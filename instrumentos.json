@@ -112,7 +112,7 @@
       "nombre": "Bitcoin",
       "corto": "Bitcoin",
       "yahoo": "BTC-EUR",
-      "coingecko": "bitcoin",
+      "bitvavo": "BTC-EUR",
       "tipo": "Cripto",
       "clase": "Cripto",
       "region": { "Global": 100 },

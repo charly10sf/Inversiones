@@ -14,8 +14,10 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios actua
 | `index.html`, `sw.js`, `manifest.webmanifest` | La web (instalable en el móvil). | Sí |
 
 - La contraseña no se guarda en ningún sitio. Si marco "Recordar en este dispositivo", el navegador guarda la clave derivada (no exportable) en IndexedDB.
-- Los precios los descarga `scripts/precios.py` (Yahoo Finance con `yfinance`) cada 20 minutos de lunes a viernes de 8:00 a 24:00 y una vez al día el fin de semana. Bitcoin se actualiza en directo en la web con CoinGecko.
-- Los fondos tienen un único valor liquidativo al día, así que su precio cambia una vez al día.
+- Precios en directo, sin recargar: la web abre dos WebSockets públicos.
+  - Yahoo Finance para acciones, oro y divisas. Madrid llega con 15 minutos de retraso y Londres con 20 (es lo que da Yahoo gratis); las divisas, al instante.
+  - Bitvavo para Bitcoin, al instante.
+- Los fondos tienen un único valor liquidativo al día. Ese valor, el histórico de un año, los analistas y los sectores los descarga `scripts/precios.py` (Yahoo Finance con `yfinance`) cada 20 minutos de lunes a viernes y una vez al día el fin de semana; la web vuelve a leerlos sola cada 2 minutos.
 
 ## Guardar cambios desde la web
 
