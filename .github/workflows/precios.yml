@@ -1,0 +1,63 @@
+name: Precios
+
+# Descarga los precios y los publica en la rama "datos" (un único commit que se sobrescribe).
+# Horario en UTC: de lunes a viernes cada 20 minutos de 6:00 a 21:59 UTC (8:00-23:59 en Madrid en verano)
+# y una vez al día el fin de semana (para Bitcoin; en la web además se actualiza en directo).
+on:
+  schedule:
+    - cron: "*/20 6-21 * * 1-5"
+    - cron: "17 10 * * 0,6"
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "instrumentos.json"
+      - "scripts/**"
+      - ".github/workflows/precios.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: precios
+  cancel-in-progress: false
+
+jobs:
+  precios:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r scripts/requirements.txt
+
+      - name: Recuperar los precios anteriores
+        run: |
+          if git fetch --depth=1 origin datos 2>/dev/null; then
+            git show origin/datos:precios.json > anterior.json || echo '{}' > anterior.json
+          else
+            echo '{}' > anterior.json
+          fi
+
+      - name: Descargar precios
+        run: |
+          mkdir -p salida
+          python scripts/precios.py instrumentos.json anterior.json salida/precios.json
+
+      - name: Publicar en la rama datos
+        working-directory: salida
+        run: |
+          git init -q
+          git checkout -q -b datos
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add precios.json
+          git commit -q -m "Precios $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" datos
