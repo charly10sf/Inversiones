@@ -193,12 +193,12 @@ button.fila:hover { background: var(--plane); }
 .fila.efectivo { color: var(--text-2); }
 .fila .c-senal { text-align: right; }
 @media (max-width: 1360px) and (min-width: 681px) {
-  .fila { grid-template-columns: minmax(0, 2fr) 0.9fr 0.75fr 1.1fr 0.9fr 1.1fr; }
+  .fila { grid-template-columns: minmax(0, 2.2fr) 0.9fr 0.75fr 1.1fr 0.9fr 1.1fr; }
   .fila .c-peso, .fila .c-gan { display: none; }
 }
 @media (max-width: 680px) {
   .fila { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "act val" "act hoy"; gap: 0 14px; padding: 12px 2px; }
-  .fila .activo { grid-area: act; }
+  .fila .activo-l { grid-area: act; }
   .fila .c-val { grid-area: val; }
   .fila .c-hoy { grid-area: hoy; font-size: 13.5px; }
   .fila .c-precio, .fila .c-peso, .fila .c-gan, .fila .c-pct, .fila .c-senal { display: none; }
@@ -318,6 +318,70 @@ tr.tuya td:first-child b::after { content: 'la tienes'; font-weight: 400; font-s
 .solo-movil { display: none; }
 @media (max-width: 680px) { .solo-movil { display: inline-block; font-size: 11.5px; padding: 0 7px; line-height: 18px; } }
 .merc-r span b { font-weight: 400; }
+
+/* ---------- análisis IA ---------- */
+.ia-cab { display: grid; gap: 14px; max-width: 920px; }
+.ia-firma { display: flex; gap: 10px; align-items: flex-start; color: var(--muted); font-size: 13px; }
+.ia-firma svg { width: 18px; height: 18px; color: var(--accent); flex: none; margin-top: 1px; }
+.ia-titular { margin: 4px 0 2px; font-size: clamp(22px, 2.6vw, 28px); font-weight: 300; line-height: 1.3; letter-spacing: -0.02em; }
+.ia-p { margin: 0; color: var(--text-2); font-size: 15.5px; line-height: 1.65; max-width: 80ch; }
+.dato { color: var(--text); font-weight: 650; }
+.lista .dato, .tarjeta .dato { display: inline; }
+.ia-titular .dato { font-weight: 500; }
+.ia-notas { display: grid; gap: 1px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 210px), 1fr)); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; margin-top: 32px; }
+.ia-notas > div { background: var(--bg); padding: 16px 18px; display: grid; gap: 6px; align-content: start; box-shadow: 0 0 0 1px var(--line); font-size: 13.5px; color: var(--text-2); }
+.ia-nota-cab { display: flex; justify-content: space-between; gap: 10px; align-items: center; }
+.ia-nota-cab b { color: var(--text); font-weight: 650; font-size: 14.5px; }
+.ia-puntos { display: inline-flex; gap: 3px; }
+.ia-puntos i { width: 14px; height: 6px; border-radius: 2px; background: var(--line-2); }
+.ia-puntos i.on { background: var(--accent); }
+.ia-mejorar { margin: 0; padding: 0; list-style: none; counter-reset: m; display: grid; gap: 0; border-top: 1px solid var(--line); }
+.ia-mejorar li { counter-increment: m; display: grid; grid-template-columns: 34px minmax(0, 1fr); column-gap: 14px; padding: 18px 0; border-bottom: 1px solid var(--line); }
+.ia-mejorar li::before { content: counter(m); grid-row: span 3; width: 28px; height: 28px; border-radius: 50%; background: var(--accent-bg); color: var(--accent); font-weight: 700; font-size: 14px; display: grid; place-items: center; }
+.ia-mejorar h3 { margin: 2px 0 6px; font-size: 16px; font-weight: 650; letter-spacing: -0.01em; }
+.ia-mejorar p { margin: 0 0 10px; color: var(--text-2); font-size: 14.5px; line-height: 1.6; }
+.ia-meta { display: flex; flex-wrap: wrap; gap: 6px 20px; font-size: 13px; color: var(--muted); }
+.ia-meta b { color: var(--text-2); font-weight: 600; }
+.tarjeta h3 .logo-a { margin-right: 2px; }
+
+/* ---------- logos, banderas y orden ---------- */
+.logo-a { position: relative; flex: none; width: 34px; height: 34px; border-radius: 9px; background: #F1EDE5; display: grid; place-items: center; overflow: hidden; }
+.logo-a > span { font-size: 12px; font-weight: 700; color: #3A362F; letter-spacing: -0.02em; }
+.logo-a img { position: absolute; inset: 5px; width: calc(100% - 10px); height: calc(100% - 10px); object-fit: contain; background: #F1EDE5; }
+.logo-a.peq { width: 24px; height: 24px; border-radius: 6px; }
+.logo-a.peq > span { font-size: 9.5px; }
+.logo-a.peq img { inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); }
+.activo-l { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.bandera { width: 18px; height: 13px; border-radius: 2px; object-fit: cover; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08); flex: none; }
+.bandera.global { display: inline-block; background: radial-gradient(circle at 50% 50%, var(--muted) 0 3px, transparent 3.5px), var(--plane-3); }
+.origen { display: inline-flex; gap: 6px; align-items: center; white-space: nowrap; }
+.th { border: 0; background: none; padding: 0; color: inherit; font: inherit; cursor: pointer; display: inline-flex; gap: 4px; align-items: center; }
+.th:hover, .th[aria-pressed="true"] { color: var(--text); }
+.th .fl { color: var(--accent); }
+.ordenar-m { display: none; }
+@media (max-width: 680px) { .ordenar-m { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; width: 100%; } .ordenar-m select { flex: 1; background: var(--plane); border: 1px solid var(--line-2); border-radius: 8px; padding: 7px 9px; color: var(--text); } }
+
+/* ---------- plan de venta ---------- */
+.plan-venta { background: var(--plane); border: 1px solid var(--line); border-left: 3px solid var(--accent); border-radius: 14px; padding: 20px; display: grid; gap: 18px; }
+.plan-venta > header { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+.plan-venta > header h3 { margin: 0; font-size: 17px; font-weight: 650; }
+.plan-venta > header .senal { margin-left: auto; }
+.pv-grid { display: grid; gap: 18px 36px; }
+@media (min-width: 900px) { .pv-grid { grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); } }
+.plan-venta.compacto .pv-grid { grid-template-columns: minmax(0, 1fr); }
+.pv-col { display: grid; gap: 16px; align-content: start; }
+.pv-paso { display: grid; grid-template-columns: 76px minmax(0, 1fr); gap: 12px; font-size: 14px; }
+.pv-paso b { display: block; font-weight: 650; }
+.pv-paso > div > span { color: var(--text-2); font-size: 13.5px; }
+.pv-n { color: var(--accent); font-size: 13px; font-weight: 600; padding-top: 1px; }
+.pv-destinos { display: grid; gap: 12px; }
+.pv-dest { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: start; }
+.pv-dest b { font-size: 15px; }
+.pv-dest span { color: var(--text-2); font-size: 13.5px; display: block; }
+.ideas-top { margin: 0; padding-left: 20px; display: grid; gap: 10px; font-size: 13.5px; color: var(--text-2); }
+.ideas-top b { color: var(--text); font-weight: 600; }
+.idea-cab { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 2px; }
+@media (max-width: 560px) { .pv-paso { grid-template-columns: minmax(0, 1fr); gap: 4px; } .plan-venta { padding: 16px; } }
 
 /* ---------- futuro ---------- */
 .proy-controles { display: grid; gap: 16px 20px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); align-items: start; padding: 18px 20px; background: var(--plane); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 36px; }
@@ -492,10 +556,10 @@ const S = {
   inst: {}, instOrden: [], ref: null, instCambiados: false, instSha: null,
   precios: null, cartera: null, enc: null, key: null, salt: null, iter: 600000,
   oculto: LS.get('inv-oculto', false), dim: LS.get('inv-dim', 'clase'), base: LS.get('inv-base', 'todo'),
-  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif', 'rent'), fichaRango: LS.get('inv-frango', '1A'),
+  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif2', 'ia'), fichaRango: LS.get('inv-frango', '1A'),
   comparar: LS.get('inv-comparar', false), radarZona: LS.get('inv-zona', 'Todas'), radarOrden: LS.get('inv-orden', 'pot'),
   radarMin: LS.get('inv-radar-min', true), radarTodo: false, vista: 'cartera', ficha: null,
-  proy: LS.get('inv-proy', {}), horizonte: LS.get('inv-horizonte', 20), proyCache: null,
+  ordenPos: LS.get('inv-orden-pos', { k: 'valor', dir: 'desc' }), proy: LS.get('inv-proy', {}), horizonte: LS.get('inv-horizonte', 20), proyCache: null,
   hist: null, histId: null, live: {}, liveM: {}, fxVivo: {}, binds: {}, M: null, ultimaCarga: 0,
 };
 
@@ -937,7 +1001,7 @@ function calcular() {
   filas.sort((a, b) => b.valor - a.valor);
   const M = { filas, efectivo, liquidez, total, totalPos, invertido, dia, diaPct: total - dia ? (dia / (total - dia)) * 100 : 0, pl: totalPos - invertido, plPct: invertido ? (totalPos / invertido - 1) * 100 : 0 };
   M.dividendos = sum(filas, (f) => (f.p && f.p.dividendo_pct ? (f.valor * f.p.dividendo_pct) / 100 : 0));
-  M.realizado = realizadoAnio(new Date().getFullYear());
+  M.realizado = fiscalAnio(new Date().getFullYear()).gp;
   for (const f of filas) f.senal = senal(f, M);
   return M;
 }
@@ -1105,9 +1169,23 @@ function senal(f, M) {
     if (t.rsi >= 72) motivos.push(`Ha subido rápido en las últimas semanas (RSI ${fmtNum(t.rsi, 0)}): puede corregir a corto plazo.`);
     if (t.rsi && t.rsi <= 30) motivos.push(`Ha caído rápido en las últimas semanas (RSI ${fmtNum(t.rsi, 0)}): suele rebotar a corto plazo.`);
     if (stop && pr) motivos.push(`Tu salida está a ${precioFmt(stop)}, un ${fmtNum((1 - stop / pr) * 100, 1)} % por debajo.`);
-    if (f.plPct > 60 && pot != null && pot < 8) { motivos.unshift(`Ganas un ${fmtNum(f.plPct, 0)} % y los analistas ven poco recorrido: plantéate vender una parte y asegurar.`); return fin('recoger'); }
+    if (f.plPct > 60 && pot != null && pot < 8) {
+      const ya = (S.cartera.movimientos || []).filter((m) => m.tipo === 'venta' && m.instrumento === i.id && (m.resultado || 0) > 0 && diasEntre(m.fecha, hoyIso()) <= 90);
+      if (!ya.length) { motivos.unshift(`Ganas un ${fmtNum(f.plPct, 0)} % y los analistas ven poco recorrido: plantéate vender una parte y asegurar.`); return fin('recoger'); }
+      motivos.unshift(`Ya recogiste beneficios el ${fechaLarga(ya[ya.length - 1].fecha)}: lo que queda es ganancia. Protégela con una orden stop en su media de 50 sesiones.`);
+    }
     if (f.peso > 10) { motivos.unshift(`Pesa un ${fmtNum(f.peso, 1)} % de tu cartera: más del 10 % en una sola empresa.`); return fin('reducir'); }
-    if (score >= 2) return fin('comprar');
+    if (score >= 2) {
+      // tu regla: las acciones sueltas no pasan del límite; si ya estás cerca, no se añade
+      const sueltas = M.total ? (sum(M.filas.filter((x) => x.inst.tipo === 'Acción'), (x) => x.valor) / M.total) * 100 : 0;
+      const lim = +(S.cartera.limite_acciones || 20);
+      if (sueltas >= lim - 3) {
+        const plan = (S.cartera.aportaciones || []).some((x) => x.instrumento === i.id && +x.importe && (!x.hasta || x.hasta >= hoyIso()));
+        motivos.unshift(`Los analistas la ven para comprar, pero tus acciones sueltas ya pesan un ${fmtNum(sueltas, 1)} % y tu límite es el ${fmtNum(lim, 0)} %: ${plan ? 'deja que la compre tu plan mensual y no metas extra' : 'no añadas hasta que vendas parte de otra'}.`);
+        return fin(plan ? 'aportar' : 'mantener');
+      }
+      return fin('comprar');
+    }
     if (score <= -2) return fin('vender');
     if (score === -1) return fin('vigilar');
     return fin('mantener');
@@ -1176,6 +1254,7 @@ const ICONOS = {
   mas: SVG('<path d="M12 5v14M5 12h14"/>', 2),
   compra: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2),
   venta: SVG('<path d="M12 5v14M6 13l6 6 6-6"/>', 2),
+  chispa: SVG('<path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 3v4M17 5h4"/>'),
   papelera: SVG('<path d="M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3"/>'),
   cartera: SVG('<rect x="3" y="6" width="18" height="14" rx="2.5"/><path d="M16 13h2M3 10h18M8 6V4h8v2"/>'),
   expertos: SVG('<path d="M4 19V5M4 19h16"/><path d="M7 15l4-4 3 3 5-6"/><circle cx="19" cy="8" r="1.2" fill="currentColor"/>'),
@@ -1343,7 +1422,7 @@ function vistaCartera(M) {
         <div class="kpi"><span class="k">Invertido</span><span class="v">${eur(M.invertido, 0)}</span></div>
         <div class="kpi"><span class="k">Dividendos al año</span><span class="v">${eur(M.dividendos, 0)}<small>brutos</small></span></div>
         ${(() => { try { const pr = proyeccion(M); return `<a class="kpi" href="#futuro"><span class="k">En 10 años, lo probable</span><span class="v acento">${euCorto(pr.p50[120])}</span></a>`; } catch (e) { return ''; } })()}
-        ${(S.cartera.movimientos || []).some((m) => m.tipo === 'venta' && String(m.fecha).startsWith(String(anio))) ? `<div class="kpi"><span class="k">Ventas de ${anio}</span><span class="v ${cls(M.realizado)}">${eurS(M.realizado, 0)}</span></div>` : ''}
+        ${M.realizado ? `<div class="kpi"><span class="k">Ventas de ${anio}</span><span class="v ${cls(M.realizado)}">${eurS(M.realizado, 0)}</span></div>` : ''}
       </div>
     </section>
     <section aria-label="Evolución">
@@ -1369,10 +1448,10 @@ function chipsPos(f) {
 }
 
 function htmlPosiciones(M) {
-  const filas = M.filas.map((f) => {
+  const filas = ordenarPos(M.filas).map((f) => {
     const id = f.pos.id;
     return `<button class="fila" data-pos="${esc(id)}" aria-label="Abrir la ficha de ${esc(f.inst.corto || f.inst.nombre)}">
-        <span class="activo"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small>${esc(f.pos.plataforma || '')}${chipsPos(f)}${['mantener', 'aportar'].includes(f.senal.nivel) ? '' : `<span class="senal ${f.senal.nivel} solo-movil">${f.senal.txt}</span>`}</small></span>
+        <span class="activo-l">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}<span class="activo"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small>${origen(f.inst)}<span>${esc(f.pos.plataforma || '')}</span>${chipsPos(f)}${['mantener', 'aportar'].includes(f.senal.nivel) ? '' : `<span class="senal ${f.senal.nivel} solo-movil">${f.senal.txt}</span>`}</small></span></span>
         <span class="r c-precio">${B('pp:' + id)}</span>
         <span class="r c-hoy">${B('pd:' + id)}</span>
         <span class="r valor c-val">${B('pv:' + id)}</span>
@@ -1382,12 +1461,13 @@ function htmlPosiciones(M) {
         <span class="c-senal"><span class="senal ${f.senal.nivel}">${f.senal.txt}</span></span>
       </button>`;
   }).join('');
-  const ef = M.efectivo.map((e) => `<div class="fila efectivo"><span class="activo"><b>Efectivo</b><small>${esc(e.plataforma)}</small></span><span class="c-precio"></span><span class="c-hoy"></span><span class="r valor num c-val">${eur(e.importe)}</span><span class="r c-peso k num">${pct(M.total ? (e.importe / M.total) * 100 : 0, 1)}</span><span class="c-gan"></span><span class="c-pct"></span><span class="c-senal"></span></div>`).join('');
+  const ef = M.efectivo.map((e) => `<div class="fila efectivo"><span class="activo-l">${logo(null, '€')}<span class="activo"><b>Efectivo</b><small>${esc(e.plataforma)}</small></span></span><span class="c-precio"></span><span class="c-hoy"></span><span class="r valor num c-val">${eur(e.importe)}</span><span class="r c-peso k num">${pct(M.total ? (e.importe / M.total) * 100 : 0, 1)}</span><span class="c-gan"></span><span class="c-pct"></span><span class="c-senal"></span></div>`).join('');
   return `<section aria-labelledby="hPos">
     <div class="sec-cab"><h2 id="hPos">Posiciones</h2><span class="k">${M.filas.length} activos</span>
-      <div class="der"><button class="btn peq" data-accion="operacion">${ICONOS.compra}Registrar compra o venta</button><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir posición</button></div></div>
+      <div class="der"><button class="btn peq" data-accion="operacion">${ICONOS.compra}Registrar compra o venta</button><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir posición</button></div>
+      <label class="ordenar-m">Ordenar por<select data-orden-pos-sel>${COLS_POS.map(([k, t]) => [[k, 'desc'], [k, 'asc']].map(([kk, d]) => `<option value="${kk}|${d}"${S.ordenPos.k === kk && S.ordenPos.dir === d ? ' selected' : ''}>${t === '%' ? 'Ganancia en %' : t} ${kk === 'activo' ? (d === 'asc' ? 'A-Z' : 'Z-A') : kk === 'senal' ? (d === 'asc' ? 'más urgente' : 'menos urgente') : d === 'desc' ? 'mayor a menor' : 'menor a mayor'}</option>`).join('')).join('')}</select></label></div>
     <div class="tabla-pos">
-      <div class="fila cab" aria-hidden="true"><span>Activo</span><span class="r c-precio">Precio</span><span class="r c-hoy">Hoy</span><span class="r c-val">Valor</span><span class="r c-peso">Peso</span><span class="r c-gan">Ganancia</span><span class="r c-pct">%</span><span class="c-senal" style="text-align:right">Señal</span></div>
+      <div class="fila cab">${COLS_POS.map(([k, t, c]) => { const on = S.ordenPos && S.ordenPos.k === k; return `<span class="${c}"><button class="th" data-orden-pos="${k}" aria-pressed="${on}" title="Ordenar por ${t.toLowerCase()}">${t}${on ? `<span class="fl">${S.ordenPos.dir === 'asc' ? '↑' : '↓'}</span>` : ''}</button></span>`; }).join('')}</div>
       ${filas || '<div class="vacio">Todavía no hay posiciones. Pulsa "Añadir posición".</div>'}${ef}
     </div>
     <p class="nota">Pulsa una posición para ver su ficha: gráfico, analistas, noticias y botones para comprar, vender o editarla.</p>
@@ -1541,6 +1621,10 @@ function vistaExpertos(M) {
   return `
   <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas de Yahoo Finance, prensa económica y una señal para cada posición.</p></div>
   <div class="pila">
+    ${(() => { const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean); return `<section aria-labelledby="hPlanV">
+      <div class="sec-cab"><h2 id="hPlanV">Qué haría ahora</h2><span class="k">${planes.length ? `${planes.length === 1 ? 'una posición que conviene' : planes.length + ' posiciones que conviene'} vender o recortar` : 'nada que vender'}</span></div>
+      ${planes.length ? `<div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl)).join('')}</div>` : '<div class="vacio">Ninguna posición pide vender ahora mismo. Si cambia, aquí saldrá cuánto vender, cuándo, lo que se lleva Hacienda y adónde mover el dinero.</div>'}
+    </section>`; })()}
     <section aria-labelledby="hSen">
       <div class="sec-cab"><h2 id="hSen">Tu cartera, posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
       <div class="tarjetas">${[...M.filas].sort((a, b) => ORDEN_SENAL.indexOf(a.senal.nivel) - ORDEN_SENAL.indexOf(b.senal.nivel) || b.valor - a.valor).map(tarjetaSenal).join('')}</div>
@@ -1572,7 +1656,7 @@ function htmlIdeas(M) {
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Solo con 5 analistas o más</label></div>
     <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial')}${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
-    ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><b style="font-weight:500">${esc(x.n)}</b><small>${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</small></td>
+    ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${x.pais ? bandera(PAIS_DE_NOMBRE[x.pais]) + ' ' : ''}${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</small></td>
       <td class="r">${fmtNum(x.p, x.p >= 1000 ? 0 : 2)} ${x.m === 'EUR' ? '€' : x.m === 'USD' ? '$' : x.m === 'GBp' ? 'p' : esc(x.m || '')}<small class="${cls(x.v)}">${pctS(x.v)}</small></td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
       <td class="r ${cls(x.pot)}">${pctS(x.pot, 1)}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
@@ -1599,12 +1683,13 @@ function vistaMercados() {
 }
 
 /* =========================== Análisis =========================== */
-const ANALISIS = [['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas frente al índice'], ['impuestos', 'Impuestos']];
+const ANALISIS = [['ia', 'Análisis IA'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas frente al índice'], ['impuestos', 'Impuestos']];
 function vistaAnalisis(M) {
-  if (!ANALISIS.some(([k]) => k === S.califTab)) S.califTab = 'rent';
+  if (!ANALISIS.some(([k]) => k === S.califTab)) S.califTab = 'ia';
   const nombre = (f) => `<b style="font-weight:500">${esc(f.inst.corto || f.inst.nombre)}</b>`;
   let cuerpo = '';
-  if (S.califTab === 'rent') {
+  if (S.califTab === 'ia') cuerpo = htmlAnalisisIA(M);
+  else if (S.califTab === 'rent') {
     const anios = [...new Set(M.filas.flatMap((f) => Object.keys((f.p && f.p.anios) || {})))].sort().slice(-8);
     cuerpo = `<div class="tabla-w"><table><thead><tr><th>Posición</th><th class="r">1 mes</th><th class="r">3 meses</th><th class="r">En el año</th><th class="r">1 año</th><th class="r">3 años</th><th class="r">5 años</th><th class="r">10 años</th></tr></thead><tbody>
       ${M.filas.map((f) => { const r = (f.p && f.p.rent) || {}; return `<tr><td>${nombre(f)}</td>${['1m', '3m', 'ytd', '1a'].map((k) => `<td class="r ${cls(r[k])}">${pctS(r[k], 1)}</td>`).join('')}${['3a', '5a', '10a'].map((k) => `<td class="r ${cls(r[k + '_anual'])}">${r[k + '_anual'] == null ? '—' : pctS(r[k + '_anual'], 1)}<small>${r[k] == null ? '' : 'total ' + pctS(r[k], 0)}</small></td>`).join('')}</tr>`; }).join('')}
@@ -1652,16 +1737,10 @@ function vistaAnalisis(M) {
       }).join('')}</tbody></table></div><p class="nota">Solo el precio, sin dividendos ni comisiones. Para que una posición cuente como apuesta, ponle fecha y precio de entrada en su ficha (Editar).</p>`
       : '<div class="vacio">Ninguna posición tiene fecha y precio de entrada. Añádelos en la ficha de la posición (Editar).</div>';
   } else {
-    const anio = new Date().getFullYear();
-    const ventas = (S.cartera.movimientos || []).filter((m) => m.tipo === 'venta' && String(m.fecha).startsWith(String(anio)));
-    const real = sum(ventas, (m) => m.resultado || 0);
-    const latente = M.pl;
-    cuerpo = `<div class="resumen-fila"><div><span class="k">Resultado de tus ventas en ${anio}</span><span class="v ${cls(real)}">${eurS(real, 0)}</span></div><div><span class="k">Impuesto aproximado</span><span class="v">${eur(irpfAhorro(real), 0)}</span></div><div><span class="k">Ganancia sin vender</span><span class="v ${cls(latente)}">${eurS(latente, 0)}</span></div><div><span class="k">Si vendieras todo hoy</span><span class="v">${eur(irpfAhorro(real + latente), 0)}</span></div></div>
-      ${ventas.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Venta</th><th class="r">Unidades</th><th class="r">Precio</th><th class="r">Coste</th><th class="r">Resultado</th></tr></thead><tbody>${ventas.map((m) => `<tr><td><b style="font-weight:500">${esc((S.inst[m.instrumento] && S.inst[m.instrumento].corto) || m.instrumento)}</b><small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${precioFmt(m.precio)}</td><td class="r">${eur(m.coste_vendido || 0, 0)}</td><td class="r ${cls(m.resultado)}">${eurS(m.resultado || 0, 0)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="vacio">No has registrado ventas este año. Las que registres desde "Registrar compra o venta" salen aquí con su resultado.</div>'}
-      <p class="nota">Escala del ahorro de 2026: 19 % hasta 6.000 €, 21 % hasta 50.000 €, 23 % hasta 200.000 €, 27 % hasta 300.000 € y 30 % por encima. Las pérdidas se compensan con las ganancias del mismo año y, si sobran, durante los 4 siguientes. Si vendes con pérdidas y recompras lo mismo en 2 meses, esa pérdida no cuenta hasta que vendas lo recomprado. Los traspasos entre fondos no pagan.</p>`;
+    cuerpo = htmlImpuestos(M);
   }
   return `
-  <div class="vista-cab"><h1>Análisis</h1><p>Rentabilidad, riesgo, costes, qué hay dentro de tus fondos e impuestos.</p></div>
+  <div class="vista-cab"><h1>Análisis</h1><p>Un análisis de Claude de tu cartera, y tu rentabilidad, riesgo, costes, lo que hay dentro de tus fondos e impuestos.</p></div>
   <div class="tabs-fila"><div class="tabs" role="group" aria-label="Ver">${ANALISIS.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div></div>
   ${cuerpo}`;
 }
@@ -1853,6 +1932,457 @@ function dibujar(M) {
 
 let rsT;
 window.addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(() => { if (S.M) { dibujar(S.M); if (S.ficha) dibujarFicha(); } }, 150); });
+/* =====================================================================
+   Logo y país de cada activo
+   El logo es el icono de la web de la empresa o la gestora (servicio de iconos de Google);
+   si no carga, se ven las iniciales. Las banderas, de flagcdn.com.
+   ===================================================================== */
+const PAISES = { ES: 'España', GB: 'Reino Unido', IE: 'Irlanda', LU: 'Luxemburgo', JE: 'Jersey', US: 'EEUU', DE: 'Alemania', FR: 'Francia', NL: 'Países Bajos', IT: 'Italia', CH: 'Suiza', DK: 'Dinamarca', BE: 'Bélgica', SE: 'Suecia', FI: 'Finlandia', PT: 'Portugal', JP: 'Japón', CA: 'Canadá' };
+const PAIS_DE_NOMBRE = { Spain: 'ES', 'United Kingdom': 'GB', Ireland: 'IE', Luxembourg: 'LU', Jersey: 'JE', 'United States': 'US', Germany: 'DE', France: 'FR', Netherlands: 'NL', Italy: 'IT', Switzerland: 'CH', Denmark: 'DK', Belgium: 'BE', Sweden: 'SE', Finland: 'FI', Portugal: 'PT', Japan: 'JP', Canada: 'CA' };
+const iniciales = (t) => String(t || '?').replace(/\(.*?\)/g, '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
+function logo(dominio, nombre, clase = '') {
+  const ini = esc(iniciales(nombre));
+  if (!dominio) return `<span class="logo-a ${clase}" aria-hidden="true"><span>${ini}</span></span>`;
+  return `<span class="logo-a ${clase}" aria-hidden="true"><span>${ini}</span><img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(dominio)}&sz=64" alt="" loading="lazy" referrerpolicy="no-referrer" onerror="this.remove()"></span>`;
+}
+function bandera(cod) {
+  if (!cod) return '<span class="bandera global" aria-hidden="true"></span>';
+  return `<img class="bandera" src="https://flagcdn.com/${esc(cod.toLowerCase())}.svg" alt="" width="18" height="13" loading="lazy" onerror="this.remove()">`;
+}
+function origen(inst) {
+  const cod = inst.pais || null;
+  const nombre = cod ? PAISES[cod] || cod : 'Global';
+  return `<span class="origen" title="${esc(donde(inst))}">${bandera(cod)}${esc(nombre)}</span>`;
+}
+function donde(inst) {
+  const pais = inst.pais ? PAISES[inst.pais] || inst.pais : null;
+  if (inst.tipo === 'Acción') return `Empresa de ${pais || 'fuera'}${inst.mercado ? `, cotiza en la bolsa de ${inst.mercado}` : ''}`;
+  if (/^Fondo/.test(inst.tipo || '')) return `Fondo domiciliado en ${pais || '—'}: no cotiza en bolsa, tiene un valor liquidativo al día`;
+  if (inst.tipo === 'ETC') return `Emitido en ${pais || '—'}${inst.mercado ? `, cotiza en la bolsa de ${inst.mercado}` : ''}`;
+  if (inst.clase === 'Cripto') return 'Sin país: cotiza las 24 horas en exchanges de todo el mundo';
+  return pais || '';
+}
+const dominioWeb = (u) => { try { return u ? new URL(/^https?:/.test(u) ? u : 'https://' + u).hostname.replace(/^www\./, '') : null; } catch (e) { return null; } };
+
+/* =====================================================================
+   Orden de la tabla de posiciones
+   ===================================================================== */
+const COLS_POS = [['activo', 'Activo', ''], ['precio', 'Precio', 'r c-precio'], ['hoy', 'Hoy', 'r c-hoy'], ['valor', 'Valor', 'r c-val'], ['peso', 'Peso', 'r c-peso'], ['gan', 'Ganancia', 'r c-gan'], ['pct', '%', 'r c-pct'], ['senal', 'Señal', 'r c-senal']];
+const CLAVE_POS = {
+  activo: (f) => (f.inst.corto || f.inst.nombre || '').toLowerCase(),
+  precio: (f) => f.precio ?? -Infinity, hoy: (f) => f.varDia ?? -Infinity, valor: (f) => f.valor, peso: (f) => f.peso,
+  gan: (f) => f.pl, pct: (f) => f.plPct ?? -Infinity, senal: (f) => ORDEN_SENAL.indexOf(f.senal.nivel),
+};
+const DIR_INICIAL = { activo: 'asc', senal: 'asc' };
+function ordenarPos(filas) {
+  const o = S.ordenPos || { k: 'valor', dir: 'desc' };
+  const g = CLAVE_POS[o.k] || CLAVE_POS.valor;
+  return [...filas].sort((a, b) => {
+    const x = g(a), y = g(b);
+    const c = typeof x === 'string' ? x.localeCompare(y, 'es') : x - y;
+    return (o.dir === 'asc' ? c : -c) || b.valor - a.valor;
+  });
+}
+function cambiarOrden(k) {
+  const o = S.ordenPos || {};
+  S.ordenPos = o.k === k ? { k, dir: o.dir === 'asc' ? 'desc' : 'asc' } : { k, dir: DIR_INICIAL[k] || 'desc' };
+  LS.set('inv-orden-pos', S.ordenPos);
+  pintar();
+}
+
+/* =====================================================================
+   Impuestos (IRPF de territorio común, residente en España)
+   - Ganancias y pérdidas de ventas, dividendos e intereses van a la base del ahorro.
+   - Lo vendido se calcula con FIFO (primero salen las acciones más antiguas), como pide Hacienda.
+   - Saldos negativos: se compensan entre ganancias y rendimientos hasta el 25 % y el resto en 4 años.
+   - Al comprar, algunos países cobran una tasa: España 0,2 % y Francia 0,4 % (empresas de más de
+     1.000 M€), Italia 0,1 %, Reino Unido 0,5 %. Los ETF y fondos no la pagan.
+   ===================================================================== */
+const TRAMOS_AHORRO = [[6000, 0.19], [50000, 0.21], [200000, 0.23], [300000, 0.27], [Infinity, 0.30]];
+const tipoMarginal = (base) => (TRAMOS_AHORRO.find(([h]) => base < h) || TRAMOS_AHORRO[TRAMOS_AHORRO.length - 1])[1];
+const TASA_COMPRA = { ES: [0.002, 'impuesto sobre transacciones financieras español'], FR: [0.004, 'tasa francesa sobre transacciones financieras'], IT: [0.001, 'tasa italiana sobre transacciones financieras'], GB: [0.005, 'impuesto de timbre británico'] };
+function tasaCompra(pais, tipo, capital) {
+  if (tipo && tipo !== 'Acción') return null;
+  const t = TASA_COMPRA[pais];
+  if (!t) return null;
+  if (pais !== 'GB' && pais !== 'IT' && capital != null && capital < 1e9) return null;
+  return { tipo: t[0], nombre: t[1] };
+}
+
+function datosFiscales(anio) { return ((S.cartera.fiscal || {})[anio]) || {}; }
+function fiscalAnio(anio, extra = 0) {
+  const d = datosFiscales(anio);
+  const ventas = (S.cartera.movimientos || []).filter((m) => m.tipo === 'venta' && String(m.fecha).startsWith(String(anio)));
+  const gpWeb = sum(ventas, (m) => m.resultado || 0);
+  const otras = +d.otras || 0;
+  const gp = gpWeb + otras + extra;
+  const rcm = +d.rcm || 0;
+  const pendientes = Math.max(0, +d.pendientes || 0);
+  let bGP = gp, bRCM = rcm, cruzado = 0;
+  if (bGP < 0 && bRCM > 0) { cruzado = Math.min(-bGP, 0.25 * bRCM); bGP += cruzado; bRCM -= cruzado; }
+  else if (bRCM < 0 && bGP > 0) { cruzado = Math.min(-bRCM, 0.25 * bGP); bRCM += cruzado; bGP -= cruzado; }
+  let usadas = 0;
+  if (pendientes > 0 && bGP > 0) { usadas = Math.min(bGP, pendientes); bGP -= usadas; }
+  if (pendientes - usadas > 0 && bRCM > 0) { const u2 = Math.min(0.25 * bRCM, pendientes - usadas); bRCM -= u2; usadas += u2; }
+  const base = Math.max(0, bGP) + Math.max(0, bRCM);
+  return { anio, ventas, gpWeb, otras, gp, rcm, pendientes, usadas, cruzado, base, cuota: irpfAhorro(base), marginal: tipoMarginal(base), sobra: (bGP < 0 ? -bGP : 0) + (pendientes - usadas), retenido: +d.retenido || 0 };
+}
+/* lo que añade una venta concreta a la factura de este año (con todo lo demás que ya llevas) */
+function impuestoDeVenta(ganancia, anio = new Date().getFullYear()) {
+  const a = fiscalAnio(anio), b = fiscalAnio(anio, ganancia);
+  return { impuesto: b.cuota - a.cuota, antes: a, despues: b };
+}
+
+/* Lotes de compra de una posición: los guardados, o uno de partida con lo que tenías al empezar a
+   usar la web, más cada aportación automática ya sumada (fecha, unidades y coste de cada una). */
+function lotesDe(pos) {
+  const f = calcularPos(pos, hoyIso());
+  const apo = f.aportes.filter((a) => a.precio).map((a) => ({ f: a.f, u: a.importe / a.precio, c: a.importe }));
+  let base;
+  if (pos.lotes && pos.lotes.length) base = pos.lotes.map((l) => ({ ...l }));
+  else {
+    const u = (f.uds ?? 0) - sum(apo, (a) => a.u);
+    base = u > 1e-9 ? [{ f: pos.fecha || hoyIso(), u, c: +pos.coste || 0, mezcla: true }] : [];
+  }
+  return [...base, ...apo].sort((a, b) => (a.f < b.f ? -1 : a.f > b.f ? 1 : 0));
+}
+function fifo(lotes, uds) {
+  let resto = uds, coste = 0, mezcla = false;
+  const usados = [], quedan = [];
+  for (const l of lotes) {
+    if (resto <= 1e-9) { quedan.push({ ...l }); continue; }
+    const u = Math.min(resto, l.u), c = l.c * (u / l.u);
+    usados.push({ f: l.f, u, c }); coste += c; resto -= u; mezcla = mezcla || !!l.mezcla;
+    if (l.u - u > 1e-9) quedan.push({ ...l, u: l.u - u, c: l.c - c });
+  }
+  return { coste, usados, quedan, falta: resto > 1e-6 ? resto : 0, mezcla };
+}
+
+function editarFiscal(anio = new Date().getFullYear()) {
+  const d = datosFiscales(anio);
+  const h = hoja(`Datos fiscales de ${anio}`, `<form id="fFis" novalidate>
+    <p class="nota" style="margin:0">Lo que la web no puede saber sola. Con esto calcula lo que pagarías en la renta de ${anio}, que se presenta entre abril y junio de ${anio + 1}.</p>
+    <div class="form-grid">
+      <label class="campo">Ventas hechas fuera de la web (€)<input name="otras" inputmode="decimal" value="${val(d.otras)}" placeholder="0"><small>Ganancia o pérdida neta de lo que vendiste este año antes de registrarlo aquí. Las pérdidas, en negativo.</small></label>
+      <label class="campo">Dividendos e intereses cobrados (€)<input name="rcm" inputmode="decimal" value="${val(d.rcm)}" placeholder="0"><small>En bruto, antes de retenciones. Incluye los intereses del efectivo de Trade Republic.</small></label>
+      <label class="campo">Retenciones que ya te han hecho (€)<input name="retenido" inputmode="decimal" value="${val(d.retenido)}" placeholder="0"><small>Lo que ya te quitaron al cobrar: se resta de lo que pagas.</small></label>
+      <label class="campo">Pérdidas de años anteriores sin compensar (€)<input name="pendientes" inputmode="decimal" value="${val(d.pendientes)}" placeholder="0"><small>Las que te queden de los últimos 4 años (vienen en tu declaración anterior).</small></label>
+    </div>
+    <div class="error" id="errFis"></div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div></form>`);
+  $('#fFis', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const o = {};
+    for (const k of ['otras', 'rcm', 'retenido', 'pendientes']) {
+      const n = numero(ev.target[k].value);
+      if (Number.isNaN(n)) { $('#errFis', h.el).textContent = 'Algún importe no es un número.'; return; }
+      if (n != null) o[k] = n;
+    }
+    S.cartera.fiscal = { ...(S.cartera.fiscal || {}), [anio]: o };
+    await guardarYPintar('Datos fiscales', h);
+  };
+}
+
+function htmlImpuestos(M) {
+  const anio = new Date().getFullYear();
+  const fa = fiscalAnio(anio);
+  const nombreI = (id) => esc((S.inst[id] && S.inst[id].corto) || id);
+  // si vendieras cada posición hoy (FIFO sobre todo lo que tienes = valor menos coste total)
+  const latentes = M.filas.map((f) => {
+    const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0);
+    return { f, g, imp: g > 0 ? impuestoDeVenta(g, anio).impuesto : 0 };
+  }).sort((a, b) => b.g - a.g);
+  const totLat = sum(latentes, (x) => x.g);
+  const todo = impuestoDeVenta(totLat, anio).impuesto;
+  const perdidas = latentes.filter((x) => x.g < 0);
+  const fondos = M.filas.filter((f) => /^Fondo/.test(f.inst.tipo || ''));
+  const tr = sum(M.filas.filter((f) => f.pos.plataforma === 'Trade Republic'), (f) => f.valor) + sum(M.efectivo.filter((e) => e.plataforma === 'Trade Republic'), (e) => e.importe);
+  const cripto = sum(M.filas.filter((f) => f.inst.clase === 'Cripto'), (f) => f.valor);
+  const divs = M.filas.filter((f) => f.p && f.p.dividendo_pct);
+  return `
+    <div class="sec-cab"><h2>Renta de ${anio}</h2><span class="k">se presenta entre abril y junio de ${anio + 1}</span><div class="der"><button class="btn peq" data-accion="fiscal">${ICONOS.lapiz}Datos fiscales de ${anio}</button></div></div>
+    <div class="resumen-fila">
+      <div><span class="k">Ventas del año</span><span class="v ${cls(fa.gp)}">${eurS(fa.gp, 0)}</span><small class="k">${fa.ventas.length} en la web${fa.otras ? `, ${eurS(fa.otras, 0)} fuera` : ''}</small></div>
+      <div><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm, 0)}</span><small class="k">${fa.rcm ? 'los que has apuntado' : 'apúntalos en Datos fiscales'}</small></div>
+      <div><span class="k">Base del ahorro</span><span class="v">${eur(fa.base, 0)}</span><small class="k">tramo del ${fmtNum(fa.marginal * 100, 0)} %</small></div>
+      <div><span class="k">Cuota estimada</span><span class="v">${eur(fa.cuota, 0)}</span><small class="k">${fa.retenido ? `menos ${eur(fa.retenido, 0)} ya retenidos: ${eurS(fa.cuota - fa.retenido, 0)}` : 'antes de restar retenciones'}</small></div>
+      ${fa.sobra > 0 ? `<div><span class="k">Pérdidas para años siguientes</span><span class="v down">${eur(fa.sobra, 0)}</span><small class="k">hasta ${anio + 4}</small></div>` : ''}
+    </div>
+    ${fa.ventas.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Venta</th><th class="r">Unidades</th><th class="r">Valor de venta</th><th class="r">Valor de compra (FIFO)</th><th class="r">Resultado</th></tr></thead><tbody>${fa.ventas.map((m) => `<tr><td><b style="font-weight:600">${nombreI(m.instrumento)}</b><small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${eur(m.importe || 0)}<small>gastos restados</small></td><td class="r">${eur(m.coste_vendido || 0)}<small>${m.fifo && m.fifo.length ? `${m.fifo.length} ${m.fifo.length === 1 ? 'lote' : 'lotes'}${m.mezcla ? ', con el de partida' : ''}` : ''}</small></td><td class="r ${cls(m.resultado)}">${eurS(m.resultado || 0)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="vacio">No has registrado ventas este año. Las que registres desde "Registrar compra o venta" salen aquí, con el valor de compra calculado por FIFO.</div>'}
+
+    <div class="dos" style="margin-top:44px">
+      <section>
+        <div class="sec-cab"><h2>Si vendieras hoy</h2><span class="k">con lo que ya llevas en ${anio}</span></div>
+        <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r">Ganancia o pérdida</th><th class="r">Impuesto si vendes todo</th><th class="r">Tipo</th></tr></thead><tbody>
+          ${latentes.map((x) => `<tr><td><b style="font-weight:600">${esc(x.f.inst.corto || x.f.inst.nombre)}</b><small>${esc(x.f.pos.plataforma || '')}${/^Fondo/.test(x.f.inst.tipo || '') ? ', se puede traspasar sin pagar' : ''}</small></td><td class="r ${cls(x.g)}">${eurS(x.g, 0)}</td><td class="r">${x.imp > 0 ? eur(x.imp, 0) : '—'}</td><td class="r">${x.g > 0 ? pct((x.imp / x.g) * 100, 1) : x.g < 0 ? '<span class="k">resta</span>' : '—'}</td></tr>`).join('')}
+        </tbody></table></div>
+        <p class="nota">Vender todo hoy costaría unos ${eur(todo, 0)} en la renta de ${anio}. Las pérdidas restan de las ganancias del mismo año; por eso el impuesto de cada fila depende de lo que ya llevas. ${perdidas.length ? `Ahora tienes pérdidas sin vender en ${perdidas.map((x) => esc(x.f.inst.corto)).join(', ')}: si algún día las vendes, hazlo el mismo año que una venta con ganancia para compensarla.` : ''}</p>
+      </section>
+      <aside class="lateral">
+        <div class="sec-cab"><h2>Qué declarar</h2></div>
+        <ul class="lista">
+          <li class="info">${ICONOS.info}<div><b>Cada venta de acciones, ETF, oro o Bitcoin</b><span>Ganancia o pérdida de cada una, con FIFO: primero se venden las que compraste antes. Las comisiones y tasas suben el coste o bajan el precio de venta. Trade Republic te da el informe fiscal en la app (Perfil, Impuestos).</span></div></li>
+          <li class="info">${ICONOS.info}<div><b>Traspasos entre fondos: no se declaran</b><span>Pasar dinero de un fondo a otro en MyInvestor no paga hasta que vendas de verdad. ${fondos.length ? `Lo tienes en ${fondos.map((f) => esc(f.inst.corto)).join(', ')}.` : ''} Con un ETF no funciona: cada venta paga.</span></div></li>
+          <li class="info">${ICONOS.info}<div><b>Dividendos e intereses</b><span>${divs.length ? `Cobras dividendos de ${divs.map((f) => esc(f.inst.corto)).join(', ')}. ` : ''}Los españoles llegan con el 19 % retenido. Los extranjeros pueden venir sin retención española o con la del país de origen: esa se recupera en la renta con la deducción por doble imposición internacional. Los intereses del efectivo de Trade Republic también se declaran.</span></div></li>
+          <li class="${tr > 50000 || cripto > 50000 ? 'warn' : 'info'}">${tr > 50000 || cripto > 50000 ? ICONOS.alerta : ICONOS.info}<div><b>Modelos 720 y 721</b><span>Solo si tus cuentas o valores en el extranjero pasan de 50.000 € (720) o tu cripto fuera de España pasa de 50.000 € (721), entre enero y marzo. Ahora tienes ${eur(tr, 0)} en Trade Republic y ${eur(cripto, 0)} en cripto.</span></div></li>
+          <li class="warn">${ICONOS.alerta}<div><b>La regla de los dos meses</b><span>Si vendes con pérdidas y vuelves a comprar lo mismo en los dos meses anteriores o siguientes, esa pérdida no cuenta hasta que vendas lo recomprado. En cripto no se aplica, pero Hacienda podría aplicar la de un año.</span></div></li>
+        </ul>
+      </aside>
+    </div>
+    <p class="nota">Escala del ahorro de ${anio}: 19 % hasta 6.000 €, 21 % hasta 50.000 €, 23 % hasta 200.000 €, 27 % hasta 300.000 € y 30 % por encima. Las pérdidas de ventas se compensan con las ganancias del año y, si sobran, con hasta un 25 % de los dividendos e intereses; lo que quede pasa a los 4 años siguientes. Es un cálculo orientativo: la cifra exacta, en el borrador de la renta y en los informes fiscales de tus brókeres.</p>`;
+}
+
+/* =====================================================================
+   Plan de venta: cuánto vender, cuándo, qué se lleva Hacienda y adónde mover el dinero
+   ===================================================================== */
+
+/* Puntúa cada idea de la lista (~100 grandes empresas) para recibir dinero nuevo. Cada factor suma
+   o resta y queda escrito como motivo, para que se vea por qué gana una y no otra. */
+function puntuarIdea(x, ctx) {
+  const motivos = [], pegas = [];
+  let p = 0;
+  const pot = Math.min(x.pot, 50);
+  p += 1.2 * (pot / 50);
+  motivos.push(`los analistas le ven un ${fmtNum(x.pot, 0)} % de recorrido`);
+  const rm = x.rm ?? 3;
+  p += Math.max(-1, Math.min(1, (2.6 - rm) / 1.6));
+  if (rm <= 1.6) motivos.push(`consenso de compra fuerte entre ${x.na} analistas`);
+  else motivos.push(`${x.na} analistas, consenso de compra`);
+  p += 0.5 * (Math.min(x.na || 0, 30) / 30);
+  if (x.perf > 0 && x.perf < 10) { p += 0.4; motivos.push(`barata: PER futuro de ${fmtNum(x.perf, 1)}`); }
+  else if (x.perf > 0 && x.perf < 15) { p += 0.3; motivos.push(`PER futuro de ${fmtNum(x.perf, 1)}`); }
+  else if (x.perf > 0 && x.perf < 22) p += 0.1;
+  else if (x.perf >= 30) { p -= 0.3; pegas.push(`cara: PER futuro de ${fmtNum(x.perf, 0)}`); }
+  if (x.c1a != null) {
+    if (x.c1a >= 5 && x.c1a <= 60) { p += 0.25; motivos.push(`tendencia sana: ${pctS(x.c1a, 0)} en un año`); }
+    else if (x.c1a < -15) { p -= 0.3; pegas.push(`ha caído un ${fmtNum(-x.c1a, 0)} % en un año: el mercado duda de algo`); }
+    else if (x.c1a > 90) { p -= 0.15; pegas.push(`ya ha subido un ${fmtNum(x.c1a, 0)} % en un año`); }
+  }
+  if (x.div >= 2) { p += 0.1; motivos.push(`dividendo del ${fmtNum(x.div, 1)} %`); }
+  const pesoSector = x.sector ? ctx.sectores[x.sector] || 0 : 0;
+  if (pesoSector > 20) { p -= 0.3; pegas.push(`ya tienes un ${fmtNum(pesoSector, 0)} % en ${x.sector.toLowerCase()} a través de tus fondos`); }
+  else if (x.sector) { p += 0.1; motivos.push(`${x.sector.toLowerCase()}: solo un ${fmtNum(pesoSector, 0)} % de tu bolsa`); }
+  const dentro = ctx.dentro(x.n);
+  if (dentro > 0.01 * ctx.total) { p -= 0.35; pegas.push(`ya tienes ${eur(dentro, 0)} en ella dentro de tus fondos`); }
+  if (x.z === 'EEUU') pegas.push('cotiza en dólares: el cambio euro/dólar también cuenta');
+  const tc = tasaCompra(PAIS_DE_NOMBRE[x.pais], 'Acción', x.cap);
+  if (tc) pegas.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
+  return { ...x, puntos: p, motivos, pegas };
+}
+function mejoresIdeas(M, excluir = {}) {
+  const r = S.precios && S.precios.radar;
+  if (!r || !r.valores) return [];
+  const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
+  const sect = {};
+  for (const x of reparto(M, 'sector', 'rv').filas) sect[x.k] = x.pct;
+  // lo que ya tienes de cada empresa dentro de tus fondos (para no doblar la apuesta sin saberlo)
+  const SOBRA = new Set(['inc', 'corp', 'corporation', 'plc', 'sa', 'nv', 'ag', 'se', 'ltd', 'co', 'holding', 'holdings', 'group', 'class', 'a', 'b', 'c', 'the', 'company', 'ordinary', 'shares', 'new', 'registered', 'participating', 'preferred']);
+  const norm = (n) => String(n || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter((w) => w && !SOBRA.has(w)).join(' ');
+  const dentroMapa = new Map(empresasPorDentro(M).filas.filter((e) => !e.directa).map((e) => [norm(e.n), e.v]));
+  const ctx = { sectores: sect, total: M.total, dentro: (n) => { const k = norm(n); let v = 0; for (const [kk, vv] of dentroMapa) if (kk && k && (kk === k || kk.startsWith(k + ' ') || k.startsWith(kk + ' '))) v += vv; return v; } };
+  return r.valores
+    .filter((x) => !tuyas.has(x.s) && x.pot != null && x.pot >= 10 && (x.na || 0) >= 8 && (x.rm ?? 9) <= 2.4 && ['buy', 'strong_buy'].includes(x.r) && !(x.c1a < -35) && (!excluir.sector || x.sector !== excluir.sector))
+    .map((x) => puntuarIdea(x, ctx))
+    .sort((a, b) => b.puntos - a.puntos);
+}
+
+const NUCLEO = { n: 'S&P 500 (núcleo indexado)', d: 'ishares.com', txt: 'Mejor en tu fondo del S&P 500 de MyInvestor (transfiere el dinero desde Trade Republic): entre fondos podrás cambiar más adelante sin pagar impuestos con un traspaso. Si prefieres no moverlo de Trade Republic, el ETF iShares Core S&P 500 (ISIN IE00B5BMR087) sigue el mismo índice, pero cada venta futura pagará.' };
+
+function planVenta(f, M) {
+  const nivel = f.senal.nivel;
+  if (!['vender', 'recoger', 'reducir'].includes(nivel) || !f.uds || !f.precio) return null;
+  const p = f.p || {}, a = p.analistas || {}, t = p.tecnico || {};
+  const pr = f.precio, medio = f.coste / f.uds;
+  const accion = f.inst.tipo === 'Acción';
+  const redondea = (u) => (accion ? Math.min(f.uds, Math.ceil(u - 1e-9)) : u);
+  let uds, cuanto;
+  if (nivel === 'vender') { uds = f.uds; cuanto = 'Toda la posición.'; }
+  else if (nivel === 'recoger') {
+    uds = redondea(f.coste / pr);
+    cuanto = `Lo que pusiste (${eur(f.coste, 0)}): recuperas tu dinero y lo que te quedas es ganancia que sigue trabajando.`;
+  } else {
+    uds = redondea(Math.max(0, f.valor - 0.08 * M.total) / pr);
+    cuanto = `Lo que pasa del 8 % de tu cartera, para que una sola empresa no mande en tus resultados.`;
+  }
+  if (!(uds > 0)) return null;
+  const queda = f.uds - uds;
+  const gastos = f.pos.plataforma === 'Trade Republic' ? 1 : 0;
+  const importe = uds * pr, neto = importe - gastos;
+  let r;
+  try { r = fifo(lotesDe(f.pos), uds); } catch (e) { r = { coste: medio * uds, mezcla: true, usados: [] }; }
+  const ganancia = neto - r.coste;
+  const anio = new Date().getFullYear();
+  const iv = impuestoDeVenta(ganancia, anio);
+  const impuesto = Math.max(0, iv.impuesto);
+  const mover = Math.max(0, neto - impuesto);
+  const fiscal = { coste: r.coste, mezcla: r.mezcla, lotes: r.usados.length, antes: iv.antes, despues: iv.despues, anio, finDeAnio: new Date().getMonth() >= 10 };
+
+  // cuándo
+  const cuando = [];
+  const hoy = hoyIso();
+  const res = p.proximos_resultados && p.proximos_resultados >= hoy ? p.proximos_resultados : null;
+  const diasRes = res ? diasEntre(hoy, res) : null;
+  const pot = a.objetivo ? (a.objetivo / pr - 1) * 100 : null;
+  if (nivel === 'vender' && +f.pos.stop && pr <= +f.pos.stop) cuando.push(`Ya: ha roto tu precio de salida (${precioFmt(+f.pos.stop)}). Cada día que esperas te expones a que siga cayendo.`);
+  else if (pot != null && pot < 3) cuando.push(`Ya: cotiza en el precio objetivo medio de los analistas (${precioFmt(a.objetivo)}). En Trade Republic, orden limitada de venta a ${precioCorto(pr)} o un céntimo por debajo.`);
+  else if (pot != null && nivel !== 'vender') cuando.push(`Con una orden limitada a ${precioCorto(a.objetivo)}, el precio objetivo medio: es donde los analistas ven su techo a 12 meses. Si no llega en unas semanas, vende igualmente.`);
+  else cuando.push('En los próximos días, sin esperar a un rebote.');
+  if (diasRes != null && diasRes <= 21) cuando.push(`Mejor antes de sus resultados del ${fechaLarga(res)} (en ${diasRes} días): con lo que lleva subido, lo bueno ya está en el precio y un mal dato puede tumbarla en una sesión.`);
+  if (p.ex_dividendo && p.ex_dividendo >= hoy && diasEntre(hoy, p.ex_dividendo) <= 30 && p.dividendo_pct) cuando.push(`Si quieres cobrar el próximo dividendo, tienes que tenerla al cierre del día anterior al ${fechaLarga(p.ex_dividendo)}: ese día el precio baja más o menos lo que paga, así que no compensa esperar solo por eso.`);
+  const ref = [+f.pos.stop || 0, t.media50 || 0].filter((x) => x > 0 && x < pr);
+  const salidaResto = ref.length ? Math.max(...ref) : null;
+  if (queda > 0 && salidaResto) cuando.push(`Para las ${fmtNum(queda, accion ? 0 : 2)} que te quedas: orden stop a ${precioCorto(salidaResto)}${salidaResto === t.media50 ? ' (su media de 50 sesiones)' : ' (tu precio de salida)'}. Si cierra por debajo, la subida se ha acabado y vendes el resto.`);
+
+  // adónde
+  const sueltas = sum(M.filas.filter((x) => x.inst.tipo === 'Acción'), (x) => x.valor);
+  const lim = (+(S.cartera.limite_acciones || 20) / 100) * M.total;
+  const hueco = Math.max(0, lim - (sueltas - (accion ? importe : 0)));
+  const ideas = mejoresIdeas(M, { sector: p.sector });
+  let aIdea = 0;
+  if (nivel === 'recoger') aIdea = Math.min(mover, hueco);
+  else if (nivel === 'vender') aIdea = Math.min(mover * 0.5, hueco);
+  if (!ideas.length) aIdea = 0;
+  const aNucleo = mover - aIdea;
+  return { f, nivel, uds, queda, cuanto, importe, neto, ganancia, impuesto, mover, cuando, ideas: ideas.slice(0, 3), aIdea, aNucleo, salidaResto, accion, fiscal };
+}
+
+/* qué declaras con esta venta y cuánto pagas, con todo lo que ya llevas en el año */
+function htmlFiscalVenta(pl) {
+  const fs = pl.fiscal, a = fs.antes;
+  const lineas = [];
+  lineas.push(`Vendes por ${eur(pl.neto)} (comisión restada) lo que te costó ${eur(fs.coste)}${fs.lotes > 1 ? `, sacando primero las ${fs.lotes} compras más antiguas (FIFO)` : ''}.`);
+  if (fs.mezcla) lineas.push('Lo que tenías antes de usar la web cuenta como una sola compra a tu precio medio. Si lo compraste en varias veces, Hacienda usa primero las más antiguas: el informe fiscal del bróker te da la cifra exacta.');
+  const yaLlevas = [];
+  if (a.gp) yaLlevas.push(`${eurS(a.gp, 0)} en otras ventas`);
+  if (a.rcm) yaLlevas.push(`${eur(a.rcm, 0)} en dividendos e intereses`);
+  if (a.pendientes) yaLlevas.push(`${eur(a.pendientes, 0)} de pérdidas de años anteriores`);
+  if (pl.ganancia > 0) {
+    lineas.push(yaLlevas.length ? `Este año ya llevas ${yaLlevas.join(', ')}: con esta venta tu base del ahorro queda en ${eur(fs.despues.base, 0)} y tu tramo en el ${fmtNum(fs.despues.marginal * 100, 0)} %.` : `Es lo único que declaras este año por ahora. Si tienes pérdidas de otras ventas o dividendos, apúntalos en Análisis, Impuestos, Datos fiscales, y este cálculo se ajusta.`);
+    lineas.push(`Coste fiscal de mover el dinero: ${eur(pl.impuesto, 0)}. La inversión nueva tiene que ganar al menos eso más que ${esc(pl.f.inst.corto)} para que el cambio compense.`);
+    if (fs.finDeAnio) lineas.push(`Si esperas a enero, el impuesto se paga un año más tarde (en la renta de ${fs.anio + 1}).`);
+  } else {
+    lineas.push(`Esa pérdida resta de tus ganancias de ${fs.anio}; si sobra, de hasta un 25 % de tus dividendos e intereses y el resto en los 4 años siguientes. No vuelvas a comprar ${esc(pl.f.inst.corto)} en dos meses o la pérdida no cuenta hasta que la vendas.`);
+  }
+  return `<b>${pl.ganancia > 0 ? `Declaras una ganancia de ${eur(pl.ganancia, 0)}: unos ${eur(pl.impuesto, 0)} de impuesto` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: no pagas y te ahorra impuestos`}</b><ul class="motivos" style="margin-top:6px">${lineas.map((l) => `<li>${l}</li>`).join('')}</ul>`;
+}
+function htmlPlanVenta(pl, compacto) {
+  if (!pl) return '';
+  const f = pl.f, i = f.inst;
+  const nombre = esc(i.corto || i.nombre);
+  const top = pl.ideas[0];
+  const idea = (x, k) => `<li><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b>${esc(x.n)}</b><span class="k">${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</span></div>
+    <span>${esc(x.motivos.slice(0, 4).join(', '))}.${x.pegas.length ? ` Pega: ${esc(x.pegas.join('; '))}.` : ''}</span></li>`;
+  const destino = [];
+  const tasaTop = top ? tasaCompra(PAIS_DE_NOMBRE[top.pais], 'Acción', top.cap) : null;
+  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${(S.precios.radar.valores || []).length} empresas que sigue la web para una apuesta nueva: ${esc(top.motivos.slice(0, 3).join(', '))}.${top.pegas.length ? ` Pega: ${esc(top.pegas[0])}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} Sus dividendos tributan en la renta como los de tus otras acciones.</span></div></div>`);
+  if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(NUCLEO.d, 'S P')}<div><b>${eur(pl.aNucleo, 0)} al S&P 500</b><span>${pl.nivel === 'reducir' ? 'Para bajar riesgo sin dejar de estar invertido. ' : pl.aIdea > 0 ? 'La otra mitad, a lo seguro. ' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite. '}${esc(NUCLEO.txt)}</span></div></div>`);
+  if (pl.impuesto > 0) destino.push(`<div class="pv-dest">${logo(null, '€')}<div><b>${eur(pl.impuesto, 0)} aparte para Hacienda</b><span>Se paga en la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}. Déjalo en efectivo o en tu colchón hasta entonces: no lo inviertas en bolsa.</span></div></div>`);
+  return `<article class="plan-venta${compacto ? ' compacto' : ''}">
+    <header>${logo(i.dominio, i.corto)}<div><h3>${nombre}</h3><span class="k">${esc(f.pos.plataforma || '')}, ahora ${precioFmt(f.precio)}</span></div><span class="senal ${f.senal.nivel}">${esc(f.senal.txt)}</span></header>
+    <div class="pv-grid">
+      <div class="pv-col">
+        <div class="pv-paso"><span class="pv-n">Cuánto</span><div><b>Vende ${oc(fmtNum(pl.uds, pl.accion ? 0 : 4))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b><span>${pl.cuanto}${pl.queda > 0 ? ` Te quedas ${oc(fmtNum(pl.queda, pl.accion ? 0 : 2))}, unos ${eur(pl.queda * f.precio, 0)}.` : ''}</span></div></div>
+        <div class="pv-paso"><span class="pv-n">Cuándo</span><div><ul class="motivos">${pl.cuando.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div>
+        <div class="pv-paso"><span class="pv-n">Hacienda</span><div>${htmlFiscalVenta(pl)}</div></div>
+      </div>
+      <div class="pv-col">
+        <div class="pv-paso"><span class="pv-n">Adónde</span><div class="pv-destinos">${destino.join('') || '<span class="k">Déjalo en efectivo hasta tener una idea clara.</span>'}</div></div>
+        ${!compacto && pl.ideas.length > 1 ? `<details class="mas"><summary>Por qué esa y no otra: las ${pl.ideas.length} mejores</summary><ol class="ideas-top">${pl.ideas.map(idea).join('')}</ol>
+          <p class="nota">Puntuación con el recorrido hasta el precio objetivo, el consenso y cuántos analistas lo respaldan, lo barata que está (PER futuro), la tendencia del último año, el dividendo y si te diversifica. Quedan fuera las que ya tienes, las del mismo sector que vendes, las de menos de 8 analistas y las que han caído más de un 35 % en un año.</p></details>` : ''}
+      </div>
+    </div>
+  </article>`;
+}
+
+/* =====================================================================
+   Análisis IA: lo escribe Claude en analisis-ia.json (público, sin cantidades).
+   Los datos personales van como {marcas} y se rellenan aquí con tu cartera descifrada.
+   ===================================================================== */
+async function cargarIA() {
+  try {
+    const r = await fetch('analisis-ia.json?v=' + Date.now(), { cache: 'no-store' });
+    if (r.ok) { const t = await r.text(); S.ia = JSON.parse(t); LS.set('inv-cache-ia', t); return; }
+  } catch (e) { console.warn(e); }
+  try { const c = LS.get('inv-cache-ia'); if (c) S.ia = JSON.parse(c); } catch (e) {}
+}
+function valoresIA(M) {
+  const v = {};
+  const conTer = M.filas.filter((f) => f.inst.ter != null);
+  const costeAnual = sum(conTer, (f) => (f.valor * f.inst.ter) / 100), base = sum(conTer, (f) => f.valor);
+  const clase = (c) => (M.total ? (sum(M.filas.filter((f) => f.inst.clase === c), (f) => f.valor) / M.total) * 100 : 0);
+  let pr = null; try { pr = proyeccion(M); } catch (e) {}
+  v.total = eur(M.total, 0);
+  v.rv_pct = pct(clase('Renta variable'), 0);
+  v.aport_mes = eur(aportacionActual(), 0);
+  v.ter_medio = pct(base ? (costeAnual / base) * 100 : 0, 2);
+  v.coste_anual = eur(costeAnual, 0);
+  v.p50_10 = pr ? euCorto(pr.p50[120]) : '—';
+  v.p50_20 = pr ? euCorto(pr.p50[240]) : '—';
+  v.sueltas_pct = pct(M.total ? (sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor) / M.total) * 100 : 0, 1);
+  for (const k of ['valor', 'peso', 'pl', 'plpct', 'coste', 'rent1a', 'rentytd', 'obj']) v[k] = {};
+  const agrupado = new Map();
+  for (const f of M.filas) { const g = agrupado.get(f.inst.id) || { valor: 0, coste: 0, peso: 0, f }; g.valor += f.valor; g.coste += f.coste; g.peso += f.peso; agrupado.set(f.inst.id, g); }
+  for (const [id, g] of agrupado) {
+    const p = g.f.p || {}, r = p.rent || {};
+    v.valor[id] = eur(g.valor, 0); v.peso[id] = pct(g.peso, 1); v.coste[id] = eur(g.coste, 0);
+    v.pl[id] = eurS(g.valor - g.coste, 0); v.plpct[id] = g.coste ? pctS((g.valor / g.coste - 1) * 100, Math.abs(g.valor / g.coste - 1) < 0.1 ? 1 : 0) : '—';
+    v.rent1a[id] = pctS(r['1a'], 1); v.rentytd[id] = pctS(r.ytd, 1);
+    v.obj[id] = p.analistas && p.analistas.objetivo ? precioCorto(p.analistas.objetivo) : '—';
+  }
+  for (const k of ['plan_ganancia', 'plan_impuesto', 'plan_importe']) v[k] = {};
+  for (const f of M.filas) {
+    const pl = planVenta(f, M); if (!pl) continue;
+    v.plan_ganancia[f.inst.id] = eurS(pl.ganancia, 0); v.plan_impuesto[f.inst.id] = eur(pl.impuesto, 0); v.plan_importe[f.inst.id] = eur(pl.importe, 0);
+  }
+  const nb = agrupado.get('nb-short');
+  v.mejora_colchon = nb && nb.f.p && nb.f.p.rent ? eur((nb.valor * Math.max(0, 2.5 - (nb.f.p.rent['1a'] || 0))) / 100, 0) : '—';
+  return v;
+}
+function rellenarIA(txt, v) {
+  return esc(txt).replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (m, k, id) => {
+    const val = id ? v[k] && v[k][id] : v[k];
+    return val != null && typeof val !== 'object' ? `<b class="dato">${esc(val)}</b>` : '—';
+  });
+}
+function htmlAnalisisIA(M) {
+  const ia = S.ia;
+  if (!ia) return '<div class="vacio">Cargando el análisis…</div>';
+  const v = valoresIA(M);
+  const R = (t) => rellenarIA(t || '', v);
+  const dias = diasEntre(ia.fecha, hoyIso());
+  const ids = [...new Set(M.filas.map((f) => f.inst.id))];
+  const puntos = (n) => `<span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
+  return `<div class="ia">
+    <div class="ia-cab">
+      <div class="ia-firma">${ICONOS.chispa}<span>Escrito por ${esc(ia.autor || 'Claude')} el ${fechaLarga(ia.fecha)}${dias > 0 ? `, hace ${dias} ${dias === 1 ? 'día' : 'días'}` : ''}. ${esc(ia.datos || '')}</span></div>
+      ${dias > 14 ? `<div class="chip warn" style="justify-self:start">Tiene más de dos semanas: pídele a Claude una revisión</div>` : ''}
+      <p class="ia-titular">${R(ia.titular)}</p>
+      ${(ia.resumen || []).map((p) => `<p class="ia-p">${R(p)}</p>`).join('')}
+    </div>
+    ${ia.puntuaciones ? `<div class="ia-notas">${ia.puntuaciones.map((x) => `<div><div class="ia-nota-cab"><b>${esc(x.k)}</b>${puntos(x.nota)}</div><span>${R(x.txt)}</span></div>`).join('')}</div>` : ''}
+    <div class="dos" style="margin-top:44px">
+      <section aria-labelledby="hMej"><div class="sec-cab"><h2 id="hMej">Qué mejoraría</h2><span class="k">por orden de importancia</span></div>
+        <ol class="ia-mejorar">${(ia.mejorar || []).map((x) => `<li><h3>${R(x.titulo)}</h3><p>${R(x.texto)}</p><div class="ia-meta">${x.impacto ? `<span><b>Qué ganas.</b> ${R(x.impacto)}</span>` : ''}${x.cuando ? `<span><b>Cuándo.</b> ${R(x.cuando)}</span>` : ''}</div></li>`).join('')}</ol>
+      </section>
+      <aside class="pila lateral" style="gap:40px">
+        <section aria-labelledby="hMan"><div class="sec-cab"><h2 id="hMan">Qué mantendría</h2></div>
+          <ul class="lista">${(ia.mantener || []).map((x) => `<li class="good">${ICONOS.ok}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></section>
+        ${ia.riesgos ? `<section aria-labelledby="hRie"><div class="sec-cab"><h2 id="hRie">Riesgos a vigilar</h2></div>
+          <ul class="lista">${ia.riesgos.map((x) => `<li class="warn">${ICONOS.alerta}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></section>` : ''}
+        ${ia.calendario ? `<section aria-labelledby="hCalIA"><div class="sec-cab"><h2 id="hCalIA">Fechas</h2></div>
+          <ul class="lista agenda">${ia.calendario.filter((e) => e.d >= hoyIso()).map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><br><span class="k">${MESES[d.getMonth()]}</span></div><div><b>${R(e.t)}</b></div><span></span></li>`; }).join('')}</ul></section>` : ''}
+      </aside>
+    </div>
+    <section style="margin-top:48px" aria-labelledby="hPosIA"><div class="sec-cab"><h2 id="hPosIA">Posición a posición</h2></div>
+      <div class="tarjetas">${ids.map((id) => { const a = (ia.posiciones || {})[id]; const i = S.inst[id] || { corto: id }; return `<article class="tarjeta">
+        <h3>${logo(i.dominio, i.corto || i.nombre)}<button class="enlace" data-pos="${esc((M.filas.find((f) => f.inst.id === id) || {}).pos.id)}">${esc(i.corto || i.nombre)}</button>${a ? `<span class="senal ${esc(a.nivel || 'mantener')}" style="margin-left:auto">${esc(a.veredicto)}</span>` : ''}</h3>
+        ${a ? `<p class="ia-p" style="margin:0">${R(a.texto)}</p>${a.vigilar ? `<p class="nota" style="margin:0"><b style="color:var(--text-2);font-weight:600">A vigilar.</b> ${R(a.vigilar)}</p>` : ''}` : '<p class="nota" style="margin:0">Todavía sin análisis: entrará en la próxima revisión.</p>'}
+      </article>`; }).join('')}</div>
+    </section>
+    <p class="nota" style="margin-top:28px">Lo escribe Claude a partir de tus posiciones, los datos de la web y la prensa económica. Las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio; el texto se renueva cada vez que pides una revisión. ${esc(ia.nota_privacidad || '')}</p>
+  </div>`;
+}
+
 /* =====================================================================
    Futuro: cuánto podrías tener si sigues aportando
    Se simulan 2.000 caminos de mercado mes a mes. Cada tipo de activo tiene una rentabilidad
@@ -2128,7 +2658,7 @@ function htmlFicha(f) {
   else if (S.ficha.tab === 'noticias') cuerpo = `<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
   else cuerpo = fichaDatos(f);
   return `<div class="ficha-cab">
-    <div class="ficha-tit"><div><h2 id="fichaTit">${esc(i.corto || i.nombre)}</h2><small>${esc(tipo)} en ${esc(f.pos.plataforma || '')}${i.nombre && i.nombre !== i.corto ? `, ${esc(i.nombre)}` : ''}</small></div>
+    <div class="ficha-tit">${logo(i.dominio, i.corto || i.nombre)}<div><h2 id="fichaTit">${esc(i.corto || i.nombre)}</h2><small>${origen(i)} ${esc(tipo)} en ${esc(f.pos.plataforma || '')}${i.nombre && i.nombre !== i.corto ? `, ${esc(i.nombre)}` : ''}</small><small>${esc(donde(i))}</small></div>
       <button class="ib" data-accion="cerrar-ficha" aria-label="Cerrar">${ICONOS.cerrar}</button></div>
     <div class="ficha-precio"><span class="p">${B('pp:' + id)}</span>${B('pd:' + id)}<span class="k">hoy${f.vivo && S.live[i.id] ? `, ${esc(S.live[i.id].fuente)}` : p.fecha ? `, cierre del ${fechaCorta(p.fecha)}` : ''}</span></div>
     <div class="ficha-precio" style="margin-top:-6px;font-size:15px"><span class="k">Tienes</span>${B('pv:' + id, 'valor')}${B('pg:' + id)}${B('pt:' + id)}</div>
@@ -2158,6 +2688,7 @@ function fichaResumen(f) {
     <h3>Señal <span class="senal ${f.senal.nivel}" style="margin-left:auto">${f.senal.txt}</span></h3>
     <ul class="motivos">${f.senal.motivos.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>
   </section>
+  ${htmlPlanVenta(planVenta(f, S.M), true)}
   <div class="kv-2">
     <div class="bloque"><h3>Tu posición</h3>${kv([
       [i.tipo === 'Acción' || i.tipo === 'Cripto' || i.tipo === 'ETC' ? 'Unidades' : 'Participaciones', f.uds != null ? oc(fmtNum(f.uds, 6)) + (f.estimada ? ' <span class="chip warn">estimado</span>' : '') : '—'],
@@ -2382,6 +2913,7 @@ function editarPosicion(id) {
     }
     if (o.cantidad == null && o.valor_ref == null) return err('Pon la cantidad (o el valor en esa fecha si no la sabes).');
     if (o.cantidad != null) { delete o.valor_ref; if (!orig || orig.cantidad == null || orig.cantidad !== o.cantidad) delete o.estimada; } else o.cantidad = null;
+    if (orig && (orig.cantidad !== o.cantidad || +orig.coste !== +o.coste || orig.fecha !== o.fecha)) delete o.lotes;
     if (o.coste == null) o.coste = 0;
     const ef = g('entrada_fecha'), ep = numero(g('entrada_precio'));
     if (ef && ep) o.entrada = { fecha: ef, precio: ep }; else delete o.entrada;
@@ -2399,8 +2931,10 @@ function fijarPosicion(pos) {
   const f = calcularPos(pos, hoyIso());
   if (f.uds == null) throw new Error('No sé cuántas unidades tienes de esta posición: ponlas en Editar.');
   const sumadas = f.aportes.filter((a) => a.precio);
-  pos.cantidad = +f.uds.toFixed(8);
-  pos.coste = +(f.coste - f.pendiente).toFixed(2);
+  const lotes = lotesDe(pos);
+  pos.lotes = lotes.map((l) => ({ ...l, u: +l.u.toFixed(8), c: +l.c.toFixed(2) }));
+  pos.cantidad = +sum(lotes, (l) => l.u).toFixed(8);
+  pos.coste = +sum(lotes, (l) => l.c).toFixed(2);
   if (sumadas.length) pos.fecha = sumadas[sumadas.length - 1].f;
   if (f.estimada) pos.estimada = true;
   delete pos.valor_ref;
@@ -2420,7 +2954,7 @@ function operacion(tipo, id) {
         <label class="campo">Unidades<input name="uds" inputmode="decimal" placeholder="acciones o participaciones"></label>
         <label class="campo">Precio por unidad (€)<input name="precio" inputmode="decimal"></label>
         <label class="campo">o el importe (€)<input name="importe" inputmode="decimal" placeholder="sin gastos"><small>Si lo pones, calculo las unidades.</small></label>
-        <label class="campo">Gastos (€)<input name="gastos" inputmode="decimal" placeholder="comisión e impuestos"><small>En Trade Republic, 1 € de comisión. En acciones españolas grandes, más un 0,2 % de tasa.</small></label>
+        <label class="campo">Comisión (€)<input name="gastos" inputmode="decimal" placeholder="0"><small>En Trade Republic, 1 € por operación. Las tasas de compra de cada país las calculo yo.</small></label>
       </div>
       <label class="check"><input type="checkbox" name="efectivo" checked><span id="tEf"></span></label>
       <div class="calculo" id="calc"></div>
@@ -2440,28 +2974,38 @@ function operacion(tipo, id) {
     for (const b of $$('[data-t]', fm)) b.setAttribute('aria-pressed', b.dataset.t === t);
     if (t === 'venta' && nueva) q('pos').value = (S.cartera.posiciones[0] || {}).id || '__nueva';
     $('#tEf', h.el).textContent = t === 'compra' ? `Pagar con el efectivo de ${platSel()}` : `Sumar lo cobrado al efectivo de ${platSel()}`;
+    if (!q('gastos').dataset.tocado) q('gastos').value = platSel() === 'Trade Republic' ? '1' : '';
     recalcular();
   };
+  const tasaDe = (instId) => { const i = S.inst[instId] || {}; const pp = S.precios && S.precios.instrumentos && S.precios.instrumentos[instId]; return tasaCompra(i.pais, i.tipo, pp && pp.fundamentales && pp.fundamentales.capitalizacion); };
   const recalcular = () => {
     const uds = numero(q('uds').value), pr = numero(q('precio').value), gastos = numero(q('gastos').value) || 0;
     const c = $('#calc', h.el);
     if (!(uds > 0) || !(pr > 0)) { c.innerHTML = '<div><span class="k">Pon las unidades y el precio (o el importe).</span></div>'; return; }
     const bruto = uds * pr;
-    if (t === 'compra') { c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Gastos</span><span>${eur(gastos)}</span></div><div><b>Total pagado</b><b>${eur(bruto + gastos)}</b></div>`; return; }
+    if (t === 'compra') {
+      const ta = tasaDe(instSel()); const tasa = ta ? bruto * ta.tipo : 0;
+      c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Comisión</span><span>${eur(gastos)}</span></div>${ta ? `<div><span>Tasa de compra (${fmtNum(ta.tipo * 100, 1)} %, ${esc(ta.nombre)})</span><span>${eur(tasa)}</span></div>` : ''}<div><b>Total pagado</b><b>${eur(bruto + gastos + tasa)}</b></div><div><span class="k">Para Hacienda, tu precio de compra incluye la comisión y la tasa.</span></div>`;
+      return;
+    }
     const p = posSel(); let extra = '';
     if (p) {
-      try { const copia = JSON.parse(JSON.stringify(p)); fijarPosicion(copia); const medio = copia.coste / copia.cantidad; const res = bruto - gastos - medio * uds;
-        extra = `<div><span>Tienes</span><span>${oc(fmtNum(copia.cantidad, 4))} a ${precioFmt(medio)} de media</span></div><div><b>Resultado</b><b class="${cls(res)}">${eurS(res)}</b></div>${uds > copia.cantidad + 1e-6 ? '<div><span class="down">Vendes más de lo que tienes.</span></div>' : ''}`;
+      try {
+        const copia = JSON.parse(JSON.stringify(p)); fijarPosicion(copia);
+        const r = fifo(copia.lotes, Math.min(uds, copia.cantidad));
+        const res = bruto - gastos - r.coste;
+        const imp = res > 0 ? impuestoDeVenta(res).impuesto : 0;
+        extra = `<div><span>Valor de compra (FIFO)</span><span>${eur(r.coste)}</span></div><div><b>Resultado para Hacienda</b><b class="${cls(res)}">${eurS(res)}</b></div>${res > 0 ? `<div><span>Impuesto estimado, con lo que ya llevas este año</span><span>${eur(imp)}</span></div>` : res < 0 ? '<div><span class="k">Esa pérdida resta de tus ganancias del año (y si sobra, de los 4 siguientes).</span></div>' : ''}${r.mezcla ? '<div><span class="k">Lo que tenías antes de usar la web cuenta como un solo lote con tu precio medio; el informe fiscal del bróker lo afina compra a compra.</span></div>' : ''}${uds > copia.cantidad + 1e-6 ? '<div><span class="down">Vendes más de lo que tienes.</span></div>' : ''}`;
       } catch (e) { extra = `<div><span class="down">${esc(e.message)}</span></div>`; }
     }
-    c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Gastos</span><span>${eur(gastos)}</span></div><div><b>Cobrado</b><b>${eur(bruto - gastos)}</b></div>${extra}`;
+    c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Comisión</span><span>${eur(gastos)}</span></div><div><b>Cobrado</b><b>${eur(bruto - gastos)}</b></div>${extra}`;
   };
   for (const b of $$('[data-t]', fm)) b.onclick = () => { t = b.dataset.t; sincronizar(); };
   q('pos').onchange = () => { ponerPrecio(); sincronizar(); };
   q('instrumento').onchange = (e) => { if (e.target.value === '__nuevo') nuevoInstrumento((nid) => { e.target.innerHTML = opcionesInst(nid || S.instOrden[0]); ponerPrecio(); }); else ponerPrecio(); sincronizar(); };
   q('plataforma').onchange = sincronizar;
   q('importe').oninput = () => { const imp = numero(q('importe').value), pr = numero(q('precio').value); if (imp > 0 && pr > 0) q('uds').value = String(+(imp / pr).toFixed(6)).replace('.', ','); recalcular(); };
-  for (const n of ['uds', 'precio', 'gastos']) q(n).oninput = () => { if (n !== 'gastos') q('importe').value = ''; recalcular(); };
+  for (const n of ['uds', 'precio', 'gastos']) q(n).oninput = () => { if (n !== 'gastos') q('importe').value = ''; else q('gastos').dataset.tocado = '1'; recalcular(); };
   if (!pos0 && t === 'compra') q('pos').value = S.cartera.posiciones.length ? q('pos').value : '__nueva';
   ponerPrecio(); sincronizar();
   fm.onsubmit = async (ev) => {
@@ -2478,19 +3022,25 @@ function operacion(tipo, id) {
     const mov = { id: nuevoId('m-'), fecha, tipo: t, instrumento: inst, plataforma: plat, uds, precio: pr, gastos };
     try {
       if (t === 'compra') {
-        mov.importe = +(uds * pr + gastos).toFixed(2);
-        if (pos) { fijarPosicion(pos); pos.cantidad = +(pos.cantidad + uds).toFixed(8); pos.coste = +(pos.coste + mov.importe).toFixed(2); }
-        else { pos = { id: nuevoId('p-'), instrumento: inst, plataforma: plat, cantidad: uds, fecha, coste: mov.importe }; S.cartera.posiciones.push(pos); }
+        const ta = tasaDe(inst);
+        mov.tasa = ta ? +(uds * pr * ta.tipo).toFixed(2) : 0;
+        mov.importe = +(uds * pr + gastos + mov.tasa).toFixed(2);
+        const lote = { f: fecha, u: uds, c: mov.importe };
+        if (pos) { fijarPosicion(pos); pos.lotes = [...(pos.lotes || []), lote]; pos.cantidad = +(pos.cantidad + uds).toFixed(8); pos.coste = +(pos.coste + mov.importe).toFixed(2); }
+        else { pos = { id: nuevoId('p-'), instrumento: inst, plataforma: plat, cantidad: uds, fecha, coste: mov.importe, lotes: [lote] }; S.cartera.posiciones.push(pos); }
       } else {
         if (!pos) return err('Elige la posición que vendes.');
         fijarPosicion(pos);
         if (uds > pos.cantidad + 1e-6) return err(`Solo tienes ${fmtNum(pos.cantidad, 4)}.`);
-        const medio = pos.coste / pos.cantidad;
+        const r = fifo(pos.lotes, uds);
         mov.importe = +(uds * pr - gastos).toFixed(2);
-        mov.coste_vendido = +(medio * uds).toFixed(2);
+        mov.coste_vendido = +r.coste.toFixed(2);
         mov.resultado = +(mov.importe - mov.coste_vendido).toFixed(2);
-        pos.cantidad = +(pos.cantidad - uds).toFixed(8);
-        pos.coste = +(pos.coste - mov.coste_vendido).toFixed(2);
+        mov.fifo = r.usados.map((l) => ({ f: l.f, u: +l.u.toFixed(8), c: +l.c.toFixed(2) }));
+        if (r.mezcla) mov.mezcla = true;
+        pos.lotes = r.quedan.map((l) => ({ ...l, u: +l.u.toFixed(8), c: +l.c.toFixed(2) }));
+        pos.cantidad = +sum(pos.lotes, (l) => l.u).toFixed(8);
+        pos.coste = +sum(pos.lotes, (l) => l.c).toFixed(2);
         if (pos.cantidad <= 1e-8) { S.cartera.posiciones = S.cartera.posiciones.filter((x) => x !== pos); if (S.ficha && S.ficha.id === pos.id) cerrarFicha(); }
       }
     } catch (e) { return err(e.message); }
@@ -2701,6 +3251,8 @@ function nuevoInstrumento(fin) {
       <label class="campo">Clase<select name="clase"><option>Renta variable</option><option>Renta fija</option><option>Oro</option><option>Cripto</option><option>Monetario</option></select></label>
       <label class="campo">Región<select name="region"><option>Europa</option><option>EEUU</option><option>Emergentes</option><option>Japón y Pacífico</option><option>Global</option></select></label>
       <label class="campo">Gastos TER (%)<input name="ter" inputmode="decimal" placeholder="solo fondos y ETF"></label>
+      <label class="campo">Web de la empresa<input name="dominio" placeholder="repsol.com"><small>Para poner su logo.</small></label>
+      <label class="campo">País<select name="pais"><option value="">Sin país</option>${Object.entries(PAISES).map(([k, v]) => `<option value="${k}">${esc(v)}</option>`).join('')}</select></label>
     </div>
     <div class="error" id="errI" style="text-align:left"></div>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button class="btn pri" type="submit">Añadir</button></div></form>`, () => fin(null));
@@ -2714,6 +3266,9 @@ function nuevoInstrumento(fin) {
     if (g('isin')) inst.isin = g('isin').toUpperCase();
     if (g('yahoo')) inst.yahoo = g('yahoo');
     const ter = numero(g('ter')); if (ter != null && !Number.isNaN(ter)) inst.ter = ter;
+    const dom = dominioWeb(g('dominio')); if (dom) inst.dominio = dom;
+    if (g('pais')) inst.pais = g('pais');
+    if (inst.yahoo && /\.MC$/i.test(inst.yahoo)) inst.mercado = 'Madrid'; else if (inst.yahoo && /\.L$/i.test(inst.yahoo)) inst.mercado = 'Londres';
     if (inst.clase === 'Oro' || inst.clase === 'Cripto' || inst.clase === 'Renta fija' || inst.clase === 'Monetario') inst.sector_fijo = inst.clase;
     if (inst.clase === 'Cripto' && inst.yahoo && /-EUR$/i.test(inst.yahoo)) inst.bitvavo = inst.yahoo.toUpperCase();
     S.inst[id] = inst; S.instOrden.push(id); S.instCambiados = true;
@@ -2791,17 +3346,18 @@ function abrirAjustes() {
    Eventos: un solo oyente para toda la página (las vistas se vuelven a pintar a menudo)
    ===================================================================== */
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset]');
+  const t = e.target.closest('[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos]');
   if (!t || !S.cartera) return;
   const d = t.dataset;
   if (d.rango) { S.rango = d.rango; LS.set('inv-rango', S.rango); pintar(); }
+  else if (d.ordenPos) cambiarOrden(d.ordenPos);
   else if ('proyReset' in d) { const c = { ...(S.proy || {}) }; delete c.aport; S.proy = c; LS.set('inv-proy', c); pintar(); }
   else if (d.horizonte) { S.horizonte = +d.horizonte; LS.set('inv-horizonte', S.horizonte); pintar(); }
   else if (d.frango) { S.fichaRango = d.frango; LS.set('inv-frango', S.fichaRango); refrescarFicha(); }
   else if (d.ftab) { S.ficha.tab = d.ftab; refrescarFicha(); const c = $('#fichaFondo .ficha'); if (c) c.scrollTop = 0; }
   else if (d.dim) { S.dim = d.dim; LS.set('inv-dim', S.dim); pintar(); }
   else if (d.base) { S.base = d.base; LS.set('inv-base', S.base); pintar(); }
-  else if (d.calif) { S.califTab = d.calif; LS.set('inv-calif', S.califTab); pintar(); }
+  else if (d.calif) { S.califTab = d.calif; LS.set('inv-calif2', S.califTab); pintar(); }
   else if (d.zona) { S.radarZona = d.zona; S.radarTodo = false; LS.set('inv-zona', S.radarZona); pintar(); }
   else if (d.orden) { S.radarOrden = d.orden; LS.set('inv-orden', S.radarOrden); pintar(); }
   else if ('radarTodo' in d) { S.radarTodo = !S.radarTodo; pintar(); }
@@ -2818,6 +3374,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'editar-ap') editarAportacion(+d.k);
     else if (a === 'efectivo') editarEfectivo();
     else if (a === 'limites') editarLimites();
+    else if (a === 'fiscal') editarFiscal();
     else if (a === 'borrar-mov') borrarMovimiento(d.id, t);
   }
 });
@@ -2825,6 +3382,7 @@ document.addEventListener('change', (e) => {
   const t = e.target;
   if (!S.cartera) return;
   if (t.matches('[data-comparar]')) { S.comparar = t.checked; LS.set('inv-comparar', S.comparar); pintar(); }
+  else if (t.matches('[data-orden-pos-sel]')) { const [k, dir] = t.value.split('|'); S.ordenPos = { k, dir }; LS.set('inv-orden-pos', S.ordenPos); pintar(); }
   else if (t.matches('[data-radar-min]')) { S.radarMin = t.checked; LS.set('inv-radar-min', S.radarMin); pintar(); }
   else if (t.matches('[data-proy]')) {
     const k = t.dataset.proy, c = { ...(S.proy || {}) };
@@ -2855,7 +3413,7 @@ async function recargarPrecios() {
   try { await cargarPrecios(); } catch (e) { return; }
   if (!S.cartera) return;
   if (S.precios.generado !== antes) {
-    await cargarHistorico();
+    await Promise.all([cargarHistorico(), cargarIA()]);
     pintar(); LIVE.resuscribir();
   } else programarParche();
 }
@@ -2865,6 +3423,7 @@ function arrancar() {
   montar();
   pintar();
   LIVE.iniciar();
+  cargarIA().then(() => { if (S.vista === 'analisis') pintar(); });
   clearInterval(tickPrecios); clearInterval(tickEstado);
   tickPrecios = setInterval(() => { if (!document.hidden) recargarPrecios(); }, 120000);
   tickEstado = setInterval(programarParche, 30000);

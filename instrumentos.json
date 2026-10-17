@@ -17,7 +17,9 @@
       "sector_etf": {
         "IVV": 1
       },
-      "proxy": "SXR8.DE"
+      "proxy": "SXR8.DE",
+      "dominio": "ishares.com",
+      "pais": "IE"
     },
     {
       "id": "amundi-europe",
@@ -34,7 +36,9 @@
       "sector_etf": {
         "IEUR": 1
       },
-      "proxy": "IMAE.AS"
+      "proxy": "IMAE.AS",
+      "dominio": "amundi.com",
+      "pais": "LU"
     },
     {
       "id": "vanguard-em",
@@ -51,7 +55,9 @@
       "sector_etf": {
         "EEM": 1
       },
-      "proxy": "EUNM.DE"
+      "proxy": "EUNM.DE",
+      "dominio": "vanguard.com",
+      "pais": "IE"
     },
     {
       "id": "vanguard-smallcap",
@@ -72,7 +78,9 @@
       "sector_etf": {
         "VB": 0.61,
         "SCZ": 0.39
-      }
+      },
+      "dominio": "vanguard.com",
+      "pais": "IE"
     },
     {
       "id": "nb-short",
@@ -86,7 +94,9 @@
       "region": {
         "Europa": 100
       },
-      "sector_fijo": "Renta fija"
+      "sector_fijo": "Renta fija",
+      "dominio": "nb.com",
+      "pais": "IE"
     },
     {
       "id": "phau",
@@ -102,7 +112,10 @@
       },
       "sector_fijo": "Oro",
       "noticias": "precio del oro",
-      "noticias_filtro": "\\boro\\b"
+      "noticias_filtro": "\\boro\\b",
+      "dominio": "wisdomtree.eu",
+      "pais": "JE",
+      "mercado": "Londres"
     },
     {
       "id": "repsol",
@@ -115,9 +128,11 @@
       "region": {
         "Europa": 100
       },
-      "pais": "España",
+      "pais": "ES",
       "noticias": "Repsol acciones",
-      "noticias_filtro": "Repsol"
+      "noticias_filtro": "Repsol",
+      "dominio": "repsol.com",
+      "mercado": "Madrid"
     },
     {
       "id": "bat",
@@ -130,9 +145,11 @@
       "region": {
         "Europa": 100
       },
-      "pais": "Reino Unido",
+      "pais": "GB",
       "noticias": "British American Tobacco",
-      "noticias_filtro": "British American|\\bBAT\\b|tabac"
+      "noticias_filtro": "British American|\\bBAT\\b|tabac",
+      "dominio": "bat.com",
+      "mercado": "Londres"
     },
     {
       "id": "iag",
@@ -145,9 +162,11 @@
       "region": {
         "Europa": 100
       },
-      "pais": "España",
+      "pais": "ES",
       "noticias": "IAG bolsa",
-      "noticias_filtro": "IAG|Iberia|British Airways|Vueling|aerol"
+      "noticias_filtro": "IAG|Iberia|British Airways|Vueling|aerol",
+      "dominio": "iairgroup.com",
+      "mercado": "Madrid"
     },
     {
       "id": "btc",
@@ -162,7 +181,8 @@
       },
       "sector_fijo": "Cripto",
       "noticias": "Bitcoin precio",
-      "noticias_filtro": "bitcoin|BTC|cripto"
+      "noticias_filtro": "bitcoin|BTC|cripto",
+      "dominio": "bitcoin.org"
     }
   ]
 }

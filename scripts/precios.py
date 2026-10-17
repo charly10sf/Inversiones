@@ -658,6 +658,17 @@ def mercado(simbolo, nombre):
     }
 
 
+def dominio(web):
+    """repsol.com a partir de https://www.repsol.com/es/index.html (para el logo)."""
+    if not web:
+        return None
+    try:
+        host = urllib.parse.urlparse(web if "://" in web else "https://" + web).hostname or ""
+        return host[4:] if host.startswith("www.") else host or None
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def radar(fx):
     out = []
     for zona, simbolos in RADAR.items():
@@ -692,6 +703,8 @@ def radar(fx):
                     "div": num(div, 2) if div is not None else None,
                     "c1a": num(cambio_1a * 100, 1) if cambio_1a is not None else None,
                     "cap": num(info["marketCap"] * a_eur_base, 0) if info.get("marketCap") and a_eur_base else None,
+                    "w": dominio(info.get("website")),
+                    "pais": info.get("country"),
                 })
             except Exception as e:  # noqa: BLE001
                 print(f"radar {sim}: {e}")
@@ -824,7 +837,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
 
     # La lista de ideas se renueva una vez al día (son ~100 consultas)
     prev_radar = anterior.get("radar") or {}
-    if prev_radar.get("fecha") == hoy and prev_radar.get("valores"):
+    if prev_radar.get("fecha") == hoy and prev_radar.get("valores") and "w" in prev_radar["valores"][0]:
         salida["radar"] = prev_radar
     else:
         try:
