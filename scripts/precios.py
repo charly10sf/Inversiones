@@ -115,6 +115,21 @@ def buscar_simbolo(isin):
     raise RuntimeError(f"no encuentro símbolo para {isin}")
 
 
+def hora_iso(valor):
+    """yfinance devuelve la hora del último precio como número o como Timestamp según la versión."""
+    if valor is None:
+        return None
+    try:
+        if isinstance(valor, (int, float)):
+            return dt.datetime.fromtimestamp(valor, dt.timezone.utc).isoformat()
+        t = pd.Timestamp(valor)
+        if t.tzinfo is None:
+            t = t.tz_localize("UTC")
+        return t.tz_convert("UTC").isoformat()
+    except Exception:  # noqa: BLE001
+        return None
+
+
 def rentabilidad(serie, desde):
     s = serie[serie.index >= desde]
     if len(s) < 2:
@@ -220,8 +235,7 @@ def procesar(inst, fx):
         "cierre_anterior": num(anterior, 6),
         "variacion_dia": num((precio / anterior - 1) * 100, 2) if anterior else None,
         "fecha": hoy.date().isoformat(),
-        "hora_mercado": dt.datetime.fromtimestamp(meta["regularMarketTime"], dt.timezone.utc).isoformat()
-        if meta.get("regularMarketTime") else None,
+        "hora_mercado": hora_iso(meta.get("regularMarketTime")),
         "max52": num(float(un_anio.max()), 6),
         "min52": num(float(un_anio.min()), 6),
         "rent": {

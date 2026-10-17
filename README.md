@@ -2,7 +2,7 @@
 
 Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios actualizados, repartos por tipo de activo, región, sector, plataforma y riesgo, opinión de analistas y avisos.
 
-**Web:** https://charly10sf.github.io/inversiones/
+**Web:** https://charly10sf.github.io/Inversiones/
 
 ## Cómo funciona
 
@@ -22,7 +22,7 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios actua
 La web guarda en este repositorio con un *fine-grained personal access token*:
 
 1. GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token.
-2. Repository access: **Only select repositories** → `inversiones`.
+2. Repository access: **Only select repositories** → `Inversiones`.
 3. Permissions → Repository permissions → **Contents: Read and write**.
 4. Pegarlo en la web (Ajustes). Para el móvil: Ajustes → *Vincular el móvil* y escanear el QR.
 
