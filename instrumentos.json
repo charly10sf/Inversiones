@@ -1,5 +1,5 @@
 {
-  "nota": "Lista pública de instrumentos (sin cantidades). La GitHub Action descarga sus precios. Las cantidades van cifradas en cartera.enc.json.",
+  "nota": "Lista pública de instrumentos (sin cantidades). La GitHub Action descarga sus precios, analistas y noticias. Las cantidades van cifradas en cartera.enc.json. 'proxy' es un ETF del mismo índice con el que se completa el histórico de los fondos más jóvenes.",
   "referencia": "ishares-us",
   "instrumentos": [
     {
@@ -11,8 +11,13 @@
       "tipo": "Fondo indexado",
       "clase": "Renta variable",
       "ter": 0.05,
-      "region": { "EEUU": 100 },
-      "sector_etf": { "IVV": 1 }
+      "region": {
+        "EEUU": 100
+      },
+      "sector_etf": {
+        "IVV": 1
+      },
+      "proxy": "SXR8.DE"
     },
     {
       "id": "amundi-europe",
@@ -23,8 +28,13 @@
       "tipo": "Fondo indexado",
       "clase": "Renta variable",
       "ter": 0.15,
-      "region": { "Europa": 100 },
-      "sector_etf": { "IEUR": 1 }
+      "region": {
+        "Europa": 100
+      },
+      "sector_etf": {
+        "IEUR": 1
+      },
+      "proxy": "IMAE.AS"
     },
     {
       "id": "vanguard-em",
@@ -35,8 +45,13 @@
       "tipo": "Fondo indexado",
       "clase": "Renta variable",
       "ter": 0.23,
-      "region": { "Emergentes": 100 },
-      "sector_etf": { "EEM": 1 }
+      "region": {
+        "Emergentes": 100
+      },
+      "sector_etf": {
+        "EEM": 1
+      },
+      "proxy": "EUNM.DE"
     },
     {
       "id": "vanguard-smallcap",
@@ -47,8 +62,17 @@
       "tipo": "Fondo indexado",
       "clase": "Renta variable",
       "ter": 0.29,
-      "region": { "EEUU": 61.4, "Japón y Pacífico": 17.5, "Europa": 12.7, "Canadá": 4.4, "Otros": 4.0 },
-      "sector_etf": { "VB": 0.61, "SCZ": 0.39 }
+      "region": {
+        "EEUU": 61.4,
+        "Japón y Pacífico": 17.5,
+        "Europa": 12.7,
+        "Canadá": 4.4,
+        "Otros": 4.0
+      },
+      "sector_etf": {
+        "VB": 0.61,
+        "SCZ": 0.39
+      }
     },
     {
       "id": "nb-short",
@@ -59,7 +83,9 @@
       "tipo": "Fondo de renta fija",
       "clase": "Renta fija",
       "ter": 0.25,
-      "region": { "Europa": 100 },
+      "region": {
+        "Europa": 100
+      },
       "sector_fijo": "Renta fija"
     },
     {
@@ -71,8 +97,12 @@
       "tipo": "ETC",
       "clase": "Oro",
       "ter": 0.39,
-      "region": { "Global": 100 },
-      "sector_fijo": "Oro"
+      "region": {
+        "Global": 100
+      },
+      "sector_fijo": "Oro",
+      "noticias": "precio del oro",
+      "noticias_filtro": "\\boro\\b"
     },
     {
       "id": "repsol",
@@ -82,8 +112,12 @@
       "yahoo": "REP.MC",
       "tipo": "Acción",
       "clase": "Renta variable",
-      "region": { "Europa": 100 },
-      "pais": "España"
+      "region": {
+        "Europa": 100
+      },
+      "pais": "España",
+      "noticias": "Repsol acciones",
+      "noticias_filtro": "Repsol"
     },
     {
       "id": "bat",
@@ -93,8 +127,12 @@
       "yahoo": "BATS.L",
       "tipo": "Acción",
       "clase": "Renta variable",
-      "region": { "Europa": 100 },
-      "pais": "Reino Unido"
+      "region": {
+        "Europa": 100
+      },
+      "pais": "Reino Unido",
+      "noticias": "British American Tobacco",
+      "noticias_filtro": "British American|\\bBAT\\b|tabac"
     },
     {
       "id": "iag",
@@ -104,8 +142,12 @@
       "yahoo": "IAG.MC",
       "tipo": "Acción",
       "clase": "Renta variable",
-      "region": { "Europa": 100 },
-      "pais": "España"
+      "region": {
+        "Europa": 100
+      },
+      "pais": "España",
+      "noticias": "IAG bolsa",
+      "noticias_filtro": "IAG|Iberia|British Airways|Vueling|aerol"
     },
     {
       "id": "btc",
@@ -115,8 +157,12 @@
       "bitvavo": "BTC-EUR",
       "tipo": "Cripto",
       "clase": "Cripto",
-      "region": { "Global": 100 },
-      "sector_fijo": "Cripto"
+      "region": {
+        "Global": 100
+      },
+      "sector_fijo": "Cripto",
+      "noticias": "Bitcoin precio",
+      "noticias_filtro": "bitcoin|BTC|cripto"
     }
   ]
 }

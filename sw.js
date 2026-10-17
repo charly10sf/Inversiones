@@ -1,7 +1,7 @@
 /* Service worker de Inversiones: abre al instante con la copia guardada de la web (también sin conexión)
    y por detrás descarga la versión nueva; si ha cambiado, avisa a la página.
    Los datos (precios, cartera cifrada, GitHub, Yahoo, Bitvavo) nunca pasan por aquí: la página los guarda aparte. */
-var CACHE = 'inv-v2';
+var CACHE = 'inv-v3';
 var CORE = ['./', 'index.html', 'manifest.webmanifest', 'favicon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 var DATOS = /(^|\/)(instrumentos\.json|cartera\.enc\.json)$/;
 self.addEventListener('install', function (e) {

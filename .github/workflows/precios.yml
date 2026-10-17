@@ -25,7 +25,7 @@ concurrency:
 jobs:
   precios:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
 
@@ -38,18 +38,18 @@ jobs:
       - name: Instalar dependencias
         run: pip install -r scripts/requirements.txt
 
-      - name: Recuperar los precios anteriores
+      - name: Recuperar los datos anteriores
         run: |
+          mkdir -p anterior
           if git fetch --depth=1 origin datos 2>/dev/null; then
-            git show origin/datos:precios.json > anterior.json || echo '{}' > anterior.json
-          else
-            echo '{}' > anterior.json
+            git show origin/datos:precios.json > anterior/precios.json || true
+            git show origin/datos:historico.json > anterior/historico.json || true
           fi
 
       - name: Descargar precios
         run: |
           mkdir -p salida
-          python scripts/precios.py instrumentos.json anterior.json salida/precios.json
+          python scripts/precios.py instrumentos.json anterior salida
 
       - name: Publicar en la rama datos
         working-directory: salida
@@ -58,6 +58,6 @@ jobs:
           git checkout -q -b datos
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add precios.json
+          git add precios.json historico.json
           git commit -q -m "Precios $(date -u +%Y-%m-%dT%H:%MZ)"
           git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" datos

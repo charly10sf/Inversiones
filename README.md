@@ -1,6 +1,12 @@
 # Inversiones
 
-Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios actualizados, repartos por tipo de activo, región, sector, plataforma y riesgo, opinión de analistas y avisos.
+Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en directo. Cinco apartados:
+
+- **Cartera**: patrimonio, evolución hasta 8 años (con comparación con el S&P 500), posiciones con una señal para cada una, reparto, próximas fechas y avisos. Cada posición abre una ficha con gráfico, analistas, noticias y botones para comprar, vender o editarla.
+- **Expertos**: consenso y precio objetivo de los analistas de tus acciones, titulares de prensa con opiniones de analistas e ideas de compra entre ~100 grandes empresas de España, Europa y EEUU.
+- **Mercados**: índices, petróleo, oro, euro/dólar, bono a 10 años y VIX, con noticias de mercado.
+- **Análisis**: rentabilidad (hasta 10 años y año a año), riesgo, costes y dividendos, qué empresas hay dentro de los fondos, apuestas frente al índice e impuestos.
+- **Plan**: aportaciones periódicas, compras y ventas, efectivo y posiciones, todo editable desde la web.
 
 **Web:** https://charly10sf.github.io/Inversiones/
 
@@ -9,7 +15,8 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios actua
 | Archivo | Qué es | ¿Público? |
 |---|---|---|
 | `instrumentos.json` | Lista de fondos, acciones y cripto que sigo (ISIN, ticker, gastos, región). Sin cantidades. | Sí |
-| rama `datos` → `precios.json` | Precios, histórico de un año, analistas y sectores. Lo genera la GitHub Action. | Sí |
+| rama `datos` → `precios.json` | Precios, analistas, fundamentales, noticias, mercados e ideas. Lo genera la GitHub Action. | Sí |
+| rama `datos` → `historico.json` | Cierres de 10 años de cada instrumento (diarios los 2 últimos, semanales antes) y de 1 año de cada mercado. | Sí |
 | `cartera.enc.json` | Cantidades, costes, notas y aportaciones, **cifrado** con AES-GCM. La clave sale de mi contraseña (PBKDF2-SHA256, 600.000 iteraciones). | Cifrado |
 | `index.html`, `sw.js`, `manifest.webmanifest` | La web (instalable en el móvil). | Sí |
 
@@ -17,7 +24,8 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios actua
 - Precios en directo, sin recargar: la web abre dos WebSockets públicos.
   - Yahoo Finance para acciones, oro y divisas. Madrid llega con 15 minutos de retraso y Londres con 20 (es lo que da Yahoo gratis); las divisas, al instante.
   - Bitvavo para Bitcoin, al instante.
-- Los fondos tienen un único valor liquidativo al día. Ese valor, el histórico de un año, los analistas y los sectores los descarga `scripts/precios.py` (Yahoo Finance con `yfinance`) cada 20 minutos de lunes a viernes y una vez al día el fin de semana; la web vuelve a leerlos sola cada 2 minutos.
+- Los fondos tienen un único valor liquidativo al día. Ese valor, el histórico, los analistas y los sectores los descarga `scripts/precios.py` (Yahoo Finance con `yfinance`) cada 20 minutos de lunes a viernes y una vez al día el fin de semana; la web vuelve a leer `precios.json` sola cada 2 minutos. Analistas y noticias (Google Noticias) se renuevan como mucho cada 2 horas y la lista de ideas una vez al día.
+- Los fondos más jóvenes se completan hacia atrás con un ETF del mismo índice (`proxy` en `instrumentos.json`).
 
 ## Guardar cambios desde la web
 
