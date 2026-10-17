@@ -1,0 +1,18 @@
+name: Sonda
+on:
+  push:
+    branches: [sonda]
+permissions:
+  contents: write
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install yfinance==1.7.0 pandas
+      - run: mkdir -p salida && python scripts/sonda.py
+      - run: |
+          cd salida && git init -q && git checkout -q -b sonda-out && git add . && git -c user.name=sonda -c user.email=sonda@x commit -qm sonda
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" sonda-out
