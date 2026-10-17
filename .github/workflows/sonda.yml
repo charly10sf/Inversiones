@@ -1,0 +1,20 @@
+name: Sonda
+on:
+  push:
+    branches: [sonda2]
+permissions:
+  contents: write
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - run: pip install yfinance==1.7.0 pandas
+      - run: python sonda.py
+      - run: |
+          mkdir s && mv salida.json s/ && cd s && git init -q && git checkout -q -b sonda2-datos
+          git config user.name bot && git config user.email bot@example.com
+          git add . && git commit -q -m sonda && git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" sonda2-datos
