@@ -7,14 +7,21 @@ permissions:
 jobs:
   sonda:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install yfinance==1.7.0 pandas
-      - run: python sonda.py
-      - run: |
-          mkdir s && mv salida.json s/ && cd s && git init -q && git checkout -q -b sonda2-datos
+      - run: pip install -r scripts/requirements.txt
+      - name: Primera pasada (como si no hubiera nada)
+        run: |
+          mkdir -p vacio s1 s2
+          ( time python scripts/precios.py instrumentos.json vacio s1 ) 2>&1 | tee s1/log.txt
+      - name: Segunda pasada (reutiliza lo lento)
+        run: |
+          ( time python scripts/precios.py instrumentos.json s1 s2 ) 2>&1 | tee s2/log.txt
+      - if: always()
+        run: |
+          mkdir out && cp -r s1 s2 out/ 2>/dev/null; cd out && git init -q && git checkout -q -b sonda2-datos
           git config user.name bot && git config user.email bot@example.com
           git add . && git commit -q -m sonda && git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" sonda2-datos
