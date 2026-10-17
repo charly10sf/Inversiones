@@ -25,7 +25,7 @@ concurrency:
 jobs:
   precios:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -44,6 +44,7 @@ jobs:
           if git fetch --depth=1 origin datos 2>/dev/null; then
             git show origin/datos:precios.json > anterior/precios.json || true
             git show origin/datos:historico.json > anterior/historico.json || true
+            git show origin/datos:radar.json > anterior/radar.json || true
           fi
 
       - name: Descargar precios
@@ -58,6 +59,6 @@ jobs:
           git checkout -q -b datos
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add precios.json historico.json
+          git add precios.json historico.json radar.json 2>/dev/null || git add precios.json historico.json
           git commit -q -m "Precios $(date -u +%Y-%m-%dT%H:%MZ)"
           git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" datos

@@ -3,12 +3,14 @@
 
 Uso: python scripts/precios.py instrumentos.json anterior/ salida/
 
-Escribe dos archivos en salida/:
-- precios.json: lo que cambia durante el día (precios, analistas, noticias, mercados, ideas). Pesa poco
+Escribe tres archivos en salida/:
+- precios.json: lo que cambia durante el día (precios, analistas, noticias y mercados). Pesa poco
   porque la web lo vuelve a leer cada 2 minutos.
+- radar.json: unas 400 empresas para buscar ideas, con analistas, valoración y tendencia. La ficha
+  se renueva cada 3 horas y los precios en cada ejecución.
 - historico.json: los cierres de cada instrumento (10 años) y de cada mercado (1 año). La web lo lee
   al abrirse y cuando cambia el día.
-anterior/ tiene los dos archivos de la ejecución anterior (si existen).
+anterior/ tiene los archivos de la ejecución anterior (si existen).
 
 - Todo lo de la cartera se pasa a euros con el tipo de cambio de cada día.
 - El histórico llega hasta 10 años. Si un fondo es más joven que eso, se completa hacia atrás
@@ -74,20 +76,70 @@ MERCADOS = [
 
 NOTICIAS_MERCADO = ["Ibex 35 bolsa", "Wall Street bolsa", "BCE tipos de interés", "Reserva Federal tipos"]
 
-# Lista de ideas: valores grandes que se pueden comprar en Trade Republic
+# Lista de ideas: unas 380 empresas que se pueden comprar en Trade Republic. Ibex 35 y buena parte
+# del mercado continuo, las grandes de Europa (Euro Stoxx 50, DAX, CAC 40, Italia, Países Bajos,
+# Suiza, nórdicos y Londres) y las grandes de EEUU. Si un símbolo deja de existir, se salta solo.
 RADAR = {
-    "España": ["ACS.MC", "ACX.MC", "AENA.MC", "AMS.MC", "ANA.MC", "ANE.MC", "BBVA.MC", "BKT.MC", "CABK.MC", "CLNX.MC",
-               "COL.MC", "ELE.MC", "ENG.MC", "FDR.MC", "FER.MC", "GRF.MC", "IAG.MC", "IBE.MC", "IDR.MC", "ITX.MC",
-               "LOG.MC", "MAP.MC", "MRL.MC", "MTS.MC", "NTGY.MC", "PUIG.MC", "RED.MC", "REP.MC", "ROVI.MC", "SAB.MC",
-               "SAN.MC", "SCYR.MC", "SLR.MC", "TEF.MC", "UNI.MC"],
-    "Europa": ["ASML.AS", "SAP.DE", "MC.PA", "OR.PA", "RMS.PA", "SIE.DE", "ALV.DE", "TTE.PA", "AIR.PA", "SAN.PA",
-               "SU.PA", "AI.PA", "BNP.PA", "DTE.DE", "MUV2.DE", "RHM.DE", "IFX.DE", "ENEL.MI", "ISP.MI", "UCG.MI",
-               "RACE.MI", "INGA.AS", "ADYEN.AS", "NOVO-B.CO", "NESN.SW", "ROG.SW", "NOVN.SW", "UBSG.SW", "AZN.L",
-               "SHEL.L", "HSBA.L", "ULVR.L", "RR.L", "BP.L", "GSK.L", "BATS.L"],
-    "EEUU": ["AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "AVGO", "TSLA", "BRK-B", "JPM", "V", "MA", "LLY",
-             "UNH", "XOM", "KO", "PEP", "PG", "COST", "WMT", "NFLX", "AMD", "PLTR", "ORCL", "CRM", "ADBE", "DIS",
-             "MCD", "NKE", "BA", "INTC"],
+    "España": [
+        # Ibex 35
+        "ACS.MC", "ACX.MC", "AENA.MC", "AMS.MC", "ANA.MC", "ANE.MC", "BBVA.MC", "BKT.MC", "CABK.MC", "CLNX.MC",
+        "COL.MC", "ELE.MC", "ENG.MC", "FDR.MC", "FER.MC", "GRF.MC", "IAG.MC", "IBE.MC", "IDR.MC", "ITX.MC",
+        "LOG.MC", "MAP.MC", "MRL.MC", "MTS.MC", "NTGY.MC", "PUIG.MC", "RED.MC", "REP.MC", "ROVI.MC", "SAB.MC",
+        "SAN.MC", "SCYR.MC", "SLR.MC", "TEF.MC", "UNI.MC",
+        # mercado continuo
+        "ALM.MC", "CIE.MC", "VIS.MC", "VID.MC", "EBRO.MC", "FAE.MC", "PSG.MC", "CASH.MC", "A3M.MC", "GEST.MC",
+        "PHM.MC", "NEI.MC", "MVC.MC", "DOM.MC", "ENC.MC", "TRE.MC", "GRE.MC", "ADX.MC", "OHLA.MC", "LDA.MC",
+        "R4.MC", "MCM.MC", "ALB.MC", "TLGO.MC", "TUB.MC", "ENO.MC", "CAF.MC", "ECR.MC", "EDR.MC", "MEL.MC",
+        "DIA.MC", "GSJ.MC", "PRS.MC", "AMP.MC", "SQRL.MC", "NXT.MC", "LGT.MC", "HBX.MC", "CIRSA.MC", "ATRY.MC",
+    ],
+    "Europa": [
+        # Euro Stoxx 50
+        "ASML.AS", "SAP.DE", "MC.PA", "OR.PA", "RMS.PA", "SIE.DE", "ALV.DE", "TTE.PA", "AIR.PA", "SAN.PA",
+        "SU.PA", "AI.PA", "BNP.PA", "DTE.DE", "MUV2.DE", "RHM.DE", "IFX.DE", "ENEL.MI", "ISP.MI", "UCG.MI",
+        "RACE.MI", "INGA.AS", "ADYEN.AS", "ADS.DE", "AD.AS", "ABI.BR", "ARGX.BR", "CS.PA", "BAS.DE", "BAYN.DE",
+        "BMW.DE", "DB1.DE", "DBK.DE", "DHL.DE", "ENI.MI", "EL.PA", "MBG.DE", "NOKIA.HE", "PRX.AS", "SAF.PA",
+        "STLAM.MI", "VOW3.DE", "DG.PA", "WKL.AS", "ENR.DE",
+        # DAX
+        "BEI.DE", "CBK.DE", "CON.DE", "DTG.DE", "EOAN.DE", "FRE.DE", "HEI.DE", "HNR1.DE", "HEN3.DE", "MRK.DE",
+        "MTX.DE", "P911.DE", "PAH3.DE", "QIA.DE", "RWE.DE", "SHL.DE", "SY1.DE", "VNA.DE", "ZAL.DE", "BNR.DE",
+        "G1A.DE",
+        # CAC 40
+        "ACA.PA", "BN.PA", "CA.PA", "CAP.PA", "DSY.PA", "ENGI.PA", "GLE.PA", "HO.PA", "KER.PA", "LR.PA",
+        "ML.PA", "ORA.PA", "PUB.PA", "RI.PA", "SGO.PA", "STMPA.PA", "VIE.PA", "EN.PA", "RNO.PA", "AM.PA",
+        "ERF.PA", "TEP.PA", "URW.PA", "VIV.PA",
+        # Italia
+        "G.MI", "PST.MI", "LDO.MI", "PRY.MI", "SRG.MI", "TRN.MI", "MB.MI", "BAMI.MI", "MONC.MI", "CPR.MI",
+        "FBK.MI", "BMED.MI", "TIT.MI",
+        # Países Bajos y Bélgica
+        "HEIA.AS", "PHIA.AS", "ASM.AS", "BESI.AS", "NN.AS", "ABN.AS", "KPN.AS", "UMG.AS", "KBC.BR", "UCB.BR",
+        # nórdicos
+        "NOVO-B.CO", "DSV.CO", "VWS.CO", "MAERSK-B.CO", "CARL-B.CO", "ATCO-A.ST", "VOLV-B.ST", "ERIC-B.ST",
+        "INVE-B.ST", "SAND.ST", "NDA-FI.HE", "EQNR.OL", "DNB.OL", "NHY.OL",
+        # Suiza
+        "NESN.SW", "ROG.SW", "NOVN.SW", "UBSG.SW", "ABBN.SW", "ZURN.SW", "CFR.SW", "LONN.SW", "SIKA.SW",
+        "GIVN.SW", "ALC.SW", "HOLN.SW", "SREN.SW", "PGHN.SW", "LOGN.SW",
+        # Londres
+        "AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "RR.L", "BP.L", "GSK.L", "BATS.L", "RIO.L", "GLEN.L",
+        "LSEG.L", "DGE.L", "REL.L", "BARC.L", "LLOY.L", "NWG.L", "BA.L", "NG.L", "VOD.L", "TSCO.L",
+        "PRU.L", "AAL.L", "IMB.L", "CPG.L", "EXPN.L", "STAN.L", "LGEN.L", "AV.L", "III.L", "HLN.L",
+        "SSE.L", "BT-A.L", "RKT.L",
+    ],
+    "EEUU": [
+        "AAPL", "MSFT", "NVDA", "AMZN", "GOOGL", "META", "AVGO", "TSLA", "BRK-B", "JPM", "V", "MA", "LLY",
+        "UNH", "XOM", "KO", "PEP", "PG", "COST", "WMT", "NFLX", "AMD", "PLTR", "ORCL", "CRM", "ADBE", "DIS",
+        "MCD", "NKE", "BA", "INTC", "JNJ", "ABBV", "MRK", "PFE", "TMO", "ABT", "DHR", "AMGN", "GILD", "ISRG",
+        "BMY", "CVS", "MDT", "SYK", "VRTX", "REGN", "ZTS", "HD", "LOW", "TGT", "SBUX", "BKNG", "ABNB", "UBER",
+        "CMG", "TJX", "MAR", "BAC", "WFC", "C", "GS", "MS", "SCHW", "BLK", "AXP", "PYPL", "SPGI", "CB", "PGR",
+        "MMC", "CVX", "COP", "SLB", "OXY", "EOG", "LIN", "CAT", "DE", "GE", "HON", "RTX", "LMT", "NOC", "GD",
+        "UNP", "UPS", "FDX", "MMM", "ETN", "PH", "CSCO", "QCOM", "TXN", "AMAT", "LRCX", "KLAC", "MU", "MRVL",
+        "ADI", "NOW", "INTU", "SNOW", "PANW", "CRWD", "FTNT", "ANET", "SHOP", "IBM", "ACN", "T", "VZ", "TMUS",
+        "CMCSA", "NEE", "DUK", "SO", "PLD", "AMT", "EQIX", "O", "SPOT", "MELI", "TSM", "BABA", "PDD", "NU",
+        "COIN", "HOOD", "DELL", "APP", "CEG", "VST", "GEV", "WM", "ICE", "CME", "KKR", "BX", "APO", "MO", "PM",
+        "CL", "MDLZ", "KHC", "HSY", "LULU", "F", "GM", "RIVN",
+    ],
 }
+HORAS_RADAR = 3   # analistas y cuentas del radar: cada 3 horas; los precios, en cada ejecución
+HILOS_RADAR = 4
 
 
 def ahora():
@@ -129,7 +181,8 @@ def tipos_de_cambio():
     """Series diarias: cuántas unidades de cada moneda vale 1 EUR."""
     fx = {}
     for moneda, simbolo, periodo in (("USD", "EURUSD=X", "max"), ("GBP", "EURGBP=X", "max"),
-                                     ("CHF", "EURCHF=X", "1mo"), ("DKK", "EURDKK=X", "1mo"), ("JPY", "EURJPY=X", "1mo")):
+                                     ("CHF", "EURCHF=X", "1mo"), ("DKK", "EURDKK=X", "1mo"), ("JPY", "EURJPY=X", "1mo"),
+                                     ("SEK", "EURSEK=X", "1mo"), ("NOK", "EURNOK=X", "1mo")):
         try:
             _, s, _ = serie_cierres(simbolo, periodo)
             fx[moneda] = s
@@ -669,47 +722,130 @@ def dominio(web):
         return None
 
 
-def radar(fx):
-    out = []
-    for zona, simbolos in RADAR.items():
-        for sim in simbolos:
+def pct(x, nd=1):
+    f = num(x, 8)
+    return num(f * 100, nd) if f is not None else None
+
+
+def radar_ficha(sim, zona, fx):
+    """Todo lo que hace falta para contrastar una idea: analistas (y cómo han cambiado en 3 meses),
+    rango de precios objetivo, valoración, crecimiento esperado, rentabilidad, deuda y tendencia."""
+    t = yf.Ticker(sim)
+    info = t.info or {}
+    precio = info.get("currentPrice") or info.get("regularMarketPrice")
+    if not precio:
+        return None
+    moneda = info.get("currency") or "EUR"
+    a_eur = cambio_hoy(moneda, fx)
+    a_eur_base = cambio_hoy(normaliza_moneda(moneda)[0], fx)
+    objetivo = info.get("targetMeanPrice")
+    eps, epsf = info.get("trailingEps"), info.get("forwardEps")
+    div = info.get("dividendYield")
+    cambio_1a = info.get("52WeekChange")
+    nombre = info.get("shortName") if len(info.get("longName") or "") > 34 else (info.get("longName") or info.get("shortName") or sim)
+    x = {
+        "s": sim, "n": nombre, "z": zona,
+        "sector": SECTORES.get(info.get("sector"), info.get("sector")), "ind": info.get("industry"),
+        "m": moneda, "p": num(precio, 4), "pe": num(precio * a_eur, 4) if a_eur else None,
+        "v": num(info.get("regularMarketChangePercent"), 2),
+        "r": info.get("recommendationKey"), "rm": num(info.get("recommendationMean"), 2),
+        "na": info.get("numberOfAnalystOpinions"),
+        "obj": num(objetivo, 4), "tb": num(info.get("targetLowPrice"), 4), "ta": num(info.get("targetHighPrice"), 4),
+        "pot": num((objetivo / precio - 1) * 100, 1) if objetivo else None,
+        "per": num(info.get("trailingPE"), 1), "perf": num(info.get("forwardPE"), 1),
+        "epsg": num((epsf / eps - 1) * 100, 1) if eps and epsf and eps > 0 else None,
+        "eg": pct(info.get("earningsGrowth")), "rg": pct(info.get("revenueGrowth")),
+        "roe": pct(info.get("returnOnEquity")), "mg": pct(info.get("profitMargins")),
+        "de": num(info.get("debtToEquity"), 0), "beta": num(info.get("beta"), 2),
+        "div": num(div, 2) if div is not None else None,
+        "c1a": num(cambio_1a * 100, 1) if cambio_1a is not None else None,
+        "m50": num(info.get("fiftyDayAverage"), 4), "m200": num(info.get("twoHundredDayAverage"), 4),
+        "mx": num(info.get("fiftyTwoWeekHigh"), 4), "mn": num(info.get("fiftyTwoWeekLow"), 4),
+        "cap": num(info["marketCap"] * a_eur_base, 0) if info.get("marketCap") and a_eur_base else None,
+        "w": dominio(info.get("website")), "pais": info.get("country"),
+        "f": ahora(),
+    }
+    v = votos_analistas(t)
+    if v and v.get("ahora"):
+        orden = ("strongBuy", "buy", "hold", "sell", "strongSell")
+        x["v0"] = [v["ahora"][k] for k in orden]
+        if v.get("hace3m"):
+            x["v3"] = [v["hace3m"][k] for k in orden]
+    return x
+
+
+def radar(fx, previo):
+    """Renueva la ficha de cada empresa (en paralelo). Si una falla, se queda la de la vez anterior."""
+    import concurrent.futures as cf
+    antes = {x["s"]: x for x in (previo or [])}
+    tareas = [(sim, zona) for zona, simbolos in RADAR.items() for sim in simbolos]
+    nuevos, fallos = {}, []
+
+    def una(sim, zona):
+        for intento in range(2):
             try:
-                info = yf.Ticker(sim).info or {}
-                precio = info.get("currentPrice") or info.get("regularMarketPrice")
-                if not precio:
-                    continue
-                moneda = info.get("currency") or "EUR"
-                a_eur = cambio_hoy(moneda, fx)
-                a_eur_base = cambio_hoy(normaliza_moneda(moneda)[0], fx)
-                objetivo = info.get("targetMeanPrice")
-                cambio_1a = info.get("52WeekChange")
-                div = info.get("dividendYield")
-                out.append({
-                    "s": sim,
-                    "n": info.get("shortName") if len(info.get("longName") or "") > 34 else (info.get("longName") or info.get("shortName") or sim),
-                    "z": zona,
-                    "sector": SECTORES.get(info.get("sector"), info.get("sector")),
-                    "m": moneda,
-                    "p": num(precio, 4),
-                    "pe": num(precio * a_eur, 4) if a_eur else None,
-                    "v": num(info.get("regularMarketChangePercent"), 2),
-                    "r": info.get("recommendationKey"),
-                    "rm": num(info.get("recommendationMean"), 2),
-                    "na": info.get("numberOfAnalystOpinions"),
-                    "obj": num(objetivo, 4),
-                    "pot": num((objetivo / precio - 1) * 100, 1) if objetivo else None,
-                    "per": num(info.get("trailingPE"), 1),
-                    "perf": num(info.get("forwardPE"), 1),
-                    "div": num(div, 2) if div is not None else None,
-                    "c1a": num(cambio_1a * 100, 1) if cambio_1a is not None else None,
-                    "cap": num(info["marketCap"] * a_eur_base, 0) if info.get("marketCap") and a_eur_base else None,
-                    "w": dominio(info.get("website")),
-                    "pais": info.get("country"),
-                })
+                time.sleep(0.1)
+                return radar_ficha(sim, zona, fx)
             except Exception as e:  # noqa: BLE001
+                if intento:
+                    raise e
+                time.sleep(1.5)
+        return None
+
+    with cf.ThreadPoolExecutor(max_workers=HILOS_RADAR) as ex:
+        futuros = {ex.submit(una, sim, zona): sim for sim, zona in tareas}
+        for fu in cf.as_completed(futuros):
+            sim = futuros[fu]
+            try:
+                x = fu.result()
+                if x:
+                    nuevos[sim] = x
+                else:
+                    fallos.append(sim)
+            except Exception as e:  # noqa: BLE001
+                fallos.append(sim)
                 print(f"radar {sim}: {e}")
-            time.sleep(0.15)
+    out = []
+    for sim, _ in tareas:
+        if sim in nuevos:
+            out.append(nuevos[sim])
+        elif sim in antes:
+            out.append(antes[sim])
+    if fallos:
+        print(f"radar: {len(fallos)} sin datos nuevos: {' '.join(sorted(fallos))}")
     return out
+
+
+def radar_precios(valores, fx):
+    """Precio y variación del día de todas las empresas del radar en pocas consultas, para que el
+    potencial hasta el precio objetivo se recalcule en cada ejecución (cada 20 minutos)."""
+    sims = [x["s"] for x in valores]
+    nuevos = {}
+    for i in range(0, len(sims), 100):
+        trozo = sims[i:i + 100]
+        try:
+            df = yf.download(trozo, period="5d", interval="1d", progress=False, auto_adjust=False, threads=True, group_by="column")
+            cierre = df["Close"]
+            for sim in trozo:
+                if sim not in cierre:
+                    continue
+                c = cierre[sim].dropna()
+                c = c[c > 0]
+                if len(c) >= 2:
+                    nuevos[sim] = (float(c.iloc[-1]), float(c.iloc[-2]))
+        except Exception:  # noqa: BLE001
+            traceback.print_exc()
+    for x in valores:
+        if x["s"] not in nuevos:
+            continue
+        p, ant = nuevos[x["s"]]
+        a_eur = cambio_hoy(x.get("m") or "EUR", fx)
+        x["p"] = num(p, 4)
+        x["pe"] = num(p * a_eur, 4) if a_eur else x.get("pe")
+        x["v"] = num((p / ant - 1) * 100, 2)
+        if x.get("obj"):
+            x["pot"] = num((x["obj"] / p - 1) * 100, 1)
+    return len(nuevos)
 
 
 # ---------------------------------------------------------------- principal
@@ -761,7 +897,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
         "mercados": {},
         "noticias": {},
         "noticias_generado": None,
-        "radar": None,
+        "radar_id": None,
         "errores": errores,
     }
 
@@ -835,19 +971,36 @@ def main(ruta_inst, dir_anterior, dir_salida):
             salida["noticias"]["mercado"] = unicos[:16]
         salida["noticias_generado"] = ahora()
 
-    # La lista de ideas se renueva una vez al día (son ~100 consultas)
-    prev_radar = anterior.get("radar") or {}
-    if prev_radar.get("fecha") == hoy and prev_radar.get("valores") and "w" in prev_radar["valores"][0]:
-        salida["radar"] = prev_radar
-    else:
+    # Radar de ideas: la ficha de cada empresa cada HORAS_RADAR horas y los precios en cada ejecución.
+    # Va en radar.json (pesa bastante) y la web solo lo vuelve a leer cuando cambia radar_id.
+    prev_radar = leer_json(f"{dir_anterior}/radar.json") or anterior.get("radar") or {}
+    previos = prev_radar.get("valores") or []
+    completo = previos and "v0" in "".join(json.dumps(x) for x in previos[:20]) and hace_menos_de(prev_radar.get("generado") or "", HORAS_RADAR)
+    radar_sal = dict(prev_radar) if completo else None
+    if not completo:
         try:
-            valores = radar(fx)
-            salida["radar"] = {"fecha": hoy, "generado": ahora(), "valores": valores} if valores else prev_radar or None
-            print(f"radar: {len(valores)} valores")
+            valores = radar(fx, previos)
+            radar_sal = {"fecha": hoy, "generado": ahora(), "valores": valores} if valores else (prev_radar or None)
+            print(f"radar: {len(valores)} empresas renovadas")
         except Exception as e:  # noqa: BLE001
             traceback.print_exc()
             errores.append(f"radar: {e}")
-            salida["radar"] = prev_radar or None
+            radar_sal = prev_radar or None
+    if radar_sal and radar_sal.get("valores"):
+        try:
+            n = radar_precios(radar_sal["valores"], fx)
+            radar_sal["precios"] = ahora()
+            print(f"radar: precios de {n} empresas")
+        except Exception as e:  # noqa: BLE001
+            traceback.print_exc()
+            errores.append(f"radar precios: {e}")
+        radar_sal["universo"] = sum(len(v) for v in RADAR.values())
+        with open(f"{dir_salida}/radar.json", "w", encoding="utf-8") as f:
+            json.dump(radar_sal, f, ensure_ascii=False, separators=(",", ":"))
+        salida["radar_id"] = (radar_sal.get("generado") or "") + "|" + (radar_sal.get("precios") or "")
+        salida["radar_generado"] = radar_sal.get("generado")
+        salida["radar_n"] = len(radar_sal["valores"])
+        salida["radar"] = radar_sal  # TRANSICION: la web antigua aún lo lee de aquí
 
     # El histórico va aparte: pesa mucho y solo cambia una vez al día
     historico = {"generado": salida["generado"], "instrumentos": {}, "mercados": {}}
