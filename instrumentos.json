@@ -101,7 +101,8 @@
         "Global": 100
       },
       "sector_fijo": "Oro",
-      "noticias": "precio del oro"
+      "noticias": "precio del oro",
+      "noticias_filtro": "\\boro\\b"
     },
     {
       "id": "repsol",
@@ -115,7 +116,8 @@
         "Europa": 100
       },
       "pais": "España",
-      "noticias": "Repsol acciones"
+      "noticias": "Repsol acciones",
+      "noticias_filtro": "Repsol"
     },
     {
       "id": "bat",
@@ -129,7 +131,8 @@
         "Europa": 100
       },
       "pais": "Reino Unido",
-      "noticias": "British American Tobacco acciones"
+      "noticias": "British American Tobacco",
+      "noticias_filtro": "British American|\\bBAT\\b|tabac"
     },
     {
       "id": "iag",
@@ -143,7 +146,8 @@
         "Europa": 100
       },
       "pais": "España",
-      "noticias": "IAG acciones"
+      "noticias": "IAG bolsa",
+      "noticias_filtro": "IAG|Iberia|British Airways|Vueling|aerol"
     },
     {
       "id": "btc",
@@ -157,7 +161,8 @@
         "Global": 100
       },
       "sector_fijo": "Cripto",
-      "noticias": "Bitcoin precio"
+      "noticias": "Bitcoin precio",
+      "noticias_filtro": "bitcoin|BTC|cripto"
     }
   ]
 }

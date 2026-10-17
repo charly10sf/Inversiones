@@ -306,7 +306,10 @@ def comprimir(s, anios_diario=ANIOS_DIARIO, cifras=6):
 
 # ---------------------------------------------------------------- noticias (Google News en español)
 
-def noticias(consulta, n=6):
+RUIDO = re.compile(r"^Precio de acciones, noticias|\(\w+\d{6}[CP]\d+\)|cotización e historial", re.I)
+
+
+def noticias(consulta, n=6, debe=None):
     url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(consulta + " when:30d") + "&hl=es&gl=ES&ceid=ES:es"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (inversiones)"})
     raiz = ET.fromstring(urllib.request.urlopen(req, timeout=20).read())
@@ -317,7 +320,9 @@ def noticias(consulta, n=6):
         if fuente and titulo.endswith(" - " + fuente):
             titulo = titulo[: -len(fuente) - 3].strip()
         clave = re.sub(r"\W+", "", titulo.lower())[:60]
-        if not titulo or clave in vistos:
+        if not titulo or clave in vistos or RUIDO.search(titulo):
+            continue
+        if debe and not re.search(debe, titulo, re.I):
             continue
         vistos.add(clave)
         try:
@@ -325,6 +330,8 @@ def noticias(consulta, n=6):
         except Exception:  # noqa: BLE001
             fecha = None
         out.append({"t": titulo, "f": fuente, "d": fecha, "u": it.findtext("link")})
+        if len(out) >= n * 3:
+            break
     out.sort(key=lambda x: x["d"] or "", reverse=True)
     return out[:n]
 
@@ -455,7 +462,7 @@ def datos_accion(t, info, moneda, fx, precio_local):
             "cambios": cambios_analistas(t, a_eur),
         } if rec or info.get("targetMeanPrice") else None,
         "fundamentales": {
-            "capitalizacion": num(info["marketCap"] * a_eur, 0) if info.get("marketCap") else None,
+            "capitalizacion": num(info["marketCap"] * (cambio_hoy(normaliza_moneda(moneda)[0], fx) or 1.0), 0) if info.get("marketCap") else None,
             "per": num(info.get("trailingPE"), 2),
             "per_futuro": num(info.get("forwardPE"), 2),
             "peg": num(info.get("trailingPegRatio"), 2),
@@ -490,6 +497,17 @@ def datos_fondo(info):
             "per_cartera": num(info.get("trailingPE"), 2),
         },
     }
+
+
+def corregir_saltos(s, bajo=0.5, alto=2.0):
+    """Algunos fondos cambian de unidad en Yahoo (por ejemplo, de 10 a 1) y la serie da un salto que
+    no es real. Un fondo no se mueve un 50 % en un día: se reescala todo lo anterior al salto."""
+    s = s.copy()
+    r = s / s.shift(1)
+    for fecha, ratio in r[(r < bajo) | (r > alto)].items():
+        s.loc[s.index < fecha] *= float(ratio)
+        print(f"  salto corregido el {fecha.date()} (x{float(ratio):.4f})")
+    return s
 
 
 def serie_con_proxy(eur, inst, fx):
@@ -528,6 +546,8 @@ def procesar(inst, fx, prev=None):
     propio = a_euros(s, moneda, fx).dropna()
     if propio.empty:
         raise RuntimeError("serie en euros vacía")
+    if str(inst.get("tipo", "")).startswith("Fondo") or inst.get("tipo") in ("ETC", "ETF"):
+        propio = corregir_saltos(propio)
     largo, proxy_hasta = serie_con_proxy(propio, inst, fx)
     hoy = propio.index[-1]
     largo = largo[largo.index >= hoy - pd.Timedelta(days=int(365.25 * ANIOS_HISTORICO))]
@@ -649,6 +669,7 @@ def radar(fx):
                     continue
                 moneda = info.get("currency") or "EUR"
                 a_eur = cambio_hoy(moneda, fx)
+                a_eur_base = cambio_hoy(normaliza_moneda(moneda)[0], fx)
                 objetivo = info.get("targetMeanPrice")
                 cambio_1a = info.get("52WeekChange")
                 div = info.get("dividendYield")
@@ -670,7 +691,7 @@ def radar(fx):
                     "perf": num(info.get("forwardPE"), 1),
                     "div": num(div, 2) if div is not None else None,
                     "c1a": num(cambio_1a * 100, 1) if cambio_1a is not None else None,
-                    "cap": num(info["marketCap"] * a_eur, 0) if info.get("marketCap") and a_eur else None,
+                    "cap": num(info["marketCap"] * a_eur_base, 0) if info.get("marketCap") and a_eur_base else None,
                 })
             except Exception as e:  # noqa: BLE001
                 print(f"radar {sim}: {e}")
@@ -780,11 +801,11 @@ def main(ruta_inst, dir_anterior, dir_salida):
         salida["noticias"] = prev_not
         salida["noticias_generado"] = anterior.get("noticias_generado")
     else:
-        consultas = [("mercado", q) for q in NOTICIAS_MERCADO]
-        consultas += [(inst["id"], inst["noticias"]) for inst in instrumentos if inst.get("noticias")]
-        for clave, q in consultas:
+        consultas = [("mercado", q, None) for q in NOTICIAS_MERCADO]
+        consultas += [(inst["id"], inst["noticias"], inst.get("noticias_filtro")) for inst in instrumentos if inst.get("noticias")]
+        for clave, q, debe in consultas:
             try:
-                salida["noticias"].setdefault(clave, []).extend(noticias(q, 8 if clave == "mercado" else 8))
+                salida["noticias"].setdefault(clave, []).extend(noticias(q, 8, debe))
             except Exception as e:  # noqa: BLE001
                 errores.append(f"noticias {q}: {e}")
                 if clave in prev_not and clave not in salida["noticias"]:
