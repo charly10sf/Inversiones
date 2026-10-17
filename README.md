@@ -1,11 +1,12 @@
 # Inversiones
 
-Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en directo. Cinco apartados:
+Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en directo. Seis apartados:
 
 - **Cartera**: patrimonio, evolución hasta 8 años (con comparación con el S&P 500), posiciones con una señal para cada una, reparto, próximas fechas y avisos. Cada posición abre una ficha con gráfico, analistas, noticias y botones para comprar, vender o editarla.
 - **Expertos**: consenso y precio objetivo de los analistas de tus acciones, titulares de prensa con opiniones de analistas e ideas de compra entre ~100 grandes empresas de España, Europa y EEUU.
 - **Mercados**: índices, petróleo, oro, euro/dólar, bono a 10 años y VIX, con noticias de mercado.
 - **Análisis**: rentabilidad (hasta 10 años y año a año), riesgo, costes y dividendos, qué empresas hay dentro de los fondos, apuestas frente al índice e impuestos.
+- **Futuro**: cuánto podrías tener a 5, 10, 15, 20, 25 y 30 años si sigues aportando, con 2.000 escenarios de mercado simulados (si va mal, lo probable y si va bien), cuándo llegarías a 100.000 €, 250.000 €, 500.000 € y un millón, y los supuestos a la vista.
 - **Plan**: aportaciones periódicas, compras y ventas, efectivo y posiciones, todo editable desde la web.
 
 **Web:** https://charly10sf.github.io/Inversiones/
