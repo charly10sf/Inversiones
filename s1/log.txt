@@ -1,0 +1,20 @@
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: BATS.L"}}}
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"No fundamentals data found for symbol: IAG.MC"}}}
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: ROG.SW"}}}
+ok   ishares-us           12.683 desde 2016-10-17
+  salto corregido el 2023-03-07 (x0.0993)
+ok   amundi-europe        384.790009 desde 2016-10-17
+ok   vanguard-em          302.901306 desde 2016-10-17
+ok   vanguard-smallcap    444.370514 desde 2018-01-02
+ok   nb-short             118.230003 desde 2018-10-31
+ok   phau                 343.941454 desde 2016-10-17
+ok   repsol               29.799999 desde 2016-10-17
+ok   bat                  52.756177 desde 2016-10-17
+ok   iag                  4.927 desde 2016-10-17
+ok   btc                  72514.039062 desde 2016-10-17
+radar: 101 valores
+10/10 instrumentos al día; 0 errores
+
+real	0m48.267s
+user	0m2.045s
+sys	0m0.174s
