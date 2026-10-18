@@ -15,6 +15,10 @@ public class Puente {
     public void guardarWidget(String json) {
         Datos.guardarFoto(ctx, json);
         Widget.actualizarTodos(ctx);
+        // si el widget aún no tiene los cierres del mes (o son de hace rato), los baja y se vuelve a pintar
+        if (Datos.viejos(ctx)) new Thread(() -> {
+            if (Datos.descargar(ctx)) Widget.actualizarTodos(ctx);
+        }).start();
     }
 
     @JavascriptInterface

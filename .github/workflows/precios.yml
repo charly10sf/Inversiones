@@ -56,14 +56,24 @@ jobs:
           mkdir -p salida
           python scripts/precios.py instrumentos.json anterior salida
 
-      # Un resumen mínimo de precios para el widget de la app de Android (1 KB en vez de los 90 de precios.json)
+      # Un resumen mínimo para el widget de la app de Android: precios y cierres del último mes (unos 10 KB en vez de los 90 de precios.json)
       - name: Precios para el widget
         run: |
           python - <<'PY'
-          import json
+          import json, datetime
           d = json.load(open("salida/precios.json"))
           p = {k: [v.get("precio"), v.get("cierre_anterior")] for k, v in (d.get("instrumentos") or {}).items() if v.get("precio") is not None}
-          json.dump({"generado": d.get("generado"), "p": p}, open("salida/widget.json", "w"), separators=(",", ":"))
+          # los cierres de las últimas 6 semanas, para que el widget dibuje él solo la gráfica del mes
+          h = {}
+          try:
+              hi = json.load(open("salida/historico.json"))
+              desde = (datetime.date.today() - datetime.timedelta(days=42)).isoformat()
+              for k, s in (hi.get("instrumentos") or {}).items():
+                  ant = [x for x in s if x[0] < desde][-1:]
+                  h[k] = ant + [x for x in s if x[0] >= desde]
+          except Exception as e:
+              print("sin cierres para el widget:", e)
+          json.dump({"generado": d.get("generado"), "p": p, "h": h}, open("salida/widget.json", "w"), separators=(",", ":"))
           PY
 
       # Noticias de un lote de empresas en cada pasada; Gemini las lee, y cada 2 horas escribe el

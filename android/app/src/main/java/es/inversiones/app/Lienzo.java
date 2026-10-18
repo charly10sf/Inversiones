@@ -282,6 +282,23 @@ final class Lienzo {
         float altoFilas = filas.isEmpty() ? 0 : 26 + 23 * filas.size();
         float grafAbajo = abajo - pie - 6 - altoToca - altoFilas;
         grafica(ph, y + 12, W - ph, grafAbajo, r.serie);
+        if (!hayGraf && grafAbajo - y - 12 >= 24) {   // aún sin datos del mes: una línea tenue y qué hacer
+            float ym = (y + 12 + grafAbajo) / 2;
+            p.reset();
+            p.setAntiAlias(true);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(Math.max(1, dp(1)));
+            p.setColor((APAGADO & 0x00FFFFFF) | 0x60000000);
+            p.setPathEffect(new DashPathEffect(new float[]{dp(3), dp(3)}, 0));
+            c.drawLine(dp(ph), dp(ym), dp(W - ph), dp(ym), p);
+            p.setPathEffect(null);
+            String aviso = recortar("La gráfica se carga al refrescar", 11.5f, 500, util - 24);
+            float wa = ancho(aviso, 11.5f, 500);
+            p.reset();
+            p.setColor(PLANO);
+            c.drawRect(dp(W / 2 - wa / 2 - 8), dp(ym - 9), dp(W / 2 + wa / 2 + 8), dp(ym + 9), p);
+            texto(W / 2 - wa / 2, ym + 4, aviso, 11.5f, 500, APAGADO, false);
+        }
 
         // lo ganado en total y lo que ha hecho la cartera en el periodo de la gráfica
         float yp = grafAbajo + 18;

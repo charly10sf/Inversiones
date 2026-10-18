@@ -1,7 +1,8 @@
-/* Service worker de Inversiones: abre al instante con la copia guardada de la web (también sin conexión)
-   y por detrás descarga la versión nueva; si ha cambiado, avisa a la página.
+/* Service worker de Inversiones. La página (index.html) se pide primero a la red, así siempre abres la
+   última versión; si la red no contesta en 3 segundos o no hay conexión, sale la copia guardada.
+   El resto (iconos, letras) sale de la copia y se renueva por detrás.
    Los datos (precios, cartera cifrada, GitHub, Yahoo, Bitvavo) nunca pasan por aquí: la página los guarda aparte. */
-var CACHE = 'inv-v20';
+var CACHE = 'inv-v21';
 var CORE = ['./', 'index.html', 'manifest.webmanifest', 'favicon.svg', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png', 'apple-touch-icon.png'];
 var DATOS = /(^|\/)(instrumentos\.json|cartera\.enc\.json|analisis-ia\.json|analisis\.enc\.json)$/;
 self.addEventListener('install', function (e) {
@@ -25,16 +26,31 @@ self.addEventListener('fetch', function (e) {
   if (!cacheable) return;
   var pagina = req.mode === 'navigate' || (propia && /\/(index\.html)?$/.test(url.pathname));
   var clave = pagina ? new URL('index.html', self.registration.scope).href : req;
+  if (pagina) {
+    var porCopia = false;
+    var red = fetch(req.url, { cache: 'no-cache', credentials: 'same-origin' });
+    // guarda la versión que llega de la red; si ya se había enseñado la copia y es distinta, avisa
+    e.waitUntil(red.then(function (res) {
+      if (!res || !res.ok) return;
+      var otra = res.clone();
+      return caches.open(CACHE).then(function (c) {
+        return c.match(clave).then(function (hit) {
+          var x = hit && (hit.headers.get('etag') || hit.headers.get('last-modified')), y = otra.headers.get('etag') || otra.headers.get('last-modified');
+          if (porCopia && x && y && x !== y) avisar();
+          return c.put(clave, otra);
+        });
+      });
+    }).catch(function () {}));
+    var copia = function () { return caches.match(clave).then(function (hit) { if (hit) { porCopia = true; return hit; } return red; }); };
+    var buena = red.then(function (res) { return res && res.ok ? res : copia(); }, copia);
+    var plazo = new Promise(function (ok) { setTimeout(ok, 3000); }).then(function () { return porCopia ? null : copia(); });
+    e.respondWith(Promise.race([buena, plazo]));
+    return;
+  }
   e.respondWith(caches.open(CACHE).then(function (c) {
     return c.match(clave).then(function (hit) {
       var red = fetch(req).then(function (res) {
-        if (res && (res.ok || res.type === 'opaque')) {
-          if (pagina && hit) {
-            var a = hit.headers.get('etag') || hit.headers.get('last-modified'), b = res.headers.get('etag') || res.headers.get('last-modified');
-            if (a && b && a !== b) avisar();
-          }
-          c.put(clave, res.clone());
-        }
+        if (res && (res.ok || res.type === 'opaque')) c.put(clave, res.clone());
         return res;
       }).catch(function () { return hit; });
       if (hit) { e.waitUntil(red.catch(function () {})); return hit; }
