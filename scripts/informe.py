@@ -46,7 +46,7 @@ LOTE_LECTURA = 70           # empresas que lee Gemini en cada pasada
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
 CANDIDATAS = 40             # empresas entre las que decide cada 2 horas
-DECISION_V = 4              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
+DECISION_V = 5              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
 NOTICIAS_POR_ACTIVO = 8
 # para los fondos, las noticias de lo que siguen
 NOTICIAS_DE = {"ishares-us": "^GSPC", "amundi-europe": "^STOXX50E", "vanguard-em": "EEM", "vanguard-smallcap": "VSS", "nb-short": None, "phau": "GC=F", "btc": "BTC-USD"}
@@ -565,18 +565,26 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave):
     buenas.sort(key=lambda t: -t[0])
     malas.sort(key=lambda t: -t[0])
     cands = [x for _, x in buenas[:CANDIDATAS]] + [x for _, x in malas[:10]]
-    # las que más le gustan a la web (consenso de compra, recorrido y contraste), aunque no tengan prensa
-    # reciente: Gemini les pone plazo para que la web no compare su "al año" con el de los analistas
-    ya = {x["s"] for x in cands}
+    # las que más le gustan a la web (con su misma puntuación aproximada: recorrido, consenso, analistas,
+    # PER y contraste), aunque no tengan prensa reciente: Gemini les pone plazo para que la web no compare
+    # su "al año" solo con el objetivo de los analistas
     web = []
     for x in valores:
-        if x["s"] in tuyas or x["s"] in ya or x.get("pot") is None:
+        if x["s"] in tuyas or x.get("pot") is None:
             continue
         fav, con = P.contraste_idea(x, medianas)
-        if x["pot"] >= 10 and (x.get("na") or 0) >= 8 and (x.get("rm") or 9) <= 2.4 and x.get("r") in ("buy", "strong_buy") and fav >= 3 and con <= 2 and (x.get("c1a") or 0) > -35:
-            web.append((fav - 0.9 * con + min(x["pot"], 50) / 25, x))
+        rm, na, perf = x.get("rm") or 3, x.get("na") or 0, x.get("perf") or 0
+        if x["pot"] >= 10 and na >= 8 and rm <= 2.4 and x.get("r") in ("buy", "strong_buy") and fav >= 3 and con <= 2 and (x.get("c1a") or 0) > -35:
+            pts = 1.2 * min(x["pot"], 50) / 50 + max(-1, min(1, (2.6 - rm) / 1.6)) + 0.5 * min(na, 30) / 30 + 0.22 * fav - 0.3 * con
+            pts += 0.4 if 0 < perf < 10 else 0.3 if 0 < perf < 15 else 0.1 if 0 < perf < 22 else -0.3 if perf >= 30 else 0
+            web.append((pts, x))
     web.sort(key=lambda t: -t[0])
-    cands = [x for _, x in web[:15]] + cands  # primero las de la web: son las que más importa que tengan plazo
+    vistos, orden = set(), []
+    for x in [x for _, x in web[:20]] + cands:  # primero las de la web: son las que más importa que tengan plazo
+        if x["s"] not in vistos:
+            vistos.add(x["s"])
+            orden.append(x)
+    cands = orden
     if not cands:
         return None
     fuentes, bloques = [], []
