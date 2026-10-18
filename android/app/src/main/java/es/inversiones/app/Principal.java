@@ -71,8 +71,17 @@ public class Principal extends Activity {
     }
 
     /** El widget abre la app en una sección concreta (#ruta, #cartera...) */
+    /** El token de GitHub, si llega desde Chrome: como extra o en el enlace inversiones://token?t=... */
+    private static String token(Intent i) {
+        if (i == null) return null;
+        String t = i.getStringExtra("t");
+        Uri d = i.getData();
+        if ((t == null || t.isEmpty()) && d != null && "inversiones".equals(d.getScheme())) t = d.getQueryParameter("t");
+        return t;
+    }
+
     private String direccion(Intent i) {
-        String t = i != null ? i.getStringExtra("t") : null;
+        String t = token(i);
         if (t != null && !t.isEmpty()) return WEB + "#t=" + Uri.encode(t);  // el token de GitHub, pasado desde Chrome
         String h = i != null ? i.getStringExtra("hash") : null;
         return h != null && !h.isEmpty() ? WEB + "#" + h : WEB;
@@ -81,7 +90,8 @@ public class Principal extends Activity {
     @Override
     protected void onNewIntent(Intent i) {
         super.onNewIntent(i);
-        String t = i != null ? i.getStringExtra("t") : null;
+        setIntent(i);
+        String t = token(i);
         if (t != null && !t.isEmpty()) {
             web.loadUrl(direccion(i));
             return;
