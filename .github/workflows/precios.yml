@@ -46,6 +46,8 @@ jobs:
             git show origin/datos:historico.json > anterior/historico.json || true
             git show origin/datos:radar.json > anterior/radar.json || true
             git show origin/datos:informe.json > anterior/informe.json || true
+            git show origin/datos:escaneo.json > anterior/escaneo.json || true
+            git show origin/datos:noticias-cache.json > anterior/noticias-cache.json || true
           fi
 
       - name: Descargar precios
@@ -53,9 +55,10 @@ jobs:
           mkdir -p salida
           python scripts/precios.py instrumentos.json anterior salida
 
-      # Gemini lee las noticias y escribe el informe de prensa (cada 2 horas como mucho).
-      # Necesita el secreto GEMINI_API_KEY; si falla, se queda el informe anterior.
-      - name: Informe de prensa de Gemini
+      # Noticias de un lote de empresas en cada pasada; Gemini las lee, y cada 2 horas escribe el
+      # informe de tu cartera y elige ideas entre todo el radar. Necesita el secreto GEMINI_API_KEY;
+      # si falla, se queda lo anterior.
+      - name: Escaneo de prensa e informe de Gemini
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |

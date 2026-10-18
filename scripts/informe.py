@@ -1,21 +1,28 @@
 #!/usr/bin/env python3
-"""Informe de prensa de Gemini: la parte de la IA que trabaja aunque la web esté cerrada.
+"""La IA que trabaja aunque la web esté cerrada: escaneo de prensa de toda la bolsa e informe de Gemini.
 
 Uso: python scripts/informe.py instrumentos.json anterior/ salida/
 
-Cada pocas horas (lo llama la GitHub Action después de precios.py):
-1. Junta las noticias de los últimos días de cada posición, del mercado y de las ideas mejor
-   contrastadas del radar: titulares de Google Noticias (en español) y noticias de Yahoo Finance
-   con su resumen (en inglés).
-2. Se las pasa a Gemini junto con los datos de la web (precio, analistas, objetivo, tendencia) y le
-   pide un informe contrastado: qué ha pasado de verdad, si es bueno o malo para cada una, qué fuentes
-   coinciden y cuáles no, y qué vigilar. Si la clave permite la búsqueda de Google, además busca en
-   internet por su cuenta.
-3. Escribe salida/informe.json (público, sin cantidades: la cartera cifrada no se toca).
+Lo llama la GitHub Action después de precios.py, en cada pasada (cada 20 minutos entre semana):
+1. Noticias de un lote de empresas del radar (las que más tiempo llevan sin mirar): Yahoo Finance con
+   su resumen y Google Noticias en español. Así se recorren las ~840 empresas varias veces al día.
+   Se guardan en noticias-cache.json.
+2. Gemini lee la prensa de unas 70 empresas con noticias nuevas y apunta, para cada una, qué ha
+   pasado, si es bueno o malo, cuánto importa y si hay un catalizador (escaneo.json, "lectura").
+3. Cada 2 horas:
+   - el informe de tu cartera y del mercado (informe.json): qué ha pasado, si es bueno o malo, qué
+     fuentes coinciden y qué vigilar;
+   - la decisión: entre todas las empresas con buenos números y buena prensa, Gemini elige las que
+     merecen dinero nuevo y las que conviene evitar, contrastando números y noticias (escaneo.json,
+     "decision").
+Todo es público y sin cantidades: la cartera cifrada no se toca. Si la clave permite la búsqueda de
+Google, el informe además busca en internet.
 
-Necesita el secreto GEMINI_API_KEY en el repositorio. Sin él, deja el informe anterior tal cual.
+Necesita el secreto GEMINI_API_KEY en el repositorio. Sin él, solo se actualizan las noticias.
 """
+import concurrent.futures as cf
 import datetime as dt
+import hashlib
 import json
 import os
 import re
@@ -27,10 +34,18 @@ import urllib.request
 
 import yfinance as yf
 
+import precios as P  # noqa: E402  (noticias de Google, contraste de las ideas)
+
 MODELO = os.environ.get("GEMINI_MODELO", "gemini-3.8-flash")
 GEMINI = "https://generativelanguage.googleapis.com/v1beta"
 HORAS_INFORME = 2          # como mucho uno cada 2 horas
-MAX_IDEAS = 12
+MAX_IDEAS = 0               # las ideas ya no van en el informe: salen del escaneo
+LOTE_YAHOO = 45             # empresas por pasada con noticias de Yahoo Finance
+LOTE_GOOGLE = 12            # y con Google Noticias en español
+LOTE_LECTURA = 70           # empresas que lee Gemini en cada pasada
+MAX_NOTICIAS = 8            # noticias guardadas por empresa
+DIAS_NOTICIA = 21
+CANDIDATAS = 45             # empresas entre las que decide cada 2 horas
 NOTICIAS_POR_ACTIVO = 8
 # para los fondos, las noticias de lo que siguen
 NOTICIAS_DE = {"ishares-us": "^GSPC", "amundi-europe": "^STOXX50E", "vanguard-em": "EEM", "vanguard-smallcap": "VSS", "nb-short": None, "phau": "GC=F", "btc": "BTC-USD"}
@@ -196,7 +211,7 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   noticias por su número en "fuentes".
 - Contrasta: di qué fuentes coinciden y cuáles no. Si solo hay una fuente, dilo. Ignora titulares de
   relleno (anuncios, gráficos de cotización, notas de prensa sin contenido).
-- Para cada posición y cada idea: qué ha pasado de verdad en los últimos días (con fechas), si es bueno o
+- Para cada posición: qué ha pasado de verdad en los últimos días (con fechas), si es bueno o
   malo para la acción y por qué, y qué vigilar (fecha o precio). Si no hay nada relevante, dilo en una frase.
 - En español de España, frases cortas y concretas, sin avisos legales.
 Responde solo con un bloque ```json con este formato:
@@ -204,32 +219,37 @@ Responde solo con un bloque ```json con este formato:
   "resumen": "dos o tres frases: qué mueve hoy los mercados y qué afecta a esta cartera",
   "mercado": [{"t": "título corto", "detalle": "una o dos frases", "impacto": "positivo|negativo|neutral", "fuentes": [1, 2]}],
   "posiciones": {"<id>": {"novedades": "...", "impacto": "positivo|negativo|neutral|mixto", "contraste": "qué fuentes coinciden y cuáles no", "vigilar": "...", "fuentes": [3]}},
-  "ideas": {"<ticker>": {"novedades": "...", "impacto": "positivo|negativo|neutral|mixto", "contraste": "...", "riesgo": "...", "fuentes": [7]}},
   "alertas": [{"t": "algo que pide atención ya", "id": "<id de posición o ticker>", "urgencia": "alta|media"}]
 }
-Una entrada en "posiciones" por cada posición y en "ideas" por cada idea. "mercado": de 2 a 5. "alertas": de 0 a 4."""
+Una entrada en "posiciones" por cada posición. "mercado": de 2 a 5. "alertas": de 0 a 4."""
 
 
-def main(ruta_inst, dir_anterior, dir_salida):
+def marcar(dir_salida, clave_id, valor):
+    """precios.json lleva la fecha de cada archivo de la IA: la web sabe así cuándo volver a leerlos."""
+    ruta = f"{dir_salida}/precios.json"
+    p = leer(ruta)
+    if p:
+        p[clave_id] = valor
+        with open(ruta, "w", encoding="utf-8") as f:
+            json.dump(p, f, ensure_ascii=False, separators=(",", ":"))
+
+
+def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
+    """Devuelve True si ha escrito un informe nuevo."""
     previo = leer(f"{dir_anterior}/informe.json")
     destino = f"{dir_salida}/informe.json"
 
-    def marcar(generado):
-        ruta = f"{dir_salida}/precios.json"
-        p = leer(ruta)
-        if p:
-            p["informe_id"] = generado
-            with open(ruta, "w", encoding="utf-8") as f:
-                json.dump(p, f, ensure_ascii=False, separators=(",", ":"))
+    def marcar_inf(generado):
+        marcar(dir_salida, "informe_id", generado)
 
     def conservar(motivo):
         print(f"informe: {motivo}")
         if previo:
             with open(destino, "w", encoding="utf-8") as f:
                 json.dump(previo, f, ensure_ascii=False, separators=(",", ":"))
-            marcar(previo.get("generado"))
+            marcar_inf(previo.get("generado"))
+        return False
 
-    clave = (os.environ.get("GEMINI_API_KEY") or "").strip()
     if not clave:
         return conservar("sin GEMINI_API_KEY, se deja el anterior")
     if previo.get("generado") and hace_menos_de(previo["generado"], HORAS_INFORME) and not os.environ.get("INFORME_FORZAR"):
@@ -284,8 +304,250 @@ def main(ruta_inst, dir_anterior, dir_salida):
     inf.update({"generado": ahora(), "modelo": MODELO, "noticias_leidas": len(fuentes), "busqueda_google": busqueda, "web": web[:15]})
     with open(destino, "w", encoding="utf-8") as f:
         json.dump(inf, f, ensure_ascii=False, separators=(",", ":"))
-    marcar(inf["generado"])
-    print(f"informe: listo ({len(inf.get('posiciones') or {})} posiciones, {len(inf.get('ideas') or {})} ideas, búsqueda de Google: {busqueda})")
+    marcar_inf(inf["generado"])
+    print(f"informe: listo ({len(inf.get('posiciones') or {})} posiciones, búsqueda de Google: {busqueda})")
+    return True
+
+
+# ---------------------------------------------------------------- escaneo de toda la bolsa
+
+def nombre_corto(n, s):
+    n = re.sub(r",?\s+(S\.?A\.?U?|S\.?p\.?A\.?|N\.?V\.?|SE|AG|plc|PLC|Inc\.?|Corp\.?|Corporation|Holdings?|Group|Ltd\.?|ASA|AB|Oyj|Company)\b.*$", "", n or "")
+    return n.split(",")[0].strip() or s
+
+
+def cuando(d):
+    try:
+        x = dt.datetime.fromisoformat(str(d).replace("Z", "+00:00"))
+        return x if x.tzinfo else x.replace(tzinfo=dt.timezone.utc)
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def huella(lista):
+    return hashlib.sha1("|".join(x.get("t", "") for x in lista).encode()).hexdigest()[:10]
+
+
+def mezclar(cache, sim, nuevas, campo):
+    e = cache.setdefault(sim, {"n": []})
+    limite = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=DIAS_NOTICIA)
+    vistos, out = set(), []
+    for x in list(nuevas) + list(e.get("n") or []):
+        k = re.sub(r"\W+", "", (x.get("t") or "").lower())[:70]
+        f = cuando(x.get("d"))
+        if not k or k in vistos or (f and f < limite) or P.RUIDO.search(x.get("t") or ""):
+            continue
+        vistos.add(k)
+        out.append({kk: x.get(kk) for kk in ("t", "r", "f", "d", "u") if x.get(kk)})
+    out.sort(key=lambda x: x.get("d") or "", reverse=True)
+    e["n"] = out[:MAX_NOTICIAS]
+    e[campo] = ahora()
+
+
+def actualizar_noticias(cache, valores):
+    """Noticias de las empresas que más tiempo llevan sin mirar (las nuevas, primero)."""
+    lote = sorted(valores, key=lambda x: (cache.get(x["s"]) or {}).get("fy") or "")[:LOTE_YAHOO]
+    with cf.ThreadPoolExecutor(max_workers=4) as ex:
+        for x, ns in ex.map(lambda x: (x, noticias_yahoo(x["s"], 6)), lote):
+            mezclar(cache, x["s"], ns, "fy")
+    lote_g = sorted(valores, key=lambda x: (x.get("z") != "España", (cache.get(x["s"]) or {}).get("fg") or ""))[:LOTE_GOOGLE]
+    for x in lote_g:
+        nombre = nombre_corto(x.get("n"), x["s"])
+        try:
+            ns = P.noticias(f'"{nombre}" (acciones OR bolsa OR resultados OR analistas OR beneficio OR "precio objetivo")', 5, re.escape(nombre.split()[0]) if nombre.split() else None)
+        except Exception as e:  # noqa: BLE001
+            print(f"google {x['s']}: {e}")
+            ns = []
+        mezclar(cache, x["s"], ns, "fg")
+        time.sleep(0.3)
+    validos = {x["s"] for x in valores}
+    for s in [s for s in cache if s not in validos]:
+        del cache[s]
+    print(f"escaneo: noticias de {len(lote)} empresas en Yahoo y {len(lote_g)} en Google; {sum(1 for v in cache.values() if v.get('n'))} con noticias")
+
+
+def datos_idea(x, medianas):
+    fav, con = P.contraste_idea(x, medianas)
+    return (f"{x.get('n')} ({x['s']}, {x.get('z')}, {x.get('sector')}): precio {x.get('p')} {x.get('m')}, {x.get('na')} analistas, "
+            f"consenso {x.get('r')}, objetivo medio {x.get('obj')} ({x.get('pot')} % de recorrido), PER futuro {x.get('perf')}, "
+            f"beneficio esperado {x.get('epsg') if x.get('epsg') is not None else x.get('eg')} %, 1 año {x.get('c1a')} %, contraste de la web {fav} señales a favor y {con} en contra")
+
+
+LEER = """Vigilas la prensa de cientos de empresas para un inversor particular español. Para cada empresa
+tienes sus datos y sus noticias numeradas (titulares de Google Noticias en español y de Yahoo Finance con
+su resumen). Para cada una, en una frase: qué dicen de verdad las noticias (con fecha), si es bueno o
+malo para la acción, cuánto importa y si hay un catalizador próximo. Ignora el relleno (anuncios de
+productos, gráficos de cotización, notas de prensa vacías, noticias de otra empresa con el mismo nombre).
+Solo lo que digan las noticias: nada inventado. En español de España.
+Responde con un objeto JSON: {"<ticker>": {"imp": "positivo|negativo|neutral|mixto", "rel": 0-3, "txt": "una frase", "cat": "catalizador y fecha, o vacío", "fuentes": [números]}}
+"rel": 0 si no hay nada relevante, 1 poco, 2 importante, 3 cambia la tesis. Una entrada por empresa."""
+
+
+def leer_lote(lectura, cache, valores, medianas, clave):
+    """Gemini lee la prensa de las empresas con noticias que todavía no ha leído (las de mejores
+    números, primero)."""
+    pend = []
+    for x in valores:
+        e = cache.get(x["s"]) or {}
+        if not e.get("n"):
+            continue
+        h = huella(e["n"])
+        if (lectura.get(x["s"]) or {}).get("h") == h:
+            continue
+        fav, con = P.contraste_idea(x, medianas)
+        pend.append((fav - 0.9 * con + min(x.get("pot") or 0, 50) / 50, x, h))
+    pend.sort(key=lambda t: -t[0])
+    lote = pend[:LOTE_LECTURA]
+    if not lote:
+        print("escaneo: nada nuevo que leer")
+        return 0
+    fuentes, bloques = [], []
+    for _, x, _ in lote:
+        lineas = []
+        for n in (cache[x["s"]]["n"] or [])[:6]:
+            fuentes.append(n)
+            lineas.append(f"[{len(fuentes)}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}" + (f" — {n['r'][:300]}" if n.get("r") else ""))
+        bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n" + "\n".join(lineas))
+    hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+    cuerpo = {"systemInstruction": {"parts": [{"text": LEER}]}, "contents": [{"role": "user", "parts": [{"text": f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques)}]}],
+              "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
+    texto, _ = texto_de(gemini(cuerpo, clave))
+    res = extraer_json(texto) or {}
+    n = 0
+    for _, x, h in lote:
+        r = res.get(x["s"])
+        if not isinstance(r, dict):
+            continue
+        fs = []
+        for k in r.get("fuentes") or []:
+            try:
+                f = fuentes[int(k) - 1]
+            except (ValueError, IndexError, TypeError):
+                continue
+            if f.get("u") and len(fs) < 2:
+                fs.append({kk: f.get(kk) for kk in ("t", "u", "f", "d")})
+        try:
+            rel = max(0, min(3, int(r.get("rel") or 0)))
+        except (TypeError, ValueError):
+            rel = 0
+        lectura[x["s"]] = {"d": ahora(), "h": h, "imp": r.get("imp") if r.get("imp") in ("positivo", "negativo", "neutral", "mixto") else "neutral",
+                           "rel": rel, "txt": (r.get("txt") or "")[:300], "cat": (r.get("cat") or "")[:160], "fuentes": fs}
+        n += 1
+    print(f"escaneo: Gemini ha leído la prensa de {n} empresas")
+    return n
+
+
+DECIDIR = """Eres el analista jefe de un inversor particular español que busca dónde poner dinero nuevo a 6-12
+meses en acciones sueltas (compra en Trade Republic). Tu equipo ha leído la prensa de cientos de empresas;
+aquí tienes las candidatas con sus números (analistas, recorrido, valoración, beneficio esperado, tendencia y
+el contraste de siete señales de la web) y lo que dice su prensa reciente, con las noticias numeradas.
+Decide tú. Reglas:
+- Solo recomiendas una empresa si los números Y la prensa van a favor. Si la prensa contradice a los
+  analistas, o depende de una sola fuente, baja la confianza o descártala, y dilo.
+- Busca un motor concreto (un catalizador con fecha o un cambio de tendencia), que esté razonablemente
+  barata y que el balance aguante.
+- Máximo 5 ideas, de mejor a peor. Si ninguna está clara, devuelve "ideas" vacío y explícalo en "comentario".
+- Añade hasta 5 empresas a evitar por lo que dice su prensa, aunque los analistas digan comprar.
+- Nada inventado; cita las noticias por número. En español de España, frases cortas.
+Responde con un objeto JSON:
+{"comentario": "dos frases: cómo está el panorama y qué has buscado",
+ "ideas": [{"s": "ticker", "tesis": "...", "catalizador": "qué y cuándo", "riesgo": "...", "contraste": "qué coincide y qué no", "confianza": "alta|media|baja", "fuentes": [n]}],
+ "evitar": [{"s": "ticker", "motivo": "...", "fuentes": [n]}]}"""
+
+
+def decidir(lectura, cache, valores, medianas, tuyas, clave):
+    limite = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=7)
+    buenas, malas = [], []
+    for x in valores:
+        if x["s"] in tuyas:
+            continue
+        le = lectura.get(x["s"])
+        fresca = le and cuando(le.get("d")) and cuando(le["d"]) > limite
+        fav, con = P.contraste_idea(x, medianas)
+        pot = x.get("pot") or 0
+        if fresca and le["rel"] >= 2 and le["imp"] == "negativo" and (x.get("na") or 0) >= 8 and x.get("r") in ("buy", "strong_buy"):
+            malas.append((le["rel"] + fav, x))
+        prensa = fresca and le["rel"] >= 2 and le["imp"] in ("positivo", "mixto")
+        if (prensa and fav >= 3 and pot >= 5) or (fav >= 5 and con == 0 and pot >= 10):
+            buenas.append((fav - 0.9 * con + (le["rel"] if prensa else 0) + min(pot, 50) / 25, x))
+    buenas.sort(key=lambda t: -t[0])
+    malas.sort(key=lambda t: -t[0])
+    cands = [x for _, x in buenas[:CANDIDATAS]] + [x for _, x in malas[:10]]
+    if not cands:
+        return None
+    fuentes, bloques = [], []
+    for x in cands:
+        le = lectura.get(x["s"]) or {}
+        lineas = []
+        for n in ((cache.get(x["s"]) or {}).get("n") or [])[:3]:
+            fuentes.append(n)
+            lineas.append(f"[{len(fuentes)}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}")
+        prensa = f"Prensa ({le.get('imp')}, relevancia {le.get('rel')}): {le.get('txt')}" + (f" Catalizador: {le.get('cat')}." if le.get("cat") else "") if le else "Prensa: sin leer todavía."
+        bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n{prensa}\n" + "\n".join(lineas))
+    hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+    cuerpo = {"systemInstruction": {"parts": [{"text": DECIDIR}]}, "contents": [{"role": "user", "parts": [{"text": f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques)}]}],
+              "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "high"}}}
+    texto, _ = texto_de(gemini(cuerpo, clave))
+    d = extraer_json(texto)
+    if not d:
+        return None
+    porsim = {x["s"]: x for x in cands}
+
+    def fs_de(nums):
+        out = []
+        for k in nums or []:
+            try:
+                f = fuentes[int(k) - 1]
+            except (ValueError, IndexError, TypeError):
+                continue
+            if f.get("u") and len(out) < 4:
+                out.append({kk: f.get(kk) for kk in ("t", "u", "f", "d")})
+        return out
+    ideas = [{**i, "n": (porsim.get(i.get("s")) or {}).get("n"), "fuentes": fs_de(i.get("fuentes"))} for i in (d.get("ideas") or []) if isinstance(i, dict) and i.get("s") in porsim][:5]
+    evitar = [{**i, "n": (porsim.get(i.get("s")) or {}).get("n"), "fuentes": fs_de(i.get("fuentes"))} for i in (d.get("evitar") or []) if isinstance(i, dict) and i.get("s") in porsim][:5]
+    return {"generado": ahora(), "modelo": MODELO, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar, "candidatas": len(cands)}
+
+
+def main(ruta_inst, dir_anterior, dir_salida):
+    clave = (os.environ.get("GEMINI_API_KEY") or "").strip()
+    instrumentos = leer(ruta_inst).get("instrumentos") or []
+    radar = leer(f"{dir_salida}/radar.json")
+    valores = radar.get("valores") or []
+    cache = leer(f"{dir_anterior}/noticias-cache.json") or {}
+    esc = leer(f"{dir_anterior}/escaneo.json") or {}
+    lectura = {k: v for k, v in (esc.get("lectura") or {}).items() if any(x["s"] == k for x in valores)} if valores else (esc.get("lectura") or {})
+    decision = esc.get("decision")
+    medianas = P.per_sector_mediano(valores)
+    tuyas = {(i.get("yahoo") or "") for i in instrumentos}
+    if valores:
+        try:
+            actualizar_noticias(cache, valores)
+        except Exception as e:  # noqa: BLE001
+            print(f"escaneo: fallaron las noticias ({e})")
+        if clave:
+            try:
+                leer_lote(lectura, cache, valores, medianas, clave)
+            except Exception as e:  # noqa: BLE001
+                print(f"escaneo: falló la lectura de Gemini ({str(e)[:200]})")
+    nuevo = informe_cartera(ruta_inst, dir_anterior, dir_salida, clave)
+    viejo = not decision or not hace_menos_de(decision.get("generado") or "", HORAS_INFORME)
+    if clave and valores and (nuevo or viejo):
+        try:
+            d = decidir(lectura, cache, valores, medianas, tuyas, clave)
+            if d:
+                decision = d
+                print(f"escaneo: decisión con {d['candidatas']} candidatas, {len(d['ideas'])} ideas y {len(d['evitar'])} a evitar")
+        except Exception as e:  # noqa: BLE001
+            print(f"escaneo: falló la decisión de Gemini ({str(e)[:200]})")
+    hace24 = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=24)
+    salida = {"generado": ahora(), "lectura": lectura, "decision": decision,
+              "con_noticias": sum(1 for v in cache.values() if v.get("n")), "leidas_24h": sum(1 for v in lectura.values() if cuando(v.get("d")) and cuando(v["d"]) > hace24),
+              "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores)}
+    with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:
+        json.dump(cache, f, ensure_ascii=False, separators=(",", ":"))
+    with open(f"{dir_salida}/escaneo.json", "w", encoding="utf-8") as f:
+        json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
+    marcar(dir_salida, "escaneo_id", salida["generado"])
 
 
 if __name__ == "__main__":

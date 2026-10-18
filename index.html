@@ -1887,6 +1887,7 @@ function htmlFrescura() {
     ${lento ? `<span>Analistas de tus posiciones: ${haceCuanto(lento)}</span>` : ''}
     ${rg ? `<span>Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}</span>` : ''}
     ${S.informe && S.informe.generado ? `<span>Prensa leída por Gemini: ${haceCuanto(S.informe.generado)}</span>` : ''}
+    ${S.escaneo && S.escaneo.leidas_24h ? `<span>Escaneo: ${S.escaneo.leidas_24h} empresas leídas en 24 h</span>` : ''}
     <span>${ia && ia.propio ? `${esc(ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '<button class="enlace acento" data-accion="asesor">Conecta la IA (gratis con Gemini) para que la revise cada día</button>'}</span>
   </div>`;
 }
@@ -2030,8 +2031,23 @@ async function cargarInforme() {
   else { try { const c = localStorage.getItem('inv-cache-informe'); if (c && !S.informe) S.informe = JSON.parse(c); } catch (e) {} }
   S.informeId = id;
 }
+async function cargarEscaneo() {
+  const id = S.precios && S.precios.escaneo_id;
+  if (!id && !CFG.dev) { if (!S.escaneo) { try { const c = localStorage.getItem('inv-cache-escaneo'); if (c) S.escaneo = JSON.parse(c); } catch (e) {} } return; }
+  if (S.escaneo && S.escaneoId === id && !CFG.dev) return;
+  let txt = null;
+  try {
+    if (CFG.dev) { const r = await fetch('dev/escaneo.json', { cache: 'no-store' }); if (r.ok) txt = await r.text(); }
+    else { const r = await fetch(GH.raw('escaneo.json', 'datos') + '?v=' + encodeURIComponent(id), { cache: 'no-cache' }).catch(() => null); if (r && r.ok) txt = await r.text(); }
+  } catch (e) { console.warn(e); }
+  if (txt) { try { S.escaneo = JSON.parse(txt); localStorage.setItem('inv-cache-escaneo', txt); } catch (e) {} }
+  else { try { const c = localStorage.getItem('inv-cache-escaneo'); if (c && !S.escaneo) S.escaneo = JSON.parse(c); } catch (e) {} }
+  S.escaneoId = id;
+}
+/* lo que ha leído Gemini de la prensa de una empresa (el escaneo recorre todo el radar) */
+const lecturaDe = (sim) => (S.escaneo && S.escaneo.lectura && S.escaneo.lectura[sim]) || null;
 const informeDe = (id) => (S.informe && S.informe.posiciones && S.informe.posiciones[id]) || null;
-const informeIdea = (sim) => (S.informe && S.informe.ideas && S.informe.ideas[sim]) || null;
+const informeIdea = (sim) => { const v = S.informe && S.informe.ideas && S.informe.ideas[sim]; if (v) return v; const l = lecturaDe(sim); return l && l.txt ? { novedades: l.txt, impacto: l.imp, fuentes: l.fuentes, vigilar: l.cat } : null; };
 const IMPACTO = { positivo: ['up', 'Bueno'], negativo: ['down', 'Malo'], mixto: ['warn', 'Mixto'], neutral: ['flat', 'Neutral'] };
 const chipImpacto = (i) => { const x = IMPACTO[i] || IMPACTO.neutral; return `<span class="imp ${x[0]}">${x[1]}</span>`; };
 function enlacesFuentes(fs, n = 3) {
@@ -2073,11 +2089,34 @@ function tarjetaIdea(x, k) {
     <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde y con qué impuesto.`)}">${ICONOS.chispa}Pídele a la IA que la contraste</button>
   </article>`;
 }
+function htmlDecisionIA() {
+  const e = S.escaneo, d = e && e.decision;
+  if (!d) return '';
+  const tarjeta = (i, k) => {
+    const x = buscarRadar(i.s) || { s: i.s, n: i.n || i.s };
+    const ctr = x.p ? contraste(x) : null;
+    return `<article class="idea ia">
+      <header>${logo(x.w, x.n)}<div><b>${esc(x.n || i.n || i.s)}</b><small>${x.pais ? bandera(PAIS_DE_NOMBRE[x.pais]) + ' ' : ''}${esc(i.s)}${x.sector ? ', ' + esc(x.sector) : ''}</small></div><span class="chip ${i.confianza === 'alta' ? 'good' : i.confianza === 'baja' ? 'warn' : 'info'}">confianza ${esc(i.confianza || 'media')}</span></header>
+      ${x.p ? `<div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + x.s)}</div><div><span class="k">Hasta el objetivo</span>${B('ro:' + x.s)}</div><div><span class="k">Contraste</span>${htmlContraste(ctr, true)}</div></div>` : ''}
+      <p>${esc(i.tesis || '')}</p>
+      ${i.catalizador ? `<p><b>Qué la puede mover.</b> ${esc(i.catalizador)}</p>` : ''}
+      ${i.riesgo ? `<p><b>Riesgo.</b> ${esc(i.riesgo)}</p>` : ''}
+      ${i.contraste ? `<p class="k"><b>Contraste.</b> ${esc(i.contraste)}</p>` : ''}
+      ${enlacesFuentes(i.fuentes, 4)}
+      <button class="btn peq" data-accion="asesor" data-q="${esc(`Gemini ha elegido ${x.n || i.s} (${i.s}) en su escaneo. ¿Cuánto meto, desde dónde, con qué impuesto y con qué regla de salida?`)}">${ICONOS.chispa}¿Cuánto meto?</button>
+    </article>`;
+  };
+  return `<div class="ia-ideas"><div class="sec-cab"><h3>Lo que ha elegido Gemini en toda la bolsa</h3><span class="k">${haceCuanto(d.generado)}, entre ${d.candidatas} candidatas; esta semana ha leído la prensa de ${Object.keys(e.lectura || {}).length} empresas</span></div>
+    ${d.comentario ? `<p class="informe-res" style="margin:0 0 14px">${esc(d.comentario)}</p>` : ''}
+    ${(d.ideas || []).length ? `<div class="ideas-top3">${d.ideas.map(tarjeta).join('')}</div>` : '<div class="vacio">Ahora mismo no ve ninguna clara: prefiere esperar.</div>'}
+    ${(d.evitar || []).length ? `<div class="sec-cab" style="margin-top:18px"><h3>Las que evitaría por lo que dice su prensa</h3></div><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${esc(v.motivo || '')}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul>` : ''}
+  </div>`;
+}
 function htmlIdeasIA(ia) {
   const ideas = (ia && Array.isArray(ia.ideas) ? ia.ideas : []).filter((x) => x && x.nombre);
   if (!ideas.length) return '';
   const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } };
-  return `<div class="ia-ideas"><div class="sec-cab"><h3>Las que ha contrastado ${esc(ia.autor || 'la IA')}</h3><span class="k">con las noticias ${ia.propio ? 'de su última revisión' : 'de la última revisión publicada'}</span></div>
+  return `<div class="ia-ideas"><div class="sec-cab"><h3>Las que te propone ${esc(ia.autor || 'la IA')} para tu cartera</h3><span class="k">con las noticias ${ia.propio ? 'de su última revisión' : 'de la última revisión publicada'}</span></div>
     <div class="ia-ideas-g">${ideas.map((x) => { const r = buscarRadar(x.ticker || x.nombre); return `<article class="idea ia">
       <header>${logo(r && r.w, x.nombre)}<div><b>${esc(x.nombre)}</b><small>${esc(x.ticker || '')}${x.importe ? `, propone ${eur(+x.importe, 0)}` : ''}</small></div>${r ? htmlContraste(contraste(r), true) : ''}</header>
       <p>${rellenarIA(x.tesis || '', {})}</p>
@@ -2102,18 +2141,19 @@ function htmlIdeas(M, ia) {
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   return `<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU; cada una contrastada con siete señales</span></div>
     ${top.length ? `<div class="ideas-top3">${top.map(tarjetaIdea).join('')}</div><p class="nota" style="margin:-4px 0 28px">Las tres que mejor encajan contigo: consenso de compra, recorrido, al menos 3 señales a favor y que no dupliquen lo que ya tienes en tus fondos. Las barras son las siete señales: verde a favor, rojo en contra, gris neutral.</p>` : ''}
+    ${htmlDecisionIA()}
     ${htmlIdeasIA(ia)}
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
       <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
-    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial')}${th('ctr', 'Contraste', '')}${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
+    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial')}${th('ctr', 'Contraste', '')}<th>Prensa</th>${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
     ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${x.pais ? bandera(PAIS_DE_NOMBRE[x.pais]) + ' ' : ''}${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</small></td>
       <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
-      <td class="r">${B('ro:' + x.s)}</td><td>${htmlContraste(x._ctr, true)}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
+      <td class="r">${B('ro:' + x.s)}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     ${total > 20 ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? 'Ver solo las 20 primeras' : `Ver las ${total}`}</button>` : ''}
-    <p class="nota">Potencial: distancia hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio. Una idea con potencial alto pero pocas señales a favor vale menos. Antes de comprar, pídele a la IA que la contraste con las noticias.</p>`;
+    <p class="nota">Potencial: distancia hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Prensa: lo que ha leído Gemini en sus noticias (pasa el ratón para verlo). Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio. Una idea con potencial alto pero pocas señales a favor vale menos. Antes de comprar, pídele a la IA que la contraste con las noticias.</p>`;
 }
 
 /* ---------- repintar solo cuando cambia una recomendación ---------- */
@@ -3995,7 +4035,8 @@ function radarVals() {
 function simsRadarVivos() {
   const s = new Set(S.radarVisibles || []);
   for (const x of S.ideasTop || []) s.add(x);
-  return [...s].slice(0, 80);
+  for (const i of (S.escaneo && S.escaneo.decision && S.escaneo.decision.ideas) || []) s.add(i.s);
+  return [...s].slice(0, 90);
 }
 
 /* lo que ya tienes de cada empresa dentro de tus fondos (para no doblar la apuesta sin saberlo) */
@@ -4117,7 +4158,7 @@ function pedidoAnalisis(ids, motivo, conWeb = true) {
 0. Lee el informe de prensa de Gemini que viene en los datos (noticias de cada posición, del mercado y de las ideas, ya contrastadas) y úsalo como base.
 1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.' : 'No puedes buscar en internet: usa los titulares de los datos (los de mis posiciones, los del mercado y los de las mejores ideas del radar) y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
 2. Si recomiendas vender algo, calcúlalo con simular_venta. Si recomiendas comprar una acción, con simular_compra.
-3. Para las ideas de compra, parte del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de la web y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
+3. Para las ideas de compra, parte de las que ha elegido Gemini en su escaneo de prensa de toda la bolsa, del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de la web y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
 
 Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
 {
@@ -4403,6 +4444,18 @@ function contextoAsesor(M) {
       for (const [s0, x] of Object.entries(inf.ideas || {})) L.push(`- Idea ${s0} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Riesgo: ${x.riesgo || '—'}.`);
       for (const a of inf.alertas || []) L.push(`- Alerta (${a.urgencia}): ${a.t}`);
     }
+    const esc0 = S.escaneo;
+    if (esc0 && esc0.decision) {
+      const d = esc0.decision;
+      L.push('', `## Lo que ha elegido Gemini tras escanear la prensa de ${Object.keys(esc0.lectura || {}).length} empresas (${haceCuanto(d.generado)})`, d.comentario || '');
+      for (const i of d.ideas || []) L.push(`- Comprar ${i.n || ''} (${i.s}), confianza ${i.confianza}: ${i.tesis || ''} Catalizador: ${i.catalizador || '—'}. Riesgo: ${i.riesgo || '—'}. Contraste: ${i.contraste || '—'}.`);
+      for (const v of d.evitar || []) L.push(`- Evitar ${v.n || ''} (${v.s}): ${v.motivo || ''}`);
+    }
+    if (esc0 && esc0.lectura) {
+      const hace7 = Date.now() - 7 * 864e5;
+      const imp = Object.entries(esc0.lectura).filter(([, l]) => l.rel >= 2 && new Date(l.d).getTime() > hace7).sort((a, b) => b[1].rel - a[1].rel).slice(0, 80);
+      if (imp.length) L.push('', '## Prensa importante de la última semana en el radar (escaneo de Gemini)', ...imp.map(([s0, l]) => `- ${s0} (${l.imp}, relevancia ${l.rel}): ${l.txt}${l.cat ? ` Catalizador: ${l.cat}.` : ''}`));
+    }
     const ia = iaActual();
     if (ia) {
       const v = valoresIA(M);
@@ -4532,6 +4585,7 @@ function hBuscarEmpresa(q) {
     ya_tiene_dentro_de_sus_fondos_eur: R2(dentroDeFondos(M)(x.n), 0),
     valoracion_de_la_web: k >= 0 ? { puesto: k + 1, de: ideas.length, motivos: ideas[k].motivos, pegas: ideas[k].pegas } : 'No pasa el filtro de ideas de la web (potencial de al menos un 10 %, 8 analistas o más, consenso de compra, 3 señales a favor y no haber caído más de un 35 % en un año).',
     titulares_recientes: noticiasIdea(x.s).slice(0, 5).map((n) => `${n.d ? n.d.slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})`),
+    prensa_leida_por_gemini: lecturaDe(x.s) ? { impacto: lecturaDe(x.s).imp, relevancia: lecturaDe(x.s).rel, resumen: lecturaDe(x.s).txt, catalizador: lecturaDe(x.s).cat, fecha: lecturaDe(x.s).d } : 'sin leer todavía',
     datos_de: x.f || (S.radar && S.radar.generado),
   };
 }
@@ -5085,7 +5139,7 @@ async function recargarPrecios() {
   try { await cargarPrecios(); } catch (e) { return; }
   if (!S.cartera) return;
   if (S.precios.generado !== antes) {
-    await Promise.all([cargarHistorico(), cargarIA(), cargarRadar(), cargarInforme()]);
+    await Promise.all([cargarHistorico(), cargarIA(), cargarRadar(), cargarInforme(), cargarEscaneo()]);
     pintar(); LIVE.resuscribir();
   } else programarParche();
   revisarAnalisisIA();
@@ -5112,7 +5166,7 @@ window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); reca
 async function iniciar() {
   $('#app').innerHTML = '<div class="pantalla"><div class="caja" style="text-align:center;justify-items:center"><img class="logo" src="icon-192.png" alt=""><p>Cargando…</p></div></div>';
   try {
-    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarRadar(), cargarInforme()])), cargarCifrada(), leerAnalisisRemoto()]);
+    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarRadar(), cargarInforme(), cargarEscaneo()])), cargarCifrada(), leerAnalisisRemoto()]);
     S.enc = enc; S.iaRemoto = iaRem;
   } catch (e) {
     console.error(e);

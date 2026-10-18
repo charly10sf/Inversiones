@@ -23,7 +23,9 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en di
 | `cartera.enc.json` | Cantidades, costes, notas, aportaciones y datos fiscales, **cifrado** con AES-GCM. La clave sale de mi contraseña (PBKDF2-SHA256, 600.000 iteraciones). | Cifrado |
 | `analisis.enc.json` | El último análisis que ha escrito la IA con mis cifras, cifrado igual. | Cifrado |
 | `analisis-ia.json` | El análisis de partida, sin cantidades, y mis reglas de inversión. Se usa hasta que Gemini escribe el suyo. | Sí |
-| rama `datos` → `informe.json` | El informe de prensa de Gemini: noticias de cada posición, del mercado y de las mejores ideas, contrastadas y con enlaces. Sin cantidades. | Sí |
+| rama `datos` → `informe.json` | El informe de prensa de Gemini de tu cartera y del mercado, contrastado y con enlaces. Sin cantidades. | Sí |
+| rama `datos` → `escaneo.json` | Lo que ha leído Gemini de la prensa de cada empresa del radar y las que ha elegido (o evitaría). | Sí |
+| rama `datos` → `noticias-cache.json` | Las noticias recientes de cada empresa del radar (no la lee la web). | Sí |
 | `index.html`, `sw.js`, `manifest.webmanifest` | La web (instalable en el móvil). | Sí |
 
 - La contraseña no se guarda en ningún sitio. Si marco "Recordar en este dispositivo", el navegador guarda la clave derivada (no exportable) en IndexedDB.
@@ -40,7 +42,10 @@ Toda la IA de la web es **Gemini 3.8 Flash**, el más potente de los modelos gra
 
 Trabaja en dos sitios:
 
-- **En la GitHub Action, aunque la web esté cerrada** (`scripts/informe.py`): cada 2 horas entre semana y cada 4 el fin de semana lee las noticias de cada posición, del mercado y de las ~20 ideas mejor contrastadas del radar (Google Noticias en español y Yahoo Finance con su resumen; y busca en Google si la clave lo permite). Escribe un informe contrastado en `informe.json` (rama `datos`, sin cantidades): qué ha pasado, si es bueno o malo, qué fuentes coinciden y qué vigilar, con enlaces. Necesita el secreto `GEMINI_API_KEY` en el repositorio (Settings → Secrets and variables → Actions).
+- **En la GitHub Action, aunque la web esté cerrada** (`scripts/informe.py`). Necesita el secreto `GEMINI_API_KEY` en el repositorio (Settings → Secrets and variables → Actions).
+  - En cada pasada (cada 20 minutos entre semana, cada 4 horas el fin de semana) baja noticias de un lote de empresas del radar, las que más tiempo llevan sin mirar (Yahoo Finance con su resumen y Google Noticias en español), y Gemini lee la prensa de unas 70: qué ha pasado, si es bueno o malo, cuánto importa y si hay un catalizador. Así recorre las ~840 empresas varias veces al día (`escaneo.json` y `noticias-cache.json`, rama `datos`).
+  - Cada 2 horas escribe el informe de tu cartera y del mercado (`informe.json`) y decide entre todas las empresas con buenos números y buena prensa cuáles merecen dinero nuevo y cuáles evitar, contrastando números y noticias.
+  - Todo sin cantidades: la cartera cifrada no se toca.
 - **En el navegador, con tus cifras**: el asesor (botón de arriba) y la revisión de la cartera, que se rehace cada día, cuando cambia una señal y cuando llega un informe de prensa nuevo. Usa herramientas que calculan con la web (`simular_venta`, `simular_compra`, `buscar_empresa`, `proyectar`, `historico`). La clave se guarda cifrada y las preguntas van directamente del navegador a Google.
 
 Sin clave, el botón *Copiar mi cartera* copia los datos y la pregunta para pegarlos en un chat de Gemini.
