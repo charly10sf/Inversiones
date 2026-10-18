@@ -45,8 +45,8 @@ LOTE_GOOGLE = 20            # y con Google Noticias en español
 LOTE_LECTURA = 70           # empresas que lee Gemini en cada pasada
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
-CANDIDATAS = 45             # empresas entre las que decide cada 2 horas
-DECISION_V = 3              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
+CANDIDATAS = 40             # empresas entre las que decide cada 2 horas
+DECISION_V = 4              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
 NOTICIAS_POR_ACTIVO = 8
 # para los fondos, las noticias de lo que siguen
 NOTICIAS_DE = {"ishares-us": "^GSPC", "amundi-europe": "^STOXX50E", "vanguard-em": "EEM", "vanguard-smallcap": "VSS", "nb-short": None, "phau": "GC=F", "btc": "BTC-USD"}
@@ -576,7 +576,7 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave):
         if x["pot"] >= 10 and (x.get("na") or 0) >= 8 and (x.get("rm") or 9) <= 2.4 and x.get("r") in ("buy", "strong_buy") and fav >= 3 and con <= 2 and (x.get("c1a") or 0) > -35:
             web.append((fav - 0.9 * con + min(x["pot"], 50) / 25, x))
     web.sort(key=lambda t: -t[0])
-    cands += [x for _, x in web[:15]]
+    cands = [x for _, x in web[:15]] + cands  # primero las de la web: son las que más importa que tengan plazo
     if not cands:
         return None
     fuentes, bloques = [], []
@@ -589,7 +589,9 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave):
         prensa = f"Prensa ({le.get('imp')}, relevancia {le.get('rel')}): {le.get('txt')}" + (f" Catalizador: {le.get('cat')}." if le.get("cat") else "") if le else "Prensa: sin leer todavía."
         bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n{prensa}\n" + "\n".join(lineas))
     hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
-    cuerpo = {"systemInstruction": {"parts": [{"text": DECIDIR}]}, "contents": [{"role": "user", "parts": [{"text": f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques)}]}],
+    obligadas = ", ".join(x["s"] for x in cands[:CANDIDATAS] if x not in [m for _, m in malas[:10]])
+    pedido = f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques) + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
+    cuerpo = {"systemInstruction": {"parts": [{"text": DECIDIR}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
               "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "high"}}}
     texto, _ = texto_de(gemini(cuerpo, clave))
     d = extraer_json(texto)
