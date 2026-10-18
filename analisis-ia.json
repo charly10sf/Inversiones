@@ -233,5 +233,45 @@
     "El dinero de una apuesta nueva sale de otra acción del cajón, nunca de los fondos indexados ni del colchón (el fondo de renta fija).",
     "Cada apuesta lleva su ficha antes de comprar: por qué, qué tiene que pasar y la regla de salida, con precio y con hecho.",
     "Cada operación se compara con lo que habría hecho el mismo dinero en el fondo del S&P 500. Revisión de las apuestas en octubre de 2027."
-  ]
+  ],
+  "hoja_de_ruta": {
+    "mes": [
+      {
+        "t": "Sigue la reunión del BCE del 29 de octubre",
+        "detalle": "Coincide con los resultados de Repsol. Otra subida de tipos favorece a tu colchón y a los bancos y castiga a la bolsa más cara.",
+        "d": "2026-10-29"
+      },
+      {
+        "t": "Lee los resultados de IAG del 6 de noviembre con tu regla de salida delante",
+        "detalle": "La apuesta es Ormuz y el combustible. Si suben la previsión de gasto en combustible por encima de 8.600 millones, o cierra por debajo de 3,82 €, toca salir.",
+        "d": "2026-11-06"
+      }
+    ],
+    "seis_meses": [
+      {
+        "t": "No recompres Realty Income antes del 13 de diciembre",
+        "detalle": "Si lo haces, la pérdida de la venta del 13 de octubre no cuenta en la renta de 2026 (regla de los dos meses).",
+        "d": "2026-12-13"
+      },
+      {
+        "t": "Decide qué haces con las small caps globales",
+        "detalle": "No reciben aportación y cada mes pesan menos. O les das entre 50 y 100 € al mes, o las dejas como están; que sea una decisión, no inercia.",
+        "d": ""
+      }
+    ],
+    "anio": [
+      {
+        "t": "Revisa tus apuestas en octubre de 2027",
+        "detalle": "Compara Repsol, BAT e IAG con lo que habría hecho el mismo dinero en tu fondo del S&P 500, como acordaste al empezar. Quédate solo con las que ganen o aún tengan su motivo.",
+        "d": "2027-10-13"
+      }
+    ],
+    "largo": [
+      {
+        "t": "Repasa una vez al año el reparto entre EEUU, Europa y emergentes",
+        "detalle": "Hoy, de lo que aportas a fondos, casi la mitad va a EEUU, un tercio a Europa y una quinta parte a emergentes. Decide si es lo que quieres o es herencia, y ajústalo en las aportaciones, no vendiendo.",
+        "d": ""
+      }
+    ]
+  }
 }

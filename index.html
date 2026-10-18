@@ -189,6 +189,7 @@ button.fila:hover { background: var(--plane); }
 .activo { display: grid; gap: 1px; min-width: 0; }
 .activo b { font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .activo small { color: var(--muted); font-size: 12.5px; display: flex; gap: 6px 8px; align-items: center; flex-wrap: wrap; }
+.nombre-real { display: block; color: var(--text-2); font-size: 12.5px; font-weight: 400; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .valor { font-weight: 600; }
 .fila.efectivo { color: var(--text-2); }
 .fila .c-senal { text-align: right; }
@@ -590,6 +591,7 @@ details.mas[open] > summary { margin-bottom: 12px; }
 .fx-act { grid-area: act; } .fx-web { grid-area: web; } .fx-claude { grid-area: claude; } .fx-datos { grid-area: datos; }
 @media (max-width: 1179px) and (min-width: 861px) { .fx { grid-template-columns: minmax(150px, 0.8fr) minmax(0, 2fr) minmax(200px, 1fr); grid-template-areas: "act web datos" "act claude datos"; row-gap: 12px; } .fx-claude { padding-top: 12px; border-top: 1px dashed var(--line-2); } }
 .fx-act { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.fx-act > div { min-width: 0; }
 .fx-act .enlace { font-weight: 650; font-size: 15.5px; letter-spacing: -0.01em; }
 .fx-act small { display: block; color: var(--muted); font-size: 12.5px; }
 .fx-op { min-width: 0; }
@@ -650,6 +652,39 @@ table.ideas .sub { display: block; font-size: 12px; }
 /* ---------- análisis de Claude ---------- */
 .ia-firma { flex-wrap: wrap; }
 .ia-firma .btn { margin-left: auto; }
+/* ---------- paso a paso ---------- */
+.idea-prensa { margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-2); }
+.idea-prensa a { color: var(--text); }
+.idea-prensa small { color: var(--muted); }
+.ruta-cab { display: grid; gap: 6px; margin-bottom: 26px; max-width: 900px; }
+.ruta-cab p { margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.6; }
+.ruta-cab .ruta-ya { font-size: clamp(19px, 2vw, 23px); font-weight: 300; color: var(--text); letter-spacing: -0.01em; line-height: 1.35; }
+.ruta { display: grid; gap: 28px 28px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .ruta { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1500px) { .ruta { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.ruta-col > header { display: flex; align-items: baseline; gap: 10px; padding-bottom: 10px; border-bottom: 2px solid var(--line-2); margin-bottom: 4px; }
+.ruta-col:first-child > header { border-bottom-color: var(--accent); }
+.ruta-col h3 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+.ruta-col header .k { font-size: 12.5px; }
+.ruta-pasos { list-style: none; margin: 0; padding: 0; counter-reset: paso; }
+.ruta-pasos li { counter-increment: paso; display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 14px 0; border-bottom: 1px solid var(--line); }
+.ruta-pasos li:last-child { border-bottom: 0; }
+.ruta-check { width: 26px; height: 26px; border-radius: 50%; border: 1.5px solid var(--line-2); background: none; color: var(--muted); font-size: 12.5px; font-weight: 700; display: grid; place-items: center; padding: 0; margin-top: 1px; }
+.ruta-check::before { content: counter(paso); }
+.ruta-check:hover { border-color: var(--accent); color: var(--accent); }
+.ruta-pasos li.urgente .ruta-check { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.ruta-pasos li.hecho .ruta-check { background: var(--up-bg); border-color: rgba(79, 201, 149, 0.5); color: var(--up); }
+.ruta-pasos li.hecho .ruta-check::before { content: '✓'; }
+.ruta-pasos li.hecho b, .ruta-pasos li.hecho p { color: var(--muted); }
+.ruta-pasos li.hecho b { text-decoration: line-through; text-decoration-color: var(--line-2); }
+.ruta-pasos b { display: block; font-weight: 600; font-size: 14.5px; line-height: 1.4; }
+.ruta-pasos p { margin: 3px 0 0; color: var(--text-2); font-size: 13.5px; line-height: 1.55; }
+.ruta-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-bottom: 3px; font-size: 12px; color: var(--muted); }
+.ruta-meta .fecha { color: var(--accent); font-weight: 600; }
+.ruta-meta .chip { font-size: 11px; line-height: 16px; }
+.ruta-acc { margin-top: 6px; font-size: 13px; }
+.ruta-acc .enlace { color: var(--accent); }
+.ruta-vacio { color: var(--muted); font-size: 13.5px; padding: 14px 0; }
 .ia-progreso { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 14px 16px; border-radius: 12px; background: var(--plane); border: 1px solid var(--line-2); margin-bottom: 28px; }
 .ia-progreso b { display: block; font-weight: 600; font-size: 14.5px; }
 .ia-progreso span { color: var(--text-2); font-size: 13.5px; }
@@ -734,7 +769,7 @@ const S = {
   inst: {}, instOrden: [], ref: null, instCambiados: false, instSha: null,
   precios: null, cartera: null, enc: null, key: null, salt: null, iter: 600000,
   oculto: LS.get('inv-oculto', false), dim: LS.get('inv-dim', 'clase'), base: LS.get('inv-base', 'todo'),
-  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif2', 'ia'), fichaRango: LS.get('inv-frango', '1A'),
+  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif3', 'ruta'), fichaRango: LS.get('inv-frango', '1A'),
   comparar: LS.get('inv-comparar', false), radarZona: LS.get('inv-zona', 'Todas'), radarOrden: LS.get('inv-orden2', 'ctr'),
   radarMin: LS.get('inv-radar-min', true), radarTodo: false, vista: 'cartera', ficha: null,
   ordenPos: LS.get('inv-orden-pos', { k: 'valor', dir: 'desc' }), proy: LS.get('inv-proy', {}), horizonte: LS.get('inv-horizonte', 20), proyCache: null,
@@ -1570,7 +1605,7 @@ function montar() {
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t]) => `<a href="#${k}" data-ir="${k}">${t}</a>`).join('')}</nav>
     <span id="estado"></span>
     <div class="acciones">
-      <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a Claude por tu cartera">${ICONOS.chispa}<span>Asesor</span></button>
+      <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a la IA por tu cartera">${ICONOS.chispa}<span>Asesor</span></button>
       <button class="ib" id="bOcultar" data-accion="ocultar"></button>
       <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
     </div>
@@ -1651,6 +1686,13 @@ function vistaCartera(M) {
   </div>`;
 }
 
+/* el nombre completo del fondo o la empresa, cuando dice algo más que el corto ("S&P 500" → "iShares US Index Fund (IE) S Acc EUR") */
+function nombreReal(i) {
+  const n = String((i && i.nombre) || '').trim(), c = String((i && i.corto) || '').trim();
+  if (!n || !c) return '';
+  const a = normTxt(n), b = normTxt(c);
+  return !b || a.startsWith(b) ? '' : n;
+}
 function chipsPos(f) {
   const c = [];
   if (f.estimada) c.push('<span class="chip warn">estimado</span>');
@@ -1662,7 +1704,7 @@ function htmlPosiciones(M) {
   const filas = ordenarPos(M.filas).map((f) => {
     const id = f.pos.id;
     return `<button class="fila" data-pos="${esc(id)}" aria-label="Abrir la ficha de ${esc(f.inst.corto || f.inst.nombre)}">
-        <span class="activo-l">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}<span class="activo"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small>${origen(f.inst)}<span>${esc(f.pos.plataforma || '')}</span>${chipsPos(f)}${['mantener', 'aportar'].includes(f.senal.nivel) ? '' : `<span class="senal ${f.senal.nivel} solo-movil">${f.senal.txt}</span>`}</small></span></span>
+        <span class="activo-l">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}<span class="activo"><b>${esc(f.inst.corto || f.inst.nombre)}</b>${nombreReal(f.inst) ? `<span class="nombre-real" title="${esc(nombreReal(f.inst))}">${esc(nombreReal(f.inst))}</span>` : ''}<small>${origen(f.inst)}<span>${esc(f.pos.plataforma || '')}</span>${chipsPos(f)}${['mantener', 'aportar'].includes(f.senal.nivel) ? '' : `<span class="senal ${f.senal.nivel} solo-movil">${f.senal.txt}</span>`}</small></span></span>
         <span class="r c-precio">${B('pp:' + id)}</span>
         <span class="r c-hoy">${B('pd:' + id)}</span>
         <span class="r valor c-val">${B('pv:' + id)}</span>
@@ -1831,7 +1873,7 @@ function htmlFrescura() {
     <span class="vivo-dot">Señales y planes recalculados con cada precio: ${B('recalc')}</span>
     ${lento ? `<span>Analistas de tus posiciones: ${haceCuanto(lento)}</span>` : ''}
     ${rg ? `<span>Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}</span>` : ''}
-    <span>${ia && ia.propio ? `Claude: ${cuando(ia.fecha)}` : AS.clave ? 'Claude: sin análisis propio todavía' : '<button class="enlace acento" data-accion="asesor">Conecta a Claude para que lo revise cada día</button>'}</span>
+    <span>${ia && ia.propio ? `${esc(ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '<button class="enlace acento" data-accion="asesor">Conecta la IA (gratis con Gemini) para que la revise cada día</button>'}</span>
   </div>`;
 }
 
@@ -1855,14 +1897,14 @@ function filaExperto(f, ia, vIA = {}) {
   const choca = c && LADO[nivelC] !== LADO[s.nivel];
   const [m0, ...resto] = s.motivos;
   return `<article class="fx">
-    <div class="fx-act">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button><small>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</small></div></div>
+    <div class="fx-act">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button>${nombreReal(i) ? `<span class="nombre-real" title="${esc(nombreReal(i))}">${esc(nombreReal(i))}</span>` : ''}<small>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</small></div></div>
     <div class="fx-op fx-web">
       <div class="fx-quien"><span class="fx-de">La web</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></div>
       ${m0 ? `<p>${esc(m0)}</p>` : ''}
       ${resto.length ? `<details class="mas"><summary>${resto.length === 1 ? 'Un motivo más' : `${resto.length} motivos más`}</summary><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></details>` : ''}
     </div>
-    <div class="fx-op fx-claude">${c ? `<div class="fx-quien"><span class="fx-de">Claude</span><span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>${c.confianza ? `<span class="k">confianza ${esc(c.confianza)}</span>` : ''}${choca ? '<span class="chip warn">no coinciden</span>' : ''}</div>
-        <p>${rellenarIA(c.vigilar ? `Vigilar: ${c.vigilar}` : c.texto || '', vIA)}</p>` : `<div class="fx-quien"><span class="fx-de">Claude</span><span class="k">sin revisar todavía</span></div>`}
+    <div class="fx-op fx-claude">${c ? `<div class="fx-quien"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span><span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>${c.confianza ? `<span class="k">confianza ${esc(c.confianza)}</span>` : ''}${choca ? '<span class="chip warn">no coinciden</span>' : ''}</div>
+        <p>${rellenarIA(c.vigilar ? `Vigilar: ${c.vigilar}` : c.texto || '', vIA)}</p>` : `<div class="fx-quien"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span><span class="k">sin revisar todavía</span></div>`}
     </div>
     <div class="fx-datos">${datosExperto(f)}</div>
   </article>`;
@@ -1882,7 +1924,7 @@ function vistaExpertos(M) {
   const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
   const orden = [...M.filas].sort((a, b) => ORDEN_SENAL.indexOf(a.senal.nivel) - ORDEN_SENAL.indexOf(b.senal.nivel) || b.valor - a.valor);
   return `
-  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa y Claude, y una señal para cada posición que se recalcula con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale al asesor</button></div>
+  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa e IA, y una señal para cada posición que se recalcula con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale al asesor</button></div>
   ${htmlFrescura()}
   <div class="pila">
     <section aria-labelledby="hPlanV">
@@ -1892,7 +1934,7 @@ function vistaExpertos(M) {
     <section aria-labelledby="hSen" class="bloque-sec">
         <div class="sec-cab"><h2 id="hSen">Tu cartera, posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
         <div class="fx-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; return orden.map((f) => filaExperto(f, ia, vIA)).join(''); })()}</div>
-        <p class="nota">La señal de la web junta el consenso de los analistas, lo que le queda hasta su precio objetivo medio, la tendencia, tus reglas de salida y lo que pesa en tu cartera. La de Claude sale de su revisión con las noticias${ia && ia.propio ? '' : ' (la última que hay publicada)'}. Cuando no coinciden, lee los dos motivos antes de decidir.</p>
+        <p class="nota">La señal de la web junta el consenso de los analistas, lo que le queda hasta su precio objetivo medio, la tendencia, tus reglas de salida y lo que pesa en tu cartera. La de la IA sale de su revisión con las noticias${ia && ia.propio ? '' : ' (la última que hay publicada)'}. Cuando no coinciden, lee los dos motivos antes de decidir.</p>
     </section>
     <div class="dos">
       <section aria-labelledby="hPrensa" class="bloque-sec"><div class="sec-cab"><h2 id="hPrensa">Analistas en prensa</h2><span class="k">tus acciones, últimos 30 días</span></div>
@@ -1956,20 +1998,22 @@ function mejoresIdeas(M, excluir = {}) {
 
 const ORDEN_RADAR = { pot: ['Potencial', (x) => x.pot ?? -999], ctr: ['Contraste', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
 const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? 'p' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
+const noticiasIdea = (sim) => ((S.precios && S.precios.noticias_ideas) || {})[sim] || [];
 function tarjetaIdea(x, k) {
   return `<article class="idea">
     <header>${logo(x.w, x.n)}<div><b>${esc(x.n)}</b><small>${x.pais ? bandera(PAIS_DE_NOMBRE[x.pais]) + ' ' : ''}${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</small></div><span class="idea-n">${k + 1}</span></header>
     <div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + x.s)}</div><div><span class="k">Hasta el objetivo</span>${B('ro:' + x.s)}</div><div><span class="k">Contraste</span>${htmlContraste(x.ctr, true)}</div></div>
     ${htmlContrasteLista(x.ctr)}
     ${x.pegas.length ? `<p class="idea-pega"><b>Pegas.</b> ${esc(x.pegas.slice(0, 3).join('; '))}.</p>` : ''}
-    <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde y con qué impuesto.`)}">${ICONOS.chispa}Pídele a Claude que la contraste</button>
+    ${(() => { const n = noticiasIdea(x.s)[0]; return n ? `<p class="idea-prensa"><span class="k">En prensa</span> <a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${esc(n.t)}</a> <small>${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}</small></p>` : ''; })()}
+    <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde y con qué impuesto.`)}">${ICONOS.chispa}Pídele a la IA que la contraste</button>
   </article>`;
 }
 function htmlIdeasClaude(ia) {
   const ideas = (ia && Array.isArray(ia.ideas) ? ia.ideas : []).filter((x) => x && x.nombre);
   if (!ideas.length) return '';
   const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } };
-  return `<div class="ia-ideas"><div class="sec-cab"><h3>Las que ha contrastado Claude</h3><span class="k">con las noticias ${ia.propio ? 'de su última revisión' : 'de la última revisión publicada'}</span></div>
+  return `<div class="ia-ideas"><div class="sec-cab"><h3>Las que ha contrastado ${esc(ia.autor || 'la IA')}</h3><span class="k">con las noticias ${ia.propio ? 'de su última revisión' : 'de la última revisión publicada'}</span></div>
     <div class="ia-ideas-g">${ideas.map((x) => { const r = buscarRadar(x.ticker || x.nombre); return `<article class="idea ia">
       <header>${logo(r && r.w, x.nombre)}<div><b>${esc(x.nombre)}</b><small>${esc(x.ticker || '')}${x.importe ? `, propone ${eur(+x.importe, 0)}` : ''}</small></div>${r ? htmlContraste(contraste(r), true) : ''}</header>
       <p>${rellenarIA(x.tesis || '', {})}</p>
@@ -2052,12 +2096,159 @@ function vistaMercados() {
 }
 
 /* =========================== Análisis =========================== */
-const ANALISIS = [['ia', 'Análisis IA'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas frente al índice'], ['impuestos', 'Impuestos']];
+const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'Análisis IA'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas frente al índice'], ['impuestos', 'Impuestos']];
+/* =====================================================================
+   Paso a paso: qué hacer con la cartera este mes, en 6 meses, en un año y de 1 a 5 años.
+   Los pasos de la web salen de sus cálculos (planes de venta, fechas, impuestos, aportaciones y
+   proyección) y se recalculan con cada precio; los de la IA salen de su última revisión.
+   Lo que marques como hecho se guarda en tu cartera cifrada.
+   ===================================================================== */
+const PLAZOS = [['mes', 'Este mes'], ['seis', 'Próximos 6 meses'], ['anio', 'Próximo año'], ['largo', 'De 1 a 5 años']];
+function plazoDe(d) {
+  if (!d) return null;
+  const n = diasEntre(hoyIso(), d);
+  return n <= 31 ? 'mes' : n <= 183 ? 'seis' : n <= 366 ? 'anio' : 'largo';
+}
+function pasosRuta(M) {
+  const P = { mes: [], seis: [], anio: [], largo: [] };
+  const hoy = hoyIso(), anio = new Date().getFullYear();
+  const add = (plazo, o) => P[plazo].push({ fuente: 'web', ...o });
+  const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
+  // 1. ventas que propone la web
+  for (const pl of planes) {
+    const f = pl.f, p = f.p || {}, res = p.proximos_resultados && p.proximos_resultados >= hoy && diasEntre(hoy, p.proximos_resultados) <= 31 ? p.proximos_resultados : null;
+    const destino = [pl.aIdea > 0 && pl.ideas[0] ? `${eur(pl.aIdea, 0)} a ${esc(pl.ideas[0].n)}` : '', pl.aNucleo > 0.5 ? `${eur(pl.aNucleo, 0)} al S&P 500` : ''].filter(Boolean).join(' y ');
+    add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
+      t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
+      det: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} y pagas unos ${eur(pl.impuesto, 0)} en la renta de ${anio}.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}.`}${destino ? ` Después: ${destino}${pl.impuesto > 0 ? `, y aparta ${eur(pl.impuesto, 0)} para Hacienda` : ''}.` : ''}`,
+      acc: `<a class="enlace" href="#expertos">Ver el plan completo</a>` });
+  }
+  // 2. tus reglas de salida cerca
+  for (const f of M.filas) {
+    const stop = +f.pos.stop;
+    if (stop && f.precio && f.precio > stop && (f.precio / stop - 1) * 100 < 6) add('mes', { id: `stop:${f.pos.id}:${hoy.slice(0, 7)}`, urgente: true, cuando: 'vigila', t: `${esc(f.inst.corto)} está a un ${fmtNum((f.precio / stop - 1) * 100, 1)} % de tu precio de salida`, det: `Tu regla: vender si cierra por debajo de ${precioFmt(stop)}. Pon la orden stop si no la tienes.` });
+  }
+  // 3. fechas de tus empresas: resultados y dividendos
+  const vistos = new Set();
+  for (const f of M.filas) {
+    if (vistos.has(f.inst.id)) continue; vistos.add(f.inst.id);
+    const p = f.p || {};
+    if (p.proximos_resultados && p.proximos_resultados >= hoy) {
+      const pz = plazoDe(p.proximos_resultados);
+      if (pz === 'mes' || pz === 'seis') add(pz, { id: `res:${f.inst.id}:${p.proximos_resultados}`, d: p.proximos_resultados, cuando: fechaCorta(p.proximos_resultados), t: `Resultados de ${esc(f.inst.corto)}`, det: `Suele moverse mucho ese día. Mira si cambian las previsiones y si se cumple lo que esperabas al comprarla.`, acc: `<button class="enlace" data-pos="${esc(f.pos.id)}">Abrir su ficha</button>` });
+    }
+    if (p.ex_dividendo && p.ex_dividendo >= hoy && p.dividendo_pct) {
+      const pz = plazoDe(p.ex_dividendo);
+      if (pz === 'mes' || pz === 'seis') add(pz, { id: `div:${f.inst.id}:${p.ex_dividendo}`, d: p.ex_dividendo, cuando: fechaCorta(p.ex_dividendo), t: `Dividendo de ${esc(f.inst.corto)}`, det: `Para cobrarlo tienes que tenerla al cierre del ${fechaLarga(iso(new Date(deIso(p.ex_dividendo).getTime() - 86400000)))}. Unos ${eur((f.valor * p.dividendo_pct) / 100 / (f.inst.pais === 'GB' || f.inst.pais === 'US' ? 4 : 2), 0)} brutos.` });
+    }
+  }
+  // 4. datos que le faltan a la web
+  const fa = fiscalAnio(anio);
+  if (!fa.otras && !fa.rcm) add('mes', { id: `fiscal:${anio}`, cuando: 'cuando puedas', t: `Apunta tus datos fiscales de ${anio}`, det: 'Las ventas que hiciste fuera de la web (con su ganancia o pérdida) y los dividendos e intereses cobrados. Sin eso, los impuestos de cada consejo salen más altos de lo que son.', acc: `<button class="enlace" data-accion="fiscal">Apuntarlos</button>` });
+  const est = M.filas.filter((f) => f.estimada);
+  if (est.length) add('mes', { id: `exactas:${est.map((f) => f.pos.id).join(',')}`, cuando: 'cuando puedas', t: `Pon las participaciones exactas de ${est.length === 1 ? esc(est[0].inst.corto) : `${est.length} posiciones`}`, det: `${esc(est.map((f) => f.inst.corto).join(', '))} están estimadas. Con las exactas (salen en tu bróker) todo cuadra al céntimo.`, acc: `<a class="enlace" href="#plan">Ir a Plan</a>` });
+  // 5. aportaciones automáticas
+  const act = aportacionesActivas();
+  const total = sum(act, ({ a }) => +a.importe || 0);
+  if (total > 0) {
+    const prox = act.flatMap(({ a }) => fechasAportacion({ ...a, desde: a.desde > hoy ? a.desde : hoy }, iso(new Date(Date.now() - 86400000)), iso(new Date(Date.now() + 31 * 86400000))).map((d) => ({ d, a }))).sort((x, y) => (x.d < y.d ? -1 : 1));
+    if (prox.length) add('mes', { id: `aport:${prox[0].d}`, d: prox[0].d, cuando: fechaCorta(prox[0].d), auto: true, t: `Entran ${eur(sum(prox, (x) => +x.a.importe || 0), 0)} de tus aportaciones`, det: `${esc([...new Set(prox.map((x) => `${nombreInst(x.a.instrumento)} el ${fechaCorta(x.d)}`))].join(', '))}. Van solas: solo comprueba que tienes saldo en la cuenta.` });
+    add('seis', { id: `aport6:${hoy.slice(0, 7)}`, cuando: 'cada mes', auto: true, t: `Sigue aportando: ${eur(total * 6, 0)} en 6 meses`, det: `Son ${eur(total, 0)} al mes. No las pares si la bolsa cae: comprar barato en las caídas es lo que más suma a largo plazo.` });
+  }
+  // 6. fin de año: compensar pérdidas
+  const ganPrevista = sum(planes.filter((pl) => pl.ganancia > 0), (pl) => pl.ganancia);
+  const perdidas = M.filas.map((f) => ({ f, g: f.valor - f.coste })).filter((x) => x.g < -50);
+  if (perdidas.length && new Date().getMonth() >= 6) {
+    const base = fa.gp + ganPrevista;
+    for (const x of perdidas) {
+      const ahorro = fiscalAnio(anio, ganPrevista).cuota - fiscalAnio(anio, ganPrevista + x.g).cuota;
+      if (ahorro < 15) continue;
+      const cripto = x.f.inst.clase === 'Cripto';
+      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Plantéate vender ${esc(x.f.inst.corto)} con pérdidas para pagar menos`, det: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de tus ganancias${ganPrevista ? ' (contando la venta que propone la web)' : ''}` : 'compensa hasta un 25 % de tus dividendos'}: unos ${eur(ahorro, 0)} menos en la renta. ${cripto ? 'En cripto puedes volver a comprar enseguida (no se aplica la regla de los dos meses, aunque hay quien defiende esperar un año).' : 'Si lo recompras, espera dos meses o la pérdida no cuenta.'}`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>` });
+    }
+  }
+  // 7. colchón que rinde poco
+  for (const f of M.filas.filter((f) => f.inst.clase === 'Renta fija' && /^Fondo/.test(f.inst.tipo || ''))) {
+    const r1 = f.p && f.p.rent && f.p.rent['1a'];
+    if (r1 != null && r1 < 2) add('seis', { id: `colchon:${f.pos.id}:${anio}`, cuando: 'sin prisa', t: `Mira si te compensa cambiar ${esc(f.inst.corto)} por un monetario`, det: `Ha dado un ${fmtNum(r1, 1)} % en un año, menos que un fondo monetario, que va pegado al tipo del BCE. Entre fondos de MyInvestor es un traspaso: no pagas impuestos.`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Qué fondo monetario de MyInvestor me conviene para el colchón en vez de ${f.inst.nombre || f.inst.corto}? Compara rentabilidad y gastos.`)}">Pregúntale a la IA</button>` });
+  }
+  // 8. renta y modelos informativos
+  const informe = `${anio + 1}-02-15`, renta = `${anio + 1}-04-08`;
+  add(plazoDe(informe) || 'seis', { id: `informe:${anio}`, d: informe, cuando: 'enero-febrero', t: `Descarga el informe fiscal de ${anio} de Trade Republic`, det: 'En la app: Perfil, Impuestos. Compáralo con las ventas de la web antes de la renta.' });
+  add(plazoDe(renta) || 'seis', { id: `renta:${anio}`, d: renta, cuando: 'abril-junio', t: `Haz la renta de ${anio}`, det: `Con lo que llevas, unos ${eur(fiscalAnio(anio, ganPrevista).cuota, 0)} de cuota en la base del ahorro${ganPrevista ? ' contando la venta que propone la web' : ''}${fa.retenido ? `, menos ${eur(fa.retenido, 0)} ya retenidos` : ''}. Revisa en el borrador que estén tus ventas y dividendos.`, acc: `<button class="enlace" data-calif="impuestos">Ver tus impuestos</button>` });
+  const tr = sum(M.filas.filter((f) => f.pos.plataforma === 'Trade Republic'), (f) => f.valor) + sum(M.efectivo.filter((e) => e.plataforma === 'Trade Republic'), (e) => e.importe);
+  if (tr > 40000) add('seis', { id: `m720:${anio}`, d: `${anio + 1}-03-15`, cuando: 'antes del 31 mar', t: tr > 50000 ? 'Presenta el modelo 720' : 'Vigila el modelo 720', det: `Tienes ${eur(tr, 0)} en Trade Republic. Por encima de 50.000 € a 31 de diciembre hay que declararlo entre enero y marzo.` });
+  // 9. ideas si hay hueco y no hay ya una venta que lo use
+  const sueltas = sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor);
+  const lim = (+(S.cartera.limite_acciones || 20) / 100) * M.total;
+  const top = mejoresIdeas(M).find((x) => x.ctr.favor >= 4);
+  if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres una apuesta nueva: ${esc(top.n)}`, det: `Te caben ${eur(lim - sueltas, 0)} en acciones sueltas. Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor). Antes de comprar, que la IA la contraste con las noticias.`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>` });
+  // 10. a un año y más: proyección, hueco que se abre y revisión
+  let pr = null; try { pr = proyeccion(M); } catch (e) {}
+  if (pr) {
+    add('anio', { id: `proy1:${hoy.slice(0, 7)}`, cuando: 'en un año', auto: true, t: `Si sigues así, lo probable es tener ${euCorto(pr.p50[12])}`, det: `Entre ${euCorto(pr.p10[12])} si va mal y ${euCorto(pr.p90[12])} si va bien, habiendo puesto ${euCorto(pr.aportado[12])}.`, acc: '<a class="enlace" href="#futuro">Ver Futuro</a>' });
+    const metas = META_HITOS.map((m) => ({ m, i: pr.p50.findIndex((x) => x >= m) })).filter((x) => x.i > 0 && x.i <= 60);
+    for (const x of metas) add('largo', { id: `hito:${x.m}`, d: pr.fechas[x.i], cuando: `${MESES[deIso(pr.fechas[x.i]).getMonth()]} ${pr.fechas[x.i].slice(0, 4)}`, auto: true, t: `Llegas a ${euCorto(x.m)}`, det: `Es lo probable con tus aportaciones de hoy. Si va mal, en ${pr.p10.findIndex((v) => v >= x.m) > 0 ? pr.fechas[pr.p10.findIndex((v) => v >= x.m)].slice(0, 4) : 'más tiempo'}.` });
+  }
+  if (total > 0 && M.total) {
+    const pct12 = (sueltas / (M.total + total * 12)) * 100, limP = +(S.cartera.limite_acciones || 20);
+    if (sueltas) add('anio', { id: `hueco:${hoy.slice(0, 7)}`, cuando: 'en un año', t: `Tus acciones sueltas bajarán al ${fmtNum(pct12, 1)} % de la cartera`, det: `Porque todo lo que aportas va a fondos. Con tu límite del ${fmtNum(limP, 0)} %, tendrás unos ${eur(Math.max(0, (limP / 100) * (M.total + total * 12) - sueltas), 0)} de hueco para apuestas, sin vender nada.` });
+  }
+  if (M.filas.some((f) => f.inst.tipo === 'Acción')) add('anio', { id: `revision:${anio}`, cuando: 'una vez al año', t: 'Revisa cada acción frente al S&P 500', det: 'Compara lo que ha hecho cada apuesta con lo que habría hecho el mismo dinero en tu fondo del S&P 500. Quédate solo con las que ganen o tengan aún su motivo para subir.', acc: '<a class="enlace" href="#analisis" data-calif="apuestas">Ver apuestas frente al índice</a>' });
+  add('largo', { id: 'nucleo', cuando: 'siempre', auto: true, t: 'Deja trabajar al núcleo indexado', det: `Tus fondos son el ${fmtNum(M.total ? (sum(M.filas.filter((f) => /^Fondo/.test(f.inst.tipo || '') && f.inst.clase === 'Renta variable'), (f) => f.valor) / M.total) * 100 : 0, 0)} % de la cartera. No los vendas en las caídas: si hay que sacar dinero, que salga del colchón o de las acciones sueltas.` });
+  if (total > 0) add('largo', { id: 'subir', cuando: 'con cada subida de sueldo', t: 'Sube la aportación cuando suba tu sueldo', det: `Es lo que más mueve el resultado a 10 y 20 años. Pruébalo en Futuro con "Subes la aportación cada año".`, acc: '<a class="enlace" href="#futuro">Probar en Futuro</a>' });
+  // los de la IA, de su última revisión
+  const ia = iaActual(), hr = ia && ia.hoja_de_ruta;
+  if (hr) {
+    const v = valoresIA(M), mapa = { mes: 'mes', seis_meses: 'seis', anio: 'anio', largo: 'largo' };
+    for (const [k, pz] of Object.entries(mapa)) for (const x of (Array.isArray(hr[k]) ? hr[k] : []).slice(0, 5)) {
+      if (!x || !x.t) continue;
+      const d = /^\d{4}-\d{2}-\d{2}$/.test(x.d || '') ? x.d : null;
+      if (d && d < hoy) continue;
+      P[pz].push({ fuente: 'ia', id: 'ia:' + normTxt(x.t).slice(0, 60), d, cuando: d ? fechaCorta(d) : '', t: rellenarIA(x.t, v), det: rellenarIA(x.detalle || '', v), autor: ia.autor });
+    }
+  }
+  const hechos = (S.cartera.ruta && S.cartera.ruta.hechos) || {};
+  for (const k of Object.keys(P)) {
+    for (const x of P[k]) x.hecho = !!hechos[x.id];
+    P[k].sort((a, b) => (a.hecho - b.hecho) || ((b.urgente ? 1 : 0) - (a.urgente ? 1 : 0)) || ((a.auto ? 1 : 0) - (b.auto ? 1 : 0)) || String(a.d || '9').localeCompare(String(b.d || '9')));
+  }
+  return P;
+}
+function htmlRuta(M) {
+  const P = pasosRuta(M);
+  const hasta = (dias) => fechaCorta(iso(new Date(Date.now() + dias * 86400000)));
+  const sub = { mes: `hasta el ${hasta(31)}`, seis: `hasta ${MESES[new Date(Date.now() + 183 * 86400000).getMonth()]}`, anio: `hasta ${MESES[new Date().getMonth()]} de ${new Date().getFullYear() + 1}`, largo: 'lo que se construye despacio' };
+  const primero = P.mes.find((x) => !x.hecho && !x.auto) || P.seis.find((x) => !x.hecho && !x.auto);
+  const ia = iaActual();
+  const paso = (x) => `<li class="${x.hecho ? 'hecho' : ''}${x.urgente && !x.hecho ? ' urgente' : ''}">
+      <button class="ruta-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"></button>
+      <div>${x.cuando || x.fuente === 'ia' ? `<div class="ruta-meta">${x.cuando ? `<span class="fecha">${esc(x.cuando)}</span>` : ''}${x.fuente === 'ia' ? `<span class="chip info">${esc(x.autor || 'IA')}</span>` : ''}</div>` : ''}
+        <b>${x.t.replace(/ €/g, '\u00a0€')}</b>${x.det ? `<p>${x.det}</p>` : ''}${x.acc && !x.hecho ? `<div class="ruta-acc">${x.acc}</div>` : ''}</div>
+    </li>`;
+  return `<div class="ruta-cab">
+      ${primero ? `<p class="ruta-ya">Lo primero: ${(() => { const t = primero.t.replace(/<[^>]+>/g, ''); return t.charAt(0).toLowerCase() + t.slice(1); })()}${primero.cuando ? `, ${esc(primero.cuando)}` : ''}.</p>` : '<p class="ruta-ya">Este mes no hay nada urgente: deja que trabajen tus aportaciones.</p>'}
+      <p>Los pasos salen de los cálculos de la web y se recalculan con cada precio${ia && ia.hoja_de_ruta ? `; los marcados con ${esc(ia.autor || 'IA')} vienen de la última revisión de la IA` : '. Con la IA conectada, añade los suyos en cada revisión'}. Márcalos al hacerlos: se guarda en tu cartera cifrada.</p>
+    </div>
+    <div class="ruta">${PLAZOS.map(([k, t]) => `<section class="ruta-col" aria-labelledby="hRuta-${k}"><header><h3 id="hRuta-${k}">${t}</h3><span class="k">${sub[k]}</span></header>
+      ${P[k].length ? `<ol class="ruta-pasos">${P[k].map(paso).join('')}</ol>` : '<div class="ruta-vacio">Nada que hacer en este plazo.</div>'}</section>`).join('')}</div>`;
+}
+async function marcarRuta(id) {
+  const r = S.cartera.ruta = S.cartera.ruta || {};
+  r.hechos = r.hechos || {};
+  if (r.hechos[id]) delete r.hechos[id]; else r.hechos[id] = hoyIso();
+  // los hechos de hace más de un año ya no hacen falta
+  const limite = iso(new Date(Date.now() - 400 * 86400000));
+  for (const [k, d] of Object.entries(r.hechos)) if (d < limite) delete r.hechos[k];
+  pintar();
+  await guardarCarteraCallada('Paso a paso');
+}
 function vistaAnalisis(M) {
   if (!ANALISIS.some(([k]) => k === S.califTab)) S.califTab = 'ia';
   const nombre = (f) => `<b style="font-weight:500">${esc(f.inst.corto || f.inst.nombre)}</b>`;
   let cuerpo = '';
-  if (S.califTab === 'ia') cuerpo = htmlAnalisisIA(M);
+  if (S.califTab === 'ruta') cuerpo = htmlRuta(M);
+  else if (S.califTab === 'ia') cuerpo = htmlAnalisisIA(M);
   else if (S.califTab === 'rent') {
     const anios = [...new Set(M.filas.flatMap((f) => Object.keys((f.p && f.p.anios) || {})))].sort().slice(-8);
     cuerpo = `<div class="tabla-w"><table><thead><tr><th>Posición</th><th class="r">1 mes</th><th class="r">3 meses</th><th class="r">En el año</th><th class="r">1 año</th><th class="r">3 años</th><th class="r">5 años</th><th class="r">10 años</th></tr></thead><tbody>
@@ -2109,7 +2300,7 @@ function vistaAnalisis(M) {
     cuerpo = htmlImpuestos(M);
   }
   return `
-  <div class="vista-cab"><h1>Análisis</h1><p>Un análisis de Claude de tu cartera, y tu rentabilidad, riesgo, costes, lo que hay dentro de tus fondos e impuestos.</p></div>
+  <div class="vista-cab"><h1>Análisis</h1><p>Qué hacer paso a paso, el análisis de la IA, y tu rentabilidad, riesgo, costes, lo que hay dentro de tus fondos e impuestos.</p></div>
   <div class="tabs-fila"><div class="tabs" role="group" aria-label="Ver">${ANALISIS.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div></div>
   ${cuerpo}`;
 }
@@ -2143,7 +2334,7 @@ function vistaPlan(M) {
       <section aria-labelledby="hPosE">
         <div class="sec-cab"><h2 id="hPosE">Posiciones</h2><div class="der"><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir posición</button></div></div>
         <div class="tabla-w"><table class="resp"><thead><tr><th>Activo</th><th class="r">Cantidad</th><th class="r">Invertido</th><th class="r">Valor</th><th></th></tr></thead><tbody>
-          ${M.filas.map((f) => `<tr><td><b style="font-weight:500">${esc(f.inst.corto || f.inst.nombre)}</b><small>${esc(f.pos.plataforma || '')}</small></td><td class="r">${f.uds != null ? oc(fmtNum(f.uds, 4)) : '—'}${f.estimada ? '<small>estimada</small>' : ''}</td><td class="r">${eur(f.coste, 0)}</td><td class="r">${eur(f.valor, 0)}</td><td class="r"><button class="btn peq" data-accion="editar-pos" data-id="${esc(f.pos.id)}">${ICONOS.lapiz}Editar</button></td></tr>`).join('')}
+          ${M.filas.map((f) => `<tr><td><b style="font-weight:500">${esc(f.inst.corto || f.inst.nombre)}</b><small>${nombreReal(f.inst) ? esc(nombreReal(f.inst)) + ', ' : ''}${esc(f.pos.plataforma || '')}</small></td><td class="r">${f.uds != null ? oc(fmtNum(f.uds, 4)) : '—'}${f.estimada ? '<small>estimada</small>' : ''}</td><td class="r">${eur(f.coste, 0)}</td><td class="r">${eur(f.valor, 0)}</td><td class="r"><button class="btn peq" data-accion="editar-pos" data-id="${esc(f.pos.id)}">${ICONOS.lapiz}Editar</button></td></tr>`).join('')}
         </tbody></table></div>
       </section>
     </div>
@@ -2683,7 +2874,7 @@ function htmlAnalisisIA(M) {
   const dias = diasEntre(iso(d), hoyIso());
   const cuando = f.length > 10 ? (dias === 0 ? `hoy a las ${hora}` : dias === 1 ? `ayer a las ${hora}` : `el ${fechaLarga(iso(d))}`) : `el ${fechaLarga(f)}${dias > 0 ? `, hace ${dias} ${dias === 1 ? 'día' : 'días'}` : ''}`;
   const firma = ia.propio
-    ? `Escrito por Claude ${cuando}${ia.busquedas ? `, con ${ia.busquedas} ${ia.busquedas === 1 ? 'búsqueda' : 'búsquedas'} en internet` : ''} y tus cifras de ese momento${ia.modelo && MODELOS[ia.modelo] ? ` (${MODELOS[ia.modelo].n})` : ''}.`
+    ? `Escrito por ${esc(ia.autor)} ${cuando}${ia.busquedas ? `, con ${ia.busquedas} ${ia.busquedas === 1 ? 'búsqueda' : 'búsquedas'} en internet` : ''} y tus cifras de ese momento${ia.modelo && MODELOS[ia.modelo] ? ` (${MODELOS[ia.modelo].n})` : ''}.`
     : `Escrito por ${ia.autor || 'Claude'} ${cuando}. ${ia.datos || ''}`;
   const boton = AS.clave
     ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Actualizando…' : 'Actualizar ahora'}</button>`
@@ -2727,7 +2918,7 @@ function htmlAnalisisIA(M) {
         </article>`; }).join('')}</div>
     </section>
     ${fuentes.length ? `<section class="ia-fuentes" aria-labelledby="hFueIA"><div class="sec-cab"><h2 id="hFueIA">Fuentes</h2><span class="k">lo que ha leído para contrastar</span></div><div class="as-fuentes">${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t || '')}">${esc(x.t ? x.t.slice(0, 60) : dom(x.u))}</a>`).join('')}</div></section>` : ''}
-    <p class="nota" style="margin-top:28px">${ia.propio ? 'Lo escribe Claude desde tu navegador con tu clave de la API: lee tu cartera cifrada, usa las cuentas de la web y busca en internet para contrastar. Se guarda cifrado con tu contraseña.' : 'Lo escribe Claude a partir de tus posiciones, los datos de la web y la prensa económica. Las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. ' + esc(ia.nota_privacidad || '')}</p>
+    <p class="nota" style="margin-top:28px">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de la web y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Lo escribe Claude a partir de tus posiciones, los datos de la web y la prensa económica. Las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. ' + esc(ia.nota_privacidad || '')}</p>
   </div>`;
 }
 
@@ -3635,7 +3826,7 @@ function abrirAjustes() {
       <div id="aQRbox"></div>
     </div>
     <div class="seccion-ed"><h3>Asesor</h3>
-      <p class="nota" style="margin:0">Claude dentro de la web, con tu clave de la API de Anthropic: responde a lo que le preguntes y revisa tu cartera cada día.</p>
+      <p class="nota" style="margin:0">Una IA dentro de la web: Gemini, gratis con una clave de Google (o Claude, de pago). Responde a lo que le preguntes y revisa tu cartera cada día.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes del asesor</button></div>
     </div>
     <div class="seccion-ed"><h3>Contraseña</h3>
@@ -3690,7 +3881,7 @@ function abrirAjustes() {
   $('#aOlvidar', h.el).onclick = async () => {
     if (!confirm('¿Borrar la clave, el token y las copias locales de este navegador?')) return;
     await IDB.del('clave');
-    for (const k of ['inv-token', 'inv-cache-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc', 'inv-cache-radar', 'inv-asesor-clave', 'inv-asesor-conv', 'inv-ia-propio', 'inv-dev-ia-enc']) LS.del(k);
+    for (const k of ['inv-token', 'inv-cache-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc', 'inv-cache-radar', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-dev-ia-enc']) LS.del(k);
     location.reload();
   };
 }
@@ -3825,7 +4016,7 @@ function htmlContrasteLista(ctr) {
 const IA = { generando: false, turno: null, error: null, ultimoIntento: 0 };
 function iaActual() {
   const p = S.iaPropio, pub = S.ia;
-  if (p && p.json && (!pub || String(p.fecha) >= String(pub.fecha))) return { ...p.json, fecha: p.fecha, autor: 'Claude', propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
+  if (p && p.json && (!pub || String(p.fecha) >= String(pub.fecha))) return { ...p.json, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
   return pub || null;
 }
 const firmaSenales = (M) => [...new Set(M.filas.map((f) => `${f.inst.id}:${f.senal.nivel}`))].sort().join('|');
@@ -3852,13 +4043,13 @@ async function guardarAnalisisPropio() {
   try {
     const texto = await cifrar(o);
     if (CFG.dev) { LS.set('inv-dev-ia-enc', texto); return; }
-    if (GH.token()) await GH.escribir('analisis.enc.json', texto, 'Análisis de Claude');
+    if (GH.token()) await GH.escribir('analisis.enc.json', texto, 'Análisis de la IA');
   } catch (e) { console.warn('No se pudo subir el análisis', e); }
 }
 
-function pedidoAnalisis(ids, motivo) {
+function pedidoAnalisis(ids, motivo, conWeb = true) {
   return `Haz la revisión de hoy de mi cartera (${motivo}). Antes de escribir:
-1. Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.
+1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.' : 'No puedes buscar en internet: usa los titulares de los datos (los de mis posiciones, los del mercado y los de las mejores ideas del radar) y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
 2. Si recomiendas vender algo, calcúlalo con simular_venta. Si recomiendas comprar una acción, con simular_compra.
 3. Para las ideas de compra, parte del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de la web y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
 
@@ -3873,9 +4064,10 @@ Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
   "calendario": [{"d": "AAAA-MM-DD", "t": "qué pasa ese día y por qué me importa"}],
   "posiciones": {"<id>": {"veredicto": "de 2 a 4 palabras", "nivel": "comprar|aportar|mantener|vigilar|recoger|reducir|vender", "texto": "dos o tres frases con cifras", "vigilar": "qué vigilar, con precio o fecha", "confianza": "alta|media|baja"}},
   "ideas": [{"ticker": "...", "nombre": "...", "tesis": "...", "catalizador": "qué la puede mover y cuándo", "riesgo": "...", "contraste": "qué fuentes coinciden y cuáles no", "importe": 0, "fuentes": [{"t": "título", "u": "https://..."}]}],
+  "hoja_de_ruta": {"mes": [{"t": "paso concreto", "detalle": "cuánto, cómo y por qué", "d": "AAAA-MM-DD o vacío"}], "seis_meses": [...], "anio": [...], "largo": [...]},
   "fuentes": [{"t": "título", "u": "https://..."}]
 }
-Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 3 a 8. "ideas" de 0 a 3.
+Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 3 a 8. "ideas" de 0 a 3. "hoja_de_ruta": de 1 a 4 pasos por plazo (este mes, próximos 6 meses, próximo año, de 1 a 5 años) que completen la hoja de ruta que ya calcula la web (está en los datos): no repitas sus pasos; añade lo que solo se sabe leyendo las noticias, las fechas que vienen y sus reglas.
 Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**) para que la web pueda ocultarlas; ningún otro formato.`;
 }
 function extraerJSON(texto) {
@@ -3899,7 +4091,8 @@ async function generarAnalisisIA(motivo = 'la pides tú') {
     refrescarFoto(true);
     const M = S.M || calcular();
     const ids = [...new Set(M.filas.map((f) => f.inst.id))];
-    await conversar({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo) }], turno, sistema: sistemaAsesor(), maxTokens: 12000, alCambiar });
+    const cfgA = cfgAsesor();
+    await conversar({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, cfgA.web && !AS.sinWeb) }], turno, sistema: sistemaAsesor(), maxTokens: 12000, alCambiar });
     const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');
     const json = extraerJSON(texto);
     if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');
@@ -3908,9 +4101,9 @@ async function generarAnalisisIA(motivo = 'la pides tú') {
     S.iaPropio = { fecha: new Date().toISOString(), modelo: cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo };
     AS.gasto += turno.coste || 0; guardarConv();
     await guardarAnalisisPropio();
-    toast('Claude ha actualizado el análisis de tu cartera');
+    toast(`${nombreIA()} ha actualizado el análisis de tu cartera`);
   } catch (e) {
-    IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? 'No hay conexión con Anthropic.' : e.message;
+    IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}.` : e.message;
   }
   IA.generando = false; IA.turno = null;
   if (['analisis', 'expertos', 'cartera'].includes(S.vista) && !$('.hoja-fondo')) pintar(); else refrescarProgresoIA();
@@ -3932,7 +4125,7 @@ async function revisarAnalisisIA() {
 function htmlProgresoIA() {
   if (IA.generando) {
     const pasos = (IA.turno ? IA.turno.partes.filter((p) => p.tipo === 'paso') : []).slice(-4);
-    return `<div class="ia-progreso" role="status"><div class="as-pensando"><i></i><i></i><i></i></div><div><b>Claude está revisando tu cartera y las noticias de hoy</b><span>Tarda uno o dos minutos. Puedes seguir usando la web.</span>${pasos.length ? `<ul>${pasos.map((p) => `<li>${esc(p.txt)}</li>`).join('')}</ul>` : ''}</div></div>`;
+    return `<div class="ia-progreso" role="status"><div class="as-pensando"><i></i><i></i><i></i></div><div><b>${nombreIA()} está revisando tu cartera y las noticias de hoy</b><span>Tarda uno o dos minutos. Puedes seguir usando la web.</span>${pasos.length ? `<ul>${pasos.map((p) => `<li>${esc(p.txt)}</li>`).join('')}</ul>` : ''}</div></div>`;
   }
   if (IA.error) return `<div class="ia-progreso error" role="alert">${ICONOS.alerta}<div><b>No se pudo actualizar el análisis</b><span>${esc(IA.error)}</span></div><button class="btn peq" data-accion="ia-actualizar">Reintentar</button></div>`;
   return '';
@@ -3948,13 +4141,31 @@ function refrescarProgresoIA() { const el = $('#iaProgreso'); if (el) el.innerHT
    motor de la web: ventas con FIFO e IRPF, compras con su tasa, empresas del radar, proyecciones e
    histórico. Si le falta algo de hoy, busca en internet y cita de dónde sale.
    ===================================================================== */
+/* Gemini (Google) es el de serie: gratis con una clave de Google AI Studio. Claude queda como opción de pago. */
 const MODELOS = {
-  'claude-sonnet-5-5': { n: 'Sonnet 5.5', txt: 'Rápido y muy fino. Unos 2-4 céntimos por pregunta.', in: 2, out: 10 },
-  'claude-opus-5-5': { n: 'Opus 5.5', txt: 'El que más razona. Cuesta el doble que Sonnet.', in: 4, out: 20 },
-  'claude-haiku-5-5': { n: 'Haiku 5.5', txt: 'Para dudas rápidas. Casi gratis, pero menos fino.', in: 0.1, out: 0.5 },
+  'gemini-3.8-flash': { n: 'Gemini 3.8 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Gratis. El más potente de los gratuitos de Google, pensando al máximo. El recomendado.' },
+  'gemini-4-argon': { n: 'Gemini 4 Argon', prov: 'google', pensar: 'high', txt: 'El más potente de Google, pero de pago: hay que activar la facturación en Google AI Studio. Unos 2-4 céntimos por pregunta (el doble desde diciembre).', in: 2, out: 10 },
+  'gemini-3.6-flash': { n: 'Gemini 3.6 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Gratis. Por si el 3.8 te da límite.' },
+  'gemini-3.5-flash-lite': { n: 'Gemini 3.5 Flash-Lite', prov: 'google', gratis: true, txt: 'Gratis y muy rápido, para dudas sencillas.' },
+  'claude-sonnet-5-5': { n: 'Claude Sonnet 5.5', prov: 'anthropic', txt: 'De pago, con tu cuenta de Anthropic: unos 2-4 céntimos por pregunta.', in: 2, out: 10 },
+  'claude-opus-5-5': { n: 'Claude Opus 5.5', prov: 'anthropic', txt: 'De pago: el que más razona de Anthropic. El doble que Sonnet.', in: 4, out: 20 },
+  'claude-haiku-5-5': { n: 'Claude Haiku 5.5', prov: 'anthropic', txt: 'De pago y casi gratis, pero menos fino.', in: 0.1, out: 0.5 },
 };
-const AS = { conv: [], api: [], foto: null, fotoT: 0, clave: null, cargando: false, ctrl: null, vista: 'chat', cargada: false, sinWeb: false, gasto: 0 };
-const cfgAsesor = () => { const c = LS.get('inv-asesor-cfg', {}); return { modelo: MODELOS[c.modelo] ? c.modelo : 'claude-sonnet-5-5', web: c.web !== false, auto: ['diario', 'semanal', 'manual'].includes(c.auto) ? c.auto : 'diario' }; };
+const MODELO_DEF = 'gemini-3.8-flash';
+const PROV = { google: { n: 'Google', ia: 'Gemini' }, anthropic: { n: 'Anthropic', ia: 'Claude' } };
+const AS = { conv: [], api: [], foto: null, fotoT: 0, claves: { google: null, anthropic: null }, cargando: false, ctrl: null, vista: 'chat', cargada: false, sinWeb: false, gasto: 0 };
+Object.defineProperty(AS, 'clave', { get() { return AS.claves[cfgAsesor().prov]; }, set(v) { AS.claves[cfgAsesor().prov] = v; } });
+function cfgAsesor() {
+  const c = LS.get('inv-asesor-cfg2', {});
+  if (c.modelo && !MODELOS[c.modelo] && /^gemini-[\w.-]+$/.test(c.modelo)) MODELOS[c.modelo] = { n: c.modelo.replace(/^gemini-/, 'Gemini ').replace(/-/g, ' '), prov: 'google', gratis: true, txt: 'El Flash más nuevo que tiene tu clave.' };
+  const modelo = MODELOS[c.modelo] ? c.modelo : MODELO_DEF;
+  const prov = MODELOS[modelo].prov;
+  const webFalla = prov === 'google' && !!c.web_falla && Date.now() - c.web_falla < 7 * 864e5;
+  return { modelo, prov, web: c.web !== false && !webFalla, webPedida: c.web !== false, webFalla, auto: ['diario', 'semanal', 'manual'].includes(c.auto) ? c.auto : 'diario' };
+}
+const guardarCfgAsesor = (o) => LS.set('inv-asesor-cfg2', { ...LS.get('inv-asesor-cfg2', {}), ...o });
+const nombreIA = (modelo) => PROV[(MODELOS[modelo || cfgAsesor().modelo] || {}).prov || 'google'].ia;
+const LS_CLAVE = { anthropic: 'inv-asesor-clave', google: 'inv-asesor-clave-g' }, CAMPO_CLAVE = { anthropic: 'clave', google: 'clave_g' };
 const R2 = (n, d = 2) => (n == null || !isFinite(n) ? null : Math.round(n * 10 ** d) / 10 ** d);
 const E0 = (n) => fmtNum(n, 0) + ' €', E2 = (n) => fmtNum(n, 2) + ' €';
 const eurP = (n, d = 2) => (n > 0 ? '+' : '') + fmtNum(n, d) + ' €';
@@ -3975,9 +4186,12 @@ async function descifrarLocal(o) {
 async function cargarAsesor() {
   if (AS.cargada || !S.key) return;
   AS.cargada = true;
-  const c = LS.get('inv-asesor-clave');
-  if (c) { try { AS.clave = await descifrarLocal(c); } catch (e) { LS.del('inv-asesor-clave'); } }
-  if (!AS.clave && S.cartera && S.cartera.asesor && S.cartera.asesor.clave) AS.clave = S.cartera.asesor.clave;
+  for (const prov of ['google', 'anthropic']) {
+    const c = LS.get(LS_CLAVE[prov]);
+    if (c) { try { AS.claves[prov] = await descifrarLocal(c); } catch (e) { LS.del(LS_CLAVE[prov]); } }
+    const enCartera = S.cartera && S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[prov]];
+    if (!AS.claves[prov] && enCartera) AS.claves[prov] = enCartera;
+  }
   const h = LS.get('inv-asesor-conv');
   if (h) { try { const o = await descifrarLocal(h); AS.conv = o.conv || []; AS.api = o.api || []; AS.gasto = o.gasto || 0; } catch (e) { LS.del('inv-asesor-conv'); } }
 }
@@ -3985,7 +4199,7 @@ async function guardarConv() {
   if (!S.key) return;
   try { LS.set('inv-asesor-conv', await cifrarLocal({ conv: AS.conv.slice(-60), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
 }
-function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, clave: null, cargada: false, gasto: 0 }); }
+function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, claves: { google: null, anthropic: null }, cargada: false, gasto: 0 }); }
 
 /* guarda la cartera sin avisos ni descargas (para lo que hace la web sola, como el análisis diario) */
 async function guardarCarteraCallada(mensaje) {
@@ -4096,7 +4310,7 @@ function contextoAsesor(M) {
     const ideas = mejoresIdeas(M).slice(0, 8);
     if (ideas.length) {
       L.push('', '## Las ideas de compra que mejor encajan con su cartera según la web');
-      for (const x of ideas) L.push(`- ${x.n} (${x.s}, ${x.z}${x.sector ? ', ' + x.sector : ''}): ${x.motivos.join(', ')}${x.pegas.length ? `. Pegas: ${x.pegas.join('; ')}` : ''}. Contraste: ${x.ctr.favor} de ${x.ctr.total} señales a favor (${x.ctr.checks.filter((c) => c.ok).map((c) => c.k.toLowerCase()).join(', ')})${x.ctr.contra ? `, ${x.ctr.contra} en contra (${x.ctr.checks.filter((c) => c.ok === -1).map((c) => c.k.toLowerCase()).join(', ')})` : ''}.`);
+      for (const x of ideas) L.push(`- ${x.n} (${x.s}, ${x.z}${x.sector ? ', ' + x.sector : ''}): ${noticiasIdea(x.s).length ? `[titulares: ${noticiasIdea(x.s).slice(0, 3).map((n) => `${n.d ? n.d.slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})`).join(' / ')}] ` : ''}${x.motivos.join(', ')}${x.pegas.length ? `. Pegas: ${x.pegas.join('; ')}` : ''}. Contraste: ${x.ctr.favor} de ${x.ctr.total} señales a favor (${x.ctr.checks.filter((c) => c.ok).map((c) => c.k.toLowerCase()).join(', ')})${x.ctr.contra ? `, ${x.ctr.contra} en contra (${x.ctr.checks.filter((c) => c.ok === -1).map((c) => c.k.toLowerCase()).join(', ')})` : ''}.`);
     }
     // del radar entran las 120 mejor contrastadas; del resto puede pedir los datos con buscar_empresa
     const todasR = radarVals();
@@ -4121,11 +4335,16 @@ function contextoAsesor(M) {
     if (ia) {
       const v = valoresIA(M);
       const T = (t) => String(t || '').replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (mm, k, id) => { const x = id ? v[k] && v[k][id] : v[k]; return x != null && typeof x !== 'object' ? x : '—'; }).replace(/\*\*/g, '');
-      L.push('', `## Último análisis de Claude (${ia.fecha ? fechaLarga(String(ia.fecha).slice(0, 10)) : ''})`);
+      L.push('', `## Último análisis de ${ia.autor || 'la IA'} (${ia.fecha ? fechaLarga(String(ia.fecha).slice(0, 10)) : ''})`);
       L.push(T(ia.titular)); for (const p of ia.resumen || []) L.push(T(p));
       if (ia.mejorar) L.push('Qué mejorar: ' + ia.mejorar.map((x) => T(x.titulo)).join('; ') + '.');
       if (ia.riesgos) L.push('Riesgos: ' + ia.riesgos.map((x) => T(x.titulo)).join('; ') + '.');
     }
+    try {
+      const P = pasosRuta(M), limpio = (t) => String(t || '').replace(/<[^>]+>/g, '');
+      L.push('', '## Su hoja de ruta en la web (pasos que ya calcula la web; los marcados como hechos ya los ha hecho)');
+      for (const [k, t] of PLAZOS) { const xs = P[k].filter((x) => x.fuente === 'web'); if (xs.length) L.push(`${t}:`, ...xs.map((x) => `- ${x.hecho ? '[hecho] ' : ''}${x.cuando ? x.cuando + ': ' : ''}${limpio(x.t)}. ${limpio(x.det)}`)); }
+    } catch (e) {}
     const reglas = (S.ia && S.ia.reglas) || [];
     if (reglas.length) L.push('', '## Sus reglas de inversión', ...reglas.map((r) => '- ' + r));
     const yo = S.cartera.asesor && S.cartera.asesor.sobre_mi;
@@ -4143,7 +4362,7 @@ Cómo respondes:
 - Primero la respuesta o la recomendación concreta (qué hacer, cuánto, cuándo y dónde). Después el porqué, con números de su cartera.
 - Nada de avisos de que no eres asesor financiero ni de "consulta a un profesional": no los quiere. Los riesgos concretos sí, cuando importen.
 - Antes de recomendar vender, usa simular_venta para dar la ganancia que se declara y el impuesto (FIFO y escala del ahorro con lo que ya lleva en el año). Antes de recomendar comprar una acción, usa simular_compra para la tasa del país, la comisión y cómo queda su límite de acciones sueltas.
-- Contrasta: no recomiendes nada apoyándote en una sola fuente. Cruza el consenso y el rango de objetivos de los analistas, las cuentas (valoración, crecimiento, deuda), la tendencia del precio y las noticias. Si buscas en internet, busca al menos dos fuentes distintas y di si coinciden o no. Si las fuentes chocan, dilo.
+- Contrasta: no recomiendes nada apoyándote en una sola fuente. Cruza el consenso y el rango de objetivos de los analistas, las cuentas (valoración, crecimiento, deuda), la tendencia del precio y las noticias. Si buscas en internet, busca al menos dos fuentes distintas y di si coinciden o no. Si las fuentes chocan, dilo. Si no puedes buscar, contrasta con los titulares que tienes en los datos y dilo.
 - Usa solo datos que tengas: los de abajo, los de las herramientas o los de internet. Si te falta algo de hoy, búscalo y di de dónde sale. Si algo no se puede saber, dilo.
 - Respeta sus reglas: el límite de acciones sueltas, el fondo de renta fija como colchón, sus aportaciones automáticas y sus reglas para apuestas.
 - Formato: frases cortas, números en formato español (1.234,56 €), negrita solo para la cifra o la acción clave, listas cuando ayuden a seguir pasos y tablas solo para comparar opciones. Breve salvo que pida detalle.
@@ -4241,6 +4460,7 @@ function hBuscarEmpresa(q) {
     tasa_de_compra: tasa ? `${fmtNum(tasa.tipo * 100, 1)} % (${tasa.nombre})` : 'no paga',
     ya_tiene_dentro_de_sus_fondos_eur: R2(dentroDeFondos(M)(x.n), 0),
     valoracion_de_la_web: k >= 0 ? { puesto: k + 1, de: ideas.length, motivos: ideas[k].motivos, pegas: ideas[k].pegas } : 'No pasa el filtro de ideas de la web (potencial de al menos un 10 %, 8 analistas o más, consenso de compra, 3 señales a favor y no haber caído más de un 35 % en un año).',
+    titulares_recientes: noticiasIdea(x.s).slice(0, 5).map((n) => `${n.d ? n.d.slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})`),
     datos_de: x.f || (S.radar && S.radar.generado),
   };
 }
@@ -4292,6 +4512,7 @@ function pasoTxt(nombre, q = {}) {
   if (nombre === 'proyectar') return `Proyecta tu cartera${q.aportacion_mensual != null ? ` aportando ${E0(q.aportacion_mensual)} al mes` : ''}`;
   if (nombre === 'historico') return `Mira el histórico de ${q.activo || ''}${q.desde ? ` desde el ${fechaLarga(String(q.desde).slice(0, 10))}` : ''}`;
   if (nombre === 'web_search') return q.query ? `Busca en internet: ${q.query}` : 'Busca en internet';
+  if (nombre === 'buscar_en_internet') return q.consulta ? `Busca en internet: ${q.consulta}` : 'Busca en internet';
   return 'Calcula';
 }
 
@@ -4368,8 +4589,9 @@ function costeUso(uso, modelo) {
   return t + ((uso.server_tool_use && uso.server_tool_use.web_search_requests) || 0) * 0.01;
 }
 
-/* Una vuelta completa: Claude responde, pide herramientas, se las damos y sigue hasta terminar */
-async function conversar({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web }) {
+/* Una vuelta completa: la IA responde, pide herramientas, se las damos y sigue hasta terminar */
+function conversar(o) { return cfgAsesor().prov === 'google' ? conversarGemini(o) : conversarClaude(o); }
+async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web }) {
   const cfg = cfgAsesor();
   const clave = AS.clave;
   const msgs = [...mensajes];
@@ -4395,6 +4617,155 @@ async function conversar({ mensajes, turno, sistema, maxTokens = 4096, alCambiar
   }
   return msgs;
 }
+/* ---------- Gemini (API de Google AI Studio): mismas herramientas, mismo formato de turnos ---------- */
+const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
+const dormir = (ms, signal) => new Promise((res, rej) => { const t = setTimeout(res, ms); if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('Parado', 'AbortError')); }, { once: true }); });
+function esquemaGemini(x) {
+  if (Array.isArray(x)) return x.map(esquemaGemini);
+  if (!x || typeof x !== 'object') return x;
+  const o = {};
+  for (const [k, v] of Object.entries(x)) o[k] = k === 'type' && typeof v === 'string' ? v.toUpperCase() : k === 'properties' ? Object.fromEntries(Object.entries(v).map(([kk, vv]) => [kk, esquemaGemini(vv)])) : esquemaGemini(v);
+  return o;
+}
+const BUSCAR_GEMINI = { name: 'buscar_en_internet', description: 'Busca en internet con Google noticias y datos recientes y devuelve un resumen con sus fuentes. Úsala para contrastar lo que no esté en los datos, con al menos dos fuentes.', parameters: { type: 'OBJECT', properties: { consulta: { type: 'STRING', description: 'qué buscar: concreto, con el nombre de la empresa y el tema' } }, required: ['consulta'] } };
+const herramientasGemini = (web) => [{ functionDeclarations: [...HERRAMIENTAS.map((h) => ({ name: h.name, description: h.description, parameters: esquemaGemini(h.input_schema) })), ...(web ? [BUSCAR_GEMINI] : [])] }];
+function errorGoogle(estado, j) {
+  const e0 = (j && j.error) || {}, m = e0.message || '', det = JSON.stringify(e0.details || '');
+  let e;
+  if (/API key not valid|API_KEY_INVALID/i.test(m + det)) e = new Error('La clave de Google no es válida. Cámbiala en los ajustes del asesor.');
+  else if (estado === 403) e = new Error('Tu clave de Google no tiene permiso para este modelo. Si es uno de pago, activa la facturación en Google AI Studio o elige Gemini 3.8 Flash.');
+  else if (estado === 404) e = new Error('Ese modelo de Gemini no existe para tu clave.');
+  else if (estado === 429) e = new Error(/free.?tier|limit: 0/i.test(m) && /pro|argon/i.test(m) ? 'Ese modelo no entra en el plan gratuito: elige Gemini 3.8 Flash en los ajustes del asesor o activa la facturación.' : 'Has llegado al límite gratuito de Google. Si es el de por minuto, en un momento vuelve a funcionar; si es el diario, mañana.');
+  else if (estado >= 500) e = new Error('Google está saturado ahora mismo. Prueba en un momento.');
+  else e = new Error(m || `Error ${estado} de Google`);
+  e.estado = estado; e.msg = m;
+  const ri = (e0.details || []).find((d) => /RetryInfo/.test(d['@type'] || ''));
+  if (ri && ri.retryDelay) e.espera = parseFloat(ri.retryDelay);
+  return e;
+}
+async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar) {
+  const r = await fetch(`${GEMINI}/models/${modelo}:streamGenerateContent?alt=sse`, { method: 'POST', signal, headers: { 'content-type': 'application/json', 'x-goog-api-key': clave }, body: JSON.stringify(cuerpo) });
+  if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorGoogle(r.status, j); }
+  const lector = r.body.getReader(), dec = new TextDecoder();
+  let buf = '', fin = null, uso = {}, bloqueo = null, texto = null, vista = null;
+  const partes = [];
+  const procesar = (ch) => {
+    if (ch.error) throw errorGoogle(ch.error.code || 500, ch);
+    if (ch.usageMetadata) uso = ch.usageMetadata;
+    if (ch.promptFeedback && ch.promptFeedback.blockReason) bloqueo = ch.promptFeedback.blockReason;
+    const c = (ch.candidates || [])[0];
+    if (!c) return;
+    if (c.finishReason) fin = c.finishReason;
+    for (const pt of (c.content && c.content.parts) || []) {
+      if (pt.thought) { if (pt.thoughtSignature) partes.push({ ...pt }); continue; }
+      if (pt.functionCall) {
+        partes.push(JSON.parse(JSON.stringify(pt))); texto = null;
+        const fc = pt.functionCall;
+        turno.partes.push({ tipo: 'paso', web: fc.name === 'buscar_en_internet', txt: pasoTxt(fc.name, fc.args || {}) });
+      } else if (typeof pt.text === 'string') {
+        if (!texto) { texto = { text: '' }; partes.push(texto); vista = { tipo: 'texto', texto: '' }; turno.partes.push(vista); }
+        texto.text += pt.text; vista.texto = texto.text;
+        if (pt.thoughtSignature) texto.thoughtSignature = pt.thoughtSignature;
+      } else partes.push(JSON.parse(JSON.stringify(pt)));
+    }
+    alCambiar();
+  };
+  for (;;) {
+    const { done, value } = await lector.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true }).replace(/\r/g, '');
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0) {
+      const trozo = buf.slice(0, i); buf = buf.slice(i + 2);
+      const datos = trozo.split('\n').filter((l) => l.startsWith('data:')).map((l) => l.slice(5).trim()).join('');
+      if (!datos) continue;
+      let ch; try { ch = JSON.parse(datos); } catch (e) { continue; }
+      procesar(ch);
+    }
+  }
+  if (buf.trim().startsWith('data:')) { try { procesar(JSON.parse(buf.trim().slice(5))); } catch (e) {} }
+  turno.partes = turno.partes.filter((p) => p.tipo !== 'texto' || p.texto);
+  return { contenido: partes.filter((p) => !(typeof p.text === 'string' && !p.text && !p.thoughtSignature)), fin, uso, bloqueo };
+}
+/* búsqueda con Google: una llamada aparte con la herramienta de búsqueda de Gemini */
+async function buscarGoogle(consulta, turno, signal) {
+  if (!consulta) return { error: 'Falta qué buscar.' };
+  const cfg = cfgAsesor();
+  let r;
+  try {
+    r = await fetch(`${GEMINI}/models/${cfg.modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json', 'x-goog-api-key': AS.clave }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
+  } catch (e) { if (e.name === 'AbortError') throw e; return { error: 'No se pudo conectar para buscar.' }; }
+  if (!r.ok) {
+    let j = null; try { j = await r.json(); } catch (e) {}
+    const e = errorGoogle(r.status, j);
+    if (r.status !== 429 && r.status < 500) { guardarCfgAsesor({ web_falla: Date.now() }); AS.sinWeb = true; turno.partes.push({ tipo: 'paso', web: true, txt: 'Tu plan de Google no incluye la búsqueda en internet: sigo con los titulares de la web' }); }
+    return { error: `No se pudo buscar en internet (${e.message}). Contrasta con los titulares que tienes en los datos.` };
+  }
+  const j = await r.json(), c = (j.candidates || [])[0] || {};
+  const texto = ((c.content && c.content.parts) || []).map((x) => x.text || '').join('').trim();
+  const fuentes = ((c.groundingMetadata && c.groundingMetadata.groundingChunks) || []).map((g) => g.web).filter((w) => w && w.uri).map((w) => ({ t: w.title || w.uri, u: w.uri, d: w.title }));
+  turno.resultados.push(...fuentes); turno.citas.push(...fuentes);
+  return { resumen: texto || 'Sin resultados.', fuentes: fuentes.map((f) => f.t).slice(0, 10) };
+}
+async function mejorFlash(clave) {
+  try {
+    const r = await fetch(`${GEMINI}/models?pageSize=200`, { headers: { 'x-goog-api-key': clave } });
+    if (!r.ok) return null;
+    const j = await r.json();
+    const v = (j.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('generateContent')).map((m) => m.name.replace(/^models\//, '')).filter((n) => /^gemini-[\d.]+-flash$/.test(n));
+    v.sort((a, b) => parseFloat(b.split('-')[1]) - parseFloat(a.split('-')[1]));
+    return v[0] || null;
+  } catch (e) { return null; }
+}
+async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web }) {
+  let cfg = cfgAsesor();
+  const clave = AS.clave;
+  const contents = mensajes.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: typeof m.content === 'string' ? [{ text: m.content }] : m.content }));
+  const sysTexto = (Array.isArray(sistema) ? sistema.map((b) => b.text) : [String(sistema || '')]).join('\n\n');
+  const usarWeb = web !== false && cfg.web && !AS.sinWeb;
+  let reintentos = 0, conPensar = true, cambiado = false;
+  for (let vuelta = 0; vuelta < 14; vuelta++) {
+    const m = MODELOS[cfg.modelo] || {};
+    const cuerpo = {
+      systemInstruction: { parts: [{ text: sysTexto }] }, contents, tools: herramientasGemini(usarWeb),
+      generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: m.pensar } } : {}) },
+    };
+    let r;
+    try { r = await llamarGemini(clave, cfg.modelo, cuerpo, turno, signal, alCambiar); }
+    catch (e) {
+      if (e.name === 'AbortError') throw e;
+      if (e.estado === 400 && conPensar && /thinking/i.test(e.msg || '')) { conPensar = false; vuelta--; continue; }
+      if (e.estado === 404 && !cambiado) { const nuevo = await mejorFlash(clave); if (nuevo && nuevo !== cfg.modelo) { guardarCfgAsesor({ modelo: nuevo }); cfg = cfgAsesor(); cambiado = true; vuelta--; continue; } }
+      if (e.estado === 429 && reintentos < 3 && !(e.espera > 60)) { reintentos++; const seg = Math.ceil(e.espera || 15 * reintentos); turno.partes.push({ tipo: 'paso', txt: `Google pide esperar ${seg} s (límite gratuito por minuto)` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
+      if (e.estado >= 500 && reintentos < 3) { reintentos++; await dormir(3000 * reintentos, signal); vuelta--; continue; }
+      throw e;
+    }
+    const pm = MODELOS[cfg.modelo] || {};
+    if (pm.in) turno.coste = (turno.coste || 0) + ((r.uso.promptTokenCount || 0) * pm.in + ((r.uso.candidatesTokenCount || 0) + (r.uso.thoughtsTokenCount || 0)) * pm.out) / 1e6;
+    if (r.bloqueo) throw new Error('Google ha bloqueado la pregunta por sus filtros. Prueba a decirlo de otra forma.');
+    if (!r.contenido.length) {
+      if (reintentos < 2) { reintentos++; vuelta--; continue; }
+      throw new Error('Google no ha devuelto respuesta. Vuelve a preguntar.');
+    }
+    contents.push({ role: 'model', parts: r.contenido });
+    const llamadas = r.contenido.filter((p) => p.functionCall);
+    if (llamadas.length) {
+      const respuestas = [];
+      for (const pt of llamadas) {
+        const fc = pt.functionCall;
+        const out = fc.name === 'buscar_en_internet' ? await buscarGoogle(fc.args && fc.args.consulta, turno, signal) : ejecutarHerramienta(fc.name, fc.args || {});
+        respuestas.push({ functionResponse: { name: fc.name, ...(fc.id ? { id: fc.id } : {}), response: out && typeof out === 'object' && !Array.isArray(out) ? out : { resultado: out } } });
+      }
+      contents.push({ role: 'user', parts: respuestas });
+      alCambiar();
+      continue;
+    }
+    if (r.fin === 'MAX_TOKENS') turno.partes.push({ tipo: 'paso', txt: 'La respuesta se ha cortado por larga. Pídele que siga.' });
+    else if (/SAFETY|RECITATION|PROHIBITED|BLOCKLIST/.test(r.fin || '')) turno.partes.push({ tipo: 'paso', txt: 'Google ha cortado la respuesta por sus filtros.' });
+    break;
+  }
+  return contents;
+}
 const sistemaAsesor = () => [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: AS.foto, cache_control: { type: 'ephemeral' } }];
 function refrescarFoto(forzar) {
   if (forzar || !AS.foto || Date.now() - AS.fotoT > 10 * 60000) { S.M = S.M || calcular(); AS.foto = contextoAsesor(S.M); AS.fotoT = Date.now(); }
@@ -4414,7 +4785,7 @@ async function preguntarAsesor(texto) {
   try {
     await conversar({ mensajes: [...AS.api, { role: 'user', content: texto }], turno, sistema: sistemaAsesor(), alCambiar, signal: AS.ctrl.signal });
   } catch (e) {
-    turno.error = e.name === 'AbortError' ? 'Parado.' : /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? 'No hay conexión con Anthropic. Mira tu conexión y vuelve a probar.' : e.message;
+    turno.error = e.name === 'AbortError' ? 'Parado.' : /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
   }
   AS.cargando = false; AS.ctrl = null;
   const final = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim();
@@ -4484,11 +4855,31 @@ function htmlTurno(t, k) {
   return `<div class="as-ia${vivo ? ' vivo' : ''}" id="asT${k}">${partes}
     ${vivo && !(ult && ult.tipo === 'texto' && ult.texto) ? '<div class="as-pensando" aria-label="Pensando"><i></i><i></i><i></i></div>' : ''}
     ${t.error ? `<div class="as-error">${esc(t.error)} <button class="enlace" data-as="reintentar">Volver a preguntar</button></div>` : ''}
-    ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(dom(x.u))}</a>`).join('')}</div>` : ''}
+    ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(x.d || dom(x.u))}</a>`).join('')}</div>` : ''}
   </div>`;
 }
 function htmlClaveAsesor() {
   const cfg = cfgAsesor();
+  if (cfg.prov === 'google') return `<div class="as-config">
+    <h3>Conecta Gemini, gratis</h3>
+    <p>El asesor usa ${esc(MODELOS[cfg.modelo].n)}, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
+    <ol class="as-pasos-clave">
+      <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
+      <li>Pulsa "Create API key" y copia la clave: empieza por AIza.</li>
+      <li>Pégala aquí. Se guarda cifrada con la clave de tu cartera y solo viaja de tu navegador a Google.</li>
+    </ol>
+    <label class="campo">Clave de Google<input type="password" id="asClave" placeholder="AIza…" autocomplete="off" spellcheck="false"></label>
+    <label class="check"><input type="checkbox" id="asSync"> Guardarla también en tu cartera cifrada, para no tener que ponerla en el móvil</label>
+    <div class="error" id="asErr"></div>
+    <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${AS.claves.anthropic || AS.clave ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
+    <p class="nota" style="margin:0">El plan gratuito tiene un tope de preguntas por minuto y por día (los tuyos, en aistudio.google.com/rate-limit); si lo pasas, el asesor espera o te avisa. No actives la facturación en ese proyecto o empezará a cobrarte. Desde España, por las condiciones de Google para la UE, lo que mandas con la clave gratuita no se usa para mejorar sus productos.</p>
+    <div class="as-sin-clave">
+      <b>Sin clave</b>
+      <p>Copia tu cartera de ahora mismo junto con tu pregunta y pégala en un chat de Gemini. No hace los cálculos de la web en directo, pero tiene todos tus datos.</p>
+      <button class="btn" data-as="copiar">${ICONOS.copiar}Copiar mi cartera para Gemini</button>
+    </div>
+    <p class="nota" style="margin:0">¿Prefieres Claude, de pago? <button class="enlace acento" data-as="ajustes">Cámbialo en los ajustes</button>.</p>
+  </div>`;
   return `<div class="as-config">
     <h3>Conecta tu cuenta de Anthropic</h3>
     <p>El asesor usa Claude a través de la API, que va aparte de tu suscripción y se paga por uso. Con ${MODELOS[cfg.modelo].n}, una pregunta normal cuesta unos 2-4 céntimos, y el análisis diario unos 10-15.</p>
@@ -4513,13 +4904,14 @@ function htmlAjustesAsesor() {
   const yo = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
   return `<div class="as-config">
     <h3>Ajustes del asesor</h3>
-    <fieldset class="as-modelos"><legend>Modelo</legend>${Object.entries(MODELOS).map(([k, m]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${cfg.modelo === k ? ' checked' : ''}><span><b>${m.n}</b><small>${m.txt}</small></span></label>`).join('')}</fieldset>
-    <label class="check"><input type="checkbox" id="asWeb"${cfg.web ? ' checked' : ''}> Puede buscar en internet (1 céntimo por búsqueda)</label>
-    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe Claude con tus cifras y las noticias del día, en Análisis. Unos 10-15 céntimos cada vez.</small></label>
+    ${[['google', 'Google, con tu clave de AI Studio'], ['anthropic', 'Anthropic (Claude), de pago']].map(([pv, t]) => `<fieldset class="as-modelos"><legend>${t}</legend>${Object.entries(MODELOS).filter(([, m]) => m.prov === pv).map(([k, m]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${cfg.modelo === k ? ' checked' : ''}><span><b>${m.n}${m.gratis ? ' <span class="chip good">gratis</span>' : ''}</b><small>${m.txt}</small></span></label>`).join('')}</fieldset>`).join('')}
+    <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> Puede buscar en internet${cfg.prov === 'google' ? ' con Google' : ' (1 céntimo por búsqueda)'}</label>
+    ${cfg.webFalla ? '<p class="nota" style="margin:-6px 0 0">Tu plan de Google no incluye la búsqueda en internet: de momento la IA contrasta con los titulares que baja la web. Lo vuelve a intentar dentro de unos días.</p>' : ''}
+    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe la IA con tus cifras y las noticias del día, en Análisis. ${MODELOS[cfg.modelo].gratis ? 'Con Gemini gratis no cuesta nada.' : 'Unos 10-15 céntimos cada vez.'}</small></label>
     <label class="campo">Lo que quieres que sepa de ti<textarea id="asYo" rows="6" placeholder="Por ejemplo: tu edad, para qué inviertes, si piensas comprar casa y cuándo, cuánto riesgo aguantas, tus reglas para las apuestas…">${esc(yo)}</textarea><small>Va dentro de tu cartera cifrada y lo lee al empezar cada conversación.</small></label>
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
-    <div class="seccion-ed"><h3>Clave de la API</h3>
-      <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor.clave ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'} Gasto aproximado en este dispositivo: ${fmtNum(AS.gasto, 2)} $.</p>
+    <div class="seccion-ed"><h3>Clave de ${PROV[cfg.prov].n}</h3>
+      <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[cfg.prov]] ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'}${AS.gasto ? ` Gasto aproximado en modelos de pago en este dispositivo: ${fmtNum(AS.gasto, 2)} $.` : ''}</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-as="cambiar-clave">Cambiar clave</button>${AS.clave ? '<button class="btn peq peligro" data-as="borrar-clave">Borrar clave</button>' : ''}</div>
     </div>
   </div>`;
@@ -4538,7 +4930,10 @@ function pintarAsesor(alFinal) {
   const b = $('#asEnviar', fondo);
   b.classList.toggle('parar', AS.cargando); b.innerHTML = AS.cargando ? ICONOS.parar : ICONOS.enviar;
   b.setAttribute('aria-label', AS.cargando ? 'Parar' : 'Enviar'); b.disabled = false;
-  $('#asNota', fondo).textContent = AS.conv.length ? `Esta conversación: unos ${fmtNum(sum(AS.conv, (t) => t.coste || 0), 2)} $. Tus datos van de tu navegador a Anthropic.` : 'Tus datos van de tu navegador a Anthropic, cifrados en el camino. No pasan por GitHub.';
+  const gratis = MODELOS[cfg.modelo].gratis, pv = PROV[cfg.prov].n;
+  $('#asNota', fondo).textContent = gratis
+    ? `Gratis con tu clave de Google. Tus datos van de tu navegador a Google, cifrados en el camino; no pasan por GitHub.`
+    : AS.conv.length ? `Esta conversación: unos ${fmtNum(sum(AS.conv, (t) => t.coste || 0), 2)} $. Tus datos van de tu navegador a ${pv}.` : `Tus datos van de tu navegador a ${pv}, cifrados en el camino. No pasan por GitHub.`;
   if (vista === 'chat') cuerpo.scrollTop = cuerpo.scrollHeight; else cuerpo.scrollTop = 0;
 }
 function pintarTurno(k) {
@@ -4592,6 +4987,13 @@ function cerrarAsesor() {
 }
 async function probarClave(clave) {
   const cfg = cfgAsesor();
+  if (cfg.prov === 'google') {
+    const r = await fetch(`${GEMINI}/models/${cfg.modelo}`, { headers: { 'x-goog-api-key': clave } });
+    if (r.ok) return;
+    let j = null; try { j = await r.json(); } catch (e) {}
+    if (r.status === 404) { const m = await mejorFlash(clave); if (m) { guardarCfgAsesor({ modelo: m }); return; } }
+    throw errorGoogle(r.status, j);
+  }
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: { 'content-type': 'application/json', 'x-api-key': clave, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
@@ -4602,10 +5004,11 @@ async function probarClave(clave) {
 async function copiarParaClaude() {
   refrescarFoto(true);
   const q = ($('#asTexto') && $('#asTexto').value.trim()) || '';
+  const google = cfgAsesor().prov === 'google', ia = google ? 'Gemini' : 'Claude';
   const texto = `${instruccionesAsesor()}\n\n${AS.foto}\n\n${q ? `Mi pregunta: ${q}` : 'Mi pregunta: '}`;
-  try { await navigator.clipboard.writeText(texto); toast('Copiado. Pégalo en un chat de Claude y escribe tu pregunta al final.', 6000); }
-  catch (e) { descargar(`cartera-para-claude-${hoyIso()}.txt`, texto); toast('No se pudo copiar: te lo he descargado como texto.', 6000); }
-  window.open('https://claude.ai/new', '_blank', 'noopener');
+  try { await navigator.clipboard.writeText(texto); toast(`Copiado. Pégalo en un chat de ${ia} y escribe tu pregunta al final.`, 6000); }
+  catch (e) { descargar(`cartera-para-la-ia-${hoyIso()}.txt`, texto); toast('No se pudo copiar: te lo he descargado como texto.', 6000); }
+  window.open(google ? 'https://gemini.google.com/app' : 'https://claude.ai/new', '_blank', 'noopener');
 }
 async function clicAsesor(e) {
   const t = e.target.closest('[data-as],[data-as-q]'); if (!t) return;
@@ -4622,22 +5025,25 @@ async function clicAsesor(e) {
     if (k < 0) return;
     const q = AS.conv[k].texto; AS.conv.splice(k); preguntarAsesor(q);
   } else if (a === 'borrar-clave') {
-    AS.clave = null; LS.del('inv-asesor-clave');
-    if (S.cartera.asesor && S.cartera.asesor.clave) { delete S.cartera.asesor.clave; await guardarCartera('Asesor: borrar clave'); }
+    const pv = cfgAsesor().prov;
+    AS.clave = null; LS.del(LS_CLAVE[pv]);
+    if (S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[pv]]) { delete S.cartera.asesor[CAMPO_CLAVE[pv]]; await guardarCartera('Asesor: borrar clave'); }
     AS.vista = 'clave'; pintarAsesor();
   } else if (a === 'guardar-clave') {
-    const c = $('#asClave', fondo).value.trim(), err = $('#asErr', fondo);
-    if (!/^sk-ant-/.test(c)) { err.textContent = 'Las claves de Anthropic empiezan por sk-ant-.'; return; }
+    const c = $('#asClave', fondo).value.trim(), err = $('#asErr', fondo), pv = cfgAsesor().prov;
+    if (pv === 'google' && !/^AIza[\w-]{20,}$/.test(c)) { err.textContent = 'Las claves de Google AI Studio empiezan por AIza.'; return; }
+    if (pv === 'anthropic' && !/^sk-ant-/.test(c)) { err.textContent = 'Las claves de Anthropic empiezan por sk-ant-.'; return; }
     t.disabled = true; t.textContent = 'Probando…'; err.textContent = '';
     try {
       await probarClave(c);
-      AS.clave = c; LS.set('inv-asesor-clave', await cifrarLocal(c));
-      if ($('#asSync', fondo).checked) { S.cartera.asesor = { ...(S.cartera.asesor || {}), clave: c }; await guardarCartera('Asesor: clave'); }
+      AS.clave = c; LS.set(LS_CLAVE[pv], await cifrarLocal(c));
+      if ($('#asSync', fondo).checked) { S.cartera.asesor = { ...(S.cartera.asesor || {}), [CAMPO_CLAVE[pv]]: c }; await guardarCartera('Asesor: clave'); }
       AS.vista = 'chat'; toast('Clave guardada: ya puedes preguntar'); pintarAsesor(); revisarAnalisisIA();
-    } catch (x) { err.textContent = /Failed to fetch|NetworkError|Load failed/i.test(x.message) ? 'No se pudo conectar con Anthropic.' : x.message; t.disabled = false; t.textContent = 'Guardar y probar'; }
+    } catch (x) { err.textContent = /Failed to fetch|NetworkError|Load failed/i.test(x.message) ? `No se pudo conectar con ${PROV[pv].n}.` : x.message; t.disabled = false; t.textContent = 'Guardar y probar'; }
   } else if (a === 'guardar-ajustes') {
     const modelo = (fondo.querySelector('input[name="asModelo"]:checked') || {}).value;
-    LS.set('inv-asesor-cfg', { modelo, web: $('#asWeb', fondo).checked, auto: $('#asAuto', fondo).value });
+    const web = $('#asWeb', fondo).checked, antesWeb = cfgAsesor().webPedida;
+    guardarCfgAsesor({ modelo, web, auto: $('#asAuto', fondo).value, ...(web && !antesWeb ? { web_falla: null } : {}) });
     const yo = $('#asYo', fondo).value.trim(), antes = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
     if (yo !== antes) { S.cartera.asesor = { ...(S.cartera.asesor || {}), sobre_mi: yo }; await guardarCartera('Asesor: sobre ti'); AS.foto = null; }
     else toast('Guardado');
@@ -4650,10 +5056,11 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#ases
    Eventos: un solo oyente para toda la página (las vistas se vuelven a pintar a menudo)
    ===================================================================== */
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos]');
+  const t = e.target.closest('[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta]');
   if (!t || !S.cartera) return;
   const d = t.dataset;
   if (d.rango) { S.rango = d.rango; LS.set('inv-rango', S.rango); pintar(); }
+  else if (d.ruta) marcarRuta(d.ruta);
   else if (d.ordenPos) cambiarOrden(d.ordenPos);
   else if ('proyReset' in d) { const c = { ...(S.proy || {}) }; delete c.aport; S.proy = c; LS.set('inv-proy', c); pintar(); }
   else if (d.horizonte) { S.horizonte = +d.horizonte; LS.set('inv-horizonte', S.horizonte); pintar(); }
@@ -4661,7 +5068,7 @@ document.addEventListener('click', (e) => {
   else if (d.ftab) { S.ficha.tab = d.ftab; refrescarFicha(); const c = $('#fichaFondo .ficha'); if (c) c.scrollTop = 0; }
   else if (d.dim) { S.dim = d.dim; LS.set('inv-dim', S.dim); pintar(); }
   else if (d.base) { S.base = d.base; LS.set('inv-base', S.base); pintar(); }
-  else if (d.calif) { S.califTab = d.calif; LS.set('inv-calif2', S.califTab); pintar(); }
+  else if (d.calif) { S.califTab = d.calif; LS.set('inv-calif3', S.califTab); if (S.vista !== 'analisis') { S.vista = 'analisis'; location.hash = 'analisis'; } pintar(); }
   else if (d.zona) { S.radarZona = d.zona; S.radarTodo = false; LS.set('inv-zona', S.radarZona); pintar(); }
   else if (d.orden) { S.radarOrden = d.orden; LS.set('inv-orden2', S.radarOrden); pintar(); }
   else if ('radarTodo' in d) { S.radarTodo = !S.radarTodo; pintar(); }
