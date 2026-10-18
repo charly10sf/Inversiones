@@ -950,6 +950,49 @@ def radar_precios(valores, fx):
 
 # ---------------------------------------------------------------- principal
 
+def per_sector_mediano(valores):
+    g = {}
+    for x in valores:
+        if x.get("sector") and x.get("perf") and 0 < x["perf"] < 80:
+            g.setdefault(x["sector"], []).append(x["perf"])
+    return {k: sorted(v)[len(v) // 2] for k, v in g.items()}
+
+
+def contraste_idea(x, medianas):
+    """Las mismas siete comprobaciones que hace la web (a favor, en contra), para elegir de qué ideas
+    bajar titulares."""
+    favor = contra = 0
+    def sumar(ok, mal):
+        nonlocal favor, contra
+        favor += 1 if ok else 0
+        contra += 1 if (mal and not ok) else 0
+    na, rm, p = x.get("na") or 0, x.get("rm"), x.get("p")
+    if rm is not None:
+        sumar(na >= 8 and rm <= 2.2, rm >= 2.8 or na < 4)
+    v0, v3 = x.get("v0"), x.get("v3")
+    if v0 and v3 and sum(v0) and sum(v3):
+        d = (v0[0] + v0[1]) / sum(v0) - (v3[0] + v3[1]) / sum(v3)
+        sumar(d >= 0.03, d <= -0.03)
+    pot, tb = x.get("pot"), x.get("tb")
+    if pot is not None and p:
+        sumar(pot >= 15 and (not tb or (tb / p - 1) * 100 >= -12), pot < 5)
+    crec = x.get("epsg") if x.get("epsg") is not None else x.get("eg")
+    if crec is not None:
+        sumar(crec >= 5, crec <= -5)
+    perf, med = x.get("perf"), medianas.get(x.get("sector"))
+    if perf and perf > 0 and med:
+        sumar(perf <= med * 0.9, perf >= med * 1.35)
+    elif perf is not None and perf <= 0:
+        sumar(False, True)
+    m50, m200 = x.get("m50"), x.get("m200")
+    if m50 and m200 and p:
+        sumar(p > m200 and m50 > m200, p < m200 and m50 < m200)
+    roe, de, banco = x.get("roe"), x.get("de"), x.get("sector") == "Financiero"
+    if roe is not None:
+        sumar(roe >= 12 and (banco or de is None or de < 150), roe < 4 or (not banco and de is not None and de > 250))
+    return favor, contra
+
+
 def leer_json(ruta):
     try:
         with open(ruta, encoding="utf-8") as f:
@@ -1121,16 +1164,20 @@ def main(ruta_inst, dir_anterior, dir_salida):
     # Titulares de las mejores ideas del radar (como mucho cada 2 horas), para contrastar con la prensa
     # lo que dicen los números. Las elige como la web: muchos analistas, consenso de compra y recorrido.
     prev_ni = anterior.get("noticias_ideas") or {}
-    if prev_ni and anterior.get("noticias_ideas_v") == 2 and hace_menos_de(anterior.get("noticias_ideas_generado") or "", HORAS_LENTO):
+    if prev_ni and anterior.get("noticias_ideas_v") == 3 and hace_menos_de(anterior.get("noticias_ideas_generado") or "", HORAS_LENTO):
         salida["noticias_ideas"] = prev_ni
         salida["noticias_ideas_generado"] = anterior.get("noticias_ideas_generado")
-        salida["noticias_ideas_v"] = 2
+        salida["noticias_ideas_v"] = 3
     elif radar_sal and radar_sal.get("valores"):
         tuyas = {(inst.get("yahoo") or "") for inst in instrumentos}
-        cand = [x for x in radar_sal["valores"] if x.get("s") not in tuyas and (x.get("na") or 0) >= 8 and (x.get("rm") or 9) <= 2.2 and (x.get("pot") or 0) >= 12]
-        cand.sort(key=lambda x: ((x.get("rm") or 9), -(x.get("pot") or 0)))
+        cand = [x for x in radar_sal["valores"] if x.get("s") not in tuyas and (x.get("na") or 0) >= 8 and (x.get("rm") or 9) <= 2.4
+                and x.get("r") in ("buy", "strong_buy") and (x.get("pot") or 0) >= 10 and (x.get("c1a") if x.get("c1a") is not None else 0) >= -35]
+        medianas = per_sector_mediano(radar_sal["valores"])
+        puntos = {x["s"]: contraste_idea(x, medianas) for x in cand}
+        cand = [x for x in cand if puntos[x["s"]][0] >= 3 and puntos[x["s"]][1] <= 2]
+        cand.sort(key=lambda x: -(puntos[x["s"]][0] - 0.9 * puntos[x["s"]][1] + (x.get("pot") or 0) / 100))
         salida["noticias_ideas"] = {}
-        for x in cand[:14]:
+        for x in cand[:20]:
             nombre = re.sub(r",?\s+(S\.?A\.?U?|S\.?p\.?A\.?|N\.?V\.?|SE|AG|plc|PLC|Inc\.?|Corp\.?|Corporation|Holdings?|Group|Ltd\.?|ASA|AB|Oyj|Company)\b.*$", "", x.get("n") or "").split(",")[0].strip() or x["s"]
             clave = re.escape(nombre.split()[0]) if nombre.split() else None
             try:
@@ -1144,7 +1191,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
                     salida["noticias_ideas"][x["s"]] = prev_ni[x["s"]]
             time.sleep(0.3)
         salida["noticias_ideas_generado"] = ahora()
-        salida["noticias_ideas_v"] = 2
+        salida["noticias_ideas_v"] = 3
 
     # El histórico va aparte: pesa mucho y solo cambia una vez al día
     historico = {"generado": salida["generado"], "instrumentos": {}, "mercados": {}}
