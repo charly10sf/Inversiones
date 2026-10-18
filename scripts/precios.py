@@ -146,27 +146,29 @@ HILOS_RADAR = 6
 # Además de la lista fija, una vez al día se recorre toda la bolsa de EEUU y de Europa con el buscador
 # de Yahoo Finance: entran las empresas medianas y grandes que los analistas recomiendan comprar y que
 # no estaban ya. Así ninguna idea buena se queda fuera por no estar en la lista.
-# región de Yahoo: (zona de la web, sufijos de su bolsa principal, capitalización mínima en euros)
+# región de Yahoo: (zona de la web, sufijo y código de su bolsa principal, capitalización mínima en
+# euros, páginas de 250). Xetra, Londres y Zúrich también cotizan muchas empresas extranjeras grandes,
+# así que allí hay que bajar más páginas para llegar a las medianas de casa.
 DESCUBRIR = {
-    "us": ("EEUU", ("",), 4e9),
-    "es": ("España", (".MC",), 3e8),
-    "gb": ("Europa", (".L",), 2e9),
-    "de": ("Europa", (".DE",), 1.5e9),
-    "fr": ("Europa", (".PA",), 1.5e9),
-    "it": ("Europa", (".MI",), 1.5e9),
-    "nl": ("Europa", (".AS",), 1.5e9),
-    "be": ("Europa", (".BR",), 1.5e9),
-    "ch": ("Europa", (".SW",), 2e9),
-    "se": ("Europa", (".ST",), 2e9),
-    "dk": ("Europa", (".CO",), 2e9),
-    "no": ("Europa", (".OL",), 2e9),
-    "fi": ("Europa", (".HE",), 1.5e9),
-    "pt": ("Europa", (".LS",), 1e9),
-    "at": ("Europa", (".VI",), 1.5e9),
-    "ie": ("Europa", (".IR",), 1.5e9),
+    "us": ("EEUU", "", None, 4e9, 5),
+    "es": ("España", ".MC", "MCE", 3e8, 1),
+    "gb": ("Europa", ".L", "LSE", 2e9, 4),
+    "de": ("Europa", ".DE", "GER", 1.5e9, 7),
+    "fr": ("Europa", ".PA", "PAR", 1.5e9, 2),
+    "it": ("Europa", ".MI", "MIL", 1.5e9, 2),
+    "nl": ("Europa", ".AS", "AMS", 1.5e9, 1),
+    "be": ("Europa", ".BR", "BRU", 1.5e9, 1),
+    "ch": ("Europa", ".SW", "EBS", 2e9, 3),
+    "se": ("Europa", ".ST", "STO", 2e9, 2),
+    "dk": ("Europa", ".CO", "CPH", 2e9, 1),
+    "no": ("Europa", ".OL", "OSL", 2e9, 1),
+    "fi": ("Europa", ".HE", "HEL", 1.5e9, 1),
+    "pt": ("Europa", ".LS", "LIS", 1e9, 1),
+    "at": ("Europa", ".VI", "VIE", 1.5e9, 1),
+    "ie": ("Europa", ".IR", "ISE", 1.5e9, 1),
 }
 NOTA_MAX_DESCUBRIR = 2.3   # nota media de los analistas (1 compra fuerte, 5 venta fuerte)
-MAX_DESCUBIERTAS = 450
+MAX_DESCUBIERTAS = 550
 HORAS_DESCUBRIR = 20
 BOLSAS_US = {"NMS", "NYQ", "NGM", "NCM", "ASE", "BTS", "PCX"}
 
@@ -768,13 +770,16 @@ def descubrir(fx, fijas):
     """Recorre la bolsa de EEUU y Europa con el buscador de Yahoo y devuelve [(símbolo, zona)] de las
     empresas con recomendación de compra que no están en la lista fija, más un diagnóstico."""
     from yfinance import EquityQuery
-    diag = {"fecha": ahora(), "por_region": {}, "errores": [], "muestras": {}}
+    diag = {"version": 2, "fecha": ahora(), "por_region": {}, "errores": [], "muestras": {}}
     vistos, candidatos = set(fijas), []
-    for reg, (zona, sufijos, minimo) in DESCUBRIR.items():
-        n_reg, paginas = 0, (5 if reg == "us" else 2)
+    for reg, (zona, sufijo, bolsa, minimo, paginas) in DESCUBRIR.items():
+        n_reg = 0
         for pagina in range(paginas):
             try:
-                q = EquityQuery("and", [EquityQuery("eq", ["region", reg]), EquityQuery("gt", ["intradaymarketcap", 3e8])])
+                filtros = [EquityQuery("eq", ["region", reg]), EquityQuery("gt", ["intradaymarketcap", 3e8])]
+                if bolsa:
+                    filtros.append(EquityQuery("eq", ["exchange", bolsa]))
+                q = EquityQuery("and", filtros)
                 r = yf.screen(q, offset=pagina * 250, size=250, sortField="intradaymarketcap", sortAsc=False)
                 quotes = (r or {}).get("quotes") or []
             except Exception as e:  # noqa: BLE001
@@ -789,7 +794,7 @@ def descubrir(fx, fijas):
                 if reg == "us":
                     if "." in sim or (x.get("exchange") and x.get("exchange") not in BOLSAS_US):
                         continue
-                elif not any(sim.endswith(s) for s in sufijos if s):
+                elif not sim.endswith(sufijo):
                     continue
                 nota = nota_analistas(x.get("averageAnalystRating"))
                 if nota is None or nota > NOTA_MAX_DESCUBRIR:
@@ -1073,7 +1078,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
     # las descubiertas en toda la bolsa: una vez al día; mientras, las de la vez anterior
     extra = [tuple(x) for x in (prev_radar.get("descubiertas") or [])]
     diag = prev_radar.get("descubrir")
-    nuevo_descubrir = not extra or "muestras" not in (diag or {}) or not hace_menos_de((diag or {}).get("fecha") or "", HORAS_DESCUBRIR)
+    nuevo_descubrir = not extra or (diag or {}).get("version") != 2 or not hace_menos_de((diag or {}).get("fecha") or "", HORAS_DESCUBRIR)
     if nuevo_descubrir:
         try:
             fijas = {sim for simbolos in RADAR.values() for sim in simbolos}

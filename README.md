@@ -18,7 +18,7 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en di
 |---|---|---|
 | `instrumentos.json` | Lista de fondos, acciones y cripto que sigo (ISIN, ticker, gastos, región). Sin cantidades. | Sí |
 | rama `datos` → `precios.json` | Precios, analistas, fundamentales, noticias y mercados. Lo genera la GitHub Action. | Sí |
-| rama `datos` → `radar.json` | Empresas para buscar ideas: unas 400 fijas más hasta 450 que el buscador de Yahoo encuentra cada día en EEUU y Europa con recomendación de compra. Analistas y sus cambios, rango de objetivos, valoración, beneficio esperado, deuda y tendencia. | Sí |
+| rama `datos` → `radar.json` | Empresas para buscar ideas: unas 400 fijas más hasta 550 que el buscador de Yahoo encuentra cada día en EEUU y Europa con recomendación de compra. Analistas y sus cambios, rango de objetivos, valoración, beneficio esperado, deuda y tendencia. | Sí |
 | rama `datos` → `historico.json` | Cierres de 10 años de cada instrumento (diarios los 2 últimos, semanales antes) y de 1 año de cada mercado. | Sí |
 | `cartera.enc.json` | Cantidades, costes, notas, aportaciones y datos fiscales, **cifrado** con AES-GCM. La clave sale de mi contraseña (PBKDF2-SHA256, 600.000 iteraciones). | Cifrado |
 | `analisis.enc.json` | El último análisis que ha escrito Claude con mis cifras, cifrado igual. | Cifrado |
