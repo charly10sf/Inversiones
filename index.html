@@ -5760,7 +5760,7 @@ function irArriba(sel) {
   const y = el.getBoundingClientRect().top + window.scrollY - alto - 12;
   if (window.scrollY > y) window.scrollTo(0, y);
 }
-function vistaDeHash() { const v = location.hash.slice(1); return VISTAS.some(([k]) => k === v) ? v : null; }
+function vistaDeHash() { const v = location.hash.slice(1); if (v === 'ruta') { S.califTab = 'ruta'; LS.set('inv-calif3', 'ruta'); return 'analisis'; } return VISTAS.some(([k]) => k === v) ? v : null; }
 window.addEventListener('hashchange', () => {
   const v = vistaDeHash(); if (!v || !S.cartera) return;
   if (S.ficha) cerrarFicha(true);
