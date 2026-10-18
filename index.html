@@ -717,8 +717,7 @@ table.ideas .sub { display: block; font-size: 12px; }
 .ia-fuentes .as-fuentes a { max-width: 260px; }
 
 /* ---------- mercados: filas completas, sin huecos ---------- */
-.mercados { grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 560px) { .mercados { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.mercados { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 @media (min-width: 900px) { .mercados { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 @media (min-width: 1150px) { .mercados { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
 @media (min-width: 1500px) { .mercados { grid-template-columns: repeat(6, minmax(0, 1fr)); } .merc-p { font-size: 24px; } }
@@ -726,6 +725,153 @@ table.ideas .sub { display: block; font-size: 12px; }
 /* ---------- cartera: lo que mueve el día ---------- */
 .movers { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
 .movers span { color: var(--text-2); }
+
+/* ---------- subpestañas (Expertos) y plazos (Paso a paso) ---------- */
+.subvistas, .plazos { display: flex; gap: 4px; padding: 4px; background: var(--plane); border: 1px solid var(--line); border-radius: 12px; width: fit-content; max-width: 100%; }
+.subvistas { margin: 0 0 32px; }
+.subvistas button, .plazos button { border: 0; background: none; color: var(--text-2); font-size: 14.5px; font-weight: 500; padding: 8px 16px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; line-height: 1.2; }
+.subvistas button:hover, .plazos button:hover { color: var(--text); }
+.subvistas button[aria-pressed="true"], .plazos button[aria-pressed="true"] { background: var(--plane-3); color: var(--text); }
+.cuenta { font-size: 11.5px; font-weight: 700; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: var(--accent-bg); color: var(--accent); display: inline-grid; place-items: center; font-variant-numeric: tabular-nums; }
+.plazos { display: none; }
+@media (max-width: 899px) {
+  .plazos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; margin-bottom: 18px; }
+  .plazos button { padding: 8px 4px; font-size: 13px; flex-wrap: wrap; gap: 4px; text-align: center; }
+  .ruta[data-sel="mes"] > .ruta-col:not([data-p="mes"]), .ruta[data-sel="seis"] > .ruta-col:not([data-p="seis"]), .ruta[data-sel="anio"] > .ruta-col:not([data-p="anio"]), .ruta[data-sel="largo"] > .ruta-col:not([data-p="largo"]) { display: none; }
+}
+@media (max-width: 860px) {
+  .subvistas, .plazos { position: sticky; top: calc(56px + env(safe-area-inset-top)); z-index: 20; box-shadow: 0 0 0 5px var(--bg), 0 10px 18px -4px rgba(0, 0, 0, 0.6); }
+}
+@media (max-width: 680px) {
+  .subvistas { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 24px; }
+  .subvistas button { padding: 8px 4px; font-size: 13.5px; text-align: center; flex-wrap: wrap; gap: 4px; }
+}
+
+/* ---------- frescura plegada en una línea ---------- */
+.frescura { align-items: baseline; font-size: 13px; margin: -8px 0 22px; }
+.frescura details > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
+.frescura details > summary::-webkit-details-marker { display: none; }
+.frescura .fr-mas { color: var(--text-2); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+.frescura details[open] .fr-mas { color: var(--muted); }
+.frescura ul { margin: 8px 0 0; padding: 0 0 0 16px; display: grid; gap: 3px; }
+
+/* ---------- tus posiciones de un vistazo ---------- */
+.vistazo { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--line); }
+.vistazo li { border-bottom: 1px solid var(--line); }
+.vistazo-f { width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 11px 2px; background: none; border: 0; text-align: left; color: var(--text); }
+.vistazo-f:hover { background: var(--plane); }
+.vistazo-t { display: grid; gap: 1px; min-width: 0; }
+.vistazo-t b { font-weight: 600; font-size: 15px; }
+.vistazo-t small { color: var(--muted); font-size: 13px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.vistazo-t .vistazo-ia { color: var(--warn); -webkit-line-clamp: 1; }
+.ver-mas { margin-top: 14px; font-size: 14px; }
+@media (max-width: 440px) { .vistazo-f { grid-template-columns: 34px minmax(0, 1fr); row-gap: 6px; } .vistazo-f .senal { grid-column: 2; justify-self: start; } }
+
+/* ---------- ideas juntas ---------- */
+.idea-quien { display: flex; flex-wrap: wrap; gap: 6px; }
+.quien { font-size: 12.5px; color: var(--text-2); background: var(--plane-2); border-radius: 7px; padding: 2px 8px; }
+.idea.coinciden { border-color: rgba(79, 201, 149, 0.4); }
+.idea-tesis { margin: 0; color: var(--text); font-size: 14.5px; line-height: 1.55; }
+.idea-linea { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.55; }
+.idea-linea b { color: var(--text); font-weight: 600; }
+.idea details.mas > summary { font-size: 13.5px; }
+.idea details.mas[open] > summary { margin-bottom: 8px; }
+.idea .prensa-ia { margin-top: 0; }
+.idea-panorama { margin: -4px 0 18px; color: var(--text-2); font-size: 14.5px; line-height: 1.6; max-width: 100ch; }
+.idea-panorama b { color: var(--accent); font-weight: 600; }
+.evitar { margin-top: 28px; }
+.evitar .sec-cab h3 { margin: 0; font-size: 15px; font-weight: 650; }
+
+/* ---------- cartera: lo que toca ahora ---------- */
+.toca { margin-top: 24px; padding: 12px 16px 6px; border: 1px solid var(--line-2); border-left: 3px solid var(--accent); border-radius: 12px; background: var(--plane); }
+.toca-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; margin-bottom: 4px; }
+.toca h2 { margin: 0; font-size: 15px; font-weight: 650; }
+.toca-cab .enlace { font-size: 13.5px; }
+.toca ul { list-style: none; margin: 0; padding: 0; }
+.toca li { padding: 9px 0; border-top: 1px solid var(--line); display: grid; gap: 1px; }
+.toca li:first-child { border-top: 0; }
+.toca-c { font-size: 12.5px; color: var(--muted); }
+.toca-c:empty { display: none; }
+.toca li.urgente .toca-c { color: var(--accent); font-weight: 600; }
+.toca b { font-weight: 550; font-size: 14.5px; line-height: 1.4; }
+
+/* ---------- secciones plegables ---------- */
+details.plegable { border-top: 1px solid var(--line); margin-top: 28px; }
+details.plegable + details.plegable { margin-top: 0; }
+details.plegable > summary { list-style: none; cursor: pointer; display: flex; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; padding: 16px 30px 16px 0; position: relative; }
+details.plegable > summary::-webkit-details-marker { display: none; }
+details.plegable > summary h2 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -0.015em; }
+details.plegable > summary::after { content: '+'; position: absolute; right: 4px; top: 12px; color: var(--accent); font-size: 22px; line-height: 1; }
+details.plegable[open] > summary::after { content: '\2212'; }
+details.plegable[open] { padding-bottom: 16px; }
+
+/* ---------- móvil: letra algo mayor, toques cómodos y menos aire vacío ---------- */
+@media (max-width: 680px) {
+  body { font-size: 15.5px; }
+  .vista-cab { margin-bottom: 18px; }
+  .vista-cab h1 { font-size: 28px; }
+  .vista-cab p { font-size: 14.5px; }
+  .pila { gap: 40px; }
+  .sec-cab h2 { font-size: 18px; }
+  .sec-cab .k { font-size: 13.5px; }
+  .nota { font-size: 13.5px; }
+  .chip { font-size: 12px; line-height: 20px; }
+  .imp { font-size: 12px; line-height: 20px; }
+  .senal { font-size: 13px; padding: 3px 9px; }
+  .fx-de, .fx-quien .k { font-size: 13px; }
+  .fx-op p { font-size: 14.5px; }
+  .fx-datos { font-size: 13.5px; }
+  .fx-op details.mas > summary { font-size: 14px; }
+  .prensa-ia { font-size: 14px; }
+  .ctr-lista { font-size: 13.5px; }
+  .ctr-lista li { grid-template-columns: 8px 84px minmax(0, 1fr); }
+  .idea-cifras .k { font-size: 12.5px; }
+  .idea-pega, .idea-prensa { font-size: 14px; }
+  .noticias a { font-size: 15px; }
+  .noticias small, .objetivo-ley, .votos-ley { font-size: 13px; }
+  .lista li { font-size: 15px; }
+  .lista span { font-size: 14px; }
+  .pv-paso { font-size: 14.5px; }
+  .pv-paso > div > span { font-size: 14px; }
+  .motivos { font-size: 14px; }
+  .ruta-pasos b { font-size: 15px; }
+  .ruta-pasos p { font-size: 14px; }
+  .ruta-meta { font-size: 12.5px; }
+  .ruta-acc { font-size: 14px; }
+  .btn.peq { min-height: 38px; padding: 8px 13px; font-size: 14px; }
+  .tabs button { padding: 7px 11px; font-size: 13.5px; min-height: 36px; }
+  .tabs.envuelve { flex-wrap: wrap; overflow: visible; gap: 6px; }
+  .tabs.envuelve button { border: 1px solid var(--line-2); }
+  .tabs.envuelve button[aria-pressed="true"] { border-color: var(--plane-3); }
+  details.mas > summary { padding: 6px 0; font-size: 14px; }
+  .check-mini { font-size: 13.5px; min-height: 32px; }
+  .agenda li { grid-template-columns: 46px minmax(0, 1fr) auto; }
+  .ia-p { font-size: 15.5px; }
+  .ia-notas > div { font-size: 14px; }
+  table.resp td[data-l]::before { font-size: 13px; }
+  td small { font-size: 12.5px; }
+}
+/* mercados en el móvil: dos por fila y más bajas */
+@media (max-width: 559px) {
+  .merc { padding: 12px; gap: 4px; }
+  .merc-cab { flex-wrap: wrap; gap: 0 8px; }
+  .merc-n { font-size: 13px; }
+  .merc-p { font-size: 20px; }
+  .merc-r { font-size: 12px; gap: 0 10px; }
+  .merc:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+.txt-m { display: none; }
+@media (max-width: 680px) {
+  .txt-pc { display: none; } .txt-m { display: inline; }
+  .subvistas button, .plazos button { flex-direction: column; gap: 3px; }
+  .subvistas .cuenta, .plazos .cuenta { height: 17px; min-width: 17px; font-size: 11px; }
+}
+@media (max-width: 899px) and (min-width: 681px) { .plazos button { flex-direction: column; gap: 3px; } }
+
+/* "lo que toca": bajo las cifras en el móvil, bajo el gráfico en pantallas anchas */
+.toca.en-evo { display: none; }
+@media (min-width: 1180px) { .toca.en-hero { display: none; } .toca.en-evo { display: block; margin-top: 28px; } }
 </style>
 </head>
 <body>
@@ -782,7 +928,7 @@ const S = {
   inst: {}, instOrden: [], ref: null, instCambiados: false, instSha: null,
   precios: null, cartera: null, enc: null, key: null, salt: null, iter: 600000,
   oculto: LS.get('inv-oculto', false), dim: LS.get('inv-dim', 'clase'), base: LS.get('inv-base', 'todo'),
-  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif3', 'ruta'), fichaRango: LS.get('inv-frango', '1A'),
+  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif3', 'ruta'), expTab: LS.get('inv-exp', 'resumen'), rutaPlazo: LS.get('inv-ruta-plazo', 'mes'), fichaRango: LS.get('inv-frango', '1A'),
   comparar: LS.get('inv-comparar', false), radarZona: LS.get('inv-zona', 'Todas'), radarOrden: LS.get('inv-orden2', 'ctr'),
   radarMin: LS.get('inv-radar-min', true), radarTodo: false, vista: 'cartera', ficha: null,
   ordenPos: LS.get('inv-orden-pos', { k: 'valor', dir: 'desc' }), proy: LS.get('inv-proy', {}), horizonte: LS.get('inv-horizonte', 20), proyCache: null,
@@ -1670,6 +1816,8 @@ const RANGOS = { '1M': 31, '3M': 92, '6M': 183, '1A': 366, '3A': 1097, '5A': 182
 function vistaCartera(M) {
   const plats = porPlataforma(M).map(([k]) => `<div class="kpi"><span class="k">${esc(k)}</span><span class="v">${B('plat:' + k)}</span></div>`).join('');
   const anio = new Date().getFullYear();
+  const tocaHtml = htmlToca(M);
+  const toca = (donde) => tocaHtml.replace('class="toca"', `class="toca en-${donde}"`).replace(/hToca/g, 'hToca-' + donde);
   return `
   <div class="cabecera">
     <section aria-label="Patrimonio">
@@ -1683,6 +1831,7 @@ function vistaCartera(M) {
         ${(() => { try { const pr = proyeccion(M); return `<a class="kpi" href="#futuro"><span class="k">En 10 años, lo probable</span><span class="v acento">${euCorto(pr.p50[120])}</span></a>`; } catch (e) { return ''; } })()}
         ${M.realizado ? `<div class="kpi"><span class="k">Ventas de ${anio}</span><span class="v ${cls(M.realizado)}">${eurS(M.realizado, 0)}</span></div>` : ''}
       </div>
+      ${toca('hero')}
     </section>
     <section aria-label="Evolución">
       <div class="evo-cab"><div class="datos" id="evoCab"></div>
@@ -1691,6 +1840,7 @@ function vistaCartera(M) {
       <div class="leyenda-graf"><span><i style="border-color:var(--accent)"></i>Tu cartera</span>${S.comparar ? `<span><i class="disc" style="border-color:var(--text-2)"></i>El mismo dinero en el S&P 500</span>` : ''}
         <label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> Comparar con el S&P 500</label></div>
       <p class="nota">Tus posiciones de hoy con el precio de cada día: enseña cómo se habría movido esta cartera, no lo que has ganado tú (no cuenta cuándo compraste). Antes de que existieran algunos fondos se usa un ETF del mismo índice.</p>
+      ${toca('evo')}
     </section>
   </div>
   <div class="dos">
@@ -1699,6 +1849,15 @@ function vistaCartera(M) {
   </div>`;
 }
 
+/* lo que toca hacer este mes, sacado del paso a paso: lo urgente primero */
+function htmlToca(M) {
+  let P; try { P = pasosRuta(M); } catch (e) { return ''; }
+  const pend = [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto);
+  const v = [...pend.filter((x) => x.urgente), ...pend.filter((x) => !x.urgente)].slice(0, 3);
+  if (!v.length) return '';
+  return `<section class="toca" aria-labelledby="hToca"><div class="toca-cab"><h2 id="hToca">Lo que toca ahora</h2><button class="enlace acento" data-calif="ruta">Ver el paso a paso</button></div>
+    <ul>${v.map((x) => `<li class="${x.urgente ? 'urgente' : ''}"><span class="toca-c">${esc(x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, '\u00a0€')}</b></li>`).join('')}</ul></section>`;
+}
 /* el nombre completo del fondo o la empresa, cuando dice algo más que el corto ("S&P 500" → "iShares US Index Fund (IE) S Acc EUR") */
 function nombreReal(i) {
   const n = String((i && i.nombre) || '').trim(), c = String((i && i.corto) || '').trim();
@@ -1730,7 +1889,7 @@ function htmlPosiciones(M) {
   const ef = M.efectivo.map((e) => `<div class="fila efectivo"><span class="activo-l">${logo(null, '€')}<span class="activo"><b>Efectivo</b><small>${esc(e.plataforma)}</small></span></span><span class="c-precio"></span><span class="c-hoy"></span><span class="r valor num c-val">${eur(e.importe)}</span><span class="r c-peso k num">${pct(M.total ? (e.importe / M.total) * 100 : 0, 1)}</span><span class="c-gan"></span><span class="c-pct"></span><span class="c-senal"></span></div>`).join('');
   return `<section aria-labelledby="hPos">
     <div class="sec-cab"><h2 id="hPos">Posiciones</h2><span class="k">${M.filas.length} activos</span>
-      <div class="der"><button class="btn peq" data-accion="operacion">${ICONOS.compra}Registrar compra o venta</button><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir posición</button></div>
+      <div class="der"><button class="btn peq" data-accion="operacion">${ICONOS.compra}<span class="txt-pc">Registrar compra o venta</span><span class="txt-m">Compra o venta</span></button><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir posición</button></div>
       <label class="ordenar-m">Ordenar por<select data-orden-pos-sel>${COLS_POS.map(([k, t]) => [[k, 'desc'], [k, 'asc']].map(([kk, d]) => `<option value="${kk}|${d}"${S.ordenPos.k === kk && S.ordenPos.dir === d ? ' selected' : ''}>${t === '%' ? 'Ganancia en %' : t} ${kk === 'activo' ? (d === 'asc' ? 'A-Z' : 'Z-A') : kk === 'senal' ? (d === 'asc' ? 'más urgente' : 'menos urgente') : d === 'desc' ? 'mayor a menor' : 'menor a mayor'}</option>`).join('')).join('')}</select></label></div>
     <div class="tabla-pos">
       <div class="fila cab">${COLS_POS.map(([k, t, c]) => { const on = S.ordenPos && S.ordenPos.k === k; return `<span class="${c}"><button class="th" data-orden-pos="${k}" aria-pressed="${on}" title="Ordenar por ${t.toLowerCase()}">${t}${on ? `<span class="fl">${S.ordenPos.dir === 'asc' ? '↑' : '↓'}</span>` : ''}</button></span>`; }).join('')}</div>
@@ -1791,7 +1950,7 @@ function htmlAgenda(M) {
   if (!ev.length) return '';
   return `<section aria-labelledby="hAg">
     <div class="sec-cab"><h2 id="hAg">Próximas fechas</h2></div>
-    <ul class="lista agenda">${ev.map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><br><span class="k">${MESES[d.getMonth()]}</span></div><div><b>${esc(e.t)}</b><span>${esc(e.s)}</span></div><span class="r">${e.importe ? eur(e.importe, 0) : ''}</span></li>`; }).join('')}</ul>
+    <ul class="lista agenda">${ev.map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><span class="k">${MESES[d.getMonth()]}</span></div><div><b>${esc(e.t)}</b><span>${esc(e.s)}</span></div><span class="r">${e.importe ? eur(e.importe, 0) : ''}</span></li>`; }).join('')}</ul>
   </section>`;
 }
 
@@ -1882,13 +2041,17 @@ function htmlFrescura() {
   const rg = S.radar && S.radar.generado, rp = S.radar && S.radar.precios;
   const hora = (t) => { const d = new Date(t); return isNaN(d) ? '—' : d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); };
   const cuando = (t) => { const d = new Date(t); if (isNaN(d)) return '—'; const hoy = new Date(); return d.toDateString() === hoy.toDateString() ? `hoy a las ${hora(t)}` : fechaLarga(iso(d)) + ` a las ${hora(t)}`; };
+  const datos = [
+    lento && `Analistas de tus posiciones: ${haceCuanto(lento)}`,
+    rg && `Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}`,
+    S.informe && S.informe.generado && `Prensa de tu cartera leída por Gemini: ${haceCuanto(S.informe.generado)}`,
+    S.escaneo && S.escaneo.leidas_24h && `Escaneo de prensa: ${S.escaneo.leidas_24h} empresas leídas en 24 h`,
+    ia && ia.propio ? `Análisis de ${esc(ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '',
+  ].filter(Boolean);
   return `<div class="frescura" aria-label="Frescura de los datos">
-    <span class="vivo-dot">Señales y planes recalculados con cada precio: ${B('recalc')}</span>
-    ${lento ? `<span>Analistas de tus posiciones: ${haceCuanto(lento)}</span>` : ''}
-    ${rg ? `<span>Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}</span>` : ''}
-    ${S.informe && S.informe.generado ? `<span>Prensa leída por Gemini: ${haceCuanto(S.informe.generado)}</span>` : ''}
-    ${S.escaneo && S.escaneo.leidas_24h ? `<span>Escaneo: ${S.escaneo.leidas_24h} empresas leídas en 24 h</span>` : ''}
-    <span>${ia && ia.propio ? `${esc(ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '<button class="enlace acento" data-accion="asesor">Conecta la IA (gratis con Gemini) para que la revise cada día</button>'}</span>
+    <details><summary><span class="vivo-dot">Recalculado a las ${B('recalc')}</span>${S.informe && S.informe.generado ? `<span>prensa leída ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas">de cuándo es cada dato</span></summary>
+      <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
+    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">Conecta la IA (gratis con Gemini) para que la revise cada día</button>'}
   </div>`;
 }
 
@@ -1932,34 +2095,57 @@ function htmlFechasExpertos(M, ia) {
   for (const e of (ia && ia.calendario) || []) if (e.d >= hoy && diasEntre(hoy, e.d) <= 60 && !ev.some((x) => x.d === e.d)) ev.push({ d: e.d, html: `<b>${rellenarIA(e.t, {})}</b>` });
   if (!ev.length) return '';
   return `<section aria-labelledby="hFechasE"><div class="sec-cab"><h2 id="hFechasE">Lo que viene</h2><span class="k">próximos dos meses</span></div>
-    <ul class="lista agenda">${ev.sort((a, b) => (a.d < b.d ? -1 : 1)).slice(0, 7).map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><br><span class="k">${MESES[d.getMonth()]}</span></div><div>${e.html}</div><span></span></li>`; }).join('')}</ul></section>`;
+    <ul class="lista agenda">${ev.sort((a, b) => (a.d < b.d ? -1 : 1)).slice(0, 7).map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><span class="k">${MESES[d.getMonth()]}</span></div><div>${e.html}</div><span></span></li>`; }).join('')}</ul></section>`;
+}
+/* Expertos va en tres pestañas: el resumen (qué hacer), el detalle de cada posición y las ideas de compra */
+const EXPERTOS = [['resumen', 'Resumen'], ['posiciones', 'Tus posiciones'], ['ideas', 'Ideas de compra']];
+const ordenSenales = (M) => [...M.filas].sort((a, b) => ORDEN_SENAL.indexOf(a.senal.nivel) - ORDEN_SENAL.indexOf(b.senal.nivel) || b.valor - a.valor);
+function htmlVistazo(M, ia) {
+  const vistos = new Set();
+  const filas = ordenSenales(M).filter((f) => { if (vistos.has(f.inst.id)) return false; vistos.add(f.inst.id); return true; });
+  return `<section aria-labelledby="hVis"><div class="sec-cab"><h2 id="hVis">Tus posiciones de un vistazo</h2><span class="k">${resumenSenales(M)}</span></div>
+    <ul class="vistazo">${filas.map((f) => {
+      const s = f.senal, c = ia && ia.posiciones && ia.posiciones[f.inst.id];
+      const nivelC = c && NIVELES.has(c.nivel) ? c.nivel : null;
+      const choca = nivelC && LADO[nivelC] !== LADO[s.nivel];
+      return `<li><button class="vistazo-f" data-pos="${esc(f.pos.id)}">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}
+        <span class="vistazo-t"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small>${esc(s.motivos[0] || '')}</small>${choca ? `<small class="vistazo-ia">La IA dice otra cosa: ${esc((c.veredicto || SENALES[nivelC]).toLowerCase())}</small>` : ''}</span>
+        <span class="senal ${s.nivel}">${esc(s.txt)}</span></button></li>`;
+    }).join('')}</ul>
+    <button class="enlace acento ver-mas" data-exp="posiciones">Ver los motivos, la IA y los analistas de cada una</button>
+  </section>`;
 }
 function vistaExpertos(M) {
-  const prensa = noticiasCartera(true);
+  if (!EXPERTOS.some(([k]) => k === S.expTab)) S.expTab = 'resumen';
   const ia = iaActual();
   const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
-  const orden = [...M.filas].sort((a, b) => ORDEN_SENAL.indexOf(a.senal.nivel) - ORDEN_SENAL.indexOf(b.senal.nivel) || b.valor - a.valor);
-  return `
-  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa e IA, y una señal para cada posición que se recalcula con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale al asesor</button></div>
-  ${htmlFrescura()}
-  <div class="pila">
-    ${htmlResumenInforme()}
+  S.radarVisibles = [];
+  let cuerpo = '';
+  if (S.expTab === 'resumen') {
+    cuerpo = `${htmlResumenInforme()}
     <section aria-labelledby="hPlanV">
       <div class="sec-cab"><h2 id="hPlanV">Qué haría ahora</h2><span class="k">${planes.length ? `${planes.length === 1 ? 'una posición que conviene' : planes.length + ' posiciones que conviene'} vender o recortar` : 'nada que vender'}</span></div>
       ${planes.length ? `<div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl)).join('')}</div>` : '<div class="vacio">Ninguna posición pide vender ahora mismo. Si cambia, aquí saldrá cuánto vender, cuándo, lo que se lleva Hacienda y adónde mover el dinero.</div>'}
     </section>
-    <section aria-labelledby="hSen" class="bloque-sec">
-        <div class="sec-cab"><h2 id="hSen">Tu cartera, posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
-        <div class="fx-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; return orden.map((f) => filaExperto(f, ia, vIA)).join(''); })()}</div>
-        <p class="nota">La señal de la web junta el consenso de los analistas, lo que le queda hasta su precio objetivo medio, la tendencia, tus reglas de salida y lo que pesa en tu cartera. La de la IA sale de su revisión con las noticias${ia && ia.propio ? '' : ' (la última que hay publicada)'}. Cuando no coinciden, lee los dos motivos antes de decidir.</p>
+    <div class="dos">${htmlVistazo(M, ia)}<aside class="lateral">${htmlFechasExpertos(M, ia)}</aside></div>`;
+  } else if (S.expTab === 'posiciones') {
+    const prensa = noticiasCartera(true);
+    cuerpo = `<section aria-labelledby="hSen" class="bloque-sec">
+        <div class="sec-cab"><h2 id="hSen">Posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
+        <div class="fx-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; return ordenSenales(M).map((f) => filaExperto(f, ia, vIA)).join(''); })()}</div>
+        <p class="nota">La web mira el consenso de los analistas, lo que queda hasta su precio objetivo, la tendencia, tus reglas de salida y lo que pesa en tu cartera. La IA, además, las noticias${ia && ia.propio ? '' : ' (su última revisión publicada)'}. Si no coinciden, lee los dos motivos antes de decidir.</p>
     </section>
-    <div class="dos">
-      <section aria-labelledby="hPrensa" class="bloque-sec"><div class="sec-cab"><h2 id="hPrensa">Analistas en prensa</h2><span class="k">tus acciones, últimos 30 días</span></div>
-        ${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10).replace('class="noticias"', 'class="noticias dos-col"')}</section>
-      <aside class="lateral">${htmlFechasExpertos(M, ia)}</aside>
-    </div>
-    <section aria-labelledby="hIdeas" class="bloque-sec">${htmlIdeas(M, ia)}</section>
-  </div>`;
+    <section aria-labelledby="hPrensa" class="bloque-sec"><div class="sec-cab"><h2 id="hPrensa">Analistas en prensa</h2><span class="k">tus acciones, últimos 30 días</span></div>
+      ${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10).replace('class="noticias"', 'class="noticias dos-col"')}</section>`;
+  } else {
+    cuerpo = `<section aria-labelledby="hIdeas" class="bloque-sec">${htmlIdeas(M, ia)}</section>`;
+  }
+  const marca = { resumen: planes.length };
+  return `
+  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa e IA. Las señales se recalculan con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale al asesor</button></div>
+  ${htmlFrescura()}
+  <div class="subvistas" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
+  <div class="pila">${cuerpo}</div>`;
 }
 
 /* ---------- ideas para comprar ---------- */
@@ -1997,13 +2183,16 @@ function puntuarIdea(x, ctx) {
   if (tc) pegas.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
   return { ...x, puntos: p, motivos, pegas, ctr };
 }
+function ctxIdeas(M) {
+  const sect = {};
+  for (const x of reparto(M, 'sector', 'rv').filas) sect[x.k] = x.pct;
+  return { sectores: sect, total: M.total, dentro: dentroDeFondos(M) };
+}
 function mejoresIdeas(M, excluir = {}) {
   const r = radarVals();
   if (!r.length) return [];
   const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
-  const sect = {};
-  for (const x of reparto(M, 'sector', 'rv').filas) sect[x.k] = x.pct;
-  const ctx = { sectores: sect, total: M.total, dentro: dentroDeFondos(M) };
+  const ctx = ctxIdeas(M);
   const out = r
     .filter((x) => !tuyas.has(x.s) && x.pot != null && x.pot >= 10 && (x.na || 0) >= 8 && (x.rm ?? 9) <= 2.4 && ['buy', 'strong_buy'].includes(x.r) && !(x.c1a < -35) && (!excluir.sector || x.sector !== excluir.sector))
     .map((x) => puntuarIdea(x, ctx))
@@ -2057,7 +2246,7 @@ function enlacesFuentes(fs, n = 3) {
 }
 function htmlPrensaIA(x, conEtiqueta = true) {
   if (!x || !x.novedades) return '';
-  return `<div class="prensa-ia">${conEtiqueta ? '<span class="fx-de">Prensa</span>' : ''}${chipImpacto(x.impacto)}${esc(x.novedades)}${x.contraste ? ` <span class="k">${esc(x.contraste)}</span>` : ''}${x.vigilar ? ` <span class="k">Vigilar: ${esc(x.vigilar)}</span>` : ''}${x.riesgo ? ` <span class="k">Riesgo: ${esc(x.riesgo)}</span>` : ''}${enlacesFuentes(x.fuentes)}</div>`;
+  return `<div class="prensa-ia">${conEtiqueta ? '<span class="fx-de">Prensa</span>' : ''}${chipImpacto(x.impacto)}${escIA(x.novedades)}${x.contraste ? ` <span class="k">${escIA(x.contraste)}</span>` : ''}${x.vigilar ? ` <span class="k">Vigilar: ${escIA(x.vigilar)}</span>` : ''}${x.riesgo ? ` <span class="k">Riesgo: ${escIA(x.riesgo)}</span>` : ''}${enlacesFuentes(x.fuentes)}</div>`;
 }
 function cabInforme(inf) {
   return `${haceCuanto(inf.generado)}, tras leer ${inf.noticias_leidas || 'las'} noticias${inf.busqueda_google ? ' y buscar en Google' : ''}`;
@@ -2066,83 +2255,96 @@ function htmlResumenInforme() {
   const inf = S.informe;
   if (!inf || !inf.resumen) return '';
   return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
-    <p class="informe-res">${esc(inf.resumen)}</p>
-    ${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${esc(a.t)}</b></div></li>`).join('')}</ul>` : ''}
+    <p class="informe-res">${escIA(inf.resumen)}</p>
+    ${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}
   </section>`;
 }
 function htmlMercadoInforme() {
   const inf = S.informe;
   if (!inf || !(inf.mercado || []).length) return '';
   return `<section class="informe" aria-labelledby="hInfM"><div class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
-    ${inf.resumen ? `<p class="informe-res" style="margin-bottom:12px">${esc(inf.resumen)}</p>` : ''}
-    <ul class="informe-merc">${inf.mercado.map((m) => `<li>${chipImpacto(m.impacto)}<b>${esc(m.t)}.</b> ${esc(m.detalle || '')}${enlacesFuentes(m.fuentes, 2)}</li>`).join('')}</ul>
+    ${inf.resumen ? `<p class="informe-res" style="margin-bottom:12px">${escIA(inf.resumen)}</p>` : ''}
+    <ul class="informe-merc">${inf.mercado.map((m) => `<li>${chipImpacto(m.impacto)}<b>${escIA(m.t)}.</b> ${escIA(m.detalle)}${enlacesFuentes(m.fuentes, 2)}</li>`).join('')}</ul>
   </section>`;
 }
+const limpiaIA = (t) => String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, '');
+const escIA = (t) => esc(limpiaIA(t));
 const noticiasIdea = (sim) => ((S.precios && S.precios.noticias_ideas) || {})[sim] || [];
-function tarjetaIdea(x, k) {
-  return `<article class="idea">
-    <header>${logo(x.w, x.n)}<div><b>${esc(x.n)}</b><small>${x.pais ? bandera(PAIS_DE_NOMBRE[x.pais]) + ' ' : ''}${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</small></div><span class="idea-n">${k + 1}</span></header>
-    <div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + x.s)}</div><div><span class="k">Hasta el objetivo</span>${B('ro:' + x.s)}</div><div><span class="k">Contraste</span>${htmlContraste(x.ctr, true)}</div></div>
-    ${htmlContrasteLista(x.ctr)}
-    ${x.pegas.length ? `<p class="idea-pega"><b>Pegas.</b> ${esc(x.pegas.slice(0, 3).join('; '))}.</p>` : ''}
-    ${informeIdea(x.s) ? htmlPrensaIA(informeIdea(x.s)) : (() => { const n = noticiasIdea(x.s)[0]; return n ? `<p class="idea-prensa"><span class="k">En prensa</span> <a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${esc(n.t)}</a> <small>${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}</small></p>` : ''; })()}
-    <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde y con qué impuesto.`)}">${ICONOS.chispa}Pídele a la IA que la contraste</button>
+/* ---------- las mejores ideas: la web, Gemini y tu análisis, juntas ----------
+   Cada fuente elige por su lado: la web, las tres mejor contrastadas del radar; Gemini, las que
+   elige tras leer la prensa de todo el radar; y el análisis de la IA, las que propone para tu cartera.
+   Si dos o tres coinciden en la misma empresa, sale una sola tarjeta y va primero. */
+function ideasJuntas(M, ia) {
+  const mapa = new Map();
+  const add = (q, nombre, o) => {
+    const r = q ? buscarRadar(q) : null;
+    const k = r ? r.s : String(q || nombre || '').toUpperCase();
+    if (!k) return;
+    const x = mapa.get(k) || { s: r ? r.s : String(q || ''), r, n: (r && r.n) || nombre || q };
+    mapa.set(k, Object.assign(x, o));
+  };
+  mejoresIdeas(M).slice(0, 3).forEach((x, i) => add(x.s, x.n, { web: { ...x, puesto: i + 1 } }));
+  const d = S.escaneo && S.escaneo.decision;
+  for (const i of (d && d.ideas) || []) if (i && i.s) add(i.s, i.n, { gem: i });
+  for (const x of (ia && Array.isArray(ia.ideas) ? ia.ideas : [])) if (x && x.nombre) add(x.ticker || x.nombre, x.nombre, { tuya: x });
+  return [...mapa.values()].map((x) => ({ ...x, votos: (x.web ? 1 : 0) + (x.gem ? 1 : 0) + (x.tuya ? 1 : 0) }))
+    .sort((a, b) => b.votos - a.votos || (b.gem ? 1 : 0) - (a.gem ? 1 : 0) || (a.web ? a.web.puesto : 9) - (b.web ? b.web.puesto : 9));
+}
+function tarjetaIdea(x, ctx) {
+  const r = x.r;
+  const pu = x.web || (r && r.p != null && r.pot != null ? puntuarIdea(r, ctx) : null);
+  const ctr = pu ? pu.ctr : r && r.p ? contraste(r) : null;
+  const T = (t) => rellenarIA(t || '', {});
+  const de = (k) => (x.gem && x.gem[k] ? escIA(x.gem[k]) : x.tuya && x.tuya[k] ? T(limpiaIA(x.tuya[k])) : '');
+  const quien = [];
+  if (x.web) quien.push(`<span class="quien">La web: ${x.web.puesto === 1 ? 'la mejor contrastada' : `la ${x.web.puesto}.ª mejor contrastada`}</span>`);
+  if (x.gem) quien.push(`<span class="quien">Gemini la elige, confianza ${esc(x.gem.confianza || 'media')}</span>`);
+  if (x.tuya) quien.push(`<span class="quien">Tu análisis la propone${x.tuya.importe ? ` con ${eur(+x.tuya.importe, 0)}` : ''}</span>`);
+  const motivos = pu ? pu.motivos.slice(0, 3).join(', ') : '';
+  const tesis = de('tesis') || (motivos ? esc(motivos.charAt(0).toUpperCase() + motivos.slice(1)) + '.' : '');
+  const fuentes = [...((x.gem && x.gem.fuentes) || []), ...((x.tuya && x.tuya.fuentes) || [])];
+  const prensa = !x.gem && informeIdea(x.s);
+  return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}">
+    <header>${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r && r.pais ? bandera(PAIS_DE_NOMBRE[r.pais]) + ' ' : ''}${esc([r && r.sector, r ? r.z : x.s].filter(Boolean).join(', '))}</small></div>${x.votos > 1 ? `<span class="chip good">${x.votos === 3 ? 'las tres coinciden' : 'coinciden dos'}</span>` : ''}</header>
+    <div class="idea-quien">${quien.join('')}</div>
+    ${r && r.p ? `<div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + r.s)}</div><div><span class="k">Hasta el objetivo</span>${B('ro:' + r.s)}</div><div><span class="k">Contraste</span>${ctr ? htmlContraste(ctr, true) : '—'}</div></div>` : ''}
+    ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
+    ${de('catalizador') ? `<p class="idea-linea"><b>Qué la puede mover.</b> ${de('catalizador')}</p>` : ''}
+    ${de('riesgo') ? `<p class="idea-linea"><b>Riesgo.</b> ${de('riesgo')}</p>` : ''}
+    ${pu && pu.pegas.length ? `<p class="idea-pega"><b>Pegas.</b> ${esc((([p0, ...pr]) => [p0.charAt(0).toUpperCase() + p0.slice(1), ...pr])(pu.pegas.slice(0, 3)).join('; '))}.</p>` : ''}
+    ${prensa ? htmlPrensaIA(prensa) : ''}
+    ${ctr ? `<details class="mas"><summary>Las siete señales, una a una</summary>${htmlContrasteLista(ctr)}</details>` : ''}
+    ${enlacesFuentes(fuentes, 4)}
+    <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, con qué impuesto y con qué regla de salida.`)}">${ICONOS.chispa}¿Cuánto meto?</button>
   </article>`;
 }
-function htmlDecisionIA() {
-  const e = S.escaneo, d = e && e.decision;
-  if (!d) return '';
-  const tarjeta = (i, k) => {
-    const x = buscarRadar(i.s) || { s: i.s, n: i.n || i.s };
-    const ctr = x.p ? contraste(x) : null;
-    return `<article class="idea ia">
-      <header>${logo(x.w, x.n)}<div><b>${esc(x.n || i.n || i.s)}</b><small>${x.pais ? bandera(PAIS_DE_NOMBRE[x.pais]) + ' ' : ''}${esc(i.s)}${x.sector ? ', ' + esc(x.sector) : ''}</small></div><span class="chip ${i.confianza === 'alta' ? 'good' : i.confianza === 'baja' ? 'warn' : 'info'}">confianza ${esc(i.confianza || 'media')}</span></header>
-      ${x.p ? `<div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + x.s)}</div><div><span class="k">Hasta el objetivo</span>${B('ro:' + x.s)}</div><div><span class="k">Contraste</span>${htmlContraste(ctr, true)}</div></div>` : ''}
-      <p>${esc(i.tesis || '')}</p>
-      ${i.catalizador ? `<p><b>Qué la puede mover.</b> ${esc(i.catalizador)}</p>` : ''}
-      ${i.riesgo ? `<p><b>Riesgo.</b> ${esc(i.riesgo)}</p>` : ''}
-      ${i.contraste ? `<p class="k"><b>Contraste.</b> ${esc(i.contraste)}</p>` : ''}
-      ${enlacesFuentes(i.fuentes, 4)}
-      <button class="btn peq" data-accion="asesor" data-q="${esc(`Gemini ha elegido ${x.n || i.s} (${i.s}) en su escaneo. ¿Cuánto meto, desde dónde, con qué impuesto y con qué regla de salida?`)}">${ICONOS.chispa}¿Cuánto meto?</button>
-    </article>`;
-  };
-  return `<div class="ia-ideas"><div class="sec-cab"><h3>Lo que ha elegido Gemini en toda la bolsa</h3><span class="k">${haceCuanto(d.generado)}, entre ${d.candidatas} candidatas; esta semana ha leído la prensa de ${Object.keys(e.lectura || {}).length} empresas</span></div>
-    ${d.comentario ? `<p class="informe-res" style="margin:0 0 14px">${esc(d.comentario)}</p>` : ''}
-    ${(d.ideas || []).length ? `<div class="ideas-top3">${d.ideas.map(tarjeta).join('')}</div>` : '<div class="vacio">Ahora mismo no ve ninguna clara: prefiere esperar.</div>'}
-    ${(d.evitar || []).length ? `<div class="sec-cab" style="margin-top:18px"><h3>Las que evitaría por lo que dice su prensa</h3></div><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${esc(v.motivo || '')}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul>` : ''}
-  </div>`;
-}
-function htmlIdeasIA(ia) {
-  const ideas = (ia && Array.isArray(ia.ideas) ? ia.ideas : []).filter((x) => x && x.nombre);
-  if (!ideas.length) return '';
-  const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } };
-  return `<div class="ia-ideas"><div class="sec-cab"><h3>Las que te propone ${esc(ia.autor || 'la IA')} para tu cartera</h3><span class="k">con las noticias ${ia.propio ? 'de su última revisión' : 'de la última revisión publicada'}</span></div>
-    <div class="ia-ideas-g">${ideas.map((x) => { const r = buscarRadar(x.ticker || x.nombre); return `<article class="idea ia">
-      <header>${logo(r && r.w, x.nombre)}<div><b>${esc(x.nombre)}</b><small>${esc(x.ticker || '')}${x.importe ? `, propone ${eur(+x.importe, 0)}` : ''}</small></div>${r ? htmlContraste(contraste(r), true) : ''}</header>
-      <p>${rellenarIA(x.tesis || '', {})}</p>
-      ${x.catalizador ? `<p><b>Qué la puede mover.</b> ${rellenarIA(x.catalizador, {})}</p>` : ''}
-      ${x.riesgo ? `<p><b>Riesgo.</b> ${rellenarIA(x.riesgo, {})}</p>` : ''}
-      ${x.contraste ? `<p class="k"><b>Contraste.</b> ${rellenarIA(x.contraste, {})}</p>` : ''}
-      ${Array.isArray(x.fuentes) && x.fuentes.length ? `<div class="as-fuentes">${x.fuentes.filter((f) => /^https?:\/\//.test(f.u || '')).slice(0, 4).map((f) => `<a href="${esc(f.u)}" target="_blank" rel="noopener noreferrer" title="${esc(f.t || '')}">${esc(dom(f.u))}</a>`).join('')}</div>` : ''}
-    </article>`; }).join('')}</div></div>`;
+function htmlEvitar() {
+  const d = S.escaneo && S.escaneo.decision;
+  if (!d || !(d.evitar || []).length) return '';
+  return `<section class="evitar" aria-labelledby="hEvi"><div class="sec-cab"><h3 id="hEvi">Las que Gemini evitaría por lo que dice su prensa</h3></div><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${escIA(v.motivo)}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul></section>`;
 }
 function htmlIdeas(M, ia) {
   const todas = radarVals();
   if (!todas.length) return '<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2></div><div class="vacio">La lista de ideas llega con la próxima actualización de datos.</div>';
   const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
-  const top = mejoresIdeas(M).slice(0, 3);
+  const juntas = ideasJuntas(M, ia).slice(0, 6);
+  const ctx = ctxIdeas(M);
+  const d = S.escaneo && S.escaneo.decision;
   let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => ({ ...x, _ctr: contraste(x) }));
   if (S.radarSolidas) v = v.filter((x) => x._ctr.favor >= 4 && x._ctr.contra <= 1);
   const [, clave] = ORDEN_RADAR[S.radarOrden] || ORDEN_RADAR.pot;
   v = v.sort((a, b) => clave(b) - clave(a));
   const total = v.length;
   if (!S.radarTodo) v = v.slice(0, 20);
-  S.radarVisibles = [...new Set([...v.map((x) => x.s), ...top.map((x) => x.s)])];
+  S.radarVisibles = [...new Set([...v.map((x) => x.s), ...juntas.filter((x) => x.r).map((x) => x.r.s)])];
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
-  return `<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU; cada una contrastada con siete señales</span></div>
-    ${top.length ? `<div class="ideas-top3">${top.map(tarjetaIdea).join('')}</div><p class="nota" style="margin:-4px 0 28px">Las tres que mejor encajan contigo: consenso de compra, recorrido, al menos 3 señales a favor y que no dupliquen lo que ya tienes en tus fondos. Las barras son las siete señales: verde a favor, rojo en contra, gris neutral.</p>` : ''}
-    ${htmlDecisionIA()}
-    ${htmlIdeasIA(ia)}
+  const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
+  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen la web, Gemini y tu análisis</span></div>
+    ${d && d.comentario ? `<p class="idea-panorama"><b>Gemini</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
+    ${juntas.length ? `<div class="ideas-top3">${juntas.map((x) => tarjetaIdea(x, ctx)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
+    <p class="nota">La web elige las tres mejor contrastadas: consenso de compra, recorrido hasta el objetivo, al menos 3 de las 7 señales a favor y que no repitan lo que ya llevan tus fondos. Gemini lee la prensa del radar y elige por su cuenta. Si coinciden, la tarjeta va primero. Las barras de contraste: verde a favor, rojo en contra, gris neutral.</p>
+    ${htmlEvitar()}
+    <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
       <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
@@ -2153,7 +2355,7 @@ function htmlIdeas(M, ia) {
       <td class="r">${B('ro:' + x.s)}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     ${total > 20 ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? 'Ver solo las 20 primeras' : `Ver las ${total}`}</button>` : ''}
-    <p class="nota">Potencial: distancia hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Prensa: lo que ha leído Gemini en sus noticias (pasa el ratón para verlo). Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio. Una idea con potencial alto pero pocas señales a favor vale menos. Antes de comprar, pídele a la IA que la contraste con las noticias.</p>`;
+    <p class="nota">Potencial: lo que queda hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Prensa: lo que ha leído Gemini en sus noticias. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio.</p>`;
 }
 
 /* ---------- repintar solo cuando cambia una recomendación ---------- */
@@ -2201,7 +2403,7 @@ function vistaMercados() {
 }
 
 /* =========================== Análisis =========================== */
-const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'Análisis IA'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas frente al índice'], ['impuestos', 'Impuestos']];
+const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'Análisis IA'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas'], ['impuestos', 'Impuestos']];
 /* =====================================================================
    Paso a paso: qué hacer con la cartera este mes, en 6 meses, en un año y de 1 a 5 años.
    Los pasos de la web salen de sus cálculos (planes de venta, fechas, impuestos, aportaciones y
@@ -2209,6 +2411,7 @@ const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'Análisis IA'], ['rent', 'Ren
    Lo que marques como hecho se guarda en tu cartera cifrada.
    ===================================================================== */
 const PLAZOS = [['mes', 'Este mes'], ['seis', 'Próximos 6 meses'], ['anio', 'Próximo año'], ['largo', 'De 1 a 5 años']];
+const PLAZO_CORTO = { mes: 'Este mes', seis: '6 meses', anio: '1 año', largo: '1 a 5 años' };
 function plazoDe(d) {
   if (!d) return null;
   const n = diasEntre(hoyIso(), d);
@@ -2226,7 +2429,7 @@ function pasosRuta(M) {
     add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
       t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
       det: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} y pagas unos ${eur(pl.impuesto, 0)} en la renta de ${anio}.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}.`}${destino ? ` Después: ${destino}${pl.impuesto > 0 ? `, y aparta ${eur(pl.impuesto, 0)} para Hacienda` : ''}.` : ''}`,
-      acc: `<a class="enlace" href="#expertos">Ver el plan completo</a>` });
+      acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>` });
   }
   // 2. tus reglas de salida cerca
   for (const f of M.filas) {
@@ -2335,7 +2538,8 @@ function htmlRuta(M) {
       ${primero ? `<p class="ruta-ya">Lo primero: ${(() => { const t = primero.t.replace(/<[^>]+>/g, ''); return t.charAt(0).toLowerCase() + t.slice(1); })()}${primero.cuando ? `, ${esc(primero.cuando)}` : ''}.</p>` : '<p class="ruta-ya">Este mes no hay nada urgente: deja que trabajen tus aportaciones.</p>'}
       <p>Los pasos salen de los cálculos de la web y se recalculan con cada precio${ia && ia.hoja_de_ruta ? `; los marcados con ${esc(ia.autor || 'IA')} vienen de la última revisión de la IA` : '. Con la IA conectada, añade los suyos en cada revisión'}. Márcalos al hacerlos: se guarda en tu cartera cifrada.</p>
     </div>
-    <div class="ruta">${PLAZOS.map(([k, t]) => `<section class="ruta-col" aria-labelledby="hRuta-${k}"><header><h3 id="hRuta-${k}">${t}</h3><span class="k">${sub[k]}</span></header>
+    <div class="plazos" role="group" aria-label="Plazo">${PLAZOS.map(([k, t]) => { const n = P[k].filter((x) => !x.hecho).length; return `<button data-plazo="${k}" aria-pressed="${S.rutaPlazo === k}">${PLAZO_CORTO[k]}${n ? `<span class="cuenta">${n}</span>` : ''}</button>`; }).join('')}</div>
+    <div class="ruta" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(([k, t]) => `<section class="ruta-col" data-p="${k}" aria-labelledby="hRuta-${k}"><header><h3 id="hRuta-${k}">${t}</h3><span class="k">${sub[k]}</span></header>
       ${P[k].length ? `<ol class="ruta-pasos">${P[k].map(paso).join('')}</ol>` : '<div class="ruta-vacio">Nada que hacer en este plazo.</div>'}</section>`).join('')}</div>`;
 }
 async function marcarRuta(id) {
@@ -2405,8 +2609,8 @@ function vistaAnalisis(M) {
     cuerpo = htmlImpuestos(M);
   }
   return `
-  <div class="vista-cab"><h1>Análisis</h1><p>Qué hacer paso a paso, el análisis de la IA, y tu rentabilidad, riesgo, costes, lo que hay dentro de tus fondos e impuestos.</p></div>
-  <div class="tabs-fila"><div class="tabs" role="group" aria-label="Ver">${ANALISIS.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div></div>
+  <div class="vista-cab"><h1>Análisis</h1><p>Qué hacer paso a paso, lo que opina la IA y los números de tu cartera.</p></div>
+  <div class="tabs-fila"><div class="tabs envuelve" role="group" aria-label="Ver">${ANALISIS.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div></div>
   ${cuerpo}`;
 }
 
@@ -2591,7 +2795,7 @@ function dibujar(M) {
   }
   for (const el of $$('[data-spark-m]')) {
     const h = histMercado(el.dataset.sparkM) || [];
-    grafLinea(el, h.map(([d, v]) => ({ d, v })), { alto: 70, sinEjes: true, sinRef: false, titulo: 'Último año', fmt: (v) => fmtMerc(el.dataset.sparkM, v) });
+    grafLinea(el, h.map(([d, v]) => ({ d, v })), { alto: window.innerWidth < 560 ? 44 : 70, sinEjes: true, sinRef: false, titulo: 'Último año', fmt: (v) => fmtMerc(el.dataset.sparkM, v) });
   }
 }
 
@@ -2883,7 +3087,7 @@ function htmlFiscalVenta(pl) {
   } else {
     lineas.push(`Esa pérdida resta de tus ganancias de ${fs.anio}; si sobra, de hasta un 25 % de tus dividendos e intereses y el resto en los 4 años siguientes. No vuelvas a comprar ${esc(pl.f.inst.corto)} en dos meses o la pérdida no cuenta hasta que la vendas.`);
   }
-  return `<b>${pl.ganancia > 0 ? `Declaras una ganancia de ${eur(pl.ganancia, 0)}: unos ${eur(pl.impuesto, 0)} de impuesto` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: no pagas y te ahorra impuestos`}</b><ul class="motivos" style="margin-top:6px">${lineas.map((l) => `<li>${l}</li>`).join('')}</ul>`;
+  return `<b>${pl.ganancia > 0 ? `Declaras una ganancia de ${eur(pl.ganancia, 0)}: unos ${eur(pl.impuesto, 0)} de impuesto` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: no pagas y te ahorra impuestos`}</b><details class="mas"><summary>Cómo se calcula</summary><ul class="motivos">${lineas.map((l) => `<li>${l}</li>`).join('')}</ul></details>`;
 }
 function htmlPlanVenta(pl, compacto) {
   if (!pl) return '';
@@ -2960,7 +3164,7 @@ function valoresIA(M) {
   return v;
 }
 function rellenarIA(txt, v) {
-  return esc(txt)
+  return esc(limpiaIA(txt))
     .replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (m, k, id) => {
       const val = id ? v[k] && v[k][id] : v[k];
       return val != null && typeof val !== 'object' ? `<b class="dato">${esc(val)}</b>` : '—';
@@ -3007,12 +3211,12 @@ function htmlAnalisisIA(M) {
         ${ia.riesgos && ia.riesgos.length ? `<section aria-labelledby="hRie"><div class="sec-cab"><h2 id="hRie">Riesgos a vigilar</h2></div>
           <ul class="lista">${ia.riesgos.map((x) => `<li class="warn">${ICONOS.alerta}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></section>` : ''}
         ${ia.calendario && ia.calendario.some((e) => e.d >= hoyIso()) ? `<section aria-labelledby="hCalIA"><div class="sec-cab"><h2 id="hCalIA">Fechas</h2></div>
-          <ul class="lista agenda">${ia.calendario.filter((e) => e.d >= hoyIso()).sort((a, b) => (a.d < b.d ? -1 : 1)).map((e) => { const dd = deIso(e.d); return `<li><div class="dia"><b>${dd.getDate()}</b><br><span class="k">${MESES[dd.getMonth()]}</span></div><div><b>${R(e.t)}</b></div><span></span></li>`; }).join('')}</ul></section>` : ''}
-        ${reglas.length ? `<section aria-labelledby="hReg"><div class="sec-cab"><h2 id="hReg">Tus reglas</h2><span class="k">las que acordaste</span></div>
-          <ul class="lista">${reglas.map((r) => `<li class="info">${ICONOS.info}<div><span>${esc(r)}</span></div></li>`).join('')}</ul></section>` : ''}
+          <ul class="lista agenda">${ia.calendario.filter((e) => e.d >= hoyIso()).sort((a, b) => (a.d < b.d ? -1 : 1)).map((e) => { const dd = deIso(e.d); return `<li><div class="dia"><b>${dd.getDate()}</b><span class="k">${MESES[dd.getMonth()]}</span></div><div><b>${R(e.t)}</b></div><span></span></li>`; }).join('')}</ul></section>` : ''}
+        ${reglas.length ? `<details class="plegable" style="margin-top:0"><summary><h2>Tus reglas</h2><span class="k">${reglas.length} que acordaste</span></summary>
+          <ul class="lista">${reglas.map((r) => `<li class="info">${ICONOS.info}<div><span>${esc(r)}</span></div></li>`).join('')}</ul></details>` : ''}
       </aside>
     </div>
-    <section style="margin-top:48px" aria-labelledby="hPosIA"><div class="sec-cab"><h2 id="hPosIA">Posición a posición</h2></div>
+    <details class="plegable" style="margin-top:44px"><summary><h2>Posición a posición</h2><span class="k">lo que opina de cada una, también en Expertos</span></summary>
       <div class="iap-lista">${ids.map((id) => {
         const a = (ia.posiciones || {})[id]; const i = S.inst[id] || { corto: id };
         const fila = M.filas.find((x) => x.inst.id === id) || { pos: {} };
@@ -3021,8 +3225,8 @@ function htmlAnalisisIA(M) {
           <div class="iap-act">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(fila.pos.id)}">${esc(i.corto || i.nombre)}</button>${a ? `<span class="senal ${nivel}">${esc(a.veredicto || SENALES[nivel])}</span>` : ''}</div></div>
           ${a ? `<p>${R(a.texto)}</p><p class="iap-vig">${a.vigilar ? `<b>A vigilar.</b> ${R(a.vigilar)}` : ''}${a.confianza ? `${a.vigilar ? ' ' : ''}<b>Confianza:</b> ${esc(a.confianza)}.` : ''}</p>` : '<p class="k">Todavía sin análisis: entrará en la próxima revisión.</p><p></p>'}
         </article>`; }).join('')}</div>
-    </section>
-    ${fuentes.length ? `<section class="ia-fuentes" aria-labelledby="hFueIA"><div class="sec-cab"><h2 id="hFueIA">Fuentes</h2><span class="k">lo que ha leído para contrastar</span></div><div class="as-fuentes">${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t || '')}">${esc(x.t ? x.t.slice(0, 60) : dom(x.u))}</a>`).join('')}</div></section>` : ''}
+    </details>
+    ${fuentes.length ? `<details class="plegable"><summary><h2>Fuentes</h2><span class="k">${fuentes.length} noticias que ha leído para contrastar</span></summary><div class="as-fuentes">${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t || '')}">${esc(x.t ? x.t.slice(0, 60) : dom(x.u))}</a>`).join('')}</div></details>` : ''}
     <p class="nota" style="margin-top:28px">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de la web y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Es el análisis de partida, sin cantidades: las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. Gemini lo sustituye por el suyo en cuanto hace su primera revisión.'}</p>
   </div>`;
 }
@@ -5067,11 +5271,13 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#ases
    Eventos: un solo oyente para toda la página (las vistas se vuelven a pintar a menudo)
    ===================================================================== */
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta]');
+  const t = e.target.closest('[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta],[data-exp],[data-plazo]');
   if (!t || !S.cartera) return;
   const d = t.dataset;
   if (d.rango) { S.rango = d.rango; LS.set('inv-rango', S.rango); pintar(); }
   else if (d.ruta) marcarRuta(d.ruta);
+  else if (d.exp) { S.expTab = d.exp; LS.set('inv-exp', S.expTab); if (S.vista !== 'expertos') { e.preventDefault(); location.hash = 'expertos'; return; } pintar(); if (!t.closest('.subvistas')) irArriba('.subvistas'); }
+  else if (d.plazo) { S.rutaPlazo = d.plazo; LS.set('inv-ruta-plazo', S.rutaPlazo); for (const b of $$('[data-plazo]')) b.setAttribute('aria-pressed', b.dataset.plazo === S.rutaPlazo); const r = $('.ruta'); if (r) r.dataset.sel = S.rutaPlazo; }
   else if (d.ordenPos) cambiarOrden(d.ordenPos);
   else if ('proyReset' in d) { const c = { ...(S.proy || {}) }; delete c.aport; S.proy = c; LS.set('inv-proy', c); pintar(); }
   else if (d.horizonte) { S.horizonte = +d.horizonte; LS.set('inv-horizonte', S.horizonte); pintar(); }
@@ -5119,6 +5325,12 @@ document.addEventListener('change', (e) => {
   }
 });
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && S.ficha && !$('.hoja-fondo')) cerrarFicha(); });
+function irArriba(sel) {
+  const el = $(sel); if (!el) return;
+  const alto = ($('.top') && $('.top').offsetHeight) || 0;
+  const y = el.getBoundingClientRect().top + window.scrollY - alto - 12;
+  if (window.scrollY > y) window.scrollTo(0, y);
+}
 function vistaDeHash() { const v = location.hash.slice(1); return VISTAS.some(([k]) => k === v) ? v : null; }
 window.addEventListener('hashchange', () => {
   const v = vistaDeHash(); if (!v || !S.cartera) return;

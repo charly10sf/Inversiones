@@ -2,8 +2,11 @@
 
 Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en directo, recomendaciones que se recalculan con cada precio y un asesor con IA (Gemini, gratis). Seis apartados y el asesor:
 
-- **Cartera**: patrimonio, lo que más mueve el día, evolución hasta 8 años (con comparación con el S&P 500), posiciones con una señal para cada una, avisos, reparto y próximas fechas. Cada posición abre una ficha con gráfico, analistas, noticias y botones para comprar, vender, editarla o preguntarle al asesor.
-- **Expertos**: qué vender y adónde mover el dinero (con lo que se lleva Hacienda), la señal de la web y la de la IA para cada posición (y si no coinciden), analistas en prensa, lo que viene, y las ideas de compra entre cientos de empresas de España, Europa y EEUU (unas 400 fijas más las que cada día recomiendan comprar los analistas en toda la bolsa), cada una contrastada con siete señales.
+- **Cartera**: patrimonio, lo que más mueve el día, lo que toca hacer ahora (sacado del paso a paso), evolución hasta 8 años (con comparación con el S&P 500), posiciones con una señal para cada una, avisos, reparto y próximas fechas. Cada posición abre una ficha con gráfico, analistas, noticias y botones para comprar, vender, editarla o preguntarle al asesor.
+- **Expertos**, en tres pestañas:
+  - *Resumen*: lo último que ha leído Gemini en la prensa, qué vender y adónde mover el dinero (con lo que se lleva Hacienda), tus posiciones de un vistazo y lo que viene.
+  - *Tus posiciones*: la señal de la web y la de la IA para cada una (y si no coinciden), lo que dice su prensa, los analistas y su precio objetivo.
+  - *Ideas de compra*: las mejores ahora, juntando las tres mejor contrastadas por la web, las que elige Gemini tras leer la prensa de todo el radar y las de tu análisis (si coinciden, salen primero), y el radar entero: cientos de empresas de España, Europa y EEUU, cada una contrastada con siete señales.
 - **Mercados**: índices, petróleo, oro, euro/dólar, bono a 10 años y VIX, con noticias de mercado.
 - **Análisis**: paso a paso qué hacer este mes, en 6 meses, en un año y de 1 a 5 años; el análisis de la IA (al día si el asesor está conectado), rentabilidad, riesgo, costes y dividendos, qué empresas hay dentro de los fondos, apuestas frente al índice e impuestos.
 - **Futuro**: cuánto podrías tener a 5, 10, 15, 20, 25 y 30 años si sigues aportando, con 2.000 escenarios de mercado simulados.
