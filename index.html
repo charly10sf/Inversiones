@@ -4619,6 +4619,20 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
 }
 /* ---------- Gemini (API de Google AI Studio): mismas herramientas, mismo formato de turnos ---------- */
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
+let MODO_CLAVE_G = LS.get('inv-gkey-modo', 'cabecera');
+async function fetchGoogle(url, opts = {}, clave = AS.clave) {
+  const hacer = (modo) => fetch(modo === 'query' ? `${url}${url.includes('?') ? '&' : '?'}key=${encodeURIComponent(clave)}` : url, { ...opts, headers: { ...(opts.headers || {}), ...(modo === 'cabecera' ? { 'x-goog-api-key': clave } : {}) } });
+  const r = await hacer(MODO_CLAVE_G);
+  if ([400, 401, 403].includes(r.status)) {
+    const otro = MODO_CLAVE_G === 'cabecera' ? 'query' : 'cabecera';
+    let txt = ''; try { txt = await r.clone().text(); } catch (e) {}
+    if (/API key|API_KEY|ACCESS_TOKEN_TYPE|UNAUTHENTICATED|credential/i.test(txt)) {
+      const r2 = await hacer(otro);
+      if (r2.ok || ![400, 401, 403].includes(r2.status)) { MODO_CLAVE_G = otro; LS.set('inv-gkey-modo', otro); return r2; }
+    }
+  }
+  return r;
+}
 const dormir = (ms, signal) => new Promise((res, rej) => { const t = setTimeout(res, ms); if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('Parado', 'AbortError')); }, { once: true }); });
 function esquemaGemini(x) {
   if (Array.isArray(x)) return x.map(esquemaGemini);
@@ -4632,7 +4646,8 @@ const herramientasGemini = (web) => [{ functionDeclarations: [...HERRAMIENTAS.ma
 function errorGoogle(estado, j) {
   const e0 = (j && j.error) || {}, m = e0.message || '', det = JSON.stringify(e0.details || '');
   let e;
-  if (/API key not valid|API_KEY_INVALID/i.test(m + det)) e = new Error('La clave de Google no es válida. Cámbiala en los ajustes del asesor.');
+  if (/API key not valid|API_KEY_INVALID/i.test(m + det)) e = new Error('Google dice que la clave no es válida. Cópiala otra vez entera desde aistudio.google.com/apikey (sin espacios al principio ni al final).');
+  else if (estado === 401 || /ACCESS_TOKEN_TYPE_UNSUPPORTED|UNAUTHENTICATED/i.test(m + det)) e = new Error('Google no acepta esta clave desde la web. Crea otra en aistudio.google.com/apikey y vuelve a probar; si sigue igual, dímelo.');
   else if (estado === 403) e = new Error('Tu clave de Google no tiene permiso para este modelo. Si es uno de pago, activa la facturación en Google AI Studio o elige Gemini 3.8 Flash.');
   else if (estado === 404) e = new Error('Ese modelo de Gemini no existe para tu clave.');
   else if (estado === 429) e = new Error(/free.?tier|limit: 0/i.test(m) && /pro|argon/i.test(m) ? 'Ese modelo no entra en el plan gratuito: elige Gemini 3.8 Flash en los ajustes del asesor o activa la facturación.' : 'Has llegado al límite gratuito de Google. Si es el de por minuto, en un momento vuelve a funcionar; si es el diario, mañana.');
@@ -4644,7 +4659,7 @@ function errorGoogle(estado, j) {
   return e;
 }
 async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar) {
-  const r = await fetch(`${GEMINI}/models/${modelo}:streamGenerateContent?alt=sse`, { method: 'POST', signal, headers: { 'content-type': 'application/json', 'x-goog-api-key': clave }, body: JSON.stringify(cuerpo) });
+  const r = await fetchGoogle(`${GEMINI}/models/${modelo}:streamGenerateContent?alt=sse`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }, clave);
   if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorGoogle(r.status, j); }
   const lector = r.body.getReader(), dec = new TextDecoder();
   let buf = '', fin = null, uso = {}, bloqueo = null, texto = null, vista = null;
@@ -4693,7 +4708,7 @@ async function buscarGoogle(consulta, turno, signal) {
   const cfg = cfgAsesor();
   let r;
   try {
-    r = await fetch(`${GEMINI}/models/${cfg.modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json', 'x-goog-api-key': AS.clave }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
+    r = await fetchGoogle(`${GEMINI}/models/${cfg.modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
   } catch (e) { if (e.name === 'AbortError') throw e; return { error: 'No se pudo conectar para buscar.' }; }
   if (!r.ok) {
     let j = null; try { j = await r.json(); } catch (e) {}
@@ -4709,7 +4724,7 @@ async function buscarGoogle(consulta, turno, signal) {
 }
 async function mejorFlash(clave) {
   try {
-    const r = await fetch(`${GEMINI}/models?pageSize=200`, { headers: { 'x-goog-api-key': clave } });
+    const r = await fetchGoogle(`${GEMINI}/models?pageSize=200`, {}, clave);
     if (!r.ok) return null;
     const j = await r.json();
     const v = (j.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('generateContent')).map((m) => m.name.replace(/^models\//, '')).filter((n) => /^gemini-[\d.]+-flash$/.test(n));
@@ -4865,10 +4880,10 @@ function htmlClaveAsesor() {
     <p>El asesor usa ${esc(MODELOS[cfg.modelo].n)}, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
     <ol class="as-pasos-clave">
       <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
-      <li>Pulsa "Create API key" y copia la clave: empieza por AIza.</li>
+      <li>Pulsa "Create API key" y copia la clave entera: empieza por AQ. (o por AIza si es de las antiguas).</li>
       <li>Pégala aquí. Se guarda cifrada con la clave de tu cartera y solo viaja de tu navegador a Google.</li>
     </ol>
-    <label class="campo">Clave de Google<input type="password" id="asClave" placeholder="AIza…" autocomplete="off" spellcheck="false"></label>
+    <label class="campo">Clave de Google<input type="password" id="asClave" placeholder="AQ.… o AIza…" autocomplete="off" spellcheck="false"></label>
     <label class="check"><input type="checkbox" id="asSync"> Guardarla también en tu cartera cifrada, para no tener que ponerla en el móvil</label>
     <div class="error" id="asErr"></div>
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${AS.claves.anthropic || AS.clave ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
@@ -4988,7 +5003,7 @@ function cerrarAsesor() {
 async function probarClave(clave) {
   const cfg = cfgAsesor();
   if (cfg.prov === 'google') {
-    const r = await fetch(`${GEMINI}/models/${cfg.modelo}`, { headers: { 'x-goog-api-key': clave } });
+    const r = await fetchGoogle(`${GEMINI}/models/${cfg.modelo}`, {}, clave);
     if (r.ok) return;
     let j = null; try { j = await r.json(); } catch (e) {}
     if (r.status === 404) { const m = await mejorFlash(clave); if (m) { guardarCfgAsesor({ modelo: m }); return; } }
@@ -5031,7 +5046,7 @@ async function clicAsesor(e) {
     AS.vista = 'clave'; pintarAsesor();
   } else if (a === 'guardar-clave') {
     const c = $('#asClave', fondo).value.trim(), err = $('#asErr', fondo), pv = cfgAsesor().prov;
-    if (pv === 'google' && !/^AIza[\w-]{20,}$/.test(c)) { err.textContent = 'Las claves de Google AI Studio empiezan por AIza.'; return; }
+    if (pv === 'google' && !/^[\w.-]{30,}$/.test(c)) { err.textContent = 'Eso no parece una clave de Google AI Studio: son una sola línea larga, sin espacios, que empieza por AQ. o por AIza.'; return; }
     if (pv === 'anthropic' && !/^sk-ant-/.test(c)) { err.textContent = 'Las claves de Anthropic empiezan por sk-ant-.'; return; }
     t.disabled = true; t.textContent = 'Probando…'; err.textContent = '';
     try {
