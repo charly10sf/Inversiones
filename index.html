@@ -960,6 +960,9 @@ table td.txt { white-space: normal; min-width: 260px; }
 
 .fx2 > *, .fx2-det, .fx2-det > * { min-width: 0; }
 .fx2-det .fx-an .k { overflow-wrap: anywhere; }
+
+.fr-aviso { display: inline-flex; gap: 6px; align-items: flex-start; color: var(--warn); flex-basis: 100%; }
+.fr-aviso svg { width: 15px; height: 15px; flex: none; margin-top: 2px; }
 </style>
 </head>
 <body>
@@ -2155,6 +2158,7 @@ function htmlFrescura() {
     <details><summary><span class="vivo-dot">Recalculado a las ${B('recalc')}</span>${S.informe && S.informe.generado ? `<span>prensa leída ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas">de cuándo es cada dato</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
     ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">Conecta la IA (gratis con Gemini) para que la revise cada día</button>'}
+    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? 'se ha acabado el cupo gratuito de Google por hoy; se renueva sobre las 9:00' : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática Gemini no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
   </div>`;
 }
 

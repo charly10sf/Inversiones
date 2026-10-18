@@ -138,11 +138,37 @@ def peticion(ruta, cuerpo, clave, modo):
 MODO = "cabecera"
 
 
-def gemini(cuerpo, clave):
-    """Llama a Gemini. Prueba la clave en la cabecera y, si Google no la acepta así, en la dirección
-    (las claves nuevas de AI Studio empiezan por AQ.). Reintenta si Google pide esperar."""
+ERRORES = []                # lo que ha fallado con Gemini en esta pasada (va a escaneo.json para verlo en la web)
+RESERVA = ["gemini-3.6-flash", "gemini-3.5-flash-lite"]  # si se acaba el cupo gratuito del modelo principal
+
+
+def gemini(cuerpo, clave, reserva=True):
+    """Llama a Gemini; si se acaba el cupo del modelo (429), prueba con los de reserva, que tienen su
+    propio cupo gratuito. Si un modelo no acepta el nivel de razonamiento, lo quita."""
+    for modelo in [MODELO] + ([m for m in RESERVA if m != MODELO] if reserva else []):
+        try:
+            return gemini_modelo(cuerpo, clave, modelo)
+        except RuntimeError as e:
+            txt = str(e)
+            if txt.startswith("400") and re.search(r"thinking", txt, re.I):
+                gc = dict(cuerpo.get("generationConfig") or {})
+                gc.pop("thinkingConfig", None)
+                try:
+                    return gemini_modelo({**cuerpo, "generationConfig": gc}, clave, modelo)
+                except RuntimeError as e2:
+                    txt = str(e2)
+            ERRORES.append(f"{modelo}: {txt[:160]}")
+            if not (txt.startswith("429") or txt.startswith("404") or txt.startswith("5")):
+                raise
+            print(f"gemini: {modelo} no responde ({txt[:80]}), pruebo otro")
+    raise RuntimeError(ERRORES[-1] if ERRORES else "sin respuesta")
+
+
+def gemini_modelo(cuerpo, clave, modelo):
+    """Prueba la clave en la cabecera y, si Google no la acepta así, en la dirección (las claves nuevas
+    de AI Studio empiezan por AQ.). Reintenta si Google pide esperar."""
     global MODO
-    ruta = f"models/{MODELO}:generateContent"
+    ruta = f"models/{modelo}:generateContent"
     ultimo = None
     for k, modo in enumerate([MODO, "query" if MODO == "cabecera" else "cabecera"]):
         for intento in range(3):
@@ -302,8 +328,10 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
     busqueda, web = True, []
     try:
         try:
-            resp = gemini({**base, "tools": [{"google_search": {}}]}, clave)
+            n_err = len(ERRORES)
+            resp = gemini({**base, "tools": [{"google_search": {}}]}, clave, reserva=False)
         except RuntimeError as e:
+            del ERRORES[n_err:]  # sin búsqueda en el plan gratuito: es lo esperado, no un fallo
             print(f"informe: sin búsqueda de Google ({str(e)[:160]})")
             busqueda = False
             resp = gemini(base, clave)
@@ -544,6 +572,7 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave):
     texto, _ = texto_de(gemini(cuerpo, clave))
     d = extraer_json(texto)
     if not d:
+        ERRORES.append(f"decisión: la respuesta no traía JSON ({len(texto)} caracteres)")
         return None
     porsim = {x["s"]: x for x in cands}
 
@@ -612,7 +641,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: falló la decisión de Gemini ({str(e)[:200]})")
     hace24 = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=24)
-    salida = {"generado": ahora(), "lectura": lectura, "decision": decision,
+    salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "gemini": {"ok": not ERRORES, "errores": ERRORES[-6:], "con_clave": bool(clave)},
               "con_noticias": sum(1 for v in cache.values() if v.get("n")), "leidas_24h": sum(1 for v in lectura.values() if cuando(v.get("d")) and cuando(v["d"]) > hace24),
               "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores), "fuentes_pasada": DIAG}
     with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:
