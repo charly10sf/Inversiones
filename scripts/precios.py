@@ -390,7 +390,7 @@ def comprimir(s, anios_diario=ANIOS_DIARIO, cifras=6):
 
 # ---------------------------------------------------------------- noticias (Google News en español)
 
-RUIDO = re.compile(r"^Precio de acciones, noticias|\(\w+\d{6}[CP]\d+\)|cotización e historial", re.I)
+RUIDO = re.compile(r"^Precio de acciones, noticias|Gráfico de acciones|^Cotización de |\(\w+\d{6}[CP]\d+\)|cotización e historial", re.I)
 
 
 def noticias(consulta, n=6, debe=None):
@@ -1121,9 +1121,10 @@ def main(ruta_inst, dir_anterior, dir_salida):
     # Titulares de las mejores ideas del radar (como mucho cada 2 horas), para contrastar con la prensa
     # lo que dicen los números. Las elige como la web: muchos analistas, consenso de compra y recorrido.
     prev_ni = anterior.get("noticias_ideas") or {}
-    if prev_ni and hace_menos_de(anterior.get("noticias_ideas_generado") or "", HORAS_LENTO):
+    if prev_ni and anterior.get("noticias_ideas_v") == 2 and hace_menos_de(anterior.get("noticias_ideas_generado") or "", HORAS_LENTO):
         salida["noticias_ideas"] = prev_ni
         salida["noticias_ideas_generado"] = anterior.get("noticias_ideas_generado")
+        salida["noticias_ideas_v"] = 2
     elif radar_sal and radar_sal.get("valores"):
         tuyas = {(inst.get("yahoo") or "") for inst in instrumentos}
         cand = [x for x in radar_sal["valores"] if x.get("s") not in tuyas and (x.get("na") or 0) >= 8 and (x.get("rm") or 9) <= 2.2 and (x.get("pot") or 0) >= 12]
@@ -1133,7 +1134,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
             nombre = re.sub(r",?\s+(S\.?A\.?U?|S\.?p\.?A\.?|N\.?V\.?|SE|AG|plc|PLC|Inc\.?|Corp\.?|Corporation|Holdings?|Group|Ltd\.?|ASA|AB|Oyj|Company)\b.*$", "", x.get("n") or "").split(",")[0].strip() or x["s"]
             clave = re.escape(nombre.split()[0]) if nombre.split() else None
             try:
-                ns = noticias(f'"{nombre}"', 5, clave)
+                # con palabras de bolsa, para no traer noticias de productos que se llaman igual
+                ns = noticias(f'"{nombre}" (acciones OR bolsa OR resultados OR analistas OR beneficio OR "precio objetivo")', 5, clave)
                 if ns:
                     salida["noticias_ideas"][x["s"]] = ns
             except Exception as e:  # noqa: BLE001
@@ -1142,6 +1144,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
                     salida["noticias_ideas"][x["s"]] = prev_ni[x["s"]]
             time.sleep(0.3)
         salida["noticias_ideas_generado"] = ahora()
+        salida["noticias_ideas_v"] = 2
 
     # El histórico va aparte: pesa mucho y solo cambia una vez al día
     historico = {"generado": salida["generado"], "instrumentos": {}, "mercados": {}}
