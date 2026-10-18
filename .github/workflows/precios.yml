@@ -58,7 +58,8 @@ jobs:
       - name: Informe de prensa de Gemini
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-        run: python scripts/informe.py instrumentos.json anterior salida || echo "informe: no se pudo generar"
+        run: |
+          python scripts/informe.py instrumentos.json anterior salida || echo "el informe no se pudo generar"
 
       - name: Publicar en la rama datos
         working-directory: salida
