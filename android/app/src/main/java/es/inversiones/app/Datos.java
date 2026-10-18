@@ -72,8 +72,9 @@ final class Datos {
     static final class Resultado {
         boolean hay, oculto, conPrecios;
         double total, dia, diaPct, pl, plPct;
-        String toca = "", cuando = "";
+        String toca = "", cuando = "", rango = "", horaTxt = "";
         long hora;
+        double[] serie;
         List<Mov> movs = new ArrayList<>();
     }
 
@@ -119,6 +120,14 @@ final class Datos {
             r.pl = totalPos - inv;
             r.plPct = inv > 0 ? (totalPos / inv - 1) * 100 : 0;
             r.hora = r.conPrecios ? preciosT : fotoT;
+            r.horaTxt = new java.text.SimpleDateFormat("HH:mm", new Locale("es", "ES")).format(new java.util.Date(r.hora));
+            r.rango = f.optString("rango", "");
+            JSONArray se = f.optJSONArray("serie");
+            if (se != null && se.length() > 1) {
+                r.serie = new double[se.length()];
+                for (int k = 0; k < se.length(); k++) r.serie[k] = se.optDouble(k);
+                r.serie[r.serie.length - 1] = r.total;   // el último punto, con los precios de ahora
+            }
             Collections.sort(r.movs, (a, b) -> Double.compare(Math.abs(b.dia), Math.abs(a.dia)));
         } catch (Exception e) {
             r.hay = false;

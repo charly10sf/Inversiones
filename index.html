@@ -1899,7 +1899,17 @@ function enviarWidget(forzar) {
     if (x) { const d = document.createElement('div'); d.innerHTML = x.t; toca = d.textContent.replace(/\s+/g, ' ').trim(); cuando = x.cuando || ''; }
   } catch (e) {}
   const pos = M.filas.filter((f) => f.valor).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, uds: f.uds || undefined, valor: Math.round(f.valor * 100) / 100, dia: Math.round((f.dia || 0) * 100) / 100 }));
-  const foto = { v: 1, total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos };
+  // la gráfica del widget: el último mes, día a día, con el efectivo sumado para que acabe en el total de hoy
+  let serie = [];
+  try {
+    const se = serieCartera(M, 31);
+    if (se.length > 1) {
+      const extra = M.total - se[se.length - 1].v;
+      const paso = Math.max(1, Math.ceil(se.length / 60));
+      serie = se.filter((x, k) => k % paso === 0 || k === se.length - 1).map((x) => Math.round(x.v + extra));
+    }
+  } catch (e) {}
+  const foto = { v: 2, total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos, serie, rango: '1 mes' };
   const firma = JSON.stringify({ ...foto, total: Math.round(foto.total), dia: Math.round(foto.dia) });
   if (!forzar && firma === widgetFirma) return;
   widgetT = Date.now(); widgetFirma = firma;

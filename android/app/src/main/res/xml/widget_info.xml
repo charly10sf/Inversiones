@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 4x2 casillas al ponerlo; se puede estirar o encoger: de 2x1 (solo el total) a 4x3 o más (con lo que más se mueve hoy) -->
+<!-- 4x2 casillas al ponerlo; se puede estirar o encoger: de una fila (el total, hoy y una gráfica pequeña)
+     a 4x4 (además lo que toca y lo que más se mueve hoy). Se dibuja entero a su tamaño, con Manrope. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="110dp"
@@ -7,11 +8,12 @@
     android:targetCellHeight="2"
     android:minResizeWidth="110dp"
     android:minResizeHeight="40dp"
-    android:maxResizeWidth="600dp"
-    android:maxResizeHeight="400dp"
+    android:maxResizeWidth="700dp"
+    android:maxResizeHeight="600dp"
     android:resizeMode="horizontal|vertical"
     android:updatePeriodMillis="1800000"
-    android:initialLayout="@layout/widget_mediano"
-    android:previewLayout="@layout/widget_mediano"
+    android:initialLayout="@layout/widget_lienzo"
+    android:previewLayout="@layout/widget_vista_previa"
+    android:previewImage="@drawable/vista_previa"
     android:description="@string/widget_descripcion"
     android:widgetCategory="home_screen" />
