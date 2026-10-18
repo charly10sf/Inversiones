@@ -22,7 +22,8 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en di
 | rama `datos` → `historico.json` | Cierres de 10 años de cada instrumento (diarios los 2 últimos, semanales antes) y de 1 año de cada mercado. | Sí |
 | `cartera.enc.json` | Cantidades, costes, notas, aportaciones y datos fiscales, **cifrado** con AES-GCM. La clave sale de mi contraseña (PBKDF2-SHA256, 600.000 iteraciones). | Cifrado |
 | `analisis.enc.json` | El último análisis que ha escrito la IA con mis cifras, cifrado igual. | Cifrado |
-| `analisis-ia.json` | Un análisis sin cantidades y mis reglas de inversión. Se usa si no hay uno cifrado más reciente. | Sí |
+| `analisis-ia.json` | El análisis de partida, sin cantidades, y mis reglas de inversión. Se usa hasta que Gemini escribe el suyo. | Sí |
+| rama `datos` → `informe.json` | El informe de prensa de Gemini: noticias de cada posición, del mercado y de las mejores ideas, contrastadas y con enlaces. Sin cantidades. | Sí |
 | `index.html`, `sw.js`, `manifest.webmanifest` | La web (instalable en el móvil). | Sí |
 
 - La contraseña no se guarda en ningún sitio. Si marco "Recordar en este dispositivo", el navegador guarda la clave derivada (no exportable) en IndexedDB.
@@ -33,15 +34,16 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en di
 - `scripts/precios.py` (Yahoo Finance con `yfinance`) corre cada 20 minutos de lunes a viernes y una vez al día el fin de semana; la web vuelve a leer `precios.json` sola cada 2 minutos. Analistas y noticias se renuevan como mucho cada 2 horas; las fichas del radar cada 3 horas y sus precios en cada ejecución.
 - Los fondos más jóvenes se completan hacia atrás con un ETF del mismo índice (`proxy` en `instrumentos.json`).
 
-## El asesor
+## La IA: Gemini, gratis
 
-Usa por defecto **Gemini 3.8 Flash**, el más potente de los modelos gratuitos de Google, con el razonamiento al máximo. Solo hace falta una clave gratuita de Google AI Studio (aistudio.google.com/apikey); sin tarjeta y sin activar la facturación. El plan gratuito tiene un tope de peticiones por minuto y por día: si se pasa, el asesor espera o avisa. Desde la UE, según las condiciones de Google, lo enviado con la clave gratuita no se usa para mejorar sus productos.
+Toda la IA de la web es **Gemini 3.8 Flash**, el más potente de los modelos gratuitos de Google, con el razonamiento al máximo. Funciona con una clave gratuita de Google AI Studio (aistudio.google.com/apikey), sin tarjeta. Desde la UE, según las condiciones de Google, lo enviado con la clave gratuita no se usa para mejorar sus productos.
 
-- En los ajustes se puede cambiar a Gemini 4 Argon (el más potente de Google, de pago) o a Claude (de pago, con clave de Anthropic).
-- La clave se guarda cifrada con la clave de la cartera y las preguntas van directamente del navegador a Google.
-- Lee una foto de la cartera al empezar cada conversación y tiene herramientas que calculan con la web: `simular_venta`, `simular_compra`, `buscar_empresa`, `proyectar` e `historico`. Si el plan lo permite, busca en internet; si no, contrasta con los titulares que baja la Action (de tus posiciones, del mercado y de las mejores ideas del radar).
-- Con la clave puesta, revisa la cartera cada día, o cuando cambia una señal, y deja su análisis en Análisis, su veredicto en Expertos y sus pasos en Análisis → Paso a paso. Se puede pasar a semanal o a manual en los ajustes del asesor.
-- Sin clave, el botón *Copiar mi cartera* copia los datos y la pregunta para pegarlos en un chat de Gemini.
+Trabaja en dos sitios:
+
+- **En la GitHub Action, aunque la web esté cerrada** (`scripts/informe.py`): cada 2 horas entre semana y cada 4 el fin de semana lee las noticias de cada posición, del mercado y de las ~20 ideas mejor contrastadas del radar (Google Noticias en español y Yahoo Finance con su resumen; y busca en Google si la clave lo permite). Escribe un informe contrastado en `informe.json` (rama `datos`, sin cantidades): qué ha pasado, si es bueno o malo, qué fuentes coinciden y qué vigilar, con enlaces. Necesita el secreto `GEMINI_API_KEY` en el repositorio (Settings → Secrets and variables → Actions).
+- **En el navegador, con tus cifras**: el asesor (botón de arriba) y la revisión de la cartera, que se rehace cada día, cuando cambia una señal y cuando llega un informe de prensa nuevo. Usa herramientas que calculan con la web (`simular_venta`, `simular_compra`, `buscar_empresa`, `proyectar`, `historico`). La clave se guarda cifrada y las preguntas van directamente del navegador a Google.
+
+Sin clave, el botón *Copiar mi cartera* copia los datos y la pregunta para pegarlos en un chat de Gemini.
 
 ## Guardar cambios desde la web
 

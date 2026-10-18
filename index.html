@@ -613,7 +613,7 @@ details.mas[open] > summary { margin-bottom: 12px; }
   .fx-datos { padding-left: 46px; }
 }
 
-/* ---------- ideas: las tres mejores, las de Claude y la tabla ---------- */
+/* ---------- ideas: las tres mejores, las de la IA y la tabla ---------- */
 .ideas-top3 { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); margin-bottom: 10px; }
 @media (min-width: 900px) { .ideas-top3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
 .idea { background: var(--plane); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
@@ -649,10 +649,23 @@ details.mas[open] > summary { margin-bottom: 12px; }
 table.ideas .sub { display: block; font-size: 12px; }
 @media (max-width: 680px) { table.ideas .sub { display: inline; margin-left: 6px; } }
 
-/* ---------- análisis de Claude ---------- */
+/* ---------- análisis de la IA ---------- */
 .ia-firma { flex-wrap: wrap; }
 .ia-firma .btn { margin-left: auto; }
 /* ---------- paso a paso ---------- */
+.informe { border: 1px solid var(--line-2); border-left: 3px solid var(--accent); border-radius: 14px; padding: 16px 20px; background: var(--plane); }
+.informe .sec-cab { margin-bottom: 8px; }
+.informe-res { margin: 0; font-size: 15.5px; line-height: 1.6; color: var(--text); max-width: 100ch; }
+.informe .lista { border-top: 0; margin-top: 8px; }
+.informe .lista li:last-child { border-bottom: 0; padding-bottom: 0; }
+.informe-merc { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 10px; }
+.informe-merc li { font-size: 14px; color: var(--text-2); line-height: 1.55; }
+.informe-merc b { color: var(--text); font-weight: 600; }
+.imp { display: inline-block; font-size: 11px; font-weight: 600; padding: 0 7px; line-height: 18px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; white-space: nowrap; }
+.imp.up { color: var(--up); background: var(--up-bg); } .imp.down { color: var(--down); background: var(--down-bg); } .imp.warn { color: var(--warn); background: var(--warn-bg); } .imp.flat { color: var(--text-2); background: var(--plane-3); }
+.prensa-ia { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line-2); font-size: 13.5px; color: var(--text-2); line-height: 1.55; }
+.prensa-ia .fx-de { margin-right: 6px; }
+.prensa-ia .as-fuentes { margin-top: 6px; }
 .idea-prensa { margin: 0; font-size: 13px; line-height: 1.5; color: var(--text-2); }
 .idea-prensa a { color: var(--text); }
 .idea-prensa small { color: var(--muted); }
@@ -1858,7 +1871,7 @@ function resumenSenales(M) {
   return ORDEN_SENAL.filter((k) => c[k]).map((k) => `${c[k]} ${SENALES[k].toLowerCase()}`).join(', ');
 }
 const ZONAS = ['Todas', 'España', 'Europa', 'EEUU'];
-/* ---------- de qué lado cae cada recomendación (para ver si la web y Claude coinciden) ---------- */
+/* ---------- de qué lado cae cada recomendación (para ver si la web y la IA coinciden) ---------- */
 const LADO = { comprar: 1, aportar: 0, mantener: 0, vigilar: 0, recoger: -1, reducir: -1, vender: -1 };
 const NIVELES = new Set(Object.keys(LADO));
 
@@ -1873,6 +1886,7 @@ function htmlFrescura() {
     <span class="vivo-dot">Señales y planes recalculados con cada precio: ${B('recalc')}</span>
     ${lento ? `<span>Analistas de tus posiciones: ${haceCuanto(lento)}</span>` : ''}
     ${rg ? `<span>Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}</span>` : ''}
+    ${S.informe && S.informe.generado ? `<span>Prensa leída por Gemini: ${haceCuanto(S.informe.generado)}</span>` : ''}
     <span>${ia && ia.propio ? `${esc(ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '<button class="enlace acento" data-accion="asesor">Conecta la IA (gratis con Gemini) para que la revise cada día</button>'}</span>
   </div>`;
 }
@@ -1905,6 +1919,7 @@ function filaExperto(f, ia, vIA = {}) {
     </div>
     <div class="fx-op fx-claude">${c ? `<div class="fx-quien"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span><span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>${c.confianza ? `<span class="k">confianza ${esc(c.confianza)}</span>` : ''}${choca ? '<span class="chip warn">no coinciden</span>' : ''}</div>
         <p>${rellenarIA(c.vigilar ? `Vigilar: ${c.vigilar}` : c.texto || '', vIA)}</p>` : `<div class="fx-quien"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span><span class="k">sin revisar todavía</span></div>`}
+      ${htmlPrensaIA(informeDe(i.id))}
     </div>
     <div class="fx-datos">${datosExperto(f)}</div>
   </article>`;
@@ -1927,6 +1942,7 @@ function vistaExpertos(M) {
   <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa e IA, y una señal para cada posición que se recalcula con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale al asesor</button></div>
   ${htmlFrescura()}
   <div class="pila">
+    ${htmlResumenInforme()}
     <section aria-labelledby="hPlanV">
       <div class="sec-cab"><h2 id="hPlanV">Qué haría ahora</h2><span class="k">${planes.length ? `${planes.length === 1 ? 'una posición que conviene' : planes.length + ' posiciones que conviene'} vender o recortar` : 'nada que vender'}</span></div>
       ${planes.length ? `<div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl)).join('')}</div>` : '<div class="vacio">Ninguna posición pide vender ahora mismo. Si cambia, aquí saldrá cuánto vender, cuándo, lo que se lleva Hacienda y adónde mover el dinero.</div>'}
@@ -1998,6 +2014,54 @@ function mejoresIdeas(M, excluir = {}) {
 
 const ORDEN_RADAR = { pot: ['Potencial', (x) => x.pot ?? -999], ctr: ['Contraste', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
 const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? 'p' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
+/* ---------- informe de prensa de Gemini (informe.json, rama datos) ----------
+   Lo escribe la Action cada 2 horas con las noticias de tus posiciones, del mercado y de las mejores
+   ideas del radar, aunque la web esté cerrada. Sin cantidades: tus cifras las pone la web. */
+async function cargarInforme() {
+  const id = S.precios && S.precios.informe_id;
+  if (!id && !CFG.dev) { if (!S.informe) { try { const c = localStorage.getItem('inv-cache-informe'); if (c) S.informe = JSON.parse(c); } catch (e) {} } return; }
+  if (S.informe && S.informeId === id && !CFG.dev) return;
+  let txt = null;
+  try {
+    if (CFG.dev) { const r = await fetch('dev/informe.json', { cache: 'no-store' }); if (r.ok) txt = await r.text(); }
+    else { const r = await fetch(GH.raw('informe.json', 'datos') + '?v=' + encodeURIComponent(id), { cache: 'no-cache' }).catch(() => null); if (r && r.ok) txt = await r.text(); }
+  } catch (e) { console.warn(e); }
+  if (txt) { try { S.informe = JSON.parse(txt); localStorage.setItem('inv-cache-informe', txt); } catch (e) {} }
+  else { try { const c = localStorage.getItem('inv-cache-informe'); if (c && !S.informe) S.informe = JSON.parse(c); } catch (e) {} }
+  S.informeId = id;
+}
+const informeDe = (id) => (S.informe && S.informe.posiciones && S.informe.posiciones[id]) || null;
+const informeIdea = (sim) => (S.informe && S.informe.ideas && S.informe.ideas[sim]) || null;
+const IMPACTO = { positivo: ['up', 'Bueno'], negativo: ['down', 'Malo'], mixto: ['warn', 'Mixto'], neutral: ['flat', 'Neutral'] };
+const chipImpacto = (i) => { const x = IMPACTO[i] || IMPACTO.neutral; return `<span class="imp ${x[0]}">${x[1]}</span>`; };
+function enlacesFuentes(fs, n = 3) {
+  const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } };
+  const v = (fs || []).filter((f) => f && /^https?:\/\//.test(f.u || '')).slice(0, n);
+  return v.length ? `<div class="as-fuentes">${v.map((f) => `<a href="${esc(f.u)}" target="_blank" rel="noopener noreferrer" title="${esc(f.t || '')}">${esc(f.f || dom(f.u))}</a>`).join('')}</div>` : '';
+}
+function htmlPrensaIA(x, conEtiqueta = true) {
+  if (!x || !x.novedades) return '';
+  return `<div class="prensa-ia">${conEtiqueta ? '<span class="fx-de">Prensa</span>' : ''}${chipImpacto(x.impacto)}${esc(x.novedades)}${x.contraste ? ` <span class="k">${esc(x.contraste)}</span>` : ''}${x.vigilar ? ` <span class="k">Vigilar: ${esc(x.vigilar)}</span>` : ''}${x.riesgo ? ` <span class="k">Riesgo: ${esc(x.riesgo)}</span>` : ''}${enlacesFuentes(x.fuentes)}</div>`;
+}
+function cabInforme(inf) {
+  return `${haceCuanto(inf.generado)}, tras leer ${inf.noticias_leidas || 'las'} noticias${inf.busqueda_google ? ' y buscar en Google' : ''}`;
+}
+function htmlResumenInforme() {
+  const inf = S.informe;
+  if (!inf || !inf.resumen) return '';
+  return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
+    <p class="informe-res">${esc(inf.resumen)}</p>
+    ${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${esc(a.t)}</b></div></li>`).join('')}</ul>` : ''}
+  </section>`;
+}
+function htmlMercadoInforme() {
+  const inf = S.informe;
+  if (!inf || !(inf.mercado || []).length) return '';
+  return `<section class="informe" aria-labelledby="hInfM"><div class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
+    ${inf.resumen ? `<p class="informe-res" style="margin-bottom:12px">${esc(inf.resumen)}</p>` : ''}
+    <ul class="informe-merc">${inf.mercado.map((m) => `<li>${chipImpacto(m.impacto)}<b>${esc(m.t)}.</b> ${esc(m.detalle || '')}${enlacesFuentes(m.fuentes, 2)}</li>`).join('')}</ul>
+  </section>`;
+}
 const noticiasIdea = (sim) => ((S.precios && S.precios.noticias_ideas) || {})[sim] || [];
 function tarjetaIdea(x, k) {
   return `<article class="idea">
@@ -2005,11 +2069,11 @@ function tarjetaIdea(x, k) {
     <div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + x.s)}</div><div><span class="k">Hasta el objetivo</span>${B('ro:' + x.s)}</div><div><span class="k">Contraste</span>${htmlContraste(x.ctr, true)}</div></div>
     ${htmlContrasteLista(x.ctr)}
     ${x.pegas.length ? `<p class="idea-pega"><b>Pegas.</b> ${esc(x.pegas.slice(0, 3).join('; '))}.</p>` : ''}
-    ${(() => { const n = noticiasIdea(x.s)[0]; return n ? `<p class="idea-prensa"><span class="k">En prensa</span> <a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${esc(n.t)}</a> <small>${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}</small></p>` : ''; })()}
+    ${informeIdea(x.s) ? htmlPrensaIA(informeIdea(x.s)) : (() => { const n = noticiasIdea(x.s)[0]; return n ? `<p class="idea-prensa"><span class="k">En prensa</span> <a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${esc(n.t)}</a> <small>${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}</small></p>` : ''; })()}
     <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde y con qué impuesto.`)}">${ICONOS.chispa}Pídele a la IA que la contraste</button>
   </article>`;
 }
-function htmlIdeasClaude(ia) {
+function htmlIdeasIA(ia) {
   const ideas = (ia && Array.isArray(ia.ideas) ? ia.ideas : []).filter((x) => x && x.nombre);
   if (!ideas.length) return '';
   const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } };
@@ -2038,7 +2102,7 @@ function htmlIdeas(M, ia) {
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   return `<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU; cada una contrastada con siete señales</span></div>
     ${top.length ? `<div class="ideas-top3">${top.map(tarjetaIdea).join('')}</div><p class="nota" style="margin:-4px 0 28px">Las tres que mejor encajan contigo: consenso de compra, recorrido, al menos 3 señales a favor y que no dupliquen lo que ya tienes en tus fondos. Las barras son las siete señales: verde a favor, rojo en contra, gris neutral.</p>` : ''}
-    ${htmlIdeasClaude(ia)}
+    ${htmlIdeasIA(ia)}
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
       <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
@@ -2049,7 +2113,7 @@ function htmlIdeas(M, ia) {
       <td class="r">${B('ro:' + x.s)}</td><td>${htmlContraste(x._ctr, true)}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     ${total > 20 ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? 'Ver solo las 20 primeras' : `Ver las ${total}`}</button>` : ''}
-    <p class="nota">Potencial: distancia hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio. Una idea con potencial alto pero pocas señales a favor vale menos. Antes de comprar, pídele a Claude que la contraste con las noticias.</p>`;
+    <p class="nota">Potencial: distancia hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio. Una idea con potencial alto pero pocas señales a favor vale menos. Antes de comprar, pídele a la IA que la contraste con las noticias.</p>`;
 }
 
 /* ---------- repintar solo cuando cambia una recomendación ---------- */
@@ -2091,6 +2155,7 @@ function vistaMercados() {
       <div class="chart" data-spark-m="${esc(sym)}"></div>
       <div class="merc-r"><span>1 mes <b class="${cls(m.rent && m.rent['1m'])}">${pctS(m.rent && m.rent['1m'], 1)}</b></span><span>Año <b class="${cls(m.rent && m.rent.ytd)}">${pctS(m.rent && m.rent.ytd, 1)}</b></span><span>1 año <b class="${cls(m.rent && m.rent['1a'])}">${pctS(m.rent && m.rent['1a'], 1)}</b></span></div>
     </div>`).join('')}</div></section>
+    ${htmlMercadoInforme()}
     <section aria-labelledby="hNotM"><div class="sec-cab"><h2 id="hNotM">Noticias de mercado</h2><span class="k">Ibex, Wall Street, BCE y Reserva Federal</span></div>${htmlNoticias(N, false, 16).replace('class="noticias"', 'class="noticias dos-col"')}</section>
   </div>`;
 }
@@ -2811,7 +2876,7 @@ function htmlPlanVenta(pl, compacto) {
 }
 
 /* =====================================================================
-   Análisis IA: lo escribe Claude en analisis-ia.json (público, sin cantidades).
+   Análisis IA: el de partida está en analisis-ia.json (público, sin cantidades); el de Gemini, cifrado.
    Los datos personales van como {marcas} y se rellenan aquí con tu cartera descifrada.
    ===================================================================== */
 async function cargarIA() {
@@ -2875,7 +2940,7 @@ function htmlAnalisisIA(M) {
   const cuando = f.length > 10 ? (dias === 0 ? `hoy a las ${hora}` : dias === 1 ? `ayer a las ${hora}` : `el ${fechaLarga(iso(d))}`) : `el ${fechaLarga(f)}${dias > 0 ? `, hace ${dias} ${dias === 1 ? 'día' : 'días'}` : ''}`;
   const firma = ia.propio
     ? `Escrito por ${esc(ia.autor)} ${cuando}${ia.busquedas ? `, con ${ia.busquedas} ${ia.busquedas === 1 ? 'búsqueda' : 'búsquedas'} en internet` : ''} y tus cifras de ese momento${ia.modelo && MODELOS[ia.modelo] ? ` (${MODELOS[ia.modelo].n})` : ''}.`
-    : `Escrito por ${ia.autor || 'Claude'} ${cuando}. ${ia.datos || ''}`;
+    : `Análisis de partida ${cuando}, sin tus cifras al céntimo. ${AS.clave ? 'Gemini escribe el suyo con tus datos: si no aparece en un par de minutos, pulsa Actualizar ahora.' : 'Conecta Gemini (gratis) para que lo rehaga con tus datos cada día.'}`;
   const boton = AS.clave
     ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Actualizando…' : 'Actualizar ahora'}</button>`
     : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Que se actualice solo cada día</button>`;
@@ -2918,7 +2983,7 @@ function htmlAnalisisIA(M) {
         </article>`; }).join('')}</div>
     </section>
     ${fuentes.length ? `<section class="ia-fuentes" aria-labelledby="hFueIA"><div class="sec-cab"><h2 id="hFueIA">Fuentes</h2><span class="k">lo que ha leído para contrastar</span></div><div class="as-fuentes">${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t || '')}">${esc(x.t ? x.t.slice(0, 60) : dom(x.u))}</a>`).join('')}</div></section>` : ''}
-    <p class="nota" style="margin-top:28px">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de la web y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Lo escribe Claude a partir de tus posiciones, los datos de la web y la prensa económica. Las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. ' + esc(ia.nota_privacidad || '')}</p>
+    <p class="nota" style="margin-top:28px">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de la web y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Es el análisis de partida, sin cantidades: las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. Gemini lo sustituye por el suyo en cuanto hace su primera revisión.'}</p>
   </div>`;
 }
 
@@ -3194,7 +3259,7 @@ function htmlFicha(f) {
   let cuerpo = '';
   if (S.ficha.tab === 'resumen') cuerpo = fichaResumen(f);
   else if (S.ficha.tab === 'expertos') cuerpo = fichaExpertos(f);
-  else if (S.ficha.tab === 'noticias') cuerpo = `<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
+  else if (S.ficha.tab === 'noticias') cuerpo = `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px">Lo que dice la prensa, según Gemini</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
   else cuerpo = fichaDatos(f);
   return `<div class="ficha-cab">
     <div class="ficha-tit">${logo(i.dominio, i.corto || i.nombre)}<div><h2 id="fichaTit">${esc(i.corto || i.nombre)}</h2><small>${origen(i)} ${esc(tipo)} en ${esc(f.pos.plataforma || '')}${i.nombre && i.nombre !== i.corto ? `, ${esc(i.nombre)}` : ''}</small><small>${esc(donde(i))}</small></div>
@@ -3712,7 +3777,7 @@ function pantallaCrear() {
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fCrear">
     <img class="logo" src="icon-192.png" alt="">
     <h1>Crear tu cartera</h1>
-    <p>Todavía no hay ninguna cartera guardada en <b>${esc(CFG.owner)}/${esc(CFG.repo)}</b>. Importa el archivo que te pasó Claude o empieza de cero.</p>
+    <p>Todavía no hay ninguna cartera guardada en <b>${esc(CFG.owner)}/${esc(CFG.repo)}</b>. Importa tu copia de la cartera o empieza de cero.</p>
     <label class="campo">Archivo de cartera (.json)<input type="file" id="archivo" accept=".json,application/json"><small id="archivoInfo">Opcional. Si no subes nada, empiezas con la cartera vacía.</small></label>
     <label class="campo">Contraseña nueva<input type="password" id="p1" autocomplete="new-password" minlength="8" required><small>Mínimo 8 caracteres. Si la pierdes no hay forma de recuperar los datos.</small></label>
     <label class="campo">Repite la contraseña<input type="password" id="p2" autocomplete="new-password" minlength="8" required></label>
@@ -3826,7 +3891,7 @@ function abrirAjustes() {
       <div id="aQRbox"></div>
     </div>
     <div class="seccion-ed"><h3>Asesor</h3>
-      <p class="nota" style="margin:0">Una IA dentro de la web: Gemini, gratis con una clave de Google (o Claude, de pago). Responde a lo que le preguntes y revisa tu cartera cada día.</p>
+      <p class="nota" style="margin:0">Gemini dentro de la web, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes del asesor</button></div>
     </div>
     <div class="seccion-ed"><h3>Contraseña</h3>
@@ -4007,7 +4072,7 @@ function htmlContrasteLista(ctr) {
 }
 
 /* =====================================================================
-   Análisis de Claude al día: con tu clave de la API, la web le pide a Claude una revisión completa
+   Análisis de Gemini al día: con tu clave de Google, la web le pide a Gemini una revisión completa
    cada día (o cuando cambia una señal), con tus cifras reales, las herramientas de la web y
    búsquedas en internet para contrastar. Se guarda cifrado en analisis.enc.json (aparte de la
    cartera, para no pisar cambios hechos desde otro dispositivo) y en este navegador.
@@ -4017,7 +4082,7 @@ const IA = { generando: false, turno: null, error: null, ultimoIntento: 0 };
 function iaActual() {
   const p = S.iaPropio, pub = S.ia;
   if (p && p.json && (!pub || String(p.fecha) >= String(pub.fecha))) return { ...p.json, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
-  return pub || null;
+  return pub ? { ...pub, autor: 'IA', publicado: true } : null;
 }
 const firmaSenales = (M) => [...new Set(M.filas.map((f) => `${f.inst.id}:${f.senal.nivel}`))].sort().join('|');
 
@@ -4049,6 +4114,7 @@ async function guardarAnalisisPropio() {
 
 function pedidoAnalisis(ids, motivo, conWeb = true) {
   return `Haz la revisión de hoy de mi cartera (${motivo}). Antes de escribir:
+0. Lee el informe de prensa de Gemini que viene en los datos (noticias de cada posición, del mercado y de las ideas, ya contrastadas) y úsalo como base.
 1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.' : 'No puedes buscar en internet: usa los titulares de los datos (los de mis posiciones, los del mercado y los de las mejores ideas del radar) y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
 2. Si recomiendas vender algo, calcúlalo con simular_venta. Si recomiendas comprar una acción, con simular_compra.
 3. Para las ideas de compra, parte del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de la web y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
@@ -4119,8 +4185,11 @@ async function revisarAnalisisIA() {
   const edad = p ? Date.now() - new Date(p.fecha).getTime() : Infinity;
   const limite = cfg.auto === 'semanal' ? 7 * 864e5 : 20 * 36e5;
   const cambio = cfg.auto === 'diario' && p && p.firma !== firmaSenales(M) && edad > 3 * 36e5;
+  // trabaja sola: si hay un informe de prensa más nuevo que su última revisión, la rehace (cada 3 horas como mucho)
+  const prensa = cfg.auto === 'diario' && p && S.informe && S.informe.generado > p.fecha && edad > 3 * 36e5;
   if (edad > limite) generarAnalisisIA(p ? 'revisión diaria' : 'primera revisión');
   else if (cambio) generarAnalisisIA('ha cambiado la señal de alguna posición');
+  else if (prensa) generarAnalisisIA('hay noticias nuevas en el informe de prensa');
 }
 function htmlProgresoIA() {
   if (IA.generando) {
@@ -4133,27 +4202,22 @@ function htmlProgresoIA() {
 function refrescarProgresoIA() { const el = $('#iaProgreso'); if (el) el.innerHTML = htmlProgresoIA(); }
 
 /* =====================================================================
-   Asesor: Claude dentro de la web
-   Habla con la API de Anthropic directamente desde tu navegador y con tu propia clave: no pasa por
-   GitHub ni por ningún servidor intermedio. La clave se guarda cifrada con la misma clave que tu
-   cartera. Al empezar cada conversación recibe una foto de tu cartera (posiciones, costes, impuestos
-   del año, analistas, radar de ideas, mercados y noticias) y usa herramientas que calculan con el
-   motor de la web: ventas con FIFO e IRPF, compras con su tasa, empresas del radar, proyecciones e
-   histórico. Si le falta algo de hoy, busca en internet y cita de dónde sale.
+   Asesor: Gemini dentro de la web
+   Habla con la API de Gemini (Google AI Studio) directamente desde tu navegador y con tu propia clave:
+   no pasa por GitHub ni por ningún servidor intermedio. La clave se guarda cifrada con la misma clave
+   que tu cartera. Al empezar cada conversación recibe una foto de tu cartera y usa herramientas que
+   calculan con el motor de la web: ventas con FIFO e IRPF, compras con su tasa, empresas del radar,
+   proyecciones e histórico.
    ===================================================================== */
-/* Gemini (Google) es el de serie: gratis con una clave de Google AI Studio. Claude queda como opción de pago. */
+/* La IA de la web es Gemini, de Google, con una clave gratuita de Google AI Studio. */
 const MODELOS = {
-  'gemini-3.8-flash': { n: 'Gemini 3.8 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Gratis. El más potente de los gratuitos de Google, pensando al máximo. El recomendado.' },
-  'gemini-4-argon': { n: 'Gemini 4 Argon', prov: 'google', pensar: 'high', txt: 'El más potente de Google, pero de pago: hay que activar la facturación en Google AI Studio. Unos 2-4 céntimos por pregunta (el doble desde diciembre).', in: 2, out: 10 },
-  'gemini-3.6-flash': { n: 'Gemini 3.6 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Gratis. Por si el 3.8 te da límite.' },
-  'gemini-3.5-flash-lite': { n: 'Gemini 3.5 Flash-Lite', prov: 'google', gratis: true, txt: 'Gratis y muy rápido, para dudas sencillas.' },
-  'claude-sonnet-5-5': { n: 'Claude Sonnet 5.5', prov: 'anthropic', txt: 'De pago, con tu cuenta de Anthropic: unos 2-4 céntimos por pregunta.', in: 2, out: 10 },
-  'claude-opus-5-5': { n: 'Claude Opus 5.5', prov: 'anthropic', txt: 'De pago: el que más razona de Anthropic. El doble que Sonnet.', in: 4, out: 20 },
-  'claude-haiku-5-5': { n: 'Claude Haiku 5.5', prov: 'anthropic', txt: 'De pago y casi gratis, pero menos fino.', in: 0.1, out: 0.5 },
+  'gemini-3.8-flash': { n: 'Gemini 3.8 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'El más potente de los gratuitos de Google, pensando al máximo. El recomendado.' },
+  'gemini-3.6-flash': { n: 'Gemini 3.6 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Por si el 3.8 te da límite.' },
+  'gemini-3.5-flash-lite': { n: 'Gemini 3.5 Flash-Lite', prov: 'google', gratis: true, txt: 'Muy rápido, para dudas sencillas.' },
 };
 const MODELO_DEF = 'gemini-3.8-flash';
-const PROV = { google: { n: 'Google', ia: 'Gemini' }, anthropic: { n: 'Anthropic', ia: 'Claude' } };
-const AS = { conv: [], api: [], foto: null, fotoT: 0, claves: { google: null, anthropic: null }, cargando: false, ctrl: null, vista: 'chat', cargada: false, sinWeb: false, gasto: 0 };
+const PROV = { google: { n: 'Google', ia: 'Gemini' } };
+const AS = { conv: [], api: [], foto: null, fotoT: 0, claves: { google: null }, cargando: false, ctrl: null, vista: 'chat', cargada: false, sinWeb: false, gasto: 0 };
 Object.defineProperty(AS, 'clave', { get() { return AS.claves[cfgAsesor().prov]; }, set(v) { AS.claves[cfgAsesor().prov] = v; } });
 function cfgAsesor() {
   const c = LS.get('inv-asesor-cfg2', {});
@@ -4164,8 +4228,8 @@ function cfgAsesor() {
   return { modelo, prov, web: c.web !== false && !webFalla, webPedida: c.web !== false, webFalla, auto: ['diario', 'semanal', 'manual'].includes(c.auto) ? c.auto : 'diario' };
 }
 const guardarCfgAsesor = (o) => LS.set('inv-asesor-cfg2', { ...LS.get('inv-asesor-cfg2', {}), ...o });
-const nombreIA = (modelo) => PROV[(MODELOS[modelo || cfgAsesor().modelo] || {}).prov || 'google'].ia;
-const LS_CLAVE = { anthropic: 'inv-asesor-clave', google: 'inv-asesor-clave-g' }, CAMPO_CLAVE = { anthropic: 'clave', google: 'clave_g' };
+const nombreIA = () => 'Gemini';
+const LS_CLAVE = { google: 'inv-asesor-clave-g' }, CAMPO_CLAVE = { google: 'clave_g' };
 const R2 = (n, d = 2) => (n == null || !isFinite(n) ? null : Math.round(n * 10 ** d) / 10 ** d);
 const E0 = (n) => fmtNum(n, 0) + ' €', E2 = (n) => fmtNum(n, 2) + ' €';
 const eurP = (n, d = 2) => (n > 0 ? '+' : '') + fmtNum(n, d) + ' €';
@@ -4186,7 +4250,7 @@ async function descifrarLocal(o) {
 async function cargarAsesor() {
   if (AS.cargada || !S.key) return;
   AS.cargada = true;
-  for (const prov of ['google', 'anthropic']) {
+  for (const prov of ['google']) {
     const c = LS.get(LS_CLAVE[prov]);
     if (c) { try { AS.claves[prov] = await descifrarLocal(c); } catch (e) { LS.del(LS_CLAVE[prov]); } }
     const enCartera = S.cartera && S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[prov]];
@@ -4199,7 +4263,7 @@ async function guardarConv() {
   if (!S.key) return;
   try { LS.set('inv-asesor-conv', await cifrarLocal({ conv: AS.conv.slice(-60), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
 }
-function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, claves: { google: null, anthropic: null }, cargada: false, gasto: 0 }); }
+function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, claves: { google: null }, cargada: false, gasto: 0 }); }
 
 /* guarda la cartera sin avisos ni descargas (para lo que hace la web sola, como el análisis diario) */
 async function guardarCarteraCallada(mensaje) {
@@ -4233,7 +4297,7 @@ function buscarRadar(q) {
     || null;
 }
 
-/* ---------- la foto de la cartera que recibe Claude ---------- */
+/* ---------- la foto de la cartera que recibe la IA ---------- */
 function fichaTexto(f) {
   const i = f.inst, p = f.p || {}, a = p.analistas || {}, fu = p.fundamentales || {}, r = p.rent || {}, t = p.tecnico || {};
   const L = [];
@@ -4331,11 +4395,19 @@ function contextoAsesor(M) {
     L.push('', '## Titulares recientes (Google Noticias)');
     if (N.mercado) L.push('Mercado:\n' + tit(N.mercado, 10));
     for (const id of new Set(M.filas.map((f) => f.inst.id))) if (N[id] && N[id].length) L.push(`${nombreInst(id)}:\n` + tit(N[id], 5));
+    const inf = S.informe;
+    if (inf && inf.resumen) {
+      L.push('', `## Informe de prensa de Gemini (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, `Resumen: ${inf.resumen}`);
+      for (const m of inf.mercado || []) L.push(`- Mercado (${m.impacto}): ${m.t}. ${m.detalle || ''}`);
+      for (const [id, x] of Object.entries(inf.posiciones || {})) L.push(`- ${nombreInst(id)} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Vigilar: ${x.vigilar || '—'}. Fuentes: ${(x.fuentes || []).map((f) => f.f || '').filter(Boolean).join(', ') || '—'}`);
+      for (const [s0, x] of Object.entries(inf.ideas || {})) L.push(`- Idea ${s0} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Riesgo: ${x.riesgo || '—'}.`);
+      for (const a of inf.alertas || []) L.push(`- Alerta (${a.urgencia}): ${a.t}`);
+    }
     const ia = iaActual();
     if (ia) {
       const v = valoresIA(M);
       const T = (t) => String(t || '').replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (mm, k, id) => { const x = id ? v[k] && v[k][id] : v[k]; return x != null && typeof x !== 'object' ? x : '—'; }).replace(/\*\*/g, '');
-      L.push('', `## Último análisis de ${ia.autor || 'la IA'} (${ia.fecha ? fechaLarga(String(ia.fecha).slice(0, 10)) : ''})`);
+      L.push('', `## ${ia.publicado ? 'Análisis de partida publicado' : 'Tu último análisis'} (${ia.fecha ? fechaLarga(String(ia.fecha).slice(0, 10)) : ''})`);
       L.push(T(ia.titular)); for (const p of ia.resumen || []) L.push(T(p));
       if (ia.mejorar) L.push('Qué mejorar: ' + ia.mejorar.map((x) => T(x.titulo)).join('; ') + '.');
       if (ia.riesgos) L.push('Riesgos: ' + ia.riesgos.map((x) => T(x.titulo)).join('; ') + '.');
@@ -4379,7 +4451,7 @@ Fiscalidad en España en ${anio}:
 - Comisiones: Trade Republic 1 € por operación; los fondos de MyInvestor no cobran por comprar ni vender; Bitvavo, alrededor del 0,25 %.`;
 }
 
-/* ---------- herramientas: el motor de la web al servicio de Claude ---------- */
+/* ---------- herramientas: el motor de la web al servicio de la IA ---------- */
 const HERRAMIENTAS = [
   { name: 'simular_venta', description: 'Calcula una venta de una de sus posiciones con el motor de la web: unidades, importe, comisión, valor de compra por FIFO, ganancia o pérdida y el impuesto extra en la renta de este año contando lo que ya lleva. Úsala siempre antes de recomendar vender.', input_schema: { type: 'object', properties: { posicion: { type: 'string', description: 'id o nombre de la posición, por ejemplo "repsol" o "S&P 500"' }, unidades: { type: 'number' }, importe: { type: 'number', description: 'euros a vender, en vez de unidades' }, porcentaje: { type: 'number', description: 'porcentaje de la posición a vender, en vez de unidades' }, precio: { type: 'number', description: 'precio de venta en euros; si no se pone, el actual' } }, required: ['posicion'] } },
   { name: 'simular_compra', description: 'Calcula la compra de una acción o fondo (de su cartera o del radar de la web, con cientos de empresas de EEUU y Europa): tasa del país, comisión, unidades, cómo queda su límite de acciones sueltas, cuánto pesa ya ese sector y cuánto tiene ya de esa empresa dentro de sus fondos.', input_schema: { type: 'object', properties: { empresa: { type: 'string', description: 'ticker o nombre' }, importe: { type: 'number', description: 'euros a invertir' }, plataforma: { type: 'string', description: 'Trade Republic, MyInvestor o Bitvavo' } }, required: ['empresa', 'importe'] } },
@@ -4387,7 +4459,6 @@ const HERRAMIENTAS = [
   { name: 'proyectar', description: 'Simula 2.000 escenarios de su cartera con otra aportación mensual, subida anual de la aportación o rentabilidad de la bolsa.', input_schema: { type: 'object', properties: { aportacion_mensual: { type: 'number' }, anios: { type: 'integer', description: 'de 1 a 30' }, subida_anual_aportacion: { type: 'number', description: '% al año' }, rentabilidad_bolsa: { type: 'number', description: '% anual a largo plazo, por defecto 7' } }, required: ['aportacion_mensual'] } },
   { name: 'historico', description: 'Evolución de una de sus posiciones o de un índice entre dos fechas: precio inicial y final, cambio, máximo, mínimo y peor caída. Índices: Ibex 35, Euro Stoxx 50, DAX, S&P 500, Nasdaq 100, Nikkei 225, Brent, Oro, Bitcoin, Euro/dólar, VIX, Bono EEUU 10 años.', input_schema: { type: 'object', properties: { activo: { type: 'string' }, desde: { type: 'string', description: 'AAAA-MM-DD' }, hasta: { type: 'string', description: 'AAAA-MM-DD, por defecto hoy' } }, required: ['activo', 'desde'] } },
 ];
-const BUSQUEDA_WEB = { type: 'web_search_20250305', name: 'web_search', max_uses: 5, user_location: { type: 'approximate', country: 'ES', timezone: 'Europe/Madrid' } };
 
 function hSimularVenta(q) {
   const f = buscarFila(q.posicion);
@@ -4516,107 +4587,9 @@ function pasoTxt(nombre, q = {}) {
   return 'Calcula';
 }
 
-/* ---------- llamada a la API con respuesta en directo ---------- */
-function errorApi(estado, j) {
-  const m = (j && j.error && j.error.message) || '';
-  if (estado === 401) return new Error('La clave de la API no es válida. Cámbiala en los ajustes del asesor.');
-  if (estado === 403) return new Error('Tu clave no tiene permiso para este modelo.');
-  if (estado === 429) return new Error('Demasiadas preguntas seguidas. Espera un minuto.');
-  if (estado === 529 || estado === 503) return new Error('Anthropic está saturado ahora mismo. Prueba en un momento.');
-  if (/credit balance|billing/i.test(m)) return new Error('Tu cuenta de Anthropic no tiene saldo. Recárgala en console.anthropic.com, en Billing.');
-  const e = new Error(m || `Error ${estado} de la API`); e.estado = estado; e.msg = m; return e;
-}
-async function llamarClaude(clave, cfg, cuerpo, turno, signal, alCambiar) {
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST', signal,
-    headers: { 'content-type': 'application/json', 'x-api-key': clave, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ ...cuerpo, model: cfg.modelo, stream: true }),
-  });
-  if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorApi(r.status, j); }
-  const lector = r.body.getReader(), dec = new TextDecoder();
-  let buf = '', stop = null;
-  const bloques = [], partes = {}, uso = {};
-  const procesar = (ev) => {
-    if (ev.type === 'message_start') Object.assign(uso, ev.message && ev.message.usage);
-    else if (ev.type === 'content_block_start') {
-      const b = JSON.parse(JSON.stringify(ev.content_block)); bloques[ev.index] = b;
-      if (b.type === 'text') { b.text = b.text || ''; const p = { tipo: 'texto', texto: b.text }; turno.partes.push(p); partes[ev.index] = p; }
-      else if (b.type === 'tool_use' || b.type === 'server_tool_use') { b._json = ''; const p = { tipo: 'paso', web: b.type === 'server_tool_use', txt: b.type === 'server_tool_use' ? 'Busca en internet' : pasoTxt(b.name) }; turno.partes.push(p); partes[ev.index] = p; }
-      else if (b.type === 'web_search_tool_result') {
-        const res = Array.isArray(b.content) ? b.content : [];
-        for (const x of res) if (x.url) turno.resultados.push({ t: x.title || x.url, u: x.url });
-        if (!Array.isArray(b.content) && b.content && b.content.error_code) turno.partes.push({ tipo: 'paso', web: true, txt: 'La búsqueda en internet ha fallado' });
-      }
-    } else if (ev.type === 'content_block_delta') {
-      const b = bloques[ev.index], d = ev.delta || {};
-      if (!b) return;
-      if (d.type === 'text_delta') { b.text += d.text; if (partes[ev.index]) partes[ev.index].texto = b.text; }
-      else if (d.type === 'input_json_delta') b._json += d.partial_json || '';
-      else if (d.type === 'citations_delta' && d.citation) { if (d.citation.url) turno.citas.push({ t: d.citation.title || d.citation.url, u: d.citation.url }); }
-    } else if (ev.type === 'content_block_stop') {
-      const b = bloques[ev.index];
-      if (b && (b.type === 'tool_use' || b.type === 'server_tool_use')) {
-        try { b.input = b._json ? JSON.parse(b._json) : (b.input || {}); } catch (e) { b.input = {}; }
-        if (partes[ev.index]) partes[ev.index].txt = pasoTxt(b.name, b.input);
-      }
-    } else if (ev.type === 'message_delta') { if (ev.delta && ev.delta.stop_reason) stop = ev.delta.stop_reason; Object.assign(uso, ev.usage || {}); }
-    else if (ev.type === 'error') throw new Error((ev.error && ev.error.message) || 'Error en la respuesta');
-    alCambiar();
-  };
-  for (;;) {
-    const { done, value } = await lector.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true });
-    let i;
-    while ((i = buf.indexOf('\n\n')) >= 0) {
-      const trozo = buf.slice(0, i); buf = buf.slice(i + 2);
-      const datos = trozo.split('\n').filter((l) => l.startsWith('data:')).map((l) => l.slice(5).trim()).join('');
-      if (!datos) continue;
-      let ev; try { ev = JSON.parse(datos); } catch (e) { continue; }
-      procesar(ev);
-    }
-  }
-  const contenido = bloques.filter(Boolean).map((b) => {
-    if (b.type === 'text') return { type: 'text', text: b.text };
-    if (b.type === 'tool_use' || b.type === 'server_tool_use') return { type: b.type, id: b.id, name: b.name, input: b.input || {} };
-    const { _json, ...resto } = b; return resto;
-  }).filter((b) => b.type !== 'text' || b.text);
-  return { contenido, stop, uso };
-}
-function costeUso(uso, modelo) {
-  const m = MODELOS[modelo] || MODELOS['claude-sonnet-5-5'];
-  const t = ((uso.input_tokens || 0) * m.in + (uso.cache_creation_input_tokens || 0) * m.in * 1.25 + (uso.cache_read_input_tokens || 0) * m.in * 0.1 + (uso.output_tokens || 0) * m.out) / 1e6;
-  return t + ((uso.server_tool_use && uso.server_tool_use.web_search_requests) || 0) * 0.01;
-}
-
 /* Una vuelta completa: la IA responde, pide herramientas, se las damos y sigue hasta terminar */
-function conversar(o) { return cfgAsesor().prov === 'google' ? conversarGemini(o) : conversarClaude(o); }
-async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web }) {
-  const cfg = cfgAsesor();
-  const clave = AS.clave;
-  const msgs = [...mensajes];
-  let usarWeb = web !== false && cfg.web && !AS.sinWeb;
-  for (let vuelta = 0; vuelta < 10; vuelta++) {
-    const cuerpo = { max_tokens: maxTokens, system: sistema, tools: [...HERRAMIENTAS, ...(usarWeb ? [BUSQUEDA_WEB] : [])], messages: msgs };
-    let r;
-    try { r = await llamarClaude(clave, cfg, cuerpo, turno, signal, alCambiar); }
-    catch (e) {
-      if (usarWeb && e.estado === 400 && /web_search|tool/i.test(e.msg || '')) { AS.sinWeb = true; usarWeb = false; turno.partes.push({ tipo: 'paso', web: true, txt: 'Tu cuenta no tiene la búsqueda en internet activada: sigo sin ella' }); alCambiar(); vuelta--; continue; }
-      throw e;
-    }
-    turno.coste = (turno.coste || 0) + costeUso(r.uso, cfg.modelo);
-    msgs.push({ role: 'assistant', content: r.contenido });
-    if (r.stop === 'tool_use') {
-      const res = r.contenido.filter((b) => b.type === 'tool_use').map((b) => { const out = ejecutarHerramienta(b.name, b.input); return { type: 'tool_result', tool_use_id: b.id, content: JSON.stringify(out), ...(out && out.error ? { is_error: true } : {}) }; });
-      msgs.push({ role: 'user', content: res });
-      continue;
-    }
-    if (r.stop === 'pause_turn') continue;
-    if (r.stop === 'max_tokens') turno.partes.push({ tipo: 'paso', txt: 'La respuesta se ha cortado por larga. Pídele que siga.' });
-    break;
-  }
-  return msgs;
-}
+function conversar(o) { return conversarGemini(o); }
+
 /* ---------- Gemini (API de Google AI Studio): mismas herramientas, mismo formato de turnos ---------- */
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
 let MODO_CLAVE_G = LS.get('inv-gkey-modo', 'cabecera');
@@ -4781,7 +4754,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
   }
   return contents;
 }
-const sistemaAsesor = () => [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: AS.foto, cache_control: { type: 'ephemeral' } }];
+const sistemaAsesor = () => [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: AS.foto }];
 function refrescarFoto(forzar) {
   if (forzar || !AS.foto || Date.now() - AS.fotoT > 10 * 60000) { S.M = S.M || calcular(); AS.foto = contextoAsesor(S.M); AS.fotoT = Date.now(); }
 }
@@ -4875,7 +4848,7 @@ function htmlTurno(t, k) {
 }
 function htmlClaveAsesor() {
   const cfg = cfgAsesor();
-  if (cfg.prov === 'google') return `<div class="as-config">
+  return `<div class="as-config">
     <h3>Conecta Gemini, gratis</h3>
     <p>El asesor usa ${esc(MODELOS[cfg.modelo].n)}, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
     <ol class="as-pasos-clave">
@@ -4886,31 +4859,12 @@ function htmlClaveAsesor() {
     <label class="campo">Clave de Google<input type="password" id="asClave" placeholder="AQ.… o AIza…" autocomplete="off" spellcheck="false"></label>
     <label class="check"><input type="checkbox" id="asSync"> Guardarla también en tu cartera cifrada, para no tener que ponerla en el móvil</label>
     <div class="error" id="asErr"></div>
-    <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${AS.claves.anthropic || AS.clave ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
+    <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${AS.clave ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
     <p class="nota" style="margin:0">El plan gratuito tiene un tope de preguntas por minuto y por día (los tuyos, en aistudio.google.com/rate-limit); si lo pasas, el asesor espera o te avisa. No actives la facturación en ese proyecto o empezará a cobrarte. Desde España, por las condiciones de Google para la UE, lo que mandas con la clave gratuita no se usa para mejorar sus productos.</p>
     <div class="as-sin-clave">
       <b>Sin clave</b>
       <p>Copia tu cartera de ahora mismo junto con tu pregunta y pégala en un chat de Gemini. No hace los cálculos de la web en directo, pero tiene todos tus datos.</p>
       <button class="btn" data-as="copiar">${ICONOS.copiar}Copiar mi cartera para Gemini</button>
-    </div>
-    <p class="nota" style="margin:0">¿Prefieres Claude, de pago? <button class="enlace acento" data-as="ajustes">Cámbialo en los ajustes</button>.</p>
-  </div>`;
-  return `<div class="as-config">
-    <h3>Conecta tu cuenta de Anthropic</h3>
-    <p>El asesor usa Claude a través de la API, que va aparte de tu suscripción y se paga por uso. Con ${MODELOS[cfg.modelo].n}, una pregunta normal cuesta unos 2-4 céntimos, y el análisis diario unos 10-15.</p>
-    <ol class="as-pasos-clave">
-      <li>Entra en <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>, en Settings y luego API keys, y crea una clave.</li>
-      <li>En Billing, carga algo de saldo (con 5 € tienes para semanas) y, si quieres, pon un límite de gasto mensual.</li>
-      <li>Pégala aquí. Se guarda cifrada con la clave de tu cartera y solo viaja de tu navegador a Anthropic.</li>
-    </ol>
-    <label class="campo">Clave de la API<input type="password" id="asClave" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"></label>
-    <label class="check"><input type="checkbox" id="asSync"> Guardarla también en tu cartera cifrada, para no tener que ponerla en el móvil</label>
-    <div class="error" id="asErr"></div>
-    <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${AS.clave ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
-    <div class="as-sin-clave">
-      <b>Sin clave</b>
-      <p>Copia tu cartera de ahora mismo junto con tu pregunta y pégala en un chat de Claude. No hace los cálculos de la web en directo, pero tiene todos tus datos.</p>
-      <button class="btn" data-as="copiar">${ICONOS.copiar}Copiar mi cartera para Claude</button>
     </div>
   </div>`;
 }
@@ -4919,14 +4873,14 @@ function htmlAjustesAsesor() {
   const yo = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
   return `<div class="as-config">
     <h3>Ajustes del asesor</h3>
-    ${[['google', 'Google, con tu clave de AI Studio'], ['anthropic', 'Anthropic (Claude), de pago']].map(([pv, t]) => `<fieldset class="as-modelos"><legend>${t}</legend>${Object.entries(MODELOS).filter(([, m]) => m.prov === pv).map(([k, m]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${cfg.modelo === k ? ' checked' : ''}><span><b>${m.n}${m.gratis ? ' <span class="chip good">gratis</span>' : ''}</b><small>${m.txt}</small></span></label>`).join('')}</fieldset>`).join('')}
-    <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> Puede buscar en internet${cfg.prov === 'google' ? ' con Google' : ' (1 céntimo por búsqueda)'}</label>
+    <fieldset class="as-modelos"><legend>Modelo de Gemini (todos gratis con tu clave)</legend>${Object.entries(MODELOS).map(([k, m]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${cfg.modelo === k ? ' checked' : ''}><span><b>${m.n}</b><small>${m.txt}</small></span></label>`).join('')}</fieldset>
+    <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> Puede buscar en internet con Google</label>
     ${cfg.webFalla ? '<p class="nota" style="margin:-6px 0 0">Tu plan de Google no incluye la búsqueda en internet: de momento la IA contrasta con los titulares que baja la web. Lo vuelve a intentar dentro de unos días.</p>' : ''}
-    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe la IA con tus cifras y las noticias del día, en Análisis. ${MODELOS[cfg.modelo].gratis ? 'Con Gemini gratis no cuesta nada.' : 'Unos 10-15 céntimos cada vez.'}</small></label>
+    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe Gemini con tus cifras y las noticias del día, en Análisis, Expertos y Paso a paso. Gratis.</small></label>
     <label class="campo">Lo que quieres que sepa de ti<textarea id="asYo" rows="6" placeholder="Por ejemplo: tu edad, para qué inviertes, si piensas comprar casa y cuándo, cuánto riesgo aguantas, tus reglas para las apuestas…">${esc(yo)}</textarea><small>Va dentro de tu cartera cifrada y lo lee al empezar cada conversación.</small></label>
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
-    <div class="seccion-ed"><h3>Clave de ${PROV[cfg.prov].n}</h3>
-      <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[cfg.prov]] ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'}${AS.gasto ? ` Gasto aproximado en modelos de pago en este dispositivo: ${fmtNum(AS.gasto, 2)} $.` : ''}</p>
+    <div class="seccion-ed"><h3>Clave de Google</h3>
+      <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[cfg.prov]] ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'}</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-as="cambiar-clave">Cambiar clave</button>${AS.clave ? '<button class="btn peq peligro" data-as="borrar-clave">Borrar clave</button>' : ''}</div>
     </div>
   </div>`;
@@ -4945,10 +4899,7 @@ function pintarAsesor(alFinal) {
   const b = $('#asEnviar', fondo);
   b.classList.toggle('parar', AS.cargando); b.innerHTML = AS.cargando ? ICONOS.parar : ICONOS.enviar;
   b.setAttribute('aria-label', AS.cargando ? 'Parar' : 'Enviar'); b.disabled = false;
-  const gratis = MODELOS[cfg.modelo].gratis, pv = PROV[cfg.prov].n;
-  $('#asNota', fondo).textContent = gratis
-    ? `Gratis con tu clave de Google. Tus datos van de tu navegador a Google, cifrados en el camino; no pasan por GitHub.`
-    : AS.conv.length ? `Esta conversación: unos ${fmtNum(sum(AS.conv, (t) => t.coste || 0), 2)} $. Tus datos van de tu navegador a ${pv}.` : `Tus datos van de tu navegador a ${pv}, cifrados en el camino. No pasan por GitHub.`;
+  $('#asNota', fondo).textContent = 'Gratis con tu clave de Google. Tus datos van de tu navegador a Google, cifrados en el camino; no pasan por GitHub.';
   if (vista === 'chat') cuerpo.scrollTop = cuerpo.scrollHeight; else cuerpo.scrollTop = 0;
 }
 function pintarTurno(k) {
@@ -5002,28 +4953,20 @@ function cerrarAsesor() {
 }
 async function probarClave(clave) {
   const cfg = cfgAsesor();
-  if (cfg.prov === 'google') {
-    const r = await fetchGoogle(`${GEMINI}/models/${cfg.modelo}`, {}, clave);
-    if (r.ok) return;
-    let j = null; try { j = await r.json(); } catch (e) {}
-    if (r.status === 404) { const m = await mejorFlash(clave); if (m) { guardarCfgAsesor({ modelo: m }); return; } }
-    throw errorGoogle(r.status, j);
-  }
-  const r = await fetch('https://api.anthropic.com/v1/messages', {
-    method: 'POST',
-    headers: { 'content-type': 'application/json', 'x-api-key': clave, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
-    body: JSON.stringify({ model: cfg.modelo, max_tokens: 5, messages: [{ role: 'user', content: 'Di hola' }] }),
-  });
-  if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorApi(r.status, j); }
+  const r = await fetchGoogle(`${GEMINI}/models/${cfg.modelo}`, {}, clave);
+  if (r.ok) return;
+  let j = null; try { j = await r.json(); } catch (e) {}
+  if (r.status === 404) { const m = await mejorFlash(clave); if (m) { guardarCfgAsesor({ modelo: m }); return; } }
+  throw errorGoogle(r.status, j);
 }
-async function copiarParaClaude() {
+async function copiarCartera() {
   refrescarFoto(true);
   const q = ($('#asTexto') && $('#asTexto').value.trim()) || '';
-  const google = cfgAsesor().prov === 'google', ia = google ? 'Gemini' : 'Claude';
+  const ia = 'Gemini';
   const texto = `${instruccionesAsesor()}\n\n${AS.foto}\n\n${q ? `Mi pregunta: ${q}` : 'Mi pregunta: '}`;
   try { await navigator.clipboard.writeText(texto); toast(`Copiado. Pégalo en un chat de ${ia} y escribe tu pregunta al final.`, 6000); }
   catch (e) { descargar(`cartera-para-la-ia-${hoyIso()}.txt`, texto); toast('No se pudo copiar: te lo he descargado como texto.', 6000); }
-  window.open(google ? 'https://gemini.google.com/app' : 'https://claude.ai/new', '_blank', 'noopener');
+  window.open('https://gemini.google.com/app', '_blank', 'noopener');
 }
 async function clicAsesor(e) {
   const t = e.target.closest('[data-as],[data-as-q]'); if (!t) return;
@@ -5034,7 +4977,7 @@ async function clicAsesor(e) {
   else if (a === 'ajustes') { AS.vista = AS.vista === 'ajustes' ? 'chat' : 'ajustes'; pintarAsesor(); }
   else if (a === 'chat') { AS.vista = 'chat'; pintarAsesor(true); }
   else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }
-  else if (a === 'copiar') copiarParaClaude();
+  else if (a === 'copiar') copiarCartera();
   else if (a === 'reintentar') {
     let k = AS.conv.length - 1; while (k >= 0 && AS.conv[k].rol !== 'yo') k--;
     if (k < 0) return;
@@ -5047,7 +4990,6 @@ async function clicAsesor(e) {
   } else if (a === 'guardar-clave') {
     const c = $('#asClave', fondo).value.trim(), err = $('#asErr', fondo), pv = cfgAsesor().prov;
     if (pv === 'google' && !/^[\w.-]{30,}$/.test(c)) { err.textContent = 'Eso no parece una clave de Google AI Studio: son una sola línea larga, sin espacios, que empieza por AQ. o por AIza.'; return; }
-    if (pv === 'anthropic' && !/^sk-ant-/.test(c)) { err.textContent = 'Las claves de Anthropic empiezan por sk-ant-.'; return; }
     t.disabled = true; t.textContent = 'Probando…'; err.textContent = '';
     try {
       await probarClave(c);
@@ -5143,7 +5085,7 @@ async function recargarPrecios() {
   try { await cargarPrecios(); } catch (e) { return; }
   if (!S.cartera) return;
   if (S.precios.generado !== antes) {
-    await Promise.all([cargarHistorico(), cargarIA(), cargarRadar()]);
+    await Promise.all([cargarHistorico(), cargarIA(), cargarRadar(), cargarInforme()]);
     pintar(); LIVE.resuscribir();
   } else programarParche();
   revisarAnalisisIA();
@@ -5170,7 +5112,7 @@ window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); reca
 async function iniciar() {
   $('#app').innerHTML = '<div class="pantalla"><div class="caja" style="text-align:center;justify-items:center"><img class="logo" src="icon-192.png" alt=""><p>Cargando…</p></div></div>';
   try {
-    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarRadar()])), cargarCifrada(), leerAnalisisRemoto()]);
+    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarRadar(), cargarInforme()])), cargarCifrada(), leerAnalisisRemoto()]);
     S.enc = enc; S.iaRemoto = iaRem;
   } catch (e) {
     console.error(e);
