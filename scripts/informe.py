@@ -46,7 +46,7 @@ LOTE_LECTURA = 70           # empresas que lee Gemini en cada pasada
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
 CANDIDATAS = 45             # empresas entre las que decide cada 2 horas
-DECISION_V = 2              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
+DECISION_V = 3              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
 NOTICIAS_POR_ACTIVO = 8
 # para los fondos, las noticias de lo que siguen
 NOTICIAS_DE = {"ishares-us": "^GSPC", "amundi-europe": "^STOXX50E", "vanguard-em": "EEM", "vanguard-smallcap": "VSS", "nb-short": None, "phau": "GC=F", "btc": "BTC-USD"}
@@ -139,6 +139,8 @@ MODO = "cabecera"
 
 
 ERRORES = []                # lo que ha fallado con Gemini en esta pasada (va a escaneo.json para verlo en la web)
+FALLOS = []                 # las llamadas que no salieron ni con los modelos de reserva
+USADOS = set()              # los modelos que han respondido
 RESERVA = ["gemini-3.6-flash", "gemini-3.5-flash-lite"]  # si se acaba el cupo gratuito del modelo principal
 
 
@@ -147,20 +149,28 @@ def gemini(cuerpo, clave, reserva=True):
     propio cupo gratuito. Si un modelo no acepta el nivel de razonamiento, lo quita."""
     for modelo in [MODELO] + ([m for m in RESERVA if m != MODELO] if reserva else []):
         try:
-            return gemini_modelo(cuerpo, clave, modelo)
+            r = gemini_modelo(cuerpo, clave, modelo)
+            USADOS.add(modelo)
+            return r
         except RuntimeError as e:
             txt = str(e)
             if txt.startswith("400") and re.search(r"thinking", txt, re.I):
                 gc = dict(cuerpo.get("generationConfig") or {})
                 gc.pop("thinkingConfig", None)
                 try:
-                    return gemini_modelo({**cuerpo, "generationConfig": gc}, clave, modelo)
+                    r = gemini_modelo({**cuerpo, "generationConfig": gc}, clave, modelo)
+                    USADOS.add(modelo)
+                    return r
                 except RuntimeError as e2:
                     txt = str(e2)
             ERRORES.append(f"{modelo}: {txt[:160]}")
             if not (txt.startswith("429") or txt.startswith("404") or txt.startswith("5")):
+                if reserva:
+                    FALLOS.append(txt[:160])
                 raise
             print(f"gemini: {modelo} no responde ({txt[:80]}), pruebo otro")
+    if reserva:
+        FALLOS.append(ERRORES[-1] if ERRORES else "sin respuesta")
     raise RuntimeError(ERRORES[-1] if ERRORES else "sin respuesta")
 
 
@@ -555,6 +565,18 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave):
     buenas.sort(key=lambda t: -t[0])
     malas.sort(key=lambda t: -t[0])
     cands = [x for _, x in buenas[:CANDIDATAS]] + [x for _, x in malas[:10]]
+    # las que más le gustan a la web (consenso de compra, recorrido y contraste), aunque no tengan prensa
+    # reciente: Gemini les pone plazo para que la web no compare su "al año" con el de los analistas
+    ya = {x["s"] for x in cands}
+    web = []
+    for x in valores:
+        if x["s"] in tuyas or x["s"] in ya or x.get("pot") is None:
+            continue
+        fav, con = P.contraste_idea(x, medianas)
+        if x["pot"] >= 10 and (x.get("na") or 0) >= 8 and (x.get("rm") or 9) <= 2.4 and x.get("r") in ("buy", "strong_buy") and fav >= 3 and con <= 2 and (x.get("c1a") or 0) > -35:
+            web.append((fav - 0.9 * con + min(x["pot"], 50) / 25, x))
+    web.sort(key=lambda t: -t[0])
+    cands += [x for _, x in web[:15]]
     if not cands:
         return None
     fuentes, bloques = [], []
@@ -606,7 +628,7 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave):
     for i in ideas:
         if i.get("plazo_meses") and i.get("subida_pct") is not None and i["s"] not in plazos:
             plazos[i["s"]] = {"meses": i["plazo_meses"], "subida_pct": i["subida_pct"], "por": str(i.get("catalizador") or "")[:120]}
-    return {"generado": ahora(), "modelo": MODELO, "v": DECISION_V, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar, "plazos": plazos, "candidatas": len(cands)}
+    return {"generado": ahora(), "modelo": ", ".join(sorted(USADOS)) or MODELO, "v": DECISION_V, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar, "plazos": plazos, "candidatas": len(cands)}
 
 
 def main(ruta_inst, dir_anterior, dir_salida):
@@ -641,7 +663,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: falló la decisión de Gemini ({str(e)[:200]})")
     hace24 = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=24)
-    salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "gemini": {"ok": not ERRORES, "errores": ERRORES[-6:], "con_clave": bool(clave)},
+    salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "gemini": {"ok": not FALLOS, "errores": (FALLOS or ERRORES)[-4:], "modelos": sorted(USADOS), "con_clave": bool(clave)},
               "con_noticias": sum(1 for v in cache.values() if v.get("n")), "leidas_24h": sum(1 for v in lectura.values() if cuando(v.get("d")) and cuando(v["d"]) > hace24),
               "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores), "fuentes_pasada": DIAG}
     with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:

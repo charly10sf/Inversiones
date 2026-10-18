@@ -2259,9 +2259,13 @@ function vistaExpertos(M) {
 function puntuarIdea(x, ctx) {
   const motivos = [], pegas = [];
   let p = 0;
-  const pot = Math.min(x.pot, 50);
+  // el recorrido cuenta con su plazo: si Gemini ha estimado cuánto y en cuánto tiempo, se promedia con
+  // lo de los analistas (a 12 meses) pasado a "al año"
+  const g = plazoGemini(x.s);
+  const potG = g ? anualizar(g.subida_pct, Math.max(g.meses, 3)) : null;
+  const pot = Math.max(-50, Math.min(potG != null ? (x.pot + potG) / 2 : x.pot, 50));
   p += 1.2 * (pot / 50);
-  motivos.push(`los analistas le ven un ${fmtNum(x.pot, 0)} % de recorrido`);
+  motivos.push(`los analistas le ven un ${fmtNum(x.pot, 0)} % de recorrido${g ? ` y Gemini, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`);
   const rm = x.rm ?? 3;
   p += Math.max(-1, Math.min(1, (2.6 - rm) / 1.6));
   if (rm <= 1.6) motivos.push(`consenso de compra fuerte entre ${x.na} analistas`);
@@ -2432,7 +2436,7 @@ function htmlCifrasIdea(r, e) {
   if (!r || !r.p) return '';
   const p = e && e.prin;
   const plazo = p ? `<b>${plazoTxt(p.meses)}</b><small>${p === e.ia ? esc(`según ${p.fuente}${e.ia.por ? `: ${limpiaIA(e.ia.por)}` : ''}`) : 'el de los analistas'}</small>` : '—';
-  const neto = p && p.netoAnual != null ? `<b class="${cls(p.netoAnual)}">${pctS(p.netoAnual, 0)}</b><small>${p.netoAnual < bolsaAnual() ? 'menos que tu fondo indexado' : `tu fondo indexado: ${fmtNum(bolsaAnual(), 0)} %`}</small>` : '—';
+  const neto = p && p.netoAnual != null ? `<b class="${cls(p.netoAnual)}">${pctS(p.netoAnual, 0)}</b><small>${p.meses !== 12 ? `${pctS(p.netoP, 0)} neto en ${plazoTxt(p.meses)}; ` : ''}${p.netoAnual < bolsaAnual() ? 'menos que tu fondo indexado' : `tu fondo indexado: ${fmtNum(bolsaAnual(), 0)} %`}</small>` : '—';
   return `<div class="idea-cifras4">
     <div><span class="k">Precio</span><b>${B('rp:' + r.s)}</b></div>
     <div><span class="k">Puede subir</span><b class="${cls(p ? p.subida : r.pot)}">${pctS(p ? p.subida : r.pot, 0)}</b><small>${p && p === e.ia ? `analistas: ${pctS(r.pot, 0)} a 12 meses` : 'hasta el objetivo medio'}</small></div>
@@ -2486,7 +2490,7 @@ function htmlIdeas(M, ia) {
   const todas = radarVals();
   if (!todas.length) return '<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2></div><div class="vacio">La lista de ideas llega con la próxima actualización de datos.</div>';
   const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
-  const juntas = ideasJuntas(M, ia).slice(0, 6);
+  const juntas = ideasJuntas(M, ia).slice(0, 8);
   const ctx = ctxIdeas(M);
   const d = S.escaneo && S.escaneo.decision;
   let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => { const e = esperadaRadar(x); return { ...x, _ctr: contraste(x), _neto: e ? e.prin.netoAnual : null, _meses: e ? e.prin.meses : null }; });
@@ -3107,7 +3111,9 @@ function rentaEsperada(x, subida, meses, fuente) {
   const divP = ((x.div || 0) * meses) / 12;
   const ganP = subida > 0 ? subida * (1 - t) : subida;
   const netoP = ganP + divP * (1 - t - fis.pierde / 100) - (tasa ? tasa.tipo * 100 : 0);
-  return { subida, meses, fuente, divP, netoP, netoAnual: anualizar(netoP, meses), brutoAnual: anualizar(subida + divP, meses), t, fis, tasa };
+  // un subidón en un mes no se puede repetir cada mes: para pasarlo a "al año" se cuentan al menos 3 meses
+  const mA = Math.max(meses, 3);
+  return { subida, meses, fuente, divP, netoP, netoAnual: anualizar(netoP, mA), brutoAnual: anualizar(subida + divP, mA), t, fis, tasa };
 }
 const plazoTxt = (m) => (m == null ? '' : m < 1.5 ? 'un mes' : m < 12 ? `${Math.round(m)} meses` : m === 12 ? '12 meses' : m % 12 === 0 ? `${m / 12} años` : `${fmtNum(m / 12, 1)} años`);
 /* cuánto llevas ganando al año en una posición: con la fecha de cada compra (o "desde cuándo la tienes") */
