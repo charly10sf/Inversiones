@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- El mismo dibujo que favicon.svg (48x48), centrado en la zona segura de 72dp de un icono adaptable de 108dp -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp"
+    android:viewportWidth="108" android:viewportHeight="108">
+    <group android:translateX="20" android:translateY="20" android:scaleX="1.4167" android:scaleY="1.4167">
+        <path android:pathData="M10,37.5H38" android:strokeColor="#4F4A41" android:strokeWidth="3" android:strokeLineCap="round" />
+        <path android:pathData="M11,31L19.5,23.5L25.5,27.5L36.5,15" android:strokeColor="#E2B45F" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round" />
+        <path android:pathData="M29.5,14H37.5V22" android:strokeColor="#E2B45F" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round" />
+    </group>
+</vector>

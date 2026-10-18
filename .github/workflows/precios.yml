@@ -56,6 +56,16 @@ jobs:
           mkdir -p salida
           python scripts/precios.py instrumentos.json anterior salida
 
+      # Un resumen mínimo de precios para el widget de la app de Android (1 KB en vez de los 90 de precios.json)
+      - name: Precios para el widget
+        run: |
+          python - <<'PY'
+          import json
+          d = json.load(open("salida/precios.json"))
+          p = {k: [v.get("precio"), v.get("cierre_anterior")] for k, v in (d.get("instrumentos") or {}).items() if v.get("precio") is not None}
+          json.dump({"generado": d.get("generado"), "p": p}, open("salida/widget.json", "w"), separators=(",", ":"))
+          PY
+
       # Noticias de un lote de empresas en cada pasada; Gemini las lee, y cada 2 horas escribe el
       # informe de tu cartera y elige ideas entre todo el radar. Necesita el secreto GEMINI_API_KEY;
       # si falla, se queda lo anterior.

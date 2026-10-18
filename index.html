@@ -1854,6 +1854,7 @@ function parchear() {
     for (const c of ['up', 'down', 'flat', 'on', 'off']) el.classList.toggle(c, b.cls === c);
   }
   vigilarRecomendaciones(M);
+  enviarWidget();
 }
 
 /* ---------- estructura fija: cabecera, cinta, contenido y barra inferior ---------- */
@@ -1876,6 +1877,32 @@ function montar() {
   S.tickerFirma = null;
 }
 
+/* =====================================================================
+   App de Android: la web corre dentro de la app y le manda al widget una foto de la cartera
+   (total, hoy, cantidad y valor de cada posición, lo que toca). El widget la recalcula sola con los
+   precios de widget.json, que publica la Action. Nunca sale de aquí la contraseña.
+   ===================================================================== */
+let widgetT = 0, widgetFirma = '';
+function enviarWidget(forzar) {
+  const app = window.InversionesApp;
+  if (!app || !S.cartera || !S.M) return;
+  if (!forzar && Date.now() - widgetT < 60000) return;
+  const M = S.M;
+  let toca = '', cuando = '';
+  try {
+    const P = pasosRuta(M), pend = [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto);
+    const x = pend.find((y) => y.urgente) || pend[0];
+    if (x) { const d = document.createElement('div'); d.innerHTML = x.t; toca = d.textContent.replace(/\s+/g, ' ').trim(); cuando = x.cuando || ''; }
+  } catch (e) {}
+  const pos = M.filas.filter((f) => f.valor).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, uds: f.uds || undefined, valor: Math.round(f.valor * 100) / 100, dia: Math.round((f.dia || 0) * 100) / 100 }));
+  const foto = { v: 1, total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos };
+  const firma = JSON.stringify({ ...foto, total: Math.round(foto.total), dia: Math.round(foto.dia) });
+  if (!forzar && firma === widgetFirma) return;
+  widgetT = Date.now(); widgetFirma = firma;
+  try { app.guardarWidget(JSON.stringify(foto)); } catch (e) { console.warn('widget', e); }
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) enviarWidget(true); });
+
 function pintar() {
   if (!S.cartera) return;
   if (!$('#vista')) montar();
@@ -1892,6 +1919,7 @@ function pintar() {
   dibujar(M);
   if (S.ficha) refrescarFicha();
   S.firmaPintada = firmaRecom(M);
+  enviarWidget();
   const sv = simsRadarVivos().join();
   if (sv !== S.radarSubs) { S.radarSubs = sv; LIVE.resuscribir(); }
 }
@@ -4430,6 +4458,25 @@ function nuevoInstrumento(fin) {
   };
 }
 
+/* la app de Android: dónde bajarla, qué versión tienes y cómo pasarle el token sin escribirlo */
+async function pintarAjustesApp(el) {
+  if (!el) return;
+  let ult = null;
+  try { const r = await fetch(GH.raw('app.json', 'main') + '?v=' + Date.now(), { cache: 'no-store' }); if (r.ok) ult = await r.json(); } catch (e) {}
+  const app = window.InversionesApp;
+  const tengo = app ? (() => { try { return app.version(); } catch (e) { return 0; } })() : 0;
+  const apk = (ult && ult.apk) || `https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk`;
+  const android = /Android/i.test(navigator.userAgent);
+  const tok = GH.token();
+  if (app) {
+    el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (versión ${tengo}). Para el widget: mantén pulsado un hueco de la pantalla de inicio, Widgets, Inversiones, y arrastra "Tu cartera". Se puede estirar o encoger.</p>
+      ${ult && ult.version > tengo ? `<div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Bajar la versión ${ult.version}</a></div><p class="nota" style="margin:0">Se abre en Chrome: descárgala y ábrela para instalarla encima. No pierdes nada.</p>` : ''}`;
+    return;
+  }
+  el.innerHTML = `<p class="nota" style="margin:0">La misma web como app de Android, con un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo que toca hacer. ${ult ? '' : 'Todavía no hay ninguna versión publicada.'}</p>
+    ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} y ábrela: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa "Pasar el token a la app" para que pueda guardar cambios sin escribirlo.</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio, Widgets, Inversiones.</li></ol>
+    <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Descargar la app (versión ${ult.version})</a>${tok && android ? `<a class="btn peq" href="intent:#Intent;package=es.inversiones.app;component=es.inversiones.app/.Principal;S.t=${encodeURIComponent(tok)};end">Pasar el token a la app</a>` : ''}</div>` : ''}`;
+}
 function abrirAjustes() {
   const tok = GH.token();
   const h = hoja('Ajustes', `
@@ -4443,6 +4490,7 @@ function abrirAjustes() {
       <p class="nota" style="margin:0">Gemini dentro de la web, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes del asesor</button></div>
     </div>
+    <div class="seccion-ed"><h3>App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
     <div class="seccion-ed"><h3>Contraseña</h3>
       <div class="form-grid"><label class="campo">Nueva contraseña<input type="password" id="aP1" autocomplete="new-password"></label><label class="campo">Repítela<input type="password" id="aP2" autocomplete="new-password"></label></div>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aCambiar">Cambiar contraseña</button></div>
@@ -4455,6 +4503,7 @@ function abrirAjustes() {
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
       <p class="nota" style="margin:0">Bloquear te pedirá la contraseña la próxima vez. Olvidar borra también el token y la copia local.</p>
     </div>`);
+  pintarAjustesApp($('#aApp', h.el));
   $('#aProbar', h.el).onclick = async () => {
     const t = $('#aTok', h.el).value.trim();
     if (t) LS.set('inv-token', t); else LS.del('inv-token');

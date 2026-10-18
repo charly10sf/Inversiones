@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="fondo">#FF12110F</color>
+    <color name="plano">#FF1A1916</color>
+    <color name="linea">#FF2A2723</color>
+    <color name="texto">#FFF1EDE5</color>
+    <color name="texto2">#FFBDB6A8</color>
+    <color name="apagado">#FF8E877A</color>
+    <color name="acento">#FFE2B45F</color>
+    <color name="sube">#FF4FC995</color>
+    <color name="baja">#FFEF7461</color>
+    <color name="icono_fondo">#FF1F1D19</color>
+
+    <style name="Tema" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@color/fondo</item>
+        <item name="android:statusBarColor">@color/fondo</item>
+        <item name="android:navigationBarColor">@color/plano</item>
+        <item name="android:windowLightStatusBar">false</item>
+        <item name="android:colorAccent">@color/acento</item>
+    </style>
+
+    <string name="widget_descripcion">Tu patrimonio, lo que ganas o pierdes hoy y lo que toca hacer</string>
+</resources>

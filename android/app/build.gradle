@@ -1,0 +1,53 @@
+plugins {
+    id 'com.android.application'
+}
+
+// La firma: la clave vive en android/firma.p12, cifrada con el secreto ANDROID_CLAVE de GitHub.
+// Sin ese secreto, la Action firma con una clave de prueba solo para comprobar que compila.
+def rutaFirma = System.getenv('FIRMA_RUTA')
+def claveFirma = System.getenv('FIRMA_CLAVE')
+
+android {
+    namespace 'es.inversiones.app'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'es.inversiones.app'
+        minSdk 26
+        targetSdk 34
+        versionCode((System.getenv('VERSION_CODE') ?: '1') as int)
+        versionName "1.${System.getenv('VERSION_CODE') ?: '0'}"
+    }
+
+    signingConfigs {
+        release {
+            if (rutaFirma && claveFirma) {
+                storeFile file(rutaFirma)
+                storePassword claveFirma
+                keyAlias 'inversiones'
+                keyPassword claveFirma
+                storeType 'pkcs12'
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            if (rutaFirma && claveFirma) signingConfig signingConfigs.release
+        }
+    }
+
+    buildFeatures { buildConfig true }
+
+    // es una app para ti, no para Google Play: que los avisos de Play no paren la compilación
+    lint {
+        checkReleaseBuilds false
+        abortOnError false
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
