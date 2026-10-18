@@ -913,6 +913,53 @@ p.idea-quien { display: block; margin: 0; font-size: 13.5px; line-height: 1.5; c
 
 table td.txt { white-space: normal; min-width: 260px; }
 @media (max-width: 680px) { table.resp td.txt { white-space: normal; flex: 1 0 100%; min-width: 0; } table.resp td.txt small { display: block; margin: 2px 0 0; } }
+
+/* ideas: cuatro cifras (precio, subida, plazo y al año neto) y el resto plegado */
+.idea > header .ctr { margin-left: auto; flex: none; }
+.idea-cifras4 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px 14px; padding: 10px 12px; border-radius: 10px; background: var(--plane-2); }
+.idea-cifras4 > div { display: grid; gap: 1px; align-content: start; min-width: 0; }
+.idea-cifras4 .k { font-size: 12px; }
+.idea-cifras4 b { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.idea-cifras4 b span { font-weight: inherit; }
+.idea-cifras4 small { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+.idea-tesis { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--text); }
+.idea-mas { display: grid; gap: 10px; }
+.ideas-top3 .idea-cifras4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@media (max-width: 680px) { .idea-cifras4 { grid-template-columns: repeat(2, minmax(0, 1fr)); } .idea-cifras4 .k { font-size: 12.5px; } .idea-cifras4 small { font-size: 12px; } }
+
+/* plan de venta plegado: el porqué, los pasos en una lista y el detalle debajo */
+.pv-porque { margin: -6px 0 0; color: var(--text-2); font-size: 14.5px; line-height: 1.55; }
+.pv-resumen { margin: 0; padding-left: 22px; display: grid; gap: 8px; font-size: 15px; line-height: 1.45; }
+.pv-resumen li::marker { color: var(--accent); font-weight: 700; }
+.pv-resumen b { font-weight: 650; }
+.pv-resumen small { display: block; color: var(--text-2); font-size: 13.5px; line-height: 1.5; margin-top: 1px; }
+.pv-mas[open] > .pv-grid { margin-top: 4px; }
+
+/* expertos, tus posiciones: tarjetas cortas con el detalle plegado */
+.fx-lista.cortas { border-top: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); align-items: start; }
+.fx2 { background: var(--plane); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 8px; min-width: 0; }
+.fx2-cab { display: flex; gap: 12px; align-items: center; }
+.fx2-cab > div { min-width: 0; flex: 1; }
+.fx2-cab .enlace { font-weight: 650; font-size: 15.5px; display: block; }
+.fx2-cab small { display: block; color: var(--muted); font-size: 12.5px; }
+.fx2-m { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--text); }
+.fx2-ia { margin: 0; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 13px; }
+.fx2-det { display: grid; gap: 12px; }
+.fx2-det p { margin: 4px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.fx2-det .fx-vig { color: var(--muted); font-size: 13.5px; }
+.fx2-det .fx-vig b { color: var(--text-2); font-weight: 600; }
+.fx2-det .prensa-ia { margin-top: 0; }
+.fx2-det .fx-datos { padding-left: 0; }
+@media (max-width: 440px) { .fx2-cab { flex-wrap: wrap; row-gap: 6px; } .fx2-cab > div { flex: 1 1 calc(100% - 50px); } .fx2-cab .senal { margin-left: 46px; } }
+
+.subvistas.cuatro { margin-bottom: 26px; }
+@media (max-width: 680px) { .subvistas.cuatro { grid-template-columns: repeat(4, minmax(0, 1fr)); } .subvistas.cuatro button { font-size: 13px; padding: 8px 2px; } }
+
+.ctr-q { white-space: nowrap; color: var(--muted); font-size: 12.5px; margin-left: 4px; }
+.ctr-q .ctr b { font-size: 12.5px; }
+
+.fx2 > *, .fx2-det, .fx2-det > * { min-width: 0; }
+.fx2-det .fx-an .k { overflow-wrap: anywhere; }
 </style>
 </head>
 <body>
@@ -1696,7 +1743,7 @@ const ICONOS = {
 };
 
 const VISTAS = [
-  ['cartera', 'Cartera'], ['expertos', 'Expertos'], ['mercados', 'Mercados'], ['analisis', 'Análisis'], ['futuro', 'Futuro'], ['plan', 'Plan'],
+  ['cartera', 'Cartera'], ['expertos', 'Expertos'], ['analisis', 'Análisis'], ['futuro', 'Futuro'], ['plan', 'Plan'], ['mercados', 'Mercados'],
 ];
 
 let toastT;
@@ -2130,18 +2177,18 @@ function filaExperto(f, ia, vIA = {}) {
   const nivelC = c && NIVELES.has(c.nivel) ? c.nivel : 'mantener';
   const choca = c && LADO[nivelC] !== LADO[s.nivel];
   const [m0, ...resto] = s.motivos;
-  return `<article class="fx">
-    <div class="fx-act">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button>${nombreReal(i) ? `<span class="nombre-real" title="${esc(nombreReal(i))}">${esc(nombreReal(i))}</span>` : ''}<small>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</small></div></div>
-    <div class="fx-op fx-web">
-      <div class="fx-quien"><span class="fx-de">La web</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></div>
-      ${m0 ? `<p>${esc(m0)}</p>` : ''}
-      ${resto.length ? `<details class="mas"><summary>${resto.length === 1 ? 'Un motivo más' : `${resto.length} motivos más`}</summary><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></details>` : ''}
-    </div>
-    <div class="fx-op fx-claude">${c ? `<div class="fx-quien"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span><span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>${c.confianza ? `<span class="k">confianza ${esc(c.confianza)}</span>` : ''}${choca ? '<span class="chip warn">no coinciden</span>' : ''}</div>
-        ${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>Vigilar.</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}` : `<div class="fx-quien"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span><span class="k">sin revisar todavía</span></div>`}
-      ${htmlPrensaIA(informeDe(i.id))}
-    </div>
-    <div class="fx-datos">${datosExperto(f)}</div>
+  const prensa = htmlPrensaIA(informeDe(i.id));
+  const datos = datosExperto(f);
+  return `<article class="fx2">
+    <div class="fx2-cab">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button><small>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</small></div><span class="senal ${s.nivel}">${esc(s.txt)}</span></div>
+    ${m0 ? `<p class="fx2-m">${esc(m0)}</p>` : ''}
+    <p class="fx2-ia"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>${choca ? '<span class="chip warn">no coincide con la web</span>' : '<span class="k">coincide con la web</span>'}` : '<span class="k">sin revisar todavía</span>'}</p>
+    ${resto.length || c || prensa || datos ? `<details class="mas"><summary>Por qué lo dicen: motivos, IA, prensa y analistas</summary><div class="fx2-det">
+      ${resto.length ? `<div><span class="fx-de">La web</span><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>` : ''}
+      ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>Vigilar.</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
+      ${prensa}
+      ${datos ? `<div class="fx-datos">${datos}</div>` : ''}
+    </div></details>` : ''}
   </article>`;
 }
 
@@ -2181,14 +2228,14 @@ function vistaExpertos(M) {
     cuerpo = `${htmlResumenInforme()}
     <section aria-labelledby="hPlanV">
       <div class="sec-cab"><h2 id="hPlanV">Qué haría ahora</h2><span class="k">${planes.length ? `${planes.length === 1 ? 'una posición que conviene' : planes.length + ' posiciones que conviene'} vender o recortar` : 'nada que vender'}</span></div>
-      ${planes.length ? `<div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl)).join('')}</div>` : '<div class="vacio">Ninguna posición pide vender ahora mismo. Si cambia, aquí saldrá cuánto vender, cuándo, lo que se lleva Hacienda y adónde mover el dinero.</div>'}
+      ${planes.length ? `<div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl, 'plegado')).join('')}</div>` : '<div class="vacio">Ninguna posición pide vender ahora mismo. Si cambia, aquí saldrá cuánto vender, cuándo, lo que se lleva Hacienda y adónde mover el dinero.</div>'}
     </section>
     ${htmlVistazo(M, ia)}`;
   } else if (S.expTab === 'posiciones') {
     const prensa = noticiasCartera(true);
     cuerpo = `<section aria-labelledby="hSen" class="bloque-sec">
         <div class="sec-cab"><h2 id="hSen">Posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
-        <div class="fx-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; return ordenSenales(M).map((f) => filaExperto(f, ia, vIA)).join(''); })()}</div>
+        <div class="fx-lista cortas">${(() => { const vIA = ia ? valoresIA(M) : {}; const vistos = new Set(); return ordenSenales(M).filter((f) => !vistos.has(f.pos.id) && vistos.add(f.pos.id)).map((f) => filaExperto(f, ia, vIA)).join(''); })()}</div>
         <p class="nota">La web mira el consenso de los analistas, lo que queda hasta su precio objetivo, la tendencia, tus reglas de salida y lo que pesa en tu cartera. La IA, además, las noticias${ia && ia.propio ? '' : ' (su última revisión publicada)'}. Si no coinciden, lee los dos motivos antes de decidir.</p>
     </section>
     <section aria-labelledby="hPrensa" class="bloque-sec"><div class="sec-cab"><h2 id="hPrensa">Analistas en prensa</h2><span class="k">tus acciones, últimos 30 días</span></div>
@@ -2350,30 +2397,44 @@ function ideasJuntas(M, ia) {
 }
 /* lo que puede dar cada idea y en cuánto tiempo: el objetivo de los analistas es a 12 meses; si Gemini
    (o tu análisis) ha estimado su propio plazo por un catalizador, manda el suyo */
-function esperadaIdea(x) {
-  const r = x.r; if (!r || r.pot == null) return null;
-  const g = [x.gem, x.tuya].find((y) => y && y.subida_pct != null && +y.plazo_meses > 0);
-  const ana = rentaEsperada(r, r.pot, 12, `objetivo de ${r.na || 'los'} analistas`);
-  const ia = g ? rentaEsperada(r, +g.subida_pct, +g.plazo_meses, g === x.gem ? 'Gemini' : 'tu análisis') : null;
+/* el plazo de cada idea: el que estima Gemini por su catalizador (en su escaneo o en tu análisis) o, si no hay,
+   los 12 meses del objetivo de los analistas */
+const plazoGemini = (sim) => { const p = S.escaneo && S.escaneo.decision && S.escaneo.decision.plazos; return (p && p[sim]) || null; };
+function esperadaRadar(r, extra) {
+  if (!r || r.pot == null) return null;
+  const ana = rentaEsperada(r, r.pot, 12, 'analistas');
+  const g = extra && extra.subida_pct != null && +extra.plazo_meses > 0 ? { meses: +extra.plazo_meses, subida_pct: +extra.subida_pct, por: extra.catalizador || '', fuente: extra.fuente } : plazoGemini(r.s) ? { ...plazoGemini(r.s), fuente: 'Gemini' } : null;
+  const ia = g ? { ...rentaEsperada(r, g.subida_pct, g.meses, g.fuente || 'Gemini'), por: g.por } : null;
   return { ana, ia, prin: ia || ana };
+}
+function esperadaIdea(x) {
+  const g = [x.gem, x.tuya].find((y) => y && y.subida_pct != null && +y.plazo_meses > 0);
+  return esperadaRadar(x.r, g ? { ...g, fuente: g === x.gem ? 'Gemini' : 'tu análisis' } : null);
 }
 function quienIdea(x) {
   const w = x.web ? `la web (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})` : null;
-  const g = x.gem ? `Gemini en su escaneo de prensa (confianza ${esc(x.gem.confianza || 'media')})` : null;
+  const g = x.gem ? `Gemini tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')})` : null;
   const t = x.tuya ? `tu análisis de Gemini${x.tuya.importe ? `, con ${eur(+x.tuya.importe, 0)}` : ''}` : null;
   const p = [w, g, t].filter(Boolean);
-  let txt = `La propone ${p.length === 1 ? p[0] : `${p.slice(0, -1).join(', ')} y ${p[p.length - 1]}`}.`;
-  if (x.tuya && (x.web || x.gem)) txt += ' Tu análisis tiene delante las otras listas: más que un voto aparte, es una segunda revisión con las noticias.';
-  return txt;
+  return `La propone ${p.length === 1 ? p[0] : `${p.slice(0, -1).join(', ')} y ${p[p.length - 1]}`}.`;
 }
-function htmlNetoIdea(e) {
-  if (!e) return '';
-  const b = bolsaAnual(), p = e.prin;
-  const al = (z) => `<b class="${cls(z.netoAnual)}">${pctS(z.netoAnual, 0)} al año</b>`;
-  const linea = e.ia
-    ? `${esc(e.ia.fuente.charAt(0).toUpperCase() + e.ia.fuente.slice(1))} espera ${pctS(e.ia.subida, 0)} en ${plazoTxt(e.ia.meses)}: neto de impuestos, ${al(e.ia)}. Con el objetivo de los analistas (${pctS(e.ana.subida, 0)} a 12 meses) serían ${al(e.ana)}.`
-    : `Si llega al objetivo de los analistas (${pctS(e.ana.subida, 0)} en 12 meses${e.ana.divP ? `, más ${fmtNum(e.ana.divP, 1)} % de dividendo` : ''}): neto de impuestos, ${al(e.ana)}.`;
-  return `<p class="idea-neto">${linea} <span class="k">Tu fondo indexado: un ${fmtNum(b, 0)} % al año${p.netoAnual != null && p.netoAnual < b ? ', y esta no lo mejora' : ''}.</span></p>`;
+/* precio, objetivo, plazo y lo que daría al año neto de impuestos, en cuatro cifras */
+/* "Puede subir un 51 % en 12 meses (los analistas): un 43 % al año tras impuestos." */
+function planTxt(e) {
+  const p = e.prin;
+  return `Plazo: puede subir un ${pctS(p.subida, 0)} en ${plazoTxt(p.meses)} (${p === e.ia ? `según ${esc(p.fuente)}${e.ia.por ? `, por ${esc(limpiaIA(e.ia.por).replace(/^./, (c) => c.toLowerCase()))}` : ''}` : 'el objetivo de los analistas'}): un ${pctS(p.netoAnual, 0)} al año tras impuestos.`;
+}
+function htmlCifrasIdea(r, e) {
+  if (!r || !r.p) return '';
+  const p = e && e.prin;
+  const plazo = p ? `<b>${plazoTxt(p.meses)}</b><small>${p === e.ia ? esc(`según ${p.fuente}${e.ia.por ? `: ${limpiaIA(e.ia.por)}` : ''}`) : 'el de los analistas'}</small>` : '—';
+  const neto = p && p.netoAnual != null ? `<b class="${cls(p.netoAnual)}">${pctS(p.netoAnual, 0)}</b><small>${p.netoAnual < bolsaAnual() ? 'menos que tu fondo indexado' : `tu fondo indexado: ${fmtNum(bolsaAnual(), 0)} %`}</small>` : '—';
+  return `<div class="idea-cifras4">
+    <div><span class="k">Precio</span><b>${B('rp:' + r.s)}</b></div>
+    <div><span class="k">Puede subir</span><b class="${cls(p ? p.subida : r.pot)}">${pctS(p ? p.subida : r.pot, 0)}</b><small>${p && p === e.ia ? `analistas: ${pctS(r.pot, 0)} a 12 meses` : 'hasta el objetivo medio'}</small></div>
+    <div><span class="k">En cuánto tiempo</span>${plazo}</div>
+    <div><span class="k">Al año, tras impuestos</span>${neto}</div>
+  </div>`;
 }
 function htmlFiscalIdea(r, e) {
   if (!r) return '';
@@ -2392,20 +2453,23 @@ function tarjetaIdea(x, ctx) {
   const motivos = pu ? pu.motivos.slice(0, 3).join(', ') : '';
   const tesis = de('tesis') || (motivos ? esc(motivos.charAt(0).toUpperCase() + motivos.slice(1)) + '.' : '');
   const pegas = pu ? pu.pegas.filter((p) => !p.startsWith('al comprar pagas') && !p.startsWith('sus dividendos pierden')).slice(0, 2) : [];
-  const contra = [de('riesgo'), ...pegas.map((p) => esc(p.charAt(0).toUpperCase() + p.slice(1)))].filter(Boolean).map((x) => x.replace(/\.\s*$/, '')).join('. ');
+  const contra = [de('riesgo'), ...pegas.map((p) => esc(p.charAt(0).toUpperCase() + p.slice(1)))].filter(Boolean).map((y) => y.replace(/\.\s*$/, '')).join('. ');
   const fuentes = [...((x.gem && x.gem.fuentes) || []), ...((x.tuya && x.tuya.fuentes) || [])];
   const prensa = !x.gem && informeIdea(x.s);
+  const mas = [
+    de('catalizador') ? `<p class="idea-linea"><b>Qué la puede mover.</b> ${de('catalizador')}</p>` : '',
+    contra ? `<p class="idea-linea"><b>En contra.</b> ${contra.replace(/\.?$/, '.')}</p>` : '',
+    prensa && prensa.novedades ? `<p class="idea-linea"><b>Prensa.</b> ${chipImpacto(prensa.impacto)}${escIA(prensa.novedades)}</p>` : '',
+    htmlFiscalIdea(r, x.esp),
+    ctr ? `<div><p class="idea-linea" style="margin-bottom:6px"><b>Las siete señales.</b></p>${htmlContrasteLista(ctr)}</div>` : '',
+    enlacesFuentes(fuentes, 4),
+  ].filter(Boolean).join('');
   return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}">
     <header>${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? lineaOrigen(r) : esc(x.s)}</small></div></header>
-    <p class="idea-quien">${quienIdea(x)}</p>
-    ${r && r.p ? `<div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + r.s)}</div><div><span class="k">Objetivo a 12 meses</span>${B('ro:' + r.s)}</div><div><span class="k">Contraste</span>${ctr ? htmlContraste(ctr, true) : '—'}</div></div>` : ''}
-    ${htmlNetoIdea(x.esp)}
-    ${tesis ? `<p class="idea-linea"><b>Por qué.</b> ${tesis}</p>` : ''}
-    ${de('catalizador') ? `<p class="idea-linea"><b>Cuándo.</b> ${de('catalizador')}</p>` : ''}
-    ${contra ? `<p class="idea-linea"><b>En contra.</b> ${contra.replace(/\.?$/, '.')}</p>` : ''}
-    ${prensa && prensa.novedades ? `<p class="idea-linea"><b>Prensa.</b> ${chipImpacto(prensa.impacto)}${escIA(prensa.novedades)}</p>` : ''}
-    ${htmlFiscalIdea(r, x.esp)}
-    ${ctr || fuentes.length ? `<details class="mas"><summary>Las siete señales${fuentes.length ? ' y las fuentes' : ''}</summary>${ctr ? htmlContrasteLista(ctr) : ''}${enlacesFuentes(fuentes, 4)}</details>` : ''}
+    <p class="idea-quien">${quienIdea(x)}${ctr ? ` <span class="ctr-q">${htmlContraste(ctr, true)} señales a favor</span>` : ''}</p>
+    ${htmlCifrasIdea(r, x.esp)}
+    ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
+    ${mas ? `<details class="mas"><summary>Qué la mueve, pegas, impuestos y señales</summary><div class="idea-mas">${mas}</div></details>` : ''}
     <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.chispa}¿Cuánto meto?</button>
   </article>`;
 }
@@ -2421,7 +2485,7 @@ function htmlIdeas(M, ia) {
   const juntas = ideasJuntas(M, ia).slice(0, 6);
   const ctx = ctxIdeas(M);
   const d = S.escaneo && S.escaneo.decision;
-  let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => { const e = rentaEsperada(x, x.pot, 12); return { ...x, _ctr: contraste(x), _neto: e ? e.netoAnual : null }; });
+  let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => { const e = esperadaRadar(x); return { ...x, _ctr: contraste(x), _neto: e ? e.prin.netoAnual : null, _meses: e ? e.prin.meses : null }; });
   if (S.radarSolidas) v = v.filter((x) => x._ctr.favor >= 4 && x._ctr.contra <= 1);
   const [, clave] = ORDEN_RADAR[S.radarOrden] || ORDEN_RADAR.pot;
   v = v.sort((a, b) => clave(b) - clave(a));
@@ -2443,7 +2507,7 @@ function htmlIdeas(M, ia) {
     ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${lineaOrigen(x)}</small></td>
       <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
-      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Si llega al objetivo en 12 meses, con su dividendo, menos la tasa de compra, la retención que no se recupera y tu tramo del ahorro">${x._neto == null ? '—' : pctS(x._neto, 0)}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
+      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que daría al año si se cumple lo esperado (el plazo de Gemini o los 12 meses de los analistas), con su dividendo, menos la tasa de compra, la retención que no se recupera y tu tramo del ahorro">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses && x._meses !== 12 ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     ${total > 20 ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? 'Ver solo las 20 primeras' : `Ver las ${total}`}</button>` : ''}
     <p class="nota">Potencial: lo que queda hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Prensa: lo que ha leído Gemini en sus noticias. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio.</p>`;
@@ -2494,7 +2558,10 @@ function vistaMercados() {
 }
 
 /* =========================== Análisis =========================== */
-const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'Análisis IA'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas'], ['impuestos', 'Fiscalidad']];
+/* cuatro pestañas: qué hacer, lo que opina la IA, tus números (cinco vistas) y la fiscalidad */
+const ANALISIS_P = [['ruta', 'Paso a paso'], ['ia', 'La IA opina'], ['numeros', 'Tus números'], ['impuestos', 'Fiscalidad']];
+const NUMEROS = ['rent', 'riesgo', 'costes', 'dentro', 'apuestas'];
+const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'La IA opina'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas'], ['impuestos', 'Fiscalidad']];
 /* =====================================================================
    Paso a paso: qué hacer con la cartera este mes, en 6 meses, en un año y de 1 a 5 años.
    Los pasos de la web salen de sus cálculos (planes de venta, fechas, impuestos, aportaciones y
@@ -2523,6 +2590,18 @@ function pasosRuta(M) {
       como: `${esc(pl.cuando[0].replace(/^Ya: /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? ` Con lo que cobres: ${destino}.` : ''}`,
       imp: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año.`}`,
       acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>` });
+    const top = pl.ideas[0], dVenta = res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy;
+    if (pl.aIdea > 0 && top) {
+      const e = esperadaRadar(top), tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede);
+      add('mes', { id: `compra:${top.s}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Compra ${eur(pl.aIdea, 0)} de ${esc(top.n)}`,
+        pq: `Es la mejor de las ${radarVals().length} empresas del radar para una apuesta nueva: ${top.ctr.favor} de ${top.ctr.total} señales a favor. ${e ? planTxt(e) : ''}`,
+        como: `En ${esc(pl.f.pos.plataforma || 'Trade Republic')}: busca ${esc(top.n)} (${esc(top.s)}), Comprar, orden limitada a ${fmtNum(top.p, top.p >= 1000 ? 0 : 2)} ${monedaR(top.m)} (el precio de ahora) por unos ${eur(pl.aIdea, 0)}. Ponle tu regla de salida en su ficha cuando la tengas.`,
+        imp: `${tasa ? `Al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${esc(tasa.nombre)} (unos ${eur(pl.aIdea * tasa.tipo, 0)}).` : 'Sin tasa al comprar.'} ${esc(fis.txt)}`,
+        acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`Voy a comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}. Contrástalo con las noticias de esta semana: ¿lo hago, a qué precio y con qué regla de salida?`)}">Que la IA la contraste antes</button>` });
+    }
+    if (pl.aNucleo > 0.5) add('mes', { id: `nucleo:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Mete ${eur(pl.aNucleo, 0)} en tu fondo del S&P 500`,
+      pq: pl.nivel === 'reducir' ? 'Bajas riesgo sin dejar de estar invertido.' : pl.aIdea > 0 ? 'La otra parte, a lo seguro.' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite.',
+      como: 'Transfiere el dinero de Trade Republic a MyInvestor y compra tu fondo del S&P 500.', imp: 'Fondo de acumulación: no paga nada hasta que vendas, y entre fondos ni eso (traspaso).' });
   }
   // 2. tus reglas de salida cerca
   for (const f of M.filas) {
@@ -2705,8 +2784,12 @@ function vistaAnalisis(M) {
     cuerpo = htmlImpuestos(M);
   }
   return `
-  <div class="vista-cab"><h1>Análisis</h1><p>Qué hacer paso a paso, lo que opina la IA y los números de tu cartera.</p></div>
-  <div class="tabs-fila"><div class="tabs envuelve" role="group" aria-label="Ver">${ANALISIS.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div></div>
+  <div class="vista-cab"><h1>Análisis</h1><p>Qué hacer y cuándo, lo que opina la IA, los números de tu cartera y tus impuestos.</p></div>
+  ${(() => {
+    const enNum = NUMEROS.includes(S.califTab), ult = enNum ? S.califTab : LS.get('inv-num', 'rent');
+    return `<div class="subvistas cuatro" role="group" aria-label="Qué ver">${ANALISIS_P.map(([k, t]) => `<button data-calif="${k === 'numeros' ? ult : k}" aria-pressed="${k === 'numeros' ? enNum : S.califTab === k}">${t}</button>`).join('')}</div>
+    ${enNum ? `<div class="tabs-fila"><div class="tabs envuelve" role="group" aria-label="Qué números">${ANALISIS.filter(([k]) => NUMEROS.includes(k)).map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div></div>` : ''}`;
+  })()}
   ${cuerpo}`;
 }
 
@@ -3306,11 +3389,21 @@ function htmlPlanVenta(pl, compacto) {
   const destino = [];
   const tasaTop = top ? tasaRadar(top) : null;
   const pegaTop = top && top.pegas.find((x) => !x.startsWith('al comprar pagas'));
-  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${radarVals().length} empresas que sigue la web para una apuesta nueva, contrastada con ${top.ctr.favor} de ${top.ctr.total} señales a favor: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` Pega: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} ${(() => { const e = rentaEsperada(top, top.pot, 12), an = f.p && f.p.analistas, queda = an && an.objetivo ? (an.objetivo / f.precio - 1) * 100 : null; return e ? ` Plazo: si llega al objetivo de los analistas en 12 meses, unos ${pctS(e.netoAnual, 0)} al año netos de impuestos${queda != null ? `, frente al ${pctS(queda, 1)} que le queda a ${esc(i.corto)}` : ''}.` : ''; })()} ${esc(fiscalidadSede(origenRadar(top).sede).txt)}</span></div></div>`);
+  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${radarVals().length} empresas que sigue la web para una apuesta nueva, contrastada con ${top.ctr.favor} de ${top.ctr.total} señales a favor: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` Pega: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} ${(() => { const e = esperadaRadar(top), an = f.p && f.p.analistas, queda = an && an.objetivo ? (an.objetivo / f.precio - 1) * 100 : null; return e ? ` ${planTxt(e)}${queda != null ? ` A ${esc(i.corto)} le quedan un ${pctS(queda, 1)} hasta su objetivo.` : ''}` : ''; })()} ${esc(fiscalidadSede(origenRadar(top).sede).txt)}</span></div></div>`);
   if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(NUCLEO.d, 'S P')}<div><b>${eur(pl.aNucleo, 0)} al S&P 500</b><span>${pl.nivel === 'reducir' ? 'Para bajar riesgo sin dejar de estar invertido. ' : pl.aIdea > 0 ? 'La otra mitad, a lo seguro. ' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite. '}${esc(NUCLEO.txt)}</span></div></div>`);
   if (pl.impuesto > 0) destino.push(`<div class="pv-dest">${logo(null, '€')}<div><b>${eur(pl.impuesto, 0)} aparte para Hacienda</b><span>Se paga en la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}. Déjalo en efectivo o en tu colchón hasta entonces: no lo inviertas en bolsa.</span></div></div>`);
+  const plegado = compacto === 'plegado';
+  if (plegado) compacto = false;
+  const resP = f.p && f.p.proximos_resultados && f.p.proximos_resultados >= hoyIso() && diasEntre(hoyIso(), f.p.proximos_resultados) <= 21 ? f.p.proximos_resultados : null;
+  const pasos = [
+    `<b>Vende ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b>${resP ? `, antes del ${fechaCorta(resP)}` : ''}`,
+    pl.aIdea > 0 && top ? `<b>Compra ${eur(pl.aIdea, 0)} de ${esc(top.n)}</b>${(() => { const e = esperadaRadar(top); return e ? `<small>${esc(planTxt(e).replace(/^Plazo: /, ''))}</small>` : ''; })()}` : '',
+    pl.aNucleo > 0.5 ? `<b>Mete ${eur(pl.aNucleo, 0)} en tu fondo del S&P 500</b>` : '',
+    pl.impuesto > 0 ? `<b>Aparta ${eur(pl.impuesto, 0)} para Hacienda</b><small>la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}</small>` : '',
+  ].filter(Boolean);
   return `<article class="plan-venta${compacto ? ' compacto' : ''}">
     <header>${logo(i.dominio, i.corto)}<div><h3>${nombre}</h3><span class="k">${esc(f.pos.plataforma || '')}, ahora ${precioFmt(f.precio)}</span></div><span class="senal ${f.senal.nivel}">${esc(f.senal.txt)}</span>${compacto ? '' : `<button class="btn peq" data-accion="asesor" data-q="${esc(`Explícame el plan de venta de ${i.corto}: ¿por qué ahora, por qué ese destino y qué alternativas bien contrastadas hay? Mira las noticias de esta semana.`)}">${ICONOS.chispa}Pregúntale</button>`}</header>
+    ${plegado ? `<p class="pv-porque">${esc(f.senal.motivos[0] || '')}</p><ol class="pv-resumen">${pasos.map((x) => `<li>${x}</li>`).join('')}</ol><details class="mas pv-mas"><summary>El plan completo: cuándo, a qué precio, Hacienda y por qué esa empresa</summary>` : ''}
     <div class="pv-grid">
       <div class="pv-col">
         <div class="pv-paso"><span class="pv-n">Cuánto</span><div><b>Vende ${oc(fmtNum(pl.uds, pl.accion ? 0 : 4))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b><span>${pl.cuanto}${pl.queda > 0 ? ` Te quedas ${oc(fmtNum(pl.queda, pl.accion ? 0 : 2))}, unos ${eur(pl.queda * f.precio, 0)}.` : ''}</span></div></div>
@@ -3322,7 +3415,7 @@ function htmlPlanVenta(pl, compacto) {
         ${!compacto && pl.ideas.length > 1 ? `<details class="mas"><summary>Por qué esa y no otra: las ${pl.ideas.length} mejores</summary><ol class="ideas-top">${pl.ideas.map(idea).join('')}</ol>
           <p class="nota">Puntuación con el recorrido hasta el precio objetivo, el consenso y cuántos analistas lo respaldan, lo barata que está (PER futuro), la tendencia del último año, el dividendo y si te diversifica. Quedan fuera las que ya tienes, las del mismo sector que vendes, las de menos de 8 analistas y las que han caído más de un 35 % en un año.</p></details>` : ''}
       </div>
-    </div>
+    </div>${plegado ? '</details>' : ''}
   </article>`;
 }
 
@@ -3413,11 +3506,11 @@ function htmlAnalisisIA(M) {
     ${ia.puntuaciones ? `<div class="ia-notas">${ia.puntuaciones.map((x) => `<div><div class="ia-nota-cab"><b>${esc(x.k)}</b>${puntos(+x.nota || 0)}</div><span>${R(x.txt)}</span></div>`).join('')}</div>` : ''}
     <div class="dos" style="margin-top:44px">
       <section aria-labelledby="hMej"><div class="sec-cab"><h2 id="hMej">Qué mejoraría</h2><span class="k">por orden de importancia</span></div>
-        <ol class="ia-mejorar">${(ia.mejorar || []).map((x) => `<li><h3>${R(x.titulo)}</h3><p>${R(x.texto)}</p><div class="ia-meta">${x.impacto ? `<span><b>Qué ganas.</b> ${R(x.impacto)}</span>` : ''}${x.cuando ? `<span><b>Cuándo.</b> ${R(x.cuando)}</span>` : ''}</div></li>`).join('')}</ol>
+        ${(() => { const li = (x) => `<li><h3>${R(x.titulo)}</h3><p>${R(x.texto)}</p><div class="ia-meta">${x.impacto ? `<span><b>Qué ganas.</b> ${R(x.impacto)}</span>` : ''}${x.cuando ? `<span><b>Cuándo.</b> ${R(x.cuando)}</span>` : ''}</div></li>`; const m = ia.mejorar || []; return `<ol class="ia-mejorar">${m.slice(0, 3).map(li).join('')}</ol>${m.length > 3 ? `<details class="mas"><summary>${m.length - 3 === 1 ? 'Una cosa más' : `${m.length - 3} cosas más`}, menos urgentes</summary><ol class="ia-mejorar" style="counter-reset: m 3">${m.slice(3).map(li).join('')}</ol></details>` : ''}`; })()}
       </section>
       <aside class="pila lateral" style="gap:40px">
-        <section aria-labelledby="hMan"><div class="sec-cab"><h2 id="hMan">Qué mantendría</h2></div>
-          <ul class="lista">${(ia.mantener || []).map((x) => `<li class="good">${ICONOS.ok}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></section>
+        ${(ia.mantener || []).length ? `<details class="plegable" style="margin-top:0"><summary><h2>Qué mantendría</h2><span class="k">${ia.mantener.length} cosas que van bien</span></summary>
+          <ul class="lista">${ia.mantener.map((x) => `<li class="good">${ICONOS.ok}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></details>` : ''}
         ${ia.riesgos && ia.riesgos.length ? `<section aria-labelledby="hRie"><div class="sec-cab"><h2 id="hRie">Riesgos a vigilar</h2></div>
           <ul class="lista">${ia.riesgos.map((x) => `<li class="warn">${ICONOS.alerta}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></section>` : ''}
         ${reglas.length ? `<details class="plegable" style="margin-top:0"><summary><h2>Tus reglas</h2><span class="k">${reglas.length} que acordaste</span></summary>
@@ -5610,7 +5703,7 @@ document.addEventListener('click', (e) => {
   else if (d.ftab) { S.ficha.tab = d.ftab; refrescarFicha(); const c = $('#fichaFondo .ficha'); if (c) c.scrollTop = 0; }
   else if (d.dim) { S.dim = d.dim; LS.set('inv-dim', S.dim); pintar(); }
   else if (d.base) { S.base = d.base; LS.set('inv-base', S.base); pintar(); }
-  else if (d.calif) { S.califTab = d.calif; LS.set('inv-calif3', S.califTab); if (S.vista !== 'analisis') { S.vista = 'analisis'; location.hash = 'analisis'; } pintar(); }
+  else if (d.calif) { S.califTab = d.calif; LS.set('inv-calif3', S.califTab); if (NUMEROS.includes(d.calif)) LS.set('inv-num', d.calif); if (S.vista !== 'analisis') { S.vista = 'analisis'; location.hash = 'analisis'; } pintar(); }
   else if (d.zona) { S.radarZona = d.zona; S.radarTodo = false; LS.set('inv-zona', S.radarZona); pintar(); }
   else if (d.orden) { S.radarOrden = d.orden; LS.set('inv-orden2', S.radarOrden); pintar(); }
   else if ('radarTodo' in d) { S.radarTodo = !S.radarTodo; pintar(); }

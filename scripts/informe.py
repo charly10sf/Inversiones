@@ -46,6 +46,7 @@ LOTE_LECTURA = 70           # empresas que lee Gemini en cada pasada
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
 CANDIDATAS = 45             # empresas entre las que decide cada 2 horas
+DECISION_V = 2              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
 NOTICIAS_POR_ACTIVO = 8
 # para los fondos, las noticias de lo que siguen
 NOTICIAS_DE = {"ishares-us": "^GSPC", "amundi-europe": "^STOXX50E", "vanguard-em": "EEM", "vanguard-smallcap": "VSS", "nb-short": None, "phau": "GC=F", "btc": "BTC-USD"}
@@ -496,11 +497,16 @@ Decide tú. Reglas:
   España no le hacen perder nada. Al comprar paga una tasa del 0,2 % en España, 0,4 % en Francia y 0,1 % en Italia.
 - Máximo 5 ideas, de mejor a peor. Si ninguna está clara, devuelve "ideas" vacío y explícalo en "comentario".
 - Añade hasta 5 empresas a evitar por lo que dice su prensa, aunque los analistas digan comprar.
+- En "plazos", para TODAS las candidatas que no descartes por su prensa (aunque no estén entre tus ideas),
+  estima en cuántos meses se puede materializar la mayor parte de su subida y cuánto: la web lo usa para
+  comparar cualquier idea en "al año". Si no hay un catalizador claro, usa 12 meses y lo de los analistas,
+  o menos si la prensa o los números no lo sostienen.
 - Nada inventado; cita las noticias por número. En español de España, frases cortas.
 Responde con un objeto JSON:
 {"comentario": "dos frases: cómo está el panorama y qué has buscado",
  "ideas": [{"s": "ticker", "tesis": "una o dos frases", "catalizador": "qué y cuándo", "riesgo": "...", "contraste": "qué coincide y qué no", "confianza": "alta|media|baja", "plazo_meses": 6, "subida_pct": 20, "fiscalidad": "lo que pagaría o perdería en impuestos, si importa", "fuentes": [n]}],
- "evitar": [{"s": "ticker", "motivo": "...", "fuentes": [n]}]}"""
+ "evitar": [{"s": "ticker", "motivo": "...", "fuentes": [n]}],
+ "plazos": [{"s": "ticker", "meses": 6, "subida_pct": 15, "por": "qué marca ese plazo, en pocas palabras (por ejemplo: resultados del 6 nov)"}]}"""
 
 
 def decidir(lectura, cache, valores, medianas, tuyas, clave):
@@ -561,7 +567,17 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave):
               "plazo_meses": num(i.get("plazo_meses"), 1, 60), "subida_pct": num(i.get("subida_pct"), -80, 400)}
              for i in (d.get("ideas") or []) if isinstance(i, dict) and i.get("s") in porsim][:5]
     evitar = [{**i, "n": (porsim.get(i.get("s")) or {}).get("n"), "fuentes": fs_de(i.get("fuentes"))} for i in (d.get("evitar") or []) if isinstance(i, dict) and i.get("s") in porsim][:5]
-    return {"generado": ahora(), "modelo": MODELO, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar, "candidatas": len(cands)}
+    plazos = {}
+    for i in d.get("plazos") or []:
+        if not isinstance(i, dict) or i.get("s") not in porsim:
+            continue
+        m, sub = num(i.get("meses"), 1, 60), num(i.get("subida_pct"), -80, 400)
+        if m and sub is not None:
+            plazos[i["s"]] = {"meses": m, "subida_pct": sub, "por": str(i.get("por") or "")[:120]}
+    for i in ideas:
+        if i.get("plazo_meses") and i.get("subida_pct") is not None and i["s"] not in plazos:
+            plazos[i["s"]] = {"meses": i["plazo_meses"], "subida_pct": i["subida_pct"], "por": str(i.get("catalizador") or "")[:120]}
+    return {"generado": ahora(), "modelo": MODELO, "v": DECISION_V, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar, "plazos": plazos, "candidatas": len(cands)}
 
 
 def main(ruta_inst, dir_anterior, dir_salida):
@@ -586,7 +602,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
             except Exception as e:  # noqa: BLE001
                 print(f"escaneo: falló la lectura de Gemini ({str(e)[:200]})")
     nuevo = informe_cartera(ruta_inst, dir_anterior, dir_salida, clave)
-    viejo = not decision or not hace_menos_de(decision.get("generado") or "", HORAS_INFORME)
+    viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_INFORME)
     if clave and valores and (nuevo or viejo):
         try:
             d = decidir(lectura, cache, valores, medianas, tuyas, clave)
