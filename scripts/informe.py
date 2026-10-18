@@ -41,7 +41,7 @@ GEMINI = "https://generativelanguage.googleapis.com/v1beta"
 HORAS_INFORME = 2          # como mucho uno cada 2 horas
 MAX_IDEAS = 0               # las ideas ya no van en el informe: salen del escaneo
 LOTE_YAHOO = 45             # empresas por pasada con noticias de Yahoo Finance
-LOTE_GOOGLE = 12            # y con Google Noticias en español
+LOTE_GOOGLE = 20            # y con Google Noticias en español
 LOTE_LECTURA = 70           # empresas que lee Gemini en cada pasada
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
@@ -71,8 +71,40 @@ def hace_menos_de(iso, horas):
         return False
 
 
+DIAG = {"yahoo_rss": 0, "yahoo_rss_vacias": 0, "yahoo_rss_error": 0, "yahoo_api": 0, "google": 0, "google_error": 0}
+
+
 def noticias_yahoo(simbolo, n=NOTICIAS_POR_ACTIVO):
-    """Noticias de Yahoo Finance de un símbolo, con su resumen. Formato nuevo y antiguo de yfinance."""
+    """Noticias de Yahoo Finance de un símbolo con su resumen: primero por su RSS (rápido y sin
+    sesión) y, si falla, por la API de yfinance."""
+    out = []
+    try:
+        import email.utils
+        import xml.etree.ElementTree as ET
+        url = "https://feeds.finance.yahoo.com/rss/2.0/headline?s=" + urllib.parse.quote(simbolo) + "&region=US&lang=en-US"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (inversiones)"})
+        raiz = ET.fromstring(urllib.request.urlopen(req, timeout=12).read())
+        for it in raiz.iter("item"):
+            titulo = (it.findtext("title") or "").strip()
+            if not titulo:
+                continue
+            try:
+                fecha = email.utils.parsedate_to_datetime(it.findtext("pubDate")).astimezone(dt.timezone.utc).replace(microsecond=0).isoformat()
+            except Exception:  # noqa: BLE001
+                fecha = None
+            desc = re.sub(r"<[^>]+>", "", it.findtext("description") or "").strip()
+            out.append({"t": titulo, "r": desc[:500], "f": (it.findtext("source") or "Yahoo Finance").strip(), "d": fecha, "u": it.findtext("link")})
+            if len(out) >= n:
+                break
+        DIAG["yahoo_rss" if out else "yahoo_rss_vacias"] += 1
+        if out:
+            return out
+    except Exception as e:  # noqa: BLE001
+        DIAG["yahoo_rss_error"] += 1
+        if DIAG["yahoo_rss_error"] <= 2:
+            print(f"rss {simbolo}: {e}")
+    if DIAG["yahoo_rss_error"] > 5 and DIAG["yahoo_api"] == 0 and DIAG["yahoo_rss"] == 0:
+        return out  # si el RSS no va y la API tampoco ha dado nada, no se pierde tiempo
     out = []
     try:
         for x in (yf.Ticker(simbolo).get_news(count=n) or [])[:n]:
@@ -85,6 +117,8 @@ def noticias_yahoo(simbolo, n=NOTICIAS_POR_ACTIVO):
             if not fecha and c.get("providerPublishTime"):
                 fecha = dt.datetime.fromtimestamp(c["providerPublishTime"], dt.timezone.utc).isoformat()
             out.append({"t": titulo, "r": (c.get("summary") or "")[:500], "f": ((c.get("provider") or {}).get("displayName") or c.get("publisher") or "Yahoo Finance"), "d": fecha, "u": url})
+        if out:
+            DIAG["yahoo_api"] += 1
     except Exception as e:  # noqa: BLE001
         print(f"noticias {simbolo}: {e}")
     return out
@@ -355,7 +389,9 @@ def actualizar_noticias(cache, valores):
         nombre = nombre_corto(x.get("n"), x["s"])
         try:
             ns = P.noticias(f'"{nombre}" (acciones OR bolsa OR resultados OR analistas OR beneficio OR "precio objetivo")', 5, re.escape(nombre.split()[0]) if nombre.split() else None)
+            DIAG["google"] += 1
         except Exception as e:  # noqa: BLE001
+            DIAG["google_error"] += 1
             print(f"google {x['s']}: {e}")
             ns = []
         mezclar(cache, x["s"], ns, "fg")
@@ -542,7 +578,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
     hace24 = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=24)
     salida = {"generado": ahora(), "lectura": lectura, "decision": decision,
               "con_noticias": sum(1 for v in cache.values() if v.get("n")), "leidas_24h": sum(1 for v in lectura.values() if cuando(v.get("d")) and cuando(v["d"]) > hace24),
-              "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores)}
+              "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores), "fuentes_pasada": DIAG}
     with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, separators=(",", ":"))
     with open(f"{dir_salida}/escaneo.json", "w", encoding="utf-8") as f:
