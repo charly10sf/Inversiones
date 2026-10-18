@@ -768,7 +768,7 @@ def descubrir(fx, fijas):
     """Recorre la bolsa de EEUU y Europa con el buscador de Yahoo y devuelve [(símbolo, zona)] de las
     empresas con recomendación de compra que no están en la lista fija, más un diagnóstico."""
     from yfinance import EquityQuery
-    diag = {"fecha": ahora(), "por_region": {}, "errores": []}
+    diag = {"fecha": ahora(), "por_region": {}, "errores": [], "muestras": {}}
     vistos, candidatos = set(fijas), []
     for reg, (zona, sufijos, minimo) in DESCUBRIR.items():
         n_reg, paginas = 0, (5 if reg == "us" else 2)
@@ -780,6 +780,8 @@ def descubrir(fx, fijas):
             except Exception as e:  # noqa: BLE001
                 diag["errores"].append(f"{reg} p{pagina}: {str(e)[:160]}")
                 break
+            if pagina == 0:
+                diag["muestras"][reg] = [f'{x.get("symbol")}|{x.get("exchange")}|{x.get("averageAnalystRating")}' for x in quotes[:4]] + [f"total {len(quotes)}"]
             for x in quotes:
                 sim = x.get("symbol") or ""
                 if sim in vistos or x.get("quoteType", "EQUITY") != "EQUITY":
@@ -889,12 +891,21 @@ def radar(fx, previo, extra=()):
             except Exception as e:  # noqa: BLE001
                 fallos.append(sim)
                 print(f"radar {sim}: {e}")
-    out = []
+    out, nombres = [], {}
+    clave = lambda x: re.sub(r"\b(inc|corp|corporation|plc|sa|s a|nv|n v|ag|se|ltd|co|company|holdings?|group|the|spa|s p a|asa|ab|oyj)\b", "", re.sub(r"[^a-z0-9 ]+", " ", (x.get("n") or "").lower())).split()  # noqa: E731
     for sim, _ in tareas:
-        if sim in nuevos:
-            out.append(nuevos[sim])
-        elif sim in antes:
-            out.append(antes[sim])
+        x = nuevos.get(sim) or antes.get(sim)
+        if not x:
+            continue
+        k = " ".join(clave(x))
+        if sim not in fijas and k and k in nombres:
+            # la misma empresa en otra bolsa: se queda la de la lista fija o la que siguen más analistas
+            i = nombres[k]
+            if out[i]["s"] not in fijas and (x.get("na") or 0) > (out[i].get("na") or 0):
+                out[i] = x
+            continue
+        nombres[k] = len(out)
+        out.append(x)
     if fallos:
         print(f"radar: {len(fallos)} sin datos nuevos: {' '.join(sorted(fallos))}")
     return out
@@ -1062,7 +1073,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
     # las descubiertas en toda la bolsa: una vez al día; mientras, las de la vez anterior
     extra = [tuple(x) for x in (prev_radar.get("descubiertas") or [])]
     diag = prev_radar.get("descubrir")
-    nuevo_descubrir = not extra or not hace_menos_de((diag or {}).get("fecha") or "", HORAS_DESCUBRIR)
+    nuevo_descubrir = not extra or "muestras" not in (diag or {}) or not hace_menos_de((diag or {}).get("fecha") or "", HORAS_DESCUBRIR)
     if nuevo_descubrir:
         try:
             fijas = {sim for simbolos in RADAR.values() for sim in simbolos}
