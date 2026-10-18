@@ -500,6 +500,184 @@ details.mas[open] > summary { margin-bottom: 12px; }
 .pie { color: var(--muted); font-size: 12.5px; margin: 56px 0 0; line-height: 1.6; max-width: 90ch; }
 .mas-filas { border: 0; background: none; color: var(--accent); padding: 12px 0 0; font-size: 14px; }
 @media (prefers-reduced-motion: reduce) { .sube, .baja, .estado.on::before { animation: none; } }
+
+/* ---------- botón del asesor en la cabecera ---------- */
+.as-boton { display: inline-flex; align-items: center; gap: 7px; height: 36px; padding: 0 14px 0 11px; margin-right: 6px; border-radius: 999px; border: 1px solid rgba(226, 180, 95, 0.4); background: var(--accent-bg); color: var(--accent); font-weight: 600; font-size: 13.5px; white-space: nowrap; }
+.as-boton svg { width: 17px; height: 17px; }
+.as-boton:hover { background: rgba(226, 180, 95, 0.22); }
+@media (max-width: 860px) { .as-boton { width: 38px; height: 38px; padding: 0; justify-content: center; margin-right: 0; } .as-boton span { display: none; } }
+.vista-cta { margin-left: auto; align-self: center; }
+.vista-cta svg, .btn svg.ch { color: var(--accent); }
+
+/* ---------- panel del asesor ---------- */
+.asesor-fondo { position: fixed; inset: 0; z-index: 64; background: rgba(5, 7, 10, 0.5); display: flex; justify-content: flex-end; }
+.asesor { width: min(540px, 100%); height: 100vh; height: 100dvh; background: var(--bg); border-left: 1px solid var(--line-2); display: grid; grid-template-rows: auto minmax(0, 1fr) auto; grid-template-columns: minmax(0, 1fr); animation: entra 0.22s ease-out; }
+@media (max-width: 760px) { .asesor { border-left: 0; animation-name: subeFicha; } }
+@media (prefers-reduced-motion: reduce) { .asesor { animation: none; } }
+.as-cab { display: flex; align-items: center; gap: 2px; padding: calc(12px + env(safe-area-inset-top)) 12px 12px 20px; border-bottom: 1px solid var(--line); }
+.as-tit { display: flex; gap: 12px; align-items: center; margin-right: auto; min-width: 0; }
+.as-tit > div { min-width: 0; }
+.as-ico { width: 34px; height: 34px; border-radius: 10px; background: var(--accent-bg); color: var(--accent); display: grid; place-items: center; flex: none; }
+.as-ico svg { width: 19px; height: 19px; }
+.as-tit h2 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+.as-tit small { display: block; color: var(--muted); font-size: 12.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.as-cuerpo { overflow-y: auto; overscroll-behavior: contain; padding: 22px 20px 12px; display: flex; flex-direction: column; gap: 20px; }
+.as-yo { align-self: flex-end; max-width: 86%; background: var(--plane-2); border: 1px solid var(--line-2); border-radius: 16px 16px 4px 16px; padding: 9px 14px; font-size: 14.5px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.as-ia { font-size: 14.5px; line-height: 1.62; color: var(--text); min-width: 0; overflow-wrap: anywhere; }
+.as-md p { margin: 0 0 10px; }
+.as-md ul, .as-md ol { margin: 0 0 10px; padding-left: 20px; display: grid; gap: 4px; }
+.as-md h4 { margin: 14px 0 6px; font-size: 15px; font-weight: 650; }
+.as-md b { font-weight: 650; color: var(--text); }
+.as-md code { background: var(--plane-2); border-radius: 5px; padding: 1px 5px; font-size: 13px; }
+.as-md hr { border: 0; border-top: 1px solid var(--line); margin: 14px 0; }
+.as-md a { overflow-wrap: anywhere; }
+.as-tabla { overflow-x: auto; margin: 0 0 12px; }
+.as-tabla table { font-size: 13px; }
+.as-tabla th, .as-tabla td { padding: 6px 8px; white-space: nowrap; }
+.as-paso { display: flex; gap: 8px; align-items: flex-start; color: var(--muted); font-size: 12.5px; margin: 0 0 8px; line-height: 1.4; }
+.as-paso svg { width: 14px; height: 14px; color: var(--accent); flex: none; margin-top: 1px; }
+.as-pensando { display: inline-flex; gap: 5px; padding: 6px 2px; }
+.as-pensando i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); opacity: 0.35; animation: pensando 1.2s ease-in-out infinite; }
+.as-pensando i:nth-child(2) { animation-delay: 0.15s; } .as-pensando i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes pensando { 40% { opacity: 1; transform: translateY(-2px); } }
+@media (prefers-reduced-motion: reduce) { .as-pensando i { animation: none; opacity: 0.8; } }
+.as-error { color: var(--down); font-size: 13.5px; }
+.as-error .enlace { color: var(--accent); margin-left: 6px; }
+.as-fuentes { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
+.as-fuentes .k { font-size: 12px; margin-right: 2px; }
+.as-fuentes a { font-size: 12px; color: var(--text-2); border: 1px solid var(--line-2); border-radius: 999px; padding: 1px 9px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.as-fuentes a:hover { color: var(--accent); border-color: var(--accent); text-decoration: none; }
+.as-pie { border-top: 1px solid var(--line); padding: 12px 14px calc(12px + env(safe-area-inset-bottom)); display: grid; gap: 7px; background: var(--bg); }
+.as-form { display: flex; gap: 8px; align-items: flex-end; background: var(--plane); border: 1px solid var(--line-2); border-radius: 14px; padding: 6px 6px 6px 14px; }
+.as-form:focus-within { border-color: var(--accent); }
+.as-form textarea { flex: 1; min-width: 0; border: 0; background: none; resize: none; font-size: 15px; line-height: 1.45; max-height: 160px; padding: 7px 0; color: var(--text); }
+.as-form textarea:focus, .as-form textarea:focus-visible { outline: none; }
+@media (max-width: 760px) { .as-form textarea { font-size: 16px; } }
+.as-enviar { width: 38px; height: 38px; border-radius: 10px; border: 0; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; flex: none; }
+.as-enviar svg { width: 18px; height: 18px; }
+.as-enviar.parar { background: var(--plane-3); color: var(--text); }
+.as-pie small { color: var(--muted); font-size: 11.5px; padding: 0 6px; }
+.as-vacio { display: grid; gap: 12px; margin-top: auto; }
+.as-vacio h3 { margin: 0; font-size: 24px; font-weight: 300; letter-spacing: -0.02em; }
+.as-vacio p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.6; }
+.as-sug { display: grid; gap: 8px; margin-top: 6px; }
+.as-sug button { text-align: left; border: 1px solid var(--line-2); background: var(--plane); border-radius: 12px; padding: 10px 14px; font-size: 14px; color: var(--text); line-height: 1.4; }
+.as-sug button:hover { border-color: var(--accent); }
+.as-config { display: grid; gap: 14px; align-content: start; }
+.as-config h3 { margin: 0; font-size: 20px; font-weight: 400; letter-spacing: -0.01em; }
+.as-config > p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.6; }
+.as-pasos-clave { margin: 0; padding-left: 20px; display: grid; gap: 6px; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.as-sin-clave { border-top: 1px solid var(--line); padding-top: 16px; margin-top: 4px; display: grid; gap: 8px; justify-items: start; }
+.as-sin-clave p { margin: 0; color: var(--text-2); font-size: 13.5px; }
+.as-modelos { border: 0; padding: 0; margin: 0; display: grid; gap: 8px; }
+.as-modelos legend { color: var(--text-2); font-size: 13.5px; margin-bottom: 6px; }
+.as-modelo { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line-2); border-radius: 12px; padding: 10px 12px; cursor: pointer; }
+.as-modelo:has(input:checked) { border-color: var(--accent); background: var(--accent-bg); }
+.as-modelo input { accent-color: var(--accent); margin-top: 4px; }
+.as-modelo b { display: block; font-weight: 600; font-size: 14px; }
+.as-modelo small { color: var(--muted); font-size: 12.5px; }
+
+/* ---------- frescura de los datos ---------- */
+.frescura { display: flex; flex-wrap: wrap; gap: 6px 22px; font-size: 12.5px; color: var(--muted); margin: -8px 0 32px; }
+.frescura .vivo-dot { display: inline-flex; align-items: center; gap: 8px; }
+.frescura .vivo-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 3px rgba(79, 201, 149, 0.18); }
+.frescura [data-b="recalc"] { color: var(--text-2); font-variant-numeric: tabular-nums; }
+.enlace.acento { color: var(--accent); }
+
+/* ---------- expertos: una fila por posición ---------- */
+.fx-lista { border-top: 1px solid var(--line); }
+.fx { display: grid; grid-template-columns: minmax(160px, 0.8fr) minmax(0, 1.7fr) minmax(0, 1.5fr) minmax(220px, 1fr); grid-template-areas: "act web claude datos"; gap: 26px; padding: 18px 4px; border-bottom: 1px solid var(--line); align-items: start; }
+.fx-act { grid-area: act; } .fx-web { grid-area: web; } .fx-claude { grid-area: claude; } .fx-datos { grid-area: datos; }
+@media (max-width: 1179px) and (min-width: 861px) { .fx { grid-template-columns: minmax(150px, 0.8fr) minmax(0, 2fr) minmax(200px, 1fr); grid-template-areas: "act web datos" "act claude datos"; row-gap: 12px; } .fx-claude { padding-top: 12px; border-top: 1px dashed var(--line-2); } }
+.fx-act { display: flex; gap: 12px; align-items: center; min-width: 0; }
+.fx-act .enlace { font-weight: 650; font-size: 15.5px; letter-spacing: -0.01em; }
+.fx-act small { display: block; color: var(--muted); font-size: 12.5px; }
+.fx-op { min-width: 0; }
+.fx-op p { margin: 6px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.fx-op details.mas { margin-top: 6px; }
+.fx-op details.mas > summary { font-size: 13px; }
+.fx-op details.mas[open] > summary { margin-bottom: 6px; }
+.fx-quien { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.fx-de { font-size: 12px; color: var(--muted); min-width: 44px; }
+.fx-quien .k { font-size: 12px; }
+.fx-datos { display: grid; gap: 8px; font-size: 13px; min-width: 0; }
+.fx-an { display: grid; gap: 7px; }
+.fx-an .k b { color: var(--text); font-weight: 500; }
+.fx-kv { display: grid; gap: 5px; color: var(--text-2); }
+.fx-kv b { color: var(--text); font-weight: 500; }
+@media (max-width: 860px) {
+  .fx { grid-template-columns: minmax(0, 1fr); grid-template-areas: "act" "web" "claude" "datos"; gap: 12px; padding: 16px 0; }
+  .fx-claude { padding-top: 12px; border-top: 1px dashed var(--line-2); }
+  .fx-datos { padding-left: 46px; }
+}
+
+/* ---------- ideas: las tres mejores, las de Claude y la tabla ---------- */
+.ideas-top3 { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); margin-bottom: 10px; }
+@media (min-width: 900px) { .ideas-top3 { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.idea { background: var(--plane); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.idea > header { display: flex; gap: 11px; align-items: center; }
+.idea > header > div { min-width: 0; flex: 1; }
+.idea > header b { display: block; font-weight: 650; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.idea > header small { color: var(--muted); font-size: 12.5px; display: flex; gap: 6px; align-items: center; }
+.idea-n { color: var(--accent); font-weight: 700; font-size: 13px; width: 24px; height: 24px; border-radius: 50%; background: var(--accent-bg); display: grid; place-items: center; flex: none; }
+.idea-cifras { display: grid; grid-template-columns: repeat(3, auto); justify-content: space-between; gap: 10px; font-variant-numeric: tabular-nums; }
+.idea-cifras > div { display: grid; gap: 2px; font-size: 16px; font-weight: 500; }
+.idea-cifras .k { font-size: 12px; font-weight: 400; }
+.idea-pega { margin: 0; color: var(--text-2); font-size: 13px; line-height: 1.5; }
+.idea-pega b { color: var(--warn); font-weight: 600; }
+.idea > .btn { margin-top: auto; align-self: flex-start; }
+.idea.ia p { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.55; }
+.idea.ia p b { color: var(--text); font-weight: 600; }
+.ia-ideas { margin: 18px 0 30px; }
+.ia-ideas .sec-cab h3 { margin: 0; font-size: 15px; font-weight: 650; }
+.ia-ideas-g { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .ia-ideas-g { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.ctr { display: inline-flex; gap: 2px; align-items: center; vertical-align: middle; }
+.ctr i { width: 5px; height: 14px; border-radius: 2px; background: var(--line-2); }
+.ctr i.si { background: var(--up); }
+.ctr i.no { background: var(--down); }
+.ctr b { margin-left: 7px; font-weight: 600; font-size: 13px; color: var(--text); }
+.ctr-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; font-size: 12.5px; }
+.ctr-lista li { display: grid; grid-template-columns: 8px 76px minmax(0, 1fr); gap: 8px; align-items: baseline; color: var(--muted); }
+.ctr-lista li::before { content: ''; width: 7px; height: 7px; border-radius: 2px; background: var(--line-2); transform: translateY(-1px); }
+.ctr-lista li.si::before { background: var(--up); }
+.ctr-lista li.no::before { background: var(--down); }
+.ctr-lista b { color: var(--text-2); font-weight: 500; }
+.ctr-lista li.si span { color: var(--text-2); }
+table.ideas .sub { display: block; font-size: 12px; }
+@media (max-width: 680px) { table.ideas .sub { display: inline; margin-left: 6px; } }
+
+/* ---------- análisis de Claude ---------- */
+.ia-firma { flex-wrap: wrap; }
+.ia-firma .btn { margin-left: auto; }
+.ia-progreso { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 14px 16px; border-radius: 12px; background: var(--plane); border: 1px solid var(--line-2); margin-bottom: 28px; }
+.ia-progreso b { display: block; font-weight: 600; font-size: 14.5px; }
+.ia-progreso span { color: var(--text-2); font-size: 13.5px; }
+.ia-progreso ul { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 3px; color: var(--muted); font-size: 12.5px; }
+.ia-progreso.error > svg { width: 18px; height: 18px; color: var(--down); }
+#iaProgreso:empty { display: none; }
+.iap-lista { border-top: 1px solid var(--line); }
+.iap { display: grid; grid-template-columns: minmax(170px, 0.8fr) minmax(0, 2fr) minmax(0, 1.1fr); gap: 22px; padding: 16px 4px; border-bottom: 1px solid var(--line); align-items: start; }
+.iap-act { display: flex; gap: 12px; align-items: flex-start; }
+.iap-act > div { display: grid; gap: 6px; justify-items: start; }
+.iap-act .enlace { font-weight: 650; font-size: 15px; }
+.iap p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.55; }
+.iap .iap-vig { font-size: 13px; color: var(--muted); }
+.iap .iap-vig b { color: var(--text-2); font-weight: 600; }
+@media (max-width: 860px) { .iap { grid-template-columns: minmax(0, 1fr); gap: 8px; padding: 16px 0; } }
+.ia-fuentes { margin-top: 28px; }
+.ia-fuentes .as-fuentes a { max-width: 260px; }
+
+/* ---------- mercados: filas completas, sin huecos ---------- */
+.mercados { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 560px) { .mercados { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 900px) { .mercados { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (min-width: 1150px) { .mercados { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (min-width: 1500px) { .mercados { grid-template-columns: repeat(6, minmax(0, 1fr)); } .merc-p { font-size: 24px; } }
+
+/* ---------- cartera: lo que mueve el día ---------- */
+.movers { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
+.movers span { color: var(--text-2); }
 </style>
 </head>
 <body>
@@ -557,10 +735,12 @@ const S = {
   precios: null, cartera: null, enc: null, key: null, salt: null, iter: 600000,
   oculto: LS.get('inv-oculto', false), dim: LS.get('inv-dim', 'clase'), base: LS.get('inv-base', 'todo'),
   rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif2', 'ia'), fichaRango: LS.get('inv-frango', '1A'),
-  comparar: LS.get('inv-comparar', false), radarZona: LS.get('inv-zona', 'Todas'), radarOrden: LS.get('inv-orden', 'pot'),
+  comparar: LS.get('inv-comparar', false), radarZona: LS.get('inv-zona', 'Todas'), radarOrden: LS.get('inv-orden2', 'ctr'),
   radarMin: LS.get('inv-radar-min', true), radarTodo: false, vista: 'cartera', ficha: null,
   ordenPos: LS.get('inv-orden-pos', { k: 'valor', dir: 'desc' }), proy: LS.get('inv-proy', {}), horizonte: LS.get('inv-horizonte', 20), proyCache: null,
   hist: null, histId: null, live: {}, liveM: {}, fxVivo: {}, binds: {}, M: null, ultimaCarga: 0,
+  radar: null, radarId: null, radarVer: 0, liveR: {}, liveRVer: 0, radarVisibles: [], ideasTop: [], radarSolidas: LS.get('inv-radar-solidas', false),
+  ia: null, iaPropio: null, iaRemoto: null, firmaPintada: null, radarSubs: '',
 };
 
 /* ---------- formato de números (siempre con punto de miles, como en tus apps) ---------- */
@@ -789,7 +969,7 @@ function aEuros(p, moneda) {
 }
 
 const LIVE = {
-  yahoo: 'off', bitvavo: 'off', wsY: null, wsB: null, mapaY: {}, mapaB: {}, mercY: new Set(), mercB: new Set(), latido: null, esperaY: 1000, esperaB: 1000,
+  yahoo: 'off', bitvavo: 'off', wsY: null, wsB: null, mapaY: {}, mapaB: {}, mercY: new Set(), mercB: new Set(), radarY: new Set(), latido: null, esperaY: 1000, esperaB: 1000,
   mapas() {
     this.mapaY = {}; this.mapaB = {}; this.mercY = new Set(); this.mercB = new Set();
     const usados = new Set((S.cartera.posiciones || []).map((p) => p.instrumento));
@@ -802,6 +982,7 @@ const LIVE = {
     for (const sym of Object.keys((S.precios && S.precios.mercados) || {})) {
       if (/-EUR$/.test(sym)) this.mercB.add(sym); else this.mercY.add(sym);
     }
+    this.radarY = new Set(simsRadarVivos());
   },
   iniciar() {
     this.mapas();
@@ -814,7 +995,7 @@ const LIVE = {
     this.conectarYahoo();
     this.conectarBitvavo();
   },
-  subs() { return [...new Set([...Object.keys(this.mapaY), ...this.mercY, 'EURUSD=X', 'EURGBP=X'])]; },
+  subs() { return [...new Set([...Object.keys(this.mapaY), ...this.mercY, ...this.radarY, 'EURUSD=X', 'EURGBP=X'])]; },
   conectarYahoo() {
     if (typeof WebSocket === 'undefined') return;
     const viejo = this.wsY; this.wsY = null; try { viejo && viejo.close(); } catch (e) {}
@@ -846,6 +1027,7 @@ const LIVE = {
     if (this.mercY.has(d.id)) S.liveM[d.id] = { precio: d.price, var: d.changePercent != null ? d.changePercent : null, t };
     if (d.id === 'EURUSD=X') S.fxVivo.USD = 1 / d.price;
     if (d.id === 'EURGBP=X') S.fxVivo.GBP = 1 / d.price;
+    if (this.radarY.has(d.id)) { S.liveR[d.id] = { p: d.price, v: d.changePercent != null ? d.changePercent : null, t }; S.liveRVer++; }
     const id = this.mapaY[d.id];
     if (id) {
       const precio = aEuros(d.price, d.currency);
@@ -1262,6 +1444,11 @@ const ICONOS = {
   analisis: SVG('<path d="M12 3v9l7.8 4.5"/><circle cx="12" cy="12" r="9"/>'),
   futuro: SVG('<path d="M3 19c3-1 5-4 7-7"/><path d="M10 12c2.5-2 5-4 11-7" stroke-dasharray="2.2 2.6"/><path d="M15 5h6v6"/>'),
   plan: SVG('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3M8 17h6"/>'),
+  calc: SVG('<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7.5h7M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01"/>', 1.8),
+  nueva: SVG('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>', 1.8),
+  enviar: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2.2),
+  parar: SVG('<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>', 1.5),
+  copiar: SVG('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>', 1.8),
 };
 
 const VISTAS = [
@@ -1323,6 +1510,16 @@ function binds(M) {
       b['tv:' + f.inst.id] = { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
     }
   }
+  b.recalc = { txt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) };
+  const mueven = [...M.filas].filter((f) => Math.abs(f.dia) >= 1).sort((a, z) => Math.abs(z.dia) - Math.abs(a.dia)).slice(0, 3);
+  b.movers = { txt: mueven.length ? 'Lo que más mueve hoy: ' + mueven.map((f) => `${f.inst.corto} ${eurS(f.dia, 0)}`).join(', ') : '' };
+  const vis = new Set([...(S.radarVisibles || []), ...(S.ideasTop || [])]);
+  if (vis.size) for (const x of radarVals()) {
+    if (!vis.has(x.s)) continue;
+    b['rp:' + x.s] = { txt: `${fmtNum(x.p, x.p >= 1000 ? 0 : 2)} ${monedaR(x.m)}`, n: x.p };
+    b['rv:' + x.s] = { txt: pctS(x.v), n: x.v, cls: cls(x.v) };
+    b['ro:' + x.s] = { txt: pctS(x.pot, 1), n: x.pot, cls: cls(x.pot) };
+  }
   for (const sym of Object.keys((S.precios && S.precios.mercados) || {})) {
     const d = datoMerc(sym);
     b['mp:' + sym] = { txt: fmtMerc(sym, d.precio), n: d.precio };
@@ -1335,9 +1532,17 @@ function B(k, extra = '') {
   return `<span data-b="${esc(k)}" data-n="${b.n == null ? '' : b.n}" class="${[b.cls, extra].filter(Boolean).join(' ')}">${esc(b.txt)}</span>`;
 }
 
+/* pone el texto de los datos en directo que aún no se habían calculado al pintar (los del radar) */
+function rellenarBinds(raiz) {
+  for (const el of $$('[data-b]', raiz)) {
+    const b = S.binds[el.dataset.b]; if (!b) continue;
+    el.textContent = b.txt; el.dataset.n = b.n == null ? '' : b.n;
+    for (const c of ['up', 'down', 'flat']) el.classList.toggle(c, b.cls === c);
+  }
+}
 let parcheT = null;
 function programarParche() { if (parcheT) return; parcheT = setTimeout(() => { parcheT = null; parchear(); }, 250); }
-const DESTELLA = /^(totalE|pv:|pp:|tp:|mp:|plat:)/;
+const DESTELLA = /^(totalE|pv:|pp:|tp:|mp:|plat:|rp:)/;
 function parchear() {
   if (!S.cartera || !document.querySelector('[data-b]')) return;
   const M = calcular(); S.M = M;
@@ -1354,6 +1559,7 @@ function parchear() {
     el.dataset.n = b.n == null ? '' : b.n;
     for (const c of ['up', 'down', 'flat', 'on', 'off']) el.classList.toggle(c, b.cls === c);
   }
+  vigilarRecomendaciones(M);
 }
 
 /* ---------- estructura fija: cabecera, cinta, contenido y barra inferior ---------- */
@@ -1364,6 +1570,7 @@ function montar() {
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t]) => `<a href="#${k}" data-ir="${k}">${t}</a>`).join('')}</nav>
     <span id="estado"></span>
     <div class="acciones">
+      <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a Claude por tu cartera">${ICONOS.chispa}<span>Asesor</span></button>
       <button class="ib" id="bOcultar" data-accion="ocultar"></button>
       <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
     </div>
@@ -1386,8 +1593,12 @@ function pintar() {
   const html = { cartera: vistaCartera, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, futuro: vistaFuturo, plan: vistaPlan }[S.vista] || vistaCartera;
   $('#vista').innerHTML = html(M) + `<p class="pie">Precios en directo de Yahoo Finance (la bolsa de Madrid llega con 15 minutos de retraso y la de Londres con 20; divisas y futuros, al instante) y de Bitvavo para Bitcoin. Los fondos publican un valor liquidativo al día. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action. Noticias: Google Noticias. Tus cantidades van cifradas en <code>cartera.enc.json</code>.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
+  if ((S.radarVisibles || []).length) { S.binds = binds(M); rellenarBinds($('#vista')); }
   dibujar(M);
   if (S.ficha) refrescarFicha();
+  S.firmaPintada = firmaRecom(M);
+  const sv = simsRadarVivos().join();
+  if (sv !== S.radarSubs) { S.radarSubs = sv; LIVE.resuscribir(); }
 }
 
 function pintarTicker(M) {
@@ -1416,7 +1627,7 @@ function vistaCartera(M) {
     <section aria-label="Patrimonio">
       <div class="hero-lbl">Patrimonio</div>
       <div class="hero-num" aria-label="Patrimonio">${B('totalE')}${B('totalD', 'dec')}</div>
-      <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">de ganancia en lo que tienes</span></div></div>
+      <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">de ganancia en lo que tienes</span></div><div class="movers">${B('movers')}</div></div>
       <div class="kpis">
         ${plats}
         <div class="kpi"><span class="k">Invertido</span><span class="v">${eur(M.invertido, 0)}</span></div>
@@ -1435,8 +1646,8 @@ function vistaCartera(M) {
     </section>
   </div>
   <div class="dos">
-    <div class="pila">${htmlPosiciones(M)}</div>
-    <aside class="pila lateral">${htmlReparto(M)}${htmlAgenda(M)}${htmlAvisos(M)}</aside>
+    <div class="pila">${htmlPosiciones(M)}${htmlAvisos(M)}</div>
+    <aside class="pila lateral">${htmlReparto(M)}${htmlAgenda(M)}</aside>
   </div>`;
 }
 
@@ -1583,18 +1794,6 @@ function htmlObjetivo(a, precio) {
     </div>
     <div class="objetivo-ley"><span>Mínimo ${precioCorto(a.objetivo_bajo)}</span><span>Medio <b class="${cls(pot)}">${precioCorto(a.objetivo)} (${pctS(pot, 1)})</b></span><span>Máximo ${precioCorto(a.objetivo_alto)}</span></div></div>`;
 }
-function tarjetaSenal(f) {
-  const p = f.p || {}, a = p.analistas;
-  const extra = [];
-  if (a && a.votos && a.votos.ahora) extra.push(`<div><div class="k" style="font-size:13px;margin-bottom:6px">${a.num || ''} analistas${a.recomendacion ? `, consenso <b style="color:var(--text);font-weight:500">${esc(a.recomendacion.toLowerCase())}</b>` : ''}</div>${htmlVotos(a.votos.ahora)}</div>`);
-  if (a) extra.push(htmlObjetivo(a, f.precio));
-  if (p.fondo && p.fondo.morningstar) extra.push(`<div class="k" style="font-size:13px">Morningstar <span class="estrellas">${'★'.repeat(p.fondo.morningstar)}<span class="k">${'★'.repeat(5 - p.fondo.morningstar)}</span></span></div>`);
-  return `<article class="tarjeta">
-    <h3><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(f.inst.corto || f.inst.nombre)}</button><span class="k">${esc(f.pos.plataforma || '')}</span><span class="senal ${f.senal.nivel}" style="margin-left:auto">${f.senal.txt}</span></h3>
-    <ul class="motivos">${f.senal.motivos.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>
-    ${extra.join('')}
-  </article>`;
-}
 
 const RE_ANALISTA = /analista|precio objetivo|recomienda|recomendaci|potencial|eleva|rebaja|sobreponderar|infraponderar|comprar|vender|JP ?Morgan|Goldman|Morgan Stanley|Citi|UBS|Barclays|Jefferies|Bernstein|Deutsche|Bankinter|Renta 4|Santander|BBVA Research|CaixaBank|Kepler|HSBC|RBC|Bank of America|BofA|Berenberg|Alantra|Sabadell/i;
 function noticiasCartera(soloAnalistas) {
@@ -1616,53 +1815,223 @@ function resumenSenales(M) {
   for (const f of M.filas) c[f.senal.nivel] = (c[f.senal.nivel] || 0) + 1;
   return ORDEN_SENAL.filter((k) => c[k]).map((k) => `${c[k]} ${SENALES[k].toLowerCase()}`).join(', ');
 }
-function vistaExpertos(M) {
-  const prensa = noticiasCartera(true);
-  return `
-  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas de Yahoo Finance, prensa económica y una señal para cada posición.</p></div>
-  <div class="pila">
-    ${(() => { const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean); return `<section aria-labelledby="hPlanV">
-      <div class="sec-cab"><h2 id="hPlanV">Qué haría ahora</h2><span class="k">${planes.length ? `${planes.length === 1 ? 'una posición que conviene' : planes.length + ' posiciones que conviene'} vender o recortar` : 'nada que vender'}</span></div>
-      ${planes.length ? `<div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl)).join('')}</div>` : '<div class="vacio">Ninguna posición pide vender ahora mismo. Si cambia, aquí saldrá cuánto vender, cuándo, lo que se lleva Hacienda y adónde mover el dinero.</div>'}
-    </section>`; })()}
-    <section aria-labelledby="hSen">
-      <div class="sec-cab"><h2 id="hSen">Tu cartera, posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
-      <div class="tarjetas">${[...M.filas].sort((a, b) => ORDEN_SENAL.indexOf(a.senal.nivel) - ORDEN_SENAL.indexOf(b.senal.nivel) || b.valor - a.valor).map(tarjetaSenal).join('')}</div>
-      <p class="nota">La señal es un resumen automático, no una orden: junta el consenso de los analistas, cuánto le queda hasta su precio objetivo medio, la tendencia (precio frente a su media de 200 sesiones), tus reglas de salida y lo que pesa en tu cartera. Los motivos de cada una están a la vista para que decidas tú.</p>
-    </section>
-    <div class="dos">
-      <section aria-labelledby="hIdeas" class="bloque-sec">${htmlIdeas(M)}</section>
-      <aside aria-labelledby="hPrensa" class="lateral">
-        <div class="sec-cab"><h2 id="hPrensa">Analistas en prensa</h2><span class="k">tus acciones, últimos 30 días</span></div>
-        ${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 14)}
-      </aside>
-    </div>
+const ZONAS = ['Todas', 'España', 'Europa', 'EEUU'];
+/* ---------- de qué lado cae cada recomendación (para ver si la web y Claude coinciden) ---------- */
+const LADO = { comprar: 1, aportar: 0, mantener: 0, vigilar: 0, recoger: -1, reducir: -1, vender: -1 };
+const NIVELES = new Set(Object.keys(LADO));
+
+/* qué tan frescos están los datos que hay detrás de cada recomendación */
+function htmlFrescura() {
+  const ia = iaActual();
+  const lento = Object.values((S.precios && S.precios.instrumentos) || {}).map((p) => p.lento).filter(Boolean).sort().pop();
+  const rg = S.radar && S.radar.generado, rp = S.radar && S.radar.precios;
+  const hora = (t) => { const d = new Date(t); return isNaN(d) ? '—' : d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }); };
+  const cuando = (t) => { const d = new Date(t); if (isNaN(d)) return '—'; const hoy = new Date(); return d.toDateString() === hoy.toDateString() ? `hoy a las ${hora(t)}` : fechaLarga(iso(d)) + ` a las ${hora(t)}`; };
+  return `<div class="frescura" aria-label="Frescura de los datos">
+    <span class="vivo-dot">Señales y planes recalculados con cada precio: ${B('recalc')}</span>
+    ${lento ? `<span>Analistas de tus posiciones: ${haceCuanto(lento)}</span>` : ''}
+    ${rg ? `<span>Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}</span>` : ''}
+    <span>${ia && ia.propio ? `Claude: ${cuando(ia.fecha)}` : AS.clave ? 'Claude: sin análisis propio todavía' : '<button class="enlace acento" data-accion="asesor">Conecta a Claude para que lo revise cada día</button>'}</span>
   </div>`;
 }
 
-const ZONAS = ['Todas', 'España', 'Europa', 'EEUU'];
-const ORDEN_RADAR = { pot: ['Potencial', (x) => x.pot ?? -999], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
-function htmlIdeas(M) {
-  const r = S.precios && S.precios.radar;
-  if (!r || !r.valores || !r.valores.length) return '<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2></div><div class="vacio">La lista de ideas llega con la próxima actualización de datos.</div>';
+function datosExperto(f) {
+  const p = f.p || {}, a = p.analistas;
+  if (a && a.num) {
+    return `<div class="fx-an"><span class="k">${a.num} analistas${a.recomendacion ? `, consenso <b>${esc(a.recomendacion.toLowerCase())}</b>` : ''}</span>${a.votos && a.votos.ahora ? htmlVotos(a.votos.ahora, false) : ''}</div>${htmlObjetivo(a, f.precio)}`;
+  }
+  const r = p.rent || {}, d = [];
+  if (p.fondo && p.fondo.morningstar) d.push(`<span>Morningstar <span class="estrellas">${'★'.repeat(p.fondo.morningstar)}<span class="k">${'★'.repeat(5 - p.fondo.morningstar)}</span></span></span>`);
+  if (f.inst.ter != null) d.push(`<span>Gastos <b>${pct(f.inst.ter, 2)}</b> al año</span>`);
+  if (r['5a_anual'] != null) d.push(`<span>5 años <b class="${cls(r['5a_anual'])}">${pctS(r['5a_anual'], 1)}</b> al año</span>`);
+  else if (r['1a'] != null) d.push(`<span>1 año <b class="${cls(r['1a'])}">${pctS(r['1a'], 1)}</b></span>`);
+  if (p.volatilidad) d.push(`<span>Volatilidad <b>${fmtNum(p.volatilidad, 0)} %</b></span>`);
+  return d.length ? `<div class="fx-kv">${d.join('')}</div>` : '';
+}
+function filaExperto(f, ia, vIA = {}) {
+  const i = f.inst, s = f.senal;
+  const c = ia && ia.posiciones && ia.posiciones[i.id];
+  const nivelC = c && NIVELES.has(c.nivel) ? c.nivel : 'mantener';
+  const choca = c && LADO[nivelC] !== LADO[s.nivel];
+  const [m0, ...resto] = s.motivos;
+  return `<article class="fx">
+    <div class="fx-act">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button><small>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</small></div></div>
+    <div class="fx-op fx-web">
+      <div class="fx-quien"><span class="fx-de">La web</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></div>
+      ${m0 ? `<p>${esc(m0)}</p>` : ''}
+      ${resto.length ? `<details class="mas"><summary>${resto.length === 1 ? 'Un motivo más' : `${resto.length} motivos más`}</summary><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></details>` : ''}
+    </div>
+    <div class="fx-op fx-claude">${c ? `<div class="fx-quien"><span class="fx-de">Claude</span><span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>${c.confianza ? `<span class="k">confianza ${esc(c.confianza)}</span>` : ''}${choca ? '<span class="chip warn">no coinciden</span>' : ''}</div>
+        <p>${rellenarIA(c.vigilar ? `Vigilar: ${c.vigilar}` : c.texto || '', vIA)}</p>` : `<div class="fx-quien"><span class="fx-de">Claude</span><span class="k">sin revisar todavía</span></div>`}
+    </div>
+    <div class="fx-datos">${datosExperto(f)}</div>
+  </article>`;
+}
+
+function htmlFechasExpertos(M, ia) {
+  const hoy = hoyIso();
+  const ev = eventos(M, 60).filter((e) => e.tipo !== 'aportacion').map((e) => ({ d: e.d, html: `<b>${esc(e.t)}</b><span>${esc(e.s)}</span>` }));
+  for (const e of (ia && ia.calendario) || []) if (e.d >= hoy && diasEntre(hoy, e.d) <= 60 && !ev.some((x) => x.d === e.d)) ev.push({ d: e.d, html: `<b>${rellenarIA(e.t, {})}</b>` });
+  if (!ev.length) return '';
+  return `<section aria-labelledby="hFechasE"><div class="sec-cab"><h2 id="hFechasE">Lo que viene</h2><span class="k">próximos dos meses</span></div>
+    <ul class="lista agenda">${ev.sort((a, b) => (a.d < b.d ? -1 : 1)).slice(0, 7).map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><br><span class="k">${MESES[d.getMonth()]}</span></div><div>${e.html}</div><span></span></li>`; }).join('')}</ul></section>`;
+}
+function vistaExpertos(M) {
+  const prensa = noticiasCartera(true);
+  const ia = iaActual();
+  const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
+  const orden = [...M.filas].sort((a, b) => ORDEN_SENAL.indexOf(a.senal.nivel) - ORDEN_SENAL.indexOf(b.senal.nivel) || b.valor - a.valor);
+  return `
+  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa y Claude, y una señal para cada posición que se recalcula con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale al asesor</button></div>
+  ${htmlFrescura()}
+  <div class="pila">
+    <section aria-labelledby="hPlanV">
+      <div class="sec-cab"><h2 id="hPlanV">Qué haría ahora</h2><span class="k">${planes.length ? `${planes.length === 1 ? 'una posición que conviene' : planes.length + ' posiciones que conviene'} vender o recortar` : 'nada que vender'}</span></div>
+      ${planes.length ? `<div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl)).join('')}</div>` : '<div class="vacio">Ninguna posición pide vender ahora mismo. Si cambia, aquí saldrá cuánto vender, cuándo, lo que se lleva Hacienda y adónde mover el dinero.</div>'}
+    </section>
+    <section aria-labelledby="hSen" class="bloque-sec">
+        <div class="sec-cab"><h2 id="hSen">Tu cartera, posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
+        <div class="fx-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; return orden.map((f) => filaExperto(f, ia, vIA)).join(''); })()}</div>
+        <p class="nota">La señal de la web junta el consenso de los analistas, lo que le queda hasta su precio objetivo medio, la tendencia, tus reglas de salida y lo que pesa en tu cartera. La de Claude sale de su revisión con las noticias${ia && ia.propio ? '' : ' (la última que hay publicada)'}. Cuando no coinciden, lee los dos motivos antes de decidir.</p>
+    </section>
+    <div class="dos">
+      <section aria-labelledby="hPrensa" class="bloque-sec"><div class="sec-cab"><h2 id="hPrensa">Analistas en prensa</h2><span class="k">tus acciones, últimos 30 días</span></div>
+        ${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10).replace('class="noticias"', 'class="noticias dos-col"')}</section>
+      <aside class="lateral">${htmlFechasExpertos(M, ia)}</aside>
+    </div>
+    <section aria-labelledby="hIdeas" class="bloque-sec">${htmlIdeas(M, ia)}</section>
+  </div>`;
+}
+
+/* ---------- ideas para comprar ---------- */
+function puntuarIdea(x, ctx) {
+  const motivos = [], pegas = [];
+  let p = 0;
+  const pot = Math.min(x.pot, 50);
+  p += 1.2 * (pot / 50);
+  motivos.push(`los analistas le ven un ${fmtNum(x.pot, 0)} % de recorrido`);
+  const rm = x.rm ?? 3;
+  p += Math.max(-1, Math.min(1, (2.6 - rm) / 1.6));
+  if (rm <= 1.6) motivos.push(`consenso de compra fuerte entre ${x.na} analistas`);
+  else motivos.push(`${x.na} analistas, consenso de compra`);
+  p += 0.5 * (Math.min(x.na || 0, 30) / 30);
+  if (x.perf > 0 && x.perf < 10) { p += 0.4; motivos.push(`barata: PER futuro de ${fmtNum(x.perf, 1)}`); }
+  else if (x.perf > 0 && x.perf < 15) { p += 0.3; motivos.push(`PER futuro de ${fmtNum(x.perf, 1)}`); }
+  else if (x.perf > 0 && x.perf < 22) p += 0.1;
+  else if (x.perf >= 30) { p -= 0.3; pegas.push(`cara: PER futuro de ${fmtNum(x.perf, 0)}`); }
+  if (x.c1a != null) {
+    if (x.c1a < -15) { p -= 0.3; pegas.push(`ha caído un ${fmtNum(-x.c1a, 0)} % en un año: el mercado duda de algo`); }
+    else if (x.c1a > 90) { p -= 0.15; pegas.push(`ya ha subido un ${fmtNum(x.c1a, 0)} % en un año`); }
+  }
+  if (x.div >= 2) { p += 0.1; motivos.push(`dividendo del ${fmtNum(x.div, 1)} %`); }
+  const ctr = contraste(x);
+  p += 0.22 * ctr.favor - 0.3 * ctr.contra;
+  motivos.push(`contrastada: ${ctr.favor} de ${ctr.total} señales a favor`);
+  for (const c of ctr.checks) if (c.ok === -1) pegas.push(`${c.k.toLowerCase()} en contra: ${c.txt}`);
+  const pesoSector = x.sector ? ctx.sectores[x.sector] || 0 : 0;
+  if (pesoSector > 20) { p -= 0.3; pegas.push(`ya tienes un ${fmtNum(pesoSector, 0)} % en ${x.sector.toLowerCase()} a través de tus fondos`); }
+  else if (x.sector) { p += 0.1; motivos.push(`${x.sector.toLowerCase()}: solo un ${fmtNum(pesoSector, 0)} % de tu bolsa`); }
+  const dentro = ctx.dentro(x.n);
+  if (dentro > 0.01 * ctx.total) { p -= 0.35; pegas.push(`ya tienes ${eur(dentro, 0)} en ella dentro de tus fondos`); }
+  if (x.z === 'EEUU') pegas.push('cotiza en dólares: el cambio euro/dólar también cuenta');
+  const tc = tasaRadar(x);
+  if (tc) pegas.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
+  return { ...x, puntos: p, motivos, pegas, ctr };
+}
+function mejoresIdeas(M, excluir = {}) {
+  const r = radarVals();
+  if (!r.length) return [];
   const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
-  let v = r.valores.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null);
+  const sect = {};
+  for (const x of reparto(M, 'sector', 'rv').filas) sect[x.k] = x.pct;
+  const ctx = { sectores: sect, total: M.total, dentro: dentroDeFondos(M) };
+  const out = r
+    .filter((x) => !tuyas.has(x.s) && x.pot != null && x.pot >= 10 && (x.na || 0) >= 8 && (x.rm ?? 9) <= 2.4 && ['buy', 'strong_buy'].includes(x.r) && !(x.c1a < -35) && (!excluir.sector || x.sector !== excluir.sector))
+    .map((x) => puntuarIdea(x, ctx))
+    .filter((x) => x.ctr.favor >= 3 && x.ctr.contra <= 2)
+    .sort((a, b) => b.puntos - a.puntos);
+  if (!excluir.sector) S.ideasTop = out.slice(0, 12).map((x) => x.s);
+  return out;
+}
+
+const ORDEN_RADAR = { pot: ['Potencial', (x) => x.pot ?? -999], ctr: ['Contraste', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
+const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? 'p' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
+function tarjetaIdea(x, k) {
+  return `<article class="idea">
+    <header>${logo(x.w, x.n)}<div><b>${esc(x.n)}</b><small>${x.pais ? bandera(PAIS_DE_NOMBRE[x.pais]) + ' ' : ''}${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</small></div><span class="idea-n">${k + 1}</span></header>
+    <div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + x.s)}</div><div><span class="k">Hasta el objetivo</span>${B('ro:' + x.s)}</div><div><span class="k">Contraste</span>${htmlContraste(x.ctr, true)}</div></div>
+    ${htmlContrasteLista(x.ctr)}
+    ${x.pegas.length ? `<p class="idea-pega"><b>Pegas.</b> ${esc(x.pegas.slice(0, 3).join('; '))}.</p>` : ''}
+    <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde y con qué impuesto.`)}">${ICONOS.chispa}Pídele a Claude que la contraste</button>
+  </article>`;
+}
+function htmlIdeasClaude(ia) {
+  const ideas = (ia && Array.isArray(ia.ideas) ? ia.ideas : []).filter((x) => x && x.nombre);
+  if (!ideas.length) return '';
+  const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } };
+  return `<div class="ia-ideas"><div class="sec-cab"><h3>Las que ha contrastado Claude</h3><span class="k">con las noticias ${ia.propio ? 'de su última revisión' : 'de la última revisión publicada'}</span></div>
+    <div class="ia-ideas-g">${ideas.map((x) => { const r = buscarRadar(x.ticker || x.nombre); return `<article class="idea ia">
+      <header>${logo(r && r.w, x.nombre)}<div><b>${esc(x.nombre)}</b><small>${esc(x.ticker || '')}${x.importe ? `, propone ${eur(+x.importe, 0)}` : ''}</small></div>${r ? htmlContraste(contraste(r), true) : ''}</header>
+      <p>${rellenarIA(x.tesis || '', {})}</p>
+      ${x.catalizador ? `<p><b>Qué la puede mover.</b> ${rellenarIA(x.catalizador, {})}</p>` : ''}
+      ${x.riesgo ? `<p><b>Riesgo.</b> ${rellenarIA(x.riesgo, {})}</p>` : ''}
+      ${x.contraste ? `<p class="k"><b>Contraste.</b> ${rellenarIA(x.contraste, {})}</p>` : ''}
+      ${Array.isArray(x.fuentes) && x.fuentes.length ? `<div class="as-fuentes">${x.fuentes.filter((f) => /^https?:\/\//.test(f.u || '')).slice(0, 4).map((f) => `<a href="${esc(f.u)}" target="_blank" rel="noopener noreferrer" title="${esc(f.t || '')}">${esc(dom(f.u))}</a>`).join('')}</div>` : ''}
+    </article>`; }).join('')}</div></div>`;
+}
+function htmlIdeas(M, ia) {
+  const todas = radarVals();
+  if (!todas.length) return '<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2></div><div class="vacio">La lista de ideas llega con la próxima actualización de datos.</div>';
+  const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
+  const top = mejoresIdeas(M).slice(0, 3);
+  let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => ({ ...x, _ctr: contraste(x) }));
+  if (S.radarSolidas) v = v.filter((x) => x._ctr.favor >= 4 && x._ctr.contra <= 1);
   const [, clave] = ORDEN_RADAR[S.radarOrden] || ORDEN_RADAR.pot;
   v = v.sort((a, b) => clave(b) - clave(a));
   const total = v.length;
-  if (!S.radarTodo) v = v.slice(0, 15);
-  const th = (k, t) => `<th class="r"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
-  return `<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2><span class="k">${r.valores.length} grandes empresas, actualizado ${haceCuanto(r.generado)}</span></div>
+  if (!S.radarTodo) v = v.slice(0, 20);
+  S.radarVisibles = [...new Set([...v.map((x) => x.s), ...top.map((x) => x.s)])];
+  const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
+  return `<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU; cada una contrastada con siete señales</span></div>
+    ${top.length ? `<div class="ideas-top3">${top.map(tarjetaIdea).join('')}</div><p class="nota" style="margin:-4px 0 28px">Las tres que mejor encajan contigo: consenso de compra, recorrido, al menos 3 señales a favor y que no dupliquen lo que ya tienes en tus fondos. Las barras son las siete señales: verde a favor, rojo en contra, gris neutral.</p>` : ''}
+    ${htmlIdeasClaude(ia)}
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
-      <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Solo con 5 analistas o más</label></div>
-    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial')}${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
+      <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
+      <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
+    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial')}${th('ctr', 'Contraste', '')}${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
     ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${x.pais ? bandera(PAIS_DE_NOMBRE[x.pais]) + ' ' : ''}${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</small></td>
-      <td class="r">${fmtNum(x.p, x.p >= 1000 ? 0 : 2)} ${x.m === 'EUR' ? '€' : x.m === 'USD' ? '$' : x.m === 'GBp' ? 'p' : esc(x.m || '')}<small class="${cls(x.v)}">${pctS(x.v)}</small></td>
+      <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
-      <td class="r ${cls(x.pot)}">${pctS(x.pot, 1)}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
+      <td class="r">${B('ro:' + x.s)}</td><td>${htmlContraste(x._ctr, true)}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
-    ${total > 15 ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? 'Ver solo las 15 primeras' : `Ver las ${total}`}</button>` : ''}
-    <p class="nota">Potencial: distancia hasta el precio objetivo medio de los analistas a 12 meses. Un potencial alto con pocos analistas o con el consenso dividido vale menos. Antes de comprar, mira por qué ha caído o subido: abre la empresa en Yahoo Finance o en tu bróker.</p>`;
+    ${total > 20 ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? 'Ver solo las 20 primeras' : `Ver las ${total}`}</button>` : ''}
+    <p class="nota">Potencial: distancia hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio. Una idea con potencial alto pero pocas señales a favor vale menos. Antes de comprar, pídele a Claude que la contraste con las noticias.</p>`;
+}
+
+/* ---------- repintar solo cuando cambia una recomendación ---------- */
+function firmaRecom(M) {
+  const s = M.filas.map((f) => `${f.pos.id}:${f.senal.nivel}`).join('|');
+  const pl = M.filas.map((f) => planVenta(f, M)).filter(Boolean).map((p) => `${p.f.pos.id}:${fmtNum(p.uds, 0)}:${p.ideas[0] ? p.ideas[0].s : ''}`).join('|');
+  const id = mejoresIdeas(M).slice(0, 3).map((x) => x.s).join(',');
+  return `${s}#${pl}#${id}`;
+}
+let repintadoT = null;
+function vigilarRecomendaciones(M) {
+  if (!S.firmaPintada) return;
+  const f = firmaRecom(M);
+  if (f === S.firmaPintada) return;
+  const antes = Object.fromEntries(S.firmaPintada.split('#')[0].split('|').map((x) => x.split(':')));
+  for (const fila of M.filas) {
+    const a = antes[fila.pos.id];
+    if (a && a !== fila.senal.nivel) toast(`${fila.inst.corto}: la señal pasa de "${SENALES[a] || a}" a "${fila.senal.txt}"`, 6000);
+  }
+  S.firmaPintada = f;
+  clearTimeout(repintadoT);
+  repintadoT = setTimeout(() => {
+    const ocupado = $('.hoja-fondo') || $('#asesorFondo') || (document.activeElement && document.activeElement.matches('input, textarea, select'));
+    if (ocupado) { S.firmaPintada = 'pendiente'; return; }
+    pintar();
+  }, 1200);
 }
 
 /* =========================== Mercados =========================== */
@@ -2001,6 +2370,11 @@ function cambiarOrden(k) {
 const TRAMOS_AHORRO = [[6000, 0.19], [50000, 0.21], [200000, 0.23], [300000, 0.27], [Infinity, 0.30]];
 const tipoMarginal = (base) => (TRAMOS_AHORRO.find(([h]) => base < h) || TRAMOS_AHORRO[TRAMOS_AHORRO.length - 1])[1];
 const TASA_COMPRA = { ES: [0.002, 'impuesto sobre transacciones financieras español'], FR: [0.004, 'tasa francesa sobre transacciones financieras'], IT: [0.001, 'tasa italiana sobre transacciones financieras'], GB: [0.005, 'impuesto de timbre británico'] };
+const SUFIJO_PAIS = { MC: 'ES', PA: 'FR', MI: 'IT', L: 'GB' };
+function tasaRadar(x) {
+  const pais = PAIS_DE_NOMBRE[x.pais], suf = String(x.s || '').split('.')[1];
+  return SUFIJO_PAIS[suf] && SUFIJO_PAIS[suf] === pais ? tasaCompra(pais, 'Acción', x.cap) : null;
+}
 function tasaCompra(pais, tipo, capital) {
   if (tipo && tipo !== 'Acción') return null;
   const t = TASA_COMPRA[pais];
@@ -2136,56 +2510,6 @@ function htmlImpuestos(M) {
    Plan de venta: cuánto vender, cuándo, qué se lleva Hacienda y adónde mover el dinero
    ===================================================================== */
 
-/* Puntúa cada idea de la lista (~100 grandes empresas) para recibir dinero nuevo. Cada factor suma
-   o resta y queda escrito como motivo, para que se vea por qué gana una y no otra. */
-function puntuarIdea(x, ctx) {
-  const motivos = [], pegas = [];
-  let p = 0;
-  const pot = Math.min(x.pot, 50);
-  p += 1.2 * (pot / 50);
-  motivos.push(`los analistas le ven un ${fmtNum(x.pot, 0)} % de recorrido`);
-  const rm = x.rm ?? 3;
-  p += Math.max(-1, Math.min(1, (2.6 - rm) / 1.6));
-  if (rm <= 1.6) motivos.push(`consenso de compra fuerte entre ${x.na} analistas`);
-  else motivos.push(`${x.na} analistas, consenso de compra`);
-  p += 0.5 * (Math.min(x.na || 0, 30) / 30);
-  if (x.perf > 0 && x.perf < 10) { p += 0.4; motivos.push(`barata: PER futuro de ${fmtNum(x.perf, 1)}`); }
-  else if (x.perf > 0 && x.perf < 15) { p += 0.3; motivos.push(`PER futuro de ${fmtNum(x.perf, 1)}`); }
-  else if (x.perf > 0 && x.perf < 22) p += 0.1;
-  else if (x.perf >= 30) { p -= 0.3; pegas.push(`cara: PER futuro de ${fmtNum(x.perf, 0)}`); }
-  if (x.c1a != null) {
-    if (x.c1a >= 5 && x.c1a <= 60) { p += 0.25; motivos.push(`tendencia sana: ${pctS(x.c1a, 0)} en un año`); }
-    else if (x.c1a < -15) { p -= 0.3; pegas.push(`ha caído un ${fmtNum(-x.c1a, 0)} % en un año: el mercado duda de algo`); }
-    else if (x.c1a > 90) { p -= 0.15; pegas.push(`ya ha subido un ${fmtNum(x.c1a, 0)} % en un año`); }
-  }
-  if (x.div >= 2) { p += 0.1; motivos.push(`dividendo del ${fmtNum(x.div, 1)} %`); }
-  const pesoSector = x.sector ? ctx.sectores[x.sector] || 0 : 0;
-  if (pesoSector > 20) { p -= 0.3; pegas.push(`ya tienes un ${fmtNum(pesoSector, 0)} % en ${x.sector.toLowerCase()} a través de tus fondos`); }
-  else if (x.sector) { p += 0.1; motivos.push(`${x.sector.toLowerCase()}: solo un ${fmtNum(pesoSector, 0)} % de tu bolsa`); }
-  const dentro = ctx.dentro(x.n);
-  if (dentro > 0.01 * ctx.total) { p -= 0.35; pegas.push(`ya tienes ${eur(dentro, 0)} en ella dentro de tus fondos`); }
-  if (x.z === 'EEUU') pegas.push('cotiza en dólares: el cambio euro/dólar también cuenta');
-  const tc = tasaCompra(PAIS_DE_NOMBRE[x.pais], 'Acción', x.cap);
-  if (tc) pegas.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
-  return { ...x, puntos: p, motivos, pegas };
-}
-function mejoresIdeas(M, excluir = {}) {
-  const r = S.precios && S.precios.radar;
-  if (!r || !r.valores) return [];
-  const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
-  const sect = {};
-  for (const x of reparto(M, 'sector', 'rv').filas) sect[x.k] = x.pct;
-  // lo que ya tienes de cada empresa dentro de tus fondos (para no doblar la apuesta sin saberlo)
-  const SOBRA = new Set(['inc', 'corp', 'corporation', 'plc', 'sa', 'nv', 'ag', 'se', 'ltd', 'co', 'holding', 'holdings', 'group', 'class', 'a', 'b', 'c', 'the', 'company', 'ordinary', 'shares', 'new', 'registered', 'participating', 'preferred']);
-  const norm = (n) => String(n || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9 ]+/g, ' ').split(/\s+/).filter((w) => w && !SOBRA.has(w)).join(' ');
-  const dentroMapa = new Map(empresasPorDentro(M).filas.filter((e) => !e.directa).map((e) => [norm(e.n), e.v]));
-  const ctx = { sectores: sect, total: M.total, dentro: (n) => { const k = norm(n); let v = 0; for (const [kk, vv] of dentroMapa) if (kk && k && (kk === k || kk.startsWith(k + ' ') || k.startsWith(kk + ' '))) v += vv; return v; } };
-  return r.valores
-    .filter((x) => !tuyas.has(x.s) && x.pot != null && x.pot >= 10 && (x.na || 0) >= 8 && (x.rm ?? 9) <= 2.4 && ['buy', 'strong_buy'].includes(x.r) && !(x.c1a < -35) && (!excluir.sector || x.sector !== excluir.sector))
-    .map((x) => puntuarIdea(x, ctx))
-    .sort((a, b) => b.puntos - a.puntos);
-}
-
 const NUCLEO = { n: 'S&P 500 (núcleo indexado)', d: 'ishares.com', txt: 'Mejor en tu fondo del S&P 500 de MyInvestor (transfiere el dinero desde Trade Republic): entre fondos podrás cambiar más adelante sin pagar impuestos con un traspaso. Si prefieres no moverlo de Trade Republic, el ETF iShares Core S&P 500 (ISIN IE00B5BMR087) sigue el mismo índice, pero cada venta futura pagará.' };
 
 function planVenta(f, M) {
@@ -2273,13 +2597,13 @@ function htmlPlanVenta(pl, compacto) {
   const idea = (x, k) => `<li><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b>${esc(x.n)}</b><span class="k">${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</span></div>
     <span>${esc(x.motivos.slice(0, 4).join(', '))}.${x.pegas.length ? ` Pega: ${esc(x.pegas.join('; '))}.` : ''}</span></li>`;
   const destino = [];
-  const tasaTop = top ? tasaCompra(PAIS_DE_NOMBRE[top.pais], 'Acción', top.cap) : null;
+  const tasaTop = top ? tasaRadar(top) : null;
   const pegaTop = top && top.pegas.find((x) => !x.startsWith('al comprar pagas'));
-  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${(S.precios.radar.valores || []).length} empresas que sigue la web para una apuesta nueva: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` Pega: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} Sus dividendos tributan en la renta como los de tus otras acciones.</span></div></div>`);
+  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${radarVals().length} empresas que sigue la web para una apuesta nueva, contrastada con ${top.ctr.favor} de ${top.ctr.total} señales a favor: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` Pega: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} Sus dividendos tributan en la renta como los de tus otras acciones.</span></div></div>`);
   if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(NUCLEO.d, 'S P')}<div><b>${eur(pl.aNucleo, 0)} al S&P 500</b><span>${pl.nivel === 'reducir' ? 'Para bajar riesgo sin dejar de estar invertido. ' : pl.aIdea > 0 ? 'La otra mitad, a lo seguro. ' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite. '}${esc(NUCLEO.txt)}</span></div></div>`);
   if (pl.impuesto > 0) destino.push(`<div class="pv-dest">${logo(null, '€')}<div><b>${eur(pl.impuesto, 0)} aparte para Hacienda</b><span>Se paga en la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}. Déjalo en efectivo o en tu colchón hasta entonces: no lo inviertas en bolsa.</span></div></div>`);
   return `<article class="plan-venta${compacto ? ' compacto' : ''}">
-    <header>${logo(i.dominio, i.corto)}<div><h3>${nombre}</h3><span class="k">${esc(f.pos.plataforma || '')}, ahora ${precioFmt(f.precio)}</span></div><span class="senal ${f.senal.nivel}">${esc(f.senal.txt)}</span></header>
+    <header>${logo(i.dominio, i.corto)}<div><h3>${nombre}</h3><span class="k">${esc(f.pos.plataforma || '')}, ahora ${precioFmt(f.precio)}</span></div><span class="senal ${f.senal.nivel}">${esc(f.senal.txt)}</span>${compacto ? '' : `<button class="btn peq" data-accion="asesor" data-q="${esc(`Explícame el plan de venta de ${i.corto}: ¿por qué ahora, por qué ese destino y qué alternativas bien contrastadas hay? Mira las noticias de esta semana.`)}">${ICONOS.chispa}Pregúntale</button>`}</header>
     <div class="pv-grid">
       <div class="pv-col">
         <div class="pv-paso"><span class="pv-n">Cuánto</span><div><b>Vende ${oc(fmtNum(pl.uds, pl.accion ? 0 : 4))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b><span>${pl.cuanto}${pl.queda > 0 ? ` Te quedas ${oc(fmtNum(pl.queda, pl.accion ? 0 : 2))}, unos ${eur(pl.queda * f.precio, 0)}.` : ''}</span></div></div>
@@ -2340,27 +2664,43 @@ function valoresIA(M) {
   return v;
 }
 function rellenarIA(txt, v) {
-  return esc(txt).replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (m, k, id) => {
-    const val = id ? v[k] && v[k][id] : v[k];
-    return val != null && typeof val !== 'object' ? `<b class="dato">${esc(val)}</b>` : '—';
-  });
+  return esc(txt)
+    .replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (m, k, id) => {
+      const val = id ? v[k] && v[k][id] : v[k];
+      return val != null && typeof val !== 'object' ? `<b class="dato">${esc(val)}</b>` : '—';
+    })
+    .replace(/\*\*([^*]+)\*\*/g, (m, x) => `<b class="dato">${S.oculto && /€/.test(x) ? '••••' : x}</b>`);
 }
 function htmlAnalisisIA(M) {
-  const ia = S.ia;
-  if (!ia) return '<div class="vacio">Cargando el análisis…</div>';
+  const ia = iaActual();
+  const prog = `<div id="iaProgreso">${htmlProgresoIA()}</div>`;
+  if (!ia) return prog + '<div class="vacio">Cargando el análisis…</div>';
   const v = valoresIA(M);
   const R = (t) => rellenarIA(t || '', v);
-  const dias = diasEntre(ia.fecha, hoyIso());
-  const ids = [...new Set(M.filas.map((f) => f.inst.id))];
+  const f = String(ia.fecha || '');
+  const d = new Date(f.length > 10 ? f : f + 'T12:00:00');
+  const hora = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+  const dias = diasEntre(iso(d), hoyIso());
+  const cuando = f.length > 10 ? (dias === 0 ? `hoy a las ${hora}` : dias === 1 ? `ayer a las ${hora}` : `el ${fechaLarga(iso(d))}`) : `el ${fechaLarga(f)}${dias > 0 ? `, hace ${dias} ${dias === 1 ? 'día' : 'días'}` : ''}`;
+  const firma = ia.propio
+    ? `Escrito por Claude ${cuando}${ia.busquedas ? `, con ${ia.busquedas} ${ia.busquedas === 1 ? 'búsqueda' : 'búsquedas'} en internet` : ''} y tus cifras de ese momento${ia.modelo && MODELOS[ia.modelo] ? ` (${MODELOS[ia.modelo].n})` : ''}.`
+    : `Escrito por ${ia.autor || 'Claude'} ${cuando}. ${ia.datos || ''}`;
+  const boton = AS.clave
+    ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Actualizando…' : 'Actualizar ahora'}</button>`
+    : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Que se actualice solo cada día</button>`;
+  const ids = [...new Set(M.filas.map((x) => x.inst.id))];
   const puntos = (n) => `<span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
-  return `<div class="ia">
+  const reglas = (S.ia && S.ia.reglas) || [];
+  const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return ''; } };
+  const fuentes = (ia.fuentes || []).filter((x) => x && /^https?:\/\//.test(x.u || ''));
+  return `<div class="ia">${prog}
     <div class="ia-cab">
-      <div class="ia-firma">${ICONOS.chispa}<span>Escrito por ${esc(ia.autor || 'Claude')} el ${fechaLarga(ia.fecha)}${dias > 0 ? `, hace ${dias} ${dias === 1 ? 'día' : 'días'}` : ''}. ${esc(ia.datos || '')}</span></div>
-      ${dias > 14 ? `<div class="chip warn" style="justify-self:start">Tiene más de dos semanas: pídele a Claude una revisión</div>` : ''}
+      <div class="ia-firma">${ICONOS.chispa}<span>${esc(firma)}</span>${boton}</div>
+      ${!ia.propio && dias > 14 ? `<div class="chip warn" style="justify-self:start">Tiene más de dos semanas: conecta el asesor para que se renueve solo</div>` : ''}
       <p class="ia-titular">${R(ia.titular)}</p>
       ${(ia.resumen || []).map((p) => `<p class="ia-p">${R(p)}</p>`).join('')}
     </div>
-    ${ia.puntuaciones ? `<div class="ia-notas">${ia.puntuaciones.map((x) => `<div><div class="ia-nota-cab"><b>${esc(x.k)}</b>${puntos(x.nota)}</div><span>${R(x.txt)}</span></div>`).join('')}</div>` : ''}
+    ${ia.puntuaciones ? `<div class="ia-notas">${ia.puntuaciones.map((x) => `<div><div class="ia-nota-cab"><b>${esc(x.k)}</b>${puntos(+x.nota || 0)}</div><span>${R(x.txt)}</span></div>`).join('')}</div>` : ''}
     <div class="dos" style="margin-top:44px">
       <section aria-labelledby="hMej"><div class="sec-cab"><h2 id="hMej">Qué mejoraría</h2><span class="k">por orden de importancia</span></div>
         <ol class="ia-mejorar">${(ia.mejorar || []).map((x) => `<li><h3>${R(x.titulo)}</h3><p>${R(x.texto)}</p><div class="ia-meta">${x.impacto ? `<span><b>Qué ganas.</b> ${R(x.impacto)}</span>` : ''}${x.cuando ? `<span><b>Cuándo.</b> ${R(x.cuando)}</span>` : ''}</div></li>`).join('')}</ol>
@@ -2368,19 +2708,26 @@ function htmlAnalisisIA(M) {
       <aside class="pila lateral" style="gap:40px">
         <section aria-labelledby="hMan"><div class="sec-cab"><h2 id="hMan">Qué mantendría</h2></div>
           <ul class="lista">${(ia.mantener || []).map((x) => `<li class="good">${ICONOS.ok}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></section>
-        ${ia.riesgos ? `<section aria-labelledby="hRie"><div class="sec-cab"><h2 id="hRie">Riesgos a vigilar</h2></div>
+        ${ia.riesgos && ia.riesgos.length ? `<section aria-labelledby="hRie"><div class="sec-cab"><h2 id="hRie">Riesgos a vigilar</h2></div>
           <ul class="lista">${ia.riesgos.map((x) => `<li class="warn">${ICONOS.alerta}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></section>` : ''}
-        ${ia.calendario ? `<section aria-labelledby="hCalIA"><div class="sec-cab"><h2 id="hCalIA">Fechas</h2></div>
-          <ul class="lista agenda">${ia.calendario.filter((e) => e.d >= hoyIso()).map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><br><span class="k">${MESES[d.getMonth()]}</span></div><div><b>${R(e.t)}</b></div><span></span></li>`; }).join('')}</ul></section>` : ''}
+        ${ia.calendario && ia.calendario.some((e) => e.d >= hoyIso()) ? `<section aria-labelledby="hCalIA"><div class="sec-cab"><h2 id="hCalIA">Fechas</h2></div>
+          <ul class="lista agenda">${ia.calendario.filter((e) => e.d >= hoyIso()).sort((a, b) => (a.d < b.d ? -1 : 1)).map((e) => { const dd = deIso(e.d); return `<li><div class="dia"><b>${dd.getDate()}</b><br><span class="k">${MESES[dd.getMonth()]}</span></div><div><b>${R(e.t)}</b></div><span></span></li>`; }).join('')}</ul></section>` : ''}
+        ${reglas.length ? `<section aria-labelledby="hReg"><div class="sec-cab"><h2 id="hReg">Tus reglas</h2><span class="k">las que acordaste</span></div>
+          <ul class="lista">${reglas.map((r) => `<li class="info">${ICONOS.info}<div><span>${esc(r)}</span></div></li>`).join('')}</ul></section>` : ''}
       </aside>
     </div>
     <section style="margin-top:48px" aria-labelledby="hPosIA"><div class="sec-cab"><h2 id="hPosIA">Posición a posición</h2></div>
-      <div class="tarjetas">${ids.map((id) => { const a = (ia.posiciones || {})[id]; const i = S.inst[id] || { corto: id }; return `<article class="tarjeta">
-        <h3>${logo(i.dominio, i.corto || i.nombre)}<button class="enlace" data-pos="${esc((M.filas.find((f) => f.inst.id === id) || {}).pos.id)}">${esc(i.corto || i.nombre)}</button>${a ? `<span class="senal ${esc(a.nivel || 'mantener')}" style="margin-left:auto">${esc(a.veredicto)}</span>` : ''}</h3>
-        ${a ? `<p class="ia-p" style="margin:0">${R(a.texto)}</p>${a.vigilar ? `<p class="nota" style="margin:0"><b style="color:var(--text-2);font-weight:600">A vigilar.</b> ${R(a.vigilar)}</p>` : ''}` : '<p class="nota" style="margin:0">Todavía sin análisis: entrará en la próxima revisión.</p>'}
-      </article>`; }).join('')}</div>
+      <div class="iap-lista">${ids.map((id) => {
+        const a = (ia.posiciones || {})[id]; const i = S.inst[id] || { corto: id };
+        const fila = M.filas.find((x) => x.inst.id === id) || { pos: {} };
+        const nivel = a && NIVELES.has(a.nivel) ? a.nivel : 'mantener';
+        return `<article class="iap">
+          <div class="iap-act">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(fila.pos.id)}">${esc(i.corto || i.nombre)}</button>${a ? `<span class="senal ${nivel}">${esc(a.veredicto || SENALES[nivel])}</span>` : ''}</div></div>
+          ${a ? `<p>${R(a.texto)}</p><p class="iap-vig">${a.vigilar ? `<b>A vigilar.</b> ${R(a.vigilar)}` : ''}${a.confianza ? `${a.vigilar ? ' ' : ''}<b>Confianza:</b> ${esc(a.confianza)}.` : ''}</p>` : '<p class="k">Todavía sin análisis: entrará en la próxima revisión.</p><p></p>'}
+        </article>`; }).join('')}</div>
     </section>
-    <p class="nota" style="margin-top:28px">Lo escribe Claude a partir de tus posiciones, los datos de la web y la prensa económica. Las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio; el texto se renueva cada vez que pides una revisión. ${esc(ia.nota_privacidad || '')}</p>
+    ${fuentes.length ? `<section class="ia-fuentes" aria-labelledby="hFueIA"><div class="sec-cab"><h2 id="hFueIA">Fuentes</h2><span class="k">lo que ha leído para contrastar</span></div><div class="as-fuentes">${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t || '')}">${esc(x.t ? x.t.slice(0, 60) : dom(x.u))}</a>`).join('')}</div></section>` : ''}
+    <p class="nota" style="margin-top:28px">${ia.propio ? 'Lo escribe Claude desde tu navegador con tu clave de la API: lee tu cartera cifrada, usa las cuentas de la web y busca en internet para contrastar. Se guarda cifrado con tu contraseña.' : 'Lo escribe Claude a partir de tus posiciones, los datos de la web y la prensa económica. Las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. ' + esc(ia.nota_privacidad || '')}</p>
   </div>`;
 }
 
@@ -2667,6 +3014,7 @@ function htmlFicha(f) {
       <button class="btn compra" data-accion="operacion" data-tipo="compra" data-id="${esc(id)}">${ICONOS.compra}Comprar</button>
       <button class="btn venta" data-accion="operacion" data-tipo="venta" data-id="${esc(id)}">${ICONOS.venta}Vender</button>
       <button class="btn" data-accion="editar-pos" data-id="${esc(id)}">${ICONOS.lapiz}Editar</button>
+      <button class="btn" data-accion="asesor" data-q="${esc(`¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.chispa}Preguntar</button>
     </div>
     <div class="tabs" role="group" aria-label="Apartados">${FTABS.map(([k, t]) => `<button data-ftab="${k}" aria-pressed="${S.ficha.tab === k}">${t}</button>`).join('')}</div>
   </div>
@@ -3286,6 +3634,10 @@ function abrirAjustes() {
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aProbar">Guardar y probar</button><button class="btn peq" id="aQR"${tok ? '' : ' disabled'}>Vincular el móvil</button></div>
       <div id="aQRbox"></div>
     </div>
+    <div class="seccion-ed"><h3>Asesor</h3>
+      <p class="nota" style="margin:0">Claude dentro de la web, con tu clave de la API de Anthropic: responde a lo que le preguntes y revisa tu cartera cada día.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes del asesor</button></div>
+    </div>
     <div class="seccion-ed"><h3>Contraseña</h3>
       <div class="form-grid"><label class="campo">Nueva contraseña<input type="password" id="aP1" autocomplete="new-password"></label><label class="campo">Repítela<input type="password" id="aP2" autocomplete="new-password"></label></div>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aCambiar">Cambiar contraseña</button></div>
@@ -3334,14 +3686,965 @@ function abrirAjustes() {
       S.cartera = j; await guardarCartera('Importar copia'); h.cerrar(); pintar();
     } catch (e) { toast('Ese archivo no parece una cartera'); }
   };
-  $('#aBloq', h.el).onclick = async () => { await IDB.del('clave'); S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
+  $('#aBloq', h.el).onclick = async () => { await IDB.del('clave'); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
   $('#aOlvidar', h.el).onclick = async () => {
     if (!confirm('¿Borrar la clave, el token y las copias locales de este navegador?')) return;
     await IDB.del('clave');
-    for (const k of ['inv-token', 'inv-cache-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc']) LS.del(k);
+    for (const k of ['inv-token', 'inv-cache-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc', 'inv-cache-radar', 'inv-asesor-clave', 'inv-asesor-conv', 'inv-ia-propio', 'inv-dev-ia-enc']) LS.del(k);
     location.reload();
   };
 }
+
+/* =====================================================================
+   Radar de ideas (radar.json, rama datos): unas 400 empresas fijas más las que la Action encuentra cada
+   día en toda la bolsa de EEUU y Europa con recomendación de compra. La Action renueva la ficha de cada
+   una cada 3 horas y los precios cada 20 minutos; aquí, además, las que se ven en pantalla y las
+   mejores ideas llegan en directo por el mismo canal que tu cartera.
+   ===================================================================== */
+async function cargarRadar() {
+  const id = S.precios && S.precios.radar_id;
+  if (!id) { if (S.precios && S.precios.radar && !S.radar) { S.radar = S.precios.radar; S.radarVer = (S.radarVer || 0) + 1; } return; }
+  if (S.radar && S.radarId === id) return;
+  let txt = null;
+  try {
+    if (CFG.dev) { const r = await fetch('dev/radar.json', { cache: 'no-store' }); if (r.ok) txt = await r.text(); }
+    else {
+      const r = await fetch(GH.raw('radar.json', 'datos') + '?v=' + encodeURIComponent(id), { cache: 'no-cache' }).catch(() => null);
+      if (r && r.ok) txt = await r.text();
+      else { const f = await GH.leer('radar.json', 'datos'); if (f) txt = f.texto; }
+    }
+  } catch (e) { console.warn(e); }
+  if (txt) { try { localStorage.setItem('inv-cache-radar', txt); } catch (e) {} }
+  else { try { txt = localStorage.getItem('inv-cache-radar'); } catch (e) {} }
+  try { const j = txt ? JSON.parse(txt) : null; if (j) S.radar = j; } catch (e) {}
+  S.radarId = id; S.radarVer = (S.radarVer || 0) + 1;
+}
+
+/* el radar con los precios en directo encima (y el potencial recalculado con ellos) */
+function radarVals() {
+  const r = S.radar && S.radar.valores;
+  if (!r) return [];
+  const c = S.radarCache;
+  if (c && c.ver === S.radarVer && c.live === S.liveRVer) return c.v;
+  const v = r.map((x) => {
+    const l = S.liveR[x.s];
+    if (!l || !(l.p > 0)) return x;
+    const k = x.p ? l.p / x.p : 1;
+    return { ...x, p: l.p, pe: x.pe != null ? x.pe * k : null, v: l.v != null ? l.v : x.v, pot: x.obj ? (x.obj / l.p - 1) * 100 : x.pot, vivo: true };
+  });
+  S.radarCache = { ver: S.radarVer, live: S.liveRVer, v };
+  return v;
+}
+/* las que se siguen en directo: las de la tabla que estás viendo y las mejores para ti */
+function simsRadarVivos() {
+  const s = new Set(S.radarVisibles || []);
+  for (const x of S.ideasTop || []) s.add(x);
+  return [...s].slice(0, 80);
+}
+
+/* lo que ya tienes de cada empresa dentro de tus fondos (para no doblar la apuesta sin saberlo) */
+const SOBRA_NOMBRE = new Set(['inc', 'corp', 'corporation', 'plc', 'sa', 'nv', 'ag', 'se', 'ltd', 'co', 'holding', 'holdings', 'group', 'class', 'a', 'b', 'c', 'the', 'company', 'ordinary', 'shares', 'new', 'registered', 'participating', 'preferred', 's', 'p', 'spa', 'asa', 'ab', 'oyj']);
+const normEmpresa = (n) => normTxt(n).split(' ').filter((w) => w && !SOBRA_NOMBRE.has(w)).join(' ');
+function dentroDeFondos(M) {
+  if (S.dentroCache && S.dentroCache.M === M) return S.dentroCache.fn;
+  const mapa = new Map(empresasPorDentro(M).filas.filter((e) => !e.directa).map((e) => [normEmpresa(e.n), e.v]));
+  const fn = (n) => { const k = normEmpresa(n); let v = 0; for (const [kk, vv] of mapa) if (kk && k && (kk === k || kk.startsWith(k + ' ') || k.startsWith(kk + ' '))) v += vv; return v; };
+  S.dentroCache = { M, fn };
+  return fn;
+}
+
+/* ---------- contraste: siete comprobaciones independientes para cada empresa ----------
+   Cada una mira una fuente distinta (analistas, sus revisiones, el rango de objetivos, las cuentas,
+   la valoración frente a su sector, la tendencia del precio y la solidez del negocio). Una idea
+   solo es buena si coinciden varias. 1 = a favor, -1 = en contra, 0 = neutral o sin datos. */
+function perSectorMediano() {
+  const c = S.perSectorCache;
+  if (c && c.ver === S.radarVer) return c.m;
+  const g = {};
+  for (const x of (S.radar && S.radar.valores) || []) if (x.sector && x.perf > 0 && x.perf < 80) (g[x.sector] = g[x.sector] || []).push(x.perf);
+  const m = {};
+  for (const [k, a] of Object.entries(g)) { a.sort((p, q) => p - q); m[k] = a[Math.floor(a.length / 2)]; }
+  S.perSectorCache = { ver: S.radarVer, m };
+  return m;
+}
+function contraste(x) {
+  const checks = [];
+  const add = (k, ok, txt) => checks.push({ k, ok, txt });
+  // 1. consenso de los analistas
+  if (x.na && x.rm != null) add('Analistas', x.na >= 8 && x.rm <= 2.2 ? 1 : x.rm >= 2.8 || x.na < 4 ? -1 : 0, `${x.na} analistas, nota media ${fmtNum(x.rm, 1)} (1 es compra fuerte, 5 venta fuerte)`);
+  else add('Analistas', 0, 'sin consenso de analistas');
+  // 2. hacia dónde se mueven: votos de compra ahora frente a hace 3 meses
+  if (x.v0 && x.v3 && sum(x.v0) && sum(x.v3)) {
+    const a = (x.v0[0] + x.v0[1]) / sum(x.v0), b = (x.v3[0] + x.v3[1]) / sum(x.v3);
+    add('Revisiones', a - b >= 0.03 ? 1 : a - b <= -0.03 ? -1 : 0, a - b >= 0.03 ? `más analistas a favor que hace 3 meses (${fmtNum(a * 100, 0)} % frente a ${fmtNum(b * 100, 0)} %)` : a - b <= -0.03 ? `menos analistas a favor que hace 3 meses (${fmtNum(a * 100, 0)} % frente a ${fmtNum(b * 100, 0)} %)` : 'los mismos analistas a favor que hace 3 meses');
+  } else add('Revisiones', 0, 'sin histórico de recomendaciones');
+  // 3. recorrido, y si hasta el analista más pesimista la ve cerca o por encima
+  if (x.pot != null && x.p) {
+    const bajo = x.tb ? (x.tb / x.p - 1) * 100 : null;
+    add('Recorrido', x.pot >= 15 && (bajo == null || bajo >= -12) ? 1 : x.pot < 5 ? -1 : 0, `objetivo medio ${pctS(x.pot, 0)}${bajo != null ? `; el más pesimista, ${pctS(bajo, 0)}` : ''}`);
+  } else add('Recorrido', 0, 'sin precio objetivo');
+  // 4. beneficios: lo que esperan que gane el año que viene frente al último
+  const crec = x.epsg != null ? x.epsg : x.eg;
+  if (crec != null) add('Beneficios', crec >= 5 ? 1 : crec <= -5 ? -1 : 0, `beneficio por acción esperado ${pctS(crec, 0)}`);
+  else add('Beneficios', 0, 'sin estimaciones de beneficio');
+  // 5. valoración frente a su sector
+  const med = x.sector && perSectorMediano()[x.sector];
+  if (x.perf > 0 && med) add('Valoración', x.perf <= med * 0.9 ? 1 : x.perf >= med * 1.35 ? -1 : 0, `PER futuro de ${fmtNum(x.perf, 1)} frente a ${fmtNum(med, 1)} de su sector`);
+  else if (x.perf != null && x.perf <= 0) add('Valoración', -1, 'se espera que pierda dinero');
+  else add('Valoración', 0, 'sin PER futuro');
+  // 6. tendencia del precio
+  if (x.m200 && x.m50 && x.p) {
+    const s200 = (x.p / x.m200 - 1) * 100;
+    add('Tendencia', x.p > x.m200 && x.m50 > x.m200 ? 1 : x.p < x.m200 && x.m50 < x.m200 ? -1 : 0, `${pctS(s200, 0)} sobre su media de 200 sesiones${x.p < x.m50 ? ', por debajo de la de 50' : ''}`);
+  } else add('Tendencia', 0, 'sin medias de precio');
+  // 7. solidez del negocio: rentabilidad sobre el capital y deuda
+  if (x.roe != null) {
+    const banco = x.sector === 'Financiero';
+    const ok = x.roe >= 12 && (banco || x.de == null || x.de < 150);
+    const mal = x.roe < 4 || (!banco && x.de != null && x.de > 250);
+    add('Solidez', ok ? 1 : mal ? -1 : 0, `ROE del ${fmtNum(x.roe, 0)} %${!banco && x.de != null ? `, deuda del ${fmtNum(x.de, 0)} % de su capital` : ''}`);
+  } else add('Solidez', 0, 'sin datos de rentabilidad');
+  const favor = checks.filter((c) => c.ok === 1).length, contra = checks.filter((c) => c.ok === -1).length;
+  return { checks, favor, contra, total: checks.length };
+}
+function htmlContraste(ctr, conTexto) {
+  const t = ctr.checks.map((c) => `${c.k}: ${c.ok === 1 ? 'a favor' : c.ok === -1 ? 'en contra' : 'neutral'}, ${c.txt}`).join('. ');
+  return `<span class="ctr" role="img" aria-label="${ctr.favor} de ${ctr.total} señales a favor y ${ctr.contra} en contra. ${esc(t)}" title="${esc(t)}">${ctr.checks.map((c) => `<i class="${c.ok === 1 ? 'si' : c.ok === -1 ? 'no' : ''}"></i>`).join('')}${conTexto ? `<b>${ctr.favor}/${ctr.total}</b>` : ''}</span>`;
+}
+function htmlContrasteLista(ctr) {
+  return `<ul class="ctr-lista">${ctr.checks.map((c) => `<li class="${c.ok === 1 ? 'si' : c.ok === -1 ? 'no' : ''}"><b>${esc(c.k)}</b><span>${esc(c.txt)}</span></li>`).join('')}</ul>`;
+}
+
+/* =====================================================================
+   Análisis de Claude al día: con tu clave de la API, la web le pide a Claude una revisión completa
+   cada día (o cuando cambia una señal), con tus cifras reales, las herramientas de la web y
+   búsquedas en internet para contrastar. Se guarda cifrado en analisis.enc.json (aparte de la
+   cartera, para no pisar cambios hechos desde otro dispositivo) y en este navegador.
+   Si no hay clave, se ve el último análisis público (analisis-ia.json, sin cantidades).
+   ===================================================================== */
+const IA = { generando: false, turno: null, error: null, ultimoIntento: 0 };
+function iaActual() {
+  const p = S.iaPropio, pub = S.ia;
+  if (p && p.json && (!pub || String(p.fecha) >= String(pub.fecha))) return { ...p.json, fecha: p.fecha, autor: 'Claude', propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
+  return pub || null;
+}
+const firmaSenales = (M) => [...new Set(M.filas.map((f) => `${f.inst.id}:${f.senal.nivel}`))].sort().join('|');
+
+async function cargarAnalisisPropio(textoRemoto) {
+  if (!S.key) return;
+  const cands = [];
+  if (textoRemoto) { try { cands.push(await descifrar(textoRemoto, S.key)); } catch (e) {} }
+  const loc = LS.get('inv-ia-propio');
+  if (loc) { try { cands.push(await descifrarLocal(loc)); } catch (e) { LS.del('inv-ia-propio'); } }
+  const mejor = cands.filter((x) => x && x.json && x.fecha).sort((a, b) => (a.fecha < b.fecha ? 1 : -1))[0];
+  if (mejor && (!S.iaPropio || mejor.fecha > S.iaPropio.fecha)) S.iaPropio = mejor;
+}
+async function leerAnalisisRemoto() {
+  try {
+    if (CFG.dev) return LS.get('inv-dev-ia-enc');
+    const f = await GH.leer('analisis.enc.json');
+    return f ? f.texto : null;
+  } catch (e) { return null; }
+}
+async function guardarAnalisisPropio() {
+  const o = S.iaPropio; if (!o || !S.key) return;
+  try { LS.set('inv-ia-propio', await cifrarLocal(o)); } catch (e) {}
+  try {
+    const texto = await cifrar(o);
+    if (CFG.dev) { LS.set('inv-dev-ia-enc', texto); return; }
+    if (GH.token()) await GH.escribir('analisis.enc.json', texto, 'Análisis de Claude');
+  } catch (e) { console.warn('No se pudo subir el análisis', e); }
+}
+
+function pedidoAnalisis(ids, motivo) {
+  return `Haz la revisión de hoy de mi cartera (${motivo}). Antes de escribir:
+1. Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.
+2. Si recomiendas vender algo, calcúlalo con simular_venta. Si recomiendas comprar una acción, con simular_compra.
+3. Para las ideas de compra, parte del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de la web y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
+
+Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
+{
+  "titular": "una frase con el diagnóstico y lo más urgente",
+  "resumen": ["dos o tres párrafos cortos con cifras"],
+  "puntuaciones": [{"k": "Diversificación", "nota": 4, "txt": "una o dos frases"}, {"k": "Costes", ...}, {"k": "Riesgo", ...}, {"k": "Disciplina", ...}, {"k": "Impuestos", ...}],
+  "mejorar": [{"titulo": "...", "texto": "qué hacer, cuánto y por qué; si hay venta, el impuesto", "impacto": "qué gano", "cuando": "fecha o condición"}],
+  "mantener": [{"titulo": "...", "texto": "..."}],
+  "riesgos": [{"titulo": "...", "texto": "..."}],
+  "calendario": [{"d": "AAAA-MM-DD", "t": "qué pasa ese día y por qué me importa"}],
+  "posiciones": {"<id>": {"veredicto": "de 2 a 4 palabras", "nivel": "comprar|aportar|mantener|vigilar|recoger|reducir|vender", "texto": "dos o tres frases con cifras", "vigilar": "qué vigilar, con precio o fecha", "confianza": "alta|media|baja"}},
+  "ideas": [{"ticker": "...", "nombre": "...", "tesis": "...", "catalizador": "qué la puede mover y cuándo", "riesgo": "...", "contraste": "qué fuentes coinciden y cuáles no", "importe": 0, "fuentes": [{"t": "título", "u": "https://..."}]}],
+  "fuentes": [{"t": "título", "u": "https://..."}]
+}
+Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 3 a 8. "ideas" de 0 a 3.
+Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**) para que la web pueda ocultarlas; ningún otro formato.`;
+}
+function extraerJSON(texto) {
+  const bloques = [...String(texto).matchAll(/```(?:json)?\s*([\s\S]*?)```/g)].map((m) => m[1]);
+  const cands = bloques.length ? bloques.reverse() : [];
+  const i = texto.indexOf('{'), j = texto.lastIndexOf('}');
+  if (i >= 0 && j > i) cands.push(texto.slice(i, j + 1));
+  for (const c of cands) { try { const o = JSON.parse(c); if (o && typeof o === 'object') return o; } catch (e) {} }
+  return null;
+}
+async function generarAnalisisIA(motivo = 'la pides tú') {
+  if (IA.generando) return;
+  await cargarAsesor();
+  if (!AS.clave) { abrirAsesor(); return; }
+  IA.generando = true; IA.error = null; IA.ultimoIntento = Date.now();
+  const turno = { rol: 'ia', partes: [], citas: [], resultados: [] };
+  IA.turno = turno; refrescarProgresoIA();
+  let marco = 0;
+  const alCambiar = () => { if (!marco) marco = setTimeout(() => { marco = 0; refrescarProgresoIA(); }, 400); };
+  try {
+    refrescarFoto(true);
+    const M = S.M || calcular();
+    const ids = [...new Set(M.filas.map((f) => f.inst.id))];
+    await conversar({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo) }], turno, sistema: sistemaAsesor(), maxTokens: 12000, alCambiar });
+    const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');
+    const json = extraerJSON(texto);
+    if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');
+    const vistas = new Set();
+    json.fuentes = [...turno.citas, ...(Array.isArray(json.fuentes) ? json.fuentes : [])].filter((x) => x && /^https?:\/\//.test(x.u || '') && !vistas.has(x.u) && vistas.add(x.u)).slice(0, 20);
+    S.iaPropio = { fecha: new Date().toISOString(), modelo: cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo };
+    AS.gasto += turno.coste || 0; guardarConv();
+    await guardarAnalisisPropio();
+    toast('Claude ha actualizado el análisis de tu cartera');
+  } catch (e) {
+    IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? 'No hay conexión con Anthropic.' : e.message;
+  }
+  IA.generando = false; IA.turno = null;
+  if (['analisis', 'expertos', 'cartera'].includes(S.vista) && !$('.hoja-fondo')) pintar(); else refrescarProgresoIA();
+}
+/* ¿toca revisar? cada día (o semana) y, si es diario, también cuando cambia alguna señal */
+async function revisarAnalisisIA() {
+  if (IA.generando || !S.cartera || document.hidden || !S.key) return;
+  await cargarAsesor();
+  if (!AS.clave) return;
+  const cfg = cfgAsesor();
+  if (cfg.auto === 'manual' || Date.now() - IA.ultimoIntento < 3600000) return;
+  const p = S.iaPropio, M = S.M || calcular();
+  const edad = p ? Date.now() - new Date(p.fecha).getTime() : Infinity;
+  const limite = cfg.auto === 'semanal' ? 7 * 864e5 : 20 * 36e5;
+  const cambio = cfg.auto === 'diario' && p && p.firma !== firmaSenales(M) && edad > 3 * 36e5;
+  if (edad > limite) generarAnalisisIA(p ? 'revisión diaria' : 'primera revisión');
+  else if (cambio) generarAnalisisIA('ha cambiado la señal de alguna posición');
+}
+function htmlProgresoIA() {
+  if (IA.generando) {
+    const pasos = (IA.turno ? IA.turno.partes.filter((p) => p.tipo === 'paso') : []).slice(-4);
+    return `<div class="ia-progreso" role="status"><div class="as-pensando"><i></i><i></i><i></i></div><div><b>Claude está revisando tu cartera y las noticias de hoy</b><span>Tarda uno o dos minutos. Puedes seguir usando la web.</span>${pasos.length ? `<ul>${pasos.map((p) => `<li>${esc(p.txt)}</li>`).join('')}</ul>` : ''}</div></div>`;
+  }
+  if (IA.error) return `<div class="ia-progreso error" role="alert">${ICONOS.alerta}<div><b>No se pudo actualizar el análisis</b><span>${esc(IA.error)}</span></div><button class="btn peq" data-accion="ia-actualizar">Reintentar</button></div>`;
+  return '';
+}
+function refrescarProgresoIA() { const el = $('#iaProgreso'); if (el) el.innerHTML = htmlProgresoIA(); }
+
+/* =====================================================================
+   Asesor: Claude dentro de la web
+   Habla con la API de Anthropic directamente desde tu navegador y con tu propia clave: no pasa por
+   GitHub ni por ningún servidor intermedio. La clave se guarda cifrada con la misma clave que tu
+   cartera. Al empezar cada conversación recibe una foto de tu cartera (posiciones, costes, impuestos
+   del año, analistas, radar de ideas, mercados y noticias) y usa herramientas que calculan con el
+   motor de la web: ventas con FIFO e IRPF, compras con su tasa, empresas del radar, proyecciones e
+   histórico. Si le falta algo de hoy, busca en internet y cita de dónde sale.
+   ===================================================================== */
+const MODELOS = {
+  'claude-sonnet-5-5': { n: 'Sonnet 5.5', txt: 'Rápido y muy fino. Unos 2-4 céntimos por pregunta.', in: 2, out: 10 },
+  'claude-opus-5-5': { n: 'Opus 5.5', txt: 'El que más razona. Cuesta el doble que Sonnet.', in: 4, out: 20 },
+  'claude-haiku-5-5': { n: 'Haiku 5.5', txt: 'Para dudas rápidas. Casi gratis, pero menos fino.', in: 0.1, out: 0.5 },
+};
+const AS = { conv: [], api: [], foto: null, fotoT: 0, clave: null, cargando: false, ctrl: null, vista: 'chat', cargada: false, sinWeb: false, gasto: 0 };
+const cfgAsesor = () => { const c = LS.get('inv-asesor-cfg', {}); return { modelo: MODELOS[c.modelo] ? c.modelo : 'claude-sonnet-5-5', web: c.web !== false, auto: ['diario', 'semanal', 'manual'].includes(c.auto) ? c.auto : 'diario' }; };
+const R2 = (n, d = 2) => (n == null || !isFinite(n) ? null : Math.round(n * 10 ** d) / 10 ** d);
+const E0 = (n) => fmtNum(n, 0) + ' €', E2 = (n) => fmtNum(n, 2) + ' €';
+const eurP = (n, d = 2) => (n > 0 ? '+' : '') + fmtNum(n, d) + ' €';
+const P1 = (n) => (n == null || !isFinite(n) ? '—' : pctS(n, 1));
+const normTxt = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
+const nombreInst = (id) => (S.inst[id] && (S.inst[id].corto || S.inst[id].nombre)) || id;
+
+/* ---------- cifrado local con la clave de la cartera (para la clave de la API y la conversación) ---------- */
+async function cifrarLocal(obj) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, S.key, TE.encode(JSON.stringify(obj))));
+  return { iv: b64.enc(iv), ct: b64.enc(ct) };
+}
+async function descifrarLocal(o) {
+  const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64.dec(o.iv) }, S.key, b64.dec(o.ct));
+  return JSON.parse(TD.decode(pt));
+}
+async function cargarAsesor() {
+  if (AS.cargada || !S.key) return;
+  AS.cargada = true;
+  const c = LS.get('inv-asesor-clave');
+  if (c) { try { AS.clave = await descifrarLocal(c); } catch (e) { LS.del('inv-asesor-clave'); } }
+  if (!AS.clave && S.cartera && S.cartera.asesor && S.cartera.asesor.clave) AS.clave = S.cartera.asesor.clave;
+  const h = LS.get('inv-asesor-conv');
+  if (h) { try { const o = await descifrarLocal(h); AS.conv = o.conv || []; AS.api = o.api || []; AS.gasto = o.gasto || 0; } catch (e) { LS.del('inv-asesor-conv'); } }
+}
+async function guardarConv() {
+  if (!S.key) return;
+  try { LS.set('inv-asesor-conv', await cifrarLocal({ conv: AS.conv.slice(-60), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
+}
+function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, clave: null, cargada: false, gasto: 0 }); }
+
+/* guarda la cartera sin avisos ni descargas (para lo que hace la web sola, como el análisis diario) */
+async function guardarCarteraCallada(mensaje) {
+  if (!S.key || !S.cartera) return false;
+  S.cartera.actualizado = new Date().toISOString();
+  const texto = await cifrar(S.cartera);
+  if (CFG.dev) { LS.set('inv-dev-enc', texto); S.enc = { texto, sha: null }; return true; }
+  LS.set('inv-cache-enc', texto);
+  if (!GH.token()) return false;
+  try { const sha = await GH.escribir('cartera.enc.json', texto, mensaje); S.enc = { texto, sha }; return true; } catch (e) { console.warn(e); return false; }
+}
+
+/* ---------- buscar posiciones, empresas e índices por nombre ---------- */
+function buscarFila(q) {
+  const M = S.M || calcular();
+  const n = normTxt(q), c = n.replace(/ /g, '');
+  if (!c) return null;
+  const claves = (f) => [f.pos.id, f.inst.id, f.inst.corto, f.inst.nombre, f.inst.yahoo, f.inst.isin, f.p && f.p.simbolo].filter(Boolean).map((k) => normTxt(k).replace(/ /g, ''));
+  return M.filas.find((f) => claves(f).includes(c))
+    || M.filas.find((f) => claves(f).some((k) => k.length > 2 && (k.startsWith(c) || (c.length > 3 && c.startsWith(k)))))
+    || null;
+}
+function buscarRadar(q) {
+  const r = radarVals();
+  const n = normTxt(q), c = n.replace(/ /g, '');
+  if (!c) return null;
+  const tk = (x) => normTxt(x.s).replace(/ /g, ''), base = (x) => normTxt(String(x.s).split('.')[0]).replace(/ /g, '');
+  return r.find((x) => tk(x) === c || base(x) === c)
+    || r.find((x) => { const nn = normTxt(x.n); return nn === n || nn.startsWith(n + ' ') || nn.replace(/ /g, '').startsWith(c); })
+    || (c.length >= 4 ? r.find((x) => normTxt(x.n).includes(n)) : null)
+    || null;
+}
+
+/* ---------- la foto de la cartera que recibe Claude ---------- */
+function fichaTexto(f) {
+  const i = f.inst, p = f.p || {}, a = p.analistas || {}, fu = p.fundamentales || {}, r = p.rent || {}, t = p.tecnico || {};
+  const L = [];
+  L.push(`### ${i.corto || i.nombre} (id "${f.pos.id}")`);
+  L.push(`${i.nombre || ''}. ${i.tipo || ''}, ${i.clase || ''}${i.pais ? `, ${PAISES[i.pais] || i.pais}` : ''}, en ${f.pos.plataforma || '?'}. ${[i.yahoo && 'Ticker ' + i.yahoo, i.isin && 'ISIN ' + i.isin].filter(Boolean).join(', ')}.`);
+  L.push(`Tiene ${f.uds != null ? fmtNum(f.uds, f.uds < 10 ? 6 : 4) : '?'} ${i.tipo === 'Acción' ? 'acciones' : 'participaciones'}${f.estimada ? ' (cantidad estimada por la web, no exacta)' : ''} a ${f.precio != null ? fmtNum(f.precio, 4) + ' €' : 'sin precio'} (hoy ${P1(f.varDia)}${p.fecha ? `, último cierre ${p.fecha}` : ''}${f.vivo ? ', precio en directo' : ''}). Valor ${E2(f.valor)}, el ${fmtNum(f.peso, 1)} % del total. Coste ${E2(f.coste)}${f.uds ? `, precio medio ${fmtNum(f.coste / f.uds, 4)} €` : ''}. Ganancia latente ${eurP(f.pl)} (${P1(f.plPct)}).`);
+  L.push(`Señal automática de la web: ${f.senal.txt}. ${f.senal.motivos.join(' ')}`);
+  if (a.num) {
+    const v = a.votos && a.votos.ahora, v3 = a.votos && a.votos.hace3m;
+    L.push(`Analistas: ${a.num}, consenso ${a.recomendacion || '?'} (nota media ${a.media != null ? fmtNum(a.media, 2) : '?'}, de 1 compra fuerte a 5 venta fuerte)${v ? `; ahora ${v.strongBuy} compra fuerte, ${v.buy} comprar, ${v.hold} mantener, ${v.sell} vender, ${v.strongSell} venta fuerte` : ''}${v3 ? `; hace 3 meses ${v3.strongBuy}/${v3.buy}/${v3.hold}/${v3.sell}/${v3.strongSell}` : ''}. Objetivo medio ${fmtNum(a.objetivo, 2)} € (${P1(f.precio ? (a.objetivo / f.precio - 1) * 100 : null)}), rango ${fmtNum(a.objetivo_bajo, 2)} a ${fmtNum(a.objetivo_alto, 2)} €.`);
+    if (a.cambios && a.cambios.length) L.push('Cambios recientes de analistas: ' + a.cambios.slice(0, 5).map((c) => [c.fecha, c.firma, c.accion, c.de && c.a ? `${c.de} → ${c.a}` : c.a, c.objetivo ? `objetivo ${fmtNum(c.objetivo, 2)} €` : ''].filter(Boolean).join(' ')).join('; ') + '.');
+  }
+  const val = [fu.per && `PER ${fmtNum(fu.per, 1)}`, (fu.per_futuro || p.per_futuro) && `PER futuro ${fmtNum(fu.per_futuro || p.per_futuro, 1)}`, fu.peg && `PEG ${fmtNum(fu.peg, 2)}`, fu.ev_ebitda && `EV/EBITDA ${fmtNum(fu.ev_ebitda, 1)}`, fu.pvc && `precio/valor contable ${fmtNum(fu.pvc, 2)}`, p.dividendo_pct && `dividendo ${fmtNum(p.dividendo_pct, 2)} %`, fu.payout && `payout ${fmtNum(fu.payout, 0)} %`, fu.capitalizacion && `capitalización ${fmtNum(fu.capitalizacion / 1e9, 1)} mil millones`, fu.deuda_capital && `deuda/capital ${fmtNum(fu.deuda_capital, 0)} %`, fu.roe && `ROE ${fmtNum(fu.roe, 1)} %`, fu.margen && `margen ${fmtNum(fu.margen, 1)} %`, fu.crec_ingresos != null && `ingresos ${P1(fu.crec_ingresos)} interanual`, fu.crec_beneficio != null && `beneficio ${P1(fu.crec_beneficio)} interanual`, fu.beta != null && `beta ${fmtNum(fu.beta, 2)}`].filter(Boolean);
+  if (val.length) L.push('Valoración y cuentas: ' + val.join(', ') + '.');
+  if (p.estimaciones) { const e = p.estimaciones; L.push(`Beneficio por acción que esperan los analistas: este año ${P1(e.este_anio && e.este_anio.crec)}, el que viene ${P1(e.siguiente && e.siguiente.crec)}.`); }
+  const re = [['1m', '1 mes'], ['3m', '3 meses'], ['ytd', 'en el año'], ['1a', '1 año'], ['3a_anual', '3 años, anual'], ['5a_anual', '5 años, anual'], ['10a_anual', '10 años, anual']].filter(([k]) => r[k] != null).map(([k, tt]) => `${tt} ${P1(r[k])}`);
+  if (re.length) L.push('Rentabilidad: ' + re.join(', ') + '.');
+  const tec = [t.tendencia && `tendencia ${t.tendencia}`, t.media50 && `media de 50 sesiones ${fmtNum(t.media50, 2)} €`, t.media200 && `media de 200 sesiones ${fmtNum(t.media200, 2)} € (${P1(t.vs_media200)} sobre ella)`, t.rsi && `RSI ${fmtNum(t.rsi, 0)}`, t.dist_max52 != null && `${P1(t.dist_max52)} desde el máximo de 52 semanas`, p.max52 && `rango de 52 semanas ${fmtNum(p.min52, 2)} a ${fmtNum(p.max52, 2)}`, t.caida_max_1a != null && `peor caída del año ${P1(t.caida_max_1a)}`, p.volatilidad && `volatilidad ${fmtNum(p.volatilidad, 0)} %`, p.riesgo && `riesgo ${p.riesgo} de 7`].filter(Boolean);
+  if (tec.length) L.push('Precio y técnico: ' + tec.join(', ') + '.');
+  if (i.ter != null) L.push(`Gastos corrientes (TER) ${fmtNum(i.ter, 2)} %.${p.fondo && p.fondo.morningstar ? ` Morningstar ${p.fondo.morningstar} de 5.` : ''}`);
+  const fechas = [p.proximos_resultados && `próximos resultados el ${p.proximos_resultados}`, p.ex_dividendo && `ex-dividendo el ${p.ex_dividendo}`].filter(Boolean);
+  if (fechas.length) L.push('Fechas: ' + fechas.join(', ') + '.');
+  const reglas = [+f.pos.stop && `precio de salida (stop) ${fmtNum(+f.pos.stop, 2)} €`, +f.pos.objetivo && `objetivo de venta ${fmtNum(+f.pos.objetivo, 2)} €`].filter(Boolean);
+  if (reglas.length) L.push('Sus reglas para esta posición: ' + reglas.join(', ') + '.');
+  if (f.pos.notas) L.push('Sus notas: ' + String(f.pos.notas).replace(/\s+/g, ' ').slice(0, 500));
+  const ap = aportacionesActivas().filter(({ a }) => a.instrumento === i.id && (!a.plataforma || a.plataforma === f.pos.plataforma));
+  if (ap.length) L.push(`Aportación automática: ${ap.map(({ a }) => `${a.importe} € al mes, el día ${a.dia || 1}`).join(', ')}.`);
+  try { const lotes = lotesDe(f.pos); if (lotes.length) L.push(`Lotes de compra para FIFO: ${lotes.length}${lotes.some((l) => l.mezcla) ? ' (el primero es lo que tenía al empezar a usar la web, a precio medio)' : ''}; el más antiguo del ${lotes[0].f}.`); } catch (e) {}
+  return L.join('\n');
+}
+
+function contextoAsesor(M) {
+  const oc0 = S.oculto; S.oculto = false;
+  try {
+    const ahora = new Date(), anio = ahora.getFullYear();
+    const DIAS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+    const hora = ahora.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const L = [];
+    L.push(`# Su cartera, foto del ${DIAS[ahora.getDay()]} ${fechaLarga(hoyIso())} a las ${hora}`);
+    L.push(`Precios: ${estadoDirecto().txt.toLowerCase()}. Datos de la web generados ${haceCuanto(S.precios && S.precios.generado)}.`);
+    L.push('', '## Resumen');
+    L.push(`Patrimonio ${E2(M.total)}. Coste de lo que tiene ${E2(M.invertido)}. Ganancia latente ${eurP(M.pl)} (${P1(M.plPct)}). Hoy ${eurP(M.dia)} (${P1(M.diaPct)}).`);
+    L.push('Por plataforma: ' + porPlataforma(M).map(([k, o]) => `${k} ${E0(o.v)}`).join(', ') + '.');
+    if (M.efectivo.length) L.push('Efectivo: ' + M.efectivo.map((e) => `${e.plataforma} ${E2(e.importe)}`).join(', ') + '.');
+    for (const [dim, t, base] of [['clase', 'Por tipo de activo', 'todo'], ['region', 'Renta variable por región', 'rv'], ['sector', 'Renta variable por sector', 'rv'], ['riesgo', 'Por nivel de riesgo (1 a 7)', 'todo']]) {
+      const r = reparto(M, dim, base);
+      L.push(`${t}: ` + r.filas.slice(0, 10).map((x) => `${x.k} ${fmtNum(x.pct, 1)} %`).join(', ') + '.');
+    }
+    const sueltas = M.total ? (sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor) / M.total) * 100 : 0;
+    L.push(`Acciones sueltas: ${fmtNum(sueltas, 1)} % del total. Su límite propio: ${fmtNum(+(S.cartera.limite_acciones || 20), 0)} %.`);
+    const conTer = M.filas.filter((f) => f.inst.ter != null), base = sum(conTer, (f) => f.valor), coste = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
+    L.push(`Dividendos brutos estimados al año ${E0(M.dividendos)}. Gastos de sus fondos ${E0(coste)} al año (TER medio ${fmtNum(base ? (coste / base) * 100 : 0, 2)} %).`);
+    const ed = empresasPorDentro(M).filas.slice(0, 15);
+    if (ed.length) L.push('Empresas que más pesan contando lo que hay dentro de sus fondos: ' + ed.map((e) => `${e.n} ${E0(e.v)}${e.directa ? ' (comprada directamente)' : ''}`).join(', ') + '.');
+    L.push('', '## Posiciones');
+    for (const f of M.filas) L.push(fichaTexto(f), '');
+    const act = aportacionesActivas();
+    L.push('## Aportaciones automáticas');
+    L.push(act.length ? act.map(({ a }) => `- ${a.importe} € al mes a ${nombreInst(a.instrumento)} en ${a.plataforma || '?'}, el día ${a.dia || 1}${a.desde ? `, desde ${a.desde}` : ''}${a.hasta ? `, hasta ${a.hasta}` : ''}`).join('\n') + `\nTotal ${E0(aportacionActual())} al mes.` : 'Ninguna.');
+    const movs = (S.cartera.movimientos || []).slice(-15);
+    if (movs.length) {
+      L.push('', '## Compras y ventas registradas en la web');
+      for (const m of movs) L.push(`- ${m.fecha}: ${m.tipo} de ${fmtNum(m.uds, 4)} ${nombreInst(m.instrumento)} a ${fmtNum(m.precio, 4)} € en ${m.plataforma}${m.tipo === 'venta' ? `; cobrado ${E2(m.importe || 0)}, valor de compra FIFO ${E2(m.coste_vendido || 0)}, resultado ${eurP(m.resultado || 0)}` : `; pagado ${E2(m.importe || 0)}${m.tasa ? `, tasa ${E2(m.tasa)}` : ''}`}`);
+    }
+    const fa = fiscalAnio(anio);
+    L.push('', `## Impuestos de ${anio} (renta que se presenta entre abril y junio de ${anio + 1})`);
+    L.push(`Ventas del año ${eurP(fa.gp)} (${fa.ventas.length} registradas en la web por ${eurP(fa.gpWeb)}; fuera de la web ${eurP(fa.otras)}). Dividendos e intereses apuntados ${E2(fa.rcm)}. Retenciones ya hechas ${E2(fa.retenido)}. Pérdidas de años anteriores pendientes ${E2(fa.pendientes)}. Base del ahorro ${E2(fa.base)}, cuota estimada ${E2(fa.cuota)}, tipo marginal ${fmtNum(fa.marginal * 100, 0)} %. Pérdidas que pasarían a años siguientes ${E2(fa.sobra)}.`);
+    if (!fa.otras && !fa.rcm) L.push('Aviso: no ha apuntado en la web sus dividendos ni ventas hechas fuera de ella, así que el impuesto calculado puede salir alto.');
+    L.push('Si vendiera hoy cada posición entera (ganancia, e impuesto extra con lo que ya lleva): ' + M.filas.map((f) => { const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0); return `${f.inst.corto} ${eurP(g, 0)}${g > 0 ? `, impuesto ${E0(impuestoDeVenta(g, anio).impuesto)}` : ''}`; }).join('; ') + '.');
+    const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
+    L.push('', '## Planes de venta que propone la web ahora');
+    if (!planes.length) L.push('Ninguno: ninguna posición pide vender.');
+    for (const pl of planes) L.push(`- ${pl.f.inst.corto} (${pl.f.senal.txt.toLowerCase()}): vender ${fmtNum(pl.uds, pl.accion ? 0 : 4)} por unos ${E0(pl.importe)} y quedarse ${fmtNum(pl.queda, pl.accion ? 0 : 4)}. Ganancia que se declara ${eurP(pl.ganancia, 0)}, impuesto ${E0(pl.impuesto)}. Cuándo: ${pl.cuando.join(' ')} Destino: ${pl.aIdea > 0 && pl.ideas[0] ? `${E0(pl.aIdea)} a ${pl.ideas[0].n} y ` : ''}${E0(pl.aNucleo)} al S&P 500; ${E0(pl.impuesto)} apartados para Hacienda.`);
+    const ideas = mejoresIdeas(M).slice(0, 8);
+    if (ideas.length) {
+      L.push('', '## Las ideas de compra que mejor encajan con su cartera según la web');
+      for (const x of ideas) L.push(`- ${x.n} (${x.s}, ${x.z}${x.sector ? ', ' + x.sector : ''}): ${x.motivos.join(', ')}${x.pegas.length ? `. Pegas: ${x.pegas.join('; ')}` : ''}. Contraste: ${x.ctr.favor} de ${x.ctr.total} señales a favor (${x.ctr.checks.filter((c) => c.ok).map((c) => c.k.toLowerCase()).join(', ')})${x.ctr.contra ? `, ${x.ctr.contra} en contra (${x.ctr.checks.filter((c) => c.ok === -1).map((c) => c.k.toLowerCase()).join(', ')})` : ''}.`);
+    }
+    // del radar entran las 120 mejor contrastadas; del resto puede pedir los datos con buscar_empresa
+    const todasR = radarVals();
+    const rad = todasR.filter((x) => x.pot != null && (x.na || 0) >= 5).map((x) => ({ x, c: contraste(x) })).sort((a, b) => (b.c.favor - b.c.contra) - (a.c.favor - a.c.contra) || (b.x.pot || 0) - (a.x.pot || 0)).slice(0, 120).map((o) => o.x);
+    if (rad.length) {
+      L.push('', `## Radar de la web: las ${rad.length} mejor contrastadas de ${todasR.length} empresas; del resto, pide los datos con buscar_empresa (nombre | ticker | zona | sector | precio | potencial hasta el objetivo medio | rango de objetivos | consenso y nº de analistas | PER futuro | crecimiento esperado del beneficio | dividendo | 1 año | sobre la media de 200 sesiones)`);
+      for (const x of rad) L.push([x.n, x.s, x.z, x.sector || '', `${fmtNum(x.p, 2)} ${x.m}`, P1(x.pot), x.tb && x.ta ? `${fmtNum(x.tb, 2)}-${fmtNum(x.ta, 2)}` : '—', `${CONSENSO[x.r] || '—'} ${x.na || 0}`, x.perf > 0 ? fmtNum(x.perf, 1) : '—', P1(x.epsg ?? x.eg), x.div ? fmtNum(x.div, 1) + ' %' : '—', P1(x.c1a), x.m200 && x.p ? P1((x.p / x.m200 - 1) * 100) : '—'].join(' | '));
+    }
+    L.push('', '## Mercados');
+    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}; L.push(`- ${m.nombre}: ${fmtMerc(sym, d.precio)} (hoy ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
+    try {
+      const pr = proyeccion(M), c = pr.cfg;
+      L.push('', `## Proyección de la web (2.000 escenarios aportando ${E0(c.aport)} al mes${c.subida ? `, subiendo un ${c.subida} % cada año` : ''}, bolsa al ${c.bolsa} % anual)`);
+      for (const a of [5, 10, 20, 30]) L.push(`- ${a} años: si va mal ${E0(pr.p10[a * 12])}, lo probable ${E0(pr.p50[a * 12])}, si va bien ${E0(pr.p90[a * 12])}; habrá puesto ${E0(pr.aportado[a * 12])}.`);
+    } catch (e) {}
+    const N = (S.precios && S.precios.noticias) || {};
+    const tit = (arr, n) => (arr || []).slice(0, n).map((x) => `- ${x.d ? x.d.slice(0, 10) : ''} ${x.t} (${x.f || ''})`).join('\n');
+    L.push('', '## Titulares recientes (Google Noticias)');
+    if (N.mercado) L.push('Mercado:\n' + tit(N.mercado, 10));
+    for (const id of new Set(M.filas.map((f) => f.inst.id))) if (N[id] && N[id].length) L.push(`${nombreInst(id)}:\n` + tit(N[id], 5));
+    const ia = iaActual();
+    if (ia) {
+      const v = valoresIA(M);
+      const T = (t) => String(t || '').replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (mm, k, id) => { const x = id ? v[k] && v[k][id] : v[k]; return x != null && typeof x !== 'object' ? x : '—'; }).replace(/\*\*/g, '');
+      L.push('', `## Último análisis de Claude (${ia.fecha ? fechaLarga(String(ia.fecha).slice(0, 10)) : ''})`);
+      L.push(T(ia.titular)); for (const p of ia.resumen || []) L.push(T(p));
+      if (ia.mejorar) L.push('Qué mejorar: ' + ia.mejorar.map((x) => T(x.titulo)).join('; ') + '.');
+      if (ia.riesgos) L.push('Riesgos: ' + ia.riesgos.map((x) => T(x.titulo)).join('; ') + '.');
+    }
+    const reglas = (S.ia && S.ia.reglas) || [];
+    if (reglas.length) L.push('', '## Sus reglas de inversión', ...reglas.map((r) => '- ' + r));
+    const yo = S.cartera.asesor && S.cartera.asesor.sobre_mi;
+    if (yo) L.push('', '## Lo que cuenta de sí mismo', String(yo).slice(0, 3000));
+    return L.join('\n');
+  } finally { S.oculto = oc0; }
+}
+
+function instruccionesAsesor() {
+  const anio = new Date().getFullYear();
+  return `Eres el asesor de inversiones personal del dueño de esta cartera y estás dentro de su web privada de inversiones. Tienes delante su cartera real con cifras al céntimo y herramientas que calculan con el mismo motor que la web.
+
+Cómo respondes:
+- En español de España, tuteando, con tono cercano y directo: como un amigo que sabe mucho de inversión y de impuestos.
+- Primero la respuesta o la recomendación concreta (qué hacer, cuánto, cuándo y dónde). Después el porqué, con números de su cartera.
+- Nada de avisos de que no eres asesor financiero ni de "consulta a un profesional": no los quiere. Los riesgos concretos sí, cuando importen.
+- Antes de recomendar vender, usa simular_venta para dar la ganancia que se declara y el impuesto (FIFO y escala del ahorro con lo que ya lleva en el año). Antes de recomendar comprar una acción, usa simular_compra para la tasa del país, la comisión y cómo queda su límite de acciones sueltas.
+- Contrasta: no recomiendes nada apoyándote en una sola fuente. Cruza el consenso y el rango de objetivos de los analistas, las cuentas (valoración, crecimiento, deuda), la tendencia del precio y las noticias. Si buscas en internet, busca al menos dos fuentes distintas y di si coinciden o no. Si las fuentes chocan, dilo.
+- Usa solo datos que tengas: los de abajo, los de las herramientas o los de internet. Si te falta algo de hoy, búscalo y di de dónde sale. Si algo no se puede saber, dilo.
+- Respeta sus reglas: el límite de acciones sueltas, el fondo de renta fija como colchón, sus aportaciones automáticas y sus reglas para apuestas.
+- Formato: frases cortas, números en formato español (1.234,56 €), negrita solo para la cifra o la acción clave, listas cuando ayuden a seguir pasos y tablas solo para comparar opciones. Breve salvo que pida detalle.
+- Si la pregunta es ambigua, contesta la interpretación más útil y di cuál has tomado.
+
+Fiscalidad en España en ${anio}:
+- Ventas: ganancia o pérdida = lo cobrado (menos comisiones) menos lo que costó (más comisiones y tasas), por FIFO. Tributa en la base del ahorro: 19 % hasta 6.000 €, 21 % hasta 50.000 €, 23 % hasta 200.000 €, 27 % hasta 300.000 € y 30 % por encima.
+- Las pérdidas se compensan con las ganancias del año; si sobran, con hasta el 25 % de dividendos e intereses; el resto, durante los 4 años siguientes.
+- Regla de los dos meses: si vende con pérdidas y recompra lo mismo en los dos meses anteriores o posteriores, la pérdida se aplaza. En cripto no se aplica, aunque hay quien defiende un plazo de un año.
+- Traspasos entre fondos de inversión (sus fondos de MyInvestor): no tributan. Entre ETF sí.
+- Dividendos e intereses: retención del 19 % en España; los extranjeros pueden traer retención en origen, que se recupera en parte con la deducción por doble imposición internacional.
+- Tasas al comprar acciones: 0,2 % en España y 0,4 % en Francia (empresas de más de 1.000 millones de capitalización), 0,1 % en Italia y 0,5 % de timbre en Reino Unido. Fondos y ETF no la pagan.
+- Modelos 720 y 721: solo si lo que tiene en el extranjero (Trade Republic) o la cripto fuera de España pasan de 50.000 €.
+- Comisiones: Trade Republic 1 € por operación; los fondos de MyInvestor no cobran por comprar ni vender; Bitvavo, alrededor del 0,25 %.`;
+}
+
+/* ---------- herramientas: el motor de la web al servicio de Claude ---------- */
+const HERRAMIENTAS = [
+  { name: 'simular_venta', description: 'Calcula una venta de una de sus posiciones con el motor de la web: unidades, importe, comisión, valor de compra por FIFO, ganancia o pérdida y el impuesto extra en la renta de este año contando lo que ya lleva. Úsala siempre antes de recomendar vender.', input_schema: { type: 'object', properties: { posicion: { type: 'string', description: 'id o nombre de la posición, por ejemplo "repsol" o "S&P 500"' }, unidades: { type: 'number' }, importe: { type: 'number', description: 'euros a vender, en vez de unidades' }, porcentaje: { type: 'number', description: 'porcentaje de la posición a vender, en vez de unidades' }, precio: { type: 'number', description: 'precio de venta en euros; si no se pone, el actual' } }, required: ['posicion'] } },
+  { name: 'simular_compra', description: 'Calcula la compra de una acción o fondo (de su cartera o del radar de la web, con cientos de empresas de EEUU y Europa): tasa del país, comisión, unidades, cómo queda su límite de acciones sueltas, cuánto pesa ya ese sector y cuánto tiene ya de esa empresa dentro de sus fondos.', input_schema: { type: 'object', properties: { empresa: { type: 'string', description: 'ticker o nombre' }, importe: { type: 'number', description: 'euros a invertir' }, plataforma: { type: 'string', description: 'Trade Republic, MyInvestor o Bitvavo' } }, required: ['empresa', 'importe'] } },
+  { name: 'buscar_empresa', description: 'Todos los datos que tiene la web de una empresa o fondo: precio, analistas y su evolución, rango de objetivos, valoración, crecimiento, deuda, tendencia, el contraste de señales y cuánto tiene ya dentro de sus fondos. Busca en su cartera y en el radar de la web (cientos de empresas de EEUU y Europa); si no está, usa la búsqueda web.', input_schema: { type: 'object', properties: { consulta: { type: 'string', description: 'ticker o nombre' } }, required: ['consulta'] } },
+  { name: 'proyectar', description: 'Simula 2.000 escenarios de su cartera con otra aportación mensual, subida anual de la aportación o rentabilidad de la bolsa.', input_schema: { type: 'object', properties: { aportacion_mensual: { type: 'number' }, anios: { type: 'integer', description: 'de 1 a 30' }, subida_anual_aportacion: { type: 'number', description: '% al año' }, rentabilidad_bolsa: { type: 'number', description: '% anual a largo plazo, por defecto 7' } }, required: ['aportacion_mensual'] } },
+  { name: 'historico', description: 'Evolución de una de sus posiciones o de un índice entre dos fechas: precio inicial y final, cambio, máximo, mínimo y peor caída. Índices: Ibex 35, Euro Stoxx 50, DAX, S&P 500, Nasdaq 100, Nikkei 225, Brent, Oro, Bitcoin, Euro/dólar, VIX, Bono EEUU 10 años.', input_schema: { type: 'object', properties: { activo: { type: 'string' }, desde: { type: 'string', description: 'AAAA-MM-DD' }, hasta: { type: 'string', description: 'AAAA-MM-DD, por defecto hoy' } }, required: ['activo', 'desde'] } },
+];
+const BUSQUEDA_WEB = { type: 'web_search_20250305', name: 'web_search', max_uses: 5, user_location: { type: 'approximate', country: 'ES', timezone: 'Europe/Madrid' } };
+
+function hSimularVenta(q) {
+  const f = buscarFila(q.posicion);
+  if (!f) return { error: `No encuentro "${q.posicion}" en su cartera. Tiene: ${S.M.filas.map((x) => `${x.inst.corto} (id "${x.pos.id}")`).join(', ')}.` };
+  if (!f.uds || !f.precio) return { error: 'Esa posición no tiene unidades o precio.' };
+  const pr = +q.precio > 0 ? +q.precio : f.precio;
+  let u = +q.unidades > 0 ? +q.unidades : +q.importe > 0 ? q.importe / pr : +q.porcentaje > 0 ? (f.uds * q.porcentaje) / 100 : f.uds;
+  u = Math.min(u, f.uds);
+  const gastos = f.pos.plataforma === 'Trade Republic' ? 1 : f.inst.clase === 'Cripto' ? 0.0025 * u * pr : 0;
+  const bruto = u * pr, neto = bruto - gastos;
+  const r = fifo(lotesDe(f.pos), u);
+  const gan = neto - r.coste;
+  const anio = new Date().getFullYear();
+  const iv = impuestoDeVenta(gan, anio);
+  return {
+    posicion: f.inst.corto, plataforma: f.pos.plataforma, unidades: R2(u, 6), de_un_total_de: R2(f.uds, 6), precio: R2(pr, 4),
+    importe_bruto: R2(bruto), comision: R2(gastos), cobras: R2(neto), valor_de_compra_fifo: R2(r.coste),
+    lotes_usados: r.usados.map((l) => ({ fecha: l.f, unidades: R2(l.u, 6), coste: R2(l.c) })),
+    ganancia_o_perdida: R2(gan), impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
+    tipo_efectivo_pct: gan > 0 ? R2((iv.impuesto / gan) * 100, 1) : 0,
+    renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra) },
+    te_quedan: R2(f.uds - u, 6), valor_que_te_queda: R2((f.uds - u) * f.precio),
+    notas: [/^Fondo/.test(f.inst.tipo || '') ? 'Es un fondo: si en vez de venderlo lo traspasa a otro fondo, no paga nada ahora.' : '', r.mezcla ? 'Lo que tenía antes de usar la web cuenta como un solo lote a su precio medio; el informe fiscal del bróker lo afina compra a compra.' : '', f.estimada ? 'La cantidad de esta posición es estimada.' : ''].filter(Boolean).join(' ') || undefined,
+  };
+}
+function hSimularCompra(q) {
+  const imp = +q.importe;
+  if (!(imp > 0)) return { error: 'Falta el importe en euros.' };
+  const M = S.M;
+  const f = buscarFila(q.empresa), x = f ? null : buscarRadar(q.empresa);
+  if (!f && !x) return { error: `"${q.empresa}" no está en su cartera ni en el radar de la web. Busca sus datos en internet. Tasa de compra por país: España 0,2 % y Francia 0,4 % (empresas de más de 1.000 millones), Italia 0,1 %, Reino Unido 0,5 %; fondos y ETF no pagan.` };
+  const nombre = f ? f.inst.corto : x.n, precio = f ? f.precio : x.pe || x.p;
+  const pais = f ? f.inst.pais : PAIS_DE_NOMBRE[x.pais], tipo = f ? f.inst.tipo : 'Acción';
+  const cap = f ? f.p && f.p.fundamentales && f.p.fundamentales.capitalizacion : x.cap;
+  const sector = f ? f.p && f.p.sector : x.sector, moneda = f ? 'EUR' : x.m;
+  const plat = q.plataforma || (f ? f.pos.plataforma : 'Trade Republic');
+  const tasa = f ? tasaCompra(pais, tipo, cap) : tasaRadar(x);
+  const comision = plat === 'Trade Republic' ? 1 : plat === 'Bitvavo' ? 0.0025 * imp : 0;
+  const t = tasa ? imp * tasa.tipo : 0;
+  const sueltas = sum(M.filas.filter((y) => y.inst.tipo === 'Acción'), (y) => y.valor);
+  const lim = +(S.cartera.limite_acciones || 20);
+  const sect = sector ? (reparto(M, 'sector', 'rv').filas.find((s) => s.k === sector) || {}).pct || 0 : null;
+  return {
+    empresa: nombre, plataforma: plat, precio_aprox_eur: R2(precio, 4), unidades_aprox: precio ? R2(imp / precio, 4) : null,
+    importe: R2(imp), comision: R2(comision), tasa_de_compra: tasa ? { tipo_pct: tasa.tipo * 100, nombre: tasa.nombre, importe: R2(t) } : 'no paga',
+    total_a_pagar: R2(imp + comision + t), nota_fiscal: 'La comisión y la tasa suman al precio de compra para Hacienda.',
+    acciones_sueltas: tipo === 'Acción' ? { ahora_pct: R2((sueltas / M.total) * 100, 1), con_dinero_nuevo_pct: R2(((sueltas + imp) / (M.total + imp)) * 100, 1), con_dinero_que_ya_tiene_pct: R2(((sueltas + imp) / M.total) * 100, 1), limite_pct: lim } : null,
+    peso_de_su_sector_en_su_bolsa_pct: sect != null ? R2(sect, 1) : null,
+    ya_tiene_dentro_de_sus_fondos_eur: R2(dentroDeFondos(M)(nombre), 0),
+    divisa: moneda && moneda !== 'EUR' ? `Cotiza en ${moneda}: el cambio con el euro también cuenta.` : undefined,
+    ya_la_tiene: !!f,
+  };
+}
+function hBuscarEmpresa(q) {
+  const f = buscarFila(q.consulta);
+  if (f) return { en_su_cartera: true, datos: fichaTexto(f) };
+  const x = buscarRadar(q.consulta);
+  const M = S.M;
+  if (!x) return { error: `No está en su cartera ni en el radar de ${radarVals().length} empresas de la web. Usa la búsqueda en internet.` };
+  const ideas = mejoresIdeas(M), k = ideas.findIndex((y) => y.s === x.s);
+  const ctr = contraste(x);
+  const tasa = tasaRadar(x);
+  return {
+    en_su_cartera: false, nombre: x.n, ticker: x.s, zona: x.z, pais: PAISES[PAIS_DE_NOMBRE[x.pais]] || x.pais, sector: x.sector, industria: x.ind,
+    precio: `${fmtNum(x.p, 2)} ${x.m}`, precio_eur: R2(x.pe, 2), hoy_pct: x.v, en_directo: !!x.vivo,
+    analistas: { consenso: CONSENSO[x.r] || null, nota_media_1_a_5: x.rm, numero: x.na, votos_ahora: x.v0, votos_hace_3_meses: x.v3, objetivo_medio: x.obj, objetivo_bajo: x.tb, objetivo_alto: x.ta, potencial_pct: R2(x.pot, 1) },
+    valoracion: { per: x.per, per_futuro: x.perf, crecimiento_beneficio_esperado_pct: x.epsg, crecimiento_beneficio_pct: x.eg, crecimiento_ingresos_pct: x.rg, roe_pct: x.roe, margen_pct: x.mg, deuda_capital_pct: x.de, dividendo_pct: x.div, capitalizacion_eur: x.cap, beta: x.beta },
+    precio_y_tendencia: { cambio_1_anio_pct: x.c1a, media_50: x.m50, media_200: x.m200, sobre_media_200_pct: x.m200 && x.p ? R2((x.p / x.m200 - 1) * 100, 1) : null, maximo_52s: x.mx, minimo_52s: x.mn },
+    contraste: { a_favor: ctr.favor, en_contra: ctr.contra, de: ctr.total, detalle: ctr.checks.map((c) => `${c.k}: ${c.ok === 1 ? 'a favor' : c.ok === -1 ? 'en contra' : 'neutral'} (${c.txt})`) },
+    tasa_de_compra: tasa ? `${fmtNum(tasa.tipo * 100, 1)} % (${tasa.nombre})` : 'no paga',
+    ya_tiene_dentro_de_sus_fondos_eur: R2(dentroDeFondos(M)(x.n), 0),
+    valoracion_de_la_web: k >= 0 ? { puesto: k + 1, de: ideas.length, motivos: ideas[k].motivos, pegas: ideas[k].pegas } : 'No pasa el filtro de ideas de la web (potencial de al menos un 10 %, 8 analistas o más, consenso de compra, 3 señales a favor y no haber caído más de un 35 % en un año).',
+    datos_de: x.f || (S.radar && S.radar.generado),
+  };
+}
+function hProyectar(q) {
+  const M = S.M;
+  const aport = Math.max(0, +q.aportacion_mensual || 0);
+  const anios = Math.max(1, Math.min(30, Math.round(+q.anios || 10)));
+  const prev = S.proy, prevC = S.proyCache;
+  try {
+    const c0 = cfgProy();
+    S.proy = { ...(S.proy || {}), aport, subida: q.subida_anual_aportacion != null ? +q.subida_anual_aportacion : c0.subida, bolsa: q.rentabilidad_bolsa != null ? +q.rentabilidad_bolsa : c0.bolsa, real: false };
+    S.proyCache = null;
+    const pr = proyeccion(M);
+    const at = (a) => ({ anios: a, si_va_mal_p10: R2(pr.p10[a * 12], 0), probable_p50: R2(pr.p50[a * 12], 0), si_va_bien_p90: R2(pr.p90[a * 12], 0), habra_puesto: R2(pr.aportado[a * 12], 0) });
+    const hitos = META_HITOS.map((m) => { const i = pr.p50.findIndex((x) => x >= m); return { meta: m, lo_probable_en: i < 0 ? 'más de 30 años' : pr.fechas[i].slice(0, 7) }; });
+    return { supuestos: { aportacion_mensual: aport, subida_anual_aportacion_pct: S.proy.subida, bolsa_anual_pct: S.proy.bolsa, rentabilidad_esperada_hoy_pct: R2(pr.mu, 1), volatilidad_hoy_pct: R2(pr.sd, 1) }, resultado: [...new Set([anios, 5, 10, 20])].sort((a, b) => a - b).map(at), hitos };
+  } finally { S.proy = prev; S.proyCache = prevC; }
+}
+function hHistorico(q) {
+  let serie = null, nombre = q.activo, moneda = 'EUR';
+  const merc = (S.precios && S.precios.mercados) || {};
+  const n = normTxt(q.activo).replace(/ /g, '');
+  const ALIAS = { ibex: '^IBEX', ibex35: '^IBEX', eurostoxx: '^STOXX50E', eurostoxx50: '^STOXX50E', dax: '^GDAXI', sp500indice: '^GSPC', indicesp500: '^GSPC', nasdaq: '^NDX', nasdaq100: '^NDX', nikkei: '^N225', nikkei225: '^N225', brent: 'BZ=F', petroleo: 'BZ=F', crudo: 'BZ=F', orospot: 'GC=F', bitcoinindice: 'BTC-EUR', eurodolar: 'EURUSD=X', eurusd: 'EURUSD=X', vix: '^VIX', bono: '^TNX', bonoeeuu: '^TNX', bonoeeuu10anos: '^TNX' };
+  const sym = ALIAS[n] || Object.keys(merc).find((s) => normTxt(merc[s].nombre).replace(/ /g, '') === n || normTxt(s).replace(/ /g, '') === n);
+  const f = sym ? null : buscarFila(q.activo);
+  if (f) { serie = histDe(f.inst.id); nombre = f.inst.corto; }
+  else if (sym) { serie = histMercado(sym); nombre = merc[sym] ? merc[sym].nombre : sym; moneda = (merc[sym] && merc[sym].moneda) || ''; }
+  if (!serie || !serie.length) return { error: 'No tengo histórico de eso. Prueba con una de sus posiciones o con un índice: Ibex 35, Euro Stoxx 50, DAX, S&P 500 índice, Nasdaq 100, Nikkei 225, Brent, Oro, Bitcoin, Euro/dólar, VIX o Bono EEUU.' };
+  const desde = String(q.desde || '').slice(0, 10), hasta = String(q.hasta || hoyIso()).slice(0, 10);
+  const tramo = serie.filter(([d]) => d >= desde && d <= hasta);
+  if (tramo.length < 2) return { error: `Sin datos entre ${desde} y ${hasta}. El histórico empieza el ${serie[0][0]}.` };
+  let max = -Infinity, min = Infinity, pico = -Infinity, peor = 0, fMax, fMin;
+  for (const [d, p] of tramo) { if (p > max) { max = p; fMax = d; } if (p < min) { min = p; fMin = d; } pico = Math.max(pico, p); peor = Math.min(peor, p / pico - 1); }
+  const [d0, p0] = tramo[0], [d1, p1] = tramo[tramo.length - 1];
+  return { activo: nombre, moneda, desde: d0, hasta: d1, precio_inicial: R2(p0, 4), precio_final: R2(p1, 4), cambio_pct: R2((p1 / p0 - 1) * 100, 2), maximo: { precio: R2(max, 4), fecha: fMax }, minimo: { precio: R2(min, 4), fecha: fMin }, peor_caida_pct: R2(peor * 100, 1), puntos: tramo.length };
+}
+function ejecutarHerramienta(nombre, input) {
+  try {
+    const fn = { simular_venta: hSimularVenta, simular_compra: hSimularCompra, buscar_empresa: hBuscarEmpresa, proyectar: hProyectar, historico: hHistorico }[nombre];
+    if (!fn) return { error: 'Herramienta desconocida: ' + nombre };
+    S.M = S.M || calcular();
+    return fn(input || {});
+  } catch (e) { console.warn(e); return { error: 'Falló el cálculo: ' + e.message }; }
+}
+function pasoTxt(nombre, q = {}) {
+  if (nombre === 'simular_venta') return `Calcula la venta${q.unidades ? ` de ${fmtNum(q.unidades, 0)}` : q.porcentaje ? ` del ${fmtNum(q.porcentaje, 0)} %` : q.importe ? ` de ${E0(q.importe)}` : ''}${q.posicion ? ` de ${q.posicion}` : ''}, con FIFO e impuestos`;
+  if (nombre === 'simular_compra') return `Calcula una compra${q.importe ? ` de ${E0(q.importe)}` : ''}${q.empresa ? ` en ${q.empresa}` : ''}, con su tasa`;
+  if (nombre === 'buscar_empresa') return `Mira los datos de ${q.consulta || 'una empresa'}`;
+  if (nombre === 'proyectar') return `Proyecta tu cartera${q.aportacion_mensual != null ? ` aportando ${E0(q.aportacion_mensual)} al mes` : ''}`;
+  if (nombre === 'historico') return `Mira el histórico de ${q.activo || ''}${q.desde ? ` desde el ${fechaLarga(String(q.desde).slice(0, 10))}` : ''}`;
+  if (nombre === 'web_search') return q.query ? `Busca en internet: ${q.query}` : 'Busca en internet';
+  return 'Calcula';
+}
+
+/* ---------- llamada a la API con respuesta en directo ---------- */
+function errorApi(estado, j) {
+  const m = (j && j.error && j.error.message) || '';
+  if (estado === 401) return new Error('La clave de la API no es válida. Cámbiala en los ajustes del asesor.');
+  if (estado === 403) return new Error('Tu clave no tiene permiso para este modelo.');
+  if (estado === 429) return new Error('Demasiadas preguntas seguidas. Espera un minuto.');
+  if (estado === 529 || estado === 503) return new Error('Anthropic está saturado ahora mismo. Prueba en un momento.');
+  if (/credit balance|billing/i.test(m)) return new Error('Tu cuenta de Anthropic no tiene saldo. Recárgala en console.anthropic.com, en Billing.');
+  const e = new Error(m || `Error ${estado} de la API`); e.estado = estado; e.msg = m; return e;
+}
+async function llamarClaude(clave, cfg, cuerpo, turno, signal, alCambiar) {
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST', signal,
+    headers: { 'content-type': 'application/json', 'x-api-key': clave, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ ...cuerpo, model: cfg.modelo, stream: true }),
+  });
+  if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorApi(r.status, j); }
+  const lector = r.body.getReader(), dec = new TextDecoder();
+  let buf = '', stop = null;
+  const bloques = [], partes = {}, uso = {};
+  const procesar = (ev) => {
+    if (ev.type === 'message_start') Object.assign(uso, ev.message && ev.message.usage);
+    else if (ev.type === 'content_block_start') {
+      const b = JSON.parse(JSON.stringify(ev.content_block)); bloques[ev.index] = b;
+      if (b.type === 'text') { b.text = b.text || ''; const p = { tipo: 'texto', texto: b.text }; turno.partes.push(p); partes[ev.index] = p; }
+      else if (b.type === 'tool_use' || b.type === 'server_tool_use') { b._json = ''; const p = { tipo: 'paso', web: b.type === 'server_tool_use', txt: b.type === 'server_tool_use' ? 'Busca en internet' : pasoTxt(b.name) }; turno.partes.push(p); partes[ev.index] = p; }
+      else if (b.type === 'web_search_tool_result') {
+        const res = Array.isArray(b.content) ? b.content : [];
+        for (const x of res) if (x.url) turno.resultados.push({ t: x.title || x.url, u: x.url });
+        if (!Array.isArray(b.content) && b.content && b.content.error_code) turno.partes.push({ tipo: 'paso', web: true, txt: 'La búsqueda en internet ha fallado' });
+      }
+    } else if (ev.type === 'content_block_delta') {
+      const b = bloques[ev.index], d = ev.delta || {};
+      if (!b) return;
+      if (d.type === 'text_delta') { b.text += d.text; if (partes[ev.index]) partes[ev.index].texto = b.text; }
+      else if (d.type === 'input_json_delta') b._json += d.partial_json || '';
+      else if (d.type === 'citations_delta' && d.citation) { if (d.citation.url) turno.citas.push({ t: d.citation.title || d.citation.url, u: d.citation.url }); }
+    } else if (ev.type === 'content_block_stop') {
+      const b = bloques[ev.index];
+      if (b && (b.type === 'tool_use' || b.type === 'server_tool_use')) {
+        try { b.input = b._json ? JSON.parse(b._json) : (b.input || {}); } catch (e) { b.input = {}; }
+        if (partes[ev.index]) partes[ev.index].txt = pasoTxt(b.name, b.input);
+      }
+    } else if (ev.type === 'message_delta') { if (ev.delta && ev.delta.stop_reason) stop = ev.delta.stop_reason; Object.assign(uso, ev.usage || {}); }
+    else if (ev.type === 'error') throw new Error((ev.error && ev.error.message) || 'Error en la respuesta');
+    alCambiar();
+  };
+  for (;;) {
+    const { done, value } = await lector.read();
+    if (done) break;
+    buf += dec.decode(value, { stream: true });
+    let i;
+    while ((i = buf.indexOf('\n\n')) >= 0) {
+      const trozo = buf.slice(0, i); buf = buf.slice(i + 2);
+      const datos = trozo.split('\n').filter((l) => l.startsWith('data:')).map((l) => l.slice(5).trim()).join('');
+      if (!datos) continue;
+      let ev; try { ev = JSON.parse(datos); } catch (e) { continue; }
+      procesar(ev);
+    }
+  }
+  const contenido = bloques.filter(Boolean).map((b) => {
+    if (b.type === 'text') return { type: 'text', text: b.text };
+    if (b.type === 'tool_use' || b.type === 'server_tool_use') return { type: b.type, id: b.id, name: b.name, input: b.input || {} };
+    const { _json, ...resto } = b; return resto;
+  }).filter((b) => b.type !== 'text' || b.text);
+  return { contenido, stop, uso };
+}
+function costeUso(uso, modelo) {
+  const m = MODELOS[modelo] || MODELOS['claude-sonnet-5-5'];
+  const t = ((uso.input_tokens || 0) * m.in + (uso.cache_creation_input_tokens || 0) * m.in * 1.25 + (uso.cache_read_input_tokens || 0) * m.in * 0.1 + (uso.output_tokens || 0) * m.out) / 1e6;
+  return t + ((uso.server_tool_use && uso.server_tool_use.web_search_requests) || 0) * 0.01;
+}
+
+/* Una vuelta completa: Claude responde, pide herramientas, se las damos y sigue hasta terminar */
+async function conversar({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web }) {
+  const cfg = cfgAsesor();
+  const clave = AS.clave;
+  const msgs = [...mensajes];
+  let usarWeb = web !== false && cfg.web && !AS.sinWeb;
+  for (let vuelta = 0; vuelta < 10; vuelta++) {
+    const cuerpo = { max_tokens: maxTokens, system: sistema, tools: [...HERRAMIENTAS, ...(usarWeb ? [BUSQUEDA_WEB] : [])], messages: msgs };
+    let r;
+    try { r = await llamarClaude(clave, cfg, cuerpo, turno, signal, alCambiar); }
+    catch (e) {
+      if (usarWeb && e.estado === 400 && /web_search|tool/i.test(e.msg || '')) { AS.sinWeb = true; usarWeb = false; turno.partes.push({ tipo: 'paso', web: true, txt: 'Tu cuenta no tiene la búsqueda en internet activada: sigo sin ella' }); alCambiar(); vuelta--; continue; }
+      throw e;
+    }
+    turno.coste = (turno.coste || 0) + costeUso(r.uso, cfg.modelo);
+    msgs.push({ role: 'assistant', content: r.contenido });
+    if (r.stop === 'tool_use') {
+      const res = r.contenido.filter((b) => b.type === 'tool_use').map((b) => { const out = ejecutarHerramienta(b.name, b.input); return { type: 'tool_result', tool_use_id: b.id, content: JSON.stringify(out), ...(out && out.error ? { is_error: true } : {}) }; });
+      msgs.push({ role: 'user', content: res });
+      continue;
+    }
+    if (r.stop === 'pause_turn') continue;
+    if (r.stop === 'max_tokens') turno.partes.push({ tipo: 'paso', txt: 'La respuesta se ha cortado por larga. Pídele que siga.' });
+    break;
+  }
+  return msgs;
+}
+const sistemaAsesor = () => [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: AS.foto, cache_control: { type: 'ephemeral' } }];
+function refrescarFoto(forzar) {
+  if (forzar || !AS.foto || Date.now() - AS.fotoT > 10 * 60000) { S.M = S.M || calcular(); AS.foto = contextoAsesor(S.M); AS.fotoT = Date.now(); }
+}
+
+async function preguntarAsesor(texto) {
+  texto = String(texto || '').trim();
+  if (!texto || AS.cargando) return;
+  if (!AS.clave) { AS.vista = 'clave'; pintarAsesor(); return; }
+  refrescarFoto(!AS.api.length);
+  const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
+  AS.conv.push({ rol: 'yo', texto }, turno);
+  AS.cargando = true; AS.ctrl = new AbortController();
+  pintarAsesor(true);
+  let marco = 0;
+  const alCambiar = () => { if (!marco) marco = requestAnimationFrame(() => { marco = 0; pintarTurno(AS.conv.length - 1); }); };
+  try {
+    await conversar({ mensajes: [...AS.api, { role: 'user', content: texto }], turno, sistema: sistemaAsesor(), alCambiar, signal: AS.ctrl.signal });
+  } catch (e) {
+    turno.error = e.name === 'AbortError' ? 'Parado.' : /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? 'No hay conexión con Anthropic. Mira tu conexión y vuelve a probar.' : e.message;
+  }
+  AS.cargando = false; AS.ctrl = null;
+  const final = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim();
+  if (final) { AS.api.push({ role: 'user', content: texto }, { role: 'assistant', content: final }); AS.api = AS.api.slice(-24); }
+  AS.gasto += turno.coste || 0;
+  guardarConv();
+  pintarAsesor();
+}
+
+/* ---------- markdown mínimo y seguro para las respuestas ---------- */
+function md(src) {
+  const inline = (s) => s
+    .replace(/`([^`]+)`/g, '<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
+    .replace(/(^|[^*\w])\*([^*\n]+)\*(?!\w)/g, '$1<i>$2</i>')
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+  const lineas = esc(src).split('\n');
+  let html = '', lista = null, tabla = null, par = [];
+  const cerrarPar = () => { if (par.length) { html += `<p>${inline(par.join('<br>'))}</p>`; par = []; } };
+  const cerrarLista = () => { if (lista) { html += `<${lista.t}>${lista.items.map((x) => `<li>${inline(x)}</li>`).join('')}</${lista.t}>`; lista = null; } };
+  const cerrarTabla = () => {
+    if (!tabla) return;
+    const celdas = (l) => l.replace(/^\s*\|/, '').replace(/\|\s*$/, '').split('|').map((c) => c.trim());
+    const filas = tabla.filter((l) => !/^\s*\|?\s*:?-{2,}/.test(l)).map(celdas);
+    const [cab, ...resto] = filas;
+    html += `<div class="as-tabla"><table><thead><tr>${cab.map((c) => `<th>${inline(c)}</th>`).join('')}</tr></thead><tbody>${resto.map((f) => `<tr>${f.map((c) => `<td>${inline(c)}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
+    tabla = null;
+  };
+  const cerrar = () => { cerrarPar(); cerrarLista(); cerrarTabla(); };
+  for (const l of lineas) {
+    let m;
+    if (/^\s*\|.*\|\s*$/.test(l)) { cerrarPar(); cerrarLista(); (tabla = tabla || []).push(l); continue; }
+    if (tabla) cerrarTabla();
+    if (!l.trim()) { cerrar(); continue; }
+    if ((m = /^\s*#{1,6}\s+(.*)$/.exec(l))) { cerrar(); html += `<h4>${inline(m[1])}</h4>`; continue; }
+    if (/^\s*(-{3,}|\*{3,})\s*$/.test(l)) { cerrar(); html += '<hr>'; continue; }
+    if ((m = /^\s*[-*•]\s+(.*)$/.exec(l))) { cerrarPar(); if (!lista || lista.t !== 'ul') { cerrarLista(); lista = { t: 'ul', items: [] }; } lista.items.push(m[1]); continue; }
+    if ((m = /^\s*\d+[.)]\s+(.*)$/.exec(l))) { cerrarPar(); if (!lista || lista.t !== 'ol') { cerrarLista(); lista = { t: 'ol', items: [] }; } lista.items.push(m[1]); continue; }
+    if (lista && /^\s{2,}\S/.test(l)) { lista.items[lista.items.length - 1] += ' ' + l.trim(); continue; }
+    cerrarLista(); par.push(l);
+  }
+  cerrar();
+  return html;
+}
+
+/* ---------- el panel ---------- */
+function sugerencias(M) {
+  const s = [], anio = new Date().getFullYear();
+  const pl = M.filas.map((f) => planVenta(f, M)).filter(Boolean)[0];
+  if (pl) { const res = pl.f.p && pl.f.p.proximos_resultados; s.push(`¿Vendo ya ${pl.f.inst.corto} o espero${res && res >= hoyIso() ? ` a sus resultados del ${fechaCorta(res)}` : ''}?`); }
+  s.push('Este mes me sobran 500 €: ¿dónde los meto?');
+  const top = M.filas.filter((f) => f.inst.tipo === 'Acción' && f.plPct > 40).sort((a, b) => b.plPct - a.plPct)[0];
+  s.push(top ? `Búscame otra jugada como la de ${top.inst.corto}, bien contrastada` : 'Búscame una acción con un motor claro y bien contrastada');
+  s.push(`¿Cuánto voy a pagar en la renta de ${anio}?`);
+  s.push('¿Qué ha pasado hoy en los mercados que me afecte?');
+  s.push('Si la bolsa cae un 30 %, ¿cuánto pierdo y qué hago?');
+  return s.slice(0, 6);
+}
+function htmlTurno(t, k) {
+  if (t.rol === 'yo') return `<div class="as-yo">${esc(t.texto)}</div>`;
+  const vivo = AS.cargando && k === AS.conv.length - 1;
+  const ult = t.partes[t.partes.length - 1];
+  const partes = t.partes.map((p) => (p.tipo === 'texto' ? `<div class="as-md">${md(p.texto)}</div>` : `<div class="as-paso">${p.web ? ICONOS.mercados : ICONOS.calc}<span>${esc(p.txt)}</span></div>`)).join('');
+  const vistas = new Set();
+  const fuentes = (t.citas.length ? t.citas : t.resultados.slice(0, 5)).filter((x) => !vistas.has(x.u) && vistas.add(x.u)).slice(0, 8);
+  const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
+  return `<div class="as-ia${vivo ? ' vivo' : ''}" id="asT${k}">${partes}
+    ${vivo && !(ult && ult.tipo === 'texto' && ult.texto) ? '<div class="as-pensando" aria-label="Pensando"><i></i><i></i><i></i></div>' : ''}
+    ${t.error ? `<div class="as-error">${esc(t.error)} <button class="enlace" data-as="reintentar">Volver a preguntar</button></div>` : ''}
+    ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(dom(x.u))}</a>`).join('')}</div>` : ''}
+  </div>`;
+}
+function htmlClaveAsesor() {
+  const cfg = cfgAsesor();
+  return `<div class="as-config">
+    <h3>Conecta tu cuenta de Anthropic</h3>
+    <p>El asesor usa Claude a través de la API, que va aparte de tu suscripción y se paga por uso. Con ${MODELOS[cfg.modelo].n}, una pregunta normal cuesta unos 2-4 céntimos, y el análisis diario unos 10-15.</p>
+    <ol class="as-pasos-clave">
+      <li>Entra en <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener noreferrer">console.anthropic.com</a>, en Settings y luego API keys, y crea una clave.</li>
+      <li>En Billing, carga algo de saldo (con 5 € tienes para semanas) y, si quieres, pon un límite de gasto mensual.</li>
+      <li>Pégala aquí. Se guarda cifrada con la clave de tu cartera y solo viaja de tu navegador a Anthropic.</li>
+    </ol>
+    <label class="campo">Clave de la API<input type="password" id="asClave" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"></label>
+    <label class="check"><input type="checkbox" id="asSync"> Guardarla también en tu cartera cifrada, para no tener que ponerla en el móvil</label>
+    <div class="error" id="asErr"></div>
+    <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${AS.clave ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
+    <div class="as-sin-clave">
+      <b>Sin clave</b>
+      <p>Copia tu cartera de ahora mismo junto con tu pregunta y pégala en un chat de Claude. No hace los cálculos de la web en directo, pero tiene todos tus datos.</p>
+      <button class="btn" data-as="copiar">${ICONOS.copiar}Copiar mi cartera para Claude</button>
+    </div>
+  </div>`;
+}
+function htmlAjustesAsesor() {
+  const cfg = cfgAsesor();
+  const yo = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
+  return `<div class="as-config">
+    <h3>Ajustes del asesor</h3>
+    <fieldset class="as-modelos"><legend>Modelo</legend>${Object.entries(MODELOS).map(([k, m]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${cfg.modelo === k ? ' checked' : ''}><span><b>${m.n}</b><small>${m.txt}</small></span></label>`).join('')}</fieldset>
+    <label class="check"><input type="checkbox" id="asWeb"${cfg.web ? ' checked' : ''}> Puede buscar en internet (1 céntimo por búsqueda)</label>
+    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe Claude con tus cifras y las noticias del día, en Análisis. Unos 10-15 céntimos cada vez.</small></label>
+    <label class="campo">Lo que quieres que sepa de ti<textarea id="asYo" rows="6" placeholder="Por ejemplo: tu edad, para qué inviertes, si piensas comprar casa y cuándo, cuánto riesgo aguantas, tus reglas para las apuestas…">${esc(yo)}</textarea><small>Va dentro de tu cartera cifrada y lo lee al empezar cada conversación.</small></label>
+    <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
+    <div class="seccion-ed"><h3>Clave de la API</h3>
+      <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor.clave ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'} Gasto aproximado en este dispositivo: ${fmtNum(AS.gasto, 2)} $.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-as="cambiar-clave">Cambiar clave</button>${AS.clave ? '<button class="btn peq peligro" data-as="borrar-clave">Borrar clave</button>' : ''}</div>
+    </div>
+  </div>`;
+}
+function pintarAsesor(alFinal) {
+  const fondo = $('#asesorFondo'); if (!fondo) return;
+  const cfg = cfgAsesor();
+  const cuerpo = $('#asCuerpo', fondo), pie = $('#asPie', fondo);
+  $('#asSub', fondo).textContent = `${MODELOS[cfg.modelo].n}${cfg.web && !AS.sinWeb ? ', con búsqueda en internet' : ''}`;
+  const vista = !AS.clave && AS.vista !== 'ajustes' ? 'clave' : AS.vista;
+  if (vista === 'clave') cuerpo.innerHTML = htmlClaveAsesor();
+  else if (vista === 'ajustes') cuerpo.innerHTML = htmlAjustesAsesor();
+  else if (!AS.conv.length) cuerpo.innerHTML = `<div class="as-vacio"><h3>¿Qué quieres saber?</h3><p>Tiene delante tu cartera de ahora mismo: lo que tienes y lo que te costó, tus aportaciones, lo que llevas de renta este año, los analistas, cientos de empresas de EEUU y Europa para buscar ideas y las noticias. Calcula ventas con FIFO e impuestos${cfg.web ? ' y busca en internet lo que le falte' : ''}.</p><div class="as-sug">${sugerencias(S.M || calcular()).map((q) => `<button data-as-q="${esc(q)}">${esc(q)}</button>`).join('')}</div></div>`;
+  else cuerpo.innerHTML = AS.conv.map(htmlTurno).join('');
+  pie.hidden = vista !== 'chat';
+  const b = $('#asEnviar', fondo);
+  b.classList.toggle('parar', AS.cargando); b.innerHTML = AS.cargando ? ICONOS.parar : ICONOS.enviar;
+  b.setAttribute('aria-label', AS.cargando ? 'Parar' : 'Enviar'); b.disabled = false;
+  $('#asNota', fondo).textContent = AS.conv.length ? `Esta conversación: unos ${fmtNum(sum(AS.conv, (t) => t.coste || 0), 2)} $. Tus datos van de tu navegador a Anthropic.` : 'Tus datos van de tu navegador a Anthropic, cifrados en el camino. No pasan por GitHub.';
+  if (vista === 'chat') cuerpo.scrollTop = cuerpo.scrollHeight; else cuerpo.scrollTop = 0;
+}
+function pintarTurno(k) {
+  const el = document.getElementById('asT' + k), cuerpo = $('#asCuerpo');
+  if (!el || !cuerpo) return;
+  const abajo = cuerpo.scrollHeight - cuerpo.scrollTop - cuerpo.clientHeight < 80;
+  el.outerHTML = htmlTurno(AS.conv[k], k);
+  if (abajo) cuerpo.scrollTop = cuerpo.scrollHeight;
+}
+async function abrirAsesor(pregunta, enviar) {
+  if (!S.cartera) return;
+  if (S.ficha) cerrarFicha();
+  let fondo = $('#asesorFondo');
+  if (!fondo) {
+    fondo = document.createElement('div'); fondo.className = 'asesor-fondo'; fondo.id = 'asesorFondo';
+    fondo.innerHTML = `<section class="asesor" role="dialog" aria-modal="true" aria-labelledby="asTit">
+      <header class="as-cab"><div class="as-tit"><span class="as-ico">${ICONOS.chispa}</span><div><h2 id="asTit">Asesor</h2><small id="asSub"></small></div></div>
+        <button class="ib" data-as="nueva" title="Nueva conversación" aria-label="Nueva conversación">${ICONOS.nueva}</button>
+        <button class="ib" data-as="ajustes" title="Ajustes del asesor" aria-label="Ajustes del asesor">${ICONOS.ajustes}</button>
+        <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
+      <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
+      <footer class="as-pie" id="asPie"><form class="as-form" id="asForm"><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea><button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
+    </section>`;
+    fondo.addEventListener('click', (e) => { if (e.target === fondo) cerrarAsesor(); else clicAsesor(e); });
+    document.body.appendChild(fondo);
+    document.body.style.overflow = 'hidden';
+    const ta = $('#asTexto', fondo);
+    const ajustar = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 160) + 'px'; };
+    ta.addEventListener('input', ajustar);
+    ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('#asForm').requestSubmit(); } });
+    $('#asForm', fondo).onsubmit = (e) => {
+      e.preventDefault();
+      if (AS.cargando) { if (AS.ctrl) AS.ctrl.abort(); return; }
+      const q = ta.value; if (!q.trim()) return;
+      ta.value = ''; ajustar(); preguntarAsesor(q);
+    };
+  }
+  await cargarAsesor();
+  if (AS.vista !== 'chat' && AS.clave) AS.vista = 'chat';
+  pintarAsesor(true);
+  const ta = $('#asTexto', fondo);
+  if (pregunta && enviar && AS.clave) preguntarAsesor(pregunta);
+  else if (pregunta) { ta.value = pregunta; ta.dispatchEvent(new Event('input')); }
+  if (window.innerWidth > 760 && !pie_oculto()) ta.focus();
+  function pie_oculto() { return $('#asPie', fondo).hidden; }
+}
+function cerrarAsesor() {
+  const f = $('#asesorFondo'); if (!f) return;
+  f.remove(); document.body.style.overflow = '';
+  const b = $('#bAsesor'); if (b) b.focus({ preventScroll: true });
+}
+async function probarClave(clave) {
+  const cfg = cfgAsesor();
+  const r = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json', 'x-api-key': clave, 'anthropic-version': '2023-06-01', 'anthropic-dangerous-direct-browser-access': 'true' },
+    body: JSON.stringify({ model: cfg.modelo, max_tokens: 5, messages: [{ role: 'user', content: 'Di hola' }] }),
+  });
+  if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorApi(r.status, j); }
+}
+async function copiarParaClaude() {
+  refrescarFoto(true);
+  const q = ($('#asTexto') && $('#asTexto').value.trim()) || '';
+  const texto = `${instruccionesAsesor()}\n\n${AS.foto}\n\n${q ? `Mi pregunta: ${q}` : 'Mi pregunta: '}`;
+  try { await navigator.clipboard.writeText(texto); toast('Copiado. Pégalo en un chat de Claude y escribe tu pregunta al final.', 6000); }
+  catch (e) { descargar(`cartera-para-claude-${hoyIso()}.txt`, texto); toast('No se pudo copiar: te lo he descargado como texto.', 6000); }
+  window.open('https://claude.ai/new', '_blank', 'noopener');
+}
+async function clicAsesor(e) {
+  const t = e.target.closest('[data-as],[data-as-q]'); if (!t) return;
+  if (t.dataset.asQ) return preguntarAsesor(t.dataset.asQ);
+  const a = t.dataset.as, fondo = $('#asesorFondo');
+  if (a === 'cerrar') cerrarAsesor();
+  else if (a === 'nueva') { if (AS.ctrl) AS.ctrl.abort(); AS.conv = []; AS.api = []; AS.foto = null; AS.vista = 'chat'; LS.del('inv-asesor-conv'); pintarAsesor(); }
+  else if (a === 'ajustes') { AS.vista = AS.vista === 'ajustes' ? 'chat' : 'ajustes'; pintarAsesor(); }
+  else if (a === 'chat') { AS.vista = 'chat'; pintarAsesor(true); }
+  else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }
+  else if (a === 'copiar') copiarParaClaude();
+  else if (a === 'reintentar') {
+    let k = AS.conv.length - 1; while (k >= 0 && AS.conv[k].rol !== 'yo') k--;
+    if (k < 0) return;
+    const q = AS.conv[k].texto; AS.conv.splice(k); preguntarAsesor(q);
+  } else if (a === 'borrar-clave') {
+    AS.clave = null; LS.del('inv-asesor-clave');
+    if (S.cartera.asesor && S.cartera.asesor.clave) { delete S.cartera.asesor.clave; await guardarCartera('Asesor: borrar clave'); }
+    AS.vista = 'clave'; pintarAsesor();
+  } else if (a === 'guardar-clave') {
+    const c = $('#asClave', fondo).value.trim(), err = $('#asErr', fondo);
+    if (!/^sk-ant-/.test(c)) { err.textContent = 'Las claves de Anthropic empiezan por sk-ant-.'; return; }
+    t.disabled = true; t.textContent = 'Probando…'; err.textContent = '';
+    try {
+      await probarClave(c);
+      AS.clave = c; LS.set('inv-asesor-clave', await cifrarLocal(c));
+      if ($('#asSync', fondo).checked) { S.cartera.asesor = { ...(S.cartera.asesor || {}), clave: c }; await guardarCartera('Asesor: clave'); }
+      AS.vista = 'chat'; toast('Clave guardada: ya puedes preguntar'); pintarAsesor(); revisarAnalisisIA();
+    } catch (x) { err.textContent = /Failed to fetch|NetworkError|Load failed/i.test(x.message) ? 'No se pudo conectar con Anthropic.' : x.message; t.disabled = false; t.textContent = 'Guardar y probar'; }
+  } else if (a === 'guardar-ajustes') {
+    const modelo = (fondo.querySelector('input[name="asModelo"]:checked') || {}).value;
+    LS.set('inv-asesor-cfg', { modelo, web: $('#asWeb', fondo).checked, auto: $('#asAuto', fondo).value });
+    const yo = $('#asYo', fondo).value.trim(), antes = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
+    if (yo !== antes) { S.cartera.asesor = { ...(S.cartera.asesor || {}), sobre_mi: yo }; await guardarCartera('Asesor: sobre ti'); AS.foto = null; }
+    else toast('Guardado');
+    AS.sinWeb = false; AS.vista = 'chat'; pintarAsesor();
+  }
+}
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#asesorFondo') && !$('.hoja-fondo')) { e.stopPropagation(); cerrarAsesor(); } }, true);
 
 /* =====================================================================
    Eventos: un solo oyente para toda la página (las vistas se vuelven a pintar a menudo)
@@ -3360,7 +4663,7 @@ document.addEventListener('click', (e) => {
   else if (d.base) { S.base = d.base; LS.set('inv-base', S.base); pintar(); }
   else if (d.calif) { S.califTab = d.calif; LS.set('inv-calif2', S.califTab); pintar(); }
   else if (d.zona) { S.radarZona = d.zona; S.radarTodo = false; LS.set('inv-zona', S.radarZona); pintar(); }
-  else if (d.orden) { S.radarOrden = d.orden; LS.set('inv-orden', S.radarOrden); pintar(); }
+  else if (d.orden) { S.radarOrden = d.orden; LS.set('inv-orden2', S.radarOrden); pintar(); }
   else if ('radarTodo' in d) { S.radarTodo = !S.radarTodo; pintar(); }
   else if (d.pos) abrirFicha(d.pos);
   else if (d.accion) {
@@ -3376,6 +4679,9 @@ document.addEventListener('click', (e) => {
     else if (a === 'efectivo') editarEfectivo();
     else if (a === 'limites') editarLimites();
     else if (a === 'fiscal') editarFiscal();
+    else if (a === 'asesor') abrirAsesor(d.q || '', !!d.q);
+    else if (a === 'ia-actualizar') generarAnalisisIA('la pides tú');
+    else if (a === 'asesor-ajustes') { AS.vista = 'ajustes'; abrirAsesor().then(() => { AS.vista = 'ajustes'; pintarAsesor(); }); }
     else if (a === 'borrar-mov') borrarMovimiento(d.id, t);
   }
 });
@@ -3385,6 +4691,7 @@ document.addEventListener('change', (e) => {
   if (t.matches('[data-comparar]')) { S.comparar = t.checked; LS.set('inv-comparar', S.comparar); pintar(); }
   else if (t.matches('[data-orden-pos-sel]')) { const [k, dir] = t.value.split('|'); S.ordenPos = { k, dir }; LS.set('inv-orden-pos', S.ordenPos); pintar(); }
   else if (t.matches('[data-radar-min]')) { S.radarMin = t.checked; LS.set('inv-radar-min', S.radarMin); pintar(); }
+  else if (t.matches('[data-radar-solidas]')) { S.radarSolidas = t.checked; LS.set('inv-radar-solidas', S.radarSolidas); pintar(); }
   else if (t.matches('[data-proy]')) {
     const k = t.dataset.proy, c = { ...(S.proy || {}) };
     if (k === 'real') c.real = t.checked;
@@ -3414,9 +4721,10 @@ async function recargarPrecios() {
   try { await cargarPrecios(); } catch (e) { return; }
   if (!S.cartera) return;
   if (S.precios.generado !== antes) {
-    await Promise.all([cargarHistorico(), cargarIA()]);
+    await Promise.all([cargarHistorico(), cargarIA(), cargarRadar()]);
     pintar(); LIVE.resuscribir();
   } else programarParche();
+  revisarAnalisisIA();
 }
 function arrancar() {
   S.vista = vistaDeHash() || LS.get('inv-vista', 'cartera');
@@ -3425,6 +4733,7 @@ function arrancar() {
   pintar();
   LIVE.iniciar();
   cargarIA().then(() => { if (S.vista === 'analisis') pintar(); });
+  Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { if (['analisis', 'expertos'].includes(S.vista)) pintar(); setTimeout(revisarAnalisisIA, 4000); });
   clearInterval(tickPrecios); clearInterval(tickEstado);
   tickPrecios = setInterval(() => { if (!document.hidden) recargarPrecios(); }, 120000);
   tickEstado = setInterval(programarParche, 30000);
@@ -3432,15 +4741,15 @@ function arrancar() {
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !S.cartera) return;
   LIVE.asegurar();
-  if (Date.now() - S.ultimaCarga > 60000) recargarPrecios(); else programarParche();
+  if (Date.now() - S.ultimaCarga > 60000) recargarPrecios(); else { programarParche(); revisarAnalisisIA(); }
 });
 window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); recargarPrecios(); } });
 
 async function iniciar() {
   $('#app').innerHTML = '<div class="pantalla"><div class="caja" style="text-align:center;justify-items:center"><img class="logo" src="icon-192.png" alt=""><p>Cargando…</p></div></div>';
   try {
-    const [, , enc] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => cargarHistorico()), cargarCifrada()]);
-    S.enc = enc;
+    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarRadar()])), cargarCifrada(), leerAnalisisRemoto()]);
+    S.enc = enc; S.iaRemoto = iaRem;
   } catch (e) {
     console.error(e);
     $('#app').innerHTML = `<div class="pantalla"><div class="caja"><h1>No se pudo cargar</h1><p>${esc(e.message)}</p><button class="btn pri" onclick="location.reload()">Reintentar</button></div></div>`;

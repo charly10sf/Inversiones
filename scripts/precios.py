@@ -6,8 +6,10 @@ Uso: python scripts/precios.py instrumentos.json anterior/ salida/
 Escribe tres archivos en salida/:
 - precios.json: lo que cambia durante el día (precios, analistas, noticias y mercados). Pesa poco
   porque la web lo vuelve a leer cada 2 minutos.
-- radar.json: unas 400 empresas para buscar ideas, con analistas, valoración y tendencia. La ficha
-  se renueva cada 3 horas y los precios en cada ejecución.
+- radar.json: las empresas en las que buscar ideas, con analistas, valoración y tendencia. Son unas
+  400 fijas (Ibex, continuo, grandes de Europa y EEUU) más las que el buscador de Yahoo encuentra
+  cada día en toda la bolsa de EEUU y Europa con recomendación de compra. La ficha se renueva cada
+  3 horas y los precios en cada ejecución.
 - historico.json: los cierres de cada instrumento (10 años) y de cada mercado (1 año). La web lo lee
   al abrirse y cuando cambia el día.
 anterior/ tiene los archivos de la ejecución anterior (si existen).
@@ -88,8 +90,8 @@ RADAR = {
         "SAN.MC", "SCYR.MC", "SLR.MC", "TEF.MC", "UNI.MC",
         # mercado continuo
         "ALM.MC", "CIE.MC", "VIS.MC", "VID.MC", "EBRO.MC", "FAE.MC", "PSG.MC", "CASH.MC", "A3M.MC", "GEST.MC",
-        "PHM.MC", "NEI.MC", "MVC.MC", "DOM.MC", "ENC.MC", "TRE.MC", "GRE.MC", "ADX.MC", "OHLA.MC", "LDA.MC",
-        "R4.MC", "MCM.MC", "ALB.MC", "TLGO.MC", "TUB.MC", "ENO.MC", "CAF.MC", "ECR.MC", "EDR.MC", "MEL.MC",
+        "PHM.MC", "MVC.MC", "DOM.MC", "ENC.MC", "TRE.MC", "GRE.MC", "ADX.MC", "OHLA.MC", "LDA.MC",
+        "R4.MC", "MCM.MC", "TLGO.MC", "TUB.MC", "ENO.MC", "CAF.MC", "ECR.MC", "EDR.MC", "MEL.MC",
         "DIA.MC", "GSJ.MC", "PRS.MC", "AMP.MC", "SQRL.MC", "NXT.MC", "LGT.MC", "HBX.MC", "CIRSA.MC", "ATRY.MC",
     ],
     "Europa": [
@@ -116,7 +118,7 @@ RADAR = {
         "NOVO-B.CO", "DSV.CO", "VWS.CO", "MAERSK-B.CO", "CARL-B.CO", "ATCO-A.ST", "VOLV-B.ST", "ERIC-B.ST",
         "INVE-B.ST", "SAND.ST", "NDA-FI.HE", "EQNR.OL", "DNB.OL", "NHY.OL",
         # Suiza
-        "NESN.SW", "ROG.SW", "NOVN.SW", "UBSG.SW", "ABBN.SW", "ZURN.SW", "CFR.SW", "LONN.SW", "SIKA.SW",
+        "NESN.SW", "RO.SW", "NOVN.SW", "UBSG.SW", "ABBN.SW", "ZURN.SW", "CFR.SW", "LONN.SW", "SIKA.SW",
         "GIVN.SW", "ALC.SW", "HOLN.SW", "SREN.SW", "PGHN.SW", "LOGN.SW",
         # Londres
         "AZN.L", "SHEL.L", "HSBA.L", "ULVR.L", "RR.L", "BP.L", "GSK.L", "BATS.L", "RIO.L", "GLEN.L",
@@ -130,7 +132,7 @@ RADAR = {
         "MCD", "NKE", "BA", "INTC", "JNJ", "ABBV", "MRK", "PFE", "TMO", "ABT", "DHR", "AMGN", "GILD", "ISRG",
         "BMY", "CVS", "MDT", "SYK", "VRTX", "REGN", "ZTS", "HD", "LOW", "TGT", "SBUX", "BKNG", "ABNB", "UBER",
         "CMG", "TJX", "MAR", "BAC", "WFC", "C", "GS", "MS", "SCHW", "BLK", "AXP", "PYPL", "SPGI", "CB", "PGR",
-        "MMC", "CVX", "COP", "SLB", "OXY", "EOG", "LIN", "CAT", "DE", "GE", "HON", "RTX", "LMT", "NOC", "GD",
+        "CVX", "COP", "SLB", "OXY", "EOG", "LIN", "CAT", "DE", "GE", "HON", "RTX", "LMT", "NOC", "GD",
         "UNP", "UPS", "FDX", "MMM", "ETN", "PH", "CSCO", "QCOM", "TXN", "AMAT", "LRCX", "KLAC", "MU", "MRVL",
         "ADI", "NOW", "INTU", "SNOW", "PANW", "CRWD", "FTNT", "ANET", "SHOP", "IBM", "ACN", "T", "VZ", "TMUS",
         "CMCSA", "NEE", "DUK", "SO", "PLD", "AMT", "EQIX", "O", "SPOT", "MELI", "TSM", "BABA", "PDD", "NU",
@@ -139,7 +141,34 @@ RADAR = {
     ],
 }
 HORAS_RADAR = 3   # analistas y cuentas del radar: cada 3 horas; los precios, en cada ejecución
-HILOS_RADAR = 4
+HILOS_RADAR = 6
+
+# Además de la lista fija, una vez al día se recorre toda la bolsa de EEUU y de Europa con el buscador
+# de Yahoo Finance: entran las empresas medianas y grandes que los analistas recomiendan comprar y que
+# no estaban ya. Así ninguna idea buena se queda fuera por no estar en la lista.
+# región de Yahoo: (zona de la web, sufijos de su bolsa principal, capitalización mínima en euros)
+DESCUBRIR = {
+    "us": ("EEUU", ("",), 4e9),
+    "es": ("España", (".MC",), 3e8),
+    "gb": ("Europa", (".L",), 2e9),
+    "de": ("Europa", (".DE",), 1.5e9),
+    "fr": ("Europa", (".PA",), 1.5e9),
+    "it": ("Europa", (".MI",), 1.5e9),
+    "nl": ("Europa", (".AS",), 1.5e9),
+    "be": ("Europa", (".BR",), 1.5e9),
+    "ch": ("Europa", (".SW",), 2e9),
+    "se": ("Europa", (".ST",), 2e9),
+    "dk": ("Europa", (".CO",), 2e9),
+    "no": ("Europa", (".OL",), 2e9),
+    "fi": ("Europa", (".HE",), 1.5e9),
+    "pt": ("Europa", (".LS",), 1e9),
+    "at": ("Europa", (".VI",), 1.5e9),
+    "ie": ("Europa", (".IR",), 1.5e9),
+}
+NOTA_MAX_DESCUBRIR = 2.3   # nota media de los analistas (1 compra fuerte, 5 venta fuerte)
+MAX_DESCUBIERTAS = 450
+HORAS_DESCUBRIR = 20
+BOLSAS_US = {"NMS", "NYQ", "NGM", "NCM", "ASE", "BTS", "PCX"}
 
 
 def ahora():
@@ -727,6 +756,59 @@ def pct(x, nd=1):
     return num(f * 100, nd) if f is not None else None
 
 
+def nota_analistas(texto):
+    """'1.8 - Buy' -> 1.8"""
+    try:
+        return float(str(texto).split("-")[0].strip())
+    except (TypeError, ValueError):
+        return None
+
+
+def descubrir(fx, fijas):
+    """Recorre la bolsa de EEUU y Europa con el buscador de Yahoo y devuelve [(símbolo, zona)] de las
+    empresas con recomendación de compra que no están en la lista fija, más un diagnóstico."""
+    from yfinance import EquityQuery
+    diag = {"fecha": ahora(), "por_region": {}, "errores": []}
+    vistos, candidatos = set(fijas), []
+    for reg, (zona, sufijos, minimo) in DESCUBRIR.items():
+        n_reg, paginas = 0, (5 if reg == "us" else 2)
+        for pagina in range(paginas):
+            try:
+                q = EquityQuery("and", [EquityQuery("eq", ["region", reg]), EquityQuery("gt", ["intradaymarketcap", 3e8])])
+                r = yf.screen(q, offset=pagina * 250, size=250, sortField="intradaymarketcap", sortAsc=False)
+                quotes = (r or {}).get("quotes") or []
+            except Exception as e:  # noqa: BLE001
+                diag["errores"].append(f"{reg} p{pagina}: {str(e)[:160]}")
+                break
+            for x in quotes:
+                sim = x.get("symbol") or ""
+                if sim in vistos or x.get("quoteType", "EQUITY") != "EQUITY":
+                    continue
+                if reg == "us":
+                    if "." in sim or (x.get("exchange") and x.get("exchange") not in BOLSAS_US):
+                        continue
+                elif not any(sim.endswith(s) for s in sufijos if s):
+                    continue
+                nota = nota_analistas(x.get("averageAnalystRating"))
+                if nota is None or nota > NOTA_MAX_DESCUBRIR:
+                    continue
+                cap_eur = (x.get("marketCap") or 0) * (cambio_hoy(normaliza_moneda(x.get("currency") or "EUR")[0], fx) or 1.0)
+                if cap_eur < minimo:
+                    continue
+                vistos.add(sim)
+                candidatos.append((nota, -cap_eur, sim, zona))
+                n_reg += 1
+            if len(quotes) < 250:
+                break
+            time.sleep(0.4)
+        diag["por_region"][reg] = n_reg
+    candidatos.sort()
+    elegidas = [(sim, zona) for _, _, sim, zona in candidatos[:MAX_DESCUBIERTAS]]
+    diag["candidatas"] = len(candidatos)
+    diag["elegidas"] = len(elegidas)
+    return elegidas, diag
+
+
 def radar_ficha(sim, zona, fx):
     """Todo lo que hace falta para contrastar una idea: analistas (y cómo han cambiado en 3 meses),
     rango de precios objetivo, valoración, crecimiento esperado, rentabilidad, deuda y tendencia."""
@@ -774,11 +856,13 @@ def radar_ficha(sim, zona, fx):
     return x
 
 
-def radar(fx, previo):
+def radar(fx, previo, extra=()):
     """Renueva la ficha de cada empresa (en paralelo). Si una falla, se queda la de la vez anterior."""
     import concurrent.futures as cf
     antes = {x["s"]: x for x in (previo or [])}
     tareas = [(sim, zona) for zona, simbolos in RADAR.items() for sim in simbolos]
+    fijas = {sim for sim, _ in tareas}
+    tareas += [(sim, zona) for sim, zona in extra if sim not in fijas]
     nuevos, fallos = {}, []
 
     def una(sim, zona):
@@ -975,11 +1059,26 @@ def main(ruta_inst, dir_anterior, dir_salida):
     # Va en radar.json (pesa bastante) y la web solo lo vuelve a leer cuando cambia radar_id.
     prev_radar = leer_json(f"{dir_anterior}/radar.json") or anterior.get("radar") or {}
     previos = prev_radar.get("valores") or []
-    completo = previos and "v0" in "".join(json.dumps(x) for x in previos[:20]) and hace_menos_de(prev_radar.get("generado") or "", HORAS_RADAR)
+    # las descubiertas en toda la bolsa: una vez al día; mientras, las de la vez anterior
+    extra = [tuple(x) for x in (prev_radar.get("descubiertas") or [])]
+    diag = prev_radar.get("descubrir")
+    nuevo_descubrir = not extra or not hace_menos_de((diag or {}).get("fecha") or "", HORAS_DESCUBRIR)
+    if nuevo_descubrir:
+        try:
+            fijas = {sim for simbolos in RADAR.values() for sim in simbolos}
+            halladas, diag = descubrir(fx, fijas)
+            if halladas:
+                extra = halladas
+            print(f"descubrir: {diag.get('elegidas')} de {diag.get('candidatas')} candidatas {diag.get('por_region')}")
+        except Exception as e:  # noqa: BLE001
+            traceback.print_exc()
+            diag = {"fecha": ahora(), "errores": [str(e)[:300]]}
+            errores.append(f"descubrir: {e}")
+    completo = previos and "v0" in "".join(json.dumps(x) for x in previos[:20]) and hace_menos_de(prev_radar.get("generado") or "", HORAS_RADAR) and not nuevo_descubrir
     radar_sal = dict(prev_radar) if completo else None
     if not completo:
         try:
-            valores = radar(fx, previos)
+            valores = radar(fx, previos, extra)
             radar_sal = {"fecha": hoy, "generado": ahora(), "valores": valores} if valores else (prev_radar or None)
             print(f"radar: {len(valores)} empresas renovadas")
         except Exception as e:  # noqa: BLE001
@@ -994,13 +1093,14 @@ def main(ruta_inst, dir_anterior, dir_salida):
         except Exception as e:  # noqa: BLE001
             traceback.print_exc()
             errores.append(f"radar precios: {e}")
-        radar_sal["universo"] = sum(len(v) for v in RADAR.values())
+        radar_sal["descubiertas"] = [list(x) for x in extra]
+        radar_sal["descubrir"] = diag
+        radar_sal["universo"] = sum(len(v) for v in RADAR.values()) + len(extra)
         with open(f"{dir_salida}/radar.json", "w", encoding="utf-8") as f:
             json.dump(radar_sal, f, ensure_ascii=False, separators=(",", ":"))
         salida["radar_id"] = (radar_sal.get("generado") or "") + "|" + (radar_sal.get("precios") or "")
         salida["radar_generado"] = radar_sal.get("generado")
         salida["radar_n"] = len(radar_sal["valores"])
-        salida["radar"] = radar_sal  # TRANSICION: la web antigua aún lo lee de aquí
 
     # El histórico va aparte: pesa mucho y solo cambia una vez al día
     historico = {"generado": salida["generado"], "instrumentos": {}, "mercados": {}}

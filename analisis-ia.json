@@ -225,5 +225,13 @@
       "d": "2027-04-01",
       "t": "Abril: empieza la renta de 2026 (ventas, dividendos e intereses)"
     }
+  ],
+  "reglas": [
+    "Acciones sueltas: 2 o 3 apuestas a la vez como mucho y nunca más del 20 % de la cartera entre todas.",
+    "Solo se entra en una apuesta si cumple los cinco criterios: barata, con un motor concreto, con apalancamiento a ese motor, que pague por esperar y con un balance que aguante.",
+    "Sin calendario: se compra cuando una idea cumple los criterios, no porque toque.",
+    "El dinero de una apuesta nueva sale de otra acción del cajón, nunca de los fondos indexados ni del colchón (el fondo de renta fija).",
+    "Cada apuesta lleva su ficha antes de comprar: por qué, qué tiene que pasar y la regla de salida, con precio y con hecho.",
+    "Cada operación se compara con lo que habría hecho el mismo dinero en el fondo del S&P 500. Revisión de las apuestas en octubre de 2027."
   ]
 }
