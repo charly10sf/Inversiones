@@ -1,11 +1,12 @@
 name: Precios
 
 # Descarga los precios y los publica en la rama "datos" (un único commit que se sobrescribe).
-# Horario en UTC: de lunes a viernes cada 20 minutos de 6:00 a 21:59 UTC (8:00-23:59 en Madrid en verano)
+# Horario en UTC: de lunes a viernes cada 20 minutos de 6:00 a 21:59 UTC (8:00-23:59 en Madrid en verano),
+# en minutos sueltos (7, 27, 47) porque GitHub retrasa o se salta más las tareas de las horas en punto,
 # y cada 4 horas el fin de semana (Bitcoin y noticias; en la web Bitcoin además va en directo).
 on:
   schedule:
-    - cron: "*/20 6-21 * * 1-5"
+    - cron: "7,27,47 6-21 * * 1-5"
     - cron: "17 */4 * * 0,6"
   workflow_dispatch:
   push:

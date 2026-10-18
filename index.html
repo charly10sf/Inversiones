@@ -595,6 +595,7 @@ details.mas[open] > summary { margin-bottom: 12px; }
 .fx-act .enlace { font-weight: 650; font-size: 15.5px; letter-spacing: -0.01em; }
 .fx-act small { display: block; color: var(--muted); font-size: 12.5px; }
 .fx-op { min-width: 0; }
+.fx-op p.fx-vig { color: var(--muted); font-size: 13.5px; } .fx-op p.fx-vig b { color: var(--text-2); font-weight: 600; }
 .fx-op p { margin: 6px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
 .fx-op details.mas { margin-top: 6px; }
 .fx-op details.mas > summary { font-size: 13px; }
@@ -872,6 +873,46 @@ details.plegable[open] { padding-bottom: 16px; }
 /* "lo que toca": bajo las cifras en el móvil, bajo el gráfico en pantallas anchas */
 .toca.en-evo { display: none; }
 @media (min-width: 1180px) { .toca.en-hero { display: none; } .toca.en-evo { display: block; margin-top: 28px; } }
+
+/* ---------- recorte de pantalla ---------- */
+.recorte { position: fixed; inset: 0; z-index: 90; cursor: crosshair; touch-action: none; background: rgba(0, 0, 0, 0.28); user-select: none; -webkit-user-select: none; }
+.rc-aviso { position: absolute; left: 50%; top: calc(12px + env(safe-area-inset-top)); transform: translateX(-50%); display: flex; gap: 8px; align-items: center; flex-wrap: wrap; justify-content: center; background: var(--plane-2); border: 1px solid var(--line-2); border-radius: 12px; padding: 8px 10px 8px 14px; box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5); font-size: 14px; width: max-content; max-width: calc(100% - 24px); cursor: default; }
+.rc-caja { position: absolute; border: 2px solid var(--accent); border-radius: 6px; background: rgba(226, 180, 95, 0.08); box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.35); pointer-events: none; }
+.as-form { padding-left: 6px; }
+.as-adj { width: 38px; height: 38px; border-radius: 10px; border: 0; background: none; color: var(--text-2); display: grid; place-items: center; flex: none; }
+.as-adj:hover { background: var(--plane-3); color: var(--text); }
+.as-adj svg { width: 19px; height: 19px; }
+.as-adjunto { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; align-items: start; background: var(--plane); border: 1px solid var(--line-2); border-radius: 12px; padding: 8px; }
+.as-adjunto > img { width: 64px; height: 64px; object-fit: cover; object-position: top left; border-radius: 8px; border: 1px solid var(--line-2); }
+.as-adj-txt { width: 64px; height: 64px; border-radius: 8px; background: var(--plane-2); display: grid; place-items: center; color: var(--accent); }
+.as-adjunto b { display: block; font-weight: 600; font-size: 13.5px; }
+.as-adjunto small { color: var(--muted); font-size: 12px; padding: 0; }
+.as-adj-sug { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
+.as-adj-sug button { border: 1px solid var(--line-2); background: var(--bg); color: var(--text); border-radius: 999px; padding: 4px 10px; font-size: 12.5px; }
+.as-adj-sug button:hover { border-color: var(--accent); }
+.as-yo-rec { display: grid; gap: 4px; margin-bottom: 6px; }
+.as-yo-rec img { max-width: 220px; max-height: 160px; border-radius: 8px; border: 1px solid var(--line-2); object-fit: cover; object-position: top left; }
+.as-yo-rec small { color: var(--muted); font-size: 12px; }
+@media (max-width: 420px) { #bRecorte { width: 34px; } .acciones .ib { width: 34px; } }
+
+/* ideas: quién la propone, lo que daría al año y la ficha con lo que llevas ganado al año */
+p.idea-quien { display: block; margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
+.idea-neto { margin: 0; font-size: 14px; line-height: 1.55; color: var(--text-2); padding: 9px 12px; border-radius: 10px; background: var(--plane-2); }
+.idea-neto b { font-weight: 650; }
+.ficha-anual { font-size: 13.5px; margin-top: -4px; }
+.ficha-anual b { font-weight: 600; }
+
+/* paso a paso: por qué, cómo e impuestos de cada paso */
+.ruta-dl { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 5px 10px; margin: 8px 0 0; font-size: 13.5px; line-height: 1.5; }
+.ruta-dl dt { color: var(--muted); font-weight: 500; }
+.ruta-dl dd { margin: 0; color: var(--text-2); }
+.ruta-pasos li.hecho .ruta-dl { display: none; }
+.ruta-guia { margin: 2px 0 4px; padding-left: 20px; display: grid; gap: 3px; color: var(--text-2); font-size: 14.5px; line-height: 1.5; }
+.ruta-cab p.k { font-size: 13.5px; color: var(--muted); }
+@media (max-width: 680px) { .ruta-dl { grid-template-columns: minmax(0, 1fr); gap: 0; font-size: 14px; } .ruta-dl dt { margin-top: 6px; font-size: 12.5px; } }
+
+table td.txt { white-space: normal; min-width: 260px; }
+@media (max-width: 680px) { table.resp td.txt { white-space: normal; flex: 1 0 100%; min-width: 0; } table.resp td.txt small { display: block; margin: 2px 0 0; } }
 </style>
 </head>
 <body>
@@ -1545,9 +1586,17 @@ function senal(f, M) {
     if (t.rsi >= 72) motivos.push(`Ha subido rápido en las últimas semanas (RSI ${fmtNum(t.rsi, 0)}): puede corregir a corto plazo.`);
     if (t.rsi && t.rsi <= 30) motivos.push(`Ha caído rápido en las últimas semanas (RSI ${fmtNum(t.rsi, 0)}): suele rebotar a corto plazo.`);
     if (stop && pr) motivos.push(`Tu salida está a ${precioFmt(stop)}, un ${fmtNum((1 - stop / pr) * 100, 1)} % por debajo.`);
+    const tp0 = tiempoPos(f);
+    if (tp0 && !(f.plPct > 60 && pot != null && pot < 8)) motivos.push(`La tienes desde hace ${duracion(tp0.dias)}: ${pctS(f.plPct, 0)} en total, un ${pctS(tp0.anual, 1)} al año (la bolsa suele dar un ${fmtNum(bolsaAnual(), 0)} %).`);
     if (f.plPct > 60 && pot != null && pot < 8) {
       const ya = (S.cartera.movimientos || []).filter((m) => m.tipo === 'venta' && m.instrumento === i.id && (m.resultado || 0) > 0 && diasEntre(m.fecha, hoyIso()) <= 90);
-      if (!ya.length) { motivos.unshift(`Ganas un ${fmtNum(f.plPct, 0)} % y los analistas ven poco recorrido: plantéate vender una parte y asegurar.`); return fin('recoger'); }
+      if (!ya.length) {
+        const tp = tiempoPos(f), b = bolsaAnual();
+        motivos.unshift(tp
+          ? `Ganas un ${fmtNum(f.plPct, 0)} % en ${duracion(tp.dias)}: un ${fmtNum(tp.anual, 0)} % al año${tp.anual > 2 * b ? `, ${tp.anual > 10 * b ? 'más de diez veces' : `unas ${fmtNum(tp.anual / b, 0)} veces`} lo que suele dar la bolsa` : ''}. Los analistas ven poco recorrido: plantéate vender una parte y asegurar.`
+          : `Ganas un ${fmtNum(f.plPct, 0)} % y los analistas ven poco recorrido: plantéate vender una parte y asegurar.`);
+        return fin('recoger');
+      }
       motivos.unshift(`Ya recogiste beneficios el ${fechaLarga(ya[ya.length - 1].fecha)}: lo que queda es ganancia. Protégela con una orden stop en su media de 50 sesiones.`);
     }
     if (f.peso > 10) { motivos.unshift(`Pesa un ${fmtNum(f.peso, 1)} % de tu cartera: más del 10 % en una sola empresa.`); return fin('reducir'); }
@@ -1640,6 +1689,7 @@ const ICONOS = {
   plan: SVG('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3M8 17h6"/>'),
   calc: SVG('<rect x="5" y="3" width="14" height="18" rx="2.5"/><path d="M8.5 7.5h7M8.5 12h.01M12 12h.01M15.5 12h.01M8.5 15.5h.01M12 15.5h.01M15.5 15.5h.01"/>', 1.8),
   nueva: SVG('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>', 1.8),
+  recorte: SVG('<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>', 1.8),
   enviar: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2.2),
   parar: SVG('<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>', 1.5),
   copiar: SVG('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>', 1.8),
@@ -1765,6 +1815,7 @@ function montar() {
     <span id="estado"></span>
     <div class="acciones">
       <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a la IA por tu cartera">${ICONOS.chispa}<span>Asesor</span></button>
+      <button class="ib" id="bRecorte" data-accion="recorte" title="Recorta un trozo de la pantalla y pregúntale a la IA" aria-label="Recortar la pantalla para preguntar a la IA">${ICONOS.recorte}</button>
       <button class="ib" id="bOcultar" data-accion="ocultar"></button>
       <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
     </div>
@@ -1946,11 +1997,17 @@ function eventos(M, dias = 45) {
   return ev.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
 }
 function htmlAgenda(M) {
-  const ev = eventos(M).slice(0, 8);
+  const ev0 = eventos(M), ia = iaActual(), hoy = hoyIso();
+  for (const e of (ia && ia.calendario) || []) {
+    if (!e || !e.t || !(e.d >= hoy) || diasEntre(hoy, e.d) > 75 || /aportaci/i.test(e.t)) continue;
+    const mismo = ev0.find((x) => x.d === e.d && x.tipo !== 'aportacion' && normTxt(e.t).includes(normTxt(x.t)));
+    if (mismo) { mismo.t = e.t; mismo.ia = true; } else if (!ev0.some((x) => x.d === e.d && normTxt(x.t) === normTxt(e.t))) ev0.push({ d: e.d, t: e.t, s: 'según la IA', ia: true });
+  }
+  const ev = ev0.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0)).slice(0, 9);
   if (!ev.length) return '';
   return `<section aria-labelledby="hAg">
     <div class="sec-cab"><h2 id="hAg">Próximas fechas</h2></div>
-    <ul class="lista agenda">${ev.map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><span class="k">${MESES[d.getMonth()]}</span></div><div><b>${esc(e.t)}</b><span>${esc(e.s)}</span></div><span class="r">${e.importe ? eur(e.importe, 0) : ''}</span></li>`; }).join('')}</ul>
+    <ul class="lista agenda">${ev.map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><span class="k">${MESES[d.getMonth()]}</span></div><div><b>${e.ia ? rellenarIA(e.t, {}) : esc(e.t)}</b><span>${esc(e.s)}</span></div><span class="r">${e.importe ? eur(e.importe, 0) : ''}</span></li>`; }).join('')}</ul>
   </section>`;
 }
 
@@ -1959,7 +2016,6 @@ function avisos(M) {
   for (const f of M.filas) {
     const s = f.senal;
     if (s.nivel === 'vender' && (+f.pos.stop && f.precio <= +f.pos.stop)) av.push({ n: 'bad', i: ICONOS.stop, t: `${f.inst.corto}: precio de salida alcanzado`, d: s.motivos[0] });
-    else if (s.nivel === 'recoger') av.push({ n: 'good', i: ICONOS.ok, t: `${f.inst.corto}: ${s.txt.toLowerCase()}`, d: s.motivos[0] });
     else if (+f.pos.stop && f.precio && (f.precio / +f.pos.stop - 1) * 100 < 5) av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto} se acerca a tu salida`, d: `Está a un ${fmtNum((f.precio / f.pos.stop - 1) * 100, 1)} % de ${precioFmt(+f.pos.stop)}.` });
   }
   const sueltas = M.filas.filter((f) => f.inst.tipo === 'Acción');
@@ -2082,7 +2138,7 @@ function filaExperto(f, ia, vIA = {}) {
       ${resto.length ? `<details class="mas"><summary>${resto.length === 1 ? 'Un motivo más' : `${resto.length} motivos más`}</summary><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></details>` : ''}
     </div>
     <div class="fx-op fx-claude">${c ? `<div class="fx-quien"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span><span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>${c.confianza ? `<span class="k">confianza ${esc(c.confianza)}</span>` : ''}${choca ? '<span class="chip warn">no coinciden</span>' : ''}</div>
-        <p>${rellenarIA(c.vigilar ? `Vigilar: ${c.vigilar}` : c.texto || '', vIA)}</p>` : `<div class="fx-quien"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span><span class="k">sin revisar todavía</span></div>`}
+        ${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>Vigilar.</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}` : `<div class="fx-quien"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span><span class="k">sin revisar todavía</span></div>`}
       ${htmlPrensaIA(informeDe(i.id))}
     </div>
     <div class="fx-datos">${datosExperto(f)}</div>
@@ -2127,7 +2183,7 @@ function vistaExpertos(M) {
       <div class="sec-cab"><h2 id="hPlanV">Qué haría ahora</h2><span class="k">${planes.length ? `${planes.length === 1 ? 'una posición que conviene' : planes.length + ' posiciones que conviene'} vender o recortar` : 'nada que vender'}</span></div>
       ${planes.length ? `<div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl)).join('')}</div>` : '<div class="vacio">Ninguna posición pide vender ahora mismo. Si cambia, aquí saldrá cuánto vender, cuándo, lo que se lleva Hacienda y adónde mover el dinero.</div>'}
     </section>
-    <div class="dos">${htmlVistazo(M, ia)}<aside class="lateral">${htmlFechasExpertos(M, ia)}</aside></div>`;
+    ${htmlVistazo(M, ia)}`;
   } else if (S.expTab === 'posiciones') {
     const prensa = noticiasCartera(true);
     cuerpo = `<section aria-labelledby="hSen" class="bloque-sec">
@@ -2181,6 +2237,8 @@ function puntuarIdea(x, ctx) {
   if (x.z === 'EEUU') pegas.push('cotiza en dólares: el cambio euro/dólar también cuenta');
   const tc = tasaRadar(x);
   if (tc) pegas.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
+  const fis = fiscalidadSede(origenRadar(x).sede);
+  if (x.div >= 1.5 && fis.pierde > 0) { p -= 0.05 * (x.div * fis.pierde) / 10; pegas.push(`sus dividendos pierden un ${fmtNum(fis.pierde, 1)} % por la retención de ${PAISES[origenRadar(x).sede]}`); }
   return { ...x, puntos: p, motivos, pegas, ctr };
 }
 function ctxIdeas(M) {
@@ -2202,7 +2260,7 @@ function mejoresIdeas(M, excluir = {}) {
   return out;
 }
 
-const ORDEN_RADAR = { pot: ['Potencial', (x) => x.pot ?? -999], ctr: ['Contraste', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
+const ORDEN_RADAR = { pot: ['Potencial', (x) => x.pot ?? -999], neto: ['Neto al año', (x) => x._neto ?? -999], ctr: ['Contraste', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
 const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? 'p' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
 /* ---------- informe de prensa de Gemini (informe.json, rama datos) ----------
    Lo escribe la Action cada 2 horas con las noticias de tus posiciones, del mercado y de las mejores
@@ -2287,8 +2345,43 @@ function ideasJuntas(M, ia) {
   const d = S.escaneo && S.escaneo.decision;
   for (const i of (d && d.ideas) || []) if (i && i.s) add(i.s, i.n, { gem: i });
   for (const x of (ia && Array.isArray(ia.ideas) ? ia.ideas : [])) if (x && x.nombre) add(x.ticker || x.nombre, x.nombre, { tuya: x });
-  return [...mapa.values()].map((x) => ({ ...x, votos: (x.web ? 1 : 0) + (x.gem ? 1 : 0) + (x.tuya ? 1 : 0) }))
-    .sort((a, b) => b.votos - a.votos || (b.gem ? 1 : 0) - (a.gem ? 1 : 0) || (a.web ? a.web.puesto : 9) - (b.web ? b.web.puesto : 9));
+  return [...mapa.values()].map((x) => { const y = { ...x, votos: (x.web ? 1 : 0) + (x.gem ? 1 : 0) + (x.tuya ? 1 : 0) }; y.esp = esperadaIdea(y); return y; })
+    .sort((a, b) => b.votos - a.votos || ((b.esp && b.esp.prin.netoAnual) || -999) - ((a.esp && a.esp.prin.netoAnual) || -999));
+}
+/* lo que puede dar cada idea y en cuánto tiempo: el objetivo de los analistas es a 12 meses; si Gemini
+   (o tu análisis) ha estimado su propio plazo por un catalizador, manda el suyo */
+function esperadaIdea(x) {
+  const r = x.r; if (!r || r.pot == null) return null;
+  const g = [x.gem, x.tuya].find((y) => y && y.subida_pct != null && +y.plazo_meses > 0);
+  const ana = rentaEsperada(r, r.pot, 12, `objetivo de ${r.na || 'los'} analistas`);
+  const ia = g ? rentaEsperada(r, +g.subida_pct, +g.plazo_meses, g === x.gem ? 'Gemini' : 'tu análisis') : null;
+  return { ana, ia, prin: ia || ana };
+}
+function quienIdea(x) {
+  const w = x.web ? `la web (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})` : null;
+  const g = x.gem ? `Gemini en su escaneo de prensa (confianza ${esc(x.gem.confianza || 'media')})` : null;
+  const t = x.tuya ? `tu análisis de Gemini${x.tuya.importe ? `, con ${eur(+x.tuya.importe, 0)}` : ''}` : null;
+  const p = [w, g, t].filter(Boolean);
+  let txt = `La propone ${p.length === 1 ? p[0] : `${p.slice(0, -1).join(', ')} y ${p[p.length - 1]}`}.`;
+  if (x.tuya && (x.web || x.gem)) txt += ' Tu análisis tiene delante las otras listas: más que un voto aparte, es una segunda revisión con las noticias.';
+  return txt;
+}
+function htmlNetoIdea(e) {
+  if (!e) return '';
+  const b = bolsaAnual(), p = e.prin;
+  const al = (z) => `<b class="${cls(z.netoAnual)}">${pctS(z.netoAnual, 0)} al año</b>`;
+  const linea = e.ia
+    ? `${esc(e.ia.fuente.charAt(0).toUpperCase() + e.ia.fuente.slice(1))} espera ${pctS(e.ia.subida, 0)} en ${plazoTxt(e.ia.meses)}: neto de impuestos, ${al(e.ia)}. Con el objetivo de los analistas (${pctS(e.ana.subida, 0)} a 12 meses) serían ${al(e.ana)}.`
+    : `Si llega al objetivo de los analistas (${pctS(e.ana.subida, 0)} en 12 meses${e.ana.divP ? `, más ${fmtNum(e.ana.divP, 1)} % de dividendo` : ''}): neto de impuestos, ${al(e.ana)}.`;
+  return `<p class="idea-neto">${linea} <span class="k">Tu fondo indexado: un ${fmtNum(b, 0)} % al año${p.netoAnual != null && p.netoAnual < b ? ', y esta no lo mejora' : ''}.</span></p>`;
+}
+function htmlFiscalIdea(r, e) {
+  if (!r) return '';
+  const o = origenRadar(r), fis = fiscalidadSede(o.sede), tasa = tasaRadar(r), t = e ? e.prin.t : tramoAhorro();
+  const partes = [`al vender pagas el ${fmtNum(t * 100, 0)} % de lo que ganes (tu tramo de este año)`];
+  if (r.div > 0.3) partes.push(fis.txt.replace(/^Dividendos: /, `su dividendo del ${fmtNum(r.div, 1)} %: `));
+  partes.push(tasa ? `al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${tasa.nombre}` : 'sin tasa al comprar');
+  return `<p class="idea-linea"><b>Impuestos.</b> ${esc(partes.map((x) => x.replace(/\.\s*$/, '')).join('; ').replace(/^./, (c) => c.toUpperCase()))}.</p>`;
 }
 function tarjetaIdea(x, ctx) {
   const r = x.r;
@@ -2296,26 +2389,24 @@ function tarjetaIdea(x, ctx) {
   const ctr = pu ? pu.ctr : r && r.p ? contraste(r) : null;
   const T = (t) => rellenarIA(t || '', {});
   const de = (k) => (x.gem && x.gem[k] ? escIA(x.gem[k]) : x.tuya && x.tuya[k] ? T(limpiaIA(x.tuya[k])) : '');
-  const quien = [];
-  if (x.web) quien.push(`<span class="quien">La web: ${x.web.puesto === 1 ? 'la mejor contrastada' : `la ${x.web.puesto}.ª mejor contrastada`}</span>`);
-  if (x.gem) quien.push(`<span class="quien">Gemini la elige, confianza ${esc(x.gem.confianza || 'media')}</span>`);
-  if (x.tuya) quien.push(`<span class="quien">Tu análisis la propone${x.tuya.importe ? ` con ${eur(+x.tuya.importe, 0)}` : ''}</span>`);
   const motivos = pu ? pu.motivos.slice(0, 3).join(', ') : '';
   const tesis = de('tesis') || (motivos ? esc(motivos.charAt(0).toUpperCase() + motivos.slice(1)) + '.' : '');
+  const pegas = pu ? pu.pegas.filter((p) => !p.startsWith('al comprar pagas') && !p.startsWith('sus dividendos pierden')).slice(0, 2) : [];
+  const contra = [de('riesgo'), ...pegas.map((p) => esc(p.charAt(0).toUpperCase() + p.slice(1)))].filter(Boolean).map((x) => x.replace(/\.\s*$/, '')).join('. ');
   const fuentes = [...((x.gem && x.gem.fuentes) || []), ...((x.tuya && x.tuya.fuentes) || [])];
   const prensa = !x.gem && informeIdea(x.s);
   return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}">
-    <header>${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r && r.pais ? bandera(PAIS_DE_NOMBRE[r.pais]) + ' ' : ''}${esc([r && r.sector, r ? r.z : x.s].filter(Boolean).join(', '))}</small></div>${x.votos > 1 ? `<span class="chip good">${x.votos === 3 ? 'las tres coinciden' : 'coinciden dos'}</span>` : ''}</header>
-    <div class="idea-quien">${quien.join('')}</div>
-    ${r && r.p ? `<div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + r.s)}</div><div><span class="k">Hasta el objetivo</span>${B('ro:' + r.s)}</div><div><span class="k">Contraste</span>${ctr ? htmlContraste(ctr, true) : '—'}</div></div>` : ''}
-    ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
-    ${de('catalizador') ? `<p class="idea-linea"><b>Qué la puede mover.</b> ${de('catalizador')}</p>` : ''}
-    ${de('riesgo') ? `<p class="idea-linea"><b>Riesgo.</b> ${de('riesgo')}</p>` : ''}
-    ${pu && pu.pegas.length ? `<p class="idea-pega"><b>Pegas.</b> ${esc((([p0, ...pr]) => [p0.charAt(0).toUpperCase() + p0.slice(1), ...pr])(pu.pegas.slice(0, 3)).join('; '))}.</p>` : ''}
-    ${prensa ? htmlPrensaIA(prensa) : ''}
-    ${ctr ? `<details class="mas"><summary>Las siete señales, una a una</summary>${htmlContrasteLista(ctr)}</details>` : ''}
-    ${enlacesFuentes(fuentes, 4)}
-    <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, con qué impuesto y con qué regla de salida.`)}">${ICONOS.chispa}¿Cuánto meto?</button>
+    <header>${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? lineaOrigen(r) : esc(x.s)}</small></div></header>
+    <p class="idea-quien">${quienIdea(x)}</p>
+    ${r && r.p ? `<div class="idea-cifras"><div><span class="k">Precio</span>${B('rp:' + r.s)}</div><div><span class="k">Objetivo a 12 meses</span>${B('ro:' + r.s)}</div><div><span class="k">Contraste</span>${ctr ? htmlContraste(ctr, true) : '—'}</div></div>` : ''}
+    ${htmlNetoIdea(x.esp)}
+    ${tesis ? `<p class="idea-linea"><b>Por qué.</b> ${tesis}</p>` : ''}
+    ${de('catalizador') ? `<p class="idea-linea"><b>Cuándo.</b> ${de('catalizador')}</p>` : ''}
+    ${contra ? `<p class="idea-linea"><b>En contra.</b> ${contra.replace(/\.?$/, '.')}</p>` : ''}
+    ${prensa && prensa.novedades ? `<p class="idea-linea"><b>Prensa.</b> ${chipImpacto(prensa.impacto)}${escIA(prensa.novedades)}</p>` : ''}
+    ${htmlFiscalIdea(r, x.esp)}
+    ${ctr || fuentes.length ? `<details class="mas"><summary>Las siete señales${fuentes.length ? ' y las fuentes' : ''}</summary>${ctr ? htmlContrasteLista(ctr) : ''}${enlacesFuentes(fuentes, 4)}</details>` : ''}
+    <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.chispa}¿Cuánto meto?</button>
   </article>`;
 }
 function htmlEvitar() {
@@ -2330,7 +2421,7 @@ function htmlIdeas(M, ia) {
   const juntas = ideasJuntas(M, ia).slice(0, 6);
   const ctx = ctxIdeas(M);
   const d = S.escaneo && S.escaneo.decision;
-  let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => ({ ...x, _ctr: contraste(x) }));
+  let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => { const e = rentaEsperada(x, x.pot, 12); return { ...x, _ctr: contraste(x), _neto: e ? e.netoAnual : null }; });
   if (S.radarSolidas) v = v.filter((x) => x._ctr.favor >= 4 && x._ctr.contra <= 1);
   const [, clave] = ORDEN_RADAR[S.radarOrden] || ORDEN_RADAR.pot;
   v = v.sort((a, b) => clave(b) - clave(a));
@@ -2342,17 +2433,17 @@ function htmlIdeas(M, ia) {
   return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen la web, Gemini y tu análisis</span></div>
     ${d && d.comentario ? `<p class="idea-panorama"><b>Gemini</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x) => tarjetaIdea(x, ctx)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
-    <p class="nota">La web elige las tres mejor contrastadas: consenso de compra, recorrido hasta el objetivo, al menos 3 de las 7 señales a favor y que no repitan lo que ya llevan tus fondos. Gemini lee la prensa del radar y elige por su cuenta. Si coinciden, la tarjeta va primero. Las barras de contraste: verde a favor, rojo en contra, gris neutral.</p>
+    <p class="nota">La web elige las tres mejor contrastadas: consenso de compra, recorrido hasta el objetivo, al menos 3 de las 7 señales a favor y que no repitan lo que ya llevan tus fondos. Gemini lee la prensa del radar y elige por su cuenta. Primero van las que eligen dos o más; después, de más a menos de lo que darían al año, netas de impuestos. Las barras de contraste: verde a favor, rojo en contra, gris neutral.</p>
     ${htmlEvitar()}
     <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
       <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
-    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial')}${th('ctr', 'Contraste', '')}<th>Prensa</th>${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
-    ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${x.pais ? bandera(PAIS_DE_NOMBRE[x.pais]) + ' ' : ''}${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</small></td>
+    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial 12 m')}${th('neto', 'Neto al año')}${th('ctr', 'Contraste', '')}<th>Prensa</th>${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
+    ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${lineaOrigen(x)}</small></td>
       <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
-      <td class="r">${B('ro:' + x.s)}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
+      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Si llega al objetivo en 12 meses, con su dividendo, menos la tasa de compra, la retención que no se recupera y tu tramo del ahorro">${x._neto == null ? '—' : pctS(x._neto, 0)}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     ${total > 20 ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? 'Ver solo las 20 primeras' : `Ver las ${total}`}</button>` : ''}
     <p class="nota">Potencial: lo que queda hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Prensa: lo que ha leído Gemini en sus noticias. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio.</p>`;
@@ -2403,7 +2494,7 @@ function vistaMercados() {
 }
 
 /* =========================== Análisis =========================== */
-const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'Análisis IA'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas'], ['impuestos', 'Impuestos']];
+const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'Análisis IA'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas'], ['impuestos', 'Fiscalidad']];
 /* =====================================================================
    Paso a paso: qué hacer con la cartera este mes, en 6 meses, en un año y de 1 a 5 años.
    Los pasos de la web salen de sus cálculos (planes de venta, fechas, impuestos, aportaciones y
@@ -2428,13 +2519,15 @@ function pasosRuta(M) {
     const destino = [pl.aIdea > 0 && pl.ideas[0] ? `${eur(pl.aIdea, 0)} a ${esc(pl.ideas[0].n)}` : '', pl.aNucleo > 0.5 ? `${eur(pl.aNucleo, 0)} al S&P 500` : ''].filter(Boolean).join(' y ');
     add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
       t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
-      det: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} y pagas unos ${eur(pl.impuesto, 0)} en la renta de ${anio}.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}.`}${destino ? ` Después: ${destino}${pl.impuesto > 0 ? `, y aparta ${eur(pl.impuesto, 0)} para Hacienda` : ''}.` : ''}`,
+      pq: esc(f.senal.motivos[0] || ''),
+      como: `${esc(pl.cuando[0].replace(/^Ya: /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? ` Con lo que cobres: ${destino}.` : ''}`,
+      imp: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año.`}`,
       acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>` });
   }
   // 2. tus reglas de salida cerca
   for (const f of M.filas) {
     const stop = +f.pos.stop;
-    if (stop && f.precio && f.precio > stop && (f.precio / stop - 1) * 100 < 6) add('mes', { id: `stop:${f.pos.id}:${hoy.slice(0, 7)}`, urgente: true, cuando: 'vigila', t: `${esc(f.inst.corto)} está a un ${fmtNum((f.precio / stop - 1) * 100, 1)} % de tu precio de salida`, det: `Tu regla: vender si cierra por debajo de ${precioFmt(stop)}. Pon la orden stop si no la tienes.` });
+    if (stop && f.precio && f.precio > stop && (f.precio / stop - 1) * 100 < 6) add('mes', { id: `stop:${f.pos.id}:${hoy.slice(0, 7)}`, urgente: true, cuando: 'vigila', t: `${esc(f.inst.corto)} está a un ${fmtNum((f.precio / stop - 1) * 100, 1)} % de tu precio de salida`, pq: `Tu regla de salida: si cierra por debajo de ${precioFmt(stop)}, la tesis se ha roto y se vende.`, como: `En ${esc(f.pos.plataforma || 'tu bróker')}: orden stop de venta a ${precioFmt(stop)} para toda la posición, si no la tienes ya.` });
   }
   // 3. fechas de tus empresas: resultados y dividendos
   const vistos = new Set();
@@ -2443,24 +2536,24 @@ function pasosRuta(M) {
     const p = f.p || {};
     if (p.proximos_resultados && p.proximos_resultados >= hoy) {
       const pz = plazoDe(p.proximos_resultados);
-      if (pz === 'mes' || pz === 'seis') add(pz, { id: `res:${f.inst.id}:${p.proximos_resultados}`, d: p.proximos_resultados, cuando: fechaCorta(p.proximos_resultados), t: `Resultados de ${esc(f.inst.corto)}`, det: `Suele moverse mucho ese día. Mira si cambian las previsiones y si se cumple lo que esperabas al comprarla.`, acc: `<button class="enlace" data-pos="${esc(f.pos.id)}">Abrir su ficha</button>` });
+      if (pz === 'mes' || pz === 'seis') add(pz, { id: `res:${f.inst.id}:${p.proximos_resultados}`, d: p.proximos_resultados, cuando: fechaCorta(p.proximos_resultados), t: `Resultados de ${esc(f.inst.corto)}`, pq: 'Es el día que más se mueve: se ve si la razón por la que la compraste sigue en pie.', como: `Ese día abre su ficha: mira cómo reacciona el precio, si suben o bajan las previsiones y si los analistas cambian el objetivo. Si rompe tu salida${+f.pos.stop ? ` (${precioFmt(+f.pos.stop)})` : ''}, vende.`, acc: `<button class="enlace" data-pos="${esc(f.pos.id)}">Abrir su ficha</button>` });
     }
     if (p.ex_dividendo && p.ex_dividendo >= hoy && p.dividendo_pct) {
       const pz = plazoDe(p.ex_dividendo);
-      if (pz === 'mes' || pz === 'seis') add(pz, { id: `div:${f.inst.id}:${p.ex_dividendo}`, d: p.ex_dividendo, cuando: fechaCorta(p.ex_dividendo), t: `Dividendo de ${esc(f.inst.corto)}`, det: `Para cobrarlo tienes que tenerla al cierre del ${fechaLarga(iso(new Date(deIso(p.ex_dividendo).getTime() - 86400000)))}. Unos ${eur((f.valor * p.dividendo_pct) / 100 / (f.inst.pais === 'GB' || f.inst.pais === 'US' ? 4 : 2), 0)} brutos.` });
+      if (pz === 'mes' || pz === 'seis') add(pz, { id: `div:${f.inst.id}:${p.ex_dividendo}`, d: p.ex_dividendo, cuando: fechaCorta(p.ex_dividendo), t: `Dividendo de ${esc(f.inst.corto)}`, ...(() => { const bruto = (f.valor * p.dividendo_pct) / 100 / (f.inst.pais === 'GB' || f.inst.pais === 'US' ? 4 : 2), fis = fiscalidadSede(f.inst.pais, f.inst.tipo), neto = bruto * (1 - tramoAhorro() - (fis.pierde || 0) / 100); return { pq: `Unos ${eur(bruto, 0)} brutos, ${eur(neto, 0)} netos tras impuestos.`, como: `Nada: si la tienes al cierre del ${fechaLarga(iso(new Date(deIso(p.ex_dividendo).getTime() - 86400000)))}, cobras. No compres más solo por el dividendo: ese día el precio baja más o menos lo que paga.`, imp: esc(fis.txt.replace(/^Dividendos: /, '')) }; })() });
     }
   }
   // 4. datos que le faltan a la web
   const fa = fiscalAnio(anio);
-  if (!fa.otras && !fa.rcm) add('mes', { id: `fiscal:${anio}`, cuando: 'cuando puedas', t: `Apunta tus datos fiscales de ${anio}`, det: 'Las ventas que hiciste fuera de la web (con su ganancia o pérdida) y los dividendos e intereses cobrados. Sin eso, los impuestos de cada consejo salen más altos de lo que son.', acc: `<button class="enlace" data-accion="fiscal">Apuntarlos</button>` });
+  if (!fa.otras && !fa.rcm) add('mes', { id: `fiscal:${anio}`, cuando: 'cuando puedas', t: `Apunta tus datos fiscales de ${anio}`, pq: 'Sin ellos, el impuesto de cada consejo de la web sale más alto o más bajo de lo que es.', como: 'Análisis, Fiscalidad, botón "Datos fiscales": las ventas que hiciste fuera de la web (ganancia o pérdida), los dividendos e intereses cobrados y lo que ya te retuvieron. Son dos minutos.', acc: `<button class="enlace" data-accion="fiscal">Apuntarlos</button>` });
   const est = M.filas.filter((f) => f.estimada);
-  if (est.length) add('mes', { id: `exactas:${est.map((f) => f.pos.id).join(',')}`, cuando: 'cuando puedas', t: `Pon las participaciones exactas de ${est.length === 1 ? esc(est[0].inst.corto) : `${est.length} posiciones`}`, det: `${esc(est.map((f) => f.inst.corto).join(', '))} están estimadas. Con las exactas (salen en tu bróker) todo cuadra al céntimo.`, acc: `<a class="enlace" href="#plan">Ir a Plan</a>` });
+  if (est.length) add('mes', { id: `exactas:${est.map((f) => f.pos.id).join(',')}`, cuando: 'cuando puedas', t: `Pon las participaciones exactas de ${est.length === 1 ? esc(est[0].inst.corto) : `${est.length} posiciones`}`, pq: `${esc(est.map((f) => f.inst.corto).join(', '))} están estimadas: con las exactas cuadran al céntimo el valor, la ganancia y los impuestos.`, como: 'Mira las participaciones en la app de tu bróker y ponlas en Plan, Posiciones, Editar, Cantidad.', acc: `<a class="enlace" href="#plan">Ir a Plan</a>` });
   // 5. aportaciones automáticas
   const act = aportacionesActivas();
   const total = sum(act, ({ a }) => +a.importe || 0);
   if (total > 0) {
     const prox = act.flatMap(({ a }) => fechasAportacion({ ...a, desde: a.desde > hoy ? a.desde : hoy }, iso(new Date(Date.now() - 86400000)), iso(new Date(Date.now() + 31 * 86400000))).map((d) => ({ d, a }))).sort((x, y) => (x.d < y.d ? -1 : 1));
-    if (prox.length) add('mes', { id: `aport:${prox[0].d}`, d: prox[0].d, cuando: fechaCorta(prox[0].d), auto: true, t: `Entran ${eur(sum(prox, (x) => +x.a.importe || 0), 0)} de tus aportaciones`, det: `${esc([...new Set(prox.map((x) => `${nombreInst(x.a.instrumento)} el ${fechaCorta(x.d)}`))].join(', '))}. Van solas: solo comprueba que tienes saldo en la cuenta.` });
+    if (prox.length) add('mes', { id: `aport:${prox[0].d}`, d: prox[0].d, cuando: fechaCorta(prox[0].d), auto: true, t: `Entran ${eur(sum(prox, (x) => +x.a.importe || 0), 0)} de tus aportaciones`, det: `${esc([...new Set(prox.map((x) => `${nombreInst(x.a.instrumento)} el ${fechaCorta(x.d)}`))].join(', '))}.`, como: 'Van solas: solo comprueba el día antes que tienes saldo en la cuenta.' });
     add('seis', { id: `aport6:${hoy.slice(0, 7)}`, cuando: 'cada mes', auto: true, t: `Sigue aportando: ${eur(total * 6, 0)} en 6 meses`, det: `Son ${eur(total, 0)} al mes. No las pares si la bolsa cae: comprar barato en las caídas es lo que más suma a largo plazo.` });
   }
   // 6. fin de año: compensar pérdidas
@@ -2472,25 +2565,25 @@ function pasosRuta(M) {
       const ahorro = fiscalAnio(anio, ganPrevista).cuota - fiscalAnio(anio, ganPrevista + x.g).cuota;
       if (ahorro < 15) continue;
       const cripto = x.f.inst.clase === 'Cripto';
-      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Plantéate vender ${esc(x.f.inst.corto)} con pérdidas para pagar menos`, det: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de tus ganancias${ganPrevista ? ' (contando la venta que propone la web)' : ''}` : 'compensa hasta un 25 % de tus dividendos'}: unos ${eur(ahorro, 0)} menos en la renta. ${cripto ? 'En cripto puedes volver a comprar enseguida (no se aplica la regla de los dos meses, aunque hay quien defiende esperar un año).' : 'Si lo recompras, espera dos meses o la pérdida no cuenta.'}`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>` });
+      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Plantéate vender ${esc(x.f.inst.corto)} con pérdidas para pagar menos`, pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de tus ganancias${ganPrevista ? ' (contando la venta que propone la web)' : ''}` : 'compensa hasta un 25 % de tus dividendos'}.`, como: cripto ? `Véndelo en ${esc(x.f.pos.plataforma || 'tu plataforma')} antes del 31 de diciembre. Si quieres seguir dentro, puedes recomprar enseguida: en cripto no se aplica la regla de los dos meses (hay quien defiende esperar un año).` : 'Véndela antes del 31 de diciembre y no la recompres en dos meses, o la pérdida no cuenta.', imp: `Unos ${eur(ahorro, 0)} menos en la renta de ${anio}.`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>` });
     }
   }
   // 7. colchón que rinde poco
   for (const f of M.filas.filter((f) => f.inst.clase === 'Renta fija' && /^Fondo/.test(f.inst.tipo || ''))) {
     const r1 = f.p && f.p.rent && f.p.rent['1a'];
-    if (r1 != null && r1 < 2) add('seis', { id: `colchon:${f.pos.id}:${anio}`, cuando: 'sin prisa', t: `Mira si te compensa cambiar ${esc(f.inst.corto)} por un monetario`, det: `Ha dado un ${fmtNum(r1, 1)} % en un año, menos que un fondo monetario, que va pegado al tipo del BCE. Entre fondos de MyInvestor es un traspaso: no pagas impuestos.`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Qué fondo monetario de MyInvestor me conviene para el colchón en vez de ${f.inst.nombre || f.inst.corto}? Compara rentabilidad y gastos.`)}">Pregúntale a la IA</button>` });
+    if (r1 != null && r1 < 2) add('seis', { id: `colchon:${f.pos.id}:${anio}`, cuando: 'sin prisa', t: `Mira si te compensa cambiar ${esc(f.inst.corto)} por un monetario`, pq: `Ha dado un ${fmtNum(r1, 1)} % en un año, menos que un fondo monetario, que va pegado al tipo del BCE.`, como: `En MyInvestor: Traspasar, desde ${esc(f.inst.corto)} a un fondo monetario. Pregúntale a la IA cuál antes.`, imp: 'Entre fondos es un traspaso: no pagas nada.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Qué fondo monetario de MyInvestor me conviene para el colchón en vez de ${f.inst.nombre || f.inst.corto}? Compara rentabilidad y gastos.`)}">Pregúntale a la IA</button>` });
   }
   // 8. renta y modelos informativos
   const informe = `${anio + 1}-02-15`, renta = `${anio + 1}-04-08`;
-  add(plazoDe(informe) || 'seis', { id: `informe:${anio}`, d: informe, cuando: 'enero-febrero', t: `Descarga el informe fiscal de ${anio} de Trade Republic`, det: 'En la app: Perfil, Impuestos. Compáralo con las ventas de la web antes de la renta.' });
-  add(plazoDe(renta) || 'seis', { id: `renta:${anio}`, d: renta, cuando: 'abril-junio', t: `Haz la renta de ${anio}`, det: `Con lo que llevas, unos ${eur(fiscalAnio(anio, ganPrevista).cuota, 0)} de cuota en la base del ahorro${ganPrevista ? ' contando la venta que propone la web' : ''}${fa.retenido ? `, menos ${eur(fa.retenido, 0)} ya retenidos` : ''}. Revisa en el borrador que estén tus ventas y dividendos.`, acc: `<button class="enlace" data-calif="impuestos">Ver tus impuestos</button>` });
+  add(plazoDe(informe) || 'seis', { id: `informe:${anio}`, d: informe, cuando: 'enero-febrero', t: `Descarga el informe fiscal de ${anio} de Trade Republic`, pq: 'Trae tus ventas, dividendos e intereses del año tal y como los ve Hacienda.', como: 'En la app: Perfil, Impuestos. Compáralo con Análisis, Fiscalidad antes de hacer la renta.' });
+  add(plazoDe(renta) || 'seis', { id: `renta:${anio}`, d: renta, cuando: 'abril-junio', t: `Haz la renta de ${anio}`, pq: `Con lo que llevas, unos ${eur(fiscalAnio(anio, ganPrevista).cuota, 0)} de cuota en la base del ahorro${ganPrevista ? ' contando la venta que propone la web' : ''}${fa.retenido ? `, menos ${eur(fa.retenido, 0)} ya retenidos` : ''}.`, como: 'En Renta Web, revisa que el borrador tenga tus ventas, dividendos e intereses; si falta algo, añádelo con los informes de tus brókeres. Los dividendos extranjeros llevan la deducción por doble imposición.', acc: `<button class="enlace" data-calif="impuestos">Ver tu fiscalidad</button>` });
   const tr = sum(M.filas.filter((f) => f.pos.plataforma === 'Trade Republic'), (f) => f.valor) + sum(M.efectivo.filter((e) => e.plataforma === 'Trade Republic'), (e) => e.importe);
   if (tr > 40000) add('seis', { id: `m720:${anio}`, d: `${anio + 1}-03-15`, cuando: 'antes del 31 mar', t: tr > 50000 ? 'Presenta el modelo 720' : 'Vigila el modelo 720', det: `Tienes ${eur(tr, 0)} en Trade Republic. Por encima de 50.000 € a 31 de diciembre hay que declararlo entre enero y marzo.` });
   // 9. ideas si hay hueco y no hay ya una venta que lo use
   const sueltas = sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor);
   const lim = (+(S.cartera.limite_acciones || 20) / 100) * M.total;
   const top = mejoresIdeas(M).find((x) => x.ctr.favor >= 4);
-  if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres una apuesta nueva: ${esc(top.n)}`, det: `Te caben ${eur(lim - sueltas, 0)} en acciones sueltas. Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor). Antes de comprar, que la IA la contraste con las noticias.`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>` });
+  if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres una apuesta nueva: ${esc(top.n)}`, pq: `Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor)${(() => { const e = rentaEsperada(top, top.pot, 12); return e ? `: si llega al objetivo, un ${pctS(e.netoAnual, 0)} al año neto de impuestos` : ''; })()}. Te caben ${eur(lim - sueltas, 0)} en acciones sueltas.`, como: 'Antes de comprar, que la IA la contraste con las noticias de la semana y te diga cuánto meter.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>` });
   // 10. a un año y más: proyección, hueco que se abre y revisión
   let pr = null; try { pr = proyeccion(M); } catch (e) {}
   if (pr) {
@@ -2513,7 +2606,7 @@ function pasosRuta(M) {
       if (!x || !x.t) continue;
       const d = /^\d{4}-\d{2}-\d{2}$/.test(x.d || '') ? x.d : null;
       if (d && d < hoy) continue;
-      P[pz].push({ fuente: 'ia', id: 'ia:' + normTxt(x.t).slice(0, 60), d, cuando: d ? fechaCorta(d) : '', t: rellenarIA(x.t, v), det: rellenarIA(x.detalle || '', v), autor: ia.autor });
+      P[pz].push({ fuente: 'ia', id: 'ia:' + normTxt(x.t).slice(0, 60), d, cuando: d ? fechaCorta(d) : '', t: rellenarIA(x.t, v), pq: x.por_que ? rellenarIA(x.por_que, v) : '', como: x.como ? rellenarIA(x.como, v) : '', det: x.por_que || x.como ? '' : rellenarIA(x.detalle || '', v), autor: ia.autor });
     }
   }
   const hechos = (S.cartera.ruta && S.cartera.ruta.hechos) || {};
@@ -2531,15 +2624,18 @@ function htmlRuta(M) {
   const ia = iaActual();
   const paso = (x) => `<li class="${x.hecho ? 'hecho' : ''}${x.urgente && !x.hecho ? ' urgente' : ''}">
       <button class="ruta-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"></button>
-      <div>${x.cuando || x.fuente === 'ia' ? `<div class="ruta-meta">${x.cuando ? `<span class="fecha">${esc(x.cuando)}</span>` : ''}${x.fuente === 'ia' ? `<span class="chip info">${esc(x.autor || 'IA')}</span>` : ''}</div>` : ''}
-        <b>${x.t.replace(/ €/g, '\u00a0€')}</b>${x.det ? `<p>${x.det}</p>` : ''}${x.acc && !x.hecho ? `<div class="ruta-acc">${x.acc}</div>` : ''}</div>
+      <div>${x.cuando || x.fuente === 'ia' || x.auto ? `<div class="ruta-meta">${x.cuando ? `<span class="fecha">${esc(x.cuando)}</span>` : ''}${x.fuente === 'ia' ? `<span class="chip info">${esc(x.autor || 'IA')}</span>` : ''}${x.auto ? '<span class="chip">va solo</span>' : ''}</div>` : ''}
+        <b>${x.t.replace(/ €/g, '\u00a0€')}</b>${x.det ? `<p>${x.det}</p>` : ''}
+        ${x.pq || x.como || x.imp ? `<dl class="ruta-dl">${x.pq ? `<dt>Por qué</dt><dd>${x.pq}</dd>` : ''}${x.como ? `<dt>Cómo</dt><dd>${x.como}</dd>` : ''}${x.imp ? `<dt>Impuestos</dt><dd>${x.imp}</dd>` : ''}</dl>` : ''}
+        ${x.acc && !x.hecho ? `<div class="ruta-acc">${x.acc}</div>` : ''}</div>
     </li>`;
   return `<div class="ruta-cab">
       ${primero ? `<p class="ruta-ya">Lo primero: ${(() => { const t = primero.t.replace(/<[^>]+>/g, ''); return t.charAt(0).toLowerCase() + t.slice(1); })()}${primero.cuando ? `, ${esc(primero.cuando)}` : ''}.</p>` : '<p class="ruta-ya">Este mes no hay nada urgente: deja que trabajen tus aportaciones.</p>'}
-      <p>Los pasos salen de los cálculos de la web y se recalculan con cada precio${ia && ia.hoja_de_ruta ? `; los marcados con ${esc(ia.autor || 'IA')} vienen de la última revisión de la IA` : '. Con la IA conectada, añade los suyos en cada revisión'}. Márcalos al hacerlos: se guarda en tu cartera cifrada.</p>
+      <ol class="ruta-guia"><li>Ve de arriba abajo: cada plazo empieza por lo urgente.</li><li>Cada paso te dice por qué, cómo hacerlo y lo que paga a Hacienda.</li><li>Cuando lo hagas, toca su círculo: se tacha y se guarda en tu cartera cifrada.</li></ol>
+      <p class="k">Los pasos sin etiqueta los calcula la web con tus números y cambian solos con cada precio. Los que llevan ${ia && ia.hoja_de_ruta ? `la etiqueta ${esc(ia.autor || 'IA')} los propone Gemini tras leer las noticias` : 'la etiqueta de la IA los propone Gemini tras leer las noticias, cuando la conectes'}. "Va solo" quiere decir que no tienes que hacer nada.</p>
     </div>
     <div class="plazos" role="group" aria-label="Plazo">${PLAZOS.map(([k, t]) => { const n = P[k].filter((x) => !x.hecho).length; return `<button data-plazo="${k}" aria-pressed="${S.rutaPlazo === k}">${PLAZO_CORTO[k]}${n ? `<span class="cuenta">${n}</span>` : ''}</button>`; }).join('')}</div>
-    <div class="ruta" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(([k, t]) => `<section class="ruta-col" data-p="${k}" aria-labelledby="hRuta-${k}"><header><h3 id="hRuta-${k}">${t}</h3><span class="k">${sub[k]}</span></header>
+    <div class="ruta" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(([k, t]) => `<section class="ruta-col" data-p="${k}" aria-labelledby="hRuta-${k}"><header><h3 id="hRuta-${k}">${t}</h3><span class="k">${sub[k]}${(() => { const n = P[k].filter((x) => !x.auto).length, h = P[k].filter((x) => !x.auto && x.hecho).length; return n ? `, ${h} de ${n} hechos` : ''; })()}</span></header>
       ${P[k].length ? `<ol class="ruta-pasos">${P[k].map(paso).join('')}</ol>` : '<div class="ruta-vacio">Nada que hacer en este plazo.</div>'}</section>`).join('')}</div>`;
 }
 async function marcarRuta(id) {
@@ -2806,8 +2902,17 @@ window.addEventListener('resize', () => { clearTimeout(rsT); rsT = setTimeout(()
    El logo es el icono de la web de la empresa o la gestora (servicio de iconos de Google);
    si no carga, se ven las iniciales. Las banderas, de flagcdn.com.
    ===================================================================== */
-const PAISES = { ES: 'España', GB: 'Reino Unido', IE: 'Irlanda', LU: 'Luxemburgo', JE: 'Jersey', US: 'EEUU', DE: 'Alemania', FR: 'Francia', NL: 'Países Bajos', IT: 'Italia', CH: 'Suiza', DK: 'Dinamarca', BE: 'Bélgica', SE: 'Suecia', FI: 'Finlandia', PT: 'Portugal', JP: 'Japón', CA: 'Canadá' };
-const PAIS_DE_NOMBRE = { Spain: 'ES', 'United Kingdom': 'GB', Ireland: 'IE', Luxembourg: 'LU', Jersey: 'JE', 'United States': 'US', Germany: 'DE', France: 'FR', Netherlands: 'NL', Italy: 'IT', Switzerland: 'CH', Denmark: 'DK', Belgium: 'BE', Sweden: 'SE', Finland: 'FI', Portugal: 'PT', Japan: 'JP', Canada: 'CA' };
+const PAISES = { ES: 'España', GB: 'Reino Unido', IE: 'Irlanda', LU: 'Luxemburgo', JE: 'Jersey', US: 'EEUU', DE: 'Alemania', FR: 'Francia', NL: 'Países Bajos', IT: 'Italia', CH: 'Suiza', DK: 'Dinamarca', BE: 'Bélgica', SE: 'Suecia', FI: 'Finlandia', PT: 'Portugal', JP: 'Japón', CA: 'Canadá', NO: 'Noruega', AT: 'Austria', HK: 'Hong Kong', TW: 'Taiwán', CN: 'China', BR: 'Brasil', KR: 'Corea del Sur', AU: 'Australia', GR: 'Grecia', IL: 'Israel', MX: 'México', IN: 'India', SG: 'Singapur', ZA: 'Sudáfrica', CY: 'Chipre', UY: 'Uruguay', BM: 'Bermudas', KY: 'Islas Caimán', IM: 'Isla de Man', PE: 'Perú', CZ: 'Chequia', NG: 'Nigeria' };
+const PAIS_DE_NOMBRE = { Spain: 'ES', 'United Kingdom': 'GB', Ireland: 'IE', Luxembourg: 'LU', Jersey: 'JE', 'United States': 'US', Germany: 'DE', France: 'FR', Netherlands: 'NL', Italy: 'IT', Switzerland: 'CH', Denmark: 'DK', Belgium: 'BE', Sweden: 'SE', Finland: 'FI', Portugal: 'PT', Japan: 'JP', Canada: 'CA', Norway: 'NO', Austria: 'AT', 'Hong Kong': 'HK', Taiwan: 'TW', China: 'CN', Brazil: 'BR', 'South Korea': 'KR', Australia: 'AU', Greece: 'GR', Israel: 'IL', Mexico: 'MX', India: 'IN', Singapore: 'SG', 'South Africa': 'ZA', Cyprus: 'CY', Uruguay: 'UY', Bermuda: 'BM', 'Cayman Islands': 'KY', 'Isle of Man': 'IM', Peru: 'PE', 'Czech Republic': 'CZ', Nigeria: 'NG' };
+/* dónde cotiza (por el sufijo del ticker de Yahoo) y dónde tiene la sede (de su ficha): no siempre coinciden */
+const BOLSA_SUFIJO = { MC: ['ES', 'Madrid'], AS: ['NL', 'Ámsterdam'], DE: ['DE', 'Fráncfort'], F: ['DE', 'Fráncfort'], PA: ['FR', 'París'], MI: ['IT', 'Milán'], BR: ['BE', 'Bruselas'], HE: ['FI', 'Helsinki'], CO: ['DK', 'Copenhague'], ST: ['SE', 'Estocolmo'], OL: ['NO', 'Oslo'], SW: ['CH', 'Zúrich'], L: ['GB', 'Londres'], LS: ['PT', 'Lisboa'], IR: ['IE', 'Dublín'], VI: ['AT', 'Viena'] };
+function origenRadar(x) {
+  const suf = String((x && x.s) || '').split('.')[1];
+  const [bolsa, ciudad] = suf ? BOLSA_SUFIJO[suf] || [null, null] : ['US', 'Nueva York'];
+  const sede = PAIS_DE_NOMBRE[x && x.pais] || null;
+  return { bolsa, ciudad, sede, sedeNombre: sede ? PAISES[sede] : (x && x.pais) || null, distinta: !!(sede && bolsa && sede !== bolsa) };
+}
+const lineaOrigen = (x) => { const o = origenRadar(x); return `${bandera(o.bolsa || o.sede)} ${esc(x.sector || '')}${x.sector ? ', ' : ''}${o.ciudad ? `bolsa de ${esc(o.ciudad)}` : esc(x.z || '')}${o.distinta ? `, sede en ${esc(o.sedeNombre)}` : ''}`; };
 const iniciales = (t) => String(t || '?').replace(/\(.*?\)/g, '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 function logo(dominio, nombre, clase = '') {
   const ini = esc(iniciales(nombre));
@@ -2883,6 +2988,60 @@ function tasaCompra(pais, tipo, capital) {
   return { tipo: t[0], nombre: t[1] };
 }
 
+/* Retención de los dividendos en el país de la sede de la empresa (tipo general para un particular
+   residente en España, con el formulario que gestiona el bróker cuando hace falta). En la renta se
+   recupera con la deducción por doble imposición hasta el tipo del convenio, casi siempre el 15 %:
+   lo que pase de ahí se pierde salvo que se reclame a ese país. Orientativo. */
+const RET_DIV = { ES: 19, US: 15, GB: 0, JE: 0, IM: 0, BM: 0, KY: 0, HK: 0, SG: 0, NL: 15, LU: 15, FR: 12.8, DE: 26.375, IT: 26, CH: 35, DK: 27, SE: 30, FI: 35, NO: 25, BE: 30, PT: 25, AT: 27.5, IE: 25, CA: 25, JP: 15.315, AU: 30, GR: 5, IL: 25, MX: 10, BR: 0, IN: 20, ZA: 20, CY: 0, TW: 21, KR: 22, CN: 10 };
+function fiscalidadSede(cod, tipo = 'Acción') {
+  const nombre = (cod && PAISES[cod]) || 'su país';
+  if (tipo && tipo !== 'Acción') return { ret: 0, pierde: 0, txt: 'Fondos y ETF de acumulación: no reparten; pagas solo al vender (y entre fondos, ni eso, con un traspaso).' };
+  const ret = cod ? RET_DIV[cod] : null;
+  if (ret == null) return { ret: null, pierde: 0, txt: `Dividendos: ${nombre} aplica su propia retención; mira el informe de tu bróker.` };
+  if (cod === 'ES') return { ret, pierde: 0, txt: 'Dividendos: llegan con el 19 % retenido; en la renta se ajusta a tu tramo.' };
+  if (ret === 0) return { ret, pierde: 0, txt: `Dividendos: ${nombre} no retiene nada; tributan en tu renta como los españoles.` };
+  const tope = 15, pierde = Math.max(0, ret - tope);
+  if (!pierde) return { ret, pierde: 0, txt: `Dividendos: ${nombre} retiene un ${fmtNum(ret, 1)} % y lo recuperas entero en la renta.` };
+  return { ret, pierde, txt: `Dividendos: ${nombre} retiene un ${fmtNum(ret, 1)} % y en la renta solo recuperas el ${tope} %: pierdes un ${fmtNum(pierde, 1)} % de cada dividendo (se puede reclamar a ${nombre}, con papeleo).` };
+}
+const tramoAhorro = () => { try { return fiscalAnio(new Date().getFullYear()).marginal; } catch (e) { return 0.19; } };
+
+/* ---------- plazo: no es lo mismo ganar un 50 % en 3 meses que en 3 años ----------
+   Se compara todo en "al año": (1 + lo que ganas)^(12 / meses) - 1. Neto: con la tasa de compra, la
+   retención de los dividendos que no se recupera y tu tramo del ahorro al vender. */
+const anualizar = (pct, meses) => (meses > 0 && pct > -100 ? (Math.pow(1 + pct / 100, 12 / meses) - 1) * 100 : null);
+const bolsaAnual = () => { try { return cfgProy().bolsa; } catch (e) { return 7; } };
+function rentaEsperada(x, subida, meses, fuente) {
+  if (subida == null || !(meses > 0)) return null;
+  const t = tramoAhorro();
+  const o = origenRadar(x);
+  const fis = fiscalidadSede(o.sede);
+  const tasa = tasaRadar(x);
+  const divP = ((x.div || 0) * meses) / 12;
+  const ganP = subida > 0 ? subida * (1 - t) : subida;
+  const netoP = ganP + divP * (1 - t - fis.pierde / 100) - (tasa ? tasa.tipo * 100 : 0);
+  return { subida, meses, fuente, divP, netoP, netoAnual: anualizar(netoP, meses), brutoAnual: anualizar(subida + divP, meses), t, fis, tasa };
+}
+const plazoTxt = (m) => (m == null ? '' : m < 1.5 ? 'un mes' : m < 12 ? `${Math.round(m)} meses` : m === 12 ? '12 meses' : m % 12 === 0 ? `${m / 12} años` : `${fmtNum(m / 12, 1)} años`);
+/* cuánto llevas ganando al año en una posición: con la fecha de cada compra (o "desde cuándo la tienes") */
+function tiempoPos(f) {
+  const pos = f.pos;
+  let lotes; try { lotes = lotesDe(pos); } catch (e) { return null; }
+  const ahora = Date.now();
+  let c = 0, cd = 0;
+  for (const l of lotes) {
+    const d = l.mezcla ? pos.desde || (pos.entrada && pos.entrada.fecha && pos.entrada.fecha < (pos.fecha || hoyIso()) ? pos.entrada.fecha : null) : l.f;
+    if (!d) return null;
+    const dias = Math.max(1, (ahora - deIso(d)) / 864e5);
+    c += l.c; cd += l.c * dias;
+  }
+  if (!c || !(f.coste > 0) || !(f.valor > 0)) return null;
+  const dias = cd / c;
+  if (dias < 45) return null;
+  return { dias, anual: (Math.pow(f.valor / f.coste, 365 / dias) - 1) * 100 };
+}
+const duracion = (dias) => (dias < 75 ? `${Math.round(dias)} días` : dias < 548 ? `${Math.round(dias / 30.4)} meses` : `${fmtNum(dias / 365, 1)} años`);
+
 function datosFiscales(anio) { return ((S.cartera.fiscal || {})[anio]) || {}; }
 function fiscalAnio(anio, extra = 0) {
   const d = datosFiscales(anio);
@@ -2957,6 +3116,52 @@ function editarFiscal(anio = new Date().getFullYear()) {
   };
 }
 
+/* lo que pagas (o te ahorras) con cada cosa que te recomienda la web, todo junto */
+function htmlFiscalRecom(M, fa) {
+  const anio = new Date().getFullYear(), filas = [];
+  const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
+  let gan = 0;
+  for (const pl of planes) {
+    gan += pl.ganancia;
+    const antes = fiscalAnio(anio, gan - pl.ganancia).cuota, despues = fiscalAnio(anio, gan).cuota;
+    filas.push({ q: `Vender ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${esc(pl.f.inst.corto)}`, d: `ganancia de ${eurS(pl.ganancia, 0)} por FIFO`, v: despues - antes, c: `en la renta de ${anio}, entre abril y junio de ${anio + 1}` });
+    const top = pl.ideas[0];
+    if (pl.aIdea > 0 && top) {
+      const tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede), e = rentaEsperada(top, top.pot, 12);
+      filas.push({ q: `Comprar ${eur(pl.aIdea, 0)} de ${esc(top.n)}`, d: `${tasa ? `${fmtNum(tasa.tipo * 100, 1)} % de ${tasa.nombre}` : 'sin tasa al comprar'}; ${esc(fis.txt.replace(/^Dividendos: /, 'dividendos: '))}${e ? ` Si llega al objetivo, ${pctS(e.netoAnual, 0)} al año neto.` : ''}`, v: tasa ? pl.aIdea * tasa.tipo : 0, c: tasa ? 'al comprar, suma a tu precio de compra' : '' });
+    }
+    if (pl.aNucleo > 0.5) filas.push({ q: `Meter ${eur(pl.aNucleo, 0)} en el S&P 500`, d: 'fondo de acumulación: no reparte, no paga hasta que vendas, y entre fondos ni eso (traspaso)', v: 0, c: '' });
+  }
+  const perd = M.filas.map((f) => ({ f, g: f.valor - f.coste })).filter((x) => x.g < -50);
+  if (new Date().getMonth() >= 6) for (const x of perd) {
+    const ahorro = fiscalAnio(anio, gan).cuota - fiscalAnio(anio, gan + x.g).cuota;
+    if (ahorro >= 15) filas.push({ q: `Vender ${esc(x.f.inst.corto)} con pérdidas`, d: `${eurS(x.g, 0)}: resta de tus ganancias del año${x.f.inst.clase === 'Cripto' ? '; puedes recomprar enseguida' : '; no la recompres en dos meses'}`, v: -ahorro, c: `en la renta de ${anio}`, opc: true });
+  }
+  const ap = sum(aportacionesActivas(), ({ a }) => +a.importe || 0);
+  if (ap > 0) filas.push({ q: `Aportar ${eur(ap, 0)} al mes`, d: 'a fondos de acumulación: no reparten dividendos, no tributan hasta que vendas', v: 0, c: '' });
+  if (!filas.length) return '';
+  const tot = sum(filas.filter((x) => !x.opc), (x) => x.v);
+  return `<section style="margin-top:44px" aria-labelledby="hFisR"><div class="sec-cab"><h2 id="hFisR">Lo que cuesta lo que te recomienda la web</h2><span class="k">con lo que ya llevas en ${anio}</span></div>
+    <div class="tabla-w"><table class="resp"><thead><tr><th>Recomendación</th><th>Qué pasa con Hacienda</th><th class="r">Pagas</th></tr></thead><tbody>
+      ${filas.map((x) => `<tr><td><b style="font-weight:600">${x.q}</b>${x.opc ? '<small>opcional</small>' : ''}</td><td class="txt">${x.d}${x.c ? `<small>${esc(x.c)}</small>` : ''}</td><td class="r ${x.v < 0 ? 'up' : ''}">${x.v ? (x.v < 0 ? `te ahorras ${eur(-x.v, 0)}` : eur(x.v, 0)) : '0 €'}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="nota">Con todo lo que recomienda hacer ya, la renta de ${anio} sube unos ${eur(tot, 0)}${filas.some((x) => x.opc) ? '; con lo opcional, menos' : ''}. Cada cifra sale de tu tramo del ahorro (${fmtNum(fa.marginal * 100, 0)} % ahora) y de lo que ya llevas declarado este año.</p></section>`;
+}
+/* dividendos: lo que retiene el país de la sede, lo que recuperas en la renta y lo que te queda */
+function htmlFiscalDividendos(M) {
+  const t = tramoAhorro(), vistos = new Set();
+  const filas = M.filas.filter((f) => f.p && f.p.dividendo_pct && f.inst.tipo === 'Acción' && !vistos.has(f.inst.id) && vistos.add(f.inst.id)).map((f) => {
+    const bruto = (f.valor * f.p.dividendo_pct) / 100, fis = fiscalidadSede(f.inst.pais, f.inst.tipo);
+    const pierde = bruto * (fis.pierde || 0) / 100;
+    return { f, bruto, fis, ret: bruto * ((fis.ret || 0) / 100), pierde, neto: bruto * (1 - t) - pierde };
+  });
+  if (!filas.length) return '';
+  return `<section style="margin-top:44px" aria-labelledby="hFisD"><div class="sec-cab"><h2 id="hFisD">Tus dividendos</h2><span class="k">al año, con el precio de hoy</span></div>
+    <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r">Bruto</th><th class="r">Retención en origen</th><th class="r">Pierdes</th><th class="r">Te queda</th></tr></thead><tbody>
+      ${filas.map((x) => `<tr><td><b style="font-weight:600">${esc(x.f.inst.corto)}</b><small>sede en ${esc(PAISES[x.f.inst.pais] || x.f.inst.pais || '—')}, ${pct(x.f.p.dividendo_pct, 1)} al año</small></td><td class="r" data-l="Bruto">${eur(x.bruto, 0)}</td><td class="r" data-l="Retención en origen">${x.fis.ret == null ? '—' : `${eur(x.ret, 0)}<small>${fmtNum(x.fis.ret, 1)} %</small>`}</td><td class="r ${x.pierde > 0 ? 'down' : ''}" data-l="Pierdes">${x.pierde > 0 ? eur(x.pierde, 0) : '0 €'}</td><td class="r" data-l="Te queda">${eur(x.neto, 0)}</td></tr>`).join('')}
+    </tbody></table></div>
+    <p class="nota">"Te queda" es lo que cobras después de pagar tu tramo del ahorro (${fmtNum(t * 100, 0)} %). Lo que retiene el país de la sede se descuenta en la renta con la deducción por doble imposición hasta el tipo del convenio (casi siempre el 15 %); "Pierdes" es lo que pasa de ahí, que solo se recupera reclamándolo a ese país. Tus fondos de MyInvestor son de acumulación: no reparten y no pagan hasta que vendas.</p></section>`;
+}
 function htmlImpuestos(M) {
   const anio = new Date().getFullYear();
   const fa = fiscalAnio(anio);
@@ -2984,6 +3189,8 @@ function htmlImpuestos(M) {
     </div>
     ${fa.ventas.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Venta</th><th class="r">Unidades</th><th class="r">Valor de venta</th><th class="r">Valor de compra (FIFO)</th><th class="r">Resultado</th></tr></thead><tbody>${fa.ventas.map((m) => `<tr><td><b style="font-weight:600">${nombreI(m.instrumento)}</b><small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${eur(m.importe || 0)}<small>gastos restados</small></td><td class="r">${eur(m.coste_vendido || 0)}<small>${m.fifo && m.fifo.length ? `${m.fifo.length} ${m.fifo.length === 1 ? 'lote' : 'lotes'}${m.mezcla ? ', con el de partida' : ''}` : ''}</small></td><td class="r ${cls(m.resultado)}">${eurS(m.resultado || 0)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="vacio">No has registrado ventas este año. Las que registres desde "Registrar compra o venta" salen aquí, con el valor de compra calculado por FIFO.</div>'}
 
+    ${htmlFiscalRecom(M, fa)}
+    ${htmlFiscalDividendos(M)}
     <div class="dos" style="margin-top:44px">
       <section>
         <div class="sec-cab"><h2>Si vendieras hoy</h2><span class="k">con lo que ya llevas en ${anio}</span></div>
@@ -3081,7 +3288,7 @@ function htmlFiscalVenta(pl) {
   if (a.rcm) yaLlevas.push(`${eur(a.rcm, 0)} en dividendos e intereses`);
   if (a.pendientes) yaLlevas.push(`${eur(a.pendientes, 0)} de pérdidas de años anteriores`);
   if (pl.ganancia > 0) {
-    lineas.push(yaLlevas.length ? `Este año ya llevas ${yaLlevas.join(', ')}: con esta venta tu base del ahorro queda en ${eur(fs.despues.base, 0)} y tu tramo en el ${fmtNum(fs.despues.marginal * 100, 0)} %.` : `Es lo único que declaras este año por ahora. Si tienes pérdidas de otras ventas o dividendos, apúntalos en Análisis, Impuestos, Datos fiscales, y este cálculo se ajusta.`);
+    lineas.push(yaLlevas.length ? `Este año ya llevas ${yaLlevas.join(', ')}: con esta venta tu base del ahorro queda en ${eur(fs.despues.base, 0)} y tu tramo en el ${fmtNum(fs.despues.marginal * 100, 0)} %.` : `Es lo único que declaras este año por ahora. Si tienes pérdidas de otras ventas o dividendos, apúntalos en Análisis, Fiscalidad, Datos fiscales, y este cálculo se ajusta.`);
     lineas.push(`Coste fiscal de mover el dinero: ${eur(pl.impuesto, 0)}. La inversión nueva tiene que ganar al menos eso más que ${esc(pl.f.inst.corto)} para que el cambio compense.`);
     if (fs.finDeAnio) lineas.push(`Si esperas a enero, el impuesto se paga un año más tarde (en la renta de ${fs.anio + 1}).`);
   } else {
@@ -3099,7 +3306,7 @@ function htmlPlanVenta(pl, compacto) {
   const destino = [];
   const tasaTop = top ? tasaRadar(top) : null;
   const pegaTop = top && top.pegas.find((x) => !x.startsWith('al comprar pagas'));
-  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${radarVals().length} empresas que sigue la web para una apuesta nueva, contrastada con ${top.ctr.favor} de ${top.ctr.total} señales a favor: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` Pega: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} Sus dividendos tributan en la renta como los de tus otras acciones.</span></div></div>`);
+  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${radarVals().length} empresas que sigue la web para una apuesta nueva, contrastada con ${top.ctr.favor} de ${top.ctr.total} señales a favor: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` Pega: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} ${(() => { const e = rentaEsperada(top, top.pot, 12), an = f.p && f.p.analistas, queda = an && an.objetivo ? (an.objetivo / f.precio - 1) * 100 : null; return e ? ` Plazo: si llega al objetivo de los analistas en 12 meses, unos ${pctS(e.netoAnual, 0)} al año netos de impuestos${queda != null ? `, frente al ${pctS(queda, 1)} que le queda a ${esc(i.corto)}` : ''}.` : ''; })()} ${esc(fiscalidadSede(origenRadar(top).sede).txt)}</span></div></div>`);
   if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(NUCLEO.d, 'S P')}<div><b>${eur(pl.aNucleo, 0)} al S&P 500</b><span>${pl.nivel === 'reducir' ? 'Para bajar riesgo sin dejar de estar invertido. ' : pl.aIdea > 0 ? 'La otra mitad, a lo seguro. ' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite. '}${esc(NUCLEO.txt)}</span></div></div>`);
   if (pl.impuesto > 0) destino.push(`<div class="pv-dest">${logo(null, '€')}<div><b>${eur(pl.impuesto, 0)} aparte para Hacienda</b><span>Se paga en la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}. Déjalo en efectivo o en tu colchón hasta entonces: no lo inviertas en bolsa.</span></div></div>`);
   return `<article class="plan-venta${compacto ? ' compacto' : ''}">
@@ -3126,9 +3333,11 @@ function htmlPlanVenta(pl, compacto) {
 async function cargarIA() {
   try {
     const r = await fetch('analisis-ia.json?v=' + Date.now(), { cache: 'no-store' });
-    if (r.ok) { const t = await r.text(); S.ia = JSON.parse(t); LS.set('inv-cache-ia', t); return; }
+    if (r.ok) { const t = await r.text(); S.ia = JSON.parse(t); LS.set('inv-cache-ia', t); S.iaCargado = true; return; }
+    if (r.status === 404) { S.ia = null; LS.del('inv-cache-ia'); S.iaCargado = true; return; }
   } catch (e) { console.warn(e); }
   try { const c = LS.get('inv-cache-ia'); if (c) S.ia = JSON.parse(c); } catch (e) {}
+  S.iaCargado = true;
 }
 function valoresIA(M) {
   const v = {};
@@ -3174,7 +3383,8 @@ function rellenarIA(txt, v) {
 function htmlAnalisisIA(M) {
   const ia = iaActual();
   const prog = `<div id="iaProgreso">${htmlProgresoIA()}</div>`;
-  if (!ia) return prog + '<div class="vacio">Cargando el análisis…</div>';
+  if (!ia) return prog + (!S.iaCargado ? '<div class="vacio">Cargando el análisis…</div>'
+    : `<div class="vacio">Todavía no hay un análisis de tu cartera. ${AS.clave ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Escribiéndolo…' : 'Que Gemini lo escriba ahora'}</button>` : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Conecta Gemini (gratis) y lo escribe con tus datos</button>`}</div>`);
   const v = valoresIA(M);
   const R = (t) => rellenarIA(t || '', v);
   const f = String(ia.fecha || '');
@@ -3210,22 +3420,11 @@ function htmlAnalisisIA(M) {
           <ul class="lista">${(ia.mantener || []).map((x) => `<li class="good">${ICONOS.ok}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></section>
         ${ia.riesgos && ia.riesgos.length ? `<section aria-labelledby="hRie"><div class="sec-cab"><h2 id="hRie">Riesgos a vigilar</h2></div>
           <ul class="lista">${ia.riesgos.map((x) => `<li class="warn">${ICONOS.alerta}<div><b>${R(x.titulo)}</b><span>${R(x.texto)}</span></div></li>`).join('')}</ul></section>` : ''}
-        ${ia.calendario && ia.calendario.some((e) => e.d >= hoyIso()) ? `<section aria-labelledby="hCalIA"><div class="sec-cab"><h2 id="hCalIA">Fechas</h2></div>
-          <ul class="lista agenda">${ia.calendario.filter((e) => e.d >= hoyIso()).sort((a, b) => (a.d < b.d ? -1 : 1)).map((e) => { const dd = deIso(e.d); return `<li><div class="dia"><b>${dd.getDate()}</b><span class="k">${MESES[dd.getMonth()]}</span></div><div><b>${R(e.t)}</b></div><span></span></li>`; }).join('')}</ul></section>` : ''}
         ${reglas.length ? `<details class="plegable" style="margin-top:0"><summary><h2>Tus reglas</h2><span class="k">${reglas.length} que acordaste</span></summary>
           <ul class="lista">${reglas.map((r) => `<li class="info">${ICONOS.info}<div><span>${esc(r)}</span></div></li>`).join('')}</ul></details>` : ''}
       </aside>
     </div>
-    <details class="plegable" style="margin-top:44px"><summary><h2>Posición a posición</h2><span class="k">lo que opina de cada una, también en Expertos</span></summary>
-      <div class="iap-lista">${ids.map((id) => {
-        const a = (ia.posiciones || {})[id]; const i = S.inst[id] || { corto: id };
-        const fila = M.filas.find((x) => x.inst.id === id) || { pos: {} };
-        const nivel = a && NIVELES.has(a.nivel) ? a.nivel : 'mantener';
-        return `<article class="iap">
-          <div class="iap-act">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(fila.pos.id)}">${esc(i.corto || i.nombre)}</button>${a ? `<span class="senal ${nivel}">${esc(a.veredicto || SENALES[nivel])}</span>` : ''}</div></div>
-          ${a ? `<p>${R(a.texto)}</p><p class="iap-vig">${a.vigilar ? `<b>A vigilar.</b> ${R(a.vigilar)}` : ''}${a.confianza ? `${a.vigilar ? ' ' : ''}<b>Confianza:</b> ${esc(a.confianza)}.` : ''}</p>` : '<p class="k">Todavía sin análisis: entrará en la próxima revisión.</p><p></p>'}
-        </article>`; }).join('')}</div>
-    </details>
+    <p class="nota" style="margin-top:28px">Lo que opina de cada posición está en Expertos, Tus posiciones; sus fechas, en Cartera, Próximas fechas; y sus pasos, en el Paso a paso.</p>
     ${fuentes.length ? `<details class="plegable"><summary><h2>Fuentes</h2><span class="k">${fuentes.length} noticias que ha leído para contrastar</span></summary><div class="as-fuentes">${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t || '')}">${esc(x.t ? x.t.slice(0, 60) : dom(x.u))}</a>`).join('')}</div></details>` : ''}
     <p class="nota" style="margin-top:28px">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de la web y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Es el análisis de partida, sin cantidades: las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. Gemini lo sustituye por el suyo en cuanto hace su primera revisión.'}</p>
   </div>`;
@@ -3510,6 +3709,7 @@ function htmlFicha(f) {
       <button class="ib" data-accion="cerrar-ficha" aria-label="Cerrar">${ICONOS.cerrar}</button></div>
     <div class="ficha-precio"><span class="p">${B('pp:' + id)}</span>${B('pd:' + id)}<span class="k">hoy${f.vivo && S.live[i.id] ? `, ${esc(S.live[i.id].fuente)}` : p.fecha ? `, cierre del ${fechaCorta(p.fecha)}` : ''}</span></div>
     <div class="ficha-precio" style="margin-top:-6px;font-size:15px"><span class="k">Tienes</span>${B('pv:' + id, 'valor')}${B('pg:' + id)}${B('pt:' + id)}</div>
+    ${(() => { if (i.clase === 'Efectivo') return ''; const tp = tiempoPos(f); return tp ? `<div class="ficha-anual k">Desde hace ${duracion(tp.dias)}: <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b> (la bolsa suele dar un ${fmtNum(bolsaAnual(), 0)} %)</div>` : `<div class="ficha-anual k">¿Cuánto ganas al año? <button class="enlace acento" data-accion="editar-pos" data-id="${esc(id)}">Pon desde cuándo la tienes</button></div>`; })()}
     <div class="ficha-botones">
       <button class="btn compra" data-accion="operacion" data-tipo="compra" data-id="${esc(id)}">${ICONOS.compra}Comprar</button>
       <button class="btn venta" data-accion="operacion" data-tipo="venta" data-id="${esc(id)}">${ICONOS.venta}Vender</button>
@@ -3728,6 +3928,7 @@ function editarPosicion(id) {
         <label class="campo">Cantidad<input name="cantidad" inputmode="decimal" value="${val(p.cantidad)}" placeholder="${f && f.uds != null ? 'ahora ' + fmtNum(f.uds, 4) + ' (estimado)' : 'participaciones o acciones'}"><small>Lo que pone tu bróker. Admite coma decimal.</small></label>
         <label class="campo">A fecha de<input name="fecha" type="date" value="${val(p.fecha || hoyIso())}"><small>Las aportaciones automáticas se suman después de esta fecha.</small></label>
         <label class="campo">Invertido (€)<input name="coste" inputmode="decimal" value="${val(p.coste)}"><small>Lo que has puesto en total, con comisiones.</small></label>
+        <label class="campo">Desde cuándo la tienes<input name="desde" type="date" value="${val(p.desde)}"><small>Más o menos, la fecha de tu primera compra. Con ella la web calcula cuánto ganas al año.</small></label>
       </div>
       <details class="mas"${p.valor_ref || p.stop || p.objetivo || p.entrada || p.notas ? ' open' : ''}><summary>Reglas, apuesta y notas</summary>
         <div class="form-grid">
@@ -3766,6 +3967,7 @@ function editarPosicion(id) {
     if (o.coste == null) o.coste = 0;
     const ef = g('entrada_fecha'), ep = numero(g('entrada_precio'));
     if (ef && ep) o.entrada = { fecha: ef, precio: ep }; else delete o.entrada;
+    const de = g('desde'); if (de && de <= hoyIso()) o.desde = de; else delete o.desde;
     const nt = g('notas').trim(); if (nt) o.notas = nt; else delete o.notas;
     if (orig) Object.keys(orig).forEach((k) => delete orig[k]), Object.assign(orig, o);
     else S.cartera.posiciones.push(o);
@@ -4363,6 +4565,8 @@ function pedidoAnalisis(ids, motivo, conWeb = true) {
 1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.' : 'No puedes buscar en internet: usa los titulares de los datos (los de mis posiciones, los del mercado y los de las mejores ideas del radar) y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
 2. Si recomiendas vender algo, calcúlalo con simular_venta. Si recomiendas comprar una acción, con simular_compra.
 3. Para las ideas de compra, parte de las que ha elegido Gemini en su escaneo de prensa de toda la bolsa, del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de la web y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
+4. Ten en cuenta el plazo y los impuestos en todo: no es lo mismo ganar un 50 % en 3 meses que en 3 años. Para cada idea, estima en cuántos meses se puede materializar la subida y cuánto, y compárala en "al año" y neta de impuestos con mi fondo indexado. Para cada venta o compra, di lo que pago (ganancia, tasa, retención de dividendos que no recupero).
+5. Sintetiza: no repitas en una sección lo que ya está en otra. Frases cortas.
 
 Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
 {
@@ -4374,8 +4578,8 @@ Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
   "riesgos": [{"titulo": "...", "texto": "..."}],
   "calendario": [{"d": "AAAA-MM-DD", "t": "qué pasa ese día y por qué me importa"}],
   "posiciones": {"<id>": {"veredicto": "de 2 a 4 palabras", "nivel": "comprar|aportar|mantener|vigilar|recoger|reducir|vender", "texto": "dos o tres frases con cifras", "vigilar": "qué vigilar, con precio o fecha", "confianza": "alta|media|baja"}},
-  "ideas": [{"ticker": "...", "nombre": "...", "tesis": "...", "catalizador": "qué la puede mover y cuándo", "riesgo": "...", "contraste": "qué fuentes coinciden y cuáles no", "importe": 0, "fuentes": [{"t": "título", "u": "https://..."}]}],
-  "hoja_de_ruta": {"mes": [{"t": "paso concreto", "detalle": "cuánto, cómo y por qué", "d": "AAAA-MM-DD o vacío"}], "seis_meses": [...], "anio": [...], "largo": [...]},
+  "ideas": [{"ticker": "...", "nombre": "...", "tesis": "una o dos frases", "catalizador": "qué la puede mover y cuándo", "riesgo": "...", "contraste": "qué fuentes coinciden y cuáles no", "importe": 0, "plazo_meses": 6, "subida_pct": 20, "fuentes": [{"t": "título", "u": "https://..."}]}],
+  "hoja_de_ruta": {"mes": [{"t": "paso concreto, empezando por un verbo", "por_que": "una frase: qué gano o qué evito, con cifras", "como": "los pasos exactos: en qué app, qué botón, qué orden y a qué precio", "d": "AAAA-MM-DD o vacío"}], "seis_meses": [...], "anio": [...], "largo": [...]},
   "fuentes": [{"t": "título", "u": "https://..."}]
 }
 Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 3 a 8. "ideas" de 0 a 3. "hoja_de_ruta": de 1 a 4 pasos por plazo (este mes, próximos 6 meses, próximo año, de 1 a 5 años) que completen la hoja de ruta que ya calcula la web (está en los datos): no repitas sus pasos; añade lo que solo se sabe leyendo las noticias, las fechas que vienen y sus reglas.
@@ -4506,7 +4710,7 @@ async function cargarAsesor() {
 }
 async function guardarConv() {
   if (!S.key) return;
-  try { LS.set('inv-asesor-conv', await cifrarLocal({ conv: AS.conv.slice(-60), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
+  try { LS.set('inv-asesor-conv', await cifrarLocal({ conv: AS.conv.slice(-60).map(({ adj, ...t }, k, v) => (t.mini && v.slice(k + 1).filter((y) => y.mini).length >= 4 ? { ...t, mini: undefined } : t)), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
 }
 function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, claves: { google: null }, cargada: false, gasto: 0 }); }
 
@@ -4696,13 +4900,17 @@ Cómo respondes:
 - Respeta sus reglas: el límite de acciones sueltas, el fondo de renta fija como colchón, sus aportaciones automáticas y sus reglas para apuestas.
 - Formato: frases cortas, números en formato español (1.234,56 €), negrita solo para la cifra o la acción clave, listas cuando ayuden a seguir pasos y tablas solo para comparar opciones. Breve salvo que pida detalle.
 - Si la pregunta es ambigua, contesta la interpretación más útil y di cuál has tomado.
+- El plazo importa: no es lo mismo ganar un 50 % en 3 meses que en 3 años. Cuando compares inversiones o recomiendes una, di en cuánto tiempo esperas la subida (el objetivo de los analistas es a 12 meses; si hay un catalizador con fecha, puede ser antes) y pásalo a "al año" y neto de impuestos. Compáralo con su fondo indexado (un 7 % al año a largo plazo). En sus posiciones, usa lo que llevan ganado al año desde que las compró, no solo el total.
+- Toda recomendación lleva su coste fiscal: lo que paga al vender, la tasa al comprar, la retención de los dividendos que no recupera y si un traspaso entre fondos le ahorra pagar. Si dos opciones dan parecido, gana la que paga menos impuestos o los paga más tarde.
+- Si te manda un recorte de la pantalla, explica lo que se ve en él con sus datos: qué significa cada cifra, de dónde sale y qué haría él con eso.
 
 Fiscalidad en España en ${anio}:
 - Ventas: ganancia o pérdida = lo cobrado (menos comisiones) menos lo que costó (más comisiones y tasas), por FIFO. Tributa en la base del ahorro: 19 % hasta 6.000 €, 21 % hasta 50.000 €, 23 % hasta 200.000 €, 27 % hasta 300.000 € y 30 % por encima.
 - Las pérdidas se compensan con las ganancias del año; si sobran, con hasta el 25 % de dividendos e intereses; el resto, durante los 4 años siguientes.
 - Regla de los dos meses: si vende con pérdidas y recompra lo mismo en los dos meses anteriores o posteriores, la pérdida se aplaza. En cripto no se aplica, aunque hay quien defiende un plazo de un año.
 - Traspasos entre fondos de inversión (sus fondos de MyInvestor): no tributan. Entre ETF sí.
-- Dividendos e intereses: retención del 19 % en España; los extranjeros pueden traer retención en origen, que se recupera en parte con la deducción por doble imposición internacional.
+- Dividendos e intereses: tributan en la base del ahorro; los españoles llegan con el 19 % retenido. Los extranjeros traen la retención del país de la sede: EEUU 15 % (con el W-8BEN que hace el bróker), Países Bajos 15 %, Francia 12,8 %, Reino Unido 0 %; Suiza 35 %, Alemania 26,4 %, Italia 26 %, Dinamarca 27 %, Suecia 30 %, Finlandia 35 %, Bélgica 30 %, Austria 27,5 %, Irlanda 25 %, Noruega 25 %, Portugal 25 %. En la renta recupera con la deducción por doble imposición internacional hasta el tipo del convenio (casi siempre el 15 %): lo que pase se pierde salvo que lo reclame a ese país.
+- Fondos de acumulación (los suyos de MyInvestor): no reparten, así que no pagan nada hasta que venda.
 - Tasas al comprar acciones: 0,2 % en España y 0,4 % en Francia (empresas de más de 1.000 millones de capitalización), 0,1 % en Italia y 0,5 % de timbre en Reino Unido. Fondos y ETF no la pagan.
 - Modelos 720 y 721: solo si lo que tiene en el extranjero (Trade Republic) o la cripto fuera de España pasan de 50.000 €.
 - Comisiones: Trade Republic 1 € por operación; los fondos de MyInvestor no cobran por comprar ni vender; Bitvavo, alrededor del 0,25 %.`;
@@ -4766,6 +4974,9 @@ function hSimularCompra(q) {
     peso_de_su_sector_en_su_bolsa_pct: sect != null ? R2(sect, 1) : null,
     ya_tiene_dentro_de_sus_fondos_eur: R2(dentroDeFondos(M)(nombre), 0),
     divisa: moneda && moneda !== 'EUR' ? `Cotiza en ${moneda}: el cambio con el euro también cuenta.` : undefined,
+    dividendos: (() => { const fis = fiscalidadSede(x ? origenRadar(x).sede : pais, tipo); return { retencion_en_origen_pct: fis.ret, se_pierde_pct: fis.pierde, nota: fis.txt }; })(),
+    si_llega_al_objetivo_de_los_analistas: (() => { if (!x) return undefined; const e = rentaEsperada(x, x.pot, 12); return e ? { subida_pct: R2(e.subida, 1), en_meses: 12, neto_de_impuestos_pct: R2(e.netoP, 1), neto_al_anio_pct: R2(e.netoAnual, 1), su_tramo_del_ahorro_pct: R2(e.t * 100, 0) } : undefined; })(),
+    sede: x ? origenRadar(x).sedeNombre : undefined, cotiza_en: x ? origenRadar(x).ciudad : undefined,
     ya_la_tiene: !!f,
   };
 }
@@ -5023,22 +5234,133 @@ async function preguntarAsesor(texto) {
   if (!AS.clave) { AS.vista = 'clave'; pintarAsesor(); return; }
   refrescarFoto(!AS.api.length);
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
-  AS.conv.push({ rol: 'yo', texto }, turno);
+  const adj = AS.adjunto; AS.adjunto = null; pintarAdjunto();
+  const textoApi = adj ? `${texto}\n\n[Te mando un recorte de la pantalla de la web, de ${adj.donde}. ${adj.img ? 'Va en la imagen. ' : ''}El texto que se lee en esa zona es: «${adj.texto || 'sin texto'}». Respóndeme sobre lo que se ve ahí, con mis datos y tus herramientas si hace falta, y explica lo que haga falta para entenderlo.]` : texto;
+  const contenido = adj && adj.img ? [{ inlineData: { mimeType: 'image/jpeg', data: adj.img.split(',')[1] } }, { text: textoApi }] : textoApi;
+  AS.conv.push({ rol: 'yo', texto, mini: adj && adj.mini, donde: adj && adj.donde, adj: adj || undefined }, turno);
   AS.cargando = true; AS.ctrl = new AbortController();
   pintarAsesor(true);
   let marco = 0;
   const alCambiar = () => { if (!marco) marco = requestAnimationFrame(() => { marco = 0; pintarTurno(AS.conv.length - 1); }); };
   try {
-    await conversar({ mensajes: [...AS.api, { role: 'user', content: texto }], turno, sistema: sistemaAsesor(), alCambiar, signal: AS.ctrl.signal });
+    await conversar({ mensajes: [...AS.api, { role: 'user', content: contenido }], turno, sistema: sistemaAsesor(), alCambiar, signal: AS.ctrl.signal });
   } catch (e) {
     turno.error = e.name === 'AbortError' ? 'Parado.' : /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
   }
   AS.cargando = false; AS.ctrl = null;
   const final = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim();
-  if (final) { AS.api.push({ role: 'user', content: texto }, { role: 'assistant', content: final }); AS.api = AS.api.slice(-24); }
+  if (final) { AS.api.push({ role: 'user', content: textoApi }, { role: 'assistant', content: final }); AS.api = AS.api.slice(-24); }
   AS.gasto += turno.coste || 0;
   guardarConv();
   pintarAsesor();
+}
+
+/* =====================================================================
+   Recorte de pantalla: marcas un trozo de la web y se lo preguntas a la IA.
+   Se manda la imagen del trozo (html2canvas, en lib/, se carga solo al usarlo) y el texto que se lee
+   en esa zona, para que Gemini lo entienda aunque la imagen no se pueda sacar.
+   ===================================================================== */
+function cargarScript(src) {
+  return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('No se pudo cargar ' + src)); document.head.appendChild(s); });
+}
+function dondeEstas() {
+  const v = (VISTAS.find(([k]) => k === S.vista) || [])[1] || 'la web';
+  if (S.ficha) { const f = (S.M || calcular()).filas.find((x) => x.pos.id === S.ficha.id); return `la ficha de ${f ? f.inst.corto : 'una posición'}`; }
+  if (S.vista === 'expertos') return `${v}, pestaña ${((EXPERTOS.find(([k]) => k === S.expTab) || [])[1] || '')}`;
+  if (S.vista === 'analisis') return `${v}, pestaña ${((ANALISIS.find(([k]) => k === S.califTab) || [])[1] || '')}`;
+  return v;
+}
+function textoEnZona(z) {
+  const r = { left: z.left, top: z.top, right: z.left + z.width, bottom: z.top + z.height };
+  const out = [];
+  let ultTop = null;
+  const w = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, { acceptNode: (n) => (n.textContent.trim() && n.parentElement && !n.parentElement.closest('#recorte, script, style, .navbar, .sr') ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT) });
+  const rango = document.createRange();
+  let n;
+  while ((n = w.nextNode())) {
+    rango.selectNodeContents(n);
+    let ok = false;
+    for (const b of rango.getClientRects()) {
+      if (!b.width || b.right <= r.left || b.left >= r.right || b.bottom <= r.top || b.top >= r.bottom) continue;
+      const cx = Math.max(b.left, r.left, 0) / 2 + Math.min(b.right, r.right, innerWidth - 1) / 2;
+      const cy = Math.max(b.top, r.top, 0) / 2 + Math.min(b.bottom, r.bottom, innerHeight - 1) / 2;
+      const el = document.elementFromPoint(cx, cy);
+      if (el && (el === n.parentElement || n.parentElement.contains(el) || el.contains(n.parentElement))) { ok = true; if (ultTop != null && Math.abs(b.top - ultTop) > 6) out.push('\n'); ultTop = b.top; break; }
+    }
+    if (ok) out.push(n.textContent.replace(/\s+/g, ' ').trim());
+  }
+  return out.join(' ').replace(/ ?\n ?/g, '\n').replace(/\n{2,}/g, '\n').trim().slice(0, 4000);
+}
+function iniciarRecorte() {
+  if (!S.cartera || $('#recorte')) return;
+  const volverAlAsesor = !!$('#asesorFondo');
+  cerrarAsesor();
+  const capa = document.createElement('div');
+  capa.id = 'recorte'; capa.className = 'recorte';
+  capa.innerHTML = `<div class="rc-aviso"><span>Arrastra para marcar lo que quieres preguntar</span><button class="btn peq" type="button" data-rc="todo">Toda la pantalla</button><button class="btn peq" type="button" data-rc="cancelar">Cancelar</button></div><div class="rc-caja" hidden></div>`;
+  document.body.appendChild(capa);
+  const caja = $('.rc-caja', capa);
+  let x0 = 0, y0 = 0, arrastrando = false;
+  const fin = () => { capa.remove(); document.removeEventListener('keydown', tecla); };
+  const tecla = (e) => { if (e.key === 'Escape') { fin(); if (volverAlAsesor) abrirAsesor(); } };
+  document.addEventListener('keydown', tecla);
+  const rect = (e) => ({ left: Math.min(x0, e.clientX), top: Math.min(y0, e.clientY), width: Math.abs(e.clientX - x0), height: Math.abs(e.clientY - y0) });
+  capa.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-rc]'); if (!b) return;
+    fin();
+    if (b.dataset.rc === 'todo') capturarRecorte({ left: 0, top: 0, width: innerWidth, height: innerHeight });
+    else if (volverAlAsesor) abrirAsesor();
+  });
+  capa.addEventListener('pointerdown', (e) => {
+    if (e.target.closest('.rc-aviso')) return;
+    arrastrando = true; x0 = e.clientX; y0 = e.clientY; capa.setPointerCapture(e.pointerId);
+    Object.assign(caja.style, { left: x0 + 'px', top: y0 + 'px', width: '0px', height: '0px' }); caja.hidden = false;
+  });
+  capa.addEventListener('pointermove', (e) => {
+    if (!arrastrando) return;
+    const r = rect(e); Object.assign(caja.style, { left: r.left + 'px', top: r.top + 'px', width: r.width + 'px', height: r.height + 'px' });
+  });
+  capa.addEventListener('pointerup', (e) => {
+    if (!arrastrando) return;
+    arrastrando = false;
+    const r = rect(e);
+    if (r.width < 24 || r.height < 24) { caja.hidden = true; toast('Arrastra el dedo o el ratón para marcar una zona'); return; }
+    fin(); capturarRecorte(r);
+  });
+}
+async function capturarRecorte(r) {
+  const donde = dondeEstas();
+  const texto = textoEnZona(r);
+  let img = null, mini = null;
+  toast('Recortando…', 1500);
+  try {
+    if (!window.html2canvas) await cargarScript('lib/html2canvas.min.js');
+    const escala = Math.min(2, window.devicePixelRatio || 1, 1600 / Math.max(r.width, 1));
+    const lienzo = await html2canvas(document.documentElement, {
+      x: r.left + window.scrollX, y: r.top + window.scrollY, width: r.width, height: r.height,
+      scale: escala, backgroundColor: '#12110F', useCORS: true, logging: false,
+      ignoreElements: (el) => el.id === 'recorte' || el.id === 'toast',
+    });
+    img = lienzo.toDataURL('image/jpeg', 0.86);
+    const k = Math.min(1, 360 / lienzo.width);
+    const c2 = document.createElement('canvas'); c2.width = Math.round(lienzo.width * k); c2.height = Math.round(lienzo.height * k);
+    c2.getContext('2d').drawImage(lienzo, 0, 0, c2.width, c2.height);
+    mini = c2.toDataURL('image/jpeg', 0.7);
+  } catch (e) { console.warn('recorte sin imagen', e); }
+  if (!img && !texto) { toast('No he podido sacar nada de esa zona. Prueba con otra.'); return; }
+  AS.adjunto = { img, mini, texto, donde };
+  await abrirAsesor();
+  const ta = $('#asTexto');
+  if (ta) { ta.placeholder = '¿Qué quieres saber de esto?'; ta.focus({ preventScroll: true }); }
+}
+function pintarAdjunto() {
+  const el = $('#asAdjunto'); if (!el) return;
+  const a = AS.adjunto;
+  const ta = $('#asTexto');
+  if (ta && !a) ta.placeholder = 'Pregunta lo que quieras de tu cartera';
+  el.innerHTML = a ? `<div class="as-adjunto">${a.mini ? `<img src="${esc(a.mini)}" alt="">` : `<span class="as-adj-txt">${ICONOS.recorte}</span>`}<div><b>Recorte de ${esc(a.donde)}</b><small>${a.img ? 'Imagen y texto de la zona' : 'Solo el texto de la zona (la imagen no se pudo sacar)'}</small>
+    <div class="as-adj-sug">${['Explícamelo fácil', '¿Qué significa cada dato?', '¿Me conviene? Con números'].map((q) => `<button type="button" data-as-q="${esc(q)}">${esc(q)}</button>`).join('')}</div></div>
+    <button type="button" class="ib" data-as="quitar-adjunto" aria-label="Quitar el recorte" title="Quitar el recorte">${ICONOS.cerrar}</button></div>` : '';
 }
 
 /* ---------- markdown mínimo y seguro para las respuestas ---------- */
@@ -5091,7 +5413,7 @@ function sugerencias(M) {
   return s.slice(0, 6);
 }
 function htmlTurno(t, k) {
-  if (t.rol === 'yo') return `<div class="as-yo">${esc(t.texto)}</div>`;
+  if (t.rol === 'yo') return `<div class="as-yo">${t.mini || t.donde ? `<div class="as-yo-rec">${t.mini ? `<img src="${esc(t.mini)}" alt="Recorte de la pantalla">` : ''}<small>Recorte de ${esc(t.donde || 'la pantalla')}</small></div>` : ''}${esc(t.texto)}</div>`;
   const vivo = AS.cargando && k === AS.conv.length - 1;
   const ult = t.partes[t.partes.length - 1];
   const partes = t.partes.map((p) => (p.tipo === 'texto' ? `<div class="as-md">${md(p.texto)}</div>` : `<div class="as-paso">${p.web ? ICONOS.mercados : ICONOS.calc}<span>${esc(p.txt)}</span></div>`)).join('');
@@ -5157,6 +5479,7 @@ function pintarAsesor(alFinal) {
   const b = $('#asEnviar', fondo);
   b.classList.toggle('parar', AS.cargando); b.innerHTML = AS.cargando ? ICONOS.parar : ICONOS.enviar;
   b.setAttribute('aria-label', AS.cargando ? 'Parar' : 'Enviar'); b.disabled = false;
+  pintarAdjunto();
   $('#asNota', fondo).textContent = 'Gratis con tu clave de Google. Tus datos van de tu navegador a Google, cifrados en el camino; no pasan por GitHub.';
   if (vista === 'chat') cuerpo.scrollTop = cuerpo.scrollHeight; else cuerpo.scrollTop = 0;
 }
@@ -5179,7 +5502,7 @@ async function abrirAsesor(pregunta, enviar) {
         <button class="ib" data-as="ajustes" title="Ajustes del asesor" aria-label="Ajustes del asesor">${ICONOS.ajustes}</button>
         <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
       <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
-      <footer class="as-pie" id="asPie"><form class="as-form" id="asForm"><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea><button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
+      <footer class="as-pie" id="asPie"><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea><button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
     </section>`;
     fondo.addEventListener('click', (e) => { if (e.target === fondo) cerrarAsesor(); else clicAsesor(e); });
     document.body.appendChild(fondo);
@@ -5236,10 +5559,12 @@ async function clicAsesor(e) {
   else if (a === 'chat') { AS.vista = 'chat'; pintarAsesor(true); }
   else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }
   else if (a === 'copiar') copiarCartera();
+  else if (a === 'recorte') iniciarRecorte();
+  else if (a === 'quitar-adjunto') { AS.adjunto = null; pintarAdjunto(); }
   else if (a === 'reintentar') {
     let k = AS.conv.length - 1; while (k >= 0 && AS.conv[k].rol !== 'yo') k--;
     if (k < 0) return;
-    const q = AS.conv[k].texto; AS.conv.splice(k); preguntarAsesor(q);
+    const q = AS.conv[k].texto; if (AS.conv[k].adj) AS.adjunto = AS.conv[k].adj; AS.conv.splice(k); preguntarAsesor(q);
   } else if (a === 'borrar-clave') {
     const pv = cfgAsesor().prov;
     AS.clave = null; LS.del(LS_CLAVE[pv]);
@@ -5304,6 +5629,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'limites') editarLimites();
     else if (a === 'fiscal') editarFiscal();
     else if (a === 'asesor') abrirAsesor(d.q || '', !!d.q);
+    else if (a === 'recorte') iniciarRecorte();
     else if (a === 'ia-actualizar') generarAnalisisIA('la pides tú');
     else if (a === 'asesor-ajustes') { AS.vista = 'ajustes'; abrirAsesor().then(() => { AS.vista = 'ajustes'; pintarAsesor(); }); }
     else if (a === 'borrar-mov') borrarMovimiento(d.id, t);

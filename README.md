@@ -8,7 +8,7 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en di
   - *Tus posiciones*: la señal de la web y la de la IA para cada una (y si no coinciden), lo que dice su prensa, los analistas y su precio objetivo.
   - *Ideas de compra*: las mejores ahora, juntando las tres mejor contrastadas por la web, las que elige Gemini tras leer la prensa de todo el radar y las de tu análisis (si coinciden, salen primero), y el radar entero: cientos de empresas de España, Europa y EEUU, cada una contrastada con siete señales.
 - **Mercados**: índices, petróleo, oro, euro/dólar, bono a 10 años y VIX, con noticias de mercado.
-- **Análisis**: paso a paso qué hacer este mes, en 6 meses, en un año y de 1 a 5 años; el análisis de la IA (al día si el asesor está conectado), rentabilidad, riesgo, costes y dividendos, qué empresas hay dentro de los fondos, apuestas frente al índice e impuestos.
+- **Análisis**: paso a paso qué hacer este mes, en 6 meses, en un año y de 1 a 5 años (cada paso con su porqué, cómo hacerlo y lo que paga a Hacienda); el análisis de la IA, rentabilidad, riesgo, costes y dividendos, qué empresas hay dentro de los fondos, apuestas frente al índice y fiscalidad (la renta del año, lo que cuesta cada recomendación y lo que te queda de cada dividendo).
 - **Futuro**: cuánto podrías tener a 5, 10, 15, 20, 25 y 30 años si sigues aportando, con 2.000 escenarios de mercado simulados.
 - **Plan**: aportaciones periódicas, compras y ventas, efectivo y posiciones, todo editable desde la web.
 - **Asesor** (botón de arriba a la derecha): Gemini con toda la cartera delante. Calcula ventas con FIFO e IRPF, compras con su tasa, proyecciones e históricos con el motor de la web, y busca en internet para contrastar.
@@ -71,3 +71,16 @@ Desde la web (Editar → Instrumento → *Nuevo instrumento…*) o editando `ins
 ## Si los precios dejan de actualizarse
 
 GitHub pausa las tareas programadas de un repositorio público tras 60 días sin actividad. Pestaña **Actions** → *Precios* → *Enable workflow* (o *Run workflow* para lanzarla a mano).
+
+
+## Usarla con tus propios datos (por ejemplo, un amigo)
+
+Cada persona necesita su propia copia: los datos van cifrados con su contraseña en su repositorio, y la Action descarga los precios de lo que tiene cada uno.
+
+1. Crea una cuenta en GitHub y haz un *fork* de este repositorio (deja marcado "Copy the main branch only").
+2. En tu copia, borra `cartera.enc.json`, `analisis.enc.json` y `analisis-ia.json`: son los de otra persona (cifrados, pero no te sirven).
+3. *Settings → Pages*: publica desde la rama `main`, carpeta raíz.
+4. Pestaña *Actions*: pulsa el botón para activar los workflows (en los forks vienen apagados).
+5. Opcional, para que Gemini lea la prensa aunque no abras la web: crea tu clave gratis en aistudio.google.com/apikey y guárdala en *Settings → Secrets and variables → Actions* como `GEMINI_API_KEY`.
+6. Crea un token en *Settings → Developer settings → Fine-grained tokens*, solo para tu repositorio, con permiso de lectura y escritura en *Contents*.
+7. Abre `https://TU-USUARIO.github.io/Inversiones/`, pulsa "Empezar de cero", elige tu contraseña, pega el token y añade tus posiciones. Lo que añadas entra en `instrumentos.json` y la Action empieza a descargar sus precios en unos minutos.

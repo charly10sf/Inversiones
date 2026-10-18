@@ -247,12 +247,13 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   relleno (anuncios, gráficos de cotización, notas de prensa sin contenido).
 - Para cada posición: qué ha pasado de verdad en los últimos días (con fechas), si es bueno o
   malo para la acción y por qué, y qué vigilar (fecha o precio). Si no hay nada relevante, dilo en una frase.
-- En español de España, frases cortas y concretas, sin avisos legales.
+- En español de España, frases cortas y concretas, sin avisos legales. Sintetiza: no repitas en una
+  sección lo que ya has dicho en otra.
 Responde solo con un bloque ```json con este formato:
 {
-  "resumen": "dos o tres frases: qué mueve hoy los mercados y qué afecta a esta cartera",
+  "resumen": "dos frases cortas como mucho: lo que más afecta hoy a esta cartera y por qué",
   "mercado": [{"t": "título corto", "detalle": "una o dos frases", "impacto": "positivo|negativo|neutral", "fuentes": [1, 2]}],
-  "posiciones": {"<id>": {"novedades": "...", "impacto": "positivo|negativo|neutral|mixto", "contraste": "qué fuentes coinciden y cuáles no", "vigilar": "...", "fuentes": [3]}},
+  "posiciones": {"<id>": {"novedades": "una o dos frases", "impacto": "positivo|negativo|neutral|mixto", "contraste": "qué fuentes coinciden y cuáles no, en pocas palabras", "vigilar": "fecha o precio", "fuentes": [3]}},
   "alertas": [{"t": "algo que pide atención ya", "id": "<id de posición o ticker>", "urgencia": "alta|media"}]
 }
 Una entrada en "posiciones" por cada posición. "mercado": de 2 a 5. "alertas": de 0 a 4."""
@@ -404,9 +405,10 @@ def actualizar_noticias(cache, valores):
 
 def datos_idea(x, medianas):
     fav, con = P.contraste_idea(x, medianas)
-    return (f"{x.get('n')} ({x['s']}, {x.get('z')}, {x.get('sector')}): precio {x.get('p')} {x.get('m')}, {x.get('na')} analistas, "
-            f"consenso {x.get('r')}, objetivo medio {x.get('obj')} ({x.get('pot')} % de recorrido), PER futuro {x.get('perf')}, "
-            f"beneficio esperado {x.get('epsg') if x.get('epsg') is not None else x.get('eg')} %, 1 año {x.get('c1a')} %, contraste de la web {fav} señales a favor y {con} en contra")
+    return (f"{x.get('n')} ({x['s']}, cotiza en {x.get('z')}, sede en {x.get('pais') or '?'}, {x.get('sector')}): precio {x.get('p')} {x.get('m')}, {x.get('na')} analistas, "
+            f"consenso {x.get('r')}, objetivo medio a 12 meses {x.get('obj')} ({x.get('pot')} % de recorrido), PER futuro {x.get('perf')}, "
+            f"beneficio esperado {x.get('epsg') if x.get('epsg') is not None else x.get('eg')} %, dividendo {x.get('div') or 0} %, 1 año {x.get('c1a')} %, "
+            f"contraste de la web {fav} señales a favor y {con} en contra")
 
 
 LEER = """Vigilas la prensa de cientos de empresas para un inversor particular español. Para cada empresa
@@ -482,12 +484,22 @@ Decide tú. Reglas:
   analistas, o depende de una sola fuente, baja la confianza o descártala, y dilo.
 - Busca un motor concreto (un catalizador con fecha o un cambio de tendencia), que esté razonablemente
   barata y que el balance aguante.
+- El plazo importa: no es lo mismo ganar un 50 % en 3 meses que en 3 años. El objetivo de los analistas es
+  a 12 meses; para cada idea estima tú en cuántos meses se puede materializar la mayor parte de la subida
+  (por su catalizador) y cuánto esperas que suba en ese plazo (puede ser menos que lo de los analistas).
+  Ordena por lo que dan al año, netas de impuestos, no por la subida total.
+- Fiscalidad de un residente en España: las ganancias pagan entre el 19 y el 23 %. Los dividendos de
+  empresas con sede en Suiza (35 %), Alemania (26,4 %), Italia (26 %), Dinamarca (27 %), Suecia (30 %),
+  Finlandia (35 %), Bélgica (30 %), Austria (27,5 %), Irlanda (25 %), Noruega (25 %) o Portugal (25 %) traen
+  una retención en origen de la que en la renta solo recupera el 15 %: si el dividendo es una parte
+  importante de la tesis, cuéntalo. EEUU (15 %), Países Bajos (15 %), Francia (12,8 %), Reino Unido (0 %) y
+  España no le hacen perder nada. Al comprar paga una tasa del 0,2 % en España, 0,4 % en Francia y 0,1 % en Italia.
 - Máximo 5 ideas, de mejor a peor. Si ninguna está clara, devuelve "ideas" vacío y explícalo en "comentario".
 - Añade hasta 5 empresas a evitar por lo que dice su prensa, aunque los analistas digan comprar.
 - Nada inventado; cita las noticias por número. En español de España, frases cortas.
 Responde con un objeto JSON:
 {"comentario": "dos frases: cómo está el panorama y qué has buscado",
- "ideas": [{"s": "ticker", "tesis": "...", "catalizador": "qué y cuándo", "riesgo": "...", "contraste": "qué coincide y qué no", "confianza": "alta|media|baja", "fuentes": [n]}],
+ "ideas": [{"s": "ticker", "tesis": "una o dos frases", "catalizador": "qué y cuándo", "riesgo": "...", "contraste": "qué coincide y qué no", "confianza": "alta|media|baja", "plazo_meses": 6, "subida_pct": 20, "fiscalidad": "lo que pagaría o perdería en impuestos, si importa", "fuentes": [n]}],
  "evitar": [{"s": "ticker", "motivo": "...", "fuentes": [n]}]}"""
 
 
@@ -539,7 +551,15 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave):
             if f.get("u") and len(out) < 4:
                 out.append({kk: f.get(kk) for kk in ("t", "u", "f", "d")})
         return out
-    ideas = [{**i, "n": (porsim.get(i.get("s")) or {}).get("n"), "fuentes": fs_de(i.get("fuentes"))} for i in (d.get("ideas") or []) if isinstance(i, dict) and i.get("s") in porsim][:5]
+    def num(v, lo, hi):
+        try:
+            v = float(v)
+        except (TypeError, ValueError):
+            return None
+        return v if lo <= v <= hi else None
+    ideas = [{**i, "n": (porsim.get(i.get("s")) or {}).get("n"), "fuentes": fs_de(i.get("fuentes")),
+              "plazo_meses": num(i.get("plazo_meses"), 1, 60), "subida_pct": num(i.get("subida_pct"), -80, 400)}
+             for i in (d.get("ideas") or []) if isinstance(i, dict) and i.get("s") in porsim][:5]
     evitar = [{**i, "n": (porsim.get(i.get("s")) or {}).get("n"), "fuentes": fs_de(i.get("fuentes"))} for i in (d.get("evitar") or []) if isinstance(i, dict) and i.get("s") in porsim][:5]
     return {"generado": ahora(), "modelo": MODELO, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar, "candidatas": len(cands)}
 
