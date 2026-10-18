@@ -1006,13 +1006,17 @@ const CFG = (() => {
 })();
 
 /* el token puede llegar desde otro dispositivo en el enlace (#t=...): se guarda y se borra de la dirección */
-(function tokenDesdeEnlace() {
+function tokenDesdeEnlace() {
   const m = /[#&]t=([^&]+)/.exec(location.hash);
-  if (!m) return;
+  if (!m) return false;
   const t = decodeURIComponent(m[1]).trim();
   if (t.length > 20) LS.set('inv-token', t);
-  try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {}
-})();
+  try { history.replaceState(null, '', location.pathname + location.search + (typeof S !== 'undefined' && S.vista ? '#' + S.vista : '')); } catch (e) {}
+  return t.length > 20;
+}
+tokenDesdeEnlace();
+/* también si llega con la web ya abierta (la app, cuando Chrome le pasa el token) */
+window.addEventListener('hashchange', () => { if (tokenDesdeEnlace()) setTimeout(() => toast('Token de GitHub guardado: ya puedes guardar cambios desde aquí', 5000), 50); });
 
 /* ---------- estado ---------- */
 const S = {
