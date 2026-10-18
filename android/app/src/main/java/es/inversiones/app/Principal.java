@@ -14,12 +14,16 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Toast;
 
+import org.json.JSONObject;
+
 /** La app es la misma web de siempre (GitHub Pages) dentro de un WebView, con un puente para el widget. */
 public class Principal extends Activity {
     static final String WEB = "https://charly10sf.github.io/Inversiones/";
     private static final int ELEGIR_ARCHIVO = 7;
     private WebView web;
     private ValueCallback<Uri[]> archivos;
+    private String tokenPendiente;
+    private boolean cargada;
 
     @Override
     protected void onCreate(Bundle guardado) {
@@ -39,6 +43,12 @@ public class Principal extends Activity {
 
         web.addJavascriptInterface(new Puente(this), "InversionesApp");
         web.setWebViewClient(new WebViewClient() {
+            @Override
+            public void onPageFinished(WebView v, String url) {
+                cargada = true;
+                guardarToken();
+            }
+
             @Override
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
@@ -66,11 +76,23 @@ public class Principal extends Activity {
             else Toast.makeText(this, "Para descargar archivos, abre la web en Chrome", Toast.LENGTH_LONG).show();
         });
 
+        tokenPendiente = token(getIntent());
         if (guardado != null) web.restoreState(guardado);
         else web.loadUrl(direccion(getIntent()));
     }
 
-    /** El widget abre la app en una sección concreta (#ruta, #cartera...) */
+    /** Guarda el token que llega desde Chrome directamente en la web de la app y recarga, sin depender de la versión de la web */
+    private void guardarToken() {
+        if (tokenPendiente == null || tokenPendiente.isEmpty() || !cargada) return;
+        String t = tokenPendiente;
+        tokenPendiente = null;
+        String js = "try{localStorage.setItem('inv-token'," + JSONObject.quote(JSONObject.quote(t)) + ");'ok'}catch(e){'no'}";
+        web.evaluateJavascript(js, r -> {
+            Toast.makeText(this, "\"ok\"".equals(r) ? "Token de GitHub guardado en la app" : "No se pudo guardar el token", Toast.LENGTH_LONG).show();
+            if ("\"ok\"".equals(r)) web.loadUrl(WEB + "#cartera");
+        });
+    }
+
     /** El token de GitHub, si llega desde Chrome: como extra o en el enlace inversiones://token?t=... */
     private static String token(Intent i) {
         if (i == null) return null;
@@ -80,9 +102,8 @@ public class Principal extends Activity {
         return t;
     }
 
+    /** El widget abre la app en una sección concreta (#ruta, #cartera...) */
     private String direccion(Intent i) {
-        String t = token(i);
-        if (t != null && !t.isEmpty()) return WEB + "#t=" + Uri.encode(t);  // el token de GitHub, pasado desde Chrome
         String h = i != null ? i.getStringExtra("hash") : null;
         return h != null && !h.isEmpty() ? WEB + "#" + h : WEB;
     }
@@ -93,7 +114,8 @@ public class Principal extends Activity {
         setIntent(i);
         String t = token(i);
         if (t != null && !t.isEmpty()) {
-            web.loadUrl(direccion(i));
+            tokenPendiente = t;
+            guardarToken();
             return;
         }
         String h = i != null ? i.getStringExtra("hash") : null;
