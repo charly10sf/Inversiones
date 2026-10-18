@@ -76,8 +76,9 @@ jobs:
           printf '{"version": %s, "apk": "https://github.com/%s/releases/download/app/inversiones.apk"}\n' "${{ github.run_number }}" "${{ github.repository }}" > app.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git pull -q --rebase origin main
-          git add app.json && git commit -q -m "App: versión ${{ github.run_number }} publicada" && git push -q origin HEAD:main || true
+          git add app.json
+          git commit -q -m "App: versión ${{ github.run_number }} publicada" || true
+          git pull -q --rebase origin main && git push -q origin HEAD:main
 
       # el registro de la compilación, en la rama android-registro, para poder revisarlo si falla
       - name: Guardar el registro
