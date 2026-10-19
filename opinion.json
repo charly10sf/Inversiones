@@ -1,0 +1,5 @@
+{
+  "nota": "Adónde manda la web las opiniones: un formulario de Google (sus respuestas acaban en una hoja de cálculo del dueño). Si 'form' está vacío, la web las manda por WhatsApp.",
+  "form": "",
+  "campos": { "tipo": "", "sitio": "", "texto": "", "quien": "", "info": "" }
+}

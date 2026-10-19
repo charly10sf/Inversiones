@@ -1519,6 +1519,11 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .opinion-pie:hover { border-color: var(--accent); color: var(--text); }
 .opinion-pie svg { width: 22px; height: 22px; flex: none; color: var(--accent); }
 .opinion-pie b { color: var(--text); font-weight: 600; }
+
+.opi-ok { display: grid; justify-items: center; text-align: center; gap: 10px; padding: 18px 6px 6px; }
+.opi-ok .dib { width: 150px; height: 100px; background: var(--accent-bg); animation: tour-brota 0.6s cubic-bezier(.3, 1.5, .5, 1) both; }
+.opi-ok h2 { margin: 6px 0 0; font-size: 21px; letter-spacing: -0.02em; }
+.opi-ok p { margin: 0; color: var(--text-2); line-height: 1.55; max-width: 360px; }
 </style>
 </head>
 <body>
@@ -6361,15 +6366,32 @@ function mostrarNovedades(desde, alCerrar) {
    ===================================================================== */
 const SITIOS_OP = [['general', 'La app en general'], ['cartera', 'Cartera'], ['plan', 'Cartera: plan y movimientos'], ['ruta', 'Paso a paso'], ['expertos', 'Expertos e ideas'], ['analisis', 'Análisis'], ['fiscal', 'Fiscalidad'], ['futuro', 'Objetivos'], ['mercados', 'Mercados'], ['asesor', 'El asesor (IA)'], ['ficha', 'La ficha de una posición'], ['operacion', 'Apuntar compras o ventas'], ['android', 'App de Android y widget']];
 const TIPOS_OP = [['mal', 'Algo se ve mal'], ['falla', 'Algo no funciona'], ['idea', 'Una idea'], ['otra', 'Otra cosa']];
-function abrirOpinion() {
+/* adónde van: opinion.json dice el formulario de Google y el nombre de cada campo (entry.NNN) */
+let OPI = null;
+async function cargarOpinion() {
+  if (OPI) return OPI;
+  try { const r = await fetch('opinion.json?v=' + Math.floor(Date.now() / 3600000), { cache: 'no-cache' }); if (r.ok) OPI = await r.json(); } catch (e) {}
+  return (OPI = OPI || {});
+}
+const opiDirecta = () => !!(OPI && /^https:\/\/docs\.google\.com\/forms\/.+\/formResponse$/.test(OPI.form || '') && OPI.campos && OPI.campos.texto);
+async function mandarOpinion(o) {
+  const c = OPI.campos, b = new URLSearchParams();
+  for (const k of ['tipo', 'sitio', 'texto', 'quien', 'info']) if (c[k] && o[k]) b.append(c[k], o[k]);
+  // Google no deja leer la respuesta desde otra web (no-cors): si la petición sale, la respuesta queda guardada
+  await fetch(OPI.form, { method: 'POST', mode: 'no-cors', body: b });
+}
+async function abrirOpinion() {
+  await cargarOpinion();
   const sitio = S.ficha ? 'ficha' : S.vista === 'cartera' && S.carTab === 'plan' ? 'plan' : S.vista || 'general';
+  const directa = opiDirecta(), hist = LS.get('inv-opi-hist', []);
   const h = hoja('Tu opinión', `<form id="fOpi" class="pf-form" novalidate>
     <fieldset class="opciones"><legend>Qué es</legend><div class="opc-fila">${TIPOS_OP.map(([k, t], i) => `<label class="opc"><input type="radio" name="tipo" value="${k}"${i === 0 ? ' checked' : ''}><span>${t}</span></label>`).join('')}</div></fieldset>
     <label class="campo">Dónde<select name="sitio">${SITIOS_OP.map(([k, t]) => `<option value="${k}"${k === sitio ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
-    <label class="campo">Cuéntalo<textarea name="txt" rows="5" placeholder="Qué ves, qué esperabas o qué se te ha ocurrido. Si es algo que falla, qué estabas haciendo."></textarea><small>Si es algo visual, manda también una captura en el mismo chat.</small></label>
+    <label class="campo">Cuéntalo<textarea name="txt" rows="5" placeholder="Qué ves, qué esperabas o qué se te ha ocurrido. Si es algo que falla, qué estabas haciendo."></textarea>${directa ? '' : '<small>Si es algo visual, manda también una captura en el mismo chat.</small>'}</label>
+    ${directa ? `<label class="campo">Tu nombre<input name="quien" maxlength="40" value="${esc(LS.get('inv-opi-nombre', '') || '')}" placeholder="Opcional, para saber quién lo dice"></label>` : ''}
     <div class="error" id="errOpi"></div>
-    <div class="fila-btns"><button type="button" class="btn" id="bOpiCopiar">Copiar</button>${navigator.share ? '<button type="button" class="btn" id="bOpiComp">Compartir…</button>' : ''}<button type="submit" class="btn pri">${ICONOS.globo}Enviar por WhatsApp</button></div>
-    <p class="nota" style="margin:0">Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó Bellota. Solo va lo que escribes, la sección y la versión, nada de tu cartera.</p>
+    <div class="fila-btns">${directa ? '' : `<button type="button" class="btn" id="bOpiCopiar">Copiar</button>${navigator.share ? '<button type="button" class="btn" id="bOpiComp">Compartir…</button>' : ''}`}<button type="submit" class="btn pri" id="bOpiEnviar">${ICONOS.globo}${directa ? 'Enviar' : 'Enviar por WhatsApp'}</button></div>
+    <p class="nota" style="margin:0">${directa ? 'Llega directamente a quien te pasó Bellota.' : 'Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó Bellota.'} Solo va lo que escribes, la sección y la versión, nada de tu cartera.${hist.length ? ` Llevas ${hist.length} ${hist.length === 1 ? 'enviada' : 'enviadas'}: gracias.` : ''}</p>
   </form>`);
   const f = $('#fOpi', h.el);
   const texto = () => {
@@ -6379,11 +6401,26 @@ function abrirOpinion() {
     const disp = [`web ${VERSION}`, window.InversionesApp ? `app ${(() => { try { return window.InversionesApp.nombreVersion() || versionApp(); } catch (e) { return versionApp(); } })()}` : null, /Android/i.test(navigator.userAgent) ? 'Android' : /iPhone|iPad/i.test(navigator.userAgent) ? 'iPhone' : 'ordenador', `${innerWidth} px`, PERFIL_LOCAL ? 'cartera en el móvil' : null].filter(Boolean).join(', ');
     return `Bellota, ${String(tt).toLowerCase()} en ${st}:\n\n${t}\n\n(${disp})`;
   };
-  $('#bOpiCopiar', h.el).onclick = async () => { const t = texto(); if (!t) return; try { await navigator.clipboard.writeText(t); toast('Copiado: pégalo donde quieras'); } catch (e) { toast('No se pudo copiar'); } };
+  if ($('#bOpiCopiar', h.el)) $('#bOpiCopiar', h.el).onclick = async () => { const t = texto(); if (!t) return; try { await navigator.clipboard.writeText(t); toast('Copiado: pégalo donde quieras'); } catch (e) { toast('No se pudo copiar'); } };
   if ($('#bOpiComp', h.el)) $('#bOpiComp', h.el).onclick = async () => { const t = texto(); if (!t) return; try { await navigator.share({ text: t }); h.cerrar(); } catch (e) {} };
-  f.onsubmit = (ev) => {
+  f.onsubmit = async (ev) => {
     ev.preventDefault();
     const t = texto(); if (!t) return;
+    if (directa) {
+      const tipo = (f.querySelector('[name=tipo]:checked') || {}).value || 'otra', st = f.sitio.value;
+      const quien = (f.quien && f.quien.value.trim()) || '';
+      LS.set('inv-opi-nombre', quien);
+      const b = $('#bOpiEnviar', h.el); b.disabled = true; b.textContent = 'Enviando…';
+      try {
+        await mandarOpinion({ tipo: (TIPOS_OP.find(([k]) => k === tipo) || [])[1], sitio: (SITIOS_OP.find(([k]) => k === st) || [])[1], texto: f.txt.value.trim(), quien: quien || (PERFIL_LOCAL ? 'amigo sin nombre' : 'el dueño'), info: t.split('\n').pop().replace(/^\(|\)$/g, '') });
+        LS.set('inv-opi-hist', [...hist, { f: hoyIso(), tipo, sitio: st }].slice(-30));
+        h.el.querySelector('.hoja').innerHTML = `<div class="opi-ok">${dibujo('bellota')}<h2>Recibido, gracias</h2><p>Con lo que mandáis se arregla y se mejora Bellota. Si es algo visual y quieres, manda también una captura por WhatsApp.</p><div class="fila-btns"><button class="btn pri" data-cerrar>Cerrar</button></div></div>`;
+      } catch (e) {
+        b.disabled = false; b.innerHTML = ICONOS.globo + 'Enviar';
+        $('#errOpi', h.el).textContent = 'No se ha podido enviar (¿sin conexión?). Prueba otra vez en un rato.';
+      }
+      return;
+    }
     const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(t); a.target = '_blank'; a.rel = 'noopener';
     document.body.appendChild(a); a.click(); a.remove();
     h.cerrar(); toast('Gracias: ahora elige el chat en WhatsApp', 4000);

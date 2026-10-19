@@ -72,6 +72,10 @@ Desde la web (Editar → Instrumento → *Nuevo instrumento…*) o editando `ins
 
 `catalogo.json` lista fondos indexados, fondos españoles, monetarios, ETF, ETC de oro y cripto por ISIN (o símbolo de Yahoo), con sus tickers habituales (`VWCE`, `IWDA`…) para el buscador. La Action *Catálogo* (`scripts/catalogo.py`) les pone cada noche precio en euros e histórico de hasta 10 años y lo publica en la rama `catalogo`; la web solo baja el histórico de lo que tienes. Para añadir uno, una línea con su ISIN, nombre y tipo.
 
+## Opiniones de los usuarios
+
+El botón "¿Algo se ve mal o tienes una idea?" (al final de cada pestaña y en Ajustes) manda la opinión a un formulario de Google si `opinion.json` lo tiene puesto: la dirección `.../formResponse` y el `entry.NNN` de cada campo (tipo, sección, mensaje, nombre y detalles). Las respuestas acaban en la hoja de cálculo del formulario. Sin formulario, se manda por WhatsApp.
+
 ## Versiones
 
 La web va por la `0.x` mientras esté en alfa: el número del medio sube con cada tanda de mejoras (0.9 → 0.10) y el último con los arreglos (0.9.0 → 0.9.1). Se cambia en `const VERSION` de `index.html`, y lo nuevo se apunta arriba de `NOVEDADES`, con un dibujo por cambio: la primera vez que alguien abre la web tras una versión nueva le sale *¿Qué se ha mejorado?*. La app de Android toma el mismo número al compilarse y, cuando hay una nueva, la web le ofrece descargarla e instalarla encima.
