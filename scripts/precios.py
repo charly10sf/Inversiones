@@ -69,14 +69,24 @@ RECOMENDACION = {
 
 ACCION_ANALISTA = {"up": "Sube", "down": "Baja", "init": "Empieza", "main": "Mantiene", "reit": "Reitera"}
 
+# (símbolo, nombre, grupo). Los grupos ordenan la pestaña Mercados y lo que lee Gemini por regiones.
 MERCADOS = [
-    ("^IBEX", "Ibex 35"), ("^STOXX50E", "Euro Stoxx 50"), ("^GDAXI", "DAX"),
-    ("^GSPC", "S&P 500"), ("^NDX", "Nasdaq 100"), ("^N225", "Nikkei 225"),
-    ("EURUSD=X", "Euro / dólar"), ("BZ=F", "Brent"), ("GC=F", "Oro"),
-    ("BTC-EUR", "Bitcoin"), ("^TNX", "Bono EEUU 10 años"), ("^VIX", "VIX"),
+    ("^IBEX", "Ibex 35", "Europa"), ("^STOXX50E", "Euro Stoxx 50", "Europa"), ("^GDAXI", "DAX", "Europa"),
+    ("^FCHI", "CAC 40", "Europa"), ("^FTSE", "FTSE 100", "Europa"),
+    ("^GSPC", "S&P 500", "EEUU"), ("^NDX", "Nasdaq 100", "EEUU"), ("^RUT", "Russell 2000", "EEUU"),
+    ("^N225", "Nikkei 225", "Asia y emergentes"), ("^HSI", "Hang Seng", "Asia y emergentes"),
+    ("000001.SS", "Shanghái", "Asia y emergentes"), ("^NSEI", "Nifty 50 (India)", "Asia y emergentes"),
+    ("^BVSP", "Bovespa (Brasil)", "Asia y emergentes"),
+    ("^TNX", "Bono EEUU 10 años", "Tipos y riesgo"), ("^IRX", "Letra EEUU 3 meses", "Tipos y riesgo"), ("^VIX", "VIX", "Tipos y riesgo"),
+    ("EURUSD=X", "Euro / dólar", "Divisas"), ("EURGBP=X", "Euro / libra", "Divisas"), ("JPY=X", "Dólar / yen", "Divisas"),
+    ("DX-Y.NYB", "Índice dólar", "Divisas"),
+    ("BZ=F", "Brent", "Materias primas"), ("GC=F", "Oro", "Materias primas"), ("HG=F", "Cobre", "Materias primas"),
+    ("NG=F", "Gas natural", "Materias primas"),
+    ("BTC-EUR", "Bitcoin", "Cripto"),
 ]
 
-NOTICIAS_MERCADO = ["Ibex 35 bolsa", "Wall Street bolsa", "BCE tipos de interés", "Reserva Federal tipos"]
+NOTICIAS_MERCADO = ["Ibex 35 bolsa", "Wall Street bolsa", "BCE tipos de interés", "Reserva Federal tipos",
+                    "bolsas asiáticas China Japón", "mercados emergentes bolsa", "petróleo Brent OPEP", "dólar euro divisas"]
 
 # Lista de ideas: unas 380 empresas que se pueden comprar en Trade Republic. Ibex 35 y buena parte
 # del mercado continuo, las grandes de Europa (Euro Stoxx 50, DAX, CAC 40, Italia, Países Bajos,
@@ -206,6 +216,43 @@ def serie_cierres(simbolo, periodo="max"):
     s = s[~s.index.duplicated(keep="last")]
     meta = t.history_metadata or {}
     return t, s, meta
+
+
+def intradia(instrumentos, salida):
+    """Precios cada 30 minutos de los últimos 5 días, en euros, para la gráfica de 1 día y 1 semana.
+    Los fondos no cotizan durante el día: la web usa su valor liquidativo diario."""
+    fx = {}
+    for moneda, sim in (("USD", "EURUSD=X"), ("GBP", "EURGBP=X")):
+        try:
+            h = yf.Ticker(sim).history(period="5d", interval="30m")["Close"].dropna()
+            h.index = pd.to_datetime(h.index).tz_convert("UTC")
+            fx[moneda] = h
+        except Exception:  # noqa: BLE001
+            traceback.print_exc()
+    out = {}
+    for inst in instrumentos:
+        iid = inst["id"]
+        v = salida["instrumentos"].get(iid) or {}
+        sim = v.get("simbolo") or inst.get("yahoo")
+        if not sim or str(inst.get("tipo", "")).startswith("Fondo") or sim.startswith("0P"):
+            continue
+        try:
+            h = yf.Ticker(sim).history(period="5d", interval="30m")["Close"].dropna()
+            if h.empty:
+                continue
+            h.index = pd.to_datetime(h.index).tz_convert("UTC")
+            moneda, factor = normaliza_moneda(v.get("moneda") or "EUR")
+            h = h * factor
+            if moneda != "EUR":
+                if moneda not in fx:
+                    continue
+                cambio = fx[moneda].reindex(h.index.union(fx[moneda].index)).ffill().bfill().reindex(h.index)
+                h = h / cambio
+            out[iid] = [[t.strftime("%Y-%m-%dT%H:%MZ"), redondeo(float(p), 6)] for t, p in h.items() if p == p]
+        except Exception as e:  # noqa: BLE001
+            print(f"intradía {iid}: {e}")
+        time.sleep(0.2)
+    return out
 
 
 def tipos_de_cambio():
@@ -720,7 +767,7 @@ def participaciones_etf(simbolo, n=10):
 
 # ---------------------------------------------------------------- mercados y radar
 
-def mercado(simbolo, nombre):
+def mercado(simbolo, nombre, grupo=None):
     _, s, meta = serie_cierres(simbolo, "2y")
     hoy = s.index[-1]
     anterior = float(s.iloc[-2]) if len(s) > 1 else None
@@ -728,6 +775,7 @@ def mercado(simbolo, nombre):
     ultimo = s[s.index >= hoy - pd.Timedelta(days=366)]
     return {
         "nombre": nombre,
+        "grupo": grupo,
         "moneda": meta.get("currency") or ("EUR" if simbolo.startswith("^") and simbolo != "^GSPC" else None),
         "precio": num(precio, 6),
         "cierre_anterior": num(anterior, 6),
@@ -1080,9 +1128,9 @@ def main(ruta_inst, dir_anterior, dir_salida):
                 salida["participaciones_etf"][etf] = prev_part[etf]
     salida["participaciones_fecha"] = hoy
 
-    for sim, nombre in MERCADOS:
+    for sim, nombre, grupo in MERCADOS:
         try:
-            salida["mercados"][sim] = mercado(sim, nombre)
+            salida["mercados"][sim] = mercado(sim, nombre, grupo)
         except Exception as e:  # noqa: BLE001
             errores.append(f"mercado {sim}: {e}")
             if sim in prev_merc:
@@ -1206,6 +1254,13 @@ def main(ruta_inst, dir_anterior, dir_salida):
 
     with open(f"{dir_salida}/precios.json", "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
+    try:
+        intra = intradia(instrumentos, salida)
+        with open(f"{dir_salida}/intradia.json", "w", encoding="utf-8") as f:
+            json.dump({"generado": salida["generado"], "p": intra}, f, ensure_ascii=False, separators=(",", ":"))
+        print(f"intradía: {len(intra)} instrumentos")
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
     with open(f"{dir_salida}/historico.json", "w", encoding="utf-8") as f:
         json.dump(historico, f, ensure_ascii=False, separators=(",", ":"))
 
