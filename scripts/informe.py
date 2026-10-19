@@ -250,7 +250,7 @@ def material(instrumentos, precios, radar):
     for v in mm.values():
         r = v.get("rent") or {}
         grupos.setdefault(v.get("grupo") or "Otros", []).append(
-            f"{v.get('nombre')} {v.get('precio')} ({v.get('variacion_dia')} % hoy, {r.get('1m')} % en un mes, {r.get('ytd')} % en el año, {r.get('1a')} % a un año)")
+            f"{v.get('nombre')} {round(v['precio'], 4) if isinstance(v.get('precio'), (int, float)) else v.get('precio')} ({v.get('variacion_dia')} % hoy, {r.get('1m')} % en un mes, {r.get('ytd')} % en el año, {r.get('1a')} % a un año)")
     datos_m = "\n".join(f"- {g}: " + "; ".join(xs) for g, xs in grupos.items())
     fx = precios.get("fx") or {}
     if fx:
@@ -555,6 +555,8 @@ Decide tú. Reglas:
   una retención en origen de la que en la renta solo recupera el 15 %: si el dividendo es una parte
   importante de la tesis, cuéntalo. EEUU (15 %), Países Bajos (15 %), Francia (12,8 %), Reino Unido (0 %) y
   España no le hacen perder nada. Al comprar paga una tasa del 0,2 % en España, 0,4 % en Francia y 0,1 % en Italia.
+- Mira cómo van los mercados de cada zona (vienen al principio): reparte la mirada entre regiones y, si una zona
+  va débil o depende de algo que está cambiando (tipos, divisa, petróleo), exige más a sus empresas y dilo.
 - Máximo 5 ideas, de mejor a peor. Si ninguna está clara, devuelve "ideas" vacío y explícalo en "comentario".
 - Añade hasta 5 empresas a evitar por lo que dice su prensa, aunque los analistas digan comprar.
 - En "plazos", para TODAS las candidatas que no descartes por su prensa (aunque no estén entre tus ideas),
@@ -569,7 +571,16 @@ Responde con un objeto JSON:
  "plazos": [{"s": "ticker", "meses": 6, "subida_pct": 15, "por": "qué marca ese plazo, en pocas palabras (por ejemplo: resultados del 6 nov)"}]}"""
 
 
-def decidir(lectura, cache, valores, medianas, tuyas, clave):
+def contexto_zonas(precios):
+    """Una línea por zona con cómo van sus índices (hoy, mes y año), para que Gemini pese la geografía."""
+    grupos = {}
+    for v in (precios.get("mercados") or {}).values():
+        r = v.get("rent") or {}
+        grupos.setdefault(v.get("grupo") or "Otros", []).append(f"{v.get('nombre')} {v.get('variacion_dia')} % hoy, {r.get('1m')} % mes, {r.get('ytd')} % año")
+    return "\n".join(f"- {g}: " + "; ".join(xs) for g, xs in grupos.items())
+
+
+def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None):
     limite = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=7)
     buenas, malas = [], []
     for x in valores:
@@ -620,7 +631,8 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave):
         bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n{prensa}\n" + "\n".join(lineas))
     hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
     obligadas = ", ".join(x["s"] for x in cands[:CANDIDATAS] if x not in [m for _, m in malas[:10]])
-    pedido = f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques) + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
+    zonas = contexto_zonas(precios or {})
+    pedido = f"Hoy es {hoy}.\n\n" + (f"## Cómo van los mercados por zonas\n{zonas}\n\n" if zonas else "") + "\n\n".join(bloques) + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
     cuerpo = {"systemInstruction": {"parts": [{"text": DECIDIR}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
               "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "high"}}}
     texto, _ = texto_de(gemini(cuerpo, clave))
@@ -688,7 +700,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
     viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_INFORME)
     if clave and valores and (nuevo or viejo):
         try:
-            d = decidir(lectura, cache, valores, medianas, tuyas, clave)
+            d = decidir(lectura, cache, valores, medianas, tuyas, clave, leer(f"{dir_salida}/precios.json"))
             if d:
                 decision = d
                 print(f"escaneo: decisión con {d['candidatas']} candidatas, {len(d['ideas'])} ideas y {len(d['evitar'])} a evitar")
