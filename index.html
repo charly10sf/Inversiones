@@ -99,7 +99,9 @@ a:hover { text-decoration: underline; }
 @media (max-width: 420px) { .marca span { display: none; } }
 
 /* ---------- cinta de cotizaciones: da la vuelta sola, se para al pasar el ratón ---------- */
-.ticker { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; position: relative; font-family: var(--fc); font-size: 14px; }
+@media (max-width: 680px) { table.ideas.resp tr > :nth-child(3), table.ideas.resp tr > :nth-child(n+8) { display: none !important; } }
+.ticker { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; position: relative; font-family: var(--fc); font-size: 14px; cursor: pointer; }
+@media (max-width: 680px) { #bRecorte { display: none; } }
 .ticker::before, .ticker::after { content: ''; position: absolute; top: 0; bottom: 0; width: 48px; z-index: 1; pointer-events: none; }
 .ticker::before { left: 0; background: linear-gradient(90deg, var(--bg), transparent); }
 .ticker::after { right: 0; background: linear-gradient(-90deg, var(--bg), transparent); }
@@ -1732,6 +1734,10 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .idiomas.pie { justify-content: center; margin-top: 4px; }
 .idiomas.pie button { height: 34px; font-size: 13px; }
 .aj-idioma { display: grid; gap: 8px; margin: 4px 0 20px; }
+.aj-grupo { margin: 30px 0 -4px; font-size: 13.5px; font-weight: 650; color: var(--accent); letter-spacing: 0; }
+.aj-avanzado { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 14px; }
+.aj-avanzado > summary { cursor: pointer; color: var(--text-2); font-size: 14px; padding: 4px 0; }
+.aj-avanzado[open] > summary { margin-bottom: 4px; }
 .aj-idioma small { color: var(--muted); font-size: 12.5px; }
 .aviso-idioma { position: relative; z-index: 31; display: flex; align-items: center; gap: 10px; padding: 8px max(12px, var(--gutter)); padding-top: calc(8px + env(safe-area-inset-top)); background: #1F2A3A; border-bottom: 1px solid #33465F; color: #DCE6F2; font-size: 13px; line-height: 1.4; }
 .aviso-idioma p { margin: 0; flex: 1; min-width: 0; }
@@ -2211,10 +2217,13 @@ function bolsaAbierta(b) {
 }
 function estadoDirecto() {
   const conectado = LIVE.yahoo === 'ok' || LIVE.bitvavo === 'ok';
-  if (!conectado) return { txt: S.precios && S.precios.generado ? 'Precios de ' + haceCuanto(S.precios.generado) : 'Sin conexión', cls: 'off' };
+  // en el móvil no cabe la frase entera al lado de los botones: la corta
+  const corto = window.matchMedia && matchMedia('(max-width: 600px)').matches;
+  const hace = S.precios && S.precios.generado ? haceCuanto(S.precios.generado) : '';
+  if (!conectado) return { txt: hace ? (corto ? hace.replace(/^./, (c) => c.toUpperCase()) : 'Precios de ' + hace) : 'Sin conexión', cls: 'off' };
   const abiertas = BOLSAS.filter(bolsaAbierta).map((b) => b.nombre);
-  if (abiertas.length) return { txt: `En directo, ${abiertas.length > 1 ? 'bolsas de ' : 'bolsa de '}${abiertas.join(' y ')} ${abiertas.length > 1 ? 'abiertas' : 'abierta'}`, cls: 'on' };
-  return { txt: LIVE.bitvavo === 'ok' ? 'Bolsas cerradas, Bitcoin en directo' : 'En directo, bolsas cerradas', cls: 'on' };
+  if (abiertas.length) return { txt: corto ? 'En directo' : `En directo, ${abiertas.length > 1 ? 'bolsas de ' : 'bolsa de '}${abiertas.join(' y ')} ${abiertas.length > 1 ? 'abiertas' : 'abierta'}`, cls: 'on' };
+  return { txt: corto ? 'Bolsas cerradas' : LIVE.bitvavo === 'ok' ? 'Bolsas cerradas, Bitcoin en directo' : 'En directo, bolsas cerradas', cls: 'on' };
 }
 /* =====================================================================
    Cálculos
@@ -2557,7 +2566,7 @@ function senal(f, M) {
     return fin('mantener');
   }
   if (i.clase === 'Renta fija') {
-    motivos.push('Es tu colchón: poca volatilidad y liquidez rápida.');
+    motivos.push('Es tu parte segura: se mueve poco y sacas el dinero en unos días.');
     if (p.rent && p.rent['1a'] != null) motivos.push(`Ha dado un ${fmtNum(p.rent['1a'], 1)} % en el último año.`);
     return fin('mantener');
   }
@@ -2703,7 +2712,7 @@ function binds(M) {
   const vis = new Set([...(S.radarVisibles || []), ...(S.ideasTop || [])]);
   if (vis.size) for (const x of radarVals()) {
     if (!vis.has(x.s)) continue;
-    b['rp:' + x.s] = { txt: `${fmtNum(x.p, x.p >= 1000 ? 0 : 2)} ${monedaR(x.m)}`, n: x.p };
+    b['rp:' + x.s] = { txt: precioR(x.p, x.m), n: x.p };
     b['rv:' + x.s] = { txt: pctS(x.v), n: x.v, cls: cls(x.v) };
     b['ro:' + x.s] = { txt: pctS(x.pot, 1), n: x.pot, cls: cls(x.pot) };
   }
@@ -2759,16 +2768,20 @@ function montar() {
     <span id="estado"></span>
     <div class="acciones">
       <a class="ib ir-merc" href="#mercados" data-ir="mercados" title="Mercados: índices, tipos, divisas y materias primas" aria-label="Mercados">${ICONOS.mercados}<span>Mercados</span></a>
-      <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a la IA por tu cartera">${ICONOS.chispa}<span>Asesor</span></button>
+      <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowFolio IA por tu cartera" aria-label="Pregúntale a GrowFolio IA">${ICONOS.chispa}<span>Pregúntale</span></button>
       <button class="ib" id="bRecorte" data-accion="recorte" title="Recorta un trozo de la pantalla y pregúntale a la IA" aria-label="Recortar la pantalla para preguntar a la IA">${ICONOS.recorte}</button>
       <button class="ib" id="bOcultar" data-accion="ocultar"></button>
       <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
     </div>
   </div></header>
-  <div class="ticker" id="ticker" role="region" aria-label="Cotizaciones"></div>
+  <div class="ticker" id="ticker" role="link" tabindex="0" aria-label="Cotizaciones. Toca para ver Mercados" title="Ver Mercados"></div>
   <main class="wrap" id="vista"></main>
   <nav class="navbar" aria-label="Secciones">${VISTAS.map(([k, t, c]) => `<a href="#${k}" data-ir="${k}">${ICONOS[k]}<span>${c || t}</span></a>`).join('')}</nav>`;
   S.tickerFirma = null;
+  // la cinta de cotizaciones lleva a Mercados
+  const tk = $('#ticker');
+  tk.onclick = () => { location.hash = '#mercados'; };
+  tk.onkeydown = (e) => { if (e.key === 'Enter') location.hash = '#mercados'; };
 }
 
 /* =====================================================================
@@ -2818,7 +2831,7 @@ function pintar() {
   const scroll = window.scrollY;
   const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo }[S.vista] || vistaCartera;
   setTimeout(() => plegarNotas($('#vista')), 0);
-  $('#vista').innerHTML = html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie">Precios en directo de Yahoo Finance (la bolsa de Madrid llega con 15 minutos de retraso y la de Londres con 20; divisas y futuros, al instante) y de Bitvavo para Bitcoin. Los fondos publican un valor liquidativo al día. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action. Noticias: Google Noticias. Tus cantidades van cifradas en <code>cartera.enc.json</code>.</p>`;
+  $('#vista').innerHTML = html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if ((S.radarVisibles || []).length) { S.binds = binds(M); rellenarBinds($('#vista')); }
   dibujar(M);
@@ -3033,7 +3046,20 @@ function htmlAgenda(M) {
     const mismo = ev0.find((x) => x.d === e.d && x.tipo !== 'aportacion' && normTxt(e.t).includes(normTxt(x.t)));
     if (mismo) { mismo.t = e.t; mismo.ia = true; } else if (!ev0.some((x) => x.d === e.d && normTxt(x.t) === normTxt(e.t))) ev0.push({ d: e.d, t: e.t, s: 'según la IA', ia: true });
   }
-  const ev = ev0.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0)).slice(0, 9);
+  // las aportaciones del mismo día van juntas en una fila: así no tapan los resultados y los dividendos
+  const juntas = [], porDia = new Map();
+  for (const e of ev0) {
+    if (e.tipo !== 'aportacion') { juntas.push(e); continue; }
+    let g = porDia.get(e.d);
+    if (!g) { g = { d: e.d, tipo: 'aportacion', importe: 0, nombres: [], plats: new Set() }; porDia.set(e.d, g); juntas.push(g); }
+    g.importe += e.importe || 0; g.nombres.push((S.inst[e.inst] && S.inst[e.inst].corto) || e.inst); if (e.s) g.plats.add(e.s);
+  }
+  for (const g of porDia.values()) {
+    const n = g.nombres;
+    g.t = n.length > 1 ? 'Aportaciones automáticas' : `Aportación a ${n[0]}`;
+    g.s = n.length > 1 ? `${n.slice(0, -1).join(', ')} y ${n[n.length - 1]}` : [...g.plats].join(', ');
+  }
+  const ev = juntas.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0)).slice(0, 8);
   if (!ev.length) return '';
   return `<section aria-labelledby="hAg">
     <div class="sec-cab"><h2 id="hAg">Próximas fechas</h2></div>
@@ -3189,7 +3215,7 @@ function htmlFrescura() {
   return `<div class="frescura" aria-label="Frescura de los datos">
     <details><summary><span class="vivo-dot">Recalculado a las ${B('recalc')}</span>${S.informe && S.informe.generado ? `<span>prensa leída ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas">de cuándo es cada dato</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
-    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">Activa GrowFolio IA (gratis) para que la revise cada día</button>'}
+    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">Activar GrowFolio IA, gratis: revisa esto cada día</button>'}
     ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? 'se ha acabado el cupo gratuito de Google por hoy; se renueva sobre las 9:00' : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowFolio IA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
   </div>`;
 }
@@ -3281,7 +3307,7 @@ function vistaExpertos(M) {
   }
   const marca = { posiciones: planes.length };
   return `
-  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa e IA sobre lo que tienes y lo que podrías comprar. Las señales se recalculan con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale al asesor</button></div>
+  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa e IA sobre lo que tienes y lo que podrías comprar. Las señales se recalculan con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale a GrowFolio IA</button></div>
   ${htmlFrescura()}
   <div class="subvistas dos-op" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
   <div class="pila">${cuerpo}</div>`;
@@ -3352,8 +3378,10 @@ function mejoresIdeas(M, excluir = {}) {
   return out;
 }
 
-const ORDEN_RADAR = { pot: ['Potencial', (x) => x.pot ?? -999], neto: ['Te quedas', (x) => x._neto ?? -999], ctr: ['Señales', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
-const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? 'p' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
+const ORDEN_RADAR = { pot: ['Puede subir', (x) => x.pot ?? -999], neto: ['Te quedas', (x) => x._neto ?? -999], ctr: ['Señales', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
+// Londres cotiza en peniques (GBp): se enseña en libras, que se entiende mejor
+const precioR = (p, m) => { const v = m === 'GBp' ? p / 100 : p; return `${fmtNum(v, v >= 1000 ? 0 : 2)} ${monedaR(m)}`; };
+const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? '£' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
 /* ---------- informe de prensa de Gemini (informe.json, rama datos) ----------
    Lo escribe la Action cada 2 horas con las noticias de tus posiciones, del mercado y de las mejores
    ideas del radar, aunque la web esté cerrada. Sin cantidades: tus cifras las pone la web. */
@@ -3571,14 +3599,14 @@ function htmlIdeas(M, ia) {
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
       <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
-    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial 12 m')}${th('neto', 'Te quedas')}${th('ctr', 'Señales', '')}<th>Prensa</th>${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
+    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Puede subir')}${th('neto', 'Te quedas')}${th('ctr', 'Señales', '')}<th>Prensa</th>${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
     ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${lineaOrigen(x)}</small></td>
       <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
       <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que te quedaría si se cumple lo esperado (en el plazo de GrowFolio IA o en los 12 meses de los analistas), con su dividendo y ya restados la tasa de compra, la retención que no se recupera y tus impuestos">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
-    ${total > corte ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? `Ver solo las ${corte} primeras` : `Ver las ${total}`}</button>` : ''}
-    <p class="nota">Potencial: cuánto le queda para llegar al precio que esperan los analistas dentro de 12 meses. Te quedas: lo que ganarías si llega, ya restados los impuestos. Prensa: lo que ha leído GrowFolio IA en sus noticias. Señales: siete pruebas (analistas, si mejoran su opinión, beneficios, precio frente a su sector, tendencia y solidez del negocio).</p>`;
+    ${total > corte ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? `Ver solo las ${corte} primeras` : `Ver las ${total}${S.radarMin ? ' con 5 analistas o más' : S.radarZona !== 'Todas' ? ` de ${esc(S.radarZona)}` : ''}`}</button>` : ''}
+    <p class="nota">Puede subir: cuánto le queda para llegar al precio que esperan los analistas dentro de 12 meses. Te quedas: lo que ganarías si llega, ya restados los impuestos. Prensa: lo que ha leído GrowFolio IA en sus noticias. Señales: siete pruebas (analistas, si mejoran su opinión, beneficios, precio frente a su sector, tendencia y solidez del negocio).</p>`;
 }
 
 /* ---------- repintar solo cuando cambia una recomendación ---------- */
@@ -3643,9 +3671,14 @@ function filaMercado(sym, m, M) {
   const info = MERC_INFO[sym] || {};
   const v = (S.liveM[sym] && S.liveM[sym].var != null) ? S.liveM[sym].var : m.variacion_dia;
   const plano = v == null || Math.abs(v) < 0.05, sube = v > 0;
-  const tuyos = info.tuyo && M ? [...new Set(M.filas.filter((f) => { try { return info.tuyo(f); } catch (e) { return false; } }).map((f) => f.inst.corto || f.inst.nombre))] : [];
+  const filasT = info.tuyo && M ? M.filas.filter((f) => { try { return info.tuyo(f); } catch (e) { return false; } }) : [];
+  const tuyos = [...new Set(filasT.map((f) => f.inst.corto || f.inst.nombre))];
+  // cuánto de tu cartera depende de este mercado (en vez de un "te afecta" que salía en todos)
+  // en tipos y riesgo (bono, VIX) afecta a casi todo y el porcentaje no dice nada
+  const peso = M && M.total && m.grupo !== 'Tipos y riesgo' ? (sum(filasT, (f) => f.valor) / M.total) * 100 : 0;
+  const nombreM = sym === '^VIX' ? 'VIX (nervios en bolsa)' : m.nombre;
   return `<details class="mfila">
-    <summary><span class="mf-n"><b>${esc(m.nombre)}</b>${tuyos.length ? '<small class="mf-tuyo">te afecta</small>' : ''}</span>${miniSpark(sym)}<span class="mf-p"><span class="merc-p">${B('mp:' + sym)}</span>${B('mv:' + sym)}</span></summary>
+    <summary><span class="mf-n"><b>${esc(nombreM)}</b>${peso >= 1 ? `<small class="mf-tuyo">${fmtNum(peso, 0)} % de tu cartera</small>` : ''}</span>${miniSpark(sym)}<span class="mf-p"><span class="merc-p">${B('mp:' + sym)}</span>${B('mv:' + sym)}</span></summary>
     <div class="mf-det">
       ${info.que ? `<p class="mf-que">${esc(info.que)}</p>` : ''}
       <div class="chart" data-spark-m="${esc(sym)}"></div>
@@ -3688,7 +3721,7 @@ function vistaMercados(M) {
 /* =========================== Análisis =========================== */
 /* cuatro pestañas: qué hacer, lo que opina la IA, tus números (cinco vistas) y la fiscalidad */
 const ANALISIS_P = [['ia', 'La IA opina'], ['numeros', 'Tus números']];
-const NUM_T = { rent: ['Rentabilidad', 'lo que ha dado cada posición en 1 mes, 1, 3, 5 y 10 años, y año a año'], riesgo: ['Riesgo', 'cuánto se mueve cada una y su peor caída del último año'], costes: ['Costes y dividendos', 'gastos de los fondos y lo que cobras en dividendos'], dentro: ['Por dentro', 'las empresas en las que tienes más dinero, sumando tus fondos'], apuestas: ['Apuestas frente al índice', 'cada acción comparada con el mismo dinero en el S&P 500'] };
+const NUM_T = { rent: ['Rentabilidad', 'lo que ha dado cada posición en 1 mes, 1, 3, 5 y 10 años, y año a año'], riesgo: ['Riesgo', 'cuánto se mueve cada una y su peor caída del último año'], costes: ['Costes y dividendos', 'gastos de los fondos y lo que cobras en dividendos'], dentro: ['Por dentro', 'las empresas en las que tienes más dinero, sumando tus fondos'], apuestas: ['Tus acciones frente al índice', 'cada acción comparada con el mismo dinero en el S&P 500'] };
 const NUMEROS = ['rent', 'riesgo', 'costes', 'dentro', 'apuestas'];
 const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'La IA opina'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas'], ['impuestos', 'Fiscalidad']];
 /* =====================================================================
@@ -3723,8 +3756,8 @@ function pasosRuta(M) {
     if (pl.aIdea > 0 && top) {
       const e = esperadaRadar(top), tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede);
       add('mes', { id: `compra:${top.s}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Compra ${eur(pl.aIdea, 0)} de ${esc(top.n)}`,
-        pq: `Es la mejor de las ${radarVals().length} empresas del radar para una apuesta nueva: ${top.ctr.favor} de ${top.ctr.total} señales a favor. ${e ? planTxt(e) : ''}`,
-        como: `En ${esc(pl.f.pos.plataforma || 'Trade Republic')}: busca ${esc(top.n)} (${esc(top.s)}), Comprar, orden limitada a ${fmtNum(top.p, top.p >= 1000 ? 0 : 2)} ${monedaR(top.m)} (el precio de ahora) por unos ${eur(pl.aIdea, 0)}. Ponle tu regla de salida en su ficha cuando la tengas.`,
+        pq: `Es la mejor de las ${radarVals().length} empresas del radar para comprar una acción nueva: ${top.ctr.favor} de ${top.ctr.total} señales a favor. ${e ? planTxt(e) : ''}`,
+        como: `En ${esc(pl.f.pos.plataforma || 'Trade Republic')}: busca ${esc(top.n)} (${esc(top.s)}), Comprar, orden limitada a ${precioR(top.p, top.m)} (el precio de ahora) por unos ${eur(pl.aIdea, 0)}. Ponle tu regla de salida en su ficha cuando la tengas.`,
         imp: `${tasa ? `Al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${esc(tasa.nombre)} (unos ${eur(pl.aIdea * tasa.tipo, 0)}).` : 'Sin tasa al comprar.'} ${esc(fis.txt)}`,
         acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`Voy a comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}. Contrástalo con las noticias de esta semana: ¿lo hago, a qué precio y con qué regla de salida?`)}">Que la IA la contraste antes</button>` });
     }
@@ -3791,7 +3824,7 @@ function pasosRuta(M) {
   const sueltas = sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor);
   const lim = (+(S.cartera.limite_acciones || 20) / 100) * M.total;
   const top = mejoresIdeas(M).find((x) => x.ctr.favor >= 4);
-  if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres una apuesta nueva: ${esc(top.n)}`, pq: `Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor)${(() => { const e = rentaEsperada(top, top.pot, 12); return e ? `: si llega al objetivo en 12 meses, te quedarías un ${pctS(e.netoP, 0)} después de impuestos` : ''; })()}. Te caben ${eur(lim - sueltas, 0)} en acciones sueltas.`, como: 'Antes de comprar, que la IA la contraste con las noticias de la semana y te diga cuánto meter.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>` });
+  if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres comprar una acción nueva: ${esc(top.n)}`, pq: `Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor)${(() => { const e = rentaEsperada(top, top.pot, 12); return e ? `: si llega al objetivo en 12 meses, te quedarías un ${pctS(e.netoP, 0)} después de impuestos` : ''; })()}. Te caben ${eur(lim - sueltas, 0)} en acciones sueltas.`, como: 'Antes de comprar, que la IA la contraste con las noticias de la semana y te diga cuánto meter.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>` });
   // 10. a un año y más: proyección, hueco que se abre y revisión
   let pr = null; try { pr = proyeccion(M); } catch (e) {}
   if (pr) {
@@ -3803,8 +3836,8 @@ function pasosRuta(M) {
     const pct12 = (sueltas / (M.total + total * 12)) * 100, limP = +(S.cartera.limite_acciones || 20);
     if (sueltas) add('anio', { id: `hueco:${hoy.slice(0, 7)}`, cuando: 'en un año', t: `Tus acciones sueltas bajarán al ${fmtNum(pct12, 1)} % de la cartera`, det: `Porque todo lo que aportas va a fondos. Con tu límite del ${fmtNum(limP, 0)} %, tendrás unos ${eur(Math.max(0, (limP / 100) * (M.total + total * 12) - sueltas), 0)} de hueco para apuestas, sin vender nada.` });
   }
-  if (M.filas.some((f) => f.inst.tipo === 'Acción')) add('anio', { id: `revision:${anio}`, cuando: 'una vez al año', t: 'Revisa cada acción frente al S&P 500', det: 'Compara lo que ha hecho cada apuesta con lo que habría hecho el mismo dinero en tu fondo del S&P 500. Quédate solo con las que ganen o tengan aún su motivo para subir.', acc: '<a class="enlace" href="#analisis" data-calif="apuestas">Ver apuestas frente al índice</a>' });
-  add('largo', { id: 'nucleo', cuando: 'siempre', auto: true, t: 'Deja trabajar al núcleo indexado', det: `Tus fondos son el ${fmtNum(M.total ? (sum(M.filas.filter((f) => /^Fondo/.test(f.inst.tipo || '') && f.inst.clase === 'Renta variable'), (f) => f.valor) / M.total) * 100 : 0, 0)} % de la cartera. No los vendas en las caídas: si hay que sacar dinero, que salga del colchón o de las acciones sueltas.` });
+  if (M.filas.some((f) => f.inst.tipo === 'Acción')) add('anio', { id: `revision:${anio}`, cuando: 'una vez al año', t: 'Revisa cada acción frente al S&P 500', det: 'Compara lo que ha hecho cada acción con lo que habría hecho el mismo dinero en tu fondo del S&P 500. Quédate solo con las que ganen o tengan aún su motivo para subir.', acc: '<a class="enlace" href="#analisis" data-calif="apuestas">Ver tus acciones frente al índice</a>' });
+  add('largo', { id: 'nucleo', cuando: 'siempre', auto: true, t: 'Deja trabajar a tus fondos indexados', det: `Tus fondos son el ${fmtNum(M.total ? (sum(M.filas.filter((f) => /^Fondo/.test(f.inst.tipo || '') && f.inst.clase === 'Renta variable'), (f) => f.valor) / M.total) * 100 : 0, 0)} % de la cartera. No los vendas en las caídas: si hay que sacar dinero, que salga del colchón o de las acciones sueltas.` });
   if (total > 0) add('largo', { id: 'subir', cuando: 'con cada subida de sueldo', t: 'Sube la aportación cuando suba tu sueldo', det: `Es lo que más mueve el resultado a 10 y 20 años. Pruébalo en Objetivos, Proyección, con "Subes la aportación cada año".`, acc: '<a class="enlace" href="#proyeccion">Probarlo</a>' });
   // 11. lo que sale de tu perfil y tus metas
   try { pasosPerfil(M, add); } catch (e) { console.warn(e); }
@@ -3839,7 +3872,7 @@ const libreRecompra = (inst, fecha = hoyIso()) => { const r = reglaRecompra(inst
 
 /* el tipo de cada paso, por cómo empieza su id: decide el icono y el color */
 const TIPO_PASO = [
-  [/^venta:|^perdida:/, 'venta', 'venta'], [/^compra:|^idea:/, 'compra', 'compra'], [/^nucleo|^subir/, 'compra', 'fondo'],
+  [/^venta:|^perdida:/, 'venta', 'venta'], [/^compra:|^idea:/, 'compra', 'compra'], [/^nucleo|^subir/, 'info', 'fondo'],
   [/^limcripto:/, 'venta', 'venta'], [/^perfil:|^deuda:/, 'dato', 'lapiz'], [/^colchonf:|^metaseg:|^metafalta:|^perfilbolsa:/, 'info', 'futuro'],
   [/^stop:/, 'aviso', 'alerta'], [/^res:|^div:|^aport/, 'fecha', 'calendario'], [/^fiscal:|^informe:|^renta:|^m720:|^colchon:/, 'fiscal', 'fiscal'],
   [/^exactas:/, 'dato', 'lapiz'], [/^ia:/, 'ia', 'chispa'],
@@ -3867,7 +3900,7 @@ function htmlPaso(x, n) {
   </li>`;
 }
 /* cada paso, según lo que pide: algo que hacer tú (numerado y con su casilla), una fecha que vigilar o algo que va solo */
-const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Un dato', ia: 'GrowFolio IA', info: 'Plan', fecha: 'Fecha' };
+const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Completa tus datos', ia: 'Lo propone la IA', info: 'Plan', fecha: 'Fecha' };
 const claseRuta = (x) => (x.auto ? 'solo' : tipoPaso(x).c === 'fecha' ? 'fecha' : 'tarea');
 function checkRuta(x, n) {
   return `<button class="t-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Hecho. Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"><span>${n || ''}</span></button>`;
@@ -3991,7 +4024,7 @@ function cuerpoNum(k, M) {
     const pRef = S.precios && S.precios.instrumentos && S.precios.instrumentos[S.ref];
     const precioRef = (S.live[S.ref] && S.live[S.ref].precio) || (pRef && pRef.precio);
     const apu = M.filas.filter((f) => f.pos.entrada && f.pos.entrada.fecha && f.pos.entrada.precio);
-    cuerpo = apu.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Apuesta</th><th class="r">Tuya</th><th class="r">${esc(ref ? ref.corto : 'Índice')}</th><th class="r">Diferencia</th><th class="r">En euros</th></tr></thead><tbody>
+    cuerpo = apu.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Acción</th><th class="r">Tuya</th><th class="r">${esc(ref ? ref.corto : 'Índice')}</th><th class="r">Diferencia</th><th class="r">En euros</th></tr></thead><tbody>
       ${apu.map((f) => {
         const e = f.pos.entrada;
         const mia = f.precio ? (f.precio / e.precio - 1) * 100 : null;
@@ -3999,7 +4032,7 @@ function cuerpoNum(k, M) {
         const ind = b0 && precioRef ? (precioRef / b0 - 1) * 100 : null;
         const dif = mia != null && ind != null ? mia - ind : null;
         return `<tr><td>${nombre(f)}<small>desde el ${fechaCorta(e.fecha)} a ${precioFmt(+e.precio)}</small></td><td class="r ${cls(mia)}">${pctS(mia, 1)}</td><td class="r ${cls(ind)}">${pctS(ind, 1)}</td><td class="r ${cls(dif)}">${dif == null ? '—' : (dif > 0 ? '+' : '') + fmtNum(dif, 1) + ' puntos'}</td><td class="r ${cls(dif)}">${dif == null ? '—' : eurS((f.coste * dif) / 100, 0)}</td></tr>`;
-      }).join('')}</tbody></table></div><p class="nota">Solo el precio, sin dividendos ni comisiones. Para que una posición cuente como apuesta, ponle fecha y precio de entrada en su ficha (Editar).</p>`
+      }).join('')}</tbody></table></div><p class="nota">Solo el precio, sin dividendos ni comisiones. Para que una acción salga aquí, ponle fecha y precio de entrada en su ficha (Editar).</p>`
       : '<div class="vacio">Ninguna posición tiene fecha y precio de entrada. Añádelos en la ficha de la posición (Editar).</div>';
   }
   return cuerpo;
@@ -4032,8 +4065,8 @@ function cotiza(inst) {
   const y = String((inst && inst.yahoo) || ''), suf = y.includes('.') ? y.split('.').pop().toUpperCase() : '';
   if (inst && inst.clase === 'Cripto') return { cod: null, txt: 'cripto, 24 h' };
   if (/^Fondo/.test((inst && inst.tipo) || '')) return { cod: inst.pais || null, txt: inst.pais ? `fondo de ${PAISES[inst.pais] || inst.pais}` : 'fondo' };
-  if (suf && BOLSA_SUFIJO[suf]) return { cod: BOLSA_SUFIJO[suf][0], txt: BOLSA_SUFIJO[suf][1] };
-  if (y && !suf && inst.tipo === 'Acción') return { cod: 'US', txt: 'Nueva York' };
+  if (suf && BOLSA_SUFIJO[suf]) return { cod: BOLSA_SUFIJO[suf][0], txt: 'bolsa de ' + BOLSA_SUFIJO[suf][1] };
+  if (y && !suf && inst.tipo === 'Acción') return { cod: 'US', txt: 'bolsa de Nueva York' };
   return { cod: inst && inst.pais, txt: (inst && inst.pais && (PAISES[inst.pais] || inst.pais)) || 'global' };
 }
 const chipCotiza = (inst) => { const c = cotiza(inst); return `<span class="origen">${bandera(c.cod)}${esc(c.txt)}</span>`; };
@@ -4699,7 +4732,7 @@ function htmlGuiaRenta(M) {
    Plan de venta: cuánto vender, cuándo, qué se lleva Hacienda y adónde mover el dinero
    ===================================================================== */
 
-const NUCLEO = { n: 'S&P 500 (núcleo indexado)', d: 'ishares.com', txt: 'Mejor en tu fondo del S&P 500 de MyInvestor (transfiere el dinero desde Trade Republic): entre fondos podrás cambiar más adelante sin pagar impuestos con un traspaso. Si prefieres no moverlo de Trade Republic, el ETF iShares Core S&P 500 (ISIN IE00B5BMR087) sigue el mismo índice, pero cada venta futura pagará.' };
+const NUCLEO = { n: 'S&P 500 (tu fondo indexado)', d: 'ishares.com', txt: 'Mejor en tu fondo del S&P 500 de MyInvestor (transfiere el dinero desde Trade Republic): entre fondos podrás cambiar más adelante sin pagar impuestos con un traspaso. Si prefieres no moverlo de Trade Republic, el ETF iShares Core S&P 500 (ISIN IE00B5BMR087) sigue el mismo índice, pero cada venta futura pagará.' };
 
 function planVenta(f, M) {
   const nivel = f.senal.nivel;
@@ -4788,7 +4821,7 @@ function htmlPlanVenta(pl, compacto) {
   const destino = [];
   const tasaTop = top ? tasaRadar(top) : null;
   const pegaTop = top && top.pegas.find((x) => !x.startsWith('al comprar pagas'));
-  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${radarVals().length} empresas que sigue GrowFolio para una apuesta nueva, contrastada con ${top.ctr.favor} de ${top.ctr.total} señales a favor: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` Pega: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} ${(() => { const e = esperadaRadar(top), an = f.p && f.p.analistas, queda = an && an.objetivo ? (an.objetivo / f.precio - 1) * 100 : null; return e ? ` ${planTxt(e)}${queda != null ? ` A ${esc(i.corto)} le quedan un ${pctS(queda, 1)} hasta su objetivo.` : ''}` : ''; })()} ${esc(fiscalidadSede(origenRadar(top).sede).txt)}</span></div></div>`);
+  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${radarVals().length} empresas que sigue GrowFolio para comprar una acción nueva, contrastada con ${top.ctr.favor} de ${top.ctr.total} señales a favor: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` Pega: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} ${(() => { const e = esperadaRadar(top), an = f.p && f.p.analistas, queda = an && an.objetivo ? (an.objetivo / f.precio - 1) * 100 : null; return e ? ` ${planTxt(e)}${queda != null ? ` A ${esc(i.corto)} le quedan un ${pctS(queda, 1)} hasta su objetivo.` : ''}` : ''; })()} ${esc(fiscalidadSede(origenRadar(top).sede).txt)}</span></div></div>`);
   if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(NUCLEO.d, 'S P')}<div><b>${eur(pl.aNucleo, 0)} al S&P 500</b><span>${pl.nivel === 'reducir' ? 'Para bajar riesgo sin dejar de estar invertido. ' : pl.aIdea > 0 ? 'La otra mitad, a lo seguro. ' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite. '}${esc(NUCLEO.txt)}</span></div></div>`);
   if (pl.impuesto > 0) destino.push(`<div class="pv-dest">${logo(null, '€')}<div><b>${eur(pl.impuesto, 0)} aparte para Hacienda</b><span>Se paga en la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}. Déjalo en efectivo o en tu colchón hasta entonces: no lo inviertas en bolsa.</span></div></div>`);
   const plegado = compacto === 'plegado';
@@ -4890,7 +4923,7 @@ function htmlAnalisisIA(M) {
     : `Análisis de partida ${cuando}, sin tus cifras al céntimo. ${AS.clave ? 'GrowFolio IA escribe el suyo con tus datos: si no aparece en un par de minutos, pulsa Actualizar ahora.' : 'Activa GrowFolio IA (gratis) para que lo rehaga con tus datos cada día.'}`;
   const boton = AS.clave
     ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Actualizando…' : 'Actualizar ahora'}</button>`
-    : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Que se actualice solo cada día</button>`;
+    : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Activar GrowFolio IA, gratis</button>`;
   const ids = [...new Set(M.filas.map((x) => x.inst.id))];
   const puntos = (n) => `<span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
   const reglas = (S.ia && S.ia.reglas) || [];
@@ -5473,7 +5506,7 @@ function htmlFicha(f) {
       <button class="btn compra" data-accion="operacion" data-tipo="compra" data-id="${esc(id)}">${ICONOS.compra}Comprar</button>
       <button class="btn venta" data-accion="operacion" data-tipo="venta" data-id="${esc(id)}">${ICONOS.venta}Vender</button>
       <button class="btn" data-accion="editar-pos" data-id="${esc(id)}">${ICONOS.lapiz}Editar</button>
-      <button class="btn" data-accion="asesor" data-q="${esc(`¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.chispa}Preguntar</button>
+      <button class="btn" data-accion="asesor" data-q="${esc(`¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.chispa}Pregúntale</button>
     </div>
     <div class="tabs" role="group" aria-label="Apartados">${FTABS.map(([k, t]) => `<button data-ftab="${k}" aria-pressed="${S.ficha.tab === k}">${t}</button>`).join('')}</div>
   </div>
@@ -5631,7 +5664,7 @@ function fichaDatos(f) {
       p.historico_desde && ['Histórico desde', fechaLarga(p.historico_desde)],
       p.sector && ['Sector', esc(p.sector)],
       p.industria && ['Industria', esc(p.industria)],
-      f.pos.entrada && f.pos.entrada.fecha && ['Entrada de la apuesta', `${fechaCorta(f.pos.entrada.fecha)} a ${precioFmt(+f.pos.entrada.precio)}`],
+      f.pos.entrada && f.pos.entrada.fecha && ['Cuándo y a cuánto entraste', `${fechaCorta(f.pos.entrada.fecha)} a ${precioFmt(+f.pos.entrada.precio)}`],
     ])}</div>
   </div>
   ${anios.length ? `<section class="bloque"><h3>Año a año</h3><div class="anios">${anios.map(([y, v]) => `<div><span class="k">${y}</span><span class="${cls(v)}">${pctS(v, 1)}</span></div>`).join('')}</div><p class="nota">Rentabilidad del precio en euros de cada año natural. El último va hasta hoy.</p></section>` : ''}`;
@@ -6582,7 +6615,7 @@ function candidatosBusqueda() {
     out.push({ k: 'cat:' + cid, n: x.c || x.n, l: x.n, s: x.s || '', isin: x.isin || '', a: x.a || [], dom: x.dom, cot: x.cl === 'Cripto' ? { cod: null, txt: 'cripto, 24 h' } : { cod: x.pais, txt: /^Fondo/.test(x.t || '') ? `fondo${x.pais ? ' de ' + (PAISES[x.pais] || x.pais) : ''}` : x.t || '' }, pr: () => x.p });
     if (x.s) vistos.add(String(x.s).toUpperCase());
   }
-  for (const x of radarVals()) if (x.s && !vistos.has(x.s.toUpperCase())) { const o = origenRadar(x); out.push({ k: 'radar:' + x.s, n: x.n, l: x.n, s: x.s, isin: '', dom: x.w, cot: { cod: o.bolsa || o.sede, txt: o.ciudad || x.z || '' }, pr: () => x.pe }); }
+  for (const x of radarVals()) if (x.s && !vistos.has(x.s.toUpperCase())) { const o = origenRadar(x); out.push({ k: 'radar:' + x.s, n: x.n, l: x.n, s: x.s, isin: '', dom: x.w, cot: { cod: o.bolsa || o.sede, txt: o.ciudad ? 'bolsa de ' + o.ciudad : x.z || '' }, pr: () => x.pe }); }
   return out;
 }
 function buscarEn(lista, q) {
@@ -6646,8 +6679,14 @@ function buscador(cont, alElegir, opt = {}) {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.1.14';
+const VERSION = '0.1.15';
 const NOVEDADES = [
+  { v: '0.1.15', f: '2026-10-19', t: 'Menos ruido', cosas: [
+    { d: 'ajustes', t: 'Ajustes ordenados', x: 'Seguridad (PIN, contraseña y este dispositivo), GrowFolio IA y la app, Ayuda, y lo técnico (copias, archivos y GitHub) plegado en «Avanzado».' },
+    { d: 'mercados', t: 'Mercados dice cuánto te toca', x: 'En vez de «te afecta» en todos, cada mercado dice qué parte de tu cartera depende de él. Y tocando la cinta de cotizaciones de arriba vas a Mercados.' },
+    { d: 'movil', t: 'Menos iconos arriba en el móvil', x: 'El estado sale en corto («En directo», «Bolsas cerradas») y recortar la pantalla está dentro de Pregúntale. En Próximas fechas, las aportaciones del mismo día van en una sola fila.' },
+    { d: 'jerga', t: 'Las mismas palabras en todas partes', x: '«Acciones» en vez de apuestas, «GrowFolio IA» y «Pregúntale» para la IA, «bolsa de Madrid» o «fondo de Irlanda» al lado de cada cosa y Londres en libras, no en peniques. En el radar del móvil, solo lo importante.' },
+  ] },
   { v: '0.1.14', f: '2026-10-19', t: 'Más claro', cosas: [
     { d: 'cifras', t: 'Ideas con cifras de verdad', x: 'Antes salía lo que daría cada idea «al año» aunque su plazo fuera de 3 meses, y aparecían cosas como +110 %. Ahora ves lo que te quedarías en su plazo real, ya restados los impuestos.' },
     { d: 'hecho', t: 'Marcar un paso como hecho', x: 'Cada paso tiene su botón «Marcar como hecho» y lo hecho se queda tachado. Los contadores de arriba cuentan lo mismo que las listas.' },
@@ -6710,6 +6749,7 @@ const fechaNov = (f) => { const d = deIso(f); return `${d.getDate()} ${MESES[d.g
 
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  ajustes: '<rect class="fp" x="16" y="6" width="88" height="16" rx="6"/><rect class="fa" x="22" y="11" width="22" height="6" rx="3"/><rect class="fp" x="16" y="26" width="88" height="16" rx="6"/><rect class="fa" x="22" y="31" width="30" height="6" rx="3"/><rect class="fp" x="16" y="46" width="88" height="16" rx="6"/><rect class="fa" x="22" y="51" width="18" height="6" rx="3"/><path class="m" d="M16 72h88"/><path class="a" d="M94 68l4 4 4-4"/><text class="t" x="18" y="78">Avanzado</text>',
   cifras: '<rect class="fp" x="14" y="10" width="92" height="60" rx="10"/><text class="t" x="24" y="27">Te quedas</text><text class="ta" x="24" y="49" style="font-size:17px;font-weight:700">+20 %</text><text class="t" x="24" y="62">en 3 meses</text><path class="u" d="M80 52l6-8 5 4 8-12"/>',
   jerga: '<rect class="fp" x="12" y="12" width="96" height="24" rx="8"/><text class="t" x="22" y="28" style="text-decoration:line-through">TER 0,15 %</text><rect class="fa" x="12" y="44" width="96" height="24" rx="8"/><text class="ta" x="22" y="60">Comisión 0,15 %</text>',
   hecho: '<rect class="fp" x="10" y="12" width="100" height="56" rx="10"/><path class="l" d="M22 28h50M22 38h34"/><rect class="fa" x="50" y="48" width="52" height="14" rx="7"/><path class="u" d="M56 55l3 3 6-6"/><text class="ta" x="68" y="58.5">hecho</text>',
@@ -6842,7 +6882,7 @@ const TOUR = [
   { v: 'fiscal', sel: '.navbar [data-ir="fiscal"], .nav [data-ir="fiscal"]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
   { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
   { v: 'mercados', sel: '.ir-merc', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
-  { v: 'cartera', sel: '#bAsesor', t: 'El asesor', x: 'Pregúntale lo que quieras de tu cartera. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
+  { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale a GrowFolio IA', x: 'Lo que quieras de tu cartera, con tus números delante. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
   { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades, tu opinión y este tutorial, para repetirlo cuando quieras.' },
 ];
 let TOURE = null;
@@ -7263,43 +7303,48 @@ function abrirAjustes() {
     ${PERFIL_LOCAL ? `<div class="seccion-ed" style="border:0;padding-top:0;margin-top:0"><h3>Tu cartera</h3>
       <p class="nota" style="margin:0">Guardada solo en este dispositivo y cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (abajo, en Copias).</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPerfil">Abrir la cartera de GitHub</button></div></div>` : ''}
-    <div style="display:grid;gap:12px"${PERFIL_LOCAL ? ' hidden' : ''}>
-      <div class="campo">Repositorio<div style="color:var(--text)">${esc(CFG.owner)}/${esc(CFG.repo)}</div></div>
-      <label class="campo">Token de GitHub<input type="password" id="aTok" value="${esc(tok || '')}" autocomplete="off" placeholder="github_pat_…"><small>Token "fine-grained" con permiso <b>Contents: Read and write</b> solo para este repositorio. Se guarda en este navegador.</small></label>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aProbar">Guardar y probar</button><button class="btn peq" id="aQR"${tok ? '' : ' disabled'}>Vincular el móvil</button></div>
-      <div id="aQRbox"></div>
-    </div>
-    <div class="seccion-ed"><h3>Asesor</h3>
-      <p class="nota" style="margin:0">GrowFolio IA funciona con Gemini, la IA de Google, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes del asesor</button></div>
-    </div>
-    <div class="seccion-ed"><h3>Invita a alguien</h3>
-      <p class="nota" style="margin:0">Le llega un enlace para crear su propia cartera en su móvil, cifrada y sin cuenta: nadie más la ve, ni tú.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aInvita">${ICONOS.globo}Mandar invitación por WhatsApp</button></div>
-    </div>
-    <div class="seccion-ed"><h3>Tu opinión</h3>
-      <p class="nota" style="margin:0">Algo que se ve mal, algo que no funciona o una idea, y en qué pestaña: le llega a quien te pasó GrowFolio.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="opinion" data-cerrar>${ICONOS.globo}Enviar opinión o un fallo</button></div>
-    </div>
-    <div class="seccion-ed"><h3>Versión</h3>
-      <p class="nota" style="margin:0">Web ${VERSION} (alfa). Cada actualización sube el último número.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNov" data-cerrar>Qué se ha mejorado</button><button class="btn peq" id="aTour2" data-cerrar>Ver el tutorial</button></div>
-    </div>
-    <div class="seccion-ed"><h3>App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
+    <h2 class="aj-grupo">Seguridad</h2>
     ${htmlAjustesBloqueo()}
     <div class="seccion-ed"><h3>Contraseña</h3>
       <div class="form-grid"><label class="campo">Nueva contraseña<input type="password" id="aP1" autocomplete="new-password"></label><label class="campo">Repítela<input type="password" id="aP2" autocomplete="new-password"></label></div>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aCambiar">Cambiar contraseña</button></div>
     </div>
+    <div class="seccion-ed"><h3>Este dispositivo</h3>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
+      <p class="nota" style="margin:0">${cfgBloqueo() ? 'Bloquear te pedirá el PIN o la huella ahora mismo.' : 'Bloquear te pedirá la contraseña la próxima vez.'} ${PERFIL_LOCAL ? 'Olvidar borra tu cartera de este dispositivo: descarga antes una copia.' : 'Olvidar borra también el token y la copia local.'}</p>
+    </div>
+    <h2 class="aj-grupo">GrowFolio IA y la app</h2>
+    <div class="seccion-ed"><h3>GrowFolio IA</h3>
+      <p class="nota" style="margin:0">GrowFolio IA funciona con Gemini, la IA de Google, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes de GrowFolio IA</button></div>
+    </div>
+    <div class="seccion-ed"><h3>App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
+    <h2 class="aj-grupo">Ayuda</h2>
+    <div class="seccion-ed"><h3>Tu opinión</h3>
+      <p class="nota" style="margin:0">Algo que se ve mal, algo que no funciona o una idea, y en qué pestaña: le llega a quien te pasó GrowFolio.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="opinion" data-cerrar>${ICONOS.globo}Enviar opinión o un fallo</button></div>
+    </div>
+    <div class="seccion-ed"><h3>Invita a alguien</h3>
+      <p class="nota" style="margin:0">Le llega un enlace para crear su propia cartera en su móvil, cifrada y sin cuenta: nadie más la ve, ni tú.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aInvita">${ICONOS.globo}Mandar invitación por WhatsApp</button></div>
+    </div>
+    <div class="seccion-ed"><h3>Versión</h3>
+      <p class="nota" style="margin:0">Web ${VERSION} (alfa). Cada actualización sube el último número.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNov" data-cerrar>Qué se ha mejorado</button></div>
+    </div>
+    <details class="aj-avanzado"><summary>Avanzado: copias y archivos${PERFIL_LOCAL ? '' : ', GitHub'}</summary>
     <div class="seccion-ed"><h3>Copias</h3>
       <p class="nota" style="margin:0">La copia sin cifrar contiene todas tus cantidades: guárdala solo en tu ordenador.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aExp">Descargar copia sin cifrar</button><label class="btn peq" style="display:inline-flex;align-items:center">Importar copia o JSON<input type="file" id="aImp" accept=".json,application/json" hidden></label><button class="btn peq" id="aEjemplo">Ejemplo de JSON</button></div>
       <p class="nota" style="margin:0">El JSON puede llevar el ISIN, el ticker o el nombre de cada cosa con su cantidad, lo que pagaste (o el precio medio), el bróker y la fecha: GrowFolio busca cada valor sola.</p>
     </div>
-    <div class="seccion-ed"><h3>Este dispositivo</h3>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
-      <p class="nota" style="margin:0">${cfgBloqueo() ? 'Bloquear te pedirá el PIN o la huella ahora mismo.' : 'Bloquear te pedirá la contraseña la próxima vez.'} ${PERFIL_LOCAL ? 'Olvidar borra tu cartera de este dispositivo: descarga antes una copia.' : 'Olvidar borra también el token y la copia local.'}</p>
-    </div>`);
+    <div class="seccion-ed" style="display:grid;gap:12px"${PERFIL_LOCAL ? ' hidden' : ''}><h3>GitHub</h3>
+      <div class="campo">Repositorio<div style="color:var(--text)">${esc(CFG.owner)}/${esc(CFG.repo)}</div></div>
+      <label class="campo">Token de GitHub<input type="password" id="aTok" value="${esc(tok || '')}" autocomplete="off" placeholder="github_pat_…"><small>Token "fine-grained" con permiso <b>Contents: Read and write</b> solo para este repositorio. Se guarda en este navegador.</small></label>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aProbar">Guardar y probar</button><button class="btn peq" id="aQR"${tok ? '' : ' disabled'}>Vincular el móvil</button></div>
+      <div id="aQRbox"></div>
+    </div>
+    </details>`);
   pintarAjustesApp($('#aApp', h.el));
   const recargarBloq = () => { const x = $('#ajBloqueo', h.el); if (!x || !h.el.isConnected) return; x.outerHTML = htmlAjustesBloqueo(); enlazarAjustesBloqueo(h.el, recargarBloq); };
   enlazarAjustesBloqueo(h.el, recargarBloq);
@@ -8468,7 +8513,7 @@ function htmlAjustesAsesor() {
   const cfg = cfgAsesor();
   const yo = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
   return `<div class="as-config">
-    <h3>Ajustes del asesor</h3>
+    <h3>Ajustes de GrowFolio IA</h3>
     <fieldset class="as-modelos"><legend>Modelo de Gemini (todos gratis con tu clave)</legend>${Object.entries(MODELOS).map(([k, m]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${cfg.modelo === k ? ' checked' : ''}><span><b>${m.n}</b><small>${m.txt}</small></span></label>`).join('')}</fieldset>
     <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> Puede buscar en internet con Google</label>
     ${cfg.webFalla ? '<p class="nota" style="margin:-6px 0 0">Tu plan de Google no incluye la búsqueda en internet: de momento la IA contrasta con los titulares que baja GrowFolio. Lo vuelve a intentar dentro de unos días.</p>' : ''}
@@ -8518,7 +8563,7 @@ async function abrirAsesor(pregunta, enviar) {
     fondo.innerHTML = `<section class="asesor" role="dialog" aria-modal="true" aria-labelledby="asTit">
       <header class="as-cab"><div class="as-tit"><span class="as-ico">${ICONOS.chispa}</span><div><h2 id="asTit">Asesor</h2><small id="asSub"></small></div></div>
         <button class="ib" data-as="nueva" title="Nueva conversación" aria-label="Nueva conversación">${ICONOS.nueva}</button>
-        <button class="ib" data-as="ajustes" title="Ajustes del asesor" aria-label="Ajustes del asesor">${ICONOS.ajustes}</button>
+        <button class="ib" data-as="ajustes" title="Ajustes de GrowFolio IA" aria-label="Ajustes de GrowFolio IA">${ICONOS.ajustes}</button>
         <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
       <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
       <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea><button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
