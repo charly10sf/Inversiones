@@ -472,6 +472,9 @@ a.kpi:hover .v { color: var(--accent); }
 .check input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
 .form-grid { display: grid; gap: 14px 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); align-items: start; }
 .form-grid .ancho { grid-column: 1 / -1; }
+.otro-perfil { display: flex; flex-wrap: wrap; gap: 4px 6px; justify-content: center; align-items: baseline; color: var(--muted); font-size: 13.5px; text-align: center; }
+button.otro-perfil { justify-self: center; }
+.otro-perfil .enlace, .enlace.otro-perfil { color: var(--accent); font-weight: 600; }
 .calculo { background: var(--plane-2); border-radius: 10px; padding: 12px 14px; font-size: 14px; display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
 .calculo div { display: flex; justify-content: space-between; gap: 12px; }
 .calculo b { font-weight: 500; }
@@ -992,11 +995,29 @@ const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '
 const sum = (a, f = (x) => x) => a.reduce((s, x) => s + (+f(x) || 0), 0);
 
 /* ---------- almacenamiento local (siempre con try/catch) ---------- */
+/* Dos formas de usar la web:
+   - la cartera del repositorio (la del dueño de la web), cifrada en cartera.enc.json y guardada en GitHub;
+   - una cartera de este dispositivo, para otra persona que use la misma web sin GitHub: va cifrada con su
+     contraseña y se queda en el navegador o la app; nadie más la ve. El enlace con #mia abre esta.
+   Cada una guarda aparte su clave, su asesor y su análisis, así que pueden convivir en el mismo móvil. */
+const PERFIL_LOCAL = (() => {
+  try {
+    if (/[#&]mia(?:&|$)/.test(location.hash)) { localStorage.setItem('inv-perfil', '"local"'); history.replaceState(null, '', location.pathname + location.search); }
+    return localStorage.getItem('inv-perfil') === '"local"';
+  } catch (e) { return false; }
+})();
+const PRIVADAS = new Set(['inv-cache-enc', 'inv-token', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-cfg2', 'inv-ia-propio', 'inv-ia-agotados', 'inv-gkey-modo', 'inv-cache-ia', 'inv-oculto', 'inv-proy']);
+const IDB_CLAVE = PERFIL_LOCAL ? 'clave-local' : 'clave';
 const LS = {
-  get(k, d = null) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} },
-  del(k) { try { localStorage.removeItem(k); } catch (e) {} },
+  k(k) { return PERFIL_LOCAL && PRIVADAS.has(k) ? 'invL-' + k.slice(4) : k; },
+  get(k, d = null) { try { const v = localStorage.getItem(this.k(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
+  set(k, v) { try { localStorage.setItem(this.k(k), JSON.stringify(v)); } catch (e) {} },
+  del(k) { try { localStorage.removeItem(this.k(k)); } catch (e) {} },
 };
+function cambiarPerfil(local) {
+  if (local) LS.set('inv-perfil', 'local'); else LS.del('inv-perfil');
+  location.replace(location.pathname + location.search);
+}
 
 /* ---------- configuración: usuario y repo salen de la propia dirección ---------- */
 const CFG = (() => {
@@ -1191,6 +1212,7 @@ async function cargarPrecios() {
 }
 
 async function cargarCifrada() {
+  if (PERFIL_LOCAL) { const t = LS.get('inv-local-enc'); return t ? { texto: t, sha: null } : null; }
   if (CFG.dev) {
     const local = LS.get('inv-dev-enc');
     if (local) return { texto: local, sha: null };
@@ -2427,16 +2449,24 @@ function htmlPrensaIA(x, conEtiqueta = true) {
 function cabInforme(inf) {
   return `${haceCuanto(inf.generado)}, tras leer ${inf.noticias_leidas || 'las'} noticias${inf.busqueda_google ? ' y buscar en Google' : ''}`;
 }
-function htmlResumenInforme() {
+/* el resumen y las alertas del informe hablan de la cartera del repositorio: en una cartera de este
+   dispositivo solo se enseña lo del mercado y lo de las posiciones que también tiene */
+function informeVisible() {
   const inf = S.informe;
-  if (!inf || !inf.resumen) return '';
+  if (!inf || !PERFIL_LOCAL) return inf;
+  const ids = new Set(((S.M && S.M.filas) || []).map((f) => f.inst.id));
+  return { ...inf, resumen: '', alertas: (inf.alertas || []).filter((a) => a.id && ids.has(a.id)), posiciones: Object.fromEntries(Object.entries(inf.posiciones || {}).filter(([id]) => ids.has(id))) };
+}
+function htmlResumenInforme() {
+  const inf = informeVisible();
+  if (!inf || (!inf.resumen && !(inf.alertas || []).length)) return '';
   return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
-    <p class="informe-res">${escIA(inf.resumen)}</p>
+    ${inf.resumen ? `<p class="informe-res">${escIA(inf.resumen)}</p>` : ''}
     ${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}
   </section>`;
 }
 function htmlMercadoInforme() {
-  const inf = S.informe;
+  const inf = informeVisible();
   if (!inf || !(inf.mercado || []).length) return '';
   return `<section class="informe" aria-labelledby="hInfM"><div class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
     ${inf.resumen ? `<p class="informe-res" style="margin-bottom:12px">${escIA(inf.resumen)}</p>` : ''}
@@ -3497,6 +3527,7 @@ function htmlPlanVenta(pl, compacto) {
    Los datos personales van como {marcas} y se rellenan aquí con tu cartera descifrada.
    ===================================================================== */
 async function cargarIA() {
+  if (PERFIL_LOCAL) { S.ia = null; S.iaCargado = true; return; }
   try {
     const r = await fetch('analisis-ia.json?v=' + Date.now(), { cache: 'no-store' });
     if (r.ok) { const t = await r.text(); S.ia = JSON.parse(t); LS.set('inv-cache-ia', t); S.iaCargado = true; return; }
@@ -4390,13 +4421,15 @@ function pantallaDesbloqueo(errorTxt = '') {
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fDesb" autocomplete="on">
     <img class="logo" src="icon-192.png" alt="">
     <h1>Inversiones</h1>
-    <p>Tu cartera está cifrada. Escribe tu contraseña para verla.</p>
+    <p>${PERFIL_LOCAL ? 'Tu cartera de este dispositivo está cifrada. Escribe tu contraseña para verla.' : 'Tu cartera está cifrada. Escribe tu contraseña para verla.'}</p>
     <input type="text" name="username" value="${esc(CFG.owner)}" autocomplete="username" hidden>
     <label class="campo">Contraseña<input type="password" id="pass" autocomplete="current-password" required autofocus></label>
     <label class="check"><input type="checkbox" id="recordar" checked> Recordar en este dispositivo</label>
     <div class="error" id="err">${esc(errorTxt)}</div>
     <button class="btn pri" type="submit" id="bEntrar">Entrar</button>
+    ${htmlOtroPerfil()}
   </form></div>`;
+  enlazarOtroPerfil();
   $('#fDesb').onsubmit = async (ev) => {
     ev.preventDefault();
     const b = $('#bEntrar'); b.disabled = true; b.textContent = 'Descifrando…'; $('#err').textContent = '';
@@ -4406,8 +4439,8 @@ function pantallaDesbloqueo(errorTxt = '') {
       const key = await derivarClave($('#pass').value, S.salt, S.iter);
       S.cartera = await descifrar(S.enc.texto, key);
       S.key = key;
-      if ($('#recordar').checked) await IDB.set('clave', { salt: f.salt, key });
-      else await IDB.del('clave');
+      if ($('#recordar').checked) await IDB.set(IDB_CLAVE, { salt: f.salt, key });
+      else await IDB.del(IDB_CLAVE);
       arrancar();
     } catch (e) {
       console.warn(e);
@@ -4418,19 +4451,30 @@ function pantallaDesbloqueo(errorTxt = '') {
   };
 }
 
+/* para que otra persona use la web con su propia cartera, sin GitHub (o para volver a la del repositorio) */
+function htmlOtroPerfil() {
+  return PERFIL_LOCAL
+    ? `<button type="button" class="enlace otro-perfil" id="bPerfil">Abrir la cartera guardada en GitHub</button>`
+    : `<div class="otro-perfil"><span>¿Eres otra persona?</span><button type="button" class="enlace" id="bPerfil">Crea tu propia cartera en este dispositivo</button></div>`;
+}
+function enlazarOtroPerfil() { const b = $('#bPerfil'); if (b) b.onclick = () => cambiarPerfil(!PERFIL_LOCAL); }
 function pantallaCrear() {
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fCrear">
     <img class="logo" src="icon-192.png" alt="">
     <h1>Crear tu cartera</h1>
-    <p>Todavía no hay ninguna cartera guardada en <b>${esc(CFG.owner)}/${esc(CFG.repo)}</b>. Importa tu copia de la cartera o empieza de cero.</p>
+    ${PERFIL_LOCAL
+      ? '<p>Tu cartera se guarda solo en este dispositivo, cifrada con tu contraseña: nadie más la ve, ni el dueño de la web ni GitHub. Los precios, el radar, las noticias y las ideas son los mismos para todos.</p><p class="nota" style="margin:0">Para pasarla a otro móvil o tener copia: Ajustes, Descargar copia, y en el otro, Importar copia.</p>'
+      : `<p>Todavía no hay ninguna cartera guardada en <b>${esc(CFG.owner)}/${esc(CFG.repo)}</b>. Importa tu copia de la cartera o empieza de cero.</p>`}
     <label class="campo">Archivo de cartera (.json)<input type="file" id="archivo" accept=".json,application/json"><small id="archivoInfo">Opcional. Si no subes nada, empiezas con la cartera vacía.</small></label>
     <label class="campo">Contraseña nueva<input type="password" id="p1" autocomplete="new-password" minlength="8" required><small>Mínimo 8 caracteres. Si la pierdes no hay forma de recuperar los datos.</small></label>
     <label class="campo">Repite la contraseña<input type="password" id="p2" autocomplete="new-password" minlength="8" required></label>
-    <label class="campo">Token de GitHub<input type="password" id="tok" value="${esc(GH.token() || '')}" autocomplete="off" placeholder="github_pat_…"><small>Para guardar desde la web. Si no lo pones, se descarga el archivo cifrado y lo subes tú al repositorio.</small></label>
+    ${PERFIL_LOCAL ? '' : `<label class="campo">Token de GitHub<input type="password" id="tok" value="${esc(GH.token() || '')}" autocomplete="off" placeholder="github_pat_…"><small>Para guardar desde la web. Si no lo pones, se descarga el archivo cifrado y lo subes tú al repositorio.</small></label>`}
     <label class="check"><input type="checkbox" id="recordar" checked> Recordar en este dispositivo</label>
     <div class="error" id="err"></div>
     <button class="btn pri" type="submit" id="bCrear">Cifrar y guardar</button>
+    ${PERFIL_LOCAL ? htmlOtroPerfil() : ''}
   </form></div>`;
+  enlazarOtroPerfil();
   let importada = null;
   $('#archivo').onchange = async (ev) => {
     const file = ev.target.files[0]; if (!file) return;
@@ -4446,19 +4490,45 @@ function pantallaCrear() {
     const p1 = $('#p1').value, p2 = $('#p2').value;
     if (p1 !== p2) { $('#err').textContent = 'Las contraseñas no coinciden.'; return; }
     if (p1.length < 8) { $('#err').textContent = 'Mínimo 8 caracteres.'; return; }
-    const tok = $('#tok').value.trim();
+    const tok = $('#tok') ? $('#tok').value.trim() : '';
     if (tok) LS.set('inv-token', tok);
     const b = $('#bCrear'); b.disabled = true; b.textContent = 'Cifrando…';
     S.salt = crypto.getRandomValues(new Uint8Array(16)); S.iter = 600000;
     S.key = await derivarClave(p1, S.salt, S.iter);
     S.cartera = importada || { version: 1, posiciones: [], efectivo: [], aportaciones: [], limite_acciones: 20 };
-    if ($('#recordar').checked) await IDB.set('clave', { salt: b64.enc(S.salt), key: S.key });
+    if ($('#recordar').checked) await IDB.set(IDB_CLAVE, { salt: b64.enc(S.salt), key: S.key });
     const ok = await guardarCartera('Crear cartera cifrada');
     if (ok) arrancar(); else { b.disabled = false; b.textContent = 'Cifrar y guardar'; }
   };
 }
 
+/* las empresas que da de alta alguien sin GitHub van dentro de su cartera cifrada (no en instrumentos.json) */
+function instPropios() {
+  const comunes = new Set(((S.instJson && S.instJson.instrumentos) || []).map((i) => i.id));
+  return S.instOrden.filter((id) => !comunes.has(id)).map((id) => S.inst[id]);
+}
+function sumarInstPropios() {
+  for (const i of (S.cartera && S.cartera.inst_propios) || []) {
+    if (!i || !i.id) continue;
+    // si el dueño de la web la ha añadido a la lista común (con precio diario de la Action), se usa esa
+    const comun = S.instOrden.find((id) => { const c = S.inst[id]; return id !== i.id && c && ((i.isin && c.isin === i.isin) || (i.yahoo && c.yahoo && c.yahoo.toUpperCase() === i.yahoo.toUpperCase())); });
+    if (comun) {
+      for (const lista of [S.cartera.posiciones, S.cartera.aportaciones, S.cartera.movimientos]) for (const x of lista || []) if (x.instrumento === i.id) x.instrumento = comun;
+      continue;
+    }
+    if (!S.inst[i.id]) { S.inst[i.id] = i; S.instOrden.push(i.id); }
+  }
+}
+async function guardarLocal() {
+  S.cartera.inst_propios = instPropios();
+  S.cartera.actualizado = new Date().toISOString();
+  const texto = await cifrar(S.cartera);
+  LS.set('inv-local-enc', texto); S.enc = { texto, sha: null }; S.instCambiados = false;
+  try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist(); } catch (e) {}
+  return true;
+}
 async function guardarCartera(mensaje) {
+  if (PERFIL_LOCAL) { await guardarLocal(); toast('Guardado en este dispositivo'); return true; }
   S.cartera.actualizado = new Date().toISOString();
   const texto = await cifrar(S.cartera);
   if (CFG.dev) { LS.set('inv-dev-enc', texto); S.enc = { texto, sha: null }; toast('Guardado (modo pruebas)'); return true; }
@@ -4587,7 +4657,10 @@ async function pintarAjustesApp(el) {
 function abrirAjustes() {
   const tok = GH.token();
   const h = hoja('Ajustes', `
-    <div style="display:grid;gap:12px">
+    ${PERFIL_LOCAL ? `<div class="seccion-ed" style="border:0;padding-top:0;margin-top:0"><h3>Tu cartera</h3>
+      <p class="nota" style="margin:0">Guardada solo en este dispositivo y cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (abajo, en Copias).</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPerfil">Abrir la cartera de GitHub</button></div></div>` : ''}
+    <div style="display:grid;gap:12px"${PERFIL_LOCAL ? ' hidden' : ''}>
       <div class="campo">Repositorio<div style="color:var(--text)">${esc(CFG.owner)}/${esc(CFG.repo)}</div></div>
       <label class="campo">Token de GitHub<input type="password" id="aTok" value="${esc(tok || '')}" autocomplete="off" placeholder="github_pat_…"><small>Token "fine-grained" con permiso <b>Contents: Read and write</b> solo para este repositorio. Se guarda en este navegador.</small></label>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aProbar">Guardar y probar</button><button class="btn peq" id="aQR"${tok ? '' : ' disabled'}>Vincular el móvil</button></div>
@@ -4608,9 +4681,10 @@ function abrirAjustes() {
     </div>
     <div class="seccion-ed"><h3>Este dispositivo</h3>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
-      <p class="nota" style="margin:0">Bloquear te pedirá la contraseña la próxima vez. Olvidar borra también el token y la copia local.</p>
+      <p class="nota" style="margin:0">${PERFIL_LOCAL ? 'Bloquear te pedirá la contraseña la próxima vez. Olvidar borra tu cartera de este dispositivo: descarga antes una copia.' : 'Bloquear te pedirá la contraseña la próxima vez. Olvidar borra también el token y la copia local.'}</p>
     </div>`);
   pintarAjustesApp($('#aApp', h.el));
+  if ($('#aPerfil', h.el)) $('#aPerfil', h.el).onclick = () => cambiarPerfil(false);
   $('#aProbar', h.el).onclick = async () => {
     const t = $('#aTok', h.el).value.trim();
     if (t) LS.set('inv-token', t); else LS.del('inv-token');
@@ -4634,7 +4708,7 @@ function abrirAjustes() {
     if (a !== b) return toast('No coinciden');
     S.salt = crypto.getRandomValues(new Uint8Array(16));
     S.key = await derivarClave(a, S.salt, S.iter);
-    if (await IDB.get('clave')) await IDB.set('clave', { salt: b64.enc(S.salt), key: S.key });
+    if (await IDB.get(IDB_CLAVE)) await IDB.set(IDB_CLAVE, { salt: b64.enc(S.salt), key: S.key });
     await guardarCartera('Cambiar contraseña');
     $('#aP1', h.el).value = $('#aP2', h.el).value = '';
   };
@@ -4647,10 +4721,11 @@ function abrirAjustes() {
       S.cartera = j; await guardarCartera('Importar copia'); h.cerrar(); pintar();
     } catch (e) { toast('Ese archivo no parece una cartera'); }
   };
-  $('#aBloq', h.el).onclick = async () => { await IDB.del('clave'); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
+  $('#aBloq', h.el).onclick = async () => { await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
   $('#aOlvidar', h.el).onclick = async () => {
-    if (!confirm('¿Borrar la clave, el token y las copias locales de este navegador?')) return;
-    await IDB.del('clave');
+    if (!confirm(PERFIL_LOCAL ? '¿Borrar tu cartera de este dispositivo? Sin una copia descargada no se puede recuperar.' : '¿Borrar la clave, el token y las copias locales de este navegador?')) return;
+    await IDB.del(IDB_CLAVE);
+    if (PERFIL_LOCAL) { LS.del('inv-local-enc'); LS.del('inv-perfil'); }
     for (const k of ['inv-token', 'inv-cache-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc', 'inv-cache-radar', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-dev-ia-enc']) LS.del(k);
     location.reload();
   };
@@ -4802,6 +4877,7 @@ async function cargarAnalisisPropio(textoRemoto) {
   if (mejor && (!S.iaPropio || mejor.fecha > S.iaPropio.fecha)) S.iaPropio = mejor;
 }
 async function leerAnalisisRemoto() {
+  if (PERFIL_LOCAL) return null;
   try {
     if (CFG.dev) return LS.get('inv-dev-ia-enc');
     const f = await GH.leer('analisis.enc.json');
@@ -4814,7 +4890,7 @@ async function guardarAnalisisPropio() {
   try {
     const texto = await cifrar(o);
     if (CFG.dev) { LS.set('inv-dev-ia-enc', texto); return; }
-    if (GH.token()) await GH.escribir('analisis.enc.json', texto, 'Análisis de la IA');
+    if (GH.token() && !PERFIL_LOCAL) await GH.escribir('analisis.enc.json', texto, 'Análisis de la IA');
   } catch (e) { console.warn('No se pudo subir el análisis', e); }
 }
 
@@ -4992,6 +5068,7 @@ function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, cl
 /* guarda la cartera sin avisos ni descargas (para lo que hace la web sola, como el análisis diario) */
 async function guardarCarteraCallada(mensaje) {
   if (!S.key || !S.cartera) return false;
+  if (PERFIL_LOCAL) return guardarLocal();
   S.cartera.actualizado = new Date().toISOString();
   const texto = await cifrar(S.cartera);
   if (CFG.dev) { LS.set('inv-dev-enc', texto); S.enc = { texto, sha: null }; return true; }
@@ -5119,9 +5196,9 @@ function contextoAsesor(M) {
     L.push('', '## Titulares recientes (Google Noticias)');
     if (N.mercado) L.push('Mercado:\n' + tit(N.mercado, 10));
     for (const id of new Set(M.filas.map((f) => f.inst.id))) if (N[id] && N[id].length) L.push(`${nombreInst(id)}:\n` + tit(N[id], 5));
-    const inf = S.informe;
-    if (inf && inf.resumen) {
-      L.push('', `## Informe de prensa de Gemini (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, `Resumen: ${inf.resumen}`);
+    const inf = informeVisible();
+    if (inf && (inf.resumen || (inf.mercado || []).length)) {
+      L.push('', `## Informe de prensa de Gemini (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, inf.resumen ? `Resumen: ${inf.resumen}` : 'Solo lo del mercado y lo de sus posiciones.');
       for (const m of inf.mercado || []) L.push(`- Mercado (${m.impacto}): ${m.t}. ${m.detalle || ''}`);
       for (const [id, x] of Object.entries(inf.posiciones || {})) L.push(`- ${nombreInst(id)} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Vigilar: ${x.vigilar || '—'}. Fuentes: ${(x.fuentes || []).map((f) => f.f || '').filter(Boolean).join(', ') || '—'}`);
       for (const [s0, x] of Object.entries(inf.ideas || {})) L.push(`- Idea ${s0} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Riesgo: ${x.riesgo || '—'}.`);
@@ -5989,6 +6066,7 @@ async function recargarPrecios() {
   revisarAnalisisIA();
 }
 function arrancar() {
+  sumarInstPropios();
   S.vista = vistaDeHash() || LS.get('inv-vista', 'cartera');
   if (!VISTAS.some(([k]) => k === S.vista)) S.vista = 'cartera';
   montar();
@@ -6020,7 +6098,7 @@ async function iniciar() {
   if (!S.enc) return pantallaCrear();
   try {
     const f = JSON.parse(S.enc.texto);
-    const guardada = await IDB.get('clave');
+    const guardada = await IDB.get(IDB_CLAVE);
     if (guardada && guardada.key && guardada.salt === f.salt) {
       S.cartera = await descifrar(S.enc.texto, guardada.key);
       S.key = guardada.key; S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;

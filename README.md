@@ -73,7 +73,14 @@ Desde la web (Editar → Instrumento → *Nuevo instrumento…*) o editando `ins
 GitHub pausa las tareas programadas de un repositorio público tras 60 días sin actividad. Pestaña **Actions** → *Precios* → *Enable workflow* (o *Run workflow* para lanzarla a mano).
 
 
-## Usarla con tus propios datos (por ejemplo, un amigo)
+## Otra persona en la misma web, sin GitHub
+
+Un amigo puede usar esta misma web con su propia cartera: que abra `https://charly10sf.github.io/Inversiones/#mia` (o, en la pantalla de la contraseña, "Crea tu propia cartera en este dispositivo"). Elige su contraseña y su cartera se guarda cifrada solo en su navegador o en la app: no pasa por GitHub y el dueño de la web no la ve. Comparte con todos los precios, el radar, las noticias y las ideas; no ve el análisis ni las reglas del dueño, y el asesor funciona con su propia clave gratuita de Google.
+
+- Las acciones del radar (unas 800) y todo lo que ya está en `instrumentos.json` salen con precio. Un fondo o ETF que la web no conozca se puede dar de alta, pero sin precio diario: o se pone su valor a mano o el dueño lo añade a `instrumentos.json` (solo lleva el ISIN, sin cantidades) y desde entonces sale con precio para los dos.
+- La cartera vive en ese dispositivo: para tener copia o pasarla a otro móvil, Ajustes, Copias.
+
+## Usarla con tus propios datos en tu propia web
 
 Cada persona necesita su propia copia: los datos van cifrados con su contraseña en su repositorio, y la Action descarga los precios de lo que tiene cada uno.
 
