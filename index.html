@@ -1578,6 +1578,8 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .intro-slide.activa .cierra { animation: ilus-cierra 0.7s cubic-bezier(.3, 1.4, .5, 1) 0.35s both; }
 @keyframes ilus-cierra { from { transform: translateY(-14px); } }
 @media (prefers-reduced-motion: reduce) { .intro-pista { transition: none; } .intro-slide.activa * { animation: none !important; } }
+
+.aj-intro { display: block; margin: -8px 0 18px; color: var(--accent); font-weight: 600; font-size: 14px; }
 </style>
 </head>
 <body>
@@ -6797,6 +6799,7 @@ function abrirAjustes() {
   const tok = GH.token();
   const h = hoja('Ajustes', `
     <button class="aj-tutorial" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña. Puedes repetirlo cuando quieras.</small></span></button>
+    <button class="enlace aj-intro" id="aIntro" data-cerrar>Ver la presentación de GrowFolio</button>
     ${PERFIL_LOCAL ? `<div class="seccion-ed" style="border:0;padding-top:0;margin-top:0"><h3>Tu cartera</h3>
       <p class="nota" style="margin:0">Guardada solo en este dispositivo y cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (abajo, en Copias).</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPerfil">Abrir la cartera de GitHub</button></div></div>` : ''}
@@ -6839,6 +6842,7 @@ function abrirAjustes() {
   pintarAjustesApp($('#aApp', h.el));
   $('#aNov', h.el).onclick = () => setTimeout(() => mostrarNovedades(null), 0);
   for (const b of $$('#aTour, #aTour2', h.el)) b.onclick = () => setTimeout(() => iniciarTour(0), 0);
+  $('#aIntro', h.el).onclick = () => setTimeout(() => pantallaIntro(() => { montar(); pintar(); }), 0);
   $('#aInvita', h.el).onclick = () => {
     const url = (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#mia';
     const t = `Te paso GrowFolio, la web con la que llevo mis inversiones: precios en directo, qué hacer en cada momento, la renta y una IA que te aconseja según tu perfil.\n\n1. Abre ${url} y crea tu contraseña: tu cartera se guarda cifrada solo en tu móvil.\n2. Haz el tutorial del principio.\n3. Mete lo que tienes con "Añadir posición" (busca por nombre o ISIN) o importando capturas de tu bróker.\n4. Para la IA, saca una clave gratis en aistudio.google.com y pégala en el Asesor.\n5. Rellena tu perfil en Objetivos: así te aconseja a tu medida.`;
@@ -8326,7 +8330,8 @@ async function iniciar() {
     if (guardada && guardada.key && guardada.salt === f.salt) {
       S.cartera = await descifrar(S.enc.texto, guardada.key);
       S.key = guardada.key; S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;
-      return arrancar();
+      // también a quien ya entra solo: la presentación, una vez en cada dispositivo
+      return intro ? pantallaIntro(arrancar) : arrancar();
     }
   } catch (e) { console.warn('La clave guardada no sirve', e); }
   if (intro) pantallaIntro(() => pantallaDesbloqueo()); else pantallaDesbloqueo();
