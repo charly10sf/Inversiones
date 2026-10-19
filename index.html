@@ -471,6 +471,7 @@ a.kpi:hover .v { color: var(--accent); }
 .check { display: flex; gap: 9px; align-items: center; font-size: 14px; color: var(--text-2); }
 .check input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; }
 .form-grid { display: grid; gap: 14px 12px; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); align-items: start; }
+.form-grid .ancho { grid-column: 1 / -1; }
 .calculo { background: var(--plane-2); border-radius: 10px; padding: 12px 14px; font-size: 14px; display: grid; gap: 4px; font-variant-numeric: tabular-nums; }
 .calculo div { display: flex; justify-content: space-between; gap: 12px; }
 .calculo b { font-weight: 500; }
@@ -558,6 +559,12 @@ details.mas[open] > summary { margin-bottom: 12px; }
 .as-enviar svg { width: 18px; height: 18px; }
 .as-enviar.parar { background: var(--plane-3); color: var(--text); }
 .as-pie small { color: var(--muted); font-size: 11.5px; padding: 0 6px; }
+.as-modo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.as-modo > span { color: var(--muted); font-size: 12.5px; }
+.as-modo .seg { display: flex; gap: 3px; padding: 3px; background: var(--plane); border: 1px solid var(--line); border-radius: 10px; }
+.as-modo button { border: 0; background: none; color: var(--text-2); font-size: 13px; font-weight: 500; padding: 5px 12px; border-radius: 7px; min-height: 30px; }
+.as-modo button[aria-pressed="true"] { background: var(--plane-3); color: var(--text); }
+.as-modo small { padding: 0; }
 .as-vacio { display: grid; gap: 12px; margin-top: auto; }
 .as-vacio h3 { margin: 0; font-size: 24px; font-weight: 300; letter-spacing: -0.02em; }
 .as-vacio p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.6; }
@@ -628,7 +635,7 @@ details.mas[open] > summary { margin-bottom: 12px; }
 .idea-cifras .k { font-size: 12px; font-weight: 400; }
 .idea-pega { margin: 0; color: var(--text-2); font-size: 13px; line-height: 1.5; }
 .idea-pega b { color: var(--warn); font-weight: 600; }
-.idea > .btn { margin-top: auto; align-self: flex-start; }
+.idea-btns { margin-top: auto; display: flex; flex-wrap: wrap; gap: 8px; }
 .idea.ia p { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.55; }
 .idea.ia p b { color: var(--text); font-weight: 600; }
 .ia-ideas { margin: 18px 0 30px; }
@@ -1440,6 +1447,8 @@ function calcularPos(pos, hoy) {
   let precio = p ? p.precio : null;
   let prev = p ? p.cierre_anterior : null;
   let varDia = p ? p.variacion_dia : null;
+  // recién dada de alta: hasta que la Action le busque precio (unos minutos), el del radar
+  if (precio == null && inst.yahoo) { const r = radarPorSim(inst.yahoo); if (r && r.pe) { precio = r.pe; varDia = r.v != null ? r.v : null; prev = varDia != null ? precio / (1 + varDia / 100) : null; } }
   const vivo = S.live[pos.instrumento];
   if (vivo) { precio = vivo.precio; varDia = vivo.var; prev = varDia != null ? precio / (1 + varDia / 100) : prev; }
 
@@ -2338,6 +2347,8 @@ function puntuarIdea(x, ctx) {
   else if (x.sector) { p += 0.1; motivos.push(`${x.sector.toLowerCase()}: solo un ${fmtNum(pesoSector, 0)} % de tu bolsa`); }
   const dentro = ctx.dentro(x.n);
   if (dentro > 0.01 * ctx.total) { p -= 0.35; pegas.push(`ya tienes ${eur(dentro, 0)} en ella dentro de tus fondos`); }
+  const gemelas = x.ind && ctx.industrias && ctx.industrias[x.ind];
+  if (gemelas) { p -= 0.6; pegas.push(`es la misma apuesta que ${gemelas.join(' y ')}, que ya tienes: dependen de lo mismo y subirían y caerían a la vez`); }
   if (x.z === 'EEUU') pegas.push('cotiza en dólares: el cambio euro/dólar también cuenta');
   const tc = tasaRadar(x);
   if (tc) pegas.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
@@ -2348,7 +2359,10 @@ function puntuarIdea(x, ctx) {
 function ctxIdeas(M) {
   const sect = {};
   for (const x of reparto(M, 'sector', 'rv').filas) sect[x.k] = x.pct;
-  return { sectores: sect, total: M.total, dentro: dentroDeFondos(M) };
+  // las acciones que ya tienes sueltas, por industria (aerolíneas, petroleras…): otra de la misma es repetir apuesta
+  const industrias = {};
+  for (const f of M.filas) if (f.inst.tipo === 'Acción' && f.p && f.p.industria && f.valor) industrias[f.p.industria] = [...new Set([...(industrias[f.p.industria] || []), f.inst.corto])];
+  return { sectores: sect, total: M.total, dentro: dentroDeFondos(M), industrias };
 }
 function mejoresIdeas(M, excluir = {}) {
   const r = radarVals();
@@ -2527,7 +2541,7 @@ function tarjetaIdea(x, ctx) {
     ${htmlCifrasIdea(r, x.esp)}
     ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
     ${mas ? `<details class="mas"><summary>Qué la mueve, pegas, impuestos y señales</summary><div class="idea-mas">${mas}</div></details>` : ''}
-    <button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.chispa}¿Cuánto meto?</button>
+    <div class="idea-btns"><button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.chispa}¿Cuánto meto?</button>${r && r.s ? `<button class="btn peq" data-accion="operacion" data-tipo="compra" data-sim="${esc(r.s)}">${ICONOS.compra}Ya la he comprado</button>` : ''}</div>
   </article>`;
 }
 function htmlEvitar() {
@@ -4143,15 +4157,26 @@ function fijarPosicion(pos) {
   delete pos.valor_ref;
 }
 
-function operacion(tipo, id) {
-  const pos0 = id ? S.cartera.posiciones.find((p) => p.id === id) : null;
-  const precioDe = (instId) => { const v = S.live[instId]; const p = S.precios && S.precios.instrumentos && S.precios.instrumentos[instId]; return v ? v.precio : p ? p.precio : null; };
+function operacion(tipo, id, sim) {
+  let pos0 = id ? S.cartera.posiciones.find((p) => p.id === id) : null;
+  const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
+  let registrada = false;
+  // desde una idea: la empresa ya elegida (y dada de alta si no la tenías); solo faltan las acciones
+  let instIni = pos0 ? pos0.instrumento : S.instOrden[0];
+  if (sim) { const nid = instDeRadar(sim); if (nid) { instIni = nid; pos0 = S.cartera.posiciones.find((p) => p.instrumento === nid) || null; } }
+  const precioDe = (instId) => {
+    const v = S.live[instId]; const p = S.precios && S.precios.instrumentos && S.precios.instrumentos[instId];
+    if (v) return v.precio; if (p && p.precio) return p.precio;
+    const r = radarPorSim(S.inst[instId] && S.inst[instId].yahoo); return r && r.pe ? r.pe : null;
+  };
   const h = hoja('Registrar operación', `
     <form id="fOp" novalidate>
       <div class="tabs" role="group" aria-label="Tipo"><button type="button" data-t="compra" aria-pressed="${tipo !== 'venta'}">Compra</button><button type="button" data-t="venta" aria-pressed="${tipo === 'venta'}">Venta</button></div>
       <div class="form-grid">
         <label class="campo" id="cPos">Posición<select name="pos">${S.cartera.posiciones.map((p) => `<option value="${esc(p.id)}"${pos0 && p.id === pos0.id ? ' selected' : ''}>${esc((S.inst[p.instrumento] && S.inst[p.instrumento].corto) || p.instrumento)}, ${esc(p.plataforma)}</option>`).join('')}<option value="__nueva">Otra (nueva posición)…</option></select></label>
-        <label class="campo" id="cInst" hidden>Instrumento<select name="instrumento">${opcionesInst(pos0 ? pos0.instrumento : S.instOrden[0])}</select></label>
+        <label class="campo ancho" id="cBus" hidden>Busca la empresa<input name="buscar" list="dlEmpresas" placeholder="Nombre o ticker: HBX, United Airlines…" autocomplete="off" enterkeyhint="done"><small id="tBus">Entre las ${radarVals().length} que sigue la web: nombre, ticker y país se ponen solos, sin ISIN.</small></label>
+        <datalist id="dlEmpresas">${opcionesEmpresas()}</datalist>
+        <label class="campo" id="cInst" hidden>Instrumento<select name="instrumento">${opcionesInst(instIni)}</select></label>
         <label class="campo" id="cPlat" hidden>Plataforma<select name="plataforma">${opcionesPlat(pos0 ? pos0.plataforma : 'Trade Republic')}</select></label>
         <label class="campo">Fecha<input name="fecha" type="date" value="${hoyIso()}"></label>
         <label class="campo">Unidades<input name="uds" inputmode="decimal" placeholder="acciones o participaciones"></label>
@@ -4163,7 +4188,16 @@ function operacion(tipo, id) {
       <div class="calculo" id="calc"></div>
       <div class="error" id="errOp"></div>
       <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Registrar</button></div>
-    </form>`);
+    </form>`, () => {
+    // si cancelas, las empresas dadas de alta aquí y sin usar no se quedan en tu lista
+    if (registrada) return;
+    const usados = new Set((S.cartera.posiciones || []).map((p) => p.instrumento));
+    const sobran = S.instOrden.filter((x) => !instsAntes.has(x) && !usados.has(x));
+    if (!sobran.length) return;
+    for (const x of sobran) delete S.inst[x];
+    S.instOrden = S.instOrden.filter((x) => !sobran.includes(x));
+    S.instCambiados = cambiadosAntes;
+  });
   const fm = $('#fOp', h.el);
   const q = (n) => fm.querySelector(`[name="${n}"]`);
   let t = tipo === 'venta' ? 'venta' : 'compra';
@@ -4173,14 +4207,14 @@ function operacion(tipo, id) {
   const ponerPrecio = () => { const pr = precioDe(instSel()); if (pr) q('precio').value = String(+pr.toFixed(pr >= 100 ? 2 : 4)).replace('.', ','); };
   const sincronizar = () => {
     const nueva = q('pos').value === '__nueva';
-    $('#cInst', h.el).hidden = !nueva; $('#cPlat', h.el).hidden = !nueva;
+    $('#cInst', h.el).hidden = !nueva; $('#cPlat', h.el).hidden = !nueva; $('#cBus', h.el).hidden = !nueva || t !== 'compra';
     for (const b of $$('[data-t]', fm)) b.setAttribute('aria-pressed', b.dataset.t === t);
     if (t === 'venta' && nueva) q('pos').value = (S.cartera.posiciones[0] || {}).id || '__nueva';
     $('#tEf', h.el).textContent = t === 'compra' ? `Pagar con el efectivo de ${platSel()}` : `Sumar lo cobrado al efectivo de ${platSel()}`;
     if (!q('gastos').dataset.tocado) q('gastos').value = platSel() === 'Trade Republic' ? '1' : '';
     recalcular();
   };
-  const tasaDe = (instId) => { const i = S.inst[instId] || {}; const pp = S.precios && S.precios.instrumentos && S.precios.instrumentos[instId]; return tasaCompra(i.pais, i.tipo, pp && pp.fundamentales && pp.fundamentales.capitalizacion); };
+  const tasaDe = (instId) => { const i = S.inst[instId] || {}; if (i.bolsa && i.bolsa !== i.pais) return null; const pp = S.precios && S.precios.instrumentos && S.precios.instrumentos[instId]; return tasaCompra(i.pais, i.tipo, pp && pp.fundamentales && pp.fundamentales.capitalizacion); };
   const recalcular = () => {
     const uds = numero(q('uds').value), pr = numero(q('precio').value), gastos = numero(q('gastos').value) || 0;
     const c = $('#calc', h.el);
@@ -4207,10 +4241,22 @@ function operacion(tipo, id) {
   q('pos').onchange = () => { ponerPrecio(); sincronizar(); };
   q('instrumento').onchange = (e) => { if (e.target.value === '__nuevo') nuevoInstrumento((nid) => { e.target.innerHTML = opcionesInst(nid || S.instOrden[0]); ponerPrecio(); }); else ponerPrecio(); sincronizar(); };
   q('plataforma').onchange = sincronizar;
+  q('buscar').onchange = () => {
+    const m = q('buscar').value.match(/\(([^()]+)\)\s*$/);
+    const nid = m ? instDeRadar(m[1].trim()) : null;
+    if (!nid) { $('#tBus', h.el).textContent = 'No la encuentro en el radar: elige "Nuevo instrumento" en la lista de abajo.'; return; }
+    q('instrumento').innerHTML = opcionesInst(nid); q('instrumento').value = nid;
+    const ya = S.cartera.posiciones.find((p) => p.instrumento === nid && p.plataforma === q('plataforma').value);
+    $('#tBus', h.el).textContent = ya ? `Ya tienes ${S.inst[nid].corto} en ${ya.plataforma}: la compra se suma a esa posición.` : `${S.inst[nid].corto} (${S.inst[nid].yahoo}) lista: pon las acciones o el importe.`;
+    q('buscar').value = '';
+    ponerPrecio(); sincronizar();
+  };
   q('importe').oninput = () => { const imp = numero(q('importe').value), pr = numero(q('precio').value); if (imp > 0 && pr > 0) q('uds').value = String(+(imp / pr).toFixed(6)).replace('.', ','); recalcular(); };
   for (const n of ['uds', 'precio', 'gastos']) q(n).oninput = () => { if (n !== 'gastos') q('importe').value = ''; else q('gastos').dataset.tocado = '1'; recalcular(); };
-  if (!pos0 && t === 'compra') q('pos').value = S.cartera.posiciones.length ? q('pos').value : '__nueva';
+  if (!pos0 && t === 'compra') q('pos').value = S.cartera.posiciones.length && !sim ? q('pos').value : '__nueva';
+  if (sim && !pos0) { q('instrumento').value = instIni; q('plataforma').value = 'Trade Republic'; }
   ponerPrecio(); sincronizar();
+  if (sim) setTimeout(() => q('uds').focus(), 50);
   fm.onsubmit = async (ev) => {
     ev.preventDefault();
     const err = (x) => { $('#errOp', h.el).textContent = x; };
@@ -4248,6 +4294,7 @@ function operacion(tipo, id) {
       }
     } catch (e) { return err(e.message); }
     mov.posicion = pos.id;
+    registrada = true;
     if (q('efectivo').checked) {
       S.cartera.efectivo = S.cartera.efectivo || [];
       let e = S.cartera.efectivo.find((x) => x.plataforma === plat);
@@ -4478,6 +4525,45 @@ function nuevoInstrumento(fin) {
     const finalizar = fin; fin = () => {}; h.cerrar(); finalizar(id);
   };
 }
+
+/* Las empresas que sigue la web (el radar) sirven para dar de alta una acción sin escribir nada: nombre,
+   ticker, país, mercado y logo salen de ahí. Sin ISIN: la Action busca su precio por el ticker. */
+function radarPorSim(sim) {
+  const r = S.radar && S.radar.valores;
+  if (!r || !sim) return null;
+  if (!S.radarMapa || S.radarMapa.ver !== S.radarVer || S.radarMapa.n !== r.length) S.radarMapa = { ver: S.radarVer, n: r.length, m: new Map(r.map((x) => [String(x.s).toUpperCase(), x])) };
+  return S.radarMapa.m.get(String(sim).toUpperCase()) || null;
+}
+function instPorSim(sim) {
+  const S2 = String(sim || '').toUpperCase();
+  return S.instOrden.find((id) => { const i = S.inst[id], p = S.precios && S.precios.instrumentos && S.precios.instrumentos[id]; return (i.yahoo && i.yahoo.toUpperCase() === S2) || (p && String(p.simbolo || '').toUpperCase() === S2); }) || null;
+}
+const nombreCorto = (n) => {
+  const t = String(n || '').replace(/,?\s+(inc|corp|corporation|co|plc|s\.?a|n\.?v|ag|se|sa|spa|s\.p\.a|ltd|limited|holdings?|group|international|company|the)\.?(?=\s|,|$)/gi, ' ').replace(/[,.]+\s*$/, '').replace(/\s+/g, ' ').trim();
+  return (t || String(n || '')).split(' ').slice(0, 3).join(' ').slice(0, 24);
+};
+/* devuelve el id del instrumento (el que ya tienes o uno nuevo hecho con los datos del radar) */
+function instDeRadar(sim) {
+  const ya = instPorSim(sim);
+  if (ya) return ya;
+  const x = radarPorSim(sim);
+  if (!x) return null;
+  const o = origenRadar(x);
+  const nombre = /^[A-Z0-9 .,&'-]+$/.test(x.n) ? x.n.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : x.n;
+  const corto = nombreCorto(nombre);
+  let id = corto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'accion';
+  while (S.inst[id]) id += '-2';
+  const inst = { id, nombre, corto, yahoo: x.s, tipo: 'Acción', clase: 'Renta variable', region: { [x.z === 'EEUU' ? 'EEUU' : 'Europa']: 100 } };
+  if (o.sede || o.bolsa) inst.pais = o.sede || o.bolsa;
+  // si cotiza en un país y tiene la sede en otro (HBX: Madrid y Reino Unido), la tasa de compra no aplica
+  if (o.bolsa && o.bolsa !== inst.pais) inst.bolsa = o.bolsa;
+  if (o.ciudad) inst.mercado = o.ciudad;
+  if (x.w) inst.dominio = x.w;
+  inst.noticias = corto;
+  S.inst[id] = inst; S.instOrden.push(id); S.instCambiados = true;
+  return id;
+}
+const opcionesEmpresas = () => (radarVals() || []).filter((x) => x.n && x.s).map((x) => `<option value="${esc(`${x.n} (${x.s})`)}"></option>`).join('');
 
 /* la app de Android: dónde bajarla, qué versión tienes y cómo pasarle el token sin escribirlo */
 async function pintarAjustesApp(el) {
@@ -4780,13 +4866,14 @@ async function generarAnalisisIA(motivo = 'la pides tú') {
     const M = S.M || calcular();
     const ids = [...new Set(M.filas.map((f) => f.inst.id))];
     const cfgA = cfgAsesor();
-    await conversar({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, cfgA.web && !AS.sinWeb) }], turno, sistema: sistemaAsesor(), maxTokens: 12000, alCambiar });
+    // las revisiones automáticas van con el 3.6, que tiene su propio cupo: así no gastan el del 3.8, que queda para tus preguntas
+    await conversar({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, cfgA.web && !AS.sinWeb) }], turno, sistema: sistemaAsesor(), maxTokens: 12000, alCambiar, modelo: motivo === 'la pides tú' ? undefined : 'gemini-3.6-flash' });
     const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');
     const json = extraerJSON(texto);
     if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');
     const vistas = new Set();
     json.fuentes = [...turno.citas, ...(Array.isArray(json.fuentes) ? json.fuentes : [])].filter((x) => x && /^https?:\/\//.test(x.u || '') && !vistas.has(x.u) && vistas.add(x.u)).slice(0, 20);
-    S.iaPropio = { fecha: new Date().toISOString(), modelo: cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo };
+    S.iaPropio = { fecha: new Date().toISOString(), modelo: AS.modeloVivo || cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo };
     AS.gasto += turno.coste || 0; guardarConv();
     await guardarAnalisisPropio();
     toast(`${nombreIA()} ha actualizado el análisis de tu cartera`);
@@ -4836,11 +4923,23 @@ function refrescarProgresoIA() { const el = $('#iaProgreso'); if (el) el.innerHT
    ===================================================================== */
 /* La IA de la web es Gemini, de Google, con una clave gratuita de Google AI Studio. */
 const MODELOS = {
-  'gemini-3.8-flash': { n: 'Gemini 3.8 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'El más potente de los gratuitos de Google, pensando al máximo. El recomendado.' },
-  'gemini-3.6-flash': { n: 'Gemini 3.6 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Por si el 3.8 te da límite.' },
-  'gemini-3.5-flash-lite': { n: 'Gemini 3.5 Flash-Lite', prov: 'google', gratis: true, txt: 'Muy rápido, para dudas sencillas.' },
+  'gemini-3.8-flash': { n: 'Gemini 3.8 Flash', corto: '3.8 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'El más listo de los gratuitos: piensa a fondo, pero su cupo diario es el que antes se acaba.' },
+  'gemini-3.6-flash': { n: 'Gemini 3.6 Flash', corto: '3.6 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Casi igual de bueno y con su propio cupo. Si el 3.8 se agota, la web salta a este sola.' },
+  'gemini-3.5-flash-lite': { n: 'Gemini 3.5 Flash-Lite', corto: 'Flash-Lite', prov: 'google', gratis: true, txt: 'La rápida: contesta en segundos, no piensa tanto y su cupo diario es mucho más amplio. Para el día a día.' },
 };
-const MODELO_DEF = 'gemini-3.8-flash';
+const MODELO_DEF = 'gemini-3.8-flash', MODELO_RAPIDO = 'gemini-3.5-flash-lite';
+/* Cada modelo gratuito tiene su propio cupo diario, que Google renueva a medianoche de California (las 9:00
+   en España en verano). Cuando uno se agota, la web lo apunta y sigue con el siguiente de esta lista. */
+const CADENA_IA = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
+const diaGoogle = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
+const agotadosIA = () => { const a = LS.get('inv-ia-agotados', {}), d = diaGoogle(); return Object.keys(a).filter((k) => a[k] === d); };
+const marcarAgotado = (m) => { const d = diaGoogle(), a = Object.fromEntries(Object.entries(LS.get('inv-ia-agotados', {})).filter(([, v]) => v === d)); a[m] = d; LS.set('inv-ia-agotados', a); };
+// la elegida y, detrás, las demás: primero las más baratas que ella y luego las más caras
+function ordenIA(elegido) {
+  const i = CADENA_IA.indexOf(elegido);
+  return [elegido, ...(i < 0 ? CADENA_IA : [...CADENA_IA.slice(i + 1), ...CADENA_IA.slice(0, i).reverse()])].filter((m, k, v) => MODELOS[m] && v.indexOf(m) === k);
+}
+const modeloVivo = (cfg = cfgAsesor()) => { const fuera = agotadosIA(); return ordenIA(cfg.modelo).find((m) => !fuera.includes(m)) || cfg.modelo; };
 const PROV = { google: { n: 'Google', ia: 'Gemini' } };
 const AS = { conv: [], api: [], foto: null, fotoT: 0, claves: { google: null }, cargando: false, ctrl: null, vista: 'chat', cargada: false, sinWeb: false, gasto: 0 };
 Object.defineProperty(AS, 'clave', { get() { return AS.claves[cfgAsesor().prov]; }, set(v) { AS.claves[cfgAsesor().prov] = v; } });
@@ -5074,6 +5173,7 @@ Cómo respondes:
 - Contrasta: no recomiendes nada apoyándote en una sola fuente. Cruza el consenso y el rango de objetivos de los analistas, las cuentas (valoración, crecimiento, deuda), la tendencia del precio y las noticias. Si buscas en internet, busca al menos dos fuentes distintas y di si coinciden o no. Si las fuentes chocan, dilo. Si no puedes buscar, contrasta con los titulares que tienes en los datos y dilo.
 - Usa solo datos que tengas: los de abajo, los de las herramientas o los de internet. Si te falta algo de hoy, búscalo y di de dónde sale. Si algo no se puede saber, dilo.
 - Respeta sus reglas: el límite de acciones sueltas, el fondo de renta fija como colchón, sus aportaciones automáticas y sus reglas para apuestas.
+- Antes de recomendar una acción, mira si ya tiene otra suelta del mismo negocio (dos aerolíneas, dos petroleras…): sería repetir la misma apuesta. Dilo claro y, si aun así compensa, explica qué añade que no tenga ya.
 - Formato: frases cortas, números en formato español (1.234,56 €), negrita solo para la cifra o la acción clave, listas cuando ayuden a seguir pasos y tablas solo para comparar opciones. Breve salvo que pida detalle.
 - Si la pregunta es ambigua, contesta la interpretación más útil y di cuál has tomado.
 - El plazo importa: no es lo mismo ganar un 50 % en 3 meses que en 3 años. Cuando compares inversiones o recomiendes una, di en cuánto tiempo esperas la subida (el objetivo de los analistas es a 12 meses; si hay un catalizador con fecha, puede ser antes) y pásalo a "al año" y neto de impuestos. Compáralo con su fondo indexado (un 7 % al año a largo plazo). En sus posiciones, usa lo que llevan ganado al año desde que las compró, no solo el total.
@@ -5274,6 +5374,8 @@ function errorGoogle(estado, j) {
   e.estado = estado; e.msg = m;
   const ri = (e0.details || []).find((d) => /RetryInfo/.test(d['@type'] || ''));
   if (ri && ri.retryDelay) e.espera = parseFloat(ri.retryDelay);
+  // el cupo de por día (no el de por minuto): no merece la pena esperar
+  e.diario = estado === 429 && (/PerDay|per.?day|daily/i.test(m + det) || e.espera > 60);
   return e;
 }
 async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar) {
@@ -5323,14 +5425,15 @@ async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar) {
 /* búsqueda con Google: una llamada aparte con la herramienta de búsqueda de Gemini */
 async function buscarGoogle(consulta, turno, signal) {
   if (!consulta) return { error: 'Falta qué buscar.' };
-  const cfg = cfgAsesor();
+  const modelo = AS.modeloVivo || modeloVivo();
   let r;
   try {
-    r = await fetchGoogle(`${GEMINI}/models/${cfg.modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
+    r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
   } catch (e) { if (e.name === 'AbortError') throw e; return { error: 'No se pudo conectar para buscar.' }; }
   if (!r.ok) {
     let j = null; try { j = await r.json(); } catch (e) {}
     const e = errorGoogle(r.status, j);
+    if (e.diario) marcarAgotado(modelo);
     if (r.status !== 429 && r.status < 500) { guardarCfgAsesor({ web_falla: Date.now() }); AS.sinWeb = true; turno.partes.push({ tipo: 'paso', web: true, txt: 'Tu plan de Google no incluye la búsqueda en internet: sigo con los titulares de la web' }); }
     return { error: `No se pudo buscar en internet (${e.message}). Contrasta con los titulares que tienes en los datos.` };
   }
@@ -5350,30 +5453,48 @@ async function mejorFlash(clave) {
     return v[0] || null;
   } catch (e) { return null; }
 }
-async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web }) {
+async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, modelo: pedido }) {
   let cfg = cfgAsesor();
+  if (pedido && MODELOS[pedido]) cfg = { ...cfg, modelo: pedido };
   const clave = AS.clave;
   const contents = mensajes.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: typeof m.content === 'string' ? [{ text: m.content }] : m.content }));
   const sysTexto = (Array.isArray(sistema) ? sistema.map((b) => b.text) : [String(sistema || '')]).join('\n\n');
   const usarWeb = web !== false && cfg.web && !AS.sinWeb;
   let reintentos = 0, conPensar = true, cambiado = false;
+  let modelo = modeloVivo(cfg);
+  const inicio = contents.length, probados = new Set([modelo]);
+  AS.modeloVivo = modelo;
+  if (modelo !== cfg.modelo) turno.partes.push({ tipo: 'paso', txt: `${MODELOS[cfg.modelo].n} ya ha gastado su cupo de hoy: contesta ${MODELOS[modelo].n}` });
+  // si el modelo se agota a mitad, se empieza la respuesta de nuevo con el siguiente
+  const saltar = (porque) => {
+    const fuera = agotadosIA(), otro = ordenIA(cfg.modelo).find((x) => !probados.has(x) && !fuera.includes(x));
+    if (!otro) return false;
+    turno.partes = turno.partes.filter((x) => x.tipo === 'paso');
+    turno.partes.push({ tipo: 'paso', txt: `${MODELOS[modelo].n} ${porque}: sigo con ${MODELOS[otro].n}` });
+    modelo = otro; probados.add(otro); AS.modeloVivo = otro; contents.length = inicio; reintentos = 0; conPensar = true;
+    alCambiar(); return true;
+  };
   for (let vuelta = 0; vuelta < 14; vuelta++) {
-    const m = MODELOS[cfg.modelo] || {};
+    const m = MODELOS[modelo] || {};
     const cuerpo = {
       systemInstruction: { parts: [{ text: sysTexto }] }, contents, tools: herramientasGemini(usarWeb),
       generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: m.pensar } } : {}) },
     };
     let r;
-    try { r = await llamarGemini(clave, cfg.modelo, cuerpo, turno, signal, alCambiar); }
+    try { r = await llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar); }
     catch (e) {
       if (e.name === 'AbortError') throw e;
       if (e.estado === 400 && conPensar && /thinking/i.test(e.msg || '')) { conPensar = false; vuelta--; continue; }
-      if (e.estado === 404 && !cambiado) { const nuevo = await mejorFlash(clave); if (nuevo && nuevo !== cfg.modelo) { guardarCfgAsesor({ modelo: nuevo }); cfg = cfgAsesor(); cambiado = true; vuelta--; continue; } }
+      if (e.estado === 404 && (pedido || modelo !== cfg.modelo) && saltar('no está disponible con tu clave')) { vuelta--; continue; }
+      if (e.estado === 404 && !pedido && !cambiado && modelo === cfg.modelo) { const nuevo = await mejorFlash(clave); if (nuevo && nuevo !== cfg.modelo) { guardarCfgAsesor({ modelo: nuevo }); cfg = cfgAsesor(); modelo = nuevo; AS.modeloVivo = nuevo; probados.add(nuevo); cambiado = true; vuelta--; continue; } }
+      if (e.estado === 429 && e.diario) { marcarAgotado(modelo); if (saltar('ha gastado su cupo de hoy')) { vuelta--; continue; } }
+      if (e.estado === 429 && reintentos >= 3 && saltar('sigue pidiendo esperar')) { vuelta--; continue; }
       if (e.estado === 429 && reintentos < 3 && !(e.espera > 60)) { reintentos++; const seg = Math.ceil(e.espera || 15 * reintentos); turno.partes.push({ tipo: 'paso', txt: `Google pide esperar ${seg} s (límite gratuito por minuto)` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
       if (e.estado >= 500 && reintentos < 3) { reintentos++; await dormir(3000 * reintentos, signal); vuelta--; continue; }
+      if (e.estado === 429 && e.diario) e.message = 'Los modelos gratuitos de Gemini han gastado su cupo de hoy. Se renueva hacia las 9:00 de la mañana.';
       throw e;
     }
-    const pm = MODELOS[cfg.modelo] || {};
+    const pm = MODELOS[modelo] || {};
     if (pm.in) turno.coste = (turno.coste || 0) + ((r.uso.promptTokenCount || 0) * pm.in + ((r.uso.candidatesTokenCount || 0) + (r.uso.thoughtsTokenCount || 0)) * pm.out) / 1e6;
     if (r.bloqueo) throw new Error('Google ha bloqueado la pregunta por sus filtros. Prueba a decirlo de otra forma.');
     if (!r.contenido.length) {
@@ -5645,7 +5766,10 @@ function pintarAsesor(alFinal) {
   const fondo = $('#asesorFondo'); if (!fondo) return;
   const cfg = cfgAsesor();
   const cuerpo = $('#asCuerpo', fondo), pie = $('#asPie', fondo);
-  $('#asSub', fondo).textContent = `${MODELOS[cfg.modelo].n}${cfg.web && !AS.sinWeb ? ', con búsqueda en internet' : ''}`;
+  const vivo = modeloVivo(cfg);
+  $('#asSub', fondo).textContent = `${MODELOS[vivo].n}${vivo !== cfg.modelo ? ` (el ${MODELOS[cfg.modelo].corto || MODELOS[cfg.modelo].n} ha gastado su cupo de hoy)` : ''}${cfg.web && !AS.sinWeb ? ', con búsqueda en internet' : ''}`;
+  const rapida = cfg.modelo === MODELO_RAPIDO;
+  $('#asModo', fondo).innerHTML = `<span>Respuesta</span><div class="seg" role="group" aria-label="Tipo de respuesta"><button type="button" data-as="modo" data-m="normal" aria-pressed="${!rapida}">Normal</button><button type="button" data-as="modo" data-m="rapida" aria-pressed="${rapida}">Rápida</button></div><small>${rapida ? 'Contesta en segundos y gasta mucho menos cupo' : 'Piensa más a fondo; si se agota, salta sola a otro modelo'}</small>`;
   const vista = !AS.clave && AS.vista !== 'ajustes' ? 'clave' : AS.vista;
   if (vista === 'clave') cuerpo.innerHTML = htmlClaveAsesor();
   else if (vista === 'ajustes') cuerpo.innerHTML = htmlAjustesAsesor();
@@ -5678,7 +5802,7 @@ async function abrirAsesor(pregunta, enviar) {
         <button class="ib" data-as="ajustes" title="Ajustes del asesor" aria-label="Ajustes del asesor">${ICONOS.ajustes}</button>
         <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
       <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
-      <footer class="as-pie" id="asPie"><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea><button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
+      <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea><button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
     </section>`;
     fondo.addEventListener('click', (e) => { if (e.target === fondo) cerrarAsesor(); else clicAsesor(e); });
     document.body.appendChild(fondo);
@@ -5730,6 +5854,12 @@ async function clicAsesor(e) {
   if (t.dataset.asQ) return preguntarAsesor(t.dataset.asQ);
   const a = t.dataset.as, fondo = $('#asesorFondo');
   if (a === 'cerrar') cerrarAsesor();
+  else if (a === 'modo') {
+    const cfg = cfgAsesor(), c = LS.get('inv-asesor-cfg2', {});
+    if (t.dataset.m === 'rapida' && cfg.modelo !== MODELO_RAPIDO) guardarCfgAsesor({ modelo: MODELO_RAPIDO, normal: cfg.modelo });
+    else if (t.dataset.m === 'normal' && cfg.modelo === MODELO_RAPIDO) guardarCfgAsesor({ modelo: c.normal && c.normal !== MODELO_RAPIDO && MODELOS[c.normal] ? c.normal : MODELO_DEF });
+    pintarAsesor();
+  }
   else if (a === 'nueva') { if (AS.ctrl) AS.ctrl.abort(); AS.conv = []; AS.api = []; AS.foto = null; AS.vista = 'chat'; LS.del('inv-asesor-conv'); pintarAsesor(); }
   else if (a === 'ajustes') { AS.vista = AS.vista === 'ajustes' ? 'chat' : 'ajustes'; pintarAsesor(); }
   else if (a === 'chat') { AS.vista = 'chat'; pintarAsesor(true); }
@@ -5796,7 +5926,7 @@ document.addEventListener('click', (e) => {
     if (a === 'ocultar') { S.oculto = !S.oculto; LS.set('inv-oculto', S.oculto); pintar(); }
     else if (a === 'ajustes') abrirAjustes();
     else if (a === 'cerrar-ficha') cerrarFicha();
-    else if (a === 'operacion') operacion(d.tipo || 'compra', d.id);
+    else if (a === 'operacion') operacion(d.tipo || 'compra', d.id, d.sim);
     else if (a === 'editar-pos') editarPosicion(d.id);
     else if (a === 'nueva-pos') editarPosicion(null);
     else if (a === 'nueva-ap') editarAportacion(null);
