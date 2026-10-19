@@ -2995,15 +2995,15 @@ function htmlFrescura() {
   const datos = [
     lento && `Analistas de tus posiciones: ${haceCuanto(lento)}`,
     rg && `Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}`,
-    S.informe && S.informe.generado && `Prensa de tu cartera leída por Gemini: ${haceCuanto(S.informe.generado)}`,
+    S.informe && S.informe.generado && `Prensa de tu cartera leída por GrowFolio IA: ${haceCuanto(S.informe.generado)}`,
     S.escaneo && S.escaneo.leidas_24h && `Escaneo de prensa: ${S.escaneo.leidas_24h} empresas leídas en 24 h`,
     ia && ia.propio ? `Análisis de ${esc(ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '',
   ].filter(Boolean);
   return `<div class="frescura" aria-label="Frescura de los datos">
     <details><summary><span class="vivo-dot">Recalculado a las ${B('recalc')}</span>${S.informe && S.informe.generado ? `<span>prensa leída ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas">de cuándo es cada dato</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
-    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">Conecta la IA (gratis con Gemini) para que la revise cada día</button>'}
-    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? 'se ha acabado el cupo gratuito de Google por hoy; se renueva sobre las 9:00' : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática Gemini no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
+    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">Activa GrowFolio IA (gratis) para que la revise cada día</button>'}
+    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? 'se ha acabado el cupo gratuito de Google por hoy; se renueva sobre las 9:00' : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowFolio IA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
   </div>`;
 }
 
@@ -3031,11 +3031,11 @@ function filaExperto(f, ia, vIA = {}) {
   return `<article class="fx2">
     <div class="fx2-cab">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button><small>${chipCotiza(i)}<span>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</span></small></div></div>
     ${c && !choca && normTxt(c.veredicto || SENALES[nivelC]) === normTxt(s.txt)
-      ? `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Web e ${esc((ia && ia.autor) || 'IA')}</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-ok">coinciden</span></div>`
-      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Web</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="fx-ok">coinciden</span>') : ''}</div>`}
+      ? `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números e IA</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-ok">coinciden</span></div>`
+      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="fx-ok">coinciden</span>') : ''}</div>`}
     ${m0 ? `<p class="fx2-m">${esc(m0)}</p>` : ''}
     ${resto.length || c || prensa || datos ? `<details class="mas"><summary>Por qué lo dicen: motivos, IA, prensa y analistas</summary><div class="fx2-det">
-      ${resto.length ? `<div><span class="fx-de">GrowFolio</span><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>` : ''}
+      ${resto.length ? `<div><span class="fx-de">Números</span><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>` : ''}
       ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>Vigilar.</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
       ${prensa}
       ${datos ? `<div class="fx-datos">${datos}</div>` : ''}
@@ -3110,7 +3110,7 @@ function puntuarIdea(x, ctx) {
   const potG = g ? anualizar(g.subida_pct, Math.max(g.meses, 3)) : null;
   const pot = Math.max(-50, Math.min(potG != null ? (x.pot + potG) / 2 : x.pot, 50));
   p += 1.2 * (pot / 50);
-  motivos.push(`los analistas le ven un ${fmtNum(x.pot, 0)} % de recorrido${g ? ` y Gemini, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`);
+  motivos.push(`los analistas le ven un ${fmtNum(x.pot, 0)} % de recorrido${g ? ` y GrowFolio IA, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`);
   const rm = x.rm ?? 3;
   p += Math.max(-1, Math.min(1, (2.6 - rm) / 1.6));
   if (rm <= 1.6) motivos.push(`consenso de compra fuerte entre ${x.na} analistas`);
@@ -3227,12 +3227,12 @@ function htmlResumenInforme(corto) {
   if (!inf || (!inf.resumen && !(inf.alertas || []).length)) return '';
   if (corto) {
     const fr = String(limpiaIA(inf.resumen || '')).split(/(?<=\.)\s+/);
-    return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
+    return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según GrowFolio IA</h2><span class="k">${cabInforme(inf)}</span></div>
       ${fr[0] ? `<p class="informe-res">${esc(fr[0])}</p>` : ''}
       ${fr.length > 1 || (inf.alertas || []).length ? `<details class="mas"><summary>${(inf.alertas || []).length ? `Seguir leyendo y ${inf.alertas.length} ${inf.alertas.length === 1 ? 'alerta' : 'alertas'}` : 'Seguir leyendo'}</summary>${fr.length > 1 ? `<p class="informe-res">${esc(fr.slice(1).join(' '))}</p>` : ''}${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}</details>` : ''}
     </section>`;
   }
-  return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
+  return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según GrowFolio IA</h2><span class="k">${cabInforme(inf)}</span></div>
     ${inf.resumen ? `<p class="informe-res">${escIA(inf.resumen)}</p>` : ''}
     ${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}
   </section>`;
@@ -3242,7 +3242,7 @@ function htmlMercadoInforme() {
   const inf = informeVisible();
   if (!inf || !(inf.mercado || []).length) return '';
   // los titulares a la vista; el detalle de cada uno, al tocarlo
-  return `<section class="informe" aria-labelledby="hInfM"><div class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
+  return `<section class="informe" aria-labelledby="hInfM"><div class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según GrowFolio IA</h2><span class="k">${cabInforme(inf)}</span></div>
     <ul class="informe-merc plegados">${inf.mercado.map((m) => `<li><details><summary>${chipImpacto(m.impacto)}${m.zona ? `<span class="zona-ia">${bandera(ZONA_BANDERA[m.zona])}${esc(m.zona)}</span>` : ''}<b>${escIA(m.t)}</b></summary><p>${escIA(m.detalle)}</p>${m.implica ? `<p class="ia-implica"><b>Para tu cartera:</b> ${escIA(m.implica)}</p>` : ''}${enlacesFuentes(m.fuentes, 2)}</details></li>`).join('')}</ul>
     ${(inf.macro || []).length ? `<div class="macro-ia">${inf.macro.map((x) => `<div><small>${escIA(x.t)}</small><b>${escIA(x.dato)}</b><p>${escIA(x.lectura)}</p></div>`).join('')}</div>` : ''}
   </section>`;
@@ -3281,18 +3281,18 @@ const plazoGemini = (sim) => { const p = S.escaneo && S.escaneo.decision && S.es
 function esperadaRadar(r, extra) {
   if (!r || r.pot == null) return null;
   const ana = rentaEsperada(r, r.pot, 12, 'analistas');
-  const g = extra && extra.subida_pct != null && +extra.plazo_meses > 0 ? { meses: +extra.plazo_meses, subida_pct: +extra.subida_pct, por: extra.catalizador || '', fuente: extra.fuente } : plazoGemini(r.s) ? { ...plazoGemini(r.s), fuente: 'Gemini' } : null;
-  const ia = g ? { ...rentaEsperada(r, g.subida_pct, g.meses, g.fuente || 'Gemini'), por: g.por } : null;
+  const g = extra && extra.subida_pct != null && +extra.plazo_meses > 0 ? { meses: +extra.plazo_meses, subida_pct: +extra.subida_pct, por: extra.catalizador || '', fuente: extra.fuente } : plazoGemini(r.s) ? { ...plazoGemini(r.s), fuente: 'GrowFolio IA' } : null;
+  const ia = g ? { ...rentaEsperada(r, g.subida_pct, g.meses, g.fuente || 'GrowFolio IA'), por: g.por } : null;
   return { ana, ia, prin: ia || ana };
 }
 function esperadaIdea(x) {
   const g = [x.gem, x.tuya].find((y) => y && y.subida_pct != null && +y.plazo_meses > 0);
-  return esperadaRadar(x.r, g ? { ...g, fuente: g === x.gem ? 'Gemini' : 'tu análisis' } : null);
+  return esperadaRadar(x.r, g ? { ...g, fuente: g === x.gem ? 'GrowFolio IA' : 'tu análisis' } : null);
 }
 function quienIdea(x) {
-  const w = x.web ? `GrowFolio (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})` : null;
-  const g = x.gem ? `Gemini tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')})` : null;
-  const t = x.tuya ? `tu análisis de Gemini${x.tuya.importe ? `, con ${eur(+x.tuya.importe, 0)}` : ''}` : null;
+  const w = x.web ? `el radar de GrowFolio (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})` : null;
+  const g = x.gem ? `GrowFolio IA tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')})` : null;
+  const t = x.tuya ? `tu análisis${x.tuya.importe ? `, con ${eur(+x.tuya.importe, 0)}` : ''}` : null;
   const p = [w, g, t].filter(Boolean);
   return `La propone ${p.length === 1 ? p[0] : `${p.slice(0, -1).join(', ')} y ${p[p.length - 1]}`}.`;
 }
@@ -3354,7 +3354,7 @@ function tarjetaIdea(x, ctx) {
 function htmlEvitar() {
   const d = S.escaneo && S.escaneo.decision;
   if (!d || !(d.evitar || []).length) return '';
-  return `<section class="evitar" aria-labelledby="hEvi"><div class="sec-cab"><h3 id="hEvi">Las que Gemini evitaría por lo que dice su prensa</h3></div><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${escIA(v.motivo)}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul></section>`;
+  return `<section class="evitar" aria-labelledby="hEvi"><div class="sec-cab"><h3 id="hEvi">Las que GrowFolio IA evitaría por lo que dice su prensa</h3></div><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${escIA(v.motivo)}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul></section>`;
 }
 function htmlIdeas(M, ia) {
   const todas = radarVals();
@@ -3372,10 +3372,10 @@ function htmlIdeas(M, ia) {
   S.radarVisibles = [...new Set([...v.map((x) => x.s), ...juntas.filter((x) => x.r).map((x) => x.r.s)])];
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
-  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen GrowFolio, Gemini y tu análisis</span></div>
-    ${d && d.comentario ? `<p class="idea-panorama"><b>Gemini</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
+  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowFolio IA y tu análisis</span></div>
+    ${d && d.comentario ? `<p class="idea-panorama"><b>GrowFolio IA</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x) => tarjetaIdea(x, ctx)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
-    <p class="nota">GrowFolio elige las tres mejor contrastadas: consenso de compra, recorrido hasta el objetivo, al menos 3 de las 7 señales a favor y que no repitan lo que ya llevan tus fondos. Gemini lee la prensa del radar y elige por su cuenta. Primero van las que eligen dos o más; después, de más a menos de lo que darían al año, netas de impuestos. Las barras de contraste: verde a favor, rojo en contra, gris neutral.</p>
+    <p class="nota">GrowFolio elige las tres mejor contrastadas: consenso de compra, recorrido hasta el objetivo, al menos 3 de las 7 señales a favor y que no repitan lo que ya llevan tus fondos. GrowFolio IA lee la prensa del radar y elige por su cuenta. Primero van las que eligen dos o más; después, de más a menos de lo que darían al año, netas de impuestos. Las barras de contraste: verde a favor, rojo en contra, gris neutral.</p>
     ${htmlEvitar()}
     <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
@@ -3385,10 +3385,10 @@ function htmlIdeas(M, ia) {
     ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${lineaOrigen(x)}</small></td>
       <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
-      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que daría al año si se cumple lo esperado (el plazo de Gemini o los 12 meses de los analistas), con su dividendo, menos la tasa de compra, la retención que no se recupera y tu tramo del ahorro">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses && x._meses !== 12 ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
+      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que daría al año si se cumple lo esperado (el plazo de GrowFolio IA o los 12 meses de los analistas), con su dividendo, menos la tasa de compra, la retención que no se recupera y tu tramo del ahorro">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses && x._meses !== 12 ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     ${total > 20 ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? 'Ver solo las 20 primeras' : `Ver las ${total}`}</button>` : ''}
-    <p class="nota">Potencial: lo que queda hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Prensa: lo que ha leído Gemini en sus noticias. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio.</p>`;
+    <p class="nota">Potencial: lo que queda hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Prensa: lo que ha leído GrowFolio IA en sus noticias. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio.</p>`;
 }
 
 /* ---------- repintar solo cuando cambia una recomendación ---------- */
@@ -3659,7 +3659,7 @@ function htmlPaso(x, n) {
   </li>`;
 }
 /* cada paso, según lo que pide: algo que hacer tú (numerado y con su casilla), una fecha que vigilar o algo que va solo */
-const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Un dato', ia: 'Gemini', info: 'Plan', fecha: 'Fecha' };
+const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Un dato', ia: 'GrowFolio IA', info: 'Plan', fecha: 'Fecha' };
 const claseRuta = (x) => (x.auto ? 'solo' : tipoPaso(x).c === 'fecha' ? 'fecha' : 'tarea');
 function checkRuta(x, n) {
   return `<button class="t-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Hecho. Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"><span>${n || ''}</span></button>`;
@@ -3727,7 +3727,7 @@ function htmlRuta(M) {
       <div class="ruta-res" aria-label="Progreso"><div class="ruta-res-n"><b>${hechas}</b> de ${cuenta.length} hechos <span>en los próximos 6 meses</span></div><div class="ruta-barra"><i style="width:${cuenta.length ? ((hechas / cuenta.length) * 100).toFixed(0) : 0}%"></i></div></div>
     </div>
     <div class="ruta ruta2" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(columna).join('')}</div>
-    <p class="nota ruta-nota">Toca el círculo de cada paso cuando lo hagas. ${ia && ia.hoja_de_ruta ? `Los que llevan ${esc(ia.autor || 'IA')} los propone Gemini tras leer las noticias; el resto, GrowFolio con tus números.` : 'Los calcula GrowFolio con tus números; con la IA conectada, Gemini añade los suyos.'}</p>`;
+    <p class="nota ruta-nota">Toca el círculo de cada paso cuando lo hagas. ${ia && ia.hoja_de_ruta ? `Los que llevan ${esc(ia.autor || 'IA')} los propone GrowFolio IA tras leer las noticias; el resto salen de tus números.` : 'Salen de tus números; con GrowFolio IA activada, añade los suyos tras leer las noticias.'}</p>`;
 }
 function vistaRuta(M) {
   return `<div class="vista-cab"><h1>Paso a paso</h1><p>Qué te toca hacer y cuándo: lo urgente primero, con el porqué, el cómo y lo que pagas a Hacienda.</p></div>${htmlRuta(M)}`;
@@ -4643,7 +4643,7 @@ function htmlAnalisisIA(M) {
   const ia = iaActual();
   const prog = `<div id="iaProgreso">${htmlProgresoIA()}</div>${htmlPreguntasIA(true)}`;
   if (!ia) return prog + (!S.iaCargado ? '<div class="vacio">Cargando el análisis…</div>'
-    : `<div class="vacio">Todavía no hay un análisis de tu cartera. ${AS.clave ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Escribiéndolo…' : 'Que Gemini lo escriba ahora'}</button>` : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Conecta Gemini (gratis) y lo escribe con tus datos</button>`}</div>`);
+    : `<div class="vacio">Todavía no hay un análisis de tu cartera. ${AS.clave ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Escribiéndolo…' : 'Que GrowFolio IA lo escriba ahora'}</button>` : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Activa GrowFolio IA (gratis) y lo escribe con tus datos</button>`}</div>`);
   const v = valoresIA(M);
   const R = (t) => rellenarIA(t || '', v);
   const f = String(ia.fecha || '');
@@ -4653,7 +4653,7 @@ function htmlAnalisisIA(M) {
   const cuando = f.length > 10 ? (dias === 0 ? `hoy a las ${hora}` : dias === 1 ? `ayer a las ${hora}` : `el ${fechaLarga(iso(d))}`) : `el ${fechaLarga(f)}${dias > 0 ? `, hace ${dias} ${dias === 1 ? 'día' : 'días'}` : ''}`;
   const firma = ia.propio
     ? `Escrito por ${esc(ia.autor)} ${cuando}${ia.busquedas ? `, con ${ia.busquedas} ${ia.busquedas === 1 ? 'búsqueda' : 'búsquedas'} en internet` : ''} y tus cifras de ese momento${ia.modelo && MODELOS[ia.modelo] ? ` (${MODELOS[ia.modelo].n})` : ''}.`
-    : `Análisis de partida ${cuando}, sin tus cifras al céntimo. ${AS.clave ? 'Gemini escribe el suyo con tus datos: si no aparece en un par de minutos, pulsa Actualizar ahora.' : 'Conecta Gemini (gratis) para que lo rehaga con tus datos cada día.'}`;
+    : `Análisis de partida ${cuando}, sin tus cifras al céntimo. ${AS.clave ? 'GrowFolio IA escribe el suyo con tus datos: si no aparece en un par de minutos, pulsa Actualizar ahora.' : 'Activa GrowFolio IA (gratis) para que lo rehaga con tus datos cada día.'}`;
   const boton = AS.clave
     ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Actualizando…' : 'Actualizar ahora'}</button>`
     : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Que se actualice solo cada día</button>`;
@@ -4686,7 +4686,7 @@ function htmlAnalisisIA(M) {
     </div>
     <p class="nota" style="margin-top:28px">Lo que opina de cada posición está en Expertos, Tus posiciones; sus fechas, en Cartera, Próximas fechas; y sus pasos, en el Paso a paso.</p>
     ${fuentes.length ? `<details class="plegable"><summary><h2>Fuentes</h2><span class="k">${fuentes.length} noticias que ha leído para contrastar</span></summary><div class="as-fuentes">${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t || '')}">${esc(x.t ? x.t.slice(0, 60) : dom(x.u))}</a>`).join('')}</div></details>` : ''}
-    <p class="nota" style="margin-top:28px">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de GrowFolio y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Es el análisis de partida, sin cantidades: las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. Gemini lo sustituye por el suyo en cuanto hace su primera revisión.'}</p>
+    <p class="nota" style="margin-top:28px">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de GrowFolio y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Es el análisis de partida, sin cantidades: las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. GrowFolio IA lo sustituye por el suyo en cuanto hace su primera revisión.'}</p>
   </div>`;
 }
 
@@ -5227,7 +5227,7 @@ function htmlFicha(f) {
   let cuerpo = '';
   if (S.ficha.tab === 'resumen') cuerpo = fichaResumen(f);
   else if (S.ficha.tab === 'expertos') cuerpo = fichaExpertos(f);
-  else if (S.ficha.tab === 'noticias') cuerpo = `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px">Lo que dice la prensa, según Gemini</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
+  else if (S.ficha.tab === 'noticias') cuerpo = `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px">Lo que dice la prensa, según GrowFolio IA</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
   else cuerpo = fichaDatos(f);
   return `<div class="ficha-cab">
     <div class="ficha-tit">${logo(i.dominio, i.corto || i.nombre)}<div><h2 id="fichaTit">${esc(i.corto || i.nombre)}</h2><small>${origen(i)} ${esc(tipo)} en ${esc(f.pos.plataforma || '')}${i.nombre && i.nombre !== i.corto ? `, ${esc(i.nombre)}` : ''}</small><small>${esc(donde(i))}</small></div>
@@ -5811,17 +5811,17 @@ async function leerCapturas(archivos, alPaso) {
     const txt = (((j.candidates || [])[0] || {}).content || {}).parts ? j.candidates[0].content.parts.map((x) => x.text || '').join('') : '';
     const o = extraerJSON(txt);
     if (o && Array.isArray(o.posiciones)) return o;
-    ultimo = new Error('Gemini no ha devuelto las posiciones. Prueba con capturas más nítidas.');
+    ultimo = new Error('GrowFolio IA no ha devuelto las posiciones. Prueba con capturas más nítidas.');
   }
   throw ultimo || new Error('No se pudo leer.');
 }
 async function importarCapturas() {
   await cargarAsesor();
-  if (!AS.clave) { toast('Para leer las capturas hace falta conectar Gemini (gratis): te abro dónde poner la clave', 5000); abrirAsesor(); return; }
+  if (!AS.clave) { toast('Para leer las capturas hace falta activar GrowFolio IA (gratis, con tu clave de Google): te abro dónde ponerla', 5000); abrirAsesor(); return; }
   const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
   let hecho = false, filas = [], efectivo = [];
   const h = hoja('Importar desde capturas', `<div class="imp">
-      <p class="nota" style="margin:0">Haz capturas de la pantalla de posiciones de tu bróker (MyInvestor, Trade Republic, Bitvavo u otro) o sube el PDF del extracto. Gemini las lee y aquí revisas lo que ha entendido antes de guardar nada. Las imágenes van de tu navegador a Google y no se guardan.</p>
+      <p class="nota" style="margin:0">Haz capturas de la pantalla de posiciones de tu bróker (MyInvestor, Trade Republic, Bitvavo u otro) o sube el PDF del extracto. GrowFolio IA las lee y aquí revisas lo que ha entendido antes de guardar nada. Las imágenes van de tu navegador a Google y no se guardan.</p>
       <label class="imp-sube"><input type="file" id="impArch" accept="image/*,application/pdf" multiple hidden><span class="imp-sube-c">${ICONOS.recorte}<b>Elegir capturas o PDF</b><small>Puedes elegir varias a la vez</small></span></label>
       <div id="impEstado" class="imp-estado" aria-live="polite"></div>
       <div id="impRev"></div>
@@ -6412,7 +6412,7 @@ function buscador(cont, alElegir, opt = {}) {
 const VERSION = '0.1.11';
 const NOVEDADES = [
   { v: '0.1.11', f: '2026-10-19', t: 'GrowFolio', cosas: [
-    { d: 'logo', t: 'Ahora se llama GrowFolio', x: 'Grow (crecer) y portfolio (cartera): tu cartera creciendo. Logo nuevo en la web y en la app.' },
+    { d: 'logo', t: 'Ahora se llama GrowFolio', x: 'Grow (crecer) y portfolio (cartera): tu cartera creciendo. Logo nuevo en la web y en la app, y la IA pasa a llamarse GrowFolio IA (por dentro sigue usando Gemini, de Google).' },
     { d: 'intro', t: 'Una presentación al empezar', x: 'La primera vez que abres la web o la app, cinco diapositivas con lo que puedes hacer y, al final, el botón para crear tu cartera o entrar. Desde la pantalla de entrar se puede volver a ver.' },
     { d: 'tour', t: 'El tutorial, siempre a mano', x: 'Al final de cada pestaña y arriba del todo en Ajustes, aunque te lo saltaras al principio.' },
     { d: 'opinion', t: 'Tu opinión, desde la app', x: 'Cuenta qué se ve mal, qué falla o una idea, y en qué pestaña. Botón al final de cada pestaña y en Ajustes.' },
@@ -6422,7 +6422,7 @@ const NOVEDADES = [
     { d: 'pregunta', t: 'La IA te pregunta', x: 'Cuando le falta algo de ti para acertar, te lo pregunta. Contestas con un toque y rehace sus consejos.' },
     { d: 'pasos', t: 'Paso a paso más claro', x: 'Separa lo que tienes que hacer tú, las fechas que vigilar y lo que va solo. Cada compra o venta dice lo que supone en la renta y qué evitar por Hacienda.' },
     { d: 'renta', t: 'Guía de la renta', x: 'En Fiscalidad: los pasos de la declaración, en qué casilla va cada cosa y tus ventas del año.' },
-    { d: 'mundo', t: 'Noticias de todo el mundo', x: 'El informe de Gemini repasa EEUU, Europa, España, Asia y emergentes, más tipos, divisas, materias primas y cripto, y dice qué supone cada cosa para tu cartera. En Mercados, los datos macro de un vistazo.' },
+    { d: 'mundo', t: 'Noticias de todo el mundo', x: 'El informe de GrowFolio IA repasa EEUU, Europa, España, Asia y emergentes, más tipos, divisas, materias primas y cripto, y dice qué supone cada cosa para tu cartera. En Mercados, los datos macro de un vistazo.' },
     { d: 'json', t: 'Tu cartera desde un archivo', x: 'Un JSON sencillo con el ISIN o el ticker de cada cosa, cuántas tienes y lo que pagaste: GrowFolio encuentra cada valor sola. Hay un ejemplo para descargar en Ajustes, Copias.' },
     { d: 'catalogo', t: 'Fondos que no tenían precio', x: 'El Fidelity S&P 500, True Value, Xetra-Gold y los ETF del DAX, Euro Stoxx 50 y LifeStrategy 80 % ya tienen precio diario.' },
     { d: 'app', t: 'El aviso de la app, nada más abrirla', x: 'Si hay versión nueva de la app, te lo dice al abrirla y se instala con un toque (desde la 0.1.10; la primera vez se baja con Chrome).' },
@@ -6810,7 +6810,7 @@ function abrirAjustes() {
       <div id="aQRbox"></div>
     </div>
     <div class="seccion-ed"><h3>Asesor</h3>
-      <p class="nota" style="margin:0">Gemini dentro de GrowFolio, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
+      <p class="nota" style="margin:0">GrowFolio IA funciona con Gemini, la IA de Google, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes del asesor</button></div>
     </div>
     <div class="seccion-ed"><h3>Invita a alguien</h3>
@@ -7064,10 +7064,10 @@ async function guardarAnalisisPropio() {
 
 function pedidoAnalisis(ids, motivo, conWeb = true) {
   return `Haz la revisión de hoy de mi cartera (${motivo}). Antes de escribir:
-0. Lee el informe de prensa de Gemini que viene en los datos (noticias de cada posición, del mercado y de las ideas, ya contrastadas) y úsalo como base.
+0. Lee el informe de prensa de GrowFolio IA que viene en los datos (noticias de cada posición, del mercado y de las ideas, ya contrastadas) y úsalo como base.
 1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.' : 'No puedes buscar en internet: usa los titulares de los datos (los de mis posiciones, los del mercado y los de las mejores ideas del radar) y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
 2. Si recomiendas vender algo, calcúlalo con simular_venta. Si recomiendas comprar una acción, con simular_compra.
-3. Para las ideas de compra, parte de las que ha elegido Gemini en su escaneo de prensa de toda la bolsa, del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de GrowFolio y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
+3. Para las ideas de compra, parte de las que ha elegido GrowFolio IA en su escaneo de prensa de toda la bolsa, del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de GrowFolio y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
 4. Ten en cuenta el plazo y los impuestos en todo: no es lo mismo ganar un 50 % en 3 meses que en 3 años. Para cada idea, estima en cuántos meses se puede materializar la subida y cuánto, y compárala en "al año" y neta de impuestos con mi fondo indexado. Para cada venta o compra, di lo que pago (ganancia, tasa, retención de dividendos que no recupero).
 5. Sintetiza: no repitas en una sección lo que ya está en otra. Frases cortas.
 6. Ajústalo todo a su perfil y sus objetivos (edad, cuándo necesita el dinero, cuánto riesgo aguanta, sus límites y sus metas con fecha y cifra, vienen en los datos): si algo de su cartera choca con ellos, dilo y propón cómo encajarlo; en la hoja de ruta, lo que necesite cada meta.
@@ -7201,7 +7201,7 @@ function cfgAsesor() {
   return { modelo, prov, web: c.web !== false && !webFalla, webPedida: c.web !== false, webFalla, auto: ['diario', 'semanal', 'manual'].includes(c.auto) ? c.auto : 'diario' };
 }
 const guardarCfgAsesor = (o) => LS.set('inv-asesor-cfg2', { ...LS.get('inv-asesor-cfg2', {}), ...o });
-const nombreIA = () => 'Gemini';
+const nombreIA = () => 'GrowFolio IA';
 const LS_CLAVE = { google: 'inv-asesor-clave-g' }, CAMPO_CLAVE = { google: 'clave_g' };
 const R2 = (n, d = 2) => (n == null || !isFinite(n) ? null : Math.round(n * 10 ** d) / 10 ** d);
 const E0 = (n) => fmtNum(n, 0) + ' €', E2 = (n) => fmtNum(n, 2) + ' €';
@@ -7372,7 +7372,7 @@ function contextoAsesor(M) {
     for (const id of new Set(M.filas.map((f) => f.inst.id))) if (N[id] && N[id].length) L.push(`${nombreInst(id)}:\n` + tit(N[id], 5));
     const inf = informeVisible();
     if (inf && (inf.resumen || (inf.mercado || []).length)) {
-      L.push('', `## Informe de prensa de Gemini (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, inf.resumen ? `Resumen: ${inf.resumen}` : 'Solo lo del mercado y lo de sus posiciones.');
+      L.push('', `## Informe de prensa de GrowFolio IA (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, inf.resumen ? `Resumen: ${inf.resumen}` : 'Solo lo del mercado y lo de sus posiciones.');
       for (const m of inf.mercado || []) L.push(`- Mercado${m.zona ? ` ${m.zona}` : ''} (${m.impacto}): ${m.t}. ${m.detalle || ''}${m.implica ? ` Para la cartera: ${m.implica}` : ''}`);
       for (const x of inf.macro || []) L.push(`- Macro: ${x.t}: ${x.dato}. ${x.lectura || ''}`);
       for (const [id, x] of Object.entries(inf.posiciones || {})) L.push(`- ${nombreInst(id)} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Vigilar: ${x.vigilar || '—'}. Fuentes: ${(x.fuentes || []).map((f) => f.f || '').filter(Boolean).join(', ') || '—'}`);
@@ -7382,14 +7382,14 @@ function contextoAsesor(M) {
     const esc0 = S.escaneo;
     if (esc0 && esc0.decision) {
       const d = esc0.decision;
-      L.push('', `## Lo que ha elegido Gemini tras escanear la prensa de ${Object.keys(esc0.lectura || {}).length} empresas (${haceCuanto(d.generado)})`, d.comentario || '');
+      L.push('', `## Lo que ha elegido GrowFolio IA tras escanear la prensa de ${Object.keys(esc0.lectura || {}).length} empresas (${haceCuanto(d.generado)})`, d.comentario || '');
       for (const i of d.ideas || []) L.push(`- Comprar ${i.n || ''} (${i.s}), confianza ${i.confianza}: ${i.tesis || ''} Catalizador: ${i.catalizador || '—'}. Riesgo: ${i.riesgo || '—'}. Contraste: ${i.contraste || '—'}.`);
       for (const v of d.evitar || []) L.push(`- Evitar ${v.n || ''} (${v.s}): ${v.motivo || ''}`);
     }
     if (esc0 && esc0.lectura) {
       const hace7 = Date.now() - 7 * 864e5;
       const imp = Object.entries(esc0.lectura).filter(([, l]) => l.rel >= 2 && new Date(l.d).getTime() > hace7).sort((a, b) => b[1].rel - a[1].rel).slice(0, 80);
-      if (imp.length) L.push('', '## Prensa importante de la última semana en el radar (escaneo de Gemini)', ...imp.map(([s0, l]) => `- ${s0} (${l.imp}, relevancia ${l.rel}): ${l.txt}${l.cat ? ` Catalizador: ${l.cat}.` : ''}`));
+      if (imp.length) L.push('', '## Prensa importante de la última semana en el radar (escaneo de GrowFolio IA)', ...imp.map(([s0, l]) => `- ${s0} (${l.imp}, relevancia ${l.rel}): ${l.txt}${l.cat ? ` Catalizador: ${l.cat}.` : ''}`));
     }
     const ia = iaActual();
     if (ia) {
@@ -7979,8 +7979,8 @@ function htmlTurno(t, k) {
 function htmlClaveAsesor() {
   const cfg = cfgAsesor();
   return `<div class="as-config">
-    <h3>Conecta Gemini, gratis</h3>
-    <p>El asesor usa ${esc(MODELOS[cfg.modelo].n)}, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
+    <h3>Activa GrowFolio IA, gratis</h3>
+    <p>GrowFolio IA funciona con ${esc(MODELOS[cfg.modelo].n)}, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
     <ol class="as-pasos-clave">
       <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
       <li>Pulsa "Create API key" y copia la clave entera: empieza por AQ. (o por AIza si es de las antiguas).</li>
@@ -8006,7 +8006,7 @@ function htmlAjustesAsesor() {
     <fieldset class="as-modelos"><legend>Modelo de Gemini (todos gratis con tu clave)</legend>${Object.entries(MODELOS).map(([k, m]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${cfg.modelo === k ? ' checked' : ''}><span><b>${m.n}</b><small>${m.txt}</small></span></label>`).join('')}</fieldset>
     <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> Puede buscar en internet con Google</label>
     ${cfg.webFalla ? '<p class="nota" style="margin:-6px 0 0">Tu plan de Google no incluye la búsqueda en internet: de momento la IA contrasta con los titulares que baja GrowFolio. Lo vuelve a intentar dentro de unos días.</p>' : ''}
-    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe Gemini con tus cifras y las noticias del día, en Análisis, Expertos y Paso a paso. Gratis.</small></label>
+    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe GrowFolio IA con tus cifras y las noticias del día, en Análisis, Expertos y Paso a paso. Gratis.</small></label>
     <label class="campo">Lo que quieres que sepa de ti<textarea id="asYo" rows="6" placeholder="Por ejemplo: tu edad, para qué inviertes, si piensas comprar casa y cuándo, cuánto riesgo aguantas, tus reglas para las apuestas…">${esc(yo)}</textarea><small>Va dentro de tu cartera cifrada y lo lee al empezar cada conversación.</small></label>
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
     <div class="seccion-ed"><h3>Clave de Google</h3>
