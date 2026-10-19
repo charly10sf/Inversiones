@@ -280,7 +280,8 @@
    "a": [
     "VWCE",
     "VWRA"
-   ]
+   ],
+   "s": "VWCE.DE"
   },
   {
    "isin": "IE00B3RBWM25",
@@ -341,8 +342,7 @@
    "t": "ETF",
    "a": [
     "LCWD"
-   ],
-   "s": "LCWD.PA"
+   ]
   },
   {
    "isin": "IE00BK5BQV03",
