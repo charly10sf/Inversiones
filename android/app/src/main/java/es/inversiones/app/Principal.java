@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
+import android.view.ViewGroup;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -13,6 +14,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import org.json.JSONObject;
@@ -29,6 +31,8 @@ public class Principal extends Activity {
     private ValueCallback<Uri[]> archivos;
     private String tokenPendiente;
     private boolean cargada;
+    private View video;
+    private WebChromeClient.CustomViewCallback cerrarVideo;
 
     @Override
     protected void onCreate(Bundle guardado) {
@@ -75,10 +79,25 @@ public class Principal extends Activity {
                 }
                 return true;
             }
+
+            // vídeos a pantalla completa (el tráiler de GTA VI y cualquier vídeo de YouTube dentro de la web)
+            @Override
+            public void onShowCustomView(View v, CustomViewCallback cb) {
+                if (video != null) { cb.onCustomViewHidden(); return; }
+                video = v;
+                cerrarVideo = cb;
+                ((FrameLayout) getWindow().getDecorView()).addView(v, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+                web.setVisibility(View.GONE);
+            }
+
+            @Override
+            public void onHideCustomView() {
+                salirVideo();
+            }
         });
         web.setDownloadListener((url, agente, disposicion, tipo, largo) -> {
             if (url != null && url.startsWith("http")) abrirFuera(Uri.parse(url));
-            else Toast.makeText(this, "Para descargar archivos, abre la web en Chrome", Toast.LENGTH_LONG).show();
+            else Toast.makeText(this, "Para descargar archivos, abre GrowFolio en Chrome", Toast.LENGTH_LONG).show();
         });
 
         tokenPendiente = token(getIntent());
@@ -188,9 +207,19 @@ public class Principal extends Activity {
         super.onActivityResult(pedido, resultado, datos);
     }
 
+    private void salirVideo() {
+        if (video == null) return;
+        ((FrameLayout) getWindow().getDecorView()).removeView(video);
+        video = null;
+        web.setVisibility(View.VISIBLE);
+        if (cerrarVideo != null) cerrarVideo.onCustomViewHidden();
+        cerrarVideo = null;
+    }
+
     @Override
     public void onBackPressed() {
-        if (web.canGoBack()) web.goBack();
+        if (video != null) salirVideo();
+        else if (web.canGoBack()) web.goBack();
         else super.onBackPressed();
     }
 

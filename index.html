@@ -1580,6 +1580,158 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 @media (prefers-reduced-motion: reduce) { .intro-pista { transition: none; } .intro-slide.activa * { animation: none !important; } }
 
 .aj-intro { display: block; margin: -8px 0 18px; color: var(--accent); font-weight: 600; font-size: 14px; }
+
+/* ---------- Mercados: filas compactas que se abren ---------- */
+.mgrupos { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .mgrupos { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 32px; align-items: start; } }
+.mg-t { margin: 0 0 6px; font-size: 13px; font-weight: 650; color: var(--muted); letter-spacing: 0.01em; }
+.mfilas { border: 1px solid var(--line); border-radius: 14px; overflow: hidden; background: var(--plane); }
+.mfila + .mfila { border-top: 1px solid var(--line); }
+.mfila > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: minmax(0, 1fr) 64px minmax(84px, auto); gap: 12px; align-items: center; padding: 11px 14px; min-height: 48px; box-sizing: border-box; }
+.mfila > summary::-webkit-details-marker { display: none; }
+.mfila[open] > summary { background: var(--plane-2); }
+.mf-n { min-width: 0; display: grid; gap: 1px; }
+.mf-n b { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mf-tuyo { color: var(--accent); font-size: 11.5px; font-weight: 600; }
+.mf-spark { width: 64px; height: 22px; display: block; }
+.mf-spark polyline { fill: none; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
+.mf-spark.up polyline { stroke: var(--up); }
+.mf-spark.down polyline { stroke: var(--down); }
+.mf-p { display: grid; justify-items: end; gap: 1px; font-variant-numeric: tabular-nums; }
+.mf-p .merc-p { font-size: 15px; font-weight: 600; }
+.mf-p > span:last-child { font-size: 12.5px; }
+.mf-det { padding: 4px 14px 14px; display: grid; gap: 10px; background: var(--plane-2); }
+.mf-que { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
+.mf-det .merc2-imp, .mf-det .merc2-tuyo { margin: 0; }
+.mg-nota { margin-top: -8px; }
+.mas-noticias > summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 14px; padding: 10px 0; }
+@media (max-width: 680px) {
+  .macro-ia { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 72%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; }
+  .macro-ia > div { scroll-snap-align: start; }
+}
+
+/* ---------- menos scroll en el móvil ---------- */
+.idea-res { display: none; }
+.sec-det > summary { list-style: none; cursor: pointer; }
+.sec-det > summary::-webkit-details-marker { display: none; }
+.sec-det > summary h2::after, .sec-det > summary h3::after { content: '›'; display: inline-block; margin-left: 8px; color: var(--muted); transition: transform 0.15s; }
+.sec-det[open] > summary h2::after, .sec-det[open] > summary h3::after { transform: rotate(90deg); }
+.nota-plegada > summary { cursor: pointer; color: var(--muted); font-size: 13px; padding: 6px 0; }
+.nota-plegada > p.nota { margin-top: 4px; }
+@media (max-width: 680px) {
+  .pila { gap: 30px; }
+  .vista-cab { margin-bottom: 16px; }
+  #vista [style*="margin-top:44px"], #vista [style*="margin-top:48px"], #vista [style*="margin-top: 44px"], #vista [style*="margin-top: 48px"] { margin-top: 28px !important; }
+  .pie-btns { margin-top: 32px; }
+  .idea[data-compacta] { padding-top: 12px; padding-bottom: 12px; }
+  .idea[data-compacta] > header { cursor: pointer; }
+  .idea[data-compacta] .idea-res { display: grid; justify-items: end; margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .idea[data-compacta] .idea-res b { font-size: 15px; }
+  .idea[data-compacta] .idea-res small { color: var(--muted); font-size: 11.5px; }
+  .idea[data-compacta]:not(.abierta) > :not(header) { display: none; }
+  .idea[data-compacta] > header::after { content: '›'; color: var(--muted); font-size: 20px; margin-left: 8px; transition: transform 0.15s; }
+  .idea[data-compacta].abierta > header::after { transform: rotate(90deg); }
+}
+
+.ir-objetivos { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--plane); color: var(--text); text-decoration: none; }
+.ir-objetivos svg { width: 22px; height: 22px; color: var(--accent); flex: none; }
+.ir-objetivos b { display: block; font-weight: 600; font-size: 14.5px; }
+.ir-objetivos small { color: var(--muted); font-size: 13px; }
+@media (max-width: 680px) {
+  .tabla-ed tr { position: relative; padding-right: 48px; }
+  .tabla-ed td:last-child { position: absolute; right: 0; top: 10px; margin: 0; }
+  .tabla-ed td:last-child .btn { width: 40px; height: 40px; padding: 0; justify-content: center; font-size: 0; gap: 0; }
+  .tabla-ed td:last-child .btn svg { width: 17px; height: 17px; }
+}
+
+/* ---------- GTA VI: botón junto a Patrimonio, hoja y aviso ---------- */
+.hero-fila { display: flex; align-items: center; gap: 12px; min-height: 30px; }
+.gta-chip { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px 0 9px; border-radius: 999px; border: 1px solid rgba(255, 77, 157, 0.42); background: linear-gradient(100deg, #24103A, #3A1240); color: #FFE3F0; font-size: 12.5px; white-space: nowrap; flex: none; }
+.gta-chip svg { width: 17px; height: 17px; color: #FF7DB8; }
+.gta-chip b { font-weight: 800; letter-spacing: 0.02em; color: #fff; }
+.gta-chip span { color: #FFB27A; font-variant-numeric: tabular-nums; }
+.gta-chip:hover { border-color: #FF4D9D; }
+.gta-chip.pulsa { animation: gtaPulsa 1.25s ease-in-out 4; }
+@keyframes gtaPulsa { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 157, 0); } 50% { box-shadow: 0 0 0 8px rgba(255, 77, 157, 0.33); } }
+.gta-fondo { align-items: center; background: rgba(8, 3, 16, 0.8); }
+.gta { --g-rosa: #FF4D9D; --g-nar: #FFA24D; --g-cian: #4EE6D6; --g-t: #FFF3F8; --g-t2: #D8C3E4; --g-d: 'Anton', Impact, 'Arial Narrow', sans-serif;
+  position: relative; width: min(780px, calc(100% - 32px)); max-height: min(94vh, 1000px); overflow: auto; overscroll-behavior: contain; border-radius: 22px; color: var(--g-t);
+  background: radial-gradient(130% 55% at 50% 0%, rgba(255, 110, 90, 0.26), transparent 62%), radial-gradient(90% 40% at 85% 100%, rgba(78, 230, 214, 0.1), transparent 70%), linear-gradient(180deg, #1B0A30 0%, #24093A 45%, #12061F 100%);
+  border: 1px solid rgba(255, 77, 157, 0.28); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); padding: 30px clamp(18px, 4vw, 40px) calc(26px + env(safe-area-inset-bottom)); }
+@media (max-width: 720px) { .gta { width: 100%; height: 100%; max-height: none; border-radius: 0; border: 0; padding-top: calc(30px + env(safe-area-inset-top)); } }
+.gta-x { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.08); color: var(--g-t); }
+.gta-x svg { width: 18px; height: 18px; }
+.gta-x:hover { background: rgba(255, 255, 255, 0.16); }
+.gta :focus-visible { outline-color: var(--g-cian); }
+.gta-cab { text-align: center; }
+.gta-pre { margin: 0; color: var(--g-nar); font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
+.gta-tit { margin: 4px 0 14px; font: 400 clamp(68px, 17vw, 116px)/0.95 var(--g-d); letter-spacing: 0.01em; color: #fff; text-shadow: 0 0 18px rgba(255, 77, 157, 0.75), 0 0 48px rgba(255, 77, 157, 0.4); animation: gtaNeon 1.6s steps(1) 1; }
+@keyframes gtaNeon { 0% { opacity: 0.15; } 12% { opacity: 1; } 18% { opacity: 0.35; } 26% { opacity: 1; } 34% { opacity: 0.6; } 40% { opacity: 1; } }
+.gta-reloj { display: flex; justify-content: center; gap: clamp(8px, 2.4vw, 16px); }
+.gta-reloj span { display: grid; justify-items: center; min-width: clamp(62px, 17vw, 96px); padding: 10px 6px 8px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); }
+.gta-reloj b { font: 400 clamp(34px, 9vw, 54px)/1 var(--g-d); font-variant-numeric: tabular-nums; color: var(--g-nar); }
+.gta-reloj span:first-child b { color: var(--g-rosa); }
+.gta-reloj i { font-style: normal; font-size: 12px; color: var(--g-t2); margin-top: 5px; }
+.gta-reloj.fuera span { min-width: 180px; }
+.gta-fecha { margin: 16px auto 0; color: var(--g-t2); font-size: 14px; max-width: 48ch; }
+.gta-web { display: inline-flex; align-items: center; height: 38px; padding: 0 16px; margin-top: 14px; border-radius: 999px; border: 1px solid rgba(78, 230, 214, 0.5); color: var(--g-cian); font-weight: 650; font-size: 14px; }
+.gta-web:hover { background: rgba(78, 230, 214, 0.1); text-decoration: none; }
+.gta-sub { margin: 34px 0 2px; font: 400 27px/1.1 var(--g-d); letter-spacing: 0.01em; color: #fff; }
+.gta-nota { color: var(--g-nar); font-size: 13.5px; margin: 6px 0 0; }
+.gta-datos { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 680px) { .gta-datos { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 30px; } }
+.gta-datos li { padding: 16px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+.gta-datos b { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 9px; font: 400 clamp(30px, 7.5vw, 40px)/1.05 var(--g-d); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
+.gta-datos .c0 b { color: var(--g-rosa); } .gta-datos .c1 b { color: var(--g-nar); } .gta-datos .c2 b { color: var(--g-cian); }
+.gta-datos small { font: 650 14px/1.2 var(--f); color: var(--g-t); }
+.gta-datos p { margin: 6px 0 0; color: var(--g-t2); font-size: 14px; line-height: 1.5; }
+.gta-trailer { margin-top: 18px; }
+.gta-txt { margin: 6px 0 0; color: var(--g-t2); font-size: 14.5px; line-height: 1.55; }
+.gta-video { position: relative; aspect-ratio: 16 / 9; margin-top: 16px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.14); background: #000; box-shadow: 0 0 40px rgba(255, 77, 157, 0.18); }
+.gta-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.gta-sub2 { margin: 26px 0 0; font: 400 22px/1.15 var(--g-d); letter-spacing: 0.01em; color: #fff; }
+.gta-coste { margin: 12px 0 0; display: grid; gap: 0; }
+.gta-coste > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); }
+@media (min-width: 560px) { .gta-coste > div { grid-template-columns: 120px minmax(0, 1fr); gap: 14px; } }
+.gta-coste dt { color: var(--g-t); font-weight: 700; font-size: 14.5px; padding-top: 4px; }
+.gta-coste dd { margin: 0; color: var(--g-t2); font-size: 14px; line-height: 1.5; }
+.gta-coste dd b { display: block; font: 400 24px/1.1 var(--g-d); color: var(--g-nar); letter-spacing: 0.01em; margin-bottom: 2px; }
+.gta-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 14px 16px; margin-top: 4px; border-radius: 14px; background: rgba(255, 77, 157, 0.1); border: 1px solid rgba(255, 77, 157, 0.35); }
+.gta-total b { font: 400 34px/1.05 var(--g-d); color: var(--g-rosa); letter-spacing: 0.01em; }
+.gta-total span { color: var(--g-t2); font-size: 14px; }
+.gta-pie { margin: 20px 0 0; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); color: rgba(216, 195, 228, 0.72); font-size: 12px; line-height: 1.5; }
+.gta-aviso { width: min(520px, calc(100% - 32px)); text-align: center; display: grid; align-content: center; }
+@media (max-width: 720px) { .gta-aviso { width: 100%; } }
+.gta-lead { margin: 20px auto 0; max-width: 40ch; font-size: 16px; line-height: 1.55; color: var(--g-t); }
+.gta-donde { margin: 10px 0 0; color: var(--g-t2); font-size: 13.5px; }
+.gta-btns { display: grid; gap: 10px; margin: 24px auto 0; width: min(100%, 360px); }
+.gta-b { height: 48px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2); background: transparent; color: var(--g-t); font-weight: 650; font-size: 15.5px; }
+.gta-b.pri { background: linear-gradient(95deg, #FF4D9D, #FF8A4D); border: 0; color: #1A0718; }
+.gta-b:hover { filter: brightness(1.08); }
+@media (prefers-reduced-motion: reduce) { .gta-tit, .gta-chip.pulsa { animation: none; } }
+
+/* ---------- idiomas ---------- */
+.i18n-carga body { visibility: hidden; }
+.bandera { width: 22px; height: 15px; border-radius: 3px; flex: none; box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.12); }
+.idiomas { display: inline-flex; gap: 6px; flex-wrap: wrap; }
+.idiomas button { display: inline-flex; align-items: center; gap: 8px; height: 38px; padding: 0 14px 0 10px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--plane-2); color: var(--text-2); font-size: 14px; font-weight: 600; }
+.idiomas button[aria-pressed="true"] { border-color: var(--accent); color: var(--text); background: var(--accent-bg); }
+.idiomas button:hover { color: var(--text); }
+.idiomas.mini button { height: 32px; padding: 0 8px; gap: 0; font-size: 0; }
+.idiomas.mini button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.idiomas.mini button[aria-pressed="true"] { background: transparent; }
+.intro-cab .idiomas.mini { margin-left: auto; margin-right: 6px; }
+.idiomas.pie { justify-content: center; margin-top: 4px; }
+.idiomas.pie button { height: 34px; font-size: 13px; }
+.aj-idioma { display: grid; gap: 8px; margin: 4px 0 20px; }
+.aj-idioma small { color: var(--muted); font-size: 12.5px; }
+.aviso-idioma { position: relative; z-index: 31; display: flex; align-items: center; gap: 10px; padding: 8px max(12px, var(--gutter)); padding-top: calc(8px + env(safe-area-inset-top)); background: #1F2A3A; border-bottom: 1px solid #33465F; color: #DCE6F2; font-size: 13px; line-height: 1.4; }
+.aviso-idioma p { margin: 0; flex: 1; min-width: 0; }
+.aviso-idioma .ai-es { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 8px; border: 1px solid #4A6182; background: transparent; color: #fff; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+.aviso-idioma .ai-es .bandera { width: 18px; height: 12px; }
+.aviso-idioma .ai-x { width: 30px; height: 30px; display: grid; place-items: center; border: 0; background: transparent; color: #DCE6F2; border-radius: 8px; flex: none; }
+.aviso-idioma .ai-x svg { width: 16px; height: 16px; }
+@media (max-width: 560px) { .aviso-idioma { gap: 8px; font-size: 12.5px; padding-left: 14px; padding-right: 6px; } .aviso-idioma > .bandera { display: none; } .aviso-idioma .ai-es { padding: 0 8px; } }
 </style>
 </head>
 <body>
@@ -2631,6 +2783,7 @@ function pintar() {
   pintarTicker(M);
   const scroll = window.scrollY;
   const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo }[S.vista] || vistaCartera;
+  setTimeout(() => plegarNotas($('#vista')), 0);
   $('#vista').innerHTML = html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie">Precios en directo de Yahoo Finance (la bolsa de Madrid llega con 15 minutos de retraso y la de Londres con 20; divisas y futuros, al instante) y de Bitvavo para Bitcoin. Los fondos publican un valor liquidativo al día. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action. Noticias: Google Noticias. Tus cantidades van cifradas en <code>cartera.enc.json</code>.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if ((S.radarVisibles || []).length) { S.binds = binds(M); rellenarBinds($('#vista')); }
@@ -2713,7 +2866,7 @@ function vistaCartera(M) {
   return `
   <div class="cabecera">
     <section aria-label="Patrimonio">
-      <div class="hero-lbl">Patrimonio</div>
+      <div class="hero-fila"><div class="hero-lbl">Patrimonio</div>${chipGTA()}</div>
       <div class="hero-num" aria-label="Patrimonio">${B('totalE')}${B('totalD', 'dec')}</div>
       <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">de ganancia en lo que tienes</span></div><div class="movers">${B('movers')}</div></div>
       <div class="kpis">
@@ -3322,7 +3475,7 @@ function htmlFiscalIdea(r, e) {
   partes.push(tasa ? `al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${tasa.nombre}` : 'sin tasa al comprar');
   return `<p class="idea-linea"><b>Impuestos.</b> ${esc(partes.map((x) => x.replace(/\.\s*$/, '')).join('; ').replace(/^./, (c) => c.toUpperCase()))}.</p>`;
 }
-function tarjetaIdea(x, ctx) {
+function tarjetaIdea(x, ctx, compacta = false) {
   const r = x.r;
   const pu = x.web || (r && r.p != null && r.pot != null ? puntuarIdea(r, ctx) : null);
   const ctr = pu ? pu.ctr : r && r.p ? contraste(r) : null;
@@ -3342,8 +3495,9 @@ function tarjetaIdea(x, ctx) {
     ctr ? `<div><p class="idea-linea" style="margin-bottom:6px"><b>Las siete señales.</b></p>${htmlContrasteLista(ctr)}</div>` : '',
     enlacesFuentes(fuentes, 4),
   ].filter(Boolean).join('');
-  return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}">
-    <header>${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? lineaOrigen(r) : esc(x.s)}</small></div></header>
+  const resumen = x.esp && x.esp.prin ? `${x.esp.prin.netoAnual != null ? `${pctS(x.esp.prin.netoAnual, 0)} al año neto` : ''}${x.esp.prin.meses ? ` en ${plazoTxt(x.esp.prin.meses)}` : ''}` : '';
+  return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}"${compacta ? ' data-compacta' : ''}>
+    <header${compacta ? ' data-idea-toggle role="button" tabindex="0" aria-expanded="false"' : ''}>${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? lineaOrigen(r) : esc(x.s)}</small></div>${compacta ? `<span class="idea-res">${resumen ? `<b class="${cls(x.esp.prin.netoAnual)}">${esc(resumen.split(' al año')[0])}</b><small>al año neto</small>` : ''}</span>` : ''}</header>
     <p class="idea-quien">${quienIdea(x)}${ctr ? ` <span class="ctr-q">${htmlContraste(ctr, true)} señales a favor</span>` : ''}</p>
     ${htmlCifrasIdea(r, x.esp)}
     ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
@@ -3354,13 +3508,14 @@ function tarjetaIdea(x, ctx) {
 function htmlEvitar() {
   const d = S.escaneo && S.escaneo.decision;
   if (!d || !(d.evitar || []).length) return '';
-  return `<section class="evitar" aria-labelledby="hEvi"><div class="sec-cab"><h3 id="hEvi">Las que GrowFolio IA evitaría por lo que dice su prensa</h3></div><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${escIA(v.motivo)}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul></section>`;
+  return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det"${innerWidth > 680 ? ' open' : ''}><summary class="sec-cab"><h3 id="hEvi">Las que GrowFolio IA evitaría por lo que dice su prensa <span class="k">(${d.evitar.length})</span></h3></summary><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${escIA(v.motivo)}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul></details></section>`;
 }
 function htmlIdeas(M, ia) {
   const todas = radarVals();
   if (!todas.length) return '<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2></div><div class="vacio">La lista de ideas llega con la próxima actualización de datos.</div>';
   const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
   const juntas = ideasJuntas(M, ia, 9).slice(0, 9);
+  const movil = innerWidth <= 680;
   const ctx = ctxIdeas(M);
   const d = S.escaneo && S.escaneo.decision;
   let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => { const e = esperadaRadar(x); return { ...x, _ctr: contraste(x), _neto: e ? e.prin.netoAnual : null, _meses: e ? e.prin.meses : null }; });
@@ -3368,13 +3523,14 @@ function htmlIdeas(M, ia) {
   const [, clave] = ORDEN_RADAR[S.radarOrden] || ORDEN_RADAR.pot;
   v = v.sort((a, b) => clave(b) - clave(a));
   const total = v.length;
-  if (!S.radarTodo) v = v.slice(0, 20);
+  const corte = movil ? 10 : 20;
+  if (!S.radarTodo) v = v.slice(0, corte);
   S.radarVisibles = [...new Set([...v.map((x) => x.s), ...juntas.filter((x) => x.r).map((x) => x.r.s)])];
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
   return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowFolio IA y tu análisis</span></div>
     ${d && d.comentario ? `<p class="idea-panorama"><b>GrowFolio IA</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
-    ${juntas.length ? `<div class="ideas-top3">${juntas.map((x) => tarjetaIdea(x, ctx)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
+    ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, movil && i >= 3)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
     <p class="nota">GrowFolio elige las tres mejor contrastadas: consenso de compra, recorrido hasta el objetivo, al menos 3 de las 7 señales a favor y que no repitan lo que ya llevan tus fondos. GrowFolio IA lee la prensa del radar y elige por su cuenta. Primero van las que eligen dos o más; después, de más a menos de lo que darían al año, netas de impuestos. Las barras de contraste: verde a favor, rojo en contra, gris neutral.</p>
     ${htmlEvitar()}
     <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
@@ -3387,7 +3543,7 @@ function htmlIdeas(M, ia) {
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
       <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que daría al año si se cumple lo esperado (el plazo de GrowFolio IA o los 12 meses de los analistas), con su dividendo, menos la tasa de compra, la retención que no se recupera y tu tramo del ahorro">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses && x._meses !== 12 ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
-    ${total > 20 ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? 'Ver solo las 20 primeras' : `Ver las ${total}`}</button>` : ''}
+    ${total > corte ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? `Ver solo las ${corte} primeras` : `Ver las ${total}`}</button>` : ''}
     <p class="nota">Potencial: lo que queda hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Prensa: lo que ha leído GrowFolio IA en sus noticias. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio.</p>`;
 }
 
@@ -3448,6 +3604,23 @@ const MERC_INFO = {
   'NG=F': { g: 'Materias primas', que: 'El gas natural en EEUU. Pesa en la factura de la industria y en la inflación.', sube: 'Más inflación y costes para la industria.', baja: 'Alivio en costes y en la inflación.', tuyo: (f) => f.p && /Utilities|Gas/i.test(f.p.industria || '') },
   'BTC-EUR': { g: 'Cripto', que: 'La mayor criptomoneda. Muy volátil: se mueve con el apetito por el riesgo.', sube: 'Apetito por el riesgo: suele ir con la tecnología.', baja: 'Huida del riesgo: puede caer mucho en poco tiempo.', tuyo: (f) => f.inst.clase === 'Cripto' },
 };
+/* cada mercado en una fila: nombre, mini gráfica, precio y cambio de hoy; al tocarla, qué es, cómo va y qué te implica */
+function filaMercado(sym, m, M) {
+  const info = MERC_INFO[sym] || {};
+  const v = (S.liveM[sym] && S.liveM[sym].var != null) ? S.liveM[sym].var : m.variacion_dia;
+  const plano = v == null || Math.abs(v) < 0.05, sube = v > 0;
+  const tuyos = info.tuyo && M ? [...new Set(M.filas.filter((f) => { try { return info.tuyo(f); } catch (e) { return false; } }).map((f) => f.inst.corto || f.inst.nombre))] : [];
+  return `<details class="mfila">
+    <summary><span class="mf-n"><b>${esc(m.nombre)}</b>${tuyos.length ? '<small class="mf-tuyo">te afecta</small>' : ''}</span>${miniSpark(sym)}<span class="mf-p"><span class="merc-p">${B('mp:' + sym)}</span>${B('mv:' + sym)}</span></summary>
+    <div class="mf-det">
+      ${info.que ? `<p class="mf-que">${esc(info.que)}</p>` : ''}
+      <div class="chart" data-spark-m="${esc(sym)}"></div>
+      <div class="merc-r"><span>1 mes <b class="${cls(m.rent && m.rent['1m'])}">${pctS(m.rent && m.rent['1m'], 1)}</b></span><span>Año <b class="${cls(m.rent && m.rent.ytd)}">${pctS(m.rent && m.rent.ytd, 1)}</b></span><span>1 año <b class="${cls(m.rent && m.rent['1a'])}">${pctS(m.rent && m.rent['1a'], 1)}</b></span></div>
+      ${info.sube ? `<p class="merc2-imp ${plano ? '' : (sube !== !!info.inverso) ? 'sube' : 'baja'}"><b>${plano ? 'Si sube' : sube ? 'Hoy sube' : 'Hoy baja'}:</b> ${esc(plano ? info.sube : sube ? info.sube : info.baja)}</p>${plano ? `<p class="merc2-imp"><b>Si baja:</b> ${esc(info.baja)}</p>` : ''}` : ''}
+      ${tuyos.length ? `<p class="merc2-tuyo">Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}</p>` : ''}
+    </div>
+  </details>`;
+}
 function tarjetaMercado(sym, m, M) {
   const info = MERC_INFO[sym] || {};
   const v = (S.liveM[sym] && S.liveM[sym].var != null) ? S.liveM[sym].var : m.variacion_dia;
@@ -3472,8 +3645,9 @@ function vistaMercados(M) {
   <div class="vista-cab"><h1>Mercados</h1><p>Bolsas del mundo, tipos, divisas y materias primas: qué son, cómo van y qué significa que suban o bajen para lo que tienes.</p></div>
   <div class="pila">
     ${htmlMercadoInforme()}
-    ${[...porGrupo.entries()].filter(([, v]) => v.length).map(([g, v]) => `<section aria-label="${esc(g)}"><div class="sec-cab"><h2>${esc(g)}</h2></div><div class="mercados2">${v.map(([sym, m]) => tarjetaMercado(sym, m, M)).join('')}</div></section>`).join('')}
-    <section aria-labelledby="hNotM"><div class="sec-cab"><h2 id="hNotM">Noticias de mercado</h2><span class="k">bolsas, bancos centrales, petróleo y divisas</span></div>${htmlNoticias(N, false, 16).replace('class="noticias"', 'class="noticias dos-col"')}</section>
+    <div class="mgrupos">${[...porGrupo.entries()].filter(([, v]) => v.length).map(([g, v]) => `<section class="mgrupo" aria-label="${esc(g)}"><h2 class="mg-t">${esc(g)}</h2><div class="mfilas">${v.map(([sym, m]) => filaMercado(sym, m, M)).join('')}</div></section>`).join('')}</div>
+    <p class="nota mg-nota">Toca cada mercado para ver qué es, cómo ha ido y qué significa para ti que suba o baje.</p>
+    <section aria-labelledby="hNotM"><div class="sec-cab"><h2 id="hNotM">Noticias de mercado</h2><span class="k">bolsas, bancos centrales, petróleo y divisas</span></div>${htmlNoticias(N.slice(0, 6), false, 6).replace('class="noticias"', 'class="noticias dos-col"')}${N.length > 6 ? `<details class="mas-noticias"><summary>Ver ${Math.min(N.length, 16) - 6} noticias más</summary>${htmlNoticias(N.slice(6, 16), false, 10).replace('class="noticias"', 'class="noticias dos-col"')}</details>` : ''}</section>
   </div>`;
 }
 
@@ -3858,7 +4032,7 @@ function htmlPlan(M) {
       </section>
       <section aria-labelledby="hPosE">
         <div class="sec-cab"><h2 id="hPosE">Posiciones</h2><div class="der"><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir posición</button></div></div>
-        <div class="tabla-w"><table class="resp"><thead><tr><th>Activo</th><th class="r">Cantidad</th><th class="r">Invertido</th><th class="r">Valor</th><th></th></tr></thead><tbody>
+        <div class="tabla-w"><table class="resp tabla-ed"><thead><tr><th>Activo</th><th class="r">Cantidad</th><th class="r">Invertido</th><th class="r">Valor</th><th></th></tr></thead><tbody>
           ${M.filas.map((f) => `<tr><td>${activoMini(f.inst, `<span>${esc(f.pos.plataforma || '')}</span>`)}</td><td class="r">${f.uds != null ? oc(fmtNum(f.uds, 4)) : '—'}${f.estimada ? '<small>estimada</small>' : ''}</td><td class="r">${eur(f.coste, 0)}</td><td class="r">${eur(f.valor, 0)}</td><td class="r"><button class="btn peq" data-accion="editar-pos" data-id="${esc(f.pos.id)}">${ICONOS.lapiz}Editar</button></td></tr>`).join('')}
         </tbody></table></div>
       </section>
@@ -3870,10 +4044,7 @@ function htmlPlan(M) {
       <section aria-labelledby="hEf"><div class="sec-cab"><h2 id="hEf">Efectivo</h2><span class="k">${eur(M.liquidez, 0)}</span><div class="der"><button class="btn peq" data-accion="efectivo">${ICONOS.lapiz}Cambiar</button></div></div>
         <ul class="leyenda">${(S.cartera.efectivo || []).map((e) => `<li style="grid-template-columns:minmax(0,1fr) auto"><span class="n">${esc(e.plataforma)}</span><span class="p">${eur(+e.importe || 0)}</span></li>`).join('') || '<li class="vacio">Sin efectivo</li>'}</ul>
       </section>
-      <section aria-labelledby="hLim"><div class="sec-cab"><h2 id="hLim">Tus límites</h2><div class="der"><button class="btn peq" data-accion="limites">${ICONOS.lapiz}Cambiar</button></div></div>
-        <ul class="leyenda"><li style="grid-template-columns:minmax(0,1fr) auto"><span class="n">Máximo en acciones sueltas</span><span class="p">${fmtNum(+(S.cartera.limite_acciones || 20), 0)} %</span></li></ul>
-        <p class="nota">Si las acciones sueltas pasan de ese porcentaje, sale un aviso en Cartera.</p>
-      </section>
+      <a class="ir-objetivos" href="#objetivos">${ICONOS.futuro}<span><b>Tus límites, tu perfil y tus metas</b><small>están en Objetivos</small></span></a>
     </aside>
   </div>`;
 }
@@ -4021,10 +4192,38 @@ function dibujar(M) {
     if (S.comparar && S.ref && !intra) series.push({ datos: serieComparada(serie, S.ref), color: 'var(--text-2)', disc: true, nombre: 'S&P 500' });
     grafLinea(g, series, { titulo: 'Evolución del valor de la cartera', fmt: (v) => eur(v, 0), oculto: S.oculto, cambio: true, alto: 280 });
   }
-  for (const el of $$('[data-spark-m]')) {
-    const h = histMercado(el.dataset.sparkM) || [];
-    grafLinea(el, h.map(([d, v]) => ({ d, v })), { alto: window.innerWidth < 560 ? 44 : 70, sinEjes: true, sinRef: false, titulo: 'Último año', fmt: (v) => fmtMerc(el.dataset.sparkM, v) });
+  // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
+  for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
+}
+function dibujarSparkM(el) {
+  const h = histMercado(el.dataset.sparkM) || [];
+  grafLinea(el, h.map(([d, v]) => ({ d, v })), { alto: window.innerWidth < 560 ? 56 : 70, sinEjes: true, sinRef: false, titulo: 'Último año', fmt: (v) => fmtMerc(el.dataset.sparkM, v) });
+}
+/* las ideas compactas del móvil se abren al tocar su cabecera */
+function abrirIdea(h) { const a = h.closest('.idea'); if (!a) return; const on = a.classList.toggle('abierta'); h.setAttribute('aria-expanded', String(on)); }
+document.addEventListener('click', (e) => { const h = e.target.closest('[data-idea-toggle]'); if (h && !e.target.closest('a, button')) abrirIdea(h); });
+document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-idea-toggle]')) { e.preventDefault(); abrirIdea(e.target); } });
+document.addEventListener('toggle', (e) => {
+  const d = e.target;
+  if (d.matches && d.matches('details.mfila') && d.open) { const el = d.querySelector('[data-spark-m]'); if (el) requestAnimationFrame(() => dibujarSparkM(el)); }
+}, true);
+/* en el móvil, las notas largas (cómo se calcula, de dónde sale) se pliegan para no hacer scroll */
+function plegarNotas(raiz) {
+  if (!raiz || innerWidth > 680) return;
+  for (const p of raiz.querySelectorAll('p.nota')) {
+    if (p.closest('details, .pf-preguntas, .rg-pasos') || p.textContent.length < 170) continue;
+    const d = document.createElement('details'); d.className = 'nota-plegada';
+    d.innerHTML = '<summary>Más detalles</summary>';
+    p.replaceWith(d); d.appendChild(p);
   }
+}
+/* la mini gráfica de cada fila de Mercados: los últimos 3 meses, sin ejes */
+function miniSpark(sym) {
+  const h = (histMercado(sym) || []).slice(-66).map(([, v]) => v).filter((v) => v != null);
+  if (h.length < 3) return '<span class="mf-spark"></span>';
+  const lo = Math.min(...h), hi = Math.max(...h), W = 64, H = 22;
+  const pts = h.map((v, i) => `${((i / (h.length - 1)) * W).toFixed(1)},${(H - 2 - ((v - lo) / (hi - lo || 1)) * (H - 4)).toFixed(1)}`).join(' ');
+  return `<svg class="mf-spark ${h[h.length - 1] >= h[0] ? 'up' : 'down'}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts}"/></svg>`;
 }
 
 let rsT;
@@ -5118,13 +5317,13 @@ function htmlProyeccion(M) {
       <ul class="lista hitos">${META_HITOS.map((m) => { const a = hito(pr, pr.p50, m), r = hito(pr, pr.p90, m), l = hito(pr, pr.p10, m); return `<li><span class="meta">${euCorto(m)}</span><div>${a == null ? '<b>Más de 30 años</b><span>con esta aportación</span>' : `<b>${a === 0 ? 'Ya lo tienes' : `En ${cuando(a)}, en ${anioDe(pr.fechas[a])}`}</b><span>${a === 0 ? '' : `Si va bien, en ${anioDe(pr.fechas[r])}. Si va mal, ${l == null ? 'después de 30 años' : `en ${anioDe(pr.fechas[l])}`}.`}</span>`}</div></li>`; }).join('')}</ul>
     </aside>
   </div>
-  <section style="margin-top:48px" aria-labelledby="hSup">
-    <div class="sec-cab"><h2 id="hSup">Con qué se calcula</h2><span class="k">tu cartera hoy: ${fmtNum(pr.mu, 1)} % al año esperado, volatilidad del ${fmtNum(pr.sd, 0)} %</span></div>
+  <section style="margin-top:48px" aria-labelledby="hSup"><details class="sec-det"${innerWidth > 680 ? ' open' : ''}>
+    <summary class="sec-cab"><h2 id="hSup">Con qué se calcula</h2><span class="k">tu cartera hoy: ${fmtNum(pr.mu, 1)} % al año esperado, volatilidad del ${fmtNum(pr.sd, 0)} %</span></summary>
     <div class="tabla-w"><table class="resp"><thead><tr><th>Tipo de activo</th><th class="r">Tienes</th><th class="r">Va de tus aportaciones</th><th class="r">Rentabilidad esperada</th><th class="r">Volatilidad</th></tr></thead><tbody>
       ${Object.entries(pr.sup).filter(([k]) => pr.ahora[k] > 0 || pr.destino[k] > 0).map(([k, s]) => `<tr><td><b style="font-weight:600">${esc(s.n)}</b></td><td class="r">${pct((pr.ahora[k] / totAhora) * 100, 1)}</td><td class="r">${pct(pr.destino[k] * 100, 0)}</td><td class="r">${pct(s.mu, 1)}</td><td class="r">${pct(s.sd, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     <p class="nota">Rentabilidades y volatilidades a largo plazo en euros, antes de impuestos y después de los gastos de los fondos. Son supuestos razonables, no promesas: la bolsa mundial ha dado de media en torno a un 7 % al año durante décadas, pero con años de −30 %. Como lo que aportas va casi todo a fondos de bolsa, dentro de 10 años la cartera esperaría un ${fmtNum(pr.mu10, 1)} % al año con una volatilidad del ${fmtNum(pr.sd10, 0)} %. Las acciones sueltas y Bitcoin tienen la misma rentabilidad esperada que la bolsa o poco más, pero mucho más riesgo: por eso ensanchan el abanico. Cada escenario sigue un camino mes a mes con caídas y subidas al azar, siempre con la misma semilla para que los números no cambien al recargar.</p>
-  </section>`;
+  </details></section>`;
 }
 
 /* abanico: banda del 10-90 %, banda del 25-75 %, mediana y lo aportado */
@@ -6006,7 +6205,7 @@ const INTRO = [
 function pantallaIntro(seguir) {
   const nuevo = !S.enc;
   $('#app').innerHTML = `<div class="intro" role="region" aria-roledescription="carrusel" aria-label="Presentación de GrowFolio">
-    <div class="intro-cab"><span class="intro-marca"><img src="favicon.svg" alt="">GrowFolio</span><button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
+    <div class="intro-cab"><span class="intro-marca"><img src="favicon.svg" alt="">GrowFolio</span>${selectorIdioma('mini')}<button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
     <div class="intro-ventana"><div class="intro-pista">${INTRO.map((d, k) => `<section class="intro-slide" aria-roledescription="diapositiva" aria-label="${k + 1} de ${INTRO.length}"><div class="intro-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true">${ILUS[d.il]}</svg></div><div class="intro-txt"><h1>${d.t}</h1><p>${d.x}</p></div></section>`).join('')}</div></div>
     <div class="intro-pie"><div class="intro-puntos" role="group" aria-label="Diapositivas">${INTRO.map((_, k) => `<button type="button" data-pt="${k}" aria-label="Diapositiva ${k + 1}"></button>`).join('')}</div>
       <div class="intro-btns"><button type="button" class="btn intro-atras" data-in="atras">Atrás</button><button type="button" class="btn pri intro-sig" data-in="sig">Siguiente</button></div></div>
@@ -6069,6 +6268,7 @@ function pantallaDesbloqueo(errorTxt = '') {
     <button class="btn pri" type="submit" id="bEntrar">Entrar</button>
     ${htmlOtroPerfil()}
     <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
+    ${selectorIdioma('pie')}
   </form></div>`;
   enlazarOtroPerfil();
   $('#bIntro').onclick = () => pantallaIntro(() => pantallaDesbloqueo());
@@ -6116,6 +6316,7 @@ function pantallaCrear() {
     <button class="btn pri" type="submit" id="bCrear">Cifrar y guardar</button>
     ${PERFIL_LOCAL ? htmlOtroPerfil() : ''}
     <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
+    ${selectorIdioma('pie')}
   </form></div>`;
   enlazarOtroPerfil();
   $('#bIntro').onclick = () => pantallaIntro(pantallaCrear);
@@ -6409,8 +6610,14 @@ function buscador(cont, alElegir, opt = {}) {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.1.11';
+const VERSION = '0.1.12';
 const NOVEDADES = [
+  { v: '0.1.12', f: '2026-10-19', t: 'Menos scroll y GTA VI', cosas: [
+    { d: 'gta', t: 'Cuenta atrás para GTA VI', x: 'Al lado de tu patrimonio: los días que faltan, cuántos GTA VI vale tu cartera, en qué año podrías pagar el juego entero, el tráiler de lanzamiento y lo que pudo costar hacerlo.' },
+    { d: 'mercados', t: 'Mercados, más fácil de leer', x: 'Cada mercado en una fila con su precio, lo de hoy y una gráfica pequeña; tócalo para ver qué es y qué significa para ti. Seis noticias a la vista y el resto, plegadas.' },
+    { d: 'movil', t: 'Menos scroll en el móvil', x: 'Las explicaciones largas se pliegan en "Más detalles", las ideas de compra salen en corto hasta que las abres y el radar enseña diez filas. Mercados mide la mitad que antes e Ideas, menos de la mitad.' },
+    { d: 'idioma', t: 'GrowFolio en inglés, en pruebas', x: 'En Ajustes, Idioma, con la bandera de cada uno, y también en la presentación y al entrar. Está a medias: botones, pestañas y formularios ya salen en inglés, pero las noticias, los informes de la IA y algunos textos siguen en español.' },
+  ] },
   { v: '0.1.11', f: '2026-10-19', t: 'GrowFolio', cosas: [
     { d: 'logo', t: 'Ahora se llama GrowFolio', x: 'Grow (crecer) y portfolio (cartera): tu cartera creciendo. Logo nuevo en la web y en la app, y la IA pasa a llamarse GrowFolio IA (por dentro sigue usando Gemini, de Google).' },
     { d: 'intro', t: 'Una presentación al empezar', x: 'La primera vez que abres la web o la app, cinco diapositivas con lo que puedes hacer y, al final, el botón para crear tu cartera o entrar. Desde la pantalla de entrar se puede volver a ver.' },
@@ -6457,6 +6664,9 @@ const fechaNov = (f) => { const d = deIso(f); return `${d.getDate()} ${MESES[d.g
 
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  gta: '<path class="l" d="M32 34h56a13 13 0 0 1 13 14l-1.6 10a7.5 7.5 0 0 1-13 3.6L80 54H40l-6.4 7.6a7.5 7.5 0 0 1-13-3.6L19 48a13 13 0 0 1 13-14z"/><path class="a" d="M36 41v10M31 46h10"/><circle class="fA" cx="80" cy="43" r="3"/><circle class="fA" cx="87" cy="50" r="3"/><rect class="fa" x="36" y="6" width="48" height="18" rx="9"/><text class="ta" x="47" y="19">19 nov</text>',
+  movil: '<rect class="l" x="38" y="4" width="44" height="72" rx="8"/><rect class="fp" x="44" y="14" width="32" height="10" rx="3"/><rect class="fp" x="44" y="28" width="32" height="10" rx="3"/><rect class="fa" x="44" y="42" width="32" height="10" rx="3"/><path class="a" d="M69 45.5l2.5 2.5 2.5-2.5"/><path class="m" d="M46 60h20M46 66h14"/><path class="u" d="M96 24v32M91 29l5-5 5 5M91 51l5 5 5-5"/>',
+  idioma: '<rect x="18" y="16" width="36" height="24" rx="4" fill="#AA151B"/><rect x="18" y="22" width="36" height="12" fill="#F1BF00"/><rect x="66" y="16" width="36" height="24" rx="4" fill="#012169"/><path d="M67 17l34 22M101 17L67 39" stroke="#fff" stroke-width="4"/><path d="M84 16v24M66 28h36" stroke="#fff" stroke-width="7"/><path d="M84 16v24M66 28h36" stroke="#C8102E" stroke-width="4"/><rect class="fa" x="32" y="52" width="56" height="16" rx="8"/><text class="ta" x="41" y="63.5">en pruebas</text>',
   buscar: '<rect class="fp" x="8" y="6" width="104" height="20" rx="10"/><circle class="a" cx="21" cy="16" r="4.5"/><path class="a" d="M24.5 19.5l3.5 3.5"/><text class="ta" x="35" y="19.5">VWCE</text><path class="a" d="M62 11v10"/><rect class="fa" x="8" y="32" width="104" height="15" rx="5"/><circle class="fA" cx="19" cy="39.5" r="4.5"/><path class="l" d="M30 39.5h44"/><path class="a" d="M90 39.5h14"/><circle class="fp" cx="19" cy="57" r="4.5"/><path class="m" d="M30 57h36"/><path class="m" d="M90 57h14"/><circle class="fp" cx="19" cy="72" r="4.5"/><path class="m" d="M30 72h28"/><path class="m" d="M90 72h14"/>',
   capturas: '<rect class="l" x="14" y="8" width="32" height="64" rx="6"/><path class="m" d="M21 20h18M21 29h11M21 38h18M21 47h9M21 56h15"/><path class="a" d="M9 15V7h8M43 7h8v8M51 65v8h-8M17 73H9v-8"/><path class="a" d="M57 40h13M65 35l5 5-5 5"/><rect class="fa" x="77" y="14" width="36" height="14" rx="4"/><path class="u" d="M81 21l2.5 2.5L88 18.5"/><path class="l" d="M93 21h15"/><rect class="fa" x="77" y="33" width="36" height="14" rx="4"/><path class="u" d="M81 40l2.5 2.5L88 37.5"/><path class="l" d="M93 40h11"/><rect class="fa" x="77" y="52" width="36" height="14" rx="4"/><path class="u" d="M81 59l2.5 2.5L88 56.5"/><path class="l" d="M93 59h13"/>',
   tengo: '<rect class="fp" x="4" y="10" width="112" height="22" rx="11"/><text class="t" x="12" y="24.5">Compra</text><text class="t" x="46" y="24.5">Venta</text><rect class="fA" x="74" y="12" width="40" height="18" rx="9"/><text class="tn" x="79" y="24.5">La tenía</text><ellipse class="l" cx="60" cy="68" rx="17" ry="5"/><path class="l" d="M43 68v-7M77 68v-7"/><ellipse class="l" cx="60" cy="61" rx="17" ry="5"/><path class="a" d="M43 61v-7M77 61v-7"/><ellipse class="a" cx="60" cy="54" rx="17" ry="5"/>',
@@ -6737,6 +6947,204 @@ function avisoApp(ult) {
   b.onclick = bajar;
 }
 
+/* =====================================================================
+   GTA VI: cuenta atrás hasta su salida y unas cuentas con tu cartera.
+   Un botón pequeño al lado de Patrimonio; al entrar se avisa una vez. Desde 2027 ya no sale.
+   Datos: fecha, plataformas y precio, de Rockstar (junio de 2026); ventas de GTA V, de Take-Two
+   (agosto de 2026); el coste de GTA VI no es oficial: la prensa lo estima entre 1.000 y 2.000
+   millones de dólares y aquí se usa 1.500.
+   ===================================================================== */
+const GTA = {
+  salida: new Date(2026, 10, 19), precarga: new Date(2026, 10, 12), hasta: new Date(2027, 0, 1),
+  precio: 79.99, ultimate: 99.99, costeUSD: 1.5e9,
+  gta5Copias: 230e6, trailer2: 475e6, cadaCuanto: 13,
+  // tráiler de lanzamiento (15 oct 2026, YouTube de Rockstar); su coste es una estimación nuestra: canción 1-3 M$, vídeo 1,5-4 M$
+  trailer: { id: 'rz1B4B2yBZY', seg: 91, medio: 4.5e6, visitas11h: 18e6 },
+};
+const gtaActivo = () => Date.now() < GTA.hasta.getTime();
+function gtaFalta() {
+  const ms = GTA.salida - Date.now();
+  return ms > 0 ? { d: Math.floor(ms / 864e5), h: Math.floor(ms / 36e5) % 24, m: Math.floor(ms / 6e4) % 60, s: Math.floor(ms / 1e3) % 60 } : null;
+}
+const MANDO = SVG('<path d="M7 8.5h10a4.3 4.3 0 0 1 4.3 4.6l-.4 3.4a2.5 2.5 0 0 1-4.4 1.3L15 16H9l-1.5 1.8a2.5 2.5 0 0 1-4.4-1.3l-.4-3.4A4.3 4.3 0 0 1 7 8.5z"/><path d="M8 11.3v3.4M6.3 13h3.4"/><path d="M15.5 12.2h.01M17.5 14h.01" stroke-width="2.4"/>', 1.7);
+function chipGTA() {
+  if (!gtaActivo()) return '';
+  const f = gtaFalta();
+  const txt = !f ? 'ya está aquí' : f.d ? `${f.d} ${f.d === 1 ? 'día' : 'días'}` : `${f.h} h`;
+  return `<button class="gta-chip" type="button" data-gta aria-label="GTA VI: ${esc(txt)}. Cuenta atrás y cuentas con tu cartera">${MANDO}<b>GTA VI</b><span>${esc(txt)}</span></button>`;
+}
+function fuenteGTA() {
+  if ($('#fuenteGTA')) return;
+  const l = document.createElement('link');
+  l.id = 'fuenteGTA'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Anton&display=swap';
+  document.head.appendChild(l);
+}
+const dosC = (n) => String(n).padStart(2, '0');
+function relojGTA() {
+  const f = gtaFalta();
+  if (!f) {
+    const d = Math.floor((Date.now() - GTA.salida) / 864e5);
+    return `<div class="gta-reloj fuera"><span><b>${d ? d : '¡Hoy!'}</b><i>${d ? (d === 1 ? 'día a la venta' : 'días a la venta') : 'sale hoy'}</i></span></div>`;
+  }
+  return `<div class="gta-reloj">${[[f.d, f.d === 1 ? 'día' : 'días'], [dosC(f.h), 'horas'], [dosC(f.m), 'min'], [dosC(f.s), 'seg']].map(([n, t]) => `<span><b>${n}</b><i>${t}</i></span>`).join('')}</div>`;
+}
+// números grandes en corto: 1,3 M, 12.400, 7,5
+function nGTA(n, d) {
+  if (!isFinite(n)) return '—';
+  const a = Math.abs(n);
+  if (a >= 1e9) return fmtNum(n / 1e9, a >= 1e10 ? 0 : 1) + ' mil M';
+  if (a >= 1e6) return fmtNum(n / 1e6, a >= 1e7 ? 0 : 1) + ' M';
+  return fmtNum(n, d != null ? d : a < 10 ? 1 : 0);
+}
+// meses hasta tener F empezando con P, aportando C al mes y rindiendo r al año
+function mesesHasta(F, P, C, r) {
+  if (P >= F) return 0;
+  const rm = Math.pow(1 + r, 1 / 12) - 1;
+  if (rm <= 0) return C > 0 ? (F - P) / C : Infinity;
+  const base = P * rm + C;
+  return base > 0 ? Math.log((F * rm + C) / base) / Math.log(1 + rm) : Infinity;
+}
+function datosGTA(M) {
+  const P = Math.max(0, M.total || 0), O = S.oculto;
+  const fx = (S.precios && S.precios.fx) || {};
+  const usd = fx.USD || 0.86;
+  const costeE = GTA.costeUSD * usd;
+  const n = (x, d) => (O ? '••••' : nGTA(x, d));
+  const precio = fmtNum(GTA.precio, 2) + ' €';
+  const out = [];
+  if (!P) {
+    out.push({ n: '0', u: 'copias', t: 'Es lo que vale tu cartera en GTA VI de momento. Añade lo que tienes en Cartera y aquí salen tus cuentas.' });
+  } else {
+    out.push({ n: n(P / GTA.precio), u: P / GTA.precio < 2 ? 'copia' : 'copias', t: `Es lo que vale tu cartera en GTA VI, a ${precio} cada uno. En la edición Ultimate (${fmtNum(GTA.ultimate, 2)} €), ${O ? '••••' : nGTA(P / GTA.ultimate)}.` });
+    if (Math.abs(M.pl) >= GTA.precio / 2) {
+      out.push(M.pl > 0
+        ? { n: n(M.pl / GTA.precio), u: 'copias gratis', t: 'Te las paga lo que llevas ganado desde que compraste. El juego, invitado por la bolsa.' }
+        : { n: n(-M.pl / GTA.precio), u: 'copias en rojo', t: 'Es lo que llevas perdido desde que compraste. No se vende en las caídas: ni la cartera ni la reserva.' });
+    }
+    const hoy = M.dia / GTA.precio;
+    if (Math.abs(hoy) >= 0.1) out.push({ n: (hoy > 0 ? '+' : '−') + n(Math.abs(hoy)), u: 'copias hoy', t: hoy > 0 ? `Lo que ha ganado tu cartera hoy (${pctS(M.diaPct)}).` : `Lo que se ha dejado hoy tu cartera (${pctS(M.diaPct)}). Mañana será otro día.` });
+    out.push({ n: n(costeE / P), u: 'veces tu cartera', t: `Es lo que necesitarías para pagar GTA VI entero. Rockstar no ha dicho lo que ha costado; la prensa lo estima entre 1.000 y 2.000 millones de dólares. Con 1.500, son unos ${fmtNum(costeE / 1e6, 0)} millones de euros.` });
+    // al ritmo de tu plan: tu aportación y la rentabilidad esperada de tu proyección
+    let r = 0.06, C = 0;
+    try { const pr = proyeccion(M); r = pr.mu / 100; C = pr.cfg.aport || 0; } catch (e) { C = aportacionActual(); }
+    const meses = mesesHasta(costeE, P, C, r);
+    const anios = meses / 12;
+    if (isFinite(anios) && anios < 5000) {
+      const anio = new Date().getFullYear() + Math.round(anios);
+      out.push({ n: O ? '••••' : 'Año ' + anio, u: '', t: `Lo tendrías pagado si sigues ${C ? `aportando ${eur(C, 0)} al mes` : 'sin aportar'} y tu cartera rinde un ${fmtNum(r * 100, 1)} % al año, como en tu proyección. Son ${O ? '••••' : fmtNum(Math.round(anios), 0)} años: a uno cada ${GTA.cadaCuanto}, Rockstar sacaría mientras unos ${O ? '••••' : fmtNum(Math.max(1, Math.round(anios / GTA.cadaCuanto)), 0)} GTA más.` });
+    } else {
+      out.push({ n: 'Nunca', u: '', t: 'Al ritmo de tu plan no lo pagarías: sin aportaciones ni rentabilidad la cartera no crece. Pon tus aportaciones en Plan y movimientos.' });
+    }
+    // si cada día de bolsa fuera como hoy
+    const dp = M.diaPct || 0;
+    if (dp >= 0.05) {
+      const anosHoy = Math.log(costeE / P) / Math.log(1 + dp / 100) / 252;
+      out.push({ n: O ? '••••' : nGTA(anosHoy, anosHoy < 10 ? 1 : 0) + (anosHoy < 2 ? ' año' : ' años'), u: '', t: `Lo que tardarías en pagarlo entero si todos los días de bolsa fueran como hoy (${pctS(dp)}). El interés compuesto, llevado al extremo.` });
+    } else {
+      out.push({ n: 'Nunca', u: '', t: dp <= -0.05 ? `Hoy tu cartera va ${pctS(dp)}: si todos los días fueran así, no pagarías GTA VI ni GTA VII. Menos mal que no lo son.` : 'Hoy tu cartera apenas se ha movido. A este ritmo, ni GTA VI ni GTA VII.' });
+    }
+    if (M.dividendos >= GTA.precio / 4) out.push({ n: n(M.dividendos / GTA.precio), u: M.dividendos / GTA.precio < 2 ? 'copia al año' : 'copias al año', t: 'Te pagan tus dividendos de un año, brutos, sin mover un dedo.' });
+    let r10 = 0.07; try { r10 = proyeccion(M).mu / 100; } catch (e) {}
+    out.push({ n: fmtNum(GTA.precio * Math.pow(1 + r10, 10), 0) + ' €', u: '', t: `Serían los ${precio} del juego dentro de 10 años si los metes en tu cartera, al ${fmtNum(r10 * 100, 1)} % al año. Ya, te lo vas a comprar igual.` });
+    out.push({ n: O ? '••••' : nGTA(GTA.trailer2 / P), u: 'visitas por euro', t: 'El segundo tráiler tuvo 475 millones de visualizaciones en 24 horas, según Rockstar el mayor estreno de un vídeo de la historia (mayo de 2025). Tocan a eso por cada euro de tu cartera.' });
+  }
+  const tt = S.precios && S.precios.extra && S.precios.extra.TTWO;
+  if (tt && tt.precio) {
+    const pe = tt.precio * (fx[tt.moneda || 'USD'] || usd);
+    const r1 = tt.rent && tt.rent['1a'];
+    out.push({ n: P ? n(P / pe) : fmtNum(tt.precio, 2) + ' $', u: P ? (P / pe < 2 ? 'acción de Take-Two' : 'acciones de Take-Two') : 'Take-Two', t: `La dueña de Rockstar cotiza en el Nasdaq (TTWO) a ${fmtNum(tt.precio, 2)} $, ${pctS(tt.variacion_dia)} hoy${r1 != null ? ` y ${pctS(r1, 1)} en un año. Si hace un año hubieras metido ahí los ${precio} del juego, hoy tendrías unos ${fmtNum(GTA.precio * (1 + r1 / 100), 2)} € (sin contar lo que ha hecho el dólar)` : ''}.` });
+  }
+  const fact = GTA.gta5Copias * GTA.precio;
+  out.push({ n: '230 M', u: 'copias de GTA V', t: `Lleva vendidas desde 2013 (Take-Two, agosto de 2026). Si GTA VI vendiera lo mismo a ${precio}, ingresaría unos ${fmtNum(fact / 1e9, 1)} mil millones de euros: ${fmtNum(fact / costeE, 0)} veces lo que se calcula que ha costado.` });
+  return out;
+}
+function htmlGTA(M) {
+  const f = gtaFalta();
+  const datos = datosGTA(M);
+  return `<div class="gta-cab">
+      <p class="gta-pre">${f ? 'Cuenta atrás' : 'Ya a la venta'}</p>
+      <h2 class="gta-tit">GTA VI</h2>
+      <div id="gtaReloj">${relojGTA()}</div>
+      <p class="gta-fecha">19 de noviembre de 2026, en PS5 y Xbox Series X y S. ${f && f.d > 7 ? 'Se puede precargar desde el 12. ' : ''}${fmtNum(GTA.precio, 2)} € la edición normal.</p>
+      <a class="gta-web" href="https://www.rockstargames.com/VI" target="_blank" rel="noopener">Web oficial y tráileres</a>
+    </div>
+    <h3 class="gta-sub">GTA VI y tu cartera</h3>
+    ${S.oculto ? '<p class="gta-nota">Tienes los importes ocultos: pulsa el ojo de arriba para ver tus cifras.</p>' : ''}
+    <ol class="gta-datos">${datos.map((d, i) => `<li class="c${i % 3}"><b>${esc(d.n)}${d.u ? `<small>${esc(d.u)}</small>` : ''}</b><p>${esc(d.t)}</p></li>`).join('')}</ol>
+    ${htmlTrailerGTA(M)}
+    <p class="gta-pie">Fecha, precio, plataformas y tráiler: Rockstar Games. Ventas de GTA V: Take-Two. Visitas del tráiler: Forbes. Coste de GTA VI: estimación de prensa, no es oficial; el del tráiler, estimación de GrowFolio. Las cuentas con tu cartera usan tu proyección de Objetivos. GrowFolio no tiene relación con Rockstar Games ni con Take-Two.</p>`;
+}
+function htmlTrailerGTA(M) {
+  const T = GTA.trailer, O = S.oculto;
+  const usd = ((S.precios && S.precios.fx) || {}).USD || 0.86;
+  const porSeg = (T.medio / T.seg) * usd;
+  const P = Math.max(0, M.total || 0), seg = P / porSeg;
+  return `<section class="gta-trailer" aria-label="Tráiler de lanzamiento">
+    <h3 class="gta-sub">El tráiler de lanzamiento</h3>
+    <p class="gta-txt">Salió el 15 de octubre: 91 segundos con "Flower in a Hurricane", la canción que Justice, autores de la música del juego, han hecho con Tame Impala, SZA y King Gizzard &amp; The Lizard Wizard.</p>
+    <div class="gta-video"><iframe src="https://www.youtube-nocookie.com/embed/${T.id}?rel=0&amp;playsinline=1" title="Grand Theft Auto VI, tráiler de lanzamiento" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+    <h4 class="gta-sub2">¿Cuánto costó hacer esos 91 segundos?</h4>
+    <p class="gta-txt">Rockstar no da cifras. Esto es una estimación de GrowFolio con supuestos razonables, no un dato.</p>
+    <dl class="gta-coste">
+      <div><dt>La canción</dt><dd><b>1 a 3 M$</b>Componerla, grabarla y producirla con Justice y tres artistas de primera, más sus derechos. Sirve también para el disco y para el juego.</dd></div>
+      <div><dt>El vídeo</dt><dd><b>1,5 a 4 M$</b>El equipo de vídeo de Rockstar: de 30 a 50 personas durante 3 a 6 meses eligiendo planos dentro del juego (grabado en una PS5 normal), con montaje, color y sonido.</dd></div>
+      <div><dt>Las escenas</dt><dd><b>0 $ aparte</b>Actores, captura de movimiento y animación ya estaban hechos para el juego: van en su presupuesto, no en el del tráiler.</dd></div>
+    </dl>
+    <div class="gta-total"><b>Unos ${fmtNum(T.medio / 1e6, 1)} M$</b><span>entre 2,5 y 7 millones de dólares: unos ${fmtNum(Math.round(T.medio / T.seg / 1000) * 1000, 0)} $ por segundo de vídeo</span></div>
+    <ol class="gta-datos">
+      <li class="c2"><b>${O ? '••••' : nGTA(seg, seg < 10 ? 1 : 0)}<small>${seg >= 0.95 && seg < 1.05 ? 'segundo' : 'segundos'}</small></b><p>Del tráiler que pagarías con tu cartera, a unos ${fmtNum(Math.round(porSeg / 1000) * 1000, 0)} € el segundo.</p></li>
+      <li class="c0"><b>${nGTA(T.visitas11h)}<small>visitas en 11 horas</small></b><p>Las que llevaba en YouTube a las 11 horas de salir, según Forbes. Con esas solas, cada visita le salió a Rockstar por unos ${fmtNum((T.medio * usd / T.visitas11h) * 100, 0)} céntimos.</p></li>
+    </ol>
+  </section>`;
+}
+function abrirGTA() {
+  fuenteGTA();
+  const M = S.M || calcular();
+  const fondo = document.createElement('div');
+  fondo.className = 'hoja-fondo gta-fondo';
+  fondo.innerHTML = `<div class="gta" role="dialog" aria-modal="true" aria-label="GTA VI y tu cartera"><button class="gta-x" type="button" data-cerrar aria-label="Cerrar">${ICONOS.cerrar}</button>${htmlGTA(M)}</div>`;
+  const tic = setInterval(() => { const r = $('#gtaReloj', fondo); if (r) r.innerHTML = relojGTA(); }, 1000);
+  const cerrar = () => { clearInterval(tic); fondo.remove(); document.removeEventListener('keydown', tecla, true); };
+  const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); cerrar(); } };
+  fondo.addEventListener('click', (e) => { if (e.target === fondo || e.target.closest('[data-cerrar]')) cerrar(); });
+  document.addEventListener('keydown', tecla, true);
+  document.body.appendChild(fondo);
+  $('.gta-x', fondo).focus({ preventScroll: true });
+}
+// la primera vez que se entra con esto: un aviso a pantalla completa, como la presentación
+function avisoGTA(seguir) {
+  if (!gtaActivo() || LS.get('inv-gta', null) || !S.cartera) return seguir && seguir();
+  LS.set('inv-gta', true);
+  fuenteGTA();
+  const f = gtaFalta();
+  const fondo = document.createElement('div');
+  fondo.className = 'hoja-fondo gta-fondo';
+  fondo.innerHTML = `<div class="gta gta-aviso" role="dialog" aria-modal="true" aria-label="Nuevo: GTA VI">
+    <p class="gta-pre">Nuevo en GrowFolio</p>
+    <h2 class="gta-tit">GTA VI</h2>
+    <div id="gtaReloj">${relojGTA()}</div>
+    <p class="gta-lead">${f ? 'Sale el 19 de noviembre. Para la espera' : 'Ya ha salido. Para celebrarlo'}, unas cuentas con tu cartera: cuántos GTA VI vale, en qué año podrías pagar el juego entero y cómo le va en bolsa a Take-Two, la dueña de Rockstar.</p>
+    <p class="gta-donde">Lo tienes siempre en Cartera, al lado de tu patrimonio.</p>
+    <div class="gta-btns"><button type="button" class="gta-b pri" data-ver>Verlo</button><button type="button" class="gta-b" data-luego>Luego</button></div>
+  </div>`;
+  const tic = setInterval(() => { const r = $('#gtaReloj', fondo); if (r) r.innerHTML = relojGTA(); }, 1000);
+  const cerrar = (ver) => {
+    clearInterval(tic); fondo.remove(); document.removeEventListener('keydown', tecla, true);
+    if (ver) abrirGTA();
+    else {
+      if (S.vista !== 'cartera') location.hash = '#cartera';
+      setTimeout(() => { const c = $('.gta-chip'); if (c) { c.scrollIntoView({ block: 'center', behavior: 'smooth' }); c.classList.add('pulsa'); setTimeout(() => c.classList.remove('pulsa'), 5000); } }, 350);
+    }
+    if (seguir) setTimeout(seguir, 600);
+  };
+  const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); cerrar(false); } };
+  fondo.addEventListener('click', (e) => { if (e.target.closest('[data-ver]')) cerrar(true); else if (e.target === fondo || e.target.closest('[data-luego]')) cerrar(false); });
+  document.addEventListener('keydown', tecla, true);
+  document.body.appendChild(fondo);
+  setTimeout(() => $('[data-ver]', fondo).focus({ preventScroll: true }), 50);
+}
+document.addEventListener('click', (e) => { if (e.target.closest('[data-gta]')) abrirGTA(); });
+
 /* al entrar: tour la primera vez, novedades si hay versión nueva y, después, el aviso de la app */
 function bienvenida(intento = 0) {
   if (!S.cartera) return;
@@ -6746,7 +7154,7 @@ function bienvenida(intento = 0) {
   if (/^0\.[2-9]\.0$/.test(visto || '')) visto = '0.1.' + visto.split('.')[1];  // numeración de antes: 0.9.0 es la 0.1.9
   const nuevo = S.recienCreada || (!(S.cartera.posiciones || []).length && !LS.get('inv-tour', null));
   S.recienCreada = false;
-  const despues = () => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); };
+  const despues = () => avisoGTA(() => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); });
   if (nuevo) { LS.set('inv-version', VERSION); return iniciarTour(0, despues); }
   if (!visto || cmpVer(visto, VERSION) < 0) return mostrarNovedades(visto, despues);
   despues();
@@ -6800,6 +7208,7 @@ function abrirAjustes() {
   const h = hoja('Ajustes', `
     <button class="aj-tutorial" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña. Puedes repetirlo cuando quieras.</small></span></button>
     <button class="enlace aj-intro" id="aIntro" data-cerrar>Ver la presentación de GrowFolio</button>
+    <div class="aj-idioma"><span class="campo" style="margin:0">Idioma</span>${selectorIdioma()}<small>${IDIOMA === 'en' ? 'English is still in progress: some texts are in Spanish.' : 'El inglés está en pruebas: parte de los textos siguen en español.'}</small></div>
     ${PERFIL_LOCAL ? `<div class="seccion-ed" style="border:0;padding-top:0;margin-top:0"><h3>Tu cartera</h3>
       <p class="nota" style="margin:0">Guardada solo en este dispositivo y cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (abajo, en Copias).</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPerfil">Abrir la cartera de GitHub</button></div></div>` : ''}
@@ -7793,7 +8202,7 @@ async function preguntarAsesor(texto) {
   let marco = 0;
   const alCambiar = () => { if (!marco) marco = requestAnimationFrame(() => { marco = 0; pintarTurno(AS.conv.length - 1); }); };
   try {
-    await conversar({ mensajes: [...AS.api, { role: 'user', content: contenido }], turno, sistema: sistemaAsesor(), alCambiar, signal: AS.ctrl.signal });
+    await conversar({ mensajes: [...AS.api, { role: 'user', content: contenido }], turno, sistema: [].concat(sistemaAsesor()).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []), alCambiar, signal: AS.ctrl.signal });
   } catch (e) {
     turno.error = e.name === 'AbortError' ? 'Parado.' : /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
   }
@@ -8309,7 +8718,111 @@ document.addEventListener('visibilitychange', () => {
 });
 window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); recargarPrecios(); } });
 
+/* =====================================================================
+   Idiomas. GrowFolio está escrita en español; en inglés, un diccionario (en.json) cambia los textos
+   según van apareciendo en pantalla. Primera fase: pestañas, botones, formularios, la presentación, el
+   tutorial y los avisos. Noticias, informes de la IA y parte de los textos siguen en español.
+   Los números se buscan como "#": "Tienes 3 posiciones" usa la plantilla "Tienes # posiciones".
+   Cambiar de idioma recarga la página.
+   ===================================================================== */
+const IDIOMAS = [['es', 'Español'], ['en', 'English']];
+const IDIOMA = LS.get('inv-idioma', 'es') === 'en' ? 'en' : 'es';
+const I18N = { dic: null };
+const NUM_I18N = /[-+−]?\d[\d.,]*/g;
+const ATR_I18N = ['placeholder', 'title', 'aria-label', 'alt'];
+let banderaN = 0;
+function banderaIdioma(c) {
+  if (c === 'es') return '<svg class="bandera" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#AA151B"/><rect y="5" width="30" height="10" fill="#F1BF00"/></svg>';
+  const id = 'bd' + (++banderaN);
+  return `<svg class="bandera" viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><clipPath id="${id}a"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="${id}b"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><g clip-path="url(#${id}a)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#${id}b)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></g></svg>`;
+}
+function selectorIdioma(clase = '') {
+  return `<div class="idiomas ${clase}" role="group" aria-label="Idioma / Language" data-no-trad>${IDIOMAS.map(([c, n]) => `<button type="button" data-idioma="${c}" aria-pressed="${c === IDIOMA}" lang="${c}">${banderaIdioma(c)}<span>${n}</span></button>`).join('')}</div>`;
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-idioma]'); if (!b) return;
+  e.preventDefault();
+  if (b.dataset.idioma === IDIOMA) return;
+  LS.set('inv-idioma', b.dataset.idioma);
+  location.reload();
+});
+function traducirTexto(s) {
+  const d = I18N.dic; if (!d || !s) return null;
+  let t = d[s]; if (t != null) return t;
+  const nums = [];
+  const k = s.replace(NUM_I18N, (m) => { nums.push(m); return '#'; });
+  if (!nums.length || (t = d[k]) == null) {
+    // frases que empiezan igual y siguen con datos: "Lo que más mueve hoy: Repsol +2 %…"
+    for (const [es, en] of I18N.pre || []) if (s.startsWith(es)) return en + s.slice(es.length);
+    return null;
+  }
+  let i = 0;
+  return t.replace(/\{(\d)\}|#/g, (m, n) => (n ? nums[+n - 1] : nums[i++]) ?? m);
+}
+function traducirTN(n) {
+  const v = n.nodeValue;
+  if (!v || !/[A-Za-zÁÉÍÓÚáéíóúÑñ¿¡]/.test(v)) return;
+  const s = v.trim(), t = traducirTexto(s);
+  if (t == null || t === s) return;
+  const i = v.indexOf(s);
+  n.nodeValue = v.slice(0, i) + t + v.slice(i + s.length);
+}
+function traducirAtr(el) {
+  for (const a of ATR_I18N) {
+    const v = el.getAttribute(a); if (!v) continue;
+    const t = traducirTexto(v.trim());
+    if (t != null && t !== v) el.setAttribute(a, t);
+  }
+}
+const SALTA_I18N = (el) => /^(SCRIPT|STYLE|TEXTAREA|CODE|PRE)$/.test(el.nodeName) || el.hasAttribute('data-no-trad');
+function traducirNodo(raiz) {
+  if (!I18N.dic || !raiz) return;
+  if (raiz.nodeType === 3) { const p = raiz.parentElement; if (p && !p.closest('[data-no-trad], script, style, textarea')) traducirTN(raiz); return; }
+  if (raiz.nodeType !== 1 || SALTA_I18N(raiz) || (raiz.parentElement && raiz.parentElement.closest('[data-no-trad], textarea'))) return;
+  traducirAtr(raiz);
+  const w = document.createTreeWalker(raiz, NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT, { acceptNode: (n) => (n.nodeType === 1 && SALTA_I18N(n) ? NodeFilter.FILTER_REJECT : NodeFilter.FILTER_ACCEPT) });
+  for (let n = w.nextNode(); n; n = w.nextNode()) { if (n.nodeType === 3) traducirTN(n); else traducirAtr(n); }
+}
+const obsI18N = new MutationObserver((ms) => {
+  for (const m of ms) {
+    if (m.type === 'childList') m.addedNodes.forEach(traducirNodo);
+    else if (m.type === 'characterData') traducirNodo(m.target);
+    else if (m.type === 'attributes' && m.target.nodeType === 1 && !m.target.closest('[data-no-trad]')) traducirAtr(m.target);
+  }
+});
+// en inglés: se espera al diccionario (como mucho 2,5 s) antes de enseñar nada, para no ver el cambio
+async function cargarIdioma() {
+  if (IDIOMA !== 'en') return;
+  const raiz = document.documentElement;
+  raiz.lang = 'en'; raiz.classList.add('i18n-carga');
+  const ver = setTimeout(() => raiz.classList.remove('i18n-carga'), 2500);
+  try {
+    const r = await fetch('en.json?v=' + VERSION);
+    if (r.ok) { const j = await r.json(); I18N.dic = j.t || null; I18N.pre = Object.entries(j.p || {}).sort((x, y) => y[0].length - x[0].length); }
+  } catch (e) { console.warn('Sin diccionario de inglés', e); }
+  clearTimeout(ver);
+  if (I18N.dic) {
+    traducirNodo(document.body);
+    document.title = traducirTexto(document.title) || document.title;
+    obsI18N.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATR_I18N });
+    avisoIngles();
+  }
+  raiz.classList.remove('i18n-carga');
+}
+// la franja de arriba: el inglés está a medias
+function avisoIngles() {
+  try { if (sessionStorage.getItem('inv-aviso-en')) return; } catch (e) {}
+  const d = document.createElement('div');
+  d.className = 'aviso-idioma'; d.setAttribute('data-no-trad', ''); d.setAttribute('role', 'note');
+  d.innerHTML = `${banderaIdioma('en')}<p><b>English version in progress.</b> News, AI reports and some texts are still in Spanish.</p><button type="button" class="ai-es" data-idioma="es">${banderaIdioma('es')}Español</button><button type="button" class="ai-x" aria-label="Close">${ICONOS.cerrar}</button>`;
+  d.querySelector('.ai-x').onclick = () => { d.remove(); try { sessionStorage.setItem('inv-aviso-en', '1'); } catch (e) {} };
+  document.body.prepend(d);
+}
+// lo que se le pide a GrowFolio IA, en el idioma de la app
+const notaIdiomaIA = () => (IDIOMA === 'en' ? '\n\nIDIOMA: el usuario usa GrowFolio en inglés. Escribe en inglés todos los textos que vea él (respuestas, resúmenes, motivos, pasos), aunque estas instrucciones y los datos estén en español. Las claves del JSON no se traducen.' : '');
+
 async function iniciar() {
+  cargarIdioma();
   // en la app de Android, lo primero de todo: ¿hay versión nueva de la app?
   if (window.InversionesApp) setTimeout(() => revisarApp(), 900);
   $('#app').innerHTML = '<div class="pantalla"><div class="caja" style="text-align:center;justify-items:center"><img class="logo" src="icon-192.png" alt=""><p>Cargando…</p></div></div>';

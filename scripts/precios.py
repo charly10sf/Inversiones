@@ -85,6 +85,9 @@ MERCADOS = [
     ("BTC-EUR", "Bitcoin", "Cripto"),
 ]
 
+# aparte de Mercados: solo para la cuenta atrás de GTA VI de la web (Take-Two es la dueña de Rockstar)
+EXTRA = [("TTWO", "Take-Two Interactive")]
+
 # titulares de mercado por zonas, para que la IA vea el mundo entero y no solo España y Wall Street
 NOTICIAS_MERCADO = [
     ("España", "Ibex 35 bolsa"), ("EEUU", "Wall Street bolsa"), ("Europa", "bolsas europeas Euro Stoxx DAX"),
@@ -1143,6 +1146,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
         "sectores_etf": {},
         "participaciones_etf": {},
         "mercados": {},
+        "extra": {},
         "noticias": {},
         "noticias_generado": None,
         "radar_id": None,
@@ -1192,6 +1196,17 @@ def main(ruta_inst, dir_anterior, dir_salida):
             errores.append(f"mercado {sim}: {e}")
             if sim in prev_merc:
                 salida["mercados"][sim] = prev_merc[sim]
+
+    prev_extra = anterior.get("extra", {})
+    for sim, nombre in EXTRA:
+        try:
+            v = mercado(sim, nombre)
+            v.pop("historico", None)
+            salida["extra"][sim] = v
+        except Exception as e:  # noqa: BLE001
+            errores.append(f"extra {sim}: {e}")
+            if sim in prev_extra:
+                salida["extra"][sim] = prev_extra[sim]
 
     # Noticias: como mucho cada 2 horas (Google News limita si se le pregunta demasiado)
     if prev_not and hace_menos_de(anterior.get("noticias_generado") or "", HORAS_LENTO):
