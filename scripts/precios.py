@@ -85,8 +85,14 @@ MERCADOS = [
     ("BTC-EUR", "Bitcoin", "Cripto"),
 ]
 
-NOTICIAS_MERCADO = ["Ibex 35 bolsa", "Wall Street bolsa", "BCE tipos de interés", "Reserva Federal tipos",
-                    "bolsas asiáticas China Japón", "mercados emergentes bolsa", "petróleo Brent OPEP", "dólar euro divisas"]
+# titulares de mercado por zonas, para que la IA vea el mundo entero y no solo España y Wall Street
+NOTICIAS_MERCADO = [
+    ("España", "Ibex 35 bolsa"), ("EEUU", "Wall Street bolsa"), ("Europa", "bolsas europeas Euro Stoxx DAX"),
+    ("Tipos", "BCE tipos de interés"), ("Tipos", "Reserva Federal tipos"), ("Tipos", "inflación IPC zona euro Estados Unidos"),
+    ("Tipos", "bonos rentabilidad bono 10 años"), ("Asia", "bolsas asiáticas China Japón"),
+    ("Emergentes", "mercados emergentes bolsa India Brasil"), ("Materias primas", "petróleo Brent OPEP"),
+    ("Materias primas", "oro precio onza"), ("Divisas", "dólar euro divisas"), ("Cripto", "bitcoin criptomonedas mercado"),
+]
 
 # Lista de ideas: unas 380 empresas que se pueden comprar en Trade Republic. Ibex 35 y buena parte
 # del mercado continuo, las grandes de Europa (Euro Stoxx 50, DAX, CAC 40, Italia, Países Bajos,
@@ -300,12 +306,53 @@ def cambio_hoy(moneda, fx):
     return factor / float(fx[moneda].iloc[-1])
 
 
+def candidatos_simbolo(isin):
+    """Todos los símbolos de Yahoo para un ISIN, primero los que suelen tener histórico: el del fondo
+    (0P…), luego las bolsas grandes en euros y al final las regionales alemanas (.SG, .MU…), que a
+    menudo solo dan el último precio."""
+    try:
+        res = yf.Search(isin, max_results=10, news_count=0, lists_count=0, raise_errors=False)
+        quotes = res.quotes or []
+    except Exception:  # noqa: BLE001
+        quotes = []
+    vistos = []
+    for q in quotes:
+        sim = q.get("symbol")
+        if sim and sim not in vistos:
+            vistos.append(sim)
+
+    def orden(sim):
+        if sim.startswith("0P"):
+            return 0
+        if sim.endswith((".DE", ".AS", ".PA", ".MI", ".MC")):
+            return 1
+        if sim.endswith((".F", ".SW", ".L", ".VI", ".BR", ".LS", ".IR")):
+            return 2
+        if "." not in sim:
+            return 3
+        return 4
+    return sorted(vistos, key=orden)
+
+
 def buscar_simbolo(isin):
-    res = yf.Search(isin, max_results=5, news_count=0, lists_count=0, raise_errors=False)
-    for q in res.quotes or []:
-        if q.get("symbol"):
-            return q["symbol"]
-    raise RuntimeError(f"no encuentro símbolo para {isin}")
+    c = candidatos_simbolo(isin)
+    if not c:
+        raise RuntimeError(f"no encuentro símbolo para {isin}")
+    return c[0]
+
+
+def serie_por_isin(isin, periodo="max"):
+    """El primer símbolo del ISIN que tenga histórico de verdad (al menos 20 cierres)."""
+    fallos = []
+    for sim in candidatos_simbolo(isin)[:8]:
+        try:
+            t, s, meta = serie_cierres(sim, periodo)
+            if len(s) >= 20:
+                return sim, t, s, meta
+            fallos.append(f"{sim}: {len(s)} cierres")
+        except Exception as ex:  # noqa: BLE001
+            fallos.append(str(ex))
+    raise RuntimeError(f"ningún símbolo con histórico para {isin}: {'; '.join(fallos[:4]) or 'Yahoo no da resultados'}")
 
 
 def hora_iso(valor):
@@ -671,8 +718,18 @@ def lento_al_dia(prev):
 
 
 def procesar(inst, fx, prev=None):
-    simbolo = inst.get("yahoo") or buscar_simbolo(inst["isin"])
-    t, s, meta = serie_cierres(simbolo, "max")
+    # el símbolo fijado en instrumentos.json; si no, el que funcionó la vez anterior; si no, se busca por ISIN
+    simbolo = inst.get("yahoo") or (prev or {}).get("simbolo")
+    try:
+        if not simbolo:
+            raise RuntimeError("sin símbolo")
+        t, s, meta = serie_cierres(simbolo, "max")
+        if len(s) < 20 and not inst.get("yahoo"):
+            raise RuntimeError("poco histórico")
+    except Exception:  # noqa: BLE001
+        if inst.get("yahoo") or not inst.get("isin"):
+            raise
+        simbolo, t, s, meta = serie_por_isin(inst["isin"], "max")
     moneda = meta.get("currency") or "EUR"
     propio = a_euros(s, moneda, fx).dropna()
     if propio.empty:
@@ -1141,11 +1198,15 @@ def main(ruta_inst, dir_anterior, dir_salida):
         salida["noticias"] = prev_not
         salida["noticias_generado"] = anterior.get("noticias_generado")
     else:
-        consultas = [("mercado", q, None) for q in NOTICIAS_MERCADO]
-        consultas += [(inst["id"], inst["noticias"], inst.get("noticias_filtro")) for inst in instrumentos if inst.get("noticias")]
-        for clave, q, debe in consultas:
+        consultas = [("mercado", q, None, z) for z, q in NOTICIAS_MERCADO]
+        consultas += [(inst["id"], inst["noticias"], inst.get("noticias_filtro"), None) for inst in instrumentos if inst.get("noticias")]
+        for clave, q, debe, zona in consultas:
             try:
-                salida["noticias"].setdefault(clave, []).extend(noticias(q, 8, debe))
+                lista = noticias(q, 6 if zona else 8, debe)
+                for x in lista:
+                    if zona:
+                        x["z"] = zona
+                salida["noticias"].setdefault(clave, []).extend(lista)
             except Exception as e:  # noqa: BLE001
                 errores.append(f"noticias {q}: {e}")
                 if clave in prev_not and clave not in salida["noticias"]:
@@ -1159,7 +1220,14 @@ def main(ruta_inst, dir_anterior, dir_salida):
                 if k not in vistos:
                     vistos.add(k)
                     unicos.append(x)
-            salida["noticias"]["mercado"] = unicos[:16]
+            # hasta 3 por zona y el resto por fecha, 30 como mucho
+            por_zona = {}
+            for x in unicos:
+                por_zona.setdefault(x.get("z"), []).append(x)
+            elegidas = [x for xs in por_zona.values() for x in xs[:3]]
+            resto = [x for x in unicos if x not in elegidas]
+            elegidas += resto[: max(0, 30 - len(elegidas))]
+            salida["noticias"]["mercado"] = sorted(elegidas, key=lambda x: x["d"] or "", reverse=True)
         salida["noticias_generado"] = ahora()
 
     # Radar de ideas: la ficha de cada empresa cada HORAS_RADAR horas y los precios en cada ejecución.

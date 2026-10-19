@@ -4,7 +4,8 @@
   {
    "isin": "IE00BYX5MX67",
    "n": "Fidelity S&P 500 Index Fund EUR P Acc",
-   "t": "Fondo"
+   "t": "Fondo",
+   "s": "0P0001CLDM.F"
   },
   {
    "isin": "IE00BYX5NX33",
@@ -169,7 +170,8 @@
   {
    "isin": "ES0179556008",
    "n": "True Value FI",
-   "t": "Fondo"
+   "t": "Fondo",
+   "s": "0P00011MD7.F"
   },
   {
    "isin": "ES0114638036",
@@ -259,7 +261,8 @@
    "t": "ETC",
    "a": [
     "4GLD"
-   ]
+   ],
+   "s": "4GLD.DE"
   },
   {
    "isin": "IE00B579F325",
@@ -338,7 +341,8 @@
    "t": "ETF",
    "a": [
     "LCWD"
-   ]
+   ],
+   "s": "LCWD.PA"
   },
   {
    "isin": "IE00BK5BQV03",
@@ -542,7 +546,8 @@
    "a": [
     "CSX5",
     "SXRT"
-   ]
+   ],
+   "s": "SXRT.DE"
   },
   {
    "isin": "DE0005933931",
@@ -550,7 +555,8 @@
    "t": "ETF",
    "a": [
     "EXS1"
-   ]
+   ],
+   "s": "EXS1.DE"
   },
   {
    "isin": "IE00B4L5YX21",
@@ -636,7 +642,8 @@
    "t": "ETF",
    "a": [
     "V80A"
-   ]
+   ],
+   "s": "V80A.DE"
   },
   {
    "isin": "IE00B1XNHC34",

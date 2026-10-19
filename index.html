@@ -1271,6 +1271,15 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .aviso-web > svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
 .aviso-web span { font-weight: 600; font-size: 14.5px; }
 @media (prefers-reduced-motion: reduce) { .tour-foco, .tour-prog i, .act-barra i { transition: none; } .nov-lista li { animation: none; } }
+
+.zona-ia { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; color: var(--text-2); background: var(--plane-3); border-radius: 999px; padding: 2px 8px 2px 6px; margin-right: 8px; vertical-align: 1px; }
+.zona-ia img, .zona-ia .bandera { width: 14px; height: 10px; }
+.ia-implica { margin: 8px 0 0; padding: 8px 12px; border-left: 2px solid var(--accent); background: var(--accent-bg); border-radius: 0 8px 8px 0; color: var(--text); font-size: 14px; line-height: 1.45; }
+.macro-ia { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; margin-top: 14px; }
+.macro-ia > div { background: var(--plane); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.macro-ia small { display: block; color: var(--muted); font-size: 12.5px; }
+.macro-ia b { display: block; font-size: 17px; font-weight: 700; margin: 2px 0 4px; font-variant-numeric: tabular-nums; }
+.macro-ia p { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.4; }
 </style>
 </head>
 <body>
@@ -2925,12 +2934,14 @@ function htmlResumenInforme(corto) {
     ${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}
   </section>`;
 }
+const ZONA_BANDERA = { EEUU: 'US', Europa: 'EU', 'España': 'ES', Asia: 'JP', Emergentes: null, Global: null };
 function htmlMercadoInforme() {
   const inf = informeVisible();
   if (!inf || !(inf.mercado || []).length) return '';
   // los titulares a la vista; el detalle de cada uno, al tocarlo
   return `<section class="informe" aria-labelledby="hInfM"><div class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según Gemini</h2><span class="k">${cabInforme(inf)}</span></div>
-    <ul class="informe-merc plegados">${inf.mercado.map((m) => `<li><details><summary>${chipImpacto(m.impacto)}<b>${escIA(m.t)}</b></summary><p>${escIA(m.detalle)}</p>${enlacesFuentes(m.fuentes, 2)}</details></li>`).join('')}</ul>
+    <ul class="informe-merc plegados">${inf.mercado.map((m) => `<li><details><summary>${chipImpacto(m.impacto)}${m.zona ? `<span class="zona-ia">${bandera(ZONA_BANDERA[m.zona])}${esc(m.zona)}</span>` : ''}<b>${escIA(m.t)}</b></summary><p>${escIA(m.detalle)}</p>${m.implica ? `<p class="ia-implica"><b>Para tu cartera:</b> ${escIA(m.implica)}</p>` : ''}${enlacesFuentes(m.fuentes, 2)}</details></li>`).join('')}</ul>
+    ${(inf.macro || []).length ? `<div class="macro-ia">${inf.macro.map((x) => `<div><small>${escIA(x.t)}</small><b>${escIA(x.dato)}</b><p>${escIA(x.lectura)}</p></div>`).join('')}</div>` : ''}
   </section>`;
 }
 const limpiaIA = (t) => String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, '');
@@ -6401,7 +6412,7 @@ function contextoAsesor(M) {
       for (const x of rad) L.push([x.n, x.s, x.z, x.sector || '', `${fmtNum(x.p, 2)} ${x.m}`, P1(x.pot), x.tb && x.ta ? `${fmtNum(x.tb, 2)}-${fmtNum(x.ta, 2)}` : '—', `${CONSENSO[x.r] || '—'} ${x.na || 0}`, x.perf > 0 ? fmtNum(x.perf, 1) : '—', P1(x.epsg ?? x.eg), x.div ? fmtNum(x.div, 1) + ' %' : '—', P1(x.c1a), x.m200 && x.p ? P1((x.p / x.m200 - 1) * 100) : '—'].join(' | '));
     }
     L.push('', '## Mercados');
-    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}; L.push(`- ${m.nombre}: ${fmtMerc(sym, d.precio)} (hoy ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
+    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}; L.push(`- ${m.grupo ? `[${m.grupo}] ` : ''}${m.nombre}: ${fmtMerc(sym, d.precio)} (hoy ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
     try {
       const pr = proyeccion(M), c = pr.cfg;
       L.push('', `## Proyección de la web (2.000 escenarios aportando ${E0(c.aport)} al mes${c.subida ? `, subiendo un ${c.subida} % cada año` : ''}, bolsa al ${c.bolsa} % anual)`);
@@ -6415,7 +6426,8 @@ function contextoAsesor(M) {
     const inf = informeVisible();
     if (inf && (inf.resumen || (inf.mercado || []).length)) {
       L.push('', `## Informe de prensa de Gemini (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, inf.resumen ? `Resumen: ${inf.resumen}` : 'Solo lo del mercado y lo de sus posiciones.');
-      for (const m of inf.mercado || []) L.push(`- Mercado (${m.impacto}): ${m.t}. ${m.detalle || ''}`);
+      for (const m of inf.mercado || []) L.push(`- Mercado${m.zona ? ` ${m.zona}` : ''} (${m.impacto}): ${m.t}. ${m.detalle || ''}${m.implica ? ` Para la cartera: ${m.implica}` : ''}`);
+      for (const x of inf.macro || []) L.push(`- Macro: ${x.t}: ${x.dato}. ${x.lectura || ''}`);
       for (const [id, x] of Object.entries(inf.posiciones || {})) L.push(`- ${nombreInst(id)} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Vigilar: ${x.vigilar || '—'}. Fuentes: ${(x.fuentes || []).map((f) => f.f || '').filter(Boolean).join(', ') || '—'}`);
       for (const [s0, x] of Object.entries(inf.ideas || {})) L.push(`- Idea ${s0} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Riesgo: ${x.riesgo || '—'}.`);
       for (const a of inf.alertas || []) L.push(`- Alerta (${a.urgencia}): ${a.t}`);

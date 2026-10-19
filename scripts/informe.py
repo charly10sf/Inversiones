@@ -50,7 +50,8 @@ DECISION_V = 5              # sube si cambia lo que devuelve la decisión: así 
 NOTICIAS_POR_ACTIVO = 8
 # para los fondos, las noticias de lo que siguen
 NOTICIAS_DE = {"ishares-us": "^GSPC", "amundi-europe": "^STOXX50E", "vanguard-em": "EEM", "vanguard-smallcap": "VSS", "nb-short": None, "phau": "GC=F", "btc": "BTC-USD"}
-MERCADO = ["^GSPC", "^STOXX50E", "^IBEX", "BZ=F", "EURUSD=X"]
+# noticias de Yahoo Finance de los grandes índices y precios de cada zona
+MERCADO = ["^GSPC", "^IXIC", "^STOXX50E", "^GDAXI", "^IBEX", "^N225", "^HSI", "EEM", "^TNX", "BZ=F", "GC=F", "EURUSD=X", "BTC-USD"]
 
 
 def ahora():
@@ -234,18 +235,27 @@ def material(instrumentos, precios, radar):
         for x in lista:
             fuentes.append({"t": x["t"], "u": x.get("u"), "f": x.get("f"), "d": x.get("d")})
             n = len(fuentes)
-            lineas.append(f"[{n}] {(x.get('d') or '')[:10]} {x.get('f') or ''}: {x['t']}" + (f" — {x['r']}" if x.get("r") else ""))
+            zona = f" ({x['z']})" if x.get("z") else ""
+            lineas.append(f"[{n}] {(x.get('d') or '')[:10]} {x.get('f') or ''}{zona}: {x['t']}" + (f" — {x['r']}" if x.get("r") else ""))
         return lineas
 
     N = precios.get("noticias") or {}
     P = precios.get("instrumentos") or {}
     # mercado
-    merc = list(N.get("mercado") or [])[:10]
+    merc = list(N.get("mercado") or [])[:30]
     for s in MERCADO:
-        merc += noticias_yahoo(s, 4)
+        merc += noticias_yahoo(s, 3)
     mm = precios.get("mercados") or {}
-    datos_m = "; ".join(f"{v.get('nombre')} {v.get('precio')} ({v.get('variacion_dia')} % hoy, {((v.get('rent') or {}).get('ytd'))} % en el año)" for v in mm.values())
-    bloques.append("## Mercado\nDatos: " + datos_m + "\n" + "\n".join(citar(merc)))
+    grupos = {}
+    for v in mm.values():
+        r = v.get("rent") or {}
+        grupos.setdefault(v.get("grupo") or "Otros", []).append(
+            f"{v.get('nombre')} {v.get('precio')} ({v.get('variacion_dia')} % hoy, {r.get('1m')} % en un mes, {r.get('ytd')} % en el año, {r.get('1a')} % a un año)")
+    datos_m = "\n".join(f"- {g}: " + "; ".join(xs) for g, xs in grupos.items())
+    fx = precios.get("fx") or {}
+    if fx:
+        datos_m += "\n- Euros por cada unidad de: " + ", ".join(f"{k} {v}" for k, v in fx.items() if isinstance(v, (int, float)))
+    bloques.append("## Mercado por zonas\nDatos:\n" + datos_m + "\nNoticias (entre paréntesis, la zona):\n" + "\n".join(citar(merc)))
     # posiciones
     for inst in instrumentos:
         iid = inst["id"]
@@ -253,6 +263,8 @@ def material(instrumentos, precios, radar):
         a = p.get("analistas") or {}
         t = p.get("tecnico") or {}
         datos = [f"{inst.get('nombre')} ({inst.get('corto')}, {inst.get('tipo')}, id {iid})", f"precio {p.get('precio')} €", f"hoy {p.get('variacion_dia')} %"]
+        if inst.get("region"):
+            datos.append("zonas " + ", ".join(f"{k} {v} %" for k, v in inst["region"].items()))
         if a.get("objetivo"):
             datos.append(f"{a.get('num')} analistas, consenso {a.get('recomendacion')}, objetivo medio {a.get('objetivo')} € (rango {a.get('objetivo_bajo')}-{a.get('objetivo_alto')})")
         if t.get("tendencia"):
@@ -282,6 +294,14 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   noticias por su número en "fuentes".
 - Contrasta: di qué fuentes coinciden y cuáles no. Si solo hay una fuente, dilo. Ignora titulares de
   relleno (anuncios, gráficos de cotización, notas de prensa sin contenido).
+- Mercado: repasa el mundo por zonas (EEUU, Europa, España, Asia, emergentes) y lo que las cruza a todas
+  (tipos e inflación, bonos, divisas, materias primas, cripto). Usa los datos de cada zona (hoy, mes, año)
+  y las noticias para explicar qué ha movido los precios, con cifras y fechas. En cada punto, "implica":
+  qué significa para las posiciones de esta cartera (cuáles y en qué sentido, según sus zonas) o "nada
+  directo" si no les toca.
+- Macro: los datos que más pesan ahora (tipos del BCE y de la Fed, inflación, bono a 10 años, euro/dólar,
+  petróleo...) con su cifra y una frase de lectura para un inversor español. Solo cifras que estén en los
+  datos, en las noticias o en lo que encuentres buscando.
 - Para cada posición: qué ha pasado de verdad en los últimos días (con fechas), si es bueno o
   malo para la acción y por qué, y qué vigilar (fecha o precio). Si no hay nada relevante, dilo en una frase.
 - En español de España, frases cortas y concretas, sin avisos legales. Sintetiza: no repitas en una
@@ -289,11 +309,13 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
 Responde solo con un bloque ```json con este formato:
 {
   "resumen": "dos frases cortas como mucho: lo que más afecta hoy a esta cartera y por qué",
-  "mercado": [{"t": "título corto", "detalle": "una o dos frases", "impacto": "positivo|negativo|neutral", "fuentes": [1, 2]}],
+  "mercado": [{"zona": "EEUU|Europa|España|Asia|Emergentes|Global", "t": "título corto", "detalle": "dos o tres frases con cifras y fechas", "implica": "una frase: qué supone para esta cartera", "impacto": "positivo|negativo|neutral", "fuentes": [1, 2]}],
+  "macro": [{"t": "qué (BCE, inflación EEUU, bono 10 años...)", "dato": "la cifra", "lectura": "una frase"}],
   "posiciones": {"<id>": {"novedades": "una o dos frases", "impacto": "positivo|negativo|neutral|mixto", "contraste": "qué fuentes coinciden y cuáles no, en pocas palabras", "vigilar": "fecha o precio", "fuentes": [3]}},
   "alertas": [{"t": "algo que pide atención ya", "id": "<id de posición o ticker>", "urgencia": "alta|media"}]
 }
-Una entrada en "posiciones" por cada posición. "mercado": de 2 a 5. "alertas": de 0 a 4."""
+Una entrada en "posiciones" por cada posición. "mercado": de 4 a 7, de al menos tres zonas distintas si
+hay noticias de ellas. "macro": de 3 a 5. "alertas": de 0 a 4."""
 
 
 def marcar(dir_salida, clave_id, valor):

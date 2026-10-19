@@ -21,7 +21,7 @@ import traceback
 import pandas as pd
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from precios import a_euros, buscar_simbolo, num, redondeo, rentabilidad, serie_cierres, tipos_de_cambio  # noqa: E402
+from precios import a_euros, num, redondeo, rentabilidad, serie_cierres, serie_por_isin, tipos_de_cambio  # noqa: E402
 
 GESTORAS = [
     (r"^vanguard", "vanguard.com"), (r"^ishares", "ishares.com"), (r"^fidelity", "fidelity.es"), (r"^amundi|^lyxor", "amundi.com"),
@@ -125,8 +125,17 @@ def main(ruta_cat, dir_anterior, dir_salida):
         isin = (e.get("isin") or "").upper()
         cid = ("c-" + (isin or e.get("s", "")).lower()).replace("=", "").replace("^", "")
         try:
-            sim = e.get("s") or (prev.get(cid) or {}).get("s") or buscar_simbolo(isin)
-            _, s, meta = serie_cierres(sim, "10y")
+            sim = e.get("s") or (prev.get(cid) or {}).get("s")
+            try:
+                if not sim:
+                    raise RuntimeError("sin símbolo")
+                _, s, meta = serie_cierres(sim, "10y")
+                if len(s) < 20 and not e.get("s"):
+                    raise RuntimeError("poco histórico")
+            except Exception:  # noqa: BLE001
+                if e.get("s") or not isin:
+                    raise
+                sim, _, s, meta = serie_por_isin(isin, "10y")
             moneda = meta.get("currency") or "EUR"
             s_eur = a_euros(s, moneda, fx).dropna()
             if s_eur.empty:
