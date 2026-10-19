@@ -88,8 +88,12 @@ a:hover { text-decoration: underline; }
 @media (max-width: 860px) {
   :root { --nav-h: 62px; }
   .nav { display: none; }
-  .navbar { display: grid; grid-template-columns: repeat(7, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgba(26, 25, 22, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
-  .navbar a { display: grid; justify-items: center; align-content: center; gap: 3px; color: var(--muted); font-size: 11px; text-decoration: none; min-width: 0; }
+  .navbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgba(26, 25, 22, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
+  .navbar a, .navbar .nav-mas { display: grid; justify-items: center; align-content: center; gap: 3px; color: var(--muted); font-size: 11px; text-decoration: none; min-width: 0; }
+  .navbar .nav-mas { border: 0; background: none; font: inherit; font-size: 11px; cursor: pointer; padding: 0; }
+  .navbar .nav-mas svg { width: 22px; height: 22px; }
+  .navbar .nav-mas[aria-current="page"] { color: var(--text); }
+  .navbar .nav-mas[aria-current="page"] svg { color: var(--accent); }
   .navbar a span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .navbar a svg { width: 22px; height: 22px; }
   .navbar a[aria-current="page"] { color: var(--text); }
@@ -1263,6 +1267,14 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .nov-lista p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.45; }
 @keyframes nov-entra { from { opacity: 0; transform: translateY(8px); } }
 @media (max-width: 480px) { .nov-lista li { align-items: flex-start; gap: 12px; } .nov-lista .dib { width: 88px; height: 59px; padding: 5px; border-radius: 10px; } }
+/* la hoja «Más» del móvil */
+.mas-g { display: grid; gap: 10px; }
+.mas-t { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 14px; align-items: center; padding: 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--plane); color: inherit; text-decoration: none; font: inherit; text-align: left; cursor: pointer; }
+.mas-t svg { width: 24px; height: 24px; color: var(--accent); }
+.mas-t b { display: block; font-size: 16px; font-weight: 650; }
+.mas-t small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.mas-t.on { border-color: rgba(226, 180, 95, 0.55); background: var(--accent-bg); }
+.mas-aj { background: none; }
 .nov-ir { margin-top: 6px; font-size: 14px; font-weight: 600; color: var(--accent); }
 .nov-reg { justify-self: center; font-size: 14px; color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
 /* registro de cambios en texto */
@@ -1370,6 +1382,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .es-btns { display: grid; gap: 10px; margin-top: 8px; animation: enLetras 0.6s 1.45s ease both; }
 .es-btns .btn { justify-content: center; padding: 14px 18px; font-size: 16px; }
 .es-mas { justify-self: center; color: var(--text-2); animation: enLetras 0.6s 1.6s ease both; }
+.es-nota { margin: 0; text-align: center; color: var(--muted); font-size: 13.5px; animation: enLetras 0.6s 1.6s ease both; }
 .tour-foco { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.76), 0 0 0 2px var(--accent); transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease; pointer-events: none; }
 .tour-foco.sin { left: 50% !important; top: 40% !important; width: 0 !important; height: 0 !important; box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.76); }
 .tour-caja { position: fixed; left: 50%; transform: translateX(-50%); width: min(420px, calc(100vw - 32px)); box-sizing: border-box; background: var(--plane); border: 1px solid var(--line-2); border-radius: 18px; padding: 16px 18px 14px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55); outline: none; }
@@ -2089,11 +2102,13 @@ const MODO = (() => {
   try {
     let m = null; try { m = JSON.parse(localStorage.getItem('inv-perfil') || 'null'); } catch (e) {}
     const h = location.hash, limpia = () => history.replaceState(null, '', location.pathname + location.search);
-    if (/[#&]mia(?:&|$)/.test(h)) { m = m || 'cuenta'; limpia(); }
-    else if (/[#&]cuenta(?:&|$)/.test(h)) { m = 'cuenta'; limpia(); }
-    else if (/[#&]github(?:&|$)/.test(h)) { m = 'github'; limpia(); }
-    // quien ya usaba la cartera de GitHub en este dispositivo (o las pruebas con ?dev) sigue en ella
-    if (!['cuenta', 'local', 'github'].includes(m)) m = localStorage.getItem('inv-token') || localStorage.getItem('inv-cache-enc') || /[?&]dev\b/.test(location.search) ? 'github' : 'cuenta';
+    const dev = /[?&]dev\b/.test(location.search);
+    // desde la 0.2, todo el mundo con cuenta (también el dueño): la cartera de este dispositivo o la de GitHub
+    // se sube a la cuenta en la bienvenida. #github (una vez) y ?dev quedan solo para pruebas.
+    if (/[#&]github(?:&|$)/.test(h)) { m = 'github'; limpia(); }
+    else if (/[#&](?:mia|cuenta)(?:&|$)/.test(h)) { m = 'cuenta'; limpia(); }
+    else if (!dev) m = 'cuenta';
+    else if (!['cuenta', 'local', 'github'].includes(m)) m = 'github';
     localStorage.setItem('inv-perfil', JSON.stringify(m));
     return m;
   } catch (e) { return 'github'; }
@@ -2392,6 +2407,7 @@ async function cargarDeCuenta() {
       return { texto: c.texto, sha: null };
     }
     LS.del('inv-pend-cuenta');
+    if (d && d.ia) S.iaCuenta = d.ia;
     if (d && d.enc) { cacheCuenta.set(d.enc, d.actualizado); return { texto: d.enc, sha: null }; }
     return null;
   } catch (e) { console.warn('No se pudo leer la cuenta', e); S.cuentaSinRed = true; return c && c.uid === FB.user.uid ? { texto: c.texto, sha: null } : null; }
@@ -2978,6 +2994,7 @@ const ICONOS = {
   ojo: SVG('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
   ojoNo: SVG('<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.6-.6 5-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
   lapiz: SVG('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
+  masV: SVG('<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>', 2.4),
   ajustes: SVG('<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>'),
   cerrar: SVG('<path d="M6 6l12 12M18 6L6 18"/>', 2),
   alerta: SVG('<path d="M12 3l9.5 17h-19L12 3z"/><path d="M12 10v4M12 17.5v.01"/>', 2),
@@ -3017,6 +3034,9 @@ const VISTAS = [
   ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['mercados', 'Mercados', 'Mercados'],
 ];
 const VISTAS_APARTE = [];
+// en el móvil caben cinco: estas cuatro y «Más», que abre Análisis, Fiscalidad y Objetivos
+const EN_BARRA = new Set(['cartera', 'ruta', 'expertos', 'mercados']);
+const EN_MAS = [['analisis', 'La IA revisa tu cartera y le pone nota; riesgo, costes y reparto'], ['fiscal', 'Lo que pagarías a Hacienda, los tramos y la guía de la renta'], ['futuro', 'Tu perfil, tus límites, tus metas y la proyección']];
 const esVista = (k) => VISTAS.some(([x]) => x === k) || VISTAS_APARTE.some(([x]) => x === k);
 
 let toastT;
@@ -3151,7 +3171,7 @@ function montar() {
   </div></header>
   <div class="ticker" id="ticker" role="link" tabindex="0" aria-label="Cotizaciones. Toca para ver Mercados" title="Ver Mercados"></div>
   <main class="wrap" id="vista"></main>
-  <nav class="navbar" aria-label="Secciones">${VISTAS.map(([k, t, c]) => `<a href="#${k}" data-ir="${k}">${ICONOS[k]}<span>${c || t}</span></a>`).join('')}</nav>`;
+  <nav class="navbar" aria-label="Secciones">${VISTAS.filter(([k]) => EN_BARRA.has(k)).map(([k, t, c]) => `<a href="#${k}" data-ir="${k}">${ICONOS[k]}<span>${c || t}</span></a>`).join('')}<button type="button" class="nav-mas" data-mas aria-haspopup="dialog">${ICONOS.masV}<span>Más</span></button></nav>`;
   S.tickerFirma = null;
   // la cinta de cotizaciones lleva a Mercados
   const tk = $('#ticker');
@@ -3200,6 +3220,8 @@ function pintar() {
   if (!$('#vista')) montar();
   const M = calcular(); S.M = M; S.binds = binds(M);
   for (const a of $$('[data-ir]')) a.setAttribute('aria-current', a.dataset.ir === S.vista ? 'page' : 'false');
+  const bm = $('.nav-mas');
+  if (bm) { const v = EN_MAS.find(([k]) => k === S.vista), vv = v && VISTAS.find(([k]) => k === v[0]); bm.setAttribute('aria-current', v ? 'page' : 'false'); bm.querySelector('span').textContent = vv ? vv[2] || vv[1] : 'Más'; }
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
   const bo = $('#bOcultar'); bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? 'Mostrar importes' : 'Ocultar importes'; bo.setAttribute('aria-label', bo.title);
   pintarTicker(M);
@@ -6820,7 +6842,7 @@ function pantallaCuenta(errorTxt = '') {
   $('#app').innerHTML = `<div class="pantalla"><div class="caja caja-cuenta">
     <img class="logo" src="icon-192.png" alt="">
     <h1>Entra en GrowFolio</h1>
-    <p>Con tu cuenta, tu cartera se guarda cifrada y la ves igual en el móvil, en el ordenador y en la app.</p>
+    <p>Con tu cuenta, tu cartera se guarda cifrada y la ves igual en el móvil, en el ordenador y en la app.${(() => { try { return localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc'); } catch (e) { return null; } })() ? ' Si ya usabas GrowFolio aquí, después de entrar te ofrece subir tu cartera tal cual.' : ''}</p>
     ${app && !nativo ? '<p class="nota" style="margin:0">En la app, de momento, se entra con el correo. Con Google puedes entrar desde la web o desde Chrome.</p>' : `<button type="button" class="btn btn-google" id="bGoogle"><svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.5z"/></svg><span>Continuar con Google</span></button><div class="cuenta-o"><span>o con tu correo</span></div>`}
     <form id="fCorreo" class="cuenta-f" novalidate>
       <div class="cuenta-modo" role="group" aria-label="Entrar o crear cuenta"><button type="button" data-m="entrar" aria-pressed="true">Entrar</button><button type="button" data-m="crear" aria-pressed="false">Crear cuenta</button></div>
@@ -6832,19 +6854,17 @@ function pantallaCuenta(errorTxt = '') {
       <button type="button" class="enlace" id="bOlvido">He olvidado la contraseña</button>
     </form>
     <p class="nota cuenta-priv">La contraseña de la cuenta solo sirve para entrar. Tus cifras van cifradas con otra, la de tu cartera, que no sale de tu dispositivo: ni GrowFolio ni Google pueden leerlas.</p>
-    <div class="otro-perfil"><button type="button" class="enlace" id="bLocal">Usar sin cuenta, solo en este dispositivo</button></div>
     <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
     ${selectorIdioma('pie')}
   </div></div>`;
   const err = (t) => { $('#err').textContent = t || ''; };
   const dentro = async () => {
     // ya con sesión: tu cartera de la cuenta (o, si es nueva, la bienvenida)
-    S.enc = await cargarDeCuenta();
+    S.enc = await cargarDeCuenta(); S.iaRemoto = S.iaCuenta || null;
     if (FB.user && FB.user.displayName && !LS.get('inv-nombre', '')) LS.set('inv-nombre', FB.user.displayName.split(' ')[0]);
     entrar();
   };
   $('#bIntro').onclick = () => pantallaIntro(() => pantallaCuenta());
-  $('#bLocal').onclick = () => cambiarPerfil('local');
   for (const b of $$('.cuenta-modo button')) b.onclick = () => {
     modo = b.dataset.m;
     for (const x of $$('.cuenta-modo button')) x.setAttribute('aria-pressed', x === b);
@@ -7592,8 +7612,8 @@ function estreno02(visto, despues) {
         ${li(2, ICONOS.candado, 'Igual de privada', 'Se sube cifrada con la contraseña de tu cartera: ni GrowFolio ni Google ven tus cifras.')}
         ${li(3, ICONOS.chispa, 'Te saluda al entrar', 'Una entrada nueva, con tu nombre y la hora del día.')}
       </ul>
-      <div class="es-btns">${PERFIL_CUENTA ? '<button class="btn pri es-cta" data-es="ok">Empezar</button>' : '<button class="btn pri es-cta" data-es="cuenta">Pasar mi cartera a una cuenta</button><button class="btn" data-es="luego">Ahora no</button>'}</div>
-      <button class="enlace es-mas" data-es="nov">Ver todas las novedades de la 0.2</button>
+      <div class="es-btns">${!PERFIL_CUENTA ? '<button class="btn pri es-cta" data-es="cuenta">Pasar mi cartera a una cuenta</button><button class="btn" data-es="luego">Ahora no</button>' : FB.user ? '<button class="btn pri es-cta" data-es="ok">Empezar</button>' : '<button class="btn pri es-cta" data-es="ok">Crear mi cuenta o entrar</button>'}</div>
+      ${S.cartera ? '<button class="enlace es-mas" data-es="nov">Ver todas las novedades de la 0.2</button>' : '<p class="es-nota">Tu cartera de antes no se pierde: al entrar te ofrece subirla a tu cuenta tal cual, con su misma contraseña.</p>'}
     </div>`;
   document.body.appendChild(d);
   LS.set('inv-estreno-02', true); LS.set('inv-version', VERSION); LS.set('inv-vnum', 2);
@@ -7743,9 +7763,9 @@ const TOUR = [
   { v: 'cartera', sel: '#carTabs', t: 'Posiciones y plan', x: 'Toca una posición para ver su ficha. En "Plan y movimientos" están las aportaciones de cada mes y todo lo que has comprado y vendido.' },
   { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', t: 'Paso a paso', x: 'Lo que toca hacer con tu dinero, en orden y con lo primero arriba: qué, cuánto, por qué y lo que pagarías a Hacienda.' },
   { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', t: 'Expertos', x: 'Qué opinan los analistas de lo que tienes y las ideas de compra que sacan GrowFolio y la IA de unas 800 empresas.' },
-  { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', t: 'Análisis', x: 'La IA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
-  { v: 'fiscal', sel: '.navbar [data-ir="fiscal"], .nav [data-ir="fiscal"]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
-  { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
+  { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"], .navbar [data-mas]', t: 'Análisis', x: 'La IA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
+  { v: 'fiscal', sel: '.navbar [data-ir="fiscal"], .nav [data-ir="fiscal"], .navbar [data-mas]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
+  { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"], .navbar [data-mas]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
   { v: 'mercados', sel: '.navbar [data-ir="mercados"], .nav [data-ir="mercados"]', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
   { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale a GrowFolio IA', x: 'Lo que quieras de tu cartera, con tus números delante. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
   { v: 'cartera', dib: 'app', t: 'El widget del móvil', x: 'Con la app de Android tienes un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo próximo que toca, sin abrir nada. Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio. La app se baja desde Ajustes.' },
@@ -7753,6 +7773,14 @@ const TOUR = [
 ];
 let TOURE = null;
 const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
+/* «Más» en la barra del móvil: Análisis, Fiscalidad y Objetivos en tarjetas, y Ajustes */
+function abrirMas() {
+  const h = hoja('Más', `<div class="mas-g">${EN_MAS.map(([k, x]) => { const v = VISTAS.find(([kk]) => kk === k); return `<a class="mas-t${S.vista === k ? ' on' : ''}" href="#${k}" data-cerrar>${ICONOS[k]}<span><b>${esc(v[1])}</b><small>${esc(x)}</small></span></a>`; }).join('')}
+      <button type="button" class="mas-t mas-aj" data-accion="ajustes" data-cerrar>${ICONOS.ajustes}<span><b>Ajustes</b><small>Tu cuenta, idioma, seguridad, la app y ayuda</small></span></button></div>`);
+  h.el.classList.add('hoja-mas');
+}
+document.addEventListener('click', (e) => { if (e.target.closest('[data-mas]')) abrirMas(); });
+
 function iniciarTour(paso = 0, alAcabar, pasos) {
   cerrarTour();
   if (S.ficha) cerrarFicha(true);
@@ -8546,6 +8574,7 @@ async function guardarAnalisisPropio() {
   try {
     const texto = await cifrar(o);
     if (CFG.dev) { LS.set('inv-dev-ia-enc', texto); return; }
+    if (PERFIL_CUENTA) { await fbCargar(); if (FB.user) await FB.fs.setDoc(docCuenta(), { ia: texto }, { merge: true }); return; }
     if (GH.token() && !PERFIL_LOCAL) await GH.escribir('analisis.enc.json', texto, 'Análisis de la IA');
   } catch (e) { console.warn('No se pudo subir el análisis', e); }
 }
@@ -10134,7 +10163,7 @@ async function iniciar() {
   const t0 = mostrarEntrada();
   try {
     const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), cargarEscaneo(), cargarCatalogo()])), cargarCifrada(), leerAnalisisRemoto()]);
-    S.enc = enc; S.iaRemoto = iaRem;
+    S.enc = enc; S.iaRemoto = iaRem || S.iaCuenta || null;
   } catch (e) {
     console.error(e);
     quitarEntrada();
@@ -10164,7 +10193,13 @@ function quitarEntrada() {
 }
 /* después de cargar: la cuenta (si toca), crear la cartera o abrirla con la clave guardada */
 async function entrar() {
-  if (PERFIL_CUENTA && !FB.user && !S.cuentaSinRed) return pantallaCuenta();
+  if (PERFIL_CUENTA && !FB.user && !S.cuentaSinRed) {
+    const visto = LS.get('inv-version', null);
+    if (visto && cmpVer(visto, '0.2.0') < 0 && !LS.get('inv-estreno-02')) return estreno02(visto, () => pantallaCuenta());
+    // la primera vez en este dispositivo, la presentación antes de entrar
+    if (!LS.get('inv-intro', false)) return pantallaIntro(() => pantallaCuenta());
+    return pantallaCuenta();
+  }
   // la primera vez en este dispositivo, antes de crear la cartera o entrar, la presentación
   const intro = !LS.get('inv-intro', false);
   if (!S.enc && PERFIL_CUENTA) return intro ? pantallaIntro(bienvenidaCuenta) : bienvenidaCuenta();

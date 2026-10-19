@@ -1,5 +1,5 @@
 {
-  "nota": "Adónde manda la web las opiniones: un formulario de Google (sus respuestas acaban en una hoja de cálculo del dueño). Si 'form' está vacío, la web las manda por WhatsApp.",
-  "form": "",
-  "campos": { "tipo": "", "sitio": "", "texto": "", "quien": "", "info": "" }
+  "nota": "Adónde manda la web las opiniones: el formulario «GrowFolio Feedback» de Google (sus respuestas acaban en la pestaña Respuestas y, si se vincula, en una hoja de cálculo del dueño). Si 'form' está vacío, la web las manda por WhatsApp.",
+  "form": "https://docs.google.com/forms/d/e/1FAIpQLScXBI-PgKS2mUVCYt3qHSvMll7Md8k2eyyrf1frsa3qD-UyIg/formResponse",
+  "campos": { "tipo": "entry.513489859", "sitio": "entry.525561222", "texto": "entry.1429792192", "quien": "entry.703504586", "info": "entry.177011396" }
 }
