@@ -205,7 +205,7 @@ button.fila:hover { background: var(--plane); }
   .fila .c-precio, .fila .c-peso, .fila .c-gan, .fila .c-pct, .fila .c-senal { display: none; }
   .fila.cab { display: none; }
 }
-.chip { font-size: 11.5px; color: var(--text-2); border: 1px solid var(--line-2); border-radius: 999px; padding: 0 7px; line-height: 18px; white-space: nowrap; }
+.chip { font-size: 12px; color: var(--text-2); border: 1px solid var(--line-2); border-radius: 999px; padding: 0 7px; line-height: 18px; white-space: nowrap; }
 .chip.warn { color: var(--warn); border-color: rgba(242, 146, 90, 0.4); }
 .chip.bad { color: var(--down); border-color: rgba(239, 116, 97, 0.45); }
 .chip.good { color: var(--up); border-color: rgba(79, 201, 149, 0.45); }
@@ -271,7 +271,7 @@ td.r { white-space: nowrap; }
   table.resp td:last-child:has(.btn)::before { content: none; }
   .tabla-w > table:not(.resp) th:first-child, .tabla-w > table:not(.resp) td:first-child { position: sticky; left: 0; background: var(--bg); z-index: 1; }
 }
-tr.tuya td:first-child b::after { content: 'la tienes'; font-weight: 400; font-size: 11px; color: var(--accent); border: 1px solid rgba(226, 180, 95, 0.45); border-radius: 999px; padding: 0 6px; margin-left: 8px; }
+tr.tuya td:first-child b::after { content: 'la tienes'; font-weight: 400; font-size: 12px; color: var(--accent); border: 1px solid rgba(226, 180, 95, 0.45); border-radius: 999px; padding: 0 6px; margin-left: 8px; }
 .resumen-fila { display: flex; flex-wrap: wrap; gap: 14px 40px; margin-bottom: 20px; }
 .resumen-fila > div { display: grid; gap: 2px; }
 .resumen-fila .v { font-size: 22px; font-weight: 300; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
@@ -317,7 +317,7 @@ tr.tuya td:first-child b::after { content: 'la tienes'; font-weight: 400; font-s
 .merc-r span { white-space: nowrap; }
 @media (min-width: 1100px) { .noticias.dos-col { display: grid; grid-template-columns: 1fr 1fr; column-gap: 48px; } }
 .solo-movil { display: none; }
-@media (max-width: 680px) { .solo-movil { display: inline-block; font-size: 11.5px; padding: 0 7px; line-height: 18px; } }
+@media (max-width: 680px) { .solo-movil { display: inline-block; font-size: 12px; padding: 0 7px; line-height: 18px; } }
 .merc-r span b { font-weight: 400; }
 
 /* ---------- análisis IA ---------- */
@@ -561,7 +561,7 @@ details.mas[open] > summary { margin-bottom: 12px; }
 .as-enviar { width: 38px; height: 38px; border-radius: 10px; border: 0; background: var(--accent); color: var(--on-accent); display: grid; place-items: center; flex: none; }
 .as-enviar svg { width: 18px; height: 18px; }
 .as-enviar.parar { background: var(--plane-3); color: var(--text); }
-.as-pie small { color: var(--muted); font-size: 11.5px; padding: 0 6px; }
+.as-pie small { color: var(--muted); font-size: 12px; padding: 0 6px; }
 .as-modo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .as-modo > span { color: var(--muted); font-size: 12.5px; }
 .as-modo .seg { display: flex; gap: 3px; padding: 3px; background: var(--plane); border: 1px solid var(--line); border-radius: 10px; }
@@ -672,7 +672,7 @@ table.ideas .sub { display: block; font-size: 12px; }
 .informe-merc { list-style: none; margin: 0 0 8px; padding: 0; display: grid; gap: 10px; }
 .informe-merc li { font-size: 14px; color: var(--text-2); line-height: 1.55; }
 .informe-merc b { color: var(--text); font-weight: 600; }
-.imp { display: inline-block; font-size: 11px; font-weight: 600; padding: 0 7px; line-height: 18px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; white-space: nowrap; }
+.imp { display: inline-block; font-size: 12px; font-weight: 600; padding: 0 7px; line-height: 18px; border-radius: 999px; margin-right: 6px; vertical-align: 1px; white-space: nowrap; }
 .imp.up { color: var(--up); background: var(--up-bg); } .imp.down { color: var(--down); background: var(--down-bg); } .imp.warn { color: var(--warn); background: var(--warn-bg); } .imp.flat { color: var(--text-2); background: var(--plane-3); }
 .prensa-ia { margin-top: 10px; padding-top: 10px; border-top: 1px dashed var(--line-2); font-size: 13.5px; color: var(--text-2); line-height: 1.55; }
 .prensa-ia .fx-de { margin-right: 6px; }
@@ -705,7 +705,7 @@ table.ideas .sub { display: block; font-size: 12px; }
 .ruta-pasos p { margin: 3px 0 0; color: var(--text-2); font-size: 13.5px; line-height: 1.55; }
 .ruta-meta { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; margin-bottom: 3px; font-size: 12px; color: var(--muted); }
 .ruta-meta .fecha { color: var(--accent); font-weight: 600; }
-.ruta-meta .chip { font-size: 11px; line-height: 16px; }
+.ruta-meta .chip { font-size: 12px; line-height: 17px; }
 .ruta-acc { margin-top: 6px; font-size: 13px; }
 .ruta-acc .enlace { color: var(--accent); }
 .ruta-vacio { color: var(--muted); font-size: 13.5px; padding: 14px 0; }
@@ -743,7 +743,7 @@ table.ideas .sub { display: block; font-size: 12px; }
 .subvistas button, .plazos button { border: 0; background: none; color: var(--text-2); font-size: 14.5px; font-weight: 500; padding: 8px 16px; border-radius: 9px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; min-height: 40px; line-height: 1.2; }
 .subvistas button:hover, .plazos button:hover { color: var(--text); }
 .subvistas button[aria-pressed="true"], .plazos button[aria-pressed="true"] { background: var(--plane-3); color: var(--text); }
-.cuenta { font-size: 11.5px; font-weight: 700; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: var(--accent-bg); color: var(--accent); display: inline-grid; place-items: center; font-variant-numeric: tabular-nums; }
+.cuenta { font-size: 12px; font-weight: 700; min-width: 19px; height: 19px; padding: 0 5px; border-radius: 999px; background: var(--accent-bg); color: var(--accent); display: inline-grid; place-items: center; font-variant-numeric: tabular-nums; }
 .plazos { display: none; }
 @media (max-width: 899px) {
   .plazos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); width: 100%; margin-bottom: 18px; }
@@ -931,7 +931,7 @@ table td.txt { white-space: normal; min-width: 260px; }
 .idea-cifras4 .k { font-size: 12px; }
 .idea-cifras4 b { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
 .idea-cifras4 b span { font-weight: inherit; }
-.idea-cifras4 small { font-size: 11.5px; color: var(--muted); line-height: 1.35; }
+.idea-cifras4 small { font-size: 12px; color: var(--muted); line-height: 1.35; }
 .idea-tesis { margin: 0; font-size: 14.5px; line-height: 1.55; color: var(--text); }
 .idea-mas { display: grid; gap: 10px; }
 .ideas-top3 .idea-cifras4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -1036,7 +1036,7 @@ table td.txt { white-space: normal; min-width: 260px; }
 .ruta-pasos li.paso.hecho .ruta-check::before { content: '✓'; }
 .ruta-pasos li.paso.hecho .paso-ico { opacity: 0.5; }
 .ruta-pasos li.paso.hecho .paso-t { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-2); }
-.paso-solo { font-size: 10.5px; color: var(--muted); border: 1px dashed var(--line-2); border-radius: 99px; height: 22px; display: grid; place-items: center; margin-top: 7px; }
+.paso-solo { font-size: 12px; color: var(--muted); border: 1px dashed var(--line-2); border-radius: 99px; height: 22px; display: grid; place-items: center; margin-top: 7px; }
 
 /* ---------- Fiscalidad ---------- */
 .tramos { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
@@ -1055,7 +1055,10 @@ table td.txt { white-space: normal; min-width: 260px; }
 
 /* ---------- secciones plegables (Tus números, prensa) ---------- */
 .num-secs { display: grid; gap: 10px; margin-top: 24px; }
-.num-sec { border: 1px solid var(--line); border-radius: 14px; background: var(--plane); }
+.fis-vacio { padding: 18px 20px; border-radius: 14px; background: var(--plane); border: 1px solid var(--line); }
+.fis-vacio p { margin: 0; font-size: 15px; line-height: 1.55; }
+.fis-vacio p + p { margin-top: 8px; font-size: 13.5px; }
+.num-sec { border: 1px solid var(--line); border-radius: 14px; background: var(--plane); min-width: 0; max-width: 100%; }
 .num-sec > summary { list-style: none; cursor: pointer; padding: 16px 18px; display: flex; gap: 12px; align-items: center; justify-content: space-between; }
 .num-sec > summary::-webkit-details-marker { display: none; }
 .num-sec > summary > span { display: grid; gap: 2px; }
@@ -1063,7 +1066,8 @@ table td.txt { white-space: normal; min-width: 260px; }
 .num-sec > summary small { color: var(--muted); font-size: 13px; }
 .num-sec > summary::after { content: '›'; color: var(--muted); font-size: 22px; line-height: 1; transition: transform 0.15s; }
 .num-sec[open] > summary::after { transform: rotate(90deg); }
-.num-sec .num-cuerpo { padding: 4px 18px 18px; }
+.num-sec .num-cuerpo { padding: 4px 18px 18px; min-width: 0; overflow-x: auto; }
+.num-secs { min-width: 0; } .num-secs > * { min-width: 0; }
 .informe.corto .informe-res { font-size: 15px; }
 
 /* ---------- La IA opina, compacta ---------- */
@@ -1154,7 +1158,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .busca-t b { font-weight: 600; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .busca-t small { color: var(--muted); font-size: 12px; display: flex; gap: 5px; align-items: center; white-space: nowrap; overflow: hidden; }
 .busca-p { text-align: right; font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; display: grid; }
-.busca-p small { color: var(--accent); font-size: 11px; }
+.busca-p small { color: var(--accent); font-size: 12px; }
 .busca-nada { padding: 10px; color: var(--muted); font-size: 13px; }
 .op-modo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; background: var(--plane); border: 1px solid var(--line); border-radius: 12px; }
 .op-modo button { border: 0; background: none; color: var(--text-2); font-weight: 600; font-size: 14px; padding: 10px 6px; border-radius: 9px; display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
@@ -1174,7 +1178,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .op-pos { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; align-items: center; text-align: left; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--plane); color: var(--text); }
 .op-pos span { display: grid; min-width: 0; }
 .op-pos b { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.op-pos small { color: var(--muted); font-size: 11.5px; }
+.op-pos small { color: var(--muted); font-size: 12px; }
 .op-pos[aria-pressed="true"] { border-color: rgba(226, 180, 95, 0.6); background: var(--accent-bg); }
 .enlace-imp svg { width: 16px; height: 16px; }
 @media (max-width: 520px) { .enlace-imp { order: 9; width: 100%; } }
@@ -1318,7 +1322,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .tarea.t-ia .t-tipo, .tarea.t-info .t-tipo { color: var(--accent); }
 .tarea.t-fiscal .t-tipo, .tarea.t-aviso .t-tipo, .tarea.t-dato .t-tipo { color: var(--warn); }
 .t-cuando { color: var(--muted); }
-.t-primero { margin-left: auto; font-size: 11.5px; font-weight: 700; color: var(--on-accent); background: var(--accent); border-radius: 999px; padding: 2px 8px; }
+.t-primero { margin-left: auto; font-size: 12px; font-weight: 700; color: var(--on-accent); background: var(--accent); border-radius: 999px; padding: 2px 8px; }
 .t-t { display: block; font-size: 16px; font-weight: 600; line-height: 1.38; letter-spacing: -0.01em; }
 .t-pq { margin: 6px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.55; }
 .t-pq.k { color: var(--muted); font-size: 13px; }
@@ -1326,13 +1330,17 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .t-pie .paso-mas { margin: 0; }
 .t-pie .paso-mas[open] { flex-basis: 100%; }
 .t-pie .ruta-acc { margin: 0; font-size: 13.5px; }
+.t-hecho { margin-left: auto; height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--plane-2); color: var(--text); font: 600 13.5px/1 var(--f); cursor: pointer; white-space: nowrap; }
+.t-hecho:hover { border-color: var(--up); color: var(--up); }
+.t-hecho[aria-pressed="true"] { background: var(--up-bg); border-color: rgba(79, 201, 149, 0.5); color: var(--up); }
 .tarea.hecho, .rfecha.hecho { background: none; border-style: dashed; }
 .tarea.hecho .t-t, .rfecha.hecho .t-t { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-2); }
-.tarea.hecho .t-pq, .tarea.hecho .t-pie, .rfecha.hecho .t-pq, .rfecha.hecho .t-pie { display: none; }
+.tarea.hecho .t-pq, .rfecha.hecho .t-pq, .rfecha.hecho .t-pie { display: none; }
+.tarea.hecho .t-pie { margin-top: 6px; }
 .rfecha { display: grid; grid-template-columns: 48px minmax(0, 1fr) 32px; gap: 12px; align-items: start; padding: 12px 12px 12px 10px; border: 1px solid var(--line); border-radius: 14px; }
 .rf-d { display: grid; justify-items: center; align-content: center; min-height: 48px; border-radius: 10px; background: var(--accent-bg); color: var(--accent); line-height: 1.05; }
 .rf-d b { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
-.rf-d small { font-size: 11.5px; font-weight: 600; }
+.rf-d small { font-size: 12px; font-weight: 600; }
 .rfecha .t-t { font-size: 15px; }
 .rfecha .t-pq { font-size: 13.5px; }
 .rfecha .t-check { width: 28px; height: 28px; }
@@ -1390,7 +1398,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .pf-rango { position: absolute; top: 0; bottom: 0; border-radius: 5px; background: rgba(79, 201, 149, 0.45); }
 .pf-tu { position: absolute; top: -5px; width: 4px; height: 20px; margin-left: -2px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 0 3px var(--plane-2); }
 .pf-lectura.aviso .pf-tu { box-shadow: 0 0 0 3px #2a2018; }
-.pf-medidor-ej { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11.5px; color: var(--muted); }
+.pf-medidor-ej { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; color: var(--muted); }
 .pf-lim { padding: 10px 0; border-bottom: 1px solid var(--line); }
 .pf-lim:last-of-type { border-bottom: 0; }
 .pf-lim-t { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; margin-bottom: 7px; }
@@ -1454,12 +1462,12 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .tr2 i { position: absolute; left: 0; right: 0; bottom: 0; height: var(--h); background: var(--plane-2); z-index: 0; }
 .tr2 b, .tr2 small, .tr2 span { position: relative; z-index: 1; }
 .tr2 b { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
-.tr2 small { color: var(--muted); font-size: 11.5px; line-height: 1.3; }
+.tr2 small { color: var(--muted); font-size: 12px; line-height: 1.3; }
 .tr2 span { position: absolute; top: 8px; right: 8px; font-size: 11px; font-weight: 700; color: var(--on-accent); background: var(--accent); border-radius: 999px; padding: 1px 7px; }
 .tr2.tuyo { border-color: rgba(226, 180, 95, 0.6); }
 .tr2.tuyo i { background: var(--accent-bg); }
 .tr2.tuyo b { color: var(--accent); }
-@media (max-width: 560px) { .tr2 { padding: 8px 6px 7px; } .tr2 b { font-size: 15px; } .tr2 small { font-size: 10.5px; } .tr2 span { top: auto; bottom: auto; position: static; justify-self: start; margin-top: 3px; } }
+@media (max-width: 560px) { .tr2 { padding: 8px 6px 7px; } .tr2 b { font-size: 15px; } .tr2 small { font-size: 12px; } .tr2 span { top: auto; bottom: auto; position: static; justify-self: start; margin-top: 3px; } }
 /* guía de la renta */
 .rg-intro { margin: 0 0 22px; font-size: 16px; line-height: 1.55; color: var(--text-2); max-width: 760px; }
 .rg-intro b { color: var(--text); }
@@ -1592,7 +1600,7 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .mfila[open] > summary { background: var(--plane-2); }
 .mf-n { min-width: 0; display: grid; gap: 1px; }
 .mf-n b { font-weight: 600; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mf-tuyo { color: var(--accent); font-size: 11.5px; font-weight: 600; }
+.mf-tuyo { color: var(--accent); font-size: 12px; font-weight: 600; }
 .mf-spark { width: 64px; height: 22px; display: block; }
 .mf-spark polyline { fill: none; stroke-width: 1.6; stroke-linejoin: round; stroke-linecap: round; }
 .mf-spark.up polyline { stroke: var(--up); }
@@ -1627,7 +1635,7 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
   .idea[data-compacta] > header { cursor: pointer; }
   .idea[data-compacta] .idea-res { display: grid; justify-items: end; margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
   .idea[data-compacta] .idea-res b { font-size: 15px; }
-  .idea[data-compacta] .idea-res small { color: var(--muted); font-size: 11.5px; }
+  .idea[data-compacta] .idea-res small { color: var(--muted); font-size: 12px; }
   .idea[data-compacta]:not(.abierta) > :not(header) { display: none; }
   .idea[data-compacta] > header::after { content: '›'; color: var(--muted); font-size: 20px; margin-left: 8px; transition: transform 0.15s; }
   .idea[data-compacta].abierta > header::after { transform: rotate(90deg); }
@@ -2518,7 +2526,7 @@ function senal(f, M) {
         const tp = tiempoPos(f), b = bolsaAnual();
         motivos.unshift(tp
           ? `Ganas un ${fmtNum(f.plPct, 0)} % en ${duracion(tp.dias)}: un ${fmtNum(tp.anual, 0)} % al año${tp.anual > 2 * b ? `, ${tp.anual > 10 * b ? 'más de diez veces' : `unas ${fmtNum(tp.anual / b, 0)} veces`} lo que suele dar la bolsa` : ''}. Los analistas ven poco recorrido: plantéate vender una parte y asegurar.`
-          : `Ganas un ${fmtNum(f.plPct, 0)} % y los analistas ven poco recorrido: plantéate vender una parte y asegurar.`);
+          : `Ganas un ${fmtNum(f.plPct, 0)} % y los analistas creen que ya le queda poco por subir: plantéate vender una parte y asegurar lo ganado.`);
         return fin('recoger');
       }
       motivos.unshift(`Ya recogiste beneficios el ${fechaLarga(ya[ya.length - 1].fecha)}: lo que queda es ganancia. Protégela con una orden stop en su media de 50 sesiones.`);
@@ -2894,7 +2902,7 @@ function vistaCartera(M) {
     <section aria-label="Patrimonio">
       <div class="hero-fila"><div class="hero-lbl">Patrimonio</div>${chipGTA()}</div>
       <div class="hero-num" aria-label="Patrimonio">${B('totalE')}${B('totalD', 'dec')}</div>
-      <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">de ganancia en lo que tienes</span></div><div class="movers">${B('movers')}</div></div>
+      <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">ganado desde que compraste</span></div><div class="movers">${B('movers')}</div></div>
       <div class="kpis">
         ${plats}
         <div class="kpi"><span class="k">Invertido</span><span class="v">${eur(M.invertido, 0)}</span></div>
@@ -2910,7 +2918,7 @@ function vistaCartera(M) {
       <div class="chart" id="grafEvo"></div>
       <div class="leyenda-graf"><span><i style="border-color:var(--accent)"></i>Tu cartera</span>${S.comparar ? `<span><i class="disc" style="border-color:var(--text-2)"></i>El mismo dinero en el S&P 500</span>` : ''}
         <label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> Comparar con el S&P 500</label></div>
-      <p class="nota">Tus posiciones de hoy con el precio de cada día: enseña cómo se habría movido esta cartera, no lo que has ganado tú (no cuenta cuándo compraste). Antes de que existieran algunos fondos se usa un ETF del mismo índice.</p>
+      <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste».</p>
       ${toca('evo')}
     </section>
   </div>
@@ -2939,7 +2947,7 @@ function nombreReal(i) {
 }
 function chipsPos(f) {
   const c = [];
-  if (f.estimada) c.push('<span class="chip warn">estimado</span>');
+  if (f.estimada) c.push('<span class="chip warn" title="No sabemos las participaciones exactas: ponlas en su ficha, Editar, para que el valor cuadre al céntimo">cantidad aproximada</span>');
   if (f.p && f.p.estado === 'antiguo') c.push('<span class="chip warn">precio antiguo</span>');
   return c.join('');
 }
@@ -2961,12 +2969,12 @@ function htmlPosiciones(M) {
   }).join('');
   const ef = M.efectivo.map((e) => `<div class="fila efectivo"><span class="activo-l">${logo(null, '€')}<span class="activo"><b>Efectivo</b><small>${esc(e.plataforma)}</small></span></span><span class="c-precio"></span><span class="c-hoy"></span><span class="r valor num c-val">${eur(e.importe)}</span><span class="r c-peso k num">${pct(M.total ? (e.importe / M.total) * 100 : 0, 1)}</span><span class="c-gan"></span><span class="c-pct"></span><span class="c-senal"></span></div>`).join('');
   return `<section aria-labelledby="hPos">
-    <div class="sec-cab"><h2 id="hPos">Posiciones</h2><span class="k">${M.filas.length} activos</span><span class="k leyenda-m">valor, lo que llevas ganado desde la compra y lo de hoy</span>
-      <div class="der"><button class="btn peq" data-accion="operacion">${ICONOS.compra}<span class="txt-pc">Registrar compra o venta</span><span class="txt-m">Compra o venta</span></button><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir posición</button></div>
+    <div class="sec-cab"><h2 id="hPos">Posiciones</h2><span class="k">${M.filas.length} activos</span><span class="k leyenda-m">Toca una para ver su ficha. Debajo del valor, lo ganado desde que compraste</span>
+      <div class="der"><button class="btn peq" data-accion="operacion">${ICONOS.compra}<span class="txt-pc">Apuntar compra o venta</span><span class="txt-m">Compra o venta</span></button><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}<span class="txt-pc">Añadir lo que ya tenía</span><span class="txt-m">Lo que ya tenía</span></button></div>
       <label class="ordenar-m">Ordenar por<select data-orden-pos-sel>${COLS_POS.map(([k, t]) => [[k, 'desc'], [k, 'asc']].map(([kk, d]) => `<option value="${kk}|${d}"${S.ordenPos.k === kk && S.ordenPos.dir === d ? ' selected' : ''}>${t === '%' ? 'Ganancia en %' : t} ${kk === 'activo' ? (d === 'asc' ? 'A-Z' : 'Z-A') : kk === 'senal' ? (d === 'asc' ? 'más urgente' : 'menos urgente') : d === 'desc' ? 'mayor a menor' : 'menor a mayor'}</option>`).join('')).join('')}</select></label></div>
     <div class="tabla-pos">
       <div class="fila cab">${COLS_POS.map(([k, t, c]) => { const on = S.ordenPos && S.ordenPos.k === k; return `<span class="${c}"><button class="th" data-orden-pos="${k}" aria-pressed="${on}" title="Ordenar por ${t.toLowerCase()}">${t}${on ? `<span class="fl">${S.ordenPos.dir === 'asc' ? '↑' : '↓'}</span>` : ''}</button></span>`; }).join('')}</div>
-      ${filas || '<div class="vacio">Todavía no hay posiciones. Pulsa "Añadir posición".</div>'}${ef}
+      ${filas || '<div class="vacio">Todavía no hay nada. Pulsa «Lo que ya tenía» y mete lo que tienes en tu bróker: busca cada cosa por su nombre o su ISIN.</div>'}${ef}
     </div>
     <p class="nota">Pulsa una posición para ver su ficha: gráfico, analistas, noticias y botones para comprar, vender o editarla.</p>
   </section>`;
@@ -3211,9 +3219,9 @@ function filaExperto(f, ia, vIA = {}) {
     <div class="fx2-cab">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button><small>${chipCotiza(i)}<span>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</span></small></div></div>
     ${c && !choca && normTxt(c.veredicto || SENALES[nivelC]) === normTxt(s.txt)
       ? `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números e IA</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-ok">coinciden</span></div>`
-      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="fx-ok">coinciden</span>') : ''}</div>`}
+      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="chip" title="Van en la misma dirección, pero la IA lo dice con otro matiz: lee su motivo">la IA matiza</span>') : ''}</div>`}
     ${m0 ? `<p class="fx2-m">${esc(m0)}</p>` : ''}
-    ${resto.length || c || prensa || datos ? `<details class="mas"><summary>Por qué lo dicen: motivos, IA, prensa y analistas</summary><div class="fx2-det">
+    ${resto.length || c || prensa || datos ? `<details class="mas"><summary>Por qué</summary><div class="fx2-det">
       ${resto.length ? `<div><span class="fx-de">Números</span><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>` : ''}
       ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>Vigilar.</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
       ${prensa}
@@ -3258,7 +3266,7 @@ function vistaExpertos(M) {
   if (S.expTab === 'posiciones') {
     const prensa = noticiasCartera(true);
     cuerpo = `${planes.length ? `<section aria-labelledby="hPlanV">
-      <div class="sec-cab"><h2 id="hPlanV">Qué haría ahora</h2><span class="k">${planes.length === 1 ? 'una posición que conviene' : planes.length + ' posiciones que conviene'} vender o recortar</span></div>
+      <div class="sec-cab"><h2 id="hPlanV">Qué vender o recortar</h2><span class="k">${planes.length === 1 ? 'una posición' : planes.length + ' posiciones'}, con el plan completo</span></div>
       <div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl, 'plegado')).join('')}</div>
     </section>` : ''}
     ${htmlResumenInforme(true)}
@@ -3289,7 +3297,7 @@ function puntuarIdea(x, ctx) {
   const potG = g ? anualizar(g.subida_pct, Math.max(g.meses, 3)) : null;
   const pot = Math.max(-50, Math.min(potG != null ? (x.pot + potG) / 2 : x.pot, 50));
   p += 1.2 * (pot / 50);
-  motivos.push(`los analistas le ven un ${fmtNum(x.pot, 0)} % de recorrido${g ? ` y GrowFolio IA, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`);
+  motivos.push(`los analistas creen que puede subir un ${fmtNum(x.pot, 0)} %${g ? ` y GrowFolio IA, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`);
   const rm = x.rm ?? 3;
   p += Math.max(-1, Math.min(1, (2.6 - rm) / 1.6));
   if (rm <= 1.6) motivos.push(`consenso de compra fuerte entre ${x.na} analistas`);
@@ -3344,7 +3352,7 @@ function mejoresIdeas(M, excluir = {}) {
   return out;
 }
 
-const ORDEN_RADAR = { pot: ['Potencial', (x) => x.pot ?? -999], neto: ['Neto al año', (x) => x._neto ?? -999], ctr: ['Contraste', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
+const ORDEN_RADAR = { pot: ['Potencial', (x) => x.pot ?? -999], neto: ['Te quedas', (x) => x._neto ?? -999], ctr: ['Señales', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
 const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? 'p' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
 /* ---------- informe de prensa de Gemini (informe.json, rama datos) ----------
    Lo escribe la Action cada 2 horas con las noticias de tus posiciones, del mercado y de las mejores
@@ -3479,18 +3487,18 @@ function quienIdea(x) {
 /* "Puede subir un 51 % en 12 meses (los analistas): un 43 % al año tras impuestos." */
 function planTxt(e) {
   const p = e.prin;
-  return `Plazo: puede subir un ${pctS(p.subida, 0)} en ${plazoTxt(p.meses)} (${p === e.ia ? `según ${esc(p.fuente)}${e.ia.por ? `, por ${esc(limpiaIA(e.ia.por).replace(/^./, (c) => c.toLowerCase()))}` : ''}` : 'el objetivo de los analistas'}): un ${pctS(p.netoAnual, 0)} al año tras impuestos.`;
+  return `Si se cumple: ${pctS(p.subida, 0)} en ${plazoTxt(p.meses)} (${p === e.ia ? `según ${esc(p.fuente)}${e.ia.por ? `, por ${esc(limpiaIA(e.ia.por).replace(/^./, (c) => c.toLowerCase()))}` : ''}` : 'el objetivo de los analistas'}). Después de impuestos te quedarías un ${pctS(p.netoP, 0)}.`;
 }
 function htmlCifrasIdea(r, e) {
   if (!r || !r.p) return '';
   const p = e && e.prin;
   const plazo = p ? `<b>${plazoTxt(p.meses)}</b><small>${p === e.ia ? esc(`según ${p.fuente}${e.ia.por ? `: ${limpiaIA(e.ia.por)}` : ''}`) : 'el de los analistas'}</small>` : '—';
-  const neto = p && p.netoAnual != null ? `<b class="${cls(p.netoAnual)}">${pctS(p.netoAnual, 0)}</b><small>${p.meses !== 12 ? `${pctS(p.netoP, 0)} neto en ${plazoTxt(p.meses)}; ` : ''}${p.netoAnual < bolsaAnual() ? 'menos que tu fondo indexado' : `tu fondo indexado: ${fmtNum(bolsaAnual(), 0)} %`}</small>` : '—';
+  const neto = p && p.netoP != null ? `<b class="${cls(p.netoP)}">${pctS(p.netoP, 0)}</b><small>en ${plazoTxt(p.meses)}, ya restados los impuestos. Tu fondo indexado da un ${fmtNum(bolsaAnual(), 0)} % al año</small>` : '—';
   return `<div class="idea-cifras4">
     <div><span class="k">Precio</span><b>${B('rp:' + r.s)}</b></div>
     <div><span class="k">Puede subir</span><b class="${cls(p ? p.subida : r.pot)}">${pctS(p ? p.subida : r.pot, 0)}</b><small>${p && p === e.ia ? `analistas: ${pctS(r.pot, 0)} a 12 meses` : 'hasta el objetivo medio'}</small></div>
     <div><span class="k">En cuánto tiempo</span>${plazo}</div>
-    <div><span class="k">Al año, tras impuestos</span>${neto}</div>
+    <div><span class="k">Te quedas, si se cumple</span>${neto}</div>
   </div>`;
 }
 function htmlFiscalIdea(r, e) {
@@ -3521,9 +3529,9 @@ function tarjetaIdea(x, ctx, compacta = false) {
     ctr ? `<div><p class="idea-linea" style="margin-bottom:6px"><b>Las siete señales.</b></p>${htmlContrasteLista(ctr)}</div>` : '',
     enlacesFuentes(fuentes, 4),
   ].filter(Boolean).join('');
-  const resumen = x.esp && x.esp.prin ? `${x.esp.prin.netoAnual != null ? `${pctS(x.esp.prin.netoAnual, 0)} al año neto` : ''}${x.esp.prin.meses ? ` en ${plazoTxt(x.esp.prin.meses)}` : ''}` : '';
+  const resumen = x.esp && x.esp.prin && x.esp.prin.netoP != null ? { n: pctS(x.esp.prin.netoP, 0), en: `en ${plazoTxt(x.esp.prin.meses)}, neto` } : null;
   return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}"${compacta ? ' data-compacta' : ''}>
-    <header${compacta ? ' data-idea-toggle role="button" tabindex="0" aria-expanded="false"' : ''}>${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? lineaOrigen(r) : esc(x.s)}</small></div>${compacta ? `<span class="idea-res">${resumen ? `<b class="${cls(x.esp.prin.netoAnual)}">${esc(resumen.split(' al año')[0])}</b><small>al año neto</small>` : ''}</span>` : ''}</header>
+    <header${compacta ? ' data-idea-toggle role="button" tabindex="0" aria-expanded="false"' : ''}>${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? lineaOrigen(r) : esc(x.s)}</small></div>${compacta ? `<span class="idea-res">${resumen ? `<b class="${cls(x.esp.prin.netoP)}">${esc(resumen.n)}</b><small>${esc(resumen.en)}</small>` : ''}</span>` : ''}</header>
     <p class="idea-quien">${quienIdea(x)}${ctr ? ` <span class="ctr-q">${htmlContraste(ctr, true)} señales a favor</span>` : ''}</p>
     ${htmlCifrasIdea(r, x.esp)}
     ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
@@ -3544,7 +3552,7 @@ function htmlIdeas(M, ia) {
   const movil = innerWidth <= 680;
   const ctx = ctxIdeas(M);
   const d = S.escaneo && S.escaneo.decision;
-  let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => { const e = esperadaRadar(x); return { ...x, _ctr: contraste(x), _neto: e ? e.prin.netoAnual : null, _meses: e ? e.prin.meses : null }; });
+  let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => { const e = esperadaRadar(x); return { ...x, _ctr: contraste(x), _neto: e ? e.prin.netoP : null, _meses: e ? e.prin.meses : null }; });
   if (S.radarSolidas) v = v.filter((x) => x._ctr.favor >= 4 && x._ctr.contra <= 1);
   const [, clave] = ORDEN_RADAR[S.radarOrden] || ORDEN_RADAR.pot;
   v = v.sort((a, b) => clave(b) - clave(a));
@@ -3557,20 +3565,20 @@ function htmlIdeas(M, ia) {
   return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowFolio IA y tu análisis</span></div>
     ${d && d.comentario ? `<p class="idea-panorama"><b>GrowFolio IA</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, movil && i >= 3)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
-    <p class="nota">GrowFolio elige las tres mejor contrastadas: consenso de compra, recorrido hasta el objetivo, al menos 3 de las 7 señales a favor y que no repitan lo que ya llevan tus fondos. GrowFolio IA lee la prensa del radar y elige por su cuenta. Primero van las que eligen dos o más; después, de más a menos de lo que darían al año, netas de impuestos. Las barras de contraste: verde a favor, rojo en contra, gris neutral.</p>
+    <p class="nota">Cómo se eligen: GrowFolio se queda con las tres mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowFolio IA lee sus noticias y elige las suyas. Primero salen las que eligen los dos. En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
     <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
       <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
-    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial 12 m')}${th('neto', 'Neto al año')}${th('ctr', 'Contraste', '')}<th>Prensa</th>${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
+    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Potencial 12 m')}${th('neto', 'Te quedas')}${th('ctr', 'Señales', '')}<th>Prensa</th>${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
     ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${lineaOrigen(x)}</small></td>
       <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
-      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que daría al año si se cumple lo esperado (el plazo de GrowFolio IA o los 12 meses de los analistas), con su dividendo, menos la tasa de compra, la retención que no se recupera y tu tramo del ahorro">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses && x._meses !== 12 ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
+      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que te quedaría si se cumple lo esperado (en el plazo de GrowFolio IA o en los 12 meses de los analistas), con su dividendo y ya restados la tasa de compra, la retención que no se recupera y tus impuestos">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     ${total > corte ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? `Ver solo las ${corte} primeras` : `Ver las ${total}`}</button>` : ''}
-    <p class="nota">Potencial: lo que queda hasta el precio objetivo medio de los analistas a 12 meses, con el precio en directo. Prensa: lo que ha leído GrowFolio IA en sus noticias. Contraste: analistas, sus revisiones de los últimos 3 meses, el rango de objetivos, el beneficio esperado, la valoración frente a su sector, la tendencia y la solidez del negocio.</p>`;
+    <p class="nota">Potencial: cuánto le queda para llegar al precio que esperan los analistas dentro de 12 meses. Te quedas: lo que ganarías si llega, ya restados los impuestos. Prensa: lo que ha leído GrowFolio IA en sus noticias. Señales: siete pruebas (analistas, si mejoran su opinión, beneficios, precio frente a su sector, tendencia y solidez del negocio).</p>`;
 }
 
 /* ---------- repintar solo cuando cambia una recomendación ---------- */
@@ -3783,7 +3791,7 @@ function pasosRuta(M) {
   const sueltas = sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor);
   const lim = (+(S.cartera.limite_acciones || 20) / 100) * M.total;
   const top = mejoresIdeas(M).find((x) => x.ctr.favor >= 4);
-  if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres una apuesta nueva: ${esc(top.n)}`, pq: `Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor)${(() => { const e = rentaEsperada(top, top.pot, 12); return e ? `: si llega al objetivo, un ${pctS(e.netoAnual, 0)} al año neto de impuestos` : ''; })()}. Te caben ${eur(lim - sueltas, 0)} en acciones sueltas.`, como: 'Antes de comprar, que la IA la contraste con las noticias de la semana y te diga cuánto meter.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>` });
+  if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres una apuesta nueva: ${esc(top.n)}`, pq: `Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor)${(() => { const e = rentaEsperada(top, top.pot, 12); return e ? `: si llega al objetivo en 12 meses, te quedarías un ${pctS(e.netoP, 0)} después de impuestos` : ''; })()}. Te caben ${eur(lim - sueltas, 0)} en acciones sueltas.`, como: 'Antes de comprar, que la IA la contraste con las noticias de la semana y te diga cuánto meter.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>` });
   // 10. a un año y más: proyección, hueco que se abre y revisión
   let pr = null; try { pr = proyeccion(M); } catch (e) {}
   if (pr) {
@@ -3865,10 +3873,11 @@ function checkRuta(x, n) {
   return `<button class="t-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Hecho. Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"><span>${n || ''}</span></button>`;
 }
 /* lo de Hacienda va a la vista en cada paso; el cómo, plegado */
-function masRuta(x) {
+function masRuta(x, conHecho) {
   const hac = x.imp && !x.hecho ? `<p class="t-imp">${ICONO_PASO.fiscal}<span><b>Hacienda:</b> ${x.imp}</span></p>` : '';
-  if (!x.como && !(x.acc && !x.hecho)) return hac;
-  return `${hac}<div class="t-pie">${x.como ? `<details class="paso-mas"><summary>Cómo hacerlo</summary><div class="t-como">${x.como}</div></details>` : ''}${x.acc && !x.hecho ? `<span class="ruta-acc">${x.acc}</span>` : ''}</div>`;
+  const hecho = conHecho ? `<button type="button" class="t-hecho" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}">${x.hecho ? 'Hecho. Deshacer' : '✓ Marcar como hecho'}</button>` : '';
+  if (!x.como && !(x.acc && !x.hecho) && !hecho) return hac;
+  return `${hac}<div class="t-pie">${x.como && !x.hecho ? `<details class="paso-mas"><summary>Cómo hacerlo</summary><div class="t-como">${x.como}</div></details>` : ''}${x.acc && !x.hecho ? `<span class="ruta-acc">${x.acc}</span>` : ''}${hecho}</div>`;
 }
 function htmlTarea(x, n, primero) {
   const tp = tipoPaso(x), txt = [x.pq, x.det].filter(Boolean).join(' ');
@@ -3877,8 +3886,8 @@ function htmlTarea(x, n, primero) {
     <div class="t-c">
       <div class="t-meta"><span class="t-tipo">${ICONO_PASO[tp.i] || ''}${TIPO_ETQ[tp.c] || 'Plan'}</span>${x.cuando ? `<span class="t-cuando">${esc(x.cuando)}</span>` : ''}${primero ? '<span class="t-primero">Lo primero</span>' : ''}</div>
       <b class="t-t">${x.t.replace(/ €/g, ' €')}</b>
-      ${txt ? `<p class="t-pq">${txt}</p>` : ''}
-      ${masRuta(x)}
+      ${txt && !x.hecho ? `<p class="t-pq">${txt}</p>` : ''}
+      ${masRuta(x, true)}
     </div>
   </li>`;
 }
@@ -3901,7 +3910,7 @@ function htmlRuta(M) {
   const hasta = (dias) => fechaCorta(iso(new Date(Date.now() + dias * 86400000)));
   const sub = { mes: `hasta el ${hasta(31)}`, seis: `hasta ${MESES[new Date(Date.now() + 183 * 86400000).getMonth()]}`, anio: `hasta ${MESES[new Date().getMonth()]} de ${new Date().getFullYear() + 1}`, largo: 'lo que se construye despacio' };
   const ia = iaActual();
-  const cuenta = [...P.mes, ...P.seis].filter((x) => !x.auto), hechas = cuenta.filter((x) => x.hecho).length;
+  const cuenta = [...P.mes, ...P.seis].filter((x) => !x.auto && claseRuta(x) === 'tarea'), hechas = cuenta.filter((x) => x.hecho).length;
   const primero = P.mes.find((x) => !x.hecho && claseRuta(x) === 'tarea') || (!P.mes.some((x) => claseRuta(x) === 'tarea' && !x.hecho) ? P.seis.find((x) => !x.hecho && claseRuta(x) === 'tarea') : null);
   const columna = ([k, t]) => {
     const tareas = P[k].filter((x) => claseRuta(x) === 'tarea'), fechas = P[k].filter((x) => claseRuta(x) === 'fecha'), solos = P[k].filter((x) => claseRuta(x) === 'solo');
@@ -3923,11 +3932,11 @@ function htmlRuta(M) {
     </section>`;
   };
   return `<div class="ruta-barra-top">
-      <div class="plazos" role="group" aria-label="Plazo">${PLAZOS.map(([k]) => { const n = P[k].filter((x) => !x.hecho && !x.auto).length; return `<button data-plazo="${k}" aria-pressed="${S.rutaPlazo === k}">${PLAZO_CORTO[k]}${n ? `<span class="cuenta">${n}</span>` : ''}</button>`; }).join('')}</div>
-      <div class="ruta-res" aria-label="Progreso"><div class="ruta-res-n"><b>${hechas}</b> de ${cuenta.length} hechos <span>en los próximos 6 meses</span></div><div class="ruta-barra"><i style="width:${cuenta.length ? ((hechas / cuenta.length) * 100).toFixed(0) : 0}%"></i></div></div>
+      <div class="plazos" role="group" aria-label="Plazo">${PLAZOS.map(([k]) => { const n = P[k].filter((x) => !x.hecho && !x.auto && claseRuta(x) === 'tarea').length; return `<button data-plazo="${k}" aria-pressed="${S.rutaPlazo === k}">${PLAZO_CORTO[k]}${n ? `<span class="cuenta">${n}</span>` : ''}</button>`; }).join('')}</div>
+      <div class="ruta-res" aria-label="Progreso"><div class="ruta-res-n"><b>${hechas}</b> de ${cuenta.length} hechos <span>en los próximos 6 meses. Cuando hagas uno, márcalo y se queda tachado.</span></div><div class="ruta-barra"><i style="width:${cuenta.length ? ((hechas / cuenta.length) * 100).toFixed(0) : 0}%"></i></div></div>
     </div>
     <div class="ruta ruta2" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(columna).join('')}</div>
-    <p class="nota ruta-nota">Toca el círculo de cada paso cuando lo hagas. ${ia && ia.hoja_de_ruta ? `Los que llevan ${esc(ia.autor || 'IA')} los propone GrowFolio IA tras leer las noticias; el resto salen de tus números.` : 'Salen de tus números; con GrowFolio IA activada, añade los suyos tras leer las noticias.'}</p>`;
+    <p class="nota ruta-nota">${ia && ia.hoja_de_ruta ? `Los que llevan ${esc(ia.autor || 'IA')} los propone GrowFolio IA tras leer las noticias; el resto salen de tus números.` : 'Salen de tus números; con GrowFolio IA activada, añade los suyos tras leer las noticias.'}</p>`;
 }
 function vistaRuta(M) {
   return `<div class="vista-cab"><h1>Paso a paso</h1><p>Qué te toca hacer y cuándo: lo urgente primero, con el porqué, el cómo y lo que pagas a Hacienda.</p></div>${htmlRuta(M)}`;
@@ -3966,8 +3975,8 @@ function cuerpoNum(k, M) {
     const conTer = M.filas.filter((f) => f.inst.ter != null);
     const costeAnual = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
     const baseTer = sum(conTer, (f) => f.valor);
-    cuerpo = `<div class="resumen-fila"><div><span class="k">Gastos de fondos al año</span><span class="v">${eur(costeAnual, 0)}</span></div><div><span class="k">TER medio</span><span class="v">${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</span></div><div><span class="k">Dividendos al año</span><span class="v">${eur(M.dividendos, 0)}</span></div><div><span class="k">Tras impuestos (19 %)</span><span class="v">${eur(M.dividendos * 0.81, 0)}</span></div></div>
-      <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r">TER</th><th class="r">Gasto al año</th><th class="r">Dividendo</th><th class="r">Cobro al año</th><th class="r">Próximo</th></tr></thead><tbody>
+    cuerpo = `<div class="resumen-fila"><div><span class="k">Gastos de fondos al año</span><span class="v">${eur(costeAnual, 0)}</span></div><div><span class="k">Comisión media de los fondos</span><span class="v">${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</span></div><div><span class="k">Dividendos al año</span><span class="v">${eur(M.dividendos, 0)}</span></div><div><span class="k">Tras impuestos (19 %)</span><span class="v">${eur(M.dividendos * 0.81, 0)}</span></div></div>
+      <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r" title="Lo que cobra el fondo cada año (TER), ya descontado de su precio">Comisión</th><th class="r">Gasto al año</th><th class="r">Dividendo</th><th class="r">Cobro al año</th><th class="r">Próximo</th></tr></thead><tbody>
       ${M.filas.map((f) => `<tr><td>${nombre(f)}</td><td class="r">${f.inst.ter != null ? pct(f.inst.ter, 2) : '—'}</td><td class="r">${f.inst.ter != null ? eur((f.valor * f.inst.ter) / 100, 0) : '—'}</td><td class="r">${f.p && f.p.dividendo_pct ? pct(f.p.dividendo_pct, 1) : '—'}</td><td class="r">${f.p && f.p.dividendo_pct ? eur((f.valor * f.p.dividendo_pct) / 100, 0) : '—'}</td><td class="r">${f.p && f.p.ex_dividendo ? fechaCorta(f.p.ex_dividendo) : '—'}</td></tr>`).join('')}
       </tbody></table></div><p class="nota">Dividendos brutos de los últimos 12 meses sobre el precio de hoy. Los de BAT llevan además la retención de Reino Unido (0 %), los de Repsol e IAG ya vienen con el 19 % retenido.</p>`;
   } else if (k === 'dentro') {
@@ -3989,7 +3998,7 @@ function cuerpoNum(k, M) {
         const b0 = precioEn(histDe(S.ref), e.fecha, 'antes');
         const ind = b0 && precioRef ? (precioRef / b0 - 1) * 100 : null;
         const dif = mia != null && ind != null ? mia - ind : null;
-        return `<tr><td>${nombre(f)}<small>desde el ${fechaCorta(e.fecha)} a ${precioFmt(+e.precio)}</small></td><td class="r ${cls(mia)}">${pctS(mia, 1)}</td><td class="r ${cls(ind)}">${pctS(ind, 1)}</td><td class="r ${cls(dif)}">${dif == null ? '—' : (dif > 0 ? '+' : '') + fmtNum(dif, 1) + ' pp'}</td><td class="r ${cls(dif)}">${dif == null ? '—' : eurS((f.coste * dif) / 100, 0)}</td></tr>`;
+        return `<tr><td>${nombre(f)}<small>desde el ${fechaCorta(e.fecha)} a ${precioFmt(+e.precio)}</small></td><td class="r ${cls(mia)}">${pctS(mia, 1)}</td><td class="r ${cls(ind)}">${pctS(ind, 1)}</td><td class="r ${cls(dif)}">${dif == null ? '—' : (dif > 0 ? '+' : '') + fmtNum(dif, 1) + ' puntos'}</td><td class="r ${cls(dif)}">${dif == null ? '—' : eurS((f.coste * dif) / 100, 0)}</td></tr>`;
       }).join('')}</tbody></table></div><p class="nota">Solo el precio, sin dividendos ni comisiones. Para que una posición cuente como apuesta, ponle fecha y precio de entrada en su ficha (Editar).</p>`
       : '<div class="vacio">Ninguna posición tiene fecha y precio de entrada. Añádelos en la ficha de la posición (Editar).</div>';
   }
@@ -4002,7 +4011,7 @@ function htmlNumeros(M) {
   return `<div class="resumen-fila">
       ${rent1a != null ? `<div><span class="k">Tu cartera, último año</span><span class="v ${cls(rent1a)}">${pctS(rent1a, 1)}</span><small class="k">con tus posiciones de hoy</small></div>` : ''}
       ${cr ? `<div><span class="k">Riesgo</span><span class="v">${cr} de 7</span><small class="k">volatilidad ${pct(vol, 1)}, peor caída ${pct(caidaMaxima(serie), 1)}</small></div>` : ''}
-      <div><span class="k">Gastos de fondos</span><span class="v">${eur(costeAnual, 0)} al año</span><small class="k">TER medio ${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</small></div>
+      <div><span class="k">Gastos de fondos</span><span class="v">${eur(costeAnual, 0)} al año</span><small class="k">comisión media del ${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</small></div>
       <div><span class="k">Dividendos</span><span class="v">${eur(M.dividendos, 0)} al año</span><small class="k">brutos, con el precio de hoy</small></div>
     </div>
     <div class="num-secs">${NUMEROS.map((k) => `<details class="num-sec" id="num-${k}"${S.numAbierto === k ? ' open' : ''}><summary><span><b>${NUM_T[k][0]}</b><small>${NUM_T[k][1]}</small></span></summary><div class="num-cuerpo">${cuerpoNum(k, M)}</div></details>`).join('')}</div>`;
@@ -4051,13 +4060,13 @@ function htmlPlan(M) {
         <p class="nota">Cada aportación se suma sola a su posición con el precio del primer día después de la fecha (el que usa el fondo). Si cambias el importe o el día en tu bróker, cámbialo aquí también.</p>
       </section>
       <section aria-labelledby="hMov">
-        <div class="sec-cab"><h2 id="hMov">Compras y ventas</h2><div class="der"><button class="btn peq compra" data-accion="operacion" data-tipo="compra">${ICONOS.compra}Registrar compra</button><button class="btn peq venta" data-accion="operacion" data-tipo="venta">${ICONOS.venta}Registrar venta</button></div></div>
+        <div class="sec-cab"><h2 id="hMov">Compras y ventas</h2><div class="der"><button class="btn peq compra" data-accion="operacion" data-tipo="compra">${ICONOS.compra}Apuntar compra</button><button class="btn peq venta" data-accion="operacion" data-tipo="venta">${ICONOS.venta}Apuntar venta</button></div></div>
         ${movs.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Operación</th><th class="r">Unidades</th><th class="r">Precio</th><th class="r">Importe</th><th class="r">Resultado</th><th></th></tr></thead><tbody>
           ${movs.map((m) => `<tr><td><span class="mov-l">${logo((S.inst[m.instrumento] || {}).dominio, nombreI(m.instrumento))}<span><b style="font-weight:500" class="${m.tipo === 'compra' ? 'up' : 'down'}">${m.tipo === 'compra' ? 'Compra' : 'Venta'}</b> ${nombreI(m.instrumento)}<small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></span></span></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${precioFmt(m.precio)}</td><td class="r">${eur(m.importe)}<small>${m.gastos ? 'gastos ' + eur(m.gastos) : ''}</small></td><td class="r ${cls(m.resultado)}">${m.tipo === 'venta' ? eurS(m.resultado || 0, 0) : ''}</td><td class="r"><button class="btn peq peligro" data-accion="borrar-mov" data-id="${esc(m.id)}" aria-label="Borrar del historial">${ICONOS.papelera}</button></td></tr>`).join('')}
         </tbody></table></div><p class="nota">Borrar una operación del historial no deshace su efecto en la posición: para eso, edita la posición.</p>` : '<div class="vacio">Aquí saldrán las compras y ventas que registres. Al registrarlas se actualizan solas la posición, el efectivo y el resultado para la renta.</div>'}
       </section>
       <section aria-labelledby="hPosE">
-        <div class="sec-cab"><h2 id="hPosE">Posiciones</h2><div class="der"><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir posición</button></div></div>
+        <div class="sec-cab"><h2 id="hPosE">Posiciones</h2><div class="der"><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir lo que ya tenía</button></div></div>
         <div class="tabla-w"><table class="resp tabla-ed"><thead><tr><th>Activo</th><th class="r">Cantidad</th><th class="r">Invertido</th><th class="r">Valor</th><th></th></tr></thead><tbody>
           ${M.filas.map((f) => `<tr><td>${activoMini(f.inst, `<span>${esc(f.pos.plataforma || '')}</span>`)}</td><td class="r">${f.uds != null ? oc(fmtNum(f.uds, 4)) : '—'}${f.estimada ? '<small>estimada</small>' : ''}</td><td class="r">${eur(f.coste, 0)}</td><td class="r">${eur(f.valor, 0)}</td><td class="r"><button class="btn peq" data-accion="editar-pos" data-id="${esc(f.pos.id)}">${ICONOS.lapiz}Editar</button></td></tr>`).join('')}
         </tbody></table></div>
@@ -4212,7 +4221,7 @@ function dibujar(M) {
     const cab = $('#evoCab');
     if (cab && serie.length > 1) {
       const d = serie[serie.length - 1].v - serie[0].v, p = (serie[serie.length - 1].v / serie[0].v - 1) * 100;
-      cab.innerHTML = `<span class="${cls(d)}">${eurS(d, 0)}</span><span class="${cls(p)}">${pctS(p)}</span><span class="k">${S.rango === '1D' && intra ? 'desde el último cierre' : `desde el ${fechaPunto(serie[0].d)}`}</span>`;
+      cab.innerHTML = `<span class="${cls(d)}">${eurS(d, 0)}</span><span class="${cls(p)}">${pctS(p)}</span><span class="k">${S.rango === '1D' && intra ? 'desde el último cierre' : `lo que tienes hoy, desde el ${fechaPunto(serie[0].d)}`}</span>`;
     }
     const series = [{ datos: serie, color: 'var(--accent)' }];
     if (S.comparar && S.ref && !intra) series.push({ datos: serieComparada(serie, S.ref), color: 'var(--text-2)', disc: true, nombre: 'S&P 500' });
@@ -4487,7 +4496,7 @@ function htmlFiscalRecom(M, fa) {
     const top = pl.ideas[0];
     if (pl.aIdea > 0 && top) {
       const tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede), e = rentaEsperada(top, top.pot, 12);
-      filas.push({ q: `Comprar ${eur(pl.aIdea, 0)} de ${esc(top.n)}`, d: `${tasa ? `${fmtNum(tasa.tipo * 100, 1)} % de ${tasa.nombre}` : 'sin tasa al comprar'}; ${esc(fis.txt.replace(/^Dividendos: /, 'dividendos: '))}${e ? ` Si llega al objetivo, ${pctS(e.netoAnual, 0)} al año neto.` : ''}`, v: tasa ? pl.aIdea * tasa.tipo : 0, c: tasa ? 'al comprar, suma a tu precio de compra' : '' });
+      filas.push({ q: `Comprar ${eur(pl.aIdea, 0)} de ${esc(top.n)}`, d: `${tasa ? `${fmtNum(tasa.tipo * 100, 1)} % de ${tasa.nombre}` : 'sin tasa al comprar'}; ${esc(fis.txt.replace(/^Dividendos: /, 'dividendos: '))}${e ? ` Si llega al objetivo en 12 meses, te quedas un ${pctS(e.netoP, 0)} neto.` : ''}`, v: tasa ? pl.aIdea * tasa.tipo : 0, c: tasa ? 'al comprar, suma a tu precio de compra' : '' });
     }
     if (pl.aNucleo > 0.5) filas.push({ q: `Meter ${eur(pl.aNucleo, 0)} en el S&P 500`, d: 'fondo de acumulación: no reparte, no paga hasta que vendas, y entre fondos ni eso (traspaso)', v: 0, c: '' });
   }
@@ -4545,14 +4554,14 @@ function htmlImpuestos(M) {
   const divs = M.filas.filter((f) => f.p && f.p.dividendo_pct);
   return `
     <div class="sec-cab"><h2>Renta de ${anio}</h2><span class="k">se presenta entre abril y junio de ${anio + 1}</span><div class="der"><button class="btn peq" data-accion="fiscal">${ICONOS.lapiz}Datos fiscales de ${anio}</button></div></div>
-    <div class="resumen-fila">
+    ${!fa.ventas.length && !fa.otras && !fa.rcm && !fa.retenido ? `<div class="fis-vacio"><p><b>Por ahora no pagas nada en la renta de ${anio}.</b> Este año no has apuntado ventas ni dividendos. Cuando vendas algo, apúntalo en Cartera con «Compra o venta» y aquí verás lo que te toca. Si has cobrado dividendos o intereses, ponlos en «Datos fiscales».</p><p class="k">Más abajo, lo que pagarías si sigues lo que te recomienda GrowFolio.</p></div>` : `<div class="resumen-fila">
       <div><span class="k">Ventas del año</span><span class="v ${cls(fa.gp)}">${eurS(fa.gp, 0)}</span><small class="k">${fa.ventas.length} en GrowFolio${fa.otras ? `, ${eurS(fa.otras, 0)} fuera` : ''}</small></div>
       <div><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm, 0)}</span><small class="k">${fa.rcm ? 'los que has apuntado' : 'apúntalos en Datos fiscales'}</small></div>
       <div><span class="k">Base del ahorro</span><span class="v">${eur(fa.base, 0)}</span><small class="k">tramo del ${fmtNum(fa.marginal * 100, 0)} %</small></div>
       <div><span class="k">Cuota estimada</span><span class="v">${eur(fa.cuota, 0)}</span><small class="k">${fa.retenido ? `menos ${eur(fa.retenido, 0)} ya retenidos: ${eurS(fa.cuota - fa.retenido, 0)}` : 'antes de restar retenciones'}</small></div>
       ${fa.sobra > 0 ? `<div><span class="k">Pérdidas para años siguientes</span><span class="v down">${eur(fa.sobra, 0)}</span><small class="k">hasta ${anio + 4}</small></div>` : ''}
-    </div>
-    ${fa.ventas.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Venta</th><th class="r">Unidades</th><th class="r">Valor de venta</th><th class="r">Valor de compra (FIFO)</th><th class="r">Resultado</th></tr></thead><tbody>${fa.ventas.map((m) => `<tr><td><b style="font-weight:600">${nombreI(m.instrumento)}</b><small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${eur(m.importe || 0)}<small>gastos restados</small></td><td class="r">${eur(m.coste_vendido || 0)}<small>${m.fifo && m.fifo.length ? `${m.fifo.length} ${m.fifo.length === 1 ? 'lote' : 'lotes'}${m.mezcla ? ', con el de partida' : ''}` : ''}</small></td><td class="r ${cls(m.resultado)}">${eurS(m.resultado || 0)}</td></tr>`).join('')}</tbody></table></div>` : '<div class="vacio">No has registrado ventas este año. Las que registres desde "Registrar compra o venta" salen aquí, con el valor de compra calculado por FIFO.</div>'}
+    </div>`}
+    ${fa.ventas.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Venta</th><th class="r">Unidades</th><th class="r">Valor de venta</th><th class="r" title="Hacienda cuenta que vendes primero las que compraste antes (FIFO)">Lo que te costó</th><th class="r">Resultado</th></tr></thead><tbody>${fa.ventas.map((m) => `<tr><td><b style="font-weight:600">${nombreI(m.instrumento)}</b><small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${eur(m.importe || 0)}<small>gastos restados</small></td><td class="r">${eur(m.coste_vendido || 0)}<small>${m.fifo && m.fifo.length ? `${m.fifo.length} ${m.fifo.length === 1 ? 'lote' : 'lotes'}${m.mezcla ? ', con el de partida' : ''}` : ''}</small></td><td class="r ${cls(m.resultado)}">${eurS(m.resultado || 0)}</td></tr>`).join('')}</tbody></table></div>` : ''}
 
     ${htmlFiscalRecom(M, fa)}
     ${plegarSec(htmlFiscalDividendos(M))}
@@ -4803,7 +4812,7 @@ function htmlPlanVenta(pl, compacto) {
       <div class="pv-col">
         <div class="pv-paso"><span class="pv-n">Adónde</span><div class="pv-destinos">${destino.join('') || '<span class="k">Déjalo en efectivo hasta tener una idea clara.</span>'}</div></div>
         ${!compacto && pl.ideas.length > 1 ? `<details class="mas"><summary>Por qué esa y no otra: las ${pl.ideas.length} mejores</summary><ol class="ideas-top">${pl.ideas.map(idea).join('')}</ol>
-          <p class="nota">Puntuación con el recorrido hasta el precio objetivo, el consenso y cuántos analistas lo respaldan, lo barata que está (PER futuro), la tendencia del último año, el dividendo y si te diversifica. Quedan fuera las que ya tienes, las del mismo sector que vendes, las de menos de 8 analistas y las que han caído más de un 35 % en un año.</p></details>` : ''}
+          <p class="nota">Cómo se puntúan: cuánto creen los analistas que puede subir, cuántos la recomiendan, si está barata frente a lo que gana (PER), cómo ha ido el último año, el dividendo y si te ayuda a repartir el riesgo. Se quedan fuera las que ya tienes, las del mismo sector que vendes, las que siguen menos de 8 analistas y las que han caído más de un 35 % en un año.</p></details>` : ''}
       </div>
     </div>${plegado ? '</details>' : ''}
   </article>`;
@@ -5506,7 +5515,7 @@ function fichaResumen(f) {
   ${htmlPlanVenta(planVenta(f, S.M), true)}
   <div class="kv-2">
     <div class="bloque"><h3>Tu posición</h3>${kv([
-      [i.tipo === 'Acción' || i.tipo === 'Cripto' || i.tipo === 'ETC' ? 'Unidades' : 'Participaciones', f.uds != null ? oc(fmtNum(f.uds, 6)) + (f.estimada ? ' <span class="chip warn">estimado</span>' : '') : '—'],
+      [i.tipo === 'Acción' || i.tipo === 'Cripto' || i.tipo === 'ETC' ? 'Unidades' : 'Participaciones', f.uds != null ? oc(fmtNum(f.uds, 6)) + (f.estimada ? ' <span class="chip warn">aproximada</span>' : '') : '—'],
       medio && ['Precio medio', precioFmt(medio)],
       ['Invertido', eur(f.coste)],
       ['Ganancia', `<span class="${cls(f.pl)}">${eurS(f.pl)}</span>`],
@@ -6637,8 +6646,14 @@ function buscador(cont, alElegir, opt = {}) {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.1.13';
+const VERSION = '0.1.14';
 const NOVEDADES = [
+  { v: '0.1.14', f: '2026-10-19', t: 'Más claro', cosas: [
+    { d: 'cifras', t: 'Ideas con cifras de verdad', x: 'Antes salía lo que daría cada idea «al año» aunque su plazo fuera de 3 meses, y aparecían cosas como +110 %. Ahora ves lo que te quedarías en su plazo real, ya restados los impuestos.' },
+    { d: 'hecho', t: 'Marcar un paso como hecho', x: 'Cada paso tiene su botón «Marcar como hecho» y lo hecho se queda tachado. Los contadores de arriba cuentan lo mismo que las listas.' },
+    { d: 'grafica', t: 'Cartera más fácil de leer', x: 'La gráfica dice que es cómo se habría movido lo que tienes hoy; lo tuyo de verdad es «ganado desde que compraste». Los botones se llaman igual en todas partes: «Compra o venta» y «Lo que ya tenía».' },
+    { d: 'jerga', t: 'Menos jerga y algún arreglo', x: 'Comisión en vez de TER, puntos en vez de pp, «puede subir» en vez de recorrido. Fiscalidad sin ventas te lo dice en una frase. En el móvil, Rentabilidad ya no descuadra la pantalla, y «coinciden» solo sale cuando la IA y los números dicen lo mismo.' },
+  ] },
   { v: '0.1.13', f: '2026-10-19', t: 'PIN y huella', cosas: [
     { d: 'pin', t: 'Entra con PIN o con la huella', x: 'En Ajustes, Bloqueo con PIN o huella. GrowFolio se abre sin escribir la contraseña y, una vez cada 72 horas, te pide el PIN de 4 cifras o la huella. Con cinco PIN mal seguidos vuelve a pedir la contraseña.' },
     { d: 'candado', t: 'Bloquear al momento', x: 'Con el PIN puesto, el botón Bloquear de Ajustes cierra GrowFolio y pide el PIN o la huella para volver. En la app de Android, la huella llega con la versión nueva de la app: te avisa al abrirla.' },
@@ -6695,6 +6710,9 @@ const fechaNov = (f) => { const d = deIso(f); return `${d.getDate()} ${MESES[d.g
 
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  cifras: '<rect class="fp" x="14" y="10" width="92" height="60" rx="10"/><text class="t" x="24" y="27">Te quedas</text><text class="ta" x="24" y="49" style="font-size:17px;font-weight:700">+20 %</text><text class="t" x="24" y="62">en 3 meses</text><path class="u" d="M80 52l6-8 5 4 8-12"/>',
+  jerga: '<rect class="fp" x="12" y="12" width="96" height="24" rx="8"/><text class="t" x="22" y="28" style="text-decoration:line-through">TER 0,15 %</text><rect class="fa" x="12" y="44" width="96" height="24" rx="8"/><text class="ta" x="22" y="60">Comisión 0,15 %</text>',
+  hecho: '<rect class="fp" x="10" y="12" width="100" height="56" rx="10"/><path class="l" d="M22 28h50M22 38h34"/><rect class="fa" x="50" y="48" width="52" height="14" rx="7"/><path class="u" d="M56 55l3 3 6-6"/><text class="ta" x="68" y="58.5">hecho</text>',
   pin: '<circle class="fA" cx="36" cy="12" r="4.5"/><circle class="fA" cx="50" cy="12" r="4.5"/><circle class="fA" cx="64" cy="12" r="4.5"/><circle class="l" cx="78" cy="12" r="4.5"/><rect class="fp" x="28" y="26" width="16" height="14" rx="7"/><rect class="fp" x="49" y="26" width="16" height="14" rx="7"/><rect class="fp" x="70" y="26" width="16" height="14" rx="7"/><rect class="fp" x="28" y="44" width="16" height="14" rx="7"/><rect class="fa" x="49" y="44" width="16" height="14" rx="7"/><rect class="fp" x="70" y="44" width="16" height="14" rx="7"/><path class="a" d="M101 52v4a7 7 0 0 1-1.6 4.4M97.7 50.2a3.4 3.4 0 0 1 6.6 1.3v2.4M95.3 48.1a6.4 6.4 0 0 1 12.1 3.4M94.2 53.8V51.5"/>',
   candado: '<rect class="fa" x="42" y="34" width="36" height="30" rx="7"/><path class="a" d="M50 34v-8a10 10 0 0 1 20 0v8"/><circle class="fA" cx="60" cy="47" r="3.5"/><path class="a" d="M60 50v5"/><text class="t" x="84" y="22">72 h</text>',
   gta: '<path class="l" d="M32 34h56a13 13 0 0 1 13 14l-1.6 10a7.5 7.5 0 0 1-13 3.6L80 54H40l-6.4 7.6a7.5 7.5 0 0 1-13-3.6L19 48a13 13 0 0 1 13-14z"/><path class="a" d="M36 41v10M31 46h10"/><circle class="fA" cx="80" cy="43" r="3"/><circle class="fA" cx="87" cy="50" r="3"/><rect class="fa" x="36" y="6" width="48" height="18" rx="9"/><text class="ta" x="47" y="19">19 nov</text>',
@@ -6816,7 +6834,7 @@ const TOUR = [
   { v: 'cartera', logo: true, t: 'Bienvenido a GrowFolio', x: 'Te enseño la app en un minuto: qué hay en cada pestaña y dónde tocar. Lo puedes repetir cuando quieras desde Ajustes.' },
   { v: 'cartera', sel: '.hero-num', t: 'Lo que tienes', x: 'Todo sumado y en euros. Debajo, lo que ganas o pierdes hoy y desde el principio. Los precios se mueven solos, sin recargar.' },
   { v: 'cartera', sel: '.tabs[aria-label="Periodo"]', t: 'La gráfica', x: '1D y 1S enseñan hoy y esta semana, hora a hora. 1A o más, el camino largo.' },
-  { v: 'cartera', pos: true, sel: '#hPos ~ .der [data-accion="nueva-pos"], [data-accion="nueva-pos"]', t: 'Mete lo que tienes', x: '"Añadir posición" para lo que ya tenías. "Compra o venta" para lo que hagas desde hoy. Busca por nombre, ticker o ISIN, o importa capturas de tu bróker.' },
+  { v: 'cartera', pos: true, sel: '#hPos ~ .der [data-accion="nueva-pos"], [data-accion="nueva-pos"]', t: 'Mete lo que tienes', x: '"Lo que ya tenía" para lo que compraste antes de usar GrowFolio. "Compra o venta" para lo que hagas desde hoy. Busca por nombre, ticker o ISIN, o importa capturas de tu bróker.' },
   { v: 'cartera', sel: '#carTabs', t: 'Posiciones y plan', x: 'Toca una posición para ver su ficha. En "Plan y movimientos" están las aportaciones de cada mes y todo lo que has comprado y vendido.' },
   { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', t: 'Paso a paso', x: 'Lo que toca hacer con tu dinero, en orden y con lo primero arriba: qué, cuánto, por qué y lo que pagarías a Hacienda.' },
   { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', t: 'Expertos', x: 'Qué opinan los analistas de lo que tienes y las ideas de compra que sacan GrowFolio y la IA de unas 800 empresas.' },
@@ -7290,7 +7308,7 @@ function abrirAjustes() {
   $('#aIntro', h.el).onclick = () => setTimeout(() => pantallaIntro(() => { montar(); pintar(); }), 0);
   $('#aInvita', h.el).onclick = () => {
     const url = (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#mia';
-    const t = `Te paso GrowFolio, la app con la que llevo mis inversiones: precios en directo, qué hacer en cada momento, la renta y una IA que te aconseja según tu perfil.\n\n1. Abre ${url} y crea tu contraseña: tu cartera se guarda cifrada solo en tu móvil.\n2. Haz el tutorial del principio.\n3. Mete lo que tienes con "Añadir posición" (busca por nombre o ISIN) o importando capturas de tu bróker.\n4. Para la IA, saca una clave gratis en aistudio.google.com y pégala en el Asesor.\n5. Rellena tu perfil en Objetivos: así te aconseja a tu medida.`;
+    const t = `Te paso GrowFolio, la app con la que llevo mis inversiones: precios en directo, qué hacer en cada momento, la renta y una IA que te aconseja según tu perfil.\n\n1. Abre ${url} y crea tu contraseña: tu cartera se guarda cifrada solo en tu móvil.\n2. Haz el tutorial del principio.\n3. Mete lo que tienes con "Lo que ya tenía" (busca por nombre o ISIN) o importando capturas de tu bróker.\n4. Para la IA, saca una clave gratis en aistudio.google.com y pégala en el Asesor.\n5. Rellena tu perfil en Objetivos: así te aconseja a tu medida.`;
     const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(t); a.target = '_blank'; a.rel = 'noopener';
     document.body.appendChild(a); a.click(); a.remove();
   };
