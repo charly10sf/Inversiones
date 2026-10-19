@@ -1,0 +1,682 @@
+{
+ "versiones": [
+  {
+   "v": "0.1.17",
+   "f": "2026-10-20",
+   "h": "01:06",
+   "t": "Consulta cualquier valor y GTA VI en neón",
+   "commits": [
+    {
+     "cuando": "2026-10-20 01:06",
+     "asunto": "0.1.17: consulta cualquier valor, GTA VI en neón, novedades guiadas y mucho más inglés",
+     "detalle": [
+      "Mercados pasa a ser una pestaña (también en la barra del móvil); buscador para consultar cualquier fondo, acción, cripto o mercado: precio, gráfica del año o rango con objetivo, datos, señales, noticias y botón para añadirlo a la cartera",
+      "Las que más suben y bajan del radar en su último día de bolsa, con su ficha de consulta",
+      "Plata en Mercados (SI=F)",
+      "Tabla de posiciones: Hoy en euros con el % debajo; en pantallas medianas la ganancia en euros (con su %) en vez del % suelto",
+      "Lo que más ha movido hoy tu cartera, en etiquetas de colores",
+      "Al apuntar una compra, la fecha se llama «Cuándo la compraste» o «Desde cuándo la tienes», con explicación; en Editar viene rellena",
+      "Perfil: «Ahora mismo estás» admite varias opciones; los límites son deslizadores enlazados (acciones sueltas, cripto y oro no pasan del 100 %; una sola empresa nunca supera a las acciones sueltas) y hay límite de oro",
+      "App sin token: ya no intenta descargar (salía el aviso de Android); los cambios quedan apartados, mandan sobre GitHub si son más nuevos y se suben solos cuando hay token",
+      "Novedades: «Enséñamelo» en cada mejora y recorrido guiado con el foco del tutorial; todas las versiones perdidas enteras; anteriores plegadas con dibujos y textos; día y hora de cada versión; registro de cambios completo en texto (cambios.json, scripts/cambios.py)",
+      "Ajustes con engranaje, cabecera con la versión y grupos en tarjetas; el tutorial enseña el widget",
+      "GTA VI: sin el enlace a la web oficial; barras de la cartera medida en copias en cada hito, el camino se rellena al bajar, unidades en Anton",
+      "Inglés: plantillas con nombres dentro (patrones), espacios duros de los importes, listas unidas en el idioma de la app y unas 600 frases más"
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.16",
+   "f": "2026-10-19",
+   "h": "23:43",
+   "t": "Compras arregladas y todo más claro",
+   "commits": [
+    {
+     "cuando": "2026-10-19 23:43",
+     "asunto": "0.1.16: compras arregladas, ficha e IA más claras",
+     "detalle": [
+      "Buscador: SP500, sp 500 y S&P500 encuentran el S&P 500 (comparación sin espacios y sinónimos)",
+      "Compra: primero el total, precio del día de la operación (cambia con la fecha, baja el histórico si falta), participaciones calculadas; aviso si el precio parece el total; el efectivo solo se descuenta si hay",
+      "Ficha: cabecera corta, cuatro botones en fila, fecha del precio explicada, gestora, medias y RSI plegados",
+      "IA: regla de lenguaje llano en el asesor y en los informes",
+      "Riesgo y volatilidad etiquetados; Control del riesgo; Hacienda en una frase; fuentes agrupadas",
+      "Arreglo: la clase .imp del importador estiraba las etiquetas Bueno/Malo"
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.15",
+   "f": "2026-10-19",
+   "h": "23:26",
+   "t": "Menos ruido",
+   "commits": [
+    {
+     "cuando": "2026-10-19 23:26",
+     "asunto": "0.1.15: menos ruido",
+     "detalle": [
+      "Ajustes en grupos (Seguridad, GrowFolio IA y la app, Ayuda) y lo técnico plegado en Avanzado",
+      "Mercados: qué parte de tu cartera depende de cada uno; la cinta de arriba lleva a Mercados; VIX explicado",
+      "Móvil: estado en corto, recortar dentro de Pregúntale; aportaciones del mismo día juntas",
+      "Mismas palabras: acciones (no apuestas), GrowFolio IA y Pregúntale, bolsa de Madrid, Londres en libras; radar móvil con lo importante",
+      "Pie de página corto"
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.14",
+   "f": "2026-10-19",
+   "h": "23:19",
+   "t": "Más claro",
+   "commits": [
+    {
+     "cuando": "2026-10-19 23:19",
+     "asunto": "0.1.14: más claro",
+     "detalle": [
+      "Ideas: lo que te quedas en su plazo real, ya restados impuestos (no el anualizado que inflaba +110 %)",
+      "Paso a paso: botón Marcar como hecho, tachado, contadores que cuentan lo mismo",
+      "Cartera: la gráfica dice qué enseña; ganado desde que compraste; botones con un solo nombre; cantidad aproximada",
+      "Fiscalidad vacía en una frase; menos jerga (comisión, puntos, puede subir); la IA matiza en vez de coinciden falso",
+      "Arreglo: Rentabilidad en Tus números desbordaba en el móvil; letra mínima 12 px"
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.13",
+   "f": "2026-10-19",
+   "h": "23:04",
+   "t": "PIN y huella",
+   "commits": [
+    {
+     "cuando": "2026-10-19 23:04",
+     "asunto": "0.1.13: bloqueo con PIN o huella cada 72 horas",
+     "detalle": [
+      "PIN de 4 cifras (PBKDF2) sobre la clave recordada; 5 fallos olvidan la clave y piden la contraseña",
+      "Huella: WebAuthn con el lector del dispositivo en el navegador; BiometricPrompt nativo en la app (puente huellaDisponible/pedirHuella)",
+      "Bloquear en Ajustes pide el PIN o la huella al momento si hay PIN",
+      "Textos en inglés del bloqueo"
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.12",
+   "f": "2026-10-19",
+   "h": "22:57",
+   "t": "Menos scroll y GTA VI",
+   "commits": [
+    {
+     "cuando": "2026-10-19 22:57",
+     "asunto": "0.1.12: Mercados en filas, menos scroll en el móvil, cuenta atrás de GTA VI con su tráiler, primera fase del inglés",
+     "detalle": [
+      "Mercados: cada mercado en una fila con precio, día y minigráfica; detalle al tocar. Seis noticias y el resto plegadas",
+      "Móvil: notas largas plegadas, ideas en corto, radar de 10 filas, secciones secundarias plegadas",
+      "GTA VI: botón junto a Patrimonio, hoja con cuenta atrás, cuentas con la cartera, Take-Two (TTWO en precios.json como extra), tráiler de lanzamiento y estimación de su coste; aviso una vez",
+      "Inglés: en.json con ~1.200 textos, selector con banderas (presentación, entrar, crear, Ajustes), franja de en proceso, el asesor contesta en inglés",
+      "App: vídeos a pantalla completa y texto del aviso de descargas"
+     ]
+    },
+    {
+     "cuando": "2026-10-19 22:06",
+     "asunto": "La IA se llama GrowFolio IA en recomendaciones, informes y análisis; Gemini solo donde se configura la clave",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-19 21:59",
+     "asunto": "Los textos llaman a la app por su nombre, GrowFolio, en vez de \"la web\"",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-19 21:55",
+     "asunto": "La presentación sale también a quien ya entra solo (una vez por dispositivo) y se puede ver desde Ajustes",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-19 21:41",
+     "asunto": "Escaneo: Gemini decide las ideas sabiendo cómo va cada zona del mundo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-19 21:38",
+     "asunto": "Presentación con diapositivas al abrir por primera vez, antes de crear la cartera o entrar",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.1.11",
+   "f": "2026-10-19",
+   "h": "21:33",
+   "t": "GrowFolio",
+   "commits": [
+    {
+     "cuando": "2026-10-19 21:33",
+     "asunto": "GrowFolio 0.1.11: nombre y logo nuevos, tutorial siempre a mano e invitar a un amigo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-19 21:25",
+     "asunto": "Opiniones dentro de la app: se mandan a un formulario de Google si opinion.json lo tiene, si no por WhatsApp",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.1.10",
+   "f": "2026-10-19",
+   "h": "21:18",
+   "t": "A tu medida",
+   "commits": [
+    {
+     "cuando": "2026-10-19 21:18",
+     "asunto": "Bellota 0.1.10: Objetivos con tu perfil y metas, la IA pregunta, Paso a paso nuevo, guía de la renta y opinión",
+     "detalle": [
+      "Nombre y logo nuevos (Bellota) en la web y en la app",
+      "Objetivos: edad, situación, plazo, riesgo, límites, colchón y metas; la IA, las ideas y el Paso a paso se ajustan",
+      "La IA hace preguntas cuando le falta algo de ti y rehace sus consejos con la respuesta",
+      "Paso a paso: por hacer, fechas que vigilar y lo que va solo; Hacienda a la vista en cada paso",
+      "Regla de recompra explicada en cada venta con pérdidas (dos meses, un año en fondos; cripto)",
+      "Fiscalidad: guía de la declaración con casillas y tus ventas del año; tramos compactos",
+      "Tour animado, aviso de la app nada más abrirla, 9 ideas, notas de la IA siempre visibles",
+      "Versiones 0.1.x, cartera desde un JSON sencillo, botón para mandar opinión por WhatsApp"
+     ]
+    },
+    {
+     "cuando": "2026-10-19 20:34",
+     "asunto": "Informe por zonas del mundo, datos macro y fondos que antes no tenían precio",
+     "detalle": [
+      "Titulares de mercado por zonas (EEUU, Europa, España, Asia, emergentes, tipos, divisas, materias primas, cripto)",
+      "Gemini recibe los mercados agrupados con su mes, año y 1 año, y escribe qué implica cada noticia para la cartera y los datos macro",
+      "Mercados enseña la zona, 'Para tu cartera' y los datos macro",
+      "Símbolos: se prueba cada cotización del ISIN hasta dar con una con histórico; fijados Fidelity S&P 500, True Value y cinco ETF"
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.9",
+   "f": "2026-10-19",
+   "h": "20:28",
+   "t": "Meter lo que tienes, sin líos",
+   "commits": [
+    {
+     "cuando": "2026-10-19 20:28",
+     "asunto": "Versión 0.9.0: novedades con dibujos, tour de bienvenida y la app se actualiza desde la web",
+     "detalle": [
+      "Número de versión 0.x (alfa) en la web y en la app; '¿Qué se ha mejorado?' al abrir tras una versión nueva",
+      "Tour por las pestañas la primera vez, y desde Ajustes",
+      "App de Android: aviso grande cuando hay versión nueva, la baja y abre el instalador (REQUEST_INSTALL_PACKAGES y un proveedor solo para el APK)",
+      "Aviso con botón para recargar si la web cambia mientras está abierta",
+      "El buscador da precio a lo del catálogo y entiende tickers (VWCE, IWDA) y varias palabras"
+     ]
+    },
+    {
+     "cuando": "2026-10-19 20:14",
+     "asunto": "Buscador nuevo, compra/venta/ya la tenía, importar desde capturas y catálogo común de fondos y ETF",
+     "detalle": [
+      "Un buscador único (lo tuyo, el catálogo y las ~800 empresas del radar) por nombre, ticker o ISIN",
+      "Formulario de operaciones con tres modos y aviso si el precio no cuadra con la fecha",
+      "Importar la cartera leyendo capturas o PDF del bróker con Gemini",
+      "catalogo.json (111 fondos, ETF, ETC y cripto) con precio e histórico diarios en la rama catalogo"
+     ]
+    },
+    {
+     "cuando": "2026-10-19 19:58",
+     "asunto": "Fondos que se llaman igual: aviso si el precio de compra no cuadra y botón para cambiarlo",
+     "detalle": [
+      "Un amigo metió su S&P 500 de MyInvestor en el de iShares (11,67 € el 15 de mayo) cuando el suyo",
+      "costaba 15,68 €: la web le daba -19 %. Ahora:",
+      "Si el precio al que dices que compraste se aleja más de un 20 % del que tenía ese día, sale un",
+      "aviso arriba de las posiciones y en la ficha, con el fondo de tu lista que sí cuadra y un botón",
+      "para cambiarlo.",
+      "Lista común con los indexados más usados en MyInvestor: Fidelity S&P 500, Fidelity MSCI World,",
+      "Vanguard Global Stock y Vanguard US 500 (la Action les pone precio por ISIN).",
+      "El desplegable dice la gestora cuando dos se llaman igual: \"S&P 500 (iShares)\"."
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.8",
+   "f": "2026-10-19",
+   "h": "19:50",
+   "t": "Pestañas más claras",
+   "commits": [
+    {
+     "cuando": "2026-10-19 19:50",
+     "asunto": "Pestañas nuevas: Paso a paso y Fiscalidad propias, Plan dentro de Cartera, Mercados aparte",
+     "detalle": [
+      "Barra: Cartera, Paso a paso, Expertos, Análisis, Fiscalidad y Futuro; Mercados, botón aparte.",
+      "Cartera: Tus posiciones / Plan y movimientos (con logos y bandera de dónde cotiza).",
+      "Posiciones: valor, lo ganado desde la compra y lo de hoy; en la ficha, precio medio frente a ahora.",
+      "Gráfica de 1 día y 1 semana con precios cada 30 minutos (intradia.json de la Action).",
+      "Paso a paso con tarjetas por tipo, lo primero arriba y progreso; Fiscalidad con tramos,",
+      "cómo tributa cada cosa, regla de los dos meses, calendario y formas de pagar menos.",
+      "Expertos en dos pestañas; Análisis: la IA más corta y los números en plegables.",
+      "Mercados por regiones (25), con qué es cada uno y qué implica que suba o baje."
+     ]
+    },
+    {
+     "cuando": "2026-10-19 12:40",
+     "asunto": "Sin token, los datos públicos se leen directo de raw",
+     "detalle": [
+      "Los amigos que usan la web con su cartera en el móvil no tienen token: la API de GitHub sin token",
+      "solo deja 60 lecturas por hora por conexión, así que van directo a raw.githubusercontent.com."
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.7",
+   "f": "2026-10-19",
+   "h": "12:26",
+   "t": "Cada uno con su cartera",
+   "commits": [
+    {
+     "cuando": "2026-10-19 12:26",
+     "asunto": "Otra persona puede usar la web con su propia cartera, sin GitHub",
+     "detalle": [
+      "Enlace #mia o \"Crea tu propia cartera en este dispositivo\" en la pantalla de la contraseña.",
+      "Su cartera va cifrada con su contraseña y se guarda solo en su navegador o en la app; las empresas",
+      "que da de alta van dentro de ella. Clave, asesor, análisis y token van aparte de los del dueño.",
+      "No carga el análisis ni las reglas del dueño; del informe de Gemini, solo el mercado y sus posiciones.",
+      "Si el dueño añade a la lista común algo que la otra persona dio de alta, se usa el común (con precio)."
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.6",
+   "f": "2026-10-19",
+   "h": "12:06",
+   "t": "Reglas más flexibles e IA rápida",
+   "commits": [
+    {
+     "cuando": "2026-10-19 12:06",
+     "asunto": "IA rápida, salto de modelo al agotar el cupo y alta de acciones sin ISIN",
+     "detalle": [
+      "Asesor: botón Normal / Rápida (Flash-Lite, con mucho más cupo). Si un modelo gasta su cupo",
+      "del día, la web lo apunta y sigue con el siguiente; las revisiones automáticas van con el 3.6",
+      "para no gastar el del 3.8.",
+      "Ideas: una acción de la misma industria que otra que ya tienes (UAL con IAG) baja puntos y lo dice.",
+      "\"Ya la he comprado\" en cada idea y buscador de empresas al registrar una compra: nombre, ticker,",
+      "país y mercado salen del radar, sin ISIN. Hasta que la Action le pone precio, usa el del radar.",
+      "Si cotiza fuera de su sede (HBX: Madrid y Reino Unido), no se cobra tasa de compra."
+     ]
+    },
+    {
+     "cuando": "2026-10-19 10:46",
+     "asunto": "Reglas más flexibles y pensadas para la rentabilidad",
+     "detalle": [
+      "Sin límite de número de acciones sueltas: solo el 20 % de la cartera entre todas.",
+      "El dividendo y estar barata suman, pero ya no son requisitos; lo que pide una compra es un",
+      "motivo concreto para subir, un balance que aguante y batir al S&P 500 al año y neto de impuestos.",
+      "El dinero puede salir también del efectivo suelto, no solo de vender otra acción.",
+      "Si cambian las reglas después de la última revisión de Gemini, la rehace con las nuevas."
+     ]
+    },
+    {
+     "cuando": "2026-10-19 10:21",
+     "asunto": "BAT salía a 400.000 €: los precios en directo usan la moneda de precios.json",
+     "detalle": [
+      "Yahoo manda a veces ticks sin moneda y los peniques de BATS.L se tomaban como euros (x100).",
+      "Ahora manda la moneda conocida del instrumento, y un precio que se aleja más de 3 veces del",
+      "último cierre se descarta."
+     ]
+    },
+    {
+     "cuando": "2026-10-18 23:34",
+     "asunto": "Widget: dibuja él solo la gráfica del mes con los cierres que publica la Action",
+     "detalle": [
+      "widget.json trae los cierres de las últimas 6 semanas (unos 7 KB) y el widget calcula la serie",
+      "con las cantidades de la foto, aunque la web que tengas abierta sea una versión vieja.",
+      "Al guardar la foto, la app baja los cierres si no los tiene o son de hace más de 20 minutos.",
+      "Sin datos todavía, en vez de un hueco sale \"La gráfica se carga al refrescar\".",
+      "La web se pide primero a la red (3 s de margen) y la copia guardada queda para sin conexión,",
+      "así la app no se queda una versión por detrás."
+     ]
+    },
+    {
+     "cuando": "2026-10-18 23:21",
+     "asunto": "Widget rediseñado: se dibuja entero con Manrope, con la gráfica del último mes y sin textos cortados",
+     "detalle": [
+      "Una imagen al tamaño exacto del widget: el patrimonio grande con céntimos, hoy en € y %, la gráfica de 1 mes,",
+      "lo ganado en total y, si es alto, lo que toca y lo que más se mueve hoy.",
+      "La web le manda el último mes día a día.",
+      "Vista previa en la lista de widgets con cifras de ejemplo."
+     ]
+    },
+    {
+     "cuando": "2026-10-18 22:37",
+     "asunto": "App: guarda ella misma el token que le pasa Chrome y avisa",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 22:34",
+     "asunto": "La web coge el token también cuando le llega con la app ya abierta",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 22:30",
+     "asunto": "App: publicar la versión sin chocar con app.json",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 22:29",
+     "asunto": "App: Chrome puede abrirla desde la web para pasarle el token (enlace inversiones://token)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 22:25",
+     "asunto": "App: clave de firma, cifrada con el secreto ANDROID_CLAVE",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.1.5",
+   "f": "2026-10-18",
+   "h": "22:14",
+   "t": "App de Android con widget",
+   "commits": [
+    {
+     "cuando": "2026-10-18 22:14",
+     "asunto": "App de Android con widget para la pantalla de inicio",
+     "detalle": [
+      "La app es la misma web dentro de un WebView, con un puente para mandar al widget la foto de la cartera.",
+      "Widget redimensionable: 2x1 (total y hoy), 4x2 (además lo ganado y lo que toca) y 4x3 o más (lo que más se mueve hoy).",
+      "Se recalcula solo cada 30 minutos con widget.json, un resumen de precios que publica la Action.",
+      "Workflow que compila, firma (con el secreto ANDROID_CLAVE) y publica el APK en la release \"app\".",
+      "Ajustes: descargar la app, ver si hay versión nueva y pasarle el token desde Chrome."
+     ]
+    },
+    {
+     "cuando": "2026-10-18 19:54",
+     "asunto": "El acceso directo \"Qué hacer ahora\" abre el Paso a paso",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 19:54",
+     "asunto": "Accesos directos al mantener pulsado el icono de la app en el móvil",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 19:37",
+     "asunto": "Escaneo: las favoritas de la web, con su misma puntuación, siempre entre las que Gemini pone plazo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 19:28",
+     "asunto": "Escaneo: Gemini pone plazo a una lista cerrada de empresas, empezando por las favoritas de la web",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 19:16",
+     "asunto": "El plazo de Gemini cuenta en la puntuación de la web, y Gemini pone plazo también a las favoritas de la web",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 19:04",
+     "asunto": "Escaneo: si se acaba el cupo de un modelo de Gemini prueba con otro, y la web avisa si la pasada automática falla",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 18:54",
+     "asunto": "Plazo de cada idea a la vista, compra de HBX en el paso a paso y Expertos y Análisis más sencillos",
+     "detalle": [
+      "Ideas: precio, cuánto puede subir, en cuánto tiempo y lo que daría al año tras impuestos; el resto, plegado.",
+      "Gemini estima el plazo de todas las candidatas del radar en su escaneo (la decisión se rehace con el formato nuevo).",
+      "Paso a paso: tras la venta, la compra de la idea de destino (y del S&P 500 si toca), con porqué, cómo e impuestos.",
+      "Expertos: el plan de venta en tres pasos con el detalle plegado; cada posición en una tarjeta corta.",
+      "Análisis en cuatro pestañas: Paso a paso, La IA opina, Tus números y Fiscalidad.",
+      "Mercados, al final del menú."
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.4",
+   "f": "2026-10-18",
+   "h": "18:30",
+   "t": "Paso a paso, Fiscalidad y recortar la pantalla para preguntar a la IA",
+   "commits": [
+    {
+     "cuando": "2026-10-18 18:30",
+     "asunto": "Recorte de pantalla para preguntar a la IA, plazo e impuestos en cada recomendación y pestaña de Fiscalidad",
+     "detalle": [
+      "Botón de recorte (cabecera y asesor): marcas una zona y Gemini recibe la imagen y el texto que se lee en ella.",
+      "Ideas y radar: lo que darían al año, netas de impuestos (tramo, tasa de compra y retención de dividendos), frente al fondo indexado; Gemini estima su propio plazo y subida.",
+      "Posiciones: cuánto llevas ganando al año desde que compraste (campo \"Desde cuándo la tienes\").",
+      "Bandera de la bolsa donde cotiza y la sede aparte (HBX: Madrid, sede en Reino Unido).",
+      "Fiscalidad: lo que cuesta cada recomendación y lo que te queda de cada dividendo.",
+      "Paso a paso con por qué, cómo e impuestos en cada paso, guía de uso y progreso por plazo.",
+      "Menos repeticiones: fechas de la IA dentro de Próximas fechas, su opinión por posición solo en Expertos.",
+      "Action en minutos sueltos para que GitHub no se salte pasadas.",
+      "README: cómo usar la web con datos propios."
+     ]
+    },
+    {
+     "cuando": "2026-10-18 13:09",
+     "asunto": "Web más legible en el móvil: Expertos en pestañas, ideas juntas y lo que toca en Cartera",
+     "detalle": [
+      "Expertos en tres pestañas: Resumen (Gemini, qué vender, posiciones de un vistazo, fechas), Tus posiciones e Ideas de compra.",
+      "Las ideas de la web, las que elige Gemini y las del análisis de la IA salen juntas; si coinciden, una sola tarjeta y primero.",
+      "Cartera: \"Lo que toca ahora\", sacado del paso a paso.",
+      "Paso a paso por plazos en el móvil; pestañas fijas al bajar.",
+      "Mercados a dos columnas en el móvil, letra algo mayor y botones más cómodos de tocar.",
+      "Secciones largas plegadas (cálculo de Hacienda, siete señales, posición a posición, reglas, fuentes).",
+      "Sin marcas de cita [n] en los textos de Gemini."
+     ]
+    },
+    {
+     "cuando": "2026-10-18 12:43",
+     "asunto": "Escaneo: noticias de Yahoo por su RSS (la API no daba nada en la Action) y más empresas por pasada",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 12:34",
+     "asunto": "Gemini escanea la prensa de todo el radar y elige él mismo qué comprar y qué evitar",
+     "detalle": [
+      "En cada pasada de la Action: noticias de un lote de empresas (Yahoo Finance y Google Noticias)",
+      "y Gemini lee la prensa de unas 70: impacto, relevancia, resumen y catalizador",
+      "Cada 2 horas decide entre todas las candidatas con buenos números y buena prensa: hasta 5 ideas",
+      "con tesis, catalizador, riesgo, contraste y confianza, y hasta 5 a evitar",
+      "La web lo enseña en Expertos (Lo que ha elegido Gemini, columna Prensa en la tabla) y el asesor",
+      "y la revisión de la cartera parten de ahí"
+     ]
+    },
+    {
+     "cuando": "2026-10-18 12:23",
+     "asunto": "Action: arregla el YAML del paso del informe",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 12:22",
+     "asunto": "Toda la IA con Gemini e informe de prensa que se hace solo cada 2 horas",
+     "detalle": [
+      "Fuera Claude de la web: solo modelos gratuitos de Gemini, sin opciones de pago",
+      "La Action lee cada 2 horas (cada 4 el fin de semana) las noticias de tus posiciones, del",
+      "mercado y de las ~20 ideas mejor contrastadas (Google Noticias y Yahoo Finance con resumen) y",
+      "Gemini escribe un informe contrastado con enlaces: informe.json en la rama datos. Necesita el",
+      "secreto GEMINI_API_KEY",
+      "La web lo enseña en Expertos, Mercados, cada posición y cada idea; el asesor y la revisión de la",
+      "cartera lo usan, y la revisión se rehace sola cuando llega un informe nuevo",
+      "El análisis de partida ya no se firma con otro nombre: Gemini lo sustituye por el suyo"
+     ]
+    },
+    {
+     "cuando": "2026-10-18 12:11",
+     "asunto": "Asesor: acepta las claves nuevas de Google AI Studio (AQ.)",
+     "detalle": [
+      "AI Studio ya no da claves que empiecen por AIza. La web acepta las dos y, si Google no admite la",
+      "clave en la cabecera, la manda en la dirección y lo recuerda."
+     ]
+    },
+    {
+     "cuando": "2026-10-18 11:57",
+     "asunto": "Titulares de las ideas mejor contrastadas, con las mismas siete comprobaciones que la web",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 11:54",
+     "asunto": "Titulares de las ideas: solo noticias de bolsa, no de productos con el mismo nombre",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.1.3",
+   "f": "2026-10-18",
+   "h": "11:52",
+   "t": "Asesor con Gemini e informe de prensa cada dos horas",
+   "commits": [
+    {
+     "cuando": "2026-10-18 11:52",
+     "asunto": "Asesor con Gemini gratis, paso a paso por plazos y nombre real de cada fondo",
+     "detalle": [
+      "La IA de serie es Gemini 3.8 Flash (gratis con clave de Google AI Studio) con el razonamiento al",
+      "máximo; Gemini 4 Argon y Claude quedan como opciones de pago. Mismas herramientas, reintentos",
+      "si Google pide esperar y búsqueda con Google si el plan la incluye",
+      "Análisis → Paso a paso: qué hacer este mes, en 6 meses, en un año y de 1 a 5 años, con los",
+      "cálculos de la web (ventas, fechas, impuestos, aportaciones, proyección) y los pasos de la IA.",
+      "Se marcan como hechos y se guarda en la cartera cifrada",
+      "Nombre completo de cada fondo y empresa en Cartera, Expertos y Plan",
+      "La Action baja titulares de las mejores ideas del radar para contrastarlas"
+     ]
+    },
+    {
+     "cuando": "2026-10-18 11:25",
+     "asunto": "Radar: el buscador filtra por la bolsa principal de cada país y llega a las medianas alemanas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 11:21",
+     "asunto": "Radar: sin la misma empresa repetida en otra bolsa y con diagnóstico del buscador",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-18 11:18",
+     "asunto": "Asesor con Claude, recomendaciones en tiempo real e ideas de toda la bolsa",
+     "detalle": [
+      "Asesor dentro de la web: Claude con la cartera delante, herramientas que calculan con el motor",
+      "de la web (venta con FIFO e IRPF, compra con su tasa, empresas del radar, proyección, histórico)",
+      "y búsqueda en internet con fuentes. Clave de la API propia, guardada cifrada",
+      "Análisis de Claude al día (analisis.enc.json, cifrado): cada día o cuando cambia una señal",
+      "Señales, planes de venta e ideas se recalculan con cada precio; si cambia una recomendación la",
+      "página se repinta y avisa. Las ideas que se ven en pantalla llegan en directo",
+      "Expertos rehecho: posiciones en filas con la señal de la web y la de Claude, prensa y fechas,",
+      "tres mejores ideas con siete señales de contraste; la tabla se ordena por contraste",
+      "Radar: además de las ~400 fijas, cada día el buscador de Yahoo recorre EEUU y Europa y añade",
+      "hasta 450 empresas con recomendación de compra",
+      "Cartera: lo que más mueve el día y avisos debajo de las posiciones"
+     ]
+    },
+    {
+     "cuando": "2026-10-17 21:50",
+     "asunto": "Radar de ideas: unas 400 empresas, más datos para contrastar y precios cada 20 minutos",
+     "detalle": [
+      "Ibex 35 y mercado continuo, grandes de Europa (Euro Stoxx 50, DAX, CAC, Italia, Países Bajos,",
+      "Suiza, nórdicos, Londres) y de EEUU",
+      "Por empresa: rango de precios objetivo, votos de analistas ahora y hace 3 meses, crecimiento",
+      "esperado del beneficio, ROE, margen, deuda, medias de 50 y 200 sesiones",
+      "Ficha cada 3 horas en paralelo; precios de todas en cada ejecución",
+      "Va en radar.json en la rama datos"
+     ]
+    },
+    {
+     "cuando": "2026-10-17 21:25",
+     "asunto": "Plan de venta: la tasa de compra sale una sola vez",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-17 21:22",
+     "asunto": "Impuestos en cada consejo, plan de venta, análisis IA, logos y tabla ordenable",
+     "detalle": [
+      "Motor fiscal IRPF 2026: lotes FIFO, compensación de pérdidas (25 % cruzado, 4 años),",
+      "impuesto marginal de cada venta y tasas de compra (ITF España, FTT Francia, Italia, timbre UK)",
+      "Pestaña Impuestos: renta del año, ventas con su valor FIFO, qué pasaría si vendes hoy",
+      "y qué declarar (traspasos, dividendos, 720/721, regla de los dos meses)",
+      "Expertos: cuándo vender, cuánto, a dónde mover el dinero y cuánto se queda Hacienda",
+      "Análisis IA detallado (analisis-ia.json, sin importes; las cifras las pone la web)",
+      "Logo y país de cada activo; tabla de posiciones ordenable por columna",
+      "precios.py: dominio y país en el radar"
+     ]
+    },
+    {
+     "cuando": "2026-10-17 17:06",
+     "asunto": "Apartado Futuro, colores y tipografía propios y más aire bajo la cinta",
+     "detalle": [
+      "Futuro: 2.000 escenarios simulados con la aportación actual, horizontes de 5 a 30 años,",
+      "hitos, euros de hoy y supuestos editables (aportación, subida anual y bolsa a largo plazo).",
+      "Grafito cálido con latón en vez del azul de la web de la UAH; Manrope en vez de IBM Plex;",
+      "icono nuevo.",
+      "El padding de la vista lo anulaba .wrap: ahora hay espacio entre la cinta y el patrimonio."
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.2",
+   "f": "2026-10-17",
+   "h": "16:51",
+   "t": "Expertos, Mercados, Futuro y el radar de ideas",
+   "commits": [
+    {
+     "cuando": "2026-10-17 16:51",
+     "asunto": "Web por apartados: expertos, mercados, historial largo y edición desde la web",
+     "detalle": [
+      "Cartera: cinta de cotizaciones en bucle a todo el ancho, evolución hasta 8 años con",
+      "comparación con el S&P 500, señal por posición y ficha con gráfico, analistas y noticias.",
+      "Expertos: consenso, precio objetivo y prensa de tus acciones; ideas entre ~100 empresas.",
+      "Mercados: índices, Brent, oro, euro/dólar, bono a 10 años y VIX en directo.",
+      "Análisis: rentabilidad a 10 años y año a año, riesgo, costes, empresas dentro de los",
+      "fondos, apuestas e impuestos.",
+      "Plan: aportaciones periódicas, compras y ventas, efectivo y posiciones editables.",
+      "Datos: histórico aparte (historico.json), proxies para los fondos jóvenes, analistas y",
+      "noticias cada 2 horas, corrección de saltos de unidad en fondos."
+     ]
+    },
+    {
+     "cuando": "2026-10-17 13:37",
+     "asunto": "Rediseño oscuro y precios en directo sin botón de actualizar",
+     "detalle": [
+      "Acciones, oro y divisas por el WebSocket de Yahoo Finance; Bitcoin por el de Bitvavo.",
+      "Solo se reescriben los números que cambian y destellan al subir o bajar.",
+      "precios.json se vuelve a leer solo cada 2 minutos; fuera CoinGecko y el botón.",
+      "Nuevo diseño: cinta de cotizaciones, patrimonio grande, posiciones en tabla y reparto con barra apilada."
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.1.1",
+   "f": "2026-10-17",
+   "h": "13:21",
+   "t": "Primera versión: cartera cifrada con precios automáticos",
+   "commits": [
+    {
+     "cuando": "2026-10-17 13:05",
+     "asunto": "Precios: aceptar la hora del último precio como Timestamp",
+     "detalle": [
+      "yfinance 1.7 devuelve regularMarketTime como pandas.Timestamp y",
+      "datetime.fromtimestamp fallaba con todos los instrumentos."
+     ]
+    },
+    {
+     "cuando": "2026-10-17 12:59",
+     "asunto": "Web de inversiones con precios automáticos y cartera cifrada",
+     "detalle": [
+      "index.html: PWA con resumen, evolución, repartos (tipo, región, sector,",
+      "plataforma, producto, riesgo), posiciones, analistas, costes, avisos,",
+      "apuestas frente al índice y plan mensual. Cartera cifrada con AES-GCM.",
+      "scripts/precios.py + workflow: precios de Yahoo Finance cada 20 min",
+      "publicados en la rama datos."
+     ]
+    }
+   ]
+  }
+ ]
+}

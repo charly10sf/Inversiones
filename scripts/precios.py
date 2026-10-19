@@ -80,7 +80,8 @@ MERCADOS = [
     ("^TNX", "Bono EEUU 10 años", "Tipos y riesgo"), ("^IRX", "Letra EEUU 3 meses", "Tipos y riesgo"), ("^VIX", "VIX", "Tipos y riesgo"),
     ("EURUSD=X", "Euro / dólar", "Divisas"), ("EURGBP=X", "Euro / libra", "Divisas"), ("JPY=X", "Dólar / yen", "Divisas"),
     ("DX-Y.NYB", "Índice dólar", "Divisas"),
-    ("BZ=F", "Brent", "Materias primas"), ("GC=F", "Oro", "Materias primas"), ("HG=F", "Cobre", "Materias primas"),
+    ("BZ=F", "Brent", "Materias primas"), ("GC=F", "Oro", "Materias primas"), ("SI=F", "Plata", "Materias primas"),
+    ("HG=F", "Cobre", "Materias primas"),
     ("NG=F", "Gas natural", "Materias primas"),
     ("BTC-EUR", "Bitcoin", "Cripto"),
 ]

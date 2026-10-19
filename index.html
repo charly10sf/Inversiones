@@ -88,8 +88,9 @@ a:hover { text-decoration: underline; }
 @media (max-width: 860px) {
   :root { --nav-h: 62px; }
   .nav { display: none; }
-  .navbar { display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgba(26, 25, 22, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
-  .navbar a { display: grid; justify-items: center; align-content: center; gap: 3px; color: var(--muted); font-size: 11px; text-decoration: none; }
+  .navbar { display: grid; grid-template-columns: repeat(7, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgba(26, 25, 22, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
+  .navbar a { display: grid; justify-items: center; align-content: center; gap: 3px; color: var(--muted); font-size: 11px; text-decoration: none; min-width: 0; }
+  .navbar a span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   .navbar a svg { width: 22px; height: 22px; }
   .navbar a[aria-current="page"] { color: var(--text); }
   .navbar a[aria-current="page"] svg { color: var(--accent); }
@@ -195,9 +196,14 @@ button.fila:hover { background: var(--plane); }
 .valor { font-weight: 600; }
 .fila.efectivo { color: var(--text-2); }
 .fila .c-senal { text-align: right; }
+/* en pantallas medianas no caben las ocho columnas: la ganancia en € se queda (con su % debajo) y se van el peso y el % suelto */
+.gan-pct { display: none; }
+.hoy-pct { display: block; font-size: 12px; font-weight: 500; }
+@media (max-width: 680px) { .fila .hoy-pct { display: inline; margin-left: 6px; font-size: inherit; } }
 @media (max-width: 1360px) and (min-width: 681px) {
-  .fila { grid-template-columns: minmax(0, 2.2fr) 0.9fr 0.75fr 1.1fr 0.9fr 1.1fr; }
-  .fila .c-peso, .fila .c-gan { display: none; }
+  .fila { grid-template-columns: minmax(0, 2.2fr) 0.9fr 0.75fr 1.1fr 1.05fr 1.1fr; }
+  .fila .c-peso, .fila .c-pct { display: none; }
+  .fila .gan-pct { display: block; font-size: 12px; font-weight: 500; }
 }
 @media (max-width: 680px) {
   .fila { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "act val" "act hoy"; gap: 0 14px; padding: 12px 2px; }
@@ -740,8 +746,16 @@ table.ideas .sub { display: block; font-size: 12px; }
 @media (min-width: 1500px) { .mercados { grid-template-columns: repeat(6, minmax(0, 1fr)); } .merc-p { font-size: 24px; } }
 
 /* ---------- cartera: lo que mueve el día ---------- */
-.movers { font-size: 13.5px; color: var(--muted); margin-top: 2px; }
-.movers span { color: var(--text-2); }
+.movers { font-size: 13.5px; color: var(--muted); margin-top: 4px; }
+.movers > span { display: grid; gap: 6px; }
+.mv-t { font-size: 12.5px; color: var(--muted); }
+.mv-l { display: flex; flex-wrap: wrap; gap: 6px; }
+.mv-c { display: inline-flex; align-items: baseline; gap: 5px; padding: 4px 10px; border-radius: 999px; font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.mv-c b { color: var(--text); font-weight: 600; }
+.mv-c small { font-size: 12px; font-weight: 500; opacity: 0.85; }
+.mv-c.up { background: var(--up-bg); color: var(--up); }
+.mv-c.down { background: var(--down-bg); color: var(--down); }
+.mv-f { font-size: 9px; align-self: center; }
 
 /* ---------- subpestañas (Expertos) y plazos (Paso a paso) ---------- */
 .subvistas, .plazos { display: flex; gap: 4px; padding: 4px; background: var(--plane); border: 1px solid var(--line); border-radius: 12px; width: fit-content; max-width: 100%; }
@@ -981,9 +995,6 @@ table td.txt { white-space: normal; min-width: 260px; }
 .fr-aviso svg { width: 15px; height: 15px; flex: none; margin-top: 2px; }
 
 /* ---------- cabecera: Mercados aparte ---------- */
-.ir-merc { width: auto; padding: 0 10px; gap: 6px; display: inline-flex; align-items: center; text-decoration: none; font-size: 13.5px; font-weight: 500; }
-.ir-merc[aria-current="page"] { color: var(--accent); background: var(--accent-bg); }
-@media (max-width: 1100px) { .ir-merc { width: 38px; padding: 0; justify-content: center; } .ir-merc span { display: none; } }
 
 /* ---------- subpestañas de dos opciones (Cartera, Expertos, Análisis) ---------- */
 .subvistas.dos-op button svg { width: 17px; height: 17px; }
@@ -1250,6 +1261,44 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .nov-lista p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.45; }
 @keyframes nov-entra { from { opacity: 0; transform: translateY(8px); } }
 @media (max-width: 480px) { .nov-lista li { align-items: flex-start; gap: 12px; } .nov-lista .dib { width: 88px; height: 59px; padding: 5px; border-radius: 10px; } }
+.nov-ir { margin-top: 6px; font-size: 14px; font-weight: 600; color: var(--accent); }
+.nov-reg { justify-self: center; font-size: 14px; color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
+/* registro de cambios en texto */
+.registro { display: grid; gap: 22px; max-width: 72ch; }
+.registro > .nota { margin: 0; }
+.reg-indice { display: flex; flex-wrap: wrap; gap: 6px; }
+.reg-indice a { padding: 3px 9px; border-radius: 999px; background: var(--plane-2); color: var(--text-2); font-size: 12.5px; font-variant-numeric: tabular-nums; text-decoration: none; }
+.reg-indice a:hover { color: var(--text); }
+.reg-v { display: grid; gap: 8px; padding-top: 18px; border-top: 1px solid var(--line); scroll-margin-top: 12px; }
+.reg-v header { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; }
+.reg-v h3 { margin: 0; font-size: 18px; font-weight: 700; }
+.reg-v time { color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.reg-t { margin: 0; color: var(--text-2); font-size: 15px; }
+.reg-v h4 { margin: 8px 0 0; font-size: 13.5px; font-weight: 650; color: var(--accent); }
+.reg-v ul { margin: 0; padding-left: 20px; display: grid; gap: 6px; font-size: 14px; line-height: 1.55; color: var(--text-2); }
+.reg-v ul b { color: var(--text); font-weight: 600; }
+.reg-det > li { color: var(--text); }
+.reg-det ul { margin-top: 4px; gap: 3px; font-size: 13.5px; }
+.nov-perdidas { display: flex; align-items: center; gap: 14px; margin: 0; padding: 14px 16px; border-radius: 14px; background: var(--accent-bg); border: 1px solid rgba(226, 180, 95, 0.35); }
+.nov-perdidas .dib { width: 72px; height: 48px; flex: none; }
+.nov-perdidas b { display: block; font-size: 16px; margin-bottom: 2px; }
+.nov-perdidas span { font-size: 14px; color: var(--text-2); line-height: 1.4; }
+.novedades > .nov-v + .nov-v { border-top: 1px solid var(--line); padding-top: 18px; }
+.nov-todo { width: 100%; justify-content: center; padding: 13px 18px; font-size: 15.5px; }
+.nov-antes { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 16px; }
+.nov-antes > h3 { margin: 0 0 4px; font-size: 14px; font-weight: 600; color: var(--muted); }
+.nov-ant { border: 1px solid var(--line); border-radius: 14px; background: var(--plane); }
+.nov-ant > summary { display: flex; align-items: center; gap: 10px; padding: 12px 14px; cursor: pointer; list-style: none; }
+.nov-ant > summary::-webkit-details-marker { display: none; }
+.nov-ant > summary::after { content: ''; width: 8px; height: 8px; margin-left: auto; flex: none; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(45deg); transition: transform 0.2s ease; }
+.nov-ant[open] > summary::after { transform: rotate(-135deg); }
+.nov-ant-t { display: grid; min-width: 0; }
+.nov-ant-t b { font-size: 14.5px; font-weight: 600; }
+.nov-ant-t small { color: var(--muted); font-size: 12.5px; }
+.nov-ant .nov-lista { padding: 4px 14px 16px; }
+.tour-dib { display: flex; justify-content: center; margin: -2px 0 6px; }
+.tour-dib .dib { width: 120px; height: 80px; }
+.tour-nuevo { display: inline-block; margin-bottom: 6px; padding: 2px 9px; border-radius: 999px; background: var(--accent-bg); color: var(--accent); font-size: 12px; font-weight: 700; }
 .nov-antes summary { cursor: pointer; color: var(--text-2); font-weight: 600; padding: 4px 0; }
 .nov-antes ol { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 12px; }
 .nov-antes li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; font-size: 14px; }
@@ -1451,6 +1500,32 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .ia-pregunta-aviso .k { margin-left: auto; color: var(--accent); font-weight: 600; white-space: nowrap; }
 fieldset.opciones { border: 0; margin: 0; padding: 0; min-width: 0; }
 fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-bottom: 8px; padding: 0; }
+/* tus límites como un reparto (perfil): barra de colores y deslizadores enlazados */
+.reparto { display: grid; gap: 14px; }
+.reparto > .nota { margin: 0; }
+.rp-barra { display: flex; height: 16px; border-radius: 999px; overflow: hidden; background: var(--plane-2); }
+.rp-barra i { display: block; height: 100%; transition: width 0.15s ease; }
+.rp-barra > i + i { box-shadow: inset 2px 0 0 var(--plane); }
+.rb-lim { background: var(--c1); position: relative; }
+.rb-cripto { background: var(--c5); }
+.rb-oro { background: var(--c4); }
+.rb-resto { background: rgba(25, 158, 112, 0.5); }
+.rb-emp { position: absolute; left: 0; top: 0; background: repeating-linear-gradient(135deg, rgba(255, 255, 255, 0.38) 0 3px, transparent 3px 7px); }
+.rp-desl { display: grid; gap: 4px; --c: var(--accent); }
+.rp-desl.rp-lim, .rp-desl.rp-empresa { --c: var(--c1); }
+.rp-desl.rp-cripto { --c: var(--c5); }
+.rp-desl.rp-oro { --c: var(--c4); }
+.rp-desl.rp-empresa { padding-left: 14px; border-left: 2px solid var(--line-2); }
+.rp-t { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14.5px; }
+.rp-t b { font-variant-numeric: tabular-nums; }
+.rp-desl input[type=range] { -webkit-appearance: none; appearance: none; width: 100%; height: 30px; margin: 0; background: transparent; cursor: pointer; touch-action: pan-y; }
+.rp-desl input[type=range]::-webkit-slider-runnable-track { height: 6px; border-radius: 999px; background: linear-gradient(to right, var(--c) var(--v, 0%), var(--plane-3) var(--v, 0%)); }
+.rp-desl input[type=range]::-moz-range-track { height: 6px; border-radius: 999px; background: linear-gradient(to right, var(--c) var(--v, 0%), var(--plane-3) var(--v, 0%)); }
+.rp-desl input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; appearance: none; width: 22px; height: 22px; margin-top: -8px; border-radius: 50%; background: var(--text); border: 4px solid var(--c); box-shadow: 0 1px 5px rgba(0, 0, 0, 0.45); }
+.rp-desl input[type=range]::-moz-range-thumb { width: 14px; height: 14px; border-radius: 50%; background: var(--text); border: 4px solid var(--c); }
+.rp-desl input[type=range]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 8px; }
+.rp-queda { display: flex; justify-content: space-between; margin: 0; padding: 9px 12px; border-radius: 10px; background: rgba(25, 158, 112, 0.1); color: var(--text-2); font-size: 14.5px; }
+.rp-queda b { color: var(--text); font-variant-numeric: tabular-nums; }
 .opc-fila { display: flex; flex-wrap: wrap; gap: 8px; }
 .opc { position: relative; cursor: pointer; }
 .opc input { position: absolute; opacity: 0; pointer-events: none; }
@@ -1597,6 +1672,43 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .aj-intro { display: block; margin: -8px 0 18px; color: var(--accent); font-weight: 600; font-size: 14px; }
 
 /* ---------- Mercados: filas compactas que se abren ---------- */
+/* Mercados: buscador para consultar cualquier cosa y las que más se mueven */
+.merc-busca { display: grid; gap: 10px; padding: 18px; border-radius: 16px; background: var(--plane); border: 1px solid var(--line); }
+.merc-busca h2 { margin: 0; font-size: 17px; }
+.merc-busca .busca input { font-size: 16px; }
+.merc-busca-t { margin: 0; color: var(--muted); font-size: 13px; line-height: 1.45; }
+.mov-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 22px; }
+@media (max-width: 720px) { .mov-cols { grid-template-columns: minmax(0, 1fr); } }
+.mov-h { margin: 0 0 6px; font-size: 13.5px; font-weight: 600; }
+.mov-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.mov { width: 100%; display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px; border: 0; border-radius: 10px; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.mov:hover, .mov:focus-visible { background: var(--plane-2); }
+.mov .logo-a { width: 30px; height: 30px; border-radius: 8px; }
+.mov-v { display: grid; justify-items: end; font-variant-numeric: tabular-nums; }
+.mov-v b { font-size: 14.5px; }
+.mov-v small { color: var(--muted); font-size: 12px; }
+/* la hoja de consulta */
+.cons { display: grid; gap: 16px; }
+.cons-cab { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; align-items: center; }
+.cons-cab .logo-a { width: 44px; height: 44px; border-radius: 12px; }
+.cons-precio { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 12px; }
+.cons-precio > b { font-size: 30px; font-weight: 600; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.cons-precio > span { font-weight: 600; font-variant-numeric: tabular-nums; }
+.cons-graf { margin: 0; display: grid; gap: 6px; }
+.cons-graf svg { width: 100%; height: 170px; display: block; }
+.cons-graf figcaption { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 4px 12px; font-size: 12.5px; }
+.cons-rango { display: grid; gap: 8px; font-size: 13px; }
+.cr-t { display: flex; justify-content: space-between; gap: 10px; }
+.cr-barra { position: relative; height: 8px; border-radius: 999px; background: linear-gradient(to right, var(--down-bg), var(--plane-3), var(--up-bg)); }
+.cr-barra i { position: absolute; top: 50%; transform: translate(-50%, -50%); border-radius: 50%; }
+.cr-p { width: 16px; height: 16px; background: var(--text); border: 3px solid var(--plane); }
+.cr-o { width: 10px; height: 10px; background: var(--accent); }
+.cr-et { display: flex; justify-content: space-between; gap: 10px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.cr-leg { display: inline-flex; align-items: center; gap: 5px; }
+.cr-leg i { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+.cons-btns { justify-content: flex-start; }
+.cons-not { display: grid; gap: 8px; }
+.cons-not h3 { margin: 0; font-size: 15px; }
 .mgrupos { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 900px) { .mgrupos { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 32px; align-items: start; } }
 .mg-t { margin: 0 0 6px; font-size: 13px; font-weight: 650; color: var(--muted); letter-spacing: 0.01em; }
@@ -1659,71 +1771,153 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
   .tabla-ed td:last-child .btn svg { width: 17px; height: 17px; }
 }
 
-/* ---------- GTA VI: botón junto a Patrimonio, hoja y aviso ---------- */
+/* ---------- GTA VI: botón junto a Patrimonio, hoja y aviso. Estética de neón de los 80 (no la del logo del juego) ---------- */
 .hero-fila { display: flex; align-items: center; gap: 12px; min-height: 30px; }
-.gta-chip { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px 0 9px; border-radius: 999px; border: 1px solid rgba(255, 77, 157, 0.42); background: linear-gradient(100deg, #24103A, #3A1240); color: #FFE3F0; font-size: 12.5px; white-space: nowrap; flex: none; }
+.gta-chip { margin-left: auto; display: inline-flex; align-items: center; gap: 7px; height: 30px; padding: 0 12px 0 9px; border-radius: 999px; border: 1px solid rgba(255, 62, 165, 0.5); background: linear-gradient(100deg, #24103A, #3A1240 60%, #4A1638); color: #FFE3F0; font-size: 12.5px; white-space: nowrap; flex: none; box-shadow: 0 0 14px rgba(255, 62, 165, 0.18); }
 .gta-chip svg { width: 17px; height: 17px; color: #FF7DB8; }
 .gta-chip b { font-weight: 800; letter-spacing: 0.02em; color: #fff; }
 .gta-chip span { color: #FFB27A; font-variant-numeric: tabular-nums; }
-.gta-chip:hover { border-color: #FF4D9D; }
+.gta-chip:hover { border-color: #FF3EA5; box-shadow: 0 0 18px rgba(255, 62, 165, 0.35); }
 .gta-chip.pulsa { animation: gtaPulsa 1.25s ease-in-out 4; }
-@keyframes gtaPulsa { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 77, 157, 0); } 50% { box-shadow: 0 0 0 8px rgba(255, 77, 157, 0.33); } }
-.gta-fondo { align-items: center; background: rgba(8, 3, 16, 0.8); }
-.gta { --g-rosa: #FF4D9D; --g-nar: #FFA24D; --g-cian: #4EE6D6; --g-t: #FFF3F8; --g-t2: #D8C3E4; --g-d: 'Anton', Impact, 'Arial Narrow', sans-serif;
-  position: relative; width: min(780px, calc(100% - 32px)); max-height: min(94vh, 1000px); overflow: auto; overscroll-behavior: contain; border-radius: 22px; color: var(--g-t);
-  background: radial-gradient(130% 55% at 50% 0%, rgba(255, 110, 90, 0.26), transparent 62%), radial-gradient(90% 40% at 85% 100%, rgba(78, 230, 214, 0.1), transparent 70%), linear-gradient(180deg, #1B0A30 0%, #24093A 45%, #12061F 100%);
-  border: 1px solid rgba(255, 77, 157, 0.28); box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6); padding: 30px clamp(18px, 4vw, 40px) calc(26px + env(safe-area-inset-bottom)); }
-@media (max-width: 720px) { .gta { width: 100%; height: 100%; max-height: none; border-radius: 0; border: 0; padding-top: calc(30px + env(safe-area-inset-top)); } }
-.gta-x { position: absolute; top: calc(12px + env(safe-area-inset-top)); right: 12px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.08); color: var(--g-t); }
+@keyframes gtaPulsa { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 62, 165, 0); } 50% { box-shadow: 0 0 0 8px rgba(255, 62, 165, 0.33); } }
+
+.gta-fondo { align-items: center; background: rgba(6, 2, 14, 0.82); }
+.gta-marco { --g-rosa: #FF3EA5; --g-nar: #FF9F43; --g-sol: #FFD23F; --g-cian: #2DE2E6; --g-lila: #B14AED; --g-t: #FFF1F8; --g-t2: #D9C4E8;
+  --g-neon: 'Tilt Neon', 'Anton', Impact, sans-serif; --g-script: 'Yellowtail', 'Brush Script MT', cursive;
+  position: relative; width: min(820px, calc(100% - 32px)); height: min(94vh, 1000px); border-radius: 24px; overflow: hidden; border: 1px solid rgba(255, 62, 165, 0.35); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65), 0 0 60px rgba(177, 74, 237, 0.18); }
+@media (max-width: 720px) { .gta-marco { width: 100%; height: 100%; border-radius: 0; border: 0; } }
+.gta { height: 100%; overflow: auto; overscroll-behavior: contain; color: var(--g-t); background: #10051C; scrollbar-width: thin; scrollbar-color: #5A1F5E transparent; }
+.gta-x { position: absolute; z-index: 5; top: calc(12px + env(safe-area-inset-top)); right: 12px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(14, 4, 26, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--g-t); }
 .gta-x svg { width: 18px; height: 18px; }
-.gta-x:hover { background: rgba(255, 255, 255, 0.16); }
-.gta :focus-visible { outline-color: var(--g-cian); }
-.gta-cab { text-align: center; }
-.gta-pre { margin: 0; color: var(--g-nar); font-weight: 700; font-size: 13px; letter-spacing: 0.04em; }
-.gta-tit { margin: 4px 0 14px; font: 400 clamp(68px, 17vw, 116px)/0.95 var(--g-d); letter-spacing: 0.01em; color: #fff; text-shadow: 0 0 18px rgba(255, 77, 157, 0.75), 0 0 48px rgba(255, 77, 157, 0.4); animation: gtaNeon 1.6s steps(1) 1; }
-@keyframes gtaNeon { 0% { opacity: 0.15; } 12% { opacity: 1; } 18% { opacity: 0.35; } 26% { opacity: 1; } 34% { opacity: 0.6; } 40% { opacity: 1; } }
-.gta-reloj { display: flex; justify-content: center; gap: clamp(8px, 2.4vw, 16px); }
-.gta-reloj span { display: grid; justify-items: center; min-width: clamp(62px, 17vw, 96px); padding: 10px 6px 8px; border-radius: 14px; background: rgba(255, 255, 255, 0.06); border: 1px solid rgba(255, 255, 255, 0.1); }
-.gta-reloj b { font: 400 clamp(34px, 9vw, 54px)/1 var(--g-d); font-variant-numeric: tabular-nums; color: var(--g-nar); }
-.gta-reloj span:first-child b { color: var(--g-rosa); }
+.gta-x:hover { border-color: var(--g-rosa); }
+.gta-marco :focus-visible { outline-color: var(--g-cian); }
+
+/* la escena */
+.gta-hero { position: relative; overflow: hidden; min-height: 100%; display: flex; flex-direction: column; padding: calc(46px + env(safe-area-inset-top)) clamp(18px, 4vw, 40px) 0; text-align: center; isolation: isolate; }
+.gta-cielo { position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #08031A 0%, #1C0838 45%, #3A0F4D 75%, #4A1259 100%); }
+.gta-estrellas { position: absolute; inset: 0 0 40% 0; background-image: radial-gradient(1.2px 1.2px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 28% 8%, #fff, transparent), radial-gradient(1.4px 1.4px at 47% 22%, #ffe8f5, transparent), radial-gradient(1px 1px at 63% 12%, #fff, transparent), radial-gradient(1.3px 1.3px at 78% 26%, #dff, transparent), radial-gradient(1px 1px at 90% 9%, #fff, transparent), radial-gradient(1px 1px at 8% 38%, #fff, transparent), radial-gradient(1.2px 1.2px at 85% 40%, #fff, transparent), radial-gradient(1px 1px at 36% 34%, #fff, transparent); opacity: 0.75; animation: gtaTitila 4s ease-in-out infinite alternate; }
+@keyframes gtaTitila { to { opacity: 0.35; } }
+/* el paisaje va debajo del texto, nunca encima: atardecer, sol a rayas y suelo de rejilla */
+.gta-paisaje { position: relative; flex: 1 0 auto; min-height: clamp(250px, 38vh, 340px); margin: 26px calc(-1 * clamp(18px, 4vw, 40px)) 0; overflow: hidden; background: linear-gradient(180deg, rgba(74, 18, 89, 0) 0%, #7A1F6B 26%, #D23C70 50%, #FF7A55 62%, #FFB347 69.9%, #12051E 70%); }
+.gta-sol { position: absolute; left: 50%; bottom: 30%; width: min(290px, 70vw); aspect-ratio: 1; transform: translate(-50%, 30%); border-radius: 50%; background: linear-gradient(180deg, #FFE97A 0%, #FFC23F 30%, #FF7A45 55%, #FF3EA5 80%, #C21A8A 100%);
+  -webkit-mask-image: linear-gradient(180deg, #000 0 46%, transparent 46% 50%, #000 50% 57%, transparent 57% 61.5%, #000 61.5% 67%, transparent 67% 72.5%, #000 72.5% 77%, transparent 77% 84%, #000 84%);
+  mask-image: linear-gradient(180deg, #000 0 46%, transparent 46% 50%, #000 50% 57%, transparent 57% 61.5%, #000 61.5% 67%, transparent 67% 72.5%, #000 72.5% 77%, transparent 77% 84%, #000 84%);
+  filter: drop-shadow(0 0 38px rgba(255, 62, 165, 0.6)); animation: gtaSol 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) both 0.2s; }
+@keyframes gtaSol { from { transform: translate(-50%, 90%); opacity: 0; } }
+.gta-horizonte { position: absolute; left: 0; right: 0; bottom: 30%; height: 2px; background: linear-gradient(90deg, transparent, var(--g-rosa) 20%, #fff 50%, var(--g-rosa) 80%, transparent); box-shadow: 0 0 18px 2px rgba(255, 62, 165, 0.8); }
+.gta-suelo { position: absolute; left: -60%; right: -60%; bottom: 0; height: 30%; background-color: #12051E; background-image: linear-gradient(0deg, rgba(255, 62, 165, 0.75) 2px, transparent 2px), linear-gradient(90deg, rgba(177, 74, 237, 0.6) 2px, transparent 2px); background-size: 64px 34px; transform: perspective(260px) rotateX(58deg); transform-origin: top; animation: gtaSuelo 1.4s linear infinite; }
+@keyframes gtaSuelo { to { background-position: 0 34px, 0 0; } }
+.gta-paisaje::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: #12051E; z-index: 2; }
+.gta-sol { z-index: 1; } .gta-suelo { z-index: 3; } .gta-horizonte { z-index: 4; }
+.gta-hero-c { position: relative; z-index: 1; display: grid; justify-items: center; max-width: 640px; margin: 0 auto; }
+
+/* letras */
+.gta-rotulo { margin: 0; font: 400 clamp(30px, 7vw, 40px)/1.1 var(--g-script); color: var(--g-cian); text-shadow: 0 0 6px rgba(45, 226, 230, 0.9), 0 0 22px rgba(45, 226, 230, 0.55); transform: rotate(-3deg); letter-spacing: 0.01em; }
+.gta-pre { font-size: clamp(28px, 6vw, 36px); }
+.gta-tit { margin: 0 0 14px; font: 400 clamp(84px, 22vw, 140px)/0.95 var(--g-neon); letter-spacing: 0.03em; color: #FFE7F4;
+  text-shadow: 0 0 3px #fff, 0 0 10px var(--g-rosa), 0 0 24px var(--g-rosa), 0 0 52px rgba(177, 74, 237, 0.85), 0 0 90px rgba(177, 74, 237, 0.5);
+  animation: gtaEnciende 1.8s steps(1) 1, gtaRespira 4s ease-in-out 1.8s infinite alternate; }
+@keyframes gtaEnciende { 0% { opacity: 0.1; } 10% { opacity: 1; } 16% { opacity: 0.3; } 24% { opacity: 1; } 31% { opacity: 0.55; } 37% { opacity: 1; } }
+@keyframes gtaRespira { to { text-shadow: 0 0 2px #fff, 0 0 8px var(--g-rosa), 0 0 18px var(--g-rosa), 0 0 40px rgba(177, 74, 237, 0.7), 0 0 70px rgba(177, 74, 237, 0.35); } }
+.gta-reloj { display: flex; justify-content: center; gap: clamp(8px, 2.6vw, 18px); }
+.gta-reloj span { display: grid; justify-items: center; min-width: clamp(64px, 18vw, 100px); padding: 10px 6px 9px; border-radius: 16px; background: rgba(16, 5, 28, 0.55); border: 1px solid rgba(255, 159, 67, 0.35); box-shadow: inset 0 0 18px rgba(255, 62, 165, 0.12), 0 0 16px rgba(255, 159, 67, 0.12); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.gta-reloj b { font: 400 clamp(36px, 10vw, 58px)/1 var(--g-neon); font-variant-numeric: tabular-nums; color: #FFE2B8; text-shadow: 0 0 4px #fff3, 0 0 12px var(--g-nar), 0 0 26px rgba(255, 159, 67, 0.6); }
+.gta-reloj span:first-child b { color: #FFD1EA; text-shadow: 0 0 12px var(--g-rosa), 0 0 28px rgba(255, 62, 165, 0.6); }
 .gta-reloj i { font-style: normal; font-size: 12px; color: var(--g-t2); margin-top: 5px; }
-.gta-reloj.fuera span { min-width: 180px; }
-.gta-fecha { margin: 16px auto 0; color: var(--g-t2); font-size: 14px; max-width: 48ch; }
-.gta-web { display: inline-flex; align-items: center; height: 38px; padding: 0 16px; margin-top: 14px; border-radius: 999px; border: 1px solid rgba(78, 230, 214, 0.5); color: var(--g-cian); font-weight: 650; font-size: 14px; }
-.gta-web:hover { background: rgba(78, 230, 214, 0.1); text-decoration: none; }
-.gta-sub { margin: 34px 0 2px; font: 400 27px/1.1 var(--g-d); letter-spacing: 0.01em; color: #fff; }
-.gta-nota { color: var(--g-nar); font-size: 13.5px; margin: 6px 0 0; }
-.gta-datos { list-style: none; margin: 10px 0 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 680px) { .gta-datos { grid-template-columns: repeat(2, minmax(0, 1fr)); column-gap: 30px; } }
-.gta-datos li { padding: 16px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); }
-.gta-datos b { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 9px; font: 400 clamp(30px, 7.5vw, 40px)/1.05 var(--g-d); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; }
-.gta-datos .c0 b { color: var(--g-rosa); } .gta-datos .c1 b { color: var(--g-nar); } .gta-datos .c2 b { color: var(--g-cian); }
-.gta-datos small { font: 650 14px/1.2 var(--f); color: var(--g-t); }
-.gta-datos p { margin: 6px 0 0; color: var(--g-t2); font-size: 14px; line-height: 1.5; }
-.gta-trailer { margin-top: 18px; }
-.gta-txt { margin: 6px 0 0; color: var(--g-t2); font-size: 14.5px; line-height: 1.55; }
-.gta-video { position: relative; aspect-ratio: 16 / 9; margin-top: 16px; border-radius: 14px; overflow: hidden; border: 1px solid rgba(255, 255, 255, 0.14); background: #000; box-shadow: 0 0 40px rgba(255, 77, 157, 0.18); }
+.gta-reloj.fuera span { min-width: 190px; }
+.gta-fecha { margin: 16px auto 0; color: var(--g-t2); font-size: 14px; max-width: 46ch; text-shadow: 0 1px 8px #10051C; }
+.gta-espera { width: min(420px, 100%); margin-top: 16px; display: grid; gap: 7px; }
+.gta-barra { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+.gta-barra i { display: block; height: 100%; width: var(--p); border-radius: inherit; background: linear-gradient(90deg, var(--g-lila), var(--g-rosa), var(--g-nar)); box-shadow: 0 0 14px rgba(255, 62, 165, 0.7); animation: gtaBarra 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) both 0.3s; }
+@keyframes gtaBarra { from { width: 0; } }
+.gta-espera small { color: var(--g-t2); font-size: 12.5px; text-shadow: 0 1px 8px #10051C; }
+.gta-web { display: inline-flex; align-items: center; height: 40px; padding: 0 18px; margin-top: 16px; border-radius: 999px; border: 1px solid rgba(45, 226, 230, 0.6); background: rgba(16, 5, 28, 0.5); color: var(--g-cian); font-weight: 650; font-size: 14px; box-shadow: 0 0 14px rgba(45, 226, 230, 0.2); }
+.gta-web:hover { background: rgba(45, 226, 230, 0.12); text-decoration: none; }
+.gta-baja { position: absolute; z-index: 1; left: 50%; bottom: 14px; transform: translateX(-50%); width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: rgba(16, 5, 28, 0.5); border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer; animation: gtaBaja 1.8s ease-in-out infinite; }
+.gta-baja svg { width: 20px; height: 20px; }
+@keyframes gtaBaja { 50% { transform: translate(-50%, 6px); } }
+
+/* lo de debajo */
+.gta-cuerpo { padding: 34px clamp(18px, 4vw, 40px) calc(30px + env(safe-area-inset-bottom)); background: radial-gradient(120% 40% at 50% 0%, rgba(177, 74, 237, 0.16), transparent 70%), #10051C; }
+.gta-sec + .gta-sec { margin-top: 44px; }
+.gta-sec > .gta-rotulo { margin-bottom: 12px; color: #FF7DC4; text-shadow: 0 0 6px rgba(255, 62, 165, 0.9), 0 0 22px rgba(255, 62, 165, 0.5); }
+.gta-nota { color: var(--g-nar); font-size: 13.5px; margin: 0 0 10px; }
+.gta-datos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+@media (min-width: 680px) { .gta-datos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.gta-datos li { padding: 16px 16px 15px; border-radius: 16px; background: linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015)); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 3px solid var(--c, var(--g-rosa)); }
+.gta-datos .c0 { --c: var(--g-rosa); } .gta-datos .c1 { --c: var(--g-nar); } .gta-datos .c2 { --c: var(--g-cian); }
+.gta-datos b { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; }
+.gta-num { font: 400 clamp(32px, 8vw, 42px)/1.05 var(--g-neon); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; color: #fff; text-shadow: 0 0 10px var(--c, var(--g-rosa)), 0 0 24px var(--c, var(--g-rosa)); }
+.gta-datos small { font: 400 15px/1.2 'Anton', Impact, var(--f); text-transform: uppercase; letter-spacing: 0.07em; color: var(--g-t); }
+.gta-datos p { margin: 7px 0 0; color: var(--g-t2); font-size: 14px; line-height: 1.5; }
+.gta-desde { display: grid; gap: 8px; padding: 18px; border-radius: 18px; background: rgba(45, 226, 230, 0.06); border: 1px solid rgba(45, 226, 230, 0.3); }
+.gta-desde > b .gta-num { font-size: clamp(42px, 11vw, 56px); --c: var(--g-cian); }
+.gta-desde > b.down .gta-num { --c: var(--g-rosa); }
+.gta-desde p { margin: 0; color: var(--g-t2); font-size: 14.5px; line-height: 1.5; }
+.gta-linea { width: 100%; height: 90px; margin-top: 4px; }
+.gta-desde.vis .gta-linea polyline { stroke-dasharray: 100; animation: gtaTraza 2s ease-out both; }
+@keyframes gtaTraza { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+.gta-camino { list-style: none; margin: 0; padding: 0 0 0 22px; position: relative; display: grid; gap: 16px; }
+.gta-camino::before { content: ''; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: rgba(255, 255, 255, 0.12); }
+.gta-camino::after { content: ''; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: linear-gradient(180deg, var(--g-lila), var(--g-rosa), var(--g-nar)); box-shadow: 0 0 10px rgba(255, 62, 165, 0.6); transform: scaleY(var(--prog, 1)); transform-origin: top; transition: transform 0.12s linear; }
+/* tu cartera en copias: barras que crecen al verse */
+.gta-copias { display: grid; gap: 12px; margin-top: 18px; }
+.gta-copias > p { margin: 0; color: var(--g-t2); font-size: 14px; }
+.gta-barras { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; align-items: end; height: 190px; }
+.gb { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: 6px; height: 100%; min-width: 0; }
+.gb i { align-self: end; width: 100%; max-width: 46px; height: var(--h); border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, var(--g-rosa), rgba(176, 107, 255, 0.55)); box-shadow: 0 0 14px rgba(255, 62, 165, 0.45); transform: scaleY(0); transform-origin: bottom; transition: transform 0.9s cubic-bezier(.2, .8, .2, 1); transition-delay: calc(var(--i) * 110ms + 150ms); }
+.gb.hoy i { background: linear-gradient(180deg, var(--g-sol), var(--g-nar)); box-shadow: 0 0 16px rgba(255, 210, 63, 0.55); }
+.gta-copias.vis .gb i { transform: scaleY(1); }
+.gb-n { align-self: end; font: 400 15px/1 var(--g-neon); color: #fff; text-shadow: 0 0 8px var(--g-rosa); opacity: 0; transition: opacity 0.5s ease; transition-delay: calc(var(--i) * 110ms + 700ms); }
+.gta-copias.vis .gb-n { opacity: 1; }
+.gb small { font-size: 11px; line-height: 1.2; min-height: 2.4em; color: var(--g-t2); text-align: center; }
+.gta-desde .gta-linea polygon { opacity: 0; transition: opacity 1s ease 1.3s; }
+.gta-desde.vis .gta-linea polygon { opacity: 1; }
+.gta-camino li { position: relative; }
+.gta-camino li::before { content: ''; position: absolute; left: -21px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #10051C; border: 2px solid var(--g-rosa); }
+.gta-camino li.hecho::before { background: var(--g-rosa); box-shadow: 0 0 10px var(--g-rosa); }
+.gta-camino li.siguiente::before { background: var(--g-sol); border-color: var(--g-sol); box-shadow: 0 0 0 0 rgba(255, 210, 63, 0.6); animation: gtaLatido 1.6s ease-out infinite; }
+@keyframes gtaLatido { 70% { box-shadow: 0 0 0 10px rgba(255, 210, 63, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 210, 63, 0); } }
+.gc-d { display: block; color: var(--g-nar); font-size: 12.5px; font-weight: 650; }
+.gta-camino b { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 16px; font-weight: 650; color: #fff; }
+.gta-camino em { font-style: normal; font-size: 12px; font-weight: 700; color: #1A0718; background: var(--g-sol); border-radius: 99px; padding: 1px 8px; box-shadow: 0 0 12px rgba(255, 210, 63, 0.6); }
+.gta-camino li:not(.hecho):not(.siguiente) b { color: var(--g-t2); }
+.gta-camino p { margin: 2px 0 0; color: var(--g-t2); font-size: 13.5px; line-height: 1.45; }
+.gta-txt { margin: 0 0 4px; color: var(--g-t2); font-size: 14.5px; line-height: 1.55; }
+.gta-video { position: relative; aspect-ratio: 16 / 9; margin-top: 14px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 62, 165, 0.35); background: #000; box-shadow: 0 0 40px rgba(255, 62, 165, 0.22); }
 .gta-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.gta-sub2 { margin: 26px 0 0; font: 400 22px/1.15 var(--g-d); letter-spacing: 0.01em; color: #fff; }
-.gta-coste { margin: 12px 0 0; display: grid; gap: 0; }
+.gta-sub2 { margin: 26px 0 4px; font: 400 24px/1.15 var(--g-neon); color: #fff; text-shadow: 0 0 10px rgba(255, 62, 165, 0.6); }
+.gta-coste { margin: 10px 0 0; display: grid; }
 .gta-coste > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); }
 @media (min-width: 560px) { .gta-coste > div { grid-template-columns: 120px minmax(0, 1fr); gap: 14px; } }
 .gta-coste dt { color: var(--g-t); font-weight: 700; font-size: 14.5px; padding-top: 4px; }
 .gta-coste dd { margin: 0; color: var(--g-t2); font-size: 14px; line-height: 1.5; }
-.gta-coste dd b { display: block; font: 400 24px/1.1 var(--g-d); color: var(--g-nar); letter-spacing: 0.01em; margin-bottom: 2px; }
-.gta-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 14px 16px; margin-top: 4px; border-radius: 14px; background: rgba(255, 77, 157, 0.1); border: 1px solid rgba(255, 77, 157, 0.35); }
-.gta-total b { font: 400 34px/1.05 var(--g-d); color: var(--g-rosa); letter-spacing: 0.01em; }
+.gta-coste dd b { display: block; font: 400 24px/1.1 var(--g-neon); color: #FFE2B8; text-shadow: 0 0 10px var(--g-nar); margin-bottom: 2px; }
+.gta-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 14px 16px; margin: 4px 0 14px; border-radius: 16px; background: rgba(255, 62, 165, 0.1); border: 1px solid rgba(255, 62, 165, 0.4); }
+.gta-total b { font: 400 36px/1.05 var(--g-neon); color: #fff; text-shadow: 0 0 10px var(--g-rosa), 0 0 26px var(--g-rosa); }
 .gta-total span { color: var(--g-t2); font-size: 14px; }
-.gta-pie { margin: 20px 0 0; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); color: rgba(216, 195, 228, 0.72); font-size: 12px; line-height: 1.5; }
-.gta-aviso { width: min(520px, calc(100% - 32px)); text-align: center; display: grid; align-content: center; }
-@media (max-width: 720px) { .gta-aviso { width: 100%; } }
-.gta-lead { margin: 20px auto 0; max-width: 40ch; font-size: 16px; line-height: 1.55; color: var(--g-t); }
-.gta-donde { margin: 10px 0 0; color: var(--g-t2); font-size: 13.5px; }
-.gta-btns { display: grid; gap: 10px; margin: 24px auto 0; width: min(100%, 360px); }
-.gta-b { height: 48px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.2); background: transparent; color: var(--g-t); font-weight: 650; font-size: 15.5px; }
-.gta-b.pri { background: linear-gradient(95deg, #FF4D9D, #FF8A4D); border: 0; color: #1A0718; }
+.gta-pie { margin: 32px 0 0; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); color: rgba(217, 196, 232, 0.72); font-size: 12px; line-height: 1.5; }
+
+/* aparecer al bajar */
+.gta-rev { opacity: 0; transform: translateY(26px) scale(0.98); transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(var(--i, 0) * 90ms); }
+.gta-rev.vis { opacity: 1; transform: none; }
+.gta-rotulo.gta-rev.vis { transform: rotate(-3deg); }
+
+/* el aviso de la primera vez: la misma escena, a pantalla completa */
+.gta-aviso { width: min(560px, calc(100% - 32px)); height: min(92vh, 860px); }
+@media (max-width: 720px) { .gta-aviso { width: 100%; height: 100%; } }
+.gta-aviso .gta-paisaje { min-height: clamp(180px, 26vh, 260px); }
+.gta-lead { margin: 18px auto 0; max-width: 40ch; font-size: 15.5px; line-height: 1.55; color: var(--g-t); text-shadow: 0 1px 8px #10051C; }
+.gta-donde { margin: 8px 0 0; color: var(--g-t2); font-size: 13.5px; }
+.gta-btns { display: grid; gap: 10px; margin: 20px auto 0; width: min(100%, 340px); }
+.gta-b { height: 48px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(16, 5, 28, 0.55); color: var(--g-t); font-weight: 650; font-size: 15.5px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.gta-b.pri { background: linear-gradient(95deg, #FF3EA5, #FF9F43); border: 0; color: #1A0718; box-shadow: 0 0 22px rgba(255, 62, 165, 0.5); }
 .gta-b:hover { filter: brightness(1.08); }
-@media (prefers-reduced-motion: reduce) { .gta-tit, .gta-chip.pulsa { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .gb i, .gb-n { transition: none !important; transform: none !important; opacity: 1 !important; }
+  .gta-tit, .gta-chip.pulsa, .gta-suelo, .gta-sol, .gta-estrellas, .gta-baja, .gta-barra i, .gta-camino li.siguiente::before, .gta-desde .gta-linea polyline { animation: none !important; }
+  .gta-rev { opacity: 1; transform: none; transition: none; }
+}
 
 /* ---------- idiomas ---------- */
 .i18n-carga body { visibility: hidden; }
@@ -1739,7 +1933,30 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .idiomas.pie { justify-content: center; margin-top: 4px; }
 .idiomas.pie button { height: 34px; font-size: 13px; }
 .aj-idioma { display: grid; gap: 8px; margin: 4px 0 20px; }
-.aj-grupo { margin: 30px 0 -4px; font-size: 13.5px; font-weight: 650; color: var(--accent); letter-spacing: 0; }
+/* Ajustes: cabecera con la versión, grupos en tarjetas y filas que se tocan enteras */
+.aj-cab { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 14px 16px; border-radius: 16px; background: linear-gradient(135deg, rgba(226, 180, 95, 0.16), rgba(226, 180, 95, 0.04)); border: 1px solid rgba(226, 180, 95, 0.35); }
+.aj-cab img { width: 44px; height: 44px; }
+.aj-cab b { display: block; font-size: 17px; font-weight: 700; }
+.aj-cab small { display: block; color: var(--text-2); font-size: 13px; line-height: 1.35; }
+.aj-caja { display: grid; padding: 2px 16px; border-radius: 16px; background: var(--plane); border: 1px solid var(--line); }
+.aj-caja > .seccion-ed { margin: 0; padding: 14px 0; border-top: 1px solid var(--line); }
+.aj-caja > :first-child { border-top: 0; }
+.aj-caja .seccion-ed > h3, .aj-plegable > summary h3 { display: flex; align-items: center; gap: 10px; font-weight: 600; }
+.aj-caja h3 svg, .aj-fila > svg, .aj-fila > img { width: 20px; height: 20px; flex: none; color: var(--accent); }
+.aj-fila { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 0; border: 0; border-top: 1px solid var(--line); background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.aj-fila > span { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.aj-fila b { font-size: 15px; font-weight: 600; }
+.aj-fila small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.aj-fila:hover b { color: var(--accent); }
+.aj-flecha { width: 8px; height: 8px; flex: none; margin-right: 4px; border-right: 2px solid var(--muted); border-bottom: 2px solid var(--muted); transform: rotate(-45deg); }
+.aj-plegable > summary { display: flex; align-items: center; justify-content: space-between; cursor: pointer; list-style: none; }
+.aj-plegable > summary::-webkit-details-marker { display: none; }
+.aj-plegable > summary h3 { margin: 0; font-size: 15px; }
+.aj-plegable .aj-flecha { transform: rotate(45deg); transition: transform 0.2s ease; }
+.aj-plegable[open] .aj-flecha { transform: rotate(-135deg); }
+.aj-caja .aj-idioma { margin: 0; }
+
+.aj-grupo { margin: 24px 0 8px 4px; font-size: 13.5px; font-weight: 650; color: var(--accent); letter-spacing: 0; }
 .aj-avanzado { margin-top: 26px; border-top: 1px solid var(--line); padding-top: 14px; }
 .aj-avanzado > summary { cursor: pointer; color: var(--text-2); font-size: 14px; padding: 4px 0; }
 .aj-avanzado[open] > summary { margin-bottom: 4px; }
@@ -1808,7 +2025,7 @@ const PERFIL_LOCAL = (() => {
     return localStorage.getItem('inv-perfil') === '"local"';
   } catch (e) { return false; }
 })();
-const PRIVADAS = new Set(['inv-bloqueo', 'inv-bloqueo-t', 'inv-cache-enc', 'inv-token', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-cfg2', 'inv-ia-propio', 'inv-ia-agotados', 'inv-gkey-modo', 'inv-cache-ia', 'inv-oculto', 'inv-proy']);
+const PRIVADAS = new Set(['inv-bloqueo', 'inv-bloqueo-t', 'inv-cache-enc', 'inv-pend-enc', 'inv-token', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-cfg2', 'inv-ia-propio', 'inv-ia-agotados', 'inv-gkey-modo', 'inv-cache-ia', 'inv-oculto', 'inv-proy']);
 const IDB_CLAVE = PERFIL_LOCAL ? 'clave-local' : 'clave';
 const LS = {
   k(k) { return PERFIL_LOCAL && PRIVADAS.has(k) ? 'invL-' + k.slice(4) : k; },
@@ -2549,7 +2766,7 @@ function senal(f, M) {
     if (score >= 2) {
       // tu regla: las acciones sueltas no pasan del límite; si ya estás cerca, no se añade
       const sueltas = M.total ? (sum(M.filas.filter((x) => x.inst.tipo === 'Acción'), (x) => x.valor) / M.total) * 100 : 0;
-      const lim = +(S.cartera.limite_acciones || 20);
+      const lim = +(S.cartera.limite_acciones ?? 20);
       if (sueltas >= lim - 3) {
         const plan = (S.cartera.aportaciones || []).some((x) => x.instrumento === i.id && +x.importe && (!x.hasta || x.hasta >= hoyIso()));
         motivos.unshift(`Los analistas la ven para comprar, pero tus acciones sueltas ya pesan un ${fmtNum(sueltas, 1)} % y tu límite es el ${fmtNum(lim, 0)} %: ${plan ? 'deja que la compre tu plan mensual y no metas extra' : 'no añadas hasta que vendas parte de otra'}.`);
@@ -2615,7 +2832,7 @@ const ICONOS = {
   ojo: SVG('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
   ojoNo: SVG('<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.6-.6 5-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
   lapiz: SVG('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
-  ajustes: SVG('<path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/>'),
+  ajustes: SVG('<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>'),
   cerrar: SVG('<path d="M6 6l12 12M18 6L6 18"/>', 2),
   alerta: SVG('<path d="M12 3l9.5 17h-19L12 3z"/><path d="M12 10v4M12 17.5v.01"/>', 2),
   ok: SVG('<circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.7 2.7L16 9.5"/>', 2),
@@ -2648,11 +2865,12 @@ const ICONOS = {
   copiar: SVG('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>', 1.8),
 };
 
-/* las pestañas, con el nombre corto de la barra del móvil; Mercados va aparte (es de consulta) y Plan, dentro de Cartera */
+/* las pestañas, con el nombre corto de la barra del móvil; Plan va dentro de Cartera. Mercados era un icono suelto
+   arriba y no se veía: desde la 0.1.17 es una pestaña más */
 const VISTAS = [
-  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'],
+  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['mercados', 'Mercados', 'Mercados'],
 ];
-const VISTAS_APARTE = [['mercados', 'Mercados']];
+const VISTAS_APARTE = [];
 const esVista = (k) => VISTAS.some(([x]) => x === k) || VISTAS_APARTE.some(([x]) => x === k);
 
 let toastT;
@@ -2701,6 +2919,8 @@ function binds(M) {
     b['pv:' + id] = { txt: eur(f.valor), n: f.valor };
     b['pp:' + id] = { txt: precioFmt(f.precio), n: f.precio };
     b['pd:' + id] = { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
+    // lo de hoy también en euros (en la tabla sale con el % debajo)
+    b['pdE:' + id] = { txt: f.dia == null || f.varDia == null ? '—' : eurS(f.dia, Math.abs(f.dia) < 10 ? 2 : 0), n: f.dia, cls: cls(f.dia) };
     b['pw:' + id] = { txt: pct(f.peso, 1), n: f.peso };
     b['pt:' + id] = { txt: pctS(f.plPct, 1), n: f.plPct, cls: cls(f.pl) };
     b['pg:' + id] = { txt: eurS(f.pl, 0), n: f.pl, cls: cls(f.pl) };
@@ -2713,7 +2933,9 @@ function binds(M) {
   }
   b.recalc = { txt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) };
   const mueven = [...M.filas].filter((f) => Math.abs(f.dia) >= 1).sort((a, z) => Math.abs(z.dia) - Math.abs(a.dia)).slice(0, 3);
-  b.movers = { txt: mueven.length ? 'Lo que más mueve hoy: ' + mueven.map((f) => `${f.inst.corto} ${eurS(f.dia, 0)}`).join(', ') : '' };
+  // las tres posiciones que más han movido hoy tu cartera, en euros y en %, cada una con su color
+  const tm = mueven.map((f) => `${f.inst.corto} ${eurS(f.dia, 0)}`).join(', ');
+  b.movers = { txt: tm, html: mueven.length ? `<span class="mv-t">Lo que más ha movido hoy tu cartera</span><span class="mv-l">${mueven.map((f) => `<span class="mv-c ${cls(f.dia)}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span>`).join('')}</span>` : '' };
   const vis = new Set([...(S.radarVisibles || []), ...(S.ideasTop || [])]);
   if (vis.size) for (const x of radarVals()) {
     if (!vis.has(x.s)) continue;
@@ -2730,13 +2952,15 @@ function binds(M) {
 }
 function B(k, extra = '') {
   const b = (S.binds && S.binds[k]) || { txt: '—' };
-  return `<span data-b="${esc(k)}" data-n="${b.n == null ? '' : b.n}" class="${[b.cls, extra].filter(Boolean).join(' ')}">${esc(b.txt)}</span>`;
+  return `<span data-b="${esc(k)}" data-n="${b.n == null ? '' : b.n}"${b.html != null ? ` data-h="${esc(b.txt)}"` : ''} class="${[b.cls, extra].filter(Boolean).join(' ')}">${b.html != null ? b.html : esc(b.txt)}</span>`;
 }
 
 /* pone el texto de los datos en directo que aún no se habían calculado al pintar (los del radar) */
 function rellenarBinds(raiz) {
   for (const el of $$('[data-b]', raiz)) {
     const b = S.binds[el.dataset.b]; if (!b) continue;
+    // las que llevan html (lo que más mueve hoy) solo se rehacen si cambia su texto
+    if (b.html != null) { if (el.dataset.h !== b.txt) { el.innerHTML = b.html; el.dataset.h = b.txt; } continue; }
     el.textContent = b.txt; el.dataset.n = b.n == null ? '' : b.n;
     for (const c of ['up', 'down', 'flat']) el.classList.toggle(c, b.cls === c);
   }
@@ -2750,6 +2974,7 @@ function parchear() {
   const nb = binds(M); S.binds = nb;
   for (const el of $$('[data-b]')) {
     const b = nb[el.dataset.b]; if (!b) continue;
+    if (b.html != null) { if (el.dataset.h !== b.txt) { el.innerHTML = b.html; el.dataset.h = b.txt; } continue; }
     if (el.textContent !== b.txt) {
       const viejo = parseFloat(el.dataset.n);
       el.textContent = b.txt;
@@ -2772,7 +2997,6 @@ function montar() {
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t]) => `<a href="#${k}" data-ir="${k}">${t}</a>`).join('')}</nav>
     <span id="estado"></span>
     <div class="acciones">
-      <a class="ib ir-merc" href="#mercados" data-ir="mercados" title="Mercados: índices, tipos, divisas y materias primas" aria-label="Mercados">${ICONOS.mercados}<span>Mercados</span></a>
       <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowFolio IA por tu cartera" aria-label="Pregúntale a GrowFolio IA">${ICONOS.chispa}<span>Pregúntale</span></button>
       <button class="ib" id="bRecorte" data-accion="recorte" title="Recorta un trozo de la pantalla y pregúntale a la IA" aria-label="Recortar la pantalla para preguntar a la IA">${ICONOS.recorte}</button>
       <button class="ib" id="bOcultar" data-accion="ocultar"></button>
@@ -2838,6 +3062,13 @@ function pintar() {
   setTimeout(() => plegarNotas($('#vista')), 0);
   $('#vista').innerHTML = html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
+  const mb = $('#mercBusca');
+  if (mb) {
+    const inp = buscador(mb, null, { alCandidato: abrirConsulta, lista: candidatosConsulta(), placeholder: 'Apple, SP500, oro, bitcoin o un ISIN' });
+    if (S.mercQ) { inp.value = S.mercQ.v; if (S.mercQ.foco) { inp.focus(); inp.dispatchEvent(new Event('input')); } }
+    inp.addEventListener('input', () => { S.mercQ = { v: inp.value, foco: true }; });
+    inp.addEventListener('blur', () => { if (S.mercQ) S.mercQ.foco = false; });
+  }
   if ((S.radarVisibles || []).length) { S.binds = binds(M); rellenarBinds($('#vista')); }
   dibujar(M);
   if (S.ficha) refrescarFicha();
@@ -2976,11 +3207,11 @@ function htmlPosiciones(M) {
     return `<button class="fila" data-pos="${esc(id)}" aria-label="Abrir la ficha de ${esc(f.inst.corto || f.inst.nombre)}">
         <span class="activo-l">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}<span class="activo"><b>${esc(f.inst.corto || f.inst.nombre)}</b>${nombreReal(f.inst) ? `<span class="nombre-real" title="${esc(nombreReal(f.inst))}">${esc(nombreReal(f.inst))}</span>` : ''}<small>${origen(f.inst)}<span>${esc(f.pos.plataforma || '')}</span>${chipsPos(f)}${['mantener', 'aportar'].includes(f.senal.nivel) ? '' : `<span class="senal ${f.senal.nivel} solo-movil">${f.senal.txt}</span>`}</small></span></span>
         <span class="r c-precio">${B('pp:' + id)}</span>
-        <span class="r c-hoy"><span class="k hoy-l">hoy </span>${B('pd:' + id)}</span>
+        <span class="r c-hoy"><span class="k hoy-l">hoy </span>${B('pdE:' + id)}<small class="hoy-pct">${B('pd:' + id)}</small></span>
         <span class="r valor c-val">${B('pv:' + id)}</span>
         <span class="r c-desde" title="Lo que llevas ganado o perdido desde que la compraste">${B('pgd:' + id)}</span>
         <span class="r c-peso k">${B('pw:' + id)}</span>
-        <span class="r c-gan">${B('pg:' + id)}</span>
+        <span class="r c-gan">${B('pg:' + id)}<small class="gan-pct">${B('pt:' + id)}</small></span>
         <span class="r c-pct">${B('pt:' + id)}</span>
         <span class="c-senal"><span class="senal ${f.senal.nivel}">${f.senal.txt}</span></span>
       </button>`;
@@ -3062,7 +3293,7 @@ function htmlAgenda(M) {
   for (const g of porDia.values()) {
     const n = g.nombres;
     g.t = n.length > 1 ? 'Aportaciones automáticas' : `Aportación a ${n[0]}`;
-    g.s = n.length > 1 ? `${n.slice(0, -1).join(', ')} y ${n[n.length - 1]}` : [...g.plats].join(', ');
+    g.s = n.length > 1 ? yLista(n) : [...g.plats].join(', ');
   }
   const ev = juntas.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0)).slice(0, 8);
   if (!ev.length) return '';
@@ -3128,7 +3359,7 @@ function avisos(M) {
   }
   const sueltas = M.filas.filter((f) => f.inst.tipo === 'Acción');
   const pctSueltas = M.total ? (sum(sueltas, (f) => f.valor) / M.total) * 100 : 0;
-  const lim = +(S.cartera.limite_acciones || 20);
+  const lim = +(S.cartera.limite_acciones ?? 20);
   if (sueltas.length) av.push({ n: pctSueltas > lim ? 'warn' : 'info', i: pctSueltas > lim ? ICONOS.alerta : ICONOS.info, t: `Acciones sueltas: ${pct(pctSueltas, 1)} de la cartera`, d: `Tu límite es el ${fmtNum(lim, 0)} %. ${pctSueltas > lim ? 'Lo has pasado.' : `Te queda margen de ${eur(((lim - pctSueltas) / 100) * M.total, 0)}.`}` });
   const estimadas = M.filas.filter((f) => f.estimada);
   if (estimadas.length) av.push({ n: 'warn', i: ICONOS.alerta, t: `${estimadas.length === 1 ? 'Una posición' : estimadas.length + ' posiciones'} con la cantidad estimada`, d: `${estimadas.map((f) => f.inst.corto).join(', ')}. Pon las participaciones exactas en la ficha de cada una (botón Editar) para que cuadre al céntimo.` });
@@ -3513,11 +3744,11 @@ function esperadaIdea(x) {
   return esperadaRadar(x.r, g ? { ...g, fuente: g === x.gem ? 'GrowFolio IA' : 'tu análisis' } : null);
 }
 function quienIdea(x) {
-  const w = x.web ? `el radar de GrowFolio (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})` : null;
+  const w = x.web ? (IDIOMA === 'en' ? `GrowFolio's radar (${x.web.puesto === 1 ? 'the best-backed on it' : `number ${x.web.puesto} by backing`})` : `el radar de GrowFolio (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})`) : null;
   const g = x.gem ? `GrowFolio IA tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')})` : null;
   const t = x.tuya ? `tu análisis${x.tuya.importe ? `, con ${eur(+x.tuya.importe, 0)}` : ''}` : null;
   const p = [w, g, t].filter(Boolean);
-  return `La propone ${p.length === 1 ? p[0] : `${p.slice(0, -1).join(', ')} y ${p[p.length - 1]}`}.`;
+  return `La propone ${yLista(p.map(trad))}.`;
 }
 /* precio, objetivo, plazo y lo que daría al año neto de impuestos, en cuatro cifras */
 /* "Puede subir un 51 % en 12 meses (los analistas): un 43 % al año tras impuestos." */
@@ -3669,6 +3900,7 @@ const MERC_INFO = {
   'JPY=X': { g: 'Divisas', que: 'Cuántos yenes vale un dólar.', sube: 'Yen débil: ayuda a las exportadoras japonesas.', baja: 'Yen fuerte: a veces es señal de miedo, porque el yen hace de refugio.', tuyo: conRegion('Japón y Pacífico', 10) },
   'DX-Y.NYB': { g: 'Divisas', que: 'El dólar frente a las grandes monedas.', sube: 'Dólar fuerte: suele pesar en emergentes y materias primas.', baja: 'Dólar débil: suele ayudar a emergentes, oro y materias primas.', tuyo: (f) => conRegion('Emergentes')(f) || f.inst.clase === 'Oro' },
   'BZ=F': { g: 'Materias primas', que: 'El petróleo de referencia en Europa.', sube: 'Bueno para petroleras; malo para aerolíneas, transporte y la inflación.', baja: 'Sufren las petroleras; ganan aerolíneas, transporte y consumidores.', tuyo: (f) => f.p && /Oil|Gas|Airlines/i.test(f.p.industria || '') },
+  'SI=F': { g: 'Materias primas', que: 'Medio refugio y medio metal industrial (placas solares, electrónica): se mueve como el oro pero con más fuerza, en las dos direcciones.', sube: 'Más miedo, tipos a la baja o más demanda industrial.', baja: 'Se enfría la industria o vuelve el apetito por el riesgo.', tuyo: (f) => /plata|silver/i.test(`${f.inst.nombre || ''} ${f.inst.corto || ''}`) },
   'GC=F': { g: 'Materias primas', que: 'El refugio clásico: sube con el miedo, la inflación y cuando bajan los tipos.', sube: 'Más miedo o tipos a la baja: sube tu oro.', baja: 'Vuelve el apetito por el riesgo o suben los tipos reales.', tuyo: (f) => f.inst.clase === 'Oro' },
   'HG=F': { g: 'Materias primas', que: 'El "doctor cobre": se usa en todo, así que sube cuando la industria mundial (sobre todo China) va bien.', sube: 'Señal de economía fuerte; ayuda a mineras y emergentes.', baja: 'Señal de frenazo industrial.', tuyo: conRegion('Emergentes') },
   'NG=F': { g: 'Materias primas', que: 'El gas natural en EEUU. Pesa en la factura de la industria y en la inflación.', sube: 'Más inflación y costes para la industria.', baja: 'Alivio en costes y en la inflación.', tuyo: (f) => f.p && /Utilities|Gas/i.test(f.p.industria || '') },
@@ -3685,7 +3917,7 @@ function filaMercado(sym, m, M) {
   // en tipos y riesgo (bono, VIX) afecta a casi todo y el porcentaje no dice nada
   const peso = M && M.total && m.grupo !== 'Tipos y riesgo' ? (sum(filasT, (f) => f.valor) / M.total) * 100 : 0;
   const nombreM = sym === '^VIX' ? 'VIX (nervios en bolsa)' : m.nombre;
-  return `<details class="mfila">
+  return `<details class="mfila" data-sym="${esc(sym)}">
     <summary><span class="mf-n"><b>${esc(nombreM)}</b>${peso >= 1 ? `<small class="mf-tuyo">${fmtNum(peso, 0)} % de tu cartera</small>` : ''}</span>${miniSpark(sym)}<span class="mf-p"><span class="merc-p">${B('mp:' + sym)}</span>${B('mv:' + sym)}</span></summary>
     <div class="mf-det">
       ${info.que ? `<p class="mf-que">${esc(info.que)}</p>` : ''}
@@ -3719,6 +3951,8 @@ function vistaMercados(M) {
   return `
   <div class="vista-cab"><h1>Mercados</h1><p>Bolsas del mundo, tipos, divisas y materias primas: qué son, cómo van y qué significa que suban o bajen para lo que tienes.</p></div>
   <div class="pila">
+    ${htmlBuscaMercados()}
+    ${htmlMovidas()}
     ${htmlMercadoInforme()}
     <div class="mgrupos">${[...porGrupo.entries()].filter(([, v]) => v.length).map(([g, v]) => `<section class="mgrupo" aria-label="${esc(g)}"><h2 class="mg-t">${esc(g)}</h2><div class="mfilas">${v.map(([sym, m]) => filaMercado(sym, m, M)).join('')}</div></section>`).join('')}</div>
     <p class="nota mg-nota">Toca cada mercado para ver qué es, cómo ha ido y qué significa para ti que suba o baje.</p>
@@ -3753,7 +3987,7 @@ function pasosRuta(M) {
   // 1. ventas que propone la web
   for (const pl of planes) {
     const f = pl.f, p = f.p || {}, res = p.proximos_resultados && p.proximos_resultados >= hoy && diasEntre(hoy, p.proximos_resultados) <= 31 ? p.proximos_resultados : null;
-    const destino = [pl.aIdea > 0 && pl.ideas[0] ? `${eur(pl.aIdea, 0)} a ${esc(pl.ideas[0].n)}` : '', pl.aNucleo > 0.5 ? `${eur(pl.aNucleo, 0)} al S&P 500` : ''].filter(Boolean).join(' y ');
+    const destino = [pl.aIdea > 0 && pl.ideas[0] ? `${eur(pl.aIdea, 0)} a ${esc(pl.ideas[0].n)}` : '', pl.aNucleo > 0.5 ? `${eur(pl.aNucleo, 0)} al S&P 500` : ''].filter(Boolean).join(IDIOMA === 'en' ? ' and ' : ' y ');
     add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
       t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
       pq: esc(f.senal.motivos[0] || ''),
@@ -3802,7 +4036,7 @@ function pasosRuta(M) {
   const total = sum(act, ({ a }) => +a.importe || 0);
   if (total > 0) {
     const prox = act.flatMap(({ a }) => fechasAportacion({ ...a, desde: a.desde > hoy ? a.desde : hoy }, iso(new Date(Date.now() - 86400000)), iso(new Date(Date.now() + 31 * 86400000))).map((d) => ({ d, a }))).sort((x, y) => (x.d < y.d ? -1 : 1));
-    if (prox.length) add('mes', { id: `aport:${prox[0].d}`, d: prox[0].d, cuando: fechaCorta(prox[0].d), auto: true, t: `Entran ${eur(sum(prox, (x) => +x.a.importe || 0), 0)} de tus aportaciones`, det: `${esc([...new Set(prox.map((x) => `${nombreInst(x.a.instrumento)} el ${fechaCorta(x.d)}`))].join(', '))}.`, como: 'Van solas: solo comprueba el día antes que tienes saldo en la cuenta.' });
+    if (prox.length) add('mes', { id: `aport:${prox[0].d}`, d: prox[0].d, cuando: fechaCorta(prox[0].d), auto: true, t: `Entran ${eur(sum(prox, (x) => +x.a.importe || 0), 0)} de tus aportaciones`, det: `${esc([...new Set(prox.map((x) => IDIOMA === 'en' ? `${nombreInst(x.a.instrumento)} on ${trad(fechaCorta(x.d))}` : `${nombreInst(x.a.instrumento)} el ${fechaCorta(x.d)}`))].join(', '))}.`, como: 'Van solas: solo comprueba el día antes que tienes saldo en la cuenta.' });
     add('seis', { id: `aport6:${hoy.slice(0, 7)}`, cuando: 'cada mes', auto: true, t: `Sigue aportando: ${eur(total * 6, 0)} en 6 meses`, det: `Son ${eur(total, 0)} al mes. No las pares si la bolsa cae: comprar barato en las caídas es lo que más suma a largo plazo.` });
   }
   // 6. fin de año: compensar pérdidas
@@ -3830,7 +4064,7 @@ function pasosRuta(M) {
   if (tr > 40000) add('seis', { id: `m720:${anio}`, d: `${anio + 1}-03-15`, cuando: 'antes del 31 mar', t: tr > 50000 ? 'Presenta el modelo 720' : 'Vigila el modelo 720', det: `Tienes ${eur(tr, 0)} en Trade Republic. Por encima de 50.000 € a 31 de diciembre hay que declararlo entre enero y marzo.` });
   // 9. ideas si hay hueco y no hay ya una venta que lo use
   const sueltas = sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor);
-  const lim = (+(S.cartera.limite_acciones || 20) / 100) * M.total;
+  const lim = (+(S.cartera.limite_acciones ?? 20) / 100) * M.total;
   const top = mejoresIdeas(M).find((x) => x.ctr.favor >= 4);
   if (!planes.length && top && lim - sueltas >= 500) add('mes', { id: `idea:${top.s}:${hoy.slice(0, 7)}`, cuando: 'sin prisa', t: `Si quieres comprar una acción nueva: ${esc(top.n)}`, pq: `Es la mejor contrastada del radar (${top.ctr.favor} de ${top.ctr.total} señales a favor)${(() => { const e = rentaEsperada(top, top.pot, 12); return e ? `: si llega al objetivo en 12 meses, te quedarías un ${pctS(e.netoP, 0)} después de impuestos` : ''; })()}. Te caben ${eur(lim - sueltas, 0)} en acciones sueltas.`, como: 'Antes de comprar, que la IA la contraste con las noticias de la semana y te diga cuánto meter.', acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Compro ${top.n} (${top.s})? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.`)}">Pídele a la IA que la contraste</button>` });
   // 10. a un año y más: proyección, hueco que se abre y revisión
@@ -3841,7 +4075,7 @@ function pasosRuta(M) {
     for (const x of metas) add('largo', { id: `hito:${x.m}`, d: pr.fechas[x.i], cuando: `${MESES[deIso(pr.fechas[x.i]).getMonth()]} ${pr.fechas[x.i].slice(0, 4)}`, auto: true, t: `Llegas a ${euCorto(x.m)}`, det: `Es lo probable con tus aportaciones de hoy. Si va mal, en ${pr.p10.findIndex((v) => v >= x.m) > 0 ? pr.fechas[pr.p10.findIndex((v) => v >= x.m)].slice(0, 4) : 'más tiempo'}.` });
   }
   if (total > 0 && M.total) {
-    const pct12 = (sueltas / (M.total + total * 12)) * 100, limP = +(S.cartera.limite_acciones || 20);
+    const pct12 = (sueltas / (M.total + total * 12)) * 100, limP = +(S.cartera.limite_acciones ?? 20);
     if (sueltas) add('anio', { id: `hueco:${hoy.slice(0, 7)}`, cuando: 'en un año', t: `Tus acciones sueltas bajarán al ${fmtNum(pct12, 1)} % de la cartera`, det: `Porque todo lo que aportas va a fondos. Con tu límite del ${fmtNum(limP, 0)} %, tendrás unos ${eur(Math.max(0, (limP / 100) * (M.total + total * 12) - sueltas), 0)} de hueco para apuestas, sin vender nada.` });
   }
   if (M.filas.some((f) => f.inst.tipo === 'Acción')) add('anio', { id: `revision:${anio}`, cuando: 'una vez al año', t: 'Revisa cada acción frente al S&P 500', det: 'Compara lo que ha hecho cada acción con lo que habría hecho el mismo dinero en tu fondo del S&P 500. Quédate solo con las que ganen o tengan aún su motivo para subir.', acc: '<a class="enlace" href="#analisis" data-calif="apuestas">Ver tus acciones frente al índice</a>' });
@@ -4122,7 +4356,7 @@ function htmlPlan(M) {
     </div>
     <aside class="pila lateral">
       <section aria-labelledby="hCal"><div class="sec-cab"><h2 id="hCal">Próximas aportaciones</h2></div>
-        ${porMes.size ? `<ul class="lista agenda">${[...porMes.entries()].map(([k, v]) => { const d = deIso(k + '-01'); return `<li><div class="dia"><b>${MESES[d.getMonth()]}</b><br><span class="k">${d.getFullYear()}</span></div><div><b>${eur(v, 0)}</b><span class="logos-fila">${ev.filter((e) => e.d.startsWith(k)).map((e) => `<span>${logo((S.inst[e.inst] || {}).dominio, e.t.replace('Aportación a ', ''), 'peq')}${esc(e.t.replace('Aportación a ', ''))} el ${deIso(e.d).getDate()}</span>`).join('')}</span></div><span></span></li>`; }).join('')}</ul>` : '<div class="vacio">Sin aportaciones programadas.</div>'}
+        ${porMes.size ? `<ul class="lista agenda">${[...porMes.entries()].map(([k, v]) => { const d = deIso(k + '-01'); return `<li><div class="dia"><b>${MESES[d.getMonth()]}</b><br><span class="k">${d.getFullYear()}</span></div><div><b>${eur(v, 0)}</b><span class="logos-fila">${ev.filter((e) => e.d.startsWith(k)).map((e) => `<span>${logo((S.inst[e.inst] || {}).dominio, e.t.replace('Aportación a ', ''), 'peq')}${esc(e.t.replace('Aportación a ', ''))}${IDIOMA === 'en' ? ', day ' : ' el '}${deIso(e.d).getDate()}</span>`).join('')}</span></div><span></span></li>`; }).join('')}</ul>` : '<div class="vacio">Sin aportaciones programadas.</div>'}
       </section>
       <section aria-labelledby="hEf"><div class="sec-cab"><h2 id="hEf">Efectivo</h2><span class="k">${eur(M.liquidez, 0)}</span><div class="der"><button class="btn peq" data-accion="efectivo">${ICONOS.lapiz}Cambiar</button></div></div>
         <ul class="leyenda">${(S.cartera.efectivo || []).map((e) => `<li style="grid-template-columns:minmax(0,1fr) auto"><span class="n">${esc(e.plataforma)}</span><span class="p">${eur(+e.importe || 0)}</span></li>`).join('') || '<li class="vacio">Sin efectivo</li>'}</ul>
@@ -4796,7 +5030,7 @@ function planVenta(f, M) {
 
   // adónde
   const sueltas = sum(M.filas.filter((x) => x.inst.tipo === 'Acción'), (x) => x.valor);
-  const lim = (+(S.cartera.limite_acciones || 20) / 100) * M.total;
+  const lim = (+(S.cartera.limite_acciones ?? 20) / 100) * M.total;
   const hueco = Math.max(0, lim - (sueltas - (accion ? importe : 0)));
   const ideas = mejoresIdeas(M, { sector: p.sector });
   let aIdea = 0;
@@ -5096,10 +5330,12 @@ function euCorto(n) {
    ajustan la IA, el Paso a paso y la lectura de tu cartera: no se invierte igual a los 24 que a los 60.
    La IA, además, pregunta lo que le falte para afinar sus consejos.
    ===================================================================== */
-const PERFIL_DEF = { edad: null, situacion: null, ingresos_mes: null, gastos_mes: null, colchon_meses: 6, horizonte: null, riesgo: null, experiencia: null, estilo: null, deudas: null, limite_cripto: 5, limite_empresa: 10 };
+const PERFIL_DEF = { edad: null, situacion: null, ingresos_mes: null, gastos_mes: null, colchon_meses: 6, horizonte: null, riesgo: null, experiencia: null, estilo: null, deudas: null, limite_cripto: 5, limite_empresa: 10, limite_oro: 10 };
 const perfil = () => ({ ...PERFIL_DEF, ...((S.cartera && S.cartera.perfil) || {}) });
 const perfilVacio = () => { const p = (S.cartera && S.cartera.perfil) || {}; return !p.edad && !p.horizonte && !p.riesgo; };
 const SITUACION = { estudiante: 'Estudiando', trabajando: 'Trabajando por cuenta ajena', autonomo: 'Autónomo o empresa propia', paro: 'Buscando trabajo', jubilado: 'Jubilado' };
+// se pueden marcar varias (estudias y trabajas): se guardan juntas, "estudiante,trabajando"
+const situacionTxt = (s) => { const t = String(s || '').split(',').map((k) => SITUACION[k]).filter(Boolean).map((x, i) => (i ? x.toLowerCase() : x)); return t.length ? yLista(t) : ''; };
 const RIESGO = {
   bajo: ['Vendería', 'para no perder más', 'Prudente'],
   medio: ['Esperaría', 'a que se recupere', 'Equilibrado'],
@@ -5127,12 +5363,12 @@ function estadoPerfil(M) {
   const p = perfil(), total = M.total || 0;
   const v = (fn) => sum(M.filas.filter(fn), (f) => f.valor);
   const pc = (x) => (total ? (x / total) * 100 : 0);
-  const sueltas = v((f) => f.inst.tipo === 'Acción'), cripto = v((f) => f.inst.clase === 'Cripto');
+  const sueltas = v((f) => f.inst.tipo === 'Acción'), cripto = v((f) => f.inst.clase === 'Cripto'), oro = v((f) => f.inst.clase === 'Oro');
   const bolsa = v((f) => f.inst.clase === 'Renta variable');
   const seguro = v((f) => ['Renta fija', 'Monetario'].includes(f.inst.clase)) + (M.liquidez || 0);
   const acciones = M.filas.filter((f) => f.inst.tipo === 'Acción').map((f) => ({ f, pct: pc(f.valor) })).sort((a, b) => b.pct - a.pct);
   const colchon = p.gastos_mes ? +p.gastos_mes * (+p.colchon_meses || 6) : null;
-  return { p, total, pctSueltas: pc(sueltas), pctCripto: pc(cripto), pctBolsa: pc(bolsa), cripto, seguro, colchon, mayor: acciones[0] || null, reco: bolsaRecomendada(p), metas: evaluarMetas(M) };
+  return { p, total, pctSueltas: pc(sueltas), pctCripto: pc(cripto), pctOro: pc(oro), pctBolsa: pc(bolsa), cripto, seguro, colchon, mayor: acciones[0] || null, reco: bolsaRecomendada(p), metas: evaluarMetas(M) };
 }
 
 /* cada meta frente a la proyección: lo probable en su fecha, descontando las metas anteriores que se gastan */
@@ -5191,6 +5427,44 @@ async function responderIA(i, a) {
   toast('Apuntado. La IA lo tendrá en cuenta en su próxima revisión.', 4000);
 }
 
+/* ---------- tus límites como un reparto: acciones sueltas, cripto y oro no pueden sumar más del 100 % ----------
+   Al subir una, las otras bajan (la más grande primero). Lo que queda es para fondos y lo demás. El máximo en una
+   sola empresa va dentro de las acciones sueltas: nunca puede ser mayor. */
+const REPARTO = [['lim', 'Acciones sueltas', 'empresas compradas una a una, fuera de fondos', 100], ['cripto', 'Cripto', '', 50], ['oro', 'Oro y materias primas', '', 50]];
+function htmlReparto(acc, cri, oro, emp) {
+  const v = { lim: acc, cripto: cri, oro };
+  const desl = (n, t, sub, max, val, cl) => `<label class="rp-desl ${cl}"><span class="rp-t"><span>${t}</span><b><output data-o="${n}">${fmtNum(val, 0)}</output> %</b></span><input type="range" name="${n}" min="0" max="${max}" step="1" value="${val}">${sub ? `<small class="k">${sub}</small>` : ''}</label>`;
+  return `<div class="reparto" id="reparto">
+      <p class="nota">Lo máximo que quieres tener en cada cosa. Si al subir una os pasáis del 100 %, las demás bajan solas.</p>
+      <div class="rp-barra" aria-hidden="true"><i class="rb-lim"><i class="rb-emp"></i></i><i class="rb-cripto"></i><i class="rb-oro"></i><i class="rb-resto"></i></div>
+      ${REPARTO.map(([n, t, sub, max]) => desl(n, t, sub, max, Math.min(max, v[n]), 'rp-' + n)).join('')}
+      <p class="rp-queda"><span>Fondos y lo demás</span><b><output data-o="resto"></output> %</b></p>
+      ${desl('empresa', 'Una sola empresa', 'dentro de las acciones sueltas: nunca más que ellas', Math.max(acc, 1), Math.min(emp, acc), 'rp-empresa')}
+    </div>`;
+}
+function enlazarReparto(rp) {
+  if (!rp) return;
+  const R = (n) => rp.querySelector(`[name="${n}"]`), grupo = REPARTO.map(([n]) => n);
+  const pintarRp = () => {
+    const val = (n) => +R(n).value, a = val('lim'), resto = Math.max(0, 100 - grupo.reduce((t, n) => t + val(n), 0));
+    for (const o of rp.querySelectorAll('output[data-o]')) o.textContent = fmtNum(o.dataset.o === 'resto' ? resto : val(o.dataset.o), 0);
+    for (const n of grupo) rp.querySelector('.rp-barra > .rb-' + n).style.width = val(n) + '%';
+    rp.querySelector('.rp-barra .rb-resto').style.width = resto + '%';
+    rp.querySelector('.rb-emp').style.width = (a ? Math.min(100, (val('empresa') / a) * 100) : 0) + '%';
+    for (const n of [...grupo, 'empresa']) { const el = R(n); el.style.setProperty('--v', ((el.value - el.min) / ((el.max - el.min) || 1)) * 100 + '%'); }
+  };
+  const ajusta = (movido) => {
+    let sobra = grupo.reduce((t, n) => t + +R(n).value, 0) - 100;
+    if (sobra > 0) for (const n of grupo.filter((x) => x !== movido).sort((x, y) => R(y).value - R(x).value)) {
+      const q = Math.min(+R(n).value, sobra); R(n).value = +R(n).value - q; sobra -= q; if (sobra <= 0) break;
+    }
+    const a = +R('lim').value, e = R('empresa');
+    e.max = Math.max(a, 1); if (+e.value > a) e.value = a;
+    pintarRp();
+  };
+  for (const n of [...grupo, 'empresa']) R(n).addEventListener('input', () => ajusta(n));
+  pintarRp();
+}
 function barraLimite(t, actual, limite, sub) {
   const pasa = actual > limite + 0.5;
   return `<div class="pf-lim${pasa ? ' pasa' : ''}"><div class="pf-lim-t"><span>${t}</span><b>${fmtNum(actual, 1)} %<small> de ${fmtNum(limite, 0)} %</small></b></div>
@@ -5215,13 +5489,14 @@ function htmlPerfil(M) {
     ${vacio ? `<section class="pf-empieza">${dibujo('perfil')}<div><h2>Cuéntale a GrowFolio quién eres</h2><p>Tu edad, en qué andas, cuándo vas a necesitar el dinero y cuánto riesgo aguantas. Es un minuto y con eso la IA, las ideas y el Paso a paso te aconsejan a tu medida: no se invierte igual a los 24 que a los 60.</p><button class="btn pri" data-accion="perfil">Empezar</button></div></section>` : ''}
     <div class="pf-grid">
       ${vacio ? '' : `<section class="pf-card" aria-labelledby="hTu"><header><h2 id="hTu">Tú</h2><button class="enlace" data-accion="perfil">Editar</button></header>
-        <dl class="pf-dl">${fila('Edad', p.edad ? `${p.edad} años` : '')}${fila('Ahora mismo', SITUACION[p.situacion])}${fila('Necesitarás la mayor parte', p.horizonte ? textoHorizonte(p.horizonte) : '')}${fila('Si cayera un 30 %', p.riesgo ? `${RIESGO[p.riesgo][0]} ${RIESGO[p.riesgo][1]}` : '')}${fila('Experiencia', EXPERIENCIA[p.experiencia])}${fila('Buscas', ESTILO[p.estilo])}${fila('Deudas', DEUDAS[p.deudas])}</dl>
+        <dl class="pf-dl">${fila('Edad', p.edad ? `${p.edad} años` : '')}${fila('Ahora mismo', situacionTxt(p.situacion))}${fila('Necesitarás la mayor parte', p.horizonte ? textoHorizonte(p.horizonte) : '')}${fila('Si cayera un 30 %', p.riesgo ? `${RIESGO[p.riesgo][0]} ${RIESGO[p.riesgo][1]}` : '')}${fila('Experiencia', EXPERIENCIA[p.experiencia])}${fila('Buscas', ESTILO[p.estilo])}${fila('Deudas', DEUDAS[p.deudas])}</dl>
         ${lectura}
       </section>`}
       <section class="pf-card" aria-labelledby="hLim"><header><h2 id="hLim">Tus límites</h2><button class="enlace" data-accion="perfil">Editar</button></header>
-        ${barraLimite('Acciones sueltas', e.pctSueltas, +(S.cartera.limite_acciones || 20), 'empresas compradas una a una, fuera de fondos')}
-        ${barraLimite('Cripto', e.pctCripto, +p.limite_cripto || 5)}
-        ${e.mayor ? barraLimite(`Una sola empresa: ${esc(e.mayor.f.inst.corto)}`, e.mayor.pct, +p.limite_empresa || 10, 'la que más pesa de las que tienes sueltas') : ''}
+        ${barraLimite('Acciones sueltas', e.pctSueltas, +(S.cartera.limite_acciones ?? 20), 'empresas compradas una a una, fuera de fondos')}
+        ${barraLimite('Cripto', e.pctCripto, +(p.limite_cripto ?? 5))}
+        ${e.pctOro > 0 ? barraLimite('Oro y materias primas', e.pctOro, +(p.limite_oro ?? 10)) : ''}
+        ${e.mayor ? barraLimite(`Una sola empresa: ${esc(e.mayor.f.inst.corto)}`, e.mayor.pct, +(p.limite_empresa ?? 10), 'la que más pesa de las que tienes sueltas') : ''}
         ${e.colchon ? `<div class="pf-lim${e.seguro < e.colchon * 0.9 ? ' pasa' : ''}"><div class="pf-lim-t"><span>Colchón para imprevistos</span><b>${eur(e.seguro, 0)}<small> de ${eur(e.colchon, 0)}</small></b></div><div class="pf-barra ok"><i style="width:${Math.min(100, (e.seguro / e.colchon) * 100).toFixed(0)}%"></i></div><small class="k">${p.colchon_meses || 6} meses de tus gastos, en efectivo, monetarios y renta fija</small></div>` : '<p class="k">Pon tus gastos al mes en Editar y te calculo el colchón que deberías tener aparte.</p>'}
       </section>
       <section class="pf-card pf-metas" aria-labelledby="hMet"><header><h2 id="hMet">Tus metas</h2>${metas.length ? `<button class="btn peq" data-accion="meta">${ICONOS.mas}Añadir</button>` : ''}</header>
@@ -5243,7 +5518,7 @@ function editarPerfil() {
       <label class="campo">Edad<input name="edad" inputmode="numeric" value="${val(p.edad)}" placeholder="24"></label>
       <label class="campo">¿Cuándo necesitarás la mayor parte del dinero?<select name="horizonte"><option value="">Elige</option>${HORIZONTES_P.map(([k, t]) => `<option value="${k}"${+p.horizonte === k ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
     </div>
-    <fieldset class="opciones"><legend>Ahora mismo estás</legend><div class="opc-fila">${radios('situacion', SITUACION, p.situacion)}</div></fieldset>
+    <fieldset class="opciones"><legend>Ahora mismo estás <span class="k">(puedes marcar varias)</span></legend><div class="opc-fila">${(() => { const sel = new Set(String(p.situacion || '').split(',')); return Object.entries(SITUACION).map(([k, v]) => `<label class="opc"><input type="checkbox" name="situacion" value="${k}"${sel.has(k) ? ' checked' : ''}><span>${esc(v)}</span></label>`).join(''); })()}</div></fieldset>
     <fieldset class="opciones"><legend>Si tu cartera cayera un 30 % en unos meses, ¿qué harías?</legend><div class="opc-fila">${radios('riesgo', RIESGO, p.riesgo, (k, v) => `<b>${v[0]}</b><small>${v[1]}</small>`)}</div></fieldset>
     <fieldset class="opciones"><legend>¿Cuánto llevas invirtiendo?</legend><div class="opc-fila">${radios('experiencia', EXPERIENCIA, p.experiencia)}</div></fieldset>
     <fieldset class="opciones"><legend>Qué buscas</legend><div class="opc-fila">${radios('estilo', ESTILO, p.estilo)}</div></fieldset>
@@ -5254,14 +5529,11 @@ function editarPerfil() {
       <label class="campo">Ingresos netos al mes (€)<input name="ingresos" inputmode="decimal" value="${val(p.ingresos_mes)}" placeholder="Opcional"><small>Para saber cuánto podrías aportar.</small></label>
     </div>
     <h3 class="pf-sub">Tus límites</h3>
-    <div class="form-grid">
-      <label class="campo">Máximo en acciones sueltas (%)<input name="lim" inputmode="decimal" value="${val(+(S.cartera.limite_acciones || 20))}"></label>
-      <label class="campo">Máximo en cripto (%)<input name="cripto" inputmode="decimal" value="${val(+p.limite_cripto)}"></label>
-      <label class="campo">Máximo en una sola empresa (%)<input name="empresa" inputmode="decimal" value="${val(+p.limite_empresa)}"></label>
-    </div>
+    ${htmlReparto(+(S.cartera.limite_acciones ?? 20), +(p.limite_cripto ?? 5), +(p.limite_oro ?? 10), +(p.limite_empresa ?? 10))}
     <div class="error" id="errPerfil"></div>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div>
   </form>`, null, true);
+  enlazarReparto($('#reparto', h.el));
   $('#fPerfil', h.el).onsubmit = async (ev) => {
     ev.preventDefault();
     const f = ev.target, n = (x) => { const v = numero(x); return v == null || isNaN(v) ? null : v; }, r = (k) => (f.querySelector(`[name=${k}]:checked`) || {}).value || null;
@@ -5269,8 +5541,8 @@ function editarPerfil() {
     if (edad != null && (edad < 14 || edad > 100)) { $('#errPerfil', h.el).textContent = 'Revisa la edad.'; return; }
     if ([lim, cri, emp].some((x) => x != null && (x < 0 || x > 100))) { $('#errPerfil', h.el).textContent = 'Los límites van de 0 a 100 %.'; return; }
     const antes = S.cartera.perfil || {};
-    S.cartera.perfil = { ...antes, edad, horizonte: n(f.horizonte.value), situacion: r('situacion'), riesgo: r('riesgo'), experiencia: r('experiencia'), estilo: r('estilo'), deudas: r('deudas'), gastos_mes: n(f.gastos.value), colchon_meses: n(f.colchon.value) || 6, ingresos_mes: n(f.ingresos.value), limite_cripto: cri ?? 5, limite_empresa: emp ?? 10, actualizado: new Date().toISOString() };
-    if (lim) S.cartera.limite_acciones = lim;
+    S.cartera.perfil = { ...antes, edad, horizonte: n(f.horizonte.value), situacion: [...f.querySelectorAll('[name=situacion]:checked')].map((x) => x.value).join(',') || null, riesgo: r('riesgo'), experiencia: r('experiencia'), estilo: r('estilo'), deudas: r('deudas'), gastos_mes: n(f.gastos.value), colchon_meses: n(f.colchon.value) || 6, ingresos_mes: n(f.ingresos.value), limite_cripto: cri ?? 5, limite_empresa: emp ?? 10, limite_oro: n(f.oro.value) ?? 10, actualizado: new Date().toISOString() };
+    if (lim != null) S.cartera.limite_acciones = lim;
     AS.foto = null;
     await guardarYPintar('Perfil de inversor', h);
     toast('Guardado. La IA rehará sus consejos con tu perfil.', 4000);
@@ -5324,10 +5596,10 @@ function editarSobreMi() {
 function textoPerfil(M) {
   const e = estadoPerfil(M), p = e.p, L = [];
   if (perfilVacio()) L.push('No ha rellenado su perfil todavía: si te falta algo que cambie tus consejos (edad, en qué anda, cuándo necesita el dinero, cuánto riesgo aguanta), pregúntaselo.');
-  const d = [p.edad && `${p.edad} años`, SITUACION[p.situacion], p.horizonte && `necesitará la mayor parte del dinero ${textoHorizonte(p.horizonte)}`, p.riesgo && `si la cartera cae un 30 %: ${RIESGO[p.riesgo][0].toLowerCase()} (${RIESGO[p.riesgo][2].toLowerCase()})`, EXPERIENCIA[p.experiencia] && `experiencia: ${EXPERIENCIA[p.experiencia].toLowerCase()}`, ESTILO[p.estilo] && `busca: ${ESTILO[p.estilo].toLowerCase()}`, DEUDAS[p.deudas] && `deudas: ${DEUDAS[p.deudas].toLowerCase()}`, p.ingresos_mes && `ingresos netos ${E0(+p.ingresos_mes)} al mes`, p.gastos_mes && `gastos ${E0(+p.gastos_mes)} al mes`].filter(Boolean);
+  const d = [p.edad && `${p.edad} años`, situacionTxt(p.situacion), p.horizonte && `necesitará la mayor parte del dinero ${textoHorizonte(p.horizonte)}`, p.riesgo && `si la cartera cae un 30 %: ${RIESGO[p.riesgo][0].toLowerCase()} (${RIESGO[p.riesgo][2].toLowerCase()})`, EXPERIENCIA[p.experiencia] && `experiencia: ${EXPERIENCIA[p.experiencia].toLowerCase()}`, ESTILO[p.estilo] && `busca: ${ESTILO[p.estilo].toLowerCase()}`, DEUDAS[p.deudas] && `deudas: ${DEUDAS[p.deudas].toLowerCase()}`, p.ingresos_mes && `ingresos netos ${E0(+p.ingresos_mes)} al mes`, p.gastos_mes && `gastos ${E0(+p.gastos_mes)} al mes`].filter(Boolean);
   if (d.length) L.push(d.join('; ') + '.');
   if (e.reco) L.push(`Bolsa que encaja con su perfil según GrowFolio: entre ${e.reco.min} y ${e.reco.max} %. Tiene un ${fmtNum(e.pctBolsa, 0)} %.`);
-  L.push(`Sus límites: acciones sueltas ${fmtNum(+(S.cartera.limite_acciones || 20), 0)} % (lleva ${fmtNum(e.pctSueltas, 1)} %), cripto ${fmtNum(+p.limite_cripto, 0)} % (lleva ${fmtNum(e.pctCripto, 1)} %), una sola empresa ${fmtNum(+p.limite_empresa, 0)} %${e.mayor ? ` (la mayor, ${e.mayor.f.inst.corto}, ${fmtNum(e.mayor.pct, 1)} %)` : ''}.`);
+  L.push(`Sus límites: acciones sueltas ${fmtNum(+(S.cartera.limite_acciones ?? 20), 0)} % (lleva ${fmtNum(e.pctSueltas, 1)} %), cripto ${fmtNum(+p.limite_cripto, 0)} % (lleva ${fmtNum(e.pctCripto, 1)} %), una sola empresa ${fmtNum(+p.limite_empresa, 0)} %${e.mayor ? ` (la mayor, ${e.mayor.f.inst.corto}, ${fmtNum(e.mayor.pct, 1)} %)` : ''}.`);
   if (e.colchon) L.push(`Colchón que quiere: ${p.colchon_meses} meses de gastos, ${E0(e.colchon)}. Tiene ${E0(e.seguro)} entre efectivo, monetarios y renta fija.`);
   for (const m of e.metas) L.push(`- Meta "${m.n}": ${m.tipo === 'llegar' ? 'llegar a tener' : 'gastar'} ${E0(m.importe)}${m.anio ? ` en ${m.anio}` : ''}. ${textoMeta(m).replace(/<[^>]+>/g, '')}`);
   for (const r of (p.respuestas || []).slice(-12)) L.push(`- Le preguntaste "${r.q}" y contestó: "${r.a}" (${r.f}).`);
@@ -5340,7 +5612,7 @@ function pasosPerfil(M, add) {
   if (perfilVacio()) add('mes', { id: 'perfil:0', cuando: 'un minuto', t: 'Cuéntale a GrowFolio tu edad, tus metas y cuánto riesgo aguantas', pq: 'Con eso estos pasos, las ideas y la IA se ajustan a ti: no se invierte igual a los 24 que a los 60.', acc: '<a class="enlace" href="#objetivos">Rellenar tu perfil</a>' });
   if (p.deudas === 'consumo') add('mes', { id: `deuda:${mes}`, cuando: 'antes que nada', t: 'Liquida los préstamos o tarjetas antes de invertir más', pq: 'Suelen costar un 7-25 % al año: devolverlos es una rentabilidad segura que la bolsa no te garantiza.', como: 'Lo que ibas a aportar este mes, a amortizar el préstamo más caro. Las aportaciones automáticas, en pausa hasta acabar.' });
   if (e.colchon && e.seguro < e.colchon * 0.9) add('mes', { id: `colchonf:${mes}`, cuando: 'antes de meter más en bolsa', t: `Completa tu colchón: te faltan ${eur(e.colchon - e.seguro, 0)}`, pq: `Son ${p.colchon_meses} meses de tus gastos (${eur(e.colchon, 0)}). Ahora tienes ${eur(e.seguro, 0)} entre efectivo, monetarios y renta fija.`, como: 'Ve apartando cada mes en el efectivo remunerado de Trade Republic o en un fondo monetario de MyInvestor hasta llegar. Es el dinero de los imprevistos: así nunca tienes que vender en una caída.', imp: 'Los intereses del efectivo y de los monetarios tributan como los dividendos (19-23 %); el monetario no paga nada hasta que lo vendas.', acc: '<a class="enlace" href="#objetivos">Ver tu perfil</a>' });
-  const limC = +p.limite_cripto || 5;
+  const limC = +(p.limite_cripto ?? 5);
   if (e.pctCripto > limC + 1 && e.total) { const exceso = e.cripto - (limC / 100) * e.total; add('mes', { id: `limcripto:${mes}`, cuando: 'sin prisa', t: `La cripto pasa de tu límite: ${fmtNum(e.pctCripto, 1)} % de un ${fmtNum(limC, 0)} %`, pq: `Para volver a tu ${fmtNum(limC, 0)} % tendrías que pasar unos ${eur(exceso, 0)} a otra cosa, o dejar de comprar cripto hasta que tus aportaciones la diluyan.`, como: 'Vende esa parte en Bitvavo, pásala a tu banco y de ahí a tu fondo indexado.', imp: 'Si vendes con ganancia, tributa como cualquier venta (19-23 %). Cambiarla por otra cripto también cuenta como venta.' }); }
   if (e.reco && e.pctBolsa - e.reco.pct > 15) add('anio', { id: `perfilbolsa:${mes}`, cuando: 'poco a poco', t: `Tu cartera arriesga más de lo que encaja contigo: ${fmtNum(e.pctBolsa, 0)} % en bolsa`, pq: `Para tu edad, tu plazo y lo que dices aguantar, lo normal es un ${e.reco.min}-${e.reco.max} %.`, como: 'Sin vender nada: manda las próximas aportaciones a un fondo de renta fija o monetario hasta acercarte.', imp: 'Así no pagas nada: no vendes, solo cambias adónde va lo nuevo. Entre fondos, cambia con traspasos.', acc: '<a class="enlace" href="#objetivos">Ver tu perfil</a>' });
   for (const m of e.metas) {
@@ -5723,7 +5995,7 @@ function hoja(titulo, html, alCerrar, ancha) {
   const f = document.createElement('div');
   f.className = 'hoja-fondo';
   f.innerHTML = `<div class="hoja${ancha ? ' ancha' : ''}" role="dialog" aria-modal="true" aria-label="${esc(titulo)}"><div class="hoja-cab"><h2>${esc(titulo)}</h2><button class="ib" data-cerrar aria-label="Cerrar">${ICONOS.cerrar}</button></div>${html}</div>`;
-  const cerrar = () => { f.remove(); document.removeEventListener('keydown', tecla, true); if (alCerrar) alCerrar(); };
+  const cerrar = (sinAviso) => { f.remove(); document.removeEventListener('keydown', tecla, true); if (alCerrar && sinAviso !== true) alCerrar(); };
   const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); cerrar(); } };
   f.addEventListener('click', (e) => { if (e.target === f || e.target.closest('[data-cerrar]')) cerrar(); });
   document.addEventListener('keydown', tecla, true);
@@ -5771,7 +6043,7 @@ function editarPosicion(id) {
         <label class="campo">Cantidad<input name="cantidad" inputmode="decimal" value="${val(p.cantidad)}" placeholder="${f && f.uds != null ? 'ahora ' + fmtNum(f.uds, 4) + ' (estimado)' : 'participaciones o acciones'}"><small>Lo que pone tu bróker. Admite coma decimal.</small></label>
         <label class="campo">A fecha de<input name="fecha" type="date" value="${val(p.fecha || hoyIso())}"><small>Las aportaciones automáticas se suman después de esta fecha.</small></label>
         <label class="campo">Invertido (€)<input name="coste" inputmode="decimal" value="${val(p.coste)}"><small>Lo que has puesto en total, con comisiones.</small></label>
-        <label class="campo">Desde cuándo la tienes<input name="desde" type="date" value="${val(p.desde)}"><small>Más o menos, la fecha de tu primera compra. Con ella GrowFolio calcula cuánto ganas al año.</small></label>
+        <label class="campo">Desde cuándo la tienes<input name="desde" type="date" value="${val(p.desde || ((p.lotes || [])[0] || {}).f)}"><small>Más o menos, la fecha de tu primera compra. Con ella GrowFolio calcula cuánto ganas al año.</small></label>
       </div>
       <details class="mas"${p.valor_ref || p.stop || p.objetivo || p.entrada || p.notas ? ' open' : ''}><summary>Reglas, apuesta y notas</summary>
         <div class="form-grid">
@@ -5836,13 +6108,14 @@ function fijarPosicion(pos) {
 
 /* Compra, venta o "ya la tenía" (lo que tienes de antes, sin tocar el efectivo ni el historial).
    Un solo formulario: eliges el modo, buscas la empresa o el fondo y pones cuántas y a qué precio. */
-function operacion(tipo, id, sim) {
+function operacion(tipo, id, sim, cand) {
   let t = ['venta', 'tengo'].includes(tipo) ? tipo : 'compra';
   const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
   let registrada = false;
   const pos0 = id ? S.cartera.posiciones.find((p) => p.id === id) : null;
   let inst = pos0 ? pos0.instrumento : null, plat = pos0 ? pos0.plataforma : null, posSel = pos0;
   if (sim) { const nid = instDeRadar(sim); if (nid) inst = nid; }
+  if (cand) { const nid = idDeCandidato(cand); if (nid) inst = nid; }
   const platPor = (iid) => { const i = S.inst[iid] || {}; const ya = S.cartera.posiciones.find((p) => p.instrumento === iid); if (ya) return ya.plataforma; return i.clase === 'Cripto' ? 'Bitvavo' : /^Fondo/.test(i.tipo || '') ? 'MyInvestor' : 'Trade Republic'; };
   if (inst && !plat) plat = platPor(inst);
   const plats = [...new Set([...PLATAFORMAS, ...(S.cartera.posiciones || []).map((p) => p.plataforma), ...(S.cartera.efectivo || []).map((e) => e.plataforma)].filter(Boolean))];
@@ -5854,7 +6127,7 @@ function operacion(tipo, id, sim) {
       <div class="op-paso" id="cPlat"><span class="op-lbl">Dónde</span><div class="op-plats" id="opPlat" role="group" aria-label="Plataforma"></div></div>
       <div class="form-grid op-num">
         <label class="campo"><span id="lImp">Cuánto pagaste en total (€)</span><input name="importe" inputmode="decimal" placeholder="por ejemplo, 1.000"><small id="sImp">Sin la comisión.</small></label>
-        <label class="campo"><span id="lFecha">Fecha</span><input name="fecha" type="date" value="${hoyIso()}" max="${hoyIso()}"></label>
+        <label class="campo"><span id="lFecha">Fecha</span><input name="fecha" type="date" value="${hoyIso()}" max="${hoyIso()}"><small id="sFecha"></small></label>
         <label class="campo"><span id="lPrecio">Precio de cada una (€)</span><input name="precio" inputmode="decimal"><small id="sPrecio"></small></label>
         <label class="campo"><span id="lUds">Cuántas</span><input name="uds" inputmode="decimal" placeholder="se calcula sola"><small>Sale sola con el total y el precio; cámbiala si tu bróker dice otra cosa.</small></label>
         <label class="campo" id="cGastos">Comisión (€)<input name="gastos" inputmode="decimal" placeholder="0"><small id="sGastos"></small></label>
@@ -5964,7 +6237,9 @@ function operacion(tipo, id, sim) {
     $('#sPrecio', h.el).textContent = tengo ? 'Sale en tu bróker. Si pones lo invertido y cuántas, no hace falta.' : 'El de ese día. Si tu justificante dice otro, cámbialo.';
     $('#lImp', h.el).textContent = tengo ? 'Lo invertido en total (€)' : t === 'venta' ? 'Cuánto cobraste en total (€)' : 'Cuánto pagaste en total (€)';
     $('#sImp', h.el).textContent = tengo ? 'Lo que pagaste por todas: sale en tu bróker.' : 'Sin la comisión.';
-    $('#lFecha', h.el).textContent = tengo ? 'Desde cuándo la tienes (más o menos)' : 'Fecha';
+    // la fecha también es "desde cuándo la tienes": con ella sale cuánto te da al año, así que se pide ya aquí
+    $('#lFecha', h.el).textContent = tengo ? 'Desde cuándo la tienes (más o menos)' : t === 'venta' ? 'Cuándo la vendiste' : 'Cuándo la compraste';
+    $('#sFecha', h.el).textContent = tengo ? 'El día de tu primera compra, más o menos. Con él GrowFolio calcula cuánto te da al año.' : t === 'venta' ? 'Cuenta para la renta de ese año.' : 'Si es de hace tiempo, pon ese día: el precio y lo que te da al año salen solos.';
     if (!efTocado) q('efectivo').checked = !tengo && !!plat && (t === 'venta' || efectivoDe(plat) > 0);
     $('#cGastos', h.el).hidden = tengo; $('#cEf', h.el).hidden = tengo;
     $('#sGastos', h.el).textContent = plat === 'Trade Republic' ? 'En Trade Republic, 1 € por operación.' : '';
@@ -6292,7 +6567,7 @@ function editarEfectivo() {
 }
 
 function editarLimites() {
-  const h = hoja('Tus límites', `<form id="fLim" novalidate><label class="campo">Máximo en acciones sueltas (% de la cartera)<input name="lim" inputmode="decimal" value="${val(+(S.cartera.limite_acciones || 20))}"></label>
+  const h = hoja('Tus límites', `<form id="fLim" novalidate><label class="campo">Máximo en acciones sueltas (% de la cartera)<input name="lim" inputmode="decimal" value="${val(+(S.cartera.limite_acciones ?? 20))}"></label>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div></form>`);
   $('#fLim', h.el).onsubmit = async (ev) => {
     ev.preventDefault();
@@ -6559,12 +6834,15 @@ async function guardarCartera(mensaje) {
       S.instJson = j; S.instCambiados = false;
     }
     const sha = await GH.escribir('cartera.enc.json', texto, mensaje);
-    S.enc = { texto, sha }; LS.set('inv-cache-enc', texto);
+    S.enc = { texto, sha }; LS.set('inv-cache-enc', texto); LS.del('inv-pend-enc');
     toast('Guardado en GitHub');
     return true;
   } catch (e) {
     console.warn(e);
-    S.enc = { texto, sha: null }; LS.set('inv-cache-enc', texto);
+    // se queda guardado en este dispositivo y, al volver a entrar, manda sobre lo de GitHub si es más nuevo
+    S.enc = { texto, sha: S.enc && S.enc.sha }; LS.set('inv-cache-enc', texto); LS.set('inv-pend-enc', texto);
+    // en la app de Android no se pueden descargar archivos (salía el aviso de Android): solo se explica
+    if (window.InversionesApp) { toast(e.message === 'sin-token' ? 'Guardado en este móvil. Para que llegue a GitHub y al ordenador, pon el token en Ajustes, Avanzado: se sube solo al volver a entrar.' : `Guardado en este móvil, pero no en GitHub (${e.message}). Se subirá la próxima vez que entres.`, 8000); return true; }
     descargar('cartera.enc.json', texto);
     if (S.instCambiados) descargar('instrumentos.json', JSON.stringify({ ...S.instJson, instrumentos: S.instOrden.map((id) => S.inst[id]) }, null, 2) + '\n');
     toast(e.message === 'sin-token' ? 'Sin token: te he descargado el archivo cifrado. Súbelo al repositorio.' : `No se pudo guardar en GitHub (${e.message}). Te he descargado el archivo.`, 7000);
@@ -6707,13 +6985,13 @@ const idDeCandidato = (c) => (c.k.startsWith('inst:') ? c.k.slice(5) : c.k.start
 function buscador(cont, alElegir, opt = {}) {
   cont.innerHTML = `<div class="busca"><span class="busca-ico" aria-hidden="true">${SVG('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>', 2)}</span><input type="search" autocomplete="off" spellcheck="false" enterkeyhint="search" placeholder="${esc(opt.placeholder || 'Busca por nombre, ticker o ISIN')}" aria-label="Buscar"><ul class="busca-res" role="listbox" hidden></ul></div>`;
   const inp = cont.querySelector('input'), ul = cont.querySelector('ul');
-  const lista = candidatosBusqueda().filter((c) => !opt.soloTengo || c.tengo);
+  const lista = (opt.lista || candidatosBusqueda()).filter((c) => !opt.soloTengo || c.tengo);
   let res = [], sel = 0;
   const fila = (c, i) => { const pr = c.pr && c.pr(); return `<li role="option" data-i="${i}" aria-selected="${i === sel}">${logo(c.dom, c.n)}<span class="busca-t"><b>${esc(c.n)}</b>${c.l && normTxt(c.l) !== normTxt(c.n) ? `<small class="busca-l">${esc(c.l)}</small>` : ''}<small>${bandera(c.cot.cod)}${esc(c.cot.txt || '')}${c.isin ? ` · ${esc(c.isin)}` : c.s ? ` · ${esc(c.s)}` : ''}</small></span><span class="busca-p">${pr ? precioFmt(pr) : ''}${c.tengo ? '<small>la tienes</small>' : ''}</span></li>`; };
   const pintarRes = () => {
     const q = inp.value.trim();
     if (!res.length && !q) { ul.hidden = true; return; }
-    const isin = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i.test(q) && !res.some((c) => String(c.isin).toUpperCase() === q.toUpperCase());
+    const isin = !opt.alCandidato && /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i.test(q) && !res.some((c) => String(c.isin).toUpperCase() === q.toUpperCase());
     ul.innerHTML = res.map(fila).join('') + (isin ? `<li role="option" data-isin="${esc(q.toUpperCase())}">${logo(null, '+')}<span class="busca-t"><b>Añadir el fondo o ETF ${esc(q.toUpperCase())}</b><small>${PERFIL_LOCAL ? 'No está en la base de datos: lo añades, pero sin precio diario hasta que se sume al catálogo común' : 'No está en la lista: lo das de alta y la Action le busca precio'}</small></span></li>` : '') + (!res.length && !isin ? `<li class="busca-nada">No lo encuentro. Prueba con otro nombre, el ticker (IAG, AAPL) o el ISIN, que sale en tu bróker.</li>` : '');
     ul.hidden = false;
   };
@@ -6722,6 +7000,7 @@ function buscador(cont, alElegir, opt = {}) {
     if (!li) return;
     if (li.dataset.isin) { ul.hidden = true; nuevoInstrumento((nid) => { if (nid) alElegir(nid); }, { isin: li.dataset.isin }); return; }
     const c = res[+li.dataset.i]; if (!c) return;
+    if (opt.alCandidato) { ul.hidden = true; inp.blur(); opt.alCandidato(c); return; }
     const id = idDeCandidato(c);
     ul.hidden = true; if (id) alElegir(id);
   };
@@ -6741,48 +7020,169 @@ function buscador(cont, alElegir, opt = {}) {
 }
 
 /* =====================================================================
+   Consulta (pestaña Mercados): buscar cualquier fondo, acción, cripto o mercado aunque no lo tengas, ver su
+   precio, su gráfica, sus datos y sus noticias, y añadirlo a la cartera desde ahí. Las que más suben y bajan
+   salen de las empresas del radar (unas 840), con su último cierre.
+   ===================================================================== */
+function candidatosConsulta() {
+  const merc = Object.entries((S.precios && S.precios.mercados) || {}).map(([sym, m]) => ({ k: 'merc:' + sym, n: m.nombre, l: m.grupo || '', s: sym, isin: '', dom: null, cot: { cod: null, txt: m.grupo || 'mercado' }, tengo: false }));
+  return [...candidatosBusqueda(), ...merc];
+}
+function candidatoDeSim(sim) {
+  const id = instPorSim(sim), k = id ? 'inst:' + id : 'radar:' + sim;
+  return candidatosBusqueda().find((c) => c.k === k) || null;
+}
+const nombreRadar = (x) => nombreCorto(/^[A-Z0-9 .,&'-]+$/.test(x.n) ? x.n.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : x.n);
+function htmlBuscaMercados() {
+  const n = candidatosBusqueda().length;
+  return `<section class="merc-busca" aria-labelledby="hBusca"><h2 id="hBusca">Busca un fondo, una acción o una cripto</h2><div id="mercBusca"></div><p class="merc-busca-t">Unos ${fmtNum(Math.floor(n / 50) * 50, 0)} entre fondos, cripto, empresas y mercados. Tócalo para ver su precio, su gráfica y sus noticias, y añadirlo a tu cartera.</p></section>`;
+}
+function htmlMovidas() {
+  const r = ((S.radar && S.radar.valores) || []).filter((x) => x.v != null && isFinite(x.v) && x.p > 0 && Math.abs(x.v) < 60);
+  if (r.length < 30) return '';
+  const orden = [...r].sort((a, b) => b.v - a.v), suben = orden.slice(0, 5), bajan = orden.slice(-5).reverse();
+  const li = (x) => `<li><button type="button" class="mov" data-consulta="${esc(x.s)}">${logo(x.w, nombreRadar(x), 'peq')}<span class="busca-t"><b>${esc(nombreRadar(x))}</b><small>${esc(x.s)}${x.sector ? ` · ${esc(x.sector)}` : ''}</small></span><span class="mov-v"><b class="${cls(x.v)}">${pctS(x.v, 1)}</b><small>${precioR(x.p, x.m)}</small></span></button></li>`;
+  return `<section class="movidas" aria-labelledby="hMov"><div class="sec-cab"><h2 id="hMov">Las que más se han movido</h2><span class="k">en su último día de bolsa, de las ${fmtNum(r.length, 0)} empresas del radar${S.radar.generado ? `, ${haceCuanto(S.radar.generado)}` : ''}</span></div>
+    <div class="mov-cols"><div><h3 class="mov-h up">Suben</h3><ul class="mov-l">${suben.map(li).join('')}</ul></div><div><h3 class="mov-h down">Bajan</h3><ul class="mov-l">${bajan.map(li).join('')}</ul></div></div></section>`;
+}
+/* gráfica sencilla del último año a partir de [[fecha, precio], …] */
+function graficaConsulta(h, mon) {
+  const desde = iso(new Date(Date.now() - 366 * 864e5));
+  const se = (h || []).filter(([d, v]) => d >= desde && v > 0);
+  if (se.length < 10) return '';
+  const W = 600, H = 170, vs = se.map((x) => x[1]), mn = Math.min(...vs), mx = Math.max(...vs);
+  const pts = vs.map((v, i) => `${((i / (vs.length - 1)) * W).toFixed(1)},${(H - 8 - ((v - mn) / (mx - mn || 1)) * (H - 22)).toFixed(1)}`);
+  const ch = (vs[vs.length - 1] / vs[0] - 1) * 100, col = ch >= 0 ? 'var(--up)' : 'var(--down)';
+  return `<figure class="cons-graf"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Precio desde el ${fechaLarga(se[0][0])}: ${pctS(ch, 1)}"><defs><linearGradient id="consG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity="0.28"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs><path d="M0,${H} L${pts.join(' L')} L${W},${H} Z" fill="url(#consG)"/><polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
+    <figcaption><span class="k">Desde el ${fechaLarga(se[0][0])}</span><b class="${cls(ch)}">${pctS(ch, 1)}</b><span class="k">máximo ${precioR(mx, mon)}, mínimo ${precioR(mn, mon)}</span></figcaption></figure>`;
+}
+/* sin histórico (empresas del radar): dónde está el precio dentro de su rango del año y su objetivo */
+function rangoConsulta(x) {
+  if (!(x.mx > x.mn) || !x.p) return '';
+  const p = (v) => Math.max(0, Math.min(100, ((v - x.mn) / (x.mx - x.mn)) * 100)).toFixed(1);
+  return `<div class="cons-rango"><div class="cr-t"><span class="k">Rango del último año</span>${x.c1a != null ? `<b class="${cls(x.c1a)}">${pctS(x.c1a, 1)} en un año</b>` : ''}</div>
+    <div class="cr-barra" role="img" aria-label="Precio ${precioR(x.p, x.m)} entre ${precioR(x.mn, x.m)} y ${precioR(x.mx, x.m)}"><i class="cr-p" style="left:${p(x.p)}%"></i>${x.obj ? `<i class="cr-o" style="left:${p(Math.min(x.obj, x.mx))}%" title="Objetivo medio de los analistas"></i>` : ''}</div>
+    <div class="cr-et"><span>${precioR(x.mn, x.m)}</span>${x.obj ? `<span class="cr-leg"><i></i>objetivo ${precioR(x.obj, x.m)}</span>` : ''}<span>${precioR(x.mx, x.m)}</span></div></div>`;
+}
+function abrirConsulta(c) {
+  if (!c) return;
+  if (c.k.startsWith('merc:')) {
+    const d = document.querySelector(`details.mfila[data-sym="${CSS.escape(c.k.slice(5))}"]`);
+    if (d) { d.open = true; d.scrollIntoView({ behavior: 'smooth', block: 'center' }); }
+    return;
+  }
+  const idI = c.k.startsWith('inst:') ? c.k.slice(5) : null;
+  const pos = idI && (S.cartera.posiciones || []).find((p) => p.instrumento === idI);
+  if (pos) { abrirFicha(pos.id); return; }
+  const inst = idI ? S.inst[idI] : null;
+  const cid = c.k.startsWith('cat:') ? c.k.slice(4) : (inst && inst.cat) || null;
+  const ca = cid ? S.cat && S.cat.v && S.cat.v[cid] : inst ? catDe(inst) : null;
+  const sim = c.k.startsWith('radar:') ? c.k.slice(6) : c.s || (inst && inst.yahoo) || '';
+  const x = sim ? radarPorSim(sim) : null;
+  const pi = idI && S.precios && S.precios.instrumentos && S.precios.instrumentos[idI];
+  let precio = null, mon = 'EUR', dia = null, fecha = null;
+  if (idI && pi && pi.precio) { precio = precioInst(idI); dia = pi.variacion_dia; fecha = pi.fecha; mon = pi.moneda || 'EUR'; }
+  if (precio == null && ca && ca.p) { precio = ca.p; mon = ca.m || 'EUR'; dia = ca.pa ? (ca.p / ca.pa - 1) * 100 : null; fecha = ca.f; }
+  if (precio == null && x) { precio = x.p; mon = x.m || 'EUR'; dia = x.v; }
+  const nombre = x && c.k.startsWith('radar:') ? nombreRadar(x) : c.n;
+  const fondo = /^Fondo/.test((ca && ca.t) || (inst && inst.tipo) || '');
+  const datos = [];
+  if (x) {
+    if (x.na) datos.push(['Analistas', `${fmtNum(x.na, 0)}, ${esc((CONSENSO[x.r] || '').toLowerCase() || 'sin consenso')}`]);
+    if (x.pot != null && x.obj) datos.push(['Hasta su precio objetivo', `<span class="${cls(x.pot)}">${pctS(x.pot, 1)}</span> (${precioR(x.obj, x.m)})`]);
+    if (x.div) datos.push(['Dividendo', pct(x.div, 1)]);
+    if (x.perf) datos.push(['PER futuro', fmtNum(x.perf, 1)]);
+    // la capitalización llega en la moneda de la bolsa: se pasa a euros con el cambio del día
+    const fxC = x.m === 'EUR' ? 1 : (S.precios && S.precios.fx && S.precios.fx[x.m === 'GBp' ? 'GBP' : x.m]) || null;
+    if (x.cap && fxC) datos.push(['Capitalización', capital(x.cap * fxC)]);
+    if (x.sector) datos.push(['Sector', esc(x.sector)]);
+    if (x.z) datos.push(['País', esc(x.z)]);
+  }
+  if (ca && ca.r && Object.keys(ca.r).length > 1) datos.push(['Dónde invierte', esc(Object.entries(ca.r).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${fmtNum(v, 0)} %`).join(', '))]);
+  const nots = sim ? noticiasIdea(sim) : [];
+  const gnews = `https://news.google.com/search?q=${encodeURIComponent(nombre)}&hl=es&gl=ES&ceid=ES:es`;
+  const h = hoja(nombre, `<div class="cons">
+      <div class="cons-cab">${logo(c.dom, nombre)}<div class="busca-t"><b>${esc(nombre)}</b><small>${bandera(c.cot.cod)}${esc(c.cot.txt || '')}${c.isin ? ` · ${esc(c.isin)}` : sim ? ` · ${esc(sim)}` : ''}</small></div></div>
+      ${precio != null ? `<div class="cons-precio"><b>${precioR(precio, mon)}</b>${dia != null ? `<span class="${cls(dia)}">${pctS(dia, 2)}</span>` : ''}<small class="k">${fecha ? `${fondo ? 'valor liquidativo del' : 'cierre del'} ${fechaCorta(fecha)}` : 'último cierre'}</small></div>` : ''}
+      <div id="consGraf">${cid || (idI && histDe(idI)) ? '<div class="vacio">Cargando la gráfica…</div>' : x ? rangoConsulta(x) : ''}</div>
+      <div class="fila-btns cons-btns"><button type="button" class="btn pri" data-cons-add>${ICONOS.mas}Añadir a mi cartera</button><button type="button" class="btn" data-cons-ia>${ICONOS.chispa}Pregúntale a la IA</button></div>
+      ${datos.length ? `<dl class="kv">${datos.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : ''}
+      ${x ? `<details class="mas"><summary>Las siete señales de GrowFolio</summary>${htmlContrasteLista(contraste(x))}</details>` : ''}
+      <section class="cons-not"><h3>Noticias</h3>${nots.length ? htmlNoticias(nots, false, 5) : ''}<a class="enlace" href="${esc(gnews)}" target="_blank" rel="noopener noreferrer">Ver las noticias de ${esc(nombre)} en Google Noticias</a></section>
+    </div>`);
+  $('[data-cons-add]', h.el).onclick = () => { h.cerrar(); operacion('compra', null, null, c); };
+  $('[data-cons-ia]', h.el).onclick = () => { h.cerrar(); abrirAsesor(`¿Qué me dices de ${nombre}${sim ? ` (${sim})` : c.isin ? ` (${c.isin})` : ''}? Qué es, cómo le va, qué riesgos tiene y si encajaría en mi cartera.`); };
+  // la gráfica: histórico del catálogo (fondos y cripto) o el de la web; si no hay, el rango del año
+  const gr = $('#consGraf', h.el);
+  (async () => {
+    let serie = idI ? histDe(idI) : null;
+    if (!serie && cid) {
+      const id2 = cid;
+      try { const r = await fetch(CFG.dev ? `dev/cat/${id2}.json` : GH.raw(`cat/${id2}.json`, 'catalogo') + '?v=' + Math.floor(Date.now() / 3600000), { cache: 'no-cache' }); if (r.ok) { const j = await r.json(); serie = j && j.h; } } catch (e) { console.warn(e); }
+    }
+    const g = serie ? graficaConsulta(serie, mon) : '';
+    gr.innerHTML = g || (x ? rangoConsulta(x) : '');
+  })();
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-consulta]'); if (!b || !S.cartera) return;
+  const sim = b.dataset.consulta, c = candidatoDeSim(sim);
+  const x = radarPorSim(sim);
+  abrirConsulta(c || (x ? { k: 'radar:' + sim, n: nombreRadar(x), l: x.n, s: sim, isin: '', dom: x.w, cot: { cod: null, txt: x.z || '' }, tengo: false } : null));
+});
+
+/* =====================================================================
    Versiones. Mientras la web esté en alfa va por 0.1.x: el último número sube con cada actualización
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.1.16';
+const VERSION = '0.1.17';
 const NOVEDADES = [
-  { v: '0.1.16', f: '2026-10-19', t: 'Compras arregladas y todo más claro', cosas: [
+  { v: '0.1.17', f: '2026-10-20', h: '01:06', t: 'Consulta cualquier valor y GTA VI en neón', cosas: [
+    { d: 'buscar', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Busca cualquier fondo o acción', x: 'Mercados ya es una pestaña más. Arriba tiene un buscador para cualquier fondo, acción, cripto o mercado, lo tengas o no: precio, gráfica del año, datos, noticias y un botón para añadirlo a tu cartera. Debajo, las que más han subido y bajado en el día.' },
+    { d: 'cifras', ir: { v: 'cartera', sel: '.hero-sub' }, t: 'Hoy y lo ganado, también en euros', x: 'La tabla dice cuánto ha subido o bajado hoy cada posición en euros, con el % debajo, y en pantallas medianas lo que llevas ganado en euros. Arriba, lo que más ha movido hoy tu cartera sale en etiquetas de colores.' },
+    { d: 'perfil', ir: { v: 'futuro', sel: 'section[aria-labelledby="hLim"]' }, t: 'Tus límites, con deslizadores', x: 'Acciones sueltas, cripto y oro se reparten en una barra: si al subir uno os pasáis del 100 %, los demás bajan solos. En «Ahora mismo estás» ya puedes marcar varias, por ejemplo si estudias y trabajas.' },
+    { d: 'app', t: 'En la app no se pierde nada', x: 'Si guardas en la app sin el token de GitHub, ya no sale el aviso de Android. Se queda en el móvil, manda sobre lo de GitHub si es más nuevo y se sube solo cuando haya token. Al apuntar una compra, la fecha ahora se llama «Cuándo la compraste».' },
+    { d: 'tour', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Novedades que te llevan a cada cosa', x: 'Cada mejora tiene un «Enséñamelo» que te lleva hasta ella, resaltada. Si llevabas días sin entrar, salen todas las versiones que te has perdido, con su día y su hora, y al final está el registro de cambios completo en texto. Ajustes tiene su engranaje y va ordenado en tarjetas, y el tutorial enseña el widget de Android.' },
+    { d: 'gta', ir: { v: 'cartera', sel: '[data-gta]' }, t: 'El rincón de GTA VI, rehecho', x: 'Ahora es una escena de neón: atardecer, cuadrícula que se mueve, letras que se encienden y cifras que cuentan hacia arriba al aparecer. Según bajas se dibujan las gráficas: tu cartera medida en copias del juego en cada momento de la espera, lo que habría hecho desde el primer tráiler y el camino hasta el 19 de noviembre, que se va llenando. El tráiler de lanzamiento, al final.' },
+    { d: 'idioma', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Mucho más en inglés', x: 'Paso a paso, Expertos, Fiscalidad, la ficha, las ideas y GTA VI ya salen en inglés, también las frases con nombres y cifras dentro («Sell part of Repsol: 98 shares»). Los informes de GrowFolio IA y las noticias siguen en español por ahora.' },
+  ] },
+  { v: '0.1.16', f: '2026-10-19', h: '23:43', t: 'Compras arregladas y todo más claro', cosas: [
     { d: 'buscar', t: 'Apuntar compras, sin líos', x: 'Buscar «SP500», «sp 500» o «S&P500» ya encuentra el S&P 500. Primero pones cuánto pagaste en total y las participaciones salen solas con el precio de ese día (si cambias la fecha, cambia el precio). Si pones el total donde va el precio, te avisa antes de guardar, y ya no resta del efectivo si no tienes.' },
     { d: 'ficha', t: 'Ficha más limpia', x: 'Arriba, tipo y bróker en una línea, los cuatro botones en una fila en el móvil y la fecha del precio explicada (los fondos tienen un precio al día). Las medias y el RSI van plegados en «Para curiosos» y la gestora sale con su nombre.' },
     { d: 'pregunta', t: 'La IA habla más claro', x: 'GrowFolio IA tiene una regla nueva: nada de jerga sin explicar y empezar por lo que te supone a ti. Se nota en los próximos informes y respuestas.' },
     { d: 'renta', t: 'Hacienda en una frase', x: 'En el Paso a paso, lo de Hacienda sale en una frase y el resto en «Más sobre Hacienda». Las noticias agrupan las fuentes («Yahoo Finance (3)») y las etiquetas «Bueno» y «Malo» ya no se estiran a lo ancho.' },
     { d: 'perfil', t: 'Riesgo y objetivos sin líos', x: 'El riesgo de 1 a 7 dice que 7 es lo más arriesgado y la nota de la IA se llama «Control del riesgo» (5 es lo mejor). En Objetivos ya no salen filas «sin decir» hasta que rellenas tu perfil, y al vender ves cuántas participaciones tienes.' },
   ] },
-  { v: '0.1.15', f: '2026-10-19', t: 'Menos ruido', cosas: [
+  { v: '0.1.15', f: '2026-10-19', h: '23:26', t: 'Menos ruido', cosas: [
     { d: 'ajustes', t: 'Ajustes ordenados', x: 'Seguridad (PIN, contraseña y este dispositivo), GrowFolio IA y la app, Ayuda, y lo técnico (copias, archivos y GitHub) plegado en «Avanzado».' },
     { d: 'mercados', t: 'Mercados dice cuánto te toca', x: 'En vez de «te afecta» en todos, cada mercado dice qué parte de tu cartera depende de él. Y tocando la cinta de cotizaciones de arriba vas a Mercados.' },
     { d: 'movil', t: 'Menos iconos arriba en el móvil', x: 'El estado sale en corto («En directo», «Bolsas cerradas») y recortar la pantalla está dentro de Pregúntale. En Próximas fechas, las aportaciones del mismo día van en una sola fila.' },
     { d: 'jerga', t: 'Las mismas palabras en todas partes', x: '«Acciones» en vez de apuestas, «GrowFolio IA» y «Pregúntale» para la IA, «bolsa de Madrid» o «fondo de Irlanda» al lado de cada cosa y Londres en libras, no en peniques. En el radar del móvil, solo lo importante.' },
   ] },
-  { v: '0.1.14', f: '2026-10-19', t: 'Más claro', cosas: [
+  { v: '0.1.14', f: '2026-10-19', h: '23:19', t: 'Más claro', cosas: [
     { d: 'cifras', t: 'Ideas con cifras de verdad', x: 'Antes salía lo que daría cada idea «al año» aunque su plazo fuera de 3 meses, y aparecían cosas como +110 %. Ahora ves lo que te quedarías en su plazo real, ya restados los impuestos.' },
     { d: 'hecho', t: 'Marcar un paso como hecho', x: 'Cada paso tiene su botón «Marcar como hecho» y lo hecho se queda tachado. Los contadores de arriba cuentan lo mismo que las listas.' },
     { d: 'grafica', t: 'Cartera más fácil de leer', x: 'La gráfica dice que es cómo se habría movido lo que tienes hoy; lo tuyo de verdad es «ganado desde que compraste». Los botones se llaman igual en todas partes: «Compra o venta» y «Lo que ya tenía».' },
     { d: 'jerga', t: 'Menos jerga y algún arreglo', x: 'Comisión en vez de TER, puntos en vez de pp, «puede subir» en vez de recorrido. Fiscalidad sin ventas te lo dice en una frase. En el móvil, Rentabilidad ya no descuadra la pantalla, y «coinciden» solo sale cuando la IA y los números dicen lo mismo.' },
   ] },
-  { v: '0.1.13', f: '2026-10-19', t: 'PIN y huella', cosas: [
+  { v: '0.1.13', f: '2026-10-19', h: '23:04', t: 'PIN y huella', cosas: [
     { d: 'pin', t: 'Entra con PIN o con la huella', x: 'En Ajustes, Bloqueo con PIN o huella. GrowFolio se abre sin escribir la contraseña y, una vez cada 72 horas, te pide el PIN de 4 cifras o la huella. Con cinco PIN mal seguidos vuelve a pedir la contraseña.' },
     { d: 'candado', t: 'Bloquear al momento', x: 'Con el PIN puesto, el botón Bloquear de Ajustes cierra GrowFolio y pide el PIN o la huella para volver. En la app de Android, la huella llega con la versión nueva de la app: te avisa al abrirla.' },
   ] },
-  { v: '0.1.12', f: '2026-10-19', t: 'Menos scroll y GTA VI', cosas: [
+  { v: '0.1.12', f: '2026-10-19', h: '22:57', t: 'Menos scroll y GTA VI', cosas: [
     { d: 'gta', t: 'Cuenta atrás para GTA VI', x: 'Al lado de tu patrimonio: los días que faltan, cuántos GTA VI vale tu cartera, en qué año podrías pagar el juego entero, el tráiler de lanzamiento y lo que pudo costar hacerlo.' },
     { d: 'mercados', t: 'Mercados, más fácil de leer', x: 'Cada mercado en una fila con su precio, lo de hoy y una gráfica pequeña; tócalo para ver qué es y qué significa para ti. Seis noticias a la vista y el resto, plegadas.' },
     { d: 'movil', t: 'Menos scroll en el móvil', x: 'Las explicaciones largas se pliegan en "Más detalles", las ideas de compra salen en corto hasta que las abres y el radar enseña diez filas. Mercados mide la mitad que antes e Ideas, menos de la mitad.' },
     { d: 'idioma', t: 'GrowFolio en inglés, en pruebas', x: 'En Ajustes, Idioma, con la bandera de cada uno, y también en la presentación y al entrar. Está a medias: botones, pestañas y formularios ya salen en inglés, pero las noticias, los informes de la IA y algunos textos siguen en español.' },
   ] },
-  { v: '0.1.11', f: '2026-10-19', t: 'GrowFolio', cosas: [
+  { v: '0.1.11', f: '2026-10-19', h: '21:33', t: 'GrowFolio', cosas: [
     { d: 'logo', t: 'Ahora se llama GrowFolio', x: 'Grow (crecer) y portfolio (cartera): tu cartera creciendo. Logo nuevo en la web y en la app, y la IA pasa a llamarse GrowFolio IA (por dentro sigue usando Gemini, de Google).' },
     { d: 'intro', t: 'Una presentación al empezar', x: 'La primera vez que abres la web o la app, cinco diapositivas con lo que puedes hacer y, al final, el botón para crear tu cartera o entrar. Desde la pantalla de entrar se puede volver a ver.' },
     { d: 'tour', t: 'El tutorial, siempre a mano', x: 'Al final de cada pestaña y arriba del todo en Ajustes, aunque te lo saltaras al principio.' },
     { d: 'opinion', t: 'Tu opinión, desde la app', x: 'Cuenta qué se ve mal, qué falla o una idea, y en qué pestaña. Botón al final de cada pestaña y en Ajustes.' },
   ] },
-  { v: '0.1.10', f: '2026-10-19', t: 'A tu medida', cosas: [
+  { v: '0.1.10', f: '2026-10-19', h: '21:18', t: 'A tu medida', cosas: [
     { d: 'perfil', t: 'Objetivos: tu perfil y tus metas', x: 'Tu edad, en qué andas, cuándo necesitas el dinero, cuánto riesgo aguantas, tus límites y tus metas con cifra y fecha. La IA, las ideas y el Paso a paso se ajustan a ti.' },
     { d: 'pregunta', t: 'La IA te pregunta', x: 'Cuando le falta algo de ti para acertar, te lo pregunta. Contestas con un toque y rehace sus consejos.' },
     { d: 'pasos', t: 'Paso a paso más claro', x: 'Separa lo que tienes que hacer tú, las fechas que vigilar y lo que va solo. Cada compra o venta dice lo que supone en la renta y qué evitar por Hacienda.' },
@@ -6792,7 +7192,7 @@ const NOVEDADES = [
     { d: 'catalogo', t: 'Fondos que no tenían precio', x: 'El Fidelity S&P 500, True Value, Xetra-Gold y los ETF del DAX, Euro Stoxx 50 y LifeStrategy 80 % ya tienen precio diario.' },
     { d: 'app', t: 'El aviso de la app, nada más abrirla', x: 'Si hay versión nueva de la app, te lo dice al abrirla y se instala con un toque (desde la 0.1.10; la primera vez se baja con Chrome).' },
   ] },
-  { v: '0.1.9', f: '2026-10-19', t: 'Meter lo que tienes, sin líos', cosas: [
+  { v: '0.1.9', f: '2026-10-19', h: '20:28', t: 'Meter lo que tienes, sin líos', cosas: [
     { d: 'buscar', t: 'Un buscador que lo encuentra todo', x: 'Escribe el nombre, el ticker (VWCE, AAPL) o el ISIN: salen tus valores, unos 110 fondos y ETF y las ~800 empresas del radar, cada uno con su precio.' },
     { d: 'capturas', t: 'Importar desde capturas', x: 'Haz capturas de MyInvestor, Trade Republic o Bitvavo (o sube el PDF) y la IA lee qué tienes, cuántas y lo que pagaste. Lo revisas y se guarda.' },
     { d: 'tengo', t: 'Compra, venta o "ya la tenía"', x: 'Tres botones arriba del formulario. "Ya la tenía" mete lo que compraste antes de usar GrowFolio, con su fecha, sin tocar el efectivo.' },
@@ -6801,24 +7201,25 @@ const NOVEDADES = [
     { d: 'tour', t: 'Un tour por la app', x: 'La primera vez te enseña cada pestaña. Lo puedes repetir cuando quieras desde Ajustes.' },
     { d: 'app', t: 'La app se actualiza sola', x: 'Cuando haya versión nueva de la app de Android sale un aviso con un botón que la descarga e instala encima.' },
   ] },
-  { v: '0.1.8', f: '2026-10-19', t: 'Pestañas más claras', cosas: [
+  { v: '0.1.8', f: '2026-10-19', h: '19:50', t: 'Pestañas más claras', cosas: [
     { d: 'pestanas', t: 'Paso a paso y Fiscalidad, cada una en su pestaña', x: 'El Plan está dentro de Cartera y Futuro va la última.' },
     { d: 'mercados', t: 'Mercados aparte, con qué te implica', x: 'Cada índice, bono, divisa o materia prima explica qué significa que suba o baje y a qué parte de tu cartera le afecta.' },
     { d: 'grafica', t: 'Gráfica de 1 día y 1 semana', x: 'Con el precio cada media hora.' },
     { d: 'desde', t: 'Ganancia desde que compraste', x: 'En cada posición: a cuánto compraste, cuánto vale ahora, lo ganado y lo que sale al año.' },
   ] },
-  { v: '0.1.7', f: '2026-10-19', t: 'Cada uno con su cartera', cosas: [
+  { v: '0.1.7', f: '2026-10-19', h: '12:26', t: 'Cada uno con su cartera', cosas: [
     { d: 'perfil', t: 'Tu cartera en tu móvil', x: 'Guardada y cifrada en tu dispositivo, sin cuenta de GitHub. La IA te hace recomendaciones a ti.' },
   ] },
-  { v: '0.1.6', f: '2026-10-19', t: 'Reglas más flexibles e IA rápida' },
-  { v: '0.1.5', f: '2026-10-18', t: 'App de Android con widget' },
-  { v: '0.1.4', f: '2026-10-18', t: 'Paso a paso, Fiscalidad y recortar la pantalla para preguntar a la IA' },
-  { v: '0.1.3', f: '2026-10-18', t: 'Asesor con Gemini e informe de prensa cada dos horas' },
-  { v: '0.1.2', f: '2026-10-17', t: 'Expertos, Mercados, Futuro y el radar de ideas' },
-  { v: '0.1.1', f: '2026-10-17', t: 'Primera versión: cartera cifrada con precios automáticos' },
+  { v: '0.1.6', f: '2026-10-19', h: '12:06', t: 'Reglas más flexibles e IA rápida' },
+  { v: '0.1.5', f: '2026-10-18', h: '22:14', t: 'App de Android con widget' },
+  { v: '0.1.4', f: '2026-10-18', h: '18:30', t: 'Paso a paso, Fiscalidad y recortar la pantalla para preguntar a la IA' },
+  { v: '0.1.3', f: '2026-10-18', h: '11:52', t: 'Asesor con Gemini e informe de prensa cada dos horas' },
+  { v: '0.1.2', f: '2026-10-17', h: '16:51', t: 'Expertos, Mercados, Futuro y el radar de ideas' },
+  { v: '0.1.1', f: '2026-10-17', h: '13:21', t: 'Primera versión: cartera cifrada con precios automáticos' },
 ];
 const cmpVer = (a, b) => { const x = String(a || '0').split('.').map(Number), y = String(b || '0').split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
-const fechaNov = (f) => { const d = deIso(f); return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`; };
+// día y hora de publicación de cada versión (la hora, desde la 0.1.17; las de antes salen del historial de GitHub)
+const fechaNov = (f, h) => { const d = deIso(f); return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}${h ? `, ${h}` : ''}`; };
 
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
@@ -6856,22 +7257,61 @@ const DIBUJOS = {
 };
 const dibujo = (k) => `<svg class="dib" viewBox="0 0 120 80" aria-hidden="true">${DIBUJOS[k] || ''}</svg>`;
 
+/* qué se ha mejorado: lo nuevo arriba, cada cosa con un «Enséñamelo» que te lleva hasta ella resaltada (como el
+   tutorial) y un «Enséñamelo todo» que las recorre en orden. Las versiones anteriores, plegadas una a una con sus
+   dibujos y sus textos. */
 function mostrarNovedades(desde, alCerrar) {
   LS.set('inv-version', VERSION);
   let nuevas = NOVEDADES.filter((n) => n.cosas && desde && cmpVer(n.v, desde) > 0);
   if (!nuevas.length) nuevas = [NOVEDADES[0]];
   const resto = NOVEDADES.filter((n) => !nuevas.includes(n));
+  const pasos = [], idx = new Map();
+  for (const n of nuevas) for (const c of n.cosas || []) if (c.ir) { idx.set(c, pasos.length); pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
+  const item = (c, i, ir) => `<li style="--i:${i}">${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${ir && idx.has(c) ? `<button type="button" class="enlace nov-ir" data-nov-ir="${idx.get(c)}">Enséñamelo</button>` : ''}</div></li>`;
   const bloque = (n) => `<section class="nov-v">
-    <div class="nov-cab"><span class="nov-num">${esc(n.v)}</span><span class="nov-alfa">alfa</span><small>${fechaNov(n.f)}</small></div>
+    <div class="nov-cab"><span class="nov-num">${esc(n.v)}</span><span class="nov-alfa">alfa</span><small>${fechaNov(n.f, n.h)}</small></div>
     <h3>${esc(n.t)}</h3>
-    <ul class="nov-lista">${n.cosas.map((c, i) => `<li style="--i:${i}">${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p></div></li>`).join('')}</ul>
+    <ul class="nov-lista">${(n.cosas || []).map((c, i) => item(c, i, true)).join('')}</ul>
   </section>`;
-  const h = hoja('¿Qué se ha mejorado?', `<div class="novedades">${nuevas.map(bloque).join('')}
-    ${resto.length ? `<details class="nov-antes"><summary>Versiones anteriores</summary><ol>${resto.map((n) => `<li><span class="nov-num peq">${esc(n.v)}</span><span><b>${esc(n.t)}</b>${n.cosas ? `<small>${n.cosas.map((c) => esc(c.t)).join('. ')}.</small>` : ''}</span><small class="k">${fechaCorta(n.f)}</small></li>`).join('')}</ol></details>` : ''}
-    <div class="fila-btns"><button class="btn" data-tour-ya>Ver el tutorial</button><button class="btn pri" data-cerrar>Entendido</button></div>
+  const antes = (n) => `<details class="nov-ant"><summary><span class="nov-num peq">${esc(n.v)}</span><span class="nov-ant-t"><b>${esc(n.t)}</b><small>${fechaNov(n.f, n.h)}</small></span></summary>${n.cosas ? `<ul class="nov-lista">${n.cosas.map((c, i) => item(c, i, false)).join('')}</ul>` : ''}</details>`;
+  // si llevabas tiempo sin entrar, salen todas las que te has perdido, enteras, de la más nueva a la más antigua
+  const perdidas = nuevas.length > 1 ? `<p class="nov-perdidas">${dibujo('tour')}<span><b>Te has perdido ${nuevas.length} actualizaciones</b>Desde la ${esc(desde)}, que fue la última que viste. Aquí van todas, de la más nueva a la más antigua.</span></p>` : '';
+  const h = hoja(nuevas.length > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}${nuevas.map(bloque).join('')}
+    ${pasos.length ? `<button type="button" class="btn pri nov-todo" data-nov-todo>${ICONOS.chispa}Enséñamelo todo, paso a paso</button>` : ''}
+    ${resto.length ? `<section class="nov-antes" aria-labelledby="hNovAnt"><h3 id="hNovAnt">Versiones anteriores</h3>${resto.map(antes).join('')}</section>` : ''}
+    <button type="button" class="enlace nov-reg" data-nov-reg>Registro de cambios completo, en texto y sin dibujos</button>
+    <div class="fila-btns"><button class="btn" data-tour-ya>Ver el tutorial</button><button class="btn" data-cerrar>Cerrar</button></div>
   </div>`, alCerrar);
   h.el.classList.add('hoja-nov');
-  $('[data-tour-ya]', h.el).onclick = () => { h.el.remove(); iniciarTour(0, alCerrar); };
+  $('[data-nov-reg]', h.el).onclick = () => { h.cerrar(true); abrirRegistro(alCerrar); };
+  const ir = (k) => { h.cerrar(true); iniciarTour(k, alCerrar, pasos); };
+  $('[data-tour-ya]', h.el).onclick = () => { h.cerrar(true); iniciarTour(0, alCerrar); };
+  if (pasos.length) $('[data-nov-todo]', h.el).onclick = () => ir(0);
+  for (const b of $$('[data-nov-ir]', h.el)) b.onclick = () => ir(+b.dataset.novIr);
+}
+
+/* registro de cambios: lo mismo que las novedades pero en texto y entero, versión a versión, con la lista
+   detallada de cambios de cada una (cambios.json, que sale del historial del proyecto con scripts/cambios.py) */
+async function abrirRegistro(alCerrar) {
+  let d = null;
+  try { const r = await fetch('cambios.json?v=' + VERSION, { cache: 'no-cache' }); if (r.ok) d = await r.json(); } catch (e) { console.warn(e); }
+  const det = new Map(((d && d.versiones) || []).map((x) => [x.v, x.commits || []]));
+  const limpia = (t) => esc(String(t).replace(/^(GrowFolio|Bellota|Versión)\s+/i, ''));
+  const art = (n) => {
+    const cs = det.get(n.v) || [];
+    return `<article class="reg-v" id="reg-${esc(n.v)}"><header><h3>Versión ${esc(n.v)}</h3><time datetime="${esc(n.f)}${n.h ? 'T' + esc(n.h) : ''}">${fechaNov(n.f, n.h)}</time></header>
+      <p class="reg-t">${esc(n.t)}.</p>
+      ${n.cosas ? `<h4>Qué cambia</h4><ul>${n.cosas.map((c) => `<li><b>${esc(c.t)}.</b> ${esc(c.x)}</li>`).join('')}</ul>` : ''}
+      ${cs.length ? `<h4>Cambios detallados</h4><ul class="reg-det">${cs.map((c) => `<li>${limpia(c.asunto)}${c.detalle && c.detalle.length ? `<ul>${c.detalle.map((x) => `<li>${esc(x)}</li>`).join('')}</ul>` : ''}</li>`).join('')}</ul>` : ''}
+    </article>`;
+  };
+  const h = hoja('Registro de cambios', `<div class="registro">
+      <p class="nota">Todas las versiones de GrowFolio con el día y la hora en que salieron: primero lo que cambia contado en corto y después la lista detallada de lo que se hizo, tal como quedó en el historial del proyecto.</p>
+      <nav class="reg-indice" aria-label="Versiones">${NOVEDADES.map((n) => `<a href="#reg-${esc(n.v)}">${esc(n.v)}</a>`).join('')}</nav>
+      ${NOVEDADES.map(art).join('')}
+      <div class="fila-btns"><button class="btn" data-cerrar>Cerrar</button></div>
+    </div>`, alCerrar, true);
+  for (const a of $$('.reg-indice a', h.el)) a.onclick = (e) => { e.preventDefault(); const el = $(a.getAttribute('href'), h.el); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };
 }
 
 /* =====================================================================
@@ -6955,13 +7395,14 @@ const TOUR = [
   { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', t: 'Análisis', x: 'La IA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
   { v: 'fiscal', sel: '.navbar [data-ir="fiscal"], .nav [data-ir="fiscal"]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
   { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
-  { v: 'mercados', sel: '.ir-merc', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
+  { v: 'mercados', sel: '.navbar [data-ir="mercados"], .nav [data-ir="mercados"]', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
   { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale a GrowFolio IA', x: 'Lo que quieras de tu cartera, con tus números delante. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
+  { v: 'cartera', dib: 'app', t: 'El widget del móvil', x: 'Con la app de Android tienes un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo próximo que toca, sin abrir nada. Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio. La app se baja desde Ajustes.' },
   { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades, tu opinión y este tutorial, para repetirlo cuando quieras.' },
 ];
 let TOURE = null;
 const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
-function iniciarTour(paso = 0, alAcabar) {
+function iniciarTour(paso = 0, alAcabar, pasos) {
   cerrarTour();
   if (S.ficha) cerrarFicha(true);
   document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
@@ -6976,7 +7417,7 @@ function iniciarTour(paso = 0, alAcabar) {
     else if (e.key === 'ArrowLeft') irPasoTour(-1);
   };
   window.addEventListener('resize', reubicar); window.addEventListener('scroll', reubicar, true); document.addEventListener('keydown', tecla, true);
-  TOURE = { capa, i: paso, el: null, alAcabar, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); } };
+  TOURE = { capa, i: paso, el: null, alAcabar, pasos: pasos || TOUR, nov: !!pasos, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); } };
   // en el móvil, deslizar la tarjeta pasa de paso
   let x0 = null, y0 = null;
   capa.addEventListener('touchstart', (e) => { if (!e.target.closest('.tour-caja')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
@@ -6998,8 +7439,9 @@ function iniciarTour(paso = 0, alAcabar) {
 }
 function cerrarTour(hecho, sinVolver) {
   if (!TOURE) return;
-  const { alAcabar } = TOURE;
+  const { alAcabar, nov } = TOURE;
   TOURE.off(); TOURE.capa.remove(); TOURE = null;
+  if (nov) { if (alAcabar) alAcabar(); return; }
   if (!hecho) return;
   LS.set('inv-tour', VERSION);
   if (sinVolver) return;
@@ -7010,20 +7452,21 @@ function irPasoTour(d) {
   if (!TOURE) return;
   const n = TOURE.i + d;
   if (n < 0) return;
-  if (n >= TOUR.length) return cerrarTour(true);
+  if (n >= TOURE.pasos.length) return cerrarTour(true);
   TOURE.i = n; pasoTour(d);
 }
 function pasoTour(dir = 1) {
-  const p = TOUR[TOURE.i], cambia = p.v && S.vista !== p.v;
+  const P = TOURE.pasos, p = P[TOURE.i], cambia = p.v && S.vista !== p.v;
+  if (p.antes) try { p.antes(); } catch (e) { console.warn(e); }
   if (cambia) location.hash = '#' + p.v;
   if (p.pos && S.carTab === 'plan') { S.carTab = 'pos'; LS.set('inv-car', 'pos'); if (!cambia) pintar(); }
-  const ultimo = TOURE.i === TOUR.length - 1, vacia = !((S.cartera && S.cartera.posiciones) || []).length;
+  const ultimo = TOURE.i === P.length - 1, vacia = !TOURE.nov && !((S.cartera && S.cartera.posiciones) || []).length;
   const caja = $('.tour-caja', TOURE.capa);
-  caja.innerHTML = `<div class="tour-prog" aria-hidden="true">${TOUR.map((_, i) => `<i class="${i === TOURE.i ? 'on' : i < TOURE.i ? 'ya' : ''}"></i>`).join('')}</div>
-    <div class="tour-txt">${p.logo ? '<img class="tour-logo" src="favicon.svg" alt="">' : ''}<h3>${esc(p.t)}</h3><p>${esc(p.x)}</p></div>
-    <div class="tour-btns"><small class="tour-n">${TOURE.i + 1} de ${TOUR.length}</small>
+  caja.innerHTML = `<div class="tour-prog" aria-hidden="true">${P.map((_, i) => `<i class="${i === TOURE.i ? 'on' : i < TOURE.i ? 'ya' : ''}"></i>`).join('')}</div>
+    <div class="tour-txt">${p.logo ? '<img class="tour-logo" src="favicon.svg" alt="">' : ''}${p.dib ? `<div class="tour-dib">${dibujo(p.dib)}</div>` : ''}${p.nuevo ? `<span class="tour-nuevo">Nuevo en la ${esc(p.nuevo)}</span>` : ''}<h3>${esc(p.t)}</h3><p>${esc(p.x)}</p></div>
+    <div class="tour-btns"><small class="tour-n">${TOURE.i + 1} de ${P.length}</small>
       ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}
-      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar capturas</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : '<button class="btn peq pri" data-t="fin">Terminar</button>') : `<button class="btn peq pri" data-t="sig">${TOURE.i ? 'Siguiente' : 'Empezar'}</button>`}
+      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar capturas</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq pri" data-t="fin">${TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}
     </div>`;
   const txt = $('.tour-txt', caja);
   if (txt) { txt.classList.remove('entra-d', 'entra-i'); void txt.offsetWidth; txt.classList.add(dir < 0 ? 'entra-i' : 'entra-d'); }
@@ -7041,7 +7484,7 @@ function colocarTour() {
   if (!TOURE) return;
   const foco = $('.tour-foco', TOURE.capa), caja = $('.tour-caja', TOURE.capa);
   let el = TOURE.el;
-  if (el && !el.isConnected) el = TOURE.el = elVisible(TOUR[TOURE.i].sel);
+  if (el && !el.isConnected) el = TOURE.el = elVisible(TOURE.pasos[TOURE.i].sel);
   if (!el) { foco.className = 'tour-foco sin'; caja.className = 'tour-caja centro'; return; }
   const r = el.getBoundingClientRect(), m = 6;
   foco.className = 'tour-foco';
@@ -7138,10 +7581,11 @@ function chipGTA() {
   const txt = !f ? 'ya está aquí' : f.d ? `${f.d} ${f.d === 1 ? 'día' : 'días'}` : `${f.h} h`;
   return `<button class="gta-chip" type="button" data-gta aria-label="GTA VI: ${esc(txt)}. Cuenta atrás y cuentas con tu cartera">${MANDO}<b>GTA VI</b><span>${esc(txt)}</span></button>`;
 }
+// letras de neón de los ochenta (no las del logo del juego): Tilt Neon para títulos y cifras, Yellowtail para los rótulos
 function fuenteGTA() {
   if ($('#fuenteGTA')) return;
   const l = document.createElement('link');
-  l.id = 'fuenteGTA'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Anton&display=swap';
+  l.id = 'fuenteGTA'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Anton&family=Tilt+Neon&family=Yellowtail&display=swap';
   document.head.appendChild(l);
 }
 const dosC = (n) => String(n).padStart(2, '0');
@@ -7169,6 +7613,7 @@ function mesesHasta(F, P, C, r) {
   const base = P * rm + C;
   return base > 0 ? Math.log((F * rm + C) / base) / Math.log(1 + rm) : Infinity;
 }
+/* cada dato lleva su cifra final (n) y, si se puede animar, el número (v) y cómo escribirlo (f) */
 function datosGTA(M) {
   const P = Math.max(0, M.total || 0), O = S.oculto;
   const fx = (S.precios && S.precios.fx) || {};
@@ -7177,26 +7622,26 @@ function datosGTA(M) {
   const n = (x, d) => (O ? '••••' : nGTA(x, d));
   const precio = fmtNum(GTA.precio, 2) + ' €';
   const out = [];
+  const add = (o) => { if (O && o.oculto !== false) delete o.v; out.push(o); };
   if (!P) {
     out.push({ n: '0', u: 'copias', t: 'Es lo que vale tu cartera en GTA VI de momento. Añade lo que tienes en Cartera y aquí salen tus cuentas.' });
   } else {
-    out.push({ n: n(P / GTA.precio), u: P / GTA.precio < 2 ? 'copia' : 'copias', t: `Es lo que vale tu cartera en GTA VI, a ${precio} cada uno. En la edición Ultimate (${fmtNum(GTA.ultimate, 2)} €), ${O ? '••••' : nGTA(P / GTA.ultimate)}.` });
+    add({ n: n(P / GTA.precio), v: P / GTA.precio, f: 'n', u: P / GTA.precio < 2 ? 'copia' : 'copias', t: `Es lo que vale tu cartera en GTA VI, a ${precio} cada uno. En la edición Ultimate (${fmtNum(GTA.ultimate, 2)} €), ${O ? '••••' : nGTA(P / GTA.ultimate)}.` });
     if (Math.abs(M.pl) >= GTA.precio / 2) {
-      out.push(M.pl > 0
-        ? { n: n(M.pl / GTA.precio), u: 'copias gratis', t: 'Te las paga lo que llevas ganado desde que compraste. El juego, invitado por la bolsa.' }
-        : { n: n(-M.pl / GTA.precio), u: 'copias en rojo', t: 'Es lo que llevas perdido desde que compraste. No se vende en las caídas: ni la cartera ni la reserva.' });
+      add(M.pl > 0
+        ? { n: n(M.pl / GTA.precio), v: M.pl / GTA.precio, f: 'n', u: 'copias gratis', t: 'Te las paga lo que llevas ganado desde que compraste. El juego, invitado por la bolsa.' }
+        : { n: n(-M.pl / GTA.precio), v: -M.pl / GTA.precio, f: 'n', u: 'copias en rojo', t: 'Es lo que llevas perdido desde que compraste. No se vende en las caídas: ni la cartera ni la reserva.' });
     }
     const hoy = M.dia / GTA.precio;
-    if (Math.abs(hoy) >= 0.1) out.push({ n: (hoy > 0 ? '+' : '−') + n(Math.abs(hoy)), u: 'copias hoy', t: hoy > 0 ? `Lo que ha ganado tu cartera hoy (${pctS(M.diaPct)}).` : `Lo que se ha dejado hoy tu cartera (${pctS(M.diaPct)}). Mañana será otro día.` });
-    out.push({ n: n(costeE / P), u: 'veces tu cartera', t: `Es lo que necesitarías para pagar GTA VI entero. Rockstar no ha dicho lo que ha costado; la prensa lo estima entre 1.000 y 2.000 millones de dólares. Con 1.500, son unos ${fmtNum(costeE / 1e6, 0)} millones de euros.` });
+    if (Math.abs(hoy) >= 0.1) add({ n: (hoy > 0 ? '+' : '−') + n(Math.abs(hoy)), v: hoy, f: 'signo', u: 'copias hoy', t: hoy > 0 ? `Lo que ha ganado tu cartera hoy (${pctS(M.diaPct)}).` : `Lo que se ha dejado hoy tu cartera (${pctS(M.diaPct)}). Mañana será otro día.` });
+    add({ n: n(costeE / P), v: costeE / P, f: 'n', u: 'veces tu cartera', t: `Es lo que necesitarías para pagar GTA VI entero. Rockstar no ha dicho lo que ha costado; la prensa lo estima entre 1.000 y 2.000 millones de dólares. Con 1.500, son unos ${fmtNum(costeE / 1e6, 0)} millones de euros.` });
     // al ritmo de tu plan: tu aportación y la rentabilidad esperada de tu proyección
     let r = 0.06, C = 0;
     try { const pr = proyeccion(M); r = pr.mu / 100; C = pr.cfg.aport || 0; } catch (e) { C = aportacionActual(); }
-    const meses = mesesHasta(costeE, P, C, r);
-    const anios = meses / 12;
+    const anios = mesesHasta(costeE, P, C, r) / 12;
     if (isFinite(anios) && anios < 5000) {
       const anio = new Date().getFullYear() + Math.round(anios);
-      out.push({ n: O ? '••••' : 'Año ' + anio, u: '', t: `Lo tendrías pagado si sigues ${C ? `aportando ${eur(C, 0)} al mes` : 'sin aportar'} y tu cartera rinde un ${fmtNum(r * 100, 1)} % al año, como en tu proyección. Son ${O ? '••••' : fmtNum(Math.round(anios), 0)} años: a uno cada ${GTA.cadaCuanto}, Rockstar sacaría mientras unos ${O ? '••••' : fmtNum(Math.max(1, Math.round(anios / GTA.cadaCuanto)), 0)} GTA más.` });
+      add({ n: O ? '••••' : 'Año ' + anio, v: anio, f: 'anio', u: '', t: `Lo tendrías pagado si sigues ${C ? `aportando ${eur(C, 0)} al mes` : 'sin aportar'} y tu cartera rinde un ${fmtNum(r * 100, 1)} % al año, como en tu proyección. Son ${O ? '••••' : fmtNum(Math.round(anios), 0)} años: a uno cada ${GTA.cadaCuanto}, Rockstar sacaría mientras unos ${O ? '••••' : fmtNum(Math.max(1, Math.round(anios / GTA.cadaCuanto)), 0)} GTA más.` });
     } else {
       out.push({ n: 'Nunca', u: '', t: 'Al ritmo de tu plan no lo pagarías: sin aportaciones ni rentabilidad la cartera no crece. Pon tus aportaciones en Plan y movimientos.' });
     }
@@ -7204,76 +7649,173 @@ function datosGTA(M) {
     const dp = M.diaPct || 0;
     if (dp >= 0.05) {
       const anosHoy = Math.log(costeE / P) / Math.log(1 + dp / 100) / 252;
-      out.push({ n: O ? '••••' : nGTA(anosHoy, anosHoy < 10 ? 1 : 0) + (anosHoy < 2 ? ' año' : ' años'), u: '', t: `Lo que tardarías en pagarlo entero si todos los días de bolsa fueran como hoy (${pctS(dp)}). El interés compuesto, llevado al extremo.` });
+      add({ n: O ? '••••' : nGTA(anosHoy, anosHoy < 10 ? 1 : 0) + (anosHoy < 2 ? ' año' : ' años'), v: anosHoy, f: 'anos', u: '', t: `Lo que tardarías en pagarlo entero si todos los días de bolsa fueran como hoy (${pctS(dp)}). El interés compuesto, llevado al extremo.` });
     } else {
       out.push({ n: 'Nunca', u: '', t: dp <= -0.05 ? `Hoy tu cartera va ${pctS(dp)}: si todos los días fueran así, no pagarías GTA VI ni GTA VII. Menos mal que no lo son.` : 'Hoy tu cartera apenas se ha movido. A este ritmo, ni GTA VI ni GTA VII.' });
     }
-    if (M.dividendos >= GTA.precio / 4) out.push({ n: n(M.dividendos / GTA.precio), u: M.dividendos / GTA.precio < 2 ? 'copia al año' : 'copias al año', t: 'Te pagan tus dividendos de un año, brutos, sin mover un dedo.' });
+    if (M.dividendos >= GTA.precio / 4) {
+      const dias = Math.ceil(GTA.precio / (M.dividendos / 365));
+      add({ n: n(M.dividendos / GTA.precio), v: M.dividendos / GTA.precio, f: 'n', u: M.dividendos / GTA.precio < 2 ? 'copia al año' : 'copias al año', t: `Te pagan tus dividendos de un año, brutos, sin mover un dedo. Una copia cada ${O ? '••••' : fmtNum(dias, 0)} días.` });
+    }
     let r10 = 0.07; try { r10 = proyeccion(M).mu / 100; } catch (e) {}
-    out.push({ n: fmtNum(GTA.precio * Math.pow(1 + r10, 10), 0) + ' €', u: '', t: `Serían los ${precio} del juego dentro de 10 años si los metes en tu cartera, al ${fmtNum(r10 * 100, 1)} % al año. Ya, te lo vas a comprar igual.` });
-    out.push({ n: O ? '••••' : nGTA(GTA.trailer2 / P), u: 'visitas por euro', t: 'El segundo tráiler tuvo 475 millones de visualizaciones en 24 horas, según Rockstar el mayor estreno de un vídeo de la historia (mayo de 2025). Tocan a eso por cada euro de tu cartera.' });
+    out.push({ n: fmtNum(GTA.precio * Math.pow(1 + r10, 10), 0) + ' €', v: GTA.precio * Math.pow(1 + r10, 10), f: 'eur', u: '', t: `Serían los ${precio} del juego dentro de 10 años si los metes en tu cartera, al ${fmtNum(r10 * 100, 1)} % al año. Ya, te lo vas a comprar igual.` });
+    // lo que te cuesta en horas de trabajo, si has puesto tus ingresos en Objetivos
+    const ing = +(perfil().ingresos_mes || 0);
+    if (ing > 0) { const h = GTA.precio / (ing / 160); add({ n: n(h, h < 10 ? 1 : 0), v: h, f: 'n', u: h < 2 ? 'hora de trabajo' : 'horas de trabajo', t: `Lo que te cuesta el juego con los ingresos que has puesto en Objetivos (${eur(ing, 0)} al mes, unas 160 horas).` }); }
+    add({ n: O ? '••••' : nGTA(GTA.trailer2 / P), v: GTA.trailer2 / P, f: 'n', u: 'visitas por euro', t: 'El segundo tráiler tuvo 475 millones de visualizaciones en 24 horas, según Rockstar el mayor estreno de un vídeo de la historia (mayo de 2025). Tocan a eso por cada euro de tu cartera.' });
   }
   const tt = S.precios && S.precios.extra && S.precios.extra.TTWO;
   if (tt && tt.precio) {
     const pe = tt.precio * (fx[tt.moneda || 'USD'] || usd);
     const r1 = tt.rent && tt.rent['1a'];
-    out.push({ n: P ? n(P / pe) : fmtNum(tt.precio, 2) + ' $', u: P ? (P / pe < 2 ? 'acción de Take-Two' : 'acciones de Take-Two') : 'Take-Two', t: `La dueña de Rockstar cotiza en el Nasdaq (TTWO) a ${fmtNum(tt.precio, 2)} $, ${pctS(tt.variacion_dia)} hoy${r1 != null ? ` y ${pctS(r1, 1)} en un año. Si hace un año hubieras metido ahí los ${precio} del juego, hoy tendrías unos ${fmtNum(GTA.precio * (1 + r1 / 100), 2)} € (sin contar lo que ha hecho el dólar)` : ''}.` });
+    add({ n: P ? n(P / pe) : fmtNum(tt.precio, 2) + ' $', v: P ? P / pe : undefined, f: 'n', u: P ? (P / pe < 2 ? 'acción de Take-Two' : 'acciones de Take-Two') : 'Take-Two', t: `La dueña de Rockstar cotiza en el Nasdaq (TTWO) a ${fmtNum(tt.precio, 2)} $, ${pctS(tt.variacion_dia)} hoy${r1 != null ? ` y ${pctS(r1, 1)} en un año. Si hace un año hubieras metido ahí los ${precio} del juego, hoy tendrías unos ${fmtNum(GTA.precio * (1 + r1 / 100), 2)} € (sin contar lo que ha hecho el dólar)` : ''}.` });
   }
   const fact = GTA.gta5Copias * GTA.precio;
-  out.push({ n: '230 M', u: 'copias de GTA V', t: `Lleva vendidas desde 2013 (Take-Two, agosto de 2026). Si GTA VI vendiera lo mismo a ${precio}, ingresaría unos ${fmtNum(fact / 1e9, 1)} mil millones de euros: ${fmtNum(fact / costeE, 0)} veces lo que se calcula que ha costado.` });
+  out.push({ n: '230 M', v: 230e6, f: 'n', u: 'copias de GTA V', t: `Lleva vendidas desde 2013 (Take-Two, agosto de 2026). Si GTA VI vendiera lo mismo a ${precio}, ingresaría unos ${fmtNum(fact / 1e9, 1)} mil millones de euros: ${fmtNum(fact / costeE, 0)} veces lo que se calcula que ha costado.` });
   return out;
 }
-function htmlGTA(M) {
-  const f = gtaFalta();
-  const datos = datosGTA(M);
-  return `<div class="gta-cab">
-      <p class="gta-pre">${f ? 'Cuenta atrás' : 'Ya a la venta'}</p>
-      <h2 class="gta-tit">GTA VI</h2>
-      <div id="gtaReloj">${relojGTA()}</div>
-      <p class="gta-fecha">19 de noviembre de 2026, en PS5 y Xbox Series X y S. ${f && f.d > 7 ? 'Se puede precargar desde el 12. ' : ''}${fmtNum(GTA.precio, 2)} € la edición normal.</p>
-      <a class="gta-web" href="https://www.rockstargames.com/VI" target="_blank" rel="noopener">Web oficial y tráileres</a>
+const numGTA = (d) => `<span class="gta-num"${d.v != null && isFinite(d.v) ? ` data-to="${d.v}" data-f="${d.f || 'n'}" data-fin="${esc(d.n)}"` : ''}>${esc(d.n)}</span>`;
+
+/* la escena: cielo de noche, estrellas, un sol a rayas que se pone y el suelo de rejilla en movimiento */
+const escenaGTA = () => '<div class="gta-cielo" aria-hidden="true"><i class="gta-estrellas"></i></div>';
+const paisajeGTA = () => '<div class="gta-paisaje" aria-hidden="true"><i class="gta-sol"></i><i class="gta-horizonte"></i><i class="gta-suelo"></i></div>';
+const GTA_PRIMER_TRAILER = '2023-12-05';
+function esperaGTA() {
+  const total = diasEntre(GTA_PRIMER_TRAILER, iso(GTA.salida)), van = Math.min(total, diasEntre(GTA_PRIMER_TRAILER, hoyIso()));
+  const p = Math.max(0, Math.min(100, (van / total) * 100));
+  return `<div class="gta-espera"><div class="gta-barra" role="img" aria-label="${fmtNum(p, 0)} % de la espera"><i style="--p:${p.toFixed(1)}%"></i></div><small>Llevas ${fmtNum(van, 0)} días esperando desde el primer tráiler: el ${fmtNum(p, 0)} % del camino.</small></div>`;
+}
+const GTA_HITOS = [
+  ['2023-12-05', 'Primer tráiler', 'Más de 90 millones de visitas en YouTube en 24 horas.'],
+  ['2025-05-02', 'Primer retraso', 'De otoño de 2025 al 26 de mayo de 2026.'],
+  ['2025-05-06', 'Segundo tráiler', '475 millones de visitas en 24 horas, según Rockstar.'],
+  ['2025-11-06', 'Segundo retraso', 'Al 19 de noviembre de 2026.'],
+  ['2026-06-25', 'Abren las reservas', '79,99 € la edición normal y 99,99 € la Ultimate.'],
+  ['2026-10-15', 'Tráiler de lanzamiento', 'Con «Flower in a Hurricane», de Justice.'],
+  ['2026-11-12', 'Precarga', 'Se puede descargar antes de que salga.'],
+  ['2026-11-19', 'Sale GTA VI', 'En PS5 y Xbox Series X y S.'],
+];
+function htmlCaminoGTA() {
+  const hoy = hoyIso(), sig = GTA_HITOS.findIndex(([d]) => d > hoy);
+  return `<section class="gta-sec" aria-labelledby="gtaCamino"><h3 class="gta-rotulo gta-rev" id="gtaCamino">el camino hasta aquí</h3>
+    <ol class="gta-camino">${GTA_HITOS.map(([d, t, x], i) => `<li class="gta-rev${d <= hoy ? ' hecho' : ''}${i === sig ? ' siguiente' : ''}" style="--i:${i % 3}"><span class="gc-d">${fechaCorta(d)}${d.slice(0, 4) !== hoy.slice(0, 4) ? ` ${d.slice(0, 4)}` : ''}</span><b>${esc(t)}${i === sig ? '<em>lo siguiente</em>' : ''}</b><p>${esc(x)}</p></li>`).join('')}</ol>
+  </section>`;
+}
+// tu cartera de hoy, con los precios desde el primer tráiler: lo que habría hecho mientras esperabas
+function htmlDesdeTrailerGTA(M) {
+  if (!M.total) return '';
+  const dias = diasEntre(GTA_PRIMER_TRAILER, hoyIso()) + 4;
+  let serie = [];
+  try { serie = serieCartera(M, dias).filter((x) => x.d.slice(0, 10) >= GTA_PRIMER_TRAILER); } catch (e) { return ''; }
+  if (serie.length < 30 || diasEntre(GTA_PRIMER_TRAILER, serie[0].d.slice(0, 10)) > 10) return '';
+  const v0 = serie[0].v, v1 = serie[serie.length - 1].v, pct = (v1 / v0 - 1) * 100;
+  const W = 320, H = 90, vs = serie.map((x) => x.v), mn = Math.min(...vs), mx = Math.max(...vs), k = Math.max(1, Math.ceil(serie.length / 160));
+  const pts = serie.filter((_, i) => i % k === 0 || i === serie.length - 1).map((x, i, a) => `${((i / (a.length - 1)) * W).toFixed(1)},${(H - 6 - ((x.v - mn) / (mx - mn || 1)) * (H - 14)).toFixed(1)}`).join(' ');
+  // lo que valía lo que tienes hoy, en copias del juego, en cada momento del camino (las barras crecen al verse)
+  const hoy = hoyIso(), en = (d) => { const x = serie.find((y) => y.d.slice(0, 10) >= d); return x ? x.v : null; };
+  const cortos = ['Primer tráiler', 'Primer retraso', 'Segundo tráiler', 'Segundo retraso', 'Reservas', 'Último tráiler'];
+  const barras = GTA_HITOS.map(([d], i) => [d, cortos[i], en(d)]).filter(([d, t, v]) => t && d <= hoy && v).concat([[hoy, 'Hoy', v1]]);
+  const bmx = Math.max(...barras.map((b) => b[2]));
+  const htmlBarras = barras.length > 2 ? `<div class="gta-copias gta-rev"><p>Cuántos GTA VI valía lo que tienes hoy en cada momento de la espera.</p><div class="gta-barras" role="img" aria-label="${esc(barras.map(([, t, v]) => `${t}: ${fmtNum(v / GTA.precio, 0)} copias`).join(', '))}">${barras.map(([d, t, v], i) => `<div class="gb${i === barras.length - 1 ? ' hoy' : ''}" style="--h:${((v / bmx) * 100).toFixed(1)}%;--i:${i}"><span class="gb-n">${S.oculto ? '' : fmtNum(v / GTA.precio, 0)}</span><i></i><small>${esc(t)}</small></div>`).join('')}</div></div>` : '';
+  return `<section class="gta-sec" aria-labelledby="gtaDesde"><h3 class="gta-rotulo gta-rev" id="gtaDesde">mientras esperabas</h3>
+    <div class="gta-desde gta-rev"><b class="${cls(pct)}">${numGTA({ n: pctS(pct, 1), v: pct, f: 'pct' })}</b><p>Lo que habría hecho lo que tienes hoy desde el 5 de diciembre de 2023, el día del primer tráiler${S.oculto ? '' : `: de ${eur(v0, 0)} a ${eur(v1, 0)}`}. La espera, al menos, ha dado para algo.</p>
+      <svg class="gta-linea" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="gtaLG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2DE2E6" stop-opacity=".4"/><stop offset="1" stop-color="#2DE2E6" stop-opacity="0"/></linearGradient></defs><polygon points="0,${H} ${pts} ${W},${H}" fill="url(#gtaLG)"/><polyline points="${pts}" fill="none" stroke="#2DE2E6" stroke-width="2.2" vector-effect="non-scaling-stroke" pathLength="100"/></svg>
     </div>
-    <h3 class="gta-sub">GTA VI y tu cartera</h3>
-    ${S.oculto ? '<p class="gta-nota">Tienes los importes ocultos: pulsa el ojo de arriba para ver tus cifras.</p>' : ''}
-    <ol class="gta-datos">${datos.map((d, i) => `<li class="c${i % 3}"><b>${esc(d.n)}${d.u ? `<small>${esc(d.u)}</small>` : ''}</b><p>${esc(d.t)}</p></li>`).join('')}</ol>
-    ${htmlTrailerGTA(M)}
-    <p class="gta-pie">Fecha, precio, plataformas y tráiler: Rockstar Games. Ventas de GTA V: Take-Two. Visitas del tráiler: Forbes. Coste de GTA VI: estimación de prensa, no es oficial; el del tráiler, estimación de GrowFolio. Las cuentas con tu cartera usan tu proyección de Objetivos. GrowFolio no tiene relación con Rockstar Games ni con Take-Two.</p>`;
+  ${htmlBarras}
+  </section>`;
 }
 function htmlTrailerGTA(M) {
   const T = GTA.trailer, O = S.oculto;
   const usd = ((S.precios && S.precios.fx) || {}).USD || 0.86;
   const porSeg = (T.medio / T.seg) * usd;
   const P = Math.max(0, M.total || 0), seg = P / porSeg;
-  return `<section class="gta-trailer" aria-label="Tráiler de lanzamiento">
-    <h3 class="gta-sub">El tráiler de lanzamiento</h3>
-    <p class="gta-txt">Salió el 15 de octubre: 91 segundos con "Flower in a Hurricane", la canción que Justice, autores de la música del juego, han hecho con Tame Impala, SZA y King Gizzard &amp; The Lizard Wizard.</p>
-    <div class="gta-video"><iframe src="https://www.youtube-nocookie.com/embed/${T.id}?rel=0&amp;playsinline=1" title="Grand Theft Auto VI, tráiler de lanzamiento" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
-    <h4 class="gta-sub2">¿Cuánto costó hacer esos 91 segundos?</h4>
-    <p class="gta-txt">Rockstar no da cifras. Esto es una estimación de GrowFolio con supuestos razonables, no un dato.</p>
+  return `<section class="gta-sec gta-trailer" aria-labelledby="gtaTrailer"><h3 class="gta-rotulo gta-rev" id="gtaTrailer">el tráiler de lanzamiento</h3>
+    <p class="gta-txt gta-rev">Salió el 15 de octubre: 91 segundos con "Flower in a Hurricane", la canción que Justice, autores de la música del juego, han hecho con Tame Impala, SZA y King Gizzard &amp; The Lizard Wizard.</p>
+    <div class="gta-video gta-rev"><iframe src="https://www.youtube-nocookie.com/embed/${T.id}?rel=0&amp;playsinline=1" title="Grand Theft Auto VI, tráiler de lanzamiento" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
+    <h4 class="gta-sub2 gta-rev">¿Cuánto costó hacer esos 91 segundos?</h4>
+    <p class="gta-txt gta-rev">Rockstar no da cifras. Esto es una estimación de GrowFolio con supuestos razonables, no un dato.</p>
     <dl class="gta-coste">
-      <div><dt>La canción</dt><dd><b>1 a 3 M$</b>Componerla, grabarla y producirla con Justice y tres artistas de primera, más sus derechos. Sirve también para el disco y para el juego.</dd></div>
-      <div><dt>El vídeo</dt><dd><b>1,5 a 4 M$</b>El equipo de vídeo de Rockstar: de 30 a 50 personas durante 3 a 6 meses eligiendo planos dentro del juego (grabado en una PS5 normal), con montaje, color y sonido.</dd></div>
-      <div><dt>Las escenas</dt><dd><b>0 $ aparte</b>Actores, captura de movimiento y animación ya estaban hechos para el juego: van en su presupuesto, no en el del tráiler.</dd></div>
+      <div class="gta-rev"><dt>La canción</dt><dd><b>1 a 3 M$</b>Componerla, grabarla y producirla con Justice y tres artistas de primera, más sus derechos. Sirve también para el disco y para el juego.</dd></div>
+      <div class="gta-rev"><dt>El vídeo</dt><dd><b>1,5 a 4 M$</b>El equipo de vídeo de Rockstar: de 30 a 50 personas durante 3 a 6 meses eligiendo planos dentro del juego (grabado en una PS5 normal), con montaje, color y sonido.</dd></div>
+      <div class="gta-rev"><dt>Las escenas</dt><dd><b>0 $ aparte</b>Actores, captura de movimiento y animación ya estaban hechos para el juego: van en su presupuesto, no en el del tráiler.</dd></div>
     </dl>
-    <div class="gta-total"><b>Unos ${fmtNum(T.medio / 1e6, 1)} M$</b><span>entre 2,5 y 7 millones de dólares: unos ${fmtNum(Math.round(T.medio / T.seg / 1000) * 1000, 0)} $ por segundo de vídeo</span></div>
+    <div class="gta-total gta-rev"><b>Unos ${fmtNum(T.medio / 1e6, 1)} M$</b><span>entre 2,5 y 7 millones de dólares: unos ${fmtNum(Math.round(T.medio / T.seg / 1000) * 1000, 0)} $ por segundo de vídeo</span></div>
     <ol class="gta-datos">
-      <li class="c2"><b>${O ? '••••' : nGTA(seg, seg < 10 ? 1 : 0)}<small>${seg >= 0.95 && seg < 1.05 ? 'segundo' : 'segundos'}</small></b><p>Del tráiler que pagarías con tu cartera, a unos ${fmtNum(Math.round(porSeg / 1000) * 1000, 0)} € el segundo.</p></li>
-      <li class="c0"><b>${nGTA(T.visitas11h)}<small>visitas en 11 horas</small></b><p>Las que llevaba en YouTube a las 11 horas de salir, según Forbes. Con esas solas, cada visita le salió a Rockstar por unos ${fmtNum((T.medio * usd / T.visitas11h) * 100, 0)} céntimos.</p></li>
+      <li class="c2 gta-rev"><b>${numGTA({ n: O ? '••••' : nGTA(seg, seg < 10 ? 1 : 0), v: O ? null : seg, f: 'n' })}<small>${seg >= 0.95 && seg < 1.05 ? 'segundo' : 'segundos'}</small></b><p>Del tráiler que pagarías con tu cartera, a unos ${fmtNum(Math.round(porSeg / 1000) * 1000, 0)} € el segundo.</p></li>
+      <li class="c0 gta-rev" style="--i:1"><b>${numGTA({ n: nGTA(T.visitas11h), v: T.visitas11h, f: 'n' })}<small>visitas en 11 horas</small></b><p>Las que llevaba en YouTube a las 11 horas de salir, según Forbes. Con esas solas, cada visita le salió a Rockstar por unos ${fmtNum((T.medio * usd / T.visitas11h) * 100, 0)} céntimos.</p></li>
     </ol>
   </section>`;
+}
+function htmlGTA(M) {
+  const f = gtaFalta();
+  const datos = datosGTA(M);
+  return `<header class="gta-hero">
+      ${escenaGTA()}
+      <div class="gta-hero-c">
+        <p class="gta-rotulo gta-pre">${f ? 'cuenta atrás' : 'ya a la venta'}</p>
+        <h2 class="gta-tit">GTA VI</h2>
+        <div id="gtaReloj">${relojGTA()}</div>
+        <p class="gta-fecha">19 de noviembre de 2026, en PS5 y Xbox Series X y S. ${f && f.d > 7 ? 'Precarga desde el 12 de noviembre. ' : ''}Cuesta ${fmtNum(GTA.precio, 2)} € la edición normal.</p>
+        ${f ? esperaGTA() : ''}
+      </div>
+      ${paisajeGTA()}
+      <span class="gta-baja" aria-hidden="true">${SVG('<path d="M6 9l6 6 6-6"/>', 2)}</span>
+    </header>
+    <div class="gta-cuerpo">
+      <section class="gta-sec" aria-labelledby="gtaTu"><h3 class="gta-rotulo gta-rev" id="gtaTu">tus cuentas</h3>
+        ${S.oculto ? '<p class="gta-nota">Tienes los importes ocultos: pulsa el ojo de arriba para ver tus cifras.</p>' : ''}
+        <ol class="gta-datos">${datos.map((d, i) => `<li class="c${i % 3} gta-rev" style="--i:${i % 2}"><b>${numGTA(d)}${d.u ? `<small>${esc(d.u)}</small>` : ''}</b><p>${esc(d.t)}</p></li>`).join('')}</ol>
+      </section>
+      ${htmlDesdeTrailerGTA(M)}
+      ${htmlCaminoGTA()}
+      ${htmlTrailerGTA(M)}
+      <p class="gta-pie">Fecha, precio, plataformas, retrasos y tráileres: Rockstar Games y Take-Two. Ventas de GTA V: Take-Two. Visitas del tráiler de lanzamiento: Forbes. Coste de GTA VI: estimación de prensa, no es oficial; el del tráiler, estimación de GrowFolio. Las cuentas con tu cartera usan tu proyección de Objetivos. GrowFolio no tiene relación con Rockstar Games ni con Take-Two.</p>
+    </div>`;
+}
+/* las cifras cuentan desde cero cuando aparecen en pantalla */
+function contarGTA(el) {
+  const to = +el.dataset.to, fm = el.dataset.f, fin = el.dataset.fin || el.textContent;
+  if (!isFinite(to)) return;
+  const desde = fm === 'anio' ? new Date().getFullYear() : 0;
+  const fmt = (x) => (fm === 'anio' ? 'Año ' + Math.round(x) : fm === 'signo' ? (x >= 0 ? '+' : '−') + nGTA(Math.abs(x)) : fm === 'anos' ? nGTA(x, x < 10 ? 1 : 0) + (x < 2 ? ' año' : ' años') : fm === 'eur' ? fmtNum(x, 0) + ' €' : fm === 'pct' ? pctS(x, 1) : nGTA(x));
+  const t0 = performance.now(), dur = 1200;
+  const paso = (t) => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = k < 1 ? fmt(desde + (to - desde) * e) : fin; if (k < 1 && el.isConnected) requestAnimationFrame(paso); };
+  requestAnimationFrame(paso);
+}
+/* lo que aparece al bajar: cada bloque entra cuando se ve */
+function animarGTA(raiz) {
+  const els = $$('.gta-rev', raiz);
+  if ((window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) || !('IntersectionObserver' in window)) { els.forEach((e) => e.classList.add('vis')); return null; }
+  // la línea del camino se va rellenando según bajas
+  const camino = $('.gta-camino', raiz);
+  if (camino) {
+    const prog = () => { const r = camino.getBoundingClientRect(), c = raiz.getBoundingClientRect(); const k = Math.max(0, Math.min(1, (c.top + c.height * 0.62 - r.top) / (r.height || 1))); camino.style.setProperty('--prog', k.toFixed(3)); };
+    raiz.addEventListener('scroll', prog, { passive: true }); prog();
+  }
+  const io = new IntersectionObserver((ents) => {
+    for (const en of ents) {
+      if (!en.isIntersecting) continue;
+      en.target.classList.add('vis'); io.unobserve(en.target);
+      en.target.querySelectorAll('[data-to]').forEach(contarGTA);
+    }
+  }, { root: raiz, threshold: 0.15 });
+  els.forEach((e) => io.observe(e));
+  return io;
 }
 function abrirGTA() {
   fuenteGTA();
   const M = S.M || calcular();
   const fondo = document.createElement('div');
   fondo.className = 'hoja-fondo gta-fondo';
-  fondo.innerHTML = `<div class="gta" role="dialog" aria-modal="true" aria-label="GTA VI y tu cartera"><button class="gta-x" type="button" data-cerrar aria-label="Cerrar">${ICONOS.cerrar}</button>${htmlGTA(M)}</div>`;
+  fondo.innerHTML = `<div class="gta-marco" role="dialog" aria-modal="true" aria-label="GTA VI y tu cartera"><button class="gta-x" type="button" data-cerrar aria-label="Cerrar">${ICONOS.cerrar}</button><div class="gta">${htmlGTA(M)}</div></div>`;
   const tic = setInterval(() => { const r = $('#gtaReloj', fondo); if (r) r.innerHTML = relojGTA(); }, 1000);
-  const cerrar = () => { clearInterval(tic); fondo.remove(); document.removeEventListener('keydown', tecla, true); };
+  let io = null;
+  const cerrar = () => { clearInterval(tic); if (io) io.disconnect(); fondo.remove(); document.removeEventListener('keydown', tecla, true); };
   const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); cerrar(); } };
-  fondo.addEventListener('click', (e) => { if (e.target === fondo || e.target.closest('[data-cerrar]')) cerrar(); });
+  fondo.addEventListener('click', (e) => { if (e.target === fondo || e.target.closest('[data-cerrar]')) cerrar(); else if (e.target.closest('.gta-baja')) $('.gta-cuerpo', fondo).scrollIntoView({ behavior: 'smooth' }); });
   document.addEventListener('keydown', tecla, true);
   document.body.appendChild(fondo);
+  io = animarGTA($('.gta', fondo));
   $('.gta-x', fondo).focus({ preventScroll: true });
 }
 // la primera vez que se entra con esto: un aviso a pantalla completa, como la presentación
@@ -7284,14 +7826,18 @@ function avisoGTA(seguir) {
   const f = gtaFalta();
   const fondo = document.createElement('div');
   fondo.className = 'hoja-fondo gta-fondo';
-  fondo.innerHTML = `<div class="gta gta-aviso" role="dialog" aria-modal="true" aria-label="Nuevo: GTA VI">
-    <p class="gta-pre">Nuevo en GrowFolio</p>
-    <h2 class="gta-tit">GTA VI</h2>
-    <div id="gtaReloj">${relojGTA()}</div>
-    <p class="gta-lead">${f ? 'Sale el 19 de noviembre. Para la espera' : 'Ya ha salido. Para celebrarlo'}, unas cuentas con tu cartera: cuántos GTA VI vale, en qué año podrías pagar el juego entero y cómo le va en bolsa a Take-Two, la dueña de Rockstar.</p>
-    <p class="gta-donde">Lo tienes siempre en Cartera, al lado de tu patrimonio.</p>
-    <div class="gta-btns"><button type="button" class="gta-b pri" data-ver>Verlo</button><button type="button" class="gta-b" data-luego>Luego</button></div>
-  </div>`;
+  fondo.innerHTML = `<div class="gta-marco gta-aviso" role="dialog" aria-modal="true" aria-label="Nuevo: GTA VI"><div class="gta"><header class="gta-hero">
+    ${escenaGTA()}
+    <div class="gta-hero-c">
+      <p class="gta-rotulo gta-pre">nuevo en GrowFolio</p>
+      <h2 class="gta-tit">GTA VI</h2>
+      <div id="gtaReloj">${relojGTA()}</div>
+      <p class="gta-lead">${f ? 'Sale el 19 de noviembre. Para la espera' : 'Ya ha salido. Para celebrarlo'}, unas cuentas con tu cartera: cuántos GTA VI vale, en qué año podrías pagar el juego entero y cómo le va en bolsa a Take-Two, la dueña de Rockstar.</p>
+      <p class="gta-donde">Lo tienes siempre en Cartera, al lado de tu patrimonio.</p>
+      <div class="gta-btns"><button type="button" class="gta-b pri" data-ver>Verlo</button><button type="button" class="gta-b" data-luego>Luego</button></div>
+    </div>
+    ${paisajeGTA()}
+  </header></div></div>`;
   const tic = setInterval(() => { const r = $('#gtaReloj', fondo); if (r) r.innerHTML = relojGTA(); }, 1000);
   const cerrar = (ver) => {
     clearInterval(tic); fondo.remove(); document.removeEventListener('keydown', tecla, true);
@@ -7371,40 +7917,37 @@ async function pintarAjustesApp(el) {
 function abrirAjustes() {
   const tok = GH.token();
   const h = hoja('Ajustes', `
-    <button class="aj-tutorial" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña. Puedes repetirlo cuando quieras.</small></span></button>
-    <button class="enlace aj-intro" id="aIntro" data-cerrar>Ver la presentación de GrowFolio</button>
-    <div class="aj-idioma"><span class="campo" style="margin:0">Idioma</span>${selectorIdioma()}<small>${IDIOMA === 'en' ? 'English is still in progress: some texts are in Spanish.' : 'El inglés está en pruebas: parte de los textos siguen en español.'}</small></div>
-    ${PERFIL_LOCAL ? `<div class="seccion-ed" style="border:0;padding-top:0;margin-top:0"><h3>Tu cartera</h3>
-      <p class="nota" style="margin:0">Guardada solo en este dispositivo y cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (abajo, en Copias).</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPerfil">Abrir la cartera de GitHub</button></div></div>` : ''}
+    <div class="aj-cab"><img src="favicon.svg" alt=""><div><b>GrowFolio</b><small>Versión ${VERSION} alfa, ${PERFIL_LOCAL ? 'con la cartera guardada en este dispositivo' : 'con la cartera guardada en GitHub'}</small></div><button class="btn peq" id="aNov" data-cerrar>${ICONOS.chispa}Novedades</button></div>
+    <h2 class="aj-grupo">General</h2>
+    <div class="aj-caja">
+      <div class="seccion-ed aj-idioma"><h3>${ICONOS.mercados}Idioma</h3>${selectorIdioma()}<small>${IDIOMA === 'en' ? 'English is still in progress: some texts are in Spanish.' : 'El inglés está en pruebas: parte de los textos siguen en español.'}</small></div>
+      <button class="aj-fila" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aIntro" data-cerrar><img src="favicon.svg" alt=""><span><b>Ver la presentación</b><small>Qué es GrowFolio y qué puedes hacer con él.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+    </div>
+    ${PERFIL_LOCAL ? `<h2 class="aj-grupo">Tu cartera</h2><div class="aj-caja"><div class="seccion-ed"><h3>${ICONOS.cartera}Guardada en este dispositivo</h3>
+      <p class="nota" style="margin:0">Cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (en Avanzado, Copias).</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPerfil">Abrir la cartera de GitHub</button></div></div></div>` : ''}
     <h2 class="aj-grupo">Seguridad</h2>
+    <div class="aj-caja">
     ${htmlAjustesBloqueo()}
-    <div class="seccion-ed"><h3>Contraseña</h3>
+    <details class="seccion-ed aj-plegable"><summary><h3>${ICONOS.candado}Cambiar la contraseña</h3><i class="aj-flecha" aria-hidden="true"></i></summary>
       <div class="form-grid"><label class="campo">Nueva contraseña<input type="password" id="aP1" autocomplete="new-password"></label><label class="campo">Repítela<input type="password" id="aP2" autocomplete="new-password"></label></div>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aCambiar">Cambiar contraseña</button></div>
-    </div>
-    <div class="seccion-ed"><h3>Este dispositivo</h3>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
+    </details>
+    <div class="seccion-ed"><h3>${ICONOS.perfil}Este dispositivo</h3>
       <p class="nota" style="margin:0">${cfgBloqueo() ? 'Bloquear te pedirá el PIN o la huella ahora mismo.' : 'Bloquear te pedirá la contraseña la próxima vez.'} ${PERFIL_LOCAL ? 'Olvidar borra tu cartera de este dispositivo: descarga antes una copia.' : 'Olvidar borra también el token y la copia local.'}</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
+    </div>
     </div>
     <h2 class="aj-grupo">GrowFolio IA y la app</h2>
-    <div class="seccion-ed"><h3>GrowFolio IA</h3>
-      <p class="nota" style="margin:0">GrowFolio IA funciona con Gemini, la IA de Google, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes de GrowFolio IA</button></div>
+    <div class="aj-caja">
+      <button class="aj-fila" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}<span><b>Ajustes de GrowFolio IA</b><small>Funciona con Gemini, la IA de Google, gratis con una clave tuya: responde a lo que le preguntes y revisa tu cartera cada día.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <div class="seccion-ed"><h3>${ICONOS.cartera}App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
     </div>
-    <div class="seccion-ed"><h3>App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
     <h2 class="aj-grupo">Ayuda</h2>
-    <div class="seccion-ed"><h3>Tu opinión</h3>
-      <p class="nota" style="margin:0">Algo que se ve mal, algo que no funciona o una idea, y en qué pestaña: le llega a quien te pasó GrowFolio.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="opinion" data-cerrar>${ICONOS.globo}Enviar opinión o un fallo</button></div>
-    </div>
-    <div class="seccion-ed"><h3>Invita a alguien</h3>
-      <p class="nota" style="margin:0">Le llega un enlace para crear su propia cartera en su móvil, cifrada y sin cuenta: nadie más la ve, ni tú.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aInvita">${ICONOS.globo}Mandar invitación por WhatsApp</button></div>
-    </div>
-    <div class="seccion-ed"><h3>Versión</h3>
-      <p class="nota" style="margin:0">Web ${VERSION} (alfa). Cada actualización sube el último número.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNov" data-cerrar>Qué se ha mejorado</button></div>
+    <div class="aj-caja">
+      <button class="aj-fila" data-accion="opinion" data-cerrar>${ICONOS.globo}<span><b>Tu opinión o un fallo</b><small>Algo que se ve mal, que no funciona o una idea: le llega a quien te pasó GrowFolio.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aInvita">${ICONOS.enviar}<span><b>Invita a alguien</b><small>Le llega un enlace por WhatsApp para crear su propia cartera, cifrada y sin cuenta: nadie más la ve, ni tú.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
     </div>
     <details class="aj-avanzado"><summary>Avanzado: copias y archivos${PERFIL_LOCAL ? '' : ', GitHub'}</summary>
     <div class="seccion-ed"><h3>Copias</h3>
@@ -7479,7 +8022,7 @@ function abrirAjustes() {
     await IDB.del(IDB_CLAVE);
     guardarBloqueo(null); LS.del('inv-bloqueo-t');
     if (PERFIL_LOCAL) { LS.del('inv-local-enc'); LS.del('inv-perfil'); }
-    for (const k of ['inv-token', 'inv-cache-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc', 'inv-cache-radar', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-dev-ia-enc']) LS.del(k);
+    for (const k of ['inv-token', 'inv-cache-enc', 'inv-pend-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc', 'inv-cache-radar', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-dev-ia-enc']) LS.del(k);
     location.reload();
   };
 }
@@ -7598,7 +8141,7 @@ function contraste(x) {
   return { checks, favor, contra, total: checks.length };
 }
 function htmlContraste(ctr, conTexto) {
-  const t = ctr.checks.map((c) => `${c.k}: ${c.ok === 1 ? 'a favor' : c.ok === -1 ? 'en contra' : 'neutral'}, ${c.txt}`).join('. ');
+  const t = ctr.checks.map((c) => `${trad(c.k)}: ${trad(c.ok === 1 ? 'a favor' : c.ok === -1 ? 'en contra' : 'neutral')}, ${trad(c.txt)}`).join('. ');
   return `<span class="ctr" role="img" aria-label="${ctr.favor} de ${ctr.total} señales a favor y ${ctr.contra} en contra. ${esc(t)}" title="${esc(t)}">${ctr.checks.map((c) => `<i class="${c.ok === 1 ? 'si' : c.ok === -1 ? 'no' : ''}"></i>`).join('')}${conTexto ? `<b>${ctr.favor}/${ctr.total}</b>` : ''}</span>`;
 }
 function htmlContrasteLista(ctr) {
@@ -7831,8 +8374,20 @@ async function guardarCarteraCallada(mensaje) {
   const texto = await cifrar(S.cartera);
   if (CFG.dev) { LS.set('inv-dev-enc', texto); S.enc = { texto, sha: null }; return true; }
   LS.set('inv-cache-enc', texto);
-  if (!GH.token()) return false;
-  try { const sha = await GH.escribir('cartera.enc.json', texto, mensaje); S.enc = { texto, sha }; return true; } catch (e) { console.warn(e); return false; }
+  if (!GH.token()) { LS.set('inv-pend-enc', texto); return false; }
+  try { const sha = await GH.escribir('cartera.enc.json', texto, mensaje); S.enc = { texto, sha }; LS.del('inv-pend-enc'); return true; } catch (e) { console.warn(e); LS.set('inv-pend-enc', texto); return false; }
+}
+/* cambios que no se pudieron subir (sin token o sin conexión): si son más nuevos que lo de GitHub, mandan,
+   y en cuanto hay token se suben solos */
+async function aplicarPendiente() {
+  const t = LS.get('inv-pend-enc');
+  if (!t || !S.key || PERFIL_LOCAL || CFG.dev) return;
+  try {
+    const c = await descifrar(t, S.key);
+    if (S.cartera && (c.actualizado || '') <= (S.cartera.actualizado || '')) { LS.del('inv-pend-enc'); return; }
+    S.cartera = c;
+    if (GH.token() && await guardarCarteraCallada('Cambios hechos sin conexión')) toast('Subidos a GitHub los cambios que hiciste sin conexión', 5000);
+  } catch (e) { console.warn('Cambios pendientes que no se pueden leer', e); }
 }
 
 /* ---------- buscar posiciones, empresas e índices por nombre ---------- */
@@ -7906,7 +8461,7 @@ function contextoAsesor(M) {
       L.push(`${t}: ` + r.filas.slice(0, 10).map((x) => `${x.k} ${fmtNum(x.pct, 1)} %`).join(', ') + '.');
     }
     const sueltas = M.total ? (sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor) / M.total) * 100 : 0;
-    L.push(`Acciones sueltas: ${fmtNum(sueltas, 1)} % del total. Su límite propio: ${fmtNum(+(S.cartera.limite_acciones || 20), 0)} %.`);
+    L.push(`Acciones sueltas: ${fmtNum(sueltas, 1)} % del total. Su límite propio: ${fmtNum(+(S.cartera.limite_acciones ?? 20), 0)} %.`);
     try { L.push('', '## Su perfil y sus objetivos (ajusta todos tus consejos a esto)', ...textoPerfil(M), ''); } catch (e) {}
     const conTer = M.filas.filter((f) => f.inst.ter != null), base = sum(conTer, (f) => f.valor), coste = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
     L.push(`Dividendos brutos estimados al año ${E0(M.dividendos)}. Gastos de sus fondos ${E0(coste)} al año (TER medio ${fmtNum(base ? (coste / base) * 100 : 0, 2)} %).`);
@@ -8079,7 +8634,7 @@ function hSimularCompra(q) {
   const comision = plat === 'Trade Republic' ? 1 : plat === 'Bitvavo' ? 0.0025 * imp : 0;
   const t = tasa ? imp * tasa.tipo : 0;
   const sueltas = sum(M.filas.filter((y) => y.inst.tipo === 'Acción'), (y) => y.valor);
-  const lim = +(S.cartera.limite_acciones || 20);
+  const lim = +(S.cartera.limite_acciones ?? 20);
   const sect = sector ? (reparto(M, 'sector', 'rv').filas.find((s) => s.k === sector) || {}).pct || 0 : null;
   return {
     empresa: nombre, plataforma: plat, precio_aprox_eur: R2(precio, 4), unidades_aprox: precio ? R2(imp / precio, 4) : null,
@@ -8871,6 +9426,7 @@ async function recargarPrecios() {
   revisarWeb();
 }
 function arrancar() {
+  if (!S.pendRevisado && LS.get('inv-pend-enc')) { S.pendRevisado = true; aplicarPendiente().finally(arrancar); return; }
   sumarInstPropios();
   setTimeout(() => cargarHistCatalogo().then((n) => { if (n) pintar(); }), 50);
   S.vista = vistaDeHash() || LS.get('inv-vista', 'cartera');
@@ -9021,7 +9577,7 @@ document.addEventListener('visibilitychange', () => {
 /* Ajustes: poner, cambiar o quitar el PIN y la huella */
 function htmlAjustesBloqueo() {
   const c = cfgBloqueo();
-  return `<div class="seccion-ed" id="ajBloqueo"><h3>Bloqueo con PIN o huella</h3>
+  return `<div class="seccion-ed" id="ajBloqueo"><h3>${ICONOS.huella}Bloqueo con PIN o huella</h3>
     ${c ? `<p class="nota" style="margin:0">Activado${c.huella ? ', con PIN y huella' : ', con PIN'}. GrowFolio se abre sin contraseña, pero te pide ${c.huella ? 'la huella o el PIN' : 'el PIN'} una vez cada ${BLOQUEO_H} horas.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPin">Cambiar el PIN</button><button class="btn peq" id="aHuella" hidden></button><button class="btn peq" id="aSinPin">Quitar el bloqueo</button></div>`
     : `<p class="nota" style="margin:0">Pon un PIN de 4 cifras y, si tu móvil u ordenador tiene lector, la huella. GrowFolio se abre sin escribir la contraseña y te pide el PIN o la huella una vez cada ${BLOQUEO_H} horas.</p>
@@ -9091,6 +9647,10 @@ function ofrecerHuella(tipo, recargar) {
    ===================================================================== */
 const IDIOMAS = [['es', 'Español'], ['en', 'English']];
 const IDIOMA = LS.get('inv-idioma', 'es') === 'en' ? 'en' : 'es';
+// "Repsol, BAT y IAG" / "Repsol, BAT and IAG": las listas se juntan ya en el idioma de la app
+// trozos que se montan en el código (títulos, aria-label, listas) y se traducen antes de pintarse
+const trad = (s) => (IDIOMA === 'en' && I18N.dic ? traducirTexto(s) ?? s : s);
+const yLista = (a) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}${IDIOMA === 'en' ? ' and ' : ' y '}${a[a.length - 1]}` : a.join(''));
 const I18N = { dic: null };
 const NUM_I18N = /[-+−]?\d[\d.,]*/g;
 const ATR_I18N = ['placeholder', 'title', 'aria-label', 'alt'];
@@ -9110,18 +9670,33 @@ document.addEventListener('click', (e) => {
   LS.set('inv-idioma', b.dataset.idioma);
   location.reload();
 });
+// los importes llevan un espacio duro antes del € (así no se parten): para buscar se usa uno normal y
+// en la traducción se vuelve a pegar el número a su € o %
 function traducirTexto(s) {
-  const d = I18N.dic; if (!d || !s) return null;
+  if (!s || !I18N.dic) return null;
+  if (!/[  ]/.test(s)) return traducirTextoN(s);
+  const t = traducirTextoN(s.replace(/[  ]/g, ' '));
+  return t == null ? null : t.replace(/(\d) (€|%)/g, '$1 $2');
+}
+function traducirTextoN(s) {
+  const d = I18N.dic;
   let t = d[s]; if (t != null) return t;
   const nums = [];
   const k = s.replace(NUM_I18N, (m) => { nums.push(m); return '#'; });
-  if (!nums.length || (t = d[k]) == null) {
-    // frases que empiezan igual y siguen con datos: "Lo que más mueve hoy: Repsol +2 %…"
-    for (const [es, en] of I18N.pre || []) if (s.startsWith(es)) return en + s.slice(es.length);
-    return null;
+  if (nums.length && (t = d[k]) != null) {
+    let i = 0;
+    return t.replace(/\{(\d)\}|#/g, (m, n) => (n ? nums[+n - 1] : nums[i++]) ?? m);
   }
-  let i = 0;
-  return t.replace(/\{(\d)\}|#/g, (m, n) => (n ? nums[+n - 1] : nums[i++]) ?? m);
+  // plantillas con nombres dentro: "Abrir la ficha de Repsol" → "Open Repsol details". Cada trozo
+  // variable se traduce a su vez (países, sectores…) y si no está, se deja tal cual.
+  for (const [re, en, clave] of I18N.re || []) {
+    if (!s.includes(clave)) continue;
+    const m = re.exec(s);
+    if (m) return en.replace(/\$(\d)/g, (_, n) => { const g = m[+n] || ''; return traducirTexto(g.trim()) ?? g; });
+  }
+  // frases que empiezan igual y siguen con datos: "Lo que más mueve hoy: Repsol +2 %…"
+  for (const [es, en] of I18N.pre || []) if (s.startsWith(es)) return en + s.slice(es.length);
+  return null;
 }
 function traducirTN(n) {
   const v = n.nodeValue;
@@ -9162,7 +9737,7 @@ async function cargarIdioma() {
   const ver = setTimeout(() => raiz.classList.remove('i18n-carga'), 2500);
   try {
     const r = await fetch('en.json?v=' + VERSION);
-    if (r.ok) { const j = await r.json(); I18N.dic = j.t || null; I18N.pre = Object.entries(j.p || {}).sort((x, y) => y[0].length - x[0].length); }
+    if (r.ok) { const j = await r.json(); I18N.dic = j.t || null; I18N.pre = Object.entries(j.p || {}).sort((x, y) => y[0].length - x[0].length); I18N.re = (j.r || []).map(([p, en, c]) => [new RegExp(p), en, c]); }
   } catch (e) { console.warn('Sin diccionario de inglés', e); }
   clearTimeout(ver);
   if (I18N.dic) {
