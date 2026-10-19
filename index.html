@@ -1532,6 +1532,52 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .pie-btns { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); margin-top: 48px; max-width: 900px; }
 @media (min-width: 760px) { .pie-btns { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); } }
 .pie-btns .opinion-pie { margin: 0; max-width: none; }
+
+/* ---------- presentación ---------- */
+.ilus { width: 100%; height: auto; padding: 0; background: none; border-radius: 0; overflow: visible; }
+.intro { position: fixed; inset: 0; z-index: 50; display: flex; flex-direction: column; background: radial-gradient(120% 70% at 50% 0%, #201d17 0%, var(--bg) 60%); padding: env(safe-area-inset-top) 0 env(safe-area-inset-bottom); overflow: hidden; }
+.intro-cab { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; max-width: 1040px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.intro-marca { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.02em; }
+.intro-marca img { width: 28px; height: 28px; border-radius: 8px; }
+.intro-saltar { border: 0; background: none; color: var(--text-2); font: 600 15px var(--f); padding: 10px 6px; cursor: pointer; }
+.intro-ventana { flex: 1; overflow: hidden; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
+.intro-pista { display: flex; height: 100%; transition: transform 0.45s cubic-bezier(.2, .8, .2, 1); will-change: transform; }
+.intro-pista.arrastra { transition: none; }
+.intro-slide { flex: 0 0 100%; box-sizing: border-box; display: grid; align-content: center; justify-items: center; gap: 26px; padding: 8px 24px; text-align: center; }
+.intro-ilus { width: min(84vw, 380px); }
+.intro-txt h1 { margin: 0 0 12px; font-size: clamp(28px, 7vw, 44px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.08; }
+.intro-txt p { margin: 0 auto; max-width: 460px; color: var(--text-2); font-size: 17px; line-height: 1.55; }
+.intro-pie { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px 22px; max-width: 1040px; width: 100%; margin: 0 auto; box-sizing: border-box; }
+.intro-puntos { display: flex; gap: 6px; }
+.intro-puntos button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px; background: var(--line-2); cursor: pointer; transition: width 0.3s, background 0.3s; }
+.intro-puntos button[aria-current="true"] { width: 26px; background: var(--accent); }
+.intro-btns { display: flex; gap: 8px; }
+.intro-btns .btn { min-height: 48px; padding: 0 22px; font-size: 16px; }
+.intro-sig.final { padding: 0 28px; }
+.ver-intro { justify-self: center; margin-top: 4px; color: var(--accent); font-weight: 600; }
+@media (min-width: 900px) {
+  .intro-slide { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); text-align: left; gap: 56px; padding: 0 max(56px, calc((100% - 1000px) / 2)); justify-items: stretch; align-content: center; align-items: center; }
+  .intro-ilus { width: 100%; max-width: 440px; justify-self: end; }
+  .intro-txt p { margin: 0; }
+  .intro-pista { max-width: none; }
+}
+@media (max-height: 640px) { .intro-ilus { width: min(64vw, 280px); } .intro-txt h1 { font-size: 26px; } .intro-txt p { font-size: 15.5px; } .intro-slide { gap: 16px; } }
+/* lo que se mueve en cada diapositiva, solo cuando está a la vista */
+.intro-slide.activa .an1, .intro-slide.activa .an2, .intro-slide.activa .an3, .intro-slide.activa .an4 { animation: ilus-in 0.5s cubic-bezier(.2, .7, .3, 1) both; }
+.intro-slide.activa .an1 { animation-delay: 0.25s; } .intro-slide.activa .an2 { animation-delay: 0.6s; } .intro-slide.activa .an3 { animation-delay: 0.95s; } .intro-slide.activa .an4 { animation-delay: 1.3s; }
+@keyframes ilus-in { from { opacity: 0; transform: translateY(10px); } }
+.intro-slide.activa .an1v { animation: ilus-ok 0.4s ease 0.25s both; } .intro-slide.activa .an2v { animation: ilus-ok 0.4s ease 0.6s both; }
+@keyframes ilus-ok { to { fill: var(--up-bg); stroke: var(--up); } }
+.intro-slide.activa .traza { stroke-dasharray: 100; animation: ilus-traza 1.1s ease-out 0.2s both; }
+@keyframes ilus-traza { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
+.intro-slide.activa .brota { transform-box: fill-box; transform-origin: 0% 100%; animation: ilus-brota 0.6s cubic-bezier(.3, 1.6, .5, 1) 1.1s both; }
+@keyframes ilus-brota { from { transform: scale(0); } }
+.intro-slide.activa .late { transform-box: fill-box; transform-origin: center; animation: ilus-late 2.4s ease-in-out infinite; }
+.intro-slide.activa .late.d2 { animation-delay: 0.6s; } .intro-slide.activa .late.d3 { animation-delay: 1.2s; } .intro-slide.activa .late.d4 { animation-delay: 1.8s; }
+@keyframes ilus-late { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: 0.55; } }
+.intro-slide.activa .cierra { animation: ilus-cierra 0.7s cubic-bezier(.3, 1.4, .5, 1) 0.35s both; }
+@keyframes ilus-cierra { from { transform: translateY(-14px); } }
+@media (prefers-reduced-motion: reduce) { .intro-pista { transition: none; } .intro-slide.activa * { animation: none !important; } }
 </style>
 </head>
 <body>
@@ -5937,6 +5983,78 @@ async function borrarMovimiento(id, boton) {
 /* =====================================================================
    Pantallas de entrada: desbloquear y crear
    ===================================================================== */
+/* =====================================================================
+   Presentación: unas diapositivas al abrir la web por primera vez en un dispositivo (o desde la pantalla
+   de entrar), con lo que se puede hacer, y al final el botón para crear tu cartera o entrar.
+   ===================================================================== */
+const ILUS = {
+  logo: '<g transform="translate(60 6) scale(3.2)"><path d="M8 15.5C8 14.1 9.1 13 10.5 13H18.2C19 13 19.7 13.4 20.2 14L22.3 16.5H37.5C38.9 16.5 40 17.6 40 19V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#A97C33" stroke="none"/><path class="traza" pathLength="100" d="M13.5 25.5L19.5 19L24 22L31.5 11.5" fill="none" stroke="#4FC995" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path class="brota" d="M31.2 11.8C30.6 7 33.8 4.4 39 4.8C39.2 9.8 35.8 12.6 31.2 11.8Z" fill="#4FC995" stroke="none"/><path d="M8 25C8 23.9 8.9 23 10 23H38C39.1 23 40 23.9 40 25V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#E2B45F" stroke="none"/><path d="M14 30.5H34" stroke="#1F1D19" stroke-opacity="0.18" stroke-width="2" stroke-linecap="round"/></g><g class="an3"><rect class="fp" x="14" y="128" width="62" height="26" rx="13"/><text class="t" x="25" y="145.5">Fondos</text><rect class="fp" x="84" y="128" width="72" height="26" rx="13"/><text class="t" x="95" y="145.5">Acciones</text><rect class="fp" x="164" y="128" width="62" height="26" rx="13"/><text class="t" x="176" y="145.5">Cripto</text></g>',
+  pasos: '<rect class="fp" x="20" y="8" width="200" height="40" rx="12"/><circle class="a an1v" cx="44" cy="28" r="10"/><path class="u an1" d="M39 28.5l3.5 3.5 6.5-7"/><path class="l" d="M64 22h100M64 34h66"/><rect class="fp" x="20" y="58" width="200" height="40" rx="12"/><circle class="a an2v" cx="44" cy="78" r="10"/><path class="u an2" d="M39 78.5l3.5 3.5 6.5-7"/><path class="l" d="M64 72h120M64 84h50"/><rect class="fa" x="20" y="108" width="200" height="40" rx="12"/><circle class="a" cx="44" cy="128" r="10"/><path class="l" d="M64 122h90M64 134h70"/><rect class="fA an3" x="170" y="118" width="40" height="20" rx="10"/><text class="tn an3" x="179" y="132">IRPF</text>',
+  ia: '<rect class="fp an1" x="96" y="8" width="128" height="34" rx="14"/><text class="t an1" x="110" y="30">¿Vendo Repsol?</text><path class="a an2" d="M16 52h150a12 12 0 0112 12v26a12 12 0 01-12 12H44l-14 12v-12H16a12 12 0 01-12-12V64a12 12 0 0112-12z"/><path class="l an2" d="M20 70h120M20 84h90"/><rect class="fa an3" x="30" y="122" width="190" height="34" rx="14"/><text class="ta an3" x="44" y="144">¿Cuándo necesitas el dinero?</text>',
+  mundo: '<circle class="l" cx="86" cy="82" r="62"/><path class="m" d="M24 82h124M86 20c-26 18-26 106 0 124M86 20c26 18 26 106 0 124M32 52h108M32 112h108"/><circle class="fA late" cx="62" cy="58" r="6"/><circle class="fA late d2" cx="104" cy="54" r="6"/><circle class="fA late d3" cx="124" cy="80" r="6"/><circle class="fA late d4" cx="72" cy="108" r="6"/><g class="an2"><rect class="fa" x="164" y="34" width="66" height="28" rx="9"/><path class="u" d="M174 54l7-8 6 5 9-11"/><path class="a" d="M202 48h20"/></g><g class="an3"><rect class="fa" x="164" y="72" width="66" height="28" rx="9"/><path class="d" d="M174 80l7 8 6-5 9 11"/><path class="a" d="M202 86h20"/></g><g class="an4"><rect class="fa" x="164" y="110" width="66" height="28" rx="9"/><text class="ta" x="172" y="129">840 ideas</text></g>',
+  privada: '<rect class="l" x="70" y="10" width="100" height="150" rx="16"/><path class="m" d="M70 136h100"/><g class="cierra"><path class="a" d="M100 70V56a20 20 0 0140 0v14" stroke-width="5"/></g><rect class="fA" x="90" y="68" width="60" height="46" rx="10"/><circle cx="120" cy="88" r="5" fill="#1A1408"/><path d="M120 92v9" stroke="#1A1408" stroke-width="4" stroke-linecap="round"/><g class="an3"><rect class="fp" x="178" y="44" width="54" height="24" rx="12"/><text class="t" x="184" y="60">cifrada</text><rect class="fp" x="8" y="98" width="56" height="24" rx="12"/><text class="t" x="15" y="114">solo tú</text></g>',
+};
+const INTRO = [
+  { il: 'logo', t: 'Tu dinero, creciendo', x: 'Todas tus inversiones en un sitio: fondos, acciones, ETF, oro y cripto de MyInvestor, Trade Republic, Bitvavo o el bróker que uses, con los precios en directo.' },
+  { il: 'pasos', t: 'Qué hacer y cuándo', x: 'Cada mes te dice qué toca: vender, comprar, aportar, vigilar unos resultados… Con el porqué, el cómo y lo que pagarás a Hacienda.' },
+  { il: 'ia', t: 'Una IA que te conoce', x: 'Lee las noticias de todo el mundo y analiza tu cartera según tu edad, tus metas y el riesgo que aguantas. Si le falta algo de ti, te lo pregunta.' },
+  { il: 'mundo', t: 'Ideas y mercados', x: 'Unas 840 empresas contrastadas con siete señales, y qué significa para ti cada movimiento de las bolsas, los tipos o el petróleo.' },
+  { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera va cifrada con tu contraseña y se queda en tu dispositivo. Nadie más la ve, ni quien te pasó la web.' },
+];
+function pantallaIntro(seguir) {
+  const nuevo = !S.enc;
+  $('#app').innerHTML = `<div class="intro" role="region" aria-roledescription="carrusel" aria-label="Presentación de GrowFolio">
+    <div class="intro-cab"><span class="intro-marca"><img src="favicon.svg" alt="">GrowFolio</span><button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
+    <div class="intro-ventana"><div class="intro-pista">${INTRO.map((d, k) => `<section class="intro-slide" aria-roledescription="diapositiva" aria-label="${k + 1} de ${INTRO.length}"><div class="intro-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true">${ILUS[d.il]}</svg></div><div class="intro-txt"><h1>${d.t}</h1><p>${d.x}</p></div></section>`).join('')}</div></div>
+    <div class="intro-pie"><div class="intro-puntos" role="group" aria-label="Diapositivas">${INTRO.map((_, k) => `<button type="button" data-pt="${k}" aria-label="Diapositiva ${k + 1}"></button>`).join('')}</div>
+      <div class="intro-btns"><button type="button" class="btn intro-atras" data-in="atras">Atrás</button><button type="button" class="btn pri intro-sig" data-in="sig">Siguiente</button></div></div>
+  </div>`;
+  const raiz = $('.intro'), pista = $('.intro-pista', raiz), slides = $$('.intro-slide', raiz), puntos = $$('[data-pt]', raiz), sig = $('.intro-sig', raiz), atras = $('.intro-atras', raiz);
+  let i = 0;
+  const fin = () => { LS.set('inv-intro', true); document.removeEventListener('keydown', tecla); seguir(); };
+  const ir = (n) => {
+    i = Math.max(0, Math.min(INTRO.length - 1, n));
+    pista.style.transform = `translateX(${-i * 100}%)`;
+    slides.forEach((s, k) => { s.classList.toggle('activa', k === i); s.setAttribute('aria-hidden', String(k !== i)); });
+    puntos.forEach((p, k) => p.setAttribute('aria-current', String(k === i)));
+    const ult = i === INTRO.length - 1;
+    sig.textContent = ult ? (nuevo ? 'Crear mi cartera' : 'Entrar') : 'Siguiente';
+    sig.classList.toggle('final', ult);
+    atras.style.visibility = i ? 'visible' : 'hidden';
+    $('.intro-saltar', raiz).style.visibility = ult ? 'hidden' : 'visible';
+  };
+  const tecla = (e) => { if (e.key === 'ArrowRight') ir(i + 1); else if (e.key === 'ArrowLeft') ir(i - 1); else if (e.key === 'Enter' && i === INTRO.length - 1) fin(); };
+  document.addEventListener('keydown', tecla);
+  raiz.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-in],[data-pt]'); if (!b) return;
+    if (b.dataset.pt) return ir(+b.dataset.pt);
+    const a = b.dataset.in;
+    if (a === 'fin') fin(); else if (a === 'atras') ir(i - 1); else if (a === 'sig') { if (i === INTRO.length - 1) fin(); else ir(i + 1); }
+  });
+  // arrastrar con el dedo: la diapositiva sigue al dedo y, si pasa un tercio, cambia
+  let x0 = null, y0 = null, dx = 0, horizontal = null;
+  const ventana = $('.intro-ventana', raiz);
+  ventana.addEventListener('pointerdown', (e) => { x0 = e.clientX; y0 = e.clientY; dx = 0; horizontal = null; });
+  ventana.addEventListener('pointermove', (e) => {
+    if (x0 == null) return;
+    dx = e.clientX - x0; const dy = e.clientY - y0;
+    if (horizontal == null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) horizontal = Math.abs(dx) > Math.abs(dy);
+    if (!horizontal) return;
+    pista.classList.add('arrastra');
+    const borde = (i === 0 && dx > 0) || (i === INTRO.length - 1 && dx < 0) ? 0.3 : 1;
+    pista.style.transform = `translateX(calc(${-i * 100}% + ${dx * borde}px))`;
+  });
+  const suelta = () => {
+    if (x0 == null) return;
+    pista.classList.remove('arrastra');
+    if (horizontal && Math.abs(dx) > Math.min(120, ventana.clientWidth / 3)) ir(i + (dx < 0 ? 1 : -1)); else ir(i);
+    x0 = null;
+  };
+  ventana.addEventListener('pointerup', suelta); ventana.addEventListener('pointercancel', suelta); ventana.addEventListener('pointerleave', suelta);
+  ir(0);
+  setTimeout(() => sig.focus({ preventScroll: true }), 50);
+}
+
 function pantallaDesbloqueo(errorTxt = '') {
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fDesb" autocomplete="on">
     <img class="logo" src="icon-192.png" alt="">
@@ -5948,8 +6066,10 @@ function pantallaDesbloqueo(errorTxt = '') {
     <div class="error" id="err">${esc(errorTxt)}</div>
     <button class="btn pri" type="submit" id="bEntrar">Entrar</button>
     ${htmlOtroPerfil()}
+    <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
   </form></div>`;
   enlazarOtroPerfil();
+  $('#bIntro').onclick = () => pantallaIntro(() => pantallaDesbloqueo());
   $('#fDesb').onsubmit = async (ev) => {
     ev.preventDefault();
     const b = $('#bEntrar'); b.disabled = true; b.textContent = 'Descifrando…'; $('#err').textContent = '';
@@ -5993,8 +6113,10 @@ function pantallaCrear() {
     <div class="error" id="err"></div>
     <button class="btn pri" type="submit" id="bCrear">Cifrar y guardar</button>
     ${PERFIL_LOCAL ? htmlOtroPerfil() : ''}
+    <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
   </form></div>`;
   enlazarOtroPerfil();
+  $('#bIntro').onclick = () => pantallaIntro(pantallaCrear);
   let importada = null;
   $('#bEjemplo').onclick = (e) => { e.preventDefault(); descargar('cartera-ejemplo.json', JSON.stringify(EJEMPLO_CARTERA, null, 2)); };
   $('#archivo').onchange = async (ev) => {
@@ -6289,6 +6411,7 @@ const VERSION = '0.1.11';
 const NOVEDADES = [
   { v: '0.1.11', f: '2026-10-19', t: 'GrowFolio', cosas: [
     { d: 'logo', t: 'Ahora se llama GrowFolio', x: 'Grow (crecer) y portfolio (cartera): tu cartera creciendo. Logo nuevo en la web y en la app.' },
+    { d: 'intro', t: 'Una presentación al empezar', x: 'La primera vez que abres la web o la app, cinco diapositivas con lo que puedes hacer y, al final, el botón para crear tu cartera o entrar. Desde la pantalla de entrar se puede volver a ver.' },
     { d: 'tour', t: 'El tutorial, siempre a mano', x: 'Al final de cada pestaña y arriba del todo en Ajustes, aunque te lo saltaras al principio.' },
     { d: 'opinion', t: 'Tu opinión, desde la app', x: 'Cuenta qué se ve mal, qué falla o una idea, y en qué pestaña. Botón al final de cada pestaña y en Ajustes.' },
   ] },
@@ -6342,6 +6465,7 @@ const DIBUJOS = {
   mundo: '<circle class="l" cx="42" cy="40" r="30"/><path class="m" d="M12 40h60M42 10c-12 9-12 51 0 60M42 10c12 9 12 51 0 60M17 24h50M17 56h50"/><circle class="fA" cx="30" cy="28" r="4"/><circle class="fA" cx="49" cy="27" r="4"/><circle class="fA" cx="62" cy="38" r="4"/><circle class="fA" cx="36" cy="52" r="4"/><rect class="fa" x="80" y="14" width="36" height="14" rx="5"/><path class="u" d="M85 24l4-4 3 3 5-6"/><path class="a" d="M101 21h11"/><rect class="fa" x="80" y="33" width="36" height="14" rx="5"/><path class="d" d="M85 37l4 4 3-3 5 6"/><path class="a" d="M101 40h11"/><rect class="fa" x="80" y="52" width="36" height="14" rx="5"/><path class="l" d="M85 59h12"/><path class="a" d="M101 59h11"/>',
   macro: '<rect class="fp" x="6" y="8" width="52" height="30" rx="6"/><text class="t" x="12" y="20">BCE</text><text class="ta" x="12" y="32">2,00 %</text><rect class="fp" x="62" y="8" width="52" height="30" rx="6"/><text class="t" x="68" y="20">Bono 10a</text><text class="ta" x="68" y="32">5,10 %</text><rect class="fp" x="6" y="44" width="52" height="30" rx="6"/><text class="t" x="12" y="56">EUR/USD</text><text class="ta" x="12" y="68">1,124</text><rect class="fp" x="62" y="44" width="52" height="30" rx="6"/><text class="t" x="68" y="56">Brent</text><text class="ta" x="68" y="68">110 $</text>',
   logo: '<g transform="translate(36 2) scale(1.55)"><path d="M8 15.5C8 14.1 9.1 13 10.5 13H18.2C19 13 19.7 13.4 20.2 14L22.3 16.5H37.5C38.9 16.5 40 17.6 40 19V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#A97C33" stroke="none"/><path d="M13.5 25.5L19.5 19L24 22L31.5 11.5" fill="none" stroke="#4FC995" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M31.2 11.8C30.6 7 33.8 4.4 39 4.8C39.2 9.8 35.8 12.6 31.2 11.8Z" fill="#4FC995" stroke="none"/><path d="M8 25C8 23.9 8.9 23 10 23H38C39.1 23 40 23.9 40 25V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#E2B45F" stroke="none"/><path d="M14 30.5H34" stroke="#1F1D19" stroke-opacity="0.18" stroke-width="2" stroke-linecap="round"/></g>',
+  intro: '<rect class="l" x="40" y="4" width="40" height="72" rx="8"/><rect class="fa" x="46" y="14" width="28" height="22" rx="4"/><path class="a" d="M52 30l5-6 4 3 6-8"/><path class="m" d="M48 44h24M48 51h16"/><circle class="fA" cx="54" cy="64" r="2.4"/><circle class="fp" cx="60" cy="64" r="2.4"/><circle class="fp" cx="66" cy="64" r="2.4"/><path class="a" d="M88 40h18M100 34l6 6-6 6"/><path class="m" d="M14 40h18M20 34l-6 6 6 6"/>',
   opinion: '<path class="a" d="M10 10h66a7 7 0 017 7v24a7 7 0 01-7 7H38l-12 10V48H10a7 7 0 01-7-7V17a7 7 0 017-7z"/><path class="l" d="M16 23h52M16 32h38"/><circle class="fA" cx="96" cy="50" r="14"/><path d="M90 50.5l4 4 8-8.5" fill="none" stroke="#1A1408" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><rect class="fp" x="84" y="12" width="30" height="14" rx="7"/><text class="t" x="89" y="22">idea</text>',
   pregunta: '<path class="a" d="M14 8h62a8 8 0 018 8v22a8 8 0 01-8 8H40l-12 10V46H14a8 8 0 01-8-8V16a8 8 0 018-8z"/><text class="ta" x="40" y="35" style="font-size:22px">?</text><rect class="fA" x="56" y="54" width="26" height="14" rx="7"/><rect class="fp" x="86" y="54" width="28" height="14" rx="7"/><rect class="fp" x="70" y="34" width="0" height="0"/><path class="m" d="M60 61h18M90 61h20"/>',
   pasos: '<circle class="fA" cx="16" cy="16" r="7"/><path class="l" d="M30 13h52M30 20h34"/><circle class="a" cx="16" cy="40" r="7"/><path class="m" d="M30 37h60M30 44h40"/><circle class="u" cx="16" cy="64" r="7"/><path class="u" d="M12.5 64l2.5 2.5 4.5-5"/><path class="m" d="M30 61h46M30 68h28"/><rect class="fa" x="92" y="8" width="24" height="16" rx="5"/><text class="ta" x="96" y="19.5">€</text>',
@@ -8193,7 +8317,9 @@ async function iniciar() {
     $('#app').innerHTML = `<div class="pantalla"><div class="caja"><h1>No se pudo cargar</h1><p>${esc(e.message)}</p><button class="btn pri" onclick="location.reload()">Reintentar</button></div></div>`;
     return;
   }
-  if (!S.enc) return pantallaCrear();
+  // la primera vez en este dispositivo, antes de crear la cartera o entrar, la presentación
+  const intro = !LS.get('inv-intro', false);
+  if (!S.enc) return intro ? pantallaIntro(pantallaCrear) : pantallaCrear();
   try {
     const f = JSON.parse(S.enc.texto);
     const guardada = await IDB.get(IDB_CLAVE);
@@ -8203,7 +8329,7 @@ async function iniciar() {
       return arrancar();
     }
   } catch (e) { console.warn('La clave guardada no sirve', e); }
-  pantallaDesbloqueo();
+  if (intro) pantallaIntro(() => pantallaDesbloqueo()); else pantallaDesbloqueo();
 }
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
