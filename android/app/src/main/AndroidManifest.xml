@@ -2,6 +2,8 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- para instalar la versión nueva de la app desde el aviso de la web -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
     <application
         android:allowBackup="false"
@@ -28,6 +30,12 @@
                 <data android:scheme="inversiones" android:host="token" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name=".Archivos"
+            android:authorities="es.inversiones.app.archivos"
+            android:exported="false"
+            android:grantUriPermissions="true" />
 
         <receiver
             android:name=".Widget"

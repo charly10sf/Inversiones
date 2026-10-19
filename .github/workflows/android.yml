@@ -56,6 +56,12 @@ jobs:
             echo "FIRMA_RUTA=$GITHUB_WORKSPACE/android/firma.p12" >> "$GITHUB_ENV"
           fi
 
+      - name: Versión
+        run: |
+          v=$(grep -oP "^const VERSION = '\K[0-9.]+" index.html | head -1)
+          echo "VERSION_NAME=${v:-0.0.0}" >> "$GITHUB_ENV"
+          echo "Versión ${v:-0.0.0}, compilación ${{ github.run_number }}"
+
       - name: Compilar
         working-directory: android
         env:
@@ -73,7 +79,8 @@ jobs:
           cp android/app/build/outputs/apk/release/app-release.apk inversiones.apk
           gh release view app >/dev/null 2>&1 || gh release create app --title "App de Android" --notes "La web de Inversiones como app, con widget para la pantalla de inicio. Descarga inversiones.apk e instálala."
           gh release upload app inversiones.apk --clobber
-          printf '{"version": %s, "apk": "https://github.com/%s/releases/download/app/inversiones.apk"}\n' "${{ github.run_number }}" "${{ github.repository }}" > app.json
+          gh release edit app --title "App de Android $VERSION_NAME" || true
+          printf '{"version": %s, "nombre": "%s", "apk": "https://github.com/%s/releases/download/app/inversiones.apk"}\n' "${{ github.run_number }}" "$VERSION_NAME" "${{ github.repository }}" > app.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app.json

@@ -71,7 +71,7 @@ a:hover { text-decoration: underline; }
 .marca { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.02em; flex: none; }
 .marca img { width: 28px; height: 28px; border-radius: 8px; }
 .nav { display: flex; gap: 2px; margin-left: 10px; }
-.nav a { color: var(--text-2); padding: 7px 12px; border-radius: 9px; font-size: 14.5px; text-decoration: none; }
+.nav a { color: var(--text-2); padding: 7px 12px; border-radius: 9px; font-size: 14.5px; text-decoration: none; white-space: nowrap; }
 .nav a:hover { color: var(--text); background: var(--plane); }
 .nav a[aria-current="page"] { color: var(--accent); background: var(--accent-bg); }
 .estado { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; margin-left: auto; }
@@ -1204,6 +1204,73 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 @media (max-width: 480px) { .imp-num { grid-template-columns: 1fr 1fr; } .imp-num select { grid-column: 1 / -1; } }
 
 .busca-l { color: var(--text-2) !important; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block !important; }
+
+/* ---------- novedades, tour y avisos de versión nueva ---------- */
+.ver-chip { font: 700 11px/1 var(--f); color: var(--accent); background: var(--accent-bg); border: 0; border-radius: 999px; padding: 5px 8px; cursor: pointer; letter-spacing: 0; white-space: nowrap; }
+.ver-chip:hover { background: rgba(226, 180, 95, 0.24); }
+@media (max-width: 1360px) { .ver-chip { display: none; } }
+.dib { width: 112px; height: 75px; padding: 6px; flex: none; background: var(--plane-2); border-radius: 12px; fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
+.dib .l { stroke: var(--text-2); }
+.dib .m { stroke: var(--line-2); }
+.dib .a { stroke: var(--accent); }
+.dib .u { stroke: var(--up); }
+.dib .d { stroke: var(--down); }
+.dib .fp { fill: var(--plane-3); stroke: none; }
+.dib .fa { fill: var(--accent-bg); stroke: none; }
+.dib .fA { fill: var(--accent); stroke: none; }
+.dib text { font: 700 9px var(--f); stroke: none; fill: var(--text-2); }
+.dib .ta { fill: var(--accent); }
+.dib .tn { fill: var(--on-accent); }
+.dib .tm { fill: var(--muted); font-weight: 500; }
+.dib .tu { fill: var(--up); }
+.hoja-nov .hoja { max-width: 580px; }
+.novedades { display: grid; gap: 20px; }
+.nov-cab { display: flex; align-items: center; gap: 8px; }
+.nov-cab small { margin-left: auto; color: var(--muted); font-size: 13px; }
+.nov-num { font-weight: 800; font-size: 15px; font-variant-numeric: tabular-nums; color: var(--on-accent); background: var(--accent); border-radius: 999px; padding: 4px 11px; }
+.nov-num.peq { font-size: 12px; font-weight: 700; padding: 3px 8px; color: var(--text-2); background: var(--plane-3); }
+.nov-alfa { font-size: 12px; font-weight: 600; color: var(--accent); border: 1px solid rgba(226, 180, 95, 0.5); border-radius: 999px; padding: 3px 8px; }
+.nov-v h3 { margin: 12px 0 14px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.2; }
+.nov-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 14px; }
+.nov-lista li { display: flex; gap: 14px; align-items: center; animation: nov-entra 0.42s cubic-bezier(.2, .7, .3, 1) both; animation-delay: calc(var(--i, 0) * 70ms + 80ms); }
+.nov-lista b { display: block; font-size: 15.5px; line-height: 1.3; margin-bottom: 3px; }
+.nov-lista p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.45; }
+@keyframes nov-entra { from { opacity: 0; transform: translateY(8px); } }
+@media (max-width: 480px) { .nov-lista li { align-items: flex-start; gap: 12px; } .nov-lista .dib { width: 88px; height: 59px; padding: 5px; border-radius: 10px; } }
+.nov-antes summary { cursor: pointer; color: var(--text-2); font-weight: 600; padding: 4px 0; }
+.nov-antes ol { list-style: none; margin: 10px 0 0; padding: 0; display: grid; gap: 12px; }
+.nov-antes li { display: grid; grid-template-columns: auto 1fr auto; gap: 10px; align-items: baseline; font-size: 14px; }
+.nov-antes li b { font-weight: 600; }
+.nov-antes li small:not(.k) { display: block; color: var(--muted); margin-top: 3px; line-height: 1.4; }
+.novedades > .fila-btns { margin-top: 2px; }
+.tour { position: fixed; inset: 0; z-index: 9000; }
+.tour-foco { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.76), 0 0 0 2px var(--accent); transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease; pointer-events: none; }
+.tour-foco.sin { left: 50% !important; top: 40% !important; width: 0 !important; height: 0 !important; box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.76); }
+.tour-caja { position: fixed; left: 50%; transform: translateX(-50%); width: min(420px, calc(100vw - 32px)); box-sizing: border-box; background: var(--plane); border: 1px solid var(--line-2); border-radius: 18px; padding: 16px 18px 14px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55); outline: none; }
+.tour-caja.abajo { bottom: calc(20px + var(--nav-h) + env(safe-area-inset-bottom, 0px)); }
+.tour-caja.arriba { top: calc(16px + env(safe-area-inset-top, 0px)); }
+.tour-caja.centro { top: 50%; transform: translate(-50%, -50%); }
+.tour-caja h3 { margin: 12px 0 6px; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+.tour-caja p { margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.5; }
+.tour-prog { display: flex; gap: 4px; }
+.tour-prog i { flex: 1; height: 4px; border-radius: 2px; background: var(--line-2); transition: background 0.3s; }
+.tour-prog i.ya { background: var(--muted); }
+.tour-prog i.on { background: var(--accent); }
+.tour-btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 14px; }
+.tour-n { margin-right: auto; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
+.act-app { display: grid; gap: 14px; }
+.act-app .dib { justify-self: center; width: 150px; height: 100px; background: var(--accent-bg); }
+.act-app .dib .fp { fill: var(--plane-2); }
+.act-app p { margin: 0; line-height: 1.5; }
+.act-app .fila-btns .btn.pri { flex: 1; justify-content: center; text-align: center; }
+.act-prog { display: grid; gap: 6px; }
+.act-prog small { color: var(--text-2); font-size: 13.5px; }
+.act-barra { height: 8px; border-radius: 4px; background: var(--plane-3); overflow: hidden; }
+.act-barra i { display: block; width: 0; height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.2s; }
+.aviso-web { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + var(--nav-h) + env(safe-area-inset-bottom, 0px)); z-index: 8000; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 8px 8px 8px 14px; background: var(--plane-2); border: 1px solid rgba(226, 180, 95, 0.55); border-radius: 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5); }
+.aviso-web > svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+.aviso-web span { font-weight: 600; font-size: 14.5px; }
+@media (prefers-reduced-motion: reduce) { .tour-foco, .tour-prog i, .act-barra i { transition: none; } .nov-lista li { animation: none; } }
 </style>
 </head>
 <body>
@@ -2189,7 +2256,7 @@ function parchear() {
 function montar() {
   $('#app').innerHTML = `
   <header class="top"><div class="wrap fila-top">
-    <div class="marca"><img src="favicon.svg" alt=""><span>Inversiones</span></div>
+    <div class="marca"><img src="favicon.svg" alt=""><span>Inversiones</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION.replace(/\.0$/, '')} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t]) => `<a href="#${k}" data-ir="${k}">${t}</a>`).join('')}</nav>
     <span id="estado"></span>
     <div class="acciones">
@@ -5523,19 +5590,274 @@ function buscador(cont, alElegir, opt = {}) {
   return inp;
 }
 
+/* =====================================================================
+   Versiones. Mientras la web esté en alfa van por 0.x: el número del medio sube con cada tanda de
+   mejoras que se nota (0.9 → 0.10) y el último con los arreglos (0.9.0 → 0.9.1). La primera vez que
+   abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
+   ===================================================================== */
+const VERSION = '0.9.0';
+const NOVEDADES = [
+  { v: '0.9.0', f: '2026-10-19', t: 'Meter lo que tienes, sin líos', cosas: [
+    { d: 'buscar', t: 'Un buscador que lo encuentra todo', x: 'Escribe el nombre, el ticker (VWCE, AAPL) o el ISIN: salen tus valores, unos 110 fondos y ETF y las ~800 empresas del radar, cada uno con su precio.' },
+    { d: 'capturas', t: 'Importar desde capturas', x: 'Haz capturas de MyInvestor, Trade Republic o Bitvavo (o sube el PDF) y la IA lee qué tienes, cuántas y lo que pagaste. Lo revisas y se guarda.' },
+    { d: 'tengo', t: 'Compra, venta o "ya la tenía"', x: 'Tres botones arriba del formulario. "Ya la tenía" mete lo que compraste antes de usar la web, con su fecha, sin tocar el efectivo.' },
+    { d: 'catalogo', t: 'Una base de datos común de fondos', x: 'Cada fondo y ETF con su clase y su ISIN exactos y el precio de cada día, para que dos fondos que se llaman igual no se confundan.' },
+    { d: 'aviso', t: 'Aviso si el fondo no cuadra', x: 'Si lo que pagaste no encaja con el precio del fondo ese día, la web te dice cuál es el tuyo y lo cambias con un toque.' },
+    { d: 'tour', t: 'Un tour por la app', x: 'La primera vez te enseña cada pestaña. Lo puedes repetir cuando quieras desde Ajustes.' },
+    { d: 'app', t: 'La app se actualiza sola', x: 'Cuando haya versión nueva de la app de Android sale un aviso con un botón que la descarga e instala encima.' },
+  ] },
+  { v: '0.8.0', f: '2026-10-19', t: 'Pestañas más claras', cosas: [
+    { d: 'pestanas', t: 'Paso a paso y Fiscalidad, cada una en su pestaña', x: 'El Plan está dentro de Cartera y Futuro va la última.' },
+    { d: 'mercados', t: 'Mercados aparte, con qué te implica', x: 'Cada índice, bono, divisa o materia prima explica qué significa que suba o baje y a qué parte de tu cartera le afecta.' },
+    { d: 'grafica', t: 'Gráfica de 1 día y 1 semana', x: 'Con el precio cada media hora.' },
+    { d: 'desde', t: 'Ganancia desde que compraste', x: 'En cada posición: a cuánto compraste, cuánto vale ahora, lo ganado y lo que sale al año.' },
+  ] },
+  { v: '0.7.0', f: '2026-10-19', t: 'Cada uno con su cartera', cosas: [
+    { d: 'perfil', t: 'Tu cartera en tu móvil', x: 'Guardada y cifrada en tu dispositivo, sin cuenta de GitHub. La IA te hace recomendaciones a ti.' },
+  ] },
+  { v: '0.6.0', f: '2026-10-19', t: 'Reglas más flexibles e IA rápida' },
+  { v: '0.5.0', f: '2026-10-18', t: 'App de Android con widget' },
+  { v: '0.4.0', f: '2026-10-18', t: 'Paso a paso, Fiscalidad y recortar la pantalla para preguntar a la IA' },
+  { v: '0.3.0', f: '2026-10-18', t: 'Asesor con Gemini e informe de prensa cada dos horas' },
+  { v: '0.2.0', f: '2026-10-17', t: 'Expertos, Mercados, Futuro y el radar de ideas' },
+  { v: '0.1.0', f: '2026-10-17', t: 'Primera versión: cartera cifrada con precios automáticos' },
+];
+const cmpVer = (a, b) => { const x = String(a || '0').split('.').map(Number), y = String(b || '0').split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
+const fechaNov = (f) => { const d = deIso(f); return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`; };
+
+/* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
+const DIBUJOS = {
+  buscar: '<rect class="fp" x="8" y="6" width="104" height="20" rx="10"/><circle class="a" cx="21" cy="16" r="4.5"/><path class="a" d="M24.5 19.5l3.5 3.5"/><text class="ta" x="35" y="19.5">VWCE</text><path class="a" d="M62 11v10"/><rect class="fa" x="8" y="32" width="104" height="15" rx="5"/><circle class="fA" cx="19" cy="39.5" r="4.5"/><path class="l" d="M30 39.5h44"/><path class="a" d="M90 39.5h14"/><circle class="fp" cx="19" cy="57" r="4.5"/><path class="m" d="M30 57h36"/><path class="m" d="M90 57h14"/><circle class="fp" cx="19" cy="72" r="4.5"/><path class="m" d="M30 72h28"/><path class="m" d="M90 72h14"/>',
+  capturas: '<rect class="l" x="14" y="8" width="32" height="64" rx="6"/><path class="m" d="M21 20h18M21 29h11M21 38h18M21 47h9M21 56h15"/><path class="a" d="M9 15V7h8M43 7h8v8M51 65v8h-8M17 73H9v-8"/><path class="a" d="M57 40h13M65 35l5 5-5 5"/><rect class="fa" x="77" y="14" width="36" height="14" rx="4"/><path class="u" d="M81 21l2.5 2.5L88 18.5"/><path class="l" d="M93 21h15"/><rect class="fa" x="77" y="33" width="36" height="14" rx="4"/><path class="u" d="M81 40l2.5 2.5L88 37.5"/><path class="l" d="M93 40h11"/><rect class="fa" x="77" y="52" width="36" height="14" rx="4"/><path class="u" d="M81 59l2.5 2.5L88 56.5"/><path class="l" d="M93 59h13"/>',
+  tengo: '<rect class="fp" x="4" y="10" width="112" height="22" rx="11"/><text class="t" x="12" y="24.5">Compra</text><text class="t" x="46" y="24.5">Venta</text><rect class="fA" x="74" y="12" width="40" height="18" rx="9"/><text class="tn" x="79" y="24.5">La tenía</text><ellipse class="l" cx="60" cy="68" rx="17" ry="5"/><path class="l" d="M43 68v-7M77 68v-7"/><ellipse class="l" cx="60" cy="61" rx="17" ry="5"/><path class="a" d="M43 61v-7M77 61v-7"/><ellipse class="a" cx="60" cy="54" rx="17" ry="5"/>',
+  catalogo: '<ellipse class="a" cx="36" cy="15" rx="24" ry="7"/><path class="a" d="M12 15v48c0 4 11 7 24 7s24-3 24-7V15"/><path class="a" d="M12 31c0 4 11 7 24 7s24-3 24-7M12 47c0 4 11 7 24 7s24-3 24-7"/><rect class="fp" x="70" y="10" width="44" height="15" rx="4"/><text class="t" x="75" y="20.5">IE00B…</text><rect class="fp" x="70" y="32" width="44" height="15" rx="4"/><text class="t" x="75" y="42.5">LU168…</text><rect class="fa" x="70" y="54" width="44" height="15" rx="4"/><text class="ta" x="75" y="64.5">BTC</text>',
+  aviso: '<rect class="fp" x="4" y="14" width="48" height="36" rx="6"/><text class="t" x="10" y="29">S&amp;P 500</text><text class="tm" x="10" y="41">iShares</text><path class="d" d="M22 58l8 8M30 58l-8 8"/><path class="a" d="M55 32h10M61 28l4 4-4 4"/><rect class="fa" x="68" y="14" width="48" height="36" rx="6"/><text class="ta" x="74" y="29">S&amp;P 500</text><text class="t" x="74" y="41">Fidelity</text><path class="u" d="M86 62l4 4 8-8"/>',
+  tour: '<rect class="l" x="30" y="4" width="50" height="72" rx="8"/><path class="m" d="M38 15h26M38 23h18"/><rect class="fp" x="38" y="30" width="34" height="18" rx="4"/><path class="m" d="M30 61h50"/><circle class="fp" cx="42" cy="68.5" r="2.5"/><circle class="fA" cx="55" cy="68.5" r="2.5"/><circle class="fp" cx="68" cy="68.5" r="2.5"/><circle class="a" cx="55" cy="68.5" r="7.5"/><path class="a" d="M61 63l25-12"/><rect class="fa" x="84" y="34" width="32" height="22" rx="5"/><path class="a" d="M90 42h20M90 49h13"/>',
+  app: '<rect class="l" x="40" y="4" width="40" height="72" rx="8"/><path class="a" d="M60 17v26M51 35l9 9 9-9"/><path class="a" d="M50 51h20"/><rect class="fp" x="48" y="60" width="24" height="5" rx="2.5"/><rect class="fA" x="48" y="60" width="15" height="5" rx="2.5"/><rect class="fA" x="82" y="8" width="30" height="15" rx="7.5"/><text class="tn" x="88" y="18.5">0.9</text>',
+  pestanas: '<rect class="l" x="10" y="6" width="64" height="38" rx="6"/><path class="m" d="M18 16h32M18 25h44M18 34h24"/><circle class="a" cx="98" cy="24" r="13"/><path class="a" d="M85 24h26M98 11c-5 4-5 22 0 26M98 11c5 4 5 22 0 26"/><rect class="fp" x="6" y="52" width="108" height="24" rx="8"/><rect class="m" x="14" y="59" width="10" height="10" rx="3"/><rect class="m" x="32" y="59" width="10" height="10" rx="3"/><rect class="fA" x="50" y="59" width="10" height="10" rx="3"/><rect class="m" x="68" y="59" width="10" height="10" rx="3"/><rect class="m" x="86" y="59" width="10" height="10" rx="3"/><rect class="m" x="102" y="59" width="6" height="10" rx="3"/>',
+  mercados: '<path class="m" d="M8 70h104"/><rect class="fp" x="14" y="44" width="12" height="26" rx="2"/><rect class="fp" x="32" y="32" width="12" height="38" rx="2"/><rect class="fa" x="50" y="22" width="12" height="48" rx="2"/><path class="u" d="M56 15V5M52 9l4-4 4 4"/><path class="d" d="M70 12l10 10 8-4 14 16"/><path class="d" d="M97 34h5v-5"/><rect class="fa" x="70" y="46" width="44" height="17" rx="6"/><text class="ta" x="76" y="57.5">¿y a mí?</text>',
+  grafica: '<rect class="fA" x="8" y="5" width="22" height="14" rx="7"/><text class="tn" x="13" y="15">1D</text><rect class="fp" x="34" y="5" width="22" height="14" rx="7"/><text class="t" x="39.5" y="15">1S</text><rect class="fp" x="60" y="5" width="22" height="14" rx="7"/><text class="t" x="64" y="15">1M</text><path class="a" d="M8 60l12-6 10 4 12-14 10 5 12-10 10 3 14-16 10 6 14-8"/><path class="m" d="M8 72h104M20 70v4M44 70v4M68 70v4M92 70v4"/>',
+  desde: '<path class="m" d="M8 72h104"/><path class="l" d="M14 58c14-2 22 6 34 0s18-20 30-18 14-12 28-22"/><path class="a" d="M20 57H104V24" stroke-dasharray="3 4"/><circle class="fp" cx="20" cy="57" r="5"/><circle class="a" cx="20" cy="57" r="5"/><circle class="fA" cx="104" cy="19" r="5"/><rect class="fa" x="60" y="62" width="40" height="14" rx="7"/><text class="tu" x="66" y="72.5">+12 %</text>',
+  perfil: '<circle class="l" cx="34" cy="22" r="9"/><path class="l" d="M18 56c0-10 7-16 16-16s16 6 16 16"/><circle class="a" cx="86" cy="22" r="9"/><path class="a" d="M70 56c0-10 7-16 16-16s16 6 16 16"/><rect class="fp" x="28" y="64" width="12" height="10" rx="2"/><path class="l" d="M30.5 64v-3a3.5 3.5 0 017 0v3"/><rect class="fa" x="80" y="64" width="12" height="10" rx="2"/><path class="a" d="M82.5 64v-3a3.5 3.5 0 017 0v3"/>',
+};
+const dibujo = (k) => `<svg class="dib" viewBox="0 0 120 80" aria-hidden="true">${DIBUJOS[k] || ''}</svg>`;
+
+function mostrarNovedades(desde, alCerrar) {
+  LS.set('inv-version', VERSION);
+  let nuevas = NOVEDADES.filter((n) => n.cosas && desde && cmpVer(n.v, desde) > 0);
+  if (!nuevas.length) nuevas = [NOVEDADES[0]];
+  const resto = NOVEDADES.filter((n) => !nuevas.includes(n));
+  const bloque = (n) => `<section class="nov-v">
+    <div class="nov-cab"><span class="nov-num">${esc(n.v)}</span><span class="nov-alfa">alfa</span><small>${fechaNov(n.f)}</small></div>
+    <h3>${esc(n.t)}</h3>
+    <ul class="nov-lista">${n.cosas.map((c, i) => `<li style="--i:${i}">${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p></div></li>`).join('')}</ul>
+  </section>`;
+  const h = hoja('¿Qué se ha mejorado?', `<div class="novedades">${nuevas.map(bloque).join('')}
+    ${resto.length ? `<details class="nov-antes"><summary>Versiones anteriores</summary><ol>${resto.map((n) => `<li><span class="nov-num peq">${esc(n.v)}</span><span><b>${esc(n.t)}</b>${n.cosas ? `<small>${n.cosas.map((c) => esc(c.t)).join('. ')}.</small>` : ''}</span><small class="k">${fechaCorta(n.f)}</small></li>`).join('')}</ol></details>` : ''}
+    <div class="fila-btns"><button class="btn" data-tour-ya>Ver el tour</button><button class="btn pri" data-cerrar>Entendido</button></div>
+  </div>`, alCerrar);
+  h.el.classList.add('hoja-nov');
+  $('[data-tour-ya]', h.el).onclick = () => { h.el.remove(); iniciarTour(0, alCerrar); };
+}
+
+/* =====================================================================
+   Tour: la primera vez (y desde Ajustes) enseña cada pestaña, resaltando dónde está.
+   ===================================================================== */
+const TOUR = [
+  { v: 'cartera', t: 'Bienvenido', x: 'Te enseño la app en un minuto: qué hay en cada pestaña y dónde tocar. Lo puedes repetir cuando quieras desde Ajustes.' },
+  { v: 'cartera', sel: '.hero-num', t: 'Lo que tienes', x: 'Todo sumado y en euros. Debajo, lo que ganas o pierdes hoy y desde el principio. Los precios se mueven solos, sin recargar.' },
+  { v: 'cartera', sel: '.tabs[aria-label="Periodo"]', t: 'La gráfica', x: '1D y 1S enseñan hoy y esta semana, hora a hora. 1A o más, el camino largo.' },
+  { v: 'cartera', pos: true, sel: '#hPos ~ .der [data-accion="nueva-pos"], [data-accion="nueva-pos"]', t: 'Mete lo que tienes', x: '"Añadir posición" para lo que ya tenías. "Compra o venta" para lo que hagas desde hoy. Busca por nombre, ticker o ISIN, o importa capturas de tu bróker.' },
+  { v: 'cartera', sel: '#carTabs', t: 'Posiciones y plan', x: 'Toca una posición para ver su ficha. En "Plan y movimientos" están las aportaciones de cada mes y todo lo que has comprado y vendido.' },
+  { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', t: 'Paso a paso', x: 'Lo que toca hacer con tu dinero, en orden y con lo primero arriba: qué, cuánto, por qué y lo que pagarías a Hacienda.' },
+  { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', t: 'Expertos', x: 'Qué opinan los analistas de lo que tienes y las ideas de compra que sacan la web y la IA de unas 800 empresas.' },
+  { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', t: 'Análisis', x: 'La IA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
+  { v: 'fiscal', sel: '.navbar [data-ir="fiscal"], .nav [data-ir="fiscal"]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
+  { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"]', t: 'Futuro', x: 'Cuánto podrías tener dentro de unos años con lo que aportas cada mes.' },
+  { v: 'mercados', sel: '.ir-merc', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
+  { v: 'cartera', sel: '#bAsesor', t: 'El asesor', x: 'Pregúntale lo que quieras de tu cartera. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
+  { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades y este tour.' },
+];
+let TOURE = null;
+const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
+function iniciarTour(paso = 0, alAcabar) {
+  cerrarTour();
+  if (S.ficha) cerrarFicha(true);
+  document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
+  const capa = document.createElement('div');
+  capa.className = 'tour'; capa.setAttribute('role', 'dialog'); capa.setAttribute('aria-modal', 'true'); capa.setAttribute('aria-label', 'Tour por la app');
+  capa.innerHTML = '<div class="tour-foco"></div><div class="tour-caja" tabindex="-1" aria-live="polite"></div>';
+  document.body.appendChild(capa);
+  const reubicar = () => colocarTour();
+  const tecla = (e) => {
+    if (e.key === 'Escape') { e.stopPropagation(); cerrarTour(true); }
+    else if (e.key === 'ArrowRight') irPasoTour(1);
+    else if (e.key === 'ArrowLeft') irPasoTour(-1);
+  };
+  window.addEventListener('resize', reubicar); window.addEventListener('scroll', reubicar, true); document.addEventListener('keydown', tecla, true);
+  TOURE = { capa, i: paso, el: null, alAcabar, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); } };
+  capa.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-t]'); if (!b) return;
+    const a = b.dataset.t;
+    if (a === 'sig') irPasoTour(1);
+    else if (a === 'ant') irPasoTour(-1);
+    else if (a === 'fin') cerrarTour(true);
+    else if (a === 'tengo') { cerrarTour(true, true); operacion('tengo'); }
+    else if (a === 'importar') { cerrarTour(true, true); importarCapturas(); }
+  });
+  pasoTour();
+}
+function cerrarTour(hecho, sinVolver) {
+  if (!TOURE) return;
+  const { alAcabar } = TOURE;
+  TOURE.off(); TOURE.capa.remove(); TOURE = null;
+  if (!hecho) return;
+  LS.set('inv-tour', VERSION);
+  if (sinVolver) return;
+  if (S.vista !== 'cartera') location.hash = '#cartera';
+  if (alAcabar) alAcabar();
+}
+function irPasoTour(d) {
+  if (!TOURE) return;
+  const n = TOURE.i + d;
+  if (n < 0) return;
+  if (n >= TOUR.length) return cerrarTour(true);
+  TOURE.i = n; pasoTour();
+}
+function pasoTour() {
+  const p = TOUR[TOURE.i], cambia = p.v && S.vista !== p.v;
+  if (cambia) location.hash = '#' + p.v;
+  if (p.pos && S.carTab === 'plan') { S.carTab = 'pos'; LS.set('inv-car', 'pos'); if (!cambia) pintar(); }
+  const ultimo = TOURE.i === TOUR.length - 1, vacia = !((S.cartera && S.cartera.posiciones) || []).length;
+  const caja = $('.tour-caja', TOURE.capa);
+  caja.innerHTML = `<div class="tour-prog" aria-hidden="true">${TOUR.map((_, i) => `<i class="${i === TOURE.i ? 'on' : i < TOURE.i ? 'ya' : ''}"></i>`).join('')}</div>
+    <h3>${esc(p.t)}</h3><p>${esc(p.x)}</p>
+    <div class="tour-btns"><small class="tour-n">${TOURE.i + 1} de ${TOUR.length}</small>
+      ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}
+      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar capturas</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : '<button class="btn peq pri" data-t="fin">Terminar</button>') : `<button class="btn peq pri" data-t="sig">${TOURE.i ? 'Siguiente' : 'Empezar'}</button>`}
+    </div>`;
+  TOURE.el = null; colocarTour();
+  setTimeout(() => {
+    if (!TOURE) return;
+    const el = elVisible(p.sel);
+    TOURE.el = el;
+    if (el) { const r = el.getBoundingClientRect(); if (r.top < 64 || r.bottom > innerHeight - 80) el.scrollIntoView({ block: 'center' }); }
+    colocarTour();
+    caja.focus({ preventScroll: true });
+  }, cambia ? 380 : 140);
+}
+function colocarTour() {
+  if (!TOURE) return;
+  const foco = $('.tour-foco', TOURE.capa), caja = $('.tour-caja', TOURE.capa);
+  let el = TOURE.el;
+  if (el && !el.isConnected) el = TOURE.el = elVisible(TOUR[TOURE.i].sel);
+  if (!el) { foco.className = 'tour-foco sin'; caja.className = 'tour-caja centro'; return; }
+  const r = el.getBoundingClientRect(), m = 6;
+  foco.className = 'tour-foco';
+  foco.style.cssText = `left:${r.left - m}px;top:${r.top - m}px;width:${r.width + 2 * m}px;height:${r.height + 2 * m}px`;
+  caja.className = 'tour-caja ' + (r.top + r.height / 2 < innerHeight * 0.5 ? 'abajo' : 'arriba');
+}
+
+/* =====================================================================
+   App de Android: si hay versión nueva, aviso grande con un botón que la baja y la instala encima.
+   Las apps hasta la compilación 7 no saben instalar solas: a esas se les abre la descarga en Chrome.
+   ===================================================================== */
+const versionApp = () => { try { return window.InversionesApp.version(); } catch (e) { return 0; } };
+const nombreApp = () => { try { const n = window.InversionesApp.nombreVersion(); if (n) return `versión ${n}`; } catch (e) {} return `compilación ${versionApp()}`; };
+async function ultimaApp() {
+  try { const r = await fetch(GH.raw('app.json', 'main') + '?v=' + Date.now(), { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (e) {}
+  return null;
+}
+async function revisarApp(forzar) {
+  if (!window.InversionesApp) return false;
+  const ult = await ultimaApp();
+  if (!ult || !(ult.version > versionApp())) return false;
+  const luego = LS.get('inv-app-luego', null);
+  if (!forzar && luego && luego.v === ult.version && Date.now() - luego.t < 86400000) return true;
+  avisoApp(ult);
+  return true;
+}
+function avisoApp(ult) {
+  const app = window.InversionesApp;
+  const sola = app && typeof app.actualizar === 'function';
+  const nueva = ult.nombre ? `versión ${ult.nombre}` : `compilación ${ult.version}`;
+  const h = hoja('Hay una versión nueva de la app', `<div class="act-app">
+    ${dibujo('app')}
+    <p>Tienes la ${esc(nombreApp())} y ya está la <b>${esc(nueva)}</b>. Se instala encima: no pierdes la cartera, la contraseña ni el widget.</p>
+    <div class="act-prog" hidden><div class="act-barra"><i></i></div><small></small></div>
+    <div class="fila-btns"><button class="btn" data-luego>Luego</button>${sola ? '<button class="btn pri" data-act>Actualizar ahora</button>' : `<a class="btn pri" href="${esc(ult.apk)}" data-cerrar>Descargar la actualización</a>`}</div>
+    <p class="nota act-nota">${sola ? 'Android te pedirá confirmar la instalación. La primera vez, también permiso para instalar desde la app.' : 'Se abre en Chrome: cuando acabe de bajar, ábrela e instálala encima. Desde esa versión, la app se actualiza desde aquí con un toque.'}</p>
+  </div>`, () => LS.set('inv-app-luego', { v: ult.version, t: Date.now() }));
+  h.el.classList.add('hoja-act');
+  $('[data-luego]', h.el).onclick = () => h.cerrar();
+  const b = $('[data-act]', h.el); if (!b) return;
+  const prog = $('.act-prog', h.el), bar = $('.act-barra i', h.el), txt = $('.act-prog small', h.el);
+  const bajar = () => {
+    b.disabled = true; b.textContent = 'Descargando…'; prog.hidden = false; bar.style.width = '0%'; txt.textContent = 'Empezando la descarga…';
+    try { app.actualizar(ult.apk); } catch (e) { window.progresoApp(-1, e.message); }
+  };
+  window.progresoApp = (pct, estado) => {
+    if (!h.el.isConnected) return;
+    if (pct < 0) {
+      txt.innerHTML = `No se pudo descargar${estado ? ` (${esc(estado)})` : ''}. Prueba otra vez o <a href="${esc(ult.apk)}">bájala con Chrome</a>.`;
+      b.disabled = false; b.textContent = 'Reintentar'; b.onclick = bajar; return;
+    }
+    bar.style.width = Math.min(100, pct) + '%';
+    if (estado === 'permiso') { txt.textContent = 'Android pide permiso: activa "Permitir de esta fuente" y vuelve atrás.'; b.disabled = false; b.textContent = 'Instalar'; b.onclick = () => app.instalar(); }
+    else if (estado === 'instalar') { txt.textContent = 'Descargada. Pulsa Instalar en la ventana de Android.'; b.disabled = false; b.textContent = 'Instalar'; b.onclick = () => app.instalar(); }
+    else txt.textContent = `Descargando… ${pct} %`;
+  };
+  b.onclick = bajar;
+}
+
+/* al entrar: tour la primera vez, novedades si hay versión nueva y, después, el aviso de la app */
+function bienvenida() {
+  if (!S.cartera || document.querySelector('.hoja-fondo, .tour')) return;
+  const visto = LS.get('inv-version', null);
+  const nuevo = !(S.cartera.posiciones || []).length && !LS.get('inv-tour', null);
+  const despues = () => setTimeout(() => revisarApp(), 400);
+  if (nuevo) { LS.set('inv-version', VERSION); return iniciarTour(0, despues); }
+  if (!visto || cmpVer(visto, VERSION) < 0) return mostrarNovedades(visto, despues);
+  despues();
+}
+
+/* la web se renueva sola al abrirla; si llevas rato con ella abierta (la app la deja viva días) y hay
+   versión nueva, un aviso con botón para recargar */
+let firmaWeb = null, firmaT = 0;
+async function revisarWeb() {
+  if (CFG.dev || Date.now() - firmaT < 1800000) return;
+  firmaT = Date.now();
+  try {
+    const r = await fetch(location.pathname, { method: 'HEAD', cache: 'no-store' });
+    const f = r.ok && (r.headers.get('etag') || r.headers.get('last-modified'));
+    if (!f) return;
+    if (firmaWeb && f !== firmaWeb) avisoWebNueva(); else firmaWeb = f;
+  } catch (e) {}
+}
+function avisoWebNueva() {
+  if ($('#avisoWeb')) return;
+  const d = document.createElement('div');
+  d.id = 'avisoWeb'; d.className = 'aviso-web'; d.setAttribute('role', 'status');
+  d.innerHTML = `${ICONOS.chispa}<span>Hay una versión nueva de la web</span><button class="btn peq pri">Actualizar</button><button class="ib" aria-label="Cerrar el aviso">${ICONOS.cerrar}</button>`;
+  d.querySelector('.btn').onclick = () => location.reload();
+  d.querySelector('.ib').onclick = () => d.remove();
+  document.body.appendChild(d);
+}
+
 /* la app de Android: dónde bajarla, qué versión tienes y cómo pasarle el token sin escribirlo */
 async function pintarAjustesApp(el) {
   if (!el) return;
   let ult = null;
   try { const r = await fetch(GH.raw('app.json', 'main') + '?v=' + Date.now(), { cache: 'no-store' }); if (r.ok) ult = await r.json(); } catch (e) {}
   const app = window.InversionesApp;
-  const tengo = app ? (() => { try { return app.version(); } catch (e) { return 0; } })() : 0;
+  const tengo = app ? versionApp() : 0;
   const apk = (ult && ult.apk) || `https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk`;
   const android = /Android/i.test(navigator.userAgent);
   const tok = GH.token();
   if (app) {
-    el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (versión ${tengo}). Para el widget: mantén pulsado un hueco de la pantalla de inicio, Widgets, Inversiones, y arrastra "Tu cartera". Se puede estirar o encoger.</p>
-      ${ult && ult.version > tengo ? `<div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Bajar la versión ${ult.version}</a></div><p class="nota" style="margin:0">Se abre en Chrome: descárgala y ábrela para instalarla encima. No pierdes nada.</p>` : ''}`;
+    el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (${esc(nombreApp())}). Para el widget: mantén pulsado un hueco de la pantalla de inicio, Widgets, Inversiones, y arrastra "Tu cartera". Se puede estirar o encoger.</p>
+      ${ult && ult.version > tengo ? `<div class="fila-btns" style="justify-content:flex-start"><button class="btn peq pri" id="aActApp" data-cerrar>Actualizar la app</button></div>` : '<p class="nota" style="margin:0">Tienes la última versión de la app.</p>'}`;
+    const b = $('#aActApp', el); if (b) b.onclick = () => avisoApp(ult);
     return;
   }
   el.innerHTML = `<p class="nota" style="margin:0">La misma web como app de Android, con un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo que toca hacer. ${ult ? '' : 'Todavía no hay ninguna versión publicada.'}</p>
@@ -5558,6 +5880,10 @@ function abrirAjustes() {
       <p class="nota" style="margin:0">Gemini dentro de la web, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes del asesor</button></div>
     </div>
+    <div class="seccion-ed"><h3>Versión</h3>
+      <p class="nota" style="margin:0">Web ${VERSION} (alfa). Cada mejora sube el número del medio y cada arreglo el último.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNov" data-cerrar>Qué se ha mejorado</button><button class="btn peq" id="aTour" data-cerrar>Repetir el tour</button></div>
+    </div>
     <div class="seccion-ed"><h3>App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
     <div class="seccion-ed"><h3>Contraseña</h3>
       <div class="form-grid"><label class="campo">Nueva contraseña<input type="password" id="aP1" autocomplete="new-password"></label><label class="campo">Repítela<input type="password" id="aP2" autocomplete="new-password"></label></div>
@@ -5572,6 +5898,8 @@ function abrirAjustes() {
       <p class="nota" style="margin:0">${PERFIL_LOCAL ? 'Bloquear te pedirá la contraseña la próxima vez. Olvidar borra tu cartera de este dispositivo: descarga antes una copia.' : 'Bloquear te pedirá la contraseña la próxima vez. Olvidar borra también el token y la copia local.'}</p>
     </div>`);
   pintarAjustesApp($('#aApp', h.el));
+  $('#aNov', h.el).onclick = () => setTimeout(() => mostrarNovedades(null), 0);
+  $('#aTour', h.el).onclick = () => setTimeout(() => iniciarTour(0), 0);
   if ($('#aPerfil', h.el)) $('#aPerfil', h.el).onclick = () => cambiarPerfil(false);
   $('#aProbar', h.el).onclick = async () => {
     const t = $('#aTok', h.el).value.trim();
@@ -6898,6 +7226,8 @@ document.addEventListener('click', (e) => {
     const a = d.accion;
     if (a === 'ocultar') { S.oculto = !S.oculto; LS.set('inv-oculto', S.oculto); pintar(); }
     else if (a === 'ajustes') abrirAjustes();
+    else if (a === 'novedades') mostrarNovedades(null);
+    else if (a === 'tour') iniciarTour(0);
     else if (a === 'cerrar-ficha') cerrarFicha();
     else if (a === 'operacion') operacion(d.tipo || 'compra', d.id, d.sim);
     else if (a === 'editar-pos') editarPosicion(d.id);
@@ -6977,6 +7307,7 @@ async function recargarPrecios() {
     pintar(); LIVE.resuscribir();
   } else programarParche();
   revisarAnalisisIA();
+  revisarWeb();
 }
 function arrancar() {
   sumarInstPropios();
@@ -6992,6 +7323,8 @@ function arrancar() {
   clearInterval(tickPrecios); clearInterval(tickEstado);
   tickPrecios = setInterval(() => { if (!document.hidden) recargarPrecios(); }, 120000);
   tickEstado = setInterval(programarParche, 30000);
+  setTimeout(bienvenida, 700);
+  revisarWeb();
 }
 document.addEventListener('visibilitychange', () => {
   if (document.hidden || !S.cartera) return;
@@ -7025,7 +7358,7 @@ async function iniciar() {
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});
-  navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.type === 'inv-actualizada') toast('Hay una versión nueva: recarga la página para verla', 6000); });
+  navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.type === 'inv-actualizada') avisoWebNueva(); });
 }
 iniciar();
 </script>

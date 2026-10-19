@@ -68,6 +68,14 @@ Sin token la web descarga `cartera.enc.json` y hay que subirlo a mano.
 
 Desde la web (Editar → Instrumento → *Nuevo instrumento…*) o editando `instrumentos.json`. Con el ISIN basta: la Action busca el ticker de Yahoo. Al guardar se lanza la Action y en un par de minutos aparece el precio.
 
+## Base de datos común de fondos
+
+`catalogo.json` lista fondos indexados, fondos españoles, monetarios, ETF, ETC de oro y cripto por ISIN (o símbolo de Yahoo), con sus tickers habituales (`VWCE`, `IWDA`…) para el buscador. La Action *Catálogo* (`scripts/catalogo.py`) les pone cada noche precio en euros e histórico de hasta 10 años y lo publica en la rama `catalogo`; la web solo baja el histórico de lo que tienes. Para añadir uno, una línea con su ISIN, nombre y tipo.
+
+## Versiones
+
+La web va por la `0.x` mientras esté en alfa: el número del medio sube con cada tanda de mejoras (0.9 → 0.10) y el último con los arreglos (0.9.0 → 0.9.1). Se cambia en `const VERSION` de `index.html`, y lo nuevo se apunta arriba de `NOVEDADES`, con un dibujo por cambio: la primera vez que alguien abre la web tras una versión nueva le sale *¿Qué se ha mejorado?*. La app de Android toma el mismo número al compilarse y, cuando hay una nueva, la web le ofrece descargarla e instalarla encima.
+
 ## Si los precios dejan de actualizarse
 
 GitHub pausa las tareas programadas de un repositorio público tras 60 días sin actividad. Pestaña **Actions** → *Precios* → *Enable workflow* (o *Run workflow* para lanzarla a mano).
@@ -77,7 +85,8 @@ GitHub pausa las tareas programadas de un repositorio público tras 60 días sin
 
 Un amigo puede usar esta misma web con su propia cartera: que abra `https://charly10sf.github.io/Inversiones/#mia` (o, en la pantalla de la contraseña, "Crea tu propia cartera en este dispositivo"). Elige su contraseña y su cartera se guarda cifrada solo en su navegador o en la app: no pasa por GitHub y el dueño de la web no la ve. Comparte con todos los precios, el radar, las noticias y las ideas; no ve el análisis ni las reglas del dueño, y el asesor funciona con su propia clave gratuita de Google.
 
-- Las acciones del radar (unas 800) y todo lo que ya está en `instrumentos.json` salen con precio. Un fondo o ETF que la web no conozca se puede dar de alta, pero sin precio diario: o se pone su valor a mano o el dueño lo añade a `instrumentos.json` (solo lleva el ISIN, sin cantidades) y desde entonces sale con precio para los dos.
+- Salen con precio las acciones del radar (unas 800), todo lo de `instrumentos.json` y los fondos, ETF, oro y cripto de `catalogo.json` (unos 110, con su clase e ISIN exactos). Un fondo que no esté en ninguno se puede dar de alta, pero sin precio diario hasta que se añada su ISIN a `catalogo.json`: la Action *Catálogo* le busca precio e histórico esa misma noche, para todos.
+- Para meter lo que ya tiene: Añadir posición, o Importar desde capturas (lee capturas o PDF del bróker con su clave de Gemini).
 - La cartera vive en ese dispositivo: para tener copia o pasarla a otro móvil, Ajustes, Copias.
 
 ## Usarla con tus propios datos en tu propia web

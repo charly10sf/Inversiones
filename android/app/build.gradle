@@ -16,7 +16,8 @@ android {
         minSdk 26
         targetSdk 34
         versionCode((System.getenv('VERSION_CODE') ?: '1') as int)
-        versionName "1.${System.getenv('VERSION_CODE') ?: '0'}"
+        // el mismo número que la web (0.x mientras esté en alfa); la Action lo saca de index.html
+        versionName System.getenv('VERSION_NAME') ?: "0.0.${System.getenv('VERSION_CODE') ?: '0'}"
     }
 
     signingConfigs {

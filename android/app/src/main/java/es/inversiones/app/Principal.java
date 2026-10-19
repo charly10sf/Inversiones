@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.provider.Settings;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
@@ -16,10 +17,14 @@ import android.widget.Toast;
 
 import org.json.JSONObject;
 
+import java.io.File;
+
 /** La app es la misma web de siempre (GitHub Pages) dentro de un WebView, con un puente para el widget. */
 public class Principal extends Activity {
     static final String WEB = "https://charly10sf.github.io/Inversiones/";
     private static final int ELEGIR_ARCHIVO = 7;
+    private static final int PERMISO_INSTALAR = 8;
+    private File pendiente;
     private WebView web;
     private ValueCallback<Uri[]> archivos;
     private String tokenPendiente;
@@ -134,8 +139,47 @@ public class Principal extends Activity {
         }
     }
 
+    /** Cuenta a la web cómo va la descarga de la versión nueva (-1 si falla) */
+    void progreso(int pct, String estado) {
+        String js = "window.progresoApp && progresoApp(" + pct + "," + JSONObject.quote(estado == null ? "" : estado) + ")";
+        runOnUiThread(() -> { if (web != null) web.evaluateJavascript(js, null); });
+    }
+
+    /** Abre el instalador de Android con el APK descargado; la primera vez pide permiso para instalar desde la app */
+    void instalar(File f) {
+        if (f == null || !f.exists()) {
+            progreso(-1, "no hay nada descargado");
+            return;
+        }
+        if (!getPackageManager().canRequestPackageInstalls()) {
+            pendiente = f;
+            progreso(100, "permiso");
+            try {
+                startActivityForResult(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())), PERMISO_INSTALAR);
+            } catch (Exception e) {
+                progreso(-1, "no se pudo abrir el permiso");
+            }
+            return;
+        }
+        Intent i = new Intent(Intent.ACTION_VIEW)
+                .setDataAndType(Archivos.uri(), "application/vnd.android.package-archive")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            startActivity(i);
+        } catch (Exception e) {
+            progreso(-1, "no se pudo abrir el instalador");
+        }
+    }
+
     @Override
     protected void onActivityResult(int pedido, int resultado, Intent datos) {
+        if (pedido == PERMISO_INSTALAR) {
+            File f = pendiente;
+            pendiente = null;
+            if (f != null && getPackageManager().canRequestPackageInstalls()) instalar(f);
+            else progreso(100, "permiso");
+            return;
+        }
         if (pedido == ELEGIR_ARCHIVO && archivos != null) {
             archivos.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultado, datos));
             archivos = null;
