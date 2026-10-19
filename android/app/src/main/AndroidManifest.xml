@@ -8,7 +8,7 @@
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="Bellota"
+        android:label="GrowFolio"
         android:supportsRtl="false"
         android:theme="@style/Tema">
 

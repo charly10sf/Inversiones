@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Bellota</title>
-<meta name="description" content="Bellota: tu cartera de inversión en directo, a tu medida">
+<title>GrowFolio</title>
+<meta name="description" content="GrowFolio: tu cartera de inversión en directo, a tu medida">
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Bellota">
+<meta name="apple-mobile-web-app-title" content="GrowFolio">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
@@ -1524,6 +1524,14 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .opi-ok .dib { width: 150px; height: 100px; background: var(--accent-bg); animation: tour-brota 0.6s cubic-bezier(.3, 1.5, .5, 1) both; }
 .opi-ok h2 { margin: 6px 0 0; font-size: 21px; letter-spacing: -0.02em; }
 .opi-ok p { margin: 0; color: var(--text-2); line-height: 1.55; max-width: 360px; }
+
+.aj-tutorial { display: flex; align-items: center; gap: 12px; width: 100%; margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(226, 180, 95, 0.45); background: var(--accent-bg); color: var(--text); font: 400 14px/1.4 var(--f); text-align: left; cursor: pointer; }
+.aj-tutorial svg { width: 24px; height: 24px; flex: none; color: var(--accent); }
+.aj-tutorial b { display: block; font-size: 15.5px; font-weight: 650; }
+.aj-tutorial small { color: var(--text-2); font-size: 13px; }
+.pie-btns { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); margin-top: 48px; max-width: 900px; }
+@media (min-width: 760px) { .pie-btns { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); } }
+.pie-btns .opinion-pie { margin: 0; max-width: none; }
 </style>
 </head>
 <body>
@@ -1532,7 +1540,7 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 <script>
 'use strict';
 /* =====================================================================
-   Bellota (antes Inversiones) — web estática (GitHub Pages).
+   GrowFolio (antes Inversiones) — web estática (GitHub Pages).
    - instrumentos.json (público): qué instrumentos hay, sin cantidades.
    - rama "datos" / precios.json (público): precios que baja la GitHub Action.
    - cartera.enc.json (público pero cifrado): cantidades, costes y notas, con
@@ -2512,7 +2520,7 @@ function parchear() {
 function montar() {
   $('#app').innerHTML = `
   <header class="top"><div class="wrap fila-top">
-    <div class="marca"><img src="favicon.svg" alt=""><span>Bellota</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
+    <div class="marca"><img src="favicon.svg" alt=""><span>GrowFolio</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t]) => `<a href="#${k}" data-ir="${k}">${t}</a>`).join('')}</nav>
     <span id="estado"></span>
     <div class="acciones">
@@ -2575,7 +2583,7 @@ function pintar() {
   pintarTicker(M);
   const scroll = window.scrollY;
   const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo }[S.vista] || vistaCartera;
-  $('#vista').innerHTML = html(M) + `<button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó Bellota.</span></button><p class="pie">Precios en directo de Yahoo Finance (la bolsa de Madrid llega con 15 minutos de retraso y la de Londres con 20; divisas y futuros, al instante) y de Bitvavo para Bitcoin. Los fondos publican un valor liquidativo al día. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action. Noticias: Google Noticias. Tus cantidades van cifradas en <code>cartera.enc.json</code>.</p>`;
+  $('#vista').innerHTML = html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie">Precios en directo de Yahoo Finance (la bolsa de Madrid llega con 15 minutos de retraso y la de Londres con 20; divisas y futuros, al instante) y de Bitvavo para Bitcoin. Los fondos publican un valor liquidativo al día. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action. Noticias: Google Noticias. Tus cantidades van cifradas en <code>cartera.enc.json</code>.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if ((S.radarVisibles || []).length) { S.binds = binds(M); rellenarBinds($('#vista')); }
   dibujar(M);
@@ -5932,7 +5940,7 @@ async function borrarMovimiento(id, boton) {
 function pantallaDesbloqueo(errorTxt = '') {
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fDesb" autocomplete="on">
     <img class="logo" src="icon-192.png" alt="">
-    <h1>Bellota</h1>
+    <h1>GrowFolio</h1>
     <p>${PERFIL_LOCAL ? 'Tu cartera de este dispositivo está cifrada. Escribe tu contraseña para verla.' : 'Tu cartera está cifrada. Escribe tu contraseña para verla.'}</p>
     <input type="text" name="username" value="${esc(CFG.owner)}" autocomplete="username" hidden>
     <label class="campo">Contraseña<input type="password" id="pass" autocomplete="current-password" required autofocus></label>
@@ -6277,10 +6285,14 @@ function buscador(cont, alElegir, opt = {}) {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.1.10';
+const VERSION = '0.1.11';
 const NOVEDADES = [
-  { v: '0.1.10', f: '2026-10-19', t: 'Bellota, a tu medida', cosas: [
-    { d: 'bellota', t: 'Ahora se llama Bellota', x: 'Como las bellotas que acaban siendo robles: poco a poco y sin prisa. Logo nuevo en la web y en la app.' },
+  { v: '0.1.11', f: '2026-10-19', t: 'GrowFolio', cosas: [
+    { d: 'logo', t: 'Ahora se llama GrowFolio', x: 'Grow (crecer) y portfolio (cartera): tu cartera creciendo. Logo nuevo en la web y en la app.' },
+    { d: 'tour', t: 'El tutorial, siempre a mano', x: 'Al final de cada pestaña y arriba del todo en Ajustes, aunque te lo saltaras al principio.' },
+    { d: 'opinion', t: 'Tu opinión, desde la app', x: 'Cuenta qué se ve mal, qué falla o una idea, y en qué pestaña. Botón al final de cada pestaña y en Ajustes.' },
+  ] },
+  { v: '0.1.10', f: '2026-10-19', t: 'A tu medida', cosas: [
     { d: 'perfil', t: 'Objetivos: tu perfil y tus metas', x: 'Tu edad, en qué andas, cuándo necesitas el dinero, cuánto riesgo aguantas, tus límites y tus metas con cifra y fecha. La IA, las ideas y el Paso a paso se ajustan a ti.' },
     { d: 'pregunta', t: 'La IA te pregunta', x: 'Cuando le falta algo de ti para acertar, te lo pregunta. Contestas con un toque y rehace sus consejos.' },
     { d: 'pasos', t: 'Paso a paso más claro', x: 'Separa lo que tienes que hacer tú, las fechas que vigilar y lo que va solo. Cada compra o venta dice lo que supone en la renta y qué evitar por Hacienda.' },
@@ -6329,7 +6341,8 @@ const DIBUJOS = {
   app: '<rect class="l" x="40" y="4" width="40" height="72" rx="8"/><path class="a" d="M60 17v26M51 35l9 9 9-9"/><path class="a" d="M50 51h20"/><rect class="fp" x="48" y="60" width="24" height="5" rx="2.5"/><rect class="fA" x="48" y="60" width="15" height="5" rx="2.5"/><rect class="fA" x="80" y="8" width="36" height="15" rx="7.5"/><text class="tn" x="85" y="18.5">nueva</text>',
   mundo: '<circle class="l" cx="42" cy="40" r="30"/><path class="m" d="M12 40h60M42 10c-12 9-12 51 0 60M42 10c12 9 12 51 0 60M17 24h50M17 56h50"/><circle class="fA" cx="30" cy="28" r="4"/><circle class="fA" cx="49" cy="27" r="4"/><circle class="fA" cx="62" cy="38" r="4"/><circle class="fA" cx="36" cy="52" r="4"/><rect class="fa" x="80" y="14" width="36" height="14" rx="5"/><path class="u" d="M85 24l4-4 3 3 5-6"/><path class="a" d="M101 21h11"/><rect class="fa" x="80" y="33" width="36" height="14" rx="5"/><path class="d" d="M85 37l4 4 3-3 5 6"/><path class="a" d="M101 40h11"/><rect class="fa" x="80" y="52" width="36" height="14" rx="5"/><path class="l" d="M85 59h12"/><path class="a" d="M101 59h11"/>',
   macro: '<rect class="fp" x="6" y="8" width="52" height="30" rx="6"/><text class="t" x="12" y="20">BCE</text><text class="ta" x="12" y="32">2,00 %</text><rect class="fp" x="62" y="8" width="52" height="30" rx="6"/><text class="t" x="68" y="20">Bono 10a</text><text class="ta" x="68" y="32">5,10 %</text><rect class="fp" x="6" y="44" width="52" height="30" rx="6"/><text class="t" x="12" y="56">EUR/USD</text><text class="ta" x="12" y="68">1,124</text><rect class="fp" x="62" y="44" width="52" height="30" rx="6"/><text class="t" x="68" y="56">Brent</text><text class="ta" x="68" y="68">110 $</text>',
-  bellota: '<g transform="translate(36 2) scale(1.55)"><path d="M24 11C24 8.4 25.4 6.6 27.8 5.7" fill="none" stroke="#E2B45F" stroke-width="2.6" stroke-linecap="round"/><path d="M27.2 7.6C30.4 4.6 34.8 4.6 37.2 6.4C34.7 9.6 30.4 10.2 27.2 7.6Z" fill="#4FC995" stroke="none"/><path d="M12.5 20.6C12.5 14.2 17.6 10.6 24 10.6S35.5 14.2 35.5 20.6C35.5 21.7 34.7 22.5 33.6 22.5H14.4C13.3 22.5 12.5 21.7 12.5 20.6Z" fill="#E2B45F" stroke="none"/><path d="M15.8 17.6C19.4 15.5 28.6 15.5 32.2 17.6" fill="none" stroke="#A97C33" stroke-width="1.3" stroke-linecap="round"/><path d="M15.2 22.5C14.4 31.2 18.4 38.6 24 41.8C29.6 38.6 33.6 31.2 32.8 22.5Z" fill="#F1EDE5" stroke="none"/><path d="M19 33.2L22.4 29.6L25 31.6L29.2 26.6" fill="none" stroke="#1F1D19" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>',
+  logo: '<g transform="translate(36 2) scale(1.55)"><path d="M8 15.5C8 14.1 9.1 13 10.5 13H18.2C19 13 19.7 13.4 20.2 14L22.3 16.5H37.5C38.9 16.5 40 17.6 40 19V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#A97C33" stroke="none"/><path d="M13.5 25.5L19.5 19L24 22L31.5 11.5" fill="none" stroke="#4FC995" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path d="M31.2 11.8C30.6 7 33.8 4.4 39 4.8C39.2 9.8 35.8 12.6 31.2 11.8Z" fill="#4FC995" stroke="none"/><path d="M8 25C8 23.9 8.9 23 10 23H38C39.1 23 40 23.9 40 25V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#E2B45F" stroke="none"/><path d="M14 30.5H34" stroke="#1F1D19" stroke-opacity="0.18" stroke-width="2" stroke-linecap="round"/></g>',
+  opinion: '<path class="a" d="M10 10h66a7 7 0 017 7v24a7 7 0 01-7 7H38l-12 10V48H10a7 7 0 01-7-7V17a7 7 0 017-7z"/><path class="l" d="M16 23h52M16 32h38"/><circle class="fA" cx="96" cy="50" r="14"/><path d="M90 50.5l4 4 8-8.5" fill="none" stroke="#1A1408" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><rect class="fp" x="84" y="12" width="30" height="14" rx="7"/><text class="t" x="89" y="22">idea</text>',
   pregunta: '<path class="a" d="M14 8h62a8 8 0 018 8v22a8 8 0 01-8 8H40l-12 10V46H14a8 8 0 01-8-8V16a8 8 0 018-8z"/><text class="ta" x="40" y="35" style="font-size:22px">?</text><rect class="fA" x="56" y="54" width="26" height="14" rx="7"/><rect class="fp" x="86" y="54" width="28" height="14" rx="7"/><rect class="fp" x="70" y="34" width="0" height="0"/><path class="m" d="M60 61h18M90 61h20"/>',
   pasos: '<circle class="fA" cx="16" cy="16" r="7"/><path class="l" d="M30 13h52M30 20h34"/><circle class="a" cx="16" cy="40" r="7"/><path class="m" d="M30 37h60M30 44h40"/><circle class="u" cx="16" cy="64" r="7"/><path class="u" d="M12.5 64l2.5 2.5 4.5-5"/><path class="m" d="M30 61h46M30 68h28"/><rect class="fa" x="92" y="8" width="24" height="16" rx="5"/><text class="ta" x="96" y="19.5">€</text>',
   renta: '<path class="l" d="M22 6h44l14 14v54H22z"/><path class="l" d="M66 6v14h14"/><path class="m" d="M32 30h38M32 39h30M32 48h38"/><rect class="fa" x="30" y="56" width="30" height="12" rx="4"/><text class="ta" x="34" y="65">0328</text><circle class="fA" cx="96" cy="56" r="14"/><path d="M89 56l5 5 9-10" fill="none" stroke="#1A1408" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
@@ -6354,7 +6367,7 @@ function mostrarNovedades(desde, alCerrar) {
   </section>`;
   const h = hoja('¿Qué se ha mejorado?', `<div class="novedades">${nuevas.map(bloque).join('')}
     ${resto.length ? `<details class="nov-antes"><summary>Versiones anteriores</summary><ol>${resto.map((n) => `<li><span class="nov-num peq">${esc(n.v)}</span><span><b>${esc(n.t)}</b>${n.cosas ? `<small>${n.cosas.map((c) => esc(c.t)).join('. ')}.</small>` : ''}</span><small class="k">${fechaCorta(n.f)}</small></li>`).join('')}</ol></details>` : ''}
-    <div class="fila-btns"><button class="btn" data-tour-ya>Ver el tour</button><button class="btn pri" data-cerrar>Entendido</button></div>
+    <div class="fila-btns"><button class="btn" data-tour-ya>Ver el tutorial</button><button class="btn pri" data-cerrar>Entendido</button></div>
   </div>`, alCerrar);
   h.el.classList.add('hoja-nov');
   $('[data-tour-ya]', h.el).onclick = () => { h.el.remove(); iniciarTour(0, alCerrar); };
@@ -6391,7 +6404,7 @@ async function abrirOpinion() {
     ${directa ? `<label class="campo">Tu nombre<input name="quien" maxlength="40" value="${esc(LS.get('inv-opi-nombre', '') || '')}" placeholder="Opcional, para saber quién lo dice"></label>` : ''}
     <div class="error" id="errOpi"></div>
     <div class="fila-btns">${directa ? '' : `<button type="button" class="btn" id="bOpiCopiar">Copiar</button>${navigator.share ? '<button type="button" class="btn" id="bOpiComp">Compartir…</button>' : ''}`}<button type="submit" class="btn pri" id="bOpiEnviar">${ICONOS.globo}${directa ? 'Enviar' : 'Enviar por WhatsApp'}</button></div>
-    <p class="nota" style="margin:0">${directa ? 'Llega directamente a quien te pasó Bellota.' : 'Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó Bellota.'} Solo va lo que escribes, la sección y la versión, nada de tu cartera.${hist.length ? ` Llevas ${hist.length} ${hist.length === 1 ? 'enviada' : 'enviadas'}: gracias.` : ''}</p>
+    <p class="nota" style="margin:0">${directa ? 'Llega directamente a quien te pasó GrowFolio.' : 'Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó GrowFolio.'} Solo va lo que escribes, la sección y la versión, nada de tu cartera.${hist.length ? ` Llevas ${hist.length} ${hist.length === 1 ? 'enviada' : 'enviadas'}: gracias.` : ''}</p>
   </form>`);
   const f = $('#fOpi', h.el);
   const texto = () => {
@@ -6399,7 +6412,7 @@ async function abrirOpinion() {
     if (!t) { $('#errOpi', h.el).textContent = 'Escribe qué pasa o qué se te ocurre.'; return null; }
     const tt = (TIPOS_OP.find(([k]) => k === tipo) || [])[1], st = (SITIOS_OP.find(([k]) => k === sitio) || [])[1];
     const disp = [`web ${VERSION}`, window.InversionesApp ? `app ${(() => { try { return window.InversionesApp.nombreVersion() || versionApp(); } catch (e) { return versionApp(); } })()}` : null, /Android/i.test(navigator.userAgent) ? 'Android' : /iPhone|iPad/i.test(navigator.userAgent) ? 'iPhone' : 'ordenador', `${innerWidth} px`, PERFIL_LOCAL ? 'cartera en el móvil' : null].filter(Boolean).join(', ');
-    return `Bellota, ${String(tt).toLowerCase()} en ${st}:\n\n${t}\n\n(${disp})`;
+    return `GrowFolio, ${String(tt).toLowerCase()} en ${st}:\n\n${t}\n\n(${disp})`;
   };
   if ($('#bOpiCopiar', h.el)) $('#bOpiCopiar', h.el).onclick = async () => { const t = texto(); if (!t) return; try { await navigator.clipboard.writeText(t); toast('Copiado: pégalo donde quieras'); } catch (e) { toast('No se pudo copiar'); } };
   if ($('#bOpiComp', h.el)) $('#bOpiComp', h.el).onclick = async () => { const t = texto(); if (!t) return; try { await navigator.share({ text: t }); h.cerrar(); } catch (e) {} };
@@ -6414,7 +6427,7 @@ async function abrirOpinion() {
       try {
         await mandarOpinion({ tipo: (TIPOS_OP.find(([k]) => k === tipo) || [])[1], sitio: (SITIOS_OP.find(([k]) => k === st) || [])[1], texto: f.txt.value.trim(), quien: quien || (PERFIL_LOCAL ? 'amigo sin nombre' : 'el dueño'), info: t.split('\n').pop().replace(/^\(|\)$/g, '') });
         LS.set('inv-opi-hist', [...hist, { f: hoyIso(), tipo, sitio: st }].slice(-30));
-        h.el.querySelector('.hoja').innerHTML = `<div class="opi-ok">${dibujo('bellota')}<h2>Recibido, gracias</h2><p>Con lo que mandáis se arregla y se mejora Bellota. Si es algo visual y quieres, manda también una captura por WhatsApp.</p><div class="fila-btns"><button class="btn pri" data-cerrar>Cerrar</button></div></div>`;
+        h.el.querySelector('.hoja').innerHTML = `<div class="opi-ok">${dibujo('logo')}<h2>Recibido, gracias</h2><p>Con lo que mandáis se arregla y se mejora GrowFolio. Si es algo visual y quieres, manda también una captura por WhatsApp.</p><div class="fila-btns"><button class="btn pri" data-cerrar>Cerrar</button></div></div>`;
       } catch (e) {
         b.disabled = false; b.innerHTML = ICONOS.globo + 'Enviar';
         $('#errOpi', h.el).textContent = 'No se ha podido enviar (¿sin conexión?). Prueba otra vez en un rato.';
@@ -6431,7 +6444,7 @@ async function abrirOpinion() {
    Tour: la primera vez (y desde Ajustes) enseña cada pestaña, resaltando dónde está.
    ===================================================================== */
 const TOUR = [
-  { v: 'cartera', logo: true, t: 'Bienvenido a Bellota', x: 'Te enseño la app en un minuto: qué hay en cada pestaña y dónde tocar. Lo puedes repetir cuando quieras desde Ajustes.' },
+  { v: 'cartera', logo: true, t: 'Bienvenido a GrowFolio', x: 'Te enseño la app en un minuto: qué hay en cada pestaña y dónde tocar. Lo puedes repetir cuando quieras desde Ajustes.' },
   { v: 'cartera', sel: '.hero-num', t: 'Lo que tienes', x: 'Todo sumado y en euros. Debajo, lo que ganas o pierdes hoy y desde el principio. Los precios se mueven solos, sin recargar.' },
   { v: 'cartera', sel: '.tabs[aria-label="Periodo"]', t: 'La gráfica', x: '1D y 1S enseñan hoy y esta semana, hora a hora. 1A o más, el camino largo.' },
   { v: 'cartera', pos: true, sel: '#hPos ~ .der [data-accion="nueva-pos"], [data-accion="nueva-pos"]', t: 'Mete lo que tienes', x: '"Añadir posición" para lo que ya tenías. "Compra o venta" para lo que hagas desde hoy. Busca por nombre, ticker o ISIN, o importa capturas de tu bróker.' },
@@ -6443,7 +6456,7 @@ const TOUR = [
   { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
   { v: 'mercados', sel: '.ir-merc', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
   { v: 'cartera', sel: '#bAsesor', t: 'El asesor', x: 'Pregúntale lo que quieras de tu cartera. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
-  { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades y este tour.' },
+  { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades, tu opinión y este tutorial, para repetirlo cuando quieras.' },
 ];
 let TOURE = null;
 const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
@@ -6647,18 +6660,19 @@ async function pintarAjustesApp(el) {
   const android = /Android/i.test(navigator.userAgent);
   const tok = GH.token();
   if (app) {
-    el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (${esc(nombreApp())}). Para el widget: mantén pulsado un hueco de la pantalla de inicio, Widgets, Bellota, y arrastra "Tu cartera". Se puede estirar o encoger.</p>
+    el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (${esc(nombreApp())}). Para el widget: mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio, y arrastra "Tu cartera". Se puede estirar o encoger.</p>
       ${ult && ult.version > tengo ? `<div class="fila-btns" style="justify-content:flex-start"><button class="btn peq pri" id="aActApp" data-cerrar>Actualizar la app</button></div>` : '<p class="nota" style="margin:0">Tienes la última versión de la app.</p>'}`;
     const b = $('#aActApp', el); if (b) b.onclick = () => avisoApp(ult);
     return;
   }
   el.innerHTML = `<p class="nota" style="margin:0">La misma web como app de Android, con un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo que toca hacer. ${ult ? '' : 'Todavía no hay ninguna versión publicada.'}</p>
-    ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} y ábrela: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa "Pasar el token a la app" para que pueda guardar cambios sin escribirlo (necesita la versión 3 de la app o posterior).</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio, Widgets, Bellota.</li></ol>
+    ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} y ábrela: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa "Pasar el token a la app" para que pueda guardar cambios sin escribirlo (necesita la versión 3 de la app o posterior).</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio.</li></ol>
     <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Descargar la app (${esc(nombreUlt(ult))})</a>${tok && android ? `<a class="btn peq" href="intent://token#Intent;scheme=inversiones;package=es.inversiones.app;S.t=${encodeURIComponent(tok)};S.browser_fallback_url=${encodeURIComponent(apk)};end">Pasar el token a la app</a>` : ''}</div>` : ''}`;
 }
 function abrirAjustes() {
   const tok = GH.token();
   const h = hoja('Ajustes', `
+    <button class="aj-tutorial" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña. Puedes repetirlo cuando quieras.</small></span></button>
     ${PERFIL_LOCAL ? `<div class="seccion-ed" style="border:0;padding-top:0;margin-top:0"><h3>Tu cartera</h3>
       <p class="nota" style="margin:0">Guardada solo en este dispositivo y cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (abajo, en Copias).</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPerfil">Abrir la cartera de GitHub</button></div></div>` : ''}
@@ -6672,13 +6686,17 @@ function abrirAjustes() {
       <p class="nota" style="margin:0">Gemini dentro de la web, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes del asesor</button></div>
     </div>
+    <div class="seccion-ed"><h3>Invita a alguien</h3>
+      <p class="nota" style="margin:0">Le llega un enlace para crear su propia cartera en su móvil, cifrada y sin cuenta: nadie más la ve, ni tú.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aInvita">${ICONOS.globo}Mandar invitación por WhatsApp</button></div>
+    </div>
     <div class="seccion-ed"><h3>Tu opinión</h3>
-      <p class="nota" style="margin:0">Algo que se ve mal, algo que no funciona o una idea: se manda por WhatsApp a quien te pasó la web.</p>
+      <p class="nota" style="margin:0">Algo que se ve mal, algo que no funciona o una idea, y en qué pestaña: le llega a quien te pasó la web.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="opinion" data-cerrar>${ICONOS.globo}Enviar opinión o un fallo</button></div>
     </div>
     <div class="seccion-ed"><h3>Versión</h3>
       <p class="nota" style="margin:0">Web ${VERSION} (alfa). Cada actualización sube el último número.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNov" data-cerrar>Qué se ha mejorado</button><button class="btn peq" id="aTour" data-cerrar>Repetir el tour</button></div>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNov" data-cerrar>Qué se ha mejorado</button><button class="btn peq" id="aTour2" data-cerrar>Ver el tutorial</button></div>
     </div>
     <div class="seccion-ed"><h3>App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
     <div class="seccion-ed"><h3>Contraseña</h3>
@@ -6696,7 +6714,13 @@ function abrirAjustes() {
     </div>`);
   pintarAjustesApp($('#aApp', h.el));
   $('#aNov', h.el).onclick = () => setTimeout(() => mostrarNovedades(null), 0);
-  $('#aTour', h.el).onclick = () => setTimeout(() => iniciarTour(0), 0);
+  for (const b of $$('#aTour, #aTour2', h.el)) b.onclick = () => setTimeout(() => iniciarTour(0), 0);
+  $('#aInvita', h.el).onclick = () => {
+    const url = (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#mia';
+    const t = `Te paso GrowFolio, la web con la que llevo mis inversiones: precios en directo, qué hacer en cada momento, la renta y una IA que te aconseja según tu perfil.\n\n1. Abre ${url} y crea tu contraseña: tu cartera se guarda cifrada solo en tu móvil.\n2. Haz el tutorial del principio.\n3. Mete lo que tienes con "Añadir posición" (busca por nombre o ISIN) o importando capturas de tu bróker.\n4. Para la IA, saca una clave gratis en aistudio.google.com y pégala en el Asesor.\n5. Rellena tu perfil en Objetivos: así te aconseja a tu medida.`;
+    const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(t); a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+  };
   if ($('#aPerfil', h.el)) $('#aPerfil', h.el).onclick = () => cambiarPerfil(false);
   $('#aProbar', h.el).onclick = async () => {
     const t = $('#aTok', h.el).value.trim();
