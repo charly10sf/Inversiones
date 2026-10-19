@@ -73,7 +73,7 @@
         "Japón y Pacífico": 17.5,
         "Europa": 12.7,
         "Canadá": 4.4,
-        "Otros": 4.0
+        "Otros": 4
       },
       "sector_etf": {
         "VB": 0.61,
@@ -183,6 +183,22 @@
       "noticias": "Bitcoin precio",
       "noticias_filtro": "bitcoin|BTC|cripto",
       "dominio": "bitcoin.org"
+    },
+    {
+      "id": "hbx",
+      "nombre": "HBX Group International plc",
+      "corto": "HBX",
+      "yahoo": "HBX.MC",
+      "tipo": "Acción",
+      "clase": "Renta variable",
+      "region": {
+        "Europa": 100
+      },
+      "pais": "GB",
+      "bolsa": "ES",
+      "mercado": "Madrid",
+      "dominio": "hbxgroup.com",
+      "noticias": "HBX"
     }
   ]
 }
