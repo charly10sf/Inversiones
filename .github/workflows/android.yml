@@ -71,8 +71,9 @@ jobs:
           set -o pipefail
           gradle assembleRelease --no-daemon --stacktrace 2>&1 | tee "$GITHUB_WORKSPACE/compilacion.log"
 
+      # solo desde main: en otras ramas se compila para probar, sin publicar
       - name: Publicar la app
-        if: env.FIRMA == 'buena'
+        if: env.FIRMA == 'buena' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |

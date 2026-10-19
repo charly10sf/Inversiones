@@ -10,6 +10,21 @@ import android.os.Build;
 import android.os.CancellationSignal;
 import android.webkit.JavascriptInterface;
 
+import androidx.credentials.Credential;
+import androidx.credentials.CredentialManager;
+import androidx.credentials.CredentialManagerCallback;
+import androidx.credentials.CustomCredential;
+import androidx.credentials.GetCredentialRequest;
+import androidx.credentials.GetCredentialResponse;
+import androidx.credentials.exceptions.GetCredentialException;
+
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
+
+import org.json.JSONObject;
+
+import java.util.concurrent.Executors;
+
 /** Lo que la web puede pedirle a la app: guardar la foto de la cartera para el widget, saber la versión,
  *  bajar e instalar la versión nueva y pedir la huella para el bloqueo. */
 public class Puente {
@@ -108,5 +123,46 @@ public class Puente {
         } catch (Exception e) {
             act.js("window.resultadoHuella && resultadoHuella(false, 'error')");
         }
+    }
+
+    /** Entrar con Google: el selector de cuentas de Android devuelve un token de Google que la web cambia por
+     *  la sesión de Firebase. clienteWeb es el «ID de cliente web» del proveedor Google de Firebase. */
+    @JavascriptInterface
+    public boolean googleDisponible() {
+        return true;
+    }
+
+    @JavascriptInterface
+    public void entrarGoogle(String clienteWeb) {
+        act.runOnUiThread(() -> {
+            try {
+                GetGoogleIdOption op = new GetGoogleIdOption.Builder()
+                        .setFilterByAuthorizedAccounts(false)
+                        .setServerClientId(clienteWeb)
+                        .setAutoSelectEnabled(false)
+                        .build();
+                GetCredentialRequest req = new GetCredentialRequest.Builder().addCredentialOption(op).build();
+                CredentialManager.create(act).getCredentialAsync(act, req, new CancellationSignal(), Executors.newSingleThreadExecutor(),
+                        new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
+                            @Override
+                            public void onResult(GetCredentialResponse r) {
+                                Credential c = r.getCredential();
+                                if (c instanceof CustomCredential && GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(c.getType())) {
+                                    GoogleIdTokenCredential g = GoogleIdTokenCredential.createFrom(((CustomCredential) c).getData());
+                                    act.js("window.resultadoGoogle && window.resultadoGoogle(true, " + JSONObject.quote(g.getIdToken()) + ")");
+                                } else {
+                                    act.js("window.resultadoGoogle && window.resultadoGoogle(false, 'tipo')");
+                                }
+                            }
+
+                            @Override
+                            public void onError(GetCredentialException e) {
+                                act.js("window.resultadoGoogle && window.resultadoGoogle(false, " + JSONObject.quote(String.valueOf(e.getType())) + ")");
+                            }
+                        });
+            } catch (Exception e) {
+                act.js("window.resultadoGoogle && window.resultadoGoogle(false, " + JSONObject.quote(String.valueOf(e)) + ")");
+            }
+        });
     }
 }
