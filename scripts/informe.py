@@ -306,6 +306,10 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   malo para la acción y por qué, y qué vigilar (fecha o precio). Si no hay nada relevante, dilo en una frase.
 - En español de España, frases cortas y concretas, sin avisos legales. Sintetiza: no repitas en una
   sección lo que ya has dicho en otra.
+- Lenguaje llano: lo lee alguien que no es experto. Nada de jerga sin explicar (catalizador, capex,
+  amplitud de mercado, soportes, recorrido, múltiplos, rotación sectorial, risk-off...): dilo con palabras
+  normales o explícalo en la misma frase. Cada texto corto empieza por lo que significa para quien invierte
+  ("malo para tus fondos de EEUU: …") y después el dato.
 Responde solo con un bloque ```json con este formato:
 {
   "resumen": "dos frases cortas como mucho: lo que más afecta hoy a esta cartera y por qué",
@@ -564,6 +568,9 @@ Decide tú. Reglas:
   comparar cualquier idea en "al año". Si no hay un catalizador claro, usa 12 meses y lo de los analistas,
   o menos si la prensa o los números no lo sostienen.
 - Nada inventado; cita las noticias por número. En español de España, frases cortas.
+- Lenguaje llano: lo lee alguien que no es experto. Nada de jerga sin explicar (catalizador, capex,
+  amplitud de mercado, soportes, recorrido, múltiplos, rotación sectorial, risk-off...): dilo con palabras
+  normales o explícalo en la misma frase. La tesis, en una o dos frases que entienda cualquiera.
 Responde con un objeto JSON:
 {"comentario": "dos frases: cómo está el panorama y qué has buscado",
  "ideas": [{"s": "ticker", "tesis": "una o dos frases", "catalizador": "qué y cuándo", "riesgo": "...", "contraste": "qué coincide y qué no", "confianza": "alta|media|baja", "plazo_meses": 6, "subida_pct": 20, "fiscalidad": "lo que pagaría o perdería en impuestos, si importa", "fuentes": [n]}],
