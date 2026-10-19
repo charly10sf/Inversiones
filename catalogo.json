@@ -1,0 +1,769 @@
+{
+ "nota": "Catálogo común: fondos, ETF, oro y cripto que cualquiera puede elegir en la web. La Action (catalogo.yml) les busca precio e histórico una vez al día y lo publica en la rama 'catalogo'. Para añadir uno, basta con su ISIN (o el símbolo de Yahoo en cripto).",
+ "valores": [
+  {
+   "isin": "IE00BYX5MX67",
+   "n": "Fidelity S&P 500 Index Fund EUR P Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00BYX5NX33",
+   "n": "Fidelity MSCI World Index Fund EUR P Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00BYX5M476",
+   "n": "Fidelity MSCI Emerging Markets Index Fund EUR P Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00BYX5P602",
+   "n": "Fidelity MSCI Europe Index Fund EUR P Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00BYX5PR43",
+   "n": "Fidelity MSCI Japan Index Fund EUR P Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00BYX5PP84",
+   "n": "Fidelity MSCI Pacific ex Japan Index Fund EUR P Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE0032126645",
+   "n": "Vanguard US 500 Stock Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00B1G3DH73",
+   "n": "Vanguard US 500 Stock Index Fund EUR Hedged Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00B03HD191",
+   "n": "Vanguard Global Stock Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00B42W3S00",
+   "n": "Vanguard Global Small-Cap Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE0031786696",
+   "n": "Vanguard Emerging Markets Stock Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE0007987708",
+   "n": "Vanguard European Stock Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE0008248803",
+   "n": "Vanguard Eurozone Stock Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE0007286036",
+   "n": "Vanguard Japan Stock Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE0007201266",
+   "n": "Vanguard Pacific ex-Japan Stock Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00B18GC888",
+   "n": "Vanguard Global Bond Index Fund EUR Hedged Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE0007472990",
+   "n": "Vanguard Euro Government Bond Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00B04FFJ44",
+   "n": "Vanguard Euro Investment Grade Bond Index Fund EUR Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00BD0NCM55",
+   "n": "iShares Developed World Index Fund (IE) D Acc EUR",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE000N4ZYX28",
+   "n": "iShares US Index Fund (IE) S Acc EUR",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00BD0NCL49",
+   "n": "iShares US Index Fund (IE) D Acc EUR",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00BDRK7J14",
+   "n": "iShares Emerging Markets Index Fund (IE) D Acc EUR",
+   "t": "Fondo"
+  },
+  {
+   "isin": "LU0996182563",
+   "n": "Amundi Index MSCI World AE-C",
+   "t": "Fondo"
+  },
+  {
+   "isin": "LU0996179007",
+   "n": "Amundi Index S&P 500 AE-C",
+   "t": "Fondo"
+  },
+  {
+   "isin": "LU0996177134",
+   "n": "Amundi Index MSCI Emerging Markets AE-C",
+   "t": "Fondo"
+  },
+  {
+   "isin": "LU0389811885",
+   "n": "Amundi Index MSCI Europe AE-C",
+   "t": "Fondo"
+  },
+  {
+   "isin": "LU0389811539",
+   "n": "Amundi Index MSCI Europe IE-C",
+   "t": "Fondo"
+  },
+  {
+   "isin": "ES0165242001",
+   "n": "MyInvestor S&P 500 Equiponderado FI",
+   "t": "Fondo"
+  },
+  {
+   "isin": "ES0165243009",
+   "n": "MyInvestor Value FI",
+   "t": "Fondo"
+  },
+  {
+   "isin": "ES0119199000",
+   "n": "Cobas Internacional FI",
+   "t": "Fondo"
+  },
+  {
+   "isin": "ES0124037005",
+   "n": "Cobas Selección FI",
+   "t": "Fondo"
+  },
+  {
+   "isin": "ES0112611001",
+   "n": "azValor Internacional FI",
+   "t": "Fondo"
+  },
+  {
+   "isin": "ES0159259029",
+   "n": "Magallanes European Equity M FI",
+   "t": "Fondo"
+  },
+  {
+   "isin": "ES0179556008",
+   "n": "True Value FI",
+   "t": "Fondo"
+  },
+  {
+   "isin": "ES0114638036",
+   "n": "Bestinver Internacional FI",
+   "t": "Fondo"
+  },
+  {
+   "isin": "ES0114673033",
+   "n": "Bestinfond FI",
+   "t": "Fondo"
+  },
+  {
+   "isin": "FR0000989626",
+   "n": "Groupama Trésorerie IC",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE00BFZMJT78",
+   "n": "Neuberger Berman Short Duration Euro Bond EUR I Acc",
+   "t": "Fondo"
+  },
+  {
+   "isin": "LU0290358497",
+   "n": "Xtrackers II EUR Overnight Rate Swap 1C",
+   "t": "ETF",
+   "a": [
+    "XEON"
+   ]
+  },
+  {
+   "isin": "FR0010510800",
+   "n": "Amundi Euro Overnight Return",
+   "t": "ETF",
+   "a": [
+    "CSH2"
+   ]
+  },
+  {
+   "isin": "IE00BCRY6557",
+   "n": "iShares EUR Ultrashort Bond",
+   "t": "ETF",
+   "a": [
+    "ERNE",
+    "IS3M"
+   ]
+  },
+  {
+   "isin": "IE00B4WXJJ64",
+   "n": "iShares Core Euro Government Bond",
+   "t": "ETF",
+   "a": [
+    "SEGA",
+    "EUNH"
+   ]
+  },
+  {
+   "isin": "IE00BDBRDM35",
+   "n": "iShares Core Global Aggregate Bond EUR Hedged Acc",
+   "t": "ETF",
+   "a": [
+    "AGGH",
+    "EUNA"
+   ]
+  },
+  {
+   "isin": "JE00B1VS3770",
+   "n": "WisdomTree Physical Gold",
+   "t": "ETC",
+   "a": [
+    "PHAU",
+    "VZLD"
+   ]
+  },
+  {
+   "isin": "IE00B4ND3602",
+   "n": "iShares Physical Gold",
+   "t": "ETC",
+   "a": [
+    "SGLN",
+    "IGLN",
+    "PPFB"
+   ]
+  },
+  {
+   "isin": "DE000A0S9GB0",
+   "n": "Xetra-Gold",
+   "t": "ETC",
+   "a": [
+    "4GLD"
+   ]
+  },
+  {
+   "isin": "IE00B579F325",
+   "n": "Invesco Physical Gold",
+   "t": "ETC",
+   "a": [
+    "SGLD",
+    "8PSG"
+   ]
+  },
+  {
+   "isin": "IE00BK5BQT80",
+   "n": "Vanguard FTSE All-World Acc",
+   "t": "ETF",
+   "a": [
+    "VWCE",
+    "VWRA"
+   ]
+  },
+  {
+   "isin": "IE00B3RBWM25",
+   "n": "Vanguard FTSE All-World Dist",
+   "t": "ETF",
+   "a": [
+    "VWRL",
+    "VWRD"
+   ]
+  },
+  {
+   "isin": "IE00B4L5Y983",
+   "n": "iShares Core MSCI World Acc",
+   "t": "ETF",
+   "a": [
+    "IWDA",
+    "EUNL",
+    "SWDA"
+   ]
+  },
+  {
+   "isin": "IE00B0M62Q58",
+   "n": "iShares MSCI World Dist",
+   "t": "ETF",
+   "a": [
+    "IWRD"
+   ]
+  },
+  {
+   "isin": "IE00BFY0GT14",
+   "n": "SPDR MSCI World",
+   "t": "ETF",
+   "a": [
+    "SWRD",
+    "SPPW"
+   ]
+  },
+  {
+   "isin": "IE00BJ0KDQ92",
+   "n": "Xtrackers MSCI World 1C",
+   "t": "ETF",
+   "a": [
+    "XDWD"
+   ]
+  },
+  {
+   "isin": "LU1681043599",
+   "n": "Amundi MSCI World",
+   "t": "ETF",
+   "a": [
+    "CW8",
+    "MWRD"
+   ]
+  },
+  {
+   "isin": "LU1781541179",
+   "n": "Amundi Core MSCI World",
+   "t": "ETF",
+   "a": [
+    "LCWD"
+   ]
+  },
+  {
+   "isin": "IE00BK5BQV03",
+   "n": "Vanguard FTSE Developed World Acc",
+   "t": "ETF",
+   "a": [
+    "VHVE"
+   ]
+  },
+  {
+   "isin": "IE00BKX55T58",
+   "n": "Vanguard FTSE Developed World Dist",
+   "t": "ETF",
+   "a": [
+    "VEVE"
+   ]
+  },
+  {
+   "isin": "IE00B6R52259",
+   "n": "iShares MSCI ACWI Acc",
+   "t": "ETF",
+   "a": [
+    "SSAC",
+    "IUSQ"
+   ]
+  },
+  {
+   "isin": "IE00B3YLTY66",
+   "n": "SPDR MSCI ACWI IMI",
+   "t": "ETF",
+   "a": [
+    "SPYI",
+    "IMIE"
+   ]
+  },
+  {
+   "isin": "IE00BNG8L278",
+   "n": "Vanguard ESG Global All Cap",
+   "t": "ETF",
+   "a": [
+    "V3AA",
+    "V3AL"
+   ]
+  },
+  {
+   "isin": "IE00B5BMR087",
+   "n": "iShares Core S&P 500 Acc",
+   "t": "ETF",
+   "a": [
+    "CSPX",
+    "SXR8"
+   ]
+  },
+  {
+   "isin": "IE00B3XXRP09",
+   "n": "Vanguard S&P 500 Dist",
+   "t": "ETF",
+   "a": [
+    "VUSA"
+   ]
+  },
+  {
+   "isin": "IE00BFMXXD54",
+   "n": "Vanguard S&P 500 Acc",
+   "t": "ETF",
+   "a": [
+    "VUAA"
+   ]
+  },
+  {
+   "isin": "IE00B3YCGJ38",
+   "n": "Invesco S&P 500 Acc",
+   "t": "ETF",
+   "a": [
+    "SPXS",
+    "SPXP",
+    "SC0J"
+   ]
+  },
+  {
+   "isin": "IE00B6YX5C33",
+   "n": "SPDR S&P 500",
+   "t": "ETF",
+   "a": [
+    "SPY5"
+   ]
+  },
+  {
+   "isin": "LU1681048804",
+   "n": "Amundi S&P 500",
+   "t": "ETF",
+   "a": [
+    "500"
+   ]
+  },
+  {
+   "isin": "IE00B3ZW0K18",
+   "n": "iShares S&P 500 EUR Hedged",
+   "t": "ETF",
+   "a": [
+    "IUSE"
+   ]
+  },
+  {
+   "isin": "IE00BLNMYC90",
+   "n": "Xtrackers S&P 500 Equal Weight",
+   "t": "ETF",
+   "a": [
+    "XDEW"
+   ]
+  },
+  {
+   "isin": "IE00B53SZB19",
+   "n": "iShares Nasdaq 100 Acc",
+   "t": "ETF",
+   "a": [
+    "CNDX",
+    "SXRV"
+   ]
+  },
+  {
+   "isin": "IE0032077012",
+   "n": "Invesco EQQQ Nasdaq-100",
+   "t": "ETF",
+   "a": [
+    "EQQQ"
+   ]
+  },
+  {
+   "isin": "IE00B3WJKG14",
+   "n": "iShares S&P 500 Information Technology Sector",
+   "t": "ETF",
+   "a": [
+    "IUIT",
+    "QDVE"
+   ]
+  },
+  {
+   "isin": "IE00BKM4GZ66",
+   "n": "iShares Core MSCI EM IMI Acc",
+   "t": "ETF",
+   "a": [
+    "EIMI",
+    "IS3N"
+   ]
+  },
+  {
+   "isin": "IE00BTJRMP35",
+   "n": "Xtrackers MSCI Emerging Markets 1C",
+   "t": "ETF",
+   "a": [
+    "XMME"
+   ]
+  },
+  {
+   "isin": "IE00B3VVMM84",
+   "n": "Vanguard FTSE Emerging Markets Dist",
+   "t": "ETF",
+   "a": [
+    "VFEM"
+   ]
+  },
+  {
+   "isin": "IE00BK5BR733",
+   "n": "Vanguard FTSE Emerging Markets Acc",
+   "t": "ETF",
+   "a": [
+    "VFEA"
+   ]
+  },
+  {
+   "isin": "IE00BZCQB185",
+   "n": "iShares MSCI India",
+   "t": "ETF",
+   "a": [
+    "NDIA",
+    "QDV5"
+   ]
+  },
+  {
+   "isin": "IE00B4K48X80",
+   "n": "iShares Core MSCI Europe Acc",
+   "t": "ETF",
+   "a": [
+    "IMAE",
+    "SMEA"
+   ]
+  },
+  {
+   "isin": "IE00B945VV12",
+   "n": "Vanguard FTSE Developed Europe Dist",
+   "t": "ETF",
+   "a": [
+    "VEUR"
+   ]
+  },
+  {
+   "isin": "IE00B53L3W79",
+   "n": "iShares Core EURO STOXX 50 Acc",
+   "t": "ETF",
+   "a": [
+    "CSX5",
+    "SXRT"
+   ]
+  },
+  {
+   "isin": "DE0005933931",
+   "n": "iShares Core DAX",
+   "t": "ETF",
+   "a": [
+    "EXS1"
+   ]
+  },
+  {
+   "isin": "IE00B4L5YX21",
+   "n": "iShares Core MSCI Japan IMI",
+   "t": "ETF",
+   "a": [
+    "SJPA",
+    "IJPA"
+   ]
+  },
+  {
+   "isin": "IE00B95PGT31",
+   "n": "Vanguard FTSE Japan",
+   "t": "ETF",
+   "a": [
+    "VJPN"
+   ]
+  },
+  {
+   "isin": "IE00B52MJY50",
+   "n": "iShares Core MSCI Pacific ex Japan",
+   "t": "ETF",
+   "a": [
+    "CPXJ"
+   ]
+  },
+  {
+   "isin": "IE00BF4RFH31",
+   "n": "iShares MSCI World Small Cap",
+   "t": "ETF",
+   "a": [
+    "IUSN",
+    "WSML"
+   ]
+  },
+  {
+   "isin": "IE00BCBJG560",
+   "n": "SPDR MSCI World Small Cap",
+   "t": "ETF",
+   "a": [
+    "ZPRS",
+    "WOSC"
+   ]
+  },
+  {
+   "isin": "IE0003R87OG3",
+   "n": "Avantis Global Small Cap Value",
+   "t": "ETF",
+   "a": [
+    "AVWS"
+   ]
+  },
+  {
+   "isin": "IE00BP3QZ601",
+   "n": "iShares Edge MSCI World Quality Factor",
+   "t": "ETF",
+   "a": [
+    "IWQU",
+    "IS3Q"
+   ]
+  },
+  {
+   "isin": "IE00BP3QZ825",
+   "n": "iShares Edge MSCI World Momentum Factor",
+   "t": "ETF",
+   "a": [
+    "IWMO",
+    "IS3R"
+   ]
+  },
+  {
+   "isin": "IE00BP3QZB59",
+   "n": "iShares Edge MSCI World Value Factor",
+   "t": "ETF",
+   "a": [
+    "IWVL",
+    "IS3S"
+   ]
+  },
+  {
+   "isin": "IE00BMVB5R75",
+   "n": "Vanguard LifeStrategy 80% Equity Acc",
+   "t": "ETF",
+   "a": [
+    "V80A"
+   ]
+  },
+  {
+   "isin": "IE00B1XNHC34",
+   "n": "iShares Global Clean Energy",
+   "t": "ETF",
+   "a": [
+    "INRG",
+    "IQQH"
+   ]
+  },
+  {
+   "isin": "IE00BYZK4552",
+   "n": "iShares Automation & Robotics",
+   "t": "ETF",
+   "a": [
+    "RBOT",
+    "2B76"
+   ]
+  },
+  {
+   "isin": "IE00BGV5VN51",
+   "n": "Xtrackers Artificial Intelligence & Big Data",
+   "t": "ETF",
+   "a": [
+    "XAIX"
+   ]
+  },
+  {
+   "isin": "IE00BYZK4776",
+   "n": "iShares Healthcare Innovation",
+   "t": "ETF",
+   "a": [
+    "HEAL",
+    "2B78"
+   ]
+  },
+  {
+   "isin": "IE000NDWFGA5",
+   "n": "Global X Uranium",
+   "t": "ETF",
+   "a": [
+    "URNU"
+   ]
+  },
+  {
+   "isin": "IE00BMC38736",
+   "n": "VanEck Semiconductor",
+   "t": "ETF",
+   "a": [
+    "SMH",
+    "VVSM"
+   ]
+  },
+  {
+   "s": "BTC-EUR",
+   "n": "Bitcoin",
+   "t": "Cripto"
+  },
+  {
+   "s": "ETH-EUR",
+   "n": "Ethereum",
+   "t": "Cripto"
+  },
+  {
+   "s": "SOL-EUR",
+   "n": "Solana",
+   "t": "Cripto"
+  },
+  {
+   "s": "XRP-EUR",
+   "n": "XRP",
+   "t": "Cripto"
+  },
+  {
+   "s": "ADA-EUR",
+   "n": "Cardano",
+   "t": "Cripto"
+  },
+  {
+   "s": "DOGE-EUR",
+   "n": "Dogecoin",
+   "t": "Cripto"
+  },
+  {
+   "s": "DOT-EUR",
+   "n": "Polkadot",
+   "t": "Cripto"
+  },
+  {
+   "s": "LINK-EUR",
+   "n": "Chainlink",
+   "t": "Cripto"
+  },
+  {
+   "s": "AVAX-EUR",
+   "n": "Avalanche",
+   "t": "Cripto"
+  },
+  {
+   "s": "LTC-EUR",
+   "n": "Litecoin",
+   "t": "Cripto"
+  },
+  {
+   "s": "BNB-EUR",
+   "n": "BNB",
+   "t": "Cripto"
+  },
+  {
+   "s": "TRX-EUR",
+   "n": "TRON",
+   "t": "Cripto"
+  },
+  {
+   "s": "XLM-EUR",
+   "n": "Stellar",
+   "t": "Cripto"
+  },
+  {
+   "s": "SHIB-EUR",
+   "n": "Shiba Inu",
+   "t": "Cripto"
+  },
+  {
+   "s": "USDC-EUR",
+   "n": "USD Coin",
+   "t": "Cripto"
+  }
+ ]
+}

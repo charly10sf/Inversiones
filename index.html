@@ -1138,6 +1138,72 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 
 .lista.graves { border: 1px solid rgba(239, 116, 97, 0.45); background: var(--down-bg); border-radius: 14px; padding: 0 16px; }
 .lista.graves li:last-child { border-bottom: 0; }
+/* ---------- buscador y formulario de compra/venta ---------- */
+.busca { position: relative; }
+.busca input { width: 100%; padding-left: 40px; }
+.busca-ico { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); display: grid; }
+.busca-ico svg { width: 18px; height: 18px; }
+.busca-res { position: absolute; left: 0; right: 0; top: calc(100% + 6px); z-index: 30; list-style: none; margin: 0; padding: 6px; background: var(--plane-2); border: 1px solid var(--line-2); border-radius: 14px; box-shadow: 0 18px 40px rgba(0, 0, 0, 0.55); max-height: 340px; overflow-y: auto; }
+.busca-res li { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px; border-radius: 10px; cursor: pointer; }
+.busca-res li[aria-selected="true"], .busca-res li:hover { background: var(--plane-3); }
+.busca-res .logo-a, .op-elegido .logo-a, .op-pos .logo-a { width: 30px; height: 30px; border-radius: 8px; }
+.busca-t { display: grid; min-width: 0; }
+.busca-t b { font-weight: 600; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.busca-t small { color: var(--muted); font-size: 12px; display: flex; gap: 5px; align-items: center; white-space: nowrap; overflow: hidden; }
+.busca-p { text-align: right; font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; display: grid; }
+.busca-p small { color: var(--accent); font-size: 11px; }
+.busca-nada { padding: 10px; color: var(--muted); font-size: 13px; }
+.op-modo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; background: var(--plane); border: 1px solid var(--line); border-radius: 12px; }
+.op-modo button { border: 0; background: none; color: var(--text-2); font-weight: 600; font-size: 14px; padding: 10px 6px; border-radius: 9px; display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
+.op-modo button svg { width: 16px; height: 16px; }
+.op-modo button[aria-pressed="true"] { background: var(--plane-3); color: var(--text); }
+.op-modo button[data-t="compra"][aria-pressed="true"] svg { color: var(--up); }
+.op-modo button[data-t="venta"][aria-pressed="true"] svg { color: var(--down); }
+.op-modo button[data-t="tengo"][aria-pressed="true"] svg { color: var(--accent); }
+.op-ayuda { margin: 10px 0 4px; color: var(--muted); font-size: 13px; line-height: 1.5; }
+.op-paso { display: grid; gap: 8px; margin: 14px 0; }
+.op-lbl { color: var(--text-2); font-size: 13.5px; font-weight: 500; }
+.op-elegido { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto auto; gap: 10px; align-items: center; padding: 10px 12px; border-radius: 12px; background: var(--plane); border: 1px solid var(--line-2); }
+.op-plats { display: flex; flex-wrap: wrap; gap: 6px; }
+.op-plats button { border: 1px solid var(--line-2); background: none; color: var(--text-2); border-radius: 999px; padding: 7px 14px; font-size: 13.5px; font-weight: 500; }
+.op-plats button[aria-pressed="true"] { border-color: rgba(226, 180, 95, 0.6); background: var(--accent-bg); color: var(--accent); }
+.op-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px; max-height: 260px; overflow-y: auto; }
+.op-pos { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; align-items: center; text-align: left; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--plane); color: var(--text); }
+.op-pos span { display: grid; min-width: 0; }
+.op-pos b { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.op-pos small { color: var(--muted); font-size: 11.5px; }
+.op-pos[aria-pressed="true"] { border-color: rgba(226, 180, 95, 0.6); background: var(--accent-bg); }
+.enlace-imp svg { width: 16px; height: 16px; }
+@media (max-width: 520px) { .enlace-imp { order: 9; width: 100%; } }
+
+.op-raro { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; padding: 10px 12px; margin-bottom: 8px; border-radius: 10px; background: var(--down-bg); color: var(--text); font-size: 13px; line-height: 1.5; }
+.op-raro svg { width: 18px; height: 18px; color: var(--down); }
+
+/* ---------- importar desde capturas ---------- */
+.imp { display: grid; gap: 14px; }
+.imp-sube { display: block; cursor: pointer; }
+.imp-sube-c { display: grid; justify-items: center; gap: 4px; padding: 26px 16px; border: 1.5px dashed var(--line-2); border-radius: 16px; background: var(--plane); text-align: center; }
+.imp-sube-c svg { width: 26px; height: 26px; color: var(--accent); }
+.imp-sube-c b { font-weight: 600; }
+.imp-sube-c small { color: var(--muted); font-size: 12.5px; }
+.imp-sube:hover .imp-sube-c { border-color: var(--accent); }
+.imp-estado { font-size: 13.5px; min-height: 18px; }
+.imp-tit { margin: 6px 0 2px; font-size: 16px; font-weight: 600; }
+.imp-lista { display: grid; gap: 8px; }
+.imp-f { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; padding: 12px; border-radius: 12px; background: var(--plane); border: 1px solid var(--line); }
+.imp-f.off { opacity: 0.6; }
+.imp-ck input { width: 18px; height: 18px; margin-top: 6px; }
+.imp-c { display: grid; gap: 8px; min-width: 0; }
+.imp-inst { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; border: 0; background: none; color: var(--text); text-align: left; padding: 0; }
+.imp-inst .logo-a { width: 30px; height: 30px; border-radius: 8px; }
+.imp-inst .k { font-size: 12px; color: var(--accent); }
+.imp-leido { color: var(--muted); font-size: 12px; }
+.imp-num { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: end; }
+.imp-num label { display: grid; gap: 3px; font-size: 12px; color: var(--muted); }
+.imp-num input, .imp-num select { width: 100%; min-width: 0; }
+@media (max-width: 480px) { .imp-num { grid-template-columns: 1fr 1fr; } .imp-num select { grid-column: 1 / -1; } }
+
+.busca-l { color: var(--text-2) !important; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block !important; }
 </style>
 </head>
 <body>
@@ -1593,7 +1659,51 @@ function estadoDirecto() {
 /* =====================================================================
    Cálculos
    ===================================================================== */
-const histDe = (id) => (S.hist && S.hist.instrumentos && S.hist.instrumentos[id]) || (S.precios && S.precios.instrumentos && S.precios.instrumentos[id] && S.precios.instrumentos[id].historico) || null;
+const histDe = (id) => (S.hist && S.hist.instrumentos && S.hist.instrumentos[id]) || (S.precios && S.precios.instrumentos && S.precios.instrumentos[id] && S.precios.instrumentos[id].historico) || (S.catHist && S.catHist[id]) || null;
+
+/* =====================================================================
+   Catálogo común (rama "catalogo", una vez al día): unos cien fondos, ETF, oro y cripto con su ISIN,
+   precio e histórico, para que cualquiera encuentre su fondo exacto aunque no esté en instrumentos.json.
+   ===================================================================== */
+async function cargarCatalogo() {
+  let txt = null;
+  try {
+    const r = await fetch(CFG.dev ? 'dev/catalogo-precios.json' : GH.raw('catalogo-precios.json', 'catalogo') + '?v=' + Math.floor(Date.now() / 3600000), { cache: 'no-cache' });
+    if (r.ok) txt = await r.text();
+  } catch (e) { console.warn(e); }
+  if (txt) { try { localStorage.setItem('inv-cache-cat', txt); } catch (e) {} } else { try { txt = localStorage.getItem('inv-cache-cat'); } catch (e) {} }
+  try { S.cat = txt ? JSON.parse(txt) : null; } catch (e) { S.cat = null; }
+}
+/* la ficha del catálogo de un instrumento (por ISIN o por símbolo) */
+function catDe(inst) {
+  const v = S.cat && S.cat.v; if (!v || !inst) return null;
+  if (inst.cat && v[inst.cat]) return v[inst.cat];
+  const isin = String(inst.isin || '').toUpperCase(), sim = String(inst.yahoo || '').toUpperCase();
+  for (const [k, x] of Object.entries(v)) if ((isin && String(x.isin || '').toUpperCase() === isin) || (sim && String(x.s || '').toUpperCase() === sim)) { inst.cat = k; return x; }
+  return null;
+}
+/* da de alta (o devuelve) el instrumento de una ficha del catálogo */
+function instDeCatalogo(cid) {
+  const x = S.cat && S.cat.v && S.cat.v[cid]; if (!x) return null;
+  const ya = S.instOrden.find((id) => S.inst[id].cat === cid || (x.isin && String(S.inst[id].isin || '').toUpperCase() === String(x.isin).toUpperCase()) || (x.s && String(S.inst[id].yahoo || '').toUpperCase() === String(x.s).toUpperCase()));
+  if (ya) return ya;
+  const i = { id: cid, nombre: x.n, corto: x.c || x.n, tipo: x.t, clase: x.cl, region: x.r || { Global: 100 }, cat: cid };
+  if (x.isin) i.isin = x.isin; if (x.s) i.yahoo = x.s; if (x.pais) i.pais = x.pais; if (x.dom) i.dominio = x.dom;
+  if (x.cl === 'Cripto') { i.bitvavo = x.s; i.sector_fijo = 'Cripto'; } else if (['Oro', 'Renta fija', 'Monetario'].includes(x.cl)) i.sector_fijo = x.cl;
+  S.inst[cid] = i; S.instOrden.push(cid); S.instCambiados = true;
+  return cid;
+}
+/* el histórico del catálogo de lo que tienes (solo lo que no trae ya la Action de cada 20 minutos) */
+async function cargarHistCatalogo(ids) {
+  S.catHist = S.catHist || {};
+  const quiero = (ids || [...new Set((S.cartera.posiciones || []).map((p) => p.instrumento))]).filter((id) => !S.catHist[id] && S.inst[id] && !(S.hist && S.hist.instrumentos && S.hist.instrumentos[id]) && catDe(S.inst[id]));
+  if (!quiero.length) return false;
+  await Promise.all(quiero.map(async (id) => {
+    const cid = S.inst[id].cat;
+    try { const r = await fetch(CFG.dev ? `dev/cat/${cid}.json` : GH.raw(`cat/${cid}.json`, 'catalogo') + '?v=' + Math.floor(Date.now() / 3600000), { cache: 'no-cache' }); if (r.ok) { const j = await r.json(); if (j && j.h) S.catHist[id] = j.h; } } catch (e) {}
+  }));
+  return true;
+}
 const histMercado = (sym) => (S.hist && S.hist.mercados && S.hist.mercados[sym]) || null;
 
 function precioEn(hist, fecha, modo) {
@@ -1636,6 +1746,8 @@ function calcularPos(pos, hoy) {
   let precio = p ? p.precio : null;
   let prev = p ? p.cierre_anterior : null;
   let varDia = p ? p.variacion_dia : null;
+  // lo que no está en la lista de la Action: el precio diario del catálogo común
+  if (precio == null) { const ce = catDe(inst); if (ce && ce.p) { precio = ce.p; prev = ce.pa || null; varDia = prev ? (precio / prev - 1) * 100 : null; } }
   // recién dada de alta: hasta que la Action le busque precio (unos minutos), el último cierre o el del radar
   if (precio == null && hist && hist.length) { precio = hist[hist.length - 1][1]; prev = hist.length > 1 ? hist[hist.length - 2][1] : null; varDia = prev ? (precio / prev - 1) * 100 : null; }
   if (precio == null && inst.yahoo) { const r = radarPorSim(inst.yahoo); if (r && r.pe) { precio = r.pe; varDia = r.v != null ? r.v : null; prev = varDia != null ? precio / (1 + varDia / 100) : null; } }
@@ -2376,21 +2488,37 @@ function precioCompraRaro(f) {
     if (!real) continue;
     const r = pagado / real;
     if (r > 0.8 && r < 1.25) continue;
-    const otro = S.instOrden.filter((id) => id !== f.inst.id && (S.inst[id].clase === f.inst.clase))
-      .map((id) => { const h = histDe(id); return { id, p: h ? precioEn(h, fecha, 'antes') : null }; })
-      .filter((x) => x.p && Math.abs(pagado / x.p - 1) < 0.04)
-      .sort((a, b) => Math.abs(pagado / a.p - 1) - Math.abs(pagado / b.p - 1))[0] || null;
+    const cerca = (v) => v.filter((x) => x.p && Math.abs(pagado / x.p - 1) < 0.04).sort((a, b) => Math.abs(pagado / a.p - 1) - Math.abs(pagado / b.p - 1))[0] || null;
+    let otro = cerca(S.instOrden.filter((id) => id !== f.inst.id && S.inst[id].clase === f.inst.clase).map((id) => { const h = histDe(id); return { id, p: h ? precioEn(h, fecha, 'antes') : null }; }));
+    // si no está en tu lista, en el catálogo común: los del mismo tipo y la misma zona
+    if (!otro) {
+      const cands = candidatosCatRaro(f), faltan = cands.filter((c) => !S.catHistC[c]);
+      if (faltan.length) { if (!S.cargandoCand) { S.cargandoCand = true; cargarCandidatosCat(faltan).then(() => { S.cargandoCand = false; pintar(); }); } }
+      else otro = cerca(cands.map((cid) => ({ cid, p: S.catHistC[cid].length ? precioEn(S.catHistC[cid], fecha, 'antes') : null })));
+    }
     return { f, fecha, pagado, real, otro };
   }
   return null;
 }
+S.catHistC = {};
+const regionPrincipal = (r) => (Object.entries(r || {}).sort((a, b) => b[1] - a[1])[0] || [])[0];
+function candidatosCatRaro(f) {
+  const r0 = regionPrincipal(f.inst.region);
+  return Object.entries((S.cat && S.cat.v) || {}).filter(([cid, x]) => x.cl === f.inst.clase && regionPrincipal(x.r) === r0 && f.inst.cat !== cid && (!f.inst.isin || String(x.isin || '') !== String(f.inst.isin))).map(([cid]) => cid).slice(0, 16);
+}
+async function cargarCandidatosCat(cids) {
+  await Promise.all(cids.map(async (cid) => {
+    try { const r = await fetch(CFG.dev ? `dev/cat/${cid}.json` : GH.raw(`cat/${cid}.json`, 'catalogo'), { cache: 'force-cache' }); const j = r.ok ? await r.json() : null; S.catHistC[cid] = (j && j.h) || []; } catch (e) { S.catHistC[cid] = []; }
+  }));
+}
 function avisoPrecioRaro(x) {
   const fondo = /^Fondo/.test(x.f.inst.tipo || '');
-  const o = x.otro && S.inst[x.otro.id];
+  const oc0 = x.otro && x.otro.cid && S.cat && S.cat.v[x.otro.cid];
+  const o = x.otro && (x.otro.id ? S.inst[x.otro.id] : oc0 ? { nombre: oc0.n, corto: oc0.c || oc0.n } : null);
   return {
     n: 'bad', i: ICONOS.alerta, t: `${x.f.inst.corto}: el precio de compra no cuadra`,
     d: `Pones que compraste a ${precioFmt(x.pagado)} el ${fechaLarga(x.fecha)}, pero ${x.f.inst.nombre || x.f.inst.corto} valía ${precioFmt(x.real)} ese día. ${o ? `Cuadra con ${o.nombre} (${precioFmt(x.otro.p)} ese día): seguramente es el tuyo.` : `Seguramente tienes ${fondo ? 'otro fondo u otra clase del mismo' : 'otro valor'}: mira el ISIN en tu bróker y búscalo por ISIN.`} Mientras tanto, el valor y la ganancia salen mal.`,
-    acc: o ? `<button class="btn peq pri" data-accion="cambiar-inst" data-id="${esc(x.f.pos.id)}" data-inst="${esc(x.otro.id)}">Cambiar a ${esc(o.corto || o.nombre)}</button>` : `<button class="btn peq" data-accion="editar-pos" data-id="${esc(x.f.pos.id)}">Revisarla</button>`,
+    acc: o ? `<button class="btn peq pri" data-accion="cambiar-inst" data-id="${esc(x.f.pos.id)}" data-inst="${esc(x.otro.id || 'cat:' + x.otro.cid)}">Cambiar a ${esc(o.corto || o.nombre)}</button>` : `<button class="btn peq" data-accion="editar-pos" data-id="${esc(x.f.pos.id)}">Revisarla</button>`,
   };
 }
 function avisos(M) {
@@ -4576,8 +4704,9 @@ async function guardarYPintar(mensaje, h) {
   const b = h && h.el.querySelector('button[type=submit]'); if (b) { b.disabled = true; b.textContent = 'Guardando…'; }
   await guardarCartera(mensaje);
   if (h) h.cerrar();
-  LIVE.resuscribir();
+  LIVE.mapas(); LIVE.resuscribir();
   pintar();
+  cargarHistCatalogo().then((n) => { if (n) pintar(); });
 }
 
 /* ---------- editar o añadir una posición ---------- */
@@ -4656,39 +4785,36 @@ function fijarPosicion(pos) {
   delete pos.valor_ref;
 }
 
+/* Compra, venta o "ya la tenía" (lo que tienes de antes, sin tocar el efectivo ni el historial).
+   Un solo formulario: eliges el modo, buscas la empresa o el fondo y pones cuántas y a qué precio. */
 function operacion(tipo, id, sim) {
-  let pos0 = id ? S.cartera.posiciones.find((p) => p.id === id) : null;
+  let t = ['venta', 'tengo'].includes(tipo) ? tipo : 'compra';
   const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
   let registrada = false;
-  // desde una idea: la empresa ya elegida (y dada de alta si no la tenías); solo faltan las acciones
-  let instIni = pos0 ? pos0.instrumento : S.instOrden[0];
-  if (sim) { const nid = instDeRadar(sim); if (nid) { instIni = nid; pos0 = S.cartera.posiciones.find((p) => p.instrumento === nid) || null; } }
-  const precioDe = (instId) => {
-    const v = S.live[instId]; const p = S.precios && S.precios.instrumentos && S.precios.instrumentos[instId];
-    if (v) return v.precio; if (p && p.precio) return p.precio;
-    const r = radarPorSim(S.inst[instId] && S.inst[instId].yahoo); return r && r.pe ? r.pe : null;
-  };
-  const h = hoja('Registrar operación', `
+  const pos0 = id ? S.cartera.posiciones.find((p) => p.id === id) : null;
+  let inst = pos0 ? pos0.instrumento : null, plat = pos0 ? pos0.plataforma : null, posSel = pos0;
+  if (sim) { const nid = instDeRadar(sim); if (nid) inst = nid; }
+  const platPor = (iid) => { const i = S.inst[iid] || {}; const ya = S.cartera.posiciones.find((p) => p.instrumento === iid); if (ya) return ya.plataforma; return i.clase === 'Cripto' ? 'Bitvavo' : /^Fondo/.test(i.tipo || '') ? 'MyInvestor' : 'Trade Republic'; };
+  if (inst && !plat) plat = platPor(inst);
+  const plats = [...new Set([...PLATAFORMAS, ...(S.cartera.posiciones || []).map((p) => p.plataforma), ...(S.cartera.efectivo || []).map((e) => e.plataforma)].filter(Boolean))];
+  const h = hoja('Compra, venta o lo que ya tienes', `
     <form id="fOp" novalidate>
-      <div class="tabs" role="group" aria-label="Tipo"><button type="button" data-t="compra" aria-pressed="${tipo !== 'venta'}">Compra</button><button type="button" data-t="venta" aria-pressed="${tipo === 'venta'}">Venta</button></div>
-      <div class="form-grid">
-        <label class="campo" id="cPos">Posición<select name="pos">${S.cartera.posiciones.map((p) => `<option value="${esc(p.id)}"${pos0 && p.id === pos0.id ? ' selected' : ''}>${esc((S.inst[p.instrumento] && S.inst[p.instrumento].corto) || p.instrumento)}, ${esc(p.plataforma)}</option>`).join('')}<option value="__nueva">Otra (nueva posición)…</option></select></label>
-        <label class="campo ancho" id="cBus" hidden>Busca la empresa<input name="buscar" list="dlEmpresas" placeholder="Nombre o ticker: HBX, United Airlines…" autocomplete="off" enterkeyhint="done"><small id="tBus">Entre las ${radarVals().length} que sigue la web: nombre, ticker y país se ponen solos, sin ISIN.</small></label>
-        <datalist id="dlEmpresas">${opcionesEmpresas()}</datalist>
-        <label class="campo" id="cInst" hidden>Instrumento<select name="instrumento">${opcionesInst(instIni)}</select></label>
-        <label class="campo" id="cPlat" hidden>Plataforma<select name="plataforma">${opcionesPlat(pos0 ? pos0.plataforma : 'Trade Republic')}</select></label>
-        <label class="campo">Fecha<input name="fecha" type="date" value="${hoyIso()}"></label>
-        <label class="campo">Unidades<input name="uds" inputmode="decimal" placeholder="acciones o participaciones"></label>
-        <label class="campo">Precio por unidad (€)<input name="precio" inputmode="decimal"></label>
-        <label class="campo">o el importe (€)<input name="importe" inputmode="decimal" placeholder="sin gastos"><small>Si lo pones, calculo las unidades.</small></label>
-        <label class="campo">Comisión (€)<input name="gastos" inputmode="decimal" placeholder="0"><small>En Trade Republic, 1 € por operación. Las tasas de compra de cada país las calculo yo.</small></label>
+      <div class="op-modo" role="group" aria-label="Qué quieres apuntar"><button type="button" data-t="compra">${ICONOS.compra}Compra</button><button type="button" data-t="venta">${ICONOS.venta}Venta</button><button type="button" data-t="tengo">${ICONOS.cartera}Ya la tenía</button></div>
+      <p class="op-ayuda" id="opAyuda"></p>
+      <div class="op-paso"><span class="op-lbl">Qué</span><div id="opQue"></div></div>
+      <div class="op-paso" id="cPlat"><span class="op-lbl">Dónde</span><div class="op-plats" id="opPlat" role="group" aria-label="Plataforma"></div></div>
+      <div class="form-grid op-num">
+        <label class="campo"><span id="lUds">Cuántas</span><input name="uds" inputmode="decimal" placeholder="acciones o participaciones"></label>
+        <label class="campo"><span id="lPrecio">Precio por unidad (€)</span><input name="precio" inputmode="decimal"><small id="sPrecio"></small></label>
+        <label class="campo"><span id="lImp">o el importe total (€)</span><input name="importe" inputmode="decimal" placeholder="sin comisión"><small>Si lo pones, calculo cuántas.</small></label>
+        <label class="campo"><span id="lFecha">Fecha</span><input name="fecha" type="date" value="${hoyIso()}" max="${hoyIso()}"></label>
+        <label class="campo" id="cGastos">Comisión (€)<input name="gastos" inputmode="decimal" placeholder="0"><small id="sGastos"></small></label>
       </div>
-      <label class="check"><input type="checkbox" name="efectivo" checked><span id="tEf"></span></label>
+      <label class="check" id="cEf"><input type="checkbox" name="efectivo" checked><span id="tEf"></span></label>
       <div class="calculo" id="calc"></div>
       <div class="error" id="errOp"></div>
-      <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Registrar</button></div>
+      <div class="fila-btns"><button type="button" class="btn izq enlace-imp" data-accion="importar">${ICONOS.recorte}Importar desde capturas</button><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri" id="bOp">Apuntar</button></div>
     </form>`, () => {
-    // si cancelas, las empresas dadas de alta aquí y sin usar no se quedan en tu lista
     if (registrada) return;
     const usados = new Set((S.cartera.posiciones || []).map((p) => p.instrumento));
     const sobran = S.instOrden.filter((x) => !instsAntes.has(x) && !usados.has(x));
@@ -4699,74 +4825,112 @@ function operacion(tipo, id, sim) {
   });
   const fm = $('#fOp', h.el);
   const q = (n) => fm.querySelector(`[name="${n}"]`);
-  let t = tipo === 'venta' ? 'venta' : 'compra';
-  const posSel = () => (q('pos').value === '__nueva' ? null : S.cartera.posiciones.find((p) => p.id === q('pos').value));
-  const instSel = () => { const p = posSel(); return p ? p.instrumento : q('instrumento').value; };
-  const platSel = () => { const p = posSel(); return p ? p.plataforma : q('plataforma').value; };
-  const ponerPrecio = () => { const pr = precioDe(instSel()); if (pr) q('precio').value = String(+pr.toFixed(pr >= 100 ? 2 : 4)).replace('.', ','); };
-  const sincronizar = () => {
-    const nueva = q('pos').value === '__nueva';
-    $('#cInst', h.el).hidden = !nueva; $('#cPlat', h.el).hidden = !nueva; $('#cBus', h.el).hidden = !nueva || t !== 'compra';
-    for (const b of $$('[data-t]', fm)) b.setAttribute('aria-pressed', b.dataset.t === t);
-    if (t === 'venta' && nueva) q('pos').value = (S.cartera.posiciones[0] || {}).id || '__nueva';
-    $('#tEf', h.el).textContent = t === 'compra' ? `Pagar con el efectivo de ${platSel()}` : `Sumar lo cobrado al efectivo de ${platSel()}`;
-    if (!q('gastos').dataset.tocado) q('gastos').value = platSel() === 'Trade Republic' ? '1' : '';
-    recalcular();
-  };
+  const err = (x) => { $('#errOp', h.el).textContent = x; };
+  const posDe = () => (t === 'venta' ? posSel : inst && plat ? S.cartera.posiciones.find((p) => p.instrumento === inst && p.plataforma === plat) : null);
   const tasaDe = (instId) => { const i = S.inst[instId] || {}; if (i.bolsa && i.bolsa !== i.pais) return null; const pp = S.precios && S.precios.instrumentos && S.precios.instrumentos[instId]; return tasaCompra(i.pais, i.tipo, pp && pp.fundamentales && pp.fundamentales.capitalizacion); };
-  const recalcular = () => {
-    const uds = numero(q('uds').value), pr = numero(q('precio').value), gastos = numero(q('gastos').value) || 0;
-    const c = $('#calc', h.el);
-    if (!(uds > 0) || !(pr > 0)) { c.innerHTML = '<div><span class="k">Pon las unidades y el precio (o el importe).</span></div>'; return; }
-    const bruto = uds * pr;
-    if (t === 'compra') {
-      const ta = tasaDe(instSel()); const tasa = ta ? bruto * ta.tipo : 0;
-      c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Comisión</span><span>${eur(gastos)}</span></div>${ta ? `<div><span>Tasa de compra (${fmtNum(ta.tipo * 100, 1)} %, ${esc(ta.nombre)})</span><span>${eur(tasa)}</span></div>` : ''}<div><b>Total pagado</b><b>${eur(bruto + gastos + tasa)}</b></div><div><span class="k">Para Hacienda, tu precio de compra incluye la comisión y la tasa.</span></div>`;
+  const unidad = () => { const i = S.inst[inst] || {}; return i.tipo === 'Acción' ? 'acciones' : i.clase === 'Cripto' ? 'unidades' : /^Fondo/.test(i.tipo || '') ? 'participaciones' : 'unidades'; };
+  const ponerPrecio = () => { if (t === 'tengo') return; const pr = inst && precioInst(inst); if (pr) q('precio').value = String(+pr.toFixed(pr >= 100 ? 2 : 4)).replace('.', ','); };
+  const pintarQue = () => {
+    const c = $('#opQue', h.el);
+    if (t === 'venta') {
+      const ps = S.cartera.posiciones.filter((p) => calcularPos(p, hoyIso()).uds > 0);
+      c.innerHTML = ps.length ? `<div class="op-lista">${ps.map((p) => { const i = S.inst[p.instrumento] || { corto: p.instrumento }; const f = calcularPos(p, hoyIso()); return `<button type="button" class="op-pos" data-pid="${esc(p.id)}" aria-pressed="${posSel && posSel.id === p.id}">${logo(i.dominio, i.corto || i.nombre)}<span><b>${esc(i.corto || i.nombre)}</b><small>${esc(p.plataforma || '')}, ${fmtNum(f.uds, f.uds < 10 ? 4 : 2)}</small></span></button>`; }).join('')}</div>` : '<div class="vacio">No tienes nada que vender todavía.</div>';
+      for (const b of $$('[data-pid]', c)) b.onclick = () => { posSel = S.cartera.posiciones.find((p) => p.id === b.dataset.pid); inst = posSel.instrumento; plat = posSel.plataforma; ponerPrecio(); pintarTodo(); };
       return;
     }
-    const p = posSel(); let extra = '';
+    if (inst) {
+      const i = S.inst[inst] || {}, pr = precioInst(inst), ya = S.cartera.posiciones.filter((p) => p.instrumento === inst);
+      c.innerHTML = `<div class="op-elegido">${logo(i.dominio, i.corto || i.nombre)}<span class="busca-t"><b>${esc(i.corto || i.nombre)}</b><small>${chipCotiza(i)}${i.yahoo ? ` · ${esc(i.yahoo)}` : ''}${ya.length ? ` · ya tienes en ${esc(ya.map((p) => p.plataforma).join(' y '))}` : ''}</small></span><span class="busca-p">${pr ? precioFmt(pr) : ''}</span><button type="button" class="enlace acento" id="opCambiar">Cambiar</button></div>`;
+      $('#opCambiar', h.el).onclick = () => { inst = null; pintarTodo(); };
+    } else buscador(c, (nid) => { inst = nid; plat = platPor(nid); ponerPrecio(); pintarTodo(); setTimeout(() => q('uds').focus(), 50); }, { foco: true });
+  };
+  const pintarPlat = () => {
+    const c = $('#opPlat', h.el);
+    if (t === 'venta') { $('#cPlat', h.el).hidden = true; return; }
+    $('#cPlat', h.el).hidden = false;
+    c.innerHTML = plats.map((p) => `<button type="button" data-plat="${esc(p)}" aria-pressed="${plat === p}">${esc(p)}</button>`).join('') + '<button type="button" data-plat="__otra">Otra…</button>';
+    for (const b of $$('[data-plat]', c)) b.onclick = () => {
+      if (b.dataset.plat === '__otra') { const n = (prompt('¿Cómo se llama la plataforma?') || '').trim(); if (!n) return; if (!plats.includes(n)) plats.push(n); plat = n; } else plat = b.dataset.plat;
+      if (!q('gastos').dataset.tocado) q('gastos').value = plat === 'Trade Republic' && t !== 'tengo' ? '1' : '';
+      pintarTodo();
+    };
+  };
+  const recalcular = () => {
+    const uds = numero(q('uds').value), pr = numero(q('precio').value), gastos = t === 'tengo' ? 0 : numero(q('gastos').value) || 0;
+    const c = $('#calc', h.el);
+    if (!inst) { c.innerHTML = '<div><span class="k">Elige primero qué.</span></div>'; return; }
+    if (!(uds > 0) || !(pr > 0)) { c.innerHTML = `<div><span class="k">${t === 'tengo' ? 'Pon cuántas tienes y tu precio medio (o lo invertido).' : 'Pon cuántas y el precio (o el importe).'}</span></div>`; return; }
+    const bruto = uds * pr;
+    // ¿cuadra el precio con lo que valía ese día? Si no, casi seguro que es otro fondo u otra clase
+    const h0 = histDe(inst), fch = q('fecha').value || hoyIso(), real = h0 && fch < hoyIso() ? precioEn(h0, fch, 'antes') : null;
+    const raro = real && (pr / real > 1.25 || pr / real < 0.8) ? `<div class="op-raro">${ICONOS.alerta}<span>El ${fechaLarga(fch)} ${esc((S.inst[inst] || {}).nombre || '')} valía ${precioFmt(real)} y tú pones ${precioFmt(pr)}. Si no cuadra, seguramente el tuyo es otro fondo u otra clase: búscalo por su ISIN (sale en tu bróker).</span></div>` : '';
+    if (t === 'tengo') {
+      const ahora = precioInst(inst), vale = ahora ? uds * ahora : null, g = vale != null ? vale - bruto : null;
+      c.innerHTML = `${raro}<div><span>Invertido</span><span>${eur(bruto)}</span></div>${vale != null ? `<div><span>Vale hoy</span><span>${eur(vale)}</span></div><div><b>${g >= 0 ? 'Llevas ganado' : 'Llevas perdido'}</b><b class="${cls(g)}">${eurS(g)} (${pctS((g / bruto) * 100, 1)})</b></div>` : ''}`;
+      return;
+    }
+    if (t === 'compra') {
+      const ta = tasaDe(inst); const tasa = ta ? bruto * ta.tipo : 0;
+      c.innerHTML = `${raro}<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Comisión</span><span>${eur(gastos)}</span></div>${ta ? `<div><span>Tasa de compra (${fmtNum(ta.tipo * 100, 1)} %, ${esc(ta.nombre)})</span><span>${eur(tasa)}</span></div>` : ''}<div><b>Total pagado</b><b>${eur(bruto + gastos + tasa)}</b></div>`;
+      return;
+    }
+    const p = posSel; let extra = '';
     if (p) {
       try {
         const copia = JSON.parse(JSON.stringify(p)); fijarPosicion(copia);
         const r = fifo(copia.lotes, Math.min(uds, copia.cantidad));
         const res = bruto - gastos - r.coste;
         const imp = res > 0 ? impuestoDeVenta(res).impuesto : 0;
-        extra = `<div><span>Valor de compra (FIFO)</span><span>${eur(r.coste)}</span></div><div><b>Resultado para Hacienda</b><b class="${cls(res)}">${eurS(res)}</b></div>${res > 0 ? `<div><span>Impuesto estimado, con lo que ya llevas este año</span><span>${eur(imp)}</span></div>` : res < 0 ? '<div><span class="k">Esa pérdida resta de tus ganancias del año (y si sobra, de los 4 siguientes).</span></div>' : ''}${r.mezcla ? '<div><span class="k">Lo que tenías antes de usar la web cuenta como un solo lote con tu precio medio; el informe fiscal del bróker lo afina compra a compra.</span></div>' : ''}${uds > copia.cantidad + 1e-6 ? '<div><span class="down">Vendes más de lo que tienes.</span></div>' : ''}`;
+        extra = `<div><span>Lo que te costaron (FIFO)</span><span>${eur(r.coste)}</span></div><div><b>${res >= 0 ? 'Ganas' : 'Pierdes'}</b><b class="${cls(res)}">${eurS(res)}</b></div>${res > 0 ? `<div><span>Impuesto estimado en la renta</span><span>${eur(imp)}</span></div>` : res < 0 ? '<div><span class="k">Esa pérdida resta de tus ganancias del año (y si sobra, de los 4 siguientes).</span></div>' : ''}${uds > copia.cantidad + 1e-6 ? '<div><span class="down">Vendes más de lo que tienes.</span></div>' : ''}`;
       } catch (e) { extra = `<div><span class="down">${esc(e.message)}</span></div>`; }
     }
-    c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Comisión</span><span>${eur(gastos)}</span></div><div><b>Cobrado</b><b>${eur(bruto - gastos)}</b></div>${extra}`;
+    c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Comisión</span><span>${eur(gastos)}</span></div><div><b>Cobras</b><b>${eur(bruto - gastos)}</b></div>${extra}`;
   };
-  for (const b of $$('[data-t]', fm)) b.onclick = () => { t = b.dataset.t; sincronizar(); };
-  q('pos').onchange = () => { ponerPrecio(); sincronizar(); };
-  q('instrumento').onchange = (e) => { if (e.target.value === '__nuevo') nuevoInstrumento((nid) => { e.target.innerHTML = opcionesInst(nid || S.instOrden[0]); ponerPrecio(); }); else ponerPrecio(); sincronizar(); };
-  q('plataforma').onchange = sincronizar;
-  q('buscar').onchange = () => {
-    const m = q('buscar').value.match(/\(([^()]+)\)\s*$/);
-    const nid = m ? instDeRadar(m[1].trim()) : null;
-    if (!nid) { $('#tBus', h.el).textContent = 'No la encuentro en el radar: elige "Nuevo instrumento" en la lista de abajo.'; return; }
-    q('instrumento').innerHTML = opcionesInst(nid); q('instrumento').value = nid;
-    const ya = S.cartera.posiciones.find((p) => p.instrumento === nid && p.plataforma === q('plataforma').value);
-    $('#tBus', h.el).textContent = ya ? `Ya tienes ${S.inst[nid].corto} en ${ya.plataforma}: la compra se suma a esa posición.` : `${S.inst[nid].corto} (${S.inst[nid].yahoo}) lista: pon las acciones o el importe.`;
-    q('buscar').value = '';
-    ponerPrecio(); sincronizar();
+  const pintarTodo = () => {
+    for (const b of $$('[data-t]', fm)) b.setAttribute('aria-pressed', b.dataset.t === t);
+    const tengo = t === 'tengo';
+    $('#opAyuda', h.el).textContent = t === 'compra' ? 'Una compra que acabas de hacer: suma a tu posición y, si quieres, resta del efectivo.' : t === 'venta' ? 'Elige qué vendiste: la web calcula lo que ganas o pierdes para Hacienda.' : 'Lo que ya tenías antes de usar la web: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.';
+    $('#lUds', h.el).textContent = inst ? `Cuántas ${unidad()}` : 'Cuántas';
+    $('#lPrecio', h.el).textContent = tengo ? 'Tu precio medio (€)' : 'Precio por unidad (€)';
+    $('#sPrecio', h.el).textContent = tengo ? 'El que te dice tu bróker.' : 'El de ahora: cámbialo por el de tu justificante.';
+    $('#lImp', h.el).textContent = tengo ? 'o lo invertido en total (€)' : 'o el importe total (€)';
+    $('#lFecha', h.el).textContent = tengo ? 'Desde cuándo la tienes (más o menos)' : 'Fecha';
+    $('#cGastos', h.el).hidden = tengo; $('#cEf', h.el).hidden = tengo;
+    $('#sGastos', h.el).textContent = plat === 'Trade Republic' ? 'En Trade Republic, 1 € por operación.' : '';
+    $('#tEf', h.el).textContent = t === 'compra' ? `Pagar con el efectivo de ${plat || 'la plataforma'}` : `Sumar lo cobrado al efectivo de ${plat || 'la plataforma'}`;
+    $('#bOp', h.el).textContent = t === 'compra' ? 'Apuntar la compra' : t === 'venta' ? 'Apuntar la venta' : 'Añadir a mi cartera';
+    pintarQue(); pintarPlat(); recalcular();
   };
+  for (const b of $$('[data-t]', fm)) b.onclick = () => { if (t === b.dataset.t) return; t = b.dataset.t; if (t === 'venta') { posSel = posSel || S.cartera.posiciones.find((p) => p.instrumento === inst) || null; if (posSel) { inst = posSel.instrumento; plat = posSel.plataforma; } } if (t === 'tengo') q('precio').value = ''; else ponerPrecio(); if (!q('gastos').dataset.tocado) q('gastos').value = plat === 'Trade Republic' && t !== 'tengo' ? '1' : ''; pintarTodo(); };
   q('importe').oninput = () => { const imp = numero(q('importe').value), pr = numero(q('precio').value); if (imp > 0 && pr > 0) q('uds').value = String(+(imp / pr).toFixed(6)).replace('.', ','); recalcular(); };
   for (const n of ['uds', 'precio', 'gastos']) q(n).oninput = () => { if (n !== 'gastos') q('importe').value = ''; else q('gastos').dataset.tocado = '1'; recalcular(); };
-  if (!pos0 && t === 'compra') q('pos').value = S.cartera.posiciones.length && !sim ? q('pos').value : '__nueva';
-  if (sim && !pos0) { q('instrumento').value = instIni; q('plataforma').value = 'Trade Republic'; }
-  ponerPrecio(); sincronizar();
-  if (sim) setTimeout(() => q('uds').focus(), 50);
+  q('fecha').onchange = recalcular;
+  if (!q('gastos').dataset.tocado) q('gastos').value = plat === 'Trade Republic' && t !== 'tengo' ? '1' : '';
+  if (t === 'venta' && !posSel && inst) posSel = S.cartera.posiciones.find((p) => p.instrumento === inst) || null;
+  ponerPrecio(); pintarTodo();
+  if (inst && t !== 'venta') setTimeout(() => q('uds').focus(), 80);
   fm.onsubmit = async (ev) => {
     ev.preventDefault();
-    const err = (x) => { $('#errOp', h.el).textContent = x; };
-    const uds = numero(q('uds').value), pr = numero(q('precio').value), gastos = numero(q('gastos').value) || 0;
-    if (!(uds > 0)) return err('Pon cuántas unidades.');
-    if (!(pr > 0)) return err('Pon el precio por unidad.');
-    if (Number.isNaN(gastos) || gastos < 0) return err('Los gastos no son un número.');
+    let uds = numero(q('uds').value), pr = numero(q('precio').value);
+    const gastos = t === 'tengo' ? 0 : numero(q('gastos').value) || 0;
+    if (!inst) return err('Elige qué.');
+    if (t !== 'venta' && !plat) return err('Elige dónde la tienes.');
+    if (t === 'tengo' && !(pr > 0) && numero(q('importe').value) > 0 && uds > 0) pr = numero(q('importe').value) / uds;
+    if (!(uds > 0)) return err('Pon cuántas.');
+    if (!(pr > 0)) return err(t === 'tengo' ? 'Pon tu precio medio o lo invertido en total.' : 'Pon el precio por unidad.');
+    if (Number.isNaN(gastos) || gastos < 0) return err('La comisión no es un número.');
     const fecha = q('fecha').value || hoyIso();
-    const inst = instSel(), plat = platSel();
-    if (inst === '__nuevo') return err('Elige un instrumento.');
-    let pos = posSel() || S.cartera.posiciones.find((p) => p.instrumento === inst && p.plataforma === plat);
+    let pos = posDe();
+    const nombre = (S.inst[inst] && S.inst[inst].corto) || inst;
+    if (t === 'tengo') {
+      const lote = { f: fecha, u: uds, c: +(uds * pr).toFixed(2) };
+      if (pos) { fijarPosicion(pos); pos.lotes = [...(pos.lotes || []), lote].sort((a, b) => (a.f < b.f ? -1 : 1)); pos.cantidad = +(pos.cantidad + uds).toFixed(8); pos.coste = +(pos.coste + lote.c).toFixed(2); }
+      else { pos = { id: nuevoId('p-'), instrumento: inst, plataforma: plat, cantidad: uds, fecha: hoyIso(), coste: lote.c, lotes: [lote] }; if (fecha < hoyIso()) pos.desde = fecha; S.cartera.posiciones.push(pos); }
+      registrada = true;
+      await guardarYPintar(`Añadir ${nombre}`, h);
+      toast(`${nombre} añadida a tu cartera`, 3500);
+      return;
+    }
     const mov = { id: nuevoId('m-'), fecha, tipo: t, instrumento: inst, plataforma: plat, uds, precio: pr, gastos };
     try {
       if (t === 'compra') {
@@ -4777,7 +4941,7 @@ function operacion(tipo, id, sim) {
         if (pos) { fijarPosicion(pos); pos.lotes = [...(pos.lotes || []), lote]; pos.cantidad = +(pos.cantidad + uds).toFixed(8); pos.coste = +(pos.coste + mov.importe).toFixed(2); }
         else { pos = { id: nuevoId('p-'), instrumento: inst, plataforma: plat, cantidad: uds, fecha, coste: mov.importe, lotes: [lote] }; S.cartera.posiciones.push(pos); }
       } else {
-        if (!pos) return err('Elige la posición que vendes.');
+        if (!pos) return err('Elige qué vendiste.');
         fijarPosicion(pos);
         if (uds > pos.cantidad + 1e-6) return err(`Solo tienes ${fmtNum(pos.cantidad, 4)}.`);
         const r = fifo(pos.lotes, uds);
@@ -4801,9 +4965,187 @@ function operacion(tipo, id, sim) {
       e.importe = Math.max(0, +((+e.importe || 0) + (t === 'compra' ? -mov.importe : mov.importe)).toFixed(2));
     }
     (S.cartera.movimientos = S.cartera.movimientos || []).push(mov);
-    const nombre = (S.inst[inst] && S.inst[inst].corto) || inst;
     await guardarYPintar(`${t === 'compra' ? 'Compra' : 'Venta'} de ${nombre}`, h);
-    toast(t === 'compra' ? `Compra de ${nombre} registrada` : `Venta de ${nombre} registrada: ${eurS(mov.resultado)} de resultado`, 4500);
+    toast(t === 'compra' ? `Compra de ${nombre} apuntada` : `Venta de ${nombre} apuntada: ${eurS(mov.resultado)} de resultado`, 4500);
+  };
+}
+
+/* =====================================================================
+   Importar la cartera desde capturas o PDF del bróker: Gemini lee lo que se ve (nombre, ISIN, cuántas,
+   precio medio, valor), la web lo empareja con su lista o con el radar y tú lo revisas antes de guardar.
+   Las imágenes van de tu navegador a Google con tu clave; no se guardan en ningún sitio.
+   ===================================================================== */
+const CRIPTOS = { bitcoin: 'BTC', btc: 'BTC', ethereum: 'ETH', ether: 'ETH', eth: 'ETH', solana: 'SOL', sol: 'SOL', cardano: 'ADA', ada: 'ADA', xrp: 'XRP', ripple: 'XRP', dogecoin: 'DOGE', doge: 'DOGE', polkadot: 'DOT', litecoin: 'LTC', chainlink: 'LINK', avalanche: 'AVAX', polygon: 'POL', bnb: 'BNB', tron: 'TRX', pepe: 'PEPE', shiba: 'SHIB', usdc: 'USDC', tether: 'USDT' };
+function instCripto(nombre, ticker) {
+  const sym = (CRIPTOS[normTxt(ticker)] || CRIPTOS[normTxt(nombre).split(' ')[0]] || String(ticker || '').toUpperCase().replace(/[^A-Z0-9]/g, '')).slice(0, 8);
+  if (!sym) return null;
+  const ya = S.instOrden.find((id) => S.inst[id].clase === 'Cripto' && String(S.inst[id].yahoo || S.inst[id].bitvavo || '').toUpperCase().startsWith(sym + '-'));
+  if (ya) return ya;
+  let id = sym.toLowerCase(); while (S.inst[id]) id += '-2';
+  S.inst[id] = { id, nombre: nombre || sym, corto: nombre ? nombreCorto(nombre) : sym, yahoo: `${sym}-EUR`, bitvavo: `${sym}-EUR`, tipo: 'Cripto', clase: 'Cripto', region: { Global: 100 }, sector_fijo: 'Cripto' };
+  S.instOrden.push(id); S.instCambiados = true;
+  return id;
+}
+/* parecido entre dos nombres de fondo o empresa: palabras en común, sin las de relleno */
+const RELLENO = new Set(['fund', 'fondo', 'index', 'indice', 'acc', 'eur', 'class', 'clase', 'the', 'inc', 'plc', 'sa', 'ag', 'nv', 'de', 'la', 'el', 'y', 'and', 'ie', 'lu', 'ucits', 'etf', 'p', 's', 'd', 'a', 'b', 'c', 'i', 'r']);
+const palabras = (t) => new Set(normTxt(t).split(' ').filter((w) => w && !RELLENO.has(w)));
+function parecido(a, b) { const A = palabras(a), B = palabras(b); if (!A.size || !B.size) return 0; let k = 0; for (const w of A) if (B.has(w)) k++; return k / Math.max(A.size, B.size); }
+/* busca el instrumento de una posición leída: ISIN, ticker, nombre; si es un fondo con ISIN que no
+   conoce, lo da de alta con ese ISIN */
+function emparejar(x) {
+  const isin = String(x.isin || '').toUpperCase().replace(/\s/g, '');
+  if (isin) { const id = S.instOrden.find((k) => String(S.inst[k].isin || '').toUpperCase() === isin); if (id) return { id, como: 'ISIN' }; }
+  if (isin) { const c = Object.entries((S.cat && S.cat.v) || {}).find(([, x]) => String(x.isin || '').toUpperCase() === isin); if (c) return { id: instDeCatalogo(c[0]), como: 'ISIN' }; }
+  if (x.tipo === 'Cripto' || CRIPTOS[normTxt(x.nombre)] || CRIPTOS[normTxt(x.ticker)]) { const id = instCripto(x.nombre, x.ticker); if (id) return { id, como: 'cripto' }; }
+  const lista = candidatosBusqueda();
+  if (x.ticker) { const r = buscarEn(lista, x.ticker).find((c) => String(c.s).toUpperCase().split('.')[0].split('-')[0] === String(x.ticker).toUpperCase()); if (r) return { id: idDeCandidato(r), como: 'ticker' }; }
+  let mejor = null, p = 0;
+  for (const c of lista) { const v = Math.max(parecido(x.nombre, c.l), parecido(x.nombre, c.n)); if (v > p) { p = v; mejor = c; } }
+  if (mejor && p >= 0.6) return { id: idDeCandidato(mejor), como: 'nombre' };
+  if (isin) {
+    let id = nombreCorto(x.nombre || isin).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || isin.toLowerCase();
+    while (S.inst[id]) id += '-2';
+    const fondo = /fond|fund|index|indice/i.test(x.nombre || '') || x.tipo === 'Fondo';
+    S.inst[id] = { id, nombre: x.nombre || isin, corto: nombreCorto(x.nombre || isin), isin, tipo: fondo ? 'Fondo indexado' : x.tipo === 'ETF' ? 'ETF' : 'Acción', clase: 'Renta variable', region: { Global: 100 }, pais: isin.slice(0, 2) };
+    S.instOrden.push(id); S.instCambiados = true;
+    return { id, como: 'nuevo' };
+  }
+  return null;
+}
+/* una imagen grande se reduce (así pesa menos y Gemini la lee igual) */
+function leerArchivo(file) {
+  return new Promise((res, rej) => {
+    const fr = new FileReader();
+    fr.onerror = () => rej(new Error('No se pudo leer ' + file.name));
+    fr.onload = () => {
+      const url = fr.result;
+      if (!/^image\//.test(file.type) || file.size < 900000) return res({ mime: file.type || 'application/pdf', data: String(url).split(',')[1], nombre: file.name });
+      const img = new Image();
+      img.onload = () => {
+        const k = Math.min(1, 2000 / Math.max(img.width, img.height));
+        const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        res({ mime: 'image/jpeg', data: c.toDataURL('image/jpeg', 0.86).split(',')[1], nombre: file.name });
+      };
+      img.onerror = () => res({ mime: file.type, data: String(url).split(',')[1], nombre: file.name });
+      img.src = url;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+const PEDIDO_IMPORTAR = `Estas imágenes o PDF son de la app o la web de un bróker, un banco o un exchange (por ejemplo MyInvestor, Trade Republic, Bitvavo, DEGIRO, Revolut, ING, Indexa…). Extrae TODAS las posiciones que se vean (acciones, ETF, fondos, cripto, oro…) y el efectivo disponible.
+No inventes nada: si un dato no se ve, pon null. Si una posición sale en varias imágenes, ponla una sola vez.
+Responde solo con JSON, con números con punto decimal y sin símbolos:
+{"plataforma": "nombre de la app si se reconoce o null",
+ "posiciones": [{"nombre": "como aparece", "isin": "si se ve", "ticker": "si se ve", "tipo": "Acción|ETF|Fondo|Cripto|Oro|Otro", "cantidad": número de acciones, participaciones o unidades, "precio_medio": precio medio de compra por unidad en euros, "invertido": total invertido en euros, "valor": valor actual en euros, "plataforma": "app de esta posición si se distingue"}],
+ "efectivo": [{"plataforma": "", "importe": número}]}`;
+async function leerCapturas(archivos, alPaso) {
+  const partes = [...archivos.map((a) => ({ inlineData: { mimeType: a.mime, data: a.data } })), { text: PEDIDO_IMPORTAR }];
+  const cuerpo = { contents: [{ role: 'user', parts: partes }], generationConfig: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 8192 } };
+  let ultimo = null;
+  for (const modelo of ordenIA(modeloVivo()).filter((m) => !agotadosIA().includes(m))) {
+    alPaso(`Leyendo con ${MODELOS[modelo].n}…`);
+    let r;
+    try { r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }); }
+    catch (e) { ultimo = new Error('No hay conexión con Google.'); continue; }
+    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} const e = errorGoogle(r.status, j); if (e.diario) marcarAgotado(modelo); ultimo = e; if ([429, 404, 500, 503].includes(r.status)) continue; throw e; }
+    const j = await r.json();
+    const txt = (((j.candidates || [])[0] || {}).content || {}).parts ? j.candidates[0].content.parts.map((x) => x.text || '').join('') : '';
+    const o = extraerJSON(txt);
+    if (o && Array.isArray(o.posiciones)) return o;
+    ultimo = new Error('Gemini no ha devuelto las posiciones. Prueba con capturas más nítidas.');
+  }
+  throw ultimo || new Error('No se pudo leer.');
+}
+async function importarCapturas() {
+  await cargarAsesor();
+  if (!AS.clave) { toast('Para leer las capturas hace falta conectar Gemini (gratis): te abro dónde poner la clave', 5000); abrirAsesor(); return; }
+  const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
+  let hecho = false, filas = [], efectivo = [];
+  const h = hoja('Importar desde capturas', `<div class="imp">
+      <p class="nota" style="margin:0">Haz capturas de la pantalla de posiciones de tu bróker (MyInvestor, Trade Republic, Bitvavo u otro) o sube el PDF del extracto. Gemini las lee y aquí revisas lo que ha entendido antes de guardar nada. Las imágenes van de tu navegador a Google y no se guardan.</p>
+      <label class="imp-sube"><input type="file" id="impArch" accept="image/*,application/pdf" multiple hidden><span class="imp-sube-c">${ICONOS.recorte}<b>Elegir capturas o PDF</b><small>Puedes elegir varias a la vez</small></span></label>
+      <div id="impEstado" class="imp-estado" aria-live="polite"></div>
+      <div id="impRev"></div>
+    </div>`, () => {
+    if (hecho) return;
+    const usados = new Set((S.cartera.posiciones || []).map((p) => p.instrumento));
+    const sobran = S.instOrden.filter((x) => !instsAntes.has(x) && !usados.has(x));
+    for (const x of sobran) delete S.inst[x];
+    S.instOrden = S.instOrden.filter((x) => !sobran.includes(x));
+    S.instCambiados = cambiadosAntes;
+  }, true);
+  const estado = (t, mal) => { $('#impEstado', h.el).innerHTML = t ? `<span class="${mal ? 'down' : 'k'}">${esc(t)}</span>` : ''; };
+  const pintarRev = () => {
+    const rev = $('#impRev', h.el);
+    if (!filas.length && !efectivo.length) { rev.innerHTML = ''; return; }
+    const plats = [...new Set([...PLATAFORMAS, ...filas.map((f) => f.plat), ...efectivo.map((e) => e.plat)].filter(Boolean))];
+    const selPlat = (v, k) => `<select data-imp-plat="${k}">${plats.map((p) => `<option${p === v ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>`;
+    rev.innerHTML = `<h3 class="imp-tit">Esto es lo que he leído</h3><p class="nota" style="margin:0 0 10px">Revisa cada una: si alguna no está bien emparejada, tócala para cambiarla. Lo que no marques no se guarda.</p>
+      <div class="imp-lista">${filas.map((f, k) => { const i = f.id && S.inst[f.id]; return `<div class="imp-f${f.ok ? '' : ' off'}">
+        <label class="imp-ck"><input type="checkbox" data-imp-ok="${k}"${f.ok ? ' checked' : ''}${f.id ? '' : ' disabled'}></label>
+        <div class="imp-c">
+          ${i ? `<button type="button" class="imp-inst" data-imp-cambiar="${k}">${logo(i.dominio, i.corto || i.nombre)}<span class="busca-t"><b>${esc(etiquetaInst(i))}</b><small>${chipCotiza(i)}${f.como === 'nuevo' ? ' · nuevo, por ISIN' : ''}</small></span><span class="k">cambiar</span></button>` : `<div class="imp-sin" id="impBus${k}"></div>`}
+          <small class="imp-leido">Leído: ${esc(f.x.nombre || '?')}${f.x.isin ? ` · ${esc(f.x.isin)}` : ''}${f.x.valor ? ` · vale ${eur(f.x.valor, 0)}` : ''}</small>
+          <div class="imp-num">${selPlat(f.plat, k)}<label>Cuántas<input inputmode="decimal" data-imp-uds="${k}" value="${f.uds != null ? String(f.uds).replace('.', ',') : ''}"></label><label>Invertido (€)<input inputmode="decimal" data-imp-inv="${k}" value="${f.inv != null ? String(+f.inv.toFixed(2)).replace('.', ',') : ''}"></label></div>
+        </div></div>`; }).join('')}
+      ${efectivo.map((e, k) => `<div class="imp-f${e.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-ef="${k}"${e.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-inst">${logo(null, '€')}<span class="busca-t"><b>Efectivo</b><small>${esc(e.plat || '')}</small></span><span>${eur(e.importe)}</span></div></div></div>`).join('')}</div>
+      <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="button" class="btn pri" id="impGuardar">Añadir ${filas.filter((f) => f.ok).length + efectivo.filter((e) => e.ok).length} a mi cartera</button></div>`;
+    filas.forEach((f, k) => { if (!f.id) buscador($(`#impBus${k}`, h.el), (nid) => { f.id = nid; f.ok = true; pintarRev(); }, { placeholder: `¿Cuál es "${f.x.nombre || ''}"? Busca por nombre o ISIN` }); });
+    for (const el of $$('[data-imp-ok]', rev)) el.onchange = () => { filas[+el.dataset.impOk].ok = el.checked; pintarRev(); };
+    for (const el of $$('[data-imp-ef]', rev)) el.onchange = () => { efectivo[+el.dataset.impEf].ok = el.checked; pintarRev(); };
+    for (const el of $$('[data-imp-plat]', rev)) el.onchange = () => { filas[+el.dataset.impPlat].plat = el.value; };
+    for (const el of $$('[data-imp-uds]', rev)) el.onchange = () => { filas[+el.dataset.impUds].uds = numero(el.value); };
+    for (const el of $$('[data-imp-inv]', rev)) el.onchange = () => { filas[+el.dataset.impInv].inv = numero(el.value); };
+    for (const el of $$('[data-imp-cambiar]', rev)) el.onclick = () => { const f = filas[+el.dataset.impCambiar]; f.id = null; f.ok = false; pintarRev(); };
+    $('#impGuardar', h.el).onclick = guardar;
+  };
+  const guardar = async () => {
+    let n = 0;
+    for (const f of filas.filter((x) => x.ok && x.id)) {
+      if (!(f.uds > 0) && !(f.x.valor > 0)) continue;
+      const coste = f.inv > 0 ? f.inv : f.uds > 0 && f.x.precio_medio > 0 ? f.uds * f.x.precio_medio : f.x.valor || 0;
+      const ya = S.cartera.posiciones.find((p) => p.instrumento === f.id && p.plataforma === f.plat);
+      const o = { cantidad: f.uds > 0 ? f.uds : null, coste: +(+coste).toFixed(2), fecha: hoyIso() };
+      if (o.cantidad == null) o.valor_ref = f.x.valor;
+      if (ya) { delete ya.lotes; delete ya.estimada; delete ya.valor_ref; Object.assign(ya, o); }
+      else S.cartera.posiciones.push({ id: nuevoId('p-'), instrumento: f.id, plataforma: f.plat, ...o });
+      n++;
+    }
+    for (const e of efectivo.filter((x) => x.ok)) {
+      S.cartera.efectivo = S.cartera.efectivo || [];
+      const ya = S.cartera.efectivo.find((x) => x.plataforma === e.plat);
+      if (ya) ya.importe = e.importe; else S.cartera.efectivo.push({ plataforma: e.plat, importe: e.importe });
+      n++;
+    }
+    if (!n) { estado('No hay nada marcado para guardar.', true); return; }
+    hecho = true;
+    await guardarYPintar('Importar desde capturas', h);
+    toast(`Listo: ${n} ${n === 1 ? 'cosa añadida' : 'cosas añadidas'}. Pon en cada ficha desde cuándo la tienes para ver cuánto te da al año.`, 6000);
+  };
+  $('#impArch', h.el).onchange = async (ev) => {
+    const files = [...ev.target.files].slice(0, 8);
+    if (!files.length) return;
+    try {
+      estado(`Preparando ${files.length} ${files.length === 1 ? 'archivo' : 'archivos'}…`);
+      const arch = await Promise.all(files.map(leerArchivo));
+      if (arch.reduce((a, x) => a + x.data.length, 0) > 18e6) throw new Error('Pesan demasiado: sube menos capturas o un PDF más pequeño.');
+      const o = await leerCapturas(arch, estado);
+      const platGen = PLATAFORMAS.find((p) => normTxt(o.plataforma || '').includes(normTxt(p))) || (o.plataforma || null);
+      filas = (o.posiciones || []).filter((x) => x && (x.nombre || x.isin)).map((x) => {
+        const m = emparejar(x);
+        const platX = PLATAFORMAS.find((p) => normTxt(x.plataforma || '').includes(normTxt(p))) || x.plataforma || platGen;
+        const i = m && S.inst[m.id];
+        const plat = platX || (i ? (i.clase === 'Cripto' ? 'Bitvavo' : /^Fondo/.test(i.tipo || '') ? 'MyInvestor' : 'Trade Republic') : 'Trade Republic');
+        const uds = +x.cantidad > 0 ? +x.cantidad : null;
+        const inv = +x.invertido > 0 ? +x.invertido : uds && +x.precio_medio > 0 ? uds * +x.precio_medio : null;
+        return { x, id: m ? m.id : null, como: m ? m.como : null, ok: !!m, plat, uds, inv };
+      });
+      efectivo = (o.efectivo || []).filter((e) => e && +e.importe > 0).map((e) => ({ plat: PLATAFORMAS.find((p) => normTxt(e.plataforma || '').includes(normTxt(p))) || e.plataforma || platGen || 'Trade Republic', importe: +e.importe, ok: true }));
+      estado(filas.length || efectivo.length ? `He encontrado ${filas.length} ${filas.length === 1 ? 'posición' : 'posiciones'}${efectivo.length ? ' y efectivo' : ''}.` : 'No he encontrado posiciones en esas imágenes. Prueba con la pantalla donde se ven todas tus inversiones.', !(filas.length || efectivo.length));
+      pintarRev();
+    } catch (e) { estado(e.message, true); }
+    ev.target.value = '';
   };
 }
 
@@ -5027,13 +5369,13 @@ function descargar(nombre, texto) {
   setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
 }
 
-function nuevoInstrumento(fin) {
+function nuevoInstrumento(fin, ini = {}) {
   const h = hoja('Nuevo instrumento', `<form id="fInst" style="display:grid;gap:12px">
-    <p class="nota" style="margin:0">Se añade a <code>instrumentos.json</code> (público, sin cantidades). La Action buscará su precio en Yahoo Finance en un par de minutos.</p>
+    <p class="nota" style="margin:0">${PERFIL_LOCAL ? 'Se guarda en tu cartera. Si no está en la lista común no tendrá precio diario: pon su valor en la posición, o pide al dueño de la web que lo añada.' : 'Se añade a <code>instrumentos.json</code> (público, sin cantidades). La Action buscará su precio en Yahoo Finance en un par de minutos.'}</p>
     <div class="form-grid">
       <label class="campo">Nombre<input name="nombre" required></label>
       <label class="campo">Nombre corto<input name="corto" required maxlength="24"></label>
-      <label class="campo">ISIN<input name="isin" maxlength="12" placeholder="ES0177542018"></label>
+      <label class="campo">ISIN<input name="isin" maxlength="12" placeholder="ES0177542018" value="${esc(ini.isin || '')}"></label>
       <label class="campo">Ticker de Yahoo<input name="yahoo" placeholder="IAG.MC"><small>Opcional si pones el ISIN.</small></label>
       <label class="campo">Tipo<select name="tipo"><option>Acción</option><option>Fondo indexado</option><option>Fondo de renta fija</option><option>ETF</option><option>ETC</option><option>Cripto</option></select></label>
       <label class="campo">Clase<select name="clase"><option>Renta variable</option><option>Renta fija</option><option>Oro</option><option>Cripto</option><option>Monetario</option></select></label>
@@ -5044,6 +5386,7 @@ function nuevoInstrumento(fin) {
     </div>
     <div class="error" id="errI" style="text-align:left"></div>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button class="btn pri" type="submit">Añadir</button></div></form>`, () => fin(null));
+  if (ini.isin && /^(IE|LU|ES|FR|DE)/i.test(ini.isin)) { const sel = $('#fInst [name=tipo]', h.el); if (sel) sel.value = 'Fondo indexado'; }
   $('#fInst', h.el).onsubmit = (ev) => {
     ev.preventDefault();
     const g = (n) => ev.target.querySelector(`[name="${n}"]`).value.trim();
@@ -5102,6 +5445,83 @@ function instDeRadar(sim) {
   return id;
 }
 const opcionesEmpresas = () => (radarVals() || []).filter((x) => x.n && x.s).map((x) => `<option value="${esc(`${x.n} (${x.s})`)}"></option>`).join('');
+
+/* ---------- buscador: lo que tienes, tu lista y las ~800 empresas del radar ---------- */
+function precioInst(id) {
+  const v = S.live[id], p = S.precios && S.precios.instrumentos && S.precios.instrumentos[id];
+  if (v) return v.precio; if (p && p.precio) return p.precio;
+  const c = catDe(S.inst[id]); if (c && c.p) return c.p;
+  const r = radarPorSim(S.inst[id] && S.inst[id].yahoo); return r && r.pe ? r.pe : null;
+}
+function candidatosBusqueda() {
+  const tengo = new Set((S.cartera.posiciones || []).map((p) => p.instrumento));
+  const out = [];
+  for (const id of S.instOrden) { const i = S.inst[id]; out.push({ k: 'inst:' + id, n: i.corto || i.nombre, l: i.nombre || '', s: i.yahoo || '', isin: i.isin || '', dom: i.dominio, cot: cotiza(i), tengo: tengo.has(id), pr: () => precioInst(id) }); }
+  const vistos = new Set(S.instOrden.map((id) => String(S.inst[id].yahoo || '').toUpperCase()).filter(Boolean));
+  const isins = new Set(S.instOrden.map((id) => String(S.inst[id].isin || '').toUpperCase()).filter(Boolean));
+  for (const [cid, x] of Object.entries((S.cat && S.cat.v) || {})) {
+    if ((x.isin && isins.has(String(x.isin).toUpperCase())) || (x.s && vistos.has(String(x.s).toUpperCase()))) continue;
+    out.push({ k: 'cat:' + cid, n: x.c || x.n, l: x.n, s: x.s || '', isin: x.isin || '', a: x.a || [], dom: x.dom, cot: x.cl === 'Cripto' ? { cod: null, txt: 'cripto, 24 h' } : { cod: x.pais, txt: /^Fondo/.test(x.t || '') ? `fondo${x.pais ? ' de ' + (PAISES[x.pais] || x.pais) : ''}` : x.t || '' }, pr: () => x.p });
+    if (x.s) vistos.add(String(x.s).toUpperCase());
+  }
+  for (const x of radarVals()) if (x.s && !vistos.has(x.s.toUpperCase())) { const o = origenRadar(x); out.push({ k: 'radar:' + x.s, n: x.n, l: x.n, s: x.s, isin: '', dom: x.w, cot: { cod: o.bolsa || o.sede, txt: o.ciudad || x.z || '' }, pr: () => x.pe }); }
+  return out;
+}
+function buscarEn(lista, q) {
+  const t = normTxt(q), T = t.replace(/ /g, '');
+  if (!t) return [];
+  const sc = (c) => {
+    const n = normTxt(c.n), l = normTxt(c.l), s = String(c.s || '').toLowerCase(), base = s.split('.')[0].split('-')[0], isin = String(c.isin || '').toLowerCase();
+    if (isin && isin === T) return 100;
+    if (base === T || s === T || (c.a || []).some((x) => String(x).toLowerCase() === T)) return 90;
+    if (n === t) return 85;
+    if (n.startsWith(t) || l.startsWith(t)) return 70;
+    if (T.length >= 2 && base.startsWith(T)) return 55;
+    if ((' ' + n + ' ' + l).includes(' ' + t)) return 50;
+    if (t.length >= 3 && (n.includes(t) || l.includes(t))) return 35;
+    const ws = t.split(' ').filter((w) => w.length >= 2);
+    if (ws.length > 1 && ws.every((w) => (n + ' ' + l).includes(w))) return 30;
+    return 0;
+  };
+  return lista.map((c) => ({ c, p: sc(c) })).filter((x) => x.p > 0).map((x) => ({ c: x.c, p: x.p + (x.c.tengo ? 6 : 0) + (x.c.k.startsWith('inst:') ? 3 : 0) })).sort((a, b) => b.p - a.p).map((x) => x.c);
+}
+const idDeCandidato = (c) => (c.k.startsWith('inst:') ? c.k.slice(5) : c.k.startsWith('cat:') ? instDeCatalogo(c.k.slice(4)) : instDeRadar(c.k.slice(6)));
+/* pinta un buscador en "cont"; al elegir llama a alElegir(idInstrumento) */
+function buscador(cont, alElegir, opt = {}) {
+  cont.innerHTML = `<div class="busca"><span class="busca-ico" aria-hidden="true">${SVG('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>', 2)}</span><input type="search" autocomplete="off" spellcheck="false" enterkeyhint="search" placeholder="${esc(opt.placeholder || 'Busca por nombre, ticker o ISIN')}" aria-label="Buscar"><ul class="busca-res" role="listbox" hidden></ul></div>`;
+  const inp = cont.querySelector('input'), ul = cont.querySelector('ul');
+  const lista = candidatosBusqueda().filter((c) => !opt.soloTengo || c.tengo);
+  let res = [], sel = 0;
+  const fila = (c, i) => { const pr = c.pr && c.pr(); return `<li role="option" data-i="${i}" aria-selected="${i === sel}">${logo(c.dom, c.n)}<span class="busca-t"><b>${esc(c.n)}</b>${c.l && normTxt(c.l) !== normTxt(c.n) ? `<small class="busca-l">${esc(c.l)}</small>` : ''}<small>${bandera(c.cot.cod)}${esc(c.cot.txt || '')}${c.isin ? ` · ${esc(c.isin)}` : c.s ? ` · ${esc(c.s)}` : ''}</small></span><span class="busca-p">${pr ? precioFmt(pr) : ''}${c.tengo ? '<small>la tienes</small>' : ''}</span></li>`; };
+  const pintarRes = () => {
+    const q = inp.value.trim();
+    if (!res.length && !q) { ul.hidden = true; return; }
+    const isin = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i.test(q) && !res.some((c) => String(c.isin).toUpperCase() === q.toUpperCase());
+    ul.innerHTML = res.map(fila).join('') + (isin ? `<li role="option" data-isin="${esc(q.toUpperCase())}">${logo(null, '+')}<span class="busca-t"><b>Añadir el fondo o ETF ${esc(q.toUpperCase())}</b><small>${PERFIL_LOCAL ? 'No está en la base de datos: lo añades, pero sin precio diario hasta que se sume al catálogo común' : 'No está en la lista: lo das de alta y la Action le busca precio'}</small></span></li>` : '') + (!res.length && !isin ? `<li class="busca-nada">No lo encuentro. Prueba con otro nombre, el ticker (IAG, AAPL) o el ISIN, que sale en tu bróker.</li>` : '');
+    ul.hidden = false;
+  };
+  const buscar = () => { res = inp.value.trim() ? buscarEn(lista, inp.value).slice(0, 8) : lista.filter((c) => c.tengo).slice(0, 8); sel = 0; pintarRes(); };
+  const elegir = (li) => {
+    if (!li) return;
+    if (li.dataset.isin) { ul.hidden = true; nuevoInstrumento((nid) => { if (nid) alElegir(nid); }, { isin: li.dataset.isin }); return; }
+    const c = res[+li.dataset.i]; if (!c) return;
+    const id = idDeCandidato(c);
+    ul.hidden = true; if (id) alElegir(id);
+  };
+  let t0; inp.addEventListener('input', () => { clearTimeout(t0); t0 = setTimeout(buscar, 90); });
+  inp.addEventListener('focus', buscar);
+  inp.addEventListener('blur', () => setTimeout(() => { ul.hidden = true; }, 180));
+  inp.addEventListener('keydown', (e) => {
+    const n = ul.querySelectorAll('li[role=option]').length;
+    if (e.key === 'ArrowDown') { sel = Math.min(n - 1, sel + 1); pintarRes(); e.preventDefault(); }
+    else if (e.key === 'ArrowUp') { sel = Math.max(0, sel - 1); pintarRes(); e.preventDefault(); }
+    else if (e.key === 'Enter') { e.preventDefault(); elegir(ul.querySelectorAll('li[role=option]')[sel]); }
+    else if (e.key === 'Escape') { ul.hidden = true; }
+  });
+  ul.addEventListener('pointerdown', (e) => { const li = e.target.closest('li[role=option]'); if (li) { e.preventDefault(); elegir(li); } });
+  if (opt.foco) setTimeout(() => inp.focus(), 60);
+  return inp;
+}
 
 /* la app de Android: dónde bajarla, qué versión tienes y cómo pasarle el token sin escribirlo */
 async function pintarAjustesApp(el) {
@@ -6482,6 +6902,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'operacion') operacion(d.tipo || 'compra', d.id, d.sim);
     else if (a === 'editar-pos') editarPosicion(d.id);
     else if (a === 'cambiar-inst') {
+      if (String(d.inst).startsWith('cat:')) d.inst = instDeCatalogo(d.inst.slice(4)) || '';
       const pos = S.cartera.posiciones.find((p) => p.id === d.id), nuevo = S.inst[d.inst];
       if (pos && nuevo) {
         const antes = (S.inst[pos.instrumento] || {}).corto || pos.instrumento;
@@ -6491,7 +6912,8 @@ document.addEventListener('click', (e) => {
         guardarYPintar(`Cambiar ${antes} por ${nuevo.corto}`).then(() => toast(`Hecho: ahora es ${nuevo.nombre || nuevo.corto}`, 4500));
       }
     }
-    else if (a === 'nueva-pos') editarPosicion(null);
+    else if (a === 'nueva-pos') operacion('tengo');
+    else if (a === 'importar') importarCapturas();
     else if (a === 'nueva-ap') editarAportacion(null);
     else if (a === 'editar-ap') editarAportacion(+d.k);
     else if (a === 'efectivo') editarEfectivo();
@@ -6558,6 +6980,7 @@ async function recargarPrecios() {
 }
 function arrancar() {
   sumarInstPropios();
+  setTimeout(() => cargarHistCatalogo().then((n) => { if (n) pintar(); }), 50);
   S.vista = vistaDeHash() || LS.get('inv-vista', 'cartera');
   if (S.vista === 'plan') { S.vista = 'cartera'; S.carTab = 'plan'; }
   if (!esVista(S.vista)) S.vista = 'cartera';
@@ -6580,7 +7003,7 @@ window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); reca
 async function iniciar() {
   $('#app').innerHTML = '<div class="pantalla"><div class="caja" style="text-align:center;justify-items:center"><img class="logo" src="icon-192.png" alt=""><p>Cargando…</p></div></div>';
   try {
-    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), cargarEscaneo()])), cargarCifrada(), leerAnalisisRemoto()]);
+    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), cargarEscaneo(), cargarCatalogo()])), cargarCifrada(), leerAnalisisRemoto()]);
     S.enc = enc; S.iaRemoto = iaRem;
   } catch (e) {
     console.error(e);
