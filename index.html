@@ -4809,7 +4809,10 @@ async function revisarAnalisisIA() {
   const cambio = cfg.auto === 'diario' && p && p.firma !== firmaSenales(M) && edad > 3 * 36e5;
   // trabaja sola: si hay un informe de prensa más nuevo que su última revisión, la rehace (cada 3 horas como mucho)
   const prensa = cfg.auto === 'diario' && p && S.informe && S.informe.generado > p.fecha && edad > 3 * 36e5;
+  // si has cambiado tus reglas después de su última revisión, la rehace con las nuevas
+  const reglas = p && S.ia && S.ia.reglas_fecha && String(S.ia.reglas_fecha) > String(p.fecha);
   if (edad > limite) generarAnalisisIA(p ? 'revisión diaria' : 'primera revisión');
+  else if (reglas) generarAnalisisIA('han cambiado tus reglas');
   else if (cambio) generarAnalisisIA('ha cambiado la señal de alguna posición');
   else if (prensa) generarAnalisisIA('hay noticias nuevas en el informe de prensa');
 }

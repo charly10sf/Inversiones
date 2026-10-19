@@ -227,12 +227,12 @@
     }
   ],
   "reglas": [
-    "Acciones sueltas: 2 o 3 apuestas a la vez como mucho y nunca más del 20 % de la cartera entre todas.",
-    "Solo se entra en una apuesta si cumple los cinco criterios: barata, con un motor concreto, con apalancamiento a ese motor, que pague por esperar y con un balance que aguante.",
-    "Sin calendario: se compra cuando una idea cumple los criterios, no porque toque.",
-    "El dinero de una apuesta nueva sale de otra acción del cajón, nunca de los fondos indexados ni del colchón (el fondo de renta fija).",
-    "Cada apuesta lleva su ficha antes de comprar: por qué, qué tiene que pasar y la regla de salida, con precio y con hecho.",
-    "Cada operación se compara con lo que habría hecho el mismo dinero en el fondo del S&P 500. Revisión de las apuestas en octubre de 2027."
+    "Acciones sueltas: las que quieras, siempre que entre todas no pasen del 20 % de la cartera.",
+    "Para comprar hace falta un motivo concreto para que suba (resultados, recompras, un cambio en su sector…) y un balance que aguante un mal año. Que esté barata o pague dividendo suma, pero no es obligatorio.",
+    "Solo compensa si lo que se espera, pasado a \"al año\" y neto de impuestos, bate con margen al fondo del S&P 500. Si no, mejor el fondo.",
+    "El dinero sale de vender otra acción o del efectivo que tengas suelto, nunca de vender los fondos indexados ni del colchón (el fondo de renta fija). Sin calendario: se compra cuando hay una buena idea, no porque toque.",
+    "Antes de comprar, apunta en su ficha por qué la compras y cuándo saldrías (un precio o un hecho). Deja correr las que suben mientras el motivo siga en pie y vende cuando se cumpla o se rompa.",
+    "Cada apuesta se compara con lo que habría hecho el mismo dinero en el fondo del S&P 500. Revisión una vez al año; la próxima, en octubre de 2027."
   ],
   "hoja_de_ruta": {
     "mes": [
@@ -273,5 +273,6 @@
         "d": ""
       }
     ]
-  }
+  },
+  "reglas_fecha": "2026-10-19T08:46:00Z"
 }
