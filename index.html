@@ -1129,6 +1129,15 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .informe-merc.plegados details > summary::-webkit-details-marker { display: none; }
 .informe-merc.plegados details > summary b { font-weight: 600; }
 .informe-merc.plegados details p { margin: 6px 0 0; color: var(--text-2); font-size: 13.5px; line-height: 1.55; }
+
+.aviso-acc { margin-top: 8px; }
+.aviso-ficha { display: grid; grid-template-columns: 20px minmax(0, 1fr); gap: 10px; padding: 14px 16px; border-radius: 14px; border: 1px solid rgba(239, 116, 97, 0.45); background: var(--down-bg); margin-bottom: 16px; }
+.aviso-ficha > svg { width: 20px; height: 20px; color: var(--down); margin-top: 1px; }
+.aviso-ficha b { display: block; font-weight: 600; }
+.aviso-ficha span { color: var(--text-2); font-size: 13.5px; line-height: 1.55; }
+
+.lista.graves { border: 1px solid rgba(239, 116, 97, 0.45); background: var(--down-bg); border-radius: 14px; padding: 0 16px; }
+.lista.graves li:last-child { border-bottom: 0; }
 </style>
 </head>
 <body>
@@ -1627,7 +1636,8 @@ function calcularPos(pos, hoy) {
   let precio = p ? p.precio : null;
   let prev = p ? p.cierre_anterior : null;
   let varDia = p ? p.variacion_dia : null;
-  // recién dada de alta: hasta que la Action le busque precio (unos minutos), el del radar
+  // recién dada de alta: hasta que la Action le busque precio (unos minutos), el último cierre o el del radar
+  if (precio == null && hist && hist.length) { precio = hist[hist.length - 1][1]; prev = hist.length > 1 ? hist[hist.length - 2][1] : null; varDia = prev ? (precio / prev - 1) * 100 : null; }
   if (precio == null && inst.yahoo) { const r = radarPorSim(inst.yahoo); if (r && r.pe) { precio = r.pe; varDia = r.v != null ? r.v : null; prev = varDia != null ? precio / (1 + varDia / 100) : null; } }
   const vivo = S.live[pos.instrumento];
   if (vivo) { precio = vivo.precio; varDia = vivo.var; prev = varDia != null ? precio / (1 + varDia / 100) : prev; }
@@ -2236,7 +2246,7 @@ function vistaCartera(M) {
   </div>
   <div class="subvistas dos-op car-tabs" id="carTabs" role="group" aria-label="Qué ver"><button data-car="pos" aria-pressed="${S.carTab !== 'plan'}">${ICONOS.cartera}Tus posiciones</button><button data-car="plan" aria-pressed="${S.carTab === 'plan'}">${ICONOS.plan}Plan y movimientos</button></div>
   ${S.carTab === 'plan' ? htmlPlan(M) : `<div class="dos">
-    <div class="pila">${htmlPosiciones(M)}${htmlAvisos(M)}</div>
+    <div class="pila">${htmlAvisosGraves(M)}${htmlPosiciones(M)}${htmlAvisos(M)}</div>
     <aside class="pila lateral">${htmlReparto(M)}${htmlAgenda(M)}</aside>
   </div>`}`;
 }
@@ -2353,8 +2363,39 @@ function htmlAgenda(M) {
   </section>`;
 }
 
+/* ¿El precio al que dices que compraste cuadra con lo que valía ese día? Si no, casi seguro que es
+   otro fondo u otra clase del mismo (mismo índice, distinto ISIN y distinto precio): la web multiplicaría
+   tus participaciones por un precio que no es el tuyo. Busca en tu lista uno que sí cuadre. */
+function precioCompraRaro(f) {
+  if (!f || f.estimada || !f.hist || !(f.uds > 0) || !(f.coste > 0)) return null;
+  let lotes; try { lotes = lotesDe(f.pos); } catch (e) { return null; }
+  for (const l of lotes) {
+    const fecha = l.mezcla ? f.pos.desde : l.f;
+    if (!fecha || !(l.u > 0) || !(l.c > 0)) continue;
+    const pagado = l.c / l.u, real = precioEn(f.hist, fecha, 'antes');
+    if (!real) continue;
+    const r = pagado / real;
+    if (r > 0.8 && r < 1.25) continue;
+    const otro = S.instOrden.filter((id) => id !== f.inst.id && (S.inst[id].clase === f.inst.clase))
+      .map((id) => { const h = histDe(id); return { id, p: h ? precioEn(h, fecha, 'antes') : null }; })
+      .filter((x) => x.p && Math.abs(pagado / x.p - 1) < 0.04)
+      .sort((a, b) => Math.abs(pagado / a.p - 1) - Math.abs(pagado / b.p - 1))[0] || null;
+    return { f, fecha, pagado, real, otro };
+  }
+  return null;
+}
+function avisoPrecioRaro(x) {
+  const fondo = /^Fondo/.test(x.f.inst.tipo || '');
+  const o = x.otro && S.inst[x.otro.id];
+  return {
+    n: 'bad', i: ICONOS.alerta, t: `${x.f.inst.corto}: el precio de compra no cuadra`,
+    d: `Pones que compraste a ${precioFmt(x.pagado)} el ${fechaLarga(x.fecha)}, pero ${x.f.inst.nombre || x.f.inst.corto} valía ${precioFmt(x.real)} ese día. ${o ? `Cuadra con ${o.nombre} (${precioFmt(x.otro.p)} ese día): seguramente es el tuyo.` : `Seguramente tienes ${fondo ? 'otro fondo u otra clase del mismo' : 'otro valor'}: mira el ISIN en tu bróker y búscalo por ISIN.`} Mientras tanto, el valor y la ganancia salen mal.`,
+    acc: o ? `<button class="btn peq pri" data-accion="cambiar-inst" data-id="${esc(x.f.pos.id)}" data-inst="${esc(x.otro.id)}">Cambiar a ${esc(o.corto || o.nombre)}</button>` : `<button class="btn peq" data-accion="editar-pos" data-id="${esc(x.f.pos.id)}">Revisarla</button>`,
+  };
+}
 function avisos(M) {
   const av = [];
+  for (const f of M.filas) { const x = precioCompraRaro(f); if (x) av.push({ ...avisoPrecioRaro(x), grave: true }); }
   for (const f of M.filas) {
     const s = f.senal;
     if (s.nivel === 'vender' && (+f.pos.stop && f.precio <= +f.pos.stop)) av.push({ n: 'bad', i: ICONOS.stop, t: `${f.inst.corto}: precio de salida alcanzado`, d: s.motivos[0] });
@@ -2373,11 +2414,16 @@ function avisos(M) {
   if (S.precios && S.precios.generado && (Date.now() - new Date(S.precios.generado)) > 3 * 86400000) av.push({ n: 'warn', i: ICONOS.alerta, t: 'Los datos llevan días sin actualizarse', d: 'Mira la pestaña Actions del repositorio: GitHub pausa las tareas programadas tras 60 días sin actividad.' });
   return av;
 }
+/* los avisos graves (un precio de compra que no cuadra) van arriba, antes de las posiciones */
+function htmlAvisosGraves(M) {
+  const av = avisos(M).filter((a) => a.grave);
+  return av.length ? `<ul class="lista graves">${av.map((a) => `<li class="${a.n}">${a.i}<div><b>${esc(a.t)}</b><span>${esc(a.d)}</span>${a.acc ? `<div class="aviso-acc">${a.acc}</div>` : ''}</div></li>`).join('')}</ul>` : '';
+}
 function htmlAvisos(M) {
-  const av = avisos(M);
+  const av = avisos(M).filter((a) => !a.grave);
   return `<section aria-labelledby="hAvi">
     <div class="sec-cab"><h2 id="hAvi">Avisos</h2>${av.length ? '' : '<span class="k">nada que vigilar</span>'}</div>
-    ${av.length ? `<ul class="lista">${av.map((a) => `<li class="${a.n}">${a.i}<div><b>${esc(a.t)}</b><span>${esc(a.d)}</span></div></li>`).join('')}</ul>` : ''}
+    ${av.length ? `<ul class="lista">${av.map((a) => `<li class="${a.n}">${a.i}<div><b>${esc(a.t)}</b><span>${esc(a.d)}</span>${a.acc ? `<div class="aviso-acc">${a.acc}</div>` : ''}</div></li>`).join('')}</ul>` : ''}
   </section>`;
 }
 
@@ -4334,7 +4380,8 @@ function fichaResumen(f) {
       <p>${f.uds != null ? `${oc(fmtNum(f.uds, f.uds < 10 ? 4 : 2))} ${ud}, ` : ''}${eur(f.coste, 0)} invertidos${desde ? ` desde el ${fechaLarga(desde)}` : ''}${tp ? ` (${duracion(tp.dias)} de media): un <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b>` : ''}. ${f.estimada ? 'La cantidad es estimada: ponla exacta en Editar.' : 'Incluye comisiones y tasas de compra.'}${!desde ? ' Pon en Editar desde cuándo la tienes y verás cuánto te da al año.' : ''}</p>
     </section>`;
   }
-  return `${dc}
+  const raro = precioCompraRaro(f);
+  return `${raro ? (() => { const a = avisoPrecioRaro(raro); return `<div class="aviso-ficha">${a.i}<div><b>${esc(a.t)}</b><span>${esc(a.d)}</span><div class="aviso-acc">${a.acc}</div></div></div>`; })() : ''}${dc}
   <section>
     <div class="evo-cab"><div class="datos" id="fichaCab"></div><div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).map((k) => `<button data-frango="${k}" aria-pressed="${S.fichaRango === k}">${k}</button>`).join('')}</div></div>
     <div class="chart" id="fichaGraf"></div>
@@ -4509,7 +4556,8 @@ function hoja(titulo, html, alCerrar, ancha) {
 }
 
 const PLATAFORMAS = ['MyInvestor', 'Trade Republic', 'Bitvavo'];
-const opcionesInst = (sel, conNuevo = true) => S.instOrden.map((id) => `<option value="${esc(id)}"${id === sel ? ' selected' : ''}>${esc(S.inst[id].corto || S.inst[id].nombre)}</option>`).join('') + (conNuevo ? '<option value="__nuevo">+ Nuevo instrumento…</option>' : '');
+const etiquetaInst = (i) => { const c = i.corto || i.nombre || '', g = String(i.nombre || '').split(' ')[0]; return /^Fondo|ETF|ETC/.test(i.tipo || '') && g && !normTxt(c).includes(normTxt(g)) ? `${c} (${g})` : c; };
+const opcionesInst = (sel, conNuevo = true) => S.instOrden.map((id) => `<option value="${esc(id)}"${id === sel ? ' selected' : ''}>${esc(etiquetaInst(S.inst[id]))}</option>`).join('') + (conNuevo ? '<option value="__nuevo">+ Nuevo instrumento…</option>' : '');
 const opcionesPlat = (sel) => [...new Set([...PLATAFORMAS, sel].filter(Boolean))].map((p) => `<option${p === sel ? ' selected' : ''}>${esc(p)}</option>`).join('');
 const val = (v) => (v == null ? '' : typeof v === 'number' ? String(+v.toFixed(8)).replace('.', ',') : esc(v));
 const numero = (s) => { if (s == null) return null; const t = String(s).trim().replace(/\s/g, '').replace('€', ''); if (!t) return null; const n = Number(t.includes(',') ? t.replace(/\./g, '').replace(',', '.') : t); return isFinite(n) ? n : NaN; };
@@ -6433,6 +6481,16 @@ document.addEventListener('click', (e) => {
     else if (a === 'cerrar-ficha') cerrarFicha();
     else if (a === 'operacion') operacion(d.tipo || 'compra', d.id, d.sim);
     else if (a === 'editar-pos') editarPosicion(d.id);
+    else if (a === 'cambiar-inst') {
+      const pos = S.cartera.posiciones.find((p) => p.id === d.id), nuevo = S.inst[d.inst];
+      if (pos && nuevo) {
+        const antes = (S.inst[pos.instrumento] || {}).corto || pos.instrumento;
+        pos.instrumento = d.inst; delete pos.estimada;
+        for (const m of S.cartera.movimientos || []) if (m.posicion === pos.id) m.instrumento = d.inst;
+        if (S.ficha && S.ficha.id === pos.id) cerrarFicha(true);
+        guardarYPintar(`Cambiar ${antes} por ${nuevo.corto}`).then(() => toast(`Hecho: ahora es ${nuevo.nombre || nuevo.corto}`, 4500));
+      }
+    }
     else if (a === 'nueva-pos') editarPosicion(null);
     else if (a === 'nueva-ap') editarAportacion(null);
     else if (a === 'editar-ap') editarAportacion(+d.k);

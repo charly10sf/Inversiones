@@ -199,6 +199,82 @@
       "mercado": "Madrid",
       "dominio": "hbxgroup.com",
       "noticias": "HBX"
+    },
+    {
+      "id": "fidelity-sp500",
+      "nombre": "Fidelity S&P 500 Index Fund EUR P Acc",
+      "corto": "S&P 500 Fidelity",
+      "isin": "IE00BYX5MX67",
+      "tipo": "Fondo indexado",
+      "clase": "Renta variable",
+      "ter": 0.06,
+      "region": {
+        "EEUU": 100
+      },
+      "sector_etf": {
+        "IVV": 1
+      },
+      "dominio": "fidelity.es",
+      "pais": "IE"
+    },
+    {
+      "id": "fidelity-world",
+      "nombre": "Fidelity MSCI World Index Fund EUR P Acc",
+      "corto": "MSCI World Fidelity",
+      "isin": "IE00BYX5NX33",
+      "tipo": "Fondo indexado",
+      "clase": "Renta variable",
+      "ter": 0.12,
+      "region": {
+        "EEUU": 72,
+        "Europa": 16,
+        "Japón y Pacífico": 8,
+        "Canadá": 3,
+        "Otros": 1
+      },
+      "sector_etf": {
+        "URTH": 1
+      },
+      "dominio": "fidelity.es",
+      "pais": "IE"
+    },
+    {
+      "id": "vanguard-global",
+      "nombre": "Vanguard Global Stock Index Fund EUR Acc",
+      "corto": "Global Vanguard",
+      "isin": "IE00B03HD191",
+      "tipo": "Fondo indexado",
+      "clase": "Renta variable",
+      "ter": 0.18,
+      "region": {
+        "EEUU": 72,
+        "Europa": 16,
+        "Japón y Pacífico": 8,
+        "Canadá": 3,
+        "Otros": 1
+      },
+      "sector_etf": {
+        "URTH": 1
+      },
+      "dominio": "vanguard.com",
+      "pais": "IE"
+    },
+    {
+      "id": "vanguard-us500",
+      "nombre": "Vanguard US 500 Stock Index Fund EUR Acc",
+      "corto": "S&P 500 Vanguard",
+      "isin": "IE0032126645",
+      "tipo": "Fondo indexado",
+      "clase": "Renta variable",
+      "ter": 0.1,
+      "region": {
+        "EEUU": 100
+      },
+      "sector_etf": {
+        "IVV": 1
+      },
+      "dominio": "vanguard.com",
+      "pais": "IE"
     }
   ]
 }
