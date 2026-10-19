@@ -1,4 +1,4 @@
-# Inversiones
+# Bellota
 
 Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en directo, recomendaciones que se recalculan con cada precio y un asesor con IA (Gemini, gratis). Seis apartados y el asesor:
 

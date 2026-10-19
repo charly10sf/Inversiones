@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Inversiones</title>
-<meta name="description" content="Mi cartera de inversión en directo">
+<title>Bellota</title>
+<meta name="description" content="Bellota: tu cartera de inversión en directo, a tu medida">
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
@@ -13,7 +13,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Inversiones">
+<meta name="apple-mobile-web-app-title" content="Bellota">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
@@ -1068,12 +1068,15 @@ table td.txt { white-space: normal; min-width: 260px; }
 
 /* ---------- La IA opina, compacta ---------- */
 .ia-mas > summary { color: var(--accent); }
-.ia-notas.compactas { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 8px; margin-top: 28px; border: 0; }
-.ia-nota { background: var(--plane); border: 1px solid var(--line); border-radius: 12px; padding: 0; }
-.ia-nota > summary { list-style: none; cursor: pointer; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 14px; }
-.ia-nota > summary::-webkit-details-marker { display: none; }
-.ia-nota > summary b { font-weight: 600; font-size: 14px; }
-.ia-nota > span { display: block; padding: 0 14px 12px; color: var(--text-2); font-size: 13.5px; line-height: 1.55; }
+.ia-notas.compactas { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 200px), 1fr)); gap: 8px; margin-top: 28px; border: 0; overflow: visible; align-items: start; }
+.ia-nota { background: var(--plane); border: 1px solid var(--line); border-radius: 12px; padding: 14px 14px 14px; display: grid; gap: 8px; align-content: start; min-width: 0; }
+.ia-nota-t { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+.ia-nota-t b { font-weight: 650; font-size: 14.5px; min-width: 0; overflow-wrap: anywhere; }
+.ia-nota-t small { color: var(--muted); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ia-nota .ia-puntos { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
+.ia-nota .ia-puntos i { width: auto; }
+.ia-nota > span { color: var(--text-2); font-size: 13.5px; line-height: 1.55; }
+@media (max-width: 560px) { .ia-notas.compactas { grid-template-columns: minmax(0, 1fr); } }
 .ia-mejorar .paso-mas p { color: var(--text-2); font-size: 13.5px; line-height: 1.6; margin: 8px 0 0; }
 
 .fx2-cab small { display: flex; flex-wrap: wrap; gap: 4px 10px; align-items: center; }
@@ -1280,6 +1283,242 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .macro-ia small { display: block; color: var(--muted); font-size: 12.5px; }
 .macro-ia b { display: block; font-size: 17px; font-weight: 700; margin: 2px 0 4px; font-variant-numeric: tabular-nums; }
 .macro-ia p { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.4; }
+
+/* ---------- Paso a paso: por hacer, fechas y lo que va solo ---------- */
+.ruta-barra-top { display: flex; flex-wrap: wrap; gap: 14px 24px; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+.ruta-barra-top .plazos { display: grid; grid-template-columns: repeat(4, minmax(0, auto)); width: auto; margin: 0; }
+.ruta-res { flex: 1 1 260px; max-width: 420px; display: grid; gap: 8px; }
+.ruta-res-n { color: var(--text-2); font-size: 14px; }
+.ruta-res-n b { color: var(--text); font-size: 22px; font-weight: 600; font-variant-numeric: tabular-nums; margin-right: 2px; }
+.ruta.ruta2 { display: block; }
+.ruta2 > .rcol { display: none; }
+.ruta2[data-sel="mes"] > .rcol[data-p="mes"], .ruta2[data-sel="seis"] > .rcol[data-p="seis"], .ruta2[data-sel="anio"] > .rcol[data-p="anio"], .ruta2[data-sel="largo"] > .rcol[data-p="largo"] { display: block; }
+.rcol-cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin-bottom: 18px; }
+.rcol-cab h2 { margin: 0; font-size: 22px; font-weight: 650; letter-spacing: -0.02em; }
+.rcol-grid { display: grid; gap: 28px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 980px) { .rcol-grid.con-lado { grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); align-items: start; } }
+.rlado { display: grid; gap: 28px; align-content: start; }
+.rh { display: flex; align-items: baseline; gap: 10px; margin: 0 0 10px; font-size: 13.5px; font-weight: 650; color: var(--text-2); }
+.rh .k { font-weight: 400; font-size: 12.5px; }
+.tareas, .rfechas, .rsolos { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.tarea { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; padding: 16px 16px 16px 14px; background: var(--plane); border: 1px solid var(--line); border-radius: 14px; }
+.tarea.primero { border-color: rgba(226, 180, 95, 0.55); background: linear-gradient(var(--accent-bg), var(--accent-bg)), var(--plane); }
+.t-check { width: 32px; height: 32px; border-radius: 50%; border: 1.5px solid var(--line-2); background: none; color: var(--text-2); font: 700 13px/1 var(--f); display: grid; place-items: center; cursor: pointer; padding: 0; font-variant-numeric: tabular-nums; transition: background 0.15s, border-color 0.15s; }
+.t-check:hover { border-color: var(--accent); color: var(--accent); }
+.tarea.primero .t-check { border-color: var(--accent); color: var(--accent); }
+.t-check[aria-pressed="true"] { background: var(--up-bg); border-color: rgba(79, 201, 149, 0.55); color: var(--up); }
+.t-check[aria-pressed="true"] span { display: none; }
+.t-check[aria-pressed="true"]::before { content: '✓'; font-size: 15px; }
+.t-c { min-width: 0; }
+.t-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px; margin-bottom: 6px; font-size: 12.5px; }
+.t-tipo { display: inline-flex; align-items: center; gap: 5px; font-weight: 600; color: var(--text-2); }
+.t-tipo svg { width: 14px; height: 14px; }
+.tarea.t-venta .t-tipo { color: var(--down); }
+.tarea.t-compra .t-tipo { color: var(--up); }
+.tarea.t-ia .t-tipo, .tarea.t-info .t-tipo { color: var(--accent); }
+.tarea.t-fiscal .t-tipo, .tarea.t-aviso .t-tipo, .tarea.t-dato .t-tipo { color: var(--warn); }
+.t-cuando { color: var(--muted); }
+.t-primero { margin-left: auto; font-size: 11.5px; font-weight: 700; color: var(--on-accent); background: var(--accent); border-radius: 999px; padding: 2px 8px; }
+.t-t { display: block; font-size: 16px; font-weight: 600; line-height: 1.38; letter-spacing: -0.01em; }
+.t-pq { margin: 6px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.55; }
+.t-pq.k { color: var(--muted); font-size: 13px; }
+.t-pie { display: flex; flex-wrap: wrap; gap: 8px 18px; align-items: baseline; margin-top: 10px; }
+.t-pie .paso-mas { margin: 0; }
+.t-pie .paso-mas[open] { flex-basis: 100%; }
+.t-pie .ruta-acc { margin: 0; font-size: 13.5px; }
+.tarea.hecho, .rfecha.hecho { background: none; border-style: dashed; }
+.tarea.hecho .t-t, .rfecha.hecho .t-t { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-2); }
+.tarea.hecho .t-pq, .tarea.hecho .t-pie, .rfecha.hecho .t-pq, .rfecha.hecho .t-pie { display: none; }
+.rfecha { display: grid; grid-template-columns: 48px minmax(0, 1fr) 32px; gap: 12px; align-items: start; padding: 12px 12px 12px 10px; border: 1px solid var(--line); border-radius: 14px; }
+.rf-d { display: grid; justify-items: center; align-content: center; min-height: 48px; border-radius: 10px; background: var(--accent-bg); color: var(--accent); line-height: 1.05; }
+.rf-d b { font-size: 19px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.rf-d small { font-size: 11.5px; font-weight: 600; }
+.rfecha .t-t { font-size: 15px; }
+.rfecha .t-pq { font-size: 13.5px; }
+.rfecha .t-check { width: 28px; height: 28px; }
+.rsolo { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 10px 2px; border-bottom: 1px solid var(--line); }
+.rsolo:last-child { border-bottom: 0; }
+.rs-ico { width: 30px; height: 30px; border-radius: 9px; display: grid; place-items: center; background: var(--plane-2); color: var(--muted); }
+.rs-ico svg { width: 16px; height: 16px; }
+.rsolo .t-cuando { display: block; font-size: 12px; margin-bottom: 2px; }
+.rsolo .t-t { font-size: 14.5px; font-weight: 600; }
+.rsolo .t-pq { font-size: 13.5px; margin-top: 3px; }
+.rsolo .ruta-acc { display: inline-block; margin-top: 6px; font-size: 13.5px; }
+.ruta-nota { margin-top: 26px; }
+@media (max-width: 860px) {
+  .ruta-barra-top { margin-bottom: 18px; }
+  .ruta-barra-top .plazos { order: 2; width: 100%; grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .ruta-res { order: 1; max-width: none; flex-basis: 100%; }
+}
+@media (max-width: 680px) {
+  .tarea { grid-template-columns: 30px minmax(0, 1fr); gap: 10px; padding: 14px 14px 14px 12px; }
+  .t-check { width: 30px; height: 30px; }
+  .t-t { font-size: 16px; }
+  .t-pq { font-size: 14.5px; }
+  .rcol-cab h2 { font-size: 20px; }
+  .rfecha { grid-template-columns: 44px minmax(0, 1fr) 28px; }
+}
+
+.t-imp { display: flex; gap: 8px; align-items: flex-start; margin: 10px 0 0; padding: 9px 11px; border-radius: 10px; background: rgba(242, 146, 90, 0.08); color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
+.t-imp svg { width: 16px; height: 16px; flex: none; margin-top: 2px; color: var(--warn); }
+.t-imp b { color: var(--text); font-weight: 600; }
+.t-como { margin-top: 8px; padding: 11px 13px; background: var(--plane-2); border-radius: 10px; color: var(--text-2); font-size: 14px; line-height: 1.55; }
+.tarea.primero .t-imp { background: rgba(18, 17, 15, 0.35); }
+
+/* ---------- Objetivos: tu perfil, tus límites y tus metas ---------- */
+.pf-empieza { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: center; padding: 20px; margin-bottom: 18px; border-radius: 18px; background: linear-gradient(var(--accent-bg), var(--accent-bg)), var(--plane); border: 1px solid rgba(226, 180, 95, 0.4); }
+.pf-empieza .dib { width: 120px; height: 80px; background: var(--plane-2); }
+.pf-empieza h2 { margin: 0 0 6px; font-size: 20px; letter-spacing: -0.02em; }
+.pf-empieza p { margin: 0 0 14px; color: var(--text-2); line-height: 1.55; }
+@media (max-width: 600px) { .pf-empieza { grid-template-columns: minmax(0, 1fr); } .pf-empieza .dib { justify-self: start; } }
+.pf-grid { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .pf-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; } }
+.pf-card { background: var(--plane); border: 1px solid var(--line); border-radius: 16px; padding: 18px; min-width: 0; }
+.pf-card > header { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.pf-card h2 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+.pf-card .enlace { color: var(--accent); font-weight: 600; font-size: 14px; }
+.pf-dl { display: grid; gap: 0; margin: 0; }
+.pf-dl > div { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 12px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.pf-dl > div:last-child { border-bottom: 0; }
+.pf-dl dt { color: var(--muted); }
+.pf-dl dd { margin: 0; color: var(--text); }
+.pf-lectura { margin-top: 16px; padding: 14px; border-radius: 12px; background: var(--plane-2); }
+.pf-lectura.aviso { background: var(--warn-bg); }
+.pf-lectura p { margin: 12px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.55; }
+.pf-lectura p b { color: var(--text); font-weight: 600; }
+.pf-medidor { position: relative; height: 10px; border-radius: 5px; background: var(--plane-3); }
+.pf-rango { position: absolute; top: 0; bottom: 0; border-radius: 5px; background: rgba(79, 201, 149, 0.45); }
+.pf-tu { position: absolute; top: -5px; width: 4px; height: 20px; margin-left: -2px; border-radius: 2px; background: var(--accent); box-shadow: 0 0 0 3px var(--plane-2); }
+.pf-lectura.aviso .pf-tu { box-shadow: 0 0 0 3px #2a2018; }
+.pf-medidor-ej { display: flex; justify-content: space-between; margin-top: 6px; font-size: 11.5px; color: var(--muted); }
+.pf-lim { padding: 10px 0; border-bottom: 1px solid var(--line); }
+.pf-lim:last-of-type { border-bottom: 0; }
+.pf-lim-t { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; font-size: 14px; margin-bottom: 7px; }
+.pf-lim-t span { min-width: 0; overflow-wrap: anywhere; }
+.pf-lim-t b { font-weight: 600; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pf-lim-t b small { color: var(--muted); font-weight: 400; font-size: 12.5px; }
+.pf-barra { height: 6px; border-radius: 3px; background: var(--plane-3); overflow: hidden; }
+.pf-barra i { display: block; height: 100%; border-radius: 3px; background: var(--accent); }
+.pf-barra.ok i { background: var(--up); }
+.pf-lim.pasa .pf-barra i { background: var(--down); }
+.pf-lim.pasa .pf-lim-t b { color: var(--down); }
+.pf-lim > small.k { display: block; margin-top: 6px; font-size: 12.5px; }
+.metas { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.metas li { padding: 10px 0 12px; border-bottom: 1px solid var(--line); }
+.metas li:last-child { border-bottom: 0; }
+.meta-cab { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+.meta-cab b { font-size: 15px; font-weight: 600; min-width: 0; }
+.meta-cab .k { margin-left: auto; white-space: nowrap; font-size: 13px; }
+.meta-cab .ib { width: 30px; height: 30px; flex: none; }
+.meta-cab .ib svg { width: 15px; height: 15px; }
+.metas li p { margin: 8px 0 0; color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
+.metas li.falta .pf-barra i { background: var(--warn); }
+.pf-metas > p.k { margin: 0 0 12px; line-height: 1.55; font-size: 14px; }
+.pf-yo { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.55; white-space: pre-line; }
+.pf-resp { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 8px; font-size: 13.5px; }
+.pf-resp li { display: grid; gap: 2px; }
+.pf-resp b { font-weight: 500; }
+.pf-preguntas { margin-bottom: 20px; padding: 18px; border-radius: 16px; border: 1px solid rgba(226, 180, 95, 0.45); background: linear-gradient(var(--accent-bg), var(--accent-bg)), var(--plane); }
+.pf-preguntas .sec-cab { margin-bottom: 10px; }
+.pf-preguntas h2 { display: inline-flex; align-items: center; gap: 8px; }
+.pf-preguntas h2 svg { width: 18px; height: 18px; color: var(--accent); }
+.pf-preg { padding: 12px 0; border-top: 1px solid rgba(226, 180, 95, 0.2); }
+.pf-preg > b { display: block; font-size: 16px; font-weight: 600; line-height: 1.4; }
+.pf-preg > p { margin: 4px 0 0; font-size: 13px; }
+.pf-opc { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.chip-btn { border: 1px solid var(--line-2); background: var(--plane-2); color: var(--text); border-radius: 999px; padding: 8px 14px; font: 500 14px var(--f); cursor: pointer; }
+.chip-btn:hover { border-color: var(--accent); color: var(--accent); }
+.pf-otra { display: flex; gap: 8px; margin-top: 10px; }
+.pf-otra input { flex: 1; min-width: 0; }
+.ia-pregunta-aviso { display: flex; align-items: center; gap: 10px; margin: 14px 0; padding: 12px 14px; border-radius: 14px; border: 1px solid rgba(226, 180, 95, 0.45); background: var(--accent-bg); color: var(--text); text-decoration: none; font-size: 14px; line-height: 1.4; }
+.ia-pregunta-aviso svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+.ia-pregunta-aviso b { font-weight: 600; }
+.ia-pregunta-aviso .k { margin-left: auto; color: var(--accent); font-weight: 600; white-space: nowrap; }
+fieldset.opciones { border: 0; margin: 0; padding: 0; min-width: 0; }
+fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-bottom: 8px; padding: 0; }
+.opc-fila { display: flex; flex-wrap: wrap; gap: 8px; }
+.opc { position: relative; cursor: pointer; }
+.opc input { position: absolute; opacity: 0; pointer-events: none; }
+.opc > span { display: grid; gap: 2px; padding: 9px 13px; border-radius: 12px; border: 1px solid var(--line-2); background: var(--plane-2); font-size: 14px; line-height: 1.3; }
+.opc > span small { color: var(--muted); font-size: 12px; }
+.opc input:checked + span { border-color: var(--accent); background: var(--accent-bg); color: var(--text); }
+.opc input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pf-form { display: grid; gap: 18px; }
+.pf-sub { margin: 4px 0 -6px; font-size: 15px; font-weight: 650; }
+
+.pf-otra input { font: inherit; font-size: 15px; color: var(--text); background: var(--bg); border: 1px solid var(--line-2); border-radius: 10px; padding: 9px 12px; }
+.pf-otra input:focus { outline: none; border-color: var(--accent); }
+/* tramos del ahorro, en una escalera */
+.tramos2 { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; align-items: end; max-width: 760px; }
+.tr2 { position: relative; display: grid; gap: 2px; padding: 10px 10px 9px; border-radius: 10px; background: var(--plane); border: 1px solid var(--line); overflow: hidden; }
+.tr2 i { position: absolute; left: 0; right: 0; bottom: 0; height: var(--h); background: var(--plane-2); z-index: 0; }
+.tr2 b, .tr2 small, .tr2 span { position: relative; z-index: 1; }
+.tr2 b { font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.tr2 small { color: var(--muted); font-size: 11.5px; line-height: 1.3; }
+.tr2 span { position: absolute; top: 8px; right: 8px; font-size: 11px; font-weight: 700; color: var(--on-accent); background: var(--accent); border-radius: 999px; padding: 1px 7px; }
+.tr2.tuyo { border-color: rgba(226, 180, 95, 0.6); }
+.tr2.tuyo i { background: var(--accent-bg); }
+.tr2.tuyo b { color: var(--accent); }
+@media (max-width: 560px) { .tr2 { padding: 8px 6px 7px; } .tr2 b { font-size: 15px; } .tr2 small { font-size: 10.5px; } .tr2 span { top: auto; bottom: auto; position: static; justify-self: start; margin-top: 3px; } }
+/* guía de la renta */
+.rg-intro { margin: 0 0 22px; font-size: 16px; line-height: 1.55; color: var(--text-2); max-width: 760px; }
+.rg-intro b { color: var(--text); }
+.rg-pasos { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; max-width: 860px; }
+.rg-paso { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; position: relative; padding-bottom: 24px; }
+.rg-paso::before { content: ''; position: absolute; left: 16px; top: 34px; bottom: 4px; width: 2px; background: var(--line); }
+.rg-paso:last-child::before { display: none; }
+.rg-n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--accent-bg); color: var(--accent); font-weight: 700; font-size: 14px; border: 1px solid rgba(226, 180, 95, 0.4); }
+.rg-cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 6px 0 6px; }
+.rg-cab b { font-size: 16.5px; font-weight: 650; letter-spacing: -0.01em; }
+.rg-cuando { font-size: 12.5px; color: var(--accent); font-weight: 600; }
+.rg-paso p { margin: 0 0 8px; color: var(--text-2); font-size: 14.5px; line-height: 1.6; }
+.rg-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.rg-lista li { display: grid; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--plane); border: 1px solid var(--line); font-size: 14px; line-height: 1.5; color: var(--text-2); }
+.rg-lista b { color: var(--text); font-weight: 600; }
+.rg-casillas { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); margin-bottom: 10px; }
+.rg-c { padding: 12px; border-radius: 12px; background: var(--plane); border: 1px solid var(--line); }
+.rg-c-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
+.rg-c-cab b { font-size: 14.5px; font-weight: 600; }
+.rg-cas { font-size: 12px; font-weight: 700; color: var(--accent); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rg-c p { font-size: 13.5px; margin: 0; }
+.rg-c p.k { margin-top: 8px; font-size: 12.5px; }
+.rg-ventas { list-style: none; margin: 8px 0 0; padding: 0; font-size: 13px; display: grid; gap: 4px; }
+.rg-ventas li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }
+
+/* tour: entrada, foco que late, flecha hacia lo resaltado y texto que desliza al cambiar de paso */
+.tour { animation: tour-in 0.25s ease both; }
+@keyframes tour-in { from { opacity: 0; } }
+.tour-foco::after { content: ''; position: absolute; inset: -2px; border-radius: 16px; border: 2px solid var(--accent); animation: tour-late 1.8s ease-out infinite; pointer-events: none; }
+.tour-foco.sin::after { display: none; }
+@keyframes tour-late { 0% { opacity: 0.9; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.12); } }
+.tour-caja { transition: top 0.3s ease, bottom 0.3s ease, transform 0.3s ease; max-height: calc(100vh - var(--nav-h) - 60px); overflow: auto; touch-action: pan-y; }
+.tour-caja.con-flecha { overflow: visible; }
+.tour-caja.con-flecha::before { content: ''; position: absolute; left: var(--fx, 50%); width: 14px; height: 14px; margin-left: -7px; background: var(--plane); border: 1px solid var(--line-2); transform: rotate(45deg); }
+.tour-caja.con-flecha.abajo::before { top: -8px; border-right: 0; border-bottom: 0; }
+.tour-caja.con-flecha.arriba::before { bottom: -8px; border-left: 0; border-top: 0; }
+.tour-caja.centro::before { display: none; }
+.tour-txt.entra-d { animation: tour-txt-d 0.32s cubic-bezier(.2, .7, .3, 1) both; }
+.tour-txt.entra-i { animation: tour-txt-i 0.32s cubic-bezier(.2, .7, .3, 1) both; }
+@keyframes tour-txt-d { from { opacity: 0; transform: translateX(18px); } }
+@keyframes tour-txt-i { from { opacity: 0; transform: translateX(-18px); } }
+.tour-prog i { transition: background 0.3s, flex-grow 0.3s; }
+.tour-prog i.on { flex-grow: 2.4; }
+.tour-logo { display: block; width: 56px; height: 56px; margin: 12px 0 2px; animation: tour-brota 0.7s cubic-bezier(.3, 1.5, .5, 1) 0.15s both; }
+@keyframes tour-brota { from { opacity: 0; transform: scale(0.4) rotate(-12deg); } }
+.tour-caja.centro { animation: tour-pop 0.35s cubic-bezier(.2, .8, .3, 1.1) both; }
+@keyframes tour-pop { from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); } }
+@media (max-width: 680px) {
+  .tour-caja { width: calc(100vw - 24px); padding: 14px 16px 12px; border-radius: 16px; }
+  .tour-caja h3 { font-size: 18px; }
+  .tour-caja p { font-size: 15px; }
+  .tour-btns .btn { min-height: 40px; }
+}
+@media (prefers-reduced-motion: reduce) { .tour, .tour-foco::after, .tour-txt.entra-d, .tour-txt.entra-i, .tour-logo, .tour-caja.centro { animation: none; } .tour-caja { transition: none; } }
+
+.opinion-pie { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 640px; margin: 48px 0 0; padding: 14px 16px; border-radius: 14px; border: 1px dashed var(--line-2); background: none; color: var(--text-2); font: 400 14px/1.45 var(--f); text-align: left; cursor: pointer; }
+.opinion-pie:hover { border-color: var(--accent); color: var(--text); }
+.opinion-pie svg { width: 22px; height: 22px; flex: none; color: var(--accent); }
+.opinion-pie b { color: var(--text); font-weight: 600; }
 </style>
 </head>
 <body>
@@ -1288,7 +1527,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 <script>
 'use strict';
 /* =====================================================================
-   Inversiones — web estática (GitHub Pages).
+   Bellota (antes Inversiones) — web estática (GitHub Pages).
    - instrumentos.json (público): qué instrumentos hay, sin cantidades.
    - rama "datos" / precios.json (público): precios que baja la GitHub Action.
    - cartera.enc.json (público pero cifrado): cantidades, costes y notas, con
@@ -1358,7 +1597,7 @@ const S = {
   inst: {}, instOrden: [], ref: null, instCambiados: false, instSha: null,
   precios: null, cartera: null, enc: null, key: null, salt: null, iter: 600000,
   oculto: LS.get('inv-oculto', false), dim: LS.get('inv-dim', 'clase'), base: LS.get('inv-base', 'todo'),
-  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif3', 'ia'), expTab: LS.get('inv-exp', 'posiciones'), carTab: LS.get('inv-car', 'pos'), numAbierto: null, rutaPlazo: LS.get('inv-ruta-plazo', 'mes'), fichaRango: LS.get('inv-frango', '1A'),
+  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif3', 'ia'), expTab: LS.get('inv-exp', 'posiciones'), carTab: LS.get('inv-car', 'pos'), futTab: LS.get('inv-futtab', 'perfil'), fisTab: LS.get('inv-fistab', 'tu'), numAbierto: null, rutaPlazo: LS.get('inv-ruta-plazo', 'mes'), fichaRango: LS.get('inv-frango', '1A'),
   comparar: LS.get('inv-comparar', false), radarZona: LS.get('inv-zona', 'Todas'), radarOrden: LS.get('inv-orden2', 'ctr'),
   radarMin: LS.get('inv-radar-min', true), radarTodo: false, vista: 'cartera', ficha: null,
   ordenPos: LS.get('inv-orden-pos', { k: 'valor', dir: 'desc' }), proy: LS.get('inv-proy', {}), horizonte: LS.get('inv-horizonte', 20), proyCache: null,
@@ -2133,7 +2372,9 @@ const ICONOS = {
   expertos: SVG('<path d="M4 19V5M4 19h16"/><path d="M7 15l4-4 3 3 5-6"/><circle cx="19" cy="8" r="1.2" fill="currentColor"/>'),
   mercados: SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>'),
   analisis: SVG('<path d="M12 3v9l7.8 4.5"/><circle cx="12" cy="12" r="9"/>'),
-  futuro: SVG('<path d="M3 19c3-1 5-4 7-7"/><path d="M10 12c2.5-2 5-4 11-7" stroke-dasharray="2.2 2.6"/><path d="M15 5h6v6"/>'),
+  futuro: SVG('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>'),
+  proy: SVG('<path d="M3 19c3-1 5-4 7-7"/><path d="M10 12c2.5-2 5-4 11-7" stroke-dasharray="2.2 2.6"/><path d="M15 5h6v6"/>'),
+  perfil: SVG('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.8-4 3.8-6.2 7.5-6.2s6.7 2.2 7.5 6.2"/>'),
   plan: SVG('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3M8 17h6"/>'),
   ruta: SVG('<path d="M10 6h10M10 12h10M10 18h10"/><path d="M3.5 6.2l1.6 1.6 2.6-3M3.5 12.2l1.6 1.6 2.6-3"/><circle cx="5.5" cy="18" r="1.6"/>'),
   fiscal: SVG('<path d="M6 3h12v18l-3-1.8-3 1.8-3-1.8L6 21z"/><path d="M9 8h6M9 12h6M9 16h3.5"/>'),
@@ -2142,12 +2383,13 @@ const ICONOS = {
   recorte: SVG('<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>', 1.8),
   enviar: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2.2),
   parar: SVG('<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>', 1.5),
+  globo: SVG('<path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17.5H4A1.5 1.5 0 0 1 2.5 16V7A1.5 1.5 0 0 1 4 5.5z"/><path d="M7.5 10.5h9M7.5 13.5h5.5"/>', 1.8),
   copiar: SVG('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>', 1.8),
 };
 
 /* las pestañas, con el nombre corto de la barra del móvil; Mercados va aparte (es de consulta) y Plan, dentro de Cartera */
 const VISTAS = [
-  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Futuro', 'Futuro'],
+  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'],
 ];
 const VISTAS_APARTE = [['mercados', 'Mercados']];
 const esVista = (k) => VISTAS.some(([x]) => x === k) || VISTAS_APARTE.some(([x]) => x === k);
@@ -2265,7 +2507,7 @@ function parchear() {
 function montar() {
   $('#app').innerHTML = `
   <header class="top"><div class="wrap fila-top">
-    <div class="marca"><img src="favicon.svg" alt=""><span>Inversiones</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION.replace(/\.0$/, '')} alfa</button></div>
+    <div class="marca"><img src="favicon.svg" alt=""><span>Bellota</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t]) => `<a href="#${k}" data-ir="${k}">${t}</a>`).join('')}</nav>
     <span id="estado"></span>
     <div class="acciones">
@@ -2328,7 +2570,7 @@ function pintar() {
   pintarTicker(M);
   const scroll = window.scrollY;
   const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo }[S.vista] || vistaCartera;
-  $('#vista').innerHTML = html(M) + `<p class="pie">Precios en directo de Yahoo Finance (la bolsa de Madrid llega con 15 minutos de retraso y la de Londres con 20; divisas y futuros, al instante) y de Bitvavo para Bitcoin. Los fondos publican un valor liquidativo al día. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action. Noticias: Google Noticias. Tus cantidades van cifradas en <code>cartera.enc.json</code>.</p>`;
+  $('#vista').innerHTML = html(M) + `<button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó Bellota.</span></button><p class="pie">Precios en directo de Yahoo Finance (la bolsa de Madrid llega con 15 minutos de retraso y la de Londres con 20; divisas y futuros, al instante) y de Bitvavo para Bitcoin. Los fondos publican un valor liquidativo al día. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action. Noticias: Google Noticias. Tus cantidades van cifradas en <code>cartera.enc.json</code>.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if ((S.radarVisibles || []).length) { S.binds = binds(M); rellenarBinds($('#vista')); }
   dibujar(M);
@@ -2417,10 +2659,10 @@ function vistaCartera(M) {
         ${plats}
         <div class="kpi"><span class="k">Invertido</span><span class="v">${eur(M.invertido, 0)}</span></div>
         <div class="kpi"><span class="k">Dividendos al año</span><span class="v">${eur(M.dividendos, 0)}<small>brutos</small></span></div>
-        ${(() => { try { const pr = proyeccion(M); return `<a class="kpi" href="#futuro"><span class="k">En 10 años, lo probable</span><span class="v acento">${euCorto(pr.p50[120])}</span></a>`; } catch (e) { return ''; } })()}
+        ${(() => { try { const pr = proyeccion(M); return `<a class="kpi" href="#proyeccion"><span class="k">En 10 años, lo probable</span><span class="v acento">${euCorto(pr.p50[120])}</span></a>`; } catch (e) { return ''; } })()}
         ${M.realizado ? `<div class="kpi"><span class="k">Ventas de ${anio}</span><span class="v ${cls(M.realizado)}">${eurS(M.realizado, 0)}</span></div>` : ''}
       </div>
-      ${toca('hero')}
+      ${htmlPreguntasIA(true)}${toca('hero')}
     </section>
     <section aria-label="Evolución">
       <div class="evo-cab"><div class="datos" id="evoCab"></div>
@@ -2951,7 +3193,7 @@ const noticiasIdea = (sim) => ((S.precios && S.precios.noticias_ideas) || {})[si
    Cada fuente elige por su lado: la web, las tres mejor contrastadas del radar; Gemini, las que
    elige tras leer la prensa de todo el radar; y el análisis de la IA, las que propone para tu cartera.
    Si dos o tres coinciden en la misma empresa, sale una sola tarjeta y va primero. */
-function ideasJuntas(M, ia) {
+function ideasJuntas(M, ia, n = 9) {
   const mapa = new Map();
   const add = (q, nombre, o) => {
     const r = q ? buscarRadar(q) : null;
@@ -2960,10 +3202,13 @@ function ideasJuntas(M, ia) {
     const x = mapa.get(k) || { s: r ? r.s : String(q || ''), r, n: (r && r.n) || nombre || q };
     mapa.set(k, Object.assign(x, o));
   };
-  mejoresIdeas(M).slice(0, 3).forEach((x, i) => add(x.s, x.n, { web: { ...x, puesto: i + 1 } }));
+  const web = mejoresIdeas(M);
+  web.slice(0, 3).forEach((x, i) => add(x.s, x.n, { web: { ...x, puesto: i + 1 } }));
   const d = S.escaneo && S.escaneo.decision;
   for (const i of (d && d.ideas) || []) if (i && i.s) add(i.s, i.n, { gem: i });
   for (const x of (ia && Array.isArray(ia.ideas) ? ia.ideas : [])) if (x && x.nombre) add(x.ticker || x.nombre, x.nombre, { tuya: x });
+  // hasta completar n (9, tres filas de tres), las siguientes mejor contrastadas de la web
+  for (let i = 3; i < web.length && mapa.size < n; i++) if (!mapa.has(web[i].s)) add(web[i].s, web[i].n, { web: { ...web[i], puesto: i + 1 } });
   return [...mapa.values()].map((x) => { const y = { ...x, votos: (x.web ? 1 : 0) + (x.gem ? 1 : 0) + (x.tuya ? 1 : 0) }; y.esp = esperadaIdea(y); return y; })
     .sort((a, b) => b.votos - a.votos || ((b.esp && b.esp.prin.netoAnual) || -999) - ((a.esp && a.esp.prin.netoAnual) || -999));
 }
@@ -3054,7 +3299,7 @@ function htmlIdeas(M, ia) {
   const todas = radarVals();
   if (!todas.length) return '<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2></div><div class="vacio">La lista de ideas llega con la próxima actualización de datos.</div>';
   const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
-  const juntas = ideasJuntas(M, ia).slice(0, 8);
+  const juntas = ideasJuntas(M, ia, 9).slice(0, 9);
   const ctx = ctxIdeas(M);
   const d = S.escaneo && S.escaneo.decision;
   let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => { const e = esperadaRadar(x); return { ...x, _ctr: contraste(x), _neto: e ? e.prin.netoAnual : null, _meses: e ? e.prin.meses : null }; });
@@ -3203,7 +3448,7 @@ function pasosRuta(M) {
       t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
       pq: esc(f.senal.motivos[0] || ''),
       como: `${esc(pl.cuando[0].replace(/^Ya: /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? ` Con lo que cobres: ${destino}.` : ''}`,
-      imp: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año.`}`,
+      imp: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año. ${(() => { const l = libreRecompra(f.inst, res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy); return l ? `No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}` : reglaRecompra(f.inst).corto; })()}`}`,
       acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>` });
     const top = pl.ideas[0], dVenta = res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy;
     if (pl.aIdea > 0 && top) {
@@ -3259,7 +3504,7 @@ function pasosRuta(M) {
       const ahorro = fiscalAnio(anio, ganPrevista).cuota - fiscalAnio(anio, ganPrevista + x.g).cuota;
       if (ahorro < 15) continue;
       const cripto = x.f.inst.clase === 'Cripto';
-      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Plantéate vender ${esc(x.f.inst.corto)} con pérdidas para pagar menos`, pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de tus ganancias${ganPrevista ? ' (contando la venta que propone la web)' : ''}` : 'compensa hasta un 25 % de tus dividendos'}.`, como: cripto ? `Véndelo en ${esc(x.f.pos.plataforma || 'tu plataforma')} antes del 31 de diciembre. Si quieres seguir dentro, puedes recomprar enseguida: en cripto no se aplica la regla de los dos meses (hay quien defiende esperar un año).` : 'Véndela antes del 31 de diciembre y no la recompres en dos meses, o la pérdida no cuenta.', imp: `Unos ${eur(ahorro, 0)} menos en la renta de ${anio}.`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>` });
+      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Plantéate vender ${esc(x.f.inst.corto)} con pérdidas para pagar menos`, pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de tus ganancias${ganPrevista ? ' (contando la venta que propone la web)' : ''}` : 'compensa hasta un 25 % de tus dividendos'}.`, como: cripto ? `Véndelo en ${esc(x.f.pos.plataforma || 'tu plataforma')} antes del 31 de diciembre. Si quieres seguir dentro, lo más seguro es comprar otra cripto distinta o esperar.` : `Véndela antes del 31 de diciembre${/^Fondo/.test(x.f.inst.tipo || '') ? '. Si quieres seguir invertido, traspasa a otro fondo parecido pero distinto (otra gestora del mismo índice): no es el mismo, así que la pérdida cuenta' : ' y, si quieres seguir dentro, compra otra empresa o un ETF parecido, no la misma'}.`, imp: `Unos ${eur(ahorro, 0)} menos en la renta de ${anio}. ${cripto ? reglaRecompra(x.f.inst).corto : `No vuelvas a comprar${/^Fondo/.test(x.f.inst.tipo || '') ? ' ese mismo fondo' : 'la'} hasta pasado ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'un año' : 'dos meses'} de la venta (ni la hayas comprado en los ${reglaRecompra(x.f.inst).plazo} anteriores). ${reglaRecompra(x.f.inst).corto}`}`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a la IA</button>` });
     }
   }
   // 7. colchón que rinde poco
@@ -3270,7 +3515,7 @@ function pasosRuta(M) {
   // 8. renta y modelos informativos
   const informe = `${anio + 1}-02-15`, renta = `${anio + 1}-04-08`;
   add(plazoDe(informe) || 'seis', { id: `informe:${anio}`, d: informe, cuando: 'enero-febrero', t: `Descarga el informe fiscal de ${anio} de Trade Republic`, pq: 'Trae tus ventas, dividendos e intereses del año tal y como los ve Hacienda.', como: 'En la app: Perfil, Impuestos. Compáralo con la pestaña Fiscalidad antes de hacer la renta.' });
-  add(plazoDe(renta) || 'seis', { id: `renta:${anio}`, d: renta, cuando: 'abril-junio', t: `Haz la renta de ${anio}`, pq: `Con lo que llevas, unos ${eur(fiscalAnio(anio, ganPrevista).cuota, 0)} de cuota en la base del ahorro${ganPrevista ? ' contando la venta que propone la web' : ''}${fa.retenido ? `, menos ${eur(fa.retenido, 0)} ya retenidos` : ''}.`, como: 'En Renta Web, revisa que el borrador tenga tus ventas, dividendos e intereses; si falta algo, añádelo con los informes de tus brókeres. Los dividendos extranjeros llevan la deducción por doble imposición.', acc: `<button class="enlace" data-calif="impuestos">Ver tu fiscalidad</button>` });
+  add(plazoDe(renta) || 'seis', { id: `renta:${anio}`, d: renta, cuando: 'abril-junio', t: `Haz la renta de ${anio}`, pq: `Con lo que llevas, unos ${eur(fiscalAnio(anio, ganPrevista).cuota, 0)} de cuota en la base del ahorro${ganPrevista ? ' contando la venta que propone la web' : ''}${fa.retenido ? `, menos ${eur(fa.retenido, 0)} ya retenidos` : ''}.`, como: 'En Renta Web, revisa que el borrador tenga tus ventas, dividendos e intereses; si falta algo, añádelo con los informes de tus brókeres. Los dividendos extranjeros llevan la deducción por doble imposición.', acc: '<a class="enlace" href="#renta">Ver la guía de la renta</a>' });
   const tr = sum(M.filas.filter((f) => f.pos.plataforma === 'Trade Republic'), (f) => f.valor) + sum(M.efectivo.filter((e) => e.plataforma === 'Trade Republic'), (e) => e.importe);
   if (tr > 40000) add('seis', { id: `m720:${anio}`, d: `${anio + 1}-03-15`, cuando: 'antes del 31 mar', t: tr > 50000 ? 'Presenta el modelo 720' : 'Vigila el modelo 720', det: `Tienes ${eur(tr, 0)} en Trade Republic. Por encima de 50.000 € a 31 de diciembre hay que declararlo entre enero y marzo.` });
   // 9. ideas si hay hueco y no hay ya una venta que lo use
@@ -3281,7 +3526,7 @@ function pasosRuta(M) {
   // 10. a un año y más: proyección, hueco que se abre y revisión
   let pr = null; try { pr = proyeccion(M); } catch (e) {}
   if (pr) {
-    add('anio', { id: `proy1:${hoy.slice(0, 7)}`, cuando: 'en un año', auto: true, t: `Si sigues así, lo probable es tener ${euCorto(pr.p50[12])}`, det: `Entre ${euCorto(pr.p10[12])} si va mal y ${euCorto(pr.p90[12])} si va bien, habiendo puesto ${euCorto(pr.aportado[12])}.`, acc: '<a class="enlace" href="#futuro">Ver Futuro</a>' });
+    add('anio', { id: `proy1:${hoy.slice(0, 7)}`, cuando: 'en un año', auto: true, t: `Si sigues así, lo probable es tener ${euCorto(pr.p50[12])}`, det: `Entre ${euCorto(pr.p10[12])} si va mal y ${euCorto(pr.p90[12])} si va bien, habiendo puesto ${euCorto(pr.aportado[12])}.`, acc: '<a class="enlace" href="#proyeccion">Ver la proyección</a>' });
     const metas = META_HITOS.map((m) => ({ m, i: pr.p50.findIndex((x) => x >= m) })).filter((x) => x.i > 0 && x.i <= 60);
     for (const x of metas) add('largo', { id: `hito:${x.m}`, d: pr.fechas[x.i], cuando: `${MESES[deIso(pr.fechas[x.i]).getMonth()]} ${pr.fechas[x.i].slice(0, 4)}`, auto: true, t: `Llegas a ${euCorto(x.m)}`, det: `Es lo probable con tus aportaciones de hoy. Si va mal, en ${pr.p10.findIndex((v) => v >= x.m) > 0 ? pr.fechas[pr.p10.findIndex((v) => v >= x.m)].slice(0, 4) : 'más tiempo'}.` });
   }
@@ -3291,7 +3536,9 @@ function pasosRuta(M) {
   }
   if (M.filas.some((f) => f.inst.tipo === 'Acción')) add('anio', { id: `revision:${anio}`, cuando: 'una vez al año', t: 'Revisa cada acción frente al S&P 500', det: 'Compara lo que ha hecho cada apuesta con lo que habría hecho el mismo dinero en tu fondo del S&P 500. Quédate solo con las que ganen o tengan aún su motivo para subir.', acc: '<a class="enlace" href="#analisis" data-calif="apuestas">Ver apuestas frente al índice</a>' });
   add('largo', { id: 'nucleo', cuando: 'siempre', auto: true, t: 'Deja trabajar al núcleo indexado', det: `Tus fondos son el ${fmtNum(M.total ? (sum(M.filas.filter((f) => /^Fondo/.test(f.inst.tipo || '') && f.inst.clase === 'Renta variable'), (f) => f.valor) / M.total) * 100 : 0, 0)} % de la cartera. No los vendas en las caídas: si hay que sacar dinero, que salga del colchón o de las acciones sueltas.` });
-  if (total > 0) add('largo', { id: 'subir', cuando: 'con cada subida de sueldo', t: 'Sube la aportación cuando suba tu sueldo', det: `Es lo que más mueve el resultado a 10 y 20 años. Pruébalo en Futuro con "Subes la aportación cada año".`, acc: '<a class="enlace" href="#futuro">Probar en Futuro</a>' });
+  if (total > 0) add('largo', { id: 'subir', cuando: 'con cada subida de sueldo', t: 'Sube la aportación cuando suba tu sueldo', det: `Es lo que más mueve el resultado a 10 y 20 años. Pruébalo en Objetivos, Proyección, con "Subes la aportación cada año".`, acc: '<a class="enlace" href="#proyeccion">Probarlo</a>' });
+  // 11. lo que sale de tu perfil y tus metas
+  try { pasosPerfil(M, add); } catch (e) { console.warn(e); }
   // los de la IA, de su última revisión
   const ia = iaActual(), hr = ia && ia.hoja_de_ruta;
   if (hr) {
@@ -3300,7 +3547,7 @@ function pasosRuta(M) {
       if (!x || !x.t) continue;
       const d = /^\d{4}-\d{2}-\d{2}$/.test(x.d || '') ? x.d : null;
       if (d && d < hoy) continue;
-      P[pz].push({ fuente: 'ia', id: 'ia:' + normTxt(x.t).slice(0, 60), d, cuando: d ? fechaCorta(d) : '', t: rellenarIA(x.t, v), pq: x.por_que ? rellenarIA(x.por_que, v) : '', como: x.como ? rellenarIA(x.como, v) : '', det: x.por_que || x.como ? '' : rellenarIA(x.detalle || '', v), autor: ia.autor });
+      P[pz].push({ fuente: 'ia', id: 'ia:' + normTxt(x.t).slice(0, 60), d, cuando: d ? fechaCorta(d) : '', t: rellenarIA(x.t, v), pq: x.por_que ? rellenarIA(x.por_que, v) : '', como: x.como ? rellenarIA(x.como, v) : '', imp: x.impuestos ? rellenarIA(x.impuestos, v) : '', det: x.por_que || x.como ? '' : rellenarIA(x.detalle || '', v), autor: ia.autor });
     }
   }
   const hechos = (S.cartera.ruta && S.cartera.ruta.hechos) || {};
@@ -3310,9 +3557,21 @@ function pasosRuta(M) {
   }
   return P;
 }
+/* norma antiaplicación (art. 33.5 de la ley del IRPF): si vendes con pérdidas y recompras lo mismo dentro del
+   plazo (antes o después de la venta), esa pérdida no resta ese año; se aplaza hasta que vendas lo recomprado */
+function reglaRecompra(inst) {
+  if (!inst) return null;
+  if (inst.clase === 'Cripto') return { dias: 0, corto: 'En cripto no se aplica la regla de los dos meses (no son valores cotizados, según las consultas de Hacienda), pero hay quien defiende que rige la de un año del resto de bienes: si recompras antes, la pérdida podría quedar aplazada hasta que vendas lo recomprado.' };
+  const fondo = /^Fondo/.test(inst.tipo || '');
+  const dias = fondo ? 365 : 61, plazo = fondo ? 'un año' : 'dos meses';
+  return { dias, plazo, corto: `Es por Hacienda: si vendes con pérdidas y recompras ${fondo ? 'el mismo fondo' : 'la misma acción o ETF'} en ${plazo} (antes o después de vender), esa pérdida no resta este año y se aplaza hasta que vendas lo recomprado.` };
+}
+const libreRecompra = (inst, fecha = hoyIso()) => { const r = reglaRecompra(inst); return r && r.dias ? iso(new Date(deIso(fecha).getTime() + r.dias * 86400000)) : null; };
+
 /* el tipo de cada paso, por cómo empieza su id: decide el icono y el color */
 const TIPO_PASO = [
   [/^venta:|^perdida:/, 'venta', 'venta'], [/^compra:|^idea:/, 'compra', 'compra'], [/^nucleo|^subir/, 'compra', 'fondo'],
+  [/^limcripto:/, 'venta', 'venta'], [/^perfil:|^deuda:/, 'dato', 'lapiz'], [/^colchonf:|^metaseg:|^metafalta:|^perfilbolsa:/, 'info', 'futuro'],
   [/^stop:/, 'aviso', 'alerta'], [/^res:|^div:|^aport/, 'fecha', 'calendario'], [/^fiscal:|^informe:|^renta:|^m720:|^colchon:/, 'fiscal', 'fiscal'],
   [/^exactas:/, 'dato', 'lapiz'], [/^ia:/, 'ia', 'chispa'],
 ];
@@ -3338,32 +3597,79 @@ function htmlPaso(x, n) {
     ${x.auto ? '<span class="paso-solo" title="Va solo: no tienes que hacer nada">auto</span>' : `<button class="ruta-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"><span>${n}</span></button>`}
   </li>`;
 }
+/* cada paso, según lo que pide: algo que hacer tú (numerado y con su casilla), una fecha que vigilar o algo que va solo */
+const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Un dato', ia: 'Gemini', info: 'Plan', fecha: 'Fecha' };
+const claseRuta = (x) => (x.auto ? 'solo' : tipoPaso(x).c === 'fecha' ? 'fecha' : 'tarea');
+function checkRuta(x, n) {
+  return `<button class="t-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Hecho. Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"><span>${n || ''}</span></button>`;
+}
+/* lo de Hacienda va a la vista en cada paso; el cómo, plegado */
+function masRuta(x) {
+  const hac = x.imp && !x.hecho ? `<p class="t-imp">${ICONO_PASO.fiscal}<span><b>Hacienda:</b> ${x.imp}</span></p>` : '';
+  if (!x.como && !(x.acc && !x.hecho)) return hac;
+  return `${hac}<div class="t-pie">${x.como ? `<details class="paso-mas"><summary>Cómo hacerlo</summary><div class="t-como">${x.como}</div></details>` : ''}${x.acc && !x.hecho ? `<span class="ruta-acc">${x.acc}</span>` : ''}</div>`;
+}
+function htmlTarea(x, n, primero) {
+  const tp = tipoPaso(x), txt = [x.pq, x.det].filter(Boolean).join(' ');
+  return `<li class="tarea t-${tp.c}${x.hecho ? ' hecho' : ''}${primero ? ' primero' : ''}">
+    ${checkRuta(x, n)}
+    <div class="t-c">
+      <div class="t-meta"><span class="t-tipo">${ICONO_PASO[tp.i] || ''}${TIPO_ETQ[tp.c] || 'Plan'}</span>${x.cuando ? `<span class="t-cuando">${esc(x.cuando)}</span>` : ''}${primero ? '<span class="t-primero">Lo primero</span>' : ''}</div>
+      <b class="t-t">${x.t.replace(/ €/g, ' €')}</b>
+      ${txt ? `<p class="t-pq">${txt}</p>` : ''}
+      ${masRuta(x)}
+    </div>
+  </li>`;
+}
+function htmlFechaRuta(x) {
+  const d = x.d ? deIso(x.d) : null;
+  return `<li class="rfecha${x.hecho ? ' hecho' : ''}">
+    <span class="rf-d">${d ? `<b>${d.getDate()}</b><small>${MESES[d.getMonth()]}</small>` : `<small>${esc(x.cuando || '')}</small>`}</span>
+    <div class="t-c"><b class="t-t">${x.t.replace(/ €/g, ' €')}</b>${x.pq || x.det ? `<p class="t-pq">${x.pq || x.det}</p>` : ''}${masRuta(x)}</div>
+    ${checkRuta(x, '')}
+  </li>`;
+}
+function htmlSoloRuta(x) {
+  return `<li class="rsolo">
+    <span class="rs-ico" aria-hidden="true">${ICONO_PASO[tipoPaso(x).i] || ''}</span>
+    <div class="t-c">${x.cuando ? `<span class="t-cuando">${esc(x.cuando)}</span>` : ''}<b class="t-t">${x.t.replace(/ €/g, ' €')}</b>${x.det || x.pq ? `<p class="t-pq">${x.det || x.pq}</p>` : ''}${x.como ? `<p class="t-pq k">${x.como}</p>` : ''}${x.acc ? `<span class="ruta-acc">${x.acc}</span>` : ''}</div>
+  </li>`;
+}
 function htmlRuta(M) {
   const P = pasosRuta(M);
   const hasta = (dias) => fechaCorta(iso(new Date(Date.now() + dias * 86400000)));
   const sub = { mes: `hasta el ${hasta(31)}`, seis: `hasta ${MESES[new Date(Date.now() + 183 * 86400000).getMonth()]}`, anio: `hasta ${MESES[new Date().getMonth()]} de ${new Date().getFullYear() + 1}`, largo: 'lo que se construye despacio' };
-  const primero = P.mes.find((x) => !x.hecho && !x.auto) || P.seis.find((x) => !x.hecho && !x.auto);
   const ia = iaActual();
-  const tareas = [...P.mes, ...P.seis].filter((x) => !x.auto), hechas = tareas.filter((x) => x.hecho).length;
-  const tp = primero ? tipoPaso(primero) : null;
-  return `<div class="ruta-top">
-      ${primero ? `<section class="ruta-hero t-${tp.c}" aria-label="Lo primero">
-        <span class="paso-ico" aria-hidden="true">${ICONO_PASO[tp.i] || ''}</span>
-        <div><span class="ruta-hero-et">Lo primero${primero.cuando ? `, ${esc(primero.cuando)}` : ''}</span>
-          <b>${primero.t.replace(/ €/g, ' €')}</b>${primero.pq ? `<p>${primero.pq}</p>` : ''}${primero.acc ? `<div class="ruta-acc">${primero.acc}</div>` : ''}</div>
-      </section>` : '<section class="ruta-hero t-info"><span class="paso-ico">' + ICONO_PASO.futuro + '</span><div><span class="ruta-hero-et">Este mes</span><b>Nada urgente: deja que trabajen tus aportaciones.</b></div></section>'}
-      <div class="ruta-prog" aria-label="Progreso">
-        <div class="ruta-prog-n"><b>${hechas}</b><span>de ${tareas.length} hechos en los próximos 6 meses</span></div>
-        <div class="ruta-barra"><i style="width:${tareas.length ? ((hechas / tareas.length) * 100).toFixed(0) : 0}%"></i></div>
-        <p class="k">Toca el círculo de cada paso cuando lo hagas. Los de "auto" van solos. ${ia && ia.hoja_de_ruta ? `Los que llevan ${esc(ia.autor || 'IA')} los propone Gemini tras leer las noticias; el resto, la web con tus números.` : 'Los calcula la web con tus números; con la IA conectada, Gemini añade los suyos.'}</p>
+  const cuenta = [...P.mes, ...P.seis].filter((x) => !x.auto), hechas = cuenta.filter((x) => x.hecho).length;
+  const primero = P.mes.find((x) => !x.hecho && claseRuta(x) === 'tarea') || (!P.mes.some((x) => claseRuta(x) === 'tarea' && !x.hecho) ? P.seis.find((x) => !x.hecho && claseRuta(x) === 'tarea') : null);
+  const columna = ([k, t]) => {
+    const tareas = P[k].filter((x) => claseRuta(x) === 'tarea'), fechas = P[k].filter((x) => claseRuta(x) === 'fecha'), solos = P[k].filter((x) => claseRuta(x) === 'solo');
+    const ht = tareas.filter((x) => x.hecho).length;
+    let n = 0;
+    const lado = fechas.length || solos.length;
+    return `<section class="rcol" data-p="${k}" aria-labelledby="hRuta-${k}">
+      <header class="rcol-cab"><h2 id="hRuta-${k}">${t}</h2><span class="k">${sub[k]}</span></header>
+      <div class="rcol-grid${lado ? ' con-lado' : ''}">
+        <div class="rbloque">
+          <h3 class="rh">Por hacer${tareas.length ? `<span class="k">${ht} de ${tareas.length} hechos</span>` : ''}</h3>
+          ${tareas.length ? `<ol class="tareas">${tareas.map((x) => htmlTarea(x, ++n, x === primero)).join('')}</ol>` : `<div class="ruta-vacio">Nada que hacer tú${k === 'mes' ? ' este mes' : ' en este plazo'}.</div>`}
+        </div>
+        ${lado ? `<div class="rlado">
+          ${fechas.length ? `<div class="rbloque"><h3 class="rh">Fechas que vigilar</h3><ul class="rfechas">${fechas.map(htmlFechaRuta).join('')}</ul></div>` : ''}
+          ${solos.length ? `<div class="rbloque"><h3 class="rh">Va solo<span class="k">no tienes que hacer nada</span></h3><ul class="rsolos">${solos.map(htmlSoloRuta).join('')}</ul></div>` : ''}
+        </div>` : ''}
       </div>
+    </section>`;
+  };
+  return `<div class="ruta-barra-top">
+      <div class="plazos" role="group" aria-label="Plazo">${PLAZOS.map(([k]) => { const n = P[k].filter((x) => !x.hecho && !x.auto).length; return `<button data-plazo="${k}" aria-pressed="${S.rutaPlazo === k}">${PLAZO_CORTO[k]}${n ? `<span class="cuenta">${n}</span>` : ''}</button>`; }).join('')}</div>
+      <div class="ruta-res" aria-label="Progreso"><div class="ruta-res-n"><b>${hechas}</b> de ${cuenta.length} hechos <span>en los próximos 6 meses</span></div><div class="ruta-barra"><i style="width:${cuenta.length ? ((hechas / cuenta.length) * 100).toFixed(0) : 0}%"></i></div></div>
     </div>
-    <div class="plazos" role="group" aria-label="Plazo">${PLAZOS.map(([k, t]) => { const n = P[k].filter((x) => !x.hecho && !x.auto).length; return `<button data-plazo="${k}" aria-pressed="${S.rutaPlazo === k}">${PLAZO_CORTO[k]}${n ? `<span class="cuenta">${n}</span>` : ''}</button>`; }).join('')}</div>
-    <div class="ruta" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(([k, t]) => { let n = 0; return `<section class="ruta-col" data-p="${k}" aria-labelledby="hRuta-${k}"><header><h3 id="hRuta-${k}">${t}</h3><span class="k">${sub[k]}${(() => { const a = P[k].filter((x) => !x.auto), h = a.filter((x) => x.hecho).length; return a.length ? `, ${h} de ${a.length} hechos` : ''; })()}</span></header>
-      ${P[k].length ? `<ol class="ruta-pasos">${P[k].map((x) => htmlPaso(x, x.auto ? 0 : ++n)).join('')}</ol>` : '<div class="ruta-vacio">Nada que hacer en este plazo.</div>'}</section>`; }).join('')}</div>`;
+    <div class="ruta ruta2" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(columna).join('')}</div>
+    <p class="nota ruta-nota">Toca el círculo de cada paso cuando lo hagas. ${ia && ia.hoja_de_ruta ? `Los que llevan ${esc(ia.autor || 'IA')} los propone Gemini tras leer las noticias; el resto, la web con tus números.` : 'Los calcula la web con tus números; con la IA conectada, Gemini añade los suyos.'}</p>`;
 }
 function vistaRuta(M) {
-  return `<div class="vista-cab"><h1>Paso a paso</h1><p>Qué hacer con tu cartera y cuándo, en orden: lo urgente primero, con el porqué, el cómo y lo que pagas a Hacienda.</p></div>${htmlRuta(M)}`;
+  return `<div class="vista-cab"><h1>Paso a paso</h1><p>Qué te toca hacer y cuándo: lo urgente primero, con el porqué, el cómo y lo que pagas a Hacienda.</p></div>${htmlRuta(M)}`;
 }
 async function marcarRuta(id) {
   const r = S.cartera.ruta = S.cartera.ruta || {};
@@ -4027,7 +4333,7 @@ function htmlFiscalGuia(M, fa, x) {
   ].filter(Boolean);
   return `
     <section style="margin-top:44px" aria-labelledby="hTram"><div class="sec-cab"><h2 id="hTram">Cuánto pagas: los tramos del ahorro</h2><span class="k">ganancias de ventas, dividendos e intereses de ${anio}</span></div>
-      <div class="tramos">${tramos.map((t) => `<div class="tramo${t.tuyo ? ' tuyo' : ''}"><b>${t.t} %</b><span>${t.hasta === Infinity ? `más de ${eur(t.desde, 0)}` : `${t.desde ? `de ${eur(t.desde, 0)} ` : 'hasta '}${t.desde ? 'a ' : ''}${eur(t.hasta, 0)}`}</span>${t.tuyo ? '<small>estás aquí</small>' : ''}</div>`).join('')}</div>
+      <div class="tramos2">${tramos.map((t, i) => `<div class="tr2${t.tuyo ? ' tuyo' : ''}" style="--h:${32 + i * 14}%"><i></i><b>${t.t} %</b><small>${t.hasta === Infinity ? `más de ${fmtNum(t.desde / 1000, 0)}.000 €` : t.desde ? `${fmtNum(t.desde / 1000, 0)}.000 a ${fmtNum(t.hasta / 1000, 0)}.000 €` : `hasta ${fmtNum(t.hasta / 1000, 0)}.000 €`}</small>${t.tuyo ? '<span>tú</span>' : ''}</div>`).join('')}</div>
       <p class="nota">Cada tramo paga solo lo que cae dentro de él. Tu base del ahorro de ${anio} va por ${eur(fa.base, 0)}: ${eur(fa.cuota, 0)} de cuota. Las pérdidas de ventas se compensan con las ganancias del año y, si sobran, con hasta un 25 % de los dividendos e intereses; lo que quede, en los 4 años siguientes.</p>
     </section>
     <section style="margin-top:44px" aria-labelledby="hComo"><div class="sec-cab"><h2 id="hComo">Cómo tributa lo que tienes</h2></div>
@@ -4043,7 +4349,55 @@ function htmlFiscalGuia(M, fa, x) {
     <p class="nota">Cálculo orientativo con la normativa de ${anio}: la cifra exacta sale en el borrador de la renta y en los informes fiscales de tus brókeres.</p>`;
 }
 function vistaFiscal(M) {
-  return `<div class="vista-cab"><h1>Fiscalidad</h1><p>Lo que pagarás en la renta, lo que cuesta cada recomendación y cómo tributa cada cosa que tienes.</p></div>${htmlImpuestos(M)}`;
+  const t = S.fisTab === 'renta' ? 'renta' : 'tu';
+  return `<div class="vista-cab"><h1>Fiscalidad</h1><p>Lo que pagarás en la renta, lo que cuesta cada recomendación, cómo tributa cada cosa y cómo hacer la declaración.</p></div>
+  <div class="subvistas dos-op" id="fisTabs" role="group" aria-label="Qué ver"><button data-fis="tu" aria-pressed="${t === 'tu'}">${ICONOS.calc}Lo que pagas</button><button data-fis="renta" aria-pressed="${t === 'renta'}">${ICONOS.fiscal}Guía de la renta</button></div>
+  ${t === 'renta' ? htmlGuiaRenta(M) : htmlImpuestos(M)}`;
+}
+
+/* =====================================================================
+   Guía de la declaración de la renta: los pasos, en qué casilla va cada cosa y lo tuyo de ese año.
+   De enero a junio es la del año pasado (la que toca presentar); después, la del año en curso.
+   ===================================================================== */
+function htmlGuiaRenta(M) {
+  const hoy = new Date(), anio = hoy.getMonth() < 6 ? hoy.getFullYear() - 1 : hoy.getFullYear(), pres = anio + 1;
+  const fa = fiscalAnio(anio), d = datosFiscales(anio);
+  const plats = new Set([...M.filas.map((f) => f.pos.plataforma), ...M.efectivo.map((e) => e.plataforma)].filter(Boolean));
+  const ventas = (S.cartera.movimientos || []).filter((m) => m.tipo === 'venta' && String(m.fecha).startsWith(String(anio)));
+  const grupo = (m) => { const i = S.inst[m.instrumento] || {}; return i.clase === 'Cripto' ? 'cripto' : /^Fondo/.test(i.tipo || '') ? 'fondos' : 'acciones'; };
+  const lineaV = (m) => `<li><span>${esc(nombreInst(m.instrumento))}</span><span class="k">${fechaCorta(m.fecha)}</span><b class="${cls(m.resultado)}">${eurS(m.resultado || 0, 0)}</b></li>`;
+  const deGrupo = (g) => ventas.filter((m) => grupo(m) === g);
+  const tuyas = (g, vacio) => { const v = deGrupo(g); return v.length ? `<ul class="rg-ventas">${v.map(lineaV).join('')}</ul>` : `<p class="k">${vacio}</p>`; };
+  const extranjeras = M.filas.some((f) => f.inst.tipo === 'Acción' && f.inst.pais && f.inst.pais !== 'ES');
+  const informes = [
+    plats.has('Trade Republic') && ['Trade Republic', 'En la app: Perfil, Impuestos, el informe fiscal del año. Si tu cuenta tiene IBAN español, sus datos llegan al borrador, aunque a veces mal colocados: las ventas pueden aparecer como rendimientos del capital (casilla 0031) en vez de ganancias (0328).'],
+    plats.has('MyInvestor') && ['MyInvestor', 'Es español: retiene y se lo comunica a Hacienda, así que sus fondos y su cuenta suelen venir bien en el borrador. Descarga igualmente su información fiscal del año para comprobarlo.'],
+    plats.has('Bitvavo') && ['Bitvavo', 'No le pasa tus datos a Hacienda española: descarga el informe o el historial de operaciones del año y mete tú cada venta.'],
+  ].filter(Boolean);
+  const casillas = [
+    ['Intereses de cuentas', '0027', 'Lo que te ha pagado el efectivo (Trade Republic y similares), en bruto.'],
+    ['Dividendos', '0029', 'En bruto, antes de retenciones. La retención española ya viene restada abajo.'],
+    ['Ventas de acciones y ETF', '0328', 'Una línea por cada venta: fechas, lo que pagaste y lo que cobraste (con comisiones).'],
+    ['Reembolsos de fondos', 'fondos de inversión', 'Solo cuando sacas el dinero. Los traspasos entre fondos no se declaran.'],
+    ['Criptomonedas', 'monedas virtuales', 'Cada venta a euros y cada cambio de una cripto por otra, con su valor de compra y de venta.'],
+    extranjeras && ['Doble imposición internacional', '0588', 'Lo que te retuvieron fuera por dividendos, hasta el 15 %: así no pagas dos veces.'],
+    ['Pérdidas de años anteriores', '1634', 'Las de los 4 últimos años que te queden por compensar.'],
+  ].filter(Boolean);
+  const paso = (n, t, cuando, cuerpo) => `<li class="rg-paso"><span class="rg-n">${n}</span><div><div class="rg-cab"><b>${t}</b>${cuando ? `<span class="rg-cuando">${cuando}</span>` : ''}</div>${cuerpo}</div></li>`;
+  let n = 0;
+  return `<div class="rg">
+    <p class="rg-intro">Renta de <b>${anio}</b>: se presenta del 1 de abril al 30 de junio de ${pres}. Con lo que la web sabe, sale una cuota de <b>${eur(fa.cuota, 0)}</b> en la base del ahorro${fa.retenido ? `, menos ${eur(fa.retenido, 0)} que ya te retuvieron` : ''}.${!d.otras && !d.rcm ? ' <button class="enlace" data-accion="fiscal">Apunta tus datos fiscales</button> para que cuadre.' : ''}</p>
+    <ol class="rg-pasos">
+      ${anio === hoy.getFullYear() ? paso(++n, 'Cierra el año antes del 31 de diciembre', `31 dic ${anio}`, `<p>Si este año tienes ganancias, mira si te compensa vender algo con pérdidas para restarlas: el Paso a paso te lo propone con cifras. Ojo con la recompra: si vuelves a comprar lo mismo antes de dos meses (acciones y ETF) o de un año (fondos), esa pérdida no resta. En cripto la regla de los dos meses no se aplica, aunque hay quien defiende la de un año.</p>`) : ''}
+      ${paso(++n, 'Descarga los informes fiscales de tus brókeres', `enero-marzo ${pres}`, informes.length ? `<ul class="rg-lista">${informes.map(([t, x]) => `<li><b>${t}</b><span>${x}</span></li>`).join('')}</ul>` : '<p>Cada bróker publica en enero o febrero un informe con tus ventas, dividendos e intereses del año.</p>')}
+      ${paso(++n, 'Modelos 720 y 721, solo si te tocan', `hasta el 31 mar ${pres}`, `<p>Son informativos (no se paga nada) y solo si a 31 de diciembre tenías más de 50.000 € fuera de España: el 720 para valores y cuentas, el 721 para cripto en plataformas extranjeras. Si no llegas, no tienes que hacer nada.</p>`)}
+      ${paso(++n, 'Entra en Renta Web y abre el borrador', `desde el 1 abr ${pres}`, `<p>En la web de la Agencia Tributaria o en su app, con Cl@ve, certificado digital o el número de referencia (te lo dan con tu DNI y la casilla 0505 de la renta anterior). El borrador trae lo que tus bancos y brókeres españoles han comunicado: no lo confirmes sin revisarlo.</p>`)}
+      ${paso(++n, 'Revisa cada apartado con lo tuyo', '', `<div class="rg-casillas">${casillas.map(([t, c, x]) => `<div class="rg-c"><div class="rg-c-cab"><b>${t}</b><span class="rg-cas">${/^\d/.test(c) ? `casilla ${c}` : c}</span></div><p>${x}</p>${t === 'Ventas de acciones y ETF' ? tuyas('acciones', `No tienes ventas de acciones o ETF apuntadas en ${anio}.`) : t === 'Reembolsos de fondos' ? tuyas('fondos', `Ningún reembolso apuntado en ${anio}.`) : t === 'Criptomonedas' ? tuyas('cripto', `Ninguna venta de cripto apuntada en ${anio}.`) : t === 'Dividendos' && d.rcm ? `<p class="k">Has apuntado ${eur(d.rcm, 0)} de dividendos e intereses en ${anio}.</p>` : ''}</div>`).join('')}</div><p class="k">Los números de casilla cambian a veces de un año a otro: si no cuadran, búscalas por su nombre. Las ventas que hiciste fuera de la web no salen aquí.</p>`)}
+      ${paso(++n, 'Compara con lo que calcula la web', '', `<p>Base del ahorro de ${anio}: ${eur(fa.base, 0)}. Cuota: ${eur(fa.cuota, 0)}. Si el borrador da mucho más, suele faltar el valor de compra de alguna venta o sobrar una venta duplicada; si da mucho menos, falta alguna venta de un bróker extranjero.</p>`)}
+      ${paso(++n, 'Preséntala antes del 30 de junio', `30 jun ${pres}`, `<p>Si sale a pagar, puedes fraccionarlo sin intereses: 60 % en junio y 40 % en noviembre. Si la domicilias, hazlo antes del 25 de junio. Si sale a devolver, cuanto antes la presentes, antes cobras.</p>`)}
+    </ol>
+    <p class="nota">Guía orientativa con la normativa vigente; la cifra exacta sale en tu borrador y en los informes de tus brókeres. Para dudas concretas, pregúntale al asesor: tiene tus números.</p>
+  </div>`;
 }
 
 /* =====================================================================
@@ -4226,7 +4580,7 @@ function rellenarIA(txt, v) {
 }
 function htmlAnalisisIA(M) {
   const ia = iaActual();
-  const prog = `<div id="iaProgreso">${htmlProgresoIA()}</div>`;
+  const prog = `<div id="iaProgreso">${htmlProgresoIA()}</div>${htmlPreguntasIA(true)}`;
   if (!ia) return prog + (!S.iaCargado ? '<div class="vacio">Cargando el análisis…</div>'
     : `<div class="vacio">Todavía no hay un análisis de tu cartera. ${AS.clave ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Escribiéndolo…' : 'Que Gemini lo escriba ahora'}</button>` : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Conecta Gemini (gratis) y lo escribe con tus datos</button>`}</div>`);
   const v = valoresIA(M);
@@ -4255,7 +4609,7 @@ function htmlAnalisisIA(M) {
       ${(ia.resumen || []).slice(0, 1).map((p) => `<p class="ia-p">${R(p)}</p>`).join('')}
       ${(ia.resumen || []).length > 1 ? `<details class="mas ia-mas"><summary>Seguir leyendo</summary>${ia.resumen.slice(1).map((p) => `<p class="ia-p">${R(p)}</p>`).join('')}</details>` : ''}
     </div>
-    ${ia.puntuaciones ? `<div class="ia-notas compactas">${ia.puntuaciones.map((x) => `<details class="ia-nota"><summary><b>${esc(x.k)}</b>${puntos(+x.nota || 0)}</summary><span>${R(x.txt)}</span></details>`).join('')}</div><p class="nota" style="margin-top:8px">Toca cada nota para ver por qué.</p>` : ''}
+    ${ia.puntuaciones ? `<div class="ia-notas compactas">${ia.puntuaciones.map((x) => `<div class="ia-nota"><div class="ia-nota-t"><b>${esc(x.k)}</b><small>${+x.nota || 0} de 5</small></div>${puntos(+x.nota || 0)}<span>${R(x.txt)}</span></div>`).join('')}</div>` : ''}
     <div class="dos" style="margin-top:44px">
       <section aria-labelledby="hMej"><div class="sec-cab"><h2 id="hMej">Qué mejoraría</h2><span class="k">por orden de importancia</span></div>
         ${(() => { const li = (x) => `<li><h3>${R(x.titulo)}</h3><div class="ia-meta">${x.impacto ? `<span><b>Qué ganas.</b> ${R(x.impacto)}</span>` : ''}${x.cuando ? `<span><b>Cuándo.</b> ${R(x.cuando)}</span>` : ''}</div>${x.texto ? `<details class="paso-mas"><summary>Por qué y cómo</summary><p>${R(x.texto)}</p></details>` : ''}</li>`; const m = ia.mejorar || []; return `<ol class="ia-mejorar">${m.slice(0, 3).map(li).join('')}</ol>${m.length > 3 ? `<details class="mas"><summary>${m.length - 3 === 1 ? 'Una cosa más' : `${m.length - 3} cosas más`}, menos urgentes</summary><ol class="ia-mejorar" style="counter-reset: m 3">${m.slice(3).map(li).join('')}</ol></details>` : ''}`; })()}
@@ -4393,7 +4747,272 @@ function euCorto(n) {
   return fmtNum(Math.round(n / 1000) * 1000, 0) + ' €';
 }
 
+/* =====================================================================
+   Objetivos: quién eres como inversor (edad, situación, cuándo necesitas el dinero, cuánto riesgo
+   aguantas, tus límites) y tus metas con cifra y fecha. Va dentro de la cartera cifrada. Con esto se
+   ajustan la IA, el Paso a paso y la lectura de tu cartera: no se invierte igual a los 24 que a los 60.
+   La IA, además, pregunta lo que le falte para afinar sus consejos.
+   ===================================================================== */
+const PERFIL_DEF = { edad: null, situacion: null, ingresos_mes: null, gastos_mes: null, colchon_meses: 6, horizonte: null, riesgo: null, experiencia: null, estilo: null, deudas: null, limite_cripto: 5, limite_empresa: 10 };
+const perfil = () => ({ ...PERFIL_DEF, ...((S.cartera && S.cartera.perfil) || {}) });
+const perfilVacio = () => { const p = (S.cartera && S.cartera.perfil) || {}; return !p.edad && !p.horizonte && !p.riesgo; };
+const SITUACION = { estudiante: 'Estudiando', trabajando: 'Trabajando por cuenta ajena', autonomo: 'Autónomo o empresa propia', paro: 'Buscando trabajo', jubilado: 'Jubilado' };
+const RIESGO = {
+  bajo: ['Vendería', 'para no perder más', 'Prudente'],
+  medio: ['Esperaría', 'a que se recupere', 'Equilibrado'],
+  alto: ['Compraría más', 'aprovechando que está barato', 'Decidido'],
+};
+const EXPERIENCIA = { poca: 'Estoy empezando', algo: 'Llevo un par de años', mucha: 'Llevo muchos años' };
+const ESTILO = { crecimiento: 'Que crezca, aunque no dé dividendos', equilibrio: 'Un poco de todo', dividendos: 'Cobrar dividendos cada año' };
+const DEUDAS = { no: 'Ninguna', hipoteca: 'Hipoteca', consumo: 'Préstamos o tarjetas' };
+const HORIZONTES_P = [[2, 'en menos de 3 años'], [5, 'en 3 a 5 años'], [10, 'en 5 a 10 años'], [20, 'en 10 a 20 años'], [30, 'en más de 20 años']];
+const textoHorizonte = (h) => (HORIZONTES_P.find(([x]) => x === +h) || [, h ? `en ${h} años` : '—'])[1];
+
+/* cuánto en bolsa le toca a tu perfil: por el riesgo que aguantas, recortado por el plazo y la edad */
+function bolsaRecomendada(p) {
+  if (!p.riesgo && !p.horizonte && !p.edad) return null;
+  let b = { bajo: 50, medio: 75, alto: 95 }[p.riesgo] ?? 75;
+  const h = +p.horizonte;
+  if (h && h <= 2) b = Math.min(b, 20); else if (h && h <= 5) b = Math.min(b, 45); else if (h && h <= 10) b = Math.min(b, 75);
+  if (+p.edad >= 50) b -= Math.min(30, +p.edad - 50);
+  b = Math.max(10, Math.min(100, Math.round(b / 5) * 5));
+  return { pct: b, min: Math.max(0, b - 10), max: Math.min(100, b + 10) };
+}
+
+/* la foto de tu cartera frente a tu perfil */
+function estadoPerfil(M) {
+  const p = perfil(), total = M.total || 0;
+  const v = (fn) => sum(M.filas.filter(fn), (f) => f.valor);
+  const pc = (x) => (total ? (x / total) * 100 : 0);
+  const sueltas = v((f) => f.inst.tipo === 'Acción'), cripto = v((f) => f.inst.clase === 'Cripto');
+  const bolsa = v((f) => f.inst.clase === 'Renta variable');
+  const seguro = v((f) => ['Renta fija', 'Monetario'].includes(f.inst.clase)) + (M.liquidez || 0);
+  const acciones = M.filas.filter((f) => f.inst.tipo === 'Acción').map((f) => ({ f, pct: pc(f.valor) })).sort((a, b) => b.pct - a.pct);
+  const colchon = p.gastos_mes ? +p.gastos_mes * (+p.colchon_meses || 6) : null;
+  return { p, total, pctSueltas: pc(sueltas), pctCripto: pc(cripto), pctBolsa: pc(bolsa), cripto, seguro, colchon, mayor: acciones[0] || null, reco: bolsaRecomendada(p), metas: evaluarMetas(M) };
+}
+
+/* cada meta frente a la proyección: lo probable en su fecha, descontando las metas anteriores que se gastan */
+function evaluarMetas(M) {
+  const metas = ((S.cartera && S.cartera.metas) || []).filter((m) => m && +m.importe > 0);
+  if (!metas.length) return [];
+  let pr = null; try { pr = proyeccion(M); } catch (e) {}
+  const hoy = new Date();
+  let gastado = 0;
+  return [...metas].sort((a, b) => (+a.anio || 9999) - (+b.anio || 9999)).map((m0) => {
+    const m = { ...m0, importe: +m0.importe, anio: +m0.anio || null };
+    m.pct = Math.max(0, Math.min(100, ((M.total - gastado) / m.importe) * 100));
+    if (m.anio && pr) {
+      m.meses = Math.max(1, Math.min(360, (m.anio - hoy.getFullYear()) * 12 + (11 - hoy.getMonth())));
+      m.prob = pr.p50[m.meses] - gastado; m.mal = pr.p10[m.meses] - gastado;
+      m.ok = m.prob >= m.importe; m.seguro = m.mal >= m.importe;
+      m.falta = Math.max(0, m.importe - m.prob); m.extraMes = m.falta ? m.falta / m.meses : 0;
+    } else if (pr) {
+      const i = pr.p50.findIndex((x) => x - gastado >= m.importe);
+      m.cuando = i >= 0 ? pr.fechas[i] : null; m.ok = i >= 0;
+    }
+    if (m.tipo !== 'llegar') gastado += m.importe;
+    return m;
+  });
+}
+function textoMeta(m) {
+  if (!m.anio) return m.cuando ? (m.pct >= 100 ? 'Ya lo tienes.' : `Lo probable es llegar en ${MESES[deIso(m.cuando).getMonth()]} de ${m.cuando.slice(0, 4)}, con lo que aportas ahora.`) : 'Con lo que aportas ahora no llegas en 30 años: súbele la aportación en Proyección para ver cuánto haría falta.';
+  if (m.prob == null) return '';
+  if (m.seguro) return `Llegas de sobra: en ${m.anio} lo probable es tener ${euCorto(m.prob)}, e incluso si va mal, ${euCorto(m.mal)}.`;
+  if (m.ok) return `Llegas en lo probable (${euCorto(m.prob)} en ${m.anio}), pero si la bolsa va mal te quedarías en ${euCorto(Math.max(0, m.mal))}.${m.tipo !== 'llegar' && m.meses <= 36 ? ' Como es en menos de 3 años, ve pasando ese dinero a algo que no baje.' : ''}`;
+  return `Te faltarían unos ${eur(m.falta, 0)}: súbele unos ${eur(Math.ceil(m.extraMes / 10) * 10, 0)} al mes a la aportación o retrásala.`;
+}
+
+/* lo que la IA preguntó en su última revisión y aún no has contestado */
+function preguntasIA() {
+  const ia = iaActual(); if (!ia || !Array.isArray(ia.preguntas)) return [];
+  const hechas = new Set((perfil().respuestas || []).map((r) => normTxt(r.q)));
+  return ia.preguntas.filter((x) => x && x.q && !hechas.has(normTxt(x.q))).slice(0, 3);
+}
+function htmlPreguntasIA(compacto) {
+  const qs = preguntasIA(); if (!qs.length) return '';
+  if (compacto) return `<a class="ia-pregunta-aviso" href="#objetivos">${ICONOS.chispa}<span><b>La IA quiere saber ${qs.length === 1 ? 'una cosa' : `${qs.length} cosas`} de ti</b> para afinar sus consejos</span><span class="k">Contestar</span></a>`;
+  return `<section class="pf-preguntas" aria-labelledby="hPreg"><div class="sec-cab"><h2 id="hPreg">${ICONOS.chispa}La IA quiere saber</h2><span class="k">con tu respuesta rehace sus consejos</span></div>
+    ${qs.map((x, i) => `<div class="pf-preg" data-preg="${i}"><b>${esc(x.q)}</b>${x.por_que ? `<p class="k">${esc(x.por_que)}</p>` : ''}
+      <div class="pf-opc">${(x.opciones || []).slice(0, 5).map((o) => `<button type="button" class="chip-btn" data-resp="${esc(o)}">${esc(o)}</button>`).join('')}</div>
+      <form class="pf-otra"><input placeholder="${(x.opciones || []).length ? 'O escríbelo tú' : 'Tu respuesta'}" aria-label="Tu respuesta"><button class="btn peq">Responder</button></form></div>`).join('')}
+  </section>`;
+}
+async function responderIA(i, a) {
+  const x = preguntasIA()[i]; if (!x || !String(a || '').trim()) return;
+  const p = S.cartera.perfil = S.cartera.perfil || {};
+  p.respuestas = [...(p.respuestas || []), { q: x.q, a: String(a).trim().slice(0, 300), f: hoyIso() }].slice(-25);
+  p.actualizado = new Date().toISOString();
+  AS.foto = null;
+  await guardarYPintar('Respuesta a la IA');
+  toast('Apuntado. La IA lo tendrá en cuenta en su próxima revisión.', 4000);
+}
+
+function barraLimite(t, actual, limite, sub) {
+  const pasa = actual > limite + 0.5;
+  return `<div class="pf-lim${pasa ? ' pasa' : ''}"><div class="pf-lim-t"><span>${t}</span><b>${fmtNum(actual, 1)} %<small> de ${fmtNum(limite, 0)} %</small></b></div>
+    <div class="pf-barra"><i style="width:${Math.min(100, (actual / Math.max(limite, 0.1)) * 100).toFixed(0)}%"></i></div>${sub ? `<small class="k">${sub}</small>` : ''}</div>`;
+}
+function htmlPerfil(M) {
+  const e = estadoPerfil(M), p = e.p, vacio = perfilVacio();
+  const fila = (t, v) => `<div><dt>${t}</dt><dd>${v || '<span class="k">sin decir</span>'}</dd></div>`;
+  const metas = e.metas;
+  const lectura = (() => {
+    if (!e.reco) return '';
+    const dif = e.pctBolsa - e.reco.pct;
+    const quien = [p.edad ? `${p.edad} años` : '', p.horizonte ? `el dinero ${textoHorizonte(p.horizonte)}` : '', p.riesgo ? RIESGO[p.riesgo][2].toLowerCase() : ''].filter(Boolean).join(', ');
+    return `<div class="pf-lectura${Math.abs(dif) > 15 ? ' aviso' : ''}">
+      <div class="pf-medidor" role="img" aria-label="En bolsa: ${fmtNum(e.pctBolsa, 0)} %. Para tu perfil: entre ${e.reco.min} y ${e.reco.max} %"><span class="pf-rango" style="left:${e.reco.min}%;width:${e.reco.max - e.reco.min}%"></span><span class="pf-tu" style="left:${Math.min(100, e.pctBolsa).toFixed(1)}%"></span></div>
+      <div class="pf-medidor-ej"><span>0 %</span><span>100 % en bolsa</span></div>
+      <p><b>Para tu perfil${quien ? ` (${esc(quien)})` : ''}, lo normal es tener entre un ${e.reco.min} y un ${e.reco.max} % en bolsa.</b> Tú tienes un ${fmtNum(e.pctBolsa, 0)} %. ${dif > 15 ? 'Arriesgas más de lo que encaja contigo: en una caída fuerte lo notarías mucho. Lo que aportes, mejor a renta fija o monetario hasta acercarte.' : dif < -15 ? 'Vas más conservador de lo que te permite tu perfil: a largo plazo, más bolsa suele dar bastante más.' : 'Encaja.'}</p>
+    </div>`;
+  })();
+  return `
+    ${htmlPreguntasIA()}
+    ${vacio ? `<section class="pf-empieza">${dibujo('perfil')}<div><h2>Cuéntale a la web quién eres</h2><p>Tu edad, en qué andas, cuándo vas a necesitar el dinero y cuánto riesgo aguantas. Es un minuto y con eso la IA, las ideas y el Paso a paso te aconsejan a tu medida: no se invierte igual a los 24 que a los 60.</p><button class="btn pri" data-accion="perfil">Empezar</button></div></section>` : ''}
+    <div class="pf-grid">
+      <section class="pf-card" aria-labelledby="hTu"><header><h2 id="hTu">Tú</h2><button class="enlace" data-accion="perfil">Editar</button></header>
+        <dl class="pf-dl">${fila('Edad', p.edad ? `${p.edad} años` : '')}${fila('Ahora mismo', SITUACION[p.situacion])}${fila('Necesitarás la mayor parte', p.horizonte ? textoHorizonte(p.horizonte) : '')}${fila('Si cayera un 30 %', p.riesgo ? `${RIESGO[p.riesgo][0]} ${RIESGO[p.riesgo][1]}` : '')}${fila('Experiencia', EXPERIENCIA[p.experiencia])}${fila('Buscas', ESTILO[p.estilo])}${fila('Deudas', DEUDAS[p.deudas])}</dl>
+        ${lectura}
+      </section>
+      <section class="pf-card" aria-labelledby="hLim"><header><h2 id="hLim">Tus límites</h2><button class="enlace" data-accion="perfil">Cambiar</button></header>
+        ${barraLimite('Acciones sueltas', e.pctSueltas, +(S.cartera.limite_acciones || 20), 'empresas compradas una a una, fuera de fondos')}
+        ${barraLimite('Cripto', e.pctCripto, +p.limite_cripto || 5)}
+        ${e.mayor ? barraLimite(`Una sola empresa: ${esc(e.mayor.f.inst.corto)}`, e.mayor.pct, +p.limite_empresa || 10, 'la que más pesa de las que tienes sueltas') : ''}
+        ${e.colchon ? `<div class="pf-lim${e.seguro < e.colchon * 0.9 ? ' pasa' : ''}"><div class="pf-lim-t"><span>Colchón para imprevistos</span><b>${eur(e.seguro, 0)}<small> de ${eur(e.colchon, 0)}</small></b></div><div class="pf-barra ok"><i style="width:${Math.min(100, (e.seguro / e.colchon) * 100).toFixed(0)}%"></i></div><small class="k">${p.colchon_meses || 6} meses de tus gastos, en efectivo, monetarios y renta fija</small></div>` : '<p class="k">Pon tus gastos al mes en Editar y te calculo el colchón que deberías tener aparte.</p>'}
+      </section>
+      <section class="pf-card pf-metas" aria-labelledby="hMet"><header><h2 id="hMet">Tus metas</h2><button class="btn peq" data-accion="meta">${ICONOS.mas}Añadir</button></header>
+        ${metas.length ? `<ul class="metas">${metas.map((m) => `<li class="${m.ok === false ? 'falta' : 'ok'}"><div class="meta-cab"><b>${esc(m.n)}</b><span class="k">${eur(m.importe, 0)}${m.anio ? ` en ${m.anio}` : ''}</span><button class="ib" data-accion="meta" data-id="${esc(m.id)}" aria-label="Editar la meta">${ICONOS.lapiz}</button></div><div class="pf-barra ok"><i style="width:${m.pct.toFixed(0)}%"></i></div><p>${textoMeta(m)}</p></li>`).join('')}</ul>` : '<p class="k">Algo con cifra y fecha: la entrada de un piso, un coche, la boda, llegar a 100.000 €, dejar de trabajar a los 55… La web calcula si llegas con lo que aportas y cuánto te falta.</p><button class="btn peq" data-accion="meta">' + ICONOS.mas + 'Añadir tu primera meta</button>'}
+      </section>
+      <section class="pf-card" aria-labelledby="hPIA"><header><h2 id="hPIA">Lo que la IA debe saber</h2><button class="enlace" data-accion="perfil-ia">Editar</button></header>
+        <p class="pf-yo">${S.cartera.asesor && S.cartera.asesor.sobre_mi ? esc(S.cartera.asesor.sobre_mi) : '<span class="k">Tus planes, tus reglas, lo que no quieres comprar nunca, si vas a cambiar de trabajo… Lo que quieras que tenga en cuenta.</span>'}</p>
+        ${(p.respuestas || []).length ? `<details class="mas"><summary>Lo que le has contestado (${p.respuestas.length})</summary><ul class="pf-resp">${p.respuestas.slice().reverse().map((r) => `<li><span class="k">${esc(r.q)}</span><b>${esc(r.a)}</b></li>`).join('')}</ul></details>` : ''}
+      </section>
+    </div>`;
+}
+
+function editarPerfil() {
+  const p = perfil();
+  const radios = (nombre, obj, actual, fmt = (k, v) => esc(v)) => Object.entries(obj).map(([k, v]) => `<label class="opc"><input type="radio" name="${nombre}" value="${k}"${actual === k ? ' checked' : ''}><span>${fmt(k, v)}</span></label>`).join('');
+  const h = hoja('Tu perfil de inversor', `<form id="fPerfil" class="pf-form" novalidate>
+    <p class="nota" style="margin:0">Va dentro de tu cartera cifrada. Con esto la IA, el Paso a paso y las ideas se ajustan a ti.</p>
+    <div class="form-grid">
+      <label class="campo">Edad<input name="edad" inputmode="numeric" value="${val(p.edad)}" placeholder="24"></label>
+      <label class="campo">¿Cuándo necesitarás la mayor parte del dinero?<select name="horizonte"><option value="">Elige</option>${HORIZONTES_P.map(([k, t]) => `<option value="${k}"${+p.horizonte === k ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
+    </div>
+    <fieldset class="opciones"><legend>Ahora mismo estás</legend><div class="opc-fila">${radios('situacion', SITUACION, p.situacion)}</div></fieldset>
+    <fieldset class="opciones"><legend>Si tu cartera cayera un 30 % en unos meses, ¿qué harías?</legend><div class="opc-fila">${radios('riesgo', RIESGO, p.riesgo, (k, v) => `<b>${v[0]}</b><small>${v[1]}</small>`)}</div></fieldset>
+    <fieldset class="opciones"><legend>¿Cuánto llevas invirtiendo?</legend><div class="opc-fila">${radios('experiencia', EXPERIENCIA, p.experiencia)}</div></fieldset>
+    <fieldset class="opciones"><legend>Qué buscas</legend><div class="opc-fila">${radios('estilo', ESTILO, p.estilo)}</div></fieldset>
+    <fieldset class="opciones"><legend>Deudas que estés pagando</legend><div class="opc-fila">${radios('deudas', DEUDAS, p.deudas)}</div></fieldset>
+    <div class="form-grid">
+      <label class="campo">Gastos al mes (€)<input name="gastos" inputmode="decimal" value="${val(p.gastos_mes)}" placeholder="1.200"><small>De media. Sirve para calcular tu colchón.</small></label>
+      <label class="campo">Colchón<select name="colchon">${[3, 6, 9, 12].map((n) => `<option value="${n}"${+p.colchon_meses === n ? ' selected' : ''}>${n} meses de gastos</option>`).join('')}</select><small>Con trabajo fijo bastan 3-6; si no, mejor 9-12.</small></label>
+      <label class="campo">Ingresos netos al mes (€)<input name="ingresos" inputmode="decimal" value="${val(p.ingresos_mes)}" placeholder="Opcional"><small>Para saber cuánto podrías aportar.</small></label>
+    </div>
+    <h3 class="pf-sub">Tus límites</h3>
+    <div class="form-grid">
+      <label class="campo">Máximo en acciones sueltas (%)<input name="lim" inputmode="decimal" value="${val(+(S.cartera.limite_acciones || 20))}"></label>
+      <label class="campo">Máximo en cripto (%)<input name="cripto" inputmode="decimal" value="${val(+p.limite_cripto)}"></label>
+      <label class="campo">Máximo en una sola empresa (%)<input name="empresa" inputmode="decimal" value="${val(+p.limite_empresa)}"></label>
+    </div>
+    <div class="error" id="errPerfil"></div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div>
+  </form>`, null, true);
+  $('#fPerfil', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const f = ev.target, n = (x) => { const v = numero(x); return v == null || isNaN(v) ? null : v; }, r = (k) => (f.querySelector(`[name=${k}]:checked`) || {}).value || null;
+    const edad = n(f.edad.value), lim = n(f.lim.value), cri = n(f.cripto.value), emp = n(f.empresa.value);
+    if (edad != null && (edad < 14 || edad > 100)) { $('#errPerfil', h.el).textContent = 'Revisa la edad.'; return; }
+    if ([lim, cri, emp].some((x) => x != null && (x < 0 || x > 100))) { $('#errPerfil', h.el).textContent = 'Los límites van de 0 a 100 %.'; return; }
+    const antes = S.cartera.perfil || {};
+    S.cartera.perfil = { ...antes, edad, horizonte: n(f.horizonte.value), situacion: r('situacion'), riesgo: r('riesgo'), experiencia: r('experiencia'), estilo: r('estilo'), deudas: r('deudas'), gastos_mes: n(f.gastos.value), colchon_meses: n(f.colchon.value) || 6, ingresos_mes: n(f.ingresos.value), limite_cripto: cri ?? 5, limite_empresa: emp ?? 10, actualizado: new Date().toISOString() };
+    if (lim) S.cartera.limite_acciones = lim;
+    AS.foto = null;
+    await guardarYPintar('Perfil de inversor', h);
+    toast('Guardado. La IA rehará sus consejos con tu perfil.', 4000);
+  };
+}
+function editarMeta(id) {
+  const metas = S.cartera.metas = S.cartera.metas || [];
+  const m = metas.find((x) => x.id === id) || { tipo: 'gastar' };
+  const h = hoja(id ? 'Tu meta' : 'Nueva meta', `<form id="fMeta" class="pf-form" novalidate>
+    <label class="campo">Qué es<input name="n" value="${val(m.n)}" placeholder="Entrada del piso" maxlength="60"></label>
+    <fieldset class="opciones"><legend>Tipo</legend><div class="opc-fila">
+      <label class="opc"><input type="radio" name="tipo" value="gastar"${m.tipo !== 'llegar' ? ' checked' : ''}><span><b>Gastar ese dinero</b><small>piso, coche, boda, estudios…</small></span></label>
+      <label class="opc"><input type="radio" name="tipo" value="llegar"${m.tipo === 'llegar' ? ' checked' : ''}><span><b>Llegar a tenerlo</b><small>un patrimonio, vivir de rentas…</small></span></label></div></fieldset>
+    <div class="form-grid">
+      <label class="campo">Cuánto (€)<input name="importe" inputmode="decimal" value="${val(m.importe)}" placeholder="40.000"></label>
+      <label class="campo">Para qué año<input name="anio" inputmode="numeric" value="${val(m.anio)}" placeholder="${new Date().getFullYear() + 5}"><small>Si es "llegar a tener", puedes dejarlo vacío y te digo cuándo llegas.</small></label>
+    </div>
+    <div class="error" id="errMeta"></div>
+    <div class="fila-btns">${id ? '<button type="button" class="btn peligro izq" id="bBorrarMeta">Borrar</button>' : ''}<button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div>
+  </form>`);
+  if (id) dosPasos($('#bBorrarMeta', h.el), '¿Seguro?', async () => { S.cartera.metas = metas.filter((x) => x.id !== id); AS.foto = null; await guardarYPintar('Borrar meta', h); });
+  $('#fMeta', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const f = ev.target, importe = numero(f.importe.value), anio = numero(f.anio.value), tipo = (f.querySelector('[name=tipo]:checked') || {}).value || 'gastar';
+    const err = (t) => { $('#errMeta', h.el).textContent = t; };
+    if (!f.n.value.trim()) return err('Ponle un nombre.');
+    if (!(importe > 0)) return err('Pon cuánto dinero es.');
+    if (anio != null && !isNaN(anio) && (anio < new Date().getFullYear() || anio > new Date().getFullYear() + 60)) return err('Revisa el año.');
+    if (tipo === 'gastar' && !anio) return err('Para gastarlo hace falta el año.');
+    const nueva = { id: m.id || nuevoId('m-'), n: f.n.value.trim(), tipo, importe, anio: anio || null };
+    S.cartera.metas = id ? metas.map((x) => (x.id === id ? nueva : x)) : [...metas, nueva];
+    S.cartera.perfil = { ...(S.cartera.perfil || {}), actualizado: new Date().toISOString() };
+    AS.foto = null;
+    await guardarYPintar(id ? 'Cambiar meta' : 'Nueva meta', h);
+  };
+}
+function editarSobreMi() {
+  const yo = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
+  const h = hoja('Lo que la IA debe saber', `<form id="fYo"><label class="campo">Cuéntaselo con tus palabras<textarea name="yo" rows="7" placeholder="Por ejemplo: quiero comprar piso en 2030, no quiero empresas de armas, cobro un extra en junio, prefiero no tocar los fondos…">${esc(yo)}</textarea><small>Va dentro de tu cartera cifrada. Lo leen el asesor y tu análisis diario.</small></label>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div></form>`);
+  $('#fYo', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    S.cartera.asesor = { ...(S.cartera.asesor || {}), sobre_mi: ev.target.yo.value.trim() };
+    S.cartera.perfil = { ...(S.cartera.perfil || {}), actualizado: new Date().toISOString() };
+    AS.foto = null;
+    await guardarYPintar('Asesor: sobre ti', h);
+  };
+}
+
+/* lo que lee la IA de tu perfil */
+function textoPerfil(M) {
+  const e = estadoPerfil(M), p = e.p, L = [];
+  if (perfilVacio()) L.push('No ha rellenado su perfil todavía: si te falta algo que cambie tus consejos (edad, en qué anda, cuándo necesita el dinero, cuánto riesgo aguanta), pregúntaselo.');
+  const d = [p.edad && `${p.edad} años`, SITUACION[p.situacion], p.horizonte && `necesitará la mayor parte del dinero ${textoHorizonte(p.horizonte)}`, p.riesgo && `si la cartera cae un 30 %: ${RIESGO[p.riesgo][0].toLowerCase()} (${RIESGO[p.riesgo][2].toLowerCase()})`, EXPERIENCIA[p.experiencia] && `experiencia: ${EXPERIENCIA[p.experiencia].toLowerCase()}`, ESTILO[p.estilo] && `busca: ${ESTILO[p.estilo].toLowerCase()}`, DEUDAS[p.deudas] && `deudas: ${DEUDAS[p.deudas].toLowerCase()}`, p.ingresos_mes && `ingresos netos ${E0(+p.ingresos_mes)} al mes`, p.gastos_mes && `gastos ${E0(+p.gastos_mes)} al mes`].filter(Boolean);
+  if (d.length) L.push(d.join('; ') + '.');
+  if (e.reco) L.push(`Bolsa que encaja con su perfil según la web: entre ${e.reco.min} y ${e.reco.max} %. Tiene un ${fmtNum(e.pctBolsa, 0)} %.`);
+  L.push(`Sus límites: acciones sueltas ${fmtNum(+(S.cartera.limite_acciones || 20), 0)} % (lleva ${fmtNum(e.pctSueltas, 1)} %), cripto ${fmtNum(+p.limite_cripto, 0)} % (lleva ${fmtNum(e.pctCripto, 1)} %), una sola empresa ${fmtNum(+p.limite_empresa, 0)} %${e.mayor ? ` (la mayor, ${e.mayor.f.inst.corto}, ${fmtNum(e.mayor.pct, 1)} %)` : ''}.`);
+  if (e.colchon) L.push(`Colchón que quiere: ${p.colchon_meses} meses de gastos, ${E0(e.colchon)}. Tiene ${E0(e.seguro)} entre efectivo, monetarios y renta fija.`);
+  for (const m of e.metas) L.push(`- Meta "${m.n}": ${m.tipo === 'llegar' ? 'llegar a tener' : 'gastar'} ${E0(m.importe)}${m.anio ? ` en ${m.anio}` : ''}. ${textoMeta(m).replace(/<[^>]+>/g, '')}`);
+  for (const r of (p.respuestas || []).slice(-12)) L.push(`- Le preguntaste "${r.q}" y contestó: "${r.a}" (${r.f}).`);
+  return L;
+}
+
+/* los pasos que salen de tu perfil: colchón, límites, metas y bolsa frente a lo que aguantas */
+function pasosPerfil(M, add) {
+  const e = estadoPerfil(M), p = e.p, hoy = hoyIso(), mes = hoy.slice(0, 7);
+  if (perfilVacio()) add('mes', { id: 'perfil:0', cuando: 'un minuto', t: 'Cuéntale a la web tu edad, tus metas y cuánto riesgo aguantas', pq: 'Con eso estos pasos, las ideas y la IA se ajustan a ti: no se invierte igual a los 24 que a los 60.', acc: '<a class="enlace" href="#objetivos">Rellenar tu perfil</a>' });
+  if (p.deudas === 'consumo') add('mes', { id: `deuda:${mes}`, cuando: 'antes que nada', t: 'Liquida los préstamos o tarjetas antes de invertir más', pq: 'Suelen costar un 7-25 % al año: devolverlos es una rentabilidad segura que la bolsa no te garantiza.', como: 'Lo que ibas a aportar este mes, a amortizar el préstamo más caro. Las aportaciones automáticas, en pausa hasta acabar.' });
+  if (e.colchon && e.seguro < e.colchon * 0.9) add('mes', { id: `colchonf:${mes}`, cuando: 'antes de meter más en bolsa', t: `Completa tu colchón: te faltan ${eur(e.colchon - e.seguro, 0)}`, pq: `Son ${p.colchon_meses} meses de tus gastos (${eur(e.colchon, 0)}). Ahora tienes ${eur(e.seguro, 0)} entre efectivo, monetarios y renta fija.`, como: 'Ve apartando cada mes en el efectivo remunerado de Trade Republic o en un fondo monetario de MyInvestor hasta llegar. Es el dinero de los imprevistos: así nunca tienes que vender en una caída.', imp: 'Los intereses del efectivo y de los monetarios tributan como los dividendos (19-23 %); el monetario no paga nada hasta que lo vendas.', acc: '<a class="enlace" href="#objetivos">Ver tu perfil</a>' });
+  const limC = +p.limite_cripto || 5;
+  if (e.pctCripto > limC + 1 && e.total) { const exceso = e.cripto - (limC / 100) * e.total; add('mes', { id: `limcripto:${mes}`, cuando: 'sin prisa', t: `La cripto pasa de tu límite: ${fmtNum(e.pctCripto, 1)} % de un ${fmtNum(limC, 0)} %`, pq: `Para volver a tu ${fmtNum(limC, 0)} % tendrías que pasar unos ${eur(exceso, 0)} a otra cosa, o dejar de comprar cripto hasta que tus aportaciones la diluyan.`, como: 'Vende esa parte en Bitvavo, pásala a tu banco y de ahí a tu fondo indexado.', imp: 'Si vendes con ganancia, tributa como cualquier venta (19-23 %). Cambiarla por otra cripto también cuenta como venta.' }); }
+  if (e.reco && e.pctBolsa - e.reco.pct > 15) add('anio', { id: `perfilbolsa:${mes}`, cuando: 'poco a poco', t: `Tu cartera arriesga más de lo que encaja contigo: ${fmtNum(e.pctBolsa, 0)} % en bolsa`, pq: `Para tu edad, tu plazo y lo que dices aguantar, lo normal es un ${e.reco.min}-${e.reco.max} %.`, como: 'Sin vender nada: manda las próximas aportaciones a un fondo de renta fija o monetario hasta acercarte.', imp: 'Así no pagas nada: no vendes, solo cambias adónde va lo nuevo. Entre fondos, cambia con traspasos.', acc: '<a class="enlace" href="#objetivos">Ver tu perfil</a>' });
+  for (const m of e.metas) {
+    if (m.tipo !== 'llegar' && m.meses && m.meses <= 36) add(m.meses <= 6 ? 'mes' : 'seis', { id: `metaseg:${m.id}`, cuando: `para ${m.anio}`, t: `Pon a salvo el dinero de «${esc(m.n)}»`, pq: `La necesitas en ${cuando(m.meses)}: si la bolsa cae justo antes, no da tiempo a que se recupere.`, como: `Ve pasando ${eur(m.importe, 0)} a un monetario o a renta fija corta, poco a poco, antes de ${m.anio}.`, imp: 'De un fondo a otro, con traspaso: no pagas nada hasta que saques el dinero. Si vendes acciones o ETF, la ganancia tributa al vender.' });
+    else if (m.falta > 0) add('anio', { id: `metafalta:${m.id}:${mes}`, cuando: m.anio ? `para ${m.anio}` : '', t: `Para «${esc(m.n)}» te faltarían unos ${eur(m.falta, 0)}`, pq: `Lo probable es tener ${euCorto(m.prob)} en ${m.anio} y necesitas ${eur(m.importe, 0)}.`, como: `Súbele unos ${eur(Math.ceil(m.extraMes / 10) * 10, 0)} al mes a la aportación, o retrasa la meta un par de años.`, acc: '<a class="enlace" href="#objetivos">Ver tus metas</a>' });
+  }
+}
+
 function vistaFuturo(M) {
+  const t = S.futTab === 'proy' ? 'proy' : 'perfil';
+  return `<div class="vista-cab"><h1>Objetivos</h1><p>Quién eres como inversor, para qué inviertes y cuánto podrías tener. La IA, las ideas y el Paso a paso se ajustan a esto.</p></div>
+  <div class="subvistas dos-op" id="futTabs" role="group" aria-label="Qué ver"><button data-fut="perfil" aria-pressed="${t === 'perfil'}">${ICONOS.perfil}Tú y tus metas${preguntasIA().length ? `<span class="cuenta">${preguntasIA().length}</span>` : ''}</button><button data-fut="proy" aria-pressed="${t === 'proy'}">${ICONOS.proy}Proyección</button></div>
+  ${t === 'perfil' ? htmlPerfil(M) : htmlProyeccion(M)}`;
+}
+function htmlProyeccion(M) {
   const pr = proyeccion(M);
   const c = pr.cfg;
   const H = S.horizonte || 20;
@@ -4404,7 +5023,7 @@ function vistaFuturo(M) {
   const pesos = Object.entries(pr.ahora).filter(([, x]) => x > 0);
   const totAhora = sum(pesos.map(([, x]) => x)) || 1;
   return `
-  <div class="vista-cab"><h1>Tu futuro</h1><p>Lo que podrías tener si sigues invirtiendo como ahora, con 2.000 escenarios de mercado simulados.</p></div>
+  <p class="nota" style="margin:0 0 18px">Lo que podrías tener si sigues invirtiendo como ahora, con 2.000 escenarios de mercado simulados.</p>
   <div class="proy-controles">
     <label class="campo">Aportas al mes<span class="con-ud"><input data-proy="aport" inputmode="numeric" value="${val(c.aport)}"><span>€</span></span><small>${c.aport === Math.round(aportacionActual()) ? `Es lo de tu plan de ahora` : `Tu plan: ${eur(aportacionActual(), 0)}. <button type="button" class="enlace acento" data-proy-reset>Volver a tu plan</button>`}</small></label>
     <label class="campo">Subes la aportación cada año${sel('subida', [0, 2, 3, 5, 10], c.subida, (x) => (x ? `un ${x} %` : 'No'))}<small>Por ejemplo, con las subidas de sueldo</small></label>
@@ -4959,7 +5578,7 @@ function operacion(tipo, id, sim) {
         const r = fifo(copia.lotes, Math.min(uds, copia.cantidad));
         const res = bruto - gastos - r.coste;
         const imp = res > 0 ? impuestoDeVenta(res).impuesto : 0;
-        extra = `<div><span>Lo que te costaron (FIFO)</span><span>${eur(r.coste)}</span></div><div><b>${res >= 0 ? 'Ganas' : 'Pierdes'}</b><b class="${cls(res)}">${eurS(res)}</b></div>${res > 0 ? `<div><span>Impuesto estimado en la renta</span><span>${eur(imp)}</span></div>` : res < 0 ? '<div><span class="k">Esa pérdida resta de tus ganancias del año (y si sobra, de los 4 siguientes).</span></div>' : ''}${uds > copia.cantidad + 1e-6 ? '<div><span class="down">Vendes más de lo que tienes.</span></div>' : ''}`;
+        extra = `<div><span>Lo que te costaron (FIFO)</span><span>${eur(r.coste)}</span></div><div><b>${res >= 0 ? 'Ganas' : 'Pierdes'}</b><b class="${cls(res)}">${eurS(res)}</b></div>${res > 0 ? `<div><span>Impuesto estimado en la renta</span><span>${eur(imp)}</span></div>` : res < 0 ? `<div><span class="k">Esa pérdida resta de tus ganancias del año (y si sobra, de los 4 siguientes).${(() => { const ins = S.inst[copia.instrumento], l = libreRecompra(ins, q('fecha').value || hoyIso()); return l ? ` Para que cuente, no la recompres hasta el ${fechaLarga(l)}: es la regla de ${reglaRecompra(ins).plazo} de Hacienda.` : ''; })()}</span></div>` : ''}${uds > copia.cantidad + 1e-6 ? '<div><span class="down">Vendes más de lo que tienes.</span></div>' : ''}`;
       } catch (e) { extra = `<div><span class="down">${esc(e.message)}</span></div>`; }
     }
     c.innerHTML = `<div><span>Importe</span><span>${eur(bruto)}</span></div><div><span>Comisión</span><span>${eur(gastos)}</span></div><div><b>Cobras</b><b>${eur(bruto - gastos)}</b></div>${extra}`;
@@ -5076,7 +5695,7 @@ function emparejar(x) {
   if (isin) { const c = Object.entries((S.cat && S.cat.v) || {}).find(([, x]) => String(x.isin || '').toUpperCase() === isin); if (c) return { id: instDeCatalogo(c[0]), como: 'ISIN' }; }
   if (x.tipo === 'Cripto' || CRIPTOS[normTxt(x.nombre)] || CRIPTOS[normTxt(x.ticker)]) { const id = instCripto(x.nombre, x.ticker); if (id) return { id, como: 'cripto' }; }
   const lista = candidatosBusqueda();
-  if (x.ticker) { const r = buscarEn(lista, x.ticker).find((c) => String(c.s).toUpperCase().split('.')[0].split('-')[0] === String(x.ticker).toUpperCase()); if (r) return { id: idDeCandidato(r), como: 'ticker' }; }
+  if (x.ticker) { const T = String(x.ticker).toUpperCase().trim(); const r = buscarEn(lista, T).find((c) => String(c.s).toUpperCase().split('.')[0].split('-')[0] === T || String(c.s).toUpperCase() === T || (c.a || []).some((a) => String(a).toUpperCase() === T)); if (r) return { id: idDeCandidato(r), como: 'ticker' }; }
   let mejor = null, p = 0;
   for (const c of lista) { const v = Math.max(parecido(x.nombre, c.l), parecido(x.nombre, c.n)); if (v > p) { p = v; mejor = c; } }
   if (mejor && p >= 0.6) return { id: idDeCandidato(mejor), como: 'nombre' };
@@ -5308,7 +5927,7 @@ async function borrarMovimiento(id, boton) {
 function pantallaDesbloqueo(errorTxt = '') {
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fDesb" autocomplete="on">
     <img class="logo" src="icon-192.png" alt="">
-    <h1>Inversiones</h1>
+    <h1>Bellota</h1>
     <p>${PERFIL_LOCAL ? 'Tu cartera de este dispositivo está cifrada. Escribe tu contraseña para verla.' : 'Tu cartera está cifrada. Escribe tu contraseña para verla.'}</p>
     <input type="text" name="username" value="${esc(CFG.owner)}" autocomplete="username" hidden>
     <label class="campo">Contraseña<input type="password" id="pass" autocomplete="current-password" required autofocus></label>
@@ -5353,7 +5972,7 @@ function pantallaCrear() {
     ${PERFIL_LOCAL
       ? '<p>Tu cartera se guarda solo en este dispositivo, cifrada con tu contraseña: nadie más la ve, ni el dueño de la web ni GitHub. Los precios, el radar, las noticias y las ideas son los mismos para todos.</p><p class="nota" style="margin:0">Para pasarla a otro móvil o tener copia: Ajustes, Descargar copia, y en el otro, Importar copia.</p>'
       : `<p>Todavía no hay ninguna cartera guardada en <b>${esc(CFG.owner)}/${esc(CFG.repo)}</b>. Importa tu copia de la cartera o empieza de cero.</p>`}
-    <label class="campo">Archivo de cartera (.json)<input type="file" id="archivo" accept=".json,application/json"><small id="archivoInfo">Opcional. Si no subes nada, empiezas con la cartera vacía.</small></label>
+    <label class="campo">Archivo de cartera (.json)<input type="file" id="archivo" accept=".json,application/json"><small id="archivoInfo">Opcional: una copia de la web o un JSON con el ISIN o el ticker de cada cosa (<a href="#" id="bEjemplo">descarga un ejemplo</a>). Si no subes nada, empiezas con la cartera vacía y la llenas dentro.</small></label>
     <label class="campo">Contraseña nueva<input type="password" id="p1" autocomplete="new-password" minlength="8" required><small>Mínimo 8 caracteres. Si la pierdes no hay forma de recuperar los datos.</small></label>
     <label class="campo">Repite la contraseña<input type="password" id="p2" autocomplete="new-password" minlength="8" required></label>
     ${PERFIL_LOCAL ? '' : `<label class="campo">Token de GitHub<input type="password" id="tok" value="${esc(GH.token() || '')}" autocomplete="off" placeholder="github_pat_…"><small>Para guardar desde la web. Si no lo pones, se descarga el archivo cifrado y lo subes tú al repositorio.</small></label>`}
@@ -5364,14 +5983,14 @@ function pantallaCrear() {
   </form></div>`;
   enlazarOtroPerfil();
   let importada = null;
+  $('#bEjemplo').onclick = (e) => { e.preventDefault(); descargar('cartera-ejemplo.json', JSON.stringify(EJEMPLO_CARTERA, null, 2)); };
   $('#archivo').onchange = async (ev) => {
     const file = ev.target.files[0]; if (!file) return;
     try {
-      const j = JSON.parse(await file.text());
-      if (!Array.isArray(j.posiciones)) throw new Error();
-      importada = j;
-      $('#archivoInfo').textContent = `${j.posiciones.length} posiciones, ${(j.aportaciones || []).length} aportaciones. Listo.`;
-    } catch (e) { importada = null; $('#archivoInfo').textContent = 'Ese archivo no parece una cartera.'; }
+      const r = normalizarCartera(JSON.parse(await file.text()));
+      importada = r.cartera;
+      $('#archivoInfo').textContent = resumenImport(r);
+    } catch (e) { importada = null; $('#archivoInfo').textContent = `Ese archivo no parece una cartera: ${e instanceof SyntaxError ? 'el JSON tiene un error de formato (una coma o unas comillas de más o de menos).' : e.message || 'falta la lista "posiciones".'}`; }
   };
   $('#fCrear').onsubmit = async (ev) => {
     ev.preventDefault();
@@ -5386,9 +6005,56 @@ function pantallaCrear() {
     S.cartera = importada || { version: 1, posiciones: [], efectivo: [], aportaciones: [], limite_acciones: 20 };
     if ($('#recordar').checked) await IDB.set(IDB_CLAVE, { salt: b64.enc(S.salt), key: S.key });
     const ok = await guardarCartera('Crear cartera cifrada');
-    if (ok) arrancar(); else { b.disabled = false; b.textContent = 'Cifrar y guardar'; }
+    if (ok) { S.recienCreada = true; arrancar(); } else { b.disabled = false; b.textContent = 'Cifrar y guardar'; }
   };
 }
+
+/* =====================================================================
+   Cartera desde un archivo: vale la copia de la web tal cual o un JSON sencillo, con el ISIN, el ticker o
+   el nombre de cada cosa en vez del id interno. La web busca cada valor (lo tuyo, el catálogo, el radar,
+   cripto) y lo que no reconoce lo deja fuera y lo dice.
+   ===================================================================== */
+const EJEMPLO_CARTERA = {
+  posiciones: [
+    { isin: 'IE00BYX5MX67', nombre: 'Fidelity S&P 500 Index Fund EUR P Acc', plataforma: 'MyInvestor', cantidad: 63.77551, coste: 1000, fecha: '2026-05-15' },
+    { ticker: 'AAPL', plataforma: 'Trade Republic', cantidad: 2, precio_medio: 210.5, fecha: '2026-03-02' },
+    { nombre: 'Bitcoin', plataforma: 'Bitvavo', cantidad: 0.01, coste: 600 },
+  ],
+  efectivo: [{ plataforma: 'Trade Republic', importe: 250 }],
+};
+function normalizarCartera(j) {
+  if (Array.isArray(j)) j = { posiciones: j };
+  if (!j || !Array.isArray(j.posiciones)) throw new Error('Falta la lista "posiciones".');
+  for (const i of j.inst_propios || []) if (i && i.id && !S.inst[i.id]) { S.inst[i.id] = i; S.instOrden.push(i.id); }
+  const n = (v) => { if (v == null || v === '') return null; const x = typeof v === 'number' ? v : numero(v); return isFinite(x) ? x : null; };
+  const fechaOk = (f) => (/^\d{4}-\d{2}-\d{2}$/.test(String(f || '')) ? String(f) : /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(f || '')) ? String(f).split('/').reverse().map((x) => x.padStart(2, '0')).join('-') : null);
+  const posiciones = [], fuera = [];
+  for (const x of j.posiciones) {
+    if (!x || typeof x !== 'object') continue;
+    let id = x.instrumento && S.inst[x.instrumento] ? x.instrumento : null;
+    if (!id) {
+      const m = emparejar({ isin: x.isin, ticker: x.ticker || x.simbolo, nombre: x.nombre || x.instrumento || '', tipo: x.tipo });
+      id = m && m.id;
+    }
+    if (!id) { fuera.push(x.nombre || x.isin || x.ticker || x.instrumento || '¿?'); continue; }
+    const uds = n(x.cantidad ?? x.participaciones ?? x.acciones ?? x.unidades ?? x.uds);
+    const pm = n(x.precio_medio ?? x.precio);
+    let coste = n(x.coste ?? x.invertido ?? x.importe ?? x.total);
+    if (coste == null && uds != null && pm != null) coste = +(uds * pm).toFixed(2);
+    if (uds == null && coste == null) { fuera.push((x.nombre || x.isin || x.ticker || id) + ' (sin cantidad ni importe)'); continue; }
+    const f = fechaOk(x.fecha ?? x.fecha_compra ?? x.desde);
+    const pos = { ...x, id: x.id || nuevoId('p-'), instrumento: id, plataforma: x.plataforma || x.broker || 'Otra', cantidad: uds, coste: coste ?? 0, fecha: fechaOk(x.fecha) || hoyIso() };
+    for (const k of ['isin', 'ticker', 'simbolo', 'nombre', 'participaciones', 'acciones', 'unidades', 'uds', 'precio_medio', 'precio', 'invertido', 'importe', 'total', 'broker', 'fecha_compra', 'tipo']) delete pos[k];
+    if (f && !x.lotes) { pos.desde = f; pos.fecha = f; if (uds) pos.lotes = [{ f, u: uds, c: coste ?? 0 }]; }
+    posiciones.push(pos);
+  }
+  let efectivo = j.efectivo || [];
+  if (!Array.isArray(efectivo)) efectivo = Object.entries(efectivo).map(([plataforma, importe]) => ({ plataforma, importe }));
+  efectivo = efectivo.map((e) => ({ plataforma: e.plataforma || e.broker || 'Otra', importe: n(e.importe) || 0 })).filter((e) => e.importe);
+  const cartera = { version: 1, aportaciones: [], limite_acciones: 20, ...j, posiciones, efectivo };
+  return { cartera, fuera };
+}
+const resumenImport = (r) => `${r.cartera.posiciones.length} posiciones${r.cartera.efectivo.length ? ` y efectivo en ${r.cartera.efectivo.length} sitio${r.cartera.efectivo.length > 1 ? 's' : ''}` : ''}.${r.fuera.length ? ` No reconozco ${r.fuera.length}: ${r.fuera.slice(0, 4).join(', ')}${r.fuera.length > 4 ? '…' : ''}. Añádelas luego a mano o pon su ISIN en el archivo.` : ' Todo reconocido.'}`;
 
 /* las empresas que da de alta alguien sin GitHub van dentro de su cartera cifrada (no en instrumentos.json) */
 function instPropios() {
@@ -5532,7 +6198,7 @@ function precioInst(id) {
   const r = radarPorSim(S.inst[id] && S.inst[id].yahoo); return r && r.pe ? r.pe : null;
 }
 function candidatosBusqueda() {
-  const tengo = new Set((S.cartera.posiciones || []).map((p) => p.instrumento));
+  const tengo = new Set(((S.cartera && S.cartera.posiciones) || []).map((p) => p.instrumento));
   const out = [];
   for (const id of S.instOrden) { const i = S.inst[id]; out.push({ k: 'inst:' + id, n: i.corto || i.nombre, l: i.nombre || '', s: i.yahoo || '', isin: i.isin || '', dom: i.dominio, cot: cotiza(i), tengo: tengo.has(id), pr: () => precioInst(id) }); }
   const vistos = new Set(S.instOrden.map((id) => String(S.inst[id].yahoo || '').toUpperCase()).filter(Boolean));
@@ -5602,13 +6268,24 @@ function buscador(cont, alElegir, opt = {}) {
 }
 
 /* =====================================================================
-   Versiones. Mientras la web esté en alfa van por 0.x: el número del medio sube con cada tanda de
-   mejoras que se nota (0.9 → 0.10) y el último con los arreglos (0.9.0 → 0.9.1). La primera vez que
-   abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
+   Versiones. Mientras la web esté en alfa va por 0.1.x: el último número sube con cada actualización
+   (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
+   vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.9.0';
+const VERSION = '0.1.10';
 const NOVEDADES = [
-  { v: '0.9.0', f: '2026-10-19', t: 'Meter lo que tienes, sin líos', cosas: [
+  { v: '0.1.10', f: '2026-10-19', t: 'Bellota, a tu medida', cosas: [
+    { d: 'bellota', t: 'Ahora se llama Bellota', x: 'Como las bellotas que acaban siendo robles: poco a poco y sin prisa. Logo nuevo en la web y en la app.' },
+    { d: 'perfil', t: 'Objetivos: tu perfil y tus metas', x: 'Tu edad, en qué andas, cuándo necesitas el dinero, cuánto riesgo aguantas, tus límites y tus metas con cifra y fecha. La IA, las ideas y el Paso a paso se ajustan a ti.' },
+    { d: 'pregunta', t: 'La IA te pregunta', x: 'Cuando le falta algo de ti para acertar, te lo pregunta. Contestas con un toque y rehace sus consejos.' },
+    { d: 'pasos', t: 'Paso a paso más claro', x: 'Separa lo que tienes que hacer tú, las fechas que vigilar y lo que va solo. Cada compra o venta dice lo que supone en la renta y qué evitar por Hacienda.' },
+    { d: 'renta', t: 'Guía de la renta', x: 'En Fiscalidad: los pasos de la declaración, en qué casilla va cada cosa y tus ventas del año.' },
+    { d: 'mundo', t: 'Noticias de todo el mundo', x: 'El informe de Gemini repasa EEUU, Europa, España, Asia y emergentes, más tipos, divisas, materias primas y cripto, y dice qué supone cada cosa para tu cartera. En Mercados, los datos macro de un vistazo.' },
+    { d: 'json', t: 'Tu cartera desde un archivo', x: 'Un JSON sencillo con el ISIN o el ticker de cada cosa, cuántas tienes y lo que pagaste: la web encuentra cada valor sola. Hay un ejemplo para descargar en Ajustes, Copias.' },
+    { d: 'catalogo', t: 'Fondos que no tenían precio', x: 'El Fidelity S&P 500, True Value, Xetra-Gold y los ETF del DAX, Euro Stoxx 50 y LifeStrategy 80 % ya tienen precio diario.' },
+    { d: 'app', t: 'El aviso de la app, nada más abrirla', x: 'Si hay versión nueva de la app, te lo dice al abrirla y se instala con un toque (desde la 0.1.10; la primera vez se baja con Chrome).' },
+  ] },
+  { v: '0.1.9', f: '2026-10-19', t: 'Meter lo que tienes, sin líos', cosas: [
     { d: 'buscar', t: 'Un buscador que lo encuentra todo', x: 'Escribe el nombre, el ticker (VWCE, AAPL) o el ISIN: salen tus valores, unos 110 fondos y ETF y las ~800 empresas del radar, cada uno con su precio.' },
     { d: 'capturas', t: 'Importar desde capturas', x: 'Haz capturas de MyInvestor, Trade Republic o Bitvavo (o sube el PDF) y la IA lee qué tienes, cuántas y lo que pagaste. Lo revisas y se guarda.' },
     { d: 'tengo', t: 'Compra, venta o "ya la tenía"', x: 'Tres botones arriba del formulario. "Ya la tenía" mete lo que compraste antes de usar la web, con su fecha, sin tocar el efectivo.' },
@@ -5617,21 +6294,21 @@ const NOVEDADES = [
     { d: 'tour', t: 'Un tour por la app', x: 'La primera vez te enseña cada pestaña. Lo puedes repetir cuando quieras desde Ajustes.' },
     { d: 'app', t: 'La app se actualiza sola', x: 'Cuando haya versión nueva de la app de Android sale un aviso con un botón que la descarga e instala encima.' },
   ] },
-  { v: '0.8.0', f: '2026-10-19', t: 'Pestañas más claras', cosas: [
+  { v: '0.1.8', f: '2026-10-19', t: 'Pestañas más claras', cosas: [
     { d: 'pestanas', t: 'Paso a paso y Fiscalidad, cada una en su pestaña', x: 'El Plan está dentro de Cartera y Futuro va la última.' },
     { d: 'mercados', t: 'Mercados aparte, con qué te implica', x: 'Cada índice, bono, divisa o materia prima explica qué significa que suba o baje y a qué parte de tu cartera le afecta.' },
     { d: 'grafica', t: 'Gráfica de 1 día y 1 semana', x: 'Con el precio cada media hora.' },
     { d: 'desde', t: 'Ganancia desde que compraste', x: 'En cada posición: a cuánto compraste, cuánto vale ahora, lo ganado y lo que sale al año.' },
   ] },
-  { v: '0.7.0', f: '2026-10-19', t: 'Cada uno con su cartera', cosas: [
+  { v: '0.1.7', f: '2026-10-19', t: 'Cada uno con su cartera', cosas: [
     { d: 'perfil', t: 'Tu cartera en tu móvil', x: 'Guardada y cifrada en tu dispositivo, sin cuenta de GitHub. La IA te hace recomendaciones a ti.' },
   ] },
-  { v: '0.6.0', f: '2026-10-19', t: 'Reglas más flexibles e IA rápida' },
-  { v: '0.5.0', f: '2026-10-18', t: 'App de Android con widget' },
-  { v: '0.4.0', f: '2026-10-18', t: 'Paso a paso, Fiscalidad y recortar la pantalla para preguntar a la IA' },
-  { v: '0.3.0', f: '2026-10-18', t: 'Asesor con Gemini e informe de prensa cada dos horas' },
-  { v: '0.2.0', f: '2026-10-17', t: 'Expertos, Mercados, Futuro y el radar de ideas' },
-  { v: '0.1.0', f: '2026-10-17', t: 'Primera versión: cartera cifrada con precios automáticos' },
+  { v: '0.1.6', f: '2026-10-19', t: 'Reglas más flexibles e IA rápida' },
+  { v: '0.1.5', f: '2026-10-18', t: 'App de Android con widget' },
+  { v: '0.1.4', f: '2026-10-18', t: 'Paso a paso, Fiscalidad y recortar la pantalla para preguntar a la IA' },
+  { v: '0.1.3', f: '2026-10-18', t: 'Asesor con Gemini e informe de prensa cada dos horas' },
+  { v: '0.1.2', f: '2026-10-17', t: 'Expertos, Mercados, Futuro y el radar de ideas' },
+  { v: '0.1.1', f: '2026-10-17', t: 'Primera versión: cartera cifrada con precios automáticos' },
 ];
 const cmpVer = (a, b) => { const x = String(a || '0').split('.').map(Number), y = String(b || '0').split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
 const fechaNov = (f) => { const d = deIso(f); return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`; };
@@ -5644,7 +6321,14 @@ const DIBUJOS = {
   catalogo: '<ellipse class="a" cx="36" cy="15" rx="24" ry="7"/><path class="a" d="M12 15v48c0 4 11 7 24 7s24-3 24-7V15"/><path class="a" d="M12 31c0 4 11 7 24 7s24-3 24-7M12 47c0 4 11 7 24 7s24-3 24-7"/><rect class="fp" x="70" y="10" width="44" height="15" rx="4"/><text class="t" x="75" y="20.5">IE00B…</text><rect class="fp" x="70" y="32" width="44" height="15" rx="4"/><text class="t" x="75" y="42.5">LU168…</text><rect class="fa" x="70" y="54" width="44" height="15" rx="4"/><text class="ta" x="75" y="64.5">BTC</text>',
   aviso: '<rect class="fp" x="4" y="14" width="48" height="36" rx="6"/><text class="t" x="10" y="29">S&amp;P 500</text><text class="tm" x="10" y="41">iShares</text><path class="d" d="M22 58l8 8M30 58l-8 8"/><path class="a" d="M55 32h10M61 28l4 4-4 4"/><rect class="fa" x="68" y="14" width="48" height="36" rx="6"/><text class="ta" x="74" y="29">S&amp;P 500</text><text class="t" x="74" y="41">Fidelity</text><path class="u" d="M86 62l4 4 8-8"/>',
   tour: '<rect class="l" x="30" y="4" width="50" height="72" rx="8"/><path class="m" d="M38 15h26M38 23h18"/><rect class="fp" x="38" y="30" width="34" height="18" rx="4"/><path class="m" d="M30 61h50"/><circle class="fp" cx="42" cy="68.5" r="2.5"/><circle class="fA" cx="55" cy="68.5" r="2.5"/><circle class="fp" cx="68" cy="68.5" r="2.5"/><circle class="a" cx="55" cy="68.5" r="7.5"/><path class="a" d="M61 63l25-12"/><rect class="fa" x="84" y="34" width="32" height="22" rx="5"/><path class="a" d="M90 42h20M90 49h13"/>',
-  app: '<rect class="l" x="40" y="4" width="40" height="72" rx="8"/><path class="a" d="M60 17v26M51 35l9 9 9-9"/><path class="a" d="M50 51h20"/><rect class="fp" x="48" y="60" width="24" height="5" rx="2.5"/><rect class="fA" x="48" y="60" width="15" height="5" rx="2.5"/><rect class="fA" x="82" y="8" width="30" height="15" rx="7.5"/><text class="tn" x="88" y="18.5">0.9</text>',
+  app: '<rect class="l" x="40" y="4" width="40" height="72" rx="8"/><path class="a" d="M60 17v26M51 35l9 9 9-9"/><path class="a" d="M50 51h20"/><rect class="fp" x="48" y="60" width="24" height="5" rx="2.5"/><rect class="fA" x="48" y="60" width="15" height="5" rx="2.5"/><rect class="fA" x="80" y="8" width="36" height="15" rx="7.5"/><text class="tn" x="85" y="18.5">nueva</text>',
+  mundo: '<circle class="l" cx="42" cy="40" r="30"/><path class="m" d="M12 40h60M42 10c-12 9-12 51 0 60M42 10c12 9 12 51 0 60M17 24h50M17 56h50"/><circle class="fA" cx="30" cy="28" r="4"/><circle class="fA" cx="49" cy="27" r="4"/><circle class="fA" cx="62" cy="38" r="4"/><circle class="fA" cx="36" cy="52" r="4"/><rect class="fa" x="80" y="14" width="36" height="14" rx="5"/><path class="u" d="M85 24l4-4 3 3 5-6"/><path class="a" d="M101 21h11"/><rect class="fa" x="80" y="33" width="36" height="14" rx="5"/><path class="d" d="M85 37l4 4 3-3 5 6"/><path class="a" d="M101 40h11"/><rect class="fa" x="80" y="52" width="36" height="14" rx="5"/><path class="l" d="M85 59h12"/><path class="a" d="M101 59h11"/>',
+  macro: '<rect class="fp" x="6" y="8" width="52" height="30" rx="6"/><text class="t" x="12" y="20">BCE</text><text class="ta" x="12" y="32">2,00 %</text><rect class="fp" x="62" y="8" width="52" height="30" rx="6"/><text class="t" x="68" y="20">Bono 10a</text><text class="ta" x="68" y="32">5,10 %</text><rect class="fp" x="6" y="44" width="52" height="30" rx="6"/><text class="t" x="12" y="56">EUR/USD</text><text class="ta" x="12" y="68">1,124</text><rect class="fp" x="62" y="44" width="52" height="30" rx="6"/><text class="t" x="68" y="56">Brent</text><text class="ta" x="68" y="68">110 $</text>',
+  bellota: '<g transform="translate(36 2) scale(1.55)"><path d="M24 11C24 8.4 25.4 6.6 27.8 5.7" fill="none" stroke="#E2B45F" stroke-width="2.6" stroke-linecap="round"/><path d="M27.2 7.6C30.4 4.6 34.8 4.6 37.2 6.4C34.7 9.6 30.4 10.2 27.2 7.6Z" fill="#4FC995" stroke="none"/><path d="M12.5 20.6C12.5 14.2 17.6 10.6 24 10.6S35.5 14.2 35.5 20.6C35.5 21.7 34.7 22.5 33.6 22.5H14.4C13.3 22.5 12.5 21.7 12.5 20.6Z" fill="#E2B45F" stroke="none"/><path d="M15.8 17.6C19.4 15.5 28.6 15.5 32.2 17.6" fill="none" stroke="#A97C33" stroke-width="1.3" stroke-linecap="round"/><path d="M15.2 22.5C14.4 31.2 18.4 38.6 24 41.8C29.6 38.6 33.6 31.2 32.8 22.5Z" fill="#F1EDE5" stroke="none"/><path d="M19 33.2L22.4 29.6L25 31.6L29.2 26.6" fill="none" stroke="#1F1D19" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></g>',
+  pregunta: '<path class="a" d="M14 8h62a8 8 0 018 8v22a8 8 0 01-8 8H40l-12 10V46H14a8 8 0 01-8-8V16a8 8 0 018-8z"/><text class="ta" x="40" y="35" style="font-size:22px">?</text><rect class="fA" x="56" y="54" width="26" height="14" rx="7"/><rect class="fp" x="86" y="54" width="28" height="14" rx="7"/><rect class="fp" x="70" y="34" width="0" height="0"/><path class="m" d="M60 61h18M90 61h20"/>',
+  pasos: '<circle class="fA" cx="16" cy="16" r="7"/><path class="l" d="M30 13h52M30 20h34"/><circle class="a" cx="16" cy="40" r="7"/><path class="m" d="M30 37h60M30 44h40"/><circle class="u" cx="16" cy="64" r="7"/><path class="u" d="M12.5 64l2.5 2.5 4.5-5"/><path class="m" d="M30 61h46M30 68h28"/><rect class="fa" x="92" y="8" width="24" height="16" rx="5"/><text class="ta" x="96" y="19.5">€</text>',
+  renta: '<path class="l" d="M22 6h44l14 14v54H22z"/><path class="l" d="M66 6v14h14"/><path class="m" d="M32 30h38M32 39h30M32 48h38"/><rect class="fa" x="30" y="56" width="30" height="12" rx="4"/><text class="ta" x="34" y="65">0328</text><circle class="fA" cx="96" cy="56" r="14"/><path d="M89 56l5 5 9-10" fill="none" stroke="#1A1408" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>',
+  json: '<path class="l" d="M10 6h28l12 12v56H10z"/><path class="l" d="M38 6v12h12"/><text class="ta" x="16" y="36">{ }</text><path class="m" d="M17 46h26M17 55h20M17 64h24"/><path class="a" d="M56 40h13M64 35l5 5-5 5"/><rect class="fa" x="76" y="14" width="38" height="14" rx="4"/><circle class="fA" cx="83" cy="21" r="3"/><path class="l" d="M90 21h19"/><rect class="fa" x="76" y="33" width="38" height="14" rx="4"/><circle class="fA" cx="83" cy="40" r="3"/><path class="l" d="M90 40h15"/><rect class="fa" x="76" y="52" width="38" height="14" rx="4"/><circle class="fA" cx="83" cy="59" r="3"/><path class="l" d="M90 59h17"/>',
   pestanas: '<rect class="l" x="10" y="6" width="64" height="38" rx="6"/><path class="m" d="M18 16h32M18 25h44M18 34h24"/><circle class="a" cx="98" cy="24" r="13"/><path class="a" d="M85 24h26M98 11c-5 4-5 22 0 26M98 11c5 4 5 22 0 26"/><rect class="fp" x="6" y="52" width="108" height="24" rx="8"/><rect class="m" x="14" y="59" width="10" height="10" rx="3"/><rect class="m" x="32" y="59" width="10" height="10" rx="3"/><rect class="fA" x="50" y="59" width="10" height="10" rx="3"/><rect class="m" x="68" y="59" width="10" height="10" rx="3"/><rect class="m" x="86" y="59" width="10" height="10" rx="3"/><rect class="m" x="102" y="59" width="6" height="10" rx="3"/>',
   mercados: '<path class="m" d="M8 70h104"/><rect class="fp" x="14" y="44" width="12" height="26" rx="2"/><rect class="fp" x="32" y="32" width="12" height="38" rx="2"/><rect class="fa" x="50" y="22" width="12" height="48" rx="2"/><path class="u" d="M56 15V5M52 9l4-4 4 4"/><path class="d" d="M70 12l10 10 8-4 14 16"/><path class="d" d="M97 34h5v-5"/><rect class="fa" x="70" y="46" width="44" height="17" rx="6"/><text class="ta" x="76" y="57.5">¿y a mí?</text>',
   grafica: '<rect class="fA" x="8" y="5" width="22" height="14" rx="7"/><text class="tn" x="13" y="15">1D</text><rect class="fp" x="34" y="5" width="22" height="14" rx="7"/><text class="t" x="39.5" y="15">1S</text><rect class="fp" x="60" y="5" width="22" height="14" rx="7"/><text class="t" x="64" y="15">1M</text><path class="a" d="M8 60l12-6 10 4 12-14 10 5 12-10 10 3 14-16 10 6 14-8"/><path class="m" d="M8 72h104M20 70v4M44 70v4M68 70v4M92 70v4"/>',
@@ -5672,10 +6356,45 @@ function mostrarNovedades(desde, alCerrar) {
 }
 
 /* =====================================================================
+   Tu opinión: qué se ve mal, qué falla o qué idea tienes, y en qué parte. Sale como un mensaje de
+   WhatsApp (o compartir / copiar) hacia quien te pasó la web: no hay servidor ni se guarda nada fuera.
+   ===================================================================== */
+const SITIOS_OP = [['general', 'La app en general'], ['cartera', 'Cartera'], ['plan', 'Cartera: plan y movimientos'], ['ruta', 'Paso a paso'], ['expertos', 'Expertos e ideas'], ['analisis', 'Análisis'], ['fiscal', 'Fiscalidad'], ['futuro', 'Objetivos'], ['mercados', 'Mercados'], ['asesor', 'El asesor (IA)'], ['ficha', 'La ficha de una posición'], ['operacion', 'Apuntar compras o ventas'], ['android', 'App de Android y widget']];
+const TIPOS_OP = [['mal', 'Algo se ve mal'], ['falla', 'Algo no funciona'], ['idea', 'Una idea'], ['otra', 'Otra cosa']];
+function abrirOpinion() {
+  const sitio = S.ficha ? 'ficha' : S.vista === 'cartera' && S.carTab === 'plan' ? 'plan' : S.vista || 'general';
+  const h = hoja('Tu opinión', `<form id="fOpi" class="pf-form" novalidate>
+    <fieldset class="opciones"><legend>Qué es</legend><div class="opc-fila">${TIPOS_OP.map(([k, t], i) => `<label class="opc"><input type="radio" name="tipo" value="${k}"${i === 0 ? ' checked' : ''}><span>${t}</span></label>`).join('')}</div></fieldset>
+    <label class="campo">Dónde<select name="sitio">${SITIOS_OP.map(([k, t]) => `<option value="${k}"${k === sitio ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
+    <label class="campo">Cuéntalo<textarea name="txt" rows="5" placeholder="Qué ves, qué esperabas o qué se te ha ocurrido. Si es algo que falla, qué estabas haciendo."></textarea><small>Si es algo visual, manda también una captura en el mismo chat.</small></label>
+    <div class="error" id="errOpi"></div>
+    <div class="fila-btns"><button type="button" class="btn" id="bOpiCopiar">Copiar</button>${navigator.share ? '<button type="button" class="btn" id="bOpiComp">Compartir…</button>' : ''}<button type="submit" class="btn pri">${ICONOS.globo}Enviar por WhatsApp</button></div>
+    <p class="nota" style="margin:0">Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó Bellota. Solo va lo que escribes, la sección y la versión, nada de tu cartera.</p>
+  </form>`);
+  const f = $('#fOpi', h.el);
+  const texto = () => {
+    const tipo = (f.querySelector('[name=tipo]:checked') || {}).value || 'otra', sitio = f.sitio.value, t = f.txt.value.trim();
+    if (!t) { $('#errOpi', h.el).textContent = 'Escribe qué pasa o qué se te ocurre.'; return null; }
+    const tt = (TIPOS_OP.find(([k]) => k === tipo) || [])[1], st = (SITIOS_OP.find(([k]) => k === sitio) || [])[1];
+    const disp = [`web ${VERSION}`, window.InversionesApp ? `app ${(() => { try { return window.InversionesApp.nombreVersion() || versionApp(); } catch (e) { return versionApp(); } })()}` : null, /Android/i.test(navigator.userAgent) ? 'Android' : /iPhone|iPad/i.test(navigator.userAgent) ? 'iPhone' : 'ordenador', `${innerWidth} px`, PERFIL_LOCAL ? 'cartera en el móvil' : null].filter(Boolean).join(', ');
+    return `Bellota, ${String(tt).toLowerCase()} en ${st}:\n\n${t}\n\n(${disp})`;
+  };
+  $('#bOpiCopiar', h.el).onclick = async () => { const t = texto(); if (!t) return; try { await navigator.clipboard.writeText(t); toast('Copiado: pégalo donde quieras'); } catch (e) { toast('No se pudo copiar'); } };
+  if ($('#bOpiComp', h.el)) $('#bOpiComp', h.el).onclick = async () => { const t = texto(); if (!t) return; try { await navigator.share({ text: t }); h.cerrar(); } catch (e) {} };
+  f.onsubmit = (ev) => {
+    ev.preventDefault();
+    const t = texto(); if (!t) return;
+    const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(t); a.target = '_blank'; a.rel = 'noopener';
+    document.body.appendChild(a); a.click(); a.remove();
+    h.cerrar(); toast('Gracias: ahora elige el chat en WhatsApp', 4000);
+  };
+}
+
+/* =====================================================================
    Tour: la primera vez (y desde Ajustes) enseña cada pestaña, resaltando dónde está.
    ===================================================================== */
 const TOUR = [
-  { v: 'cartera', t: 'Bienvenido', x: 'Te enseño la app en un minuto: qué hay en cada pestaña y dónde tocar. Lo puedes repetir cuando quieras desde Ajustes.' },
+  { v: 'cartera', logo: true, t: 'Bienvenido a Bellota', x: 'Te enseño la app en un minuto: qué hay en cada pestaña y dónde tocar. Lo puedes repetir cuando quieras desde Ajustes.' },
   { v: 'cartera', sel: '.hero-num', t: 'Lo que tienes', x: 'Todo sumado y en euros. Debajo, lo que ganas o pierdes hoy y desde el principio. Los precios se mueven solos, sin recargar.' },
   { v: 'cartera', sel: '.tabs[aria-label="Periodo"]', t: 'La gráfica', x: '1D y 1S enseñan hoy y esta semana, hora a hora. 1A o más, el camino largo.' },
   { v: 'cartera', pos: true, sel: '#hPos ~ .der [data-accion="nueva-pos"], [data-accion="nueva-pos"]', t: 'Mete lo que tienes', x: '"Añadir posición" para lo que ya tenías. "Compra o venta" para lo que hagas desde hoy. Busca por nombre, ticker o ISIN, o importa capturas de tu bróker.' },
@@ -5684,7 +6403,7 @@ const TOUR = [
   { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', t: 'Expertos', x: 'Qué opinan los analistas de lo que tienes y las ideas de compra que sacan la web y la IA de unas 800 empresas.' },
   { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', t: 'Análisis', x: 'La IA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
   { v: 'fiscal', sel: '.navbar [data-ir="fiscal"], .nav [data-ir="fiscal"]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
-  { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"]', t: 'Futuro', x: 'Cuánto podrías tener dentro de unos años con lo que aportas cada mes.' },
+  { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
   { v: 'mercados', sel: '.ir-merc', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
   { v: 'cartera', sel: '#bAsesor', t: 'El asesor', x: 'Pregúntale lo que quieras de tu cartera. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
   { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades y este tour.' },
@@ -5707,6 +6426,14 @@ function iniciarTour(paso = 0, alAcabar) {
   };
   window.addEventListener('resize', reubicar); window.addEventListener('scroll', reubicar, true); document.addEventListener('keydown', tecla, true);
   TOURE = { capa, i: paso, el: null, alAcabar, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); } };
+  // en el móvil, deslizar la tarjeta pasa de paso
+  let x0 = null, y0 = null;
+  capa.addEventListener('touchstart', (e) => { if (!e.target.closest('.tour-caja')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
+  capa.addEventListener('touchend', (e) => {
+    if (x0 == null) return;
+    const dx = e.changedTouches[0].clientX - x0, dy = e.changedTouches[0].clientY - y0; x0 = null;
+    if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) * 1.5) irPasoTour(dx < 0 ? 1 : -1);
+  }, { passive: true });
   capa.addEventListener('click', (e) => {
     const b = e.target.closest('[data-t]'); if (!b) return;
     const a = b.dataset.t;
@@ -5733,20 +6460,22 @@ function irPasoTour(d) {
   const n = TOURE.i + d;
   if (n < 0) return;
   if (n >= TOUR.length) return cerrarTour(true);
-  TOURE.i = n; pasoTour();
+  TOURE.i = n; pasoTour(d);
 }
-function pasoTour() {
+function pasoTour(dir = 1) {
   const p = TOUR[TOURE.i], cambia = p.v && S.vista !== p.v;
   if (cambia) location.hash = '#' + p.v;
   if (p.pos && S.carTab === 'plan') { S.carTab = 'pos'; LS.set('inv-car', 'pos'); if (!cambia) pintar(); }
   const ultimo = TOURE.i === TOUR.length - 1, vacia = !((S.cartera && S.cartera.posiciones) || []).length;
   const caja = $('.tour-caja', TOURE.capa);
   caja.innerHTML = `<div class="tour-prog" aria-hidden="true">${TOUR.map((_, i) => `<i class="${i === TOURE.i ? 'on' : i < TOURE.i ? 'ya' : ''}"></i>`).join('')}</div>
-    <h3>${esc(p.t)}</h3><p>${esc(p.x)}</p>
+    <div class="tour-txt">${p.logo ? '<img class="tour-logo" src="favicon.svg" alt="">' : ''}<h3>${esc(p.t)}</h3><p>${esc(p.x)}</p></div>
     <div class="tour-btns"><small class="tour-n">${TOURE.i + 1} de ${TOUR.length}</small>
       ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}
       ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar capturas</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : '<button class="btn peq pri" data-t="fin">Terminar</button>') : `<button class="btn peq pri" data-t="sig">${TOURE.i ? 'Siguiente' : 'Empezar'}</button>`}
     </div>`;
+  const txt = $('.tour-txt', caja);
+  if (txt) { txt.classList.remove('entra-d', 'entra-i'); void txt.offsetWidth; txt.classList.add(dir < 0 ? 'entra-i' : 'entra-d'); }
   TOURE.el = null; colocarTour();
   setTimeout(() => {
     if (!TOURE) return;
@@ -5766,7 +6495,13 @@ function colocarTour() {
   const r = el.getBoundingClientRect(), m = 6;
   foco.className = 'tour-foco';
   foco.style.cssText = `left:${r.left - m}px;top:${r.top - m}px;width:${r.width + 2 * m}px;height:${r.height + 2 * m}px`;
-  caja.className = 'tour-caja ' + (r.top + r.height / 2 < innerHeight * 0.5 ? 'abajo' : 'arriba');
+  const abajo = r.top + r.height / 2 < innerHeight * 0.5;
+  caja.className = 'tour-caja con-flecha ' + (abajo ? 'abajo' : 'arriba');
+  // la flechita de la tarjeta apunta a lo resaltado
+  const c = caja.getBoundingClientRect();
+  caja.style.setProperty('--fx', `${Math.max(22, Math.min(c.width - 22, r.left + r.width / 2 - c.left)).toFixed(0)}px`);
+  const tapa = abajo ? c.top < r.bottom + 12 : c.bottom > r.top - 12;
+  caja.classList.toggle('con-flecha', !tapa);
 }
 
 /* =====================================================================
@@ -5774,31 +6509,36 @@ function colocarTour() {
    Las apps hasta la compilación 7 no saben instalar solas: a esas se les abre la descarga en Chrome.
    ===================================================================== */
 const versionApp = () => { try { return window.InversionesApp.version(); } catch (e) { return 0; } };
-const nombreApp = () => { try { const n = window.InversionesApp.nombreVersion(); if (n) return `versión ${n}`; } catch (e) {} return `compilación ${versionApp()}`; };
+const nombreApp = () => { try { const n = window.InversionesApp.nombreVersion(); if (n) return `versión ${n}`; } catch (e) {} return 'versión anterior a la 0.1.10'; };
+const nombreUlt = (ult) => (ult && ult.nombre ? `versión ${ult.nombre}` : 'versión nueva');
 async function ultimaApp() {
   try { const r = await fetch(GH.raw('app.json', 'main') + '?v=' + Date.now(), { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (e) {}
   return null;
 }
+let appRevisadaT = 0, appLuego = null, appEnCurso = false;
 async function revisarApp(forzar) {
   if (!window.InversionesApp) return false;
-  const ult = await ultimaApp();
+  appRevisadaT = Date.now(); appEnCurso = true;
+  let ult = null;
+  try { ult = await ultimaApp(); } finally { appEnCurso = false; }
   if (!ult || !(ult.version > versionApp())) return false;
-  const luego = LS.get('inv-app-luego', null);
-  if (!forzar && luego && luego.v === ult.version && Date.now() - luego.t < 86400000) return true;
+  // "Luego" vale hasta la próxima vez que abras la app
+  if (!forzar && appLuego === ult.version) return true;
+  if (document.querySelector('.hoja-act')) return true;
   avisoApp(ult);
   return true;
 }
 function avisoApp(ult) {
   const app = window.InversionesApp;
   const sola = app && typeof app.actualizar === 'function';
-  const nueva = ult.nombre ? `versión ${ult.nombre}` : `compilación ${ult.version}`;
+  const nueva = nombreUlt(ult);
   const h = hoja('Hay una versión nueva de la app', `<div class="act-app">
     ${dibujo('app')}
     <p>Tienes la ${esc(nombreApp())} y ya está la <b>${esc(nueva)}</b>. Se instala encima: no pierdes la cartera, la contraseña ni el widget.</p>
     <div class="act-prog" hidden><div class="act-barra"><i></i></div><small></small></div>
     <div class="fila-btns"><button class="btn" data-luego>Luego</button>${sola ? '<button class="btn pri" data-act>Actualizar ahora</button>' : `<a class="btn pri" href="${esc(ult.apk)}" data-cerrar>Descargar la actualización</a>`}</div>
     <p class="nota act-nota">${sola ? 'Android te pedirá confirmar la instalación. La primera vez, también permiso para instalar desde la app.' : 'Se abre en Chrome: cuando acabe de bajar, ábrela e instálala encima. Desde esa versión, la app se actualiza desde aquí con un toque.'}</p>
-  </div>`, () => LS.set('inv-app-luego', { v: ult.version, t: Date.now() }));
+  </div>`, () => { appLuego = ult.version; });
   h.el.classList.add('hoja-act');
   $('[data-luego]', h.el).onclick = () => h.cerrar();
   const b = $('[data-act]', h.el); if (!b) return;
@@ -5822,11 +6562,15 @@ function avisoApp(ult) {
 }
 
 /* al entrar: tour la primera vez, novedades si hay versión nueva y, después, el aviso de la app */
-function bienvenida() {
-  if (!S.cartera || document.querySelector('.hoja-fondo, .tour')) return;
-  const visto = LS.get('inv-version', null);
-  const nuevo = !(S.cartera.posiciones || []).length && !LS.get('inv-tour', null);
-  const despues = () => setTimeout(() => revisarApp(), 400);
+function bienvenida(intento = 0) {
+  if (!S.cartera) return;
+  // primero el aviso de la app, si lo hay; las novedades, después
+  if (appEnCurso || (window.InversionesApp && !appRevisadaT) || document.querySelector('.hoja-fondo, .tour')) { if (intento < 40) setTimeout(() => bienvenida(intento + 1), intento ? 1500 : 800); return; }
+  let visto = LS.get('inv-version', null);
+  if (/^0\.[2-9]\.0$/.test(visto || '')) visto = '0.1.' + visto.split('.')[1];  // numeración de antes: 0.9.0 es la 0.1.9
+  const nuevo = S.recienCreada || (!(S.cartera.posiciones || []).length && !LS.get('inv-tour', null));
+  S.recienCreada = false;
+  const despues = () => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); };
   if (nuevo) { LS.set('inv-version', VERSION); return iniciarTour(0, despues); }
   if (!visto || cmpVer(visto, VERSION) < 0) return mostrarNovedades(visto, despues);
   despues();
@@ -5866,14 +6610,14 @@ async function pintarAjustesApp(el) {
   const android = /Android/i.test(navigator.userAgent);
   const tok = GH.token();
   if (app) {
-    el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (${esc(nombreApp())}). Para el widget: mantén pulsado un hueco de la pantalla de inicio, Widgets, Inversiones, y arrastra "Tu cartera". Se puede estirar o encoger.</p>
+    el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (${esc(nombreApp())}). Para el widget: mantén pulsado un hueco de la pantalla de inicio, Widgets, Bellota, y arrastra "Tu cartera". Se puede estirar o encoger.</p>
       ${ult && ult.version > tengo ? `<div class="fila-btns" style="justify-content:flex-start"><button class="btn peq pri" id="aActApp" data-cerrar>Actualizar la app</button></div>` : '<p class="nota" style="margin:0">Tienes la última versión de la app.</p>'}`;
     const b = $('#aActApp', el); if (b) b.onclick = () => avisoApp(ult);
     return;
   }
   el.innerHTML = `<p class="nota" style="margin:0">La misma web como app de Android, con un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo que toca hacer. ${ult ? '' : 'Todavía no hay ninguna versión publicada.'}</p>
-    ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} y ábrela: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa "Pasar el token a la app" para que pueda guardar cambios sin escribirlo (necesita la versión 3 de la app o posterior).</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio, Widgets, Inversiones.</li></ol>
-    <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Descargar la app (versión ${ult.version})</a>${tok && android ? `<a class="btn peq" href="intent://token#Intent;scheme=inversiones;package=es.inversiones.app;S.t=${encodeURIComponent(tok)};S.browser_fallback_url=${encodeURIComponent(apk)};end">Pasar el token a la app</a>` : ''}</div>` : ''}`;
+    ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} y ábrela: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa "Pasar el token a la app" para que pueda guardar cambios sin escribirlo (necesita la versión 3 de la app o posterior).</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio, Widgets, Bellota.</li></ol>
+    <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Descargar la app (${esc(nombreUlt(ult))})</a>${tok && android ? `<a class="btn peq" href="intent://token#Intent;scheme=inversiones;package=es.inversiones.app;S.t=${encodeURIComponent(tok)};S.browser_fallback_url=${encodeURIComponent(apk)};end">Pasar el token a la app</a>` : ''}</div>` : ''}`;
 }
 function abrirAjustes() {
   const tok = GH.token();
@@ -5891,8 +6635,12 @@ function abrirAjustes() {
       <p class="nota" style="margin:0">Gemini dentro de la web, gratis con una clave de Google: responde a lo que le preguntes y revisa tu cartera cada día.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}Ajustes del asesor</button></div>
     </div>
+    <div class="seccion-ed"><h3>Tu opinión</h3>
+      <p class="nota" style="margin:0">Algo que se ve mal, algo que no funciona o una idea: se manda por WhatsApp a quien te pasó la web.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-accion="opinion" data-cerrar>${ICONOS.globo}Enviar opinión o un fallo</button></div>
+    </div>
     <div class="seccion-ed"><h3>Versión</h3>
-      <p class="nota" style="margin:0">Web ${VERSION} (alfa). Cada mejora sube el número del medio y cada arreglo el último.</p>
+      <p class="nota" style="margin:0">Web ${VERSION} (alfa). Cada actualización sube el último número.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNov" data-cerrar>Qué se ha mejorado</button><button class="btn peq" id="aTour" data-cerrar>Repetir el tour</button></div>
     </div>
     <div class="seccion-ed"><h3>App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
@@ -5902,7 +6650,8 @@ function abrirAjustes() {
     </div>
     <div class="seccion-ed"><h3>Copias</h3>
       <p class="nota" style="margin:0">La copia sin cifrar contiene todas tus cantidades: guárdala solo en tu ordenador.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aExp">Descargar copia sin cifrar</button><label class="btn peq" style="display:inline-flex;align-items:center">Importar copia<input type="file" id="aImp" accept=".json" hidden></label></div>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aExp">Descargar copia sin cifrar</button><label class="btn peq" style="display:inline-flex;align-items:center">Importar copia o JSON<input type="file" id="aImp" accept=".json,application/json" hidden></label><button class="btn peq" id="aEjemplo">Ejemplo de JSON</button></div>
+      <p class="nota" style="margin:0">El JSON puede llevar el ISIN, el ticker o el nombre de cada cosa con su cantidad, lo que pagaste (o el precio medio), el bróker y la fecha: la web busca cada valor sola.</p>
     </div>
     <div class="seccion-ed"><h3>Este dispositivo</h3>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
@@ -5940,13 +6689,16 @@ function abrirAjustes() {
     $('#aP1', h.el).value = $('#aP2', h.el).value = '';
   };
   $('#aExp', h.el).onclick = () => descargar(`cartera-${hoyIso()}.json`, JSON.stringify(S.cartera, null, 2));
+  $('#aEjemplo', h.el).onclick = () => descargar('cartera-ejemplo.json', JSON.stringify(EJEMPLO_CARTERA, null, 2));
   $('#aImp', h.el).onchange = async (ev) => {
-    try {
-      const j = JSON.parse(await ev.target.files[0].text());
-      if (!Array.isArray(j.posiciones)) throw new Error();
-      if (!confirm(`¿Sustituir tu cartera por la del archivo (${j.posiciones.length} posiciones)?`)) return;
-      S.cartera = j; await guardarCartera('Importar copia'); h.cerrar(); pintar();
-    } catch (e) { toast('Ese archivo no parece una cartera'); }
+    let r;
+    try { r = normalizarCartera(JSON.parse(await ev.target.files[0].text())); }
+    catch (e) { toast(`Ese archivo no parece una cartera: ${e instanceof SyntaxError ? 'el JSON tiene un error de formato' : e.message || 'falta la lista "posiciones"'}`, 6000); ev.target.value = ''; return; }
+    ev.target.value = '';
+    if (!confirm(`¿Sustituir tu cartera por la del archivo? ${resumenImport(r)}`)) return;
+    S.cartera = r.cartera; sumarInstPropios(); await guardarCartera('Importar copia'); h.cerrar(); pintar();
+    cargarHistCatalogo().then((x) => { if (x) pintar(); });
+    toast(resumenImport(r), 6000);
   };
   $('#aBloq', h.el).onclick = async () => { await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
   $('#aOlvidar', h.el).onclick = async () => {
@@ -6129,6 +6881,8 @@ function pedidoAnalisis(ids, motivo, conWeb = true) {
 3. Para las ideas de compra, parte de las que ha elegido Gemini en su escaneo de prensa de toda la bolsa, del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de la web y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
 4. Ten en cuenta el plazo y los impuestos en todo: no es lo mismo ganar un 50 % en 3 meses que en 3 años. Para cada idea, estima en cuántos meses se puede materializar la subida y cuánto, y compárala en "al año" y neta de impuestos con mi fondo indexado. Para cada venta o compra, di lo que pago (ganancia, tasa, retención de dividendos que no recupero).
 5. Sintetiza: no repitas en una sección lo que ya está en otra. Frases cortas.
+6. Ajústalo todo a su perfil y sus objetivos (edad, cuándo necesita el dinero, cuánto riesgo aguanta, sus límites y sus metas con fecha y cifra, vienen en los datos): si algo de su cartera choca con ellos, dilo y propón cómo encajarlo; en la hoja de ruta, lo que necesite cada meta.
+7. En cada compra o venta explica lo de Hacienda y por qué: lo que pagará, y lo que debe hacer o evitar por fiscalidad (por ejemplo, si vende con pérdidas, no recomprar la misma acción o ETF en dos meses, ni el mismo fondo en un año, porque si no la pérdida no resta ese año; en cripto la de dos meses no se aplica, aunque hay quien defiende la de un año). Si un consejo tiene un motivo fiscal, que se diga.
 
 Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
 {
@@ -6141,10 +6895,11 @@ Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
   "calendario": [{"d": "AAAA-MM-DD", "t": "qué pasa ese día y por qué me importa"}],
   "posiciones": {"<id>": {"veredicto": "de 2 a 4 palabras", "nivel": "comprar|aportar|mantener|vigilar|recoger|reducir|vender", "texto": "dos o tres frases con cifras", "vigilar": "qué vigilar, con precio o fecha", "confianza": "alta|media|baja"}},
   "ideas": [{"ticker": "...", "nombre": "...", "tesis": "una o dos frases", "catalizador": "qué la puede mover y cuándo", "riesgo": "...", "contraste": "qué fuentes coinciden y cuáles no", "importe": 0, "plazo_meses": 6, "subida_pct": 20, "fuentes": [{"t": "título", "u": "https://..."}]}],
-  "hoja_de_ruta": {"mes": [{"t": "paso concreto, empezando por un verbo", "por_que": "una frase: qué gano o qué evito, con cifras", "como": "los pasos exactos: en qué app, qué botón, qué orden y a qué precio", "d": "AAAA-MM-DD o vacío"}], "seis_meses": [...], "anio": [...], "largo": [...]},
+  "hoja_de_ruta": {"mes": [{"t": "paso concreto, empezando por un verbo", "por_que": "una frase: qué gano o qué evito, con cifras", "como": "los pasos exactos: en qué app, qué botón, qué orden y a qué precio", "impuestos": "si el paso compra o vende: lo que paga o ahorra en la renta y lo que debe hacer o evitar por Hacienda, diciendo que es por eso; vacío si no aplica", "d": "AAAA-MM-DD o vacío"}], "seis_meses": [...], "anio": [...], "largo": [...]},
+  "preguntas": [{"q": "una pregunta corta para él", "por_que": "qué cambiaría en tus consejos según lo que conteste", "opciones": ["respuesta corta", "otra", "otra"]}],
   "fuentes": [{"t": "título", "u": "https://..."}]
 }
-Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 3 a 8. "ideas" de 0 a 3. "hoja_de_ruta": de 1 a 4 pasos por plazo (este mes, próximos 6 meses, próximo año, de 1 a 5 años) que completen la hoja de ruta que ya calcula la web (está en los datos): no repitas sus pasos; añade lo que solo se sabe leyendo las noticias, las fechas que vienen y sus reglas.
+"preguntas": de 0 a 2, solo si te falta algo de él (su vida, sus planes, su perfil) que cambiaría de verdad tus consejos; no repitas lo que ya ha contestado (viene en los datos). Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 3 a 8. "ideas" de 0 a 3. "hoja_de_ruta": de 1 a 4 pasos por plazo (este mes, próximos 6 meses, próximo año, de 1 a 5 años) que completen la hoja de ruta que ya calcula la web (está en los datos): no repitas sus pasos; añade lo que solo se sabe leyendo las noticias, las fechas que vienen y sus reglas.
 Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**) para que la web pueda ocultarlas; ningún otro formato.`;
 }
 function extraerJSON(texto) {
@@ -6201,8 +6956,10 @@ async function revisarAnalisisIA() {
   const prensa = cfg.auto === 'diario' && p && S.informe && S.informe.generado > p.fecha && edad > 3 * 36e5;
   // si has cambiado tus reglas después de su última revisión, la rehace con las nuevas
   const reglas = p && S.ia && S.ia.reglas_fecha && String(S.ia.reglas_fecha) > String(p.fecha);
+  const perfilNuevo = p && S.cartera.perfil && S.cartera.perfil.actualizado && String(S.cartera.perfil.actualizado) > String(p.fecha);
   if (edad > limite) generarAnalisisIA(p ? 'revisión diaria' : 'primera revisión');
   else if (reglas) generarAnalisisIA('han cambiado tus reglas');
+  else if (perfilNuevo) generarAnalisisIA('has cambiado tu perfil o le has contestado');
   else if (cambio) generarAnalisisIA('ha cambiado la señal de alguna posición');
   else if (prensa) generarAnalisisIA('hay noticias nuevas en el informe de prensa');
 }
@@ -6376,6 +7133,7 @@ function contextoAsesor(M) {
     }
     const sueltas = M.total ? (sum(M.filas.filter((f) => f.inst.tipo === 'Acción'), (f) => f.valor) / M.total) * 100 : 0;
     L.push(`Acciones sueltas: ${fmtNum(sueltas, 1)} % del total. Su límite propio: ${fmtNum(+(S.cartera.limite_acciones || 20), 0)} %.`);
+    try { L.push('', '## Su perfil y sus objetivos (ajusta todos tus consejos a esto)', ...textoPerfil(M), ''); } catch (e) {}
     const conTer = M.filas.filter((f) => f.inst.ter != null), base = sum(conTer, (f) => f.valor), coste = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
     L.push(`Dividendos brutos estimados al año ${E0(M.dividendos)}. Gastos de sus fondos ${E0(coste)} al año (TER medio ${fmtNum(base ? (coste / base) * 100 : 0, 2)} %).`);
     const ed = empresasPorDentro(M).filas.slice(0, 15);
@@ -6481,6 +7239,7 @@ Cómo respondes:
 - Antes de recomendar una acción, mira si ya tiene otra suelta del mismo negocio (dos aerolíneas, dos petroleras…): sería repetir la misma apuesta. Dilo claro y, si aun así compensa, explica qué añade que no tenga ya.
 - Formato: frases cortas, números en formato español (1.234,56 €), negrita solo para la cifra o la acción clave, listas cuando ayuden a seguir pasos y tablas solo para comparar opciones. Breve salvo que pida detalle.
 - Si la pregunta es ambigua, contesta la interpretación más útil y di cuál has tomado.
+- Ajusta cada consejo a su perfil y sus metas (vienen abajo): no se le recomienda lo mismo a alguien de 24 años que empieza que a alguien de 60 que va a necesitar el dinero. Si te falta algo de su vida o de sus planes que cambie la respuesta (edad, cuándo necesita el dinero, cuánto riesgo aguanta, si tiene colchón o deudas), pregúntaselo en una frase al final, o antes de recomendar si sin eso no puedes.
 - El plazo importa: no es lo mismo ganar un 50 % en 3 meses que en 3 años. Cuando compares inversiones o recomiendes una, di en cuánto tiempo esperas la subida (el objetivo de los analistas es a 12 meses; si hay un catalizador con fecha, puede ser antes) y pásalo a "al año" y neto de impuestos. Compáralo con su fondo indexado (un 7 % al año a largo plazo). En sus posiciones, usa lo que llevan ganado al año desde que las compró, no solo el total.
 - Toda recomendación lleva su coste fiscal: lo que paga al vender, la tasa al comprar, la retención de los dividendos que no recupera y si un traspaso entre fondos le ahorra pagar. Si dos opciones dan parecido, gana la que paga menos impuestos o los paga más tarde.
 - Si te manda un recorte de la pantalla, explica lo que se ve en él con sus datos: qué significa cada cifra, de dónde sale y qué haría él con eso.
@@ -7207,7 +7966,7 @@ document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#ases
    Eventos: un solo oyente para toda la página (las vistas se vuelven a pintar a menudo)
    ===================================================================== */
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-car],[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta],[data-exp],[data-plazo]');
+  const t = e.target.closest('[data-car],[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta],[data-exp],[data-plazo],[data-fut],[data-resp],[data-fis]');
   if (!t || !S.cartera) return;
   const d = t.dataset;
   if (d.rango) { S.rango = d.rango; LS.set('inv-rango', S.rango); pintar(); }
@@ -7230,6 +7989,9 @@ document.addEventListener('click', (e) => {
     if (S.numAbierto) setTimeout(() => { const el = $(`#num-${S.numAbierto}`); if (el) { el.open = true; el.scrollIntoView({ block: 'start' }); } }, 60);
   }
   else if (d.car) { S.carTab = d.car; LS.set('inv-car', S.carTab); pintar(); irArriba('#carTabs'); }
+  else if (d.fis) { S.fisTab = d.fis; LS.set('inv-fistab', S.fisTab); pintar(); irArriba('#fisTabs'); }
+  else if (d.fut) { S.futTab = d.fut; LS.set('inv-futtab', S.futTab); pintar(); irArriba('#futTabs'); }
+  else if ('resp' in d) { const q = t.closest('[data-preg]'); if (q) responderIA(+q.dataset.preg, d.resp); }
   else if (d.zona) { S.radarZona = d.zona; S.radarTodo = false; LS.set('inv-zona', S.radarZona); pintar(); }
   else if (d.orden) { S.radarOrden = d.orden; LS.set('inv-orden2', S.radarOrden); pintar(); }
   else if ('radarTodo' in d) { S.radarTodo = !S.radarTodo; pintar(); }
@@ -7239,6 +8001,7 @@ document.addEventListener('click', (e) => {
     if (a === 'ocultar') { S.oculto = !S.oculto; LS.set('inv-oculto', S.oculto); pintar(); }
     else if (a === 'ajustes') abrirAjustes();
     else if (a === 'novedades') mostrarNovedades(null);
+    else if (a === 'opinion') abrirOpinion();
     else if (a === 'tour') iniciarTour(0);
     else if (a === 'cerrar-ficha') cerrarFicha();
     else if (a === 'operacion') operacion(d.tipo || 'compra', d.id, d.sim);
@@ -7259,7 +8022,9 @@ document.addEventListener('click', (e) => {
     else if (a === 'nueva-ap') editarAportacion(null);
     else if (a === 'editar-ap') editarAportacion(+d.k);
     else if (a === 'efectivo') editarEfectivo();
-    else if (a === 'limites') editarLimites();
+    else if (a === 'limites' || a === 'perfil') editarPerfil();
+    else if (a === 'perfil-ia') editarSobreMi();
+    else if (a === 'meta') editarMeta(d.id || null);
     else if (a === 'fiscal') editarFiscal();
     else if (a === 'asesor') abrirAsesor(d.q || '', !!d.q);
     else if (a === 'recorte') iniciarRecorte();
@@ -7267,6 +8032,12 @@ document.addEventListener('click', (e) => {
     else if (a === 'asesor-ajustes') { AS.vista = 'ajustes'; abrirAsesor().then(() => { AS.vista = 'ajustes'; pintarAsesor(); }); }
     else if (a === 'borrar-mov') borrarMovimiento(d.id, t);
   }
+});
+document.addEventListener('submit', (e) => {
+  const f = e.target.closest && e.target.closest('.pf-otra'); if (!f) return;
+  e.preventDefault();
+  const q = f.closest('[data-preg]'), v = f.querySelector('input').value;
+  if (q && v.trim()) responderIA(+q.dataset.preg, v);
 });
 document.addEventListener('change', (e) => {
   const t = e.target;
@@ -7293,13 +8064,16 @@ function irArriba(sel) {
 function vistaDeHash() {
   const v = location.hash.slice(1);
   if (v === 'plan') { S.carTab = 'plan'; LS.set('inv-car', 'plan'); return 'cartera'; }
-  if (v === 'impuestos') return 'fiscal';
+  if (v === 'impuestos') { S.fisTab = 'tu'; return 'fiscal'; }
+  if (v === 'renta') { S.fisTab = 'renta'; return 'fiscal'; }
+  if (v === 'objetivos') { S.futTab = 'perfil'; return 'futuro'; }
+  if (v === 'proyeccion') { S.futTab = 'proy'; return 'futuro'; }
   return esVista(v) ? v : null;
 }
 window.addEventListener('hashchange', () => {
   const v = vistaDeHash(); if (!v || !S.cartera) return;
   if (S.ficha) cerrarFicha(true);
-  if (v !== S.vista) { S.vista = v; S.scrollTop = true; LS.set('inv-vista', v); pintar(); }
+  if (v !== S.vista || /^(renta|impuestos|objetivos|proyeccion|plan)$/.test(location.hash.slice(1))) { S.vista = v; S.scrollTop = true; LS.set('inv-vista', v); pintar(); }
 });
 /* la cinta se para al tocarla en el móvil y sigue al volver a tocar */
 document.addEventListener('pointerup', (e) => { if (e.pointerType === 'touch' && e.target.closest('#ticker')) $('#ticker').classList.toggle('pausa'); });
@@ -7339,6 +8113,7 @@ function arrancar() {
   revisarWeb();
 }
 document.addEventListener('visibilitychange', () => {
+  if (!document.hidden && window.InversionesApp && Date.now() - appRevisadaT > 3600000) revisarApp();
   if (document.hidden || !S.cartera) return;
   LIVE.asegurar();
   if (Date.now() - S.ultimaCarga > 60000) recargarPrecios(); else { programarParche(); revisarAnalisisIA(); }
@@ -7346,6 +8121,8 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); recargarPrecios(); } });
 
 async function iniciar() {
+  // en la app de Android, lo primero de todo: ¿hay versión nueva de la app?
+  if (window.InversionesApp) setTimeout(() => revisarApp(), 900);
   $('#app').innerHTML = '<div class="pantalla"><div class="caja" style="text-align:center;justify-items:center"><img class="logo" src="icon-192.png" alt=""><p>Cargando…</p></div></div>';
   try {
     const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), cargarEscaneo(), cargarCatalogo()])), cargarCifrada(), leerAnalisisRemoto()]);

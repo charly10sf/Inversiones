@@ -1,7 +1,7 @@
 {
-  "name": "Inversiones",
-  "short_name": "Inversiones",
-  "description": "Mi cartera de inversión en tiempo real",
+  "name": "Bellota",
+  "short_name": "Bellota",
+  "description": "Tu cartera de inversión, a tu medida",
   "lang": "es",
   "start_url": "./",
   "scope": "./",

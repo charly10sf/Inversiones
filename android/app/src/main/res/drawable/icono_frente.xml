@@ -1,11 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- El mismo dibujo que favicon.svg (48x48), centrado en la zona segura de 72dp de un icono adaptable de 108dp -->
+<!-- La bellota de favicon.svg (48x48), centrada en la zona segura de 72dp de un icono adaptable de 108dp -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="108dp" android:height="108dp"
     android:viewportWidth="108" android:viewportHeight="108">
     <group android:translateX="20" android:translateY="20" android:scaleX="1.4167" android:scaleY="1.4167">
-        <path android:pathData="M10,37.5H38" android:strokeColor="#4F4A41" android:strokeWidth="3" android:strokeLineCap="round" />
-        <path android:pathData="M11,31L19.5,23.5L25.5,27.5L36.5,15" android:strokeColor="#E2B45F" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round" />
-        <path android:pathData="M29.5,14H37.5V22" android:strokeColor="#E2B45F" android:strokeWidth="4" android:strokeLineCap="round" android:strokeLineJoin="round" />
+        <path android:pathData="M24,11C24,8.4 25.4,6.6 27.8,5.7" android:strokeColor="#E2B45F" android:strokeWidth="2.6" android:strokeLineCap="round" />
+        <path android:pathData="M27.2,7.6C30.4,4.6 34.8,4.6 37.2,6.4C34.7,9.6 30.4,10.2 27.2,7.6Z" android:fillColor="#4FC995" />
+        <path android:pathData="M12.5,20.6C12.5,14.2 17.6,10.6 24,10.6C30.4,10.6 35.5,14.2 35.5,20.6C35.5,21.7 34.7,22.5 33.6,22.5H14.4C13.3,22.5 12.5,21.7 12.5,20.6Z" android:fillColor="#E2B45F" />
+        <path android:pathData="M15.8,17.6C19.4,15.5 28.6,15.5 32.2,17.6" android:strokeColor="#A97C33" android:strokeWidth="1.3" android:strokeLineCap="round" />
+        <path android:pathData="M15.2,22.5C14.4,31.2 18.4,38.6 24,41.8C29.6,38.6 33.6,31.2 32.8,22.5Z" android:fillColor="#F1EDE5" />
+        <path android:pathData="M19,33.2L22.4,29.6L25,31.6L29.2,26.6" android:strokeColor="#1F1D19" android:strokeWidth="2.2" android:strokeLineCap="round" android:strokeLineJoin="round" />
     </group>
 </vector>

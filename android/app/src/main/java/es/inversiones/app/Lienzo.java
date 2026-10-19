@@ -233,7 +233,7 @@ final class Lienzo {
         float ph = W >= 200 ? 16 : 14, pv = H >= 110 ? 14 : 10;
         float util = W - 2 * ph;
         if (!r.hay) {
-            texto(ph, H / 2 - 2, "Inversiones", Math.min(22, H * 0.22f), 300, TEXTO, false);
+            texto(ph, H / 2 - 2, "Bellota", Math.min(22, H * 0.22f), 300, TEXTO, false);
             texto(ph, H / 2 + 18, recortar("Abre la app una vez para ver aquí tu cartera", 12.5f, 500, util), 12.5f, 500, TEXTO2, false);
             return;
         }
