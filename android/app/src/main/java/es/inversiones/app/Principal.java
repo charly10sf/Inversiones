@@ -158,6 +158,11 @@ public class Principal extends Activity {
         }
     }
 
+    /** Ejecuta algo en la web desde cualquier hilo */
+    void js(String codigo) {
+        runOnUiThread(() -> { if (web != null) web.evaluateJavascript(codigo, null); });
+    }
+
     /** Cuenta a la web cómo va la descarga de la versión nueva (-1 si falla) */
     void progreso(int pct, String estado) {
         String js = "window.progresoApp && progresoApp(" + pct + "," + JSONObject.quote(estado == null ? "" : estado) + ")";

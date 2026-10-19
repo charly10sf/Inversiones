@@ -1732,6 +1732,30 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .aviso-idioma .ai-x { width: 30px; height: 30px; display: grid; place-items: center; border: 0; background: transparent; color: #DCE6F2; border-radius: 8px; flex: none; }
 .aviso-idioma .ai-x svg { width: 16px; height: 16px; }
 @media (max-width: 560px) { .aviso-idioma { gap: 8px; font-size: 12.5px; padding-left: 14px; padding-right: 6px; } .aviso-idioma > .bandera { display: none; } .aviso-idioma .ai-es { padding: 0 8px; } }
+
+/* ---------- bloqueo con PIN o huella ---------- */
+.bloqueo { position: fixed; inset: 0; z-index: 95; display: grid; place-items: center; background: var(--bg); padding: calc(20px + env(safe-area-inset-top)) 20px calc(20px + env(safe-area-inset-bottom)); overflow: auto; animation: bqEntra 0.2s ease-out; }
+.bloqueo.sale { opacity: 0; transition: opacity 0.2s; }
+@keyframes bqEntra { from { opacity: 0; } to { opacity: 1; } }
+.bq-caja { width: min(340px, 100%); display: grid; justify-items: center; text-align: center; }
+.bq-caja .logo { width: 56px; height: 56px; }
+.bq-caja h1 { margin: 14px 0 4px; font-size: 24px; font-weight: 600; letter-spacing: -0.02em; }
+.bq-txt { margin: 0; color: var(--text-2); font-size: 15px; }
+.bq-puntos { display: flex; gap: 18px; margin: 28px 0 8px; }
+.bq-puntos i { width: 14px; height: 14px; border-radius: 50%; border: 2px solid var(--line-2); transition: background 0.12s, border-color 0.12s; }
+.bq-puntos i.on { background: var(--accent); border-color: var(--accent); }
+.bq-puntos.mal { animation: bqMal 0.35s; }
+@keyframes bqMal { 20%, 60% { transform: translateX(-8px); } 40%, 80% { transform: translateX(8px); } }
+.bq-error { min-height: 40px; margin: 0; color: var(--down); font-size: 13.5px; line-height: 1.45; }
+.bq-teclado { display: grid; grid-template-columns: repeat(3, 76px); gap: 14px 22px; margin-top: 4px; }
+.bq-teclado button { width: 76px; height: 76px; border-radius: 50%; border: 1px solid var(--line-2); background: var(--plane-2); color: var(--text); font-size: 28px; font-weight: 400; display: grid; place-items: center; }
+.bq-teclado button:active { background: var(--plane-3); }
+.bq-teclado button[data-t="huella"], .bq-teclado button[data-t="borrar"] { background: transparent; border-color: transparent; color: var(--accent); }
+.bq-teclado button[data-t="borrar"] { color: var(--text-2); }
+.bq-teclado button svg { width: 30px; height: 30px; }
+.bq-pass { margin-top: 26px; }
+@media (max-height: 640px) { .bq-teclado { grid-template-columns: repeat(3, 64px); gap: 10px 20px; } .bq-teclado button { width: 64px; height: 64px; font-size: 24px; } .bq-puntos { margin-top: 18px; } }
+@media (prefers-reduced-motion: reduce) { .bloqueo, .bq-puntos.mal { animation: none; } }
 </style>
 </head>
 <body>
@@ -1765,7 +1789,7 @@ const PERFIL_LOCAL = (() => {
     return localStorage.getItem('inv-perfil') === '"local"';
   } catch (e) { return false; }
 })();
-const PRIVADAS = new Set(['inv-cache-enc', 'inv-token', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-cfg2', 'inv-ia-propio', 'inv-ia-agotados', 'inv-gkey-modo', 'inv-cache-ia', 'inv-oculto', 'inv-proy']);
+const PRIVADAS = new Set(['inv-bloqueo', 'inv-bloqueo-t', 'inv-cache-enc', 'inv-token', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-cfg2', 'inv-ia-propio', 'inv-ia-agotados', 'inv-gkey-modo', 'inv-cache-ia', 'inv-oculto', 'inv-proy']);
 const IDB_CLAVE = PERFIL_LOCAL ? 'clave-local' : 'clave';
 const LS = {
   k(k) { return PERFIL_LOCAL && PRIVADAS.has(k) ? 'invL-' + k.slice(4) : k; },
@@ -2597,6 +2621,8 @@ const ICONOS = {
   enviar: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2.2),
   parar: SVG('<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>', 1.5),
   globo: SVG('<path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17.5H4A1.5 1.5 0 0 1 2.5 16V7A1.5 1.5 0 0 1 4 5.5z"/><path d="M7.5 10.5h9M7.5 13.5h5.5"/>', 1.8),
+  huella: SVG('<path d="M12 11.5v3a7 7 0 0 1-1.6 4.4"/><path d="M8.7 9.7a3.4 3.4 0 0 1 6.6 1.3v2.4a11 11 0 0 1-.7 3.9"/><path d="M6.3 7.6a6.4 6.4 0 0 1 12.1 3.4v1.4"/><path d="M5.2 13.3V11a7 7 0 0 1 .3-1.9"/><path d="M8.6 13.6v1a8.5 8.5 0 0 1-1.7 5"/><path d="M18.3 15.6a14 14 0 0 1-.8 2.9"/><path d="M8.4 4.2A9.4 9.4 0 0 1 21.3 11"/><path d="M2.7 11.2a9.3 9.3 0 0 1 2.4-6.1"/>', 1.6),
+  borrarTecla: SVG('<path d="M9 5h10.5A1.5 1.5 0 0 1 21 6.5v11a1.5 1.5 0 0 1-1.5 1.5H9l-6-7z"/><path d="M12.5 9.5l5 5M17.5 9.5l-5 5"/>', 1.8),
   copiar: SVG('<rect x="8" y="8" width="12" height="12" rx="2.5"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/>', 1.8),
 };
 
@@ -6283,6 +6309,7 @@ function pantallaDesbloqueo(errorTxt = '') {
       S.key = key;
       if ($('#recordar').checked) await IDB.set(IDB_CLAVE, { salt: f.salt, key });
       else await IDB.del(IDB_CLAVE);
+      marcarDesbloqueo();
       arrancar();
     } catch (e) {
       console.warn(e);
@@ -6610,8 +6637,12 @@ function buscador(cont, alElegir, opt = {}) {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.1.12';
+const VERSION = '0.1.13';
 const NOVEDADES = [
+  { v: '0.1.13', f: '2026-10-19', t: 'PIN y huella', cosas: [
+    { d: 'pin', t: 'Entra con PIN o con la huella', x: 'En Ajustes, Bloqueo con PIN o huella. GrowFolio se abre sin escribir la contraseña y, una vez cada 72 horas, te pide el PIN de 4 cifras o la huella. Con cinco PIN mal seguidos vuelve a pedir la contraseña.' },
+    { d: 'candado', t: 'Bloquear al momento', x: 'Con el PIN puesto, el botón Bloquear de Ajustes cierra GrowFolio y pide el PIN o la huella para volver. En la app de Android, la huella llega con la versión nueva de la app: te avisa al abrirla.' },
+  ] },
   { v: '0.1.12', f: '2026-10-19', t: 'Menos scroll y GTA VI', cosas: [
     { d: 'gta', t: 'Cuenta atrás para GTA VI', x: 'Al lado de tu patrimonio: los días que faltan, cuántos GTA VI vale tu cartera, en qué año podrías pagar el juego entero, el tráiler de lanzamiento y lo que pudo costar hacerlo.' },
     { d: 'mercados', t: 'Mercados, más fácil de leer', x: 'Cada mercado en una fila con su precio, lo de hoy y una gráfica pequeña; tócalo para ver qué es y qué significa para ti. Seis noticias a la vista y el resto, plegadas.' },
@@ -6664,6 +6695,8 @@ const fechaNov = (f) => { const d = deIso(f); return `${d.getDate()} ${MESES[d.g
 
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  pin: '<circle class="fA" cx="36" cy="12" r="4.5"/><circle class="fA" cx="50" cy="12" r="4.5"/><circle class="fA" cx="64" cy="12" r="4.5"/><circle class="l" cx="78" cy="12" r="4.5"/><rect class="fp" x="28" y="26" width="16" height="14" rx="7"/><rect class="fp" x="49" y="26" width="16" height="14" rx="7"/><rect class="fp" x="70" y="26" width="16" height="14" rx="7"/><rect class="fp" x="28" y="44" width="16" height="14" rx="7"/><rect class="fa" x="49" y="44" width="16" height="14" rx="7"/><rect class="fp" x="70" y="44" width="16" height="14" rx="7"/><path class="a" d="M101 52v4a7 7 0 0 1-1.6 4.4M97.7 50.2a3.4 3.4 0 0 1 6.6 1.3v2.4M95.3 48.1a6.4 6.4 0 0 1 12.1 3.4M94.2 53.8V51.5"/>',
+  candado: '<rect class="fa" x="42" y="34" width="36" height="30" rx="7"/><path class="a" d="M50 34v-8a10 10 0 0 1 20 0v8"/><circle class="fA" cx="60" cy="47" r="3.5"/><path class="a" d="M60 50v5"/><text class="t" x="84" y="22">72 h</text>',
   gta: '<path class="l" d="M32 34h56a13 13 0 0 1 13 14l-1.6 10a7.5 7.5 0 0 1-13 3.6L80 54H40l-6.4 7.6a7.5 7.5 0 0 1-13-3.6L19 48a13 13 0 0 1 13-14z"/><path class="a" d="M36 41v10M31 46h10"/><circle class="fA" cx="80" cy="43" r="3"/><circle class="fA" cx="87" cy="50" r="3"/><rect class="fa" x="36" y="6" width="48" height="18" rx="9"/><text class="ta" x="47" y="19">19 nov</text>',
   movil: '<rect class="l" x="38" y="4" width="44" height="72" rx="8"/><rect class="fp" x="44" y="14" width="32" height="10" rx="3"/><rect class="fp" x="44" y="28" width="32" height="10" rx="3"/><rect class="fa" x="44" y="42" width="32" height="10" rx="3"/><path class="a" d="M69 45.5l2.5 2.5 2.5-2.5"/><path class="m" d="M46 60h20M46 66h14"/><path class="u" d="M96 24v32M91 29l5-5 5 5M91 51l5 5 5-5"/>',
   idioma: '<rect x="18" y="16" width="36" height="24" rx="4" fill="#AA151B"/><rect x="18" y="22" width="36" height="12" fill="#F1BF00"/><rect x="66" y="16" width="36" height="24" rx="4" fill="#012169"/><path d="M67 17l34 22M101 17L67 39" stroke="#fff" stroke-width="4"/><path d="M84 16v24M66 28h36" stroke="#fff" stroke-width="7"/><path d="M84 16v24M66 28h36" stroke="#C8102E" stroke-width="4"/><rect class="fa" x="32" y="52" width="56" height="16" rx="8"/><text class="ta" x="41" y="63.5">en pruebas</text>',
@@ -7235,6 +7268,7 @@ function abrirAjustes() {
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNov" data-cerrar>Qué se ha mejorado</button><button class="btn peq" id="aTour2" data-cerrar>Ver el tutorial</button></div>
     </div>
     <div class="seccion-ed"><h3>App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
+    ${htmlAjustesBloqueo()}
     <div class="seccion-ed"><h3>Contraseña</h3>
       <div class="form-grid"><label class="campo">Nueva contraseña<input type="password" id="aP1" autocomplete="new-password"></label><label class="campo">Repítela<input type="password" id="aP2" autocomplete="new-password"></label></div>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aCambiar">Cambiar contraseña</button></div>
@@ -7246,9 +7280,11 @@ function abrirAjustes() {
     </div>
     <div class="seccion-ed"><h3>Este dispositivo</h3>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
-      <p class="nota" style="margin:0">${PERFIL_LOCAL ? 'Bloquear te pedirá la contraseña la próxima vez. Olvidar borra tu cartera de este dispositivo: descarga antes una copia.' : 'Bloquear te pedirá la contraseña la próxima vez. Olvidar borra también el token y la copia local.'}</p>
+      <p class="nota" style="margin:0">${cfgBloqueo() ? 'Bloquear te pedirá el PIN o la huella ahora mismo.' : 'Bloquear te pedirá la contraseña la próxima vez.'} ${PERFIL_LOCAL ? 'Olvidar borra tu cartera de este dispositivo: descarga antes una copia.' : 'Olvidar borra también el token y la copia local.'}</p>
     </div>`);
   pintarAjustesApp($('#aApp', h.el));
+  const recargarBloq = () => { const x = $('#ajBloqueo', h.el); if (!x || !h.el.isConnected) return; x.outerHTML = htmlAjustesBloqueo(); enlazarAjustesBloqueo(h.el, recargarBloq); };
+  enlazarAjustesBloqueo(h.el, recargarBloq);
   $('#aNov', h.el).onclick = () => setTimeout(() => mostrarNovedades(null), 0);
   for (const b of $$('#aTour, #aTour2', h.el)) b.onclick = () => setTimeout(() => iniciarTour(0), 0);
   $('#aIntro', h.el).onclick = () => setTimeout(() => pantallaIntro(() => { montar(); pintar(); }), 0);
@@ -7298,10 +7334,13 @@ function abrirAjustes() {
     cargarHistCatalogo().then((x) => { if (x) pintar(); });
     toast(resumenImport(r), 6000);
   };
-  $('#aBloq', h.el).onclick = async () => { await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
+  $('#aBloq', h.el).onclick = async () => {
+    if (cfgBloqueo()) { LS.del('inv-bloqueo-t'); h.cerrar(); return pantallaBloqueo(() => {}, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); }); }
+    await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
   $('#aOlvidar', h.el).onclick = async () => {
     if (!confirm(PERFIL_LOCAL ? '¿Borrar tu cartera de este dispositivo? Sin una copia descargada no se puede recuperar.' : '¿Borrar la clave, el token y las copias locales de este navegador?')) return;
     await IDB.del(IDB_CLAVE);
+    guardarBloqueo(null); LS.del('inv-bloqueo-t');
     if (PERFIL_LOCAL) { LS.del('inv-local-enc'); LS.del('inv-perfil'); }
     for (const k of ['inv-token', 'inv-cache-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc', 'inv-cache-radar', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-dev-ia-enc']) LS.del(k);
     location.reload();
@@ -8719,6 +8758,193 @@ document.addEventListener('visibilitychange', () => {
 window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); recargarPrecios(); } });
 
 /* =====================================================================
+   Bloqueo con PIN o huella. Encima de "Recordar en este dispositivo" (y, cuando lleguen las cuentas,
+   encima de la sesión de Google): la app se abre sola, pero una vez cada 72 horas pide el PIN de 4
+   cifras o la huella. Cinco PIN mal seguidos olvidan la clave del dispositivo y piden la contraseña.
+   Huella: en la app de Android, la del sistema (BiometricPrompt, por el puente); en el navegador,
+   WebAuthn con el lector del dispositivo (huella, cara o Windows Hello).
+   Es un candado de uso diario frente a quien coja el móvil, no sustituye al cifrado con la contraseña.
+   ===================================================================== */
+const BLOQUEO_H = 72, BLOQUEO_FALLOS = 5;
+const cfgBloqueo = () => LS.get('inv-bloqueo', null);
+const guardarBloqueo = (c) => (c ? LS.set('inv-bloqueo', c) : LS.del('inv-bloqueo'));
+const marcarDesbloqueo = () => LS.set('inv-bloqueo-t', Date.now());
+function necesitaBloqueo() {
+  const c = cfgBloqueo();
+  return !!(c && c.pin) && Date.now() - (+LS.get('inv-bloqueo-t', 0) || 0) > BLOQUEO_H * 3600000;
+}
+async function hashPin(pin, salt) {
+  const base = await crypto.subtle.importKey('raw', TE.encode(pin), 'PBKDF2', false, ['deriveBits']);
+  return b64.enc(new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 200000, hash: 'SHA-256' }, base, 256)));
+}
+// ¿qué huella hay en este dispositivo? 'app' (Android), 'web' (WebAuthn) o null
+async function huellaPosible() {
+  const a = window.InversionesApp;
+  if (a && typeof a.huellaDisponible === 'function') { try { return a.huellaDisponible() ? 'app' : null; } catch (e) { return null; } }
+  if (a) return null;  // app antigua: el WebView no tiene WebAuthn
+  try { return window.PublicKeyCredential && (await PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable()) ? 'web' : null; } catch (e) { return null; }
+}
+let huellaEspera = null;
+window.resultadoHuella = (ok, motivo) => { const r = huellaEspera; huellaEspera = null; if (r) r({ ok: !!ok, motivo: motivo || '' }); };
+function huellaApp() {
+  return new Promise((res) => {
+    huellaEspera = res;
+    try { window.InversionesApp.pedirHuella(IDIOMA === 'en' ? 'Unlock GrowFolio' : 'Desbloquea GrowFolio', IDIOMA === 'en' ? 'Use PIN' : 'Usar el PIN'); } catch (e) { huellaEspera = null; res({ ok: false, motivo: 'sin puente' }); }
+  });
+}
+async function registrarHuellaWeb() {
+  const cred = await navigator.credentials.create({ publicKey: {
+    challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'GrowFolio' },
+    user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'GrowFolio', displayName: 'GrowFolio' },
+    pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
+    authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' }, timeout: 60000,
+  } });
+  return b64.enc(new Uint8Array(cred.rawId));
+}
+async function huellaWeb(id) {
+  try {
+    const r = await navigator.credentials.get({ publicKey: { challenge: crypto.getRandomValues(new Uint8Array(32)), allowCredentials: [{ type: 'public-key', id: b64.dec(id) }], userVerification: 'required', timeout: 60000 } });
+    const flags = new Uint8Array(r.response.authenticatorData)[32];
+    return { ok: !!(flags & 0x04) };  // el lector comprobó que eres tú (huella, cara o PIN del sistema)
+  } catch (e) { return { ok: false, motivo: e.name }; }
+}
+const pedirHuella = (c) => (c.huella && c.huella.tipo === 'app' ? huellaApp() : c.huella && c.huella.tipo === 'web' ? huellaWeb(c.huella.id) : Promise.resolve({ ok: false }));
+
+/* la pantalla: cuatro puntos, teclado numérico grande y, si la hay, la huella */
+function pantallaBloqueo(alAbrir, conContrasena) {
+  const c = cfgBloqueo(); if (!c) return alAbrir();
+  $$('.bloqueo').forEach((x) => x.remove());
+  const el = document.createElement('div');
+  el.className = 'bloqueo'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'GrowFolio bloqueado');
+  const teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', c.huella ? 'huella' : '', '0', 'borrar'];
+  el.innerHTML = `<div class="bq-caja">
+    <img class="logo" src="favicon.svg" alt="">
+    <h1>Hola de nuevo</h1>
+    <p class="bq-txt">${c.huella ? 'Pon tu huella o tu PIN para ver tu cartera.' : 'Pon tu PIN para ver tu cartera.'}</p>
+    <div class="bq-puntos" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+    <p class="bq-error" role="alert"></p>
+    <div class="bq-teclado">${teclas.map((t) => (!t ? '<span></span>' : t === 'huella' ? `<button type="button" data-t="huella" aria-label="Usar la huella">${ICONOS.huella}</button>` : t === 'borrar' ? `<button type="button" data-t="borrar" aria-label="Borrar">${ICONOS.borrarTecla}</button>` : `<button type="button" data-t="${t}">${t}</button>`)).join('')}</div>
+    <button type="button" class="enlace bq-pass">Usar la contraseña</button>
+  </div>`;
+  document.body.appendChild(el);
+  let pin = '', ocupado = false;
+  const puntos = $$('.bq-puntos i', el), err = $('.bq-error', el);
+  const pintarPuntos = () => puntos.forEach((p, i) => p.classList.toggle('on', i < pin.length));
+  const abrir = () => { marcarDesbloqueo(); const cc = cfgBloqueo(); if (cc && cc.fallos) { cc.fallos = 0; guardarBloqueo(cc); } document.removeEventListener('keydown', tecla, true); el.classList.add('sale'); setTimeout(() => el.remove(), 220); alAbrir(); };
+  const aContrasena = () => { document.removeEventListener('keydown', tecla, true); el.remove(); conContrasena(); };
+  const comprobar = async () => {
+    ocupado = true;
+    const cc = cfgBloqueo();
+    const ok = (await hashPin(pin, b64.dec(cc.salt))) === cc.pin;
+    if (ok) return abrir();
+    cc.fallos = (cc.fallos || 0) + 1; guardarBloqueo(cc);
+    pin = ''; pintarPuntos(); ocupado = false;
+    el.querySelector('.bq-puntos').classList.remove('mal'); void el.offsetWidth; el.querySelector('.bq-puntos').classList.add('mal');
+    const quedan = BLOQUEO_FALLOS - cc.fallos;
+    if (quedan <= 0) {
+      cc.fallos = 0; guardarBloqueo(cc);
+      await IDB.del(IDB_CLAVE);
+      toast('Demasiados intentos: entra con tu contraseña.');
+      return aContrasena();
+    }
+    err.textContent = `PIN incorrecto. ${quedan === 1 ? 'Te queda 1 intento' : `Te quedan ${quedan} intentos`} antes de pedirte la contraseña.`;
+  };
+  const pulsar = (t) => {
+    if (ocupado) return;
+    if (t === 'huella') return probarHuella();
+    if (t === 'borrar') { pin = pin.slice(0, -1); return pintarPuntos(); }
+    if (pin.length >= 4) return;
+    pin += t; err.textContent = ''; pintarPuntos();
+    if (pin.length === 4) setTimeout(comprobar, 120);
+  };
+  const probarHuella = async () => {
+    if (ocupado) return;
+    ocupado = true;
+    const r = await pedirHuella(cfgBloqueo());
+    ocupado = false;
+    if (r.ok) return abrir();
+    if (r.motivo && !/cancel|pin|NotAllowed|AbortError/i.test(r.motivo)) err.textContent = 'No se pudo leer la huella. Prueba otra vez o usa el PIN.';
+  };
+  const tecla = (e) => {
+    if (/^\d$/.test(e.key)) { e.preventDefault(); pulsar(e.key); } else if (e.key === 'Backspace') { e.preventDefault(); pulsar('borrar'); }
+  };
+  document.addEventListener('keydown', tecla, true);
+  el.addEventListener('click', (e) => { const b = e.target.closest('[data-t]'); if (b) pulsar(b.dataset.t); });
+  $('.bq-pass', el).onclick = aContrasena;
+  if (c.huella) setTimeout(probarHuella, 350);
+}
+
+/* al volver a la app después de 72 horas fuera, también */
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden || !S.cartera || $('.bloqueo') || !necesitaBloqueo()) return;
+  pantallaBloqueo(() => {}, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); });
+});
+
+/* Ajustes: poner, cambiar o quitar el PIN y la huella */
+function htmlAjustesBloqueo() {
+  const c = cfgBloqueo();
+  return `<div class="seccion-ed" id="ajBloqueo"><h3>Bloqueo con PIN o huella</h3>
+    ${c ? `<p class="nota" style="margin:0">Activado${c.huella ? ', con PIN y huella' : ', con PIN'}. GrowFolio se abre sin contraseña, pero te pide ${c.huella ? 'la huella o el PIN' : 'el PIN'} una vez cada ${BLOQUEO_H} horas.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPin">Cambiar el PIN</button><button class="btn peq" id="aHuella" hidden></button><button class="btn peq" id="aSinPin">Quitar el bloqueo</button></div>`
+    : `<p class="nota" style="margin:0">Pon un PIN de 4 cifras y, si tu móvil u ordenador tiene lector, la huella. GrowFolio se abre sin escribir la contraseña y te pide el PIN o la huella una vez cada ${BLOQUEO_H} horas.</p>
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq pri" id="aPin">Poner un PIN</button></div>`}
+  </div>`;
+}
+async function enlazarAjustesBloqueo(raiz, recargar) {
+  const c = cfgBloqueo();
+  const bPin = $('#aPin', raiz), bHuella = $('#aHuella', raiz), bQuitar = $('#aSinPin', raiz);
+  if (bPin) bPin.onclick = () => ponerPin(recargar);
+  if (bQuitar) dosPasos(bQuitar, '¿Seguro? Pulsa otra vez', () => { guardarBloqueo(null); LS.del('inv-bloqueo-t'); toast('Bloqueo quitado.'); recargar(); });
+  if (c && bHuella) {
+    const tipo = await huellaPosible();
+    if (c.huella) { bHuella.hidden = false; bHuella.textContent = 'Quitar la huella'; bHuella.onclick = () => { const cc = cfgBloqueo(); delete cc.huella; guardarBloqueo(cc); toast('Ahora solo con PIN.'); recargar(); }; }
+    else if (tipo) { bHuella.hidden = false; bHuella.textContent = 'Usar también la huella'; bHuella.onclick = () => activarHuella(tipo, recargar); }
+    else if (window.InversionesApp && typeof window.InversionesApp.huellaDisponible !== 'function') { bHuella.hidden = false; bHuella.disabled = true; bHuella.textContent = 'Huella: actualiza la app'; }
+  }
+}
+async function activarHuella(tipo, recargar) {
+  try {
+    let huella;
+    if (tipo === 'app') { const r = await huellaApp(); if (!r.ok) return toast('No se activó la huella.'); huella = { tipo: 'app' }; }
+    else huella = { tipo: 'web', id: await registrarHuellaWeb() };
+    const cc = cfgBloqueo(); cc.huella = huella; guardarBloqueo(cc);
+    toast('Huella activada.'); recargar();
+  } catch (e) { console.warn(e); toast('No se activó la huella.'); }
+}
+function ponerPin(recargar) {
+  const h = hoja('Tu PIN', `<form id="fPin">
+    <p class="nota" style="margin:0">Cuatro cifras que recuerdes y que no sean obvias (nada de 1234 o tu año de nacimiento). Con él abres GrowFolio en este dispositivo; tu contraseña sigue siendo la llave de verdad.</p>
+    <label class="campo">PIN nuevo<input type="password" id="pin1" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required></label>
+    <label class="campo">Repítelo<input type="password" id="pin2" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required></label>
+    <div class="error" id="pinErr"></div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar el PIN</button></div>
+  </form>`);
+  $('#fPin', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const a = $('#pin1', h.el).value.trim(), b = $('#pin2', h.el).value.trim();
+    if (!/^\d{4}$/.test(a)) return ($('#pinErr', h.el).textContent = 'Tienen que ser 4 cifras.');
+    if (a !== b) return ($('#pinErr', h.el).textContent = 'No coinciden. Escríbelo igual las dos veces.');
+    if (/^(\d)\1{3}$/.test(a) || '0123456789'.includes(a) || '9876543210'.includes(a)) return ($('#pinErr', h.el).textContent = 'Es demasiado fácil de adivinar. Prueba con otro.');
+    const salt = crypto.getRandomValues(new Uint8Array(16));
+    const antes = cfgBloqueo();
+    guardarBloqueo({ pin: await hashPin(a, salt), salt: b64.enc(salt), fallos: 0, ...(antes && antes.huella ? { huella: antes.huella } : {}) });
+    marcarDesbloqueo();
+    // el PIN solo tiene sentido si la clave se recuerda en el dispositivo
+    if (S.key && S.salt) await IDB.set(IDB_CLAVE, { salt: b64.enc(S.salt), key: S.key });
+    h.cerrar();
+    const tipo = !antes && (await huellaPosible());
+    toast(antes ? 'PIN cambiado.' : 'PIN puesto.');
+    if (tipo) return ofrecerHuella(tipo, recargar);
+    recargar();
+  };
+}
+function ofrecerHuella(tipo, recargar) {
+  const h = hoja('¿También con la huella?', `<p class="nota" style="margin:0">${tipo === 'app' ? 'Tu móvil tiene lector de huella o de cara.' : 'Este dispositivo tiene lector (huella, cara o Windows Hello).'} Con él desbloqueas sin escribir el PIN; el PIN sigue valiendo por si acaso.</p>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>Solo PIN</button><button type="button" class="btn pri" id="bSiHuella">Usar la huella</button></div>`, recargar);
+  $('#bSiHuella', h.el).onclick = () => { h.el.remove(); activarHuella(tipo, recargar); };
+}
+
+/* =====================================================================
    Idiomas. GrowFolio está escrita en español; en inglés, un diccionario (en.json) cambia los textos
    según van apareciendo en pantalla. Primera fase: pestañas, botones, formularios, la presentación, el
    tutorial y los avisos. Noticias, informes de la IA y parte de los textos siguen en español.
@@ -8843,8 +9069,10 @@ async function iniciar() {
     if (guardada && guardada.key && guardada.salt === f.salt) {
       S.cartera = await descifrar(S.enc.texto, guardada.key);
       S.key = guardada.key; S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;
+      // con PIN o huella puestos, una vez cada 72 h los pide antes de enseñar nada
+      const seguir = () => (necesitaBloqueo() ? pantallaBloqueo(arrancar, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); }) : arrancar());
       // también a quien ya entra solo: la presentación, una vez en cada dispositivo
-      return intro ? pantallaIntro(arrancar) : arrancar();
+      return intro ? pantallaIntro(seguir) : seguir();
     }
   } catch (e) { console.warn('La clave guardada no sirve', e); }
   if (intro) pantallaIntro(() => pantallaDesbloqueo()); else pantallaDesbloqueo();

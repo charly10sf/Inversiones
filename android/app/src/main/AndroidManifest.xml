@@ -2,6 +2,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- para instalar la versión nueva de la app desde el aviso de la web -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
 
