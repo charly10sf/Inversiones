@@ -1144,8 +1144,10 @@ const GH = {
   url(ruta, ref) { return `https://api.github.com/repos/${CFG.owner}/${CFG.repo}/contents/${ruta}${ref ? '?ref=' + ref : ''}`; },
   raw(ruta, ref) { return `https://raw.githubusercontent.com/${CFG.owner}/${CFG.repo}/${ref}/${ruta}`; },
   async leer(ruta, ref = 'main', cache = 'no-store') {
-    // devuelve {texto, sha} o null si no existe; lanza error si no hay forma de saberlo
-    try {
+    // devuelve {texto, sha} o null si no existe; lanza error si no hay forma de saberlo.
+    // Sin token (los amigos con su cartera en el móvil) va directo a raw: la API sin token solo deja
+    // 60 lecturas por hora y no hace falta para leer un repositorio público.
+    if (this.token()) try {
       const r = await fetch(this.url(ruta, ref), { headers: this.cab(false), cache });
       if (r.status === 404) return null;
       if (r.ok) { const j = await r.json(); return { texto: j.content ? b64.decTxt(j.content) : await this.leerRaw(ruta, ref), sha: j.sha }; }
