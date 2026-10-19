@@ -1319,8 +1319,15 @@ const LIVE = {
     if (this.radarY.has(d.id)) { S.liveR[d.id] = { p: d.price, v: d.changePercent != null ? d.changePercent : null, t }; S.liveRVer++; }
     const id = this.mapaY[d.id];
     if (id) {
-      const precio = aEuros(d.price, d.currency);
-      if (precio != null) S.live[id] = { precio, var: d.changePercent != null ? d.changePercent : null, t, fuente: 'Yahoo Finance' };
+      // la moneda buena es la de precios.json: Yahoo a veces manda ticks sin ella, y BAT (en peniques) salía
+      // como si fueran euros, 100 veces más. Y por si acaso, un precio que se aleja más de 3 veces del
+      // último cierre no se usa: ninguna acción hace eso en un día, es un dato roto.
+      const P = S.precios && S.precios.instrumentos && S.precios.instrumentos[id];
+      const precio = aEuros(d.price, (P && P.moneda) || d.currency || 'EUR');
+      const ref = P && (P.cierre_anterior || P.precio);
+      const roto = precio != null && ref > 0 && (precio / ref > 3 || precio / ref < 1 / 3);
+      if (roto) console.warn('Precio descartado', d.id, d.price, d.currency, precio, ref);
+      else if (precio != null) S.live[id] = { precio, var: d.changePercent != null ? d.changePercent : null, t, fuente: 'Yahoo Finance' };
     }
     programarParche();
   },
