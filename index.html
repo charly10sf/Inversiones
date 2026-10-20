@@ -1509,6 +1509,9 @@ table td.txt { white-space: normal; min-width: 260px; }
   .hero-movers .mv-n i { font-size: 7px; }
   .hero-movers .mv-v { flex: none; gap: 4px; font-size: 13.5px; line-height: 1.2; }
   .hero-movers .mv-v small { font-size: 11px; }
+  .hero-movers .mv-l.mv-sinfl .mv-n i { display: none; }
+  .hero-movers .mv-l.mv-peq .mv-n { font-size: 12.5px; }
+  .hero-movers .mv-l.mv-peq .mv-v { font-size: 13px; gap: 3px; }
 }
 .info-graf p { margin: 0 0 12px; color: var(--text-2); line-height: 1.55; }
 .info-graf .fila-btns { margin-top: 18px; }
@@ -4543,7 +4546,7 @@ function rellenarBinds(raiz) {
   for (const el of $$('[data-b]', raiz)) {
     const b = S.binds[el.dataset.b]; if (!b) continue;
     // las que llevan html (lo que más mueve hoy) solo se rehacen si cambia su texto
-    if (b.html != null) { if (el.dataset.h !== b.txt) { el.innerHTML = b.html; el.dataset.h = b.txt; } continue; }
+    if (b.html != null) { if (el.dataset.h !== b.txt) { el.innerHTML = b.html; el.dataset.h = b.txt; if (el.dataset.b === 'movers') pedirEncajarMovers(); } continue; }
     el.textContent = b.txt; el.dataset.n = b.n == null ? '' : b.n;
     for (const c of ['up', 'down', 'flat']) el.classList.toggle(c, b.cls === c);
   }
@@ -4565,7 +4568,7 @@ function parchear() {
   const nb = binds(M); S.binds = nb;
   for (const el of $$('[data-b]')) {
     const b = nb[el.dataset.b]; if (!b) continue;
-    if (b.html != null) { if (el.dataset.h !== b.txt) { el.innerHTML = b.html; el.dataset.h = b.txt; } continue; }
+    if (b.html != null) { if (el.dataset.h !== b.txt) { el.innerHTML = b.html; el.dataset.h = b.txt; if (el.dataset.b === 'movers') pedirEncajarMovers(); } continue; }
     if (el.textContent !== b.txt) {
       const viejo = parseFloat(el.dataset.n);
       el.textContent = b.txt;
@@ -4810,6 +4813,7 @@ function pintar() {
   setTimeout(() => plegarNotas($('#vista')), 0);
   $('#vista').innerHTML = htmlSubvistas() + html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
+  if (S.vista === 'cartera') pedirEncajarMovers();
   // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada
   if (S.vista === 'agenda' && S.agIr) {
     const id = S.agIr; S.agIr = null;
@@ -12074,6 +12078,47 @@ function encajarCabecera() {
 var encajarT = 0;
 addEventListener('resize', () => { cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera); });
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => encajarCabecera());
+
+/* Lo que más ha movido hoy, en el móvil: si un nombre no cabe, como en el widget se prueba de menos a más hasta que
+   cabe: primero fuera las flechitas (el signo y el color ya lo dicen), luego la letra un poco más pequeña en todas, y
+   solo entonces se resume el nombre que no cabe («MSCI Europe» → «MSCI Eur.»); los puntos, solo si ni así */
+const ABREV_MV = [
+  [/\s*\b(Index|Indexado|Fund|Fondo|ETF|UCITS|Acc|Dist|EUR|USD|Class|Clase|Inc)\b\.?/gi, ''],
+  [/^(Vanguard|iShares|Amundi|Fidelity|Xtrackers|SPDR|Invesco|Lyxor|WisdomTree|Vaneck|VanEck|BlackRock|Pictet|Robeco|DWS|UBS|HSBC|JPMorgan|Baillie Gifford|Bestinver|Cobas|Magallanes|Azvalor)\s+/i, ''],
+  [/\b(Core|Prime|Select|Screened|ESG|Sustainable|Enhanced)\b/g, ''],
+  [/\bEurope\b|\bEuropa\b|\bEuropean\b|\bEuropeo\b/g, 'Eur.'], [/\bEmergentes\b|\bEmerging( Markets)?\b/g, 'Emerg.'],
+  [/\bInternational\b|\bInternacional\b/g, 'Intl.'], [/\bTechnology\b|\bTecnología\b/g, 'Tec.'], [/\bDividends?\b|\bDividendos?\b/g, 'Div.'],
+  [/\bPacific\b|\bPacífico\b/g, 'Pac.'], [/\bJapan\b|\bJapón\b/g, 'Jap.'], [/\bGlobal\b/g, 'Glob.'], [/\bSmall ?[Cc]aps?\b/g, 'Small C.'],
+  [/\bPhysical\b/g, 'Phys.'], [/\bHoldings?\b|\bGroup\b|\bGrupo\b|\bplc\b|\bAG\b|\bSE\b/gi, ''],
+];
+function encajarMovers() {
+  const l = $('.hero-movers .mv-l'); if (!l) return;
+  const ns = $$('.mv-nn', l);
+  l.classList.remove('mv-sinfl', 'mv-peq');
+  for (const n of ns) { if (n.dataset.nom == null) n.dataset.nom = n.textContent; else n.textContent = n.dataset.nom; n.removeAttribute('title'); }
+  if (innerWidth >= 760) return;
+  const corta = (n) => n.scrollWidth > n.clientWidth + 0.5;
+  for (const c of ['mv-sinfl', 'mv-peq']) { if (!ns.some(corta)) return; l.classList.add(c); }
+  for (const n of ns.filter(corta)) {
+    const orig = n.dataset.nom; let t = orig;
+    n.title = orig;
+    for (const [re, r] of ABREV_MV) {
+      const u = t.replace(re, r).replace(/\s{2,}/g, ' ').trim();
+      if (u && u !== t) { t = u; n.textContent = t; if (!corta(n)) break; }
+    }
+    // si sigue sin caber, la palabra más larga se queda en su principio y un punto («Vanguard» → «Vang.»)
+    for (let i = 0; i < 4 && corta(n); i++) {
+      const ws = t.split(' '), k = ws.reduce((m, w, j) => (w.replace(/\.$/, '').length > ws[m].replace(/\.$/, '').length ? j : m), 0);
+      const w = ws[k].replace(/\.$/, '');
+      if (w.length <= 4) break;
+      ws[k] = w.slice(0, Math.max(4, Math.ceil(w.length * 0.55))) + '.'; t = ws.join(' '); n.textContent = t;
+    }
+  }
+}
+let encajarMvT = 0;
+const pedirEncajarMovers = () => { cancelAnimationFrame(encajarMvT); encajarMvT = requestAnimationFrame(encajarMovers); };
+addEventListener('resize', pedirEncajarMovers);
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(pedirEncajarMovers);
 
 function pintarGtaTop() {
   const w = $('#gtaTop'); if (!w) return;
