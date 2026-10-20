@@ -1,23 +1,197 @@
 {
  "versiones": [
   {
+   "v": "0.2.1",
+   "f": "2026-10-20",
+   "h": "12:41",
+   "t": "Lo que habéis avisado",
+   "commits": [
+    {
+     "cuando": "2026-10-20 12:41",
+     "asunto": "0.2.1: lo que habéis avisado (Londres en euros, festivos, gráficas, Euro Stoxx), idioma arriba, recorte dentro de Pregúntale e icono nuevo",
+     "detalle": [
+      "La bandera del idioma va arriba, entre «Avisar de un fallo» y Ajustes, con un menú pequeño (Español / English beta)",
+      "El recorte de pantalla ya no va suelto en la cabecera: está en la bienvenida de Pregúntale y junto a donde escribes",
+      "Gemini saturado (5xx): dos reintentos con espera y luego el siguiente modelo gratuito; el análisis se reprograma solo a los 5, 15 y 30 minutos y lo dice en el aviso",
+      "Iconos con nombre nuevo (growfolio-*.png, growfolio.svg) para que el navegador y la app instalada dejen el de Bellota",
+      "Novedades de la 0.2.1 y sus traducciones; catálogo: guarda dónde falla cada fondo",
+      "Novedades: GrowFolio en el iPhone"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 12:25",
+     "asunto": "Catálogo: guarda en el índice los que fallan y por qué",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 12:20",
+     "asunto": "Catálogo: si Yahoo no encuentra un fondo por ISIN, lo busca por nombre",
+     "detalle": [
+      "El indexado de Fidelity del Euro Stoxx 50 (ahora Euro 50 Index Fund) no salía por su ISIN. Se guarda el",
+      "nombre que tiene en Yahoo para comprobar que es el fondo bueno."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 12:05",
+     "asunto": "Gráfica de un año en la ficha de las empresas del radar que no tienes",
+     "detalle": [
+      "La Action guarda una vez al día un año de cierres semanales de cada empresa del radar (radar-hist.json, en",
+      "pocas consultas de cien en cien) y la ficha la dibuja; mientras no llega, el rango del año como antes."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 12:01",
+     "asunto": "Calendario: días sin bolsa de cada bolsa donde tienes algo (Madrid, Londres, Fráncfort, Euronext y Wall Street)",
+     "detalle": [
+      "Cada acción o ETF sabe su bolsa por el final de su símbolo; los cierres de esas bolsas salen también en «Solo lo",
+      "mío». Festivos de 2026 y 2027 de cada bolsa (Londres, con los suyos de mayo, primavera y verano; Fráncfort,",
+      "Nochebuena y Nochevieja; Madrid y Euronext, el calendario TARGET)."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 11:58",
+     "asunto": "Arreglado: las acciones de Londres que añade cada uno salían en peniques como si fueran euros",
+     "detalle": [
+      "El precio en directo de Yahoo a veces llega sin moneda; para las acciones que no están en precios.json se",
+      "tomaba como euros (NatWest a 666 € en vez de 7,90 €). Ahora la moneda sale de la ficha, del radar o de la bolsa",
+      "(.L = peniques), el precio se compara con el del radar en euros y se descarta si no cuadra; y las acciones que",
+      "se añaden desde el radar guardan su moneda."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 11:46",
+     "asunto": "Opiniones y fallos: se guardan en la cuenta (Firestore, colección «opiniones») además del formulario",
+     "detalle": [
+      "Con cuenta, cada opinión se guarda en Firestore y se sabe seguro que ha llegado; el dueño las ve en la consola",
+      "de Firebase. Si las reglas aún no lo permiten, va igual al formulario de Google. Las reglas nuevas, en",
+      "firestore.rules. En la información del dispositivo, «cuenta Google» o «cuenta correo»."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 11:37",
+     "asunto": "iPhone: GrowFolio en la pantalla de inicio (guía al entrar y en Ajustes); Google en la app del iPhone; base para entrar con Apple",
+     "detalle": [
+      "En iPhone y iPad, al entrar una vez y en Ajustes, los tres pasos para ponerla en la pantalla de inicio desde",
+      "Safari (se abre como una app, a pantalla completa).",
+      "Con GrowFolio en la pantalla de inicio del iPhone, si la ventana de Google no vuelve, lo explica y propone",
+      "Safari o el correo, en vez de quedarse colgado.",
+      "Botón «Continuar con Apple» preparado (FB_APPLE): sale cuando haya cuenta de desarrollador de Apple y el",
+      "proveedor esté configurado en Firebase.",
+      "«Invita a alguien» explica también cómo instalarla en el iPhone."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 06:39",
+     "asunto": "Novedades de la 0.2: calendario nuevo, avisar de fallos, recuperar la cartera de antes, cambiar el nombre y negro puro",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 06:34",
+     "asunto": "«Invita a alguien»: los pasos para empezar con la 0.2 (cuenta, contraseña de la cartera, clave de la IA gratis)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 06:33",
+     "asunto": "Calendario: «Próximos» como entradas con la cuenta atrás y lo que te toca; sin empresas que no son tuyas",
+     "detalle": [
+      "Cada cosa que viene es una entrada: el resguardo con los días que faltan y un anillo que se cierra según se",
+      "acerca, y al otro lado qué es, cuándo y lo que te toca (euros, tu posición o a qué afecta).",
+      "Dentro de tus fondos, solo las seis empresas con más dinero tuyo detrás (y al menos 50 €); «Solo lo mío» ya",
+      "no las incluye: solo tus propias posiciones, tus aportaciones y tu renta.",
+      "Intro de la 0.2 sin GTA VI; la presentación general pasa de 5 a 10 pantallas (cartera, calendario, Hacienda,",
+      "metas y la app, con el aviso de que es una alfa)."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 05:54",
+     "asunto": "Calendario nuevo: pestañas, «Próximos» en tarjetas de color, el mes plegado y lo último; aviso para recuperar lo de la 0.1",
+     "detalle": [
+      "Pestañas: Para ti (lo tuyo y lo importante), Solo lo mío (tus posiciones, tus fondos, tus aportaciones y la",
+      "renta), Resultados, Dividendos y Economía.",
+      "Próximos: tarjetas grandes de color que se deslizan (en el ordenador, en rejilla), con «En N días».",
+      "El mes, plegado en la semana con puntos; se despliega al tocarlo.",
+      "Lo último: «Mercados hoy» con el titular y cómo van el S&P 500, el Ibex y el bitcoin, y las noticias de lo que tienes.",
+      "Quien venía de la 0.1 ve arriba en Cartera «¿Te falta algo de antes de la 0.2?» con el botón para recuperarlo.",
+      "El texto del botón de fallos sale desde 1400 px (en 1280 desbordaba la cabecera)."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 05:46",
+     "asunto": "0.2: intro nueva más completa (cuenta, calendario, más cuidada, GTA VI) y botón de avisar de un fallo arriba",
+     "detalle": [
+      "La presentación de la 0.2 pasa a seis pasos que se deslizan, con dibujos animados, lo próximo de tu cartera",
+      "de verdad y el aviso de que es una alfa; sale una vez más a quien ya la usaba y está en Ajustes.",
+      "Botón para avisar de un fallo en la cabecera (dorado, con su «α»; con texto en pantallas anchas)."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 05:38",
+     "asunto": "Carteras de antes que no llegaron a la cuenta: se revisan en cada dispositivo y se pueden juntar",
+     "detalle": [
+      "Al abrir la cartera se mira la copia de la 0.1 de este dispositivo y la de GitHub; si tienen compras,",
+      "ventas o posiciones que no están en tu cuenta, se ofrece añadir lo que falta o usar esa copia.",
+      "Sin preguntar solo si es de la misma contraseña que tu cuenta; si no, pide la de esa copia (nadie puede",
+      "quedarse con la cartera de otro). La caché de GitHub de un amigo (la del dueño) no se le ofrece.",
+      "Ajustes > Recuperar tu cartera de antes, para hacerlo a mano."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 05:33",
+     "asunto": "Traer la cartera de GitHub si tiene operaciones que no están en tu cuenta",
+     "detalle": [
+      "Para quien pasó a la cuenta una copia de la 0.1 más vieja que la de GitHub: si la de GitHub se abre con su",
+      "clave y tiene compras o ventas que faltan, lo ofrece al abrir (con su nombre y su perfil de ahora). La de la",
+      "cuenta queda aparte en el dispositivo. A nadie más le sale: solo se abre con la contraseña de su dueño."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 05:31",
+     "asunto": "Cambiar el nombre en un toque: tocando tu nombre en el saludo de Cartera o desde Ajustes",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 05:28",
+     "asunto": "El nombre de tu perfil manda en todos tus dispositivos (antes, en el móvil ganaba el de Google)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 05:23",
+     "asunto": "App: entrar con Google con el selector clásico de Google Play; negro puro AMOLED; Más sin Ajustes",
+     "detalle": [
+      "Google en la app: selector de cuentas clásico de Google Play (GoogleSignIn), que contesta en todos los",
+      "móviles; Credential Manager queda solo para apps de antes. Errores con su código (10 = falta la SHA-1).",
+      "Fondo negro puro (#000) en la web y en la app, con las superficies un escalón más claras.",
+      "«Más» ya no lleva Ajustes: están arriba, en la rueda."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 05:18",
+     "asunto": "App: sin cartera abierta, mira si hay versión nueva cada vez que vuelves (cada 2 minutos como mucho)",
+     "detalle": [
+      "Para que nadie se quede atascado en la pantalla de entrar con una app vieja."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 05:13",
+     "asunto": "0.2.0: Google en la app que no se queda colgado y sin barra de desplazamiento en el móvil",
+     "detalle": [
+      "App de Android: «Continuar con Google» usa el selector de cuentas del botón de Google (GetSignInWithGoogleOption)",
+      "y avisa de cada paso; si Google no contesta en 45 s, el botón se suelta y dice en qué paso se quedó.",
+      "En el móvil y en la app ya no sale la barra de desplazamiento a la derecha."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.2.0",
    "f": "2026-10-20",
    "h": "05:03",
    "t": "Tu cartera, ahora en tu cuenta",
    "commits": [
     {
-     "cuando": "2026-10-20 05:03",
-     "asunto": "0.2.0: tu cartera en tu cuenta, calendario de lo que viene, GTA VI con tu cartera y la app más pulida",
-     "detalle": [
-      "Cuentas con Google o correo (Google nativo en la app de Android); cartera cifrada en tu cuenta y sincronizada al momento entre dispositivos, a prueba de cortes de conexión",
-      "Si cambias cosas en dos dispositivos a la vez se juntan (dos compras del mismo valor cuentan las dos); si es lo mismo, pregunta con cuál quedarse",
-      "Calendario: resultados y dividendos de lo que tienes y de lo que hay dentro de tus fondos, Fed y BCE, días sin bolsa y tus aportaciones, con los días que faltan",
-      "Barra del móvil con Cartera, Pasos, Expertos, Análisis y Más",
-      "GTA VI: camino desde GTA V, tu cartera en copias, lo que costó el Adder y música synthwave original",
-      "Widget con pastillas de color; acabado más pulido y Cartera más rápida",
-      "Arreglado el reparto de Cartera, que salía cambiado desde la 0.1.17, y la fecha para recomprar tras vender con pérdidas cuando hay cambio de hora por medio"
-     ]
+     "cuando": "2026-10-20 05:00",
+     "asunto": "0.2.0: tu cartera en tu cuenta, calendario de lo que viene, GTA VI con tu cartera y la app más pulida - Cuentas con Google o correo (Google nativo en la app de Android); cartera cifrada en tu cuenta y sincronizada al momento entre dispositivos, a prueba de cortes de conexión - Si cambias cosas en dos dispositivos a la vez se juntan (dos compras del mismo valor cuentan las dos); si es lo mismo, pregunta con cuál quedarse - Calendario: resultados y dividendos de lo que tienes y de lo que hay dentro de tus fondos, Fed y BCE, días sin bolsa y tus aportaciones, con los días que faltan - Barra del móvil con Cartera, Pasos, Expertos, Análisis y Más - GTA VI: camino desde GTA V, tu cartera en copias, lo que costó el Adder y música synthwave original - Widget con pastillas de color; acabado más pulido y Cartera más rápida - Arreglado el reparto de Cartera, que salía cambiado desde la 0.1.17, y la fecha para recomprar tras vender con pérdidas cuando hay cambio de hora por medio",
+     "detalle": []
     },
     {
      "cuando": "2026-10-20 04:45",

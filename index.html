@@ -7,8 +7,11 @@
 <meta name="description" content="GrowFolio: tu cartera de inversión en directo, a tu medida">
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="favicon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<!-- iconos con nombre nuevo: así el navegador deja de enseñar el de antes (Bellota) que tenía guardado -->
+<link rel="icon" href="growfolio-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="growfolio.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="growfolio-180.png">
+<meta name="application-name" content="GrowFolio">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -87,6 +90,18 @@ a:hover { text-decoration: underline; }
 .ib-fallo { position: relative; color: var(--accent); }
 .ib-fallo::after { content: 'α'; position: absolute; top: 4px; right: 4px; width: 12px; height: 12px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: #000; font-size: 9px; font-weight: 800; line-height: 1; }
 .fallo-t { display: none; }
+.ib-idioma .bandera { width: 20px; height: 14px; border-radius: 3px; }
+.ib-idioma[aria-expanded="true"] { background: var(--plane-3); }
+.menu-idioma { position: fixed; z-index: 60; min-width: 190px; padding: 6px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--plane-2); box-shadow: 0 12px 32px rgba(0, 0, 0, 0.55); display: grid; gap: 2px; animation: menuIdi 0.14s ease-out; transform-origin: top right; }
+@keyframes menuIdi { from { opacity: 0; transform: translateY(-4px) scale(0.97); } }
+@media (prefers-reduced-motion: reduce) { .menu-idioma { animation: none; } }
+.menu-idioma button { display: flex; align-items: center; gap: 10px; height: 40px; padding: 0 10px; border: 0; border-radius: 9px; background: none; color: var(--text-2); font-size: 14px; font-weight: 600; text-align: left; }
+.menu-idioma button:hover, .menu-idioma button:focus-visible { background: var(--plane-3); color: var(--text); }
+.menu-idioma button[aria-checked="true"] { color: var(--text); }
+.menu-idioma button small { margin-left: auto; color: var(--muted); font-size: 11.5px; font-weight: 500; }
+.menu-idioma .mi-ok { margin-left: auto; color: var(--accent); display: grid; }
+.menu-idioma .mi-ok svg { width: 16px; height: 16px; }
+.menu-idioma small + .mi-ok { margin-left: 8px; }
 @media (min-width: 1400px) { .ib-fallo { width: auto; padding: 0 12px 0 10px; gap: 7px; display: inline-flex; align-items: center; border: 1px solid rgba(226, 180, 95, 0.4); background: var(--accent-bg); font-size: 13.5px; font-weight: 600; } .ib-fallo::after { display: none; } .fallo-t { display: inline; } }
 
 /* barra de navegación inferior en el móvil y en tabletas en vertical; entre 961 y 1240 px, la de arriba
@@ -126,7 +141,6 @@ a:hover { text-decoration: underline; }
 /* ---------- cinta de cotizaciones: da la vuelta sola, se para al pasar el ratón ---------- */
 @media (max-width: 680px) { table.ideas.resp tr > :nth-child(3), table.ideas.resp tr > :nth-child(n+8) { display: none !important; } }
 .ticker { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); overflow: hidden; position: relative; font-family: var(--fc); font-size: 14px; cursor: pointer; }
-@media (max-width: 680px) { #bRecorte { display: none; } }
 .ticker::before, .ticker::after { content: ''; position: absolute; top: 0; bottom: 0; width: 48px; z-index: 1; pointer-events: none; }
 .ticker::before { left: 0; background: linear-gradient(90deg, var(--bg), transparent); }
 .ticker::after { right: 0; background: linear-gradient(-90deg, var(--bg), transparent); }
@@ -753,6 +767,8 @@ details.mas[open] > summary { margin-bottom: 12px; }
 .as-sug { display: grid; gap: 8px; margin-top: 6px; }
 .as-sug button { text-align: left; border: 1px solid var(--line-2); background: var(--plane); border-radius: 12px; padding: 10px 14px; font-size: 14px; color: var(--text); line-height: 1.4; }
 .as-sug button:hover { border-color: var(--accent); }
+.as-sug .as-sug-rec { display: flex; align-items: center; gap: 10px; border-style: dashed; color: var(--text-2); }
+.as-sug .as-sug-rec svg { width: 17px; height: 17px; flex: none; color: var(--accent); }
 .as-config { display: grid; gap: 14px; align-content: start; }
 .as-config h3 { margin: 0; font-size: 20px; font-weight: 400; letter-spacing: -0.01em; }
 .as-config > p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.6; }
@@ -896,6 +912,7 @@ table.ideas .sub { display: block; font-size: 12px; }
 .ia-progreso span { color: var(--text-2); font-size: 13.5px; }
 .ia-progreso ul { margin: 8px 0 0; padding: 0; list-style: none; display: grid; gap: 3px; color: var(--muted); font-size: 12.5px; }
 .ia-progreso.error > svg { width: 18px; height: 18px; color: var(--down); }
+.ia-progreso.error.espera > svg { color: var(--accent); }
 #iaProgreso:empty { display: none; }
 .iap-lista { border-top: 1px solid var(--line); }
 .iap { display: grid; grid-template-columns: minmax(170px, 0.8fr) minmax(0, 2fr) minmax(0, 1.1fr); gap: 22px; padding: 16px 4px; border-bottom: 1px solid var(--line); align-items: start; }
@@ -1095,7 +1112,7 @@ details.plegable[open] { padding-bottom: 16px; }
 .as-yo-rec { display: grid; gap: 4px; margin-bottom: 6px; }
 .as-yo-rec img { max-width: 220px; max-height: 160px; border-radius: 8px; border: 1px solid var(--line-2); object-fit: cover; object-position: top left; }
 .as-yo-rec small { color: var(--muted); font-size: 12px; }
-@media (max-width: 420px) { #bRecorte { width: 34px; } .acciones .ib { width: 34px; } }
+@media (max-width: 420px) { .acciones .ib { width: 34px; } }
 
 /* ideas: quién la propone, lo que daría al año y la ficha con lo que llevas ganado al año */
 p.idea-quien { display: block; margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
@@ -3770,9 +3787,9 @@ function montar() {
     <span id="estado"></span>
     <div class="acciones">
       <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowFolio IA por tu cartera" aria-label="Pregúntale a GrowFolio IA">${ICONOS.chispa}<span>Pregúntale</span></button>
-      <button class="ib" id="bRecorte" data-accion="recorte" title="Recorta un trozo de la pantalla y pregúntale a la IA" aria-label="Recortar la pantalla para preguntar a la IA">${ICONOS.recorte}</button>
       <button class="ib" id="bOcultar" data-accion="ocultar"></button>
       <button class="ib ib-fallo" id="bFallo" data-accion="opinion" title="Es una alfa: avisa de cualquier fallo o idea" aria-label="Avisar de un fallo">${ICONOS.bicho}<span class="fallo-t">Avisar de un fallo</span></button>
+      <button class="ib ib-idioma" id="bIdioma" data-accion="idioma" aria-haspopup="menu" aria-expanded="false" title="Idioma / Language" aria-label="Idioma / Language" data-no-trad>${banderaIdioma(IDIOMA)}</button>
       <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
     </div>
   </div></header>
@@ -8617,8 +8634,19 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.2.0';
+const VERSION = '0.2.1';
 const NOVEDADES = [
+  { v: '0.2.1', f: '2026-10-20', h: '12:41', t: 'Lo que habéis avisado', cosas: [
+    { d: 'cifras', t: 'Las acciones de Londres, en euros', x: 'Cotizan en peniques y algunas salían como si fueran euros (NatWest, a 666 €). Ahora se pasan bien a euros, también con el precio en directo.' },
+    { d: 'calendario', ir: { v: 'agenda', sel: '.ag-mes2' }, t: 'Los días sin bolsa', x: 'El calendario marca los festivos de cada bolsa donde tienes algo: Madrid, Londres, Fráncfort, Euronext y Wall Street.' },
+    { d: 'grafica', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Gráfica en cualquier empresa', x: 'Al consultar una empresa que no tienes, como Pfizer, sale su gráfica del último año, semana a semana, y no solo entre qué precios se ha movido.' },
+    { d: 'catalogo', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Más del Euro Stoxx 50', x: 'Al buscar «Euro Stoxx» salen también el iShares de reparto, el Xtrackers y el Amundi.' },
+    { d: 'movil', t: 'GrowFolio en el iPhone', x: 'En Safari, Compartir > Añadir a pantalla de inicio, y se abre como una app, a pantalla completa. Al entrar desde un iPhone te lo explica, y también está en Ajustes.' },
+    { d: 'idioma', ir: { v: 'cartera', sel: '#bIdioma' }, t: 'El idioma, arriba', x: 'La bandera de arriba, junto a Ajustes, cambia entre español e inglés.' },
+    { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor' }, t: 'Recortar, dentro de Pregúntale', x: 'El botón para recortar un trozo de la pantalla ya no va suelto arriba: está al abrir Pregúntale y junto a donde escribes.' },
+    { d: 'logo', t: 'Adiós a la bellota', x: 'Si la pestaña del navegador o el acceso directo seguían con el icono y el nombre de antes, ya salen los de GrowFolio.' },
+    { d: 'aviso', ir: { v: 'analisis', sel: '[data-accion="ia-actualizar"]' }, t: 'Cuando Google se satura', x: 'Si Gemini está saturado, GrowFolio IA lo reintenta y pasa a otro modelo gratuito. Si ninguno responde, el análisis se vuelve a intentar solo a los 5, 15 y 30 minutos, y mientras tienes el último.' },
+  ] },
   { v: '0.2.0', f: '2026-10-20', h: '05:03', t: 'Tu cartera, ahora en tu cuenta', cosas: [
     { d: 'perfil', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Cuentas con Google o con correo', x: 'Entras con Google o con tu correo en la web, en Chrome y en la app de Android, que abre la ventanita de Google del propio móvil. Tu cartera se guarda en tu cuenta y la ves igual en el móvil, en el ordenador y en la app.' },
     { d: 'calendario', ir: { v: 'agenda', sel: '.agc-fila' }, t: 'Calendario de lo que viene', x: 'En Más > Calendario. Lo próximo sale como entradas con los días que faltan y lo que te toca a ti: el dividendo en euros, tu posición antes de unos resultados, la Fed y el BCE con la hora de España. Pestañas para verlo todo o solo lo tuyo, el mes plegado en una semana que se despliega y, debajo, lo último de los mercados y de lo que tienes.' },
@@ -10214,7 +10242,7 @@ function htmlContrasteLista(ctr) {
    cartera, para no pisar cambios hechos desde otro dispositivo) y en este navegador.
    Si no hay clave, se ve el último análisis público (analisis-ia.json, sin cantidades).
    ===================================================================== */
-const IA = { generando: false, turno: null, error: null, ultimoIntento: 0 };
+const IA = { generando: false, turno: null, error: null, ultimoIntento: 0, reintento: 0, reintentos: 0, reintentoT: 0 };
 function iaActual() {
   const p = S.iaPropio, pub = S.ia;
   if (p && p.json && (!pub || String(p.fecha) >= String(pub.fecha))) return { ...p.json, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
@@ -10287,8 +10315,10 @@ function extraerJSON(texto) {
   for (const c of cands) { try { const o = JSON.parse(c); if (o && typeof o === 'object') return o; } catch (e) {} }
   return null;
 }
-async function generarAnalisisIA(motivo = 'la pides tú') {
+async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   if (IA.generando) return;
+  clearTimeout(IA.reintentoT); IA.reintento = 0;
+  if (!solo) IA.reintentos = 0;
   await cargarAsesor();
   if (!AS.clave) { abrirAsesor(); return; }
   IA.generando = true; IA.error = null; IA.ultimoIntento = Date.now();
@@ -10312,8 +10342,17 @@ async function generarAnalisisIA(motivo = 'la pides tú') {
     AS.gasto += turno.coste || 0; guardarConv();
     await guardarAnalisisPropio();
     toast(`${nombreIA()} ha actualizado el análisis de tu cartera`);
+    IA.reintentos = 0;
   } catch (e) {
     IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}.` : e.message;
+    // saturado o «espera un momento»: lo vuelve a intentar sola a los 5, 15 y 30 minutos
+    if ((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3) {
+      const min = [5, 15, 30][IA.reintentos++];
+      IA.reintento = Date.now() + min * 60000;
+      IA.reintentoT = setTimeout(() => { if (S.cartera && !IA.generando) generarAnalisisIA(motivo, true); }, min * 60000);
+      if (e.estado >= 500) IA.error = 'Google está saturado ahora mismo, también con los otros modelos gratuitos de Gemini.';
+      else if (e.estado === 429) IA.error = 'Google pide esperar un poco (el límite gratuito por minuto).';
+    }
   }
   IA.generando = false; IA.turno = null;
   if (['analisis', 'expertos', 'cartera'].includes(S.vista) && !$('.hoja-fondo')) pintar(); else refrescarProgresoIA();
@@ -10345,7 +10384,10 @@ function htmlProgresoIA() {
     const pasos = (IA.turno ? IA.turno.partes.filter((p) => p.tipo === 'paso') : []).slice(-4);
     return `<div class="ia-progreso" role="status"><div class="as-pensando"><i></i><i></i><i></i></div><div><b>${nombreIA()} está revisando tu cartera y las noticias de hoy</b><span>Tarda uno o dos minutos. Puedes seguir usando GrowFolio.</span>${pasos.length ? `<ul>${pasos.map((p) => `<li>${esc(p.txt)}</li>`).join('')}</ul>` : ''}</div></div>`;
   }
-  if (IA.error) return `<div class="ia-progreso error" role="alert">${ICONOS.alerta}<div><b>No se pudo actualizar el análisis</b><span>${esc(IA.error)}</span></div><button class="btn peq" data-accion="ia-actualizar">Reintentar</button></div>`;
+  if (IA.error) {
+    const luego = IA.reintento > Date.now() ? ` ${nombreIA()} lo vuelve a intentar a las ${new Date(IA.reintento).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}${S.iaPropio ? '; mientras, tienes el último análisis' : ''}.` : '';
+    return `<div class="ia-progreso error${luego ? ' espera' : ''}" role="alert">${ICONOS.alerta}<div><b>No se pudo actualizar el análisis</b><span>${esc(IA.error)}</span>${luego ? ` <span>${esc(luego.trim())}</span>` : ''}</div><button class="btn peq" data-accion="ia-actualizar">Reintentar</button></div>`;
+  }
   return '';
 }
 function refrescarProgresoIA() { const el = $('#iaProgreso'); if (el) el.innerHTML = htmlProgresoIA(); }
@@ -10944,7 +10986,8 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
       if (e.estado === 429 && e.diario) { marcarAgotado(modelo); if (saltar('ha gastado su cupo de hoy')) { vuelta--; continue; } }
       if (e.estado === 429 && reintentos >= 3 && saltar('sigue pidiendo esperar')) { vuelta--; continue; }
       if (e.estado === 429 && reintentos < 3 && !(e.espera > 60)) { reintentos++; const seg = Math.ceil(e.espera || 15 * reintentos); turno.partes.push({ tipo: 'paso', txt: `Google pide esperar ${seg} s (límite gratuito por minuto)` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
-      if (e.estado >= 500 && reintentos < 3) { reintentos++; await dormir(3000 * reintentos, signal); vuelta--; continue; }
+      if (e.estado >= 500 && reintentos < 2) { reintentos++; const seg = 4 * reintentos; turno.partes.push({ tipo: 'paso', txt: `${MODELOS[modelo] ? MODELOS[modelo].n : 'Gemini'} está saturado: lo intento otra vez en ${seg} s` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
+      if (e.estado >= 500 && saltar('está saturado')) { vuelta--; continue; }
       if (e.estado === 429 && e.diario) e.message = 'Los modelos gratuitos de Gemini han gastado su cupo de hoy. Se renueva hacia las 9:00 de la mañana.';
       throw e;
     }
@@ -11227,7 +11270,7 @@ function pintarAsesor(alFinal) {
   const vista = !AS.clave && AS.vista !== 'ajustes' ? 'clave' : AS.vista;
   if (vista === 'clave') cuerpo.innerHTML = htmlClaveAsesor();
   else if (vista === 'ajustes') cuerpo.innerHTML = htmlAjustesAsesor();
-  else if (!AS.conv.length) cuerpo.innerHTML = `<div class="as-vacio"><h3>¿Qué quieres saber?</h3><p>Tiene delante tu cartera de ahora mismo: lo que tienes y lo que te costó, tus aportaciones, lo que llevas de renta este año, los analistas, cientos de empresas de EEUU y Europa para buscar ideas y las noticias. Calcula ventas con FIFO e impuestos${cfg.web ? ' y busca en internet lo que le falte' : ''}.</p><div class="as-sug">${sugerencias(S.M || calcular()).map((q) => `<button data-as-q="${esc(q)}">${esc(q)}</button>`).join('')}</div></div>`;
+  else if (!AS.conv.length) cuerpo.innerHTML = `<div class="as-vacio"><h3>¿Qué quieres saber?</h3><p>Tiene delante tu cartera de ahora mismo: lo que tienes y lo que te costó, tus aportaciones, lo que llevas de renta este año, los analistas, cientos de empresas de EEUU y Europa para buscar ideas y las noticias. Calcula ventas con FIFO e impuestos${cfg.web ? ' y busca en internet lo que le falte' : ''}.</p><div class="as-sug">${sugerencias(S.M || calcular()).map((q) => `<button data-as-q="${esc(q)}">${esc(q)}</button>`).join('')}<button type="button" class="as-sug-rec" data-as="recorte">${ICONOS.recorte}<span>Recorta un trozo de la pantalla y pregúntale por él</span></button></div></div>`;
   else cuerpo.innerHTML = AS.conv.map(htmlTurno).join('');
   pie.hidden = vista !== 'chat';
   const b = $('#asEnviar', fondo);
@@ -11421,6 +11464,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'fiscal') editarFiscal();
     else if (a === 'asesor') abrirAsesor(d.q || '', !!d.q);
     else if (a === 'recorte') iniciarRecorte();
+    else if (a === 'idioma') menuIdioma(t);
     else if (a === 'ia-actualizar') generarAnalisisIA('la pides tú');
     else if (a === 'asesor-ajustes') { AS.vista = 'ajustes'; abrirAsesor().then(() => { AS.vista = 'ajustes'; pintarAsesor(); }); }
     else if (a === 'borrar-mov') borrarMovimiento(d.id, t);
@@ -11736,6 +11780,28 @@ function banderaIdioma(c) {
   if (c === 'es') return '<svg class="bandera" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#AA151B"/><rect y="5" width="30" height="10" fill="#F1BF00"/></svg>';
   const id = 'bd' + (++banderaN);
   return `<svg class="bandera" viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><clipPath id="${id}a"><path d="M0 0v30h60V0z"/></clipPath><clipPath id="${id}b"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><g clip-path="url(#${id}a)"><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#${id}b)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></g></svg>`;
+}
+// el menú de la bandera de la cabecera, entre «Avisar de un fallo» y Ajustes
+function menuIdioma(btn) {
+  const viejo = $('#menuIdioma'); if (viejo) { viejo.cerrar(); return; }
+  const m = document.createElement('div');
+  m.id = 'menuIdioma'; m.className = 'menu-idioma'; m.setAttribute('role', 'menu'); m.setAttribute('aria-label', 'Idioma / Language'); m.dataset.noTrad = '';
+  m.innerHTML = IDIOMAS.map(([c, n]) => `<button type="button" role="menuitemradio" aria-checked="${c === IDIOMA}" data-idioma="${c}" lang="${c}">${banderaIdioma(c)}<span>${n}</span>${c === 'en' ? '<small>beta</small>' : ''}${c === IDIOMA ? '<span class="mi-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>' : ''}</button>`).join('');
+  document.body.appendChild(m);
+  const r = btn.getBoundingClientRect();
+  m.style.top = Math.round(r.bottom + 6) + 'px';
+  m.style.right = Math.max(8, Math.round(innerWidth - r.right)) + 'px';
+  btn.setAttribute('aria-expanded', 'true');
+  const fuera = (e) => { if (!m.contains(e.target) && !btn.contains(e.target)) m.cerrar(); };
+  const tecla = (e) => {
+    const bs = [...m.querySelectorAll('button')], i = bs.indexOf(document.activeElement);
+    if (e.key === 'Escape') { m.cerrar(); btn.focus(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); bs[(i + (e.key === 'ArrowDown' ? 1 : bs.length - 1)) % bs.length].focus(); }
+  };
+  m.cerrar = () => { m.remove(); btn.setAttribute('aria-expanded', 'false'); document.removeEventListener('pointerdown', fuera, true); document.removeEventListener('keydown', tecla); removeEventListener('resize', m.cerrar); removeEventListener('scroll', m.cerrar, true); };
+  setTimeout(() => { document.addEventListener('pointerdown', fuera, true); addEventListener('resize', m.cerrar); addEventListener('scroll', m.cerrar, true); }, 0);
+  document.addEventListener('keydown', tecla);
+  (m.querySelector('[aria-checked="true"]') || m.querySelector('button')).focus({ preventScroll: true });
 }
 function selectorIdioma(clase = '') {
   return `<div class="idiomas ${clase}" role="group" aria-label="Idioma / Language" data-no-trad>${IDIOMAS.map(([c, n]) => `<button type="button" data-idioma="${c}" aria-pressed="${c === IDIOMA}" lang="${c}">${banderaIdioma(c)}<span>${n}</span></button>`).join('')}</div>`;

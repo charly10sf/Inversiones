@@ -192,7 +192,8 @@ def main(ruta_cat, dir_anterior, dir_salida):
                 json.dump({"h": compacta(s_eur)}, f, separators=(",", ":"))
             print(f"ok   {cid:22s} {sim:16s} {salida[cid]['p']}")
         except Exception as ex:  # noqa: BLE001
-            errores.append(f"{cid}: {ex}")
+            donde = traceback.extract_tb(ex.__traceback__)[-1] if ex.__traceback__ else None
+            errores.append(f"{cid}: {ex!r}" + (f" ({os.path.basename(donde.filename)}:{donde.lineno} {donde.name})" if donde else ""))
             if cid in prev:
                 salida[cid] = prev[cid]
                 try:
