@@ -147,10 +147,6 @@ final class Lienzo {
         return v > 0.5 ? SUBE : v < -0.5 ? BAJA : TEXTO2;
     }
 
-    private static int colorPct(double v) {
-        return v > 0.005 ? SUBE : v < -0.005 ? BAJA : TEXTO2;
-    }
-
     // ---------- piezas ----------
     /** el patrimonio: los euros grandes y gruesos, los céntimos pequeños, encogiendo la letra hasta que quepa */
     private float numero(Datos.Resultado r, float x, float yBase, float maxW, float maxSp, float minSp) {
@@ -378,7 +374,6 @@ final class Lienzo {
             return;
         }
         boolean hayGraf = r.serie != null && r.serie.length > 1;
-        double rangoPct = hayGraf && r.serie[0] != 0 ? (r.serie[r.serie.length - 1] / r.serie[0] - 1) * 100 : 0;
         String diaEur = r.oculto ? Datos.pct(r.diaPct) : Datos.eur(r.dia, true);
         String diaPct = r.oculto ? "" : Datos.pct(r.diaPct);
 
@@ -403,12 +398,10 @@ final class Lienzo {
         float yb = y + 8 + maxSp * 0.92f;
         numero(r, ph, yb, util, maxSp, 18);
 
-        // hoy en su pastilla y, a la derecha si cabe, lo ganado en total
+        // lo de hoy en su pastilla y «hoy» al lado: es la única cifra que cambia (nada de «en total» ni del mes)
         float yp = yb + 9;
         float wP = pildora(ph, yp, 24, diaEur, diaPct, color(r.dia), r.dia >= 0);
-        String tot = (r.oculto ? Datos.pct(r.plPct) : Datos.eur(r.pl, true)) + " en total";
-        if (ancho(tot, 12, 600) <= util - wP - 12) texto(W - ph, yp + 16.5f, tot, 12, 600, color(r.pl), true);
-        else if (ancho("hoy", 12, 500) <= util - wP - 8) texto(ph + wP + 8, yp + 16.5f, "hoy", 12, 500, APAGADO, false);
+        if (ancho("hoy", 12.5f, 500) <= util - wP - 8) texto(ph + wP + 9, yp + 16.5f, "hoy", 12.5f, 500, APAGADO, false);
         y = yp + 24;
 
         // abajo, según el alto: lo que toca y lo que más ha movido hoy la cartera (en pastillas, como en la app)
@@ -440,13 +433,8 @@ final class Lienzo {
             texto(W / 2 - wa / 2, ym + 4, aviso, 11.5f, 500, APAGADO, false);
         }
 
-        // el periodo de la curva, abajo a la izquierda
-        if (hayGraf) {
-            String etq = (r.rango.isEmpty() ? "1 mes" : r.rango) + " ";
-            float ye = suelo - 7;
-            texto(ph, ye, etq, 11.5f, 600, APAGADO, false);
-            texto(ph + ancho(etq, 11.5f, 600), ye, Datos.pct(rangoPct), 11.5f, 700, colorPct(rangoPct), false);
-        }
+        // de qué es la curva, abajo a la izquierda y sin cifra: el único número que cambia es el de hoy
+        if (hayGraf) texto(ph, suelo - 7, r.rango.isEmpty() || r.rango.equals("1 mes") ? "Último mes" : r.rango, 11.5f, 600, APAGADO, false);
 
         float yy = suelo + 4;
         if (!filas.isEmpty()) {

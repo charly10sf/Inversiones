@@ -1384,7 +1384,7 @@ table td.txt { white-space: normal; min-width: 260px; }
 @media (min-width: 1500px) { .car-fila.par-der { grid-template-columns: minmax(0, 1fr) 440px; gap: 64px; } }
 .car-pie { display: flex; justify-content: center; }
 /* el patrimonio y su gráfica, en una sola pieza: la cifra grande arriba y la curva subiendo por debajo */
-.hero-panel { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "cifra" "graf" "rangos"; padding: 22px 0 16px; border: 1px solid var(--line); border-radius: 28px; overflow: hidden;
+.hero-panel { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "cifra" "graf" "rangos" "pie" "movers"; padding: 22px 0 18px; border: 1px solid var(--line); border-radius: 28px; overflow: hidden;
   background: radial-gradient(70% 90% at 0% 0%, rgba(226, 180, 95, 0.11), rgba(226, 180, 95, 0) 70%), linear-gradient(180deg, #0D0C0A, #050504); }
 .hero-cifra { grid-area: cifra; position: relative; z-index: 2; padding: 0 28px; pointer-events: none; min-width: 0; }
 .hero-lbl { font-size: 13.5px; transition: color 0.15s ease; }
@@ -1407,11 +1407,46 @@ table td.txt { white-space: normal; min-width: 260px; }
 .hero-rangos button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); }
 .hero-panel > .chart { grid-area: graf; margin-top: -34px; z-index: 1; min-width: 0; }
 .hero-bajo { display: grid; gap: 14px; margin-top: 16px; }
-.hero-bajo .leyenda-graf { margin-top: 0; align-items: center; }
-.hero-bajo .nota { margin: 0; }
+/* en Cartera, el hueco entre bloques lo pone la rejilla: sin márgenes de más encima (la tarjeta de GrowIA dejaba un hueco) */
+.car-fila > .toca { margin-top: 0; }
+/* el ojo de los importes, pequeño, junto a «Patrimonio» */
+.hero-lbl { display: flex; align-items: center; gap: 2px; min-height: 28px; }
+.hero-ojo, .hv-info { appearance: none; background: transparent; border: 0; padding: 0; font: inherit; cursor: pointer; }
+.hero-ojo { pointer-events: auto; display: grid; place-items: center; width: 30px; height: 28px; margin: -4px 0; border-radius: 8px; color: var(--muted); }
+.hero-ojo svg { width: 17px; height: 17px; }
+.hero-ojo:hover, .hero-ojo[aria-pressed="true"] { color: var(--text-2); }
+.hero-ojo:focus-visible, .hv-info:focus-visible, .hp-cmp:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.hv-in { display: contents; }
+.hv-info { pointer-events: auto; display: grid; place-items: center; width: 28px; height: 28px; margin-left: -6px; border-radius: 50%; color: var(--muted); }
+.hv-info svg { width: 16px; height: 16px; }
+.hv-info:hover { color: var(--text-2); }
+/* comparar con el S&P 500: un interruptor junto a los periodos; su raya discontinua es la de la gráfica */
+.hero-pie { grid-area: pie; display: flex; margin: 10px var(--gp, 16px) 0; position: relative; z-index: 2; }
+.hp-cmp { display: inline-flex; align-items: center; gap: 8px; min-height: 32px; padding: 0 13px 0 11px; border-radius: 999px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.035); color: var(--muted); font-size: 13px; font-weight: 600; }
+.hp-cmp i { width: 16px; border-top: 2px dashed currentColor; opacity: 0.7; }
+.hp-cmp[aria-pressed="true"] { color: var(--text); border-color: var(--line-2); background: var(--plane-3); }
+.hp-cmp[aria-pressed="true"] i { opacity: 1; }
+/* lo que más ha movido hoy la cartera, dentro de la pieza y como en el widget */
+.hero-movers { grid-area: movers; margin: 14px var(--gp, 16px) 0; padding-top: 14px; border-top: 1px solid var(--line); }
+.hero-movers:empty { display: none; }
+.hero-movers .mv-t { margin: 0 0 10px; font-size: 13px; color: var(--muted); }
+.hero-movers .mv-l { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.hero-movers .mv-c { display: grid; gap: 2px; justify-items: start; text-align: left; padding: 9px 13px 10px; border-radius: 16px; white-space: normal; min-width: 0; }
+.hero-movers .mv-n { display: flex; align-items: center; gap: 6px; max-width: 100%; color: var(--text); font-size: 14px; font-weight: 600; }
+.hero-movers .mv-n i { flex: none; font-style: normal; font-size: 9px; }
+.hero-movers .mv-c.up .mv-n i { color: var(--up); }
+.hero-movers .mv-c.down .mv-n i { color: var(--down); }
+.hero-movers .mv-n, .hero-movers .mv-n + * { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hero-movers .mv-v { display: flex; align-items: baseline; gap: 7px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
+.hero-movers .mv-v small { font-size: 13px; font-weight: 600; opacity: 0.8; }
+.info-graf p { margin: 0 0 12px; color: var(--text-2); line-height: 1.55; }
+.info-graf .fila-btns { margin-top: 18px; }
 @media (min-width: 760px) {
-  .hero-panel { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "cifra rangos" "graf graf"; padding: 26px 0 6px; }
+  .hero-panel { --gp: 28px; grid-template-columns: minmax(0, 1fr) auto; grid-template-rows: auto auto 1fr; grid-template-areas: "cifra rangos" "cifra pie" "cifra ." "graf graf" "movers movers"; padding: 26px 0 22px; }
   .hero-rangos { align-self: start; justify-self: end; margin: 2px 24px 0 0; }
+  .hero-pie { justify-self: end; align-self: start; margin: 10px 24px 0 0; }
+  .hero-movers { margin-top: 6px; }
+  .hero-movers .mv-l { grid-template-columns: repeat(var(--n, 4), minmax(0, 250px)); }
   .hero-rangos button { flex: none; padding: 6px 11px; }
   .hero-panel > .chart { margin-top: -48px; }
 }
@@ -1420,6 +1455,7 @@ table td.txt { white-space: normal; min-width: 260px; }
   .hero-panel { margin: 0 calc(-1 * var(--gutter)); border: 0; border-radius: 0; padding-top: 6px; background: none; overflow: visible; }
   .car-patrimonio::before { content: ''; position: absolute; z-index: -1; left: -30%; top: 10px; width: 130%; height: 340px; background: radial-gradient(closest-side, rgba(226, 180, 95, 0.12), rgba(226, 180, 95, 0)); pointer-events: none; }
   .hero-cifra { padding: 0 var(--gutter); }
+  .hero-panel { --gp: var(--gutter); padding-bottom: 0; }
 }
 /* la gráfica grande: curva con brillo, el punto de ahora latiendo, máximo y mínimo, y la fecha abajo al pasar el dedo */
 .gh { touch-action: pan-y; }
@@ -4174,10 +4210,10 @@ function binds(M) {
     }
   }
   b.recalc = { txt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) };
-  const mueven = [...M.filas].filter((f) => Math.abs(f.dia) >= 1).sort((a, z) => Math.abs(z.dia) - Math.abs(a.dia)).slice(0, 3);
-  // las tres posiciones que más han movido hoy tu cartera, en euros y en %, cada una con su color
-  const tm = mueven.map((f) => `${f.inst.corto} ${eurS(f.dia, 0)}`).join(', ');
-  b.movers = { txt: tm, html: mueven.length ? `<span class="mv-t">Lo que más ha movido hoy tu cartera</span><span class="mv-l">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></button>`).join('')}</span>` : '' };
+  const mueven = [...M.filas].filter((f) => Math.abs(f.dia) >= 1).sort((a, z) => Math.abs(z.dia) - Math.abs(a.dia)).slice(0, 4);
+  // las que más han movido hoy tu cartera (hasta cuatro), como en el widget: nombre arriba y, debajo, euros y % con su color
+  const tm = mueven.map((f) => `${f.inst.corto} ${eurS(f.dia, 0)} ${pctS(f.varDia, 1)}`).join(', ');
+  b.movers = { txt: tm, html: mueven.length ? `<p class="mv-t">${L('Lo que más ha movido hoy tu cartera', 'What moved your portfolio most today')}</p><div class="mv-l" style="--n:${mueven.length}">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-n"><i aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</i>${esc(f.inst.corto)}</span><span class="mv-v">${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span></button>`).join('')}</div>` : '' };
   const vis = new Set([...(S.radarVisibles || []), ...(S.ideasTop || [])]);
   if (vis.size) for (const x of radarVals()) {
     if (!vis.has(x.s)) continue;
@@ -4236,6 +4272,9 @@ function parchear() {
     el.dataset.n = b.n == null ? '' : b.n;
     for (const c of ['up', 'down', 'flat', 'on', 'off']) el.classList.toggle(c, b.cls === c);
   }
+  if (S.heroVar) S.heroVar(M);
+  // «En directo» / «Cerrada» cambia de largo: la cabecera se vuelve a encajar (si no, se cortaba por el final)
+  if (nb.estado && nb.estado.txt !== S.estadoTxt) { S.estadoTxt = nb.estado.txt; requestAnimationFrame(encajarCabecera); }
   vigilarRecomendaciones(M);
   enviarWidget();
 }
@@ -4250,9 +4289,7 @@ function montar() {
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <div class="acciones">
       <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowIA por tu cartera" aria-label="Pregúntale a GrowIA">${ICONOS.chispa}<span>Pregúntale</span></button>
-      <button class="ib" id="bOcultar" data-accion="ocultar"></button>
       <button class="ib ib-fallo" id="bFallo" data-accion="opinion" title="Es una alfa: avisa de cualquier fallo o idea" aria-label="Avisar de un fallo">${ICONOS.bicho}<span class="fallo-t">Avisar de un fallo</span></button>
-      <button class="ib ib-idioma" id="bIdioma" data-accion="idioma" aria-haspopup="menu" aria-expanded="false" title="Idioma / Language" aria-label="Idioma / Language" data-no-trad>${banderaIdioma(IDIOMA)}</button>
       <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
     </div>
   </div></header>
@@ -4463,7 +4500,7 @@ function pintar() {
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
   pintarGtaTop();
   cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
-  const bo = $('#bOcultar'); bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? 'Mostrar importes' : 'Ocultar importes'; bo.setAttribute('aria-label', bo.title);
+  for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
   pintarTicker(M);
   const scroll = window.scrollY;
   const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
@@ -4593,23 +4630,20 @@ function htmlBloqueCar(k, M) {
       <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Cartera: qué sale y en qué orden" aria-label="Personalizar Cartera">${ICONOS.ordenar}<span>Personalizar</span></button></div>
       <div class="hero-panel">
         <div class="hero-cifra">
-          <div class="hero-lbl" id="heroLbl">${L('Patrimonio', 'Net worth')}</div>
+          <div class="hero-lbl"><span id="heroLbl">${L('Patrimonio', 'Net worth')}</span><button type="button" class="hero-ojo" data-accion="ocultar" aria-pressed="${!!S.oculto}" title="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}" aria-label="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}">${S.oculto ? ICONOS.ojoNo : ICONOS.ojo}</button></div>
           <div class="hero-num" id="heroNum" aria-label="${L('Patrimonio', 'Net worth')}">${B('totalE')}${B('totalD', 'dec')}</div>
-          <div class="hero-var" id="evoCab" aria-live="off"></div>
+          <div class="hero-var"><span class="hv-in" id="evoCab" aria-live="off"></span><button type="button" class="hv-info" data-accion="info-grafica" title="${L('Qué enseña la gráfica', 'What the chart shows')}" aria-label="${L('Qué enseña la gráfica', 'What the chart shows')}">${ICONOS.info}</button></div>
           <div class="hero-sub">
-            <div class="hs"><span class="k">${L('Hoy', 'Today')}</span>${B('dia')}</div>
+            ${S.rango === '1D' ? '' : `<div class="hs"><span class="k">${L('Hoy', 'Today')}</span>${B('dia')}</div>`}
             <div class="hs"><span class="k">${L('Ganado desde que compraste', 'Gained since you bought')}</span>${B('pl')}</div>
           </div>
         </div>
         <div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div>
+        ${INTRADIA.has(S.rango) || !S.ref ? '' : `<div class="hero-pie"><button type="button" class="hp-cmp" data-accion="comparar" aria-pressed="${!!S.comparar}"><i aria-hidden="true"></i>${L('Comparar con el S&P 500', 'Compare with the S&P 500')}</button></div>`}
         <div class="chart gh" id="grafEvo"></div>
+        <div class="movers hero-movers">${B('movers')}</div>
       </div>
-      <div class="hero-bajo">
-        <div class="movers">${B('movers')}</div>
-        ${htmlPreguntasIA(true)}
-        <div class="leyenda-graf"><label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> ${L('Comparar con el S&P 500', 'Compare with the S&P 500')}</label>${S.comparar ? `<span><i style="border-color:var(--accent)"></i>${L('Tu cartera', 'Your portfolio')}</span><span><i class="disc" style="border-color:var(--text-2)"></i>${L('El mismo dinero en el S&P 500', 'The same money in the S&P 500')}</span>` : ''}</div>
-        <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste». Pasa el dedo por la gráfica para ver cuánto tenías cada día.</p>
-      </div>
+      ${((pr) => (pr ? `<div class="hero-bajo">${pr}</div>` : ''))(htmlPreguntasIA(true))}
     </section>`;
     }
     if (k === 'cifras') {
@@ -6855,6 +6889,12 @@ function dibujar(M) {
         if (serie.length > 1) pintarVar(ref0, ahora, etqRango);
       }
     };
+    // con los precios en directo cambia el patrimonio: la pastilla se pone al día con él (salvo con el dedo encima)
+    S.heroVar = (M2) => {
+      const hn = $('#heroNum'); if (!hn || hn.dataset.antes || serie.length < 2) return;
+      const desde = S.rango === '1D' && deIntra && isFinite(M2.dia) ? { v: M2.total - M2.dia } : ref0;
+      pintarVar(desde, { v: isFinite(M2.total) ? M2.total : ahora.v }, etqRango);
+    };
     const movil = innerWidth < 760;
     const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
     grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 300, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, ref: ref0 && ref0.v, alMover, animar });
@@ -6874,6 +6914,15 @@ document.addEventListener('toggle', (e) => {
   const d = e.target;
   if (d.matches && d.matches('details.mfila') && d.open) { const el = d.querySelector('[data-spark-m]'); if (el) requestAnimationFrame(() => dibujarSparkM(el)); }
 }, true);
+/* lo que antes iba en una nota debajo de la gráfica, ahora detrás de la «i» junto a la pastilla */
+function infoGrafica() {
+  hoja(L('Qué enseña la gráfica', 'What the chart shows'), `<div class="info-graf">
+    <p>${L('Cómo se habría movido lo que tienes hoy, con las cantidades de hoy. Lo que has ganado tú de verdad, con lo que pagaste, es «Ganado desde que compraste».', 'How what you hold today would have moved, with today\'s amounts. What you have really made, with what you paid, is «Gained since you bought».')}</p>
+    <p>${L('La pastilla de debajo de la cifra es lo que ha cambiado en el periodo que elijas. En 1D se cuenta desde el cierre de ayer.', 'The pill under the figure is how much it changed over the period you pick. In 1D it counts from yesterday\'s close.')}</p>
+    <p>${L('Pasa el dedo por la curva para ver cuánto tenías cada día. Desde 1M puedes compararla con el mismo dinero metido en el S&P 500 (la línea discontinua). Antes de que existieran algunos fondos se usa un ETF del mismo índice.', 'Run your finger along the curve to see what you had each day. From 1M you can compare it with the same money in the S&P 500 (the dashed line). Before some funds existed, an ETF on the same index is used.')}</p>
+    <div class="fila-btns"><button class="btn" data-cerrar>${L('Entendido', 'Got it')}</button></div>
+  </div>`);
+}
 /* en el móvil, las notas largas (cómo se calcula, de dónde sale) se pliegan para no hacer scroll */
 function plegarNotas(raiz) {
   if (!raiz || innerWidth > 680) return;
@@ -11368,7 +11417,7 @@ var PASOS_CAB = ['cab-1', 'cab-2', 'cab-3', 'cab-4', 'cab-5'];
 function encajarCabecera() {
   const top = $('.top'), f = $('.fila-top'); if (!top || !f) return;
   top.classList.remove(...PASOS_CAB);
-  const aprieta = () => { const e = $('#estado'); return f.scrollWidth > f.clientWidth + 1 || (e && e.scrollWidth > e.clientWidth + 1); };
+  const aprieta = () => { const e = $('#estado'); return f.scrollWidth > f.clientWidth + 1 || (e && e.scrollWidth > e.clientWidth); };  // la luz, sin margen: un píxel ya corta la última letra
   for (const c of PASOS_CAB) { if (!aprieta()) break; top.classList.add(c); }
 }
 var encajarT = 0;
@@ -13653,6 +13702,8 @@ document.addEventListener('click', (e) => {
   else if (d.accion) {
     const a = d.accion;
     if (a === 'ocultar') { S.oculto = !S.oculto; LS.set('inv-oculto', S.oculto); pintar(); }
+    else if (a === 'comparar') { S.comparar = !S.comparar; LS.set('inv-comparar', S.comparar); pintar(); }
+    else if (a === 'info-grafica') infoGrafica();
     else if (a === 'ajustes') abrirAjustes();
     else if (a === 'novedades') mostrarNovedades(null);
     else if (a === 'opinion') abrirOpinion();
