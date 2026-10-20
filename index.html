@@ -10510,8 +10510,18 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.2.2';
+const VERSION = '0.2.3';
 const NOVEDADES = [
+  { v: '0.2.3', f: '2026-10-20', h: '20:30', t: 'Cartera nueva y los días sin bolsa', cosas: [
+    { d: 'grafica', ir: { v: 'cartera', sel: '.hero-panel', pos: true }, t: 'Tu patrimonio y su gráfica, en una pieza', x: 'La cifra va encima de la gráfica, más grande. Debajo, cuánto ha cambiado en el periodo que elijas, lo de hoy y lo ganado. Pasa el dedo por la curva: la cifra te dice lo que tenías ese día y lo de después se apaga. En 1D se cuenta desde el cierre de ayer.' },
+    { d: 'cifras', ir: { v: 'cartera', sel: '.movers', pos: true }, t: 'Lo que más se mueve, a un toque', x: 'Toca cualquiera de «Lo que más ha movido hoy tu cartera» y se abre su ficha.' },
+    { d: 'pestanas', ir: { v: 'cartera', sel: '.car-ordenar-mini', pos: true }, t: 'Personaliza Cartera', x: 'Con el botón de arriba eliges qué bloques salen y en qué orden: tus cifras, lo que viene, GrowIA, el reparto o la cuenta atrás de GTA VI.' },
+    { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor' }, t: 'Pregúntale hablando', x: 'Abre Pregúntale, toca el micrófono y dilo en voz alta. En la app de Android usa el dictado del móvil.' },
+    { d: 'calendario', ir: { v: 'agenda', sel: '.ag-mes2' }, t: 'Los días sin bolsa, de un vistazo', x: 'En el calendario, el día entero sale rayado si la bolsa cierra, medio lleno si cierra antes (el 24 y el 31 de diciembre, a las 14:00) y con el borde a trazos si es festivo pero la bolsa abre, como el 8 de diciembre. Con tu comunidad puesta en Objetivos, también sus festivos.' },
+    { d: 'capturas', ir: { v: 'cartera', sel: '#hEf', antes: () => { S.carTab = 'plan'; LS.set('inv-car', 'plan'); if (S.vista === 'cartera') pintar(); } }, t: 'Tu efectivo, con un extracto del banco', x: 'En Plan y movimientos > Efectivo > Cambiar: «Ponerlo con un extracto del banco». Sube una captura, el PDF o el CSV de tu cuenta y GrowIA saca el saldo más reciente; tú eliges a qué plataforma va.' },
+    { d: 'movil', t: 'El widget, con el estilo nuevo', x: 'En la app de Android, el widget lleva la cifra gruesa, lo de hoy en su pastilla de color, la curva con brillo y, si es alto, lo que más ha movido hoy tu cartera (hasta cuatro).' },
+    { d: 'gta', ir: { v: 'cartera', sel: '.gta-top' }, t: 'GTA VI, arriba', x: 'La cuenta atrás está ahora en la cabecera, junto a la luz de En directo, con los días que faltan.' },
+  ] },
   { v: '0.2.2', f: '2026-10-20', h: '16:12', t: 'Tu perfil, tus avisos y cualquier bróker', cosas: [
     { d: 'perfil', ir: { v: 'objetivos', sel: '.pf-grid' }, t: 'Tu perfil, paso a paso', x: 'Si no lo tenías hecho, al entrar te lo pide con una pregunta por pantalla: tu edad, dónde vives, cuándo necesitarás el dinero, cuánto riesgo aguantas y para qué inviertes. Es un minuto, y con eso GrowIA te aconseja a ti. Mientras falte, te lo recuerda arriba en Cartera y con un punto en Objetivos.' },
     { d: 'capturas', ir: { v: 'cartera', sel: '[data-accion="nueva-pos"]' }, t: 'Importa de cualquier bróker o banco', x: 'En «Lo que ya tenía» > Importar de tu bróker: capturas, el PDF de un extracto o del informe fiscal, o los movimientos en CSV o Excel de DEGIRO, Interactive Brokers, ING, Revolut o el que uses. Con un listado de operaciones saca además desde cuándo tienes cada cosa, lo que te costó cada compra, tus ventas con su resultado y los dividendos del año para Fiscalidad.' },
