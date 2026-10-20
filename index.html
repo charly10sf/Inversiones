@@ -448,6 +448,23 @@ button.fila:hover { background: var(--plane); }
 button.ag-c { color: var(--text); cursor: pointer; }
 button.ag-c:hover { border-color: var(--line-2); }
 .ag-pts { display: flex; gap: 3px; }
+/* la celda entera: rayada si la bolsa cierra (más tenue si solo cierra alguna de las tuyas), medio llena si es media
+   sesión y con el borde a trazos si es festivo pero la bolsa abre */
+.ag-est { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9.5px; font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; color: var(--text-2); }
+.ag-c.cierra, .ag-ley .sw.cierra { background: repeating-linear-gradient(135deg, rgba(154, 147, 133, 0.24) 0 4px, rgba(154, 147, 133, 0.07) 4px 9px); }
+.ag-c.cierra-p, .ag-ley .sw.cierra-p { background: repeating-linear-gradient(135deg, rgba(154, 147, 133, 0.13) 0 4px, transparent 4px 9px), var(--plane); }
+.ag-c.cierra-p .ag-est { color: var(--muted); }
+.ag-est .ec { display: none; }
+@media (max-width: 560px) { .ag-est .el { display: none; } .ag-est .ec { display: inline; } .ag-est { font-size: 9px; } .ag-cal .ag-c { padding: 5px 4px; } }
+.ag-c.media, .ag-ley .sw.media { background: linear-gradient(180deg, var(--plane) 50%, rgba(154, 147, 133, 0.26) 50%); }
+.ag-c.fiesta { border-style: dashed; border-color: rgba(226, 180, 95, 0.45); }
+.ag-ley .sw.fiesta { border: 1px dashed rgba(226, 180, 95, 0.6); background: var(--plane); }
+.ag-c.fiesta .ag-est { color: var(--accent); }
+.ag-c.hoy.fiesta, .ag-c.sel.fiesta { border-style: solid; }
+.ag-ley i.sw { width: 16px; height: 12px; border-radius: 3px; }
+.ag-cal .ag-c { min-height: 50px; }
+.t-media { --ag: #9a9385; }
+.t-fiesta { --ag: #c9a46a; }
 .ag-pts i, .ag-ley i { width: 6px; height: 6px; border-radius: 50%; background: var(--ag); display: block; }
 .ag-ley { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 12px; color: var(--muted); }
 .ag-ley span { display: inline-flex; align-items: center; gap: 6px; }
@@ -3551,28 +3568,13 @@ const LIVE = {
   },
 };
 
-/* horario de las bolsas para saber si lo que llega se mueve de verdad */
-const BOLSAS = [
-  { nombre: 'Madrid', tz: 'Europe/Madrid', abre: 540, cierra: 1050 },
-  { nombre: 'Londres', tz: 'Europe/London', abre: 480, cierra: 990 },
-  { nombre: 'Nueva York', tz: 'America/New_York', abre: 570, cierra: 960 },
-];
-function bolsaAbierta(b) {
-  try {
-    const p = new Intl.DateTimeFormat('en-GB', { timeZone: b.tz, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());
-    const g = (t) => (p.find((x) => x.type === t) || {}).value;
-    if (g('weekday') === 'Sat' || g('weekday') === 'Sun') return false;
-    const m = +g('hour') * 60 + +g('minute');
-    return m >= b.abre && m < b.cierra;
-  } catch (e) { return false; }
-}
 /* arriba, solo la luz y dos palabras (antes una frase que se cortaba); el detalle de cada bolsa, al pasar el ratón
    o al tocarlo */
 function estadoDirecto() {
   const conectado = LIVE.yahoo === 'ok' || LIVE.bitvavo === 'ok';
   const hace = S.precios && S.precios.generado ? haceCuanto(S.precios.generado) : '';
   if (!conectado) return { txt: hace ? hace.replace(/^./, (c) => c.toUpperCase()) : 'Sin conexión', cls: 'off' };
-  if (BOLSAS.some(bolsaAbierta)) return { txt: 'En directo', cls: 'on' };
+  if (BOLSAS_MUNDO.filter((b) => ['mad', 'lon', 'us'].includes(b.k)).some((b) => estadoBolsa(b).on)) return { txt: 'En directo', cls: 'on' };
   return { txt: 'Bolsas cerradas', cls: 'cerr' };
 }
 // las principales bolsas, con su horario (y sus festivos, los que hay apuntados) en hora de España
@@ -3593,16 +3595,18 @@ function partesTz(tz, d = new Date()) {
 function estadoBolsa(b) {
   try {
     const t = partesTz(b.tz), fest = (d) => AG_CIERRES.find(([x, donde]) => x === d && donde.split(' ').includes(b.k));
+    const med = AG_MEDIAS.find(([x, bo]) => x === t.fecha && bo === b.k), cierra = med ? med[2] : b.cierra;
     const hm = (d, m) => horaEspana(d, b.tz, Math.floor(m / 60), m % 60) || '';
     const finde = (d) => { const x = new Date(d + 'T12:00:00Z').getUTCDay(); return x === 0 || x === 6; };
     const hoyF = fest(t.fecha);
-    if (!finde(t.fecha) && !hoyF && t.min >= b.abre && t.min < b.cierra) return { on: true, txt: `abierta, cierra a las ${hm(t.fecha, b.cierra)}` };
+    if (!finde(t.fecha) && !hoyF && t.min >= b.abre && t.min < cierra) return { on: true, txt: `abierta, cierra a las ${hm(t.fecha, cierra)}${med ? ` (media sesión por ${med[3]})` : ''}` };
     for (let k = 0; k < 10; k++) {
       const x = new Date(t.fecha + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + k);
       const d = x.toISOString().slice(0, 10);
       if (finde(d) || fest(d) || (k === 0 && t.min >= b.abre)) continue;
+      const medD = AG_MEDIAS.find(([x, bo]) => x === d && bo === b.k);
       const cuando = k === 0 ? 'hoy' : k === 1 ? 'mañana' : `el ${['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'][x.getUTCDay()]}`;
-      return { on: false, txt: `${hoyF ? `cerrada por ${hoyF[2]}` : 'cerrada'}, abre ${cuando} a las ${hm(d, b.abre)}` };
+      return { on: false, txt: `${hoyF ? `cerrada por ${hoyF[2]}` : 'cerrada'}, abre ${cuando} a las ${hm(d, b.abre)}${medD ? ` (solo hasta las ${hm(d, medD[2])})` : ''}` };
     }
   } catch (e) {}
   return { on: false, txt: 'cerrada' };
@@ -4027,6 +4031,8 @@ const ICONOS = {
   dividendo: SVG('<circle cx="12" cy="12" r="8.5"/><path d="M14.6 9.3c-.5-.9-1.5-1.4-2.6-1.4-1.5 0-2.6.8-2.6 2 0 2.8 5.4 1.4 5.4 4.2 0 1.2-1.2 2-2.8 2-1.2 0-2.3-.5-2.8-1.4M12 6.4v1.5M12 16.2v1.4"/>'),
   banco: SVG('<path d="M3.5 9.3L12 4.2l8.5 5.1z"/><path d="M6 10.5v6.3M10 10.5v6.3M14 10.5v6.3M18 10.5v6.3M3.5 19.8h17"/>'),
   festivo: SVG('<circle cx="12" cy="12" r="8.5"/><path d="M8.2 12h7.6"/>'),
+  media: SVG('<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/>'),
+  fiesta: SVG('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 12.6l1.2 2.3 2.5.4-1.8 1.8.4 2.5-2.3-1.2-2.3 1.2.4-2.5-1.8-1.8 2.5-.4z"/>'),
   aporte: SVG('<path d="M12 3.8v10.4M7.8 10l4.2 4.2 4.2-4.2"/><path d="M4.5 15.5v2.8A1.7 1.7 0 0 0 6.2 20h11.6a1.7 1.7 0 0 0 1.7-1.7v-2.8"/>'),
   proy: SVG('<path d="M3 19c3-1 5-4 7-7"/><path d="M10 12c2.5-2 5-4 11-7" stroke-dasharray="2.2 2.6"/><path d="M15 5h6v6"/>'),
   perfil: SVG('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.8-4 3.8-6.2 7.5-6.2s6.7 2.2 7.5 6.2"/>'),
@@ -4326,7 +4332,7 @@ function htmlResumenDia(M) {
   const tuyas = noticiasDeLoTuyo(M, 4), generales = (N.mercado || []).filter((n) => n.t && n.u).slice(0, 3);
   // de tu comunidad, solo lo que toca tu dinero (impuestos, ayudas, vivienda), de los últimos 3 días y como mucho dos
   const regionales = comunidadUsuario() ? noticiasComunidad(comunidadUsuario(), 2, 3) : [];
-  const prox = (() => { try { return agendaLista(M, 2).filter((e) => e.tipo !== 'festivo' || e.mio).slice(0, 4); } catch (e) { return []; } })();
+  const prox = (() => { try { return agendaLista(M, 2).filter((e) => !['festivo', 'media'].includes(e.tipo) || e.mio).slice(0, 4); } catch (e) { return []; } })();
   const toca = (() => { try { const P = pasosRuta(M); return [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto && x.urgente)[0] || null; } catch (e) { return null; } })();
   const noticia = (n) => `<li><a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
   return `<div class="rdia">
@@ -4835,10 +4841,51 @@ const AG_CIERRES = [
   ['2027-08-30', 'lon', 'el festivo de verano británico'], ['2027-09-06', 'us', 'el Día del Trabajo'], ['2027-11-25', 'us', 'Acción de Gracias'],
   ['2027-12-24', 'us', 'Navidad'], ['2027-12-24', 'fra', 'Nochebuena'], ['2027-12-27', 'lon', 'Navidad'], ['2027-12-28', 'lon', 'San Esteban'], ['2027-12-31', 'fra', 'Nochevieja'],
 ];
+// medias sesiones: [fecha, bolsa, hora de cierre allí (en minutos), por qué, estimada]. NYSE cierra a las 13:00 de
+// Nueva York, Londres a las 12:30, Euronext a las 14:05 y Madrid a las 14:00. Fuentes: NYSE, LSEG, Euronext y BME
+const AG_MEDIAS = [
+  ['2026-11-27', 'us', 780, 'el día después de Acción de Gracias'],
+  ['2026-12-24', 'mad', 840, 'Nochebuena'], ['2026-12-24', 'lon', 750, 'Nochebuena'], ['2026-12-24', 'eur', 845, 'Nochebuena'], ['2026-12-24', 'us', 780, 'Nochebuena'],
+  ['2026-12-31', 'mad', 840, 'Nochevieja'], ['2026-12-31', 'lon', 750, 'Nochevieja'], ['2026-12-31', 'eur', 845, 'Nochevieja'],
+  ['2027-11-26', 'us', 780, 'el día después de Acción de Gracias'],
+  ['2027-12-24', 'mad', 840, 'Nochebuena', true], ['2027-12-24', 'lon', 750, 'Nochebuena'], ['2027-12-24', 'eur', 845, 'Nochebuena'],
+  ['2027-12-31', 'mad', 840, 'Nochevieja', true], ['2027-12-31', 'lon', 750, 'Nochevieja'], ['2027-12-31', 'eur', 845, 'Nochevieja'],
+];
+const AG_TZ = { us: 'America/New_York', mad: 'Europe/Madrid', lon: 'Europe/London', fra: 'Europe/Berlin', eur: 'Europe/Paris' };
+const AG_CORTO = { us: ['NY', 'NY'], mad: ['Madrid', 'Madrid'], lon: ['Londres', 'London'], fra: ['Fráncfort', 'Frankfurt'], eur: ['Euronext', 'Euronext'] };
+// festivos en España en los que la Bolsa de Madrid abre: [fecha, qué se celebra, dónde ('*' = toda España)].
+// Fuente: el BOE (fiestas laborales de 2026 y 2027). Las fiestas de cada pueblo y de cada isla no están
+const FIESTAS_ES = [
+  ['2026-11-02', 'el lunes después de Todos los Santos', 'andalucia aragon asturias canarias clm cyl extremadura madrid navarra'],
+  ['2026-12-07', 'el lunes después del Día de la Constitución', 'andalucia aragon asturias cantabria cyl extremadura madrid murcia rioja melilla'],
+  ['2026-12-08', 'la Inmaculada', '*'],
+  ['2027-01-06', 'Reyes', '*'],
+  ['2027-03-01', 'el Día de Andalucía', 'andalucia'], ['2027-03-01', 'el Día de les Illes Balears', 'baleares'],
+  ['2027-03-10', 'la Fiesta del Eid Fitr', 'melilla'],
+  ['2027-03-19', 'San José', 'galicia madrid murcia navarra valencia'],
+  ['2027-03-25', 'Jueves Santo', 'andalucia aragon asturias baleares canarias cantabria clm cyl extremadura galicia madrid murcia navarra paisvasco rioja ceuta melilla'],
+  ['2027-04-23', 'San Jorge, el Día de Aragón', 'aragon'], ['2027-04-23', 'la Fiesta de Castilla y León', 'cyl'],
+  ['2027-05-17', 'el Día de las Letras Gallegas', 'galicia'], ['2027-05-17', 'la Fiesta del Sacrificio', 'ceuta melilla'],
+  ['2027-05-27', 'el Corpus Christi', 'clm'], ['2027-05-31', 'el Día de Castilla-La Mancha', 'clm'],
+  ['2027-06-09', 'el Día de la Región de Murcia', 'murcia'], ['2027-06-09', 'el Día de La Rioja', 'rioja'],
+  ['2027-06-24', 'San Juan', 'cataluna'],
+  ['2027-07-28', 'el Día de las Instituciones de Cantabria', 'cantabria'],
+  ['2027-08-05', 'Nuestra Señora de África', 'ceuta'],
+  ['2027-08-16', 'el lunes después de la Asunción', 'andalucia aragon asturias canarias cyl madrid'],
+  ['2027-09-08', 'el Día de Asturias', 'asturias'], ['2027-09-08', 'el Día de Extremadura', 'extremadura'],
+  ['2027-09-15', 'La Bien Aparecida', 'cantabria'],
+  ['2027-10-07', 'el aniversario del primer Gobierno Vasco', 'paisvasco'],
+  ['2027-10-11', 'el lunes que sustituye al 15 de agosto', 'extremadura'],
+  ['2027-10-12', 'la Fiesta Nacional', '*'],
+  ['2027-11-01', 'Todos los Santos', '*'],
+  ['2027-12-06', 'el Día de la Constitución', '*'],
+  ['2027-12-08', 'la Inmaculada', '*'],
+];
+const FIESTAS_EN = { 'el lunes después de Todos los Santos': "the Monday after All Saints' Day", 'el lunes después del Día de la Constitución': 'the Monday after Constitution Day', 'la Inmaculada': 'the Immaculate Conception', 'Reyes': 'Epiphany', 'el Día de Andalucía': 'Andalusia Day', 'el Día de les Illes Balears': 'Balearic Islands Day', 'la Fiesta del Eid Fitr': 'Eid al-Fitr', 'San José': "St Joseph's Day", 'Jueves Santo': 'Maundy Thursday', 'San Jorge, el Día de Aragón': "St George's Day, Aragon Day", 'la Fiesta de Castilla y León': 'Castile and León Day', 'el Día de las Letras Gallegas': 'Galician Literature Day', 'la Fiesta del Sacrificio': 'Eid al-Adha', 'el Corpus Christi': 'Corpus Christi', 'el Día de Castilla-La Mancha': 'Castilla-La Mancha Day', 'el Día de la Región de Murcia': 'Murcia Day', 'el Día de La Rioja': 'La Rioja Day', 'San Juan': "St John's Day", 'el Día de las Instituciones de Cantabria': 'Cantabria Institutions Day', 'Nuestra Señora de África': 'Our Lady of Africa', 'el lunes después de la Asunción': 'the Monday after the Assumption', 'el Día de Asturias': 'Asturias Day', 'el Día de Extremadura': 'Extremadura Day', 'La Bien Aparecida': 'La Bien Aparecida', 'el aniversario del primer Gobierno Vasco': 'the anniversary of the first Basque Government', 'el lunes que sustituye al 15 de agosto': 'the Monday in lieu of 15 August', 'la Fiesta Nacional': 'National Day', 'Todos los Santos': "All Saints' Day", 'el Día de la Constitución': 'Constitution Day' };
 // la bolsa de cada acción o ETF, por el final de su símbolo en Yahoo
 const bolsaDe = (i) => { const y = String((i && i.yahoo) || ''); if (!y || /^Fondo/.test(i.tipo || '') || i.clase === 'Cripto' || /-EUR$|=/.test(y)) return null; if (/\.MC$/i.test(y)) return 'mad'; if (/\.L$/i.test(y)) return 'lon'; if (/\.(DE|F)$/i.test(y)) return 'fra'; if (/\.(PA|AS|BR|LS)$/i.test(y)) return 'eur'; if (!y.includes('.')) return 'us'; return null; };
 // cada tipo: su icono y en qué filtro sale
-const AG_TIPOS = { resultados: ['resultados', 'res'], fondo: ['resultados', 'res'], dividendo: ['dividendo', 'div'], cobro: ['dividendo', 'div'], banco: ['banco', 'eco'], festivo: ['festivo', 'eco'], hacienda: ['fiscal', 'eco'], aportacion: ['aporte', 'apo'], otro: ['mando', 'otro'], ia: ['chispa', 'eco'] };
+const AG_TIPOS = { resultados: ['resultados', 'res'], fondo: ['resultados', 'res'], dividendo: ['dividendo', 'div'], cobro: ['dividendo', 'div'], banco: ['banco', 'eco'], festivo: ['festivo', 'eco'], media: ['media', 'eco'], fiesta: ['fiesta', 'eco'], hacienda: ['fiscal', 'eco'], aportacion: ['aporte', 'apo'], otro: ['mando', 'otro'], ia: ['chispa', 'eco'] };
 const AG_FILTROS = [['todo', 'Todo', 'All'], ['res', 'Resultados', 'Earnings'], ['div', 'Dividendos', 'Dividends'], ['eco', 'Economía', 'Economy'], ['apo', 'Aportaciones', 'Contributions']];
 const AG_FESTIVOS_EN = { 'Nochebuena': 'Christmas Eve', 'Nochevieja': "New Year's Eve", 'San Esteban': 'Boxing Day', 'el festivo de mayo británico': 'the UK early May bank holiday', 'el festivo de primavera británico': 'the UK spring bank holiday', 'el festivo de verano británico': 'the UK summer bank holiday', 'Acción de Gracias': 'Thanksgiving', 'Navidad': 'Christmas', 'Año Nuevo': "New Year's Day", 'el día de Martin Luther King': 'Martin Luther King Jr. Day', 'el Día de los Presidentes': "Presidents' Day", 'Viernes Santo': 'Good Friday', 'Lunes de Pascua': 'Easter Monday', 'el Memorial Day': 'Memorial Day', 'Juneteenth': 'Juneteenth', 'el Día de la Independencia': 'Independence Day', 'el Día del Trabajo': 'Labor Day' };
 const DIAS_LARGOS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -5006,9 +5053,40 @@ function agendaLista(M, dias = 120) {
     const nombres = bolsas.filter((bo) => !(soloEuGen && bo === 'eur' && bolsas.includes('mad'))).map((bo) => (soloEuGen && bo === 'mad' ? L('las bolsas europeas', 'European markets') : L(...AG_BOLSAS[bo])));
     const t = nombres.length === 1 ? L(`Cierra ${nombres[0]}`, `${nombres[0][0].toUpperCase() + nombres[0].slice(1)} closed`) : L(`Cierran ${yLista(nombres)}`, `${yLista(nombres)} closed`);
     const mot = motivos.map((m) => L(m, AG_FESTIVOS_EN[m] || m));
-    add({ id: `fes:${d}`, d, tipo: 'festivo', mio: bolsas.some((bo) => mias.has(bo)), t: t[0].toUpperCase() + t.slice(1), s: L(`Por ${yLista(motivos)}`, `For ${yLista(mot)}`),
+    add({ id: `fes:${d}`, d, tipo: 'festivo', bolsas, todas: [...ver].every((bo) => bolsas.includes(bo)), mio: bolsas.some((bo) => mias.has(bo)), t: t[0].toUpperCase() + t.slice(1), s: L(`Por ${yLista(motivos)}`, `For ${yLista(mot)}`),
       det: L(`Ese día no abre${nombres.length > 1 ? 'n' : ''} ${esc(yLista(nombres))}. Lo que tienes allí no cambia de precio, y lo que mandes comprar o vender se hace el siguiente día que abra.`,
         `${esc(yLista(nombres))} ${nombres.length > 1 ? "don't" : "doesn't"} open that day. What you hold there doesn't change price, and any buy or sell order goes through on the next trading day.`) });
+  }
+  // medias sesiones: las de las mismas bolsas, con la hora de cierre en hora de España
+  const medias = new Map();
+  for (const [d, bo, min, motivo, est] of AG_MEDIAS) if (ver.has(bo)) { if (!medias.has(d)) medias.set(d, []); medias.get(d).push({ bo, motivo, est, hora: horaEspana(d, AG_TZ[bo], Math.floor(min / 60), min % 60) || '' }); }
+  for (const [d, ms] of medias) {
+    const soloEuGen = !mias.size || ![...mias].some((x) => x !== 'us');
+    const lista = ms.filter((m) => !(soloEuGen && m.bo === 'eur' && ms.some((x) => x.bo === 'mad')));
+    const nombre = (m) => (soloEuGen && m.bo === 'mad' ? L('las bolsas europeas', 'European markets') : L(...AG_BOLSAS[m.bo]));
+    const motivo = ms[0].motivo, motEn = L(motivo, AG_FESTIVOS_EN[motivo] || ({ 'el día después de Acción de Gracias': 'the day after Thanksgiving' })[motivo] || motivo);
+    const principal = lista.find((m) => m.bo === 'mad') || lista[0];
+    const cap = (x) => x[0].toUpperCase() + x.slice(1);
+    const t = lista.length === 1 ? L(`${cap(nombre(principal))} ${soloEuGen && principal.bo === 'mad' ? 'cierran' : 'cierra'} a las ${principal.hora}`, `${cap(nombre(principal))} ${soloEuGen && principal.bo === 'mad' ? 'close' : 'closes'} at ${principal.hora}`)
+      : L('Media sesión en las bolsas', 'Half day on the markets');
+    const corto = (m) => (soloEuGen && m.bo === 'mad' ? L('las europeas', 'Europe') : ({ us: L('Nueva York', 'New York'), mad: 'Madrid', lon: L('Londres', 'London'), fra: L('Fráncfort', 'Frankfurt'), eur: 'Euronext' })[m.bo]);
+    const detalle = lista.map((m) => L(`${corto(m)} a las ${m.hora}`, `${corto(m)} at ${m.hora}`));
+    add({ id: `med:${d}`, d, tipo: 'media', hora: principal.hora, bolsas: lista.map((m) => m.bo), est: lista.some((m) => m.est), mio: lista.some((m) => mias.has(m.bo)), t,
+      s: lista.length === 1 ? L(`Media sesión por ${motivo}`, `Half day for ${motEn}`) : L(`Cierran antes por ${motivo}: ${yLista(detalle)}`, `Early close for ${motEn}: ${yLista(detalle)}`),
+      det: L(`Ese día cierra${lista.length > 1 ? 'n' : ''} antes de lo normal (en hora de España): ${esc(yLista(detalle))}. Lo que mandes comprar o vender después se hace el siguiente día que abra. Suele moverse poco dinero, así que los precios pueden saltar más de lo normal.${lista.some((m) => m.est) ? ' BME publica su calendario del año que viene en diciembre: la hora de Madrid es la de otros años.' : ''}`,
+        `${lista.length > 1 ? 'They close' : 'It closes'} early that day (Spanish time): ${esc(yLista(detalle))}. Anything you buy or sell later goes through on the next trading day. Volumes are usually thin, so prices can jump more than usual.${lista.some((m) => m.est) ? " BME publishes next year's calendar in December: the Madrid time is the usual one." : ''}`) });
+  }
+  // festivos en España (los de toda España y los de tu comunidad) en los que la bolsa abre igual
+  const ccaa = comunidadUsuario();
+  for (const [d, motivo, donde] of FIESTAS_ES) {
+    const x = deIso(d).getDay(); if (x === 0 || x === 6) continue;
+    const todas = donde === '*', aqui = todas || (ccaa && donde.split(' ').includes(ccaa));
+    if (!aqui || AG_CIERRES.some(([c, bo]) => c === d && bo.split(' ').includes('mad'))) continue;
+    const motEn = FIESTAS_EN[motivo] || motivo;
+    add({ id: `fie:${d}`, d, tipo: 'fiesta', t: todas ? L('Festivo en España, la bolsa abre', 'Holiday in Spain, markets open') : L(`Festivo en ${conArticulo(ccaa)}, la bolsa abre`, `Holiday in ${conArticulo(ccaa)}, markets open`),
+      s: L(`Por ${motivo}`, `For ${motEn}`),
+      det: L(`Es festivo${todas ? ' en toda España' : ` en ${conArticulo(ccaa)}`}, pero la Bolsa de Madrid abre como cualquier otro día: va con el calendario de las bolsas europeas, no con el de los festivos. Puedes comprar y vender desde tu bróker como siempre.`,
+        `It's a public holiday${todas ? ' across Spain' : ` in ${conArticulo(ccaa)}`}, but the Madrid exchange opens like any other day: it follows the European markets' calendar, not the holiday one. You can buy and sell through your broker as usual.`) });
   }
   // Hacienda: del 15 de noviembre al 31 de diciembre, lo que vendas cuenta en la renta de este año
   const y = new Date().getFullYear();
@@ -5050,7 +5128,7 @@ function agendaLista(M, dias = 120) {
   }
   return ev.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : (ordenAg(a) - ordenAg(b))));
 }
-const ordenAg = (e) => ['resultados', 'dividendo', 'cobro', 'aportacion', 'fondo', 'banco', 'hacienda', 'festivo', 'ia', 'otro'].indexOf(e.tipo);
+const ordenAg = (e) => ['resultados', 'dividendo', 'cobro', 'aportacion', 'fondo', 'banco', 'hacienda', 'festivo', 'media', 'fiesta', 'ia', 'otro'].indexOf(e.tipo);
 // la versión de antes, para el plan (aportaciones) y Expertos (resultados y dividendos)
 function eventos(M, dias = 45) {
   return agendaLista(M, dias).filter((e) => ['resultados', 'dividendo', 'aportacion'].includes(e.tipo));
@@ -5062,7 +5140,7 @@ const importeAg = (e) => (e.importe != null && isFinite(e.importe) ? `<span clas
 /* en Cartera: lo próximo, con los días que faltan */
 function htmlAgenda(M) {
   // lo tuyo primero: de las empresas de dentro de tus fondos, solo las dos que más te tocan
-  const todos = agendaLista(M, 40).filter((e) => e.tipo !== 'festivo' || diasEntre(hoyIso(), e.d) <= 7);
+  const todos = agendaLista(M, 40).filter((e) => !['festivo', 'media', 'fiesta'].includes(e.tipo) || diasEntre(hoyIso(), e.d) <= 7);
   const fondos = new Set(todos.filter((e) => e.tipo === 'fondo').sort((a, b) => b.euros - a.euros).slice(0, 2).map((e) => e.id));
   const ev = todos.filter((e) => e.tipo !== 'fondo' || fondos.has(e.id)).slice(0, 5);
   if (!ev.length) return '';
@@ -5070,6 +5148,24 @@ function htmlAgenda(M) {
     <div class="sec-cab"><h2 id="hAg">${L('Lo que viene', 'Coming up')}</h2><div class="der"><a class="enlace acento" href="#agenda">${L('Ver el calendario', 'See the calendar')}</a></div></div>
     <ul class="ag-mini">${ev.map((e) => `<li class="t-${e.tipo}"><a href="#agenda" data-ag-ir="${esc(e.id)}"><span class="ag-cd${diasEntre(hoyIso(), e.d) <= 1 ? ' pronto' : ''}">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span class="ag-tx"><b>${tituloAg(e)}</b><small>${esc(e.s)}</small></span>${importeAg(e)}</a></li>`).join('')}</ul>
   </section>`;
+}
+
+/* cómo está la bolsa un día, para pintar la celda entera del calendario: cerrada (todas las tuyas o solo alguna),
+   media sesión o festivo con la bolsa abierta. Sale de los eventos de ese día, estén o no en la pestaña elegida */
+function estadoDiaAg(lista) {
+  const fes = lista.find((e) => e.tipo === 'festivo'), med = lista.find((e) => e.tipo === 'media'), fie = lista.find((e) => e.tipo === 'fiesta');
+  const ev = [fes, med, fie].filter(Boolean);
+  // cada una con su texto corto, para las celdas estrechas del móvil
+  if (fes && fes.todas) return { cls: 'cierra', etq: L('Cerrada', 'Closed'), corto: L('Cerrada', 'Closed'), ev };
+  if (fes) {
+    const b = fes.bolsas || [], eu = b.includes('mad') && b.includes('eur') && b.length === 2;
+    const nom = eu ? L('Europa', 'Europe') : b.length > 2 ? L('varias', 'several') : b.map((x) => L(...(AG_CORTO[x] || [x, x]))).join(L(' y ', ' & '));
+    const cor = eu ? 'Eur' : b.length > 1 ? L('varias', 'several') : ({ us: 'NY', mad: 'Mad', lon: 'Lon', fra: 'Fra', eur: 'Eur' })[b[0]] || '';
+    return { cls: 'cierra-p', etq: L(`Sin ${nom}`, `${nom} shut`), corto: b.length > 1 && !eu ? L('Algunas', 'Some') : L(`Sin ${cor}`, `${cor} shut`), ev };
+  }
+  if (med) { const h = String(med.hora).replace(':00', ' h'); return { cls: 'media', etq: L(`Hasta las ${h}`, `Until ${h}`), corto: h, ev }; }
+  if (fie) return { cls: 'fiesta', etq: L('Festivo', 'Holiday'), corto: L('Festivo', 'Holiday'), ev };
+  return null;
 }
 
 /* la pestaña Calendario */
@@ -5080,7 +5176,7 @@ const AG_MIO = new Set(['resultados', 'dividendo', 'cobro', 'aportacion', 'hacie
 const enModo = (e, m) => m === 'tu' || (m === 'mio' ? AG_MIO.has(e.tipo) || !!e.mio : AG_TIPOS[e.tipo][1] === m);
 // el color de cada tarjeta de «Próximos»
 const AG_COLOR = { res: '#6EA8FE', div: '#4FC995', eco: '#E2B45F', apo: '#E58FB6', otro: '#B58CFF' };
-const AG_CAT = { resultados: ['Resultados', 'Earnings'], fondo: ['En tus fondos', 'In your funds'], dividendo: ['Dividendo', 'Dividend'], cobro: ['Cobro', 'Payment'], banco: ['Bancos centrales', 'Central banks'], festivo: ['Sin bolsa', 'Market closed'], hacienda: ['Hacienda', 'Taxes'], aportacion: ['Tu aportación', 'Your contribution'], otro: ['GTA VI', 'GTA VI'], ia: ['Para vigilar', 'To watch'] };
+const AG_CAT = { resultados: ['Resultados', 'Earnings'], fondo: ['En tus fondos', 'In your funds'], dividendo: ['Dividendo', 'Dividend'], cobro: ['Cobro', 'Payment'], banco: ['Bancos centrales', 'Central banks'], festivo: ['Sin bolsa', 'Market closed'], media: ['Media sesión', 'Half day'], fiesta: ['Festivo, con bolsa', 'Holiday, market open'], hacienda: ['Hacienda', 'Taxes'], aportacion: ['Tu aportación', 'Your contribution'], otro: ['GTA VI', 'GTA VI'], ia: ['Para vigilar', 'To watch'] };
 function impactoAg(e, M) {
   const eu = (x) => eur(x, x < 10 ? 2 : 0);
   if ((e.tipo === 'dividendo' || e.tipo === 'cobro' || e.tipo === 'aportacion') && e.importe != null && isFinite(e.importe)) return e.tipo === 'aportacion' ? L(`${eu(e.importe)} que aportas`, `${eu(e.importe)} you put in`) : L(`${e.aprox ? '≈ ' : ''}${eu(e.importe)} para ti`, `${e.aprox ? '≈ ' : ''}${eu(e.importe)} for you`);
@@ -5088,6 +5184,8 @@ function impactoAg(e, M) {
   if (e.tipo === 'fondo' && e.euros) return L(`≈ ${eur(e.euros, 0)} tuyos dentro`, `≈ ${eur(e.euros, 0)} of yours inside`);
   if (e.tipo === 'banco') return L('Mueve tipos y bolsas', 'Moves rates and stocks');
   if (e.tipo === 'festivo') return L('Ese día no hay bolsa', 'No trading that day');
+  if (e.tipo === 'media') return L(`Se negocia hasta las ${e.hora}`, `Trading until ${e.hora}`);
+  if (e.tipo === 'fiesta') return L('La bolsa abre normal', 'Markets open as usual');
   return '';
 }
 const enDias = (d) => { const n = diasEntre(hoyIso(), d); return n <= 0 ? L('Hoy', 'Today') : n === 1 ? L('Mañana', 'Tomorrow') : L(`En ${n} días`, `In ${n} days`); };
@@ -5135,7 +5233,7 @@ function vistaAgenda(M) {
     cuenta(['banco']) && L(`${cuenta(['banco'])} reuniones de la Fed y el BCE`, `${cuenta(['banco'])} Fed and ECB meetings`),
   ].filter(Boolean);
   // «Próximos»: las tarjetas grandes de lo que viene
-  const prox = ev.slice(0, 10);
+  const prox = ev.filter((e) => e.tipo !== 'fiesta' || diasEntre(hoy, e.d) <= 10).slice(0, 10);
   // cada cosa que viene, como una entrada: el resguardo con los días que faltan (y un anillo que se va cerrando según
   // se acerca, sobre un mes) y, al otro lado, qué es, cuándo y lo que te toca a ti
   const tarjeta = (e) => {
@@ -5152,16 +5250,19 @@ function vistaAgenda(M) {
   // el mes, plegado: la semana con puntos; al tocarlo se despliegan las cinco semanas
   const lunes = deIso(hoy); lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
   const porDia = new Map(); for (const e of ev) { if (!porDia.has(e.d)) porDia.set(e.d, []); porDia.get(e.d).push(e); }
+  const porDiaTodo = new Map(); for (const e of todos) { if (!porDiaTodo.has(e.d)) porDiaTodo.set(e.d, []); porDiaTodo.get(e.d).push(e); }
   const celda = (k, mini) => {
     const x = new Date(lunes); x.setDate(lunes.getDate() + k);
     const d = iso(x), es = porDia.get(d) || [], pasado = d < hoy, finde = x.getDay() === 0 || x.getDay() === 6;
+    const est = estadoDiaAg(porDiaTodo.get(d) || []);
     const tipos = [...new Set(es.map((e) => e.tipo))].slice(0, 3);
     const mes = !mini && (x.getDate() === 1 || k === 0) ? `<span class="m">${L(MESES[x.getMonth()], MESES_EN[x.getMonth()].slice(0, 3))}</span>` : '';
     const lbl = `${fechaDia(d)}${es.length ? `: ${es.map((e) => e.t).join(', ')}` : ''}`;
-    const dentro = `${mini ? `<span class="sem">${L(['L', 'M', 'X', 'J', 'V', 'S', 'D'], ['M', 'T', 'W', 'T', 'F', 'S', 'S'])[k % 7]}</span>` : ''}<span class="n">${x.getDate()}${mes}</span><span class="ag-pts">${tipos.map((t) => `<i class="t-${t}"></i>`).join('')}</span>`;
+    const dentro = `${mini ? `<span class="sem">${L(['L', 'M', 'X', 'J', 'V', 'S', 'D'], ['M', 'T', 'W', 'T', 'F', 'S', 'S'])[k % 7]}</span>` : ''}<span class="n">${x.getDate()}${mes}</span>${est ? `<span class="ag-est"><span class="el">${esc(est.etq)}</span><span class="ec" aria-hidden="true">${esc(est.corto)}</span></span>` : ''}<span class="ag-pts">${tipos.filter((t) => !['festivo', 'media', 'fiesta'].includes(t) || !est).map((t) => `<i class="t-${t}"></i>`).join('')}</span>`;
+    const ce = est ? ' ' + est.cls : '';
     return es.length && !pasado
-      ? `<button type="button" class="ag-c${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}" data-ag-dia="${d}" aria-label="${esc(lbl)}">${dentro}</button>`
-      : `<span class="ag-c${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}">${dentro}</span>`;
+      ? `<button type="button" class="ag-c${ce}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}" data-ag-dia="${d}" aria-label="${esc(lbl)}">${dentro}</button>`
+      : `<span class="ag-c${ce}${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}"${est ? ` title="${esc(est.ev.map((e) => e.t).join(' · '))}"` : ''}>${dentro}</span>`;
   };
   const mesAbierto = !!S.agMes;
   // el mes entero (de lunes a domingo), desde este hasta dentro de 14 meses: la Fed, el BCE y los festivos
@@ -5169,16 +5270,21 @@ function vistaAgenda(M) {
   const MAX_MESES = 14;
   const mesN = Math.max(0, Math.min(MAX_MESES, S.agMesN || 0));
   const m0 = (() => { const b = deIso(hoy); return new Date(b.getFullYear(), b.getMonth() + mesN, 1); })();
-  const evMes = mesAbierto ? agendaLista(M, 470).filter((e) => enModo(e, modo)) : [];
+  const evMesTodo = mesAbierto ? agendaLista(M, 470) : [];
+  const evMes = evMesTodo.filter((e) => enModo(e, modo));
   const porDiaMes = new Map(); for (const e of evMes) { if (!porDiaMes.has(e.d)) porDiaMes.set(e.d, []); porDiaMes.get(e.d).push(e); }
+  // la celda entera dice si la bolsa cierra, si es media sesión o si es festivo con la bolsa abierta (en cualquier pestaña)
+  const estMes = new Map(); { const g = new Map(); for (const e of evMesTodo) { if (!g.has(e.d)) g.set(e.d, []); g.get(e.d).push(e); } for (const [d, l] of g) { const st = estadoDiaAg(l); if (st) estMes.set(d, st); } }
+  for (const [d, st] of estMes) { const l = porDiaMes.get(d) || []; for (const e of st.ev) if (!l.some((x) => x.id === e.id)) l.push(e); porDiaMes.set(d, l.sort((a, b) => ordenAg(a) - ordenAg(b))); }
   const desfase = (m0.getDay() + 6) % 7, diasMes = new Date(m0.getFullYear(), m0.getMonth() + 1, 0).getDate();
   const nCeldas = Math.ceil((desfase + diasMes) / 7) * 7;
   const celdaMes = (k) => {
     const x = new Date(m0.getFullYear(), m0.getMonth(), 1 - desfase + k), d = iso(x);
     const fuera = x.getMonth() !== m0.getMonth(), es = fuera ? [] : porDiaMes.get(d) || [], pasado = d < hoy, finde = x.getDay() === 0 || x.getDay() === 6;
-    const tipos = [...new Set(es.map((e) => e.tipo))].slice(0, 3);
-    const cls = `ag-c${fuera ? ' fuera' : ''}${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}${S.agDia === d ? ' sel' : ''}`;
-    const dentro = `<span class="n">${x.getDate()}</span><span class="ag-pts">${tipos.map((t) => `<i class="t-${t}"></i>`).join('')}</span>`;
+    const st = fuera ? null : estMes.get(d);
+    const tipos = [...new Set(es.map((e) => e.tipo))].filter((t) => !st || !['festivo', 'media', 'fiesta'].includes(t)).slice(0, 3);
+    const cls = `ag-c${st ? ' ' + st.cls : ''}${fuera ? ' fuera' : ''}${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}${S.agDia === d ? ' sel' : ''}`;
+    const dentro = `<span class="n">${x.getDate()}</span>${st ? `<span class="ag-est"><span class="el">${esc(st.etq)}</span><span class="ec" aria-hidden="true">${esc(st.corto)}</span></span>` : ''}<span class="ag-pts">${tipos.map((t) => `<i class="t-${t}"></i>`).join('')}</span>`;
     return es.length ? `<button type="button" class="${cls}" data-ag-sel="${d}" aria-pressed="${S.agDia === d}" aria-label="${esc(`${fechaDia(d)}: ${es.map((e) => e.t).join(', ')}`)}">${dentro}</button>` : `<span class="${cls}">${dentro}</span>`;
   };
   const nomMes = (() => { const m = mesL(m0.getMonth()); return m[0].toUpperCase() + m.slice(1) + ' ' + m0.getFullYear(); })();
@@ -5214,8 +5320,8 @@ function vistaAgenda(M) {
           <div class="ag-nav-t"><b data-no-trad>${esc(L(nomMes, `${MESES_EN[m0.getMonth()]} ${m0.getFullYear()}`))}</b><small>${evDelMes.length ? L(`${evDelMes.length} ${evDelMes.length === 1 ? 'cosa' : 'cosas'} este mes`, `${evDelMes.length} ${evDelMes.length === 1 ? 'thing' : 'things'} this month`) : L('Nada apuntado este mes', 'Nothing this month')}</small></div>
           <button type="button" class="ib" data-ag-mesn="1" aria-label="${L('Mes siguiente', 'Next month')}"${mesN < MAX_MESES ? '' : ' disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>
         <div class="ag-cal" data-ag-desliza>${L(['L', 'M', 'X', 'J', 'V', 'S', 'D'], ['M', 'T', 'W', 'T', 'F', 'S', 'S']).map((x) => `<span class="sem" data-no-trad>${x}</span>`).join('')}${Array.from({ length: nCeldas }, (_, k) => celdaMes(k)).join('')}</div>
-        ${diaSel ? `<div class="ag-diap"><h3>${esc(fechaDia(diaSel))}<small>${faltan(diaSel, true)}</small></h3><ul class="ag-evs">${(porDiaMes.get(diaSel) || []).map(item).join('')}</ul></div>` : `<p class="ag-pista">${L('Toca un día con puntos para ver qué pasa. Las flechas (o deslizar) te llevan a los meses siguientes.', 'Tap a day with dots to see what happens. The arrows (or swiping) take you to the next months.')}</p>`}
-        <div class="ag-ley">${[['resultados', L('Resultados', 'Earnings')], ['dividendo', L('Dividendos', 'Dividends')], ['banco', L('Bancos centrales', 'Central banks')], ['aportacion', L('Aportaciones', 'Contributions')], ['festivo', L('Sin bolsa', 'Market closed')]].map(([t, n]) => `<span><i class="t-${t}"></i>${n}</span>`).join('')}</div>`
+        ${diaSel ? `<div class="ag-diap"><h3>${esc(fechaDia(diaSel))}<small>${faltan(diaSel, true)}</small></h3><ul class="ag-evs">${(porDiaMes.get(diaSel) || []).map(item).join('')}</ul></div>` : `<p class="ag-pista">${L('Toca un día con puntos (o marcado) para ver qué pasa. Las flechas (o deslizar) te llevan a los meses siguientes.', 'Tap a day with dots (or shading) to see what happens. The arrows (or swiping) take you to the next months.')}${comunidadUsuario() ? '' : ` <a href="#futuro" class="enlace acento">${L('Pon tu comunidad en Objetivos', 'Set your region in Goals')}</a> ${L('y saldrán también sus festivos.', 'to see its holidays too.')}`}</p>`}
+        <div class="ag-ley">${[['resultados', L('Resultados', 'Earnings')], ['dividendo', L('Dividendos', 'Dividends')], ['banco', L('Bancos centrales', 'Central banks')], ['aportacion', L('Aportaciones', 'Contributions')]].map(([t, n]) => `<span><i class="t-${t}"></i>${n}</span>`).join('')}${[['cierra', L('Bolsa cerrada', 'Market closed')], ['media', L('Media sesión', 'Half day')], ['fiesta', L('Festivo, la bolsa abre', 'Holiday, market open')]].map(([c, n]) => `<span><i class="sw ${c}"></i>${n}</span>`).join('')}</div>`
         : `<div class="ag-semana">${Array.from({ length: 7 }, (_, k) => celda(k, true)).join('')}</div>`}
     </section>
     ${pasado.html ? `<section class="ag2-sec"><h2>${L('Lo último', 'Latest')}</h2><div class="agp-lista">${pasado.html}</div>${pasado.mas ? `<button type="button" class="btn peq ag-mas-not" data-ag-pasado>${L('Ver más noticias', 'More news')}</button>` : ''}</section>` : ''}
