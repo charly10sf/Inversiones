@@ -2385,42 +2385,160 @@ function fbCargar() {
 }
 const docCuenta = () => FB.fs.doc(FB.db, 'usuarios', FB.user.uid);
 async function leerCuenta() { const d = await FB.fs.getDoc(docCuenta()); return d.exists() ? d.data() : null; }
-/* Sincronizar sin perder nada (0.2):
-   - Cada escritura lleva su sello «actualizado» y el dispositivo recuerda cuáles son suyas.
-   - La copia del dispositivo guarda su «base»: el sello de la versión de la cuenta sobre la que se hicieron los
-     cambios. Si al subir la cuenta sigue en esa base, mandan los cambios de aquí; si otro dispositivo la cambió
-     entretanto, manda la cuenta y se avisa.
-   - Nunca se escribe en la cuenta sin haberla leído antes en esta sesión (S.cuentaLeida): si la lectura falla,
-     no se da por vacía.
-   - Sin conexión, setDoc de Firestore no acaba nunca: se espera como mucho 5 segundos y, si no, queda pendiente. */
-async function escribirCuenta(texto, extra = {}) {
-  const actualizado = new Date().toISOString();
-  (S.misEscrituras || (S.misEscrituras = new Set())).add(actualizado);
-  await FB.fs.setDoc(docCuenta(), { enc: texto, actualizado, v: VERSION, desde: window.InversionesApp ? 'app' : 'web', ...extra }, { merge: true });
-  return actualizado;
+/* Sincronizar sin perder nada (0.2). En la cuenta, la cartera cifrada (enc) lleva un número de revisión (rev)
+   que sube en cada escritura. La copia del dispositivo guarda sobre qué revisión se hicieron sus cambios
+   (baseRev), y solo se sube con una transacción que comprueba en el servidor que la cuenta sigue en esa
+   revisión: si otro dispositivo la cambió entretanto, no se pisa nada (si lo acabas de editar tú, te pregunta;
+   si no, se queda la cuenta y lo de aquí se guarda aparte). Las transacciones no se quedan en cola sin
+   conexión: fallan, y lo de aquí queda pendiente y se reintenta con esperas cada vez más largas; ante un error
+   que no se arregla solo (permisos, tamaño, cuota), se para y se avisa. No depende del reloj de cada móvil.
+   Nunca se escribe sin haber leído la cuenta en esta sesión, ni se da por vacía si la lectura falla. */
+const revDe = (d) => !d ? 0 : (+d.rev || (d.enc ? 1 : 0));
+async function escribirCuenta(texto, baseRev, forzar) {
+  const ref = docCuenta(), actualizado = new Date().toISOString();
+  // lo que este dispositivo ya intentó subir no cuenta como cambio de otro (una subida que tardó y llegó igual)
+  const mios = S.intentos || (S.intentos = []);
+  mios.push(texto); if (mios.length > 8) mios.shift();
+  return FB.fs.runTransaction(FB.db, async (tx) => {
+    const s0 = await tx.get(ref), d = s0.exists() ? s0.data() : null, rev = revDe(d);
+    if (d && d.enc && d.enc === texto) return rev;
+    if (!forzar && d && d.enc && rev !== (baseRev || 0) && !mios.includes(d.enc)) { const e = new Error('conflicto'); e.conflicto = true; e.d = d; throw e; }
+    tx.set(ref, { enc: texto, actualizado, rev: rev + 1, v: VERSION, desde: window.InversionesApp ? 'app' : 'web' }, { merge: true });
+    return rev + 1;
+  });
 }
 const conTiempo = (pr, ms) => Promise.race([pr, new Promise((_, no) => setTimeout(() => no(new Error('tiempo')), ms))]);
 // copia en el dispositivo de lo último de tu cuenta, para abrir sin conexión y para lo que aún no se ha subido
 const cacheCuenta = {
   get() { const c = LS.get('inv-cuenta-enc'); return c && (!FB.user || c.uid === FB.user.uid) ? c : null; },
-  set(texto, actualizado, base) { LS.set('inv-cuenta-enc', { uid: FB.user ? FB.user.uid : null, texto, actualizado: actualizado || new Date().toISOString(), base: base == null ? (S.baseCuenta || '') : base }); },
+  set(texto, baseRev, base) {
+    if (baseRev == null) baseRev = S.baseRev || 0;
+    if (base == null) base = S.baseTexto || null;
+    LS.set('inv-cuenta-enc', { uid: FB.user ? FB.user.uid : null, texto, actualizado: new Date().toISOString(), baseRev, base: base && base !== texto ? base : undefined });
+  },
 };
-/* sube a la cuenta; si en 5 s no ha terminado (sin conexión), queda pendiente y se acaba de subir sola */
-async function subirCuenta(texto) {
-  const n = (S.subidas = (S.subidas || 0) + 1);
-  LS.set('inv-pend-cuenta', true);
-  const pr = escribirCuenta(texto).then((act) => {
-    S.baseCuenta = act; S.cuentaOk = true;
-    const c = cacheCuenta.get(); if (c && c.texto === texto) cacheCuenta.set(texto, c.actualizado, act);
-    if (S.subidas === n) LS.del('inv-pend-cuenta');
-    return act;
-  });
-  pr.catch(() => {});
-  // sin conexión no se espera nada; con ella, como mucho 5 s (luego se acaba de subir por detrás)
-  return conTiempo(pr, navigator.onLine === false ? 0 : 5000);
+// lo último que se sabe que hay en la cuenta (revisión y texto): sobre eso se hacen los cambios de aquí
+function fijarBase(rev, texto) { S.baseRev = rev || 0; S.baseTexto = texto || null; }
+/* sube lo último del dispositivo; nunca dos a la vez (si cambias algo mientras, se sube después) */
+let subidaEnCurso = null;
+function subirPendiente() {
+  if (subidaEnCurso) { S.otraSubida = true; return subidaEnCurso; }
+  subidaEnCurso = (async () => {
+    try {
+      do {
+        S.otraSubida = false;
+        const c = cacheCuenta.get();
+        if (!c || !LS.get('inv-pend-cuenta') || !FB.user || !S.cuentaLeida) return;
+        const rev = await conTiempo(escribirCuenta(c.texto, c.baseRev || 0, S.forzarSubida), 15000);
+        S.forzarSubida = false; fijarBase(rev, c.texto); S.cuentaOk = true; S.fallosSubir = 0; S.subidaParada = false;
+        const c2 = cacheCuenta.get();
+        if (c2 && c2.texto === c.texto) { cacheCuenta.set(c.texto, rev, c.texto); LS.del('inv-pend-cuenta'); }
+        else if (c2) cacheCuenta.set(c2.texto, rev, c.texto);
+        if (S.toastPend) { S.toastPend = false; toast('Subidos a tu cuenta los cambios que hiciste sin conexión', 5000); }
+      } while (S.otraSubida);
+    } catch (e) {
+      S.forzarSubida = false;
+      if (e && e.conflicto) await resolverConflicto(e);
+      else falloSubida(e);
+    } finally { subidaEnCurso = null; }
+  })();
+  return subidaEnCurso;
 }
-/* ¿el cambio de la cuenta es de otro dispositivo y posterior a la base de lo que hay aquí sin subir? */
-const cambioAjeno = (act, base) => !!act && act > (base || '') && !(S.misEscrituras && S.misEscrituras.has(act));
+/* Juntar dos versiones de la cartera que han cambiado a la vez a partir de la misma (base): lo que solo ha
+   cambiado en un lado se queda; las listas con id (posiciones, movimientos…) se juntan elemento a elemento; si
+   los dos han cambiado lo mismo, gana «gana» ('mio' o 'suyo') y se apunta en choques. */
+const igualJ = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+const conIds = (x) => Array.isArray(x) && x.every((e) => e && typeof e === 'object' && e.id != null);
+const esObj = (x) => x && typeof x === 'object' && !Array.isArray(x);
+function juntar3(b, m, t, gana, choques, ruta) {
+  if (igualJ(m, t)) return m;
+  if (igualJ(m, b)) return t;
+  if (igualJ(t, b)) return m;
+  if (conIds(m) && conIds(t) && (b == null || conIds(b))) {
+    const B = new Map((b || []).map((e) => [e.id, e])), M = new Map(m.map((e) => [e.id, e])), T = new Map(t.map((e) => [e.id, e]));
+    const out = [];
+    for (const id of [...t.map((e) => e.id), ...m.map((e) => e.id).filter((id) => !T.has(id))]) {
+      const be = B.get(id), me = M.get(id), te = T.get(id);
+      if (me && te) { out.push(juntar3(be, me, te, gana, choques, ruta + '/' + id)); continue; }
+      const queda = me || te;
+      if (!be) { out.push(queda); continue; }          // nuevo en un lado
+      if (igualJ(queda, be)) continue;                  // borrado en el otro lado sin tocarlo aquí
+      choques.push(ruta + '/' + id);                    // borrado en un lado y cambiado en el otro
+      if ((gana === 'mio') === !!me) out.push(queda);
+    }
+    return out;
+  }
+  if (esObj(m) && esObj(t)) {
+    const bb = esObj(b) ? b : {}, out = {};
+    for (const k of new Set([...Object.keys(t), ...Object.keys(m)])) {
+      const v = juntar3(bb[k], m[k], t[k], gana, choques, ruta + '.' + k);
+      if (v !== undefined) out[k] = v;
+    }
+    return out;
+  }
+  choques.push(ruta);
+  return gana === 'mio' ? m : t;
+}
+function juntarCarteras(base, mio, suyo, gana, choques) {
+  const sin = (x) => { if (!x) return x; const { actualizado, ...r } = x; return r; };
+  const r = juntar3(base ? sin(base) : undefined, sin(mio), sin(suyo), gana, choques, '');
+  r.actualizado = new Date().toISOString();
+  return r;
+}
+/* otro dispositivo cambió la cuenta mientras aquí había cambios sin subir: se juntan los dos */
+async function resolverConflicto(e) {
+  const d = e.d, c = cacheCuenta.get();
+  if (!c) { LS.del('inv-pend-cuenta'); return; }
+  // con la cartera bloqueada no se puede leer: se queda pendiente hasta que la abras
+  if (!S.key) return;
+  // con un formulario abierto, al cerrarlo (no se cambia la cartera debajo de lo que estás editando)
+  if (!S.preguntarConflicto && document.querySelector('.hoja-fondo form, .ficha')) { clearTimeout(S.subidaT); S.subidaT = setTimeout(() => sincronizarCuenta(), 2000); return; }
+  let mio, suyo, base;
+  try {
+    if (JSON.parse(d.enc).salt !== JSON.parse(c.texto).salt) throw new Error('otra contraseña');
+    [mio, suyo] = await Promise.all([descifrar(c.texto, S.key), descifrar(d.enc, S.key)]);
+    if (c.base) { try { base = await descifrar(c.base, S.key); } catch (e2) {} }
+  } catch (e1) {
+    // no se puede juntar (otra contraseña): manda la cuenta; lo de aquí, aparte en el dispositivo
+    LS.set('inv-cuenta-descartada', { texto: c.texto, cuando: new Date().toISOString() });
+    LS.del('inv-pend-cuenta'); S.avisoConflicto = true;
+    if (S.cartera) return aplicarRemoto(d.enc, revDe(d));
+    fijarBase(revDe(d), d.enc); cacheCuenta.set(d.enc); S.enc = { texto: d.enc, sha: null }; return;
+  }
+  let choques = [], junto = juntarCarteras(base, mio, suyo, 'suyo', choques), gana = 'suyo';
+  if (choques.length && S.preguntarConflicto && confirm(trad('Has cambiado lo mismo también en otro dispositivo. ¿Te quedas con lo de aquí? Aceptar: lo de este dispositivo. Cancelar: lo del otro. El resto de cambios de los dos se junta.'))) {
+    choques = []; junto = juntarCarteras(base, mio, suyo, 'mio', choques); gana = 'mio';
+  }
+  if (choques.length) LS.set('inv-cuenta-descartada', { texto: c.texto, cuando: new Date().toISOString() });
+  // lo juntado pasa a ser lo de aquí, sobre la revisión que hay en la cuenta, y se sube
+  fijarBase(revDe(d), d.enc);
+  S.cartera = junto; sumarInstPropios();
+  const texto = await cifrar(junto);
+  cacheCuenta.set(texto); S.enc = { texto, sha: null }; LS.set('inv-pend-cuenta', true);
+  if (!document.querySelector('.hoja-fondo form, .ficha')) pintar();
+  toast(!choques.length && gana === 'suyo' ? 'Tu cartera había cambiado también en otro dispositivo: se han juntado los cambios de los dos'
+    : gana === 'mio' ? 'Guardado: en lo que coincidía se queda lo de aquí y el resto se ha juntado con lo del otro dispositivo'
+    : 'Habías cambiado lo mismo en otro dispositivo: en eso se queda lo del otro y el resto se ha juntado', 7000);
+  S.preguntarConflicto = false; S.toastPend = false; subidaEnCurso = null;
+  return subirPendiente();
+}
+/* sin conexión, se reintenta cada vez más espaciado; con un error que no se arregla solo, se para y se avisa */
+function falloSubida(e) {
+  S.cuentaOk = false; S.toastPend = true;
+  const code = String((e && e.code) || '');
+  if (/permission-denied|invalid-argument|resource-exhausted|unauthenticated/.test(code)) {
+    if (!S.subidaParada) { S.subidaParada = true; toast(trad(code === 'resource-exhausted' ? 'Hoy no se puede guardar más en tu cuenta (límite de Firebase). Lo tienes en este dispositivo y se subirá mañana al abrir.' : 'No se ha podido guardar en tu cuenta. Lo tienes en este dispositivo; si sigue pasando, avisa a quien te pasó GrowFolio.') + ` (${code})`, 9000); }
+    return;
+  }
+  S.fallosSubir = (S.fallosSubir || 0) + 1;
+  reintentarSubida();
+}
+function reintentarSubida() {
+  clearTimeout(S.subidaT);
+  if (!LS.get('inv-pend-cuenta') || S.subidaParada) return;
+  const espera = [5, 15, 30, 60, 120, 300, 600][Math.min(S.fallosSubir || 0, 6)] * 1000;
+  S.subidaT = setTimeout(() => sincronizarCuenta(), espera);
+}
 // el nombre para saludarte: el que pusiste al crear la cuenta (o en tu perfil) o, si no, el de Google
 const nombreUsuario = () => String(LS.get('inv-nombre', '') || (S.cartera && S.cartera.perfil && S.cartera.perfil.nombre) || (FB.user && FB.user.displayName) || '').trim().split(/\s+/)[0] || '';
 const ERR_FB = {
@@ -2487,6 +2605,8 @@ const MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sept', '
 const iso = (d) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 const hoyIso = () => iso(new Date());
 const deIso = (s) => { const [y, m, d] = s.split('-').map(Number); return new Date(y, m - 1, d); };
+// sumar días de calendario (sin el desfase de una hora al cruzar el cambio de hora)
+const sumarDias = (s, n) => { const d = deIso(s); d.setDate(d.getDate() + n); return iso(d); };
 const fechaCorta = (s) => { if (!s) return '—'; const d = deIso(s); return `${d.getDate()} ${MESES[d.getMonth()]}`; };
 const fechaLarga = (s) => { if (!s) return '—'; const d = deIso(s); return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}`; };
 function haceCuanto(t) {
@@ -2634,28 +2754,30 @@ async function cargarCifrada() {
 
 /* la cartera de tu cuenta: la de Firestore; sin conexión, la copia del dispositivo. Si en este dispositivo hay
    cambios que no llegaron a subirse y son más nuevos que los de la cuenta, mandan y se suben ahora. */
+function olvidarClavesViejas() { try { IDB.del('clave-local'); IDB.del('clave'); } catch (e) {} LS.set('inv-local-ofrecida', true); }
 async function cargarDeCuenta() {
   const c = cacheCuenta.get();
   S.cuentaLeida = false; S.cuentaSinRed = false;
-  try { await fbCargar(); } catch (e) { console.warn('Sin Firebase', e); S.cuentaSinRed = true; return c ? { texto: c.texto, sha: null } : null; }
+  const deCopia = () => { S.cuentaSinRed = true; if (c && (!FB.user || c.uid === FB.user.uid)) { fijarBase(c.baseRev, c.base || c.texto); return { texto: c.texto, sha: null }; } return null; };
+  try { await fbCargar(); } catch (e) { console.warn('Sin Firebase', e); return deCopia(); }
   if (!FB.user) return null;
   let d;
-  try { d = await conTiempo(leerCuenta(), 12000); } catch (e) { console.warn('No se pudo leer la cuenta', e); S.cuentaSinRed = true; return c && c.uid === FB.user.uid ? { texto: c.texto, sha: null } : null; }
-  S.cuentaLeida = true; S.baseCuenta = (d && d.actualizado) || '';
+  try { d = await conTiempo(leerCuenta(), 12000); } catch (e) { console.warn('No se pudo leer la cuenta', e); return deCopia(); }
+  S.cuentaLeida = true;
   if (d && d.ia) S.iaCuenta = d.ia;
   const pend = LS.get('inv-pend-cuenta') && c && c.uid === FB.user.uid;
   if (pend) {
-    // lo de aquí se hizo sobre la versión que sigue en la cuenta: se sube
-    if (!d || !d.enc || !cambioAjeno(d.actualizado, c.base)) {
-      cacheCuenta.set(c.texto, c.actualizado, S.baseCuenta);
-      try { await subirCuenta(c.texto); } catch (e) { console.warn(e); }
-      return { texto: c.texto, sha: null };
-    }
-    // otro dispositivo cambió la cuenta entretanto: manda la cuenta
-    S.avisoConflicto = true;
+    // ya había llegado (se subió pero no se enteró este dispositivo)
+    if (d && d.enc === c.texto) { LS.del('inv-pend-cuenta'); fijarBase(revDe(d), d.enc); cacheCuenta.set(c.texto); return { texto: c.texto, sha: null }; }
+    // se abre lo de aquí y se sube enseguida; si otro dispositivo cambió la cuenta entretanto, la subida lo
+    // detecta y se juntan los dos al abrir la cartera
+    fijarBase(c.baseRev, c.base || null); S.toastPend = true; if (d && d.enc) olvidarClavesViejas();
+    if (!d || !d.enc || revDe(d) === (c.baseRev || 0)) setTimeout(() => subirPendiente(), 0);
+    return { texto: c.texto, sha: null };
   }
   LS.del('inv-pend-cuenta');
-  if (d && d.enc) { cacheCuenta.set(d.enc, d.actualizado, d.actualizado); return { texto: d.enc, sha: null }; }
+  fijarBase(revDe(d), d && d.enc);
+  if (d && d.enc) { cacheCuenta.set(d.enc); olvidarClavesViejas(); return { texto: d.enc, sha: null }; }
   return null;
 }
 /* sin conexión al abrir: ni se crea una cartera nueva ni se toca la cuenta; se reintenta */
@@ -2670,23 +2792,25 @@ function pantallaSinCuenta() {
   $('#bReintentar').onclick = () => location.reload();
   $('#bSalir').onclick = () => cerrarSesion();
 }
-/* con conexión otra vez (o cada minuto si hay algo pendiente): lo de aquí sube o llega lo de la cuenta */
+/* con conexión otra vez, al volver a la app o cuando toca reintentar: lo de aquí sube o llega lo de la cuenta */
 async function sincronizarCuenta() {
-  if (!PERFIL_CUENTA || !S.key || !S.cartera || S.sincronizando) return;
+  if (!PERFIL_CUENTA || S.sincronizando) return;
   S.sincronizando = true;
   try {
     await fbCargar(); if (!FB.user) return;
     const d = await conTiempo(leerCuenta(), 12000);
     S.cuentaLeida = true;
     const c = cacheCuenta.get();
-    if (LS.get('inv-pend-cuenta') && c && (!d || !d.enc || !cambioAjeno(d.actualizado, c.base))) {
-      await subirCuenta(c.texto);
-      if (S.toastPend) { S.toastPend = false; toast('Subidos a tu cuenta los cambios que hiciste sin conexión', 5000); }
-    } else if (d && d.enc && (!S.enc || d.enc !== S.enc.texto)) await aplicarRemoto(d.enc, d.actualizado);
-  } catch (e) { console.warn('Sin sincronizar todavía', e); }
+    if (LS.get('inv-pend-cuenta') && c) {
+      if (d && d.enc === c.texto) { LS.del('inv-pend-cuenta'); fijarBase(revDe(d), d.enc); cacheCuenta.set(c.texto); return; }
+      if (S.subidaParada) return;
+      S.preguntarConflicto = false;
+      await subirPendiente();   // la transacción decide: sube si la cuenta no ha cambiado; si sí, manda la cuenta
+    } else if (d && d.enc && S.key && S.cartera && (!S.enc || d.enc !== S.enc.texto) && revDe(d) > (S.baseRev || 0)) await aplicarRemoto(d.enc, revDe(d));
+  } catch (e) { console.warn('Sin sincronizar todavía', e); S.fallosSubir = (S.fallosSubir || 0) + 1; reintentarSubida(); }
   finally { S.sincronizando = false; }
 }
-setInterval(() => { if (LS.get('inv-pend-cuenta') && !document.hidden) sincronizarCuenta(); }, 60000);
+document.addEventListener('visibilitychange', () => { if (!document.hidden && PERFIL_CUENTA && LS.get('inv-pend-cuenta') && !S.subidaParada) sincronizarCuenta(); });
 
 /* El histórico (10 años de cierres) pesa unos 300 KB: se baja al abrir y cuando cambia de día */
 async function cargarHistorico() {
@@ -4741,13 +4865,13 @@ function pasosRuta0(M) {
   for (const pl of planes) {
     const f = pl.f, p = f.p || {}, res = p.proximos_resultados && p.proximos_resultados >= hoy && diasEntre(hoy, p.proximos_resultados) <= 31 ? p.proximos_resultados : null;
     const destino = [pl.aIdea > 0 && pl.ideas[0] ? `${eur(pl.aIdea, 0)} a ${esc(pl.ideas[0].n)}` : '', pl.aNucleo > 0.5 ? `${eur(pl.aNucleo, 0)} al S&P 500` : ''].filter(Boolean).join(IDIOMA === 'en' ? ' and ' : ' y ');
-    add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
+    add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? sumarDias(res, -1) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
       t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
       pq: esc(f.senal.motivos[0] || ''),
       como: `${esc(pl.cuando[0].replace(/^Ya: /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? ` Con lo que cobres: ${destino}.` : ''}`,
-      imp: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año. ${(() => { const l = libreRecompra(f.inst, res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy); return l ? `No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}` : reglaRecompra(f.inst).corto; })()}`}`,
+      imp: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año. ${(() => { const l = libreRecompra(f.inst, res ? sumarDias(res, -1) : hoy); return l ? `No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}` : reglaRecompra(f.inst).corto; })()}`}`,
       acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>` });
-    const top = pl.ideas[0], dVenta = res ? iso(new Date(deIso(res).getTime() - 86400000)) : hoy;
+    const top = pl.ideas[0], dVenta = res ? sumarDias(res, -1) : hoy;
     if (pl.aIdea > 0 && top) {
       const e = esperadaRadar(top), tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede);
       add('mes', { id: `compra:${top.s}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Compra ${eur(pl.aIdea, 0)} de ${esc(top.n)}`,
@@ -4776,7 +4900,7 @@ function pasosRuta0(M) {
     }
     if (p.ex_dividendo && p.ex_dividendo >= hoy && p.dividendo_pct) {
       const pz = plazoDe(p.ex_dividendo);
-      if (pz === 'mes' || pz === 'seis') add(pz, { id: `div:${f.inst.id}:${p.ex_dividendo}`, d: p.ex_dividendo, cuando: fechaCorta(p.ex_dividendo), t: `Dividendo de ${esc(f.inst.corto)}`, ...(() => { const bruto = (f.valor * p.dividendo_pct) / 100 / (f.inst.pais === 'GB' || f.inst.pais === 'US' ? 4 : 2), fis = fiscalidadSede(f.inst.pais, f.inst.tipo), neto = bruto * (1 - tramoAhorro() - (fis.pierde || 0) / 100); return { pq: `Unos ${eur(bruto, 0)} brutos, ${eur(neto, 0)} netos tras impuestos.`, como: `Nada: si la tienes al cierre del ${fechaLarga(iso(new Date(deIso(p.ex_dividendo).getTime() - 86400000)))}, cobras. No compres más solo por el dividendo: ese día el precio baja más o menos lo que paga.`, imp: esc(fis.txt.replace(/^Dividendos: /, '')) }; })() });
+      if (pz === 'mes' || pz === 'seis') add(pz, { id: `div:${f.inst.id}:${p.ex_dividendo}`, d: p.ex_dividendo, cuando: fechaCorta(p.ex_dividendo), t: `Dividendo de ${esc(f.inst.corto)}`, ...(() => { const bruto = (f.valor * p.dividendo_pct) / 100 / (f.inst.pais === 'GB' || f.inst.pais === 'US' ? 4 : 2), fis = fiscalidadSede(f.inst.pais, f.inst.tipo), neto = bruto * (1 - tramoAhorro() - (fis.pierde || 0) / 100); return { pq: `Unos ${eur(bruto, 0)} brutos, ${eur(neto, 0)} netos tras impuestos.`, como: `Nada: si la tienes al cierre del ${fechaLarga(sumarDias(p.ex_dividendo, -1))}, cobras. No compres más solo por el dividendo: ese día el precio baja más o menos lo que paga.`, imp: esc(fis.txt.replace(/^Dividendos: /, '')) }; })() });
     }
   }
   // 4. datos que le faltan a la web
@@ -4863,7 +4987,7 @@ function reglaRecompra(inst) {
   const dias = fondo ? 365 : 61, plazo = fondo ? 'un año' : 'dos meses';
   return { dias, plazo, corto: `Es por Hacienda: si vendes con pérdidas y recompras ${fondo ? 'el mismo fondo' : 'la misma acción o ETF'} en ${plazo} (antes o después de vender), esa pérdida no resta este año y se aplaza hasta que vendas lo recomprado.` };
 }
-const libreRecompra = (inst, fecha = hoyIso()) => { const r = reglaRecompra(inst); return r && r.dias ? iso(new Date(deIso(fecha).getTime() + r.dias * 86400000)) : null; };
+const libreRecompra = (inst, fecha = hoyIso()) => { const r = reglaRecompra(inst); return r && r.dias ? sumarDias(fecha, r.dias) : null; };
 
 /* el tipo de cada paso, por cómo empieza su id: decide el icono y el color */
 const TIPO_PASO = [
@@ -5637,7 +5761,7 @@ function htmlFiscalGuia(M, fa, x) {
   for (const v of movs.filter((m) => m.tipo === 'venta' && m.resultado < 0)) {
     const lim = 61;
     const re = movs.filter((m) => m.tipo === 'compra' && m.instrumento === v.instrumento && Math.abs(diasEntre(v.fecha, m.fecha)) <= lim && m.id !== v.id);
-    const libre = iso(new Date(deIso(v.fecha).getTime() + lim * 86400000));
+    const libre = sumarDias(v.fecha, lim);
     const cripto = (S.inst[v.instrumento] || {}).clase === 'Cripto';
     if (cripto) continue;
     if (re.length) dosMeses.push({ n: 'warn', t: `La pérdida de ${nombreInst(v.instrumento)} (${eurS(v.resultado, 0)}) no cuenta todavía`, d: `Recompraste el ${fechaLarga(re[0].fecha)}, a menos de dos meses de la venta. Contará cuando vendas lo recomprado.` });
@@ -7331,7 +7455,7 @@ function editarAportacion(k) {
     const nueva = { instrumento: g('instrumento'), plataforma: g('plataforma'), importe, dia, desde: g('desde') || hoyIso() };
     if (orig && yaHaAportado(orig)) {
       // la anterior termina ayer y la nueva empieza hoy: así no se recalculan las aportaciones pasadas
-      orig.hasta = nueva.desde > ayer ? iso(new Date(deIso(nueva.desde).getTime() - 86400000)) : ayer;
+      orig.hasta = nueva.desde > ayer ? sumarDias(nueva.desde, -1) : ayer;
       S.cartera.aportaciones.push(nueva);
     } else if (orig) Object.assign(orig, nueva);
     else (S.cartera.aportaciones = S.cartera.aportaciones || []).push(nueva);
@@ -7559,8 +7683,7 @@ async function bienvenidaCuenta() {
     const nom = $('#bNombre').value.trim(), b = $('#bSeguir');
     if (nom) { LS.set('inv-nombre', nom); if (FB.user && !FB.user.displayName) try { await FB.au.updateProfile(FB.user, { displayName: nom }); } catch (e) {} }
     const que = (document.querySelector('[name=que]:checked') || {}).value;
-    if (local) LS.set('inv-local-ofrecida', true);
-    if (!local || que !== 'subir') return pantallaCrear();
+    if (!local || que !== 'subir') { if (local) LS.set('inv-local-ofrecida', true); return pantallaCrear(); }
     b.disabled = true; b.textContent = 'Comprobando…'; $('#err').textContent = '';
     try {
       // antes de subirla, abrirla: con la clave que recuerda este dispositivo o con su contraseña
@@ -7574,10 +7697,12 @@ async function bienvenidaCuenta() {
         catch (e) { LS.del('inv-local-ofrecida'); b.disabled = false; b.textContent = 'Subirla'; $('#err').textContent = 'Esa contraseña no abre esa cartera. Si no es tuya, elige «Empezar una nueva».'; return; }
       }
       b.textContent = 'Subiendo…';
-      // la cuenta tiene que estar vacía de verdad
-      const d = await conTiempo(leerCuenta(), 12000); if (d && d.enc) { location.reload(); return; }
-      S.cuentaLeida = true; S.cuentaNueva = false;
-      S.baseCuenta = await conTiempo(escribirCuenta(local.texto), 15000); cacheCuenta.set(local.texto, c.actualizado, S.baseCuenta);
+      // la cuenta tiene que estar vacía de verdad (la transacción lo comprueba en el servidor)
+      let rev;
+      try { rev = await conTiempo(escribirCuenta(local.texto, 0), 15000); }
+      catch (e) { if (e && e.conflicto) { location.reload(); return; } throw e; }
+      S.cuentaLeida = true; S.cuentaNueva = false; fijarBase(rev, local.texto); cacheCuenta.set(local.texto); LS.del('inv-pend-cuenta');
+      LS.set('inv-local-ofrecida', true);
       S.enc = { texto: local.texto, sha: null };
       S.cartera = c; S.key = key; S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;
       await IDB.set(IDB_CLAVE, { salt: f.salt, key });
@@ -7595,8 +7720,8 @@ async function bienvenidaCuenta() {
   for (const r of $$('[name=que]')) r.onchange = () => { const x = $('#bPassL'); if (x) x.hidden = !(r.checked && r.value === 'subir' && S.pidePassLocal); };
 }
 async function cerrarSesion() {
-  if (LS.get('inv-pend-cuenta') && S.key) {
-    try { await sincronizarCuenta(); } catch (e) {}
+  if (LS.get('inv-pend-cuenta')) {
+    if (navigator.onLine !== false && !S.subidaParada) try { await conTiempo(sincronizarCuenta(), 8000); } catch (e) {}
     if (LS.get('inv-pend-cuenta') && !confirm(trad('Hay cambios de este dispositivo que aún no han llegado a tu cuenta (falta conexión). Si cierras la sesión ahora, se pierden. ¿Cerrarla igualmente?'))) return;
   }
   try { await fbCargar(); await FB.au.signOut(FB.auth); } catch (e) { console.warn(e); }
@@ -7618,15 +7743,14 @@ function vigilarCuenta() {
       if (d.metadata.hasPendingWrites) return;
       const x = d.data();
       if (!d.metadata.fromCache) S.cuentaLeida = true;
-      if (!S.key || !S.cartera) return;
-      if (x && x.enc && S.enc && x.enc === S.enc.texto) { if (x.actualizado) S.baseCuenta = x.actualizado; return nombreEnCuenta(); }
-      const c = cacheCuenta.get();
-      if (LS.get('inv-pend-cuenta') && c) {
-        // lo de aquí aún no ha subido: si la cuenta no ha cambiado por otro lado, se sube; si sí, manda la cuenta
-        if (!x || !x.enc || !cambioAjeno(x.actualizado, c.base)) { if (!d.metadata.fromCache) { try { await subirCuenta(c.texto); } catch (e) {} } return; }
-        LS.del('inv-pend-cuenta'); S.avisoConflicto = true;
-      }
-      if (x && x.enc && !(S.misEscrituras && S.misEscrituras.has(x.actualizado))) await aplicarRemoto(x.enc, x.actualizado);
+      if (!S.key || !S.cartera || !x || !x.enc) return;
+      const rev = revDe(x);
+      if (S.enc && x.enc === S.enc.texto) { if (rev > (S.baseRev || 0)) fijarBase(rev, x.enc); return nombreEnCuenta(); }
+      // una revisión que no es más nueva que la que ya tienes (llegan desordenadas a veces): nada
+      if (rev <= (S.baseRev || 0)) return;
+      // con cambios de aquí sin subir, decide la sincronización (con su transacción), no esto
+      if (LS.get('inv-pend-cuenta')) { if (!d.metadata.fromCache) sincronizarCuenta(); return; }
+      await aplicarRemoto(x.enc, rev);
       nombreEnCuenta();
     }, (e) => console.warn(e));
   } catch (e) { console.warn(e); }
@@ -7639,25 +7763,26 @@ function nombreEnCuenta() {
 }
 /* llega una versión de la cuenta: si estás editando algo, espera a que cierres; si ya no abre con tu clave
    (cambiaste la contraseña en otro dispositivo), se bloquea y pide la nueva */
-async function aplicarRemoto(enc, act) {
+async function aplicarRemoto(enc, rev) {
   if (document.querySelector('.hoja-fondo form, .ficha')) {
     // se aplica al cerrar; si mientras tanto guardas, manda lo tuyo (es lo último que has hecho) y esta se descarta
     const antes = S.enc && S.enc.texto;
-    S.remotoEnEspera = { enc, act, antes }; clearTimeout(S.remotoT);
-    const reintenta = () => { const r = S.remotoEnEspera; if (!r) return; if (document.querySelector('.hoja-fondo form, .ficha')) { S.remotoT = setTimeout(reintenta, 1500); return; } S.remotoEnEspera = null; if (S.enc && S.enc.texto !== r.antes) return; if (!S.enc || r.enc !== S.enc.texto) aplicarRemoto(r.enc, r.act); };
+    S.remotoEnEspera = { enc, rev, antes }; clearTimeout(S.remotoT);
+    const reintenta = () => { const r = S.remotoEnEspera; if (!r) return; if (document.querySelector('.hoja-fondo form, .ficha')) { S.remotoT = setTimeout(reintenta, 1500); return; } S.remotoEnEspera = null; if (S.enc && S.enc.texto !== r.antes) return; if (!S.enc || r.enc !== S.enc.texto) aplicarRemoto(r.enc, r.rev); };
     S.remotoT = setTimeout(reintenta, 1500); return;
   }
+  if (rev && rev <= (S.baseRev || 0)) return;
   let c;
   try { c = await descifrar(enc, S.key); }
   catch (e) {
     let otraSal = false; try { otraSal = JSON.parse(enc).salt !== JSON.parse(S.enc.texto).salt; } catch (e2) {}
     if (!otraSal) { console.warn('No se pudo leer el cambio de otro dispositivo', e); return; }
     if (S.vigilaCuenta) { try { S.vigilaCuenta(); } catch (e3) {} S.vigilaCuenta = null; }
-    S.enc = { texto: enc, sha: null }; cacheCuenta.set(enc, act, act); LS.del('inv-pend-cuenta');
+    S.enc = { texto: enc, sha: null }; fijarBase(rev, enc); cacheCuenta.set(enc); LS.del('inv-pend-cuenta');
     S.cartera = null; S.key = null; try { await IDB.del(IDB_CLAVE); } catch (e4) {}
     return pantallaDesbloqueo('', 'La contraseña de tu cartera ha cambiado en otro dispositivo. Escribe la nueva para seguir.');
   }
-  S.cartera = c; S.enc = { texto: enc, sha: null }; S.baseCuenta = act || ''; cacheCuenta.set(enc, act, act); LS.del('inv-pend-cuenta');
+  S.cartera = c; S.enc = { texto: enc, sha: null }; fijarBase(rev, enc); cacheCuenta.set(enc); LS.del('inv-pend-cuenta');
   sumarInstPropios(); pintar();
   toast(S.avisoConflicto ? 'Tu cuenta tenía cambios más recientes de otro dispositivo: se ha quedado esa versión' : 'Tu cartera se ha actualizado con lo que cambiaste en otro dispositivo', 6000);
   S.avisoConflicto = false;
@@ -7827,20 +7952,24 @@ function sumarInstPropios() {
     if (!S.inst[i.id]) { S.inst[i.id] = i; S.instOrden.push(i.id); }
   }
 }
-async function guardarLocal() {
+async function guardarLocal(interactivo) {
   S.cartera.inst_propios = instPropios();
   S.cartera.actualizado = new Date().toISOString();
   const texto = await cifrar(S.cartera);
   if (PERFIL_CUENTA) {
     // primero en el dispositivo y luego a la cuenta; si no hay conexión, se sube al volver a entrar
-    cacheCuenta.set(texto, S.cartera.actualizado); S.enc = { texto, sha: null }; S.instCambiados = false;
+    cacheCuenta.set(texto); S.enc = { texto, sha: null }; S.instCambiados = false;
+    LS.set('inv-pend-cuenta', true); S.cuentaOk = false;
     try {
       await fbCargar(); if (!FB.user) throw new Error('sin sesión');
       if (!S.cuentaLeida) throw new Error('la cuenta aún no se ha podido leer');
       // la primera cartera de una cuenta: antes de escribir, comprobar que de verdad está vacía
-      if (S.cuentaNueva) { const d = await conTiempo(leerCuenta(), 12000); if (d && d.enc) { LS.del('inv-cuenta-enc'); toast('Tu cuenta ya tenía una cartera: la abro', 5000); setTimeout(() => location.reload(), 1200); return false; } }
-      await subirCuenta(texto); S.cuentaNueva = false; S.cuentaOk = true;
-    } catch (e) { console.warn('No se pudo subir a la cuenta', e); LS.set('inv-pend-cuenta', true); S.cuentaOk = false; S.toastPend = true; }
+      if (S.cuentaNueva) { const d = await conTiempo(leerCuenta(), 12000); if (d && d.enc) { LS.del('inv-cuenta-enc'); LS.del('inv-pend-cuenta'); toast('Tu cuenta ya tenía una cartera: la abro', 5000); setTimeout(() => location.reload(), 1200); return false; } }
+      // lo que guardas tú (un formulario) pregunta si choca con otro dispositivo; lo automático, no
+      S.preguntarConflicto = !!interactivo;
+      await conTiempo(subirPendiente(), navigator.onLine === false ? 0 : 8000);
+      if (!LS.get('inv-pend-cuenta')) S.cuentaNueva = false;
+    } catch (e) { console.warn('Aún no se ha subido a la cuenta', e); if (!S.subidaParada) { S.toastPend = true; reintentarSubida(); } }
     return true;
   }
   LS.set('inv-local-enc', texto); S.enc = { texto, sha: null }; S.instCambiados = false;
@@ -7848,7 +7977,12 @@ async function guardarLocal() {
   return true;
 }
 async function guardarCartera(mensaje) {
-  if (PERFIL_LOCAL) { await guardarLocal(); toast(!PERFIL_CUENTA ? 'Guardado en este dispositivo' : S.cuentaOk ? 'Guardado en tu cuenta' : 'Guardado en este dispositivo: se subirá a tu cuenta en cuanto haya conexión', PERFIL_CUENTA && !S.cuentaOk ? 6000 : undefined); return true; }
+  if (PERFIL_LOCAL) {
+    await guardarLocal(true); const ok = !PERFIL_CUENTA || !LS.get('inv-pend-cuenta');
+    // con la subida parada ya hay un aviso que explica por qué: no se tapa
+    if (!ok && S.subidaParada) return true;
+    toast(!PERFIL_CUENTA ? 'Guardado en este dispositivo' : ok ? 'Guardado en tu cuenta' : 'Guardado en este dispositivo: se subirá a tu cuenta en cuanto haya conexión', ok ? undefined : 6000); return true;
+  }
   S.cartera.actualizado = new Date().toISOString();
   const texto = await cifrar(S.cartera);
   if (CFG.dev) { LS.set('inv-dev-enc', texto); S.enc = { texto, sha: null }; toast('Guardado (modo pruebas)'); return true; }
@@ -8167,9 +8301,9 @@ const NOVEDADES = [
     { d: 'perfil', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Cuentas con Google o con correo', x: 'Entras con Google o con tu correo en la web, en Chrome y en la app de Android, que abre la ventanita de Google del propio móvil. Tu cartera se guarda en tu cuenta y la ves igual en el móvil, en el ordenador y en la app.' },
     { d: 'calendario', ir: { v: 'agenda', sel: '.ag-prox' }, t: 'Calendario de lo que viene', x: 'Resultados y dividendos de lo que tienes, con lo que te toca en euros; los de las grandes empresas de dentro de tus fondos; la Fed y el BCE con la hora de España; los días sin bolsa y tus aportaciones. Cada uno con los días que faltan. En Cartera, «Lo que viene» enseña lo próximo.' },
     { d: 'candado', t: 'Igual de privada', x: 'Se sube ya cifrada con la contraseña de tu cartera, que no sale de tu dispositivo: ni GrowFolio ni Google pueden ver tus cifras. El PIN y la huella siguen funcionando encima de la cuenta.' },
-    { d: 'app', t: 'Sincronizada al momento', x: 'Si cambias algo en el móvil, el ordenador lo recibe solo, sin recargar. Sin conexión se guarda en el dispositivo y se sube al volver a entrar.' },
+    { d: 'app', t: 'Sincronizada al momento', x: 'Si cambias algo en el móvil, el ordenador lo recibe solo, sin recargar. Sin conexión se guarda en el dispositivo y se sube en cuanto vuelve la red. Si cambias cosas distintas en dos dispositivos a la vez, se juntan; si es lo mismo, te pregunta con cuál quedarte.' },
     { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar [data-mas], .nav [data-ir="agenda"]' }, t: 'Barra del móvil más clara', x: 'Cinco botones: Cartera, Pasos, Expertos, Análisis y Más, que abre el Calendario, Mercados, Fiscalidad, Objetivos y Ajustes. La pestaña en la que estás lleva una pastilla y, en la app, el móvil vibra un poco al cambiar.' },
-    { d: 'gta', ir: { v: 'cartera', sel: '[data-gta]' }, t: 'GTA VI, con tu cartera', x: 'El camino desde GTA V (17 de septiembre de 2013) en porcentaje, lo que tienes medido en copias del juego, lo que costó hacer el Adder y cuántos pagaría tu cartera, qué posición ha pagado más copias desde el primer tráiler y música original de fondo con su botón de silencio.' },
+    { d: 'gta', ir: { v: 'cartera', sel: '[data-gta]' }, t: 'GTA VI, con tu cartera', x: 'El camino desde GTA V (17 de septiembre de 2013) en porcentaje, lo que tienes medido en copias del juego, lo que costó hacer el Adder y cuántos pagaría tu cartera, qué posición ha pagado más copias desde el primer tráiler y música synthwave original de fondo, con su botón de silencio.' },
     { d: 'app', t: 'El widget, como la app', x: 'Lo que más ha movido hoy tu cartera sale en el widget en pastillas de color, igual que en Cartera.' },
     { d: 'pulido', t: 'Más pulida y más rápida', x: 'Tarjetas con algo de relieve, títulos más legibles, pestañas que entran con una animación corta, hojas que se cierran arrastrándolas y un patrimonio que cuenta hasta el valor nuevo en vez de saltar. Cartera se pinta casi el doble de rápido, y vuelve el reparto de Cartera, que desde la 0.1.17 salía cambiado.' },
     { d: 'logo', t: 'Una entrada nueva', x: 'Al abrir GrowFolio se monta el logo y te saluda por tu nombre según la hora: buenos días, buenas tardes o buenas noches. El nombre se pone al crear la cuenta o en tu perfil.' },
@@ -8889,78 +9023,209 @@ function htmlDesdeTrailerGTA(M) {
   </section>`;
 }
 
-/* música original de fondo: electro francés de los ochenta hecho en el navegador (Web Audio), sin
-   archivos. 116 pulsaciones en La menor: bombo a negras, palmas, charles, bajo funky, acordes filtrados
-   que respiran con el bombo y un arpegio que entra a mitad de frase. Suena al abrir GTA VI y se calla al
-   cerrarlo; el botón del altavoz la silencia y se recuerda. */
-const MUSICA = { ctx: null, sal: null, pad: null, filtro: null, ruido: null, t: null, paso: 0, prox: 0 };
+/* música original de fondo: synthwave de los ochenta con producción de ahora, hecha en el navegador
+   (Web Audio), sin archivos. 112 pulsaciones en Fa menor (Fam9, Re♭maj7, La♭add9, Mi♭), dos compases por
+   acorde: pads anchos de varias sierras desafinadas que respiran con el bombo, bajo en corcheas con subgrave,
+   caja con la reverb cerrada de los ochenta, charles, un arpegio con eco de lado a lado y una melodía propia
+   en el estribillo. Intro filtrada que se abre; luego verso y estribillo en bucle, con subidas de ruido entre
+   partes. Suena al abrir GTA VI y se calla al cerrarlo; el botón del altavoz la silencia y se recuerda. */
+const MUSICA = { ctx: null, sal: null, t: null, paso: 0, prox: 0 };
+const BPM_GTA = 112, PASO_GTA = 60 / BPM_GTA / 4;
 const NOTA = (m) => 440 * Math.pow(2, (m - 69) / 12);
-// cuatro compases: La menor, Fa mayor 7, Re menor 9 y Mi (con la cuarta suspendida al principio)
-const ACORDES = [[57, 60, 64, 67], [53, 57, 60, 64], [50, 53, 57, 60, 64], [52, 56, 59, 62]];
-const BAJOS = [45, 41, 38, 40];
-const PATRON_BAJO = [[0, 0], [3, 12], [6, 0], [8, 0], [10, 12], [11, 0], [14, 7]];
-const ARPEGIO = [0, 1, 2, 3, 2, 1, 2, 3, 0, 1, 2, 3, 3, 2, 1, 2];
+const ACORDES = [[53, 56, 60, 67], [49, 56, 60, 65], [56, 60, 63, 70], [51, 55, 58, 67]];
+const BAJOS = [41, 37, 44, 39];
+const BAJO_8 = [0, 0, 12, 0, 0, 0, 12, 7];       // una nota por corchea: raíz, octavas y la quinta al final
+const BAJO_16 = [0, 0, 12, 0, 0, 0, 12, 0, 0, 0, 12, 0, 7, 0, 12, 0];   // en el estribillo, a semicorcheas
+const ARPEGIO = [0, 1, 2, 3, 4, 3, 2, 1];        // notas del acorde una octava arriba (4 = la raíz otra octava más)
+// la melodía del estribillo, ocho compases: [semicorchea, nota MIDI, duración en semicorcheas]
+const MELODIA = [[0, 72, 6], [6, 68, 2], [8, 72, 4], [12, 75, 4], [16, 77, 10], [26, 75, 2], [28, 72, 4],
+  [32, 73, 6], [38, 72, 2], [40, 68, 4], [44, 65, 4], [48, 68, 12], [60, 70, 4],
+  [64, 72, 6], [70, 75, 2], [72, 77, 4], [76, 75, 4], [80, 72, 8], [88, 70, 4], [92, 68, 4],
+  [96, 70, 6], [102, 67, 2], [104, 70, 4], [108, 72, 4], [112, 67, 16]];
 function musicaNota(fn, t) { try { fn(t); } catch (e) {} }
+// respuesta de una sala sintética: ruido estéreo que se apaga (y se oscurece) en «dur» segundos;
+// «cerrada» es la de la caja de los ochenta: densa y cortada en seco
+function impulsoGTA(ctx, dur, cerrada) {
+  const n = Math.round(ctx.sampleRate * dur), b = ctx.createBuffer(2, n, ctx.sampleRate);
+  for (let c = 0; c < 2; c++) {
+    const d = b.getChannelData(c); let lp = 0;
+    for (let i = 0; i < n; i++) {
+      const x = i / n, env = cerrada ? (x < 0.82 ? 1 - x * 0.35 : (1 - x) / 0.18 * 0.7) : Math.pow(1 - x, 2.2) * Math.exp(-x * 3);
+      const k = cerrada ? 0.6 : 0.5 - x * 0.38;       // la cola grande se oscurece al apagarse
+      lp += k * ((Math.random() * 2 - 1) - lp);
+      d[i] = lp * env * (i < ctx.sampleRate * 0.012 && !cerrada ? i / (ctx.sampleRate * 0.012) : 1);
+    }
+  }
+  return b;
+}
 function sonidoGTA() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return null;
   if (MUSICA.ctx) return MUSICA.ctx;
-  const ctx = new AC(), sal = ctx.createGain(), comp = ctx.createDynamicsCompressor();
-  sal.gain.value = 0; comp.threshold.value = -16; comp.ratio.value = 4;
-  sal.connect(comp); comp.connect(ctx.destination);
-  // los acordes van por un filtro que se abre y se cierra, y un volumen que se agacha con cada bombo
-  const filtro = ctx.createBiquadFilter(); filtro.type = 'lowpass'; filtro.frequency.value = 900; filtro.Q.value = 5;
-  const pad = ctx.createGain(); pad.gain.value = 1;
-  filtro.connect(pad); pad.connect(sal);
-  const ruido = ctx.createBuffer(1, ctx.sampleRate, ctx.sampleRate), d = ruido.getChannelData(0);
+  const ctx = new AC();
+  const gan = (v = 1) => { const x = ctx.createGain(); x.gain.value = v; return x; };
+  const lado = (v) => { if (!ctx.createStereoPanner) return gan(); const p = ctx.createStereoPanner(); p.pan.value = v; return p; };
+  // mezcla → filtro general (se abre en la intro) → compresor que lo pega todo → volumen con fundido
+  const mezcla = gan(), filtroM = ctx.createBiquadFilter(), comp = ctx.createDynamicsCompressor(), sal = gan(0);
+  filtroM.type = 'lowpass'; filtroM.frequency.value = 18000; filtroM.Q.value = 0.8;
+  comp.threshold.value = -20; comp.knee.value = 10; comp.ratio.value = 3; comp.attack.value = 0.008; comp.release.value = 0.2;
+  const corte = ctx.createBiquadFilter(), brillo = ctx.createBiquadFilter();
+  corte.type = 'highpass'; corte.frequency.value = 32; brillo.type = 'highshelf'; brillo.frequency.value = 5000; brillo.gain.value = 3;
+  mezcla.connect(corte); corte.connect(filtroM); filtroM.connect(brillo); brillo.connect(comp); comp.connect(sal); sal.connect(ctx.destination);
+  // reverb grande y reverb cerrada de la caja
+  const rev = ctx.createConvolver(); rev.buffer = impulsoGTA(ctx, 3.2); const aRev = gan(); aRev.connect(rev); const revS = gan(0.8); rev.connect(revS); revS.connect(mezcla);
+  const puerta = ctx.createConvolver(); puerta.buffer = impulsoGTA(ctx, 0.34, true); const aPuerta = gan(); aPuerta.connect(puerta); const puertaS = gan(0.5); puerta.connect(puertaS); puertaS.connect(mezcla);
+  // eco de lado a lado a corchea con puntillo, cada vuelta más apagado
+  const aEco = gan(), dI = ctx.createDelay(2), dD = ctx.createDelay(2), vuelta = gan(0.42), apaga = ctx.createBiquadFilter(), pI = lado(-0.85), pD = lado(0.85), ecoS = gan(0.5);
+  dI.delayTime.value = dD.delayTime.value = PASO_GTA * 3; apaga.type = 'lowpass'; apaga.frequency.value = 2800;
+  aEco.connect(dI); dI.connect(pI); dI.connect(dD); dD.connect(pD); dD.connect(apaga); apaga.connect(vuelta); vuelta.connect(dI);
+  pI.connect(ecoS); pD.connect(ecoS); ecoS.connect(mezcla); ecoS.connect(aRev);
+  // grupos: los pads y el bajo se agachan con cada bombo (el «bombeo» del synthwave)
+  const padF = ctx.createBiquadFilter(); padF.type = 'lowpass'; padF.frequency.value = 2100; padF.Q.value = 0.9;
+  const pads = gan(), bajo = gan(), bat = gan(), arp = gan(), lead = gan();
+  padF.connect(pads); pads.connect(mezcla); pads.connect(aRev);
+  bajo.connect(mezcla); bat.connect(mezcla);
+  arp.connect(mezcla); const arpEco = gan(0.55), arpRev = gan(0.25); arp.connect(arpEco); arpEco.connect(aEco); arp.connect(arpRev); arpRev.connect(aRev);
+  lead.connect(mezcla); const leadEco = gan(0.35), leadRev = gan(0.45); lead.connect(leadEco); leadEco.connect(aEco); lead.connect(leadRev); leadRev.connect(aRev);
+  const ruido = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), d = ruido.getChannelData(0);
   for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
-  Object.assign(MUSICA, { ctx, sal, pad, filtro, ruido });
+  Object.assign(MUSICA, { ctx, sal, filtroM, padF, pads, bajo, bat, arp, lead, aRev, aPuerta, ruido, lado });
   return ctx;
 }
-function golpeGTA(t, tipo) {
-  const { ctx, sal, ruido } = MUSICA;
-  if (tipo === 'bombo') {
-    const o = ctx.createOscillator(), g = ctx.createGain();
-    o.frequency.setValueAtTime(140, t); o.frequency.exponentialRampToValueAtTime(42, t + 0.13);
-    g.gain.setValueAtTime(0.9, t); g.gain.exponentialRampToValueAtTime(0.001, t + 0.38);
-    o.connect(g); g.connect(sal); o.start(t); o.stop(t + 0.4);
-    // se agacha y vuelve en curva, sin saltos (un salto de volumen suena como un clic)
-    MUSICA.pad.gain.setTargetAtTime(0.35, t, 0.006); MUSICA.pad.gain.setTargetAtTime(1, t + 0.04, 0.07);
+// ataque y caída exponenciales sin clics
+function envGTA(g, t, vol, ata, dur, cae) {
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + ata);
+  if (dur > ata) g.gain.setValueAtTime(vol, t + dur); g.gain.exponentialRampToValueAtTime(0.0001, t + Math.max(dur, ata) + cae);
+}
+function ruidoGTA(t, dur, tipo, frec, q, vol, destinos, ata = 0.001) {
+  const { ctx, ruido } = MUSICA, s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+  s.buffer = ruido; f.type = tipo; f.frequency.value = frec; f.Q.value = q;
+  envGTA(g, t, vol, ata, 0, dur);
+  s.connect(f); f.connect(g); for (const x of destinos) g.connect(x);
+  s.start(t, Math.random() * 1.2); s.stop(t + dur + 0.05);
+  return f;
+}
+function golpeGTA(t, tipo, vol = 1) {
+  const M = MUSICA, ctx = M.ctx;
+  if (tipo === 'palmas') {
+    const p = M.lado(-0.15); p.connect(M.bat); p.connect(M.aRev);
+    for (const [dt, v] of [[0, 0.7], [0.011, 0.55], [0.023, 1]]) ruidoGTA(t + dt, dt === 0.023 ? 0.16 : 0.012, 'bandpass', 1250, 1.1, 0.3 * v * vol, [p]);
     return;
   }
-  const s = ctx.createBufferSource(), f = ctx.createBiquadFilter(), g = ctx.createGain();
-  s.buffer = ruido;
-  if (tipo === 'palmas') {
-    f.type = 'bandpass'; f.frequency.value = 1500; f.Q.value = 0.9;
-    for (const [dt, v] of [[0, 0.5], [0.012, 0.4], [0.024, 0.45]]) g.gain.setValueAtTime(v, t + dt);
-    g.gain.exponentialRampToValueAtTime(0.001, t + 0.2);
-  } else {
-    f.type = 'highpass'; f.frequency.value = 7500;
-    g.gain.setValueAtTime(tipo === 'abierto' ? 0.14 : 0.07, t); g.gain.exponentialRampToValueAtTime(0.001, t + (tipo === 'abierto' ? 0.16 : 0.04));
+  if (tipo === 'bombo') {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.frequency.setValueAtTime(165, t); o.frequency.exponentialRampToValueAtTime(52, t + 0.07); o.frequency.exponentialRampToValueAtTime(40, t + 0.38);
+    envGTA(g, t, 0.8 * vol, 0.003, 0.02, 0.36);
+    o.connect(g); g.connect(M.bat); o.start(t); o.stop(t + 0.5);
+    ruidoGTA(t, 0.012, 'highpass', 2500, 0.7, 0.22 * vol, [M.bat]);
+    // los pads y el bajo se agachan y vuelven en curva (sin saltos, que suenan como un clic)
+    M.pads.gain.setTargetAtTime(0.28, t, 0.004); M.pads.gain.setTargetAtTime(1, t + 0.03, 0.11);
+    M.bajo.gain.setTargetAtTime(0.4, t, 0.004); M.bajo.gain.setTargetAtTime(1, t + 0.03, 0.08);
+    return;
   }
-  s.connect(f); f.connect(g); g.connect(sal); s.start(t, Math.random() * 0.5); s.stop(t + 0.25);
+  if (tipo === 'caja') {
+    const o = ctx.createOscillator(), g = ctx.createGain();
+    o.type = 'triangle'; o.frequency.setValueAtTime(210, t); o.frequency.exponentialRampToValueAtTime(165, t + 0.1);
+    envGTA(g, t, 0.32 * vol, 0.002, 0, 0.13);
+    o.connect(g); g.connect(M.bat); g.connect(M.aPuerta); o.start(t); o.stop(t + 0.2);
+    ruidoGTA(t, 0.22, 'bandpass', 1900, 0.6, 0.5 * vol, [M.bat, M.aPuerta, M.aRev]);
+    ruidoGTA(t, 0.09, 'highpass', 5500, 0.7, 0.22 * vol, [M.bat]);
+    return;
+  }
+  const ab = tipo === 'abierto';
+  const p = M.lado(0.25); p.connect(M.bat);
+  ruidoGTA(t, ab ? 0.24 : 0.035, 'highpass', ab ? 7000 : 8000, 0.8, (ab ? 0.17 : 0.13) * vol, [p]);
 }
-function notaGTA(t, frec, dur, forma, vol, destino, corte) {
-  const { ctx } = MUSICA;
-  const o = ctx.createOscillator(), g = ctx.createGain();
-  o.type = forma; o.frequency.value = frec;
-  let ult = g;
-  if (corte) { const f = ctx.createBiquadFilter(); f.type = 'lowpass'; f.frequency.setValueAtTime(corte * 2.5, t); f.frequency.exponentialRampToValueAtTime(corte, t + dur); g.connect(f); ult = f; }
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol, t + 0.012); g.gain.setValueAtTime(vol, t + dur * 0.7); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-  o.connect(g); ult.connect(destino); o.start(t); o.stop(t + dur + 0.02);
+function bajoGTA(t, m, dur) {
+  const M = MUSICA, ctx = M.ctx;
+  const o = ctx.createOscillator(), f = ctx.createBiquadFilter(), g = ctx.createGain();
+  o.type = 'sawtooth'; o.frequency.value = NOTA(m);
+  f.type = 'lowpass'; f.Q.value = 3; f.frequency.setValueAtTime(1900, t); f.frequency.exponentialRampToValueAtTime(380, t + dur);
+  envGTA(g, t, 0.12, 0.005, dur * 0.6, dur * 0.5);
+  o.connect(f); f.connect(g); g.connect(M.bajo); o.start(t); o.stop(t + dur * 1.2);
+  // el subgrave, limpio: lo que hace que suene de ahora en unos cascos o en un móvil con buen altavoz
+  const s = ctx.createOscillator(), gs = ctx.createGain();
+  s.frequency.value = NOTA(m - 12 * (m >= 41 ? 1 : 0));
+  envGTA(gs, t, 0.13, 0.006, dur * 0.7, dur * 0.4);
+  s.connect(gs); gs.connect(M.bajo); s.start(t); s.stop(t + dur * 1.2);
 }
+function padGTA(t, notas, dur, brillo) {
+  const M = MUSICA, ctx = M.ctx;
+  for (const m of notas) {
+    // cada nota, tres sierras un poco desafinadas y abiertas a los lados
+    for (const [det, lado] of [[-12, -0.9], [0, 0], [12, 0.9]]) {
+      const o = ctx.createOscillator(), g = ctx.createGain(), p = M.lado(lado);
+      o.type = 'sawtooth'; o.frequency.value = NOTA(m); o.detune.value = det + (Math.random() - 0.5) * 4;
+      envGTA(g, t, 0.034, 0.5, dur - 0.5, 0.9);
+      o.connect(g); g.connect(p); p.connect(M.padF); o.start(t); o.stop(t + dur + 1);
+    }
+    if (brillo) { const o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'triangle'; o.frequency.value = NOTA(m + 12); envGTA(g, t, 0.022, 0.8, dur - 0.8, 1); o.connect(g); g.connect(M.pads); o.start(t); o.stop(t + dur + 1.1); }
+  }
+}
+function arpGTA(t, m, vol) {
+  const M = MUSICA, ctx = M.ctx, f = ctx.createBiquadFilter(), g = ctx.createGain();
+  f.type = 'lowpass'; f.Q.value = 4; f.frequency.setValueAtTime(4800, t); f.frequency.exponentialRampToValueAtTime(650, t + 0.16);
+  for (const [forma, det] of [['sawtooth', -5], ['square', 5]]) { const o = ctx.createOscillator(); o.type = forma; o.frequency.value = NOTA(m); o.detune.value = det; o.connect(f); o.start(t); o.stop(t + 0.32); }
+  envGTA(g, t, vol, 0.003, 0, 0.26);
+  f.connect(g); g.connect(M.arp);
+}
+function leadGTA(t, m, dur, capa) {
+  const M = MUSICA, ctx = M.ctx, fr = NOTA(m), f = ctx.createBiquadFilter(), g = ctx.createGain();
+  f.type = 'lowpass'; f.Q.value = 1.2; f.frequency.setValueAtTime(1800, t); f.frequency.linearRampToValueAtTime(3400, t + 0.08);
+  // vibrato que entra poco a poco y un pequeño portamento desde la nota anterior si van ligadas
+  const lfo = ctx.createOscillator(), prof = ctx.createGain(); lfo.frequency.value = 5.4; prof.gain.setValueAtTime(0, t); prof.gain.linearRampToValueAtTime(dur > 0.4 ? 9 : 3, t + Math.min(0.5, dur));
+  lfo.connect(prof); lfo.start(t); lfo.stop(t + dur + 0.3);
+  const desde = M.leadFin && Math.abs(M.leadFin - t) < 0.05 ? M.leadFr : null;
+  for (const det of [-7, 7]) {
+    const o = ctx.createOscillator(); o.type = 'sawtooth'; o.detune.value = det;
+    if (desde) { o.frequency.setValueAtTime(desde, t); o.frequency.exponentialRampToValueAtTime(fr, t + 0.045); } else o.frequency.value = fr;
+    prof.connect(o.detune); o.connect(f); o.start(t); o.stop(t + dur + 0.3);
+  }
+  if (capa) { const o = ctx.createOscillator(), gc = ctx.createGain(); o.type = 'sine'; o.frequency.value = fr * 2; gc.gain.value = 0.5; prof.connect(o.detune); o.connect(gc); gc.connect(f); o.start(t); o.stop(t + dur + 0.3); }
+  envGTA(g, t, 0.11, 0.018, dur * 0.85, 0.18);
+  f.connect(g); g.connect(M.lead);
+  M.leadFin = t + dur; M.leadFr = fr;
+}
+// subida de ruido antes de cada parte, y un golpe grave que se apaga al llegar
+function subidaGTA(t, dur) {
+  const f = ruidoGTA(t, dur, 'bandpass', 300, 2.5, 0.07, [MUSICA.bat, MUSICA.aRev], dur * 0.95);
+  f.frequency.setValueAtTime(300, t); f.frequency.exponentialRampToValueAtTime(7000, t + dur);
+}
+function impactoGTA(t) {
+  const M = MUSICA, ctx = M.ctx, o = ctx.createOscillator(), g = ctx.createGain();
+  o.frequency.setValueAtTime(70, t); o.frequency.exponentialRampToValueAtTime(30, t + 1.4);
+  envGTA(g, t, 0.45, 0.004, 0, 1.5); o.connect(g); g.connect(M.bat); o.start(t); o.stop(t + 1.6);
+  const f = ruidoGTA(t, 1.6, 'lowpass', 4000, 0.7, 0.06, [M.aRev]); f.frequency.setValueAtTime(4000, t); f.frequency.exponentialRampToValueAtTime(200, t + 1.6);
+}
+/* un paso de semicorchea. Compases 0-3: intro; luego, en bucle de 24, verso (8) y estribillo (16) */
 function pasoGTA(paso, t) {
-  const s = paso % 16, compas = Math.floor(paso / 16) % 4, frase = Math.floor(paso / 64) % 2, dur = 60 / 116 / 4;
-  if (s % 4 === 0) musicaNota(() => golpeGTA(t, 'bombo'));
-  if (s === 4 || s === 12) musicaNota(() => golpeGTA(t, 'palmas'));
-  if (s % 4 === 2) musicaNota(() => golpeGTA(t, 'abierto')); else if (paso % 2) musicaNota(() => golpeGTA(t, 'cerrado'));
-  for (const [p, sube] of PATRON_BAJO) if (p === s) musicaNota(() => { notaGTA(t, NOTA(BAJOS[compas] + sube), dur * 1.6, 'sawtooth', 0.22, MUSICA.sal, 380); notaGTA(t, NOTA(BAJOS[compas] + sube - 12), dur * 1.6, 'square', 0.1, MUSICA.sal, 200); });
-  // los acordes, dos veces por compás, con dos osciladores un poco desafinados por nota
-  if (s === 0 || s === 8) musicaNota(() => { for (const m of ACORDES[compas]) for (const det of [-7, 7]) { const { ctx } = MUSICA, o = ctx.createOscillator(), g = ctx.createGain(); o.type = 'sawtooth'; o.frequency.value = NOTA(m); o.detune.value = det; g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.03, t + 0.04); g.gain.setValueAtTime(0.03, t + dur * 7); g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 8); o.connect(g); g.connect(MUSICA.filtro); o.start(t); o.stop(t + dur * 8 + 0.05); } });
-  // el filtro se abre a lo largo de la frase
-  if (s === 0) musicaNota(() => MUSICA.filtro.frequency.linearRampToValueAtTime(700 + (compas + frase * 4) * 330, t + dur * 16));
-  // el arpegio: la segunda vuelta de cada ocho compases
-  if (frase === 1) { const ac = ACORDES[compas]; musicaNota(() => notaGTA(t, NOTA(ac[ARPEGIO[s] % ac.length] + 12), dur * 0.9, 'square', 0.045, MUSICA.sal, 2600)); }
+  const M = MUSICA, d = PASO_GTA, s = paso % 16, bar = Math.floor(paso / 16);
+  const intro = bar < 4, cb = intro ? -1 : (bar - 4) % 24, verso = !intro && cb < 8, estr = cb >= 8;
+  const ac = Math.floor(bar / 2) % 4, notas = ACORDES[ac];
+  if (s === 0) {
+    if (bar === 0) musicaNota(() => { M.filtroM.frequency.setValueAtTime(420, t); M.filtroM.frequency.exponentialRampToValueAtTime(18000, t + d * 16 * 4); });
+    if (cb === 0) musicaNota(() => M.padF.frequency.setTargetAtTime(2700, t, 0.6));
+    if (cb === 8) musicaNota(() => { M.padF.frequency.setTargetAtTime(3800, t, 0.5); impactoGTA(t); });
+    if (bar % 2 === 0) musicaNota(() => padGTA(t, notas, d * 32 + 0.2, estr));
+    if (bar === 2 || cb === 6 || cb === 22) musicaNota(() => subidaGTA(t, d * 32));
+  }
+  // bajo: una nota larga al empezar, corcheas en el verso y semicorcheas que empujan en el estribillo
+  if (intro && bar < 2) { if (s === 0 && bar === 0) musicaNota(() => bajoGTA(t, BAJOS[ac], d * 31)); }
+  else if (estr) musicaNota(() => bajoGTA(t, BAJOS[ac] + BAJO_16[s], d * 0.95));
+  else if (s % 2 === 0) musicaNota(() => bajoGTA(t, BAJOS[ac] + BAJO_8[s / 2], d * 1.8));
+  // batería; en el último compás del estribillo, un respiro antes de volver al verso
+  const respiro = cb === 23 && s >= 8;
+  if ((s % 4 === 0 || (s === 14 && bar % 4 === 3 && !intro)) && bar >= 2 && !respiro) musicaNota(() => golpeGTA(t, 'bombo', s === 14 ? 0.7 : 1));
+  if (!intro && (s === 4 || s === 12) && !respiro) { musicaNota(() => golpeGTA(t, 'caja')); if (estr) musicaNota(() => golpeGTA(t, 'palmas')); }
+  if ((bar === 3 || cb === 7 || cb === 23) && s >= 8) musicaNota(() => golpeGTA(t, 'caja', 0.25 + (s - 8) * 0.07));
+  if (bar >= 3 && !respiro) {
+    if (!intro && s % 4 === 2) musicaNota(() => golpeGTA(t, 'abierto', estr ? 1 : 0.7));
+    else musicaNota(() => golpeGTA(t, 'cerrado', s % 2 === 0 ? 0.85 : 0.45));
+  }
+  // arpegio: en todo el verso (más bajo) y en el estribillo
+  if (!intro) musicaNota(() => arpGTA(t, notas[ARPEGIO[s % 8] % 4] + 12 + (ARPEGIO[s % 8] === 4 ? 12 : 0), estr ? 0.07 : 0.04));
+  // melodía en el estribillo; la segunda vuelta, con una capa una octava arriba
+  if (estr) { const pos = ((cb - 8) % 8) * 16 + s; for (const [p, m, l] of MELODIA) if (p === pos) musicaNota(() => leadGTA(t, m, l * d, cb >= 16)); }
 }
 function musicaGTA(encender) {
   if (!encender) {
@@ -8975,14 +9240,13 @@ function musicaGTA(encender) {
   ctx.resume();
   if (MUSICA.t) return;
   const t0 = ctx.currentTime + 0.08;
-  MUSICA.paso = 0; MUSICA.prox = t0;
-  MUSICA.sal.gain.cancelScheduledValues(t0); MUSICA.sal.gain.setValueAtTime(0, t0); MUSICA.sal.gain.linearRampToValueAtTime(0.32, t0 + 2.5);
-  MUSICA.filtro.frequency.setValueAtTime(700, t0);
+  MUSICA.paso = 0; MUSICA.prox = t0; MUSICA.leadFin = 0;
+  MUSICA.sal.gain.cancelScheduledValues(t0); MUSICA.sal.gain.setValueAtTime(0, t0); MUSICA.sal.gain.linearRampToValueAtTime(VOL_GTA, t0 + 2);
   MUSICA.t = setInterval(() => {
-    const dur = 60 / 116 / 4;
-    while (MUSICA.prox < ctx.currentTime + 0.15) { pasoGTA(MUSICA.paso, MUSICA.prox); MUSICA.prox += dur; MUSICA.paso++; }
+    while (MUSICA.prox < ctx.currentTime + 0.15) { pasoGTA(MUSICA.paso, MUSICA.prox); MUSICA.prox += PASO_GTA; MUSICA.paso++; }
   }, 25);
 }
+const VOL_GTA = 0.6;
 const SON = { on: SVG('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>', 1.8), off: SVG('<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>', 1.8) };
 const botonSonGTA = () => { const on = LS.get('inv-gta-son', true); return `<button class="gta-son" type="button" data-son aria-pressed="${on}" aria-label="${on ? L('Silenciar la música', 'Mute the music') : L('Poner la música', 'Play the music')}">${on ? SON.on : SON.off}</button>`; };
 
@@ -10715,7 +10979,7 @@ document.addEventListener('visibilitychange', () => {
   LIVE.asegurar();
   if (Date.now() - S.ultimaCarga > 60000) recargarPrecios(); else { programarParche(); revisarAnalisisIA(); }
 });
-window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); recargarPrecios(); sincronizarCuenta(); } });
+window.addEventListener('online', () => { S.fallosSubir = 0; if (S.cartera) { LIVE.asegurar(); recargarPrecios(); } if (PERFIL_CUENTA && (S.cartera || LS.get('inv-pend-cuenta'))) sincronizarCuenta(); });
 
 /* =====================================================================
    Bloqueo con PIN o huella. Encima de "Recordar en este dispositivo" (y, cuando lleguen las cuentas,
