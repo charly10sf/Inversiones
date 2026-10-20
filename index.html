@@ -1384,6 +1384,8 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .mas-t small { color: var(--muted); font-size: 13px; line-height: 1.4; }
 .mas-t.on { border-color: rgba(226, 180, 95, 0.55); background: var(--accent-bg); }
 .mas-aj { background: none; }
+.hola-nom { all: unset; font-weight: 700; cursor: pointer; border-bottom: 1px dashed transparent; }
+.hola-nom:hover, .hola-nom:focus-visible { border-bottom-color: currentColor; }
 .nov-ir { margin-top: 6px; font-size: 14px; font-weight: 600; color: var(--accent); }
 .nov-reg { justify-self: center; font-size: 14px; color: var(--text-2); text-decoration: underline; text-underline-offset: 3px; }
 /* registro de cambios en texto */
@@ -3769,7 +3771,7 @@ function vistaCartera(M) {
   return `
   <div class="cabecera">
     <section aria-label="Patrimonio">
-      ${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <b>${esc(nombreUsuario())}</b></p>` : ''}
+      ${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}
       <div class="hero-fila"><div class="hero-lbl">Patrimonio</div>${chipGTA()}</div>
       <div class="hero-num" aria-label="Patrimonio">${B('totalE')}${B('totalD', 'dec')}</div>
       <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">ganado desde que compraste</span></div><div class="movers">${B('movers')}</div></div>
@@ -9472,13 +9474,33 @@ async function pintarAjustesApp(el) {
     ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} y ábrela: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa "Pasar el token a la app" para que pueda guardar cambios sin escribirlo (necesita la versión 3 de la app o posterior).</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio.</li></ol>
     <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Descargar la app (${esc(nombreUlt(ult))})</a>${tok && android ? `<a class="btn peq" href="intent://token#Intent;scheme=inversiones;package=es.inversiones.app;S.t=${encodeURIComponent(tok)};S.browser_fallback_url=${encodeURIComponent(apk)};end">Pasar el token a la app</a>` : ''}</div>` : ''}`;
 }
+/* cómo quieres que te llame GrowFolio: va en tu perfil cifrado (el mismo en todos tus dispositivos) */
+function cambiarNombre() {
+  const h = hoja('Tu nombre', `<form id="fNom" novalidate>
+    <label class="campo">Cómo quieres que te llame<input name="nombre" maxlength="40" autocomplete="given-name" value="${esc(nombreUsuario())}" placeholder="Tu nombre"></label>
+    <p class="nota" style="margin:0">Para saludarte al entrar. Es el mismo en el móvil, en el ordenador y en la app.</p>
+    <div class="error" id="errNom"></div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div>
+  </form>`);
+  const i = $('[name=nombre]', h.el); setTimeout(() => { i.focus(); i.select(); }, 60);
+  $('#fNom', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const n = i.value.trim().slice(0, 40);
+    if (!n) { $('#errNom', h.el).textContent = 'Escribe un nombre.'; return; }
+    LS.set('inv-nombre', n);
+    try { if (FB.user) await FB.au.updateProfile(FB.user, { displayName: n }); } catch (e) {}
+    h.cerrar(true);
+    if (S.cartera) { S.cartera.perfil = { ...(S.cartera.perfil || {}), nombre: n }; await guardarCartera('Nombre'); pintar(); }
+    toast(`${trad('Ahora te llamo')} ${n}`, 3500);
+  };
+}
 function abrirAjustes() {
   const tok = GH.token();
   const h = hoja('Ajustes', `
     <div class="aj-cab"><img src="favicon.svg" alt=""><div><b>GrowFolio</b><small>Versión ${VERSION} alfa, ${PERFIL_CUENTA ? 'con la cartera guardada en tu cuenta' : PERFIL_LOCAL ? 'con la cartera guardada en este dispositivo' : 'con la cartera guardada en GitHub'}</small></div><button class="btn peq" id="aNov" data-cerrar>${ICONOS.chispa}Novedades</button></div>
     ${PERFIL_CUENTA ? `<h2 class="aj-grupo">Tu cuenta</h2><div class="aj-caja">
       <div class="seccion-ed"><h3>${ICONOS.perfil}${esc(nombreUsuario() || 'Tu cuenta')}</h3><p class="nota" style="margin:0">${FB.user && FB.user.email ? `${esc(FB.user.email)}, ` : ''}${FB.user && (FB.user.providerData || []).some((x) => x.providerId === 'google.com') ? 'con Google' : 'con correo y contraseña'}. Tu cartera se guarda cifrada en tu cuenta y se sincroniza sola entre tus dispositivos.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aSalir">Cerrar sesión</button></div></div></div>`
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNombre">${ICONOS.perfil}Cambiar nombre</button><button class="btn peq" id="aSalir">Cerrar sesión</button></div></div></div>`
     : `<h2 class="aj-grupo">Tu cuenta</h2><div class="aj-caja"><button class="aj-fila" id="aCuenta">${ICONOS.perfil}<span><b>Guarda tu cartera en una cuenta</b><small>Con Google o con tu correo: la tendrás en el móvil, en el ordenador y en la app, cifrada igual que ahora.</small></span><i class="aj-flecha" aria-hidden="true"></i></button></div>`}
     <h2 class="aj-grupo">General</h2>
     <div class="aj-caja">
@@ -9580,6 +9602,7 @@ function abrirAjustes() {
     if (cfgBloqueo()) { LS.del('inv-bloqueo-t'); h.cerrar(); return pantallaBloqueo(() => {}, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); }); }
     await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
   if ($('#aSalir', h.el)) $('#aSalir', h.el).onclick = () => cerrarSesion();
+  if ($('#aNombre', h.el)) $('#aNombre', h.el).onclick = () => { h.cerrar(true); cambiarNombre(); };
   if ($('#aCuenta', h.el)) $('#aCuenta', h.el).onclick = () => cambiarPerfil('cuenta');
   $('#aOlvidar', h.el).onclick = async () => {
     if (PERFIL_CUENTA) { if (confirm('¿Cerrar la sesión y borrar de este dispositivo la clave y la copia? Tu cartera sigue en tu cuenta.')) cerrarSesion(); return; }
@@ -10914,6 +10937,7 @@ document.addEventListener('click', (e) => {
       }
     }
     else if (a === 'nueva-pos') operacion('tengo');
+    else if (a === 'nombre') cambiarNombre();
     else if (a === 'importar') importarCapturas();
     else if (a === 'nueva-ap') editarAportacion(null);
     else if (a === 'editar-ap') editarAportacion(+d.k);
