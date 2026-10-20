@@ -5392,33 +5392,34 @@ function puntuarIdea(x, ctx) {
   const potG = g ? anualizar(g.subida_pct, Math.max(g.meses, 3)) : null;
   const pot = Math.max(-50, Math.min(potG != null ? (x.pot + potG) / 2 : x.pot, 50));
   p += 1.2 * (pot / 50);
-  motivos.push(`los analistas creen que puede subir un ${fmtNum(x.pot, 0)} %${g ? ` y GrowIA, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`);
+  motivos.push(L(`los analistas creen que puede subir un ${fmtNum(x.pot, 0)} %${g ? ` y GrowIA, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`, `analysts see ${fmtNum(x.pot, 0)} % upside${g ? ` and GrowIA ${fmtNum(g.subida_pct, 0)} % in ${plazoTxt(g.meses)}` : ''}`));
   const rm = x.rm ?? 3;
   p += Math.max(-1, Math.min(1, (2.6 - rm) / 1.6));
-  if (rm <= 1.6) motivos.push(`consenso de compra fuerte entre ${x.na} analistas`);
-  else motivos.push(`${x.na} analistas, consenso de compra`);
+  if (rm <= 1.6) motivos.push(L(`consenso de compra fuerte entre ${x.na} analistas`, `strong buy consensus among ${x.na} analysts`));
+  else motivos.push(L(`${x.na} analistas, consenso de compra`, `${x.na} analysts, buy consensus`));
   p += 0.5 * (Math.min(x.na || 0, 30) / 30);
-  if (x.perf > 0 && x.perf < 10) { p += 0.4; motivos.push(`barata: PER futuro de ${fmtNum(x.perf, 1)}`); }
-  else if (x.perf > 0 && x.perf < 15) { p += 0.3; motivos.push(`PER futuro de ${fmtNum(x.perf, 1)}`); }
+  if (x.perf > 0 && x.perf < 10) { p += 0.4; motivos.push(L(`barata: PER futuro de ${fmtNum(x.perf, 1)}`, `cheap: forward P/E of ${fmtNum(x.perf, 1)}`)); }
+  else if (x.perf > 0 && x.perf < 15) { p += 0.3; motivos.push(L(`PER futuro de ${fmtNum(x.perf, 1)}`, `forward P/E of ${fmtNum(x.perf, 1)}`)); }
   else if (x.perf > 0 && x.perf < 22) p += 0.1;
-  else if (x.perf >= 30) { p -= 0.3; pegas.push(`cara: PER futuro de ${fmtNum(x.perf, 0)}`); }
+  else if (x.perf >= 30) { p -= 0.3; pegas.push(L(`cara: PER futuro de ${fmtNum(x.perf, 0)}`, `expensive: forward P/E of ${fmtNum(x.perf, 0)}`)); }
   if (x.c1a != null) {
-    if (x.c1a < -15) { p -= 0.3; pegas.push(`ha caído un ${fmtNum(-x.c1a, 0)} % en un año: el mercado duda de algo`); }
-    else if (x.c1a > 90) { p -= 0.15; pegas.push(`ya ha subido un ${fmtNum(x.c1a, 0)} % en un año`); }
+    if (x.c1a < -15) { p -= 0.3; pegas.push(L(`ha caído un ${fmtNum(-x.c1a, 0)} % en un año: el mercado duda de algo`, `down ${fmtNum(-x.c1a, 0)} % in a year: the market doubts something`)); }
+    else if (x.c1a > 90) { p -= 0.15; pegas.push(L(`ya ha subido un ${fmtNum(x.c1a, 0)} % en un año`, `already up ${fmtNum(x.c1a, 0)} % in a year`)); }
   }
-  if (x.div >= 2) { p += 0.1; motivos.push(`dividendo del ${fmtNum(x.div, 1)} %`); }
+  if (x.div >= 2) { p += 0.1; motivos.push(L(`dividendo del ${fmtNum(x.div, 1)} %`, `${fmtNum(x.div, 1)} % dividend`)); }
   const ctr = contraste(x);
   p += 0.22 * ctr.favor - 0.3 * ctr.contra;
-  motivos.push(`contrastada: ${ctr.favor} de ${ctr.total} señales a favor`);
+  motivos.push(L(`contrastada: ${ctr.favor} de ${ctr.total} señales a favor`, `checked: ${ctr.favor} of ${ctr.total} signals in favour`));
   for (const c of ctr.checks) if (c.ok === -1) pegas.push(`${c.k.toLowerCase()} en contra: ${c.txt}`);
   const pesoSector = x.sector ? ctx.sectores[x.sector] || 0 : 0;
-  if (pesoSector > 20) { p -= 0.3; pegas.push(`ya tienes un ${fmtNum(pesoSector, 0)} % en ${x.sector.toLowerCase()} a través de tus fondos`); }
-  else if (x.sector) { p += 0.1; motivos.push(`${x.sector.toLowerCase()}: solo un ${fmtNum(pesoSector, 0)} % de tu bolsa`); }
+  const sectorT = x.sector ? trad(x.sector).toLowerCase() : '';
+  if (pesoSector > 20) { p -= 0.3; pegas.push(L(`ya tienes un ${fmtNum(pesoSector, 0)} % en ${sectorT} a través de tus fondos`, `you already have ${fmtNum(pesoSector, 0)} % in ${sectorT} through your funds`)); }
+  else if (x.sector) { p += 0.1; motivos.push(L(`${sectorT}: solo un ${fmtNum(pesoSector, 0)} % de tu bolsa`, `${sectorT}: only ${fmtNum(pesoSector, 0)} % of your stocks`)); }
   const dentro = ctx.dentro(x.n);
-  if (dentro > 0.01 * ctx.total) { p -= 0.35; pegas.push(`ya tienes ${eur(dentro, 0)} en ella dentro de tus fondos`); }
+  if (dentro > 0.01 * ctx.total) { p -= 0.35; pegas.push(L(`ya tienes ${eur(dentro, 0)} en ella dentro de tus fondos`, `you already hold ${eur(dentro, 0)} of it inside your funds`)); }
   const gemelas = x.ind && ctx.industrias && ctx.industrias[x.ind];
-  if (gemelas) { p -= 0.6; pegas.push(`es la misma apuesta que ${gemelas.join(' y ')}, que ya tienes: dependen de lo mismo y subirían y caerían a la vez`); }
-  if (x.z === 'EEUU') pegas.push('cotiza en dólares: el cambio euro/dólar también cuenta');
+  if (gemelas) { p -= 0.6; pegas.push(L(`es la misma apuesta que ${gemelas.join(' y ')}, que ya tienes: dependen de lo mismo y subirían y caerían a la vez`, `it's the same bet as ${gemelas.join(' and ')}, which you already own: they depend on the same thing and would rise and fall together`)); }
+  if (x.z === 'EEUU') pegas.push(L('cotiza en dólares: el cambio euro/dólar también cuenta', 'priced in dollars: the euro/dollar rate also counts'));
   const tc = tasaRadar(x);
   if (tc) pegas.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
   const fis = fiscalidadSede(origenRadar(x).sede);
@@ -5475,6 +5476,10 @@ async function cargarInforme() {
   else { try { const c = localStorage.getItem('inv-cache-informe'); if (c && !S.informe) S.informe = JSON.parse(c); } catch (e) {} }
   S.informeId = id;
 }
+/* El escaneo de prensa (unos 500 KB) no hace falta para pintar: al abrir se usa el guardado y el nuevo se baja
+   después, sin frenar la entrada. Solo lo leen las ideas de Expertos y Mercados. */
+function escaneoDeCache() { if (!S.escaneo) { try { const c = localStorage.getItem('inv-cache-escaneo'); if (c) S.escaneo = JSON.parse(c); } catch (e) {} } return Promise.resolve(); }
+function escaneoLuego(ms = 6000) { setTimeout(() => cargarEscaneo().then(() => { if (S.cartera && ['expertos', 'mercados'].includes(S.vista) && !S.ficha) pintar(); }).catch(() => {}), ms); }
 async function cargarEscaneo() {
   const id = S.precios && S.precios.escaneo_id;
   if (!id && !CFG.dev) { if (!S.escaneo) { try { const c = localStorage.getItem('inv-cache-escaneo'); if (c) S.escaneo = JSON.parse(c); } catch (e) {} } return; }
@@ -6589,7 +6594,7 @@ function rentaEsperada(x, subida, meses, fuente) {
   const mA = Math.max(meses, 3);
   return { subida, meses, fuente, divP, netoP, netoAnual: anualizar(netoP, mA), brutoAnual: anualizar(subida + divP, mA), t, fis, tasa };
 }
-const plazoTxt = (m) => (m == null ? '' : m < 1.5 ? 'un mes' : m < 12 ? `${Math.round(m)} meses` : m === 12 ? '12 meses' : m % 12 === 0 ? `${m / 12} años` : `${fmtNum(m / 12, 1)} años`);
+const plazoTxt = (m) => (m == null ? '' : m < 1.5 ? L('un mes', 'a month') : m < 12 ? L(`${Math.round(m)} meses`, `${Math.round(m)} months`) : m === 12 ? L('12 meses', '12 months') : m % 12 === 0 ? L(`${m / 12} años`, `${m / 12} years`) : L(`${fmtNum(m / 12, 1)} años`, `${fmtNum(m / 12, 1)} years`));
 /* cuánto llevas ganando al año en una posición: con la fecha de cada compra (o "desde cuándo la tienes") */
 function tiempoPos(f) {
   const pos = f.pos;
@@ -7028,7 +7033,7 @@ function htmlPlanVenta(pl, compacto) {
   const destino = [];
   const tasaTop = top ? tasaRadar(top) : null;
   const pegaTop = top && top.pegas.find((x) => !x.startsWith('al comprar pagas'));
-  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>La mejor de las ${radarVals().length} empresas que sigue GrowFolio para comprar una acción nueva, contrastada con ${top.ctr.favor} de ${top.ctr.total} señales a favor: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` Pega: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} ${(() => { const e = esperadaRadar(top), an = f.p && f.p.analistas, queda = an && an.objetivo ? (an.objetivo / f.precio - 1) * 100 : null; return e ? ` ${planTxt(e)}${queda != null ? ` A ${esc(i.corto)} le quedan un ${pctS(queda, 1)} hasta su objetivo.` : ''}` : ''; })()} ${esc(fiscalidadSede(origenRadar(top).sede).txt)}</span></div></div>`);
+  if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(top.n)}</b><span>${L(`La mejor de las ${radarVals().length} empresas que sigue GrowFolio para comprar una acción nueva, contrastada con ${top.ctr.favor} de ${top.ctr.total} señales a favor`, `The best of the ${radarVals().length} companies GrowFolio follows for buying a new stock, checked with ${top.ctr.favor} of ${top.ctr.total} signals in favour`)}: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` ${L('Pega', 'Drawback')}: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} ${(() => { const e = esperadaRadar(top), an = f.p && f.p.analistas, queda = an && an.objetivo ? (an.objetivo / f.precio - 1) * 100 : null; return e ? ` ${planTxt(e)}${queda != null ? ` A ${esc(i.corto)} le quedan un ${pctS(queda, 1)} hasta su objetivo.` : ''}` : ''; })()} ${esc(fiscalidadSede(origenRadar(top).sede).txt)}</span></div></div>`);
   if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(NUCLEO.d, 'S P')}<div><b>${eur(pl.aNucleo, 0)} al S&P 500</b><span>${pl.nivel === 'reducir' ? 'Para bajar riesgo sin dejar de estar invertido. ' : pl.aIdea > 0 ? 'La otra mitad, a lo seguro. ' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite. '}${esc(NUCLEO.txt)}</span></div></div>`);
   if (pl.impuesto > 0) destino.push(`<div class="pv-dest">${logo(null, '€')}<div><b>${eur(pl.impuesto, 0)} aparte para Hacienda</b><span>Se paga en la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}. Déjalo en efectivo o en tu colchón hasta entonces: no lo inviertas en bolsa.</span></div></div>`);
   const plegado = compacto === 'plegado';
@@ -9769,7 +9774,7 @@ function htmlMovidas() {
 /* gráfica sencilla del último año a partir de [[fecha, precio], …] */
 // el histórico semanal del radar: se baja la primera vez que abres la ficha de una empresa que no tienes
 let radarHistP = null;
-const radarHist = () => radarHistP || (radarHistP = fetch(GH.raw('radar-hist.json', 'datos') + '?v=' + Math.floor(Date.now() / 3600000), { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => { radarHistP = null; return null; }));
+const radarHist = () => radarHistP || (radarHistP = fetch(CFG.dev ? 'dev/radar-hist.json' : GH.raw('radar-hist.json', 'datos') + '?v=' + Math.floor(Date.now() / 3600000), { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => { radarHistP = null; return null; }));
 function graficaConsulta(h, mon) {
   const desde = iso(new Date(Date.now() - 366 * 864e5));
   const se = (h || []).filter(([d, v]) => d >= desde && v > 0);
@@ -12844,8 +12849,8 @@ async function recargarPrecios() {
   try { await cargarPrecios(); } catch (e) { return; }
   if (!S.cartera) return;
   if (S.precios.generado !== antes) {
-    await Promise.all([cargarHistorico(), cargarIntradia(), cargarIA(), cargarRadar(), cargarInforme(), cargarEscaneo()]);
-    pintar(); LIVE.resuscribir();
+    await Promise.all([cargarHistorico(), cargarIntradia(), cargarIA(), cargarRadar(), cargarInforme()]);
+    pintar(); LIVE.resuscribir(); escaneoLuego(1500);
   } else programarParche();
   revisarAnalisisIA();
   revisarWeb();
@@ -13234,7 +13239,7 @@ async function iniciar() {
   $('#app').innerHTML = '';
   const t0 = mostrarEntrada();
   try {
-    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), cargarEscaneo(), cargarCatalogo()])), cargarCifrada(), leerAnalisisRemoto()]);
+    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), escaneoDeCache(), cargarCatalogo()]).then(() => escaneoLuego())), cargarCifrada(), leerAnalisisRemoto()]);
     S.enc = enc; S.iaRemoto = iaRem || S.iaCuenta || null;
   } catch (e) {
     console.error(e);
