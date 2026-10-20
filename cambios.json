@@ -1,11 +1,20 @@
 {
  "versiones": [
   {
-   "v": "0.2.3",
+   "v": "0.2.3b",
    "f": "2026-10-20",
-   "h": "20:31",
-   "t": "Cartera nueva y los días sin bolsa",
+   "h": "20:58",
+   "t": "Precios al día y avisos que se van",
    "commits": [
+    {
+     "cuando": "2026-10-20 20:58",
+     "asunto": "0.2.3b: los precios se actualizan cada 20 minutos de verdad (los lanza el Worker con su cron) y el aviso «sin precio» solo sale si no lo hay",
+     "detalle": [
+      "El Worker lanza la Action de Precios con su cron (wrangler.toml): entre semana cada 20 minutos de 6:00 a 21:59 UTC y cada 4 horas el fin de semana; el Catálogo, una vez al día. GitHub se saltaba casi todas sus tareas programadas",
+      "Necesita el secreto PRECIOS_TOKEN (solo Actions en escritura); la Action Worker se lo pone",
+      "Versiones con letra (0.2.3b) en la web, los releases, los cambios y la app de Android"
+     ]
+    },
     {
      "cuando": "2026-10-20 20:40",
      "asunto": "Releases: las etiquetas de las versiones viejas se crean con el secreto RELEASES_TOKEN (el de la Action no puede)",
@@ -15,7 +24,15 @@
      "cuando": "2026-10-20 20:37",
      "asunto": "Releases: las etiquetas de las versiones viejas se crean con git y, si GitHub no deja, el aviso dice por qué",
      "detalle": []
-    },
+    }
+   ]
+  },
+  {
+   "v": "0.2.3",
+   "f": "2026-10-20",
+   "h": "20:31",
+   "t": "Cartera nueva y los días sin bolsa",
+   "commits": [
     {
      "cuando": "2026-10-20 20:31",
      "asunto": "0.2.3: el aviso «sin precio» solo sale si de verdad no hay precio (se quedaba aunque lo sacara del catálogo o del radar)",

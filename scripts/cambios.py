@@ -25,7 +25,7 @@ RESERVADOS = {"c7f439a", "4f9b948", "92a42b5"}
 def versiones():
     html = (RAIZ / "index.html").read_text(encoding="utf-8")
     out = []
-    for m in re.finditer(r"\{ v: '([\d.]+)', f: '([\d-]+)'(?:, h: '([\d:]+)')?, t: '((?:[^'\\]|\\.)*)'", html):
+    for m in re.finditer(r"\{ v: '([\d.]+[a-z]?)', f: '([\d-]+)'(?:, h: '([\d:]+)')?, t: '((?:[^'\\]|\\.)*)'", html):
         v, f, h, t = m.groups()
         out.append({"v": v, "f": f, "h": h or "23:59", "t": t.replace("\\'", "'")})
     return sorted(out, key=lambda x: (x["f"], x["h"]))
@@ -44,9 +44,9 @@ def commits():
         if corto in RESERVADOS:
             continue  # se publicó y se quitó para salir en una versión posterior: allí va su cambio
         cuando, asunto = lineas[0], (lineas[1] if len(lineas) > 1 else "").strip()
-        asunto = re.sub(r"^(\d+\.\d+\.\d+) \(sin publicar\)", r"\1", asunto)  # lo que se preparaba en una rama antes de publicar
+        asunto = re.sub(r"^(\d+\.\d+\.\d+[a-z]?) \(sin publicar\)", r"\1", asunto)  # lo que se preparaba en una rama antes de publicar
         # lo que se guardaba en una rama para la versión siguiente («Reservado para la 0.2.3: …») cuenta en esa versión
-        m = re.match(r"^Reservado para la (\d+\.\d+\.\d+): ?", asunto)
+        m = re.match(r"^Reservado para la (\d+\.\d+\.\d+[a-z]?): ?", asunto)
         version = m.group(1) if m else None
         if m:
             asunto = asunto[m.end():]
@@ -55,7 +55,7 @@ def commits():
         if re.match(r"^Prueba temporal", asunto, re.I):
             continue  # pruebas de las Actions que se quitan enseguida: no son cambios de la app
         # «0.2.2: …» es un arreglo de esa versión aunque se publicara después de su hora
-        m = re.match(r"^(\d+\.\d+\.\d+): ", asunto)
+        m = re.match(r"^(\d+\.\d+\.\d+[a-z]?): ", asunto)
         out.append({"cuando": cuando, "asunto": asunto, "detalle": detalle, "version": version or (m.group(1) if m else None)})
     return out
 

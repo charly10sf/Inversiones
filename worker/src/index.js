@@ -171,7 +171,27 @@ async function banco(ruta, url, req, env, res) {
   return res({ error: 'no-existe' }, 404);
 }
 
+// La actualización de precios. GitHub se salta casi todas sus tareas programadas (un día normal lanza 2 o 3 de las 48 que
+// tocan), así que las lanza este Worker con su cron, que sí se cumple (los horarios están en wrangler.toml). Necesita el
+// secreto PRECIOS_TOKEN: un token de grano fino solo de este repositorio con Actions en lectura y escritura, que sirve
+// para lanzar Actions y nada más. Sin él, el cron no hace nada.
+const REPO = 'charly10sf/Inversiones';
+const CRON_CATALOGO = '23 5 * * *';
+async function lanzarAction(env, flujo) {
+  const r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${flujo}/dispatches`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${env.PRECIOS_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'growfolio-worker', 'Content-Type': 'application/json' },
+    body: JSON.stringify({ ref: 'main' }),
+  });
+  if (r.status !== 204) console.log(`No se ha podido lanzar ${flujo}: ${r.status} ${(await r.text()).slice(0, 200)}`);
+  return r.status;
+}
+
 export default {
+  async scheduled(ev, env, ctx) {
+    if (!env.PRECIOS_TOKEN) return;
+    ctx.waitUntil(lanzarAction(env, ev.cron === CRON_CATALOGO ? 'catalogo.yml' : 'precios.yml'));
+  },
   async fetch(req, env) {
     const url = new URL(req.url), origen = req.headers.get('Origin') || '';
     const origenes = [...ORIGENES, ...String(env.ORIGENES_EXTRA || '').split(',').map((x) => x.trim()).filter(Boolean)];
@@ -179,7 +199,7 @@ export default {
     const res = (cuerpo, status = 200) => new Response(JSON.stringify(cuerpo), { status, headers: { ...cors, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     try {
-      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP) });
+      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN });
       if (url.pathname.startsWith('/banco/')) return await banco(url.pathname.slice(7), url, req, env, res);
       return res({ error: 'no-existe' }, 404);
     } catch (e) {

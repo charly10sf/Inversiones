@@ -1,6 +1,11 @@
-# El Worker de GrowFolio (servidor pequeño para el banco). Lo publica la GitHub Action «Worker» (.github/workflows/worker.yml); los secretos
-# (EB_CLAVE, EB_APP, BANCO_EMAILS, ESTADO) los pone esa Action y nunca están en el repositorio.
+# El Worker de GrowFolio (servidor pequeño para el banco y para lanzar la actualización de precios). Lo publica la GitHub Action «Worker» (.github/workflows/worker.yml); los secretos
+# (EB_CLAVE, EB_APP, BANCO_EMAILS, ESTADO, PRECIOS_TOKEN) los pone esa Action y nunca están en el repositorio.
 name = "growfolio"
 main = "src/index.js"
 compatibility_date = "2025-06-01"
 workers_dev = true
+
+# Cuándo lanza las Actions (en UTC, como las de GitHub): los precios cada 20 minutos de lunes a viernes de 6:00 a 21:59 y
+# cada 4 horas el fin de semana; el catálogo de fondos, una vez al día. El de catálogo tiene que ser igual que CRON_CATALOGO.
+[triggers]
+crons = ["7,27,47 6-21 * * MON-FRI", "17 */4 * * SAT,SUN", "23 5 * * *"]

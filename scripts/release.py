@@ -25,19 +25,25 @@ def limpio(t):
     return t.replace("\\'", "'")
 
 
+def orden(v):
+    """0.2.3 < 0.2.3b < 0.2.4: la letra es una corrección de esa versión"""
+    m = re.match(r"(\d+)\.(\d+)\.(\d+)([a-z]*)", v)
+    return (int(m[1]), int(m[2]), int(m[3]), m[4])
+
+
 def versiones():
     html = (RAIZ / "index.html").read_text(encoding="utf-8")
     i = html.index("const NOVEDADES = [")
     j = html.index("\n];", i)
     bloque = html[i:j]
-    cabeceras = list(re.finditer(r"\n  \{ v: '([\d.]+)', f: '([\d-]+)'(?:, h: '([\d:]+)')?, t: " + CADENA, bloque))
+    cabeceras = list(re.finditer(r"\n  \{ v: '([\d.]+[a-z]?)', f: '([\d-]+)'(?:, h: '([\d:]+)')?, t: " + CADENA, bloque))
     out = []
     for k, m in enumerate(cabeceras):
         fin = cabeceras[k + 1].start() if k + 1 < len(cabeceras) else len(bloque)
         cosas = [(limpio(a), limpio(b)) for a, b in re.findall(r"t: " + CADENA + r", x: " + CADENA, bloque[m.end():fin])]
         v, f, h, t = m.groups()
         out.append({"v": v, "f": f, "h": h or "", "t": limpio(t), "cosas": cosas})
-    return sorted(out, key=lambda x: [int(n) for n in x["v"].split(".")])
+    return sorted(out, key=lambda x: orden(x["v"]))
 
 
 def cambios():

@@ -10512,8 +10512,12 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.2.3';
+const VERSION = '0.2.3b';
 const NOVEDADES = [
+  { v: '0.2.3b', f: '2026-10-20', h: '20:58', t: 'Precios al día y avisos que se van', cosas: [
+    { d: 'cifras', t: 'Los precios, al día de verdad', x: 'Entre semana, los precios se actualizan cada 20 minutos de la mañana a la noche, y el fin de semana cada 4 horas. Hasta ahora muchas actualizaciones no llegaban a hacerse y los precios podían ir con horas de retraso; lo que acababas de añadir tardaba en tener precio.' },
+    { d: 'aviso', t: 'Avisos que se van cuando toca', x: '«Sin precio» solo sale si de verdad no hay precio. Antes se quedaba aunque el valor ya lo tuviera del catálogo, del radar o de su último cierre.' },
+  ] },
   { v: '0.2.3', f: '2026-10-20', h: '20:31', t: 'Cartera nueva y los días sin bolsa', cosas: [
     { d: 'grafica', ir: { v: 'cartera', sel: '.hero-panel', pos: true }, t: 'Tu patrimonio y su gráfica, en una pieza', x: 'La cifra va encima de la gráfica, más grande. Debajo, cuánto ha cambiado en el periodo que elijas, lo de hoy y lo ganado. Pasa el dedo por la curva: la cifra te dice lo que tenías ese día y lo de después se apaga. En 1D se cuenta desde el cierre de ayer.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.movers', pos: true }, t: 'Lo que más se mueve, a un toque', x: 'Toca cualquiera de «Lo que más ha movido hoy tu cartera» y se abre su ficha.' },
@@ -10649,7 +10653,8 @@ const NOVEDADES = [
   { v: '0.1.2', f: '2026-10-17', h: '16:51', t: 'Expertos, Mercados, Futuro y el radar de ideas' },
   { v: '0.1.1', f: '2026-10-17', h: '13:21', t: 'Primera versión: cartera cifrada con precios automáticos' },
 ];
-const cmpVer = (a, b) => { const x = String(a || '0').split('.').map(Number), y = String(b || '0').split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
+// 0.2.3 < 0.2.3b < 0.2.4: la letra es una corrección de esa versión
+const cmpVer = (a, b) => { const p = (v) => { const m = String(v || '0').match(/^(\d+)(?:\.(\d+))?(?:\.(\d+))?([a-z]*)/) || []; return [+m[1] || 0, +m[2] || 0, +m[3] || 0, m[4] || '']; }; const x = p(a), y = p(b); for (let i = 0; i < 3; i++) { const d = x[i] - y[i]; if (d) return d; } return x[3] < y[3] ? -1 : x[3] > y[3] ? 1 : 0; };
 // día y hora de publicación de cada versión (la hora, desde la 0.1.17; las de antes salen del historial de GitHub)
 const fechaNov = (f, h) => { const d = deIso(f); return L(`${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}${h ? `, ${h}` : ''}`, `${MESES_EN[d.getMonth()].slice(0, 3)} ${d.getDate()}, ${d.getFullYear()}${h ? `, ${h}` : ''}`); };
 
