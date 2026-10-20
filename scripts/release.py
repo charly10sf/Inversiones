@@ -41,8 +41,10 @@ def versiones():
     for k, m in enumerate(cabeceras):
         fin = cabeceras[k + 1].start() if k + 1 < len(cabeceras) else len(bloque)
         cosas = [(limpio(a), limpio(b)) for a, b in re.findall(r"t: " + CADENA + r", x: " + CADENA, bloque[m.end():fin])]
+        a = re.search(r"arreglos: \[(.*?)\]", bloque[m.end():fin], re.S)
+        arreglos = [limpio(x) for x in re.findall(CADENA, a.group(1))] if a else []
         v, f, h, t = m.groups()
-        out.append({"v": v, "f": f, "h": h or "", "t": limpio(t), "cosas": cosas})
+        out.append({"v": v, "f": f, "h": h or "", "t": limpio(t), "cosas": cosas, "arreglos": arreglos})
     return sorted(out, key=lambda x: orden(x["v"]))
 
 
@@ -69,6 +71,8 @@ def cuerpo(x, anterior, cam):
         l += ["### Novedades", ""]
         l += [f"- **{t}.** {d}" if not t.endswith((".", "?", "!")) else f"- **{t}** {d}" for t, d in x["cosas"]]
         l.append("")
+    if x.get("arreglos"):
+        l += ["### Bugs corregidos", ""] + [f"- {a}" for a in x["arreglos"]] + [""]
     hechos = cam.get(x["v"], [])
     if hechos:
         l += ["### Todos los cambios", ""]

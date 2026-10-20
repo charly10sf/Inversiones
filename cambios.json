@@ -7,6 +7,14 @@
    "t": "Precios al día y avisos que se van",
    "commits": [
     {
+     "cuando": "2026-10-20 21:10",
+     "asunto": "0.2.3b: al abrirla salen también los bugs corregidos (en la presentación, en la lista y en el release)",
+     "detalle": [
+      "Cada versión puede llevar arreglos: además de sus novedades, una escena «Bugs corregidos» antes del final de la presentación, debajo de sus novedades en la lista y su apartado en el release de GitHub",
+      "A quien abrió la 0.2.3b antes de esto se le enseña otra vez, una sola"
+     ]
+    },
+    {
      "cuando": "2026-10-20 20:58",
      "asunto": "0.2.3b: los precios se actualizan cada 20 minutos de verdad (los lanza el Worker con su cron) y el aviso «sin precio» solo sale si no lo hay",
      "detalle": [
