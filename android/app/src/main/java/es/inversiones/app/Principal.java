@@ -27,6 +27,7 @@ public class Principal extends Activity {
     private static final int ELEGIR_ARCHIVO = 7;
     private static final int PERMISO_INSTALAR = 8;
     static final int ENTRAR_GOOGLE = 9;
+    private static final int PERMISO_AVISOS = 10;
     private File pendiente;
     private WebView web;
     private ValueCallback<Uri[]> archivos;
@@ -55,6 +56,8 @@ public class Principal extends Activity {
         CookieManager.getInstance().setAcceptCookie(true);
 
         web.addJavascriptInterface(new Puente(this), "InversionesApp");
+        // los avisos, si los tienes activados (por si el sistema canceló el trabajo al actualizar la app)
+        if (Avisos.activados(this)) Avisos.programar(this, true);
         web.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView v, String url) {
@@ -230,6 +233,21 @@ public class Principal extends Activity {
             return;
         }
         super.onActivityResult(pedido, resultado, datos);
+    }
+
+    /** Android 13 o más: el permiso de notificaciones, solo cuando activas los avisos */
+    void pedirPermisoAvisos() {
+        if (android.os.Build.VERSION.SDK_INT >= 33) requestPermissions(new String[]{android.Manifest.permission.POST_NOTIFICATIONS}, PERMISO_AVISOS);
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int pedido, String[] permisos, int[] resultados) {
+        if (pedido == PERMISO_AVISOS) {
+            boolean ok = resultados.length > 0 && resultados[0] == android.content.pm.PackageManager.PERMISSION_GRANTED;
+            js("window.permisoAvisos && permisoAvisos(" + ok + ")");
+            return;
+        }
+        super.onRequestPermissionsResult(pedido, permisos, resultados);
     }
 
     private void salirVideo() {

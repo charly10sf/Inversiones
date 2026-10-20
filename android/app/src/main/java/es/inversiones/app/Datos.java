@@ -30,6 +30,8 @@ import java.util.TreeSet;
  */
 final class Datos {
     static final String PRECIOS = "https://raw.githubusercontent.com/charly10sf/Inversiones/datos/widget.json";
+    /** los precios del radar y de los fondos del catálogo (para los avisos de lo que añadiste a mano) */
+    static final String AVISOS = "https://raw.githubusercontent.com/charly10sf/Inversiones/datos/avisos.json";
     private static final String PREFS = "widget";
 
     private Datos() {}
@@ -70,6 +72,35 @@ final class Datos {
             return true;
         } catch (Exception e) {
             return false;
+        } finally {
+            if (con != null) con.disconnect();
+        }
+    }
+
+    /** Solo para los avisos: precios del radar (r: {símbolo: [precio en €, % del día]}) y del catálogo de fondos
+     *  (c: {id: [precio, anterior]}). Como mucho una vez cada 20 minutos. */
+    static void descargarAvisos(Context c) {
+        SharedPreferences p = prefs(c);
+        if (System.currentTimeMillis() - p.getLong("avisos_bajado_t", 0) < 20 * 60000L) return;
+        HttpURLConnection con = null;
+        try {
+            con = (HttpURLConnection) new URL(AVISOS + "?t=" + (System.currentTimeMillis() / 60000)).openConnection();
+            con.setConnectTimeout(8000);
+            con.setReadTimeout(10000);
+            con.setRequestProperty("Cache-Control", "no-cache");
+            if (con.getResponseCode() != 200) return;
+            InputStream in = con.getInputStream();
+            ByteArrayOutputStream out = new ByteArrayOutputStream();
+            byte[] b = new byte[8192];
+            int n;
+            while ((n = in.read(b)) > 0) out.write(b, 0, n);
+            JSONObject j = new JSONObject(out.toString("UTF-8"));
+            SharedPreferences.Editor e = p.edit().putLong("avisos_bajado_t", System.currentTimeMillis());
+            if (j.optJSONObject("r") != null) e.putString("radar_p", j.getJSONObject("r").toString());
+            if (j.optJSONObject("c") != null) e.putString("cat_p", j.getJSONObject("c").toString());
+            e.apply();
+        } catch (Exception e) {
+            // la próxima vez
         } finally {
             if (con != null) con.disconnect();
         }

@@ -51,6 +51,10 @@ jobs:
             git show origin/datos:escaneo.json > anterior/escaneo.json || true
             git show origin/datos:noticias-cache.json > anterior/noticias-cache.json || true
           fi
+          # los precios de los fondos del catálogo, para los avisos del móvil (avisos.json)
+          if git fetch --depth=1 origin catalogo 2>/dev/null; then
+            git show origin/catalogo:catalogo-precios.json > anterior/catalogo-precios.json || true
+          fi
 
       - name: Descargar precios
         run: |
@@ -75,6 +79,26 @@ jobs:
           except Exception as e:
               print("sin cierres para el widget:", e)
           json.dump({"generado": d.get("generado"), "p": p, "h": h}, open("salida/widget.json", "w"), separators=(",", ":"))
+          # Para los avisos de la app (solo los baja si los activas y tienes algo fuera de los precios comunes):
+          # el radar {símbolo: [precio en €, % del día]} y el catálogo de fondos {id: [precio, anterior]}
+          r, c = {}, {}
+          for f in ("salida/radar.json", "anterior/radar.json"):
+              try:
+                  for x in json.load(open(f)).get("valores") or []:
+                      pe = x.get("pe") if x.get("pe") is not None else x.get("p")
+                      if x.get("s") and pe:
+                          r[str(x["s"]).upper()] = [round(pe, 4), round(x.get("v"), 2) if x.get("v") is not None else None]
+                  break
+              except Exception as e:
+                  print("sin radar para los avisos:", f, e)
+          try:
+              for k, x in (json.load(open("anterior/catalogo-precios.json")).get("v") or {}).items():
+                  if x.get("p"):
+                      c[k] = [x.get("p"), x.get("pa")]
+          except Exception as e:
+              print("sin catálogo para los avisos:", e)
+          json.dump({"generado": d.get("generado"), "r": r, "c": c}, open("salida/avisos.json", "w"), separators=(",", ":"))
+          print("avisos.json:", len(r), "del radar,", len(c), "fondos")
           PY
 
       # Noticias de un lote de empresas en cada pasada; Gemini las lee, y cada 2 horas escribe el

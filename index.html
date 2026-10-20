@@ -4094,6 +4094,11 @@ function enlazarAjAvisos(caja) {
   });
   caja.addEventListener('click', (e) => { if (e.target.closest('[data-av-prueba]')) avisoSistema('prueba', 'Así te llegarán los avisos', 'Por ejemplo: «Repsol se acerca a tu precio de salida: está a un 2,1 % de 26,92 €».', '#cartera', 'prueba:' + Date.now(), true); });
 }
+// la app de Android contesta aquí cuando aceptas (o no) el permiso de notificaciones al activar los avisos
+window.permisoAvisos = (ok) => {
+  const caja = document.getElementById('aAvisos'); if (caja) caja.innerHTML = htmlAjAvisos();
+  if (!ok) toast('Sin el permiso de notificaciones no te llegará ningún aviso. Puedes darlo en Ajustes de Android > Aplicaciones > GrowFolio.', 6000);
+};
 async function avisoSistema(tipo, titulo, cuerpo, hash = '#cartera', clave = '', forzar = false) {
   const c = avisosCfg();
   if (!forzar && (!c.on || (tipo !== 'prueba' && c[{ pregunta: 'preg' }[tipo] || tipo] === false))) return;

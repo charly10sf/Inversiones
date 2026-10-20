@@ -54,6 +54,26 @@ public class Puente {
         act.runOnUiThread(() -> act.getWindow().getDecorView().performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP));
     }
 
+    /** Avisos en el móvil (Ajustes > Avisos y resumen): activa o quita la revisión cada media hora. Al activarlos
+     *  en Android 13 o más pide el permiso de notificaciones; la respuesta llega a la web por permisoAvisos(ok). */
+    @JavascriptInterface
+    public void avisos(boolean on) {
+        Avisos.programar(ctx, on);
+        if (on && !Avisos.permitidos(ctx)) act.runOnUiThread(act::pedirPermisoAvisos);
+    }
+
+    @JavascriptInterface
+    public boolean avisosPermitidos() {
+        return Avisos.permitidos(ctx);
+    }
+
+    /** Un aviso que manda la web (el de prueba, o una pregunta de GrowIA que llega con la app abierta) */
+    @JavascriptInterface
+    public void notificar(String titulo, String cuerpo, String hash) {
+        String h = hash == null ? "cartera" : hash.replaceAll("[^a-z]", "");
+        Avisos.mostrar(ctx, "web:" + titulo, titulo == null ? "GrowFolio" : titulo, cuerpo == null ? "" : cuerpo, h.isEmpty() ? "cartera" : h);
+    }
+
     @JavascriptInterface
     public void borrarWidget() {
         Datos.borrar(ctx);
