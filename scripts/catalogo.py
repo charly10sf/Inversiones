@@ -59,7 +59,8 @@ def serie_por_nombre(texto, periodo="10y"):
                 return sim, t, s, meta, nombre
         except Exception:  # noqa: BLE001
             pass
-    raise RuntimeError(f"nada en Yahoo para «{texto}»")
+    vistos = ", ".join(f"{q.get('symbol')} {q.get('quoteType')} {(q.get('longname') or q.get('shortname') or '')[:50]}" for q in quotes[:8])
+    raise RuntimeError(f"nada en Yahoo para «{texto}»: {vistos or 'sin resultados'}")
 
 
 def region_de(nombre):
@@ -201,7 +202,8 @@ def main(ruta_cat, dir_anterior, dir_salida):
         time.sleep(0.4)
     generado = pd.Timestamp.now(tz="UTC").isoformat(timespec="seconds")
     with open(f"{dir_salida}/catalogo-precios.json", "w", encoding="utf-8") as f:
-        json.dump({"generado": generado, "v": salida}, f, ensure_ascii=False, separators=(",", ":"))
+        # los que fallan, con el motivo (los registros de las Actions no siempre se pueden leer desde fuera)
+        json.dump({"generado": generado, "v": salida, "errores": errores[:40]}, f, ensure_ascii=False, separators=(",", ":"))
     print(f"{len(salida)} en el catálogo; {len(errores)} errores")
     for x in errores:
         print("  -", x)
