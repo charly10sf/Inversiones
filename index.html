@@ -86,7 +86,8 @@ a:hover { text-decoration: underline; }
 .gta-top { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px 0 9px; border-radius: 999px; border: 1px solid rgba(255, 62, 165, 0.55); background: linear-gradient(90deg, rgba(255, 62, 165, 0.16), rgba(255, 140, 60, 0.12)); color: #fff; cursor: pointer; white-space: nowrap; box-shadow: 0 0 14px rgba(255, 62, 165, 0.22); transition: box-shadow 0.2s ease, border-color 0.2s ease; }
 .gta-top:hover { border-color: #FF3EA5; box-shadow: 0 0 20px rgba(255, 62, 165, 0.45); }
 .gta-top:focus-visible { outline: 2px solid #FF7DB8; outline-offset: 2px; }
-.gta-top-t { font-family: 'Tilt Neon', var(--f); font-size: 15px; letter-spacing: 0.05em; color: #FFE1F1; text-shadow: 0 0 6px rgba(255, 62, 165, 0.85); }
+/* «VI» en letra de rótulo de neón de los ochenta, como los de Vice City (Yellowtail; no es la del logo del juego) */
+.gta-top-t { font-family: 'Yellowtail', 'Tilt Neon', var(--f); font-size: 19px; line-height: 1; letter-spacing: 0.01em; padding: 0 2px 2px 0; color: #FFE6F3; text-shadow: 0 0 4px rgba(255, 62, 165, 0.95), 0 0 12px rgba(255, 62, 165, 0.65), 0 0 22px rgba(255, 62, 165, 0.35); }
 .gta-top-d { font-family: 'Tilt Neon', var(--f); font-size: 14px; color: #FFB27A; text-shadow: 0 0 6px rgba(255, 140, 60, 0.75); font-variant-numeric: tabular-nums; }
 .gta-top.pulsa { animation: gtaPulsa 1.25s ease-in-out 4; }
 /* en el móvil, solo el mando y los días */
@@ -2562,6 +2563,25 @@ body.con-ixn { overflow: hidden; }
 .mg-nota { margin-top: -8px; }
 /* Mercados (0.2.4): las gráficas arriba; en el móvil, un grupo cada vez con pestañas y lo demás plegado */
 .mg-tabs { display: none; }
+/* la noticia, leída dentro */
+.not-h { display: grid; gap: 12px; }
+.not-src { margin: 0; color: var(--muted); font-size: 13px; }
+.not-t { margin: 0; font-size: 20px; line-height: 1.3; font-weight: 700; letter-spacing: -0.015em; text-wrap: balance; }
+.not-cuerpo { display: grid; gap: 12px; }
+.not-cuerpo > p { margin: 0; color: var(--text); font-size: 15.5px; line-height: 1.6; }
+.not-lee { display: flex; align-items: center; gap: 8px; color: var(--accent) !important; font-size: 14px !important; }
+.not-lee svg { width: 16px; height: 16px; animation: notLee 1.4s ease-in-out infinite; }
+@keyframes notLee { 50% { opacity: 0.35; } }
+.not-esq { display: grid; gap: 9px; }
+.not-esq i { display: block; height: 12px; border-radius: 6px; background: linear-gradient(90deg, var(--plane-2), var(--plane-3), var(--plane-2)); background-size: 200% 100%; animation: notEsq 1.4s ease-in-out infinite; }
+.not-esq i:nth-child(2) { width: 92%; } .not-esq i:nth-child(3) { width: 96%; } .not-esq i:nth-child(4) { width: 60%; }
+@keyframes notEsq { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+@media (prefers-reduced-motion: reduce) { .not-esq i, .not-lee svg { animation: none; } }
+.not-tuyo { padding: 12px 14px; border-radius: 12px; background: var(--accent-bg); border: 1px solid rgba(226, 180, 95, 0.3); }
+.not-tuyo b { color: var(--accent); }
+.not-cuerpo > p.not-pie { color: var(--muted); font-size: 12.5px; line-height: 1.5; }
+.not-pie a { color: var(--text-2); }
+.not-btns { justify-content: flex-start; margin-top: 4px; }
 .merc-pleg > summary { list-style: none; cursor: pointer; align-items: center; }
 .merc-pleg > summary::-webkit-details-marker { display: none; }
 .merc-pleg > summary .aj-flecha { margin-left: auto; transition: transform 0.2s ease; }
@@ -5345,7 +5365,7 @@ function pasadoAg(modo) {
   const hoyM = (modo === 'tu' || modo === 'eco') && fichas.length && (N.mercado || []).length ? (() => {
     const n = N.mercado[0], x = deIso(String(n.d).slice(0, 10));
     return `<div class="agp"><div class="agp-fe"><span>${diaSemL(x.getDay()).slice(0, 3)}</span><b>${x.getDate()}</b><span>${L(MESES[x.getMonth()], MESES_EN[x.getMonth()].slice(0, 3))}</span></div>
-      <div class="agp-c agp-hoy"><p class="agp-src"><span class="agp-rayo">${ICONOS.chispa}</span>${String(n.d).slice(0, 10) === hoyIso() ? L('Mercados hoy', 'Markets today') : L('Mercados', 'Markets')}</p><a class="agp-t grande" data-no-trad href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${esc(n.t)}</a>
+      <div class="agp-c agp-hoy"><p class="agp-src"><span class="agp-rayo">${ICONOS.chispa}</span>${String(n.d).slice(0, 10) === hoyIso() ? L('Mercados hoy', 'Markets today') : L('Mercados', 'Markets')}</p><a class="agp-t grande noti" data-no-trad href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a>
         <div class="agp-fichas">${fichas.map(([k, nom]) => { const v = MK[k].variacion_dia; return `<span class="${v >= 0 ? 'up' : 'down'}"><i>${v >= 0 ? '↑' : '↓'}</i>${esc(nom)} <b>${pctS(v, 2)}</b></span>`; }).join('')}</div></div></div>`;
   })() : '';
   const resto = hoyM ? lista.filter((n) => n !== lista.find((x) => x.id === null)) : lista;
@@ -5353,7 +5373,7 @@ function pasadoAg(modo) {
     const x = deIso(String(n.d).slice(0, 10)), i = n.id && S.inst[n.id], v = n.id && I[n.id] && I[n.id].variacion_dia;
     return `<div class="agp"><div class="agp-fe"><span>${diaSemL(x.getDay()).slice(0, 3)}</span><b>${x.getDate()}</b><span>${L(MESES[x.getMonth()], MESES_EN[x.getMonth()].slice(0, 3))}</span></div>
       <div class="agp-c"><p class="agp-src">${i ? logo(i.dominio, i.corto || i.nombre) : `<span class="agp-rayo">${ICONOS.mercados}</span>`}<span data-no-trad>${esc(n.f || '')}</span></p>
-        <a class="agp-t" data-no-trad href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${esc(n.t)}</a>
+        <a class="agp-t noti" data-no-trad href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a>
         ${i ? `<p class="agp-pie"><span class="chip">${esc(i.corto || i.nombre)}</span>${v != null ? `<span class="${v >= 0 ? 'up' : 'down'}">${L('hoy', 'today')} ${pctS(v, 2)}</span>` : ''}</p>` : ''}</div></div>`;
   };
   const todas = hoyM ? [hoyM, ...resto.map(tarjeta)] : resto.map(tarjeta);
@@ -5636,7 +5656,77 @@ function noticiasCartera(soloAnalistas) {
 }
 function htmlNoticias(lista, conActivo = false, max = 12) {
   if (!lista.length) return '<div class="vacio">No hay noticias recientes.</div>';
-  return `<ul class="noticias">${lista.slice(0, max).map((n) => `<li><a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${esc(n.t)}</a><small>${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}</small></li>`).join('')}</ul>`;
+  return `<ul class="noticias">${lista.slice(0, max).map((n) => `<li><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}</small></li>`).join('')}</ul>`;
+}
+
+/* Las noticias se leen dentro (0.2.4): al tocar una sale una hoja con su resumen, que escribe GrowIA (Gemini, con tu
+   clave de Google) leyendo el enlace y, si no puede abrirlo, buscándola por su titular y su medio. Abajo, la original.
+   Sin clave de Google, la hoja ofrece activarla o abrir la noticia. Con Ctrl o Cmd se abre la web, como siempre. */
+const RES_NOT = new Map();
+document.addEventListener('click', (e) => {
+  const a = e.target.closest('a.noti'); if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button) return;
+  e.preventDefault();
+  abrirNoticia({ t: a.textContent.trim(), f: a.dataset.nf || '', d: a.dataset.nd || '', u: a.href });
+});
+function abrirNoticia(n) {
+  const clave = AS.claves && AS.claves.google;
+  const h = hoja(L('La noticia', 'The article'), `<div class="not-h">
+    <p class="not-src">${esc(n.f || '')}${n.d ? `${n.f ? ', ' : ''}${haceCuanto(n.d)}` : ''}</p>
+    <h3 class="not-t" data-no-trad>${esc(n.t)}</h3>
+    <div class="not-cuerpo" aria-live="polite">${clave ? `<p class="not-lee">${ICONOS.chispa}${L('GrowIA está leyendo la noticia…', 'GrowIA is reading the article…')}</p><div class="not-esq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>`
+      : `<p class="nota" style="margin:0">${L('Con GrowIA activada (gratis, con tu clave de Google) aquí te sale el resumen de la noticia entera sin salir de GrowFolio.', 'With GrowIA on (free, with your Google key) you get a summary of the whole article here, without leaving GrowFolio.')}</p>`}</div>
+    <div class="fila-btns not-btns">${clave ? '' : `<button type="button" class="btn pri" data-not-ia>${ICONOS.chispa}${L('Activar GrowIA', 'Turn on GrowIA')}</button>`}<a class="btn" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${L('Abrir la original', 'Open the original')}</a></div>
+  </div>`);
+  h.el.classList.add('hoja-not');
+  const bIA = $('[data-not-ia]', h.el); if (bIA) bIA.onclick = () => { h.cerrar(true); abrirAsesor(); };
+  if (!clave) return;
+  const ctl = new AbortController(), cuerpo = $('.not-cuerpo', h.el);
+  new MutationObserver((m, o) => { if (!document.body.contains(h.el)) { ctl.abort(); o.disconnect(); } }).observe(document.body, { childList: true });
+  resumirNoticia(n, clave, ctl.signal).then((r) => {
+    if (!document.body.contains(cuerpo)) return;
+    if (r.noEncontrada) { cuerpo.innerHTML = `<p class="nota" style="margin:0">${L('GrowIA no ha podido leer esta noticia (puede que sea de pago o que la web no la deje abrir). Ábrela en su web con el botón de abajo.', 'GrowIA could not read this article (it may be paywalled or the site blocks it). Open it on its site with the button below.')}</p>`; return; }
+    const par = r.texto.split(/\n\s*\n|\n(?=Para tu cartera:)/).map((x) => x.replace(/\*\*/g, '').trim()).filter(Boolean);
+    cuerpo.innerHTML = par.map((x) => /^Para tu cartera:/i.test(x) ? `<p class="not-tuyo"><b>${L('Para tu cartera', 'For your portfolio')}:</b> ${esc(x.replace(/^Para tu cartera:\s*/i, ''))}</p>` : `<p>${esc(x)}</p>`).join('')
+      + `<p class="not-pie">${L('Resumen de GrowIA: puede equivocarse en algún detalle; la original manda.', 'Summary by GrowIA: it may get a detail wrong; the original is what counts.')}${r.fuentes.length ? ` ${L('Leído en', 'Read on')} ${r.fuentes.slice(0, 3).map((f) => `<a href="${esc(f.u)}" target="_blank" rel="noopener noreferrer">${esc(f.t)}</a>`).join(', ')}.` : ''}</p>`;
+  }).catch((e) => {
+    if (e.name === 'AbortError' || !document.body.contains(cuerpo)) return;
+    cuerpo.innerHTML = `<p class="nota" style="margin:0">${esc(e.message || L('No se ha podido hacer el resumen.', 'Could not make the summary.'))} ${L('Puedes abrir la noticia en su web.', 'You can open it on its site.')}</p>`;
+  });
+}
+async function resumirNoticia(n, clave, signal) {
+  if (RES_NOT.has(n.u)) return RES_NOT.get(n.u);
+  const mias = ((S.M && S.M.filas) || []).map((f) => f.inst.corto || f.inst.nombre).filter(Boolean).slice(0, 30).join(', ');
+  const pedido = `Lee esta noticia y resúmela en español de España para alguien que invierte su dinero.
+Titular: «${n.t}»
+Medio: ${n.f || 'no se sabe'}${n.d ? `\nPublicada: ${String(n.d).slice(0, 10)}` : ''}
+Enlace (de Google Noticias, lleva a la noticia): ${n.u}
+Si no puedes abrir el enlace, búscala en internet por su titular y su medio. Resume solo esa noticia, no otras parecidas.
+Escribe 3 o 4 párrafos cortos, separados por una línea en blanco, con lo que cuenta: qué ha pasado, quién, las cifras y las fechas, y por qué importa. Sin título, sin listas y sin markdown.${mias ? `\nSi la noticia afecta a algo de lo que tiene en su cartera (${mias}), añade al final un párrafo que empiece por «Para tu cartera:» con cómo le afecta, en una o dos frases. Si no le afecta, no lo pongas.` : ''}
+Si no encuentras la noticia, contesta solo NO_ENCONTRADA.`;
+  const pide = (modelo, tools) => fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: pedido }] }], tools, generationConfig: { temperature: 0.3, maxOutputTokens: 1400 } }) }, clave);
+  let ultimo = null;
+  // primero la rápida (la de más cupo); si se le ha acabado, la buena. Primero leyendo el enlace y buscando; si el
+  // modelo no deja leer enlaces, solo buscando
+  for (const modelo of [MODELO_RAPIDO, MODELO_DEF].filter((m, i, a) => a.indexOf(m) === i && !agotadosIA().includes(m))) {
+    for (const tools of [[{ url_context: {} }, { google_search: {} }], [{ google_search: {} }]]) {
+      const r = await pide(modelo, tools);
+      if (!r.ok) {
+        let j = null; try { j = await r.json(); } catch (e) {}
+        ultimo = errorGoogle(r.status, j);
+        if (ultimo.diario) marcarAgotado(modelo);
+        if (r.status === 400 && tools.length > 1) continue;
+        break;
+      }
+      const j = await r.json(), c = (j.candidates || [])[0] || {};
+      const texto = ((c.content && c.content.parts) || []).map((x) => x.text || '').join('').trim();
+      if (!texto || /NO_ENCONTRADA/.test(texto)) return { noEncontrada: true };
+      const fuentes = ((c.groundingMetadata && c.groundingMetadata.groundingChunks) || []).map((g) => g.web).filter((w) => w && w.uri).map((w) => ({ t: w.title || w.uri, u: w.uri }));
+      const res = { texto, fuentes };
+      RES_NOT.set(n.u, res);
+      return res;
+    }
+  }
+  throw ultimo || new Error(L('No se ha podido hacer el resumen.', 'Could not make the summary.'));
 }
 
 const ORDEN_SENAL = ['vender', 'recoger', 'reducir', 'comprar', 'vigilar', 'aportar', 'mantener'];
