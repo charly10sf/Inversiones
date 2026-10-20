@@ -2,8 +2,10 @@ package es.inversiones.app;
 
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.BitmapShader;
 import android.graphics.BlurMaskFilter;
 import android.graphics.Canvas;
+import android.graphics.ComposeShader;
 import android.graphics.DashPathEffect;
 import android.graphics.LinearGradient;
 import android.graphics.Paint;
@@ -19,6 +21,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 /**
  * Dibuja el widget entero en una imagen, con Manrope (la letra de la web) y con el mismo estilo que el patrimonio de
@@ -31,7 +34,8 @@ final class Lienzo {
     static final int PLANO = 0xFF1A1916, LINEA = 0xFF2A2723, TEXTO = 0xFFF1EDE5, TEXTO2 = 0xFFBDB6A8,
             APAGADO = 0xFF8E877A, ACENTO = 0xFFE2B45F, SUBE = 0xFF4FC995, BAJA = 0xFFEF7461,
             FONDO_A = 0xFF100F0D, FONDO_B = 0xFF060605;
-    private static final float ESPACIADO_CIFRA = -0.045f;   // la cifra grande, apretada como en la web
+    private static final float ESPACIADO_CIFRA = -0.06f;   // la cifra grande, gruesa y apretada como en la app (0.3)
+    private static final int PESO_CIFRA = 750;
     private static final Map<Integer, Typeface> LETRAS = new HashMap<>();
 
     private final Context ctx;
@@ -163,10 +167,28 @@ final class Lienzo {
             resto = "," + (cents < 10 ? "0" : "") + cents + " €";
         }
         float sp = maxSp;
-        while (sp > minSp && ancho(entero, sp, 700, ESPACIADO_CIFRA) + ancho(resto, sp * 0.42f, 600) + 3 > maxW) sp -= 0.5f;
-        texto(x, yBase, entero, sp, 700, TEXTO, false, ESPACIADO_CIFRA);
-        texto(x + ancho(entero, sp, 700, ESPACIADO_CIFRA) + 3, yBase, resto, sp * 0.42f, 600, TEXTO2, false);
+        while (sp > minSp && ancho(entero, sp, PESO_CIFRA, ESPACIADO_CIFRA) + ancho(resto, sp * 0.4f, 600) + 3 > maxW) sp -= 0.5f;
+        texto(x, yBase, entero, sp, PESO_CIFRA, TEXTO, false, ESPACIADO_CIFRA);
+        texto(x + ancho(entero, sp, PESO_CIFRA, ESPACIADO_CIFRA) + 3, yBase, resto, sp * 0.4f, 600, TEXTO2, false);
         return sp;
+    }
+
+    private static Bitmap GRANO;
+    private static Bitmap grano() {
+        if (GRANO != null) return GRANO;
+        try {
+            int l = 128;
+            int[] px = new int[l * l];
+            Random r = new Random(7);
+            for (int i = 0; i < px.length; i++) {
+                float a = Math.max(0f, Math.min(1f, r.nextFloat() * 2.2f - 0.95f));
+                px[i] = ((int) (a * 255) << 24) | (236 << 16) | (192 << 8) | 112;
+            }
+            GRANO = Bitmap.createBitmap(px, l, l, Bitmap.Config.ARGB_8888);
+        } catch (Throwable e) {
+            GRANO = null;
+        }
+        return GRANO;
     }
 
     /** una curva suave que pasa por todos los puntos sin inventarse picos (Fritsch-Carlson), como en la web */
@@ -219,8 +241,8 @@ final class Lienzo {
         }
         if (hi - lo < 1e-9) hi = lo + 1;
         double rango = hi - lo;
-        lo -= rango * 0.18;
-        hi += rango * 0.08;
+        lo -= rango * 0.12;
+        hi += rango * 0.05;
         int n = serie.length;
         float[] xs = new float[n], ys = new float[n];
         float arriba = Float.MAX_VALUE;
@@ -241,8 +263,16 @@ final class Lienzo {
         p.reset();
         p.setAntiAlias(true);
         p.setStyle(Paint.Style.FILL);
-        p.setShader(new LinearGradient(0, arriba, 0, dp(suelo), alfa(ACENTO, 0x4D), alfa(ACENTO, 0), Shader.TileMode.CLAMP));
+        p.setShader(new LinearGradient(0, arriba, 0, dp(suelo), alfa(ACENTO, 0x45), alfa(ACENTO, 0), Shader.TileMode.CLAMP));
         c.drawPath(relleno, p);
+        // el grano, como en la app: puntitos dorados sueltos, densos junto a la curva y que se apagan hacia abajo
+        Bitmap gr = grano();
+        if (gr != null) {
+            Shader g = new BitmapShader(gr, Shader.TileMode.REPEAT, Shader.TileMode.REPEAT);
+            Shader m = new LinearGradient(0, arriba, 0, dp(suelo), new int[]{0xE6FFFFFF, 0x33FFFFFF, 0x00FFFFFF}, new float[]{0f, 0.7f, 1f}, Shader.TileMode.CLAMP);
+            p.setShader(new ComposeShader(g, m, PorterDuff.Mode.DST_IN));
+            c.drawPath(relleno, p);
+        }
         p.setShader(null);
 
         // dónde empezó el periodo, muy tenue
@@ -259,17 +289,27 @@ final class Lienzo {
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeJoin(Paint.Join.ROUND);
         p.setStrokeCap(Paint.Cap.ROUND);
-        p.setColor(alfa(ACENTO, 0x78));
-        p.setStrokeWidth(dp(6));
-        p.setMaskFilter(new BlurMaskFilter(dp(4), BlurMaskFilter.Blur.NORMAL));
+        Shader trazo = new LinearGradient(dp(x0), 0, dp(x1), 0, new int[]{alfa(ACENTO, 0x80), ACENTO, 0xFFF8DC9C}, new float[]{0f, 0.7f, 1f}, Shader.TileMode.CLAMP);
+        p.setColor(0xFFFFFFFF);
+        p.setShader(trazo);
+        p.setAlpha(0x73);
+        p.setStrokeWidth(dp(9));
+        p.setMaskFilter(new BlurMaskFilter(dp(5), BlurMaskFilter.Blur.NORMAL));
         c.drawPath(curva, p);
         p.setMaskFilter(null);
-        p.setColor(ACENTO);
-        p.setStrokeWidth(dp(2.2f));
+        p.setAlpha(0xFF);
+        p.setStrokeWidth(dp(2.6f));
         c.drawPath(curva, p);
+        p.setShader(null);
 
-        // el punto de ahora, con su halo
+        // el punto de ahora, con su halo de luz y un haz fino hasta el suelo, como en la app
+        float hx = xs[n - 1], hy = ys[n - 1], hr = Math.max(dp(14), Math.min(dp(40), (dp(suelo) - arriba) * 0.35f));
         p.setStyle(Paint.Style.FILL);
+        p.setShader(new RadialGradient(hx, hy, hr, alfa(ACENTO, 0x47), alfa(ACENTO, 0), Shader.TileMode.CLAMP));
+        c.drawCircle(hx, hy, hr, p);
+        p.setShader(new LinearGradient(0, hy + dp(4), 0, dp(suelo), alfa(ACENTO, 0x8C), alfa(ACENTO, 0), Shader.TileMode.CLAMP));
+        c.drawRect(hx - dp(0.6f), hy + dp(4), hx + dp(0.6f), dp(suelo), p);
+        p.setShader(null);
         p.setColor(alfa(ACENTO, 0x3C));
         c.drawCircle(xs[n - 1], ys[n - 1], dp(7), p);
         p.setColor(ACENTO);
