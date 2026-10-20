@@ -6767,14 +6767,14 @@ function dibujar(M) {
     const t0s = serie.length ? tiempoDe(serie[0].d) : Date.now();
     const corto = (Date.now() - t0s) < dias * 864e5 * 0.85;
     const etqRango = S.rango === '1D' && deIntra ? L('desde el último cierre', 'since the last close')
-      : corto || S.rango === 'Máx' || !ETQ_RANGO[S.rango] ? L(`desde el ${fechaPunto(serie[0].d)}`, `since ${fechaPunto(serie[0].d)}`) : L(...ETQ_RANGO[S.rango]);
+      : !serie.length ? '' : corto || S.rango === 'Máx' || !ETQ_RANGO[S.rango] ? L(`desde el ${fechaPunto(serie[0].d)}`, `since ${fechaPunto(serie[0].d)}`) : L(...ETQ_RANGO[S.rango]);
     const pintarVar = (desde, hasta, etq) => {
       const cab = $('#evoCab'); if (!cab || !desde || !hasta) return;
       const d = hasta.v - desde.v, p = (hasta.v / desde.v - 1) * 100, c = cls(d);
       cab.innerHTML = `<span class="hv-p ${c}"><i aria-hidden="true">${d > 0 ? '▲' : d < 0 ? '▼' : '•'}</i>${esc(eurS(d, 0))}<em>${esc(pctS(p))}</em></span><span class="k">${esc(etq)}</span>`;
     };
     // desde dónde se cuenta: el primer punto del periodo o, en 1D, el cierre de ayer (así cuadra con «Hoy»)
-    const ref0 = S.rango === '1D' && deIntra && isFinite(M.dia) && serie.length ? { d: serie[0].d, v: M.total - M.dia } : serie[0];
+    const ref0 = S.rango === '1D' && deIntra && isFinite(M.dia) && serie.length ? { d: serie[0].d, v: M.total - M.dia } : serie[0] || null;
     const ahora = { d: hoyIso(), v: isFinite(M.total) ? M.total : (serie[serie.length - 1] || {}).v };
     if (serie.length > 1) pintarVar(ref0, ahora, etqRango);
     const series = [{ datos: serie, color: 'var(--accent)' }];
