@@ -54,6 +54,9 @@
 }
 * { box-sizing: border-box; }
 html { background: var(--bg); -webkit-text-size-adjust: 100%; }
+/* sin el recuadro azul de Android al tocar: cada botón tiene su propia respuesta (se encoge o se enciende) */
+html, a, button, label, summary, [role="button"], [tabindex] { -webkit-tap-highlight-color: transparent; }
+a:focus:not(:focus-visible), button:focus:not(:focus-visible), summary:focus:not(:focus-visible) { outline: none; }
 body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font: 15px/1.55 var(--f); font-feature-settings: 'tnum' 0; padding: 0 env(safe-area-inset-right) calc(var(--nav-h) + env(safe-area-inset-bottom)) env(safe-area-inset-left); overflow-x: hidden; }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
@@ -189,6 +192,8 @@ a:hover { text-decoration: underline; }
   .navbar a.falta { position: relative; }
   .navbar a.falta::after { content: ''; position: absolute; top: 4px; left: calc(50% + 14px); width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg); }
   .navbar a:active svg, .navbar .nav-mas:active svg { transform: scale(0.9); }
+  .navbar a:not(.nav-centro):active svg { background: var(--accent-bg); color: var(--accent); }
+  .navbar a:focus-visible { outline: 2px solid var(--accent); outline-offset: -6px; border-radius: 14px; }
   .fila-top { height: 52px; gap: 10px; }
   .estado { font-size: 12.5px; }
 }
@@ -242,7 +247,12 @@ a:hover { text-decoration: underline; }
 @media (min-width: 1180px) { .cabecera { grid-template-columns: minmax(360px, 440px) minmax(0, 1fr); gap: 56px; align-items: start; } }
 .hero-lbl { color: var(--text-2); font-size: 14px; }
 .hero-num { font-weight: 750; font-size: clamp(54px, 16vw, 92px); line-height: 0.95; letter-spacing: -0.06em; margin: 6px 0 14px; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--text); }
-.hero-num > span:not(.dec) { background: linear-gradient(180deg, #FFFFFF 15%, #E6DCC6 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+/* al cambiar el patrimonio con los precios en directo, la cifra entera se enciende un momento en verde si sube o en rojo si baja */
+.hero-num.hn-sube > span { animation: hnSube 1.6s cubic-bezier(.2, .7, .3, 1); }
+.hero-num.hn-baja > span { animation: hnBaja 1.6s cubic-bezier(.2, .7, .3, 1); }
+@keyframes hnSube { 0%, 18% { color: var(--up); text-shadow: 0 0 22px rgba(79, 201, 149, 0.55); } }
+@keyframes hnBaja { 0%, 18% { color: var(--down); text-shadow: 0 0 22px rgba(239, 116, 97, 0.55); } }
+@media (prefers-reduced-motion: reduce) { .hero-num.hn-sube > span, .hero-num.hn-baja > span { animation: none; } }
 .hero-num span.dec { font-size: 0.4em; letter-spacing: -0.015em; color: var(--text-2); font-weight: 600; padding: 0 2px 0 3px; margin: 0; }
 .hero-num span { padding: 0 4px; margin: 0 -4px; }
 .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
@@ -2657,6 +2667,11 @@ body.con-ixn { overflow: hidden; }
 .ixn-heroe { position: relative; height: 190vh; }
 .ixn-eti { margin: 0; color: var(--accent); font-size: 15px; font-weight: 650; letter-spacing: 0.01em; }
 .ixn-ver { font-variant-numeric: tabular-nums; }
+/* el número de versión entra solo al abrir, cifra a cifra, y queda nítido sin tener que bajar */
+.ixn:not(.quieta) .ixn-ver span { animation: ixnCifra 0.75s cubic-bezier(.2, .75, .25, 1) backwards; animation-delay: calc(0.12s + var(--k) * 0.07s); }
+@keyframes ixnCifra { from { opacity: 0; filter: blur(10px); transform: translate(calc(var(--d) * 0.45em), 0.5em) scale(1.35); } to { opacity: 1; filter: blur(0); transform: none; } }
+.ixn:not(.quieta) .ix-lema { animation: ixnLema 0.6s 0.5s cubic-bezier(.2, .75, .25, 1) backwards; }
+@keyframes ixnLema { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 .ixn-v { display: inline-block; margin-bottom: 10px; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--ixg) 18%, transparent); color: var(--ixg); font-size: 13px; font-weight: 650; }
 .ixn-arr { min-height: 100vh; min-height: 100dvh; display: grid; align-items: center; padding: 76px 22px; }
 .ixn-arr-in { width: 100%; max-width: 560px; margin: 0 auto; }
@@ -4579,7 +4594,10 @@ function parchear() {
       if (el.dataset.b === 'totalE' && !S.oculto && isFinite(viejo) && isFinite(b.n) && Math.abs(b.n - viejo) >= 1) contarHasta(el, viejo, b.n, b.txt);
       if (el.dataset.b === 'totalE') setTimeout(encajarCifra, 1300);
       if (!S.oculto && DESTELLA.test(el.dataset.b) && isFinite(viejo) && isFinite(b.n) && Math.abs(b.n - viejo) > 1e-9) {
-        el.classList.remove('sube', 'baja'); void el.offsetWidth; el.classList.add(b.n > viejo ? 'sube' : 'baja');
+        // la cifra grande de Inicio cambia de color entera (euros y céntimos); el resto, con su fondo de siempre
+        const hn = el.dataset.b === 'totalE' && el.closest('#heroNum');
+        const c = hn || el, [cs, cb] = hn ? ['hn-sube', 'hn-baja'] : ['sube', 'baja'];
+        c.classList.remove(cs, cb); void c.offsetWidth; c.classList.add(b.n > viejo ? cs : cb);
       }
     }
     el.dataset.n = b.n == null ? '' : b.n;
@@ -6917,21 +6935,25 @@ function htmlRuta(M) {
       </div>
     </section>`;
   };
-  // cómo vas: lo urgente que queda, lo del mes y tus objetivos. Si no hay nada que hacer, se dice: esperar también vale
-  const C = comparaObjetivos(M), tareasMes = P.mes.filter((x) => claseRuta(x) === 'tarea' && !x.auto);
-  const urg = tareasMes.filter((x) => x.urgente && !x.hecho).length, pend = tareasMes.filter((x) => !x.hecho).length;
-  const est = urg ? 'ojo' : C.fuera ? 'ojo' : 'bien';
-  const frase = urg ? L(`Te ${urg === 1 ? 'queda una cosa' : `quedan ${urg} cosas`} que no deberían esperar: ${urg === 1 ? 'está' : 'están'} arriba del todo.`, `${urg} thing${urg === 1 ? '' : 's'} shouldn't wait: at the top.`)
-    : C.fuera ? L(`Vas bien con lo del mes, pero ${C.fuera === 1 ? 'uno de tus objetivos se sale' : `${C.fuera} de tus objetivos se salen`} de lo que querías.`, `On track this month, but ${C.fuera} of your goals ${C.fuera === 1 ? 'is' : 'are'} off.`)
-    : pend ? L(`Vas bien: este mes te ${pend === 1 ? 'queda un paso' : `quedan ${pend} pasos`}, ninguno urgente.`, `On track: ${pend} step${pend === 1 ? '' : 's'} left this month, none urgent.`)
-    : L('Vas bien. Este mes no hace falta tocar nada: tus aportaciones siguen trabajando. Esperar también es una decisión, y a menudo la mejor.', 'On track. Nothing to touch this month: your contributions keep working. Waiting is a decision too, and often the best one.');
-  const estado = `<div class="ruta-estado ${est}"><span class="re-ic">${est === 'bien' ? ICONOS.ok : ICONOS.alerta}</span><div><b>${est === 'bien' ? L('Vas bien', 'On track') : L('Ojo', 'Heads up')}</b><p>${esc(frase)}</p>${C.filas.length ? `<a class="re-obj ${C.fuera ? 'fuera' : C.bien < C.filas.length ? 'ojo' : ''}" href="#analisis">${L(`Objetivos: ${C.bien} de ${C.filas.length} en orden`, `Goals: ${C.bien} of ${C.filas.length} in order`)}</a>` : ''}</div></div>`;
-  return `${estado}<div class="ruta-barra-top">
+  return `<div class="ruta-barra-top">
       <div class="plazos" role="group" aria-label="Plazo">${PLAZOS.map(([k]) => { const n = P[k].filter((x) => !x.hecho && !x.auto && claseRuta(x) === 'tarea').length; return `<button data-plazo="${k}" aria-pressed="${S.rutaPlazo === k}">${PLAZO_CORTO[k]}${n ? `<span class="cuenta">${n}</span>` : ''}</button>`; }).join('')}</div>
       <div class="ruta-res" aria-label="Progreso"><div class="ruta-res-n"><b>${hechas}</b> de ${cuenta.length} hechos <span>en los próximos 6 meses. Cuando hagas uno, márcalo y se queda tachado.</span></div><div class="ruta-barra"><i style="width:${cuenta.length ? ((hechas / cuenta.length) * 100).toFixed(0) : 0}%"></i></div></div>
     </div>
     <div class="ruta ruta2" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(columna).join('')}</div>
     <p class="nota ruta-nota">${ia && ia.hoja_de_ruta ? `Los que llevan la etiqueta ${esc(ia.autor || 'GrowIA')} los propone ella tras leer las noticias; el resto salen de tus números.` : 'Salen de tus números; con GrowIA activada, añade los suyos tras leer las noticias.'}</p>`;
+}
+/* Cómo vas (en Análisis, encima de tus objetivos): lo urgente que queda del Paso a paso, lo del mes y tus objetivos.
+   Si no hay nada que hacer, se dice: esperar también vale */
+function htmlComoVas(M) {
+  let P; try { P = pasosRuta(M); } catch (e) { return ''; }
+  const C = comparaObjetivos(M), tareasMes = P.mes.filter((x) => claseRuta(x) === 'tarea' && !x.auto);
+  const urg = tareasMes.filter((x) => x.urgente && !x.hecho).length, pend = tareasMes.filter((x) => !x.hecho).length;
+  const est = urg ? 'ojo' : C.fuera ? 'ojo' : 'bien';
+  const frase = urg ? L(`Te ${urg === 1 ? 'queda una cosa' : `quedan ${urg} cosas`} del Paso a paso que no deberían esperar.`, `${urg} step${urg === 1 ? '' : 's'} shouldn't wait.`)
+    : C.fuera ? L(`Vas bien con lo del mes, pero ${C.fuera === 1 ? 'uno de tus objetivos se sale' : `${C.fuera} de tus objetivos se salen`} de lo que querías: lo tienes justo debajo.`, `On track this month, but ${C.fuera} of your goals ${C.fuera === 1 ? 'is' : 'are'} off: see below.`)
+    : pend ? L(`Vas bien: este mes te ${pend === 1 ? 'queda un paso' : `quedan ${pend} pasos`}, ninguno urgente.`, `On track: ${pend} step${pend === 1 ? '' : 's'} left this month, none urgent.`)
+    : L('Vas bien. Este mes no hace falta tocar nada: tus aportaciones siguen trabajando. Esperar también es una decisión, y a menudo la mejor.', 'On track. Nothing to touch this month: your contributions keep working. Waiting is a decision too, and often the best one.');
+  return `<div class="ruta-estado ${est}"><span class="re-ic">${est === 'bien' ? ICONOS.ok : ICONOS.alerta}</span><div><b>${est === 'bien' ? L('Vas bien', 'On track') : L('Ojo', 'Heads up')}</b><p>${esc(frase)}</p>${urg || pend ? `<a class="re-obj ${urg ? 'fuera' : ''}" href="#ruta">${L('Ir al Paso a paso', 'Go to Steps')}</a>` : ''}</div></div>`;
 }
 function vistaRuta(M) {
   return `<div class="vista-cab"><h1>Paso a paso</h1><p>Qué te toca hacer y cuándo: lo urgente primero, con el porqué, el cómo y lo que pagas a Hacienda.</p></div>${htmlRuta(M)}`;
@@ -7048,6 +7070,7 @@ function vistaAnalisis(M) {
   const cuerpo = S.califTab === 'ia' ? htmlAnalisisIA(M) : htmlNumeros(M);
   return `
   <div class="vista-cab"><h1>Análisis</h1><p>Si tu cartera va hacia lo que quieres, lo que opina GrowIA y tus números: rentabilidad, riesgo, costes y qué hay por dentro.</p></div>
+  ${perfilVacio() ? '' : htmlComoVas(M)}
   ${htmlObjetivosVs(M)}
   <div class="subvistas dos-op" role="group" aria-label="Qué ver">${ANALISIS_P.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div>
   ${cuerpo}
@@ -8443,7 +8466,13 @@ function estadoPerfil(M) {
 }
 
 /* cada meta frente a la proyección: lo probable en su fecha, descontando las metas anteriores que se gastan */
+const claveMeta = (m) => `${String(m.n || '').trim().toLowerCase()}|${m.tipo || ''}|${+m.importe || 0}|${+m.anio || ''}`;
 function evaluarMetas(M) {
+  // la misma meta guardada varias veces (pasaba al repetir el perfil guiado): se queda una y se guarda limpio
+  if (S.cartera && Array.isArray(S.cartera.metas)) {
+    const vistas = new Set(), unicas = S.cartera.metas.filter((m) => m && !vistas.has(claveMeta(m)) && vistas.add(claveMeta(m)));
+    if (unicas.length < S.cartera.metas.length) { S.cartera.metas = unicas; S.senalesSucias = true; }
+  }
   const metas = ((S.cartera && S.cartera.metas) || []).filter((m) => m && +m.importe > 0);
   if (!metas.length) return [];
   let pr = null; try { pr = proyeccion(M); } catch (e) {}
@@ -8792,7 +8821,7 @@ function perfilGuiado(seguir = () => {}) {
     nuevo.actualizado = new Date().toISOString();
     S.cartera.perfil = nuevo;
     if (d.nombre) LS.set('inv-nombre', d.nombre);
-    if (meta.n && meta.importe > 0) S.cartera.metas = [...(S.cartera.metas || []), { id: nuevoId('m-'), n: meta.n, tipo: meta.tipo, importe: meta.importe, anio: meta.anio || null }];
+    if (meta.n && meta.importe > 0 && !(S.cartera.metas || []).some((x) => claveMeta(x) === claveMeta(meta))) S.cartera.metas = [...(S.cartera.metas || []), { id: nuevoId('m-'), n: meta.n, tipo: meta.tipo, importe: meta.importe, anio: meta.anio || null }];
     AS.foto = null;
     await guardarCartera('Perfil de inversor');
     pintar();
@@ -8894,7 +8923,7 @@ function textoPerfil(M) {
   if (e.reco) L.push(`Bolsa que encaja con su perfil según GrowFolio: entre ${e.reco.min} y ${e.reco.max} %. Tiene un ${fmtNum(e.pctBolsa, 0)} %.`);
   L.push(`Sus límites: acciones sueltas ${fmtNum(+(S.cartera.limite_acciones ?? 20), 0)} % (lleva ${fmtNum(e.pctSueltas, 1)} %), cripto ${fmtNum(+p.limite_cripto, 0)} % (lleva ${fmtNum(e.pctCripto, 1)} %), una sola empresa ${fmtNum(+p.limite_empresa, 0)} %${e.mayor ? ` (la mayor, ${e.mayor.f.inst.corto}, ${fmtNum(e.mayor.pct, 1)} %)` : ''}.`);
   if (e.colchon) L.push(`Colchón que quiere: ${p.colchon_meses} meses de gastos, ${E0(e.colchon)}. Tiene ${E0(e.seguro)} entre efectivo, monetarios y renta fija.`);
-  for (const m of e.metas) L.push(`- Meta "${m.n}": ${m.tipo === 'llegar' ? 'llegar a tener' : 'gastar'} ${E0(m.importe)}${m.anio ? ` en ${m.anio}` : ''}. ${textoMeta(m).replace(/<[^>]+>/g, '')}`);
+  for (const m of e.metas) L.push(`- Meta "${m.n}": ${m.tipo === 'llegar' ? 'llegar a tener' : 'gastar'} ${E0(m.importe)}${m.anio ? ` en ${m.anio}` : ''}. Hoy tiene ${E0(M.total)}, un ${fmtNum(m.pct, 0)} % de la meta. ${textoMeta(m).replace(/<[^>]+>/g, '')}`);
   for (const r of (p.respuestas || []).slice(-12)) L.push(`- Le preguntaste "${r.q}" y contestó: "${r.a}" (${r.f}).`);
   return L;
 }
@@ -11226,7 +11255,7 @@ const NOVEDADES = [
     { d: 'tengo', ir: { v: 'cartera', sel: '#hPos', pos: true }, t: 'Tus posiciones, arriba', x: 'En Inicio, justo debajo del patrimonio. GrowIA va después y, en el móvil, más corta: su diagnóstico en tres líneas y las dos cosas que más urgen.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.hero-panel' }, t: 'Inicio más limpio', x: 'Fuera la cinta de cotizaciones de arriba: los mercados están en Mercados y en la luz de En directo. El ojo para ocultar las cifras va junto a Patrimonio, lo que más ha movido hoy tu cartera sale como en el widget y la comparación con el S&P 500 está junto a los periodos de la gráfica. La bandera del idioma pasa a Ajustes.' },
     { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: 'La gráfica, desde el principio', x: '«Inicio» la enseña desde tu primera compra: sale en cuanto pones en alguna ficha desde cuándo la tienes. 3A, 5A y Máx llegan de verdad hasta atrás y, en los periodos largos, el eje dice el mes y el año.' },
-    { d: 'hecho', ir: { v: 'ruta', sel: '.ruta-estado' }, t: 'Si vas bien, te lo dice', x: 'Arriba del Paso a paso, cómo vas frente a tus objetivos. Y no hacer nada también es un consejo: si tu cartera va bien, GrowIA te dice que esperes.' },
+    { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: 'Si vas bien, te lo dice', x: 'Arriba de Análisis, cómo vas con el Paso a paso y frente a tus objetivos. Y no hacer nada también es un consejo: si tu cartera va bien, GrowIA te dice que esperes.' },
     { d: 'pregunta', ir: { v: 'expertos', sel: '.fx3, .ideas-top3' }, t: 'Consejos que no cambian cada día', x: 'La señal de cada posición ya no salta de un día para otro: una nueva tiene que repetirse dos días y la anterior llevar al menos una semana, salvo que sea urgente, como tu precio de salida. GrowIA sabe lo que te dijo antes y, si cambia de opinión, te explica por qué.' },
     { d: 'meta', ir: { v: 'analisis', sel: 'section.ov, .ov-vacio' }, t: 'Tus objetivos frente a tu cartera', x: 'En Análisis, punto por punto: lo que tienes en bolsa frente a lo que te toca por tu perfil, tus límites de acciones sueltas, cripto y empresa, tu colchón y si llegas a cada meta. Con su barra, en verde lo que va bien y en rojo lo que se sale.' },
     { d: 'mundo', ir: { v: 'expertos', sel: '.fx3, .ideas-top3' }, t: 'Expertos más claro', x: 'Cada posición tuya en una fila, con su señal y si GrowIA está de acuerdo. Las ideas de compra empiezan compactas y numeradas, con las tres que mejor te encajan en verde; tócalas para ver el porqué.' },
@@ -11244,6 +11273,7 @@ const NOVEDADES = [
     '3A, 5A y Máx enseñaban casi lo mismo que 1A.',
     'Un valor que aún no cotizaba cuando lo compraste (como HBX, que salió a bolsa en 2025) cortaba la gráfica en su primer día.',
     'Debajo de Cartera quedaba un hueco en blanco.',
+    'En las novedades, las últimas cifras del número de versión salían borrosas y movidas hasta que bajabas.',
   ] },
   { v: '0.2.3b', f: '2026-10-20', h: '20:58', t: 'Precios al día y avisos que se van', cosas: [
     { d: 'cifras', t: 'Los precios, al día de verdad', x: 'Entre semana, los precios se actualizan cada 20 minutos de la mañana a la noche, y el fin de semana cada 4 horas. Lo que acabas de añadir tiene precio en un rato.' },
@@ -11580,7 +11610,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     <div class="ix-scroll" tabindex="-1">
       <section class="ixn-heroe"><div class="ix-escena">
         <p class="ixn-eti" data-no-trad>${nuevas.length > 1 ? L(`Lo que te has perdido desde la ${esc(desde)}`, `What you've missed since ${esc(desde)}`) : L('Lo nuevo', "What's new")}</p>
-        <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l) => `<span aria-hidden="true">${esc(l)}</span>`).join('')}</h1>
+        <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l, k, a) => `<span aria-hidden="true" style="--k:${k};--d:${(k - (a.length - 1) / 2).toFixed(1)}">${esc(l)}</span>`).join('')}</h1>
         <div class="ix-lema"><h2>${esc(n0.t)}</h2><p><span>${fechaNov(n0.f, n0.h)}</span> · <span data-no-trad>${cuenta}</span></p></div>
         <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
       </div></section>
@@ -11621,13 +11651,11 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     const p = quieta ? 0.6 : Math.min(1, Math.max(0, y / Math.max(1, medidas.alto - vh)));
     // el número de versión, cifra a cifra; luego el título; al final se va hacia arriba
     const sale = ease(tramo(p, 0.7, 1));
-    letras.forEach((l, k) => {
-      const e = quieta ? 1 : ease(tramo(p, -0.3 + k * 0.04, 0.15 + k * 0.04)), f = 1 - e;
-      l.style.transform = `translate(${((k - (letras.length - 1) / 2) * 0.5 * f).toFixed(3)}em, ${(0.5 * f - sale * 0.3).toFixed(3)}em) scale(${(1 + 0.4 * f).toFixed(3)})`;
-      l.style.opacity = (e * (1 - sale)).toFixed(3);
-      l.style.filter = f > 0.01 ? `blur(${(10 * f).toFixed(1)}px)` : '';
-    });
-    const le = quieta ? 1 : ease(tramo(p, -0.2, 0.25));
+    for (const l of letras) {
+      l.style.transform = sale > 0.001 ? `translateY(${(-sale * 0.3).toFixed(3)}em)` : '';
+      l.style.opacity = (1 - sale).toFixed(3);
+    }
+    const le = 1;
     lema.style.opacity = (le * (1 - sale)).toFixed(3);
     lema.style.transform = `translateY(${((1 - le) * 18 - sale * 40).toFixed(1)}px)`;
     eti.style.opacity = (1 - sale).toFixed(3);
@@ -13248,10 +13276,11 @@ function pedidoAnalisis(ids, motivo, conWeb = true) {
 7. En cada compra o venta explica lo de Hacienda y por qué: lo que pagará, y lo que debe hacer o evitar por fiscalidad (por ejemplo, si vende con pérdidas, no recomprar la misma acción o ETF en dos meses, ni el mismo fondo en un año, porque si no la pérdida no resta ese año; en cripto la de dos meses no se aplica, aunque hay quien defiende la de un año). Si un consejo tiene un motivo fiscal, que se diga.
 8. Sé constante. En los datos viene tu revisión anterior: su fecha, el nivel que diste a cada posición y su hoja de ruta. No cambies el nivel de una posición ni la hoja de ruta salvo que haya algo nuevo e importante: resultados, un cambio de recomendación de los analistas, una subida o caída de más de un 8 %, una noticia que cambie la tesis, o un cambio en su perfil, sus metas o su dinero. Los movimientos de pocos días no son motivo. Si cambias algo, di en su texto qué ha cambiado y por qué. Una revisión seria cambia poco de una semana a otra.
 9. No hacer nada también es un consejo. Esperar, seguir con las aportaciones y no tocar la cartera es muchas veces lo mejor: si este mes no hay nada que hacer, pon en la hoja de ruta un solo paso que lo diga («Este mes, nada: deja que trabajen tus aportaciones») y explica por qué. No inventes cambios por tener algo que proponer.
+10. Las cifras, sin adornos. Si nombras una meta, di a qué distancia está («79.658 € de 500.000 €, un 16 %») y, si viene en los datos, cuándo llegaría al ritmo de ahora. Nunca digas que va «rumbo a», «camino de» o «hacia» una meta sin esas cifras, ni des a entender que está cerca si no lo está. El titular habla de hoy (cómo está la cartera, qué ha pasado y lo urgente), no de metas lejanas.
 
 Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
 {
-  "titular": "una frase con el diagnóstico y lo más urgente",
+  "titular": "una frase con el diagnóstico de hoy y lo más urgente; sin metas lejanas",
   "resumen": ["dos o tres párrafos cortos con cifras"],
   "puntuaciones": [{"k": "Diversificación", "nota": 4, "txt": "una o dos frases"}, {"k": "Costes", ...}, {"k": "Riesgo", ...}, {"k": "Disciplina", ...}, {"k": "Impuestos", ...}],
   "mejorar": [{"titulo": "...", "texto": "qué hacer, cuánto y por qué; si hay venta, el impuesto", "impacto": "qué gano", "cuando": "fecha o condición"}],
