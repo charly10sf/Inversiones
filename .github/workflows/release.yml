@@ -59,5 +59,7 @@ jobs:
                   continue
               r = gh("release", "create", tag, "--target", x["sha"], "--title", x["nombre"], "--notes-file", "notas.md", "--latest" if x["actual"] else "--latest=false")
               print(tag, "creado" if r.returncode == 0 else "error: " + r.stderr.strip()[:200])
+              if r.returncode != 0:
+                  print(f"::warning::{tag} no se ha podido crear: " + " ".join(r.stderr.split())[:300])
           print(f"::notice::Releases al día: {len(vs)} versiones, la actual {vs[-1]['v']}")
           PY2

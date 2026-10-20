@@ -5463,7 +5463,9 @@ function avisos(M) {
   if (estimadas.length) av.push({ n: 'warn', i: ICONOS.alerta, t: `${estimadas.length === 1 ? 'Una posición' : estimadas.length + ' posiciones'} con la cantidad estimada`, d: `${estimadas.map((f) => f.inst.corto).join(', ')}. Pon las participaciones exactas en la ficha de cada una (botón Editar) para que cuadre al céntimo.` });
   for (const f of M.filas) {
     if (f.p && f.p.estado === 'antiguo') av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto}: precio sin actualizar`, d: `Último precio bueno del ${fechaLarga(f.p.fecha)}.` });
-    if (!f.p) av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto || f.pos.instrumento}: sin precio`, d: 'Si lo acabas de añadir, la Action lo descargará en unos minutos.' });
+    // solo si de verdad no tiene precio: muchas lo sacan del catálogo, del radar o de su último cierre aunque no estén
+    // en la lista de la Action, y entonces el aviso se quedaba aunque el precio ya saliera
+    if (f.precio == null) av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto || f.pos.instrumento}: sin precio`, d: 'Si lo acabas de añadir, GrowFolio le busca precio en la próxima actualización.' });
   }
   if (S.precios && S.precios.generado && (Date.now() - new Date(S.precios.generado)) > 3 * 86400000) av.push({ n: 'warn', i: ICONOS.alerta, t: 'Los datos llevan días sin actualizarse', d: 'Mira la pestaña Actions del repositorio: GitHub pausa las tareas programadas tras 60 días sin actividad.' });
   return av;

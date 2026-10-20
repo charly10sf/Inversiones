@@ -7,6 +7,11 @@
    "t": "Cartera nueva y los días sin bolsa",
    "commits": [
     {
+     "cuando": "2026-10-20 20:31",
+     "asunto": "0.2.3: el aviso «sin precio» solo sale si de verdad no hay precio (se quedaba aunque lo sacara del catálogo o del radar)",
+     "detalle": []
+    },
+    {
      "cuando": "2026-10-20 20:28",
      "asunto": "Un release de GitHub por versión, desde la 0.1.1, con su APK desde la 0.2.3",
      "detalle": [
