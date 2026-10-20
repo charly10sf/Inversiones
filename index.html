@@ -1498,16 +1498,17 @@ table td.txt { white-space: normal; min-width: 260px; }
 .hero-movers .mv-nn { min-width: 0; }
 .hero-movers .mv-v { display: flex; align-items: baseline; gap: 7px; font-size: 17px; font-weight: 700; letter-spacing: -0.01em; font-variant-numeric: tabular-nums; }
 .hero-movers .mv-v small { font-size: 13px; font-weight: 600; opacity: 0.8; }
-/* en el móvil, una sola fila como la cinta del widget: nombre, euros y % uno encima de otro */
+/* en el móvil, dos y dos en rectángulos de una línea, como las pastillas del widget: el nombre a la izquierda y lo de hoy a la derecha */
 @media (max-width: 759px) {
   .hero-movers { margin-top: 10px; padding-top: 11px; }
   .hero-movers .mv-t { margin-bottom: 8px; font-size: 12.5px; }
-  .hero-movers .mv-l { grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 6px; }
-  .hero-movers .mv-c { gap: 1px; padding: 7px 8px 8px 9px; border-radius: 12px; }
-  .hero-movers .mv-n { gap: 4px; font-size: 12px; }
+  .hero-movers .mv-l { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px; }
+  .hero-movers .mv-c { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 9px 10px 9px 11px; border-radius: 12px; }
+  .hero-movers .mv-c:last-child:nth-child(odd) { grid-column: 1 / -1; }
+  .hero-movers .mv-n { flex: 1 1 auto; min-width: 0; gap: 4px; font-size: 13px; }
   .hero-movers .mv-n i { font-size: 7px; }
-  .hero-movers .mv-v { flex-direction: column; align-items: flex-start; gap: 0; font-size: 14.5px; line-height: 1.25; }
-  .hero-movers .mv-v small { font-size: 11.5px; }
+  .hero-movers .mv-v { flex: none; gap: 4px; font-size: 13.5px; line-height: 1.2; }
+  .hero-movers .mv-v small { font-size: 11px; }
 }
 .info-graf p { margin: 0 0 12px; color: var(--text-2); line-height: 1.55; }
 .info-graf .fila-btns { margin-top: 18px; }
