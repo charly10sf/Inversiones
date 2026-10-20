@@ -92,6 +92,16 @@ a:hover { text-decoration: underline; }
 /* «VI» en letra de rótulo de neón de los ochenta, como los de Vice City (Yellowtail; no es la del logo del juego) */
 .gta-top-t { font-family: 'Yellowtail', 'Tilt Neon', var(--f); font-size: 21px; line-height: 1; letter-spacing: 0.03em; padding: 0 3px 2px 1px; color: #FFF2F9; -webkit-text-stroke: 1.1px #FFD3EA; paint-order: stroke fill;
   text-shadow: 0 0 1px #fff, 0 0 5px #FF4FAE, 0 0 10px rgba(255, 62, 165, 0.95), 0 0 18px rgba(255, 62, 165, 0.7), 0 0 30px rgba(255, 40, 140, 0.45); }
+/* que no esté quieto: el «VI» parpadea de vez en cuando como un neón de verdad y la pastilla respira */
+.gta-top-t { animation: gtaNeon 7.5s linear infinite; }
+@keyframes gtaNeon {
+  0%, 61%, 63.5%, 66%, 100% { opacity: 1; }
+  62% { opacity: 0.45; text-shadow: 0 0 1px #fff, 0 0 3px rgba(255, 79, 174, 0.6); }
+  64.5% { opacity: 0.7; text-shadow: 0 0 1px #fff, 0 0 4px rgba(255, 79, 174, 0.7); }
+}
+.gta-top:not(.pulsa) { animation: gtaRespira 3.8s ease-in-out infinite alternate; }
+@keyframes gtaRespira { from { box-shadow: 0 0 10px rgba(255, 62, 165, 0.16); border-color: rgba(255, 62, 165, 0.45); } to { box-shadow: 0 0 20px rgba(255, 62, 165, 0.42); border-color: rgba(255, 62, 165, 0.8); } }
+@media (prefers-reduced-motion: reduce) { .gta-top-t, .gta-top:not(.pulsa) { animation: none; } }
 .gta-top-d { font-family: 'Tilt Neon', var(--f); font-size: 14px; color: #FFB27A; text-shadow: 0 0 6px rgba(255, 140, 60, 0.75); font-variant-numeric: tabular-nums; }
 .gta-top.pulsa { animation: gtaPulsa 1.25s ease-in-out 4; }
 /* en el móvil, solo el mando y los días */
@@ -12988,7 +12998,6 @@ function abrirAjustes() {
       <button class="aj-fila" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aOrdenar" data-cerrar>${ICONOS.cartera}<span><b>Cartera a tu gusto</b><small>Ordena, quita y añade lo que sale en Cartera.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aIntro" data-cerrar><img src="favicon.svg" alt=""><span><b>Ver la presentación</b><small>Qué es GrowFolio y qué puedes hacer con él.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <button class="aj-fila" id="aEstreno" data-cerrar>${ICONOS.chispa}<span><b>Ver lo nuevo de la 0.2</b><small>La presentación de esta versión, en un minuto.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
     </div>
     ${PERFIL_LOCAL && !PERFIL_CUENTA ? `<h2 class="aj-grupo">Tu cartera</h2><div class="aj-caja"><div class="seccion-ed"><h3>${ICONOS.cartera}Guardada en este dispositivo</h3>
       <p class="nota" style="margin:0">Cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (en Avanzado, Copias).</p>
@@ -13044,7 +13053,6 @@ function abrirAjustes() {
   $('#aResumenAuto', h.el).onchange = (e) => LS.set('inv-resumen-off', !e.target.checked);
   enlazarAjAvisos($('#aAvisos', h.el));
   $('#aOrdenar', h.el).onclick = () => setTimeout(() => { if (S.vista !== 'cartera') location.hash = '#cartera'; setTimeout(ordenarCartera, 120); }, 0);
-  $('#aEstreno', h.el).onclick = () => setTimeout(() => estreno02(LS.get('inv-version', VERSION), null), 0);
   $('#aInvita', h.el).onclick = () => {
     const url = (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#mia';
     const t = `Te paso GrowFolio, para llevar todas tus inversiones en un sitio. Cómo empezar:\n\n1. Abre ${url} y entra con Google o con tu correo. En Android hay app: https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk. En iPhone, ábrela en Safari, Compartir y "Añadir a pantalla de inicio": queda como una app.\n2. Crea la contraseña de tu cartera. Es distinta de la de la cuenta y no se puede recuperar: apúntala.\n3. IA gratis: entra en aistudio.google.com/apikey con tu cuenta de Google, pulsa "Create API key", copia la clave y pégala en GrowFolio al darle a "Pregúntale" (arriba). No actives la facturación en Google.\n4. Mete lo que tienes: en Cartera, "Añadir lo que ya tenía" (busca por nombre o ISIN) o importa capturas de tu bróker (con la IA ya puesta).\n5. Rellena tu perfil en Más > Objetivos para que el Paso a paso y la IA se ajusten a ti.\n\nEs una alfa: si algo falla, dale al bichito de arriba.`;
