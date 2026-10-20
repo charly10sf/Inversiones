@@ -4047,11 +4047,23 @@ function htmlReparto(M) {
 const AG_FED = ['2026-10-28', '2026-12-09', '2027-01-27', '2027-03-17', '2027-04-28', '2027-06-09', '2027-07-28', '2027-09-15', '2027-10-27', '2027-12-08'];
 const AG_BCE = ['2026-10-29', '2026-12-17', '2027-02-04', '2027-03-18', '2027-04-29', '2027-06-10', '2027-07-22', '2027-09-09', '2027-10-28', '2027-12-16'];
 // días sin bolsa: dónde ('us' Wall Street, 'eu' las europeas) y por qué
-const AG_CIERRES = [['2026-11-26', 'us', 'Acción de Gracias'], ['2026-12-25', 'us eu', 'Navidad'], ['2027-01-01', 'us eu', 'Año Nuevo'], ['2027-01-18', 'us', 'el día de Martin Luther King'], ['2027-02-15', 'us', 'el Día de los Presidentes'], ['2027-03-26', 'us eu', 'Viernes Santo'], ['2027-03-29', 'eu', 'Lunes de Pascua'], ['2027-05-31', 'us', 'el Memorial Day'], ['2027-06-18', 'us', 'Juneteenth'], ['2027-07-05', 'us', 'el Día de la Independencia'], ['2027-09-06', 'us', 'el Día del Trabajo'], ['2027-11-25', 'us', 'Acción de Gracias'], ['2027-12-24', 'us', 'Navidad']];
+// días sin bolsa, bolsa a bolsa (Nueva York, Madrid, Londres, Fráncfort y Euronext: París, Ámsterdam, Bruselas y
+// Lisboa). Fuentes: los calendarios de cada bolsa; Madrid y Euronext siguen el calendario TARGET del euro.
+const AG_BOLSAS = { us: ['Wall Street', 'Wall Street'], mad: ['la Bolsa de Madrid', 'the Madrid exchange'], lon: ['la Bolsa de Londres', 'the London Stock Exchange'], fra: ['la Bolsa de Fráncfort', 'the Frankfurt exchange'], eur: ['Euronext (París, Ámsterdam…)', 'Euronext (Paris, Amsterdam…)'] };
+const AG_CIERRES = [
+  ['2026-11-26', 'us', 'Acción de Gracias'], ['2026-12-24', 'fra', 'Nochebuena'], ['2026-12-25', 'us mad lon fra eur', 'Navidad'], ['2026-12-28', 'lon', 'San Esteban'], ['2026-12-31', 'fra', 'Nochevieja'],
+  ['2027-01-01', 'us mad lon fra eur', 'Año Nuevo'], ['2027-01-18', 'us', 'el día de Martin Luther King'], ['2027-02-15', 'us', 'el Día de los Presidentes'],
+  ['2027-03-26', 'us mad lon fra eur', 'Viernes Santo'], ['2027-03-29', 'mad lon fra eur', 'Lunes de Pascua'], ['2027-05-03', 'lon', 'el festivo de mayo británico'],
+  ['2027-05-31', 'us', 'el Memorial Day'], ['2027-05-31', 'lon', 'el festivo de primavera británico'], ['2027-06-18', 'us', 'Juneteenth'], ['2027-07-05', 'us', 'el Día de la Independencia'],
+  ['2027-08-30', 'lon', 'el festivo de verano británico'], ['2027-09-06', 'us', 'el Día del Trabajo'], ['2027-11-25', 'us', 'Acción de Gracias'],
+  ['2027-12-24', 'us', 'Navidad'], ['2027-12-24', 'fra', 'Nochebuena'], ['2027-12-27', 'lon', 'Navidad'], ['2027-12-28', 'lon', 'San Esteban'], ['2027-12-31', 'fra', 'Nochevieja'],
+];
+// la bolsa de cada acción o ETF, por el final de su símbolo en Yahoo
+const bolsaDe = (i) => { const y = String((i && i.yahoo) || ''); if (!y || /^Fondo/.test(i.tipo || '') || i.clase === 'Cripto' || /-EUR$|=/.test(y)) return null; if (/\.MC$/i.test(y)) return 'mad'; if (/\.L$/i.test(y)) return 'lon'; if (/\.(DE|F)$/i.test(y)) return 'fra'; if (/\.(PA|AS|BR|LS)$/i.test(y)) return 'eur'; if (!y.includes('.')) return 'us'; return null; };
 // cada tipo: su icono y en qué filtro sale
 const AG_TIPOS = { resultados: ['resultados', 'res'], fondo: ['resultados', 'res'], dividendo: ['dividendo', 'div'], cobro: ['dividendo', 'div'], banco: ['banco', 'eco'], festivo: ['festivo', 'eco'], hacienda: ['fiscal', 'eco'], aportacion: ['aporte', 'apo'], otro: ['mando', 'otro'], ia: ['chispa', 'eco'] };
 const AG_FILTROS = [['todo', 'Todo', 'All'], ['res', 'Resultados', 'Earnings'], ['div', 'Dividendos', 'Dividends'], ['eco', 'Economía', 'Economy'], ['apo', 'Aportaciones', 'Contributions']];
-const AG_FESTIVOS_EN = { 'Acción de Gracias': 'Thanksgiving', 'Navidad': 'Christmas', 'Año Nuevo': "New Year's Day", 'el día de Martin Luther King': 'Martin Luther King Jr. Day', 'el Día de los Presidentes': "Presidents' Day", 'Viernes Santo': 'Good Friday', 'Lunes de Pascua': 'Easter Monday', 'el Memorial Day': 'Memorial Day', 'Juneteenth': 'Juneteenth', 'el Día de la Independencia': 'Independence Day', 'el Día del Trabajo': 'Labor Day' };
+const AG_FESTIVOS_EN = { 'Nochebuena': 'Christmas Eve', 'Nochevieja': "New Year's Eve", 'San Esteban': 'Boxing Day', 'el festivo de mayo británico': 'the UK early May bank holiday', 'el festivo de primavera británico': 'the UK spring bank holiday', 'el festivo de verano británico': 'the UK summer bank holiday', 'Acción de Gracias': 'Thanksgiving', 'Navidad': 'Christmas', 'Año Nuevo': "New Year's Day", 'el día de Martin Luther King': 'Martin Luther King Jr. Day', 'el Día de los Presidentes': "Presidents' Day", 'Viernes Santo': 'Good Friday', 'Lunes de Pascua': 'Easter Monday', 'el Memorial Day': 'Memorial Day', 'Juneteenth': 'Juneteenth', 'el Día de la Independencia': 'Independence Day', 'el Día del Trabajo': 'Labor Day' };
 const DIAS_LARGOS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
 const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
 const DIAS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
@@ -4202,16 +4214,24 @@ function agendaLista(M, dias = 120) {
         `The European Central Bank sets euro interest rates at 14:15 and explains it at a press conference at 14:45. Idle money feels it most: savings accounts, money market funds and T-bills. If it cuts rates they pay less; European stocks usually like it.${liq >= 1 ? ` You have ${eur(liq, 0)} in cash, money market and bonds.` : ''}`),
       acc: `<a class="btn peq" href="#mercados">${L('Ver Mercados', 'See Markets')}</a>` });
   }
-  // días sin bolsa, si te tocan
-  const tUs = vacia || conUs(M), tEu = vacia || conEu(M);
-  for (const [d, donde, motivo] of AG_CIERRES) {
-    const enUs = donde.includes('us') && tUs, enEu = donde.includes('eu') && tEu;
-    if (!enUs && !enEu) continue;
-    const quien = enUs && enEu ? L('Bolsas de EE. UU. y Europa cerradas', 'US and European markets closed') : enUs ? L('Wall Street cerrada', 'Wall Street closed') : L('Bolsas europeas cerradas', 'European markets closed');
-    const mot = L(motivo, AG_FESTIVOS_EN[motivo] || motivo);
-    add({ id: `fes:${d}`, d, tipo: 'festivo', t: quien, s: L(`Por ${motivo}`, `For ${mot}`),
-      det: L(`${enUs && enEu ? 'Ni Wall Street ni las bolsas europeas abren' : enUs ? 'Wall Street no abre' : 'Las bolsas europeas no abren'} por ${esc(motivo)}. Lo que tienes allí no cambia de precio ese día, y lo que mandes comprar o vender se hace el siguiente día hábil.`,
-        `${enUs && enEu ? 'Neither Wall Street nor European markets open' : enUs ? "Wall Street doesn't open" : "European markets don't open"} for ${esc(mot)}. What you hold there doesn't change price that day, and any buy or sell order goes through on the next business day.`) });
+  // días sin bolsa: los de las bolsas donde tienes acciones o ETF (eso es «lo tuyo») y, si lo tuyo depende de
+  // ellas (fondos de EE. UU. o de Europa), Wall Street y las europeas
+  const mias = new Set(M.filas.map((f) => bolsaDe(f.inst)).filter(Boolean));
+  const ver = new Set(mias);
+  if (vacia || conUs(M)) ver.add('us');
+  if ((vacia || conEu(M)) && ![...mias].some((x) => x !== 'us')) ver.add('mad').add('eur');
+  const porFecha = new Map();
+  for (const [d, donde, motivo] of AG_CIERRES) for (const bo of donde.split(' ')) if (ver.has(bo)) { if (!porFecha.has(d)) porFecha.set(d, []); porFecha.get(d).push([bo, motivo]); }
+  for (const [d, cierres] of porFecha) {
+    const bolsas = [...new Set(cierres.map(([bo]) => bo))], motivos = [...new Set(cierres.map(([, m]) => m))];
+    // si cierran Madrid y Euronext a la vez (y nada más de Europa tuyo), se dice «las bolsas europeas»
+    const soloEuGen = !mias.size || ![...mias].some((x) => x !== 'us');
+    const nombres = bolsas.filter((bo) => !(soloEuGen && bo === 'eur' && bolsas.includes('mad'))).map((bo) => (soloEuGen && bo === 'mad' ? L('las bolsas europeas', 'European markets') : L(...AG_BOLSAS[bo])));
+    const t = nombres.length === 1 ? L(`Cierra ${nombres[0]}`, `${nombres[0][0].toUpperCase() + nombres[0].slice(1)} closed`) : L(`Cierran ${yLista(nombres)}`, `${yLista(nombres)} closed`);
+    const mot = motivos.map((m) => L(m, AG_FESTIVOS_EN[m] || m));
+    add({ id: `fes:${d}`, d, tipo: 'festivo', mio: bolsas.some((bo) => mias.has(bo)), t: t[0].toUpperCase() + t.slice(1), s: L(`Por ${yLista(motivos)}`, `For ${yLista(mot)}`),
+      det: L(`Ese día no abre${nombres.length > 1 ? 'n' : ''} ${esc(yLista(nombres))}. Lo que tienes allí no cambia de precio, y lo que mandes comprar o vender se hace el siguiente día que abra.`,
+        `${esc(yLista(nombres))} ${nombres.length > 1 ? "don't" : "doesn't"} open that day. What you hold there doesn't change price, and any buy or sell order goes through on the next trading day.`) });
   }
   // Hacienda: del 15 de noviembre al 31 de diciembre, lo que vendas cuenta en la renta de este año
   const y = new Date().getFullYear();
@@ -4280,7 +4300,7 @@ function htmlAgenda(M) {
    mercado; «Solo lo mío», solo lo de tus propias posiciones, tus aportaciones y tu renta */
 const AG_MODOS = [['tu', 'Para ti', 'For you'], ['mio', 'Solo lo mío', 'Just mine'], ['res', 'Resultados', 'Earnings'], ['div', 'Dividendos', 'Dividends'], ['eco', 'Economía', 'Economy']];
 const AG_MIO = new Set(['resultados', 'dividendo', 'cobro', 'aportacion', 'hacienda']);
-const enModo = (e, m) => m === 'tu' || (m === 'mio' ? AG_MIO.has(e.tipo) : AG_TIPOS[e.tipo][1] === m);
+const enModo = (e, m) => m === 'tu' || (m === 'mio' ? AG_MIO.has(e.tipo) || !!e.mio : AG_TIPOS[e.tipo][1] === m);
 // el color de cada tarjeta de «Próximos»
 const AG_COLOR = { res: '#6EA8FE', div: '#4FC995', eco: '#E2B45F', apo: '#E58FB6', otro: '#B58CFF' };
 const AG_CAT = { resultados: ['Resultados', 'Earnings'], fondo: ['En tus fondos', 'In your funds'], dividendo: ['Dividendo', 'Dividend'], cobro: ['Cobro', 'Payment'], banco: ['Bancos centrales', 'Central banks'], festivo: ['Sin bolsa', 'Market closed'], hacienda: ['Hacienda', 'Taxes'], aportacion: ['Tu aportación', 'Your contribution'], otro: ['GTA VI', 'GTA VI'], ia: ['Para vigilar', 'To watch'] };
