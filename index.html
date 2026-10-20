@@ -1642,6 +1642,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .reg-v ul b { color: var(--text); font-weight: 600; }
 .reg-det > li { color: var(--text); }
 .reg-det ul { margin-top: 4px; gap: 3px; font-size: 13.5px; }
+.nov-scroll { justify-self: start; margin-bottom: 4px; }
 .nov-perdidas { display: flex; align-items: center; gap: 14px; margin: 0; padding: 14px 16px; border-radius: 14px; background: var(--accent-bg); border: 1px solid rgba(226, 180, 95, 0.35); }
 .nov-perdidas .dib { width: 72px; height: 48px; flex: none; }
 .nov-perdidas b { display: block; font-size: 16px; margin-bottom: 2px; }
@@ -2243,6 +2244,14 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
   .ix-txt p { margin: 0; }
 }
 @media (max-height: 640px) { .ix-ilus { width: min(62vw, 300px); } .ix-txt h2 { font-size: 30px; } .ix-txt p { font-size: 15.5px; } }
+.ixn { z-index: 80; }
+body.con-ixn { overflow: hidden; }
+.ixn-heroe { position: relative; height: 190vh; }
+.ixn-eti { margin: 0; color: var(--accent); font-size: 15px; font-weight: 650; letter-spacing: 0.01em; }
+.ixn-ver { font-variant-numeric: tabular-nums; }
+.ixn-v { display: inline-block; margin-bottom: 10px; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--ixg) 18%, transparent); color: var(--ixg); font-size: 13px; font-weight: 650; }
+.ixn-ir { margin-top: 22px; min-height: 46px; padding: 0 22px; will-change: transform, opacity; }
+.ix.quieta .ixn-heroe { height: auto; }
 /* con «reducir movimiento»: todo montado y quieto */
 .ix.quieta .ix-heroe { height: auto; }
 .ix.quieta .ix-escena { position: relative; min-height: 100vh; min-height: 100dvh; height: auto; }
@@ -4235,7 +4244,7 @@ function htmlResumenDia(M) {
 }
 function resumenDelDia(seguir = () => {}, forzar = false) {
   if (!S.cartera || !S.M) return seguir();
-  if (!forzar && (LS.get('inv-resumen-off', false) || LS.get('inv-resumen-dia', '') === hoyIso() || !S.M.filas.length || document.querySelector('.hoja-fondo, .tour, .estreno'))) return seguir();
+  if (!forzar && (LS.get('inv-resumen-off', false) || LS.get('inv-resumen-dia', '') === hoyIso() || !S.M.filas.length || document.querySelector('.hoja-fondo, .tour, .estreno, .intro'))) return seguir();
   LS.set('inv-resumen-dia', hoyIso());
   const h = hoja(`${saludoHora()}${nombreUsuario() ? `, ${nombreUsuario()}` : ''}`, `${htmlResumenDia(S.M)}
     <div class="fila-btns rdia-pie"><label class="check-mini"><input type="checkbox" id="rdiaOff" ${LS.get('inv-resumen-off', false) ? 'checked' : ''}> No enseñarlo cada día</label><button type="button" class="btn pri" data-cerrar>Ver mi cartera</button></div>`, () => seguir());
@@ -7389,7 +7398,7 @@ function preguntaNueva() {
 }
 function mostrarPreguntaIA(seguir = () => {}) {
   const p = preguntaNueva();
-  if (!p || document.querySelector('.hoja-fondo, .tour, .estreno')) return seguir();
+  if (!p || document.querySelector('.hoja-fondo, .tour, .estreno, .intro')) return seguir();
   const { x, i } = p, total = preguntasIA().length;
   LS.set('inv-preg-vistas', [...LS.get('inv-preg-vistas', []), clavePreg(x)].slice(-40));
   const h = hoja('GrowIA te pregunta', `<div class="pregia">
@@ -7550,7 +7559,7 @@ function tocaPerfilGuiado() {
   return Date.now() - l.t > (l.n <= 1 ? 2 : l.n === 2 ? 4 : 7) * 864e5;
 }
 function pedirPerfil(siSale, siNo) {
-  if (!tocaPerfilGuiado() || document.querySelector('.hoja-fondo, .tour, .estreno')) return siNo();
+  if (!tocaPerfilGuiado() || document.querySelector('.hoja-fondo, .tour, .estreno, .intro')) return siNo();
   perfilGuiado(siSale);
 }
 const METAS_RAPIDAS = [['Entrada de un piso', 'gastar', 40000, 5], ['Un coche', 'gastar', 20000, 3], ['Llegar a 100.000 €', 'llegar', 100000, null], ['Dejar de trabajar antes', 'llegar', 500000, null]];
@@ -9872,9 +9881,21 @@ document.addEventListener('click', (e) => {
    ===================================================================== */
 const VERSION = '0.2.2';
 const NOVEDADES = [
-  { v: '0.2.2', f: '2026-10-20', h: '14:00', t: 'Cartera a tu gusto', cosas: [
-    { d: 'pestanas', ir: { v: 'cartera', sel: '.car-ordenar' }, t: 'Ordena Cartera como quieras', x: 'Abajo del todo en Cartera (o en Ajustes), «Ordenar Cartera a tu gusto»: arrastra los bloques, quita los que no uses y añade otros, como Tu futuro, Tus metas, Hacienda de este año, las noticias de lo tuyo o lo que más se mueve. Se guarda en tu cartera, igual en todos tus dispositivos.' },
+  { v: '0.2.2', f: '2026-10-20', h: '18:00', t: 'Tu perfil, tus avisos y cualquier bróker', cosas: [
+    { d: 'perfil', ir: { v: 'objetivos', sel: '.pf-grid' }, t: 'Tu perfil, paso a paso', x: 'Si no lo tenías hecho, al entrar te lo pide con una pregunta por pantalla: tu edad, dónde vives, cuándo necesitarás el dinero, cuánto riesgo aguantas y para qué inviertes. Es un minuto, y con eso GrowIA te aconseja a ti. Mientras falte, te lo recuerda arriba en Cartera y con un punto en Objetivos.' },
+    { d: 'capturas', ir: { v: 'cartera', sel: '[data-accion="nueva-pos"]' }, t: 'Importa de cualquier bróker o banco', x: 'En «Lo que ya tenía» > Importar de tu bróker: capturas, el PDF de un extracto o del informe fiscal, o los movimientos en CSV o Excel de DEGIRO, Interactive Brokers, ING, Revolut o el que uses. Con un listado de operaciones saca además desde cuándo tienes cada cosa, lo que te costó cada compra, tus ventas con su resultado y los dividendos del año para Fiscalidad.' },
+    { d: 'aviso', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Avisos, solo si los quieres', x: 'En Ajustes > Avisos y resumen. Vienen apagados. Si los enciendes, te avisa cuando algo baja de tu precio de salida o se queda a menos de un 3 %, cuando una posición se mueve más de un 5 % en el día, el día antes de los resultados y dividendos de lo tuyo y cuando GrowIA te pregunta algo. En la app de Android llegan aunque la tengas cerrada. De 22:00 a 8:00, nada.' },
+    { d: 'pregunta', ir: { v: 'objetivos', sel: '#futTabs' }, t: 'GrowIA te pregunta, bien a la vista', x: 'Cuando GrowIA necesita saber algo de ti para afinar sus consejos, te sale al entrar en una hoja con respuestas de un toque. Con los avisos encendidos, también como notificación.' },
+    { d: 'calendario', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'El resumen de hoy', x: 'La primera vez que abres GrowFolio cada día: cómo va tu cartera, lo que dice GrowIA, los mercados, las noticias de lo tuyo y de la bolsa y lo que viene hoy y mañana. Se puede quitar, y lo tienes también en Ajustes.' },
+    { d: 'renta', ir: { v: 'impuestos', sel: '.fis-ccaa' }, t: 'Tu comunidad cuenta', x: 'Pon dónde vives, en tu perfil o en Fiscalidad. En País Vasco y Navarra se usa su propia escala del ahorro; en todas ves lo que se paga si tus padres te dan dinero, y en el resumen de hoy, las noticias de tu comunidad que tocan tu bolsillo.' },
+    { d: 'pestanas', ir: { v: 'cartera', sel: '.car-ordenar' }, t: 'Ordena Cartera como quieras', x: 'Abajo del todo en Cartera, «Ordenar Cartera a tu gusto»: arrastra los bloques, quita los que no uses y añade otros, como Tu futuro, Tus metas, Hacienda de este año, las noticias de lo tuyo o lo que más se mueve. Se guarda en tu cartera, igual en todos tus dispositivos.' },
     { d: 'mercados', ir: { v: 'cartera', sel: '#estadoB' }, t: 'Las bolsas, de un vistazo', x: 'Arriba queda solo la luz de En directo. Al pasar el ratón por encima (o al tocarla en el móvil) ves cómo están Madrid, Fráncfort, París, Londres, Nueva York, Tokio y Hong Kong: si están abiertas y a qué hora abren o cierran, en hora de España.' },
+    { d: 'buscar', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Lo que metes a mano, con precio', x: 'Si una acción o un fondo no estaba en GrowFolio (como Agios Pharmaceuticals), al meterlo pide su precio y en la siguiente actualización ya tiene precio diario, gráfica y cambio a euros. También se busca por ticker.' },
+    { d: 'catalogo', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Más fondos', x: 'Fidelity Japan, Fidelity Pacific ex Japan y Amundi Core MSCI World, que no salían al buscarlos.' },
+    { d: 'opinion', t: '¿Qué te parece?', x: 'Cuando lleves 5 días usando GrowFolio, te preguntará una vez qué nota le das, de 1 a 5 estrellas, y qué mejorarías. Llega a quien te la pasó.' },
+    { d: 'intro', t: 'Novedades que se cuentan bajando', x: 'Como estas: al estrenar versión, cada cosa nueva entra con el scroll y tiene su botón para llevarte a ella. La lista de siempre sigue en Ajustes.' },
+    { d: 'idioma', t: 'Más en inglés', x: 'Mercados, el asesor, los formularios, los motivos de las ideas y todo lo nuevo salen en inglés si eliges la bandera inglesa.' },
+    { d: 'pulido', t: 'Entra más rápido', x: 'La lectura de prensa de las 840 empresas (medio mega) ya no frena la entrada: se baja después. Y al vender, el nombre de cada posición sale entero.' },
   ] },
   { v: '0.2.1', f: '2026-10-20', h: '13:14', t: 'La IA al frente y lo que habéis avisado', cosas: [
     { d: 'pregunta', ir: { v: 'cartera', sel: '.toca.iac' }, t: 'GrowIA, lo primero', x: 'En Cartera, debajo del patrimonio: lo que dice la IA de tu cartera en una frase, sus notas y lo que toca hacer ahora, con su botón para marcarlo hecho sin ir al Paso a paso.' },
@@ -10124,10 +10145,12 @@ function estreno02(visto, despues) {
 /* qué se ha mejorado: lo nuevo arriba, cada cosa con un «Enséñamelo» que te lleva hasta ella resaltada (como el
    tutorial) y un «Enséñamelo todo» que las recorre en orden. Las versiones anteriores, plegadas una a una con sus
    dibujos y sus textos. */
-function mostrarNovedades(desde, alCerrar) {
+function mostrarNovedades(desde, alCerrar, lista = false) {
   LS.set('inv-version', VERSION); LS.set('inv-vnum', 2);
   let nuevas = NOVEDADES.filter((n) => n.cosas && desde && cmpVer(n.v, desde) > 0);
   if (!nuevas.length) nuevas = [NOVEDADES[0]];
+  // al estrenar versión, lo nuevo se cuenta bajando (como la presentación); desde Ajustes, la lista
+  if (desde && !lista) return novedadesScroll(nuevas, desde, alCerrar);
   const resto = NOVEDADES.filter((n) => !nuevas.includes(n));
   const pasos = [], idx = new Map();
   for (const n of nuevas) for (const c of n.cosas || []) if (c.ir) { idx.set(c, pasos.length); pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
@@ -10140,7 +10163,7 @@ function mostrarNovedades(desde, alCerrar) {
   const antes = (n) => `<details class="nov-ant"><summary><span class="nov-num peq">${esc(n.v)}</span><span class="nov-ant-t"><b>${esc(n.t)}</b><small>${fechaNov(n.f, n.h)}</small></span></summary>${n.cosas ? `<ul class="nov-lista">${n.cosas.map((c, i) => item(c, i, false)).join('')}</ul>` : ''}</details>`;
   // si llevabas tiempo sin entrar, salen todas las que te has perdido, enteras, de la más nueva a la más antigua
   const perdidas = nuevas.length > 1 ? `<p class="nov-perdidas">${dibujo('tour')}<span><b>Te has perdido ${nuevas.length} actualizaciones</b>Desde la ${esc(desde)}, que fue la última que viste. Aquí van todas, de la más nueva a la más antigua.</span></p>` : '';
-  const h = hoja(nuevas.length > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}${nuevas.map(bloque).join('')}
+  const h = hoja(nuevas.length > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}<button type="button" class="btn nov-scroll" data-nov-scroll>${ICONOS.chispa}Verlas en presentación</button>${nuevas.map(bloque).join('')}
     ${pasos.length ? `<button type="button" class="btn pri nov-todo" data-nov-todo>${ICONOS.chispa}Enséñamelo todo, paso a paso</button>` : ''}
     ${resto.length ? `<section class="nov-antes" aria-labelledby="hNovAnt"><h3 id="hNovAnt">Versiones anteriores</h3>${resto.map(antes).join('')}</section>` : ''}
     <button type="button" class="enlace nov-reg" data-nov-reg>Registro de cambios completo, en texto y sin dibujos</button>
@@ -10148,12 +10171,112 @@ function mostrarNovedades(desde, alCerrar) {
   </div>`, alCerrar);
   h.el.classList.add('hoja-nov');
   $('[data-nov-reg]', h.el).onclick = () => { h.cerrar(true); abrirRegistro(alCerrar); };
+  $('[data-nov-scroll]', h.el).onclick = () => { h.cerrar(true); novedadesScroll(nuevas, desde, alCerrar); };
   const ir = (k) => { h.cerrar(true); iniciarTour(k, alCerrar, pasos); };
   $('[data-tour-ya]', h.el).onclick = () => { h.cerrar(true); iniciarTour(0, alCerrar); };
   if (pasos.length) $('[data-nov-todo]', h.el).onclick = () => ir(0);
   for (const b of $$('[data-nov-ir]', h.el)) b.onclick = () => ir(+b.dataset.novIr);
 }
 
+/* Las novedades contadas bajando, como la presentación: el número de versión se monta letra a letra y cada cosa
+   nueva entra con el scroll (el dibujo desde un lado, el título palabra a palabra, el texto detrás), con su botón
+   «Enséñamelo» que te lleva a ella. Al final, verlo todo paso a paso, la lista o seguir. */
+const COLORES_NOV = ['#E2B45F', '#4FC995', '#3987e5', '#d55181', '#d95926'];
+function novedadesScroll(nuevas, desde, alCerrar = () => {}) {
+  const quieta = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const pasos = [], cosas = [];
+  for (const n of nuevas) for (const c of n.cosas || []) { cosas.push({ ...c, v: n.v, paso: c.ir ? pasos.length : null }); if (c.ir) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
+  const n0 = nuevas[0], ver = n0.v;
+  const raiz = document.createElement('div');
+  raiz.className = `intro ix ixn${quieta ? ' quieta' : ''}`;
+  raiz.setAttribute('role', 'dialog'); raiz.setAttribute('aria-modal', 'true'); raiz.setAttribute('aria-label', `Novedades de la ${ver}`);
+  raiz.innerHTML = `<div class="ix-luz" aria-hidden="true"></div><div class="ix-barra" aria-hidden="true"></div>
+    <div class="ix-cab"><span class="intro-marca" style="opacity:1"><img src="favicon.svg" alt="">GrowFolio</span><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
+    <div class="ix-scroll" tabindex="-1">
+      <section class="ixn-heroe"><div class="ix-escena">
+        <p class="ixn-eti">${nuevas.length > 1 ? `Lo que te has perdido desde la ${esc(desde)}` : 'Lo nuevo'}</p>
+        <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l) => `<span aria-hidden="true">${esc(l)}</span>`).join('')}</h1>
+        <div class="ix-lema"><h2>${esc(n0.t)}</h2><p>${fechaNov(n0.f, n0.h)} · ${cosas.length} ${cosas.length === 1 ? 'novedad' : 'novedades'}</p></div>
+        <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+      </div></section>
+      ${cosas.map((c, k) => `<section class="ix-cap" data-lado="${k % 2 ? 'd' : 'i'}" data-color="${COLORES_NOV[k % COLORES_NOV.length]}">
+        <div class="ix-cap-in">
+          <div class="ix-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true"><g transform="translate(0 5) scale(2)">${DIBUJOS[c.d] || DIBUJOS.pulido || ''}</g></svg></div>
+          <div class="ix-txt">${nuevas.length > 1 ? `<span class="ixn-v">${esc(c.v)}</span>` : ''}<h2 data-no-trad data-t="${esc(c.t)}" aria-label="${esc(c.t)}"></h2><p>${esc(c.x)}</p>${c.paso != null ? `<button type="button" class="btn ixn-ir" data-nv-ir="${c.paso}">Enséñamelo</button>` : ''}</div>
+        </div>
+      </section>`).join('')}
+      <section class="ix-fin">
+        <div class="ix-fin-logo">${logoEntero()}</div>
+        <h2>Eso es todo</h2>
+        <p>Si algo no va como esperas, dínoslo con el bichito de arriba.</p>
+        ${pasos.length ? '<button type="button" class="btn pri" data-nv="todo">Enséñamelo todo, paso a paso</button>' : ''}
+        <button type="button" class="btn" data-nv="fin">Seguir a mi cartera</button>
+        <button type="button" class="enlace ix-arriba" data-nv="lista">Ver la lista y las versiones anteriores</button>
+      </section>
+    </div>`;
+  document.body.appendChild(raiz);
+  document.body.classList.add('con-ixn');
+  const sc = $('.ix-scroll', raiz), heroe = $('.ixn-heroe', raiz), barra = $('.ix-barra', raiz), luz = $('.ix-luz', raiz);
+  const letras = $$('.ixn-ver span', raiz), lema = $('.ix-lema', raiz), baja = $('.ix-baja', raiz), eti = $('.ixn-eti', raiz), capEls = $$('.ix-cap', raiz);
+  const partir = () => capEls.forEach((c) => { const h = $('h2', c), t = trad(h.dataset.t); if (h.dataset.hecho === t) return; h.dataset.hecho = t; h.setAttribute('aria-label', t); h.innerHTML = t.split(' ').map((w) => `<span aria-hidden="true">${esc(w)}</span>`).join(' '); });
+  partir();
+  const tramo = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a))), ease = (t) => 1 - Math.pow(1 - t, 3);
+  let medidas = null, raf = 0, color = '';
+  const medir = () => { const vh = sc.clientHeight; medidas = { vh, alto: heroe.offsetHeight, caps: capEls.map((c) => ({ c, top: c.offsetTop, h: c.offsetHeight, palabras: $$('h2 span', c), ilus: $('.ix-ilus', c), p: $('.ix-txt p', c), b: $('.ixn-ir', c), lado: c.dataset.lado === 'd' ? 1 : -1 })) }; };
+  const pinta = () => {
+    raf = 0; if (!medidas) medir();
+    const { vh } = medidas, y = sc.scrollTop, H = sc.scrollHeight - vh;
+    barra.style.transform = `scaleX(${H > 0 ? Math.min(1, y / H) : 0})`;
+    const p = quieta ? 0.6 : Math.min(1, Math.max(0, y / Math.max(1, medidas.alto - vh)));
+    // el número de versión, cifra a cifra; luego el título; al final se va hacia arriba
+    const sale = ease(tramo(p, 0.7, 1));
+    letras.forEach((l, k) => {
+      const e = quieta ? 1 : ease(tramo(p, -0.3 + k * 0.04, 0.15 + k * 0.04)), f = 1 - e;
+      l.style.transform = `translate(${((k - (letras.length - 1) / 2) * 0.5 * f).toFixed(3)}em, ${(0.5 * f - sale * 0.3).toFixed(3)}em) scale(${(1 + 0.4 * f).toFixed(3)})`;
+      l.style.opacity = (e * (1 - sale)).toFixed(3);
+      l.style.filter = f > 0.01 ? `blur(${(10 * f).toFixed(1)}px)` : '';
+    });
+    const le = quieta ? 1 : ease(tramo(p, -0.2, 0.25));
+    lema.style.opacity = (le * (1 - sale)).toFixed(3);
+    lema.style.transform = `translateY(${((1 - le) * 18 - sale * 40).toFixed(1)}px)`;
+    eti.style.opacity = (1 - sale).toFixed(3);
+    baja.style.opacity = (1 - tramo(p, 0, 0.1)).toFixed(3);
+    luz.style.setProperty('--luz', (0.5 + 0.4 * le).toFixed(3));
+    let mejor = null;
+    for (const m of medidas.caps) {
+      const q = quieta ? 0.5 : (y + vh - m.top) / (vh + m.h);
+      if (q < -0.1 || q > 1.1) continue;
+      const ei = ease(tramo(q, 0.08, 0.38)), ex = tramo(q, 0.66, 0.94), fi = 1 - ei;
+      m.ilus.style.transform = `translate(${(m.lado * fi * 16).toFixed(2)}vw, ${(fi * 40 - ex * 60).toFixed(1)}px) rotate(${(m.lado * fi * 9).toFixed(2)}deg) scale(${(0.78 + 0.22 * ei).toFixed(3)})`;
+      m.ilus.style.opacity = (ei * (1 - ex)).toFixed(3);
+      m.palabras.forEach((w, k) => { const e = ease(tramo(q, 0.16 + k * 0.025, 0.34 + k * 0.025)); w.style.transform = `translateY(${((1 - e) * 0.6 - ex * 0.4).toFixed(3)}em)`; w.style.opacity = (e * (1 - ex)).toFixed(3); });
+      const pe = ease(tramo(q, 0.28, 0.46));
+      for (const el of [m.p, m.b]) if (el) { el.style.transform = `translateY(${((1 - pe) * 26 - ex * 30).toFixed(1)}px)`; el.style.opacity = (pe * (1 - ex)).toFixed(3); }
+      if (q > 0.25 && q < 0.75 && (!mejor || Math.abs(q - 0.5) < Math.abs(mejor.q - 0.5))) mejor = { q, c: m.c.dataset.color };
+    }
+    const nuevoColor = mejor ? mejor.c : '#E2B45F';
+    if (nuevoColor !== color) { color = nuevoColor; raiz.style.setProperty('--ixg', color); }
+  };
+  const pedir = () => { if (!raf) raf = requestAnimationFrame(pinta); };
+  const redim = () => { medidas = null; pedir(); };
+  sc.addEventListener('scroll', pedir, { passive: true });
+  addEventListener('resize', redim);
+  const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); cerrar(); } };
+  document.addEventListener('keydown', tecla, true);
+  const quitar = () => { raiz.remove(); document.body.classList.remove('con-ixn'); removeEventListener('resize', redim); document.removeEventListener('keydown', tecla, true); if (raf) cancelAnimationFrame(raf); };
+  const cerrar = () => { quitar(); alCerrar(); };
+  raiz.addEventListener('click', (e) => {
+    const ir = e.target.closest('[data-nv-ir]');
+    if (ir) { quitar(); iniciarTour(+ir.dataset.nvIr, alCerrar, pasos); return; }
+    const b = e.target.closest('[data-nv]'); if (!b) return;
+    if (b.dataset.nv === 'fin') cerrar();
+    else if (b.dataset.nv === 'todo') { quitar(); iniciarTour(0, alCerrar, pasos); }
+    else if (b.dataset.nv === 'lista') { quitar(); mostrarNovedades(desde, alCerrar, true); }
+  });
+  pinta();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(redim);
+  setTimeout(() => sc.focus({ preventScroll: true }), 50);
+}
 /* registro de cambios: lo mismo que las novedades pero en texto y entero, versión a versión, con la lista
    detallada de cambios de cada una (cambios.json, que sale del historial del proyecto con scripts/cambios.py) */
 async function abrirRegistro(alCerrar) {
