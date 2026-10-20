@@ -4606,14 +4606,9 @@ function montar() {
       <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
     </div>
   </div></header>
-  <div class="ticker" id="ticker" role="link" tabindex="0" aria-label="Cotizaciones. Toca para ver Mercados" title="Ver Mercados"></div>
   <main class="wrap" id="vista"></main>
   <nav class="navbar" aria-label="Secciones">${ORDEN_BARRA.map((k) => { const g = GRUPOS.find((x) => x.k === k); return `<a href="#${k}" data-ir="${k}"${k === 'cartera' ? ' class="nav-centro"' : ''}>${ICONOS[k]}<span>${L(g.c || g.t, g.en)}</span></a>`; }).join('')}</nav>`;
   S.tickerFirma = null;
-  // la cinta de cotizaciones lleva a Mercados
-  const tk = $('#ticker');
-  tk.onclick = () => { location.hash = '#mercados'; };
-  tk.onkeydown = (e) => { if (e.key === 'Enter') location.hash = '#mercados'; };
   // la luz de arriba: al pasar el ratón (o tocarla) se despliegan las bolsas
   const ew = $('#estadoW'), eb = $('#estadoB'), ep = $('#estadoPanel');
   const rellena = () => { ep.innerHTML = htmlBolsasPanel(); };
@@ -4841,7 +4836,9 @@ function pintar() {
   if (sv !== S.radarSubs) { S.radarSubs = sv; LIVE.resuscribir(); }
 }
 
+// 0.3: sin la cinta de cotizaciones de arriba (lo de los mercados está en Mercados y en la luz de En directo)
 function pintarTicker(M) {
+  if (!$('#ticker')) return;
   const merc = Object.keys((S.precios && S.precios.mercados) || {});
   const vistos = new Set();
   const pos = M.filas.filter((f) => !vistos.has(f.inst.id) && vistos.add(f.inst.id));
@@ -11227,7 +11224,7 @@ const NOVEDADES = [
   { v: '0.3.0', f: '2026-10-20', h: '23:59', t: 'Más sencilla y con más criterio', cosas: [
     { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar, .nav' }, t: 'Cinco sitios', x: 'Inicio va en el centro de la barra, más grande. A la izquierda, lo que haces tú: Pasos y Análisis, que ahora lleva tus objetivos. A la derecha, lo de fuera: Expertos y Mercados, que ahora lleva el calendario. Hacienda sale en Análisis cuando toca la renta; el resto del año, con un enlace al final.' },
     { d: 'tengo', ir: { v: 'cartera', sel: '#hPos', pos: true }, t: 'Tus posiciones, arriba', x: 'En Inicio, justo debajo del patrimonio. GrowIA va después y, en el móvil, más corta: su diagnóstico en tres líneas y las dos cosas que más urgen.' },
-    { d: 'cifras', ir: { v: 'cartera', sel: '.hero-panel' }, t: 'Inicio más limpio', x: 'El ojo para ocultar las cifras va junto a Patrimonio, lo que más ha movido hoy tu cartera sale como en el widget y la comparación con el S&P 500 está junto a los periodos de la gráfica. La bandera del idioma pasa a Ajustes.' },
+    { d: 'cifras', ir: { v: 'cartera', sel: '.hero-panel' }, t: 'Inicio más limpio', x: 'Fuera la cinta de cotizaciones de arriba: los mercados están en Mercados y en la luz de En directo. El ojo para ocultar las cifras va junto a Patrimonio, lo que más ha movido hoy tu cartera sale como en el widget y la comparación con el S&P 500 está junto a los periodos de la gráfica. La bandera del idioma pasa a Ajustes.' },
     { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: 'La gráfica, desde el principio', x: '«Inicio» la enseña desde tu primera compra: sale en cuanto pones en alguna ficha desde cuándo la tienes. 3A, 5A y Máx llegan de verdad hasta atrás y, en los periodos largos, el eje dice el mes y el año.' },
     { d: 'hecho', ir: { v: 'ruta', sel: '.ruta-estado' }, t: 'Si vas bien, te lo dice', x: 'Arriba del Paso a paso, cómo vas frente a tus objetivos. Y no hacer nada también es un consejo: si tu cartera va bien, GrowIA te dice que esperes.' },
     { d: 'pregunta', ir: { v: 'expertos', sel: '.fx3, .ideas-top3' }, t: 'Consejos que no cambian cada día', x: 'La señal de cada posición ya no salta de un día para otro: una nueva tiene que repetirse dos días y la anterior llevar al menos una semana, salvo que sea urgente, como tu precio de salida. GrowIA sabe lo que te dijo antes y, si cambia de opinión, te explica por qué.' },
