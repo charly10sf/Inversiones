@@ -18,7 +18,7 @@ import androidx.credentials.GetCredentialRequest;
 import androidx.credentials.GetCredentialResponse;
 import androidx.credentials.exceptions.GetCredentialException;
 
-import com.google.android.libraries.identity.googleid.GetGoogleIdOption;
+import com.google.android.libraries.identity.googleid.GetSignInWithGoogleOption;
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential;
 
 import org.json.JSONObject;
@@ -150,28 +150,31 @@ public class Puente {
     public void entrarGoogle(String clienteWeb) {
         act.runOnUiThread(() -> {
             try {
-                GetGoogleIdOption op = new GetGoogleIdOption.Builder()
-                        .setFilterByAuthorizedAccounts(false)
-                        .setServerClientId(clienteWeb)
-                        .setAutoSelectEnabled(false)
-                        .build();
+                // el flujo del botón «Continuar con Google»: siempre enseña el selector de cuentas de Google
+                // (el de un toque se puede silenciar solo si antes lo cerraste varias veces)
+                GetSignInWithGoogleOption op = new GetSignInWithGoogleOption.Builder(clienteWeb).build();
                 GetCredentialRequest req = new GetCredentialRequest.Builder().addCredentialOption(op).build();
+                act.js("window.pasoGoogle && window.pasoGoogle('pedido')");
                 CredentialManager.create(act).getCredentialAsync(act, req, new CancellationSignal(), HILO,
                         new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
                             @Override
                             public void onResult(GetCredentialResponse r) {
-                                Credential c = r.getCredential();
-                                if (c instanceof CustomCredential && GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(c.getType())) {
-                                    GoogleIdTokenCredential g = GoogleIdTokenCredential.createFrom(((CustomCredential) c).getData());
-                                    act.js("window.resultadoGoogle && window.resultadoGoogle(true, " + JSONObject.quote(g.getIdToken()) + ")");
-                                } else {
-                                    act.js("window.resultadoGoogle && window.resultadoGoogle(false, 'tipo')");
+                                try {
+                                    Credential c = r.getCredential();
+                                    if (c instanceof CustomCredential && GoogleIdTokenCredential.TYPE_GOOGLE_ID_TOKEN_CREDENTIAL.equals(c.getType())) {
+                                        GoogleIdTokenCredential g = GoogleIdTokenCredential.createFrom(((CustomCredential) c).getData());
+                                        act.js("window.resultadoGoogle && window.resultadoGoogle(true, " + JSONObject.quote(g.getIdToken()) + ")");
+                                    } else {
+                                        act.js("window.resultadoGoogle && window.resultadoGoogle(false, " + JSONObject.quote("tipo " + c.getType()) + ")");
+                                    }
+                                } catch (Exception e) {
+                                    act.js("window.resultadoGoogle && window.resultadoGoogle(false, " + JSONObject.quote(String.valueOf(e)) + ")");
                                 }
                             }
 
                             @Override
                             public void onError(GetCredentialException e) {
-                                act.js("window.resultadoGoogle && window.resultadoGoogle(false, " + JSONObject.quote(String.valueOf(e.getType())) + ")");
+                                act.js("window.resultadoGoogle && window.resultadoGoogle(false, " + JSONObject.quote(e.getType() + ": " + e.getMessage()) + ")");
                             }
                         });
             } catch (Exception e) {

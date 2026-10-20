@@ -40,6 +40,9 @@ public class Principal extends Activity {
         web = new WebView(this);
         web.setBackgroundColor(0xFF12110F);
         web.setFitsSystemWindows(true);
+        // sin la barra de desplazamiento del navegador a la derecha: en la app se desliza con el dedo
+        web.setVerticalScrollBarEnabled(false);
+        web.setHorizontalScrollBarEnabled(false);
         setContentView(web);
 
         WebSettings s = web.getSettings();

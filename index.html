@@ -2258,6 +2258,11 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
 ::selection { background: rgba(226, 180, 95, 0.32); color: #fff; }
 * { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+/* en el móvil (y en la app) nada de barra de desplazamiento a la derecha: se desliza con el dedo, como una app */
+@media (hover: none) and (pointer: coarse) {
+  html, body, *, .gta { scrollbar-width: none !important; }
+  ::-webkit-scrollbar { display: none; width: 0; height: 0; }
+}
 h1, h2, h3, .ag-tx b, .fx2-cab button { text-wrap: balance; }
 p, .nota, .ag-det p, li > span { text-wrap: pretty; }
 .vista-cab h1 { font-size: clamp(30px, 4.2vw, 38px); font-weight: 300; letter-spacing: -0.035em; line-height: 1.05; }
@@ -7643,12 +7648,24 @@ function pantallaCuenta(errorTxt = '') {
   if ($('#bGoogle')) $('#bGoogle').onclick = async () => {
     const b = $('#bGoogle'); err(''); b.disabled = true;
     if (nativo) {
+      // el botón dice en qué paso va y nunca se queda colgado: si Google no contesta, se suelta y lo explica
+      const tx = b.querySelector('span'), orig = tx.textContent;
+      let paso = 'app';
+      const fin = (m) => { clearTimeout(S.googleT); b.disabled = false; tx.textContent = orig; if (m) err(m); };
+      window.pasoGoogle = (p) => { paso = p; tx.textContent = trad('Abriendo Google…'); };
+      clearTimeout(S.googleT);
+      S.googleT = setTimeout(() => fin(`${trad('Google no ha contestado. Vuelve a probar o entra con tu correo.')} (${paso})`), 45000);
       window.resultadoGoogle = async (ok, x) => {
-        if (!ok) { b.disabled = false; if (!/CANCEL/i.test(x || '')) err(/NO_CREDENTIAL/i.test(x || '') ? 'No hay ninguna cuenta de Google en este móvil: añádela en Ajustes de Android o entra con tu correo.' : `No se pudo entrar con Google (${x}).`); return; }
-        try { await fbCargar(); await FB.au.signInWithCredential(FB.auth, FB.au.GoogleAuthProvider.credential(x)); FB.user = FB.auth.currentUser; await dentro(); }
-        catch (e) { console.warn(e); b.disabled = false; err(errorFb(e)); }
+        clearTimeout(S.googleT);
+        if (!ok) { fin(/CANCEL/i.test(x || '') ? '' : /NO_CREDENTIAL/i.test(x || '') ? 'No hay ninguna cuenta de Google en este móvil: añádela en Ajustes de Android o entra con tu correo.' : `No se pudo entrar con Google (${x}).`); return; }
+        tx.textContent = trad('Entrando…');
+        try {
+          paso = 'firebase'; await conTiempo(fbCargar(), 20000);
+          paso = 'credencial'; await conTiempo(FB.au.signInWithCredential(FB.auth, FB.au.GoogleAuthProvider.credential(x)), 20000);
+          FB.user = FB.auth.currentUser; paso = 'cuenta'; await dentro();
+        } catch (e) { console.warn(e); fin(e && e.message === 'tiempo' ? `${trad('Google ha contestado, pero no se ha podido terminar de entrar. Vuelve a probar.')} (${paso})` : errorFb(e)); }
       };
-      try { window.InversionesApp.entrarGoogle(FB_GOOGLE_WEB); } catch (e) { b.disabled = false; err('Esta versión de la app no sabe entrar con Google: actualízala desde Ajustes.'); }
+      try { window.InversionesApp.entrarGoogle(FB_GOOGLE_WEB); } catch (e) { fin('Esta versión de la app no sabe entrar con Google: actualízala desde Ajustes.'); }
       return;
     }
     try {
