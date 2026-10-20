@@ -1,0 +1,47 @@
+# Un release de GitHub por versión. Cada vez que cambia el código en main, la etiqueta de la versión que está publicada
+# (vX.Y.Z, la de VERSION en index.html) se mueve a ese commit, así que siempre apunta a cómo quedó esa versión con sus
+# arreglos; y su release se crea o se actualiza con las novedades y los cambios (scripts/release.py). La APK la añade la
+# Action «App Android» cuando compila. Para comparar dos versiones: github.com/<repo>/compare/v0.1.1...v0.2.3
+name: Release de la versión
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "index.html"
+      - "sw.js"
+      - "en.json"
+      - "cambios.json"
+      - "scripts/**"
+      - "android/**"
+      - "worker/**"
+      - ".github/workflows/**"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Etiqueta y release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          v=$(grep -oP "^const VERSION = '\K[0-9.]+" index.html | head -1)
+          [ -n "$v" ] || { echo "::warning::No encuentro VERSION en index.html"; exit 0; }
+          python3 scripts/release.py --version "$v" > notas.md
+          nombre=$(python3 scripts/release.py --version "$v" --nombre)
+          git tag -f "v$v" && git push -f -q origin "v$v"
+          if gh release view "v$v" >/dev/null 2>&1; then
+            gh release edit "v$v" --title "$nombre" --notes-file notas.md
+          else
+            gh release create "v$v" --verify-tag --title "$nombre" --notes-file notas.md --latest || gh release edit "v$v" --title "$nombre" --notes-file notas.md
+          fi
+          echo "::notice::Release v$v al día ($nombre)"

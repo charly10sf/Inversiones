@@ -81,6 +81,29 @@ a:hover { text-decoration: underline; }
 .estado { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .estado.cerr::before { background: var(--accent); opacity: 0.7; }
 .estado-w { position: relative; margin-left: auto; flex: 0 1 auto; min-width: 34px; }
+.gta-top-w { margin-left: auto; flex: none; display: flex; }
+.gta-top-w + .estado-w { margin-left: 2px; }
+.gta-top { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px 0 9px; border-radius: 999px; border: 1px solid rgba(255, 62, 165, 0.55); background: linear-gradient(90deg, rgba(255, 62, 165, 0.16), rgba(255, 140, 60, 0.12)); color: #fff; cursor: pointer; white-space: nowrap; box-shadow: 0 0 14px rgba(255, 62, 165, 0.22); transition: box-shadow 0.2s ease, border-color 0.2s ease; }
+.gta-top:hover { border-color: #FF3EA5; box-shadow: 0 0 20px rgba(255, 62, 165, 0.45); }
+.gta-top:focus-visible { outline: 2px solid #FF7DB8; outline-offset: 2px; }
+.gta-top-t { font-family: 'Tilt Neon', var(--f); font-size: 15px; letter-spacing: 0.05em; color: #FFE1F1; text-shadow: 0 0 6px rgba(255, 62, 165, 0.85); }
+.gta-top-d { font-family: 'Tilt Neon', var(--f); font-size: 14px; color: #FFB27A; text-shadow: 0 0 6px rgba(255, 140, 60, 0.75); font-variant-numeric: tabular-nums; }
+.gta-top.pulsa { animation: gtaPulsa 1.25s ease-in-out 4; }
+/* en el móvil, solo el mando y los días */
+/* con poco sitio, solo «VI» y los días */
+@media (max-width: 600px) { .gta-top-g { display: none; } .gta-top { padding: 0 9px; gap: 5px; } }
+/* si la cabecera no cabe, encajarCabecera() va quitando cosas por este orden: aire entre pestañas, el texto de
+   «Avisar de un fallo» (se queda el bicho con su α), el de GTA (se queda el mando con los días), el de la luz de
+   En directo (se queda la luz) y, por último, la etiqueta de la versión y algo de aire */
+.top.cab-1 .nav a { padding: 7px 8px; }
+.top.cab-2 .ib-fallo { width: 38px; padding: 0; border: 0; background: transparent; display: grid; }
+.top.cab-2 .ib-fallo::after { display: grid; }
+.top.cab-2 .fallo-t { display: none; }
+.top.cab-3 .gta-top-g { display: none; }
+.top.cab-3 .gta-top { padding: 0 10px; gap: 6px; }
+.top.cab-4 .estado-b .estado { font-size: 0; gap: 0; }
+.top.cab-5 .fila-top { gap: 10px; }
+.top.cab-5 .marca .ver-chip { display: none; }
 .estado-b { display: inline-flex; align-items: center; height: 34px; max-width: 100%; min-width: 0; padding: 0 10px; border: 0; border-radius: 999px; background: none; cursor: pointer; }
 /* con las pestañas arriba y poco sitio, solo la luz (el texto sigue para los lectores de pantalla) */
 @media (min-width: 900px) and (max-width: 1399px) { .estado-b .estado { font-size: 0; gap: 0; } }
@@ -209,11 +232,9 @@ a:hover { text-decoration: underline; }
 .cabecera { display: grid; gap: 32px; margin-bottom: 52px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 1180px) { .cabecera { grid-template-columns: minmax(360px, 440px) minmax(0, 1fr); gap: 56px; align-items: start; } }
 .hero-lbl { color: var(--text-2); font-size: 14px; }
-.hero-num { font-weight: 200; font-size: clamp(46px, 9vw, 84px); line-height: 1; letter-spacing: -0.045em; margin: 8px 0 16px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.hero-num span.dec { font-size: 0.48em; letter-spacing: -0.02em; color: var(--text-2); font-weight: 300; padding: 0 2px; margin: 0; }
+.hero-num { font-weight: 700; font-size: clamp(50px, 13vw, 92px); line-height: 0.95; letter-spacing: -0.055em; margin: 6px 0 14px; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--text); }
+.hero-num span.dec { font-size: 0.42em; letter-spacing: -0.015em; color: var(--text-2); font-weight: 600; padding: 0 2px 0 3px; margin: 0; }
 .hero-num span { padding: 0 4px; margin: 0 -4px; }
-.hero-sub { display: grid; gap: 4px; font-size: 16px; }
-.hero-sub .k { margin-left: 6px; }
 .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
 .kpi { display: grid; gap: 2px; min-width: 0; }
 .kpi .k { font-size: 13px; }
@@ -427,6 +448,23 @@ button.fila:hover { background: var(--plane); }
 button.ag-c { color: var(--text); cursor: pointer; }
 button.ag-c:hover { border-color: var(--line-2); }
 .ag-pts { display: flex; gap: 3px; }
+/* la celda entera: rayada si la bolsa cierra (más tenue si solo cierra alguna de las tuyas), medio llena si es media
+   sesión y con el borde a trazos si es festivo pero la bolsa abre */
+.ag-est { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 9.5px; font-weight: 700; line-height: 1.15; letter-spacing: -0.01em; color: var(--text-2); }
+.ag-c.cierra, .ag-ley .sw.cierra { background: repeating-linear-gradient(135deg, rgba(154, 147, 133, 0.24) 0 4px, rgba(154, 147, 133, 0.07) 4px 9px); }
+.ag-c.cierra-p, .ag-ley .sw.cierra-p { background: repeating-linear-gradient(135deg, rgba(154, 147, 133, 0.13) 0 4px, transparent 4px 9px), var(--plane); }
+.ag-c.cierra-p .ag-est { color: var(--muted); }
+.ag-est .ec { display: none; }
+@media (max-width: 560px) { .ag-est .el { display: none; } .ag-est .ec { display: inline; } .ag-est { font-size: 9px; } .ag-cal .ag-c { padding: 5px 4px; } }
+.ag-c.media, .ag-ley .sw.media { background: linear-gradient(180deg, var(--plane) 50%, rgba(154, 147, 133, 0.26) 50%); }
+.ag-c.fiesta { border-style: dashed; border-color: rgba(226, 180, 95, 0.45); }
+.ag-ley .sw.fiesta { border: 1px dashed rgba(226, 180, 95, 0.6); background: var(--plane); }
+.ag-c.fiesta .ag-est { color: var(--accent); }
+.ag-c.hoy.fiesta, .ag-c.sel.fiesta { border-style: solid; }
+.ag-ley i.sw { width: 16px; height: 12px; border-radius: 3px; }
+.ag-cal .ag-c { min-height: 50px; }
+.t-media { --ag: #9a9385; }
+.t-fiesta { --ag: #c9a46a; }
 .ag-pts i, .ag-ley i { width: 6px; height: 6px; border-radius: 50%; background: var(--ag); display: block; }
 .ag-ley { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 12px; color: var(--muted); }
 .ag-ley span { display: inline-flex; align-items: center; gap: 6px; }
@@ -826,6 +864,28 @@ details.mas[open] > summary { margin-bottom: 12px; }
 .frescura .vivo-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 3px rgba(79, 201, 149, 0.18); }
 .frescura [data-b="recalc"] { color: var(--text-2); font-variant-numeric: tabular-nums; }
 .enlace.acento { color: var(--accent); }
+/* el banco: conectar desde Efectivo */
+.campo-ef { display: grid; gap: 6px; min-width: 0; }
+.ef-banco { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.ef-banco:empty { display: none; }
+.ef-banco svg, .ef-dbk svg { width: 14px; height: 14px; vertical-align: -2px; margin-right: 5px; }
+.ef-banco .enlace { font-size: 12.5px; margin-right: 8px; }
+.ef-banco .enlace.acento { display: inline-flex; align-items: center; font-weight: 600; }
+.ef-banco .bk-mal { color: var(--warn); }
+input.del-banco { color: var(--text-2); background: var(--plane-2); }
+.ef-dbk { color: var(--accent); }
+.bk { display: grid; gap: 12px; }
+.bk-busca { width: 100%; }
+.bk-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: min(52vh, 420px); overflow: auto; }
+.bk-lista .vacio { color: var(--muted); font-size: 13.5px; padding: 8px 2px; }
+.bk-b { width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--plane); color: var(--text); font: inherit; font-size: 14.5px; text-align: left; cursor: pointer; }
+.bk-b:hover { border-color: var(--line-2); background: var(--plane-2); }
+.bk-b img, .bk-b i { width: 28px; height: 28px; border-radius: 8px; object-fit: contain; background: #fff; flex: none; }
+.bk-b i { background: var(--plane-3); }
+.bk-b.cargando { opacity: 0.6; }
+.bk-cuentas { display: grid; gap: 8px; margin: 12px 0; }
+.ef-extracto { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; justify-self: start; }
+.ef-extracto svg { width: 16px; height: 16px; }
 
 /* ---------- expertos: una fila por posición ---------- */
 .fx-lista { border-top: 1px solid var(--line); }
@@ -1220,6 +1280,9 @@ details.plegable[open] { padding-bottom: 16px; }
 .as-adj { width: 38px; height: 38px; border-radius: 10px; border: 0; background: none; color: var(--text-2); display: grid; place-items: center; flex: none; }
 .as-adj:hover { background: var(--plane-3); color: var(--text); }
 .as-adj svg { width: 19px; height: 19px; }
+.as-voz.oye { color: var(--on-accent, #1A1408); background: var(--down); animation: voz-oye 1.1s ease-in-out infinite; }
+@keyframes voz-oye { 0%, 100% { box-shadow: 0 0 0 0 rgba(229, 83, 75, 0.45); } 50% { box-shadow: 0 0 0 7px rgba(229, 83, 75, 0); } }
+@media (prefers-reduced-motion: reduce) { .as-voz.oye { animation: none; } }
 .as-adjunto { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; align-items: start; background: var(--plane); border: 1px solid var(--line-2); border-radius: 12px; padding: 8px; }
 .as-adjunto > img { width: 64px; height: 64px; object-fit: cover; object-position: top left; border-radius: 8px; border: 1px solid var(--line-2); }
 .as-adj-txt { width: 64px; height: 64px; border-radius: 8px; background: var(--plane-2); display: grid; place-items: center; color: var(--accent); }
@@ -1320,7 +1383,68 @@ table td.txt { white-space: normal; min-width: 260px; }
 }
 @media (min-width: 1500px) { .car-fila.par-der { grid-template-columns: minmax(0, 1fr) 440px; gap: 64px; } }
 .car-pie { display: flex; justify-content: center; }
-.hero-top { display: flex; align-items: center; gap: 10px; min-height: 30px; margin-bottom: 4px; }
+/* el patrimonio y su gráfica, en una sola pieza: la cifra grande arriba y la curva subiendo por debajo */
+.hero-panel { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "cifra" "graf" "rangos"; padding: 22px 0 16px; border: 1px solid var(--line); border-radius: 28px; overflow: hidden;
+  background: radial-gradient(70% 90% at 0% 0%, rgba(226, 180, 95, 0.11), rgba(226, 180, 95, 0) 70%), linear-gradient(180deg, #0D0C0A, #050504); }
+.hero-cifra { grid-area: cifra; position: relative; z-index: 2; padding: 0 28px; pointer-events: none; min-width: 0; }
+.hero-lbl { font-size: 13.5px; transition: color 0.15s ease; }
+/* al pasar el dedo la cifra sigue en blanco: lo que cambia es la etiqueta de arriba, que dice el día */
+.hero-cifra:has(.hero-num.mira) .hero-lbl { color: var(--accent); }
+.hero-var { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-height: 30px; }
+.hv-p { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 10px; border-radius: 999px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; white-space: nowrap; }
+.hv-p.up { background: var(--up-bg); color: var(--up); }
+.hv-p.down { background: var(--down-bg); color: var(--down); }
+.hv-p.flat { background: var(--plane-2); color: var(--text-2); }
+.hv-p i { font-style: normal; font-size: 10px; }
+.hv-p em { font-style: normal; font-weight: 600; opacity: 0.8; }
+.hero-var .k { font-size: 13.5px; }
+.hero-sub { display: flex; flex-wrap: wrap; gap: 10px 30px; margin-top: 16px; }
+.hero-sub .hs { display: grid; gap: 1px; }
+.hero-sub .hs .k { font-size: 12px; }
+.hero-sub .hs [data-b] { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hero-rangos { grid-area: rangos; justify-self: stretch; display: flex; margin: 6px 16px 0; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line); }
+.hero-rangos button { flex: 1 1 0; min-width: 0; padding: 6px 4px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.hero-rangos button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); }
+.hero-panel > .chart { grid-area: graf; margin-top: -34px; z-index: 1; min-width: 0; }
+.hero-bajo { display: grid; gap: 14px; margin-top: 16px; }
+.hero-bajo .leyenda-graf { margin-top: 0; align-items: center; }
+.hero-bajo .nota { margin: 0; }
+@media (min-width: 760px) {
+  .hero-panel { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "cifra rangos" "graf graf"; padding: 26px 0 6px; }
+  .hero-rangos { align-self: start; justify-self: end; margin: 2px 24px 0 0; }
+  .hero-rangos button { flex: none; padding: 6px 11px; }
+  .hero-panel > .chart { margin-top: -48px; }
+}
+@media (max-width: 759px) {
+  /* en el móvil, la pieza va de lado a lado, sin marco */
+  .hero-panel { margin: 0 calc(-1 * var(--gutter)); border: 0; border-radius: 0; padding-top: 6px; background: none; overflow: visible; }
+  .car-patrimonio::before { content: ''; position: absolute; z-index: -1; left: -30%; top: 10px; width: 130%; height: 340px; background: radial-gradient(closest-side, rgba(226, 180, 95, 0.12), rgba(226, 180, 95, 0)); pointer-events: none; }
+  .hero-cifra { padding: 0 var(--gutter); }
+}
+/* la gráfica grande: curva con brillo, el punto de ahora latiendo, máximo y mínimo, y la fecha abajo al pasar el dedo */
+.gh { touch-action: pan-y; }
+.gh svg { overflow: hidden; }
+.gh-eje, .gh-ext text { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.gh-ext text { fill: var(--text-2); font-weight: 600; }
+.gh-eje, .gh-ext { transition: opacity 0.15s ease; }
+.gh svg.mirando .gh-eje, .gh svg.mirando .gh-ext { opacity: 0; }
+.gh-fecha { position: absolute; bottom: 2px; transform: translateX(-50%); padding: 3px 10px; border-radius: 999px; background: var(--plane-3); border: 1px solid var(--line-2); color: var(--text); font-size: 12px; font-weight: 600; white-space: nowrap; pointer-events: none; z-index: 3; }
+.gh-fecha small { color: var(--text-2); font-weight: 500; font-size: 11.5px; margin-left: 6px; }
+.gh-pulso { transform-box: fill-box; transform-origin: center; animation: ghLate 2.6s ease-out infinite; }
+@keyframes ghLate { from { transform: scale(1); opacity: 0.55; } to { transform: scale(3.8); opacity: 0; } }
+.gh svg.entra .gh-trazo { stroke-dasharray: var(--l); stroke-dashoffset: var(--l); animation: ghTraza 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) forwards; }
+.gh svg.entra .gh-area, .gh svg.entra .gh-ext, .gh svg.entra .gh-fin { opacity: 0; animation: ghAparece 0.5s 0.55s ease forwards; }
+@keyframes ghTraza { to { stroke-dashoffset: 0; } }
+@keyframes ghAparece { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .gh-pulso { animation: none; opacity: 0; } .gh svg.entra .gh-trazo, .gh svg.entra .gh-area, .gh svg.entra .gh-ext, .gh svg.entra .gh-fin { animation: none; stroke-dasharray: none; opacity: 1; } }
+button.mv-c { border: 0; cursor: pointer; font-family: inherit; line-height: inherit; }
+.movers > span.mv-l { display: flex; flex-wrap: wrap; gap: 6px; }
+button.mv-c:hover { filter: brightness(1.15); }
+button.mv-c:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.car-cifras .kpis { margin-top: 0; padding-top: 0; border-top: 0; }
+.car-gta { display: grid; gap: 8px; justify-items: start; }
+.car-gta .gta-chip { margin-left: 0; }
+.hero-top { display: flex; align-items: center; gap: 10px; min-height: 30px; margin-bottom: 14px; }
 .hero-top .hero-hola { margin: 0; }
 .car-ordenar-mini { margin-left: auto; min-height: 30px; padding: 0 11px; gap: 5px; font-size: 13px; color: var(--text-2); }
 .car-ordenar-mini svg { width: 14px; height: 14px; }
@@ -2604,7 +2728,7 @@ body.con-ixn { overflow: hidden; }
 .gta-b:hover { filter: brightness(1.08); }
 @media (prefers-reduced-motion: reduce) {
   .gb i, .gb-n { transition: none !important; transform: none !important; opacity: 1 !important; }
-  .gta-tit, .gta-chip.pulsa, .gta-suelo, .gta-sol, .gta-estrellas, .gta-baja, .gta-barra i, .gta-camino li.siguiente::before, .gta-desde .gta-linea polyline { animation: none !important; }
+  .gta-tit, .gta-chip.pulsa, .gta-top.pulsa, .gta-suelo, .gta-sol, .gta-estrellas, .gta-baja, .gta-barra i, .gta-camino li.siguiente::before, .gta-desde .gta-linea polyline { animation: none !important; }
   .gta-coche-svg, .gta-rueda, .gta-estela path, .gta-pista-f, .gta-picto i, .gta-pila i, .gta-marca circle, .gta-marca text, .gta-haz, .gta-faro, .gta-pos .b i, .gta-quien .b i { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
   .gta-reflejo { display: none; }
   .gta-pos .b i, .gta-quien .b i { width: var(--w) !important; }
@@ -2710,10 +2834,7 @@ p, .nota, .ag-det p, li > span { text-wrap: pretty; }
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -14px rgba(0, 0, 0, 0.55);
 }
 .hoja { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 -12px 40px rgba(0, 0, 0, 0.45); }
-/* tu patrimonio, con un halo dorado muy tenue detrás */
 .car-patrimonio { position: relative; isolation: isolate; }
-.car-patrimonio::before { content: ''; position: absolute; z-index: -1; left: -12%; top: -30px; width: min(620px, 110%); height: 300px; background: radial-gradient(closest-side, rgba(226, 180, 95, 0.11), rgba(226, 180, 95, 0) 100%); pointer-events: none; }
-.hero-num { font-weight: 220; }
 /* la cabecera fija gana una línea fina al bajar */
 .top { transition: box-shadow 0.25s ease; }
 .top.bajado { box-shadow: 0 1px 0 var(--line), 0 10px 30px -18px rgba(0, 0, 0, 0.8); }
@@ -3470,28 +3591,13 @@ const LIVE = {
   },
 };
 
-/* horario de las bolsas para saber si lo que llega se mueve de verdad */
-const BOLSAS = [
-  { nombre: 'Madrid', tz: 'Europe/Madrid', abre: 540, cierra: 1050 },
-  { nombre: 'Londres', tz: 'Europe/London', abre: 480, cierra: 990 },
-  { nombre: 'Nueva York', tz: 'America/New_York', abre: 570, cierra: 960 },
-];
-function bolsaAbierta(b) {
-  try {
-    const p = new Intl.DateTimeFormat('en-GB', { timeZone: b.tz, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(new Date());
-    const g = (t) => (p.find((x) => x.type === t) || {}).value;
-    if (g('weekday') === 'Sat' || g('weekday') === 'Sun') return false;
-    const m = +g('hour') * 60 + +g('minute');
-    return m >= b.abre && m < b.cierra;
-  } catch (e) { return false; }
-}
 /* arriba, solo la luz y dos palabras (antes una frase que se cortaba); el detalle de cada bolsa, al pasar el ratón
    o al tocarlo */
 function estadoDirecto() {
   const conectado = LIVE.yahoo === 'ok' || LIVE.bitvavo === 'ok';
   const hace = S.precios && S.precios.generado ? haceCuanto(S.precios.generado) : '';
   if (!conectado) return { txt: hace ? hace.replace(/^./, (c) => c.toUpperCase()) : 'Sin conexión', cls: 'off' };
-  if (BOLSAS.some(bolsaAbierta)) return { txt: 'En directo', cls: 'on' };
+  if (BOLSAS_MUNDO.filter((b) => ['mad', 'lon', 'us'].includes(b.k)).some((b) => estadoBolsa(b).on)) return { txt: 'En directo', cls: 'on' };
   return { txt: 'Bolsas cerradas', cls: 'cerr' };
 }
 // las principales bolsas, con su horario (y sus festivos, los que hay apuntados) en hora de España
@@ -3512,16 +3618,18 @@ function partesTz(tz, d = new Date()) {
 function estadoBolsa(b) {
   try {
     const t = partesTz(b.tz), fest = (d) => AG_CIERRES.find(([x, donde]) => x === d && donde.split(' ').includes(b.k));
+    const med = AG_MEDIAS.find(([x, bo, m]) => x === t.fecha && bo === b.k && m != null), cierra = med ? med[2] : b.cierra;
     const hm = (d, m) => horaEspana(d, b.tz, Math.floor(m / 60), m % 60) || '';
     const finde = (d) => { const x = new Date(d + 'T12:00:00Z').getUTCDay(); return x === 0 || x === 6; };
     const hoyF = fest(t.fecha);
-    if (!finde(t.fecha) && !hoyF && t.min >= b.abre && t.min < b.cierra) return { on: true, txt: `abierta, cierra a las ${hm(t.fecha, b.cierra)}` };
+    if (!finde(t.fecha) && !hoyF && t.min >= b.abre && t.min < cierra) return { on: true, txt: `abierta, cierra a las ${hm(t.fecha, cierra)}${med ? ` (media sesión por ${med[3]})` : ''}` };
     for (let k = 0; k < 10; k++) {
       const x = new Date(t.fecha + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + k);
       const d = x.toISOString().slice(0, 10);
       if (finde(d) || fest(d) || (k === 0 && t.min >= b.abre)) continue;
+      const medD = AG_MEDIAS.find(([x, bo, m]) => x === d && bo === b.k && m != null);
       const cuando = k === 0 ? 'hoy' : k === 1 ? 'mañana' : `el ${['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'][x.getUTCDay()]}`;
-      return { on: false, txt: `${hoyF ? `cerrada por ${hoyF[2]}` : 'cerrada'}, abre ${cuando} a las ${hm(d, b.abre)}` };
+      return { on: false, txt: `${hoyF ? `cerrada por ${hoyF[2]}` : 'cerrada'}, abre ${cuando} a las ${hm(d, b.abre)}${medD ? ` (solo hasta las ${hm(d, medD[2])})` : ''}` };
     }
   } catch (e) {}
   return { on: false, txt: 'cerrada' };
@@ -3918,7 +4026,7 @@ function empresasPorDentro(M) {
    ===================================================================== */
 const SVG = (d, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ICONOS = {
-  ordenar: SVG('<path d="M7 20V4M7 4L4 7M7 4l3 3M17 4v16M17 20l-3-3M17 20l3-3"/>'),
+  ordenar: SVG('<rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="4.5" rx="1.6"/><rect x="13.5" y="11" width="7" height="9.5" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/>'),
   campana: SVG('<path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 004 0"/>', 1.8),
   ojo: SVG('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
   ojoNo: SVG('<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.6-.6 5-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
@@ -3946,6 +4054,8 @@ const ICONOS = {
   dividendo: SVG('<circle cx="12" cy="12" r="8.5"/><path d="M14.6 9.3c-.5-.9-1.5-1.4-2.6-1.4-1.5 0-2.6.8-2.6 2 0 2.8 5.4 1.4 5.4 4.2 0 1.2-1.2 2-2.8 2-1.2 0-2.3-.5-2.8-1.4M12 6.4v1.5M12 16.2v1.4"/>'),
   banco: SVG('<path d="M3.5 9.3L12 4.2l8.5 5.1z"/><path d="M6 10.5v6.3M10 10.5v6.3M14 10.5v6.3M18 10.5v6.3M3.5 19.8h17"/>'),
   festivo: SVG('<circle cx="12" cy="12" r="8.5"/><path d="M8.2 12h7.6"/>'),
+  media: SVG('<circle cx="12" cy="12" r="8.5"/><path d="M12 3.5a8.5 8.5 0 0 1 0 17z" fill="currentColor" stroke="none"/>'),
+  fiesta: SVG('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M12 12.6l1.2 2.3 2.5.4-1.8 1.8.4 2.5-2.3-1.2-2.3 1.2.4-2.5-1.8-1.8 2.5-.4z"/>'),
   aporte: SVG('<path d="M12 3.8v10.4M7.8 10l4.2 4.2 4.2-4.2"/><path d="M4.5 15.5v2.8A1.7 1.7 0 0 0 6.2 20h11.6a1.7 1.7 0 0 0 1.7-1.7v-2.8"/>'),
   proy: SVG('<path d="M3 19c3-1 5-4 7-7"/><path d="M10 12c2.5-2 5-4 11-7" stroke-dasharray="2.2 2.6"/><path d="M15 5h6v6"/>'),
   perfil: SVG('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.8-4 3.8-6.2 7.5-6.2s6.7 2.2 7.5 6.2"/>'),
@@ -3956,6 +4066,7 @@ const ICONOS = {
   nueva: SVG('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>', 1.8),
   recorte: SVG('<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>', 1.8),
   enviar: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2.2),
+  micro: SVG('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>', 1.9),
   parar: SVG('<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>', 1.5),
   bicho: SVG('<path d="M9 7.5a3 3 0 0 1 6 0"/><rect x="7" y="8" width="10" height="11" rx="5"/><path d="M12 11.5v7M3.5 13.5H7M17 13.5h3.5M5 8l2.5 2M19 8l-2.5 2M5 19.5l2.5-2M19 19.5l-2.5-2"/>', 1.8),
   globo: SVG('<path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17.5H4A1.5 1.5 0 0 1 2.5 16V7A1.5 1.5 0 0 1 4 5.5z"/><path d="M7.5 10.5h9M7.5 13.5h5.5"/>', 1.8),
@@ -4037,7 +4148,7 @@ function binds(M) {
   const mueven = [...M.filas].filter((f) => Math.abs(f.dia) >= 1).sort((a, z) => Math.abs(z.dia) - Math.abs(a.dia)).slice(0, 3);
   // las tres posiciones que más han movido hoy tu cartera, en euros y en %, cada una con su color
   const tm = mueven.map((f) => `${f.inst.corto} ${eurS(f.dia, 0)}`).join(', ');
-  b.movers = { txt: tm, html: mueven.length ? `<span class="mv-t">Lo que más ha movido hoy tu cartera</span><span class="mv-l">${mueven.map((f) => `<span class="mv-c ${cls(f.dia)}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span>`).join('')}</span>` : '' };
+  b.movers = { txt: tm, html: mueven.length ? `<span class="mv-t">Lo que más ha movido hoy tu cartera</span><span class="mv-l">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></button>`).join('')}</span>` : '' };
   const vis = new Set([...(S.radarVisibles || []), ...(S.ideasTop || [])]);
   if (vis.size) for (const x of radarVals()) {
     if (!vis.has(x.s)) continue;
@@ -4106,6 +4217,7 @@ function montar() {
   <header class="top"><div class="wrap fila-top">
     <div class="marca"><img src="favicon.svg" alt=""><span>GrowFolio</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t, c]) => `<a href="#${k}" data-ir="${k}"${c && c !== t ? ' class="corto"' : ''}><span class="nl">${t}</span>${c && c !== t ? `<span class="nc">${c}</span>` : ''}</a>`).join('')}</nav>
+    ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <div class="acciones">
       <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowIA por tu cartera" aria-label="Pregúntale a GrowIA">${ICONOS.chispa}<span>Pregúntale</span></button>
@@ -4243,13 +4355,13 @@ function htmlResumenDia(M) {
   const tuyas = noticiasDeLoTuyo(M, 4), generales = (N.mercado || []).filter((n) => n.t && n.u).slice(0, 3);
   // de tu comunidad, solo lo que toca tu dinero (impuestos, ayudas, vivienda), de los últimos 3 días y como mucho dos
   const regionales = comunidadUsuario() ? noticiasComunidad(comunidadUsuario(), 2, 3) : [];
-  const prox = (() => { try { return agendaLista(M, 2).filter((e) => e.tipo !== 'festivo' || e.mio).slice(0, 4); } catch (e) { return []; } })();
+  const prox = (() => { try { return agendaLista(M, 2).filter((e) => !['festivo', 'media'].includes(e.tipo) || e.mio).slice(0, 4); } catch (e) { return []; } })();
   const toca = (() => { try { const P = pasosRuta(M); return [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto && x.urgente)[0] || null; } catch (e) { return null; } })();
   const noticia = (n) => `<li><a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
   return `<div class="rdia">
     <p class="rdia-fecha" data-no-trad>${esc(fecha[0].toUpperCase() + fecha.slice(1))}</p>
     <section class="rdia-car"><span class="k">Tu cartera hoy</span><b class="rdia-tot">${eur(M.total, 0)}</b><span class="${cls(M.dia)} rdia-dia">${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})</span>
-      ${mueven.length ? `<div class="mv-l">${mueven.map((f) => `<span class="mv-c ${cls(f.dia)}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span>`).join('')}</div>` : ''}</section>
+      ${mueven.length ? `<div class="mv-l">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></button>`).join('')}</div>` : ''}</section>
     ${ia && ia.titular ? `<section class="rdia-ia"><h3>${ICONOS.chispa}Lo que dice ${esc(nombreIA())}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
     ${fichas.length || mercado.length ? `<section><h3>Los mercados</h3>${fichas.length ? `<div class="agp-fichas">${fichas.map(([k, n]) => { const v = MK[k].variacion_dia; return `<span class="${v >= 0 ? 'up' : 'down'}"><i>${v >= 0 ? '↑' : '↓'}</i>${esc(n)} <b>${pctS(v, 2)}</b></span>`; }).join('')}</div>` : ''}
       ${mercado.length ? `<ul class="rdia-merc">${mercado.map((m) => `<li>${chipImpacto(m.impacto)}<span>${escIA(m.t)}</span></li>`).join('')}</ul>` : ''}</section>` : ''}
@@ -4267,7 +4379,7 @@ function resumenDelDia(seguir = () => {}, forzar = false) {
     <div class="fila-btns rdia-pie"><label class="check-mini"><input type="checkbox" id="rdiaOff" ${LS.get('inv-resumen-off', false) ? 'checked' : ''}> No enseñarlo cada día</label><button type="button" class="btn pri" data-cerrar>Ver mi cartera</button></div>`, () => seguir());
   h.el.classList.add('hoja-rdia');
   $('#rdiaOff', h.el).onchange = (e) => { LS.set('inv-resumen-off', e.target.checked); toast(e.target.checked ? 'Ya no saldrá solo: lo tienes en Ajustes' : 'Saldrá la primera vez que abras cada día', 3500); };
-  h.el.addEventListener('click', (e) => { if (e.target.closest('a[href^="#"]')) h.cerrar(true); });
+  h.el.addEventListener('click', (e) => { if (e.target.closest('a[href^="#"], [data-pos]')) h.cerrar(true); });
 }
 
 /* =====================================================================
@@ -4320,6 +4432,8 @@ function pintar() {
   for (const a of $$('.nav [data-ir="futuro"]')) a.classList.toggle('falta', faltaP);
   if (bm) bm.classList.toggle('falta', faltaP);
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
+  pintarGtaTop();
+  cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
   const bo = $('#bOcultar'); bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? 'Mostrar importes' : 'Ocultar importes'; bo.setAttribute('aria-label', bo.title);
   pintarTicker(M);
   const scroll = window.scrollY;
@@ -4417,8 +4531,9 @@ function serieIntradia(M, rango) {
    ponen al lado del grande que tengan justo delante o detrás (el patrimonio junto a la gráfica; el reparto y lo que
    viene junto a tus posiciones), los de lado a lado ocupan la fila y, si quedan estrechos sueltos, van en columnas. */
 const BLOQUES_CAR = {
-  patrimonio: { n: 'Patrimonio', d: 'Cuánto tienes, lo de hoy y lo ganado', w: 'estrecho', fijo: true },
-  grafica: { n: 'Gráfica', d: 'Cómo se ha movido lo que tienes', w: 'grande' },
+  patrimonio: { n: 'Patrimonio y gráfica', d: 'Cuánto tienes, lo de hoy, lo ganado y cómo se ha movido', w: 'lleno', fijo: true },
+  cifras: { n: 'Tus cifras', d: 'Por plataforma, lo invertido, los dividendos, en 10 años y las ventas del año', w: 'estrecho' },
+  gta: { n: 'GTA VI', d: 'La cuenta atrás y tu cartera en copias del juego', w: 'estrecho' },
   ia: { n: 'GrowIA y lo que toca', d: 'Su diagnóstico, sus notas y lo que toca hacer', w: 'grande' },
   posiciones: { n: 'Tus posiciones', d: 'Lo que tienes, y el plan y los movimientos', w: 'grande', fijo: true },
   reparto: { n: 'Reparto', d: 'Por países, sectores, monedas y tipo', w: 'estrecho' },
@@ -4431,7 +4546,7 @@ const BLOQUES_CAR = {
   metas: { n: 'Tus metas', d: 'Si llegas a cada una con lo que aportas', w: 'estrecho' },
   renta: { n: 'Hacienda de este año', d: 'Lo que llevas ganado y lo que pagarías', w: 'estrecho' },
 };
-const CAR_DEFECTO = ['patrimonio', 'grafica', 'ia', 'posiciones', 'reparto', 'agenda'];
+const CAR_DEFECTO = ['patrimonio', 'ia', 'posiciones', 'reparto', 'agenda'];
 const ANCHO_CAR = { grande: 'Ancho', estrecho: 'Estrecho', lleno: 'De lado a lado' };
 function bloquesCartera() {
   const g = S.cartera && S.cartera.inicio && Array.isArray(S.cartera.inicio.bloques) ? S.cartera.inicio.bloques : null;
@@ -4445,30 +4560,41 @@ function htmlBloqueCar(k, M) {
   const anio = new Date().getFullYear();
   try {
     if (k === 'patrimonio') {
+      return `<section class="car-patrimonio car-hero" aria-label="Patrimonio">
+      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Cartera: qué sale y en qué orden" aria-label="Personalizar Cartera">${ICONOS.ordenar}<span>Personalizar</span></button></div>
+      <div class="hero-panel">
+        <div class="hero-cifra">
+          <div class="hero-lbl" id="heroLbl">${L('Patrimonio', 'Net worth')}</div>
+          <div class="hero-num" id="heroNum" aria-label="${L('Patrimonio', 'Net worth')}">${B('totalE')}${B('totalD', 'dec')}</div>
+          <div class="hero-var" id="evoCab" aria-live="off"></div>
+          <div class="hero-sub">
+            <div class="hs"><span class="k">${L('Hoy', 'Today')}</span>${B('dia')}</div>
+            <div class="hs"><span class="k">${L('Ganado desde que compraste', 'Gained since you bought')}</span>${B('pl')}</div>
+          </div>
+        </div>
+        <div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div>
+        <div class="chart gh" id="grafEvo"></div>
+      </div>
+      <div class="hero-bajo">
+        <div class="movers">${B('movers')}</div>
+        ${htmlPreguntasIA(true)}
+        <div class="leyenda-graf"><label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> ${L('Comparar con el S&P 500', 'Compare with the S&P 500')}</label>${S.comparar ? `<span><i style="border-color:var(--accent)"></i>${L('Tu cartera', 'Your portfolio')}</span><span><i class="disc" style="border-color:var(--text-2)"></i>${L('El mismo dinero en el S&P 500', 'The same money in the S&P 500')}</span>` : ''}</div>
+        <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste». Pasa el dedo por la gráfica para ver cuánto tenías cada día.</p>
+      </div>
+    </section>`;
+    }
+    if (k === 'cifras') {
       const plats = porPlataforma(M).map(([x]) => `<div class="kpi"><span class="k">${esc(x)}</span><span class="v">${B('plat:' + x)}</span></div>`).join('');
-      return `<section class="car-patrimonio" aria-label="Patrimonio">
-      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Ordenar Cartera a tu gusto" aria-label="Ordenar Cartera a tu gusto">${ICONOS.ordenar}<span>Ordenar</span></button></div>
-      <div class="hero-fila"><div class="hero-lbl">Patrimonio</div>${chipGTA()}</div>
-      <div class="hero-num" aria-label="Patrimonio">${B('totalE')}${B('totalD', 'dec')}</div>
-      <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">ganado desde que compraste</span></div><div class="movers">${B('movers')}</div></div>
-      ${htmlPreguntasIA(true)}
+      return `<section class="car-cifras" aria-labelledby="hCifras"><div class="sec-cab"><h2 id="hCifras">Tus cifras</h2></div>
       <div class="kpis">
         ${plats}
         <div class="kpi"><span class="k">Invertido</span><span class="v">${eur(M.invertido, 0)}</span></div>
         <div class="kpi"><span class="k">Dividendos al año</span><span class="v">${eur(M.dividendos, 0)}<small>brutos</small></span></div>
         ${(() => { try { const pr = proyeccion(M); return `<a class="kpi" href="#proyeccion"><span class="k">En 10 años, lo probable</span><span class="v acento">${euCorto(pr.p50[120])}</span></a>`; } catch (e) { return ''; } })()}
         ${M.realizado ? `<div class="kpi"><span class="k">Ventas de ${anio}</span><span class="v ${cls(M.realizado)}">${eurS(M.realizado, 0)}</span></div>` : ''}
-      </div>
-    </section>`;
+      </div></section>`;
     }
-    if (k === 'grafica') return `<section class="car-grafica" aria-label="Evolución">
-      <div class="evo-cab"><div class="datos" id="evoCab"></div>
-        <div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div></div>
-      <div class="chart" id="grafEvo"></div>
-      <div class="leyenda-graf"><span><i style="border-color:var(--accent)"></i>Tu cartera</span>
-        <label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> Comparar con el S&P 500</label>${S.comparar ? `<span><i class="disc" style="border-color:var(--text-2)"></i>El mismo dinero en el S&P 500</span>` : ''}</div>
-      <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste».</p>
-    </section>`;
+    if (k === 'gta') return gtaActivo() ? `<section class="car-gta" aria-label="GTA VI">${chipGTA()}<p class="k">La cuenta atrás y tu cartera en copias del juego.</p></section>` : '';
     if (k === 'ia') return htmlToca(M);
     if (k === 'posiciones') return `<div class="car-pos">
       <div class="subvistas dos-op car-tabs" id="carTabs" role="group" aria-label="Qué ver"><button data-car="pos" aria-pressed="${S.carTab !== 'plan'}">${ICONOS.cartera}Tus posiciones</button><button data-car="plan" aria-pressed="${S.carTab === 'plan'}">${ICONOS.plan}Plan y movimientos</button></div>
@@ -4527,7 +4653,7 @@ function vistaCartera(M) {
   return `<div class="car">${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
     : f.t === 'suelta' ? `<div class="car-fila suelta">${f.a.map((x) => `<div class="car-col">${x.html}</div>`).join('')}</div>`
     : `<div class="car-fila ${f.t}">${f.t === 'par-izq' ? col(f.a) + col(f.b) : col(f.a) + col(f.b, ' lado')}</div>`)).join('')}
-    <div class="car-pie"><button type="button" class="btn peq car-ordenar" data-accion="ordenar-cartera">${ICONOS.ajustes}Ordenar Cartera a tu gusto</button></div></div>`;
+    <div class="car-pie"><button type="button" class="btn peq car-ordenar" data-accion="ordenar-cartera">${ICONOS.ordenar}Personalizar Cartera</button></div></div>`;
 }
 /* el editor: arrastrar (o las flechas) para ordenar, quitar lo que no quieras y añadir lo que no sale */
 function ordenarCartera() {
@@ -4738,10 +4864,52 @@ const AG_CIERRES = [
   ['2027-08-30', 'lon', 'el festivo de verano británico'], ['2027-09-06', 'us', 'el Día del Trabajo'], ['2027-11-25', 'us', 'Acción de Gracias'],
   ['2027-12-24', 'us', 'Navidad'], ['2027-12-24', 'fra', 'Nochebuena'], ['2027-12-27', 'lon', 'Navidad'], ['2027-12-28', 'lon', 'San Esteban'], ['2027-12-31', 'fra', 'Nochevieja'],
 ];
+// medias sesiones: [fecha, bolsa, hora de cierre allí (en minutos), por qué, estimada]. NYSE cierra a las 13:00 de
+// Nueva York, Londres a las 12:30, Euronext a las 14:05 y Madrid a las 14:00. Fuentes: NYSE, LSEG, Euronext y BME
+const AG_MEDIAS = [
+  ['2026-11-27', 'us', 780, 'el día después de Acción de Gracias'],
+  ['2026-12-24', 'mad', 840, 'Nochebuena'], ['2026-12-24', 'lon', 750, 'Nochebuena'], ['2026-12-24', 'eur', 845, 'Nochebuena'], ['2026-12-24', 'us', 780, 'Nochebuena'],
+  ['2026-12-31', 'mad', 840, 'Nochevieja'], ['2026-12-31', 'lon', 750, 'Nochevieja'], ['2026-12-31', 'eur', 845, 'Nochevieja'],
+  ['2027-11-26', 'us', 780, 'el día después de Acción de Gracias'],
+  // 2027: Londres, confirmado; Euronext, lo de otros años; Madrid, por confirmar (en 2021, con las mismas fechas, cerró)
+  ['2027-12-24', 'mad', null, 'Nochebuena', true], ['2027-12-24', 'lon', 750, 'Nochebuena'], ['2027-12-24', 'eur', 845, 'Nochebuena', true],
+  ['2027-12-31', 'mad', null, 'Nochevieja', true], ['2027-12-31', 'lon', 750, 'Nochevieja'], ['2027-12-31', 'eur', 845, 'Nochevieja', true],
+];
+const AG_TZ = { us: 'America/New_York', mad: 'Europe/Madrid', lon: 'Europe/London', fra: 'Europe/Berlin', eur: 'Europe/Paris' };
+const AG_CORTO = { us: ['NY', 'NY'], mad: ['Madrid', 'Madrid'], lon: ['Londres', 'London'], fra: ['Fráncfort', 'Frankfurt'], eur: ['Euronext', 'Euronext'] };
+// festivos en España en los que la Bolsa de Madrid abre: [fecha, qué se celebra, dónde ('*' = toda España)].
+// Fuente: el BOE (fiestas laborales de 2026 y 2027). Las fiestas de cada pueblo y de cada isla no están
+const FIESTAS_ES = [
+  ['2026-11-02', 'el lunes después de Todos los Santos', 'andalucia aragon asturias canarias clm cyl extremadura madrid navarra'],
+  ['2026-12-07', 'el lunes después del Día de la Constitución', 'andalucia aragon asturias cantabria cyl extremadura madrid murcia rioja melilla'],
+  ['2026-12-08', 'la Inmaculada', '*'],
+  ['2027-01-06', 'Reyes', '*'],
+  ['2027-03-01', 'el Día de Andalucía', 'andalucia'], ['2027-03-01', 'el Día de les Illes Balears', 'baleares'],
+  ['2027-03-10', 'la Fiesta del Eid Fitr', 'melilla'],
+  ['2027-03-19', 'San José', 'galicia madrid murcia navarra valencia'],
+  ['2027-03-25', 'Jueves Santo', 'andalucia aragon asturias baleares canarias cantabria clm cyl extremadura galicia madrid murcia navarra paisvasco rioja ceuta melilla'],
+  ['2027-04-23', 'San Jorge, el Día de Aragón', 'aragon'], ['2027-04-23', 'la Fiesta de Castilla y León', 'cyl'],
+  ['2027-05-17', 'el Día de las Letras Gallegas', 'galicia'], ['2027-05-17', 'la Fiesta del Sacrificio', 'ceuta melilla'],
+  ['2027-05-27', 'el Corpus Christi', 'clm'], ['2027-05-31', 'el Día de Castilla-La Mancha', 'clm'],
+  ['2027-06-09', 'el Día de la Región de Murcia', 'murcia'], ['2027-06-09', 'el Día de La Rioja', 'rioja'],
+  ['2027-06-24', 'San Juan', 'cataluna'],
+  ['2027-07-28', 'el Día de las Instituciones de Cantabria', 'cantabria'],
+  ['2027-08-05', 'Nuestra Señora de África', 'ceuta'],
+  ['2027-08-16', 'el lunes después de la Asunción', 'andalucia aragon asturias canarias cyl madrid'],
+  ['2027-09-08', 'el Día de Asturias', 'asturias'], ['2027-09-08', 'el Día de Extremadura', 'extremadura'],
+  ['2027-09-15', 'La Bien Aparecida', 'cantabria'],
+  ['2027-10-07', 'el aniversario del primer Gobierno Vasco', 'paisvasco'],
+  ['2027-10-11', 'el lunes que sustituye al 15 de agosto', 'extremadura'],
+  ['2027-10-12', 'la Fiesta Nacional', '*'],
+  ['2027-11-01', 'Todos los Santos', '*'],
+  ['2027-12-06', 'el Día de la Constitución', '*'],
+  ['2027-12-08', 'la Inmaculada', '*'],
+];
+const FIESTAS_EN = { 'el lunes después de Todos los Santos': "the Monday after All Saints' Day", 'el lunes después del Día de la Constitución': 'the Monday after Constitution Day', 'la Inmaculada': 'the Immaculate Conception', 'Reyes': 'Epiphany', 'el Día de Andalucía': 'Andalusia Day', 'el Día de les Illes Balears': 'Balearic Islands Day', 'la Fiesta del Eid Fitr': 'Eid al-Fitr', 'San José': "St Joseph's Day", 'Jueves Santo': 'Maundy Thursday', 'San Jorge, el Día de Aragón': "St George's Day, Aragon Day", 'la Fiesta de Castilla y León': 'Castile and León Day', 'el Día de las Letras Gallegas': 'Galician Literature Day', 'la Fiesta del Sacrificio': 'Eid al-Adha', 'el Corpus Christi': 'Corpus Christi', 'el Día de Castilla-La Mancha': 'Castilla-La Mancha Day', 'el Día de la Región de Murcia': 'Murcia Day', 'el Día de La Rioja': 'La Rioja Day', 'San Juan': "St John's Day", 'el Día de las Instituciones de Cantabria': 'Cantabria Institutions Day', 'Nuestra Señora de África': 'Our Lady of Africa', 'el lunes después de la Asunción': 'the Monday after the Assumption', 'el Día de Asturias': 'Asturias Day', 'el Día de Extremadura': 'Extremadura Day', 'La Bien Aparecida': 'La Bien Aparecida', 'el aniversario del primer Gobierno Vasco': 'the anniversary of the first Basque Government', 'el lunes que sustituye al 15 de agosto': 'the Monday in lieu of 15 August', 'la Fiesta Nacional': 'National Day', 'Todos los Santos': "All Saints' Day", 'el Día de la Constitución': 'Constitution Day' };
 // la bolsa de cada acción o ETF, por el final de su símbolo en Yahoo
 const bolsaDe = (i) => { const y = String((i && i.yahoo) || ''); if (!y || /^Fondo/.test(i.tipo || '') || i.clase === 'Cripto' || /-EUR$|=/.test(y)) return null; if (/\.MC$/i.test(y)) return 'mad'; if (/\.L$/i.test(y)) return 'lon'; if (/\.(DE|F)$/i.test(y)) return 'fra'; if (/\.(PA|AS|BR|LS)$/i.test(y)) return 'eur'; if (!y.includes('.')) return 'us'; return null; };
 // cada tipo: su icono y en qué filtro sale
-const AG_TIPOS = { resultados: ['resultados', 'res'], fondo: ['resultados', 'res'], dividendo: ['dividendo', 'div'], cobro: ['dividendo', 'div'], banco: ['banco', 'eco'], festivo: ['festivo', 'eco'], hacienda: ['fiscal', 'eco'], aportacion: ['aporte', 'apo'], otro: ['mando', 'otro'], ia: ['chispa', 'eco'] };
+const AG_TIPOS = { resultados: ['resultados', 'res'], fondo: ['resultados', 'res'], dividendo: ['dividendo', 'div'], cobro: ['dividendo', 'div'], banco: ['banco', 'eco'], festivo: ['festivo', 'eco'], media: ['media', 'eco'], fiesta: ['fiesta', 'eco'], hacienda: ['fiscal', 'eco'], aportacion: ['aporte', 'apo'], otro: ['mando', 'otro'], ia: ['chispa', 'eco'] };
 const AG_FILTROS = [['todo', 'Todo', 'All'], ['res', 'Resultados', 'Earnings'], ['div', 'Dividendos', 'Dividends'], ['eco', 'Economía', 'Economy'], ['apo', 'Aportaciones', 'Contributions']];
 const AG_FESTIVOS_EN = { 'Nochebuena': 'Christmas Eve', 'Nochevieja': "New Year's Eve", 'San Esteban': 'Boxing Day', 'el festivo de mayo británico': 'the UK early May bank holiday', 'el festivo de primavera británico': 'the UK spring bank holiday', 'el festivo de verano británico': 'the UK summer bank holiday', 'Acción de Gracias': 'Thanksgiving', 'Navidad': 'Christmas', 'Año Nuevo': "New Year's Day", 'el día de Martin Luther King': 'Martin Luther King Jr. Day', 'el Día de los Presidentes': "Presidents' Day", 'Viernes Santo': 'Good Friday', 'Lunes de Pascua': 'Easter Monday', 'el Memorial Day': 'Memorial Day', 'Juneteenth': 'Juneteenth', 'el Día de la Independencia': 'Independence Day', 'el Día del Trabajo': 'Labor Day' };
 const DIAS_LARGOS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
@@ -4909,9 +5077,43 @@ function agendaLista(M, dias = 120) {
     const nombres = bolsas.filter((bo) => !(soloEuGen && bo === 'eur' && bolsas.includes('mad'))).map((bo) => (soloEuGen && bo === 'mad' ? L('las bolsas europeas', 'European markets') : L(...AG_BOLSAS[bo])));
     const t = nombres.length === 1 ? L(`Cierra ${nombres[0]}`, `${nombres[0][0].toUpperCase() + nombres[0].slice(1)} closed`) : L(`Cierran ${yLista(nombres)}`, `${yLista(nombres)} closed`);
     const mot = motivos.map((m) => L(m, AG_FESTIVOS_EN[m] || m));
-    add({ id: `fes:${d}`, d, tipo: 'festivo', mio: bolsas.some((bo) => mias.has(bo)), t: t[0].toUpperCase() + t.slice(1), s: L(`Por ${yLista(motivos)}`, `For ${yLista(mot)}`),
+    add({ id: `fes:${d}`, d, tipo: 'festivo', bolsas, todas: [...ver].every((bo) => bolsas.includes(bo)), mio: bolsas.some((bo) => mias.has(bo)), t: t[0].toUpperCase() + t.slice(1), s: L(`Por ${yLista(motivos)}`, `For ${yLista(mot)}`),
       det: L(`Ese día no abre${nombres.length > 1 ? 'n' : ''} ${esc(yLista(nombres))}. Lo que tienes allí no cambia de precio, y lo que mandes comprar o vender se hace el siguiente día que abra.`,
         `${esc(yLista(nombres))} ${nombres.length > 1 ? "don't" : "doesn't"} open that day. What you hold there doesn't change price, and any buy or sell order goes through on the next trading day.`) });
+  }
+  // medias sesiones: las de las mismas bolsas, con la hora de cierre en hora de España
+  const medias = new Map();
+  for (const [d, bo, min, motivo, est] of AG_MEDIAS) if (ver.has(bo)) { if (!medias.has(d)) medias.set(d, []); medias.get(d).push({ bo, motivo, est, hora: min == null ? '' : horaEspana(d, AG_TZ[bo], Math.floor(min / 60), min % 60) || '' }); }
+  for (const [d, ms] of medias) {
+    const soloEuGen = !mias.size || ![...mias].some((x) => x !== 'us');
+    const lista = ms.filter((m) => !(soloEuGen && m.bo === 'eur' && ms.some((x) => x.bo === 'mad')));
+    const nombre = (m) => (soloEuGen && m.bo === 'mad' ? L('las bolsas europeas', 'European markets') : L(...AG_BOLSAS[m.bo]));
+    const motivo = ms[0].motivo, motEn = L(motivo, AG_FESTIVOS_EN[motivo] || ({ 'el día después de Acción de Gracias': 'the day after Thanksgiving' })[motivo] || motivo);
+    const principal = lista.find((m) => m.bo === 'mad') || lista[0];
+    // (si de Madrid aún no se sabe, se dice; no se da por hecha la media sesión)
+    const porVer = !principal.hora;
+    const cap = (x) => x[0].toUpperCase() + x.slice(1);
+    const t = porVer ? L('Madrid, horario por confirmar', 'Madrid hours to be confirmed') : lista.length === 1 ? L(`${cap(nombre(principal))} ${soloEuGen && principal.bo === 'mad' ? 'cierran' : 'cierra'} a las ${principal.hora}`, `${cap(nombre(principal))} ${soloEuGen && principal.bo === 'mad' ? 'close' : 'closes'} at ${principal.hora}`)
+      : L('Media sesión en las bolsas', 'Half day on the markets');
+    const corto = (m) => (soloEuGen && m.bo === 'mad' ? L('las europeas', 'Europe') : ({ us: L('Nueva York', 'New York'), mad: 'Madrid', lon: L('Londres', 'London'), fra: L('Fráncfort', 'Frankfurt'), eur: 'Euronext' })[m.bo]);
+    const detalle = lista.map((m) => (m.hora ? L(`${corto(m)} a las ${m.hora}`, `${corto(m)} at ${m.hora}`) : L(`${corto(m)}, por confirmar`, `${corto(m)} to be confirmed`)));
+    add({ id: `med:${d}`, d, tipo: 'media', hora: principal.hora, bolsas: lista.map((m) => m.bo), est: lista.some((m) => m.est), mio: lista.some((m) => mias.has(m.bo)), t,
+      s: porVer ? (lista.length === 1 ? L(`BME aún no ha dicho si abre por ${motivo}`, `BME hasn't said yet whether it opens for ${motEn}`) : L(`Por ${motivo}: ${yLista(detalle)}`, `For ${motEn}: ${yLista(detalle)}`))
+        : lista.length === 1 ? L(`Media sesión por ${motivo}`, `Half day for ${motEn}`) : L(`Cierran antes por ${motivo}: ${yLista(detalle)}`, `Early close for ${motEn}: ${yLista(detalle)}`),
+      det: L(`Ese día cierra${lista.length > 1 ? 'n' : ''} antes de lo normal (en hora de España): ${esc(yLista(detalle))}. Lo que mandes comprar o vender después se hace el siguiente día que abra. Suele moverse poco dinero, así que los precios pueden saltar más de lo normal.${porVer ? ' BME aún no ha publicado su calendario de ese año: otros años ha abierto hasta las 14:00, pero en 2021, con las mismas fechas, cerró todo el día.' : lista.some((m) => m.est) ? ' La hora de Euronext es la de otros años: la confirma en diciembre.' : ''}`,
+        `${lista.length > 1 ? 'They close' : 'It closes'} early that day (Spanish time): ${esc(yLista(detalle))}. Anything you buy or sell later goes through on the next trading day. Volumes are usually thin, so prices can jump more than usual.${porVer ? " BME hasn't published that year's calendar yet: other years it has traded until 14:00, but in 2021, with the same dates, it closed all day." : lista.some((m) => m.est) ? " Euronext's time is the usual one: it confirms it in December." : ''}`) });
+  }
+  // festivos en España (los de toda España y los de tu comunidad) en los que la bolsa abre igual
+  const ccaa = comunidadUsuario();
+  for (const [d, motivo, donde] of FIESTAS_ES) {
+    const x = deIso(d).getDay(); if (x === 0 || x === 6) continue;
+    const todas = donde === '*', aqui = todas || (ccaa && donde.split(' ').includes(ccaa));
+    if (!aqui || AG_CIERRES.some(([c, bo]) => c === d && bo.split(' ').includes('mad'))) continue;
+    const motEn = FIESTAS_EN[motivo] || motivo;
+    add({ id: `fie:${d}`, d, tipo: 'fiesta', t: todas ? L('Festivo en España, la bolsa abre', 'Holiday in Spain, markets open') : L(`Festivo en ${conArticulo(ccaa)}, la bolsa abre`, `Holiday in ${conArticulo(ccaa)}, markets open`),
+      s: L(`Por ${motivo}`, `For ${motEn}`),
+      det: L(`Es festivo${todas ? ' en toda España' : ` en ${conArticulo(ccaa)}`}, pero la Bolsa de Madrid abre como cualquier otro día: va con el calendario de las bolsas europeas, no con el de los festivos. Puedes comprar y vender desde tu bróker como siempre.`,
+        `It's a public holiday${todas ? ' across Spain' : ` in ${conArticulo(ccaa)}`}, but the Madrid exchange opens like any other day: it follows the European markets' calendar, not the holiday one. You can buy and sell through your broker as usual.`) });
   }
   // Hacienda: del 15 de noviembre al 31 de diciembre, lo que vendas cuenta en la renta de este año
   const y = new Date().getFullYear();
@@ -4953,7 +5155,7 @@ function agendaLista(M, dias = 120) {
   }
   return ev.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : (ordenAg(a) - ordenAg(b))));
 }
-const ordenAg = (e) => ['resultados', 'dividendo', 'cobro', 'aportacion', 'fondo', 'banco', 'hacienda', 'festivo', 'ia', 'otro'].indexOf(e.tipo);
+const ordenAg = (e) => ['resultados', 'dividendo', 'cobro', 'aportacion', 'fondo', 'banco', 'hacienda', 'festivo', 'media', 'fiesta', 'ia', 'otro'].indexOf(e.tipo);
 // la versión de antes, para el plan (aportaciones) y Expertos (resultados y dividendos)
 function eventos(M, dias = 45) {
   return agendaLista(M, dias).filter((e) => ['resultados', 'dividendo', 'aportacion'].includes(e.tipo));
@@ -4965,7 +5167,7 @@ const importeAg = (e) => (e.importe != null && isFinite(e.importe) ? `<span clas
 /* en Cartera: lo próximo, con los días que faltan */
 function htmlAgenda(M) {
   // lo tuyo primero: de las empresas de dentro de tus fondos, solo las dos que más te tocan
-  const todos = agendaLista(M, 40).filter((e) => e.tipo !== 'festivo' || diasEntre(hoyIso(), e.d) <= 7);
+  const todos = agendaLista(M, 40).filter((e) => !['festivo', 'media', 'fiesta'].includes(e.tipo) || diasEntre(hoyIso(), e.d) <= 7);
   const fondos = new Set(todos.filter((e) => e.tipo === 'fondo').sort((a, b) => b.euros - a.euros).slice(0, 2).map((e) => e.id));
   const ev = todos.filter((e) => e.tipo !== 'fondo' || fondos.has(e.id)).slice(0, 5);
   if (!ev.length) return '';
@@ -4973,6 +5175,25 @@ function htmlAgenda(M) {
     <div class="sec-cab"><h2 id="hAg">${L('Lo que viene', 'Coming up')}</h2><div class="der"><a class="enlace acento" href="#agenda">${L('Ver el calendario', 'See the calendar')}</a></div></div>
     <ul class="ag-mini">${ev.map((e) => `<li class="t-${e.tipo}"><a href="#agenda" data-ag-ir="${esc(e.id)}"><span class="ag-cd${diasEntre(hoyIso(), e.d) <= 1 ? ' pronto' : ''}">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span class="ag-tx"><b>${tituloAg(e)}</b><small>${esc(e.s)}</small></span>${importeAg(e)}</a></li>`).join('')}</ul>
   </section>`;
+}
+
+/* cómo está la bolsa un día, para pintar la celda entera del calendario: cerrada (todas las tuyas o solo alguna),
+   media sesión o festivo con la bolsa abierta. Sale de los eventos de ese día, estén o no en la pestaña elegida */
+function estadoDiaAg(lista) {
+  const fes = lista.find((e) => e.tipo === 'festivo'), med = lista.find((e) => e.tipo === 'media'), fie = lista.find((e) => e.tipo === 'fiesta');
+  const ev = [fes, med, fie].filter(Boolean);
+  // cada una con su texto corto, para las celdas estrechas del móvil
+  if (fes && fes.todas) return { cls: 'cierra', etq: L('Cerrada', 'Closed'), corto: L('Cerrada', 'Closed'), ev };
+  if (fes) {
+    const b = fes.bolsas || [], eu = b.includes('mad') && b.includes('eur') && b.length === 2;
+    const nom = eu ? L('Europa', 'Europe') : b.length > 2 ? L('varias', 'several') : b.map((x) => L(...(AG_CORTO[x] || [x, x]))).join(L(' y ', ' & '));
+    const cor = eu ? 'Eur' : b.length > 1 ? L('varias', 'several') : ({ us: 'NY', mad: 'Mad', lon: 'Lon', fra: 'Fra', eur: 'Eur' })[b[0]] || '';
+    return { cls: 'cierra-p', etq: L(`Sin ${nom}`, `${nom} shut`), corto: b.length > 1 && !eu ? L('Algunas', 'Some') : L(`Sin ${cor}`, `${cor} shut`), ev };
+  }
+  if (med && !med.hora) return { cls: 'media', etq: L('¿Abre Madrid?', 'Madrid open?'), corto: L('¿Abre?', 'Open?'), ev };
+  if (med) { const h = String(med.hora).replace(':00', ' h'); return { cls: 'media', etq: L(`Hasta las ${h}`, `Until ${h}`), corto: h, ev }; }
+  if (fie) return { cls: 'fiesta', etq: L('Festivo', 'Holiday'), corto: L('Festivo', 'Holiday'), ev };
+  return null;
 }
 
 /* la pestaña Calendario */
@@ -4983,7 +5204,7 @@ const AG_MIO = new Set(['resultados', 'dividendo', 'cobro', 'aportacion', 'hacie
 const enModo = (e, m) => m === 'tu' || (m === 'mio' ? AG_MIO.has(e.tipo) || !!e.mio : AG_TIPOS[e.tipo][1] === m);
 // el color de cada tarjeta de «Próximos»
 const AG_COLOR = { res: '#6EA8FE', div: '#4FC995', eco: '#E2B45F', apo: '#E58FB6', otro: '#B58CFF' };
-const AG_CAT = { resultados: ['Resultados', 'Earnings'], fondo: ['En tus fondos', 'In your funds'], dividendo: ['Dividendo', 'Dividend'], cobro: ['Cobro', 'Payment'], banco: ['Bancos centrales', 'Central banks'], festivo: ['Sin bolsa', 'Market closed'], hacienda: ['Hacienda', 'Taxes'], aportacion: ['Tu aportación', 'Your contribution'], otro: ['GTA VI', 'GTA VI'], ia: ['Para vigilar', 'To watch'] };
+const AG_CAT = { resultados: ['Resultados', 'Earnings'], fondo: ['En tus fondos', 'In your funds'], dividendo: ['Dividendo', 'Dividend'], cobro: ['Cobro', 'Payment'], banco: ['Bancos centrales', 'Central banks'], festivo: ['Sin bolsa', 'Market closed'], media: ['Media sesión', 'Half day'], fiesta: ['Festivo, con bolsa', 'Holiday, market open'], hacienda: ['Hacienda', 'Taxes'], aportacion: ['Tu aportación', 'Your contribution'], otro: ['GTA VI', 'GTA VI'], ia: ['Para vigilar', 'To watch'] };
 function impactoAg(e, M) {
   const eu = (x) => eur(x, x < 10 ? 2 : 0);
   if ((e.tipo === 'dividendo' || e.tipo === 'cobro' || e.tipo === 'aportacion') && e.importe != null && isFinite(e.importe)) return e.tipo === 'aportacion' ? L(`${eu(e.importe)} que aportas`, `${eu(e.importe)} you put in`) : L(`${e.aprox ? '≈ ' : ''}${eu(e.importe)} para ti`, `${e.aprox ? '≈ ' : ''}${eu(e.importe)} for you`);
@@ -4991,6 +5212,8 @@ function impactoAg(e, M) {
   if (e.tipo === 'fondo' && e.euros) return L(`≈ ${eur(e.euros, 0)} tuyos dentro`, `≈ ${eur(e.euros, 0)} of yours inside`);
   if (e.tipo === 'banco') return L('Mueve tipos y bolsas', 'Moves rates and stocks');
   if (e.tipo === 'festivo') return L('Ese día no hay bolsa', 'No trading that day');
+  if (e.tipo === 'media') return e.hora ? L(`Se negocia hasta las ${e.hora}`, `Trading until ${e.hora}`) : L('Horario por confirmar', 'Hours to be confirmed');
+  if (e.tipo === 'fiesta') return L('La bolsa abre normal', 'Markets open as usual');
   return '';
 }
 const enDias = (d) => { const n = diasEntre(hoyIso(), d); return n <= 0 ? L('Hoy', 'Today') : n === 1 ? L('Mañana', 'Tomorrow') : L(`En ${n} días`, `In ${n} days`); };
@@ -5038,7 +5261,7 @@ function vistaAgenda(M) {
     cuenta(['banco']) && L(`${cuenta(['banco'])} reuniones de la Fed y el BCE`, `${cuenta(['banco'])} Fed and ECB meetings`),
   ].filter(Boolean);
   // «Próximos»: las tarjetas grandes de lo que viene
-  const prox = ev.slice(0, 10);
+  const prox = ev.filter((e) => e.tipo !== 'fiesta' || diasEntre(hoy, e.d) <= 10).slice(0, 10);
   // cada cosa que viene, como una entrada: el resguardo con los días que faltan (y un anillo que se va cerrando según
   // se acerca, sobre un mes) y, al otro lado, qué es, cuándo y lo que te toca a ti
   const tarjeta = (e) => {
@@ -5055,16 +5278,19 @@ function vistaAgenda(M) {
   // el mes, plegado: la semana con puntos; al tocarlo se despliegan las cinco semanas
   const lunes = deIso(hoy); lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
   const porDia = new Map(); for (const e of ev) { if (!porDia.has(e.d)) porDia.set(e.d, []); porDia.get(e.d).push(e); }
+  const porDiaTodo = new Map(); for (const e of todos) { if (!porDiaTodo.has(e.d)) porDiaTodo.set(e.d, []); porDiaTodo.get(e.d).push(e); }
   const celda = (k, mini) => {
     const x = new Date(lunes); x.setDate(lunes.getDate() + k);
     const d = iso(x), es = porDia.get(d) || [], pasado = d < hoy, finde = x.getDay() === 0 || x.getDay() === 6;
+    const est = estadoDiaAg(porDiaTodo.get(d) || []);
     const tipos = [...new Set(es.map((e) => e.tipo))].slice(0, 3);
     const mes = !mini && (x.getDate() === 1 || k === 0) ? `<span class="m">${L(MESES[x.getMonth()], MESES_EN[x.getMonth()].slice(0, 3))}</span>` : '';
     const lbl = `${fechaDia(d)}${es.length ? `: ${es.map((e) => e.t).join(', ')}` : ''}`;
-    const dentro = `${mini ? `<span class="sem">${L(['L', 'M', 'X', 'J', 'V', 'S', 'D'], ['M', 'T', 'W', 'T', 'F', 'S', 'S'])[k % 7]}</span>` : ''}<span class="n">${x.getDate()}${mes}</span><span class="ag-pts">${tipos.map((t) => `<i class="t-${t}"></i>`).join('')}</span>`;
+    const dentro = `${mini ? `<span class="sem">${L(['L', 'M', 'X', 'J', 'V', 'S', 'D'], ['M', 'T', 'W', 'T', 'F', 'S', 'S'])[k % 7]}</span>` : ''}<span class="n">${x.getDate()}${mes}</span>${est ? `<span class="ag-est"><span class="el">${esc(est.etq)}</span><span class="ec" aria-hidden="true">${esc(est.corto)}</span></span>` : ''}<span class="ag-pts">${tipos.filter((t) => !['festivo', 'media', 'fiesta'].includes(t) || !est).map((t) => `<i class="t-${t}"></i>`).join('')}</span>`;
+    const ce = est ? ' ' + est.cls : '';
     return es.length && !pasado
-      ? `<button type="button" class="ag-c${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}" data-ag-dia="${d}" aria-label="${esc(lbl)}">${dentro}</button>`
-      : `<span class="ag-c${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}">${dentro}</span>`;
+      ? `<button type="button" class="ag-c${ce}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}" data-ag-dia="${d}" aria-label="${esc(lbl)}">${dentro}</button>`
+      : `<span class="ag-c${ce}${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}"${est ? ` title="${esc(est.ev.map((e) => e.t).join(' · '))}"` : ''}>${dentro}</span>`;
   };
   const mesAbierto = !!S.agMes;
   // el mes entero (de lunes a domingo), desde este hasta dentro de 14 meses: la Fed, el BCE y los festivos
@@ -5072,16 +5298,21 @@ function vistaAgenda(M) {
   const MAX_MESES = 14;
   const mesN = Math.max(0, Math.min(MAX_MESES, S.agMesN || 0));
   const m0 = (() => { const b = deIso(hoy); return new Date(b.getFullYear(), b.getMonth() + mesN, 1); })();
-  const evMes = mesAbierto ? agendaLista(M, 470).filter((e) => enModo(e, modo)) : [];
+  const evMesTodo = mesAbierto ? agendaLista(M, 470) : [];
+  const evMes = evMesTodo.filter((e) => enModo(e, modo));
   const porDiaMes = new Map(); for (const e of evMes) { if (!porDiaMes.has(e.d)) porDiaMes.set(e.d, []); porDiaMes.get(e.d).push(e); }
+  // la celda entera dice si la bolsa cierra, si es media sesión o si es festivo con la bolsa abierta (en cualquier pestaña)
+  const estMes = new Map(); { const g = new Map(); for (const e of evMesTodo) { if (!g.has(e.d)) g.set(e.d, []); g.get(e.d).push(e); } for (const [d, l] of g) { const st = estadoDiaAg(l); if (st) estMes.set(d, st); } }
+  for (const [d, st] of estMes) { const l = porDiaMes.get(d) || []; for (const e of st.ev) if (!l.some((x) => x.id === e.id)) l.push(e); porDiaMes.set(d, l.sort((a, b) => ordenAg(a) - ordenAg(b))); }
   const desfase = (m0.getDay() + 6) % 7, diasMes = new Date(m0.getFullYear(), m0.getMonth() + 1, 0).getDate();
   const nCeldas = Math.ceil((desfase + diasMes) / 7) * 7;
   const celdaMes = (k) => {
     const x = new Date(m0.getFullYear(), m0.getMonth(), 1 - desfase + k), d = iso(x);
     const fuera = x.getMonth() !== m0.getMonth(), es = fuera ? [] : porDiaMes.get(d) || [], pasado = d < hoy, finde = x.getDay() === 0 || x.getDay() === 6;
-    const tipos = [...new Set(es.map((e) => e.tipo))].slice(0, 3);
-    const cls = `ag-c${fuera ? ' fuera' : ''}${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}${S.agDia === d ? ' sel' : ''}`;
-    const dentro = `<span class="n">${x.getDate()}</span><span class="ag-pts">${tipos.map((t) => `<i class="t-${t}"></i>`).join('')}</span>`;
+    const st = fuera ? null : estMes.get(d);
+    const tipos = [...new Set(es.map((e) => e.tipo))].filter((t) => !st || !['festivo', 'media', 'fiesta'].includes(t)).slice(0, 3);
+    const cls = `ag-c${st ? ' ' + st.cls : ''}${fuera ? ' fuera' : ''}${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}${S.agDia === d ? ' sel' : ''}`;
+    const dentro = `<span class="n">${x.getDate()}</span>${st ? `<span class="ag-est"><span class="el">${esc(st.etq)}</span><span class="ec" aria-hidden="true">${esc(st.corto)}</span></span>` : ''}<span class="ag-pts">${tipos.map((t) => `<i class="t-${t}"></i>`).join('')}</span>`;
     return es.length ? `<button type="button" class="${cls}" data-ag-sel="${d}" aria-pressed="${S.agDia === d}" aria-label="${esc(`${fechaDia(d)}: ${es.map((e) => e.t).join(', ')}`)}">${dentro}</button>` : `<span class="${cls}">${dentro}</span>`;
   };
   const nomMes = (() => { const m = mesL(m0.getMonth()); return m[0].toUpperCase() + m.slice(1) + ' ' + m0.getFullYear(); })();
@@ -5117,8 +5348,8 @@ function vistaAgenda(M) {
           <div class="ag-nav-t"><b data-no-trad>${esc(L(nomMes, `${MESES_EN[m0.getMonth()]} ${m0.getFullYear()}`))}</b><small>${evDelMes.length ? L(`${evDelMes.length} ${evDelMes.length === 1 ? 'cosa' : 'cosas'} este mes`, `${evDelMes.length} ${evDelMes.length === 1 ? 'thing' : 'things'} this month`) : L('Nada apuntado este mes', 'Nothing this month')}</small></div>
           <button type="button" class="ib" data-ag-mesn="1" aria-label="${L('Mes siguiente', 'Next month')}"${mesN < MAX_MESES ? '' : ' disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>
         <div class="ag-cal" data-ag-desliza>${L(['L', 'M', 'X', 'J', 'V', 'S', 'D'], ['M', 'T', 'W', 'T', 'F', 'S', 'S']).map((x) => `<span class="sem" data-no-trad>${x}</span>`).join('')}${Array.from({ length: nCeldas }, (_, k) => celdaMes(k)).join('')}</div>
-        ${diaSel ? `<div class="ag-diap"><h3>${esc(fechaDia(diaSel))}<small>${faltan(diaSel, true)}</small></h3><ul class="ag-evs">${(porDiaMes.get(diaSel) || []).map(item).join('')}</ul></div>` : `<p class="ag-pista">${L('Toca un día con puntos para ver qué pasa. Las flechas (o deslizar) te llevan a los meses siguientes.', 'Tap a day with dots to see what happens. The arrows (or swiping) take you to the next months.')}</p>`}
-        <div class="ag-ley">${[['resultados', L('Resultados', 'Earnings')], ['dividendo', L('Dividendos', 'Dividends')], ['banco', L('Bancos centrales', 'Central banks')], ['aportacion', L('Aportaciones', 'Contributions')], ['festivo', L('Sin bolsa', 'Market closed')]].map(([t, n]) => `<span><i class="t-${t}"></i>${n}</span>`).join('')}</div>`
+        ${diaSel ? `<div class="ag-diap"><h3>${esc(fechaDia(diaSel))}<small>${faltan(diaSel, true)}</small></h3><ul class="ag-evs">${(porDiaMes.get(diaSel) || []).map(item).join('')}</ul></div>` : `<p class="ag-pista">${L('Toca un día con puntos (o marcado) para ver qué pasa. Las flechas (o deslizar) te llevan a los meses siguientes.', 'Tap a day with dots (or shading) to see what happens. The arrows (or swiping) take you to the next months.')}${comunidadUsuario() ? '' : ` <a href="#futuro" class="enlace acento">${L('Pon tu comunidad en Objetivos', 'Set your region in Goals')}</a> ${L('y saldrán también sus festivos.', 'to see its holidays too.')}`}</p>`}
+        <div class="ag-ley">${[['resultados', L('Resultados', 'Earnings')], ['dividendo', L('Dividendos', 'Dividends')], ['banco', L('Bancos centrales', 'Central banks')], ['aportacion', L('Aportaciones', 'Contributions')]].map(([t, n]) => `<span><i class="t-${t}"></i>${n}</span>`).join('')}${[['cierra', L('Bolsa cerrada', 'Market closed')], ['media', L('Media sesión', 'Half day')], ['fiesta', L('Festivo, la bolsa abre', 'Holiday, market open')]].map(([c, n]) => `<span><i class="sw ${c}"></i>${n}</span>`).join('')}</div>`
         : `<div class="ag-semana">${Array.from({ length: 7 }, (_, k) => celda(k, true)).join('')}</div>`}
     </section>
     ${pasado.html ? `<section class="ag2-sec"><h2>${L('Lo último', 'Latest')}</h2><div class="agp-lista">${pasado.html}</div>${pasado.mas ? `<button type="button" class="btn peq ag-mas-not" data-ag-pasado>${L('Ver más noticias', 'More news')}</button>` : ''}</section>` : ''}
@@ -6269,7 +6500,7 @@ function htmlPlan(M) {
         ${porMes.size ? `<ul class="lista agenda">${[...porMes.entries()].map(([k, v]) => { const d = deIso(k + '-01'); return `<li><div class="dia"><b>${MESES[d.getMonth()]}</b><br><span class="k">${d.getFullYear()}</span></div><div><b>${eur(v, 0)}</b><span class="logos-fila">${ev.filter((e) => e.d.startsWith(k)).map((e) => `<span>${logo((S.inst[e.inst] || {}).dominio, e.t.replace('Aportación a ', ''), 'peq')}${esc(e.t.replace('Aportación a ', ''))}${IDIOMA === 'en' ? ', day ' : ' el '}${deIso(e.d).getDate()}</span>`).join('')}</span></div><span></span></li>`; }).join('')}</ul>` : '<div class="vacio">Sin aportaciones programadas.</div>'}
       </section>
       <section aria-labelledby="hEf"><div class="sec-cab"><h2 id="hEf">Efectivo</h2><span class="k">${eur(M.liquidez, 0)}</span><div class="der"><button class="btn peq" data-accion="efectivo">${ICONOS.lapiz}Cambiar</button></div></div>
-        <ul class="leyenda">${(S.cartera.efectivo || []).map((e) => `<li style="grid-template-columns:minmax(0,1fr) auto"><span class="n">${esc(e.plataforma)}</span><span class="p">${eur(+e.importe || 0)}</span></li>`).join('') || '<li class="vacio">Sin efectivo</li>'}</ul>
+        <ul class="leyenda">${(S.cartera.efectivo || []).map((e) => `<li style="grid-template-columns:minmax(0,1fr) auto"><span class="n">${esc(e.plataforma)}${bancosDe(e.plataforma).some((b) => !b.caducada) ? ` <small class="ef-dbk" title="${esc(L('Saldo del banco', 'Bank balance'))}">${ICONOS.banco}</small>` : ''}</span><span class="p">${eur(+e.importe || 0)}</span></li>`).join('') || '<li class="vacio">Sin efectivo</li>'}</ul>
       </section>
       <a class="ir-objetivos" href="#objetivos">${ICONOS.futuro}<span><b>Tus límites, tu perfil y tus metas</b><small>están en Objetivos</small></span></a>
     </aside>
@@ -6367,8 +6598,9 @@ function grafLinea(cont, series, opt = {}) {
     cruz.querySelector('line').setAttribute('x1', x(actual)); cruz.querySelector('line').setAttribute('x2', x(actual));
     cruz.querySelector('circle').setAttribute('cx', x(actual)); cruz.querySelector('circle').setAttribute('cy', y(s.v));
     tt.innerHTML = '';
+    if (opt.alMover) opt.alMover(s);
     const b = document.createElement('b'); b.textContent = opt.fmt ? opt.fmt(s.v) : fmtNum(s.v);
-    tt.append(b);
+    if (!opt.alMover) tt.append(b);
     if (opt.cambio) { const c = document.createElement('span'); const p = (s.v / base[0].v - 1) * 100; c.textContent = pctS(p) + ' en el periodo'; c.className = cls(p); tt.append(c); }
     series.slice(1).forEach((se, k) => { const v = mapas2[k].get(s.d); if (v != null) { const c = document.createElement('span'); c.textContent = `${se.nombre}: ${opt.fmt ? opt.fmt(v) : fmtNum(v)}`; tt.append(c); } });
     const sp = document.createElement('span'); sp.textContent = fechaPunto(s.d); tt.append(sp);
@@ -6377,7 +6609,7 @@ function grafLinea(cont, series, opt = {}) {
     tt.style.left = Math.min(Math.max(px, 80), cont.clientWidth - 80) + 'px';
     tt.style.top = ((y(s.v) / H) * svg.getBoundingClientRect().height - 10) + 'px';
   };
-  const ocultar = () => { cruz.setAttribute('visibility', 'hidden'); tt.hidden = true; };
+  const ocultar = () => { cruz.setAttribute('visibility', 'hidden'); tt.hidden = true; if (opt.alMover) opt.alMover(null); };
   const zona = svg.querySelector('.zona');
   zona.addEventListener('pointermove', (ev) => {
     const r = svg.getBoundingClientRect();
@@ -6394,6 +6626,153 @@ function grafLinea(cont, series, opt = {}) {
   svg.addEventListener('blur', ocultar);
 }
 
+/* una curva suave que pasa por todos los puntos sin inventarse picos (Fritsch-Carlson: monótona entre punto y punto) */
+function curvaSuave(P) {
+  const n = P.length, f = (v) => v.toFixed(1);
+  if (n < 3) return 'M' + P.map(([a, b]) => `${f(a)},${f(b)}`).join('L');
+  const dx = [], m = [];
+  for (let i = 0; i < n - 1; i++) { dx[i] = P[i + 1][0] - P[i][0]; m[i] = dx[i] ? (P[i + 1][1] - P[i][1]) / dx[i] : 0; }
+  const t = [m[0]];
+  for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2;
+  t[n - 1] = m[n - 2];
+  for (let i = 0; i < n - 1; i++) {
+    if (!m[i]) { t[i] = 0; t[i + 1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i + 1] / m[i], h = a * a + b * b;
+    if (h > 9) { const k = 3 / Math.sqrt(h); t[i] = k * a * m[i]; t[i + 1] = k * b * m[i]; }
+  }
+  let d = `M${f(P[0][0])},${f(P[0][1])}`;
+  for (let i = 0; i < n - 1; i++) { const h = dx[i] / 3; d += `C${f(P[i][0] + h)},${f(P[i][1] + t[i] * h)} ${f(P[i + 1][0] - h)},${f(P[i + 1][1] - t[i + 1] * h)} ${f(P[i + 1][0])},${f(P[i + 1][1])}`; }
+  return d;
+}
+
+/* la gráfica grande de Cartera: la curva con brillo y un relleno que se desvanece, el punto de ahora latiendo, el máximo
+   y el mínimo marcados, y sin eje de cifras (la cifra es la de arriba). Al pasar el dedo, lo de después se apaga, la
+   fecha sale abajo y opt.alMover recibe el punto (para la cifra grande); al soltar, todo vuelve a ahora */
+let grafHeroN = 0;
+function grafHero(cont, series, opt = {}) {
+  cont.innerHTML = '';
+  const base = series[0] && series[0].datos;
+  if (!base || base.length < 2) { cont.innerHTML = '<div class="vacio">Faltan precios para dibujarlo.</div>'; return; }
+  const id = 'gh' + (++grafHeroN), NS = 'http://www.w3.org/2000/svg';
+  const W = Math.max(260, cont.clientWidth || 600), H = opt.alto || 280;
+  const ml = 0, mr = 14, mt = opt.arriba || 60, mb = 30, borde = opt.borde || 20;
+  const vals = series.flatMap((se) => se.datos.map((p) => p.v));
+  // la línea de referencia (el principio del periodo o el cierre de ayer) entra en la escala si no queda muy lejos;
+  // si queda lejos, no se pinta, para no aplastar la curva
+  const ref = opt.ref != null && isFinite(opt.ref) ? opt.ref : base[0].v;
+  const dmin = Math.min(...vals), dmax = Math.max(...vals), dr = dmax - dmin || Math.abs(dmax) * 0.01 || 1;
+  const refVis = ref >= dmin - dr * 0.6 && ref <= dmax + dr * 0.6;
+  if (refVis) vals.push(ref);
+  const vmin = Math.min(...vals), vmax = Math.max(...vals), rango = vmax - vmin || Math.abs(vmax) * 0.02 || 1;
+  const lo = vmin - rango * 0.2, hi = vmax + rango * 0.06;
+  const n = base.length, T = base.map((p) => tiempoDe(p.d)), t0 = T[0], t1 = T[n - 1] > t0 ? T[n - 1] : t0 + 1;
+  const xt = (t) => ml + ((t - t0) / (t1 - t0)) * (W - ml - mr);
+  const y = (v) => mt + (1 - (v - lo) / (hi - lo)) * (H - mt - mb);
+  const P = base.map((p, i) => [xt(T[i]), y(p.v)]);
+  const color = series[0].color || 'var(--accent)';
+  const curva = curvaSuave(P), suelo = H - mb;
+  const area = `${curva}L${P[n - 1][0].toFixed(1)},${suelo}L${P[0][0].toFixed(1)},${suelo}Z`;
+  // fechas de abajo, metidas hacia dentro para que no peguen al borde
+  const dias = (t1 - t0) / 864e5, ejes = [];
+  const sitio = Math.min(5, Math.max(2, Math.floor((W - 2 * borde) / 120)));
+  const etq = (d) => (dias < 1.6 ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : dias < 8 ? `${DIAS_SEM[d.getDay()]} ${d.getDate()}` : dias > 900 ? String(d.getFullYear()) : dias > 100 ? `${MESES[d.getMonth()]}${d.getMonth() === 0 ? ' ' + String(d.getFullYear()).slice(2) : ''}` : `${d.getDate()} ${MESES[d.getMonth()]}`);
+  if (dias > 900) {
+    const anios = []; for (let a = new Date(t0).getFullYear() + 1; a <= new Date(t1).getFullYear(); a++) anios.push(a);
+    const salto = Math.ceil(anios.length / sitio);
+    anios.filter((a, k) => k % salto === 0).forEach((a) => ejes.push([xt(new Date(a, 0, 1).getTime()), String(a)]));
+  } else if (dias < 1.6) {
+    // en un día, horas en punto (cada 1, 2, 3, 4 o 6 h, las que quepan)
+    const paso = [1, 2, 3, 4, 6, 12].find((h) => (t1 - t0) / (h * 36e5) <= sitio + 1) || 12;
+    const h0 = new Date(t0); h0.setMinutes(0, 0, 0); h0.setHours(Math.ceil((h0.getHours() + (new Date(t0).getMinutes() ? 1 : 0)) / paso) * paso);
+    for (let t = h0.getTime(); t <= t1; t += paso * 36e5) ejes.push([xt(t), etq(new Date(t))]);
+  } else if (dias < 8) {
+    // en una semana, un rótulo por día, a mediodía de cada uno
+    const d0 = new Date(t0); d0.setHours(12, 0, 0, 0); if (d0.getTime() < t0) d0.setDate(d0.getDate() + 1);
+    const todos = []; for (const d = new Date(d0); d.getTime() <= t1; d.setDate(d.getDate() + 1)) if (d.getDay() % 6) todos.push(d.getTime());
+    const salto = Math.ceil(todos.length / (sitio + 1));
+    todos.filter((t, k) => k % salto === 0).forEach((t) => ejes.push([xt(t), etq(new Date(t))]));
+  } else for (let k = 0; k <= sitio; k++) { const tt = t0 + (k / sitio) * (t1 - t0); ejes.push([xt(tt), etq(new Date(tt))]); }
+  let g = `<defs>
+    <linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.32"/><stop offset="0.6" style="stop-color:${color};stop-opacity:0.08"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
+    <linearGradient id="${id}c" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 20}" x2="0" y2="${suelo}"><stop offset="0" style="stop-color:var(--text-2);stop-opacity:0"/><stop offset="0.3" style="stop-color:var(--text-2);stop-opacity:0.5"/><stop offset="1" style="stop-color:var(--text-2);stop-opacity:0.15"/></linearGradient>
+    <filter id="${id}b" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+    <clipPath id="${id}k"><rect class="gh-corte" x="0" y="0" width="${W}" height="${H}"/></clipPath>
+  </defs>`;
+  for (const [ex, tx] of ejes) {
+    const xx = Math.min(Math.max(ex, borde), W - borde);
+    g += `<text class="gh-eje" x="${xx.toFixed(1)}" y="${H - 9}" text-anchor="${xx <= borde + 1 ? 'start' : xx >= W - borde - 1 ? 'end' : 'middle'}">${esc(tx)}</text>`;
+  }
+  // la línea de donde empezó el periodo, muy tenue
+  if (!opt.sinRef && refVis) g += `<line x1="0" x2="${W}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 5"/>`;
+  // la misma curva en gris por debajo: es lo que se ve a la derecha del dedo
+  g += `<path d="${curva}" fill="none" stroke="var(--line-2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  for (const se of series.slice(1)) {
+    const Q = se.datos.map((p) => { const i = base.findIndex((b) => b.d === p.d); return i < 0 ? null : [P[i][0], y(p.v)]; }).filter(Boolean);
+    if (Q.length > 1) g += `<path d="${curvaSuave(Q)}" fill="none" stroke="${se.color || 'var(--text-2)'}" stroke-width="1.5" stroke-dasharray="${se.disc ? '5 5' : ''}" stroke-linejoin="round" opacity="0.85"/>`;
+  }
+  g += `<g clip-path="url(#${id}k)">
+    <path class="gh-area" d="${area}" fill="url(#${id}a)"/>
+    <path class="gh-trazo" d="${curva}" fill="none" stroke="${color}" stroke-width="7" opacity="0.4" filter="url(#${id}b)"/>
+    <path class="gh-trazo" d="${curva}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+  </g>`;
+  // el máximo y el mínimo del periodo (si no son el punto de ahora, que ya está arriba en grande)
+  if (!opt.oculto) {
+    let iMax = 0, iMin = 0; base.forEach((p, i) => { if (p.v > base[iMax].v) iMax = i; if (p.v < base[iMin].v) iMin = i; });
+    const marca = (i, arriba) => {
+      if (P[n - 1][0] - P[i][0] < 56 || base[iMax].v === base[iMin].v) return '';
+      const [px, py] = P[i], ancla = px < 60 ? 'start' : px > W - 60 ? 'end' : 'middle';
+      return `<g class="gh-ext"><circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.6" fill="${color}"/><text x="${Math.min(Math.max(px, 8), W - 8).toFixed(1)}" y="${(arriba ? py - 10 : py + 18).toFixed(1)}" text-anchor="${ancla}">${esc((opt.fmt || fmtNum)(base[i].v))}</text></g>`;
+    };
+    g += marca(iMax, true) + marca(iMin, false);
+  }
+  const [fx, fy] = P[n - 1];
+  g += `<g class="gh-fin"><circle class="gh-pulso" cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4" fill="${color}"/><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4.2" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
+  g += `<g class="gh-cruz" visibility="hidden"><line y1="${mt - 20}" y2="${suelo}" stroke="url(#${id}c)" stroke-width="1"/><circle r="11" fill="${color}" opacity="0.18"/><circle r="4.6" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
+  g += `<rect class="zona" x="0" y="0" width="${W}" height="${H}" fill="transparent"/>`;
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', opt.titulo || 'Gráfico');
+  svg.innerHTML = g;
+  cont.appendChild(svg);
+  // al estrenar periodo, la curva se dibuja de izquierda a derecha (una vez; las recargas de precios no la repiten)
+  if (opt.animar && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    for (const p of svg.querySelectorAll('.gh-trazo')) { try { p.style.setProperty('--l', Math.ceil(p.getTotalLength()) + 1); } catch (e) {} }
+    svg.classList.add('entra');
+  }
+  const fecha = document.createElement('div'); fecha.className = 'gh-fecha'; fecha.hidden = true; cont.appendChild(fecha);
+  const cruz = svg.querySelector('.gh-cruz'), corte = svg.querySelector('.gh-corte');
+  const mapas2 = series.slice(1).map((se) => new Map(se.datos.map((p) => [p.d, p.v])));
+  const cercano = (t) => { let a = 0, b = n - 1; while (b - a > 1) { const m = (a + b) >> 1; if (T[m] <= t) a = m; else b = m; } return t - T[a] <= T[b] - t ? a : b; };
+  let actual = n - 1;
+  const mostrar = (i) => {
+    actual = Math.max(0, Math.min(n - 1, i));
+    const s = base[actual], [px, py] = P[actual];
+    cruz.setAttribute('visibility', 'visible');
+    const ln = cruz.querySelector('line'); ln.setAttribute('x1', px); ln.setAttribute('x2', px);
+    for (const c of cruz.querySelectorAll('circle')) { c.setAttribute('cx', px); c.setAttribute('cy', py); }
+    corte.setAttribute('width', Math.max(0, px));
+    svg.classList.add('mirando');
+    fecha.innerHTML = esc(fechaPunto(s.d)) + series.slice(1).map((se, k) => { const v = mapas2[k].get(s.d); return v == null ? '' : `<small>${esc(se.nombre)}: ${esc(opt.fmt ? opt.fmt(v) : fmtNum(v))}</small>`; }).join('');
+    fecha.hidden = false;
+    const cw = cont.clientWidth, ancho = fecha.offsetWidth || 90;
+    fecha.style.left = Math.min(Math.max((px / W) * cw, ancho / 2 + 4), cw - ancho / 2 - 4) + 'px';
+    if (opt.alMover) opt.alMover(s);
+  };
+  const soltar = () => { cruz.setAttribute('visibility', 'hidden'); corte.setAttribute('width', W); svg.classList.remove('mirando'); fecha.hidden = true; if (opt.alMover) opt.alMover(null); };
+  const zona = svg.querySelector('.zona');
+  zona.addEventListener('pointermove', (ev) => { const r = svg.getBoundingClientRect(); const sx = ((ev.clientX - r.left) / r.width) * W; mostrar(cercano(t0 + ((sx - ml) / (W - ml - mr)) * (t1 - t0))); });
+  zona.addEventListener('pointerleave', soltar);
+  zona.addEventListener('pointercancel', soltar);
+  svg.setAttribute('tabindex', '0');
+  svg.addEventListener('keydown', (ev) => {
+    if (ev.key === 'ArrowLeft') { mostrar(actual - 1); ev.preventDefault(); }
+    else if (ev.key === 'ArrowRight') { mostrar(actual + 1); ev.preventDefault(); }
+    else if (ev.key === 'Escape') soltar();
+  });
+  svg.addEventListener('focus', () => mostrar(actual));
+  svg.addEventListener('blur', soltar);
+}
+
 /* cada celda se lleva el nombre de su columna para la vista apilada del móvil */
 function etiquetarTablas(raiz = document) {
   for (const t of $$('table.resp', raiz)) {
@@ -6401,6 +6780,8 @@ function etiquetarTablas(raiz = document) {
     for (const tr of t.querySelectorAll('tbody tr')) [...tr.children].forEach((td, i) => { if (i && hs[i]) td.dataset.l = hs[i]; });
   }
 }
+const ETQ_RANGO = { '1D': ['hoy', 'today'], '1S': ['en la última semana', 'in the last week'], '1M': ['en el último mes', 'in the last month'], '3M': ['en los últimos 3 meses', 'in the last 3 months'], '6M': ['en los últimos 6 meses', 'in the last 6 months'], '1A': ['en el último año', 'in the last year'], '3A': ['en los últimos 3 años', 'in the last 3 years'], '5A': ['en los últimos 5 años', 'in the last 5 years'] };
+let grafHeroUltimo = '';
 function dibujar(M) {
   etiquetarTablas($('#vista'));
   const gp = $('#grafProy'); if (gp) grafAbanico(gp, proyeccion(M), (S.horizonte || 20) * 12);
@@ -6408,16 +6789,44 @@ function dibujar(M) {
   if (g) {
     const dias = RANGOS[S.rango] || 366;
     const intra = INTRADIA.has(S.rango);
-    let serie = intra ? serieIntradia(M, S.rango) : serieCartera(M, dias);
-    if (intra && serie.length < 2) serie = serieCartera(M, S.rango === '1D' ? 4 : 9);
-    const cab = $('#evoCab');
-    if (cab && serie.length > 1) {
-      const d = serie[serie.length - 1].v - serie[0].v, p = (serie[serie.length - 1].v / serie[0].v - 1) * 100;
-      cab.innerHTML = `<span class="${cls(d)}">${eurS(d, 0)}</span><span class="${cls(p)}">${pctS(p)}</span><span class="k">${S.rango === '1D' && intra ? 'desde el último cierre' : `lo que tienes hoy, desde el ${fechaPunto(serie[0].d)}`}</span>`;
-    }
+    let serie = intra ? serieIntradia(M, S.rango) : serieCartera(M, dias), deIntra = intra;
+    if (intra && serie.length < 2) { serie = serieCartera(M, S.rango === '1D' ? 4 : 9); deIntra = false; }
+    // la variación del periodo, en una pastilla debajo de la cifra grande
+    const t0s = serie.length ? tiempoDe(serie[0].d) : Date.now();
+    const corto = (Date.now() - t0s) < dias * 864e5 * 0.85;
+    const etqRango = S.rango === '1D' && deIntra ? L('desde el último cierre', 'since the last close')
+      : !serie.length ? '' : corto || S.rango === 'Máx' || !ETQ_RANGO[S.rango] ? L(`desde el ${fechaPunto(serie[0].d)}`, `since ${fechaPunto(serie[0].d)}`) : L(...ETQ_RANGO[S.rango]);
+    const pintarVar = (desde, hasta, etq) => {
+      const cab = $('#evoCab'); if (!cab || !desde || !hasta) return;
+      const d = hasta.v - desde.v, p = (hasta.v / desde.v - 1) * 100, c = cls(d);
+      cab.innerHTML = `<span class="hv-p ${c}"><i aria-hidden="true">${d > 0 ? '▲' : d < 0 ? '▼' : '•'}</i>${esc(eurS(d, 0))}<em>${esc(pctS(p))}</em></span><span class="k">${esc(etq)}</span>`;
+    };
+    // desde dónde se cuenta: el primer punto del periodo o, en 1D, el cierre de ayer (así cuadra con «Hoy»)
+    const ref0 = S.rango === '1D' && deIntra && isFinite(M.dia) && serie.length ? { d: serie[0].d, v: M.total - M.dia } : serie[0] || null;
+    const ahora = { d: hoyIso(), v: isFinite(M.total) ? M.total : (serie[serie.length - 1] || {}).v };
+    if (serie.length > 1) pintarVar(ref0, ahora, etqRango);
     const series = [{ datos: serie, color: 'var(--accent)' }];
     if (S.comparar && S.ref && !intra) series.push({ datos: serieComparada(serie, S.ref), color: 'var(--text-2)', disc: true, nombre: 'S&P 500' });
-    grafLinea(g, series, { titulo: 'Evolución del valor de la cartera', fmt: (v) => eur(v, 0), oculto: S.oculto, cambio: true, alto: 280 });
+    // al pasar el dedo, la cifra grande de arriba enseña lo que tenías ese día y la pastilla, lo que iba desde el
+    // principio del periodo; al soltar, todo vuelve a ahora
+    const alMover = (p) => {
+      const hn = $('#heroNum'), lbl = $('#heroLbl'); if (!hn || !lbl) return;
+      if (p) {
+        if (!S.oculto) {
+          if (!hn.dataset.antes) { hn.dataset.antes = hn.innerHTML; hn.classList.add('mira'); }
+          hn.innerHTML = `<span>${fmtNum(Math.trunc(p.v), 0)}</span><span class="dec">,${fmtNum(p.v, 2).split(',')[1]} €</span>`;
+        }
+        lbl.textContent = L(`El ${fechaPunto(p.d)}`, fechaPunto(p.d));
+        pintarVar(ref0, p, ref0 === serie[0] ? L(`desde el ${fechaPunto(ref0.d)}`, `since ${fechaPunto(ref0.d)}`) : L('desde el último cierre', 'since the last close'));
+      } else {
+        if (hn.dataset.antes) { hn.innerHTML = hn.dataset.antes; delete hn.dataset.antes; hn.classList.remove('mira'); }
+        lbl.textContent = L('Patrimonio', 'Net worth');
+        if (serie.length > 1) pintarVar(ref0, ahora, etqRango);
+      }
+    };
+    const movil = innerWidth < 760;
+    const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
+    grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 300, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, ref: ref0 && ref0.v, alMover, animar });
   }
   // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
   for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
@@ -8213,7 +8622,7 @@ function arrastrarParaCerrar(h, cerrar) {
 }
 /* en la app de Android, un toque suave al cambiar de pestaña o elegir algo (si el móvil lo tiene activado) */
 function vibra() { try { const a = window.InversionesApp; if (a && a.toque) a.toque(); } catch (e) {} }
-document.addEventListener('click', (e) => { if (e.target.closest('.navbar a, .navbar .nav-mas, .tabs button, .subvistas button, [data-agm], [data-ag-mes], .agc, .ag-f, .mas-t, .gta-chip')) vibra(); }, true);
+document.addEventListener('click', (e) => { if (e.target.closest('.navbar a, .navbar .nav-mas, .tabs button, .subvistas button, [data-agm], [data-ag-mes], .agc, .ag-f, .mas-t, .gta-chip, .gta-top')) vibra(); }, true);
 function hoja(titulo, html, alCerrar, ancha) {
   const f = document.createElement('div');
   f.className = 'hoja-fondo';
@@ -8652,13 +9061,13 @@ const PEDIDO_IMPORTAR = `Estos archivos son de un bróker, un banco o un exchang
 Saca de ellos:
 1. "posiciones": TODAS las posiciones que se tienen ahora, si se ven (acciones, ETF, fondos, cripto, oro…).
 2. "operaciones": si hay un listado de movimientos de inversión, cada uno: compras, ventas, suscripciones y reembolsos de fondos, traspasos entre fondos, dividendos e intereses. Ignora lo que no sea de inversiones (nóminas, recibos, tarjeta, bizum, transferencias entre cuentas).
-3. "efectivo": el saldo disponible, si se ve.
+3. "efectivo": el dinero disponible de cada cuenta, si se ve. En un extracto o una lista de movimientos de una cuenta, es el saldo más reciente (el que queda tras el último movimiento) y su fecha. No lo calcules sumando movimientos: si no viene el saldo, no lo pongas.
 No inventes nada: si un dato no está, pon null. Si algo sale en varios archivos o varias veces, ponlo una sola vez. Fechas como AAAA-MM-DD. Importes en euros: si una operación va en otra moneda y viene su cambio a euros, usa el de euros; si no viene, pon la moneda en "moneda".
 Responde solo con JSON, con números con punto decimal y sin símbolos:
 {"plataforma": "nombre del bróker o banco si se reconoce o null",
  "posiciones": [{"nombre": "como aparece", "isin": "si se ve", "ticker": "si se ve", "tipo": "Acción|ETF|Fondo|Cripto|Oro|Otro", "cantidad": número de acciones, participaciones o unidades, "precio_medio": precio medio de compra por unidad en euros, "invertido": total invertido en euros, "valor": valor actual en euros, "plataforma": "app de esta posición si se distingue"}],
  "operaciones": [{"fecha": "AAAA-MM-DD", "tipo": "compra|venta|traspaso_entrada|traspaso_salida|dividendo|interes", "nombre": "", "isin": "", "ticker": "", "tipoActivo": "Acción|ETF|Fondo|Cripto|Oro|Otro", "cantidad": unidades (sin signo), "precio": precio por unidad, "importe": total en euros sin signo, ya con comisiones (en una compra, lo que salió de la cuenta; en una venta, lo que entró), "comisiones": comisiones y tasas en euros, "retencion": impuesto retenido en euros (dividendos e intereses), "moneda": "EUR si no se dice", "plataforma": ""}],
- "efectivo": [{"plataforma": "", "importe": número}]}`;
+ "efectivo": [{"plataforma": "bróker o banco de esa cuenta", "importe": número, "fecha": "AAAA-MM-DD del saldo, si se ve"}]}`;
 async function leerCapturas(archivos, alPaso) {
   const partes = [...archivos.map((a) => (a.texto != null ? { text: `Archivo «${a.nombre}»${a.cortado ? ' (cortado: es muy largo)' : ''}:\n${a.texto}` } : { inlineData: { mimeType: a.mime, data: a.data } })), { text: PEDIDO_IMPORTAR }];
   const cuerpo = { contents: [{ role: 'user', parts: partes }], generationConfig: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 32768 } };
@@ -8755,6 +9164,8 @@ async function importarCapturas() {
     if (!filas.length && !efectivo.length && !ventasImp.length && !divsImp.length) { rev.innerHTML = ''; return; }
     const plats = [...new Set([...PLATAFORMAS, ...filas.map((f) => f.plat), ...efectivo.map((e) => e.plat)].filter(Boolean))];
     const selPlat = (v, k) => `<select data-imp-plat="${k}">${plats.map((p) => `<option${p === v ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>`;
+    // el efectivo también se puede llevar a otra plataforma (un banco que no está en la lista se queda con su nombre)
+    const selPlatEf = (v, k) => `<select data-imp-efplat="${k}" aria-label="${L('Plataforma', 'Platform')}">${plats.map((p) => `<option${p === v ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>`;
     rev.innerHTML = `<h3 class="imp-tit">Esto es lo que he leído</h3><p class="nota" style="margin:0 0 10px">Revisa cada una: si alguna no está bien emparejada, tócala para cambiarla. Lo que no marques no se guarda.</p>
       <div class="imp-lista">${filas.map((f, k) => { const i = f.id && S.inst[f.id]; return `<div class="imp-f${f.ok ? '' : ' off'}">
         <label class="imp-ck"><input type="checkbox" data-imp-ok="${k}"${f.ok ? ' checked' : ''}${f.id ? '' : ' disabled'}></label>
@@ -8764,7 +9175,7 @@ async function importarCapturas() {
           ${f.g ? `<small class="imp-ops${f.cuadra ? '' : ' mal'}" data-no-trad>${f.cuadra ? `${ICONOS.ok}${L(`Desde el ${fechaLarga(f.desde)}, con ${f.g.compras} ${f.g.compras === 1 ? 'compra' : 'compras'}: guardo cada lote para calcular bien tus ventas.`, `Since ${fechaCortaL(f.desde)} ${f.desde.slice(0, 4)}, with ${f.g.compras} ${f.g.compras === 1 ? 'purchase' : 'purchases'}: I keep each lot so your sales come out right.`)}` : f.g.otraMoneda ? L(`Va en ${esc(f.g.otraMoneda)}: uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.`, `It's in ${esc(f.g.otraMoneda)}: I use what you hold${f.desde ? ` and the date of your first purchase (${fechaCortaL(f.desde)} ${f.desde.slice(0, 4)})` : ''}.`) : L(`Las operaciones no cuadran con lo que tienes (faltará algún movimiento antiguo): uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.`, `The transactions don't match what you hold (some older movement must be missing): I use what you hold${f.desde ? ` and the date of your first purchase (${fechaCortaL(f.desde)} ${f.desde.slice(0, 4)})` : ''}.`)}</small>` : ''}
           <div class="imp-num">${selPlat(f.plat, k)}<label>Cuántas<input inputmode="decimal" data-imp-uds="${k}" value="${f.uds != null ? String(f.uds).replace('.', ',') : ''}"></label><label>Invertido (€)<input inputmode="decimal" data-imp-inv="${k}" value="${f.inv != null ? String(+f.inv.toFixed(2)).replace('.', ',') : ''}"></label></div>
         </div></div>`; }).join('')}
-      ${efectivo.map((e, k) => `<div class="imp-f${e.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-ef="${k}"${e.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-inst">${logo(null, '€')}<span class="busca-t"><b>Efectivo</b><small>${esc(e.plat || '')}</small></span><span>${eur(e.importe)}</span></div></div></div>`).join('')}</div>
+      ${efectivo.map((e, k) => `<div class="imp-f${e.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-ef="${k}"${e.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-inst">${logo(null, '€')}<span class="busca-t"><b>${L('Efectivo', 'Cash')}</b><small>${e.fecha ? L(`saldo del ${fechaLarga(e.fecha)}`, `balance on ${fechaLarga(e.fecha)}`) : L('pasa a ser tu efectivo de', 'becomes your cash at')}</small></span><span>${eur(e.importe)}</span></div><div class="imp-num">${selPlatEf(e.plat, k)}</div></div></div>`).join('')}</div>
       ${ventasImp.length ? `<h3 class="imp-tit">Tus ventas</h3><p class="nota" style="margin:0 0 10px">Con su resultado por FIFO, como en la renta. Las marcadas van a tu historial y a Fiscalidad.</p>
         <div class="imp-lista">${ventasImp.map((v, k) => `<div class="imp-f${v.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-v="${k}"${v.ok ? ' checked' : ''}${v.ya || !v.g.id ? ' disabled' : ''}></label><div class="imp-c"><div class="imp-vta"><span><b>${esc(v.g.id && S.inst[v.g.id] ? etiquetaInst(S.inst[v.g.id]) : v.g.x.nombre || '?')}</b><small data-no-trad>${L(`${fechaLarga(v.fecha)} · ${fmtNum(v.uds, 4)} por ${eur(v.importe, 2)}${v.ya ? ' · ya está en tu historial' : !v.g.id ? ' · empareja antes esta posición' : ''}`, `${fechaCortaL(v.fecha)} ${v.fecha.slice(0, 4)} · ${fmtNum(v.uds, 4)} for ${eur(v.importe, 2)}${v.ya ? ' · already in your history' : !v.g.id ? ' · match this position first' : ''}`)}</small></span><b class="${cls(v.resultado)}">${eurS(v.resultado, 0)}</b></div></div></div>`).join('')}</div>` : ''}
       ${divsImp.length ? `<h3 class="imp-tit">Dividendos e intereses</h3><div class="imp-lista">${divsImp.map((d, k) => `<div class="imp-f${d.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-d="${k}"${d.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-vta"><span data-no-trad><b>${d.anio}: ${eur(d.bruto, 2)} ${L('en bruto', 'gross')}</b><small>${L(`${d.n} ${d.n === 1 ? 'cobro' : 'cobros'}${d.ret ? ` · ${eur(d.ret, 2)} retenidos` : ''} · ${d.antes ? `en Fiscalidad tienes ${eur(d.antes, 2)}: lo cambio por esto` : 'lo apunto en los datos fiscales de ese año'}`, `${d.n} ${d.n === 1 ? 'payment' : 'payments'}${d.ret ? ` · ${eur(d.ret, 2)} withheld` : ''} · ${d.antes ? `Taxes has ${eur(d.antes, 2)}: I'll replace it with this` : "I'll add it to that year's tax data"}`)}</small></span></div></div></div>`).join('')}</div>` : ''}
@@ -8775,6 +9186,7 @@ async function importarCapturas() {
     for (const el of $$('[data-imp-ok]', rev)) el.onchange = () => { filas[+el.dataset.impOk].ok = el.checked; pintarRev(); };
     for (const el of $$('[data-imp-ef]', rev)) el.onchange = () => { efectivo[+el.dataset.impEf].ok = el.checked; pintarRev(); };
     for (const el of $$('[data-imp-plat]', rev)) el.onchange = () => { filas[+el.dataset.impPlat].plat = el.value; };
+    for (const el of $$('[data-imp-efplat]', rev)) el.onchange = () => { efectivo[+el.dataset.impEfplat].plat = el.value; };
     for (const el of $$('[data-imp-uds]', rev)) el.onchange = () => { filas[+el.dataset.impUds].uds = numero(el.value); };
     for (const el of $$('[data-imp-inv]', rev)) el.onchange = () => { filas[+el.dataset.impInv].inv = numero(el.value); };
     for (const el of $$('[data-imp-cambiar]', rev)) el.onclick = () => { const f = filas[+el.dataset.impCambiar]; f.id = null; f.ok = false; pintarRev(); };
@@ -8836,7 +9248,7 @@ async function importarCapturas() {
         const inv = +x.invertido > 0 ? +x.invertido : uds && +x.precio_medio > 0 ? uds * +x.precio_medio : null;
         return { x, id: m ? m.id : null, como: m ? m.como : null, ok: !!m, plat, uds, inv };
       });
-      efectivo = (o.efectivo || []).filter((e) => e && +e.importe > 0).map((e) => ({ plat: PLATAFORMAS.find((p) => normTxt(e.plataforma || '').includes(normTxt(p))) || e.plataforma || platGen || 'Trade Republic', importe: +e.importe, ok: true }));
+      efectivo = (o.efectivo || []).filter((e) => e && +e.importe >= 0 && isFinite(+e.importe) && e.importe !== null).map((e) => ({ plat: PLATAFORMAS.find((p) => normTxt(e.plataforma || '').includes(normTxt(p))) || e.plataforma || platGen || 'Trade Republic', importe: +e.importe, fecha: /^\d{4}-\d{2}-\d{2}$/.test(String(e.fecha || '')) ? e.fecha : null, ok: true }));
       // las operaciones: lotes y fecha de cada posición, lo que solo sale en operaciones, las ventas y los dividendos
       const R = resumenOps = procesarOperaciones(o.operaciones, platGen);
       for (const f of filas) {
@@ -8906,11 +9318,184 @@ function editarAportacion(k) {
   };
 }
 
+/* =====================================================================
+   El banco: el efectivo de cada plataforma con el saldo real de tu cuenta (open banking, solo lectura, con
+   Enable Banking a través del Worker de GrowFolio, que es quien guarda la clave). Solo cuentas de dinero: acciones
+   y fondos no entran en el open banking. La sesión y las cuentas van en tu cartera cifrada (S.cartera.bancos); el
+   Worker no guarda nada. De momento solo para las cuentas de la lista del Worker (modo de pruebas de Enable Banking).
+   ===================================================================== */
+const WORKER = 'https://growfolio.growfolio-web-app.workers.dev';
+// en pruebas (?dev) se puede apuntar a otro Worker
+const urlWorker = () => (CFG.dev && LS.get('inv-worker-dev', '')) || WORKER;
+const BANCO = { estado: null, sincT: 0, enCurso: false, avisado: new Set() };
+const BANCO_CADA_H = 4;
+async function workerPide(ruta, cuerpo) {
+  if (!urlWorker() || !FB.user) throw new Error('sin-worker');
+  const t = await FB.user.getIdToken();
+  const r = await fetch(urlWorker() + ruta, { method: cuerpo ? 'POST' : 'GET', headers: { Authorization: `Bearer ${t}`, ...(cuerpo ? { 'Content-Type': 'application/json' } : {}) }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.error || `http ${r.status}`); e.j = j; e.status = r.status; throw e; }
+  return j;
+}
+async function bancoDisponible() {
+  if (!urlWorker() || !FB.user) return false;
+  if (!BANCO.estado) { try { BANCO.estado = await workerPide('/banco/estado'); } catch (e) { BANCO.estado = { permitido: false }; } }
+  return !!(BANCO.estado.permitido && BANCO.estado.listo);
+}
+const bancosDe = (pl) => ((S.cartera && S.cartera.bancos) || []).filter((b) => !pl || b.plataforma === pl);
+const finCuenta = (b) => (b.fin ? `···${b.fin}` : '');
+
+/* elegir el banco y salir a darle permiso; a la vuelta sigue vueltaDelBanco() */
+async function conectarBanco(plataforma) {
+  const h = hoja(L('Conectar con tu banco', 'Connect your bank'), `<div class="bk">
+    <p class="nota" style="margin:0">${L(`Elige el banco de <b>${esc(plataforma)}</b>. Te llevará a su web o a su app para dar permiso de <b>solo lectura</b>: GrowFolio verá el saldo de la cuenta, nunca podrá mover dinero. El permiso dura unos 180 días.`, `Pick the bank for <b>${esc(plataforma)}</b>. It takes you to its website or app to grant <b>read-only</b> access: GrowFolio sees the balance and can never move money. Access lasts about 180 days.`)}</p>
+    <div class="tabs bk-paises" role="group" aria-label="${L('País del banco', 'Bank country')}"><button type="button" data-bk-pais="ES" aria-pressed="true">${L('España', 'Spain')}</button><button type="button" data-bk-pais="DE" aria-pressed="false">${L('Alemania', 'Germany')}</button></div>
+    <input class="bk-busca" type="search" placeholder="${L('Busca tu banco', 'Search your bank')}" aria-label="${L('Busca tu banco', 'Search your bank')}">
+    <ul class="bk-lista" aria-live="polite"><li class="vacio">${L('Cargando bancos…', 'Loading banks…')}</li></ul>
+    <div class="error" id="errBk"></div></div>`);
+  let bancos = [], pais = 'ES';
+  const lista = $('.bk-lista', h.el), busca = $('.bk-busca', h.el), err = $('#errBk', h.el);
+  const pinta = () => {
+    const q = normTxt(busca.value), pl = normTxt(plataforma);
+    const v = bancos.filter((b) => !q || normTxt(b.n).includes(q)).sort((a, b) => (normTxt(b.n).includes(pl) - normTxt(a.n).includes(pl)) || a.n.localeCompare(b.n));
+    lista.innerHTML = v.length ? v.slice(0, 80).map((b) => `<li><button type="button" class="bk-b" data-bk="${esc(b.n)}" data-max="${b.max || ''}">${b.logo ? `<img src="${esc(b.logo)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '<i></i>'}<span>${esc(b.n)}</span></button></li>`).join('') : `<li class="vacio">${L('No sale ningún banco con ese nombre.', 'No bank matches that name.')}</li>`;
+  };
+  const carga = async () => {
+    lista.innerHTML = `<li class="vacio">${L('Cargando bancos…', 'Loading banks…')}</li>`; err.textContent = '';
+    try { bancos = (await workerPide(`/banco/bancos?pais=${pais}`)).bancos || []; pinta(); }
+    catch (e) { lista.innerHTML = ''; err.textContent = L('No se ha podido traer la lista de bancos. Prueba en un rato.', 'Couldn’t load the list of banks. Try again in a while.'); }
+  };
+  busca.oninput = pinta;
+  h.el.addEventListener('click', async (e) => {
+    const pb = e.target.closest('[data-bk-pais]');
+    if (pb) { pais = pb.dataset.bkPais; for (const x of $$('[data-bk-pais]', h.el)) x.setAttribute('aria-pressed', String(x === pb)); carga(); return; }
+    const b = e.target.closest('[data-bk]'); if (!b) return;
+    b.disabled = true; b.classList.add('cargando'); err.textContent = '';
+    try {
+      const r = await workerPide('/banco/conectar', { banco: b.dataset.bk, pais, plataforma, max: +b.dataset.max || 0, vuelta: location.origin + location.pathname });
+      LS.set('inv-banco-pend', { plataforma, banco: b.dataset.bk, pais, t: Date.now() });
+      location.href = r.url;
+    } catch (e2) {
+      b.disabled = false; b.classList.remove('cargando');
+      err.textContent = L(`${b.dataset.bk} no ha dejado empezar la conexión${e2.j && e2.j.motivo ? ` (${e2.j.motivo})` : ''}. Prueba otra vez o con otro país.`, `${b.dataset.bk} didn’t let the connection start${e2.j && e2.j.motivo ? ` (${e2.j.motivo})` : ''}. Try again or another country.`);
+    }
+  });
+  carga();
+}
+
+/* a la vuelta del banco (?code=…&state=…): se cambia el código por la sesión, eliges qué cuentas van a esa
+   plataforma y se trae el saldo. La plataforma viaja firmada dentro del «state», así que vale aunque el banco te
+   devuelva a otro navegador */
+async function vueltaDelBanco() {
+  const q = new URLSearchParams(location.search);
+  if (!q.has('state') || !(q.has('code') || q.has('error'))) return;
+  // la sesión de Google puede tardar un poco en estar lista al volver: se espera hasta 20 s
+  for (let k = 0; k < 40 && !FB.user; k++) await new Promise((r) => setTimeout(r, 500));
+  history.replaceState(null, '', location.pathname + location.hash);
+  const pend = LS.get('inv-banco-pend', null); LS.del('inv-banco-pend');
+  if (q.has('error')) { toast(L('El banco no ha dado permiso. Puedes probar otra vez desde Efectivo.', 'The bank didn’t grant access. You can try again from Cash.'), 6000); return; }
+  if (!(await bancoDisponible())) { toast(L('No se ha podido terminar la conexión con el banco: entra con tu cuenta y prueba otra vez desde Efectivo.', 'Couldn’t finish connecting to the bank: sign in and try again from Cash.'), 6000); return; }
+  let r;
+  try { r = await workerPide('/banco/sesion', { code: q.get('code'), estado: q.get('state') }); }
+  catch (e) { toast(L('No se ha podido terminar la conexión con el banco. Prueba otra vez desde Efectivo.', 'Couldn’t finish connecting to the bank. Try again from Cash.'), 6000); return; }
+  const plataforma = r.plataforma || (pend && pend.plataforma);
+  if (!plataforma || !(r.cuentas || []).length) { toast(L('El banco no ha dado ninguna cuenta.', 'The bank didn’t share any account.'), 6000); return; }
+  const guardar = async (cuentas) => {
+    // la conexión de antes de esa plataforma se cambia por la nueva (y se borra su sesión)
+    const viejas = [...new Set(bancosDe(plataforma).map((b) => b.sesion))].filter((x) => x && x !== r.sesion);
+    for (const v of viejas) workerPide('/banco/borrar', { sesion: v }).catch(() => {});
+    S.cartera.bancos = ((S.cartera && S.cartera.bancos) || []).filter((b) => b.plataforma !== plataforma);
+    for (const c of cuentas) S.cartera.bancos.push({ id: `bk-${c.uid}`, plataforma, banco: r.banco || (pend && pend.banco) || '', pais: r.pais || '', sesion: r.sesion, cuenta: c.uid, nombre: c.nombre, fin: c.fin, hasta: r.hasta || null });
+    BANCO.sincT = 0;
+    await sincronizarBancos(true, true);
+  };
+  if (r.cuentas.length === 1) { await guardar(r.cuentas); return; }
+  const h = hoja(L(`¿Qué cuentas son de ${plataforma}?`, `Which accounts belong to ${plataforma}?`), `<form id="fBkC" novalidate>
+    <p class="nota" style="margin:0">${L('Su saldo se suma y pasa a ser el efectivo de esa plataforma.', 'Their balances are added up and become that platform’s cash.')}</p>
+    <div class="bk-cuentas">${r.cuentas.map((c, k) => `<label class="check-mini"><input type="checkbox" data-bkc="${k}" checked> ${esc(c.nombre || L('Cuenta', 'Account'))} ${esc(c.fin ? `···${c.fin}` : '')}</label>`).join('')}</div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri">${L('Usar estas', 'Use these')}</button></div></form>`);
+  $('#fBkC', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const elegidas = r.cuentas.filter((c, k) => $(`[data-bkc="${k}"]`, h.el).checked);
+    if (!elegidas.length) return;
+    h.cerrar(); await guardar(elegidas);
+  };
+}
+
+/* el saldo de cada cuenta conectada pasa al efectivo de su plataforma (al abrir y cada BANCO_CADA_H horas) */
+async function sincronizarBancos(forzar, avisar) {
+  const bs = bancosDe().filter((b) => !b.caducada);
+  if (!S.cartera || !bs.length || BANCO.enCurso) return false;
+  if (!forzar && Date.now() - BANCO.sincT < BANCO_CADA_H * 3600e3 && bs.every((b) => b.ultimo && Date.now() - b.ultimo.t < BANCO_CADA_H * 3600e3)) return false;
+  if (!(await bancoDisponible())) return false;
+  BANCO.enCurso = true;
+  try {
+    const r = await workerPide('/banco/saldos', { cuentas: bs.map((b) => b.cuenta) });
+    BANCO.sincT = Date.now();
+    const porPlat = new Map(), caducadas = [];
+    for (const b of bs) {
+      const x = (r.saldos || {})[b.cuenta]; if (!x) continue;
+      if (x.error === 'caducada') { b.caducada = true; caducadas.push(b.plataforma); continue; }
+      if (x.error || !isFinite(x.importe) || (x.moneda && x.moneda !== 'EUR')) continue;
+      b.ultimo = { importe: x.importe, t: Date.now(), fecha: x.fecha || null };
+      porPlat.set(b.plataforma, (porPlat.get(b.plataforma) || 0) + x.importe);
+    }
+    const cambios = [];
+    S.cartera.efectivo = S.cartera.efectivo || [];
+    for (const [pl, imp] of porPlat) {
+      let e = S.cartera.efectivo.find((x) => x.plataforma === pl);
+      if (!e) { e = { plataforma: pl, importe: 0 }; S.cartera.efectivo.push(e); }
+      const nuevo = Math.round(imp * 100) / 100;
+      if (Math.abs((+e.importe || 0) - nuevo) >= 0.005) { cambios.push([pl, nuevo]); e.importe = nuevo; }
+    }
+    await guardarCartera(L('Efectivo del banco', 'Cash from the bank'));
+    if (cambios.length) pintar();
+    if (cambios.length && avisar) toast(L(`Efectivo al día con el banco: ${cambios.map(([pl, v]) => `${pl}, ${eur(v)}`).join('; ')}`, `Cash synced with the bank: ${cambios.map(([pl, v]) => `${pl}, ${eur(v)}`).join('; ')}`), 5000);
+    else if (avisar) toast(L('Efectivo al día con el banco', 'Cash synced with the bank'));
+    for (const pl of new Set(caducadas)) if (!BANCO.avisado.has('cad:' + pl)) { BANCO.avisado.add('cad:' + pl); toast(L(`El permiso del banco de ${pl} ha caducado: vuelve a conectarlo en Efectivo.`, `The bank access for ${pl} has expired: reconnect it in Cash.`), 7000); }
+    return true;
+  } catch (e) { console.warn('banco', e); return false; } finally { BANCO.enCurso = false; }
+}
+/* una semana antes de que caduque el permiso, un aviso al abrir (una vez por plataforma y sesión) */
+function avisoCaducaBanco() {
+  for (const b of bancosDe()) {
+    if (b.caducada || !b.hasta || BANCO.avisado.has('pronto:' + b.plataforma)) continue;
+    const dias = Math.ceil((new Date(b.hasta) - Date.now()) / 864e5);
+    if (dias <= 7) { BANCO.avisado.add('pronto:' + b.plataforma); toast(L(`El permiso del banco de ${b.plataforma} caduca ${dias <= 1 ? 'mañana' : `en ${dias} días`}: renuévalo en Efectivo.`, `The bank access for ${b.plataforma} expires ${dias <= 1 ? 'tomorrow' : `in ${dias} days`}: renew it in Cash.`), 7000); }
+  }
+}
+async function desconectarBanco(plataforma) {
+  const ses = [...new Set(bancosDe(plataforma).map((b) => b.sesion))];
+  for (const v of ses) workerPide('/banco/borrar', { sesion: v }).catch(() => {});
+  S.cartera.bancos = bancosDe().filter((b) => b.plataforma !== plataforma);
+  await guardarCartera(L('Desconectar banco', 'Disconnect bank'));
+  pintar();
+}
+/* debajo de cada plataforma, en la hoja de Efectivo: conectar, o de qué cuenta sale y cuándo se miró */
+async function pintarBancosEf(h) {
+  if (!(await bancoDisponible()) || !h.el.isConnected) return;
+  for (const w of $$('[data-ef-banco]', h.el)) {
+    const pl = w.dataset.efBanco, bs = bancosDe(pl), inp = w.closest('.campo-ef').querySelector('input');
+    if (!bs.length) { w.innerHTML = `<button type="button" class="enlace acento" data-bk-con="${esc(pl)}">${ICONOS.banco}${L('Conectar con el banco', 'Connect the bank')}</button>`; continue; }
+    const cad = bs.some((b) => b.caducada), ult = Math.max(0, ...bs.map((b) => (b.ultimo && b.ultimo.t) || 0));
+    inp.readOnly = !cad; inp.classList.toggle('del-banco', !cad);
+    w.innerHTML = cad
+      ? `<span class="bk-mal">${L('El permiso del banco ha caducado.', 'The bank access has expired.')}</span> <button type="button" class="enlace acento" data-bk-con="${esc(pl)}">${L('Volver a conectar', 'Reconnect')}</button>`
+      : `<span>${ICONOS.banco}${esc(bs.map((b) => `${b.nombre || b.banco} ${finCuenta(b)}`.trim()).join(', '))}${ult ? ` · ${esc(haceCuanto(new Date(ult).toISOString()))}` : ''}</span> <button type="button" class="enlace" data-bk-ya="${esc(pl)}">${L('Actualizar', 'Refresh')}</button> <button type="button" class="enlace" data-bk-fuera="${esc(pl)}">${L('Desconectar', 'Disconnect')}</button>`;
+  }
+  h.el.onclick = async (e) => {
+    const c = e.target.closest('[data-bk-con]'); if (c) { h.cerrar(); conectarBanco(c.dataset.bkCon); return; }
+    const y = e.target.closest('[data-bk-ya]'); if (y) { y.disabled = true; y.textContent = L('Mirando…', 'Checking…'); BANCO.sincT = 0; await sincronizarBancos(true, true); h.cerrar(); editarEfectivo(); return; }
+    const f = e.target.closest('[data-bk-fuera]'); if (f) { if (!f.dataset.listo) { f.dataset.listo = '1'; f.textContent = L('¿Seguro?', 'Sure?'); return; } await desconectarBanco(f.dataset.bkFuera); h.cerrar(); editarEfectivo(); }
+  };
+}
+
 function editarEfectivo() {
   const ef = JSON.parse(JSON.stringify(S.cartera.efectivo || []));
   for (const p of PLATAFORMAS) if (!ef.find((e) => e.plataforma === p)) ef.push({ plataforma: p, importe: 0 });
-  const h = hoja('Efectivo', `<form id="fEf" novalidate><div class="form-grid">${ef.map((e, k) => `<label class="campo">${esc(e.plataforma)}<input data-ef="${k}" inputmode="decimal" value="${val(+e.importe || 0)}"></label>`).join('')}</div>
+  const h = hoja('Efectivo', `<form id="fEf" novalidate><div class="form-grid">${ef.map((e, k) => `<div class="campo-ef"><label class="campo">${esc(e.plataforma)}<input data-ef="${k}" inputmode="decimal" value="${val(+e.importe || 0)}"></label><div class="ef-banco" data-ef-banco="${esc(e.plataforma)}"></div></div>`).join('')}</div>
     <p class="nota" style="margin:0">El dinero sin invertir de cada plataforma. Cuenta en el patrimonio y en el reparto.</p>
+    <button type="button" class="enlace acento ef-extracto" data-ef-extracto>${ICONOS.recorte}${L('Ponerlo con un extracto del banco (captura, PDF, CSV o Excel)', 'Set it from a bank statement (screenshot, PDF, CSV or Excel)')}</button>
     <div class="error" id="errEf"></div><div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div></form>`);
   $('#fEf', h.el).onsubmit = async (ev) => {
     ev.preventDefault();
@@ -8919,6 +9504,8 @@ function editarEfectivo() {
     S.cartera.efectivo = nuevos;
     await guardarYPintar('Cambiar efectivo', h);
   };
+  $('[data-ef-extracto]', h.el).onclick = () => { h.cerrar(); importarCapturas(); };
+  pintarBancosEf(h);
 }
 
 function editarLimites() {
@@ -9923,8 +10510,18 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.2.2';
+const VERSION = '0.2.3';
 const NOVEDADES = [
+  { v: '0.2.3', f: '2026-10-20', h: '20:31', t: 'Cartera nueva y los días sin bolsa', cosas: [
+    { d: 'grafica', ir: { v: 'cartera', sel: '.hero-panel', pos: true }, t: 'Tu patrimonio y su gráfica, en una pieza', x: 'La cifra va encima de la gráfica, más grande. Debajo, cuánto ha cambiado en el periodo que elijas, lo de hoy y lo ganado. Pasa el dedo por la curva: la cifra te dice lo que tenías ese día y lo de después se apaga. En 1D se cuenta desde el cierre de ayer.' },
+    { d: 'cifras', ir: { v: 'cartera', sel: '.movers', pos: true }, t: 'Lo que más se mueve, a un toque', x: 'Toca cualquiera de «Lo que más ha movido hoy tu cartera» y se abre su ficha.' },
+    { d: 'pestanas', ir: { v: 'cartera', sel: '.car-ordenar-mini', pos: true }, t: 'Personaliza Cartera', x: 'Con el botón de arriba eliges qué bloques salen y en qué orden: tus cifras, lo que viene, GrowIA, el reparto o la cuenta atrás de GTA VI.' },
+    { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor' }, t: 'Pregúntale hablando', x: 'Abre Pregúntale, toca el micrófono y dilo en voz alta. En la app de Android usa el dictado del móvil.' },
+    { d: 'calendario', ir: { v: 'agenda', sel: '.ag-mes2' }, t: 'Los días sin bolsa, de un vistazo', x: 'En el calendario, el día entero sale rayado si la bolsa cierra, medio lleno si cierra antes (el 24 y el 31 de diciembre, a las 14:00) y con el borde a trazos si es festivo pero la bolsa abre, como el 8 de diciembre. Con tu comunidad puesta en Objetivos, también sus festivos.' },
+    { d: 'capturas', ir: { v: 'cartera', sel: '#hEf', antes: () => { S.carTab = 'plan'; LS.set('inv-car', 'plan'); if (S.vista === 'cartera') pintar(); } }, t: 'Tu efectivo, con un extracto del banco', x: 'En Plan y movimientos > Efectivo > Cambiar: «Ponerlo con un extracto del banco». Sube una captura, el PDF o el CSV de tu cuenta y GrowIA saca el saldo más reciente; tú eliges a qué plataforma va.' },
+    { d: 'movil', t: 'El widget, con el estilo nuevo', x: 'En la app de Android, el widget lleva la cifra gruesa, lo de hoy en su pastilla de color, la curva con brillo y, si es alto, lo que más ha movido hoy tu cartera (hasta cuatro).' },
+    { d: 'gta', ir: { v: 'cartera', sel: '.gta-top' }, t: 'GTA VI, arriba', x: 'La cuenta atrás está ahora en la cabecera, junto a la luz de En directo, con los días que faltan.' },
+  ] },
   { v: '0.2.2', f: '2026-10-20', h: '16:12', t: 'Tu perfil, tus avisos y cualquier bróker', cosas: [
     { d: 'perfil', ir: { v: 'objetivos', sel: '.pf-grid' }, t: 'Tu perfil, paso a paso', x: 'Si no lo tenías hecho, al entrar te lo pide con una pregunta por pantalla: tu edad, dónde vives, cuándo necesitarás el dinero, cuánto riesgo aguantas y para qué inviertes. Es un minuto, y con eso GrowIA te aconseja a ti. Mientras falte, te lo recuerda arriba en Cartera y con un punto en Objetivos.' },
     { d: 'capturas', ir: { v: 'cartera', sel: '[data-accion="nueva-pos"]' }, t: 'Importa de cualquier bróker o banco', x: 'En «Lo que ya tenía» > Importar de tu bróker: capturas, el PDF de un extracto o del informe fiscal, o los movimientos en CSV o Excel de DEGIRO, Interactive Brokers, ING, Revolut o el que uses. Con un listado de operaciones saca además desde cuándo tienes cada cosa, lo que te costó cada compra, tus ventas con su resultado y los dividendos del año para Fiscalidad.' },
@@ -9932,7 +10529,7 @@ const NOVEDADES = [
     { d: 'pregunta', ir: { v: 'objetivos', sel: '#futTabs' }, t: 'GrowIA te pregunta, bien a la vista', x: 'Cuando GrowIA necesita saber algo de ti para afinar sus consejos, te sale al entrar en una hoja con respuestas de un toque. Con los avisos encendidos, también como notificación.' },
     { d: 'calendario', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'El resumen de hoy', x: 'La primera vez que abres GrowFolio cada día: cómo va tu cartera, lo que dice GrowIA, los mercados, las noticias de lo tuyo y de la bolsa y lo que viene hoy y mañana. Se puede quitar, y lo tienes también en Ajustes.' },
     { d: 'renta', ir: { v: 'impuestos', sel: '.fis-ccaa' }, t: 'Tu comunidad cuenta', x: 'Pon dónde vives, en tu perfil o en Fiscalidad. En País Vasco y Navarra se usa su propia escala del ahorro; en todas ves lo que se paga si tus padres te dan dinero, y en el resumen de hoy, las noticias de tu comunidad que tocan tu bolsillo.' },
-    { d: 'pestanas', ir: { v: 'cartera', sel: '.car-ordenar' }, t: 'Ordena Cartera como quieras', x: 'Abajo del todo en Cartera, «Ordenar Cartera a tu gusto»: arrastra los bloques, quita los que no uses y añade otros, como Tu futuro, Tus metas, Hacienda de este año, las noticias de lo tuyo o lo que más se mueve. Se guarda en tu cartera, igual en todos tus dispositivos.' },
+    { d: 'pestanas', ir: { v: 'cartera', sel: '.car-ordenar-mini' }, t: 'Ordena Cartera como quieras', x: 'Arriba en Cartera, «Personalizar»: arrastra los bloques, quita los que no uses y añade otros, como Tu futuro, Tus metas, Hacienda de este año, las noticias de lo tuyo o lo que más se mueve. Se guarda en tu cartera, igual en todos tus dispositivos.' },
     { d: 'mercados', ir: { v: 'cartera', sel: '#estadoB' }, t: 'Las bolsas, de un vistazo', x: 'Arriba queda solo la luz de En directo. Al pasar el ratón por encima (o al tocarla en el móvil) ves cómo están Madrid, Fráncfort, París, Londres, Nueva York, Tokio y Hong Kong: si están abiertas y a qué hora abren o cierran, en hora de España.' },
     { d: 'buscar', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Lo que metes a mano, con precio', x: 'Si una acción o un fondo no estaba en GrowFolio (como Agios Pharmaceuticals), al meterlo pide su precio y en la siguiente actualización ya tiene precio diario, gráfica y cambio a euros. También se busca por ticker.' },
     { d: 'catalogo', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Más fondos', x: 'Fidelity Japan, Fidelity Pacific ex Japan y Amundi Core MSCI World, que no salían al buscarlos.' },
@@ -10695,6 +11292,29 @@ function gtaFalta() {
   return ms > 0 ? { d: Math.floor(ms / 864e5), h: Math.floor(ms / 36e5) % 24, m: Math.floor(ms / 6e4) % 60, s: Math.floor(ms / 1e3) % 60 } : null;
 }
 const MANDO = SVG('<path d="M7 8.5h10a4.3 4.3 0 0 1 4.3 4.6l-.4 3.4a2.5 2.5 0 0 1-4.4 1.3L15 16H9l-1.5 1.8a2.5 2.5 0 0 1-4.4-1.3l-.4-3.4A4.3 4.3 0 0 1 7 8.5z"/><path d="M8 11.3v3.4M6.3 13h3.4"/><path d="M15.5 12.2h.01M17.5 14h.01" stroke-width="2.4"/>', 1.7);
+/* GTA VI en la cabecera, junto a «En directo»: el mando y los días que faltan, con las letras de neón de la
+   sección de GTA (no las del logo del juego) */
+// que la cabecera quepa sin cortar nada: se prueba de más a menos, y para en cuanto cabe y la luz de En directo se lee entera
+var PASOS_CAB = ['cab-1', 'cab-2', 'cab-3', 'cab-4', 'cab-5'];
+function encajarCabecera() {
+  const top = $('.top'), f = $('.fila-top'); if (!top || !f) return;
+  top.classList.remove(...PASOS_CAB);
+  const aprieta = () => { const e = $('#estado'); return f.scrollWidth > f.clientWidth + 1 || (e && e.scrollWidth > e.clientWidth + 1); };
+  for (const c of PASOS_CAB) { if (!aprieta()) break; top.classList.add(c); }
+}
+var encajarT = 0;
+addEventListener('resize', () => { cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => encajarCabecera());
+
+function pintarGtaTop() {
+  const w = $('#gtaTop'); if (!w) return;
+  if (!gtaActivo()) { w.remove(); return; }
+  fuenteGTA();
+  const f = gtaFalta(), cuenta = !f ? L('¡Ya!', 'Out!') : f.d ? `${f.d}${L('d', 'd')}` : `${f.h}h`;
+  const txt = !f ? L('ya está aquí', 'out now') : f.d ? L(`faltan ${f.d} ${f.d === 1 ? 'día' : 'días'}`, `${f.d} ${f.d === 1 ? 'day' : 'days'} to go`) : L(`faltan ${f.h} horas`, `${f.h} hours to go`);
+  const html = `<button type="button" class="gta-top" data-gta title="GTA VI: ${esc(txt)}" aria-label="GTA VI: ${esc(txt)}"><span class="gta-top-t" data-no-trad><span class="gta-top-g">GTA </span>VI</span><span class="gta-top-d" data-no-trad>${esc(cuenta)}</span></button>`;
+  if (w.innerHTML !== html) w.innerHTML = html;
+}
 function chipGTA() {
   if (!gtaActivo()) return '';
   const f = gtaFalta();
@@ -11231,7 +11851,7 @@ function avisoGTA(seguir) {
       <h2 class="gta-tit">GTA VI</h2>
       <div id="gtaReloj">${relojGTA()}</div>
       <p class="gta-lead">${L(`${f ? 'Sale el 19 de noviembre. Para la espera' : 'Ya ha salido. Para celebrarlo'}, unas cuentas con tu cartera: cuántos GTA VI vale, cuántos Adders podría hacer Rockstar con ella y cuánto llevamos de camino desde GTA V.`, `${f ? 'It’s out on 19 November. While you wait' : 'It’s out. To celebrate'}, your portfolio in numbers: how many copies of GTA VI it’s worth, how many Adders Rockstar could build with it and how far we’ve come since GTA V.`)}</p>
-      <p class="gta-donde">${L('Lo tienes siempre en Cartera, al lado de tu patrimonio.', 'It’s always in Portfolio, next to your net worth.')}</p>
+      <p class="gta-donde">${L('Lo tienes siempre arriba, junto a «En directo», con los días que faltan.', 'It’s always at the top, next to «Live», with the days to go.')}</p>
       <div class="gta-btns"><button type="button" class="gta-b pri" data-ver>${L('Verlo', 'Show me')}</button><button type="button" class="gta-b" data-luego>${L('Luego', 'Later')}</button></div>
     </div>
     ${paisajeGTA()}
@@ -11242,7 +11862,7 @@ function avisoGTA(seguir) {
     if (ver) abrirGTA();
     else {
       if (S.vista !== 'cartera') location.hash = '#cartera';
-      setTimeout(() => { const c = $('.gta-chip'); if (c) { c.scrollIntoView({ block: 'center', behavior: 'smooth' }); c.classList.add('pulsa'); setTimeout(() => c.classList.remove('pulsa'), 5000); } }, 350);
+      setTimeout(() => { const c = $('.gta-top') || $('.gta-chip'); if (c) { c.scrollIntoView({ block: 'center', behavior: 'smooth' }); c.classList.add('pulsa'); setTimeout(() => c.classList.remove('pulsa'), 5000); } }, 350);
     }
     if (seguir) setTimeout(seguir, 600);
   };
@@ -12786,7 +13406,7 @@ async function abrirAsesor(pregunta, enviar) {
         <button class="ib" data-as="ajustes" title="Ajustes de GrowIA" aria-label="Ajustes de GrowIA">${ICONOS.ajustes}</button>
         <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
       <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
-      <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea><button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
+      <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea>${dictadoPosible() ? `<button type="button" class="as-adj as-voz" data-as="voz" title="Dictar la pregunta" aria-label="Dictar la pregunta" aria-pressed="false">${ICONOS.micro}</button>` : ''}<button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
     </section>`;
     fondo.addEventListener('click', (e) => { if (e.target === fondo) cerrarAsesor(); else clicAsesor(e); });
     document.body.appendChild(fondo);
@@ -12811,7 +13431,47 @@ async function abrirAsesor(pregunta, enviar) {
   if (window.innerWidth > 760 && !pie_oculto()) ta.focus();
   function pie_oculto() { return $('#asPie', fondo).hidden; }
 }
+/* Dictar la pregunta en vez de escribirla. En el navegador, con el reconocimiento de voz del propio navegador
+   (Chrome, Edge, Safari); en la app de Android, con el dictado de Google del móvil (su ventanita del micrófono).
+   El texto cae en la caja y lo envías tú, así puedes corregirlo antes. */
+const RecVoz = window.SpeechRecognition || window.webkitSpeechRecognition;
+const appDicta = () => { const a = window.InversionesApp; return a && typeof a.dictar === 'function' ? a : null; };
+const dictadoPosible = () => !!(window.InversionesApp || RecVoz);
+let dictado = null;
+function dictar() {
+  const ta = $('#asTexto'), b = $('[data-as="voz"]'); if (!ta) return;
+  if (dictado) { try { dictado.stop(); } catch (e) {} return; }
+  const base = ta.value.trim();
+  const poner = (t, fin) => { ta.value = (base ? base + ' ' : '') + t; ta.dispatchEvent(new Event('input')); if (fin) ta.focus(); };
+  const oye = (on) => { if (b) { b.classList.toggle('oye', on); b.setAttribute('aria-pressed', String(on)); } };
+  if (window.InversionesApp) {
+    const app = appDicta();
+    if (!app) { toast(L('Para dictar, actualiza la app de Android (Ajustes > App de Android).', 'To dictate, update the Android app (Settings > Android app).'), 5000); return; }
+    window.resultadoDictado = (t, err) => {
+      oye(false);
+      if (t) poner(t, true);
+      else if (err === 'sin reconocimiento') toast(L('Este móvil no tiene el dictado de Google. Escríbelo o instala la app de Google.', "This phone doesn't have Google voice typing. Type it or install the Google app."), 5000);
+      else if (err !== 'cancelado') toast(L('No te he entendido. Prueba otra vez o escríbelo.', "I didn't catch that. Try again or type it."), 4000);
+    };
+    oye(true);
+    try { app.dictar(IDIOMA === 'en' ? 'en-GB' : 'es-ES'); } catch (e) { oye(false); }
+    return;
+  }
+  if (!RecVoz) { toast(L('Este navegador no deja dictar. Prueba con Chrome.', "This browser doesn't support dictation. Try Chrome."), 4000); return; }
+  const r = new RecVoz();
+  r.lang = IDIOMA === 'en' ? 'en-GB' : 'es-ES'; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+  dictado = r; oye(true);
+  r.onresult = (e) => { let t = ''; for (const x of e.results) t += x[0].transcript; poner(t.trim(), false); };
+  r.onerror = (e) => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') toast(L('Falta el permiso del micrófono: acéptalo en el navegador (el candado de la barra de direcciones).', 'Microphone permission is missing: allow it in your browser (the padlock in the address bar).'), 5000);
+    else if (e.error === 'no-speech') toast(L('No te he oído. Toca el micrófono y habla.', "I didn't hear anything. Tap the microphone and speak."), 3500);
+    else if (e.error !== 'aborted') toast(L('No se ha podido dictar. Prueba otra vez o escríbelo.', "Dictation didn't work. Try again or type it."), 3500);
+  };
+  r.onend = () => { dictado = null; oye(false); ta.focus(); };
+  try { r.start(); } catch (e) { dictado = null; oye(false); }
+}
 function cerrarAsesor() {
+  if (dictado) { try { dictado.abort(); } catch (e) {} dictado = null; }
   const f = $('#asesorFondo'); if (!f) return;
   f.remove(); document.body.style.overflow = '';
   const b = $('#bAsesor'); if (b) b.focus({ preventScroll: true });
@@ -12850,6 +13510,7 @@ async function clicAsesor(e) {
   else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }
   else if (a === 'copiar') copiarCartera();
   else if (a === 'recorte') iniciarRecorte();
+  else if (a === 'voz') dictar();
   else if (a === 'quitar-adjunto') { AS.adjunto = null; pintarAdjunto(); }
   else if (a === 'reintentar') {
     let k = AS.conv.length - 1; while (k >= 0 && AS.conv[k].rol !== 'yo') k--;
@@ -13052,6 +13713,10 @@ function arrancar() {
   S.tickAvisos = setInterval(() => { if (S.cartera && document.hidden && avisosCfg().on && !appAvisos()) { try { S.M = calcular(); revisarAvisos(S.M); } catch (e) { console.warn(e); } } }, 120000);
   tickEstado = setInterval(programarParche, 30000);
   setTimeout(bienvenida, 700);
+  // el banco: la vuelta de dar permiso y el saldo del efectivo (al abrir y cada pocas horas)
+  setTimeout(() => vueltaDelBanco().catch((e) => console.warn('banco', e)), 1500);
+  setTimeout(() => { sincronizarBancos(false); avisoCaducaBanco(); }, 9000);
+  clearInterval(S.tickBanco); S.tickBanco = setInterval(() => { if (!document.hidden) sincronizarBancos(false); }, 30 * 60e3);
   // con cuenta: el nombre va también dentro de tu perfil cifrado y los cambios de otros dispositivos llegan solos
   if (PERFIL_CUENTA) {
     nombreEnCuenta();

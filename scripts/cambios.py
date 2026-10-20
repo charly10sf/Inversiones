@@ -15,10 +15,11 @@ import sys
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-CODIGO = ["index.html", "sw.js", "en.json", "scripts", "android", ".github"]
+CODIGO = ["index.html", "sw.js", "en.json", "scripts", "android", "worker", ".github"]
 FUERA = re.compile(r"^(Co-Authored-By|Claude-Session|Signed-off-by):", re.I)
-# cambios que se publicaron un rato y se quitaron para la versión siguiente (no cuentan en la que estaban)
-RESERVADOS = {"c7f439a", "4f9b948"}
+# cambios que se publicaron un rato y se quitaron para la versión siguiente (no cuentan en la que estaban; su cambio va
+# en la versión que los publicó de verdad), y el que los quitó
+RESERVADOS = {"c7f439a", "4f9b948", "92a42b5"}
 
 
 def versiones():
@@ -40,14 +41,22 @@ def commits():
     for bloque in txt.split(sep)[1:]:
         lineas = bloque.strip("\n").split("\n")
         corto, lineas = lineas[0], lineas[1:]
-        if corto in RESERVADOS or re.match(r"^Reservado para la", (lineas[1] if len(lineas) > 1 else "")):
+        if corto in RESERVADOS:
             continue  # se publicó y se quitó para salir en una versión posterior: allí va su cambio
         cuando, asunto = lineas[0], (lineas[1] if len(lineas) > 1 else "").strip()
         asunto = re.sub(r"^(\d+\.\d+\.\d+) \(sin publicar\)", r"\1", asunto)  # lo que se preparaba en una rama antes de publicar
+        # lo que se guardaba en una rama para la versión siguiente («Reservado para la 0.2.3: …») cuenta en esa versión
+        m = re.match(r"^Reservado para la (\d+\.\d+\.\d+): ?", asunto)
+        version = m.group(1) if m else None
+        if m:
+            asunto = asunto[m.end():]
+            asunto = asunto[:1].upper() + asunto[1:]
         detalle = [l.strip().lstrip("-• ").strip() for l in lineas[2:] if l.strip() and not FUERA.match(l.strip())]
         if re.match(r"^Prueba temporal", asunto, re.I):
             continue  # pruebas de las Actions que se quitan enseguida: no son cambios de la app
-        out.append({"cuando": cuando, "asunto": asunto, "detalle": detalle})
+        # «0.2.2: …» es un arreglo de esa versión aunque se publicara después de su hora
+        m = re.match(r"^(\d+\.\d+\.\d+): ", asunto)
+        out.append({"cuando": cuando, "asunto": asunto, "detalle": detalle, "version": version or (m.group(1) if m else None)})
     return out
 
 
@@ -57,7 +66,9 @@ def main():
         sys.exit("No encuentro NOVEDADES en index.html")
     por = {x["v"]: [] for x in vs}
     for c in commits():
-        destino = next((x["v"] for x in vs if c["cuando"] <= f"{x['f']} {x['h']}"), vs[-1]["v"])
+        destino = c.pop("version", None)
+        if destino not in por:
+            destino = next((x["v"] for x in vs if c["cuando"] <= f"{x['f']} {x['h']}"), vs[-1]["v"])
         por[destino].append(c)
     if "--pendiente" in sys.argv:
         t = Path(sys.argv[sys.argv.index("--pendiente") + 1]).read_text(encoding="utf-8").strip().split("\n")

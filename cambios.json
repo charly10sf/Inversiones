@@ -1,19 +1,133 @@
 {
  "versiones": [
   {
-   "v": "0.2.2",
+   "v": "0.2.3",
    "f": "2026-10-20",
-   "h": "16:12",
-   "t": "Tu perfil, tus avisos y cualquier bróker",
+   "h": "20:31",
+   "t": "Cartera nueva y los días sin bolsa",
    "commits": [
     {
-     "cuando": "2026-10-20 17:29",
-     "asunto": "Versión nueva de la web (caché)",
+     "cuando": "2026-10-20 20:23",
+     "asunto": "0.2.3: Cartera nueva, los días sin bolsa en el calendario y el widget con el estilo nuevo",
+     "detalle": [
+      "El patrimonio y su gráfica, en una pieza: la cifra grande y gruesa encima de la curva, la variación del periodo en una pastilla y, debajo, hoy y lo ganado.",
+      "Gráfica nueva: curva suave con brillo, relleno que se desvanece, máximo y mínimo, el punto de ahora latiendo; al pasar el dedo, lo que tenías ese día y lo de después apagado. En 1D se cuenta desde el cierre de ayer.",
+      "Lo que más se mueve abre su ficha; «Personalizar» con su icono y bloques nuevos (Tus cifras y GTA VI).",
+      "Pregúntale por voz: en el navegador, con su reconocimiento de voz; en la app de Android, con el dictado del móvil.",
+      "Calendario: el día entero rayado si cierra la bolsa, medio lleno si es media sesión (con la hora de cierre de cada bolsa) y con el borde a trazos si es festivo con la bolsa abierta, de toda España y de tu comunidad (BOE 2026 y 2027).",
+      "La luz de En directo y el panel de las bolsas cuentan los festivos y las medias sesiones.",
+      "GTA VI arriba, junto a En directo, con «VI» en letra de neón; la cabecera se recoge sola si no cabe.",
+      "El efectivo, también con un extracto del banco (captura, PDF, CSV o Excel).",
+      "Conexión con el banco para el efectivo, en pruebas y de momento solo para el dueño (servidor propio en Cloudflare con Enable Banking, solo lectura).",
+      "Widget de Android con el estilo nuevo: cifra gruesa, hoy en su pastilla, la curva con brillo y hasta cuatro de lo que más se mueve."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 20:07",
+     "asunto": "Novedades de la 0.2.3 (en presentación) y su inglés",
      "detalle": []
     },
     {
-     "cuando": "2026-10-20 17:15",
-     "asunto": "0.2.2: botón «Ordenar» arriba en Cartera, junto al saludo (el de abajo del todo se quedaba escondido)",
+     "cuando": "2026-10-20 20:04",
+     "asunto": "El widget enseña hasta 4 de lo que más ha movido hoy la cartera, en dos columnas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 20:02",
+     "asunto": "El widget con el estilo nuevo del patrimonio",
+     "detalle": [
+      "Cifra grande y gruesa, lo de hoy en una pastilla de color y lo ganado en total a la derecha.",
+      "Curva suave con brillo, relleno dorado que se desvanece y punto de ahora con halo, de lado a lado.",
+      "Fondo oscuro con el halo dorado de Cartera."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 19:55",
+     "asunto": "Publicar el Worker con sus secretos",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 19:47",
+     "asunto": "La dirección del Worker de GrowFolio",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 19:42",
+     "asunto": "El efectivo, también con un extracto del banco",
+     "detalle": [
+      "El importador coge el saldo más reciente de cada cuenta y su fecha, sin sumar movimientos.",
+      "En la revisión se elige a qué plataforma va ese efectivo.",
+      "En Efectivo, «Ponerlo con un extracto del banco» abre el importador."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 19:40",
+     "asunto": "La vuelta del banco espera a que esté lista la sesión de Google",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 19:26",
+     "asunto": "Conexión con el banco para el efectivo (a medias, apagada)",
+     "detalle": [
+      "worker/: el Worker de Cloudflare que habla con Enable Banking (solo lectura de saldos). Comprueba el token de",
+      "Firebase y una lista de emails; no guarda nada. Los secretos los pone la Action, nunca están en el repositorio.",
+      ".github/workflows/worker.yml: publica el Worker si están las claves de Cloudflare.",
+      "En Efectivo, «Conectar con el banco»; a la vuelta, el saldo pasa al efectivo de esa plataforma y se mira cada 4 h.",
+      "Sin la dirección del Worker (WORKER vacío) no sale nada."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 19:17",
+     "asunto": "Arriba, «VI» con la letra de neón en vez del mando",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 19:08",
+     "asunto": "Al pasar el dedo por la gráfica, la cifra sigue en blanco (solo la fecha de arriba va en dorado)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 18:35",
+     "asunto": "Madrid el 24 y el 31 de diciembre de 2027, por confirmar",
+     "detalle": [
+      "BME aún no ha publicado su calendario de 2027 y en 2021, con las mismas fechas, cerró todo el día: no se da por hecha la media sesión. Londres, confirmado (12:30 allí); Euronext, la hora de otros años."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 18:26",
+     "asunto": "La gráfica de Cartera no falla con la cartera vacía",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 18:18",
+     "asunto": "El calendario marca el día entero si no hay bolsa",
+     "detalle": [
+      "Rayado si la bolsa cierra (o «Sin Londres» si solo cierra alguna de las tuyas), medio lleno si es media sesión y con borde a trazos si es festivo pero la bolsa abre.",
+      "Medias sesiones de Madrid, Londres, Euronext y Nueva York con su hora en España; festivos de toda España y de tu comunidad (BOE 2026 y 2027).",
+      "La luz de En directo y el panel de las bolsas tienen en cuenta festivos y medias sesiones."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 18:10",
+     "asunto": "El patrimonio y su gráfica, en una sola pieza",
+     "detalle": [
+      "La cifra grande (más gruesa) va encima de la gráfica, con la variación del periodo en una pastilla y, debajo, Hoy y lo ganado.",
+      "Gráfica nueva: curva suave con brillo, relleno que se desvanece, el punto de ahora latiendo, máximo y mínimo marcados y fechas en hora redonda.",
+      "Al pasar el dedo, la cifra enseña lo que tenías ese día, la fecha sale abajo y lo de después se apaga. En 1D se cuenta desde el cierre de ayer, como «Hoy».",
+      "En el móvil va de lado a lado y los periodos quedan debajo, en una pastilla."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 17:48",
+     "asunto": "GTA VI arriba, junto a En directo, y la cabecera se encaja sola",
+     "detalle": [
+      "El acceso a GTA VI sale en la cabecera con su letra de neón (mando, «GTA VI» y los días que faltan); ya no está en Más ni abajo del todo.",
+      "Si la cabecera no cabe, se quita por orden: aire entre pestañas, el texto de «Avisar de un fallo», el de GTA, el de la luz de En directo y la etiqueta de la versión."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 17:29",
+     "asunto": "Versión nueva de la web (caché)",
      "detalle": []
     },
     {
@@ -24,6 +138,19 @@
     {
      "cuando": "2026-10-20 16:36",
      "asunto": "Action para publicar las reglas de Firestore sola (con el secreto FIREBASE_REGLAS; sin él no hace nada)",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.2.2",
+   "f": "2026-10-20",
+   "h": "16:12",
+   "t": "Tu perfil, tus avisos y cualquier bróker",
+   "commits": [
+    {
+     "cuando": "2026-10-20 17:15",
+     "asunto": "0.2.2: botón «Ordenar» arriba en Cartera, junto al saludo (el de abajo del todo se quedaba escondido)",
      "detalle": []
     },
     {
@@ -348,15 +475,6 @@
      "detalle": [
       "Para que nadie se quede atascado en la pantalla de entrar con una app vieja."
      ]
-    },
-    {
-     "cuando": "2026-10-20 05:13",
-     "asunto": "0.2.0: Google en la app que no se queda colgado y sin barra de desplazamiento en el móvil",
-     "detalle": [
-      "App de Android: «Continuar con Google» usa el selector de cuentas del botón de Google (GetSignInWithGoogleOption)",
-      "y avisa de cada paso; si Google no contesta en 45 s, el botón se suelta y dice en qué paso se quedó.",
-      "En el móvil y en la app ya no sale la barra de desplazamiento a la derecha."
-     ]
     }
    ]
   },
@@ -366,6 +484,15 @@
    "h": "05:03",
    "t": "Tu cartera, ahora en tu cuenta",
    "commits": [
+    {
+     "cuando": "2026-10-20 05:13",
+     "asunto": "0.2.0: Google en la app que no se queda colgado y sin barra de desplazamiento en el móvil",
+     "detalle": [
+      "App de Android: «Continuar con Google» usa el selector de cuentas del botón de Google (GetSignInWithGoogleOption)",
+      "y avisa de cada paso; si Google no contesta en 45 s, el botón se suelta y dice en qué paso se quedó.",
+      "En el móvil y en la app ya no sale la barra de desplazamiento a la derecha."
+     ]
+    },
     {
      "cuando": "2026-10-20 05:00",
      "asunto": "0.2.0: tu cartera en tu cuenta, calendario de lo que viene, GTA VI con tu cartera y la app más pulida - Cuentas con Google o correo (Google nativo en la app de Android); cartera cifrada en tu cuenta y sincronizada al momento entre dispositivos, a prueba de cortes de conexión - Si cambias cosas en dos dispositivos a la vez se juntan (dos compras del mismo valor cuentan las dos); si es lo mismo, pregunta con cuál quedarse - Calendario: resultados y dividendos de lo que tienes y de lo que hay dentro de tus fondos, Fed y BCE, días sin bolsa y tus aportaciones, con los días que faltan - Barra del móvil con Cartera, Pasos, Expertos, Análisis y Más - GTA VI: camino desde GTA V, tu cartera en copias, lo que costó el Adder y música synthwave original - Widget con pastillas de color; acabado más pulido y Cartera más rápida - Arreglado el reparto de Cartera, que salía cambiado desde la 0.1.17, y la fecha para recomprar tras vender con pérdidas cuando hay cambio de hora por medio",

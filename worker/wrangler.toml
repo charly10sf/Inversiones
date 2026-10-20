@@ -1,0 +1,6 @@
+# El Worker de GrowFolio (servidor pequeño para el banco). Lo publica la GitHub Action «Worker» (.github/workflows/worker.yml); los secretos
+# (EB_CLAVE, EB_APP, BANCO_EMAILS, ESTADO) los pone esa Action y nunca están en el repositorio.
+name = "growfolio"
+main = "src/index.js"
+compatibility_date = "2025-06-01"
+workers_dev = true

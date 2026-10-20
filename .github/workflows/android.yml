@@ -80,7 +80,11 @@ jobs:
           cp android/app/build/outputs/apk/release/app-release.apk inversiones.apk
           gh release view app >/dev/null 2>&1 || gh release create app --title "App de Android" --notes "La web de Inversiones como app, con widget para la pantalla de inicio. Descarga inversiones.apk e instálala."
           gh release upload app inversiones.apk --clobber
-          gh release edit app --title "App de Android $VERSION_NAME" || true
+          gh release edit app --title "App de Android $VERSION_NAME" --latest=false || true
+          # y la APK de esta versión en su propio release (vX.Y.Z), que no se borra con las siguientes
+          cp inversiones.apk "growfolio-$VERSION_NAME.apk"
+          gh release view "v$VERSION_NAME" >/dev/null 2>&1 || gh release create "v$VERSION_NAME" --target "$GITHUB_SHA" --title "$VERSION_NAME" --notes "GrowFolio $VERSION_NAME" || true
+          gh release upload "v$VERSION_NAME" "growfolio-$VERSION_NAME.apk" --clobber || echo "::warning::No se ha podido subir la APK al release v$VERSION_NAME"
           printf '{"version": %s, "nombre": "%s", "apk": "https://github.com/%s/releases/download/app/inversiones.apk"}\n' "${{ github.run_number }}" "$VERSION_NAME" "${{ github.repository }}" > app.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
