@@ -390,6 +390,26 @@ button.fila:hover { background: var(--plane); }
 .agc-pie { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 8px; font-size: 12.5px; color: var(--muted); } .agc-pie > span { white-space: nowrap; text-transform: capitalize; }
 .agc-pie em { font-style: normal; font-weight: 700; color: var(--text); background: rgba(255, 255, 255, 0.05); padding: 4px 9px; border-radius: 999px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
 .ag-agenda-in .agc { animation: none; }
+/* 0.2.4: «Próximos» en entradas compactas, una debajo de otra (dos columnas en el ordenador): el resguardo con los
+   días y su anillo, la muesca y, al otro lado, qué es, cuándo y lo que te toca */
+.agc-fila { grid-auto-flow: row; grid-auto-columns: auto; grid-template-columns: minmax(0, 1fr); gap: 8px; overflow: visible; margin: 0; padding: 0; scroll-snap-type: none; }
+@media (min-width: 900px) { .agc-fila { grid-template-columns: repeat(2, minmax(0, 1fr)); } .agc-fila .agc:nth-child(n+7) { display: grid; } }
+.agc { grid-template-columns: 66px minmax(0, 1fr); min-height: 74px; border-radius: 16px; }
+.agc-res { border-radius: 15px 0 0 15px; }
+.agc-res::before, .agc-res::after { right: -6px; width: 11px; height: 11px; }
+.agc-res::before { top: -6px; } .agc-res::after { bottom: -6px; }
+.agc-res svg { width: 50px; height: 50px; }
+.agc-n { font-size: 19px; }
+.agc-n.pal { font-size: 11.5px; }
+.agc-res small { font-size: 9.5px; margin-top: 1px; }
+.agc-c { grid-template-rows: none; align-content: center; gap: 3px; padding: 10px 14px 10px 17px; }
+.agc-cat { width: 100%; font-size: 12px; gap: 5px; }
+.agc-cat svg { width: 13px; height: 13px; }
+.agc-cn { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.agc-cuando { margin-left: auto; padding-left: 8px; flex: none; color: var(--muted); font-weight: 500; text-transform: capitalize; }
+.agc-t { font-size: 15.5px; font-weight: 650; line-height: 1.3; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-line-clamp: unset; }
+.agc-imp { font-size: 12.5px; color: var(--text-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.agc-mas { justify-self: start; font-size: 14px; }
 .ag-mes2 { border: 1px solid var(--line); border-radius: 18px; background: var(--plane); padding: 6px 12px 12px; display: grid; gap: 10px; }
 .ag-mes-b { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 2px; cursor: pointer; font-weight: 650; font-size: 14.5px; }
 .ag-mes-b > span { display: inline-flex; align-items: center; gap: 8px; } .ag-mes-b svg { width: 17px; height: 17px; color: var(--accent); }
@@ -5289,9 +5309,9 @@ function estadoDiaAg(lista) {
 }
 
 /* la pestaña Calendario */
-/* qué entra en cada pestaña: «Para ti» es lo tuyo, lo que más pesa dentro de tus fondos y lo importante del
-   mercado; «Solo lo mío», solo lo de tus propias posiciones, tus aportaciones y tu renta */
-const AG_MODOS = [['tu', 'Para ti', 'For you'], ['mio', 'Solo lo mío', 'Just mine'], ['res', 'Resultados', 'Earnings'], ['div', 'Dividendos', 'Dividends'], ['eco', 'Economía', 'Economy']];
+/* qué entra en cada pestaña (0.2.4, solo dos): «Solo lo mío», lo de tus propias posiciones, tus aportaciones y tu
+   renta; «En general», además lo que más pesa dentro de tus fondos y lo importante del mercado */
+const AG_MODOS = [['mio', 'Solo lo mío', 'Just mine'], ['tu', 'En general', 'Everything']];
 const AG_MIO = new Set(['resultados', 'dividendo', 'cobro', 'aportacion', 'hacienda']);
 const enModo = (e, m) => m === 'tu' || (m === 'mio' ? AG_MIO.has(e.tipo) || !!e.mio : AG_TIPOS[e.tipo][1] === m);
 // el color de cada tarjeta de «Próximos»
@@ -5342,7 +5362,9 @@ function pasadoAg(modo) {
 function vistaAgenda(M) {
   const hoy = hoyIso();
   const todos = agendaLista(M, 120);
-  const modo = AG_MODOS.some(([k]) => k === S.agModo) ? S.agModo : 'tu';
+  if (S.agModo == null) S.agModo = LS.get('inv-agmodo', null);
+  // lo que eligieras la última vez; si no, «Solo lo mío» (o «En general» mientras no tengas nada metido)
+  const modo = AG_MODOS.some(([k]) => k === S.agModo) ? S.agModo : M.filas.length ? 'mio' : 'tu';
   const ev = todos.filter((e) => enModo(e, modo));
   const abiertos = S.agAbiertos || (S.agAbiertos = new Set());
   const cuenta = (tipos) => todos.filter((e) => tipos.includes(e.tipo)).length;
@@ -5353,7 +5375,8 @@ function vistaAgenda(M) {
     cuenta(['banco']) && L(`${cuenta(['banco'])} reuniones de la Fed y el BCE`, `${cuenta(['banco'])} Fed and ECB meetings`),
   ].filter(Boolean);
   // «Próximos»: las tarjetas grandes de lo que viene
-  const prox = ev.filter((e) => e.tipo !== 'fiesta' || diasEntre(hoy, e.d) <= 10).slice(0, 10);
+  const proxTodos = ev.filter((e) => e.tipo !== 'fiesta' || diasEntre(hoy, e.d) <= 10).slice(0, 14);
+  const prox = S.agProxTodo ? proxTodos : proxTodos.slice(0, 6);
   // cada cosa que viene, como una entrada: el resguardo con los días que faltan (y un anillo que se va cerrando según
   // se acerca, sobre un mes) y, al otro lado, qué es, cuándo y lo que te toca a ti
   const tarjeta = (e) => {
@@ -5363,9 +5386,9 @@ function vistaAgenda(M) {
     return `<button type="button" class="agc" style="--c:${col}" data-ag-ir="${esc(e.id)}">
       <span class="agc-res" aria-hidden="true"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" class="f"/><circle cx="22" cy="22" r="19" class="v" pathLength="1" style="stroke-dasharray:${lleno.toFixed(3)} 1"/></svg>
         ${n <= 1 ? `<b class="agc-n pal">${n ? L('Mañana', 'Tmrw') : L('Hoy', 'Today')}</b>` : `<b class="agc-n">${n}</b><small>${L('días', 'days')}</small>`}</span>
-      <span class="agc-c"><span class="agc-cat">${iconoAg(e)}${L(cat[0], cat[1])}</span>
+      <span class="agc-c"><span class="agc-cat">${iconoAg(e)}<span class="agc-cn">${L(cat[0], cat[1])}</span><span class="agc-cuando">${esc(cuando)}${e.est ? ` ${L('(estimada)', '(est.)')}` : ''}</span></span>
         <b class="agc-t">${tituloAg(e)}</b>
-        <span class="agc-pie"><span>${esc(cuando)}${e.est ? ` · ${L('estimada', 'est.')}` : ''}</span>${imp ? `<em>${esc(imp)}</em>` : ''}</span></span></button>`;
+        ${imp ? `<span class="agc-imp">${esc(imp)}</span>` : ''}</span></button>`;
   };
   // el mes, plegado: la semana con puntos; al tocarlo se despliegan las cinco semanas
   const lunes = deIso(hoy); lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
@@ -5433,7 +5456,7 @@ function vistaAgenda(M) {
     <div class="tabs ag-modos" role="group" aria-label="${L('Qué ver', 'Show')}">${AG_MODOS.map(([k, n, en]) => `<button data-agm="${k}" aria-pressed="${modo === k}">${L(n, en)}</button>`).join('')}</div>
     ${modo === 'mio' && !M.filas.length ? `<p class="nota">${L('Cuando metas tus acciones y fondos, aquí saldrán sus resultados y dividendos con lo que te toca en euros.', 'Once you add your shares and funds, their earnings and dividends will show up here, with what you get in euros.')}</p>` : ''}
     <section class="ag2-sec"><h2>${L('Próximos', 'Coming up')}</h2>
-      ${prox.length ? `<div class="agc-fila">${prox.map((e) => tarjeta(e)).join('')}</div>` : `<div class="vacio">${L('Nada a la vista en esta pestaña.', 'Nothing coming up in this tab.')}</div>`}</section>
+      ${prox.length ? `<div class="agc-fila">${prox.map((e) => tarjeta(e)).join('')}</div>${proxTodos.length > 6 ? `<button type="button" class="enlace agc-mas" data-ag-prox>${S.agProxTodo ? L('Ver menos', 'Show less') : L(`Ver ${proxTodos.length - 6} más`, `Show ${proxTodos.length - 6} more`)}</button>` : ''}` : `<div class="vacio">${L('Nada a la vista en esta pestaña.', 'Nothing coming up in this tab.')}</div>`}</section>
     <section class="ag-mes2${mesAbierto ? ' on' : ''}">
       <button type="button" class="ag-mes-b" data-ag-mes aria-expanded="${mesAbierto}"><span>${ICONOS.agenda}${mesAbierto ? L('El calendario', 'The calendar') : L('Esta semana', 'This week')}</span><span class="ag-mes-v">${mesAbierto ? L('Plegar', 'Collapse') : L('Ver el mes', 'See the month')}<i aria-hidden="true"></i></span></button>
       ${mesAbierto ? `<div class="ag-nav"><button type="button" class="ib" data-ag-mesn="-1" aria-label="${L('Mes anterior', 'Previous month')}"${mesN ? '' : ' disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -5465,7 +5488,8 @@ function vistaAgenda(M) {
 /* abrir y cerrar cada fecha, filtrar y saltar a un día */
 document.addEventListener('click', (e) => {
   const f = e.target.closest('[data-agm]');
-  if (f) { S.agModo = f.dataset.agm; pintar(); return; }
+  if (f) { S.agModo = f.dataset.agm; LS.set('inv-agmodo', S.agModo); pintar(); return; }
+  if (e.target.closest('[data-ag-prox]')) { S.agProxTodo = !S.agProxTodo; pintar(); return; }
   if (e.target.closest('[data-ag-mes]')) { S.agMes = !S.agMes; if (!S.agMes) { S.agMesN = 0; S.agDia = null; } pintar(); return; }
   const mn = e.target.closest('[data-ag-mesn]');
   if (mn) { if (mn.disabled) return; S.agMesN = Math.max(0, Math.min(14, (S.agMesN || 0) + +mn.dataset.agMesn)); S.agDia = null; pintar(); return; }
