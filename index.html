@@ -78,7 +78,29 @@ a:hover { text-decoration: underline; }
 .nav a { color: var(--text-2); padding: 7px 12px; border-radius: 9px; font-size: 14.5px; text-decoration: none; white-space: nowrap; }
 .nav a:hover { color: var(--text); background: var(--plane); }
 .nav a[aria-current="page"] { color: var(--accent); background: var(--accent-bg); }
-.estado { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; margin-left: auto; }
+.estado { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; white-space: nowrap; min-width: 0; }
+.estado.cerr::before { background: var(--accent); opacity: 0.7; }
+.estado-w { position: relative; margin-left: auto; flex: none; }
+.estado-b { display: inline-flex; align-items: center; height: 34px; padding: 0 10px; border: 0; border-radius: 999px; background: none; cursor: pointer; }
+.estado-b:hover, .estado-w.abierto .estado-b { background: var(--plane-2); }
+.estado-panel { display: none; position: absolute; z-index: 40; top: calc(100% + 6px); right: 0; width: 330px; max-width: calc(100vw - 24px); padding: 14px 14px 12px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--plane-2); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6); }
+@media (hover: hover) { .estado-w:hover .estado-panel { display: block; } }
+.estado-w.abierto .estado-panel { display: block; }
+.estado-panel::before { content: ''; position: absolute; left: 0; right: 0; top: -8px; height: 8px; }
+@media (max-width: 600px) { .estado-panel { position: fixed; top: calc(58px + env(safe-area-inset-top)); left: 12px; right: 12px; width: auto; max-width: none; } }
+.bp-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.bp-cab b { font-size: 14px; }
+.bp-cab small { color: var(--muted); font-size: 12px; }
+.bp-l { list-style: none; margin: 0; padding: 0; display: grid; }
+.bp-l li { display: grid; grid-template-columns: 8px minmax(0, 1fr); column-gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); }
+.bp-l li:first-child { border-top: 0; }
+.bp-led { width: 7px; height: 7px; border-radius: 50%; background: var(--line-2); grid-row: span 2; }
+.bp-l li.on .bp-led { background: var(--up); box-shadow: 0 0 0 3px rgba(79, 201, 149, 0.18); }
+.bp-n { font-size: 13.5px; font-weight: 600; color: var(--text); display: flex; gap: 8px; align-items: baseline; }
+.bp-n em { font-style: normal; font-weight: 500; font-size: 11px; color: var(--accent); }
+.bp-t { font-size: 12.5px; color: var(--muted); }
+.bp-l li.on .bp-t { color: var(--up); }
+.bp-pie { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .estado::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
 .estado.on::before { background: var(--up); box-shadow: 0 0 0 3px rgba(79, 201, 149, 0.18); animation: latido 2.4s ease-in-out infinite; }
 @keyframes latido { 50% { box-shadow: 0 0 0 6px rgba(79, 201, 149, 0); } }
@@ -3323,15 +3345,55 @@ function bolsaAbierta(b) {
     return m >= b.abre && m < b.cierra;
   } catch (e) { return false; }
 }
+/* arriba, solo la luz y dos palabras (antes una frase que se cortaba); el detalle de cada bolsa, al pasar el ratón
+   o al tocarlo */
 function estadoDirecto() {
   const conectado = LIVE.yahoo === 'ok' || LIVE.bitvavo === 'ok';
-  // en el móvil no cabe la frase entera al lado de los botones: la corta
-  const corto = window.matchMedia && matchMedia('(max-width: 600px)').matches;
   const hace = S.precios && S.precios.generado ? haceCuanto(S.precios.generado) : '';
-  if (!conectado) return { txt: hace ? (corto ? hace.replace(/^./, (c) => c.toUpperCase()) : 'Precios de ' + hace) : 'Sin conexión', cls: 'off' };
-  const abiertas = BOLSAS.filter(bolsaAbierta).map((b) => b.nombre);
-  if (abiertas.length) return { txt: corto ? 'En directo' : `En directo, ${abiertas.length > 1 ? 'bolsas de ' : 'bolsa de '}${abiertas.join(' y ')} ${abiertas.length > 1 ? 'abiertas' : 'abierta'}`, cls: 'on' };
-  return { txt: corto ? 'Bolsas cerradas' : LIVE.bitvavo === 'ok' ? 'Bolsas cerradas, Bitcoin en directo' : 'En directo, bolsas cerradas', cls: 'on' };
+  if (!conectado) return { txt: hace ? hace.replace(/^./, (c) => c.toUpperCase()) : 'Sin conexión', cls: 'off' };
+  if (BOLSAS.some(bolsaAbierta)) return { txt: 'En directo', cls: 'on' };
+  return { txt: 'Bolsas cerradas', cls: 'cerr' };
+}
+// las principales bolsas, con su horario (y sus festivos, los que hay apuntados) en hora de España
+const BOLSAS_MUNDO = [
+  { k: 'mad', n: 'Madrid', tz: 'Europe/Madrid', abre: 540, cierra: 1050 },
+  { k: 'fra', n: 'Fráncfort', tz: 'Europe/Berlin', abre: 540, cierra: 1050 },
+  { k: 'eur', n: 'París y Ámsterdam', tz: 'Europe/Paris', abre: 540, cierra: 1050 },
+  { k: 'lon', n: 'Londres', tz: 'Europe/London', abre: 480, cierra: 990 },
+  { k: 'us', n: 'Nueva York', tz: 'America/New_York', abre: 570, cierra: 960 },
+  { k: 'tok', n: 'Tokio', tz: 'Asia/Tokyo', abre: 540, cierra: 930 },
+  { k: 'hk', n: 'Hong Kong', tz: 'Asia/Hong_Kong', abre: 570, cierra: 960 },
+];
+function partesTz(tz, d = new Date()) {
+  const p = new Intl.DateTimeFormat('en-CA', { timeZone: tz, year: 'numeric', month: '2-digit', day: '2-digit', weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' }).formatToParts(d);
+  const g = (t) => (p.find((x) => x.type === t) || {}).value;
+  return { fecha: `${g('year')}-${g('month')}-${g('day')}`, dow: g('weekday'), min: +g('hour') * 60 + +g('minute') };
+}
+function estadoBolsa(b) {
+  try {
+    const t = partesTz(b.tz), fest = (d) => AG_CIERRES.find(([x, donde]) => x === d && donde.split(' ').includes(b.k));
+    const hm = (d, m) => horaEspana(d, b.tz, Math.floor(m / 60), m % 60) || '';
+    const finde = (d) => { const x = new Date(d + 'T12:00:00Z').getUTCDay(); return x === 0 || x === 6; };
+    const hoyF = fest(t.fecha);
+    if (!finde(t.fecha) && !hoyF && t.min >= b.abre && t.min < b.cierra) return { on: true, txt: `abierta, cierra a las ${hm(t.fecha, b.cierra)}` };
+    for (let k = 0; k < 10; k++) {
+      const x = new Date(t.fecha + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + k);
+      const d = x.toISOString().slice(0, 10);
+      if (finde(d) || fest(d) || (k === 0 && t.min >= b.abre)) continue;
+      const cuando = k === 0 ? 'hoy' : k === 1 ? 'mañana' : `el ${['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'][x.getUTCDay()]}`;
+      return { on: false, txt: `${hoyF ? `cerrada por ${hoyF[2]}` : 'cerrada'}, abre ${cuando} a las ${hm(d, b.abre)}` };
+    }
+  } catch (e) {}
+  return { on: false, txt: 'cerrada' };
+}
+function htmlBolsasPanel() {
+  const conectado = LIVE.yahoo === 'ok' || LIVE.bitvavo === 'ok';
+  const hace = S.precios && S.precios.generado ? haceCuanto(S.precios.generado) : '';
+  const tuyas = new Set(((S.M && S.M.filas) || []).map((f) => bolsaDe(f.inst)).filter(Boolean));
+  return `<div class="bp-cab"><b>Las bolsas ahora</b><small>en hora de España</small></div>
+    <ul class="bp-l">${BOLSAS_MUNDO.map((b) => { const e = estadoBolsa(b); return `<li class="${e.on ? 'on' : ''}"><i class="bp-led" aria-hidden="true"></i><span class="bp-n">${esc(b.n)}${tuyas.has(b.k) ? '<em>tienes algo</em>' : ''}</span><span class="bp-t">${esc(e.txt)}</span></li>`; }).join('')}
+      <li class="${LIVE.bitvavo === 'ok' ? 'on' : ''}"><i class="bp-led" aria-hidden="true"></i><span class="bp-n">Bitcoin y cripto</span><span class="bp-t">abiertas siempre${LIVE.bitvavo === 'ok' ? ', en directo' : ''}</span></li></ul>
+    <p class="bp-pie">${conectado ? 'Precios en directo de Yahoo Finance y Bitvavo mientras las bolsas están abiertas.' : `Ahora no llega el directo: los precios son de ${esc(hace || 'la última actualización')}.`}</p>`;
 }
 /* =====================================================================
    Cálculos
@@ -3901,7 +3963,7 @@ function montar() {
   <header class="top"><div class="wrap fila-top">
     <div class="marca"><img src="favicon.svg" alt=""><span>GrowFolio</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t, c]) => `<a href="#${k}" data-ir="${k}"${c && c !== t ? ' class="corto"' : ''}><span class="nl">${t}</span>${c && c !== t ? `<span class="nc">${c}</span>` : ''}</a>`).join('')}</nav>
-    <span id="estado"></span>
+    <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <div class="acciones">
       <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowIA por tu cartera" aria-label="Pregúntale a GrowIA">${ICONOS.chispa}<span>Pregúntale</span></button>
       <button class="ib" id="bOcultar" data-accion="ocultar"></button>
@@ -3918,6 +3980,14 @@ function montar() {
   const tk = $('#ticker');
   tk.onclick = () => { location.hash = '#mercados'; };
   tk.onkeydown = (e) => { if (e.key === 'Enter') location.hash = '#mercados'; };
+  // la luz de arriba: al pasar el ratón (o tocarla) se despliegan las bolsas
+  const ew = $('#estadoW'), eb = $('#estadoB'), ep = $('#estadoPanel');
+  const rellena = () => { ep.innerHTML = htmlBolsasPanel(); };
+  const abre = (si) => { ew.classList.toggle('abierto', si); eb.setAttribute('aria-expanded', String(si)); if (si) rellena(); };
+  ew.addEventListener('mouseenter', rellena);
+  eb.addEventListener('click', () => abre(!ew.classList.contains('abierto')));
+  document.addEventListener('click', (e) => { if (ew.classList.contains('abierto') && !ew.contains(e.target)) abre(false); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ew.classList.contains('abierto')) { abre(false); eb.focus(); } });
 }
 
 /* =====================================================================
