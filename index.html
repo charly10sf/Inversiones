@@ -271,6 +271,7 @@ button.fila:hover { background: var(--plane); }
 .agenda .dia { font-family: var(--fc); text-align: center; line-height: 1.1; color: var(--text-2); }
 .agenda .dia b { font-size: 20px; font-weight: 500; color: var(--text); }
 .agenda .r { font-variant-numeric: tabular-nums; }
+.rh-mas { margin-left: 10px; font-size: 13px; font-weight: 500; color: var(--accent); }
 
 /* ---------- calendario: cada tipo de fecha con su color ---------- */
 .t-resultados, .t-fondo { --ag: #5b9cf0; }
@@ -4173,14 +4174,6 @@ function filaExperto(f, ia, vIA = {}) {
   </article>`;
 }
 
-function htmlFechasExpertos(M, ia) {
-  const hoy = hoyIso();
-  const ev = eventos(M, 60).filter((e) => e.tipo !== 'aportacion').map((e) => ({ d: e.d, html: `<b>${esc(e.t)}</b><span>${esc(e.s)}</span>` }));
-  for (const e of (ia && ia.calendario) || []) if (e.d >= hoy && diasEntre(hoy, e.d) <= 60 && !ev.some((x) => x.d === e.d)) ev.push({ d: e.d, html: `<b>${rellenarIA(e.t, {})}</b>` });
-  if (!ev.length) return '';
-  return `<section aria-labelledby="hFechasE"><div class="sec-cab"><h2 id="hFechasE">Lo que viene</h2><span class="k">próximos dos meses</span></div>
-    <ul class="lista agenda">${ev.sort((a, b) => (a.d < b.d ? -1 : 1)).slice(0, 7).map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><span class="k">${MESES[d.getMonth()]}</span></div><div>${e.html}</div><span></span></li>`; }).join('')}</ul></section>`;
-}
 /* Expertos va en tres pestañas: el resumen (qué hacer), el detalle de cada posición y las ideas de compra */
 const EXPERTOS = [['posiciones', 'Tus posiciones'], ['ideas', 'Ideas de compra']];
 const ordenSenales = (M) => [...M.filas].sort((a, b) => ORDEN_SENAL.indexOf(a.senal.nivel) - ORDEN_SENAL.indexOf(b.senal.nivel) || b.valor - a.valor);
@@ -4903,7 +4896,7 @@ function htmlRuta(M) {
           ${tareas.length ? `<ol class="tareas">${tareas.map((x) => htmlTarea(x, ++n, x === primero)).join('')}</ol>` : `<div class="ruta-vacio">Nada que hacer tú${k === 'mes' ? ' este mes' : ' en este plazo'}.</div>`}
         </div>
         ${lado ? `<div class="rlado">
-          ${fechas.length ? `<div class="rbloque"><h3 class="rh">Fechas que vigilar</h3><ul class="rfechas">${fechas.map(htmlFechaRuta).join('')}</ul></div>` : ''}
+          ${fechas.length ? `<div class="rbloque"><h3 class="rh">Fechas que vigilar <a class="rh-mas" href="#agenda">Ver el calendario</a></h3><ul class="rfechas">${fechas.map(htmlFechaRuta).join('')}</ul></div>` : ''}
           ${solos.length ? `<div class="rbloque"><h3 class="rh">Va solo<span class="k">no tienes que hacer nada</span></h3><ul class="rsolos">${solos.map(htmlSoloRuta).join('')}</ul></div>` : ''}
         </div>` : ''}
       </div>
@@ -7330,10 +7323,10 @@ const ILUS = {
 };
 const INTRO = [
   { il: 'logo', t: 'Tu dinero, creciendo', x: 'Todas tus inversiones en un sitio: fondos, acciones, ETF, oro y cripto de MyInvestor, Trade Republic, Bitvavo o el bróker que uses, con los precios en directo.' },
-  { il: 'pasos', t: 'Qué hacer y cuándo', x: 'Cada mes te dice qué toca: vender, comprar, aportar, vigilar unos resultados… Con el porqué, el cómo y lo que pagarás a Hacienda.' },
+  { il: 'pasos', t: 'Qué hacer y cuándo', x: 'Cada mes te dice qué toca: vender, comprar, aportar, vigilar unos resultados… Con el porqué, el cómo y lo que pagarás a Hacienda. Y un calendario con lo que viene para lo que tienes.' },
   { il: 'ia', t: 'Una IA que te conoce', x: 'Lee las noticias de todo el mundo y analiza tu cartera según tu edad, tus metas y el riesgo que aguantas. Si le falta algo de ti, te lo pregunta.' },
   { il: 'mundo', t: 'Ideas y mercados', x: 'Unas 840 empresas contrastadas con siete señales, y qué significa para ti cada movimiento de las bolsas, los tipos o el petróleo.' },
-  { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera va cifrada con tu contraseña y se queda en tu dispositivo. Nadie más la ve, ni quien te pasó GrowFolio.' },
+  { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera se cifra con tu contraseña antes de guardarse en tu cuenta. La ves en el móvil, en el ordenador y en la app, y nadie más puede leerla: ni GrowFolio ni Google.' },
 ];
 function pantallaIntro(seguir) {
   const nuevo = !S.enc;

@@ -1320,7 +1320,9 @@ def main(ruta_inst, dir_anterior, dir_salida):
             traceback.print_exc()
             diag = {"fecha": ahora(), "errores": [str(e)[:300]]}
             errores.append(f"descubrir: {e}")
-    completo = previos and "v0" in "".join(json.dumps(x) for x in previos[:20]) and hace_menos_de(prev_radar.get("generado") or "", HORAS_RADAR) and not nuevo_descubrir
+    # sin las fechas de resultados y dividendos (radar de antes de la 0.2), se renueva ya en vez de esperar 3 horas
+    con_fechas = any(("rd" in x or "xd" in x) for x in previos[:300])
+    completo = previos and "v0" in "".join(json.dumps(x) for x in previos[:20]) and con_fechas and hace_menos_de(prev_radar.get("generado") or "", HORAS_RADAR) and not nuevo_descubrir
     radar_sal = dict(prev_radar) if completo else None
     if not completo:
         try:
