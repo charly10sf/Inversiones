@@ -232,11 +232,9 @@ a:hover { text-decoration: underline; }
 .cabecera { display: grid; gap: 32px; margin-bottom: 52px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 1180px) { .cabecera { grid-template-columns: minmax(360px, 440px) minmax(0, 1fr); gap: 56px; align-items: start; } }
 .hero-lbl { color: var(--text-2); font-size: 14px; }
-.hero-num { font-weight: 200; font-size: clamp(46px, 9vw, 84px); line-height: 1; letter-spacing: -0.045em; margin: 8px 0 16px; white-space: nowrap; font-variant-numeric: tabular-nums; }
-.hero-num span.dec { font-size: 0.48em; letter-spacing: -0.02em; color: var(--text-2); font-weight: 300; padding: 0 2px; margin: 0; }
+.hero-num { font-weight: 700; font-size: clamp(50px, 13vw, 92px); line-height: 0.95; letter-spacing: -0.055em; margin: 6px 0 14px; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--text); }
+.hero-num span.dec { font-size: 0.42em; letter-spacing: -0.015em; color: var(--text-2); font-weight: 600; padding: 0 2px 0 3px; margin: 0; }
 .hero-num span { padding: 0 4px; margin: 0 -4px; }
-.hero-sub { display: grid; gap: 4px; font-size: 16px; }
-.hero-sub .k { margin-left: 6px; }
 .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
 .kpi { display: grid; gap: 2px; min-width: 0; }
 .kpi .k { font-size: 13px; }
@@ -1346,12 +1344,59 @@ table td.txt { white-space: normal; min-width: 260px; }
 }
 @media (min-width: 1500px) { .car-fila.par-der { grid-template-columns: minmax(0, 1fr) 440px; gap: 64px; } }
 .car-pie { display: flex; justify-content: center; }
-.hero-cuerpo { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
-.hero-graf { min-width: 0; }
-.hero-graf .nota { margin-top: 8px; }
+/* el patrimonio y su gráfica, en una sola pieza: la cifra grande arriba y la curva subiendo por debajo */
+.hero-panel { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); grid-template-areas: "cifra" "graf" "rangos"; padding: 22px 0 16px; border: 1px solid var(--line); border-radius: 28px; overflow: hidden;
+  background: radial-gradient(70% 90% at 0% 0%, rgba(226, 180, 95, 0.11), rgba(226, 180, 95, 0) 70%), linear-gradient(180deg, #0D0C0A, #050504); }
+.hero-cifra { grid-area: cifra; position: relative; z-index: 2; padding: 0 28px; pointer-events: none; min-width: 0; }
+.hero-lbl { font-size: 13.5px; transition: color 0.15s ease; }
 .hero-num.mira { color: var(--accent); }
-#heroLbl { transition: color 0.15s ease; }
-@media (min-width: 900px) { .hero-cuerpo { grid-template-columns: minmax(260px, 340px) minmax(0, 1fr); gap: 40px; align-items: start; } .hero-izq { padding-top: 6px; } }
+.hero-var { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-height: 30px; }
+.hv-p { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 10px; border-radius: 999px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; white-space: nowrap; }
+.hv-p.up { background: var(--up-bg); color: var(--up); }
+.hv-p.down { background: var(--down-bg); color: var(--down); }
+.hv-p.flat { background: var(--plane-2); color: var(--text-2); }
+.hv-p i { font-style: normal; font-size: 10px; }
+.hv-p em { font-style: normal; font-weight: 600; opacity: 0.8; }
+.hero-var .k { font-size: 13.5px; }
+.hero-sub { display: flex; flex-wrap: wrap; gap: 10px 30px; margin-top: 16px; }
+.hero-sub .hs { display: grid; gap: 1px; }
+.hero-sub .hs .k { font-size: 12px; }
+.hero-sub .hs [data-b] { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.hero-rangos { grid-area: rangos; justify-self: stretch; display: flex; margin: 6px 16px 0; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line); }
+.hero-rangos button { flex: 1 1 0; min-width: 0; padding: 6px 4px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.hero-rangos button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); }
+.hero-panel > .chart { grid-area: graf; margin-top: -34px; z-index: 1; min-width: 0; }
+.hero-bajo { display: grid; gap: 14px; margin-top: 16px; }
+.hero-bajo .leyenda-graf { margin-top: 0; align-items: center; }
+.hero-bajo .nota { margin: 0; }
+@media (min-width: 760px) {
+  .hero-panel { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "cifra rangos" "graf graf"; padding: 26px 0 6px; }
+  .hero-rangos { align-self: start; justify-self: end; margin: 2px 24px 0 0; }
+  .hero-rangos button { flex: none; padding: 6px 11px; }
+  .hero-panel > .chart { margin-top: -48px; }
+}
+@media (max-width: 759px) {
+  /* en el móvil, la pieza va de lado a lado, sin marco */
+  .hero-panel { margin: 0 calc(-1 * var(--gutter)); border: 0; border-radius: 0; padding-top: 6px; background: none; overflow: visible; }
+  .car-patrimonio::before { content: ''; position: absolute; z-index: -1; left: -30%; top: 10px; width: 130%; height: 340px; background: radial-gradient(closest-side, rgba(226, 180, 95, 0.12), rgba(226, 180, 95, 0)); pointer-events: none; }
+  .hero-cifra { padding: 0 var(--gutter); }
+}
+/* la gráfica grande: curva con brillo, el punto de ahora latiendo, máximo y mínimo, y la fecha abajo al pasar el dedo */
+.gh { touch-action: pan-y; }
+.gh svg { overflow: hidden; }
+.gh-eje, .gh-ext text { font-size: 11px; fill: var(--muted); font-variant-numeric: tabular-nums; }
+.gh-ext text { fill: var(--text-2); font-weight: 600; }
+.gh-eje, .gh-ext { transition: opacity 0.15s ease; }
+.gh svg.mirando .gh-eje, .gh svg.mirando .gh-ext { opacity: 0; }
+.gh-fecha { position: absolute; bottom: 2px; transform: translateX(-50%); padding: 3px 10px; border-radius: 999px; background: var(--plane-3); border: 1px solid var(--line-2); color: var(--text); font-size: 12px; font-weight: 600; white-space: nowrap; pointer-events: none; z-index: 3; }
+.gh-fecha small { color: var(--text-2); font-weight: 500; font-size: 11.5px; margin-left: 6px; }
+.gh-pulso { transform-box: fill-box; transform-origin: center; animation: ghLate 2.6s ease-out infinite; }
+@keyframes ghLate { from { transform: scale(1); opacity: 0.55; } to { transform: scale(3.8); opacity: 0; } }
+.gh svg.entra .gh-trazo { stroke-dasharray: var(--l); stroke-dashoffset: var(--l); animation: ghTraza 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) forwards; }
+.gh svg.entra .gh-area, .gh svg.entra .gh-ext, .gh svg.entra .gh-fin { opacity: 0; animation: ghAparece 0.5s 0.55s ease forwards; }
+@keyframes ghTraza { to { stroke-dashoffset: 0; } }
+@keyframes ghAparece { to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) { .gh-pulso { animation: none; opacity: 0; } .gh svg.entra .gh-trazo, .gh svg.entra .gh-area, .gh svg.entra .gh-ext, .gh svg.entra .gh-fin { animation: none; stroke-dasharray: none; opacity: 1; } }
 button.mv-c { border: 0; cursor: pointer; font-family: inherit; line-height: inherit; }
 .movers > span.mv-l { display: flex; flex-wrap: wrap; gap: 6px; }
 button.mv-c:hover { filter: brightness(1.15); }
@@ -1359,7 +1404,7 @@ button.mv-c:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 .car-cifras .kpis { margin-top: 0; padding-top: 0; border-top: 0; }
 .car-gta { display: grid; gap: 8px; justify-items: start; }
 .car-gta .gta-chip { margin-left: 0; }
-.hero-top { display: flex; align-items: center; gap: 10px; min-height: 30px; margin-bottom: 4px; }
+.hero-top { display: flex; align-items: center; gap: 10px; min-height: 30px; margin-bottom: 14px; }
 .hero-top .hero-hola { margin: 0; }
 .car-ordenar-mini { margin-left: auto; min-height: 30px; padding: 0 11px; gap: 5px; font-size: 13px; color: var(--text-2); }
 .car-ordenar-mini svg { width: 14px; height: 14px; }
@@ -2749,10 +2794,7 @@ p, .nota, .ag-det p, li > span { text-wrap: pretty; }
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -14px rgba(0, 0, 0, 0.55);
 }
 .hoja { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 -12px 40px rgba(0, 0, 0, 0.45); }
-/* tu patrimonio, con un halo dorado muy tenue detrás */
 .car-patrimonio { position: relative; isolation: isolate; }
-.car-patrimonio::before { content: ''; position: absolute; z-index: -1; left: -12%; top: -30px; width: min(620px, 110%); height: 300px; background: radial-gradient(closest-side, rgba(226, 180, 95, 0.11), rgba(226, 180, 95, 0) 100%); pointer-events: none; }
-.hero-num { font-weight: 220; }
 /* la cabecera fija gana una línea fina al bajar */
 .top { transition: box-shadow 0.25s ease; }
 .top.bajado { box-shadow: 0 1px 0 var(--line), 0 10px 30px -18px rgba(0, 0, 0, 0.8); }
@@ -4491,21 +4533,24 @@ function htmlBloqueCar(k, M) {
     if (k === 'patrimonio') {
       return `<section class="car-patrimonio car-hero" aria-label="Patrimonio">
       <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Cartera: qué sale y en qué orden" aria-label="Personalizar Cartera">${ICONOS.ordenar}<span>Personalizar</span></button></div>
-      <div class="hero-cuerpo">
-        <div class="hero-izq">
-          <div class="hero-fila"><div class="hero-lbl" id="heroLbl">Patrimonio</div></div>
-          <div class="hero-num" id="heroNum" aria-label="Patrimonio">${B('totalE')}${B('totalD', 'dec')}</div>
-          <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">ganado desde que compraste</span></div><div class="movers">${B('movers')}</div></div>
-          ${htmlPreguntasIA(true)}
+      <div class="hero-panel">
+        <div class="hero-cifra">
+          <div class="hero-lbl" id="heroLbl">${L('Patrimonio', 'Net worth')}</div>
+          <div class="hero-num" id="heroNum" aria-label="${L('Patrimonio', 'Net worth')}">${B('totalE')}${B('totalD', 'dec')}</div>
+          <div class="hero-var" id="evoCab" aria-live="off"></div>
+          <div class="hero-sub">
+            <div class="hs"><span class="k">${L('Hoy', 'Today')}</span>${B('dia')}</div>
+            <div class="hs"><span class="k">${L('Ganado desde que compraste', 'Gained since you bought')}</span>${B('pl')}</div>
+          </div>
         </div>
-        <div class="hero-graf">
-          <div class="evo-cab"><div class="datos" id="evoCab"></div>
-            <div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div></div>
-          <div class="chart" id="grafEvo"></div>
-          <div class="leyenda-graf"><span><i style="border-color:var(--accent)"></i>Tu cartera</span>
-            <label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> Comparar con el S&P 500</label>${S.comparar ? `<span><i class="disc" style="border-color:var(--text-2)"></i>El mismo dinero en el S&P 500</span>` : ''}</div>
-          <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste». Pasa el dedo por la gráfica para ver cuánto tenías cada día.</p>
-        </div>
+        <div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div>
+        <div class="chart gh" id="grafEvo"></div>
+      </div>
+      <div class="hero-bajo">
+        <div class="movers">${B('movers')}</div>
+        ${htmlPreguntasIA(true)}
+        <div class="leyenda-graf"><label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> ${L('Comparar con el S&P 500', 'Compare with the S&P 500')}</label>${S.comparar ? `<span><i style="border-color:var(--accent)"></i>${L('Tu cartera', 'Your portfolio')}</span><span><i class="disc" style="border-color:var(--text-2)"></i>${L('El mismo dinero en el S&P 500', 'The same money in the S&P 500')}</span>` : ''}</div>
+        <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste». Pasa el dedo por la gráfica para ver cuánto tenías cada día.</p>
       </div>
     </section>`;
     }
@@ -6447,6 +6492,153 @@ function grafLinea(cont, series, opt = {}) {
   svg.addEventListener('blur', ocultar);
 }
 
+/* una curva suave que pasa por todos los puntos sin inventarse picos (Fritsch-Carlson: monótona entre punto y punto) */
+function curvaSuave(P) {
+  const n = P.length, f = (v) => v.toFixed(1);
+  if (n < 3) return 'M' + P.map(([a, b]) => `${f(a)},${f(b)}`).join('L');
+  const dx = [], m = [];
+  for (let i = 0; i < n - 1; i++) { dx[i] = P[i + 1][0] - P[i][0]; m[i] = dx[i] ? (P[i + 1][1] - P[i][1]) / dx[i] : 0; }
+  const t = [m[0]];
+  for (let i = 1; i < n - 1; i++) t[i] = m[i - 1] * m[i] <= 0 ? 0 : (m[i - 1] + m[i]) / 2;
+  t[n - 1] = m[n - 2];
+  for (let i = 0; i < n - 1; i++) {
+    if (!m[i]) { t[i] = 0; t[i + 1] = 0; continue; }
+    const a = t[i] / m[i], b = t[i + 1] / m[i], h = a * a + b * b;
+    if (h > 9) { const k = 3 / Math.sqrt(h); t[i] = k * a * m[i]; t[i + 1] = k * b * m[i]; }
+  }
+  let d = `M${f(P[0][0])},${f(P[0][1])}`;
+  for (let i = 0; i < n - 1; i++) { const h = dx[i] / 3; d += `C${f(P[i][0] + h)},${f(P[i][1] + t[i] * h)} ${f(P[i + 1][0] - h)},${f(P[i + 1][1] - t[i + 1] * h)} ${f(P[i + 1][0])},${f(P[i + 1][1])}`; }
+  return d;
+}
+
+/* la gráfica grande de Cartera: la curva con brillo y un relleno que se desvanece, el punto de ahora latiendo, el máximo
+   y el mínimo marcados, y sin eje de cifras (la cifra es la de arriba). Al pasar el dedo, lo de después se apaga, la
+   fecha sale abajo y opt.alMover recibe el punto (para la cifra grande); al soltar, todo vuelve a ahora */
+let grafHeroN = 0;
+function grafHero(cont, series, opt = {}) {
+  cont.innerHTML = '';
+  const base = series[0] && series[0].datos;
+  if (!base || base.length < 2) { cont.innerHTML = '<div class="vacio">Faltan precios para dibujarlo.</div>'; return; }
+  const id = 'gh' + (++grafHeroN), NS = 'http://www.w3.org/2000/svg';
+  const W = Math.max(260, cont.clientWidth || 600), H = opt.alto || 280;
+  const ml = 0, mr = 14, mt = opt.arriba || 60, mb = 30, borde = opt.borde || 20;
+  const vals = series.flatMap((se) => se.datos.map((p) => p.v));
+  // la línea de referencia (el principio del periodo o el cierre de ayer) entra en la escala si no queda muy lejos;
+  // si queda lejos, no se pinta, para no aplastar la curva
+  const ref = opt.ref != null && isFinite(opt.ref) ? opt.ref : base[0].v;
+  const dmin = Math.min(...vals), dmax = Math.max(...vals), dr = dmax - dmin || Math.abs(dmax) * 0.01 || 1;
+  const refVis = ref >= dmin - dr * 0.6 && ref <= dmax + dr * 0.6;
+  if (refVis) vals.push(ref);
+  const vmin = Math.min(...vals), vmax = Math.max(...vals), rango = vmax - vmin || Math.abs(vmax) * 0.02 || 1;
+  const lo = vmin - rango * 0.2, hi = vmax + rango * 0.06;
+  const n = base.length, T = base.map((p) => tiempoDe(p.d)), t0 = T[0], t1 = T[n - 1] > t0 ? T[n - 1] : t0 + 1;
+  const xt = (t) => ml + ((t - t0) / (t1 - t0)) * (W - ml - mr);
+  const y = (v) => mt + (1 - (v - lo) / (hi - lo)) * (H - mt - mb);
+  const P = base.map((p, i) => [xt(T[i]), y(p.v)]);
+  const color = series[0].color || 'var(--accent)';
+  const curva = curvaSuave(P), suelo = H - mb;
+  const area = `${curva}L${P[n - 1][0].toFixed(1)},${suelo}L${P[0][0].toFixed(1)},${suelo}Z`;
+  // fechas de abajo, metidas hacia dentro para que no peguen al borde
+  const dias = (t1 - t0) / 864e5, ejes = [];
+  const sitio = Math.min(5, Math.max(2, Math.floor((W - 2 * borde) / 120)));
+  const etq = (d) => (dias < 1.6 ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : dias < 8 ? `${DIAS_SEM[d.getDay()]} ${d.getDate()}` : dias > 900 ? String(d.getFullYear()) : dias > 100 ? `${MESES[d.getMonth()]}${d.getMonth() === 0 ? ' ' + String(d.getFullYear()).slice(2) : ''}` : `${d.getDate()} ${MESES[d.getMonth()]}`);
+  if (dias > 900) {
+    const anios = []; for (let a = new Date(t0).getFullYear() + 1; a <= new Date(t1).getFullYear(); a++) anios.push(a);
+    const salto = Math.ceil(anios.length / sitio);
+    anios.filter((a, k) => k % salto === 0).forEach((a) => ejes.push([xt(new Date(a, 0, 1).getTime()), String(a)]));
+  } else if (dias < 1.6) {
+    // en un día, horas en punto (cada 1, 2, 3, 4 o 6 h, las que quepan)
+    const paso = [1, 2, 3, 4, 6, 12].find((h) => (t1 - t0) / (h * 36e5) <= sitio + 1) || 12;
+    const h0 = new Date(t0); h0.setMinutes(0, 0, 0); h0.setHours(Math.ceil((h0.getHours() + (new Date(t0).getMinutes() ? 1 : 0)) / paso) * paso);
+    for (let t = h0.getTime(); t <= t1; t += paso * 36e5) ejes.push([xt(t), etq(new Date(t))]);
+  } else if (dias < 8) {
+    // en una semana, un rótulo por día, a mediodía de cada uno
+    const d0 = new Date(t0); d0.setHours(12, 0, 0, 0); if (d0.getTime() < t0) d0.setDate(d0.getDate() + 1);
+    const todos = []; for (const d = new Date(d0); d.getTime() <= t1; d.setDate(d.getDate() + 1)) if (d.getDay() % 6) todos.push(d.getTime());
+    const salto = Math.ceil(todos.length / (sitio + 1));
+    todos.filter((t, k) => k % salto === 0).forEach((t) => ejes.push([xt(t), etq(new Date(t))]));
+  } else for (let k = 0; k <= sitio; k++) { const tt = t0 + (k / sitio) * (t1 - t0); ejes.push([xt(tt), etq(new Date(tt))]); }
+  let g = `<defs>
+    <linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.32"/><stop offset="0.6" style="stop-color:${color};stop-opacity:0.08"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
+    <linearGradient id="${id}c" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 20}" x2="0" y2="${suelo}"><stop offset="0" style="stop-color:var(--text-2);stop-opacity:0"/><stop offset="0.3" style="stop-color:var(--text-2);stop-opacity:0.5"/><stop offset="1" style="stop-color:var(--text-2);stop-opacity:0.15"/></linearGradient>
+    <filter id="${id}b" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+    <clipPath id="${id}k"><rect class="gh-corte" x="0" y="0" width="${W}" height="${H}"/></clipPath>
+  </defs>`;
+  for (const [ex, tx] of ejes) {
+    const xx = Math.min(Math.max(ex, borde), W - borde);
+    g += `<text class="gh-eje" x="${xx.toFixed(1)}" y="${H - 9}" text-anchor="${xx <= borde + 1 ? 'start' : xx >= W - borde - 1 ? 'end' : 'middle'}">${esc(tx)}</text>`;
+  }
+  // la línea de donde empezó el periodo, muy tenue
+  if (!opt.sinRef && refVis) g += `<line x1="0" x2="${W}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 5"/>`;
+  // la misma curva en gris por debajo: es lo que se ve a la derecha del dedo
+  g += `<path d="${curva}" fill="none" stroke="var(--line-2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  for (const se of series.slice(1)) {
+    const Q = se.datos.map((p) => { const i = base.findIndex((b) => b.d === p.d); return i < 0 ? null : [P[i][0], y(p.v)]; }).filter(Boolean);
+    if (Q.length > 1) g += `<path d="${curvaSuave(Q)}" fill="none" stroke="${se.color || 'var(--text-2)'}" stroke-width="1.5" stroke-dasharray="${se.disc ? '5 5' : ''}" stroke-linejoin="round" opacity="0.85"/>`;
+  }
+  g += `<g clip-path="url(#${id}k)">
+    <path class="gh-area" d="${area}" fill="url(#${id}a)"/>
+    <path class="gh-trazo" d="${curva}" fill="none" stroke="${color}" stroke-width="7" opacity="0.4" filter="url(#${id}b)"/>
+    <path class="gh-trazo" d="${curva}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+  </g>`;
+  // el máximo y el mínimo del periodo (si no son el punto de ahora, que ya está arriba en grande)
+  if (!opt.oculto) {
+    let iMax = 0, iMin = 0; base.forEach((p, i) => { if (p.v > base[iMax].v) iMax = i; if (p.v < base[iMin].v) iMin = i; });
+    const marca = (i, arriba) => {
+      if (P[n - 1][0] - P[i][0] < 56 || base[iMax].v === base[iMin].v) return '';
+      const [px, py] = P[i], ancla = px < 60 ? 'start' : px > W - 60 ? 'end' : 'middle';
+      return `<g class="gh-ext"><circle cx="${px.toFixed(1)}" cy="${py.toFixed(1)}" r="2.6" fill="${color}"/><text x="${Math.min(Math.max(px, 8), W - 8).toFixed(1)}" y="${(arriba ? py - 10 : py + 18).toFixed(1)}" text-anchor="${ancla}">${esc((opt.fmt || fmtNum)(base[i].v))}</text></g>`;
+    };
+    g += marca(iMax, true) + marca(iMin, false);
+  }
+  const [fx, fy] = P[n - 1];
+  g += `<g class="gh-fin"><circle class="gh-pulso" cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4" fill="${color}"/><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4.2" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
+  g += `<g class="gh-cruz" visibility="hidden"><line y1="${mt - 20}" y2="${suelo}" stroke="url(#${id}c)" stroke-width="1"/><circle r="11" fill="${color}" opacity="0.18"/><circle r="4.6" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
+  g += `<rect class="zona" x="0" y="0" width="${W}" height="${H}" fill="transparent"/>`;
+  const svg = document.createElementNS(NS, 'svg');
+  svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
+  svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', opt.titulo || 'Gráfico');
+  svg.innerHTML = g;
+  cont.appendChild(svg);
+  // al estrenar periodo, la curva se dibuja de izquierda a derecha (una vez; las recargas de precios no la repiten)
+  if (opt.animar && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    for (const p of svg.querySelectorAll('.gh-trazo')) { try { p.style.setProperty('--l', Math.ceil(p.getTotalLength()) + 1); } catch (e) {} }
+    svg.classList.add('entra');
+  }
+  const fecha = document.createElement('div'); fecha.className = 'gh-fecha'; fecha.hidden = true; cont.appendChild(fecha);
+  const cruz = svg.querySelector('.gh-cruz'), corte = svg.querySelector('.gh-corte');
+  const mapas2 = series.slice(1).map((se) => new Map(se.datos.map((p) => [p.d, p.v])));
+  const cercano = (t) => { let a = 0, b = n - 1; while (b - a > 1) { const m = (a + b) >> 1; if (T[m] <= t) a = m; else b = m; } return t - T[a] <= T[b] - t ? a : b; };
+  let actual = n - 1;
+  const mostrar = (i) => {
+    actual = Math.max(0, Math.min(n - 1, i));
+    const s = base[actual], [px, py] = P[actual];
+    cruz.setAttribute('visibility', 'visible');
+    const ln = cruz.querySelector('line'); ln.setAttribute('x1', px); ln.setAttribute('x2', px);
+    for (const c of cruz.querySelectorAll('circle')) { c.setAttribute('cx', px); c.setAttribute('cy', py); }
+    corte.setAttribute('width', Math.max(0, px));
+    svg.classList.add('mirando');
+    fecha.innerHTML = esc(fechaPunto(s.d)) + series.slice(1).map((se, k) => { const v = mapas2[k].get(s.d); return v == null ? '' : `<small>${esc(se.nombre)}: ${esc(opt.fmt ? opt.fmt(v) : fmtNum(v))}</small>`; }).join('');
+    fecha.hidden = false;
+    const cw = cont.clientWidth, ancho = fecha.offsetWidth || 90;
+    fecha.style.left = Math.min(Math.max((px / W) * cw, ancho / 2 + 4), cw - ancho / 2 - 4) + 'px';
+    if (opt.alMover) opt.alMover(s);
+  };
+  const soltar = () => { cruz.setAttribute('visibility', 'hidden'); corte.setAttribute('width', W); svg.classList.remove('mirando'); fecha.hidden = true; if (opt.alMover) opt.alMover(null); };
+  const zona = svg.querySelector('.zona');
+  zona.addEventListener('pointermove', (ev) => { const r = svg.getBoundingClientRect(); const sx = ((ev.clientX - r.left) / r.width) * W; mostrar(cercano(t0 + ((sx - ml) / (W - ml - mr)) * (t1 - t0))); });
+  zona.addEventListener('pointerleave', soltar);
+  zona.addEventListener('pointercancel', soltar);
+  svg.setAttribute('tabindex', '0');
+  svg.addEventListener('keydown', (ev) => {
+    if (ev.key === 'ArrowLeft') { mostrar(actual - 1); ev.preventDefault(); }
+    else if (ev.key === 'ArrowRight') { mostrar(actual + 1); ev.preventDefault(); }
+    else if (ev.key === 'Escape') soltar();
+  });
+  svg.addEventListener('focus', () => mostrar(actual));
+  svg.addEventListener('blur', soltar);
+}
+
 /* cada celda se lleva el nombre de su columna para la vista apilada del móvil */
 function etiquetarTablas(raiz = document) {
   for (const t of $$('table.resp', raiz)) {
@@ -6454,6 +6646,8 @@ function etiquetarTablas(raiz = document) {
     for (const tr of t.querySelectorAll('tbody tr')) [...tr.children].forEach((td, i) => { if (i && hs[i]) td.dataset.l = hs[i]; });
   }
 }
+const ETQ_RANGO = { '1D': ['hoy', 'today'], '1S': ['en la última semana', 'in the last week'], '1M': ['en el último mes', 'in the last month'], '3M': ['en los últimos 3 meses', 'in the last 3 months'], '6M': ['en los últimos 6 meses', 'in the last 6 months'], '1A': ['en el último año', 'in the last year'], '3A': ['en los últimos 3 años', 'in the last 3 years'], '5A': ['en los últimos 5 años', 'in the last 5 years'] };
+let grafHeroUltimo = '';
 function dibujar(M) {
   etiquetarTablas($('#vista'));
   const gp = $('#grafProy'); if (gp) grafAbanico(gp, proyeccion(M), (S.horizonte || 20) * 12);
@@ -6461,25 +6655,44 @@ function dibujar(M) {
   if (g) {
     const dias = RANGOS[S.rango] || 366;
     const intra = INTRADIA.has(S.rango);
-    let serie = intra ? serieIntradia(M, S.rango) : serieCartera(M, dias);
-    if (intra && serie.length < 2) serie = serieCartera(M, S.rango === '1D' ? 4 : 9);
-    const cab = $('#evoCab');
-    if (cab && serie.length > 1) {
-      const d = serie[serie.length - 1].v - serie[0].v, p = (serie[serie.length - 1].v / serie[0].v - 1) * 100;
-      cab.innerHTML = `<span class="${cls(d)}">${eurS(d, 0)}</span><span class="${cls(p)}">${pctS(p)}</span><span class="k">${S.rango === '1D' && intra ? 'desde el último cierre' : `lo que tienes hoy, desde el ${fechaPunto(serie[0].d)}`}</span>`;
-    }
+    let serie = intra ? serieIntradia(M, S.rango) : serieCartera(M, dias), deIntra = intra;
+    if (intra && serie.length < 2) { serie = serieCartera(M, S.rango === '1D' ? 4 : 9); deIntra = false; }
+    // la variación del periodo, en una pastilla debajo de la cifra grande
+    const t0s = serie.length ? tiempoDe(serie[0].d) : Date.now();
+    const corto = (Date.now() - t0s) < dias * 864e5 * 0.85;
+    const etqRango = S.rango === '1D' && deIntra ? L('desde el último cierre', 'since the last close')
+      : corto || S.rango === 'Máx' || !ETQ_RANGO[S.rango] ? L(`desde el ${fechaPunto(serie[0].d)}`, `since ${fechaPunto(serie[0].d)}`) : L(...ETQ_RANGO[S.rango]);
+    const pintarVar = (desde, hasta, etq) => {
+      const cab = $('#evoCab'); if (!cab || !desde || !hasta) return;
+      const d = hasta.v - desde.v, p = (hasta.v / desde.v - 1) * 100, c = cls(d);
+      cab.innerHTML = `<span class="hv-p ${c}"><i aria-hidden="true">${d > 0 ? '▲' : d < 0 ? '▼' : '•'}</i>${esc(eurS(d, 0))}<em>${esc(pctS(p))}</em></span><span class="k">${esc(etq)}</span>`;
+    };
+    // desde dónde se cuenta: el primer punto del periodo o, en 1D, el cierre de ayer (así cuadra con «Hoy»)
+    const ref0 = S.rango === '1D' && deIntra && isFinite(M.dia) && serie.length ? { d: serie[0].d, v: M.total - M.dia } : serie[0];
+    const ahora = { d: hoyIso(), v: isFinite(M.total) ? M.total : (serie[serie.length - 1] || {}).v };
+    if (serie.length > 1) pintarVar(ref0, ahora, etqRango);
     const series = [{ datos: serie, color: 'var(--accent)' }];
     if (S.comparar && S.ref && !intra) series.push({ datos: serieComparada(serie, S.ref), color: 'var(--text-2)', disc: true, nombre: 'S&P 500' });
-    // al pasar el dedo, la cifra grande de arriba enseña lo que tenías ese día (y vuelve a la de ahora al soltar)
+    // al pasar el dedo, la cifra grande de arriba enseña lo que tenías ese día y la pastilla, lo que iba desde el
+    // principio del periodo; al soltar, todo vuelve a ahora
     const alMover = (p) => {
-      const hn = $('#heroNum'), lbl = $('#heroLbl'); if (!hn || !lbl || S.oculto) return;
+      const hn = $('#heroNum'), lbl = $('#heroLbl'); if (!hn || !lbl) return;
       if (p) {
-        if (!hn.dataset.antes) { hn.dataset.antes = hn.innerHTML; hn.classList.add('mira'); }
-        hn.innerHTML = `<span>${fmtNum(Math.trunc(p.v), 0)}</span><span class="dec">,${fmtNum(p.v, 2).split(',')[1]} €</span>`;
+        if (!S.oculto) {
+          if (!hn.dataset.antes) { hn.dataset.antes = hn.innerHTML; hn.classList.add('mira'); }
+          hn.innerHTML = `<span>${fmtNum(Math.trunc(p.v), 0)}</span><span class="dec">,${fmtNum(p.v, 2).split(',')[1]} €</span>`;
+        }
         lbl.textContent = L(`El ${fechaPunto(p.d)}`, fechaPunto(p.d));
-      } else if (hn.dataset.antes) { hn.innerHTML = hn.dataset.antes; delete hn.dataset.antes; hn.classList.remove('mira'); lbl.textContent = L('Patrimonio', 'Net worth'); }
+        pintarVar(ref0, p, ref0 === serie[0] ? L(`desde el ${fechaPunto(ref0.d)}`, `since ${fechaPunto(ref0.d)}`) : L('desde el último cierre', 'since the last close'));
+      } else {
+        if (hn.dataset.antes) { hn.innerHTML = hn.dataset.antes; delete hn.dataset.antes; hn.classList.remove('mira'); }
+        lbl.textContent = L('Patrimonio', 'Net worth');
+        if (serie.length > 1) pintarVar(ref0, ahora, etqRango);
+      }
     };
-    grafLinea(g, series, { titulo: 'Evolución del valor de la cartera', fmt: (v) => eur(v, 0), oculto: S.oculto, cambio: true, alto: 260, alMover });
+    const movil = innerWidth < 760;
+    const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
+    grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 300, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, ref: ref0 && ref0.v, alMover, animar });
   }
   // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
   for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
