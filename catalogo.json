@@ -550,6 +550,35 @@
    "s": "SXRT.DE"
   },
   {
+   "isin": "LU0261952682",
+   "n": "Fidelity Euro STOXX 50 Fund A-Acc-EUR",
+   "t": "Fondo"
+  },
+  {
+   "isin": "IE0008471009",
+   "n": "iShares Core EURO STOXX 50 Dist",
+   "t": "ETF",
+   "a": [
+    "EUN2"
+   ]
+  },
+  {
+   "isin": "LU0380865021",
+   "n": "Xtrackers Euro Stoxx 50 UCITS ETF 1C",
+   "t": "ETF",
+   "a": [
+    "XESC"
+   ]
+  },
+  {
+   "isin": "FR0007054358",
+   "n": "Amundi (antes Lyxor) Euro Stoxx 50 DR UCITS ETF Dist",
+   "t": "ETF",
+   "a": [
+    "MSE"
+   ]
+  },
+  {
    "isin": "DE0005933931",
    "n": "iShares Core DAX",
    "t": "ETF",
