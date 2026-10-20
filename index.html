@@ -1027,7 +1027,7 @@ table.ideas .sub { display: block; font-size: 12px; }
 .toca-c:empty { display: none; }
 .toca li.urgente .toca-c { color: var(--accent); font-weight: 600; }
 .toca b { font-weight: 550; font-size: 14.5px; line-height: 1.4; }
-/* GrowFolio IA, lo primero de Cartera */
+/* GrowIA, lo primero de Cartera */
 .toca.iac { margin: 0 0 8px; padding: 16px 16px 8px; border-left-width: 1px; border-color: rgba(226, 180, 95, 0.32); background: linear-gradient(160deg, rgba(226, 180, 95, 0.09), var(--plane) 55%); }
 @media (min-width: 900px) {
   .toca.iac.con-lista { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 0 32px; padding: 18px 22px 10px; }
@@ -3860,7 +3860,7 @@ function montar() {
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t, c]) => `<a href="#${k}" data-ir="${k}"${c && c !== t ? ' class="corto"' : ''}><span class="nl">${t}</span>${c && c !== t ? `<span class="nc">${c}</span>` : ''}</a>`).join('')}</nav>
     <span id="estado"></span>
     <div class="acciones">
-      <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowFolio IA por tu cartera" aria-label="Pregúntale a GrowFolio IA">${ICONOS.chispa}<span>Pregúntale</span></button>
+      <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowIA por tu cartera" aria-label="Pregúntale a GrowIA">${ICONOS.chispa}<span>Pregúntale</span></button>
       <button class="ib" id="bOcultar" data-accion="ocultar"></button>
       <button class="ib ib-fallo" id="bFallo" data-accion="opinion" title="Es una alfa: avisa de cualquier fallo o idea" aria-label="Avisar de un fallo">${ICONOS.bicho}<span class="fallo-t">Avisar de un fallo</span></button>
       <button class="ib ib-idioma" id="bIdioma" data-accion="idioma" aria-haspopup="menu" aria-expanded="false" title="Idioma / Language" aria-label="Idioma / Language" data-no-trad>${banderaIdioma(IDIOMA)}</button>
@@ -4036,8 +4036,8 @@ function vistaCartera(M) {
       <div class="evo-cab"><div class="datos" id="evoCab"></div>
         <div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div></div>
       <div class="chart" id="grafEvo"></div>
-      <div class="leyenda-graf"><span><i style="border-color:var(--accent)"></i>Tu cartera</span>${S.comparar ? `<span><i class="disc" style="border-color:var(--text-2)"></i>El mismo dinero en el S&P 500</span>` : ''}
-        <label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> Comparar con el S&P 500</label></div>
+      <div class="leyenda-graf"><span><i style="border-color:var(--accent)"></i>Tu cartera</span>
+        <label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> Comparar con el S&P 500</label>${S.comparar ? `<span><i class="disc" style="border-color:var(--text-2)"></i>El mismo dinero en el S&P 500</span>` : ''}</div>
       <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste».</p>
     </section>
   </div>
@@ -4057,7 +4057,7 @@ function refrescarToca() {
     if (t.firstElementChild) el.replaceWith(t.firstElementChild); else el.remove();
   }
 }
-/* Lo primero de Cartera, debajo del patrimonio: lo que dice GrowFolio IA (su diagnóstico de una frase y sus notas)
+/* Lo primero de Cartera, debajo del patrimonio: lo que dice GrowIA (su diagnóstico de una frase y sus notas)
    y lo que toca hacer ahora, sacado del paso a paso, con su botón para marcarlo hecho sin salir de aquí */
 function htmlToca(M) {
   let P; try { P = pasosRuta(M); } catch (e) { P = { mes: [], seis: [] }; }
@@ -4084,10 +4084,10 @@ function htmlToca(M) {
   } else {
     cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>Aún sin activar en este dispositivo</small></div></div>
       <p class="iac-tit iac-act">Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.</p>
-      <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.chispa}Activar GrowFolio IA</button>`;
+      <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.chispa}Activar GrowIA</button>`;
   }
   const lista = v.length ? `<div class="iac-sub"><h3>Lo que toca ahora</h3><button class="enlace acento" data-calif="ruta">Ver el paso a paso</button></div>
-    <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
+    <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según GrowIA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
   // en el ordenador, a lo ancho debajo de la gráfica: el diagnóstico a la izquierda y lo que toca a la derecha
   return `<section class="toca iac${lista ? ' con-lista' : ''}" aria-labelledby="hToca"><div class="iac-izq">${cab}${tit}${notas}</div>${lista ? `<div class="iac-der">${lista}</div>` : ''}</section>`;
 }
@@ -4392,7 +4392,7 @@ function agendaLista(M, dias = 120) {
     // si ya sale (la IA suele decir lo mismo con otras palabras y un día antes o después), no se repite
     const te = normTxt(e.t);
     if (ev.some((x) => (x.d === e.d && te.includes(normTxt(x.t))) || (x.nom && te.includes(normTxt(x.nom)) && Math.abs(diasEntre(x.d, e.d)) <= 3))) continue;
-    add({ id: `ia:${e.d}:${normTxt(e.t).slice(0, 24)}`, d: e.d, tipo: 'ia', t: e.t, s: L('Lo ha visto GrowFolio IA en las noticias', 'Spotted by GrowFolio AI in the news'), ia: true, det: L('Sale de las noticias que lee GrowFolio IA: la fecha puede moverse.', 'It comes from the news GrowFolio AI reads: the date may move.') });
+    add({ id: `ia:${e.d}:${normTxt(e.t).slice(0, 24)}`, d: e.d, tipo: 'ia', t: e.t, s: L('Lo ha visto GrowIA en las noticias', 'Spotted by GrowFolio AI in the news'), ia: true, det: L('Sale de las noticias que lee GrowIA: la fecha puede moverse.', 'It comes from the news GrowFolio AI reads: the date may move.') });
   }
   return ev.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : (ordenAg(a) - ordenAg(b))));
 }
@@ -4754,15 +4754,15 @@ function htmlFrescura() {
   const datos = [
     lento && `Analistas de tus posiciones: ${haceCuanto(lento)}`,
     rg && `Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}`,
-    S.informe && S.informe.generado && `Prensa de tu cartera leída por GrowFolio IA: ${haceCuanto(S.informe.generado)}`,
+    S.informe && S.informe.generado && `Prensa de tu cartera leída por GrowIA: ${haceCuanto(S.informe.generado)}`,
     S.escaneo && S.escaneo.leidas_24h && `Escaneo de prensa: ${S.escaneo.leidas_24h} empresas leídas en 24 h`,
     ia && ia.propio ? `Análisis de ${esc(ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '',
   ].filter(Boolean);
   return `<div class="frescura" aria-label="Frescura de los datos">
     <details><summary><span class="vivo-dot">Recalculado a las ${B('recalc')}</span>${S.informe && S.informe.generado ? `<span>prensa leída ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas">de cuándo es cada dato</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
-    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">Activar GrowFolio IA, gratis: revisa esto cada día</button>'}
-    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? 'se ha acabado el cupo gratuito de Google por hoy; se renueva sobre las 9:00' : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowFolio IA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
+    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">Activar GrowIA, gratis: revisa esto cada día</button>'}
+    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? 'se ha acabado el cupo gratuito de Google por hoy; se renueva sobre las 9:00' : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowIA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
   </div>`;
 }
 
@@ -4791,11 +4791,11 @@ function filaExperto(f, ia, vIA = {}) {
     <div class="fx2-cab">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button><small>${chipCotiza(i)}<span>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</span></small></div></div>
     ${c && !choca && normTxt(c.veredicto || SENALES[nivelC]) === normTxt(s.txt)
       ? `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números e IA</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-ok">coinciden</span></div>`
-      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="chip" title="Van en la misma dirección, pero la IA lo dice con otro matiz: lee su motivo">la IA matiza</span>') : ''}</div>`}
+      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${esc((ia && ia.autor) || 'GrowIA')}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="chip" title="Van en la misma dirección, pero la IA lo dice con otro matiz: lee su motivo">GrowIA matiza</span>') : ''}</div>`}
     ${m0 ? `<p class="fx2-m">${esc(m0)}</p>` : ''}
     ${resto.length || c || prensa || datos ? `<details class="mas"><summary>Por qué</summary><div class="fx2-det">
       ${resto.length ? `<div><span class="fx-de">Números</span><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>` : ''}
-      ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${esc((ia && ia.autor) || 'IA')}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>Vigilar.</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
+      ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${esc((ia && ia.autor) || 'GrowIA')}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>Vigilar.</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
       ${prensa}
       ${datos ? `<div class="fx-datos">${datos}</div>` : ''}
     </div></details>` : ''}
@@ -4814,7 +4814,7 @@ function htmlVistazo(M, ia) {
       const nivelC = c && NIVELES.has(c.nivel) ? c.nivel : null;
       const choca = nivelC && LADO[nivelC] !== LADO[s.nivel];
       return `<li><button class="vistazo-f" data-pos="${esc(f.pos.id)}">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}
-        <span class="vistazo-t"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small>${esc(s.motivos[0] || '')}</small>${choca ? `<small class="vistazo-ia">La IA dice otra cosa: ${esc((c.veredicto || SENALES[nivelC]).toLowerCase())}</small>` : ''}</span>
+        <span class="vistazo-t"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small>${esc(s.motivos[0] || '')}</small>${choca ? `<small class="vistazo-ia">GrowIA dice otra cosa: ${esc((c.veredicto || SENALES[nivelC]).toLowerCase())}</small>` : ''}</span>
         <span class="senal ${s.nivel}">${esc(s.txt)}</span></button></li>`;
     }).join('')}</ul>
     <button class="enlace acento ver-mas" data-exp="posiciones">Ver los motivos, la IA y los analistas de cada una</button>
@@ -4845,7 +4845,7 @@ function vistaExpertos(M) {
   }
   const marca = { posiciones: planes.length };
   return `
-  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa e IA sobre lo que tienes y lo que podrías comprar. Las señales se recalculan con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale a GrowFolio IA</button></div>
+  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa e IA sobre lo que tienes y lo que podrías comprar. Las señales se recalculan con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale a GrowIA</button></div>
   ${htmlFrescura()}
   <div class="subvistas dos-op" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
   <div class="pila">${cuerpo}</div>`;
@@ -4861,7 +4861,7 @@ function puntuarIdea(x, ctx) {
   const potG = g ? anualizar(g.subida_pct, Math.max(g.meses, 3)) : null;
   const pot = Math.max(-50, Math.min(potG != null ? (x.pot + potG) / 2 : x.pot, 50));
   p += 1.2 * (pot / 50);
-  motivos.push(`los analistas creen que puede subir un ${fmtNum(x.pot, 0)} %${g ? ` y GrowFolio IA, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`);
+  motivos.push(`los analistas creen que puede subir un ${fmtNum(x.pot, 0)} %${g ? ` y GrowIA, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`);
   const rm = x.rm ?? 3;
   p += Math.max(-1, Math.min(1, (2.6 - rm) / 1.6));
   if (rm <= 1.6) motivos.push(`consenso de compra fuerte entre ${x.na} analistas`);
@@ -4991,12 +4991,12 @@ function htmlResumenInforme(corto) {
   if (!inf || (!inf.resumen && !(inf.alertas || []).length)) return '';
   if (corto) {
     const fr = String(limpiaIA(inf.resumen || '')).split(/(?<=\.)\s+/);
-    return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según GrowFolio IA</h2><span class="k">${cabInforme(inf)}</span></div>
+    return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según GrowIA</h2><span class="k">${cabInforme(inf)}</span></div>
       ${fr[0] ? `<p class="informe-res">${esc(fr[0])}</p>` : ''}
       ${fr.length > 1 || (inf.alertas || []).length ? `<details class="mas"><summary>${(inf.alertas || []).length ? `Seguir leyendo y ${inf.alertas.length} ${inf.alertas.length === 1 ? 'alerta' : 'alertas'}` : 'Seguir leyendo'}</summary>${fr.length > 1 ? `<p class="informe-res">${esc(fr.slice(1).join(' '))}</p>` : ''}${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}</details>` : ''}
     </section>`;
   }
-  return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según GrowFolio IA</h2><span class="k">${cabInforme(inf)}</span></div>
+  return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según GrowIA</h2><span class="k">${cabInforme(inf)}</span></div>
     ${inf.resumen ? `<p class="informe-res">${escIA(inf.resumen)}</p>` : ''}
     ${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}
   </section>`;
@@ -5006,7 +5006,7 @@ function htmlMercadoInforme() {
   const inf = informeVisible();
   if (!inf || !(inf.mercado || []).length) return '';
   // los titulares a la vista; el detalle de cada uno, al tocarlo
-  return `<section class="informe" aria-labelledby="hInfM"><div class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según GrowFolio IA</h2><span class="k">${cabInforme(inf)}</span></div>
+  return `<section class="informe" aria-labelledby="hInfM"><div class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según GrowIA</h2><span class="k">${cabInforme(inf)}</span></div>
     <ul class="informe-merc plegados">${inf.mercado.map((m) => `<li><details><summary>${chipImpacto(m.impacto)}${m.zona ? `<span class="zona-ia">${bandera(ZONA_BANDERA[m.zona])}${esc(m.zona)}</span>` : ''}<b>${escIA(m.t)}</b></summary><p>${escIA(m.detalle)}</p>${m.implica ? `<p class="ia-implica"><b>Para tu cartera:</b> ${escIA(m.implica)}</p>` : ''}${enlacesFuentes(m.fuentes, 2)}</details></li>`).join('')}</ul>
     ${(inf.macro || []).length ? `<div class="macro-ia">${inf.macro.map((x) => `<div><small>${escIA(x.t)}</small><b>${escIA(x.dato)}</b><p>${escIA(x.lectura)}</p></div>`).join('')}</div>` : ''}
   </section>`;
@@ -5045,17 +5045,17 @@ const plazoGemini = (sim) => { const p = S.escaneo && S.escaneo.decision && S.es
 function esperadaRadar(r, extra) {
   if (!r || r.pot == null) return null;
   const ana = rentaEsperada(r, r.pot, 12, 'analistas');
-  const g = extra && extra.subida_pct != null && +extra.plazo_meses > 0 ? { meses: +extra.plazo_meses, subida_pct: +extra.subida_pct, por: extra.catalizador || '', fuente: extra.fuente } : plazoGemini(r.s) ? { ...plazoGemini(r.s), fuente: 'GrowFolio IA' } : null;
-  const ia = g ? { ...rentaEsperada(r, g.subida_pct, g.meses, g.fuente || 'GrowFolio IA'), por: g.por } : null;
+  const g = extra && extra.subida_pct != null && +extra.plazo_meses > 0 ? { meses: +extra.plazo_meses, subida_pct: +extra.subida_pct, por: extra.catalizador || '', fuente: extra.fuente } : plazoGemini(r.s) ? { ...plazoGemini(r.s), fuente: 'GrowIA' } : null;
+  const ia = g ? { ...rentaEsperada(r, g.subida_pct, g.meses, g.fuente || 'GrowIA'), por: g.por } : null;
   return { ana, ia, prin: ia || ana };
 }
 function esperadaIdea(x) {
   const g = [x.gem, x.tuya].find((y) => y && y.subida_pct != null && +y.plazo_meses > 0);
-  return esperadaRadar(x.r, g ? { ...g, fuente: g === x.gem ? 'GrowFolio IA' : 'tu análisis' } : null);
+  return esperadaRadar(x.r, g ? { ...g, fuente: g === x.gem ? 'GrowIA' : 'tu análisis' } : null);
 }
 function quienIdea(x) {
   const w = x.web ? (IDIOMA === 'en' ? `GrowFolio's radar (${x.web.puesto === 1 ? 'the best-backed on it' : `number ${x.web.puesto} by backing`})` : `el radar de GrowFolio (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})`) : null;
-  const g = x.gem ? `GrowFolio IA tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')})` : null;
+  const g = x.gem ? `GrowIA tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')})` : null;
   const t = x.tuya ? `tu análisis${x.tuya.importe ? `, con ${eur(+x.tuya.importe, 0)}` : ''}` : null;
   const p = [w, g, t].filter(Boolean);
   return `La propone ${yLista(p.map(trad))}.`;
@@ -5119,7 +5119,7 @@ function tarjetaIdea(x, ctx, compacta = false) {
 function htmlEvitar() {
   const d = S.escaneo && S.escaneo.decision;
   if (!d || !(d.evitar || []).length) return '';
-  return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det"${innerWidth > 680 ? ' open' : ''}><summary class="sec-cab"><h3 id="hEvi">Las que GrowFolio IA evitaría por lo que dice su prensa <span class="k">(${d.evitar.length})</span></h3></summary><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${escIA(v.motivo)}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul></details></section>`;
+  return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det"${innerWidth > 680 ? ' open' : ''}><summary class="sec-cab"><h3 id="hEvi">Las que GrowIA evitaría por lo que dice su prensa <span class="k">(${d.evitar.length})</span></h3></summary><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${escIA(v.motivo)}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul></details></section>`;
 }
 function htmlIdeas(M, ia) {
   const todas = radarVals();
@@ -5139,10 +5139,10 @@ function htmlIdeas(M, ia) {
   S.radarVisibles = [...new Set([...v.map((x) => x.s), ...juntas.filter((x) => x.r).map((x) => x.r.s)])];
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
-  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowFolio IA y tu análisis</span></div>
-    ${d && d.comentario ? `<p class="idea-panorama"><b>GrowFolio IA</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
+  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowIA y tu análisis</span></div>
+    ${d && d.comentario ? `<p class="idea-panorama"><b>GrowIA</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, movil && i >= 3)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
-    <p class="nota">Cómo se eligen: GrowFolio se queda con las tres mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowFolio IA lee sus noticias y elige las suyas. Primero salen las que eligen los dos. En las barras, verde es a favor, rojo en contra y gris neutral.</p>
+    <p class="nota">Cómo se eligen: GrowFolio se queda con las tres mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas. Primero salen las que eligen los dos. En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
     <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
@@ -5152,10 +5152,10 @@ function htmlIdeas(M, ia) {
     ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(x.n)}</b></div><small>${lineaOrigen(x)}</small></td>
       <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
-      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que te quedaría si se cumple lo esperado (en el plazo de GrowFolio IA o en los 12 meses de los analistas), con su dividendo y ya restados la tasa de compra, la retención que no se recupera y tus impuestos">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
+      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que te quedaría si se cumple lo esperado (en el plazo de GrowIA o en los 12 meses de los analistas), con su dividendo y ya restados la tasa de compra, la retención que no se recupera y tus impuestos">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     ${total > corte ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? `Ver solo las ${corte} primeras` : `Ver las ${total}${S.radarMin ? ' con 5 analistas o más' : S.radarZona !== 'Todas' ? ` de ${esc(S.radarZona)}` : ''}`}</button>` : ''}
-    <p class="nota">Puede subir: cuánto le queda para llegar al precio que esperan los analistas dentro de 12 meses. Te quedas: lo que ganarías si llega, ya restados los impuestos. Prensa: lo que ha leído GrowFolio IA en sus noticias. Señales: siete pruebas (analistas, si mejoran su opinión, beneficios, precio frente a su sector, tendencia y solidez del negocio).</p>`;
+    <p class="nota">Puede subir: cuánto le queda para llegar al precio que esperan los analistas dentro de 12 meses. Te quedas: lo que ganarías si llega, ya restados los impuestos. Prensa: lo que ha leído GrowIA en sus noticias. Señales: siete pruebas (analistas, si mejoran su opinión, beneficios, precio frente a su sector, tendencia y solidez del negocio).</p>`;
 }
 
 /* ---------- repintar solo cuando cambia una recomendación ---------- */
@@ -5272,10 +5272,10 @@ function vistaMercados(M) {
 
 /* =========================== Análisis =========================== */
 /* cuatro pestañas: qué hacer, lo que opina la IA, tus números (cinco vistas) y la fiscalidad */
-const ANALISIS_P = [['ia', 'La IA opina'], ['numeros', 'Tus números']];
+const ANALISIS_P = [['ia', 'GrowIA opina'], ['numeros', 'Tus números']];
 const NUM_T = { rent: ['Rentabilidad', 'lo que ha dado cada posición en 1 mes, 1, 3, 5 y 10 años, y año a año'], riesgo: ['Riesgo', 'cuánto se mueve cada una y su peor caída del último año'], costes: ['Costes y dividendos', 'gastos de los fondos y lo que cobras en dividendos'], dentro: ['Por dentro', 'las empresas en las que tienes más dinero, sumando tus fondos'], apuestas: ['Tus acciones frente al índice', 'cada acción comparada con el mismo dinero en el S&P 500'] };
 const NUMEROS = ['rent', 'riesgo', 'costes', 'dentro', 'apuestas'];
-const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'La IA opina'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas'], ['impuestos', 'Fiscalidad']];
+const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'GrowIA opina'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Apuestas'], ['impuestos', 'Fiscalidad']];
 /* =====================================================================
    Paso a paso: qué hacer con la cartera este mes, en 6 meses, en un año y de 1 a 5 años.
    Los pasos de la web salen de sus cálculos (planes de venta, fechas, impuestos, aportaciones y
@@ -5449,7 +5449,7 @@ function htmlPaso(x, n) {
   return `<li class="paso t-${tp.c}${x.hecho ? ' hecho' : ''}${x.urgente && !x.hecho ? ' urgente' : ''}">
     <span class="paso-ico" aria-hidden="true">${ICONO_PASO[tp.i] || ''}</span>
     <div class="paso-cuerpo">
-      ${x.cuando || x.fuente === 'ia' || x.auto ? `<div class="ruta-meta">${x.cuando ? `<span class="fecha">${esc(x.cuando)}</span>` : ''}${x.fuente === 'ia' ? `<span class="chip info">${esc(x.autor || 'IA')}</span>` : ''}${x.auto ? '<span class="chip">va solo</span>' : ''}</div>` : ''}
+      ${x.cuando || x.fuente === 'ia' || x.auto ? `<div class="ruta-meta">${x.cuando ? `<span class="fecha">${esc(x.cuando)}</span>` : ''}${x.fuente === 'ia' ? `<span class="chip info">${esc(x.autor || 'GrowIA')}</span>` : ''}${x.auto ? '<span class="chip">va solo</span>' : ''}</div>` : ''}
       <b class="paso-t">${x.t.replace(/ €/g, ' €')}</b>
       ${x.pq ? `<p class="paso-pq">${x.pq}</p>` : ''}${x.det ? `<p class="paso-pq">${x.det}</p>` : ''}
       ${detalle ? `<details class="paso-mas"><summary>${x.como ? 'Cómo hacerlo' : 'Impuestos'}${x.como && x.imp ? ' y lo que pagas' : ''}</summary><dl class="ruta-dl">${x.como ? `<dt>Cómo</dt><dd>${x.como}</dd>` : ''}${x.imp ? `<dt>Impuestos</dt><dd>${x.imp}</dd>` : ''}</dl></details>` : ''}
@@ -5459,7 +5459,7 @@ function htmlPaso(x, n) {
   </li>`;
 }
 /* cada paso, según lo que pide: algo que hacer tú (numerado y con su casilla), una fecha que vigilar o algo que va solo */
-const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Completa tus datos', ia: 'Lo propone la IA', info: 'Plan', fecha: 'Fecha' };
+const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Completa tus datos', ia: 'Lo propone GrowIA', info: 'Plan', fecha: 'Fecha' };
 const claseRuta = (x) => (x.auto ? 'solo' : tipoPaso(x).c === 'fecha' ? 'fecha' : 'tarea');
 function checkRuta(x, n) {
   return `<button class="t-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Hecho. Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"><span>${n || ''}</span></button>`;
@@ -5535,7 +5535,7 @@ function htmlRuta(M) {
       <div class="ruta-res" aria-label="Progreso"><div class="ruta-res-n"><b>${hechas}</b> de ${cuenta.length} hechos <span>en los próximos 6 meses. Cuando hagas uno, márcalo y se queda tachado.</span></div><div class="ruta-barra"><i style="width:${cuenta.length ? ((hechas / cuenta.length) * 100).toFixed(0) : 0}%"></i></div></div>
     </div>
     <div class="ruta ruta2" data-sel="${esc(S.rutaPlazo)}">${PLAZOS.map(columna).join('')}</div>
-    <p class="nota ruta-nota">${ia && ia.hoja_de_ruta ? `Los que llevan ${esc(ia.autor || 'IA')} los propone GrowFolio IA tras leer las noticias; el resto salen de tus números.` : 'Salen de tus números; con GrowFolio IA activada, añade los suyos tras leer las noticias.'}</p>`;
+    <p class="nota ruta-nota">${ia && ia.hoja_de_ruta ? `Los que llevan la etiqueta ${esc(ia.autor || 'GrowIA')} los propone ella tras leer las noticias; el resto salen de tus números.` : 'Salen de tus números; con GrowIA activada, añade los suyos tras leer las noticias.'}</p>`;
 }
 function vistaRuta(M) {
   return `<div class="vista-cab"><h1>Paso a paso</h1><p>Qué te toca hacer y cuándo: lo urgente primero, con el porqué, el cómo y lo que pagas a Hacienda.</p></div>${htmlRuta(M)}`;
@@ -6512,7 +6512,7 @@ function htmlAnalisisIA(M) {
   const ia = iaActual();
   const prog = `<div id="iaProgreso">${htmlProgresoIA()}</div>${htmlPreguntasIA(true)}`;
   if (!ia) return prog + (!S.iaCargado ? '<div class="vacio">Cargando el análisis…</div>'
-    : `<div class="vacio">Todavía no hay un análisis de tu cartera. ${AS.clave ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Escribiéndolo…' : 'Que GrowFolio IA lo escriba ahora'}</button>` : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Activa GrowFolio IA (gratis) y lo escribe con tus datos</button>`}</div>`);
+    : `<div class="vacio">Todavía no hay un análisis de tu cartera. ${AS.clave ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Escribiéndolo…' : 'Que GrowIA lo escriba ahora'}</button>` : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Activa GrowIA (gratis) y lo escribe con tus datos</button>`}</div>`);
   const v = valoresIA(M);
   const R = (t) => rellenarIA(t || '', v);
   const f = String(ia.fecha || '');
@@ -6522,10 +6522,10 @@ function htmlAnalisisIA(M) {
   const cuando = f.length > 10 ? (dias === 0 ? `hoy a las ${hora}` : dias === 1 ? `ayer a las ${hora}` : `el ${fechaLarga(iso(d))}`) : `el ${fechaLarga(f)}${dias > 0 ? `, hace ${dias} ${dias === 1 ? 'día' : 'días'}` : ''}`;
   const firma = ia.propio
     ? `Escrito por ${esc(ia.autor)} ${cuando}${ia.busquedas ? `, con ${ia.busquedas} ${ia.busquedas === 1 ? 'búsqueda' : 'búsquedas'} en internet` : ''} y tus cifras de ese momento${ia.modelo && MODELOS[ia.modelo] ? ` (${MODELOS[ia.modelo].n})` : ''}.`
-    : `Análisis de partida ${cuando}, sin tus cifras al céntimo. ${AS.clave ? 'GrowFolio IA escribe el suyo con tus datos: si no aparece en un par de minutos, pulsa Actualizar ahora.' : 'Activa GrowFolio IA (gratis) para que lo rehaga con tus datos cada día.'}`;
+    : `Análisis de partida ${cuando}, sin tus cifras al céntimo. ${AS.clave ? 'GrowIA escribe el suyo con tus datos: si no aparece en un par de minutos, pulsa Actualizar ahora.' : 'Activa GrowIA (gratis) para que lo rehaga con tus datos cada día.'}`;
   const boton = AS.clave
     ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Actualizando…' : 'Actualizar ahora'}</button>`
-    : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Activar GrowFolio IA, gratis</button>`;
+    : `<button class="btn peq" data-accion="asesor">${ICONOS.chispa}Activar GrowIA, gratis</button>`;
   const ids = [...new Set(M.filas.map((x) => x.inst.id))];
   const puntos = (n) => `<span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
   const reglas = (S.ia && S.ia.reglas) || [];
@@ -6555,7 +6555,7 @@ function htmlAnalisisIA(M) {
     </div>
     <p class="nota" style="margin-top:28px">Lo que opina de cada posición está en Expertos, Tus posiciones; sus fechas, en Cartera, Próximas fechas; y sus pasos, en el Paso a paso.</p>
     ${fuentes.length ? `<details class="plegable"><summary><h2>Fuentes</h2><span class="k">${fuentes.length} noticias que ha leído para contrastar</span></summary><div class="as-fuentes">${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t || '')}">${esc(x.t ? x.t.slice(0, 60) : dom(x.u))}</a>`).join('')}</div></details>` : ''}
-    <p class="nota" style="margin-top:28px">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de GrowFolio y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Es el análisis de partida, sin cantidades: las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. GrowFolio IA lo sustituye por el suyo en cuanto hace su primera revisión.'}</p>
+    <p class="nota" style="margin-top:28px">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de GrowFolio y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Es el análisis de partida, sin cantidades: las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. GrowIA lo sustituye por el suyo en cuanto hace su primera revisión.'}</p>
   </div>`;
 }
 
@@ -6763,8 +6763,8 @@ function preguntasIA() {
 }
 function htmlPreguntasIA(compacto) {
   const qs = preguntasIA(); if (!qs.length) return '';
-  if (compacto) return `<a class="ia-pregunta-aviso" href="#objetivos">${ICONOS.chispa}<span><b>La IA quiere saber ${qs.length === 1 ? 'una cosa' : `${qs.length} cosas`} de ti</b> para afinar sus consejos</span><span class="k">Contestar</span></a>`;
-  return `<section class="pf-preguntas" aria-labelledby="hPreg"><div class="sec-cab"><h2 id="hPreg">${ICONOS.chispa}La IA quiere saber</h2><span class="k">con tu respuesta rehace sus consejos</span></div>
+  if (compacto) return `<a class="ia-pregunta-aviso" href="#objetivos">${ICONOS.chispa}<span><b>GrowIA quiere saber ${qs.length === 1 ? 'una cosa' : `${qs.length} cosas`} de ti</b> para afinar sus consejos</span><span class="k">Contestar</span></a>`;
+  return `<section class="pf-preguntas" aria-labelledby="hPreg"><div class="sec-cab"><h2 id="hPreg">${ICONOS.chispa}GrowIA quiere saber</h2><span class="k">con tu respuesta rehace sus consejos</span></div>
     ${qs.map((x, i) => `<div class="pf-preg" data-preg="${i}"><b>${esc(x.q)}</b>${x.por_que ? `<p class="k">${esc(x.por_que)}</p>` : ''}
       <div class="pf-opc">${(x.opciones || []).slice(0, 5).map((o) => `<button type="button" class="chip-btn" data-resp="${esc(o)}">${esc(o)}</button>`).join('')}</div>
       <form class="pf-otra"><input placeholder="${(x.opciones || []).length ? 'O escríbelo tú' : 'Tu respuesta'}" aria-label="Tu respuesta"><button class="btn peq">Responder</button></form></div>`).join('')}
@@ -6777,7 +6777,7 @@ async function responderIA(i, a) {
   p.actualizado = new Date().toISOString();
   AS.foto = null;
   await guardarYPintar('Respuesta a la IA');
-  toast('Apuntado. La IA lo tendrá en cuenta en su próxima revisión.', 4000);
+  toast('Apuntado. GrowIA lo tendrá en cuenta en su próxima revisión.', 4000);
 }
 
 /* ---------- tus límites como un reparto: acciones sueltas, cripto y oro no pueden sumar más del 100 % ----------
@@ -6901,7 +6901,7 @@ function editarPerfil() {
     if (lim != null) S.cartera.limite_acciones = lim;
     AS.foto = null;
     await guardarYPintar('Perfil de inversor', h);
-    toast('Guardado. La IA rehará sus consejos con tu perfil.', 4000);
+    toast('Guardado. GrowIA rehará sus consejos con tu perfil.', 4000);
   };
 }
 function editarMeta(id) {
@@ -7137,7 +7137,7 @@ function htmlFicha(f) {
   let cuerpo = '';
   if (S.ficha.tab === 'resumen') cuerpo = fichaResumen(f);
   else if (S.ficha.tab === 'expertos') cuerpo = fichaExpertos(f);
-  else if (S.ficha.tab === 'noticias') cuerpo = `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px">Lo que dice la prensa, según GrowFolio IA</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
+  else if (S.ficha.tab === 'noticias') cuerpo = `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px">Lo que dice la prensa, según GrowIA</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
   else cuerpo = fichaDatos(f);
   return `<div class="ficha-cab">
     <div class="ficha-tit">${logo(i.dominio, i.corto || i.nombre)}<div><h2 id="fichaTit">${esc(i.corto || i.nombre)}</h2><small title="${esc(donde(i))}">${origen(i)} ${esc(tipo)} en ${esc(f.pos.plataforma || '')}</small>${i.nombre && i.nombre !== i.corto ? `<small>${esc(i.nombre)}</small>` : ''}</div>
@@ -7795,17 +7795,17 @@ async function leerCapturas(archivos, alPaso) {
     const txt = (((j.candidates || [])[0] || {}).content || {}).parts ? j.candidates[0].content.parts.map((x) => x.text || '').join('') : '';
     const o = extraerJSON(txt);
     if (o && Array.isArray(o.posiciones)) return o;
-    ultimo = new Error('GrowFolio IA no ha devuelto las posiciones. Prueba con capturas más nítidas.');
+    ultimo = new Error('GrowIA no ha devuelto las posiciones. Prueba con capturas más nítidas.');
   }
   throw ultimo || new Error('No se pudo leer.');
 }
 async function importarCapturas() {
   await cargarAsesor();
-  if (!AS.clave) { toast('Para leer las capturas hace falta activar GrowFolio IA (gratis, con tu clave de Google): te abro dónde ponerla', 5000); abrirAsesor(); return; }
+  if (!AS.clave) { toast('Para leer las capturas hace falta activar GrowIA (gratis, con tu clave de Google): te abro dónde ponerla', 5000); abrirAsesor(); return; }
   const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
   let hecho = false, filas = [], efectivo = [];
   const h = hoja('Importar desde capturas', `<div class="imp-cont">
-      <p class="nota" style="margin:0">Haz capturas de la pantalla de posiciones de tu bróker (MyInvestor, Trade Republic, Bitvavo u otro) o sube el PDF del extracto. GrowFolio IA las lee y aquí revisas lo que ha entendido antes de guardar nada. Las imágenes van de tu navegador a Google y no se guardan.</p>
+      <p class="nota" style="margin:0">Haz capturas de la pantalla de posiciones de tu bróker (MyInvestor, Trade Republic, Bitvavo u otro) o sube el PDF del extracto. GrowIA las lee y aquí revisas lo que ha entendido antes de guardar nada. Las imágenes van de tu navegador a Google y no se guardan.</p>
       <label class="imp-sube"><input type="file" id="impArch" accept="image/*,application/pdf" multiple hidden><span class="imp-sube-c">${ICONOS.recorte}<b>Elegir capturas o PDF</b><small>Puedes elegir varias a la vez</small></span></label>
       <div id="impEstado" class="imp-estado" aria-live="polite"></div>
       <div id="impRev"></div>
@@ -7982,7 +7982,7 @@ const ILUS = {
   privada: '<rect class="l" x="70" y="10" width="100" height="150" rx="16"/><path class="m" d="M70 136h100"/><g class="cierra"><path class="a" d="M100 70V56a20 20 0 0140 0v14" stroke-width="5"/></g><rect class="fA" x="90" y="68" width="60" height="46" rx="10"/><circle cx="120" cy="88" r="5" fill="#1A1408"/><path d="M120 92v9" stroke="#1A1408" stroke-width="4" stroke-linecap="round"/><g class="an3"><rect class="fp" x="178" y="44" width="54" height="24" rx="12"/><text class="t" x="184" y="60">cifrada</text><rect class="fp" x="8" y="98" width="56" height="24" rx="12"/><text class="t" x="15" y="114">solo tú</text></g>',
 };
 const INTRO = [
-  { il: 'logo', t: 'Tu dinero, con una IA que te dice qué hacer', x: 'Juntas tus fondos, acciones, ETF, oro y cripto de MyInvestor, Trade Republic, Bitvavo o el bróker que uses, con los precios en directo. GrowFolio IA los estudia y te dice qué hacer con ellos.' },
+  { il: 'logo', t: 'Tu dinero, con una IA que te dice qué hacer', x: 'Juntas tus fondos, acciones, ETF, oro y cripto de MyInvestor, Trade Republic, Bitvavo o el bróker que uses, con los precios en directo. GrowIA los estudia y te dice qué hacer con ellos.' },
   { il: 'notas', t: 'Una IA que analiza tu cartera', x: 'Cada día lee las noticias de todo el mundo y repasa lo que tienes según tu edad, tus metas y el riesgo que aguantas. Te pone nota en diversificación, costes, riesgo, disciplina e impuestos, y te dice qué mejorar primero. Si le falta algo de ti, te lo pregunta.' },
   { il: 'pasos', t: 'Qué hacer, paso a paso', x: 'Con lo que ve, te prepara la lista de cada mes: comprar, vender, aportar, poner una orden stop o vigilar unos resultados. Con el porqué, cómo hacerlo en tu bróker y lo que pagarás a Hacienda. Lo haces, lo marcas y se queda hecho.' },
   { il: 'ia', t: 'Pregúntale lo que quieras', x: '«Me sobran 500 €, ¿dónde los meto?» o «¿Vendo Repsol?». Te contesta con tus números: calcula la venta con FIFO e impuestos, busca en internet si hace falta y te lo explica fácil. También puedes recortar un trozo de la pantalla y preguntarle por él.' },
@@ -8914,8 +8914,9 @@ document.addEventListener('click', (e) => {
 const VERSION = '0.2.1';
 const NOVEDADES = [
   { v: '0.2.1', f: '2026-10-20', h: '13:14', t: 'La IA al frente y lo que habéis avisado', cosas: [
-    { d: 'pregunta', ir: { v: 'cartera', sel: '.toca.iac' }, t: 'GrowFolio IA, lo primero', x: 'En Cartera, debajo del patrimonio: lo que dice la IA de tu cartera en una frase, sus notas y lo que toca hacer ahora, con su botón para marcarlo hecho sin ir al Paso a paso.' },
-    { d: 'intro', t: 'Una presentación nueva', x: 'Se cuenta bajando: el logo se monta pieza a pieza y cada idea entra con el scroll, con GrowFolio IA de protagonista. Sale una vez a todos, y está en Ajustes > Ver la presentación.' },
+    { d: 'pregunta', ir: { v: 'cartera', sel: '.toca.iac' }, t: 'GrowIA, lo primero', x: 'En Cartera, debajo del patrimonio: lo que dice la IA de tu cartera en una frase, sus notas y lo que toca hacer ahora, con su botón para marcarlo hecho sin ir al Paso a paso.' },
+    { d: 'pregunta', t: 'La IA ahora se llama GrowIA', x: 'Más corto. Así sale en Cartera, en el análisis, en el Paso a paso y al preguntarle.' },
+    { d: 'intro', t: 'Una presentación nueva', x: 'Se cuenta bajando: el logo se monta pieza a pieza y cada idea entra con el scroll, con GrowIA de protagonista. Sale una vez a todos, y está en Ajustes > Ver la presentación.' },
     { d: 'hecho', ir: { v: 'ruta', sel: '.t-check' }, t: 'Lo hecho se queda hecho', x: 'Si la IA vuelve a escribir con otras palabras un paso que ya marcaste (como la orden stop de Repsol), sigue saliendo como hecho. Y la IA sabe lo que ya has hecho para no volver a pedírtelo.' },
     { d: 'calendario', ir: { v: 'agenda', sel: '.ag-mes2' }, t: 'El calendario, mes a mes', x: 'Toca «Ver el mes» y muévete con las flechas, o deslizando, hasta diciembre del año que viene. Al tocar un día ves lo que pasa.' },
     { d: 'cifras', t: 'Las acciones de Londres, en euros', x: 'Cotizan en peniques y algunas salían como si fueran euros (NatWest, a 666 €). Ahora se pasan bien a euros, también con el precio en directo.' },
@@ -8926,7 +8927,7 @@ const NOVEDADES = [
     { d: 'idioma', ir: { v: 'cartera', sel: '#bIdioma' }, t: 'El idioma, arriba', x: 'La bandera de arriba, junto a Ajustes, cambia entre español e inglés.' },
     { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor' }, t: 'Recortar, dentro de Pregúntale', x: 'El botón para recortar un trozo de la pantalla ya no va suelto arriba: está al abrir Pregúntale y junto a donde escribes.' },
     { d: 'logo', t: 'Adiós a la bellota', x: 'Si la pestaña del navegador o el acceso directo seguían con el icono y el nombre de antes, ya salen los de GrowFolio.' },
-    { d: 'aviso', ir: { v: 'analisis', sel: '[data-accion="ia-actualizar"]' }, t: 'Cuando Google se satura', x: 'Si Gemini está saturado, GrowFolio IA lo reintenta y pasa a otro modelo gratuito. Si ninguno responde, el análisis se vuelve a intentar solo a los 5, 15 y 30 minutos, y mientras tienes el último.' },
+    { d: 'aviso', ir: { v: 'analisis', sel: '[data-accion="ia-actualizar"]' }, t: 'Cuando Google se satura', x: 'Si Gemini está saturado, GrowIA lo reintenta y pasa a otro modelo gratuito. Si ninguno responde, el análisis se vuelve a intentar solo a los 5, 15 y 30 minutos, y mientras tienes el último.' },
   ] },
   { v: '0.2.0', f: '2026-10-20', h: '05:03', t: 'Tu cartera, ahora en tu cuenta', cosas: [
     { d: 'perfil', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Cuentas con Google o con correo', x: 'Entras con Google o con tu correo en la web, en Chrome y en la app de Android, que abre la ventanita de Google del propio móvil. Tu cartera se guarda en tu cuenta y la ves igual en el móvil, en el ordenador y en la app.' },
@@ -8949,20 +8950,20 @@ const NOVEDADES = [
     { d: 'app', t: 'En la app no se pierde nada', x: 'Si guardas en la app sin el token de GitHub, ya no sale el aviso de Android. Se queda en el móvil, manda sobre lo de GitHub si es más nuevo y se sube solo cuando haya token. Al apuntar una compra, la fecha ahora se llama «Cuándo la compraste».' },
     { d: 'tour', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Novedades que te llevan a cada cosa', x: 'Cada mejora tiene un «Enséñamelo» que te lleva hasta ella, resaltada. Si llevabas días sin entrar, salen todas las versiones que te has perdido, con su día y su hora, y al final está el registro de cambios completo en texto. Ajustes tiene su engranaje y va ordenado en tarjetas, y el tutorial enseña el widget de Android.' },
     { d: 'gta', ir: { v: 'cartera', sel: '[data-gta]' }, t: 'El rincón de GTA VI, rehecho', x: 'Ahora es una escena de neón: atardecer, cuadrícula que se mueve, letras que se encienden y cifras que cuentan hacia arriba al aparecer. Según bajas se dibujan las gráficas: tu cartera medida en copias del juego en cada momento de la espera, lo que habría hecho desde el primer tráiler y el camino hasta el 19 de noviembre, que se va llenando. El tráiler de lanzamiento, al final.' },
-    { d: 'idioma', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Mucho más en inglés', x: 'Paso a paso, Expertos, Fiscalidad, la ficha, las ideas y GTA VI ya salen en inglés, también las frases con nombres y cifras dentro («Sell part of Repsol: 98 shares»). Los informes de GrowFolio IA y las noticias siguen en español por ahora.' },
+    { d: 'idioma', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Mucho más en inglés', x: 'Paso a paso, Expertos, Fiscalidad, la ficha, las ideas y GTA VI ya salen en inglés, también las frases con nombres y cifras dentro («Sell part of Repsol: 98 shares»). Los informes de GrowIA y las noticias siguen en español por ahora.' },
   ] },
   { v: '0.1.16', f: '2026-10-19', h: '23:43', t: 'Compras arregladas y todo más claro', cosas: [
     { d: 'buscar', t: 'Apuntar compras, sin líos', x: 'Buscar «SP500», «sp 500» o «S&P500» ya encuentra el S&P 500. Primero pones cuánto pagaste en total y las participaciones salen solas con el precio de ese día (si cambias la fecha, cambia el precio). Si pones el total donde va el precio, te avisa antes de guardar, y ya no resta del efectivo si no tienes.' },
     { d: 'ficha', t: 'Ficha más limpia', x: 'Arriba, tipo y bróker en una línea, los cuatro botones en una fila en el móvil y la fecha del precio explicada (los fondos tienen un precio al día). Las medias y el RSI van plegados en «Para curiosos» y la gestora sale con su nombre.' },
-    { d: 'pregunta', t: 'La IA habla más claro', x: 'GrowFolio IA tiene una regla nueva: nada de jerga sin explicar y empezar por lo que te supone a ti. Se nota en los próximos informes y respuestas.' },
+    { d: 'pregunta', t: 'La IA habla más claro', x: 'GrowIA tiene una regla nueva: nada de jerga sin explicar y empezar por lo que te supone a ti. Se nota en los próximos informes y respuestas.' },
     { d: 'renta', t: 'Hacienda en una frase', x: 'En el Paso a paso, lo de Hacienda sale en una frase y el resto en «Más sobre Hacienda». Las noticias agrupan las fuentes («Yahoo Finance (3)») y las etiquetas «Bueno» y «Malo» ya no se estiran a lo ancho.' },
     { d: 'perfil', t: 'Riesgo y objetivos sin líos', x: 'El riesgo de 1 a 7 dice que 7 es lo más arriesgado y la nota de la IA se llama «Control del riesgo» (5 es lo mejor). En Objetivos ya no salen filas «sin decir» hasta que rellenas tu perfil, y al vender ves cuántas participaciones tienes.' },
   ] },
   { v: '0.1.15', f: '2026-10-19', h: '23:26', t: 'Menos ruido', cosas: [
-    { d: 'ajustes', t: 'Ajustes ordenados', x: 'Seguridad (PIN, contraseña y este dispositivo), GrowFolio IA y la app, Ayuda, y lo técnico (copias, archivos y GitHub) plegado en «Avanzado».' },
+    { d: 'ajustes', t: 'Ajustes ordenados', x: 'Seguridad (PIN, contraseña y este dispositivo), GrowIA y la app, Ayuda, y lo técnico (copias, archivos y GitHub) plegado en «Avanzado».' },
     { d: 'mercados', t: 'Mercados dice cuánto te toca', x: 'En vez de «te afecta» en todos, cada mercado dice qué parte de tu cartera depende de él. Y tocando la cinta de cotizaciones de arriba vas a Mercados.' },
     { d: 'movil', t: 'Menos iconos arriba en el móvil', x: 'El estado sale en corto («En directo», «Bolsas cerradas») y recortar la pantalla está dentro de Pregúntale. En Próximas fechas, las aportaciones del mismo día van en una sola fila.' },
-    { d: 'jerga', t: 'Las mismas palabras en todas partes', x: '«Acciones» en vez de apuestas, «GrowFolio IA» y «Pregúntale» para la IA, «bolsa de Madrid» o «fondo de Irlanda» al lado de cada cosa y Londres en libras, no en peniques. En el radar del móvil, solo lo importante.' },
+    { d: 'jerga', t: 'Las mismas palabras en todas partes', x: '«Acciones» en vez de apuestas, «GrowIA» y «Pregúntale» para la IA, «bolsa de Madrid» o «fondo de Irlanda» al lado de cada cosa y Londres en libras, no en peniques. En el radar del móvil, solo lo importante.' },
   ] },
   { v: '0.1.14', f: '2026-10-19', h: '23:19', t: 'Más claro', cosas: [
     { d: 'cifras', t: 'Ideas con cifras de verdad', x: 'Antes salía lo que daría cada idea «al año» aunque su plazo fuera de 3 meses, y aparecían cosas como +110 %. Ahora ves lo que te quedarías en su plazo real, ya restados los impuestos.' },
@@ -8981,7 +8982,7 @@ const NOVEDADES = [
     { d: 'idioma', t: 'GrowFolio en inglés, en pruebas', x: 'En Ajustes, Idioma, con la bandera de cada uno, y también en la presentación y al entrar. Está a medias: botones, pestañas y formularios ya salen en inglés, pero las noticias, los informes de la IA y algunos textos siguen en español.' },
   ] },
   { v: '0.1.11', f: '2026-10-19', h: '21:33', t: 'GrowFolio', cosas: [
-    { d: 'logo', t: 'Ahora se llama GrowFolio', x: 'Grow (crecer) y portfolio (cartera): tu cartera creciendo. Logo nuevo en la web y en la app, y la IA pasa a llamarse GrowFolio IA (por dentro sigue usando Gemini, de Google).' },
+    { d: 'logo', t: 'Ahora se llama GrowFolio', x: 'Grow (crecer) y portfolio (cartera): tu cartera creciendo. Logo nuevo en la web y en la app, y la IA pasa a llamarse GrowIA (por dentro sigue usando Gemini, de Google).' },
     { d: 'intro', t: 'Una presentación al empezar', x: 'La primera vez que abres la web o la app, cinco diapositivas con lo que puedes hacer y, al final, el botón para crear tu cartera o entrar. Desde la pantalla de entrar se puede volver a ver.' },
     { d: 'tour', t: 'El tutorial, siempre a mano', x: 'Al final de cada pestaña y arriba del todo en Ajustes, aunque te lo saltaras al principio.' },
     { d: 'opinion', t: 'Tu opinión, desde la app', x: 'Cuenta qué se ve mal, qué falla o una idea, y en qué pestaña. Botón al final de cada pestaña y en Ajustes.' },
@@ -8991,7 +8992,7 @@ const NOVEDADES = [
     { d: 'pregunta', t: 'La IA te pregunta', x: 'Cuando le falta algo de ti para acertar, te lo pregunta. Contestas con un toque y rehace sus consejos.' },
     { d: 'pasos', t: 'Paso a paso más claro', x: 'Separa lo que tienes que hacer tú, las fechas que vigilar y lo que va solo. Cada compra o venta dice lo que supone en la renta y qué evitar por Hacienda.' },
     { d: 'renta', t: 'Guía de la renta', x: 'En Fiscalidad: los pasos de la declaración, en qué casilla va cada cosa y tus ventas del año.' },
-    { d: 'mundo', t: 'Noticias de todo el mundo', x: 'El informe de GrowFolio IA repasa EEUU, Europa, España, Asia y emergentes, más tipos, divisas, materias primas y cripto, y dice qué supone cada cosa para tu cartera. En Mercados, los datos macro de un vistazo.' },
+    { d: 'mundo', t: 'Noticias de todo el mundo', x: 'El informe de GrowIA repasa EEUU, Europa, España, Asia y emergentes, más tipos, divisas, materias primas y cripto, y dice qué supone cada cosa para tu cartera. En Mercados, los datos macro de un vistazo.' },
     { d: 'json', t: 'Tu cartera desde un archivo', x: 'Un JSON sencillo con el ISIN o el ticker de cada cosa, cuántas tienes y lo que pagaste: GrowFolio encuentra cada valor sola. Hay un ejemplo para descargar en Ajustes, Copias.' },
     { d: 'catalogo', t: 'Fondos que no tenían precio', x: 'El Fidelity S&P 500, True Value, Xetra-Gold y los ETF del DAX, Euro Stoxx 50 y LifeStrategy 80 % ya tienen precio diario.' },
     { d: 'app', t: 'El aviso de la app, nada más abrirla', x: 'Si hay versión nueva de la app, te lo dice al abrirla y se instala con un toque (desde la 0.1.10; la primera vez se baja con Chrome).' },
@@ -9303,12 +9304,12 @@ const TOUR = [
   { v: 'cartera', sel: '#carTabs', t: 'Posiciones y plan', x: 'Toca una posición para ver su ficha. En "Plan y movimientos" están las aportaciones de cada mes y todo lo que has comprado y vendido.' },
   { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', t: 'Paso a paso', x: 'Lo que toca hacer con tu dinero, en orden y con lo primero arriba: qué, cuánto, por qué y lo que pagarías a Hacienda.' },
   { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', t: 'Expertos', x: 'Qué opinan los analistas de lo que tienes y las ideas de compra que sacan GrowFolio y la IA de unas 800 empresas.' },
-  { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"], .navbar [data-mas]', t: 'Análisis', x: 'La IA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
+  { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"], .navbar [data-mas]', t: 'Análisis', x: 'GrowIA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
   { v: 'fiscal', sel: '.navbar [data-ir="fiscal"], .nav [data-ir="fiscal"], .navbar [data-mas]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
   { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"], .navbar [data-mas]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
   { v: 'agenda', sel: '.nav [data-ir="agenda"], .navbar [data-mas]', t: 'Calendario', x: 'Lo que viene para lo que tienes: resultados, dividendos con lo que te toca en euros, reuniones de la Fed y el BCE, días sin bolsa y tus aportaciones, con los días que faltan.' },
   { v: 'mercados', sel: '.nav [data-ir="mercados"], .navbar [data-mas]', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
-  { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale a GrowFolio IA', x: 'Lo que quieras de tu cartera, con tus números delante. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
+  { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale a GrowIA', x: 'Lo que quieras de tu cartera, con tus números delante. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
   { v: 'cartera', dib: 'app', t: 'El widget del móvil', x: 'Con la app de Android tienes un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo próximo que toca, sin abrir nada. Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio. La app se baja desde Ajustes.' },
   { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades, tu opinión y este tutorial, para repetirlo cuando quieras.' },
 ];
@@ -10301,9 +10302,9 @@ function abrirAjustes() {
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
     </div>
     </div>
-    <h2 class="aj-grupo">GrowFolio IA y la app</h2>
+    <h2 class="aj-grupo">GrowIA y la app</h2>
     <div class="aj-caja">
-      <button class="aj-fila" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}<span><b>Ajustes de GrowFolio IA</b><small>Funciona con Gemini, la IA de Google, gratis con una clave tuya: responde a lo que le preguntes y revisa tu cartera cada día.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}<span><b>Ajustes de GrowIA</b><small>Funciona con Gemini, la IA de Google, gratis con una clave tuya: responde a lo que le preguntes y revisa tu cartera cada día.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <div class="seccion-ed"><h3>${ICONOS.cartera}App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
     </div>
     <h2 class="aj-grupo">Ayuda</h2>
@@ -10527,7 +10528,7 @@ const IA = { generando: false, turno: null, error: null, ultimoIntento: 0, reint
 function iaActual() {
   const p = S.iaPropio, pub = S.ia;
   if (p && p.json && (!pub || String(p.fecha) >= String(pub.fecha))) return { ...p.json, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
-  return pub ? { ...pub, autor: 'IA', publicado: true } : null;
+  return pub ? { ...pub, autor: 'GrowIA', publicado: true } : null;
 }
 const firmaSenales = (M) => [...new Set(M.filas.map((f) => `${f.inst.id}:${f.senal.nivel}`))].sort().join('|');
 
@@ -10561,10 +10562,10 @@ async function guardarAnalisisPropio() {
 
 function pedidoAnalisis(ids, motivo, conWeb = true) {
   return `Haz la revisión de hoy de mi cartera (${motivo}). Antes de escribir:
-0. Lee el informe de prensa de GrowFolio IA que viene en los datos (noticias de cada posición, del mercado y de las ideas, ya contrastadas) y úsalo como base.
+0. Lee el informe de prensa de GrowIA que viene en los datos (noticias de cada posición, del mercado y de las ideas, ya contrastadas) y úsalo como base.
 1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.' : 'No puedes buscar en internet: usa los titulares de los datos (los de mis posiciones, los del mercado y los de las mejores ideas del radar) y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
 2. Si recomiendas vender algo, calcúlalo con simular_venta. Si recomiendas comprar una acción, con simular_compra.
-3. Para las ideas de compra, parte de las que ha elegido GrowFolio IA en su escaneo de prensa de toda la bolsa, del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de GrowFolio y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
+3. Para las ideas de compra, parte de las que ha elegido GrowIA en su escaneo de prensa de toda la bolsa, del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de GrowFolio y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
 4. Ten en cuenta el plazo y los impuestos en todo: no es lo mismo ganar un 50 % en 3 meses que en 3 años. Para cada idea, estima en cuántos meses se puede materializar la subida y cuánto, y compárala en "al año" y neta de impuestos con mi fondo indexado. Para cada venta o compra, di lo que pago (ganancia, tasa, retención de dividendos que no recupero).
 5. Sintetiza: no repitas en una sección lo que ya está en otra. Frases cortas.
 6. Ajústalo todo a su perfil y sus objetivos (edad, cuándo necesita el dinero, cuánto riesgo aguanta, sus límites y sus metas con fecha y cifra, vienen en los datos): si algo de su cartera choca con ellos, dilo y propón cómo encajarlo; en la hoja de ruta, lo que necesite cada meta.
@@ -10712,7 +10713,7 @@ function cfgAsesor() {
   return { modelo, prov, web: c.web !== false && !webFalla, webPedida: c.web !== false, webFalla, auto: ['diario', 'semanal', 'manual'].includes(c.auto) ? c.auto : 'diario' };
 }
 const guardarCfgAsesor = (o) => LS.set('inv-asesor-cfg2', { ...LS.get('inv-asesor-cfg2', {}), ...o });
-const nombreIA = () => 'GrowFolio IA';
+const nombreIA = () => 'GrowIA';
 const LS_CLAVE = { google: 'inv-asesor-clave-g' }, CAMPO_CLAVE = { google: 'clave_g' };
 const R2 = (n, d = 2) => (n == null || !isFinite(n) ? null : Math.round(n * 10 ** d) / 10 ** d);
 const E0 = (n) => fmtNum(n, 0) + ' €', E2 = (n) => fmtNum(n, 2) + ' €';
@@ -10895,7 +10896,7 @@ function contextoAsesor(M) {
     for (const id of new Set(M.filas.map((f) => f.inst.id))) if (N[id] && N[id].length) L.push(`${nombreInst(id)}:\n` + tit(N[id], 5));
     const inf = informeVisible();
     if (inf && (inf.resumen || (inf.mercado || []).length)) {
-      L.push('', `## Informe de prensa de GrowFolio IA (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, inf.resumen ? `Resumen: ${inf.resumen}` : 'Solo lo del mercado y lo de sus posiciones.');
+      L.push('', `## Informe de prensa de GrowIA (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, inf.resumen ? `Resumen: ${inf.resumen}` : 'Solo lo del mercado y lo de sus posiciones.');
       for (const m of inf.mercado || []) L.push(`- Mercado${m.zona ? ` ${m.zona}` : ''} (${m.impacto}): ${m.t}. ${m.detalle || ''}${m.implica ? ` Para la cartera: ${m.implica}` : ''}`);
       for (const x of inf.macro || []) L.push(`- Macro: ${x.t}: ${x.dato}. ${x.lectura || ''}`);
       for (const [id, x] of Object.entries(inf.posiciones || {})) L.push(`- ${nombreInst(id)} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Vigilar: ${x.vigilar || '—'}. Fuentes: ${(x.fuentes || []).map((f) => f.f || '').filter(Boolean).join(', ') || '—'}`);
@@ -10905,14 +10906,14 @@ function contextoAsesor(M) {
     const esc0 = S.escaneo;
     if (esc0 && esc0.decision) {
       const d = esc0.decision;
-      L.push('', `## Lo que ha elegido GrowFolio IA tras escanear la prensa de ${Object.keys(esc0.lectura || {}).length} empresas (${haceCuanto(d.generado)})`, d.comentario || '');
+      L.push('', `## Lo que ha elegido GrowIA tras escanear la prensa de ${Object.keys(esc0.lectura || {}).length} empresas (${haceCuanto(d.generado)})`, d.comentario || '');
       for (const i of d.ideas || []) L.push(`- Comprar ${i.n || ''} (${i.s}), confianza ${i.confianza}: ${i.tesis || ''} Catalizador: ${i.catalizador || '—'}. Riesgo: ${i.riesgo || '—'}. Contraste: ${i.contraste || '—'}.`);
       for (const v of d.evitar || []) L.push(`- Evitar ${v.n || ''} (${v.s}): ${v.motivo || ''}`);
     }
     if (esc0 && esc0.lectura) {
       const hace7 = Date.now() - 7 * 864e5;
       const imp = Object.entries(esc0.lectura).filter(([, l]) => l.rel >= 2 && new Date(l.d).getTime() > hace7).sort((a, b) => b[1].rel - a[1].rel).slice(0, 80);
-      if (imp.length) L.push('', '## Prensa importante de la última semana en el radar (escaneo de GrowFolio IA)', ...imp.map(([s0, l]) => `- ${s0} (${l.imp}, relevancia ${l.rel}): ${l.txt}${l.cat ? ` Catalizador: ${l.cat}.` : ''}`));
+      if (imp.length) L.push('', '## Prensa importante de la última semana en el radar (escaneo de GrowIA)', ...imp.map(([s0, l]) => `- ${s0} (${l.imp}, relevancia ${l.rel}): ${l.txt}${l.cat ? ` Catalizador: ${l.cat}.` : ''}`));
     }
     const ia = iaActual();
     if (ia) {
@@ -10927,7 +10928,7 @@ function contextoAsesor(M) {
       const P = pasosRuta(M), limpio = (t) => String(t || '').replace(/<[^>]+>/g, '');
       L.push('', '## Su hoja de ruta en GrowFolio (pasos que ya calcula GrowFolio; los marcados como hechos ya los ha hecho)');
       for (const [k, t] of PLAZOS) { const xs = P[k].filter((x) => x.fuente === 'web'); if (xs.length) L.push(`${t}:`, ...xs.map((x) => `- ${x.hecho ? '[hecho] ' : ''}${x.cuando ? x.cuando + ': ' : ''}${limpio(x.t)}. ${limpio(x.det)}`)); }
-      // lo que ya ha hecho de lo que le propuso GrowFolio IA: no se lo vuelvas a proponer
+      // lo que ya ha hecho de lo que le propuso GrowIA: no se lo vuelvas a proponer
       const r = S.cartera.ruta || {}, hIA = Object.entries(r.hechos || {}).filter(([k]) => k.startsWith('ia:')).sort((a, b) => (b[1] > a[1] ? 1 : -1)).slice(0, 15);
       if (hIA.length) L.push('', '## Pasos que le propusiste y ya ha hecho (no los vuelvas a proponer; si hace falta algo distinto, di qué ha cambiado)', ...hIA.map(([k, d]) => `- ${fechaCorta(d)}: ${limpio((r.hechosIA && r.hechosIA[k] && r.hechosIA[k].t) || k.slice(3))}`));
     } catch (e) {}
@@ -11507,8 +11508,8 @@ function htmlTurno(t, k) {
 function htmlClaveAsesor() {
   const cfg = cfgAsesor();
   return `<div class="as-config">
-    <h3>Activa GrowFolio IA, gratis</h3>
-    <p>GrowFolio IA funciona con ${esc(MODELOS[cfg.modelo].n)}, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
+    <h3>Activa GrowIA, gratis</h3>
+    <p>GrowIA funciona con ${esc(MODELOS[cfg.modelo].n)}, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
     <ol class="as-pasos-clave">
       <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
       <li>Pulsa "Create API key" y copia la clave entera: empieza por AQ. (o por AIza si es de las antiguas).</li>
@@ -11530,11 +11531,11 @@ function htmlAjustesAsesor() {
   const cfg = cfgAsesor();
   const yo = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
   return `<div class="as-config">
-    <h3>Ajustes de GrowFolio IA</h3>
+    <h3>Ajustes de GrowIA</h3>
     <fieldset class="as-modelos"><legend>Modelo de Gemini (todos gratis con tu clave)</legend>${Object.entries(MODELOS).map(([k, m]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${cfg.modelo === k ? ' checked' : ''}><span><b>${m.n}</b><small>${m.txt}</small></span></label>`).join('')}</fieldset>
     <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> Puede buscar en internet con Google</label>
     ${cfg.webFalla ? '<p class="nota" style="margin:-6px 0 0">Tu plan de Google no incluye la búsqueda en internet: de momento la IA contrasta con los titulares que baja GrowFolio. Lo vuelve a intentar dentro de unos días.</p>' : ''}
-    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe GrowFolio IA con tus cifras y las noticias del día, en Análisis, Expertos y Paso a paso. Gratis.</small></label>
+    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe GrowIA con tus cifras y las noticias del día, en Análisis, Expertos y Paso a paso. Gratis.</small></label>
     <label class="campo">Lo que quieres que sepa de ti<textarea id="asYo" rows="6" placeholder="Por ejemplo: tu edad, para qué inviertes, si piensas comprar casa y cuándo, cuánto riesgo aguantas, tus reglas para las apuestas…">${esc(yo)}</textarea><small>Va dentro de tu cartera cifrada y lo lee al empezar cada conversación.</small></label>
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
     <div class="seccion-ed"><h3>Clave de Google</h3>
@@ -11580,7 +11581,7 @@ async function abrirAsesor(pregunta, enviar) {
     fondo.innerHTML = `<section class="asesor" role="dialog" aria-modal="true" aria-labelledby="asTit">
       <header class="as-cab"><div class="as-tit"><span class="as-ico">${ICONOS.chispa}</span><div><h2 id="asTit">Asesor</h2><small id="asSub"></small></div></div>
         <button class="ib" data-as="nueva" title="Nueva conversación" aria-label="Nueva conversación">${ICONOS.nueva}</button>
-        <button class="ib" data-as="ajustes" title="Ajustes de GrowFolio IA" aria-label="Ajustes de GrowFolio IA">${ICONOS.ajustes}</button>
+        <button class="ib" data-as="ajustes" title="Ajustes de GrowIA" aria-label="Ajustes de GrowIA">${ICONOS.ajustes}</button>
         <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
       <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
       <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea><button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
@@ -11832,7 +11833,7 @@ function arrancar() {
   pintar();
   LIVE.iniciar();
   cargarIA().then(() => { if (S.vista === 'analisis') pintar(); refrescarToca(); });
-  // el análisis y la clave llegan un poco después de pintar: hasta entonces, la tarjeta de GrowFolio IA de Cartera
+  // el análisis y la clave llegan un poco después de pintar: hasta entonces, la tarjeta de GrowIA de Cartera
   // dice «cargando» (antes decía «aún sin activar» aunque la tuvieras activada) y luego se rehace sola
   Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); });
   clearInterval(tickPrecios); clearInterval(tickEstado);
@@ -12186,7 +12187,7 @@ function avisoIngles() {
   d.querySelector('.ai-x').onclick = () => { d.remove(); try { sessionStorage.setItem('inv-aviso-en', '1'); } catch (e) {} };
   document.body.prepend(d);
 }
-// lo que se le pide a GrowFolio IA, en el idioma de la app
+// lo que se le pide a GrowIA, en el idioma de la app
 const notaIdiomaIA = () => (IDIOMA === 'en' ? '\n\nIDIOMA: el usuario usa GrowFolio en inglés. Escribe en inglés todos los textos que vea él (respuestas, resúmenes, motivos, pasos), aunque estas instrucciones y los datos estén en español. Las claves del JSON no se traducen.' : '');
 
 async function iniciar() {
