@@ -7303,6 +7303,12 @@ function grafHero(cont, series, opt = {}) {
     <linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.46"/><stop offset="0.55" style="stop-color:${color};stop-opacity:0.12"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
     <linearGradient id="${id}t" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${W}" y2="0"><stop offset="0" style="stop-color:${color};stop-opacity:0.5"/><stop offset="0.7" style="stop-color:${color};stop-opacity:1"/><stop offset="1" style="stop-color:#F8DC9C;stop-opacity:1"/></linearGradient>
     <linearGradient id="${id}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.55"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
+    <pattern id="${id}p" width="${opt.trama || 6}" height="${opt.trama || 6}" patternUnits="userSpaceOnUse"><circle cx="${(opt.trama || 6) / 2}" cy="${(opt.trama || 6) / 2}" r="1.05" style="fill:${color}"/></pattern>
+    <pattern id="${id}q" width="${(opt.trama || 6) * 3}" height="${(opt.trama || 6) * 3}" patternUnits="userSpaceOnUse"><circle cx="${(opt.trama || 6) * 1.5}" cy="${(opt.trama || 6) * 1.5}" r="0.8" style="fill:var(--text-2)"/></pattern>
+    <linearGradient id="${id}mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.95"/><stop offset="0.65" stop-color="#fff" stop-opacity="0.25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+    <linearGradient id="${id}fg" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 10}" x2="0" y2="${suelo}"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.35" stop-color="#fff" stop-opacity="0.22"/><stop offset="1" stop-color="#fff" stop-opacity="0.1"/></linearGradient>
+    <mask id="${id}m"><path d="${area}" fill="url(#${id}mg)"/></mask>
+    <mask id="${id}f"><rect x="0" y="${mt - 10}" width="${W}" height="${suelo - mt + 10}" fill="url(#${id}fg)"/></mask>
     <radialGradient id="${id}r"><stop offset="0" style="stop-color:${color};stop-opacity:0.28"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></radialGradient>
     <linearGradient id="${id}c" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 20}" x2="0" y2="${suelo}"><stop offset="0" style="stop-color:var(--text-2);stop-opacity:0"/><stop offset="0.3" style="stop-color:var(--text-2);stop-opacity:0.5"/><stop offset="1" style="stop-color:var(--text-2);stop-opacity:0.15"/></linearGradient>
     <filter id="${id}b" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="6.5"/></filter>
@@ -7312,6 +7318,8 @@ function grafHero(cont, series, opt = {}) {
     const xx = Math.min(Math.max(ex, borde), W - borde);
     g += `<text class="gh-eje" x="${xx.toFixed(1)}" y="${H - 9}" text-anchor="${xx <= borde + 1 ? 'start' : xx >= W - borde - 1 ? 'end' : 'middle'}">${esc(tx)}</text>`;
   }
+  // textura: una rejilla de puntos muy tenue de fondo
+  g += `<rect class="gh-rejilla" x="0" y="0" width="${W}" height="${suelo}" fill="url(#${id}q)" mask="url(#${id}f)"/>`;
   // la línea de donde empezó el periodo, muy tenue
   if (!opt.sinRef && refVis) g += `<line x1="0" x2="${W}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 5"/>`;
   // la misma curva en gris por debajo: es lo que se ve a la derecha del dedo
@@ -7321,7 +7329,8 @@ function grafHero(cont, series, opt = {}) {
     if (Q.length > 1) g += `<path d="${curvaSuave(Q)}" fill="none" stroke="${se.color || 'var(--text-2)'}" stroke-width="1.5" stroke-dasharray="${se.disc ? '5 5' : ''}" stroke-linejoin="round" opacity="0.85"/>`;
   }
   g += `<g clip-path="url(#${id}k)">
-    <path class="gh-area" d="${area}" fill="url(#${id}a)"/>
+    <path class="gh-area" d="${area}" fill="url(#${id}a)" opacity="0.6"/>
+    <rect class="gh-area gh-trama" x="0" y="0" width="${W}" height="${H}" fill="url(#${id}p)" mask="url(#${id}m)"/>
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="10" opacity="0.45" filter="url(#${id}b)"/>
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="${opt.grueso || 2.8}" stroke-linejoin="round" stroke-linecap="round"/>
   </g>`;
@@ -7443,7 +7452,7 @@ function dibujar(M) {
     };
     const movil = innerWidth < 760;
     const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
-    grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, ref: ref0 && ref0.v, alMover, animar });
+    grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, trama: movil ? 5 : 6, ref: ref0 && ref0.v, alMover, animar });
   }
   // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
   for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
