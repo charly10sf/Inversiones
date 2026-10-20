@@ -126,7 +126,17 @@ final class Datos {
         List<Mov> movs = new ArrayList<>();
     }
 
+    /** los periodos de la curva del widget, en días, y cómo se llaman; se cambian tocando el de arriba */
+    static final int[] PERIODOS = {7, 31, 92, 365};
+    static String nombrePeriodo(int dias) {
+        return dias <= 7 ? "1 semana" : dias <= 31 ? "1 mes" : dias <= 92 ? "3 meses" : "1 año";
+    }
+
     static Resultado calcular(Context c) {
+        return calcular(c, 31);
+    }
+
+    static Resultado calcular(Context c, int dias) {
         Resultado r = new Resultado();
         SharedPreferences p = prefs(c);
         String fotoTxt = p.getString("foto", null);
@@ -175,14 +185,15 @@ final class Datos {
             JSONArray se = f.optJSONArray("serie");
             double[] propia = null;
             try {
-                propia = seriePropia(new JSONObject(p.getString("cierres", "{}")), r.movs, r.total);
+                propia = seriePropia(new JSONObject(p.getString("cierres", "{}")), r.movs, r.total, dias);
             } catch (Exception e) {
                 propia = null;
             }
-            if (propia != null) {   // la del widget va al día aunque no abras la app; la de la web, de reserva
+            if (propia != null) {   // la del widget va al día aunque no abras la app; la de la web (del mes), de reserva
                 r.serie = propia;
-                if (r.rango.isEmpty()) r.rango = "1 mes";
+                r.rango = nombrePeriodo(dias);
             } else if (se != null && se.length() > 1) {
+                r.rango = "1 mes";
                 r.serie = new double[se.length()];
                 for (int k = 0; k < se.length(); k++) r.serie[k] = se.optDouble(k);
                 r.serie[r.serie.length - 1] = r.total;   // el último punto, con los precios de ahora
@@ -199,9 +210,9 @@ final class Datos {
      * cantidad de cada posición por su cierre de ese día, y lo que no cotiza (efectivo, fondos sin cantidad)
      * fijo. El último punto es el valor de ahora.
      */
-    static double[] seriePropia(JSONObject cierres, List<Mov> movs, double total) {
+    static double[] seriePropia(JSONObject cierres, List<Mov> movs, double total, int dias) {
         if (cierres == null || cierres.length() == 0) return null;
-        String desde = LocalDate.now().minusDays(31).toString(), hoy = LocalDate.now().toString();
+        String desde = LocalDate.now().minusDays(dias).toString(), hoy = LocalDate.now().toString();
         List<Mov> conHist = new ArrayList<>();
         List<JSONArray> hs = new ArrayList<>();
         TreeSet<String> fechas = new TreeSet<>();
@@ -218,6 +229,17 @@ final class Datos {
             }
         }
         if (conHist.isEmpty() || fechas.size() < 2) return null;
+        // el año, semana a semana (el último día de cada una): con un punto por día la curva sería ruido
+        if (dias > 120) {
+            TreeSet<String> semanal = new TreeSet<>();
+            String ant = null;
+            for (String d : fechas) {
+                if (ant != null && LocalDate.parse(d).get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR) != LocalDate.parse(ant).get(java.time.temporal.IsoFields.WEEK_OF_WEEK_BASED_YEAR)) semanal.add(ant);
+                ant = d;
+            }
+            if (ant != null) semanal.add(ant);
+            if (semanal.size() >= 2) fechas = semanal;
+        }
         List<Double> out = new ArrayList<>();
         int[] idx = new int[hs.size()];
         double[] ult = new double[hs.size()];

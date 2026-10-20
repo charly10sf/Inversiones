@@ -341,6 +341,34 @@ final class Lienzo {
         c.clipPath(marco);
     }
 
+    /** el periodo de la curva arriba, en una pastilla con su flecha: al tocarlo cambia (lo hace Widget) */
+    static boolean conPeriodo(float W, float H, Datos.Resultado r) {
+        return r.hay && H >= 110 && W >= 240 && r.serie != null && r.serie.length > 1 && !r.rango.isEmpty();
+    }
+
+    private void periodo(float xDer, float base, String txt) {
+        float tw = ancho(txt, 11.5f, 600), w = 10 + tw + 5 + 7 + 9, alto = 22, yTop = base - 15;
+        float x = xDer - w;
+        p.reset();
+        p.setAntiAlias(true);
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(alfa(TEXTO, 0x12));
+        c.drawRoundRect(new RectF(dp(x), dp(yTop), dp(xDer), dp(yTop + alto)), dp(alto / 2), dp(alto / 2), p);
+        texto(x + 10, base, txt, 11.5f, 600, TEXTO2, false);
+        // la flecha hacia abajo, dibujada
+        float cx = x + 10 + tw + 5 + 3.5f, cy = yTop + alto / 2 + 0.5f;
+        Path f = new Path();
+        f.moveTo(dp(cx - 3.2f), dp(cy - 1.6f));
+        f.lineTo(dp(cx), dp(cy + 1.8f));
+        f.lineTo(dp(cx + 3.2f), dp(cy - 1.6f));
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(dp(1.4f));
+        p.setStrokeCap(Paint.Cap.ROUND);
+        p.setStrokeJoin(Paint.Join.ROUND);
+        p.setColor(APAGADO);
+        c.drawPath(f, p);
+    }
+
     private void refresco(float cx, float cy, float r) {
         p.reset();
         p.setAntiAlias(true);
@@ -381,7 +409,9 @@ final class Lienzo {
             float izq = W < 250 ? util : util * 0.56f;
             float yb = H / 2 + 2;
             numero(r, ph, yb, izq, Math.min(30, H * 0.38f), 15);
-            texto(ph, yb + 19, recortar(diaEur + " hoy", 12, 650, izq), 12, 650, color(r.dia), false);
+            String hoyTxt = diaEur + (diaPct.isEmpty() ? "" : "  " + diaPct) + " hoy";
+            if (ancho(hoyTxt, 12, 650) > izq) hoyTxt = diaEur + " hoy";
+            texto(ph, yb + 19, recortar(hoyTxt, 12, 650, izq), 12, 650, color(r.dia), false);
             if (W >= 250) grafica(ph + izq + 12, pv + 4, W - 12, H - pv - 2, H, r.serie, false, true);
             c.restore();
             return;
@@ -392,6 +422,7 @@ final class Lienzo {
         texto(ph, y, "Patrimonio", 12, 600, APAGADO, false);
         refresco(W - ph - 6, y - 4.2f, 6.2f);
         texto(W - ph - 19, y, r.horaTxt, 11.5f, 500, APAGADO, true);
+        if (conPeriodo(W, H, r)) periodo(W - ph - 19 - ancho(r.horaTxt, 11.5f, 500) - 10, y, r.rango);
 
         // la cifra grande y gruesa
         float maxSp = Math.max(26, Math.min(42, Math.min(H * 0.2f, W * 0.115f)));
@@ -413,7 +444,7 @@ final class Lienzo {
         float altoFilas = filas.isEmpty() ? 0 : 25 + 31 * filas.size();
         boolean hayAbajo = altoToca + altoFilas > 0;
         float suelo = hayAbajo ? H - pv - altoToca - altoFilas - 8 : H;
-        float graf1 = suelo - (hayAbajo ? 22 : 20);
+        float graf1 = suelo - (hayAbajo ? 12 : 10);   // abajo ya no va la etiqueta del periodo (está arriba)
         if (hayGraf) grafica(0, y + 10, W - 12, graf1, suelo, r.serie, true, false);
         else if (graf1 - y - 10 >= 24) {   // aún sin datos del mes: una línea tenue y qué hacer
             float ym = (y + 10 + graf1) / 2;
@@ -433,8 +464,6 @@ final class Lienzo {
             texto(W / 2 - wa / 2, ym + 4, aviso, 11.5f, 500, APAGADO, false);
         }
 
-        // de qué es la curva, abajo a la izquierda y sin cifra: el único número que cambia es el de hoy
-        if (hayGraf) texto(ph, suelo - 7, r.rango.isEmpty() || r.rango.equals("1 mes") ? "Último mes" : r.rango, 11.5f, 600, APAGADO, false);
 
         float yy = suelo + 4;
         if (!filas.isEmpty()) {
@@ -480,25 +509,25 @@ final class Lienzo {
         String nombre, eur, pct;
         int color;
         boolean sube;
-        float w;
+        float w, fs = 12.5f, fsp = 11;
+        boolean tri = true;   // el triángulo: si no cabe, se quita antes que recortar el nombre (el color ya dice si sube)
     }
 
     private float anchoPastilla(Pastilla t) {
-        return 9 + 7 + 5 + ancho(t.nombre, 12.5f, 650) + (t.eur.isEmpty() ? 0 : 5 + ancho(t.eur, 12.5f, 650)) + (t.pct.isEmpty() ? 0 : 5 + ancho(t.pct, 11, 550)) + 10;
+        return (t.tri ? 9 + 7 + 5 : 11) + ancho(t.nombre, t.fs, 650) + (t.eur.isEmpty() ? 0 : 5 + ancho(t.eur, t.fs, 650)) + (t.pct.isEmpty() ? 0 : 5 + ancho(t.pct, t.fsp, 550)) + 10;
     }
 
     /**
      * las cuatro posiciones que más han movido hoy la cartera (como mínimo 1 €), en una rejilla de dos columnas
-     * iguales si cabe (una si el widget es estrecho); si no cabe todo, primero se quita el % y luego se recorta el nombre
+     * iguales si cabe (una si el widget es estrecho). Euros y % siempre: si no cabe, primero la letra un poco más
+     * pequeña, luego se recorta el nombre y, solo si ni así, se quita el %
      */
     private List<List<Pastilla>> pastillas(Datos.Resultado r, float util, int maxLineas) {
         int cols = util >= 300 ? 2 : 1;
         float colW = (util - 6 * (cols - 1)) / cols;
-        List<List<Pastilla>> out = new ArrayList<>();
-        List<Pastilla> cur = new ArrayList<>();
-        int n = 0;
+        List<Pastilla> todas = new ArrayList<>();
         for (Datos.Mov m : r.movs) {
-            if (n == 4 || Math.abs(m.dia) < 1) break;   // van ordenadas de más a menos
+            if (todas.size() == Math.min(4, cols * maxLineas) || Math.abs(m.dia) < 1) break;   // van ordenadas de más a menos
             Pastilla t = new Pastilla();
             double pc = m.valor - m.dia != 0 ? m.dia / (m.valor - m.dia) * 100 : 0;
             t.sube = m.dia > 0;
@@ -506,22 +535,26 @@ final class Lienzo {
             t.eur = r.oculto ? "" : Datos.eur(m.dia, true);
             t.pct = Datos.pct1(pc);
             t.nombre = m.nombre;
-            if (anchoPastilla(t) > colW && !t.eur.isEmpty()) t.pct = "";
-            if (anchoPastilla(t) > colW) {
-                float sobra = anchoPastilla(t) - colW;
-                t.nombre = recortar(t.nombre, 12.5f, 650, Math.max(24, ancho(t.nombre, 12.5f, 650) - sobra));
-            }
             t.w = colW;
-            if (cur.size() == cols) {
-                out.add(cur);
-                if (out.size() == maxLineas) return out;
-                cur = new ArrayList<>();
-            }
-            cur.add(t);
-            n++;
+            todas.add(t);
         }
-        if (!cur.isEmpty() && out.size() < maxLineas) out.add(cur);
+        // todas igual: si alguna no cabe, a todas la letra un poco más pequeña y, si aún no, sin el triángulo
+        if (algunaNoCabe(todas, colW)) for (Pastilla t : todas) { t.fs = 11.5f; t.fsp = 10.5f; }
+        if (algunaNoCabe(todas, colW)) for (Pastilla t : todas) t.tri = false;
+        // y la que siga sin caber: se recorta el nombre y, si ni así, se quita su %
+        for (Pastilla t : todas) {
+            if (anchoPastilla(t) > colW) t.nombre = recortar(t.nombre, t.fs, 650, Math.max(40, ancho(t.nombre, t.fs, 650) - (anchoPastilla(t) - colW)));
+            if (anchoPastilla(t) > colW && !t.eur.isEmpty()) t.pct = "";
+            if (anchoPastilla(t) > colW) t.nombre = recortar(t.nombre, t.fs, 650, Math.max(24, ancho(t.nombre, t.fs, 650) - (anchoPastilla(t) - colW)));
+        }
+        List<List<Pastilla>> out = new ArrayList<>();
+        for (int k = 0; k < todas.size(); k += cols) out.add(new ArrayList<>(todas.subList(k, Math.min(todas.size(), k + cols))));
         return out;
+    }
+
+    private boolean algunaNoCabe(List<Pastilla> l, float colW) {
+        for (Pastilla t : l) if (anchoPastilla(t) > colW) return true;
+        return false;
     }
 
     private void pastilla(Pastilla t, float x, float yTop) {
@@ -532,26 +565,28 @@ final class Lienzo {
         c.drawRoundRect(new RectF(dp(x), dp(yTop), dp(x + t.w), dp(yTop + ALTO_P)), dp(ALTO_P / 2), dp(ALTO_P / 2), p);
         // el triángulo dibujado (Manrope no trae ▲ ni ▼)
         float cx = x + 9 + 3.5f, cy = yTop + ALTO_P / 2;
-        Path tri = new Path();
-        if (t.sube) {
-            tri.moveTo(dp(cx), dp(cy - 3));
-            tri.lineTo(dp(cx + 3.5f), dp(cy + 2.6f));
-            tri.lineTo(dp(cx - 3.5f), dp(cy + 2.6f));
-        } else {
-            tri.moveTo(dp(cx), dp(cy + 3));
-            tri.lineTo(dp(cx + 3.5f), dp(cy - 2.6f));
-            tri.lineTo(dp(cx - 3.5f), dp(cy - 2.6f));
+        if (t.tri) {
+            Path tri = new Path();
+            if (t.sube) {
+                tri.moveTo(dp(cx), dp(cy - 3));
+                tri.lineTo(dp(cx + 3.5f), dp(cy + 2.6f));
+                tri.lineTo(dp(cx - 3.5f), dp(cy + 2.6f));
+            } else {
+                tri.moveTo(dp(cx), dp(cy + 3));
+                tri.lineTo(dp(cx + 3.5f), dp(cy - 2.6f));
+                tri.lineTo(dp(cx - 3.5f), dp(cy - 2.6f));
+            }
+            tri.close();
+            p.setColor(t.color);
+            c.drawPath(tri, p);
         }
-        tri.close();
-        p.setColor(t.color);
-        c.drawPath(tri, p);
-        float base = yTop + 17, tx = x + 9 + 7 + 5;
-        texto(tx, base, t.nombre, 12.5f, 650, TEXTO, false);
-        tx += ancho(t.nombre, 12.5f, 650) + 5;
+        float base = yTop + 17, tx = x + (t.tri ? 9 + 7 + 5 : 11);
+        texto(tx, base, t.nombre, t.fs, 650, TEXTO, false);
+        tx += ancho(t.nombre, t.fs, 650) + 5;
         if (!t.eur.isEmpty()) {
-            texto(tx, base, t.eur, 12.5f, 650, t.color, false);
-            tx += ancho(t.eur, 12.5f, 650) + 5;
+            texto(tx, base, t.eur, t.fs, 650, t.color, false);
+            tx += ancho(t.eur, t.fs, 650) + 5;
         }
-        if (!t.pct.isEmpty()) texto(tx, base, t.pct, 11, 550, alfa(t.color, 0xD9), false);
+        if (!t.pct.isEmpty()) texto(tx, base, t.pct, t.fsp, 550, alfa(t.color, 0xD9), false);
     }
 }

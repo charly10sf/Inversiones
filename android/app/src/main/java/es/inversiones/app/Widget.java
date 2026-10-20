@@ -22,6 +22,7 @@ import java.io.ByteArrayOutputStream;
  */
 public class Widget extends AppWidgetProvider {
     static final String REFRESCAR = "es.inversiones.app.REFRESCAR";
+    static final String PERIODO = "es.inversiones.app.PERIODO";
 
     @Override
     public void onUpdate(Context c, AppWidgetManager m, int[] ids) {
@@ -33,6 +34,15 @@ public class Widget extends AppWidgetProvider {
     public void onReceive(Context c, Intent i) {
         if (REFRESCAR.equals(i.getAction())) {
             refrescarEnSegundoPlano(c);
+            return;
+        }
+        if (PERIODO.equals(i.getAction())) {   // el siguiente: 1 semana, 1 mes, 3 meses, 1 año y vuelta a empezar
+            int id = i.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
+            if (id == AppWidgetManager.INVALID_APPWIDGET_ID) return;
+            int ahora = periodo(c, id), k = 0;
+            while (k < Datos.PERIODOS.length && Datos.PERIODOS[k] != ahora) k++;
+            Datos.prefs(c).edit().putInt("periodo_" + id, Datos.PERIODOS[(k + 1) % Datos.PERIODOS.length]).apply();
+            pintar(c, AppWidgetManager.getInstance(c), id);
             return;
         }
         super.onReceive(c, i);
@@ -69,7 +79,7 @@ public class Widget extends AppWidgetProvider {
             ancho = 340;
             alto = 180;
         }
-        Datos.Resultado r = Datos.calcular(c);
+        Datos.Resultado r = Datos.calcular(c, periodo(c, id));
         Bitmap b = Lienzo.dibujar(c, ancho, alto, r);
         // la imagen va comprimida: así cabe de sobra en lo que Android deja mandar a la pantalla de inicio
         ByteArrayOutputStream out = new ByteArrayOutputStream();
@@ -83,12 +93,23 @@ public class Widget extends AppWidgetProvider {
         v.setOnClickPendingIntent(R.id.lienzo, abrir(c, "cartera", 1));
         v.setOnClickPendingIntent(R.id.refrescar, refrescar(c));
         v.setViewVisibility(R.id.refrescar, alto >= 110 && r.hay ? View.VISIBLE : View.GONE);
+        v.setOnClickPendingIntent(R.id.periodo, cambiarPeriodo(c, id));
+        v.setViewVisibility(R.id.periodo, Lienzo.conPeriodo(ancho, alto, r) ? View.VISIBLE : View.GONE);
         m.updateAppWidget(id, v);
     }
 
     private static PendingIntent abrir(Context c, String hash, int codigo) {
         Intent i = new Intent(c, Principal.class).putExtra("hash", hash).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         return PendingIntent.getActivity(c, codigo, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    }
+
+    static int periodo(Context c, int id) {
+        return Datos.prefs(c).getInt("periodo_" + id, 31);
+    }
+
+    private static PendingIntent cambiarPeriodo(Context c, int id) {
+        Intent i = new Intent(c, Widget.class).setAction(PERIODO).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
+        return PendingIntent.getBroadcast(c, 1000 + id, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     private static PendingIntent refrescar(Context c) {

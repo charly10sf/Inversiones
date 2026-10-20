@@ -12,6 +12,15 @@
         android:contentDescription="Tu cartera"
         android:scaleType="fitXY" />
 
+    <!-- zona invisible encima del periodo de la curva (al tocarla cambia: 1 semana, 1 mes, 3 meses, 1 año) -->
+    <FrameLayout
+        android:id="@+id/periodo"
+        android:layout_width="96dp"
+        android:layout_height="44dp"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="52dp"
+        android:contentDescription="Cambiar el periodo de la gráfica" />
+
     <!-- zona invisible encima del icono de refrescar -->
     <FrameLayout
         android:id="@+id/refrescar"
