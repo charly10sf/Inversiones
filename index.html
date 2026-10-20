@@ -864,6 +864,26 @@ details.mas[open] > summary { margin-bottom: 12px; }
 .frescura .vivo-dot::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 3px rgba(79, 201, 149, 0.18); }
 .frescura [data-b="recalc"] { color: var(--text-2); font-variant-numeric: tabular-nums; }
 .enlace.acento { color: var(--accent); }
+/* el banco: conectar desde Efectivo */
+.campo-ef { display: grid; gap: 6px; min-width: 0; }
+.ef-banco { font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+.ef-banco:empty { display: none; }
+.ef-banco svg, .ef-dbk svg { width: 14px; height: 14px; vertical-align: -2px; margin-right: 5px; }
+.ef-banco .enlace { font-size: 12.5px; margin-right: 8px; }
+.ef-banco .enlace.acento { display: inline-flex; align-items: center; font-weight: 600; }
+.ef-banco .bk-mal { color: var(--warn); }
+input.del-banco { color: var(--text-2); background: var(--plane-2); }
+.ef-dbk { color: var(--accent); }
+.bk { display: grid; gap: 12px; }
+.bk-busca { width: 100%; }
+.bk-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; max-height: min(52vh, 420px); overflow: auto; }
+.bk-lista .vacio { color: var(--muted); font-size: 13.5px; padding: 8px 2px; }
+.bk-b { width: 100%; display: flex; align-items: center; gap: 12px; padding: 9px 10px; border: 1px solid var(--line); border-radius: 12px; background: var(--plane); color: var(--text); font: inherit; font-size: 14.5px; text-align: left; cursor: pointer; }
+.bk-b:hover { border-color: var(--line-2); background: var(--plane-2); }
+.bk-b img, .bk-b i { width: 28px; height: 28px; border-radius: 8px; object-fit: contain; background: #fff; flex: none; }
+.bk-b i { background: var(--plane-3); }
+.bk-b.cargando { opacity: 0.6; }
+.bk-cuentas { display: grid; gap: 8px; margin: 12px 0; }
 
 /* ---------- expertos: una fila por posición ---------- */
 .fx-lista { border-top: 1px solid var(--line); }
@@ -6478,7 +6498,7 @@ function htmlPlan(M) {
         ${porMes.size ? `<ul class="lista agenda">${[...porMes.entries()].map(([k, v]) => { const d = deIso(k + '-01'); return `<li><div class="dia"><b>${MESES[d.getMonth()]}</b><br><span class="k">${d.getFullYear()}</span></div><div><b>${eur(v, 0)}</b><span class="logos-fila">${ev.filter((e) => e.d.startsWith(k)).map((e) => `<span>${logo((S.inst[e.inst] || {}).dominio, e.t.replace('Aportación a ', ''), 'peq')}${esc(e.t.replace('Aportación a ', ''))}${IDIOMA === 'en' ? ', day ' : ' el '}${deIso(e.d).getDate()}</span>`).join('')}</span></div><span></span></li>`; }).join('')}</ul>` : '<div class="vacio">Sin aportaciones programadas.</div>'}
       </section>
       <section aria-labelledby="hEf"><div class="sec-cab"><h2 id="hEf">Efectivo</h2><span class="k">${eur(M.liquidez, 0)}</span><div class="der"><button class="btn peq" data-accion="efectivo">${ICONOS.lapiz}Cambiar</button></div></div>
-        <ul class="leyenda">${(S.cartera.efectivo || []).map((e) => `<li style="grid-template-columns:minmax(0,1fr) auto"><span class="n">${esc(e.plataforma)}</span><span class="p">${eur(+e.importe || 0)}</span></li>`).join('') || '<li class="vacio">Sin efectivo</li>'}</ul>
+        <ul class="leyenda">${(S.cartera.efectivo || []).map((e) => `<li style="grid-template-columns:minmax(0,1fr) auto"><span class="n">${esc(e.plataforma)}${bancosDe(e.plataforma).some((b) => !b.caducada) ? ` <small class="ef-dbk" title="${esc(L('Saldo del banco', 'Bank balance'))}">${ICONOS.banco}</small>` : ''}</span><span class="p">${eur(+e.importe || 0)}</span></li>`).join('') || '<li class="vacio">Sin efectivo</li>'}</ul>
       </section>
       <a class="ir-objetivos" href="#objetivos">${ICONOS.futuro}<span><b>Tus límites, tu perfil y tus metas</b><small>están en Objetivos</small></span></a>
     </aside>
@@ -9293,10 +9313,180 @@ function editarAportacion(k) {
   };
 }
 
+/* =====================================================================
+   El banco: el efectivo de cada plataforma con el saldo real de tu cuenta (open banking, solo lectura, con
+   Enable Banking a través del Worker de GrowFolio, que es quien guarda la clave). Solo cuentas de dinero: acciones
+   y fondos no entran en el open banking. La sesión y las cuentas van en tu cartera cifrada (S.cartera.bancos); el
+   Worker no guarda nada. De momento solo para las cuentas de la lista del Worker (modo de pruebas de Enable Banking).
+   ===================================================================== */
+const WORKER = '';
+// en pruebas (?dev) se puede apuntar a otro Worker
+const urlWorker = () => (CFG.dev && LS.get('inv-worker-dev', '')) || WORKER;
+const BANCO = { estado: null, sincT: 0, enCurso: false, avisado: new Set() };
+const BANCO_CADA_H = 4;
+async function workerPide(ruta, cuerpo) {
+  if (!urlWorker() || !FB.user) throw new Error('sin-worker');
+  const t = await FB.user.getIdToken();
+  const r = await fetch(urlWorker() + ruta, { method: cuerpo ? 'POST' : 'GET', headers: { Authorization: `Bearer ${t}`, ...(cuerpo ? { 'Content-Type': 'application/json' } : {}) }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) { const e = new Error(j.error || `http ${r.status}`); e.j = j; e.status = r.status; throw e; }
+  return j;
+}
+async function bancoDisponible() {
+  if (!urlWorker() || !FB.user) return false;
+  if (!BANCO.estado) { try { BANCO.estado = await workerPide('/banco/estado'); } catch (e) { BANCO.estado = { permitido: false }; } }
+  return !!(BANCO.estado.permitido && BANCO.estado.listo);
+}
+const bancosDe = (pl) => ((S.cartera && S.cartera.bancos) || []).filter((b) => !pl || b.plataforma === pl);
+const finCuenta = (b) => (b.fin ? `···${b.fin}` : '');
+
+/* elegir el banco y salir a darle permiso; a la vuelta sigue vueltaDelBanco() */
+async function conectarBanco(plataforma) {
+  const h = hoja(L('Conectar con tu banco', 'Connect your bank'), `<div class="bk">
+    <p class="nota" style="margin:0">${L(`Elige el banco de <b>${esc(plataforma)}</b>. Te llevará a su web o a su app para dar permiso de <b>solo lectura</b>: GrowFolio verá el saldo de la cuenta, nunca podrá mover dinero. El permiso dura unos 180 días.`, `Pick the bank for <b>${esc(plataforma)}</b>. It takes you to its website or app to grant <b>read-only</b> access: GrowFolio sees the balance and can never move money. Access lasts about 180 days.`)}</p>
+    <div class="tabs bk-paises" role="group" aria-label="${L('País del banco', 'Bank country')}"><button type="button" data-bk-pais="ES" aria-pressed="true">${L('España', 'Spain')}</button><button type="button" data-bk-pais="DE" aria-pressed="false">${L('Alemania', 'Germany')}</button></div>
+    <input class="bk-busca" type="search" placeholder="${L('Busca tu banco', 'Search your bank')}" aria-label="${L('Busca tu banco', 'Search your bank')}">
+    <ul class="bk-lista" aria-live="polite"><li class="vacio">${L('Cargando bancos…', 'Loading banks…')}</li></ul>
+    <div class="error" id="errBk"></div></div>`);
+  let bancos = [], pais = 'ES';
+  const lista = $('.bk-lista', h.el), busca = $('.bk-busca', h.el), err = $('#errBk', h.el);
+  const pinta = () => {
+    const q = normTxt(busca.value), pl = normTxt(plataforma);
+    const v = bancos.filter((b) => !q || normTxt(b.n).includes(q)).sort((a, b) => (normTxt(b.n).includes(pl) - normTxt(a.n).includes(pl)) || a.n.localeCompare(b.n));
+    lista.innerHTML = v.length ? v.slice(0, 80).map((b) => `<li><button type="button" class="bk-b" data-bk="${esc(b.n)}" data-max="${b.max || ''}">${b.logo ? `<img src="${esc(b.logo)}" alt="" loading="lazy" referrerpolicy="no-referrer">` : '<i></i>'}<span>${esc(b.n)}</span></button></li>`).join('') : `<li class="vacio">${L('No sale ningún banco con ese nombre.', 'No bank matches that name.')}</li>`;
+  };
+  const carga = async () => {
+    lista.innerHTML = `<li class="vacio">${L('Cargando bancos…', 'Loading banks…')}</li>`; err.textContent = '';
+    try { bancos = (await workerPide(`/banco/bancos?pais=${pais}`)).bancos || []; pinta(); }
+    catch (e) { lista.innerHTML = ''; err.textContent = L('No se ha podido traer la lista de bancos. Prueba en un rato.', 'Couldn’t load the list of banks. Try again in a while.'); }
+  };
+  busca.oninput = pinta;
+  h.el.addEventListener('click', async (e) => {
+    const pb = e.target.closest('[data-bk-pais]');
+    if (pb) { pais = pb.dataset.bkPais; for (const x of $$('[data-bk-pais]', h.el)) x.setAttribute('aria-pressed', String(x === pb)); carga(); return; }
+    const b = e.target.closest('[data-bk]'); if (!b) return;
+    b.disabled = true; b.classList.add('cargando'); err.textContent = '';
+    try {
+      const r = await workerPide('/banco/conectar', { banco: b.dataset.bk, pais, plataforma, max: +b.dataset.max || 0, vuelta: location.origin + location.pathname });
+      LS.set('inv-banco-pend', { plataforma, banco: b.dataset.bk, pais, t: Date.now() });
+      location.href = r.url;
+    } catch (e2) {
+      b.disabled = false; b.classList.remove('cargando');
+      err.textContent = L(`${b.dataset.bk} no ha dejado empezar la conexión${e2.j && e2.j.motivo ? ` (${e2.j.motivo})` : ''}. Prueba otra vez o con otro país.`, `${b.dataset.bk} didn’t let the connection start${e2.j && e2.j.motivo ? ` (${e2.j.motivo})` : ''}. Try again or another country.`);
+    }
+  });
+  carga();
+}
+
+/* a la vuelta del banco (?code=…&state=…): se cambia el código por la sesión, eliges qué cuentas van a esa
+   plataforma y se trae el saldo. La plataforma viaja firmada dentro del «state», así que vale aunque el banco te
+   devuelva a otro navegador */
+async function vueltaDelBanco() {
+  const q = new URLSearchParams(location.search);
+  if (!q.has('state') || !(q.has('code') || q.has('error'))) return;
+  history.replaceState(null, '', location.pathname + location.hash);
+  const pend = LS.get('inv-banco-pend', null); LS.del('inv-banco-pend');
+  if (q.has('error')) { toast(L('El banco no ha dado permiso. Puedes probar otra vez desde Efectivo.', 'The bank didn’t grant access. You can try again from Cash.'), 6000); return; }
+  if (!(await bancoDisponible())) return;
+  let r;
+  try { r = await workerPide('/banco/sesion', { code: q.get('code'), estado: q.get('state') }); }
+  catch (e) { toast(L('No se ha podido terminar la conexión con el banco. Prueba otra vez desde Efectivo.', 'Couldn’t finish connecting to the bank. Try again from Cash.'), 6000); return; }
+  const plataforma = r.plataforma || (pend && pend.plataforma);
+  if (!plataforma || !(r.cuentas || []).length) { toast(L('El banco no ha dado ninguna cuenta.', 'The bank didn’t share any account.'), 6000); return; }
+  const guardar = async (cuentas) => {
+    // la conexión de antes de esa plataforma se cambia por la nueva (y se borra su sesión)
+    const viejas = [...new Set(bancosDe(plataforma).map((b) => b.sesion))].filter((x) => x && x !== r.sesion);
+    for (const v of viejas) workerPide('/banco/borrar', { sesion: v }).catch(() => {});
+    S.cartera.bancos = ((S.cartera && S.cartera.bancos) || []).filter((b) => b.plataforma !== plataforma);
+    for (const c of cuentas) S.cartera.bancos.push({ id: `bk-${c.uid}`, plataforma, banco: r.banco || (pend && pend.banco) || '', pais: r.pais || '', sesion: r.sesion, cuenta: c.uid, nombre: c.nombre, fin: c.fin, hasta: r.hasta || null });
+    BANCO.sincT = 0;
+    await sincronizarBancos(true, true);
+  };
+  if (r.cuentas.length === 1) { await guardar(r.cuentas); return; }
+  const h = hoja(L(`¿Qué cuentas son de ${plataforma}?`, `Which accounts belong to ${plataforma}?`), `<form id="fBkC" novalidate>
+    <p class="nota" style="margin:0">${L('Su saldo se suma y pasa a ser el efectivo de esa plataforma.', 'Their balances are added up and become that platform’s cash.')}</p>
+    <div class="bk-cuentas">${r.cuentas.map((c, k) => `<label class="check-mini"><input type="checkbox" data-bkc="${k}" checked> ${esc(c.nombre || L('Cuenta', 'Account'))} ${esc(c.fin ? `···${c.fin}` : '')}</label>`).join('')}</div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri">${L('Usar estas', 'Use these')}</button></div></form>`);
+  $('#fBkC', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const elegidas = r.cuentas.filter((c, k) => $(`[data-bkc="${k}"]`, h.el).checked);
+    if (!elegidas.length) return;
+    h.cerrar(); await guardar(elegidas);
+  };
+}
+
+/* el saldo de cada cuenta conectada pasa al efectivo de su plataforma (al abrir y cada BANCO_CADA_H horas) */
+async function sincronizarBancos(forzar, avisar) {
+  const bs = bancosDe().filter((b) => !b.caducada);
+  if (!S.cartera || !bs.length || BANCO.enCurso) return false;
+  if (!forzar && Date.now() - BANCO.sincT < BANCO_CADA_H * 3600e3 && bs.every((b) => b.ultimo && Date.now() - b.ultimo.t < BANCO_CADA_H * 3600e3)) return false;
+  if (!(await bancoDisponible())) return false;
+  BANCO.enCurso = true;
+  try {
+    const r = await workerPide('/banco/saldos', { cuentas: bs.map((b) => b.cuenta) });
+    BANCO.sincT = Date.now();
+    const porPlat = new Map(), caducadas = [];
+    for (const b of bs) {
+      const x = (r.saldos || {})[b.cuenta]; if (!x) continue;
+      if (x.error === 'caducada') { b.caducada = true; caducadas.push(b.plataforma); continue; }
+      if (x.error || !isFinite(x.importe) || (x.moneda && x.moneda !== 'EUR')) continue;
+      b.ultimo = { importe: x.importe, t: Date.now(), fecha: x.fecha || null };
+      porPlat.set(b.plataforma, (porPlat.get(b.plataforma) || 0) + x.importe);
+    }
+    const cambios = [];
+    S.cartera.efectivo = S.cartera.efectivo || [];
+    for (const [pl, imp] of porPlat) {
+      let e = S.cartera.efectivo.find((x) => x.plataforma === pl);
+      if (!e) { e = { plataforma: pl, importe: 0 }; S.cartera.efectivo.push(e); }
+      const nuevo = Math.round(imp * 100) / 100;
+      if (Math.abs((+e.importe || 0) - nuevo) >= 0.005) { cambios.push([pl, nuevo]); e.importe = nuevo; }
+    }
+    await guardarCartera(L('Efectivo del banco', 'Cash from the bank'));
+    if (cambios.length) pintar();
+    if (cambios.length && avisar) toast(L(`Efectivo al día con el banco: ${cambios.map(([pl, v]) => `${pl}, ${eur(v)}`).join('; ')}`, `Cash synced with the bank: ${cambios.map(([pl, v]) => `${pl}, ${eur(v)}`).join('; ')}`), 5000);
+    else if (avisar) toast(L('Efectivo al día con el banco', 'Cash synced with the bank'));
+    for (const pl of new Set(caducadas)) if (!BANCO.avisado.has('cad:' + pl)) { BANCO.avisado.add('cad:' + pl); toast(L(`El permiso del banco de ${pl} ha caducado: vuelve a conectarlo en Efectivo.`, `The bank access for ${pl} has expired: reconnect it in Cash.`), 7000); }
+    return true;
+  } catch (e) { console.warn('banco', e); return false; } finally { BANCO.enCurso = false; }
+}
+/* una semana antes de que caduque el permiso, un aviso al abrir (una vez por plataforma y sesión) */
+function avisoCaducaBanco() {
+  for (const b of bancosDe()) {
+    if (b.caducada || !b.hasta || BANCO.avisado.has('pronto:' + b.plataforma)) continue;
+    const dias = Math.ceil((new Date(b.hasta) - Date.now()) / 864e5);
+    if (dias <= 7) { BANCO.avisado.add('pronto:' + b.plataforma); toast(L(`El permiso del banco de ${b.plataforma} caduca ${dias <= 1 ? 'mañana' : `en ${dias} días`}: renuévalo en Efectivo.`, `The bank access for ${b.plataforma} expires ${dias <= 1 ? 'tomorrow' : `in ${dias} days`}: renew it in Cash.`), 7000); }
+  }
+}
+async function desconectarBanco(plataforma) {
+  const ses = [...new Set(bancosDe(plataforma).map((b) => b.sesion))];
+  for (const v of ses) workerPide('/banco/borrar', { sesion: v }).catch(() => {});
+  S.cartera.bancos = bancosDe().filter((b) => b.plataforma !== plataforma);
+  await guardarCartera(L('Desconectar banco', 'Disconnect bank'));
+  pintar();
+}
+/* debajo de cada plataforma, en la hoja de Efectivo: conectar, o de qué cuenta sale y cuándo se miró */
+async function pintarBancosEf(h) {
+  if (!(await bancoDisponible()) || !h.el.isConnected) return;
+  for (const w of $$('[data-ef-banco]', h.el)) {
+    const pl = w.dataset.efBanco, bs = bancosDe(pl), inp = w.closest('.campo-ef').querySelector('input');
+    if (!bs.length) { w.innerHTML = `<button type="button" class="enlace acento" data-bk-con="${esc(pl)}">${ICONOS.banco}${L('Conectar con el banco', 'Connect the bank')}</button>`; continue; }
+    const cad = bs.some((b) => b.caducada), ult = Math.max(0, ...bs.map((b) => (b.ultimo && b.ultimo.t) || 0));
+    inp.readOnly = !cad; inp.classList.toggle('del-banco', !cad);
+    w.innerHTML = cad
+      ? `<span class="bk-mal">${L('El permiso del banco ha caducado.', 'The bank access has expired.')}</span> <button type="button" class="enlace acento" data-bk-con="${esc(pl)}">${L('Volver a conectar', 'Reconnect')}</button>`
+      : `<span>${ICONOS.banco}${esc(bs.map((b) => `${b.nombre || b.banco} ${finCuenta(b)}`.trim()).join(', '))}${ult ? ` · ${esc(haceCuanto(new Date(ult).toISOString()))}` : ''}</span> <button type="button" class="enlace" data-bk-ya="${esc(pl)}">${L('Actualizar', 'Refresh')}</button> <button type="button" class="enlace" data-bk-fuera="${esc(pl)}">${L('Desconectar', 'Disconnect')}</button>`;
+  }
+  h.el.onclick = async (e) => {
+    const c = e.target.closest('[data-bk-con]'); if (c) { h.cerrar(); conectarBanco(c.dataset.bkCon); return; }
+    const y = e.target.closest('[data-bk-ya]'); if (y) { y.disabled = true; y.textContent = L('Mirando…', 'Checking…'); BANCO.sincT = 0; await sincronizarBancos(true, true); h.cerrar(); editarEfectivo(); return; }
+    const f = e.target.closest('[data-bk-fuera]'); if (f) { if (!f.dataset.listo) { f.dataset.listo = '1'; f.textContent = L('¿Seguro?', 'Sure?'); return; } await desconectarBanco(f.dataset.bkFuera); h.cerrar(); editarEfectivo(); }
+  };
+}
+
 function editarEfectivo() {
   const ef = JSON.parse(JSON.stringify(S.cartera.efectivo || []));
   for (const p of PLATAFORMAS) if (!ef.find((e) => e.plataforma === p)) ef.push({ plataforma: p, importe: 0 });
-  const h = hoja('Efectivo', `<form id="fEf" novalidate><div class="form-grid">${ef.map((e, k) => `<label class="campo">${esc(e.plataforma)}<input data-ef="${k}" inputmode="decimal" value="${val(+e.importe || 0)}"></label>`).join('')}</div>
+  const h = hoja('Efectivo', `<form id="fEf" novalidate><div class="form-grid">${ef.map((e, k) => `<div class="campo-ef"><label class="campo">${esc(e.plataforma)}<input data-ef="${k}" inputmode="decimal" value="${val(+e.importe || 0)}"></label><div class="ef-banco" data-ef-banco="${esc(e.plataforma)}"></div></div>`).join('')}</div>
     <p class="nota" style="margin:0">El dinero sin invertir de cada plataforma. Cuenta en el patrimonio y en el reparto.</p>
     <div class="error" id="errEf"></div><div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div></form>`);
   $('#fEf', h.el).onsubmit = async (ev) => {
@@ -9306,6 +9496,7 @@ function editarEfectivo() {
     S.cartera.efectivo = nuevos;
     await guardarYPintar('Cambiar efectivo', h);
   };
+  pintarBancosEf(h);
 }
 
 function editarLimites() {
@@ -13503,6 +13694,10 @@ function arrancar() {
   S.tickAvisos = setInterval(() => { if (S.cartera && document.hidden && avisosCfg().on && !appAvisos()) { try { S.M = calcular(); revisarAvisos(S.M); } catch (e) { console.warn(e); } } }, 120000);
   tickEstado = setInterval(programarParche, 30000);
   setTimeout(bienvenida, 700);
+  // el banco: la vuelta de dar permiso y el saldo del efectivo (al abrir y cada pocas horas)
+  setTimeout(() => vueltaDelBanco().catch((e) => console.warn('banco', e)), 1500);
+  setTimeout(() => { sincronizarBancos(false); avisoCaducaBanco(); }, 9000);
+  clearInterval(S.tickBanco); S.tickBanco = setInterval(() => { if (!document.hidden) sincronizarBancos(false); }, 30 * 60e3);
   // con cuenta: el nombre va también dentro de tu perfil cifrado y los cambios de otros dispositivos llegan solos
   if (PERFIL_CUENTA) {
     nombreEnCuenta();
