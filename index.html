@@ -1231,7 +1231,49 @@ table td.txt { white-space: normal; min-width: 260px; }
 
 /* ---------- subpestañas de dos opciones (Cartera, Expertos, Análisis) ---------- */
 .subvistas.dos-op button svg { width: 17px; height: 17px; }
-.car-tabs { margin-top: 36px; }
+.car-tabs { margin-top: 0; }
+/* Cartera a tu gusto */
+.car { display: grid; gap: 48px; grid-template-columns: minmax(0, 1fr); }
+.car-fila { display: grid; gap: 40px; grid-template-columns: minmax(0, 1fr); min-width: 0; }
+.car-col { display: grid; gap: 40px; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
+.car-pos { display: grid; gap: 28px; min-width: 0; }
+.car-col > .toca.iac { margin-top: 0; }
+@media (min-width: 1180px) {
+  .car-fila.par-izq { grid-template-columns: minmax(360px, 440px) minmax(0, 1fr); gap: 56px; align-items: start; }
+  .car-fila.par-der { grid-template-columns: minmax(0, 1fr) 400px; gap: 56px; align-items: start; }
+  .car-fila.suelta { grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); gap: 40px 56px; align-items: start; }
+}
+@media (min-width: 1500px) { .car-fila.par-der { grid-template-columns: minmax(0, 1fr) 440px; gap: 64px; } }
+.car-pie { display: flex; justify-content: center; }
+.car-ordenar svg { width: 16px; height: 16px; }
+.car-fut { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+.car-fut-f { display: grid; gap: 2px; padding: 12px; border-radius: 12px; background: var(--plane); border: 1px solid var(--line); }
+.car-fut-f b { font-size: 19px; font-weight: 650; color: var(--accent); font-variant-numeric: tabular-nums; }
+.car-fut-f small { color: var(--muted); font-size: 11.5px; line-height: 1.35; }
+.car-metas { margin-top: 12px; }
+.car-renta { margin-top: 12px; }
+/* el editor */
+.ordc-intro { margin: 0 0 14px; color: var(--text-2); }
+.ordc-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.ordc-i { display: flex; align-items: center; gap: 10px; padding: 8px 8px 8px 4px; border-radius: 12px; border: 1px solid var(--line); background: var(--plane); touch-action: none; }
+.ordc-mas .ordc-i { padding-left: 14px; }
+.ordc-i.arrastra { position: relative; z-index: 2; border-color: var(--accent); background: var(--plane-2); box-shadow: 0 10px 28px rgba(0, 0, 0, 0.6); }
+.ordc-asa { width: 34px; height: 40px; flex: none; display: grid; place-items: center; border: 0; background: none; color: var(--muted); cursor: grab; touch-action: none; }
+.ordc-asa svg { width: 18px; height: 18px; fill: currentColor; }
+.ordc-i.arrastra .ordc-asa { cursor: grabbing; color: var(--accent); }
+.ordc-t { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.ordc-t b { font-size: 14.5px; font-weight: 650; }
+.ordc-t small { color: var(--muted); font-size: 12.5px; line-height: 1.35; }
+.ordc-w { flex: none; }
+@media (max-width: 760px) { .ordc-w { display: none; } }
+.ordc-bs { display: flex; align-items: center; gap: 2px; flex: none; }
+.ordc-bs .ib { width: 34px; height: 34px; }
+.ordc-bs .ib:disabled { opacity: 0.25; cursor: default; }
+.ordc-bs .ib svg { width: 17px; height: 17px; }
+.ordc-fijo { width: 52px; text-align: center; color: var(--muted); font-size: 11.5px; }
+.ordc-h { margin: 22px 0 8px; font-size: 15px; font-weight: 650; }
+.ordc-nota { margin-top: 14px; }
+.ordc-vacio { padding: 6px 2px; list-style: none; }
 @media (max-width: 680px) { .subvistas.dos-op { grid-template-columns: repeat(2, minmax(0, 1fr)); } .car-tabs { margin-top: 28px; } }
 
 /* ---------- Plan: logos y banderas ---------- */
@@ -2517,8 +2559,8 @@ p, .nota, .ag-det p, li > span { text-wrap: pretty; }
 }
 .hoja { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 -12px 40px rgba(0, 0, 0, 0.45); }
 /* tu patrimonio, con un halo dorado muy tenue detrás */
-.cabecera > section:first-child { position: relative; isolation: isolate; }
-.cabecera > section:first-child::before { content: ''; position: absolute; z-index: -1; left: -12%; top: -30px; width: min(620px, 110%); height: 300px; background: radial-gradient(closest-side, rgba(226, 180, 95, 0.11), rgba(226, 180, 95, 0) 100%); pointer-events: none; }
+.car-patrimonio { position: relative; isolation: isolate; }
+.car-patrimonio::before { content: ''; position: absolute; z-index: -1; left: -12%; top: -30px; width: min(620px, 110%); height: 300px; background: radial-gradient(closest-side, rgba(226, 180, 95, 0.11), rgba(226, 180, 95, 0) 100%); pointer-events: none; }
 .hero-num { font-weight: 220; }
 /* la cabecera fija gana una línea fina al bajar */
 .top { transition: box-shadow 0.25s ease; }
@@ -4013,13 +4055,42 @@ function serieIntradia(M, rango) {
   return out;
 }
 
-function vistaCartera(M) {
-  const plats = porPlataforma(M).map(([k]) => `<div class="kpi"><span class="k">${esc(k)}</span><span class="v">${B('plat:' + k)}</span></div>`).join('');
+/* Cartera a tu gusto (0.2.2): la pestaña está hecha de bloques que se ordenan, se quitan y se añaden (lo eliges en
+   «Ordenar Cartera», abajo del todo o en Ajustes, y se guarda en tu cartera, igual en todos tus dispositivos).
+   En el móvil van uno debajo de otro, en tu orden. En el ordenador, cada bloque tiene su anchura: los estrechos se
+   ponen al lado del grande que tengan justo delante o detrás (el patrimonio junto a la gráfica; el reparto y lo que
+   viene junto a tus posiciones), los de lado a lado ocupan la fila y, si quedan estrechos sueltos, van en columnas. */
+const BLOQUES_CAR = {
+  patrimonio: { n: 'Patrimonio', d: 'Cuánto tienes, lo de hoy y lo ganado', w: 'estrecho', fijo: true },
+  grafica: { n: 'Gráfica', d: 'Cómo se ha movido lo que tienes', w: 'grande' },
+  ia: { n: 'GrowIA y lo que toca', d: 'Su diagnóstico, sus notas y lo que toca hacer', w: 'grande' },
+  posiciones: { n: 'Tus posiciones', d: 'Lo que tienes, y el plan y los movimientos', w: 'grande', fijo: true },
+  reparto: { n: 'Reparto', d: 'Por países, sectores, monedas y tipo', w: 'estrecho' },
+  agenda: { n: 'Lo que viene', d: 'Resultados, dividendos y fechas de lo tuyo', w: 'estrecho' },
+  vistazo: { n: 'Señales de un vistazo', d: 'Qué dicen los números y GrowIA de cada posición', w: 'estrecho' },
+  informe: { n: 'Lo último, según GrowIA', d: 'Su resumen de las noticias del día', w: 'estrecho' },
+  noticias: { n: 'Noticias de lo tuyo', d: 'Los últimos titulares de lo que tienes', w: 'grande' },
+  movidas: { n: 'Lo que más se mueve', d: 'Las empresas que más suben y bajan', w: 'grande' },
+  futuro: { n: 'Tu futuro', d: 'Lo que podrías tener en 5, 10 y 20 años', w: 'estrecho' },
+  metas: { n: 'Tus metas', d: 'Si llegas a cada una con lo que aportas', w: 'estrecho' },
+  renta: { n: 'Hacienda de este año', d: 'Lo que llevas ganado y lo que pagarías', w: 'estrecho' },
+};
+const CAR_DEFECTO = ['patrimonio', 'grafica', 'ia', 'posiciones', 'reparto', 'agenda'];
+const ANCHO_CAR = { grande: 'Ancho', estrecho: 'Estrecho', lleno: 'De lado a lado' };
+function bloquesCartera() {
+  const g = S.cartera && S.cartera.inicio && Array.isArray(S.cartera.inicio.bloques) ? S.cartera.inicio.bloques : null;
+  const v = (g || CAR_DEFECTO).filter((k, i, a) => BLOQUES_CAR[k] && a.indexOf(k) === i);
+  // los que no se pueden quitar vuelven a su sitio si faltan (por ejemplo, tras juntar dos dispositivos)
+  for (const k of Object.keys(BLOQUES_CAR)) if (BLOQUES_CAR[k].fijo && !v.includes(k)) v.splice(Math.min(v.length, CAR_DEFECTO.indexOf(k)), 0, k);
+  return v;
+}
+const anchoCar = (k) => (k === 'posiciones' && S.carTab === 'plan' ? 'lleno' : BLOQUES_CAR[k].w);
+function htmlBloqueCar(k, M) {
   const anio = new Date().getFullYear();
-  const tocaHtml = htmlToca(M);
-  return `
-  <div class="cabecera">
-    <section aria-label="Patrimonio">
+  try {
+    if (k === 'patrimonio') {
+      const plats = porPlataforma(M).map(([x]) => `<div class="kpi"><span class="k">${esc(x)}</span><span class="v">${B('plat:' + x)}</span></div>`).join('');
+      return `<section class="car-patrimonio" aria-label="Patrimonio">
       ${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}
       <div class="hero-fila"><div class="hero-lbl">Patrimonio</div>${chipGTA()}</div>
       <div class="hero-num" aria-label="Patrimonio">${B('totalE')}${B('totalD', 'dec')}</div>
@@ -4032,24 +4103,149 @@ function vistaCartera(M) {
         ${(() => { try { const pr = proyeccion(M); return `<a class="kpi" href="#proyeccion"><span class="k">En 10 años, lo probable</span><span class="v acento">${euCorto(pr.p50[120])}</span></a>`; } catch (e) { return ''; } })()}
         ${M.realizado ? `<div class="kpi"><span class="k">Ventas de ${anio}</span><span class="v ${cls(M.realizado)}">${eurS(M.realizado, 0)}</span></div>` : ''}
       </div>
-    </section>
-    <section aria-label="Evolución">
+    </section>`;
+    }
+    if (k === 'grafica') return `<section class="car-grafica" aria-label="Evolución">
       <div class="evo-cab"><div class="datos" id="evoCab"></div>
         <div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div></div>
       <div class="chart" id="grafEvo"></div>
       <div class="leyenda-graf"><span><i style="border-color:var(--accent)"></i>Tu cartera</span>
         <label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> Comparar con el S&P 500</label>${S.comparar ? `<span><i class="disc" style="border-color:var(--text-2)"></i>El mismo dinero en el S&P 500</span>` : ''}</div>
       <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste».</p>
-      ${tocaHtml}
-    </section>
-  </div>
-  <div class="subvistas dos-op car-tabs" id="carTabs" role="group" aria-label="Qué ver"><button data-car="pos" aria-pressed="${S.carTab !== 'plan'}">${ICONOS.cartera}Tus posiciones</button><button data-car="plan" aria-pressed="${S.carTab === 'plan'}">${ICONOS.plan}Plan y movimientos</button></div>
-  ${S.carTab === 'plan' ? htmlPlan(M) : `<div class="dos">
-    <div class="pila">${htmlAvisosGraves(M)}${htmlPosiciones(M)}${htmlAvisos(M)}</div>
-    <aside class="pila lateral">${htmlReparto(M)}${htmlAgenda(M)}</aside>
-  </div>`}`;
+    </section>`;
+    if (k === 'ia') return htmlToca(M);
+    if (k === 'posiciones') return `<div class="car-pos">
+      <div class="subvistas dos-op car-tabs" id="carTabs" role="group" aria-label="Qué ver"><button data-car="pos" aria-pressed="${S.carTab !== 'plan'}">${ICONOS.cartera}Tus posiciones</button><button data-car="plan" aria-pressed="${S.carTab === 'plan'}">${ICONOS.plan}Plan y movimientos</button></div>
+      ${S.carTab === 'plan' ? htmlPlan(M) : `<div class="pila">${htmlAvisosGraves(M)}${htmlPosiciones(M)}${htmlAvisos(M)}</div>`}</div>`;
+    if (k === 'reparto') return htmlReparto(M);
+    if (k === 'agenda') return htmlAgenda(M);
+    if (k === 'vistazo') return M.filas.length ? htmlVistazo(M, iaActual()).replace(/<button class="enlace acento ver-mas" data-exp="posiciones">([^<]*)<\/button>/, '<a class="enlace acento ver-mas" href="#expertos">$1</a>') : '';
+    if (k === 'informe') return htmlResumenInforme(true);
+    if (k === 'movidas') return htmlMovidas();
+    if (k === 'noticias') {
+      const n = pasadoAg('mio');
+      return n.html ? `<section aria-labelledby="hNotC"><div class="sec-cab"><h2 id="hNotC">Noticias de lo tuyo</h2><div class="der"><a class="enlace acento" href="#agenda">Ver más</a></div></div><div class="agp-lista">${n.html}</div></section>` : '';
+    }
+    if (k === 'futuro') {
+      const pr = proyeccion(M), fila = (m, t) => (pr.p50[m] != null ? `<div class="car-fut-f"><span class="k">${t}</span><b>${euCorto(pr.p50[m])}</b><small>entre ${euCorto(pr.p10[m])} y ${euCorto(pr.p90[m])}</small></div>` : '');
+      return `<section aria-labelledby="hFutC"><div class="sec-cab"><h2 id="hFutC">Tu futuro</h2><div class="der"><a class="enlace acento" href="#proyeccion">Ver la proyección</a></div></div>
+        <div class="car-fut">${fila(60, 'En 5 años')}${fila(120, 'En 10 años')}${fila(240, 'En 20 años')}</div>
+        <p class="nota">Lo probable si sigues aportando como ahora; entre lo que pasaría si va mal y si va bien.</p></section>`;
+    }
+    if (k === 'metas') {
+      const metas = estadoPerfil(M).metas || [];
+      return `<section aria-labelledby="hMetC"><div class="sec-cab"><h2 id="hMetC">Tus metas</h2><div class="der"><a class="enlace acento" href="#objetivos">${metas.length ? 'Verlas' : 'Añadir una'}</a></div></div>
+        ${metas.length ? `<ul class="metas car-metas">${metas.slice(0, 4).map((m) => `<li class="${m.ok === false ? 'falta' : 'ok'}"><div class="meta-cab"><b>${esc(m.n)}</b><span class="k">${eur(m.importe, 0)}${m.anio ? ` en ${m.anio}` : ''}</span></div><div class="pf-barra ok"><i style="width:${(+m.pct || 0).toFixed(0)}%"></i></div></li>`).join('')}</ul>` : '<p class="k">Algo con cifra y fecha: la entrada de un piso, un coche, llegar a 100.000 €… GrowFolio calcula si llegas.</p>'}</section>`;
+    }
+    if (k === 'renta') {
+      const fa = fiscalAnio(anio);
+      return `<section aria-labelledby="hRenC"><div class="sec-cab"><h2 id="hRenC">Hacienda de ${anio}</h2><div class="der"><a class="enlace acento" href="#fiscal">Ver Fiscalidad</a></div></div>
+        <div class="kpis car-renta"><div class="kpi"><span class="k">Ganancias y pérdidas</span><span class="v ${cls(fa.gp || 0)}">${eurS(fa.gp || 0, 0)}</span></div><div class="kpi"><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm || 0, 0)}</span></div><div class="kpi"><span class="k">Te tocaría pagar</span><span class="v">${eur(fa.cuota || 0, 0)}</span></div></div>
+        <p class="nota">Con lo que llevas vendido y cobrado este año, antes de restar lo que ya te han retenido.</p></section>`;
+    }
+  } catch (e) { console.warn('bloque de Cartera', k, e); }
+  return '';
 }
-
+function vistaCartera(M) {
+  const lista = bloquesCartera().map((k) => ({ k, w: anchoCar(k), html: htmlBloqueCar(k, M) })).filter((b) => b.html);
+  // filas: los estrechos seguidos se ponen al lado de los grandes que vengan detrás (el patrimonio, junto a la
+  // gráfica y GrowIA), menos del grande que tenga sus propios estrechos detrás, que hace su fila con ellos (tus
+  // posiciones con el reparto y lo que viene)
+  const filas = [], w = (i) => lista[i] && lista[i].w;
+  for (let i = 0; i < lista.length;) {
+    const b = lista[i];
+    if (b.w === 'lleno') { filas.push({ t: 'sola', a: [b] }); i++; continue; }
+    if (b.w === 'grande') {
+      let j = i + 1; const lado = []; while (w(j) === 'estrecho') lado.push(lista[j++]);
+      filas.push(lado.length ? { t: 'par-der', a: [b], b: lado } : { t: 'sola', a: [b] }); i = j; continue;
+    }
+    let j = i; const pila = []; while (w(j) === 'estrecho') pila.push(lista[j++]);
+    const gr = [];
+    while (w(j) === 'grande' && !(gr.length && w(j + 1) === 'estrecho')) { gr.push(lista[j++]); if (w(j) === 'grande' && w(j + 1) === 'estrecho') break; }
+    if (gr.length) filas.push({ t: 'par-izq', a: pila, b: gr }); else filas.push({ t: 'suelta', a: pila });
+    i = j;
+  }
+  const col = (xs, cls = '') => `<div class="car-col${cls}">${xs.map((x) => x.html).join('')}</div>`;
+  return `<div class="car">${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
+    : f.t === 'suelta' ? `<div class="car-fila suelta">${f.a.map((x) => `<div class="car-col">${x.html}</div>`).join('')}</div>`
+    : `<div class="car-fila ${f.t}">${f.t === 'par-izq' ? col(f.a) + col(f.b) : col(f.a) + col(f.b, ' lado')}</div>`)).join('')}
+    <div class="car-pie"><button type="button" class="btn peq car-ordenar" data-accion="ordenar-cartera">${ICONOS.ajustes}Ordenar Cartera a tu gusto</button></div></div>`;
+}
+/* el editor: arrastrar (o las flechas) para ordenar, quitar lo que no quieras y añadir lo que no sale */
+function ordenarCartera() {
+  const h = hoja('Tu Cartera, a tu gusto', `<div class="ordc">
+    <p class="ordc-intro">Arrastra cada bloque por el asa, o usa las flechas. Lo ves cambiar detrás al momento y se guarda en tu cartera, igual en todos tus dispositivos.</p>
+    <ul class="ordc-l" id="ordcL"></ul>
+    <h3 class="ordc-h">Puedes añadir</h3>
+    <ul class="ordc-l ordc-mas" id="ordcMas"></ul>
+    <p class="nota ordc-nota">En el ordenador, lo estrecho se pone al lado de lo ancho que tenga delante o detrás, y lo de lado a lado ocupa toda la fila.</p>
+    <div class="fila-btns"><button type="button" class="btn" data-ordc="defecto">Volver a como venía</button><button type="button" class="btn pri" data-cerrar>Listo</button></div>
+  </div>`);
+  const ul = $('#ordcL', h.el), mas = $('#ordcMas', h.el);
+  let t = 0;
+  const asa = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
+  const flecha = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+  const pintaLista = () => {
+    const v = bloquesCartera();
+    ul.innerHTML = v.map((k, i) => { const b = BLOQUES_CAR[k]; return `<li class="ordc-i" data-k="${k}">
+      <button type="button" class="ordc-asa" aria-label="Arrastrar ${esc(b.n)}" title="Arrastra para moverlo">${asa}</button>
+      <span class="ordc-t"><b>${esc(b.n)}</b><small>${esc(b.d)}</small></span><span class="chip ordc-w">${ANCHO_CAR[b.w]}</span>
+      <span class="ordc-bs"><button type="button" class="ib" data-ordc="sube" aria-label="Subir ${esc(b.n)}"${i ? '' : ' disabled'}>${flecha('M6 15l6-6 6 6')}</button><button type="button" class="ib" data-ordc="baja" aria-label="Bajar ${esc(b.n)}"${i < v.length - 1 ? '' : ' disabled'}>${flecha('M6 9l6 6 6-6')}</button>
+      ${b.fijo ? '<span class="ordc-fijo" title="Este no se puede quitar">siempre</span>' : `<button type="button" class="ib ordc-quita" data-ordc="quita" aria-label="Quitar ${esc(b.n)}" title="Quitar">${ICONOS.cerrar}</button>`}</span></li>`; }).join('');
+    const fuera = Object.keys(BLOQUES_CAR).filter((k) => !v.includes(k));
+    mas.innerHTML = fuera.length ? fuera.map((k) => { const b = BLOQUES_CAR[k]; return `<li class="ordc-i" data-k="${k}"><span class="ordc-t"><b>${esc(b.n)}</b><small>${esc(b.d)}</small></span><span class="chip ordc-w">${ANCHO_CAR[b.w]}</span><button type="button" class="btn peq" data-ordc="anade">${ICONOS.mas}Añadir</button></li>`; }).join('') : '<li class="k ordc-vacio">Ya sale todo.</li>';
+    $('.ordc-h', h.el).hidden = false;
+  };
+  const guardar = (v, foco) => {
+    S.cartera.inicio = { bloques: v };
+    pintaLista(); pintar();
+    if (foco) { const b = ul.querySelector(`[data-k="${foco[0]}"] [data-ordc="${foco[1]}"]`) || ul.querySelector(`[data-k="${foco[0]}"] .ordc-asa`); if (b) b.focus({ preventScroll: true }); }
+    clearTimeout(t); t = setTimeout(() => guardarCarteraCallada('Cartera a tu gusto'), 900);
+  };
+  h.el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-ordc]'); if (!b || b.disabled) return;
+    const a = b.dataset.ordc, li = b.closest('[data-k]'), k = li && li.dataset.k, v = bloquesCartera(), i = v.indexOf(k);
+    if (a === 'sube' && i > 0) { v.splice(i, 1); v.splice(i - 1, 0, k); guardar(v, [k, i - 1 ? 'sube' : 'baja']); }
+    else if (a === 'baja' && i >= 0 && i < v.length - 1) { v.splice(i, 1); v.splice(i + 1, 0, k); guardar(v, [k, i + 1 < v.length - 1 ? 'baja' : 'sube']); }
+    else if (a === 'quita' && i >= 0 && !BLOQUES_CAR[k].fijo) { v.splice(i, 1); guardar(v); toast(`Quitado: ${BLOQUES_CAR[k].n}. Lo tienes abajo para volver a añadirlo.`, 3500); }
+    else if (a === 'anade' && i < 0) { v.push(k); guardar(v, [k, 'sube']); toast(`Añadido al final: ${BLOQUES_CAR[k].n}`, 3000); }
+    else if (a === 'defecto') { guardar([...CAR_DEFECTO]); toast('Cartera como venía', 2500); }
+  });
+  // arrastrar por el asa: el bloque sigue al dedo y, al pasar la mitad del de al lado, se cambian. Si llevas el
+  // dedo al borde de arriba o de abajo de la hoja, la lista se desplaza sola para seguir moviéndolo
+  ul.addEventListener('pointerdown', (e) => {
+    const a = e.target.closest('.ordc-asa'); if (!a) return;
+    e.preventDefault();
+    const li = a.closest('li'), sc = ul.closest('.hoja') || document.scrollingElement;
+    let y0 = e.clientY, yAhora = e.clientY, raf = 0, vivo = true;
+    li.classList.add('arrastra'); try { a.setPointerCapture(e.pointerId); } catch (er) {}
+    const coloca = () => {
+      let dy = yAhora - y0;
+      const ant = li.previousElementSibling, sig = li.nextElementSibling;
+      // se mueve el de al lado, no el que arrastras: así no se pierde el dedo
+      if (dy < 0 && ant && -dy > ant.offsetHeight / 2) { const hgt = ant.offsetHeight; ul.insertBefore(ant, li.nextSibling); y0 -= hgt + 6; dy = yAhora - y0; }
+      else if (dy > 0 && sig && dy > sig.offsetHeight / 2) { const hgt = sig.offsetHeight; ul.insertBefore(sig, li); y0 += hgt + 6; dy = yAhora - y0; }
+      li.style.transform = `translateY(${dy}px)`;
+    };
+    const borde = () => {
+      raf = 0; if (!vivo) return;
+      const r = sc.getBoundingClientRect ? sc.getBoundingClientRect() : { top: 0, bottom: innerHeight };
+      const arriba = Math.max(r.top, 0) + 70, abajo = Math.min(r.bottom, innerHeight) - 70;
+      const v = yAhora < arriba ? -Math.min(18, (arriba - yAhora) / 3) : yAhora > abajo ? Math.min(18, (yAhora - abajo) / 3) : 0;
+      if (v) { const antes = sc.scrollTop; sc.scrollTop += v; const hecho = sc.scrollTop - antes; if (hecho) { y0 -= hecho; coloca(); } raf = requestAnimationFrame(borde); }
+    };
+    const mueve = (ev) => { yAhora = ev.clientY; coloca(); if (!raf) raf = requestAnimationFrame(borde); };
+    const suelta = () => {
+      vivo = false; if (raf) cancelAnimationFrame(raf);
+      removeEventListener('pointermove', mueve); removeEventListener('pointerup', suelta); removeEventListener('pointercancel', suelta);
+      li.classList.remove('arrastra'); li.style.transform = '';
+      const v = [...ul.children].map((x) => x.dataset.k).filter(Boolean);
+      if (v.join() !== bloquesCartera().join()) guardar(v, [li.dataset.k, 'asa']); else pintaLista();
+    };
+    addEventListener('pointermove', mueve); addEventListener('pointerup', suelta); addEventListener('pointercancel', suelta);
+  });
+  pintaLista();
+}
 function refrescarToca() {
   if (S.vista !== 'cartera' || !S.cartera) return;
   let html; try { html = htmlToca(S.M || calcular()); } catch (e) { return; }
@@ -10287,6 +10483,7 @@ function abrirAjustes() {
     <div class="aj-caja">
       <div class="seccion-ed aj-idioma"><h3>${ICONOS.mercados}Idioma</h3>${selectorIdioma()}<small>${IDIOMA === 'en' ? 'English is still in progress: some texts are in Spanish.' : 'El inglés está en pruebas: parte de los textos siguen en español.'}</small></div>
       <button class="aj-fila" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aOrdenar" data-cerrar>${ICONOS.cartera}<span><b>Cartera a tu gusto</b><small>Ordena, quita y añade lo que sale en Cartera.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aIntro" data-cerrar><img src="favicon.svg" alt=""><span><b>Ver la presentación</b><small>Qué es GrowFolio y qué puedes hacer con él.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aEstreno" data-cerrar>${ICONOS.chispa}<span><b>Ver lo nuevo de la 0.2</b><small>La presentación de esta versión, en un minuto.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
     </div>
@@ -10334,6 +10531,7 @@ function abrirAjustes() {
   $('#aNov', h.el).onclick = () => setTimeout(() => mostrarNovedades(null), 0);
   for (const b of $$('#aTour, #aTour2', h.el)) b.onclick = () => setTimeout(() => iniciarTour(0), 0);
   $('#aIntro', h.el).onclick = () => setTimeout(() => pantallaIntro(() => { montar(); pintar(); }), 0);
+  $('#aOrdenar', h.el).onclick = () => setTimeout(() => { if (S.vista !== 'cartera') location.hash = '#cartera'; setTimeout(ordenarCartera, 120); }, 0);
   $('#aEstreno', h.el).onclick = () => setTimeout(() => estreno02(LS.get('inv-version', VERSION), null), 0);
   $('#aInvita', h.el).onclick = () => {
     const url = (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#mia';
@@ -11753,6 +11951,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'asesor') abrirAsesor(d.q || '', !!d.q);
     else if (a === 'recorte') iniciarRecorte();
     else if (a === 'idioma') menuIdioma(t);
+    else if (a === 'ordenar-cartera') ordenarCartera();
     else if (a === 'ia-actualizar') generarAnalisisIA('la pides tú');
     else if (a === 'asesor-ajustes') { AS.vista = 'ajustes'; abrirAsesor().then(() => { AS.vista = 'ajustes'; pintarAsesor(); }); }
     else if (a === 'borrar-mov') borrarMovimiento(d.id, t);
