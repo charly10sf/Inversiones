@@ -379,7 +379,20 @@ button.fila:hover { background: var(--plane); }
 .ag-prox-t { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: center; width: 100%; text-align: left; border: 0; background: none; padding: 0; color: inherit; }
 .ag-prox-t b { display: block; font-weight: 600; }
 .ag-prox-t small { color: var(--text-2); font-size: 13px; }
-.ag-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.ag-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; touch-action: pan-y; }
+.ag-nav { display: flex; align-items: center; gap: 8px; }
+.ag-nav-t { flex: 1; display: grid; justify-items: center; gap: 1px; text-align: center; }
+.ag-nav-t b { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; }
+.ag-nav-t small { color: var(--muted); font-size: 12.5px; }
+.ag-nav .ib { border: 1px solid var(--line-2); }
+.ag-nav .ib:disabled { opacity: 0.3; cursor: default; }
+.ag-nav .ib svg { width: 18px; height: 18px; }
+.ag-c.fuera { opacity: 0.22; }
+.ag-c.sel { border-color: var(--accent); background: var(--accent-bg); }
+.ag-diap { border-top: 1px solid var(--line); padding-top: 12px; animation: entra 0.2s ease-out; }
+.ag-diap h3 { margin: 0 0 8px; display: flex; justify-content: space-between; gap: 10px; font-size: 15px; font-weight: 650; }
+.ag-diap h3 small { color: var(--muted); font-weight: 500; font-size: 12.5px; }
+.ag-pista { margin: 0; color: var(--muted); font-size: 12.5px; }
 .ag-cal .sem { font-size: 11.5px; color: var(--muted); text-align: center; padding-bottom: 2px; }
 .ag-c { min-height: 44px; border-radius: 10px; background: var(--plane); border: 1px solid transparent; display: grid; align-content: space-between; justify-items: start; padding: 5px 6px; font: inherit; font-size: 13px; color: var(--text-2); text-align: left; font-variant-numeric: tabular-nums; }
 .ag-c .n { display: flex; gap: 3px; align-items: baseline; }
@@ -1014,6 +1027,30 @@ table.ideas .sub { display: block; font-size: 12px; }
 .toca-c:empty { display: none; }
 .toca li.urgente .toca-c { color: var(--accent); font-weight: 600; }
 .toca b { font-weight: 550; font-size: 14.5px; line-height: 1.4; }
+/* GrowFolio IA, lo primero de Cartera */
+.toca.iac { padding: 16px 16px 8px; border-left-width: 1px; border-color: rgba(226, 180, 95, 0.32); background: linear-gradient(160deg, rgba(226, 180, 95, 0.09), var(--plane) 55%); }
+.iac-cab { display: flex; align-items: center; gap: 12px; }
+.iac-cab > div { flex: 1; min-width: 0; }
+.iac-cab h2 { margin: 0; font-size: 15.5px; font-weight: 700; letter-spacing: -0.01em; }
+.iac-cab small { color: var(--muted); font-size: 12.5px; }
+.iac-cab .enlace { font-size: 13.5px; white-space: nowrap; }
+.iac-ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-bg); color: var(--accent); flex: none; }
+.iac-ico svg { width: 18px; height: 18px; }
+.iac-tit { margin: 12px 0 0; font-size: 16.5px; font-weight: 600; line-height: 1.42; letter-spacing: -0.012em; color: var(--text); }
+.iac-tit.iac-act { font-weight: 500; font-size: 15px; color: var(--text-2); }
+.iac-boton { margin: 12px 0 8px; }
+.iac-notas { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 12px; }
+.iac-nota { display: grid; gap: 4px; }
+.iac-nota small { color: var(--muted); font-size: 11.5px; }
+.iac-nota .ia-puntos i { width: 11px; height: 5px; }
+.iac-sub { display: flex; justify-content: space-between; align-items: baseline; gap: 6px 12px; flex-wrap: wrap; margin: 16px 0 2px; padding-top: 12px; border-top: 1px solid var(--line); }
+.iac-sub h3 { margin: 0; font-size: 14px; font-weight: 650; }
+.iac-sub .enlace { font-size: 13.5px; }
+.toca.iac li { grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; }
+.toca.iac li .t-check { width: 28px; height: 28px; }
+.iac-paso { display: grid; gap: 1px; min-width: 0; }
+.toca.iac li.hecho b { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--line-2); }
+.toca.iac li.hecho .toca-c { color: var(--up); }
 
 /* ---------- secciones plegables ---------- */
 details.plegable { border-top: 1px solid var(--line); margin-top: 28px; }
@@ -1091,7 +1128,7 @@ details.plegable[open] { padding-bottom: 16px; }
 
 /* "lo que toca": bajo las cifras en el móvil, bajo el gráfico en pantallas anchas */
 .toca.en-evo { display: none; }
-@media (min-width: 1180px) { .toca.en-hero { display: none; } .toca.en-evo { display: block; margin-top: 28px; } }
+@media (min-width: 1180px) { .toca.en-hero { display: none; } .toca.en-evo { display: block; margin: 0 0 22px; } }
 
 /* ---------- recorte de pantalla ---------- */
 .recorte { position: fixed; inset: 0; z-index: 90; cursor: crosshair; touch-action: none; background: rgba(0, 0, 0, 0.28); user-select: none; -webkit-user-select: none; }
@@ -1981,44 +2018,75 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .intro-marca { display: inline-flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.02em; }
 .intro-marca img { width: 28px; height: 28px; border-radius: 8px; }
 .intro-saltar { border: 0; background: none; color: var(--text-2); font: 600 15px var(--f); padding: 10px 6px; cursor: pointer; }
-.intro-ventana { flex: 1; overflow: hidden; touch-action: pan-y; user-select: none; -webkit-user-select: none; }
-.intro-pista { display: flex; height: 100%; transition: transform 0.45s cubic-bezier(.2, .8, .2, 1); will-change: transform; }
-.intro-pista.arrastra { transition: none; }
-.intro-slide { flex: 0 0 100%; box-sizing: border-box; display: grid; align-content: center; justify-items: center; gap: 26px; padding: 8px 24px; text-align: center; }
-.intro-ilus { width: min(84vw, 380px); }
-.intro-txt h1 { margin: 0 0 12px; font-size: clamp(28px, 7vw, 44px); font-weight: 700; letter-spacing: -0.035em; line-height: 1.08; }
-.intro-txt p { margin: 0 auto; max-width: 460px; color: var(--text-2); font-size: 17px; line-height: 1.55; }
-.intro-pie { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 20px 22px; max-width: 1040px; width: 100%; margin: 0 auto; box-sizing: border-box; }
-.intro-puntos { display: flex; gap: 6px; }
-.intro-puntos button { width: 8px; height: 8px; padding: 0; border: 0; border-radius: 4px; background: var(--line-2); cursor: pointer; transition: width 0.3s, background 0.3s; }
-.intro-puntos button[aria-current="true"] { width: 26px; background: var(--accent); }
-.intro-btns { display: flex; gap: 8px; }
-.intro-btns .btn { min-height: 48px; padding: 0 22px; font-size: 16px; }
-.intro-sig.final { padding: 0 28px; }
 .ver-intro { justify-self: center; margin-top: 4px; color: var(--accent); font-weight: 600; }
+/* la presentación que se cuenta bajando */
+@property --ixg { syntax: '<color>'; inherits: true; initial-value: #E2B45F; }
+.intro.ix { display: block; padding: 0; background: #000; --ixg: #E2B45F; transition: --ixg 0.9s ease; }
+.ix-scroll { position: absolute; inset: 0; overflow-x: hidden; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; scrollbar-width: none; outline: none; }
+.ix-scroll::-webkit-scrollbar { display: none; }
+.ix-luz { position: absolute; inset: 0; pointer-events: none; opacity: var(--luz, 0.4); background: radial-gradient(75% 55% at 50% 45%, color-mix(in srgb, var(--ixg) 26%, transparent) 0%, color-mix(in srgb, var(--ixg) 7%, transparent) 45%, transparent 75%); }
+.ix-barra { position: absolute; z-index: 4; top: 0; left: 0; right: 0; height: 2px; background: var(--accent); transform-origin: 0 50%; transform: scaleX(0); pointer-events: none; }
+.ix-cab { position: absolute; z-index: 3; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 6px; padding: calc(8px + env(safe-area-inset-top)) 16px 18px; background: linear-gradient(rgba(0, 0, 0, 0.85), transparent); pointer-events: none; }
+.ix-cab > * { pointer-events: auto; }
+.ix-cab .intro-marca { margin-right: auto; opacity: 0; }
+.ix-heroe { position: relative; height: 320vh; }
+.ix-escena { position: sticky; top: 0; height: 100vh; height: 100dvh; display: grid; justify-items: center; align-content: center; row-gap: clamp(14px, 3vh, 30px); padding: 0 20px; text-align: center; overflow: hidden; }
+.ix-emblema { width: min(54vw, 32vh, 280px); aspect-ratio: 1; will-change: transform, opacity; }
+.ix-emblema svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.ix-esq { transform-box: view-box; will-change: transform, opacity; }
+.ix-flota { transform-box: view-box; transform-origin: 24px 24px; animation: ix-flota 5s ease-in-out infinite alternate; animation-delay: calc(var(--i) * -0.6s); }
+@keyframes ix-flota { from { transform: translate(calc(var(--d, 0) * -1.6px), calc(var(--d, 0) * 1.2px)) rotate(calc(var(--d, 0) * -5deg)); } to { transform: translate(calc(var(--d, 0) * 1.6px), calc(var(--d, 0) * -1.4px)) rotate(calc(var(--d, 0) * 5deg)); } }
+.ix-entero { opacity: 0; }
+.ix-marca { margin: 0; display: flex; justify-content: center; font-size: clamp(54px, 15.5vw, 156px); font-weight: 800; letter-spacing: -0.055em; line-height: 0.92; }
+.ix-marca span { display: inline-block; opacity: 0; will-change: transform, opacity; }
+.ix-lema { display: grid; gap: 10px; max-width: 540px; opacity: 0; }
+.ix-lema h2 { margin: 0; color: var(--accent); font-size: clamp(21px, 5vw, 32px); font-weight: 700; letter-spacing: -0.025em; }
+.ix-lema p { margin: 0; color: var(--text-2); font-size: clamp(15.5px, 3.9vw, 18.5px); line-height: 1.55; }
+.ix-baja { position: absolute; left: 0; right: 0; bottom: calc(22px + env(safe-area-inset-bottom)); display: grid; justify-items: center; gap: 2px; color: var(--muted); font-size: 13.5px; font-weight: 600; pointer-events: none; }
+.ix-baja svg { width: 26px; height: 26px; fill: none; stroke: var(--accent); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; animation: ix-baja 1.6s ease-in-out infinite; }
+@keyframes ix-baja { 0%, 100% { transform: translateY(-3px); opacity: 0.6; } 50% { transform: translateY(5px); opacity: 1; } }
+.ix-cap { position: relative; min-height: 100vh; min-height: 100dvh; display: grid; align-items: center; padding: 76px 22px; }
+.ix-cap-in { width: 100%; max-width: 1080px; margin: 0 auto; display: grid; justify-items: center; gap: clamp(22px, 4.5vh, 44px); text-align: center; }
+.ix-ilus { width: min(80vw, 420px); will-change: transform, opacity; }
+.ix-txt { max-width: 580px; }
+.ix-txt h2 { margin: 0 0 16px; font-size: clamp(34px, 8.6vw, 66px); font-weight: 750; letter-spacing: -0.045em; line-height: 1.02; }
+.ix-txt h2 span { display: inline-block; will-change: transform, opacity; }
+.ix-txt p { margin: 0 auto; max-width: 480px; color: var(--text-2); font-size: clamp(16px, 4vw, 19.5px); line-height: 1.6; will-change: transform, opacity; }
+.ix-fin { min-height: 100vh; min-height: 100dvh; display: grid; justify-items: center; align-content: center; gap: 22px; padding: 60px 22px calc(40px + env(safe-area-inset-bottom)); text-align: center; }
+.ix-fin-logo svg { display: block; width: 92px; height: 92px; }
+.ix-fin h2 { margin: 0; font-size: clamp(38px, 10vw, 76px); font-weight: 800; letter-spacing: -0.05em; line-height: 1; }
+.ix-fin p { margin: -6px 0 6px; max-width: 420px; color: var(--text-2); font-size: 16px; line-height: 1.55; }
+.ix-fin .btn { min-height: 56px; padding: 0 36px; font-size: 17px; }
+.dib .ix-vacio { fill: var(--line-2); stroke: none; }
+.ix-arriba { color: var(--text-2); font-weight: 600; }
 @media (min-width: 900px) {
-  .intro-slide { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); text-align: left; gap: 56px; padding: 0 max(56px, calc((100% - 1000px) / 2)); justify-items: stretch; align-content: center; align-items: center; }
-  .intro-ilus { width: 100%; max-width: 440px; justify-self: end; }
-  .intro-txt p { margin: 0; }
-  .intro-pista { max-width: none; }
+  .ix-cap { padding: 90px max(56px, calc((100% - 1080px) / 2)); }
+  .ix-cap-in { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); justify-items: stretch; align-items: center; gap: 80px; text-align: left; }
+  .ix-cap[data-lado="d"] .ix-ilus { order: 2; }
+  .ix-ilus { width: 100%; max-width: 500px; justify-self: center; }
+  .ix-txt p { margin: 0; }
 }
-@media (max-height: 640px) { .intro-ilus { width: min(64vw, 280px); } .intro-txt h1 { font-size: 26px; } .intro-txt p { font-size: 15.5px; } .intro-slide { gap: 16px; } }
+@media (max-height: 640px) { .ix-ilus { width: min(62vw, 300px); } .ix-txt h2 { font-size: 30px; } .ix-txt p { font-size: 15.5px; } }
+/* con «reducir movimiento»: todo montado y quieto */
+.ix.quieta .ix-heroe { height: auto; }
+.ix.quieta .ix-escena { position: relative; min-height: 100vh; min-height: 100dvh; height: auto; }
+.ix.quieta .ix-flota, .ix.quieta .ix-baja svg { animation: none; }
 /* lo que se mueve en cada diapositiva, solo cuando está a la vista */
-.intro-slide.activa .an1, .intro-slide.activa .an2, .intro-slide.activa .an3, .intro-slide.activa .an4 { animation: ilus-in 0.5s cubic-bezier(.2, .7, .3, 1) both; }
-.intro-slide.activa .an1 { animation-delay: 0.25s; } .intro-slide.activa .an2 { animation-delay: 0.6s; } .intro-slide.activa .an3 { animation-delay: 0.95s; } .intro-slide.activa .an4 { animation-delay: 1.3s; }
+:is(.intro-slide, .ix-cap).activa .an1, :is(.intro-slide, .ix-cap).activa .an2, :is(.intro-slide, .ix-cap).activa .an3, :is(.intro-slide, .ix-cap).activa .an4 { animation: ilus-in 0.5s cubic-bezier(.2, .7, .3, 1) both; }
+:is(.intro-slide, .ix-cap).activa .an1 { animation-delay: 0.25s; } :is(.intro-slide, .ix-cap).activa .an2 { animation-delay: 0.6s; } :is(.intro-slide, .ix-cap).activa .an3 { animation-delay: 0.95s; } :is(.intro-slide, .ix-cap).activa .an4 { animation-delay: 1.3s; }
 @keyframes ilus-in { from { opacity: 0; transform: translateY(10px); } }
-.intro-slide.activa .an1v { animation: ilus-ok 0.4s ease 0.25s both; } .intro-slide.activa .an2v { animation: ilus-ok 0.4s ease 0.6s both; }
+:is(.intro-slide, .ix-cap).activa .an1v { animation: ilus-ok 0.4s ease 0.25s both; } :is(.intro-slide, .ix-cap).activa .an2v { animation: ilus-ok 0.4s ease 0.6s both; }
 @keyframes ilus-ok { to { fill: var(--up-bg); stroke: var(--up); } }
-.intro-slide.activa .traza { stroke-dasharray: 100; animation: ilus-traza 1.1s ease-out 0.2s both; }
+:is(.intro-slide, .ix-cap).activa .traza { stroke-dasharray: 100; animation: ilus-traza 1.1s ease-out 0.2s both; }
 @keyframes ilus-traza { from { stroke-dashoffset: 100; } to { stroke-dashoffset: 0; } }
-.intro-slide.activa .brota { transform-box: fill-box; transform-origin: 0% 100%; animation: ilus-brota 0.6s cubic-bezier(.3, 1.6, .5, 1) 1.1s both; }
+:is(.intro-slide, .ix-cap).activa .brota { transform-box: fill-box; transform-origin: 0% 100%; animation: ilus-brota 0.6s cubic-bezier(.3, 1.6, .5, 1) 1.1s both; }
 @keyframes ilus-brota { from { transform: scale(0); } }
-.intro-slide.activa .late { transform-box: fill-box; transform-origin: center; animation: ilus-late 2.4s ease-in-out infinite; }
-.intro-slide.activa .late.d2 { animation-delay: 0.6s; } .intro-slide.activa .late.d3 { animation-delay: 1.2s; } .intro-slide.activa .late.d4 { animation-delay: 1.8s; }
+:is(.intro-slide, .ix-cap).activa .late { transform-box: fill-box; transform-origin: center; animation: ilus-late 2.4s ease-in-out infinite; }
+:is(.intro-slide, .ix-cap).activa .late.d2 { animation-delay: 0.6s; } :is(.intro-slide, .ix-cap).activa .late.d3 { animation-delay: 1.2s; } :is(.intro-slide, .ix-cap).activa .late.d4 { animation-delay: 1.8s; }
 @keyframes ilus-late { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.6); opacity: 0.55; } }
-.intro-slide.activa .cierra { animation: ilus-cierra 0.7s cubic-bezier(.3, 1.4, .5, 1) 0.35s both; }
+:is(.intro-slide, .ix-cap).activa .cierra { animation: ilus-cierra 0.7s cubic-bezier(.3, 1.4, .5, 1) 0.35s both; }
 @keyframes ilus-cierra { from { transform: translateY(-14px); } }
-@media (prefers-reduced-motion: reduce) { .intro-pista { transition: none; } .intro-slide.activa * { animation: none !important; } }
+@media (prefers-reduced-motion: reduce) { :is(.intro-slide, .ix-cap).activa * { animation: none !important; } }
 
 .aj-intro { display: block; margin: -8px 0 18px; color: var(--accent); font-weight: 600; font-size: 14px; }
 
@@ -3942,7 +4010,7 @@ function vistaCartera(M) {
   const plats = porPlataforma(M).map(([k]) => `<div class="kpi"><span class="k">${esc(k)}</span><span class="v">${B('plat:' + k)}</span></div>`).join('');
   const anio = new Date().getFullYear();
   const tocaHtml = htmlToca(M);
-  const toca = (donde) => tocaHtml.replace('class="toca"', `class="toca en-${donde}"`).replace(/hToca/g, 'hToca-' + donde);
+  const toca = (donde) => tocaHtml.replace('class="toca ', `class="toca en-${donde} `).replace(/hToca/g, 'hToca-' + donde);
   return `
   <div class="cabecera">
     <section aria-label="Patrimonio">
@@ -3950,6 +4018,7 @@ function vistaCartera(M) {
       <div class="hero-fila"><div class="hero-lbl">Patrimonio</div>${chipGTA()}</div>
       <div class="hero-num" aria-label="Patrimonio">${B('totalE')}${B('totalD', 'dec')}</div>
       <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">ganado desde que compraste</span></div><div class="movers">${B('movers')}</div></div>
+      ${htmlPreguntasIA(true)}${toca('hero')}
       <div class="kpis">
         ${plats}
         <div class="kpi"><span class="k">Invertido</span><span class="v">${eur(M.invertido, 0)}</span></div>
@@ -3957,16 +4026,15 @@ function vistaCartera(M) {
         ${(() => { try { const pr = proyeccion(M); return `<a class="kpi" href="#proyeccion"><span class="k">En 10 años, lo probable</span><span class="v acento">${euCorto(pr.p50[120])}</span></a>`; } catch (e) { return ''; } })()}
         ${M.realizado ? `<div class="kpi"><span class="k">Ventas de ${anio}</span><span class="v ${cls(M.realizado)}">${eurS(M.realizado, 0)}</span></div>` : ''}
       </div>
-      ${htmlPreguntasIA(true)}${toca('hero')}
     </section>
     <section aria-label="Evolución">
+      ${toca('evo')}
       <div class="evo-cab"><div class="datos" id="evoCab"></div>
         <div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div></div>
       <div class="chart" id="grafEvo"></div>
       <div class="leyenda-graf"><span><i style="border-color:var(--accent)"></i>Tu cartera</span>${S.comparar ? `<span><i class="disc" style="border-color:var(--text-2)"></i>El mismo dinero en el S&P 500</span>` : ''}
         <label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> Comparar con el S&P 500</label></div>
       <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste».</p>
-      ${toca('evo')}
     </section>
   </div>
   <div class="subvistas dos-op car-tabs" id="carTabs" role="group" aria-label="Qué ver"><button data-car="pos" aria-pressed="${S.carTab !== 'plan'}">${ICONOS.cartera}Tus posiciones</button><button data-car="plan" aria-pressed="${S.carTab === 'plan'}">${ICONOS.plan}Plan y movimientos</button></div>
@@ -3976,14 +4044,34 @@ function vistaCartera(M) {
   </div>`}`;
 }
 
-/* lo que toca hacer este mes, sacado del paso a paso: lo urgente primero */
+/* Lo primero de Cartera, debajo del patrimonio: lo que dice GrowFolio IA (su diagnóstico de una frase y sus notas)
+   y lo que toca hacer ahora, sacado del paso a paso, con su botón para marcarlo hecho sin salir de aquí */
 function htmlToca(M) {
-  let P; try { P = pasosRuta(M); } catch (e) { return ''; }
-  const pend = [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto);
-  const v = [...pend.filter((x) => x.urgente), ...pend.filter((x) => !x.urgente)].slice(0, 3);
-  if (!v.length) return '';
-  return `<section class="toca" aria-labelledby="hToca"><div class="toca-cab"><h2 id="hToca">Lo que toca ahora</h2><button class="enlace acento" data-calif="ruta">Ver el paso a paso</button></div>
-    <ul>${v.map((x) => `<li class="${x.urgente ? 'urgente' : ''}"><span class="toca-c">${esc(x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, '\u00a0€')}</b></li>`).join('')}</ul></section>`;
+  let P; try { P = pasosRuta(M); } catch (e) { P = { mes: [], seis: [] }; }
+  const hoy = hoyIso(), hechos = (S.cartera.ruta && S.cartera.ruta.hechos) || {};
+  const todos = [...P.mes, ...P.seis].filter((x) => !x.auto);
+  const pend = todos.filter((x) => !x.hecho);
+  // lo que acabas de marcar se queda tachado hasta mañana, para que veas que se ha guardado
+  const recien = todos.filter((x) => x.hecho && hechos[x.hechoK] === hoy);
+  const v = [...pend.filter((x) => x.urgente), ...pend.filter((x) => !x.urgente)].slice(0, 3).concat(recien.slice(0, 2));
+  const ia = iaActual();
+  if (!v.length && !ia) return '';
+  let cab = '', notas = '', tit = '';
+  if (ia) {
+    const vIA = valoresIA(M), f = String(ia.fecha || ''), d = new Date(f.length > 10 ? f : f + 'T12:00:00'), dias = diasEntre(iso(d), hoy);
+    const hora = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+    const cuando = ia.propio ? (dias === 0 ? `Hoy a las ${hora}` : dias === 1 ? `Ayer a las ${hora}` : `El ${fechaLarga(iso(d))}`) : 'Análisis de partida';
+    cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>${esc(cuando)}${IA.generando ? ' · revisándolo ahora' : ''}</small></div><a class="enlace acento" href="#analisis">Ver el análisis</a></div>`;
+    tit = ia.titular ? `<p class="iac-tit">${rellenarIA(ia.titular, vIA)}</p>` : '';
+    notas = (ia.puntuaciones || []).length ? `<div class="iac-notas">${ia.puntuaciones.slice(0, 5).map((x) => { const n = Math.max(0, Math.min(5, +x.nota || 0)); return `<span class="iac-nota" title="${esc(x.k)}: ${n} de 5"><small>${esc(/^riesgo$/i.test(x.k) ? 'Riesgo' : x.k)}</small><span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span></span>`; }).join('')}</div>` : '';
+  } else {
+    cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>Aún sin activar</small></div></div>
+      <p class="iac-tit iac-act">Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.</p>
+      <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.chispa}Activar GrowFolio IA</button>`;
+  }
+  const lista = v.length ? `<div class="iac-sub"><h3>Lo que toca ahora</h3><button class="enlace acento" data-calif="ruta">Ver el paso a paso</button></div>
+    <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
+  return `<section class="toca iac" aria-labelledby="hToca">${cab}${tit}${notas}${lista}</section>`;
 }
 /* el nombre completo del fondo o la empresa, cuando dice algo más que el corto ("S&P 500" → "iShares US Index Fund (IE) S Acc EUR") */
 function nombreReal(i) {
@@ -4404,6 +4492,26 @@ function vistaAgenda(M) {
       : `<span class="ag-c${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}">${dentro}</span>`;
   };
   const mesAbierto = !!S.agMes;
+  // el mes entero (de lunes a domingo), desde este hasta dentro de 14 meses: la Fed, el BCE y los festivos
+  // ya están puestos hasta finales del año que viene; resultados y dividendos, los próximos que se saben
+  const MAX_MESES = 14;
+  const mesN = Math.max(0, Math.min(MAX_MESES, S.agMesN || 0));
+  const m0 = (() => { const b = deIso(hoy); return new Date(b.getFullYear(), b.getMonth() + mesN, 1); })();
+  const evMes = mesAbierto ? agendaLista(M, 470).filter((e) => enModo(e, modo)) : [];
+  const porDiaMes = new Map(); for (const e of evMes) { if (!porDiaMes.has(e.d)) porDiaMes.set(e.d, []); porDiaMes.get(e.d).push(e); }
+  const desfase = (m0.getDay() + 6) % 7, diasMes = new Date(m0.getFullYear(), m0.getMonth() + 1, 0).getDate();
+  const nCeldas = Math.ceil((desfase + diasMes) / 7) * 7;
+  const celdaMes = (k) => {
+    const x = new Date(m0.getFullYear(), m0.getMonth(), 1 - desfase + k), d = iso(x);
+    const fuera = x.getMonth() !== m0.getMonth(), es = fuera ? [] : porDiaMes.get(d) || [], pasado = d < hoy, finde = x.getDay() === 0 || x.getDay() === 6;
+    const tipos = [...new Set(es.map((e) => e.tipo))].slice(0, 3);
+    const cls = `ag-c${fuera ? ' fuera' : ''}${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}${S.agDia === d ? ' sel' : ''}`;
+    const dentro = `<span class="n">${x.getDate()}</span><span class="ag-pts">${tipos.map((t) => `<i class="t-${t}"></i>`).join('')}</span>`;
+    return es.length ? `<button type="button" class="${cls}" data-ag-sel="${d}" aria-pressed="${S.agDia === d}" aria-label="${esc(`${fechaDia(d)}: ${es.map((e) => e.t).join(', ')}`)}">${dentro}</button>` : `<span class="${cls}">${dentro}</span>`;
+  };
+  const nomMes = (() => { const m = mesL(m0.getMonth()); return m[0].toUpperCase() + m.slice(1) + ' ' + m0.getFullYear(); })();
+  const evDelMes = evMes.filter((e) => e.d.slice(0, 7) === iso(m0).slice(0, 7));
+  const diaSel = S.agDia && S.agDia.slice(0, 7) === iso(m0).slice(0, 7) ? S.agDia : null;
   // la lista: esta semana, la que viene y luego cada mes
   const finSem = new Date(lunes); finSem.setDate(lunes.getDate() + 6);
   const finSig = new Date(lunes); finSig.setDate(lunes.getDate() + 13);
@@ -4429,8 +4537,12 @@ function vistaAgenda(M) {
     <section class="ag2-sec"><h2>${L('Próximos', 'Coming up')}</h2>
       ${prox.length ? `<div class="agc-fila">${prox.map((e) => tarjeta(e)).join('')}</div>` : `<div class="vacio">${L('Nada a la vista en esta pestaña.', 'Nothing coming up in this tab.')}</div>`}</section>
     <section class="ag-mes2${mesAbierto ? ' on' : ''}">
-      <button type="button" class="ag-mes-b" data-ag-mes aria-expanded="${mesAbierto}"><span>${ICONOS.agenda}${mesAbierto ? L('Las próximas cinco semanas', 'The next five weeks') : L('Esta semana', 'This week')}</span><span class="ag-mes-v">${mesAbierto ? L('Plegar', 'Collapse') : L('Ver el mes', 'See the month')}<i aria-hidden="true"></i></span></button>
-      ${mesAbierto ? `<div class="ag-cal">${L(['L', 'M', 'X', 'J', 'V', 'S', 'D'], ['M', 'T', 'W', 'T', 'F', 'S', 'S']).map((x) => `<span class="sem" data-no-trad>${x}</span>`).join('')}${Array.from({ length: 35 }, (_, k) => celda(k, false)).join('')}</div>
+      <button type="button" class="ag-mes-b" data-ag-mes aria-expanded="${mesAbierto}"><span>${ICONOS.agenda}${mesAbierto ? L('El calendario', 'The calendar') : L('Esta semana', 'This week')}</span><span class="ag-mes-v">${mesAbierto ? L('Plegar', 'Collapse') : L('Ver el mes', 'See the month')}<i aria-hidden="true"></i></span></button>
+      ${mesAbierto ? `<div class="ag-nav"><button type="button" class="ib" data-ag-mesn="-1" aria-label="${L('Mes anterior', 'Previous month')}"${mesN ? '' : ' disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+          <div class="ag-nav-t"><b data-no-trad>${esc(L(nomMes, `${MESES_EN[m0.getMonth()]} ${m0.getFullYear()}`))}</b><small>${evDelMes.length ? L(`${evDelMes.length} ${evDelMes.length === 1 ? 'cosa' : 'cosas'} este mes`, `${evDelMes.length} ${evDelMes.length === 1 ? 'thing' : 'things'} this month`) : L('Nada apuntado este mes', 'Nothing this month')}</small></div>
+          <button type="button" class="ib" data-ag-mesn="1" aria-label="${L('Mes siguiente', 'Next month')}"${mesN < MAX_MESES ? '' : ' disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button></div>
+        <div class="ag-cal" data-ag-desliza>${L(['L', 'M', 'X', 'J', 'V', 'S', 'D'], ['M', 'T', 'W', 'T', 'F', 'S', 'S']).map((x) => `<span class="sem" data-no-trad>${x}</span>`).join('')}${Array.from({ length: nCeldas }, (_, k) => celdaMes(k)).join('')}</div>
+        ${diaSel ? `<div class="ag-diap"><h3>${esc(fechaDia(diaSel))}<small>${faltan(diaSel, true)}</small></h3><ul class="ag-evs">${(porDiaMes.get(diaSel) || []).map(item).join('')}</ul></div>` : `<p class="ag-pista">${L('Toca un día con puntos para ver qué pasa. Las flechas (o deslizar) te llevan a los meses siguientes.', 'Tap a day with dots to see what happens. The arrows (or swiping) take you to the next months.')}</p>`}
         <div class="ag-ley">${[['resultados', L('Resultados', 'Earnings')], ['dividendo', L('Dividendos', 'Dividends')], ['banco', L('Bancos centrales', 'Central banks')], ['aportacion', L('Aportaciones', 'Contributions')], ['festivo', L('Sin bolsa', 'Market closed')]].map(([t, n]) => `<span><i class="t-${t}"></i>${n}</span>`).join('')}</div>`
         : `<div class="ag-semana">${Array.from({ length: 7 }, (_, k) => celda(k, true)).join('')}</div>`}
     </section>
@@ -4440,11 +4552,27 @@ function vistaAgenda(M) {
     <p class="nota">${L('Resultados y dividendos: Yahoo Finance (las empresas a veces los mueven unos días). Fed, BCE y festivos: sus calendarios oficiales. Noticias: Google Noticias. Los importes son orientativos.', 'Earnings and dividends: Yahoo Finance (companies sometimes move them a few days). Fed, ECB and holidays: their official calendars. News: Google News. Amounts are approximate.')}</p>
   </div>`;
 }
+/* el mes se puede pasar deslizando el dedo, como en el calendario del móvil */
+{
+  let x0 = null, y0 = 0;
+  document.addEventListener('pointerdown', (e) => { if (e.pointerType !== 'mouse' && e.target.closest && e.target.closest('[data-ag-desliza]')) { x0 = e.clientX; y0 = e.clientY; } else x0 = null; }, { passive: true });
+  document.addEventListener('pointerup', (e) => {
+    if (x0 == null) return;
+    const dx = e.clientX - x0, dy = e.clientY - y0; x0 = null;
+    if (Math.abs(dx) < 60 || Math.abs(dx) < Math.abs(dy) * 1.5) return;
+    const n = Math.max(0, Math.min(14, (S.agMesN || 0) + (dx < 0 ? 1 : -1)));
+    if (n !== (S.agMesN || 0)) { S.agMesN = n; S.agDia = null; pintar(); }
+  }, { passive: true });
+}
 /* abrir y cerrar cada fecha, filtrar y saltar a un día */
 document.addEventListener('click', (e) => {
   const f = e.target.closest('[data-agm]');
   if (f) { S.agModo = f.dataset.agm; pintar(); return; }
-  if (e.target.closest('[data-ag-mes]')) { S.agMes = !S.agMes; pintar(); return; }
+  if (e.target.closest('[data-ag-mes]')) { S.agMes = !S.agMes; if (!S.agMes) { S.agMesN = 0; S.agDia = null; } pintar(); return; }
+  const mn = e.target.closest('[data-ag-mesn]');
+  if (mn) { if (mn.disabled) return; S.agMesN = Math.max(0, Math.min(14, (S.agMesN || 0) + +mn.dataset.agMesn)); S.agDia = null; pintar(); return; }
+  const sel = e.target.closest('[data-ag-sel]');
+  if (sel) { S.agDia = S.agDia === sel.dataset.agSel ? null : sel.dataset.agSel; pintar(); const p = document.querySelector('.ag-diap'); if (p) p.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'nearest' }); return; }
   if (e.target.closest('[data-ag-pasado]')) { S.agPasado = true; pintar(); return; }
   const b = e.target.closest('.ag-f');
   if (b) {
@@ -5267,7 +5395,7 @@ function pasosRuta0(M) {
   }
   const hechos = (S.cartera.ruta && S.cartera.ruta.hechos) || {};
   for (const k of Object.keys(P)) {
-    for (const x of P[k]) x.hecho = !!hechos[x.id];
+    for (const x of P[k]) { x.hechoK = x.fuente === 'ia' ? hechoIA(x) : hechos[x.id] ? x.id : null; x.hecho = !!x.hechoK; }
     P[k].sort((a, b) => (a.hecho - b.hecho) || ((b.urgente ? 1 : 0) - (a.urgente ? 1 : 0)) || ((a.auto ? 1 : 0) - (b.auto ? 1 : 0)) || String(a.d || '9').localeCompare(String(b.d || '9')));
   }
   return P;
@@ -5394,13 +5522,44 @@ function htmlRuta(M) {
 function vistaRuta(M) {
   return `<div class="vista-cab"><h1>Paso a paso</h1><p>Qué te toca hacer y cuándo: lo urgente primero, con el porqué, el cómo y lo que pagas a Hacienda.</p></div>${htmlRuta(M)}`;
 }
+/* Los pasos de la IA cambian de texto cada vez que revisa la cartera («Pon un stop en Repsol» un día, «Protege
+   lo ganado en Repsol con una orden stop» al siguiente), así que lo hecho no se busca solo por el texto exacto:
+   un paso de la IA cuenta como hecho si se parece mucho a uno que ya marcaste (las mismas palabras clave) y lo
+   marcaste hace poco, o si es casi igual aunque fuera hace meses. La IA, además, recibe lo que ya has hecho para
+   no volver a proponerlo. */
+const VACIAS_RUTA = new Set(['para', 'con', 'que', 'los', 'las', 'del', 'una', 'unos', 'unas', 'por', 'tus', 'sus', 'este', 'esta', 'cada', 'como', 'mas', 'antes', 'despues', 'desde', 'hasta', 'sobre', 'entre', 'tienes', 'tiene', 'ahora', 'cuando', 'hazlo', 'haz', 'tu', 'su', 'en', 'el', 'la', 'de', 'y', 'a']);
+const clavesRuta = (t) => new Set(normTxt(String(t || '').replace(/<[^>]+>/g, ' ')).split(' ').filter((w) => w.length >= 4 && !VACIAS_RUTA.has(w)));
+function parecidoRuta(a, b) { if (!a.size || !b.size) return 0; let c = 0; for (const w of a) if (b.has(w)) c++; return c / (a.size + b.size - c); }
+function hechoIA(x) {
+  const r = (S.cartera && S.cartera.ruta) || {}, hechos = r.hechos || {}, info = r.hechosIA || {};
+  if (hechos[x.id]) return x.id;
+  const mias = clavesRuta(x.t), hace45 = iso(new Date(Date.now() - 45 * 86400000));
+  let mejor = null, nota = 0;
+  for (const [k, d] of Object.entries(hechos)) {
+    if (!k.startsWith('ia:')) continue;
+    const p = parecidoRuta(mias, clavesRuta((info[k] && info[k].t) || k.slice(3)));
+    if ((p >= 0.5 && d >= hace45) || p >= 0.75) if (p > nota) { nota = p; mejor = k; }
+  }
+  return mejor;
+}
 async function marcarRuta(id) {
   const r = S.cartera.ruta = S.cartera.ruta || {};
   r.hechos = r.hechos || {};
-  if (r.hechos[id]) delete r.hechos[id]; else r.hechos[id] = hoyIso();
+  const x = (() => { try { const P = pasosRuta(S.M || calcular()); for (const k of Object.keys(P)) { const y = P[k].find((z) => z.id === id); if (y) return y; } } catch (e) {} return null; })();
+  if (x && x.hecho) {
+    // deshacer: también la marca del paso parecido que lo daba por hecho
+    for (const k of new Set([id, x.hechoK])) { delete r.hechos[k]; if (r.hechosIA) delete r.hechosIA[k]; }
+  } else if (r.hechos[id]) delete r.hechos[id];
+  else {
+    r.hechos[id] = hoyIso();
+    // de los de la IA se guarda el texto, para reconocerlo aunque mañana lo escriba de otra forma
+    if (x && x.fuente === 'ia') { r.hechosIA = r.hechosIA || {}; r.hechosIA[id] = { t: String(x.t || '').replace(/<[^>]+>/g, '').slice(0, 200), d: hoyIso() }; }
+  }
   // los hechos de hace más de un año ya no hacen falta
   const limite = iso(new Date(Date.now() - 400 * 86400000));
-  for (const [k, d] of Object.entries(r.hechos)) if (d < limite) delete r.hechos[k];
+  for (const [k, d] of Object.entries(r.hechos)) if (d < limite) { delete r.hechos[k]; if (r.hechosIA) delete r.hechosIA[k]; }
+  if (r.hechosIA) for (const k of Object.keys(r.hechosIA)) if (!r.hechos[k]) delete r.hechosIA[k];
+  if (S.M) cacheDe(S.M, '__ruta').delete('r');
   pintar();
   await guardarCarteraCallada('Paso a paso');
 }
@@ -7797,6 +7956,7 @@ async function borrarMovimiento(id, boton) {
    de entrar), con lo que se puede hacer, y al final el botón para crear tu cartera o entrar.
    ===================================================================== */
 const ILUS = {
+  notas: '<rect class="fp" x="16" y="8" width="208" height="156" rx="16"/><circle class="fA" cx="40" cy="32" r="11"/><path d="M40 25.5l1.8 4.7 4.7 1.8-4.7 1.8-1.8 4.7-1.8-4.7-4.7-1.8 4.7-1.8z" fill="#1A1408"/><path class="l" d="M60 28h104M60 39h66"/><g class="an1"><text class="tm" x="34" y="68">Diversificación</text><rect class="fA" x="122" y="61" width="14" height="7" rx="3.5"/><rect class="fA" x="140" y="61" width="14" height="7" rx="3.5"/><rect class="fA" x="158" y="61" width="14" height="7" rx="3.5"/><rect class="fA" x="176" y="61" width="14" height="7" rx="3.5"/><rect class="ix-vacio" x="194" y="61" width="14" height="7" rx="3.5"/></g><g class="an2"><text class="tm" x="34" y="92">Costes</text><rect class="fA" x="122" y="85" width="14" height="7" rx="3.5"/><rect class="fA" x="140" y="85" width="14" height="7" rx="3.5"/><rect class="fA" x="158" y="85" width="14" height="7" rx="3.5"/><rect class="fA" x="176" y="85" width="14" height="7" rx="3.5"/><rect class="fA" x="194" y="85" width="14" height="7" rx="3.5"/></g><g class="an3"><text class="tm" x="34" y="116">Riesgo</text><rect class="fA" x="122" y="109" width="14" height="7" rx="3.5"/><rect class="fA" x="140" y="109" width="14" height="7" rx="3.5"/><rect class="fA" x="158" y="109" width="14" height="7" rx="3.5"/><rect class="ix-vacio" x="176" y="109" width="14" height="7" rx="3.5"/><rect class="ix-vacio" x="194" y="109" width="14" height="7" rx="3.5"/></g><g class="an4"><text class="tm" x="34" y="140">Impuestos</text><rect class="fA" x="122" y="133" width="14" height="7" rx="3.5"/><rect class="fA" x="140" y="133" width="14" height="7" rx="3.5"/><rect class="fA" x="158" y="133" width="14" height="7" rx="3.5"/><rect class="fA" x="176" y="133" width="14" height="7" rx="3.5"/><rect class="ix-vacio" x="194" y="133" width="14" height="7" rx="3.5"/></g>',
   logo: '<g transform="translate(60 6) scale(3.2)"><path d="M8 15.5C8 14.1 9.1 13 10.5 13H18.2C19 13 19.7 13.4 20.2 14L22.3 16.5H37.5C38.9 16.5 40 17.6 40 19V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#A97C33" stroke="none"/><path class="traza" pathLength="100" d="M13.5 25.5L19.5 19L24 22L31.5 11.5" fill="none" stroke="#4FC995" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/><path class="brota" d="M31.2 11.8C30.6 7 33.8 4.4 39 4.8C39.2 9.8 35.8 12.6 31.2 11.8Z" fill="#4FC995" stroke="none"/><path d="M8 25C8 23.9 8.9 23 10 23H38C39.1 23 40 23.9 40 25V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#E2B45F" stroke="none"/><path d="M14 30.5H34" stroke="#1F1D19" stroke-opacity="0.18" stroke-width="2" stroke-linecap="round"/></g><g class="an3"><rect class="fp" x="14" y="128" width="62" height="26" rx="13"/><text class="t" x="25" y="145.5">Fondos</text><rect class="fp" x="84" y="128" width="72" height="26" rx="13"/><text class="t" x="95" y="145.5">Acciones</text><rect class="fp" x="164" y="128" width="62" height="26" rx="13"/><text class="t" x="176" y="145.5">Cripto</text></g>',
   pasos: '<rect class="fp" x="20" y="8" width="200" height="40" rx="12"/><circle class="a an1v" cx="44" cy="28" r="10"/><path class="u an1" d="M39 28.5l3.5 3.5 6.5-7"/><path class="l" d="M64 22h100M64 34h66"/><rect class="fp" x="20" y="58" width="200" height="40" rx="12"/><circle class="a an2v" cx="44" cy="78" r="10"/><path class="u an2" d="M39 78.5l3.5 3.5 6.5-7"/><path class="l" d="M64 72h120M64 84h50"/><rect class="fa" x="20" y="108" width="200" height="40" rx="12"/><circle class="a" cx="44" cy="128" r="10"/><path class="l" d="M64 122h90M64 134h70"/><rect class="fA an3" x="170" y="118" width="40" height="20" rx="10"/><text class="tn an3" x="179" y="132">IRPF</text>',
   ia: '<rect class="fp an1" x="96" y="8" width="128" height="34" rx="14"/><text class="t an1" x="110" y="30">¿Vendo Repsol?</text><path class="a an2" d="M16 52h150a12 12 0 0112 12v26a12 12 0 01-12 12H44l-14 12v-12H16a12 12 0 01-12-12V64a12 12 0 0112-12z"/><path class="l an2" d="M20 70h120M20 84h90"/><rect class="fa an3" x="30" y="122" width="190" height="34" rx="14"/><text class="ta an3" x="44" y="144">¿Cuándo necesitas el dinero?</text>',
@@ -7804,69 +7964,168 @@ const ILUS = {
   privada: '<rect class="l" x="70" y="10" width="100" height="150" rx="16"/><path class="m" d="M70 136h100"/><g class="cierra"><path class="a" d="M100 70V56a20 20 0 0140 0v14" stroke-width="5"/></g><rect class="fA" x="90" y="68" width="60" height="46" rx="10"/><circle cx="120" cy="88" r="5" fill="#1A1408"/><path d="M120 92v9" stroke="#1A1408" stroke-width="4" stroke-linecap="round"/><g class="an3"><rect class="fp" x="178" y="44" width="54" height="24" rx="12"/><text class="t" x="184" y="60">cifrada</text><rect class="fp" x="8" y="98" width="56" height="24" rx="12"/><text class="t" x="15" y="114">solo tú</text></g>',
 };
 const INTRO = [
-  { il: 'logo', t: 'Tu dinero, creciendo', x: 'Todas tus inversiones en un sitio: fondos, acciones, ETF, oro y cripto de MyInvestor, Trade Republic, Bitvavo o el bróker que uses, con los precios en directo.' },
+  { il: 'logo', t: 'Tu dinero, con una IA que te dice qué hacer', x: 'Juntas tus fondos, acciones, ETF, oro y cripto de MyInvestor, Trade Republic, Bitvavo o el bróker que uses, con los precios en directo. GrowFolio IA los estudia y te dice qué hacer con ellos.' },
+  { il: 'notas', t: 'Una IA que analiza tu cartera', x: 'Cada día lee las noticias de todo el mundo y repasa lo que tienes según tu edad, tus metas y el riesgo que aguantas. Te pone nota en diversificación, costes, riesgo, disciplina e impuestos, y te dice qué mejorar primero. Si le falta algo de ti, te lo pregunta.' },
+  { il: 'pasos', t: 'Qué hacer, paso a paso', x: 'Con lo que ve, te prepara la lista de cada mes: comprar, vender, aportar, poner una orden stop o vigilar unos resultados. Con el porqué, cómo hacerlo en tu bróker y lo que pagarás a Hacienda. Lo haces, lo marcas y se queda hecho.' },
+  { il: 'ia', t: 'Pregúntale lo que quieras', x: '«Me sobran 500 €, ¿dónde los meto?» o «¿Vendo Repsol?». Te contesta con tus números: calcula la venta con FIFO e impuestos, busca en internet si hace falta y te lo explica fácil. También puedes recortar un trozo de la pantalla y preguntarle por él.' },
+  { il: 'mundo', t: 'Ideas que encajan contigo', x: 'Busca entre unas 840 empresas de EEUU y Europa, contrastadas con siete señales y la opinión de los analistas, y te dice cuáles encajarían en tu cartera y por qué. Y qué significa para ti cada movimiento de las bolsas, los tipos o el petróleo.' },
   { dib: 'grafica', t: 'Tu cartera de un vistazo', x: 'Cuánto tienes, lo que ganas o pierdes hoy y desde que compraste, el reparto por países, sectores y monedas, el riesgo y lo que te cuestan los fondos al año.' },
-  { il: 'pasos', t: 'Qué hacer y cuándo', x: 'Cada mes te dice qué toca: vender, comprar, aportar o vigilar unos resultados. Con el porqué, el cómo y lo que pagarás a Hacienda.' },
   { dib: 'calendario', t: 'Lo que viene, con los días que faltan', x: 'Resultados y dividendos de lo que tienes (también de las empresas de dentro de tus fondos), con lo que te toca en euros; la Fed y el BCE con la hora de España, y tus aportaciones.' },
-  { il: 'ia', t: 'Una IA que te conoce', x: 'Lee las noticias de todo el mundo y analiza tu cartera según tu edad, tus metas y el riesgo que aguantas. Si le falta algo de ti, te lo pregunta. Y puedes preguntarle lo que quieras.' },
-  { il: 'mundo', t: 'Ideas y mercados', x: 'Unas 840 empresas contrastadas con siete señales, la opinión de los analistas y qué significa para ti cada movimiento de las bolsas, los tipos o el petróleo.' },
   { dib: 'renta', t: 'Hacienda, sin sorpresas', x: 'Antes de vender ves cuánto ganas o pierdes y lo que pagarás en la renta. Te avisa de la regla de los dos meses y trae una guía para hacer la declaración.' },
-  { dib: 'meta', t: 'Tus metas', x: 'Tu perfil de inversor, los límites que te pones y tus metas, con cuánto podrías tener dentro de 5, 10 o 30 años si sigues así.' },
-  { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera se cifra con tu contraseña antes de guardarse en tu cuenta. La ves en el móvil, en el ordenador y en la app, y nadie más puede leerla: ni GrowFolio ni Google.' },
+  { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera se cifra con tu contraseña antes de guardarse en tu cuenta, y la IA funciona con tu propia clave gratuita de Google: lo que le preguntas va de tu móvil a Google, sin pasar por GrowFolio. Nadie más puede leer tus cifras.' },
   { dib: 'app', t: 'En el móvil, con widget', x: 'En la web o en la app de Android, con un widget para la pantalla de inicio. Está en alfa: si ves algo raro, avisa con el bichito de arriba y se arregla en la siguiente versión.' },
 ];
+/* La presentación se cuenta bajando, como una película: primero el logo se monta pieza a pieza según bajas y,
+   al acabar, la cámara entra en él; después, cada idea entra con el scroll (el dibujo desde un lado, el título
+   palabra a palabra, el texto detrás) y el fondo cambia de color con cada una. Igual en la web y en la app:
+   scroll propio y nada de librerías. Con «reducir movimiento», todo quieto y montado. */
+const LOGO_PIEZAS = {
+  atras: '<path d="M8 15.5C8 14.1 9.1 13 10.5 13H18.2C19 13 19.7 13.4 20.2 14L22.3 16.5H37.5C38.9 16.5 40 17.6 40 19V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#A97C33"/>',
+  linea: '<path d="M13.5 25.5L19.5 19L24 22L31.5 11.5" fill="none" stroke="#4FC995" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"/>',
+  hoja: '<path d="M31.2 11.8C30.6 7 33.8 4.4 39 4.8C39.2 9.8 35.8 12.6 31.2 11.8Z" fill="#4FC995"/>',
+  frente: '<path d="M8 25C8 23.9 8.9 23 10 23H38C39.1 23 40 23.9 40 25V35.5C40 36.9 38.9 38 37.5 38H10.5C9.1 38 8 36.9 8 35.5Z" fill="#E2B45F"/>',
+  raya: '<path d="M14 30.5H34" stroke="#1F1D19" stroke-opacity="0.18" stroke-width="2" stroke-linecap="round"/>',
+};
+// diez trozos: [pieza, recorte (polígono en el lienzo de 48), de dónde sale (x, y), giro, tamaño]
+const ESQUIRLAS = [
+  ['atras', '0,0 25,0 21,48 0,48', -30, -26, -48, 0.6],
+  ['atras', '25,0 48,0 48,48 21,48', 30, -32, 38, 0.7],
+  ['linea', '0,0 18,0 18,48 0,48', -40, 4, 70, 1.5],
+  ['linea', '18,0 26,0 26,48 18,48', 4, -40, -60, 1.4],
+  ['linea', '26,0 48,0 48,48 26,48', 38, -10, 52, 1.3],
+  ['hoja', '', 24, -42, 120, 0.4],
+  ['frente', '0,20 23,20 17,48 0,48', -40, 30, 34, 1.3],
+  ['frente', '23,20 34,20 28,48 17,48', -2, 44, -24, 1.6],
+  ['frente', '34,20 48,20 48,48 28,48', 42, 28, -40, 1.2],
+  ['raya', '', -10, 48, 90, 0.5],
+];
+const COLOR_CAP = { notas: '#E2B45F', pasos: '#4FC995', ia: '#d55181', mundo: '#3987e5', grafica: '#4FC995', calendario: '#3987e5', renta: '#d95926', privada: '#E2B45F', app: '#4FC995' };
+const logoEntero = () => `<svg viewBox="0 0 48 48" aria-hidden="true">${['atras', 'linea', 'hoja', 'frente', 'raya'].map((k) => LOGO_PIEZAS[k]).join('')}</svg>`;
 function pantallaIntro(seguir) {
   const nuevo = !S.enc;
-  $('#app').innerHTML = `<div class="intro" role="region" aria-roledescription="carrusel" aria-label="Presentación de GrowFolio">
-    <div class="intro-cab"><span class="intro-marca"><img src="favicon.svg" alt="">GrowFolio</span>${selectorIdioma('mini')}<button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
-    <div class="intro-ventana"><div class="intro-pista">${INTRO.map((d, k) => `<section class="intro-slide" aria-roledescription="diapositiva" aria-label="${k + 1} de ${INTRO.length}"><div class="intro-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true">${d.il ? ILUS[d.il] : `<g transform="translate(0 5) scale(2)">${DIBUJOS[d.dib] || ''}</g>`}</svg></div><div class="intro-txt"><h1>${d.t}</h1><p>${d.x}</p></div></section>`).join('')}</div></div>
-    <div class="intro-pie"><div class="intro-puntos" role="group" aria-label="Diapositivas">${INTRO.map((_, k) => `<button type="button" data-pt="${k}" aria-label="Diapositiva ${k + 1}"></button>`).join('')}</div>
-      <div class="intro-btns"><button type="button" class="btn intro-atras" data-in="atras">Atrás</button><button type="button" class="btn pri intro-sig" data-in="sig">Siguiente</button></div></div>
+  const quieta = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const caps = INTRO.slice(1);
+  const centro = (pol) => { if (!pol) return [24, 24]; const v = pol.split(' ').map((x) => x.split(',').map(Number)); return [v.reduce((a, x) => a + x[0], 0) / v.length, v.reduce((a, x) => a + x[1], 0) / v.length]; };
+  const esquirlas = ESQUIRLAS.map(([pz, pol], k) => { const [cx, cy] = centro(pol); return `<g class="ix-esq" style="transform-origin:${cx.toFixed(1)}px ${cy.toFixed(1)}px"><g class="ix-flota" style="--i:${k}"${pol ? ` clip-path="url(#ixc${k})"` : ''}>${LOGO_PIEZAS[pz]}</g></g>`; }).join('');
+  const recortes = ESQUIRLAS.map(([, pol], k) => (pol ? `<clipPath id="ixc${k}"><polygon points="${pol}"/></clipPath>` : '')).join('');
+  $('#app').innerHTML = `<div class="intro ix${quieta ? ' quieta' : ''}" role="region" aria-label="Presentación de GrowFolio">
+    <div class="ix-luz" aria-hidden="true"></div>
+    <div class="ix-barra" aria-hidden="true"></div>
+    <div class="ix-cab"><span class="intro-marca"><img src="favicon.svg" alt="">GrowFolio</span>${selectorIdioma('mini')}<button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
+    <div class="ix-scroll" tabindex="-1">
+      <section class="ix-heroe" aria-label="GrowFolio">
+        <div class="ix-escena">
+          <div class="ix-emblema"><svg viewBox="0 0 48 48" aria-hidden="true"><defs>${recortes}</defs><g class="ix-trozos">${esquirlas}</g><g class="ix-entero">${['atras', 'linea', 'hoja', 'frente', 'raya'].map((k) => LOGO_PIEZAS[k]).join('')}</g></svg></div>
+          <h1 class="ix-marca" data-no-trad aria-label="GrowFolio">${[...'GrowFolio'].map((l) => `<span aria-hidden="true">${l}</span>`).join('')}</h1>
+          <div class="ix-lema"><h2>${esc(INTRO[0].t)}</h2><p>${esc(INTRO[0].x)}</p></div>
+          <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+        </div>
+      </section>
+      ${caps.map((d, k) => `<section class="ix-cap" data-lado="${k % 2 ? 'd' : 'i'}" data-color="${COLOR_CAP[d.il || d.dib] || '#E2B45F'}">
+        <div class="ix-cap-in">
+          <div class="ix-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true">${d.il ? ILUS[d.il] : `<g transform="translate(0 5) scale(2)">${DIBUJOS[d.dib] || ''}</g>`}</svg></div>
+          <div class="ix-txt"><h2 data-no-trad data-t="${esc(d.t)}" aria-label="${esc(d.t)}"></h2><p>${esc(d.x)}</p></div>
+        </div>
+      </section>`).join('')}
+      <section class="ix-fin">
+        <div class="ix-fin-logo">${logoEntero()}</div>
+        <h2>¿Empezamos?</h2>
+        <p>Para la IA solo hace falta una clave gratuita de Google: al abrir Pregúntale te dice cómo sacarla en un minuto.</p>
+        <button type="button" class="btn pri" data-in="fin">${nuevo ? 'Crear mi cartera' : 'Entrar'}</button>
+        <button type="button" class="enlace ix-arriba" data-in="arriba">Verlo otra vez desde el principio</button>
+      </section>
+    </div>
   </div>`;
-  const raiz = $('.intro'), pista = $('.intro-pista', raiz), slides = $$('.intro-slide', raiz), puntos = $$('[data-pt]', raiz), sig = $('.intro-sig', raiz), atras = $('.intro-atras', raiz);
-  let i = 0;
-  const fin = () => { LS.set('inv-intro', true); document.removeEventListener('keydown', tecla); seguir(); };
-  const ir = (n) => {
-    i = Math.max(0, Math.min(INTRO.length - 1, n));
-    pista.style.transform = `translateX(${-i * 100}%)`;
-    slides.forEach((s, k) => { s.classList.toggle('activa', k === i); s.setAttribute('aria-hidden', String(k !== i)); });
-    puntos.forEach((p, k) => p.setAttribute('aria-current', String(k === i)));
-    const ult = i === INTRO.length - 1;
-    sig.textContent = ult ? (nuevo ? 'Crear mi cartera' : 'Entrar') : 'Siguiente';
-    sig.classList.toggle('final', ult);
-    atras.style.visibility = i ? 'visible' : 'hidden';
-    $('.intro-saltar', raiz).style.visibility = ult ? 'hidden' : 'visible';
+  const raiz = $('.intro'), sc = $('.ix-scroll', raiz), heroe = $('.ix-heroe', raiz), barra = $('.ix-barra', raiz), emb = $('.ix-emblema', raiz);
+  const trozos = $$('.ix-esq', raiz), flotas = $$('.ix-flota', raiz), entero = $('.ix-entero', raiz), letras = $$('.ix-marca span', raiz);
+  const marca = $('.ix-marca', raiz), lema = $('.ix-lema', raiz), baja = $('.ix-baja', raiz), luz = $('.ix-luz', raiz), cabMarca = $('.ix-cab .intro-marca', raiz);
+  const capEls = $$('.ix-cap', raiz);
+  // el título de cada idea, palabra a palabra (ya traducido: si el inglés llega tarde, se vuelve a partir)
+  const partir = () => capEls.forEach((c) => { const h = $('h2', c), t = trad(h.dataset.t); if (h.dataset.hecho === t) return; h.dataset.hecho = t; h.setAttribute('aria-label', t); h.innerHTML = t.split(' ').map((w) => `<span aria-hidden="true">${esc(w)}</span>`).join(' '); });
+  partir();
+  if (IDIOMA === 'en' && !I18N.dic) { let n = 0; const t = setInterval(() => { if (I18N.dic || ++n > 20) { clearInterval(t); partir(); pinta(); } }, 250); }
+  const tramo = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
+  const ease = (t) => 1 - Math.pow(1 - t, 3);
+  let medidas = null, raf = 0, color = '';
+  const medir = () => {
+    const vh = sc.clientHeight;
+    medidas = { vh, alto: heroe.offsetHeight, caps: capEls.map((c) => ({ c, top: c.offsetTop, h: c.offsetHeight, palabras: $$('h2 span', c), ilus: $('.ix-ilus', c), p: $('p', c), lado: c.dataset.lado === 'd' ? 1 : -1 })) };
+    // al empezar, el logo va en el centro de la pantalla; sube a su sitio cuando sale el nombre
+    medidas.baja = (marca.offsetHeight + lema.offsetHeight + 2 * parseFloat(getComputedStyle(emb.parentNode).rowGap || 0)) / 2;
   };
-  const tecla = (e) => { if (e.key === 'ArrowRight') ir(i + 1); else if (e.key === 'ArrowLeft') ir(i - 1); else if (e.key === 'Enter' && i === INTRO.length - 1) fin(); };
+  const pinta = () => {
+    raf = 0;
+    if (!medidas) medir();
+    const { vh } = medidas, y = sc.scrollTop, H = sc.scrollHeight - vh;
+    barra.style.transform = `scaleX(${H > 0 ? Math.min(1, y / H) : 0})`;
+    const p = quieta ? 0.75 : Math.min(1, Math.max(0, y / Math.max(1, medidas.alto - vh)));
+    // 1. las piezas se juntan, una detrás de otra
+    trozos.forEach((g, k) => {
+      const [, , x, yy, r, s0] = ESQUIRLAS[k];
+      const e = ease(tramo(p, 0.02 + k * 0.035, 0.3 + k * 0.035)), f = 1 - e;
+      g.style.transform = `translate(${(x * f).toFixed(2)}px, ${(yy * f).toFixed(2)}px) rotate(${(r * f).toFixed(1)}deg) scale(${(1 + (s0 - 1) * f).toFixed(3)})`;
+      g.style.opacity = (0.55 + 0.45 * e).toFixed(3);
+      flotas[k].style.setProperty('--d', f.toFixed(3));
+    });
+    const montado = tramo(p, 0.62, 0.66);
+    entero.style.opacity = montado; $('.ix-trozos', raiz).style.opacity = 1 - montado;
+    // 2. el logo sube a su sitio y sale el nombre, letra a letra; 3. la frase
+    const sube = ease(tramo(p, 0.46, 0.66));
+    const z = ease(tramo(p, 0.86, 1));
+    emb.style.transform = `translateY(${(medidas.baja * (1 - sube)).toFixed(1)}px) scale(${(1 + 5 * z).toFixed(3)})`;
+    emb.style.opacity = Math.max(0, 1 - z * 1.6).toFixed(3);
+    letras.forEach((l, k) => {
+      const e = ease(tramo(p, 0.5 + k * 0.022, 0.64 + k * 0.022)), f = 1 - e;
+      l.style.transform = `translate(${((k - 4) * 0.32 * f).toFixed(3)}em, ${(0.45 * f).toFixed(3)}em)`;
+      l.style.opacity = e.toFixed(3);
+      l.style.filter = f > 0.01 ? `blur(${(8 * f).toFixed(1)}px)` : '';
+    });
+    const le = ease(tramo(p, 0.66, 0.8));
+    marca.style.transform = lema.style.transform = `translateY(${(-z * 60).toFixed(1)}px)`;
+    marca.style.opacity = Math.max(0, 1 - z * 1.4).toFixed(3);
+    lema.style.opacity = (le * Math.max(0, 1 - z * 1.8)).toFixed(3);
+    lema.firstElementChild.style.transform = `translateY(${((1 - le) * 18).toFixed(1)}px)`;
+    baja.style.opacity = (1 - tramo(p, 0, 0.06)).toFixed(3);
+    luz.style.setProperty('--luz', (0.35 + 0.5 * tramo(p, 0.1, 0.66) + 0.4 * z).toFixed(3));
+    cabMarca.style.opacity = tramo(p, 0.9, 1).toFixed(3);
+    // 4. cada idea: el dibujo entra desde un lado, el título palabra a palabra y el texto detrás
+    let mejor = null;
+    for (const m of medidas.caps) {
+      const q = quieta ? 0.5 : (y + vh - m.top) / (vh + m.h);
+      if (q < -0.1 || q > 1.1) continue;
+      const ei = ease(tramo(q, 0.08, 0.4)), ex = tramo(q, 0.64, 0.92), fi = 1 - ei;
+      m.ilus.style.transform = `translate(${(m.lado * fi * 16).toFixed(2)}vw, ${(fi * 40 - ex * 60).toFixed(1)}px) rotate(${(m.lado * fi * 9).toFixed(2)}deg) scale(${(0.78 + 0.22 * ei).toFixed(3)})`;
+      m.ilus.style.opacity = (ei * (1 - ex)).toFixed(3);
+      m.palabras.forEach((w, k) => {
+        const e = ease(tramo(q, 0.18 + k * 0.028, 0.36 + k * 0.028));
+        w.style.transform = `translateY(${((1 - e) * 0.6 - ex * 0.4).toFixed(3)}em)`;
+        w.style.opacity = (e * (1 - ex)).toFixed(3);
+      });
+      const pe = ease(tramo(q, 0.3, 0.48));
+      m.p.style.transform = `translateY(${((1 - pe) * 26 - ex * 30).toFixed(1)}px)`;
+      m.p.style.opacity = (pe * (1 - ex)).toFixed(3);
+      m.c.classList.toggle('activa', q > 0.2 && q < 0.9);
+      if (q > 0.25 && q < 0.75 && (!mejor || Math.abs(q - 0.5) < Math.abs(mejor.q - 0.5))) mejor = { q, c: m.c.dataset.color };
+    }
+    const nuevoColor = mejor ? mejor.c : p < 1 ? '#E2B45F' : color;
+    if (nuevoColor && nuevoColor !== color) { color = nuevoColor; raiz.style.setProperty('--ixg', color); }
+  };
+  const pedir = () => { if (!raf) raf = requestAnimationFrame(pinta); };
+  const redimensionar = () => { medidas = null; pedir(); };
+  sc.addEventListener('scroll', pedir, { passive: true });
+  addEventListener('resize', redimensionar);
+  const fin = () => { LS.set('inv-intro', true); LS.set('inv-intro2', true); document.removeEventListener('keydown', tecla); removeEventListener('resize', redimensionar); if (raf) cancelAnimationFrame(raf); seguir(); };
+  const tecla = (e) => { if (e.key === 'Enter' && sc.scrollTop >= sc.scrollHeight - sc.clientHeight - 4) fin(); };
   document.addEventListener('keydown', tecla);
   raiz.addEventListener('click', (e) => {
-    const b = e.target.closest('[data-in],[data-pt]'); if (!b) return;
-    if (b.dataset.pt) return ir(+b.dataset.pt);
-    const a = b.dataset.in;
-    if (a === 'fin') fin(); else if (a === 'atras') ir(i - 1); else if (a === 'sig') { if (i === INTRO.length - 1) fin(); else ir(i + 1); }
+    const b = e.target.closest('[data-in]'); if (!b) return;
+    if (b.dataset.in === 'fin') fin();
+    else if (b.dataset.in === 'arriba') sc.scrollTo({ top: 0, behavior: quieta ? 'auto' : 'smooth' });
   });
-  // arrastrar con el dedo: la diapositiva sigue al dedo y, si pasa un tercio, cambia
-  let x0 = null, y0 = null, dx = 0, horizontal = null;
-  const ventana = $('.intro-ventana', raiz);
-  ventana.addEventListener('pointerdown', (e) => { x0 = e.clientX; y0 = e.clientY; dx = 0; horizontal = null; });
-  ventana.addEventListener('pointermove', (e) => {
-    if (x0 == null) return;
-    dx = e.clientX - x0; const dy = e.clientY - y0;
-    if (horizontal == null && (Math.abs(dx) > 8 || Math.abs(dy) > 8)) horizontal = Math.abs(dx) > Math.abs(dy);
-    if (!horizontal) return;
-    pista.classList.add('arrastra');
-    const borde = (i === 0 && dx > 0) || (i === INTRO.length - 1 && dx < 0) ? 0.3 : 1;
-    pista.style.transform = `translateX(calc(${-i * 100}% + ${dx * borde}px))`;
-  });
-  const suelta = () => {
-    if (x0 == null) return;
-    pista.classList.remove('arrastra');
-    if (horizontal && Math.abs(dx) > Math.min(120, ventana.clientWidth / 3)) ir(i + (dx < 0 ? 1 : -1)); else ir(i);
-    x0 = null;
-  };
-  ventana.addEventListener('pointerup', suelta); ventana.addEventListener('pointercancel', suelta); ventana.addEventListener('pointerleave', suelta);
-  ir(0);
-  setTimeout(() => sig.focus({ preventScroll: true }), 50);
+  pinta();
+  // si las letras llegan después, se vuelve a medir
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(redimensionar);
+  setTimeout(() => sc.focus({ preventScroll: true }), 50);
 }
 
 /* =====================================================================
@@ -8636,11 +8895,15 @@ document.addEventListener('click', (e) => {
    ===================================================================== */
 const VERSION = '0.2.1';
 const NOVEDADES = [
-  { v: '0.2.1', f: '2026-10-20', h: '12:41', t: 'Lo que habéis avisado', cosas: [
+  { v: '0.2.1', f: '2026-10-20', h: '13:14', t: 'La IA al frente y lo que habéis avisado', cosas: [
+    { d: 'pregunta', ir: { v: 'cartera', sel: '.toca.iac' }, t: 'GrowFolio IA, lo primero', x: 'En Cartera, debajo del patrimonio: lo que dice la IA de tu cartera en una frase, sus notas y lo que toca hacer ahora, con su botón para marcarlo hecho sin ir al Paso a paso.' },
+    { d: 'intro', t: 'Una presentación nueva', x: 'Se cuenta bajando: el logo se monta pieza a pieza y cada idea entra con el scroll, con GrowFolio IA de protagonista. Sale una vez a todos, y está en Ajustes > Ver la presentación.' },
+    { d: 'hecho', ir: { v: 'ruta', sel: '.t-check' }, t: 'Lo hecho se queda hecho', x: 'Si la IA vuelve a escribir con otras palabras un paso que ya marcaste (como la orden stop de Repsol), sigue saliendo como hecho. Y la IA sabe lo que ya has hecho para no volver a pedírtelo.' },
+    { d: 'calendario', ir: { v: 'agenda', sel: '.ag-mes2' }, t: 'El calendario, mes a mes', x: 'Toca «Ver el mes» y muévete con las flechas, o deslizando, hasta diciembre del año que viene. Al tocar un día ves lo que pasa.' },
     { d: 'cifras', t: 'Las acciones de Londres, en euros', x: 'Cotizan en peniques y algunas salían como si fueran euros (NatWest, a 666 €). Ahora se pasan bien a euros, también con el precio en directo.' },
     { d: 'calendario', ir: { v: 'agenda', sel: '.ag-mes2' }, t: 'Los días sin bolsa', x: 'El calendario marca los festivos de cada bolsa donde tienes algo: Madrid, Londres, Fráncfort, Euronext y Wall Street.' },
     { d: 'grafica', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Gráfica en cualquier empresa', x: 'Al consultar una empresa que no tienes, como Pfizer, sale su gráfica del último año, semana a semana, y no solo entre qué precios se ha movido.' },
-    { d: 'catalogo', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Más del Euro Stoxx 50', x: 'Al buscar «Euro Stoxx» salen también el iShares de reparto, el Xtrackers y el Amundi.' },
+    { d: 'catalogo', ir: { v: 'mercados', sel: '.merc-busca' }, t: 'Más del Euro Stoxx 50', x: 'Al buscar «Euro Stoxx» salen también el fondo indexado de Fidelity (Euro 50 Index), el iShares de reparto, el Xtrackers y el Amundi.' },
     { d: 'movil', t: 'GrowFolio en el iPhone', x: 'En Safari, Compartir > Añadir a pantalla de inicio, y se abre como una app, a pantalla completa. Al entrar desde un iPhone te lo explica, y también está en Ajustes.' },
     { d: 'idioma', ir: { v: 'cartera', sel: '#bIdioma' }, t: 'El idioma, arriba', x: 'La bandera de arriba, junto a Ajustes, cambia entre español e inglés.' },
     { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor' }, t: 'Recortar, dentro de Pregúntale', x: 'El botón para recortar un trozo de la pantalla ya no va suelto arriba: está al abrir Pregúntale y junto a donde escribes.' },
@@ -10646,6 +10909,9 @@ function contextoAsesor(M) {
       const P = pasosRuta(M), limpio = (t) => String(t || '').replace(/<[^>]+>/g, '');
       L.push('', '## Su hoja de ruta en GrowFolio (pasos que ya calcula GrowFolio; los marcados como hechos ya los ha hecho)');
       for (const [k, t] of PLAZOS) { const xs = P[k].filter((x) => x.fuente === 'web'); if (xs.length) L.push(`${t}:`, ...xs.map((x) => `- ${x.hecho ? '[hecho] ' : ''}${x.cuando ? x.cuando + ': ' : ''}${limpio(x.t)}. ${limpio(x.det)}`)); }
+      // lo que ya ha hecho de lo que le propuso GrowFolio IA: no se lo vuelvas a proponer
+      const r = S.cartera.ruta || {}, hIA = Object.entries(r.hechos || {}).filter(([k]) => k.startsWith('ia:')).sort((a, b) => (b[1] > a[1] ? 1 : -1)).slice(0, 15);
+      if (hIA.length) L.push('', '## Pasos que le propusiste y ya ha hecho (no los vuelvas a proponer; si hace falta algo distinto, di qué ha cambiado)', ...hIA.map(([k, d]) => `- ${fechaCorta(d)}: ${limpio((r.hechosIA && r.hechosIA[k] && r.hechosIA[k].t) || k.slice(3))}`));
     } catch (e) {}
     const reglas = (S.ia && S.ia.reglas) || [];
     if (reglas.length) L.push('', '## Sus reglas de inversión', ...reglas.map((r) => '- ' + r));
@@ -11948,11 +12214,12 @@ async function entrar() {
     const visto = LS.get('inv-version', null);
     if (visto && !LS.get('inv-estreno-02b')) return estreno02(visto, () => pantallaCuenta());
     // la primera vez en este dispositivo, la presentación antes de entrar
-    if (!LS.get('inv-intro', false)) return pantallaIntro(() => pantallaCuenta());
+    if (!LS.get('inv-intro2', false)) return pantallaIntro(() => pantallaCuenta());
     return pantallaCuenta();
   }
   // la primera vez en este dispositivo, antes de crear la cartera o entrar, la presentación
-  const intro = !LS.get('inv-intro', false);
+  // la presentación nueva (0.2.1, la que se cuenta bajando): una vez a todos, también a quien ya vio la de antes
+  const intro = !LS.get('inv-intro2', false);
   // no se pudo leer la cuenta y aquí no hay copia: nunca se da por vacía
   if (!S.enc && PERFIL_CUENTA && (S.cuentaSinRed || !S.cuentaLeida)) return pantallaSinCuenta();
   if (!S.enc && PERFIL_CUENTA) { S.cuentaNueva = true; return intro ? pantallaIntro(bienvenidaCuenta) : bienvenidaCuenta(); }

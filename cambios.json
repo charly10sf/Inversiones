@@ -3,20 +3,30 @@
   {
    "v": "0.2.1",
    "f": "2026-10-20",
-   "h": "12:41",
-   "t": "Lo que habéis avisado",
+   "h": "13:14",
+   "t": "La IA al frente y lo que habéis avisado",
    "commits": [
     {
-     "cuando": "2026-10-20 12:41",
-     "asunto": "0.2.1: lo que habéis avisado (Londres en euros, festivos, gráficas, Euro Stoxx), idioma arriba, recorte dentro de Pregúntale e icono nuevo",
+     "cuando": "2026-10-20 13:14",
+     "asunto": "0.2.1: GrowFolio IA al frente, intro nueva que se cuenta bajando, calendario mes a mes y lo hecho se queda hecho",
      "detalle": [
-      "La bandera del idioma va arriba, entre «Avisar de un fallo» y Ajustes, con un menú pequeño (Español / English beta)",
-      "El recorte de pantalla ya no va suelto en la cabecera: está en la bienvenida de Pregúntale y junto a donde escribes",
-      "Gemini saturado (5xx): dos reintentos con espera y luego el siguiente modelo gratuito; el análisis se reprograma solo a los 5, 15 y 30 minutos y lo dice en el aviso",
-      "Iconos con nombre nuevo (growfolio-*.png, growfolio.svg) para que el navegador y la app instalada dejen el de Bellota",
-      "Novedades de la 0.2.1 y sus traducciones; catálogo: guarda dónde falla cada fondo",
-      "Novedades: GrowFolio en el iPhone"
+      "Intro nueva para todos (una vez): el logo se monta pieza a pieza con el scroll y cada idea entra al bajar; centrada en la IA (análisis con notas, paso a paso, Pregúntale, ideas). Con «reducir movimiento», quieta",
+      "Cartera: tarjeta de GrowFolio IA bajo el patrimonio con su titular, sus notas y lo que toca ahora, con el botón de hecho",
+      "Paso a paso: los pasos de la IA marcados como hechos se reconocen aunque los reescriba (palabras clave parecidas); la IA recibe lo que ya has hecho",
+      "Calendario: el mes entero con flechas y deslizando hasta diciembre de 2027; al tocar un día, lo que pasa",
+      "Catálogo: el indexado de Fidelity del Euro Stoxx 50 encontrado por nombre",
+      "Novedades de la 0.2.1 y traducciones"
      ]
+    },
+    {
+     "cuando": "2026-10-20 12:43",
+     "asunto": "Catálogo: el fondo buscado por nombre se caía al copiar los metadatos de yfinance",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 12:41",
+     "asunto": "0.2.1: lo que habéis avisado (Londres en euros, festivos, gráficas, Euro Stoxx), idioma arriba, recorte dentro de Pregúntale e icono nuevo - La bandera del idioma va arriba, entre «Avisar de un fallo» y Ajustes, con un menú pequeño (Español / English beta) - El recorte de pantalla ya no va suelto en la cabecera: está en la bienvenida de Pregúntale y junto a donde escribes - Gemini saturado (5xx): dos reintentos con espera y luego el siguiente modelo gratuito; el análisis se reprograma solo a los 5, 15 y 30 minutos y lo dice en el aviso - Iconos con nombre nuevo (growfolio-*.png, growfolio.svg) para que el navegador y la app instalada dejen el de Bellota - Novedades de la 0.2.1 y sus traducciones; catálogo: guarda dónde falla cada fondo - Novedades: GrowFolio en el iPhone",
+     "detalle": []
     },
     {
      "cuando": "2026-10-20 12:25",
