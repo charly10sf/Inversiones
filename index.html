@@ -2654,6 +2654,9 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .ix-cap-in { width: 100%; max-width: 1080px; margin: 0 auto; display: grid; justify-items: center; gap: clamp(22px, 4.5vh, 44px); text-align: center; }
 .ix-ilus { width: min(80vw, 420px); will-change: transform, opacity; }
 .ix-txt { max-width: 580px; }
+/* en qué sitio de la barra tienes cada cosa */
+.ix-donde { display: inline-flex; align-items: center; gap: 7px; margin: 0 0 14px; padding: 5px 13px 5px 10px; border-radius: 999px; border: 1px solid color-mix(in srgb, var(--ixg, #E2B45F) 45%, transparent); background: color-mix(in srgb, var(--ixg, #E2B45F) 12%, transparent); color: var(--ixg, #E2B45F); font-size: 14px; font-weight: 650; will-change: transform, opacity; }
+.ix-donde svg { width: 17px; height: 17px; }
 .ix-txt h2 { margin: 0 0 16px; font-size: clamp(34px, 8.6vw, 66px); font-weight: 750; letter-spacing: -0.045em; line-height: 1.02; }
 .ix-txt h2 span { display: inline-block; will-change: transform, opacity; }
 .ix-txt p { margin: 0 auto; max-width: 480px; color: var(--text-2); font-size: clamp(16px, 4vw, 19.5px); line-height: 1.6; will-change: transform, opacity; }
@@ -4884,8 +4887,11 @@ function pintarTicker(M) {
 /* =========================== Cartera =========================== */
 const RANGOS = { '1D': 1, '1S': 7, '1M': 31, '3M': 92, '6M': 183, '1A': 366, '3A': 1097, '5A': 1827, 'Máx': 3660, 'Inicio': 0 };
 // el día de tu primera compra (o desde cuándo dices que tienes cada cosa): el periodo «Inicio» de la gráfica
+// cuándo empezaste a invertir, si lo has dicho («AAAA-MM»); «auto» si prefieres que cuente tu primera compra apuntada
+const inicioDicho = () => { const v = ((S.cartera && S.cartera.perfil) || {}).inicio_inversion; return /^\d{4}-\d{2}/.test(v || '') ? String(v).slice(0, 7) + '-01' : null; };
 function inicioCartera() {
-  const fs = [];
+  const dicho = inicioDicho();
+  const fs = dicho ? [dicho] : [];
   for (const p of (S.cartera && S.cartera.posiciones) || []) { if (p.desde) fs.push(p.desde); for (const l of p.lotes || []) if (l.f) fs.push(l.f); }
   for (const m of (S.cartera && S.cartera.movimientos) || []) if (m.fecha && m.tipo === 'compra') fs.push(m.fecha);
   return fs.map((x) => String(x).slice(0, 10)).filter((x) => /^\d{4}-\d\d-\d\d$/.test(x) && x <= hoyIso()).sort()[0] || null;
@@ -4993,7 +4999,7 @@ function htmlBloqueCar(k, M) {
             <div class="hs"><span class="k">${L('Ganado desde que compraste', 'Gained since you bought')}</span>${B('pl')}</div>
           </div>
         </div>
-        <div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).filter((r) => r !== 'Inicio' || inicioCartera()).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}"${r === 'Inicio' ? ` title="${L('Desde tu primera compra', 'Since your first purchase')}"` : ''}>${r === 'Inicio' ? L('Inicio', 'Start') : r}</button>`).join('')}</div>
+        <div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}"${r === 'Inicio' ? ` title="${L('Desde tu primera compra', 'Since your first purchase')}"` : ''}>${r === 'Inicio' ? L('Inicio', 'Start') : r}</button>`).join('')}</div>
         ${INTRADIA.has(S.rango) || !S.ref ? '' : `<div class="hero-pie"><button type="button" class="hp-cmp" data-accion="comparar" aria-pressed="${!!S.comparar}"><i aria-hidden="true"></i>${L('Comparar con el S&P 500', 'Compare with the S&P 500')}</button></div>`}
         <div class="chart gh" id="grafEvo"></div>
         <div class="movers hero-movers">${B('movers')}</div>
@@ -7462,17 +7468,19 @@ function dibujar(M) {
     const t0s = serie.length ? tiempoDe(serie[0].d) : Date.now();
     const corto = (Date.now() - t0s) < dias * 864e5 * 0.85;
     const etqRango = S.rango === '1D' && deIntra ? L('desde el último cierre', 'since the last close')
-      : S.rango === 'Inicio' && inicioCartera() && serie.length ? L(`desde que empezaste, el ${fechaPunto(serie[0].d)}`, `since you started, ${fechaPunto(serie[0].d)}`)
+      : S.rango === 'Inicio' && inicioDicho() && serie.length ? L(`ganado desde que empezaste a invertir, en ${deIso(inicioDicho()).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`, `gained since you started investing, ${deIso(inicioDicho()).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`)
+      : S.rango === 'Inicio' && inicioCartera() && serie.length ? L(`desde tu primera compra apuntada, el ${fechaPunto(serie[0].d)}`, `since your first logged purchase, ${fechaPunto(serie[0].d)}`)
       : !serie.length ? '' : corto || S.rango === 'Máx' || !ETQ_RANGO[S.rango] ? L(`desde el ${fechaPunto(serie[0].d)}`, `since ${fechaPunto(serie[0].d)}`) : L(...ETQ_RANGO[S.rango]);
-    const pintarVar = (desde, hasta, etq) => {
+    const pintarVar = (desde, hasta, etq, fijo) => {
       const cab = $('#evoCab'); if (!cab || !desde || !hasta) return;
-      const d = hasta.v - desde.v, p = (hasta.v / desde.v - 1) * 100, c = cls(d);
+      const d = fijo ? fijo.d : hasta.v - desde.v, p = fijo ? fijo.p : (hasta.v / desde.v - 1) * 100, c = cls(d);
       cab.innerHTML = `<span class="hv-p ${c}"><i aria-hidden="true">${d > 0 ? '▲' : d < 0 ? '▼' : '•'}</i>${esc(eurS(d, 0))}<em>${esc(pctS(p))}</em></span><span class="k">${esc(etq)}</span>`;
     };
     // desde dónde se cuenta: el primer punto del periodo o, en 1D, el cierre de ayer (así cuadra con «Hoy»)
     const ref0 = S.rango === '1D' && deIntra && isFinite(M.dia) && serie.length ? { d: serie[0].d, v: M.total - M.dia } : serie[0] || null;
     const ahora = { d: hoyIso(), v: isFinite(M.total) ? M.total : (serie[serie.length - 1] || {}).v };
-    if (serie.length > 1) pintarVar(ref0, ahora, etqRango);
+    const real = (M2) => (S.rango === 'Inicio' && isFinite(M2.pl) && isFinite(M2.plPct) ? { d: M2.pl, p: M2.plPct } : null);
+    if (serie.length > 1) pintarVar(ref0, ahora, etqRango, real(M));
     const series = [{ datos: serie, color: 'var(--accent)' }];
     if (S.comparar && S.ref && !intra) series.push({ datos: serieComparada(serie, S.ref), color: 'var(--text-2)', disc: true, nombre: 'S&P 500' });
     // al pasar el dedo, la cifra grande de arriba enseña lo que tenías ese día y la pastilla, lo que iba desde el
@@ -7489,14 +7497,14 @@ function dibujar(M) {
       } else {
         if (hn.dataset.antes) { hn.innerHTML = hn.dataset.antes; delete hn.dataset.antes; hn.classList.remove('mira'); }
         lbl.textContent = L('Patrimonio', 'Net worth');
-        if (serie.length > 1) pintarVar(ref0, ahora, etqRango);
+        if (serie.length > 1) pintarVar(ref0, ahora, etqRango, real(S.M || M));
       }
     };
     // con los precios en directo cambia el patrimonio: la pastilla se pone al día con él (salvo con el dedo encima)
     S.heroVar = (M2) => {
       const hn = $('#heroNum'); if (!hn || hn.dataset.antes || serie.length < 2) return;
       const desde = S.rango === '1D' && deIntra && isFinite(M2.dia) ? { v: M2.total - M2.dia } : ref0;
-      pintarVar(desde, { v: isFinite(M2.total) ? M2.total : ahora.v }, etqRango);
+      pintarVar(desde, { v: isFinite(M2.total) ? M2.total : ahora.v }, etqRango, real(M2));
     };
     const movil = innerWidth < 760;
     const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
@@ -8678,6 +8686,28 @@ function htmlPerfil(M) {
     </div>`;
 }
 
+function preguntarInicio(luego = () => {}) {
+  const hoy = hoyIso().slice(0, 7), prim = (() => { const v = inicioCartera(); return v ? v.slice(0, 7) : ''; })();
+  const h = hoja(L('¿Desde cuándo inviertes?', 'Since when have you been investing?'), `<form id="fIni" class="pf-form" novalidate>
+    <p class="nota" style="margin:0 0 12px">${L('«Inicio» en la gráfica cuenta desde que empezaste a invertir, no desde que usas GrowFolio. Más o menos vale: el mes y el año.', '«Start» on the chart counts from when you started investing, not from when you started using GrowFolio. Roughly is fine: month and year.')}</p>
+    <label class="campo">${L('Empecé a invertir en', 'I started investing in')}<input type="month" name="ini" max="${hoy}" value="${esc(prim && prim < hoy ? prim : '')}" required></label>
+    <div class="error" id="errIni"></div>
+    <div class="fila-btns"><button type="button" class="btn" id="bIniNo">${L('No me acuerdo', 'I don\'t remember')}</button><button type="submit" class="btn pri">${L('Guardar', 'Save')}</button></div>
+    <p class="nota" style="margin:10px 0 0">${L('Lo puedes cambiar en tu perfil.', 'You can change it in your profile.')}</p>
+  </form>`);
+  const guardar = async (v) => {
+    S.cartera.perfil = { ...(S.cartera.perfil || {}), inicio_inversion: v };
+    h.cerrar(); luego();
+    try { await guardarCarteraCallada(L('Desde cuándo inviertes', 'Since when you invest')); } catch (e) {}
+  };
+  $('#bIniNo', h.el).onclick = () => guardar('auto');
+  $('#fIni', h.el).onsubmit = (ev) => {
+    ev.preventDefault();
+    const v = $('#fIni', h.el).ini.value;
+    if (!/^\d{4}-\d{2}$/.test(v) || v > hoy) { $('#errIni', h.el).textContent = L('Pon el mes y el año en que empezaste.', 'Enter the month and year you started.'); return; }
+    guardar(v);
+  };
+}
 function editarPerfil() {
   const p = perfil();
   const radios = (nombre, obj, actual, fmt = (k, v) => esc(v)) => Object.entries(obj).map(([k, v]) => `<label class="opc"><input type="radio" name="${nombre}" value="${k}"${actual === k ? ' checked' : ''}><span>${fmt(k, v)}</span></label>`).join('');
@@ -8692,6 +8722,7 @@ function editarPerfil() {
     <fieldset class="opciones"><legend>Ahora mismo estás <span class="k">(puedes marcar varias)</span></legend><div class="opc-fila">${(() => { const sel = new Set(String(p.situacion || '').split(',')); return Object.entries(SITUACION).map(([k, v]) => `<label class="opc"><input type="checkbox" name="situacion" value="${k}"${sel.has(k) ? ' checked' : ''}><span>${esc(v)}</span></label>`).join(''); })()}</div></fieldset>
     <fieldset class="opciones"><legend>Si tu cartera cayera un 30 % en unos meses, ¿qué harías?</legend><div class="opc-fila">${radios('riesgo', RIESGO, p.riesgo, (k, v) => `<b>${v[0]}</b><small>${v[1]}</small>`)}</div></fieldset>
     <fieldset class="opciones"><legend>¿Cuánto llevas invirtiendo?</legend><div class="opc-fila">${radios('experiencia', EXPERIENCIA, p.experiencia)}</div></fieldset>
+    <label class="campo">Empecé a invertir en<input type="month" name="ini" max="${hoyIso().slice(0, 7)}" value="${/^\d{4}-\d{2}/.test(p.inicio_inversion || '') ? esc(String(p.inicio_inversion).slice(0, 7)) : ''}"><small>Más o menos. «Inicio» en la gráfica cuenta desde aquí.</small></label>
     <fieldset class="opciones"><legend>Qué buscas</legend><div class="opc-fila">${radios('estilo', ESTILO, p.estilo)}</div></fieldset>
     <fieldset class="opciones"><legend>Deudas que estés pagando</legend><div class="opc-fila">${radios('deudas', DEUDAS, p.deudas)}</div></fieldset>
     <div class="form-grid">
@@ -8714,7 +8745,7 @@ function editarPerfil() {
     const antes = S.cartera.perfil || {};
     const nombre = (f.nombre.value || '').trim().slice(0, 40) || null;
     if (nombre) LS.set('inv-nombre', nombre); else LS.del('inv-nombre');
-    S.cartera.perfil = { ...antes, nombre, edad, comunidad: f.comunidad.value || null, horizonte: n(f.horizonte.value), situacion: [...f.querySelectorAll('[name=situacion]:checked')].map((x) => x.value).join(',') || null, riesgo: r('riesgo'), experiencia: r('experiencia'), estilo: r('estilo'), deudas: r('deudas'), gastos_mes: n(f.gastos.value), colchon_meses: n(f.colchon.value) || 6, ingresos_mes: n(f.ingresos.value), limite_cripto: cri ?? 5, limite_empresa: emp ?? 10, limite_oro: n(f.oro.value) ?? 10, actualizado: new Date().toISOString() };
+    S.cartera.perfil = { ...antes, inicio_inversion: f.ini.value || (antes.inicio_inversion === 'auto' ? 'auto' : null), nombre, edad, comunidad: f.comunidad.value || null, horizonte: n(f.horizonte.value), situacion: [...f.querySelectorAll('[name=situacion]:checked')].map((x) => x.value).join(',') || null, riesgo: r('riesgo'), experiencia: r('experiencia'), estilo: r('estilo'), deudas: r('deudas'), gastos_mes: n(f.gastos.value), colchon_meses: n(f.colchon.value) || 6, ingresos_mes: n(f.ingresos.value), limite_cripto: cri ?? 5, limite_empresa: emp ?? 10, limite_oro: n(f.oro.value) ?? 10, actualizado: new Date().toISOString() };
     if (lim != null) S.cartera.limite_acciones = lim;
     AS.foto = null;
     await guardarYPintar('Perfil de inversor', h);
@@ -10289,12 +10320,12 @@ const ILUS = {
 };
 const INTRO = [
   { il: 'logo', t: 'Tu dinero, con una IA que te dice qué hacer', x: 'Fondos, acciones, ETF, oro y cripto de cualquier bróker, juntos y con precios en directo. GrowIA los estudia y te dice qué hacer con ellos.' },
-  { il: 'notas', t: 'Una IA que revisa tu cartera', x: 'Cada día lee las noticias y repasa lo que tienes según tu edad, tus metas y el riesgo que aguantas. Le pone nota y te dice qué mejorar primero.' },
-  { il: 'pasos', t: 'Qué hacer cada mes', x: 'Comprar, vender, aportar o esperar, en orden y con el porqué. Con lo que pagarás a Hacienda. Lo haces y lo marcas.' },
+  { dib: 'grafica', donde: 'cartera', t: 'Todo lo que tienes, de un vistazo', x: 'Tu patrimonio, lo que ganas hoy y desde que compraste, y la gráfica de cualquier periodo. Tus posiciones, justo debajo.' },
+  { il: 'pasos', donde: 'ruta', t: 'Qué hacer cada mes', x: 'Comprar, vender, aportar o esperar, en orden y con el porqué. Con lo que pagarás a Hacienda. Lo haces y lo marcas.' },
+  { il: 'notas', donde: 'analisis', t: 'Una IA que revisa tu cartera', x: 'Cada día lee las noticias y repasa lo que tienes según tu edad, tus metas y el riesgo que aguantas. Le pone nota y te dice si vas hacia lo que quieres.' },
+  { il: 'mundo', donde: 'expertos', t: 'Ideas que encajan contigo', x: 'Unas 840 empresas de EEUU y Europa con la opinión de los analistas. Te dice cuáles encajan en tu cartera y por qué.' },
+  { dib: 'calendario', donde: 'mercados', t: 'El mundo y lo que viene', x: 'Bolsas, tipos, divisas y materias primas, con lo que significa para ti. Y el calendario: resultados, dividendos y la Fed.' },
   { il: 'ia', t: 'Pregúntale lo que quieras', x: '«Me sobran 500 €, ¿dónde los meto?» o «¿Vendo Repsol?». Te contesta con tus números y te lo explica fácil.' },
-  { il: 'mundo', t: 'Ideas que encajan contigo', x: 'Unas 840 empresas de EEUU y Europa con la opinión de los analistas. Te dice cuáles encajan en tu cartera y por qué.' },
-  { dib: 'grafica', t: 'Tu cartera de un vistazo', x: 'Cuánto tienes, lo que ganas hoy y desde que compraste, y el reparto por países, sectores y monedas.' },
-  { dib: 'calendario', t: 'Lo que viene', x: 'Resultados y dividendos de lo tuyo, con lo que te toca en euros, y las reuniones de la Fed y el BCE.' },
   { dib: 'renta', t: 'Hacienda, sin sorpresas', x: 'Antes de vender ves lo que pagarás en la renta. Y en primavera, una guía para hacer la declaración.' },
   { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera se cifra con tu contraseña antes de guardarse, y la IA va con tu propia clave de Google. Nadie más puede leer tus cifras, tampoco GrowFolio.' },
   { dib: 'app', t: 'En el móvil, con widget', x: 'En la web o en la app de Android, con un widget para la pantalla de inicio. Está en alfa: si ves algo raro, avisa con el bichito de arriba.' },
@@ -10323,7 +10354,7 @@ const ESQUIRLAS = [
   ['frente', '34,20 48,20 48,48 28,48', 42, 28, -40, 1.2],
   ['raya', '', -10, 48, 90, 0.5],
 ];
-const COLOR_CAP = { notas: '#E2B45F', pasos: '#4FC995', ia: '#d55181', mundo: '#3987e5', grafica: '#4FC995', calendario: '#3987e5', renta: '#d95926', privada: '#E2B45F', app: '#4FC995' };
+const COLOR_CAP = { grafica: '#E2B45F', pasos: '#4FC995', notas: '#3987e5', mundo: '#d55181', calendario: '#F2925A', ia: '#4FC995', renta: '#d95926', privada: '#E2B45F', app: '#4FC995' };
 const logoEntero = () => `<svg viewBox="0 0 48 48" aria-hidden="true">${['atras', 'linea', 'hoja', 'frente', 'raya'].map((k) => LOGO_PIEZAS[k]).join('')}</svg>`;
 function pantallaIntro(seguir) {
   const nuevo = !S.enc;
@@ -10348,13 +10379,13 @@ function pantallaIntro(seguir) {
       ${caps.map((d, k) => `<section class="ix-cap" data-lado="${k % 2 ? 'd' : 'i'}" data-color="${COLOR_CAP[d.il || d.dib] || '#E2B45F'}">
         <div class="ix-cap-in">
           <div class="ix-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true">${d.il ? ILUS[d.il] : `<g transform="translate(0 5) scale(2)">${DIBUJOS[d.dib] || ''}</g>`}</svg></div>
-          <div class="ix-txt"><h2 data-no-trad data-t="${esc(d.t)}" aria-label="${esc(d.t)}"></h2><p>${esc(d.x)}</p></div>
+          <div class="ix-txt">${d.donde ? `<span class="ix-donde">${ICONOS[d.donde] || ''}${esc(L('En', 'In'))} ${esc(L((GRUPOS.find((g) => g.k === d.donde) || {}).c || (GRUPOS.find((g) => g.k === d.donde) || {}).t || '', (GRUPOS.find((g) => g.k === d.donde) || {}).en || ''))}</span>` : ''}<h2 data-no-trad data-t="${esc(d.t)}" aria-label="${esc(d.t)}"></h2><p>${esc(d.x)}</p></div>
         </div>
       </section>`).join('')}
       <section class="ix-fin">
         <div class="ix-fin-logo">${logoEntero()}</div>
         <h2>¿Empezamos?</h2>
-        <p>Para la IA solo hace falta una clave gratuita de Google: al abrir Pregúntale te dice cómo sacarla en un minuto.</p>
+        <p>Al entrar te enseño la app en un minuto y lo que hay que hacer el primer día para que GrowIA te aconseje con tus números.</p>
         <button type="button" class="btn pri" data-in="fin">${nuevo ? 'Crear mi cartera' : 'Entrar'}</button>
         <button type="button" class="enlace ix-arriba" data-in="arriba">Verlo otra vez desde el principio</button>
       </section>
@@ -10373,7 +10404,7 @@ function pantallaIntro(seguir) {
   let medidas = null, raf = 0, color = '';
   const medir = () => {
     const vh = sc.clientHeight;
-    medidas = { vh, alto: heroe.offsetHeight, caps: capEls.map((c) => ({ c, top: c.offsetTop, h: c.offsetHeight, palabras: $$('h2 span', c), ilus: $('.ix-ilus', c), p: $('p', c), lado: c.dataset.lado === 'd' ? 1 : -1 })) };
+    medidas = { vh, alto: heroe.offsetHeight, caps: capEls.map((c) => ({ c, top: c.offsetTop, h: c.offsetHeight, palabras: $$('h2 span', c), ilus: $('.ix-ilus', c), p: $('p', c), dn: $('.ix-donde', c), lado: c.dataset.lado === 'd' ? 1 : -1 })) };
     // al empezar, el logo va en el centro de la pantalla; sube a su sitio cuando sale el nombre
     medidas.baja = (marca.offsetHeight + lema.offsetHeight + 2 * parseFloat(getComputedStyle(emb.parentNode).rowGap || 0)) / 2;
   };
@@ -10425,6 +10456,7 @@ function pantallaIntro(seguir) {
         w.style.transform = `translateY(${((1 - e) * 0.6 - ex * 0.4).toFixed(3)}em)`;
         w.style.opacity = (e * (1 - ex)).toFixed(3);
       });
+      if (m.dn) { const de = ease(tramo(q, 0.1, 0.3)); m.dn.style.transform = `translateY(${((1 - de) * 14 - ex * 30).toFixed(1)}px)`; m.dn.style.opacity = (de * (1 - ex)).toFixed(3); }
       const pe = ease(tramo(q, 0.3, 0.48));
       m.p.style.transform = `translateY(${((1 - pe) * 26 - ex * 30).toFixed(1)}px)`;
       m.p.style.opacity = (pe * (1 - ex)).toFixed(3);
@@ -11260,10 +11292,14 @@ document.addEventListener('click', (e) => {
    ===================================================================== */
 const VERSION = '0.3.0b';
 const NOVEDADES = [
-  { v: '0.3.0b', f: '2026-10-21', h: '01:04', t: 'El widget como la app y arreglos', cosas: [
+  { v: '0.3.0b', f: '2026-10-21', h: '01:13', t: 'El widget como la app, «Inicio» de verdad y arreglos', cosas: [
     { d: 'app', t: 'El widget, como la app', x: 'La cifra más gruesa y la curva con el mismo grano dorado, el trazo que se enciende hacia hoy y el halo en el punto de ahora. Llega con la app nueva de Android.' },
     { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: '«Cómo vas», en Análisis', x: 'La tarjeta que te dice si vas bien sale ahora arriba de Análisis, justo encima de tus objetivos, y ya no en el Paso a paso.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.hero-num' }, t: 'El patrimonio se enciende', x: 'Cuando cambia con los precios en directo, la cifra se pone un momento en verde si sube y en rojo si baja.' },
+    { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: '«Inicio», desde que empezaste a invertir', x: 'La primera vez que lo tocas te pregunta en qué mes y año empezaste a invertir, no cuándo empezaste a usar GrowFolio, y la pastilla dice lo ganado de verdad desde entonces. Lo cambias en tu perfil.' },
+    { d: 'gta', ir: { v: 'cartera', sel: '.gta-top' }, t: 'GTA VI, con vida', x: 'El «VI» es más grueso, parpadea de vez en cuando como un rótulo de neón y la pastilla brilla suave.' },
+    { d: 'intro', t: 'La presentación, al día', x: 'La que sale la primera vez va en el orden de la barra y cada idea dice en qué sitio la tienes: Inicio, Pasos, Análisis, Expertos o Mercados.' },
+    { d: 'ajustes', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Ajustes, sin lo de la 0.2', x: 'Fuera «Ver lo nuevo de la 0.2», que ya no tocaba.' },
   ], arreglos: [
     'Al cambiar el patrimonio con los precios en directo desaparecían los euros de la cifra grande.',
     'En las novedades, las últimas cifras del número de versión salían borrosas y movidas hasta que bajabas.',
@@ -14463,7 +14499,11 @@ document.addEventListener('click', (e) => {
   const t = e.target.closest('[data-car],[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta],[data-exp],[data-plazo],[data-fut],[data-resp],[data-fis]');
   if (!t || !S.cartera) return;
   const d = t.dataset;
-  if (d.rango) { S.rango = d.rango; LS.set('inv-rango', S.rango); pintar(); }
+  if (d.rango) {
+    // la primera vez que tocas «Inicio», te pregunta desde cuándo inviertes (no desde que usas GrowFolio)
+    if (d.rango === 'Inicio' && !((S.cartera.perfil || {}).inicio_inversion)) preguntarInicio(() => { S.rango = 'Inicio'; LS.set('inv-rango', S.rango); pintar(); });
+    else { S.rango = d.rango; LS.set('inv-rango', S.rango); pintar(); }
+  }
   else if (d.ruta) marcarRuta(d.ruta);
   else if (d.exp) { S.expTab = d.exp; LS.set('inv-exp', S.expTab); if (S.vista !== 'expertos') { e.preventDefault(); location.hash = 'expertos'; return; } pintar(); if (!t.closest('.subvistas')) irArriba('.subvistas'); }
   else if (d.plazo) { S.rutaPlazo = d.plazo; LS.set('inv-ruta-plazo', S.rutaPlazo); for (const b of $$('[data-plazo]')) b.setAttribute('aria-pressed', b.dataset.plazo === S.rutaPlazo); const r = $('.ruta'); if (r) r.dataset.sel = S.rutaPlazo; }
