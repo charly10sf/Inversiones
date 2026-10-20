@@ -28,6 +28,8 @@ import java.util.concurrent.Executors;
 /** Lo que la web puede pedirle a la app: guardar la foto de la cartera para el widget, saber la versión,
  *  bajar e instalar la versión nueva y pedir la huella para el bloqueo. */
 public class Puente {
+    /** un solo hilo para las respuestas de Credential Manager (antes se creaba uno nuevo en cada toque) */
+    private static final java.util.concurrent.Executor HILO = Executors.newSingleThreadExecutor();
     private final Context ctx;
     private final Principal act;
 
@@ -50,6 +52,12 @@ public class Puente {
     @JavascriptInterface
     public void toque() {
         act.runOnUiThread(() -> act.getWindow().getDecorView().performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP));
+    }
+
+    @JavascriptInterface
+    public void borrarWidget() {
+        Datos.borrar(ctx);
+        Widget.actualizarTodos(ctx);
     }
 
     @JavascriptInterface
@@ -148,7 +156,7 @@ public class Puente {
                         .setAutoSelectEnabled(false)
                         .build();
                 GetCredentialRequest req = new GetCredentialRequest.Builder().addCredentialOption(op).build();
-                CredentialManager.create(act).getCredentialAsync(act, req, new CancellationSignal(), Executors.newSingleThreadExecutor(),
+                CredentialManager.create(act).getCredentialAsync(act, req, new CancellationSignal(), HILO,
                         new CredentialManagerCallback<GetCredentialResponse, GetCredentialException>() {
                             @Override
                             public void onResult(GetCredentialResponse r) {

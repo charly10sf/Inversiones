@@ -38,6 +38,11 @@ final class Datos {
         return c.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
     }
 
+    /** al cerrar la sesión: el widget vuelve a «Abre la app» y no enseña la cartera de nadie */
+    static void borrar(Context c) {
+        prefs(c).edit().remove("foto").remove("foto_t").apply();
+    }
+
     static void guardarFoto(Context c, String json) {
         prefs(c).edit().putString("foto", json).putLong("foto_t", System.currentTimeMillis()).apply();
     }

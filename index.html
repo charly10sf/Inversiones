@@ -2385,14 +2385,42 @@ function fbCargar() {
 }
 const docCuenta = () => FB.fs.doc(FB.db, 'usuarios', FB.user.uid);
 async function leerCuenta() { const d = await FB.fs.getDoc(docCuenta()); return d.exists() ? d.data() : null; }
+/* Sincronizar sin perder nada (0.2):
+   - Cada escritura lleva su sello «actualizado» y el dispositivo recuerda cuáles son suyas.
+   - La copia del dispositivo guarda su «base»: el sello de la versión de la cuenta sobre la que se hicieron los
+     cambios. Si al subir la cuenta sigue en esa base, mandan los cambios de aquí; si otro dispositivo la cambió
+     entretanto, manda la cuenta y se avisa.
+   - Nunca se escribe en la cuenta sin haberla leído antes en esta sesión (S.cuentaLeida): si la lectura falla,
+     no se da por vacía.
+   - Sin conexión, setDoc de Firestore no acaba nunca: se espera como mucho 5 segundos y, si no, queda pendiente. */
 async function escribirCuenta(texto, extra = {}) {
-  await FB.fs.setDoc(docCuenta(), { enc: texto, actualizado: new Date().toISOString(), v: VERSION, desde: window.InversionesApp ? 'app' : 'web', ...extra }, { merge: true });
+  const actualizado = new Date().toISOString();
+  (S.misEscrituras || (S.misEscrituras = new Set())).add(actualizado);
+  await FB.fs.setDoc(docCuenta(), { enc: texto, actualizado, v: VERSION, desde: window.InversionesApp ? 'app' : 'web', ...extra }, { merge: true });
+  return actualizado;
 }
+const conTiempo = (pr, ms) => Promise.race([pr, new Promise((_, no) => setTimeout(() => no(new Error('tiempo')), ms))]);
 // copia en el dispositivo de lo último de tu cuenta, para abrir sin conexión y para lo que aún no se ha subido
 const cacheCuenta = {
   get() { const c = LS.get('inv-cuenta-enc'); return c && (!FB.user || c.uid === FB.user.uid) ? c : null; },
-  set(texto, actualizado) { LS.set('inv-cuenta-enc', { uid: FB.user ? FB.user.uid : null, texto, actualizado: actualizado || new Date().toISOString() }); },
+  set(texto, actualizado, base) { LS.set('inv-cuenta-enc', { uid: FB.user ? FB.user.uid : null, texto, actualizado: actualizado || new Date().toISOString(), base: base == null ? (S.baseCuenta || '') : base }); },
 };
+/* sube a la cuenta; si en 5 s no ha terminado (sin conexión), queda pendiente y se acaba de subir sola */
+async function subirCuenta(texto) {
+  const n = (S.subidas = (S.subidas || 0) + 1);
+  LS.set('inv-pend-cuenta', true);
+  const pr = escribirCuenta(texto).then((act) => {
+    S.baseCuenta = act; S.cuentaOk = true;
+    const c = cacheCuenta.get(); if (c && c.texto === texto) cacheCuenta.set(texto, c.actualizado, act);
+    if (S.subidas === n) LS.del('inv-pend-cuenta');
+    return act;
+  });
+  pr.catch(() => {});
+  // sin conexión no se espera nada; con ella, como mucho 5 s (luego se acaba de subir por detrás)
+  return conTiempo(pr, navigator.onLine === false ? 0 : 5000);
+}
+/* ¿el cambio de la cuenta es de otro dispositivo y posterior a la base de lo que hay aquí sin subir? */
+const cambioAjeno = (act, base) => !!act && act > (base || '') && !(S.misEscrituras && S.misEscrituras.has(act));
 // el nombre para saludarte: el que pusiste al crear la cuenta (o en tu perfil) o, si no, el de Google
 const nombreUsuario = () => String(LS.get('inv-nombre', '') || (S.cartera && S.cartera.perfil && S.cartera.perfil.nombre) || (FB.user && FB.user.displayName) || '').trim().split(/\s+/)[0] || '';
 const ERR_FB = {
@@ -2608,21 +2636,57 @@ async function cargarCifrada() {
    cambios que no llegaron a subirse y son más nuevos que los de la cuenta, mandan y se suben ahora. */
 async function cargarDeCuenta() {
   const c = cacheCuenta.get();
+  S.cuentaLeida = false; S.cuentaSinRed = false;
   try { await fbCargar(); } catch (e) { console.warn('Sin Firebase', e); S.cuentaSinRed = true; return c ? { texto: c.texto, sha: null } : null; }
   if (!FB.user) return null;
-  try {
-    const d = await leerCuenta();
-    const pend = LS.get('inv-pend-cuenta') && c && c.uid === FB.user.uid;
-    if (pend && (!d || (c.actualizado || '') > (d.actualizado || ''))) {
-      try { await escribirCuenta(c.texto); LS.del('inv-pend-cuenta'); } catch (e) { console.warn(e); }
+  let d;
+  try { d = await conTiempo(leerCuenta(), 12000); } catch (e) { console.warn('No se pudo leer la cuenta', e); S.cuentaSinRed = true; return c && c.uid === FB.user.uid ? { texto: c.texto, sha: null } : null; }
+  S.cuentaLeida = true; S.baseCuenta = (d && d.actualizado) || '';
+  if (d && d.ia) S.iaCuenta = d.ia;
+  const pend = LS.get('inv-pend-cuenta') && c && c.uid === FB.user.uid;
+  if (pend) {
+    // lo de aquí se hizo sobre la versión que sigue en la cuenta: se sube
+    if (!d || !d.enc || !cambioAjeno(d.actualizado, c.base)) {
+      cacheCuenta.set(c.texto, c.actualizado, S.baseCuenta);
+      try { await subirCuenta(c.texto); } catch (e) { console.warn(e); }
       return { texto: c.texto, sha: null };
     }
-    LS.del('inv-pend-cuenta');
-    if (d && d.ia) S.iaCuenta = d.ia;
-    if (d && d.enc) { cacheCuenta.set(d.enc, d.actualizado); return { texto: d.enc, sha: null }; }
-    return null;
-  } catch (e) { console.warn('No se pudo leer la cuenta', e); S.cuentaSinRed = true; return c && c.uid === FB.user.uid ? { texto: c.texto, sha: null } : null; }
+    // otro dispositivo cambió la cuenta entretanto: manda la cuenta
+    S.avisoConflicto = true;
+  }
+  LS.del('inv-pend-cuenta');
+  if (d && d.enc) { cacheCuenta.set(d.enc, d.actualizado, d.actualizado); return { texto: d.enc, sha: null }; }
+  return null;
 }
+/* sin conexión al abrir: ni se crea una cartera nueva ni se toca la cuenta; se reintenta */
+function pantallaSinCuenta() {
+  $('#app').innerHTML = `<div class="pantalla"><div class="caja caja-cuenta">
+    <img class="logo" src="icon-192.png" alt="">
+    <h1>No he podido leer tu cuenta</h1>
+    <p>Comprueba que tienes conexión y vuelve a probar. Tu cartera sigue a salvo en tu cuenta: no se ha tocado nada.</p>
+    <button class="btn pri" type="button" id="bReintentar">Reintentar</button>
+    <button type="button" class="enlace" id="bSalir">Entrar con otra cuenta</button>
+  </div></div>`;
+  $('#bReintentar').onclick = () => location.reload();
+  $('#bSalir').onclick = () => cerrarSesion();
+}
+/* con conexión otra vez (o cada minuto si hay algo pendiente): lo de aquí sube o llega lo de la cuenta */
+async function sincronizarCuenta() {
+  if (!PERFIL_CUENTA || !S.key || !S.cartera || S.sincronizando) return;
+  S.sincronizando = true;
+  try {
+    await fbCargar(); if (!FB.user) return;
+    const d = await conTiempo(leerCuenta(), 12000);
+    S.cuentaLeida = true;
+    const c = cacheCuenta.get();
+    if (LS.get('inv-pend-cuenta') && c && (!d || !d.enc || !cambioAjeno(d.actualizado, c.base))) {
+      await subirCuenta(c.texto);
+      if (S.toastPend) { S.toastPend = false; toast('Subidos a tu cuenta los cambios que hiciste sin conexión', 5000); }
+    } else if (d && d.enc && (!S.enc || d.enc !== S.enc.texto)) await aplicarRemoto(d.enc, d.actualizado);
+  } catch (e) { console.warn('Sin sincronizar todavía', e); }
+  finally { S.sincronizando = false; }
+}
+setInterval(() => { if (LS.get('inv-pend-cuenta') && !document.hidden) sincronizarCuenta(); }, 60000);
 
 /* El histórico (10 años de cierres) pesa unos 300 KB: se baja al abrir y cuando cambia de día */
 async function cargarHistorico() {
@@ -3863,7 +3927,7 @@ function agendaLista(M, dias = 120) {
   // lo que ha visto la IA en las noticias, si no está ya
   const ia = iaActual();
   for (const e of (ia && ia.calendario) || []) {
-    if (!e || !e.t || /aportaci/i.test(e.t)) continue;
+    if (!e || !e.t || /aportaci/i.test(e.t) || !/^\d{4}-\d{2}-\d{2}$/.test(String(e.d || '')) || isNaN(deIso(e.d))) continue;
     // si ya sale (la IA suele decir lo mismo con otras palabras y un día antes o después), no se repite
     const te = normTxt(e.t);
     if (ev.some((x) => (x.d === e.d && te.includes(normTxt(x.t))) || (x.nom && te.includes(normTxt(x.nom)) && Math.abs(diasEntre(x.d, e.d)) <= 3))) continue;
@@ -7468,9 +7532,14 @@ function pantallaCuenta(errorTxt = '') {
   };
 }
 /* la primera vez con una cuenta nueva: cómo te llamas y, si ya tenías una cartera en este dispositivo, subirla */
-function bienvenidaCuenta() {
+async function bienvenidaCuenta() {
   const sugerido = nombreUsuario();
-  const local = (() => { try { const l = JSON.parse(localStorage.getItem('inv-local-enc') || 'null'); if (l) return { texto: l, clave: 'clave-local', de: 'la de este dispositivo' }; const g = JSON.parse(localStorage.getItem('inv-cache-enc') || 'null'); if (g) return { texto: g, clave: 'clave', de: 'la de GitHub' }; } catch (e) {} return null; })();
+  // la cartera de antes de las cuentas que hubiera en este dispositivo (la propia o la copia de la de GitHub);
+  // una vez que se ha ofrecido a una cuenta, no se vuelve a ofrecer a otra
+  let local = LS.get('inv-local-ofrecida', false) ? null : (() => { try { const l = JSON.parse(localStorage.getItem('inv-local-enc') || 'null'); if (l) return { texto: l, clave: 'clave-local', de: 'la de este dispositivo' }; const g = JSON.parse(localStorage.getItem('inv-cache-enc') || 'null'); if (g) return { texto: g, clave: 'clave', de: 'la de GitHub' }; } catch (e) {} return null; })();
+  // la copia de la cartera de GitHub solo es tuya si este dispositivo recuerda su clave (los amigos que abrieron
+  // la web en ese modo tienen la del dueño, que no pueden abrir): sin clave, ni se ofrece
+  if (local && local.clave === 'clave') { try { const g = await IDB.get('clave'); if (!(g && g.key && g.salt === JSON.parse(local.texto).salt)) local = null; } catch (e) { local = null; } }
   $('#app').innerHTML = `<div class="pantalla"><form class="caja caja-cuenta" id="fBien" novalidate>
     <img class="logo" src="icon-192.png" alt="">
     <h1>${sugerido ? `¡Hola, ${esc(sugerido)}!` : '¡Hola!'}</h1>
@@ -7478,7 +7547,8 @@ function bienvenidaCuenta() {
     <label class="campo">¿Cómo quieres que te llame?<input id="bNombre" maxlength="40" autocomplete="given-name" value="${esc(sugerido)}" placeholder="Tu nombre"><small>Para saludarte al entrar. Lo puedes cambiar en tu perfil.</small></label>
     ${local ? `<fieldset class="opciones"><legend>Ya tienes una cartera en este dispositivo</legend><div class="opc-fila">
         <label class="opc"><input type="radio" name="que" value="subir" checked><span><b>Subirla a mi cuenta</b><small>${esc(local.de)}, con la contraseña que ya tiene</small></span></label>
-        <label class="opc"><input type="radio" name="que" value="nueva"><span><b>Empezar una nueva</b><small>la de este dispositivo se queda como está</small></span></label></div></fieldset>` : ''}
+        <label class="opc"><input type="radio" name="que" value="nueva"><span><b>Empezar una nueva</b><small>la de este dispositivo no se sube</small></span></label></div>
+        <label class="campo" id="bPassL" hidden>Contraseña de esa cartera<input type="password" id="bPass" autocomplete="current-password"><small>Para comprobar que es tuya antes de subirla.</small></label></fieldset>` : ''}
     <div class="error" id="err"></div>
     <button class="btn pri" type="submit" id="bSeguir">Seguir</button>
     <button type="button" class="enlace" id="bSalir">Entrar con otra cuenta</button>
@@ -7489,46 +7559,108 @@ function bienvenidaCuenta() {
     const nom = $('#bNombre').value.trim(), b = $('#bSeguir');
     if (nom) { LS.set('inv-nombre', nom); if (FB.user && !FB.user.displayName) try { await FB.au.updateProfile(FB.user, { displayName: nom }); } catch (e) {} }
     const que = (document.querySelector('[name=que]:checked') || {}).value;
+    if (local) LS.set('inv-local-ofrecida', true);
     if (!local || que !== 'subir') return pantallaCrear();
-    b.disabled = true; b.textContent = 'Subiendo…';
+    b.disabled = true; b.textContent = 'Comprobando…'; $('#err').textContent = '';
     try {
-      await escribirCuenta(local.texto); cacheCuenta.set(local.texto);
-      S.enc = { texto: local.texto, sha: null };
-      // si ese dispositivo ya recordaba la clave de esa cartera, no hace falta volver a escribirla
+      // antes de subirla, abrirla: con la clave que recuerda este dispositivo o con su contraseña
       const f = JSON.parse(local.texto), g = await IDB.get(local.clave);
-      if (g && g.key && g.salt === f.salt) {
-        S.cartera = await descifrar(local.texto, g.key); S.key = g.key; S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;
-        await IDB.set(IDB_CLAVE, { salt: f.salt, key: g.key });
-        if (nom) { S.cartera.perfil = { ...(S.cartera.perfil || {}), nombre: nom }; }
-        toast('Tu cartera ya está en tu cuenta', 5000); S.recienCuenta = true;
-        return arrancar();
+      let key = g && g.key && g.salt === f.salt ? g.key : null, c = null;
+      if (key) { try { c = await descifrar(local.texto, key); } catch (e) { key = null; } }
+      if (!c) {
+        const pw = $('#bPass').value;
+        if (!pw) { LS.del('inv-local-ofrecida'); S.pidePassLocal = true; $('#bPassL').hidden = false; $('#bPass').focus(); b.disabled = false; b.textContent = 'Subirla'; $('#err').textContent = 'Este dispositivo no recuerda la contraseña de esa cartera: escríbela para comprobar que es tuya.'; return; }
+        try { key = await derivarClave(pw, b64.dec(f.salt), f.iter || 600000); c = await descifrar(local.texto, key); }
+        catch (e) { LS.del('inv-local-ofrecida'); b.disabled = false; b.textContent = 'Subirla'; $('#err').textContent = 'Esa contraseña no abre esa cartera. Si no es tuya, elige «Empezar una nueva».'; return; }
       }
-      pantallaDesbloqueo('', 'Ya está en tu cuenta. Escribe la contraseña de esa cartera (la de siempre) para abrirla.');
-    } catch (e) { console.warn(e); b.disabled = false; b.textContent = 'Seguir'; $('#err').textContent = errorFb(e); }
+      b.textContent = 'Subiendo…';
+      // la cuenta tiene que estar vacía de verdad
+      const d = await conTiempo(leerCuenta(), 12000); if (d && d.enc) { location.reload(); return; }
+      S.cuentaLeida = true; S.cuentaNueva = false;
+      S.baseCuenta = await conTiempo(escribirCuenta(local.texto), 15000); cacheCuenta.set(local.texto, c.actualizado, S.baseCuenta);
+      S.enc = { texto: local.texto, sha: null };
+      S.cartera = c; S.key = key; S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;
+      await IDB.set(IDB_CLAVE, { salt: f.salt, key });
+      // lo de antes ya vive en la cuenta: fuera del dispositivo, para que no se le ofrezca a nadie más; la clave
+      // de Gemini y la conversación del asesor pasan a la cuenta
+      for (const k of ['asesor-clave', 'asesor-clave-g', 'asesor-conv', 'ia-propio']) { const v = localStorage.getItem((local.clave === 'clave' ? 'inv-' : 'invL-') + k); if (v != null && localStorage.getItem('invC-' + k) == null) localStorage.setItem('invC-' + k, v); }
+      for (const k of ['inv-local-enc', 'inv-cache-enc', 'inv-pend-enc', 'invL-pend-enc', 'invL-cache-enc']) localStorage.removeItem(k);
+      try { await IDB.del('clave-local'); await IDB.del('clave'); } catch (e) {}
+      if (nom) { S.cartera.perfil = { ...(S.cartera.perfil || {}), nombre: nom }; }
+      toast('Tu cartera ya está en tu cuenta', 5000); S.recienCuenta = true;
+      return arrancar();
+    } catch (e) { console.warn(e); b.disabled = false; b.textContent = 'Seguir'; $('#err').textContent = e.message === 'tiempo' ? 'Sin conexión: no se ha subido nada. Vuelve a probar.' : errorFb(e); }
   };
+  // la contraseña solo se pide si hace falta (el dispositivo no la recuerda) y con «Subirla» elegido
+  for (const r of $$('[name=que]')) r.onchange = () => { const x = $('#bPassL'); if (x) x.hidden = !(r.checked && r.value === 'subir' && S.pidePassLocal); };
 }
 async function cerrarSesion() {
+  if (LS.get('inv-pend-cuenta') && S.key) {
+    try { await sincronizarCuenta(); } catch (e) {}
+    if (LS.get('inv-pend-cuenta') && !confirm(trad('Hay cambios de este dispositivo que aún no han llegado a tu cuenta (falta conexión). Si cierras la sesión ahora, se pierden. ¿Cerrarla igualmente?'))) return;
+  }
   try { await fbCargar(); await FB.au.signOut(FB.auth); } catch (e) { console.warn(e); }
-  try { await IDB.del(IDB_CLAVE); } catch (e) {}
-  for (const k of ['inv-cuenta-enc', 'inv-pend-cuenta', 'inv-bloqueo', 'inv-bloqueo-t', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio']) LS.del(k);
+  try { await IDB.del(IDB_CLAVE); await IDB.del('clave-local'); await IDB.del('clave'); } catch (e) {}
+  for (const k of ['inv-cuenta-enc', 'inv-pend-cuenta', 'inv-bloqueo', 'inv-bloqueo-t', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-asesor-cfg2', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-token', 'inv-gkey-modo', 'inv-ia-agotados']) LS.del(k);
+  try { localStorage.removeItem('inv-token'); } catch (e) {}
   LS.del('inv-nombre');
+  // el widget de Android no puede seguir enseñando la cartera de quien se ha ido
+  try { if (window.InversionesApp && window.InversionesApp.borrarWidget) window.InversionesApp.borrarWidget(); } catch (e) {}
   location.reload();
 }
 /* con la cartera abierta: si cambia en otro dispositivo, se actualiza aquí sola */
 function vigilarCuenta() {
-  if (!PERFIL_CUENTA || !FB.user || S.vigilaCuenta || !FB.fs) return;
+  if (!PERFIL_CUENTA || !FB.user || !FB.fs) return;
+  // siempre una suscripción nueva: la primera respuesta trae el estado de ahora (lo que llegara con la app bloqueada)
+  if (S.vigilaCuenta) { try { S.vigilaCuenta(); } catch (e) {} S.vigilaCuenta = null; }
   try {
     S.vigilaCuenta = FB.fs.onSnapshot(docCuenta(), async (d) => {
+      if (d.metadata.hasPendingWrites) return;
       const x = d.data();
-      if (!x || !x.enc || !S.key || d.metadata.hasPendingWrites || (S.enc && x.enc === S.enc.texto)) return;
-      try {
-        const c = await descifrar(x.enc, S.key);
-        if ((c.actualizado || '') <= ((S.cartera && S.cartera.actualizado) || '')) return;
-        S.cartera = c; S.enc = { texto: x.enc, sha: null }; cacheCuenta.set(x.enc, x.actualizado);
-        sumarInstPropios(); pintar(); toast('Tu cartera se ha actualizado con lo que cambiaste en otro dispositivo', 5000);
-      } catch (e) { console.warn('No se pudo leer el cambio de otro dispositivo', e); }
+      if (!d.metadata.fromCache) S.cuentaLeida = true;
+      if (!S.key || !S.cartera) return;
+      if (x && x.enc && S.enc && x.enc === S.enc.texto) { if (x.actualizado) S.baseCuenta = x.actualizado; return nombreEnCuenta(); }
+      const c = cacheCuenta.get();
+      if (LS.get('inv-pend-cuenta') && c) {
+        // lo de aquí aún no ha subido: si la cuenta no ha cambiado por otro lado, se sube; si sí, manda la cuenta
+        if (!x || !x.enc || !cambioAjeno(x.actualizado, c.base)) { if (!d.metadata.fromCache) { try { await subirCuenta(c.texto); } catch (e) {} } return; }
+        LS.del('inv-pend-cuenta'); S.avisoConflicto = true;
+      }
+      if (x && x.enc && !(S.misEscrituras && S.misEscrituras.has(x.actualizado))) await aplicarRemoto(x.enc, x.actualizado);
+      nombreEnCuenta();
     }, (e) => console.warn(e));
   } catch (e) { console.warn(e); }
+}
+/* el nombre de la bienvenida, dentro de tu perfil cifrado: solo con la cuenta ya leída, para no pisar nada */
+function nombreEnCuenta() {
+  const nom = LS.get('inv-nombre', '');
+  if (!S.cuentaLeida || !nom || !S.cartera || (S.cartera.perfil && S.cartera.perfil.nombre)) return;
+  S.cartera.perfil = { ...(S.cartera.perfil || {}), nombre: nom }; guardarCarteraCallada('Nombre');
+}
+/* llega una versión de la cuenta: si estás editando algo, espera a que cierres; si ya no abre con tu clave
+   (cambiaste la contraseña en otro dispositivo), se bloquea y pide la nueva */
+async function aplicarRemoto(enc, act) {
+  if (document.querySelector('.hoja-fondo form, .ficha')) {
+    // se aplica al cerrar; si mientras tanto guardas, manda lo tuyo (es lo último que has hecho) y esta se descarta
+    const antes = S.enc && S.enc.texto;
+    S.remotoEnEspera = { enc, act, antes }; clearTimeout(S.remotoT);
+    const reintenta = () => { const r = S.remotoEnEspera; if (!r) return; if (document.querySelector('.hoja-fondo form, .ficha')) { S.remotoT = setTimeout(reintenta, 1500); return; } S.remotoEnEspera = null; if (S.enc && S.enc.texto !== r.antes) return; if (!S.enc || r.enc !== S.enc.texto) aplicarRemoto(r.enc, r.act); };
+    S.remotoT = setTimeout(reintenta, 1500); return;
+  }
+  let c;
+  try { c = await descifrar(enc, S.key); }
+  catch (e) {
+    let otraSal = false; try { otraSal = JSON.parse(enc).salt !== JSON.parse(S.enc.texto).salt; } catch (e2) {}
+    if (!otraSal) { console.warn('No se pudo leer el cambio de otro dispositivo', e); return; }
+    if (S.vigilaCuenta) { try { S.vigilaCuenta(); } catch (e3) {} S.vigilaCuenta = null; }
+    S.enc = { texto: enc, sha: null }; cacheCuenta.set(enc, act, act); LS.del('inv-pend-cuenta');
+    S.cartera = null; S.key = null; try { await IDB.del(IDB_CLAVE); } catch (e4) {}
+    return pantallaDesbloqueo('', 'La contraseña de tu cartera ha cambiado en otro dispositivo. Escribe la nueva para seguir.');
+  }
+  S.cartera = c; S.enc = { texto: enc, sha: null }; S.baseCuenta = act || ''; cacheCuenta.set(enc, act, act); LS.del('inv-pend-cuenta');
+  sumarInstPropios(); pintar();
+  toast(S.avisoConflicto ? 'Tu cuenta tenía cambios más recientes de otro dispositivo: se ha quedado esa versión' : 'Tu cartera se ha actualizado con lo que cambiaste en otro dispositivo', 6000);
+  S.avisoConflicto = false;
 }
 
 function pantallaDesbloqueo(errorTxt = '', texto = '') {
@@ -7543,10 +7675,16 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
     <div class="error" id="err">${esc(errorTxt)}</div>
     <button class="btn pri" type="submit" id="bEntrar">Entrar</button>
     ${htmlOtroPerfil()}
+    ${PERFIL_CUENTA && FB.user ? '<button type="button" class="enlace cero" id="bCero">No recuerdo esa contraseña: empezar de cero en esta cuenta</button>' : ''}
     <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
     ${selectorIdioma('pie')}
   </form></div>`;
   enlazarOtroPerfil();
+  if ($('#bCero')) $('#bCero').onclick = () => {
+    if (!confirm(trad('Se borrará la cartera guardada en esta cuenta y empezarás una vacía. Sin su contraseña nadie puede recuperarla. ¿Empezar de cero?'))) return;
+    S.enc = null; S.cuentaNueva = false; S.cuentaLeida = true; LS.del('inv-cuenta-enc'); LS.del('inv-pend-cuenta');
+    pantallaCrear();
+  };
   $('#bIntro').onclick = () => pantallaIntro(() => pantallaDesbloqueo());
   $('#fDesb').onsubmit = async (ev) => {
     ev.preventDefault();
@@ -7696,8 +7834,13 @@ async function guardarLocal() {
   if (PERFIL_CUENTA) {
     // primero en el dispositivo y luego a la cuenta; si no hay conexión, se sube al volver a entrar
     cacheCuenta.set(texto, S.cartera.actualizado); S.enc = { texto, sha: null }; S.instCambiados = false;
-    try { await fbCargar(); if (!FB.user) throw new Error('sin sesión'); await escribirCuenta(texto); LS.del('inv-pend-cuenta'); S.cuentaOk = true; }
-    catch (e) { console.warn('No se pudo subir a la cuenta', e); LS.set('inv-pend-cuenta', true); S.cuentaOk = false; }
+    try {
+      await fbCargar(); if (!FB.user) throw new Error('sin sesión');
+      if (!S.cuentaLeida) throw new Error('la cuenta aún no se ha podido leer');
+      // la primera cartera de una cuenta: antes de escribir, comprobar que de verdad está vacía
+      if (S.cuentaNueva) { const d = await conTiempo(leerCuenta(), 12000); if (d && d.enc) { LS.del('inv-cuenta-enc'); toast('Tu cuenta ya tenía una cartera: la abro', 5000); setTimeout(() => location.reload(), 1200); return false; } }
+      await subirCuenta(texto); S.cuentaNueva = false; S.cuentaOk = true;
+    } catch (e) { console.warn('No se pudo subir a la cuenta', e); LS.set('inv-pend-cuenta', true); S.cuentaOk = false; S.toastPend = true; }
     return true;
   }
   LS.set('inv-local-enc', texto); S.enc = { texto, sha: null }; S.instCambiados = false;
@@ -10559,9 +10702,10 @@ function arrancar() {
   setTimeout(bienvenida, 700);
   // con cuenta: el nombre va también dentro de tu perfil cifrado y los cambios de otros dispositivos llegan solos
   if (PERFIL_CUENTA) {
-    const nom = LS.get('inv-nombre', '');
-    if (nom && S.cartera && !(S.cartera.perfil && S.cartera.perfil.nombre)) { S.cartera.perfil = { ...(S.cartera.perfil || {}), nombre: nom }; guardarCarteraCallada('Nombre'); }
+    nombreEnCuenta();
     vigilarCuenta();
+    if (S.avisoConflicto) { S.avisoConflicto = false; setTimeout(() => toast('Tu cuenta tenía cambios más recientes de otro dispositivo: se ha quedado esa versión', 6000), 1200); }
+    if (!S.cuentaLeida || LS.get('inv-pend-cuenta')) setTimeout(sincronizarCuenta, 3000);
   }
   revisarWeb();
 }
@@ -10571,7 +10715,7 @@ document.addEventListener('visibilitychange', () => {
   LIVE.asegurar();
   if (Date.now() - S.ultimaCarga > 60000) recargarPrecios(); else { programarParche(); revisarAnalisisIA(); }
 });
-window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); recargarPrecios(); } });
+window.addEventListener('online', () => { if (S.cartera) { LIVE.asegurar(); recargarPrecios(); sincronizarCuenta(); } });
 
 /* =====================================================================
    Bloqueo con PIN o huella. Encima de "Recordar en este dispositivo" (y, cuando lleguen las cuentas,
@@ -10929,7 +11073,9 @@ async function entrar() {
   }
   // la primera vez en este dispositivo, antes de crear la cartera o entrar, la presentación
   const intro = !LS.get('inv-intro', false);
-  if (!S.enc && PERFIL_CUENTA) return intro ? pantallaIntro(bienvenidaCuenta) : bienvenidaCuenta();
+  // no se pudo leer la cuenta y aquí no hay copia: nunca se da por vacía
+  if (!S.enc && PERFIL_CUENTA && (S.cuentaSinRed || !S.cuentaLeida)) return pantallaSinCuenta();
+  if (!S.enc && PERFIL_CUENTA) { S.cuentaNueva = true; return intro ? pantallaIntro(bienvenidaCuenta) : bienvenidaCuenta(); }
   if (!S.enc) return intro ? pantallaIntro(pantallaCrear) : pantallaCrear();
   try {
     const f = JSON.parse(S.enc.texto);
