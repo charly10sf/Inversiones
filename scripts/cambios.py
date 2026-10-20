@@ -39,6 +39,8 @@ def commits():
         lineas = bloque.strip("\n").split("\n")
         cuando, asunto = lineas[0], (lineas[1] if len(lineas) > 1 else "").strip()
         detalle = [l.strip().lstrip("-• ").strip() for l in lineas[2:] if l.strip() and not FUERA.match(l.strip())]
+        if re.match(r"^Prueba temporal", asunto, re.I):
+            continue  # pruebas de las Actions que se quitan enseguida: no son cambios de la app
         out.append({"cuando": cuando, "asunto": asunto, "detalle": detalle})
     return out
 
