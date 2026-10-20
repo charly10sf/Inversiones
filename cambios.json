@@ -7,19 +7,14 @@
    "t": "Tu perfil, tus avisos y cualquier bróker",
    "commits": [
     {
-     "cuando": "2026-10-20 16:12",
-     "asunto": "0.2.2: tu perfil paso a paso, avisos opcionales, importar de cualquier bróker o banco y tu comunidad",
-     "detalle": [
-      "Perfil de inversor guiado al entrar si falta (una pregunta por pantalla), con aviso en Cartera y punto en Objetivos y en «Más»",
-      "Avisos opcionales (apagados de serie): precio de salida, movimientos de más del 5 %, fechas de lo tuyo y preguntas de GrowIA; en Android, con la app cerrada",
-      "Importar extractos de cualquier bróker o banco: capturas, PDF, CSV o Excel, con lotes, ventas FIFO, traspasos entre fondos y dividendos para Fiscalidad",
-      "Tu comunidad en el perfil: escala foral en País Vasco y Navarra, donaciones de padres a hijos y noticias de tu comunidad que tocan tu dinero",
-      "El resumen de hoy al abrir cada día; las preguntas de GrowIA en su propia hoja",
-      "Cartera a tu gusto (ordenar bloques) y la luz de En directo con el panel de las bolsas del mundo",
-      "Acciones y fondos metidos a mano piden su precio (Agios); más fondos en el catálogo",
-      "«¿Qué te parece GrowFolio?» tras 5 días de uso; novedades contadas con scroll",
-      "Más textos en inglés; el escaneo de prensa ya no frena la entrada"
-     ]
+     "cuando": "2026-10-20 16:32",
+     "asunto": "0.2.2: importar de tu bróker, arriba y grande en «Ya la tenía»; «Enséñamelo» enseña solo esa novedad y vuelve a ellas; el tutorial se cierra en cualquier paso; bandera británica bien dibujada; noticias de tu comunidad sin política",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 16:10",
+     "asunto": "0.2.2: tu perfil paso a paso, avisos opcionales, importar de cualquier bróker o banco y tu comunidad - Perfil de inversor guiado al entrar si falta (una pregunta por pantalla), con aviso en Cartera y punto en Objetivos y en «Más» - Avisos opcionales (apagados de serie): precio de salida, movimientos de más del 5 %, fechas de lo tuyo y preguntas de GrowIA; en Android, con la app cerrada - Importar extractos de cualquier bróker o banco: capturas, PDF, CSV o Excel, con lotes, ventas FIFO, traspasos entre fondos y dividendos para Fiscalidad - Tu comunidad en el perfil: escala foral en País Vasco y Navarra, donaciones de padres a hijos y noticias de tu comunidad que tocan tu dinero - El resumen de hoy al abrir cada día; las preguntas de GrowIA en su propia hoja - Cartera a tu gusto (ordenar bloques) y la luz de En directo con el panel de las bolsas del mundo - Acciones y fondos metidos a mano piden su precio (Agios); más fondos en el catálogo - «¿Qué te parece GrowFolio?» tras 5 días de uso; novedades contadas con scroll - Más textos en inglés; el escaneo de prensa ya no frena la entrada",
+     "detalle": []
     },
     {
      "cuando": "2026-10-20 16:06",
