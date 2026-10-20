@@ -1943,6 +1943,37 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .tarea.primero .t-imp { background: rgba(18, 17, 15, 0.35); }
 
 /* ---------- Objetivos: tu perfil, tus límites y tus metas ---------- */
+.pf-recuerda { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 12px 12px 12px 14px; margin-bottom: 14px; border-radius: 14px; background: linear-gradient(var(--accent-bg), var(--accent-bg)), var(--plane); border: 1px solid rgba(226, 180, 95, 0.45); }
+.pf-r-ic { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--plane-2); color: var(--accent); }
+.pf-r-ic svg { width: 20px; height: 20px; }
+.pf-r-t { display: grid; gap: 2px; min-width: 0; }
+.pf-r-t small { color: var(--text-2); font-size: 13px; line-height: 1.4; }
+@media (max-width: 600px) { .pf-recuerda { grid-template-columns: auto minmax(0, 1fr) auto; } .pf-recuerda .btn { grid-column: 2 / 4; justify-self: start; grid-row: 2; } .pf-recuerda .ib { grid-column: 3; grid-row: 1; } }
+.pf-medias { grid-template-columns: minmax(0, 1fr); }
+.nav a.falta, .navbar .nav-mas.falta { position: relative; }
+.nav a.falta::after { content: ''; position: absolute; top: 5px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.navbar .nav-mas.falta::after { content: ''; position: absolute; top: 2px; left: calc(50% + 12px); width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg); }
+.mas-falta { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--accent-bg); color: var(--accent); font-style: normal; font-size: 11.5px; font-weight: 600; vertical-align: 1px; }
+.pg { display: grid; gap: 14px; }
+.pg-barra { height: 4px; border-radius: 4px; background: var(--plane-2); overflow: hidden; }
+.pg-barra i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 4px; transition: width 0.3s ease; }
+.pg-paso { min-height: 250px; display: grid; align-content: start; gap: 12px; }
+.pg-q { margin: 6px 0 0; font-size: 21px; line-height: 1.25; letter-spacing: -0.02em; }
+.pg-sub { margin: -4px 0 4px; color: var(--text-2); line-height: 1.5; }
+.pg-mini { margin: 6px 0 -4px; color: var(--text-2); font-size: 14px; }
+.pg .opc-fila { display: grid; grid-template-columns: repeat(auto-fit, minmax(210px, 1fr)); gap: 8px; }
+.pg .opc > span { padding: 13px 15px; font-size: 15px; min-height: 48px; align-content: center; }
+.pg .opc:hover > span { border-color: var(--accent); }
+.pg .opc input:focus-visible + span { outline: 2px solid var(--accent); outline-offset: 2px; }
+.pg-meta { margin-top: 4px; }
+.pg-pie { display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 10px; }
+.pg-cuenta { text-align: center; color: var(--muted); font-size: 13px; }
+.pg-luego { justify-self: center; color: var(--muted); font-size: 13.5px; }
+.pg-listo { display: grid; gap: 8px; justify-items: start; padding-top: 6px; }
+.pg-listo > svg { width: 34px; height: 34px; color: var(--up); }
+.pg-listo h3 { margin: 0; font-size: 22px; letter-spacing: -0.02em; }
+.pg-listo p { margin: 0; color: var(--text-2); line-height: 1.55; }
+.pg-listo p b { color: var(--text); }
 .pf-empieza { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 20px; align-items: center; padding: 20px; margin-bottom: 18px; border-radius: 18px; background: linear-gradient(var(--accent-bg), var(--accent-bg)), var(--plane); border: 1px solid rgba(226, 180, 95, 0.4); }
 .pf-empieza .dib { width: 120px; height: 80px; background: var(--plane-2); }
 .pf-empieza h2 { margin: 0 0 6px; font-size: 20px; letter-spacing: -0.02em; }
@@ -4234,6 +4265,10 @@ function pintar() {
   for (const a of $$('[data-ir]')) a.setAttribute('aria-current', a.dataset.ir === S.vista ? 'page' : 'false');
   const bm = $('.nav-mas');
   if (bm) { const v = EN_MAS.find(([k]) => k === S.vista), vv = v && VISTAS.find(([k]) => k === v[0]); bm.setAttribute('aria-current', v ? 'page' : 'false'); bm.querySelector('span').textContent = vv ? vv[2] || vv[1] : 'Más'; }
+  // un punto en Objetivos (y en «Más», en el móvil) mientras te falte el perfil
+  const faltaP = perfilIncompleto();
+  for (const a of $$('.nav [data-ir="futuro"]')) a.classList.toggle('falta', faltaP);
+  if (bm) bm.classList.toggle('falta', faltaP);
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
   const bo = $('#bOcultar'); bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? 'Mostrar importes' : 'Ocultar importes'; bo.setAttribute('aria-label', bo.title);
   pintarTicker(M);
@@ -4437,7 +4472,9 @@ function vistaCartera(M) {
     i = j;
   }
   const col = (xs, cls = '') => `<div class="car-col${cls}">${xs.map((x) => x.html).join('')}</div>`;
-  return `<div class="car">${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
+  const aviso = perfilIncompleto() && Date.now() - (LS.get('inv-perfil-aviso', 0) || 0) > 3 * 864e5
+    ? `<div class="pf-recuerda" role="note"><span class="pf-r-ic">${ICONOS.perfil}</span><span class="pf-r-t"><b>${perfilVacio() ? 'Te falta tu perfil de inversor' : 'Tu perfil de inversor está a medias'}</b><small>Sin tu edad, tu plazo y el riesgo que aguantas, GrowIA te aconseja como a cualquiera. Es un minuto.</small></span><button type="button" class="btn peq pri" data-accion="perfil-guiado">${perfilVacio() ? 'Hacerlo ahora' : 'Terminarlo'}</button><button type="button" class="ib" data-accion="perfil-aviso-no" aria-label="Ahora no" title="Ahora no (vuelve en unos días)">${ICONOS.cerrar}</button></div>` : '';
+  return `<div class="car">${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
     : f.t === 'suelta' ? `<div class="car-fila suelta">${f.a.map((x) => `<div class="car-col">${x.html}</div>`).join('')}</div>`
     : `<div class="car-fila ${f.t}">${f.t === 'par-izq' ? col(f.a) + col(f.b) : col(f.a) + col(f.b, ' lado')}</div>`)).join('')}
     <div class="car-pie"><button type="button" class="btn peq car-ordenar" data-accion="ordenar-cartera">${ICONOS.ajustes}Ordenar Cartera a tu gusto</button></div></div>`;
@@ -7332,7 +7369,7 @@ function htmlPerfil(M) {
   })();
   return `
     ${htmlPreguntasIA()}
-    ${vacio ? `<section class="pf-empieza">${dibujo('perfil')}<div><h2>Cuéntale a GrowFolio quién eres</h2><p>Tu edad, en qué andas, cuándo vas a necesitar el dinero y cuánto riesgo aguantas. Es un minuto y con eso la IA, las ideas y el Paso a paso te aconsejan a tu medida: no se invierte igual a los 24 que a los 60.</p><button class="btn pri" data-accion="perfil">Empezar</button></div></section>` : ''}
+    ${vacio ? `<section class="pf-empieza">${dibujo('perfil')}<div><h2>Cuéntale a GrowFolio quién eres</h2><p>Tu edad, en qué andas, cuándo vas a necesitar el dinero y cuánto riesgo aguantas. Es un minuto y con eso la IA, las ideas y el Paso a paso te aconsejan a tu medida: no se invierte igual a los 24 que a los 60.</p><button class="btn pri" data-accion="perfil-guiado">Empezar</button></div></section>` : perfilIncompleto() ? `<section class="pf-empieza pf-medias"><div><h2>Tu perfil está a medias</h2><p>Te faltan ${[!perfil().edad && 'tu edad', !perfil().horizonte && 'cuándo necesitarás el dinero', !perfil().riesgo && 'cuánto riesgo aguantas'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' y $1')}. Sin eso, GrowIA te aconseja casi a ciegas.</p><button class="btn pri" data-accion="perfil-guiado">Terminarlo</button></div></section>` : ''}
     <div class="pf-grid">
       ${vacio ? '' : `<section class="pf-card" aria-labelledby="hTu"><header><h2 id="hTu">Tú</h2><button class="enlace" data-accion="perfil">Editar</button></header>
         <dl class="pf-dl">${fila('Edad', p.edad ? `${p.edad} años` : '')}${fila('Ahora mismo', situacionTxt(p.situacion))}${fila('Necesitarás la mayor parte', p.horizonte ? textoHorizonte(p.horizonte) : '')}${fila('Si cayera un 30 %', p.riesgo ? `${RIESGO[p.riesgo][0]} ${RIESGO[p.riesgo][1]}` : '')}${fila('Experiencia', EXPERIENCIA[p.experiencia])}${fila('Buscas', ESTILO[p.estilo])}${fila('Deudas', DEUDAS[p.deudas])}</dl>
@@ -7397,6 +7434,163 @@ function editarPerfil() {
     toast('Guardado. GrowIA rehará sus consejos con tu perfil.', 4000);
   };
 }
+/* El perfil guiado: una pregunta por pantalla, con botones grandes, en vez del formulario largo. Sale solo al entrar
+   si tu perfil está sin hacer (a los nuevos, justo después del tutorial). Si le das a «Luego», se vuelve a ofrecer a
+   los 2 días, después a los 4 y luego cada semana. Mientras falte: un aviso arriba en Cartera y un punto en
+   Objetivos (en el móvil, en «Más», que es donde está Objetivos y por eso pasaba desapercibido). */
+const perfilIncompleto = () => { const p = (S.cartera && S.cartera.perfil) || {}; return !p.edad || !p.horizonte || !p.riesgo; };
+function tocaPerfilGuiado() {
+  if (!S.cartera || !perfilIncompleto()) return false;
+  const l = LS.get('inv-perfil-luego', null);
+  if (!l || !l.t) return true;
+  return Date.now() - l.t > (l.n <= 1 ? 2 : l.n === 2 ? 4 : 7) * 864e5;
+}
+function pedirPerfil(siSale, siNo) {
+  if (!tocaPerfilGuiado() || document.querySelector('.hoja-fondo, .tour, .estreno')) return siNo();
+  perfilGuiado(siSale);
+}
+const METAS_RAPIDAS = [['Entrada de un piso', 'gastar', 40000, 5], ['Un coche', 'gastar', 20000, 3], ['Llegar a 100.000 €', 'llegar', 100000, null], ['Dejar de trabajar antes', 'llegar', 500000, null]];
+const PASOS_PERFIL = [
+  { k: 'hola', q: '¿Cómo te llamas y cuántos años tienes?', sub: 'Para saludarte y para saber cuánto tiempo tiene tu dinero por delante.', falta: (d) => !d.edad },
+  { k: 'situacion', q: '¿En qué andas ahora?', sub: 'Puedes marcar varias.', falta: (d) => !d.situacion },
+  { k: 'horizonte', q: '¿Cuándo vas a necesitar la mayor parte de este dinero?', sub: 'Lo que vayas a gastar en un par de años no debería estar en bolsa; lo que no vayas a tocar en 20, sí.', falta: (d) => !d.horizonte },
+  { k: 'riesgo', q: 'Si tu cartera cayera un 30 % en unos meses, ¿qué harías?', sub: 'Di lo que harías de verdad: es lo que más cambia los consejos. En 2020 la bolsa cayó eso en un mes.', falta: (d) => !d.riesgo },
+  { k: 'experiencia', q: '¿Cuánto llevas invirtiendo?', falta: (d) => !d.experiencia },
+  { k: 'estilo', q: '¿Qué buscas con tu dinero?', falta: (d) => !d.estilo },
+  { k: 'numeros', q: 'Tus números', sub: 'Opcional. Con tus gastos te calculo el colchón que deberías tener aparte; con tus ingresos, cuánto podrías aportar.', falta: (d) => !d.gastos_mes && !d.deudas },
+  { k: 'meta', q: '¿Para qué inviertes?', sub: 'Algo con cifra y fecha. GrowFolio calcula si llegas con lo que aportas. Luego puedes añadir más en Objetivos.', falta: () => !((S.cartera && S.cartera.metas) || []).length },
+];
+function perfilGuiado(seguir = () => {}) {
+  const d = { ...perfil() };
+  if (!d.nombre) d.nombre = LS.get('inv-nombre', '') || (FB.user && FB.user.displayName ? String(FB.user.displayName).split(/\s+/)[0] : '') || null;
+  const meta = { n: '', tipo: 'gastar', importe: null, anio: null };
+  const P = PASOS_PERFIL, ultimo = P.length;   // ultimo = la pantalla de «Listo»
+  let i = Math.max(0, P.findIndex((x) => x.falta(d))), tocado = false, acabado = false;
+  const h = hoja('Tu perfil de inversor', `<div class="pg">
+      <div class="pg-barra" aria-hidden="true"><i></i></div>
+      <div class="pg-paso"></div>
+      <div class="error pg-err"></div>
+      <div class="pg-pie"><button type="button" class="btn pg-atras">Atrás</button><span class="pg-cuenta"></span><button type="button" class="btn pri pg-sig">Siguiente</button></div>
+      <button type="button" class="enlace pg-luego">Luego, ahora no puedo</button>
+    </div>`, () => salir());
+  h.el.classList.add('hoja-pg');
+  const caja = $('.pg-paso', h.el), err = $('.pg-err', h.el);
+  const op = (name, k, html, on, tipo = 'radio') => `<label class="opc"><input type="${tipo}" name="${name}" value="${k}"${on ? ' checked' : ''}><span>${html}</span></label>`;
+  const radios = (name, obj, fmt = (v) => esc(v)) => `<div class="opc-fila">${Object.entries(obj).map(([k, v]) => op(name, k, fmt(v), String(d[name] ?? '') === String(k))).join('')}</div>`;
+  const cuerpo = (x) => {
+    if (x.k === 'hola') return `<div class="form-grid"><label class="campo">Tu nombre<input name="nombre" maxlength="40" autocomplete="given-name" value="${val(d.nombre || '')}" placeholder="Para saludarte al entrar"></label><label class="campo">Edad<input name="edad" inputmode="numeric" maxlength="3" value="${val(d.edad)}" placeholder="24"></label></div>`;
+    if (x.k === 'situacion') { const sel = new Set(String(d.situacion || '').split(',')); return `<div class="opc-fila">${Object.entries(SITUACION).map(([k, v]) => op('situacion', k, esc(v), sel.has(k), 'checkbox')).join('')}</div>`; }
+    if (x.k === 'horizonte') return `<div class="opc-fila">${HORIZONTES_P.map(([k, t]) => op('horizonte', k, esc(t[0].toUpperCase() + t.slice(1)), +d.horizonte === k)).join('')}</div>`;
+    if (x.k === 'riesgo') return radios('riesgo', RIESGO, (v) => `<b>${v[0]}</b><small>${v[1]}</small>`);
+    if (x.k === 'experiencia') return radios('experiencia', EXPERIENCIA);
+    if (x.k === 'estilo') return radios('estilo', ESTILO);
+    if (x.k === 'numeros') return `<div class="form-grid"><label class="campo">Gastos al mes (€)<input name="gastos" inputmode="decimal" value="${val(d.gastos_mes)}" placeholder="1.200"></label><label class="campo">Ingresos netos al mes (€)<input name="ingresos" inputmode="decimal" value="${val(d.ingresos_mes)}" placeholder="1.800"></label></div>
+      <p class="pg-mini">Deudas que estés pagando</p>${radios('deudas', DEUDAS)}`;
+    if (x.k === 'meta') return `<div class="opc-fila">${METAS_RAPIDAS.map(([n], j) => op('rapida', j, esc(n), meta.n === n)).join('')}</div>
+      <div class="form-grid pg-meta"><label class="campo">Qué es<input name="mn" maxlength="60" value="${val(meta.n)}" placeholder="O escribe la tuya"></label><label class="campo">Cuánto (€)<input name="mi" inputmode="decimal" value="${val(meta.importe)}" placeholder="40.000"></label><label class="campo">Para qué año<input name="ma" inputmode="numeric" maxlength="4" value="${val(meta.anio)}" placeholder="${new Date().getFullYear() + 5}"></label></div>`;
+    return '';
+  };
+  const listo = () => {
+    const r = bolsaRecomendada(d), e = S.M && S.M.total ? estadoPerfil(S.M) : null;
+    return `<div class="pg-listo">${ICONOS.ok}<h3>Listo${d.nombre ? `, ${esc(d.nombre)}` : ''}</h3>
+      ${r ? `<p>Para ti, lo normal es tener entre un <b>${r.min}</b> y un <b>${r.max} %</b> de tu dinero en bolsa${e ? `. Ahora tienes un ${fmtNum(e.pctBolsa, 0)} %` : ''}.</p>` : ''}
+      <p>GrowIA, el Paso a paso y las ideas ya te aconsejan con esto. Lo puedes cambiar cuando quieras en Objetivos, donde están también tus límites y tus metas.</p></div>`;
+  };
+  const pintarPaso = () => {
+    err.textContent = '';
+    $('.pg-barra i', h.el).style.width = `${(Math.min(i, ultimo) / ultimo) * 100}%`;
+    const fin = i >= ultimo, x = P[i];
+    caja.innerHTML = fin ? listo() : `<h3 class="pg-q">${x.q}</h3>${x.sub ? `<p class="pg-sub">${x.sub}</p>` : ''}${cuerpo(x)}`;
+    $('.pg-cuenta', h.el).textContent = fin ? '' : `${i + 1} de ${ultimo}`;
+    $('.pg-atras', h.el).style.visibility = i > 0 && !fin ? 'visible' : 'hidden';
+    const sig = $('.pg-sig', h.el), opcional = x && ['numeros', 'meta'].includes(x.k);
+    sig.textContent = fin ? 'Ver mis objetivos' : x.k === 'meta' ? (meta.n || meta.importe ? 'Terminar' : 'Sin meta por ahora') : opcional && !(d.gastos_mes || d.ingresos_mes || d.deudas) ? 'Saltar' : 'Siguiente';
+    $('.pg-luego', h.el).textContent = fin ? 'Seguir a mi cartera' : 'Luego, ahora no puedo';
+    const primero = caja.querySelector('input:not([type=radio]):not([type=checkbox])');
+    if (primero && window.innerWidth > 720) primero.focus({ preventScroll: true });
+  };
+  // lo que hay escrito en la pantalla, al borrador (devuelve un error si algo no cuadra)
+  const leer = () => {
+    const x = P[i]; if (!x) return '';
+    const v = (n) => { const el = caja.querySelector(`[name=${n}]`); return el ? el.value : ''; }, num = (n) => { const t = numero(v(n)); return t == null || isNaN(t) ? null : t; };
+    if (x.k === 'hola') {
+      const edad = num('edad');
+      if (v('edad').trim() && (edad == null || edad < 14 || edad > 100)) return 'Revisa la edad.';
+      d.nombre = v('nombre').trim().slice(0, 40) || null; d.edad = edad;
+    } else if (x.k === 'situacion') d.situacion = [...caja.querySelectorAll('[name=situacion]:checked')].map((c) => c.value).join(',') || null;
+    else if (x.k === 'numeros') {
+      const g = num('gastos'), n = num('ingresos');
+      if ((v('gastos').trim() && g == null) || (v('ingresos').trim() && n == null)) return 'Pon solo números, por ejemplo 1.200.';
+      d.gastos_mes = g; d.ingresos_mes = n;
+    } else if (x.k === 'meta') {
+      meta.n = v('mn').trim().slice(0, 60); meta.importe = num('mi'); meta.anio = num('ma');
+      const a = new Date().getFullYear();
+      if (meta.n || meta.importe) {
+        if (!meta.n) return 'Ponle un nombre a la meta.';
+        if (!(meta.importe > 0)) return 'Pon cuánto dinero es.';
+        if (meta.anio != null && (meta.anio < a || meta.anio > a + 60)) return 'Revisa el año.';
+        if (meta.tipo === 'gastar' && !meta.anio) return 'Para gastarlo hace falta el año.';
+      }
+    }
+    tocado = true; return '';
+  };
+  const guardar = async () => {
+    const campos = ['nombre', 'edad', 'situacion', 'horizonte', 'riesgo', 'experiencia', 'estilo', 'deudas', 'gastos_mes', 'ingresos_mes'];
+    const nuevo = { ...(S.cartera.perfil || {}) };
+    for (const k of campos) nuevo[k] = d[k] ?? null;
+    for (const k of ['colchon_meses', 'limite_cripto', 'limite_empresa', 'limite_oro']) if (nuevo[k] == null) nuevo[k] = PERFIL_DEF[k];
+    nuevo.actualizado = new Date().toISOString();
+    S.cartera.perfil = nuevo;
+    if (d.nombre) LS.set('inv-nombre', d.nombre);
+    if (meta.n && meta.importe > 0) S.cartera.metas = [...(S.cartera.metas || []), { id: nuevoId('m-'), n: meta.n, tipo: meta.tipo, importe: meta.importe, anio: meta.anio || null }];
+    AS.foto = null;
+    await guardarCartera('Perfil de inversor');
+    pintar();
+  };
+  const salir = async () => {
+    if (acabado) return seguir();
+    if (tocado) { try { await guardar(); } catch (e) { console.warn(e); } }
+    if (perfilIncompleto()) {
+      const l = LS.get('inv-perfil-luego', null) || { n: 0 };
+      LS.set('inv-perfil-luego', { n: (l.n || 0) + 1, t: Date.now() });
+      toast(tocado ? 'Guardado lo que has contestado. Lo terminas en Objetivos cuando quieras.' : 'Lo tienes en Objetivos cuando quieras. Te lo recordaré en unos días.', 4500);
+    }
+    seguir();
+  };
+  const avanzar = async () => {
+    if (i >= ultimo) { acabado = true; h.cerrar(true); location.hash = '#objetivos'; return seguir(); }
+    const e = leer(); if (e) { err.textContent = e; return; }
+    i++;
+    if (i === ultimo) {
+      const b = $('.pg-sig', h.el); b.disabled = true; b.textContent = 'Guardando…';
+      try { await guardar(); acabado = true; LS.del('inv-perfil-luego'); } catch (er) { err.textContent = 'No se ha podido guardar. Prueba otra vez.'; i--; b.disabled = false; return; }
+      b.disabled = false;
+    }
+    pintarPaso();
+  };
+  h.el.addEventListener('change', (ev) => {
+    const t = ev.target; if (!t.name || !P[i]) return;
+    if (t.type === 'radio' && t.name === 'rapida') {
+      const [n, tipo, imp, anios] = METAS_RAPIDAS[+t.value];
+      Object.assign(meta, { n, tipo, importe: imp, anio: anios ? new Date().getFullYear() + anios : null });
+      caja.querySelector('[name=mn]').value = n; caja.querySelector('[name=mi]').value = val(imp); caja.querySelector('[name=ma]').value = meta.anio || '';
+      $('.pg-sig', h.el).textContent = 'Terminar';
+      return;
+    }
+    if (t.type === 'radio') {
+      d[t.name] = t.name === 'horizonte' ? +t.value : t.value; tocado = true;
+      // una sola respuesta: pasa sola a la siguiente (menos las deudas, que van con los números)
+      if (t.name !== 'deudas') setTimeout(() => { if (P[i] && P[i].k === t.name) avanzar(); }, 260);
+      else $('.pg-sig', h.el).textContent = 'Siguiente';
+    }
+  });
+  h.el.addEventListener('input', (ev) => { if (P[i] && P[i].k === 'meta' && ev.target.name === 'mn') meta.tipo = /llegar|dejar de trabajar|vivir de|patrimonio|jubil/i.test(ev.target.value) ? 'llegar' : meta.tipo; if (P[i] && P[i].k === 'meta') $('.pg-sig', h.el).textContent = ev.target.value ? 'Terminar' : $('.pg-sig', h.el).textContent; });
+  h.el.addEventListener('keydown', (ev) => { if (ev.key === 'Enter' && ev.target.matches('.pg input:not([type=radio]):not([type=checkbox])')) { ev.preventDefault(); avanzar(); } });
+  $('.pg-sig', h.el).onclick = () => avanzar();
+  $('.pg-atras', h.el).onclick = () => { if (leer()) return; i = Math.max(0, i - 1); pintarPaso(); };
+  $('.pg-luego', h.el).onclick = () => h.cerrar();
+  pintarPaso();
+}
 function editarMeta(id) {
   const metas = S.cartera.metas = S.cartera.metas || [];
   const m = metas.find((x) => x.id === id) || { tipo: 'gastar' };
@@ -7458,7 +7652,7 @@ function textoPerfil(M) {
 /* los pasos que salen de tu perfil: colchón, límites, metas y bolsa frente a lo que aguantas */
 function pasosPerfil(M, add) {
   const e = estadoPerfil(M), p = e.p, hoy = hoyIso(), mes = hoy.slice(0, 7);
-  if (perfilVacio()) add('mes', { id: 'perfil:0', cuando: 'un minuto', t: 'Cuéntale a GrowFolio tu edad, tus metas y cuánto riesgo aguantas', pq: 'Con eso estos pasos, las ideas y la IA se ajustan a ti: no se invierte igual a los 24 que a los 60.', acc: '<a class="enlace" href="#objetivos">Rellenar tu perfil</a>' });
+  if (perfilVacio()) add('mes', { id: 'perfil:0', cuando: 'un minuto', t: 'Cuéntale a GrowFolio tu edad, tus metas y cuánto riesgo aguantas', pq: 'Con eso estos pasos, las ideas y la IA se ajustan a ti: no se invierte igual a los 24 que a los 60.', acc: '<button class="enlace" data-accion="perfil-guiado">Rellenar tu perfil</button>' });
   if (p.deudas === 'consumo') add('mes', { id: `deuda:${mes}`, cuando: 'antes que nada', t: 'Liquida los préstamos o tarjetas antes de invertir más', pq: 'Suelen costar un 7-25 % al año: devolverlos es una rentabilidad segura que la bolsa no te garantiza.', como: 'Lo que ibas a aportar este mes, a amortizar el préstamo más caro. Las aportaciones automáticas, en pausa hasta acabar.' });
   if (e.colchon && e.seguro < e.colchon * 0.9) add('mes', { id: `colchonf:${mes}`, cuando: 'antes de meter más en bolsa', t: `Completa tu colchón: te faltan ${eur(e.colchon - e.seguro, 0)}`, pq: `Son ${p.colchon_meses} meses de tus gastos (${eur(e.colchon, 0)}). Ahora tienes ${eur(e.seguro, 0)} entre efectivo, monetarios y renta fija.`, como: 'Ve apartando cada mes en el efectivo remunerado de Trade Republic o en un fondo monetario de MyInvestor hasta llegar. Es el dinero de los imprevistos: así nunca tienes que vender en una caída.', imp: 'Los intereses del efectivo y de los monetarios tributan como los dividendos (19-23 %); el monetario no paga nada hasta que lo vendas.', acc: '<a class="enlace" href="#objetivos">Ver tu perfil</a>' });
   const limC = +(p.limite_cripto ?? 5);
@@ -9854,7 +10048,7 @@ let TOURE = null;
 const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
 /* «Más» en la barra del móvil: Calendario, Mercados, Fiscalidad y Objetivos en tarjetas (Ajustes está arriba, en la rueda) */
 function abrirMas() {
-  const h = hoja('Más', `<div class="mas-g">${EN_MAS.map(([k, x]) => { const v = VISTAS.find(([kk]) => kk === k); return `<a class="mas-t${S.vista === k ? ' on' : ''}" href="#${k}" data-cerrar>${ICONOS[k]}<span><b>${esc(v[1])}</b><small>${esc(x)}</small></span></a>`; }).join('')}</div>`);
+  const h = hoja('Más', `<div class="mas-g">${EN_MAS.map(([k, x]) => { const v = VISTAS.find(([kk]) => kk === k); const falta = k === 'futuro' && perfilIncompleto(); return `<a class="mas-t${S.vista === k ? ' on' : ''}${falta ? ' falta' : ''}" href="#${k}" data-cerrar>${ICONOS[k]}<span><b>${esc(v[1])}${falta ? '<em class="mas-falta">Te falta tu perfil</em>' : ''}</b><small>${esc(x)}</small></span></a>`; }).join('')}</div>`);
   h.el.classList.add('hoja-mas');
 }
 document.addEventListener('click', (e) => { if (e.target.closest('[data-mas]')) abrirMas(); });
@@ -10614,7 +10808,9 @@ function bienvenida(intento = 0) {
   if (!LS.get('inv-vnum') && /^0\.[2-9]\.0$/.test(visto || '')) visto = '0.1.' + visto.split('.')[1];  // numeración de antes: 0.9.0 es la 0.1.9
   const nuevo = S.recienCreada || (!(S.cartera.posiciones || []).length && !LS.get('inv-tour', null));
   S.recienCreada = false;
-  const despues = () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(() => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); })));
+  const fin = () => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); };
+  // si te falta el perfil, primero eso (y esa vez nada más: el resto, la próxima)
+  const despues = () => pedirPerfil(fin, () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin))));
   if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); return iniciarTour(0, despues); }
   // la 0.2 llega con su propia pantalla de estreno, una vez
   // la presentación de la 0.2 (la nueva, más completa): una vez a todos los que ya usaban GrowFolio
@@ -12293,6 +12489,8 @@ document.addEventListener('click', (e) => {
     else if (a === 'nueva-ap') editarAportacion(null);
     else if (a === 'editar-ap') editarAportacion(+d.k);
     else if (a === 'efectivo') editarEfectivo();
+    else if (a === 'perfil-guiado') perfilGuiado();
+    else if (a === 'perfil-aviso-no') { LS.set('inv-perfil-aviso', Date.now()); pintar(); }
     else if (a === 'limites' || a === 'perfil') editarPerfil();
     else if (a === 'perfil-ia') editarSobreMi();
     else if (a === 'meta') editarMeta(d.id || null);
