@@ -3595,7 +3595,7 @@ function partesTz(tz, d = new Date()) {
 function estadoBolsa(b) {
   try {
     const t = partesTz(b.tz), fest = (d) => AG_CIERRES.find(([x, donde]) => x === d && donde.split(' ').includes(b.k));
-    const med = AG_MEDIAS.find(([x, bo]) => x === t.fecha && bo === b.k), cierra = med ? med[2] : b.cierra;
+    const med = AG_MEDIAS.find(([x, bo, m]) => x === t.fecha && bo === b.k && m != null), cierra = med ? med[2] : b.cierra;
     const hm = (d, m) => horaEspana(d, b.tz, Math.floor(m / 60), m % 60) || '';
     const finde = (d) => { const x = new Date(d + 'T12:00:00Z').getUTCDay(); return x === 0 || x === 6; };
     const hoyF = fest(t.fecha);
@@ -3604,7 +3604,7 @@ function estadoBolsa(b) {
       const x = new Date(t.fecha + 'T12:00:00Z'); x.setUTCDate(x.getUTCDate() + k);
       const d = x.toISOString().slice(0, 10);
       if (finde(d) || fest(d) || (k === 0 && t.min >= b.abre)) continue;
-      const medD = AG_MEDIAS.find(([x, bo]) => x === d && bo === b.k);
+      const medD = AG_MEDIAS.find(([x, bo, m]) => x === d && bo === b.k && m != null);
       const cuando = k === 0 ? 'hoy' : k === 1 ? 'mañana' : `el ${['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'][x.getUTCDay()]}`;
       return { on: false, txt: `${hoyF ? `cerrada por ${hoyF[2]}` : 'cerrada'}, abre ${cuando} a las ${hm(d, b.abre)}${medD ? ` (solo hasta las ${hm(d, medD[2])})` : ''}` };
     }
@@ -4848,8 +4848,9 @@ const AG_MEDIAS = [
   ['2026-12-24', 'mad', 840, 'Nochebuena'], ['2026-12-24', 'lon', 750, 'Nochebuena'], ['2026-12-24', 'eur', 845, 'Nochebuena'], ['2026-12-24', 'us', 780, 'Nochebuena'],
   ['2026-12-31', 'mad', 840, 'Nochevieja'], ['2026-12-31', 'lon', 750, 'Nochevieja'], ['2026-12-31', 'eur', 845, 'Nochevieja'],
   ['2027-11-26', 'us', 780, 'el día después de Acción de Gracias'],
-  ['2027-12-24', 'mad', 840, 'Nochebuena', true], ['2027-12-24', 'lon', 750, 'Nochebuena'], ['2027-12-24', 'eur', 845, 'Nochebuena'],
-  ['2027-12-31', 'mad', 840, 'Nochevieja', true], ['2027-12-31', 'lon', 750, 'Nochevieja'], ['2027-12-31', 'eur', 845, 'Nochevieja'],
+  // 2027: Londres, confirmado; Euronext, lo de otros años; Madrid, por confirmar (en 2021, con las mismas fechas, cerró)
+  ['2027-12-24', 'mad', null, 'Nochebuena', true], ['2027-12-24', 'lon', 750, 'Nochebuena'], ['2027-12-24', 'eur', 845, 'Nochebuena', true],
+  ['2027-12-31', 'mad', null, 'Nochevieja', true], ['2027-12-31', 'lon', 750, 'Nochevieja'], ['2027-12-31', 'eur', 845, 'Nochevieja', true],
 ];
 const AG_TZ = { us: 'America/New_York', mad: 'Europe/Madrid', lon: 'Europe/London', fra: 'Europe/Berlin', eur: 'Europe/Paris' };
 const AG_CORTO = { us: ['NY', 'NY'], mad: ['Madrid', 'Madrid'], lon: ['Londres', 'London'], fra: ['Fráncfort', 'Frankfurt'], eur: ['Euronext', 'Euronext'] };
@@ -5059,22 +5060,25 @@ function agendaLista(M, dias = 120) {
   }
   // medias sesiones: las de las mismas bolsas, con la hora de cierre en hora de España
   const medias = new Map();
-  for (const [d, bo, min, motivo, est] of AG_MEDIAS) if (ver.has(bo)) { if (!medias.has(d)) medias.set(d, []); medias.get(d).push({ bo, motivo, est, hora: horaEspana(d, AG_TZ[bo], Math.floor(min / 60), min % 60) || '' }); }
+  for (const [d, bo, min, motivo, est] of AG_MEDIAS) if (ver.has(bo)) { if (!medias.has(d)) medias.set(d, []); medias.get(d).push({ bo, motivo, est, hora: min == null ? '' : horaEspana(d, AG_TZ[bo], Math.floor(min / 60), min % 60) || '' }); }
   for (const [d, ms] of medias) {
     const soloEuGen = !mias.size || ![...mias].some((x) => x !== 'us');
     const lista = ms.filter((m) => !(soloEuGen && m.bo === 'eur' && ms.some((x) => x.bo === 'mad')));
     const nombre = (m) => (soloEuGen && m.bo === 'mad' ? L('las bolsas europeas', 'European markets') : L(...AG_BOLSAS[m.bo]));
     const motivo = ms[0].motivo, motEn = L(motivo, AG_FESTIVOS_EN[motivo] || ({ 'el día después de Acción de Gracias': 'the day after Thanksgiving' })[motivo] || motivo);
     const principal = lista.find((m) => m.bo === 'mad') || lista[0];
+    // (si de Madrid aún no se sabe, se dice; no se da por hecha la media sesión)
+    const porVer = !principal.hora;
     const cap = (x) => x[0].toUpperCase() + x.slice(1);
-    const t = lista.length === 1 ? L(`${cap(nombre(principal))} ${soloEuGen && principal.bo === 'mad' ? 'cierran' : 'cierra'} a las ${principal.hora}`, `${cap(nombre(principal))} ${soloEuGen && principal.bo === 'mad' ? 'close' : 'closes'} at ${principal.hora}`)
+    const t = porVer ? L('Madrid, horario por confirmar', 'Madrid hours to be confirmed') : lista.length === 1 ? L(`${cap(nombre(principal))} ${soloEuGen && principal.bo === 'mad' ? 'cierran' : 'cierra'} a las ${principal.hora}`, `${cap(nombre(principal))} ${soloEuGen && principal.bo === 'mad' ? 'close' : 'closes'} at ${principal.hora}`)
       : L('Media sesión en las bolsas', 'Half day on the markets');
     const corto = (m) => (soloEuGen && m.bo === 'mad' ? L('las europeas', 'Europe') : ({ us: L('Nueva York', 'New York'), mad: 'Madrid', lon: L('Londres', 'London'), fra: L('Fráncfort', 'Frankfurt'), eur: 'Euronext' })[m.bo]);
-    const detalle = lista.map((m) => L(`${corto(m)} a las ${m.hora}`, `${corto(m)} at ${m.hora}`));
+    const detalle = lista.map((m) => (m.hora ? L(`${corto(m)} a las ${m.hora}`, `${corto(m)} at ${m.hora}`) : L(`${corto(m)}, por confirmar`, `${corto(m)} to be confirmed`)));
     add({ id: `med:${d}`, d, tipo: 'media', hora: principal.hora, bolsas: lista.map((m) => m.bo), est: lista.some((m) => m.est), mio: lista.some((m) => mias.has(m.bo)), t,
-      s: lista.length === 1 ? L(`Media sesión por ${motivo}`, `Half day for ${motEn}`) : L(`Cierran antes por ${motivo}: ${yLista(detalle)}`, `Early close for ${motEn}: ${yLista(detalle)}`),
-      det: L(`Ese día cierra${lista.length > 1 ? 'n' : ''} antes de lo normal (en hora de España): ${esc(yLista(detalle))}. Lo que mandes comprar o vender después se hace el siguiente día que abra. Suele moverse poco dinero, así que los precios pueden saltar más de lo normal.${lista.some((m) => m.est) ? ' BME publica su calendario del año que viene en diciembre: la hora de Madrid es la de otros años.' : ''}`,
-        `${lista.length > 1 ? 'They close' : 'It closes'} early that day (Spanish time): ${esc(yLista(detalle))}. Anything you buy or sell later goes through on the next trading day. Volumes are usually thin, so prices can jump more than usual.${lista.some((m) => m.est) ? " BME publishes next year's calendar in December: the Madrid time is the usual one." : ''}`) });
+      s: porVer ? (lista.length === 1 ? L(`BME aún no ha dicho si abre por ${motivo}`, `BME hasn't said yet whether it opens for ${motEn}`) : L(`Por ${motivo}: ${yLista(detalle)}`, `For ${motEn}: ${yLista(detalle)}`))
+        : lista.length === 1 ? L(`Media sesión por ${motivo}`, `Half day for ${motEn}`) : L(`Cierran antes por ${motivo}: ${yLista(detalle)}`, `Early close for ${motEn}: ${yLista(detalle)}`),
+      det: L(`Ese día cierra${lista.length > 1 ? 'n' : ''} antes de lo normal (en hora de España): ${esc(yLista(detalle))}. Lo que mandes comprar o vender después se hace el siguiente día que abra. Suele moverse poco dinero, así que los precios pueden saltar más de lo normal.${porVer ? ' BME aún no ha publicado su calendario de ese año: otros años ha abierto hasta las 14:00, pero en 2021, con las mismas fechas, cerró todo el día.' : lista.some((m) => m.est) ? ' La hora de Euronext es la de otros años: la confirma en diciembre.' : ''}`,
+        `${lista.length > 1 ? 'They close' : 'It closes'} early that day (Spanish time): ${esc(yLista(detalle))}. Anything you buy or sell later goes through on the next trading day. Volumes are usually thin, so prices can jump more than usual.${porVer ? " BME hasn't published that year's calendar yet: other years it has traded until 14:00, but in 2021, with the same dates, it closed all day." : lista.some((m) => m.est) ? " Euronext's time is the usual one: it confirms it in December." : ''}`) });
   }
   // festivos en España (los de toda España y los de tu comunidad) en los que la bolsa abre igual
   const ccaa = comunidadUsuario();
@@ -5163,6 +5167,7 @@ function estadoDiaAg(lista) {
     const cor = eu ? 'Eur' : b.length > 1 ? L('varias', 'several') : ({ us: 'NY', mad: 'Mad', lon: 'Lon', fra: 'Fra', eur: 'Eur' })[b[0]] || '';
     return { cls: 'cierra-p', etq: L(`Sin ${nom}`, `${nom} shut`), corto: b.length > 1 && !eu ? L('Algunas', 'Some') : L(`Sin ${cor}`, `${cor} shut`), ev };
   }
+  if (med && !med.hora) return { cls: 'media', etq: L('¿Abre Madrid?', 'Madrid open?'), corto: L('¿Abre?', 'Open?'), ev };
   if (med) { const h = String(med.hora).replace(':00', ' h'); return { cls: 'media', etq: L(`Hasta las ${h}`, `Until ${h}`), corto: h, ev }; }
   if (fie) return { cls: 'fiesta', etq: L('Festivo', 'Holiday'), corto: L('Festivo', 'Holiday'), ev };
   return null;
@@ -5184,7 +5189,7 @@ function impactoAg(e, M) {
   if (e.tipo === 'fondo' && e.euros) return L(`≈ ${eur(e.euros, 0)} tuyos dentro`, `≈ ${eur(e.euros, 0)} of yours inside`);
   if (e.tipo === 'banco') return L('Mueve tipos y bolsas', 'Moves rates and stocks');
   if (e.tipo === 'festivo') return L('Ese día no hay bolsa', 'No trading that day');
-  if (e.tipo === 'media') return L(`Se negocia hasta las ${e.hora}`, `Trading until ${e.hora}`);
+  if (e.tipo === 'media') return e.hora ? L(`Se negocia hasta las ${e.hora}`, `Trading until ${e.hora}`) : L('Horario por confirmar', 'Hours to be confirmed');
   if (e.tipo === 'fiesta') return L('La bolsa abre normal', 'Markets open as usual');
   return '';
 }
