@@ -229,4 +229,10 @@ final class Datos {
         String t = formato(Math.abs(v) < 10 ? "0.00" : "0.0").format(Math.abs(v));
         return (v < -0.0049 ? "−" : v > 0.0049 ? "+" : "") + t + " %";
     }
+
+    /** con un decimal, como en las etiquetas de la app: +1,2 % */
+    static String pct1(double v) {
+        String t = formato("0.0").format(Math.abs(v));
+        return (v < -0.049 ? "−" : v > 0.049 ? "+" : "") + t + "\u00a0%";
+    }
 }

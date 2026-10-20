@@ -20,7 +20,8 @@ import java.util.Map;
  * Dibuja el widget entero en una imagen, con Manrope (la letra de la web) y la gráfica de la cartera.
  * Así nada se corta: cada texto se mide y se encoge o se recorta con "…" si no cabe.
  * Tamaños: una fila (2x1, 4x1: el total, hoy y una gráfica pequeña si cabe), dos filas (4x2: además lo
- * ganado en total y la gráfica grande) y tres o más (además lo que toca y lo que más se mueve hoy).
+ * ganado en total y la gráfica grande) y tres o más (además lo que toca y, en pastillas de color como en la
+ * app, lo que más ha movido hoy la cartera).
  */
 final class Lienzo {
     static final int PLANO = 0xFF1A1916, LINEA = 0xFF2A2723, TEXTO = 0xFFF1EDE5, TEXTO2 = 0xFFBDB6A8,
@@ -272,14 +273,14 @@ final class Lienzo {
             texto(ph, y, recortar(t, 12.5f, 600, util), 12.5f, 600, color(r.dia), false);
         }
 
-        // abajo, según el alto: lo que toca y lo que más se mueve hoy
+        // abajo, según el alto: lo que toca y lo que más ha movido hoy la cartera (en pastillas, como en la app)
         float abajo = H - pv, pie = 15;
-        List<Datos.Mov> filas = new ArrayList<>();
-        if (H >= 320 && !r.movs.isEmpty()) filas = r.movs.subList(0, Math.min(r.movs.size(), Math.min(4, (int) ((H - 300) / 23) + 2)));
+        List<List<Pastilla>> filas = new ArrayList<>();
+        if (H >= 280) filas = pastillas(r, util, H >= 330 ? 2 : 1);
         List<String> toca = new ArrayList<>();
         if (H >= 235 && !r.toca.isEmpty()) toca = lineas("Ahora: " + r.toca + (r.cuando.isEmpty() ? "" : ", " + r.cuando), 13, 500, util, 2);
         float altoToca = toca.isEmpty() ? 0 : 12 + 18 * toca.size();
-        float altoFilas = filas.isEmpty() ? 0 : 26 + 23 * filas.size();
+        float altoFilas = filas.isEmpty() ? 0 : 30 + 31 * filas.size();
         float grafAbajo = abajo - pie - 6 - altoToca - altoFilas;
         grafica(ph, y + 12, W - ph, grafAbajo, r.serie);
         if (!hayGraf && grafAbajo - y - 12 >= 24) {   // aún sin datos del mes: una línea tenue y qué hacer
@@ -329,14 +330,96 @@ final class Lienzo {
             p.setStrokeWidth(Math.max(1, dp(1)));
             c.drawLine(dp(ph), dp(yy), dp(W - ph), dp(yy), p);
             yy += 18;
-            texto(ph, yy, "Lo que más se mueve hoy", 11, 600, APAGADO, false);
-            for (Datos.Mov m : filas) {
-                yy += 23;
-                double pc = m.valor - m.dia != 0 ? m.dia / (m.valor - m.dia) * 100 : 0;
-                texto(W - ph, yy, Datos.pct(pc), 12.5f, 650, color(m.dia), true);
-                if (!r.oculto) texto(W - ph - 66, yy, Datos.eur(m.dia, true), 12.5f, 500, color(m.dia), true);
-                texto(ph, yy, recortar(m.nombre, 13, 600, util - 150), 13, 600, TEXTO, false);
+            texto(ph, yy, "Lo que más ha movido hoy tu cartera", 11.5f, 600, APAGADO, false);
+            yy += 7;
+            for (List<Pastilla> linea : filas) {
+                float x = ph;
+                for (Pastilla t : linea) {
+                    pastilla(t, x, yy);
+                    x += t.w + 6;
+                }
+                yy += 31;
             }
         }
+    }
+
+    // ---------- lo que más ha movido hoy: pastillas de color ----------
+    private static final float ALTO_P = 25;
+
+    private static final class Pastilla {
+        String nombre, eur, pct;
+        int color;
+        boolean sube;
+        float w;
+    }
+
+    private float anchoPastilla(Pastilla t) {
+        return 9 + 7 + 5 + ancho(t.nombre, 12.5f, 650) + (t.eur.isEmpty() ? 0 : 5 + ancho(t.eur, 12.5f, 650)) + 5 + ancho(t.pct, 11, 550) + 10;
+    }
+
+    /** las tres posiciones que más han movido hoy la cartera (como mínimo 1 €), repartidas en líneas que quepan */
+    private List<List<Pastilla>> pastillas(Datos.Resultado r, float util, int maxLineas) {
+        List<List<Pastilla>> out = new ArrayList<>();
+        List<Pastilla> cur = new ArrayList<>();
+        float usado = 0;
+        int n = 0;
+        for (Datos.Mov m : r.movs) {
+            if (n == 3 || Math.abs(m.dia) < 1) break;   // van ordenadas de más a menos
+            Pastilla t = new Pastilla();
+            double pc = m.valor - m.dia != 0 ? m.dia / (m.valor - m.dia) * 100 : 0;
+            t.sube = m.dia > 0;
+            t.color = t.sube ? SUBE : BAJA;
+            t.eur = r.oculto ? "" : Datos.eur(m.dia, true);
+            t.pct = Datos.pct1(pc);
+            t.nombre = m.nombre;
+            t.w = anchoPastilla(t);
+            if (t.w > util) {   // un nombre muy largo se recorta para que la pastilla quepa en la línea
+                float sobra = t.w - util;
+                t.nombre = recortar(t.nombre, 12.5f, 650, Math.max(24, ancho(t.nombre, 12.5f, 650) - sobra));
+                t.w = anchoPastilla(t);
+            }
+            if (!cur.isEmpty() && usado + 6 + t.w > util) {
+                out.add(cur);
+                if (out.size() == maxLineas) return out;
+                cur = new ArrayList<>();
+                usado = 0;
+            }
+            usado += (cur.isEmpty() ? 0 : 6) + t.w;
+            cur.add(t);
+            n++;
+        }
+        if (!cur.isEmpty() && out.size() < maxLineas) out.add(cur);
+        return out;
+    }
+
+    private void pastilla(Pastilla t, float x, float yTop) {
+        p.reset();
+        p.setAntiAlias(true);
+        p.setStyle(Paint.Style.FILL);
+        p.setColor((t.color & 0x00FFFFFF) | 0x24000000);
+        c.drawRoundRect(new RectF(dp(x), dp(yTop), dp(x + t.w), dp(yTop + ALTO_P)), dp(ALTO_P / 2), dp(ALTO_P / 2), p);
+        // el triángulo dibujado (Manrope no trae ▲ ni ▼)
+        float cx = x + 9 + 3.5f, cy = yTop + ALTO_P / 2;
+        Path tri = new Path();
+        if (t.sube) {
+            tri.moveTo(dp(cx), dp(cy - 3));
+            tri.lineTo(dp(cx + 3.5f), dp(cy + 2.6f));
+            tri.lineTo(dp(cx - 3.5f), dp(cy + 2.6f));
+        } else {
+            tri.moveTo(dp(cx), dp(cy + 3));
+            tri.lineTo(dp(cx + 3.5f), dp(cy - 2.6f));
+            tri.lineTo(dp(cx - 3.5f), dp(cy - 2.6f));
+        }
+        tri.close();
+        p.setColor(t.color);
+        c.drawPath(tri, p);
+        float base = yTop + 17, tx = x + 9 + 7 + 5;
+        texto(tx, base, t.nombre, 12.5f, 650, TEXTO, false);
+        tx += ancho(t.nombre, 12.5f, 650) + 5;
+        if (!t.eur.isEmpty()) {
+            texto(tx, base, t.eur, 12.5f, 650, t.color, false);
+            tx += ancho(t.eur, 12.5f, 650) + 5;
+        }
+        texto(tx, base, t.pct, 11, 550, (t.color & 0x00FFFFFF) | 0xD9000000, false);
     }
 }

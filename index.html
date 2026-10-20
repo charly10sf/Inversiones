@@ -258,6 +258,88 @@ button.fila:hover { background: var(--plane); }
 .agenda .dia b { font-size: 20px; font-weight: 500; color: var(--text); }
 .agenda .r { font-variant-numeric: tabular-nums; }
 
+/* ---------- calendario: cada tipo de fecha con su color ---------- */
+.t-resultados, .t-fondo { --ag: #5b9cf0; }
+.t-dividendo, .t-cobro { --ag: var(--up); }
+.t-banco { --ag: #d77bd0; }
+.t-festivo { --ag: #9a9385; }
+.t-hacienda { --ag: var(--warn); }
+.t-aportacion, .t-ia { --ag: var(--accent); }
+.t-otro { --ag: #ff6fae; }
+.ag-ic { width: 34px; height: 34px; border-radius: 11px; display: grid; place-items: center; flex: none; color: var(--ag, var(--accent)); background: rgba(255, 255, 255, 0.05); background: color-mix(in srgb, var(--ag, var(--accent)) 15%, transparent); }
+.ag-ic svg { width: 18px; height: 18px; }
+.t-fondo .ag-ic { background: transparent; box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--ag) 45%, transparent); }
+.ag-tx { min-width: 0; display: grid; gap: 1px; }
+.ag-tx b { font-weight: 600; font-size: 14.5px; line-height: 1.35; }
+.ag-tx small { color: var(--muted); font-size: 13px; line-height: 1.4; }
+.ag-tx .chip { margin-left: 6px; vertical-align: 1px; font-weight: 500; }
+.ag-imp { font-variant-numeric: tabular-nums; font-weight: 650; font-size: 14px; white-space: nowrap; }
+/* en Cartera */
+.ag-mini { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.ag-mini a { display: grid; grid-template-columns: 62px 34px minmax(0, 1fr) auto; gap: 11px; align-items: center; padding: 8px; margin: 0 -8px; border-radius: 14px; color: inherit; text-decoration: none; }
+.ag-mini a:hover { background: var(--plane); text-decoration: none; }
+.ag-mini .ag-tx b, .ag-mini .ag-tx small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ag-cd { justify-self: start; font-size: 12px; font-weight: 650; color: var(--text-2); background: var(--plane-2); border-radius: 999px; padding: 3px 9px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ag-cd.pronto { color: var(--on-accent); background: var(--accent); }
+/* la pestaña */
+.ag-v { display: grid; grid-template-columns: minmax(290px, 370px) minmax(0, 1fr); gap: 44px; align-items: start; }
+.ag-lado { display: grid; gap: 22px; position: sticky; top: 112px; }
+.ag-prox { border-radius: 22px; padding: 20px 20px 16px; background: linear-gradient(160deg, color-mix(in srgb, var(--ag) 22%, var(--plane)) 0%, var(--plane) 70%); border: 1px solid color-mix(in srgb, var(--ag) 30%, var(--line)); }
+.ag-prox .k { font-size: 13px; }
+.ag-prox-n { display: flex; align-items: baseline; gap: 8px; margin: 2px 0 12px; }
+.ag-prox-n b { font-size: 64px; line-height: 1; font-weight: 250; letter-spacing: -0.04em; font-variant-numeric: tabular-nums; }
+.ag-prox-n span { font-size: 18px; color: var(--text-2); }
+.ag-prox-t { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 12px; align-items: center; width: 100%; text-align: left; border: 0; background: none; padding: 0; color: inherit; }
+.ag-prox-t b { display: block; font-weight: 600; }
+.ag-prox-t small { color: var(--text-2); font-size: 13px; }
+.ag-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.ag-cal .sem { font-size: 11.5px; color: var(--muted); text-align: center; padding-bottom: 2px; }
+.ag-c { min-height: 44px; border-radius: 10px; background: var(--plane); border: 1px solid transparent; display: grid; align-content: space-between; justify-items: start; padding: 5px 6px; font: inherit; font-size: 13px; color: var(--text-2); text-align: left; font-variant-numeric: tabular-nums; }
+.ag-c .n { display: flex; gap: 3px; align-items: baseline; }
+.ag-c .m { font-size: 9.5px; color: var(--accent); }
+.ag-c.finde { background: transparent; }
+.ag-c.pasado { opacity: 0.32; }
+.ag-c.hoy { border-color: var(--accent); color: var(--text); }
+button.ag-c { color: var(--text); cursor: pointer; }
+button.ag-c:hover { border-color: var(--line-2); }
+.ag-pts { display: flex; gap: 3px; }
+.ag-pts i, .ag-ley i { width: 6px; height: 6px; border-radius: 50%; background: var(--ag); display: block; }
+.ag-ley { display: flex; flex-wrap: wrap; gap: 6px 14px; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.ag-ley span { display: inline-flex; align-items: center; gap: 6px; }
+.ag-resumen { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.55; }
+.ag-filtros { margin-bottom: 18px; }
+.ag-filtros button { display: inline-flex; gap: 6px; align-items: baseline; }
+.ag-nf { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ag-grupo + .ag-grupo { margin-top: 26px; }
+.ag-grupo h2 { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.ag-dia { display: grid; grid-template-columns: 50px minmax(0, 1fr); gap: 14px; padding: 12px 0; border-top: 1px solid var(--line); scroll-margin-top: 130px; }
+.ag-fe { text-align: center; line-height: 1.15; display: grid; justify-items: center; align-content: start; }
+.ag-fe .ds { font-size: 12px; color: var(--muted); }
+.ag-fe b { font-size: 23px; font-weight: 450; font-variant-numeric: tabular-nums; }
+.ag-fe .cd { font-size: 11px; color: var(--text-2); white-space: nowrap; margin-top: 2px; }
+.ag-evs { list-style: none; margin: 0; padding: 0; display: grid; gap: 4px; }
+.ag-e { border-radius: 14px; scroll-margin-top: 130px; }
+.ag-f { width: 100%; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; text-align: left; border: 0; background: none; padding: 7px 8px; border-radius: 14px; color: inherit; font: inherit; }
+.ag-f:hover, .ag-e.on .ag-f { background: var(--plane); }
+.ag-e.on { background: var(--plane); }
+.ag-det { padding: 0 12px 12px 54px; color: var(--text-2); font-size: 14px; line-height: 1.6; }
+.ag-det p { margin: 0 0 10px; max-width: 64ch; }
+.ag-acc { display: flex; gap: 8px; flex-wrap: wrap; }
+.destello { animation: destello 1.6s ease-out 1; }
+@keyframes destello { 0%, 35% { box-shadow: 0 0 0 2px var(--accent); } 100% { box-shadow: 0 0 0 2px transparent; } }
+@media (max-width: 900px) {
+  .ag-v { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .ag-lado { position: static; }
+  .ag-prox-n b { font-size: 54px; }
+}
+@media (max-width: 520px) {
+  .ag-dia { grid-template-columns: 42px minmax(0, 1fr); gap: 10px; }
+  .ag-det { padding-left: 12px; }
+  .ag-mini a { grid-template-columns: 56px 30px minmax(0, 1fr) auto; gap: 9px; }
+  .ag-mini .ag-ic { width: 30px; height: 30px; border-radius: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { .destello { animation: none; } }
+
 /* ---------- tablas ---------- */
 .tabla-w { overflow-x: auto; -webkit-overflow-scrolling: touch; }
 table { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -2152,7 +2234,7 @@ const CFG = (() => {
 const FB_CFG = {"apiKey": "AIzaSyAECqndaNt3kRC6HBLnWehTmvEWVpuIJbM", "authDomain": "growfolio-a79a9.firebaseapp.com", "projectId": "growfolio-a79a9", "storageBucket": "growfolio-a79a9.firebasestorage.app", "messagingSenderId": "316596282728", "appId": "1:316596282728:web:7c79fcf3dfb4e2b29b62dd"};
 const FB_VER = '10.12.2';
 // «ID de cliente web» del proveedor Google de Firebase: lo usa la app de Android para entrar con Google nativo
-const FB_GOOGLE_WEB = '';
+const FB_GOOGLE_WEB = '316596282728-9u4mt8al9c3f54cllrmr1b47tf6qemcb.apps.googleusercontent.com';
 const FB = { user: null };
 let fbPromesa = null;
 function fbCargar() {
@@ -3012,6 +3094,12 @@ const ICONOS = {
   mercados: SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.7 3.8 5.7 3.8 9s-1.3 6.3-3.8 9c-2.5-2.7-3.8-5.7-3.8-9S9.5 5.7 12 3z"/>'),
   analisis: SVG('<path d="M12 3v9l7.8 4.5"/><circle cx="12" cy="12" r="9"/>'),
   futuro: SVG('<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.6"/><circle cx="12" cy="12" r="1.2" fill="currentColor"/>'),
+  agenda: SVG('<rect x="3.5" y="5" width="17" height="15.5" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 17.2h.01M12 17.2h.01" stroke-width="2.4"/>'),
+  resultados: SVG('<path d="M6 3.5h8.5L19 8v12.5H6z"/><path d="M14 3.5V8h5"/><path d="M9.5 17v-2.5M12.5 17v-5M15.5 17v-3.5" stroke-width="2"/>'),
+  dividendo: SVG('<circle cx="12" cy="12" r="8.5"/><path d="M14.6 9.3c-.5-.9-1.5-1.4-2.6-1.4-1.5 0-2.6.8-2.6 2 0 2.8 5.4 1.4 5.4 4.2 0 1.2-1.2 2-2.8 2-1.2 0-2.3-.5-2.8-1.4M12 6.4v1.5M12 16.2v1.4"/>'),
+  banco: SVG('<path d="M3.5 9.3L12 4.2l8.5 5.1z"/><path d="M6 10.5v6.3M10 10.5v6.3M14 10.5v6.3M18 10.5v6.3M3.5 19.8h17"/>'),
+  festivo: SVG('<circle cx="12" cy="12" r="8.5"/><path d="M8.2 12h7.6"/>'),
+  aporte: SVG('<path d="M12 3.8v10.4M7.8 10l4.2 4.2 4.2-4.2"/><path d="M4.5 15.5v2.8A1.7 1.7 0 0 0 6.2 20h11.6a1.7 1.7 0 0 0 1.7-1.7v-2.8"/>'),
   proy: SVG('<path d="M3 19c3-1 5-4 7-7"/><path d="M10 12c2.5-2 5-4 11-7" stroke-dasharray="2.2 2.6"/><path d="M15 5h6v6"/>'),
   perfil: SVG('<circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.8-4 3.8-6.2 7.5-6.2s6.7 2.2 7.5 6.2"/>'),
   plan: SVG('<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4M8 14h3M8 17h6"/>'),
@@ -3031,12 +3119,12 @@ const ICONOS = {
 /* las pestañas, con el nombre corto de la barra del móvil; Plan va dentro de Cartera. Mercados era un icono suelto
    arriba y no se veía: desde la 0.1.17 es una pestaña más */
 const VISTAS = [
-  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['mercados', 'Mercados', 'Mercados'],
+  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['agenda', 'Calendario', 'Calendario'], ['mercados', 'Mercados', 'Mercados'],
 ];
 const VISTAS_APARTE = [];
-// en el móvil caben cinco: estas cuatro y «Más», que abre Análisis, Fiscalidad y Objetivos
-const EN_BARRA = new Set(['cartera', 'ruta', 'expertos', 'mercados']);
-const EN_MAS = [['analisis', 'La IA revisa tu cartera y le pone nota; riesgo, costes y reparto'], ['fiscal', 'Lo que pagarías a Hacienda, los tramos y la guía de la renta'], ['futuro', 'Tu perfil, tus límites, tus metas y la proyección']];
+// en el móvil caben cinco: estas cuatro y «Más», que abre el calendario, Mercados, Fiscalidad y Objetivos
+const EN_BARRA = new Set(['cartera', 'ruta', 'expertos', 'analisis']);
+const EN_MAS = [['agenda', 'Resultados, dividendos, bancos centrales y tus aportaciones, con cuántos días faltan'], ['mercados', 'Busca cualquier valor; bolsas, divisas y materias primas del mundo'], ['fiscal', 'Lo que pagarías a Hacienda, los tramos y la guía de la renta'], ['futuro', 'Tu perfil, tus límites, tus metas y la proyección']];
 const esVista = (k) => VISTAS.some(([x]) => x === k) || VISTAS_APARTE.some(([x]) => x === k);
 
 let toastT;
@@ -3226,10 +3314,15 @@ function pintar() {
   const bo = $('#bOcultar'); bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? 'Mostrar importes' : 'Ocultar importes'; bo.setAttribute('aria-label', bo.title);
   pintarTicker(M);
   const scroll = window.scrollY;
-  const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo }[S.vista] || vistaCartera;
+  const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
   setTimeout(() => plegarNotas($('#vista')), 0);
   $('#vista').innerHTML = html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
+  // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada
+  if (S.vista === 'agenda' && S.agIr) {
+    const id = S.agIr; S.agIr = null;
+    setTimeout(() => { const li = document.querySelector(`.ag-e[data-ag-id="${CSS.escape(id)}"]`); if (li) { li.scrollIntoView({ block: 'center' }); li.classList.add('destello'); } }, 60);
+  }
   const mb = $('#mercBusca');
   if (mb) {
     const inp = buscador(mb, null, { alCandidato: abrirConsulta, lista: candidatosConsulta(), placeholder: 'Apple, SP500, oro, bitcoin o un ISIN' });
@@ -3425,52 +3518,317 @@ function htmlReparto(M) {
   </section>`;
 }
 
-/* Agenda: resultados, dividendos y aportaciones de las próximas semanas */
-function eventos(M, dias = 45) {
+/* =====================================================================
+   Calendario: lo que viene para tu cartera y cuántos días faltan. Resultados y dividendos de tus
+   acciones (del radar, que la Action renueva cada 3 horas, o de la ficha de la Action), los resultados
+   de las grandes empresas que hay dentro de tus fondos, la Fed y el BCE, los días sin bolsa, Hacienda,
+   GTA VI y tus aportaciones. Las fechas fijas salen de los calendarios oficiales de la Fed, el BCE y la
+   NYSE (revisados el 20 de octubre de 2026): hay que añadir las de 2028 cuando se publiquen.
+   ===================================================================== */
+const AG_FED = ['2026-10-28', '2026-12-09', '2027-01-27', '2027-03-17', '2027-04-28', '2027-06-09', '2027-07-28', '2027-09-15', '2027-10-27', '2027-12-08'];
+const AG_BCE = ['2026-10-29', '2026-12-17', '2027-02-04', '2027-03-18', '2027-04-29', '2027-06-10', '2027-07-22', '2027-09-09', '2027-10-28', '2027-12-16'];
+// días sin bolsa: dónde ('us' Wall Street, 'eu' las europeas) y por qué
+const AG_CIERRES = [['2026-11-26', 'us', 'Acción de Gracias'], ['2026-12-25', 'us eu', 'Navidad'], ['2027-01-01', 'us eu', 'Año Nuevo'], ['2027-01-18', 'us', 'el día de Martin Luther King'], ['2027-02-15', 'us', 'el Día de los Presidentes'], ['2027-03-26', 'us eu', 'Viernes Santo'], ['2027-03-29', 'eu', 'Lunes de Pascua'], ['2027-05-31', 'us', 'el Memorial Day'], ['2027-06-18', 'us', 'Juneteenth'], ['2027-07-05', 'us', 'el Día de la Independencia'], ['2027-09-06', 'us', 'el Día del Trabajo'], ['2027-11-25', 'us', 'Acción de Gracias'], ['2027-12-24', 'us', 'Navidad']];
+// cada tipo: su icono y en qué filtro sale
+const AG_TIPOS = { resultados: ['resultados', 'res'], fondo: ['resultados', 'res'], dividendo: ['dividendo', 'div'], cobro: ['dividendo', 'div'], banco: ['banco', 'eco'], festivo: ['festivo', 'eco'], hacienda: ['fiscal', 'eco'], aportacion: ['aporte', 'apo'], otro: ['mando', 'otro'], ia: ['chispa', 'eco'] };
+const AG_FILTROS = [['todo', 'Todo'], ['res', 'Resultados'], ['div', 'Dividendos'], ['eco', 'Economía'], ['apo', 'Aportaciones']];
+const DIAS_LARGOS = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
+const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+// el índice que copia cada fondo, para saber qué empresas lleva dentro (las diez mayores, de la Action)
+const AG_INDICES = [[/small|peque/i, null], [/nasdaq/i, null], [/s&p ?500|sp ?500|us 500|\bus\b|\busa\b|ee\.? ?uu|estados unidos|north america|norteam/i, 'IVV'], [/emerg/i, 'EEM'], [/europe|europa|eurozone|eurozona|stoxx/i, 'IEUR'], [/world|global|mundial|acwi|all.world|developed|desarrollad/i, 'URTH']];
+const AG_ALIAS = { GOOG: 'GOOGL' };
+
+/* «hoy», «mañana», «en 3 días», «en 2 semanas», «en 3 meses» (corto: «3 días», «2 sem.») */
+function faltan(d, corto) {
+  const n = diasEntre(hoyIso(), d);
+  if (n <= 0) return corto ? 'Hoy' : 'hoy';
+  if (n === 1) return corto ? 'Mañana' : 'mañana';
+  if (n < 14) return corto ? `${n} días` : `en ${n} días`;
+  if (n < 60) { const s = Math.round(n / 7); return corto ? `${s} sem.` : `en ${s} semanas`; }
+  const m = Math.round(n / 30.4);
+  return corto ? `${m} ${m === 1 ? 'mes' : 'meses'}` : `en ${m} ${m === 1 ? 'mes' : 'meses'}`;
+}
+const fechaDia = (d) => { const x = deIso(d); return `${DIAS_LARGOS[x.getDay()]} ${x.getDate()} de ${MESES_LARGOS[x.getMonth()]}`; };
+/* la hora de España a la que en otra zona son las h:m de ese día (la Fed decide a las 14:00 de Nueva York) */
+function horaEspana(d, zona, h, m = 0) {
+  try {
+    const [y, mo, da] = d.split('-').map(Number);
+    const t0 = Date.UTC(y, mo - 1, da, h, m);
+    const p = new Intl.DateTimeFormat('en-US', { timeZone: zona, hourCycle: 'h23', year: 'numeric', month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' }).formatToParts(new Date(t0));
+    const g = (k) => +p.find((x) => x.type === k).value;
+    const t = t0 - (Date.UTC(g('year'), g('month') - 1, g('day'), g('hour'), g('minute')) - t0);
+    return new Intl.DateTimeFormat('es-ES', { timeZone: 'Europe/Madrid', hour: '2-digit', minute: '2-digit' }).format(new Date(t));
+  } catch (e) { return null; }
+}
+/* el día hábil anterior (para cobrar un dividendo hay que tener la acción al cierre de ese día) */
+function habilAntes(d) {
+  const x = deIso(d);
+  do x.setDate(x.getDate() - 1); while (x.getDay() === 0 || x.getDay() === 6);
+  return iso(x);
+}
+/* resultados y dividendo de una empresa: del radar (para todos) o de la ficha de la Action */
+function fechasDe(inst, precio) {
+  const r = inst && inst.yahoo ? radarPorSim(inst.yahoo) : null;
+  const p = (inst && S.precios && S.precios.instrumentos && S.precios.instrumentos[inst.id]) || {};
+  const o = { rd: null, rh: null, re: false, xd: null, dp: null, dve: null, dva: false };
+  if (r && r.rd) { o.rd = r.rd; o.rh = r.rh || null; o.re = !!r.re; } else if (p.proximos_resultados) o.rd = p.proximos_resultados;
+  if (r && r.xd) { o.xd = r.xd; o.dp = r.dp || null; o.dve = r.dve != null ? +r.dve : null; o.dva = !!r.dva; }
+  else if (p.ex_dividendo) { o.xd = p.ex_dividendo; if (p.dividendo_pct && precio) { o.dve = (precio * p.dividendo_pct) / 100 / (inst.pais === 'GB' || inst.pais === 'US' ? 4 : 2); o.dva = true; } }
+  return o;
+}
+function horaResultados(x) {
+  if (x.rh === 'a') return `antes de abrir Wall Street (a las ${horaEspana(x.rd, 'America/New_York', 9, 30) || '15:30'} en España)`;
+  if (x.rh === 'c') return `tras el cierre de Wall Street (a las ${horaEspana(x.rd, 'America/New_York', 16, 0) || '22:00'} en España)`;
+  return '';
+}
+function indiceDe(inst) {
+  if (!inst || inst.tipo === 'Acción' || inst.clase !== 'Renta variable') return null;
+  const se = Object.keys(inst.sector_etf || {});
+  if (se.length) return se.length === 1 && ['IVV', 'URTH', 'IEUR', 'EEM'].includes(se[0]) ? se[0] : null;
+  const n = `${inst.nombre || ''} ${inst.corto || ''}`;
+  for (const [re, k] of AG_INDICES) if (re.test(n)) return k;
+  return null;
+}
+const conUs = (M) => M.filas.some((f) => ((f.inst.region || {}).EEUU || 0) + ((f.inst.region || {}).Global || 0) > 0 || (f.inst.tipo === 'Acción' && (f.inst.pais === 'US' || (f.inst.yahoo && !f.inst.yahoo.includes('.')))));
+const conEu = (M) => M.filas.some((f) => ((f.inst.region || {}).Europa || 0) + ((f.inst.region || {}).Global || 0) > 0 || (f.inst.tipo === 'Acción' && f.inst.pais && f.inst.pais !== 'US'));
+
+/* todo lo que viene en los próximos días, ordenado */
+function agendaLista(M, dias = 120) {
   const hoy = hoyIso(), hasta = iso(new Date(Date.now() + dias * 86400000));
   const ev = [];
-  const vistos = new Set();
+  const add = (e) => { if (e.d && e.d >= hoy && e.d <= hasta) ev.push(e); };
+  const t = tramoAhorro();
+  const vacia = !M.filas.length;
+  // tus posiciones, juntando las de la misma empresa en varios brókers
+  const porInst = new Map();
   for (const f of M.filas) {
-    if (vistos.has(f.inst.id)) continue; vistos.add(f.inst.id);
-    const p = f.p || {};
-    if (p.proximos_resultados && p.proximos_resultados >= hoy && p.proximos_resultados <= hasta) ev.push({ d: p.proximos_resultados, t: `Resultados de ${f.inst.corto}`, s: 'Suele moverse mucho ese día', tipo: 'resultados' });
-    if (p.ex_dividendo && p.ex_dividendo >= hoy && p.ex_dividendo <= hasta) ev.push({ d: p.ex_dividendo, t: `${f.inst.corto} paga dividendo`, s: 'Último día para cobrarlo: el anterior', tipo: 'dividendo' });
+    let g = porInst.get(f.inst.id);
+    if (!g) { g = { inst: f.inst, f, uds: 0, valor: 0, plats: new Set(), pos: f.pos }; porInst.set(f.inst.id, g); }
+    g.uds += f.uds || 0; g.valor += f.valor || 0; if (f.pos.plataforma) g.plats.add(f.pos.plataforma);
   }
+  // lo que pesa cada empresa grande dentro de tus fondos
+  const part = (S.precios && S.precios.participaciones_etf) || {};
+  const dentro = new Map();
+  for (const g of porInst.values()) {
+    const k = indiceDe(g.inst);
+    if (!k || !part[k] || !(g.valor > 0)) continue;
+    const pesos = new Map();
+    for (const h of part[k]) { const s = AG_ALIAS[h.s] || h.s; pesos.set(s, (pesos.get(s) || 0) + (+h.w || 0)); }
+    for (const [s, w] of pesos) {
+      if (w < 1.5) continue;
+      let e = dentro.get(s); if (!e) { e = { euros: 0, fondos: [] }; dentro.set(s, e); }
+      e.euros += (g.valor * w) / 100; e.fondos.push({ n: g.inst.corto || g.inst.nombre, w });
+    }
+  }
+  const txtFondos = (e) => (e.fondos.length === 1 ? `tu ${e.fondos[0].n} (un ${fmtNum(e.fondos[0].w, 1)} %)` : yLista(e.fondos.map((x) => `tu ${x.n} (${fmtNum(x.w, 1)} %)`)));
+  const directas = new Set();
+  for (const g of porInst.values()) {
+    const i = g.inst;
+    if (i.tipo !== 'Acción') continue;
+    const sim = String(i.yahoo || '').toUpperCase(), x = fechasDe(i, g.f.precio), n = i.corto || i.nombre;
+    if (sim) directas.add(AG_ALIAS[sim] || sim);
+    const enFondos = dentro.get(AG_ALIAS[sim] || sim);
+    const plats = [...g.plats].join(' y ');
+    const accFicha = `<button type="button" class="btn peq" data-pos="${esc(g.pos.id)}">Abrir su ficha</button>`;
+    if (x.rd) {
+      const hora = horaResultados(x);
+      add({ id: `res:${i.id}:${x.rd}`, d: x.rd, tipo: 'resultados', nom: n, t: `Resultados de ${n}`, s: hora ? hora[0].toUpperCase() + hora.slice(1) : 'Presenta las cuentas del trimestre', est: x.re,
+        det: `${esc(n)} enseña sus cuentas del trimestre${hora ? ` ${esc(hora)}` : ''}. Es el día que más se suele mover, para arriba o para abajo: si se moviera un 5 %, serían unos ${eur(g.valor * 0.05, 0)} de los tuyos.${enFondos ? ` Además tienes unos ${eur(enFondos.euros, 0)} de ${esc(n)} dentro de ${esc(txtFondos(enFondos))}.` : ''}${x.re ? ' La fecha aún es una estimación: puede cambiar unos días.' : ''}`, acc: accFicha });
+    }
+    if (x.xd) {
+      const bruto = x.dve != null && g.uds ? x.dve * g.uds : null;
+      const fis = fiscalidadSede(i.pais, i.tipo), neto = bruto != null ? bruto * (1 - t - (fis.pierde || 0) / 100) : null;
+      const cuanto = bruto != null ? `Con tus ${fmtNum(g.uds, g.uds % 1 ? 2 : 0)} acciones, unos ${eur(bruto, 2)} brutos y ${eur(neto, 2)} netos${x.dva ? ' (calculado con el último que pagó)' : ''}.` : '';
+      add({ id: `div:${i.id}:${x.xd}`, d: x.xd, tipo: 'dividendo', nom: n, t: `Dividendo de ${n}: fecha de corte`, s: `Para cobrarlo, tenla al cierre del ${fechaCorta(habilAntes(x.xd))}`, importe: !x.dp && bruto != null ? bruto : null, aprox: x.dva,
+        det: `Para cobrar el dividendo tienes que tener la acción al cierre del ${esc(fechaDia(habilAntes(x.xd)))}. Ese día su precio baja más o menos lo que paga, así que comprar justo antes no sale gratis. ${cuanto} ${esc(fis.txt)}`, acc: accFicha });
+      if (x.dp && x.dp > x.xd) add({ id: `cob:${i.id}:${x.dp}`, d: x.dp, tipo: 'cobro', nom: n, t: `Cobras el dividendo de ${n}`, s: plats ? `Llega a ${plats}` : 'Llega a tu bróker', importe: neto, aprox: x.dva,
+        det: `${bruto != null ? `Unos ${eur(bruto, 2)} brutos; tras la retención y lo que toca en la renta, te quedan unos ${eur(neto, 2)}${x.dva ? ' (calculado con el último que pagó)' : ''}. ` : ''}${esc(fis.txt)}`, acc: accFicha });
+    }
+  }
+  // resultados de las grandes empresas que hay dentro de tus fondos
+  for (const [s, e] of dentro) {
+    if (directas.has(s) || e.euros < 5) continue;
+    const r = radarPorSim(s);
+    if (!r || !r.rd) continue;
+    const n = nombreRadar(r), hora = horaResultados(r);
+    add({ id: `fon:${s}:${r.rd}`, d: r.rd, tipo: 'fondo', nom: n, euros: e.euros, t: `Resultados de ${n}`, s: `Dentro de ${txtFondos(e)}`, est: !!r.re,
+      det: `${esc(n)} es de las mayores empresas de ${esc(txtFondos(e))}: unos ${eur(e.euros, 0)} de lo tuyo dependen de ella. Presenta sus cuentas${hora ? ` ${esc(hora)}` : ''} y, si se moviera un 5 %, tu fondo lo notaría en unos ${eur(e.euros * 0.05, 0)}.`,
+      acc: `<button type="button" class="btn peq" data-consulta="${esc(r.s)}">Ver ${esc(n)}</button>` });
+  }
+  // bancos centrales
+  const reg = (() => { try { return reparto(M, 'region', 'todo').filas; } catch (e) { return []; } })();
+  const pesoReg = (k) => { const x = reg.find((y) => y.k === k); return x ? x.pct : 0; };
+  const us = pesoReg('EEUU'), liq = M.liquidez + sum(M.filas.filter((f) => ['Monetario', 'Renta fija'].includes(f.inst.clase)), (f) => f.valor);
+  for (const d of AG_FED) {
+    const h = horaEspana(d, 'America/New_York', 14, 0) || '20:00';
+    add({ id: `fed:${d}`, d, tipo: 'banco', t: 'La Fed decide los tipos', s: `Reserva Federal de EE. UU., a las ${h} en España`,
+      det: `La Reserva Federal decide los tipos de interés de EE. UU. Publica la decisión a las ${h} (hora de España) y media hora después da la rueda de prensa. Si baja los tipos o avisa de bajadas, la bolsa suele recibirlo bien y el dólar tiende a bajar; si los sube, al revés.${us >= 5 ? ` Un ${fmtNum(us, 0)} % de tu cartera está en EE. UU.` : ''}`,
+      acc: '<a class="btn peq" href="#mercados">Ver Mercados</a>' });
+  }
+  for (const d of AG_BCE) {
+    add({ id: `bce:${d}`, d, tipo: 'banco', t: 'El BCE decide los tipos', s: 'Banco Central Europeo, a las 14:15',
+      det: `El Banco Central Europeo decide los tipos del euro a las 14:15 y lo explica en rueda de prensa a las 14:45. Lo nota sobre todo el dinero parado: cuentas remuneradas, fondos monetarios y letras. Si baja los tipos, rinden menos; a la bolsa europea le suele sentar bien.${liq >= 1 ? ` Tienes ${eur(liq, 0)} en efectivo, monetarios y renta fija.` : ''}`,
+      acc: '<a class="btn peq" href="#mercados">Ver Mercados</a>' });
+  }
+  // días sin bolsa, si te tocan
+  const tUs = vacia || conUs(M), tEu = vacia || conEu(M);
+  for (const [d, donde, motivo] of AG_CIERRES) {
+    const enUs = donde.includes('us') && tUs, enEu = donde.includes('eu') && tEu;
+    if (!enUs && !enEu) continue;
+    const quien = enUs && enEu ? 'Bolsas de EE. UU. y Europa cerradas' : enUs ? 'Wall Street cerrada' : 'Bolsas europeas cerradas';
+    add({ id: `fes:${d}`, d, tipo: 'festivo', t: quien, s: `Por ${motivo}`,
+      det: `${enUs && enEu ? 'Ni Wall Street ni las bolsas europeas abren' : enUs ? 'Wall Street no abre' : 'Las bolsas europeas no abren'} por ${esc(motivo)}. Lo que tienes allí no cambia de precio ese día, y lo que mandes comprar o vender se hace el siguiente día hábil.` });
+  }
+  // Hacienda: del 15 de noviembre al 31 de diciembre, lo que vendas cuenta en la renta de este año
+  const y = new Date().getFullYear();
+  if (hoy >= `${y}-11-15`) {
+    const perd = M.filas.filter((f) => f.pl < -1), sumP = -sum(perd, (f) => f.pl);
+    add({ id: `ren:${y}`, d: `${y}-12-31`, tipo: 'hacienda', t: `Último día para la renta de ${y}`, s: 'Lo que vendas hasta hoy cuenta en esta declaración',
+      det: `Lo que vendas hasta el 31 de diciembre va a la renta de ${y}, que se presenta en primavera de ${y + 1}. Las pérdidas restan de las ganancias: si este año has ganado vendiendo y tienes algo en pérdidas, venderlo antes de fin de año baja lo que pagas. Ojo: si vuelves a comprar lo mismo en los dos meses siguientes, esa pérdida no cuenta todavía.${M.realizado ? ` Este año llevas ${eurS(M.realizado, 0)} en ventas.` : ''}${sumP >= 1 ? ` Tienes ${eur(sumP, 0)} en pérdidas sin vender (${esc(yLista(perd.slice(0, 3).map((f) => f.inst.corto || f.inst.nombre)))}).` : ''}`,
+      acc: '<a class="btn peq" href="#fiscal">Ir a Fiscalidad</a>' });
+  }
+  // GTA VI
+  const ttwo = [...porInst.values()].some((g) => /^TTWO$/i.test(g.inst.yahoo || ''));
+  add({ id: 'gta6', d: '2026-11-19', tipo: 'otro', t: 'Sale GTA VI', s: ttwo ? 'Take-Two, que tienes, se juega mucho ese día' : 'En PS5 y Xbox Series X y S',
+    det: `Sale GTA VI en PS5 y Xbox Series X y S.${ttwo ? ' Es el juego del que más depende Take-Two: esos días su precio puede moverse bastante.' : ''}`, acc: '<button type="button" class="btn peq" data-gta>Abrir la cuenta atrás</button>' });
+  // tus aportaciones, juntas si caen el mismo día
+  const porDia = new Map();
   for (const a of S.cartera.aportaciones || []) {
     if (!(+a.importe)) continue;
     for (const d of fechasAportacion({ ...a, desde: a.desde > hoy ? a.desde : hoy }, iso(new Date(Date.now() - 86400000)), hasta)) {
-      ev.push({ d, t: `Aportación a ${(S.inst[a.instrumento] && S.inst[a.instrumento].corto) || a.instrumento}`, s: a.plataforma || '', importe: +a.importe, tipo: 'aportacion', inst: a.instrumento });
+      let g = porDia.get(d); if (!g) { g = { importe: 0, nombres: [], plats: new Set() }; porDia.set(d, g); }
+      g.importe += +a.importe; g.nombres.push((S.inst[a.instrumento] && S.inst[a.instrumento].corto) || a.instrumento); if (a.plataforma) g.plats.add(a.plataforma);
     }
   }
-  return ev.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0));
-}
-function htmlAgenda(M) {
-  const ev0 = eventos(M), ia = iaActual(), hoy = hoyIso();
+  for (const [d, g] of porDia) {
+    const n = [...new Set(g.nombres)];
+    add({ id: `apo:${d}`, d, tipo: 'aportacion', t: n.length > 1 ? 'Tus aportaciones automáticas' : `Aportación a ${n[0]}`, s: n.length > 1 ? yLista(n) : [...g.plats].join(', ') || 'Automática', importe: g.importe,
+      det: `Se hace sola: ${eur(g.importe, 0)} a ${esc(yLista(n))}${g.plats.size ? ` desde ${esc([...g.plats].join(' y '))}` : ''}. GrowFolio la suma a tu cartera ese día con el precio de cierre.`, acc: '<a class="btn peq" href="#plan">Ver tu plan</a>' });
+  }
+  // lo que ha visto la IA en las noticias, si no está ya
+  const ia = iaActual();
   for (const e of (ia && ia.calendario) || []) {
-    if (!e || !e.t || !(e.d >= hoy) || diasEntre(hoy, e.d) > 75 || /aportaci/i.test(e.t)) continue;
-    const mismo = ev0.find((x) => x.d === e.d && x.tipo !== 'aportacion' && normTxt(e.t).includes(normTxt(x.t)));
-    if (mismo) { mismo.t = e.t; mismo.ia = true; } else if (!ev0.some((x) => x.d === e.d && normTxt(x.t) === normTxt(e.t))) ev0.push({ d: e.d, t: e.t, s: 'según la IA', ia: true });
+    if (!e || !e.t || /aportaci/i.test(e.t)) continue;
+    // si ya sale (la IA suele decir lo mismo con otras palabras y un día antes o después), no se repite
+    const te = normTxt(e.t);
+    if (ev.some((x) => (x.d === e.d && te.includes(normTxt(x.t))) || (x.nom && te.includes(normTxt(x.nom)) && Math.abs(diasEntre(x.d, e.d)) <= 3))) continue;
+    add({ id: `ia:${e.d}:${normTxt(e.t).slice(0, 24)}`, d: e.d, tipo: 'ia', t: e.t, s: 'Lo ha visto GrowFolio IA en las noticias', ia: true, det: 'Sale de las noticias que lee GrowFolio IA: la fecha puede moverse.' });
   }
-  // las aportaciones del mismo día van juntas en una fila: así no tapan los resultados y los dividendos
-  const juntas = [], porDia = new Map();
-  for (const e of ev0) {
-    if (e.tipo !== 'aportacion') { juntas.push(e); continue; }
-    let g = porDia.get(e.d);
-    if (!g) { g = { d: e.d, tipo: 'aportacion', importe: 0, nombres: [], plats: new Set() }; porDia.set(e.d, g); juntas.push(g); }
-    g.importe += e.importe || 0; g.nombres.push((S.inst[e.inst] && S.inst[e.inst].corto) || e.inst); if (e.s) g.plats.add(e.s);
-  }
-  for (const g of porDia.values()) {
-    const n = g.nombres;
-    g.t = n.length > 1 ? 'Aportaciones automáticas' : `Aportación a ${n[0]}`;
-    g.s = n.length > 1 ? yLista(n) : [...g.plats].join(', ');
-  }
-  const ev = juntas.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : 0)).slice(0, 8);
+  return ev.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : (ordenAg(a) - ordenAg(b))));
+}
+const ordenAg = (e) => ['resultados', 'dividendo', 'cobro', 'aportacion', 'fondo', 'banco', 'hacienda', 'festivo', 'ia', 'otro'].indexOf(e.tipo);
+// la versión de antes, para el plan (aportaciones) y Expertos (resultados y dividendos)
+function eventos(M, dias = 45) {
+  return agendaLista(M, dias).filter((e) => ['resultados', 'dividendo', 'aportacion'].includes(e.tipo));
+}
+const tituloAg = (e) => (e.ia ? rellenarIA(e.t, {}) : esc(e.t));
+const iconoAg = (e) => (e.tipo === 'otro' ? MANDO : ICONOS[AG_TIPOS[e.tipo][0]] || ICONOS.agenda);
+const importeAg = (e) => (e.importe != null && isFinite(e.importe) ? `<span class="ag-imp${e.tipo === 'cobro' ? ' up' : ''}">${e.tipo === 'cobro' ? '+' : ''}${e.aprox ? '≈ ' : ''}${eur(e.importe, e.importe < 10 ? 2 : 0)}</span>` : '');
+
+/* en Cartera: lo próximo, con los días que faltan */
+function htmlAgenda(M) {
+  // lo tuyo primero: de las empresas de dentro de tus fondos, solo las dos que más te tocan
+  const todos = agendaLista(M, 40).filter((e) => e.tipo !== 'festivo' || diasEntre(hoyIso(), e.d) <= 7);
+  const fondos = new Set(todos.filter((e) => e.tipo === 'fondo').sort((a, b) => b.euros - a.euros).slice(0, 2).map((e) => e.id));
+  const ev = todos.filter((e) => e.tipo !== 'fondo' || fondos.has(e.id)).slice(0, 5);
   if (!ev.length) return '';
-  return `<section aria-labelledby="hAg">
-    <div class="sec-cab"><h2 id="hAg">Próximas fechas</h2></div>
-    <ul class="lista agenda">${ev.map((e) => { const d = deIso(e.d); return `<li><div class="dia"><b>${d.getDate()}</b><span class="k">${MESES[d.getMonth()]}</span></div><div><b>${e.ia ? rellenarIA(e.t, {}) : esc(e.t)}</b><span>${esc(e.s)}</span></div><span class="r">${e.importe ? eur(e.importe, 0) : ''}</span></li>`; }).join('')}</ul>
+  return `<section class="ag-card" aria-labelledby="hAg">
+    <div class="sec-cab"><h2 id="hAg">Lo que viene</h2><div class="der"><a class="enlace acento" href="#agenda">Ver el calendario</a></div></div>
+    <ul class="ag-mini">${ev.map((e) => `<li class="t-${e.tipo}"><a href="#agenda" data-ag-ir="${esc(e.id)}"><span class="ag-cd${diasEntre(hoyIso(), e.d) <= 1 ? ' pronto' : ''}">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span class="ag-tx"><b>${tituloAg(e)}</b><small>${esc(e.s)}</small></span>${importeAg(e)}</a></li>`).join('')}</ul>
   </section>`;
 }
+
+/* la pestaña Calendario */
+function vistaAgenda(M) {
+  const hoy = hoyIso();
+  const todos = agendaLista(M, 120);
+  const fil = AG_FILTROS.some(([k]) => k === S.agFiltro) ? S.agFiltro : 'todo';
+  const ev = fil === 'todo' ? todos : todos.filter((e) => AG_TIPOS[e.tipo][1] === fil);
+  const abiertos = S.agAbiertos || (S.agAbiertos = new Set());
+  // lo próximo que es tuyo (si no hay nada tuyo, lo próximo a secas)
+  const prox = todos.find((e) => !['banco', 'festivo', 'otro', 'ia'].includes(e.tipo)) || todos[0];
+  const cuenta = (tipos) => todos.filter((e) => tipos.includes(e.tipo)).length;
+  const cobros = sum(todos.filter((e) => e.tipo === 'cobro' || (e.tipo === 'dividendo' && e.importe != null)), (e) => (e.tipo === 'cobro' ? e.importe : e.importe * (1 - tramoAhorro())) || 0);
+  const resumen = [
+    cuenta(['resultados']) && `${cuenta(['resultados'])} ${cuenta(['resultados']) === 1 ? 'presentación de resultados' : 'presentaciones de resultados'} de lo que tienes`,
+    cuenta(['fondo']) && `${cuenta(['fondo'])} de las grandes de tus fondos`,
+    cuenta(['dividendo']) && `${cuenta(['dividendo'])} ${cuenta(['dividendo']) === 1 ? 'dividendo' : 'dividendos'}${cobros >= 0.5 ? ` (unos ${eur(cobros, cobros < 10 ? 2 : 0)} netos)` : ''}`,
+    cuenta(['banco']) && `${cuenta(['banco'])} reuniones de la Fed y el BCE`,
+  ].filter(Boolean);
+  // el mes a la vista: cinco semanas desde el lunes de esta
+  const lunes = deIso(hoy); lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
+  const porDia = new Map(); for (const e of todos) { if (!porDia.has(e.d)) porDia.set(e.d, []); porDia.get(e.d).push(e); }
+  const celdas = [];
+  for (let k = 0; k < 35; k++) {
+    const x = new Date(lunes); x.setDate(lunes.getDate() + k);
+    const d = iso(x), es = porDia.get(d) || [], pasado = d < hoy, finde = x.getDay() === 0 || x.getDay() === 6;
+    const tipos = [...new Set(es.map((e) => e.tipo))].slice(0, 3);
+    const mes = x.getDate() === 1 || k === 0 ? `<span class="m">${MESES[x.getMonth()]}</span>` : '';
+    const lbl = `${fechaDia(d)}${es.length ? `: ${es.map((e) => e.t).join(', ')}` : ''}`;
+    celdas.push(es.length && !pasado
+      ? `<button type="button" class="ag-c${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}" data-ag-dia="${d}" aria-label="${esc(lbl)}"><span class="n">${x.getDate()}${mes}</span><span class="ag-pts">${tipos.map((t) => `<i class="t-${t}"></i>`).join('')}</span></button>`
+      : `<span class="ag-c${pasado ? ' pasado' : ''}${d === hoy ? ' hoy' : ''}${finde ? ' finde' : ''}"><span class="n">${x.getDate()}${mes}</span></span>`);
+  }
+  // los grupos: esta semana, la que viene y luego cada mes
+  const finSem = new Date(lunes); finSem.setDate(lunes.getDate() + 6);
+  const finSig = new Date(lunes); finSig.setDate(lunes.getDate() + 13);
+  const grupoDe = (d) => (d <= iso(finSem) ? 'Esta semana' : d <= iso(finSig) ? 'La semana que viene' : (() => { const x = deIso(d); const m = MESES_LARGOS[x.getMonth()]; return m[0].toUpperCase() + m.slice(1) + (x.getFullYear() !== new Date().getFullYear() ? ` de ${x.getFullYear()}` : ''); })());
+  const grupos = [];
+  for (const e of ev) {
+    const gk = grupoDe(e.d);
+    let g = grupos[grupos.length - 1]; if (!g || g.k !== gk) { g = { k: gk, dias: [] }; grupos.push(g); }
+    let dd = g.dias[g.dias.length - 1]; if (!dd || dd.d !== e.d) { dd = { d: e.d, ev: [] }; g.dias.push(dd); }
+    dd.ev.push(e);
+  }
+  const item = (e) => {
+    const on = abiertos.has(e.id);
+    return `<li class="ag-e t-${e.tipo}${on ? ' on' : ''}" data-ag-id="${esc(e.id)}"><button type="button" class="ag-f" data-ag="${esc(e.id)}" aria-expanded="${on}"><span class="ag-ic">${iconoAg(e)}</span><span class="ag-tx"><b>${tituloAg(e)}${e.est ? ' <span class="chip">fecha estimada</span>' : ''}</b><small>${esc(e.s)}</small></span>${importeAg(e)}</button>
+      <div class="ag-det"${on ? '' : ' hidden'}><p>${e.det || ''}</p>${e.acc ? `<div class="ag-acc">${e.acc}</div>` : ''}</div></li>`;
+  };
+  const cuantos = (k) => (k === 'todo' ? todos.length : todos.filter((e) => AG_TIPOS[e.tipo][1] === k).length);
+  return `
+  <div class="vista-cab"><h1>Calendario</h1><p>Lo que viene para lo que tienes en los próximos cuatro meses, con los días que faltan.</p></div>
+  <div class="ag-v">
+    <aside class="ag-lado">
+      ${prox ? `<section class="ag-prox t-${prox.tipo}" aria-label="Lo próximo">
+        <span class="k">Lo próximo</span>
+        <div class="ag-prox-n">${diasEntre(hoy, prox.d) <= 1 ? `<b>${faltan(prox.d, true)}</b>` : `<b>${diasEntre(hoy, prox.d)}</b><span>días</span>`}</div>
+        <button type="button" class="ag-prox-t" data-ag-ir="${esc(prox.id)}"><span class="ag-ic">${iconoAg(prox)}</span><span><b>${tituloAg(prox)}</b><small>${esc(fechaDia(prox.d))}</small></span></button>
+      </section>` : ''}
+      <section class="ag-mes" aria-label="Las próximas cinco semanas"><div class="ag-cal">${['L', 'M', 'X', 'J', 'V', 'S', 'D'].map((x) => `<span class="sem">${x}</span>`).join('')}${celdas.join('')}</div>
+        <div class="ag-ley">${[['resultados', 'Resultados'], ['dividendo', 'Dividendos'], ['banco', 'Bancos centrales'], ['aportacion', 'Aportaciones'], ['festivo', 'Sin bolsa']].map(([t, n]) => `<span class="t-${t}"><i></i>${n}</span>`).join('')}</div></section>
+      ${resumen.length ? `<p class="ag-resumen">En los próximos cuatro meses: ${esc(yLista(resumen))}.</p>` : ''}
+      ${!M.filas.length ? '<p class="nota">Cuando metas tus acciones y fondos, aquí saldrán sus resultados y dividendos con lo que te toca en euros.</p>' : ''}
+    </aside>
+    <div class="ag-main">
+      <div class="tabs ag-filtros" role="group" aria-label="Qué ver">${AG_FILTROS.map(([k, n]) => `<button data-agf="${k}" aria-pressed="${fil === k}">${n}<span class="ag-nf">${cuantos(k)}</span></button>`).join('')}</div>
+      ${grupos.length ? grupos.map((g) => `<section class="ag-grupo"><h2>${esc(g.k)}</h2>${g.dias.map((dd) => { const x = deIso(dd.d); return `<div class="ag-dia" id="ag-d-${dd.d}"><div class="ag-fe"><span class="ds">${DIAS_SEM[x.getDay()]}</span><b>${x.getDate()}</b><span class="cd">${faltan(dd.d, true)}</span></div><ul class="ag-evs">${dd.ev.map(item).join('')}</ul></div>`; }).join('')}</section>`).join('') : '<div class="vacio">Nada a la vista con este filtro.</div>'}
+      <p class="nota">Resultados y dividendos: Yahoo Finance (las empresas a veces los mueven unos días). Fed, BCE y festivos: sus calendarios oficiales. Los importes son orientativos.</p>
+    </div>
+  </div>`;
+}
+/* abrir y cerrar cada fecha, filtrar y saltar a un día */
+document.addEventListener('click', (e) => {
+  const f = e.target.closest('[data-agf]');
+  if (f) { S.agFiltro = f.dataset.agf; pintar(); return; }
+  const b = e.target.closest('.ag-f');
+  if (b) {
+    const li = b.closest('.ag-e'), id = b.dataset.ag, det = li.querySelector('.ag-det'), on = !li.classList.contains('on');
+    li.classList.toggle('on', on); b.setAttribute('aria-expanded', on); det.hidden = !on;
+    const ab = S.agAbiertos || (S.agAbiertos = new Set()); if (on) ab.add(id); else ab.delete(id);
+    return;
+  }
+  const dia = e.target.closest('[data-ag-dia]');
+  if (dia) { const el = document.getElementById('ag-d-' + dia.dataset.agDia); if (el) { el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' }); el.classList.remove('destello'); void el.offsetWidth; el.classList.add('destello'); } return; }
+  const ir = e.target.closest('[data-ag-ir]');
+  if (ir) {
+    const id = ir.dataset.agIr;
+    (S.agAbiertos || (S.agAbiertos = new Set())).add(id);
+    S.agFiltro = 'todo';
+    const ve = () => { const li = document.querySelector(`.ag-e[data-ag-id="${CSS.escape(id)}"]`); if (li) { li.scrollIntoView({ behavior: 'smooth', block: 'center' }); li.classList.remove('destello'); void li.offsetWidth; li.classList.add('destello'); } };
+    if (S.vista === 'agenda') { e.preventDefault(); pintar(); setTimeout(ve, 30); } else S.agIr = id;
+  }
+});
 
 /* ¿El precio al que dices que compraste cuadra con lo que valía ese día? Si no, casi seguro que es
    otro fondo u otra clase del mismo (mismo índice, distinto ISIN y distinto precio): la web multiplicaría
@@ -7766,7 +8124,8 @@ const TOUR = [
   { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"], .navbar [data-mas]', t: 'Análisis', x: 'La IA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
   { v: 'fiscal', sel: '.navbar [data-ir="fiscal"], .nav [data-ir="fiscal"], .navbar [data-mas]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
   { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"], .navbar [data-mas]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
-  { v: 'mercados', sel: '.navbar [data-ir="mercados"], .nav [data-ir="mercados"]', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
+  { v: 'agenda', sel: '.nav [data-ir="agenda"], .navbar [data-mas]', t: 'Calendario', x: 'Lo que viene para lo que tienes: resultados, dividendos con lo que te toca en euros, reuniones de la Fed y el BCE, días sin bolsa y tus aportaciones, con los días que faltan.' },
+  { v: 'mercados', sel: '.nav [data-ir="mercados"], .navbar [data-mas]', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
   { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale a GrowFolio IA', x: 'Lo que quieras de tu cartera, con tus números delante. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
   { v: 'cartera', dib: 'app', t: 'El widget del móvil', x: 'Con la app de Android tienes un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo próximo que toca, sin abrir nada. Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio. La app se baja desde Ajustes.' },
   { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades, tu opinión y este tutorial, para repetirlo cuando quieras.' },

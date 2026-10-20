@@ -925,6 +925,60 @@ def descubrir(fx, fijas):
     return elegidas, diag
 
 
+def fechas_radar(info, precio, a_eur):
+    """Próximos resultados y dividendo de una empresa, con lo que ya trae su ficha (sin consultas de más):
+    rd (día de resultados en su bolsa), rh ('a' antes de abrir, 'c' tras el cierre; solo en EE. UU., donde
+    Yahoo lo sabe), re (fecha estimada), xd (fecha ex-dividendo), dp (día de pago) y dve (euros por acción;
+    dva si es una estimación con el último que pagó)."""
+    from zoneinfo import ZoneInfo
+    out = {}
+    hoy = dt.date.today()
+    utc = lambda ts: dt.datetime.fromtimestamp(int(ts), dt.timezone.utc) if ts else None  # noqa: E731
+    try:
+        r = utc(info.get("earningsTimestampStart") or info.get("earningsTimestamp"))
+        tz = info.get("exchangeTimezoneName") or "UTC"
+        if r:
+            loc = r.astimezone(ZoneInfo(tz))
+            if loc.date() >= hoy - dt.timedelta(days=1):
+                out["rd"] = loc.date().isoformat()
+                if tz.startswith("America/"):
+                    hm = loc.hour * 60 + loc.minute
+                    if 0 < hm < 9 * 60 + 30:
+                        out["rh"] = "a"
+                    elif hm >= 15 * 60:
+                        out["rh"] = "c"
+                if info.get("isEarningsDateEstimate"):
+                    out["re"] = 1
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
+    try:
+        x = utc(info.get("exDividendDate"))
+        if x and x.date() >= hoy - dt.timedelta(days=2):
+            out["xd"] = x.date().isoformat()
+            pago = utc(info.get("dividendDate"))
+            if pago and pago.date() >= x.date():
+                out["dp"] = pago.date().isoformat()
+            ultimo = utc(info.get("lastDividendDate"))
+            valor = info.get("lastDividendValue")
+            if valor and precio:
+                # en Londres el precio va en peniques y el dividendo a veces en libras
+                if (info.get("currency") in ("GBp", "GBX")) and valor / precio < 0.002:
+                    valor *= 100
+                exacto = bool(ultimo and ultimo.date() == x.date())
+                # si aún no está anunciado y paga cada trimestre, mejor el dividendo anual de ahora entre cuatro
+                # (recoge las subidas); si paga cada mes o cada semestre, el último que pagó
+                anual = info.get("dividendRate")
+                if not exacto and anual and 0.8 <= (anual / 4) / valor <= 1.25:
+                    valor = anual / 4
+                if a_eur:
+                    out["dve"] = num(valor * a_eur, 4)
+                    if not exacto:
+                        out["dva"] = 1
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
+    return out
+
+
 def radar_ficha(sim, zona, fx):
     """Todo lo que hace falta para contrastar una idea: analistas (y cómo han cambiado en 3 meses),
     rango de precios objetivo, valoración, crecimiento esperado, rentabilidad, deuda y tendencia."""
@@ -963,6 +1017,7 @@ def radar_ficha(sim, zona, fx):
         "w": dominio(info.get("website")), "pais": info.get("country"),
         "f": ahora(),
     }
+    x.update(fechas_radar(info, precio, a_eur))
     v = votos_analistas(t)
     if v and v.get("ahora"):
         orden = ("strongBuy", "buy", "hold", "sell", "strongSell")
