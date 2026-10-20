@@ -7418,7 +7418,7 @@ function preguntaNueva() {
 }
 function mostrarPreguntaIA(seguir = () => {}) {
   const p = preguntaNueva();
-  if (!p || document.querySelector('.hoja-fondo, .tour, .estreno, .intro')) return seguir();
+  if (!p || copiaViejaPendiente() || document.querySelector('.hoja-fondo, .tour, .estreno, .intro')) return seguir();
   const { x, i } = p, total = preguntasIA().length;
   LS.set('inv-preg-vistas', [...LS.get('inv-preg-vistas', []), clavePreg(x)].slice(-40));
   const h = hoja('GrowIA te pregunta', `<div class="pregia">
@@ -9903,7 +9903,7 @@ document.addEventListener('click', (e) => {
    ===================================================================== */
 const VERSION = '0.2.2';
 const NOVEDADES = [
-  { v: '0.2.2', f: '2026-10-20', h: '18:00', t: 'Tu perfil, tus avisos y cualquier bróker', cosas: [
+  { v: '0.2.2', f: '2026-10-20', h: '16:12', t: 'Tu perfil, tus avisos y cualquier bróker', cosas: [
     { d: 'perfil', ir: { v: 'objetivos', sel: '.pf-grid' }, t: 'Tu perfil, paso a paso', x: 'Si no lo tenías hecho, al entrar te lo pide con una pregunta por pantalla: tu edad, dónde vives, cuándo necesitarás el dinero, cuánto riesgo aguantas y para qué inviertes. Es un minuto, y con eso GrowIA te aconseja a ti. Mientras falte, te lo recuerda arriba en Cartera y con un punto en Objetivos.' },
     { d: 'capturas', ir: { v: 'cartera', sel: '[data-accion="nueva-pos"]' }, t: 'Importa de cualquier bróker o banco', x: 'En «Lo que ya tenía» > Importar de tu bróker: capturas, el PDF de un extracto o del informe fiscal, o los movimientos en CSV o Excel de DEGIRO, Interactive Brokers, ING, Revolut o el que uses. Con un listado de operaciones saca además desde cuándo tienes cada cosa, lo que te costó cada compra, tus ventas con su resultado y los dividendos del año para Fiscalidad.' },
     { d: 'aviso', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Avisos, solo si los quieres', x: 'En Ajustes > Avisos y resumen. Vienen apagados. Si los enciendes, te avisa cuando algo baja de tu precio de salida o se queda a menos de un 3 %, cuando una posición se mueve más de un 5 % en el día, el día antes de los resultados y dividendos de lo tuyo y cuando GrowIA te pregunta algo. En la app de Android llegan aunque la tengas cerrada. De 22:00 a 8:00, nada.' },
@@ -11238,7 +11238,8 @@ function bienvenida(intento = 0) {
   S.recienCreada = false;
   const fin = () => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); };
   // si te falta el perfil, primero eso (y esa vez nada más: el resto, la próxima)
-  const despues = () => pedirPerfil(fin, () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin))));
+  // con una cartera de antes por recuperar en este dispositivo, eso va primero y lo demás espera a la próxima vez
+  const despues = () => (copiaViejaPendiente() ? fin() : pedirPerfil(fin, () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin)))));
   if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); return iniciarTour(0, despues); }
   // la 0.2 llega con su propia pantalla de estreno, una vez
   // la presentación de la 0.2 (la nueva, más completa): una vez a todos los que ya usaban GrowFolio

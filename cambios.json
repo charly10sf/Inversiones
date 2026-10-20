@@ -1,6 +1,154 @@
 {
  "versiones": [
   {
+   "v": "0.2.2",
+   "f": "2026-10-20",
+   "h": "16:12",
+   "t": "Tu perfil, tus avisos y cualquier bróker",
+   "commits": [
+    {
+     "cuando": "2026-10-20 16:12",
+     "asunto": "0.2.2: tu perfil paso a paso, avisos opcionales, importar de cualquier bróker o banco y tu comunidad",
+     "detalle": [
+      "Perfil de inversor guiado al entrar si falta (una pregunta por pantalla), con aviso en Cartera y punto en Objetivos y en «Más»",
+      "Avisos opcionales (apagados de serie): precio de salida, movimientos de más del 5 %, fechas de lo tuyo y preguntas de GrowIA; en Android, con la app cerrada",
+      "Importar extractos de cualquier bróker o banco: capturas, PDF, CSV o Excel, con lotes, ventas FIFO, traspasos entre fondos y dividendos para Fiscalidad",
+      "Tu comunidad en el perfil: escala foral en País Vasco y Navarra, donaciones de padres a hijos y noticias de tu comunidad que tocan tu dinero",
+      "El resumen de hoy al abrir cada día; las preguntas de GrowIA en su propia hoja",
+      "Cartera a tu gusto (ordenar bloques) y la luz de En directo con el panel de las bolsas del mundo",
+      "Acciones y fondos metidos a mano piden su precio (Agios); más fondos en el catálogo",
+      "«¿Qué te parece GrowFolio?» tras 5 días de uso; novedades contadas con scroll",
+      "Más textos en inglés; el escaneo de prensa ya no frena la entrada"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 16:06",
+     "asunto": "0.2.2: el perfil guiado espera a la cartera de antes por recuperar; al tocar un aviso del navegador, la pestaña va a lo que dice sin recargar",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:53",
+     "asunto": "Registro de cambios: sin la marca «(sin publicar)» de lo preparado en una rama",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:50",
+     "asunto": "0.2.2: todo lo nuevo en inglés (perfil guiado, avisos, resumen, comunidad, importar, puntuar, novedades)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:42",
+     "asunto": "0.2.2: las novedades de cada versión se cuentan bajando, con «Enséñamelo»; notas de la 0.2.2",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:37",
+     "asunto": "0.2.2: el escaneo de prensa se baja después de entrar; motivos de las ideas en inglés; radar-hist en modo dev",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:36",
+     "asunto": "0.2.2: importar extractos de cualquier bróker o banco (capturas, PDF, CSV o Excel), con lotes, ventas FIFO, traspasos y dividendos",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:24",
+     "asunto": "0.2.2: tu comunidad en el perfil: escala foral en País Vasco y Navarra, donaciones de padres a hijos y noticias de tu comunidad que tocan tu dinero",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:16",
+     "asunto": "0.2.2: tras 5 días de uso, «¿Qué te parece GrowFolio?» con estrellas, que llega a opiniones",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:13",
+     "asunto": "0.2.2: perfil de inversor guiado al entrar si falta, con recordatorio en Cartera y punto en Objetivos",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:05",
+     "asunto": "0.2.2: avisos en el móvil con la app cerrada (WorkManager cada media hora, solo si los activas)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 15:02",
+     "asunto": "0.2.2: avisos opcionales (desactivados de serie): precio de salida, movimientos fuertes, fechas y preguntas de GrowIA",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 14:57",
+     "asunto": "0.2.2: las preguntas de GrowIA en su propia hoja; el resumen de hoy al abrir cada día",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 14:20",
+     "asunto": "0.2.2: al vender, el nombre de cada posición entero (en dos líneas)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 14:20",
+     "asunto": "0.2.2: más textos en inglés (mercados, asesor, formularios) tras el escaneo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 14:16",
+     "asunto": "0.2.2: las acciones y fondos metidos a mano piden su precio (lista común en Firestore); moneda por el ticker; buscar por ticker; fondos del catálogo que faltaban",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 13:52",
+     "asunto": "0.2.2: novedades, traducciones y la luz de En directo sola cuando no hay sitio",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 13:42",
+     "asunto": "0.2.2: arriba solo la luz de En directo; al pasar el ratón o tocarla, cómo están las principales bolsas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 13:34",
+     "asunto": "0.2.2: Cartera a tu gusto, con bloques que se ordenan, se quitan y se añaden",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 13:36",
+     "asunto": "Cartera: GrowIA debajo de la gráfica, en el hueco que quedaba junto al patrimonio",
+     "detalle": [
+      "En el ordenador la tarjeta de GrowIA pasa a la columna de la gráfica, debajo de ella, y ya no queda vacío ese",
+      "espacio. Dentro, la columna del diagnóstico lleva también el primer párrafo de su resumen, para que no quede hueco",
+      "bajo las notas; las dos columnas se ponen según el ancho de la tarjeta."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 13:29",
+     "asunto": "La IA se llama GrowIA; en la gráfica, «Comparar con el S&P 500» ya no se mueve al marcarlo",
+     "detalle": [
+      "«GrowFolio IA» pasa a «GrowIA» en toda la app, y las etiquetas que decían «La IA» (La IA opina, Lo propone la IA,",
+      "según la IA, La IA quiere saber…) dicen GrowIA; también en inglés",
+      "La leyenda de la gráfica: lo del S&P 500 aparece a la derecha del botón, que se queda en su sitio"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 13:23",
+     "asunto": "Cartera: la gráfica arriba y GrowFolio IA debajo, a lo ancho y más baja",
+     "detalle": [
+      "En el ordenador, la gráfica vuelve al lado del patrimonio y la tarjeta de la IA pasa debajo en dos columnas: el",
+      "diagnóstico y sus notas a la izquierda, lo que toca a la derecha. En el móvil, después de la gráfica."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 13:20",
+     "asunto": "Cartera: la tarjeta de GrowFolio IA ya no dice «aún sin activar» mientras carga el análisis",
+     "detalle": [
+      "Al abrir, el análisis (guardado en tu cuenta) y la clave llegan justo después de pintar Cartera, y la tarjeta no se",
+      "rehacía. Ahora dice «cargando» y se rehace sola cuando llegan; si en ese dispositivo no hay clave pero sí análisis,",
+      "enseña el análisis."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.2.1",
    "f": "2026-10-20",
    "h": "13:14",
