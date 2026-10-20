@@ -1051,6 +1051,44 @@ table.ideas .sub { display: block; font-size: 12px; }
 .toca-c:empty { display: none; }
 .toca li.urgente .toca-c { color: var(--accent); font-weight: 600; }
 .toca b { font-weight: 550; font-size: 14.5px; line-height: 1.4; }
+/* el resumen de hoy */
+.rdia { display: grid; gap: 22px; }
+.rdia-fecha { margin: -6px 0 0; color: var(--muted); font-size: 13.5px; }
+.rdia section { display: grid; gap: 10px; }
+.rdia h3 { margin: 0; font-size: 15px; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.rdia h3 svg { width: 17px; height: 17px; color: var(--accent); }
+.rdia-car { padding: 16px; border-radius: 14px; background: linear-gradient(160deg, rgba(226, 180, 95, 0.1), var(--plane) 60%); border: 1px solid rgba(226, 180, 95, 0.28); gap: 4px !important; }
+.rdia-tot { font-size: 30px; font-weight: 300; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.rdia-dia { font-size: 15px; font-weight: 600; }
+.rdia-car .mv-l { margin-top: 8px; }
+.rdia-ia p { margin: 0; line-height: 1.5; }
+.rdia-ia > p:first-of-type { font-weight: 600; font-size: 15.5px; }
+.rdia-toca { color: var(--text-2); font-size: 14px; }
+.rdia-merc, .rdia-not, .rdia-prox { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.rdia-merc li { display: flex; gap: 10px; align-items: baseline; padding: 6px 0; border-top: 1px solid var(--line); font-size: 14px; line-height: 1.45; }
+.rdia-merc li:first-child, .rdia-not li:first-child, .rdia-prox li:first-child { border-top: 0; }
+.rdia-not li { display: grid; gap: 3px; padding: 8px 0; border-top: 1px solid var(--line); }
+.rdia-not a { color: var(--text); font-size: 14.5px; line-height: 1.4; }
+.rdia-not a:hover { color: var(--accent); }
+.rdia-not b { font-weight: 550; }
+.rdia-not small { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; color: var(--muted); font-size: 12.5px; }
+.rdia-prox li { display: grid; grid-template-columns: auto auto minmax(0, 1fr); gap: 10px; align-items: center; padding: 7px 0; border-top: 1px solid var(--line); }
+.rdia-prox b { display: block; font-size: 14px; font-weight: 600; }
+.rdia-prox small { color: var(--muted); font-size: 12.5px; }
+.rdia-pie { align-items: center; justify-content: space-between; margin-top: 22px; }
+/* GrowIA te pregunta */
+.pregia { display: grid; gap: 14px; }
+.pregia-cab { display: flex; align-items: center; gap: 10px; color: var(--text-2); font-size: 14px; }
+.pregia-cab p { margin: 0; }
+.pregia-ico { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--accent-bg); color: var(--accent); flex: none; }
+.pregia-ico svg { width: 18px; height: 18px; }
+.pregia h3 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.02em; line-height: 1.3; }
+.pregia-pq { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.pregia-opc { display: grid; gap: 8px; }
+.pregia-opc .btn { justify-content: flex-start; text-align: left; min-height: 46px; white-space: normal; }
+.pregia-otra { display: flex; gap: 8px; }
+.pregia-otra input { flex: 1; min-width: 0; height: 44px; padding: 0 12px; border-radius: 10px; border: 1px solid var(--line-2); background: var(--plane); color: var(--text); }
+.pregia-luego { justify-self: center; color: var(--muted); }
 /* GrowIA, lo primero de Cartera */
 .toca.iac { margin: 26px 0 0; padding: 16px 16px 8px; border-left-width: 1px; border-color: rgba(226, 180, 95, 0.32); background: linear-gradient(160deg, rgba(226, 180, 95, 0.09), var(--plane) 55%); container-type: inline-size; }
 .iac-res { margin: 8px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
@@ -4001,6 +4039,55 @@ function montar() {
   eb.addEventListener('click', () => abre(!ew.classList.contains('abierto')));
   document.addEventListener('click', (e) => { if (ew.classList.contains('abierto') && !ew.contains(e.target)) abre(false); });
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ew.classList.contains('abierto')) { abre(false); eb.focus(); } });
+}
+
+/* El resumen de hoy: la primera vez que abres GrowFolio cada día (si no lo quitas en Ajustes), lo más importante
+   en una hoja: cómo va tu cartera, lo que mueve hoy los mercados según GrowIA, las noticias de lo tuyo y de la bolsa,
+   y lo que viene hoy y mañana. También a mano desde Ajustes y como bloque de Cartera. */
+function noticiasDeLoTuyo(M, max = 5) {
+  const N = (S.precios && S.precios.noticias) || {}, out = [], vistos = new Set(), limite = Date.now() - 3 * 864e5;
+  const filas = [...M.filas].sort((a, b) => (b.valor || 0) - (a.valor || 0));
+  for (const f of filas) {
+    const i = f.inst, lista = N[i.id] || (i.yahoo ? noticiasIdea(i.yahoo) : []);
+    for (const n of (lista || []).slice(0, 4)) {
+      const k = String(n.t || '').slice(0, 48);
+      if (!n.t || !n.u || vistos.has(k) || (n.d && new Date(n.d).getTime() < limite)) continue;
+      vistos.add(k); out.push({ ...n, inst: i });
+    }
+  }
+  return out.sort((a, b) => (String(b.d || '') > String(a.d || '') ? 1 : -1)).slice(0, max);
+}
+function htmlResumenDia(M) {
+  const N = (S.precios && S.precios.noticias) || {}, MK = (S.precios && S.precios.mercados) || {}, inf = informeVisible(), ia = iaActual();
+  const hoyD = new Date(), fecha = hoyD.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  const mueven = [...M.filas].filter((f) => f.dia && Math.abs(f.dia) >= 1).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia)).slice(0, 3);
+  const fichas = [['^IBEX', 'Ibex 35'], ['^STOXX50E', 'Euro Stoxx 50'], ['^GSPC', 'S&P 500'], ['BTC-EUR', 'Bitcoin']].filter(([k]) => MK[k] && MK[k].variacion_dia != null);
+  const mercado = ((inf && inf.mercado) || []).slice(0, 3);
+  const tuyas = noticiasDeLoTuyo(M, 4), generales = (N.mercado || []).filter((n) => n.t && n.u).slice(0, 3);
+  const prox = (() => { try { return agendaLista(M, 2).filter((e) => e.tipo !== 'festivo' || e.mio).slice(0, 4); } catch (e) { return []; } })();
+  const toca = (() => { try { const P = pasosRuta(M); return [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto && x.urgente)[0] || null; } catch (e) { return null; } })();
+  const noticia = (n) => `<li><a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
+  return `<div class="rdia">
+    <p class="rdia-fecha">${esc(fecha[0].toUpperCase() + fecha.slice(1))}</p>
+    <section class="rdia-car"><span class="k">Tu cartera hoy</span><b class="rdia-tot">${eur(M.total, 0)}</b><span class="${cls(M.dia)} rdia-dia">${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})</span>
+      ${mueven.length ? `<div class="mv-l">${mueven.map((f) => `<span class="mv-c ${cls(f.dia)}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span>`).join('')}</div>` : ''}</section>
+    ${ia && ia.titular ? `<section class="rdia-ia"><h3>${ICONOS.chispa}Lo que dice ${esc(nombreIA())}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
+    ${fichas.length || mercado.length ? `<section><h3>Los mercados</h3>${fichas.length ? `<div class="agp-fichas">${fichas.map(([k, n]) => { const v = MK[k].variacion_dia; return `<span class="${v >= 0 ? 'up' : 'down'}"><i>${v >= 0 ? '↑' : '↓'}</i>${esc(n)} <b>${pctS(v, 2)}</b></span>`; }).join('')}</div>` : ''}
+      ${mercado.length ? `<ul class="rdia-merc">${mercado.map((m) => `<li>${chipImpacto(m.impacto)}<span>${escIA(m.t)}</span></li>`).join('')}</ul>` : ''}</section>` : ''}
+    ${tuyas.length ? `<section><h3>Noticias de lo tuyo</h3><ul class="rdia-not">${tuyas.map(noticia).join('')}</ul></section>` : ''}
+    ${generales.length ? `<section><h3>De la bolsa</h3><ul class="rdia-not">${generales.map(noticia).join('')}</ul></section>` : ''}
+    ${prox.length ? `<section><h3>Hoy y mañana</h3><ul class="rdia-prox">${prox.map((e) => `<li><span class="ag-cd">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span><b>${tituloAg(e)}</b><small>${esc(e.s || '')}</small></span></li>`).join('')}</ul></section>` : ''}
+  </div>`;
+}
+function resumenDelDia(seguir = () => {}, forzar = false) {
+  if (!S.cartera || !S.M) return seguir();
+  if (!forzar && (LS.get('inv-resumen-off', false) || LS.get('inv-resumen-dia', '') === hoyIso() || !S.M.filas.length || document.querySelector('.hoja-fondo, .tour, .estreno'))) return seguir();
+  LS.set('inv-resumen-dia', hoyIso());
+  const h = hoja(`${saludoHora()}${nombreUsuario() ? `, ${nombreUsuario()}` : ''}`, `${htmlResumenDia(S.M)}
+    <div class="fila-btns rdia-pie"><label class="check-mini"><input type="checkbox" id="rdiaOff" ${LS.get('inv-resumen-off', false) ? 'checked' : ''}> No enseñarlo cada día</label><button type="button" class="btn pri" data-cerrar>Ver mi cartera</button></div>`, () => seguir());
+  h.el.classList.add('hoja-rdia');
+  $('#rdiaOff', h.el).onchange = (e) => { LS.set('inv-resumen-off', e.target.checked); toast(e.target.checked ? 'Ya no saldrá solo: lo tienes en Ajustes' : 'Saldrá la primera vez que abras cada día', 3500); };
+  h.el.addEventListener('click', (e) => { if (e.target.closest('a[href^="#"]')) h.cerrar(true); });
 }
 
 /* =====================================================================
@@ -7051,6 +7138,29 @@ function htmlPreguntasIA(compacto) {
       <div class="pf-opc">${(x.opciones || []).slice(0, 5).map((o) => `<button type="button" class="chip-btn" data-resp="${esc(o)}">${esc(o)}</button>`).join('')}</div>
       <form class="pf-otra"><input placeholder="${(x.opciones || []).length ? 'O escríbelo tú' : 'Tu respuesta'}" aria-label="Tu respuesta"><button class="btn peq">Responder</button></form></div>`).join('')}
   </section>`;
+}
+/* Cuando GrowIA pregunta algo, sale en una hoja propia al abrir (y al acabar su revisión), con las respuestas
+   para tocar: una vez cada pregunta. Si la dejas para luego, sigue en Cartera y en Objetivos. */
+const clavePreg = (x) => normTxt(x.q).slice(0, 80);
+function preguntaNueva() {
+  const vistas = LS.get('inv-preg-vistas', []);
+  return preguntasIA().map((x, i) => ({ x, i })).find(({ x }) => !vistas.includes(clavePreg(x))) || null;
+}
+function mostrarPreguntaIA(seguir = () => {}) {
+  const p = preguntaNueva();
+  if (!p || document.querySelector('.hoja-fondo, .tour, .estreno')) return seguir();
+  const { x, i } = p, total = preguntasIA().length;
+  LS.set('inv-preg-vistas', [...LS.get('inv-preg-vistas', []), clavePreg(x)].slice(-40));
+  const h = hoja('GrowIA te pregunta', `<div class="pregia">
+      <div class="pregia-cab"><span class="pregia-ico">${ICONOS.chispa}</span><p>Para afinar sus consejos${total > 1 ? ` (${total} preguntas)` : ''}</p></div>
+      <h3>${esc(x.q)}</h3>${x.por_que ? `<p class="pregia-pq">${esc(x.por_que)}</p>` : ''}
+      ${(x.opciones || []).length ? `<div class="pregia-opc">${x.opciones.slice(0, 5).map((o) => `<button type="button" class="btn" data-pregia="${esc(o)}">${esc(o)}</button>`).join('')}</div>` : ''}
+      <form class="pregia-otra"><input placeholder="${(x.opciones || []).length ? 'O escríbelo con tus palabras' : 'Tu respuesta'}" aria-label="Tu respuesta" maxlength="300"><button class="btn pri">Responder</button></form>
+      <button type="button" class="enlace pregia-luego" data-cerrar>Luego (la tienes en Objetivos)</button>
+    </div>`, () => seguir());
+  const responde = async (a) => { if (!String(a || '').trim()) return; h.cerrar(true); await responderIA(i, a); setTimeout(() => mostrarPreguntaIA(seguir), 400); };
+  h.el.addEventListener('click', (e) => { const b = e.target.closest('[data-pregia]'); if (b) responde(b.dataset.pregia); });
+  $('.pregia-otra', h.el).onsubmit = (e) => { e.preventDefault(); responde(e.target.querySelector('input').value); };
 }
 async function responderIA(i, a) {
   const x = preguntasIA()[i]; if (!x || !String(a || '').trim()) return;
@@ -10403,7 +10513,7 @@ function bienvenida(intento = 0) {
   if (!LS.get('inv-vnum') && /^0\.[2-9]\.0$/.test(visto || '')) visto = '0.1.' + visto.split('.')[1];  // numeración de antes: 0.9.0 es la 0.1.9
   const nuevo = S.recienCreada || (!(S.cartera.posiciones || []).length && !LS.get('inv-tour', null));
   S.recienCreada = false;
-  const despues = () => avisoGTA(() => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); });
+  const despues = () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(() => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); })));
   if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); return iniciarTour(0, despues); }
   // la 0.2 llega con su propia pantalla de estreno, una vez
   // la presentación de la 0.2 (la nueva, más completa): una vez a todos los que ya usaban GrowFolio
@@ -10953,6 +11063,8 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     await guardarAnalisisPropio();
     toast(`${nombreIA()} ha actualizado el análisis de tu cartera`);
     IA.reintentos = 0;
+    // si trae una pregunta nueva: a la vista (y aviso al móvil si lo tienes activado y no estás mirando)
+    if (preguntaNueva()) { if (document.hidden) avisoSistema('pregunta', 'GrowIA te pregunta', preguntaNueva().x.q, '#objetivos', 'preg:' + clavePreg(preguntaNueva().x)); else setTimeout(() => mostrarPreguntaIA(), 1200); }
   } catch (e) {
     IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}.` : e.message;
     // saturado o «espera un momento»: lo vuelve a intentar sola a los 5, 15 y 30 minutos
@@ -12164,7 +12276,7 @@ function arrancar() {
   cargarIA().then(() => { if (S.vista === 'analisis') pintar(); refrescarToca(); });
   // el análisis y la clave llegan un poco después de pintar: hasta entonces, la tarjeta de GrowIA de Cartera
   // dice «cargando» (antes decía «aún sin activar» aunque la tuvieras activada) y luego se rehace sola
-  Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); });
+  Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); setTimeout(() => mostrarPreguntaIA(), 3000); });
   // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)
   { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); }; setTimeout(mira, 6000); }
   clearInterval(tickPrecios); clearInterval(tickEstado);
