@@ -2540,6 +2540,35 @@ body.con-ixn { overflow: hidden; }
 .mf-que { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
 .mf-det .merc2-imp, .mf-det .merc2-tuyo { margin: 0; }
 .mg-nota { margin-top: -8px; }
+/* Mercados (0.2.4): las gráficas arriba; en el móvil, un grupo cada vez con pestañas y lo demás plegado */
+.mg-tabs { display: none; }
+.merc-pleg > summary { list-style: none; cursor: pointer; align-items: center; }
+.merc-pleg > summary::-webkit-details-marker { display: none; }
+.merc-pleg > summary .aj-flecha { margin-left: auto; transition: transform 0.2s ease; }
+.merc-pleg[open] > summary .aj-flecha { transform: rotate(45deg); }
+.mp-ade { display: none; }
+.movidas.merc-pleg > summary { margin-bottom: 0; }
+.movidas.merc-pleg[open] > summary { margin-bottom: 14px; }
+@media (max-width: 759px) {
+  .vista-merc { margin-bottom: 14px; }
+  .vista-merc p { display: none; }
+  .pila-merc { gap: 30px; }
+  .merc-busca { padding: 14px; gap: 8px; }
+  .merc-busca h2 { font-size: 15px; }
+  .merc-busca-t { display: none; }
+  .mg-tabs { display: flex; gap: 6px; margin: -4px calc(-1 * var(--gutter)) 12px; padding: 0 var(--gutter) 2px; overflow-x: auto; scrollbar-width: none; }
+  .mg-tabs::-webkit-scrollbar { display: none; }
+  .mg-tabs button { flex: none; min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--text-2); font: inherit; font-size: 14px; font-weight: 600; white-space: nowrap; }
+  .mg-tabs button[aria-selected="true"] { background: var(--accent-bg); border-color: rgba(226, 180, 95, 0.45); color: var(--accent); }
+  .mgrupo { display: none; }
+  .mgrupo.act { display: block; }
+  .mgrupo .mg-t { display: none; }
+  .merc-pleg:not([open]) > summary { flex-wrap: wrap; row-gap: 6px; }
+  .merc-pleg:not([open]) > summary > .k { display: none; }
+  .merc-pleg:not([open]) .mp-ade { display: block; order: 3; flex-basis: 100%; color: var(--text-2); font-size: 14px; line-height: 1.45; }
+  .mp-ade em { font-style: normal; color: var(--muted); }
+  .merc-pleg > summary h2 { flex: 1 1 0; min-width: 0; }
+}
 .mas-noticias > summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 14px; padding: 10px 0; }
 @media (max-width: 680px) {
   .macro-ia { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 72%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; }
@@ -5860,14 +5889,14 @@ function htmlResumenInforme(corto) {
   </section>`;
 }
 const ZONA_BANDERA = { EEUU: 'US', Europa: 'EU', 'España': 'ES', Asia: 'JP', Emergentes: null, Global: null };
-function htmlMercadoInforme() {
+function htmlMercadoInforme(abierto = true) {
   const inf = informeVisible();
   if (!inf || !(inf.mercado || []).length) return '';
-  // los titulares a la vista; el detalle de cada uno, al tocarlo
-  return `<section class="informe" aria-labelledby="hInfM"><div class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según GrowIA</h2><span class="k">${cabInforme(inf)}</span></div>
+  // los titulares a la vista; el detalle de cada uno, al tocarlo. Plegado (en el móvil), el primer titular de adelanto
+  return `<details class="informe merc-pleg"${abierto ? ' open' : ''}><summary class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según GrowIA</h2><span class="k">${cabInforme(inf)}</span><span class="mp-ade">${escIA(inf.mercado[0].t)}${inf.mercado.length > 1 ? ` <em>y ${inf.mercado.length - 1} más</em>` : ''}</span><i class="aj-flecha" aria-hidden="true"></i></summary>
     <ul class="informe-merc plegados">${inf.mercado.map((m) => `<li><details><summary>${chipImpacto(m.impacto)}${m.zona ? `<span class="zona-ia">${bandera(ZONA_BANDERA[m.zona])}${esc(m.zona)}</span>` : ''}<b>${escIA(m.t)}</b></summary><p>${escIA(m.detalle)}</p>${m.implica ? `<p class="ia-implica"><b>Para tu cartera:</b> ${escIA(m.implica)}</p>` : ''}${enlacesFuentes(m.fuentes, 2)}</details></li>`).join('')}</ul>
     ${(inf.macro || []).length ? `<div class="macro-ia">${inf.macro.map((x) => `<div><small>${escIA(x.t)}</small><b>${escIA(x.dato)}</b><p>${escIA(x.lectura)}</p></div>`).join('')}</div>` : ''}
-  </section>`;
+  </details>`;
 }
 const limpiaIA = (t) => String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, '');
 const escIA = (t) => esc(limpiaIA(t));
@@ -6116,17 +6145,34 @@ function vistaMercados(M) {
   const N = (S.precios && S.precios.noticias && S.precios.noticias.mercado) || [];
   const porGrupo = new Map(GRUPOS_MERC.map((g) => [g, []]));
   for (const [sym, m] of Object.entries(merc)) { const g = m.grupo || (MERC_INFO[sym] && MERC_INFO[sym].g) || 'Otros'; if (!porGrupo.has(g)) porGrupo.set(g, []); porGrupo.get(g).push([sym, m]); }
+  const grupos = [...porGrupo.entries()].filter(([, v]) => v.length);
+  if (S.mgrupo == null) S.mgrupo = LS.get('inv-mgrupo', null);
+  // en el móvil se ve un grupo cada vez (con pestañas); en el ordenador, todos
+  const act = grupos.some(([g]) => g === S.mgrupo) ? S.mgrupo : (grupos[0] || [''])[0];
+  const abierto = innerWidth >= 760;
   return `
-  <div class="vista-cab"><h1>Mercados</h1><p>Bolsas del mundo, tipos, divisas y materias primas: qué son, cómo van y qué significa que suban o bajen para lo que tienes.</p></div>
-  <div class="pila">
+  <div class="vista-cab vista-merc"><h1>Mercados</h1><p>Bolsas del mundo, tipos, divisas y materias primas: qué son, cómo van y qué significa que suban o bajen para lo que tienes.</p></div>
+  <div class="pila pila-merc">
     ${htmlBuscaMercados()}
-    ${htmlMovidas()}
-    ${htmlMercadoInforme()}
-    <div class="mgrupos">${[...porGrupo.entries()].filter(([, v]) => v.length).map(([g, v]) => `<section class="mgrupo" aria-label="${esc(g)}"><h2 class="mg-t">${esc(g)}</h2><div class="mfilas">${v.map(([sym, m]) => filaMercado(sym, m, M)).join('')}</div></section>`).join('')}</div>
-    <p class="nota mg-nota">Toca cada mercado para ver qué es, cómo ha ido y qué significa para ti que suba o baje.</p>
+    <section class="mgrupos-w" aria-labelledby="hMg">
+      <div class="sec-cab"><h2 id="hMg">Cómo van</h2><span class="k">toca uno para ver qué es y qué significa para ti</span></div>
+      <div class="mg-tabs" role="tablist" aria-label="Grupos de mercados">${grupos.map(([g]) => `<button type="button" role="tab" data-mg="${esc(g)}" aria-selected="${g === act}">${esc(MG_CORTO[g] || g)}</button>`).join('')}</div>
+      <div class="mgrupos">${grupos.map(([g, v]) => `<section class="mgrupo${g === act ? ' act' : ''}" data-g="${esc(g)}" aria-label="${esc(g)}"><h3 class="mg-t">${esc(g)}</h3><div class="mfilas">${v.map(([sym, m]) => filaMercado(sym, m, M)).join('')}</div></section>`).join('')}</div>
+    </section>
+    ${htmlMercadoInforme(abierto)}
+    ${htmlMovidas(abierto)}
     <section aria-labelledby="hNotM"><div class="sec-cab"><h2 id="hNotM">Noticias de mercado</h2><span class="k">bolsas, bancos centrales, petróleo y divisas</span></div>${htmlNoticias(N.slice(0, 6), false, 6).replace('class="noticias"', 'class="noticias dos-col"')}${N.length > 6 ? `<details class="mas-noticias"><summary>Ver ${Math.min(N.length, 16) - 6} noticias más</summary>${htmlNoticias(N.slice(6, 16), false, 10).replace('class="noticias"', 'class="noticias dos-col"')}</details>` : ''}</section>
   </div>`;
 }
+const MG_CORTO = { 'Asia y emergentes': 'Asia', 'Tipos y riesgo': 'Tipos', 'Materias primas': 'Materias primas' };
+// las pestañas de grupos del móvil: cambia sin volver a pintar la página (y se recuerda)
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-mg]'); if (!b) return;
+  S.mgrupo = b.dataset.mg; LS.set('inv-mgrupo', S.mgrupo);
+  for (const t of $$('.mg-tabs [data-mg]')) t.setAttribute('aria-selected', String(t === b));
+  for (const g of $$('.mgrupo[data-g]')) g.classList.toggle('act', g.dataset.g === S.mgrupo);
+  for (const el of $$('.mgrupo.act [data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
+});
 
 /* =========================== Análisis =========================== */
 /* cuatro pestañas: qué hacer, lo que opina la IA, tus números (cinco vistas) y la fiscalidad */
@@ -10481,15 +10527,16 @@ function candidatoDeSim(sim) {
 const nombreRadar = (x) => nombreCorto(/^[A-Z0-9 .,&'-]+$/.test(x.n) ? x.n.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : x.n);
 function htmlBuscaMercados() {
   const n = candidatosBusqueda().length;
-  return `<section class="merc-busca" aria-labelledby="hBusca"><h2 id="hBusca">Busca un fondo, una acción o una cripto</h2><div id="mercBusca"></div><p class="merc-busca-t">Unos ${fmtNum(Math.floor(n / 50) * 50, 0)} entre fondos, cripto, empresas y mercados. Tócalo para ver su precio, su gráfica y sus noticias, y añadirlo a tu cartera.</p></section>`;
+  return `<section class="merc-busca" aria-labelledby="hBusca"><h2 id="hBusca">Busca un fondo, una acción o una cripto</h2><div id="mercBusca"></div><p class="merc-busca-t">Unos ${fmtNum(Math.floor(n / 50) * 50, 0)} entre fondos, cripto, empresas y mercados: su precio, su gráfica, sus noticias y añadirlo a tu cartera.</p></section>`;
 }
-function htmlMovidas() {
+function htmlMovidas(abierto = true) {
   const r = ((S.radar && S.radar.valores) || []).filter((x) => !x.pd && x.v != null && isFinite(x.v) && x.p > 0 && Math.abs(x.v) < 60);
   if (r.length < 30) return '';
   const orden = [...r].sort((a, b) => b.v - a.v), suben = orden.slice(0, 5), bajan = orden.slice(-5).reverse();
   const li = (x) => `<li><button type="button" class="mov" data-consulta="${esc(x.s)}">${logo(x.w, nombreRadar(x), 'peq')}<span class="busca-t"><b>${esc(nombreRadar(x))}</b><small>${esc(x.s)}${x.sector ? ` · <span>${esc(x.sector)}</span>` : ''}</small></span><span class="mov-v"><b class="${cls(x.v)}">${pctS(x.v, 1)}</b><small>${precioR(x.p, x.m)}</small></span></button></li>`;
-  return `<section class="movidas" aria-labelledby="hMov"><div class="sec-cab"><h2 id="hMov">Las que más se han movido</h2><span class="k">en su último día de bolsa, de las ${fmtNum(r.length, 0)} empresas del radar${S.radar.generado ? `, ${haceCuanto(S.radar.generado)}` : ''}</span></div>
-    <div class="mov-cols"><div><h3 class="mov-h up">Suben</h3><ul class="mov-l">${suben.map(li).join('')}</ul></div><div><h3 class="mov-h down">Bajan</h3><ul class="mov-l">${bajan.map(li).join('')}</ul></div></div></section>`;
+  const ade = (x) => `${esc(nombreRadar(x))} <b class="${cls(x.v)}">${pctS(x.v, 1)}</b>`;
+  return `<details class="movidas merc-pleg"${abierto ? ' open' : ''}><summary class="sec-cab"><h2 id="hMov">Las que más se han movido</h2><span class="k">en su último día de bolsa, de las ${fmtNum(r.length, 0)} empresas del radar${S.radar.generado ? `, ${haceCuanto(S.radar.generado)}` : ''}</span><span class="mp-ade">${ade(suben[0])}, ${ade(bajan[0])}</span><i class="aj-flecha" aria-hidden="true"></i></summary>
+    <div class="mov-cols"><div><h3 class="mov-h up">Suben</h3><ul class="mov-l">${suben.map(li).join('')}</ul></div><div><h3 class="mov-h down">Bajan</h3><ul class="mov-l">${bajan.map(li).join('')}</ul></div></div></details>`;
 }
 /* gráfica sencilla del último año a partir de [[fecha, precio], …] */
 // el histórico semanal del radar: se baja la primera vez que abres la ficha de una empresa que no tienes
