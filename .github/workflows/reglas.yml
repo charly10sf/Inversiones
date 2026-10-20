@@ -1,0 +1,44 @@
+name: Reglas de Firestore
+
+# Publica firestore.rules en Firebase cada vez que cambia en main (o a mano, desde Actions). Usa el secreto
+# FIREBASE_REGLAS: la clave JSON de una cuenta de servicio que solo puede tocar las reglas. Sin el secreto no hace
+# nada (las reglas se pegan a mano en la consola de Firebase, como hasta ahora).
+on:
+  push:
+    branches: [main]
+    paths:
+      - "firestore.rules"
+      - "firebase.json"
+      - ".github/workflows/reglas.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reglas
+  cancel-in-progress: false
+
+jobs:
+  reglas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Publicar las reglas
+        env:
+          CLAVE: ${{ secrets.FIREBASE_REGLAS }}
+        run: |
+          if [ -z "$CLAVE" ]; then
+            echo "Falta el secreto FIREBASE_REGLAS: no se publica nada (se pegan a mano en la consola de Firebase)."
+            exit 0
+          fi
+          printf '%s' "$CLAVE" > "$RUNNER_TEMP/clave.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/clave.json"
+          npx --yes firebase-tools@14 deploy --only firestore:rules --project growfolio-a79a9 --non-interactive
+          rm -f "$RUNNER_TEMP/clave.json"
