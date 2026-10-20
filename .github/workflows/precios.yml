@@ -46,6 +46,7 @@ jobs:
             git show origin/datos:precios.json > anterior/precios.json || true
             git show origin/datos:historico.json > anterior/historico.json || true
             git show origin/datos:radar.json > anterior/radar.json || true
+            git show origin/datos:radar-hist.json > anterior/radar-hist.json || true
             git show origin/datos:informe.json > anterior/informe.json || true
             git show origin/datos:escaneo.json > anterior/escaneo.json || true
             git show origin/datos:noticias-cache.json > anterior/noticias-cache.json || true

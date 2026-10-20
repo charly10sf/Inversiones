@@ -8519,6 +8519,9 @@ function htmlMovidas() {
     <div class="mov-cols"><div><h3 class="mov-h up">Suben</h3><ul class="mov-l">${suben.map(li).join('')}</ul></div><div><h3 class="mov-h down">Bajan</h3><ul class="mov-l">${bajan.map(li).join('')}</ul></div></div></section>`;
 }
 /* gráfica sencilla del último año a partir de [[fecha, precio], …] */
+// el histórico semanal del radar: se baja la primera vez que abres la ficha de una empresa que no tienes
+let radarHistP = null;
+const radarHist = () => radarHistP || (radarHistP = fetch(GH.raw('radar-hist.json', 'datos') + '?v=' + Math.floor(Date.now() / 3600000), { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => { radarHistP = null; return null; }));
 function graficaConsulta(h, mon) {
   const desde = iso(new Date(Date.now() - 366 * 864e5));
   const se = (h || []).filter(([d, v]) => d >= desde && v > 0);
@@ -8592,6 +8595,11 @@ function abrirConsulta(c) {
     if (!serie && cid) {
       const id2 = cid;
       try { const r = await fetch(CFG.dev ? `dev/cat/${id2}.json` : GH.raw(`cat/${id2}.json`, 'catalogo') + '?v=' + Math.floor(Date.now() / 3600000), { cache: 'no-cache' }); if (r.ok) { const j = await r.json(); serie = j && j.h; } } catch (e) { console.warn(e); }
+    }
+    // las empresas del radar que no tienes: su año en cierres semanales (radar-hist.json, una vez al día)
+    if (!serie && sim) {
+      const rh = await radarHist(), e = rh && rh.s && rh.s[sim];
+      if (e && e.d && e.v) { const d0 = deIso(e.d), paso = rh.paso || 7; serie = e.v.map((v, k) => { const x2 = new Date(d0); x2.setDate(d0.getDate() + k * paso); return [iso(x2), v]; }); }
     }
     const g = serie ? graficaConsulta(serie, mon) : '';
     gr.innerHTML = g || (x ? rangoConsulta(x) : '');

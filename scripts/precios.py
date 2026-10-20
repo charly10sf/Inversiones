@@ -1112,6 +1112,29 @@ def radar_precios(valores, fx):
     return len(nuevos)
 
 
+def radar_historico(valores):
+    """Un año de cierres semanales de cada empresa del radar, en su moneda, para la gráfica de su ficha en la
+    web (la de las que no tienes). En pocas consultas, de cien en cien. Las semanas sin dato toman el cierre
+    anterior, así que cada serie va de semana en semana desde «d»."""
+    sims = [x["s"] for x in valores]
+    out = {}
+    for i in range(0, len(sims), 100):
+        trozo = sims[i:i + 100]
+        try:
+            df = yf.download(trozo, period="1y", interval="1wk", progress=False, auto_adjust=False, threads=True, group_by="column")
+            cierre = df["Close"]
+            for sim in trozo:
+                if sim not in cierre:
+                    continue
+                c = cierre[sim].ffill().dropna()
+                c = c[c > 0]
+                if len(c) >= 10:
+                    out[sim] = {"d": c.index[0].strftime("%Y-%m-%d"), "v": [num(float(v), 4) for v in c.values]}
+        except Exception:  # noqa: BLE001
+            traceback.print_exc()
+    return {"generado": ahora(), "paso": 7, "s": out} if out else None
+
+
 # ---------------------------------------------------------------- principal
 
 def per_sector_mediano(valores):
@@ -1347,6 +1370,22 @@ def main(ruta_inst, dir_anterior, dir_salida):
         with open(f"{dir_salida}/radar.json", "w", encoding="utf-8") as f:
             json.dump(radar_sal, f, ensure_ascii=False, separators=(",", ":"))
         salida["radar_id"] = (radar_sal.get("generado") or "") + "|" + (radar_sal.get("precios") or "")
+        # el histórico de un año de cada empresa del radar (para la gráfica de su ficha): una vez al día
+        prev_rh = leer_json(f"{dir_anterior}/radar-hist.json")
+        rh = prev_rh if prev_rh and hace_menos_de(prev_rh.get("generado") or "", 20) else None
+        if not rh:
+            try:
+                rh = radar_historico(radar_sal["valores"]) or prev_rh
+                if rh and rh is not prev_rh:
+                    print(f"radar: histórico de {len(rh.get('s') or {})} empresas")
+            except Exception as e:  # noqa: BLE001
+                traceback.print_exc()
+                errores.append(f"radar histórico: {e}")
+                rh = prev_rh
+        if rh:
+            with open(f"{dir_salida}/radar-hist.json", "w", encoding="utf-8") as f:
+                json.dump(rh, f, ensure_ascii=False, separators=(",", ":"))
+            salida["radar_hist_id"] = rh.get("generado")
         salida["radar_generado"] = radar_sal.get("generado")
         salida["radar_n"] = len(radar_sal["valores"])
 
