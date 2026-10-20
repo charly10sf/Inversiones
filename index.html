@@ -7257,20 +7257,27 @@ function curvaSuave(P) {
    y el mínimo marcados, y sin eje de cifras (la cifra es la de arriba). Al pasar el dedo, lo de después se apaga, la
    fecha sale abajo y opt.alMover recibe el punto (para la cifra grande); al soltar, todo vuelve a ahora */
 let grafHeroN = 0;
-/* la textura bajo la curva de Inicio:
-   ecos: la misma curva repetida hacia abajo, cada vez más tenue, como curvas de nivel;
-   barras: rayas finas verticales que se apagan hacia abajo;
-   grano: grano fino dorado, como de película, que se apaga hacia abajo */
-function texturaGraf(t, { id, W, H, curva, suelo, mt, color, paso }) {
-  if (t === 'barras') return `<rect class="gh-area gh-tex" x="0" y="0" width="${W}" height="${H}" fill="url(#${id}v)" mask="url(#${id}m)" opacity="0.75"/>`;
-  if (t === 'grano') return `<rect class="gh-area gh-tex" x="0" y="0" width="${W}" height="${H}" filter="url(#${id}n)" mask="url(#${id}m)"/>`;
-  if (t === 'ecos') {
-    const gap = paso + 8, n = Math.ceil((suelo - mt) / gap) + 2;
-    let e = '';
-    for (let k = 1; k <= n; k++) e += `<path d="${curva}" transform="translate(0 ${k * gap})" fill="none" style="stroke:${color}" stroke-width="0.9" opacity="${(0.4 * Math.pow(1 - k / (n + 1), 1.8)).toFixed(3)}"/>`;
-    return `<g class="gh-area gh-tex" clip-path="url(#${id}z)">${e}</g>`;
-  }
-  return '';
+/* la textura bajo la curva de Inicio: grano dorado fino, como de película, que se apaga hacia abajo. El grano es una
+   imagen pequeña hecha una vez (a la resolución de la pantalla) que se repite: sin filtros, para que pasar el dedo por
+   la curva vaya igual de fino en cualquier móvil */
+let granoCache = null;
+function granoGraf() {
+  if (granoCache) return granoCache;
+  try {
+    const dpr = Math.min(3, Math.max(1, Math.round(window.devicePixelRatio || 1))), px = 96 * dpr;
+    const c = document.createElement('canvas'); c.width = c.height = px;
+    const x = c.getContext('2d'), im = x.createImageData(px, px), d = im.data;
+    for (let i = 0; i < d.length; i += 4) {
+      const a = Math.max(0, Math.min(1, Math.random() * 2.2 - 0.95));
+      d[i] = 236; d[i + 1] = 192; d[i + 2] = 112; d[i + 3] = Math.round(a * 255);
+    }
+    x.putImageData(im, 0, 0);
+    granoCache = { url: c.toDataURL('image/png'), l: 96 };
+  } catch (e) { granoCache = null; }
+  return granoCache;
+}
+function texturaGraf({ id, W, H }) {
+  return granoGraf() ? `<rect class="gh-area gh-tex" x="0" y="0" width="${W}" height="${H}" fill="url(#${id}n)" mask="url(#${id}m)"/>` : '';
 }
 function grafHero(cont, series, opt = {}) {
   cont.innerHTML = '';
@@ -7321,9 +7328,7 @@ function grafHero(cont, series, opt = {}) {
     <linearGradient id="${id}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.55"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
     <linearGradient id="${id}mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.9"/><stop offset="0.7" stop-color="#fff" stop-opacity="0.2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <mask id="${id}m"><path d="${area}" fill="url(#${id}mg)"/></mask>
-    <clipPath id="${id}z"><path d="${area}"/></clipPath>
-    <pattern id="${id}v" width="${opt.trama || 6}" height="${H}" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="1.3" height="${H}" style="fill:${color}"/></pattern>
-    <filter id="${id}n" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" result="r"/><feColorMatrix in="r" type="matrix" values="0 0 0 0 0.89  0 0 0 0 0.71  0 0 0 0 0.37  0 0 0 2.2 -0.95"/></filter>
+    ${(() => { const gr = granoGraf(); return gr ? `<pattern id="${id}n" width="${gr.l}" height="${gr.l}" patternUnits="userSpaceOnUse"><image href="${gr.url}" width="${gr.l}" height="${gr.l}" style="image-rendering:pixelated"/></pattern>` : ''; })()}
     <radialGradient id="${id}r"><stop offset="0" style="stop-color:${color};stop-opacity:0.28"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></radialGradient>
     <linearGradient id="${id}c" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 20}" x2="0" y2="${suelo}"><stop offset="0" style="stop-color:var(--text-2);stop-opacity:0"/><stop offset="0.3" style="stop-color:var(--text-2);stop-opacity:0.5"/><stop offset="1" style="stop-color:var(--text-2);stop-opacity:0.15"/></linearGradient>
     <filter id="${id}b" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="6.5"/></filter>
@@ -7343,7 +7348,7 @@ function grafHero(cont, series, opt = {}) {
   }
   g += `<g clip-path="url(#${id}k)">
     <path class="gh-area" d="${area}" fill="url(#${id}a)" opacity="0.6"/>
-    ${texturaGraf(opt.textura || window.TEXTURA_GRAF || 'ecos', { id, W, H, curva, suelo, mt, color, paso: opt.trama || 6 })}
+    ${texturaGraf({ id, W, H })}
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="10" opacity="0.45" filter="url(#${id}b)"/>
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="${opt.grueso || 2.8}" stroke-linejoin="round" stroke-linecap="round"/>
   </g>`;
@@ -7465,7 +7470,7 @@ function dibujar(M) {
     };
     const movil = innerWidth < 760;
     const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
-    grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, trama: movil ? 5 : 6, ref: ref0 && ref0.v, alMover, animar });
+    grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, ref: ref0 && ref0.v, alMover, animar });
   }
   // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
   for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
