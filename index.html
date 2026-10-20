@@ -4250,8 +4250,8 @@ function senal(f, M) {
   const pr = f.precio;
   const stop = +f.pos.stop, obj = +f.pos.objetivo;
   const fin = (nivel) => ({ nivel, txt: SENALES[nivel], motivos });
-  if (stop && pr && pr <= stop) { motivos.push(`Ha bajado de tu precio de salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`); return { ...fin('vender'), urgente: true }; }
-  if (obj && pr && pr >= obj) { motivos.push(`Ha llegado a tu objetivo de ${precioFmt(obj)}: decide si vendes todo, una parte o subes el objetivo.`); return { ...fin('recoger'), urgente: true }; }
+  if (stop && pr && pr <= stop) { motivos.push(L(`Ha bajado de tu precio de salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`, `It has fallen below your exit price (${precioFmt(stop)}). It's what you told yourself you'd do.`)); return { ...fin('vender'), urgente: true }; }
+  if (obj && pr && pr >= obj) { motivos.push(L(`Ha llegado a tu objetivo de ${precioFmt(obj)}: decide si vendes todo, una parte o subes el objetivo.`, `It has reached your target of ${precioFmt(obj)}: decide whether to sell it all, sell part or raise the target.`)); return { ...fin('recoger'), urgente: true }; }
 
   if (i.tipo === 'Acción') {
     let score = 0;
@@ -5037,8 +5037,8 @@ function vistaCarteraEditar(M) {
     <div class="ce-cab"><h1>${L('Tu Inicio, a tu gusto', 'Your Home, your way')}</h1><p>${L('Arrastra cada bloque por su barra a donde quieras. Con la × lo quitas; abajo tienes lo que puedes añadir.', 'Drag each block by its bar to wherever you want. The × removes it; below is what you can add.')}</p></div>
     <ol class="ce-l" id="ceL">${v.map((k, i) => { const b = BLOQUES_CAR[k]; return `<li class="ce-b" data-k="${k}">
       <div class="ce-barra-b"><span class="ce-asa" aria-hidden="true">${ASA_SVG}</span><span class="ce-t"><b>${esc(b.n)}</b><small>${esc(ANCHO_CAR[b.w])}</small></span>
-        <button type="button" class="ib" data-ce="sube" aria-label="${L('Subir', 'Move up')} ${esc(b.n)}"${i ? '' : ' disabled'}>${flechaCE('M6 15l6-6 6 6')}</button><button type="button" class="ib" data-ce="baja" aria-label="${L('Bajar', 'Move down')} ${esc(b.n)}"${i < v.length - 1 ? '' : ' disabled'}>${flechaCE('M6 9l6 6 6-6')}</button>
-        ${b.fijo ? `<span class="ce-fijo">${L('siempre', 'always')}</span>` : `<button type="button" class="ib ce-quita" data-ce="quita" aria-label="${L('Quitar', 'Remove')} ${esc(b.n)}">${ICONOS.cerrar}</button>`}</div>
+        <button type="button" class="ib" data-ce="sube" aria-label="${L('Subir', 'Move up')} ${esc(trad(b.n))}"${i ? '' : ' disabled'}>${flechaCE('M6 15l6-6 6 6')}</button><button type="button" class="ib" data-ce="baja" aria-label="${L('Bajar', 'Move down')} ${esc(trad(b.n))}"${i < v.length - 1 ? '' : ' disabled'}>${flechaCE('M6 9l6 6 6-6')}</button>
+        ${b.fijo ? `<span class="ce-fijo">${L('siempre', 'always')}</span>` : `<button type="button" class="ib ce-quita" data-ce="quita" aria-label="${L('Quitar', 'Remove')} ${esc(trad(b.n))}">${ICONOS.cerrar}</button>`}</div>
       <div class="ce-prev" aria-hidden="true" inert>${htmlBloqueCar(k, M) || `<p class="nota">${esc(b.d)}</p>`}</div></li>`; }).join('')}</ol>
     ${fuera.length ? `<h2 class="ce-h">${L('Puedes añadir', 'You can add')}</h2><div class="ce-mas">${fuera.map((k) => { const b = BLOQUES_CAR[k]; return `<button type="button" class="ce-add" data-ce-add="${k}">${ICONOS.mas}<span><b>${esc(b.n)}</b><small>${esc(b.d)}</small></span></button>`; }).join('')}</div>` : ''}
     <div class="ce-pie"><button type="button" class="btn" data-ce="defecto">${L('Volver a como venía', 'Reset')}</button><button type="button" class="btn pri" data-ce="listo">${ICONOS.ok}${L('Listo', 'Done')}</button></div>
@@ -6490,7 +6490,7 @@ function htmlIdeas(M, ia) {
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
   return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowIA y tu análisis</span></div>
     ${d && d.comentario ? `<p class="idea-panorama"><b>GrowIA</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
-    ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
+    ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : `<div class="vacio">${L('Ahora mismo ninguna pasa los filtros: mejor esperar.', 'None passes the filters right now: better to wait.')}</div>`}
     <p class="nota">Cómo se eligen: GrowFolio se queda con las tres mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas. Primero salen las que eligen los dos. En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
     <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
@@ -11169,8 +11169,32 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.2.3b';
+const VERSION = '0.3.0';
 const NOVEDADES = [
+  { v: '0.3.0', f: '2026-10-20', h: '23:59', t: 'Más sencilla y con más criterio', cosas: [
+    { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar, .nav' }, t: 'Cinco sitios', x: 'Inicio va en el centro de la barra, más grande. A la izquierda, lo que haces tú: Pasos y Análisis, que ahora lleva tus objetivos. A la derecha, lo de fuera: Expertos y Mercados, que ahora lleva el calendario. Hacienda sale en Análisis cuando toca la renta; el resto del año, con un enlace al final.' },
+    { d: 'tengo', ir: { v: 'cartera', sel: '#hPos', pos: true }, t: 'Tus posiciones, arriba', x: 'En Inicio, justo debajo del patrimonio. GrowIA va después y, en el móvil, más corta: su diagnóstico en tres líneas y las dos cosas que más urgen.' },
+    { d: 'cifras', ir: { v: 'cartera', sel: '.hero-panel' }, t: 'Inicio más limpio', x: 'El ojo para ocultar las cifras va junto a Patrimonio, lo que más ha movido hoy tu cartera sale como en el widget y la comparación con el S&P 500 está junto a los periodos de la gráfica. La bandera del idioma pasa a Ajustes.' },
+    { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: 'La gráfica, desde el principio', x: '«Inicio» la enseña desde tu primera compra. 3A, 5A y Máx llegan de verdad hasta atrás y, en los periodos largos, el eje dice el mes y el año.' },
+    { d: 'hecho', ir: { v: 'ruta', sel: '.ruta-estado' }, t: 'Si vas bien, te lo dice', x: 'Arriba del Paso a paso, cómo vas frente a tus objetivos. Y no hacer nada también es un consejo: si tu cartera va bien, GrowIA te dice que esperes.' },
+    { d: 'pregunta', ir: { v: 'expertos', sel: '.fx3, .ideas-top3' }, t: 'Consejos que no cambian cada día', x: 'La señal de cada posición ya no salta de un día para otro: una nueva tiene que repetirse dos días y la anterior llevar al menos una semana, salvo que sea urgente, como tu precio de salida. GrowIA sabe lo que te dijo antes y, si cambia de opinión, te explica por qué.' },
+    { d: 'meta', ir: { v: 'analisis', sel: 'section.ov, .ov-vacio' }, t: 'Tus objetivos frente a tu cartera', x: 'En Análisis, punto por punto: lo que tienes en bolsa frente a lo que te toca por tu perfil, tus límites de acciones sueltas, cripto y empresa, tu colchón y si llegas a cada meta. Con su barra, en verde lo que va bien y en rojo lo que se sale.' },
+    { d: 'mundo', ir: { v: 'expertos', sel: '.fx3, .ideas-top3' }, t: 'Expertos más claro', x: 'Cada posición tuya en una fila, con su señal y si GrowIA está de acuerdo. Las ideas de compra empiezan compactas y numeradas, con las tres que mejor te encajan en verde; tócalas para ver el porqué.' },
+    { d: 'pestanas', ir: { v: 'cartera', sel: '.car-ordenar-mini' }, t: 'Personaliza arrastrando', x: 'En Inicio, «Personalizar» pone cada bloque con una barra encima: arrástralo por ella adonde quieras, quítalo con la × o añade otros desde abajo. Ves tal cual va a quedar.' },
+    { d: 'hecho', t: 'Compras y ventas, confirmadas', x: 'Al apuntar una compra o una venta, una animación corta te enseña el importe y la fila de esa posición se ilumina.' },
+    { d: 'mercados', ir: { v: 'mercados', sel: '.mg-tabs' }, t: 'Mercados, al grano', x: 'Las gráficas, arriba. En el móvil, un grupo cada vez con sus pestañas (Europa, EEUU, Asia, tipos, divisas…) y, plegado con un adelanto, lo que dice GrowIA y lo que más se ha movido.' },
+    { d: 'calendario', ir: { v: 'agenda', sel: '.agc-fila' }, t: 'Calendario más compacto', x: 'Dos filtros, «Solo lo mío» y «En general», y lo próximo en entradas cortas: caben seis de un vistazo y, en el ordenador, van en dos columnas.' },
+    { d: 'macro', t: 'Las noticias, sin salir', x: 'Toca una noticia y GrowIA te la resume entera ahí mismo y, si te afecta, te dice qué supone para tu cartera. La original sigue debajo.' },
+    { d: 'app', t: 'El widget, más fácil de leer', x: 'Solo lo de hoy, en euros y en %. Toca el periodo de arriba para elegir cuánto enseña la curva: 1 semana, 1 mes, 3 meses o 1 año. Llega con la app nueva de Android.' },
+    { d: 'gta', ir: { v: 'cartera', sel: '.gta-top' }, t: 'GTA VI, con letra de neón', x: 'El VI de la cuenta atrás, con letra de rótulo de neón de los ochenta.' },
+    { d: 'tour', ir: { tour: true }, t: 'Un tutorial nuevo', x: 'Nueve pasos en vez de quince: empieza por la barra y acaba en lo que hay que hacer para empezar. Está en Ajustes. A quien empieza, esa lista se le queda en Inicio hasta que la completa.' },
+  ], arreglos: [
+    '«En directo» se cortaba en la cabecera de algunos móviles.',
+    'En 1D, la pastilla de la gráfica no seguía a los precios en directo y «Hoy» salía dos veces.',
+    '3A, 5A y Máx enseñaban casi lo mismo que 1A.',
+    'Un valor que aún no cotizaba cuando lo compraste (como HBX, que salió a bolsa en 2025) cortaba la gráfica en su primer día.',
+    'Debajo de Cartera quedaba un hueco en blanco.',
+  ] },
   { v: '0.2.3b', f: '2026-10-20', h: '20:58', t: 'Precios al día y avisos que se van', cosas: [
     { d: 'cifras', t: 'Los precios, al día de verdad', x: 'Entre semana, los precios se actualizan cada 20 minutos de la mañana a la noche, y el fin de semana cada 4 horas. Lo que acabas de añadir tiene precio en un rato.' },
   ], arreglos: [
@@ -11805,7 +11829,7 @@ function htmlEmpezar() {
   if (hechas === it.length) return '';
   const desde = LS.get('inv-empezar', 0);
   if (it[1].ok && !(desde && Date.now() - desde < 30 * 864e5)) return '';
-  return `<section class="empezar" aria-labelledby="hEmpezar"><div class="empezar-cab"><h2 id="hEmpezar">Para empezar</h2><span class="k">${hechas} de ${it.length}</span><button type="button" class="ib" data-emp="no" aria-label="Quitar" title="Quitar (lo tienes en Ajustes, en el tutorial)">${ICONOS.cerrar}</button></div>${htmlListaEmpezar()}</section>`;
+  return `<section class="empezar" aria-labelledby="hEmpezar"><div class="empezar-cab"><h2 id="hEmpezar">Para empezar</h2><span class="k">${hechas} de ${it.length}</span><button type="button" class="ib" data-emp="no" aria-label="${L('Quitar', 'Remove')}" title="${L('Quitar (lo tienes en Ajustes, en el tutorial)', 'Remove (the tutorial in Settings has it too)')}">${ICONOS.cerrar}</button></div>${htmlListaEmpezar()}</section>`;
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-emp]'); if (!b) return;
@@ -11828,6 +11852,7 @@ document.addEventListener('click', (e) => { if (e.target.closest('[data-mas]')) 
 
 function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
   cerrarTour();
+  if (pasos && pasos.length === 1 && pasos[0].tour) pasos = TOUR;
   if (S.ficha) cerrarFicha(true);
   document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
   const capa = document.createElement('div');
@@ -11935,8 +11960,8 @@ function colocarTour() {
    Las apps hasta la compilación 7 no saben instalar solas: a esas se les abre la descarga en Chrome.
    ===================================================================== */
 const versionApp = () => { try { return window.InversionesApp.version(); } catch (e) { return 0; } };
-const nombreApp = () => { try { const n = window.InversionesApp.nombreVersion(); if (n) return `versión ${n}`; } catch (e) {} return 'versión anterior a la 0.1.10'; };
-const nombreUlt = (ult) => (ult && ult.nombre ? `versión ${ult.nombre}` : 'versión nueva');
+const nombreApp = () => { try { const n = window.InversionesApp.nombreVersion(); if (n) return `${L('versión', 'version')} ${n}`; } catch (e) {} return L('versión anterior a la 0.1.10', 'version older than 0.1.10'); };
+const nombreUlt = (ult) => (ult && ult.nombre ? `${L('versión', 'version')} ${ult.nombre}` : L('versión nueva', 'new version'));
 async function ultimaApp() {
   try { const r = await fetch(GH.raw('app.json', 'main') + '?v=' + Date.now(), { cache: 'no-store' }); if (r.ok) return await r.json(); } catch (e) {}
   return null;
@@ -14836,7 +14861,7 @@ async function iniciar() {
 }
 /* ---------- la entrada: el logo se monta (carpeta, línea que sube, hoja) y te saluda según la hora ----------
    Sale mientras carga todo; dura al menos lo que tarda la animación y se funde con lo que venga después. */
-const saludoHora = () => { const h = new Date().getHours(); return h >= 6 && h < 14 ? 'Buenos días' : h >= 14 && h < 21 ? 'Buenas tardes' : 'Buenas noches'; };
+const saludoHora = () => { const h = new Date().getHours(); return h >= 6 && h < 14 ? L('Buenos días', 'Good morning') : h >= 14 && h < 21 ? L('Buenas tardes', 'Good afternoon') : L('Buenas noches', 'Good evening'); };
 function mostrarEntrada() {
   const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const n = nombreUsuario();
