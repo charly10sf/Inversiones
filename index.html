@@ -1118,7 +1118,13 @@ table.ideas .sub { display: block; font-size: 12px; }
 .frescura { align-items: baseline; font-size: 13px; margin: -8px 0 22px; }
 .frescura details > summary { list-style: none; cursor: pointer; display: flex; flex-wrap: wrap; gap: 4px 14px; align-items: center; }
 .frescura details > summary::-webkit-details-marker { display: none; }
-.frescura .fr-mas { color: var(--text-2); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 3px; }
+.frescura .fr-mas { display: inline-grid; place-items: center; width: 22px; height: 22px; margin: -4px 0; border-radius: 50%; color: var(--muted); }
+.frescura .fr-mas svg { width: 15px; height: 15px; }
+.frescura .fr-hora { color: var(--muted); }
+.frescura summary { list-style: none; display: flex; flex-wrap: wrap; align-items: center; gap: 4px 14px; cursor: pointer; }
+.frescura summary::-webkit-details-marker { display: none; }
+.vista-cab.vc-corta { margin-bottom: 14px; }
+.vista-cab.vc-corta p { max-width: 520px; }
 .frescura details[open] .fr-mas { color: var(--muted); }
 .frescura ul { margin: 8px 0 0; padding: 0 0 0 16px; display: grid; gap: 3px; }
 
@@ -6134,7 +6140,7 @@ function htmlFrescura() {
     ia && ia.propio ? `Análisis de ${esc(ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '',
   ].filter(Boolean);
   return `<div class="frescura" aria-label="Frescura de los datos">
-    <details><summary><span class="vivo-dot">Recalculado a las ${B('recalc')}</span>${S.informe && S.informe.generado ? `<span>prensa leída ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas">de cuándo es cada dato</span></summary>
+    <details><summary><span class="vivo-dot">${L('Al día', 'Up to date')}<span class="fr-hora"> · ${B('recalc')}</span></span>${S.informe && S.informe.generado ? `<span>${L('prensa de', 'news from')} ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas" title="${L('De cuándo es cada dato', 'How fresh each figure is')}" aria-label="${L('De cuándo es cada dato', 'How fresh each figure is')}">${ICONOS.info}</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
     ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">Activar GrowIA, gratis: revisa esto cada día</button>'}
     ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? 'se ha acabado el cupo gratuito de Google por hoy; se renueva sobre las 9:00' : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowIA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
@@ -6232,19 +6238,19 @@ function vistaExpertos(M) {
       <div class="sec-cab"><h2 id="hPlanV">Qué vender o recortar</h2><span class="k">${planes.length === 1 ? 'una posición' : planes.length + ' posiciones'}, con el plan completo</span></div>
       <div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl, 'plegado')).join('')}</div>
     </section>` : ''}
-    ${htmlResumenInforme(true)}
     <section aria-labelledby="hSen" class="bloque-sec">
       <div class="sec-cab"><h2 id="hSen">Posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
       <div class="fx3-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; const vistos = new Set(); return ordenSenales(M).filter((f) => !vistos.has(f.pos.id) && vistos.add(f.pos.id)).map((f) => filaExperto2(f, ia, vIA)).join(''); })()}</div>
       <p class="nota">GrowFolio mira el consenso de los analistas, lo que queda hasta su precio objetivo, la tendencia, tus reglas de salida y lo que pesa en tu cartera. La IA, además, las noticias. Si no coinciden, lee los dos motivos antes de decidir.</p>
     </section>
+    ${htmlResumenInforme(true)}
     <details class="num-sec"><summary><span><b>Analistas en prensa</b><small>titulares sobre tus acciones de los últimos 30 días</small></span></summary><div class="num-cuerpo">${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10)}</div></details>`;
   } else {
     cuerpo = `<section aria-labelledby="hIdeas" class="bloque-sec">${htmlIdeas(M, ia)}</section>`;
   }
   const marca = { posiciones: planes.length };
   return `
-  <div class="vista-cab"><h1>Qué dicen los expertos</h1><p>Analistas, prensa e IA sobre lo que tienes y lo que podrías comprar. Las señales se recalculan con cada precio.</p><button class="btn peq vista-cta" data-accion="asesor">${ICONOS.chispa}Pregúntale a GrowIA</button></div>
+  <div class="vista-cab vc-corta"><h1>Expertos</h1><p>Lo que dicen analistas, prensa y GrowIA de lo tuyo y de lo que podrías comprar.</p></div>
   ${htmlFrescura()}
   <div class="subvistas dos-op" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
   <div class="pila">${cuerpo}</div>`;
@@ -11299,6 +11305,7 @@ const NOVEDADES = [
     { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: '«Inicio», desde que empezaste a invertir', x: 'La primera vez que lo tocas te pregunta en qué mes y año empezaste a invertir, no cuándo empezaste a usar GrowFolio, y la pastilla dice lo ganado de verdad desde entonces. Lo cambias en tu perfil.' },
     { d: 'gta', ir: { v: 'cartera', sel: '.gta-top' }, t: 'GTA VI, con vida', x: 'El «VI» es más grueso, parpadea de vez en cuando como un rótulo de neón y la pastilla brilla suave.' },
     { d: 'intro', t: 'La presentación, al día', x: 'La que sale la primera vez va en el orden de la barra y cada idea dice en qué sitio la tienes: Inicio, Pasos, Análisis, Expertos o Mercados.' },
+    { d: 'mundo', ir: { v: 'expertos', sel: '.fx3-lista' }, t: 'Expertos, más directo', x: 'La cabecera ocupa la mitad, sin el hueco del botón suelto, y tus posiciones van primero; lo último de la prensa, después.' },
     { d: 'ajustes', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Ajustes, sin lo de la 0.2', x: 'Fuera «Ver lo nuevo de la 0.2», que ya no tocaba.' },
   ], arreglos: [
     'Al cambiar el patrimonio con los precios en directo desaparecían los euros de la cifra grande.',
