@@ -7,6 +7,21 @@
    "t": "Tu perfil, tus avisos y cualquier bróker",
    "commits": [
     {
+     "cuando": "2026-10-20 17:29",
+     "asunto": "Versión nueva de la web (caché)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 17:27",
+     "asunto": "Pregúntale: dictar la pregunta por voz (en el navegador, con su reconocimiento de voz; en la app de Android, con el dictado de Google)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 17:25",
+     "asunto": "0.2.2: Cartera arriba: el patrimonio junto a su gráfica (al pasar el dedo, lo que tenías cada día); lo que más se mueve abre su ficha; las cifras y GTA VI, en bloques aparte (GTA también en «Más» y al pie); «Personalizar» con su icono",
+     "detalle": []
+    },
+    {
      "cuando": "2026-10-20 17:15",
      "asunto": "0.2.2: botón «Ordenar» arriba en Cartera, junto al saludo (el de abajo del todo se quedaba escondido)",
      "detalle": []
