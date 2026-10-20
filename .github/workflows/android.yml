@@ -83,7 +83,8 @@ jobs:
           gh release edit app --title "App de Android $VERSION_NAME" --latest=false || true
           # y la APK de esta versión en su propio release (vX.Y.Z), que no se borra con las siguientes
           cp inversiones.apk "growfolio-$VERSION_NAME.apk"
-          gh release view "v$VERSION_NAME" >/dev/null 2>&1 || gh release create "v$VERSION_NAME" --target "$GITHUB_SHA" --title "$VERSION_NAME" --notes "GrowFolio $VERSION_NAME" || true
+          # el release lo crea la Action «Release de la versión»: se espera a que esté (hasta 5 minutos)
+          for i in $(seq 1 20); do gh release view "v$VERSION_NAME" >/dev/null 2>&1 && break; sleep 15; done
           gh release upload "v$VERSION_NAME" "growfolio-$VERSION_NAME.apk" --clobber || echo "::warning::No se ha podido subir la APK al release v$VERSION_NAME"
           printf '{"version": %s, "nombre": "%s", "apk": "https://github.com/%s/releases/download/app/inversiones.apk"}\n' "${{ github.run_number }}" "$VERSION_NAME" "${{ github.repository }}" > app.json
           git config user.name "github-actions[bot]"

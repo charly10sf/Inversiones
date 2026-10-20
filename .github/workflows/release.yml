@@ -30,18 +30,34 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Etiqueta y release
+        with:
+          fetch-depth: 0
+      - name: Etiquetas y releases
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          v=$(grep -oP "^const VERSION = '\K[0-9.]+" index.html | head -1)
-          [ -n "$v" ] || { echo "::warning::No encuentro VERSION en index.html"; exit 0; }
-          python3 scripts/release.py --version "$v" > notas.md
-          nombre=$(python3 scripts/release.py --version "$v" --nombre)
-          git tag -f "v$v" && git push -f -q origin "v$v"
-          if gh release view "v$v" >/dev/null 2>&1; then
-            gh release edit "v$v" --title "$nombre" --notes-file notas.md
-          else
-            gh release create "v$v" --verify-tag --title "$nombre" --notes-file notas.md --latest || gh release edit "v$v" --title "$nombre" --notes-file notas.md
-          fi
-          echo "::notice::Release v$v al día ($nombre)"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python3 scripts/release.py --historial > versiones.json
+          # las que falten, de la más antigua a la más nueva (así salen en orden), cada una en su commit;
+          # la actual, además, se mueve al último commit y se le ponen las novedades y los cambios al día
+          python3 - <<'PY2'
+          import json, subprocess
+          vs = json.load(open("versiones.json"))
+          def gh(*a):
+              return subprocess.run(["gh", *a], capture_output=True, text=True)
+          for x in vs:
+              tag = "v" + x["v"]
+              open("notas.md", "w").write(x["cuerpo"])
+              existe = gh("release", "view", tag).returncode == 0
+              if x["actual"]:
+                  subprocess.run(["git", "tag", "-f", tag, x["sha"]], check=True)
+                  subprocess.run(["git", "push", "-f", "-q", "origin", tag], check=True)
+              if existe:
+                  if x["actual"]:
+                      gh("release", "edit", tag, "--title", x["nombre"], "--notes-file", "notas.md")
+                  continue
+              r = gh("release", "create", tag, "--target", x["sha"], "--title", x["nombre"], "--notes-file", "notas.md", "--latest" if x["actual"] else "--latest=false")
+              print(tag, "creado" if r.returncode == 0 else "error: " + r.stderr.strip()[:200])
+          print(f"::notice::Releases al día: {len(vs)} versiones, la actual {vs[-1]['v']}")
+          PY2

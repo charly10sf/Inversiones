@@ -7,6 +7,15 @@
    "t": "Cartera nueva y los días sin bolsa",
    "commits": [
     {
+     "cuando": "2026-10-20 20:28",
+     "asunto": "Un release de GitHub por versión, desde la 0.1.1, con su APK desde la 0.2.3",
+     "detalle": [
+      "scripts/release.py: nombre, novedades y cambios de cada versión, y el commit de cada una (justo antes de la siguiente).",
+      "Action «Release de la versión»: crea en orden los que falten y mantiene al día el de la versión publicada.",
+      "La Action de Android sube también growfolio-X.Y.Z.apk al release de su versión; «app» sigue para las actualizaciones."
+     ]
+    },
+    {
      "cuando": "2026-10-20 20:23",
      "asunto": "0.2.3: Cartera nueva, los días sin bolsa en el calendario y el widget con el estilo nuevo",
      "detalle": [
