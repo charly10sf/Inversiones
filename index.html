@@ -81,6 +81,29 @@ a:hover { text-decoration: underline; }
 .estado { display: inline-flex; align-items: center; gap: 8px; color: var(--text-2); font-size: 13px; white-space: nowrap; min-width: 0; overflow: hidden; text-overflow: ellipsis; }
 .estado.cerr::before { background: var(--accent); opacity: 0.7; }
 .estado-w { position: relative; margin-left: auto; flex: 0 1 auto; min-width: 34px; }
+.gta-top-w { margin-left: auto; flex: none; display: flex; }
+.gta-top-w + .estado-w { margin-left: 2px; }
+.gta-top { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px 0 9px; border-radius: 999px; border: 1px solid rgba(255, 62, 165, 0.55); background: linear-gradient(90deg, rgba(255, 62, 165, 0.16), rgba(255, 140, 60, 0.12)); color: #fff; cursor: pointer; white-space: nowrap; box-shadow: 0 0 14px rgba(255, 62, 165, 0.22); transition: box-shadow 0.2s ease, border-color 0.2s ease; }
+.gta-top:hover { border-color: #FF3EA5; box-shadow: 0 0 20px rgba(255, 62, 165, 0.45); }
+.gta-top:focus-visible { outline: 2px solid #FF7DB8; outline-offset: 2px; }
+.gta-top svg { width: 16px; height: 16px; color: #FF7DB8; flex: none; }
+.gta-top-t { font-family: 'Tilt Neon', var(--f); font-size: 14.5px; letter-spacing: 0.05em; color: #FFE1F1; text-shadow: 0 0 6px rgba(255, 62, 165, 0.85); }
+.gta-top-d { font-family: 'Tilt Neon', var(--f); font-size: 14px; color: #FFB27A; text-shadow: 0 0 6px rgba(255, 140, 60, 0.75); font-variant-numeric: tabular-nums; }
+.gta-top.pulsa { animation: gtaPulsa 1.25s ease-in-out 4; }
+/* en el móvil, solo el mando y los días */
+@media (max-width: 600px) { .gta-top-t { display: none; } .gta-top { padding: 0 9px 0 8px; gap: 5px; } }
+/* si la cabecera no cabe, encajarCabecera() va quitando cosas por este orden: aire entre pestañas, el texto de
+   «Avisar de un fallo» (se queda el bicho con su α), el de GTA (se queda el mando con los días), el de la luz de
+   En directo (se queda la luz) y, por último, la etiqueta de la versión y algo de aire */
+.top.cab-1 .nav a { padding: 7px 8px; }
+.top.cab-2 .ib-fallo { width: 38px; padding: 0; border: 0; background: transparent; display: grid; }
+.top.cab-2 .ib-fallo::after { display: grid; }
+.top.cab-2 .fallo-t { display: none; }
+.top.cab-3 .gta-top-t { display: none; }
+.top.cab-3 .gta-top { padding: 0 9px 0 8px; gap: 5px; }
+.top.cab-4 .estado-b .estado { font-size: 0; gap: 0; }
+.top.cab-5 .fila-top { gap: 10px; }
+.top.cab-5 .marca .ver-chip { display: none; }
 .estado-b { display: inline-flex; align-items: center; height: 34px; max-width: 100%; min-width: 0; padding: 0 10px; border: 0; border-radius: 999px; background: none; cursor: pointer; }
 /* con las pestañas arriba y poco sitio, solo la luz (el texto sigue para los lectores de pantalla) */
 @media (min-width: 900px) and (max-width: 1399px) { .estado-b .estado { font-size: 0; gap: 0; } }
@@ -1336,8 +1359,6 @@ button.mv-c:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 .car-cifras .kpis { margin-top: 0; padding-top: 0; border-top: 0; }
 .car-gta { display: grid; gap: 8px; justify-items: start; }
 .car-gta .gta-chip { margin-left: 0; }
-.mas-gta svg { color: #FF7DB8; }
-.gta-pie svg { color: #FF7DB8; }
 .hero-top { display: flex; align-items: center; gap: 10px; min-height: 30px; margin-bottom: 4px; }
 .hero-top .hero-hola { margin: 0; }
 .car-ordenar-mini { margin-left: auto; min-height: 30px; padding: 0 11px; gap: 5px; font-size: 13px; color: var(--text-2); }
@@ -2622,7 +2643,7 @@ body.con-ixn { overflow: hidden; }
 .gta-b:hover { filter: brightness(1.08); }
 @media (prefers-reduced-motion: reduce) {
   .gb i, .gb-n { transition: none !important; transform: none !important; opacity: 1 !important; }
-  .gta-tit, .gta-chip.pulsa, .gta-suelo, .gta-sol, .gta-estrellas, .gta-baja, .gta-barra i, .gta-camino li.siguiente::before, .gta-desde .gta-linea polyline { animation: none !important; }
+  .gta-tit, .gta-chip.pulsa, .gta-top.pulsa, .gta-suelo, .gta-sol, .gta-estrellas, .gta-baja, .gta-barra i, .gta-camino li.siguiente::before, .gta-desde .gta-linea polyline { animation: none !important; }
   .gta-coche-svg, .gta-rueda, .gta-estela path, .gta-pista-f, .gta-picto i, .gta-pila i, .gta-marca circle, .gta-marca text, .gta-haz, .gta-faro, .gta-pos .b i, .gta-quien .b i { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
   .gta-reflejo { display: none; }
   .gta-pos .b i, .gta-quien .b i { width: var(--w) !important; }
@@ -4125,6 +4146,7 @@ function montar() {
   <header class="top"><div class="wrap fila-top">
     <div class="marca"><img src="favicon.svg" alt=""><span>GrowFolio</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t, c]) => `<a href="#${k}" data-ir="${k}"${c && c !== t ? ' class="corto"' : ''}><span class="nl">${t}</span>${c && c !== t ? `<span class="nc">${c}</span>` : ''}</a>`).join('')}</nav>
+    ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <div class="acciones">
       <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowIA por tu cartera" aria-label="Pregúntale a GrowIA">${ICONOS.chispa}<span>Pregúntale</span></button>
@@ -4339,12 +4361,14 @@ function pintar() {
   for (const a of $$('.nav [data-ir="futuro"]')) a.classList.toggle('falta', faltaP);
   if (bm) bm.classList.toggle('falta', faltaP);
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
+  pintarGtaTop();
+  cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
   const bo = $('#bOcultar'); bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? 'Mostrar importes' : 'Ocultar importes'; bo.setAttribute('aria-label', bo.title);
   pintarTicker(M);
   const scroll = window.scrollY;
   const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
   setTimeout(() => plegarNotas($('#vista')), 0);
-  $('#vista').innerHTML = html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button>${gtaActivo() ? `<button class="opinion-pie gta-pie" data-gta>${MANDO}<span><b>GTA VI</b> ${(() => { const f = gtaFalta(); return !f ? 'Ya está aquí.' : f.d ? `Faltan ${f.d} ${f.d === 1 ? 'día' : 'días'}: tu cartera en copias del juego.` : `Faltan ${f.h} h.`; })()}</span></button>` : ''}</div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú.</p>`;
+  $('#vista').innerHTML = html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada
   if (S.vista === 'agenda' && S.agIr) {
@@ -8251,7 +8275,7 @@ function arrastrarParaCerrar(h, cerrar) {
 }
 /* en la app de Android, un toque suave al cambiar de pestaña o elegir algo (si el móvil lo tiene activado) */
 function vibra() { try { const a = window.InversionesApp; if (a && a.toque) a.toque(); } catch (e) {} }
-document.addEventListener('click', (e) => { if (e.target.closest('.navbar a, .navbar .nav-mas, .tabs button, .subvistas button, [data-agm], [data-ag-mes], .agc, .ag-f, .mas-t, .gta-chip')) vibra(); }, true);
+document.addEventListener('click', (e) => { if (e.target.closest('.navbar a, .navbar .nav-mas, .tabs button, .subvistas button, [data-agm], [data-ag-mes], .agc, .ag-f, .mas-t, .gta-chip, .gta-top')) vibra(); }, true);
 function hoja(titulo, html, alCerrar, ancha) {
   const f = document.createElement('div');
   f.className = 'hoja-fondo';
@@ -10540,8 +10564,7 @@ let TOURE = null;
 const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
 /* «Más» en la barra del móvil: Calendario, Mercados, Fiscalidad y Objetivos en tarjetas (Ajustes está arriba, en la rueda) */
 function abrirMas() {
-  const gta = gtaActivo() ? (() => { const f = gtaFalta(); const t = !f ? L('ya está aquí', 'out now') : f.d ? L(`faltan ${f.d} ${f.d === 1 ? 'día' : 'días'}`, `${f.d} ${f.d === 1 ? 'day' : 'days'} to go`) : `${f.h} h`; return `<button type="button" class="mas-t mas-gta" data-gta data-cerrar>${MANDO}<span><b>GTA VI</b><small>${esc(t)} · ${L('tu cartera en copias del juego', 'your portfolio in copies of the game')}</small></span></button>`; })() : '';
-  const h = hoja('Más', `<div class="mas-g">${EN_MAS.map(([k, x]) => { const v = VISTAS.find(([kk]) => kk === k); const falta = k === 'futuro' && perfilIncompleto(); return `<a class="mas-t${S.vista === k ? ' on' : ''}${falta ? ' falta' : ''}" href="#${k}" data-cerrar>${ICONOS[k]}<span><b>${esc(v[1])}${falta ? '<em class="mas-falta">Te falta tu perfil</em>' : ''}</b><small>${esc(x)}</small></span></a>`; }).join('')}${gta}</div>`);
+  const h = hoja('Más', `<div class="mas-g">${EN_MAS.map(([k, x]) => { const v = VISTAS.find(([kk]) => kk === k); const falta = k === 'futuro' && perfilIncompleto(); return `<a class="mas-t${S.vista === k ? ' on' : ''}${falta ? ' falta' : ''}" href="#${k}" data-cerrar>${ICONOS[k]}<span><b>${esc(v[1])}${falta ? '<em class="mas-falta">Te falta tu perfil</em>' : ''}</b><small>${esc(x)}</small></span></a>`; }).join('')}</div>`);
   h.el.classList.add('hoja-mas');
 }
 document.addEventListener('click', (e) => { if (e.target.closest('[data-mas]')) abrirMas(); });
@@ -10734,6 +10757,29 @@ function gtaFalta() {
   return ms > 0 ? { d: Math.floor(ms / 864e5), h: Math.floor(ms / 36e5) % 24, m: Math.floor(ms / 6e4) % 60, s: Math.floor(ms / 1e3) % 60 } : null;
 }
 const MANDO = SVG('<path d="M7 8.5h10a4.3 4.3 0 0 1 4.3 4.6l-.4 3.4a2.5 2.5 0 0 1-4.4 1.3L15 16H9l-1.5 1.8a2.5 2.5 0 0 1-4.4-1.3l-.4-3.4A4.3 4.3 0 0 1 7 8.5z"/><path d="M8 11.3v3.4M6.3 13h3.4"/><path d="M15.5 12.2h.01M17.5 14h.01" stroke-width="2.4"/>', 1.7);
+/* GTA VI en la cabecera, junto a «En directo»: el mando y los días que faltan, con las letras de neón de la
+   sección de GTA (no las del logo del juego) */
+// que la cabecera quepa sin cortar nada: se prueba de más a menos, y para en cuanto cabe y la luz de En directo se lee entera
+var PASOS_CAB = ['cab-1', 'cab-2', 'cab-3', 'cab-4', 'cab-5'];
+function encajarCabecera() {
+  const top = $('.top'), f = $('.fila-top'); if (!top || !f) return;
+  top.classList.remove(...PASOS_CAB);
+  const aprieta = () => { const e = $('#estado'); return f.scrollWidth > f.clientWidth + 1 || (e && e.scrollWidth > e.clientWidth + 1); };
+  for (const c of PASOS_CAB) { if (!aprieta()) break; top.classList.add(c); }
+}
+var encajarT = 0;
+addEventListener('resize', () => { cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera); });
+if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => encajarCabecera());
+
+function pintarGtaTop() {
+  const w = $('#gtaTop'); if (!w) return;
+  if (!gtaActivo()) { w.remove(); return; }
+  fuenteGTA();
+  const f = gtaFalta(), cuenta = !f ? L('¡Ya!', 'Out!') : f.d ? `${f.d}${L('d', 'd')}` : `${f.h}h`;
+  const txt = !f ? L('ya está aquí', 'out now') : f.d ? L(`faltan ${f.d} ${f.d === 1 ? 'día' : 'días'}`, `${f.d} ${f.d === 1 ? 'day' : 'days'} to go`) : L(`faltan ${f.h} horas`, `${f.h} hours to go`);
+  const html = `<button type="button" class="gta-top" data-gta title="GTA VI: ${esc(txt)}" aria-label="GTA VI: ${esc(txt)}">${MANDO}<span class="gta-top-t" data-no-trad>GTA VI</span><span class="gta-top-d" data-no-trad>${esc(cuenta)}</span></button>`;
+  if (w.innerHTML !== html) w.innerHTML = html;
+}
 function chipGTA() {
   if (!gtaActivo()) return '';
   const f = gtaFalta();
@@ -11270,7 +11316,7 @@ function avisoGTA(seguir) {
       <h2 class="gta-tit">GTA VI</h2>
       <div id="gtaReloj">${relojGTA()}</div>
       <p class="gta-lead">${L(`${f ? 'Sale el 19 de noviembre. Para la espera' : 'Ya ha salido. Para celebrarlo'}, unas cuentas con tu cartera: cuántos GTA VI vale, cuántos Adders podría hacer Rockstar con ella y cuánto llevamos de camino desde GTA V.`, `${f ? 'It’s out on 19 November. While you wait' : 'It’s out. To celebrate'}, your portfolio in numbers: how many copies of GTA VI it’s worth, how many Adders Rockstar could build with it and how far we’ve come since GTA V.`)}</p>
-      <p class="gta-donde">${L('Lo tienes abajo del todo en cada pestaña, en «Más» en el móvil y, si quieres, como bloque de Cartera (Personalizar).', 'It’s at the bottom of every tab, in «More» on your phone and, if you like, as a Portfolio block (Customize).')}</p>
+      <p class="gta-donde">${L('Lo tienes siempre arriba, junto a «En directo», con los días que faltan.', 'It’s always at the top, next to «Live», with the days to go.')}</p>
       <div class="gta-btns"><button type="button" class="gta-b pri" data-ver>${L('Verlo', 'Show me')}</button><button type="button" class="gta-b" data-luego>${L('Luego', 'Later')}</button></div>
     </div>
     ${paisajeGTA()}
@@ -11281,7 +11327,7 @@ function avisoGTA(seguir) {
     if (ver) abrirGTA();
     else {
       if (S.vista !== 'cartera') location.hash = '#cartera';
-      setTimeout(() => { const c = $('.gta-chip') || $('.gta-pie'); if (c) { c.scrollIntoView({ block: 'center', behavior: 'smooth' }); c.classList.add('pulsa'); setTimeout(() => c.classList.remove('pulsa'), 5000); } }, 350);
+      setTimeout(() => { const c = $('.gta-top') || $('.gta-chip'); if (c) { c.scrollIntoView({ block: 'center', behavior: 'smooth' }); c.classList.add('pulsa'); setTimeout(() => c.classList.remove('pulsa'), 5000); } }, 350);
     }
     if (seguir) setTimeout(seguir, 600);
   };
