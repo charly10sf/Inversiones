@@ -1431,7 +1431,9 @@ table td.txt { white-space: normal; min-width: 260px; }
 .hero-sub .hs .k { font-size: 12px; }
 .hero-sub .hs [data-b] { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .hero-rangos { grid-area: rangos; justify-self: stretch; display: flex; margin: 6px 16px 0; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line); }
-.hero-rangos button { flex: 1 1 0; min-width: 0; padding: 6px 4px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.hero-rangos button { flex: 1 0 auto; min-width: 0; padding: 6px 5px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); }
+.hero-rangos { overflow-x: auto; scrollbar-width: none; }
+.hero-rangos::-webkit-scrollbar { display: none; }
 .hero-rangos button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); }
 .hero-panel > .chart { grid-area: graf; margin-top: -34px; z-index: 1; min-width: 0; }
 .hero-bajo { display: grid; gap: 14px; margin-top: 16px; }
@@ -4004,7 +4006,9 @@ function serieCartera(M, dias) {
   for (const f of items) for (const [d] of f.hist) if (d >= desde) fechas.add(d);
   const orden = [...fechas].sort();
   if (orden.length < 2) return [];
-  const idx = items.map(() => 0), ult = items.map((f) => precioEn(f.hist, desde, 'antes'));
+  // lo que aún no cotizaba ese día (una salida a bolsa reciente, un fondo nuevo) cuenta a su primer precio: así la
+  // gráfica llega tan atrás como lo demás, en vez de empezar el día que salió lo último que compraste
+  const idx = items.map(() => 0), ult = items.map((f) => precioEn(f.hist, desde, 'antes') ?? f.hist[0][1]);
   const out = [];
   for (const d of orden) {
     let v = 0, completo = true;
@@ -4650,7 +4654,15 @@ function pintarTicker(M) {
 }
 
 /* =========================== Cartera =========================== */
-const RANGOS = { '1D': 1, '1S': 7, '1M': 31, '3M': 92, '6M': 183, '1A': 366, '3A': 1097, '5A': 1827, 'Máx': 3660 };
+const RANGOS = { '1D': 1, '1S': 7, '1M': 31, '3M': 92, '6M': 183, '1A': 366, '3A': 1097, '5A': 1827, 'Máx': 3660, 'Inicio': 0 };
+// el día de tu primera compra (o desde cuándo dices que tienes cada cosa): el periodo «Inicio» de la gráfica
+function inicioCartera() {
+  const fs = [];
+  for (const p of (S.cartera && S.cartera.posiciones) || []) { if (p.desde) fs.push(p.desde); for (const l of p.lotes || []) if (l.f) fs.push(l.f); }
+  for (const m of (S.cartera && S.cartera.movimientos) || []) if (m.fecha && m.tipo === 'compra') fs.push(m.fecha);
+  return fs.map((x) => String(x).slice(0, 10)).filter((x) => /^\d{4}-\d\d-\d\d$/.test(x) && x <= hoyIso()).sort()[0] || null;
+}
+const diasRango = (r) => (r === 'Inicio' ? (inicioCartera() ? Math.max(8, diasEntre(inicioCartera(), hoyIso())) : 366) : RANGOS[r] || 366);
 const INTRADIA = new Set(['1D', '1S']);
 /* fechas con hora (las de la gráfica de 1 día y 1 semana vienen así: 2026-10-19T14:30Z) */
 const tiempoDe = (d) => (String(d).length > 10 ? new Date(d).getTime() : deIso(d).getTime());
@@ -4744,7 +4756,7 @@ function htmlBloqueCar(k, M) {
             <div class="hs"><span class="k">${L('Ganado desde que compraste', 'Gained since you bought')}</span>${B('pl')}</div>
           </div>
         </div>
-        <div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div>
+        <div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).filter((r) => r !== 'Inicio' || inicioCartera()).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}"${r === 'Inicio' ? ` title="${L('Desde tu primera compra', 'Since your first purchase')}"` : ''}>${r === 'Inicio' ? L('Inicio', 'Start') : r}</button>`).join('')}</div>
         ${INTRADIA.has(S.rango) || !S.ref ? '' : `<div class="hero-pie"><button type="button" class="hp-cmp" data-accion="comparar" aria-pressed="${!!S.comparar}"><i aria-hidden="true"></i>${L('Comparar con el S&P 500', 'Compare with the S&P 500')}</button></div>`}
         <div class="chart gh" id="grafEvo"></div>
         <div class="movers hero-movers">${B('movers')}</div>
@@ -6938,7 +6950,7 @@ function grafHero(cont, series, opt = {}) {
   // fechas de abajo, metidas hacia dentro para que no peguen al borde
   const dias = (t1 - t0) / 864e5, ejes = [];
   const sitio = Math.min(5, Math.max(2, Math.floor((W - 2 * borde) / 120)));
-  const etq = (d) => (dias < 1.6 ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : dias < 8 ? `${DIAS_SEM[d.getDay()]} ${d.getDate()}` : dias > 900 ? String(d.getFullYear()) : dias > 100 ? `${MESES[d.getMonth()]}${d.getMonth() === 0 ? ' ' + String(d.getFullYear()).slice(2) : ''}` : `${d.getDate()} ${MESES[d.getMonth()]}`);
+  const etq = (d) => (dias < 1.6 ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : dias < 8 ? `${DIAS_SEM[d.getDay()]} ${d.getDate()}` : dias > 900 ? String(d.getFullYear()) : dias > 300 ? `${MESES[d.getMonth()]} ${d.getFullYear()}` : dias > 100 ? `${MESES[d.getMonth()]}${d.getMonth() === 0 ? ' ' + String(d.getFullYear()).slice(2) : ''}` : `${d.getDate()} ${MESES[d.getMonth()]}`);
   if (dias > 900) {
     const anios = []; for (let a = new Date(t0).getFullYear() + 1; a <= new Date(t1).getFullYear(); a++) anios.push(a);
     const salto = Math.ceil(anios.length / sitio);
@@ -7050,7 +7062,7 @@ function dibujar(M) {
   const gp = $('#grafProy'); if (gp) grafAbanico(gp, proyeccion(M), (S.horizonte || 20) * 12);
   const g = $('#grafEvo');
   if (g) {
-    const dias = RANGOS[S.rango] || 366;
+    const dias = diasRango(S.rango);
     const intra = INTRADIA.has(S.rango);
     let serie = intra ? serieIntradia(M, S.rango) : serieCartera(M, dias), deIntra = intra;
     if (intra && serie.length < 2) { serie = serieCartera(M, S.rango === '1D' ? 4 : 9); deIntra = false; }
@@ -7058,6 +7070,7 @@ function dibujar(M) {
     const t0s = serie.length ? tiempoDe(serie[0].d) : Date.now();
     const corto = (Date.now() - t0s) < dias * 864e5 * 0.85;
     const etqRango = S.rango === '1D' && deIntra ? L('desde el último cierre', 'since the last close')
+      : S.rango === 'Inicio' && inicioCartera() && serie.length ? L(`desde que empezaste, el ${fechaPunto(serie[0].d)}`, `since you started, ${fechaPunto(serie[0].d)}`)
       : !serie.length ? '' : corto || S.rango === 'Máx' || !ETQ_RANGO[S.rango] ? L(`desde el ${fechaPunto(serie[0].d)}`, `since ${fechaPunto(serie[0].d)}`) : L(...ETQ_RANGO[S.rango]);
     const pintarVar = (desde, hasta, etq) => {
       const cab = $('#evoCab'); if (!cab || !desde || !hasta) return;
@@ -7117,7 +7130,8 @@ function infoGrafica() {
   hoja(L('Qué enseña la gráfica', 'What the chart shows'), `<div class="info-graf">
     <p>${L('Cómo se habría movido lo que tienes hoy, con las cantidades de hoy. Lo que has ganado tú de verdad, con lo que pagaste, es «Ganado desde que compraste».', 'How what you hold today would have moved, with today\'s amounts. What you have really made, with what you paid, is «Gained since you bought».')}</p>
     <p>${L('La pastilla de debajo de la cifra es lo que ha cambiado en el periodo que elijas. En 1D se cuenta desde el cierre de ayer.', 'The pill under the figure is how much it changed over the period you pick. In 1D it counts from yesterday\'s close.')}</p>
-    <p>${L('Pasa el dedo por la curva para ver cuánto tenías cada día. Desde 1M puedes compararla con el mismo dinero metido en el S&P 500 (la línea discontinua). Antes de que existieran algunos fondos se usa un ETF del mismo índice.', 'Run your finger along the curve to see what you had each day. From 1M you can compare it with the same money in the S&P 500 (the dashed line). Before some funds existed, an ETF on the same index is used.')}</p>
+    <p>${L('Pasa el dedo por la curva para ver cuánto tenías cada día. Desde 1M puedes compararla con el mismo dinero metido en el S&P 500 (la línea discontinua). Antes de que existieran algunos fondos se usa un ETF del mismo índice, y lo que aún no cotizaba (una salida a bolsa reciente) cuenta a su primer precio.', 'Run your finger along the curve to see what you had each day. From 1M you can compare it with the same money in the S&P 500 (the dashed line). Before some funds existed, an ETF on the same index is used, and anything not yet listed (a recent IPO) counts at its first price.')}</p>
+    <p>${L('«Inicio» va desde tu primera compra; «Máx», tan atrás como hay precios de lo que tienes.', '«Start» goes from your first purchase; «Max», as far back as there are prices for what you own.')}</p>
     <div class="fila-btns"><button class="btn" data-cerrar>${L('Entendido', 'Got it')}</button></div>
   </div>`);
 }
@@ -8714,7 +8728,7 @@ function fichaResumen(f) {
   const raro = precioCompraRaro(f);
   return `${raro ? (() => { const a = avisoPrecioRaro(raro); return `<div class="aviso-ficha">${a.i}<div><b>${esc(a.t)}</b><span>${esc(a.d)}</span><div class="aviso-acc">${a.acc}</div></div></div>`; })() : ''}${dc}
   <section>
-    <div class="evo-cab"><div class="datos" id="fichaCab"></div><div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).map((k) => `<button data-frango="${k}" aria-pressed="${S.fichaRango === k}">${k}</button>`).join('')}</div></div>
+    <div class="evo-cab"><div class="datos" id="fichaCab"></div><div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).filter((k) => k !== 'Inicio').map((k) => `<button data-frango="${k}" aria-pressed="${S.fichaRango === k}">${k}</button>`).join('')}</div></div>
     <div class="chart" id="fichaGraf"></div>
     ${medio ? `<div class="leyenda-graf"><span><i class="disc" style="border-color:var(--warn)"></i>Tu precio medio, ${precioFmt(medio)}</span></div>` : ''}
     ${p.proxy ? `<p class="nota">Hasta el ${fechaLarga(p.proxy_hasta)} es el precio de ${esc(p.proxy)}, un ETF del mismo índice, porque el fondo no existía.</p>` : ''}
