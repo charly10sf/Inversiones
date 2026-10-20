@@ -17,6 +17,8 @@ from pathlib import Path
 RAIZ = Path(__file__).resolve().parent.parent
 CODIGO = ["index.html", "sw.js", "en.json", "scripts", "android", ".github"]
 FUERA = re.compile(r"^(Co-Authored-By|Claude-Session|Signed-off-by):", re.I)
+# cambios que se publicaron un rato y se quitaron para la versión siguiente (no cuentan en la que estaban)
+RESERVADOS = {"c7f439a", "4f9b948"}
 
 
 def versiones():
@@ -31,12 +33,15 @@ def versiones():
 def commits():
     sep = "\x1e"
     txt = subprocess.run(
-        ["git", "log", "--reverse", "--date=format-local:%Y-%m-%d %H:%M", f"--format={sep}%ad%n%s%n%b", "--", *CODIGO],
+        ["git", "log", "--reverse", "--date=format-local:%Y-%m-%d %H:%M", f"--format={sep}%h%n%ad%n%s%n%b", "--", *CODIGO],
         cwd=RAIZ, capture_output=True, text=True, check=True,
     ).stdout
     out = []
     for bloque in txt.split(sep)[1:]:
         lineas = bloque.strip("\n").split("\n")
+        corto, lineas = lineas[0], lineas[1:]
+        if corto in RESERVADOS or re.match(r"^Reservado para la", (lineas[1] if len(lineas) > 1 else "")):
+            continue  # se publicó y se quitó para salir en una versión posterior: allí va su cambio
         cuando, asunto = lineas[0], (lineas[1] if len(lineas) > 1 else "").strip()
         asunto = re.sub(r"^(\d+\.\d+\.\d+) \(sin publicar\)", r"\1", asunto)  # lo que se preparaba en una rama antes de publicar
         detalle = [l.strip().lstrip("-• ").strip() for l in lineas[2:] if l.strip() and not FUERA.match(l.strip())]
