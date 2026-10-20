@@ -1028,12 +1028,13 @@ table.ideas .sub { display: block; font-size: 12px; }
 .toca li.urgente .toca-c { color: var(--accent); font-weight: 600; }
 .toca b { font-weight: 550; font-size: 14.5px; line-height: 1.4; }
 /* GrowIA, lo primero de Cartera */
-.toca.iac { margin: 0 0 8px; padding: 16px 16px 8px; border-left-width: 1px; border-color: rgba(226, 180, 95, 0.32); background: linear-gradient(160deg, rgba(226, 180, 95, 0.09), var(--plane) 55%); }
-@media (min-width: 900px) {
-  .toca.iac.con-lista { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 0 32px; padding: 18px 22px 10px; }
-  .toca.iac .iac-der .iac-sub { margin-top: 0; padding-top: 0; border-top: 0; }
-  .toca.iac.con-lista .iac-der { border-left: 1px solid var(--line); padding-left: 28px; }
-  .toca.iac .iac-izq { padding-bottom: 8px; }
+.toca.iac { margin: 26px 0 0; padding: 16px 16px 8px; border-left-width: 1px; border-color: rgba(226, 180, 95, 0.32); background: linear-gradient(160deg, rgba(226, 180, 95, 0.09), var(--plane) 55%); container-type: inline-size; }
+.iac-res { margin: 8px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+@container (min-width: 700px) {
+  .iac-in.con-lista { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 0 28px; padding: 2px 6px 2px; }
+  .iac-in .iac-der .iac-sub { margin-top: 0; padding-top: 0; border-top: 0; }
+  .iac-in.con-lista .iac-der { border-left: 1px solid var(--line); padding-left: 26px; }
+  .iac-in .iac-izq { padding-bottom: 8px; }
 }
 .iac-cab { display: flex; align-items: center; gap: 12px; }
 .iac-cab > div { flex: 1; min-width: 0; }
@@ -4039,9 +4040,9 @@ function vistaCartera(M) {
       <div class="leyenda-graf"><span><i style="border-color:var(--accent)"></i>Tu cartera</span>
         <label class="check-mini"><input type="checkbox" data-comparar ${S.comparar ? 'checked' : ''}> Comparar con el S&P 500</label>${S.comparar ? `<span><i class="disc" style="border-color:var(--text-2)"></i>El mismo dinero en el S&P 500</span>` : ''}</div>
       <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste».</p>
+      ${tocaHtml}
     </section>
   </div>
-  ${tocaHtml}
   <div class="subvistas dos-op car-tabs" id="carTabs" role="group" aria-label="Qué ver"><button data-car="pos" aria-pressed="${S.carTab !== 'plan'}">${ICONOS.cartera}Tus posiciones</button><button data-car="plan" aria-pressed="${S.carTab === 'plan'}">${ICONOS.plan}Plan y movimientos</button></div>
   ${S.carTab === 'plan' ? htmlPlan(M) : `<div class="dos">
     <div class="pila">${htmlAvisosGraves(M)}${htmlPosiciones(M)}${htmlAvisos(M)}</div>
@@ -4075,6 +4076,8 @@ function htmlToca(M) {
     const cuando = ia.propio ? (dias === 0 ? `Hoy a las ${hora}` : dias === 1 ? `Ayer a las ${hora}` : `El ${fechaLarga(iso(d))}`) : 'Análisis de partida';
     cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>${esc(cuando)}${IA.generando ? ' · revisándolo ahora' : ''}</small></div><a class="enlace acento" href="#analisis">Ver el análisis</a></div>`;
     tit = ia.titular ? `<p class="iac-tit">${rellenarIA(ia.titular, vIA)}</p>` : '';
+    const res = (ia.resumen || [])[0];
+    tit += res ? `<p class="iac-res">${rellenarIA(res, vIA)}</p>` : '';
     notas = (ia.puntuaciones || []).length ? `<div class="iac-notas">${ia.puntuaciones.slice(0, 5).map((x) => { const n = Math.max(0, Math.min(5, +x.nota || 0)); return `<span class="iac-nota" title="${esc(x.k)}: ${n} de 5"><small>${esc(/^riesgo$/i.test(x.k) ? 'Riesgo' : x.k)}</small><span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span></span>`; }).join('')}</div>` : '';
   } else if (!S.iaListo) {
     cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>Cargando lo que dice de tu cartera…</small></div></div>`;
@@ -4089,7 +4092,7 @@ function htmlToca(M) {
   const lista = v.length ? `<div class="iac-sub"><h3>Lo que toca ahora</h3><button class="enlace acento" data-calif="ruta">Ver el paso a paso</button></div>
     <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según GrowIA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
   // en el ordenador, a lo ancho debajo de la gráfica: el diagnóstico a la izquierda y lo que toca a la derecha
-  return `<section class="toca iac${lista ? ' con-lista' : ''}" aria-labelledby="hToca"><div class="iac-izq">${cab}${tit}${notas}</div>${lista ? `<div class="iac-der">${lista}</div>` : ''}</section>`;
+  return `<section class="toca iac" aria-labelledby="hToca"><div class="iac-in${lista ? ' con-lista' : ''}"><div class="iac-izq">${cab}${tit}${notas}</div>${lista ? `<div class="iac-der">${lista}</div>` : ''}</div></section>`;
 }
 /* el nombre completo del fondo o la empresa, cuando dice algo más que el corto ("S&P 500" → "iShares US Index Fund (IE) S Acc EUR") */
 function nombreReal(i) {
