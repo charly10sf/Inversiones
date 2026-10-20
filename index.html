@@ -2249,6 +2249,36 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .bq-pass { margin-top: 26px; }
 @media (max-height: 640px) { .bq-teclado { grid-template-columns: repeat(3, 64px); gap: 10px 20px; } .bq-teclado button { width: 64px; height: 64px; font-size: 24px; } .bq-puntos { margin-top: 18px; } }
 @media (prefers-reduced-motion: reduce) { .bloqueo, .bq-puntos.mal { animation: none; } }
+
+/* =====================================================================
+   Acabado (0.2): superficies con algo de profundidad, títulos que se reparten bien en líneas,
+   cifras alineadas y un brillo dorado detrás de tu patrimonio. Va al final para mandar sobre lo de arriba.
+   ===================================================================== */
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+::selection { background: rgba(226, 180, 95, 0.32); color: #fff; }
+* { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+h1, h2, h3, .ag-tx b, .fx2-cab button { text-wrap: balance; }
+p, .nota, .ag-det p, li > span { text-wrap: pretty; }
+.vista-cab h1 { font-size: clamp(30px, 4.2vw, 38px); font-weight: 300; letter-spacing: -0.035em; line-height: 1.05; }
+.vista-cab p { font-size: 14.5px; line-height: 1.5; max-width: 62ch; }
+.sec-cab h2 { font-size: 18px; letter-spacing: -0.02em; }
+.kpi .v, .ag-imp, .leyenda .p, .leyenda .e, td.r, th.r, .tk-p, .tk-v, .mv-c, .ag-cd, .ag-fe b { font-variant-numeric: tabular-nums; }
+/* las tarjetas: un degradado muy suave arriba, un filo de luz y una sombra que las separa del fondo */
+:is(.tarjeta, .plan-venta, .idea, .informe, .fx2, .ruta-hero, .ruta-prog, .fis-vacio, .num-sec, .desde-compra, .merc2, .mas-t, .nov-ant, .tarea, .pf-card, .merc-busca, .mfilas, .ir-objetivos, .aj-caja, .ag-prox, .toca) {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0) 55%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -14px rgba(0, 0, 0, 0.55);
+}
+.hoja { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 -12px 40px rgba(0, 0, 0, 0.45); }
+/* tu patrimonio, con un halo dorado muy tenue detrás */
+.cabecera > section:first-child { position: relative; isolation: isolate; }
+.cabecera > section:first-child::before { content: ''; position: absolute; z-index: -1; left: -12%; top: -30px; width: min(620px, 110%); height: 300px; background: radial-gradient(closest-side, rgba(226, 180, 95, 0.11), rgba(226, 180, 95, 0) 100%); pointer-events: none; }
+.hero-num { font-weight: 220; }
+/* la cabecera fija gana una línea fina al bajar */
+.top { transition: box-shadow 0.25s ease; }
+.top.bajado { box-shadow: 0 1px 0 var(--line), 0 10px 30px -18px rgba(0, 0, 0, 0.8); }
+/* los botones principales, con relieve */
+.btn.pri { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 18px -8px rgba(226, 180, 95, 0.6); }
+.btn.pri:hover { filter: brightness(1.05); }
 </style>
 </head>
 <body>
@@ -3320,6 +3350,14 @@ function rellenarBinds(raiz) {
 let parcheT = null;
 function programarParche() { if (parcheT) return; parcheT = setTimeout(() => { parcheT = null; parchear(); }, 250); }
 const DESTELLA = /^(totalE|pv:|pp:|tp:|mp:|plat:|rp:)/;
+/* el patrimonio no salta: cuenta hasta el valor nuevo en medio segundo */
+function contarHasta(el, de, a, fin) {
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  cancelAnimationFrame(el._cuenta);
+  const t0 = performance.now(), dur = 650;
+  const paso = (t) => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = k < 1 ? fmtNum(Math.trunc(de + (a - de) * e), 0) : fin; if (k < 1) el._cuenta = requestAnimationFrame(paso); };
+  el._cuenta = requestAnimationFrame(paso);
+}
 function parchear() {
   if (!S.cartera || !document.querySelector('[data-b]')) return;
   const M = calcular(); S.M = M;
@@ -3330,6 +3368,7 @@ function parchear() {
     if (el.textContent !== b.txt) {
       const viejo = parseFloat(el.dataset.n);
       el.textContent = b.txt;
+      if (el.dataset.b === 'totalE' && !S.oculto && isFinite(viejo) && isFinite(b.n) && Math.abs(b.n - viejo) >= 1) contarHasta(el, viejo, b.n, b.txt);
       if (!S.oculto && DESTELLA.test(el.dataset.b) && isFinite(viejo) && isFinite(b.n) && Math.abs(b.n - viejo) > 1e-9) {
         el.classList.remove('sube', 'baja'); void el.offsetWidth; el.classList.add(b.n > viejo ? 'sube' : 'baja');
       }
@@ -6093,7 +6132,7 @@ async function responderIA(i, a) {
    Al subir una, las otras bajan (la más grande primero). Lo que queda es para fondos y lo demás. El máximo en una
    sola empresa va dentro de las acciones sueltas: nunca puede ser mayor. */
 const REPARTO = [['lim', 'Acciones sueltas', 'empresas compradas una a una, fuera de fondos', 100], ['cripto', 'Cripto', '', 50], ['oro', 'Oro y materias primas', '', 50]];
-function htmlReparto(acc, cri, oro, emp) {
+function htmlLimites(acc, cri, oro, emp) {
   const v = { lim: acc, cripto: cri, oro };
   const desl = (n, t, sub, max, val, cl) => `<label class="rp-desl ${cl}"><span class="rp-t"><span>${t}</span><b><output data-o="${n}">${fmtNum(val, 0)}</output> %</b></span><input type="range" name="${n}" min="0" max="${max}" step="1" value="${val}">${sub ? `<small class="k">${sub}</small>` : ''}</label>`;
   return `<div class="reparto" id="reparto">
@@ -6192,7 +6231,7 @@ function editarPerfil() {
       <label class="campo">Ingresos netos al mes (€)<input name="ingresos" inputmode="decimal" value="${val(p.ingresos_mes)}" placeholder="Opcional"><small>Para saber cuánto podrías aportar.</small></label>
     </div>
     <h3 class="pf-sub">Tus límites</h3>
-    ${htmlReparto(+(S.cartera.limite_acciones ?? 20), +(p.limite_cripto ?? 5), +(p.limite_oro ?? 10), +(p.limite_empresa ?? 10))}
+    ${htmlLimites(+(S.cartera.limite_acciones ?? 20), +(p.limite_cripto ?? 5), +(p.limite_oro ?? 10), +(p.limite_empresa ?? 10))}
     <div class="error" id="errPerfil"></div>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div>
   </form>`, null, true);
@@ -10480,6 +10519,8 @@ window.addEventListener('hashchange', () => {
     const vi = $('#vista'); if (vi) { vi.classList.remove('entra'); void vi.offsetWidth; vi.classList.add('entra'); }
   }
 });
+/* la cabecera gana una sombra fina en cuanto bajas */
+addEventListener('scroll', () => { const t = document.querySelector('.top'); if (t) t.classList.toggle('bajado', scrollY > 8); }, { passive: true });
 /* la cinta se para al tocarla en el móvil y sigue al volver a tocar */
 document.addEventListener('pointerup', (e) => { if (e.pointerType === 'touch' && e.target.closest('#ticker')) $('#ticker').classList.toggle('pausa'); });
 
