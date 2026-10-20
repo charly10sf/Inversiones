@@ -2,7 +2,8 @@ name: Reglas de Firestore
 
 # Publica firestore.rules en Firebase cada vez que cambia en main (o a mano, desde Actions). Usa el secreto
 # FIREBASE_REGLAS: la clave JSON de una cuenta de servicio que solo puede tocar las reglas. Sin el secreto no hace
-# nada (las reglas se pegan a mano en la consola de Firebase, como hasta ahora).
+# nada (las reglas se pegan a mano en la consola de Firebase, como hasta ahora). Antes de publicar cambia __DUENOS__
+# por los correos de BANCO_EMAILS (los del dueño, que puede leer las opiniones): así no están en el repositorio.
 on:
   push:
     branches: [main]
@@ -33,11 +34,21 @@ jobs:
       - name: Publicar las reglas
         env:
           CLAVE: ${{ secrets.FIREBASE_REGLAS }}
+          DUENOS: ${{ secrets.BANCO_EMAILS }}
         run: |
           if [ -z "$CLAVE" ]; then
             echo "::warning::Falta el secreto FIREBASE_REGLAS: no se publica nada (se pegan a mano en la consola de Firebase)."
             exit 0
           fi
+          # los correos del dueño, entre comillas y en minúsculas, solo en la copia que se publica (no se imprimen)
+          python3 - <<'PY2'
+          import os, re
+          correos = [c.strip().lower() for c in os.environ.get("DUENOS", "").split(",") if re.fullmatch(r"[^@\s',]+@[^@\s',]+", c.strip())]
+          r = open("firestore.rules").read()
+          assert "__DUENOS__" in r
+          open("firestore.rules", "w").write(r.replace("__DUENOS__", ", ".join(f"'{c}'" for c in correos)))
+          print(f"::notice::Opiniones: las puede leer {len(correos)} correo(s) de BANCO_EMAILS" if correos else "::warning::Sin BANCO_EMAILS: las opiniones no las puede leer nadie desde la app")
+          PY2
           printf '%s' "$CLAVE" > "$RUNNER_TEMP/clave.json"
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/clave.json"
           # el resultado, también como aviso del run (se ve sin abrir el registro)

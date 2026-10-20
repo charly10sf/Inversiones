@@ -7,6 +7,15 @@
    "t": "Precios al día y avisos que se van",
    "commits": [
     {
+     "cuando": "2026-10-20 22:12",
+     "asunto": "0.2.3b: las opiniones van solo a Firebase y el dueño las lee en Ajustes > Opiniones recibidas",
+     "detalle": [
+      "Fuera el formulario de Google (opinion.json): con cuenta se guardan en Firestore; sin cuenta, copiar o WhatsApp",
+      "Las reglas solo dejan leerlas a los correos de BANCO_EMAILS, que la Action pone al publicar (no están en el repositorio)",
+      "En Ajustes, una fila con cuántas hay y las nuevas; al tocarla, la lista con tipo, sección, fecha, quién y versión"
+     ]
+    },
+    {
      "cuando": "2026-10-20 21:10",
      "asunto": "0.2.3b: al abrirla salen también los bugs corregidos (en la presentación, en la lista y en el release)",
      "detalle": [
