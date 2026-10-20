@@ -7,6 +7,11 @@
    "t": "Tu perfil, tus avisos y cualquier bróker",
    "commits": [
     {
+     "cuando": "2026-10-20 16:35",
+     "asunto": "0.2.2: la bandera británica del dibujo, sin borde negro y con las esquinas redondas; «en pruebas» centrado",
+     "detalle": []
+    },
+    {
      "cuando": "2026-10-20 16:32",
      "asunto": "0.2.2: importar de tu bróker, arriba y grande en «Ya la tenía»; «Enséñamelo» enseña solo esa novedad y vuelve a ellas; el tutorial se cierra en cualquier paso; bandera británica bien dibujada; noticias de tu comunidad sin política",
      "detalle": []
