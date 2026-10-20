@@ -62,6 +62,13 @@ public class Puente {
         if (on && !Avisos.permitidos(ctx)) act.runOnUiThread(act::pedirPermisoAvisos);
     }
 
+    /** Dictar la pregunta de Pregúntale con el dictado de Google del móvil; el texto llega a la web por
+     *  resultadoDictado(texto) o resultadoDictado(null, motivo) */
+    @JavascriptInterface
+    public void dictar(String idioma) {
+        act.runOnUiThread(() -> act.dictar(idioma));
+    }
+
     @JavascriptInterface
     public boolean avisosPermitidos() {
         return Avisos.permitidos(ctx);

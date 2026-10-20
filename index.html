@@ -1220,6 +1220,9 @@ details.plegable[open] { padding-bottom: 16px; }
 .as-adj { width: 38px; height: 38px; border-radius: 10px; border: 0; background: none; color: var(--text-2); display: grid; place-items: center; flex: none; }
 .as-adj:hover { background: var(--plane-3); color: var(--text); }
 .as-adj svg { width: 19px; height: 19px; }
+.as-voz.oye { color: var(--on-accent, #1A1408); background: var(--down); animation: voz-oye 1.1s ease-in-out infinite; }
+@keyframes voz-oye { 0%, 100% { box-shadow: 0 0 0 0 rgba(229, 83, 75, 0.45); } 50% { box-shadow: 0 0 0 7px rgba(229, 83, 75, 0); } }
+@media (prefers-reduced-motion: reduce) { .as-voz.oye { animation: none; } }
 .as-adjunto { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 12px; align-items: start; background: var(--plane); border: 1px solid var(--line-2); border-radius: 12px; padding: 8px; }
 .as-adjunto > img { width: 64px; height: 64px; object-fit: cover; object-position: top left; border-radius: 8px; border: 1px solid var(--line-2); }
 .as-adj-txt { width: 64px; height: 64px; border-radius: 8px; background: var(--plane-2); display: grid; place-items: center; color: var(--accent); }
@@ -3971,6 +3974,7 @@ const ICONOS = {
   nueva: SVG('<path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/>', 1.8),
   recorte: SVG('<path d="M6 2v14a2 2 0 0 0 2 2h14"/><path d="M18 22V8a2 2 0 0 0-2-2H2"/>', 1.8),
   enviar: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2.2),
+  micro: SVG('<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>', 1.9),
   parar: SVG('<rect x="7" y="7" width="10" height="10" rx="1.5" fill="currentColor"/>', 1.5),
   bicho: SVG('<path d="M9 7.5a3 3 0 0 1 6 0"/><rect x="7" y="8" width="10" height="11" rx="5"/><path d="M12 11.5v7M3.5 13.5H7M17 13.5h3.5M5 8l2.5 2M19 8l-2.5 2M5 19.5l2.5-2M19 19.5l-2.5-2"/>', 1.8),
   globo: SVG('<path d="M4 5.5h16a1.5 1.5 0 0 1 1.5 1.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17.5H4A1.5 1.5 0 0 1 2.5 16V7A1.5 1.5 0 0 1 4 5.5z"/><path d="M7.5 10.5h9M7.5 13.5h5.5"/>', 1.8),
@@ -12821,7 +12825,7 @@ async function abrirAsesor(pregunta, enviar) {
         <button class="ib" data-as="ajustes" title="Ajustes de GrowIA" aria-label="Ajustes de GrowIA">${ICONOS.ajustes}</button>
         <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
       <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
-      <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea><button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
+      <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea>${dictadoPosible() ? `<button type="button" class="as-adj as-voz" data-as="voz" title="Dictar la pregunta" aria-label="Dictar la pregunta" aria-pressed="false">${ICONOS.micro}</button>` : ''}<button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
     </section>`;
     fondo.addEventListener('click', (e) => { if (e.target === fondo) cerrarAsesor(); else clicAsesor(e); });
     document.body.appendChild(fondo);
@@ -12846,7 +12850,47 @@ async function abrirAsesor(pregunta, enviar) {
   if (window.innerWidth > 760 && !pie_oculto()) ta.focus();
   function pie_oculto() { return $('#asPie', fondo).hidden; }
 }
+/* Dictar la pregunta en vez de escribirla. En el navegador, con el reconocimiento de voz del propio navegador
+   (Chrome, Edge, Safari); en la app de Android, con el dictado de Google del móvil (su ventanita del micrófono).
+   El texto cae en la caja y lo envías tú, así puedes corregirlo antes. */
+const RecVoz = window.SpeechRecognition || window.webkitSpeechRecognition;
+const appDicta = () => { const a = window.InversionesApp; return a && typeof a.dictar === 'function' ? a : null; };
+const dictadoPosible = () => !!(window.InversionesApp || RecVoz);
+let dictado = null;
+function dictar() {
+  const ta = $('#asTexto'), b = $('[data-as="voz"]'); if (!ta) return;
+  if (dictado) { try { dictado.stop(); } catch (e) {} return; }
+  const base = ta.value.trim();
+  const poner = (t, fin) => { ta.value = (base ? base + ' ' : '') + t; ta.dispatchEvent(new Event('input')); if (fin) ta.focus(); };
+  const oye = (on) => { if (b) { b.classList.toggle('oye', on); b.setAttribute('aria-pressed', String(on)); } };
+  if (window.InversionesApp) {
+    const app = appDicta();
+    if (!app) { toast(L('Para dictar, actualiza la app de Android (Ajustes > App de Android).', 'To dictate, update the Android app (Settings > Android app).'), 5000); return; }
+    window.resultadoDictado = (t, err) => {
+      oye(false);
+      if (t) poner(t, true);
+      else if (err === 'sin reconocimiento') toast(L('Este móvil no tiene el dictado de Google. Escríbelo o instala la app de Google.', "This phone doesn't have Google voice typing. Type it or install the Google app."), 5000);
+      else if (err !== 'cancelado') toast(L('No te he entendido. Prueba otra vez o escríbelo.', "I didn't catch that. Try again or type it."), 4000);
+    };
+    oye(true);
+    try { app.dictar(IDIOMA === 'en' ? 'en-GB' : 'es-ES'); } catch (e) { oye(false); }
+    return;
+  }
+  if (!RecVoz) { toast(L('Este navegador no deja dictar. Prueba con Chrome.', "This browser doesn't support dictation. Try Chrome."), 4000); return; }
+  const r = new RecVoz();
+  r.lang = IDIOMA === 'en' ? 'en-GB' : 'es-ES'; r.interimResults = true; r.continuous = false; r.maxAlternatives = 1;
+  dictado = r; oye(true);
+  r.onresult = (e) => { let t = ''; for (const x of e.results) t += x[0].transcript; poner(t.trim(), false); };
+  r.onerror = (e) => {
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed') toast(L('Falta el permiso del micrófono: acéptalo en el navegador (el candado de la barra de direcciones).', 'Microphone permission is missing: allow it in your browser (the padlock in the address bar).'), 5000);
+    else if (e.error === 'no-speech') toast(L('No te he oído. Toca el micrófono y habla.', "I didn't hear anything. Tap the microphone and speak."), 3500);
+    else if (e.error !== 'aborted') toast(L('No se ha podido dictar. Prueba otra vez o escríbelo.', "Dictation didn't work. Try again or type it."), 3500);
+  };
+  r.onend = () => { dictado = null; oye(false); ta.focus(); };
+  try { r.start(); } catch (e) { dictado = null; oye(false); }
+}
 function cerrarAsesor() {
+  if (dictado) { try { dictado.abort(); } catch (e) {} dictado = null; }
   const f = $('#asesorFondo'); if (!f) return;
   f.remove(); document.body.style.overflow = '';
   const b = $('#bAsesor'); if (b) b.focus({ preventScroll: true });
@@ -12885,6 +12929,7 @@ async function clicAsesor(e) {
   else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }
   else if (a === 'copiar') copiarCartera();
   else if (a === 'recorte') iniciarRecorte();
+  else if (a === 'voz') dictar();
   else if (a === 'quitar-adjunto') { AS.adjunto = null; pintarAdjunto(); }
   else if (a === 'reintentar') {
     let k = AS.conv.length - 1; while (k >= 0 && AS.conv[k].rol !== 'yo') k--;

@@ -28,6 +28,7 @@ public class Principal extends Activity {
     private static final int PERMISO_INSTALAR = 8;
     static final int ENTRAR_GOOGLE = 9;
     private static final int PERMISO_AVISOS = 10;
+    private static final int DICTAR = 11;
     private File pendiente;
     private WebView web;
     private ValueCallback<Uri[]> archivos;
@@ -220,6 +221,16 @@ public class Principal extends Activity {
             }
             return;
         }
+        if (pedido == DICTAR) {
+            String t = null;
+            if (resultado == RESULT_OK && datos != null) {
+                java.util.ArrayList<String> r = datos.getStringArrayListExtra(android.speech.RecognizerIntent.EXTRA_RESULTS);
+                if (r != null && !r.isEmpty()) t = r.get(0);
+            }
+            js(t != null ? "window.resultadoDictado && resultadoDictado(" + JSONObject.quote(t) + ")"
+                    : "window.resultadoDictado && resultadoDictado(null, " + (resultado == RESULT_CANCELED ? "'cancelado'" : "'nada'") + ")");
+            return;
+        }
         if (pedido == PERMISO_INSTALAR) {
             File f = pendiente;
             pendiente = null;
@@ -233,6 +244,21 @@ public class Principal extends Activity {
             return;
         }
         super.onActivityResult(pedido, resultado, datos);
+    }
+
+    /** El dictado de Google (la ventanita del micrófono): no hace falta permiso de micrófono en la app */
+    void dictar(String idioma) {
+        String lang = idioma == null || idioma.isEmpty() ? "es-ES" : idioma;
+        try {
+            Intent i = new Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+            i.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+            i.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE, lang);
+            i.putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, lang.startsWith("en") ? "Ask GrowIA" : "Pregúntale a GrowIA");
+            i.putExtra(android.speech.RecognizerIntent.EXTRA_MAX_RESULTS, 1);
+            startActivityForResult(i, DICTAR);
+        } catch (Exception e) {
+            js("window.resultadoDictado && resultadoDictado(null, 'sin reconocimiento')");
+        }
     }
 
     /** Android 13 o más: el permiso de notificaciones, solo cuando activas los avisos */
