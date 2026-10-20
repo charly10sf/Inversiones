@@ -9129,7 +9129,7 @@ function htmlMovidas() {
   const r = ((S.radar && S.radar.valores) || []).filter((x) => !x.pd && x.v != null && isFinite(x.v) && x.p > 0 && Math.abs(x.v) < 60);
   if (r.length < 30) return '';
   const orden = [...r].sort((a, b) => b.v - a.v), suben = orden.slice(0, 5), bajan = orden.slice(-5).reverse();
-  const li = (x) => `<li><button type="button" class="mov" data-consulta="${esc(x.s)}">${logo(x.w, nombreRadar(x), 'peq')}<span class="busca-t"><b>${esc(nombreRadar(x))}</b><small>${esc(x.s)}${x.sector ? ` · ${esc(x.sector)}` : ''}</small></span><span class="mov-v"><b class="${cls(x.v)}">${pctS(x.v, 1)}</b><small>${precioR(x.p, x.m)}</small></span></button></li>`;
+  const li = (x) => `<li><button type="button" class="mov" data-consulta="${esc(x.s)}">${logo(x.w, nombreRadar(x), 'peq')}<span class="busca-t"><b>${esc(nombreRadar(x))}</b><small>${esc(x.s)}${x.sector ? ` · <span>${esc(x.sector)}</span>` : ''}</small></span><span class="mov-v"><b class="${cls(x.v)}">${pctS(x.v, 1)}</b><small>${precioR(x.p, x.m)}</small></span></button></li>`;
   return `<section class="movidas" aria-labelledby="hMov"><div class="sec-cab"><h2 id="hMov">Las que más se han movido</h2><span class="k">en su último día de bolsa, de las ${fmtNum(r.length, 0)} empresas del radar${S.radar.generado ? `, ${haceCuanto(S.radar.generado)}` : ''}</span></div>
     <div class="mov-cols"><div><h3 class="mov-h up">Suben</h3><ul class="mov-l">${suben.map(li).join('')}</ul></div><div><h3 class="mov-h down">Bajan</h3><ul class="mov-l">${bajan.map(li).join('')}</ul></div></div></section>`;
 }
