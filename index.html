@@ -222,7 +222,7 @@ a:hover { text-decoration: underline; }
 @keyframes flashBaja { from { background: rgba(239, 116, 97, 0.32); } to { background: transparent; } }
 
 /* ---------- estructura de las vistas ---------- */
-#vista { padding-top: clamp(36px, 5vw, 64px); padding-bottom: 64px; }
+#vista { padding-top: clamp(26px, 3.4vw, 44px); padding-bottom: 64px; }
 .vista-cab { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 24px; }
 .vista-cab h1 { margin: 0; font-size: 30px; font-weight: 300; letter-spacing: -0.03em; }
 .vista-cab p { margin: 0; color: var(--muted); font-size: 14px; }
@@ -1425,10 +1425,12 @@ table td.txt { white-space: normal; min-width: 260px; }
 .subvistas.dos-op button svg { width: 17px; height: 17px; }
 .car-tabs { margin-top: 0; }
 /* Cartera a tu gusto */
-.car { display: grid; gap: 48px; grid-template-columns: minmax(0, 1fr); }
+.car { display: grid; gap: 40px; grid-template-columns: minmax(0, 1fr); }
+@media (max-width: 759px) { .car { gap: 30px; } }
 .car-fila { display: grid; gap: 40px; grid-template-columns: minmax(0, 1fr); min-width: 0; }
 .car-col { display: grid; gap: 40px; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
-.car-pos { display: grid; gap: 28px; min-width: 0; }
+.car-pos { display: grid; gap: 20px; min-width: 0; }
+.car-pos > .car-tabs { margin-bottom: 0; }
 .car-col > .toca.iac { margin-top: 0; }
 @media (min-width: 1180px) {
   .car-fila.par-izq { grid-template-columns: minmax(360px, 440px) minmax(0, 1fr); gap: 56px; align-items: start; }
@@ -1502,7 +1504,7 @@ table td.txt { white-space: normal; min-width: 260px; }
   .hero-rangos { align-self: start; justify-self: end; margin: 2px 24px 0 0; }
   .hero-pie { justify-self: end; align-self: start; margin: 10px 24px 0 0; }
   .hero-movers { margin-top: 6px; }
-  .hero-movers .mv-l { grid-template-columns: repeat(var(--n, 4), minmax(0, 250px)); }
+  .hero-movers .mv-l { grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); }
   .hero-rangos button { flex: none; padding: 6px 11px; }
   .hero-panel > .chart { margin-top: -48px; }
 }
@@ -1618,7 +1620,7 @@ body.ce-arrastrando { user-select: none; cursor: grabbing; }
 .ordc-h { margin: 22px 0 8px; font-size: 15px; font-weight: 650; }
 .ordc-nota { margin-top: 14px; }
 .ordc-vacio { padding: 6px 2px; list-style: none; }
-@media (max-width: 680px) { .subvistas.dos-op { grid-template-columns: repeat(2, minmax(0, 1fr)); } .car-tabs { margin-top: 28px; } }
+@media (max-width: 680px) { .subvistas.dos-op { grid-template-columns: repeat(2, minmax(0, 1fr)); } .car-tabs { margin-top: 0; } }
 
 /* ---------- Plan: logos y banderas ---------- */
 .activo-l.mini { gap: 10px; }
@@ -11175,7 +11177,7 @@ const NOVEDADES = [
     { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar, .nav' }, t: 'Cinco sitios', x: 'Inicio va en el centro de la barra, más grande. A la izquierda, lo que haces tú: Pasos y Análisis, que ahora lleva tus objetivos. A la derecha, lo de fuera: Expertos y Mercados, que ahora lleva el calendario. Hacienda sale en Análisis cuando toca la renta; el resto del año, con un enlace al final.' },
     { d: 'tengo', ir: { v: 'cartera', sel: '#hPos', pos: true }, t: 'Tus posiciones, arriba', x: 'En Inicio, justo debajo del patrimonio. GrowIA va después y, en el móvil, más corta: su diagnóstico en tres líneas y las dos cosas que más urgen.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.hero-panel' }, t: 'Inicio más limpio', x: 'El ojo para ocultar las cifras va junto a Patrimonio, lo que más ha movido hoy tu cartera sale como en el widget y la comparación con el S&P 500 está junto a los periodos de la gráfica. La bandera del idioma pasa a Ajustes.' },
-    { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: 'La gráfica, desde el principio', x: '«Inicio» la enseña desde tu primera compra. 3A, 5A y Máx llegan de verdad hasta atrás y, en los periodos largos, el eje dice el mes y el año.' },
+    { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: 'La gráfica, desde el principio', x: '«Inicio» la enseña desde tu primera compra: sale en cuanto pones en alguna ficha desde cuándo la tienes. 3A, 5A y Máx llegan de verdad hasta atrás y, en los periodos largos, el eje dice el mes y el año.' },
     { d: 'hecho', ir: { v: 'ruta', sel: '.ruta-estado' }, t: 'Si vas bien, te lo dice', x: 'Arriba del Paso a paso, cómo vas frente a tus objetivos. Y no hacer nada también es un consejo: si tu cartera va bien, GrowIA te dice que esperes.' },
     { d: 'pregunta', ir: { v: 'expertos', sel: '.fx3, .ideas-top3' }, t: 'Consejos que no cambian cada día', x: 'La señal de cada posición ya no salta de un día para otro: una nueva tiene que repetirse dos días y la anterior llevar al menos una semana, salvo que sea urgente, como tu precio de salida. GrowIA sabe lo que te dijo antes y, si cambia de opinión, te explica por qué.' },
     { d: 'meta', ir: { v: 'analisis', sel: 'section.ov, .ov-vacio' }, t: 'Tus objetivos frente a tu cartera', x: 'En Análisis, punto por punto: lo que tienes en bolsa frente a lo que te toca por tu perfil, tus límites de acciones sueltas, cripto y empresa, tu colchón y si llegas a cada meta. Con su barra, en verde lo que va bien y en rojo lo que se sale.' },
