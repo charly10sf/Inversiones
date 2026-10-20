@@ -1990,8 +1990,6 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .gta-barra i { display: block; height: 100%; width: var(--p); border-radius: inherit; background: linear-gradient(90deg, var(--g-lila), var(--g-rosa), var(--g-nar)); box-shadow: 0 0 14px rgba(255, 62, 165, 0.7); animation: gtaBarra 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) both 0.3s; }
 @keyframes gtaBarra { from { width: 0; } }
 .gta-espera small { color: var(--g-t2); font-size: 12.5px; text-shadow: 0 1px 8px #10051C; }
-.gta-web { display: inline-flex; align-items: center; height: 40px; padding: 0 18px; margin-top: 16px; border-radius: 999px; border: 1px solid rgba(45, 226, 230, 0.6); background: rgba(16, 5, 28, 0.5); color: var(--g-cian); font-weight: 650; font-size: 14px; box-shadow: 0 0 14px rgba(45, 226, 230, 0.2); }
-.gta-web:hover { background: rgba(45, 226, 230, 0.12); text-decoration: none; }
 .gta-baja { position: absolute; z-index: 1; left: 50%; bottom: 14px; transform: translateX(-50%); width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: rgba(16, 5, 28, 0.5); border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer; animation: gtaBaja 1.8s ease-in-out infinite; }
 .gta-baja svg { width: 20px; height: 20px; }
 @keyframes gtaBaja { 50% { transform: translate(-50%, 6px); } }
@@ -2001,14 +1999,7 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .gta-sec + .gta-sec { margin-top: 44px; }
 .gta-sec > .gta-rotulo { margin-bottom: 12px; color: #FF7DC4; text-shadow: 0 0 6px rgba(255, 62, 165, 0.9), 0 0 22px rgba(255, 62, 165, 0.5); }
 .gta-nota { color: var(--g-nar); font-size: 13.5px; margin: 0 0 10px; }
-.gta-datos { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
-@media (min-width: 680px) { .gta-datos { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-.gta-datos li { padding: 16px 16px 15px; border-radius: 16px; background: linear-gradient(160deg, rgba(255, 255, 255, 0.055), rgba(255, 255, 255, 0.015)); border: 1px solid rgba(255, 255, 255, 0.08); border-left: 3px solid var(--c, var(--g-rosa)); }
-.gta-datos .c0 { --c: var(--g-rosa); } .gta-datos .c1 { --c: var(--g-nar); } .gta-datos .c2 { --c: var(--g-cian); }
-.gta-datos b { display: flex; align-items: baseline; flex-wrap: wrap; gap: 2px 10px; }
 .gta-num { font: 400 clamp(32px, 8vw, 42px)/1.05 var(--g-neon); letter-spacing: 0.01em; font-variant-numeric: tabular-nums; color: #fff; text-shadow: 0 0 10px var(--c, var(--g-rosa)), 0 0 24px var(--c, var(--g-rosa)); }
-.gta-datos small { font: 400 15px/1.2 'Anton', Impact, var(--f); text-transform: uppercase; letter-spacing: 0.07em; color: var(--g-t); }
-.gta-datos p { margin: 7px 0 0; color: var(--g-t2); font-size: 14px; line-height: 1.5; }
 .gta-desde { display: grid; gap: 8px; padding: 18px; border-radius: 18px; background: rgba(45, 226, 230, 0.06); border: 1px solid rgba(45, 226, 230, 0.3); }
 .gta-desde > b .gta-num { font-size: clamp(42px, 11vw, 56px); --c: var(--g-cian); }
 .gta-desde > b.down .gta-num { --c: var(--g-rosa); }
@@ -2020,16 +2011,6 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .gta-camino::before { content: ''; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: rgba(255, 255, 255, 0.12); }
 .gta-camino::after { content: ''; position: absolute; left: 6px; top: 6px; bottom: 6px; width: 2px; background: linear-gradient(180deg, var(--g-lila), var(--g-rosa), var(--g-nar)); box-shadow: 0 0 10px rgba(255, 62, 165, 0.6); transform: scaleY(var(--prog, 1)); transform-origin: top; transition: transform 0.12s linear; }
 /* tu cartera en copias: barras que crecen al verse */
-.gta-copias { display: grid; gap: 12px; margin-top: 18px; }
-.gta-copias > p { margin: 0; color: var(--g-t2); font-size: 14px; }
-.gta-barras { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(0, 1fr); gap: 8px; align-items: end; height: 190px; }
-.gb { display: grid; grid-template-rows: auto 1fr auto; justify-items: center; gap: 6px; height: 100%; min-width: 0; }
-.gb i { align-self: end; width: 100%; max-width: 46px; height: var(--h); border-radius: 8px 8px 3px 3px; background: linear-gradient(180deg, var(--g-rosa), rgba(176, 107, 255, 0.55)); box-shadow: 0 0 14px rgba(255, 62, 165, 0.45); transform: scaleY(0); transform-origin: bottom; transition: transform 0.9s cubic-bezier(.2, .8, .2, 1); transition-delay: calc(var(--i) * 110ms + 150ms); }
-.gb.hoy i { background: linear-gradient(180deg, var(--g-sol), var(--g-nar)); box-shadow: 0 0 16px rgba(255, 210, 63, 0.55); }
-.gta-copias.vis .gb i { transform: scaleY(1); }
-.gb-n { align-self: end; font: 400 15px/1 var(--g-neon); color: #fff; text-shadow: 0 0 8px var(--g-rosa); opacity: 0; transition: opacity 0.5s ease; transition-delay: calc(var(--i) * 110ms + 700ms); }
-.gta-copias.vis .gb-n { opacity: 1; }
-.gb small { font-size: 11px; line-height: 1.2; min-height: 2.4em; color: var(--g-t2); text-align: center; }
 .gta-desde .gta-linea polygon { opacity: 0; transition: opacity 1s ease 1.3s; }
 .gta-desde.vis .gta-linea polygon { opacity: 1; }
 .gta-camino li { position: relative; }
@@ -2043,19 +2024,81 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .gta-camino li:not(.hecho):not(.siguiente) b { color: var(--g-t2); }
 .gta-camino p { margin: 2px 0 0; color: var(--g-t2); font-size: 13.5px; line-height: 1.45; }
 .gta-txt { margin: 0 0 4px; color: var(--g-t2); font-size: 14.5px; line-height: 1.55; }
-.gta-video { position: relative; aspect-ratio: 16 / 9; margin-top: 14px; border-radius: 16px; overflow: hidden; border: 1px solid rgba(255, 62, 165, 0.35); background: #000; box-shadow: 0 0 40px rgba(255, 62, 165, 0.22); }
-.gta-video iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
-.gta-sub2 { margin: 26px 0 4px; font: 400 24px/1.15 var(--g-neon); color: #fff; text-shadow: 0 0 10px rgba(255, 62, 165, 0.6); }
-.gta-coste { margin: 10px 0 0; display: grid; }
-.gta-coste > div { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; padding: 12px 0; border-top: 1px solid rgba(255, 255, 255, 0.1); }
-@media (min-width: 560px) { .gta-coste > div { grid-template-columns: 120px minmax(0, 1fr); gap: 14px; } }
-.gta-coste dt { color: var(--g-t); font-weight: 700; font-size: 14.5px; padding-top: 4px; }
-.gta-coste dd { margin: 0; color: var(--g-t2); font-size: 14px; line-height: 1.5; }
-.gta-coste dd b { display: block; font: 400 24px/1.1 var(--g-neon); color: #FFE2B8; text-shadow: 0 0 10px var(--g-nar); margin-bottom: 2px; }
-.gta-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; padding: 14px 16px; margin: 4px 0 14px; border-radius: 16px; background: rgba(255, 62, 165, 0.1); border: 1px solid rgba(255, 62, 165, 0.4); }
-.gta-total b { font: 400 36px/1.05 var(--g-neon); color: #fff; text-shadow: 0 0 10px var(--g-rosa), 0 0 26px var(--g-rosa); }
-.gta-total span { color: var(--g-t2); font-size: 14px; }
 .gta-pie { margin: 32px 0 0; padding-top: 14px; border-top: 1px solid rgba(255, 255, 255, 0.1); color: rgba(217, 196, 232, 0.72); font-size: 12px; line-height: 1.5; }
+.gta-txt { margin: 0; color: var(--g-t2); font-size: 14.5px; line-height: 1.55; }
+/* de GTA V a GTA VI: el porcentaje, la barra con los hitos y los años debajo */
+.gta-v6 { padding: 18px 18px 14px; border-radius: 20px; background: linear-gradient(160deg, rgba(177, 74, 237, 0.14), rgba(255, 62, 165, 0.06)); border: 1px solid rgba(255, 62, 165, 0.28); margin-bottom: 26px; }
+.gta-v6-n { display: grid; gap: 6px; }
+.gta-v6-n .gta-num { font-size: clamp(54px, 15vw, 76px); --c: var(--g-rosa); }
+.gta-v6-n > span { color: var(--g-t2); font-size: 14.5px; line-height: 1.5; max-width: 52ch; }
+.gta-pista { position: relative; height: 10px; margin: 64px 4px 0; border-radius: 99px; background: rgba(255, 255, 255, 0.1); }
+.gta-pista-f { position: absolute; left: 0; top: 0; bottom: 0; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--g-lila), var(--g-rosa) 70%, var(--g-nar)); box-shadow: 0 0 16px rgba(255, 62, 165, 0.7); transition: width 2.2s cubic-bezier(0.2, 0.8, 0.2, 1) 0.2s; }
+.gta-pista-f::after { content: ''; position: absolute; right: -6px; top: 50%; width: 14px; height: 14px; margin-top: -7px; border-radius: 50%; background: #fff; box-shadow: 0 0 0 4px rgba(255, 210, 63, 0.45), 0 0 18px var(--g-sol); }
+.gta-v6.vis .gta-pista-f { width: var(--p); }
+.gta-hito { position: absolute; top: 50%; width: 0; height: 0; }
+.gta-hito i { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%; background: #10051C; border: 2px solid var(--g-t2); }
+.gta-hito.hecho i { border-color: #fff; background: var(--g-rosa); }
+.gta-hito em { position: absolute; bottom: 12px; font-style: normal; font-size: 12px; font-weight: 600; color: var(--g-t); white-space: nowrap; }
+.gta-hito.f1 em { bottom: 32px; }
+.gta-hito.f1::before { content: ''; position: absolute; left: -0.5px; bottom: 8px; width: 1px; height: 24px; background: rgba(255, 255, 255, 0.25); }
+.gta-hito.a-start em { left: -5px; } .gta-hito.a-end em { right: -5px; } .gta-hito.a-middle em { transform: translateX(-50%); }
+.gta-anios { position: relative; height: 18px; margin: 10px 4px 0; }
+.gta-anios span { position: absolute; transform: translateX(-50%); font-size: 11px; color: rgba(217, 196, 232, 0.7); font-variant-numeric: tabular-nums; }
+/* tu cartera en copias: un dibujo de cajas */
+.gta-copias2 { padding: 18px; border-radius: 20px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.09); display: grid; gap: 12px; }
+.gta-big { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; }
+.gta-big .gta-num { font-size: clamp(54px, 15vw, 76px); --c: var(--g-rosa); }
+.gta-big span { color: var(--g-t); font-size: 15px; }
+.gta-picto { display: flex; flex-wrap: wrap; gap: 6px; }
+.gta-picto i { width: 20px; display: block; opacity: 0; transform: translateY(8px) scale(0.6); transition: opacity 0.35s ease, transform 0.45s cubic-bezier(0.2, 1.4, 0.4, 1); transition-delay: calc(var(--k) * 28ms + 0.2s); }
+.gta-picto svg { display: block; width: 100%; fill: none; stroke-width: 1.6; }
+.gta-picto.cajas svg { stroke: var(--g-rosa); filter: drop-shadow(0 0 3px rgba(255, 62, 165, 0.8)); }
+.gta-picto.coches i { width: 46px; }
+.gta-picto.coches svg { stroke: var(--g-cian); filter: drop-shadow(0 0 3px rgba(45, 226, 230, 0.8)); }
+.gta-picto i.medio { clip-path: inset(0 calc(100% - var(--r)) 0 0); }
+.vis .gta-picto i, .gta-picto.vis i, .gta-rev.vis ~ .gta-picto i { opacity: 1; transform: none; }
+.gta-unidad { color: var(--g-t2); font-size: 12.5px; }
+.gta-mini { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.gta-mini li { padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); display: grid; gap: 2px; }
+.gta-mini .c0 { --c: var(--g-rosa); } .gta-mini .c1 { --c: var(--g-nar); } .gta-mini .c2 { --c: var(--g-cian); }
+.gta-mini b { font: 400 28px/1.1 var(--g-neon); color: #fff; text-shadow: 0 0 10px var(--c), 0 0 22px var(--c); font-variant-numeric: tabular-nums; }
+.gta-mini span { color: var(--g-t2); font-size: 13px; line-height: 1.4; }
+/* el Adder: el coche, lo que costó por tareas y lo que pagas tú */
+.gta-coche { margin: 4px -6px 0; }
+.gta-coche-svg { display: block; width: 100%; max-width: 560px; margin: 0 auto; overflow: visible; }
+.gta-coche .gta-cuerpo-coche { filter: drop-shadow(0 0 6px rgba(255, 62, 165, 0.55)); }
+.gta-coche.vis .gta-coche-svg { animation: gtaEntra 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.gta-coche.vis .gta-rueda { animation: gtaGira 1.1s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+.gta-estela path { stroke-width: 2.4; opacity: 0; }
+.gta-coche.vis .gta-estela path { animation: gtaEstela 1.4s ease-out 0.2s both; }
+@keyframes gtaEntra { from { transform: translateX(-60%); opacity: 0; } }
+@keyframes gtaGira { from { transform: rotate(-720deg); } }
+@keyframes gtaEstela { 0% { opacity: 0; transform: translateX(40px); } 40% { opacity: 0.9; } 100% { opacity: 0.35; transform: none; } }
+.gta-adder-n { display: grid; gap: 6px; margin-top: 10px; }
+.gta-adder-n .gta-num { font-size: clamp(48px, 13vw, 66px); --c: var(--g-nar); }
+.gta-adder-n span { color: var(--g-t2); font-size: 14.5px; line-height: 1.5; max-width: 56ch; }
+.gta-pila { position: relative; display: flex; gap: 3px; height: 22px; margin: 22px 0 14px; }
+.gta-pila i { display: block; border-radius: 6px; background: var(--c); box-shadow: 0 0 12px color-mix(in srgb, var(--c) 60%, transparent); transform: scaleX(0); transform-origin: left; transition: transform 0.6s cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(var(--i) * 140ms + 0.15s); }
+.gta-pila.vis i { transform: none; }
+.gta-pila-tu { position: absolute; top: -6px; bottom: -6px; width: 3px; margin-left: -1.5px; background: #fff; border-radius: 2px; box-shadow: 0 0 10px #fff; }
+.gta-pila-tu em { position: absolute; top: -20px; left: 50%; transform: translateX(-50%); font-style: normal; font-size: 11.5px; font-weight: 700; color: #fff; white-space: nowrap; }
+.gta-pila-ley { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 10px 18px; }
+.gta-pila-ley li { display: grid; grid-template-columns: 10px minmax(0, 1fr); gap: 0 10px; align-items: baseline; }
+.gta-pila-ley i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); box-shadow: 0 0 8px var(--c); }
+.gta-pila-ley b { font-weight: 650; font-size: 14.5px; color: #fff; }
+.gta-pila-ley span, .gta-pila-ley small { grid-column: 2; }
+.gta-pila-ley span { color: #FFE2B8; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.gta-pila-ley small { color: var(--g-t2); font-size: 12.5px; line-height: 1.4; }
+.gta-adder .gta-picto { margin-top: 22px; }
+.gta-tu { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 14px 0 0; }
+.gta-tu .gta-num { font-size: clamp(40px, 11vw, 54px); --c: var(--g-cian); }
+.gta-tu span { color: var(--g-t); font-size: 15px; }
+.gta-est { margin: 14px 0 0; color: rgba(217, 196, 232, 0.75); font-size: 12.5px; line-height: 1.5; }
+/* la línea de mientras esperabas, con los tráileres marcados */
+.gta-linea { height: auto; aspect-ratio: 336 / 132; overflow: visible; }
+.gta-marca circle { fill: #10051C; stroke: var(--g-sol); stroke-width: 2; opacity: 0; transition: opacity 0.4s ease; transition-delay: calc(var(--i) * 0.3s + 1.4s); }
+.gta-marca text { fill: var(--g-t2); font: 600 10px var(--f); opacity: 0; transition: opacity 0.4s ease; transition-delay: calc(var(--i) * 0.3s + 1.5s); }
+.gta-desde.vis .gta-marca circle, .gta-desde.vis .gta-marca text { opacity: 1; }
 
 /* aparecer al bajar */
 .gta-rev { opacity: 0; transform: translateY(26px) scale(0.98); transition: opacity 0.7s ease, transform 0.8s cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(var(--i, 0) * 90ms); }
@@ -2075,6 +2118,8 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 @media (prefers-reduced-motion: reduce) {
   .gb i, .gb-n { transition: none !important; transform: none !important; opacity: 1 !important; }
   .gta-tit, .gta-chip.pulsa, .gta-suelo, .gta-sol, .gta-estrellas, .gta-baja, .gta-barra i, .gta-camino li.siguiente::before, .gta-desde .gta-linea polyline { animation: none !important; }
+  .gta-coche-svg, .gta-rueda, .gta-estela path, .gta-pista-f, .gta-picto i, .gta-pila i, .gta-marca circle, .gta-marca text { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
+  .gta-pista-f { width: var(--p); }
   .gta-rev { opacity: 1; transform: none; transition: none; }
 }
 
@@ -8294,19 +8339,26 @@ function avisoApp(ult) {
 }
 
 /* =====================================================================
-   GTA VI: cuenta atrás hasta su salida y unas cuentas con tu cartera.
+   GTA VI: cuenta atrás hasta su salida y unas cuentas con tu cartera, con más dibujo que texto.
    Un botón pequeño al lado de Patrimonio; al entrar se avisa una vez. Desde 2027 ya no sale.
-   Datos: fecha, plataformas y precio, de Rockstar (junio de 2026); ventas de GTA V, de Take-Two
-   (agosto de 2026); el coste de GTA VI no es oficial: la prensa lo estima entre 1.000 y 2.000
-   millones de dólares y aquí se usa 1.500.
+   Datos: fecha, plataformas y precio, de Rockstar (junio de 2026); fechas de GTA V y de los tráileres,
+   de Rockstar; el Adder cuesta 1.000.000 $ dentro del juego. Lo que costó hacerlo es una estimación de
+   GrowFolio: semanas de trabajo por tarea (un coche de Gran Turismo lleva de 3 a 6 meses, según GTPlanet,
+   y los de GTA V tienen bastante menos detalle) a lo que le cuesta cada empleado a Rockstar North
+   (31,6 M£ de gastos de personal entre 515 personas en el año fiscal 2017, según PCGamesInsider), más
+   un 30 % de oficina, equipos y licencias: unos 1.800 € por semana de trabajo.
    ===================================================================== */
 const GTA = {
   salida: new Date(2026, 10, 19), precarga: new Date(2026, 10, 12), hasta: new Date(2027, 0, 1),
-  precio: 79.99, ultimate: 99.99, costeUSD: 1.5e9,
-  gta5Copias: 230e6, trailer2: 475e6, cadaCuanto: 13,
-  // tráiler de lanzamiento (15 oct 2026, YouTube de Rockstar); su coste es una estimación nuestra: canción 1-3 M$, vídeo 1,5-4 M$
-  trailer: { id: 'rz1B4B2yBZY', seg: 91, medio: 4.5e6, visitas11h: 18e6 },
+  precio: 79.99, ultimate: 99.99, gta5: '2013-09-17',
 };
+const ADDER = {
+  enJuegoUSD: 1e6, semanaEUR: 1795,
+  // tarea, semanas de una persona, qué es y su color
+  tareas: [['Modelado 3D', 6, 'carrocería, interior y versiones simplificadas para cuando se ve de lejos', '#FF3EA5'], ['Texturas y pintura', 2, 'materiales, luces y los colores que eliges en el taller', '#B14AED'], ['Golpes y piezas', 2, 'abolladuras, cristales rotos, puertas y ruedas que se sueltan', '#2DE2E6'], ['Conducción', 1, 'velocidad, agarre, frenada y cómo derrapa', '#FFD23F'], ['Sonido del motor', 1.5, 'grabar, mezclar y ajustar el motor y las marchas', '#FF9F43'], ['Pruebas', 1.5, 'que no se atasque, no atraviese paredes y vaya bien en todas las consolas', '#7CF29C']],
+  min: 18000, max: 40000,
+};
+const adderEUR = () => sum(ADDER.tareas, (t) => t[1]) * ADDER.semanaEUR;
 const gtaActivo = () => Date.now() < GTA.hasta.getTime();
 function gtaFalta() {
   const ms = GTA.salida - Date.now();
@@ -8343,171 +8395,172 @@ function nGTA(n, d) {
   if (a >= 1e6) return fmtNum(n / 1e6, a >= 1e7 ? 0 : 1) + ' M';
   return fmtNum(n, d != null ? d : a < 10 ? 1 : 0);
 }
-// meses hasta tener F empezando con P, aportando C al mes y rindiendo r al año
-function mesesHasta(F, P, C, r) {
-  if (P >= F) return 0;
-  const rm = Math.pow(1 + r, 1 / 12) - 1;
-  if (rm <= 0) return C > 0 ? (F - P) / C : Infinity;
-  const base = P * rm + C;
-  return base > 0 ? Math.log((F * rm + C) / base) / Math.log(1 + rm) : Infinity;
-}
-/* cada dato lleva su cifra final (n) y, si se puede animar, el número (v) y cómo escribirlo (f) */
-function datosGTA(M) {
-  const P = Math.max(0, M.total || 0), O = S.oculto;
-  const fx = (S.precios && S.precios.fx) || {};
-  const usd = fx.USD || 0.86;
-  const costeE = GTA.costeUSD * usd;
-  const n = (x, d) => (O ? '••••' : nGTA(x, d));
-  const precio = fmtNum(GTA.precio, 2) + ' €';
-  const out = [];
-  const add = (o) => { if (O && o.oculto !== false) delete o.v; out.push(o); };
-  if (!P) {
-    out.push({ n: '0', u: 'copias', t: 'Es lo que vale tu cartera en GTA VI de momento. Añade lo que tienes en Cartera y aquí salen tus cuentas.' });
-  } else {
-    add({ n: n(P / GTA.precio), v: P / GTA.precio, f: 'n', u: P / GTA.precio < 2 ? 'copia' : 'copias', t: `Es lo que vale tu cartera en GTA VI, a ${precio} cada uno. En la edición Ultimate (${fmtNum(GTA.ultimate, 2)} €), ${O ? '••••' : nGTA(P / GTA.ultimate)}.` });
-    if (Math.abs(M.pl) >= GTA.precio / 2) {
-      add(M.pl > 0
-        ? { n: n(M.pl / GTA.precio), v: M.pl / GTA.precio, f: 'n', u: 'copias gratis', t: 'Te las paga lo que llevas ganado desde que compraste. El juego, invitado por la bolsa.' }
-        : { n: n(-M.pl / GTA.precio), v: -M.pl / GTA.precio, f: 'n', u: 'copias en rojo', t: 'Es lo que llevas perdido desde que compraste. No se vende en las caídas: ni la cartera ni la reserva.' });
-    }
-    const hoy = M.dia / GTA.precio;
-    if (Math.abs(hoy) >= 0.1) add({ n: (hoy > 0 ? '+' : '−') + n(Math.abs(hoy)), v: hoy, f: 'signo', u: 'copias hoy', t: hoy > 0 ? `Lo que ha ganado tu cartera hoy (${pctS(M.diaPct)}).` : `Lo que se ha dejado hoy tu cartera (${pctS(M.diaPct)}). Mañana será otro día.` });
-    add({ n: n(costeE / P), v: costeE / P, f: 'n', u: 'veces tu cartera', t: `Es lo que necesitarías para pagar GTA VI entero. Rockstar no ha dicho lo que ha costado; la prensa lo estima entre 1.000 y 2.000 millones de dólares. Con 1.500, son unos ${fmtNum(costeE / 1e6, 0)} millones de euros.` });
-    // al ritmo de tu plan: tu aportación y la rentabilidad esperada de tu proyección
-    let r = 0.06, C = 0;
-    try { const pr = proyeccion(M); r = pr.mu / 100; C = pr.cfg.aport || 0; } catch (e) { C = aportacionActual(); }
-    const anios = mesesHasta(costeE, P, C, r) / 12;
-    if (isFinite(anios) && anios < 5000) {
-      const anio = new Date().getFullYear() + Math.round(anios);
-      add({ n: O ? '••••' : 'Año ' + anio, v: anio, f: 'anio', u: '', t: `Lo tendrías pagado si sigues ${C ? `aportando ${eur(C, 0)} al mes` : 'sin aportar'} y tu cartera rinde un ${fmtNum(r * 100, 1)} % al año, como en tu proyección. Son ${O ? '••••' : fmtNum(Math.round(anios), 0)} años: a uno cada ${GTA.cadaCuanto}, Rockstar sacaría mientras unos ${O ? '••••' : fmtNum(Math.max(1, Math.round(anios / GTA.cadaCuanto)), 0)} GTA más.` });
-    } else {
-      out.push({ n: 'Nunca', u: '', t: 'Al ritmo de tu plan no lo pagarías: sin aportaciones ni rentabilidad la cartera no crece. Pon tus aportaciones en Plan y movimientos.' });
-    }
-    // si cada día de bolsa fuera como hoy
-    const dp = M.diaPct || 0;
-    if (dp >= 0.05) {
-      const anosHoy = Math.log(costeE / P) / Math.log(1 + dp / 100) / 252;
-      add({ n: O ? '••••' : nGTA(anosHoy, anosHoy < 10 ? 1 : 0) + (anosHoy < 2 ? ' año' : ' años'), v: anosHoy, f: 'anos', u: '', t: `Lo que tardarías en pagarlo entero si todos los días de bolsa fueran como hoy (${pctS(dp)}). El interés compuesto, llevado al extremo.` });
-    } else {
-      out.push({ n: 'Nunca', u: '', t: dp <= -0.05 ? `Hoy tu cartera va ${pctS(dp)}: si todos los días fueran así, no pagarías GTA VI ni GTA VII. Menos mal que no lo son.` : 'Hoy tu cartera apenas se ha movido. A este ritmo, ni GTA VI ni GTA VII.' });
-    }
-    if (M.dividendos >= GTA.precio / 4) {
-      const dias = Math.ceil(GTA.precio / (M.dividendos / 365));
-      add({ n: n(M.dividendos / GTA.precio), v: M.dividendos / GTA.precio, f: 'n', u: M.dividendos / GTA.precio < 2 ? 'copia al año' : 'copias al año', t: `Te pagan tus dividendos de un año, brutos, sin mover un dedo. Una copia cada ${O ? '••••' : fmtNum(dias, 0)} días.` });
-    }
-    let r10 = 0.07; try { r10 = proyeccion(M).mu / 100; } catch (e) {}
-    out.push({ n: fmtNum(GTA.precio * Math.pow(1 + r10, 10), 0) + ' €', v: GTA.precio * Math.pow(1 + r10, 10), f: 'eur', u: '', t: `Serían los ${precio} del juego dentro de 10 años si los metes en tu cartera, al ${fmtNum(r10 * 100, 1)} % al año. Ya, te lo vas a comprar igual.` });
-    // lo que te cuesta en horas de trabajo, si has puesto tus ingresos en Objetivos
-    const ing = +(perfil().ingresos_mes || 0);
-    if (ing > 0) { const h = GTA.precio / (ing / 160); add({ n: n(h, h < 10 ? 1 : 0), v: h, f: 'n', u: h < 2 ? 'hora de trabajo' : 'horas de trabajo', t: `Lo que te cuesta el juego con los ingresos que has puesto en Objetivos (${eur(ing, 0)} al mes, unas 160 horas).` }); }
-    add({ n: O ? '••••' : nGTA(GTA.trailer2 / P), v: GTA.trailer2 / P, f: 'n', u: 'visitas por euro', t: 'El segundo tráiler tuvo 475 millones de visualizaciones en 24 horas, según Rockstar el mayor estreno de un vídeo de la historia (mayo de 2025). Tocan a eso por cada euro de tu cartera.' });
-  }
-  const tt = S.precios && S.precios.extra && S.precios.extra.TTWO;
-  if (tt && tt.precio) {
-    const pe = tt.precio * (fx[tt.moneda || 'USD'] || usd);
-    const r1 = tt.rent && tt.rent['1a'];
-    add({ n: P ? n(P / pe) : fmtNum(tt.precio, 2) + ' $', v: P ? P / pe : undefined, f: 'n', u: P ? (P / pe < 2 ? 'acción de Take-Two' : 'acciones de Take-Two') : 'Take-Two', t: `La dueña de Rockstar cotiza en el Nasdaq (TTWO) a ${fmtNum(tt.precio, 2)} $, ${pctS(tt.variacion_dia)} hoy${r1 != null ? ` y ${pctS(r1, 1)} en un año. Si hace un año hubieras metido ahí los ${precio} del juego, hoy tendrías unos ${fmtNum(GTA.precio * (1 + r1 / 100), 2)} € (sin contar lo que ha hecho el dólar)` : ''}.` });
-  }
-  const fact = GTA.gta5Copias * GTA.precio;
-  out.push({ n: '230 M', v: 230e6, f: 'n', u: 'copias de GTA V', t: `Lleva vendidas desde 2013 (Take-Two, agosto de 2026). Si GTA VI vendiera lo mismo a ${precio}, ingresaría unos ${fmtNum(fact / 1e9, 1)} mil millones de euros: ${fmtNum(fact / costeE, 0)} veces lo que se calcula que ha costado.` });
-  return out;
-}
-const numGTA = (d) => `<span class="gta-num"${d.v != null && isFinite(d.v) ? ` data-to="${d.v}" data-f="${d.f || 'n'}" data-fin="${esc(d.n)}"` : ''}>${esc(d.n)}</span>`;
+const numGTA = (d) => `<span class="gta-num"${d.v != null && isFinite(d.v) && !S.oculto ? ` data-to="${d.v}" data-f="${d.f || 'n'}" data-fin="${esc(d.n)}"` : ''}>${esc(d.n)}</span>`;
 
 /* la escena: cielo de noche, estrellas, un sol a rayas que se pone y el suelo de rejilla en movimiento */
 const escenaGTA = () => '<div class="gta-cielo" aria-hidden="true"><i class="gta-estrellas"></i></div>';
 const paisajeGTA = () => '<div class="gta-paisaje" aria-hidden="true"><i class="gta-sol"></i><i class="gta-horizonte"></i><i class="gta-suelo"></i></div>';
-const GTA_PRIMER_TRAILER = '2023-12-05';
-function esperaGTA() {
-  const total = diasEntre(GTA_PRIMER_TRAILER, iso(GTA.salida)), van = Math.min(total, diasEntre(GTA_PRIMER_TRAILER, hoyIso()));
-  const p = Math.max(0, Math.min(100, (van / total) * 100));
-  return `<div class="gta-espera"><div class="gta-barra" role="img" aria-label="${fmtNum(p, 0)} % de la espera"><i style="--p:${p.toFixed(1)}%"></i></div><small>Llevas ${fmtNum(van, 0)} días esperando desde el primer tráiler: el ${fmtNum(p, 0)} % del camino.</small></div>`;
+
+/* de GTA V a GTA VI: cuánto camino llevamos */
+function caminoGTA5() {
+  const total = diasEntre(GTA.gta5, iso(GTA.salida)), van = Math.max(0, Math.min(total, diasEntre(GTA.gta5, hoyIso())));
+  return { total, van, p: (van / total) * 100 };
 }
+// años, meses y días entre dos fechas: «13 años, 1 mes y 3 días»
+function aniosMesesDias(a, b) {
+  const x = deIso(a), y = deIso(b);
+  let an = y.getFullYear() - x.getFullYear(), me = y.getMonth() - x.getMonth(), di = y.getDate() - x.getDate();
+  if (di < 0) { me -= 1; di += new Date(y.getFullYear(), y.getMonth(), 0).getDate(); }
+  if (me < 0) { an -= 1; me += 12; }
+  return yLista([an && `${an} ${an === 1 ? 'año' : 'años'}`, me && `${me} ${me === 1 ? 'mes' : 'meses'}`, di && `${di} ${di === 1 ? 'día' : 'días'}`].filter(Boolean));
+}
+function esperaGTA() {
+  const c = caminoGTA5();
+  return `<div class="gta-espera"><div class="gta-barra" role="img" aria-label="${fmtNum(c.p, 1)} % del camino desde GTA V"><i style="--p:${c.p.toFixed(2)}%"></i></div><small>El ${fmtNum(c.p, 1)} % del camino desde que salió GTA V, en 2013.</small></div>`;
+}
+// fecha, título, detalle y, si va marcado en la barra: su nombre corto, la fila (1 arriba del todo, 2 más cerca) y hacia dónde se alinea
 const GTA_HITOS = [
-  ['2023-12-05', 'Primer tráiler', 'Más de 90 millones de visitas en YouTube en 24 horas.'],
-  ['2025-05-02', 'Primer retraso', 'De otoño de 2025 al 26 de mayo de 2026.'],
-  ['2025-05-06', 'Segundo tráiler', '475 millones de visitas en 24 horas, según Rockstar.'],
-  ['2025-11-06', 'Segundo retraso', 'Al 19 de noviembre de 2026.'],
-  ['2026-06-25', 'Abren las reservas', '79,99 € la edición normal y 99,99 € la Ultimate.'],
-  ['2026-10-15', 'Tráiler de lanzamiento', 'Con «Flower in a Hurricane», de Justice.'],
+  ['2013-09-17', 'Sale GTA V', 'En PS3 y Xbox 360. Lleva 230 millones de copias.', ['GTA V', 2, 'start']],
+  ['2014-11-18', 'GTA V en PS4 y Xbox One', 'Con vista en primera persona.'],
+  ['2015-04-14', 'GTA V en PC', ''],
+  ['2022-02-04', 'Rockstar confirma GTA VI', 'Dice que está «bien avanzado».'],
+  ['2023-12-05', 'Primer tráiler', 'Más de 90 millones de visitas en 24 horas.', ['Primer tráiler', 1, 'end']],
+  ['2025-05-06', 'Segundo tráiler', '475 millones de visitas en 24 horas, según Rockstar.', ['Segundo tráiler', 2, 'end']],
+  ['2025-11-06', 'Último retraso', 'Al 19 de noviembre de 2026.'],
   ['2026-11-12', 'Precarga', 'Se puede descargar antes de que salga.'],
-  ['2026-11-19', 'Sale GTA VI', 'En PS5 y Xbox Series X y S.'],
+  ['2026-11-19', 'Sale GTA VI', 'En PS5 y Xbox Series X y S.', ['GTA VI', 1, 'end']],
 ];
 function htmlCaminoGTA() {
-  const hoy = hoyIso(), sig = GTA_HITOS.findIndex(([d]) => d > hoy);
-  return `<section class="gta-sec" aria-labelledby="gtaCamino"><h3 class="gta-rotulo gta-rev" id="gtaCamino">el camino hasta aquí</h3>
-    <ol class="gta-camino">${GTA_HITOS.map(([d, t, x], i) => `<li class="gta-rev${d <= hoy ? ' hecho' : ''}${i === sig ? ' siguiente' : ''}" style="--i:${i % 3}"><span class="gc-d">${fechaCorta(d)}${d.slice(0, 4) !== hoy.slice(0, 4) ? ` ${d.slice(0, 4)}` : ''}</span><b>${esc(t)}${i === sig ? '<em>lo siguiente</em>' : ''}</b><p>${esc(x)}</p></li>`).join('')}</ol>
+  const hoy = hoyIso(), c = caminoGTA5(), sig = GTA_HITOS.findIndex(([d]) => d > hoy);
+  const pos = (d) => Math.max(0, Math.min(100, (diasEntre(GTA.gta5, d) / c.total) * 100));
+  const anios = []; for (let y = 2014; y <= 2026; y += 2) anios.push(y);
+  return `<section class="gta-sec" aria-labelledby="gtaCamino"><h3 class="gta-rotulo gta-rev" id="gtaCamino">de GTA V a GTA VI</h3>
+    <div class="gta-v6 gta-rev">
+      <div class="gta-v6-n"><b>${numGTA({ n: fmtNum(c.p, 1) + ' %', v: c.p, f: 'pct1' })}</b><span>Han pasado ${aniosMesesDias(GTA.gta5, hoy)} desde GTA V: ${fmtNum(c.van, 0)} de los ${fmtNum(c.total, 0)} días que habrá entre los dos. ${c.total - c.van > 0 ? `Quedan ${fmtNum(c.total - c.van, 0)}.` : 'Ya está aquí.'}</span></div>
+      <div class="gta-pista" style="--p:${c.p.toFixed(2)}%" role="img" aria-label="${fmtNum(c.p, 1)} % del camino entre GTA V y GTA VI">
+        <i class="gta-pista-f"></i>
+        ${GTA_HITOS.filter((h) => h[3]).map(([d, , , [e, fila, al]]) => `<span class="gta-hito f${fila} a-${al}${d <= hoy ? ' hecho' : ''}" style="left:${pos(d).toFixed(2)}%"><i></i><em>${esc(e)}</em></span>`).join('')}
+      </div>
+      <div class="gta-anios" aria-hidden="true">${anios.map((y) => `<span style="left:${pos(`${y}-01-01`).toFixed(2)}%">${y}</span>`).join('')}</div>
+    </div>
+    <ol class="gta-camino">${GTA_HITOS.map(([d, t, x], i) => `<li class="gta-rev${d <= hoy ? ' hecho' : ''}${i === sig ? ' siguiente' : ''}" style="--i:${i % 3}"><span class="gc-d">${fechaCorta(d)} ${d.slice(0, 4)}</span><b>${esc(t)}${i === sig ? '<em>lo siguiente</em>' : ''}</b>${x ? `<p>${esc(x)}</p>` : ''}</li>`).join('')}</ol>
   </section>`;
 }
-// tu cartera de hoy, con los precios desde el primer tráiler: lo que habría hecho mientras esperabas
+
+/* un dibujo de iconos: hasta 50, cada uno vale «unidad»; el último, a medias si toca */
+function pictoGTA(n, icono, clase) {
+  const pasos = [1, 2, 5, 10, 20, 50, 100, 200, 500, 1000, 2000, 5000, 10000, 1e5, 1e6];
+  const unidad = pasos.find((u) => n / u <= 50) || 1e6;
+  const llenos = Math.floor(n / unidad), resto = n / unidad - llenos;
+  const iconos = [];
+  for (let k = 0; k < llenos; k++) iconos.push(`<i style="--k:${k}">${icono}</i>`);
+  if (resto >= 0.05) iconos.push(`<i class="medio" style="--k:${llenos};--r:${(resto * 100).toFixed(0)}%">${icono}</i>`);
+  return { html: `<div class="gta-picto ${clase}" aria-hidden="true">${iconos.join('')}</div>`, unidad };
+}
+const CAJA = '<svg viewBox="0 0 20 26"><rect x="1.5" y="1.5" width="17" height="23" rx="2.5"/><path d="M1.5 6.5h17"/><path d="M6 13.5l4-3 4 3-4 3z"/></svg>';
+const COCHE = '<svg viewBox="0 0 40 18"><path d="M2 13.5l.4-3.4 4.6-.9 6-4.1c3.5-1.6 8-1.8 11.6-.2l6 3.5 5.6 1 1.6 2.4-.4 1.7H2z"/><circle cx="10" cy="14" r="2.8"/><circle cx="30" cy="14" r="2.8"/></svg>';
+
+/* tu cartera en copias del juego */
+function htmlCopiasGTA(M) {
+  const P = Math.max(0, M.total || 0), O = S.oculto, c = P / GTA.precio;
+  if (!P) return `<section class="gta-sec" aria-labelledby="gtaTu"><h3 class="gta-rotulo gta-rev" id="gtaTu">tu cartera en GTA VI</h3><p class="gta-txt gta-rev">Mete lo que tienes en Cartera y aquí verás cuántas copias del juego vale.</p></section>`;
+  const pic = pictoGTA(c, CAJA, 'cajas');
+  const mini = [];
+  if (Math.abs(M.pl) >= GTA.precio / 2) mini.push(M.pl > 0 ? [O ? '••••' : '+' + nGTA(M.pl / GTA.precio), 'copias que te ha regalado la bolsa', 'c2'] : [O ? '••••' : '−' + nGTA(-M.pl / GTA.precio), 'copias en rojo desde que compraste', 'c0']);
+  const hoy = M.dia / GTA.precio;
+  if (Math.abs(hoy) >= 0.1) mini.push([O ? '••••' : (hoy > 0 ? '+' : '−') + nGTA(Math.abs(hoy)), hoy > 0 ? 'copias ganadas hoy' : 'copias perdidas hoy', hoy > 0 ? 'c2' : 'c0']);
+  if (M.dividendos >= GTA.precio / 4) mini.push([O ? '••••' : nGTA(M.dividendos / GTA.precio), 'copias al año con tus dividendos', 'c1']);
+  const tt = S.precios && S.precios.extra && S.precios.extra.TTWO, fx = (S.precios && S.precios.fx) || {};
+  if (tt && tt.precio) { const pe = tt.precio * (fx[tt.moneda || 'USD'] || fx.USD || 0.86); mini.push([O ? '••••' : nGTA(P / pe), `acciones de Take-Two (${fmtNum(tt.precio, 2)} $, ${pctS(tt.variacion_dia, 1)} hoy)`, 'c1']); }
+  return `<section class="gta-sec" aria-labelledby="gtaTu"><h3 class="gta-rotulo gta-rev" id="gtaTu">tu cartera en GTA VI</h3>
+    ${O ? '<p class="gta-nota">Tienes los importes ocultos: pulsa el ojo de arriba para ver tus cifras.</p>' : ''}
+    <div class="gta-copias2 gta-rev">
+      <div class="gta-big">${numGTA({ n: O ? '••••' : nGTA(c), v: c, f: 'n' })}<span>${c < 2 ? 'copia' : 'copias'} de GTA VI, a ${fmtNum(GTA.precio, 2)} €</span></div>
+      ${O ? '' : `${pic.html}<small class="gta-unidad">${pic.unidad === 1 ? 'Cada caja es una copia' : `Cada caja son ${fmtNum(pic.unidad, 0)} copias`}</small>`}
+    </div>
+    ${mini.length ? `<ul class="gta-mini">${mini.map(([n, t, k], i) => `<li class="${k} gta-rev" style="--i:${i}"><b>${esc(n)}</b><span>${esc(t)}</span></li>`).join('')}</ul>` : ''}
+  </section>`;
+}
+
+/* el Adder: lo que pudo costar hacerlo y cuántos pagas con tu cartera */
+const DIBUJO_COCHE = `<svg class="gta-coche-svg" viewBox="0 0 320 120" aria-hidden="true">
+  <defs><linearGradient id="gtaCo" x1="0" x2="1"><stop offset="0" stop-color="#FF3EA5"/><stop offset=".55" stop-color="#B14AED"/><stop offset="1" stop-color="#2DE2E6"/></linearGradient>
+  <radialGradient id="gtaSombra" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FF3EA5" stop-opacity=".45"/><stop offset="1" stop-color="#FF3EA5" stop-opacity="0"/></radialGradient></defs>
+  <g class="gta-estela" stroke="#2DE2E6" stroke-linecap="round"><path d="M0 58h34M6 70h22M0 82h30"/></g>
+  <ellipse cx="160" cy="104" rx="150" ry="9" fill="url(#gtaSombra)"/>
+  <g class="gta-cuerpo-coche">
+    <path d="M40 92 L42 74 Q44 66 56 64 L96 60 L130 46 Q158 35 186 37 L232 58 L284 66 Q306 69 312 80 L310 92 L276 92 A24 24 0 0 0 228 92 L122 92 A24 24 0 0 0 74 92 Z" fill="#1A0A2B" stroke="url(#gtaCo)" stroke-width="2.6" stroke-linejoin="round"/>
+    <path d="M134 50 Q158 41 184 42 L222 59 L138 59 Z" fill="rgba(45,226,230,.16)" stroke="#2DE2E6" stroke-width="1.6" stroke-linejoin="round"/>
+    <path d="M168 60 L172 90 M140 74 L208 72" stroke="url(#gtaCo)" stroke-width="1.4" opacity=".7"/>
+    <path d="M286 70 L304 76" stroke="#FFF1F8" stroke-width="3" stroke-linecap="round"/>
+    <path d="M44 72 L58 70" stroke="#FF3EA5" stroke-width="3.2" stroke-linecap="round"/>
+    <path d="M38 62 L72 59 M50 61 L54 66" stroke="url(#gtaCo)" stroke-width="2.4" stroke-linecap="round"/>
+  </g>
+  <g class="gta-rueda" style="transform-origin:98px 94px"><circle cx="98" cy="94" r="19" fill="#0C0414" stroke="#FF3EA5" stroke-width="2.6"/><circle cx="98" cy="94" r="8" fill="none" stroke="#FFD23F" stroke-width="1.6"/><path d="M98 76v36M80 94h36M85 81l26 26M111 81l-26 26" stroke="#FFD23F" stroke-width="1" opacity=".55"/></g>
+  <g class="gta-rueda" style="transform-origin:252px 94px"><circle cx="252" cy="94" r="19" fill="#0C0414" stroke="#2DE2E6" stroke-width="2.6"/><circle cx="252" cy="94" r="8" fill="none" stroke="#FFD23F" stroke-width="1.6"/><path d="M252 76v36M234 94h36M239 81l26 26M265 81l-26 26" stroke="#FFD23F" stroke-width="1" opacity=".55"/></g>
+</svg>`;
+function htmlAdderGTA(M) {
+  const P = Math.max(0, M.total || 0), O = S.oculto, coste = adderEUR(), usd = ((S.precios && S.precios.fx) || {}).USD || 0.86;
+  const n = P / coste;
+  const total = sum(ADDER.tareas, (t) => t[1]);
+  // lo que te llega, tarea a tarea en orden
+  let queda = P; const cubre = [];
+  for (const [t, sem] of ADDER.tareas) { const e = sem * ADDER.semanaEUR; if (queda >= e) { cubre.push(t.toLowerCase()); queda -= e; } else break; }
+  const tu = O || !P ? '' : n >= 1
+    ? `${pictoGTA(n, COCHE, 'coches gta-rev').html}<p class="gta-tu gta-rev"><b>${numGTA({ n: nGTA(n, n < 10 ? 1 : 0), v: n, f: n < 10 ? 'n1' : 'n' })}</b><span>Adders podría hacer Rockstar con tu cartera</span></p>`
+    : `<p class="gta-tu gta-rev"><b>${numGTA({ n: fmtNum(n * 100, 0) + ' %', v: n * 100, f: 'pct0' })}</b><span>de un Adder: ${cubre.length ? `te llega para ${esc(yLista(cubre))}` : 'aún no llega ni para el sonido del motor'}</span></p>`;
+  return `<section class="gta-sec gta-adder" aria-labelledby="gtaAdder"><h3 class="gta-rotulo gta-rev" id="gtaAdder">lo que costó el Adder</h3>
+    <div class="gta-coche gta-rev">${DIBUJO_COCHE}</div>
+    <div class="gta-adder-n gta-rev"><b>${numGTA({ n: fmtNum(Math.round(coste / 1000) * 1000, 0) + ' €', v: coste, f: 'eur' })}</b><span>es lo que calculamos que le costó a Rockstar hacer el superdeportivo más famoso de GTA V. Dentro del juego cuesta 1.000.000 $: unas ${fmtNum((ADDER.enJuegoUSD * usd) / coste, 0)} veces más.</span></div>
+    <div class="gta-pila gta-rev" role="img" aria-label="${esc(ADDER.tareas.map(([t, s]) => `${t}: ${fmtNum(s, 1)} semanas`).join(', '))}">${ADDER.tareas.map(([t, s, , col], i) => `<i style="flex:${s};--c:${col};--i:${i}"></i>`).join('')}${!O && P && n < 1 ? `<span class="gta-pila-tu" style="left:${(n * 100).toFixed(1)}%"><em>tu cartera</em></span>` : ''}</div>
+    <ul class="gta-pila-ley gta-rev">${ADDER.tareas.map(([t, s, x, col]) => `<li style="--c:${col}"><i></i><b>${esc(t)}</b><span>${fmtNum(s, s % 1 ? 1 : 0)} ${s === 1 ? 'semana' : 'semanas'}, ${fmtNum(Math.round((s * ADDER.semanaEUR) / 100) * 100, 0)} €</span><small>${esc(x)}</small></li>`).join('')}</ul>
+    ${tu}
+    <p class="gta-est">Estimación de GrowFolio, entre ${fmtNum(ADDER.min, 0)} y ${fmtNum(ADDER.max, 0)} €: Rockstar no dice cuánto cuesta cada coche. Son ${fmtNum(total, 0)} semanas de trabajo de una persona a lo que le cuesta cada empleado a Rockstar North, con oficina y equipos. El diseño se inspira en coches reales, pero la marca y el modelo son inventados, así que no hay licencia que pagar.</p>
+  </section>`;
+}
+
+/* tu cartera de hoy, con los precios desde el primer tráiler: lo que habría hecho mientras esperabas */
 function htmlDesdeTrailerGTA(M) {
   if (!M.total) return '';
-  const dias = diasEntre(GTA_PRIMER_TRAILER, hoyIso()) + 4;
+  const T1 = '2023-12-05';
+  const dias = diasEntre(T1, hoyIso()) + 4;
   let serie = [];
-  try { serie = serieCartera(M, dias).filter((x) => x.d.slice(0, 10) >= GTA_PRIMER_TRAILER); } catch (e) { return ''; }
-  if (serie.length < 30 || diasEntre(GTA_PRIMER_TRAILER, serie[0].d.slice(0, 10)) > 10) return '';
+  try { serie = serieCartera(M, dias).filter((x) => x.d.slice(0, 10) >= T1); } catch (e) { return ''; }
+  if (serie.length < 30 || diasEntre(T1, serie[0].d.slice(0, 10)) > 10) return '';
   const v0 = serie[0].v, v1 = serie[serie.length - 1].v, pct = (v1 / v0 - 1) * 100;
-  const W = 320, H = 90, vs = serie.map((x) => x.v), mn = Math.min(...vs), mx = Math.max(...vs), k = Math.max(1, Math.ceil(serie.length / 160));
-  const pts = serie.filter((_, i) => i % k === 0 || i === serie.length - 1).map((x, i, a) => `${((i / (a.length - 1)) * W).toFixed(1)},${(H - 6 - ((x.v - mn) / (mx - mn || 1)) * (H - 14)).toFixed(1)}`).join(' ');
-  // lo que valía lo que tienes hoy, en copias del juego, en cada momento del camino (las barras crecen al verse)
-  const hoy = hoyIso(), en = (d) => { const x = serie.find((y) => y.d.slice(0, 10) >= d); return x ? x.v : null; };
-  const cortos = ['Primer tráiler', 'Primer retraso', 'Segundo tráiler', 'Segundo retraso', 'Reservas', 'Último tráiler'];
-  const barras = GTA_HITOS.map(([d], i) => [d, cortos[i], en(d)]).filter(([d, t, v]) => t && d <= hoy && v).concat([[hoy, 'Hoy', v1]]);
-  const bmx = Math.max(...barras.map((b) => b[2]));
-  const htmlBarras = barras.length > 2 ? `<div class="gta-copias gta-rev"><p>Cuántos GTA VI valía lo que tienes hoy en cada momento de la espera.</p><div class="gta-barras" role="img" aria-label="${esc(barras.map(([, t, v]) => `${t}: ${fmtNum(v / GTA.precio, 0)} copias`).join(', '))}">${barras.map(([d, t, v], i) => `<div class="gb${i === barras.length - 1 ? ' hoy' : ''}" style="--h:${((v / bmx) * 100).toFixed(1)}%;--i:${i}"><span class="gb-n">${S.oculto ? '' : fmtNum(v / GTA.precio, 0)}</span><i></i><small>${esc(t)}</small></div>`).join('')}</div></div>` : '';
+  const W = 320, H = 110, vs = serie.map((x) => x.v), mn = Math.min(...vs), mx = Math.max(...vs), k = Math.max(1, Math.ceil(serie.length / 160));
+  const pts = serie.filter((_, i) => i % k === 0 || i === serie.length - 1);
+  const X = (i) => (i / (pts.length - 1)) * W, Y = (v) => H - 8 - ((v - mn) / (mx - mn || 1)) * (H - 26);
+  const linea = pts.map((x, i) => `${X(i).toFixed(1)},${Y(x.v).toFixed(1)}`).join(' ');
+  // los tráileres y hoy, marcados sobre la línea
+  const marcas = [['2023-12-05', 'Tráiler 1'], ['2025-05-06', 'Tráiler 2']].map(([d, t]) => { const i = pts.findIndex((x) => x.d.slice(0, 10) >= d); return i < 0 ? null : [X(i), Y(pts[i].v), t]; }).filter(Boolean).concat([[W, Y(v1), 'Hoy']]);
   return `<section class="gta-sec" aria-labelledby="gtaDesde"><h3 class="gta-rotulo gta-rev" id="gtaDesde">mientras esperabas</h3>
-    <div class="gta-desde gta-rev"><b class="${cls(pct)}">${numGTA({ n: pctS(pct, 1), v: pct, f: 'pct' })}</b><p>Lo que habría hecho lo que tienes hoy desde el 5 de diciembre de 2023, el día del primer tráiler${S.oculto ? '' : `: de ${eur(v0, 0)} a ${eur(v1, 0)}`}. La espera, al menos, ha dado para algo.</p>
-      <svg class="gta-linea" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-hidden="true"><defs><linearGradient id="gtaLG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2DE2E6" stop-opacity=".4"/><stop offset="1" stop-color="#2DE2E6" stop-opacity="0"/></linearGradient></defs><polygon points="0,${H} ${pts} ${W},${H}" fill="url(#gtaLG)"/><polyline points="${pts}" fill="none" stroke="#2DE2E6" stroke-width="2.2" vector-effect="non-scaling-stroke" pathLength="100"/></svg>
+    <div class="gta-desde gta-rev"><b class="${cls(pct)}">${numGTA({ n: pctS(pct, 1), v: pct, f: 'pct' })}</b><p>Lo que ha hecho lo que tienes hoy desde el primer tráiler${S.oculto ? '' : `: de ${eur(v0, 0)} a ${eur(v1, 0)}`}.</p>
+      <svg class="gta-linea" viewBox="-8 -4 ${W + 16} ${H + 22}" aria-hidden="true"><defs><linearGradient id="gtaLG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2DE2E6" stop-opacity=".4"/><stop offset="1" stop-color="#2DE2E6" stop-opacity="0"/></linearGradient></defs><polygon points="0,${H} ${linea} ${W},${H}" fill="url(#gtaLG)"/><polyline points="${linea}" fill="none" stroke="#2DE2E6" stroke-width="2.2" vector-effect="non-scaling-stroke" pathLength="100"/>
+        ${marcas.map(([x, y, t], i) => `<g class="gta-marca" style="--i:${i}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2"/><text x="${Math.min(W - 2, Math.max(2, x)).toFixed(1)}" y="${(H + 14).toFixed(1)}" text-anchor="${x > W - 30 ? 'end' : x < 30 ? 'start' : 'middle'}">${esc(t)}</text></g>`).join('')}</svg>
     </div>
-  ${htmlBarras}
-  </section>`;
-}
-function htmlTrailerGTA(M) {
-  const T = GTA.trailer, O = S.oculto;
-  const usd = ((S.precios && S.precios.fx) || {}).USD || 0.86;
-  const porSeg = (T.medio / T.seg) * usd;
-  const P = Math.max(0, M.total || 0), seg = P / porSeg;
-  return `<section class="gta-sec gta-trailer" aria-labelledby="gtaTrailer"><h3 class="gta-rotulo gta-rev" id="gtaTrailer">el tráiler de lanzamiento</h3>
-    <p class="gta-txt gta-rev">Salió el 15 de octubre: 91 segundos con "Flower in a Hurricane", la canción que Justice, autores de la música del juego, han hecho con Tame Impala, SZA y King Gizzard &amp; The Lizard Wizard.</p>
-    <div class="gta-video gta-rev"><iframe src="https://www.youtube-nocookie.com/embed/${T.id}?rel=0&amp;playsinline=1" title="Grand Theft Auto VI, tráiler de lanzamiento" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe></div>
-    <h4 class="gta-sub2 gta-rev">¿Cuánto costó hacer esos 91 segundos?</h4>
-    <p class="gta-txt gta-rev">Rockstar no da cifras. Esto es una estimación de GrowFolio con supuestos razonables, no un dato.</p>
-    <dl class="gta-coste">
-      <div class="gta-rev"><dt>La canción</dt><dd><b>1 a 3 M$</b>Componerla, grabarla y producirla con Justice y tres artistas de primera, más sus derechos. Sirve también para el disco y para el juego.</dd></div>
-      <div class="gta-rev"><dt>El vídeo</dt><dd><b>1,5 a 4 M$</b>El equipo de vídeo de Rockstar: de 30 a 50 personas durante 3 a 6 meses eligiendo planos dentro del juego (grabado en una PS5 normal), con montaje, color y sonido.</dd></div>
-      <div class="gta-rev"><dt>Las escenas</dt><dd><b>0 $ aparte</b>Actores, captura de movimiento y animación ya estaban hechos para el juego: van en su presupuesto, no en el del tráiler.</dd></div>
-    </dl>
-    <div class="gta-total gta-rev"><b>Unos ${fmtNum(T.medio / 1e6, 1)} M$</b><span>entre 2,5 y 7 millones de dólares: unos ${fmtNum(Math.round(T.medio / T.seg / 1000) * 1000, 0)} $ por segundo de vídeo</span></div>
-    <ol class="gta-datos">
-      <li class="c2 gta-rev"><b>${numGTA({ n: O ? '••••' : nGTA(seg, seg < 10 ? 1 : 0), v: O ? null : seg, f: 'n' })}<small>${seg >= 0.95 && seg < 1.05 ? 'segundo' : 'segundos'}</small></b><p>Del tráiler que pagarías con tu cartera, a unos ${fmtNum(Math.round(porSeg / 1000) * 1000, 0)} € el segundo.</p></li>
-      <li class="c0 gta-rev" style="--i:1"><b>${numGTA({ n: nGTA(T.visitas11h), v: T.visitas11h, f: 'n' })}<small>visitas en 11 horas</small></b><p>Las que llevaba en YouTube a las 11 horas de salir, según Forbes. Con esas solas, cada visita le salió a Rockstar por unos ${fmtNum((T.medio * usd / T.visitas11h) * 100, 0)} céntimos.</p></li>
-    </ol>
   </section>`;
 }
 function htmlGTA(M) {
   const f = gtaFalta();
-  const datos = datosGTA(M);
   return `<header class="gta-hero">
       ${escenaGTA()}
       <div class="gta-hero-c">
         <p class="gta-rotulo gta-pre">${f ? 'cuenta atrás' : 'ya a la venta'}</p>
         <h2 class="gta-tit">GTA VI</h2>
         <div id="gtaReloj">${relojGTA()}</div>
-        <p class="gta-fecha">19 de noviembre de 2026, en PS5 y Xbox Series X y S. ${f && f.d > 7 ? 'Precarga desde el 12 de noviembre. ' : ''}Cuesta ${fmtNum(GTA.precio, 2)} € la edición normal.</p>
+        <p class="gta-fecha">19 de noviembre de 2026, en PS5 y Xbox Series X y S, a ${fmtNum(GTA.precio, 2)} €.${f && f.d > 7 ? ' Precarga desde el 12 de noviembre.' : ''}</p>
         ${f ? esperaGTA() : ''}
       </div>
       ${paisajeGTA()}
       <span class="gta-baja" aria-hidden="true">${SVG('<path d="M6 9l6 6 6-6"/>', 2)}</span>
     </header>
     <div class="gta-cuerpo">
-      <section class="gta-sec" aria-labelledby="gtaTu"><h3 class="gta-rotulo gta-rev" id="gtaTu">tus cuentas</h3>
-        ${S.oculto ? '<p class="gta-nota">Tienes los importes ocultos: pulsa el ojo de arriba para ver tus cifras.</p>' : ''}
-        <ol class="gta-datos">${datos.map((d, i) => `<li class="c${i % 3} gta-rev" style="--i:${i % 2}"><b>${numGTA(d)}${d.u ? `<small>${esc(d.u)}</small>` : ''}</b><p>${esc(d.t)}</p></li>`).join('')}</ol>
-      </section>
-      ${htmlDesdeTrailerGTA(M)}
       ${htmlCaminoGTA()}
-      ${htmlTrailerGTA(M)}
-      <p class="gta-pie">Fecha, precio, plataformas, retrasos y tráileres: Rockstar Games y Take-Two. Ventas de GTA V: Take-Two. Visitas del tráiler de lanzamiento: Forbes. Coste de GTA VI: estimación de prensa, no es oficial; el del tráiler, estimación de GrowFolio. Las cuentas con tu cartera usan tu proyección de Objetivos. GrowFolio no tiene relación con Rockstar Games ni con Take-Two.</p>
+      ${htmlCopiasGTA(M)}
+      ${htmlAdderGTA(M)}
+      ${htmlDesdeTrailerGTA(M)}
+      <p class="gta-pie">Fechas, precio, plataformas y tráileres: Rockstar Games y Take-Two. Ventas de GTA V: Take-Two. Precio del Adder en el juego: GTA V. Lo que costó hacerlo: estimación de GrowFolio con los gastos de personal de Rockstar North (PCGamesInsider) y lo que se tarda en hacer un coche para un videojuego (GTPlanet). GrowFolio no tiene relación con Rockstar Games ni con Take-Two.</p>
     </div>`;
 }
 /* las cifras cuentan desde cero cuando aparecen en pantalla */
@@ -8515,7 +8568,7 @@ function contarGTA(el) {
   const to = +el.dataset.to, fm = el.dataset.f, fin = el.dataset.fin || el.textContent;
   if (!isFinite(to)) return;
   const desde = fm === 'anio' ? new Date().getFullYear() : 0;
-  const fmt = (x) => (fm === 'anio' ? 'Año ' + Math.round(x) : fm === 'signo' ? (x >= 0 ? '+' : '−') + nGTA(Math.abs(x)) : fm === 'anos' ? nGTA(x, x < 10 ? 1 : 0) + (x < 2 ? ' año' : ' años') : fm === 'eur' ? fmtNum(x, 0) + ' €' : fm === 'pct' ? pctS(x, 1) : nGTA(x));
+  const fmt = (x) => (fm === 'anio' ? 'Año ' + Math.round(x) : fm === 'signo' ? (x >= 0 ? '+' : '−') + nGTA(Math.abs(x)) : fm === 'anos' ? nGTA(x, x < 10 ? 1 : 0) + (x < 2 ? ' año' : ' años') : fm === 'eur' ? fmtNum(x, 0) + ' €' : fm === 'pct' ? pctS(x, 1) : fm === 'pct1' ? fmtNum(x, 1) + ' %' : fm === 'pct0' ? fmtNum(x, 0) + ' %' : fm === 'n1' ? nGTA(x, 1) : nGTA(x));
   const t0 = performance.now(), dur = 1200;
   const paso = (t) => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = k < 1 ? fmt(desde + (to - desde) * e) : fin; if (k < 1 && el.isConnected) requestAnimationFrame(paso); };
   requestAnimationFrame(paso);
@@ -8570,7 +8623,7 @@ function avisoGTA(seguir) {
       <p class="gta-rotulo gta-pre">nuevo en GrowFolio</p>
       <h2 class="gta-tit">GTA VI</h2>
       <div id="gtaReloj">${relojGTA()}</div>
-      <p class="gta-lead">${f ? 'Sale el 19 de noviembre. Para la espera' : 'Ya ha salido. Para celebrarlo'}, unas cuentas con tu cartera: cuántos GTA VI vale, en qué año podrías pagar el juego entero y cómo le va en bolsa a Take-Two, la dueña de Rockstar.</p>
+      <p class="gta-lead">${f ? 'Sale el 19 de noviembre. Para la espera' : 'Ya ha salido. Para celebrarlo'}, unas cuentas con tu cartera: cuántos GTA VI vale, cuántos Adders podría hacer Rockstar con ella y cuánto llevamos de camino desde GTA V.</p>
       <p class="gta-donde">Lo tienes siempre en Cartera, al lado de tu patrimonio.</p>
       <div class="gta-btns"><button type="button" class="gta-b pri" data-ver>Verlo</button><button type="button" class="gta-b" data-luego>Luego</button></div>
     </div>
