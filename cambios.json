@@ -7,6 +7,13 @@
    "t": "Precios al día y avisos que se van",
    "commits": [
     {
+     "cuando": "2026-10-20 22:17",
+     "asunto": "Widget.json con un año de cierres (día a día los últimos 100 días y semana a semana antes), para elegir el periodo en el widget",
+     "detalle": [
+      "Las APK de antes solo miran el último mes, así que no les afecta."
+     ]
+    },
+    {
      "cuando": "2026-10-20 22:12",
      "asunto": "0.2.3b: las opiniones van solo a Firebase y el dueño las lee en Ajustes > Opiniones recibidas",
      "detalle": [

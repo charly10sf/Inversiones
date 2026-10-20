@@ -61,21 +61,29 @@ jobs:
           mkdir -p salida
           python scripts/precios.py instrumentos.json anterior salida
 
-      # Un resumen mínimo para el widget de la app de Android: precios y cierres del último mes (unos 10 KB en vez de los 90 de precios.json)
+      # Un resumen mínimo para el widget de la app de Android: precios y cierres del último año (unos 35 KB en vez de los 90 de precios.json)
       - name: Precios para el widget
         run: |
           python - <<'PY'
           import json, datetime
           d = json.load(open("salida/precios.json"))
           p = {k: [v.get("precio"), v.get("cierre_anterior")] for k, v in (d.get("instrumentos") or {}).items() if v.get("precio") is not None}
-          # los cierres de las últimas 6 semanas, para que el widget dibuje él solo la gráfica del mes
+          # los cierres para que el widget dibuje él solo su gráfica (1 semana, 1 mes, 3 meses o 1 año, lo que elijas en
+          # él): día a día los últimos 100 días y, antes, el último de cada semana hasta un año (unos 35 KB). Las APK
+          # de antes de la 0.2.4 solo miran el último mes, así que les da igual que haya más
           h = {}
           try:
               hi = json.load(open("salida/historico.json"))
-              desde = (datetime.date.today() - datetime.timedelta(days=42)).isoformat()
+              hoy = datetime.date.today()
+              diario = (hoy - datetime.timedelta(days=100)).isoformat()
+              anio = (hoy - datetime.timedelta(days=372)).isoformat()
               for k, s in (hi.get("instrumentos") or {}).items():
-                  ant = [x for x in s if x[0] < desde][-1:]
-                  h[k] = ant + [x for x in s if x[0] >= desde]
+                  ant = [x for x in s if x[0] < anio][-1:]
+                  semanas = {}
+                  for x in s:
+                      if anio <= x[0] < diario:
+                          semanas[datetime.date.fromisoformat(x[0][:10]).isocalendar()[:2]] = x
+                  h[k] = ant + sorted(semanas.values()) + [x for x in s if x[0] >= diario]
           except Exception as e:
               print("sin cierres para el widget:", e)
           json.dump({"generado": d.get("generado"), "p": p, "h": h}, open("salida/widget.json", "w"), separators=(",", ":"))
