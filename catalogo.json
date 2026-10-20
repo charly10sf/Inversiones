@@ -551,8 +551,9 @@
   },
   {
    "isin": "LU0261952682",
-   "n": "Fidelity Euro STOXX 50 Fund A-Acc-EUR",
-   "t": "Fondo"
+   "n": "Fidelity Euro 50 Index Fund A-Acc-EUR",
+   "t": "Fondo",
+   "q": "Fidelity Euro 50"
   },
   {
    "isin": "IE0008471009",

@@ -19,6 +19,7 @@ import time
 import traceback
 
 import pandas as pd
+import yfinance as yf
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from precios import a_euros, num, redondeo, rentabilidad, serie_cierres, serie_por_isin, tipos_de_cambio  # noqa: E402
@@ -35,6 +36,30 @@ CRIPTO_DOM = {"BTC": "bitcoin.org", "ETH": "ethereum.org", "SOL": "solana.com", 
               "TRX": "tron.network", "XLM": "stellar.org", "SHIB": "shibatoken.com", "USDC": "circle.com"}
 MUNDO = {"EEUU": 70, "Europa": 15, "Japón y Pacífico": 8, "Canadá": 3, "Otros": 4}
 TODO_MUNDO = {"EEUU": 62, "Europa": 14, "Japón y Pacífico": 7, "Emergentes": 11, "Canadá": 3, "Otros": 3}
+
+
+def serie_por_nombre(texto, periodo="10y"):
+    """Para los fondos que Yahoo no encuentra por ISIN: busca por nombre ("q" en catalogo.json) y se queda
+    con el primer fondo o ETF cuyo nombre lleve todas las palabras de la búsqueda, primero los de
+    acumulación de clase A, que son los que se venden en España."""
+    palabras = [w for w in re.split(r"\s+", texto.lower()) if w]
+    try:
+        quotes = yf.Search(texto, max_results=15, news_count=0, lists_count=0, raise_errors=False).quotes or []
+    except Exception:  # noqa: BLE001
+        quotes = []
+    cands = []
+    for q in quotes:
+        nombre = (q.get("longname") or q.get("shortname") or "").lower()
+        if q.get("symbol") and q.get("quoteType") in ("MUTUALFUND", "ETF") and all(w in nombre for w in palabras):
+            cands.append((0 if re.search(r"\ba[- ]?acc", nombre) else 1 if "acc" in nombre else 2, q["symbol"], nombre))
+    for _, sim, nombre in sorted(cands):
+        try:
+            t, s, meta = serie_cierres(sim, periodo)
+            if len(s) >= 20:
+                return sim, t, s, meta, nombre
+        except Exception:  # noqa: BLE001
+            pass
+    raise RuntimeError(f"nada en Yahoo para «{texto}»")
 
 
 def region_de(nombre):
@@ -135,7 +160,13 @@ def main(ruta_cat, dir_anterior, dir_salida):
             except Exception:  # noqa: BLE001
                 if e.get("s") or not isin:
                     raise
-                sim, _, s, meta = serie_por_isin(isin, "10y")
+                try:
+                    sim, _, s, meta = serie_por_isin(isin, "10y")
+                except Exception:  # noqa: BLE001
+                    if not e.get("q"):
+                        raise
+                    sim, _, s, meta, yn = serie_por_nombre(e["q"])
+                    meta = dict(meta, yn=yn)
             moneda = meta.get("currency") or "EUR"
             s_eur = a_euros(s, moneda, fx).dropna()
             if s_eur.empty:
@@ -154,6 +185,8 @@ def main(ruta_cat, dir_anterior, dir_salida):
             }
             if e.get("a"):
                 salida[cid]["a"] = e["a"]
+            if meta.get("yn"):
+                salida[cid]["yn"] = meta["yn"]  # el nombre que tiene en Yahoo, para comprobar que es el fondo bueno
             with open(f"{dir_salida}/cat/{cid}.json", "w", encoding="utf-8") as f:
                 json.dump({"h": compacta(s_eur)}, f, separators=(",", ":"))
             print(f"ok   {cid:22s} {sim:16s} {salida[cid]['p']}")
