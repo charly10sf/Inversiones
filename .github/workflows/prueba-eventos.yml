@@ -1,0 +1,32 @@
+name: Prueba eventos (temporal)
+
+on:
+  push:
+    branches: [v0.2]
+    paths:
+      - ".github/workflows/prueba-eventos.yml"
+
+jobs:
+  prueba:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install -r scripts/requirements.txt
+      - name: Campos de resultados y dividendos
+        run: |
+          python - <<'PY'
+          import json, yfinance as yf
+          for s in ["AAPL", "MSFT", "NVDA", "KO", "O", "TTWO", "SAN.MC", "ITX.MC", "IBE.MC", "ASML.AS", "ALV.DE"]:
+              try:
+                  t = yf.Ticker(s)
+                  info = t.info or {}
+                  keys = {k: info.get(k) for k in info if any(w in k.lower() for w in ("earn", "divid", "exdiv", "timezone", "exchange"))}
+                  print(s, json.dumps(keys, default=str))
+                  print("  calendar", json.dumps(t.calendar, default=str))
+              except Exception as e:
+                  print(s, "error", e)
+          PY
