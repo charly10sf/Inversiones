@@ -1520,6 +1520,13 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .btn-google { display: flex; align-items: center; justify-content: center; gap: 12px; width: 100%; padding: 12px 16px; border-radius: 12px; background: #fff; color: #1F1F1F; border: 1px solid #dadce0; font-weight: 600; font-size: 15.5px; }
 .btn-google:hover { background: #f6f6f6; }
 .btn-google .g-logo { width: 20px; height: 20px; }
+.ios-pasos { margin: 4px 0 8px; padding: 0; list-style: none; display: grid; gap: 10px; }
+.ios-pasos li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; align-items: start; font-size: 14.5px; line-height: 1.45; color: var(--text-2); }
+.ios-pasos b { color: var(--text); } .ios-n { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 50%; background: var(--accent-bg); color: var(--accent); font-weight: 800; font-size: 13px; }
+.ios-ico { display: inline-grid; place-items: center; width: 24px; height: 24px; border-radius: 7px; background: rgba(10, 132, 255, 0.16); color: #0A84FF; vertical-align: -6px; } .ios-ico svg { width: 16px; height: 16px; }
+.ios-aviso { display: grid; gap: 12px; } .ios-aviso p { margin: 0; color: var(--text-2); line-height: 1.5; } .ios-aviso .dib { width: 120px; height: 80px; justify-self: center; }
+.btn-apple { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 12px 16px; border-radius: 12px; background: #000; color: #fff; border: 1px solid #3A362F; font-weight: 600; font-size: 15.5px; margin-top: 10px; }
+.btn-apple .g-logo { width: 19px; height: 19px; }
 .cuenta-o { display: flex; align-items: center; gap: 10px; color: var(--muted); font-size: 13px; }
 .cuenta-o::before, .cuenta-o::after { content: ''; flex: 1; height: 1px; background: var(--line-2); }
 .cuenta-f { display: grid; gap: 12px; }
@@ -2511,6 +2518,12 @@ const FB_CFG = {"apiKey": "AIzaSyAECqndaNt3kRC6HBLnWehTmvEWVpuIJbM", "authDomain
 const FB_VER = '10.12.2';
 // «ID de cliente web» del proveedor Google de Firebase: lo usa la app de Android para entrar con Google nativo
 const FB_GOOGLE_WEB = '316596282728-9u4mt8al9c3f54cllrmr1b47tf6qemcb.apps.googleusercontent.com';
+// Entrar con Apple: necesita la cuenta de desarrollador de Apple (Services ID, Team ID y clave en Firebase).
+// Mientras sea false, el botón no sale.
+const FB_APPLE = false;
+// iPhone y iPad (el iPad moderno dice que es un Mac con pantalla táctil) y si GrowFolio ya está en la pantalla de inicio
+const ES_IOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+const COMO_APP = !!(navigator.standalone || (window.matchMedia && matchMedia('(display-mode: standalone)').matches));
 const FB = { user: null };
 let fbPromesa = null;
 function fbCargar() {
@@ -7828,7 +7841,7 @@ function pantallaCuenta(errorTxt = '') {
     <img class="logo" src="icon-192.png" alt="">
     <h1>Entra en GrowFolio</h1>
     <p>Con tu cuenta, tu cartera se guarda cifrada y la ves igual en el móvil, en el ordenador y en la app.${(() => { try { return localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc'); } catch (e) { return null; } })() ? ' Si ya usabas GrowFolio aquí, después de entrar te ofrece subir tu cartera tal cual.' : ''}</p>
-    ${app && !nativo ? '<p class="nota" style="margin:0">En la app, de momento, se entra con el correo. Con Google puedes entrar desde la web o desde Chrome.</p>' : `<button type="button" class="btn btn-google" id="bGoogle"><svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.5z"/></svg><span>Continuar con Google</span></button><div class="cuenta-o"><span>o con tu correo</span></div>`}
+    ${app && !nativo ? '<p class="nota" style="margin:0">En la app, de momento, se entra con el correo. Con Google puedes entrar desde la web o desde Chrome.</p>' : `<button type="button" class="btn btn-google" id="bGoogle"><svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.5z"/></svg><span>Continuar con Google</span></button>${FB_APPLE ? `<button type="button" class="btn btn-apple" id="bApple"><svg class="g-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.6zM14.2 5.6c.6-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.3z"/></svg><span>Continuar con Apple</span></button>` : ''}<div class="cuenta-o"><span>o con tu correo</span></div>`}
     <form id="fCorreo" class="cuenta-f" novalidate>
       <div class="cuenta-modo" role="group" aria-label="Entrar o crear cuenta"><button type="button" data-m="entrar" aria-pressed="true">Entrar</button><button type="button" data-m="crear" aria-pressed="false">Crear cuenta</button></div>
       <label class="campo" id="cNombreL" hidden>Tu nombre<input id="cNombre" autocomplete="given-name" maxlength="40" placeholder="Para saludarte al entrar"></label>
@@ -7887,7 +7900,21 @@ function pantallaCuenta(errorTxt = '') {
       await fbCargar();
       const pr = new FB.au.GoogleAuthProvider(); pr.setCustomParameters({ prompt: 'select_account' });
       try { await FB.au.signInWithPopup(FB.auth, pr); }
-      catch (e) { if (/popup-blocked|operation-not-supported/.test(e.code || '')) { await FB.au.signInWithRedirect(FB.auth, pr); return; } throw e; }
+      catch (e) {
+        // en el iPhone, con GrowFolio en la pantalla de inicio, la ventanita de Google a veces no vuelve: mejor el correo
+        if (ES_IOS && COMO_APP && /popup|cancelled|operation-not-supported|web-storage/.test(e.code || '')) throw Object.assign(new Error('ios'), { code: 'ios-app' });
+        if (/popup-blocked|operation-not-supported/.test(e.code || '')) { await FB.au.signInWithRedirect(FB.auth, pr); return; }
+        throw e;
+      }
+      FB.user = FB.auth.currentUser; await dentro();
+    } catch (e) { console.warn(e); b.disabled = false; err(e.code === 'ios-app' ? trad('En la app del iPhone, Google no siempre deja entrar. Prueba desde Safari o entra con tu correo.') : errorFb(e)); }
+  };
+  if ($('#bApple')) $('#bApple').onclick = async () => {
+    const b = $('#bApple'); err(''); b.disabled = true;
+    try {
+      await fbCargar();
+      const pr = new FB.au.OAuthProvider('apple.com'); pr.addScope('email'); pr.addScope('name'); pr.setCustomParameters({ locale: IDIOMA === 'en' ? 'en' : 'es' });
+      await FB.au.signInWithPopup(FB.auth, pr);
       FB.user = FB.auth.currentUser; await dentro();
     } catch (e) { console.warn(e); b.disabled = false; err(errorFb(e)); }
   };
@@ -9727,6 +9754,20 @@ function avisoWebNueva() {
   document.body.appendChild(d);
 }
 
+/* en el iPhone no hace falta bajar nada: desde Safari se pone en la pantalla de inicio y se abre como una app */
+const ICO_COMPARTIR = SVG('<path d="M12 15V3.5M8 7.5l4-4 4 4"/><path d="M8 10.5H6.5A1.5 1.5 0 0 0 5 12v7.5A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V12a1.5 1.5 0 0 0-1.5-1.5H16"/>', 1.8);
+const htmlPasosIOS = () => `<ol class="ios-pasos">
+  <li><span class="ios-n">1</span><span>${trad('Ábrela en Safari y toca')} <b class="ios-ico">${ICO_COMPARTIR}</b> ${trad('Compartir (abajo en el iPhone, arriba en el iPad).')}</span></li>
+  <li><span class="ios-n">2</span><span>${trad('Baja y elige')} <b>${trad('Añadir a pantalla de inicio')}</b>${trad('. Si no sale, toca «Editar acciones» y añádelo.')}</span></li>
+  <li><span class="ios-n">3</span><span>${trad('Toca')} <b>${trad('Añadir')}</b>${trad('. GrowFolio queda con su icono, como cualquier app.')}</span></li>
+</ol>`;
+function avisoIOS() {
+  if (!ES_IOS || COMO_APP || LS.get('inv-ios-aviso')) return;
+  if (document.querySelector('.hoja-fondo, .tour, .estreno, .bloqueo')) { setTimeout(avisoIOS, 5000); return; }
+  LS.set('inv-ios-aviso', true);
+  const h = hoja(trad('Ponla en tu pantalla de inicio'), `<div class="ios-aviso">${dibujo('movil')}<p>${trad('En el iPhone, GrowFolio funciona como una app sin pasar por la App Store: a pantalla completa, con su icono y sin las barras de Safari.')}</p>${htmlPasosIOS()}<div class="fila-btns"><button class="btn pri" data-cerrar>${trad('Entendido')}</button></div></div>`);
+  h.el.classList.add('hoja-ios');
+}
 /* la app de Android: dónde bajarla, qué versión tienes y cómo pasarle el token sin escribirlo */
 async function pintarAjustesApp(el) {
   if (!el) return;
@@ -9737,6 +9778,12 @@ async function pintarAjustesApp(el) {
   const apk = (ult && ult.apk) || `https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk`;
   const android = /Android/i.test(navigator.userAgent);
   const tok = GH.token();
+  if (ES_IOS) {
+    el.closest('.seccion-ed').querySelector('h3').innerHTML = `${ICONOS.cartera}${trad('GrowFolio en tu iPhone')}`;
+    el.innerHTML = COMO_APP ? `<p class="nota" style="margin:0">${trad('Ya la tienes en la pantalla de inicio: se abre como una app, a pantalla completa. El widget, por ahora, solo está en Android.')}</p>`
+      : `${htmlPasosIOS()}<p class="nota" style="margin:0">${trad('Se abre como una app, a pantalla completa y sin las barras de Safari. El widget, por ahora, solo está en Android.')}</p>`;
+    return;
+  }
   if (app) {
     el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (${esc(nombreApp())}). Para el widget: mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio, y arrastra "Tu cartera". Se puede estirar o encoger.</p>
       ${ult && ult.version > tengo ? `<div class="fila-btns" style="justify-content:flex-start"><button class="btn peq pri" id="aActApp" data-cerrar>Actualizar la app</button></div>` : '<p class="nota" style="margin:0">Tienes la última versión de la app.</p>'}`;
@@ -9932,7 +9979,7 @@ function abrirAjustes() {
   $('#aEstreno', h.el).onclick = () => setTimeout(() => estreno02(LS.get('inv-version', VERSION), null), 0);
   $('#aInvita', h.el).onclick = () => {
     const url = (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#mia';
-    const t = `Te paso GrowFolio, para llevar todas tus inversiones en un sitio. Cómo empezar:\n\n1. Abre ${url} (o instala la app de Android: https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk) y entra con Google o con tu correo.\n2. Crea la contraseña de tu cartera. Es distinta de la de la cuenta y no se puede recuperar: apúntala.\n3. IA gratis: entra en aistudio.google.com/apikey con tu cuenta de Google, pulsa "Create API key", copia la clave y pégala en GrowFolio al darle a "Pregúntale" (arriba). No actives la facturación en Google.\n4. Mete lo que tienes: en Cartera, "Añadir lo que ya tenía" (busca por nombre o ISIN) o importa capturas de tu bróker (con la IA ya puesta).\n5. Rellena tu perfil en Más > Objetivos para que el Paso a paso y la IA se ajusten a ti.\n\nEs una alfa: si algo falla, dale al bichito de arriba.`;
+    const t = `Te paso GrowFolio, para llevar todas tus inversiones en un sitio. Cómo empezar:\n\n1. Abre ${url} y entra con Google o con tu correo. En Android hay app: https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk. En iPhone, ábrela en Safari, Compartir y "Añadir a pantalla de inicio": queda como una app.\n2. Crea la contraseña de tu cartera. Es distinta de la de la cuenta y no se puede recuperar: apúntala.\n3. IA gratis: entra en aistudio.google.com/apikey con tu cuenta de Google, pulsa "Create API key", copia la clave y pégala en GrowFolio al darle a "Pregúntale" (arriba). No actives la facturación en Google.\n4. Mete lo que tienes: en Cartera, "Añadir lo que ya tenía" (busca por nombre o ISIN) o importa capturas de tu bróker (con la IA ya puesta).\n5. Rellena tu perfil en Más > Objetivos para que el Paso a paso y la IA se ajusten a ti.\n\nEs una alfa: si algo falla, dale al bichito de arriba.`;
     const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(t); a.target = '_blank'; a.rel = 'noopener';
     document.body.appendChild(a); a.click(); a.remove();
   };
@@ -11423,6 +11470,7 @@ function arrancar() {
     vigilarCuenta();
     if (S.avisoConflicto) { S.avisoConflicto = false; setTimeout(() => toast('Tu cuenta tenía cambios más recientes de otro dispositivo: se ha quedado esa versión', 6000), 1200); }
     setTimeout(revisarCarteraVieja, 2500);
+    setTimeout(avisoIOS, 6000);
     if (!S.cuentaLeida || LS.get('inv-pend-cuenta')) setTimeout(sincronizarCuenta, 3000);
   }
   revisarWeb();
