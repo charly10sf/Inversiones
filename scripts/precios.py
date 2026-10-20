@@ -102,7 +102,9 @@ NOTICIAS_MERCADO = [
 # El titular tiene que nombrar la comunidad (o su gobierno) y hablar de dinero. Cada 6 horas, en noticias["_region"].
 HORAS_REGION = 6
 TEMAS_DINERO = "impuestos OR IRPF OR deducción OR bonificación OR ayudas OR vivienda OR alquiler OR hipoteca OR sucesiones OR donaciones"
-RE_DINERO = r"impuest|IRPF|tribut|fiscal|deducci|bonific|rebaja|ayuda|subvenci|vivienda|alquiler|hipotec|cheque|bono |sucesiones|donaci|patrimonio|declaraci[oó]n de la renta|tasa"
+RE_DINERO = r"impuest|IRPF|tribut|deducci|bonific|rebaja fiscal|rebaja de impuestos|ayudas?\b|subvenci|cheque|\bbono\b|hipotec|avales?\b|sucesiones|donaci|declaraci[oó]n de la renta"
+# fuera la política, las protestas y los despachos aunque hablen de vivienda o de dinero público
+RE_FUERA = r"acampada|manifestaci|protesta|despacho|pol[eé]mic|oposici[oó]n|\bPSOE\b|\bPP\b|\bVox\b|Podemos|Sumar|juicio|imputad|tribunal|elecciones|encuesta|Asamblea"
 COMUNIDADES_NOTICIAS = [
     ("andalucia", "Andalucía", r"Andaluc|Junta de Andaluc|Moreno Bonilla"),
     ("aragon", "Aragón", r"Arag[oó]n|Azc[oó]n"),
@@ -131,7 +133,7 @@ def noticias_region(prev):
     reg, errores = {}, []
     for cid, q, zona in COMUNIDADES_NOTICIAS:
         try:
-            reg[cid] = noticias(f"({q}) ({TEMAS_DINERO})", 4, f"(?=.*(?:{zona}))(?=.*(?:{RE_DINERO}))", "7d")
+            reg[cid] = noticias(f"({q}) ({TEMAS_DINERO})", 4, f"(?!.*(?:{RE_FUERA}))(?=.*(?:{zona}))(?=.*(?:{RE_DINERO}))", "7d")
         except Exception as e:  # noqa: BLE001
             errores.append(f"noticias de {cid}: {e}")
             if cid in prev:

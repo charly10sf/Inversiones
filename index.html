@@ -1534,6 +1534,16 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .op-modo button[data-t="compra"][aria-pressed="true"] svg { color: var(--up); }
 .op-modo button[data-t="venta"][aria-pressed="true"] svg { color: var(--down); }
 .op-modo button[data-t="tengo"][aria-pressed="true"] svg { color: var(--accent); }
+.op-imp { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; width: 100%; margin: 12px 0 2px; padding: 14px; border-radius: 14px; border: 1px solid rgba(226, 180, 95, 0.5); background: linear-gradient(var(--accent-bg), var(--accent-bg)), var(--plane); color: var(--text); text-align: left; cursor: pointer; }
+.op-imp[hidden] { display: none; }
+.op-imp:hover { border-color: var(--accent); }
+.op-imp:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.op-imp-ic { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; background: var(--accent); color: #1A1408; }
+.op-imp-ic svg { width: 20px; height: 20px; }
+.op-imp-t { display: grid; gap: 3px; min-width: 0; }
+.op-imp-t b { font-size: 15.5px; }
+.op-imp-t small { color: var(--text-2); font-size: 12.5px; line-height: 1.45; }
+.op-imp-ir { color: var(--accent); font-size: 26px; line-height: 1; }
 .op-ayuda { margin: 10px 0 4px; color: var(--muted); font-size: 13px; line-height: 1.5; }
 .op-paso { display: grid; gap: 8px; margin: 14px 0; }
 .op-lbl { color: var(--text-2); font-size: 13.5px; font-weight: 500; }
@@ -1832,6 +1842,8 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .tour-prog i { flex: 1; height: 4px; border-radius: 2px; background: var(--line-2); transition: background 0.3s; }
 .tour-prog i.ya { background: var(--muted); }
 .tour-prog i.on { background: var(--accent); }
+.tour-x { position: absolute; top: 8px; right: 8px; z-index: 1; }
+.tour-caja .tour-prog { margin-right: 34px; }
 .tour-btns { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; justify-content: flex-end; margin-top: 14px; }
 .tour-n { margin-right: auto; color: var(--muted); font-size: 13px; font-variant-numeric: tabular-nums; }
 .act-app { display: grid; gap: 14px; }
@@ -6810,9 +6822,11 @@ function htmlImpuestos(M) {
 }
 /* Fiscalidad > En tu comunidad: la escala que te toca, lo que se paga si tus padres te dan dinero y las noticias de
    tu comunidad que tocan tu bolsillo (impuestos, ayudas, vivienda). Sin comunidad, un selector para ponerla. */
+const RE_DINERO_CCAA = /impuest|IRPF|tribut|deducci|bonific|rebaja fiscal|rebaja de impuestos|ayudas?\b|subvenci|cheque|\bbono\b|hipotec|avales?\b|sucesiones|donaci|declaraci[oó]n de la renta/i;
+const RE_FUERA_CCAA = /acampada|manifestaci|protesta|despacho|pol[eé]mic|oposici[oó]n|\bPSOE\b|\bPP\b|\bVox\b|Podemos|Sumar|juicio|imputad|tribunal|elecciones|encuesta|Asamblea/i;
 function noticiasComunidad(c = comunidadUsuario(), max = 3, dias = 10) {
   const R = (S.precios && S.precios.noticias && S.precios.noticias._region) || {}, lim = Date.now() - dias * 864e5;
-  return (R[c] || []).filter((n) => n.t && n.u && (!n.d || new Date(n.d).getTime() >= lim)).slice(0, max);
+  return (R[c] || []).filter((n) => n.t && n.u && (!n.d || new Date(n.d).getTime() >= lim) && RE_DINERO_CCAA.test(n.t) && !RE_FUERA_CCAA.test(n.t)).slice(0, max);
 }
 function htmlFiscalComunidad() {
   const c = comunidadUsuario();
@@ -8327,6 +8341,7 @@ function operacion(tipo, id, sim, cand) {
   const h = hoja('Compra, venta o lo que ya tienes', `
     <form id="fOp" novalidate>
       <div class="op-modo" role="group" aria-label="Qué quieres apuntar"><button type="button" data-t="compra">${ICONOS.compra}Compra</button><button type="button" data-t="venta">${ICONOS.venta}Venta</button><button type="button" data-t="tengo">${ICONOS.cartera}Ya la tenía</button></div>
+      <button type="button" class="op-imp" id="opImp" data-accion="importar" hidden><span class="op-imp-ic">${ICONOS.recorte}</span><span class="op-imp-t"><b>Importar todo de tu bróker o banco</b><small>Capturas, el PDF de un extracto o los movimientos en CSV o Excel. GrowIA lo lee y tú lo revisas: mucho más rápido que meterlas una a una.</small></span><span class="op-imp-ir" aria-hidden="true">›</span></button>
       <p class="op-ayuda" id="opAyuda"></p>
       <div class="op-paso"><span class="op-lbl">Qué</span><div id="opQue"></div></div>
       <div class="op-paso" id="cPlat"><span class="op-lbl">Dónde</span><div class="op-plats" id="opPlat" role="group" aria-label="Plataforma"></div></div>
@@ -8436,7 +8451,9 @@ function operacion(tipo, id, sim, cand) {
   const pintarTodo = () => {
     for (const b of $$('[data-t]', fm)) b.setAttribute('aria-pressed', b.dataset.t === t);
     const tengo = t === 'tengo';
-    $('#opAyuda', h.el).textContent = t === 'compra' ? 'Una compra que acabas de hacer: suma a tu posición y, si quieres, resta del efectivo.' : t === 'venta' ? 'Elige qué vendiste: GrowFolio calcula lo que ganas o pierdes para Hacienda.' : 'Lo que ya tenías antes de usar GrowFolio: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.';
+    // en «Ya la tenía», importar va arriba y bien grande; en compra y venta, abajo como siempre
+    $('#opImp', h.el).hidden = t !== 'tengo'; $('.enlace-imp', h.el).hidden = t === 'tengo';
+    $('#opAyuda', h.el).textContent = t === 'tengo' ? 'O mete una a mano: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.' : t === 'compra' ? 'Una compra que acabas de hacer: suma a tu posición y, si quieres, resta del efectivo.' : t === 'venta' ? 'Elige qué vendiste: GrowFolio calcula lo que ganas o pierdes para Hacienda.' : 'Lo que ya tenías antes de usar GrowFolio: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.';
     $('#lUds', h.el).textContent = `Cuántas ${inst ? unidad() : ''}${tengo ? ' tienes' : t === 'venta' ? ' vendiste' : ''}`.replace(/\s+/g, ' ');
     $('#lPrecio', h.el).textContent = tengo ? 'Tu precio medio (€)' : 'Precio de cada una (€)';
     $('#sPrecio', h.el).textContent = tengo ? 'Sale en tu bróker. Si pones lo invertido y cuántas, no hace falta.' : 'El de ese día. Si tu justificante dice otro, cámbialo.';
@@ -10046,7 +10063,7 @@ const DIBUJOS = {
   candado: '<rect class="fa" x="42" y="34" width="36" height="30" rx="7"/><path class="a" d="M50 34v-8a10 10 0 0 1 20 0v8"/><circle class="fA" cx="60" cy="47" r="3.5"/><path class="a" d="M60 50v5"/><text class="t" x="84" y="22">72 h</text>',
   gta: '<path class="l" d="M32 34h56a13 13 0 0 1 13 14l-1.6 10a7.5 7.5 0 0 1-13 3.6L80 54H40l-6.4 7.6a7.5 7.5 0 0 1-13-3.6L19 48a13 13 0 0 1 13-14z"/><path class="a" d="M36 41v10M31 46h10"/><circle class="fA" cx="80" cy="43" r="3"/><circle class="fA" cx="87" cy="50" r="3"/><rect class="fa" x="36" y="6" width="48" height="18" rx="9"/><text class="ta" x="47" y="19">19 nov</text>',
   movil: '<rect class="l" x="38" y="4" width="44" height="72" rx="8"/><rect class="fp" x="44" y="14" width="32" height="10" rx="3"/><rect class="fp" x="44" y="28" width="32" height="10" rx="3"/><rect class="fa" x="44" y="42" width="32" height="10" rx="3"/><path class="a" d="M69 45.5l2.5 2.5 2.5-2.5"/><path class="m" d="M46 60h20M46 66h14"/><path class="u" d="M96 24v32M91 29l5-5 5 5M91 51l5 5 5-5"/>',
-  idioma: '<rect x="18" y="16" width="36" height="24" rx="4" fill="#AA151B"/><rect x="18" y="22" width="36" height="12" fill="#F1BF00"/><rect x="66" y="16" width="36" height="24" rx="4" fill="#012169"/><path d="M67 17l34 22M101 17L67 39" stroke="#fff" stroke-width="4"/><path d="M84 16v24M66 28h36" stroke="#fff" stroke-width="7"/><path d="M84 16v24M66 28h36" stroke="#C8102E" stroke-width="4"/><rect class="fa" x="32" y="52" width="56" height="16" rx="8"/><text class="ta" x="41" y="63.5">en pruebas</text>',
+  idioma: '<rect x="18" y="16" width="36" height="24" rx="4" fill="#AA151B"/><rect x="18" y="22" width="36" height="12" fill="#F1BF00"/><svg x="66" y="16" width="36" height="24" viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice" overflow="hidden"><clipPath id="dibUKb"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><path d="M0 0v30h60V0z" fill="#012169"/><path d="M0 0l60 30m0-30L0 30" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#dibUKb)" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" stroke="#C8102E" stroke-width="6"/></svg><rect x="66" y="16" width="36" height="24" rx="4" fill="none" stroke="var(--bg, #000)" stroke-width="2.4"/><rect class="fa" x="32" y="52" width="56" height="16" rx="8"/><text class="ta" x="41" y="63.5">en pruebas</text>',
   buscar: '<rect class="fp" x="8" y="6" width="104" height="20" rx="10"/><circle class="a" cx="21" cy="16" r="4.5"/><path class="a" d="M24.5 19.5l3.5 3.5"/><text class="ta" x="35" y="19.5">VWCE</text><path class="a" d="M62 11v10"/><rect class="fa" x="8" y="32" width="104" height="15" rx="5"/><circle class="fA" cx="19" cy="39.5" r="4.5"/><path class="l" d="M30 39.5h44"/><path class="a" d="M90 39.5h14"/><circle class="fp" cx="19" cy="57" r="4.5"/><path class="m" d="M30 57h36"/><path class="m" d="M90 57h14"/><circle class="fp" cx="19" cy="72" r="4.5"/><path class="m" d="M30 72h28"/><path class="m" d="M90 72h14"/>',
   capturas: '<rect class="l" x="14" y="8" width="32" height="64" rx="6"/><path class="m" d="M21 20h18M21 29h11M21 38h18M21 47h9M21 56h15"/><path class="a" d="M9 15V7h8M43 7h8v8M51 65v8h-8M17 73H9v-8"/><path class="a" d="M57 40h13M65 35l5 5-5 5"/><rect class="fa" x="77" y="14" width="36" height="14" rx="4"/><path class="u" d="M81 21l2.5 2.5L88 18.5"/><path class="l" d="M93 21h15"/><rect class="fa" x="77" y="33" width="36" height="14" rx="4"/><path class="u" d="M81 40l2.5 2.5L88 37.5"/><path class="l" d="M93 40h11"/><rect class="fa" x="77" y="52" width="36" height="14" rx="4"/><path class="u" d="M81 59l2.5 2.5L88 56.5"/><path class="l" d="M93 59h13"/>',
   tengo: '<rect class="fp" x="4" y="10" width="112" height="22" rx="11"/><text class="t" x="12" y="24.5">Compra</text><text class="t" x="46" y="24.5">Venta</text><rect class="fA" x="74" y="12" width="40" height="18" rx="9"/><text class="tn" x="79" y="24.5">La tenía</text><ellipse class="l" cx="60" cy="68" rx="17" ry="5"/><path class="l" d="M43 68v-7M77 68v-7"/><ellipse class="l" cx="60" cy="61" rx="17" ry="5"/><path class="a" d="M43 61v-7M77 61v-7"/><ellipse class="a" cx="60" cy="54" rx="17" ry="5"/>',
@@ -10197,14 +10214,14 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   const ir = (k) => { h.cerrar(true); iniciarTour(k, alCerrar, pasos); };
   $('[data-tour-ya]', h.el).onclick = () => { h.cerrar(true); iniciarTour(0, alCerrar); };
   if (pasos.length) $('[data-nov-todo]', h.el).onclick = () => ir(0);
-  for (const b of $$('[data-nov-ir]', h.el)) b.onclick = () => ir(+b.dataset.novIr);
+  for (const b of $$('[data-nov-ir]', h.el)) b.onclick = () => { h.cerrar(true); iniciarTour(0, () => mostrarNovedades(desde, alCerrar, true), [pasos[+b.dataset.novIr]], 'Volver a las novedades'); };
 }
 
 /* Las novedades contadas bajando, como la presentación: el número de versión se monta letra a letra y cada cosa
    nueva entra con el scroll (el dibujo desde un lado, el título palabra a palabra, el texto detrás), con su botón
    «Enséñamelo» que te lleva a ella. Al final, verlo todo paso a paso, la lista o seguir. */
 const COLORES_NOV = ['#E2B45F', '#4FC995', '#3987e5', '#d55181', '#d95926'];
-function novedadesScroll(nuevas, desde, alCerrar = () => {}) {
+function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   const quieta = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pasos = [], cosas = [];
   for (const n of nuevas) for (const c of n.cosas || []) { cosas.push({ ...c, v: n.v, paso: c.ir ? pasos.length : null }); if (c.ir) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
@@ -10289,12 +10306,16 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}) {
   const cerrar = () => { quitar(); alCerrar(); };
   raiz.addEventListener('click', (e) => {
     const ir = e.target.closest('[data-nv-ir]');
-    if (ir) { quitar(); iniciarTour(+ir.dataset.nvIr, alCerrar, pasos); return; }
+    if (ir) {
+      const k = +ir.dataset.nvIr, cap = capEls.indexOf(ir.closest('.ix-cap'));
+      quitar(); iniciarTour(0, () => novedadesScroll(nuevas, desde, alCerrar, cap), [pasos[k]], 'Volver a las novedades'); return;
+    }
     const b = e.target.closest('[data-nv]'); if (!b) return;
     if (b.dataset.nv === 'fin') cerrar();
     else if (b.dataset.nv === 'todo') { quitar(); iniciarTour(0, alCerrar, pasos); }
     else if (b.dataset.nv === 'lista') { quitar(); mostrarNovedades(desde, alCerrar, true); }
   });
+  if (volverA != null && capEls[volverA]) { sc.scrollTop = Math.max(0, capEls[volverA].offsetTop + capEls[volverA].offsetHeight / 2 - sc.clientHeight / 2); medidas = null; }
   pinta();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(redim);
   setTimeout(() => sc.focus({ preventScroll: true }), 50);
@@ -10481,7 +10502,7 @@ function abrirMas() {
 }
 document.addEventListener('click', (e) => { if (e.target.closest('[data-mas]')) abrirMas(); });
 
-function iniciarTour(paso = 0, alAcabar, pasos) {
+function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
   cerrarTour();
   if (S.ficha) cerrarFicha(true);
   document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
@@ -10496,7 +10517,7 @@ function iniciarTour(paso = 0, alAcabar, pasos) {
     else if (e.key === 'ArrowLeft') irPasoTour(-1);
   };
   window.addEventListener('resize', reubicar); window.addEventListener('scroll', reubicar, true); document.addEventListener('keydown', tecla, true);
-  TOURE = { capa, i: paso, el: null, alAcabar, pasos: pasos || TOUR, nov: !!pasos, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); } };
+  TOURE = { capa, i: paso, el: null, alAcabar, pasos: pasos || TOUR, nov: !!pasos, fin, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); } };
   // en el móvil, deslizar la tarjeta pasa de paso
   let x0 = null, y0 = null;
   capa.addEventListener('touchstart', (e) => { if (!e.target.closest('.tour-caja')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
@@ -10541,11 +10562,12 @@ function pasoTour(dir = 1) {
   if (p.pos && S.carTab === 'plan') { S.carTab = 'pos'; LS.set('inv-car', 'pos'); if (!cambia) pintar(); }
   const ultimo = TOURE.i === P.length - 1, vacia = !TOURE.nov && !((S.cartera && S.cartera.posiciones) || []).length;
   const caja = $('.tour-caja', TOURE.capa);
-  caja.innerHTML = `<div class="tour-prog" aria-hidden="true">${P.map((_, i) => `<i class="${i === TOURE.i ? 'on' : i < TOURE.i ? 'ya' : ''}"></i>`).join('')}</div>
+  const solo = P.length === 1;
+  caja.innerHTML = `<button type="button" class="ib tour-x" data-t="fin" aria-label="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}" title="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}">${ICONOS.cerrar}</button>${solo ? '' : `<div class="tour-prog" aria-hidden="true">${P.map((_, i) => `<i class="${i === TOURE.i ? 'on' : i < TOURE.i ? 'ya' : ''}"></i>`).join('')}</div>`}
     <div class="tour-txt">${p.logo ? '<img class="tour-logo" src="favicon.svg" alt="">' : ''}${p.dib ? `<div class="tour-dib">${dibujo(p.dib)}</div>` : ''}${p.nuevo ? `<span class="tour-nuevo">Nuevo en la ${esc(p.nuevo)}</span>` : ''}<h3>${esc(p.t)}</h3><p>${esc(p.x)}</p></div>
-    <div class="tour-btns"><small class="tour-n">${TOURE.i + 1} de ${P.length}</small>
-      ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}
-      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar de tu bróker</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq pri" data-t="fin">${TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}
+    <div class="tour-btns">${solo ? '<span class="tour-n"></span>' : `<small class="tour-n">${TOURE.i + 1} de ${P.length}</small>
+      ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}`}
+      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar de tu bróker</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq pri" data-t="fin">${TOURE.fin ? esc(TOURE.fin) : TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}
     </div>`;
   const txt = $('.tour-txt', caja);
   if (txt) { txt.classList.remove('entra-d', 'entra-i'); void txt.offsetWidth; txt.classList.add(dir < 0 ? 'entra-i' : 'entra-d'); }
