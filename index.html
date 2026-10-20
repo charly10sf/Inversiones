@@ -1210,6 +1210,12 @@ table.ideas .sub { display: block; font-size: 12px; }
 .iac-tit.iac-act { font-weight: 500; font-size: 15px; color: var(--text-2); }
 .iac-boton { margin: 12px 0 8px; }
 .iac-notas { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 12px; }
+/* 0.3: en el móvil, GrowIA en Inicio va corta (el diagnóstico en tres líneas y lo que toca): el resumen y las notas
+   están en Análisis, y así tus posiciones quedan más arriba */
+@media (max-width: 759px) {
+  .iac .iac-res, .iac .iac-notas { display: none; }
+  .iac .iac-tit { font-size: 15.5px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+}
 .iac-nota { display: grid; gap: 4px; }
 .iac-nota small { color: var(--muted); font-size: 11.5px; }
 .iac-nota .ia-puntos i { width: 11px; height: 5px; }
@@ -4868,10 +4874,19 @@ const BLOQUES_CAR = {
   metas: { n: 'Tus metas', d: 'Si llegas a cada una con lo que aportas', w: 'estrecho' },
   renta: { n: 'Hacienda de este año', d: 'Lo que llevas ganado y lo que pagarías', w: 'estrecho' },
 };
-const CAR_DEFECTO = ['patrimonio', 'ia', 'posiciones', 'reparto', 'agenda'];
+// 0.3: tus posiciones, justo debajo del patrimonio; GrowIA, después y más corta
+const CAR_DEFECTO = ['patrimonio', 'posiciones', 'ia', 'reparto', 'agenda'];
 const ANCHO_CAR = { grande: 'Ancho', estrecho: 'Estrecho', lleno: 'De lado a lado' };
 function bloquesCartera() {
-  const g = S.cartera && S.cartera.inicio && Array.isArray(S.cartera.inicio.bloques) ? S.cartera.inicio.bloques : null;
+  const ini = S.cartera && S.cartera.inicio;
+  const g = ini && Array.isArray(ini.bloques) ? ini.bloques : null;
+  // una vez, al pasar a la 0.3: si tenías un orden guardado con tus posiciones por debajo de GrowIA, suben bajo el patrimonio
+  if (g && !ini.v03) {
+    ini.v03 = true;
+    const ip = g.indexOf('posiciones'), ia = g.indexOf('ia');
+    if (ip > -1 && ia > -1 && ia < ip) { g.splice(ip, 1); g.splice(Math.max(0, g.indexOf('patrimonio')) + 1, 0, 'posiciones'); }
+    S.senalesSucias = true;
+  }
   const v = (g || CAR_DEFECTO).filter((k, i, a) => BLOQUES_CAR[k] && a.indexOf(k) === i);
   // los que no se pueden quitar vuelven a su sitio si faltan (por ejemplo, tras juntar dos dispositivos)
   for (const k of Object.keys(BLOQUES_CAR)) if (BLOQUES_CAR[k].fijo && !v.includes(k)) v.splice(Math.min(v.length, CAR_DEFECTO.indexOf(k)), 0, k);
@@ -4995,7 +5010,7 @@ function vistaCarteraEditar(M) {
 }
 let ceGuardarT = 0;
 function ceGuardar(v, repintar = true) {
-  S.cartera.inicio = { bloques: v };
+  S.cartera.inicio = { bloques: v, v03: true };
   if (repintar) pintar();
   clearTimeout(ceGuardarT); ceGuardarT = setTimeout(() => guardarCarteraCallada('Inicio a tu gusto'), 900);
 }
@@ -5086,7 +5101,7 @@ function ordenarCartera() {
     $('.ordc-h', h.el).hidden = false;
   };
   const guardar = (v, foco) => {
-    S.cartera.inicio = { bloques: v };
+    S.cartera.inicio = { bloques: v, v03: true };
     pintaLista(); pintar();
     if (foco) { const b = ul.querySelector(`[data-k="${foco[0]}"] [data-ordc="${foco[1]}"]`) || ul.querySelector(`[data-k="${foco[0]}"] .ordc-asa`); if (b) b.focus({ preventScroll: true }); }
     clearTimeout(t); t = setTimeout(() => guardarCarteraCallada('Cartera a tu gusto'), 900);
@@ -5152,7 +5167,7 @@ function htmlToca(M) {
   const pend = todos.filter((x) => !x.hecho);
   // lo que acabas de marcar se queda tachado hasta mañana, para que veas que se ha guardado
   const recien = todos.filter((x) => x.hecho && hechos[x.hechoK] === hoy);
-  const v = [...pend.filter((x) => x.urgente), ...pend.filter((x) => !x.urgente)].slice(0, 3).concat(recien.slice(0, 2));
+  const v = [...pend.filter((x) => x.urgente), ...pend.filter((x) => !x.urgente)].slice(0, innerWidth < 760 ? 2 : 3).concat(recien.slice(0, 1));
   const ia = iaActual();
   let cab = '', notas = '', tit = '';
   if (ia) {
@@ -5174,7 +5189,7 @@ function htmlToca(M) {
       <p class="iac-tit iac-act">Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.</p>
       <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.chispa}Activar GrowIA</button>`;
   }
-  const lista = v.length ? `<div class="iac-sub"><h3>Lo que toca ahora</h3><button class="enlace acento" data-calif="ruta">Ver el paso a paso</button></div>
+  const lista = v.length ? `<div class="iac-sub"><h3>Lo que toca ahora</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Ver el paso a paso'}</button></div>
     <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según GrowIA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
   // en el ordenador, a lo ancho debajo de la gráfica: el diagnóstico a la izquierda y lo que toca a la derecha
   return `<section class="toca iac" aria-labelledby="hToca"><div class="iac-in${lista ? ' con-lista' : ''}"><div class="iac-izq">${cab}${tit}${notas}</div>${lista ? `<div class="iac-der">${lista}</div>` : ''}</div></section>`;
