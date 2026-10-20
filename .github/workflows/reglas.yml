@@ -28,17 +28,24 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: "22"
 
       - name: Publicar las reglas
         env:
           CLAVE: ${{ secrets.FIREBASE_REGLAS }}
         run: |
           if [ -z "$CLAVE" ]; then
-            echo "Falta el secreto FIREBASE_REGLAS: no se publica nada (se pegan a mano en la consola de Firebase)."
+            echo "::warning::Falta el secreto FIREBASE_REGLAS: no se publica nada (se pegan a mano en la consola de Firebase)."
             exit 0
           fi
           printf '%s' "$CLAVE" > "$RUNNER_TEMP/clave.json"
           export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/clave.json"
-          npx --yes firebase-tools@14 deploy --only firestore:rules --project growfolio-a79a9 --non-interactive
+          # el resultado, también como aviso del run (se ve sin abrir el registro)
+          if npx --yes firebase-tools@14 deploy --only firestore:rules --project growfolio-a79a9 --non-interactive > "$RUNNER_TEMP/salida.txt" 2>&1; then
+            cat "$RUNNER_TEMP/salida.txt"; echo "::notice::Reglas de Firestore publicadas"
+          else
+            cat "$RUNNER_TEMP/salida.txt"
+            echo "::error::No se pudieron publicar: $(grep -iE 'error|permission|denied|403' "$RUNNER_TEMP/salida.txt" | head -3 | tr '\n' ' ' | cut -c1-600)"
+            rm -f "$RUNNER_TEMP/clave.json"; exit 1
+          fi
           rm -f "$RUNNER_TEMP/clave.json"
