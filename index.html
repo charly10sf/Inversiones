@@ -180,6 +180,13 @@ a:hover { text-decoration: underline; }
   /* la pestaña activa, con una pastilla detrás del icono; al tocar, se hunde un poco */
   .navbar a svg, .navbar .nav-mas svg { box-sizing: border-box; width: 56px !important; height: 30px !important; padding: 4px 17px; border-radius: 999px; transition: background-color 0.25s ease, transform 0.15s ease; }
   .navbar a[aria-current="page"] svg, .navbar .nav-mas[aria-current="page"] svg { background: var(--accent-bg); }
+  /* Inicio, en el centro y más grande: un botón redondo que asoma por encima de la barra */
+  .navbar a.nav-centro { align-content: end; padding-bottom: 7px; }
+  .navbar a.nav-centro svg { width: 54px !important; height: 54px !important; padding: 14px; margin-top: -24px; border-radius: 50%; color: #1a1408; background: linear-gradient(160deg, #F0C878, #C9953F); box-shadow: 0 6px 18px rgba(226, 180, 95, 0.28), 0 0 0 5px var(--bg); }
+  .navbar a.nav-centro[aria-current="page"] svg { background: linear-gradient(160deg, #F6D58E, #D9A54C); color: #1a1408; }
+  .navbar a.nav-centro:not([aria-current="page"]) svg { background: linear-gradient(160deg, #3A3020, #2A2318); color: var(--accent); box-shadow: 0 0 0 5px var(--bg); }
+  .navbar a.falta { position: relative; }
+  .navbar a.falta::after { content: ''; position: absolute; top: 4px; left: calc(50% + 14px); width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg); }
   .navbar a:active svg, .navbar .nav-mas:active svg { transform: scale(0.9); }
   .fila-top { height: 52px; gap: 10px; }
   .estado { font-size: 12.5px; }
@@ -2188,6 +2195,18 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 @media (max-width: 600px) { .pf-recuerda { grid-template-columns: auto minmax(0, 1fr) auto; } .pf-recuerda .btn { grid-column: 2 / 4; justify-self: start; grid-row: 2; } .pf-recuerda .ib { grid-column: 3; grid-row: 1; } }
 .pf-medias { grid-template-columns: minmax(0, 1fr); }
 .nav a.falta, .navbar .nav-mas.falta { position: relative; }
+/* las pestañas de dentro de Análisis (tu cartera, tus objetivos, Hacienda) y de Mercados (cómo van, calendario) */
+.grupo-tabs { display: flex; gap: 4px; margin: 0 0 18px; padding: 4px; width: fit-content; max-width: 100%; overflow-x: auto; scrollbar-width: none; border-radius: 999px; border: 1px solid var(--line); background: rgba(255, 255, 255, 0.03); }
+.grupo-tabs::-webkit-scrollbar { display: none; }
+.grupo-tabs a { position: relative; flex: none; padding: 8px 16px; border-radius: 999px; color: var(--text-2); font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; }
+.grupo-tabs a:hover { color: var(--text); }
+.grupo-tabs a[aria-current="page"] { color: var(--accent); background: var(--accent-bg); }
+.enlace-hacienda { display: flex; align-items: center; gap: 12px; margin-top: 36px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; color: var(--text); text-decoration: none; }
+.enlace-hacienda:hover { background: var(--plane); }
+.enlace-hacienda > svg { width: 20px; height: 20px; color: var(--muted); flex: none; }
+.enlace-hacienda span { display: grid; gap: 2px; flex: 1; min-width: 0; }
+.enlace-hacienda small { color: var(--muted); font-size: 13px; }
+.grupo-tabs a.falta::after { content: ''; position: absolute; top: 6px; right: 6px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 .nav a.falta::after { content: ''; position: absolute; top: 5px; right: 4px; width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
 .navbar .nav-mas.falta::after { content: ''; position: absolute; top: 2px; left: calc(50% + 12px); width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg); }
 .mas-falta { display: inline-block; margin-left: 8px; padding: 1px 8px; border-radius: 999px; background: var(--accent-bg); color: var(--accent); font-style: normal; font-size: 11.5px; font-weight: 600; vertical-align: 1px; }
@@ -4215,6 +4234,26 @@ const VISTAS = [
   ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['agenda', 'Calendario', 'Calendario'], ['mercados', 'Mercados', 'Mercados'],
 ];
 const VISTAS_APARTE = [];
+/* 0.3: cinco sitios. Análisis lleva dentro tus objetivos (y Hacienda, que solo se enseña de marzo a junio, cuando
+   toca la renta; el resto del año, con un enlace al final); Mercados lleva el calendario. En el móvil, Inicio en el
+   centro y más grande: a la izquierda lo que haces (Pasos, Análisis) y a la derecha lo de fuera (Expertos, Mercados) */
+const GRUPOS = [
+  { k: 'cartera', t: 'Inicio', en: 'Home', vistas: ['cartera'] },
+  { k: 'ruta', t: 'Paso a paso', c: 'Pasos', en: 'Steps', vistas: ['ruta'] },
+  { k: 'analisis', t: 'Análisis', en: 'Analysis', vistas: ['analisis', 'futuro', 'fiscal'] },
+  { k: 'expertos', t: 'Expertos', en: 'Experts', vistas: ['expertos'] },
+  { k: 'mercados', t: 'Mercados', en: 'Markets', vistas: ['mercados', 'agenda'] },
+];
+const ORDEN_BARRA = ['ruta', 'analisis', 'cartera', 'expertos', 'mercados'];
+const grupoDe = (v) => GRUPOS.find((g) => g.vistas.includes(v)) || GRUPOS[0];
+const SUBVISTAS = { analisis: [['analisis', 'Tu cartera', 'Your portfolio'], ['futuro', 'Tus objetivos', 'Your goals'], ['fiscal', 'Hacienda', 'Taxes']], mercados: [['mercados', 'Cómo van', 'Markets'], ['agenda', 'Calendario', 'Calendar']] };
+const epocaRenta = () => { const m = new Date().getMonth(); return m >= 2 && m <= 5; };
+function htmlSubvistas() {
+  const g = grupoDe(S.vista), sv = SUBVISTAS[g.k]; if (!sv) return '';
+  const lista = sv.filter(([k]) => k !== 'fiscal' || epocaRenta() || S.vista === 'fiscal');
+  const falta = perfilIncompleto();
+  return `<nav class="grupo-tabs" aria-label="${esc(g.t)}">${lista.map(([k, t, en]) => `<a href="#${k}" aria-current="${S.vista === k ? 'page' : 'false'}"${k === 'futuro' && falta ? ' class="falta"' : ''}>${L(t, en)}</a>`).join('')}</nav>`;
+}
 // en el móvil caben cinco: estas cuatro y «Más», que abre el calendario, Mercados, Fiscalidad y Objetivos
 const EN_BARRA = new Set(['cartera', 'ruta', 'expertos', 'analisis']);
 const EN_MAS = [['agenda', 'Resultados, dividendos, bancos centrales y tus aportaciones, con cuántos días faltan'], ['mercados', 'Busca cualquier valor; bolsas, divisas y materias primas del mundo'], ['fiscal', 'Lo que pagarías a Hacienda, los tramos y la guía de la renta'], ['futuro', 'Tu perfil, tus límites, tus metas y la proyección']];
@@ -4353,7 +4392,7 @@ function montar() {
   $('#app').innerHTML = `
   <header class="top"><div class="wrap fila-top">
     <div class="marca"><img src="favicon.svg" alt=""><span>GrowFolio</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
-    <nav class="nav" aria-label="Secciones">${VISTAS.map(([k, t, c]) => `<a href="#${k}" data-ir="${k}"${c && c !== t ? ' class="corto"' : ''}><span class="nl">${t}</span>${c && c !== t ? `<span class="nc">${c}</span>` : ''}</a>`).join('')}</nav>
+    <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`).join('')}</nav>
     ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <div class="acciones">
@@ -4364,7 +4403,7 @@ function montar() {
   </div></header>
   <div class="ticker" id="ticker" role="link" tabindex="0" aria-label="Cotizaciones. Toca para ver Mercados" title="Ver Mercados"></div>
   <main class="wrap" id="vista"></main>
-  <nav class="navbar" aria-label="Secciones">${VISTAS.filter(([k]) => EN_BARRA.has(k)).map(([k, t, c]) => `<a href="#${k}" data-ir="${k}">${ICONOS[k]}<span>${c || t}</span></a>`).join('')}<button type="button" class="nav-mas" data-mas aria-haspopup="dialog">${ICONOS.masV}<span>Más</span></button></nav>`;
+  <nav class="navbar" aria-label="Secciones">${ORDEN_BARRA.map((k) => { const g = GRUPOS.find((x) => x.k === k); return `<a href="#${k}" data-ir="${k}"${k === 'cartera' ? ' class="nav-centro"' : ''}>${ICONOS[k]}<span>${L(g.c || g.t, g.en)}</span></a>`; }).join('')}</nav>`;
   S.tickerFirma = null;
   // la cinta de cotizaciones lleva a Mercados
   const tk = $('#ticker');
@@ -4559,13 +4598,11 @@ function pintar() {
   if (!S.cartera) return;
   if (!$('#vista')) montar();
   const M = calcular(); S.M = M; S.binds = binds(M);
-  for (const a of $$('[data-ir]')) a.setAttribute('aria-current', a.dataset.ir === S.vista ? 'page' : 'false');
-  const bm = $('.nav-mas');
-  if (bm) { const v = EN_MAS.find(([k]) => k === S.vista), vv = v && VISTAS.find(([k]) => k === v[0]); bm.setAttribute('aria-current', v ? 'page' : 'false'); bm.querySelector('span').textContent = vv ? vv[2] || vv[1] : 'Más'; }
-  // un punto en Objetivos (y en «Más», en el móvil) mientras te falte el perfil
+  const gAct = grupoDe(S.vista).k;
+  for (const a of $$('[data-ir]')) a.setAttribute('aria-current', a.dataset.ir === gAct ? 'page' : 'false');
+  // un punto en Análisis (donde están tus objetivos) mientras te falte el perfil
   const faltaP = perfilIncompleto();
-  for (const a of $$('.nav [data-ir="futuro"]')) a.classList.toggle('falta', faltaP);
-  if (bm) bm.classList.toggle('falta', faltaP);
+  for (const a of $$('.nav [data-ir="analisis"], .navbar [data-ir="analisis"]')) a.classList.toggle('falta', faltaP);
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
   pintarGtaTop();
   cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
@@ -4574,7 +4611,7 @@ function pintar() {
   const scroll = window.scrollY;
   const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
   setTimeout(() => plegarNotas($('#vista')), 0);
-  $('#vista').innerHTML = html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú.</p>`;
+  $('#vista').innerHTML = htmlSubvistas() + html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú.</p>`;
   if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada
   if (S.vista === 'agenda' && S.agIr) {
@@ -6671,7 +6708,8 @@ function vistaAnalisis(M) {
   return `
   <div class="vista-cab"><h1>Análisis</h1><p>Lo que opina la IA de tu cartera y tus números: rentabilidad, riesgo, costes, qué hay por dentro y cómo van tus apuestas.</p></div>
   <div class="subvistas dos-op" role="group" aria-label="Qué ver">${ANALISIS_P.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div>
-  ${cuerpo}`;
+  ${cuerpo}
+  ${epocaRenta() ? '' : `<a class="enlace-hacienda" href="#fiscal">${ICONOS.fiscal}<span><b>${L('Hacienda', 'Taxes')}</b><small>${L('Lo que pagarías si vendieras hoy, los tramos y la guía de la renta', 'What you would pay if you sold today, the brackets and the tax-return guide')}</small></span><i class="aj-flecha" aria-hidden="true"></i></a>`}`;
 }
 
 /* =========================== Plan (dentro de Cartera) =========================== */
@@ -11365,11 +11403,11 @@ const TOUR = [
   { v: 'cartera', sel: '#carTabs', t: 'Posiciones y plan', x: 'Toca una posición para ver su ficha. En "Plan y movimientos" están las aportaciones de cada mes y todo lo que has comprado y vendido.' },
   { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', t: 'Paso a paso', x: 'Lo que toca hacer con tu dinero, en orden y con lo primero arriba: qué, cuánto, por qué y lo que pagarías a Hacienda.' },
   { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', t: 'Expertos', x: 'Qué opinan los analistas de lo que tienes y las ideas de compra que sacan GrowFolio y la IA de unas 800 empresas.' },
-  { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"], .navbar [data-mas]', t: 'Análisis', x: 'GrowIA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
-  { v: 'fiscal', sel: '.navbar [data-ir="fiscal"], .nav [data-ir="fiscal"], .navbar [data-mas]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
-  { v: 'futuro', sel: '.navbar [data-ir="futuro"], .nav [data-ir="futuro"], .navbar [data-mas]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
-  { v: 'agenda', sel: '.nav [data-ir="agenda"], .navbar [data-mas]', t: 'Calendario', x: 'Lo que viene para lo que tienes: resultados, dividendos con lo que te toca en euros, reuniones de la Fed y el BCE, días sin bolsa y tus aportaciones, con los días que faltan.' },
-  { v: 'mercados', sel: '.nav [data-ir="mercados"], .navbar [data-mas]', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
+  { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', t: 'Análisis', x: 'GrowIA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
+  { v: 'fiscal', sel: '.grupo-tabs a[href="#fiscal"]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
+  { v: 'futuro', sel: '.grupo-tabs a[href="#futuro"]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
+  { v: 'agenda', sel: '.grupo-tabs a[href="#agenda"]', t: 'Calendario', x: 'Lo que viene para lo que tienes: resultados, dividendos con lo que te toca en euros, reuniones de la Fed y el BCE, días sin bolsa y tus aportaciones, con los días que faltan.' },
+  { v: 'mercados', sel: '.navbar [data-ir="mercados"], .nav [data-ir="mercados"]', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
   { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale a GrowIA', x: 'Lo que quieras de tu cartera, con tus números delante. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
   { v: 'cartera', dib: 'app', t: 'El widget del móvil', x: 'Con la app de Android tienes un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo próximo que toca, sin abrir nada. Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio. La app se baja desde Ajustes.' },
   { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades, tu opinión y este tutorial, para repetirlo cuando quieras.' },
