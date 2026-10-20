@@ -3203,6 +3203,15 @@ function decodificarPrecio(b64txt) {
   return { id: o[1], price: o[2], time: zz(o[3]), currency: o[4], changePercent: o[8] };
 }
 
+/* la moneda en la que cotiza un ticker de Yahoo, por su terminación (sin terminación, EE. UU.: dólares) */
+const MONEDA_SUFIJO = { L: 'GBp', MC: 'EUR', PA: 'EUR', DE: 'EUR', F: 'EUR', AS: 'EUR', MI: 'EUR', BR: 'EUR', LS: 'EUR', HE: 'EUR', VI: 'EUR', IR: 'EUR', MU: 'EUR', SG: 'EUR', BE: 'EUR', DU: 'EUR', HM: 'EUR', HA: 'EUR', SW: 'CHF', CO: 'DKK', ST: 'SEK', OL: 'NOK', T: 'JPY', TO: 'CAD', V: 'CAD', HK: 'HKD', AX: 'AUD' };
+function monedaPorSufijo(sim) {
+  const t = String(sim || '').toUpperCase().trim();
+  if (!t || /[=^]/.test(t)) return null;
+  const c = t.match(/-(EUR|USD|GBP)$/); if (c) return c[1];
+  const m = t.match(/\.([A-Z]{1,3})$/);
+  return m ? MONEDA_SUFIJO[m[1]] || null : 'USD';
+}
 function aEuros(p, moneda) {
   const fx = (S.precios && S.precios.fx) || {};
   const usd = S.fxVivo.USD || fx.USD, gbp = S.fxVivo.GBP || fx.GBP;
@@ -3210,7 +3219,8 @@ function aEuros(p, moneda) {
   if (moneda === 'USD') return usd ? p * usd : null;
   if (moneda === 'GBP') return gbp ? p * gbp : null;
   if (moneda === 'GBp' || moneda === 'GBX') return gbp ? (p / 100) * gbp : null;
-  return null;
+  // el resto de monedas (francos suizos, coronas, yenes…), con el cambio del día de precios.json
+  return fx[moneda] ? p * fx[moneda] : null;
 }
 
 const LIVE = {
@@ -3282,7 +3292,7 @@ const LIVE = {
       // las que añade cada uno (no están en precios.json): la moneda, de la ficha o del radar; si no, la del tick;
       // y si no viene, por la bolsa (Londres cotiza en peniques). El precio de referencia, el del radar en euros
       const i = S.inst[id], r = !P && i ? radarPorSim(i.yahoo || d.id) : null;
-      const moneda = (P && P.moneda) || (i && i.moneda) || (r && r.m) || d.currency || (/\.L$/i.test(d.id) ? 'GBp' : 'EUR');
+      const moneda = (P && P.moneda) || (i && i.moneda) || (r && r.m) || d.currency || monedaPorSufijo(d.id) || 'EUR';
       const precio = aEuros(d.price, moneda);
       const ref = P ? (P.cierre_anterior || P.precio) : r && r.pe;
       const roto = precio != null && ref > 0 && (precio / ref > 3 || precio / ref < 1 / 3);
@@ -8895,12 +8905,12 @@ function descargar(nombre, texto) {
 
 function nuevoInstrumento(fin, ini = {}) {
   const h = hoja('Nuevo instrumento', `<form id="fInst" style="display:grid;gap:12px">
-    <p class="nota" style="margin:0">${PERFIL_LOCAL ? 'Se guarda en tu cartera. Si no está en la lista común no tendrá precio diario: pon su valor en la posición, o pide a quien te pasó GrowFolio que lo añada.' : 'Se añade a <code>instrumentos.json</code> (público, sin cantidades). La Action buscará su precio en Yahoo Finance en un par de minutos.'}</p>
+    <p class="nota" style="margin:0">${PERFIL_CUENTA ? 'Se guarda en tu cartera. Si GrowFolio aún no la sigue, pide su precio: en la próxima actualización (unos 20 minutos con la bolsa abierta) tendrá precio diario, gráfica y cambio a euros.' : PERFIL_LOCAL ? 'Se guarda en tu cartera. Si no está en la lista común no tendrá precio diario: pon su valor en la posición, o pide a quien te pasó GrowFolio que lo añada.' : 'Se añade a <code>instrumentos.json</code> (público, sin cantidades). La Action buscará su precio en Yahoo Finance en un par de minutos.'}</p>
     <div class="form-grid">
       <label class="campo">Nombre<input name="nombre" required></label>
       <label class="campo">Nombre corto<input name="corto" required maxlength="24"></label>
       <label class="campo">ISIN<input name="isin" maxlength="12" placeholder="ES0177542018" value="${esc(ini.isin || '')}"></label>
-      <label class="campo">Ticker de Yahoo<input name="yahoo" placeholder="IAG.MC"><small>Opcional si pones el ISIN.</small></label>
+      <label class="campo">Ticker de Yahoo<input name="yahoo" placeholder="IAG.MC" value="${esc(ini.yahoo || '')}"><small>Como sale en finance.yahoo.com: AGIO, IAG.MC, BATS.L… Opcional si pones el ISIN.</small></label>
       <label class="campo">Tipo<select name="tipo"><option>Acción</option><option>Fondo indexado</option><option>Fondo de renta fija</option><option>ETF</option><option>ETC</option><option>Cripto</option></select></label>
       <label class="campo">Clase<select name="clase"><option>Renta variable</option><option>Renta fija</option><option>Oro</option><option>Cripto</option><option>Monetario</option></select></label>
       <label class="campo">Región<select name="region"><option>Europa</option><option>EEUU</option><option>Emergentes</option><option>Japón y Pacífico</option><option>Global</option></select></label>
@@ -8911,6 +8921,14 @@ function nuevoInstrumento(fin, ini = {}) {
     <div class="error" id="errI" style="text-align:left"></div>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button class="btn pri" type="submit">Añadir</button></div></form>`, () => fin(null));
   if (ini.isin && /^(IE|LU|ES|FR|DE)/i.test(ini.isin)) { const sel = $('#fInst [name=tipo]', h.el); if (sel) sel.value = 'Fondo indexado'; }
+  // con el ticker, la región y el país salen de dónde cotiza (AGIO: EE. UU.; IAG.MC: España; BATS.L: Reino Unido)
+  if (ini.yahoo) {
+    const m = monedaPorSufijo(ini.yahoo), t = String(ini.yahoo).toUpperCase();
+    const reg = m === 'USD' ? 'EEUU' : m === 'JPY' || m === 'AUD' || m === 'HKD' ? 'Japón y Pacífico' : 'Europa';
+    const pais = m === 'USD' ? 'US' : /\.MC$/.test(t) ? 'ES' : /\.L$/.test(t) ? 'GB' : /\.(DE|F)$/.test(t) ? 'DE' : /\.PA$/.test(t) ? 'FR' : /\.AS$/.test(t) ? 'NL' : /\.MI$/.test(t) ? 'IT' : '';
+    const r = $('#fInst [name=region]', h.el), ps = $('#fInst [name=pais]', h.el);
+    if (r) r.value = reg; if (ps && pais && [...ps.options].some((o) => o.value === pais)) ps.value = pais;
+  }
   $('#fInst', h.el).onsubmit = (ev) => {
     ev.preventDefault();
     const g = (n) => ev.target.querySelector(`[name="${n}"]`).value.trim();
@@ -8926,11 +8944,40 @@ function nuevoInstrumento(fin, ini = {}) {
     if (inst.yahoo && /\.MC$/i.test(inst.yahoo)) inst.mercado = 'Madrid'; else if (inst.yahoo && /\.L$/i.test(inst.yahoo)) inst.mercado = 'Londres';
     if (inst.clase === 'Oro' || inst.clase === 'Cripto' || inst.clase === 'Renta fija' || inst.clase === 'Monetario') inst.sector_fijo = inst.clase;
     if (inst.clase === 'Cripto' && inst.yahoo && /-EUR$/i.test(inst.yahoo)) inst.bitvavo = inst.yahoo.toUpperCase();
+    // la moneda, por la terminación del ticker: sin ella, el precio en directo de Agios (en dólares) salía en euros
+    if (inst.yahoo && inst.clase !== 'Cripto') { const m = monedaPorSufijo(inst.yahoo); if (m) inst.moneda = m; }
     S.inst[id] = inst; S.instOrden.push(id); S.instCambiados = true;
+    pedirPrecio(inst);
     const finalizar = fin; fin = () => {}; h.cerrar(); finalizar(id);
   };
 }
 
+/* Lo que alguien mete a mano y GrowFolio no sigue (no está en la lista del dueño, ni en el catálogo, ni entre las
+   empresas del radar): se apunta su ticker o su ISIN en la lista común «simbolos» de Firestore, sin decir quién lo
+   pide. La Action la lee en cada pasada y le saca precio, moneda, gráfica y cambio a euros para todos. */
+function sinPrecioComun(i) {
+  if (!i) return false;
+  const P = S.precios && S.precios.instrumentos && S.precios.instrumentos[i.id];
+  return !(P && P.precio) && !catDe(i) && !radarPorSim(i.yahoo) && !!(i.yahoo || i.isin);
+}
+async function pedirPrecio(i) {
+  if (!PERFIL_CUENTA || !i || !sinPrecioComun(i)) return;
+  const clave = String(i.yahoo || i.isin || '').toUpperCase().trim();
+  if (!/^[A-Z0-9][A-Z0-9.\-]{0,19}$/.test(clave)) return;
+  const hechos = LS.get('inv-pedidos', {});
+  if (hechos[clave] && Date.now() - hechos[clave] < 3 * 864e5) return;
+  try {
+    await fbCargar(); if (!FB.user) return;
+    await FB.fs.setDoc(FB.fs.doc(FB.db, 'simbolos', clave), { s: i.yahoo ? String(i.yahoo).toUpperCase() : '', isin: i.isin ? String(i.isin).toUpperCase() : '', cuando: FB.fs.serverTimestamp() });
+  } catch (e) { /* ya estaba pedida (no se puede reescribir) o sin red: no pasa nada */ }
+  hechos[clave] = Date.now(); LS.set('inv-pedidos', hechos);
+}
+// al abrir: lo que tienes sin precio común, se pide (una vez cada tres días como mucho)
+function revisarPedidos() {
+  if (!PERFIL_CUENTA || !S.cartera) return;
+  const ids = new Set((S.cartera.posiciones || []).map((p) => p.instrumento));
+  for (const id of ids) pedirPrecio(S.inst[id]);
+}
 /* Las empresas que sigue la web (el radar) sirven para dar de alta una acción sin escribir nada: nombre,
    ticker, país, mercado y logo salen de ahí. Sin ISIN: la Action busca su precio por el ticker. */
 function radarPorSim(sim) {
@@ -8990,7 +9037,7 @@ function candidatosBusqueda() {
     out.push({ k: 'cat:' + cid, n: x.c || x.n, l: x.n, s: x.s || '', isin: x.isin || '', a: x.a || [], dom: x.dom, cot: x.cl === 'Cripto' ? { cod: null, txt: 'cripto, 24 h' } : { cod: x.pais, txt: /^Fondo/.test(x.t || '') ? `fondo${x.pais ? ' de ' + (PAISES[x.pais] || x.pais) : ''}` : x.t || '' }, pr: () => x.p });
     if (x.s) vistos.add(String(x.s).toUpperCase());
   }
-  for (const x of radarVals()) if (x.s && !vistos.has(x.s.toUpperCase())) { const o = origenRadar(x); out.push({ k: 'radar:' + x.s, n: x.n, l: x.n, s: x.s, isin: '', dom: x.w, cot: { cod: o.bolsa || o.sede, txt: o.ciudad ? 'bolsa de ' + o.ciudad : x.z || '' }, pr: () => x.pe }); }
+  for (const x of [...radarVals(), ...((S.radar && S.radar.valores) || []).filter((y) => y.pd)]) if (x.s && !vistos.has(x.s.toUpperCase())) { const o = origenRadar(x); out.push({ k: 'radar:' + x.s, n: x.n, l: x.n, s: x.s, isin: '', dom: x.w, cot: { cod: o.bolsa || o.sede, txt: o.ciudad ? 'bolsa de ' + o.ciudad : x.z || '' }, pr: () => x.pe }); }
   return out;
 }
 // palabras que la gente escribe de otra forma que el nombre del fondo
@@ -9030,13 +9077,16 @@ function buscador(cont, alElegir, opt = {}) {
     const q = inp.value.trim();
     if (!res.length && !q) { ul.hidden = true; return; }
     const isin = !opt.alCandidato && /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i.test(q) && !res.some((c) => String(c.isin).toUpperCase() === q.toUpperCase());
-    ul.innerHTML = res.map(fila).join('') + (isin ? `<li role="option" data-isin="${esc(q.toUpperCase())}">${logo(null, '+')}<span class="busca-t"><b>Añadir el fondo o ETF ${esc(q.toUpperCase())}</b><small>${PERFIL_LOCAL ? 'No está en la base de datos: lo añades, pero sin precio diario hasta que se sume al catálogo común' : 'No está en la lista: lo das de alta y la Action le busca precio'}</small></span></li>` : '') + (!res.length && !isin ? `<li class="busca-nada">No lo encuentro. Prueba con otro nombre, el ticker (IAG, AAPL) o el ISIN, que sale en tu bróker.</li>` : '');
+    // un ticker que no sale (AGIO, BATS.L…): se ofrece añadirlo tal cual; GrowFolio pide su precio
+    const tk = !opt.alCandidato && !isin && /^[A-Za-z][A-Za-z0-9]{0,6}([.-][A-Za-z]{1,3})?$/.test(q) && !res.some((c) => String(c.s).toUpperCase() === q.toUpperCase() || String(c.s).toUpperCase().split('.')[0] === q.toUpperCase());
+    ul.innerHTML = res.map(fila).join('') + (tk ? `<li role="option" data-ticker="${esc(q.toUpperCase())}">${logo(null, '+')}<span class="busca-t"><b>¿No sale? Añadir el ticker ${esc(q.toUpperCase())}</b><small>Por su ticker de Yahoo: GrowFolio pide su precio y lo tendrá en unos minutos</small></span></li>` : '') + (isin ? `<li role="option" data-isin="${esc(q.toUpperCase())}">${logo(null, '+')}<span class="busca-t"><b>Añadir el fondo o ETF ${esc(q.toUpperCase())}</b><small>${PERFIL_LOCAL ? 'No está en la base de datos: lo añades, pero sin precio diario hasta que se sume al catálogo común' : 'No está en la lista: lo das de alta y la Action le busca precio'}</small></span></li>` : '') + (!res.length && !isin ? `<li class="busca-nada">No lo encuentro. Prueba con otro nombre, el ticker (IAG, AAPL) o el ISIN, que sale en tu bróker.</li>` : '');
     ul.hidden = false;
   };
   const buscar = () => { res = inp.value.trim() ? buscarEn(lista, inp.value).slice(0, 8) : lista.filter((c) => c.tengo).slice(0, 8); sel = 0; pintarRes(); };
   const elegir = (li) => {
     if (!li) return;
     if (li.dataset.isin) { ul.hidden = true; nuevoInstrumento((nid) => { if (nid) alElegir(nid); }, { isin: li.dataset.isin }); return; }
+    if (li.dataset.ticker) { ul.hidden = true; nuevoInstrumento((nid) => { if (nid) alElegir(nid); }, { yahoo: li.dataset.ticker }); return; }
     const c = res[+li.dataset.i]; if (!c) return;
     if (opt.alCandidato) { ul.hidden = true; inp.blur(); opt.alCandidato(c); return; }
     const id = idDeCandidato(c);
@@ -9076,7 +9126,7 @@ function htmlBuscaMercados() {
   return `<section class="merc-busca" aria-labelledby="hBusca"><h2 id="hBusca">Busca un fondo, una acción o una cripto</h2><div id="mercBusca"></div><p class="merc-busca-t">Unos ${fmtNum(Math.floor(n / 50) * 50, 0)} entre fondos, cripto, empresas y mercados. Tócalo para ver su precio, su gráfica y sus noticias, y añadirlo a tu cartera.</p></section>`;
 }
 function htmlMovidas() {
-  const r = ((S.radar && S.radar.valores) || []).filter((x) => x.v != null && isFinite(x.v) && x.p > 0 && Math.abs(x.v) < 60);
+  const r = ((S.radar && S.radar.valores) || []).filter((x) => !x.pd && x.v != null && isFinite(x.v) && x.p > 0 && Math.abs(x.v) < 60);
   if (r.length < 30) return '';
   const orden = [...r].sort((a, b) => b.v - a.v), suben = orden.slice(0, 5), bajan = orden.slice(-5).reverse();
   const li = (x) => `<li><button type="button" class="mov" data-consulta="${esc(x.s)}">${logo(x.w, nombreRadar(x), 'peq')}<span class="busca-t"><b>${esc(nombreRadar(x))}</b><small>${esc(x.s)}${x.sector ? ` · ${esc(x.sector)}` : ''}</small></span><span class="mov-v"><b class="${cls(x.v)}">${pctS(x.v, 1)}</b><small>${precioR(x.p, x.m)}</small></span></button></li>`;
@@ -10700,7 +10750,7 @@ async function cargarRadar() {
 
 /* el radar con los precios en directo encima (y el potencial recalculado con ellos) */
 function radarVals() {
-  const r = S.radar && S.radar.valores;
+  const r = S.radar && S.radar.valores && S.radar.valores.filter((x) => !x.pd);
   if (!r) return [];
   const c = S.radarCache;
   if (c && c.ver === S.radarVer && c.live === S.liveRVer) return c.v;
@@ -12114,6 +12164,8 @@ function arrancar() {
   // el análisis y la clave llegan un poco después de pintar: hasta entonces, la tarjeta de GrowIA de Cartera
   // dice «cargando» (antes decía «aún sin activar» aunque la tuvieras activada) y luego se rehace sola
   Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); });
+  // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)
+  { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); }; setTimeout(mira, 6000); }
   clearInterval(tickPrecios); clearInterval(tickEstado);
   tickPrecios = setInterval(() => { if (!document.hidden) recargarPrecios(); }, 120000);
   tickEstado = setInterval(programarParche, 30000);

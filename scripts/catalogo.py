@@ -22,7 +22,7 @@ import pandas as pd
 import yfinance as yf
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from precios import a_euros, num, redondeo, rentabilidad, serie_cierres, serie_por_isin, tipos_de_cambio  # noqa: E402
+from precios import a_euros, num, pedidas_firestore, redondeo, rentabilidad, serie_cierres, serie_por_isin, tipos_de_cambio  # noqa: E402
 
 GESTORAS = [
     (r"^vanguard", "vanguard.com"), (r"^ishares", "ishares.com"), (r"^fidelity", "fidelity.es"), (r"^amundi|^lyxor", "amundi.com"),
@@ -139,6 +139,14 @@ def compacta(s):
 
 def main(ruta_cat, dir_anterior, dir_salida):
     cat = json.load(open(ruta_cat, encoding="utf-8"))
+    # los fondos y ETF que alguien ha metido a mano por su ISIN y no estaban (la lista común «simbolos» de Firestore)
+    try:
+        hay = {(e.get("isin") or "").upper() for e in cat.get("valores", [])}
+        nuevos = [x["isin"] for x in pedidas_firestore() if x["isin"] and not x["s"] and x["isin"] not in hay]
+        cat["valores"] = cat.get("valores", []) + [{"isin": i, "pd": 1} for i in dict.fromkeys(nuevos)][:150]
+        print(f"pedidos por ISIN: {len(nuevos)}")
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
     prev = {}
     try:
         prev = (json.load(open(f"{dir_anterior}/catalogo-precios.json", encoding="utf-8")).get("v") or {})
@@ -174,7 +182,7 @@ def main(ruta_cat, dir_anterior, dir_salida):
             if s_eur.empty:
                 raise RuntimeError("sin precios")
             nombre = e.get("n") or meta.get("longName") or meta.get("shortName") or sim
-            tipo = e.get("t") or ("Cripto" if sim.endswith("-EUR") else "ETF")
+            tipo = e.get("t") or ("Cripto" if sim.endswith("-EUR") else "Fondo" if sim.startswith("0P") else "ETF")
             clase = clase_de(nombre, tipo)
             hoy = s_eur.index[-1]
             salida[cid] = {
@@ -187,6 +195,8 @@ def main(ruta_cat, dir_anterior, dir_salida):
             }
             if e.get("a"):
                 salida[cid]["a"] = e["a"]
+            if e.get("pd"):
+                salida[cid]["pd"] = 1
             if yn:
                 salida[cid]["yn"] = yn  # el nombre que tiene en Yahoo, para comprobar que es el fondo bueno
             with open(f"{dir_salida}/cat/{cid}.json", "w", encoding="utf-8") as f:

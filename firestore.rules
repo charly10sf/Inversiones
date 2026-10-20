@@ -16,5 +16,16 @@ service cloud.firestore {
         && request.resource.data.texto.size() <= 4000;
       allow read, update, delete: if false;
     }
+    // precios que pedir: el ticker o el ISIN de lo que alguien mete a mano y GrowFolio no seguía (sin quién lo
+    // pide). Cualquiera con cuenta puede apuntar uno nuevo; lo lee la Action de precios, sin clave
+    match /simbolos/{id} {
+      allow read: if true;
+      allow create: if request.auth != null
+        && id.matches('^[A-Z0-9][A-Z0-9.-]{0,19}$')
+        && request.resource.data.keys().hasOnly(['s', 'isin', 'cuando'])
+        && request.resource.data.s is string && request.resource.data.s.size() <= 20
+        && request.resource.data.isin is string && request.resource.data.isin.size() <= 12;
+      allow update, delete: if false;
+    }
   }
 }

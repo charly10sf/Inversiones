@@ -25,12 +25,14 @@
   {
    "isin": "IE00BYX5PR43",
    "n": "Fidelity MSCI Japan Index Fund EUR P Acc",
-   "t": "Fondo"
+   "t": "Fondo",
+   "q": "Fidelity MSCI Japan Index"
   },
   {
    "isin": "IE00BYX5PP84",
    "n": "Fidelity MSCI Pacific ex Japan Index Fund EUR P Acc",
-   "t": "Fondo"
+   "t": "Fondo",
+   "q": "Fidelity MSCI Pacific ex Japan"
   },
   {
    "isin": "IE0032126645",
@@ -342,7 +344,8 @@
    "t": "ETF",
    "a": [
     "LCWD"
-   ]
+   ],
+   "q": "Amundi Core MSCI World"
   },
   {
    "isin": "IE00BK5BQV03",

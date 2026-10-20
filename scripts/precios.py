@@ -1027,6 +1027,40 @@ def radar_ficha(sim, zona, fx):
     return x
 
 
+# Lo que alguien mete a mano en la web y GrowFolio no seguía: la web lo apunta en la colección «simbolos» de
+# Firestore (solo el ticker o el ISIN, sin quién lo pide; se puede leer sin clave) y aquí entra en el radar, marcado
+# como pedido («pd»): así tiene precio en euros, moneda, gráfica y fechas para todos, sin salir como idea.
+FIRESTORE_PEDIDAS = "https://firestore.googleapis.com/v1/projects/growfolio-a79a9/databases/(default)/documents/simbolos?pageSize=300"
+RE_PEDIDA = re.compile(r"^[A-Z0-9][A-Z0-9.\-]{0,19}$")
+
+
+def pedidas_firestore():
+    out, url = [], FIRESTORE_PEDIDAS
+    for _ in range(5):
+        try:
+            with urllib.request.urlopen(url, timeout=20) as r:
+                j = json.load(r)
+        except Exception as e:  # noqa: BLE001
+            print("pedidas: no se pudo leer la lista:", e)
+            break
+        for d in j.get("documents", []) or []:
+            f = d.get("fields", {}) or {}
+            s = ((f.get("s") or {}).get("stringValue") or "").strip().upper()
+            isin = ((f.get("isin") or {}).get("stringValue") or "").strip().upper()
+            if (s and RE_PEDIDA.match(s)) or re.match(r"^[A-Z]{2}[A-Z0-9]{9}[0-9]$", isin):
+                out.append({"s": s if RE_PEDIDA.match(s or "-") else "", "isin": isin})
+        tok = j.get("nextPageToken")
+        if not tok:
+            break
+        url = FIRESTORE_PEDIDAS + "&pageToken=" + urllib.parse.quote(tok)
+    print(f"pedidas: {len(out)}")
+    return out[:400]
+
+
+def zona_pedida(sim):
+    return "España" if sim.endswith(".MC") else "EEUU" if "." not in sim else "Europa"
+
+
 def radar(fx, previo, extra=()):
     """Renueva la ficha de cada empresa (en paralelo). Si una falla, se queda la de la vez anterior."""
     import concurrent.futures as cf
@@ -1343,13 +1377,22 @@ def main(ruta_inst, dir_anterior, dir_salida):
             traceback.print_exc()
             diag = {"fecha": ahora(), "errores": [str(e)[:300]]}
             errores.append(f"descubrir: {e}")
+    # lo que se ha metido a mano y no seguíamos (ni en la lista fija, ni descubiertas, ni en instrumentos.json)
+    try:
+        propias = {str(i.get("yahoo") or "").upper() for i in instrumentos}
+        fijas_todas = {sim for simbolos in RADAR.values() for sim in simbolos} | {s for s, _ in extra} | propias
+        pedidas = [x["s"] for x in pedidas_firestore() if x["s"]]
+        pedidas = [s for s in dict.fromkeys(pedidas) if s not in fijas_todas][:150]
+    except Exception as e:  # noqa: BLE001
+        traceback.print_exc()
+        pedidas = []
     # sin las fechas de resultados y dividendos (radar de antes de la 0.2), se renueva ya en vez de esperar 3 horas
     con_fechas = any(("rd" in x or "xd" in x) for x in previos[:300])
     completo = previos and "v0" in "".join(json.dumps(x) for x in previos[:20]) and con_fechas and hace_menos_de(prev_radar.get("generado") or "", HORAS_RADAR) and not nuevo_descubrir
     radar_sal = dict(prev_radar) if completo else None
     if not completo:
         try:
-            valores = radar(fx, previos, extra)
+            valores = radar(fx, previos, list(extra) + [(s, zona_pedida(s)) for s in pedidas])
             radar_sal = {"fecha": hoy, "generado": ahora(), "valores": valores} if valores else (prev_radar or None)
             print(f"radar: {len(valores)} empresas renovadas")
         except Exception as e:  # noqa: BLE001
@@ -1357,6 +1400,22 @@ def main(ruta_inst, dir_anterior, dir_salida):
             errores.append(f"radar: {e}")
             radar_sal = prev_radar or None
     if radar_sal and radar_sal.get("valores"):
+        # las pedidas nuevas, si no tocaba renovar el radar entero: solo sus fichas
+        hay = {x["s"] for x in radar_sal["valores"]}
+        for s in [s for s in pedidas if s not in hay][:40]:
+            try:
+                x = radar_ficha(s, zona_pedida(s), fx)
+                if x:
+                    radar_sal["valores"].append(x)
+            except Exception as e:  # noqa: BLE001
+                print("pedida sin ficha:", s, e)
+        pd = set(pedidas)
+        for x in radar_sal["valores"]:
+            if x.get("s") in pd:
+                x["pd"] = 1
+            else:
+                x.pop("pd", None)
+        radar_sal["pedidas"] = pedidas
         try:
             n = radar_precios(radar_sal["valores"], fx)
             radar_sal["precios"] = ahora()
