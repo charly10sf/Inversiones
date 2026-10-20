@@ -6,6 +6,9 @@ on:
     paths:
       - ".github/workflows/prueba-eventos.yml"
 
+permissions:
+  contents: write
+
 jobs:
   prueba:
     runs-on: ubuntu-latest
@@ -18,7 +21,8 @@ jobs:
       - run: pip install -r scripts/requirements.txt
       - name: Campos de resultados y dividendos
         run: |
-          python - <<'PY'
+          mkdir -p salida
+          python - <<'PY' > salida/eventos.txt 2>&1
           import json, yfinance as yf
           for s in ["AAPL", "MSFT", "NVDA", "KO", "O", "TTWO", "SAN.MC", "ITX.MC", "IBE.MC", "ASML.AS", "ALV.DE"]:
               try:
@@ -30,3 +34,13 @@ jobs:
               except Exception as e:
                   print(s, "error", e)
           PY
+      - name: Subir el resultado a la rama prueba-eventos
+        working-directory: salida
+        run: |
+          git init -q
+          git checkout -q -b prueba-eventos
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "prueba"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" prueba-eventos
