@@ -87,7 +87,8 @@ a:hover { text-decoration: underline; }
 .gta-top:hover { border-color: #FF3EA5; box-shadow: 0 0 20px rgba(255, 62, 165, 0.45); }
 .gta-top:focus-visible { outline: 2px solid #FF7DB8; outline-offset: 2px; }
 /* «VI» en letra de rótulo de neón de los ochenta, como los de Vice City (Yellowtail; no es la del logo del juego) */
-.gta-top-t { font-family: 'Yellowtail', 'Tilt Neon', var(--f); font-size: 19px; line-height: 1; letter-spacing: 0.01em; padding: 0 2px 2px 0; color: #FFE6F3; text-shadow: 0 0 4px rgba(255, 62, 165, 0.95), 0 0 12px rgba(255, 62, 165, 0.65), 0 0 22px rgba(255, 62, 165, 0.35); }
+.gta-top-t { font-family: 'Yellowtail', 'Tilt Neon', var(--f); font-size: 21px; line-height: 1; letter-spacing: 0.03em; padding: 0 3px 2px 1px; color: #FFF2F9; -webkit-text-stroke: 1.1px #FFD3EA; paint-order: stroke fill;
+  text-shadow: 0 0 1px #fff, 0 0 5px #FF4FAE, 0 0 10px rgba(255, 62, 165, 0.95), 0 0 18px rgba(255, 62, 165, 0.7), 0 0 30px rgba(255, 40, 140, 0.45); }
 .gta-top-d { font-family: 'Tilt Neon', var(--f); font-size: 14px; color: #FFB27A; text-shadow: 0 0 6px rgba(255, 140, 60, 0.75); font-variant-numeric: tabular-nums; }
 .gta-top.pulsa { animation: gtaPulsa 1.25s ease-in-out 4; }
 /* en el móvil, solo el mando y los días */
@@ -7256,6 +7257,21 @@ function curvaSuave(P) {
    y el mínimo marcados, y sin eje de cifras (la cifra es la de arriba). Al pasar el dedo, lo de después se apaga, la
    fecha sale abajo y opt.alMover recibe el punto (para la cifra grande); al soltar, todo vuelve a ahora */
 let grafHeroN = 0;
+/* la textura bajo la curva de Inicio:
+   ecos: la misma curva repetida hacia abajo, cada vez más tenue, como curvas de nivel;
+   barras: rayas finas verticales que se apagan hacia abajo;
+   grano: grano fino dorado, como de película, que se apaga hacia abajo */
+function texturaGraf(t, { id, W, H, curva, suelo, mt, color, paso }) {
+  if (t === 'barras') return `<rect class="gh-area gh-tex" x="0" y="0" width="${W}" height="${H}" fill="url(#${id}v)" mask="url(#${id}m)" opacity="0.75"/>`;
+  if (t === 'grano') return `<rect class="gh-area gh-tex" x="0" y="0" width="${W}" height="${H}" filter="url(#${id}n)" mask="url(#${id}m)"/>`;
+  if (t === 'ecos') {
+    const gap = paso + 8, n = Math.ceil((suelo - mt) / gap) + 2;
+    let e = '';
+    for (let k = 1; k <= n; k++) e += `<path d="${curva}" transform="translate(0 ${k * gap})" fill="none" style="stroke:${color}" stroke-width="0.9" opacity="${(0.4 * Math.pow(1 - k / (n + 1), 1.8)).toFixed(3)}"/>`;
+    return `<g class="gh-area gh-tex" clip-path="url(#${id}z)">${e}</g>`;
+  }
+  return '';
+}
 function grafHero(cont, series, opt = {}) {
   cont.innerHTML = '';
   const base = series[0] && series[0].datos;
@@ -7303,12 +7319,11 @@ function grafHero(cont, series, opt = {}) {
     <linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.46"/><stop offset="0.55" style="stop-color:${color};stop-opacity:0.12"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
     <linearGradient id="${id}t" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${W}" y2="0"><stop offset="0" style="stop-color:${color};stop-opacity:0.5"/><stop offset="0.7" style="stop-color:${color};stop-opacity:1"/><stop offset="1" style="stop-color:#F8DC9C;stop-opacity:1"/></linearGradient>
     <linearGradient id="${id}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.55"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
-    <pattern id="${id}p" width="${opt.trama || 6}" height="${opt.trama || 6}" patternUnits="userSpaceOnUse"><circle cx="${(opt.trama || 6) / 2}" cy="${(opt.trama || 6) / 2}" r="1.05" style="fill:${color}"/></pattern>
-    <pattern id="${id}q" width="${(opt.trama || 6) * 3}" height="${(opt.trama || 6) * 3}" patternUnits="userSpaceOnUse"><circle cx="${(opt.trama || 6) * 1.5}" cy="${(opt.trama || 6) * 1.5}" r="0.8" style="fill:var(--text-2)"/></pattern>
-    <linearGradient id="${id}mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.95"/><stop offset="0.65" stop-color="#fff" stop-opacity="0.25"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
-    <linearGradient id="${id}fg" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 10}" x2="0" y2="${suelo}"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.35" stop-color="#fff" stop-opacity="0.22"/><stop offset="1" stop-color="#fff" stop-opacity="0.1"/></linearGradient>
+    <linearGradient id="${id}mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.9"/><stop offset="0.7" stop-color="#fff" stop-opacity="0.2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <mask id="${id}m"><path d="${area}" fill="url(#${id}mg)"/></mask>
-    <mask id="${id}f"><rect x="0" y="${mt - 10}" width="${W}" height="${suelo - mt + 10}" fill="url(#${id}fg)"/></mask>
+    <clipPath id="${id}z"><path d="${area}"/></clipPath>
+    <pattern id="${id}v" width="${opt.trama || 6}" height="${H}" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="1.3" height="${H}" style="fill:${color}"/></pattern>
+    <filter id="${id}n" x="0" y="0" width="100%" height="100%"><feTurbulence type="fractalNoise" baseFrequency="0.95" numOctaves="2" stitchTiles="stitch" result="r"/><feColorMatrix in="r" type="matrix" values="0 0 0 0 0.89  0 0 0 0 0.71  0 0 0 0 0.37  0 0 0 2.2 -0.95"/></filter>
     <radialGradient id="${id}r"><stop offset="0" style="stop-color:${color};stop-opacity:0.28"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></radialGradient>
     <linearGradient id="${id}c" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 20}" x2="0" y2="${suelo}"><stop offset="0" style="stop-color:var(--text-2);stop-opacity:0"/><stop offset="0.3" style="stop-color:var(--text-2);stop-opacity:0.5"/><stop offset="1" style="stop-color:var(--text-2);stop-opacity:0.15"/></linearGradient>
     <filter id="${id}b" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="6.5"/></filter>
@@ -7318,8 +7333,6 @@ function grafHero(cont, series, opt = {}) {
     const xx = Math.min(Math.max(ex, borde), W - borde);
     g += `<text class="gh-eje" x="${xx.toFixed(1)}" y="${H - 9}" text-anchor="${xx <= borde + 1 ? 'start' : xx >= W - borde - 1 ? 'end' : 'middle'}">${esc(tx)}</text>`;
   }
-  // textura: una rejilla de puntos muy tenue de fondo
-  g += `<rect class="gh-rejilla" x="0" y="0" width="${W}" height="${suelo}" fill="url(#${id}q)" mask="url(#${id}f)"/>`;
   // la línea de donde empezó el periodo, muy tenue
   if (!opt.sinRef && refVis) g += `<line x1="0" x2="${W}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 5"/>`;
   // la misma curva en gris por debajo: es lo que se ve a la derecha del dedo
@@ -7330,7 +7343,7 @@ function grafHero(cont, series, opt = {}) {
   }
   g += `<g clip-path="url(#${id}k)">
     <path class="gh-area" d="${area}" fill="url(#${id}a)" opacity="0.6"/>
-    <rect class="gh-area gh-trama" x="0" y="0" width="${W}" height="${H}" fill="url(#${id}p)" mask="url(#${id}m)"/>
+    ${texturaGraf(opt.textura || window.TEXTURA_GRAF || 'ecos', { id, W, H, curva, suelo, mt, color, paso: opt.trama || 6 })}
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="10" opacity="0.45" filter="url(#${id}b)"/>
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="${opt.grueso || 2.8}" stroke-linejoin="round" stroke-linecap="round"/>
   </g>`;
