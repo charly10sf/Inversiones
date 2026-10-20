@@ -240,8 +240,9 @@ a:hover { text-decoration: underline; }
 .cabecera { display: grid; gap: 32px; margin-bottom: 52px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 1180px) { .cabecera { grid-template-columns: minmax(360px, 440px) minmax(0, 1fr); gap: 56px; align-items: start; } }
 .hero-lbl { color: var(--text-2); font-size: 14px; }
-.hero-num { font-weight: 700; font-size: clamp(50px, 13vw, 92px); line-height: 0.95; letter-spacing: -0.055em; margin: 6px 0 14px; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--text); }
-.hero-num span.dec { font-size: 0.42em; letter-spacing: -0.015em; color: var(--text-2); font-weight: 600; padding: 0 2px 0 3px; margin: 0; }
+.hero-num { font-weight: 750; font-size: clamp(54px, 16vw, 92px); line-height: 0.95; letter-spacing: -0.06em; margin: 6px 0 14px; white-space: nowrap; font-variant-numeric: tabular-nums; color: var(--text); }
+.hero-num > span:not(.dec) { background: linear-gradient(180deg, #FFFFFF 15%, #E6DCC6 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero-num span.dec { font-size: 0.4em; letter-spacing: -0.015em; color: var(--text-2); font-weight: 600; padding: 0 2px 0 3px; margin: 0; }
 .hero-num span { padding: 0 4px; margin: 0 -4px; }
 .kpis { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px 24px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--line); }
 .kpi { display: grid; gap: 2px; min-width: 0; }
@@ -1540,6 +1541,8 @@ table td.txt { white-space: normal; min-width: 260px; }
 .gh svg.mirando .gh-eje, .gh svg.mirando .gh-ext { opacity: 0; }
 .gh-fecha { position: absolute; bottom: 2px; transform: translateX(-50%); padding: 3px 10px; border-radius: 999px; background: var(--plane-3); border: 1px solid var(--line-2); color: var(--text); font-size: 12px; font-weight: 600; white-space: nowrap; pointer-events: none; z-index: 3; }
 .gh-fecha small { color: var(--text-2); font-weight: 500; font-size: 11.5px; margin-left: 6px; }
+/* el halo del punto de ahora no se corta en el borde de arriba de la gráfica */
+.gh svg { overflow: visible; }
 .gh-pulso { transform-box: fill-box; transform-origin: center; animation: ghLate 2.6s ease-out infinite; }
 @keyframes ghLate { from { transform: scale(1); opacity: 0.55; } to { transform: scale(3.8); opacity: 0; } }
 .gh svg.entra .gh-trazo { stroke-dasharray: var(--l); stroke-dashoffset: var(--l); animation: ghTraza 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) forwards; }
@@ -4573,6 +4576,7 @@ function parchear() {
       const viejo = parseFloat(el.dataset.n);
       el.textContent = b.txt;
       if (el.dataset.b === 'totalE' && !S.oculto && isFinite(viejo) && isFinite(b.n) && Math.abs(b.n - viejo) >= 1) contarHasta(el, viejo, b.n, b.txt);
+      if (el.dataset.b === 'totalE') setTimeout(encajarCifra, 1300);
       if (!S.oculto && DESTELLA.test(el.dataset.b) && isFinite(viejo) && isFinite(b.n) && Math.abs(b.n - viejo) > 1e-9) {
         el.classList.remove('sube', 'baja'); void el.offsetWidth; el.classList.add(b.n > viejo ? 'sube' : 'baja');
       }
@@ -7267,7 +7271,7 @@ function grafHero(cont, series, opt = {}) {
   const refVis = ref >= dmin - dr * 0.6 && ref <= dmax + dr * 0.6;
   if (refVis) vals.push(ref);
   const vmin = Math.min(...vals), vmax = Math.max(...vals), rango = vmax - vmin || Math.abs(vmax) * 0.02 || 1;
-  const lo = vmin - rango * 0.2, hi = vmax + rango * 0.06;
+  const lo = vmin - rango * 0.12, hi = vmax + rango * 0.05;
   const n = base.length, T = base.map((p) => tiempoDe(p.d)), t0 = T[0], t1 = T[n - 1] > t0 ? T[n - 1] : t0 + 1;
   const xt = (t) => ml + ((t - t0) / (t1 - t0)) * (W - ml - mr);
   const y = (v) => mt + (1 - (v - lo) / (hi - lo)) * (H - mt - mb);
@@ -7296,9 +7300,12 @@ function grafHero(cont, series, opt = {}) {
     todos.filter((t, k) => k % salto === 0).forEach((t) => ejes.push([xt(t), etq(new Date(t))]));
   } else for (let k = 0; k <= sitio; k++) { const tt = t0 + (k / sitio) * (t1 - t0); ejes.push([xt(tt), etq(new Date(tt))]); }
   let g = `<defs>
-    <linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.32"/><stop offset="0.6" style="stop-color:${color};stop-opacity:0.08"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
+    <linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.46"/><stop offset="0.55" style="stop-color:${color};stop-opacity:0.12"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
+    <linearGradient id="${id}t" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${W}" y2="0"><stop offset="0" style="stop-color:${color};stop-opacity:0.5"/><stop offset="0.7" style="stop-color:${color};stop-opacity:1"/><stop offset="1" style="stop-color:#F8DC9C;stop-opacity:1"/></linearGradient>
+    <linearGradient id="${id}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.55"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
+    <radialGradient id="${id}r"><stop offset="0" style="stop-color:${color};stop-opacity:0.28"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></radialGradient>
     <linearGradient id="${id}c" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 20}" x2="0" y2="${suelo}"><stop offset="0" style="stop-color:var(--text-2);stop-opacity:0"/><stop offset="0.3" style="stop-color:var(--text-2);stop-opacity:0.5"/><stop offset="1" style="stop-color:var(--text-2);stop-opacity:0.15"/></linearGradient>
-    <filter id="${id}b" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="5"/></filter>
+    <filter id="${id}b" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="6.5"/></filter>
     <clipPath id="${id}k"><rect class="gh-corte" x="0" y="0" width="${W}" height="${H}"/></clipPath>
   </defs>`;
   for (const [ex, tx] of ejes) {
@@ -7315,8 +7322,8 @@ function grafHero(cont, series, opt = {}) {
   }
   g += `<g clip-path="url(#${id}k)">
     <path class="gh-area" d="${area}" fill="url(#${id}a)"/>
-    <path class="gh-trazo" d="${curva}" fill="none" stroke="${color}" stroke-width="7" opacity="0.4" filter="url(#${id}b)"/>
-    <path class="gh-trazo" d="${curva}" fill="none" stroke="${color}" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>
+    <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="10" opacity="0.45" filter="url(#${id}b)"/>
+    <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="${opt.grueso || 2.8}" stroke-linejoin="round" stroke-linecap="round"/>
   </g>`;
   // el máximo y el mínimo del periodo (si no son el punto de ahora, que ya está arriba en grande)
   if (!opt.oculto) {
@@ -7329,7 +7336,7 @@ function grafHero(cont, series, opt = {}) {
     g += marca(iMax, true) + marca(iMin, false);
   }
   const [fx, fy] = P[n - 1];
-  g += `<g class="gh-fin"><circle class="gh-pulso" cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4" fill="${color}"/><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4.2" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
+  g += `<g class="gh-fin"><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${Math.min(80, H * 0.3).toFixed(0)}" fill="url(#${id}r)"/><line x1="${fx.toFixed(1)}" x2="${fx.toFixed(1)}" y1="${(fy + 6).toFixed(1)}" y2="${suelo}" stroke="url(#${id}h)" stroke-width="1.2"/><circle class="gh-pulso" cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4" fill="${color}"/><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4.2" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
   g += `<g class="gh-cruz" visibility="hidden"><line y1="${mt - 20}" y2="${suelo}" stroke="url(#${id}c)" stroke-width="1"/><circle r="11" fill="${color}" opacity="0.18"/><circle r="4.6" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
   g += `<rect class="zona" x="0" y="0" width="${W}" height="${H}" fill="transparent"/>`;
   const svg = document.createElementNS(NS, 'svg');
@@ -7436,7 +7443,7 @@ function dibujar(M) {
     };
     const movil = innerWidth < 760;
     const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
-    grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 300, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, ref: ref0 && ref0.v, alMover, animar });
+    grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, ref: ref0 && ref0.v, alMover, animar });
   }
   // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
   for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
@@ -12091,7 +12098,14 @@ const ABREV_MV = [
   [/\bPacific\b|\bPacífico\b/g, 'Pac.'], [/\bJapan\b|\bJapón\b/g, 'Jap.'], [/\bGlobal\b/g, 'Glob.'], [/\bSmall ?[Cc]aps?\b/g, 'Small C.'],
   [/\bPhysical\b/g, 'Phys.'], [/\bHoldings?\b|\bGroup\b|\bGrupo\b|\bplc\b|\bAG\b|\bSE\b/gi, ''],
 ];
+// la cifra grande, si no cabe (un patrimonio de siete cifras en un móvil estrecho), se encoge lo justo
+function encajarCifra() {
+  const n = $('#heroNum'); if (!n) return;
+  n.style.fontSize = '';
+  if (n.scrollWidth > n.clientWidth + 1) n.style.fontSize = `${(parseFloat(getComputedStyle(n).fontSize) * (n.clientWidth / n.scrollWidth) * 0.98).toFixed(1)}px`;
+}
 function encajarMovers() {
+  encajarCifra();
   const l = $('.hero-movers .mv-l'); if (!l) return;
   const ns = $$('.mv-nn', l);
   l.classList.remove('mv-sinfl', 'mv-peq');
