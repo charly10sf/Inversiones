@@ -46,6 +46,12 @@ public class Puente {
         }).start();
     }
 
+    /** un toque suave (la vibración de las teclas) al cambiar de pestaña; si el móvil la tiene quitada, nada */
+    @JavascriptInterface
+    public void toque() {
+        act.runOnUiThread(() -> act.getWindow().getDecorView().performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP));
+    }
+
     @JavascriptInterface
     public int version() {
         return BuildConfig.VERSION_CODE;
