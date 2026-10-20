@@ -4219,7 +4219,7 @@ function noticiasDeLoTuyo(M, max = 5) {
 }
 function htmlResumenDia(M) {
   const N = (S.precios && S.precios.noticias) || {}, MK = (S.precios && S.precios.mercados) || {}, inf = informeVisible(), ia = iaActual();
-  const hoyD = new Date(), fecha = hoyD.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  const hoyD = new Date(), fecha = hoyD.toLocaleDateString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   const mueven = [...M.filas].filter((f) => f.dia && Math.abs(f.dia) >= 1).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia)).slice(0, 3);
   const fichas = [['^IBEX', 'Ibex 35'], ['^STOXX50E', 'Euro Stoxx 50'], ['^GSPC', 'S&P 500'], ['BTC-EUR', 'Bitcoin']].filter(([k]) => MK[k] && MK[k].variacion_dia != null);
   const mercado = ((inf && inf.mercado) || []).slice(0, 3);
@@ -4230,7 +4230,7 @@ function htmlResumenDia(M) {
   const toca = (() => { try { const P = pasosRuta(M); return [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto && x.urgente)[0] || null; } catch (e) { return null; } })();
   const noticia = (n) => `<li><a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
   return `<div class="rdia">
-    <p class="rdia-fecha">${esc(fecha[0].toUpperCase() + fecha.slice(1))}</p>
+    <p class="rdia-fecha" data-no-trad>${esc(fecha[0].toUpperCase() + fecha.slice(1))}</p>
     <section class="rdia-car"><span class="k">Tu cartera hoy</span><b class="rdia-tot">${eur(M.total, 0)}</b><span class="${cls(M.dia)} rdia-dia">${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})</span>
       ${mueven.length ? `<div class="mv-l">${mueven.map((f) => `<span class="mv-c ${cls(f.dia)}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span>`).join('')}</div>` : ''}</section>
     ${ia && ia.titular ? `<section class="rdia-ia"><h3>${ICONOS.chispa}Lo que dice ${esc(nombreIA())}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
@@ -4238,7 +4238,7 @@ function htmlResumenDia(M) {
       ${mercado.length ? `<ul class="rdia-merc">${mercado.map((m) => `<li>${chipImpacto(m.impacto)}<span>${escIA(m.t)}</span></li>`).join('')}</ul>` : ''}</section>` : ''}
     ${tuyas.length ? `<section><h3>Noticias de lo tuyo</h3><ul class="rdia-not">${tuyas.map(noticia).join('')}</ul></section>` : ''}
     ${generales.length ? `<section><h3>De la bolsa</h3><ul class="rdia-not">${generales.map(noticia).join('')}</ul></section>` : ''}
-    ${regionales.length ? `<section><h3>En ${esc(conArticulo(comunidadUsuario()))}</h3><ul class="rdia-not">${regionales.map(noticia).join('')}</ul></section>` : ''}
+    ${regionales.length ? `<section><h3>${L('En', 'In')} ${esc(conArticulo(comunidadUsuario()))}</h3><ul class="rdia-not">${regionales.map(noticia).join('')}</ul></section>` : ''}
     ${prox.length ? `<section><h3>Hoy y mañana</h3><ul class="rdia-prox">${prox.map((e) => `<li><span class="ag-cd">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span><b>${tituloAg(e)}</b><small>${esc(e.s || '')}</small></span></li>`).join('')}</ul></section>` : ''}
   </div>`;
 }
@@ -6519,9 +6519,10 @@ function cambiarOrden(k) {
 const COMUNIDADES = [['andalucia', 'Andalucía'], ['aragon', 'Aragón'], ['asturias', 'Asturias'], ['baleares', 'Illes Balears'], ['canarias', 'Canarias'], ['cantabria', 'Cantabria'], ['clm', 'Castilla-La Mancha'], ['cyl', 'Castilla y León'], ['cataluna', 'Cataluña'], ['ceuta', 'Ceuta'], ['valencia', 'Comunitat Valenciana'], ['extremadura', 'Extremadura'], ['galicia', 'Galicia'], ['madrid', 'Comunidad de Madrid'], ['melilla', 'Melilla'], ['murcia', 'Región de Murcia'], ['navarra', 'Navarra'], ['paisvasco', 'País Vasco'], ['rioja', 'La Rioja']];
 const nombreComunidad = (c) => (COMUNIDADES.find(([k]) => k === c) || [])[1] || '';
 // para frases: «en la Comunidad de Madrid», «de la Región de Murcia»
-const conArticulo = (c) => ({ madrid: 'la Comunidad de Madrid', valencia: 'la Comunitat Valenciana', murcia: 'la Región de Murcia', baleares: 'Baleares' })[c] || nombreComunidad(c);
+const NOMBRE_CCAA_EN = { andalucia: 'Andalusia', aragon: 'Aragon', asturias: 'Asturias', baleares: 'the Balearic Islands', canarias: 'the Canary Islands', cantabria: 'Cantabria', clm: 'Castilla-La Mancha', cyl: 'Castile and León', cataluna: 'Catalonia', ceuta: 'Ceuta', valencia: 'the Valencian Community', extremadura: 'Extremadura', galicia: 'Galicia', madrid: 'the Community of Madrid', melilla: 'Melilla', murcia: 'the Region of Murcia', navarra: 'Navarre', paisvasco: 'the Basque Country', rioja: 'La Rioja' };
+const conArticulo = (c) => L(({ madrid: 'la Comunidad de Madrid', valencia: 'la Comunitat Valenciana', murcia: 'la Región de Murcia', baleares: 'Baleares' })[c] || nombreComunidad(c), NOMBRE_CCAA_EN[c] || nombreComunidad(c));
 const comunidadUsuario = () => (S.cartera && S.cartera.perfil && S.cartera.perfil.comunidad) || null;
-const opcionesComunidad = (sel) => `<option value="">Elige tu comunidad</option>${COMUNIDADES.map(([k, n]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${esc(n)}</option>`).join('')}`;
+const opcionesComunidad = (sel) => `<option value="">${L('Elige tu comunidad', 'Choose your region')}</option>${COMUNIDADES.map(([k, n]) => `<option value="${k}"${k === sel ? ' selected' : ''} data-no-trad>${esc(n)}</option>`).join('')}`;
 const TRAMOS_COMUN = [[6000, 0.19], [50000, 0.21], [200000, 0.23], [300000, 0.27], [Infinity, 0.30]];
 const TRAMOS_FORAL = {
   // Álava, Bizkaia y Gipuzkoa, la misma desde 2026 (NF 2/2025 de Bizkaia y las de las otras dos diputaciones)
@@ -6531,9 +6532,28 @@ const TRAMOS_FORAL = {
 };
 const tramosAhorro = (c = comunidadUsuario()) => TRAMOS_FORAL[c] || TRAMOS_COMUN;
 const pctTramo = (t) => fmtNum(t * 100, Math.round(t * 1000) % 10 ? 1 : 0);
-const textoTramos = (c = comunidadUsuario()) => { const T = tramosAhorro(c); let d = 0; return T.map(([h, t]) => { const x = h === Infinity ? `${pctTramo(t)} % por encima de ${fmtNum(d, 0)} €` : `${pctTramo(t)} % hasta ${fmtNum(h, 0)} €`; d = h; return x; }).join(', '); };
+const textoTramos = (c = comunidadUsuario(), en = false) => { const T = tramosAhorro(c); let d = 0; return T.map(([h, t]) => { const x = h === Infinity ? (en ? `${pctTramo(t)} % above ${fmtNum(d, 0)} €` : `${pctTramo(t)} % por encima de ${fmtNum(d, 0)} €`) : (en ? `${pctTramo(t)} % up to ${fmtNum(h, 0)} €` : `${pctTramo(t)} % hasta ${fmtNum(h, 0)} €`); d = h; return x; }).join(', '); };
 const tipoMarginal = (base) => { const T = tramosAhorro(); return (T.find(([h]) => base < h) || T[T.length - 1])[1]; };
 // donación de dinero de padres a hijos: [lo que se paga, requisitos, norma]
+const DONACIONES_EN = {
+  andalucia: ['A 99 % rebate on the tax: you pay almost nothing.', 'A public deed and proof of where the money comes from.'],
+  aragon: ['Up to 100,000 € is tax-free (once every 5 years), and a 99 % rebate if the taxable base is 500,000 € or less.', 'File on time; property must be in a deed.'],
+  asturias: ['A reduced 2 % rate up to 150,000 €.', 'A public deed and prior wealth of up to 402,678 €; otherwise, the general rate.'],
+  baleares: ['A 100 % deduction on the tax since July 2025: nothing to pay.', 'A public deed.'],
+  canarias: ['A 99.9 % rebate: you pay almost nothing.', 'A public deed.'],
+  cantabria: ['A 100 % rebate since 2024: nothing to pay.', 'The formal requirements of the regional law.'],
+  clm: ['A 95 % rebate up to 120,000 €, 90 % up to 240,000 € and 85 % above.', 'A public deed, proof of origin and keeping the gift for 5 years.'],
+  cyl: ['A 99 % rebate: you pay almost nothing.', 'A public deed and proof of where the money comes from.'],
+  cataluna: ['Reduced rates: 5 % up to 200,000 €, 7 % up to 600,000 € and 9 % above.', 'A public deed (or signing one within a month of the handover).'],
+  valencia: ['A 100,000 € allowance and a 99 % rebate: you pay almost nothing.', 'A public deed and proof of origin (up to 4,000 € a digitally signed document is enough).'],
+  extremadura: ['A 99 % rebate up to a 300,000 € base and 50 % between 300,000 and 600,000 €.', 'A public deed above 10,000 € (adding the previous three years) and proof of origin.'],
+  galicia: ['Reduced rates: 5 % up to 200,000 €, 7 % up to 600,000 € and 9 % above.', 'A public deed; without it, the general scale (5 to 18 %).'],
+  madrid: ['A 99 % rebate: you pay almost nothing.', 'A public document above 10,000 € (adding the previous three years) and proof of where the money comes from.'],
+  murcia: ['A 99 % deduction on the tax: you pay almost nothing.', 'A public deed and proof of where the money comes from.'],
+  navarra: ['Its own foral scale: between parents and children, 0.8 % to 8 %.', 'No deed requirement for the reduced rate.'],
+  paisvasco: ['A 1.5 % rate between parents and children, in all three provinces.', 'No deed requirement for the reduced rate.'],
+  rioja: ['A 99 % deduction on the tax, with no limit: you pay almost nothing.', 'A notarial document.'],
+};
 const DONACIONES = {
   andalucia: ['Bonificación del 99 % de la cuota: casi no se paga.', 'Escritura pública y que conste de dónde sale el dinero.', 'Ley 5/2021, art. 33 ter'],
   aragon: ['Hasta 100.000 € no se paga (una vez cada 5 años), y bonificación del 99 % si la base no pasa de 500.000 €.', 'Presentarla a tiempo; los inmuebles, en escritura.', 'DLeg 1/2005, arts. 132-2 y 132-6'],
@@ -6800,13 +6820,13 @@ function htmlFiscalComunidad() {
     <p>Dinos dónde vives y te digo lo que cambia para ti: en País Vasco y Navarra la escala del ahorro es otra, y lo que pagas si tus padres te ayudan con dinero (la entrada de un piso, por ejemplo) va de casi nada a miles de euros según la comunidad.</p>
     <label class="campo fis-ccaa-sel">Tu comunidad<select data-ccaa>${opcionesComunidad('')}</select></label></section>`;
   const d = DONACIONES[c], ns = noticiasComunidad(c, 3);
-  return `<section class="fis-ccaa" style="margin-top:44px" aria-labelledby="hCcaa"><div class="sec-cab"><h2 id="hCcaa">En ${esc(conArticulo(c))}</h2><button type="button" class="enlace" data-accion="ccaa-cambiar">Cambiar</button></div>
+  return `<section class="fis-ccaa" style="margin-top:44px" aria-labelledby="hCcaa"><div class="sec-cab"><h2 id="hCcaa">${L('En', 'In')} ${esc(conArticulo(c))}</h2><button type="button" class="enlace" data-accion="ccaa-cambiar">Cambiar</button></div>
     <div class="fis-como">
-      <div class="fis-c"><b>Tu escala del ahorro</b><small>ventas, dividendos e intereses</small><p>${TRAMOS_FORAL[c] ? `Régimen foral: ${textoTramos(c)}. Es la que usa GrowFolio en tus cálculos.` : 'La misma en toda España (la de arriba): la parte autonómica del ahorro no cambia de una comunidad a otra.'}</p></div>
-      ${d ? `<div class="fis-c"><b>Si tus padres te dan dinero</b><small>donación de padres a hijos</small><p>${esc(d[0])} ${esc(d[1])}</p><small class="fis-norma">${esc(d[2])}</small></div>` : `<div class="fis-c"><b>Si tus padres te dan dinero</b><small>donación de padres a hijos</small><p>En ${esc(conArticulo(c))} se aplica la norma estatal del impuesto de donaciones, con sus bonificaciones para residentes. Antes de una donación grande, mira la cifra exacta en la Agencia Tributaria.</p></div>`}
+      <div class="fis-c"><b>Tu escala del ahorro</b><small>ventas, dividendos e intereses</small><p>${TRAMOS_FORAL[c] ? L(`Régimen foral: ${textoTramos(c)}. Es la que usa GrowFolio en tus cálculos.`, `Foral regime: ${textoTramos(c, true)}. GrowFolio uses it in your figures.`) : 'La misma en toda España (la de arriba): la parte autonómica del ahorro no cambia de una comunidad a otra.'}</p></div>
+      ${d ? `<div class="fis-c"><b>Si tus padres te dan dinero</b><small>donación de padres a hijos</small><p>${esc(L(d[0], (DONACIONES_EN[c] || [])[0] || d[0]))} ${esc(L(d[1], (DONACIONES_EN[c] || [])[1] || d[1]))}</p><small class="fis-norma" data-no-trad>${esc(d[2])}</small></div>` : `<div class="fis-c"><b>Si tus padres te dan dinero</b><small>donación de padres a hijos</small><p>${L(`En ${esc(conArticulo(c))} se aplica la norma estatal del impuesto de donaciones, con sus bonificaciones para residentes. Antes de una donación grande, mira la cifra exacta en la Agencia Tributaria.`, `In ${esc(conArticulo(c))} the national gift tax rules apply, with their allowances for residents. Before a large gift, check the exact figure with the Spanish Tax Agency.`)}</p></div>`}
       <div class="fis-c"><b>Cómo hacerlo bien</b><small>para no perder la rebaja</small><p>Por transferencia (que se vea de dónde sale el dinero), con escritura ante notario cuando la comunidad la pide, y presentando el modelo 651 (o el de tu comunidad) en el mes siguiente. Las donaciones del mismo padre en tres años se suman.</p></div>
     </div>
-    ${ns.length ? `<h3 class="fis-ccaa-not">Noticias de ${esc(conArticulo(c))} que tocan tu dinero</h3>${htmlNoticias(ns, false, 3)}` : ''}
+    ${ns.length ? `<h3 class="fis-ccaa-not">${L(`Noticias de ${esc(conArticulo(c))} que tocan tu dinero`, `News from ${esc(conArticulo(c))} that affects your money`)}</h3>${htmlNoticias(ns, false, 3)}` : ''}
   </section>`;
 }
 async function ponerComunidad(c) {
@@ -6877,7 +6897,7 @@ function htmlFiscalGuia(M, fa, x) {
   return `
     <section style="margin-top:44px" aria-labelledby="hTram"><div class="sec-cab"><h2 id="hTram">Cuánto pagas: los tramos del ahorro</h2><span class="k">ganancias de ventas, dividendos e intereses de ${anio}</span></div>
       <div class="tramos2${nT > 6 ? ' muchos' : ''}">${tramos.map((t, i) => `<div class="tr2${t.tuyo ? ' tuyo' : ''}" style="--h:${(32 + (i * 68) / Math.max(1, nT - 1)).toFixed(0)}%"><i></i><b>${t.t} %</b><small>${t.hasta === Infinity ? `más de ${fmtNum(t.desde, 0)} €` : t.desde ? `${fmtNum(t.desde, 0)} a ${fmtNum(t.hasta, 0)} €` : `hasta ${fmtNum(t.hasta, 0)} €`}</small>${t.tuyo ? '<span>tú</span>' : ''}</div>`).join('')}</div>
-      <p class="nota">${TRAMOS_FORAL[comunidadUsuario()] ? `Es la escala foral de ${esc(nombreComunidad(comunidadUsuario()))}, distinta de la del resto de España. ` : ''}Cada tramo paga solo lo que cae dentro de él. Tu base del ahorro de ${anio} va por ${eur(fa.base, 0)}: ${eur(fa.cuota, 0)} de cuota. Las pérdidas de ventas se compensan con las ganancias del año y, si sobran, con hasta un 25 % de los dividendos e intereses; lo que quede, en los 4 años siguientes.</p>
+      <p class="nota">${TRAMOS_FORAL[comunidadUsuario()] ? `<span data-no-trad>${L(`Es la escala foral de ${esc(nombreComunidad(comunidadUsuario()))}, distinta de la del resto de España.`, `This is the foral scale of ${esc(conArticulo(comunidadUsuario()))}, different from the rest of Spain.`)}</span> ` : ''}Cada tramo paga solo lo que cae dentro de él. Tu base del ahorro de ${anio} va por ${eur(fa.base, 0)}: ${eur(fa.cuota, 0)} de cuota. Las pérdidas de ventas se compensan con las ganancias del año y, si sobran, con hasta un 25 % de los dividendos e intereses; lo que quede, en los 4 años siguientes.</p>
     </section>
     ${htmlFiscalComunidad()}
     <section style="margin-top:44px" aria-labelledby="hComo"><div class="sec-cab"><h2 id="hComo">Cómo tributa lo que tienes</h2></div>
@@ -7472,16 +7492,16 @@ function htmlPerfil(M) {
   const lectura = (() => {
     if (!e.reco) return '';
     const dif = e.pctBolsa - e.reco.pct;
-    const quien = [p.edad ? `${p.edad} años` : '', p.horizonte ? `el dinero ${textoHorizonte(p.horizonte)}` : '', p.riesgo ? RIESGO[p.riesgo][2].toLowerCase() : ''].filter(Boolean).join(', ');
+    const quien = (IDIOMA === 'en' ? [p.edad ? `${p.edad} years old` : '', p.horizonte ? `money needed ${trad(textoHorizonte(p.horizonte))}` : '', p.riesgo ? trad(RIESGO[p.riesgo][2]).toLowerCase() : ''] : [p.edad ? `${p.edad} años` : '', p.horizonte ? `el dinero ${textoHorizonte(p.horizonte)}` : '', p.riesgo ? RIESGO[p.riesgo][2].toLowerCase() : '']).filter(Boolean).join(', ');
     return `<div class="pf-lectura${Math.abs(dif) > 15 ? ' aviso' : ''}">
-      <div class="pf-medidor" role="img" aria-label="En bolsa: ${fmtNum(e.pctBolsa, 0)} %. Para tu perfil: entre ${e.reco.min} y ${e.reco.max} %"><span class="pf-rango" style="left:${e.reco.min}%;width:${e.reco.max - e.reco.min}%"></span><span class="pf-tu" style="left:${Math.min(100, e.pctBolsa).toFixed(1)}%"></span></div>
-      <div class="pf-medidor-ej"><span>0 %</span><span>100 % en bolsa</span></div>
-      <p><b>Para tu perfil${quien ? ` (${esc(quien)})` : ''}, lo normal es tener entre un ${e.reco.min} y un ${e.reco.max} % en bolsa.</b> Tú tienes un ${fmtNum(e.pctBolsa, 0)} %. ${dif > 15 ? 'Arriesgas más de lo que encaja contigo: en una caída fuerte lo notarías mucho. Lo que aportes, mejor a renta fija o monetario hasta acercarte.' : dif < -15 ? 'Vas más conservador de lo que te permite tu perfil: a largo plazo, más bolsa suele dar bastante más.' : 'Encaja.'}</p>
+      <div class="pf-medidor" role="img" aria-label="${L(`En bolsa: ${fmtNum(e.pctBolsa, 0)} %. Para tu perfil: entre ${e.reco.min} y ${e.reco.max} %`, `In stocks: ${fmtNum(e.pctBolsa, 0)} %. For your profile: between ${e.reco.min} and ${e.reco.max} %`)}"><span class="pf-rango" style="left:${e.reco.min}%;width:${e.reco.max - e.reco.min}%"></span><span class="pf-tu" style="left:${Math.min(100, e.pctBolsa).toFixed(1)}%"></span></div>
+      <div class="pf-medidor-ej"><span>0 %</span><span>${L('100 % en bolsa', '100 % in stocks')}</span></div>
+      <p>${L(`<b>Para tu perfil${quien ? ` (${esc(quien)})` : ''}, lo normal es tener entre un ${e.reco.min} y un ${e.reco.max} % en bolsa.</b> Tú tienes un ${fmtNum(e.pctBolsa, 0)} %.`, `<b>For your profile${quien ? ` (${esc(quien)})` : ''}, the usual is between ${e.reco.min} and ${e.reco.max} % in stocks.</b> You have ${fmtNum(e.pctBolsa, 0)} %.`)} <span>${dif > 15 ? 'Arriesgas más de lo que encaja contigo: en una caída fuerte lo notarías mucho. Lo que aportes, mejor a renta fija o monetario hasta acercarte.' : dif < -15 ? 'Vas más conservador de lo que te permite tu perfil: a largo plazo, más bolsa suele dar bastante más.' : 'Encaja.'}</span></p>
     </div>`;
   })();
   return `
     ${htmlPreguntasIA()}
-    ${vacio ? `<section class="pf-empieza">${dibujo('perfil')}<div><h2>Cuéntale a GrowFolio quién eres</h2><p>Tu edad, en qué andas, cuándo vas a necesitar el dinero y cuánto riesgo aguantas. Es un minuto y con eso la IA, las ideas y el Paso a paso te aconsejan a tu medida: no se invierte igual a los 24 que a los 60.</p><button class="btn pri" data-accion="perfil-guiado">Empezar</button></div></section>` : perfilIncompleto() ? `<section class="pf-empieza pf-medias"><div><h2>Tu perfil está a medias</h2><p>Te faltan ${[!perfil().edad && 'tu edad', !perfil().horizonte && 'cuándo necesitarás el dinero', !perfil().riesgo && 'cuánto riesgo aguantas'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' y $1')}. Sin eso, GrowIA te aconseja casi a ciegas.</p><button class="btn pri" data-accion="perfil-guiado">Terminarlo</button></div></section>` : ''}
+    ${vacio ? `<section class="pf-empieza">${dibujo('perfil')}<div><h2>Cuéntale a GrowFolio quién eres</h2><p>Tu edad, en qué andas, cuándo vas a necesitar el dinero y cuánto riesgo aguantas. Es un minuto y con eso la IA, las ideas y el Paso a paso te aconsejan a tu medida: no se invierte igual a los 24 que a los 60.</p><button class="btn pri" data-accion="perfil-guiado">Empezar</button></div></section>` : perfilIncompleto() ? `<section class="pf-empieza pf-medias"><div><h2>Tu perfil está a medias</h2><p>${L(`Te faltan ${[!perfil().edad && 'tu edad', !perfil().horizonte && 'cuándo necesitarás el dinero', !perfil().riesgo && 'cuánto riesgo aguantas'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' y $1')}. Sin eso, GrowIA te aconseja casi a ciegas.`, `Still missing: ${[!perfil().edad && 'your age', !perfil().horizonte && 'when you will need the money', !perfil().riesgo && 'how much risk you can take'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}. Without it, GrowIA is advising you almost blind.`)}</p><button class="btn pri" data-accion="perfil-guiado">Terminarlo</button></div></section>` : ''}
     <div class="pf-grid">
       ${vacio ? '' : `<section class="pf-card" aria-labelledby="hTu"><header><h2 id="hTu">Tú</h2><button class="enlace" data-accion="perfil">Editar</button></header>
         <dl class="pf-dl">${fila('Edad', p.edad ? `${p.edad} años` : '')}${fila('Vives en', nombreComunidad(p.comunidad))}${fila('Ahora mismo', situacionTxt(p.situacion))}${fila('Necesitarás la mayor parte', p.horizonte ? textoHorizonte(p.horizonte) : '')}${fila('Si cayera un 30 %', p.riesgo ? `${RIESGO[p.riesgo][0]} ${RIESGO[p.riesgo][1]}` : '')}${fila('Experiencia', EXPERIENCIA[p.experiencia])}${fila('Buscas', ESTILO[p.estilo])}${fila('Deudas', DEUDAS[p.deudas])}</dl>
@@ -7605,8 +7625,8 @@ function perfilGuiado(seguir = () => {}) {
   };
   const listo = () => {
     const r = bolsaRecomendada(d), e = S.M && S.M.total ? estadoPerfil(S.M) : null;
-    return `<div class="pg-listo">${ICONOS.ok}<h3>Listo${d.nombre ? `, ${esc(d.nombre)}` : ''}</h3>
-      ${r ? `<p>Para ti, lo normal es tener entre un <b>${r.min}</b> y un <b>${r.max} %</b> de tu dinero en bolsa${e ? `. Ahora tienes un ${fmtNum(e.pctBolsa, 0)} %` : ''}.</p>` : ''}
+    return `<div class="pg-listo">${ICONOS.ok}<h3>${L('Listo', 'Done')}${d.nombre ? `, ${esc(d.nombre)}` : ''}</h3>
+      ${r ? `<p>${L(`Para ti, lo normal es tener entre un <b>${r.min}</b> y un <b>${r.max} %</b> de tu dinero en bolsa${e ? `. Ahora tienes un ${fmtNum(e.pctBolsa, 0)} %` : ''}.`, `For you, the usual is to have between <b>${r.min}</b> and <b>${r.max} %</b> of your money in stocks${e ? `. You now have ${fmtNum(e.pctBolsa, 0)} %` : ''}.`)}</p>` : ''}
       <p>GrowIA, el Paso a paso y las ideas ya te aconsejan con esto. Lo puedes cambiar cuando quieras en Objetivos, donde están también tus límites y tus metas.</p></div>`;
   };
   const pintarPaso = () => {
@@ -7614,7 +7634,7 @@ function perfilGuiado(seguir = () => {}) {
     $('.pg-barra i', h.el).style.width = `${(Math.min(i, ultimo) / ultimo) * 100}%`;
     const fin = i >= ultimo, x = P[i];
     caja.innerHTML = fin ? listo() : `<h3 class="pg-q">${x.q}</h3>${x.sub ? `<p class="pg-sub">${x.sub}</p>` : ''}${cuerpo(x)}`;
-    $('.pg-cuenta', h.el).textContent = fin ? '' : `${i + 1} de ${ultimo}`;
+    $('.pg-cuenta', h.el).textContent = fin ? '' : L(`${i + 1} de ${ultimo}`, `${i + 1} of ${ultimo}`);
     $('.pg-atras', h.el).style.visibility = i > 0 && !fin ? 'visible' : 'hidden';
     const sig = $('.pg-sig', h.el), opcional = x && ['numeros', 'meta'].includes(x.k);
     sig.textContent = fin ? 'Ver mis objetivos' : x.k === 'meta' ? (meta.n || meta.importe ? 'Terminar' : 'Sin meta por ahora') : opcional && !(d.gastos_mes || d.ingresos_mes || d.deudas) ? 'Saltar' : 'Siguiente';
@@ -8715,16 +8735,16 @@ async function importarCapturas() {
       <div class="imp-lista">${filas.map((f, k) => { const i = f.id && S.inst[f.id]; return `<div class="imp-f${f.ok ? '' : ' off'}">
         <label class="imp-ck"><input type="checkbox" data-imp-ok="${k}"${f.ok ? ' checked' : ''}${f.id ? '' : ' disabled'}></label>
         <div class="imp-c">
-          ${i ? `<button type="button" class="imp-inst" data-imp-cambiar="${k}">${logo(i.dominio, i.corto || i.nombre)}<span class="busca-t"><b>${esc(etiquetaInst(i))}</b><small>${chipCotiza(i)}${f.como === 'nuevo' ? ' · nuevo, por ISIN' : ''}</small></span><span class="k">cambiar</span></button>` : `<div class="imp-sin" id="impBus${k}"></div>`}
-          <small class="imp-leido">Leído: ${esc(f.x.nombre || '?')}${f.x.isin ? ` · ${esc(f.x.isin)}` : ''}${f.x.valor ? ` · vale ${eur(f.x.valor, 0)}` : ''}</small>
-          ${f.g ? `<small class="imp-ops${f.cuadra ? '' : ' mal'}">${f.cuadra ? `${ICONOS.ok}Desde el ${fechaLarga(f.desde)}, con ${f.g.compras} ${f.g.compras === 1 ? 'compra' : 'compras'}: guardo cada lote para calcular bien tus ventas.` : f.g.otraMoneda ? `Va en ${esc(f.g.otraMoneda)}: uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.` : `Las operaciones no cuadran con lo que tienes (faltará algún movimiento antiguo): uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.`}</small>` : ''}
+          ${i ? `<button type="button" class="imp-inst" data-imp-cambiar="${k}">${logo(i.dominio, i.corto || i.nombre)}<span class="busca-t"><b>${esc(etiquetaInst(i))}</b><small>${chipCotiza(i)}${f.como === 'nuevo' ? L(' · nuevo, por ISIN', ' · new, by ISIN') : ''}</small></span><span class="k">cambiar</span></button>` : `<div class="imp-sin" id="impBus${k}"></div>`}
+          <small class="imp-leido" data-no-trad>${L('Leído', 'Read')}: ${esc(f.x.nombre || '?')}${f.x.isin ? ` · ${esc(f.x.isin)}` : ''}${f.x.valor ? ` · ${L('vale', 'worth')} ${eur(f.x.valor, 0)}` : ''}</small>
+          ${f.g ? `<small class="imp-ops${f.cuadra ? '' : ' mal'}" data-no-trad>${f.cuadra ? `${ICONOS.ok}${L(`Desde el ${fechaLarga(f.desde)}, con ${f.g.compras} ${f.g.compras === 1 ? 'compra' : 'compras'}: guardo cada lote para calcular bien tus ventas.`, `Since ${fechaCortaL(f.desde)} ${f.desde.slice(0, 4)}, with ${f.g.compras} ${f.g.compras === 1 ? 'purchase' : 'purchases'}: I keep each lot so your sales come out right.`)}` : f.g.otraMoneda ? L(`Va en ${esc(f.g.otraMoneda)}: uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.`, `It's in ${esc(f.g.otraMoneda)}: I use what you hold${f.desde ? ` and the date of your first purchase (${fechaCortaL(f.desde)} ${f.desde.slice(0, 4)})` : ''}.`) : L(`Las operaciones no cuadran con lo que tienes (faltará algún movimiento antiguo): uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.`, `The transactions don't match what you hold (some older movement must be missing): I use what you hold${f.desde ? ` and the date of your first purchase (${fechaCortaL(f.desde)} ${f.desde.slice(0, 4)})` : ''}.`)}</small>` : ''}
           <div class="imp-num">${selPlat(f.plat, k)}<label>Cuántas<input inputmode="decimal" data-imp-uds="${k}" value="${f.uds != null ? String(f.uds).replace('.', ',') : ''}"></label><label>Invertido (€)<input inputmode="decimal" data-imp-inv="${k}" value="${f.inv != null ? String(+f.inv.toFixed(2)).replace('.', ',') : ''}"></label></div>
         </div></div>`; }).join('')}
       ${efectivo.map((e, k) => `<div class="imp-f${e.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-ef="${k}"${e.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-inst">${logo(null, '€')}<span class="busca-t"><b>Efectivo</b><small>${esc(e.plat || '')}</small></span><span>${eur(e.importe)}</span></div></div></div>`).join('')}</div>
       ${ventasImp.length ? `<h3 class="imp-tit">Tus ventas</h3><p class="nota" style="margin:0 0 10px">Con su resultado por FIFO, como en la renta. Las marcadas van a tu historial y a Fiscalidad.</p>
-        <div class="imp-lista">${ventasImp.map((v, k) => `<div class="imp-f${v.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-v="${k}"${v.ok ? ' checked' : ''}${v.ya || !v.g.id ? ' disabled' : ''}></label><div class="imp-c"><div class="imp-vta"><span><b>${esc(v.g.id && S.inst[v.g.id] ? etiquetaInst(S.inst[v.g.id]) : v.g.x.nombre || '?')}</b><small>${fechaLarga(v.fecha)} · ${fmtNum(v.uds, 4)} por ${eur(v.importe, 2)}${v.ya ? ' · ya está en tu historial' : !v.g.id ? ' · empareja antes esta posición' : ''}</small></span><b class="${cls(v.resultado)}">${eurS(v.resultado, 0)}</b></div></div></div>`).join('')}</div>` : ''}
-      ${divsImp.length ? `<h3 class="imp-tit">Dividendos e intereses</h3><div class="imp-lista">${divsImp.map((d, k) => `<div class="imp-f${d.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-d="${k}"${d.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-vta"><span><b>${d.anio}: ${eur(d.bruto, 2)} en bruto</b><small>${d.n} cobros${d.ret ? ` · ${eur(d.ret, 2)} retenidos` : ''} · ${d.antes ? `en Fiscalidad tienes ${eur(d.antes, 2)}: lo cambio por esto` : 'lo apunto en los datos fiscales de ese año'}</small></span></div></div></div>`).join('')}</div>` : ''}
-      <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="button" class="btn pri" id="impGuardar">Añadir ${filas.filter((f) => f.ok).length + efectivo.filter((e) => e.ok).length + ventasImp.filter((v) => v.ok).length + divsImp.filter((d) => d.ok).length} a mi cartera</button></div>`;
+        <div class="imp-lista">${ventasImp.map((v, k) => `<div class="imp-f${v.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-v="${k}"${v.ok ? ' checked' : ''}${v.ya || !v.g.id ? ' disabled' : ''}></label><div class="imp-c"><div class="imp-vta"><span><b>${esc(v.g.id && S.inst[v.g.id] ? etiquetaInst(S.inst[v.g.id]) : v.g.x.nombre || '?')}</b><small data-no-trad>${L(`${fechaLarga(v.fecha)} · ${fmtNum(v.uds, 4)} por ${eur(v.importe, 2)}${v.ya ? ' · ya está en tu historial' : !v.g.id ? ' · empareja antes esta posición' : ''}`, `${fechaCortaL(v.fecha)} ${v.fecha.slice(0, 4)} · ${fmtNum(v.uds, 4)} for ${eur(v.importe, 2)}${v.ya ? ' · already in your history' : !v.g.id ? ' · match this position first' : ''}`)}</small></span><b class="${cls(v.resultado)}">${eurS(v.resultado, 0)}</b></div></div></div>`).join('')}</div>` : ''}
+      ${divsImp.length ? `<h3 class="imp-tit">Dividendos e intereses</h3><div class="imp-lista">${divsImp.map((d, k) => `<div class="imp-f${d.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-d="${k}"${d.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-vta"><span data-no-trad><b>${d.anio}: ${eur(d.bruto, 2)} ${L('en bruto', 'gross')}</b><small>${L(`${d.n} ${d.n === 1 ? 'cobro' : 'cobros'}${d.ret ? ` · ${eur(d.ret, 2)} retenidos` : ''} · ${d.antes ? `en Fiscalidad tienes ${eur(d.antes, 2)}: lo cambio por esto` : 'lo apunto en los datos fiscales de ese año'}`, `${d.n} ${d.n === 1 ? 'payment' : 'payments'}${d.ret ? ` · ${eur(d.ret, 2)} withheld` : ''} · ${d.antes ? `Taxes has ${eur(d.antes, 2)}: I'll replace it with this` : "I'll add it to that year's tax data"}`)}</small></span></div></div></div>`).join('')}</div>` : ''}
+      <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="button" class="btn pri" id="impGuardar" data-no-trad>${L('Añadir', 'Add')} ${filas.filter((f) => f.ok).length + efectivo.filter((e) => e.ok).length + ventasImp.filter((v) => v.ok).length + divsImp.filter((d) => d.ok).length} ${L('a mi cartera', 'to my portfolio')}</button></div>`;
     filas.forEach((f, k) => { if (!f.id) buscador($(`#impBus${k}`, h.el), (nid) => { f.id = nid; f.ok = true; if (f.g) { f.g.id = nid; for (const v of ventasImp) if (v.g === f.g) { v.ya = ventaYaApuntada(nid, v); v.ok = !v.ya; } } pintarRev(); }, { placeholder: `¿Cuál es "${f.x.nombre || ''}"? Busca por nombre o ISIN` }); });
     for (const el of $$('[data-imp-v]', rev)) el.onchange = () => { ventasImp[+el.dataset.impV].ok = el.checked; pintarRev(); };
     for (const el of $$('[data-imp-d]', rev)) el.onchange = () => { divsImp[+el.dataset.impD].ok = el.checked; pintarRev(); };
@@ -8809,10 +8829,10 @@ async function importarCapturas() {
       }
       ventasImp = R.grupos.flatMap((g) => g.ventas.filter((v) => v.completa && !g.otraMoneda).map((v) => { const ya = !!g.id && ventaYaApuntada(g.id, v); return { ...v, g, ya, ok: !!g.id && !ya }; }));
       divsImp = Object.entries(R.dividendos).filter(([a, d]) => d.bruto > 0 && +a >= new Date().getFullYear() - 1).map(([anio, d]) => ({ anio: +anio, ...d, antes: +(datosFiscales(+anio).rcm || 0), ok: +anio === new Date().getFullYear() })).sort((a, b) => b.anio - a.anio);
-      const pl = (n, a, b) => `${n} ${n === 1 ? a : b}`;
-      const ops = R.total ? ` y ${pl(R.total, 'operación', 'operaciones')} (${[R.compras && pl(R.compras, 'compra', 'compras'), R.ventas && pl(R.ventas, 'venta', 'ventas'), R.divs && pl(R.divs, 'dividendo o interés', 'dividendos o intereses')].filter(Boolean).join(', ')})` : '';
+      const pl = (n, a, b) => `${n} ${n === 1 ? a : b}`, en = IDIOMA === 'en';
+      const ops = R.total ? ` ${en ? 'and' : 'y'} ${pl(R.total, L('operación', 'transaction'), L('operaciones', 'transactions'))} (${[R.compras && pl(R.compras, L('compra', 'purchase'), L('compras', 'purchases')), R.ventas && pl(R.ventas, L('venta', 'sale'), L('ventas', 'sales')), R.divs && pl(R.divs, L('dividendo o interés', 'dividend or interest'), L('dividendos o intereses', 'dividends or interest'))].filter(Boolean).join(', ')})` : '';
       const hay = filas.length || efectivo.length || ventasImp.length || divsImp.length;
-      estado(hay ? `He encontrado ${filas.length} ${filas.length === 1 ? 'posición' : 'posiciones'}${efectivo.length ? ', efectivo' : ''}${ops}.` : 'No he encontrado posiciones ni operaciones. Prueba con la pantalla donde se ven todas tus inversiones o con el extracto de movimientos.', !hay);
+      estado(hay ? `${L('He encontrado', 'I found')} ${pl(filas.length, L('posición', 'position'), L('posiciones', 'positions'))}${efectivo.length ? L(', efectivo', ', cash') : ''}${ops}.` : L('No he encontrado posiciones ni operaciones. Prueba con la pantalla donde se ven todas tus inversiones o con el extracto de movimientos.', "I didn't find any positions or transactions. Try the screen that shows all your investments, or the transaction statement."), !hay);
       pintarRev();
     } catch (e) { estado(e.message, true); }
     ev.target.value = '';
@@ -10008,7 +10028,7 @@ const NOVEDADES = [
 ];
 const cmpVer = (a, b) => { const x = String(a || '0').split('.').map(Number), y = String(b || '0').split('.').map(Number); for (let i = 0; i < 3; i++) { const d = (x[i] || 0) - (y[i] || 0); if (d) return d; } return 0; };
 // día y hora de publicación de cada versión (la hora, desde la 0.1.17; las de antes salen del historial de GitHub)
-const fechaNov = (f, h) => { const d = deIso(f); return `${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}${h ? `, ${h}` : ''}`; };
+const fechaNov = (f, h) => { const d = deIso(f); return L(`${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}${h ? `, ${h}` : ''}`, `${MESES_EN[d.getMonth()].slice(0, 3)} ${d.getDate()}, ${d.getFullYear()}${h ? `, ${h}` : ''}`); };
 
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
@@ -10194,9 +10214,9 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}) {
     <div class="ix-cab"><span class="intro-marca" style="opacity:1"><img src="favicon.svg" alt="">GrowFolio</span><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
       <section class="ixn-heroe"><div class="ix-escena">
-        <p class="ixn-eti">${nuevas.length > 1 ? `Lo que te has perdido desde la ${esc(desde)}` : 'Lo nuevo'}</p>
+        <p class="ixn-eti" data-no-trad>${nuevas.length > 1 ? L(`Lo que te has perdido desde la ${esc(desde)}`, `What you've missed since ${esc(desde)}`) : L('Lo nuevo', "What's new")}</p>
         <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l) => `<span aria-hidden="true">${esc(l)}</span>`).join('')}</h1>
-        <div class="ix-lema"><h2>${esc(n0.t)}</h2><p>${fechaNov(n0.f, n0.h)} · ${cosas.length} ${cosas.length === 1 ? 'novedad' : 'novedades'}</p></div>
+        <div class="ix-lema"><h2>${esc(n0.t)}</h2><p><span>${fechaNov(n0.f, n0.h)}</span> · <span data-no-trad>${L(`${cosas.length} ${cosas.length === 1 ? 'novedad' : 'novedades'}`, `${cosas.length} new ${cosas.length === 1 ? 'thing' : 'things'}`)}</span></p></div>
         <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
       </div></section>
       ${cosas.map((c, k) => `<section class="ix-cap" data-lado="${k % 2 ? 'd' : 'i'}" data-color="${COLORES_NOV[k % COLORES_NOV.length]}">
@@ -10353,7 +10373,7 @@ async function pedirNota(intento = 0) {
   const dias = LS.get('inv-dias-uso', []).length;
   let nota = 0, enviada = false;
   const h = hoja('¿Qué te parece GrowFolio?', `<form class="nota-f" novalidate>
-      <p class="nota-intro">Llevas ${dias} días usándola. ¿Cuántas estrellas le das?</p>
+      <p class="nota-intro">${L(`Llevas ${dias} días usándola. ¿Cuántas estrellas le das?`, `You've used it on ${dias} days. How many stars would you give it?`)}</p>
       <div class="nota-ests" role="radiogroup" aria-label="Tu nota">${[1, 2, 3, 4, 5].map(est).join('')}</div>
       <p class="nota-dice" aria-live="polite"></p>
       <label class="campo nota-com" hidden><span class="nota-q"></span><textarea name="txt" rows="4" maxlength="2000"></textarea></label>
