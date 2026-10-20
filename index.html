@@ -11248,8 +11248,19 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.0';
+const VERSION = '0.3.0b';
 const NOVEDADES = [
+  { v: '0.3.0b', f: '2026-10-21', h: '01:04', t: 'El widget como la app y arreglos', cosas: [
+    { d: 'app', t: 'El widget, como la app', x: 'La cifra más gruesa y la curva con el mismo grano dorado, el trazo que se enciende hacia hoy y el halo en el punto de ahora. Llega con la app nueva de Android.' },
+    { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: '«Cómo vas», en Análisis', x: 'La tarjeta que te dice si vas bien sale ahora arriba de Análisis, justo encima de tus objetivos, y ya no en el Paso a paso.' },
+    { d: 'cifras', ir: { v: 'cartera', sel: '.hero-num' }, t: 'El patrimonio se enciende', x: 'Cuando cambia con los precios en directo, la cifra se pone un momento en verde si sube y en rojo si baja.' },
+  ], arreglos: [
+    'Al cambiar el patrimonio con los precios en directo desaparecían los euros de la cifra grande.',
+    'En las novedades, las últimas cifras del número de versión salían borrosas y movidas hasta que bajabas.',
+    'Una meta guardada varias veces (al repetir el perfil guiado) salía repetida en Análisis.',
+    'GrowIA podía hablar de una meta lejana como si estuviera cerca («rumbo a los 500.000 €»): ahora dice a qué distancia está.',
+    'Al tocar los botones de abajo, en Android salía un recuadro azul.',
+  ] },
   { v: '0.3.0', f: '2026-10-21', h: '00:50', t: 'Más sencilla y con más criterio', cosas: [
     { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar, .nav' }, t: 'Cinco sitios', x: 'Inicio va en el centro de la barra, más grande. A la izquierda, lo que haces tú: Pasos y Análisis, que ahora lleva tus objetivos. A la derecha, lo de fuera: Expertos y Mercados, que ahora lleva el calendario. Hacienda sale en Análisis cuando toca la renta; el resto del año, con un enlace al final.' },
     { d: 'tengo', ir: { v: 'cartera', sel: '#hPos', pos: true }, t: 'Tus posiciones, arriba', x: 'En Inicio, justo debajo del patrimonio. GrowIA va después y, en el móvil, más corta: su diagnóstico en tres líneas y las dos cosas que más urgen.' },
@@ -11273,7 +11284,6 @@ const NOVEDADES = [
     '3A, 5A y Máx enseñaban casi lo mismo que 1A.',
     'Un valor que aún no cotizaba cuando lo compraste (como HBX, que salió a bolsa en 2025) cortaba la gráfica en su primer día.',
     'Debajo de Cartera quedaba un hueco en blanco.',
-    'En las novedades, las últimas cifras del número de versión salían borrosas y movidas hasta que bajabas.',
   ] },
   { v: '0.2.3b', f: '2026-10-20', h: '20:58', t: 'Precios al día y avisos que se van', cosas: [
     { d: 'cifras', t: 'Los precios, al día de verdad', x: 'Entre semana, los precios se actualizan cada 20 minutos de la mañana a la noche, y el fin de semana cada 4 horas. Lo que acabas de añadir tiene precio en un rato.' },
