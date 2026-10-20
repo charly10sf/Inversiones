@@ -150,6 +150,7 @@ def main(ruta_cat, dir_anterior, dir_salida):
     for e in cat.get("valores", []):
         isin = (e.get("isin") or "").upper()
         cid = ("c-" + (isin or e.get("s", "")).lower()).replace("=", "").replace("^", "")
+        yn = None
         try:
             sim = e.get("s") or (prev.get(cid) or {}).get("s")
             try:
@@ -166,8 +167,8 @@ def main(ruta_cat, dir_anterior, dir_salida):
                 except Exception:  # noqa: BLE001
                     if not e.get("q"):
                         raise
+                    # (meta de yfinance es perezoso: copiarlo con dict() falla en «tradingPeriods»)
                     sim, _, s, meta, yn = serie_por_nombre(e["q"])
-                    meta = dict(meta, yn=yn)
             moneda = meta.get("currency") or "EUR"
             s_eur = a_euros(s, moneda, fx).dropna()
             if s_eur.empty:
@@ -186,8 +187,8 @@ def main(ruta_cat, dir_anterior, dir_salida):
             }
             if e.get("a"):
                 salida[cid]["a"] = e["a"]
-            if meta.get("yn"):
-                salida[cid]["yn"] = meta["yn"]  # el nombre que tiene en Yahoo, para comprobar que es el fondo bueno
+            if yn:
+                salida[cid]["yn"] = yn  # el nombre que tiene en Yahoo, para comprobar que es el fondo bueno
             with open(f"{dir_salida}/cat/{cid}.json", "w", encoding="utf-8") as f:
                 json.dump({"h": compacta(s_eur)}, f, separators=(",", ":"))
             print(f"ok   {cid:22s} {sim:16s} {salida[cid]['p']}")
