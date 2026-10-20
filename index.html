@@ -1898,6 +1898,12 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .t-pie .paso-mas { margin: 0; }
 .t-pie .paso-mas[open] { flex-basis: 100%; }
 .t-pie .ruta-acc { margin: 0; font-size: 13.5px; }
+.imp-ops { display: flex; gap: 6px; align-items: flex-start; color: var(--up); font-size: 12px; line-height: 1.4; }
+.imp-ops svg { flex: none; width: 14px; height: 14px; margin-top: 1px; }
+.imp-ops.mal { color: var(--muted); }
+.imp-vta { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.imp-vta span { display: grid; gap: 2px; min-width: 0; }
+.imp-vta small { color: var(--muted); font-size: 12px; }
 .imp-mas { margin-top: 4px; } .imp-mas > summary { cursor: pointer; color: var(--accent); font-size: 13px; } .imp-mas > span { display: block; margin-top: 4px; }
 .t-hecho { margin-left: auto; height: 34px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--plane-2); color: var(--text); font: 600 13.5px/1 var(--f); cursor: pointer; white-space: nowrap; }
 .t-hecho:hover { border-color: var(--up); color: var(--up); }
@@ -8298,7 +8304,7 @@ function operacion(tipo, id, sim, cand) {
       <label class="check" id="cEf"><input type="checkbox" name="efectivo"><span id="tEf"></span></label>
       <div class="calculo" id="calc"></div>
       <div class="error" id="errOp"></div>
-      <div class="fila-btns"><button type="button" class="btn izq enlace-imp" data-accion="importar">${ICONOS.recorte}Importar desde capturas</button><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri" id="bOp">Apuntar</button></div>
+      <div class="fila-btns"><button type="button" class="btn izq enlace-imp" data-accion="importar">${ICONOS.recorte}Importar de tu bróker</button><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri" id="bOp">Apuntar</button></div>
     </form>`, () => {
     if (registrada) return;
     const usados = new Set((S.cartera.posiciones || []).map((p) => p.instrumento));
@@ -8534,6 +8540,35 @@ function emparejar(x) {
   }
   return null;
 }
+/* Extractos en CSV, TXT o Excel: se leen aquí como texto (el Excel con SheetJS, que solo se baja si hace falta)
+   y van a GrowIA como texto; imágenes y PDF van tal cual. */
+const ES_TEXTO = /\.(csv|tsv|txt|qif|ofx|json)$/i, ES_HOJA = /\.(xlsx|xlsm|xls|ods)$/i;
+let xlsxCarga = null;
+function cargarXLSX() {
+  if (window.XLSX) return Promise.resolve(window.XLSX);
+  const urls = ['https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js', 'https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js'];
+  const una = (u) => new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = u; sc.onload = () => (window.XLSX ? res(window.XLSX) : rej(new Error('vacío'))); sc.onerror = () => { sc.remove(); rej(new Error('sin red')); }; document.head.appendChild(sc); });
+  return xlsxCarga || (xlsxCarga = una(urls[0]).catch(() => una(urls[1])).catch(() => { xlsxCarga = null; throw new Error('No se ha podido abrir el Excel (sin conexión). Prueba a exportarlo como CSV.'); }));
+}
+async function leerComoTexto(file) {
+  const buf = await file.arrayBuffer();
+  const t = new TextDecoder('utf-8').decode(buf), malas = (x) => (x.match(/\uFFFD/g) || []).length;
+  if (!malas(t)) return t;
+  const w = new TextDecoder('windows-1252').decode(buf);   // los CSV de bancos españoles suelen ir en Windows-1252
+  return malas(w) < malas(t) ? w : t;
+}
+const MAX_TEXTO_EXTRACTO = 200000;
+async function leerExtracto(file) {
+  let texto = null;
+  if (ES_HOJA.test(file.name)) {
+    const X = await cargarXLSX();
+    const wb = X.read(await file.arrayBuffer(), { type: 'array', cellDates: true });
+    texto = wb.SheetNames.map((n) => `--- Hoja «${n}» ---\n` + X.utils.sheet_to_csv(wb.Sheets[n], { FS: ';', blankrows: false, dateNF: 'yyyy-mm-dd' })).join('\n');
+  } else if (ES_TEXTO.test(file.name) || /^text\//.test(file.type)) texto = await leerComoTexto(file);
+  if (texto == null) return leerArchivo(file);
+  const cortado = texto.length > MAX_TEXTO_EXTRACTO;
+  return { texto: cortado ? texto.slice(0, MAX_TEXTO_EXTRACTO) : texto, cortado, nombre: file.name, data: '' };
+}
 /* una imagen grande se reduce (así pesa menos y Gemini la lee igual) */
 function leerArchivo(file) {
   return new Promise((res, rej) => {
@@ -8555,15 +8590,20 @@ function leerArchivo(file) {
     fr.readAsDataURL(file);
   });
 }
-const PEDIDO_IMPORTAR = `Estas imágenes o PDF son de la app o la web de un bróker, un banco o un exchange (por ejemplo MyInvestor, Trade Republic, Bitvavo, DEGIRO, Revolut, ING, Indexa…). Extrae TODAS las posiciones que se vean (acciones, ETF, fondos, cripto, oro…) y el efectivo disponible.
-No inventes nada: si un dato no se ve, pon null. Si una posición sale en varias imágenes, ponla una sola vez.
+const PEDIDO_IMPORTAR = `Estos archivos son de un bróker, un banco o un exchange (MyInvestor, Trade Republic, Bitvavo, DEGIRO, Revolut, ING, Interactive Brokers, Indexa, Openbank, Santander, BBVA, CaixaBank, Renta 4, eToro, Coinbase, Binance, Kraken…): capturas de la app, PDF de extractos o informes fiscales, o exportaciones en CSV o Excel.
+Saca de ellos:
+1. "posiciones": TODAS las posiciones que se tienen ahora, si se ven (acciones, ETF, fondos, cripto, oro…).
+2. "operaciones": si hay un listado de movimientos de inversión, cada uno: compras, ventas, suscripciones y reembolsos de fondos, traspasos entre fondos, dividendos e intereses. Ignora lo que no sea de inversiones (nóminas, recibos, tarjeta, bizum, transferencias entre cuentas).
+3. "efectivo": el saldo disponible, si se ve.
+No inventes nada: si un dato no está, pon null. Si algo sale en varios archivos o varias veces, ponlo una sola vez. Fechas como AAAA-MM-DD. Importes en euros: si una operación va en otra moneda y viene su cambio a euros, usa el de euros; si no viene, pon la moneda en "moneda".
 Responde solo con JSON, con números con punto decimal y sin símbolos:
-{"plataforma": "nombre de la app si se reconoce o null",
+{"plataforma": "nombre del bróker o banco si se reconoce o null",
  "posiciones": [{"nombre": "como aparece", "isin": "si se ve", "ticker": "si se ve", "tipo": "Acción|ETF|Fondo|Cripto|Oro|Otro", "cantidad": número de acciones, participaciones o unidades, "precio_medio": precio medio de compra por unidad en euros, "invertido": total invertido en euros, "valor": valor actual en euros, "plataforma": "app de esta posición si se distingue"}],
+ "operaciones": [{"fecha": "AAAA-MM-DD", "tipo": "compra|venta|traspaso_entrada|traspaso_salida|dividendo|interes", "nombre": "", "isin": "", "ticker": "", "tipoActivo": "Acción|ETF|Fondo|Cripto|Oro|Otro", "cantidad": unidades (sin signo), "precio": precio por unidad, "importe": total en euros sin signo, ya con comisiones (en una compra, lo que salió de la cuenta; en una venta, lo que entró), "comisiones": comisiones y tasas en euros, "retencion": impuesto retenido en euros (dividendos e intereses), "moneda": "EUR si no se dice", "plataforma": ""}],
  "efectivo": [{"plataforma": "", "importe": número}]}`;
 async function leerCapturas(archivos, alPaso) {
-  const partes = [...archivos.map((a) => ({ inlineData: { mimeType: a.mime, data: a.data } })), { text: PEDIDO_IMPORTAR }];
-  const cuerpo = { contents: [{ role: 'user', parts: partes }], generationConfig: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 8192 } };
+  const partes = [...archivos.map((a) => (a.texto != null ? { text: `Archivo «${a.nombre}»${a.cortado ? ' (cortado: es muy largo)' : ''}:\n${a.texto}` } : { inlineData: { mimeType: a.mime, data: a.data } })), { text: PEDIDO_IMPORTAR }];
+  const cuerpo = { contents: [{ role: 'user', parts: partes }], generationConfig: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 32768 } };
   let ultimo = null;
   for (const modelo of ordenIA(modeloVivo()).filter((m) => !agotadosIA().includes(m))) {
     alPaso(`Leyendo con ${MODELOS[modelo].n}…`);
@@ -8574,19 +8614,73 @@ async function leerCapturas(archivos, alPaso) {
     const j = await r.json();
     const txt = (((j.candidates || [])[0] || {}).content || {}).parts ? j.candidates[0].content.parts.map((x) => x.text || '').join('') : '';
     const o = extraerJSON(txt);
-    if (o && Array.isArray(o.posiciones)) return o;
+    if (o && (Array.isArray(o.posiciones) || Array.isArray(o.operaciones))) { o.posiciones = o.posiciones || []; o.operaciones = o.operaciones || []; return o; }
     ultimo = new Error('GrowIA no ha devuelto las posiciones. Prueba con capturas más nítidas.');
   }
   throw ultimo || new Error('No se pudo leer.');
 }
+/* De un listado de operaciones a posiciones: por cada cosa, sus compras como lotes (fecha y coste), las ventas por
+   FIFO con su resultado (para Fiscalidad) y los traspasos entre fondos, que se llevan su coste y su antigüedad, como
+   dice Hacienda. Los dividendos e intereses, sumados por año. */
+const ORDEN_OP = { traspaso_salida: 0, compra: 1, traspaso_entrada: 2, venta: 3, dividendo: 4, interes: 4 };
+function procesarOperaciones(ops, platGen) {
+  const cache = new Map(), grupos = new Map(), dividendos = {}, pool = [];
+  let sueltas = 0;
+  const clave = (o) => String(o.isin || '').toUpperCase().replace(/\s/g, '') || String(o.ticker || '').toUpperCase().trim() || normTxt(o.nombre || '');
+  const platDe = (o, i) => PLATAFORMAS.find((p) => normTxt(o.plataforma || '').includes(normTxt(p))) || o.plataforma || platGen || (i ? (i.clase === 'Cripto' ? 'Bitvavo' : /^Fondo/.test(i.tipo || '') ? 'MyInvestor' : 'Trade Republic') : 'Trade Republic');
+  const lista = (ops || []).filter((o) => o && /^\d{4}-\d{2}-\d{2}$/.test(String(o.fecha || '')) && o.tipo)
+    .map((o) => ({ ...o, tipo: String(o.tipo).toLowerCase().normalize('NFD').replace(/[^a-z_]/g, '') }))
+    .filter((o) => o.tipo in ORDEN_OP)
+    .sort((a, b) => (a.fecha < b.fecha ? -1 : a.fecha > b.fecha ? 1 : ORDEN_OP[a.tipo] - ORDEN_OP[b.tipo]));
+  const ordena = (ls) => ls.sort((a, b) => (a.f < b.f ? -1 : a.f > b.f ? 1 : 0));
+  for (const o of lista) {
+    const imp = +o.importe > 0 ? +o.importe : null, uds = +o.cantidad > 0 ? +o.cantidad : null, com = +o.comisiones > 0 ? +o.comisiones : 0;
+    if (o.tipo === 'dividendo' || o.tipo === 'interes') {
+      if (!imp) continue;
+      const d = (dividendos[o.fecha.slice(0, 4)] = dividendos[o.fecha.slice(0, 4)] || { bruto: 0, ret: 0, n: 0 });
+      d.bruto += imp; d.ret += +o.retencion > 0 ? +o.retencion : 0; d.n++;
+      continue;
+    }
+    const k = clave(o);
+    if (!uds || !k) { sueltas++; continue; }
+    if (!cache.has(k)) cache.set(k, emparejar({ nombre: o.nombre, isin: o.isin, ticker: o.ticker, tipo: o.tipoActivo }));
+    const m = cache.get(k), gk = m ? m.id : 'x:' + k;
+    let g = grupos.get(gk);
+    if (!g) { g = { id: m ? m.id : null, como: m ? m.como : null, x: { nombre: o.nombre, isin: o.isin, ticker: o.ticker, tipo: o.tipoActivo }, plat: platDe(o, m && S.inst[m.id]), lotes: [], ventas: [], compras: 0, falta: 0 }; grupos.set(gk, g); }
+    if (o.moneda && String(o.moneda).toUpperCase() !== 'EUR') g.otraMoneda = String(o.moneda).toUpperCase();
+    if (o.tipo === 'compra' || o.tipo === 'traspaso_entrada') {
+      const j = o.tipo === 'traspaso_entrada' ? pool.findIndex((t) => diasEntre(t.f, o.fecha) >= 0 && diasEntre(t.f, o.fecha) <= 15) : -1;
+      if (j >= 0) {
+        // traspaso: las participaciones nuevas se quedan con el coste y las fechas de las que salieron
+        const t = pool.splice(j, 1)[0], tot = sum(t.lotes, (l) => l.c) || 1;
+        for (const l of t.lotes) g.lotes.push({ f: l.f, u: uds * (l.c / tot), c: l.c });
+      } else {
+        const c = imp ?? (+o.precio > 0 ? uds * +o.precio + com : null);
+        if (c == null) { g.sinCoste = true; continue; }
+        g.lotes.push({ f: o.fecha, u: uds, c });
+      }
+      ordena(g.lotes); g.compras++;
+    } else {
+      const r = fifo(g.lotes, uds);
+      g.lotes = r.quedan;
+      if (r.falta > 1e-6) g.falta += r.falta;
+      if (o.tipo === 'traspaso_salida') { pool.push({ f: o.fecha, lotes: r.usados }); continue; }
+      const neto = imp ?? (+o.precio > 0 ? uds * +o.precio - com : null), completa = !(r.falta > 1e-6) && neto != null;
+      g.ventas.push({ fecha: o.fecha, uds, precio: +o.precio > 0 ? +o.precio : neto != null ? neto / uds : null, gastos: com, importe: neto, coste_vendido: completa ? r.coste : null, resultado: completa ? neto - r.coste : null, fifo: r.usados, completa });
+    }
+  }
+  for (const g of grupos.values()) { g.cantidad = sum(g.lotes, (l) => l.u); g.coste = sum(g.lotes, (l) => l.c); g.desde = g.lotes.length ? g.lotes[0].f : null; }
+  return { grupos: [...grupos.values()], dividendos, sueltas, total: lista.length, compras: lista.filter((o) => /compra|entrada/.test(o.tipo)).length, ventas: lista.filter((o) => o.tipo === 'venta').length, divs: lista.filter((o) => /dividendo|interes/.test(o.tipo)).length };
+}
+const ventaYaApuntada = (id, v) => (S.cartera.movimientos || []).some((m) => m.tipo === 'venta' && m.instrumento === id && m.fecha === v.fecha && Math.abs(+m.uds - v.uds) < 1e-6);
 async function importarCapturas() {
   await cargarAsesor();
   if (!AS.clave) { toast('Para leer las capturas hace falta activar GrowIA (gratis, con tu clave de Google): te abro dónde ponerla', 5000); abrirAsesor(); return; }
   const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
-  let hecho = false, filas = [], efectivo = [];
-  const h = hoja('Importar desde capturas', `<div class="imp-cont">
-      <p class="nota" style="margin:0">Haz capturas de la pantalla de posiciones de tu bróker (MyInvestor, Trade Republic, Bitvavo u otro) o sube el PDF del extracto. GrowIA las lee y aquí revisas lo que ha entendido antes de guardar nada. Las imágenes van de tu navegador a Google y no se guardan.</p>
-      <label class="imp-sube"><input type="file" id="impArch" accept="image/*,application/pdf" multiple hidden><span class="imp-sube-c">${ICONOS.recorte}<b>Elegir capturas o PDF</b><small>Puedes elegir varias a la vez</small></span></label>
+  let hecho = false, filas = [], efectivo = [], ventasImp = [], divsImp = [], resumenOps = null;
+  const h = hoja('Importar de tu bróker o banco', `<div class="imp-cont">
+      <p class="nota" style="margin:0">Sirve cualquier bróker, banco o exchange: capturas de la pantalla de posiciones, el PDF de un extracto o del informe fiscal, o la lista de movimientos exportada en CSV o Excel. GrowIA lo lee y aquí revisas lo que ha entendido antes de guardar nada. Con un listado de operaciones sabe además desde cuándo tienes cada cosa, lo que te costó cada compra y el resultado de tus ventas. Los archivos van de tu navegador a Google y no se guardan.</p>
+      <label class="imp-sube"><input type="file" id="impArch" accept="image/*,application/pdf,.csv,.tsv,.txt,.xlsx,.xls,.ods,text/csv" multiple hidden><span class="imp-sube-c">${ICONOS.recorte}<b>Elegir capturas, PDF, CSV o Excel</b><small>Puedes elegir varios a la vez</small></span></label>
       <div id="impEstado" class="imp-estado" aria-live="polite"></div>
       <div id="impRev"></div>
     </div>`, () => {
@@ -8600,7 +8694,7 @@ async function importarCapturas() {
   const estado = (t, mal) => { $('#impEstado', h.el).innerHTML = t ? `<span class="${mal ? 'down' : 'k'}">${esc(t)}</span>` : ''; };
   const pintarRev = () => {
     const rev = $('#impRev', h.el);
-    if (!filas.length && !efectivo.length) { rev.innerHTML = ''; return; }
+    if (!filas.length && !efectivo.length && !ventasImp.length && !divsImp.length) { rev.innerHTML = ''; return; }
     const plats = [...new Set([...PLATAFORMAS, ...filas.map((f) => f.plat), ...efectivo.map((e) => e.plat)].filter(Boolean))];
     const selPlat = (v, k) => `<select data-imp-plat="${k}">${plats.map((p) => `<option${p === v ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>`;
     rev.innerHTML = `<h3 class="imp-tit">Esto es lo que he leído</h3><p class="nota" style="margin:0 0 10px">Revisa cada una: si alguna no está bien emparejada, tócala para cambiarla. Lo que no marques no se guarda.</p>
@@ -8609,11 +8703,17 @@ async function importarCapturas() {
         <div class="imp-c">
           ${i ? `<button type="button" class="imp-inst" data-imp-cambiar="${k}">${logo(i.dominio, i.corto || i.nombre)}<span class="busca-t"><b>${esc(etiquetaInst(i))}</b><small>${chipCotiza(i)}${f.como === 'nuevo' ? ' · nuevo, por ISIN' : ''}</small></span><span class="k">cambiar</span></button>` : `<div class="imp-sin" id="impBus${k}"></div>`}
           <small class="imp-leido">Leído: ${esc(f.x.nombre || '?')}${f.x.isin ? ` · ${esc(f.x.isin)}` : ''}${f.x.valor ? ` · vale ${eur(f.x.valor, 0)}` : ''}</small>
+          ${f.g ? `<small class="imp-ops${f.cuadra ? '' : ' mal'}">${f.cuadra ? `${ICONOS.ok}Desde el ${fechaLarga(f.desde)}, con ${f.g.compras} ${f.g.compras === 1 ? 'compra' : 'compras'}: guardo cada lote para calcular bien tus ventas.` : f.g.otraMoneda ? `Va en ${esc(f.g.otraMoneda)}: uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.` : `Las operaciones no cuadran con lo que tienes (faltará algún movimiento antiguo): uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.`}</small>` : ''}
           <div class="imp-num">${selPlat(f.plat, k)}<label>Cuántas<input inputmode="decimal" data-imp-uds="${k}" value="${f.uds != null ? String(f.uds).replace('.', ',') : ''}"></label><label>Invertido (€)<input inputmode="decimal" data-imp-inv="${k}" value="${f.inv != null ? String(+f.inv.toFixed(2)).replace('.', ',') : ''}"></label></div>
         </div></div>`; }).join('')}
       ${efectivo.map((e, k) => `<div class="imp-f${e.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-ef="${k}"${e.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-inst">${logo(null, '€')}<span class="busca-t"><b>Efectivo</b><small>${esc(e.plat || '')}</small></span><span>${eur(e.importe)}</span></div></div></div>`).join('')}</div>
-      <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="button" class="btn pri" id="impGuardar">Añadir ${filas.filter((f) => f.ok).length + efectivo.filter((e) => e.ok).length} a mi cartera</button></div>`;
-    filas.forEach((f, k) => { if (!f.id) buscador($(`#impBus${k}`, h.el), (nid) => { f.id = nid; f.ok = true; pintarRev(); }, { placeholder: `¿Cuál es "${f.x.nombre || ''}"? Busca por nombre o ISIN` }); });
+      ${ventasImp.length ? `<h3 class="imp-tit">Tus ventas</h3><p class="nota" style="margin:0 0 10px">Con su resultado por FIFO, como en la renta. Las marcadas van a tu historial y a Fiscalidad.</p>
+        <div class="imp-lista">${ventasImp.map((v, k) => `<div class="imp-f${v.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-v="${k}"${v.ok ? ' checked' : ''}${v.ya || !v.g.id ? ' disabled' : ''}></label><div class="imp-c"><div class="imp-vta"><span><b>${esc(v.g.id && S.inst[v.g.id] ? etiquetaInst(S.inst[v.g.id]) : v.g.x.nombre || '?')}</b><small>${fechaLarga(v.fecha)} · ${fmtNum(v.uds, 4)} por ${eur(v.importe, 2)}${v.ya ? ' · ya está en tu historial' : !v.g.id ? ' · empareja antes esta posición' : ''}</small></span><b class="${cls(v.resultado)}">${eurS(v.resultado, 0)}</b></div></div></div>`).join('')}</div>` : ''}
+      ${divsImp.length ? `<h3 class="imp-tit">Dividendos e intereses</h3><div class="imp-lista">${divsImp.map((d, k) => `<div class="imp-f${d.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-d="${k}"${d.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-vta"><span><b>${d.anio}: ${eur(d.bruto, 2)} en bruto</b><small>${d.n} cobros${d.ret ? ` · ${eur(d.ret, 2)} retenidos` : ''} · ${d.antes ? `en Fiscalidad tienes ${eur(d.antes, 2)}: lo cambio por esto` : 'lo apunto en los datos fiscales de ese año'}</small></span></div></div></div>`).join('')}</div>` : ''}
+      <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="button" class="btn pri" id="impGuardar">Añadir ${filas.filter((f) => f.ok).length + efectivo.filter((e) => e.ok).length + ventasImp.filter((v) => v.ok).length + divsImp.filter((d) => d.ok).length} a mi cartera</button></div>`;
+    filas.forEach((f, k) => { if (!f.id) buscador($(`#impBus${k}`, h.el), (nid) => { f.id = nid; f.ok = true; if (f.g) { f.g.id = nid; for (const v of ventasImp) if (v.g === f.g) { v.ya = ventaYaApuntada(nid, v); v.ok = !v.ya; } } pintarRev(); }, { placeholder: `¿Cuál es "${f.x.nombre || ''}"? Busca por nombre o ISIN` }); });
+    for (const el of $$('[data-imp-v]', rev)) el.onchange = () => { ventasImp[+el.dataset.impV].ok = el.checked; pintarRev(); };
+    for (const el of $$('[data-imp-d]', rev)) el.onchange = () => { divsImp[+el.dataset.impD].ok = el.checked; pintarRev(); };
     for (const el of $$('[data-imp-ok]', rev)) el.onchange = () => { filas[+el.dataset.impOk].ok = el.checked; pintarRev(); };
     for (const el of $$('[data-imp-ef]', rev)) el.onchange = () => { efectivo[+el.dataset.impEf].ok = el.checked; pintarRev(); };
     for (const el of $$('[data-imp-plat]', rev)) el.onchange = () => { filas[+el.dataset.impPlat].plat = el.value; };
@@ -8630,8 +8730,22 @@ async function importarCapturas() {
       const ya = S.cartera.posiciones.find((p) => p.instrumento === f.id && p.plataforma === f.plat);
       const o = { cantidad: f.uds > 0 ? f.uds : null, coste: +(+coste).toFixed(2), fecha: hoyIso() };
       if (o.cantidad == null) o.valor_ref = f.x.valor;
+      if (f.desde) o.desde = f.desde;
+      // con las operaciones cuadradas (y sin tocar las cifras), cada compra como su lote: así las ventas salen por FIFO
+      const lotesOk = f.g && f.cuadra && Math.abs((f.uds || 0) - f.g.cantidad) <= Math.max(1e-6, f.g.cantidad * 0.02) && Math.abs((+f.inv || 0) - f.g.coste) <= Math.max(1, f.g.coste * 0.02);
+      if (lotesOk) { o.lotes = f.g.lotes.map((l) => ({ f: l.f, u: +l.u.toFixed(8), c: +l.c.toFixed(2) })); o.cantidad = +sum(o.lotes, (l) => l.u).toFixed(8); o.coste = +sum(o.lotes, (l) => l.c).toFixed(2); }
       if (ya) { delete ya.lotes; delete ya.estimada; delete ya.valor_ref; Object.assign(ya, o); }
       else S.cartera.posiciones.push({ id: nuevoId('p-'), instrumento: f.id, plataforma: f.plat, ...o });
+      n++;
+    }
+    for (const v of ventasImp.filter((x) => x.ok && x.g.id && !x.ya)) {
+      const pos = S.cartera.posiciones.find((p) => p.instrumento === v.g.id && p.plataforma === v.g.plat);
+      (S.cartera.movimientos = S.cartera.movimientos || []).push({ id: nuevoId('m-'), fecha: v.fecha, tipo: 'venta', instrumento: v.g.id, plataforma: v.g.plat, uds: +v.uds.toFixed(8), precio: v.precio != null ? +(+v.precio).toFixed(6) : null, gastos: +(v.gastos || 0).toFixed(2), importe: +v.importe.toFixed(2), coste_vendido: +v.coste_vendido.toFixed(2), resultado: +v.resultado.toFixed(2), fifo: v.fifo.map((l) => ({ f: l.f, u: +l.u.toFixed(8), c: +l.c.toFixed(2) })), importada: true, ...(pos ? { posicion: pos.id } : {}) });
+      n++;
+    }
+    for (const d of divsImp.filter((x) => x.ok)) {
+      S.cartera.fiscal = S.cartera.fiscal || {};
+      S.cartera.fiscal[d.anio] = { ...(S.cartera.fiscal[d.anio] || {}), rcm: +d.bruto.toFixed(2), retenido: +d.ret.toFixed(2) };
       n++;
     }
     for (const e of efectivo.filter((x) => x.ok)) {
@@ -8642,16 +8756,17 @@ async function importarCapturas() {
     }
     if (!n) { estado('No hay nada marcado para guardar.', true); return; }
     hecho = true;
-    await guardarYPintar('Importar desde capturas', h);
-    toast(`Listo: ${n} ${n === 1 ? 'cosa añadida' : 'cosas añadidas'}. Pon en cada ficha desde cuándo la tienes para ver cuánto te da al año.`, 6000);
+    await guardarYPintar('Importar de tu bróker o banco', h);
+    toast(`Listo: ${n} ${n === 1 ? 'cosa añadida' : 'cosas añadidas'}.${filas.some((f) => f.ok && !f.desde) ? ' Pon en cada ficha desde cuándo la tienes para ver cuánto te da al año.' : ''}`, 6000);
   };
   $('#impArch', h.el).onchange = async (ev) => {
     const files = [...ev.target.files].slice(0, 8);
     if (!files.length) return;
     try {
       estado(`Preparando ${files.length} ${files.length === 1 ? 'archivo' : 'archivos'}…`);
-      const arch = await Promise.all(files.map(leerArchivo));
-      if (arch.reduce((a, x) => a + x.data.length, 0) > 18e6) throw new Error('Pesan demasiado: sube menos capturas o un PDF más pequeño.');
+      const arch = await Promise.all(files.map(leerExtracto));
+      if (arch.reduce((a, x) => a + (x.data || '').length + (x.texto || '').length, 0) > 18e6) throw new Error('Pesan demasiado: sube menos capturas o un PDF más pequeño.');
+      if (arch.some((a) => a.cortado)) toast('Un archivo es muy largo: leo solo el principio. Si faltan cosas, súbelo por partes (por ejemplo, un año cada vez).', 6000);
       const o = await leerCapturas(arch, estado);
       const platGen = PLATAFORMAS.find((p) => normTxt(o.plataforma || '').includes(normTxt(p))) || (o.plataforma || null);
       filas = (o.posiciones || []).filter((x) => x && (x.nombre || x.isin)).map((x) => {
@@ -8664,7 +8779,26 @@ async function importarCapturas() {
         return { x, id: m ? m.id : null, como: m ? m.como : null, ok: !!m, plat, uds, inv };
       });
       efectivo = (o.efectivo || []).filter((e) => e && +e.importe > 0).map((e) => ({ plat: PLATAFORMAS.find((p) => normTxt(e.plataforma || '').includes(normTxt(p))) || e.plataforma || platGen || 'Trade Republic', importe: +e.importe, ok: true }));
-      estado(filas.length || efectivo.length ? `He encontrado ${filas.length} ${filas.length === 1 ? 'posición' : 'posiciones'}${efectivo.length ? ' y efectivo' : ''}.` : 'No he encontrado posiciones en esas imágenes. Prueba con la pantalla donde se ven todas tus inversiones.', !(filas.length || efectivo.length));
+      // las operaciones: lotes y fecha de cada posición, lo que solo sale en operaciones, las ventas y los dividendos
+      const R = resumenOps = procesarOperaciones(o.operaciones, platGen);
+      for (const f of filas) {
+        const g = f.id && R.grupos.find((x) => x.id === f.id && !x.usado);
+        if (!g) continue;
+        g.usado = true; f.g = g; f.desde = g.desde;
+        f.cuadra = !g.falta && !g.sinCoste && !g.otraMoneda && f.uds > 0 && Math.abs(g.cantidad - f.uds) <= Math.max(1e-6, f.uds * 0.02);
+        if (f.cuadra) f.inv = g.coste;
+      }
+      for (const g of R.grupos) {
+        if (g.usado || !(g.cantidad > 1e-6)) continue;
+        const bien = !g.falta && !g.sinCoste && !g.otraMoneda;
+        filas.push({ x: { nombre: g.x.nombre, isin: g.x.isin }, id: g.id, como: g.como, ok: !!g.id && bien, plat: g.plat, uds: +g.cantidad.toFixed(8), inv: +g.coste.toFixed(2), g, cuadra: bien, desde: g.desde });
+      }
+      ventasImp = R.grupos.flatMap((g) => g.ventas.filter((v) => v.completa && !g.otraMoneda).map((v) => { const ya = !!g.id && ventaYaApuntada(g.id, v); return { ...v, g, ya, ok: !!g.id && !ya }; }));
+      divsImp = Object.entries(R.dividendos).filter(([a, d]) => d.bruto > 0 && +a >= new Date().getFullYear() - 1).map(([anio, d]) => ({ anio: +anio, ...d, antes: +(datosFiscales(+anio).rcm || 0), ok: +anio === new Date().getFullYear() })).sort((a, b) => b.anio - a.anio);
+      const pl = (n, a, b) => `${n} ${n === 1 ? a : b}`;
+      const ops = R.total ? ` y ${pl(R.total, 'operación', 'operaciones')} (${[R.compras && pl(R.compras, 'compra', 'compras'), R.ventas && pl(R.ventas, 'venta', 'ventas'), R.divs && pl(R.divs, 'dividendo o interés', 'dividendos o intereses')].filter(Boolean).join(', ')})` : '';
+      const hay = filas.length || efectivo.length || ventasImp.length || divsImp.length;
+      estado(hay ? `He encontrado ${filas.length} ${filas.length === 1 ? 'posición' : 'posiciones'}${efectivo.length ? ', efectivo' : ''}${ops}.` : 'No he encontrado posiciones ni operaciones. Prueba con la pantalla donde se ven todas tus inversiones o con el extracto de movimientos.', !hay);
       pintarRev();
     } catch (e) { estado(e.message, true); }
     ev.target.value = '';
@@ -10261,7 +10395,7 @@ function pasoTour(dir = 1) {
     <div class="tour-txt">${p.logo ? '<img class="tour-logo" src="favicon.svg" alt="">' : ''}${p.dib ? `<div class="tour-dib">${dibujo(p.dib)}</div>` : ''}${p.nuevo ? `<span class="tour-nuevo">Nuevo en la ${esc(p.nuevo)}</span>` : ''}<h3>${esc(p.t)}</h3><p>${esc(p.x)}</p></div>
     <div class="tour-btns"><small class="tour-n">${TOURE.i + 1} de ${P.length}</small>
       ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}
-      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar capturas</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq pri" data-t="fin">${TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}
+      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar de tu bróker</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq pri" data-t="fin">${TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}
     </div>`;
   const txt = $('.tour-txt', caja);
   if (txt) { txt.classList.remove('entra-d', 'entra-i'); void txt.offsetWidth; txt.classList.add(dir < 0 ? 'entra-i' : 'entra-d'); }
