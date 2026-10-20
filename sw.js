@@ -64,7 +64,7 @@ self.addEventListener('notificationclick', function (e) {
   var hash = (e.notification.data && e.notification.data.hash) || '#cartera';
   var url = new URL('./' + hash, self.registration.scope).href;
   e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
-    for (var i = 0; i < cs.length; i++) { if ('focus' in cs[i]) { cs[i].navigate ? cs[i].navigate(url).catch(function () {}) : null; return cs[i].focus(); } }
+    for (var i = 0; i < cs.length; i++) { if ('focus' in cs[i]) { cs[i].postMessage({ type: 'inv-ir', hash: hash }); return cs[i].focus(); } }
     return self.clients.openWindow(url);
   }));
 });

@@ -7578,8 +7578,10 @@ function tocaPerfilGuiado() {
   if (!l || !l.t) return true;
   return Date.now() - l.t > (l.n <= 1 ? 2 : l.n === 2 ? 4 : 7) * 864e5;
 }
+// si este dispositivo tiene una cartera de antes sin revisar, primero eso (puede traer ya tu perfil)
+const copiaViejaPendiente = () => { try { return PERFIL_CUENTA && !LS.get('inv-disp-rev2') && !!(localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc')); } catch (e) { return false; } };
 function pedirPerfil(siSale, siNo) {
-  if (!tocaPerfilGuiado() || document.querySelector('.hoja-fondo, .tour, .estreno, .intro')) return siNo();
+  if (!tocaPerfilGuiado() || copiaViejaPendiente() || document.querySelector('.hoja-fondo, .tour, .estreno, .intro')) return siNo();
   perfilGuiado(siSale);
 }
 const METAS_RAPIDAS = [['Entrada de un piso', 'gastar', 40000, 5], ['Un coche', 'gastar', 20000, 3], ['Llegar a 100.000 €', 'llegar', 100000, null], ['Dejar de trabajar antes', 'llegar', 500000, null]];
@@ -13444,7 +13446,11 @@ async function entrar() {
 
 if ('serviceWorker' in navigator && location.protocol === 'https:') {
   navigator.serviceWorker.register('sw.js').catch(() => {});
-  navigator.serviceWorker.addEventListener('message', (e) => { if (e.data && e.data.type === 'inv-actualizada') avisoWebNueva(); });
+  navigator.serviceWorker.addEventListener('message', (e) => {
+    if (e.data && e.data.type === 'inv-actualizada') avisoWebNueva();
+    // al tocar un aviso con GrowFolio ya abierto: a lo que dice, sin recargar
+    if (e.data && e.data.type === 'inv-ir' && /^#[a-z]+$/.test(e.data.hash || '')) location.hash = e.data.hash;
+  });
 }
 iniciar();
 </script>
