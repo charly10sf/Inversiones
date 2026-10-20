@@ -1385,6 +1385,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .mas-t.on { border-color: rgba(226, 180, 95, 0.55); background: var(--accent-bg); }
 .mas-aj { background: none; }
 .cv-l { margin: 4px 0 12px; padding-left: 20px; display: grid; gap: 4px; }
+.cv-btns { flex-wrap: wrap; }
 .hola-nom { all: unset; font-weight: 700; cursor: pointer; border-bottom: 1px dashed transparent; }
 .hola-nom:hover, .hola-nom:focus-visible { border-bottom-color: currentColor; }
 .nov-ir { margin-top: 6px; font-size: 14px; font-weight: 600; color: var(--accent); }
@@ -9475,35 +9476,106 @@ async function pintarAjustesApp(el) {
     ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} y ábrela: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa "Pasar el token a la app" para que pueda guardar cambios sin escribirlo (necesita la versión 3 de la app o posterior).</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio.</li></ol>
     <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Descargar la app (${esc(nombreUlt(ult))})</a>${tok && android ? `<a class="btn peq" href="intent://token#Intent;scheme=inversiones;package=es.inversiones.app;S.t=${encodeURIComponent(tok)};S.browser_fallback_url=${encodeURIComponent(apk)};end">Pasar el token a la app</a>` : ''}</div>` : ''}`;
 }
-/* Quien usaba GrowFolio con la cartera en GitHub (la 0.1) y pasó a la cuenta una copia más vieja que la de
-   GitHub: si la de GitHub se abre con tu clave y tiene compras o ventas que no están en tu cuenta, ofrece
-   traerla (lo de tu perfil, como el nombre, se queda). La de tu cuenta queda guardada aparte, por si acaso.
-   A nadie más le sale: la de GitHub solo se abre con la contraseña de su dueño. */
-async function revisarCarteraVieja() {
-  if (!PERFIL_CUENTA || !S.cartera || !S.key || !S.salt || LS.get('inv-gh-revisada')) return;
-  let f = null, vieja = null;
-  try { f = await GH.leer('cartera.enc.json'); } catch (e) { return; }
-  try { if (!f || JSON.parse(f.texto).salt !== b64.enc(S.salt)) throw new Error('otra'); vieja = await descifrar(f.texto, S.key); }
-  catch (e) { LS.set('inv-gh-revisada', true); return; }
-  const ids = new Set((S.cartera.movimientos || []).map((m) => m.id));
-  const faltan = (vieja.movimientos || []).filter((m) => m.id && !ids.has(m.id));
-  if (!faltan.length) { LS.set('inv-gh-revisada', true); return; }
-  if (document.querySelector('.hoja-fondo, .tour, .estreno')) { setTimeout(revisarCarteraVieja, 4000); return; }
-  const lista = faltan.slice(-6).map((m) => `<li>${m.tipo === 'venta' ? 'Venta' : 'Compra'} de ${esc(nombreInst(m.instrumento))}, ${esc(fechaCorta(m.fecha))}</li>`).join('');
-  const h = hoja('Tu cartera de antes tiene más', `<div class="cv">
-    <p>La copia de tu cartera que había en GitHub (la de la 0.1) tiene ${faltan.length === 1 ? 'una operación que no está' : `${faltan.length} operaciones que no están`} en tu cuenta:</p>
-    <ul class="cv-l">${lista}</ul>
-    <p class="nota">Si la traes, tu cuenta queda igual que esa copia (con tu nombre y tu perfil de ahora). Lo que hay ahora en tu cuenta se guarda aparte en este dispositivo.</p>
-    <div class="fila-btns"><button type="button" class="btn" data-no>Dejar la de mi cuenta</button><button type="button" class="btn pri" data-si>Traerla</button></div>
-  </div>`, () => LS.set('inv-gh-revisada', true));
+/* Carteras de antes (0.1) que no llegaron a la cuenta. Al crear la cuenta se sube la del dispositivo donde la
+   creas; pero si usabas GrowFolio en más sitios (el móvil y el ordenador, cada uno con su copia) o la copia de
+   ese dispositivo era más vieja que la de GitHub, lo de los otros no estaba. Al abrir la cartera en cada
+   dispositivo se mira su copia de antes (y la de GitHub, la del dueño de la web) y, si tiene compras, ventas o
+   posiciones que no están en tu cuenta, se ofrece añadir lo que falta o usar esa copia.
+   Solo se abre sin preguntar si es de la misma contraseña que tu cuenta; si no, pide la contraseña de esa
+   copia: así nadie que entre en este dispositivo con otra cuenta puede quedarse con la cartera de otro. */
+function difCarteras(vieja, cuenta) {
+  const k = (p) => p.instrumento + '|' + p.plataforma;
+  const ids = new Set((cuenta.movimientos || []).map((m) => m.id)), pos = new Map((cuenta.posiciones || []).map((p) => [k(p), p]));
+  return {
+    movs: (vieja.movimientos || []).filter((m) => m.id && !ids.has(m.id)),
+    nuevas: (vieja.posiciones || []).filter((p) => !pos.has(k(p))),
+    distintas: (vieja.posiciones || []).filter((p) => pos.has(k(p)) && Math.abs((+p.cantidad || 0) - (+pos.get(k(p)).cantidad || 0)) > 1e-6),
+  };
+}
+async function revisarCarteraVieja(forzar) {
+  if (!PERFIL_CUENTA || !S.cartera || !S.key || !S.salt) return;
+  if (forzar) { LS.del('inv-gh-rev2'); LS.del('inv-disp-rev2'); }
+  if (!forzar && document.querySelector('.hoja-fondo, .tour, .estreno, .bloqueo')) { setTimeout(revisarCarteraVieja, 4000); return; }
+  const mia = b64.enc(S.salt);
+  // 1) la de GitHub (solo la del dueño: se abre con su clave)
+  if (!LS.get('inv-gh-rev2')) {
+    let f = null; try { f = await GH.leer('cartera.enc.json'); } catch (e) { f = undefined; }
+    if (f !== undefined) {
+      let v = null; try { if (f && JSON.parse(f.texto).salt === mia) v = await descifrar(f.texto, S.key); } catch (e) {}
+      if (v && hayDif(difCarteras(v, S.cartera))) return ofrecerCopia(v, 'github');
+      if (!v && f && forzar) return pedirPassCopia(f.texto, 'github');
+      LS.set('inv-gh-rev2', true);
+    }
+  }
+  // 2) la de este dispositivo
+  if (LS.get('inv-disp-rev2')) return;
+  // la de este dispositivo en la 0.1 (inv-local-enc); la copia en caché de GitHub (inv-cache-enc) solo si es de tu
+  // misma contraseña: en el móvil de un amigo esa copia es la del dueño de la web, y no hay que preguntarle por ella
+  const leer = (k) => { try { return JSON.parse(localStorage.getItem(k) || 'null'); } catch (e) { return null; } };
+  const sal = (t) => { try { return JSON.parse(t).salt; } catch (e) { return null; } };
+  const local = leer('inv-local-enc'), cache = leer('inv-cache-enc');
+  const texto = local || (cache && sal(cache) === mia ? cache : null);
+  if (!texto || (S.enc && texto === S.enc.texto)) { LS.set('inv-disp-rev2', true); return; }
+  let f; try { f = JSON.parse(texto); } catch (e) { LS.set('inv-disp-rev2', true); return; }
+  if (f.salt === mia) { let v = null; try { v = await descifrar(texto, S.key); } catch (e) {} if (v && hayDif(difCarteras(v, S.cartera))) return ofrecerCopia(v, 'dispositivo'); LS.set('inv-disp-rev2', true); return; }
+  // otra contraseña: se pregunta antes de abrirla
+  return pedirPassCopia(texto, 'dispositivo');
+}
+function pedirPassCopia(texto, fuente) {
+  const f = JSON.parse(texto), marca = fuente === 'github' ? 'inv-gh-rev2' : 'inv-disp-rev2';
+  const h = hoja(fuente === 'github' ? 'Tu cartera de GitHub' : 'Hay otra cartera en este dispositivo', `<form class="cv" id="fCv" novalidate>
+    <p>${fuente === 'github' ? 'La copia de la cartera que había en GitHub (la de la 0.1) usa otra contraseña que la de tu cuenta. Si es tuya, escríbela para ver qué tiene que no esté en tu cuenta.' : 'Este dispositivo tiene una cartera de antes de la 0.2 que no se ha subido a tu cuenta. Si es tuya y la usabas aquí, puede tener cosas que no están en tu cuenta.'}</p>
+    <label class="campo">Contraseña de esa cartera<input type="password" id="cvPass" autocomplete="current-password"><small>${fuente === 'github' ? 'La que usabas antes de tener cuenta.' : 'La que usabas en este dispositivo antes de tener cuenta.'}</small></label>
+    <div class="error" id="errCv"></div>
+    <div class="fila-btns"><button type="button" class="btn" data-no>No es mía o no hace falta</button><button type="submit" class="btn pri">Revisarla</button></div>
+  </form>`, () => LS.set(marca, true));
   $('[data-no]', h.el).onclick = () => h.cerrar();
-  $('[data-si]', h.el).onclick = async () => {
-    LS.set('inv-cuenta-descartada', { texto: S.enc && S.enc.texto, cuando: new Date().toISOString(), por: 'github' });
-    S.cartera = { ...vieja, perfil: { ...(vieja.perfil || {}), ...(S.cartera.perfil || {}) } };
-    sumarInstPropios();
-    h.cerrar(true); LS.set('inv-gh-revisada', true);
-    await guardarCartera('Traer la cartera de GitHub'); pintar();
-    toast('Traída tu cartera de GitHub, con las operaciones que faltaban', 6000);
+  $('#fCv', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const pw = $('#cvPass', h.el).value; if (!pw) return;
+    const b = $('#fCv .btn.pri', h.el); b.disabled = true; b.textContent = 'Comprobando…';
+    try {
+      const key = await derivarClave(pw, b64.dec(f.salt), f.iter || 600000), v = await descifrar(texto, key);
+      h.cerrar(true);
+      if (hayDif(difCarteras(v, S.cartera))) ofrecerCopia(v, fuente);
+      else { LS.set(marca, true); toast('Esa cartera no tiene nada que no esté ya en tu cuenta', 5000); }
+    } catch (e) { b.disabled = false; b.textContent = 'Revisarla'; $('#errCv', h.el).textContent = 'Esa contraseña no abre esa cartera.'; }
+  };
+}
+const hayDif = (d) => d.movs.length || d.nuevas.length || d.distintas.length;
+function ofrecerCopia(vieja, fuente) {
+  const d = difCarteras(vieja, S.cartera), marca = fuente === 'github' ? 'inv-gh-rev2' : 'inv-disp-rev2';
+  const n = (id) => esc(nombreInst(id));
+  const li = [
+    ...d.movs.slice(-8).map((m) => `<li>${m.tipo === 'venta' ? 'Venta' : 'Compra'} de ${n(m.instrumento)}, ${esc(fechaCorta(m.fecha))}</li>`),
+    ...d.nuevas.slice(0, 8).map((p) => `<li>${n(p.instrumento)} en ${esc(p.plataforma || '')}${p.cantidad != null ? `: ${fmtNum(p.cantidad, 4)}` : ''}</li>`),
+    ...d.distintas.slice(0, 8).map((p) => `<li>${n(p.instrumento)} en ${esc(p.plataforma || '')}: ${fmtNum(p.cantidad, 4)} en esta copia</li>`),
+  ].join('');
+  const h = hoja('Tu cartera de antes tiene más', `<div class="cv">
+    <p>${fuente === 'github' ? 'La copia de tu cartera que había en GitHub (la de la 0.1)' : 'La cartera que usabas en este dispositivo antes de la 0.2'} tiene cosas que no están en tu cuenta:</p>
+    <ul class="cv-l">${li}</ul>
+    <p class="nota"><b>Añadir lo que falta</b> suma a tu cuenta esas compras, ventas y posiciones sin tocar lo que ya tienes. <b>Usar esta copia</b> deja tu cuenta igual que ella (con tu nombre y tu perfil de ahora): mejor si esta es la más reciente. Lo que hay ahora en tu cuenta se guarda aparte en este dispositivo.</p>
+    <div class="fila-btns cv-btns"><button type="button" class="btn" data-no>Dejar mi cuenta como está</button><button type="button" class="btn" data-anadir>Añadir lo que falta</button><button type="button" class="btn pri" data-usar>Usar esta copia</button></div>
+  </div>`, () => LS.set(marca, true));
+  $('[data-no]', h.el).onclick = () => h.cerrar();
+  const aplicar = async (nueva, aviso) => {
+    LS.set('inv-cuenta-descartada', { texto: S.enc && S.enc.texto, cuando: new Date().toISOString(), por: fuente });
+    S.cartera = nueva; sumarInstPropios();
+    h.cerrar(true); LS.set(marca, true);
+    await guardarCartera(fuente === 'github' ? 'Traer la cartera de GitHub' : 'Traer la cartera de este dispositivo'); pintar();
+    toast(aviso, 6000);
+    setTimeout(revisarCarteraVieja, 1500);
+  };
+  $('[data-usar]', h.el).onclick = () => aplicar({ ...vieja, perfil: { ...(vieja.perfil || {}), ...(S.cartera.perfil || {}) } }, 'Tu cuenta tiene ya esa copia, con tu nombre y tu perfil de ahora');
+  $('[data-anadir]', h.el).onclick = () => {
+    const c = JSON.parse(JSON.stringify(S.cartera)), kp = (p) => p.instrumento + '|' + p.plataforma;
+    c.movimientos = [...(c.movimientos || []), ...d.movs];
+    c.posiciones = [...(c.posiciones || []), ...d.nuevas.map((p) => ({ ...p, id: (c.posiciones || []).some((x) => x.id === p.id) ? nuevoId('p-') : p.id }))];
+    const pl = new Set((c.efectivo || []).map((e) => e.plataforma)); c.efectivo = [...(c.efectivo || []), ...(vieja.efectivo || []).filter((e) => !pl.has(e.plataforma))];
+    const ka = (a) => a.instrumento + '|' + a.plataforma + '|' + a.dia, ap = new Set((c.aportaciones || []).map(ka)); c.aportaciones = [...(c.aportaciones || []), ...(vieja.aportaciones || []).filter((a) => !ap.has(ka(a)))];
+    const ip = new Set((c.inst_propios || []).map((i) => i.id)); c.inst_propios = [...(c.inst_propios || []), ...(vieja.inst_propios || []).filter((i) => !ip.has(i.id))];
+    void kp;
+    aplicar(c, 'Añadido a tu cuenta lo que faltaba');
   };
 }
 /* cómo quieres que te llame GrowFolio: va en tu perfil cifrado (el mismo en todos tus dispositivos) */
@@ -9532,7 +9604,8 @@ function abrirAjustes() {
     <div class="aj-cab"><img src="favicon.svg" alt=""><div><b>GrowFolio</b><small>Versión ${VERSION} alfa, ${PERFIL_CUENTA ? 'con la cartera guardada en tu cuenta' : PERFIL_LOCAL ? 'con la cartera guardada en este dispositivo' : 'con la cartera guardada en GitHub'}</small></div><button class="btn peq" id="aNov" data-cerrar>${ICONOS.chispa}Novedades</button></div>
     ${PERFIL_CUENTA ? `<h2 class="aj-grupo">Tu cuenta</h2><div class="aj-caja">
       <div class="seccion-ed"><h3>${ICONOS.perfil}${esc(nombreUsuario() || 'Tu cuenta')}</h3><p class="nota" style="margin:0">${FB.user && FB.user.email ? `${esc(FB.user.email)}, ` : ''}${FB.user && (FB.user.providerData || []).some((x) => x.providerId === 'google.com') ? 'con Google' : 'con correo y contraseña'}. Tu cartera se guarda cifrada en tu cuenta y se sincroniza sola entre tus dispositivos.</p>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNombre">${ICONOS.perfil}Cambiar nombre</button><button class="btn peq" id="aSalir">Cerrar sesión</button></div></div></div>`
+      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNombre">${ICONOS.perfil}Cambiar nombre</button><button class="btn peq" id="aSalir">Cerrar sesión</button></div></div>
+      <button class="aj-fila" id="aVieja">${ICONOS.cartera}<span><b>Recuperar tu cartera de antes</b><small>Si en la 0.1 tenías compras, ventas o posiciones que no están en tu cuenta (en GitHub o en este dispositivo).</small></span><i class="aj-flecha" aria-hidden="true"></i></button></div>`
     : `<h2 class="aj-grupo">Tu cuenta</h2><div class="aj-caja"><button class="aj-fila" id="aCuenta">${ICONOS.perfil}<span><b>Guarda tu cartera en una cuenta</b><small>Con Google o con tu correo: la tendrás en el móvil, en el ordenador y en la app, cifrada igual que ahora.</small></span><i class="aj-flecha" aria-hidden="true"></i></button></div>`}
     <h2 class="aj-grupo">General</h2>
     <div class="aj-caja">
@@ -9635,6 +9708,7 @@ function abrirAjustes() {
     await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
   if ($('#aSalir', h.el)) $('#aSalir', h.el).onclick = () => cerrarSesion();
   if ($('#aNombre', h.el)) $('#aNombre', h.el).onclick = () => { h.cerrar(true); cambiarNombre(); };
+  if ($('#aVieja', h.el)) $('#aVieja', h.el).onclick = async () => { h.cerrar(true); const antes = document.querySelectorAll('.hoja').length; await revisarCarteraVieja(true); setTimeout(() => { if (document.querySelectorAll('.hoja').length <= antes) toast('No hay ninguna cartera de antes con cosas que falten en tu cuenta', 5000); }, 2500); };
   if ($('#aCuenta', h.el)) $('#aCuenta', h.el).onclick = () => cambiarPerfil('cuenta');
   $('#aOlvidar', h.el).onclick = async () => {
     if (PERFIL_CUENTA) { if (confirm('¿Cerrar la sesión y borrar de este dispositivo la clave y la copia? Tu cartera sigue en tu cuenta.')) cerrarSesion(); return; }
