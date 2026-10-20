@@ -4044,6 +4044,16 @@ function vistaCartera(M) {
   </div>`}`;
 }
 
+function refrescarToca() {
+  if (S.vista !== 'cartera' || !S.cartera) return;
+  let html; try { html = htmlToca(S.M || calcular()); } catch (e) { return; }
+  for (const el of $$('#vista .toca')) {
+    const donde = el.classList.contains('en-evo') ? 'evo' : 'hero';
+    const t = document.createElement('div');
+    t.innerHTML = html.replace('class="toca ', `class="toca en-${donde} `).replace(/hToca/g, 'hToca-' + donde);
+    if (t.firstElementChild) el.replaceWith(t.firstElementChild); else el.remove();
+  }
+}
 /* Lo primero de Cartera, debajo del patrimonio: lo que dice GrowFolio IA (su diagnóstico de una frase y sus notas)
    y lo que toca hacer ahora, sacado del paso a paso, con su botón para marcarlo hecho sin salir de aquí */
 function htmlToca(M) {
@@ -4055,7 +4065,6 @@ function htmlToca(M) {
   const recien = todos.filter((x) => x.hecho && hechos[x.hechoK] === hoy);
   const v = [...pend.filter((x) => x.urgente), ...pend.filter((x) => !x.urgente)].slice(0, 3).concat(recien.slice(0, 2));
   const ia = iaActual();
-  if (!v.length && !ia) return '';
   let cab = '', notas = '', tit = '';
   if (ia) {
     const vIA = valoresIA(M), f = String(ia.fecha || ''), d = new Date(f.length > 10 ? f : f + 'T12:00:00'), dias = diasEntre(iso(d), hoy);
@@ -4064,8 +4073,13 @@ function htmlToca(M) {
     cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>${esc(cuando)}${IA.generando ? ' · revisándolo ahora' : ''}</small></div><a class="enlace acento" href="#analisis">Ver el análisis</a></div>`;
     tit = ia.titular ? `<p class="iac-tit">${rellenarIA(ia.titular, vIA)}</p>` : '';
     notas = (ia.puntuaciones || []).length ? `<div class="iac-notas">${ia.puntuaciones.slice(0, 5).map((x) => { const n = Math.max(0, Math.min(5, +x.nota || 0)); return `<span class="iac-nota" title="${esc(x.k)}: ${n} de 5"><small>${esc(/^riesgo$/i.test(x.k) ? 'Riesgo' : x.k)}</small><span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span></span>`; }).join('')}</div>` : '';
+  } else if (!S.iaListo) {
+    cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>Cargando lo que dice de tu cartera…</small></div></div>`;
+  } else if (AS.clave) {
+    cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>${IA.generando ? 'Revisando tu cartera ahora' : 'Todavía no ha revisado tu cartera'}</small></div></div>
+      ${IA.generando ? '' : `<button type="button" class="btn peq pri iac-boton" data-accion="ia-actualizar">${ICONOS.chispa}Que la revise ahora</button>`}`;
   } else {
-    cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>Aún sin activar</small></div></div>
+    cab = `<div class="iac-cab"><span class="iac-ico">${ICONOS.chispa}</span><div><h2 id="hToca">${esc(nombreIA())}</h2><small>Aún sin activar en este dispositivo</small></div></div>
       <p class="iac-tit iac-act">Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.</p>
       <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.chispa}Activar GrowFolio IA</button>`;
   }
@@ -11813,8 +11827,10 @@ function arrancar() {
   montar();
   pintar();
   LIVE.iniciar();
-  cargarIA().then(() => { if (S.vista === 'analisis') pintar(); });
-  Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { if (['analisis', 'expertos'].includes(S.vista)) pintar(); setTimeout(revisarAnalisisIA, 4000); });
+  cargarIA().then(() => { if (S.vista === 'analisis') pintar(); refrescarToca(); });
+  // el análisis y la clave llegan un poco después de pintar: hasta entonces, la tarjeta de GrowFolio IA de Cartera
+  // dice «cargando» (antes decía «aún sin activar» aunque la tuvieras activada) y luego se rehace sola
+  Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); });
   clearInterval(tickPrecios); clearInterval(tickEstado);
   tickPrecios = setInterval(() => { if (!document.hidden) recargarPrecios(); }, 120000);
   tickEstado = setInterval(programarParche, 30000);
