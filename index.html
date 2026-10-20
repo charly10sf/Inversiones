@@ -9324,7 +9324,7 @@ function editarAportacion(k) {
    y fondos no entran en el open banking. La sesión y las cuentas van en tu cartera cifrada (S.cartera.bancos); el
    Worker no guarda nada. De momento solo para las cuentas de la lista del Worker (modo de pruebas de Enable Banking).
    ===================================================================== */
-const WORKER = '';
+const WORKER = 'https://growfolio.growfolio-web-app.workers.dev';
 // en pruebas (?dev) se puede apuntar a otro Worker
 const urlWorker = () => (CFG.dev && LS.get('inv-worker-dev', '')) || WORKER;
 const BANCO = { estado: null, sincT: 0, enCurso: false, avisado: new Set() };
