@@ -3121,8 +3121,12 @@ const LIVE = {
       // como si fueran euros, 100 veces más. Y por si acaso, un precio que se aleja más de 3 veces del
       // último cierre no se usa: ninguna acción hace eso en un día, es un dato roto.
       const P = S.precios && S.precios.instrumentos && S.precios.instrumentos[id];
-      const precio = aEuros(d.price, (P && P.moneda) || d.currency || 'EUR');
-      const ref = P && (P.cierre_anterior || P.precio);
+      // las que añade cada uno (no están en precios.json): la moneda, de la ficha o del radar; si no, la del tick;
+      // y si no viene, por la bolsa (Londres cotiza en peniques). El precio de referencia, el del radar en euros
+      const i = S.inst[id], r = !P && i ? radarPorSim(i.yahoo || d.id) : null;
+      const moneda = (P && P.moneda) || (i && i.moneda) || (r && r.m) || d.currency || (/\.L$/i.test(d.id) ? 'GBp' : 'EUR');
+      const precio = aEuros(d.price, moneda);
+      const ref = P ? (P.cierre_anterior || P.precio) : r && r.pe;
       const roto = precio != null && ref > 0 && (precio / ref > 3 || precio / ref < 1 / 3);
       if (roto) console.warn('Precio descartado', d.id, d.price, d.currency, precio, ref);
       else if (precio != null) S.live[id] = { precio, var: d.changePercent != null ? d.changePercent : null, t, fuente: 'Yahoo Finance' };
@@ -8370,6 +8374,8 @@ function instDeRadar(sim) {
   let id = corto.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'accion';
   while (S.inst[id]) id += '-2';
   const inst = { id, nombre, corto, yahoo: x.s, tipo: 'Acción', clase: 'Renta variable', region: { [x.z === 'EEUU' ? 'EEUU' : 'Europa']: 100 } };
+  // la moneda en la que cotiza (Londres, en peniques): sin ella, el precio en directo se tomaría como euros
+  if (x.m) inst.moneda = x.m;
   if (o.sede || o.bolsa) inst.pais = o.sede || o.bolsa;
   // si cotiza en un país y tiene la sede en otro (HBX: Madrid y Reino Unido), la tasa de compra no aplica
   if (o.bolsa && o.bolsa !== inst.pais) inst.bolsa = o.bolsa;
