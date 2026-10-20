@@ -1028,7 +1028,13 @@ table.ideas .sub { display: block; font-size: 12px; }
 .toca li.urgente .toca-c { color: var(--accent); font-weight: 600; }
 .toca b { font-weight: 550; font-size: 14.5px; line-height: 1.4; }
 /* GrowFolio IA, lo primero de Cartera */
-.toca.iac { padding: 16px 16px 8px; border-left-width: 1px; border-color: rgba(226, 180, 95, 0.32); background: linear-gradient(160deg, rgba(226, 180, 95, 0.09), var(--plane) 55%); }
+.toca.iac { margin: 0 0 8px; padding: 16px 16px 8px; border-left-width: 1px; border-color: rgba(226, 180, 95, 0.32); background: linear-gradient(160deg, rgba(226, 180, 95, 0.09), var(--plane) 55%); }
+@media (min-width: 900px) {
+  .toca.iac.con-lista { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 0 32px; padding: 18px 22px 10px; }
+  .toca.iac .iac-der .iac-sub { margin-top: 0; padding-top: 0; border-top: 0; }
+  .toca.iac.con-lista .iac-der { border-left: 1px solid var(--line); padding-left: 28px; }
+  .toca.iac .iac-izq { padding-bottom: 8px; }
+}
 .iac-cab { display: flex; align-items: center; gap: 12px; }
 .iac-cab > div { flex: 1; min-width: 0; }
 .iac-cab h2 { margin: 0; font-size: 15.5px; font-weight: 700; letter-spacing: -0.01em; }
@@ -4010,7 +4016,6 @@ function vistaCartera(M) {
   const plats = porPlataforma(M).map(([k]) => `<div class="kpi"><span class="k">${esc(k)}</span><span class="v">${B('plat:' + k)}</span></div>`).join('');
   const anio = new Date().getFullYear();
   const tocaHtml = htmlToca(M);
-  const toca = (donde) => tocaHtml.replace('class="toca ', `class="toca en-${donde} `).replace(/hToca/g, 'hToca-' + donde);
   return `
   <div class="cabecera">
     <section aria-label="Patrimonio">
@@ -4018,7 +4023,7 @@ function vistaCartera(M) {
       <div class="hero-fila"><div class="hero-lbl">Patrimonio</div>${chipGTA()}</div>
       <div class="hero-num" aria-label="Patrimonio">${B('totalE')}${B('totalD', 'dec')}</div>
       <div class="hero-sub"><div>${B('dia')}<span class="k">hoy</span></div><div>${B('pl')}<span class="k">ganado desde que compraste</span></div><div class="movers">${B('movers')}</div></div>
-      ${htmlPreguntasIA(true)}${toca('hero')}
+      ${htmlPreguntasIA(true)}
       <div class="kpis">
         ${plats}
         <div class="kpi"><span class="k">Invertido</span><span class="v">${eur(M.invertido, 0)}</span></div>
@@ -4028,7 +4033,6 @@ function vistaCartera(M) {
       </div>
     </section>
     <section aria-label="Evolución">
-      ${toca('evo')}
       <div class="evo-cab"><div class="datos" id="evoCab"></div>
         <div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}">${r}</button>`).join('')}</div></div>
       <div class="chart" id="grafEvo"></div>
@@ -4037,6 +4041,7 @@ function vistaCartera(M) {
       <p class="nota" title="Antes de que existieran algunos fondos se usa un ETF del mismo índice.">Cómo se habría movido lo que tienes hoy. Lo que has ganado tú de verdad es lo de «ganado desde que compraste».</p>
     </section>
   </div>
+  ${tocaHtml}
   <div class="subvistas dos-op car-tabs" id="carTabs" role="group" aria-label="Qué ver"><button data-car="pos" aria-pressed="${S.carTab !== 'plan'}">${ICONOS.cartera}Tus posiciones</button><button data-car="plan" aria-pressed="${S.carTab === 'plan'}">${ICONOS.plan}Plan y movimientos</button></div>
   ${S.carTab === 'plan' ? htmlPlan(M) : `<div class="dos">
     <div class="pila">${htmlAvisosGraves(M)}${htmlPosiciones(M)}${htmlAvisos(M)}</div>
@@ -4048,9 +4053,7 @@ function refrescarToca() {
   if (S.vista !== 'cartera' || !S.cartera) return;
   let html; try { html = htmlToca(S.M || calcular()); } catch (e) { return; }
   for (const el of $$('#vista .toca')) {
-    const donde = el.classList.contains('en-evo') ? 'evo' : 'hero';
-    const t = document.createElement('div');
-    t.innerHTML = html.replace('class="toca ', `class="toca en-${donde} `).replace(/hToca/g, 'hToca-' + donde);
+    const t = document.createElement('div'); t.innerHTML = html;
     if (t.firstElementChild) el.replaceWith(t.firstElementChild); else el.remove();
   }
 }
@@ -4085,7 +4088,8 @@ function htmlToca(M) {
   }
   const lista = v.length ? `<div class="iac-sub"><h3>Lo que toca ahora</h3><button class="enlace acento" data-calif="ruta">Ver el paso a paso</button></div>
     <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
-  return `<section class="toca iac" aria-labelledby="hToca">${cab}${tit}${notas}${lista}</section>`;
+  // en el ordenador, a lo ancho debajo de la gráfica: el diagnóstico a la izquierda y lo que toca a la derecha
+  return `<section class="toca iac${lista ? ' con-lista' : ''}" aria-labelledby="hToca"><div class="iac-izq">${cab}${tit}${notas}</div>${lista ? `<div class="iac-der">${lista}</div>` : ''}</section>`;
 }
 /* el nombre completo del fondo o la empresa, cuando dice algo más que el corto ("S&P 500" → "iShares US Index Fund (IE) S Acc EUR") */
 function nombreReal(i) {
