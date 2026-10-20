@@ -86,12 +86,12 @@ a:hover { text-decoration: underline; }
 .gta-top { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 11px 0 9px; border-radius: 999px; border: 1px solid rgba(255, 62, 165, 0.55); background: linear-gradient(90deg, rgba(255, 62, 165, 0.16), rgba(255, 140, 60, 0.12)); color: #fff; cursor: pointer; white-space: nowrap; box-shadow: 0 0 14px rgba(255, 62, 165, 0.22); transition: box-shadow 0.2s ease, border-color 0.2s ease; }
 .gta-top:hover { border-color: #FF3EA5; box-shadow: 0 0 20px rgba(255, 62, 165, 0.45); }
 .gta-top:focus-visible { outline: 2px solid #FF7DB8; outline-offset: 2px; }
-.gta-top svg { width: 16px; height: 16px; color: #FF7DB8; flex: none; }
-.gta-top-t { font-family: 'Tilt Neon', var(--f); font-size: 14.5px; letter-spacing: 0.05em; color: #FFE1F1; text-shadow: 0 0 6px rgba(255, 62, 165, 0.85); }
+.gta-top-t { font-family: 'Tilt Neon', var(--f); font-size: 15px; letter-spacing: 0.05em; color: #FFE1F1; text-shadow: 0 0 6px rgba(255, 62, 165, 0.85); }
 .gta-top-d { font-family: 'Tilt Neon', var(--f); font-size: 14px; color: #FFB27A; text-shadow: 0 0 6px rgba(255, 140, 60, 0.75); font-variant-numeric: tabular-nums; }
 .gta-top.pulsa { animation: gtaPulsa 1.25s ease-in-out 4; }
 /* en el móvil, solo el mando y los días */
-@media (max-width: 600px) { .gta-top-t { display: none; } .gta-top { padding: 0 9px 0 8px; gap: 5px; } }
+/* con poco sitio, solo «VI» y los días */
+@media (max-width: 600px) { .gta-top-g { display: none; } .gta-top { padding: 0 9px; gap: 5px; } }
 /* si la cabecera no cabe, encajarCabecera() va quitando cosas por este orden: aire entre pestañas, el texto de
    «Avisar de un fallo» (se queda el bicho con su α), el de GTA (se queda el mando con los días), el de la luz de
    En directo (se queda la luz) y, por último, la etiqueta de la versión y algo de aire */
@@ -99,8 +99,8 @@ a:hover { text-decoration: underline; }
 .top.cab-2 .ib-fallo { width: 38px; padding: 0; border: 0; background: transparent; display: grid; }
 .top.cab-2 .ib-fallo::after { display: grid; }
 .top.cab-2 .fallo-t { display: none; }
-.top.cab-3 .gta-top-t { display: none; }
-.top.cab-3 .gta-top { padding: 0 9px 0 8px; gap: 5px; }
+.top.cab-3 .gta-top-g { display: none; }
+.top.cab-3 .gta-top { padding: 0 10px; gap: 6px; }
 .top.cab-4 .estado-b .estado { font-size: 0; gap: 0; }
 .top.cab-5 .fila-top { gap: 10px; }
 .top.cab-5 .marca .ver-chip { display: none; }
@@ -11102,7 +11102,7 @@ function pintarGtaTop() {
   fuenteGTA();
   const f = gtaFalta(), cuenta = !f ? L('¡Ya!', 'Out!') : f.d ? `${f.d}${L('d', 'd')}` : `${f.h}h`;
   const txt = !f ? L('ya está aquí', 'out now') : f.d ? L(`faltan ${f.d} ${f.d === 1 ? 'día' : 'días'}`, `${f.d} ${f.d === 1 ? 'day' : 'days'} to go`) : L(`faltan ${f.h} horas`, `${f.h} hours to go`);
-  const html = `<button type="button" class="gta-top" data-gta title="GTA VI: ${esc(txt)}" aria-label="GTA VI: ${esc(txt)}">${MANDO}<span class="gta-top-t" data-no-trad>GTA VI</span><span class="gta-top-d" data-no-trad>${esc(cuenta)}</span></button>`;
+  const html = `<button type="button" class="gta-top" data-gta title="GTA VI: ${esc(txt)}" aria-label="GTA VI: ${esc(txt)}"><span class="gta-top-t" data-no-trad><span class="gta-top-g">GTA </span>VI</span><span class="gta-top-d" data-no-trad>${esc(cuenta)}</span></button>`;
   if (w.innerHTML !== html) w.innerHTML = html;
 }
 function chipGTA() {
