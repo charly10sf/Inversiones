@@ -7,6 +7,11 @@
    "t": "Cartera nueva y los días sin bolsa",
    "commits": [
     {
+     "cuando": "2026-10-20 20:40",
+     "asunto": "Releases: las etiquetas de las versiones viejas se crean con el secreto RELEASES_TOKEN (el de la Action no puede)",
+     "detalle": []
+    },
+    {
      "cuando": "2026-10-20 20:37",
      "asunto": "Releases: las etiquetas de las versiones viejas se crean con git y, si GitHub no deja, el aviso dice por qué",
      "detalle": []

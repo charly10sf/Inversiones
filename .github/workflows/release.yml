@@ -2,6 +2,11 @@
 # (vX.Y.Z, la de VERSION en index.html) se mueve a ese commit, así que siempre apunta a cómo quedó esa versión con sus
 # arreglos; y su release se crea o se actualiza con las novedades y los cambios (scripts/release.py). La APK la añade la
 # Action «App Android» cuando compila. Para comparar dos versiones: github.com/<repo>/compare/v0.1.1...v0.2.3
+#
+# Las etiquetas de las versiones viejas apuntan a commits con otras Actions, y GitHub no deja que el token de la Action
+# las cree («refusing to allow a GitHub App to create or update workflow»). Para eso está el secreto RELEASES_TOKEN:
+# un token de grano fino solo de este repositorio con Contents y Workflows en lectura y escritura. Solo hace falta
+# mientras falten releases antiguos; después puede caducar y la Action sigue con el suyo.
 name: Release de la versión
 
 on:
@@ -35,6 +40,7 @@ jobs:
       - name: Etiquetas y releases
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -42,21 +48,33 @@ jobs:
           # las que falten, de la más antigua a la más nueva (así salen en orden), cada una en su commit;
           # la actual, además, se mueve al último commit y se le ponen las novedades y los cambios al día
           python3 - <<'PY2'
-          import json, subprocess
+          import json, os, subprocess
           vs = json.load(open("versiones.json"))
-          def run(*a):
-              return subprocess.run(list(a), capture_output=True, text=True)
+          repo = os.environ["GITHUB_REPOSITORY"]
+          llave = os.environ.get("RELEASES_TOKEN", "")
+          def run(*a, env=None):
+              return subprocess.run(list(a), capture_output=True, text=True, env={**os.environ, **(env or {})})
+          def corto(t):
+              return " ".join(t.replace(llave, "***").split())[:260] if llave else " ".join(t.split())[:260]
           remotas = {l.split("refs/tags/")[1] for l in run("git", "ls-remote", "--tags", "origin").stdout.splitlines() if "refs/tags/" in l and not l.endswith("^{}")}
-          fallos = []
+          fallos, sin_llave = [], []
           for x in vs:
               tag = "v" + x["v"]
               open("notas.md", "w").write(x["cuerpo"])
-              # primero la etiqueta, con git (así, si GitHub no deja, dice por qué); la actual se mueve al último commit
-              if x["actual"] or tag not in remotas:
+              if x["actual"]:
+                  # la actual se mueve al último commit, que tiene las mismas Actions que main: con el token de la Action vale
                   run("git", "tag", "-f", tag, x["sha"])
                   r = run("git", "push", "-f", "-q", "origin", tag)
                   if r.returncode != 0:
-                      fallos.append(f"{tag}, etiqueta en {x['sha'][:7]}: " + " ".join(r.stderr.split())[:260])
+                      fallos.append(f"{tag}, etiqueta: " + corto(r.stderr))
+                      continue
+              elif tag not in remotas:
+                  if not llave:
+                      sin_llave.append(tag)
+                      continue
+                  r = run("gh", "api", "-X", "POST", f"repos/{repo}/git/refs", "-f", f"ref=refs/tags/{tag}", "-f", f"sha={x['sha']}", env={"GH_TOKEN": llave})
+                  if r.returncode != 0:
+                      fallos.append(f"{tag}, etiqueta en {x['sha'][:7]}: " + corto(r.stdout + r.stderr))
                       continue
               if run("gh", "release", "view", tag).returncode == 0:
                   if x["actual"]:
@@ -64,13 +82,15 @@ jobs:
                   continue
               r = run("gh", "release", "create", tag, "--verify-tag", "--title", x["nombre"], "--notes-file", "notas.md", "--latest" if x["actual"] else "--latest=false")
               if r.returncode != 0:
-                  fallos.append(f"{tag}, release: " + " ".join(r.stderr.split())[:260])
+                  fallos.append(f"{tag}, release: " + corto(r.stderr))
               else:
                   print(tag, "creado")
+          if sin_llave:
+              print(f"::warning::Faltan {len(sin_llave)} releases antiguos ({sin_llave[0]} a {sin_llave[-1]}): GitHub no deja que la Action etiquete commits con otras Actions. Pon el secreto RELEASES_TOKEN (está explicado arriba en release.yml)")
           # GitHub enseña como mucho 10 avisos por paso
           for f in fallos[:8]:
               print("::warning::" + f)
           if len(fallos) > 8:
               print(f"::warning::y {len(fallos) - 8} más: " + ", ".join(f.split(",")[0] for f in fallos[8:]))
-          print(f"::notice::Releases: {len(vs)} versiones, la actual {vs[-1]['v']}, {len(fallos)} sin poder crear")
+          print(f"::notice::Releases: {len(vs)} versiones, la actual {vs[-1]['v']}" + (f", {len(fallos) + len(sin_llave)} sin crear" if fallos or sin_llave else ", todas creadas"))
           PY2
