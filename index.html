@@ -11018,7 +11018,7 @@ function arrancar() {
   revisarWeb();
 }
 document.addEventListener('visibilitychange', () => {
-  if (!document.hidden && window.InversionesApp && Date.now() - appRevisadaT > 3600000) revisarApp();
+  if (!document.hidden && window.InversionesApp && Date.now() - appRevisadaT > (S.cartera ? 3600000 : 120000)) revisarApp();
   if (document.hidden || !S.cartera) return;
   LIVE.asegurar();
   if (Date.now() - S.ultimaCarga > 60000) recargarPrecios(); else { programarParche(); revisarAnalisisIA(); }
