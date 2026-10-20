@@ -2269,6 +2269,41 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .pf-r-ic svg { width: 20px; height: 20px; }
 .pf-r-t { display: grid; gap: 2px; min-width: 0; }
 .pf-r-t small { color: var(--text-2); font-size: 13px; line-height: 1.4; }
+/* Para empezar: tres cosas, en Inicio y al final del tutorial */
+.empezar { margin-bottom: 14px; padding: 14px 12px 4px 16px; border-radius: 16px; background: var(--plane); border: 1px solid rgba(226, 180, 95, 0.4); }
+.empezar-cab { display: flex; align-items: center; gap: 10px; }
+.empezar-cab h2 { margin: 0; font-size: 18px; letter-spacing: -0.02em; }
+.empezar-cab .k { font-size: 13px; font-variant-numeric: tabular-nums; }
+.empezar-cab .ib { margin-left: auto; }
+.empezar-l { list-style: none; margin: 6px 0 0; padding: 0; display: grid; }
+.empezar-l li { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 11px 0; }
+.empezar-l li + li { border-top: 1px solid var(--line); }
+.emp-n { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; border: 1.5px solid var(--line-2); color: var(--text-2); font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.emp-n svg { width: 15px; height: 15px; }
+.empezar-l li.ok .emp-n { background: var(--up-bg); border-color: transparent; color: var(--up); }
+.emp-t { display: grid; gap: 1px; min-width: 0; }
+.emp-t b { font-size: 15px; font-weight: 650; }
+.emp-t small { color: var(--text-2); font-size: 13px; line-height: 1.4; }
+.emp-t small .enlace { display: inline; padding: 0; min-height: 0; font: inherit; color: var(--accent); text-decoration: underline; text-underline-offset: 2px; }
+.empezar-l li.ok .emp-t b { color: var(--muted); }
+.empezar-l li.ok .emp-t small { color: var(--up); }
+/* en Inicio la rejilla deja 48 px entre bloques: el aviso va más pegado a lo que tiene debajo */
+.car > .empezar, .car > .pf-recuerda { margin-bottom: -28px; }
+@media (min-width: 900px) {
+  .empezar .empezar-l { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 22px; }
+  .empezar .empezar-l li + li { border-top: 0; }
+}
+.tour-caja .empezar-l { margin-top: 10px; }
+.tour-caja .empezar-l li { padding: 9px 0; }
+.tour-foco.suave { box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.5), 0 0 0 2px var(--accent); }
+/* la primera tarjeta del tutorial: los botones de la barra saltan uno detrás de otro, de izquierda a derecha */
+@keyframes tour-ola { 0%, 100% { transform: none; } 45% { transform: translateY(-6px); color: var(--accent); } }
+body.tour-ola .navbar a, body.tour-ola .nav a { animation: tour-ola 0.75s cubic-bezier(.3, 1.3, .5, 1) 0.35s both; }
+body.tour-ola .navbar a:nth-child(2), body.tour-ola .nav a:nth-child(2) { animation-delay: 0.47s; }
+body.tour-ola .navbar a:nth-child(3), body.tour-ola .nav a:nth-child(3) { animation-delay: 0.59s; }
+body.tour-ola .navbar a:nth-child(4), body.tour-ola .nav a:nth-child(4) { animation-delay: 0.71s; }
+body.tour-ola .navbar a:nth-child(5), body.tour-ola .nav a:nth-child(5) { animation-delay: 0.83s; }
+@media (prefers-reduced-motion: reduce) { body.tour-ola .navbar a, body.tour-ola .nav a { animation: none; } }
 @media (max-width: 600px) { .pf-recuerda { grid-template-columns: auto minmax(0, 1fr) auto; } .pf-recuerda .btn { grid-column: 2 / 4; justify-self: start; grid-row: 2; } .pf-recuerda .ib { grid-column: 3; grid-row: 1; } }
 .pf-medias { grid-template-columns: minmax(0, 1fr); }
 .nav a.falta, .navbar .nav-mas.falta { position: relative; }
@@ -4983,8 +5018,9 @@ function vistaCartera(M) {
     i = j;
   }
   const col = (xs, cls = '') => `<div class="car-col${cls}">${xs.map((x) => x.html).join('')}</div>`;
-  const aviso = perfilIncompleto() && Date.now() - (LS.get('inv-perfil-aviso', 0) || 0) > 3 * 864e5
-    ? `<div class="pf-recuerda" role="note"><span class="pf-r-ic">${ICONOS.perfil}</span><span class="pf-r-t"><b>${perfilVacio() ? 'Te falta tu perfil de inversor' : 'Tu perfil de inversor está a medias'}</b><small>Sin tu edad, tu plazo y el riesgo que aguantas, GrowIA te aconseja como a cualquiera. Es un minuto.</small></span><button type="button" class="btn peq pri" data-accion="perfil-guiado">${perfilVacio() ? 'Hacerlo ahora' : 'Terminarlo'}</button><button type="button" class="ib" data-accion="perfil-aviso-no" aria-label="Ahora no" title="Ahora no (vuelve en unos días)">${ICONOS.cerrar}</button></div>` : '';
+  const empezar = htmlEmpezar();
+  const aviso = empezar || (perfilIncompleto() && Date.now() - (LS.get('inv-perfil-aviso', 0) || 0) > 3 * 864e5
+    ? `<div class="pf-recuerda" role="note"><span class="pf-r-ic">${ICONOS.perfil}</span><span class="pf-r-t"><b>${perfilVacio() ? 'Te falta tu perfil de inversor' : 'Tu perfil de inversor está a medias'}</b><small>Sin tu edad, tu plazo y el riesgo que aguantas, GrowIA te aconseja como a cualquiera. Es un minuto.</small></span><button type="button" class="btn peq pri" data-accion="perfil-guiado">${perfilVacio() ? 'Hacerlo ahora' : 'Terminarlo'}</button><button type="button" class="ib" data-accion="perfil-aviso-no" aria-label="Ahora no" title="Ahora no (vuelve en unos días)">${ICONOS.cerrar}</button></div>` : '');
   return `<div class="car">${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
     : f.t === 'suelta' ? `<div class="car-fila suelta">${f.a.map((x) => `<div class="car-col">${x.html}</div>`).join('')}</div>`
     : `<div class="car-fila ${f.t}">${f.t === 'par-izq' ? col(f.a) + col(f.b) : col(f.a) + col(f.b, ' lado')}</div>`)).join('')}
@@ -10163,16 +10199,16 @@ const ILUS = {
   privada: '<rect class="l" x="70" y="10" width="100" height="150" rx="16"/><path class="m" d="M70 136h100"/><g class="cierra"><path class="a" d="M100 70V56a20 20 0 0140 0v14" stroke-width="5"/></g><rect class="fA" x="90" y="68" width="60" height="46" rx="10"/><circle cx="120" cy="88" r="5" fill="#1A1408"/><path d="M120 92v9" stroke="#1A1408" stroke-width="4" stroke-linecap="round"/><g class="an3"><rect class="fp" x="178" y="44" width="54" height="24" rx="12"/><text class="t" x="184" y="60">cifrada</text><rect class="fp" x="8" y="98" width="56" height="24" rx="12"/><text class="t" x="15" y="114">solo tú</text></g>',
 };
 const INTRO = [
-  { il: 'logo', t: 'Tu dinero, con una IA que te dice qué hacer', x: 'Juntas tus fondos, acciones, ETF, oro y cripto de MyInvestor, Trade Republic, Bitvavo o el bróker que uses, con los precios en directo. GrowIA los estudia y te dice qué hacer con ellos.' },
-  { il: 'notas', t: 'Una IA que analiza tu cartera', x: 'Cada día lee las noticias de todo el mundo y repasa lo que tienes según tu edad, tus metas y el riesgo que aguantas. Te pone nota en diversificación, costes, riesgo, disciplina e impuestos, y te dice qué mejorar primero. Si le falta algo de ti, te lo pregunta.' },
-  { il: 'pasos', t: 'Qué hacer, paso a paso', x: 'Con lo que ve, te prepara la lista de cada mes: comprar, vender, aportar, poner una orden stop o vigilar unos resultados. Con el porqué, cómo hacerlo en tu bróker y lo que pagarás a Hacienda. Lo haces, lo marcas y se queda hecho.' },
-  { il: 'ia', t: 'Pregúntale lo que quieras', x: '«Me sobran 500 €, ¿dónde los meto?» o «¿Vendo Repsol?». Te contesta con tus números: calcula la venta con FIFO e impuestos, busca en internet si hace falta y te lo explica fácil. También puedes recortar un trozo de la pantalla y preguntarle por él.' },
-  { il: 'mundo', t: 'Ideas que encajan contigo', x: 'Busca entre unas 840 empresas de EEUU y Europa, contrastadas con siete señales y la opinión de los analistas, y te dice cuáles encajarían en tu cartera y por qué. Y qué significa para ti cada movimiento de las bolsas, los tipos o el petróleo.' },
-  { dib: 'grafica', t: 'Tu cartera de un vistazo', x: 'Cuánto tienes, lo que ganas o pierdes hoy y desde que compraste, el reparto por países, sectores y monedas, el riesgo y lo que te cuestan los fondos al año.' },
-  { dib: 'calendario', t: 'Lo que viene, con los días que faltan', x: 'Resultados y dividendos de lo que tienes (también de las empresas de dentro de tus fondos), con lo que te toca en euros; la Fed y el BCE con la hora de España, y tus aportaciones.' },
-  { dib: 'renta', t: 'Hacienda, sin sorpresas', x: 'Antes de vender ves cuánto ganas o pierdes y lo que pagarás en la renta. Te avisa de la regla de los dos meses y trae una guía para hacer la declaración.' },
-  { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera se cifra con tu contraseña antes de guardarse en tu cuenta, y la IA funciona con tu propia clave gratuita de Google: lo que le preguntas va de tu móvil a Google, sin pasar por GrowFolio. Nadie más puede leer tus cifras.' },
-  { dib: 'app', t: 'En el móvil, con widget', x: 'En la web o en la app de Android, con un widget para la pantalla de inicio. Está en alfa: si ves algo raro, avisa con el bichito de arriba y se arregla en la siguiente versión.' },
+  { il: 'logo', t: 'Tu dinero, con una IA que te dice qué hacer', x: 'Fondos, acciones, ETF, oro y cripto de cualquier bróker, juntos y con precios en directo. GrowIA los estudia y te dice qué hacer con ellos.' },
+  { il: 'notas', t: 'Una IA que revisa tu cartera', x: 'Cada día lee las noticias y repasa lo que tienes según tu edad, tus metas y el riesgo que aguantas. Le pone nota y te dice qué mejorar primero.' },
+  { il: 'pasos', t: 'Qué hacer cada mes', x: 'Comprar, vender, aportar o esperar, en orden y con el porqué. Con lo que pagarás a Hacienda. Lo haces y lo marcas.' },
+  { il: 'ia', t: 'Pregúntale lo que quieras', x: '«Me sobran 500 €, ¿dónde los meto?» o «¿Vendo Repsol?». Te contesta con tus números y te lo explica fácil.' },
+  { il: 'mundo', t: 'Ideas que encajan contigo', x: 'Unas 840 empresas de EEUU y Europa con la opinión de los analistas. Te dice cuáles encajan en tu cartera y por qué.' },
+  { dib: 'grafica', t: 'Tu cartera de un vistazo', x: 'Cuánto tienes, lo que ganas hoy y desde que compraste, y el reparto por países, sectores y monedas.' },
+  { dib: 'calendario', t: 'Lo que viene', x: 'Resultados y dividendos de lo tuyo, con lo que te toca en euros, y las reuniones de la Fed y el BCE.' },
+  { dib: 'renta', t: 'Hacienda, sin sorpresas', x: 'Antes de vender ves lo que pagarás en la renta. Y en primavera, una guía para hacer la declaración.' },
+  { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera se cifra con tu contraseña antes de guardarse, y la IA va con tu propia clave de Google. Nadie más puede leer tus cifras, tampoco GrowFolio.' },
+  { dib: 'app', t: 'En el móvil, con widget', x: 'En la web o en la app de Android, con un widget para la pantalla de inicio. Está en alfa: si ves algo raro, avisa con el bichito de arriba.' },
 ];
 /* La presentación se cuenta bajando, como una película: primero el logo se monta pieza a pieza según bajas y,
    al acabar, la cámara entra en él; después, cada idea entra con el scroll (el dibujo desde un lado, el título
@@ -11740,22 +11776,47 @@ async function abrirOpinion() {
    Tour: la primera vez (y desde Ajustes) enseña cada pestaña, resaltando dónde está.
    ===================================================================== */
 const TOUR = [
-  { v: 'cartera', logo: true, t: 'Bienvenido a GrowFolio', x: 'Te enseño la app en un minuto: qué hay en cada pestaña y dónde tocar. Lo puedes repetir cuando quieras desde Ajustes.' },
-  { v: 'cartera', sel: '.hero-num', t: 'Lo que tienes', x: 'Todo sumado y en euros. Debajo, lo que ganas o pierdes hoy y desde el principio. Los precios se mueven solos, sin recargar.' },
-  { v: 'cartera', sel: '.tabs[aria-label="Periodo"]', t: 'La gráfica', x: '1D y 1S enseñan hoy y esta semana, hora a hora. 1A o más, el camino largo.' },
-  { v: 'cartera', pos: true, sel: '#hPos ~ .der [data-accion="nueva-pos"], [data-accion="nueva-pos"]', t: 'Mete lo que tienes', x: '"Lo que ya tenía" para lo que compraste antes de usar GrowFolio. "Compra o venta" para lo que hagas desde hoy. Busca por nombre, ticker o ISIN, o importa capturas de tu bróker.' },
-  { v: 'cartera', sel: '#carTabs', t: 'Posiciones y plan', x: 'Toca una posición para ver su ficha. En "Plan y movimientos" están las aportaciones de cada mes y todo lo que has comprado y vendido.' },
-  { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', t: 'Paso a paso', x: 'Lo que toca hacer con tu dinero, en orden y con lo primero arriba: qué, cuánto, por qué y lo que pagarías a Hacienda.' },
-  { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', t: 'Expertos', x: 'Qué opinan los analistas de lo que tienes y las ideas de compra que sacan GrowFolio y la IA de unas 800 empresas.' },
-  { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', t: 'Análisis', x: 'GrowIA revisa tu cartera, le pone nota y te dice qué cambiar. En "Tus números", el riesgo, los costes y el reparto por países y sectores.' },
-  { v: 'fiscal', sel: '.grupo-tabs a[href="#fiscal"]', t: 'Fiscalidad', x: 'Cuánto pagarías si vendieras hoy, los tramos de Hacienda y cómo pagar menos sin saltarte nada.' },
-  { v: 'futuro', sel: '.grupo-tabs a[href="#futuro"]', t: 'Objetivos', x: 'Tu edad, en qué andas, tus metas y cuánto riesgo aguantas: con eso la IA y los pasos se ajustan a ti. Y la proyección de cuánto podrías tener.' },
-  { v: 'agenda', sel: '.grupo-tabs a[href="#agenda"]', t: 'Calendario', x: 'Lo que viene para lo que tienes: resultados, dividendos con lo que te toca en euros, reuniones de la Fed y el BCE, días sin bolsa y tus aportaciones, con los días que faltan.' },
-  { v: 'mercados', sel: '.navbar [data-ir="mercados"], .nav [data-ir="mercados"]', t: 'Mercados', x: 'Bolsas, bonos, divisas, materias primas y cripto de todo el mundo. Cada uno explica qué significa que suba o baje y qué te toca a ti.' },
-  { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale a GrowIA', x: 'Lo que quieras de tu cartera, con tus números delante. Va con una clave gratuita de Google que pones una vez en sus ajustes.' },
-  { v: 'cartera', dib: 'app', t: 'El widget del móvil', x: 'Con la app de Android tienes un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo próximo que toca, sin abrir nada. Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio. La app se baja desde Ajustes.' },
-  { v: 'cartera', sel: '#bAjustes', t: 'Ajustes', x: 'Copias de seguridad, la app de Android con widget, las novedades, tu opinión y este tutorial, para repetirlo cuando quieras.' },
+  { v: 'cartera', sel: '.navbar, .nav', logo: true, ola: true, t: 'Bienvenido a GrowFolio', x: () => (innerWidth < 760 ? 'Todo está en estos cinco botones: Inicio en el centro, a la izquierda lo que haces tú y a la derecha lo de fuera. Te enseño cada uno en un minuto.' : 'Todo está en estas cinco pestañas. Te enseño cada una en un minuto y, al final, qué hacer hoy para empezar.') },
+  { v: 'cartera', sel: '.hero-cifra', t: 'Inicio: lo que tienes', x: 'Todo sumado, con lo que ganas o pierdes hoy. Desliza el dedo por la gráfica para ver cualquier día. El ojo oculta las cifras.' },
+  { v: 'cartera', pos: true, sel: '#hPos ~ .der', t: 'Tus posiciones, justo debajo', x: 'Toca una para ver su ficha. «Lo que ya tenía» es para lo comprado antes de GrowFolio; «Compra o venta», para lo que hagas desde hoy.' },
+  { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', suave: true, t: 'Pasos: qué hacer este mes', x: 'En orden y con lo urgente arriba: qué, cuánto y por qué. Lo haces y lo marcas. Si no toca nada, también te lo dice.' },
+  { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', suave: true, t: 'Análisis: cómo vas', x: 'La nota de GrowIA a tu cartera, tus objetivos frente a lo que tienes y cuánto podrías llegar a tener. En época de renta, también Hacienda.' },
+  { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', suave: true, t: 'Expertos: qué comprar', x: 'Lo que dicen los analistas de lo tuyo y las ideas de compra, con las tres que mejor te encajan en verde.' },
+  { v: 'mercados', sel: '.navbar [data-ir="mercados"], .nav [data-ir="mercados"]', suave: true, t: 'Mercados: lo de fuera', x: 'Bolsas, tipos, divisas y materias primas, con lo que significa para ti. Dentro, el calendario: resultados, dividendos y la Fed.' },
+  { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale', x: '«¿Vendo Repsol?» o «me sobran 500 €, ¿dónde los meto?». GrowIA contesta con tus números delante.' },
+  { v: 'cartera', empezar: true, t: 'Para empezar hoy', x: 'Con estas tres cosas, GrowIA ya te aconseja con tus números. El tutorial queda en Ajustes, por si quieres repetirlo.' },
 ];
+/* Para empezar: lo mismo al final del tutorial y en Inicio mientras falte algo (a los nuevos, el primer mes) */
+const hayClaveIA = () => !!((AS.claves && AS.claves.google) || LS.get(LS_CLAVE.google) || (S.cartera && S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE.google]));
+function itemsEmpezar() {
+  return [
+    { k: 'perfil', ok: !perfilIncompleto(), t: 'Cuéntale quién eres', x: 'Tu edad, tus metas y cuánto riesgo aguantas. Es un minuto.', b: 'Contestar' },
+    { k: 'tengo', ok: ((S.cartera && S.cartera.posiciones) || []).length > 0, t: 'Mete lo que tienes', x: `Buscando por nombre o ISIN, o <button type="button" class="enlace" data-emp="importar">${esc(trad('desde capturas o un extracto de tu bróker'))}</button>.`, b: 'Añadir' },
+    { k: 'clave', ok: hayClaveIA(), t: 'Activa GrowIA', x: 'Con una clave gratuita de Google, que pones una vez. Al abrirlo te dice cómo sacarla.', b: 'Activar' },
+  ];
+}
+function htmlListaEmpezar() {
+  const it = itemsEmpezar(), prim = it.findIndex((x) => !x.ok);
+  return `<ol class="empezar-l">${it.map((x, i) => `<li class="${x.ok ? 'ok' : ''}"><span class="emp-n" aria-hidden="true">${x.ok ? ICONOS.ok : i + 1}</span><span class="emp-t"><b>${esc(x.t)}</b><small>${x.ok ? esc(trad('Hecho')) : x.k === 'tengo' ? x.x : esc(x.x)}</small></span>${x.ok ? '' : `<button type="button" class="btn peq${i === prim ? ' pri' : ''}" data-emp="${x.k}">${esc(x.b)}</button>`}</li>`).join('')}</ol>`;
+}
+function htmlEmpezar() {
+  if (!S.cartera || LS.get('inv-empezar-no', false)) return '';
+  const it = itemsEmpezar(), hechas = it.filter((x) => x.ok).length;
+  if (hechas === it.length) return '';
+  const desde = LS.get('inv-empezar', 0);
+  if (it[1].ok && !(desde && Date.now() - desde < 30 * 864e5)) return '';
+  return `<section class="empezar" aria-labelledby="hEmpezar"><div class="empezar-cab"><h2 id="hEmpezar">Para empezar</h2><span class="k">${hechas} de ${it.length}</span><button type="button" class="ib" data-emp="no" aria-label="Quitar" title="Quitar (lo tienes en Ajustes, en el tutorial)">${ICONOS.cerrar}</button></div>${htmlListaEmpezar()}</section>`;
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-emp]'); if (!b) return;
+  const a = b.dataset.emp;
+  if (a === 'no') { LS.set('inv-empezar-no', true); pintar(); toast(L('Quitado. El tutorial sigue en Ajustes', 'Removed. The tutorial is still in Settings'), 3000); return; }
+  if (TOURE) cerrarTour(true, true);
+  if (a === 'perfil') perfilGuiado();
+  else if (a === 'tengo') operacion('tengo');
+  else if (a === 'importar') importarCapturas();
+  else if (a === 'clave') abrirAsesor();
+});
 let TOURE = null;
 const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
 /* «Más» en la barra del móvil: Calendario, Mercados, Fiscalidad y Objetivos en tarjetas (Ajustes está arriba, en la rueda) */
@@ -11804,6 +11865,7 @@ function cerrarTour(hecho, sinVolver) {
   if (!TOURE) return;
   const { alAcabar, nov } = TOURE;
   TOURE.off(); TOURE.capa.remove(); TOURE = null;
+  document.body.classList.remove('tour-ola');
   if (nov) { if (alAcabar) alAcabar(); return; }
   if (!hecho) return;
   LS.set('inv-tour', VERSION);
@@ -11823,14 +11885,16 @@ function pasoTour(dir = 1) {
   if (p.antes) try { p.antes(); } catch (e) { console.warn(e); }
   if (cambia) location.hash = '#' + p.v;
   if (p.pos && S.carTab === 'plan') { S.carTab = 'pos'; LS.set('inv-car', 'pos'); if (!cambia) pintar(); }
-  const ultimo = TOURE.i === P.length - 1, vacia = !TOURE.nov && !((S.cartera && S.cartera.posiciones) || []).length;
-  const caja = $('.tour-caja', TOURE.capa);
+  const ultimo = TOURE.i === P.length - 1, vacia = !TOURE.nov && !p.empezar && !((S.cartera && S.cartera.posiciones) || []).length;
+  const caja = $('.tour-caja', TOURE.capa), x = typeof p.x === 'function' ? p.x() : p.x;
+  document.body.classList.toggle('tour-ola', !!p.ola);
+  $('.tour-foco', TOURE.capa).classList.toggle('suave', !!p.suave);
   const solo = P.length === 1;
   caja.innerHTML = `<button type="button" class="ib tour-x" data-t="fin" aria-label="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}" title="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}">${ICONOS.cerrar}</button>${solo ? '' : `<div class="tour-prog" aria-hidden="true">${P.map((_, i) => `<i class="${i === TOURE.i ? 'on' : i < TOURE.i ? 'ya' : ''}"></i>`).join('')}</div>`}
-    <div class="tour-txt">${p.logo ? '<img class="tour-logo" src="favicon.svg" alt="">' : ''}${p.dib ? `<div class="tour-dib">${dibujo(p.dib)}</div>` : ''}${p.nuevo ? `<span class="tour-nuevo">Nuevo en la ${esc(p.nuevo)}</span>` : ''}<h3>${esc(p.t)}</h3><p>${esc(p.x)}</p></div>
+    <div class="tour-txt">${p.logo ? '<img class="tour-logo" src="favicon.svg" alt="">' : ''}${p.dib ? `<div class="tour-dib">${dibujo(p.dib)}</div>` : ''}${p.nuevo ? `<span class="tour-nuevo">Nuevo en la ${esc(p.nuevo)}</span>` : ''}<h3>${esc(p.t)}</h3><p>${esc(x)}</p>${p.empezar ? htmlListaEmpezar() : ''}</div>
     <div class="tour-btns">${solo ? '<span class="tour-n"></span>' : `<small class="tour-n">${TOURE.i + 1} de ${P.length}</small>
       ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}`}
-      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar de tu bróker</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq pri" data-t="fin">${TOURE.fin ? esc(TOURE.fin) : TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}
+      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar de tu bróker</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq${p.empezar && itemsEmpezar().some((y) => !y.ok) ? '' : ' pri'}" data-t="fin">${TOURE.fin ? esc(TOURE.fin) : TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}
     </div>`;
   const txt = $('.tour-txt', caja);
   if (txt) { txt.classList.remove('entra-d', 'entra-i'); void txt.offsetWidth; txt.classList.add(dir < 0 ? 'entra-i' : 'entra-d'); }
@@ -11849,12 +11913,16 @@ function colocarTour() {
   const foco = $('.tour-foco', TOURE.capa), caja = $('.tour-caja', TOURE.capa);
   let el = TOURE.el;
   if (el && !el.isConnected) el = TOURE.el = elVisible(TOURE.pasos[TOURE.i].sel);
-  if (!el) { foco.className = 'tour-foco sin'; caja.className = 'tour-caja centro'; return; }
+  const suave = TOURE.pasos[TOURE.i] && TOURE.pasos[TOURE.i].suave ? ' suave' : '';
+  if (!el) { foco.className = 'tour-foco sin' + suave; caja.className = 'tour-caja centro'; caja.style.top = caja.style.bottom = ''; return; }
   const r = el.getBoundingClientRect(), m = 6;
-  foco.className = 'tour-foco';
+  foco.className = 'tour-foco' + suave;
   foco.style.cssText = `left:${r.left - m}px;top:${r.top - m}px;width:${r.width + 2 * m}px;height:${r.height + 2 * m}px`;
   const abajo = r.top + r.height / 2 < innerHeight * 0.5;
   caja.className = 'tour-caja con-flecha ' + (abajo ? 'abajo' : 'arriba');
+  const nb = document.querySelector('.navbar'), navH = nb && nb.offsetHeight ? nb.offsetHeight : 0, hc = caja.offsetHeight;
+  if (abajo) { caja.style.bottom = 'auto'; caja.style.top = `${Math.max(16, Math.min(r.bottom + m + 12, innerHeight - navH - 16 - hc))}px`; }
+  else { caja.style.top = 'auto'; caja.style.bottom = `${Math.max(16, Math.min(innerHeight - r.top + m + 12, innerHeight - 16 - hc))}px`; }
   // la flechita de la tarjeta apunta a lo resaltado
   const c = caja.getBoundingClientRect();
   caja.style.setProperty('--fx', `${Math.max(22, Math.min(c.width - 22, r.left + r.width / 2 - c.left)).toFixed(0)}px`);
@@ -12548,7 +12616,7 @@ function bienvenida(intento = 0) {
   // si te falta el perfil, primero eso (y esa vez nada más: el resto, la próxima)
   // con una cartera de antes por recuperar en este dispositivo, eso va primero y lo demás espera a la próxima vez
   const despues = () => (copiaViejaPendiente() ? fin() : pedirPerfil(fin, () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin)))));
-  if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); return iniciarTour(0, despues); }
+  if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); if (!LS.get('inv-empezar', 0)) LS.set('inv-empezar', Date.now()); return iniciarTour(0, despues); }
   // la 0.2 llega con su propia pantalla de estreno, una vez
   // la presentación de la 0.2 (la nueva, más completa): una vez a todos los que ya usaban GrowFolio
   if (visto && cmpVer(VERSION, '0.2.0') >= 0 && !LS.get('inv-estreno-02b')) return estreno02(visto, despues);
