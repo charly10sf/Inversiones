@@ -1493,7 +1493,8 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .op-lista { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 6px; max-height: 260px; overflow-y: auto; }
 .op-pos { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; align-items: center; text-align: left; padding: 8px 10px; border-radius: 10px; border: 1px solid var(--line); background: var(--plane); color: var(--text); }
 .op-pos span { display: grid; min-width: 0; }
-.op-pos b { font-weight: 600; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* el nombre entero, en dos líneas si hace falta («Small caps globales» salía cortado) */
+.op-pos b { font-weight: 600; font-size: 13.5px; line-height: 1.3; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; overflow-wrap: anywhere; }
 .op-pos small { color: var(--muted); font-size: 12px; }
 .op-pos[aria-pressed="true"] { border-color: rgba(226, 180, 95, 0.6); background: var(--accent-bg); }
 .enlace-imp svg { width: 16px; height: 16px; }
