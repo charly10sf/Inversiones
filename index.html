@@ -2573,7 +2573,7 @@ function reintentarSubida() {
   S.subidaT = setTimeout(() => sincronizarCuenta(), espera);
 }
 // el nombre para saludarte: el que pusiste al crear la cuenta (o en tu perfil) o, si no, el de Google
-const nombreUsuario = () => String(LS.get('inv-nombre', '') || (S.cartera && S.cartera.perfil && S.cartera.perfil.nombre) || (FB.user && FB.user.displayName) || '').trim().split(/\s+/)[0] || '';
+const nombreUsuario = () => String((S.cartera && S.cartera.perfil && S.cartera.perfil.nombre) || LS.get('inv-nombre', '') || (FB.user && FB.user.displayName) || '').trim().split(/\s+/)[0] || '';
 const ERR_FB = {
   'auth/invalid-credential': 'El correo o la contraseña no son correctos.', 'auth/wrong-password': 'El correo o la contraseña no son correctos.', 'auth/user-not-found': 'No hay ninguna cuenta con ese correo: créala con «Crear cuenta».',
   'auth/email-already-in-use': 'Ya hay una cuenta con ese correo: entra con «Entrar».', 'auth/weak-password': 'La contraseña tiene que tener al menos 6 caracteres.', 'auth/invalid-email': 'Ese correo no parece válido.',
@@ -7804,8 +7804,10 @@ function vigilarCuenta() {
 }
 /* el nombre de la bienvenida, dentro de tu perfil cifrado: solo con la cuenta ya leída, para no pisar nada */
 function nombreEnCuenta() {
-  const nom = LS.get('inv-nombre', '');
-  if (!S.cuentaLeida || !nom || !S.cartera || (S.cartera.perfil && S.cartera.perfil.nombre)) return;
+  const nom = LS.get('inv-nombre', ''), suyo = S.cartera && S.cartera.perfil && S.cartera.perfil.nombre;
+  // el de tu perfil (el mismo en todos tus dispositivos) pasa a este dispositivo, para saludarte al abrir
+  if (suyo) { if (suyo !== nom) LS.set('inv-nombre', suyo); return; }
+  if (!S.cuentaLeida || !nom || !S.cartera) return;
   S.cartera.perfil = { ...(S.cartera.perfil || {}), nombre: nom }; guardarCarteraCallada('Nombre');
 }
 /* llega una versión de la cuenta: si estás editando algo, espera a que cierres; si ya no abre con tu clave
