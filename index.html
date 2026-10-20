@@ -2445,33 +2445,56 @@ function subirPendiente() {
   return subidaEnCurso;
 }
 /* Juntar dos versiones de la cartera que han cambiado a la vez a partir de la misma (base): lo que solo ha
-   cambiado en un lado se queda; las listas con id (posiciones, movimientos…) se juntan elemento a elemento; si
-   los dos han cambiado lo mismo, gana «gana» ('mio' o 'suyo') y se apunta en choques. */
+   cambiado en un lado se queda; las listas se juntan elemento a elemento (por su id, por plataforma o por
+   instrumento y plataforma, o por posición si ninguna cambia de largo); si los dos lados han apuntado
+   compras o ventas, el efectivo, las unidades, el coste y los lotes de una misma posición se suman (dos
+   compras del mismo valor cuentan las dos); si los dos han cambiado lo mismo de otra forma, gana «gana»
+   ('mio' o 'suyo') y se apunta en choques. */
 const igualJ = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-const conIds = (x) => Array.isArray(x) && x.every((e) => e && typeof e === 'object' && e.id != null);
 const esObj = (x) => x && typeof x === 'object' && !Array.isArray(x);
-function juntar3(b, m, t, gana, choques, ruta) {
+const claveDe = (e) => !esObj(e) ? null : e.id != null ? 'id:' + e.id : e.instrumento != null && e.plataforma != null ? 'ip:' + e.instrumento + '|' + e.plataforma : e.plataforma != null ? 'p:' + e.plataforma : null;
+const conClaves = (...xs) => xs.every((x) => x == null || (Array.isArray(x) && x.every((e) => claveDe(e) != null) && new Set(x.map(claveDe)).size === x.length));
+const SUMABLE = /^\.(efectivo\/[^/]+\.importe|posiciones\/[^/]+\.(cantidad|coste))$/;
+// lotes de una posición con compras o ventas en los dos lados: lo que cada lado quitó o añadió respecto a la base
+function juntarLotes(b, m, t) {
+  const k = (l) => JSON.stringify(l), cuenta = (xs) => { const c = new Map(); for (const x of xs) c.set(k(x), (c.get(k(x)) || 0) + 1); return c; };
+  const M = cuenta(m), T = cuenta(t);
+  // sin lotes en la base (posición de antes), la base son los que comparten los dos
+  const B = Array.isArray(b) ? cuenta(b) : new Map([...M].filter(([x]) => T.has(x)).map(([x, n]) => [x, Math.min(n, T.get(x))]));
+  const todos = new Map(); for (const x of [...(Array.isArray(b) ? b : []), ...m, ...t]) todos.set(k(x), x);
+  const out = [];
+  for (const [x, l] of todos) { const nb = B.get(x) || 0, n = Math.max(0, (M.get(x) || 0) + (T.get(x) || 0) - nb); for (let i = 0; i < n; i++) out.push({ ...l }); }
+  return out.sort((a, c) => (a.f < c.f ? -1 : a.f > c.f ? 1 : 0));
+}
+function juntar3(b, m, t, gana, choques, ruta, suma) {
   if (igualJ(m, t)) return m;
   if (igualJ(m, b)) return t;
   if (igualJ(t, b)) return m;
-  if (conIds(m) && conIds(t) && (b == null || conIds(b))) {
-    const B = new Map((b || []).map((e) => [e.id, e])), M = new Map(m.map((e) => [e.id, e])), T = new Map(t.map((e) => [e.id, e]));
-    const out = [];
-    for (const id of [...t.map((e) => e.id), ...m.map((e) => e.id).filter((id) => !T.has(id))]) {
-      const be = B.get(id), me = M.get(id), te = T.get(id);
-      if (me && te) { out.push(juntar3(be, me, te, gana, choques, ruta + '/' + id)); continue; }
-      const queda = me || te;
-      if (!be) { out.push(queda); continue; }          // nuevo en un lado
-      if (igualJ(queda, be)) continue;                  // borrado en el otro lado sin tocarlo aquí
-      choques.push(ruta + '/' + id);                    // borrado en un lado y cambiado en el otro
-      if ((gana === 'mio') === !!me) out.push(queda);
+  // los dos lados han cambiado esto
+  if (suma && typeof b === 'number' && typeof m === 'number' && typeof t === 'number' && SUMABLE.test(ruta)) return Math.round((m + t - b) * 1e8) / 1e8;
+  if (suma && /^\.posiciones\/[^/]+\.lotes$/.test(ruta) && Array.isArray(m) && Array.isArray(t)) return juntarLotes(b, m, t);
+  if (Array.isArray(m) && Array.isArray(t)) {
+    const bl = Array.isArray(b) ? b : null;
+    if (conClaves(bl, m, t)) {
+      const B = new Map((bl || []).map((e) => [claveDe(e), e])), M = new Map(m.map((e) => [claveDe(e), e])), T = new Map(t.map((e) => [claveDe(e), e]));
+      const out = [];
+      for (const id of [...t.map(claveDe), ...m.map(claveDe).filter((id) => !T.has(id))]) {
+        const be = B.get(id), me = M.get(id), te = T.get(id);
+        if (me && te) { out.push(juntar3(be, me, te, gana, choques, ruta + '/' + id, suma)); continue; }
+        const queda = me || te;
+        if (!be) { out.push(queda); continue; }          // nuevo en un lado
+        if (igualJ(queda, be)) continue;                  // borrado en el otro lado sin tocarlo aquí
+        choques.push(ruta + '/' + id);                    // borrado en un lado y cambiado en el otro
+        if ((gana === 'mio') === !!me) out.push(queda);
+      }
+      return out;
     }
-    return out;
+    if (bl && bl.length === m.length && m.length === t.length) return m.map((_, i) => juntar3(bl[i], m[i], t[i], gana, choques, ruta + '/' + i, suma));
   }
   if (esObj(m) && esObj(t)) {
     const bb = esObj(b) ? b : {}, out = {};
     for (const k of new Set([...Object.keys(t), ...Object.keys(m)])) {
-      const v = juntar3(bb[k], m[k], t[k], gana, choques, ruta + '.' + k);
+      const v = juntar3(bb[k], m[k], t[k], gana, choques, ruta + '.' + k, suma);
       if (v !== undefined) out[k] = v;
     }
     return out;
@@ -2481,7 +2504,11 @@ function juntar3(b, m, t, gana, choques, ruta) {
 }
 function juntarCarteras(base, mio, suyo, gana, choques) {
   const sin = (x) => { if (!x) return x; const { actualizado, ...r } = x; return r; };
-  const r = juntar3(base ? sin(base) : undefined, sin(mio), sin(suyo), gana, choques, '');
+  // ¿han apuntado compras o ventas los dos lados? Entonces efectivo, unidades y coste se suman
+  const idsB = new Set(((base && base.movimientos) || []).map((x) => x.id));
+  const nuevos = (x) => ((x && x.movimientos) || []).some((mv) => !idsB.has(mv.id));
+  const suma = !!base && nuevos(mio) && nuevos(suyo);
+  const r = juntar3(base ? sin(base) : undefined, sin(mio), sin(suyo), gana, choques, '', suma);
   r.actualizado = new Date().toISOString();
   return r;
 }
@@ -7726,7 +7753,7 @@ async function cerrarSesion() {
   }
   try { await fbCargar(); await FB.au.signOut(FB.auth); } catch (e) { console.warn(e); }
   try { await IDB.del(IDB_CLAVE); await IDB.del('clave-local'); await IDB.del('clave'); } catch (e) {}
-  for (const k of ['inv-cuenta-enc', 'inv-pend-cuenta', 'inv-bloqueo', 'inv-bloqueo-t', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-asesor-cfg2', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-token', 'inv-gkey-modo', 'inv-ia-agotados']) LS.del(k);
+  for (const k of ['inv-cuenta-enc', 'inv-pend-cuenta', 'inv-cuenta-descartada', 'inv-bloqueo', 'inv-bloqueo-t', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-asesor-cfg2', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-token', 'inv-gkey-modo', 'inv-ia-agotados']) LS.del(k);
   try { localStorage.removeItem('inv-token'); } catch (e) {}
   LS.del('inv-nombre');
   // el widget de Android no puede seguir enseñando la cartera de quien se ha ido
@@ -8297,7 +8324,7 @@ document.addEventListener('click', (e) => {
    ===================================================================== */
 const VERSION = '0.2.0';
 const NOVEDADES = [
-  { v: '0.2.0', f: '2026-10-20', h: '12:00', t: 'Tu cartera, ahora en tu cuenta', cosas: [
+  { v: '0.2.0', f: '2026-10-20', h: '05:03', t: 'Tu cartera, ahora en tu cuenta', cosas: [
     { d: 'perfil', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Cuentas con Google o con correo', x: 'Entras con Google o con tu correo en la web, en Chrome y en la app de Android, que abre la ventanita de Google del propio móvil. Tu cartera se guarda en tu cuenta y la ves igual en el móvil, en el ordenador y en la app.' },
     { d: 'calendario', ir: { v: 'agenda', sel: '.ag-prox' }, t: 'Calendario de lo que viene', x: 'Resultados y dividendos de lo que tienes, con lo que te toca en euros; los de las grandes empresas de dentro de tus fondos; la Fed y el BCE con la hora de España; los días sin bolsa y tus aportaciones. Cada uno con los días que faltan. En Cartera, «Lo que viene» enseña lo próximo.' },
     { d: 'candado', t: 'Igual de privada', x: 'Se sube ya cifrada con la contraseña de tu cartera, que no sale de tu dispositivo: ni GrowFolio ni Google pueden ver tus cifras. El PIN y la huella siguen funcionando encima de la cuenta.' },

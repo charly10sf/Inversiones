@@ -1,6 +1,175 @@
 {
  "versiones": [
   {
+   "v": "0.2.0",
+   "f": "2026-10-20",
+   "h": "05:03",
+   "t": "Tu cartera, ahora en tu cuenta",
+   "commits": [
+    {
+     "cuando": "2026-10-20 05:03",
+     "asunto": "0.2.0: tu cartera en tu cuenta, calendario de lo que viene, GTA VI con tu cartera y la app más pulida",
+     "detalle": [
+      "Cuentas con Google o correo (Google nativo en la app de Android); cartera cifrada en tu cuenta y sincronizada al momento entre dispositivos, a prueba de cortes de conexión",
+      "Si cambias cosas en dos dispositivos a la vez se juntan (dos compras del mismo valor cuentan las dos); si es lo mismo, pregunta con cuál quedarse",
+      "Calendario: resultados y dividendos de lo que tienes y de lo que hay dentro de tus fondos, Fed y BCE, días sin bolsa y tus aportaciones, con los días que faltan",
+      "Barra del móvil con Cartera, Pasos, Expertos, Análisis y Más",
+      "GTA VI: camino desde GTA V, tu cartera en copias, lo que costó el Adder y música synthwave original",
+      "Widget con pastillas de color; acabado más pulido y Cartera más rápida",
+      "Arreglado el reparto de Cartera, que salía cambiado desde la 0.1.17, y la fecha para recomprar tras vender con pérdidas cuando hay cambio de hora por medio"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 04:45",
+     "asunto": "0.2: guardado con revisiones y transacciones, cambios de dos dispositivos que se juntan, música synthwave",
+     "detalle": [
+      "Cada guardado en la cuenta es una transacción sobre un número de revisión: no se pisa nunca lo de otro",
+      "dispositivo y ya no depende del reloj de cada móvil.",
+      "Si dos dispositivos cambian la cartera a la vez, se juntan los cambios (posición a posición); si es lo",
+      "mismo, al guardar pregunta con cuál quedarse y, si no, manda la cuenta y lo de aquí queda aparte.",
+      "Reintentos espaciados (5 s a 10 min) y parada con aviso ante errores que no se arreglan solos.",
+      "Lo pendiente sin conexión se sube al volver la red o al abrir, también con la cartera bloqueada.",
+      "Al entrar en una cuenta que ya tiene cartera, se olvidan las claves de la 0.1 de este dispositivo.",
+      "Fechas sumando días sin el desfase del cambio de hora (regla de recompra, víspera de dividendos).",
+      "Música de GTA VI: synthwave de los ochenta con producción actual, a 112 pulsaciones.",
+      "firestore.rules: las reglas de Firestore, para tenerlas a mano."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 03:31",
+     "asunto": "0.2: sincronización de cuentas a prueba de fallos (revisión independiente)",
+     "detalle": [
+      "Si no se puede leer la cuenta al entrar, ya no se da por vacía: sale «No he podido leer tu cuenta» con Reintentar, y nunca se escribe en la cuenta sin haberla leído; antes de guardar la primera cartera se comprueba que de verdad está vacía",
+      "Cada escritura lleva su sello y la copia del dispositivo su base: lo que se hizo sin conexión sube si la cuenta no ha cambiado entretanto; si otro dispositivo la cambió, manda la cuenta y se avisa",
+      "Guardar sin conexión ya no se queda en «Guardando…»: como mucho 5 s, queda pendiente y se sube solo al volver la conexión (y cada minuto)",
+      "Un cambio de otro dispositivo mientras editas espera a que cierres; si guardas antes, manda lo tuyo",
+      "Tras bloquear y desbloquear, llega lo que cambió entretanto; si la contraseña de la cartera cambia en otro dispositivo, este se bloquea y pide la nueva",
+      "Pasar la cartera de antes: solo se ofrece si se puede abrir (clave recordada o su contraseña), nunca la copia de GitHub de otro; tras subirla se borra del dispositivo junto a sus claves, y la clave de Gemini y el asesor pasan a la cuenta",
+      "Cerrar sesión avisa si hay cambios sin subir, borra más datos de la cuenta del dispositivo y deja el widget de Android en blanco",
+      "En el desbloqueo: «empezar de cero en esta cuenta» si no recuerdas la contraseña de la cartera",
+      "Calendario: fuera las fechas de la IA mal escritas, que rompían la pestaña",
+      "Android: borrarWidget en el puente y un solo hilo para entrar con Google"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 03:05",
+     "asunto": "Registro de cambios: sin las pruebas temporales de las Actions",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 03:02",
+     "asunto": "0.2: repaso de conjunto",
+     "detalle": [
+      "La Action renueva el radar en cuanto le falten las fechas de resultados y dividendos, sin esperar 3 horas",
+      "Paso a paso enlaza con el calendario desde «Fechas que vigilar»; fuera el bloque de fechas de Expertos que ya no se usaba",
+      "Presentación al día: la cartera se guarda cifrada en tu cuenta y hay calendario"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 02:54",
+     "asunto": "0.2: novedades de la 0.2 al día e inglés de lo nuevo",
+     "detalle": [
+      "Novedades de la 0.2: calendario, barra del móvil, GTA VI con tu cartera, widget, acabado y Google nativo en la app, con dibujos nuevos (calendario y acabado)",
+      "Inglés de «Más», el calendario, el estreno, la cuenta, los errores de sincronización y las novedades",
+      "Registro de cambios: títulos traducidos y aviso de que el detalle va en español"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 02:49",
+     "asunto": "0.2: acabado más pulido y arreglo del reparto de Cartera",
+     "detalle": [
+      "Arreglado: desde la 0.1.17 el reparto de Cartera (tipo, región, sector…) salía cambiado por los deslizadores de los límites, porque dos funciones se llamaban igual",
+      "Tarjetas con un degradado suave, un filo de luz arriba y sombra; hojas con relieve; botón principal con brillo",
+      "Títulos y párrafos que se reparten mejor en líneas, títulos de pestaña algo más grandes y cifras siempre alineadas",
+      "Un halo dorado muy tenue detrás de tu patrimonio, que además cuenta hasta el valor nuevo cuando cambia en vez de saltar",
+      "La cabecera gana una sombra fina al bajar; selección de texto y barras de desplazamiento a juego"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 02:46",
+     "asunto": "0.2: GTA VI compara con tu cartera, música original y en inglés",
+     "detalle": [
+      "Lo que tienes, en copias: una barra de neón por cada posición",
+      "Quién ha pagado más copias mientras esperabas: lo que ha ganado o perdido cada posición desde el primer tráiler",
+      "Tu aportación de cada mes en copias y las que sumas hasta que salga; cuántos Adders vale tu mayor posición",
+      "Música de fondo original (electro francés de los ochenta generado con Web Audio, sin archivos): sube poco a poco al abrir, se calla al cerrar o al salir de la app y tiene botón de silencio que se recuerda",
+      "El coche enciende los faros al entrar y un reflejo recorre la carrocería",
+      "Calendario y GTA VI escritos en los dos idiomas"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 02:30",
+     "asunto": "0.2: más fluida y más moderna",
+     "detalle": [
+      "Cada pestaña entra con una animación corta; las hojas suben desde abajo y en el móvil se cierran arrastrando el asa",
+      "Barra del móvil con una pastilla detrás de la pestaña activa; botones y filas se hunden un poco al tocarlos",
+      "En la app de Android, un toque suave (la vibración de las teclas) al cambiar de pestaña o elegir algo",
+      "Cabecera que cabe entre 961 y 1240 px (nombres cortos y Pregúntale solo con su icono); por debajo de 961 px, la barra de abajo",
+      "Más rápida al pintar: las ideas, los planes de venta y el paso a paso se calculan una vez por cálculo de la cartera (Cartera, de 325 a 190 ms con la CPU a un cuarto)"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 02:24",
+     "asunto": "0.2: el rincón de GTA VI, rehecho con más dibujo y menos texto",
+     "detalle": [
+      "De GTA V a GTA VI: el porcentaje del camino (desde el 17 de septiembre de 2013), una barra con los hitos que se llena al verla, los años y la lista de fechas",
+      "Tu cartera en copias del juego con un dibujo de cajas, y cuatro cifras cortas: lo regalado por la bolsa, hoy, dividendos y acciones de Take-Two",
+      "Lo que costó el Adder: un superdeportivo de neón dibujado para GrowFolio, la estimación por tareas (unos 25.000 €) en una barra de colores y cuántos Adders paga tu cartera",
+      "Mientras esperabas: la línea de tu cartera desde el primer tráiler, con los dos tráileres marcados",
+      "Fuera el tráiler de lanzamiento con su coste y las cifras que no aportaban (el año en que pagarías el juego, visitas por euro…)"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 02:17",
+     "asunto": "0.2: calendario de lo que viene, barra con Análisis, widget con pastillas y Google nativo",
+     "detalle": [
+      "Calendario nuevo (en «Más» y en Cartera, «Lo que viene»): resultados y dividendos de tus acciones con lo que te toca en euros, resultados de las grandes empresas de dentro de tus fondos, Fed y BCE con la hora de España, días sin bolsa, GTA VI y tus aportaciones, con los días que faltan",
+      "La Action guarda en el radar el día de resultados (y si es antes de abrir o tras el cierre), la fecha de corte, el día de pago y el dividendo por acción en euros",
+      "Barra del móvil: Cartera, Pasos, Expertos, Análisis y Más (Calendario, Mercados, Fiscalidad, Objetivos)",
+      "Widget: lo que más ha movido hoy la cartera en pastillas de color, como en la app",
+      "ID de cliente web de Firebase para entrar con Google nativo en la app de Android",
+      "Fuera la prueba temporal de los campos de Yahoo"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 01:52",
+     "asunto": "0.2: todos con cuenta (sin GitHub ni token), opiniones al formulario de Google, barra del móvil con cinco botones y «Más», análisis de la IA sincronizado en la cuenta",
+     "detalle": [
+      "Modo cuenta para todo el mundo, también el dueño; la cartera de este dispositivo o la copia de GitHub se ofrece subir en la bienvenida",
+      "Estreno antes de entrar para quien venía de la 0.1 y presentación antes de entrar la primera vez",
+      "opinion.json: formulario GrowFolio Feedback con sus cinco campos",
+      "Barra inferior: Cartera, Pasos, Expertos, Mercados y Más (Análisis, Fiscalidad, Objetivos y Ajustes)",
+      "El análisis propio de la IA se guarda cifrado en la cuenta y se lee en cualquier dispositivo"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 01:23",
+     "asunto": "0.2: textos en inglés de entrar con Google en la app",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 01:22",
+     "asunto": "0.2: entrar con Google nativo en la app de Android (Credential Manager); en ramas la app se compila sin publicarse",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 01:20",
+     "asunto": "0.2.0 (rama, sin publicar): cuentas con Google o correo, cartera sincronizada, entrada con saludo y estreno",
+     "detalle": [
+      "Modos: cuenta (nuevo, por defecto para quien llega), local y github; #cuenta, #mia y #github en la dirección",
+      "Firebase Authentication (Google con ventana o redirección; correo y contraseña; recuperar contraseña) cargado solo en modo cuenta",
+      "Cartera cifrada en Firestore (usuarios/{uid}); copia en el dispositivo para abrir sin conexión; lo no subido se sube al volver",
+      "Cambios de otros dispositivos llegan solos (onSnapshot)",
+      "Bienvenida de cuenta nueva: nombre y subir la cartera que ya había en el dispositivo (local o de GitHub) con su misma contraseña",
+      "Entrada animada: el logo se monta y saluda según la hora con tu nombre; saludo también encima del patrimonio",
+      "Pantalla de estreno de la 0.2 una vez, con botón para pasar la cartera a una cuenta",
+      "Ajustes: Tu cuenta (cerrar sesión) o pasar a una cuenta; nombre en el perfil",
+      "Arreglo: la numeración antigua de versiones (0.x.0) ya no se confunde con la 0.2.0"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.1.17",
    "f": "2026-10-20",
    "h": "01:06",
