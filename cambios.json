@@ -7,6 +7,21 @@
    "t": "Tu perfil, tus avisos y cualquier bróker",
    "commits": [
     {
+     "cuando": "2026-10-20 17:15",
+     "asunto": "0.2.2: botón «Ordenar» arriba en Cartera, junto al saludo (el de abajo del todo se quedaba escondido)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 16:48",
+     "asunto": "Reglas de Firestore: el resultado como aviso del run",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 16:36",
+     "asunto": "Action para publicar las reglas de Firestore sola (con el secreto FIREBASE_REGLAS; sin él no hace nada)",
+     "detalle": []
+    },
+    {
      "cuando": "2026-10-20 16:35",
      "asunto": "0.2.2: la bandera británica del dibujo, sin borde negro y con las esquinas redondas; «en pruebas» centrado",
      "detalle": []
