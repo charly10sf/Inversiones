@@ -1366,7 +1366,8 @@ table td.txt { white-space: normal; min-width: 260px; }
   background: radial-gradient(70% 90% at 0% 0%, rgba(226, 180, 95, 0.11), rgba(226, 180, 95, 0) 70%), linear-gradient(180deg, #0D0C0A, #050504); }
 .hero-cifra { grid-area: cifra; position: relative; z-index: 2; padding: 0 28px; pointer-events: none; min-width: 0; }
 .hero-lbl { font-size: 13.5px; transition: color 0.15s ease; }
-.hero-num.mira { color: var(--accent); }
+/* al pasar el dedo la cifra sigue en blanco: lo que cambia es la etiqueta de arriba, que dice el día */
+.hero-cifra:has(.hero-num.mira) .hero-lbl { color: var(--accent); }
 .hero-var { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 10px; min-height: 30px; }
 .hv-p { display: inline-flex; align-items: center; gap: 7px; padding: 4px 12px 4px 10px; border-radius: 999px; font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; white-space: nowrap; }
 .hv-p.up { background: var(--up-bg); color: var(--up); }
