@@ -2855,8 +2855,19 @@ body.con-ixn { overflow: hidden; }
 .idea[data-compacta]:not(.abierta) > :not(header) { display: none; }
 .idea[data-compacta] > header::after { content: '›'; color: var(--muted); font-size: 20px; margin-left: 6px; transition: transform 0.15s; }
 .idea[data-compacta].abierta > header::after { transform: rotate(90deg); }
+/* todas de la misma altura: el nombre y el origen en una línea cada uno, recortados si no caben */
+.idea[data-compacta] > header { min-height: 46px; }
+.idea[data-compacta] > header > div { display: grid; gap: 2px; }
+.idea[data-compacta] > header small { flex-wrap: nowrap; white-space: nowrap; overflow: hidden; }
+.idea[data-compacta] > header small > span { overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.idea[data-compacta] .idea-res small { font-size: 11.5px; }
+/* en el móvil, al bajar se van apilando arriba, cada una un poco más abajo que la anterior; la abierta, no */
+@media (max-width: 759px) {
+  .ideas-top3 > .idea[data-compacta]:not(.abierta) { position: sticky; top: calc(130px + env(safe-area-inset-top) + var(--k, 0) * 7px); z-index: 1; }
+  .ideas-top3 > .idea[data-compacta] { box-shadow: 0 -10px 24px -12px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.05); }
+}
 .idea .idea-n { color: var(--text-2); background: rgba(255, 255, 255, 0.06); }
-.idea.top { border-color: rgba(79, 201, 149, 0.45); background: linear-gradient(135deg, rgba(79, 201, 149, 0.1), var(--plane) 55%); }
+.idea.top { border-color: rgba(79, 201, 149, 0.45); background: linear-gradient(135deg, rgba(79, 201, 149, 0.1), rgba(19, 18, 16, 0) 55%), var(--plane); }
 .idea.top .idea-n { color: #04140d; background: var(--up); }
 .sec-det > summary { list-style: none; cursor: pointer; }
 .sec-det > summary::-webkit-details-marker { display: none; }
@@ -6517,8 +6528,8 @@ function tarjetaIdea(x, ctx, compacta = false, puesto = 0) {
     enlacesFuentes(fuentes, 4),
   ].filter(Boolean).join('');
   const resumen = x.esp && x.esp.prin && x.esp.prin.netoP != null ? { n: pctS(x.esp.prin.netoP, 0), en: `en ${plazoTxt(x.esp.prin.meses)}, neto` } : null;
-  return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}${puesto && puesto <= 3 ? ' top' : ''}"${compacta ? ' data-compacta' : ''}>
-    <header${compacta ? ' data-idea-toggle role="button" tabindex="0" aria-expanded="false"' : ''}>${puesto ? `<span class="idea-n" aria-label="${L(`Número ${puesto}`, `Number ${puesto}`)}">${puesto}</span>` : ''}${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? lineaOrigen(r) : esc(x.s)}</small></div>${compacta ? `<span class="idea-res">${resumen ? `<b class="${cls(x.esp.prin.netoP)}">${esc(resumen.n)}</b><small>${esc(resumen.en)}</small>` : ''}</span>` : ''}</header>
+  return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}${puesto && puesto <= 3 ? ' top' : ''}"${compacta ? ` data-compacta style="--k:${Math.max(0, puesto - 1)}"` : ''}>
+    <header${compacta ? ' data-idea-toggle role="button" tabindex="0" aria-expanded="false"' : ''}>${puesto ? `<span class="idea-n" aria-label="${L(`Número ${puesto}`, `Number ${puesto}`)}">${puesto}</span>` : ''}${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? (compacta ? lineaOrigenCorta(r) : lineaOrigen(r)) : esc(x.s)}</small></div>${compacta ? `<span class="idea-res">${resumen ? `<b class="${cls(x.esp.prin.netoP)}">${esc(resumen.n)}</b><small>${esc(resumen.en)}</small>` : ''}</span>` : ''}</header>
     <p class="idea-quien">${quienIdea(x)}${ctr ? ` <span class="ctr-q">${htmlContraste(ctr, true)} señales a favor</span>` : ''}</p>
     ${htmlCifrasIdea(r, x.esp)}
     ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
@@ -7577,6 +7588,8 @@ function origenRadar(x) {
   const sede = PAIS_DE_NOMBRE[x && x.pais] || null;
   return { bolsa, ciudad, sede, sedeNombre: sede ? PAISES[sede] : (x && x.pais) || null, distinta: !!(sede && bolsa && sede !== bolsa) };
 }
+// en las ideas compactas, una línea que siempre cabe: la bandera de la bolsa y el sector (o la ciudad)
+const lineaOrigenCorta = (x) => { const o = origenRadar(x); return `${bandera(o.bolsa || o.sede)}<span>${esc(x.sector || o.ciudad || x.z || '')}</span>`; };
 const lineaOrigen = (x) => { const o = origenRadar(x); return `${bandera(o.bolsa || o.sede)} ${esc(x.sector || '')}${x.sector ? ', ' : ''}${o.ciudad ? `bolsa de ${esc(o.ciudad)}` : esc(x.z || '')}${o.distinta ? `, sede en ${esc(o.sedeNombre)}` : ''}`; };
 const iniciales = (t) => String(t || '?').replace(/\(.*?\)/g, '').trim().split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase();
 function logo(dominio, nombre, clase = '') {
@@ -11303,7 +11316,6 @@ const NOVEDADES = [
     { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: '«Cómo vas», en Análisis', x: 'La tarjeta que te dice si vas bien sale ahora arriba de Análisis, justo encima de tus objetivos, y ya no en el Paso a paso.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.hero-num' }, t: 'El patrimonio se enciende', x: 'Cuando cambia con los precios en directo, la cifra se pone un momento en verde si sube y en rojo si baja.' },
     { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: '«Inicio», desde que empezaste a invertir', x: 'La primera vez que lo tocas te pregunta en qué mes y año empezaste a invertir, no cuándo empezaste a usar GrowFolio, y la pastilla dice lo ganado de verdad desde entonces. Lo cambias en tu perfil.' },
-    { d: 'gta', ir: { v: 'cartera', sel: '.gta-top' }, t: 'GTA VI, con vida', x: 'El «VI» es más grueso, parpadea de vez en cuando como un rótulo de neón y la pastilla brilla suave.' },
     { d: 'intro', t: 'La presentación, al día', x: 'La que sale la primera vez va en el orden de la barra y cada idea dice en qué sitio la tienes: Inicio, Pasos, Análisis, Expertos o Mercados.' },
     { d: 'mundo', ir: { v: 'expertos', sel: '.fx3-lista' }, t: 'Expertos, más directo', x: 'La cabecera ocupa la mitad, sin el hueco del botón suelto, y tus posiciones van primero; lo último de la prensa, después.' },
     { d: 'ajustes', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Ajustes, sin lo de la 0.2', x: 'Fuera «Ver lo nuevo de la 0.2», que ya no tocaba.' },
@@ -11329,7 +11341,6 @@ const NOVEDADES = [
     { d: 'calendario', ir: { v: 'agenda', sel: '.agc-fila' }, t: 'Calendario más compacto', x: 'Dos filtros, «Solo lo mío» y «En general», y lo próximo en entradas cortas: caben seis de un vistazo y, en el ordenador, van en dos columnas.' },
     { d: 'macro', t: 'Las noticias, sin salir', x: 'Toca una noticia y GrowIA te la resume entera ahí mismo y, si te afecta, te dice qué supone para tu cartera. La original sigue debajo.' },
     { d: 'app', t: 'El widget, más fácil de leer', x: 'Solo lo de hoy, en euros y en %. Toca el periodo de arriba para elegir cuánto enseña la curva: 1 semana, 1 mes, 3 meses o 1 año. Llega con la app nueva de Android.' },
-    { d: 'gta', ir: { v: 'cartera', sel: '.gta-top' }, t: 'GTA VI, con letra de neón', x: 'El VI de la cuenta atrás, con letra de rótulo de neón de los ochenta.' },
     { d: 'tour', ir: { tour: true }, t: 'Un tutorial nuevo', x: 'Nueve pasos en vez de quince: empieza por la barra y acaba en lo que hay que hacer para empezar. Está en Ajustes. A quien empieza, esa lista se le queda en Inicio hasta que la completa.' },
   ], arreglos: [
     '«En directo» se cortaba en la cabecera de algunos móviles.',
@@ -11620,7 +11631,7 @@ function estreno02(visto, despues) {
    tutorial) y un «Enséñamelo todo» que las recorre en orden. Las versiones anteriores, plegadas una a una con sus
    dibujos y sus textos. */
 function mostrarNovedades(desde, alCerrar, lista = false) {
-  LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); LS.set('inv-023b-arr', true);
+  LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); LS.set('inv-023b-arr', true); LS.set('inv-nov-030', true);
   let nuevas = NOVEDADES.filter((n) => (n.cosas || n.arreglos) && desde && cmpVer(n.v, desde) > 0);
   if (!nuevas.length) nuevas = [NOVEDADES[0]];
   // al estrenar versión, lo nuevo se cuenta bajando (como la presentación); desde Ajustes, la lista
@@ -11661,10 +11672,15 @@ const COLORES_NOV = ['#E2B45F', '#4FC995', '#3987e5', '#d55181', '#d95926'];
 function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   const quieta = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pasos = [], cosas = [];
+  const gorda = nuevas.find((n) => /^\d+\.\d+\.0$/.test(n.v));
+  const manda = !!gorda && nuevas.slice(0, nuevas.indexOf(gorda)).every((m) => m.v.startsWith(gorda.v));
+  const juntas = !!gorda && nuevas.every((m) => m.v.startsWith(gorda.v));
+  if (juntas) nuevas = [...nuevas].reverse();
   for (const n of nuevas) for (const c of n.cosas || []) { cosas.push({ ...c, v: n.v, paso: c.ir ? pasos.length : null }); if (c.ir) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
   const arreglos = nuevas.flatMap((n) => (n.arreglos || []).map((t) => ({ t, v: n.v })));
   const cuenta = [cosas.length ? L(`${cosas.length} ${cosas.length === 1 ? 'novedad' : 'novedades'}`, `${cosas.length} new ${cosas.length === 1 ? 'thing' : 'things'}`) : '', arreglos.length ? L(`${arreglos.length} ${arreglos.length === 1 ? 'bug corregido' : 'bugs corregidos'}`, `${arreglos.length} ${arreglos.length === 1 ? 'bug fixed' : 'bugs fixed'}`) : ''].filter(Boolean).join(' · ');
-  const n0 = nuevas[0], ver = n0.v;
+  const n0 = manda ? gorda : nuevas[0], ver = n0.v;
+  const varias = nuevas.length > 1 && !juntas;
   const raiz = document.createElement('div');
   raiz.className = `intro ix ixn${quieta ? ' quieta' : ''}`;
   raiz.setAttribute('role', 'dialog'); raiz.setAttribute('aria-modal', 'true'); raiz.setAttribute('aria-label', `Novedades de la ${ver}`);
@@ -11672,7 +11688,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     <div class="ix-cab"><span class="intro-marca" style="opacity:1"><img src="favicon.svg" alt="">GrowFolio</span><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
       <section class="ixn-heroe"><div class="ix-escena">
-        <p class="ixn-eti" data-no-trad>${nuevas.length > 1 ? L(`Lo que te has perdido desde la ${esc(desde)}`, `What you've missed since ${esc(desde)}`) : L('Lo nuevo', "What's new")}</p>
+        <p class="ixn-eti" data-no-trad>${varias ? L(`Lo que te has perdido desde la ${esc(desde)}`, `What you've missed since ${esc(desde)}`) : L('Lo nuevo', "What's new")}</p>
         <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l, k, a) => `<span aria-hidden="true" style="--k:${k};--d:${(k - (a.length - 1) / 2).toFixed(1)}">${esc(l)}</span>`).join('')}</h1>
         <div class="ix-lema"><h2>${esc(n0.t)}</h2><p><span>${fechaNov(n0.f, n0.h)}</span> · <span data-no-trad>${cuenta}</span></p></div>
         <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
@@ -11680,12 +11696,12 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
       ${cosas.map((c, k) => `<section class="ix-cap" data-lado="${k % 2 ? 'd' : 'i'}" data-color="${COLORES_NOV[k % COLORES_NOV.length]}">
         <div class="ix-cap-in">
           <div class="ix-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true"><g transform="translate(0 5) scale(2)">${DIBUJOS[c.d] || DIBUJOS.pulido || ''}</g></svg></div>
-          <div class="ix-txt">${nuevas.length > 1 ? `<span class="ixn-v">${esc(c.v)}</span>` : ''}<h2 data-no-trad data-t="${esc(c.t)}" aria-label="${esc(c.t)}"></h2><p>${esc(c.x)}</p>${c.paso != null ? `<button type="button" class="btn ixn-ir" data-nv-ir="${c.paso}">Enséñamelo</button>` : ''}</div>
+          <div class="ix-txt">${varias ? `<span class="ixn-v">${esc(c.v)}</span>` : ''}<h2 data-no-trad data-t="${esc(c.t)}" aria-label="${esc(c.t)}"></h2><p>${esc(c.x)}</p>${c.paso != null ? `<button type="button" class="btn ixn-ir" data-nv-ir="${c.paso}">Enséñamelo</button>` : ''}</div>
         </div>
       </section>`).join('')}
       ${arreglos.length ? `<section class="ixn-arr" aria-labelledby="ixnArrT"><div class="ixn-arr-in">
         <h2 id="ixnArrT">Bugs corregidos</h2>
-        <ul>${arreglos.map((a, k) => `<li style="--i:${k}">${ICONOS.ok}<span>${nuevas.length > 1 ? `<span class="ixn-v">${esc(a.v)}</span>` : ''}${esc(a.t)}</span></li>`).join('')}</ul>
+        <ul>${arreglos.map((a, k) => `<li style="--i:${k}">${ICONOS.ok}<span>${varias ? `<span class="ixn-v">${esc(a.v)}</span>` : ''}${esc(a.t)}</span></li>`).join('')}</ul>
       </div></section>` : ''}
       <section class="ix-fin">
         <div class="ix-fin-logo">${logoEntero()}</div>
@@ -12834,6 +12850,7 @@ function bienvenida(intento = 0) {
   // la 0.2 llega con su propia pantalla de estreno, una vez
   // la presentación de la 0.2 (la nueva, más completa): una vez a todos los que ya usaban GrowFolio
   if (visto && cmpVer(VERSION, '0.2.0') >= 0 && !LS.get('inv-estreno-02b')) return estreno02(visto, despues);
+  if ((visto === '0.3.0' || visto === '0.3.0b') && !LS.get('inv-nov-030')) return mostrarNovedades('0.2.3b', despues);
   if (!visto || cmpVer(visto, VERSION) < 0) return mostrarNovedades(visto, despues);
   // la 0.2.3b estuvo unos minutos sin sus bugs corregidos: a quien la abrió entonces se le enseña otra vez, una sola
   if (visto === '0.2.3b' && !LS.get('inv-023b-arr')) return mostrarNovedades('0.2.3', despues);
