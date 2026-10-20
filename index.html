@@ -9,7 +9,7 @@
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<meta name="theme-color" content="#12110F">
+<meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -22,14 +22,15 @@
    Los cinco colores de categoría (reparto) están validados para daltonismo sobre este fondo. */
 :root {
   color-scheme: dark;
-  /* Grafito cálido y latón: el dorado marca "tu dinero" (tu cartera, lo probable, la sección activa);
-     verde y coral solo significan sube y baja. Las cinco categorías del reparto están validadas para daltonismo. */
-  --bg: #12110F;
-  --plane: #1A1916;
-  --plane-2: #23211D;
-  --plane-3: #2C2A25;
-  --line: #2A2723;
-  --line-2: #3A362F;
+  /* Negro puro (en pantallas AMOLED, píxel apagado) con superficies de grafito cálido y latón: el dorado marca
+     "tu dinero" (tu cartera, lo probable, la sección activa); verde y coral solo significan sube y baja.
+     Las cinco categorías del reparto están validadas para daltonismo. */
+  --bg: #000000;
+  --plane: #131210;
+  --plane-2: #1C1A17;
+  --plane-3: #26241F;
+  --line: #23211D;
+  --line-2: #34302A;
   --text: #F1EDE5;
   --text-2: #BDB6A8;
   --muted: #8E877A;
@@ -66,7 +67,7 @@ a:hover { text-decoration: underline; }
 .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
 /* ---------- cabecera ---------- */
-.top { position: sticky; top: 0; z-index: 30; background: rgba(18, 17, 15, 0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding-top: env(safe-area-inset-top); }
+.top { position: sticky; top: 0; z-index: 30; background: rgba(0, 0, 0, 0.86); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); padding-top: env(safe-area-inset-top); }
 .fila-top { display: flex; align-items: center; gap: 18px; height: 58px; }
 .marca { display: flex; align-items: center; gap: 10px; font-weight: 700; font-size: 16px; letter-spacing: -0.02em; flex: none; }
 .marca img { width: 28px; height: 28px; border-radius: 8px; }
@@ -98,7 +99,7 @@ a:hover { text-decoration: underline; }
 @media (max-width: 960px) {
   :root { --nav-h: 62px; }
   .nav { display: none; }
-  .navbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgba(26, 25, 22, 0.95); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
+  .navbar { display: grid; grid-template-columns: repeat(5, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; height: calc(var(--nav-h) + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); border-top: 1px solid var(--line); }
   .navbar a, .navbar .nav-mas { display: grid; justify-items: center; align-content: center; gap: 3px; color: var(--muted); font-size: 11px; text-decoration: none; min-width: 0; }
   .navbar .nav-mas { border: 0; background: none; font: inherit; font-size: 11px; cursor: pointer; padding: 0; }
   .navbar .nav-mas svg { width: 22px; height: 22px; }
@@ -533,7 +534,7 @@ a.kpi:hover .v { color: var(--accent); }
 @media (max-width: 760px) { .ficha { border-left: 0; animation-name: subeFicha; } }
 @keyframes subeFicha { from { transform: translateY(24px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .ficha { animation: none; } }
-.ficha-cab { position: sticky; top: 0; z-index: 2; background: rgba(18, 17, 15, 0.95); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: calc(14px + env(safe-area-inset-top)) 24px 0; border-bottom: 1px solid var(--line); }
+.ficha-cab { position: sticky; top: 0; z-index: 2; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: calc(14px + env(safe-area-inset-top)) 24px 0; border-bottom: 1px solid var(--line); }
 .ficha-tit { display: flex; gap: 12px; align-items: flex-start; }
 .ficha-tit h2 { margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -0.02em; }
 .ficha-tit small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
@@ -7657,7 +7658,7 @@ function pantallaCuenta(errorTxt = '') {
       S.googleT = setTimeout(() => fin(`${trad('Google no ha contestado. Vuelve a probar o entra con tu correo.')} (${paso})`), 45000);
       window.resultadoGoogle = async (ok, x) => {
         clearTimeout(S.googleT);
-        if (!ok) { fin(/CANCEL/i.test(x || '') ? '' : /NO_CREDENTIAL/i.test(x || '') ? 'No hay ninguna cuenta de Google en este móvil: añádela en Ajustes de Android o entra con tu correo.' : `No se pudo entrar con Google (${x}).`); return; }
+        if (!ok) { fin(/CANCEL/i.test(x || '') ? '' : /NO_CREDENTIAL/i.test(x || '') ? 'No hay ninguna cuenta de Google en este móvil: añádela en Ajustes de Android o entra con tu correo.' : /codigo 10$/.test(x || '') ? `${trad('Google no reconoce esta app: falta su huella (SHA-1) en Firebase.')} (${x})` : `No se pudo entrar con Google (${x}).`); return; }
         tx.textContent = trad('Entrando…');
         try {
           paso = 'firebase'; await conTiempo(fbCargar(), 20000);
@@ -7665,7 +7666,9 @@ function pantallaCuenta(errorTxt = '') {
           FB.user = FB.auth.currentUser; paso = 'cuenta'; await dentro();
         } catch (e) { console.warn(e); fin(e && e.message === 'tiempo' ? `${trad('Google ha contestado, pero no se ha podido terminar de entrar. Vuelve a probar.')} (${paso})` : errorFb(e)); }
       };
-      try { window.InversionesApp.entrarGoogle(FB_GOOGLE_WEB); } catch (e) { fin('Esta versión de la app no sabe entrar con Google: actualízala desde Ajustes.'); }
+      // el selector clásico de Google Play (app 0.2.0 compilación 19 en adelante) y, si no lo hay, Credential Manager
+      const clasico = (() => { try { return !!window.InversionesApp.googleClasico(); } catch (e) { return false; } })();
+      try { if (clasico) window.InversionesApp.entrarGoogleClasico(FB_GOOGLE_WEB); else window.InversionesApp.entrarGoogle(FB_GOOGLE_WEB); } catch (e) { fin('Esta versión de la app no sabe entrar con Google: actualízala desde Ajustes.'); }
       return;
     }
     try {
@@ -8346,7 +8349,7 @@ const NOVEDADES = [
     { d: 'calendario', ir: { v: 'agenda', sel: '.ag-prox' }, t: 'Calendario de lo que viene', x: 'Resultados y dividendos de lo que tienes, con lo que te toca en euros; los de las grandes empresas de dentro de tus fondos; la Fed y el BCE con la hora de España; los días sin bolsa y tus aportaciones. Cada uno con los días que faltan. En Cartera, «Lo que viene» enseña lo próximo.' },
     { d: 'candado', t: 'Igual de privada', x: 'Se sube ya cifrada con la contraseña de tu cartera, que no sale de tu dispositivo: ni GrowFolio ni Google pueden ver tus cifras. El PIN y la huella siguen funcionando encima de la cuenta.' },
     { d: 'app', t: 'Sincronizada al momento', x: 'Si cambias algo en el móvil, el ordenador lo recibe solo, sin recargar. Sin conexión se guarda en el dispositivo y se sube en cuanto vuelve la red. Si cambias cosas distintas en dos dispositivos a la vez, se juntan; si es lo mismo, te pregunta con cuál quedarte.' },
-    { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar [data-mas], .nav [data-ir="agenda"]' }, t: 'Barra del móvil más clara', x: 'Cinco botones: Cartera, Pasos, Expertos, Análisis y Más, que abre el Calendario, Mercados, Fiscalidad, Objetivos y Ajustes. La pestaña en la que estás lleva una pastilla y, en la app, el móvil vibra un poco al cambiar.' },
+    { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar [data-mas], .nav [data-ir="agenda"]' }, t: 'Barra del móvil más clara', x: 'Cinco botones: Cartera, Pasos, Expertos, Análisis y Más, que abre el Calendario, Mercados, Fiscalidad y Objetivos (Ajustes, arriba, en la rueda). La pestaña en la que estás lleva una pastilla y, en la app, el móvil vibra un poco al cambiar.' },
     { d: 'gta', ir: { v: 'cartera', sel: '[data-gta]' }, t: 'GTA VI, con tu cartera', x: 'El camino desde GTA V (17 de septiembre de 2013) en porcentaje, lo que tienes medido en copias del juego, lo que costó hacer el Adder y cuántos pagaría tu cartera, qué posición ha pagado más copias desde el primer tráiler y música synthwave original de fondo, con su botón de silencio.' },
     { d: 'app', t: 'El widget, como la app', x: 'Lo que más ha movido hoy tu cartera sale en el widget en pastillas de color, igual que en Cartera.' },
     { d: 'pulido', t: 'Más pulida y más rápida', x: 'Tarjetas con algo de relieve, títulos más legibles, pestañas que entran con una animación corta, hojas que se cierran arrastrándolas y un patrimonio que cuenta hasta el valor nuevo en vez de saltar. Cartera se pinta casi el doble de rápido, y vuelve el reparto de Cartera, que desde la 0.1.17 salía cambiado.' },
@@ -8654,10 +8657,9 @@ const TOUR = [
 ];
 let TOURE = null;
 const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
-/* «Más» en la barra del móvil: Análisis, Fiscalidad y Objetivos en tarjetas, y Ajustes */
+/* «Más» en la barra del móvil: Calendario, Mercados, Fiscalidad y Objetivos en tarjetas (Ajustes está arriba, en la rueda) */
 function abrirMas() {
-  const h = hoja('Más', `<div class="mas-g">${EN_MAS.map(([k, x]) => { const v = VISTAS.find(([kk]) => kk === k); return `<a class="mas-t${S.vista === k ? ' on' : ''}" href="#${k}" data-cerrar>${ICONOS[k]}<span><b>${esc(v[1])}</b><small>${esc(x)}</small></span></a>`; }).join('')}
-      <button type="button" class="mas-t mas-aj" data-accion="ajustes" data-cerrar>${ICONOS.ajustes}<span><b>Ajustes</b><small>Tu cuenta, idioma, seguridad, la app y ayuda</small></span></button></div>`);
+  const h = hoja('Más', `<div class="mas-g">${EN_MAS.map(([k, x]) => { const v = VISTAS.find(([kk]) => kk === k); return `<a class="mas-t${S.vista === k ? ' on' : ''}" href="#${k}" data-cerrar>${ICONOS[k]}<span><b>${esc(v[1])}</b><small>${esc(x)}</small></span></a>`; }).join('')}</div>`);
   h.el.classList.add('hoja-mas');
 }
 document.addEventListener('click', (e) => { if (e.target.closest('[data-mas]')) abrirMas(); });
@@ -10591,7 +10593,7 @@ async function capturarRecorte(r) {
     const escala = Math.min(2, window.devicePixelRatio || 1, 1600 / Math.max(r.width, 1));
     const lienzo = await html2canvas(document.documentElement, {
       x: r.left + window.scrollX, y: r.top + window.scrollY, width: r.width, height: r.height,
-      scale: escala, backgroundColor: '#12110F', useCORS: true, logging: false,
+      scale: escala, backgroundColor: '#000000', useCORS: true, logging: false,
       ignoreElements: (el) => el.id === 'recorte' || el.id === 'toast',
     });
     img = lienzo.toDataURL('image/jpeg', 0.86);

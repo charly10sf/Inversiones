@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="fondo">#FF12110F</color>
+    <color name="fondo">#FF000000</color>
     <color name="plano">#FF1A1916</color>
     <color name="linea">#FF2A2723</color>
     <color name="texto">#FFF1EDE5</color>
@@ -14,7 +14,7 @@
     <style name="Tema" parent="@android:style/Theme.DeviceDefault.NoActionBar">
         <item name="android:windowBackground">@color/fondo</item>
         <item name="android:statusBarColor">@color/fondo</item>
-        <item name="android:navigationBarColor">@color/plano</item>
+        <item name="android:navigationBarColor">@color/fondo</item>
         <item name="android:windowLightStatusBar">false</item>
         <item name="android:colorAccent">@color/acento</item>
     </style>

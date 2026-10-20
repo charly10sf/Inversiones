@@ -26,6 +26,7 @@ public class Principal extends Activity {
     static final String WEB = "https://charly10sf.github.io/Inversiones/";
     private static final int ELEGIR_ARCHIVO = 7;
     private static final int PERMISO_INSTALAR = 8;
+    static final int ENTRAR_GOOGLE = 9;
     private File pendiente;
     private WebView web;
     private ValueCallback<Uri[]> archivos;
@@ -38,7 +39,7 @@ public class Principal extends Activity {
     protected void onCreate(Bundle guardado) {
         super.onCreate(guardado);
         web = new WebView(this);
-        web.setBackgroundColor(0xFF12110F);
+        web.setBackgroundColor(0xFF000000);
         web.setFitsSystemWindows(true);
         // sin la barra de desplazamiento del navegador a la derecha: en la app se desliza con el dedo
         web.setVerticalScrollBarEnabled(false);
@@ -200,6 +201,22 @@ public class Principal extends Activity {
 
     @Override
     protected void onActivityResult(int pedido, int resultado, Intent datos) {
+        if (pedido == ENTRAR_GOOGLE) {
+            // vuelta del selector de cuentas de Google: el token va a la web, que lo cambia por la sesión de Firebase
+            try {
+                com.google.android.gms.auth.api.signin.GoogleSignInAccount c = com.google.android.gms.auth.api.signin.GoogleSignIn
+                        .getSignedInAccountFromIntent(datos).getResult(com.google.android.gms.common.api.ApiException.class);
+                String token = c != null ? c.getIdToken() : null;
+                js(token != null ? "window.resultadoGoogle && window.resultadoGoogle(true, " + JSONObject.quote(token) + ")"
+                        : "window.resultadoGoogle && window.resultadoGoogle(false, 'sin token')");
+            } catch (com.google.android.gms.common.api.ApiException e) {
+                int c = e.getStatusCode();
+                js("window.resultadoGoogle && window.resultadoGoogle(false, " + JSONObject.quote((c == 12501 ? "CANCELADO " : "codigo ") + c) + ")");
+            } catch (Exception e) {
+                js("window.resultadoGoogle && window.resultadoGoogle(false, " + JSONObject.quote(String.valueOf(e)) + ")");
+            }
+            return;
+        }
         if (pedido == PERMISO_INSTALAR) {
             File f = pendiente;
             pendiente = null;

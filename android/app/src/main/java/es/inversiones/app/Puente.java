@@ -146,6 +146,30 @@ public class Puente {
         return true;
     }
 
+    /** Entrar con Google con el selector de cuentas clásico de Google Play: funciona en todos los móviles con
+     *  Google, también donde el de Credential Manager no contesta (algunos Samsung con Android 14). */
+    @JavascriptInterface
+    public boolean googleClasico() {
+        return true;
+    }
+
+    @JavascriptInterface
+    public void entrarGoogleClasico(String clienteWeb) {
+        act.runOnUiThread(() -> {
+            try {
+                com.google.android.gms.auth.api.signin.GoogleSignInOptions o = new com.google.android.gms.auth.api.signin.GoogleSignInOptions
+                        .Builder(com.google.android.gms.auth.api.signin.GoogleSignInOptions.DEFAULT_SIGN_IN)
+                        .requestIdToken(clienteWeb).requestEmail().build();
+                com.google.android.gms.auth.api.signin.GoogleSignInClient cl = com.google.android.gms.auth.api.signin.GoogleSignIn.getClient(act, o);
+                act.js("window.pasoGoogle && window.pasoGoogle('pedido')");
+                // cierra antes la sesión de Google de la app (no la del móvil) para que siempre deje elegir cuenta
+                cl.signOut().addOnCompleteListener(x -> act.startActivityForResult(cl.getSignInIntent(), Principal.ENTRAR_GOOGLE));
+            } catch (Exception e) {
+                act.js("window.resultadoGoogle && window.resultadoGoogle(false, " + JSONObject.quote(String.valueOf(e)) + ")");
+            }
+        });
+    }
+
     @JavascriptInterface
     public void entrarGoogle(String clienteWeb) {
         act.runOnUiThread(() -> {
