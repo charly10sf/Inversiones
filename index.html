@@ -9906,7 +9906,7 @@ function abrirAjustes() {
     <h2 class="aj-grupo">Ayuda</h2>
     <div class="aj-caja">
       <button class="aj-fila" data-accion="opinion" data-cerrar>${ICONOS.globo}<span><b>Tu opinión o un fallo</b><small>Algo que se ve mal, que no funciona o una idea: le llega a quien te pasó GrowFolio.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <button class="aj-fila" id="aInvita">${ICONOS.enviar}<span><b>Invita a alguien</b><small>Le llega un enlace por WhatsApp para crear su propia cartera, cifrada y sin cuenta: nadie más la ve, ni tú.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aInvita">${ICONOS.enviar}<span><b>Invita a alguien</b><small>Le llega por WhatsApp el enlace y los pasos para empezar, con su propia cuenta: su cartera va cifrada y nadie más la ve, ni tú.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
     </div>
     <details class="aj-avanzado"><summary>Avanzado: copias y archivos${PERFIL_LOCAL ? '' : ', GitHub'}</summary>
     <div class="seccion-ed"><h3>Copias</h3>
@@ -9930,7 +9930,7 @@ function abrirAjustes() {
   $('#aEstreno', h.el).onclick = () => setTimeout(() => estreno02(LS.get('inv-version', VERSION), null), 0);
   $('#aInvita', h.el).onclick = () => {
     const url = (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#mia';
-    const t = `Te paso GrowFolio, la app con la que llevo mis inversiones: precios en directo, qué hacer en cada momento, la renta y una IA que te aconseja según tu perfil.\n\n1. Abre ${url} y crea tu contraseña: tu cartera se guarda cifrada solo en tu móvil.\n2. Haz el tutorial del principio.\n3. Mete lo que tienes con "Lo que ya tenía" (busca por nombre o ISIN) o importando capturas de tu bróker.\n4. Para la IA, saca una clave gratis en aistudio.google.com y pégala en el Asesor.\n5. Rellena tu perfil en Objetivos: así te aconseja a tu medida.`;
+    const t = `Te paso GrowFolio, para llevar todas tus inversiones en un sitio. Cómo empezar:\n\n1. Abre ${url} (o instala la app de Android: https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk) y entra con Google o con tu correo.\n2. Crea la contraseña de tu cartera. Es distinta de la de la cuenta y no se puede recuperar: apúntala.\n3. IA gratis: entra en aistudio.google.com/apikey con tu cuenta de Google, pulsa "Create API key", copia la clave y pégala en GrowFolio al darle a "Pregúntale" (arriba). No actives la facturación en Google.\n4. Mete lo que tienes: en Cartera, "Añadir lo que ya tenía" (busca por nombre o ISIN) o importa capturas de tu bróker (con la IA ya puesta).\n5. Rellena tu perfil en Más > Objetivos para que el Paso a paso y la IA se ajusten a ti.\n\nEs una alfa: si algo falla, dale al bichito de arriba.`;
     const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(t); a.target = '_blank'; a.rel = 'noopener';
     document.body.appendChild(a); a.click(); a.remove();
   };
