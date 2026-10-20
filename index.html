@@ -309,20 +309,28 @@ button.fila:hover { background: var(--plane); }
 .ag-modos { justify-self: start; }
 .ag2-sec { display: grid; gap: 12px; min-width: 0; }
 .ag2-sec > h2 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.015em; }
-.agc-fila { display: grid; grid-auto-flow: column; grid-auto-columns: min(82%, 330px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 2px var(--gutter) 6px; margin: 0 calc(-1 * var(--gutter)); scroll-padding-inline: var(--gutter); overscroll-behavior-x: contain; }
+.agc-fila { display: grid; grid-auto-flow: column; grid-auto-columns: min(86%, 330px); gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding: 2px var(--gutter) 6px; margin: 0 calc(-1 * var(--gutter)); scroll-padding-inline: var(--gutter); overscroll-behavior-x: contain; }
 .agc-fila::-webkit-scrollbar { display: none; }
 @media (min-width: 900px) { .agc-fila { grid-auto-flow: row; grid-template-columns: repeat(3, minmax(0, 1fr)); overflow: visible; margin: 0; padding: 0; } .agc-fila .agc:nth-child(n+7) { display: none; } }
-.agc { all: unset; box-sizing: border-box; position: relative; overflow: hidden; scroll-snap-align: start; display: grid; grid-template-rows: auto 1fr auto; gap: 10px; min-height: 178px; padding: 16px 18px; border-radius: 22px; color: #fff; background: linear-gradient(150deg, var(--a), var(--b)); box-shadow: 0 14px 30px -18px var(--a); cursor: pointer; transition: transform 0.18s ease; }
-.agc:active { transform: scale(0.98); }
-.agc:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
-.agc-onda { position: absolute; inset: auto 0 0 0; width: 100%; height: 70%; pointer-events: none; }
-.agc-onda path { fill: rgba(0, 0, 0, 0.14); } .agc-onda path.l { fill: none; stroke: rgba(0, 0, 0, 0.32); stroke-width: 2; vector-effect: non-scaling-stroke; }
-.agc-cab, .agc-t, .agc-pie { position: relative; }
-.agc-cab { display: flex; justify-content: space-between; align-items: center; gap: 10px; font-size: 13.5px; font-weight: 650; }
-.agc-cat { display: inline-flex; align-items: center; gap: 7px; opacity: 0.95; min-width: 0; } .agc-cat svg { width: 17px; height: 17px; flex: none; }
-.agc-cd { flex: none; padding: 4px 10px; border-radius: 999px; background: rgba(0, 0, 0, 0.22); font-variant-numeric: tabular-nums; }
-.agc-t { align-self: end; font-size: 21px; line-height: 1.18; font-weight: 750; letter-spacing: -0.01em; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; text-wrap: balance; }
-.agc-pie { display: flex; justify-content: space-between; gap: 10px; font-size: 13.5px; opacity: 0.92; } .agc-pie span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; } .agc-pie em { font-style: normal; font-weight: 750; flex: none; }
+.agc { all: unset; box-sizing: border-box; position: relative; scroll-snap-align: start; display: grid; grid-template-columns: 84px minmax(0, 1fr); min-height: 142px; border-radius: 18px; background: linear-gradient(180deg, #141310, #0B0A09); border: 1px solid var(--line); cursor: pointer; transition: transform 0.18s ease, border-color 0.2s ease; color: var(--text); }
+.agc:hover { border-color: color-mix(in srgb, var(--c) 45%, var(--line)); }
+.agc:active { transform: scale(0.985); }
+.agc:focus-visible { outline: 2px solid var(--c); outline-offset: 2px; }
+/* el resguardo: color del tipo muy suave, la cuenta atrás grande y el anillo de lo que falta */
+.agc-res { position: relative; display: grid; place-items: center; align-content: center; gap: 0; border-radius: 17px 0 0 17px; background: radial-gradient(120% 90% at 30% 0%, color-mix(in srgb, var(--c) 26%, transparent), color-mix(in srgb, var(--c) 7%, transparent) 70%); border-right: 2px dashed rgba(255, 255, 255, 0.10); }
+.agc-res::before, .agc-res::after { content: ''; position: absolute; right: -9px; width: 16px; height: 16px; border-radius: 50%; background: #000; border: 1px solid var(--line); }
+.agc-res::before { top: -9px; border-top-color: transparent; border-left-color: transparent; transform: rotate(45deg); } .agc-res::after { bottom: -9px; border-bottom-color: transparent; border-right-color: transparent; transform: rotate(45deg); }
+.agc-res svg { position: absolute; width: 64px; height: 64px; top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(-90deg); }
+.agc-res circle { fill: none; stroke-width: 2.4; } .agc-res .f { stroke: rgba(255, 255, 255, 0.07); } .agc-res .v { stroke: var(--c); stroke-linecap: round; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--c) 60%, transparent)); }
+.agc-n { position: relative; font-size: 27px; line-height: 1; font-weight: 800; letter-spacing: -0.03em; color: #fff; font-variant-numeric: tabular-nums; }
+.agc-n.pal { font-size: 14px; letter-spacing: 0; color: var(--c); }
+.agc-res small { position: relative; font-size: 11px; color: var(--text-2); margin-top: 2px; }
+.agc-c { display: grid; grid-template-rows: auto 1fr auto; gap: 7px; padding: 14px 16px 13px 18px; min-width: 0; }
+.agc-cat { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--c); min-width: 0; } .agc-cat svg { width: 15px; height: 15px; flex: none; }
+.agc-t { font-size: 17px; line-height: 1.25; font-weight: 750; letter-spacing: -0.01em; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; text-wrap: balance; }
+.agc-pie { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 6px 8px; font-size: 12.5px; color: var(--muted); } .agc-pie > span { white-space: nowrap; text-transform: capitalize; }
+.agc-pie em { font-style: normal; font-weight: 700; color: var(--text); background: rgba(255, 255, 255, 0.05); padding: 4px 9px; border-radius: 999px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.ag-agenda-in .agc { animation: none; }
 .ag-mes2 { border: 1px solid var(--line); border-radius: 18px; background: var(--plane); padding: 6px 12px 12px; display: grid; gap: 10px; }
 .ag-mes-b { all: unset; box-sizing: border-box; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 8px 2px; cursor: pointer; font-weight: 650; font-size: 14.5px; }
 .ag-mes-b > span { display: inline-flex; align-items: center; gap: 8px; } .ag-mes-b svg { width: 17px; height: 17px; color: var(--accent); }
@@ -4148,9 +4156,10 @@ function agendaLista(M, dias = 120) {
         det: `${bruto != null ? L(`Unos ${eur(bruto, 2)} brutos; tras la retención y lo que toca en la renta, te quedan unos ${eur(neto, 2)}${estm}. `, `About ${eur(bruto, 2)} gross; after withholding and income tax you keep about ${eur(neto, 2)}${estm}. `) : ''}${esc(trad(fis.txt))}`, acc: accFicha });
     }
   }
-  // resultados de las grandes empresas que hay dentro de tus fondos
-  for (const [s, e] of dentro) {
-    if (directas.has(s) || e.euros < 5) continue;
+  // resultados de las grandes empresas que hay dentro de tus fondos: solo las que más pesan en lo tuyo (las seis
+  // con más euros tuyos detrás y al menos 50 €), para que el calendario no se llene de empresas que no son tuyas
+  const pesadas = [...dentro].filter(([s, e]) => !directas.has(s) && e.euros >= 50).sort((a, b) => b[1].euros - a[1].euros).slice(0, 6);
+  for (const [s, e] of pesadas) {
     const r = radarPorSim(s);
     if (!r || !r.rd) continue;
     const n = nombreRadar(r), hora = horaResultados(r);
@@ -4250,16 +4259,24 @@ function htmlAgenda(M) {
 }
 
 /* la pestaña Calendario */
-/* qué entra en cada pestaña: «Para ti» es lo tuyo y lo importante del mercado; «Solo lo mío», lo que toca a tus
-   posiciones (también las empresas de dentro de tus fondos), tus aportaciones y tu renta */
+/* qué entra en cada pestaña: «Para ti» es lo tuyo, lo que más pesa dentro de tus fondos y lo importante del
+   mercado; «Solo lo mío», solo lo de tus propias posiciones, tus aportaciones y tu renta */
 const AG_MODOS = [['tu', 'Para ti', 'For you'], ['mio', 'Solo lo mío', 'Just mine'], ['res', 'Resultados', 'Earnings'], ['div', 'Dividendos', 'Dividends'], ['eco', 'Economía', 'Economy']];
-const AG_MIO = new Set(['resultados', 'fondo', 'dividendo', 'cobro', 'aportacion', 'hacienda']);
+const AG_MIO = new Set(['resultados', 'dividendo', 'cobro', 'aportacion', 'hacienda']);
 const enModo = (e, m) => m === 'tu' || (m === 'mio' ? AG_MIO.has(e.tipo) : AG_TIPOS[e.tipo][1] === m);
 // el color de cada tarjeta de «Próximos»
-const AG_COLOR = { res: ['#2F6FD6', '#1D4FA8'], div: ['#1E9E6A', '#127050'], eco: ['#5B5FE6', '#3D3FB5'], apo: ['#C24E86', '#8E3462'], otro: ['#8A3FD8', '#5E22A3'] };
+const AG_COLOR = { res: '#6EA8FE', div: '#4FC995', eco: '#E2B45F', apo: '#E58FB6', otro: '#B58CFF' };
 const AG_CAT = { resultados: ['Resultados', 'Earnings'], fondo: ['En tus fondos', 'In your funds'], dividendo: ['Dividendo', 'Dividend'], cobro: ['Cobro', 'Payment'], banco: ['Bancos centrales', 'Central banks'], festivo: ['Sin bolsa', 'Market closed'], hacienda: ['Hacienda', 'Taxes'], aportacion: ['Tu aportación', 'Your contribution'], otro: ['GTA VI', 'GTA VI'], ia: ['Para vigilar', 'To watch'] };
+function impactoAg(e, M) {
+  const eu = (x) => eur(x, x < 10 ? 2 : 0);
+  if ((e.tipo === 'dividendo' || e.tipo === 'cobro' || e.tipo === 'aportacion') && e.importe != null && isFinite(e.importe)) return e.tipo === 'aportacion' ? L(`${eu(e.importe)} que aportas`, `${eu(e.importe)} you put in`) : L(`${e.aprox ? '≈ ' : ''}${eu(e.importe)} para ti`, `${e.aprox ? '≈ ' : ''}${eu(e.importe)} for you`);
+  if (e.tipo === 'resultados') { const id = String(e.id).split(':')[1], f = M && M.filas.find((x) => x.inst.id === id); if (f && f.valor) return L(`Tu posición: ${eur(f.valor, 0)}`, `Your holding: ${eur(f.valor, 0)}`); }
+  if (e.tipo === 'fondo' && e.euros) return L(`≈ ${eur(e.euros, 0)} tuyos dentro`, `≈ ${eur(e.euros, 0)} of yours inside`);
+  if (e.tipo === 'banco') return L('Mueve tipos y bolsas', 'Moves rates and stocks');
+  if (e.tipo === 'festivo') return L('Ese día no hay bolsa', 'No trading that day');
+  return '';
+}
 const enDias = (d) => { const n = diasEntre(hoyIso(), d); return n <= 0 ? L('Hoy', 'Today') : n === 1 ? L('Mañana', 'Tomorrow') : L(`En ${n} días`, `In ${n} days`); };
-const ondaAg = (k) => { const y = [52, 30, 64, 22, 58, 36, 70][k % 7]; return `<svg class="agc-onda" viewBox="0 0 300 120" preserveAspectRatio="none" aria-hidden="true"><path d="M0 ${y} C 40 ${y - 40}, 70 ${y + 30}, 110 ${y - 6} S 180 ${y + 34}, 215 ${y - 18} S 270 ${y + 26}, 300 ${y - 8} V120 H0 Z"/><path class="l" d="M0 ${y} C 40 ${y - 40}, 70 ${y + 30}, 110 ${y - 6} S 180 ${y + 34}, 215 ${y - 18} S 270 ${y + 26}, 300 ${y - 8}"/></svg>`; };
 // lo que ya pasó: noticias de lo que tienes y del mercado, con cómo va hoy cada cosa
 function pasadoAg(modo) {
   const N = (S.precios && S.precios.noticias) || {}, I = (S.precios && S.precios.instrumentos) || {}, MK = (S.precios && S.precios.mercados) || {};
@@ -4305,13 +4322,18 @@ function vistaAgenda(M) {
   ].filter(Boolean);
   // «Próximos»: las tarjetas grandes de lo que viene
   const prox = ev.slice(0, 10);
-  const tarjeta = (e, k) => {
-    const cls = AG_TIPOS[e.tipo][1], [c1, c2] = AG_COLOR[cls] || AG_COLOR.eco, cat = AG_CAT[e.tipo] || AG_CAT.ia;
-    const pie = e.importe != null && isFinite(e.importe) ? `${e.tipo === 'cobro' ? '+' : ''}${e.aprox ? '≈ ' : ''}${eur(e.importe, e.importe < 10 ? 2 : 0)}` : '';
-    return `<button type="button" class="agc" style="--a:${c1};--b:${c2}" data-ag-ir="${esc(e.id)}">${ondaAg(k)}
-      <span class="agc-cab"><span class="agc-cat">${iconoAg(e)}${L(cat[0], cat[1])}</span><span class="agc-cd">${enDias(e.d)}</span></span>
-      <b class="agc-t">${tituloAg(e)}</b>
-      <span class="agc-pie"><span>${esc(e.nom || fechaDia(e.d))}</span>${pie ? `<em>${pie}</em>` : ''}</span></button>`;
+  // cada cosa que viene, como una entrada: el resguardo con los días que faltan (y un anillo que se va cerrando según
+  // se acerca, sobre un mes) y, al otro lado, qué es, cuándo y lo que te toca a ti
+  const tarjeta = (e) => {
+    const cls = AG_TIPOS[e.tipo][1], col = AG_COLOR[cls] || AG_COLOR.eco, cat = AG_CAT[e.tipo] || AG_CAT.ia;
+    const n = Math.max(0, diasEntre(hoy, e.d)), x = deIso(e.d), lleno = Math.max(0.06, 1 - Math.min(n, 30) / 30);
+    const imp = impactoAg(e, M), cuando = `${diaSemL(x.getDay()).slice(0, 3)} ${x.getDate()} ${L(MESES[x.getMonth()], MESES_EN[x.getMonth()].slice(0, 3))}`;
+    return `<button type="button" class="agc" style="--c:${col}" data-ag-ir="${esc(e.id)}">
+      <span class="agc-res" aria-hidden="true"><svg viewBox="0 0 44 44"><circle cx="22" cy="22" r="19" class="f"/><circle cx="22" cy="22" r="19" class="v" pathLength="1" style="stroke-dasharray:${lleno.toFixed(3)} 1"/></svg>
+        ${n <= 1 ? `<b class="agc-n pal">${n ? L('Mañana', 'Tmrw') : L('Hoy', 'Today')}</b>` : `<b class="agc-n">${n}</b><small>${L('días', 'days')}</small>`}</span>
+      <span class="agc-c"><span class="agc-cat">${iconoAg(e)}${L(cat[0], cat[1])}</span>
+        <b class="agc-t">${tituloAg(e)}</b>
+        <span class="agc-pie"><span>${esc(cuando)}${e.est ? ` · ${L('estimada', 'est.')}` : ''}</span>${imp ? `<em>${esc(imp)}</em>` : ''}</span></span></button>`;
   };
   // el mes, plegado: la semana con puntos; al tocarlo se despliegan las cinco semanas
   const lunes = deIso(hoy); lunes.setDate(lunes.getDate() - ((lunes.getDay() + 6) % 7));
@@ -4351,7 +4373,7 @@ function vistaAgenda(M) {
     <div class="tabs ag-modos" role="group" aria-label="${L('Qué ver', 'Show')}">${AG_MODOS.map(([k, n, en]) => `<button data-agm="${k}" aria-pressed="${modo === k}">${L(n, en)}</button>`).join('')}</div>
     ${modo === 'mio' && !M.filas.length ? `<p class="nota">${L('Cuando metas tus acciones y fondos, aquí saldrán sus resultados y dividendos con lo que te toca en euros.', 'Once you add your shares and funds, their earnings and dividends will show up here, with what you get in euros.')}</p>` : ''}
     <section class="ag2-sec"><h2>${L('Próximos', 'Coming up')}</h2>
-      ${prox.length ? `<div class="agc-fila">${prox.map(tarjeta).join('')}</div>` : `<div class="vacio">${L('Nada a la vista en esta pestaña.', 'Nothing coming up in this tab.')}</div>`}</section>
+      ${prox.length ? `<div class="agc-fila">${prox.map((e) => tarjeta(e)).join('')}</div>` : `<div class="vacio">${L('Nada a la vista en esta pestaña.', 'Nothing coming up in this tab.')}</div>`}</section>
     <section class="ag-mes2${mesAbierto ? ' on' : ''}">
       <button type="button" class="ag-mes-b" data-ag-mes aria-expanded="${mesAbierto}"><span>${ICONOS.agenda}${mesAbierto ? L('Las próximas cinco semanas', 'The next five weeks') : L('Esta semana', 'This week')}</span><span class="ag-mes-v">${mesAbierto ? L('Plegar', 'Collapse') : L('Ver el mes', 'See the month')}<i aria-hidden="true"></i></span></button>
       ${mesAbierto ? `<div class="ag-cal">${L(['L', 'M', 'X', 'J', 'V', 'S', 'D'], ['M', 'T', 'W', 'T', 'F', 'S', 'S']).map((x) => `<span class="sem" data-no-trad>${x}</span>`).join('')}${Array.from({ length: 35 }, (_, k) => celda(k, false)).join('')}</div>
@@ -7729,16 +7751,21 @@ const ILUS = {
 };
 const INTRO = [
   { il: 'logo', t: 'Tu dinero, creciendo', x: 'Todas tus inversiones en un sitio: fondos, acciones, ETF, oro y cripto de MyInvestor, Trade Republic, Bitvavo o el bróker que uses, con los precios en directo.' },
-  { il: 'pasos', t: 'Qué hacer y cuándo', x: 'Cada mes te dice qué toca: vender, comprar, aportar, vigilar unos resultados… Con el porqué, el cómo y lo que pagarás a Hacienda. Y un calendario con lo que viene para lo que tienes.' },
-  { il: 'ia', t: 'Una IA que te conoce', x: 'Lee las noticias de todo el mundo y analiza tu cartera según tu edad, tus metas y el riesgo que aguantas. Si le falta algo de ti, te lo pregunta.' },
-  { il: 'mundo', t: 'Ideas y mercados', x: 'Unas 840 empresas contrastadas con siete señales, y qué significa para ti cada movimiento de las bolsas, los tipos o el petróleo.' },
+  { dib: 'grafica', t: 'Tu cartera de un vistazo', x: 'Cuánto tienes, lo que ganas o pierdes hoy y desde que compraste, el reparto por países, sectores y monedas, el riesgo y lo que te cuestan los fondos al año.' },
+  { il: 'pasos', t: 'Qué hacer y cuándo', x: 'Cada mes te dice qué toca: vender, comprar, aportar o vigilar unos resultados. Con el porqué, el cómo y lo que pagarás a Hacienda.' },
+  { dib: 'calendario', t: 'Lo que viene, con los días que faltan', x: 'Resultados y dividendos de lo que tienes (también de las empresas de dentro de tus fondos), con lo que te toca en euros; la Fed y el BCE con la hora de España, y tus aportaciones.' },
+  { il: 'ia', t: 'Una IA que te conoce', x: 'Lee las noticias de todo el mundo y analiza tu cartera según tu edad, tus metas y el riesgo que aguantas. Si le falta algo de ti, te lo pregunta. Y puedes preguntarle lo que quieras.' },
+  { il: 'mundo', t: 'Ideas y mercados', x: 'Unas 840 empresas contrastadas con siete señales, la opinión de los analistas y qué significa para ti cada movimiento de las bolsas, los tipos o el petróleo.' },
+  { dib: 'renta', t: 'Hacienda, sin sorpresas', x: 'Antes de vender ves cuánto ganas o pierdes y lo que pagarás en la renta. Te avisa de la regla de los dos meses y trae una guía para hacer la declaración.' },
+  { dib: 'meta', t: 'Tus metas', x: 'Tu perfil de inversor, los límites que te pones y tus metas, con cuánto podrías tener dentro de 5, 10 o 30 años si sigues así.' },
   { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera se cifra con tu contraseña antes de guardarse en tu cuenta. La ves en el móvil, en el ordenador y en la app, y nadie más puede leerla: ni GrowFolio ni Google.' },
+  { dib: 'app', t: 'En el móvil, con widget', x: 'En la web o en la app de Android, con un widget para la pantalla de inicio. Está en alfa: si ves algo raro, avisa con el bichito de arriba y se arregla en la siguiente versión.' },
 ];
 function pantallaIntro(seguir) {
   const nuevo = !S.enc;
   $('#app').innerHTML = `<div class="intro" role="region" aria-roledescription="carrusel" aria-label="Presentación de GrowFolio">
     <div class="intro-cab"><span class="intro-marca"><img src="favicon.svg" alt="">GrowFolio</span>${selectorIdioma('mini')}<button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
-    <div class="intro-ventana"><div class="intro-pista">${INTRO.map((d, k) => `<section class="intro-slide" aria-roledescription="diapositiva" aria-label="${k + 1} de ${INTRO.length}"><div class="intro-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true">${ILUS[d.il]}</svg></div><div class="intro-txt"><h1>${d.t}</h1><p>${d.x}</p></div></section>`).join('')}</div></div>
+    <div class="intro-ventana"><div class="intro-pista">${INTRO.map((d, k) => `<section class="intro-slide" aria-roledescription="diapositiva" aria-label="${k + 1} de ${INTRO.length}"><div class="intro-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true">${d.il ? ILUS[d.il] : `<g transform="translate(0 5) scale(2)">${DIBUJOS[d.dib] || ''}</g>`}</svg></div><div class="intro-txt"><h1>${d.t}</h1><p>${d.x}</p></div></section>`).join('')}</div></div>
     <div class="intro-pie"><div class="intro-puntos" role="group" aria-label="Diapositivas">${INTRO.map((_, k) => `<button type="button" data-pt="${k}" aria-label="Diapositiva ${k + 1}"></button>`).join('')}</div>
       <div class="intro-btns"><button type="button" class="btn intro-atras" data-in="atras">Atrás</button><button type="button" class="btn pri intro-sig" data-in="sig">Siguiente</button></div></div>
   </div>`;
@@ -8628,6 +8655,7 @@ const fechaNov = (f, h) => { const d = deIso(f); return `${d.getDate()} ${MESES[
 
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  meta: '<path class="m" d="M6 70H114"/><path class="l" d="M8 70L36 38L52 52L80 18L112 70"/><path class="l" d="M80 18V4"/><path class="fA" d="M80 4h18l-5 6 5 6H80z"/><path class="m" d="M14 64C34 60 54 50 74 26" stroke-dasharray="3 5"/>',
   calendario: '<rect class="l" x="8" y="8" width="64" height="64" rx="10"/><path class="m" d="M8 24h64M22 4v8M58 4v8"/><rect class="m" x="15" y="31" width="9" height="8" rx="2"/><rect class="m" x="28" y="31" width="9" height="8" rx="2"/><rect class="m" x="41" y="31" width="9" height="8" rx="2"/><rect class="m" x="54" y="31" width="9" height="8" rx="2"/><rect class="m" x="15" y="45" width="9" height="8" rx="2"/><rect class="fA" x="28" y="45" width="9" height="8" rx="2"/><rect class="m" x="41" y="45" width="9" height="8" rx="2"/><rect class="m" x="54" y="45" width="9" height="8" rx="2"/><rect class="m" x="15" y="59" width="9" height="8" rx="2"/><rect class="m" x="28" y="59" width="9" height="8" rx="2"/><circle class="fA" cx="45.5" cy="63" r="2.2"/><rect class="fA" x="80" y="20" width="34" height="40" rx="10"/><text class="tn" x="97" y="42" text-anchor="middle" style="font-size:17px;font-weight:800">7</text><text class="tn" x="97" y="53" text-anchor="middle" style="font-size:8px">días</text>',
   pulido: '<rect class="fp" x="12" y="16" width="78" height="52" rx="12"/><path class="m" d="M22 30h40M22 40h28"/><rect class="fA" x="22" y="50" width="30" height="9" rx="4.5"/><path class="a" d="M102 8l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path class="a" d="M96 52l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/>',
   ficha: '<rect class="fp" x="14" y="6" width="92" height="68" rx="10"/><circle class="fa" cx="28" cy="20" r="7"/><path class="l" d="M40 17h40M40 24h26"/><text class="ta" x="24" y="44" style="font-size:13px;font-weight:700">12,68 €</text><rect class="fa" x="22" y="54" width="16" height="12" rx="4"/><rect class="fp" x="42" y="54" width="16" height="12" rx="4"/><rect class="fp" x="62" y="54" width="16" height="12" rx="4"/><rect class="fp" x="82" y="54" width="16" height="12" rx="4"/>',
@@ -8679,13 +8707,12 @@ function estreno02(visto, despues) {
     : [{ ico: ICONOS.dividendo, col: COL.div, t: L('Dividendo de una de tus acciones', 'A dividend from one of your stocks'), f: L('3 días', '3 days') },
        { ico: ICONOS.resultados, col: COL.res, t: L('Resultados de una empresa de tu fondo', 'Earnings from a company in your fund'), f: L('9 días', '9 days') },
        { ico: ICONOS.banco, col: COL.eco, t: L('La Fed decide los tipos, a las 20:00', 'The Fed sets rates, 8 pm Spain'), f: L('2 sem.', '2 wks') }];
-  const g = gtaFalta();
   const pasos = [
     { k: 'hola', html: `
       <p class="es-pre">${L('Ya está aquí', "It's here")}</p>
       <h1 class="es-tit"><span>GrowFolio</span><b>0.2</b></h1>
       <p class="es-sub">${L('La versión más grande hasta ahora. Esto es lo que cambia, en un minuto.', 'The biggest version yet. Here is what changes, in a minute.')}</p>
-      <div class="es-capitulos">${[[ICONOS.perfil, L('Tu cuenta', 'Your account')], [ICONOS.agenda, L('Calendario', 'Calendar')], [ICONOS.chispa, L('Más cuidada', 'More polished')], [ICONOS.mercados, 'GTA VI']].map(([i, t], n) => `<span style="--i:${n}">${i}${t}</span>`).join('')}</div>` },
+      <div class="es-capitulos">${[[ICONOS.perfil, L('Tu cuenta', 'Your account')], [ICONOS.agenda, L('Calendario', 'Calendar')], [ICONOS.chispa, L('Más cuidada', 'More polished')]].map(([i, t], n) => `<span style="--i:${n}">${i}${t}</span>`).join('')}</div>` },
     { k: 'cuenta', html: `
       <div class="es-ilu es-sync" aria-hidden="true">
         <div class="es-movil"><i class="es-pant"><b></b><em></em><em></em></i></div>
@@ -8716,10 +8743,6 @@ function estreno02(visto, despues) {
         <li>${L('Te saluda por tu nombre al entrar; tócalo en Cartera para cambiarlo.', 'It greets you by name; tap it in Portfolio to change it.')}</li>
         <li>${L('El widget enseña lo que más se ha movido hoy, en pastillas de color.', 'The widget shows what moved most today, in coloured pills.')}</li>
       </ul>` },
-    { k: 'gta', html: `
-      <div class="es-ilu es-neon" aria-hidden="true"><b>VI</b><span>${g ? L(`faltan ${g.d} días`, `${g.d} days to go`) : L('ya a la venta', 'out now')}</span></div>
-      <h2 class="es-h">${L('GTA VI, con tu cartera', 'GTA VI, with your portfolio')}</h2>
-      <p class="es-p">${L('Cuánto falta desde GTA V, tu cartera medida en copias del juego, cuántos Adder pagaría y qué posición ha pagado más copias. Ahora con música synthwave original de fondo.', 'How far we are since GTA V, your portfolio measured in copies of the game, how many Adders it would pay for and which holding paid for the most copies. Now with original synthwave background music.')}</p>` },
     { k: 'fin', html: `
       <div class="es-ilu es-ok" aria-hidden="true">${ICONOS.ok}</div>
       <h2 class="es-h">${nom ? L(`Todo listo, ${esc(nom)}`, `All set, ${esc(nom)}`) : L('Todo listo', 'All set')}</h2>
