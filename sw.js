@@ -58,3 +58,13 @@ self.addEventListener('fetch', function (e) {
     });
   }));
 });
+// los avisos del navegador: al tocarlos, se abre GrowFolio (o se trae al frente) en lo que dicen
+self.addEventListener('notificationclick', function (e) {
+  e.notification.close();
+  var hash = (e.notification.data && e.notification.data.hash) || '#cartera';
+  var url = new URL('./' + hash, self.registration.scope).href;
+  e.waitUntil(self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(function (cs) {
+    for (var i = 0; i < cs.length; i++) { if ('focus' in cs[i]) { cs[i].navigate ? cs[i].navigate(url).catch(function () {}) : null; return cs[i].focus(); } }
+    return self.clients.openWindow(url);
+  }));
+});

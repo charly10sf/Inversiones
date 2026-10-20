@@ -1051,6 +1051,19 @@ table.ideas .sub { display: block; font-size: 12px; }
 .toca-c:empty { display: none; }
 .toca li.urgente .toca-c { color: var(--accent); font-weight: 600; }
 .toca b { font-weight: 550; font-size: 14.5px; line-height: 1.4; }
+/* avisos en Ajustes */
+.aj-check { cursor: pointer; }
+.aj-check input, .av-op input { width: 18px; height: 18px; accent-color: var(--accent); flex: none; margin: 2px 0 0; }
+#aAvisos { display: grid; gap: 10px; }
+.av-op { display: flex; gap: 10px; align-items: flex-start; font-size: 14px; line-height: 1.45; cursor: pointer; }
+.av-op span { display: grid; gap: 2px; }
+.av-op b { font-weight: 650; }
+.av-op small { color: var(--text-2); font-size: 13px; }
+.av-ops { display: grid; gap: 8px; padding-left: 28px; }
+.av-ops input:disabled + span { opacity: 0.45; }
+.av-falta { display: flex; gap: 8px; align-items: flex-start; color: var(--warn); }
+.av-falta svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+#aAvisos .btn { justify-self: start; }
 /* el resumen de hoy */
 .rdia { display: grid; gap: 22px; }
 .rdia-fecha { margin: -6px 0 0; color: var(--muted); font-size: 13.5px; }
@@ -3828,6 +3841,7 @@ function empresasPorDentro(M) {
    ===================================================================== */
 const SVG = (d, w = 1.7) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${w}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
 const ICONOS = {
+  campana: SVG('<path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 004 0"/>', 1.8),
   ojo: SVG('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
   ojoNo: SVG('<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.6-.6 5-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
   lapiz: SVG('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
@@ -4041,6 +4055,86 @@ function montar() {
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ew.classList.contains('abierto')) { abre(false); eb.focus(); } });
 }
 
+/* Avisos (0.2.2), solo si los activas (Ajustes > Avisos y resumen), en cada dispositivo por separado:
+   - en la app de Android, notificaciones del móvil aunque no la tengas abierta: la web le pasa a la app las reglas
+     (precio de salida de cada posición, fechas de lo tuyo y las preguntas de GrowIA) y la app las mira cada media
+     hora con los precios de la Action, sin abrir la web y sin la contraseña;
+   - en el navegador (y en el iPhone con GrowFolio en la pantalla de inicio), mientras GrowFolio esté abierto en
+     segundo plano: la misma revisión, cada vez que llegan precios.
+   Nunca de noche (de 22:00 a 8:00) y cada cosa una vez. */
+const AVISOS_DEF = { on: false, stop: true, mov: true, fechas: true, preg: true };
+const avisosCfg = () => ({ ...AVISOS_DEF, ...LS.get('inv-avisos', {}) });
+const appAvisos = () => { const a = window.InversionesApp; return a && typeof a.avisos === 'function' ? a : null; };
+function htmlAjAvisos() {
+  const c = avisosCfg(), app = window.InversionesApp, nativo = appAvisos();
+  const permiso = nativo ? (typeof nativo.avisosPermitidos === 'function' ? nativo.avisosPermitidos() : true) : 'Notification' in window ? Notification.permission === 'granted' : false;
+  const donde = nativo ? 'En el móvil, aunque no tengas la app abierta: la app mira cada media hora tus precios de salida, tus fechas y si GrowIA te pregunta algo.'
+    : app ? 'Actualiza la app de Android (Ajustes > App de Android) para tener avisos en el móvil.'
+    : 'Te avisa el navegador mientras GrowFolio esté abierto, aunque sea en otra pestaña. Para tenerlos con todo cerrado, la app de Android.';
+  const fila = (k, t) => `<label class="av-op"><input type="checkbox" data-av="${k}"${c[k] ? ' checked' : ''}${c.on ? '' : ' disabled'}><span>${t}</span></label>`;
+  return `<h3>${ICONOS.campana}Avisos</h3>
+    <label class="av-op av-on"><input type="checkbox" data-av="on"${c.on ? ' checked' : ''}${app && !nativo ? ' disabled' : ''}><span><b>Avisarme de lo importante</b><small>${donde}</small></span></label>
+    ${c.on && !permiso ? `<p class="nota av-falta">${ICONOS.alerta}Falta el permiso de notificaciones: ${nativo ? 'acéptalo en el aviso del móvil o en Ajustes de Android > Aplicaciones > GrowFolio > Notificaciones.' : 'acéptalo en el navegador (el candado de la barra de direcciones).'}</p>` : ''}
+    <div class="av-ops">${fila('stop', 'Cuando algo baja de tu precio de salida o se acerca a menos de un 3 %')}${fila('mov', 'Cuando una de tus posiciones sube o baja más de un 5 % en el día')}${fila('fechas', 'El día antes de los resultados y los dividendos de lo tuyo')}${fila('preg', 'Cuando GrowIA te pregunta algo')}</div>
+    ${c.on ? '<button type="button" class="btn peq" data-av-prueba>Mandar un aviso de prueba</button>' : ''}`;
+}
+function enlazarAjAvisos(caja) {
+  if (!caja) return;
+  caja.addEventListener('change', async (e) => {
+    const i = e.target.closest('[data-av]'); if (!i) return;
+    const c = avisosCfg(); c[i.dataset.av] = i.checked;
+    if (i.dataset.av === 'on' && i.checked && !appAvisos() && 'Notification' in window && Notification.permission !== 'granted') {
+      try { await Notification.requestPermission(); } catch (er) {}
+    }
+    LS.set('inv-avisos', c);
+    const app = appAvisos(); if (app) { try { app.avisos(!!c.on); } catch (er) {} }
+    enviarWidget(true);
+    caja.innerHTML = htmlAjAvisos();
+    if (i.dataset.av === 'on') toast(c.on ? 'Avisos activados en este dispositivo' : 'Avisos quitados', 3000);
+  });
+  caja.addEventListener('click', (e) => { if (e.target.closest('[data-av-prueba]')) avisoSistema('prueba', 'Así te llegarán los avisos', 'Por ejemplo: «Repsol se acerca a tu precio de salida: está a un 2,1 % de 26,92 €».', '#cartera', 'prueba:' + Date.now(), true); });
+}
+async function avisoSistema(tipo, titulo, cuerpo, hash = '#cartera', clave = '', forzar = false) {
+  const c = avisosCfg();
+  if (!forzar && (!c.on || (tipo !== 'prueba' && c[{ pregunta: 'preg' }[tipo] || tipo] === false))) return;
+  const h = new Date().getHours();
+  if (!forzar && (h >= 22 || h < 8)) return;
+  const hechos = LS.get('inv-avisos-hechos', {});
+  if (clave && hechos[clave]) return;
+  if (clave) { hechos[clave] = Date.now(); for (const [k, t] of Object.entries(hechos)) if (Date.now() - t > 10 * 864e5) delete hechos[k]; LS.set('inv-avisos-hechos', hechos); }
+  const app = appAvisos();
+  if (app && typeof app.notificar === 'function') { try { app.notificar(trad(titulo), trad(cuerpo), String(hash).replace('#', '')); } catch (e) {} return; }
+  if (!('Notification' in window) || Notification.permission !== 'granted') { if (forzar) toast('El navegador no deja mandar avisos: acepta el permiso de notificaciones', 4500); return; }
+  const opc = { body: trad(cuerpo), icon: 'growfolio-192.png', badge: 'growfolio-192.png', tag: clave || tipo, data: { hash } };
+  try { const r = await navigator.serviceWorker.getRegistration(); if (r) { await r.showNotification(trad(titulo), opc); return; } } catch (e) {}
+  try { const n = new Notification(trad(titulo), opc); n.onclick = () => { window.focus(); location.hash = hash; n.close(); }; } catch (e) {}
+}
+// las reglas de hoy: lo que la app de Android revisa sola y lo que el navegador mira al llegar precios
+function reglasAvisos(M) {
+  const reglas = M.filas.filter((f) => f.inst && f.valor > 0).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, sym: f.inst.yahoo ? String(f.inst.yahoo).toUpperCase() : '', cid: f.inst.cat || (catDe(f.inst) ? 'c-' + String(f.inst.isin || '').toLowerCase() : ''), stop: +f.pos.stop || 0, p: f.precio || 0 }));
+  const vistos = new Set(), unicas = reglas.filter((r) => !vistos.has(r.id) && vistos.add(r.id));
+  let eventos = [];
+  try { eventos = agendaLista(M, 3).filter((e) => ['resultados', 'dividendo', 'cobro'].includes(e.tipo)).map((e) => { const d = document.createElement('div'); d.innerHTML = e.t; return { k: e.id, d: e.d, t: d.textContent, s: String(e.s || '') }; }); } catch (e) {}
+  const vistas = LS.get('inv-preg-vistas', []);
+  const preg = preguntasIA().filter((x) => !vistas.includes(clavePreg(x))).map((x) => ({ k: clavePreg(x), q: x.q }));
+  return { reglas: unicas, eventos, preg };
+}
+// en el navegador: al llegar precios y con GrowFolio en segundo plano (si lo estás mirando, ya lo ves en Cartera)
+function revisarAvisos(M) {
+  const c = avisosCfg();
+  if (!c.on || appAvisos() || !document.hidden || !M) return;
+  const hoy = hoyIso(), manana = iso(new Date(Date.now() + 864e5)), h = new Date().getHours();
+  for (const f of M.filas) {
+    const stop = +f.pos.stop, pr = f.precio, n = f.inst.corto || f.inst.nombre;
+    if (c.stop && stop > 0 && pr > 0) {
+      if (pr <= stop) avisoSistema('stop', `${n}: precio de salida roto`, `Está a ${precioFmt(pr)}, por debajo de tu salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`, '#cartera', `stop:${f.inst.id}:${hoy}`);
+      else if (pr <= stop * 1.03) avisoSistema('stop', `${n} se acerca a tu precio de salida`, `Está a un ${fmtNum((pr / stop - 1) * 100, 1)} % de ${precioFmt(stop)}.`, '#cartera', `stopc:${f.inst.id}:${hoy}`);
+    }
+    if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', `${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.`, '#cartera', `mov:${f.inst.id}:${hoy}`);
+  }
+  if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', `Mañana: ${e.t}`, e.s, '#agenda', 'ev:' + e.k);
+}
+
 /* El resumen de hoy: la primera vez que abres GrowFolio cada día (si no lo quitas en Ajustes), lo más importante
    en una hoja: cómo va tu cartera, lo que mueve hoy los mercados según GrowIA, las noticias de lo tuyo y de la bolsa,
    y lo que viene hoy y mañana. También a mano desde Ajustes y como bloque de Cartera. */
@@ -4119,6 +4213,8 @@ function enviarWidget(forzar) {
     }
   } catch (e) {}
   const foto = { v: 2, total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos, serie, rango: '1 mes' };
+  // los avisos (si están activados): las reglas que la app revisa sola cada media hora
+  try { const c = avisosCfg(); if (c.on && appAvisos()) foto.avisos = { ...c, ...reglasAvisos(M) }; } catch (e) {}
   const firma = JSON.stringify({ ...foto, total: Math.round(foto.total), dia: Math.round(foto.dia) });
   if (!forzar && firma === widgetFirma) return;
   widgetT = Date.now(); widgetFirma = firma;
@@ -10744,6 +10840,12 @@ function abrirAjustes() {
       <button class="aj-fila" data-accion="asesor-ajustes" data-cerrar>${ICONOS.chispa}<span><b>Ajustes de GrowIA</b><small>Funciona con Gemini, la IA de Google, gratis con una clave tuya: responde a lo que le preguntes y revisa tu cartera cada día.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <div class="seccion-ed"><h3>${ICONOS.cartera}App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
     </div>
+    <h2 class="aj-grupo">Avisos y resumen</h2>
+    <div class="aj-caja">
+      <button class="aj-fila" id="aResumen" data-cerrar>${ICONOS.agenda}<span><b>El resumen de hoy</b><small>Cómo va tu cartera, lo que mueve los mercados y las noticias de lo tuyo.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <label class="aj-fila aj-check"><input type="checkbox" id="aResumenAuto"${LS.get('inv-resumen-off', false) ? '' : ' checked'}><span><b>Enseñarme el resumen al abrir</b><small>La primera vez que abres GrowFolio cada día.</small></span></label>
+      <div class="seccion-ed" id="aAvisos">${htmlAjAvisos()}</div>
+    </div>
     <h2 class="aj-grupo">Ayuda</h2>
     <div class="aj-caja">
       <button class="aj-fila" data-accion="opinion" data-cerrar>${ICONOS.globo}<span><b>Tu opinión o un fallo</b><small>Algo que se ve mal, que no funciona o una idea: le llega a quien te pasó GrowFolio.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
@@ -10768,6 +10870,9 @@ function abrirAjustes() {
   $('#aNov', h.el).onclick = () => setTimeout(() => mostrarNovedades(null), 0);
   for (const b of $$('#aTour, #aTour2', h.el)) b.onclick = () => setTimeout(() => iniciarTour(0), 0);
   $('#aIntro', h.el).onclick = () => setTimeout(() => pantallaIntro(() => { montar(); pintar(); }), 0);
+  $('#aResumen', h.el).onclick = () => setTimeout(() => resumenDelDia(() => {}, true), 0);
+  $('#aResumenAuto', h.el).onchange = (e) => LS.set('inv-resumen-off', !e.target.checked);
+  enlazarAjAvisos($('#aAvisos', h.el));
   $('#aOrdenar', h.el).onclick = () => setTimeout(() => { if (S.vista !== 'cartera') location.hash = '#cartera'; setTimeout(ordenarCartera, 120); }, 0);
   $('#aEstreno', h.el).onclick = () => setTimeout(() => estreno02(LS.get('inv-version', VERSION), null), 0);
   $('#aInvita', h.el).onclick = () => {
@@ -12280,7 +12385,10 @@ function arrancar() {
   // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)
   { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); }; setTimeout(mira, 6000); }
   clearInterval(tickPrecios); clearInterval(tickEstado);
-  tickPrecios = setInterval(() => { if (!document.hidden) recargarPrecios(); }, 120000);
+  // con los avisos del navegador activados, los precios siguen llegando aunque GrowFolio esté en segundo plano
+  tickPrecios = setInterval(() => { if (!document.hidden || (avisosCfg().on && !appAvisos())) recargarPrecios(); }, 120000);
+  clearInterval(S.tickAvisos);
+  S.tickAvisos = setInterval(() => { if (S.cartera && document.hidden && avisosCfg().on && !appAvisos()) { try { S.M = calcular(); revisarAvisos(S.M); } catch (e) { console.warn(e); } } }, 120000);
   tickEstado = setInterval(programarParche, 30000);
   setTimeout(bienvenida, 700);
   // con cuenta: el nombre va también dentro de tu perfil cifrado y los cambios de otros dispositivos llegan solos
