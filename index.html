@@ -9384,10 +9384,12 @@ async function conectarBanco(plataforma) {
 async function vueltaDelBanco() {
   const q = new URLSearchParams(location.search);
   if (!q.has('state') || !(q.has('code') || q.has('error'))) return;
+  // la sesión de Google puede tardar un poco en estar lista al volver: se espera hasta 20 s
+  for (let k = 0; k < 40 && !FB.user; k++) await new Promise((r) => setTimeout(r, 500));
   history.replaceState(null, '', location.pathname + location.hash);
   const pend = LS.get('inv-banco-pend', null); LS.del('inv-banco-pend');
   if (q.has('error')) { toast(L('El banco no ha dado permiso. Puedes probar otra vez desde Efectivo.', 'The bank didn’t grant access. You can try again from Cash.'), 6000); return; }
-  if (!(await bancoDisponible())) return;
+  if (!(await bancoDisponible())) { toast(L('No se ha podido terminar la conexión con el banco: entra con tu cuenta y prueba otra vez desde Efectivo.', 'Couldn’t finish connecting to the bank: sign in and try again from Cash.'), 6000); return; }
   let r;
   try { r = await workerPide('/banco/sesion', { code: q.get('code'), estado: q.get('state') }); }
   catch (e) { toast(L('No se ha podido terminar la conexión con el banco. Prueba otra vez desde Efectivo.', 'Couldn’t finish connecting to the bank. Try again from Cash.'), 6000); return; }
