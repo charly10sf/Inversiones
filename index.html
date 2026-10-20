@@ -2203,6 +2203,45 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .grupo-tabs a { position: relative; flex: none; padding: 8px 16px; border-radius: 999px; color: var(--text-2); font-size: 14px; font-weight: 600; text-decoration: none; white-space: nowrap; }
 .grupo-tabs a:hover { color: var(--text); }
 .grupo-tabs a[aria-current="page"] { color: var(--accent); background: var(--accent-bg); }
+/* tus objetivos frente a tu cartera (Análisis) */
+.ov { margin: 4px 0 30px; }
+.ov .sec-cab .der { margin-left: auto; font-size: 13.5px; }
+.ov-res { padding: 2px 9px; border-radius: 999px; font-weight: 600; }
+.ov-res.bien { color: var(--up); background: var(--up-bg); } .ov-res.ojo { color: var(--accent); background: var(--accent-bg); } .ov-res.fuera { color: var(--down); background: var(--down-bg); }
+.ov-lista { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 16px; background: var(--plane); overflow: hidden; }
+.ov-f { display: grid; grid-template-columns: 28px minmax(0, 1fr) minmax(108px, auto); gap: 12px; align-items: center; padding: 13px 16px; }
+@media (max-width: 560px) { .ov-f { align-items: start; } .ov-ic { margin-top: 1px; } }
+.ov-f + .ov-f { border-top: 1px solid var(--line); }
+.ov-ic svg { width: 22px; height: 22px; display: block; }
+.ov-f.bien .ov-ic { color: var(--up); } .ov-f.ojo .ov-ic { color: var(--accent); } .ov-f.fuera .ov-ic { color: var(--down); }
+.ov-t { min-width: 0; display: grid; gap: 2px; }
+.ov-t b { font-size: 15px; font-weight: 600; }
+.ov-t small { color: var(--text-2); font-size: 13px; line-height: 1.45; }
+.ov-c { display: grid; justify-items: end; gap: 3px; text-align: right; }
+.ov-c b { font-size: 16px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.ov-f.fuera .ov-c b { color: var(--down); } .ov-f.ojo .ov-c b { color: var(--accent); }
+.ov-c small { color: var(--muted); font-size: 12px; white-space: nowrap; }
+.ov-barra { position: relative; width: 108px; height: 6px; border-radius: 999px; background: rgba(255, 255, 255, 0.07); overflow: hidden; margin-top: 2px; }
+.ov-barra i { position: absolute; top: 0; bottom: 0; }
+.ov-barra .banda { background: rgba(79, 201, 149, 0.28); }
+.ov-barra .tope { width: 2px; background: var(--text-2); }
+.ov-barra .val { left: 0; border-radius: 999px; background: var(--text-2); }
+.ov-f.bien .ov-barra .val { background: var(--up); } .ov-f.ojo .ov-barra .val { background: var(--accent); } .ov-f.fuera .ov-barra .val { background: var(--down); }
+.ov-barra:not(.din) .val { background: transparent !important; border-right: 3px solid currentColor; border-radius: 0; }
+.ov-f.bien .ov-barra:not(.din) .val { color: var(--up); } .ov-f.ojo .ov-barra:not(.din) .val { color: var(--accent); } .ov-f.fuera .ov-barra:not(.din) .val { color: var(--down); }
+@media (max-width: 560px) { .ov-f { grid-template-columns: 24px minmax(0, 1fr); } .ov-c { grid-column: 2; justify-items: start; text-align: left; grid-template-columns: auto auto; align-items: baseline; column-gap: 8px; } .ov-c .ov-barra { grid-column: 1 / -1; width: 100%; } }
+.ov-vacio { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px 20px; margin: 4px 0 30px; padding: 18px 20px; border: 1px dashed var(--line-2); border-radius: 16px; }
+.ov-vacio h2 { margin: 0 0 4px; font-size: 17px; } .ov-vacio p { margin: 0; color: var(--text-2); font-size: 14px; max-width: 56ch; }
+/* Paso a paso: cómo vas */
+.ruta-estado { display: grid; grid-template-columns: 36px minmax(0, 1fr); gap: 12px; align-items: start; margin: 0 0 18px; padding: 14px 16px; border-radius: 16px; border: 1px solid var(--line); background: var(--plane); }
+.ruta-estado.bien { border-color: rgba(79, 201, 149, 0.35); background: linear-gradient(135deg, rgba(79, 201, 149, 0.09), var(--plane) 60%); }
+.ruta-estado.ojo { border-color: rgba(226, 180, 95, 0.4); background: linear-gradient(135deg, rgba(226, 180, 95, 0.1), var(--plane) 60%); }
+.re-ic { display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; }
+.ruta-estado.bien .re-ic { color: var(--up); background: var(--up-bg); } .ruta-estado.ojo .re-ic { color: var(--accent); background: var(--accent-bg); }
+.re-ic svg { width: 20px; height: 20px; }
+.ruta-estado b { font-size: 16px; }
+.ruta-estado p { margin: 2px 0 6px; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.re-obj { font-size: 13px; color: var(--up); text-decoration: none; font-weight: 600; } .re-obj.ojo { color: var(--accent); } .re-obj.fuera { color: var(--down); }
 .enlace-hacienda { display: flex; align-items: center; gap: 12px; margin-top: 36px; padding: 14px 16px; border: 1px solid var(--line); border-radius: 14px; color: var(--text); text-decoration: none; }
 .enlace-hacienda:hover { background: var(--plane); }
 .enlace-hacienda > svg { width: 20px; height: 20px; color: var(--muted); flex: none; }
@@ -3934,6 +3973,7 @@ function calcular() {
   M.dividendos = sum(filas, (f) => (f.p && f.p.dividendo_pct ? (f.valor * f.p.dividendo_pct) / 100 : 0));
   M.realizado = fiscalAnio(new Date().getFullYear()).gp;
   for (const f of filas) f.senal = senal(f, M);
+  estabilizarSenales(filas);
   return M;
 }
 
@@ -4067,13 +4107,34 @@ function votosResumen(v) {
   const n = v.strongBuy + v.buy + v.hold + v.sell + v.strongSell;
   return n ? { n, compra: v.strongBuy + v.buy, mantener: v.hold, venta: v.sell + v.strongSell } : null;
 }
+/* 0.3: las señales no cambian de un día para otro. Cada posición recuerda su señal y desde cuándo la tiene (en tu
+   cartera, igual en todos tus dispositivos). Una nueva solo entra si no puede esperar (tu precio de salida o tu
+   objetivo), si la de antes lleva al menos 7 días y la nueva se ha visto dos días distintos (no un roce del umbral),
+   o si la de antes lleva un mes. Mientras, se queda la de antes y se dice por qué. */
+function estabilizarSenales(filas) {
+  if (!S.cartera) return;
+  const E = S.cartera.senales = S.cartera.senales || {}, hoy = hoyIso();
+  let cambio = false;
+  for (const f of filas) {
+    const id = f.pos.id, nueva = f.senal.nivel, e = E[id];
+    if (!e || !SENALES[e.n]) { E[id] = { n: nueva, d: hoy }; cambio = true; continue; }
+    if (e.n === nueva) { if (e.p) { delete e.p; delete e.pd; cambio = true; } continue; }
+    if (e.p !== nueva) { e.p = nueva; e.pd = [hoy]; cambio = true; } else if (!e.pd.includes(hoy)) { e.pd = [...e.pd, hoy].slice(-5); cambio = true; }
+    const dias = diasEntre(e.d, hoy);
+    if (f.senal.urgente || (dias >= 7 && e.pd.length >= 2) || dias >= 30) { E[id] = { n: nueva, d: hoy, antes: e.n }; cambio = true; continue; }
+    const cuandoCambia = dias >= 7 ? L('mañana', 'tomorrow') : L(`el ${fechaCorta(sumarDias(e.d, 7))}`, `on ${fechaCorta(sumarDias(e.d, 7))}`);
+    f.senal = { nivel: e.n, txt: SENALES[e.n], cruda: nueva, motivos: [L(`Sigue en «${SENALES[e.n]}». Los datos de estos días apuntan a «${SENALES[nueva].toLowerCase()}» (es lo de abajo), pero GrowFolio no cambia de opinión por unos días: si sigue igual, cambiará ${cuandoCambia}.`, `Still «${SENALES[e.n]}». This week's data points to «${SENALES[nueva].toLowerCase()}» (below), but GrowFolio doesn't change its mind over a few days: if it holds, it changes ${cuandoCambia}.`), ...f.senal.motivos] };
+  }
+  for (const id of Object.keys(E)) if (!filas.some((f) => f.pos.id === id)) { delete E[id]; cambio = true; }
+  if (cambio) S.senalesSucias = true;
+}
 function senal(f, M) {
   const p = f.p || {}, i = f.inst, motivos = [];
   const pr = f.precio;
   const stop = +f.pos.stop, obj = +f.pos.objetivo;
   const fin = (nivel) => ({ nivel, txt: SENALES[nivel], motivos });
-  if (stop && pr && pr <= stop) { motivos.push(`Ha bajado de tu precio de salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`); return fin('vender'); }
-  if (obj && pr && pr >= obj) { motivos.push(`Ha llegado a tu objetivo de ${precioFmt(obj)}: decide si vendes todo, una parte o subes el objetivo.`); return fin('recoger'); }
+  if (stop && pr && pr <= stop) { motivos.push(`Ha bajado de tu precio de salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`); return { ...fin('vender'), urgente: true }; }
+  if (obj && pr && pr >= obj) { motivos.push(`Ha llegado a tu objetivo de ${precioFmt(obj)}: decide si vendes todo, una parte o subes el objetivo.`); return { ...fin('recoger'), urgente: true }; }
 
   if (i.tipo === 'Acción') {
     let score = 0;
@@ -4633,6 +4694,7 @@ function pintar() {
   dibujar(M);
   if (S.ficha) refrescarFicha();
   S.firmaPintada = firmaRecom(M);
+  if (S.senalesSucias && !S.guardandoSenales) { S.senalesSucias = false; S.guardandoSenales = true; setTimeout(() => guardarCarteraCallada('Señales').catch(() => {}).finally(() => { S.guardandoSenales = false; }), 4000); }
   enviarWidget();
   const sv = simsRadarVivos().join();
   if (sv !== S.radarSubs) { S.radarSubs = sv; LIVE.resuscribir(); }
@@ -6597,7 +6659,16 @@ function htmlRuta(M) {
       </div>
     </section>`;
   };
-  return `<div class="ruta-barra-top">
+  // cómo vas: lo urgente que queda, lo del mes y tus objetivos. Si no hay nada que hacer, se dice: esperar también vale
+  const C = comparaObjetivos(M), tareasMes = P.mes.filter((x) => claseRuta(x) === 'tarea' && !x.auto);
+  const urg = tareasMes.filter((x) => x.urgente && !x.hecho).length, pend = tareasMes.filter((x) => !x.hecho).length;
+  const est = urg ? 'ojo' : C.fuera ? 'ojo' : 'bien';
+  const frase = urg ? L(`Te ${urg === 1 ? 'queda una cosa' : `quedan ${urg} cosas`} que no deberían esperar: ${urg === 1 ? 'está' : 'están'} arriba del todo.`, `${urg} thing${urg === 1 ? '' : 's'} shouldn't wait: at the top.`)
+    : C.fuera ? L(`Vas bien con lo del mes, pero ${C.fuera === 1 ? 'uno de tus objetivos se sale' : `${C.fuera} de tus objetivos se salen`} de lo que querías.`, `On track this month, but ${C.fuera} of your goals ${C.fuera === 1 ? 'is' : 'are'} off.`)
+    : pend ? L(`Vas bien: este mes te ${pend === 1 ? 'queda un paso' : `quedan ${pend} pasos`}, ninguno urgente.`, `On track: ${pend} step${pend === 1 ? '' : 's'} left this month, none urgent.`)
+    : L('Vas bien. Este mes no hace falta tocar nada: tus aportaciones siguen trabajando. Esperar también es una decisión, y a menudo la mejor.', 'On track. Nothing to touch this month: your contributions keep working. Waiting is a decision too, and often the best one.');
+  const estado = `<div class="ruta-estado ${est}"><span class="re-ic">${est === 'bien' ? ICONOS.ok : ICONOS.alerta}</span><div><b>${est === 'bien' ? L('Vas bien', 'On track') : L('Ojo', 'Heads up')}</b><p>${esc(frase)}</p>${C.filas.length ? `<a class="re-obj ${C.fuera ? 'fuera' : C.bien < C.filas.length ? 'ojo' : ''}" href="#analisis">${L(`Objetivos: ${C.bien} de ${C.filas.length} en orden`, `Goals: ${C.bien} of ${C.filas.length} in order`)}</a>` : ''}</div></div>`;
+  return `${estado}<div class="ruta-barra-top">
       <div class="plazos" role="group" aria-label="Plazo">${PLAZOS.map(([k]) => { const n = P[k].filter((x) => !x.hecho && !x.auto && claseRuta(x) === 'tarea').length; return `<button data-plazo="${k}" aria-pressed="${S.rutaPlazo === k}">${PLAZO_CORTO[k]}${n ? `<span class="cuenta">${n}</span>` : ''}</button>`; }).join('')}</div>
       <div class="ruta-res" aria-label="Progreso"><div class="ruta-res-n"><b>${hechas}</b> de ${cuenta.length} hechos <span>en los próximos 6 meses. Cuando hagas uno, márcalo y se queda tachado.</span></div><div class="ruta-barra"><i style="width:${cuenta.length ? ((hechas / cuenta.length) * 100).toFixed(0) : 0}%"></i></div></div>
     </div>
@@ -6718,7 +6789,8 @@ function vistaAnalisis(M) {
   if (!ANALISIS_P.some(([k]) => k === S.califTab)) S.califTab = 'ia';
   const cuerpo = S.califTab === 'ia' ? htmlAnalisisIA(M) : htmlNumeros(M);
   return `
-  <div class="vista-cab"><h1>Análisis</h1><p>Lo que opina la IA de tu cartera y tus números: rentabilidad, riesgo, costes, qué hay por dentro y cómo van tus apuestas.</p></div>
+  <div class="vista-cab"><h1>Análisis</h1><p>Si tu cartera va hacia lo que quieres, lo que opina GrowIA y tus números: rentabilidad, riesgo, costes y qué hay por dentro.</p></div>
+  ${htmlObjetivosVs(M)}
   <div class="subvistas dos-op" role="group" aria-label="Qué ver">${ANALISIS_P.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div>
   ${cuerpo}
   ${epocaRenta() ? '' : `<a class="enlace-hacienda" href="#fiscal">${ICONOS.fiscal}<span><b>${L('Hacienda', 'Taxes')}</b><small>${L('Lo que pagarías si vendieras hoy, los tramos y la guía de la renta', 'What you would pay if you sold today, the brackets and the tax-return guide')}</small></span><i class="aj-flecha" aria-hidden="true"></i></a>`}`;
@@ -8105,6 +8177,42 @@ function evaluarMetas(M) {
     if (m.tipo !== 'llegar') gastado += m.importe;
     return m;
   });
+}
+/* 0.3: tus objetivos frente a lo que tienes de verdad. Cada fila dice si encaja (bien), si roza tu límite (ojo) o si
+   se sale (fuera), con la cifra de cada lado y qué hacer. La usan Análisis y el Paso a paso */
+function comparaObjetivos(M) {
+  const e = estadoPerfil(M), p = e.p, filas = [];
+  if (!M.total) return { filas, e };
+  const fila = (o) => filas.push(o);
+  if (e.reco) {
+    const b = e.pctBolsa, r = e.reco;
+    const estado = b > r.max + 10 ? 'fuera' : b > r.max || b < r.min - 15 ? 'ojo' : 'bien';
+    fila({ k: 'bolsa', t: L('Bolsa, frente a tu perfil', 'Stocks vs your profile'), estado, v: `${fmtNum(b, 0)} %`, m: L(`encaja ${r.min}-${r.max} %`, `fits ${r.min}-${r.max} %`), barra: { v: b, a: r.min, b: r.max },
+      txt: estado === 'bien' ? L('Arriesgas lo que encaja con tu edad, tu plazo y lo que dices aguantar.', 'You take the risk that fits your age, horizon and tolerance.')
+        : b > r.max ? L(`Un ${fmtNum(b - r.max, 0)} % por encima de lo que encaja contigo: si la bolsa cae un 30 %, perderías unos ${eur(M.total * (b / 100) * 0.3, 0)}. Sin vender: lo nuevo, a lo seguro.`, `${fmtNum(b - r.max, 0)} % above what fits you: a 30 % fall would cost about ${eur(M.total * (b / 100) * 0.3, 0)}.`)
+        : L('Por debajo de lo que encaja contigo: con tu plazo, más en bolsa te haría crecer más.', 'Below what fits you: with your horizon, more in stocks would grow more.') });
+  }
+  const lim = (k, t, actual, limite, txts) => { const estado = actual > limite + 0.5 ? 'fuera' : actual > limite * 0.85 ? 'ojo' : 'bien'; fila({ k, t, estado, v: `${fmtNum(actual, 1)} %`, m: L(`tu máximo ${fmtNum(limite, 0)} %`, `your max ${fmtNum(limite, 0)} %`), barra: { v: actual, b: limite, max: Math.max(limite * 1.6, actual * 1.1) }, txt: txts[estado] }); };
+  lim('sueltas', L('Acciones sueltas', 'Single stocks'), e.pctSueltas, +(S.cartera.limite_acciones ?? 20), { bien: L('Dentro de tu límite.', 'Within your limit.'), ojo: L('Cerca de tu límite: lo nuevo, mejor a tus fondos.', 'Close to your limit: new money, better to your funds.'), fuera: L('Te pasas de tu límite: no añadas y, si quieres volver a él, vende una parte.', 'Over your limit: don’t add, and sell a part to get back.') });
+  if (e.pctCripto > 0) lim('cripto', 'Cripto', e.pctCripto, +(p.limite_cripto ?? 5), { bien: L('Dentro de tu límite.', 'Within your limit.'), ojo: L('Rozando tu límite: con lo que se mueve, no añadas más.', 'Close to your limit: given how it swings, don’t add.'), fuera: L('Por encima de tu límite: un mal mes en cripto se notaría en todo.', 'Over your limit: a bad crypto month would show everywhere.') });
+  if (e.mayor) lim('empresa', L(`Una sola empresa: ${e.mayor.f.inst.corto}`, `One company: ${e.mayor.f.inst.corto}`), e.mayor.pct, +(p.limite_empresa ?? 10), { bien: L('Ninguna empresa pesa demasiado.', 'No company weighs too much.'), ojo: L('Cerca de tu máximo por empresa: no le metas más.', 'Close to your per-company max: don’t add.'), fuera: L('Pesa más de lo que te pusiste por empresa: un tropiezo suyo te dolería mucho.', 'Above your per-company max: a stumble would hurt a lot.') });
+  if (e.colchon) { const c = e.seguro / e.colchon; fila({ k: 'colchon', t: L('Colchón para imprevistos', 'Emergency cushion'), estado: c >= 0.9 ? 'bien' : c >= 0.5 ? 'ojo' : 'fuera', v: eur(e.seguro, 0), m: L(`quieres ${eur(e.colchon, 0)}`, `you want ${eur(e.colchon, 0)}`), barra: { v: Math.min(100, c * 100), b: 100, max: 100, din: true }, txt: c >= 0.9 ? L('Lo tienes: un susto no te obliga a vender en mal momento.', 'You have it: a surprise won’t force you to sell at a bad time.') : L(`Te faltan ${eur(e.colchon - e.seguro, 0)}: antes que meter más en bolsa.`, `${eur(e.colchon - e.seguro, 0)} to go: before adding more to stocks.`) }); }
+  for (const m of e.metas) {
+    const estado = !m.anio ? (m.ok ? 'bien' : 'fuera') : m.seguro ? 'bien' : m.ok ? (m.tipo !== 'llegar' && m.meses <= 36 ? 'ojo' : 'bien') : m.falta > m.importe * 0.2 ? 'fuera' : 'ojo';
+    fila({ k: 'meta:' + m.id, t: L(`Meta: ${m.n}`, `Goal: ${m.n}`), estado, v: m.prob != null ? euCorto(Math.max(0, m.prob)) : m.cuando ? anioDe(m.cuando) : '—', m: `${eur(m.importe, 0)}${m.anio ? ` ${L('en', 'in')} ${m.anio}` : ''}`, barra: m.prob != null ? { v: Math.min(100, (Math.max(0, m.prob) / m.importe) * 100), b: 100, max: 100, din: true } : null, txt: textoMeta(m).replace(/<[^>]+>/g, '') });
+  }
+  return { filas, e, bien: filas.filter((x) => x.estado === 'bien').length, fuera: filas.filter((x) => x.estado === 'fuera').length };
+}
+function htmlObjetivosVs(M) {
+  const C = comparaObjetivos(M);
+  if (!C.filas.length || perfilVacio()) return `<section class="ov-vacio"><div><h2>${L('¿Va tu cartera hacia lo que quieres?', 'Is your portfolio heading where you want?')}</h2><p>${L('Cuéntale a GrowFolio tu edad, tus metas y cuánto riesgo aguantas, y aquí verás, punto por punto, si lo que tienes encaja.', 'Tell GrowFolio your age, goals and risk tolerance, and here you’ll see, point by point, whether what you own fits.')}</p></div><button class="btn pri" data-accion="perfil-guiado">${ICONOS.perfil}${L('Rellenar tu perfil', 'Fill in your profile')}</button></section>`;
+  const ic = { bien: ICONOS.ok, ojo: ICONOS.alerta, fuera: ICONOS.alerta };
+  const barra = (b) => { if (!b) return ''; const max = b.max || 100, x = (v) => Math.max(0, Math.min(100, (v / max) * 100)); return `<span class="ov-barra${b.din ? ' din' : ''}" aria-hidden="true">${b.a != null ? `<i class="banda" style="left:${x(b.a).toFixed(1)}%;width:${(x(b.b) - x(b.a)).toFixed(1)}%"></i>` : b.din ? '' : `<i class="tope" style="left:${x(b.b).toFixed(1)}%"></i>`}<i class="val" style="width:${x(b.v).toFixed(1)}%"></i></span>`; };
+  const resumen = C.fuera ? L(`${C.fuera} ${C.fuera === 1 ? 'se sale' : 'se salen'} de lo que querías`, `${C.fuera} off what you wanted`) : C.bien === C.filas.length ? L('Todo en orden', 'All in order') : L(`${C.bien} de ${C.filas.length} en orden`, `${C.bien} of ${C.filas.length} in order`);
+  return `<section class="ov" aria-labelledby="hOv"><div class="sec-cab"><h2 id="hOv">${L('Tus objetivos frente a tu cartera', 'Your goals vs your portfolio')}</h2><span class="k ov-res ${C.fuera ? 'fuera' : C.bien === C.filas.length ? 'bien' : 'ojo'}">${resumen}</span><a class="enlace der" href="#futuro">${L('Cambiar tus objetivos', 'Change your goals')}</a></div>
+    <ul class="ov-lista">${C.filas.map((f) => `<li class="ov-f ${f.estado}"><span class="ov-ic" aria-label="${f.estado === 'bien' ? L('En orden', 'OK') : f.estado === 'ojo' ? L('Ojo', 'Watch') : L('Se sale', 'Off')}">${ic[f.estado]}</span>
+      <div class="ov-t"><b>${esc(f.t)}</b><small>${esc(f.txt)}</small></div>
+      <div class="ov-c"><b>${S.oculto && /€/.test(f.v) ? '••••' : esc(f.v)}</b><small>${S.oculto && /€/.test(f.m) ? '' : esc(f.m)}</small>${barra(f.barra)}</div></li>`).join('')}</ul></section>`;
 }
 function textoMeta(m) {
   if (!m.anio) return m.cuando ? (m.pct >= 100 ? 'Ya lo tienes.' : `Lo probable es llegar en ${MESES[deIso(m.cuando).getMonth()]} de ${m.cuando.slice(0, 4)}, con lo que aportas ahora.`) : 'Con lo que aportas ahora no llegas en 30 años: súbele la aportación en Proyección para ver cuánto haría falta.';
@@ -12725,6 +12833,8 @@ function pedidoAnalisis(ids, motivo, conWeb = true) {
 5. Sintetiza: no repitas en una sección lo que ya está en otra. Frases cortas.
 6. Ajústalo todo a su perfil y sus objetivos (edad, cuándo necesita el dinero, cuánto riesgo aguanta, sus límites y sus metas con fecha y cifra, vienen en los datos): si algo de su cartera choca con ellos, dilo y propón cómo encajarlo; en la hoja de ruta, lo que necesite cada meta.
 7. En cada compra o venta explica lo de Hacienda y por qué: lo que pagará, y lo que debe hacer o evitar por fiscalidad (por ejemplo, si vende con pérdidas, no recomprar la misma acción o ETF en dos meses, ni el mismo fondo en un año, porque si no la pérdida no resta ese año; en cripto la de dos meses no se aplica, aunque hay quien defiende la de un año). Si un consejo tiene un motivo fiscal, que se diga.
+8. Sé constante. En los datos viene tu revisión anterior: su fecha, el nivel que diste a cada posición y su hoja de ruta. No cambies el nivel de una posición ni la hoja de ruta salvo que haya algo nuevo e importante: resultados, un cambio de recomendación de los analistas, una subida o caída de más de un 8 %, una noticia que cambie la tesis, o un cambio en su perfil, sus metas o su dinero. Los movimientos de pocos días no son motivo. Si cambias algo, di en su texto qué ha cambiado y por qué. Una revisión seria cambia poco de una semana a otra.
+9. No hacer nada también es un consejo. Esperar, seguir con las aportaciones y no tocar la cartera es muchas veces lo mejor: si este mes no hay nada que hacer, pon en la hoja de ruta un solo paso que lo diga («Este mes, nada: deja que trabajen tus aportaciones») y explica por qué. No inventes cambios por tener algo que proponer.
 
 Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
 {
@@ -13080,6 +13190,14 @@ function contextoAsesor(M) {
       L.push(T(ia.titular)); for (const p of ia.resumen || []) L.push(T(p));
       if (ia.mejorar) L.push('Qué mejorar: ' + ia.mejorar.map((x) => T(x.titulo)).join('; ') + '.');
       if (ia.riesgos) L.push('Riesgos: ' + ia.riesgos.map((x) => T(x.titulo)).join('; ') + '.');
+      // lo que dijo de cada posición y su hoja de ruta: para que no cambie de opinión sin motivo
+      const nv = Object.entries(ia.posiciones || {}).filter(([, x]) => x && x.nivel).map(([k, x]) => `${nombreInst(k)}: ${x.nivel}${x.veredicto ? ` («${T(x.veredicto)}»)` : ''}`);
+      if (nv.length) L.push('Nivel que diste a cada posición: ' + nv.join('; ') + '.');
+      const hrA = ia.hoja_de_ruta && ia.hoja_de_ruta.mes;
+      if (hrA && hrA.length) L.push('Tu hoja de ruta de este mes: ' + hrA.map((x) => T(x.t)).join('; ') + '.');
+      const est = S.cartera.senales || {};
+      const cambiosW = Object.entries(est).filter(([, x]) => x.antes && x.d >= sumarDias(hoyIso(), -14)).map(([k, x]) => { const f = M.filas.find((y) => y.pos.id === k); return f ? `${f.inst.corto}: de ${x.antes} a ${x.n} el ${fechaCorta(x.d)}` : ''; }).filter(Boolean);
+      if (cambiosW.length) L.push('Cambios de señal de GrowFolio en las dos últimas semanas: ' + cambiosW.join('; ') + '.');
     }
     try {
       const P = pasosRuta(M), limpio = (t) => String(t || '').replace(/<[^>]+>/g, '');
