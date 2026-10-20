@@ -1366,6 +1366,26 @@ table td.txt { white-space: normal; min-width: 260px; }
 
 /* expertos, tus posiciones: tarjetas cortas con el detalle plegado */
 .fx-lista.cortas { border-top: 0; display: grid; gap: 12px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 440px), 1fr)); align-items: start; }
+.fx3-lista { border: 1px solid var(--line); border-radius: 16px; background: var(--plane); overflow: hidden; }
+.fx3 + .fx3 { border-top: 1px solid var(--line); }
+.fx3 > summary { list-style: none; cursor: pointer; display: grid; grid-template-columns: 34px minmax(0, 1fr) auto 12px; gap: 12px; align-items: center; padding: 12px 14px; }
+.fx3 > summary::-webkit-details-marker { display: none; }
+.fx3 > summary .logo-a { width: 34px; height: 34px; border-radius: 9px; }
+.fx3[open] > summary { background: var(--plane-2); }
+.fx3-n { min-width: 0; display: grid; gap: 2px; }
+.fx3-n b { font-size: 15px; font-weight: 650; }
+.fx3-n small { color: var(--text-2); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fx3[open] .fx3-n small { white-space: normal; }
+.fx3-s { display: grid; justify-items: end; gap: 3px; }
+.fx3-s small { font-size: 11.5px; color: var(--muted); white-space: nowrap; }
+.fx3-s small.ok { color: var(--up); } .fx3-s small.no { color: var(--accent); }
+.fx3 > summary .aj-flecha { transition: transform 0.2s ease; }
+.fx3[open] > summary .aj-flecha { transform: rotate(45deg); }
+.fx3-det { display: grid; gap: 10px; padding: 4px 16px 16px 60px; background: var(--plane-2); }
+.fx3-det .btn { justify-self: start; }
+.fx3-pos { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; color: var(--muted); font-size: 12.5px; }
+@media (max-width: 560px) { .fx3 > summary { grid-template-columns: 30px minmax(0, 1fr) auto; } .fx3 > summary .aj-flecha { display: none; } .fx3-n small { display: none; } .fx3-det { padding-left: 16px; } .fx3[open] .fx3-n small { display: none; } }
+.informe-al { display: flex; gap: 8px; align-items: flex-start; } .informe-al svg { width: 18px; height: 18px; flex: none; margin-top: 2px; color: var(--accent); }
 .fx2 { background: var(--plane); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; display: grid; gap: 8px; min-width: 0; }
 .fx2-cab { display: flex; gap: 12px; align-items: center; }
 .fx2-cab > div { min-width: 0; flex: 1; }
@@ -2677,6 +2697,21 @@ body.con-ixn { overflow: hidden; }
 
 /* ---------- menos scroll en el móvil ---------- */
 .idea-res { display: none; }
+/* 0.3: las ideas empiezan compactas (una línea: el número, quién es y lo que te quedaría) y se abren al tocarlas; las
+   tres mejores, en verde */
+.ideas-top3 { grid-template-columns: repeat(auto-fill, minmax(min(100%, 360px), 1fr)) !important; align-items: start; gap: 10px !important; }
+.idea[data-compacta] { padding: 12px 14px; gap: 12px; }
+.idea[data-compacta].abierta { grid-column: 1 / -1; }
+.idea[data-compacta] > header { cursor: pointer; }
+.idea[data-compacta] .idea-res { display: grid; justify-items: end; margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.idea[data-compacta] .idea-res b { font-size: 15px; }
+.idea[data-compacta] .idea-res small { color: var(--muted); font-size: 12px; }
+.idea[data-compacta]:not(.abierta) > :not(header) { display: none; }
+.idea[data-compacta] > header::after { content: '›'; color: var(--muted); font-size: 20px; margin-left: 6px; transition: transform 0.15s; }
+.idea[data-compacta].abierta > header::after { transform: rotate(90deg); }
+.idea .idea-n { color: var(--text-2); background: rgba(255, 255, 255, 0.06); }
+.idea.top { border-color: rgba(79, 201, 149, 0.45); background: linear-gradient(135deg, rgba(79, 201, 149, 0.1), var(--plane) 55%); }
+.idea.top .idea-n { color: #04140d; background: var(--up); }
 .sec-det > summary { list-style: none; cursor: pointer; }
 .sec-det > summary::-webkit-details-marker { display: none; }
 .sec-det > summary h2::after, .sec-det > summary h3::after { content: '›'; display: inline-block; margin-left: 8px; color: var(--muted); transition: transform 0.15s; }
@@ -2688,14 +2723,6 @@ body.con-ixn { overflow: hidden; }
   .vista-cab { margin-bottom: 16px; }
   #vista [style*="margin-top:44px"], #vista [style*="margin-top:48px"], #vista [style*="margin-top: 44px"], #vista [style*="margin-top: 48px"] { margin-top: 28px !important; }
   .pie-btns { margin-top: 32px; }
-  .idea[data-compacta] { padding-top: 12px; padding-bottom: 12px; }
-  .idea[data-compacta] > header { cursor: pointer; }
-  .idea[data-compacta] .idea-res { display: grid; justify-items: end; margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
-  .idea[data-compacta] .idea-res b { font-size: 15px; }
-  .idea[data-compacta] .idea-res small { color: var(--muted); font-size: 12px; }
-  .idea[data-compacta]:not(.abierta) > :not(header) { display: none; }
-  .idea[data-compacta] > header::after { content: '›'; color: var(--muted); font-size: 20px; margin-left: 8px; transition: transform 0.15s; }
-  .idea[data-compacta].abierta > header::after { transform: rotate(90deg); }
 }
 
 .ir-objetivos { display: flex; align-items: center; gap: 12px; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--line); background: var(--plane); color: var(--text); text-decoration: none; }
@@ -5886,6 +5913,30 @@ function datosExperto(f) {
   if (p.volatilidad) d.push(`<span>Volatilidad <b>${fmtNum(p.volatilidad, 0)} %</b></span>`);
   return d.length ? `<div class="fx-kv">${d.join('')}</div>` : '';
 }
+/* 0.3: cada posición en una fila que se abre: el nombre, la señal (y si GrowIA coincide) y el motivo principal en una
+   línea; al tocarla, todos los porqués */
+function filaExperto2(f, ia, vIA = {}) {
+  const i = f.inst, s = f.senal;
+  const c = ia && ia.posiciones && ia.posiciones[i.id];
+  const nivelC = c && NIVELES.has(c.nivel) ? c.nivel : null;
+  const coinciden = nivelC && LADO[nivelC] === LADO[s.nivel];
+  const [m0, ...resto] = s.motivos;
+  const prensa = htmlPrensaIA(informeDe(i.id)), datos = datosExperto(f);
+  const iaTxt = !c ? L('GrowIA aún no la ha revisado', 'Not yet reviewed by GrowIA') : coinciden ? L('GrowIA coincide', 'GrowIA agrees') : L(`GrowIA dice «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`, `GrowIA says «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`);
+  return `<details class="fx3">
+    <summary>${logo(i.dominio, i.corto || i.nombre)}<span class="fx3-n"><b>${esc(i.corto || i.nombre)}</b><small>${m0 ? esc(m0) : `${esc(f.pos.plataforma || '')}`}</small></span>
+      <span class="fx3-s"><span class="senal ${s.nivel}">${esc(s.txt)}</span><small class="${!c ? '' : coinciden ? 'ok' : 'no'}">${esc(iaTxt)}</small></span><i class="aj-flecha" aria-hidden="true"></i></summary>
+    <div class="fx3-det">
+      <p class="fx3-pos">${chipCotiza(i)}<span>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} ${L('de tu cartera', 'of your portfolio')}</span></p>
+      ${m0 ? `<p class="fx2-m">${esc(m0)}</p>` : ''}
+      ${resto.length ? `<div><span class="fx-de">${L('Números', 'Numbers')}</span><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>` : ''}
+      ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${esc((ia && ia.autor) || 'GrowIA')}${nivelC ? ` · <span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : ''}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>${L('Vigilar.', 'Watch.')}</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
+      ${prensa}
+      ${datos ? `<div class="fx-datos">${datos}</div>` : ''}
+      <button class="btn peq" data-pos="${esc(f.pos.id)}">${L('Abrir su ficha', 'Open its details')}</button>
+    </div>
+  </details>`;
+}
 function filaExperto(f, ia, vIA = {}) {
   const i = f.inst, s = f.senal;
   const c = ia && ia.posiciones && ia.posiciones[i.id];
@@ -5943,7 +5994,7 @@ function vistaExpertos(M) {
     ${htmlResumenInforme(true)}
     <section aria-labelledby="hSen" class="bloque-sec">
       <div class="sec-cab"><h2 id="hSen">Posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
-      <div class="fx-lista cortas">${(() => { const vIA = ia ? valoresIA(M) : {}; const vistos = new Set(); return ordenSenales(M).filter((f) => !vistos.has(f.pos.id) && vistos.add(f.pos.id)).map((f) => filaExperto(f, ia, vIA)).join(''); })()}</div>
+      <div class="fx3-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; const vistos = new Set(); return ordenSenales(M).filter((f) => !vistos.has(f.pos.id) && vistos.add(f.pos.id)).map((f) => filaExperto2(f, ia, vIA)).join(''); })()}</div>
       <p class="nota">GrowFolio mira el consenso de los analistas, lo que queda hasta su precio objetivo, la tendencia, tus reglas de salida y lo que pesa en tu cartera. La IA, además, las noticias. Si no coinciden, lee los dos motivos antes de decidir.</p>
     </section>
     <details class="num-sec"><summary><span><b>Analistas en prensa</b><small>titulares sobre tus acciones de los últimos 30 días</small></span></summary><div class="num-cuerpo">${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10)}</div></details>`;
@@ -6104,7 +6155,7 @@ function htmlResumenInforme(corto) {
   if (corto) {
     const fr = String(limpiaIA(inf.resumen || '')).split(/(?<=\.)\s+/);
     return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según GrowIA</h2><span class="k">${cabInforme(inf)}</span></div>
-      ${fr[0] ? `<p class="informe-res">${esc(fr[0])}</p>` : ''}
+      ${fr[0] ? `<p class="informe-res">${esc(fr[0])}</p>` : (inf.alertas || []).length ? `<p class="informe-res informe-al">${inf.alertas[0].urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}${escIA(inf.alertas[0].t)}</p>` : ''}
       ${fr.length > 1 || (inf.alertas || []).length ? `<details class="mas"><summary>${(inf.alertas || []).length ? `Seguir leyendo y ${inf.alertas.length} ${inf.alertas.length === 1 ? 'alerta' : 'alertas'}` : 'Seguir leyendo'}</summary>${fr.length > 1 ? `<p class="informe-res">${esc(fr.slice(1).join(' '))}</p>` : ''}${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}</details>` : ''}
     </section>`;
   }
@@ -6198,7 +6249,7 @@ function htmlFiscalIdea(r, e) {
   partes.push(tasa ? `al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${tasa.nombre}` : 'sin tasa al comprar');
   return `<p class="idea-linea"><b>Impuestos.</b> ${esc(partes.map((x) => x.replace(/\.\s*$/, '')).join('; ').replace(/^./, (c) => c.toUpperCase()))}.</p>`;
 }
-function tarjetaIdea(x, ctx, compacta = false) {
+function tarjetaIdea(x, ctx, compacta = false, puesto = 0) {
   const r = x.r;
   const pu = x.web || (r && r.p != null && r.pot != null ? puntuarIdea(r, ctx) : null);
   const ctr = pu ? pu.ctr : r && r.p ? contraste(r) : null;
@@ -6219,8 +6270,8 @@ function tarjetaIdea(x, ctx, compacta = false) {
     enlacesFuentes(fuentes, 4),
   ].filter(Boolean).join('');
   const resumen = x.esp && x.esp.prin && x.esp.prin.netoP != null ? { n: pctS(x.esp.prin.netoP, 0), en: `en ${plazoTxt(x.esp.prin.meses)}, neto` } : null;
-  return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}"${compacta ? ' data-compacta' : ''}>
-    <header${compacta ? ' data-idea-toggle role="button" tabindex="0" aria-expanded="false"' : ''}>${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? lineaOrigen(r) : esc(x.s)}</small></div>${compacta ? `<span class="idea-res">${resumen ? `<b class="${cls(x.esp.prin.netoP)}">${esc(resumen.n)}</b><small>${esc(resumen.en)}</small>` : ''}</span>` : ''}</header>
+  return `<article class="idea${x.votos > 1 ? ' coinciden' : ''}${puesto && puesto <= 3 ? ' top' : ''}"${compacta ? ' data-compacta' : ''}>
+    <header${compacta ? ' data-idea-toggle role="button" tabindex="0" aria-expanded="false"' : ''}>${puesto ? `<span class="idea-n" aria-label="${L(`Número ${puesto}`, `Number ${puesto}`)}">${puesto}</span>` : ''}${logo(r && r.w, x.n)}<div><b>${esc(x.n)}</b><small>${r ? lineaOrigen(r) : esc(x.s)}</small></div>${compacta ? `<span class="idea-res">${resumen ? `<b class="${cls(x.esp.prin.netoP)}">${esc(resumen.n)}</b><small>${esc(resumen.en)}</small>` : ''}</span>` : ''}</header>
     <p class="idea-quien">${quienIdea(x)}${ctr ? ` <span class="ctr-q">${htmlContraste(ctr, true)} señales a favor</span>` : ''}</p>
     ${htmlCifrasIdea(r, x.esp)}
     ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
@@ -6253,7 +6304,7 @@ function htmlIdeas(M, ia) {
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
   return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowIA y tu análisis</span></div>
     ${d && d.comentario ? `<p class="idea-panorama"><b>GrowIA</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
-    ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, movil && i >= 3)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
+    ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : '<div class="vacio">Ahora mismo ninguna pasa los filtros: mejor esperar.</div>'}
     <p class="nota">Cómo se eligen: GrowFolio se queda con las tres mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas. Primero salen las que eligen los dos. En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
     <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
