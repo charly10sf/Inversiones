@@ -98,6 +98,48 @@ NOTICIAS_MERCADO = [
     ("Materias primas", "oro precio onza"), ("Divisas", "dólar euro divisas"), ("Cripto", "bitcoin criptomonedas mercado"),
 ]
 
+# Noticias de cada comunidad autónoma, solo las que tocan el dinero de quien vive allí: impuestos, ayudas, vivienda.
+# El titular tiene que nombrar la comunidad (o su gobierno) y hablar de dinero. Cada 6 horas, en noticias["_region"].
+HORAS_REGION = 6
+TEMAS_DINERO = "impuestos OR IRPF OR deducción OR bonificación OR ayudas OR vivienda OR alquiler OR hipoteca OR sucesiones OR donaciones"
+RE_DINERO = r"impuest|IRPF|tribut|fiscal|deducci|bonific|rebaja|ayuda|subvenci|vivienda|alquiler|hipotec|cheque|bono |sucesiones|donaci|patrimonio|declaraci[oó]n de la renta|tasa"
+COMUNIDADES_NOTICIAS = [
+    ("andalucia", "Andalucía", r"Andaluc|Junta de Andaluc|Moreno Bonilla"),
+    ("aragon", "Aragón", r"Arag[oó]n|Azc[oó]n"),
+    ("asturias", "Asturias", r"Asturi|Principado"),
+    ("baleares", "Baleares", r"Balear|Mallorca|Govern balear"),
+    ("canarias", "Canarias", r"Canari"),
+    ("cantabria", "Cantabria", r"Cantabr"),
+    ("clm", '"Castilla-La Mancha"', r"Castilla-La Mancha|Castilla La Mancha|Page\b|Junta de Comunidades"),
+    ("cyl", '"Castilla y León"', r"Castilla y Le[oó]n|Ma[nñ]ueco"),
+    ("cataluna", "Cataluña OR Generalitat", r"Catalu|Generalitat|Catalunya"),
+    ("ceuta", "Ceuta", r"Ceuta"),
+    ("valencia", '"Comunitat Valenciana" OR Generalitat Valenciana', r"Valencian|Comunitat|Generalitat"),
+    ("extremadura", "Extremadura", r"Extremadura|extreme[nñ]"),
+    ("galicia", "Galicia OR Xunta", r"Galicia|Xunta|galleg"),
+    ("madrid", '"Comunidad de Madrid"', r"Comunidad de Madrid|Ayuso|madrile[nñ]"),
+    ("melilla", "Melilla", r"Melilla"),
+    ("murcia", '"Región de Murcia"', r"Murcia|L[oó]pez Miras"),
+    ("navarra", "Navarra", r"Navarr|Chivite"),
+    ("paisvasco", "Euskadi OR Bizkaia OR Gipuzkoa OR Álava", r"Euskadi|Pa[ií]s Vasco|Bizkaia|Gipuzkoa|[AÁ]lava|vasc|Diputaci[oó]n Foral"),
+    ("rioja", '"La Rioja"', r"Rioja|riojan"),
+]
+
+
+def noticias_region(prev):
+    """Las noticias de dinero de cada comunidad (como mucho 4 por comunidad, de los últimos 7 días)."""
+    reg, errores = {}, []
+    for cid, q, zona in COMUNIDADES_NOTICIAS:
+        try:
+            reg[cid] = noticias(f"({q}) ({TEMAS_DINERO})", 4, f"(?=.*(?:{zona}))(?=.*(?:{RE_DINERO}))", "7d")
+        except Exception as e:  # noqa: BLE001
+            errores.append(f"noticias de {cid}: {e}")
+            if cid in prev:
+                reg[cid] = prev[cid]
+        time.sleep(0.4)
+    return reg, errores
+
+
 # Lista de ideas: unas 380 empresas que se pueden comprar en Trade Republic. Ibex 35 y buena parte
 # del mercado continuo, las grandes de Europa (Euro Stoxx 50, DAX, CAC 40, Italia, Países Bajos,
 # Suiza, nórdicos y Londres) y las grandes de EEUU. Si un símbolo deja de existir, se salta solo.
@@ -491,8 +533,8 @@ def comprimir(s, anios_diario=ANIOS_DIARIO, cifras=6):
 RUIDO = re.compile(r"^Precio de acciones, noticias|Gráfico de acciones|^Cotización de |\(\w+\d{6}[CP]\d+\)|cotización e historial", re.I)
 
 
-def noticias(consulta, n=6, debe=None):
-    url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(consulta + " when:30d") + "&hl=es&gl=ES&ceid=ES:es"
+def noticias(consulta, n=6, debe=None, cuando="30d"):
+    url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(consulta + " when:" + cuando) + "&hl=es&gl=ES&ceid=ES:es"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (inversiones)"})
     raiz = ET.fromstring(urllib.request.urlopen(req, timeout=20).read())
     out, vistos = [], set()
@@ -1357,6 +1399,18 @@ def main(ruta_inst, dir_anterior, dir_salida):
             elegidas += resto[: max(0, 30 - len(elegidas))]
             salida["noticias"]["mercado"] = sorted(elegidas, key=lambda x: x["d"] or "", reverse=True)
         salida["noticias_generado"] = ahora()
+
+    # las de cada comunidad, aparte y más despacio
+    prev_reg = (prev_not or {}).get("_region") or {}
+    if prev_reg and hace_menos_de(anterior.get("noticias_region_generado") or "", HORAS_REGION):
+        salida["noticias"]["_region"] = prev_reg
+        salida["noticias_region_generado"] = anterior.get("noticias_region_generado")
+    else:
+        reg, err = noticias_region(prev_reg)
+        errores += err
+        salida["noticias"]["_region"] = reg
+        salida["noticias_region_generado"] = ahora()
+        print("noticias por comunidad:", {k: len(v) for k, v in reg.items()})
 
     # Radar de ideas: la ficha de cada empresa cada HORAS_RADAR horas y los precios en cada ejecución.
     # Va en radar.json (pesa bastante) y la web solo lo vuelve a leer cuando cambia radar_id.
