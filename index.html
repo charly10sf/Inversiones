@@ -884,6 +884,8 @@ input.del-banco { color: var(--text-2); background: var(--plane-2); }
 .bk-b i { background: var(--plane-3); }
 .bk-b.cargando { opacity: 0.6; }
 .bk-cuentas { display: grid; gap: 8px; margin: 12px 0; }
+.ef-extracto { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 600; justify-self: start; }
+.ef-extracto svg { width: 16px; height: 16px; }
 
 /* ---------- expertos: una fila por posición ---------- */
 .fx-lista { border-top: 1px solid var(--line); }
@@ -9059,13 +9061,13 @@ const PEDIDO_IMPORTAR = `Estos archivos son de un bróker, un banco o un exchang
 Saca de ellos:
 1. "posiciones": TODAS las posiciones que se tienen ahora, si se ven (acciones, ETF, fondos, cripto, oro…).
 2. "operaciones": si hay un listado de movimientos de inversión, cada uno: compras, ventas, suscripciones y reembolsos de fondos, traspasos entre fondos, dividendos e intereses. Ignora lo que no sea de inversiones (nóminas, recibos, tarjeta, bizum, transferencias entre cuentas).
-3. "efectivo": el saldo disponible, si se ve.
+3. "efectivo": el dinero disponible de cada cuenta, si se ve. En un extracto o una lista de movimientos de una cuenta, es el saldo más reciente (el que queda tras el último movimiento) y su fecha. No lo calcules sumando movimientos: si no viene el saldo, no lo pongas.
 No inventes nada: si un dato no está, pon null. Si algo sale en varios archivos o varias veces, ponlo una sola vez. Fechas como AAAA-MM-DD. Importes en euros: si una operación va en otra moneda y viene su cambio a euros, usa el de euros; si no viene, pon la moneda en "moneda".
 Responde solo con JSON, con números con punto decimal y sin símbolos:
 {"plataforma": "nombre del bróker o banco si se reconoce o null",
  "posiciones": [{"nombre": "como aparece", "isin": "si se ve", "ticker": "si se ve", "tipo": "Acción|ETF|Fondo|Cripto|Oro|Otro", "cantidad": número de acciones, participaciones o unidades, "precio_medio": precio medio de compra por unidad en euros, "invertido": total invertido en euros, "valor": valor actual en euros, "plataforma": "app de esta posición si se distingue"}],
  "operaciones": [{"fecha": "AAAA-MM-DD", "tipo": "compra|venta|traspaso_entrada|traspaso_salida|dividendo|interes", "nombre": "", "isin": "", "ticker": "", "tipoActivo": "Acción|ETF|Fondo|Cripto|Oro|Otro", "cantidad": unidades (sin signo), "precio": precio por unidad, "importe": total en euros sin signo, ya con comisiones (en una compra, lo que salió de la cuenta; en una venta, lo que entró), "comisiones": comisiones y tasas en euros, "retencion": impuesto retenido en euros (dividendos e intereses), "moneda": "EUR si no se dice", "plataforma": ""}],
- "efectivo": [{"plataforma": "", "importe": número}]}`;
+ "efectivo": [{"plataforma": "bróker o banco de esa cuenta", "importe": número, "fecha": "AAAA-MM-DD del saldo, si se ve"}]}`;
 async function leerCapturas(archivos, alPaso) {
   const partes = [...archivos.map((a) => (a.texto != null ? { text: `Archivo «${a.nombre}»${a.cortado ? ' (cortado: es muy largo)' : ''}:\n${a.texto}` } : { inlineData: { mimeType: a.mime, data: a.data } })), { text: PEDIDO_IMPORTAR }];
   const cuerpo = { contents: [{ role: 'user', parts: partes }], generationConfig: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 32768 } };
@@ -9162,6 +9164,8 @@ async function importarCapturas() {
     if (!filas.length && !efectivo.length && !ventasImp.length && !divsImp.length) { rev.innerHTML = ''; return; }
     const plats = [...new Set([...PLATAFORMAS, ...filas.map((f) => f.plat), ...efectivo.map((e) => e.plat)].filter(Boolean))];
     const selPlat = (v, k) => `<select data-imp-plat="${k}">${plats.map((p) => `<option${p === v ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>`;
+    // el efectivo también se puede llevar a otra plataforma (un banco que no está en la lista se queda con su nombre)
+    const selPlatEf = (v, k) => `<select data-imp-efplat="${k}" aria-label="${L('Plataforma', 'Platform')}">${plats.map((p) => `<option${p === v ? ' selected' : ''}>${esc(p)}</option>`).join('')}</select>`;
     rev.innerHTML = `<h3 class="imp-tit">Esto es lo que he leído</h3><p class="nota" style="margin:0 0 10px">Revisa cada una: si alguna no está bien emparejada, tócala para cambiarla. Lo que no marques no se guarda.</p>
       <div class="imp-lista">${filas.map((f, k) => { const i = f.id && S.inst[f.id]; return `<div class="imp-f${f.ok ? '' : ' off'}">
         <label class="imp-ck"><input type="checkbox" data-imp-ok="${k}"${f.ok ? ' checked' : ''}${f.id ? '' : ' disabled'}></label>
@@ -9171,7 +9175,7 @@ async function importarCapturas() {
           ${f.g ? `<small class="imp-ops${f.cuadra ? '' : ' mal'}" data-no-trad>${f.cuadra ? `${ICONOS.ok}${L(`Desde el ${fechaLarga(f.desde)}, con ${f.g.compras} ${f.g.compras === 1 ? 'compra' : 'compras'}: guardo cada lote para calcular bien tus ventas.`, `Since ${fechaCortaL(f.desde)} ${f.desde.slice(0, 4)}, with ${f.g.compras} ${f.g.compras === 1 ? 'purchase' : 'purchases'}: I keep each lot so your sales come out right.`)}` : f.g.otraMoneda ? L(`Va en ${esc(f.g.otraMoneda)}: uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.`, `It's in ${esc(f.g.otraMoneda)}: I use what you hold${f.desde ? ` and the date of your first purchase (${fechaCortaL(f.desde)} ${f.desde.slice(0, 4)})` : ''}.`) : L(`Las operaciones no cuadran con lo que tienes (faltará algún movimiento antiguo): uso lo que tienes${f.desde ? ` y la fecha de tu primera compra (${fechaLarga(f.desde)})` : ''}.`, `The transactions don't match what you hold (some older movement must be missing): I use what you hold${f.desde ? ` and the date of your first purchase (${fechaCortaL(f.desde)} ${f.desde.slice(0, 4)})` : ''}.`)}</small>` : ''}
           <div class="imp-num">${selPlat(f.plat, k)}<label>Cuántas<input inputmode="decimal" data-imp-uds="${k}" value="${f.uds != null ? String(f.uds).replace('.', ',') : ''}"></label><label>Invertido (€)<input inputmode="decimal" data-imp-inv="${k}" value="${f.inv != null ? String(+f.inv.toFixed(2)).replace('.', ',') : ''}"></label></div>
         </div></div>`; }).join('')}
-      ${efectivo.map((e, k) => `<div class="imp-f${e.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-ef="${k}"${e.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-inst">${logo(null, '€')}<span class="busca-t"><b>Efectivo</b><small>${esc(e.plat || '')}</small></span><span>${eur(e.importe)}</span></div></div></div>`).join('')}</div>
+      ${efectivo.map((e, k) => `<div class="imp-f${e.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-ef="${k}"${e.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-inst">${logo(null, '€')}<span class="busca-t"><b>${L('Efectivo', 'Cash')}</b><small>${e.fecha ? L(`saldo del ${fechaLarga(e.fecha)}`, `balance on ${fechaLarga(e.fecha)}`) : L('pasa a ser tu efectivo de', 'becomes your cash at')}</small></span><span>${eur(e.importe)}</span></div><div class="imp-num">${selPlatEf(e.plat, k)}</div></div></div>`).join('')}</div>
       ${ventasImp.length ? `<h3 class="imp-tit">Tus ventas</h3><p class="nota" style="margin:0 0 10px">Con su resultado por FIFO, como en la renta. Las marcadas van a tu historial y a Fiscalidad.</p>
         <div class="imp-lista">${ventasImp.map((v, k) => `<div class="imp-f${v.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-v="${k}"${v.ok ? ' checked' : ''}${v.ya || !v.g.id ? ' disabled' : ''}></label><div class="imp-c"><div class="imp-vta"><span><b>${esc(v.g.id && S.inst[v.g.id] ? etiquetaInst(S.inst[v.g.id]) : v.g.x.nombre || '?')}</b><small data-no-trad>${L(`${fechaLarga(v.fecha)} · ${fmtNum(v.uds, 4)} por ${eur(v.importe, 2)}${v.ya ? ' · ya está en tu historial' : !v.g.id ? ' · empareja antes esta posición' : ''}`, `${fechaCortaL(v.fecha)} ${v.fecha.slice(0, 4)} · ${fmtNum(v.uds, 4)} for ${eur(v.importe, 2)}${v.ya ? ' · already in your history' : !v.g.id ? ' · match this position first' : ''}`)}</small></span><b class="${cls(v.resultado)}">${eurS(v.resultado, 0)}</b></div></div></div>`).join('')}</div>` : ''}
       ${divsImp.length ? `<h3 class="imp-tit">Dividendos e intereses</h3><div class="imp-lista">${divsImp.map((d, k) => `<div class="imp-f${d.ok ? '' : ' off'}"><label class="imp-ck"><input type="checkbox" data-imp-d="${k}"${d.ok ? ' checked' : ''}></label><div class="imp-c"><div class="imp-vta"><span data-no-trad><b>${d.anio}: ${eur(d.bruto, 2)} ${L('en bruto', 'gross')}</b><small>${L(`${d.n} ${d.n === 1 ? 'cobro' : 'cobros'}${d.ret ? ` · ${eur(d.ret, 2)} retenidos` : ''} · ${d.antes ? `en Fiscalidad tienes ${eur(d.antes, 2)}: lo cambio por esto` : 'lo apunto en los datos fiscales de ese año'}`, `${d.n} ${d.n === 1 ? 'payment' : 'payments'}${d.ret ? ` · ${eur(d.ret, 2)} withheld` : ''} · ${d.antes ? `Taxes has ${eur(d.antes, 2)}: I'll replace it with this` : "I'll add it to that year's tax data"}`)}</small></span></div></div></div>`).join('')}</div>` : ''}
@@ -9182,6 +9186,7 @@ async function importarCapturas() {
     for (const el of $$('[data-imp-ok]', rev)) el.onchange = () => { filas[+el.dataset.impOk].ok = el.checked; pintarRev(); };
     for (const el of $$('[data-imp-ef]', rev)) el.onchange = () => { efectivo[+el.dataset.impEf].ok = el.checked; pintarRev(); };
     for (const el of $$('[data-imp-plat]', rev)) el.onchange = () => { filas[+el.dataset.impPlat].plat = el.value; };
+    for (const el of $$('[data-imp-efplat]', rev)) el.onchange = () => { efectivo[+el.dataset.impEfplat].plat = el.value; };
     for (const el of $$('[data-imp-uds]', rev)) el.onchange = () => { filas[+el.dataset.impUds].uds = numero(el.value); };
     for (const el of $$('[data-imp-inv]', rev)) el.onchange = () => { filas[+el.dataset.impInv].inv = numero(el.value); };
     for (const el of $$('[data-imp-cambiar]', rev)) el.onclick = () => { const f = filas[+el.dataset.impCambiar]; f.id = null; f.ok = false; pintarRev(); };
@@ -9243,7 +9248,7 @@ async function importarCapturas() {
         const inv = +x.invertido > 0 ? +x.invertido : uds && +x.precio_medio > 0 ? uds * +x.precio_medio : null;
         return { x, id: m ? m.id : null, como: m ? m.como : null, ok: !!m, plat, uds, inv };
       });
-      efectivo = (o.efectivo || []).filter((e) => e && +e.importe > 0).map((e) => ({ plat: PLATAFORMAS.find((p) => normTxt(e.plataforma || '').includes(normTxt(p))) || e.plataforma || platGen || 'Trade Republic', importe: +e.importe, ok: true }));
+      efectivo = (o.efectivo || []).filter((e) => e && +e.importe >= 0 && isFinite(+e.importe) && e.importe !== null).map((e) => ({ plat: PLATAFORMAS.find((p) => normTxt(e.plataforma || '').includes(normTxt(p))) || e.plataforma || platGen || 'Trade Republic', importe: +e.importe, fecha: /^\d{4}-\d{2}-\d{2}$/.test(String(e.fecha || '')) ? e.fecha : null, ok: true }));
       // las operaciones: lotes y fecha de cada posición, lo que solo sale en operaciones, las ventas y los dividendos
       const R = resumenOps = procesarOperaciones(o.operaciones, platGen);
       for (const f of filas) {
@@ -9490,6 +9495,7 @@ function editarEfectivo() {
   for (const p of PLATAFORMAS) if (!ef.find((e) => e.plataforma === p)) ef.push({ plataforma: p, importe: 0 });
   const h = hoja('Efectivo', `<form id="fEf" novalidate><div class="form-grid">${ef.map((e, k) => `<div class="campo-ef"><label class="campo">${esc(e.plataforma)}<input data-ef="${k}" inputmode="decimal" value="${val(+e.importe || 0)}"></label><div class="ef-banco" data-ef-banco="${esc(e.plataforma)}"></div></div>`).join('')}</div>
     <p class="nota" style="margin:0">El dinero sin invertir de cada plataforma. Cuenta en el patrimonio y en el reparto.</p>
+    <button type="button" class="enlace acento ef-extracto" data-ef-extracto>${ICONOS.recorte}${L('Ponerlo con un extracto del banco (captura, PDF, CSV o Excel)', 'Set it from a bank statement (screenshot, PDF, CSV or Excel)')}</button>
     <div class="error" id="errEf"></div><div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div></form>`);
   $('#fEf', h.el).onsubmit = async (ev) => {
     ev.preventDefault();
@@ -9498,6 +9504,7 @@ function editarEfectivo() {
     S.cartera.efectivo = nuevos;
     await guardarYPintar('Cambiar efectivo', h);
   };
+  $('[data-ef-extracto]', h.el).onclick = () => { h.cerrar(); importarCapturas(); };
   pintarBancosEf(h);
 }
 
