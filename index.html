@@ -1384,6 +1384,7 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .mas-t small { color: var(--muted); font-size: 13px; line-height: 1.4; }
 .mas-t.on { border-color: rgba(226, 180, 95, 0.55); background: var(--accent-bg); }
 .mas-aj { background: none; }
+.cv-l { margin: 4px 0 12px; padding-left: 20px; display: grid; gap: 4px; }
 .hola-nom { all: unset; font-weight: 700; cursor: pointer; border-bottom: 1px dashed transparent; }
 .hola-nom:hover, .hola-nom:focus-visible { border-bottom-color: currentColor; }
 .nov-ir { margin-top: 6px; font-size: 14px; font-weight: 600; color: var(--accent); }
@@ -9474,6 +9475,37 @@ async function pintarAjustesApp(el) {
     ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} y ábrela: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa "Pasar el token a la app" para que pueda guardar cambios sin escribirlo (necesita la versión 3 de la app o posterior).</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio, Widgets, GrowFolio.</li></ol>
     <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Descargar la app (${esc(nombreUlt(ult))})</a>${tok && android ? `<a class="btn peq" href="intent://token#Intent;scheme=inversiones;package=es.inversiones.app;S.t=${encodeURIComponent(tok)};S.browser_fallback_url=${encodeURIComponent(apk)};end">Pasar el token a la app</a>` : ''}</div>` : ''}`;
 }
+/* Quien usaba GrowFolio con la cartera en GitHub (la 0.1) y pasó a la cuenta una copia más vieja que la de
+   GitHub: si la de GitHub se abre con tu clave y tiene compras o ventas que no están en tu cuenta, ofrece
+   traerla (lo de tu perfil, como el nombre, se queda). La de tu cuenta queda guardada aparte, por si acaso.
+   A nadie más le sale: la de GitHub solo se abre con la contraseña de su dueño. */
+async function revisarCarteraVieja() {
+  if (!PERFIL_CUENTA || !S.cartera || !S.key || !S.salt || LS.get('inv-gh-revisada')) return;
+  let f = null, vieja = null;
+  try { f = await GH.leer('cartera.enc.json'); } catch (e) { return; }
+  try { if (!f || JSON.parse(f.texto).salt !== b64.enc(S.salt)) throw new Error('otra'); vieja = await descifrar(f.texto, S.key); }
+  catch (e) { LS.set('inv-gh-revisada', true); return; }
+  const ids = new Set((S.cartera.movimientos || []).map((m) => m.id));
+  const faltan = (vieja.movimientos || []).filter((m) => m.id && !ids.has(m.id));
+  if (!faltan.length) { LS.set('inv-gh-revisada', true); return; }
+  if (document.querySelector('.hoja-fondo, .tour, .estreno')) { setTimeout(revisarCarteraVieja, 4000); return; }
+  const lista = faltan.slice(-6).map((m) => `<li>${m.tipo === 'venta' ? 'Venta' : 'Compra'} de ${esc(nombreInst(m.instrumento))}, ${esc(fechaCorta(m.fecha))}</li>`).join('');
+  const h = hoja('Tu cartera de antes tiene más', `<div class="cv">
+    <p>La copia de tu cartera que había en GitHub (la de la 0.1) tiene ${faltan.length === 1 ? 'una operación que no está' : `${faltan.length} operaciones que no están`} en tu cuenta:</p>
+    <ul class="cv-l">${lista}</ul>
+    <p class="nota">Si la traes, tu cuenta queda igual que esa copia (con tu nombre y tu perfil de ahora). Lo que hay ahora en tu cuenta se guarda aparte en este dispositivo.</p>
+    <div class="fila-btns"><button type="button" class="btn" data-no>Dejar la de mi cuenta</button><button type="button" class="btn pri" data-si>Traerla</button></div>
+  </div>`, () => LS.set('inv-gh-revisada', true));
+  $('[data-no]', h.el).onclick = () => h.cerrar();
+  $('[data-si]', h.el).onclick = async () => {
+    LS.set('inv-cuenta-descartada', { texto: S.enc && S.enc.texto, cuando: new Date().toISOString(), por: 'github' });
+    S.cartera = { ...vieja, perfil: { ...(vieja.perfil || {}), ...(S.cartera.perfil || {}) } };
+    sumarInstPropios();
+    h.cerrar(true); LS.set('inv-gh-revisada', true);
+    await guardarCartera('Traer la cartera de GitHub'); pintar();
+    toast('Traída tu cartera de GitHub, con las operaciones que faltaban', 6000);
+  };
+}
 /* cómo quieres que te llame GrowFolio: va en tu perfil cifrado (el mismo en todos tus dispositivos) */
 function cambiarNombre() {
   const h = hoja('Tu nombre', `<form id="fNom" novalidate>
@@ -11041,6 +11073,7 @@ function arrancar() {
     nombreEnCuenta();
     vigilarCuenta();
     if (S.avisoConflicto) { S.avisoConflicto = false; setTimeout(() => toast('Tu cuenta tenía cambios más recientes de otro dispositivo: se ha quedado esa versión', 6000), 1200); }
+    setTimeout(revisarCarteraVieja, 2500);
     if (!S.cuentaLeida || LS.get('inv-pend-cuenta')) setTimeout(sincronizarCuenta, 3000);
   }
   revisarWeb();
