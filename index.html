@@ -116,12 +116,19 @@ a:hover { text-decoration: underline; }
 .top.cab-2 .fallo-t { display: none; }
 .top.cab-3 .gta-top-g { display: none; }
 .top.cab-3 .gta-top { padding: 0 10px; gap: 6px; }
-.top.cab-4 .estado-b .estado { font-size: 0; gap: 0; }
+.top.cab-4 .estado .est-l { display: none; }
+.top.cab-4 .estado .est-c { display: flex; }
+.top.cab-4 .estado { overflow: visible; }
 .top.cab-5 .fila-top { gap: 10px; }
 .top.cab-5 .marca .ver-chip { display: none; }
-.estado-b { display: inline-flex; align-items: center; height: 34px; max-width: 100%; min-width: 0; padding: 0 10px; border: 0; border-radius: 999px; background: none; cursor: pointer; }
+.estado-b { display: inline-flex; align-items: center; height: 34px; max-width: 100%; min-width: 0; padding: 0 12px 0 10px; border: 1px solid var(--line-2); border-radius: 999px; background: rgba(255, 255, 255, 0.03); cursor: pointer; }
+.estado .est-c { display: none; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; line-height: 1.05; }
+.estado .est-c small { display: block; font-size: 9.5px; font-weight: 500; color: var(--muted); }
+.estado .est-c b { display: block; font-size: 12px; font-weight: 650; }
+.estado.on .est-c { color: var(--up); }
+.estado.cerr .est-c { color: var(--text-2); }
 /* con las pestañas arriba y poco sitio, solo la luz (el texto sigue para los lectores de pantalla) */
-@media (min-width: 900px) and (max-width: 1399px) { .estado-b .estado { font-size: 0; gap: 0; } }
+@media (min-width: 900px) and (max-width: 1399px) { .estado .est-l { display: none; } .estado .est-c { display: flex; } .estado { overflow: visible; } }
 .estado-b:hover, .estado-w.abierto .estado-b { background: var(--plane-2); }
 .estado-panel { display: none; position: absolute; z-index: 40; top: calc(100% + 6px); right: 0; width: 330px; max-width: calc(100vw - 24px); padding: 14px 14px 12px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--plane-2); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6); }
 @media (hover: hover) { .estado-w:hover .estado-panel { display: block; } }
@@ -3974,9 +3981,11 @@ const LIVE = {
 function estadoDirecto() {
   const conectado = LIVE.yahoo === 'ok' || LIVE.bitvavo === 'ok';
   const hace = S.precios && S.precios.generado ? haceCuanto(S.precios.generado) : '';
-  if (!conectado) return { txt: hace ? hace.replace(/^./, (c) => c.toUpperCase()) : 'Sin conexión', cls: 'off' };
-  if (BOLSAS_MUNDO.filter((b) => ['mad', 'lon', 'us'].includes(b.k)).some((b) => estadoBolsa(b).on)) return { txt: 'En directo', cls: 'on' };
-  return { txt: 'Bolsas cerradas', cls: 'cerr' };
+  // el texto largo (ordenador) y, para cuando no cabe, uno corto en dos líneas: «Bolsa / abierta»
+  const pon = (txt, cls, corto) => ({ txt, cls, html: `<span class="est-l">${esc(trad(txt))}</span><span class="est-c" aria-hidden="true"><small>${esc(L('Bolsa', 'Market'))}</small><b>${esc(corto)}</b></span>` });
+  if (!conectado) return pon(hace ? hace.replace(/^./, (c) => c.toUpperCase()) : 'Sin conexión', 'off', L('sin datos', 'offline'));
+  if (BOLSAS_MUNDO.filter((b) => ['mad', 'lon', 'us'].includes(b.k)).some((b) => estadoBolsa(b).on)) return pon('En directo', 'on', L('abierta', 'open'));
+  return pon('Bolsas cerradas', 'cerr', L('cerrada', 'closed'));
 }
 // las principales bolsas, con su horario (y sus festivos, los que hay apuntados) en hora de España
 const BOLSAS_MUNDO = [
@@ -4617,7 +4626,11 @@ function parchear() {
   const nb = binds(M); S.binds = nb;
   for (const el of $$('[data-b]')) {
     const b = nb[el.dataset.b]; if (!b) continue;
-    if (b.html != null) { if (el.dataset.h !== b.txt) { el.innerHTML = b.html; el.dataset.h = b.txt; if (el.dataset.b === 'movers') pedirEncajarMovers(); } continue; }
+    if (b.html != null) {
+      if (el.dataset.h !== b.txt) { el.innerHTML = b.html; el.dataset.h = b.txt; if (el.dataset.b === 'movers') pedirEncajarMovers(); }
+      if (el.dataset.b === 'estado') for (const c of ['on', 'off', 'cerr']) el.classList.toggle(c, b.cls === c);
+      continue;
+    }
     if (el.textContent !== b.txt) {
       const viejo = parseFloat(el.dataset.n);
       el.textContent = b.txt;
@@ -11318,6 +11331,7 @@ const NOVEDADES = [
     { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: '«Inicio», desde que empezaste a invertir', x: 'La primera vez que lo tocas te pregunta en qué mes y año empezaste a invertir, no cuándo empezaste a usar GrowFolio, y la pastilla dice lo ganado de verdad desde entonces. Lo cambias en tu perfil.' },
     { d: 'intro', t: 'La presentación, al día', x: 'La que sale la primera vez va en el orden de la barra y cada idea dice en qué sitio la tienes: Inicio, Pasos, Análisis, Expertos o Mercados.' },
     { d: 'mundo', ir: { v: 'expertos', sel: '.fx3-lista' }, t: 'Expertos, más directo', x: 'La cabecera ocupa la mitad, sin el hueco del botón suelto, y tus posiciones van primero; lo último de la prensa, después.' },
+    { d: 'mercados', ir: { v: 'cartera', sel: '#estadoB' }, t: 'La luz de las bolsas, más clara', x: 'Ya no es solo un punto: en el móvil dice «Bolsa abierta» o «cerrada», en verde cuando hay bolsa. Tócala para ver cada bolsa del mundo y su horario.' },
     { d: 'ajustes', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Ajustes, sin lo de la 0.2', x: 'Fuera «Ver lo nuevo de la 0.2», que ya no tocaba.' },
   ], arreglos: [
     'Al cambiar el patrimonio con los precios en directo desaparecían los euros de la cifra grande.',
