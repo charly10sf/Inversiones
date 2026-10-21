@@ -332,7 +332,10 @@ final class Lienzo {
                             if (!db.equals(da)) t = DIAS[db.getDayOfWeek().getValue() - 1];
                         } else if (r.dias <= 31) {
                             if (db.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) != da.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)) t = db.getDayOfMonth() + " " + MESES[db.getMonthValue() - 1];
-                        } else if (db.getMonthValue() != da.getMonthValue()) t = MESES[db.getMonthValue() - 1];
+                        } else if (db.getMonthValue() != da.getMonthValue() && (r.dias <= 92 || db.getMonthValue() % 3 == 1)) {
+                            // en el año, solo los trimestres (ene, abr, jul, oct) y enero con su año: «2026»
+                            t = r.dias > 92 && db.getMonthValue() == 1 ? String.valueOf(db.getYear()) : MESES[db.getMonthValue() - 1];
+                        }
                         if (t != null) {
                             cx.add(x0 + (x1 - x0) * k / (float) (n - 1));
                             ct.add(t);

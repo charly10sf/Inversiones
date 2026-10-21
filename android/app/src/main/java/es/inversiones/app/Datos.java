@@ -70,8 +70,8 @@ final class Datos {
             SharedPreferences.Editor e = prefs(c).edit().putString("precios", j.getJSONObject("p").toString()).putLong("precios_t", t).putLong("bajado_t", System.currentTimeMillis());
             JSONObject h = j.optJSONObject("h");
             if (h != null && h.length() > 0) e.putString("cierres", h.toString());
-            JSONObject in = j.optJSONObject("i");   // los precios de cada 30 minutos, para las 24 horas y la semana
-            if (in != null && in.length() > 0) e.putString("intradia", in.toString());
+            JSONObject intra = j.optJSONObject("i");   // los precios de cada 30 minutos, para las 24 horas y la semana
+            if (intra != null && intra.length() > 0) e.putString("intradia", intra.toString());
             e.apply();
             return true;
         } catch (Exception e) {
