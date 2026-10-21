@@ -91,6 +91,7 @@ svg.ic-ia path { stroke: none !important; }
 .ia-av-img { display: block; width: 100%; height: 100%; }
 /* «GrowIA» con la letra de su logo: mide lo que la mayúscula del texto de al lado y se apoya en su línea */
 .gia-nom { display: inline-block; height: 0.96em; width: auto; vertical-align: -0.032em; }
+.fx-de .gia-nom, .aj-grupo .gia-nom, .re-de .gia-nom { height: 1.08em; vertical-align: -0.07em; }
 #asTit .gia-nom, #hToca .gia-nom { display: block; height: 17px; margin: 1px 0 4px; }
 .marca-nom img { height: 19px; width: auto; display: block; }
 .nav { display: flex; gap: 2px; margin-left: 10px; }
@@ -455,6 +456,19 @@ button.fila:hover { background: var(--plane); }
 .ag-v { display: grid; grid-template-columns: minmax(290px, 370px) minmax(0, 1fr); gap: 44px; align-items: start; }
 /* Calendario (0.2): pestañas, «Próximos» en tarjetas de color que se deslizan, el mes plegado y lo que ya pasó */
 .ag2 { display: grid; gap: 26px; max-width: 880px; }
+/* en el móvil, las columnas no existen: el mes, «Lo último», «Más adelante» y la nota, en ese orden */
+.ag2-cols, .ag2-izq, .ag2-der { display: contents; }
+.ag2-mas { order: 1; } .ag2-pie { order: 2; }
+/* en el ordenador ancho, a todo el ancho: «Próximos» en tres columnas y, debajo, el mes y lo que viene más
+   adelante a la izquierda y las noticias a la derecha */
+@media (min-width: 1180px) {
+  .ag2 { max-width: none; }
+  .ag2-cols { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(360px, 1fr); gap: 40px; align-items: start; }
+  .ag2-izq, .ag2-der { display: grid; gap: 26px; align-content: start; min-width: 0; }
+  .ag2-mas, .ag2-pie { order: 0; }
+  .ag2 .agc-fila { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .ag2-ult .ag-mas-not { margin-left: 58px; }
+}
 .ag-modos { justify-self: start; }
 .ag2-sec { display: grid; gap: 12px; min-width: 0; }
 .ag2-sec > h2 { margin: 0; font-size: 22px; font-weight: 750; letter-spacing: -0.015em; }
@@ -6097,6 +6111,7 @@ function vistaAgenda(M) {
     ${modo === 'mio' && !M.filas.length ? `<p class="nota">${L('Cuando metas tus acciones y fondos, aquí saldrán sus resultados y dividendos con lo que te toca en euros.', 'Once you add your shares and funds, their earnings and dividends will show up here, with what you get in euros.')}</p>` : ''}
     <section class="ag2-sec"><h2>${L('Próximos', 'Coming up')}</h2>
       ${prox.length ? `<div class="agc-fila">${prox.map((e) => tarjeta(e)).join('')}</div>${proxTodos.length > 6 ? `<button type="button" class="enlace agc-mas" data-ag-prox>${S.agProxTodo ? L('Ver menos', 'Show less') : L(`Ver ${proxTodos.length - 6} más`, `Show ${proxTodos.length - 6} more`)}</button>` : ''}` : `<div class="vacio">${L('Nada a la vista en esta pestaña.', 'Nothing coming up in this tab.')}</div>`}</section>
+    <div class="ag2-cols"><div class="ag2-izq">
     <section class="ag-mes2${mesAbierto ? ' on' : ''}">
       <button type="button" class="ag-mes-b" data-ag-mes aria-expanded="${mesAbierto}"><span>${ICONOS.agenda}${mesAbierto ? L('El calendario', 'The calendar') : L('Esta semana', 'This week')}</span><span class="ag-mes-v">${mesAbierto ? L('Plegar', 'Collapse') : L('Ver el mes', 'See the month')}<i aria-hidden="true"></i></span></button>
       ${mesAbierto ? `<div class="ag-nav"><button type="button" class="ib" data-ag-mesn="-1" aria-label="${L('Mes anterior', 'Previous month')}"${mesN ? '' : ' disabled'}><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
@@ -6107,10 +6122,12 @@ function vistaAgenda(M) {
         <div class="ag-ley">${[['resultados', L('Resultados', 'Earnings')], ['dividendo', L('Dividendos', 'Dividends')], ['banco', L('Bancos centrales', 'Central banks')], ['aportacion', L('Aportaciones', 'Contributions')]].map(([t, n]) => `<span><i class="t-${t}"></i>${n}</span>`).join('')}${[['cierra', L('Bolsa cerrada', 'Market closed')], ['media', L('Media sesión', 'Half day')], ['fiesta', L('Festivo, la bolsa abre', 'Holiday, market open')]].map(([c, n]) => `<span><i class="sw ${c}"></i>${n}</span>`).join('')}</div>`
         : `<div class="ag-semana">${Array.from({ length: 7 }, (_, k) => celda(k, true)).join('')}</div>`}
     </section>
-    ${pasado.html ? `<section class="ag2-sec"><h2>${L('Lo último', 'Latest')}</h2><div class="agp-lista">${pasado.html}</div>${pasado.mas ? `<button type="button" class="btn peq ag-mas-not" data-ag-pasado>${L('Ver más noticias', 'More news')}</button>` : ''}</section>` : ''}
-    ${grupos.length > 0 ? `<section class="ag2-sec"><h2>${L('Más adelante', 'Later on')}</h2>
+    ${grupos.length > 0 ? `<section class="ag2-sec ag2-mas"><h2>${L('Más adelante', 'Later on')}</h2>
       ${grupos.map((g) => `<section class="ag-grupo"><h3>${esc(g.k)}</h3>${g.dias.map((dd) => { const x = deIso(dd.d); return `<div class="ag-dia" id="ag-d-${dd.d}"><div class="ag-fe"><span class="ds">${diaSemL(x.getDay())}</span><b>${x.getDate()}</b><span class="cd">${faltan(dd.d, true)}</span></div><ul class="ag-evs">${dd.ev.map(item).join('')}</ul></div>`; }).join('')}</section>`).join('')}</section>` : ''}
-    <p class="nota">${L('Resultados y dividendos: Yahoo Finance (las empresas a veces los mueven unos días). Fed, BCE y festivos: sus calendarios oficiales. Noticias: Google Noticias. Los importes son orientativos.', 'Earnings and dividends: Yahoo Finance (companies sometimes move them a few days). Fed, ECB and holidays: their official calendars. News: Google News. Amounts are approximate.')}</p>
+    </div><div class="ag2-der">
+    ${pasado.html ? `<section class="ag2-sec ag2-ult"><h2>${L('Lo último', 'Latest')}</h2><div class="agp-lista">${pasado.html}</div>${pasado.mas ? `<button type="button" class="btn peq ag-mas-not" data-ag-pasado>${L('Ver más noticias', 'More news')}</button>` : ''}</section>` : ''}
+    </div></div>
+    <p class="nota ag2-pie">${L('Resultados y dividendos: Yahoo Finance (las empresas a veces los mueven unos días). Fed, BCE y festivos: sus calendarios oficiales. Noticias: Google Noticias. Los importes son orientativos.', 'Earnings and dividends: Yahoo Finance (companies sometimes move them a few days). Fed, ECB and holidays: their official calendars. News: Google News. Amounts are approximate.')}</p>
   </div>`;
 }
 /* el mes se puede pasar deslizando el dedo, como en el calendario del móvil */
@@ -6412,7 +6429,7 @@ function filaExperto2(f, ia, vIA = {}) {
       <p class="fx3-pos">${chipCotiza(i)}<span>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} ${L('de tu cartera', 'of your portfolio')}</span></p>
       ${m0 ? `<p class="fx2-m">${esc(m0)}</p>` : ''}
       ${resto.length ? `<div><span class="fx-de">${L('Números', 'Numbers')}</span><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>` : ''}
-      ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${esc((ia && ia.autor) || 'GrowIA')}${nivelC ? ` · <span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : ''}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>${L('Vigilar.', 'Watch.')}</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
+      ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${NOM_IA}${nivelC ? ` · <span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : ''}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>${L('Vigilar.', 'Watch.')}</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
       ${prensa}
       ${datos ? `<div class="fx-datos">${datos}</div>` : ''}
       <button class="btn peq" data-pos="${esc(f.pos.id)}">${L('Abrir su ficha', 'Open its details')}</button>
@@ -6431,11 +6448,11 @@ function filaExperto(f, ia, vIA = {}) {
     <div class="fx2-cab">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button><small>${chipCotiza(i)}<span>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</span></small></div></div>
     ${c && !choca && normTxt(c.veredicto || SENALES[nivelC]) === normTxt(s.txt)
       ? `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números e IA</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-ok">coinciden</span></div>`
-      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${esc((ia && ia.autor) || 'GrowIA')}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="chip" title="Van en la misma dirección, pero la IA lo dice con otro matiz: lee su motivo">GrowIA matiza</span>') : ''}</div>`}
+      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${NOM_IA}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="chip" title="Van en la misma dirección, pero la IA lo dice con otro matiz: lee su motivo">GrowIA matiza</span>') : ''}</div>`}
     ${m0 ? `<p class="fx2-m">${esc(m0)}</p>` : ''}
     ${resto.length || c || prensa || datos ? `<details class="mas"><summary>Por qué</summary><div class="fx2-det">
       ${resto.length ? `<div><span class="fx-de">Números</span><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>` : ''}
-      ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${esc((ia && ia.autor) || 'GrowIA')}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>Vigilar.</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
+      ${c && (c.texto || c.vigilar) ? `<div><span class="fx-de">${NOM_IA}</span>${c.texto ? `<p>${rellenarIA(c.texto, vIA)}</p>` : ''}${c.vigilar ? `<p class="fx-vig"><b>Vigilar.</b> ${rellenarIA(c.vigilar, vIA)}</p>` : ''}</div>` : ''}
       ${prensa}
       ${datos ? `<div class="fx-datos">${datos}</div>` : ''}
     </div></details>` : ''}
@@ -6636,12 +6653,12 @@ function htmlResumenInforme(corto) {
   if (!inf || (!inf.resumen && !(inf.alertas || []).length)) return '';
   if (corto) {
     const fr = String(limpiaIA(inf.resumen || '')).split(/(?<=\.)\s+/);
-    return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según GrowIA</h2><span class="k">${cabInforme(inf)}</span></div>
+    return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según GrowIA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>
       ${fr[0] ? `<p class="informe-res">${esc(fr[0])}</p>` : (inf.alertas || []).length ? `<p class="informe-res informe-al">${inf.alertas[0].urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}${escIA(inf.alertas[0].t)}</p>` : ''}
       ${fr.length > 1 || (inf.alertas || []).length ? `<details class="mas"><summary>${(inf.alertas || []).length ? `Seguir leyendo y ${inf.alertas.length} ${inf.alertas.length === 1 ? 'alerta' : 'alertas'}` : 'Seguir leyendo'}</summary>${fr.length > 1 ? `<p class="informe-res">${esc(fr.slice(1).join(' '))}</p>` : ''}${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}</details>` : ''}
     </section>`;
   }
-  return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf">Lo último, según GrowIA</h2><span class="k">${cabInforme(inf)}</span></div>
+  return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según GrowIA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>
     ${inf.resumen ? `<p class="informe-res">${escIA(inf.resumen)}</p>` : ''}
     ${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}
   </section>`;
@@ -6789,7 +6806,7 @@ function htmlEvitar() {
       ${enlacesFuentes(v.fuentes, 3)}
     </article>`;
   };
-  return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det" open><summary class="sec-cab"><h3 id="hEvi"><span class="ev-ico" aria-hidden="true">${ICONOS.alerta}</span>Las que GrowIA evitaría <span class="k">${d.evitar.length}, por lo que dice su prensa</span></h3></summary>
+  return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det" open><summary class="sec-cab"><h3 id="hEvi"><span class="ev-ico" aria-hidden="true">${ICONOS.alerta}</span><span data-no-trad>${conIA('Las que GrowIA evitaría', 'The ones GrowIA would avoid')}</span> <span class="k">${d.evitar.length}, por lo que dice su prensa</span></h3></summary>
     <div class="evitas">${d.evitar.map(tarjeta).join('')}</div></details></section>`;
 }
 function htmlIdeas(M, ia) {
@@ -6811,7 +6828,7 @@ function htmlIdeas(M, ia) {
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
   return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowIA y tu análisis</span></div>
-    ${d && d.comentario ? `<p class="idea-panorama"><b>GrowIA</b> ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
+    ${d && d.comentario ? `<p class="idea-panorama">${NOM_IA} ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : `<div class="vacio">${L('Ahora mismo ninguna pasa los filtros: mejor esperar.', 'None passes the filters right now: better to wait.')}</div>`}
     <p class="nota">Cómo se eligen: GrowFolio se queda con las tres mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas. Primero salen las que eligen los dos. En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
@@ -7213,7 +7230,7 @@ function htmlRuta(M) {
       <header class="rcol-cab"><h2 id="hRuta-${k}">${t}</h2><span class="k">${sub[k]}</span></header>
       <div class="rcol-grid${lado ? ' con-lado' : ''}">
         <div class="rbloque">
-          ${espera ? `<div class="ruta-espera" role="note"><span class="re-ico ia-av" aria-hidden="true">${AVATAR_IA}</span><div><span class="re-de">${esc((ia && ia.autor) || 'GrowIA')} te dice</span><b>${espera.t}</b>${espera.pq ? `<p>${espera.pq}</p>` : ''}</div></div>` : ''}
+          ${espera ? `<div class="ruta-espera" role="note"><span class="re-ico ia-av" aria-hidden="true">${AVATAR_IA}</span><div><span class="re-de" data-no-trad>${conIA('GrowIA te dice', 'GrowIA says')}</span><b>${espera.t}</b>${espera.pq ? `<p>${espera.pq}</p>` : ''}</div></div>` : ''}
           <h3 class="rh">Por hacer${tareas.length ? `<span class="k">${ht} de ${tareas.length} hechos</span>` : ''}</h3>
           ${tareas.length ? `<ol class="tareas">${tareas.map((x) => htmlTarea(x, ++n, x === primero)).join('')}</ol>` : `<div class="ruta-vacio">${espera ? 'Nada más.' : `Nada que hacer tú${k === 'mes' ? ' este mes' : ' en este plazo'}.`}</div>`}
         </div>
@@ -7361,7 +7378,7 @@ function vistaAnalisis(M) {
   <div class="vista-cab"><h1>Análisis</h1><p>Si tu cartera va hacia lo que quieres, lo que opina GrowIA y tus números: rentabilidad, riesgo, costes y qué hay por dentro.</p></div>
   ${perfilVacio() ? '' : htmlComoVas(M)}
   ${htmlObjetivosVs(M)}
-  <div class="subvistas dos-op" role="group" aria-label="Qué ver">${ANALISIS_P.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${t}</button>`).join('')}</div>
+  <div class="subvistas dos-op" role="group" aria-label="Qué ver">${ANALISIS_P.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${k === 'ia' ? `<span data-no-trad>${conIA('GrowIA opina', "GrowIA's view")}</span>` : t}</button>`).join('')}</div>
   ${cuerpo}
   ${epocaRenta() ? '' : `<a class="enlace-hacienda" href="#fiscal">${ICONOS.fiscal}<span><b>${L('Hacienda', 'Taxes')}</b><small>${L('Lo que pagarías si vendieras hoy, los tramos y la guía de la renta', 'What you would pay if you sold today, the brackets and the tax-return guide')}</small></span><i class="aj-flecha" aria-hidden="true"></i></a>`}`;
 }
@@ -9433,7 +9450,7 @@ function htmlFicha(f) {
   let cuerpo = '';
   if (S.ficha.tab === 'resumen') cuerpo = fichaResumen(f);
   else if (S.ficha.tab === 'expertos') cuerpo = fichaExpertos(f);
-  else if (S.ficha.tab === 'noticias') cuerpo = `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px">Lo que dice la prensa, según GrowIA</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
+  else if (S.ficha.tab === 'noticias') cuerpo = `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px" data-no-trad>${conIA('Lo que dice la prensa, según GrowIA', 'What the press says, according to GrowIA')}</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
   else cuerpo = fichaDatos(f);
   // arriba, fija, solo una barra fina (y el precio pequeño al bajar); el resto se va con el scroll hasta las pestañas,
   // que se quedan fijas debajo de la barra
@@ -11633,9 +11650,15 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.3';
+const VERSION = '0.3.4';
 const NOVEDADES = [
-  { v: '0.3.3', f: '2026-10-21', h: '14:00', t: 'Te avisa de las versiones nuevas', cosas: [
+  { v: '0.3.4', f: '2026-10-21', h: '14:00', t: 'GrowIA firma con su logo', cosas: [
+    { d: 'growia', t: 'GrowIA firma con su logo', x: 'Donde habla GrowIA, su nombre sale con la letra del logo: en las ideas de compra y en cada posición de Expertos, en «Lo último», en «GrowIA opina» de Análisis, en el Paso a paso y en Ajustes.' },
+    { d: 'calendario', t: 'El calendario, a todo el ancho', x: 'En el ordenador, «Próximos» va en tres columnas y, debajo, la semana y lo que viene más adelante a la izquierda y las noticias a la derecha.' },
+  ], arreglos: [
+    'En el widget, la rueda de refrescar salía cortada por abajo en algunos móviles.',
+  ] },
+  { v: '0.3.3', f: '2026-10-21', h: '13:40', t: 'Te avisa de las versiones nuevas', cosas: [
     { d: 'avisover', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Un aviso con cada versión nueva', x: 'En la app de Android, cuando salga una versión de GrowFolio te llega un aviso al móvil con lo que trae, aunque no tengas la app abierta. Si además hay app nueva, te lo dice. Viene encendido y se quita en Ajustes > Avisos y resumen.' },
   ] },
   { v: '0.3.2', f: '2026-10-21', h: '13:30', t: 'Logo y letra nuevos', cosas: [
@@ -13505,7 +13528,7 @@ function abrirAjustes() {
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
     </div>
     </div>
-    <h2 class="aj-grupo">GrowIA y la app</h2>
+    <h2 class="aj-grupo" data-no-trad>${conIA('GrowIA y la app', 'GrowIA and the app')}</h2>
     <div class="aj-caja">
       <button class="aj-fila" data-accion="asesor-ajustes" data-cerrar>${ICONOS.growia}<span><b data-no-trad>${conIA('Ajustes de GrowIA', 'GrowIA settings')}</b><small>Funciona con Gemini, la IA de Google, gratis con una clave tuya: responde a lo que le preguntes y revisa tu cartera cada día.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <div class="seccion-ed"><h3>${ICONOS.cartera}App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>

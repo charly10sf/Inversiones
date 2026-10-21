@@ -104,29 +104,30 @@
 
         <ImageView
             android:id="@+id/refresco_ico"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_gravity="top|center_horizontal"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="9dp"
+            android:scaleType="centerInside"
             android:importantForAccessibility="no"
             android:src="@drawable/refresco" />
 
         <ProgressBar
             android:id="@+id/refresco_gira"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
             android:layout_gravity="top|center_horizontal"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="9dp"
             android:indeterminate="true"
             android:indeterminateDrawable="@drawable/refresco_gira"
             android:indeterminateDuration="850"
             android:indeterminateOnly="true"
             android:indeterminateTint="#FFE2B45F"
             android:indeterminateTintMode="src_in"
-            android:maxWidth="18dp"
-            android:maxHeight="18dp"
-            android:minWidth="18dp"
-            android:minHeight="18dp"
+            android:maxWidth="24dp"
+            android:maxHeight="24dp"
+            android:minWidth="24dp"
+            android:minHeight="24dp"
             android:visibility="gone" />
     </FrameLayout>
 </FrameLayout>
