@@ -3,7 +3,7 @@
 import json, sys
 import yfinance as yf
 sys.path.insert(0, "scripts")
-from candidatos import A, B
+from candidatos import A, B, C
 
 
 def info(sim):
@@ -19,7 +19,7 @@ def info(sim):
     return d
 
 
-out = {"A": {}, "B": {}}
+out = {"A": {}, "B": {}, "C": {}}
 for isin, mio in A:
     r = {"mio": mio, "quotes": [], "bueno": None}
     try:
@@ -45,7 +45,7 @@ for texto in B:
     except Exception:  # noqa: BLE001
         qs = []
     for q in qs:
-        if q.get("quoteType") not in ("MUTUALFUND", "ETF"):
+        if q.get("quoteType") not in ("MUTUALFUND", "ETF", "EQUITY"):
             continue
         d = {"s": q.get("symbol"), "tipo": q.get("quoteType"), "n": q.get("longname") or q.get("shortname"), "bolsa": q.get("exchange")}
         try:
@@ -54,5 +54,10 @@ for texto in B:
             d["err"] = str(e)[:100]
         res.append(d)
     out["B"][texto] = res
+for sim in C:
+    try:
+        out["C"][sim] = info(sim)
+    except Exception as e:  # noqa: BLE001
+        out["C"][sim] = {"err": str(e)[:150]}
 json.dump(out, open("salida/sonda.json", "w"), ensure_ascii=False, indent=1)
 print(sum(1 for r in out["A"].values() if r["bueno"]), "de", len(out["A"]), "ISIN con precio")
