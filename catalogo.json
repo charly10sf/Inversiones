@@ -2017,7 +2017,8 @@
    "v": 1,
    "a": [
     "PHPT"
-   ]
+   ],
+   "s": "PHPT.MI"
   },
   {
    "isin": "GB00BLD4ZL17",
@@ -2817,6 +2818,37 @@
    "sy": "HYPE32196-USD",
    "n": "Hyperliquid",
    "t": "Cripto"
+  },
+  {
+   "isin": "DE000A2T0VU5",
+   "n": "Xtrackers IE Physical Gold ETC",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "XGDU"
+   ],
+   "s": "XGDU.DE"
+  },
+  {
+   "isin": "JE00BQRFDY49",
+   "n": "WisdomTree Core Physical Silver",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "WSLV",
+    "WSIL"
+   ],
+   "s": "WSLV.MI"
+  },
+  {
+   "isin": "IE00B94QLN63",
+   "n": "WisdomTree Palladium 2x Daily Leveraged",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "2PAL"
+   ],
+   "s": "2PAL.MI"
   }
  ]
 }

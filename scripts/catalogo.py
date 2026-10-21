@@ -86,8 +86,14 @@ def clase_de(nombre, tipo):
     n = nombre.lower()
     if tipo == "Cripto":
         return "Cripto"
+    # las de mineras de oro son acciones, no oro
+    if re.search(r"miner|mining", n):
+        return "Renta variable"
     if re.search(r"gold|\boro\b", n):
         return "Oro"
+    # plata, platino, paladio, cobre o cestas de materias primas (los ETF de petroleras son acciones: no llevan «physical» ni son ETC)
+    if re.search(r"silver|platinum|palladium|copper|commodit|brent|crude|\bwti\b|precious metal", n) and (tipo == "ETC" or re.search(r"physical|commodit|2x|3x|leveraged", n)):
+        return "Materias primas"
     if re.search(r"overnight|tr[ée]sorerie|liquidity|monetari|money market|\bcash\b", n):
         return "Monetario"
     if re.search(r"bond|govt|government|aggregate|renta fija|ultrashort|duration|credit", n):
@@ -100,7 +106,7 @@ def tipo_web(tipo, nombre, clase):
         if clase in ("Renta fija", "Monetario"):
             return "Fondo de renta fija"
         return "Fondo indexado" if re.search(r"index|indice|s&p|msci|ftse|stoxx", nombre.lower()) else "Fondo"
-    if tipo == "ETC" or (tipo == "ETF" and clase == "Oro"):
+    if tipo == "ETC" or (tipo == "ETF" and clase in ("Oro", "Materias primas") and not re.search(r"commodit", nombre.lower())):
         return "ETC"
     return tipo
 
@@ -233,7 +239,7 @@ def main(ruta_cat, dir_anterior, dir_salida):
             hoy = s_eur.index[-1]
             salida[cid] = {
                 "n": nombre, "c": corto_de(nombre), "isin": isin or None, "s": sim, "t": tipo_web(tipo, nombre, clase), "cl": clase,
-                "r": {"Global": 100} if clase in ("Oro", "Cripto") else region_de(nombre), "m": moneda,
+                "r": {"Global": 100} if clase in ("Oro", "Materias primas", "Cripto") else region_de(nombre), "m": moneda,
                 "pais": isin[:2] if isin else None, "dom": dominio_de(nombre, sim),
                 "p": num(float(s_eur.iloc[-1]), 6), "pa": num(float(s_eur.iloc[-2]), 6) if len(s_eur) > 1 else None,
                 "f": hoy.date().isoformat(),

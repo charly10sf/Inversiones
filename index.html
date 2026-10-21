@@ -830,8 +830,14 @@ a.kpi:hover .v { color: var(--accent); }
 .ficha-tit small { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; }
 .ficha-tit small > span + span::before { content: '·'; margin-right: 6px; }
 .ficha-tit small > span:last-child { overflow: hidden; text-overflow: ellipsis; }
-/* en el móvil no cabe «Irlanda · Fondo indexado · MyInvestor»: la plataforma baja a otra línea en vez de quedarse en «·» */
-@media (max-width: 560px) { .ficha-tit small { flex-wrap: wrap; row-gap: 0; } .ficha-tit small > span:last-child { min-width: 0; } }
+/* en el móvil no cabe «Irlanda · Fondo indexado · MyInvestor»: se parte en líneas como un texto, y el punto de lo que
+   empieza línea queda fuera de la caja (se recorta), así no sale «· Trade Republic» suelto */
+@media (max-width: 560px) {
+  .ficha-tit .ft-n { overflow: hidden; }
+  .ficha-tit small { display: block; white-space: normal; line-height: 1.4; margin-left: -13px; overflow: visible; }
+  .ficha-tit small > * { display: inline-block; position: relative; margin-left: 13px; white-space: nowrap; max-width: calc(100% - 13px); overflow: visible; vertical-align: top; }
+  .ficha-tit small > * + *::before { content: '·'; position: absolute; left: -9px; margin: 0; }
+}
 .ficha-tit .ib { flex: none; margin-right: -8px; }
 /* el precio pequeño de la barra: sale cuando el grande se ha ido hacia arriba */
 .ficha-mini { display: grid; justify-items: end; gap: 1px; flex: none; text-align: right; font-variant-numeric: tabular-nums; opacity: 0; transform: translateY(4px); transition: opacity 0.2s ease, transform 0.2s ease; pointer-events: none; }
@@ -4425,6 +4431,17 @@ async function cargarCatalogo() {
   if (txt) { try { localStorage.setItem('inv-cache-cat', txt); } catch (e) {} } else { try { txt = localStorage.getItem('inv-cache-cat'); } catch (e) {} }
   try { S.cat = txt ? JSON.parse(txt) : null; } catch (e) { S.cat = null; }
 }
+/* lo que se añadió del catálogo se queda con la clase que trae hoy (0.3.5: la plata dejó de ser «renta variable» y
+   las mineras de oro, «oro»). Se mira en cada cálculo: son pocas y así vale también para lo que llega con tu cartera */
+function alinearConCatalogo() {
+  const v = S.cat && S.cat.v; if (!v || !S.inst) return;
+  for (const id of S.instOrden || []) {
+    const i = S.inst[id], x = i && i.cat && v[i.cat];
+    if (!x || !x.cl || i.clase === x.cl) continue;
+    i.clase = x.cl; if (x.t) i.tipo = x.t; if (x.r) i.region = x.r;
+    if (['Oro', 'Materias primas', 'Renta fija', 'Monetario'].includes(x.cl)) i.sector_fijo = x.cl; else if (i.sector_fijo && i.sector_fijo !== 'Cripto') delete i.sector_fijo;
+  }
+}
 /* la ficha del catálogo de un instrumento (por ISIN o por símbolo) */
 function catDe(inst) {
   const v = S.cat && S.cat.v; if (!v || !inst) return null;
@@ -4440,7 +4457,7 @@ function instDeCatalogo(cid) {
   if (ya) return ya;
   const i = { id: cid, nombre: x.n, corto: x.c || x.n, tipo: x.t, clase: x.cl, region: x.r || { Global: 100 }, cat: cid };
   if (x.isin) i.isin = x.isin; if (x.s) i.yahoo = x.s; if (x.pais) i.pais = x.pais; if (x.dom) i.dominio = x.dom;
-  if (x.cl === 'Cripto') { i.bitvavo = x.s; i.sector_fijo = 'Cripto'; } else if (['Oro', 'Renta fija', 'Monetario'].includes(x.cl)) i.sector_fijo = x.cl;
+  if (x.cl === 'Cripto') { i.bitvavo = x.s; i.sector_fijo = 'Cripto'; } else if (['Oro', 'Materias primas', 'Renta fija', 'Monetario'].includes(x.cl)) i.sector_fijo = x.cl;
   S.inst[cid] = i; S.instOrden.push(cid); S.instCambiados = true;
   return cid;
 }
@@ -4543,6 +4560,7 @@ function calcularPos(pos, hoy) {
 
 function calcular() {
   const hoy = hoyIso();
+  alinearConCatalogo();
   const filas = (S.cartera.posiciones || []).map((pos) => calcularPos(pos, hoy));
   const efectivo = (S.cartera.efectivo || []).filter((e) => +e.importe).map((e) => ({ plataforma: e.plataforma, importe: +e.importe }));
   const totalPos = sum(filas, (f) => f.valor);
@@ -4784,6 +4802,13 @@ function senal(f, M) {
     if (score === -1) return fin('vigilar');
     return fin('mantener');
   }
+  // los apalancados (2x, 3x) pierden con el tiempo aunque el precio vuelva a donde estaba: se vigilan siempre
+  if (i.tipo !== 'Acción' && /\b[23]x\b|leveraged|apalancad/i.test(`${i.nombre || ''} ${i.corto || ''}`)) {
+    motivos.push('Es un producto apalancado: multiplica lo que se mueve cada día. Con el tiempo puede perder aunque el precio acabe donde empezó, así que es para días o semanas, no para tenerlo años.');
+    const lim = limiteDe(i.clase === 'Cripto' ? 'cripto' : ['Oro', 'Materias primas'].includes(i.clase) ? 'oro' : 'empresa');
+    if (f.peso > lim) { motivos.unshift(`Pesa un ${fmtNum(f.peso, 1)} % de tu cartera, más del ${fmtNum(lim, 0)} % que te pusiste como máximo.`); return fin('reducir'); }
+    return fin('vigilar');
+  }
   const aporta = (S.cartera.aportaciones || []).filter((x) => x.instrumento === i.id && +x.importe && (!x.hasta || x.hasta >= hoyIso()));
   if (i.clase === 'Renta variable' && /^Fondo/.test(i.tipo || '')) {
     if (i.ter != null) motivos.push(`Indexado con gastos del ${fmtNum(i.ter, 2)} % al año.`);
@@ -4807,6 +4832,13 @@ function senal(f, M) {
   if (i.clase === 'Oro') {
     if (f.peso > limiteDe('oro')) { motivos.push(`Pesa un ${fmtNum(f.peso, 1)} %: más del ${fmtNum(limiteDe('oro'), 0)} % que te pusiste como máximo en oro.`); return fin('reducir'); }
     motivos.push('Diversifica: suele aguantar cuando caen las bolsas.');
+    if (p.rent && p.rent['1a'] != null) motivos.push(`${pctS(p.rent['1a'], 1)} en el último año.`);
+    return fin('mantener');
+  }
+  // plata, platino, paladio, cobre o una cesta de materias primas: cuentan en el límite del oro
+  if (i.clase === 'Materias primas') {
+    if (f.peso > limiteDe('oro')) { motivos.push(`Pesa un ${fmtNum(f.peso, 1)} %: más del ${fmtNum(limiteDe('oro'), 0)} % que te pusiste como máximo en oro y materias primas.`); return fin('reducir'); }
+    motivos.push('Es una materia prima: no da dividendos ni intereses y se mueve con la industria, el dólar y la oferta. Más brusca que el oro.');
     if (p.rent && p.rent['1a'] != null) motivos.push(`${pctS(p.rent['1a'], 1)} en el último año.`);
     return fin('mantener');
   }
@@ -8760,7 +8792,7 @@ function planVenta0(f, M) {
     cuanto = `Lo que pusiste (${eur(f.coste, 0)}): recuperas tu dinero y lo que te quedas es ganancia que sigue trabajando.`;
   } else {
     // hasta quedar algo por debajo de su límite (el de empresa, cripto u oro que se puso cada uno)
-    const k = f.inst.clase === 'Cripto' ? 'cripto' : f.inst.clase === 'Oro' ? 'oro' : 'empresa', obj = Math.max(1, limiteDe(k) - 2);
+    const k = f.inst.clase === 'Cripto' ? 'cripto' : ['Oro', 'Materias primas'].includes(f.inst.clase) ? 'oro' : 'empresa', obj = Math.max(1, limiteDe(k) - 2);
     uds = redondea(Math.max(0, f.valor - (obj / 100) * M.total) / pr);
     cuanto = k === 'empresa' ? `Lo que pasa del ${fmtNum(obj, 0)} % de tu cartera, un poco por debajo de tu máximo del ${fmtNum(limiteDe(k), 0)} %, para que una sola empresa no mande en tus resultados.` : `Lo que pasa del ${fmtNum(obj, 0)} % de tu cartera, un poco por debajo de tu máximo del ${fmtNum(limiteDe(k), 0)} % en ${k === 'cripto' ? 'cripto' : 'oro'}.`;
   }
@@ -8990,11 +9022,12 @@ const SUPUESTOS = {
   acc: { n: 'Acciones sueltas', mu: 7, sd: 25 },
   rf: { n: 'Renta fija', mu: 2.5, sd: 2.5 },
   oro: { n: 'Oro', mu: 4, sd: 15 },
+  mp: { n: 'Plata y otras materias primas', mu: 3, sd: 25 },
   cripto: { n: 'Bitcoin', mu: 8, sd: 50 },
   ef: { n: 'Efectivo', mu: 1.5, sd: 0 },
 };
 // correlaciones a largo plazo entre tipos de activo (las que no están, 0)
-const CORREL = { 'rv|acc': 0.75, 'rv|rf': 0.2, 'rv|oro': 0.1, 'rv|cripto': 0.35, 'acc|rf': 0.15, 'acc|oro': 0.1, 'acc|cripto': 0.3, 'rf|oro': 0.25, 'rf|cripto': 0.05, 'oro|cripto': 0.15 };
+const CORREL = { 'rv|acc': 0.75, 'rv|rf': 0.2, 'rv|oro': 0.1, 'rv|cripto': 0.35, 'acc|rf': 0.15, 'acc|oro': 0.1, 'acc|cripto': 0.3, 'rf|oro': 0.25, 'rf|cripto': 0.05, 'oro|cripto': 0.15, 'rv|mp': 0.3, 'acc|mp': 0.3, 'rf|mp': 0.05, 'oro|mp': 0.6, 'cripto|mp': 0.15 };
 const corr = (a, b) => (a === b ? 1 : CORREL[a + '|' + b] ?? CORREL[b + '|' + a] ?? 0);
 const INFLACION = 2;
 const HORIZONTES = [5, 10, 15, 20, 25, 30];
@@ -9005,6 +9038,7 @@ function claseProy(inst) {
   if (inst.tipo === 'Acción') return 'acc';
   if (inst.clase === 'Renta fija' || inst.clase === 'Monetario') return 'rf';
   if (inst.clase === 'Oro') return 'oro';
+  if (inst.clase === 'Materias primas') return 'mp';
   if (inst.clase === 'Cripto') return 'cripto';
   return 'rv';
 }
@@ -9140,7 +9174,7 @@ function estadoPerfil(M) {
   const p = perfil(), total = M.total || 0;
   const v = (fn) => sum(M.filas.filter(fn), (f) => f.valor);
   const pc = (x) => (total ? (x / total) * 100 : 0);
-  const sueltas = v((f) => f.inst.tipo === 'Acción'), cripto = v((f) => f.inst.clase === 'Cripto'), oro = v((f) => f.inst.clase === 'Oro');
+  const sueltas = v((f) => f.inst.tipo === 'Acción'), cripto = v((f) => f.inst.clase === 'Cripto'), oro = v((f) => ['Oro', 'Materias primas'].includes(f.inst.clase));
   const bolsa = v((f) => f.inst.clase === 'Renta variable');
   const seguro = v((f) => ['Renta fija', 'Monetario'].includes(f.inst.clase)) + (M.liquidez || 0);
   const acciones = M.filas.filter((f) => f.inst.tipo === 'Acción').map((f) => ({ f, pct: pc(f.valor) })).sort((a, b) => b.pct - a.pct);
@@ -9818,7 +9852,7 @@ function refrescarFicha() {
 
 function htmlFicha(f) {
   const id = f.pos.id, i = f.inst, p = f.p || {};
-  const tipo = { 'Acción': 'Acción', 'Fondo indexado': 'Fondo indexado', 'Fondo de renta fija': 'Fondo de renta fija', ETC: 'ETC de oro físico', Cripto: 'Criptomoneda' }[i.tipo] || i.tipo || '';
+  const tipo = i.tipo === 'ETC' ? (i.clase === 'Oro' ? 'ETC de oro físico' : i.clase === 'Materias primas' ? 'ETC de materias primas' : 'ETC') : { 'Acción': 'Acción', 'Fondo indexado': 'Fondo indexado', 'Fondo de renta fija': 'Fondo de renta fija', Cripto: 'Criptomoneda' }[i.tipo] || i.tipo || '';
   let cuerpo = '';
   if (S.ficha.tab === 'resumen') cuerpo = fichaResumen(f);
   else if (S.ficha.tab === 'expertos') cuerpo = fichaExpertos(f);
@@ -11831,7 +11865,7 @@ function nuevoInstrumento(fin, ini = {}) {
     const dom = dominioWeb(g('dominio')); if (dom) inst.dominio = dom;
     if (g('pais')) inst.pais = g('pais');
     if (inst.yahoo && /\.MC$/i.test(inst.yahoo)) inst.mercado = 'Madrid'; else if (inst.yahoo && /\.L$/i.test(inst.yahoo)) inst.mercado = 'Londres';
-    if (inst.clase === 'Oro' || inst.clase === 'Cripto' || inst.clase === 'Renta fija' || inst.clase === 'Monetario') inst.sector_fijo = inst.clase;
+    if (['Oro', 'Materias primas', 'Cripto', 'Renta fija', 'Monetario'].includes(inst.clase)) inst.sector_fijo = inst.clase;
     if (inst.clase === 'Cripto' && inst.yahoo && /-EUR$/i.test(inst.yahoo)) inst.bitvavo = inst.yahoo.toUpperCase();
     // la moneda, por la terminación del ticker: sin ella, el precio en directo de Agios (en dólares) salía en euros
     if (inst.yahoo && inst.clase !== 'Cripto') { const m = monedaPorSufijo(inst.yahoo); if (m) inst.moneda = m; }
@@ -11940,7 +11974,7 @@ const NOMBRES_COMUNES = {
 };
 const aliasDe = (sym) => NOMBRES_COMUNES[String(sym || '').toUpperCase()] || [];
 // palabras que la gente escribe de otra forma que el nombre del fondo
-const SINONIMOS_BUSCA = { indexado: 'index', indice: 'index', mundial: 'world', mundo: 'world', emergentes: 'emerging', europa: 'europe', oro: 'gold', japon: 'japan', tecnologia: 'technology', tecnologicas: 'technology', bonos: 'bond', dividendos: 'dividend' };
+const SINONIMOS_BUSCA = { plata: 'silver', platino: 'platinum', paladio: 'palladium', cobre: 'copper', mineras: 'miners', indexado: 'index', indice: 'index', mundial: 'world', mundo: 'world', emergentes: 'emerging', europa: 'europe', oro: 'gold', japon: 'japan', tecnologia: 'technology', tecnologicas: 'technology', bonos: 'bond', dividendos: 'dividend' };
 function buscarEn(lista, q) {
   const t = normTxt(q), T = t.replace(/ /g, '');
   if (!t) return [];
@@ -11959,8 +11993,9 @@ function buscarEn(lista, q) {
     if (t.length >= 4 && (n.includes(t) || l.includes(t))) return 35;
     if (T.length >= 4 && (nC.includes(T) || lC.includes(T))) return 33;
     const todo = n + ' ' + l, todoC = nC + ' ' + lC;
-    const ws = t.split(' ').filter((w) => w.length >= 2).map((w) => SINONIMOS_BUSCA[w] || w);
-    if (ws.length > 1 && ws.every((w) => todo.includes(w) || todoC.includes(w))) return 30;
+    const crudas = t.split(' ').filter((w) => w.length >= 2), ws = crudas.map((w) => SINONIMOS_BUSCA[w] || w);
+    // «plata» encuentra «Physical Silver» aunque sea una sola palabra
+    if ((ws.length > 1 || crudas.some((w) => SINONIMOS_BUSCA[w])) && ws.every((w) => todo.includes(w) || todoC.includes(w))) return 30;
     return 0;
   };
   return lista.map((c) => ({ c, p: sc(c) })).filter((x) => x.p > 0).map((x) => ({ c: x.c, p: x.p + (x.c.tengo ? 6 : 0) + (x.c.k.startsWith('inst:') ? 3 : 0) })).sort((a, b) => b.p - a.p).map((x) => x.c);
@@ -12139,8 +12174,16 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.5';
+const VERSION = '0.3.6';
 const NOVEDADES = [
+  { v: '0.3.6', f: '2026-10-21', h: '18:30', t: 'Plata, platino y paladio, cada uno en su sitio', cosas: [
+    { d: 'catalogo', t: 'Más oro y metales en el catálogo', x: 'Ya salen al buscarlos por su nombre, su ticker o su ISIN el Xtrackers IE Physical Gold (XGDU), el WisdomTree Core Physical Silver (WSLV) y el WisdomTree Palladium 2x (2PAL), con su precio en euros.' },
+    { d: 'cifras', t: 'Materias primas, aparte', x: 'La plata, el platino, el paladio y las cestas de materias primas cuentan ahora como «Materias primas», no como bolsa: en el reparto, en la proyección (más bruscas que el oro) y en tu límite de oro y materias primas.' },
+    { d: 'aviso', t: 'Aviso en los apalancados', x: 'Lo que lleva 2x o 3x sale con la señal «Vigilar» y una explicación: multiplica lo que se mueve cada día y, con el tiempo, puede perder aunque el precio vuelva a donde estaba.' },
+  ], arreglos: [
+    'Las ETF de mineras de oro (VanEck Gold Miners) contaban como oro en vez de como acciones.',
+    'El precio del WisdomTree Physical Platinum salía de su versión de la bolsa de Tokio, en yenes.',
+  ] },
   { v: '0.3.5', f: '2026-10-21', h: '18:00', t: 'Cuentas que cuadran y apuntes sin sustos', cosas: [
     { d: 'tengo', t: 'Apuntar sin meter la pata', x: 'GrowFolio ya no deja guardar cantidades, efectivo ni fechas imposibles: nada en negativo ni en el futuro, y si vendes con una fecha en la que aún no la tenías, te lo dice. Si pagas una compra con el efectivo y no llega, te avisa antes de dejarlo en 0. Y en las participaciones el punto es decimal: «40.048» son algo más de 40, no cuarenta mil.' },
     { d: 'pasos', t: 'Paso a paso sin repeticiones', x: 'Si GrowIA propone lo mismo que GrowFolio, sale un solo paso con «GrowIA coincide». Cada aportación del mes tiene su paso, y en «Plan y movimientos», «Próximas aportaciones» enseña los tres meses que vienen con cada fondo.' },
