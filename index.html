@@ -2182,12 +2182,10 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .estreno.quieta *, .estreno.quieta *::before { animation: none !important; transition: none !important; }
 .estreno.quieta .es-paso > .es-c > *, .estreno.quieta .es-ev, .estreno.quieta .es-capitulos span { opacity: 1; transform: none; }
 @media (min-width: 900px) { .es-ilu { height: 220px; } .es-c { padding-top: 72px; } }
-.tour-foco { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.76), 0 0 0 2px var(--accent); transition: left 0.3s ease, top 0.3s ease, width 0.3s ease, height 0.3s ease; pointer-events: none; }
-.tour-foco.sin { left: 50% !important; top: 40% !important; width: 0 !important; height: 0 !important; box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.76); }
+.tour-foco { position: fixed; border-radius: 14px; box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.76), 0 0 0 2px var(--accent); transition: left 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), top 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), width 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), height 0.38s cubic-bezier(0.32, 0.72, 0.24, 1); pointer-events: none; }
+/* sin nada que señalar, el foco se cierra sobre sí mismo (colocarTour lo deja en su centro y a 0 de tamaño) */
+.tour-foco.sin { box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.76); }
 .tour-caja { position: fixed; left: 50%; transform: translateX(-50%); width: min(420px, calc(100vw - 32px)); box-sizing: border-box; background: var(--plane); border: 1px solid var(--line-2); border-radius: 18px; padding: 16px 18px 14px; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.55); outline: none; }
-.tour-caja.abajo { bottom: calc(20px + var(--nav-h) + env(safe-area-inset-bottom, 0px)); }
-.tour-caja.arriba { top: calc(16px + env(safe-area-inset-top, 0px)); }
-.tour-caja.centro { top: 50%; transform: translate(-50%, -50%); }
 .tour-caja h3 { margin: 12px 0 6px; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
 .tour-caja p { margin: 0; color: var(--text-2); font-size: 15px; line-height: 1.5; }
 .tour-prog { display: flex; gap: 4px; }
@@ -2596,7 +2594,9 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .tour-foco::after { content: ''; position: absolute; inset: -2px; border-radius: 16px; border: 2px solid var(--accent); animation: tour-late 1.8s ease-out infinite; pointer-events: none; }
 .tour-foco.sin::after { display: none; }
 @keyframes tour-late { 0% { opacity: 0.9; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.12); } }
-.tour-caja { transition: top 0.3s ease, bottom 0.3s ease, transform 0.3s ease; max-height: calc(100vh - var(--nav-h) - 60px); overflow: auto; touch-action: pan-y; }
+/* la tarjeta siempre se coloca con «top» (en px, lo pone colocarTour): así de un paso a otro se desliza, sin saltos */
+@property --fx { syntax: '<length>'; inherits: false; initial-value: 0px; }
+.tour-caja { transition: top 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), --fx 0.38s cubic-bezier(0.32, 0.72, 0.24, 1); max-height: calc(100vh - var(--nav-h) - 60px); overflow: auto; touch-action: pan-y; }
 .tour-caja.con-flecha { overflow: visible; }
 .tour-caja.con-flecha::before { content: ''; position: absolute; left: var(--fx, 50%); width: 14px; height: 14px; margin-left: -7px; background: var(--plane); border: 1px solid var(--line-2); transform: rotate(45deg); }
 .tour-caja.con-flecha.abajo::before { top: -8px; border-right: 0; border-bottom: 0; }
@@ -2610,15 +2610,15 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .tour-prog i.on { flex-grow: 2.4; }
 .tour-logo { display: block; width: 56px; height: 56px; margin: 12px 0 2px; animation: tour-brota 0.7s cubic-bezier(.3, 1.5, .5, 1) 0.15s both; }
 @keyframes tour-brota { from { opacity: 0; transform: scale(0.4) rotate(-12deg); } }
-.tour-caja.centro { animation: tour-pop 0.35s cubic-bezier(.2, .8, .3, 1.1) both; }
-@keyframes tour-pop { from { opacity: 0; transform: translate(-50%, -46%) scale(0.96); } }
+.tour-caja.pop { animation: tour-pop 0.35s cubic-bezier(.2, .8, .3, 1.1) both; }
+@keyframes tour-pop { from { opacity: 0; transform: translateX(-50%) translateY(10px) scale(0.96); } }
 @media (max-width: 680px) {
   .tour-caja { width: calc(100vw - 24px); padding: 14px 16px 12px; border-radius: 16px; }
   .tour-caja h3 { font-size: 18px; }
   .tour-caja p { font-size: 15px; }
   .tour-btns .btn { min-height: 40px; }
 }
-@media (prefers-reduced-motion: reduce) { .tour, .tour-foco::after, .tour-txt.entra-d, .tour-txt.entra-i, .tour-logo, .tour-caja.centro { animation: none; } .tour-caja { transition: none; } }
+@media (prefers-reduced-motion: reduce) { .tour, .tour-foco::after, .tour-txt.entra-d, .tour-txt.entra-i, .tour-logo, .tour-caja.pop { animation: none; } .tour-caja { transition: none; } }
 
 .opinion-pie { display: flex; align-items: center; gap: 12px; width: 100%; max-width: 640px; margin: 48px 0 0; padding: 14px 16px; border-radius: 14px; border: 1px dashed var(--line-2); background: none; color: var(--text-2); font: 400 14px/1.45 var(--f); text-align: left; cursor: pointer; }
 .opinion-pie:hover { border-color: var(--accent); color: var(--text); }
@@ -11358,6 +11358,7 @@ const NOVEDADES = [
     'Una meta guardada varias veces (al repetir el perfil guiado) salía repetida en Análisis.',
     'GrowIA podía hablar de una meta lejana como si estuviera cerca («rumbo a los 500.000 €»): ahora dice a qué distancia está.',
     'Al tocar los botones de abajo, en Android salía un recuadro azul.',
+    'En el tutorial, el resaltado y la tarjeta pasaban por el centro de la pantalla entre un paso y otro: ahora se deslizan de un sitio al siguiente.',
   ] },
   { v: '0.3.0', f: '2026-10-21', h: '00:50', t: 'Más sencilla y con más criterio', cosas: [
     { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar, .nav' }, t: 'Cinco sitios', x: 'Inicio va en el centro de la barra, más grande. A la izquierda, lo que haces tú: Pasos y Análisis, que ahora lleva tus objetivos. A la derecha, lo de fuera: Expertos y Mercados, que ahora lleva el calendario. Hacienda sale en Análisis cuando toca la renta; el resto del año, con un enlace al final.' },
@@ -12074,11 +12075,13 @@ function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
     else if (a === 'tengo') { cerrarTour(true, true); operacion('tengo'); }
     else if (a === 'importar') { cerrarTour(true, true); importarCapturas(); }
   });
+  $('.tour-caja', capa).classList.add('pop');
   pasoTour();
 }
 function cerrarTour(hecho, sinVolver) {
   if (!TOURE) return;
   const { alAcabar, nov } = TOURE;
+  cancelAnimationFrame(TOURE.raf);
   TOURE.off(); TOURE.capa.remove(); TOURE = null;
   document.body.classList.remove('tour-ola');
   if (nov) { if (alAcabar) alAcabar(); return; }
@@ -12113,35 +12116,65 @@ function pasoTour(dir = 1) {
     </div>`;
   const txt = $('.tour-txt', caja);
   if (txt) { txt.classList.remove('entra-d', 'entra-i'); void txt.offsetWidth; txt.classList.add(dir < 0 ? 'entra-i' : 'entra-d'); }
-  TOURE.el = null; colocarTour();
-  setTimeout(() => {
-    if (!TOURE) return;
-    const el = elVisible(p.sel);
+  // el foco y la tarjeta se quedan donde estaban hasta saber adónde van y, entonces, se deslizan hasta allí
+  // (antes pasaban por el centro de la pantalla entre un paso y otro)
+  const n = (TOURE.n = (TOURE.n || 0) + 1);
+  const busca = () => {
+    if (!TOURE || TOURE.n !== n) return;
+    const el = p.sel ? elVisible(p.sel) : null;
     TOURE.el = el;
     if (el) { const r = el.getBoundingClientRect(); if (r.top < 64 || r.bottom > innerHeight - 80) el.scrollIntoView({ block: 'center' }); }
-    colocarTour();
+    seguirTour(500);
     caja.focus({ preventScroll: true });
-  }, cambia ? 380 : 140);
+  };
+  // al cambiar de pestaña, se espera a que esté pintada y quieta (si no, el deslizamiento iría a trompicones)
+  if (cambia) { seguirTour(80); setTimeout(() => (window.requestIdleCallback || ((f) => setTimeout(f, 120)))(busca, { timeout: 260 }), 40); }
+  else busca();
+}
+/* durante un rato, la tarjeta y el foco siguen a lo resaltado cada fotograma (mientras la pestaña entra o algo se recoloca) */
+function seguirTour(ms) {
+  if (!TOURE) return;
+  const hasta = performance.now() + ms;
+  cancelAnimationFrame(TOURE.raf);
+  const f = () => { if (!TOURE) return; colocarTour(); if (performance.now() < hasta) TOURE.raf = requestAnimationFrame(f); };
+  f();
 }
 function colocarTour() {
   if (!TOURE) return;
   const foco = $('.tour-foco', TOURE.capa), caja = $('.tour-caja', TOURE.capa);
   let el = TOURE.el;
   if (el && !el.isConnected) el = TOURE.el = elVisible(TOURE.pasos[TOURE.i].sel);
-  const suave = TOURE.pasos[TOURE.i] && TOURE.pasos[TOURE.i].suave ? ' suave' : '';
-  if (!el) { foco.className = 'tour-foco sin' + suave; caja.className = 'tour-caja centro'; caja.style.top = caja.style.bottom = ''; return; }
+  const paso = TOURE.pasos[TOURE.i] || {}, hc = caja.offsetHeight;
+  foco.classList.toggle('suave', !!paso.suave);
+  if (!el) {
+    // nada que señalar: el foco se cierra sobre su propio centro y la tarjeta se desliza al centro de la pantalla
+    if (!foco.classList.contains('sin')) {
+      const f = foco.getBoundingClientRect();
+      const cx = f.width ? f.left + f.width / 2 : innerWidth / 2, cy = f.height ? f.top + f.height / 2 : innerHeight * 0.4;
+      foco.style.cssText = `left:${cx.toFixed(1)}px;top:${cy.toFixed(1)}px;width:0px;height:0px`;
+      foco.classList.add('sin');
+    }
+    caja.classList.remove('con-flecha', 'abajo', 'arriba');
+    caja.classList.add('centro');
+    caja.style.top = `${Math.max(16, Math.round((innerHeight - hc) / 2))}px`;
+    return;
+  }
   const r = el.getBoundingClientRect(), m = 6;
-  foco.className = 'tour-foco' + suave;
-  foco.style.cssText = `left:${r.left - m}px;top:${r.top - m}px;width:${r.width + 2 * m}px;height:${r.height + 2 * m}px`;
+  foco.classList.remove('sin');
+  foco.style.cssText = `left:${(r.left - m).toFixed(1)}px;top:${(r.top - m).toFixed(1)}px;width:${(r.width + 2 * m).toFixed(1)}px;height:${(r.height + 2 * m).toFixed(1)}px`;
+  // la tarjeta, debajo de lo resaltado si está arriba y encima si está abajo; siempre con «top», para que se deslice
   const abajo = r.top + r.height / 2 < innerHeight * 0.5;
-  caja.className = 'tour-caja con-flecha ' + (abajo ? 'abajo' : 'arriba');
-  const nb = document.querySelector('.navbar'), navH = nb && nb.offsetHeight ? nb.offsetHeight : 0, hc = caja.offsetHeight;
-  if (abajo) { caja.style.bottom = 'auto'; caja.style.top = `${Math.max(16, Math.min(r.bottom + m + 12, innerHeight - navH - 16 - hc))}px`; }
-  else { caja.style.top = 'auto'; caja.style.bottom = `${Math.max(16, Math.min(innerHeight - r.top + m + 12, innerHeight - 16 - hc))}px`; }
-  // la flechita de la tarjeta apunta a lo resaltado
-  const c = caja.getBoundingClientRect();
-  caja.style.setProperty('--fx', `${Math.max(22, Math.min(c.width - 22, r.left + r.width / 2 - c.left)).toFixed(0)}px`);
-  const tapa = abajo ? c.top < r.bottom + 12 : c.bottom > r.top - 12;
+  const nb = document.querySelector('.navbar'), navH = nb && nb.offsetHeight ? nb.offsetHeight : 0;
+  const top = Math.round(abajo ? Math.max(16, Math.min(r.bottom + m + 12, innerHeight - navH - 16 - hc)) : Math.max(16, Math.min(r.top - m - 12 - hc, innerHeight - 16 - hc)));
+  caja.classList.remove('centro');
+  caja.classList.toggle('abajo', abajo);
+  caja.classList.toggle('arriba', !abajo);
+  caja.style.bottom = 'auto';
+  caja.style.top = `${top}px`;
+  // la flechita de la tarjeta apunta a lo resaltado (con la posición a la que va, no la de mitad de camino)
+  const cw = caja.offsetWidth, cl = (document.documentElement.clientWidth - cw) / 2;
+  caja.style.setProperty('--fx', `${Math.max(22, Math.min(cw - 22, r.left + r.width / 2 - cl)).toFixed(0)}px`);
+  const tapa = abajo ? top < r.bottom + 12 : top + hc > r.top - 12;
   caja.classList.toggle('con-flecha', !tapa);
 }
 
