@@ -124,6 +124,46 @@ def dominio_de(nombre, simbolo):
     return None
 
 
+# Para los que se añaden con "v": 1 en catalogo.json, el nombre que les ponemos se compara con el que tiene Yahoo para
+# ese ISIN. Si no se parecen, no se publica y queda en «dudas» para revisarlo: así nunca sale un nombre con el
+# precio de otro fondo. Yahoo abrevia mucho en los fondos (Glb Stk Idx...), de ahí las equivalencias.
+NO_CUENTA = set("""ucits etf etc etp fund fonds fondo fi index idx class shares share acc accumulating accumulation dist
+distributing inc income eur usd gbp chf a b c d e i p r t z ae ie lc nc bp ic 1c 1d 2c plc sicav icav the of and
+de del la el y en dr swap investor inv sub units unit cap c-eur a-acc-eur acc-eur comprobar antes irlanda de""".split())
+EQUIV = {"lyxor": "amundi", "blackrock": "ishares", "bgf": "ishares", "dws": "xtrackers", "glb": "global", "gbl": "global",
+         "stk": "stock", "eq": "equity", "eqty": "equity", "mkts": "markets", "mkt": "markets", "jpn": "japan", "pac": "pacific",
+         "dev": "developed", "wld": "world", "wrld": "world", "tech": "technology", "sm": "small", "bd": "bond", "bds": "bond",
+         "bonds": "bond", "govt": "government", "gov": "government", "corp": "corporate", "infl": "inflation", "lnkd": "linked",
+         "st": "short", "trm": "term", "opps": "opportunities", "opp": "opportunities", "gr": "growth", "grw": "growth",
+         "div": "dividend", "divs": "dividend", "em": "emerging", "emerg": "emerging", "europ": "europe", "eurozone": "euro",
+         "emu": "euro", "us": "usa", "hdg": "hedged", "h": "hedged", "min": "minimum", "vol": "volatility", "sp": "sp", "nasdaq100": "nasdaq", "100": "nasdaq100", "intl": "international",
+         "sust": "sustainable", "infra": "infrastructure", "ai": "intelligence", "artificial": "intelligence"}
+
+
+def fichas(nombre):
+    n = re.sub(r"\(antes [^)]*\)", " ", nombre.lower()).replace("s&p", " sp ").replace("&", " ").replace("-", " ")
+    return {EQUIV.get(w, w) for w in re.findall(r"[a-z0-9]+", n) if w not in NO_CUENTA}
+
+
+# lo que distingue a dos fondos de la misma gestora y el mismo índice: si uno lo dice y el otro no, no son el mismo
+CLAVE = set("""value momentum quality minimum volatility size small mid dividend esg sri screened leveraged doble apalancado
+inverse short equal weight growth emerging europe usa japan china india pacific latin korea brazil canada government corporate
+bond gold silver platinum technology health energy financials banks utilities materials industrials discretionary staples
+communication property inflation treasury high yield hedged bitcoin ethereum""".split())
+
+
+def se_parece(mio, suyo):
+    a, b = fichas(mio), fichas(suyo)
+    if not a or not b:
+        return False
+    marca = fichas(mio.split()[0])
+    if marca and not (marca & b):
+        return False
+    if (a & CLAVE) != (b & CLAVE):
+        return False
+    return len(a & b) / len(a) >= 0.5
+
+
 def compacta(s):
     """Diario los dos últimos años; antes, un punto por semana (hasta 10 años)."""
     if s.empty:
@@ -154,7 +194,7 @@ def main(ruta_cat, dir_anterior, dir_salida):
         pass
     os.makedirs(f"{dir_salida}/cat", exist_ok=True)
     fx = tipos_de_cambio()
-    salida, errores = {}, []
+    salida, errores, dudas = {}, [], []
     for e in cat.get("valores", []):
         isin = (e.get("isin") or "").upper()
         cid = ("c-" + (isin or e.get("s", "")).lower()).replace("=", "").replace("^", "")
@@ -181,7 +221,11 @@ def main(ruta_cat, dir_anterior, dir_salida):
             s_eur = a_euros(s, moneda, fx).dropna()
             if s_eur.empty:
                 raise RuntimeError("sin precios")
-            nombre = e.get("n") or meta.get("longName") or meta.get("shortName") or sim
+            suyo = meta.get("longName") or meta.get("shortName") or ""
+            if e.get("v") and e.get("n") and not se_parece(e["n"], suyo):
+                dudas.append([cid, e["n"], suyo, sim])
+                raise RuntimeError(f"el nombre no cuadra: Yahoo dice «{suyo}»")
+            nombre = e.get("n") or suyo or sim
             tipo = e.get("t") or ("Cripto" if sim.endswith("-EUR") else "Fondo" if sim.startswith("0P") else "ETF")
             clase = clase_de(nombre, tipo)
             hoy = s_eur.index[-1]
@@ -215,8 +259,8 @@ def main(ruta_cat, dir_anterior, dir_salida):
     generado = pd.Timestamp.now(tz="UTC").isoformat(timespec="seconds")
     with open(f"{dir_salida}/catalogo-precios.json", "w", encoding="utf-8") as f:
         # los que fallan, con el motivo (los registros de las Actions no siempre se pueden leer desde fuera)
-        json.dump({"generado": generado, "v": salida, "errores": errores[:40]}, f, ensure_ascii=False, separators=(",", ":"))
-    print(f"{len(salida)} en el catálogo; {len(errores)} errores")
+        json.dump({"generado": generado, "v": salida, "errores": errores[:400], "dudas": dudas}, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"{len(salida)} en el catálogo; {len(errores)} errores ({len(dudas)} por el nombre)")
     for x in errores:
         print("  -", x)
     if not salida:

@@ -1,5 +1,5 @@
 {
- "nota": "Catálogo común: fondos, ETF, oro y cripto que cualquiera puede elegir en la web. La Action (catalogo.yml) les busca precio e histórico una vez al día y lo publica en la rama 'catalogo'. Para añadir uno, basta con su ISIN (o el símbolo de Yahoo en cripto).",
+ "nota": "Catálogo común: fondos, ETF, oro y cripto que cualquiera puede elegir en la web. La Action (catalogo.yml) les busca precio e histórico una vez al día y lo publica en la rama 'catalogo'. Para añadir uno, basta con su ISIN (o el símbolo de Yahoo en cripto). Con \"v\": 1, la Action comprueba que el nombre cuadra con el que tiene Yahoo para ese ISIN y, si no, no lo publica y lo deja en «dudas».",
  "valores": [
   {
    "isin": "IE00BYX5MX67",
@@ -731,6 +731,1752 @@
    ]
   },
   {
+   "isin": "IE0031442068",
+   "n": "iShares Core S&P 500 Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IUSA"
+   ]
+  },
+  {
+   "isin": "IE00B4L5YC18",
+   "n": "iShares MSCI EM Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IEMA"
+   ]
+  },
+  {
+   "isin": "IE00B0M63177",
+   "n": "iShares MSCI EM Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IEEM"
+   ]
+  },
+  {
+   "isin": "IE00B1YZSC51",
+   "n": "iShares Core MSCI Europe Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IMEU"
+   ]
+  },
+  {
+   "isin": "IE00B53QG562",
+   "n": "iShares Core MSCI EMU Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "CSEMU",
+    "SXRY"
+   ]
+  },
+  {
+   "isin": "IE00BYX2JD69",
+   "n": "iShares MSCI World SRI Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SUSW"
+   ]
+  },
+  {
+   "isin": "IE00B52VJ196",
+   "n": "iShares MSCI Europe SRI Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IESE"
+   ]
+  },
+  {
+   "isin": "IE00BYVJRR92",
+   "n": "iShares MSCI USA SRI Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SUAS"
+   ]
+  },
+  {
+   "isin": "IE00BFNM3J75",
+   "n": "iShares MSCI World ESG Screened Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SAWD"
+   ]
+  },
+  {
+   "isin": "IE00BFNM3P36",
+   "n": "iShares MSCI EM IMI ESG Screened Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SAEM"
+   ]
+  },
+  {
+   "isin": "IE00BFNM3G45",
+   "n": "iShares MSCI USA ESG Screened Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SASU"
+   ]
+  },
+  {
+   "isin": "IE00B8FHGS14",
+   "n": "iShares Edge MSCI World Minimum Volatility",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "MVOL"
+   ]
+  },
+  {
+   "isin": "IE00BP3QZJ36",
+   "n": "iShares Edge MSCI World Size Factor",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IWSZ"
+   ]
+  },
+  {
+   "isin": "IE00B43HR379",
+   "n": "iShares S&P 500 Health Care Sector",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IUHC"
+   ]
+  },
+  {
+   "isin": "IE00B42NKQ00",
+   "n": "iShares S&P 500 Energy Sector",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IUES"
+   ]
+  },
+  {
+   "isin": "IE00B4JNQZ49",
+   "n": "iShares S&P 500 Financials Sector",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IUFS"
+   ]
+  },
+  {
+   "isin": "IE00BYZK4883",
+   "n": "iShares Digitalisation",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "DGTL"
+   ]
+  },
+  {
+   "isin": "IE00BG0J4C88",
+   "n": "iShares Digital Security",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "LOCK"
+   ]
+  },
+  {
+   "isin": "IE00BYZK4669",
+   "n": "iShares Ageing Population",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "AGED"
+   ]
+  },
+  {
+   "isin": "IE00BGL86Z12",
+   "n": "iShares Electric Vehicles and Driving Technology",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ECAR"
+   ]
+  },
+  {
+   "isin": "IE00B1TXK627",
+   "n": "iShares Global Water",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IH2O"
+   ]
+  },
+  {
+   "isin": "IE00B6R51Z18",
+   "n": "iShares Global Timber & Forestry",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "WOOD"
+   ]
+  },
+  {
+   "isin": "IE00B27YCK28",
+   "n": "iShares MSCI EM Latin America",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "LTAM"
+   ]
+  },
+  {
+   "isin": "IE00B02KXK85",
+   "n": "iShares China Large Cap",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "FXC"
+   ]
+  },
+  {
+   "isin": "IE00BJ5JPG56",
+   "n": "iShares MSCI China Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ICGA"
+   ]
+  },
+  {
+   "isin": "IE00B0M63060",
+   "n": "iShares UK Dividend",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IUKD"
+   ]
+  },
+  {
+   "isin": "IE00B0M62S72",
+   "n": "iShares Euro Dividend",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IDVY"
+   ]
+  },
+  {
+   "isin": "IE00B1FZS350",
+   "n": "iShares Developed Markets Property Yield",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IWDP"
+   ]
+  },
+  {
+   "isin": "IE00B0M63284",
+   "n": "iShares European Property Yield",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IPRP"
+   ]
+  },
+  {
+   "isin": "IE00B0M62Y33",
+   "n": "iShares AEX",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IAEX"
+   ]
+  },
+  {
+   "isin": "IE00B52SF786",
+   "n": "iShares MSCI Canada",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "CSCA"
+   ]
+  },
+  {
+   "isin": "IE00B5W4TY14",
+   "n": "iShares MSCI Korea",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "CSKR"
+   ]
+  },
+  {
+   "isin": "IE00B0M63391",
+   "n": "iShares MSCI Brazil Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IBZL"
+   ]
+  },
+  {
+   "isin": "IE00BHZPJ569",
+   "n": "iShares MSCI World Quality Dividend ESG",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "WQDV"
+   ]
+  },
+  {
+   "isin": "IE00BDDRF700",
+   "n": "iShares MSCI EM Asia",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "CSEMAS"
+   ]
+  },
+  {
+   "isin": "IE00B3VWMM18",
+   "n": "iShares MSCI EMU Small Cap",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "CSEMUS"
+   ]
+  },
+  {
+   "isin": "IE00B3F81409",
+   "n": "iShares Core Global Aggregate Bond",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "AGGG"
+   ]
+  },
+  {
+   "isin": "DE000A0F5UF5",
+   "n": "iShares NASDAQ-100 (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXXT"
+   ]
+  },
+  {
+   "isin": "DE0002635307",
+   "n": "iShares STOXX Europe 600 (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXSA"
+   ]
+  },
+  {
+   "isin": "DE0005933972",
+   "n": "iShares TecDAX (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXS2"
+   ]
+  },
+  {
+   "isin": "DE0006289382",
+   "n": "iShares Dow Jones Global Titans 50 (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXI2"
+   ]
+  },
+  {
+   "isin": "DE000A0D8Q07",
+   "n": "iShares EURO STOXX Banks 30-15 (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXX1"
+   ]
+  },
+  {
+   "isin": "DE0002635281",
+   "n": "iShares EURO STOXX Select Dividend 30 (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXSG"
+   ]
+  },
+  {
+   "isin": "DE000A0H08M3",
+   "n": "iShares STOXX Europe 600 Oil & Gas (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXH1"
+   ]
+  },
+  {
+   "isin": "DE000A0Q4R36",
+   "n": "iShares STOXX Europe 600 Health Care (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXV4"
+   ]
+  },
+  {
+   "isin": "DE000A0H08Q4",
+   "n": "iShares STOXX Europe 600 Technology (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXV3"
+   ]
+  },
+  {
+   "isin": "DE000A0F5UJ7",
+   "n": "iShares STOXX Europe 600 Banks (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EXV1"
+   ]
+  },
+  {
+   "isin": "IE00B3F81R35",
+   "n": "iShares Core Euro Corporate Bond",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IEAC"
+   ]
+  },
+  {
+   "isin": "IE00B4L60045",
+   "n": "iShares EUR Corp Bond 1-5yr",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IE15"
+   ]
+  },
+  {
+   "isin": "IE00B14X4Q57",
+   "n": "iShares EUR Govt Bond 1-3yr",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IBGS"
+   ]
+  },
+  {
+   "isin": "IE00B1FZS798",
+   "n": "iShares USD Treasury Bond 7-10yr Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IBTM"
+   ]
+  },
+  {
+   "isin": "IE00B3VWN518",
+   "n": "iShares USD Treasury Bond 7-10yr Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "CSBGU7"
+   ]
+  },
+  {
+   "isin": "IE00BSKRJZ44",
+   "n": "iShares USD Treasury Bond 20+yr Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IDTL"
+   ]
+  },
+  {
+   "isin": "IE00B0M62X26",
+   "n": "iShares EUR Inflation Linked Govt Bond",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IBCI"
+   ]
+  },
+  {
+   "isin": "IE00B66F4759",
+   "n": "iShares EUR High Yield Corp Bond",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IHYG"
+   ]
+  },
+  {
+   "isin": "IE00B2NPKV68",
+   "n": "iShares J.P. Morgan USD EM Bond",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IEMB"
+   ]
+  },
+  {
+   "isin": "IE00B3DKXQ41",
+   "n": "iShares EUR Aggregate Bond",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IEAG"
+   ]
+  },
+  {
+   "isin": "IE00BK5BQX27",
+   "n": "Vanguard FTSE Developed Europe Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VWCG"
+   ]
+  },
+  {
+   "isin": "IE00BKX55S42",
+   "n": "Vanguard FTSE Developed Europe ex UK Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VERX"
+   ]
+  },
+  {
+   "isin": "IE00B8GKDB10",
+   "n": "Vanguard FTSE All-World High Dividend Yield Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VHYL"
+   ]
+  },
+  {
+   "isin": "IE00BK5BR626",
+   "n": "Vanguard FTSE All-World High Dividend Yield Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VGWE"
+   ]
+  },
+  {
+   "isin": "IE00BKX55R35",
+   "n": "Vanguard FTSE North America Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VNRT"
+   ]
+  },
+  {
+   "isin": "IE00BK5BQW10",
+   "n": "Vanguard FTSE North America Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VNRA"
+   ]
+  },
+  {
+   "isin": "IE00BFMXYY33",
+   "n": "Vanguard FTSE Japan Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VJPA"
+   ]
+  },
+  {
+   "isin": "IE00BKX55Q28",
+   "n": "Vanguard FTSE Developed Asia Pacific ex Japan Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VAPX"
+   ]
+  },
+  {
+   "isin": "IE00BG47KH54",
+   "n": "Vanguard Global Aggregate Bond EUR Hedged Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VAGF"
+   ]
+  },
+  {
+   "isin": "IE00BH04GL39",
+   "n": "Vanguard EUR Eurozone Government Bond Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VETY"
+   ]
+  },
+  {
+   "isin": "IE00BZ163G84",
+   "n": "Vanguard EUR Corporate Bond Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VECP"
+   ]
+  },
+  {
+   "isin": "IE00BZ163L38",
+   "n": "Vanguard USD Emerging Markets Government Bond Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VEMT"
+   ]
+  },
+  {
+   "isin": "IE00BMVB5P51",
+   "n": "Vanguard LifeStrategy 60% Equity Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "V60A"
+   ]
+  },
+  {
+   "isin": "IE00BMVB5M21",
+   "n": "Vanguard LifeStrategy 40% Equity Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "V40A"
+   ]
+  },
+  {
+   "isin": "IE00BMVB5K07",
+   "n": "Vanguard LifeStrategy 20% Equity Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "V20A"
+   ]
+  },
+  {
+   "isin": "IE00BNG8L385",
+   "n": "Vanguard ESG Developed World All Cap",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "V3DA"
+   ]
+  },
+  {
+   "isin": "LU0274208692",
+   "n": "Xtrackers MSCI World Swap 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XMWO",
+    "DBXW"
+   ]
+  },
+  {
+   "isin": "IE00BK1PV551",
+   "n": "Xtrackers MSCI World 1D",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWL"
+   ]
+  },
+  {
+   "isin": "IE00BJ0KDR00",
+   "n": "Xtrackers MSCI USA 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XD9U"
+   ]
+  },
+  {
+   "isin": "LU0274210672",
+   "n": "Xtrackers MSCI USA Swap 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XMUS"
+   ]
+  },
+  {
+   "isin": "LU0490618542",
+   "n": "Xtrackers S&P 500 Swap 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XSPX"
+   ]
+  },
+  {
+   "isin": "LU0274211480",
+   "n": "Xtrackers DAX 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "DBXD"
+   ]
+  },
+  {
+   "isin": "LU0274211217",
+   "n": "Xtrackers Euro Stoxx 50 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "DXET"
+   ]
+  },
+  {
+   "isin": "LU0274209237",
+   "n": "Xtrackers MSCI Europe 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XMEU"
+   ]
+  },
+  {
+   "isin": "LU0328475792",
+   "n": "Xtrackers Stoxx Europe 600 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "DXSX"
+   ]
+  },
+  {
+   "isin": "LU0292107645",
+   "n": "Xtrackers MSCI Emerging Markets Swap 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XMEM"
+   ]
+  },
+  {
+   "isin": "LU0322252924",
+   "n": "Xtrackers FTSE Vietnam Swap 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XFVT"
+   ]
+  },
+  {
+   "isin": "LU0514695690",
+   "n": "Xtrackers CSI300 Swap 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XCHA"
+   ]
+  },
+  {
+   "isin": "LU0839027447",
+   "n": "Xtrackers Nikkei 225 1D",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDJP"
+   ]
+  },
+  {
+   "isin": "IE00BJZ2DD79",
+   "n": "Xtrackers Russell 2000 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XRS2"
+   ]
+  },
+  {
+   "isin": "IE00BZ02LR44",
+   "n": "Xtrackers ESG MSCI World 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XZW0"
+   ]
+  },
+  {
+   "isin": "IE00BL25JP72",
+   "n": "Xtrackers MSCI World Momentum 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDEM"
+   ]
+  },
+  {
+   "isin": "IE00BL25JL35",
+   "n": "Xtrackers MSCI World Quality 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDEQ"
+   ]
+  },
+  {
+   "isin": "IE00BL25JM42",
+   "n": "Xtrackers MSCI World Value 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDEV"
+   ]
+  },
+  {
+   "isin": "IE00BL25JN58",
+   "n": "Xtrackers MSCI World Minimum Volatility 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDEB"
+   ]
+  },
+  {
+   "isin": "IE00BM67HT60",
+   "n": "Xtrackers MSCI World Information Technology 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWT"
+   ]
+  },
+  {
+   "isin": "IE00BM67HK77",
+   "n": "Xtrackers MSCI World Health Care 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWH"
+   ]
+  },
+  {
+   "isin": "IE00BM67HM91",
+   "n": "Xtrackers MSCI World Energy 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDW0"
+   ]
+  },
+  {
+   "isin": "IE00BM67HL84",
+   "n": "Xtrackers MSCI World Financials 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWF"
+   ]
+  },
+  {
+   "isin": "IE00BM67HN09",
+   "n": "Xtrackers MSCI World Consumer Staples 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWS"
+   ]
+  },
+  {
+   "isin": "IE00BM67HP23",
+   "n": "Xtrackers MSCI World Consumer Discretionary 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWC"
+   ]
+  },
+  {
+   "isin": "IE00BM67HQ30",
+   "n": "Xtrackers MSCI World Materials 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWM"
+   ]
+  },
+  {
+   "isin": "IE00BM67HR47",
+   "n": "Xtrackers MSCI World Communication Services 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XWTS"
+   ]
+  },
+  {
+   "isin": "IE00BM67HS53",
+   "n": "Xtrackers MSCI World Utilities 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWU"
+   ]
+  },
+  {
+   "isin": "IE00BM67HV82",
+   "n": "Xtrackers MSCI World Industrials 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWI"
+   ]
+  },
+  {
+   "isin": "LU0290355717",
+   "n": "Xtrackers II Eurozone Government Bond 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "DBXN"
+   ]
+  },
+  {
+   "isin": "LU0478205379",
+   "n": "Xtrackers II EUR Corporate Bond 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XBLC"
+   ]
+  },
+  {
+   "isin": "IE000BI8OT95",
+   "n": "Amundi Core MSCI World Acc (Irlanda)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "MWRD"
+   ]
+  },
+  {
+   "isin": "FR0010315770",
+   "n": "Amundi MSCI World (antes Lyxor) Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "WLD"
+   ]
+  },
+  {
+   "isin": "LU2089238203",
+   "n": "Amundi Prime All Country World",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "PRAW"
+   ]
+  },
+  {
+   "isin": "LU0496786574",
+   "n": "Amundi S&P 500 (antes Lyxor) Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SP5"
+   ]
+  },
+  {
+   "isin": "FR0011871128",
+   "n": "Amundi PEA S&P 500",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "PSP5"
+   ]
+  },
+  {
+   "isin": "LU1829221024",
+   "n": "Amundi Nasdaq-100 (antes Lyxor) Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "UST"
+   ]
+  },
+  {
+   "isin": "LU1681038243",
+   "n": "Amundi Nasdaq-100",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ANX"
+   ]
+  },
+  {
+   "isin": "LU1681045370",
+   "n": "Amundi MSCI Emerging Markets",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "AEEM"
+   ]
+  },
+  {
+   "isin": "LU0908500753",
+   "n": "Amundi Core Stoxx Europe 600 Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "MEUD"
+   ]
+  },
+  {
+   "isin": "LU1681047236",
+   "n": "Amundi Euro Stoxx 50",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "C50"
+   ]
+  },
+  {
+   "isin": "FR0007052782",
+   "n": "Amundi CAC 40 (antes Lyxor) Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "CAC"
+   ]
+  },
+  {
+   "isin": "FR0010251744",
+   "n": "Amundi IBEX 35 (antes Lyxor) Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "LYXIB"
+   ]
+  },
+  {
+   "isin": "FR0011042753",
+   "n": "Amundi IBEX 35 Doble Apalancado Diario",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IBEXA"
+   ]
+  },
+  {
+   "isin": "LU0533033667",
+   "n": "Amundi MSCI World Information Technology (antes Lyxor)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "LYPG"
+   ]
+  },
+  {
+   "isin": "LU1900066033",
+   "n": "Amundi MSCI Semiconductors (antes Lyxor)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SEMI"
+   ]
+  },
+  {
+   "isin": "LU1834983477",
+   "n": "Amundi Stoxx Europe 600 Banks (antes Lyxor)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "BNKE"
+   ]
+  },
+  {
+   "isin": "LU1834988278",
+   "n": "Amundi Stoxx Europe 600 Oil & Gas (antes Lyxor)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "OIL"
+   ]
+  },
+  {
+   "isin": "LU1650490474",
+   "n": "Amundi Euro Government Bond (antes Lyxor Core)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "MTX"
+   ]
+  },
+  {
+   "isin": "IE000XZSV718",
+   "n": "SPDR S&P 500 Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SPYL"
+   ]
+  },
+  {
+   "isin": "IE00B44Z5B48",
+   "n": "SPDR MSCI ACWI",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SPYY"
+   ]
+  },
+  {
+   "isin": "IE00B6YX5D40",
+   "n": "SPDR S&P US Dividend Aristocrats",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "USDV",
+    "UDVD"
+   ]
+  },
+  {
+   "isin": "IE00B5M1WJ87",
+   "n": "SPDR S&P Euro Dividend Aristocrats",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EUDV",
+    "SPYW"
+   ]
+  },
+  {
+   "isin": "IE00B9CQXS71",
+   "n": "SPDR S&P Global Dividend Aristocrats",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "GBDV",
+    "ZPRG"
+   ]
+  },
+  {
+   "isin": "IE00BJ38QD84",
+   "n": "SPDR Russell 2000 US Small Cap",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ZPRR"
+   ]
+  },
+  {
+   "isin": "IE00B469F816",
+   "n": "SPDR MSCI Emerging Markets Small Cap",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EMSD"
+   ]
+  },
+  {
+   "isin": "IE00BFZXGZ54",
+   "n": "Invesco EQQQ Nasdaq-100 Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EQAC",
+    "EQQB"
+   ]
+  },
+  {
+   "isin": "IE00B60SX394",
+   "n": "Invesco MSCI World",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "MXWO"
+   ]
+  },
+  {
+   "isin": "IE00BLSNMW37",
+   "n": "Invesco CoinShares Global Blockchain",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "BCHN"
+   ]
+  },
+  {
+   "isin": "IE00BNGJJT35",
+   "n": "Invesco S&P 500 Equal Weight",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SPEQ"
+   ]
+  },
+  {
+   "isin": "NL0011683594",
+   "n": "VanEck Morningstar Developed Markets Dividend Leaders",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "TDIV"
+   ]
+  },
+  {
+   "isin": "IE00BQQP9F84",
+   "n": "VanEck Gold Miners",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "GDX"
+   ]
+  },
+  {
+   "isin": "IE00BQQP9G91",
+   "n": "VanEck Junior Gold Miners",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "GDXJ"
+   ]
+  },
+  {
+   "isin": "IE00BYWQWR46",
+   "n": "VanEck Video Gaming and eSports",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ESPO"
+   ]
+  },
+  {
+   "isin": "IE000YYE6WK5",
+   "n": "VanEck Defense",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "DFNS"
+   ]
+  },
+  {
+   "isin": "IE00BMDH1538",
+   "n": "VanEck Hydrogen Economy",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "HDRO"
+   ]
+  },
+  {
+   "isin": "IE00BMDKNW35",
+   "n": "VanEck Crypto and Blockchain Innovators",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "DAPP"
+   ]
+  },
+  {
+   "isin": "IE000M7V94E1",
+   "n": "VanEck Uranium and Nuclear Technologies",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "NUCL"
+   ]
+  },
+  {
+   "isin": "IE00BZ56RN96",
+   "n": "WisdomTree Global Quality Dividend Growth",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "GGRP"
+   ]
+  },
+  {
+   "isin": "IE00BDVPNG13",
+   "n": "WisdomTree Artificial Intelligence",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "WTAI"
+   ]
+  },
+  {
+   "isin": "IE00BLPK3577",
+   "n": "WisdomTree Europe Defence",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "WDEF"
+   ]
+  },
+  {
+   "isin": "IE00BYPLS672",
+   "n": "L&G Cyber Security",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ISPY"
+   ]
+  },
+  {
+   "isin": "IE00BK5BCD43",
+   "n": "L&G Artificial Intelligence",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "AIAI"
+   ]
+  },
+  {
+   "isin": "IE00BF0M2Z96",
+   "n": "L&G Battery Value-Chain",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "BATT"
+   ]
+  },
+  {
+   "isin": "IE00BLRPRL42",
+   "n": "L&G Hydrogen Economy",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "HTWO"
+   ]
+  },
+  {
+   "isin": "IE00B4X9L533",
+   "n": "HSBC MSCI World",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "HMWO"
+   ]
+  },
+  {
+   "isin": "IE00B5KQNG97",
+   "n": "HSBC S&P 500",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "HSPX"
+   ]
+  },
+  {
+   "isin": "LU0340285161",
+   "n": "UBS MSCI World",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "WRDUSW"
+   ]
+  },
+  {
+   "isin": "IE00BF4G6Y48",
+   "n": "JPMorgan Global Research Enhanced Index Equity",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "JREG"
+   ]
+  },
+  {
+   "isin": "IE00BHZRQZ17",
+   "n": "Franklin FTSE India",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "FLXI"
+   ]
+  },
+  {
+   "isin": "JE00B1VS3333",
+   "n": "WisdomTree Physical Silver",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "PHAG"
+   ]
+  },
+  {
+   "isin": "JE00B1VS2W53",
+   "n": "WisdomTree Physical Platinum",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "PHPT"
+   ]
+  },
+  {
+   "isin": "DE000A27Z304",
+   "n": "BTCetc Bitcoin Exchange Traded Crypto",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "BTCE"
+   ]
+  },
+  {
+   "isin": "GB00BLD4ZL17",
+   "n": "CoinShares Physical Bitcoin",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "BITC"
+   ]
+  },
+  {
+   "isin": "CH0454664001",
+   "n": "21Shares Bitcoin ETP",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "ABTC"
+   ]
+  },
+  {
+   "isin": "XS2940466316",
+   "n": "iShares Bitcoin ETP",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "IB1T"
+   ]
+  },
+  {
+   "isin": "GB00BLD4ZM24",
+   "n": "CoinShares Physical Ethereum",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "ETHE"
+   ]
+  },
+  {
+   "isin": "IE00B03HCZ61",
+   "n": "Vanguard Global Stock Index Fund Investor EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00B42LF923",
+   "n": "Vanguard Global Small-Cap Index Fund Investor EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00B04GQX83",
+   "n": "Vanguard Eurozone Inflation-Linked Bond Index Fund EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00BDRK7T12",
+   "n": "iShares Europe Index Fund (IE) D Acc EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00BDRK7Z71",
+   "n": "iShares Japan Index Fund (IE) D Acc EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00BFG1RG61",
+   "n": "iShares Developed World ESG Screened Index Fund (IE) D Acc EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0996180864",
+   "n": "Amundi Index MSCI Japan AE-C",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0996181003",
+   "n": "Amundi Index MSCI Pacific ex Japan AE-C",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0996179858",
+   "n": "Amundi Index MSCI North America AE-C",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00BYX5P826",
+   "n": "Fidelity MSCI World Index Fund EUR P Acc Hedged",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00BYX5MD61",
+   "n": "Fidelity S&P 500 Index Fund EUR P Acc Hedged",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0690375182",
+   "n": "Fundsmith Equity Fund T EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE0004766675",
+   "n": "Comgest Growth Europe EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0599946893",
+   "n": "DWS Concept Kaldemorgen LC",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "FR0010135103",
+   "n": "Carmignac Patrimoine A EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "FR0010148981",
+   "n": "Carmignac Investissement A EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0348926287",
+   "n": "Nordea 1 Global Climate and Environment BP EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0227384020",
+   "n": "Nordea 1 Stable Return BP EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0203975437",
+   "n": "Robeco BP Global Premium Equities D EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0187079347",
+   "n": "Robeco Global Consumer Trends D EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU1213836080",
+   "n": "Fidelity Global Technology A-Acc-EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0171310443",
+   "n": "BlackRock World Technology A2 EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0172157280",
+   "n": "BlackRock World Mining A2 EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU1279334210",
+   "n": "Pictet Robotics P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0104884860",
+   "n": "Pictet Water P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0280435388",
+   "n": "Pictet Clean Energy Transition P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0386882277",
+   "n": "Pictet Global Megatrend Selection P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0270904781",
+   "n": "Pictet Security P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0340554913",
+   "n": "Pictet Digital P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0255977455",
+   "n": "Pictet Biotech P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0128494944",
+   "n": "Pictet Short-Term Money Market EUR P",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU1548497699",
+   "n": "Allianz Global Artificial Intelligence AT EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0225737302",
+   "n": "Morgan Stanley US Advantage A USD",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0552385295",
+   "n": "Morgan Stanley Global Opportunity A USD",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU1670724373",
+   "n": "M&G (Lux) Optimal Income A EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0080237943",
+   "n": "DWS Euro Ultra Short Fixed Income NC",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "FI0008800511",
+   "n": "Evli Short Corporate Bond IB EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00B2NXKW18",
+   "n": "Seilern World Growth EUR U R",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00BK5TW727",
+   "n": "Baillie Gifford Worldwide Long Term Global Growth B EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0366762994",
+   "n": "Franklin Technology A Acc EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0119184002",
+   "n": "Cobas Iberia FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0112618006",
+   "n": "azValor Iberia FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0159201013",
+   "n": "Magallanes Iberian Equity M FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0179555018",
+   "n": "True Value Small Caps FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0146309002",
+   "n": "Horos Value Internacional FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0182769002",
+   "n": "Valentum FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0110407097",
+   "n": "Baelo Patrimonio FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0162735031",
+   "n": "Metavalor FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0114794037",
+   "n": "Bestinver Bolsa FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "ES0173311103",
+   "n": "Numantia Patrimonio Global FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
    "s": "BTC-EUR",
    "n": "Bitcoin",
    "t": "Cripto"
@@ -803,6 +2549,156 @@
   {
    "s": "USDC-EUR",
    "n": "USD Coin",
+   "t": "Cripto"
+  },
+  {
+   "s": "POL-EUR",
+   "n": "Polygon",
+   "t": "Cripto"
+  },
+  {
+   "s": "ATOM-EUR",
+   "n": "Cosmos",
+   "t": "Cripto"
+  },
+  {
+   "s": "NEAR-EUR",
+   "n": "NEAR Protocol",
+   "t": "Cripto"
+  },
+  {
+   "s": "INJ-EUR",
+   "n": "Injective",
+   "t": "Cripto"
+  },
+  {
+   "s": "HBAR-EUR",
+   "n": "Hedera",
+   "t": "Cripto"
+  },
+  {
+   "s": "ICP-EUR",
+   "n": "Internet Computer",
+   "t": "Cripto"
+  },
+  {
+   "s": "FIL-EUR",
+   "n": "Filecoin",
+   "t": "Cripto"
+  },
+  {
+   "s": "ETC-EUR",
+   "n": "Ethereum Classic",
+   "t": "Cripto"
+  },
+  {
+   "s": "BCH-EUR",
+   "n": "Bitcoin Cash",
+   "t": "Cripto"
+  },
+  {
+   "s": "XMR-EUR",
+   "n": "Monero",
+   "t": "Cripto"
+  },
+  {
+   "s": "AAVE-EUR",
+   "n": "Aave",
+   "t": "Cripto"
+  },
+  {
+   "s": "ALGO-EUR",
+   "n": "Algorand",
+   "t": "Cripto"
+  },
+  {
+   "s": "VET-EUR",
+   "n": "VeChain",
+   "t": "Cripto"
+  },
+  {
+   "s": "SAND-EUR",
+   "n": "The Sandbox",
+   "t": "Cripto"
+  },
+  {
+   "s": "MANA-EUR",
+   "n": "Decentraland",
+   "t": "Cripto"
+  },
+  {
+   "s": "CRO-EUR",
+   "n": "Cronos",
+   "t": "Cripto"
+  },
+  {
+   "s": "USDT-EUR",
+   "n": "Tether",
+   "t": "Cripto"
+  },
+  {
+   "s": "UNI7083-EUR",
+   "n": "Uniswap",
+   "t": "Cripto"
+  },
+  {
+   "s": "SUI20947-EUR",
+   "n": "Sui",
+   "t": "Cripto"
+  },
+  {
+   "s": "TON11419-EUR",
+   "n": "Toncoin",
+   "t": "Cripto"
+  },
+  {
+   "s": "PEPE24478-EUR",
+   "n": "Pepe",
+   "t": "Cripto"
+  },
+  {
+   "s": "APT21794-EUR",
+   "n": "Aptos",
+   "t": "Cripto"
+  },
+  {
+   "s": "ARB11841-EUR",
+   "n": "Arbitrum",
+   "t": "Cripto"
+  },
+  {
+   "s": "OP-EUR",
+   "n": "Optimism",
+   "t": "Cripto"
+  },
+  {
+   "s": "KAS-EUR",
+   "n": "Kaspa",
+   "t": "Cripto"
+  },
+  {
+   "s": "RENDER-EUR",
+   "n": "Render",
+   "t": "Cripto"
+  },
+  {
+   "s": "WLD-EUR",
+   "n": "Worldcoin",
+   "t": "Cripto"
+  },
+  {
+   "s": "ONDO-EUR",
+   "n": "Ondo",
+   "t": "Cripto"
+  },
+  {
+   "s": "TAO22974-EUR",
+   "n": "Bittensor",
+   "t": "Cripto"
+  },
+  {
+   "s": "HYPE32196-EUR",
+   "n": "Hyperliquid",
    "t": "Cripto"
   }
  ]
