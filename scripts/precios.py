@@ -269,7 +269,32 @@ def serie_cierres(simbolo, periodo="max"):
     s.index = pd.to_datetime(s.index).tz_localize(None).normalize()
     s = s[~s.index.duplicated(keep="last")]
     meta = t.history_metadata or {}
-    return t, s, meta
+    return t, al_dia(s, meta), meta
+
+
+def al_dia(s, meta):
+    """Con el histórico «max», Yahoo a veces aún no trae la vela del último día (de madrugada salía el cierre de
+    anteayer: IAG a 4,886 € del 19 cuando el 20 cerró a 4,94). Su último precio y su hora sí vienen en los
+    metadatos: si son de un día posterior al último del histórico, se añade; si son del mismo día, se pone al día."""
+    try:
+        p, ts = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
+        if not p or p <= 0 or not ts or s.empty:
+            return s
+        from zoneinfo import ZoneInfo
+        tz = ZoneInfo(meta.get("exchangeTimezoneName") or "UTC")
+        cuando = dt.datetime.fromtimestamp(int(ts), tz)
+        if dt.datetime.now(tz) - cuando > dt.timedelta(days=6):
+            return s
+        dia = pd.Timestamp(cuando.date())
+        ultimo = s.index[-1]
+        salto = abs(float(p) / float(s.iloc[-1]) - 1)
+        if (dia > ultimo and salto < 0.5) or (dia == ultimo and salto < 0.2):
+            s = s.copy()
+            s.loc[dia] = float(p)
+            s = s.sort_index()
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
+    return s
 
 
 def intradia(instrumentos, salida):
