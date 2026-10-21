@@ -2527,10 +2527,60 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .empezar-l li.ok .emp-t small { color: var(--up); }
 /* en Inicio la rejilla deja 48 px entre bloques: el aviso va más pegado a lo que tiene debajo */
 .car > .empezar, .car > .pf-recuerda { margin-bottom: -28px; }
-@media (min-width: 900px) {
-  .empezar .empezar-l { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0 22px; }
-  .empezar .empezar-l li + li { border-top: 0; }
+/* 0.3.8, primeros pasos: barra de lo hecho, el paso que toca abierto (con lo que tarda) y los demás en una línea */
+.empezar { padding: 16px 14px 6px 18px; }
+.caja .paso-chip, .paso-chip { margin: 0 0 -4px; color: var(--accent); font-size: 13px; font-weight: 650; letter-spacing: 0.01em; }
+.crear-aviso { padding: 10px 12px; border-radius: 12px; background: var(--accent-bg); color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.crear-aviso b { color: var(--text); }
+.crear-copia { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+.crear-copia summary { cursor: pointer; color: var(--text-2); font-size: 14px; }
+.crear-copia[open] summary { margin-bottom: 10px; }
+.emp-barra { height: 4px; border-radius: 4px; background: var(--plane-3); margin: 12px 0 4px; overflow: hidden; }
+.emp-barra i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--accent-hi, var(--accent))); transition: width 0.4s ease; }
+.emp-t b em { font-style: normal; font-size: 11.5px; font-weight: 600; color: var(--muted); border: 1px solid var(--line-2); border-radius: 999px; padding: 1px 7px; margin-left: 4px; vertical-align: 2px; }
+.emp-t small.emp-min { color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.emp-b { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.empezar-l li.ahora { align-items: start; padding: 14px 0; }
+.empezar-l li.ahora .emp-n { border-color: var(--accent); color: var(--accent); background: var(--accent-bg); }
+.empezar-l li.ahora .emp-t { gap: 5px; }
+.empezar-l li.ahora .emp-t b { font-size: 16px; }
+.empezar-l li.ahora .emp-t small:not(.emp-min) { font-size: 14px; color: var(--text-2); max-width: 75ch; }
+.empezar-l li.luego .emp-t b { font-weight: 600; color: var(--text-2); }
+.empezar-l li.luego .btn { opacity: 0.85; }
+@media (max-width: 640px) {
+  .empezar-l li.ahora { grid-template-columns: 28px minmax(0, 1fr); }
+  .empezar-l li.ahora .emp-b { grid-column: 2; justify-content: flex-start; }
 }
+.empezar.listo { padding-bottom: 14px; }
+.emp-listo { display: grid; place-items: center; width: 28px; height: 28px; border-radius: 50%; background: var(--up-bg); color: var(--up); }
+.emp-listo svg { width: 15px; height: 15px; }
+.emp-fin { margin: 10px 0 12px; color: var(--text-2); font-size: 14.5px; line-height: 1.55; }
+/* la hoja de bienvenida */
+.guia { display: grid; gap: 18px; }
+.guia-cab { display: grid; gap: 10px; justify-items: start; }
+.guia-cab > svg { width: 44px; height: 44px; }
+.guia-cab h2 { margin: 0; font-size: clamp(21px, 5.6vw, 26px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.2; }
+.guia-cab p { margin: 0; color: var(--text-2); font-size: 14.5px; line-height: 1.55; }
+.guia-l { list-style: none; margin: 0; padding: 4px 0; display: grid; gap: 2px; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.guia-l li { display: grid; grid-template-columns: 28px minmax(0, 1fr); gap: 12px; align-items: center; padding: 9px 0; }
+.guia-l li > span:last-child { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; }
+.guia-l b { font-size: 15px; font-weight: 600; }
+.guia-l b em { font-style: normal; font-size: 11.5px; color: var(--muted); font-weight: 500; margin-left: 4px; }
+.guia-l small { color: var(--muted); font-size: 12.5px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.guia-l li.ok .emp-n { background: var(--up-bg); border-color: transparent; color: var(--up); }
+.guia-btns { display: grid; gap: 8px; }
+.guia-btns .btn { width: 100%; justify-content: center; }
+.guia-luego { justify-self: center; color: var(--muted); }
+/* llevarla en el móvil */
+.movil { display: grid; gap: 14px; }
+.movil > .dib { width: 168px; height: 112px; justify-self: center; }
+.movil p { margin: 0; color: var(--text-2); font-size: 14.5px; line-height: 1.55; }
+.movil-apk { justify-self: start; }
+.movil-url { display: flex; gap: 8px; align-items: center; padding: 8px 8px 8px 12px; border-radius: 12px; background: var(--plane-2); border: 1px solid var(--line-2); }
+.movil-url code { flex: 1; min-width: 0; overflow-wrap: anywhere; font-size: 13.5px; color: var(--text); }
+.movil-qr:empty { display: none; }
+.movil-qr { justify-self: center; width: 180px; padding: 10px; border-radius: 14px; background: #fff; }
+.movil-qr svg { display: block; width: 100%; height: auto; }
 .tour-caja .empezar-l { margin-top: 10px; }
 .tour-caja .empezar-l li { padding: 9px 0; }
 .tour-foco.suave { box-shadow: 0 0 0 9999px rgba(10, 9, 8, 0.5), 0 0 0 2px var(--accent); }
@@ -11388,9 +11438,12 @@ function pantallaCuenta(errorTxt = '') {
   // en la app, Google va por el selector de cuentas de Android (desde la app 0.2; las de antes, solo correo)
   const nativo = app && !!FB_GOOGLE_WEB && (() => { try { return !!window.InversionesApp.googleDisponible(); } catch (e) { return false; } })();
   let modo = 'entrar';
+  // quien llega por primera vez (con el enlace que le pasan) ve «Crea tu cuenta», paso 1 de 2
+  const primeraVez = !LS.get('inv-ya-entro', false) && !(() => { try { return localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc'); } catch (e) { return null; } })();
   $('#app').innerHTML = `<div class="pantalla"><div class="caja caja-cuenta">
     <img class="logo" src="icon-192.png" alt="">
-    <h1>Entra en GrowFolio</h1>
+    ${primeraVez ? `<p class="paso-chip">${esc(trad('Paso 1 de 2: tu cuenta'))}</p>` : ''}
+    <h1>${primeraVez ? 'Crea tu cuenta' : 'Entra en GrowFolio'}</h1>
     <p>Con tu cuenta, tu cartera se guarda cifrada y la ves igual en el móvil, en el ordenador y en la app.${(() => { try { return localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc'); } catch (e) { return null; } })() ? ' Si ya usabas GrowFolio aquí, después de entrar te ofrece subir tu cartera tal cual.' : ''}</p>
     ${app && !nativo ? '<p class="nota" style="margin:0">En la app, de momento, se entra con el correo. Con Google puedes entrar desde la web o desde Chrome.</p>' : `<button type="button" class="btn btn-google" id="bGoogle"><svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.5z"/></svg><span>Continuar con Google</span></button>${FB_APPLE ? `<button type="button" class="btn btn-apple" id="bApple"><svg class="g-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.6zM14.2 5.6c.6-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.3z"/></svg><span>Continuar con Apple</span></button>` : ''}<div class="cuenta-o"><span>o con tu correo</span></div>`}
     <form id="fCorreo" class="cuenta-f" novalidate>
@@ -11410,6 +11463,7 @@ function pantallaCuenta(errorTxt = '') {
   const dentro = async () => {
     // ya con sesión: tu cartera de la cuenta (o, si es nueva, la bienvenida)
     S.enc = await cargarDeCuenta(); S.iaRemoto = S.iaCuenta || null;
+    LS.set('inv-ya-entro', true);
     if (FB.user && FB.user.displayName && !LS.get('inv-nombre', '')) LS.set('inv-nombre', FB.user.displayName.split(' ')[0]);
     entrar();
   };
@@ -11422,6 +11476,7 @@ function pantallaCuenta(errorTxt = '') {
     $('#cPass').autocomplete = modo === 'crear' ? 'new-password' : 'current-password';
     $('#bOlvido').hidden = modo === 'crear'; err('');
   };
+  if (primeraVez) { const bc = $('.cuenta-modo button[data-m="crear"]'); if (bc) bc.click(); }
   if ($('#bGoogle')) $('#bGoogle').onclick = async () => {
     const b = $('#bGoogle'); err(''); b.disabled = true;
     if (nativo) {
@@ -11683,17 +11738,18 @@ function enlazarOtroPerfil() { const b = $('#bPerfil'); if (b) b.onclick = () =>
 function pantallaCrear() {
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fCrear">
     <img class="logo" src="icon-192.png" alt="">
-    <h1>Crear tu cartera</h1>
-    ${PERFIL_CUENTA ? '<p>Pon la contraseña de tu cartera. Con ella se cifran tus cifras antes de subirlas a tu cuenta: es distinta de la de entrar, no sale de tu dispositivo y, si la pierdes, nadie puede recuperar los datos.</p>' : PERFIL_LOCAL
+    ${PERFIL_CUENTA ? `<p class="paso-chip">${esc(trad('Paso 2 de 2: tu contraseña'))}</p>` : ''}
+    <h1>${PERFIL_CUENTA ? 'La contraseña de tu cartera' : 'Crear tu cartera'}</h1>
+    ${PERFIL_CUENTA ? '<p>Es distinta de la de entrar. Con ella se cifran tus cifras en este dispositivo antes de subirlas, así que ni GrowFolio ni Google pueden verlas.</p><p class="crear-aviso"><b>Apúntala en un sitio seguro.</b> Si la pierdes, nadie puede recuperar tus datos.</p>' : PERFIL_LOCAL
       ? '<p>Tu cartera se guarda solo en este dispositivo, cifrada con tu contraseña: nadie más la ve, ni quien te pasó GrowFolio ni GitHub. Los precios, el radar, las noticias y las ideas son los mismos para todos.</p><p class="nota" style="margin:0">Para pasarla a otro móvil o tener copia: Ajustes, Descargar copia, y en el otro, Importar copia.</p>'
       : `<p>Todavía no hay ninguna cartera guardada en <b>${esc(CFG.owner)}/${esc(CFG.repo)}</b>. Importa tu copia de la cartera o empieza de cero.</p>`}
-    <label class="campo">Archivo de cartera (.json)<input type="file" id="archivo" accept=".json,application/json"><small id="archivoInfo">Opcional: una copia de GrowFolio o un JSON con el ISIN o el ticker de cada cosa (<a href="#" id="bEjemplo">descarga un ejemplo</a>). Si no subes nada, empiezas con la cartera vacía y la llenas dentro.</small></label>
+    ${PERFIL_CUENTA ? '<details class="crear-copia"><summary>¿Tienes una copia de GrowFolio (.json)?</summary>' : ''}<label class="campo">Archivo de cartera (.json)<input type="file" id="archivo" accept=".json,application/json"><small id="archivoInfo">Opcional: una copia de GrowFolio o un JSON con el ISIN o el ticker de cada cosa (<a href="#" id="bEjemplo">descarga un ejemplo</a>). Si no subes nada, empiezas con la cartera vacía y la llenas dentro.</small></label>${PERFIL_CUENTA ? '</details>' : ''}
     <label class="campo">${PERFIL_CUENTA ? 'Contraseña de tu cartera' : 'Contraseña nueva'}<input type="password" id="p1" autocomplete="new-password" minlength="8" required><small>Al menos 8 caracteres. Si la pierdes, no hay forma de recuperar los datos.</small></label>
     <label class="campo">Repite la contraseña<input type="password" id="p2" autocomplete="new-password" minlength="8" required></label>
     ${PERFIL_LOCAL ? '' : `<label class="campo">Token de GitHub<input type="password" id="tok" value="${esc(GH.token() || '')}" autocomplete="off" placeholder="github_pat_…"><small>Para guardar desde GrowFolio. Si no lo pones, se descarga el archivo cifrado y lo subes tú al repositorio.</small></label>`}
     <label class="check"><input type="checkbox" id="recordar" checked> Recordar en este dispositivo</label>
     <div class="error" id="err"></div>
-    <button class="btn pri" type="submit" id="bCrear">Cifrar y guardar</button>
+    <button class="btn pri" type="submit" id="bCrear">${PERFIL_CUENTA ? 'Crear mi cartera' : 'Cifrar y guardar'}</button>
     ${PERFIL_LOCAL ? htmlOtroPerfil() : ''}
     <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
     ${selectorIdioma('pie')}
@@ -11723,7 +11779,7 @@ function pantallaCrear() {
     S.cartera = importada || { version: 1, posiciones: [], efectivo: [], aportaciones: [], limite_acciones: 20 };
     if ($('#recordar').checked) await IDB.set(IDB_CLAVE, { salt: b64.enc(S.salt), key: S.key });
     const ok = await guardarCartera('Crear cartera cifrada');
-    if (ok) { S.recienCreada = true; arrancar(); } else { b.disabled = false; b.textContent = 'Cifrar y guardar'; }
+    if (ok) { S.recienCreada = true; arrancar(); } else { b.disabled = false; b.textContent = PERFIL_CUENTA ? 'Crear mi cartera' : 'Cifrar y guardar'; }
   };
 }
 
@@ -12386,8 +12442,15 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.7';
+const VERSION = '0.3.8';
 const NOVEDADES = [
+  { v: '0.3.8', f: '2026-10-21', h: '19:45', t: 'Te guía desde el primer minuto', cosas: [
+    { d: 'tareas', t: 'Primeros pasos, en orden', x: 'Quien llega nuevo ve arriba en Inicio lo que tiene que hacer: meter lo que tiene, contarle quién es, activar GrowIA, llevarla en el móvil y, si aporta cada mes, apuntarlo. Con lo que tarda cada paso y el que toca abierto, con su botón. Cuando acabas, te lo dice y se va.' },
+    { d: 'intro', t: 'Una bienvenida que dice por dónde empezar', x: 'Al crear la cartera sale una hoja con esos pasos y dos caminos: empezar ya a meter lo que tienes o ver antes el tutorial. Y al entrar por primera vez, la pantalla dice «Crea tu cuenta» (paso 1 de 2) y luego la contraseña de tu cartera (paso 2 de 2), con lo de apuntarla bien a la vista.' },
+    { d: 'movil', t: 'Llévala en el móvil', x: 'Un paso con lo que toca según dónde estés: en Android, el botón para descargar la app y cómo instalarla; en el iPhone, cómo ponerla en la pantalla de inicio; y en el ordenador, la dirección para copiarla y su código QR.' },
+  ], arreglos: [
+    'Al invitar a alguien, el mensaje llevaba un tutorial de cinco pasos: ahora va solo el enlace, porque la app ya guía.',
+  ] },
   { v: '0.3.7', f: '2026-10-21', h: '19:15', t: 'Lo que no encuentres, con su ISIN', cosas: [
     { d: 'buscar', t: '¿No lo encuentras? Añádelo con su ISIN', x: 'Si al buscar un fondo, un ETF o una acción no sale, abajo tienes «Añádelo con su ISIN». Lo pegas, GrowFolio lo busca en ese momento y, si es el que quieres, lo añade con su nombre, su precio en euros y la gráfica de su último año. Poco después lo tiene también el catálogo de todos y desde ahí se actualiza solo.' },
     { d: 'catalogo', t: 'Y si no aparece, queda pedido', x: 'Si tampoco así sale, puedes añadirlo igualmente con su nombre: queda pedido y GrowFolio lo vuelve a buscar en cada actualización del catálogo. Escribir el ISIN directamente en el buscador hace lo mismo.' },
@@ -13177,39 +13240,112 @@ const TOUR = [
   { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', suave: true, t: 'Expertos: qué comprar', x: 'Lo que dicen los analistas de lo tuyo y las ideas de compra, con las tres que mejor te encajan en verde.' },
   { v: 'mercados', sel: '.navbar [data-ir="mercados"], .nav [data-ir="mercados"]', suave: true, t: 'Mercados: lo de fuera', x: 'Bolsas, tipos, divisas y materias primas, con lo que significa para ti. Dentro, el calendario: resultados, dividendos y la Fed.' },
   { v: 'cartera', sel: '#bAsesor', t: 'Pregúntale', x: '«¿Vendo Repsol?» o «me sobran 500 €, ¿dónde los meto?». GrowIA contesta con tus números delante.' },
-  { v: 'cartera', empezar: true, t: 'Para empezar hoy', x: 'Con estas tres cosas, GrowIA ya te aconseja con tus números. El tutorial queda en Ajustes, por si quieres repetirlo.' },
+  { v: 'cartera', empezar: true, t: 'Tus primeros pasos', x: 'Empieza por el primero. Los tienes arriba en Inicio hasta que acabes, y el tutorial queda en Ajustes por si quieres repetirlo.' },
 ];
 /* Para empezar: lo mismo al final del tutorial y en Inicio mientras falte algo (a los nuevos, el primer mes) */
 const hayClaveIA = () => !!((AS.claves && AS.claves.google) || LS.get(LS_CLAVE.google) || (S.cartera && S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE.google]));
+/* =====================================================================
+   Primeros pasos (0.3.8): lo que tiene que hacer quien acaba de llegar, en orden y con lo que tarda cada cosa, para
+   que nadie necesite instrucciones por WhatsApp. Sale arriba en Inicio hasta que lo termina (o lo quita); el paso que
+   toca va abierto, con su botón; los demás, en una línea. Al crear la cartera, una hoja de bienvenida los enseña.
+   ===================================================================== */
+const enElMovil = () => !!window.InversionesApp || COMO_APP || LS.get('inv-movil-ok', false);
 function itemsEmpezar() {
+  const android = /Android/i.test(navigator.userAgent);
   return [
-    { k: 'perfil', ok: !perfilIncompleto(), t: 'Cuéntale quién eres', x: 'Tu edad, tus metas y cuánto riesgo aguantas. Es un minuto.', b: 'Contestar' },
-    { k: 'tengo', ok: ((S.cartera && S.cartera.posiciones) || []).length > 0, t: 'Mete lo que tienes', x: `Buscando por nombre o ISIN, o <button type="button" class="enlace" data-emp="importar">${esc(trad('desde capturas o un extracto de tu bróker'))}</button>`, b: 'Añadir' },
-    { k: 'clave', ok: hayClaveIA(), t: 'Activa GrowIA', x: 'Con una clave gratuita de Google, que pones una vez. Al abrirlo te dice cómo sacarla.', b: 'Activar' },
+    { k: 'tengo', ok: ((S.cartera && S.cartera.posiciones) || []).length > 0, t: 'Mete lo que tienes', min: '2-5 min', b: 'Añadir',
+      x: `Busca cada fondo, acción o cripto por su nombre, su ticker o su ISIN (sale en tu bróker) y pon cuántas tienes y a qué precio medio. O hazlo de golpe <button type="button" class="enlace" data-emp="importar">${esc(trad('con capturas de tu bróker'))}</button>.` },
+    { k: 'perfil', ok: !perfilIncompleto(), t: 'Cuéntale quién eres', min: '1 min', b: 'Contestar', x: 'Tu edad, para cuándo quieres el dinero y cuánto riesgo aguantas. Con eso, los consejos son para ti y no para cualquiera.' },
+    { k: 'clave', ok: hayClaveIA(), t: 'Activa GrowIA, gratis', min: '2 min', b: 'Activar', x: 'La IA de GrowFolio lee las noticias, revisa tu cartera cada día y contesta lo que le preguntes. Necesita una clave gratuita de Google: al abrirlo te dice cómo sacarla, en tres pasos.' },
+    { k: 'movil', ok: enElMovil(), t: ES_IOS ? 'Ponla en tu pantalla de inicio' : 'Llévala en el móvil', min: '1 min', b: 'Ver cómo',
+      x: ES_IOS ? 'En el iPhone se instala desde Safari y se abre como una app, a pantalla completa.' : android ? 'Instala la app de Android: con widget en la pantalla de inicio y avisos cuando algo se mueve.' : 'Abre GrowFolio en el móvil con tu misma cuenta: tu cartera está en los dos sitios.' },
+    { k: 'aporta', ok: ((S.cartera && S.cartera.aportaciones) || []).length > 0 || LS.get('inv-aporto-no', false), opcional: true, t: '¿Aportas cada mes?', min: '1 min', b: 'Apuntar', x: 'Apunta lo que metes cada mes y en qué: GrowFolio lo suma solo a tu cartera y lo tiene en cuenta en la proyección.', no: 'No aporto' },
   ];
 }
+// la lista: lo hecho, tachado en verde; el paso que toca, abierto con su botón; lo que viene, en una línea
 function htmlListaEmpezar() {
   const it = itemsEmpezar(), prim = it.findIndex((x) => !x.ok);
-  return `<ol class="empezar-l">${it.map((x, i) => `<li class="${x.ok ? 'ok' : ''}"><span class="emp-n" aria-hidden="true">${x.ok ? ICONOS.ok : i + 1}</span><span class="emp-t"><b>${esc(x.t)}</b><small>${x.ok ? esc(trad('Hecho')) : x.k === 'tengo' ? x.x : esc(x.x)}</small></span>${x.ok ? '' : `<button type="button" class="btn peq${i === prim ? ' pri' : ''}" data-emp="${x.k}">${esc(x.b)}</button>`}</li>`).join('')}</ol>`;
+  return `<ol class="empezar-l">${it.map((x, i) => {
+    const toca = i === prim, estado = x.ok ? 'ok' : toca ? 'ahora' : 'luego';
+    return `<li class="${estado}"><span class="emp-n" aria-hidden="true">${x.ok ? ICONOS.ok : i + 1}</span><span class="emp-t"><b>${esc(x.t)}${x.opcional ? ` <em>${esc(trad('opcional'))}</em>` : ''}</b>${x.ok ? `<small>${esc(trad('Hecho'))}</small>` : toca ? `<small>${x.k === 'tengo' ? x.x : esc(x.x)}</small><small class="emp-min">${esc(x.min)}</small>` : `<small class="emp-min">${esc(x.min)}</small>`}</span>${x.ok ? '' : `<span class="emp-b">${toca && x.no ? `<button type="button" class="btn peq" data-emp="${x.k}-no">${esc(x.no)}</button>` : ''}<button type="button" class="btn peq${toca ? ' pri' : ''}" data-emp="${x.k}">${esc(x.b)}</button></span>`}</li>`;
+  }).join('')}</ol>`;
 }
 function htmlEmpezar() {
   if (!S.cartera || LS.get('inv-empezar-no', false)) return '';
-  const it = itemsEmpezar(), hechas = it.filter((x) => x.ok).length;
-  if (hechas === it.length) return '';
+  const it = itemsEmpezar(), hechas = it.filter((x) => x.ok).length, tengo = it.find((x) => x.k === 'tengo');
   const desde = LS.get('inv-empezar', 0);
-  if (it[1].ok && !(desde && Date.now() - desde < 30 * 864e5)) return '';
-  return `<section class="empezar" aria-labelledby="hEmpezar"><div class="empezar-cab"><h2 id="hEmpezar">Para empezar</h2><span class="k">${hechas} de ${it.length}</span><button type="button" class="ib" data-emp="no" aria-label="${L('Quitar', 'Remove')}" title="${L('Quitar (lo tienes en Ajustes, en el tutorial)', 'Remove (the tutorial in Settings has it too)')}">${ICONOS.cerrar}</button></div>${htmlListaEmpezar()}</section>`;
+  // a quien ya usaba GrowFolio antes de los primeros pasos no se le enseñan: solo a quien llega (o aún no ha metido nada)
+  if (tengo.ok && !(desde && Date.now() - desde < 30 * 864e5)) return '';
+  if (hechas === it.length) {
+    if (LS.get('inv-empezar-fin', false)) return '';
+    return `<section class="empezar listo" aria-labelledby="hEmpezar"><div class="empezar-cab"><span class="emp-listo" aria-hidden="true">${ICONOS.ok}</span><h2 id="hEmpezar">${esc(trad('Tu cartera está lista'))}</h2><button type="button" class="ib" data-emp="fin" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button></div>
+      <p class="emp-fin">${esc(trad('A partir de ahora, Paso a paso te dice qué toca cada mes (comprar, vender, aportar) y cuánto supone en la renta, y GrowIA lo revisa cada día con las noticias.'))}</p>
+      <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="#ruta" data-emp="fin">${esc(trad('Ver Paso a paso'))}</a></div></section>`;
+  }
+  return `<section class="empezar" aria-labelledby="hEmpezar"><div class="empezar-cab"><h2 id="hEmpezar">${esc(trad('Primeros pasos'))}</h2><span class="k">${hechas} ${esc(trad('de'))} ${it.length}</span><button type="button" class="ib" data-emp="no" aria-label="${L('Quitar', 'Remove')}" title="${L('Quitar (lo tienes en Ajustes, en el tutorial)', 'Remove (the tutorial in Settings has it too)')}">${ICONOS.cerrar}</button></div>
+    <div class="emp-barra" aria-hidden="true"><i style="width:${Math.round((hechas / it.length) * 100)}%"></i></div>${htmlListaEmpezar()}</section>`;
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-emp]'); if (!b) return;
   const a = b.dataset.emp;
   if (a === 'no') { LS.set('inv-empezar-no', true); pintar(); toast(L('Quitado. El tutorial sigue en Ajustes', 'Removed. The tutorial is still in Settings'), 3000); return; }
+  if (a === 'fin') { LS.set('inv-empezar-fin', true); if (b.tagName !== 'A') pintar(); return; }
+  if (a === 'aporta-no') { LS.set('inv-aporto-no', true); pintar(); return; }
   if (TOURE) cerrarTour(true, true);
+  document.querySelectorAll('.hoja-fondo').forEach((x) => { if (x.querySelector('.guia')) x.remove(); });
   if (a === 'perfil') perfilGuiado();
   else if (a === 'tengo') operacion('tengo');
   else if (a === 'importar') importarCapturas();
   else if (a === 'clave') abrirAsesor();
+  else if (a === 'movil') abrirEnMovil();
+  else if (a === 'aporta') { if (!(S.cartera.posiciones || []).length) { toast(L('Primero mete lo que tienes: la aportación va a uno de tus fondos', 'First add what you own: the contribution goes into one of your funds'), 4000); operacion('tengo'); } else editarAportacion(null); }
 });
+/* la hoja de bienvenida, al crear la cartera: los pasos de un vistazo y por dónde empezar */
+function guiaPrimerosPasos(despues = () => {}) {
+  const it = itemsEmpezar(), nom = nombreUsuario();
+  const h = hoja(trad('Primeros pasos'), `<div class="guia">
+    <div class="guia-cab">${logoEntero()}<h2>${esc(nom ? L(`Hola, ${nom}. Tu cartera, lista en unos minutos`, `Hi, ${nom}. Your portfolio, ready in a few minutes`) : L('Tu cartera, lista en unos minutos', 'Your portfolio, ready in a few minutes'))}</h2>
+      <p>${esc(trad('Son estos pasos (el último, solo si aportas cada mes). Los tienes arriba en Inicio hasta que acabes, así que puedes dejarlo a medias y seguir otro día.'))}</p></div>
+    <ol class="guia-l">${it.map((x, i) => `<li class="${x.ok ? 'ok' : ''}"><span class="emp-n" aria-hidden="true">${x.ok ? ICONOS.ok : i + 1}</span><span><b>${esc(x.t)}${x.opcional ? ` <em>${esc(trad('opcional'))}</em>` : ''}</b><small>${esc(x.min)}</small></span></li>`).join('')}</ol>
+    <div class="guia-btns"><button type="button" class="btn pri" data-guia="tengo">${esc(trad('Empezar: meter lo que tengo'))}</button><button type="button" class="btn" data-guia="tour">${esc(trad('Antes, enséñame la app (1 min)'))}</button></div>
+    <button type="button" class="enlace guia-luego" data-cerrar>${esc(trad('Más tarde'))}</button>
+  </div>`, () => despues(), true);
+  h.el.classList.add('hoja-guia');
+  h.el.querySelector('[data-guia="tengo"]').onclick = () => { h.cerrar(true); operacion('tengo'); };
+  h.el.querySelector('[data-guia="tour"]').onclick = () => { h.cerrar(true); iniciarTour(0, despues); };
+}
+/* llevarla en el móvil: la app de Android, la pantalla de inicio del iPhone o, desde el ordenador, la dirección y su QR */
+async function abrirEnMovil() {
+  const android = /Android/i.test(navigator.userAgent), app = !!window.InversionesApp;
+  const url = CFG.dev ? CFG.pages : location.origin + location.pathname;
+  let apk = `https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk`;
+  let cuerpo, ya = app || COMO_APP;
+  if (ya) cuerpo = `<p>${esc(app ? trad('Ya estás en la app de Android. Para el widget: mantén pulsado un hueco de la pantalla de inicio > Widgets > GrowFolio y arrastra «Tu cartera».') : trad('Ya la tienes en la pantalla de inicio: se abre como una app.'))}</p>`;
+  else if (ES_IOS) cuerpo = `<p>${esc(trad('En el iPhone, GrowFolio funciona como una app sin pasar por la App Store: a pantalla completa, con su icono y sin las barras de Safari.'))}</p>${htmlPasosIOS()}`;
+  else if (android) cuerpo = `<p>${esc(trad('La app de Android tiene un widget para la pantalla de inicio (tu patrimonio y lo de hoy, sin abrir nada) y te avisa cuando algo se mueve o sale una versión nueva.'))}</p>
+    <ol class="as-pasos-clave"><li>${esc(trad('Toca «Descargar la app».'))}</li><li>${esc(trad('Abre el archivo que se descarga. La primera vez, Android te pide permiso para instalar apps de Chrome: toca Configuración, activa «Permitir de esta fuente» y vuelve atrás.'))}</li><li>${esc(trad('Ábrela y entra con tu cuenta y la contraseña de tu cartera.'))}</li></ol>
+    <a class="btn pri movil-apk" id="bApk" href="${esc(apk)}">${ICONOS.descargar || ''}${esc(trad('Descargar la app'))}</a>`;
+  else cuerpo = `<p>${esc(trad('Abre esta dirección en el móvil y entra con tu misma cuenta: tu cartera se ve igual en los dos.'))}</p>
+    <div class="movil-url"><code>${esc(url)}</code><button type="button" class="btn peq" id="bCopiarUrl">${esc(trad('Copiar'))}</button></div>
+    <div class="movil-qr" id="qrMovil"></div>
+    <p class="nota" style="margin:0">${esc(trad('O escanea el código con la cámara del móvil. Desde ahí, en Android puedes instalar la app (con widget) y en iPhone ponerla en la pantalla de inicio.'))}</p>`;
+  const h = hoja(trad(ES_IOS ? 'Ponla en tu pantalla de inicio' : 'Llévala en el móvil'), `<div class="movil">${dibujo('movil')}${cuerpo}
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>${esc(trad('Cerrar'))}</button>${ya ? '' : `<button type="button" class="btn${android || ES_IOS ? '' : ' pri'}" id="bMovilOk">${esc(trad('Ya la tengo'))}</button>`}</div></div>`);
+  const ok = $('#bMovilOk', h.el); if (ok) ok.onclick = () => { LS.set('inv-movil-ok', true); h.cerrar(true); pintar(); toast(trad('Hecho: ya la tienes en el móvil'), 2500); };
+  if (ya && !LS.get('inv-movil-ok', false)) { LS.set('inv-movil-ok', true); }
+  const cp = $('#bCopiarUrl', h.el); if (cp) cp.onclick = async () => { try { await navigator.clipboard.writeText(url); toast(trad('Dirección copiada'), 2000); } catch (e) { toast(url, 5000); } };
+  // la versión publicada de la app (app.json) y el QR, sin hacer esperar a que se abra la hoja
+  if (android && !ya) { try { const r = await fetch(GH.raw('app.json', 'main') + '?v=' + Date.now(), { cache: 'no-store' }); if (r.ok) { const j = await r.json(); if (j && j.apk) { const a = $('#bApk', h.el); if (a) a.href = j.apk; } } } catch (e) {} }
+  const box = $('#qrMovil', h.el);
+  if (box) {
+    try {
+      if (!window.qrcode) await new Promise((res, rej) => { const sc = document.createElement('script'); sc.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js'; sc.onload = res; sc.onerror = rej; document.head.appendChild(sc); });
+      const qr = window.qrcode(0, 'M'); qr.addData(url); qr.make();
+      box.innerHTML = qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true });
+    } catch (e) { box.remove(); }
+  }
+}
+
 let TOURE = null;
 const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
 /* «Más» en la barra del móvil: Calendario, Mercados, Fiscalidad y Objetivos en tarjetas (Ajustes está arriba, en la rueda) */
@@ -14094,7 +14230,8 @@ function bienvenida(intento = 0) {
   // si te falta el perfil, primero eso (y esa vez nada más: el resto, la próxima)
   // con una cartera de antes por recuperar en este dispositivo, eso va primero y lo demás espera a la próxima vez
   const despues = () => (copiaViejaPendiente() ? fin() : pedirPerfil(fin, () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin)))));
-  if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); if (!LS.get('inv-empezar', 0)) LS.set('inv-empezar', Date.now()); return iniciarTour(0, despues); }
+  // quien acaba de llegar: sus primeros pasos (y desde ahí, si quiere, el tutorial)
+  if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); if (!LS.get('inv-empezar', 0)) LS.set('inv-empezar', Date.now()); return guiaPrimerosPasos(fin); }
   // la 0.2 llega con su propia pantalla de estreno, una vez
   // la presentación de la 0.2 (la nueva, más completa): una vez a todos los que ya usaban GrowFolio
   if (visto && cmpVer(VERSION, '0.2.0') >= 0 && !LS.get('inv-estreno-02b')) return estreno02(visto, despues);
@@ -14363,7 +14500,7 @@ function abrirAjustes() {
   $('#aOrdenar', h.el).onclick = () => setTimeout(() => { if (S.vista !== 'cartera') location.hash = '#cartera'; setTimeout(abrirCarEdit, 120); }, 0);
   $('#aInvita', h.el).onclick = () => {
     const url = (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#mia';
-    const t = `Te paso GrowFolio, para llevar todas tus inversiones en un sitio. Cómo empezar:\n\n1. Abre ${url} y entra con Google o con tu correo. En Android hay app: https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk. En iPhone, ábrela en Safari, Compartir y «Añadir a pantalla de inicio»: queda como una app.\n2. Crea la contraseña de tu cartera. Es distinta de la de la cuenta y no se puede recuperar: apúntala.\n3. GrowIA gratis: entra en aistudio.google.com/apikey con tu cuenta de Google, pulsa «Create API key», copia la clave y pégala en GrowFolio al darle a «Pregúntale» (arriba). No actives la facturación en Google.\n4. Mete lo que tienes: en Inicio, «Añadir lo que ya tenías» (busca por nombre o ISIN) o importa capturas de tu bróker (con GrowIA ya activada).\n5. Rellena tu perfil en Análisis > Tus objetivos para que el Paso a paso y GrowIA se ajusten a ti.\n\nEs una alfa: si algo falla, dale al bichito de arriba.`;
+    const t = `Te paso GrowFolio, para llevar todas tus inversiones en un sitio (fondos, acciones, ETF, oro y cripto de cualquier bróker), con lo que toca hacer cada mes y lo que supone en la renta.\n\n${url}\n\nEntra con Google o con tu correo y la app te guía paso a paso: en unos minutos tienes tu cartera lista. Tus cifras van cifradas con una contraseña tuya: nadie más las ve.\n\nEs una alfa: si algo falla, dale al bichito de arriba.`;
     const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(t); a.target = '_blank'; a.rel = 'noopener';
     document.body.appendChild(a); a.click(); a.remove();
   };
