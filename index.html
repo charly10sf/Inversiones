@@ -1507,6 +1507,9 @@ table td.txt { white-space: normal; min-width: 260px; }
 .fx3[open] > summary .aj-flecha { transform: rotate(45deg); }
 .fx3-det { display: grid; gap: 10px; padding: 4px 16px 16px 60px; background: var(--plane-2); }
 .fx3-det .btn { justify-self: start; }
+/* los datos y el resto van en una sola columna: .fx-datos trae un grid-area de la tarjeta antigua que aquí partía el desplegable en dos */
+.fx3-det > * { grid-area: auto; min-width: 0; }
+.fx3-det .fx-datos { padding-left: 0; }
 .fx3-pos { margin: 0; display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; color: var(--muted); font-size: 12.5px; }
 @media (max-width: 560px) { .fx3 > summary { grid-template-columns: 30px minmax(0, 1fr) auto; } .fx3 > summary .aj-flecha { display: none; } .fx3-n small { display: none; } .fx3-det { padding-left: 16px; } .fx3[open] .fx3-n small { display: none; } }
 .informe-al { display: flex; gap: 8px; align-items: flex-start; } .informe-al svg { width: 18px; height: 18px; flex: none; margin-top: 2px; color: var(--accent); }
@@ -11584,6 +11587,7 @@ const NOVEDADES = [
     'Al cambiar el patrimonio con los precios en directo desaparecían los euros de la cifra grande.',
     'En las novedades, las últimas cifras del número de versión salían borrosas y movidas hasta que bajabas.',
     'Una meta guardada varias veces (al repetir el perfil guiado) salía repetida en Análisis.',
+    'En Expertos, al abrir una de tus posiciones, el botón «Abrir su ficha» salía como una columna que aplastaba el texto: ahora va debajo, en su sitio.',
     'GrowIA podía hablar de una meta lejana como si estuviera cerca («rumbo a los 500.000 €»): ahora dice a qué distancia está.',
     'Al tocar los botones de abajo, en Android salía un recuadro azul.',
     'En el tutorial, el resaltado y la tarjeta pasaban por el centro de la pantalla entre un paso y otro: ahora se deslizan de un sitio al siguiente.',
