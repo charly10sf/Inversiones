@@ -59,6 +59,10 @@ html { background: var(--bg); -webkit-text-size-adjust: 100%; }
 html, a, button, label, summary, [role="button"], [tabindex] { -webkit-tap-highlight-color: transparent; }
 a:focus:not(:focus-visible), button:focus:not(:focus-visible), summary:focus:not(:focus-visible) { outline: none; }
 body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); font: 15px/1.55 var(--f); font-feature-settings: 'tnum' 0; padding: 0 env(safe-area-inset-right) calc(var(--nav-h) + env(safe-area-inset-bottom)) env(safe-area-inset-left); overflow-x: hidden; }
+/* 0.3.11b: la página nunca se desplaza de lado (en la app de Android, al volver de segundo plano, se quedaba corrida).
+   Con «clip» lo que sobresale se recorta sin que nada pase a tener su propio scroll (lo «sticky» sigue funcionando);
+   donde no lo entiende, se queda como estaba */
+@supports (overflow: clip) { html, body { overflow-x: clip; } }
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 a { color: var(--accent); text-decoration: none; }
@@ -8774,7 +8778,12 @@ function etiquetarTablas(raiz = document) {
 // con «Ganado desde que compraste» (salía «+11.091 € en el último año» frente a «+9.433 €» ganados en total)
 const ETQ_RANGO = { '1D': ['hoy', 'today'], '1S': ['lo que tienes, en la última semana', 'what you hold, over the last week'], '1M': ['lo que tienes, en el último mes', 'what you hold, over the last month'], '3M': ['lo que tienes, en los últimos 3 meses', 'what you hold, over the last 3 months'], '6M': ['lo que tienes, en los últimos 6 meses', 'what you hold, over the last 6 months'], '1A': ['lo que tienes, en el último año', 'what you hold, over the last year'], '3A': ['lo que tienes, en los últimos 3 años', 'what you hold, over the last 3 years'], '5A': ['lo que tienes, en los últimos 5 años', 'what you hold, over the last 5 years'] };
 let grafHeroUltimo = '';
+const enSuSitio = () => { const se = document.scrollingElement || document.documentElement; if (se.scrollLeft) se.scrollLeft = 0; if (document.body.scrollLeft) document.body.scrollLeft = 0; };
+document.addEventListener('visibilitychange', () => { if (!document.hidden) { enSuSitio(); setTimeout(enSuSitio, 300); } });
+window.addEventListener('pageshow', enSuSitio);
+window.addEventListener('resize', () => setTimeout(enSuSitio, 50));
 function dibujar(M) {
+  enSuSitio();
   etiquetarTablas($('#vista'));
   const gp = $('#grafProy'); if (gp) grafAbanico(gp, proyeccion(M, cfgProy()), (S.horizonte || 20) * 12);
   const g = $('#grafEvo');
@@ -13216,8 +13225,11 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.11a';
+const VERSION = '0.3.11b';
 const NOVEDADES = [
+  { v: '0.3.11b', f: '2026-10-22', h: '01:50', t: 'La pantalla ya no se queda corrida', arreglos: [
+    'En la app de Android, al volver de segundo plano la pantalla podía quedarse desplazada hacia un lado y se podía mover de lado a lado. Ahora la página no se mueve de lado nunca.',
+  ] },
   { v: '0.3.11a', f: '2026-10-22', h: '00:45', t: 'Hacienda siempre a mano y los dividendos a la vista', cosas: [
     { d: 'renta', ir: { v: 'fiscal' }, t: 'Hacienda te recuerda tus dividendos', x: 'Si no has apuntado dividendos, Hacienda ya no se queda en «0 €»: te dice cuánto habrás cobrado este año según lo que han pagado tus acciones, para que lo compruebes en el informe de tu bróker y lo apuntes.' },
   ], arreglos: [
