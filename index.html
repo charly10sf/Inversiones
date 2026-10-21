@@ -2142,32 +2142,22 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .novedades > .fila-btns { margin-top: 2px; }
 .tour { position: fixed; inset: 0; z-index: 9000; }
 /* ---------- la entrada (0.2): logo que se monta, saludo y fundido ---------- */
-.entrada { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; background: radial-gradient(60% 45% at 50% 42%, rgba(226, 180, 95, 0.13), transparent 70%), var(--bg); transition: opacity 0.6s ease, transform 0.6s ease; }
+.entrada { position: fixed; inset: 0; z-index: 300; display: grid; place-items: center; background: radial-gradient(60% 45% at 50% 46%, rgba(226, 180, 95, calc(0.13 + var(--en-luz, 0) * 0.12)), transparent 70%), var(--bg); transition: opacity 0.6s ease, transform 0.6s ease; }
 .entrada.fuera { opacity: 0; transform: scale(1.03); pointer-events: none; }
 .en-c { display: grid; justify-items: center; gap: 14px; padding: 24px; text-align: center; }
-.en-svg { width: 104px; height: 104px; overflow: visible; filter: drop-shadow(0 10px 30px rgba(226, 180, 95, 0.28)); }
-.en-w { animation: enSube 0.5s cubic-bezier(.2, .9, .3, 1) both; }
-.en-palo { transform-box: view-box; transform-origin: 26.8px 27.6px; animation: enPalo 0.55s 0.22s cubic-bezier(.2, .9, .3, 1.15) both; }
-.en-barras { animation: enBarras 0.45s 0.55s cubic-bezier(.2, .9, .3, 1) both; }
-.en-piezas { animation: enFuera 0.3s 0.95s ease forwards; }
-.en-entera { opacity: 0; animation: enAparece 0.3s 0.95s ease forwards; }
-.en-brillo { transform-box: view-box; animation: enBrillar 0.9s 1.05s cubic-bezier(.5, 0, .3, 1) both; }
-@keyframes enSube { from { opacity: 0; transform: translateY(7px); } }
-@keyframes enPalo { from { opacity: 0; transform: translate(-3px, 7px) scale(0.45); } }
-@keyframes enBarras { from { opacity: 0; transform: translateX(-6px); } }
-@keyframes enFuera { to { opacity: 0; } }
-@keyframes enBrillar { from { transform: translateX(0); } to { transform: translateX(72px); } }
-.en-saludo { margin: 6px 0 0; font-size: clamp(24px, 6vw, 32px); font-weight: 600; letter-spacing: -0.02em; animation: enLetras 0.8s 0.75s cubic-bezier(.2, .8, .2, 1) both; }
+/* el nombre de la entrada: cada pieza se mueve sola (lo pinta animarEntrada), así que nada de filtros que repintar */
+.en-nombre { display: block; width: min(84vw, 460px); height: auto; overflow: visible; }
+.en-nombre .enz, .en-trozos path, .en-luz { will-change: transform, opacity; }
+.en-saludo { margin: 10px 0 0; font-size: clamp(22px, 5.6vw, 30px); font-weight: 600; letter-spacing: -0.02em; animation: enLetras 0.8s 1.45s cubic-bezier(.2, .8, .2, 1) both; }
 .en-saludo b { font-weight: 700; background: linear-gradient(90deg, var(--accent), #F4D79B, var(--accent)); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: enBrillo 2.4s 1.4s ease-in-out infinite; }
 @keyframes enLetras { from { opacity: 0; transform: translateY(10px); filter: blur(8px); letter-spacing: 0.04em; } }
 @keyframes enBrillo { 50% { background-position: 100% 0; } }
-.en-nom { width: 112px; margin: -4px 0 0; opacity: 0.92; animation: enLetras 0.8s 1s ease both; }
-.en-barra { width: 120px; height: 3px; border-radius: 99px; background: var(--plane-3); overflow: hidden; opacity: 0; animation: enAparece 0.4s 1.9s ease forwards; }
+.en-barra { width: 120px; height: 3px; border-radius: 99px; background: var(--plane-3); overflow: hidden; opacity: 0; animation: enAparece 0.4s 4s ease forwards; }
 .en-barra i { display: block; width: 40%; height: 100%; border-radius: 99px; background: var(--accent); animation: enCorre 1.1s ease-in-out infinite; }
 @keyframes enAparece { to { opacity: 1; } }
 @keyframes enCorre { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
 .entrada.quieta *, .estreno.quieta * { animation: none !important; }
-.entrada.quieta .en-piezas, .entrada.quieta .en-brillo { display: none; } .entrada.quieta .en-entera { opacity: 1; }
+
 /* ---------- entrar con tu cuenta ---------- */
 .caja.caja-cuenta { gap: 14px; }
 .caja-cuenta form > .enlace, .caja-cuenta > .enlace { justify-self: center; color: var(--text-2); }
@@ -11621,6 +11611,7 @@ const VERSION = '0.3.2';
 const NOVEDADES = [
   { v: '0.3.2', f: '2026-10-21', h: '13:30', t: 'Logo y letra nuevos', cosas: [
     { d: 'logo', t: 'GrowFolio estrena logo', x: 'La w de Grow sube y se convierte en la F de Folio, de oro a blanco. Lo ves en el icono de la app y en el de la pestaña, arriba en la web, al abrirla, en la presentación y en Ajustes.' },
+    { d: 'intro', t: 'Una entrada nueva', x: 'Al abrir la app, los trozos de la wF llegan de todas partes y se juntan, sale el nombre y, por un momento, GrowFolio se convierte en GrowIA antes de volver. Si tienes prisa, la tocas y te la saltas.' },
     { d: 'growia', ir: { v: 'cartera', sel: '#bAsesor' }, t: 'GrowIA, con su propio logo', x: 'La misma w con la IA al lado, de oro a blanco. Va en el botón de Pregúntale, en cada sitio donde habla y, con su letra, en sus títulos: la cabecera del asesor, su tarjeta en Inicio o «GrowIA quiere saber».' },
     { d: 'letra', t: 'Una letra nueva', x: 'Toda la app pasa a Plus Jakarta Sans, la letra con la que está hecho el logo. El widget también, en cuanto instales la app nueva de Android.' },
   ], arreglos: [
@@ -15509,23 +15500,102 @@ async function iniciar() {
   await entrar();
   quitarEntrada();
 }
-/* ---------- la entrada: el logo se monta (carpeta, línea que sube, hoja) y te saluda según la hora ----------
-   Sale mientras carga todo; dura al menos lo que tarda la animación y se funde con lo que venga después. */
+/* ---------- la entrada: los trozos de la wF llegan de todas partes y se juntan, sale el nombre letra a letra,
+   «Folio» se recoge dentro de la F y sale «IA» (GrowFolio pasa a GrowIA, con su degradado), y vuelve a GrowFolio.
+   Sale mientras carga todo; dura lo que la animación (unos 4 s) o hasta que la tocas, y se funde con lo que venga. */
+// la entrada: cada pieza del nombre en el mismo lienzo, los trozos de la wF (trazado, centro, de dónde llega, giro, tamaño)
+// y los degradados de GrowFolio y de GrowIA (x1, y1, x2, y2) para pasar de uno a otro
+const ENTRADA = { w: 657.5, h: 128.85, off: 1.8, piezas: { G: 'M54.01 125.85L50.97 125.77L47.99 125.53L43.64 124.87L39.42 123.86L36.68 122.99L34.01 121.95L30.14 120.14L27.68 118.78L25.32 117.29L23.04 115.67L20.86 113.93L17.77 111.08L14.92 107.98L13.17 105.79L11.56 103.5L10.07 101.11L8.7 98.62L6.89 94.71L5.4 90.6L4.27 86.33L3.5 81.9L3.18 78.86L3.02 75.75L3.02 72.59L3.17 69.47L3.69 64.93L4.23 61.99L4.92 59.11L6.24 54.93L7.9 50.91L9.16 48.37L10.55 45.92L12.06 43.58L13.7 41.35L16.4 38.19L19.37 35.28L21.47 33.49L23.66 31.83L25.95 30.3L28.34 28.89L32.1 27.01L34.72 25.92L37.42 24.99L41.59 23.88L44.46 23.33L47.39 22.94L51.93 22.65L55.01 22.64L59.5 22.92L63.79 23.53L66.53 24.12L70.48 25.29L73 26.25L76.59 27.91L79.94 29.8L83.05 31.91L84.99 33.44L87.7 35.91L90.13 38.57L92.23 41.34L93.46 43.26L95.04 46.24L96.29 49.34L77.9 58.2L76.63 55.2L75.01 52.44L73.74 50.72L71.53 48.34L68.97 46.18L66.11 44.36L64.07 43.39L60.79 42.29L58.46 41.81L54.76 41.44L50.98 41.5L47.42 41.95L44.05 42.78L40.87 43.99L37.9 45.58L35.16 47.51L32.7 49.73L30.52 52.23L28.61 55.03L26.99 58.11L25.69 61.44L24.73 64.99L24.11 68.77L23.82 72.78L23.88 76.92L24.3 80.86L25.08 84.58L26.21 88.08L27.7 91.35L29.5 94.37L31.56 97.09L33.9 99.51L36.49 101.64L39.35 103.47L41.37 104.49L44.56 105.7L47.94 106.52L50.31 106.86L54.01 107.06L56.9 106.94L59.71 106.57L63.34 105.72L66.83 104.44L69.28 103.21L72.23 101.23L74.19 99.5L75.95 97.55L77.47 95.39L78.66 93.05L79.5 90.52L80.01 87.81L80.18 84.64L53.47 84.64L53.47 67.19L100.99 67.19L100.99 77.79L100.8 82.88L100.25 87.68L99.32 92.2L98.03 96.42L96.96 99.07L95.75 101.59L94.43 103.99L93 106.27L90.65 109.44L88.93 111.4L87.11 113.23L85.18 114.94L83.18 116.52L81.11 117.98L78.97 119.3L76.77 120.51L74.51 121.58L72.18 122.53L69.79 123.36L64.97 124.65L60.12 125.48L56.46 125.79Z', r: 'M112.4 124.24L112.4 50.95L131.19 50.95L131.19 61.89L131.97 60.13L133.05 58.21L134.91 55.8L137.05 53.93L139.47 52.56L141.19 51.82L142.99 51.22L145.85 50.56L147.87 50.29L149.97 50.16L155.35 50.14L155.35 67.59L148 67.62L146.01 67.8L143.23 68.42L140.71 69.45L139.18 70.37L137.76 71.47L135.88 73.45L134.42 75.77L133.37 78.43L132.74 81.43L132.53 84.77L132.53 124.24Z', o1: 'M199.04 125.82L194.53 125.44L190.2 124.61L187.41 123.8L183.38 122.2L180.79 120.88L177.13 118.58L173.8 115.95L170.81 112.97L168.15 109.66L165.83 106.01L163.96 102.12L162.99 99.4L161.93 95.15L161.5 92.2L161.28 89.15L161.36 84.46L161.69 81.43L162.58 77.09L163.45 74.32L165.15 70.37L166.56 67.86L169 64.35L171.77 61.16L174.87 58.31L178.31 55.8L182.07 53.62L186.04 51.87L188.79 50.96L191.62 50.25L196.01 49.57L199.04 49.36L203.65 49.44L206.63 49.74L210.95 50.58L215.09 51.87L217.74 52.99L220.32 54.3L223.95 56.6L227.26 59.23L230.24 62.19L232.89 65.48L235.21 69.1L237.07 72.98L238.05 75.69L239.1 79.96L239.54 82.93L239.75 86.01L239.67 90.69L239.1 95.15L238.45 98.01L237.07 102.12L235.88 104.74L234.48 107.26L232.04 110.8L230.24 112.97L227.26 115.95L223.95 118.58L220.32 120.88L216.43 122.78L213.73 123.8L209.53 124.94L206.63 125.44L203.65 125.75ZM201.36 107.71L202.88 107.61L205.04 107.26L206.41 106.89L208.36 106.15L209.59 105.53L211.32 104.41L212.88 103.1L214.29 101.6L215.54 99.93L216.62 98.06L217.25 96.73L218 94.63L218.39 93.16L218.78 90.86L218.93 89.25L218.96 86.76L218.87 85.13L218.54 82.79L218 80.58L217.52 79.18L216.95 77.84L215.92 75.94L214.72 74.22L213.37 72.66L211.86 71.28L210.18 70.08L208.98 69.38L207.08 68.54L205.04 67.94L203.61 67.67L202.13 67.51L199.8 67.47L197.55 67.67L196.11 67.94L194.73 68.31L192.76 69.07L191.52 69.72L189.77 70.86L188.18 72.19L186.76 73.68L185.5 75.35L184.41 77.19L183.51 79.18L183.03 80.58L182.65 82.04L182.25 84.33L182.11 85.93L182.07 88.43L182.17 90.06L182.49 92.41L183.03 94.63L183.51 96.04L184.09 97.4L185.12 99.33L186.32 101.07L187.69 102.62L189.22 103.99L190.92 105.18L192.76 106.15L194.06 106.67L195.42 107.09L197.55 107.52L199.04 107.67Z', wp: 'M265.15 50.95L279.42 93.54L295.35 50.95L312.8 50.95L328.61 93.5L351.81 24.24L380.4 3L338.44 124.24L320.99 124.24L304.06 77.25L287.03 124.24L269.58 124.24L244.34 50.95Z', barras: 'M392.46 85.85L347.62 85.85L347.62 80.26L353.66 80.26L358 67.73L392.46 67.73ZM414.23 42.36L366.85 42.36L366.78 42.36L373.05 24.24L414.23 24.24Z', o2: 'M456.58 125.82L452.07 125.44L447.74 124.61L443.58 123.31L440.91 122.2L438.32 120.88L434.66 118.58L431.34 115.95L428.34 112.97L425.68 109.66L423.36 106.01L421.5 102.12L420.52 99.4L419.47 95.15L419.04 92.2L418.82 89.15L418.9 84.46L419.47 79.96L420.12 77.09L421.5 72.98L422.69 70.37L424.09 67.86L426.53 64.35L429.3 61.16L432.41 58.31L435.85 55.8L439.61 53.62L443.58 51.87L446.33 50.96L449.16 50.25L453.55 49.57L456.58 49.36L461.19 49.44L464.17 49.74L468.49 50.58L472.63 51.87L475.28 52.99L477.85 54.3L481.49 56.6L484.79 59.23L487.77 62.19L490.43 65.48L492.74 69.1L494.61 72.98L495.58 75.69L496.34 78.51L497.07 82.93L497.29 86.01L497.21 90.69L496.64 95.15L495.99 98.01L494.61 102.12L493.42 104.74L492.01 107.26L489.58 110.8L486.82 114L484.79 115.95L481.49 118.58L477.85 120.88L475.28 122.2L471.27 123.8L468.49 124.61L464.17 125.44L461.19 125.75ZM458.9 107.71L460.42 107.61L462.58 107.26L463.95 106.89L465.9 106.15L467.13 105.53L468.85 104.41L470.42 103.1L471.83 101.6L473.07 99.93L474.16 98.06L474.78 96.73L475.54 94.63L476.08 92.41L476.32 90.86L476.46 89.25L476.5 86.76L476.4 85.13L476.08 82.79L475.54 80.58L475.06 79.18L474.49 77.84L473.45 75.94L472.26 74.22L470.91 72.66L469.39 71.28L467.72 70.08L466.52 69.38L464.61 68.54L462.58 67.94L461.15 67.67L459.66 67.51L457.34 67.47L455.09 67.67L453.65 67.94L452.27 68.31L450.3 69.07L449.06 69.72L447.3 70.86L445.72 72.19L444.29 73.68L443.04 75.35L441.95 77.19L441.32 78.5L440.57 80.58L440.03 82.79L439.79 84.33L439.65 85.93L439.61 88.43L439.71 90.06L440.03 92.41L440.57 94.63L441.05 96.04L441.62 97.4L442.65 99.33L443.86 101.07L445.22 102.62L446.76 103.99L448.46 105.18L450.3 106.15L451.6 106.67L453.65 107.26L455.09 107.52L456.58 107.67Z', l: 'M509.13 124.24L509.13 22.63L529.26 22.63L529.26 124.24Z', i: 'M544.03 50.95L564.16 50.95L564.16 124.24L544.03 124.24ZM544.03 24.24L564.16 24.24L564.16 44.37L544.03 44.37Z', o3: 'M613.76 125.82L609.25 125.44L604.92 124.61L600.76 123.31L598.09 122.2L595.5 120.88L591.84 118.58L588.52 115.95L585.53 112.97L582.86 109.66L580.55 106.01L579.25 103.44L577.7 99.4L576.65 95.15L576.22 92.2L576 89.15L576.08 84.46L576.65 79.96L577.3 77.09L578.16 74.32L579.87 70.37L581.28 67.86L583.71 64.35L586.49 61.16L589.59 58.31L593.03 55.8L596.79 53.62L600.76 51.87L603.51 50.96L606.34 50.25L610.73 49.57L613.76 49.36L618.37 49.44L621.35 49.74L625.67 50.58L629.81 51.87L632.46 52.99L635.03 54.3L638.67 56.6L641.97 59.23L644.95 62.19L647.61 65.48L649.93 69.1L651.79 72.98L652.77 75.69L653.52 78.51L654.25 82.93L654.47 86.01L654.39 90.69L654.06 93.69L653.17 98.01L652.31 100.77L650.6 104.74L649.2 107.26L646.76 110.8L644.95 112.97L641.97 115.95L638.67 118.58L635.03 120.88L631.14 122.78L628.45 123.8L625.67 124.61L621.35 125.44L618.37 125.75ZM616.08 107.71L618.33 107.52L619.76 107.26L621.13 106.89L623.08 106.15L624.31 105.53L626.03 104.41L627.6 103.1L629.01 101.6L630.26 99.93L631.34 98.06L632.24 96.04L632.72 94.63L633.26 92.41L633.5 90.86L633.64 89.25L633.68 86.76L633.58 85.13L633.26 82.79L632.92 81.3L632.24 79.18L631.67 77.84L630.64 75.94L629.44 74.22L628.09 72.66L626.57 71.28L624.9 70.08L623.7 69.38L621.8 68.54L619.76 67.94L618.33 67.67L616.85 67.51L614.52 67.47L612.27 67.67L610.83 67.94L609.45 68.31L607.48 69.07L606.24 69.72L604.49 70.86L602.9 72.19L601.47 73.68L600.22 75.35L599.13 77.19L598.23 79.18L597.75 80.58L597.37 82.04L596.97 84.33L596.83 85.93L596.79 88.43L596.89 90.06L597.21 92.41L597.75 94.63L598.23 96.04L598.8 97.4L599.84 99.33L601.04 101.07L602.4 102.62L603.94 103.99L605.64 105.18L607.48 106.15L608.78 106.67L610.13 107.09L612.27 107.52L613.76 107.67Z', I: 'M341.12 124.24L361.93 124.24L396.54 24.24L375.74 24.24Z', A: 'M402.7 24.24L430.35 24.24L464.18 124.24L441.5 124.24L434.78 103.83L398.14 103.83L391.43 124.24L368.88 124.24Z' }, cajas: { G: [3, 22.6, 101, 125.8], r: [112.4, 50.1, 155.3, 124.2], o1: [161.3, 49.3, 239.8, 125.8], wp: [244.3, 3, 380.4, 124.2], barras: [347.6, 24.2, 414.2, 85.8], o2: [418.8, 49.3, 497.3, 125.8], l: [509.1, 22.6, 529.3, 124.2], i: [544, 24.2, 564.2, 124.2], o3: [576, 49.3, 654.5, 125.8], I: [341.1, 24.2, 396.5, 124.2], A: [368.9, 24.2, 464.2, 124.2] }, trozos: [['M249.89 67.07L270.55 67.07L279.42 93.54L289.32 67.07L298.11 67.07L278.32 124.24L269.58 124.24Z', 272.9, 91.4, -101.3, 136.5, -40, 0.5], ['M244.34 50.95L265.15 50.95L270.55 67.07L249.89 67.07ZM295.35 50.95L303.69 50.95L298.11 67.07L289.32 67.07Z', 268.9, 59, -134.7, -147.9, 93, 0.6], ['M287.03 124.24L278.32 124.24L298.11 67.07L318.79 67.07L322.15 76.13L313.09 102.31L304.06 77.25Z', 301.3, 89, -91, 211.3, 76, 0.7], ['M303.69 50.95L312.8 50.95L318.79 67.07L298.11 67.07Z', 308.4, 60.1, -67.5, -172.2, -59, 0.8], ['M313.09 102.31L322.15 76.13L328.61 93.5L337.46 67.07L349.07 67.07L329.29 124.24L320.99 124.24Z', 329.3, 96.2, 138.2, 164.7, 42, 0.9], ['M342.87 50.95L337.46 67.07L337.46 67.07ZM351.81 24.24L368.08 12.15L349.07 67.07L337.46 67.07Z', 352, 42.3, 163.2, -47.7, 95, 1], ['M338.44 124.24L329.29 124.24L349.07 67.07L358.22 67.07L353.66 80.26L358 67.73L372.63 67.73L366.36 85.85L351.72 85.85Z', 350, 89.3, 199.9, 5.1, -78, 1.1], ['M368.08 12.15L380.4 3L368.11 38.5L373.05 24.24L387.68 24.24L381.41 42.36L366.78 42.36L358.22 67.07L349.07 67.07Z', 368.4, 36, 228.2, -29.1, 61, 0.5], ['M392.46 85.85L366.36 85.85L372.63 67.73L392.46 67.73Z', 380.9, 77.2, 160.8, -91.5, 44, 0.6], ['M414.23 42.36L381.41 42.36L387.68 24.24L414.23 24.24Z', 399.3, 33.6, 213.8, 22.3, -97, 0.7]], wf: [327, 72.8], gf: [283.83, 124.24, 368.94, 153.7], ia: [236.89, 124.24, 439.86, 194.49], prof: [3, 125.85], mueve: 95.16 };
+const PALETA_MARCA = [[0, '#D7A033'], [0.22, '#EDBB45'], [0.42, '#F4CB66'], [0.6, '#F9DE9C'], [0.78, '#FDF0D2'], [1, '#FFFDF6']];
+const FIN_ENTRADA = 3950;
 const saludoHora = () => { const h = new Date().getHours(); return h >= 6 && h < 14 ? L('Buenos días', 'Good morning') : h >= 14 && h < 21 ? L('Buenas tardes', 'Good afternoon') : L('Buenas noches', 'Good evening'); };
+function svgEntrada() {
+  const E = ENTRADA, [a, b, c, d] = E.gf;
+  // cada pieza con su relieve: el filo claro arriba y, encima, el degradado algo bajado y recortado a la pieza
+  const pz = (k) => `<g class="enz" data-k="${k}"><use href="#ens-${k}" fill="#FFF6DA"/><g clip-path="url(#enc-${k})"><g transform="translate(0 ${E.off})"><use href="#ens-${k}" fill="url(#eng)"/><use href="#ens-${k}" fill="url(#enp)"/></g></g></g>`;
+  const formas = Object.entries(E.piezas).map(([k, t]) => `<path id="ens-${k}" d="${t}"/><clipPath id="enc-${k}"><use href="#ens-${k}"/></clipPath>`).join('');
+  const recorte = (id, ks) => `<clipPath id="${id}">${ks.map((k) => `<use href="#ens-${k}"/>`).join('')}</clipPath>`;
+  const luz = (id) => `<g clip-path="url(#${id})"><polygon class="en-luz" points="-64,${E.h} -26,${E.h} ${(-26 + 0.346 * E.h).toFixed(1)},0 ${(-64 + 0.346 * E.h).toFixed(1)},0" fill="url(#enb)" opacity="0"/></g>`;
+  return `<svg class="en-nombre" viewBox="0 0 ${E.w} ${E.h}" aria-hidden="true"><defs>`
+    + `<linearGradient id="eng" gradientUnits="userSpaceOnUse" x1="${a}" y1="${b}" x2="${c}" y2="${d}">${PALETA_MARCA.map(([o, col]) => `<stop offset="${o}" stop-color="${col}"/>`).join('')}</linearGradient>`
+    + `<linearGradient id="enp" gradientUnits="userSpaceOnUse" x1="0" y1="${E.prof[0]}" x2="0" y2="${E.prof[1]}"><stop offset="0.55" stop-color="#8A5200" stop-opacity="0"/><stop offset="1" stop-color="#8A5200" stop-opacity="0.16"/></linearGradient>`
+    + `<linearGradient id="enb" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.75"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient>`
+    + formas + recorte('encgf', ['G', 'r', 'o1', 'wp', 'barras', 'o2', 'l', 'i', 'o3']) + recorte('encia', ['G', 'r', 'o1', 'wp', 'I', 'A']) + '</defs>'
+    + '<g class="en-todo">' + ['G', 'r', 'o1', 'o2', 'l', 'i', 'o3', 'I', 'A'].map(pz).join('')
+    + `<g class="en-wf"><g class="en-trozos">${E.trozos.map(([t]) => `<path d="${t}" fill="url(#eng)"/>`).join('')}</g><g class="en-solida">${pz('wp')}${pz('barras')}</g></g>`
+    + luz('encgf') + luz('encia') + '</g></svg>';
+}
+// pinta la entrada en el instante t (ms desde que empieza); con t = Infinity queda GrowFolio quieto
+function pintaEntrada(svg, t) {
+  const E = ENTRADA;
+  const cl = (x) => Math.min(1, Math.max(0, x)), tr = (a, b) => cl((t - a) / (b - a));
+  const eo = (x) => 1 - Math.pow(1 - x, 3), eio = (x) => (x < 0.5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2);
+  const rebote = (x) => 1 + 2.2 * Math.pow(x - 1, 3) + 1.2 * Math.pow(x - 1, 2);
+  const q = (k) => svg.querySelector(`.enz[data-k="${k}"]`);
+  const cx = (k) => (E.cajas[k][0] + E.cajas[k][2]) / 2, cy = (k) => (E.cajas[k][1] + E.cajas[k][3]) / 2;
+  const pon = (n, x, y, s = 1, op = 1, ox = 0, oy = 0, rot = 0, sy = s) => {
+    n.setAttribute('transform', `translate(${x.toFixed(2)} ${y.toFixed(2)}) rotate(${rot.toFixed(1)} ${ox} ${oy}) translate(${ox} ${oy}) scale(${s.toFixed(3)} ${sy.toFixed(3)}) translate(${-ox} ${-oy})`);
+    n.style.opacity = cl(op).toFixed(3);
+  };
+  // 1. los trozos de la wF llegan de todas partes y se juntan (en grande, en el centro)
+  svg.querySelectorAll('.en-trozos path').forEach((n, k) => {
+    const [, px, py, dx, dy, rot, s0] = E.trozos[k], f = 1 - eo(tr(60 + k * 55, 60 + k * 55 + 700));
+    pon(n, dx * f, dy * f, 1 + (s0 - 1) * f, Math.sqrt(1 - f), px, py, rot * f);
+  });
+  const junta = tr(900, 1060);
+  svg.querySelector('.en-trozos').style.opacity = (1 - junta).toFixed(3);
+  svg.querySelector('.en-solida').style.opacity = junta.toFixed(3);
+  // 2. la wF baja a su sitio dentro del nombre y salen «Gro» por la izquierda y «olio» por la derecha
+  const [wx, wy] = E.wf, S0 = 1.85, p = 1 - eio(tr(1080, 1640));
+  pon(svg.querySelector('.en-wf'), (E.w / 2 - wx) * p, (E.h / 2 - wy) * p, 1 + (S0 - 1) * p, 1, wx, wy);
+  ['o1', 'r', 'G'].forEach((k, j) => { const e = eo(tr(1380 + j * 80, 1380 + j * 80 + 520)); pon(q(k), 70 * (1 - e), 0, 0.85 + 0.15 * e, e, cx(k), cy(k)); });
+  // 3. «olio» y las barras de la F se recogen, sale «IA» del palo y todo se recoloca; 4. y vuelta a GrowFolio
+  const olio = ['o2', 'l', 'i', 'o3'];
+  olio.forEach((k, j) => {
+    const sale = eo(tr(1400 + j * 80, 1400 + j * 80 + 520)), va = eio(tr(2330 + (3 - j) * 55, 2330 + (3 - j) * 55 + 400)), vuelve = eo(tr(3380 + j * 70, 3380 + j * 70 + 480));
+    const fuera = t < 2330 ? 0 : t < 3380 ? va : 1 - vuelve;
+    const x = t < 2330 ? -70 * (1 - sale) : -80 * fuera;
+    pon(q(k), x, 0, t < 2330 ? 0.85 + 0.15 * sale : 1 - 0.3 * fuera, t < 2330 ? sale : 1 - fuera, cx(k), cy(k));
+  });
+  const br = E.cajas.barras, recoge = eio(tr(2480, 2780)) * (1 - eo(tr(3300, 3620)));
+  pon(q('barras'), 0, 0, 1, 1 - recoge, br[0], (br[1] + br[3]) / 2, 0, 1);
+  q('barras').setAttribute('transform', `translate(${br[0]} 0) scale(${(1 - recoge).toFixed(3)} 1) translate(${-br[0]} 0)`);
+  ['I', 'A'].forEach((k, j) => {
+    const entra = tr(2560 + j * 110, 2560 + j * 110 + 480), sale = eio(tr(3180 + (1 - j) * 70, 3180 + (1 - j) * 70 + 360));
+    const v = t < 3180 ? rebote(entra) : 1 - sale;
+    pon(q(k), -60 * (1 - v), 0, 0.9 + 0.1 * v, t < 3180 ? cl(entra * 1.6) : 1 - sale, cx(k), cy(k));
+  });
+  const ia = eio(tr(2380, 2900)) * (1 - eio(tr(3260, 3780)));
+  const g = svg.querySelector('#eng');
+  ['x1', 'y1', 'x2', 'y2'].forEach((a, k) => g.setAttribute(a, (E.gf[k] + (E.ia[k] - E.gf[k]) * ia).toFixed(2)));
+  svg.querySelector('.en-todo').setAttribute('transform', `translate(${(E.mueve * ia).toFixed(2)} 0)`);
+  // un brillo que cruza GrowFolio recién montado y otro por GrowIA; la luz de detrás sube con GrowIA
+  const luces = svg.querySelectorAll('.en-luz');
+  [[luces[0], 1750, 2250], [luces[1], 2880, 3320]].forEach(([n, a, b]) => { const e = tr(a, b); n.setAttribute('transform', `translate(${(e * (E.w + 120)).toFixed(1)} 0)`); n.setAttribute('opacity', e > 0 && e < 1 ? '1' : '0'); });
+  svg.closest('.entrada').style.setProperty('--en-luz', ia.toFixed(3));
+}
 function mostrarEntrada() {
   const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const n = nombreUsuario();
   const d = document.createElement('div');
-  d.className = 'entrada' + (quieto ? ' quieta' : ''); d.id = 'entrada'; d.setAttribute('role', 'status');
-  // la wF se monta (la w sube, el palo sale de ella hacia arriba y llegan las barras), queda con su relieve y le pasa un brillo
-  d.innerHTML = `<div class="en-c"><svg class="en-svg" viewBox="0 0 48 48" aria-hidden="true"><defs>${MARCA_GRAD.replace(/__K__/g, 'enp')}<linearGradient id="enb" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF" stop-opacity="0"/><stop offset="0.5" stop-color="#FFFFFF" stop-opacity="0.7"/><stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/></linearGradient></defs>`
-    + `<g class="en-piezas"><path class="en-w" d="${MARCA_PIEZAS.w}" fill="url(#enpg)"/><path class="en-palo" d="${MARCA_PIEZAS.palo}" fill="url(#enpg)"/><path class="en-barras" d="${MARCA_PIEZAS.barras}" fill="url(#enpg)"/></g>`
-    + `<g class="en-entera">${marcaWF('enm')}</g><g clip-path="url(#enmc)"><polygon class="en-brillo" points="-22,42 -13,42 -1.2,8 -10.2,8" fill="url(#enb)"/></g></svg>`
-    + `<p class="en-saludo">${esc(saludoHora())}${n ? `, <b>${esc(n)}</b>` : ''}</p>${nombreGF('en-nom')}<div class="en-barra" aria-hidden="true"><i></i></div></div>`;
+  d.className = 'entrada' + (quieto ? ' quieta' : ''); d.id = 'entrada'; d.setAttribute('role', 'status'); d.setAttribute('aria-label', 'GrowFolio');
+  d.innerHTML = `<div class="en-c">${svgEntrada()}<p class="en-saludo">${esc(saludoHora())}${n ? `, <b>${esc(n)}</b>` : ''}</p><div class="en-barra" aria-hidden="true"><i></i></div></div>`;
   document.body.appendChild(d);
-  return { t: performance.now(), min: quieto ? 0 : 1700 };
+  const svg = $('.en-nombre', d), t0 = { t: performance.now(), min: quieto ? 0 : FIN_ENTRADA, saltar: null };
+  let fin = quieto;
+  const paso = () => {
+    if (fin || !d.isConnected) return;
+    const t = performance.now() - t0.t;
+    pintaEntrada(svg, t);
+    if (t < FIN_ENTRADA) requestAnimationFrame(paso); else fin = true;
+  };
+  pintaEntrada(svg, quieto ? Infinity : 0);
+  if (!quieto) requestAnimationFrame(paso);
+  // tocarla la salta: queda GrowFolio quieto y entra en cuanto haya cargado
+  d.addEventListener('click', () => { if (fin) return; fin = true; pintaEntrada(svg, Infinity); t0.min = 0; if (t0.saltar) t0.saltar(); });
+  return t0;
 }
-const esperarEntrada = (t0) => new Promise((r) => setTimeout(r, Math.max(0, t0.min - (performance.now() - t0.t))));
+const esperarEntrada = (t0) => new Promise((r) => { t0.saltar = r; setTimeout(r, Math.max(0, t0.min - (performance.now() - t0.t))); });
 function quitarEntrada() {
   const d = $('#entrada'); if (!d || d.classList.contains('fuera')) return;
   d.classList.add('fuera'); setTimeout(() => d.remove(), 650);
