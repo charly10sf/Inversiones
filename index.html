@@ -2902,6 +2902,9 @@ body.con-ixn { overflow: hidden; }
 .ixn:not(.quieta) .ixn-ver span { animation: ixnCifra 0.75s cubic-bezier(.2, .75, .25, 1) backwards; animation-delay: calc(0.12s + var(--k) * 0.07s); }
 @keyframes ixnCifra { from { opacity: 0; filter: blur(10px); transform: translate(calc(var(--d) * 0.45em), 0.5em) scale(1.35); } to { opacity: 1; filter: blur(0); transform: none; } }
 .ixn:not(.quieta) .ix-lema { animation: ixnLema 0.6s 0.5s cubic-bezier(.2, .75, .25, 1) backwards; }
+/* en las novedades se ven siempre (su entrada es la animación de arriba; al bajar se apaga el bloque entero) */
+.ixn .ix-lema, .ixn .ixn-ver > span { opacity: 1; }
+.ixn .ix-lema p > span { white-space: nowrap; }
 @keyframes ixnLema { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: none; } }
 .ixn-v { display: inline-block; margin-bottom: 10px; padding: 2px 10px; border-radius: 999px; background: color-mix(in srgb, var(--ixg) 18%, transparent); color: var(--ixg); font-size: 13px; font-weight: 650; }
 .ixn-arr { min-height: 100vh; min-height: 100dvh; display: grid; align-items: center; padding: 76px 22px; }
@@ -12183,6 +12186,7 @@ const NOVEDADES = [
   ], arreglos: [
     'Las ETF de mineras de oro (VanEck Gold Miners) contaban como oro en vez de como acciones.',
     'El precio del WisdomTree Physical Platinum salía de su versión de la bolsa de Tokio, en yenes.',
+    'Al empezar las novedades, al bajar el título se pisaba con las versiones, y «Ver las notas en detalle» salía dos veces y descentrado.',
   ] },
   { v: '0.3.5', f: '2026-10-21', h: '18:00', t: 'Cuentas que cuadran y apuntes sin sustos', cosas: [
     { d: 'tengo', t: 'Apuntar sin meter la pata', x: 'GrowFolio ya no deja guardar cantidades, efectivo ni fechas imposibles: nada en negativo ni en el futuro, y si vendes con una fecha en la que aún no la tenías, te lo dice. Si pagas una compra con el efectivo y no llega, te avisa antes de dejarlo en 0. Y en las participaciones el punto es decimal: «40.048» son algo más de 40, no cuarenta mil.' },
@@ -12684,8 +12688,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
         <p class="ixn-eti" data-no-trad>${varias ? L(`Te has perdido ${nuevas.length} versiones`, `You've missed ${nuevas.length} versions`) : L('Lo nuevo', "What's new")}</p>
         <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l, k, a) => `<span aria-hidden="true" style="--k:${k};--d:${(k - (a.length - 1) / 2).toFixed(1)}">${esc(l)}</span>`).join('')}</h1>
         ${varias ? `<ol class="ixn-ruta" data-no-trad aria-label="${L('Las versiones que te has perdido', 'The versions you missed')}">${(() => { const vs = [...nuevas].reverse().map((n) => n.v); const r = vs.length > 6 ? [vs[0], `+${vs.length - 5}`, ...vs.slice(-4)] : vs; return r.map((v, k) => `<li style="--k:${k}"${v === ultima.v ? ' class="hoy"' : v[0] === '+' ? ' class="mas"' : ''}>${esc(v)}</li>`).join(''); })()}</ol>` : ''}
-        <div class="ix-lema"><h2>${varias ? L(`Todo lo nuevo desde la ${esc(desde)}, resumido`, `Everything since ${esc(desde)}, in short`) : esc(ultima.t)}</h2><p><span>${fechaNov(ultima.f, ultima.h)}</span> · <span data-no-trad>${cuenta}</span></p>
-          <button type="button" class="btn ixn-det-b" data-nv="lista">${ICONOS.plan}${L('Ver las notas en detalle', 'See the full notes')}</button></div>
+        <div class="ix-lema"><h2>${varias ? L(`Todo lo nuevo desde la ${esc(desde)}, resumido`, `Everything since ${esc(desde)}, in short`) : esc(ultima.t)}</h2><p><span>${fechaNov(ultima.f, ultima.h)}</span> · <span data-no-trad>${cuenta}</span></p></div>
         <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
       </div></section>
       ${cuerpo}
@@ -12711,7 +12714,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   if (quieta || !('IntersectionObserver' in window)) entran.forEach((x) => x.classList.add('dentro'));
   else { const io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { e.target.classList.add('dentro'); io.unobserve(e.target); } }, { root: sc, threshold: 0.18 }); entran.forEach((x) => io.observe(x)); }
   const anclas = $$('[data-ancla]', raiz), ruta = $('.ixn-ruta', raiz);
-  const letras = $$('.ixn-ver span', raiz), lema = $('.ix-lema', raiz), baja = $('.ix-baja', raiz), eti = $('.ixn-eti', raiz), capEls = $$('.ix-cap', raiz);
+  const bloque = $('.ixn-heroe .ix-escena', raiz), baja = $('.ix-baja', raiz), capEls = $$('.ix-cap', raiz);
   const partir = () => capEls.forEach((c) => { const h = $('h2', c), t = trad(h.dataset.t); if (h.dataset.hecho === t) return; h.dataset.hecho = t; h.setAttribute('aria-label', t); h.innerHTML = t.split(' ').map((w) => `<span aria-hidden="true">${esc(w)}</span>`).join(' '); });
   partir();
   const tramo = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a))), ease = (t) => 1 - Math.pow(1 - t, 3);
@@ -12723,16 +12726,11 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     barra.style.transform = `scaleX(${H > 0 ? Math.min(1, y / H) : 0})`;
     const p = quieta ? 0.6 : Math.min(1, Math.max(0, y / Math.max(1, medidas.alto - vh)));
     // el número de versión, cifra a cifra; luego el título; al final se va hacia arriba
+    // al irse, todo el bloque sube y se apaga junto (antes el título subía y las versiones no, y se pisaban)
     const sale = ease(tramo(p, 0.7, 1));
-    for (const l of letras) {
-      l.style.transform = sale > 0.001 ? `translateY(${(-sale * 0.3).toFixed(3)}em)` : '';
-      l.style.opacity = (1 - sale).toFixed(3);
-    }
+    bloque.style.transform = sale > 0.001 ? `translateY(${(-sale * 40).toFixed(1)}px)` : '';
+    bloque.style.opacity = (1 - sale).toFixed(3);
     const le = 1;
-    lema.style.opacity = (le * (1 - sale)).toFixed(3);
-    lema.style.transform = `translateY(${((1 - le) * 18 - sale * 40).toFixed(1)}px)`;
-    eti.style.opacity = (1 - sale).toFixed(3);
-    if (ruta) ruta.style.opacity = (1 - sale).toFixed(3);
     baja.style.opacity = (1 - tramo(p, 0, 0.1)).toFixed(3);
     luz.style.setProperty('--luz', (0.5 + 0.4 * le).toFixed(3));
     let mejor = null;
