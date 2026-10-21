@@ -45,7 +45,8 @@ HORAS_LENTO = 2   # analistas, fundamentales y noticias: como mucho cada 2 horas
 
 # Campos de cada instrumento que salen de consultas lentas y se reutilizan entre ejecuciones
 CLAVES_LENTAS = ("nombre_largo", "sector", "industria", "analistas", "fundamentales", "per", "per_futuro",
-                 "dividendo_pct", "beta", "proximos_resultados", "ex_dividendo", "estimaciones", "fondo")
+                 "dividendo_pct", "beta", "proximos_resultados", "ex_dividendo", "estimaciones", "fondo",
+                 "dividendos_pagos")
 
 SECTORES = {
     "technology": "Tecnología", "Technology": "Tecnología",
@@ -628,6 +629,29 @@ def estimaciones(t):
         return None
 
 
+def pagos_dividendo(t, moneda_local, precio_local):
+    """Los dividendos de los dos últimos años: fecha ex-dividendo e importe por acción, en la misma unidad que el
+    precio (en Londres, peniques). De aquí sale en la web lo que cobrarás cada mes de los próximos 12."""
+    try:
+        d = t.dividends
+        if d is None or d.empty:
+            return []
+        d = d.copy()
+        d.index = pd.to_datetime(d.index).tz_localize(None)
+        d = d[(d.index >= pd.Timestamp.now() - pd.Timedelta(days=730)) & (d > 0)]
+        if d.empty:
+            return []
+        f = 1.0
+        if moneda_local in ("GBp", "GBX") and precio_local:
+            anual = float(d[d.index >= pd.Timestamp.now() - pd.Timedelta(days=365)].sum()) / precio_local * 100
+            if 0 < anual < 0.5:
+                f = 100.0
+        return [[i.date().isoformat(), num(float(v) * f, 6)] for i, v in d.items()]
+    except Exception:  # noqa: BLE001
+        traceback.print_exc()
+        return None
+
+
 def ex_dividendo(t):
     try:
         f = (t.calendar or {}).get("Ex-Dividend Date")
@@ -759,6 +783,7 @@ def datos_accion(t, info, moneda, fx, precio_local):
         "beta": num(info.get("beta"), 2),
         "proximos_resultados": proximos_resultados(t),
         "ex_dividendo": ex_dividendo(t),
+        "dividendos_pagos": pagos_dividendo(t, moneda, precio_local),
         "estimaciones": estimaciones(t),
     }
 

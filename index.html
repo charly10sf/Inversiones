@@ -1721,6 +1721,52 @@ table td.txt { white-space: normal; min-width: 260px; }
 .rr-chips button { min-height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--line); background: transparent; color: var(--text-2); font: inherit; font-size: 13.5px; cursor: pointer; }
 .rr-chips button[aria-pressed="true"] { color: var(--text); border-color: var(--accent); background: var(--plane-3); }
 .rr-frase { margin: 0; font-size: 15px; line-height: 1.5; }
+.rr-chips button:focus-visible, .rf-btn:focus-visible, .d12-m:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.resumen-fila > .rf-btn { display: grid; align-content: start; gap: inherit; padding: 0; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.rf-btn small { color: var(--accent); }
+.div12 { display: grid; gap: 12px; margin: 0 0 26px; }
+.div12 .sec-cab { margin: 0; }
+.div12 h3 { margin: 0; font-size: 15px; }
+.d12-barras { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 2px; align-items: end; height: 170px; padding-top: 14px; }
+.d12-m { position: relative; display: grid; grid-template-rows: 1fr auto auto; height: 100%; min-width: 0; text-align: center; outline: none; }
+.d12-col { position: relative; display: flex; align-items: flex-end; justify-content: center; }
+.d12-col i { position: absolute; bottom: 0; left: 50%; width: min(64%, 34px); transform: translateX(-50%); border-radius: 4px 4px 0 0; }
+.d12-imp { background: color-mix(in srgb, var(--accent) 28%, transparent); }
+.d12-neto { background: var(--accent); }
+.d12-v { font-size: 11px; color: var(--text-2); font-variant-numeric: tabular-nums; min-height: 15px; white-space: nowrap; }
+.d12-l { font-size: 11.5px; color: var(--muted); }
+.d12-tip { position: absolute; bottom: calc(100% - 6px); left: 50%; transform: translateX(-50%); z-index: 5; width: max-content; max-width: 220px; padding: 7px 9px; border-radius: 8px; background: var(--plane-3); border: 1px solid var(--line-2); color: var(--text); font-size: 12px; line-height: 1.35; text-align: left; white-space: normal; pointer-events: none; opacity: 0; transition: opacity .12s; }
+.d12-m:first-child .d12-tip, .d12-m:nth-child(2) .d12-tip { left: 0; transform: none; }
+.d12-m:nth-last-child(-n+2) .d12-tip { left: auto; right: 0; transform: none; }
+.d12-m:hover .d12-tip, .d12-m:focus .d12-tip { opacity: 1; }
+.d12-ley { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 12.5px; color: var(--text-2); }
+.d12-ley span { display: inline-flex; align-items: center; gap: 6px; }
+.d12-ley i { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+@media (max-width: 560px) { .d12-v { font-size: 9.5px; } .d12-barras { height: 150px; } }
+.solape { display: grid; gap: 10px; margin: 0 0 24px; }
+.solape h3 { margin: 0; font-size: 15px; }
+.solape p { margin: 0; }
+.solapes { margin: 0; padding-left: 18px; display: grid; gap: 6px; }
+.exp-tabs button { line-height: 1.25; }
+.btn-seg svg .est { fill: none; }
+.btn-seg[aria-pressed="true"] { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 55%, transparent); }
+.btn-seg[aria-pressed="true"] svg .est { fill: currentColor; }
+.seg { display: grid; gap: 12px; padding: 14px 16px; border-radius: 14px; background: var(--plane-2); border: 1px solid var(--line); }
+.seg-cab { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.seg-n { display: grid; min-width: 0; }
+.seg-n b { font-size: 15.5px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.seg-n small { display: flex; gap: 6px; align-items: center; color: var(--text-2); font-size: 13px; }
+.seg-p { display: grid; justify-items: end; }
+.seg-p b { font-size: 16px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.seg-p small { font-size: 12.5px; }
+.seg-datos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px 14px; }
+.seg-datos > div { display: grid; gap: 1px; min-width: 0; }
+.seg-datos .k { font-size: 12px; }
+.seg-datos b { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.seg-datos b.warn { color: var(--warn); }
+.seg-datos small { font-size: 12px; color: var(--muted); }
+.seg-btns { display: flex; flex-wrap: wrap; gap: 8px; }
+@media (max-width: 560px) { .seg-datos { grid-template-columns: 1fr 1fr; } .seg-datos > div:last-child { grid-column: 1 / -1; } }
 .rent-real .nota { margin: 0; }
 @media (max-width: 680px) { .rr-cifras { grid-template-columns: 1fr; } .rr-cifras b { font-size: 20px; } }
 .hp-cmp[aria-pressed="true"] { color: var(--text); border-color: var(--line-2); background: var(--plane-3); }
@@ -5291,6 +5337,7 @@ const ICONOS = {
   get growia() { return iconoIA(); },
   ordenar: SVG('<rect x="3.5" y="3.5" width="7" height="7" rx="1.6"/><rect x="13.5" y="3.5" width="7" height="4.5" rx="1.6"/><rect x="13.5" y="11" width="7" height="9.5" rx="1.6"/><rect x="3.5" y="13.5" width="7" height="7" rx="1.6"/>'),
   campana: SVG('<path d="M6 16V11a6 6 0 0112 0v5l1.5 2h-15z"/><path d="M10 20.5a2.2 2.2 0 004 0"/>', 1.8),
+  estrella: SVG('<path class="est" d="M12 3.6l2.6 5.3 5.8.8-4.2 4.1 1 5.8L12 16.9l-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z" stroke-linejoin="round"/>', 1.8),
   ojo: SVG('<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>'),
   ojoNo: SVG('<path d="M3 3l18 18"/><path d="M10.6 5.1A10.8 10.8 0 0 1 12 5c6.4 0 10 7 10 7a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6C3.9 8.4 2 12 2 12s3.6 7 10 7c1.9 0 3.6-.6 5-1.5"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'),
   lapiz: SVG('<path d="M4 20h4L19 9a2.8 2.8 0 0 0-4-4L4 16v4z"/><path d="M13.5 6.5l4 4"/>'),
@@ -5553,7 +5600,7 @@ function montar() {
    - en el navegador (y en el iPhone con GrowFolio en la pantalla de inicio), mientras GrowFolio esté abierto en
      segundo plano: la misma revisión, cada vez que llegan precios.
    Nunca de noche (de 22:00 a 8:00) y cada cosa una vez. */
-const AVISOS_DEF = { on: false, stop: true, mov: true, fechas: true, preg: true };
+const AVISOS_DEF = { on: false, stop: true, mov: true, fechas: true, preg: true, seg: true };
 const avisosCfg = () => ({ ...AVISOS_DEF, ...LS.get('inv-avisos', {}) });
 const appAvisos = () => { const a = window.InversionesApp; return a && typeof a.avisos === 'function' ? a : null; };
 function htmlAjAvisos() {
@@ -5566,7 +5613,7 @@ function htmlAjAvisos() {
   return `<h3>${ICONOS.campana}Avisos</h3>
     <label class="av-op av-on"><input type="checkbox" data-av="on"${c.on ? ' checked' : ''}${app && !nativo ? ' disabled' : ''}><span><b>Avisarme de lo importante</b><small>${donde}</small></span></label>
     ${c.on && !permiso ? `<p class="nota av-falta">${ICONOS.alerta}Falta el permiso de notificaciones: ${nativo ? 'acéptalo en el aviso del móvil o en Ajustes de Android > Aplicaciones > GrowFolio > Notificaciones.' : 'acéptalo en el navegador (el candado de la barra de direcciones).'}</p>` : ''}
-    <div class="av-ops">${fila('stop', 'Cuando algo baja de tu precio de salida o se acerca a menos de un 3 %')}${fila('mov', 'Cuando una de tus posiciones sube o baja más de un 5 % en el día')}${fila('fechas', 'El día antes de los resultados y los dividendos de lo tuyo')}${fila('preg', 'Cuando GrowIA te pregunta algo')}</div>
+    <div class="av-ops">${fila('stop', 'Cuando algo baja de tu precio de salida o se acerca a menos de un 3 %')}${fila('mov', 'Cuando una de tus posiciones sube o baja más de un 5 % en el día')}${fila('fechas', 'El día antes de los resultados y los dividendos de lo tuyo')}${fila('preg', 'Cuando GrowIA te pregunta algo')}${fila('seg', 'Cuando una empresa que sigues llega al precio que le pusiste')}</div>
     ${c.on ? '<button type="button" class="btn peq" data-av-prueba>Mandar un aviso de prueba</button>' : ''}${htmlAvisoVersiones(permiso)}`;
 }
 // el aviso de las versiones nuevas: en la app de Android, aunque no la tengas abierta (mira cada 3 horas si hay versión)
@@ -5638,7 +5685,9 @@ function reglasAvisos(M) {
   try { eventos = agendaLista(M, 3).filter((e) => ['resultados', 'dividendo', 'cobro'].includes(e.tipo)).map((e) => { const d = document.createElement('div'); d.innerHTML = e.t; return { k: e.id, d: e.d, t: d.textContent, s: String(e.s || '') }; }); } catch (e) {}
   const vistas = LS.get('inv-preg-vistas', []);
   const preg = preguntasIA().filter((x) => !vistas.includes(clavePreg(x))).map((x) => ({ k: clavePreg(x), q: x.q }));
-  return { reglas: unicas, eventos, preg };
+  // 0.3.11: las empresas que sigues, con sus precios de aviso (en euros, los del radar)
+  const seguir = siguiendo().filter((x) => x.baja || x.sube).map((x) => ({ sym: x.s, n: x.n, baja: +x.baja || 0, sube: +x.sube || 0 }));
+  return { reglas: unicas, eventos, preg, seguir };
 }
 // en el navegador: al llegar precios y con GrowFolio en segundo plano (si lo estás mirando, ya lo ves en Cartera)
 function revisarAvisos(M) {
@@ -5654,6 +5703,12 @@ function revisarAvisos(M) {
     if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', `${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.`, '#cartera', `mov:${f.inst.id}:${hoy}`);
   }
   if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', `Mañana: ${e.t}`, e.s, '#agenda', 'ev:' + e.k);
+  if (c.seg) for (const it of siguiendo()) {
+    const pr = precioSeguido(it), p = pr && pr.eur;
+    if (!(p > 0)) continue;
+    if (it.baja && p <= it.baja) avisoSistema('seg', `${it.n} ha bajado a tu precio`, `Está a ${precioFmt(p)}: la seguías para cuando bajara de ${precioFmt(it.baja)}.`, '#expertos', `segb:${it.s}:${it.baja}`);
+    if (it.sube && p >= it.sube) avisoSistema('seg', `${it.n} ha subido a tu precio`, `Está a ${precioFmt(p)}: querías saber cuándo pasara de ${precioFmt(it.sube)}.`, '#expertos', `segs:${it.s}:${it.sube}`);
+  }
 }
 
 /* El resumen de hoy: la primera vez que abres GrowFolio cada día (si no lo quitas en Ajustes), lo más importante
@@ -7117,7 +7172,7 @@ function filaExperto(f, ia, vIA = {}) {
 }
 
 /* Expertos va en tres pestañas: el resumen (qué hacer), el detalle de cada posición y las ideas de compra */
-const EXPERTOS = [['posiciones', 'Tus posiciones'], ['ideas', 'Ideas de compra']];
+const EXPERTOS = [['posiciones', 'Tus posiciones'], ['ideas', 'Ideas de compra'], ['siguiendo', 'Siguiendo']];
 const ordenSenales = (M) => [...M.filas].sort((a, b) => ORDEN_SENAL.indexOf(a.senal.nivel) - ORDEN_SENAL.indexOf(b.senal.nivel) || b.valor - a.valor);
 function htmlVistazo(M, ia) {
   const vistos = new Set();
@@ -7154,14 +7209,16 @@ function vistaExpertos(M) {
     </section>
     ${htmlResumenInforme(true)}
     <details class="num-sec"><summary><span><b>Analistas en prensa</b><small>titulares sobre lo que tienes, de los últimos 30 días</small></span></summary><div class="num-cuerpo">${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10)}</div></details>`;
+  } else if (S.expTab === 'siguiendo') {
+    cuerpo = htmlSiguiendo(M);
   } else {
     cuerpo = `<section aria-labelledby="hIdeas" class="bloque-sec">${htmlIdeas(M, ia)}</section>`;
   }
-  const marca = { posiciones: planes.length };
+  const marca = { posiciones: planes.length, siguiendo: siguiendo().length };
   return `
   <div class="vista-cab vc-corta"><h1>Expertos</h1><p>Lo que dicen analistas, prensa y GrowIA de lo tuyo y de lo que podrías comprar.</p></div>
   ${htmlFrescura()}
-  <div class="subvistas dos-op" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
+  <div class="subvistas exp-tabs" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
   <div class="pila">${cuerpo}</div>`;
 }
 
@@ -7539,7 +7596,7 @@ function tarjetaIdea(x, ctx, compacta = false, puesto = 0) {
     ${htmlCifrasIdea(r, x.esp)}
     ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
     ${mas ? `<details class="mas"><summary>Qué la mueve, pegas, impuestos y señales</summary><div class="idea-mas">${mas}</div></details>` : ''}
-    <div class="idea-btns"><button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.growia}¿Cuánto meto?</button>${r && r.s ? `<button class="btn peq" data-accion="operacion" data-tipo="compra" data-sim="${esc(r.s)}">${ICONOS.compra}Ya la he comprado</button>` : ''}</div>
+    <div class="idea-btns"><button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.growia}¿Cuánto meto?</button>${r && r.s ? `<button class="btn peq" data-accion="operacion" data-tipo="compra" data-sim="${esc(r.s)}">${ICONOS.compra}Ya la he comprado</button>${botonSeguir(r.s, nombreRadar(x))}` : ''}</div>
   </article>`;
 }
 function htmlEvitar() {
@@ -7744,7 +7801,7 @@ document.addEventListener('click', (e) => {
 /* =========================== Análisis =========================== */
 /* cuatro pestañas: qué hacer, lo que opina la IA, tus números (cinco vistas) y la fiscalidad */
 const ANALISIS_P = [['ia', 'GrowIA opina'], ['numeros', 'Tus números']];
-const NUM_T = { rent: ['Rentabilidad', 'lo que ha dado cada posición en 1 y 3 meses, en lo que va de año, a 1, 3, 5 y 10 años y año a año'], riesgo: ['Riesgo', 'cuánto se mueve cada una y su peor caída del último año'], costes: ['Costes y dividendos', 'gastos de los fondos y lo que cobras en dividendos'], dentro: ['Por dentro', 'las empresas en las que tienes más dinero, sumando tus fondos'], apuestas: ['Tus acciones frente al índice', 'cada acción comparada con el mismo dinero en el S&P 500'] };
+const NUM_T = { rent: ['Rentabilidad', 'lo que ha dado cada posición en 1 y 3 meses, en lo que va de año, a 1, 3, 5 y 10 años y año a año'], riesgo: ['Riesgo', 'cuánto se mueve cada una y su peor caída del último año'], costes: ['Costes y dividendos', 'gastos de los fondos y lo que cobrarás de dividendos, mes a mes'], dentro: ['Por dentro', 'si se pisan tus fondos y las empresas en las que tienes más dinero'], apuestas: ['Tus acciones frente al índice', 'cada acción comparada con el mismo dinero en el S&P 500'] };
 const NUMEROS = ['rent', 'riesgo', 'costes', 'dentro', 'apuestas'];
 const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'GrowIA opina'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Acciones sueltas'], ['impuestos', 'Hacienda']];
 /* =====================================================================
@@ -8134,7 +8191,7 @@ function cuerpoNum(k, M) {
     const conTer = M.filas.filter((f) => f.inst.ter != null);
     const costeAnual = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
     const baseTer = sum(conTer, (f) => f.valor);
-    cuerpo = `<div class="resumen-fila"><div><span class="k">Gastos de fondos al año</span><span class="v">${eur(costeAnual, 0)}</span></div><div><span class="k">Comisión media de los fondos</span><span class="v">${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</span></div><div><span class="k">Dividendos al año</span><span class="v">${eur(M.dividendos, 0)}</span></div><div><span class="k">Tras impuestos (${pctTramo(tramoAhorro())} %)</span><span class="v">${eur(M.dividendos * (1 - tramoAhorro()), 0)}</span></div></div>
+    cuerpo = `${htmlDividendos12(M)}<div class="resumen-fila"><div><span class="k">Gastos de fondos al año</span><span class="v">${eur(costeAnual, 0)}</span></div><div><span class="k">Comisión media de los fondos</span><span class="v">${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</span></div><div><span class="k">Dividendos al año</span><span class="v">${eur(M.dividendos, 0)}</span></div><div><span class="k">Tras impuestos (${pctTramo(tramoAhorro())} %)</span><span class="v">${eur(M.dividendos * (1 - tramoAhorro()), 0)}</span></div></div>
       <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r" title="Lo que cobra el fondo cada año (TER), ya descontado de su precio">Comisión</th><th class="r">Gasto al año</th><th class="r">Dividendo</th><th class="r">Cobro al año</th><th class="r">Próximo</th></tr></thead><tbody>
       ${M.filas.map((f) => `<tr><td>${nombre(f)}</td><td class="r">${f.inst.ter != null ? pct(f.inst.ter, 2) : '—'}</td><td class="r">${f.inst.ter != null ? eur((f.valor * f.inst.ter) / 100, 0) : '—'}</td><td class="r">${f.p && f.p.dividendo_pct ? pct(f.p.dividendo_pct, 1) : '—'}</td><td class="r">${f.p && f.p.dividendo_pct ? eur((f.valor * f.p.dividendo_pct) / 100, 0) : '—'}</td><td class="r">${f.p && f.p.ex_dividendo ? fechaCorta(f.p.ex_dividendo) : '—'}</td></tr>`).join('')}
       </tbody></table></div><p class="nota">Dividendos brutos de los últimos 12 meses sobre el precio de hoy. Los de empresas españolas llegan con el 19 % ya retenido; los de fuera pueden traer además la retención de su país; en Hacienda ves cuánto recuperas.</p>`;
@@ -8142,7 +8199,7 @@ function cuerpoNum(k, M) {
     const d = empresasPorDentro(M);
     const top = d.filas.slice(0, 20);
     const max = top.length ? top[0].v : 1;
-    cuerpo = `<p class="nota" style="margin:0 0 18px">Las empresas en las que tienes más dinero, sumando las que compras directamente y las que hay dentro de tus fondos indexados (las 10 mayores de cada uno).</p>
+    cuerpo = `${htmlSolapes(M)}<p class="nota" style="margin:0 0 18px">Las empresas en las que tienes más dinero, sumando las que compras directamente y las que hay dentro de tus fondos indexados (las 10 mayores de cada uno).</p>
       <ul class="barras">${top.map((x) => `<li><span class="n"><span class="n-t" title="${esc(x.n)}">${esc(x.n)}</span>${x.directa ? '<span class="chip info">directa</span>' : ''}</span><span class="b"><i class="${x.directa ? 'dir' : ''}" style="width:${((x.v / max) * 100).toFixed(1)}%"></i></span><span class="r">${eur(x.v, 0)}<small class="k" style="display:block;font-size:12px">${pct(M.total ? (x.v / M.total) * 100 : 0, 1)}</small></span></li>`).join('')}</ul>
       <p class="nota">Pesos de los ETF de referencia (IVV, IEUR, EEM, VB y SCZ) según Yahoo Finance. Estas 20 suman ${eur(sum(top, (x) => x.v), 0)}, un ${pct(M.total ? (sum(top, (x) => x.v) / M.total) * 100 : 0, 1)} de tu patrimonio.</p>`;
   } else if (k === 'apuestas') {
@@ -8163,6 +8220,91 @@ function cuerpoNum(k, M) {
   }
   return cuerpo;
 }
+/* ---------- 0.3.11: lo que cobrarás de dividendos cada mes de los próximos 12 ----------
+   Cada acción repite lo que pagó en los últimos 12 meses, un año después, con tus acciones de hoy. Va en el mes en
+   que se fija el dividendo (la fecha ex-dividendo: hay que tenerla el día antes); el dinero llega unas semanas
+   después. Si ya se sabe su próximo ex-dividendo, el que toca va en esa fecha. Neto: menos lo que retiene su país y
+   no recuperas y menos tu tramo del ahorro, que es lo que acabas pagando en la renta. */
+function dividendosMeses(M) {
+  const hoy = hoyIso(), mes0 = hoy.slice(0, 8) + '01', fin = sumarMeses(mes0, 12), hace1a = sumarDias(hoy, -365);
+  const meses = Array.from({ length: 12 }, (_, i) => ({ k: sumarMeses(mes0, i).slice(0, 7), bruto: 0, neto: 0, de: [] }));
+  const t = tramoAhorro(), sinCal = [];
+  for (const f of M.filas) {
+    const p = f.p || {};
+    if (!(f.uds > 0)) continue;
+    const pagos = Array.isArray(p.dividendos_pagos) ? p.dividendos_pagos.filter(([d, v]) => d > hace1a && v > 0) : null;
+    if (!pagos || !pagos.length) { if (p.dividendo_pct > 0) sinCal.push({ n: f.inst.corto || f.inst.nombre, anual: (f.valor * p.dividendo_pct) / 100 }); continue; }
+    const aEur = p.precio > 0 && p.precio_local > 0 ? p.precio / p.precio_local : 1;
+    const fis = fiscalidadSede(f.inst.pais, f.inst.tipo);
+    const prox = pagos.map(([d, v]) => [sumarMeses(d, 12), v]).sort((a, b) => (a[0] < b[0] ? -1 : 1));
+    if (p.ex_dividendo && p.ex_dividendo >= hoy) {
+      const k = prox.reduce((m, x, i) => (Math.abs(diasEntre(x[0], p.ex_dividendo)) < Math.abs(diasEntre(prox[m][0], p.ex_dividendo)) ? i : m), 0);
+      if (Math.abs(diasEntre(prox[k][0], p.ex_dividendo)) <= 75) prox[k][0] = p.ex_dividendo;
+    }
+    for (const [d, v] of prox) {
+      if (d < hoy || d >= fin) continue;
+      const m = meses.find((x) => x.k === d.slice(0, 7)); if (!m) continue;
+      const bruto = f.uds * v * aEur, neto = bruto * (1 - t - (fis.pierde || 0) / 100);
+      m.bruto += bruto; m.neto += neto; m.de.push({ n: f.inst.corto || f.inst.nombre, d, bruto, neto });
+    }
+  }
+  return { meses, sinCal, bruto: sum(meses, (m) => m.bruto), neto: sum(meses, (m) => m.neto), t };
+}
+function htmlDividendos12(M) {
+  const D = dividendosMeses(M);
+  if (!D.bruto && !D.sinCal.length) return '';
+  const max = Math.max(...D.meses.map((m) => m.bruto), 1);
+  const nombreMes = (k) => { const d = deIso(k + '-01'); return IDIOMA === 'en' ? MESES_EN[d.getMonth()].slice(0, 3) : MESES[d.getMonth()]; };
+  const barras = D.meses.map((m) => {
+    const tip = m.bruto ? `${m.de.map((x) => `${x.n}: ${eur(x.neto, 0)} (${eur(x.bruto, 0)} ${L('brutos', 'gross')})`).join('; ')}` : L('nada', 'nothing');
+    const alto = (m.bruto / max) * 100, altoN = (m.neto / max) * 100;
+    return `<div class="d12-m" tabindex="0" aria-label="${esc(`${nombreMes(m.k)}: ${m.bruto ? L(`${eur(m.neto, 0)} netos. ${tip}`, `${eur(m.neto, 0)} net. ${tip}`) : L('nada', 'nothing')}`)}"><span class="d12-tip" role="tooltip">${esc(tip)}</span>
+      <div class="d12-col">${m.bruto ? `<i class="d12-imp" style="height:${alto.toFixed(1)}%"></i><i class="d12-neto" style="height:${Math.max(0, altoN).toFixed(1)}%"></i>` : ''}</div>
+      <span class="d12-v">${m.neto >= 1 ? eur(m.neto, 0) : ''}</span><span class="d12-l">${nombreMes(m.k)}</span></div>`;
+  }).join('');
+  const lista = D.meses.filter((m) => m.bruto).map((m) => `<tr><td>${nombreMes(m.k)} ${m.k.slice(0, 4)}</td><td>${esc(m.de.map((x) => x.n).join(', '))}</td><td class="r">${eur(m.bruto, 0)}</td><td class="r">${eur(m.neto, 0)}</td></tr>`).join('');
+  return `<section class="div12" aria-labelledby="hDiv12">
+    <div class="sec-cab"><h3 id="hDiv12">${L('Lo que cobrarás, mes a mes', 'What you’ll receive, month by month')}</h3><span class="k">${L(`próximos 12 meses: ${eur(D.neto, 0)} netos de ${eur(D.bruto, 0)}`, `next 12 months: ${eur(D.neto, 0)} net of ${eur(D.bruto, 0)}`)}</span></div>
+    ${D.bruto ? `<div class="d12-barras">${barras}</div>
+    <div class="d12-ley"><span><i class="d12-neto"></i>${L('Para ti', 'Yours')}</span><span><i class="d12-imp"></i>${L('Hacienda y la retención de fuera', 'Tax and foreign withholding')}</span></div>
+    <details class="mas"><summary>${L('Verlo en una tabla', 'See it as a table')}</summary><div class="tabla-w"><table class="resp"><thead><tr><th>${L('Mes', 'Month')}</th><th>${L('De', 'From')}</th><th class="r">${L('Bruto', 'Gross')}</th><th class="r">${L('Neto', 'Net')}</th></tr></thead><tbody>${lista}</tbody></table></div></details>` : ''}
+    <p class="nota">${L(`Repite lo que pagó cada empresa en los últimos 12 meses, con tus acciones de hoy. Va en el mes en que se fija (ex-dividendo); el dinero llega unas semanas después. Neto: con tu tramo del ahorro (${pctTramo(D.t)} %) y lo que retiene su país y no recuperas.`, `It repeats what each company paid in the last 12 months, with your shares today. It goes in the month it's set (ex-dividend); the money arrives a few weeks later. Net: with your savings-tax rate (${pctTramo(D.t)} %) and what its country withholds that you don't get back.`)}${D.sinCal.length ? ' ' + L(`Sin calendario todavía: ${yLista(D.sinCal.map((x) => `${esc(x.n)} (unos ${eur(x.anual, 0)} al año)`))}.`, `No calendar yet: ${yLista(D.sinCal.map((x) => `${esc(x.n)} (about ${eur(x.anual, 0)} a year)`))}.`) : ''}</p>
+  </section>`;
+}
+
+/* ---------- 0.3.11: ¿se pisan tus fondos? ----------
+   Dos fondos indexados de grandes empresas que invierten en la misma zona llevan casi las mismas empresas (las pesan
+   por su tamaño): lo que se pisan es lo que comparten de cada zona. Un fondo de empresas pequeñas no se pisa con
+   uno de grandes aunque sean de la misma zona. */
+const esPeque = (i) => /small|peque|mid.?cap|russell 2000/i.test(`${i.nombre || ''} ${i.corto || ''}`);
+function solapamientos(M) {
+  const fondos = [];
+  const vistos = new Set();
+  for (const f of M.filas) {
+    const i = f.inst;
+    if (!(f.valor > 0) || i.clase !== 'Renta variable' || !(/^Fondo/.test(i.tipo || '') || i.tipo === 'ETF') || !i.region || vistos.has(i.id)) continue;
+    vistos.add(i.id); fondos.push(f);
+  }
+  const pares = [];
+  for (let a = 0; a < fondos.length; a++) for (let b = a + 1; b < fondos.length; b++) {
+    const A = fondos[a].inst, B = fondos[b].inst;
+    if (esPeque(A) !== esPeque(B)) continue;
+    const zonas = Object.keys(A.region).filter((r) => r !== 'Otros' && B.region[r]).map((r) => [r, Math.min(A.region[r], B.region[r])]).filter(([, v]) => v > 0).sort((x, y) => y[1] - x[1]);
+    const pct = sum(zonas, ([, v]) => v);
+    if (pct >= 15) pares.push({ a: fondos[a], b: fondos[b], pct, zonas });
+  }
+  return { fondos, pares: pares.sort((x, y) => y.pct - x.pct) };
+}
+function htmlSolapes(M) {
+  const S2 = solapamientos(M);
+  if (S2.fondos.length < 2) return '';
+  const n = (f) => `<b>${esc(f.inst.corto || f.inst.nombre)}</b>`;
+  const cuerpo = S2.pares.length ? `<ul class="solapes">${S2.pares.map((p) => `<li>${L(`${n(p.a)} y ${n(p.b)} se pisan en un <b>${fmtNum(p.pct, 0)} %</b>: los dos llevan las grandes de ${yLista(p.zonas.slice(0, 3).map(([r]) => esc(r)))}.`, `${n(p.a)} and ${n(p.b)} overlap by <b>${fmtNum(p.pct, 0)} %</b>: both hold the large companies of ${yLista(p.zonas.slice(0, 3).map(([r]) => esc(r)))}.`)}</li>`).join('')}</ul>
+    <p class="nota">${L('No es malo, pero esa parte la pagas con dos comisiones y pesa más de lo que parece. Si quieres simplificar, uno de los dos puede bastar: un traspaso entre fondos no paga impuestos.', 'It isn’t bad, but you pay two fees for that part and it weighs more than it seems. To simplify, one of them may be enough: switching between funds is tax-free.')}</p>`
+    : `<p>${L('Tus fondos no se pisan: cada uno pone el dinero en una zona distinta o en empresas de otro tamaño.', 'Your funds don’t overlap: each one invests in a different region or in companies of a different size.')}</p>`;
+  return `<section class="solape" aria-labelledby="hSolape"><h3 id="hSolape">${L('¿Se pisan tus fondos?', 'Do your funds overlap?')}</h3>${cuerpo}</section>`;
+}
+
 /* 0.3.10: lo que ha rendido tu dinero de verdad (con tus compras y ventas y sus fechas) y frente a qué índice */
 function htmlRentReal(M) {
   const R = rentabilidadCartera(M);
@@ -8220,7 +8362,7 @@ function htmlNumeros(M) {
       ${rent1a != null ? `<div><span class="k">Tu cartera, último año</span><span class="v ${cls(rent1a)}">${pctS(rent1a, 1)}</span><small class="k">con tus posiciones de hoy</small></div>` : ''}
       ${cr ? `<div><span class="k">Riesgo</span><span class="v">${cr} de 7</span><small class="k">volatilidad ${pct(vol, 1)}, peor caída ${pct(caidaMaxima(serie), 1)}</small></div>` : ''}
       <div><span class="k">Gastos de fondos</span><span class="v">${eur(costeAnual, 0)} al año</span><small class="k">comisión media del ${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</small></div>
-      <div><span class="k">Dividendos</span><span class="v">${eur(M.dividendos, 0)} al año</span><small class="k">brutos, con el precio de hoy</small></div>
+      <button type="button" class="rf-btn" data-calif="costes"><span class="k">Dividendos</span><span class="v">${eur(M.dividendos, 0)} al año</span><small class="k">brutos, con el precio de hoy; ${L('mes a mes', 'month by month')} ›</small></button>
     </div>
     ${htmlRentReal(M)}
     <div class="num-secs">${NUMEROS.map((k) => `<details class="num-sec" id="num-${k}"${S.numAbierto === k ? ' open' : ''}><summary><span><b>${NUM_T[k][0]}</b><small>${NUM_T[k][1]}</small></span></summary><div class="num-cuerpo">${cuerpoNum(k, M)}</div></details>`).join('')}</div>`;
@@ -12935,7 +13077,7 @@ function abrirConsulta(c) {
       <div class="cons-cab">${logo(c.dom, nombre)}<div class="busca-t"><b>${esc(nombre)}</b><small>${bandera(c.cot.cod)}${esc(c.cot.txt || '')}${c.isin ? ` · ${esc(c.isin)}` : sim ? ` · ${esc(sim)}` : ''}</small></div></div>
       ${precio != null ? `<div class="cons-precio"><b>${precioR(precio, mon)}</b>${mon !== 'EUR' && enEur ? `<span class="k">≈ ${precioFmt(enEur)}</span>` : ''}${dia != null ? `<span class="${cls(dia)}">${pctS(dia, 2)}</span>` : ''}<small class="k">${fecha ? `${fondo ? 'valor liquidativo del' : 'cierre del'} ${fechaCorta(fecha)}` : 'último cierre'}</small></div>` : ''}
       <div id="consGraf">${cid || (idI && histDe(idI)) ? '<div class="vacio">Cargando la gráfica…</div>' : x ? rangoConsulta(x) : ''}</div>
-      <div class="fila-btns cons-btns"><button type="button" class="btn pri" data-cons-add>${ICONOS.mas}Añadir a mi cartera</button><button type="button" class="btn" data-cons-ia>${ICONOS.growia}Pregúntale a GrowIA</button></div>
+      <div class="fila-btns cons-btns"><button type="button" class="btn pri" data-cons-add>${ICONOS.mas}Añadir a mi cartera</button><button type="button" class="btn" data-cons-ia>${ICONOS.growia}Pregúntale a GrowIA</button>${x ? botonSeguir(x.s, nombre, false) : ''}</div>
       ${datos.length ? `<dl class="kv">${datos.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : ''}
       ${x ? `<details class="mas"><summary>Las siete señales de GrowFolio</summary>${htmlContrasteLista(contraste(x))}</details>` : ''}
       <section class="cons-not"><h3>Noticias</h3>${nots.length ? htmlNoticias(nots, false, 5) : ''}<a class="enlace" href="${esc(gnews)}" target="_blank" rel="noopener noreferrer">Ver las noticias de ${esc(nombre)} en Google Noticias</a></section>
@@ -12960,6 +13102,85 @@ function abrirConsulta(c) {
     gr.innerHTML = g || (x ? rangoConsulta(x) : '');
   })();
 }
+/* ---------- 0.3.11: empresas que sigues sin tenerlas ----------
+   Se guardan en tu cartera (cifradas, en todos tus dispositivos): el símbolo del radar, el nombre, el día que
+   empezaste a seguirla y su precio ese día en euros, y los dos precios a los que quieres que te avise (si baja de uno
+   o sube de otro). Los precios, los del radar, que la Action pone al día cada 20 minutos. */
+const siguiendo = () => ((S.cartera && S.cartera.siguiendo) || []).filter((x) => x && x.s);
+const sigoA = (sim) => !!sim && siguiendo().some((x) => x.s === String(sim).toUpperCase());
+function precioSeguido(it) {
+  const x = radarPorSim(it.s);
+  if (!x) return null;
+  const eur = x.pe != null ? x.pe : x.m === 'EUR' ? x.p : null;
+  return { eur, local: x.p, m: x.m || 'EUR', dia: x.v, x };
+}
+async function seguir(sim, nombre) {
+  sim = String(sim || '').toUpperCase();
+  if (!sim || !S.cartera) return;
+  const lista = (S.cartera.siguiendo = S.cartera.siguiendo || []);
+  const i = lista.findIndex((x) => x.s === sim);
+  const x = radarPorSim(sim), n = nombre || (x ? nombreRadar(x) : sim);
+  if (i >= 0) lista.splice(i, 1);
+  else { const pr = precioSeguido({ s: sim }); lista.push({ s: sim, n, desde: hoyIso(), p0: pr && pr.eur ? +pr.eur.toFixed(4) : null }); }
+  for (const b of $$(`[data-seguir="${CSS.escape(sim)}"]`)) { const si = i < 0; b.setAttribute('aria-pressed', String(si)); const t = b.querySelector('.seg-t'); if (t) t.textContent = si ? L('Siguiendo', 'Following') : L('Seguir', 'Follow'); }
+  await guardarCartera(i >= 0 ? `Dejar de seguir ${n}` : `Seguir ${n}`);
+  toast(i >= 0 ? L(`Ya no sigues ${n}`, `No longer following ${n}`) : L(`Sigues ${n}: la tienes en Expertos, Siguiendo. Ponle un aviso de precio si quieres.`, `Following ${n}: it's in Experts, Following. Add a price alert if you like.`), 4500);
+  AS.foto = null;
+  if (S.vista === 'expertos') pintar();
+}
+const botonSeguir = (sim, nombre, peq = true) => { const si = sigoA(sim); return `<button type="button" class="btn${peq ? ' peq' : ''} btn-seg" data-seguir="${esc(String(sim).toUpperCase())}" data-seguir-n="${esc(nombre || '')}" aria-pressed="${si}">${ICONOS.estrella}<span class="seg-t">${si ? L('Siguiendo', 'Following') : L('Seguir', 'Follow')}</span></button>`; };
+function editarAvisoSeguido(sim) {
+  const it = siguiendo().find((x) => x.s === sim); if (!it) return;
+  const pr = precioSeguido(it), ahora = pr && pr.eur;
+  const h = hoja(L(`Aviso de ${it.n}`, `${it.n} alert`), `<form id="fSeg" novalidate>
+    <p class="nota" style="margin:0">${ahora ? L(`Ahora está a ${precioFmt(ahora)}.`, `It's at ${precioFmt(ahora)} now.`) : ''} ${L('Te aviso una vez cuando llegue (en el móvil, con la app y los avisos activados; en el navegador, con GrowFolio abierto).', 'I’ll alert you once when it gets there (on your phone with the app and alerts on; in the browser, with GrowFolio open).')}</p>
+    <div class="form-grid">
+      <label class="campo">${L('Avísame si baja de (€)', 'Alert me if it falls below (€)')}<input name="baja" inputmode="decimal" value="${it.baja ? fmtNum(it.baja, 2) : ''}" placeholder="${ahora ? fmtNum(ahora * 0.9, 2) : ''}"><small>${L('Por ejemplo, el precio al que la comprarías.', 'For example, the price you’d buy at.')}</small></label>
+      <label class="campo">${L('Avísame si sube de (€)', 'Alert me if it rises above (€)')}<input name="sube" inputmode="decimal" value="${it.sube ? fmtNum(it.sube, 2) : ''}" placeholder="${ahora ? fmtNum(ahora * 1.1, 2) : ''}"></label>
+    </div>
+    <div class="error" id="errSeg"></div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri">${L('Guardar', 'Save')}</button></div></form>`);
+  $('#fSeg', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const f = ev.target, baja = numero(f.baja.value), sube = numero(f.sube.value);
+    if ((f.baja.value.trim() && !(baja > 0)) || (f.sube.value.trim() && !(sube > 0))) { $('#errSeg', h.el).textContent = L('Pon un precio en euros, por ejemplo 12,50.', 'Enter a price in euros, e.g. 12.50.'); return; }
+    if (baja > 0 && sube > 0 && baja >= sube) { $('#errSeg', h.el).textContent = L('El de bajada tiene que ser menor que el de subida.', 'The lower one must be below the upper one.'); return; }
+    it.baja = baja > 0 ? baja : null; it.sube = sube > 0 ? sube : null;
+    const c = avisosCfg();
+    await guardarYPintar(`Aviso de ${it.n}`, h);
+    if (!c.on) toast(L('Guardado. Para que te llegue, activa los avisos en Ajustes > Avisos y resumen.', 'Saved. To get it, turn on alerts in Settings > Alerts and summary.'), 6000);
+  };
+}
+function htmlSiguiendo(M) {
+  const xs = siguiendo();
+  if (!xs.length) return `<section class="ov-vacio seg-vacio"><h2>${L('Sigue empresas sin tenerlas', 'Follow companies you don’t own')}</h2><p>${L('En cualquier idea de compra o empresa del radar, toca «Seguir». Aquí verás cómo van desde que las sigues, lo que esperan los analistas, y te aviso al precio que digas.', 'On any buy idea or radar company, tap «Follow». Here you’ll see how they’ve done since, what analysts expect, and I’ll alert you at the price you choose.')}</p><button type="button" class="btn pri" data-exp="ideas">${L('Ver las ideas de compra', 'See the buy ideas')}</button></section>`;
+  const filas = xs.map((it) => {
+    const pr = precioSeguido(it), x = pr && pr.x;
+    const desde = pr && pr.eur && it.p0 ? (pr.eur / it.p0 - 1) * 100 : null;
+    const e = x ? esperadaRadar(x, null) : null, q = e && e.prin;
+    const aviso = [it.baja && L(`si baja de ${precioFmt(it.baja)}`, `below ${precioFmt(it.baja)}`), it.sube && L(`si sube de ${precioFmt(it.sube)}`, `above ${precioFmt(it.sube)}`)].filter(Boolean);
+    const cerca = pr && pr.eur && ((it.baja && pr.eur <= it.baja * 1.03) || (it.sube && pr.eur >= it.sube * 0.97));
+    return `<article class="seg">
+      <button type="button" class="seg-cab" data-consulta="${esc(it.s)}">${logo(x && x.w, it.n)}<span class="seg-n"><b>${esc(it.n)}</b><small>${x ? lineaOrigenCorta(x) : esc(it.s)}</small></span>
+        <span class="seg-p">${pr && pr.eur ? `<b>${precioFmt(pr.eur)}</b>` : '<b>—</b>'}${pr && pr.dia != null ? `<small class="${cls(pr.dia)}">${pctS(pr.dia, 1)} ${L('hoy', 'today')}</small>` : ''}</span></button>
+      <div class="seg-datos">
+        <div><span class="k">${L('Desde que la sigues', 'Since you followed')}</span><b class="${cls(desde)}">${desde == null ? '—' : pctS(desde, 1)}</b><small>${L(`el ${fechaCorta(it.desde)}`, `on ${fechaCorta(it.desde)}`)}${it.p0 ? `, ${precioFmt(it.p0)}` : ''}</small></div>
+        <div><span class="k">${L('Lo que esperan', 'What they expect')}</span><b class="${cls(q && q.subida)}">${q ? pctS(q.subida, 0) : '—'}</b><small>${q ? `${L('en', 'in')} ${plazoTxt(q.meses)}${x && x.na ? L(`, ${x.na} analistas`, `, ${x.na} analysts`) : ''}` : L('sin objetivo de analistas', 'no analyst target')}</small></div>
+        <div><span class="k">${L('Aviso', 'Alert')}</span><b class="${cerca ? 'warn' : ''}">${aviso.length ? esc(aviso.join(L(' o ', ' or '))) : L('ninguno', 'none')}</b><small>${cerca ? L('¡ya está cerca!', 'it’s close!') : ''}</small></div>
+      </div>
+      <div class="seg-btns"><button type="button" class="btn peq" data-seg-aviso="${esc(it.s)}">${ICONOS.campana}${aviso.length ? L('Cambiar aviso', 'Change alert') : L('Ponerle aviso', 'Add alert')}</button><button type="button" class="btn peq" data-accion="asesor" data-q="${esc(L(`¿Qué me dices de ${it.n} (${it.s})? La sigo sin tenerla: ¿es momento de comprar, a qué precio y cuánto meter?`, `What do you think of ${it.n} (${it.s})? I follow it without owning it: is it time to buy, at what price and how much?`))}">${ICONOS.growia}${L('¿La compro?', 'Should I buy?')}</button>${botonSeguir(it.s, it.n)}</div>
+    </article>`;
+  }).join('');
+  return `<section aria-labelledby="hSeg" class="bloque-sec"><div class="sec-cab"><h2 id="hSeg">${L('Las que sigues', 'What you follow')}</h2><span class="k">${xs.length === 1 ? L('una empresa', 'one company') : L(`${xs.length} empresas`, `${xs.length} companies`)}</span></div>
+    <div class="pila" style="gap:14px">${filas}</div>
+    <p class="nota">${L('Precios del radar de GrowFolio, en euros. Los avisos te llegan una vez, sin abrir la app si la tienes en el móvil con los avisos activados.', 'Prices from the GrowFolio radar, in euros. Alerts reach you once, without opening the app if you have it on your phone with alerts on.')}</p></section>`;
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-seguir],[data-seg-aviso]'); if (!b || !S.cartera) return;
+  e.preventDefault(); e.stopPropagation();
+  if (b.dataset.segAviso) editarAvisoSeguido(b.dataset.segAviso);
+  else seguir(b.dataset.seguir, b.dataset.seguirN);
+}, true);
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-consulta]'); if (!b || !S.cartera) return;
   const sim = b.dataset.consulta, c = candidatoDeSim(sim);
@@ -12972,8 +13193,13 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.10';
+const VERSION = '0.3.11';
 const NOVEDADES = [
+  { v: '0.3.11', f: '2026-10-21', h: '23:50', t: 'Empresas que sigues, dividendos mes a mes y fondos que se pisan', cosas: [
+    { d: 'buscar', ir: { v: 'expertos', antes: () => { S.expTab = 'siguiendo'; if (S.vista === 'expertos') pintar(); } }, t: 'Sigue empresas sin tenerlas', x: 'En cualquier idea de compra o empresa del radar, «Seguir». En Expertos, Siguiendo, ves cuánto se han movido desde que las sigues y lo que esperan de ellas, y les pones un aviso: te llega al móvil cuando bajan del precio al que las comprarías o suben del que digas.' },
+    { d: 'renta', ir: { v: 'analisis', sel: '.rf-btn', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tus dividendos, mes a mes', x: 'En Análisis, Tus números, Costes y dividendos: lo que cobrarás cada mes de los próximos 12, en bruto y lo que te queda después de Hacienda y de la retención de fuera. Sale de lo que pagó cada empresa el último año, con tus acciones de hoy.' },
+    { d: 'cifras', ir: { v: 'analisis', antes: () => { S.numAbierto = 'dentro'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: '¿Se pisan tus fondos?', x: 'En Por dentro: si dos fondos tuyos llevan las mismas empresas (un S&P 500 y un MSCI World comparten casi tres cuartos), cuánto se pisan. GrowIA también lo sabe, igual que lo que sigues y tus dividendos.' },
+  ], arreglos: [] },
   { v: '0.3.10', f: '2026-10-21', h: '23:40', t: 'Lo que ha rendido tu dinero, de verdad', cosas: [
     { d: 'cifras', ir: { v: 'analisis', sel: '.rent-real', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Lo que ha rendido tu dinero', x: 'En Análisis, Tus números: la TIR, lo que te ha dado tu dinero al año contando cuándo metiste y sacaste cada euro, y la TWR, lo que ha hecho la cartera sin contar tus aportaciones, que es la que se compara con un índice. Lo que ya tenías al apuntarlo no tiene fechas: cuenta con las que mejor cuadran con tu precio medio, y si pones desde cuándo tienes cada cosa, afina.' },
     { d: 'grafica', ir: { v: 'analisis', sel: '.rr-comp', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Frente al índice que quieras', x: 'Cuánto tendrías con el mismo dinero, los mismos días, en el MSCI World, el S&P 500, el MSCI Europe, los emergentes, un 60/40 o el Ibex. En la gráfica de Inicio, «Comparar con» también deja elegir el índice. Y GrowIA ya sabe cuánto ha rendido tu dinero.' },
@@ -15617,6 +15843,14 @@ function contextoAsesor(M, modo = 'chat') {
     L.push(`Acciones sueltas: ${fmtNum(sueltas, 1)} % del total. Su límite propio: ${fmtNum(+(S.cartera.limite_acciones ?? 20), 0)} %.`);
     try { L.push('', '## Su perfil y sus objetivos (ajusta todos tus consejos a esto)', ...textoPerfil(M), ''); } catch (e) {}
     const conTer = M.filas.filter((f) => f.inst.ter != null), base = sum(conTer, (f) => f.valor), coste = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
+    try {
+      const D = dividendosMeses(M);
+      if (D.bruto) L.push(`Dividendos de los próximos 12 meses (repitiendo lo de los últimos 12, mes del ex-dividendo): ${E0(D.neto)} netos de ${E0(D.bruto)} brutos; ${D.meses.filter((m) => m.bruto).map((m) => `${m.k}: ${E0(m.neto)} (${m.de.map((x) => x.n).join(', ')})`).join('; ')}.`);
+      const SO = solapamientos(M);
+      if (SO.pares.length) L.push('Fondos que se pisan (llevan las mismas grandes empresas de una zona): ' + SO.pares.map((x) => `${x.a.inst.corto} y ${x.b.inst.corto} en un ${fmtNum(x.pct, 0)} %`).join('; ') + '.');
+      const sg = siguiendo();
+      if (sg.length) L.push('Empresas que sigue sin tenerlas: ' + sg.map((it) => { const pr = precioSeguido(it); return `${it.n} (${it.s}${pr && pr.eur ? `, ${fmtNum(pr.eur, 2)} €` : ''}${pr && pr.eur && it.p0 ? `, ${P1((pr.eur / it.p0 - 1) * 100)} desde que la sigue el ${it.desde}` : ''}${it.baja ? `, aviso si baja de ${fmtNum(it.baja, 2)} €` : ''}${it.sube ? `, aviso si sube de ${fmtNum(it.sube, 2)} €` : ''})`; }).join('; ') + '.');
+    } catch (e) {}
     L.push(`Dividendos brutos estimados al año ${E0(M.dividendos)}. Gastos de sus fondos ${E0(coste)} al año (TER medio ${fmtNum(base ? (coste / base) * 100 : 0, 2)} %).`);
     const ed = empresasPorDentro(M).filas.slice(0, chat ? 10 : 15);
     if (ed.length) L.push('Empresas que más pesan contando lo que hay dentro de sus fondos: ' + ed.map((e) => `${e.n} ${E0(e.v)}${e.directa ? ' (comprada directamente)' : ''}`).join(', ') + '.');
