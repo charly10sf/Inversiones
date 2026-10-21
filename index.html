@@ -1809,6 +1809,20 @@ body.ce-arrastrando { user-select: none; cursor: grabbing; }
 .fx-ok::before { content: '✓ '; }
 
 /* posiciones en el móvil: valor, ganancia desde la compra y hoy */
+/* y a la izquierda, siempre igual: el nombre; la bandera, el país y la plataforma en una línea; y, si hay, las
+   etiquetas (la señal, cantidad aproximada) en otra. Sin el nombre largo, que está en la ficha */
+.pos-donde .pos-pl::before { content: '·'; margin-right: 6px; color: var(--muted); }
+.pos-chips:empty { display: none; }
+@media (max-width: 680px) {
+  .fila .nombre-real { display: none; }
+  .fila .activo { gap: 2px; }
+  .fila .activo b { font-size: 15.5px; }
+  .fila .pos-donde { flex-wrap: nowrap; gap: 6px; overflow: hidden; }
+  .fila .pos-donde .origen { flex: none; }
+  .fila .pos-donde .pos-pl { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .fila .pos-chips { flex-wrap: nowrap; gap: 6px; overflow: hidden; margin-top: 3px; }
+  .fila .pos-chips .chip, .fila .pos-chips .senal { flex: none; font-size: 11.5px; line-height: 19px; padding: 0 8px; border-radius: 7px; }
+}
 .c-desde, .hoy-l, .leyenda-m { display: none; }
 @media (max-width: 680px) {
   .fila { grid-template-areas: "act val" "act desde" "act hoy"; }
@@ -5396,7 +5410,7 @@ function htmlPosiciones(M) {
   const filas = ordenarPos(M.filas).map((f) => {
     const id = f.pos.id;
     return `<button class="fila" data-pos="${esc(id)}" aria-label="Abrir la ficha de ${esc(f.inst.corto || f.inst.nombre)}">
-        <span class="activo-l">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}<span class="activo"><b>${esc(f.inst.corto || f.inst.nombre)}</b>${nombreReal(f.inst) ? `<span class="nombre-real" title="${esc(nombreReal(f.inst))}">${esc(nombreReal(f.inst))}</span>` : ''}<small>${origen(f.inst)}<span>${esc(f.pos.plataforma || '')}</span>${chipsPos(f)}${['mantener', 'aportar'].includes(f.senal.nivel) ? '' : `<span class="senal ${f.senal.nivel} solo-movil">${f.senal.txt}</span>`}</small></span></span>
+        <span class="activo-l">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}<span class="activo"><b>${esc(f.inst.corto || f.inst.nombre)}</b>${nombreReal(f.inst) ? `<span class="nombre-real" title="${esc(nombreReal(f.inst))}">${esc(nombreReal(f.inst))}</span>` : ''}<small class="pos-donde">${origen(f.inst)}<span class="pos-pl">${esc(f.pos.plataforma || '')}</span></small>${(() => { const ch = chipsPos(f) + (['mantener', 'aportar'].includes(f.senal.nivel) ? '' : `<span class="senal ${f.senal.nivel} solo-movil">${f.senal.txt}</span>`); return ch ? `<small class="pos-chips">${ch}</small>` : ''; })()}</span></span>
         <span class="r c-precio">${B('pp:' + id)}</span>
         <span class="r c-hoy"><span class="k hoy-l">hoy </span>${B('pdE:' + id)}<small class="hoy-pct">${B('pd:' + id)}</small></span>
         <span class="r valor c-val">${B('pv:' + id)}</span>
@@ -6508,7 +6522,21 @@ function htmlMercadoInforme(abierto = true) {
     ${(inf.macro || []).length ? `<div class="macro-ia">${inf.macro.map((x) => `<div><small>${escIA(x.t)}</small><b>${escIA(x.dato)}</b><p>${escIA(x.lectura)}</p></div>`).join('')}</div>` : ''}
   </details>`;
 }
-const limpiaIA = (t) => String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, '');
+/* GrowIA a veces hablaba de una meta lejana como si estuviera al caer («sostienen el rumbo hacia los 500.000 €»).
+   Los análisis nuevos dicen la distancia, pero los de antes siguen guardados: al enseñarlos, esa coletilla se quita
+   si la cifra es más de vez y media lo que tienes. */
+const NUM_IA = String.raw`\*{0,2}([\d.]+(?:,\d+)?)\s?(?:€|euros)\*{0,2}`;
+const RUMBO_IA = [
+  new RegExp(String.raw`\b(?:el|su|tu) (?:rumbo|camino) (?:hacia|a|de) (?:(?:los|las|tus|tu meta de|la meta de) )?` + NUM_IA, 'gi'),
+  new RegExp(String.raw`,?\s*(?:rumbo|camino) (?:hacia|a|de) (?:(?:los|las|tus|tu meta de|la meta de) )?` + NUM_IA, 'gi'),
+  new RegExp(String.raw`\s+(?:hacia|rumbo a) (?:(?:los|las|tus|tu meta de) )?` + NUM_IA, 'gi'),
+];
+function sinRumbo(t) {
+  const total = (S.M && S.M.total) || 0;
+  const lejos = (x) => total > 0 && +String(x).replace(/\./g, '').replace(',', '.') > total * 1.5;
+  return t.replace(RUMBO_IA[0], (m, x) => (lejos(x) ? 'la cartera' : m)).replace(RUMBO_IA[1], (m, x) => (lejos(x) ? '' : m)).replace(RUMBO_IA[2], (m, x) => (lejos(x) ? '' : m));
+}
+const limpiaIA = (t) => sinRumbo(String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, ''));
 const escIA = (t) => esc(limpiaIA(t));
 const noticiasIdea = (sim) => ((S.precios && S.precios.noticias_ideas) || {})[sim] || [];
 /* ---------- las mejores ideas: la web, Gemini y tu análisis, juntas ----------
@@ -11405,6 +11433,7 @@ const NOVEDADES = [
     { d: 'app', t: 'El widget, como la app', x: 'La cifra más gruesa y la curva con el mismo grano dorado, el trazo que se enciende hacia hoy y el halo en el punto de ahora. Llega con la app nueva de Android.' },
     { d: 'grafica', t: 'El widget: 24 horas y escala', x: 'Los plazos de la curva, a la vista arriba a la derecha, junto a refrescar: 24 h, 1 semana, 1 mes, 3 meses y 1 año. Tocas el que quieras y la curva cambia con un fundido. Abajo salen las horas o las fechas, a la izquierda los valores, y al lado de lo de hoy cuánto ha cambiado en ese plazo.' },
     { d: 'intro', t: 'Lo que te perdiste, de una vez', x: 'Si llevas tiempo sin entrar, al volver te salen juntas todas las versiones que te has perdido, cada una con su capítulo: lo más importante en grande y el resto en una lista corta que se abre al tocarla. Los bugs corregidos, todos al final.' },
+    { d: 'tengo', ir: { v: 'cartera', sel: '#hPos ~ .der', pos: true }, t: 'Tus posiciones, todas iguales', x: 'En el móvil, cada posición con el mismo orden: el nombre, debajo la bandera, el país y la plataforma en una línea y, si hay, sus etiquetas en otra. El nombre largo queda en su ficha.' },
     { d: 'calendario', ir: { v: 'cartera', sel: '#hAp', plan: true }, t: 'Plan y movimientos, al grano', x: 'Cada aportación, compra o posición en una fila de dos líneas: qué es y dónde a la izquierda, el importe a la derecha y un lápiz pequeño para cambiarla. Los botones van al lado de cada título, sin huecos.' },
     { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: '«Cómo vas», en Análisis', x: 'La tarjeta que te dice si vas bien sale ahora arriba de Análisis, justo encima de tus objetivos, y ya no en el Paso a paso.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.hero-num' }, t: 'El patrimonio se enciende', x: 'Cuando cambia con los precios en directo, la cifra se pone un momento en verde si sube y en rojo si baja.' },
@@ -13613,9 +13642,12 @@ async function revisarAnalisisIA() {
   // si has cambiado tus reglas después de su última revisión, la rehace con las nuevas
   const reglas = p && S.ia && S.ia.reglas_fecha && String(S.ia.reglas_fecha) > String(p.fecha);
   const perfilNuevo = p && S.cartera.perfil && S.cartera.perfil.actualizado && String(S.cartera.perfil.actualizado) > String(p.fecha);
+  // los de antes de que GrowIA dijera a qué distancia está cada meta (0.3.0b) se rehacen una vez
+  const metasViejo = p && String(p.fecha) < '2026-10-20T23:15';
   if (edad > limite) generarAnalisisIA(p ? 'revisión diaria' : 'primera revisión');
   else if (reglas) generarAnalisisIA('han cambiado tus reglas');
   else if (perfilNuevo) generarAnalisisIA('has cambiado tu perfil o le has contestado');
+  else if (metasViejo) generarAnalisisIA('ahora dice a qué distancia está cada meta');
   else if (cambio) generarAnalisisIA('ha cambiado la señal de alguna posición');
   else if (prensa) generarAnalisisIA('hay noticias nuevas en el informe de prensa');
 }
