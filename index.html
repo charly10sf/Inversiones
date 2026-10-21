@@ -830,6 +830,8 @@ a.kpi:hover .v { color: var(--accent); }
 .ficha-tit small { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; }
 .ficha-tit small > span + span::before { content: '·'; margin-right: 6px; }
 .ficha-tit small > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+/* en el móvil no cabe «Irlanda · Fondo indexado · MyInvestor»: la plataforma baja a otra línea en vez de quedarse en «·» */
+@media (max-width: 560px) { .ficha-tit small { flex-wrap: wrap; row-gap: 0; } .ficha-tit small > span:last-child { min-width: 0; } }
 .ficha-tit .ib { flex: none; margin-right: -8px; }
 /* el precio pequeño de la barra: sale cuando el grande se ha ido hacia arriba */
 .ficha-mini { display: grid; justify-items: end; gap: 1px; flex: none; text-align: right; font-variant-numeric: tabular-nums; opacity: 0; transform: translateY(4px); transition: opacity 0.2s ease, transform 0.2s ease; pointer-events: none; }
@@ -1780,6 +1782,7 @@ body.ce-arrastrando { user-select: none; cursor: grabbing; }
 .ce-add span { display: grid; gap: 2px; } .ce-add small { color: var(--muted); font-size: 12.5px; line-height: 1.4; }
 .ce-pie { position: sticky; bottom: calc(var(--nav-h, 0px) + env(safe-area-inset-bottom) + 10px); z-index: 6; display: flex; justify-content: flex-end; gap: 10px; margin-top: 22px; padding: 10px; border: 1px solid var(--line-2); border-radius: 16px; background: rgba(12, 11, 9, 0.92); backdrop-filter: blur(10px); }
 .ce-pie .btn.pri svg { width: 17px; height: 17px; }
+@media (max-width: 420px) { .ce-pie { gap: 8px; } .ce-pie .btn { flex: 1 1 auto; padding-left: 10px; padding-right: 10px; justify-content: center; } }
 @media (min-width: 760px) { .ce-pie { bottom: 16px; } }
 /* compra o venta apuntada */
 .celebra { position: fixed; inset: 0; z-index: 120; display: grid; place-items: center; background: rgba(0, 0, 0, 0.45); animation: celFondo 0.25s ease both; cursor: pointer; }
@@ -5000,6 +5003,7 @@ function binds(M) {
     // un fondo cuyo último valor es de hace más de dos sesiones no se ha movido «hoy»: raya, no su cambio viejo
     b['pd:' + id] = f.diaViejo ? { txt: '—', n: null, cls: '' } : { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
     // lo de hoy también en euros (en la tabla sale con el % debajo)
+    b['pdF:' + id] = { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
     b['pdE:' + id] = { txt: f.dia == null || f.varDia == null || f.diaViejo ? '—' : eurS(f.dia, Math.abs(f.dia) < 10 ? 2 : 0), n: f.diaViejo ? null : f.dia, cls: f.diaViejo ? '' : cls(f.dia) };
     b['pw:' + id] = { txt: pct(f.peso, 1), n: f.peso };
     b['pt:' + id] = { txt: pctS(f.plPct, 1), n: f.plPct, cls: cls(f.pl) };
@@ -7307,7 +7311,7 @@ function pasosRuta0(M) {
     const f = pl.f, p = f.p || {}, res = p.proximos_resultados && p.proximos_resultados >= hoy && diasEntre(hoy, p.proximos_resultados) <= 31 ? p.proximos_resultados : null;
     const destino = [pl.aIdea > 0 && pl.ideas[0] ? `${eur(pl.aIdea, 0)} a ${esc(pl.ideas[0].n)}` : '', pl.aNucleo > 0.5 ? `${eur(pl.aNucleo, 0)} ${nucleo(M).a}` : ''].filter(Boolean).join(IDIOMA === 'en' ? ' and ' : ' y ');
     add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? sumarDias(res, -1) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
-      t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
+      t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion ? 0 : f.inst.clase === 'Cripto' ? 4 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
       pq: esc(f.senal.motivos[0] || ''),
       como: `${esc(pl.cuando[0].replace(/^Ya: /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? ` Con lo que cobres: ${destino}.` : ''}`,
       imp: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año. ${(() => { const l = libreRecompra(f.inst, res ? sumarDias(res, -1) : hoy); return l ? `No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}` : reglaRecompra(f.inst).corto; })()}`}`,
@@ -8483,7 +8487,7 @@ function htmlFiscalRecom(M, fa) {
   for (const pl of planes) {
     gan += pl.ganancia;
     const antes = fiscalAnio(anio, gan - pl.ganancia).cuota, despues = fiscalAnio(anio, gan).cuota;
-    filas.push({ q: `Vender ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${esc(pl.f.inst.corto)}`, d: `ganancia de ${eurS(pl.ganancia, 0)} por FIFO (se venden primero las más antiguas)`, v: despues - antes, c: `en la renta de ${anio}, entre abril y junio de ${anio + 1}` });
+    filas.push({ q: `Vender ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${esc(pl.f.inst.corto)}`, d: `${pl.ganancia < 0 ? `pérdida de ${eur(-pl.ganancia, 0)}` : `ganancia de ${eurS(pl.ganancia, 0)}`} por FIFO (se venden primero las más antiguas)`, v: despues - antes, c: `en la renta de ${anio}, entre abril y junio de ${anio + 1}` });
     const top = pl.ideas[0];
     if (pl.aIdea > 0 && top) {
       const tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede), e = rentaEsperada(top, top.pot, 12);
@@ -8561,7 +8565,7 @@ function htmlImpuestos(M) {
         <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r">Ganancia o pérdida</th><th class="r">Impuesto si vendes todo</th><th class="r">Tipo</th></tr></thead><tbody>
           ${latentes.map((x) => `<tr><td><b style="font-weight:600">${esc(x.f.inst.corto || x.f.inst.nombre)}</b><small>${esc(x.f.pos.plataforma || '')}${/^Fondo/.test(x.f.inst.tipo || '') ? ', se puede traspasar sin pagar' : ''}</small></td><td class="r ${cls(x.g)}">${eurS(x.g, 0)}</td><td class="r">${x.imp > 0 ? eur(x.imp, 0) : '—'}</td><td class="r">${x.g > 0 ? pct((x.imp / x.g) * 100, 1) : x.g < 0 ? '<span class="k">resta</span>' : '—'}</td></tr>`).join('')}
         </tbody></table></div>
-        <p class="nota">Vender todo hoy costaría unos ${eur(todo, 0)} en la renta de ${anio}. Las pérdidas restan de las ganancias del mismo año; por eso el impuesto de cada fila depende de lo que ya llevas. ${perdidas.length ? `Ahora tienes pérdidas sin vender en ${perdidas.map((x) => esc(x.f.inst.corto)).join(', ')}: si algún día las vendes, hazlo el mismo año que una venta con ganancia para compensarla.` : ''}</p>
+        <p class="nota">Vender todo hoy costaría unos ${eur(todo, 0)} en la renta de ${anio}. Las pérdidas restan de las ganancias del mismo año; por eso el impuesto de cada fila depende de lo que ya llevas. ${perdidas.length ? `Ahora tienes pérdidas sin vender en ${yLista(perdidas.map((x) => esc(x.f.inst.corto)))}: si algún día las vendes, hazlo el mismo año que una venta con ganancia para compensarla.` : ''}</p>
       </div></details>
     </div>
     ${htmlFiscalGuia(M, fa, { tr, cripto, fondos, divs })}`;
@@ -8615,7 +8619,7 @@ function htmlFiscalGuia(M, fa, x) {
   const tiene = (fn) => M.filas.filter(fn);
   const accES = tiene((f) => f.inst.tipo === 'Acción' && f.inst.pais === 'ES'), accEx = tiene((f) => f.inst.tipo === 'Acción' && f.inst.pais !== 'ES');
   const etc = tiene((f) => /ETC|ETF/.test(f.inst.tipo || '')), cri = tiene((f) => f.inst.clase === 'Cripto');
-  const lista = (v) => v.map((f) => esc(f.inst.corto)).join(', ');
+  const lista = (v) => yLista(v.map((f) => esc(f.inst.corto)));
   const como = [
     x.fondos.length && ['Fondos de inversión', lista(x.fondos), 'Mientras no los vendas no pagas nada. Si pasas el dinero de un fondo a otro (traspaso) tampoco: el impuesto se aplaza hasta que lo saques de verdad. Al reembolsar te retienen el 19 % de la ganancia.'],
     accES.length && ['Acciones españolas', lista(accES), 'Pagas por la ganancia al vender (FIFO: primero salen las más antiguas). Los dividendos llegan con el 19 % retenido, que se resta en la renta.'],
@@ -8843,7 +8847,7 @@ function htmlPlanVenta(pl, compacto) {
   if (plegado) compacto = false;
   const resP = f.p && f.p.proximos_resultados && f.p.proximos_resultados >= hoyIso() && diasEntre(hoyIso(), f.p.proximos_resultados) <= 21 ? f.p.proximos_resultados : null;
   const pasos = [
-    `<b>Vende ${oc(fmtNum(pl.uds, pl.accion ? 0 : 2))} ${pl.accion ? 'acciones' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b>${resP ? `, antes del ${fechaCorta(resP)}` : ''}`,
+    `<b>Vende ${oc(fmtNum(pl.uds, pl.accion ? 0 : f.inst.clase === 'Cripto' ? 4 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b>${resP ? `, antes del ${fechaCorta(resP)}` : ''}`,
     pl.aIdea > 0 && top ? `<b>Compra ${eur(pl.aIdea, 0)} de ${esc(top.n)}</b>${(() => { const e = esperadaRadar(top); return e ? `<small>${esc(planTxt(e).replace(/^Plazo: /, ''))}</small>` : ''; })()}` : '',
     pl.aNucleo > 0.5 ? `<b>Mete ${eur(pl.aNucleo, 0)} ${esc(nucleo(S.M).a.replace(/^a /, 'en '))}</b>` : '',
     pl.impuesto > 0 ? `<b>Aparta ${eur(pl.impuesto, 0)} para Hacienda</b><small>la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}</small>` : '',
@@ -9824,11 +9828,11 @@ function htmlFicha(f) {
   // que se quedan fijas debajo de la barra
   return `<div class="ficha-cab">
     <div class="ficha-tit">${logo(i.dominio, i.corto || i.nombre)}<div class="ft-n"><h2 id="fichaTit" title="${esc(i.nombre || '')}">${esc(i.corto || i.nombre)}</h2><small title="${esc(donde(i))}">${origen(i)}<span>${esc(tipo)}</span><span>${esc(f.pos.plataforma || '')}</span></small></div>
-      <div class="ficha-mini" aria-hidden="true">${B('pp:' + id)}${B('pd:' + id)}</div>
+      <div class="ficha-mini" aria-hidden="true">${B('pp:' + id)}${B('pdF:' + id)}</div>
       <button class="ib ib-bicho" data-accion="opinion" title="Avisar de un fallo o mandar una idea" aria-label="Avisar de un fallo">${ICONOS.bicho}</button><button class="ib" data-accion="cerrar-ficha" aria-label="Cerrar">${ICONOS.cerrar}</button></div>
   </div>
   <div class="ficha-top">
-    <div class="ficha-precio"><span class="p">${B('pp:' + id)}</span>${B('pd:' + id)}<span class="k">${f.vivo && S.live[i.id] ? `hoy, ${esc(S.live[i.id].fuente)}` : /^Fondo/.test(i.tipo || '') && p.fecha ? `precio del ${fechaCorta(p.fecha)}: los fondos tienen uno al día` : p.fecha ? (p.fecha === hoyIso() && p.hora_mercado ? `hoy a las ${new Date(p.hora_mercado).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : `cierre del ${fechaCorta(p.fecha)}`) : 'hoy'}</span></div>
+    <div class="ficha-precio"><span class="p">${B('pp:' + id)}</span>${B('pdF:' + id)}<span class="k">${f.vivo && S.live[i.id] ? `hoy, ${esc(S.live[i.id].fuente)}` : /^Fondo/.test(i.tipo || '') && p.fecha ? `precio del ${fechaCorta(p.fecha)}: los fondos tienen uno al día` : p.fecha ? (p.fecha === hoyIso() && p.hora_mercado ? `hoy a las ${new Date(p.hora_mercado).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}` : `cierre del ${fechaCorta(p.fecha)}`) : 'hoy'}</span></div>
     <div class="ficha-precio" style="margin-top:-6px;font-size:15px"><span class="k">Tienes</span>${B('pv:' + id, 'valor')}${B('pg:' + id)}${B('pt:' + id)}</div>
     ${(() => { if (i.clase === 'Efectivo') return ''; const tp = tiempoPos(f); return tp ? `<div class="ficha-anual k">Desde hace ${duracion(tp.dias)}: <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b> (la bolsa suele dar un ${fmtNum(bolsaAnual(), 0)} %)</div>` : `<div class="ficha-anual k">¿Cuánto ganas al año? <button class="enlace acento" data-accion="editar-pos" data-id="${esc(id)}">Pon desde cuándo la tienes</button></div>`; })()}
     <div class="ficha-botones">
@@ -12994,7 +12998,6 @@ function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
     else if (a === 'importar') { cerrarTour(true, true); importarCapturas(); }
   });
   $('.tour-caja', capa).classList.add('pop');
-  TOURE.atras = conAtras(() => cerrarTour(true, false, true), capa);   // «Atrás» cierra el tutorial (como Escape)
   pasoTour();
 }
 function cerrarTour(hecho, sinVolver, desdeAtras) {
@@ -15305,7 +15308,7 @@ function htmlClaveAsesor() {
     <p>GrowIA funciona con ${esc(MODELOS[cfg.modelo].n)}, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
     <ol class="as-pasos-clave">
       <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
-      <li>Pulsa «Create API key» y copia la clave entera: empieza por AQ. (o por AIza si es de las antiguas).</li>
+      <li>Pulsa «Create API key» y copia la clave entera: empieza por «AQ.» (o por «AIza» si es de las antiguas).</li>
       <li>Pégala aquí. Se guarda cifrada con la clave de tu cartera y solo viaja de tu navegador a Google.</li>
     </ol>
     <label class="campo">Clave de Google<input type="password" id="asClave" placeholder="AQ.… o AIza…" autocomplete="off" spellcheck="false"></label>
@@ -15498,7 +15501,7 @@ async function clicAsesor(e) {
     AS.vista = 'clave'; pintarAsesor();
   } else if (a === 'guardar-clave') {
     const c = $('#asClave', fondo).value.trim(), err = $('#asErr', fondo), pv = cfgAsesor().prov;
-    if (pv === 'google' && !/^[\w.-]{30,}$/.test(c)) { err.textContent = 'Eso no parece una clave de Google AI Studio: son una sola línea larga, sin espacios, que empieza por AQ. o por AIza.'; return; }
+    if (pv === 'google' && !/^[\w.-]{30,}$/.test(c)) { err.textContent = 'Eso no parece una clave de Google AI Studio: son una sola línea larga, sin espacios, que empieza por «AQ.» o por «AIza».'; return; }
     t.disabled = true; t.textContent = 'Probando…'; err.textContent = '';
     try {
       await probarClave(c);
@@ -15932,7 +15935,8 @@ const IDIOMA = LS.get('inv-idioma', 'es') === 'en' ? 'en' : 'es';
 // "Repsol, BAT y IAG" / "Repsol, BAT and IAG": las listas se juntan ya en el idioma de la app
 // trozos que se montan en el código (títulos, aria-label, listas) y se traducen antes de pintarse
 const trad = (s) => (IDIOMA === 'en' && I18N.dic ? traducirTexto(s) ?? s : s);
-const yLista = (a) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}${IDIOMA === 'en' ? ' and ' : ' y '}${a[a.length - 1]}` : a.join(''));
+// «BAT e IAG»: delante de i- o hi- (sin diptongo: «hielo» no) la y pasa a e
+const yLista = (a) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}${IDIOMA === 'en' ? ' and ' : /^h?[iíIÍ](?![aeouáéóúAEOU])/.test(String(a[a.length - 1]).replace(/^<[^>]*>/, '')) ? ' e ' : ' y '}${a[a.length - 1]}` : a.join(''));
 const I18N = { dic: null };
 const NUM_I18N = /[-+−]?\d+(?:[.,]\d+)*/g;   // el punto o la coma de después de un número no es suyo («en 2026, que…»)
 const ATR_I18N = ['placeholder', 'title', 'aria-label', 'alt'];
