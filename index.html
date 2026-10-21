@@ -2719,6 +2719,41 @@ body.con-ixn { overflow: hidden; }
 .ixn-arr.dentro li { opacity: 1; transform: none; }
 .ix.quieta .ixn-arr li { transition: none; }
 .ixn-ir { margin-top: 22px; min-height: 46px; padding: 0 22px; will-change: transform, opacity; }
+/* varias versiones perdidas: la ruta de versiones bajo el número, un capítulo por versión y el resto en lista corta */
+.ixn-ruta { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; justify-content: center; gap: 6px 4px; max-width: 520px; font-variant-numeric: tabular-nums; }
+.ixn-ruta li { display: flex; align-items: center; gap: 4px; padding: 4px 10px; border-radius: 999px; background: rgba(255, 255, 255, 0.06); color: var(--text-2); font-size: 13.5px; font-weight: 650; }
+.ixn-ruta li + li::before { content: ''; width: 10px; height: 1px; margin: 0 6px 0 -10px; background: rgba(255, 255, 255, 0.22); }
+.ixn-ruta li.hoy { background: color-mix(in srgb, var(--accent) 20%, transparent); color: var(--accent); }
+.ixn:not(.quieta) .ixn-ruta li { animation: ixnLema 0.5s cubic-bezier(.2, .75, .25, 1) backwards; animation-delay: calc(0.55s + var(--k) * 0.09s); }
+.ixn-capv { min-height: 72vh; min-height: 72dvh; display: grid; align-items: center; padding: 70px 22px 30px; text-align: center; }
+.ixn-capv-in { display: grid; justify-items: center; gap: 12px; }
+.ixn-capv-v { margin: 0; font-size: clamp(56px, 16vw, 128px); font-weight: 800; letter-spacing: -0.05em; line-height: 0.95; font-variant-numeric: tabular-nums; }
+.ixn-capv h3 { margin: 0; max-width: 560px; color: var(--accent); font-size: clamp(20px, 5vw, 30px); font-weight: 700; letter-spacing: -0.025em; line-height: 1.2; }
+.ixn-capv p { margin: 0; color: var(--text-2); font-size: clamp(14.5px, 3.7vw, 17px); }
+.ixn-capv-in > * { opacity: 0; transform: translateY(22px); transition: opacity 0.6s ease, transform 0.7s cubic-bezier(.2, .7, .3, 1); }
+.ixn-capv-in > .ixn-capv-v { filter: blur(8px); transform: scale(1.18); transition: opacity 0.7s ease, transform 0.8s cubic-bezier(.2, .75, .25, 1), filter 0.7s ease; }
+.ixn-capv-in > :nth-child(2) { transition-delay: 0.18s; } .ixn-capv-in > :nth-child(3) { transition-delay: 0.3s; }
+.ixn-capv.dentro .ixn-capv-in > * { opacity: 1; transform: none; filter: none; }
+.ixn-mas { padding: 40px 22px 90px; }
+.ixn-mas-in { width: 100%; max-width: 640px; margin: 0 auto; }
+.ixn-mas h3 { margin: 0 0 18px; color: var(--text-2); font-size: 15px; font-weight: 650; }
+.ixn-mas ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 16px; }
+.ixn-mas li { display: flex; gap: 14px; align-items: flex-start; opacity: 0; transform: translateY(16px); transition: opacity 0.45s ease, transform 0.5s cubic-bezier(.2, .7, .3, 1); transition-delay: calc(var(--i, 0) * 70ms); }
+.ixn-mas.dentro li { opacity: 1; transform: none; }
+.ixn-mas .dib { width: 84px; height: 56px; padding: 5px; border-radius: 10px; }
+.ixn-mas b { display: block; font-size: 16.5px; line-height: 1.3; margin-bottom: 3px; }
+.ixn-mas p { margin: 0; color: var(--text-2); font-size: 14.5px; line-height: 1.5; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
+.ixn-mas li { cursor: pointer; }
+.ixn-mas li.abierta p { -webkit-line-clamp: unset; display: block; }
+.ixn-mas h3 b { display: inline; color: var(--text); font-size: 15px; margin-right: 6px; }
+.ixn-mas.vieja { padding: 14px 22px 26px; }
+.ixn-mas.vieja + .ixn-capv { margin-top: 60px; }
+.ixn-ruta li.mas { background: none; color: var(--text-3, var(--text-2)); padding: 4px 4px; }
+.ixn-capv-rango span { margin: 0 0.08em; color: var(--text-3, var(--text-2)); font-weight: 600; }
+.ixn-mas .enlace { margin-top: 4px; font-size: 14px; }
+.ixn-arr.corta li:nth-child(n + 11) { display: none; }
+.ixn-arr-mas { display: block; margin: 18px auto 0; font-size: 15px; }
+.ix.quieta .ixn-capv-in > *, .ix.quieta .ixn-mas li { transition: none; }
 .ix.quieta .ixn-heroe { height: auto; }
 /* con «reducir movimiento»: todo montado y quieto */
 .ix.quieta .ix-heroe { height: auto; }
@@ -11345,6 +11380,7 @@ const NOVEDADES = [
   { v: '0.3.1', f: '2026-10-21', h: '03:05', t: 'El widget con 24 horas, «Inicio» de verdad y arreglos', cosas: [
     { d: 'app', t: 'El widget, como la app', x: 'La cifra más gruesa y la curva con el mismo grano dorado, el trazo que se enciende hacia hoy y el halo en el punto de ahora. Llega con la app nueva de Android.' },
     { d: 'grafica', t: 'El widget: 24 horas y escala', x: 'Los plazos de la curva, a la vista arriba: 24 h, 1 semana, 1 mes, 3 meses y 1 año. Tocas el que quieras y la curva cambia con un fundido. Abajo salen las horas o las fechas, a la izquierda los valores, y al lado de lo de hoy cuánto ha cambiado en ese plazo.' },
+    { d: 'intro', t: 'Lo que te perdiste, de una vez', x: 'Si llevas tiempo sin entrar, al volver te salen juntas todas las versiones que te has perdido, cada una con su capítulo: lo más importante en grande y el resto en una lista corta que se abre al tocarla. Los bugs corregidos, todos al final.' },
     { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: '«Cómo vas», en Análisis', x: 'La tarjeta que te dice si vas bien sale ahora arriba de Análisis, justo encima de tus objetivos, y ya no en el Paso a paso.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.hero-num' }, t: 'El patrimonio se enciende', x: 'Cuando cambia con los precios en directo, la cifra se pone un momento en verde si sube y en rojo si baja.' },
     { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: '«Inicio», desde que empezaste a invertir', x: 'La primera vez que lo tocas te pregunta en qué mes y año empezaste a invertir, no cuándo empezaste a usar GrowFolio, y la pastilla dice lo ganado de verdad desde entonces. Lo cambias en tu perfil.' },
@@ -11708,37 +11744,70 @@ const COLORES_NOV = ['#E2B45F', '#4FC995', '#3987e5', '#d55181', '#d95926'];
 function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   const quieta = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pasos = [], cosas = [];
-  const gorda = nuevas.find((n) => /^\d+\.\d+\.0$/.test(n.v));
-  const serie = gorda ? gorda.v.replace(/0$/, '') : '';   // 0.3.0 → «0.3.»: la 0.3.0b y la 0.3.1 van con ella
-  const manda = !!gorda && nuevas.slice(0, nuevas.indexOf(gorda)).every((m) => m.v.startsWith(serie));
-  const juntas = !!gorda && nuevas.every((m) => m.v.startsWith(serie));
-  if (juntas) nuevas = [...nuevas].reverse();
-  for (const n of nuevas) for (const c of n.cosas || []) { cosas.push({ ...c, v: n.v, paso: c.ir ? pasos.length : null }); if (c.ir) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
+  // con varias versiones perdidas, cada una con su capítulo (de la más antigua a la de ahora) y condensada: lo que
+  // más importa de cada una en grande, el resto en una lista corta; los bugs, todos juntos al final
+  const varias = nuevas.length > 1;
+  const ultima = nuevas[0];
+  const grupos = [];
+  for (const n of [...nuevas].reverse()) {   // la 0.2.3b va con la 0.2.3: un capítulo por número
+    const base = n.v.replace(/[a-z]+$/, ''), g = grupos[grupos.length - 1];
+    if (g && g.base === base) g.vs.push(n); else grupos.push({ base, vs: [n] });
+  }
+  // si son muchas, las cuatro últimas con su capítulo y las de antes, juntas en uno, solo en lista corta
+  const muchas = grupos.length > 4, viejas = grupos.length > 5 ? grupos.length - 4 : 0;
+  const enGrande = (g, k) => (!varias ? 99 : k < viejas ? 0 : /\.0$/.test(g.base) ? (muchas ? 3 : 4) : muchas ? 1 : 2);
+  const escena = (c, k) => `<section class="ix-cap" data-ancla data-lado="${k % 2 ? 'd' : 'i'}" data-color="${COLORES_NOV[k % COLORES_NOV.length]}">
+        <div class="ix-cap-in">
+          <div class="ix-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true"><g transform="translate(0 5) scale(2)">${DIBUJOS[c.d] || DIBUJOS.pulido || ''}</g></svg></div>
+          <div class="ix-txt"><h2 data-no-trad data-t="${esc(c.t)}" aria-label="${esc(c.t)}"></h2><p>${esc(c.x)}</p>${c.paso != null ? `<button type="button" class="btn ixn-ir" data-nv-ir="${c.paso}">Enséñamelo</button>` : ''}</div>
+        </div>
+      </section>`;
+  let cuerpo = '', ne = 0;
+  grupos.forEach((g, k) => {
+    const suyas = g.vs.flatMap((n) => (n.cosas || []).map((c) => ({ ...c, v: n.v })));
+    for (const c of suyas) { c.paso = c.ir ? pasos.length : null; if (c.ir) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: c.v }); cosas.push(c); }
+    const cuantas = enGrande(g, k), grandes = suyas.length <= cuantas + 1 ? suyas : suyas.slice(0, cuantas), resto = suyas.slice(grandes.length);
+    const prin = g.vs[0], bugs = g.vs.reduce((t, n) => t + ((n.arreglos || []).length), 0);
+    if (k === 0 && viejas) {
+      const nv = grupos.slice(0, viejas).reduce((t, x) => t + x.vs.reduce((u, n) => u + (n.cosas || []).length, 0), 0);
+      cuerpo += `<section class="ixn-capv" data-ancla><div class="ixn-capv-in">
+        <h2 class="ixn-capv-v ixn-capv-rango" data-no-trad>${esc(g.vs[0].v)}<span>–</span>${esc(grupos[viejas - 1].vs[grupos[viejas - 1].vs.length - 1].v)}</h2>
+        <h3>${L('Lo de antes, en corto', 'The earlier ones, in short')}</h3>
+        <p><span data-no-trad>${L(`${viejas} versiones · ${nv} novedades`, `${viejas} versions · ${nv} new things`)}</span></p>
+      </div></section>`;
+    }
+    if (varias && k >= viejas) cuerpo += `<section class="ixn-capv" data-ancla><div class="ixn-capv-in">
+        <h2 class="ixn-capv-v" data-no-trad>${esc(g.vs.map((n) => n.v).join(' y '))}</h2>
+        <h3>${esc(prin.t)}</h3>
+        <p><span>${fechaNov(g.vs[g.vs.length - 1].f, g.vs[g.vs.length - 1].h)}</span> · <span data-no-trad>${[suyas.length ? L(`${suyas.length} ${suyas.length === 1 ? 'novedad' : 'novedades'}`, `${suyas.length} new ${suyas.length === 1 ? 'thing' : 'things'}`) : '', bugs ? L(`${bugs} ${bugs === 1 ? 'bug corregido' : 'bugs corregidos'}`, `${bugs} ${bugs === 1 ? 'bug fixed' : 'bugs fixed'}`) : ''].filter(Boolean).join(' · ')}</span></p>
+      </div></section>`;
+    for (const c of grandes) cuerpo += escena(c, ne++);
+    if (resto.length) cuerpo += `<section class="ixn-mas${k < viejas ? ' vieja' : ''}" data-ancla><div class="ixn-mas-in">
+        <h3>${grandes.length ? L(`Y además, en la ${esc(g.base)}`, `And also, in ${esc(g.base)}`) : k < viejas ? `<b data-no-trad>${esc(g.vs.map((n) => n.v).join(' y '))}</b> ${esc(prin.t)}` : L(`En la ${esc(g.base)}`, `In ${esc(g.base)}`)}</h3>
+        <ul>${resto.map((c, i) => `<li style="--i:${i}" data-nv-abre>${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${c.paso != null ? `<button type="button" class="enlace" data-nv-ir="${c.paso}">Enséñamelo</button>` : ''}</div></li>`).join('')}</ul>
+      </div></section>`;
+  });
   const arreglos = nuevas.flatMap((n) => (n.arreglos || []).map((t) => ({ t, v: n.v })));
   const cuenta = [cosas.length ? L(`${cosas.length} ${cosas.length === 1 ? 'novedad' : 'novedades'}`, `${cosas.length} new ${cosas.length === 1 ? 'thing' : 'things'}`) : '', arreglos.length ? L(`${arreglos.length} ${arreglos.length === 1 ? 'bug corregido' : 'bugs corregidos'}`, `${arreglos.length} ${arreglos.length === 1 ? 'bug fixed' : 'bugs fixed'}`) : ''].filter(Boolean).join(' · ');
-  const n0 = manda ? gorda : nuevas[0], ver = n0.v;
-  const varias = nuevas.length > 1 && !juntas;
+  const ver = ultima.v, VISIBLES = 10;
   const raiz = document.createElement('div');
-  raiz.className = `intro ix ixn${quieta ? ' quieta' : ''}`;
+  raiz.className = `intro ix ixn${varias ? ' ixn-varias' : ''}${quieta ? ' quieta' : ''}`;
   raiz.setAttribute('role', 'dialog'); raiz.setAttribute('aria-modal', 'true'); raiz.setAttribute('aria-label', `Novedades de la ${ver}`);
   raiz.innerHTML = `<div class="ix-luz" aria-hidden="true"></div><div class="ix-barra" aria-hidden="true"></div>
     <div class="ix-cab"><span class="intro-marca" style="opacity:1"><img src="favicon.svg" alt="">GrowFolio</span><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
       <section class="ixn-heroe"><div class="ix-escena">
-        <p class="ixn-eti" data-no-trad>${varias ? L(`Lo que te has perdido desde la ${esc(desde)}`, `What you've missed since ${esc(desde)}`) : L('Lo nuevo', "What's new")}</p>
+        <p class="ixn-eti" data-no-trad>${varias ? L(`Te has perdido ${nuevas.length} versiones`, `You've missed ${nuevas.length} versions`) : L('Lo nuevo', "What's new")}</p>
         <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l, k, a) => `<span aria-hidden="true" style="--k:${k};--d:${(k - (a.length - 1) / 2).toFixed(1)}">${esc(l)}</span>`).join('')}</h1>
-        <div class="ix-lema"><h2>${esc(n0.t)}</h2><p><span>${fechaNov(n0.f, n0.h)}</span> · <span data-no-trad>${cuenta}</span></p></div>
+        ${varias ? `<ol class="ixn-ruta" data-no-trad aria-label="${L('Las versiones que te has perdido', 'The versions you missed')}">${(() => { const vs = [...nuevas].reverse().map((n) => n.v); const r = vs.length > 6 ? [vs[0], `+${vs.length - 5}`, ...vs.slice(-4)] : vs; return r.map((v, k) => `<li style="--k:${k}"${v === ultima.v ? ' class="hoy"' : v[0] === '+' ? ' class="mas"' : ''}>${esc(v)}</li>`).join(''); })()}</ol>` : ''}
+        <div class="ix-lema"><h2>${varias ? L(`Todo lo de desde la ${esc(desde)}, resumido`, `Everything since ${esc(desde)}, in short`) : esc(ultima.t)}</h2><p><span>${fechaNov(ultima.f, ultima.h)}</span> · <span data-no-trad>${cuenta}</span></p></div>
         <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
       </div></section>
-      ${cosas.map((c, k) => `<section class="ix-cap" data-lado="${k % 2 ? 'd' : 'i'}" data-color="${COLORES_NOV[k % COLORES_NOV.length]}">
-        <div class="ix-cap-in">
-          <div class="ix-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true"><g transform="translate(0 5) scale(2)">${DIBUJOS[c.d] || DIBUJOS.pulido || ''}</g></svg></div>
-          <div class="ix-txt">${varias ? `<span class="ixn-v">${esc(c.v)}</span>` : ''}<h2 data-no-trad data-t="${esc(c.t)}" aria-label="${esc(c.t)}"></h2><p>${esc(c.x)}</p>${c.paso != null ? `<button type="button" class="btn ixn-ir" data-nv-ir="${c.paso}">Enséñamelo</button>` : ''}</div>
-        </div>
-      </section>`).join('')}
-      ${arreglos.length ? `<section class="ixn-arr" aria-labelledby="ixnArrT"><div class="ixn-arr-in">
+      ${cuerpo}
+      ${arreglos.length ? `<section class="ixn-arr${arreglos.length > VISIBLES ? ' corta' : ''}" data-ancla aria-labelledby="ixnArrT"><div class="ixn-arr-in">
         <h2 id="ixnArrT">Bugs corregidos</h2>
-        <ul>${arreglos.map((a, k) => `<li style="--i:${k}">${ICONOS.ok}<span>${varias ? `<span class="ixn-v">${esc(a.v)}</span>` : ''}${esc(a.t)}</span></li>`).join('')}</ul>
+        <ul>${arreglos.map((a, k) => `<li style="--i:${Math.min(k, VISIBLES)}">${ICONOS.ok}<span>${varias ? `<span class="ixn-v">${esc(a.v)}</span>` : ''}${esc(a.t)}</span></li>`).join('')}</ul>
+        ${arreglos.length > VISIBLES ? `<button type="button" class="enlace ixn-arr-mas" data-nv="bugs">${L(`Ver los ${arreglos.length}`, `See all ${arreglos.length}`)}</button>` : ''}
       </div></section>` : ''}
       <section class="ix-fin">
         <div class="ix-fin-logo">${logoEntero()}</div>
@@ -11752,8 +11821,11 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   document.body.appendChild(raiz);
   document.body.classList.add('con-ixn');
   const sc = $('.ix-scroll', raiz), heroe = $('.ixn-heroe', raiz), barra = $('.ix-barra', raiz), luz = $('.ix-luz', raiz);
-  const arrEl = $('.ixn-arr', raiz);
-  if (arrEl) { if (quieta || !('IntersectionObserver' in window)) arrEl.classList.add('dentro'); else { const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { arrEl.classList.add('dentro'); io.disconnect(); } }, { root: sc, threshold: 0.25 }); io.observe(arrEl); } }
+  // los capítulos de cada versión, sus listas cortas y los bugs entran al llegar a ellos
+  const entran = $$('.ixn-arr, .ixn-capv, .ixn-mas', raiz);
+  if (quieta || !('IntersectionObserver' in window)) entran.forEach((x) => x.classList.add('dentro'));
+  else { const io = new IntersectionObserver((es) => { for (const e of es) if (e.isIntersecting) { e.target.classList.add('dentro'); io.unobserve(e.target); } }, { root: sc, threshold: 0.18 }); entran.forEach((x) => io.observe(x)); }
+  const anclas = $$('[data-ancla]', raiz), ruta = $('.ixn-ruta', raiz);
   const letras = $$('.ixn-ver span', raiz), lema = $('.ix-lema', raiz), baja = $('.ix-baja', raiz), eti = $('.ixn-eti', raiz), capEls = $$('.ix-cap', raiz);
   const partir = () => capEls.forEach((c) => { const h = $('h2', c), t = trad(h.dataset.t); if (h.dataset.hecho === t) return; h.dataset.hecho = t; h.setAttribute('aria-label', t); h.innerHTML = t.split(' ').map((w) => `<span aria-hidden="true">${esc(w)}</span>`).join(' '); });
   partir();
@@ -11775,6 +11847,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     lema.style.opacity = (le * (1 - sale)).toFixed(3);
     lema.style.transform = `translateY(${((1 - le) * 18 - sale * 40).toFixed(1)}px)`;
     eti.style.opacity = (1 - sale).toFixed(3);
+    if (ruta) ruta.style.opacity = (1 - sale).toFixed(3);
     baja.style.opacity = (1 - tramo(p, 0, 0.1)).toFixed(3);
     luz.style.setProperty('--luz', (0.5 + 0.4 * le).toFixed(3));
     let mejor = null;
@@ -11803,15 +11876,17 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   raiz.addEventListener('click', (e) => {
     const ir = e.target.closest('[data-nv-ir]');
     if (ir) {
-      const k = +ir.dataset.nvIr, cap = capEls.indexOf(ir.closest('.ix-cap'));
+      const k = +ir.dataset.nvIr, cap = anclas.indexOf(ir.closest('[data-ancla]'));
       quitar(); iniciarTour(0, () => novedadesScroll(nuevas, desde, alCerrar, cap), [pasos[k]], 'Volver a las novedades'); return;
     }
+    const ab = e.target.closest('[data-nv-abre]'); if (ab) { ab.classList.toggle('abierta'); return; }   // la lista corta, entera al tocarla
     const b = e.target.closest('[data-nv]'); if (!b) return;
     if (b.dataset.nv === 'fin') cerrar();
     else if (b.dataset.nv === 'todo') { quitar(); iniciarTour(0, alCerrar, pasos); }
     else if (b.dataset.nv === 'lista') { quitar(); mostrarNovedades(desde, alCerrar, true); }
+    else if (b.dataset.nv === 'bugs') { b.closest('.ixn-arr').classList.remove('corta'); b.remove(); medidas = null; }
   });
-  if (volverA != null && capEls[volverA]) { sc.scrollTop = Math.max(0, capEls[volverA].offsetTop + capEls[volverA].offsetHeight / 2 - sc.clientHeight / 2); medidas = null; }
+  if (volverA != null && anclas[volverA]) { const a = anclas[volverA]; a.classList.add('dentro'); sc.scrollTop = Math.max(0, a.offsetTop + Math.min(a.offsetHeight, sc.clientHeight) / 2 - sc.clientHeight / 2); medidas = null; }
   pinta();
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(redim);
   setTimeout(() => sc.focus({ preventScroll: true }), 50);
