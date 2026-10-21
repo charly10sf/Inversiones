@@ -322,19 +322,23 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   noticia concreta del activo o un movimiento grande. No dramatices.
 - Nombra lo que tiene de verdad: sus posiciones son las de los datos (fondos del S&P 500, del mundo, de
   Europa, acciones sueltas...). No le atribuyas "tus tecnológicas" ni nada que no tenga.
-- Nada de soportes, resistencias ni niveles técnicos inventados en "vigilar": una fecha (resultados, BCE,
-  Fed, dividendo) o un precio que salga en las noticias. Si no hay nada concreto, "nada especial".
+- Nada de soportes, resistencias ni niveles técnicos inventados en "vigilar": qué y cuándo, en palabras
+  ("resultados del 29 de octubre", "la Fed, el 28 de octubre") o un precio que salga en las noticias. Nunca
+  una fecha suelta como 2026-10-28. Si no hay nada concreto, "nada especial".
+- No pongas la fecha de hoy en los textos ("este 21 de octubre de 2026"): ya se sabe que es de hoy.
 - Los datos de cada zona y de cada posición son los de hoy: si una noticia dice otra cifra (más vieja), manda la de los datos.
+- "impacto" y el texto dicen lo mismo: si el texto empieza por "malo para…", el impacto es negativo; si es "bueno para…",
+  positivo; si hay de las dos cosas, mixto. Nunca un impacto positivo con un texto que empieza por "malo".
 Responde solo con un bloque ```json con este formato:
 {
   "resumen": "dos frases cortas como mucho: lo que más afecta hoy a esta cartera y por qué",
-  "mercado": [{"zona": "EEUU|Europa|España|Asia|Emergentes|Global", "t": "título corto", "detalle": "dos o tres frases con cifras y fechas", "implica": "una frase: qué supone para esta cartera", "impacto": "positivo|negativo|neutral", "fuentes": [1, 2]}],
+  "mercado": [{"zona": "EEUU|Europa|España|Asia|Emergentes|Global", "t": "título corto", "detalle": "dos o tres frases con cifras y fechas", "implica": "una frase: qué supone para esta cartera", "impacto": "positivo|negativo|neutral|mixto", "fuentes": [1, 2]}],
   "macro": [{"t": "qué (BCE, inflación EEUU, bono 10 años...)", "dato": "la cifra, escrita a la española: coma decimal y espacio antes del % (5,12 %; 1,1235)", "lectura": "una frase"}],
   "posiciones": {"<id>": {"novedades": "una o dos frases", "impacto": "positivo|negativo|neutral|mixto", "contraste": "qué fuentes coinciden y cuáles no, en pocas palabras", "vigilar": "fecha o precio", "fuentes": [3]}},
   "alertas": [{"t": "algo que pide atención ya", "id": "<id de posición o ticker>", "urgencia": "alta|media"}]
 }
 Una entrada en "posiciones" por cada posición. "mercado": de 4 a 7, de al menos tres zonas distintas si
-hay noticias de ellas. "macro": de 3 a 5. "alertas": de 0 a 4."""
+hay noticias de ellas. "macro": de 0 a 5, solo los que tengan su cifra en los datos, en las noticias o en lo que encuentres. "alertas": de 0 a 4."""
 
 
 def marcar(dir_salida, clave_id, valor):
@@ -496,7 +500,8 @@ tienes sus datos y sus noticias numeradas (titulares de Google Noticias en espa�
 su resumen). Para cada una, en una frase: qué dicen de verdad las noticias (con fecha), si es bueno o
 malo para la acción, cuánto importa y si hay un catalizador próximo. Ignora el relleno (anuncios de
 productos, gráficos de cotización, notas de prensa vacías, noticias de otra empresa con el mismo nombre).
-Solo lo que digan las noticias: nada inventado. En español de España.
+Solo lo que digan las noticias: nada inventado. En español de España, con palabras normales (sin jerga como
+catalizador, soportes o múltiplos) y con proporción: un movimiento pequeño sin noticia propia no es ni bueno ni malo.
 Responde con un objeto JSON: {"<ticker>": {"imp": "positivo|negativo|neutral|mixto", "rel": 0-3, "txt": "una frase", "cat": "catalizador y fecha, o vacío", "fuentes": [números]}}
 "rel": 0 si no hay nada relevante, 1 poco, 2 importante, 3 cambia la tesis. Una entrada por empresa."""
 
@@ -556,7 +561,7 @@ def leer_lote(lectura, cache, valores, medianas, clave):
 
 
 DECIDIR = """Eres el analista jefe de un inversor particular español que busca dónde poner dinero nuevo a 6-12
-meses en acciones sueltas (compra en Trade Republic). Tu equipo ha leído la prensa de cientos de empresas;
+meses en acciones sueltas. Tu equipo ha leído la prensa de cientos de empresas;
 aquí tienes las candidatas con sus números (analistas, recorrido, valoración, beneficio esperado, tendencia y
 el contraste de siete señales de la web) y lo que dice su prensa reciente, con las noticias numeradas.
 Decide tú. Reglas:
@@ -568,7 +573,7 @@ Decide tú. Reglas:
   a 12 meses; para cada idea estima tú en cuántos meses se puede materializar la mayor parte de la subida
   (por su catalizador) y cuánto esperas que suba en ese plazo (puede ser menos que lo de los analistas).
   Ordena por lo que dan al año, netas de impuestos, no por la subida total.
-- Fiscalidad de un residente en España: las ganancias pagan entre el 19 y el 23 %. Los dividendos de
+- Fiscalidad de un residente en España: las ganancias pagan del 19 al 30 % según cuánto se gane en el año. Los dividendos de
   empresas con sede en Suiza (35 %), Alemania (26,4 %), Italia (26 %), Dinamarca (27 %), Suecia (30 %),
   Finlandia (35 %), Bélgica (30 %), Austria (27,5 %), Irlanda (25 %), Noruega (25 %) o Portugal (25 %) traen
   una retención en origen de la que en la renta solo recupera el 15 %: si el dividendo es una parte
@@ -595,7 +600,7 @@ Decide tú. Reglas:
   amplitud de mercado, soportes, recorrido, múltiplos, rotación sectorial, risk-off...): dilo con palabras
   normales o explícalo en la misma frase. La tesis, en una o dos frases que entienda cualquiera.
 Responde con un objeto JSON:
-{"comentario": "dos frases: cómo está el panorama y qué has buscado",
+{"comentario": "dos frases: cómo está el panorama y qué has buscado (en primera persona del singular: «He buscado…», nunca «Hemos»)",
  "ideas": [{"s": "ticker", "tesis": "una o dos frases", "catalizador": "qué y cuándo", "riesgo": "...", "contraste": "qué coincide y qué no", "confianza": "alta|media|baja", "plazo_meses": 6, "subida_pct": 20, "fiscalidad": "lo que pagaría o perdería en impuestos, si importa", "fuentes": [n]}],
  "evitar": [{"s": "ticker", "motivo": "...", "fuentes": [n]}],
  "cambios": [{"s": "ticker", "antes": "idea|evitar|nada", "ahora": "idea|evitar|fuera", "motivo": "...", "fuentes": [n]}],
