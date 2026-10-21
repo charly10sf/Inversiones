@@ -280,10 +280,13 @@ def al_dia(s, meta):
         p, ts = meta.get("regularMarketPrice"), meta.get("regularMarketTime")
         if not p or p <= 0 or not ts or s.empty:
             return s
-        from zoneinfo import ZoneInfo
-        tz = ZoneInfo(meta.get("exchangeTimezoneName") or "UTC")
-        cuando = dt.datetime.fromtimestamp(int(ts), tz)
-        if dt.datetime.now(tz) - cuando > dt.timedelta(days=6):
+        tz = meta.get("exchangeTimezoneName") or "UTC"
+        # según la versión de yfinance llega como número (segundos) o ya como fecha
+        cuando = pd.Timestamp(ts, unit="s", tz="UTC") if isinstance(ts, (int, float)) else pd.Timestamp(ts)
+        if cuando.tzinfo is None:
+            cuando = cuando.tz_localize("UTC")
+        cuando = cuando.tz_convert(tz)
+        if pd.Timestamp.now(tz=tz) - cuando > pd.Timedelta(days=6):
             return s
         dia = pd.Timestamp(cuando.date())
         ultimo = s.index[-1]
