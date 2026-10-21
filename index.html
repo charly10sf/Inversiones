@@ -9147,13 +9147,15 @@ function htmlPlanVenta(pl, compacto) {
 }
 
 /* =====================================================================
-   Análisis IA: el de partida está en analisis-ia.json (público, sin cantidades); el de Gemini, cifrado.
+   Análisis IA: el que escribe GrowIA (Gemini) con tu clave, cifrado. Ya no hay uno público de partida.
    Los datos personales van como {marcas} y se rellenan aquí con tu cartera descifrada.
    ===================================================================== */
 async function cargarIA() {
-  if (PERFIL_LOCAL) { S.ia = null; S.iaCargado = true; return; }
+  // 0.3.9: ya no hay análisis público (analisis-ia.json llevaba datos de su dueño): cada uno ve el que le escribe
+  // GrowIA con su clave, cifrado. Solo en el modo de pruebas se carga uno de muestra, si lo hay
+  if (PERFIL_LOCAL || !CFG.dev) { S.ia = null; S.iaCargado = true; LS.del('inv-cache-ia'); return; }
   try {
-    const r = await fetch('analisis-ia.json?v=' + Date.now(), { cache: 'no-store' });
+    const r = await fetch('dev/analisis-ia.json?v=' + Date.now(), { cache: 'no-store' });
     if (r.ok) { const t = await r.text(); S.ia = JSON.parse(t); LS.set('inv-cache-ia', t); S.iaCargado = true; return; }
     if (r.status === 404) { S.ia = null; LS.del('inv-cache-ia'); S.iaCargado = true; return; }
   } catch (e) { console.warn(e); }
@@ -12682,6 +12684,7 @@ const NOVEDADES = [
     'En compra y venta: el buscador tapaba la cabecera en el móvil, el botón principal quedaba fuera de la vista y la lista de venta tenía su propio scroll. Ya no abre el teclado nada más entrar.',
     '«Llévala en el móvil» prometía un QR que a veces no cargaba y daba por hecho que tenías cuenta.',
     'El «%» y el «€» ya no se quedan solos al empezar una línea.',
+    'Fuera el análisis de partida público: cada uno ve solo el suyo, el que le escribe GrowIA con su clave y se guarda cifrado.',
   ] },
   { v: '0.3.8', f: '2026-10-21', h: '19:45', t: 'Te guía desde el primer minuto', cosas: [
     { d: 'tareas', t: 'Primeros pasos, en orden', x: 'Quien llega nuevo ve arriba en Inicio lo que tiene que hacer: meter lo que tiene, contarle quién es, activar GrowIA, llevarla en el móvil y, si aporta cada mes, apuntarlo. Con lo que tarda cada paso y el que toca abierto, con su botón. Cuando acabas, te lo dice y se va.' },
@@ -14934,7 +14937,7 @@ function htmlContrasteLista(ctr) {
    cada día (o cuando cambia una señal), con tus cifras reales, las herramientas de la web y
    búsquedas en internet para contrastar. Se guarda cifrado en analisis.enc.json (aparte de la
    cartera, para no pisar cambios hechos desde otro dispositivo) y en este navegador.
-   Si no hay clave, se ve el último análisis público (analisis-ia.json, sin cantidades).
+   Si no hay clave, no hay análisis: sale una caja que explica cómo activarlo.
    ===================================================================== */
 const IA = { generando: false, turno: null, error: null, ultimoIntento: 0, reintento: 0, reintentos: 0, reintentoT: 0 };
 function iaActual() {

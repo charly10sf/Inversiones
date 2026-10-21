@@ -25,7 +25,6 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en di
 | rama `datos` → `historico.json` | Cierres de 10 años de cada instrumento (diarios los 2 últimos, semanales antes) y de 1 año de cada mercado. | Sí |
 | `cartera.enc.json` | Cantidades, costes, notas, aportaciones y datos fiscales, **cifrado** con AES-GCM. La clave sale de mi contraseña (PBKDF2-SHA256, 600.000 iteraciones). | Cifrado |
 | `analisis.enc.json` | El último análisis que ha escrito la IA con mis cifras, cifrado igual. | Cifrado |
-| `analisis-ia.json` | El análisis de partida, sin cantidades, y mis reglas de inversión. Se usa hasta que Gemini escribe el suyo. | Sí |
 | rama `datos` → `informe.json` | El informe de prensa de Gemini de tu cartera y del mercado, contrastado y con enlaces. Sin cantidades. | Sí |
 | rama `datos` → `escaneo.json` | Lo que ha leído Gemini de la prensa de cada empresa del radar y las que ha elegido (o evitaría). | Sí |
 | rama `datos` → `noticias-cache.json` | Las noticias recientes de cada empresa del radar (no la lee la web). | Sí |
@@ -98,7 +97,7 @@ Un amigo puede usar esta misma web con su propia cartera: que abra `https://char
 Cada persona necesita su propia copia: los datos van cifrados con su contraseña en su repositorio, y la Action descarga los precios de lo que tiene cada uno.
 
 1. Crea una cuenta en GitHub y haz un *fork* de este repositorio (deja marcado "Copy the main branch only").
-2. En tu copia, borra `cartera.enc.json`, `analisis.enc.json` y `analisis-ia.json`: son los de otra persona (cifrados, pero no te sirven).
+2. En tu copia, borra `cartera.enc.json` y `analisis.enc.json`: son los de otra persona (cifrados, pero no te sirven).
 3. *Settings → Pages*: publica desde la rama `main`, carpeta raíz.
 4. Pestaña *Actions*: pulsa el botón para activar los workflows (en los forks vienen apagados).
 5. Opcional, para que Gemini lea la prensa aunque no abras la web: crea tu clave gratis en aistudio.google.com/apikey y guárdala en *Settings → Secrets and variables → Actions* como `GEMINI_API_KEY`.
