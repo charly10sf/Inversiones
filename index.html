@@ -2022,7 +2022,27 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .busca-t small > * { vertical-align: -1px; }
 .busca-p { text-align: right; font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; display: grid; }
 .busca-p small { color: var(--accent); font-size: 12px; }
-.busca-nada { padding: 10px; color: var(--muted); font-size: 13px; }
+.busca-res li.busca-nada { display: block; padding: 10px; color: var(--muted); font-size: 13px; cursor: default; }
+.busca-res li.busca-isin .busca-t b, .busca-res li.busca-isin .busca-t small { white-space: normal; overflow: visible; text-overflow: clip; }
+.busca-res li.busca-isin { border-top: 1px solid var(--line); border-radius: 0 0 10px 10px; }
+.busca-res li.busca-isin b { color: var(--accent); }
+/* «Añadir con su ISIN» */
+.isin-res:empty { display: none; }
+.isin-res { margin: 4px 0 12px; }
+.isin-busca { display: flex; align-items: center; gap: 10px; padding: 14px; border-radius: 14px; background: var(--plane-2); color: var(--text-2); font-size: 14.5px; }
+.isin-giro { width: 18px; height: 18px; flex: none; border-radius: 50%; border: 2px solid var(--line-2); border-top-color: var(--accent); animation: isinGira 0.8s linear infinite; }
+@keyframes isinGira { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .isin-giro { animation-duration: 2.4s; } }
+.isin-ok { display: flex; gap: 12px; align-items: flex-start; padding: 14px; border-radius: 14px; background: var(--plane-2); border: 1px solid var(--accent-bg); }
+.isin-ok-t { display: grid; gap: 3px; min-width: 0; }
+.isin-ok-t > b { font-size: 15.5px; font-weight: 650; line-height: 1.3; }
+.isin-ok-t small { color: var(--muted); font-size: 13px; }
+.isin-ok-p { margin-top: 6px; font-variant-numeric: tabular-nums; }
+.isin-ok-p b { font-size: 18px; font-weight: 650; }
+.isin-no { display: flex; gap: 10px; align-items: flex-start; padding: 14px; border-radius: 14px; background: var(--plane-2); }
+.isin-no svg { width: 20px; height: 20px; flex: none; color: var(--accent); margin-top: 2px; }
+.isin-no b { display: block; margin-bottom: 4px; }
+.isin-no p { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
 .op-modo { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 4px; padding: 4px; background: var(--plane); border: 1px solid var(--line); border-radius: 12px; }
 .op-modo button { border: 0; background: none; color: var(--text-2); font-weight: 600; font-size: 14px; padding: 10px 6px; border-radius: 9px; display: inline-flex; gap: 6px; align-items: center; justify-content: center; }
 .op-modo button svg { width: 16px; height: 16px; }
@@ -4433,11 +4453,14 @@ async function cargarCatalogo() {
   } catch (e) { console.warn(e); }
   if (txt) { try { localStorage.setItem('inv-cache-cat', txt); } catch (e) {} } else { try { txt = localStorage.getItem('inv-cache-cat'); } catch (e) {} }
   try { S.cat = txt ? JSON.parse(txt) : null; } catch (e) { S.cat = null; }
+  catLocalMezclar();
 }
 /* lo que se añadió del catálogo se queda con la clase que trae hoy (0.3.5: la plata dejó de ser «renta variable» y
    las mineras de oro, «oro»). Se mira en cada cálculo: son pocas y así vale también para lo que llega con tu cartera */
 function alinearConCatalogo() {
   const v = S.cat && S.cat.v; if (!v || !S.inst) return;
+  // una posición de algo del catálogo cuyo instrumento no está (no se llegó a guardar): se rehace con su ficha
+  for (const p of (S.cartera && S.cartera.posiciones) || []) if (p.instrumento && !S.inst[p.instrumento] && v[p.instrumento]) instDeCatalogo(p.instrumento);
   for (const id of S.instOrden || []) {
     const i = S.inst[id], x = i && i.cat && v[i.cat];
     if (!x || !x.cl || i.clase === x.cl) continue;
@@ -4460,13 +4483,16 @@ function instDeCatalogo(cid) {
   if (ya) return ya;
   const i = { id: cid, nombre: x.n, corto: x.c || x.n, tipo: x.t, clase: x.cl, region: x.r || { Global: 100 }, cat: cid };
   if (x.isin) i.isin = x.isin; if (x.s) i.yahoo = x.s; if (x.pais) i.pais = x.pais; if (x.dom) i.dominio = x.dom;
-  if (x.cl === 'Cripto') { i.bitvavo = x.s; i.sector_fijo = 'Cripto'; } else if (['Oro', 'Materias primas', 'Renta fija', 'Monetario'].includes(x.cl)) i.sector_fijo = x.cl;
+  if (x.cl === 'Cripto') { if (/-EUR$/i.test(x.s || '')) i.bitvavo = x.s; i.sector_fijo = 'Cripto'; } else if (['Oro', 'Materias primas', 'Renta fija', 'Monetario'].includes(x.cl)) i.sector_fijo = x.cl;
+  if (x.local && x.h && x.h.length) { S.catHist = S.catHist || {}; S.catHist[cid] = x.h; }
   S.inst[cid] = i; S.instOrden.push(cid); S.instCambiados = true;
   return cid;
 }
 /* el histórico del catálogo de lo que tienes (solo lo que no trae ya la Action de cada 20 minutos) */
 async function cargarHistCatalogo(ids) {
   S.catHist = S.catHist || {};
+  // lo añadido con su ISIN que aún no está en el catálogo de todos: su año viene guardado en este dispositivo
+  for (const id of S.instOrden || []) { const x = S.inst[id] && S.inst[id].cat && S.cat && S.cat.v && S.cat.v[S.inst[id].cat]; if (x && x.local && x.h && x.h.length && !S.catHist[id]) S.catHist[id] = x.h; }
   const quiero = (ids || [...new Set((S.cartera.posiciones || []).map((p) => p.instrumento))]).filter((id) => !S.catHist[id] && S.inst[id] && !(S.hist && S.hist.instrumentos && S.hist.instrumentos[id]) && catDe(S.inst[id]));
   if (!quiero.length) return false;
   await Promise.all(quiero.map(async (id) => {
@@ -11883,20 +11909,191 @@ function nuevoInstrumento(fin, ini = {}) {
    pide. La Action la lee en cada pasada y le saca precio, moneda, gráfica y cambio a euros para todos. */
 function sinPrecioComun(i) {
   if (!i) return false;
-  const P = S.precios && S.precios.instrumentos && S.precios.instrumentos[i.id];
-  return !(P && P.precio) && !catDe(i) && !radarPorSim(i.yahoo) && !!(i.yahoo || i.isin);
+  const P = S.precios && S.precios.instrumentos && S.precios.instrumentos[i.id], ce = catDe(i);
+  // lo añadido con su ISIN en este dispositivo (catálogo «local») aún no lo tienen los demás: se sigue pidiendo
+  return !(P && P.precio) && !(ce && !ce.local) && !radarPorSim(i.yahoo) && !!(i.yahoo || i.isin);
 }
-async function pedirPrecio(i) {
-  if (!PERFIL_CUENTA || !i || !sinPrecioComun(i)) return;
-  const clave = String(i.yahoo || i.isin || '').toUpperCase().trim();
+async function pedirComun(clave, s, isin) {
+  if (!PERFIL_CUENTA) return;
+  clave = String(clave || '').toUpperCase().trim();
   if (!/^[A-Z0-9][A-Z0-9.\-]{0,19}$/.test(clave)) return;
   const hechos = LS.get('inv-pedidos', {});
   if (hechos[clave] && Date.now() - hechos[clave] < 3 * 864e5) return;
   try {
     await fbCargar(); if (!FB.user) return;
-    await FB.fs.setDoc(FB.fs.doc(FB.db, 'simbolos', clave), { s: i.yahoo ? String(i.yahoo).toUpperCase() : '', isin: i.isin ? String(i.isin).toUpperCase() : '', cuando: FB.fs.serverTimestamp() });
+    await FB.fs.setDoc(FB.fs.doc(FB.db, 'simbolos', clave), { s: s ? String(s).toUpperCase() : '', isin: isin ? String(isin).toUpperCase() : '', cuando: FB.fs.serverTimestamp() });
   } catch (e) { /* ya estaba pedida (no se puede reescribir) o sin red: no pasa nada */ }
   hechos[clave] = Date.now(); LS.set('inv-pedidos', hechos);
+}
+// fondos, ETF y ETC con ISIN van al catálogo (por su ISIN); las acciones y lo que no tiene ISIN, al radar (por su ticker)
+async function pedirPrecio(i) {
+  if (!PERFIL_CUENTA || !i || !sinPrecioComun(i)) return;
+  const alRadar = (i.tipo === 'Acción' && i.yahoo) || !i.isin;
+  return alRadar ? pedirComun(i.yahoo || i.isin, i.yahoo || '', i.isin || '') : pedirComun(i.isin, '', i.isin);
+}
+
+/* =====================================================================
+   «Añadir con su ISIN»: lo que no está en el catálogo se busca en el momento (el Worker se lo pregunta a Yahoo) y se
+   añade con su nombre, su precio y su último año. Mientras los demás no lo tengan, vive en este dispositivo
+   («catálogo local», inv-cat-local) y se deja pedido: en la siguiente pasada del catálogo, unos minutos después,
+   pasa a ser de todos y desde ahí se actualiza solo. Si Yahoo no lo encuentra, se puede añadir igualmente y queda
+   pedido: el catálogo lo vuelve a buscar cada día.
+   ===================================================================== */
+const CAT_LOCAL = 'inv-cat-local';
+function isinValido(c) {
+  c = String(c || '').toUpperCase().replace(/\s+/g, '');
+  if (!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(c)) return false;
+  const d = c.slice(0, 11).split('').map((x) => (/[0-9]/.test(x) ? x : String(x.charCodeAt(0) - 55))).join('');
+  let s = 0, doble = true;
+  for (let i = d.length - 1; i >= 0; i--) { let n = +d[i]; if (doble) { n *= 2; if (n > 9) n -= 9; } s += n; doble = !doble; }
+  return (10 - (s % 10)) % 10 === +c[11];
+}
+// cuántos euros vale una unidad de cada moneda (los peniques de libra, a 1/100)
+function eurPor(m) {
+  if (!m || m === 'EUR') return 1;
+  const fx = (S.precios && S.precios.fx) || {};
+  if (m === 'GBp' || m === 'GBX') return fx.GBP ? fx.GBP / 100 : null;
+  return fx[m] || null;
+}
+// lo mismo que hace el catálogo (scripts/catalogo.py) con el nombre que da Yahoo: tipo, clase, región, nombre corto y web
+function tipoDeYahoo(d) {
+  const n = String(d.n || '').toLowerCase(), q = String(d.tipo || '').toUpperCase();
+  if (q === 'MUTUALFUND' || /^0P/.test(d.s || '')) return 'Fondo';
+  if (q === 'ETF') return /\b(etc|etp|etn)\b/.test(n) ? 'ETC' : 'ETF';
+  if (q === 'EQUITY') return /\b(etc|etp|etn|physical)\b/.test(n) ? 'ETC' : /\b(etf|ucits|fund|fonds|index)\b/.test(n) ? 'ETF' : 'Acción';
+  return 'ETF';
+}
+function claseDeNombre(nombre, tipo) {
+  const n = String(nombre || '').toLowerCase();
+  if ((tipo === 'ETC' || tipo === 'ETF') && /bitcoin|ethereum|crypto|solana|\bxrp\b/.test(n)) return 'Cripto';
+  if (tipo === 'Acción' || /miner|mining/.test(n)) return 'Renta variable';
+  if (/gold|\boro\b/.test(n)) return 'Oro';
+  if (/silver|platinum|palladium|copper|commodit|brent|crude|\bwti\b|precious metal/.test(n) && (tipo === 'ETC' || /physical|commodit|2x|3x|leveraged/.test(n))) return 'Materias primas';
+  if (/overnight|tr[ée]sorerie|liquidity|monetari|money market|\bcash\b/.test(n)) return 'Monetario';
+  if (/bond|govt|government|aggregate|renta fija|ultrashort|duration|credit|treasury/.test(n)) return 'Renta fija';
+  return 'Renta variable';
+}
+function regionDeNombre(nombre, isin, tipo) {
+  const n = String(nombre || '').toLowerCase(), pais = String(isin || '').slice(0, 2);
+  if (tipo === 'Acción') return pais === 'US' ? { EEUU: 100 } : ['JP', 'AU', 'HK', 'SG', 'NZ'].includes(pais) ? { 'Japón y Pacífico': 100 } : ['CN', 'IN', 'BR', 'TW', 'KR', 'MX', 'ZA'].includes(pais) ? { Emergentes: 100 } : pais === 'CA' ? { Canadá: 100 } : { Europa: 100 };
+  if (/s&p|\bus\b|u\.s\.|usa|america|nasdaq|russell|dow/.test(n)) return { EEUU: 100 };
+  if (/all[- ]world|acwi|all cap|lifestrategy|global aggregate/.test(n)) return { EEUU: 62, Europa: 14, 'Japón y Pacífico': 7, Emergentes: 11, Canadá: 3, Otros: 3 };
+  if (/emerging|emergentes|\bem\b|india|china|brasil|brazil/.test(n)) return { Emergentes: 100 };
+  if (/japan|jap[oó]n|pacific/.test(n)) return { 'Japón y Pacífico': 100 };
+  if (/europe|europ|euro |eurozone|emu|stoxx|dax|ibex|espa/.test(n)) return { Europa: 100 };
+  if (/world|global|developed|mundial|internacional/.test(n)) return { EEUU: 70, Europa: 15, 'Japón y Pacífico': 8, Canadá: 3, Otros: 4 };
+  return { Global: 100 };
+}
+const GESTORAS_WEB = [[/^vanguard/i, 'vanguard.com'], [/^ishares/i, 'ishares.com'], [/^fidelity/i, 'fidelity.es'], [/^amundi|^lyxor/i, 'amundi.com'], [/^xtrackers/i, 'dws.com'], [/^spdr/i, 'ssga.com'], [/^invesco/i, 'invesco.com'], [/^wisdomtree/i, 'wisdomtree.eu'], [/^vaneck/i, 'vaneck.com'], [/^21shares/i, '21shares.com'], [/^coinshares/i, 'coinshares.com'], [/^hanetf/i, 'hanetf.com'], [/^ubs/i, 'ubs.com'], [/^bnp/i, 'bnpparibas-am.com'], [/^pictet/i, 'pictet.com'], [/^jpm|^jpmorgan/i, 'jpmorgan.com'], [/^global x/i, 'globalxetfs.com']];
+function cortoDeNombre(nombre, tipo) {
+  if (tipo === 'Acción') return nombreCorto(nombre);
+  let t = String(nombre || '').replace(/\s(?:[A-Z]|[A-Z]{2}-[A-Z]|\d[A-Z]|IC|M)(?=\s+(?:Acc|Dist|EUR|FI)\b|\s*$)/g, ' ').replace('(IE)', ' ').replace(/Hedged/g, 'cubierto');
+  t = t.replace(/\b(Index Fund|Index|Fund|Stock|UCITS|ETF|Acc|Dist|EUR|Class|FI|Investor)\b/g, ' ').replace(/\s+/g, ' ').trim().replace(/^[-, ]+|[-, ]+$/g, '');
+  return (t || String(nombre || '')).slice(0, 28).trim();
+}
+// lo que devuelve el Worker, como una entrada del catálogo (con los precios ya en euros)
+function entradaDeYahoo(d) {
+  const f = eurPor(d.m), t = tipoDeYahoo(d), cl = claseDeNombre(d.n, t), tw = t === 'Fondo' ? (['Renta fija', 'Monetario'].includes(cl) ? 'Fondo de renta fija' : /index|indice|s&p|msci|ftse|stoxx/i.test(d.n) ? 'Fondo indexado' : 'Fondo') : t === 'ETF' && ['Oro', 'Materias primas'].includes(cl) && !/commodit/i.test(d.n) ? 'ETC' : t;
+  const h = f ? (d.h || []).map(([x, v]) => [x, +(v * f).toFixed(6)]) : [];
+  const ult = h[h.length - 1], ant = h[h.length - 2], gw = GESTORAS_WEB.find(([re]) => re.test(d.n || ''));
+  return {
+    n: d.n || d.isin, c: cortoDeNombre(d.n || d.isin, t), isin: d.isin, s: d.s, t: tw, cl, r: ['Oro', 'Materias primas', 'Cripto'].includes(cl) ? { Global: 100 } : regionDeNombre(d.n, d.isin, t),
+    m: d.m || 'EUR', pais: String(d.isin).slice(0, 2), dom: gw ? gw[1] : null, p: ult ? ult[1] : null, pa: ant ? ant[1] : null, f: ult ? ult[0] : null,
+    r1a: h.length > 1 ? +(((ult[1] / h[0][1]) - 1) * 100).toFixed(2) : null, bolsa: d.bolsa || '', local: 1, h,
+  };
+}
+function catLocalGuardar(cid, x) { const o = LS.get(CAT_LOCAL, {}) || {}; o[cid] = { ...x, guardado: Date.now() }; LS.set(CAT_LOCAL, o); }
+// al cargar el catálogo: lo local entra si el de todos aún no lo tiene; si ya lo tiene, se olvida la copia local
+function catLocalMezclar() {
+  const o = LS.get(CAT_LOCAL, {}) || {}, ks = Object.keys(o);
+  if (!ks.length) return;
+  S.cat = S.cat || { v: {} }; S.cat.v = S.cat.v || {};
+  let cambio = false;
+  for (const cid of ks) {
+    if (S.cat.v[cid] && !S.cat.v[cid].local) { delete o[cid]; cambio = true; continue; }
+    S.cat.v[cid] = o[cid];
+  }
+  if (cambio) LS.set(CAT_LOCAL, o);
+}
+async function buscarIsinWorker(isin, pedir) {
+  const ctl = new AbortController(), tt = setTimeout(() => ctl.abort(), 20000);
+  try {
+    const h = {};
+    if (pedir && FB.user) { try { h.Authorization = `Bearer ${await FB.user.getIdToken()}`; } catch (e) { /* sin sesión: solo se busca */ } }
+    const r = await fetch(`${urlWorker()}/isin?c=${encodeURIComponent(isin)}${pedir ? '&pedir=1' : ''}`, { headers: h, signal: ctl.signal });
+    const j = await r.json().catch(() => ({}));
+    return r.ok || j.error === 'no-esta' ? j : { ok: false, error: j.error || `http ${r.status}` };
+  } catch (e) { return { ok: false, error: 'red' }; } finally { clearTimeout(tt); }
+}
+// los añadidos así que llevan días sin que el catálogo los coja (o en el perfil local): se les renueva el precio
+async function refrescarCatLocal() {
+  const o = LS.get(CAT_LOCAL, {}) || {}, usados = new Set((S.cartera && S.cartera.posiciones || []).map((p) => S.inst[p.instrumento] && S.inst[p.instrumento].cat).filter(Boolean));
+  const viejos = Object.entries(o).filter(([cid, x]) => usados.has(cid) && Date.now() - (x.guardado || 0) > 12 * 3600e3).slice(0, 4);
+  for (const [cid, x] of viejos) {
+    const d = await buscarIsinWorker(x.isin, false);
+    if (!d.ok || (S.cat && S.cat.v[cid] && !S.cat.v[cid].local)) continue;
+    const nx = entradaDeYahoo(d); catLocalGuardar(cid, nx); S.cat.v[cid] = nx;
+    for (const id of S.instOrden) if (S.inst[id] && S.inst[id].cat === cid && nx.h.length) S.catHist[id] = nx.h;
+  }
+  if (viejos.length && S.cartera) { S.M = calcular(); pintar(); }
+}
+/* la hoja: pones el ISIN, se busca y, si es el bueno, se añade. alListo(cid) recibe el id del catálogo; sinEncontrar(isin),
+   lo que se hace si no se encuentra (en compra: añadirlo a mano y dejarlo pedido) */
+function anadirPorIsin(inicial, alListo, sinEncontrar) {
+  const h = hoja(L('Añadir con su ISIN', 'Add by ISIN'), `<form id="fIsin" novalidate>
+    <p class="nota" style="margin:0 0 14px">${L('El ISIN son 12 letras y números, como IE00B4L5Y983. Sale en tu bróker (en la ficha del fondo o en el extracto) y en el folleto. GrowFolio lo busca y lo añade con su precio y su gráfica.', 'The ISIN is 12 letters and numbers, like IE00B4L5Y983. Your broker shows it (on the fund page or your statement), and so does the prospectus. GrowFolio looks it up and adds it with its price and chart.')}</p>
+    <label class="campo">ISIN<input name="isin" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="IE00B4L5Y983" value="${esc(String(inicial || '').toUpperCase())}"></label>
+    <div class="isin-res" id="isinRes" aria-live="polite"></div>
+    <div class="error" id="errIsin"></div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri" id="bIsin">${L('Buscarlo', 'Look it up')}</button></div>
+  </form>`);
+  const f = $('#fIsin', h.el), inp = f.isin, res = $('#isinRes', h.el), err = (t) => { $('#errIsin', h.el).textContent = t; }, boton = $('#bIsin', h.el);
+  let hallado = null, buscando = false;
+  setTimeout(() => { inp.focus(); if (inicial) inp.select(); }, 80);
+  inp.oninput = () => { hallado = null; res.innerHTML = ''; err(''); boton.textContent = L('Buscarlo', 'Look it up'); boton.disabled = false; };
+  const terminar = (cid) => { h.cerrar(true); alListo(cid); };
+  const pedido = (isin) => {
+    res.innerHTML = `<div class="isin-no">${ICONOS.alerta}<div><b>${L('No lo encontramos ahora mismo', "We couldn't find it right now")}</b><p>${L('Puede que sea muy nuevo o que Yahoo aún no lo tenga. Si lo añades igualmente, queda pedido: GrowFolio lo vuelve a buscar en cada actualización del catálogo y, en cuanto aparezca, sale con su precio. Mientras, pon tú lo que vale en Editar.', "It may be very new or Yahoo may not have it yet. If you add it anyway, it stays requested: GrowFolio looks for it again on every catalog update and, as soon as it shows up, it gets its price. In the meantime, enter its value yourself in Edit.")}</p></div></div>`;
+    boton.textContent = sinEncontrar ? L('Añadirlo igualmente', 'Add it anyway') : L('Dejarlo pedido', 'Request it');
+    hallado = { pedido: isin };
+  };
+  f.onsubmit = async (ev) => {
+    ev.preventDefault();
+    if (buscando) return;
+    const isin = String(inp.value || '').toUpperCase().replace(/[\s-]+/g, '');
+    if (hallado && hallado.pedido) {
+      // no estaba: se deja pedido (el catálogo lo busca cada día) y, si es una compra, se añade a mano
+      pedirComun(isin, '', isin); buscarIsinWorker(isin, true);
+      h.cerrar(true);
+      if (sinEncontrar) sinEncontrar(isin); else toast(L('Pedido: en cuanto GrowFolio lo encuentre, saldrá al buscarlo', 'Requested: as soon as GrowFolio finds it, it will show up in search'), 4500);
+      return;
+    }
+    if (hallado) {
+      const cid = `c-${isin.toLowerCase()}`, x = hallado;
+      S.cat = S.cat || { v: {} }; S.cat.v = S.cat.v || {}; S.cat.v[cid] = x; catLocalGuardar(cid, x);
+      if (x.t === 'Acción') pedirComun(x.s, x.s, isin); else pedirComun(isin, '', isin);
+      buscarIsinWorker(isin, true);   // con tu sesión, lanza ya el catálogo para que lo tengan todos
+      return terminar(cid);
+    }
+    if (!isinValido(isin)) return err(L('Ese ISIN no es válido: tiene que tener 12 caracteres (2 letras, 9 letras o números y una cifra al final). Revisa que no falte ni sobre ninguno.', "That ISIN isn't valid: it needs 12 characters (2 letters, 9 letters or numbers and a final digit). Check nothing is missing or extra."));
+    err('');
+    // si ya está en el catálogo (o lo añadiste antes), directo
+    const ya = Object.entries((S.cat && S.cat.v) || {}).find(([, x]) => String(x.isin || '').toUpperCase() === isin);
+    if (ya) return terminar(ya[0]);
+    buscando = true; boton.disabled = true; boton.textContent = L('Buscando…', 'Looking…');
+    res.innerHTML = `<div class="isin-busca"><span class="isin-giro" aria-hidden="true"></span>${L('Buscándolo en Yahoo Finance…', 'Looking it up on Yahoo Finance…')}</div>`;
+    const d = await buscarIsinWorker(isin, false);
+    buscando = false; boton.disabled = false;
+    if (!d.ok) return pedido(isin);
+    const x = entradaDeYahoo(d);
+    hallado = x;
+    res.innerHTML = `<div class="isin-ok">${logo(x.dom, x.c)}<div class="isin-ok-t"><b>${esc(x.n)}</b><small>${esc([x.t, x.bolsa && L(`cotiza en ${x.bolsa}`, `listed on ${x.bolsa}`), x.m !== 'EUR' && x.m].filter(Boolean).join(' · '))}</small>
+      <span class="isin-ok-p">${x.p != null ? `<b>${precioFmt(x.p)}</b>${x.r1a != null ? ` <span class="${cls(x.r1a)}">${pctS(x.r1a, 1)}</span> <small>${L('en un año', 'in a year')}</small>` : ''}` : `<small>${L('Sin precio en euros todavía: lo tendrá en la próxima actualización.', 'No euro price yet: it will have one after the next update.')}</small>`}</span></div></div>
+      <p class="nota" style="margin:10px 0 0">${L('¿Es este? Si no, añádelo a mano con su nombre.', 'Is this the one? If not, add it by hand with its name.')} <button type="button" class="enlace acento" id="isinOtro">${L('No es este', "It's not this one")}</button></p>`;
+    boton.textContent = L('Añadirlo', 'Add it');
+    $('#isinOtro', h.el).onclick = () => { h.cerrar(true); if (sinEncontrar) sinEncontrar(isin); else nuevoInstrumento(() => {}, { isin }); };
+  };
+  if (inicial && isinValido(inicial)) setTimeout(() => f.requestSubmit(), 120);
 }
 // al abrir: lo que tienes sin precio común, se pide (una vez cada tres días como mucho)
 function revisarPedidos() {
@@ -12014,16 +12211,27 @@ function buscador(cont, alElegir, opt = {}) {
   const pintarRes = () => {
     const q = inp.value.trim();
     if (!res.length && !q) { ul.hidden = true; return; }
-    const isin = !opt.alCandidato && /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i.test(q) && !res.some((c) => String(c.isin).toUpperCase() === q.toUpperCase());
+    const isin = /^[A-Z]{2}[A-Z0-9]{9}[0-9]$/i.test(q.replace(/\s+/g, '')) && !res.some((c) => String(c.isin).toUpperCase() === q.replace(/\s+/g, '').toUpperCase());
     // un ticker que no sale (AGIO, BATS.L…): se ofrece añadirlo tal cual; GrowFolio pide su precio
     const tk = !opt.alCandidato && !isin && /^[A-Za-z][A-Za-z0-9]{0,6}([.-][A-Za-z]{1,3})?$/.test(q) && !res.some((c) => String(c.s).toUpperCase() === q.toUpperCase() || String(c.s).toUpperCase().split('.')[0] === q.toUpperCase() || normTxt(c.n).startsWith(normTxt(q)) || normTxt(c.l).startsWith(normTxt(q)) || (c.a || []).includes(normTxt(q).replace(/ /g, '')));
-    ul.innerHTML = res.map(fila).join('') + (tk ? `<li role="option" data-ticker="${esc(q.toUpperCase())}">${logo(null, '+')}<span class="busca-t"><b>¿No sale? Añadir el ticker ${esc(q.toUpperCase())}</b><small>Por su ticker de Yahoo: GrowFolio pide su precio y lo tendrá en unos minutos</small></span></li>` : '') + (isin ? `<li role="option" data-isin="${esc(q.toUpperCase())}">${logo(null, '+')}<span class="busca-t"><b>Añadir el fondo o ETF ${esc(q.toUpperCase())}</b><small>${PERFIL_LOCAL ? 'No está en la base de datos: lo añades, pero sin precio diario hasta que se sume al catálogo común' : 'No está en la lista: lo das de alta y la Action le busca precio'}</small></span></li>` : '') + (!res.length && !isin ? `<li class="busca-nada">No lo encuentro. Prueba con otro nombre, el ticker (IAG, AAPL) o el ISIN, que sale en tu bróker.</li>` : '');
+    ul.innerHTML = res.map(fila).join('') + (tk ? `<li role="option" data-ticker="${esc(q.toUpperCase())}">${logo(null, '+')}<span class="busca-t"><b>¿No sale? Añadir el ticker ${esc(q.toUpperCase())}</b><small>Por su ticker de Yahoo: GrowFolio pide su precio y lo tendrá en unos minutos</small></span></li>` : '') + (isin ? `<li role="option" data-isin="${esc(q.replace(/\s+/g, '').toUpperCase())}">${logo(null, '+')}<span class="busca-t"><b>${L(`Buscar el ISIN ${esc(q.replace(/\s+/g, '').toUpperCase())}`, `Look up ISIN ${esc(q.replace(/\s+/g, '').toUpperCase())}`)}</b><small>${L('No está en el catálogo: GrowFolio lo busca ahora y lo añade con su precio', "It's not in the catalog: GrowFolio looks it up now and adds it with its price")}</small></span></li>` : '')
+      + (!res.length && !isin && q.length >= 2 ? `<li class="busca-nada">${L('No lo encuentro con ese nombre.', "Can't find it by that name.")}</li>` : '')
+      + (!isin && q.length >= 2 ? `<li role="option" class="busca-isin" data-isin-form="1">${logo(null, '#')}<span class="busca-t"><b>${L('¿No lo encuentras? Añádelo con su ISIN', "Can't find it? Add it by its ISIN")}</b><small>${L('Sale en tu bróker: GrowFolio lo busca y lo añade solo', 'Your broker shows it: GrowFolio looks it up and adds it for you')}</small></span></li>` : '');
     ul.hidden = false;
   };
   const buscar = () => { res = inp.value.trim() ? buscarEn(lista, inp.value).slice(0, 8) : lista.filter((c) => c.tengo).slice(0, 8); sel = 0; pintarRes(); };
   const elegir = (li) => {
     if (!li) return;
-    if (li.dataset.isin) { ul.hidden = true; nuevoInstrumento((nid) => { if (nid) alElegir(nid); }, { isin: li.dataset.isin }); return; }
+    if (li.dataset.isin || li.dataset.isinForm) {
+      ul.hidden = true; inp.blur();
+      // encontrado: en Mercados se abre su consulta; al apuntar, queda elegido. Si no se encuentra, al apuntar se añade a mano
+      const alListo = (cid) => {
+        if (opt.alCandidato) { const c = candidatosBusqueda().find((x) => x.k === `cat:${cid}`); if (c) opt.alCandidato(c); return; }
+        const id = instDeCatalogo(cid); if (id) alElegir(id);
+      };
+      anadirPorIsin(li.dataset.isin || '', alListo, opt.alCandidato ? null : (isin) => nuevoInstrumento((nid) => { if (nid) alElegir(nid); }, { isin }));
+      return;
+    }
     if (li.dataset.ticker) { ul.hidden = true; nuevoInstrumento((nid) => { if (nid) alElegir(nid); }, { yahoo: li.dataset.ticker }); return; }
     const c = res[+li.dataset.i]; if (!c) return;
     if (opt.alCandidato) { ul.hidden = true; inp.blur(); opt.alCandidato(c); return; }
@@ -12152,7 +12360,8 @@ function abrirConsulta(c) {
   const gr = $('#consGraf', h.el);
   (async () => {
     let serie = idI ? histDe(idI) : null;
-    if (!serie && cid) {
+    if (!serie && ca && ca.local && ca.h && ca.h.length) serie = ca.h;
+    if (!serie && cid && !(ca && ca.local)) {
       const id2 = cid;
       try { const r = await fetch(CFG.dev ? `dev/cat/${id2}.json` : GH.raw(`cat/${id2}.json`, 'catalogo') + '?v=' + Math.floor(Date.now() / 3600000), { cache: 'no-cache' }); if (r.ok) { const j = await r.json(); serie = j && j.h; } } catch (e) { console.warn(e); }
     }
@@ -12177,8 +12386,14 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.6';
+const VERSION = '0.3.7';
 const NOVEDADES = [
+  { v: '0.3.7', f: '2026-10-21', h: '19:15', t: 'Lo que no encuentres, con su ISIN', cosas: [
+    { d: 'buscar', t: '¿No lo encuentras? Añádelo con su ISIN', x: 'Si al buscar un fondo, un ETF o una acción no sale, abajo tienes «Añádelo con su ISIN». Lo pegas, GrowFolio lo busca en ese momento y, si es el que quieres, lo añade con su nombre, su precio en euros y la gráfica de su último año. Poco después lo tiene también el catálogo de todos y desde ahí se actualiza solo.' },
+    { d: 'catalogo', t: 'Y si no aparece, queda pedido', x: 'Si tampoco así sale, puedes añadirlo igualmente con su nombre: queda pedido y GrowFolio lo vuelve a buscar en cada actualización del catálogo. Escribir el ISIN directamente en el buscador hace lo mismo.' },
+  ], arreglos: [
+    'Escribir un ISIN que no estaba abría un formulario largo (nombre, tipo, clase, región…) y se quedaba sin precio hasta el día siguiente.',
+  ] },
   { v: '0.3.6', f: '2026-10-21', h: '18:30', t: 'Plata, platino y paladio, cada uno en su sitio', cosas: [
     { d: 'catalogo', t: 'Más oro y metales en el catálogo', x: 'Ya salen al buscarlos por su nombre, su ticker o su ISIN el Xtrackers IE Physical Gold (XGDU), el WisdomTree Core Physical Silver (WSLV) y el WisdomTree Palladium 2x (2PAL), con su precio en euros.' },
     { d: 'cifras', t: 'Materias primas, aparte', x: 'La plata, el platino, el paladio y las cestas de materias primas cuentan ahora como «Materias primas», no como bolsa: en el reparto, en la proyección (más bruscas que el oro) y en tu límite de oro y materias primas.' },
@@ -15746,7 +15961,7 @@ function arrancar() {
   Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); setTimeout(() => mostrarPreguntaIA(), 3000); });
   apuntarDiaUso(); setTimeout(() => pedirNota(), 150000); setTimeout(() => pedirAvisoVersiones(), 12000);
   // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)
-  { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); }; setTimeout(mira, 6000); }
+  { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); refrescarCatLocal().catch(() => {}); }; setTimeout(mira, 6000); }
   clearInterval(tickPrecios); clearInterval(tickEstado);
   // con los avisos del navegador activados, los precios siguen llegando aunque GrowFolio esté en segundo plano
   tickPrecios = setInterval(() => { if (!document.hidden || (avisosCfg().on && !appAvisos())) recargarPrecios(); }, 120000);
