@@ -649,6 +649,23 @@ def proximos_resultados(t):
         return None
 
 
+def rec_de_votos(v):
+    """Yahoo a veces da los votos de los analistas pero no su consenso (recommendationKey "none", como BAT): se saca
+    de los votos, en la misma escala de 1 (compra fuerte) a 5 (venta fuerte)."""
+    try:
+        n = sum(v)
+        if n < 3:
+            return None, None
+        media = sum((k + 1) * x for k, x in enumerate(v)) / n
+        clave = "strong_buy" if media <= 1.5 else "buy" if media <= 2.5 else "hold" if media <= 3.5 else "underperform" if media <= 4.5 else "sell"
+        return clave, round(media, 2)
+    except Exception:  # noqa: BLE001
+        return None, None
+
+
+ORDEN_VOTOS = ("strongBuy", "buy", "hold", "sell", "strongSell")
+
+
 def votos_analistas(t):
     """Cuántos analistas dicen comprar, mantener o vender: ahora y hace 3 meses."""
     try:
@@ -700,6 +717,12 @@ def datos_accion(t, info, moneda, fx, precio_local):
     obj = lambda k: num(info.get(k) * a_eur, 4) if info.get(k) is not None else None  # noqa: E731
     pct = lambda k: num(info.get(k) * 100, 2) if info.get(k) is not None else None  # noqa: E731
     rec = info.get("recommendationKey")
+    media = num(info.get("recommendationMean"), 2)
+    votos = votos_analistas(t)
+    if (not rec or rec == "none") and votos and votos.get("ahora"):
+        r2, m2 = rec_de_votos([votos["ahora"].get(k, 0) for k in ORDEN_VOTOS])
+        if r2:
+            rec, media = r2, media or m2
     return {
         "nombre_largo": info.get("longName"),
         "sector": SECTORES.get(info.get("sector"), info.get("sector")),
@@ -707,12 +730,12 @@ def datos_accion(t, info, moneda, fx, precio_local):
         "analistas": {
             "recomendacion": RECOMENDACION.get(rec, rec),
             "clave": rec,
-            "media": num(info.get("recommendationMean"), 2),
+            "media": media,
             "num": info.get("numberOfAnalystOpinions"),
             "objetivo": obj("targetMeanPrice"),
             "objetivo_alto": obj("targetHighPrice"),
             "objetivo_bajo": obj("targetLowPrice"),
-            "votos": votos_analistas(t),
+            "votos": votos,
             "cambios": cambios_analistas(t, a_eur),
         } if rec or info.get("targetMeanPrice") else None,
         "fundamentales": {
@@ -1092,10 +1115,13 @@ def radar_ficha(sim, zona, fx):
     x.update(fechas_radar(info, precio, a_eur))
     v = votos_analistas(t)
     if v and v.get("ahora"):
-        orden = ("strongBuy", "buy", "hold", "sell", "strongSell")
-        x["v0"] = [v["ahora"][k] for k in orden]
+        x["v0"] = [v["ahora"][k] for k in ORDEN_VOTOS]
         if v.get("hace3m"):
-            x["v3"] = [v["hace3m"][k] for k in orden]
+            x["v3"] = [v["hace3m"][k] for k in ORDEN_VOTOS]
+        if not x.get("r") or x["r"] == "none":
+            r2, m2 = rec_de_votos(x["v0"])
+            if r2:
+                x["r"], x["rm"] = r2, x.get("rm") or m2
     return x
 
 

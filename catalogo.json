@@ -2167,6 +2167,417 @@
    "v": 1
   },
   {
+   "isin": "DE000A0F5UH1",
+   "n": "iShares STOXX Global Select Dividend 100 (DE)",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ISPA"
+   ]
+  },
+  {
+   "isin": "IE00B1FZS467",
+   "n": "iShares Global Infrastructure Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "INFR"
+   ]
+  },
+  {
+   "isin": "FR0013416716",
+   "n": "Amundi Physical Gold ETC",
+   "t": "ETC",
+   "v": 1,
+   "a": [
+    "GOLD"
+   ]
+  },
+  {
+   "isin": "IE00BMFKG444",
+   "n": "Xtrackers Nasdaq 100 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XNAS"
+   ]
+  },
+  {
+   "isin": "IE00BMTX1Y45",
+   "n": "iShares S&P 500 Swap Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "I500"
+   ]
+  },
+  {
+   "isin": "IE00B441G979",
+   "n": "iShares MSCI World EUR Hedged Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IWDE"
+   ]
+  },
+  {
+   "isin": "IE00BYVTMS52",
+   "n": "Invesco EQQQ Nasdaq-100 EUR Hedged",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EQEU"
+   ]
+  },
+  {
+   "isin": "IE000I8KRLL9",
+   "n": "iShares MSCI Global Semiconductors Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SEMI"
+   ]
+  },
+  {
+   "isin": "IE0005YK6564",
+   "n": "Sprott Uranium Miners Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "URNM"
+   ]
+  },
+  {
+   "isin": "IE00BYXVGZ48",
+   "n": "Fidelity Global Quality Income Inc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "FGQI"
+   ]
+  },
+  {
+   "isin": "IE000OJ5TQP4",
+   "n": "HANetf Future of Defence Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ASWC"
+   ]
+  },
+  {
+   "isin": "IE00BKWQ0Q14",
+   "n": "SPDR MSCI Europe",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ERO"
+   ]
+  },
+  {
+   "isin": "IE00BSPLC413",
+   "n": "SPDR MSCI USA Small Cap Value Weighted Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "USSC",
+    "ZPRV"
+   ]
+  },
+  {
+   "isin": "IE00BSPLC298",
+   "n": "SPDR MSCI Europe Small Cap Value Weighted Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ZPRX"
+   ]
+  },
+  {
+   "isin": "IE00BG0J4841",
+   "n": "iShares Digital Security Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SHLD"
+   ]
+  },
+  {
+   "isin": "IE00BYYHSQ67",
+   "n": "iShares MSCI World Quality Dividend Advanced Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "WQDV"
+   ]
+  },
+  {
+   "isin": "LU1681044480",
+   "n": "Amundi MSCI EM Asia",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "AASI"
+   ]
+  },
+  {
+   "isin": "LU1681042609",
+   "n": "Amundi MSCI Europe ESG Broad Transition",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "CEUG"
+   ]
+  },
+  {
+   "isin": "IE00BJK55C48",
+   "n": "iShares EUR High Yield Corp Bond ESG SRI Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EHYA"
+   ]
+  },
+  {
+   "isin": "LU0629459743",
+   "n": "UBS MSCI World Socially Responsible Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "UIMM"
+   ]
+  },
+  {
+   "isin": "LU0950674332",
+   "n": "UBS MSCI World Socially Responsible Acc",
+   "t": "ETF",
+   "v": 1
+  },
+  {
+   "isin": "IE00BD4TXV59",
+   "n": "UBS Core MSCI World Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "UETW"
+   ]
+  },
+  {
+   "isin": "IE00B6YX5M31",
+   "n": "SPDR Bloomberg Euro High Yield Bond",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SYBJ"
+   ]
+  },
+  {
+   "isin": "IE00B42Z5J44",
+   "n": "iShares MSCI Japan EUR Hedged Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IJPE"
+   ]
+  },
+  {
+   "isin": "IE00BCHWNQ94",
+   "n": "Xtrackers MSCI World Screened 1D",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XDWY"
+   ]
+  },
+  {
+   "isin": "LU0322253906",
+   "n": "Xtrackers MSCI Europe Small Cap 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XXSC"
+   ]
+  },
+  {
+   "isin": "IE00BG36TC12",
+   "n": "Xtrackers MSCI Japan ESG 1C",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "XZMJ"
+   ]
+  },
+  {
+   "isin": "IE00BZ163M45",
+   "n": "Vanguard USD Treasury Bond Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VDTY"
+   ]
+  },
+  {
+   "isin": "IE00BGYWT403",
+   "n": "Vanguard EUR Corporate Bond Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "VECA"
+   ]
+  },
+  {
+   "isin": "IE00BYXYYM63",
+   "n": "iShares US Aggregate Bond Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IUAA"
+   ]
+  },
+  {
+   "isin": "IE00B9M6RS56",
+   "n": "iShares J.P. Morgan USD EM Bond EUR Hedged Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EMBE"
+   ]
+  },
+  {
+   "isin": "IE00BYZTVT56",
+   "n": "iShares EUR Corp Bond ESG SRI Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SUOE"
+   ]
+  },
+  {
+   "isin": "IE00BDFL4P12",
+   "n": "iShares Diversified Commodity Swap",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ICOM"
+   ]
+  },
+  {
+   "isin": "LU1291106356",
+   "n": "BNP Paribas Easy MSCI Pacific ex Japan Min TE",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EPEJ"
+   ]
+  },
+  {
+   "isin": "LU1291098827",
+   "n": "BNP Paribas Easy MSCI EMU Min TE",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "EEMU"
+   ]
+  },
+  {
+   "isin": "IE00BYWZ0333",
+   "n": "iShares Automation & Robotics Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "RBOD"
+   ]
+  },
+  {
+   "isin": "IE000QDFFK00",
+   "n": "BNP Paribas Easy Nasdaq 100 Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "ANAV"
+   ]
+  },
+  {
+   "isin": "IE00BGSF1X88",
+   "n": "iShares USD Treasury Bond 0-1yr Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IB01"
+   ]
+  },
+  {
+   "isin": "IE00BCRY6003",
+   "n": "iShares USD Short Duration High Yield Corp Bond Dist",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "SDHY"
+   ]
+  },
+  {
+   "isin": "LU0429459356",
+   "n": "Xtrackers II US Treasuries 1D",
+   "t": "ETF",
+   "v": 1
+  },
+  {
+   "isin": "IE00B57X3V84",
+   "n": "iShares Dow Jones Global Leaders Screened Acc",
+   "t": "ETF",
+   "v": 1,
+   "a": [
+    "IGSU"
+   ]
+  },
+  {
+   "isin": "LU1279334210",
+   "s": "0P00016UT5.F",
+   "n": "Pictet Robotics P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0104884860",
+   "s": "0P00000BJZ.F",
+   "n": "Pictet Water P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "LU0474966164",
+   "s": "0P0000TG1A.F",
+   "n": "Pictet USA Index P EUR",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "FR0010135103",
+   "s": "0P00000FB4.F",
+   "n": "Carmignac Patrimoine A EUR Acc",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "isin": "IE00B2NXKW18",
+   "s": "0P0000GACH.F",
+   "n": "Seilern World Growth EUR U R",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "s": "0P0001MRGW.F",
+   "n": "MyInvestor Nasdaq 100 FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
+   "s": "0P0001BODO.F",
+   "n": "MyInvestor Cartera Permanente FI",
+   "t": "Fondo",
+   "v": 1
+  },
+  {
    "s": "BTC-EUR",
    "n": "Bitcoin",
    "t": "Cripto"

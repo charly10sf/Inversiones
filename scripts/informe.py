@@ -317,11 +317,19 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   amplitud de mercado, soportes, recorrido, múltiplos, rotación sectorial, risk-off...): dilo con palabras
   normales o explícalo en la misma frase. Cada texto corto empieza por lo que significa para quien invierte
   ("malo para tus fondos de EEUU: …") y después el dato.
+- Proporción: un movimiento de menos del 1 % en un día, sin una noticia propia, no es ni bueno ni malo:
+  "impacto" neutral y dilo así ("apenas se mueve: sigue al mercado"). "positivo" o "negativo" solo con una
+  noticia concreta del activo o un movimiento grande. No dramatices.
+- Nombra lo que tiene de verdad: sus posiciones son las de los datos (fondos del S&P 500, del mundo, de
+  Europa, acciones sueltas...). No le atribuyas "tus tecnológicas" ni nada que no tenga.
+- Nada de soportes, resistencias ni niveles técnicos inventados en "vigilar": una fecha (resultados, BCE,
+  Fed, dividendo) o un precio que salga en las noticias. Si no hay nada concreto, "nada especial".
+- Los datos de cada zona y de cada posición son los de hoy: si una noticia dice otra cifra (más vieja), manda la de los datos.
 Responde solo con un bloque ```json con este formato:
 {
   "resumen": "dos frases cortas como mucho: lo que más afecta hoy a esta cartera y por qué",
   "mercado": [{"zona": "EEUU|Europa|España|Asia|Emergentes|Global", "t": "título corto", "detalle": "dos o tres frases con cifras y fechas", "implica": "una frase: qué supone para esta cartera", "impacto": "positivo|negativo|neutral", "fuentes": [1, 2]}],
-  "macro": [{"t": "qué (BCE, inflación EEUU, bono 10 años...)", "dato": "la cifra", "lectura": "una frase"}],
+  "macro": [{"t": "qué (BCE, inflación EEUU, bono 10 años...)", "dato": "la cifra, escrita a la española: coma decimal y espacio antes del % (5,12 %; 1,1235)", "lectura": "una frase"}],
   "posiciones": {"<id>": {"novedades": "una o dos frases", "impacto": "positivo|negativo|neutral|mixto", "contraste": "qué fuentes coinciden y cuáles no, en pocas palabras", "vigilar": "fecha o precio", "fuentes": [3]}},
   "alertas": [{"t": "algo que pide atención ya", "id": "<id de posición o ticker>", "urgencia": "alta|media"}]
 }
@@ -882,7 +890,12 @@ def main(ruta_inst, dir_anterior, dir_salida):
     viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_DECISION)
     if not viejo and valores:
         decision = revisar(decision, lectura, valores)
+    # si la última vez falló (cuota de Gemini agotada, por ejemplo), no se reintenta hasta pasadas 2 horas
+    intento = esc.get("intento_decision")
+    if viejo and intento and hace_menos_de(intento, 2):
+        viejo = False
     if clave and valores and viejo:
+        intento = ahora()
         try:
             d = decidir(lectura, cache, valores, medianas, tuyas, clave, leer(f"{dir_salida}/precios.json"), previa=decision)
             if d:
@@ -891,7 +904,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: falló la decisión de Gemini ({str(e)[:200]})")
     hace24 = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=24)
-    salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "gemini": {"ok": not FALLOS, "errores": (FALLOS or ERRORES)[-4:], "modelos": sorted(USADOS), "con_clave": bool(clave)},
+    salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "intento_decision": intento if (decision or {}).get("generado", "") < (intento or "") else None, "gemini": {"ok": not FALLOS, "errores": (FALLOS or ERRORES)[-4:], "modelos": sorted(USADOS), "con_clave": bool(clave)},
               "con_noticias": sum(1 for v in cache.values() if v.get("n")), "leidas_24h": sum(1 for v in lectura.values() if cuando(v.get("d")) and cuando(v["d"]) > hace24),
               "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores), "fuentes_pasada": DIAG}
     with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:

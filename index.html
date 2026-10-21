@@ -2004,7 +2004,8 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .busca-res .logo-a, .op-elegido .logo-a, .op-pos .logo-a { width: 30px; height: 30px; border-radius: 8px; }
 .busca-t { display: grid; min-width: 0; }
 .busca-t b { font-weight: 600; font-size: 14.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.busca-t small { color: var(--muted); font-size: 12px; display: flex; gap: 5px; align-items: center; white-space: nowrap; overflow: hidden; }
+.busca-t small { color: var(--muted); font-size: 12px; display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.busca-t small > * { vertical-align: -1px; }
 .busca-p { text-align: right; font-size: 13px; color: var(--text-2); font-variant-numeric: tabular-nums; display: grid; }
 .busca-p small { color: var(--accent); font-size: 12px; }
 .busca-nada { padding: 10px; color: var(--muted); font-size: 13px; }
@@ -2838,6 +2839,27 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .ix-fin .btn { min-height: 56px; padding: 0 36px; font-size: 17px; }
 .dib .ix-vacio { fill: var(--line-2); stroke: none; }
 .ix-arriba { color: var(--text-2); font-weight: 600; }
+.ixn-det { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px; border-radius: 999px; border: 1px solid var(--filo-oro, rgba(237, 187, 69, 0.42)); background: rgba(237, 187, 69, 0.1); color: var(--accent-hi); font: 600 13.5px var(--f); cursor: pointer; }
+.ixn-det svg { width: 15px; height: 15px; }
+.ixn-det + .intro-saltar { margin-left: 4px; }
+.ixn-det-b { justify-self: start; margin-top: 4px; }
+.ix-fin .btn svg { width: 17px; height: 17px; }
+.ix-fin .btn { white-space: normal; max-width: 100%; text-align: center; justify-content: center; }
+.nov-aviso { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 10px 8px 10px 12px; border-radius: 14px; border: 1px solid rgba(237, 187, 69, 0.34); background: radial-gradient(420px 140px at 10% -40px, rgba(233, 190, 98, 0.16), rgba(233, 190, 98, 0) 72%), linear-gradient(180deg, #221E18, #15130F); box-shadow: inset 0 1px 0 rgba(255, 231, 176, 0.12); }
+.nov-aviso-ic { width: 30px; height: 30px; flex: none; display: grid; place-items: center; border-radius: 9px; background: rgba(237, 187, 69, 0.14); color: var(--accent); }
+.nov-aviso-ic svg { width: 16px; height: 16px; }
+.nov-aviso-t { flex: 1; min-width: 0; display: grid; gap: 1px; text-align: left; border: 0; background: none; padding: 0; color: inherit; cursor: pointer; }
+.nov-aviso-t small { color: var(--accent); font-size: 12px; font-weight: 600; }
+.nov-aviso-t b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nov-aviso-b { flex: none; }
+.nov-aviso-x { width: 30px; height: 30px; flex: none; }
+.nov-aviso-x svg { width: 15px; height: 15px; }
+@media (max-width: 560px) {
+  .nov-aviso { display: grid; grid-template-columns: 30px minmax(0, 1fr) 30px; gap: 8px 10px; }
+  .nov-aviso-t b { white-space: normal; }
+  .nov-aviso-b { grid-column: 2; grid-row: 2; justify-self: start; }
+  .nov-aviso-x { grid-column: 3; grid-row: 1; align-self: start; }
+}
 @media (min-width: 900px) {
   .ix-cap { padding: 90px max(56px, calc((100% - 1080px) / 2)); }
   .ix-cap-in { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); justify-items: stretch; align-items: center; gap: 80px; text-align: left; }
@@ -3033,12 +3055,23 @@ body.con-ixn { overflow: hidden; }
   .merc-pleg:not([open]) > summary > .k { display: none; }
   .merc-pleg:not([open]) .mp-ade { display: block; order: 3; flex-basis: 100%; color: var(--text-2); font-size: 14px; line-height: 1.45; }
   .mp-ade em { font-style: normal; color: var(--muted); }
-  .merc-pleg > summary h2 { flex: 1 1 0; min-width: 0; }
+  .merc-pleg > summary { flex-wrap: wrap; row-gap: 6px; }
+  .merc-pleg > summary h2 { flex: 1 1 calc(100% - 44px); min-width: 0; }
+  .merc-pleg[open] > summary > .k { order: 3; flex-basis: 100%; }
+  /* cada titular: el impacto y la zona en una línea y el titular debajo, todos alineados */
+  .informe-merc.plegados details > summary { flex-wrap: wrap; row-gap: 5px; align-items: center; }
+  .informe-merc.plegados details > summary b { flex-basis: 100%; font-size: 15px; line-height: 1.4; }
+  .informe-merc.plegados li { padding-bottom: 10px; border-bottom: 1px solid var(--line); }
+  .informe-merc.plegados li:last-child { border-bottom: 0; padding-bottom: 0; }
 }
 .mas-noticias > summary { cursor: pointer; color: var(--accent); font-weight: 600; font-size: 14px; padding: 10px 0; }
 @media (max-width: 680px) {
-  .macro-ia { grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: 72%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; }
-  .macro-ia > div { scroll-snap-align: start; }
+  /* los datos de fondo (bono, euro/dólar...), uno debajo de otro: el nombre a la izquierda, la cifra a la derecha y su lectura debajo */
+  .macro-ia { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+  .macro-ia > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; column-gap: 12px; align-items: baseline; }
+  .macro-ia small { grid-column: 1; font-size: 13px; color: var(--text-2); }
+  .macro-ia b { grid-column: 2; grid-row: 1; margin: 0; font-size: 16px; }
+  .macro-ia p { grid-column: 1 / -1; margin-top: 4px; }
 }
 
 /* ---------- menos scroll en el móvil ---------- */
@@ -3830,13 +3863,13 @@ function fmtNum(n, d = 2) {
   return (neg ? '−' : '') + i + (d ? ',' + f : '');
 }
 const oc = (s) => (S.oculto ? '••••' : s);
-const eur = (n, d = 2) => oc(fmtNum(n, d)) + ' €';
-const eurS = (n, d = 2) => (S.oculto ? '••••' : (n > 0 ? '+' : '') + fmtNum(n, d)) + ' €';
-const pct = (n, d = 2) => (n == null || !isFinite(n) ? '—' : fmtNum(n, d) + ' %');
-const pctS = (n, d = 2) => (n == null || !isFinite(n) ? '—' : (n > 0 ? '+' : '') + fmtNum(n, d) + ' %');
+const eur = (n, d = 2) => oc(fmtNum(n, d)) + '\u00a0€';
+const eurS = (n, d = 2) => (S.oculto ? '••••' : (n > 0 ? '+' : '') + fmtNum(n, d)) + '\u00a0€';
+const pct = (n, d = 2) => (n == null || !isFinite(n) ? '—' : fmtNum(n, d) + '\u00a0%');
+const pctS = (n, d = 2) => (n == null || !isFinite(n) ? '—' : (n > 0 ? '+' : '') + fmtNum(n, d) + '\u00a0%');
 const cls = (n) => (n > 0.00001 ? 'up' : n < -0.00001 ? 'down' : 'flat');
 const flecha = (n) => (n > 0.00001 ? '▲ ' : n < -0.00001 ? '▼ ' : '');
-const precioFmt = (p) => (p == null ? '—' : fmtNum(p, p >= 1000 ? 0 : p >= 100 ? 2 : p >= 1 ? 3 : 4) + ' €');
+const precioFmt = (p) => (p == null ? '—' : fmtNum(p, p >= 1000 ? 0 : p >= 100 ? 2 : p >= 1 ? 3 : 4) + '\u00a0€');
 function compacto(n) {
   const a = Math.abs(n);
   if (a >= 1e6) return fmtNum(n / 1e6, a >= 1e7 ? 0 : 1) + ' M';
@@ -4298,7 +4331,63 @@ function htmlBolsasPanel() {
 /* =====================================================================
    Cálculos
    ===================================================================== */
-const histDe = (id) => (S.hist && S.hist.instrumentos && S.hist.instrumentos[id]) || (S.precios && S.precios.instrumentos && S.precios.instrumentos[id] && S.precios.instrumentos[id].historico) || (S.catHist && S.catHist[id]) || null;
+const histDe = (id) => (S.hist && S.hist.instrumentos && S.hist.instrumentos[id]) || (S.precios && S.precios.instrumentos && S.precios.instrumentos[id] && S.precios.instrumentos[id].historico) || (S.catHist && S.catHist[id]) || (S.histRadar && S.histRadar[id]) || null;
+
+/* Lo que añade cada uno y la Action no sigue (no está en precios.json, como la AstraZeneca de un amigo): si la empresa
+   está en el radar, su ficha sale de ahí (analistas, valoración, negocio, tendencia, próximos resultados) y su año,
+   de los cierres semanales del radar (radar-hist.json), pasados a euros. Así no sale con todo vacío. */
+const BANDAS_RIESGO = [0.5, 2, 5, 10, 15, 25];
+let histRadarPedido = false;
+function pedirHistRadar() {
+  if (histRadarPedido || typeof radarHist !== 'function') return;
+  histRadarPedido = true;
+  radarHist().then((rh) => {
+    if (!rh || !rh.s) return;
+    S.histRadar = S.histRadar || {};
+    let hay = false;
+    const hoy = hoyIso();
+    for (const id of Object.keys(S.inst || {})) {
+      const i = S.inst[id];
+      if (!i || !i.yahoo || (S.precios && S.precios.instrumentos && S.precios.instrumentos[id])) continue;
+      const e = rh.s[i.yahoo] || rh.s[String(i.yahoo).toUpperCase()], r = radarPorSim(i.yahoo);
+      if (!e || !e.d || !Array.isArray(e.v) || !r || !(r.p > 0) || !(r.pe > 0)) continue;
+      const k = r.pe / r.p, d0 = deIso(e.d), paso = rh.paso || 7;
+      const serie = e.v.map((v, n) => { const x = new Date(d0); x.setDate(d0.getDate() + n * paso); return [iso(x), +(v * k).toFixed(4)]; }).filter((x) => x[1] > 0 && x[0] <= hoy);
+      if (serie.length && serie[serie.length - 1][0] < hoy) serie.push([hoy, +r.pe.toFixed(4)]);
+      if (serie.length >= 4) { S.histRadar[id] = serie; hay = true; }
+    }
+    if (hay && S.cartera) { S.M = null; pintar(); if (S.ficha) refrescarFicha(); }
+  }).catch(() => {});
+}
+function pRadar(inst) {
+  const r = inst && inst.yahoo && inst.tipo !== 'Cripto' && !/^Fondo/.test(inst.tipo || '') ? radarPorSim(inst.yahoo) : null;
+  if (!r || !(r.pe > 0)) return null;
+  const k = r.p > 0 ? r.pe / r.p : 1, eur = (v) => (v != null && isFinite(v) && v > 0 ? +(v * k).toFixed(4) : null);
+  const votos = (a) => (Array.isArray(a) && a.length === 5 ? { strongBuy: a[0], buy: a[1], hold: a[2], sell: a[3], strongSell: a[4] } : null);
+  const h = S.histRadar && S.histRadar[inst.id];
+  const rent = { '1a': r.c1a != null ? +r.c1a : null };
+  let volatilidad = null, riesgo = null;
+  if (h && h.length > 8) {
+    const ult = h[h.length - 1][1], hace = (dias) => { const d = iso(new Date(Date.now() - dias * 864e5)); const x = h.filter((y) => y[0] <= d).pop(); return x ? (ult / x[1] - 1) * 100 : null; };
+    rent['1m'] = hace(30); rent['3m'] = hace(91); rent['6m'] = hace(182);
+    const ene = h.find((y) => y[0] >= `${new Date().getFullYear()}-01-01`); if (ene) rent.ytd = (ult / ene[1] - 1) * 100;
+    const rets = h.slice(1).map((y, n) => Math.log(y[1] / h[n][1])).filter(isFinite);
+    if (rets.length > 8) { const m = rets.reduce((a, b) => a + b, 0) / rets.length; volatilidad = Math.sqrt(rets.reduce((a, b) => a + (b - m) ** 2, 0) / (rets.length - 1)) * Math.sqrt(52) * 100; riesgo = 1 + BANDAS_RIESGO.filter((b) => volatilidad >= b).length; }
+  }
+  const t50 = r.m50, t200 = r.m200;
+  return {
+    radar: true, simbolo: r.s, moneda: r.m, precio: r.pe, precio_local: r.p, variacion_dia: r.v != null ? +r.v : null,
+    cierre_anterior: r.v != null ? r.pe / (1 + r.v / 100) : null, fecha: String(r.f || '').slice(0, 10) || null,
+    max52: eur(r.mx), min52: eur(r.mn), rent, volatilidad, riesgo,
+    tecnico: { media50: eur(t50), media200: eur(t200), vs_media200: t200 ? (r.p / t200 - 1) * 100 : null, dist_max52: r.mx ? (r.p / r.mx - 1) * 100 : null,
+      tendencia: t50 && t200 ? (r.p > t50 && t50 > t200 ? 'alcista' : r.p < t50 && t50 < t200 ? 'bajista' : 'lateral') : null },
+    nombre_largo: r.n, sector: r.sector, industria: r.ind,
+    analistas: r.na ? { recomendacion: CONSENSO[r.r] || null, clave: r.r, media: r.rm, num: r.na, objetivo: eur(r.obj), objetivo_alto: eur(r.ta), objetivo_bajo: eur(r.tb), votos: { ahora: votos(r.v0), hace3m: votos(r.v3) }, cambios: [] } : null,
+    fundamentales: { capitalizacion: r.cap && S.precios && S.precios.fx ? r.cap * (r.m === 'EUR' ? 1 : S.precios.fx[r.m === 'GBp' ? 'GBP' : r.m] || 0) || null : null, per: r.per, per_futuro: r.perf, margen: r.mg, roe: r.roe, crec_ingresos: r.rg, deuda_capital: r.de, beta: r.beta },
+    per: r.per, per_futuro: r.perf, dividendo_pct: r.div || null, beta: r.beta, proximos_resultados: r.rd || null, ex_dividendo: r.xd || null,
+    estimaciones: r.epsg != null ? { este_anio: { crec: r.epsg } } : {},
+  };
+}
 
 /* =====================================================================
    Catálogo común (rama "catalogo", una vez al día): unos cien fondos, ETF, oro y cripto con su ISIN,
@@ -4380,7 +4469,8 @@ function instDe(id) {
 function calcularPos(pos, hoy) {
   const P = (S.precios && S.precios.instrumentos) || {};
   const inst = instDe(pos.instrumento);
-  const p = P[pos.instrumento] || null;
+  const p = P[pos.instrumento] || pRadar(inst) || null;
+  if (p && p.radar && !(S.histRadar && S.histRadar[pos.instrumento])) pedirHistRadar();
   const hist = histDe(pos.instrumento);
   let precio = p ? p.precio : null;
   let prev = p ? p.cierre_anterior : null;
@@ -5338,11 +5428,23 @@ function bloquesCartera() {
   return v;
 }
 const anchoCar = (k) => (k === 'posiciones' && S.carTab === 'plan' ? 'lleno' : BLOQUES_CAR[k].w);
+/* los cuatro días siguientes a una versión nueva, arriba en Inicio: qué versión es, su título y «Ver en detalle»
+   (las notas completas). Se quita con la x o sola pasados esos días. */
+function htmlAvisoNovedades() {
+  const vista = LS.get('inv-nov-vista'), n = NOVEDADES[0];
+  if (!vista || vista.v !== VERSION || !n || n.v !== VERSION || LS.get('inv-nov-cerrada') === VERSION) return '';
+  if (diasEntre(vista.d, hoyIso()) > 3) return '';
+  return `<div class="nov-aviso" role="note"><span class="nov-aviso-ic" aria-hidden="true">${ICONOS.chispa}</span>
+    <button type="button" class="nov-aviso-t" data-accion="novedades-detalle"><small data-no-trad>${L(`Novedades de la ${esc(VERSION)}`, `What's new in ${esc(VERSION)}`)}</small><b>${esc(n.t)}</b></button>
+    <button type="button" class="btn peq nov-aviso-b" data-accion="novedades-detalle">${L('Ver en detalle', 'See details')}</button>
+    <button type="button" class="ib nov-aviso-x" data-accion="novedades-ocultar" aria-label="${L('Quitar el aviso', 'Dismiss')}">${ICONOS.cerrar}</button></div>`;
+}
 function htmlBloqueCar(k, M) {
   const anio = new Date().getFullYear();
   try {
     if (k === 'patrimonio') {
       return `<section class="car-patrimonio car-hero" aria-label="Patrimonio">
+      ${htmlAvisoNovedades()}
       <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Cartera: qué sale y en qué orden" aria-label="Personalizar Cartera">${ICONOS.ordenar}<span>Personalizar</span></button></div>
       <div class="hero-panel">
         <div class="hero-cifra">
@@ -6692,6 +6794,8 @@ function mejoresIdeas0(M, excluir = {}) {
   const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
   const ctx = ctxIdeas(M);
   const evita = evitaGrowIA();
+  // las que también elige GrowIA tras leer su prensa van por delante: así el Paso a paso y las ideas apuntan a lo mismo
+  const deGrowIA = new Set(((S.escaneo && S.escaneo.decision && S.escaneo.decision.ideas) || []).map((v) => v.s));
   // las que ya se propusieron tienen un margen: un 9 % de recorrido en vez de 10 o un consenso de 2,5 en vez de 2,4 no las saca
   const pasa = (x) => {
     const ya = propuestaReciente(x.s);
@@ -6699,7 +6803,7 @@ function mejoresIdeas0(M, excluir = {}) {
   };
   const out = r
     .filter((x) => !tuyas.has(x.s) && !evita.has(x.s) && pasa(x) && (!excluir.sector || x.sector !== excluir.sector))
-    .map((x) => { const y = puntuarIdea(x, ctx); if (propuestaReciente(x.s)) { y.puntos += 0.8; y.sigue = true; } return y; })
+    .map((x) => { const y = puntuarIdea(x, ctx); if (propuestaReciente(x.s)) { y.puntos += 0.8; y.sigue = true; } if (deGrowIA.has(x.s)) y.puntos += 0.6; return y; })
     .filter((x) => (x.sigue ? x.ctr.favor >= 2 && x.ctr.contra <= 3 : x.ctr.favor >= 3 && x.ctr.contra <= 2))
     .sort((a, b) => b.puntos - a.puntos);
   if (!excluir.sector) { S.ideasTop = out.slice(0, 12).map((x) => x.s); apuntarIdeas(out.slice(0, 3).map((x) => x.s)); }
@@ -6794,7 +6898,7 @@ function htmlMercadoInforme(abierto = true) {
   // los titulares a la vista; el detalle de cada uno, al tocarlo. Plegado (en el móvil), el primer titular de adelanto
   return `<details class="informe merc-pleg"${abierto ? ' open' : ''}><summary class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según GrowIA</h2><span class="k">${cabInforme(inf)}</span><span class="mp-ade">${escIA(inf.mercado[0].t)}${inf.mercado.length > 1 ? ` <em>y ${inf.mercado.length - 1} más</em>` : ''}</span><i class="aj-flecha" aria-hidden="true"></i></summary>
     <ul class="informe-merc plegados">${inf.mercado.map((m) => `<li><details><summary>${chipImpacto(m.impacto)}${m.zona ? `<span class="zona-ia">${bandera(ZONA_BANDERA[m.zona])}${esc(m.zona)}</span>` : ''}<b>${escIA(m.t)}</b></summary><p>${escIA(m.detalle)}</p>${m.implica ? `<p class="ia-implica"><b>Para tu cartera:</b> ${escIA(m.implica)}</p>` : ''}${enlacesFuentes(m.fuentes, 2)}</details></li>`).join('')}</ul>
-    ${(inf.macro || []).length ? `<div class="macro-ia">${inf.macro.map((x) => `<div><small>${escIA(x.t)}</small><b>${escIA(x.dato)}</b><p>${escIA(x.lectura)}</p></div>`).join('')}</div>` : ''}
+    ${(inf.macro || []).length ? `<div class="macro-ia">${inf.macro.map((x) => `<div><small>${escIA(x.t)}</small><b>${esc(datoIA(x.dato))}</b><p>${escIA(x.lectura)}</p></div>`).join('')}</div>` : ''}
   </details>`;
 }
 /* GrowIA a veces hablaba de una meta lejana como si estuviera al caer («sostienen el rumbo hacia los 500.000 €»).
@@ -6810,6 +6914,14 @@ function sinRumbo(t) {
   const total = (S.M && S.M.total) || 0;
   const lejos = (x) => total > 0 && +String(x).replace(/\./g, '').replace(',', '.') > total * 1.5;
   return t.replace(RUMBO_IA[0], (m, x) => (lejos(x) ? 'la cartera' : m)).replace(RUMBO_IA[1], (m, x) => (lejos(x) ? '' : m)).replace(RUMBO_IA[2], (m, x) => (lejos(x) ? '' : m));
+}
+/* GrowIA a veces escribe las cifras a la inglesa (5.117%, 1.1235): en español, coma decimal y espacio antes del % */
+function datoIA(t) {
+  let x = limpiaIA(t).trim();
+  if (IDIOMA === 'en') return x;
+  x = x.replace(/(-?\d+)\.(\d+)\s*%/g, '$1,$2 %').replace(/(\d)%/g, '$1 %');
+  if (/^-?\d\.\d{3,}$/.test(x)) x = x.replace('.', ',');
+  return x;
 }
 const limpiaIA = (t) => sinRumbo(String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, ''));
 const escIA = (t) => esc(limpiaIA(t));
@@ -9590,7 +9702,7 @@ function htmlFicha(f) {
   let cuerpo = '';
   if (S.ficha.tab === 'resumen') cuerpo = fichaResumen(f);
   else if (S.ficha.tab === 'expertos') cuerpo = fichaExpertos(f);
-  else if (S.ficha.tab === 'noticias') cuerpo = `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px" data-no-trad>${conIA('Lo que dice la prensa, según GrowIA', 'What the press says, according to GrowIA')}</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
+  else if (S.ficha.tab === 'noticias') cuerpo = !(((S.precios && S.precios.noticias) || {})[i.id] || []).length && p.radar ? fichaNoticiasRadar(f) : `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px" data-no-trad>${conIA('Lo que dice la prensa, según GrowIA', 'What the press says, according to GrowIA')}</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
   else cuerpo = fichaDatos(f);
   // arriba, fija, solo una barra fina (y el precio pequeño al bajar); el resto se va con el scroll hasta las pestañas,
   // que se quedan fijas debajo de la barra
@@ -9680,6 +9792,24 @@ function fichaResumen(f) {
   ${f.pos.notas ? `<div class="bloque"><h3>Tus notas</h3><p class="notas">${esc(f.pos.notas)}</p></div>` : ''}`;
 }
 
+/* las noticias de una empresa que la Action no sigue: lo que ha leído GrowIA de su prensa en el escaneo de todo el
+   radar, los titulares que tenga y, siempre, el enlace a Google Noticias */
+function fichaNoticiasRadar(f) {
+  const i = f.inst, sim = (f.p && f.p.simbolo) || i.yahoo, le = sim ? lecturaDe(sim) : null;
+  const vistos = new Set(), lista = [];
+  for (const n of [...(sim ? noticiasIdea(sim) : []), ...((le && le.fuentes) || [])]) if (n && n.u && !vistos.has(n.u)) { vistos.add(n.u); lista.push(n); }
+  const gnews = `https://news.google.com/search?q=${encodeURIComponent(i.nombre || i.corto)}&hl=es&gl=ES&ceid=ES:es`;
+  return `${le && le.txt ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px" data-no-trad>${conIA('Lo que dice la prensa, según GrowIA', 'What the press says, according to GrowIA')}</h3><span class="k">${haceCuanto(le.d)}</span></div><p class="informe-res" style="font-size:15px">${chipImpacto(le.imp)} ${escIA(le.txt)}</p></section>` : ''}
+    <section>${lista.length ? htmlNoticias(lista, false, 12) : ''}<p class="nota"><a class="enlace acento" href="${esc(gnews)}" target="_blank" rel="noopener noreferrer">${L(`Ver las noticias de ${esc(i.corto || i.nombre)} en Google Noticias`, `See ${esc(i.corto || i.nombre)} news on Google News`)}</a></p></section>`;
+}
+/* cuando Yahoo da los votos pero no el consenso (BAT): el consenso, de los votos (1 compra fuerte … 5 venta fuerte) */
+function consensoVotos(v) {
+  if (!v) return null;
+  const xs = [v.strongBuy, v.buy, v.hold, v.sell, v.strongSell].map((x) => +x || 0), n = xs.reduce((a, b) => a + b, 0);
+  if (n < 3) return null;
+  const m = xs.reduce((a, x, k) => a + (k + 1) * x, 0) / n;
+  return CONSENSO[m <= 1.5 ? 'strong_buy' : m <= 2.5 ? 'buy' : m <= 3.5 ? 'hold' : m <= 4.5 ? 'underperform' : 'sell'];
+}
 function fichaExpertos(f) {
   const p = f.p || {}, i = f.inst, a = p.analistas, fu = p.fundamentales || {};
   const kv = (filas) => `<dl class="kv">${filas.filter(Boolean).map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>`;
@@ -9689,7 +9819,7 @@ function fichaExpertos(f) {
     const v3 = a && a.votos && a.votos.hace3m;
     const est = p.estimaciones || {};
     return `
-    ${a ? `<section class="bloque"><h3>${a.num || ''} analistas, consenso ${esc((a.recomendacion || '—').toLowerCase())}</h3>${htmlVotos(a.votos && a.votos.ahora)}
+    ${a ? `<section class="bloque"><h3>${a.num || ''} analistas, consenso ${esc((a.recomendacion || consensoVotos(a.votos && a.votos.ahora) || '—').toLowerCase())}</h3>${htmlVotos(a.votos && a.votos.ahora)}
       ${v3 ? `<div style="margin-top:14px"><div class="k" style="font-size:13px;margin-bottom:6px">Hace 3 meses</div>${htmlVotos(v3, false)}</div>` : ''}</section>
     <section class="bloque"><h3>Precio objetivo a 12 meses</h3>${htmlObjetivo(a, f.precio) || '<div class="vacio">Sin precio objetivo.</div>'}</section>` : '<div class="vacio">Yahoo Finance no tiene analistas para esta acción.</div>'}
     <div class="kv-2">
@@ -9716,7 +9846,7 @@ function fichaExpertos(f) {
     </div>
     ${a && a.cambios && a.cambios.length ? `<section class="bloque"><h3>Cambios de recomendación</h3><ul class="noticias">${a.cambios.map((c) => `<li><span>${esc(c.firma)}: ${esc(c.accion || '')} ${c.de ? `de ${esc(c.de)} ` : ''}${c.a ? `a ${esc(c.a)}` : ''}${c.objetivo ? `, objetivo ${precioFmt(c.objetivo)}` : ''}</span><small>${fechaLarga(c.fecha)}</small></li>`).join('')}</ul></section>` : ''}
     <section class="bloque"><h3>Analistas en prensa</h3>${htmlNoticias(prensaA.length ? prensaA : prensa, false, 8)}</section>
-    <p class="nota">Datos de Yahoo Finance${p.lento ? `, consultados ${haceCuanto(p.lento)}` : ''}.</p>`;
+    <p class="nota">Datos de Yahoo Finance${p.lento ? `, consultados ${haceCuanto(p.lento)}` : p.radar ? `, del radar de GrowFolio${p.fecha ? ` (${fechaCorta(p.fecha)})` : ''}` : ''}.</p>`;
   }
   if (/^Fondo/.test(i.tipo || '')) {
     const fo = p.fondo || {};
@@ -9759,7 +9889,7 @@ function fichaDatos(f) {
       t.dist_max52 != null && ['Desde su máximo del año', `<span class="${cls(t.dist_max52)}">${pctS(t.dist_max52, 1)}</span>`],
       t.caida_max_1a != null && ['Peor caída del año', `<span class="down">${pct(t.caida_max_1a, 1)}</span>`],
       p.volatilidad && ['Cuánto se mueve (volatilidad del último año)', pct(p.volatilidad, 1)],
-      p.riesgo && ['Riesgo', `${p.riesgo} de 7, ${RIESGO_TXT[p.riesgo].toLowerCase()} (7 es lo más arriesgado)`],
+      p.riesgo && ['Riesgo, de 1 a 7 (7 es lo más arriesgado)', `${p.riesgo}, ${RIESGO_TXT[p.riesgo].toLowerCase()}`],
     ])}${t.media50 || t.media200 || t.rsi != null ? `<details class="paso-mas"><summary>Para curiosos: medias y RSI</summary>${kv([
       t.media50 && ['Media de 50 sesiones', precioFmt(t.media50)],
       t.media200 && ['Media de 200 sesiones', precioFmt(t.media200)],
@@ -10053,7 +10183,7 @@ function operacion(tipo, id, sim, cand) {
     }
     if (inst) {
       const i = S.inst[inst] || {}, pr = precioInst(inst), ya = S.cartera.posiciones.filter((p) => p.instrumento === inst);
-      c.innerHTML = `<div class="op-elegido">${logo(i.dominio, i.corto || i.nombre)}<span class="busca-t"><b>${esc(i.corto || i.nombre)}</b><small>${chipCotiza(i)}${i.yahoo ? ` · ${esc(i.yahoo)}` : ''}${ya.length ? ` · ya tienes en ${esc(ya.map((p) => p.plataforma).join(' y '))}` : ''}</small></span><span class="busca-p">${pr ? precioFmt(pr) : ''}</span><button type="button" class="enlace acento" id="opCambiar">Cambiar</button></div>`;
+      c.innerHTML = `<div class="op-elegido">${logo(i.dominio, i.corto || i.nombre)}<span class="busca-t"><b>${esc(i.corto || i.nombre)}</b><small>${chipCotiza(i)}${i.isin ? ` · ${esc(i.isin)}` : i.yahoo && !/^0P/.test(i.yahoo) ? ` · ${esc(i.yahoo)}` : ''}${ya.length ? ` · ya tienes en ${esc(ya.map((p) => p.plataforma).join(' y '))}` : ''}</small></span><span class="busca-p">${pr ? precioFmt(pr) : ''}</span><button type="button" class="enlace acento" id="opCambiar">Cambiar</button></div>`;
       $('#opCambiar', h.el).onclick = () => { inst = null; pintarTodo(); const b = $('#opQue input', h.el); if (b) b.focus({ preventScroll: true }); };
     } else buscador(c, (nid) => {
       inst = nid; plat = platPor(nid); precioTocado = false;
@@ -11801,8 +11931,21 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.3';
+const VERSION = '0.3.4';
 const NOVEDADES = [
+  { v: '0.3.4', f: '2026-10-21', h: '16:00', t: 'Ideas constantes, más fondos y fichas completas', cosas: [
+    { d: 'opinion', ir: { v: 'expertos', sel: '.evitar' }, t: 'GrowIA no cambia de opinión sin motivo', x: 'Las ideas de compra se deciden una vez al día y siguen salvo que llegue una noticia que cambie la tesis o se rompan sus números. Nada sale a la vez como idea y como «evitar», y si algo cambia, en Expertos lo explica en «Qué ha cambiado y por qué». El Paso a paso apunta a las mismas que GrowIA.' },
+    { d: 'ficha', t: 'Las acciones que añades tú, con su ficha entera', x: 'Si tienes una acción que GrowFolio no seguía (por ejemplo, AstraZeneca), su ficha ya trae la gráfica del último año, los analistas y su precio objetivo, la valoración, el negocio, lo que dice su prensa y sus datos, sacados del radar de 900 empresas.' },
+    { d: 'catalogo', t: 'Unos 350 fondos, ETF y cripto', x: 'Otros 48 en el catálogo: fondos de Pictet, Carmignac o Seilern, MyInvestor Nasdaq 100 y Cartera Permanente, y ETF de iShares, Xtrackers, SPDR, UBS, BNP Paribas, Sprott o HANetf. Cada nombre se comprueba con su ISIN antes de publicarlo.' },
+    { d: 'intro', t: 'Las notas de cada versión, más a mano', x: 'Al abrir una versión nueva, «En detalle» está arriba desde el principio, y durante unos días te sale en Inicio una tarjeta con su título y «Ver en detalle».' },
+    { d: 'growia', t: 'GrowIA, más prudente', x: 'No llama bueno o malo a un movimiento pequeño sin noticia, no se inventa soportes ni resistencias y habla de lo que tienes de verdad (tus fondos del S&P 500, no «tus tecnológicas»). Sus cifras, a la española.' },
+  ], arreglos: [
+    'Las acciones que añadía cada uno salían con la ficha vacía: sin gráfica, analistas, noticias ni datos.',
+    'En Mercados, el título de «Qué mueve hoy los mercados» salía palabra a palabra en el móvil, los titulares no quedaban alineados y los datos de fondo se cortaban por la derecha.',
+    'Cuando Yahoo daba los votos de los analistas pero no su consenso (BAT), salía «consenso —».',
+    'Algunos porcentajes e importes se partían en dos líneas (el número arriba y el % abajo).',
+    'Al apuntar una compra, debajo del fondo salía un código interno de Yahoo en vez de su ISIN.',
+  ] },
   { v: '0.3.3', f: '2026-10-21', h: '14:30', t: 'Más sobria, con los colores del logo', cosas: [
     { d: 'pulido', t: 'Más sobria, con los colores del logo', x: 'Toda la app usa ya solo el oro, el negro cálido y el blanco del logo. Las tarjetas son como el icono: negro cálido con un filo dorado fino y algo de luz arriba. Lo que eliges (pestañas, plazos, apartados) se marca en oro y los botones principales llevan el degradado del logo. El verde y el rojo quedan para lo que sube y baja, el calendario deja el azul y el rosa, y el botón de GrowIA ya no se confunde con el de avisar de un fallo.' },
     { d: 'avisover', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Un aviso con cada versión nueva', x: 'En la app de Android, cuando salga una versión de GrowFolio te llega un aviso al móvil con lo que trae, aunque no tengas la app abierta. Si además hay app nueva, te lo dice. Viene encendido y se quita en Ajustes > Avisos y resumen.' },
@@ -12169,6 +12312,7 @@ function estreno02(visto, despues) {
    tutorial) y un «Enséñamelo todo» que las recorre en orden. Las versiones anteriores, plegadas una a una con sus
    dibujos y sus textos. */
 function mostrarNovedades(desde, alCerrar, lista = false) {
+  if ((LS.get('inv-nov-vista') || {}).v !== VERSION) { LS.set('inv-nov-vista', { v: VERSION, d: hoyIso() }); if (S.cartera) setTimeout(() => { if (S.vista === 'cartera' && !S.ficha) pintar(); }, 60); }
   LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); LS.set('inv-023b-arr', true); LS.set('inv-nov-030', true);
   let nuevas = NOVEDADES.filter((n) => (n.cosas || n.arreglos) && desde && cmpVer(n.v, desde) > 0);
   if (!nuevas.length) nuevas = [NOVEDADES[0]];
@@ -12260,13 +12404,14 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   raiz.className = `intro ix ixn${varias ? ' ixn-varias' : ''}${quieta ? ' quieta' : ''}`;
   raiz.setAttribute('role', 'dialog'); raiz.setAttribute('aria-modal', 'true'); raiz.setAttribute('aria-label', `Novedades de la ${ver}`);
   raiz.innerHTML = `<div class="ix-luz" aria-hidden="true"></div><div class="ix-barra" aria-hidden="true"></div>
-    <div class="ix-cab"><span class="intro-marca" style="opacity:1"><img src="growfolio-nombre.svg" alt="GrowFolio"></span><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
+    <div class="ix-cab"><span class="intro-marca" style="opacity:1"><img src="growfolio-nombre.svg" alt="GrowFolio"></span><button class="ixn-det" type="button" data-nv="lista">${ICONOS.plan}${L('En detalle', 'In detail')}</button><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
       <section class="ixn-heroe"><div class="ix-escena">
         <p class="ixn-eti" data-no-trad>${varias ? L(`Te has perdido ${nuevas.length} versiones`, `You've missed ${nuevas.length} versions`) : L('Lo nuevo', "What's new")}</p>
         <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l, k, a) => `<span aria-hidden="true" style="--k:${k};--d:${(k - (a.length - 1) / 2).toFixed(1)}">${esc(l)}</span>`).join('')}</h1>
         ${varias ? `<ol class="ixn-ruta" data-no-trad aria-label="${L('Las versiones que te has perdido', 'The versions you missed')}">${(() => { const vs = [...nuevas].reverse().map((n) => n.v); const r = vs.length > 6 ? [vs[0], `+${vs.length - 5}`, ...vs.slice(-4)] : vs; return r.map((v, k) => `<li style="--k:${k}"${v === ultima.v ? ' class="hoy"' : v[0] === '+' ? ' class="mas"' : ''}>${esc(v)}</li>`).join(''); })()}</ol>` : ''}
-        <div class="ix-lema"><h2>${varias ? L(`Todo lo de desde la ${esc(desde)}, resumido`, `Everything since ${esc(desde)}, in short`) : esc(ultima.t)}</h2><p><span>${fechaNov(ultima.f, ultima.h)}</span> · <span data-no-trad>${cuenta}</span></p></div>
+        <div class="ix-lema"><h2>${varias ? L(`Todo lo de desde la ${esc(desde)}, resumido`, `Everything since ${esc(desde)}, in short`) : esc(ultima.t)}</h2><p><span>${fechaNov(ultima.f, ultima.h)}</span> · <span data-no-trad>${cuenta}</span></p>
+          <button type="button" class="btn ixn-det-b" data-nv="lista">${ICONOS.plan}${L('Ver las notas en detalle', 'See the full notes')}</button></div>
         <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
       </div></section>
       ${cuerpo}
@@ -12280,8 +12425,8 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
         <h2>Eso es todo</h2>
         <p>Si algo no va como esperas, dínoslo con el bichito de arriba.</p>
         ${pasos.length ? '<button type="button" class="btn pri" data-nv="todo">Enséñamelo todo, paso a paso</button>' : ''}
+        <button type="button" class="btn" data-nv="lista">${ICONOS.plan}${L('Ver las notas en detalle', 'See the full notes')}</button>
         <button type="button" class="btn" data-nv="fin">Seguir a mi cartera</button>
-        <button type="button" class="enlace ix-arriba" data-nv="lista">Ver la lista y las versiones anteriores</button>
       </section>
     </div>`;
   document.body.appendChild(raiz);
@@ -15216,6 +15361,8 @@ document.addEventListener('click', (e) => {
     else if (a === 'asesor') abrirAsesor(d.q || '', !!d.q);
     else if (a === 'recorte') iniciarRecorte();
     else if (a === 'idioma') menuIdioma(t);
+    else if (a === 'novedades-detalle') mostrarNovedades(null, () => {}, true);
+    else if (a === 'novedades-ocultar') { LS.set('inv-nov-cerrada', VERSION); const x = t.closest('.nov-aviso'); if (x) x.remove(); }
     else if (a === 'ordenar-cartera') { S.carEdit = true; S.vista = 'cartera'; S.scrollTop = true; pintar(); }
     else if (a === 'ia-actualizar') generarAnalisisIA('la pides tú');
     else if (a === 'asesor-ajustes') { AS.vista = 'ajustes'; abrirAsesor().then(() => { AS.vista = 'ajustes'; pintarAsesor(); }); }
