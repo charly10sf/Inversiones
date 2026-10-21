@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- la rueda de refrescar del widget (antes iba dibujada dentro de la imagen; ahora es una vista para poder girarla) -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="18dp"
+    android:height="18dp"
+    android:viewportWidth="18"
+    android:viewportHeight="18">
+    <path
+        android:fillColor="#00000000"
+        android:pathData="M12.1,3.63 A6.2,6.2 0 1,1 6.88,3.17"
+        android:strokeColor="#FF8E877A"
+        android:strokeLineCap="round"
+        android:strokeWidth="1.6" />
+    <path
+        android:fillColor="#FF8E877A"
+        android:pathData="M14.7,3.13 L10.9,0.23 L11.3,6.03 Z" />
+</vector>

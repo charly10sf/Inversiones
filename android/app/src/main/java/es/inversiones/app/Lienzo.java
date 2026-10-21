@@ -579,25 +579,6 @@ final class Lienzo {
         return w;
     }
 
-    private void refresco(float cx, float cy, float r) {
-        p.reset();
-        p.setAntiAlias(true);
-        p.setStyle(Paint.Style.STROKE);
-        p.setStrokeWidth(dp(1.6f));
-        p.setStrokeCap(Paint.Cap.ROUND);
-        p.setColor(APAGADO);
-        c.drawArc(new RectF(dp(cx - r), dp(cy - r), dp(cx + r), dp(cy + r)), -60, 310, false, p);
-        double a = Math.toRadians(-60);
-        float ex = (float) (cx + r * Math.cos(a)), ey = (float) (cy + r * Math.sin(a));
-        Path flecha = new Path();
-        flecha.moveTo(dp(ex + 2.6f), dp(ey - 0.5f));
-        flecha.lineTo(dp(ex - 1.2f), dp(ey - 3.4f));
-        flecha.lineTo(dp(ex - 0.8f), dp(ey + 2.4f));
-        flecha.close();
-        p.setStyle(Paint.Style.FILL);
-        c.drawPath(flecha, p);
-    }
-
     // ---------- el widget ----------
     private void todo(float W, float H, Datos.Resultado r) {
         fondo();
@@ -632,7 +613,7 @@ final class Lienzo {
         // los precios (lo que quepa)
         float y = pv + 11;
         int modo = modoPlazo(W, H, r);
-        refresco(W - ph - 6, y - 4.2f, 6.2f);
+        // la rueda de refrescar ya no se dibuja aquí: es una vista de widget_lienzo.xml, para que pueda girar
         float finIzq = W - ph - 26;
         if (modo == 2) {
             float x0 = W - SEL_FIN - SEL_CHIP * Datos.PERIODOS.length;
