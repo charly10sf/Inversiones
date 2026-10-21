@@ -710,6 +710,23 @@ tr.tuya td:first-child b::after { content: 'la tienes'; font-weight: 400; font-s
 .th:hover, .th[aria-pressed="true"] { color: var(--text); }
 .th .fl { color: var(--accent); }
 .ordenar-m { display: none; }
+/* Posiciones: el título y, a la derecha, el orden (pastilla con un select invisible encima), compra o venta y añadir */
+.orden-chip { display: none; }
+.pos-cab { align-items: center; }
+@media (max-width: 680px) {
+  .pos-cab { flex-wrap: nowrap; gap: 8px; }
+  .pos-cab h2 { white-space: nowrap; }
+  .pos-cab .k { white-space: nowrap; }
+  .pos-cab .der { flex-wrap: nowrap; gap: 6px; }
+  .pos-cab .btn-op, .pos-cab .btn-ya { width: 38px; height: 38px; padding: 0; justify-content: center; border-radius: 12px; flex: none; }
+  .pos-cab .btn-op svg, .pos-cab .btn-ya svg { width: 20px; height: 20px; margin: 0; flex: none; }
+  .pos-cab .btn-ya { color: var(--accent); }
+  .orden-chip { position: relative; display: inline-flex; align-items: center; gap: 5px; height: 38px; padding: 0 10px 0 9px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--plane); color: var(--text); font-size: 13px; font-weight: 600; white-space: nowrap; flex: none; }
+  .orden-chip svg { width: 17px; height: 17px; color: var(--muted); }
+  .orden-chip i { font-style: normal; color: var(--muted); font-weight: 500; }
+  .orden-chip select { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; font-size: 16px; }
+}
+@media (max-width: 400px) { .pos-act { display: none; } }
 @media (max-width: 680px) { .ordenar-m { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; width: 100%; } .ordenar-m select { flex: 1; background: var(--plane); border: 1px solid var(--line-2); border-radius: 8px; padding: 7px 9px; color: var(--text); } }
 
 /* ---------- plan de venta ---------- */
@@ -4566,6 +4583,8 @@ const ICONOS = {
   stop: SVG('<path d="M8.5 3h7L21 8.5v7L15.5 21h-7L3 15.5v-7z"/><path d="M12 8v5M12 16.5v.01"/>', 2),
   candado: SVG('<rect x="4.5" y="10.5" width="15" height="10" rx="2.5"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>', 1.8),
   mas: SVG('<path d="M12 5v14M5 12h14"/>', 2),
+  orden: SVG('<path d="M4 6.5h11M4 12h7.5M4 17.5h4"/><path d="M18 5v14M15 16l3 3 3-3"/>', 1.9),
+  compraVenta: SVG('<path d="M8.5 19V5M4.5 9l4-4 4 4" stroke="var(--up)"/><path d="M15.5 5v14M11.5 15l4 4 4-4" stroke="var(--down)"/>', 2),
   compra: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2),
   venta: SVG('<path d="M12 5v14M6 13l6 6 6-6"/>', 2),
   chispa: SVG('<path d="M12 3l1.9 5.6L19.5 10.5l-5.6 1.9L12 18l-1.9-5.6L4.5 10.5l5.6-1.9z"/><path d="M19 3v4M17 5h4"/>'),
@@ -5466,12 +5485,12 @@ function htmlPosiciones(M) {
   }).join('');
   const ef = M.efectivo.map((e) => `<div class="fila efectivo"><span class="activo-l">${logo(null, '€')}<span class="activo"><b>Efectivo</b><small>${esc(e.plataforma)}</small></span></span><span class="c-precio"></span><span class="c-hoy"></span><span class="r valor num c-val">${eur(e.importe)}</span><span class="r c-peso k num">${pct(M.total ? (e.importe / M.total) * 100 : 0, 1)}</span><span class="c-gan"></span><span class="c-pct"></span><span class="c-senal"></span></div>`).join('');
   return `<section aria-labelledby="hPos">
-    <div class="sec-cab"><h2 id="hPos">Posiciones</h2><span class="k">${M.filas.length} activos</span>${M.filas.length ? '<span class="k leyenda-m">Toca una para ver su ficha. Debajo del valor, lo ganado desde que compraste</span>' : ''}
-      <div class="der"><button class="btn peq" data-accion="operacion">${ICONOS.compra}<span class="txt-pc">Apuntar compra o venta</span><span class="txt-m">Compra o venta</span></button><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}<span class="txt-pc">Añadir lo que ya tenía</span><span class="txt-m">Lo que ya tenía</span></button></div>
-      <label class="ordenar-m">Ordenar por<select data-orden-pos-sel>${COLS_POS.map(([k, t]) => [[k, 'desc'], [k, 'asc']].map(([kk, d]) => `<option value="${kk}|${d}"${S.ordenPos.k === kk && S.ordenPos.dir === d ? ' selected' : ''}>${t === '%' ? 'Ganancia en %' : t} ${kk === 'activo' ? (d === 'asc' ? 'A-Z' : 'Z-A') : kk === 'senal' ? (d === 'asc' ? 'más urgente' : 'menos urgente') : d === 'desc' ? 'mayor a menor' : 'menor a mayor'}</option>`).join('')).join('')}</select></label></div>
+    <div class="sec-cab pos-cab"><h2 id="hPos">Posiciones</h2><span class="k">${M.filas.length}<span class="pos-act"> activos</span></span>
+      <div class="der">${M.filas.length > 1 ? `<label class="orden-chip" title="Ordenar">${ICONOS.orden}<span>${ORDEN_CORTO[S.ordenPos.k] || 'Valor'}</span><i>${S.ordenPos.k === 'activo' ? (S.ordenPos.dir === 'asc' ? 'A-Z' : 'Z-A') : S.ordenPos.dir === 'asc' ? '↑' : '↓'}</i><select data-orden-pos-sel aria-label="Ordenar las posiciones">` + COLS_POS.map(([k, t]) => [[k, 'desc'], [k, 'asc']].map(([kk, d]) => `<option value="${kk}|${d}"${S.ordenPos.k === kk && S.ordenPos.dir === d ? ' selected' : ''}>${t === '%' ? 'Ganancia en %' : t} ${kk === 'activo' ? (d === 'asc' ? 'A-Z' : 'Z-A') : kk === 'senal' ? (d === 'asc' ? 'más urgente' : 'menos urgente') : d === 'desc' ? 'mayor a menor' : 'menor a mayor'}</option>`).join('')).join('') + '</select></label>' : ''}<button class="btn peq btn-op" data-accion="operacion" title="Apuntar una compra o una venta" aria-label="Compra o venta">${ICONOS.compraVenta}<span class="txt-pc">Apuntar compra o venta</span></button><button class="btn peq btn-ya" data-accion="nueva-pos" title="Añadir lo que ya tenías antes de GrowFolio" aria-label="Lo que ya tenía">${ICONOS.mas}<span class="txt-pc">Añadir lo que ya tenía</span></button></div></div>
+
     <div class="tabla-pos">
       <div class="fila cab">${COLS_POS.map(([k, t, c]) => { const on = S.ordenPos && S.ordenPos.k === k; return `<span class="${c}"><button class="th" data-orden-pos="${k}" aria-pressed="${on}" title="Ordenar por ${t.toLowerCase()}">${t}${on ? `<span class="fl">${S.ordenPos.dir === 'asc' ? '↑' : '↓'}</span>` : ''}</button></span>`; }).join('')}</div>
-      ${filas || '<div class="vacio">Todavía no hay nada. Pulsa «Lo que ya tenía» y mete lo que tienes en tu bróker: busca cada cosa por su nombre o su ISIN.</div>'}${ef}
+      ${filas || '<div class="vacio">Todavía no hay nada. Pulsa «+» (lo que ya tenía) y mete lo que tienes en tu bróker: busca cada cosa por su nombre o su ISIN.</div>'}${ef}
     </div>
     ${M.filas.length ? '<p class="nota">Pulsa una posición para ver su ficha: gráfico, analistas, noticias y botones para comprar, vender o editarla.</p>' : ''}
   </section>`;
@@ -7789,6 +7808,7 @@ const dominioWeb = (u) => { try { return u ? new URL(/^https?:/.test(u) ? u : 'h
 /* =====================================================================
    Orden de la tabla de posiciones
    ===================================================================== */
+const ORDEN_CORTO = { activo: 'Nombre', precio: 'Precio', hoy: 'Hoy', valor: 'Valor', peso: 'Peso', gan: 'Ganado', pct: '%', senal: 'Señal' };
 const COLS_POS = [['activo', 'Activo', ''], ['precio', 'Precio', 'r c-precio'], ['hoy', 'Hoy', 'r c-hoy'], ['valor', 'Valor', 'r c-val'], ['peso', 'Peso', 'r c-peso'], ['gan', 'Desde la compra', 'r c-gan'], ['pct', '%', 'r c-pct'], ['senal', 'Señal', 'r c-senal']];
 const CLAVE_POS = {
   activo: (f) => (f.inst.corto || f.inst.nombre || '').toLowerCase(),
@@ -11551,7 +11571,7 @@ const NOVEDADES = [
     { d: 'intro', t: 'Lo que te perdiste, de una vez', x: 'Si llevas tiempo sin entrar, al volver te salen juntas todas las versiones que te has perdido, cada una con su capítulo: lo más importante en grande y el resto en una lista corta que se abre al tocarla. Los bugs corregidos, todos al final.' },
     { d: 'ficha', t: 'La ficha, con más sitio', x: 'Arriba solo queda fija una barra fina con el nombre y, al bajar, el precio. El precio grande, lo que tienes y los botones se van con el scroll, y las pestañas se quedan justo debajo de la barra.' },
     { d: 'aviso', ir: { v: 'expertos', sel: '.evitar' }, t: 'Las que GrowIA evitaría, en tarjetas', x: 'Como las ideas de compra pero al revés, en rojo: cada empresa con su bandera, su sector, cómo va hoy y por qué no la compraría, con sus fuentes.' },
-    { d: 'tengo', ir: { v: 'cartera', sel: '#hPos ~ .der', pos: true }, t: 'Tus posiciones, todas iguales', x: 'En el móvil, cada posición con el mismo orden: el nombre, debajo la bandera, el país y la plataforma en una línea y, si hay, sus etiquetas en otra. El nombre largo queda en su ficha.' },
+    { d: 'tengo', ir: { v: 'cartera', sel: '#hPos ~ .der', pos: true }, t: 'Tus posiciones, todas iguales', x: 'En el móvil, cada posición con el mismo orden: el nombre, debajo la bandera, el país y la plataforma en una línea y, si hay, sus etiquetas en otra. El nombre largo queda en su ficha. Encima, todo en una línea: el orden, las flechas verde y roja para apuntar una compra o una venta y el «+» para lo que ya tenías.' },
     { d: 'calendario', ir: { v: 'cartera', sel: '#hAp', plan: true }, t: 'Plan y movimientos, al grano', x: 'Cada aportación, compra o posición en una fila de dos líneas: qué es y dónde a la izquierda, el importe a la derecha y un lápiz pequeño para cambiarla. Los botones van al lado de cada título, sin huecos.' },
     { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: '«Cómo vas», en Análisis', x: 'La tarjeta que te dice si vas bien sale ahora arriba de Análisis, justo encima de tus objetivos, y ya no en el Paso a paso.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.hero-num' }, t: 'El patrimonio se enciende', x: 'Cuando cambia con los precios en directo, la cifra se pone un momento en verde si sube y en rojo si baja.' },
@@ -12249,7 +12269,7 @@ async function abrirOpinion() {
 const TOUR = [
   { v: 'cartera', sel: '.navbar, .nav', logo: true, ola: true, t: 'Bienvenido a GrowFolio', x: () => (innerWidth < 760 ? 'Todo está en estos cinco botones: Inicio en el centro, a la izquierda lo que haces tú y a la derecha lo de fuera. Te enseño cada uno en un minuto.' : 'Todo está en estas cinco pestañas. Te enseño cada una en un minuto y, al final, qué hacer hoy para empezar.') },
   { v: 'cartera', sel: '.hero-cifra', t: 'Inicio: lo que tienes', x: 'Todo sumado, con lo que ganas o pierdes hoy. Desliza el dedo por la gráfica para ver cualquier día. El ojo oculta las cifras.' },
-  { v: 'cartera', pos: true, sel: '#hPos ~ .der', t: 'Tus posiciones, justo debajo', x: 'Toca una para ver su ficha. «Lo que ya tenía» es para lo comprado antes de GrowFolio; «Compra o venta», para lo que hagas desde hoy.' },
+  { v: 'cartera', pos: true, sel: '#hPos ~ .der', t: 'Tus posiciones, justo debajo', x: 'Toca una para ver su ficha; debajo del valor, lo ganado desde que la compraste. El «+» es para lo que ya tenías antes de GrowFolio y las flechas, para cada compra o venta desde hoy. A su lado eliges el orden.' },
   { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', suave: true, t: 'Pasos: qué hacer este mes', x: 'En orden y con lo urgente arriba: qué, cuánto y por qué. Lo haces y lo marcas. Si no toca nada, también te lo dice.' },
   { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', suave: true, t: 'Análisis: cómo vas', x: 'La nota de GrowIA a tu cartera, tus objetivos frente a lo que tienes y cuánto podrías llegar a tener. En época de renta, también Hacienda.' },
   { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', suave: true, t: 'Expertos: qué comprar', x: 'Lo que dicen los analistas de lo tuyo y las ideas de compra, con las tres que mejor te encajan en verde.' },
