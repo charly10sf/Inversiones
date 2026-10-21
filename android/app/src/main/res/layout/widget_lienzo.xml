@@ -92,11 +92,41 @@
         android:contentDescription="Cambiar el plazo de la gráfica"
         android:visibility="gone" />
 
-    <!-- zona invisible encima del icono de refrescar -->
+    <!-- refrescar: la rueda quieta y, mientras baja los precios, la misma rueda en dorado dando vueltas
+         (centrada a 19 dp del borde y a 21 de arriba, a la altura de los plazos) -->
     <FrameLayout
         android:id="@+id/refrescar"
         android:layout_width="38dp"
         android:layout_height="44dp"
         android:layout_gravity="top|end"
-        android:contentDescription="Refrescar" />
+        android:background="@drawable/refresco_toque"
+        android:contentDescription="Refrescar">
+
+        <ImageView
+            android:id="@+id/refresco_ico"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="12dp"
+            android:importantForAccessibility="no"
+            android:src="@drawable/refresco" />
+
+        <ProgressBar
+            android:id="@+id/refresco_gira"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="top|center_horizontal"
+            android:layout_marginTop="12dp"
+            android:indeterminate="true"
+            android:indeterminateDrawable="@drawable/refresco_gira"
+            android:indeterminateDuration="850"
+            android:indeterminateOnly="true"
+            android:indeterminateTint="#FFE2B45F"
+            android:indeterminateTintMode="src_in"
+            android:maxWidth="18dp"
+            android:maxHeight="18dp"
+            android:minWidth="18dp"
+            android:minHeight="18dp"
+            android:visibility="gone" />
+    </FrameLayout>
 </FrameLayout>

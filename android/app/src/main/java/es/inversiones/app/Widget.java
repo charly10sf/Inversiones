@@ -10,6 +10,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.view.View;
 import android.widget.RemoteViews;
 
@@ -24,20 +25,23 @@ public class Widget extends AppWidgetProvider {
     static final String REFRESCAR = "es.inversiones.app.REFRESCAR";
     static final String PERIODO = "es.inversiones.app.PERIODO";
     private static final String DIAS = "dias", DISENO = "diseno";
-    /** sube cuando cambia widget_lienzo.xml de forma que las actualizaciones parciales de antes ya no valgan */
-    private static final int DISENO_ACTUAL = 2;
+    /** sube cuando cambia widget_lienzo.xml de forma que las actualizaciones parciales de antes ya no valgan
+     *  (3: la rueda de refrescar es una vista que gira) */
+    private static final int DISENO_ACTUAL = 3;
+    /** lo mínimo que gira la rueda, para que se vea aunque los precios bajen en un momento */
+    private static final long GIRO_MINIMO = 1100;
     private static final int[] PLAZOS = {R.id.plazo0, R.id.plazo1, R.id.plazo2, R.id.plazo3, R.id.plazo4};
 
     @Override
     public void onUpdate(Context c, AppWidgetManager m, int[] ids) {
         for (int id : ids) pintar(c, m, id);
-        refrescarEnSegundoPlano(c);
+        refrescarEnSegundoPlano(c, false);
     }
 
     @Override
     public void onReceive(Context c, Intent i) {
         if (REFRESCAR.equals(i.getAction())) {
-            refrescarEnSegundoPlano(c);
+            refrescarEnSegundoPlano(c, true);
             return;
         }
         if (PERIODO.equals(i.getAction())) {
@@ -62,17 +66,38 @@ public class Widget extends AppWidgetProvider {
         pintar(c, m, id);
     }
 
-    private void refrescarEnSegundoPlano(Context c) {
+    /** baja los precios y repinta. Si lo has pedido tú (la rueda), la rueda gira mientras tanto y al repintar
+     *  vuelve a quedarse quieta, haya ido bien o no */
+    private void refrescarEnSegundoPlano(Context c, boolean aMano) {
         final PendingResult pendiente = goAsync();
         final Context app = c.getApplicationContext();
+        if (aMano) girar(app);
         new Thread(() -> {
+            long t0 = SystemClock.uptimeMillis();
             try {
                 Datos.descargar(app);
-                actualizarTodos(app);
+                long falta = GIRO_MINIMO - (SystemClock.uptimeMillis() - t0);
+                if (aMano && falta > 0) SystemClock.sleep(falta);
             } finally {
-                pendiente.finish();
+                try {
+                    actualizarTodos(app);
+                } finally {
+                    pendiente.finish();
+                }
             }
         }).start();
+    }
+
+    /** la rueda de refrescar empieza a girar en todos los widgets (solo en los que ya tienen la rueda como vista) */
+    private static void girar(Context c) {
+        AppWidgetManager m = AppWidgetManager.getInstance(c);
+        for (int id : m.getAppWidgetIds(new ComponentName(c, Widget.class))) {
+            if (Datos.prefs(c).getInt("diseno_" + id, 0) != DISENO_ACTUAL) continue;
+            RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_lienzo);
+            v.setViewVisibility(R.id.refresco_ico, View.INVISIBLE);
+            v.setViewVisibility(R.id.refresco_gira, View.VISIBLE);
+            m.partiallyUpdateAppWidget(id, v);
+        }
     }
 
     static void actualizarTodos(Context c) {
@@ -127,12 +152,15 @@ public class Widget extends AppWidgetProvider {
         v.setOnClickPendingIntent(R.id.lienzo2, abre);
         v.setOnClickPendingIntent(R.id.refrescar, refrescar(c));
         v.setViewVisibility(R.id.refrescar, alto >= 110 && r.hay ? View.VISIBLE : View.GONE);
+        v.setViewVisibility(R.id.refresco_ico, View.VISIBLE);
+        v.setViewVisibility(R.id.refresco_gira, View.GONE);
         int modo = Lienzo.modoPlazo(ancho, alto, r);
         v.setViewVisibility(R.id.plazos, modo == 2 ? View.VISIBLE : View.GONE);
         for (int k = 0; k < PLAZOS.length; k++) v.setOnClickPendingIntent(PLAZOS[k], cambiarPeriodo(c, id, Datos.PERIODOS[k]));
         v.setViewVisibility(R.id.periodo, modo == 1 ? View.VISIBLE : View.GONE);
         v.setOnClickPendingIntent(R.id.periodo, cambiarPeriodo(c, id, 0));
         m.updateAppWidget(id, v);
+        Datos.prefs(c).edit().putInt("diseno_" + id, DISENO_ACTUAL).apply();
     }
 
     /**
