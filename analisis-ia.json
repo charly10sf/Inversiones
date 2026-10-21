@@ -3,7 +3,7 @@
   "fecha": "2026-10-17",
   "autor": "Claude",
   "datos": "Precios del cierre del 16 de octubre de 2026, analistas de Yahoo Finance y prensa de las dos últimas semanas. Brent a 109,9 $ y tipo de depósito del BCE en el 2,50 %.",
-  "nota_privacidad": "Este archivo es público: no lleva cantidades. Los importes y porcentajes entre llaves los pone la web con tus datos cifrados al abrirla.",
+  "nota_privacidad": "Este archivo es público: no lleva cantidades. Los importes y porcentajes entre llaves los pone GrowFolio con tus datos cifrados al abrirla.",
   "titular": "Cartera sana y barata de mantener. Hay dos cosas que haría ya: asegurar parte de Repsol antes del 29 de octubre y poner a trabajar el colchón.",
   "resumen": [
     "Tienes {total}, con el {rv_pct} en bolsa. El grueso está donde tiene que estar: fondos indexados baratos (gastos medios del {ter_medio}, unos {coste_anual} al año) que reciben {aport_mes} cada mes sin que tengas que pensar. Siguiendo así, lo probable es que dentro de 10 años tengas {p50_10} y dentro de 20, {p50_20}.",
@@ -29,7 +29,7 @@
     {
       "k": "Disciplina",
       "nota": 4,
-      "txt": "Aportas todos los meses sin mirar el precio y tus apuestas tienen reglas de salida escritas antes de comprar. Te falta registrar las operaciones en la web para llevar el resultado fiscal al día."
+      "txt": "Aportas todos los meses sin mirar el precio y tus apuestas tienen reglas de salida escritas antes de comprar. Te falta registrar las operaciones en GrowFolio para llevar el resultado fiscal al día."
     },
     {
       "k": "Impuestos",
@@ -46,7 +46,7 @@
     },
     {
       "titulo": "Ese dinero, a una apuesta nueva y que no sea otra petrolera",
-      "texto": "Según tus propias reglas, el dinero de una apuesta se queda en el cajón de apuestas, descontando lo que tendrás que pagar a Hacienda. El buscador de la web elige hoy BNP Paribas: PER futuro de 6,8, dividendo del 7 %, 19 analistas y un 33 % hasta el precio objetivo. Está barata por algo: el pleito de Sudán en EEUU, que puede costarle miles de millones, lleva un año pesando en la cotización. Al comprarla pagas un 0,4 % de tasa francesa, y su dividendo llega con retención francesa (la recuperas en parte con la deducción por doble imposición). Si no quieres ese riesgo, la segunda con más sentido para ti es ACS (16 analistas y un 47 % de recorrido, 0,2 % de impuesto español al comprar), constructora española con mucho negocio en EEUU a través de Hochtief y Turner. Ninguna tiene un motor tan claro como tuvo Repsol con Ormuz: antes de comprar, escribe en su ficha qué tiene que pasar y cuándo saldrías. Y recuerda que el cambio solo compensa si la nueva gana más que Repsol por al menos lo que pagas de impuesto.",
+      "texto": "Según tus propias reglas, el dinero de una apuesta se queda en el cajón de apuestas, descontando lo que tendrás que pagar a Hacienda. El buscador de GrowFolio elige hoy BNP Paribas: PER futuro de 6,8, dividendo del 7 %, 19 analistas y un 33 % hasta el precio objetivo. Está barata por algo: el pleito de Sudán en EEUU, que puede costarle miles de millones, lleva un año pesando en la cotización. Al comprarla pagas un 0,4 % de tasa francesa, y su dividendo llega con retención francesa (la recuperas en parte con la deducción por doble imposición). Si no quieres ese riesgo, la segunda con más sentido para ti es ACS (16 analistas y un 47 % de recorrido, 0,2 % de impuesto español al comprar), constructora española con mucho negocio en EEUU a través de Hochtief y Turner. Ninguna tiene un motor tan claro como tuvo Repsol con Ormuz: antes de comprar, escribe en su ficha qué tiene que pasar y cuándo saldrías. Y recuerda que el cambio solo compensa si la nueva gana más que Repsol por al menos lo que pagas de impuesto.",
       "impacto": "Mantienes el cajón de apuestas por debajo del 20 % sin tocar los fondos.",
       "cuando": "Tras vender la parte de Repsol"
     },
@@ -57,14 +57,14 @@
       "cuando": "Cuando quieras: no depende del mercado"
     },
     {
-      "titulo": "Apunta en la web tus datos fiscales del año",
-      "texto": "En Análisis, Impuestos, Datos fiscales: la pérdida de Realty Income como venta hecha fuera de la web (en negativo), los dividendos e intereses que hayas cobrado este año y lo que ya te hayan retenido. Con eso, cada plan de venta te dice exactamente cuánto pagas, en qué tramo quedas y si te conviene vender este año o esperar a enero.",
+      "titulo": "Apunta en GrowFolio tus datos fiscales del año",
+      "texto": "En Análisis > Hacienda > Datos fiscales: la pérdida de Realty Income como venta hecha fuera de GrowFolio (en negativo), los dividendos e intereses que hayas cobrado este año y lo que ya te hayan retenido. Con eso, cada plan de venta te dice exactamente cuánto pagas, en qué tramo quedas y si te conviene vender este año o esperar a enero.",
       "impacto": "Impuestos exactos en cada recomendación, no aproximados.",
       "cuando": "Ahora: son dos minutos"
     },
     {
       "titulo": "Mete las participaciones exactas de tus fondos y del oro",
-      "texto": "Ahora la web las estima con el valor del 13 de octubre. Son dos minutos (ficha de cada fondo, Editar, Cantidad) y a partir de ahí todo cuadra al céntimo, incluida la proyección.",
+      "texto": "Ahora GrowFolio las estima con el valor del 13 de octubre. Son dos minutos (ficha de cada fondo, Editar, Cantidad) y a partir de ahí todo cuadra al céntimo, incluida la proyección.",
       "impacto": "Datos exactos en vez de estimados.",
       "cuando": "Esta semana"
     },
