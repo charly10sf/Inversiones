@@ -1724,9 +1724,10 @@ table td.txt { white-space: normal; min-width: 260px; }
 .rr-chips button:focus-visible, .rf-btn:focus-visible, .d12-m:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 .resumen-fila > .rf-btn { display: grid; align-content: start; gap: inherit; padding: 0; margin: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 .rf-btn small { color: var(--accent); }
-.div12 { display: grid; gap: 12px; margin: 0 0 26px; }
+.div12 { display: grid; gap: 12px; margin: 30px 0 26px; scroll-margin-top: 90px; }
+.div12 h3 { font-size: 18px; }
 .div12 .sec-cab { margin: 0; }
-.div12 h3 { margin: 0; font-size: 15px; }
+.div12 h3 { margin: 0; }
 .d12-barras { display: grid; grid-template-columns: repeat(12, minmax(0, 1fr)); gap: 2px; align-items: end; height: 170px; padding-top: 14px; }
 .d12-m { position: relative; display: grid; grid-template-rows: 1fr auto auto; height: 100%; min-width: 0; text-align: center; outline: none; }
 .d12-col { position: relative; display: flex; align-items: flex-end; justify-content: center; }
@@ -5410,7 +5411,8 @@ const SUBVISTAS = { analisis: [['analisis', 'Tu cartera', 'Your portfolio'], ['f
 const epocaRenta = () => { const m = new Date().getMonth(); return m >= 2 && m <= 5; };
 function htmlSubvistas() {
   const g = grupoDe(S.vista), sv = SUBVISTAS[g.k]; if (!sv) return '';
-  const lista = sv.filter(([k]) => k !== 'fiscal' || epocaRenta() || S.vista === 'fiscal');
+  // 0.3.11a: Hacienda, siempre (antes solo de marzo a junio y aparecía y desaparecía según desde dónde entraras)
+  const lista = sv;
   const falta = perfilIncompleto();
   return `<nav class="grupo-tabs" aria-label="${esc(g.t)}">${lista.map(([k, t, en]) => `<a href="#${k}" aria-current="${S.vista === k ? 'page' : 'false'}"${k === 'futuro' && falta ? ' class="falta"' : ''}>${L(t, en)}</a>`).join('')}</nav>`;
 }
@@ -8191,7 +8193,7 @@ function cuerpoNum(k, M) {
     const conTer = M.filas.filter((f) => f.inst.ter != null);
     const costeAnual = sum(conTer, (f) => (f.valor * f.inst.ter) / 100);
     const baseTer = sum(conTer, (f) => f.valor);
-    cuerpo = `${htmlDividendos12(M)}<div class="resumen-fila"><div><span class="k">Gastos de fondos al año</span><span class="v">${eur(costeAnual, 0)}</span></div><div><span class="k">Comisión media de los fondos</span><span class="v">${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</span></div><div><span class="k">Dividendos al año</span><span class="v">${eur(M.dividendos, 0)}</span></div><div><span class="k">Tras impuestos (${pctTramo(tramoAhorro())} %)</span><span class="v">${eur(M.dividendos * (1 - tramoAhorro()), 0)}</span></div></div>
+    cuerpo = `<div class="resumen-fila"><div><span class="k">Gastos de fondos al año</span><span class="v">${eur(costeAnual, 0)}</span></div><div><span class="k">Comisión media de los fondos</span><span class="v">${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</span></div><div><span class="k">Dividendos al año</span><span class="v">${eur(M.dividendos, 0)}</span></div><div><span class="k">Tras impuestos (${pctTramo(tramoAhorro())} %)</span><span class="v">${eur(M.dividendos * (1 - tramoAhorro()), 0)}</span></div></div>
       <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r" title="Lo que cobra el fondo cada año (TER), ya descontado de su precio">Comisión</th><th class="r">Gasto al año</th><th class="r">Dividendo</th><th class="r">Cobro al año</th><th class="r">Próximo</th></tr></thead><tbody>
       ${M.filas.map((f) => `<tr><td>${nombre(f)}</td><td class="r">${f.inst.ter != null ? pct(f.inst.ter, 2) : '—'}</td><td class="r">${f.inst.ter != null ? eur((f.valor * f.inst.ter) / 100, 0) : '—'}</td><td class="r">${f.p && f.p.dividendo_pct ? pct(f.p.dividendo_pct, 1) : '—'}</td><td class="r">${f.p && f.p.dividendo_pct ? eur((f.valor * f.p.dividendo_pct) / 100, 0) : '—'}</td><td class="r">${f.p && f.p.ex_dividendo ? fechaCorta(f.p.ex_dividendo) : '—'}</td></tr>`).join('')}
       </tbody></table></div><p class="nota">Dividendos brutos de los últimos 12 meses sobre el precio de hoy. Los de empresas españolas llegan con el 19 % ya retenido; los de fuera pueden traer además la retención de su país; en Hacienda ves cuánto recuperas.</p>`;
@@ -8250,6 +8252,25 @@ function dividendosMeses(M) {
   }
   return { meses, sinCal, bruto: sum(meses, (m) => m.bruto), neto: sum(meses, (m) => m.neto), t };
 }
+/* lo que habrás cobrado de dividendos en el año (aprox.): lo que pagó cada acción con fecha ex-dividendo entre el
+   1 de enero y hoy, por las acciones que tenías ese día (lo comprado después no cuenta; lo que ya tenías al
+   apuntarlo, sí, salvo que dijeras que lo tienes desde más tarde). Para recordarlo en Hacienda: es una pista, el dato
+   bueno es el informe del bróker */
+function dividendosAnio(M, anio = new Date().getFullYear()) {
+  const ini = `${anio}-01-01`, hoy = hoyIso(), de = [];
+  for (const f of M.filas) {
+    const p = f.p || {};
+    if (!Array.isArray(p.dividendos_pagos)) continue;
+    let lotes; try { lotes = lotesDe(f.pos); } catch (e) { continue; }
+    const aEur = p.precio > 0 && p.precio_local > 0 ? p.precio / p.precio_local : 1;
+    for (const [d, v] of p.dividendos_pagos) {
+      if (d < ini || d > hoy || !(v > 0)) continue;
+      const uds = sum(lotes.filter((l) => (l.mezcla ? !f.pos.desde || f.pos.desde < d : l.f < d)), (l) => l.u);
+      if (uds > 0) de.push({ n: f.inst.corto || f.inst.nombre, d, bruto: uds * v * aEur });
+    }
+  }
+  return { bruto: sum(de, (x) => x.bruto), de };
+}
 function htmlDividendos12(M) {
   const D = dividendosMeses(M);
   if (!D.bruto && !D.sinCal.length) return '';
@@ -8264,11 +8285,12 @@ function htmlDividendos12(M) {
   }).join('');
   const lista = D.meses.filter((m) => m.bruto).map((m) => `<tr><td>${nombreMes(m.k)} ${m.k.slice(0, 4)}</td><td>${esc(m.de.map((x) => x.n).join(', '))}</td><td class="r">${eur(m.bruto, 0)}</td><td class="r">${eur(m.neto, 0)}</td></tr>`).join('');
   return `<section class="div12" aria-labelledby="hDiv12">
-    <div class="sec-cab"><h3 id="hDiv12">${L('Lo que cobrarás, mes a mes', 'What you’ll receive, month by month')}</h3><span class="k">${L(`próximos 12 meses: ${eur(D.neto, 0)} netos de ${eur(D.bruto, 0)}`, `next 12 months: ${eur(D.neto, 0)} net of ${eur(D.bruto, 0)}`)}</span></div>
+    <div class="sec-cab"><h3 id="hDiv12">${L('Tus dividendos, mes a mes', 'Your dividends, month by month')}</h3><span class="k">${D.bruto ? L(`próximos 12 meses: ${eur(D.neto, 0)} netos de ${eur(D.bruto, 0)}`, `next 12 months: ${eur(D.neto, 0)} net of ${eur(D.bruto, 0)}`) : L('aún sin las fechas de los pagos', 'payment dates not in yet')}</span></div>
+    ${!D.bruto ? `<p>${L(`GrowFolio está bajando cuándo paga cada una y cuánto; en unas horas sale aquí el calendario de los próximos 12 meses. Mientras, lo que reparten al año: ${yLista(D.sinCal.map((x) => `${esc(x.n)} (unos ${eur(x.anual, 0)} brutos)`))}.`, `GrowFolio is fetching when and how much each one pays; within hours the next-12-months calendar shows here. Meanwhile, what they pay a year: ${yLista(D.sinCal.map((x) => `${esc(x.n)} (about ${eur(x.anual, 0)} gross)`))}.`)}</p>` : ''}
     ${D.bruto ? `<div class="d12-barras">${barras}</div>
     <div class="d12-ley"><span><i class="d12-neto"></i>${L('Para ti', 'Yours')}</span><span><i class="d12-imp"></i>${L('Hacienda y la retención de fuera', 'Tax and foreign withholding')}</span></div>
     <details class="mas"><summary>${L('Verlo en una tabla', 'See it as a table')}</summary><div class="tabla-w"><table class="resp"><thead><tr><th>${L('Mes', 'Month')}</th><th>${L('De', 'From')}</th><th class="r">${L('Bruto', 'Gross')}</th><th class="r">${L('Neto', 'Net')}</th></tr></thead><tbody>${lista}</tbody></table></div></details>` : ''}
-    <p class="nota">${L(`Repite lo que pagó cada empresa en los últimos 12 meses, con tus acciones de hoy. Va en el mes en que se fija (ex-dividendo); el dinero llega unas semanas después. Neto: con tu tramo del ahorro (${pctTramo(D.t)} %) y lo que retiene su país y no recuperas.`, `It repeats what each company paid in the last 12 months, with your shares today. It goes in the month it's set (ex-dividend); the money arrives a few weeks later. Net: with your savings-tax rate (${pctTramo(D.t)} %) and what its country withholds that you don't get back.`)}${D.sinCal.length ? ' ' + L(`Sin calendario todavía: ${yLista(D.sinCal.map((x) => `${esc(x.n)} (unos ${eur(x.anual, 0)} al año)`))}.`, `No calendar yet: ${yLista(D.sinCal.map((x) => `${esc(x.n)} (about ${eur(x.anual, 0)} a year)`))}.`) : ''}</p>
+    ${!D.bruto ? '' : `<p class="nota">${L(`Repite lo que pagó cada empresa en los últimos 12 meses, con tus acciones de hoy. Va en el mes en que se fija (ex-dividendo); el dinero llega unas semanas después. Neto: con tu tramo del ahorro (${pctTramo(D.t)} %) y lo que retiene su país y no recuperas.`, `It repeats what each company paid in the last 12 months, with your shares today. It goes in the month it's set (ex-dividend); the money arrives a few weeks later. Net: with your savings-tax rate (${pctTramo(D.t)} %) and what its country withholds that you don't get back.`)}${D.sinCal.length ? ' ' + L(`Aún sin las fechas de sus pagos (GrowFolio las va bajando; salen en unas horas): ${yLista(D.sinCal.map((x) => `${esc(x.n)}, unos ${eur(x.anual, 0)} al año`))}.`, `Payment dates not in yet (GrowFolio is fetching them; they show within hours): ${yLista(D.sinCal.map((x) => `${esc(x.n)}, about ${eur(x.anual, 0)} a year`))}.`) : ''}</p>`}
   </section>`;
 }
 
@@ -8362,9 +8384,10 @@ function htmlNumeros(M) {
       ${rent1a != null ? `<div><span class="k">Tu cartera, último año</span><span class="v ${cls(rent1a)}">${pctS(rent1a, 1)}</span><small class="k">con tus posiciones de hoy</small></div>` : ''}
       ${cr ? `<div><span class="k">Riesgo</span><span class="v">${cr} de 7</span><small class="k">volatilidad ${pct(vol, 1)}, peor caída ${pct(caidaMaxima(serie), 1)}</small></div>` : ''}
       <div><span class="k">Gastos de fondos</span><span class="v">${eur(costeAnual, 0)} al año</span><small class="k">comisión media del ${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</small></div>
-      <button type="button" class="rf-btn" data-calif="costes"><span class="k">Dividendos</span><span class="v">${eur(M.dividendos, 0)} al año</span><small class="k">brutos, con el precio de hoy; ${L('mes a mes', 'month by month')} ›</small></button>
+      <button type="button" class="rf-btn" data-accion="ver-div12"><span class="k">Dividendos</span><span class="v">${eur(M.dividendos, 0)} al año</span><small class="k">brutos, con el precio de hoy; ${L('mes a mes', 'month by month')} ›</small></button>
     </div>
     ${htmlRentReal(M)}
+    ${htmlDividendos12(M)}
     <div class="num-secs">${NUMEROS.map((k) => `<details class="num-sec" id="num-${k}"${S.numAbierto === k ? ' open' : ''}><summary><span><b>${NUM_T[k][0]}</b><small>${NUM_T[k][1]}</small></span></summary><div class="num-cuerpo">${cuerpoNum(k, M)}</div></details>`).join('')}</div>`;
 }
 function vistaAnalisis(M) {
@@ -8376,7 +8399,7 @@ function vistaAnalisis(M) {
   <div class="subvistas dos-op" role="group" aria-label="Qué ver">${ANALISIS_P.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${k === 'ia' ? `<span data-no-trad>${conIA('GrowIA opina', "GrowIA's view")}</span>` : t}</button>`).join('')}</div>
   ${cuerpo}
   <div class="ana-obj">${perfilVacio() ? '' : htmlComoVas(M)}${htmlObjetivosVs(M)}</div>
-  ${epocaRenta() ? '' : `<a class="enlace-hacienda" href="#fiscal">${ICONOS.fiscal}<span><b>${L('Hacienda', 'Taxes')}</b><small>${L('Lo que pagarías si vendieras hoy, los tramos y la guía de la renta', 'What you would pay if you sold today, the brackets and the tax-return guide')}</small></span><i class="aj-flecha" aria-hidden="true"></i></a>`}`;
+`;
 }
 
 /* =========================== Plan (dentro de Cartera) =========================== */
@@ -9264,9 +9287,9 @@ function htmlImpuestos(M) {
   const divs = M.filas.filter((f) => f.p && f.p.dividendo_pct);
   return `
     <div class="sec-cab"><h2>Renta de ${anio}</h2><span class="k">se presenta entre abril y junio de ${anio + 1}</span><div class="der"><button class="btn peq" data-accion="fiscal">${ICONOS.lapiz}Datos fiscales de ${anio}</button></div></div>
-    ${!fa.ventas.length && !fa.otras && !fa.rcm && !fa.retenido ? `<div class="fis-vacio"><p><b>${M.dividendos >= 1 ? `Por ahora no has apuntado nada para la renta de ${anio}.` : `Por ahora no pagas nada en la renta de ${anio}.`}</b> ${M.dividendos >= 1 ? `Tus posiciones reparten unos ${eur(M.dividendos, 0)} brutos al año en dividendos, que tributan (desde un ${pctTramo(tramosAhorro()[0][1])} %) aunque no vendas: apunta lo cobrado en «Datos fiscales» para que salga en la cuenta.` : 'Este año no has apuntado ventas ni dividendos.'} Cuando vendas algo, apúntalo en Inicio con «Apuntar compra o venta» y aquí verás lo que te toca.${M.dividendos >= 1 ? '' : ' Si has cobrado dividendos o intereses, ponlos en «Datos fiscales».'}</p><p class="k">Más abajo, lo que pagarías si sigues lo que te recomienda GrowFolio.</p></div>` : `<div class="resumen-fila">
+    ${!fa.ventas.length && !fa.otras && !fa.rcm && !fa.retenido ? `<div class="fis-vacio"><p><b>${M.dividendos >= 1 ? `Por ahora no has apuntado nada para la renta de ${anio}.` : `Por ahora no pagas nada en la renta de ${anio}.`}</b> ${M.dividendos >= 1 ? (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return `${da && da.bruto >= 1 ? `Por lo que han pagado tus acciones, este año habrás cobrado unos ${eur(da.bruto, 0)} brutos en dividendos (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}), que` : `Tus posiciones reparten unos ${eur(M.dividendos, 0)} brutos al año en dividendos, que`} tributan (desde un ${pctTramo(tramosAhorro()[0][1])} %) aunque no vendas: mira el informe de tu bróker y apunta lo cobrado en «Datos fiscales» para que salga en la cuenta.`; })() : 'Este año no has apuntado ventas ni dividendos.'} Cuando vendas algo, apúntalo en Inicio con «Apuntar compra o venta» y aquí verás lo que te toca.${M.dividendos >= 1 ? '' : ' Si has cobrado dividendos o intereses, ponlos en «Datos fiscales».'}</p><p class="k">Más abajo, lo que pagarías si sigues lo que te recomienda GrowFolio.</p></div>` : `<div class="resumen-fila">
       <div><span class="k">Ventas del año</span><span class="v ${cls(fa.gp)}">${eurS(fa.gp, 0)}</span><small class="k">${fa.ventas.length} en GrowFolio${fa.otras ? `, ${eurS(fa.otras, 0)} fuera` : ''}</small></div>
-      <div><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm, 0)}</span><small class="k">${fa.rcm ? 'los que has apuntado' : 'apúntalos en Datos fiscales'}</small></div>
+      <div><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm, 0)}</span><small class="k">${fa.rcm ? 'los que has apuntado' : (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return da && da.bruto >= 1 ? `este año, unos ${eur(da.bruto, 0)} brutos por lo que han pagado tus acciones (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}): mira el informe de tu bróker y apúntalos en Datos fiscales` : 'apúntalos en Datos fiscales'; })()}</small></div>
       <div><span class="k">Base del ahorro</span><span class="v">${eur(fa.base, 0)}</span><small class="k">tramo del ${pctTramo(fa.marginal)} %</small></div>
       <div><span class="k">Cuota estimada</span><span class="v">${eur(fa.cuota, 0)}</span><small class="k">${fa.retenido ? `menos ${eur(fa.retenido, 0)} ya retenidos: ${eurS(fa.cuota - fa.retenido, 0)}` : 'antes de restar retenciones'}</small></div>
       ${fa.sobra > 0 ? `<div><span class="k">Pérdidas para años siguientes</span><span class="v down">${eur(fa.sobra, 0)}</span><small class="k">hasta ${anio + 4}</small></div>` : ''}
@@ -13193,8 +13216,14 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.11';
+const VERSION = '0.3.11a';
 const NOVEDADES = [
+  { v: '0.3.11a', f: '2026-10-22', h: '00:45', t: 'Hacienda siempre a mano y los dividendos a la vista', cosas: [
+    { d: 'renta', ir: { v: 'fiscal' }, t: 'Hacienda te recuerda tus dividendos', x: 'Si no has apuntado dividendos, Hacienda ya no se queda en «0 €»: te dice cuánto habrás cobrado este año según lo que han pagado tus acciones, para que lo compruebes en el informe de tu bróker y lo apuntes.' },
+  ], arreglos: [
+    'Hacienda sale siempre en Análisis, junto a Tu cartera y Tus objetivos. Antes solo salía de marzo a junio y el resto del año aparecía y desaparecía según por dónde entraras.',
+    'Los dividendos mes a mes están a la vista en Tus números, debajo de lo que ha rendido tu dinero; la cifra de Dividendos de arriba te lleva hasta ellos. Mientras GrowFolio baja las fechas de los pagos, lo dice en vez de enseñar un gráfico vacío.',
+  ] },
   { v: '0.3.11', f: '2026-10-21', h: '23:50', t: 'Empresas que sigues, dividendos mes a mes y fondos que se pisan', cosas: [
     { d: 'buscar', ir: { v: 'expertos', antes: () => { S.expTab = 'siguiendo'; if (S.vista === 'expertos') pintar(); } }, t: 'Sigue empresas sin tenerlas', x: 'En cualquier idea de compra o empresa del radar, «Seguir». En Expertos, Siguiendo, ves cuánto se han movido desde que las sigues y lo que esperan de ellas, y les pones un aviso: te llega al móvil cuando bajan del precio al que las comprarías o suben del que digas.' },
     { d: 'renta', ir: { v: 'analisis', sel: '.rf-btn', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tus dividendos, mes a mes', x: 'En Análisis, Tus números, Costes y dividendos: lo que cobrarás cada mes de los próximos 12, en bruto y lo que te queda después de Hacienda y de la retención de fuera. Sale de lo que pagó cada empresa el último año, con tus acciones de hoy.' },
@@ -16822,6 +16851,7 @@ document.addEventListener('click', (e) => {
     if (a === 'ocultar') { S.oculto = !S.oculto; LS.set('inv-oculto', S.oculto); pintar(); }
     else if (a === 'comparar') { S.comparar = !S.comparar; LS.set('inv-comparar', S.comparar); pintar(); }
     else if (a === 'inicio-inv') preguntarInicio(() => pintar());
+    else if (a === 'ver-div12') { const x = $('#hDiv12'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     else if (a === 'info-grafica') infoGrafica();
     else if (a === 'ajustes') abrirAjustes();
     else if (a === 'novedades') mostrarNovedades(null);
