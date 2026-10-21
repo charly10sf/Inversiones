@@ -92,7 +92,12 @@ public class Principal extends Activity {
                     return true;
                 }
                 if (enBanco) {
-                    if (esquema.equals("http") || esquema.equals("https")) return false;
+                    if (esquema.equals("http") || esquema.equals("https")) {
+                        // la página del banco que le corresponde a su app (Trade Republic y muchos más dan el permiso
+                        // en su app): se le pasa a ella con el enlace entero, que es el que lleva qué permiso se pide
+                        if (!esDeEnableBanking(u) && abrirEnSuApp(u)) return true;
+                        return false;
+                    }
                     abrirApp(u);   // intent:// o el esquema de la app del banco
                     return true;
                 }
@@ -160,8 +165,10 @@ public class Principal extends Activity {
         return t;
     }
 
-    /** El widget abre la app en una sección concreta (#ruta, #cartera...) */
+    /** El widget abre la app en una sección concreta (#ruta, #cartera...); la vuelta del banco, con su código */
     private String direccion(Intent i) {
+        String banco = vueltaBanco(i);
+        if (banco != null) return banco;
         String h = i != null ? i.getStringExtra("hash") : null;
         return h != null && !h.isEmpty() ? WEB + "#" + h : WEB;
     }
@@ -170,6 +177,12 @@ public class Principal extends Activity {
     protected void onNewIntent(Intent i) {
         super.onNewIntent(i);
         setIntent(i);
+        String banco = vueltaBanco(i);
+        if (banco != null) {
+            if (enBanco) salirDelBanco();
+            web.loadUrl(banco);
+            return;
+        }
         String t = token(i);
         if (t != null && !t.isEmpty()) {
             tokenPendiente = t;
@@ -203,12 +216,39 @@ public class Principal extends Activity {
         String chrome = m.find() ? m.group() : "Chrome/130.0.0.0";
         web.getSettings().setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " + chrome + " Safari/537.36");
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
+        // las webs de los bancos cuentan con un fondo blanco: con el negro de la app, sus letras oscuras no se veían
+        web.setBackgroundColor(0xFFFFFFFF);
         Toast.makeText(this, "Abriendo tu banco dentro de GrowFolio…", Toast.LENGTH_SHORT).show();
     }
 
     private void salirDelBanco() {
         enBanco = false;
         if (agenteMovil != null) web.getSettings().setUserAgentString(agenteMovil);
+        web.setBackgroundColor(0xFF000000);
+    }
+
+    /**
+     * Abre el enlace en la app que lo reclama, si hay una que no sea un navegador (Android 11 o más). Así el permiso
+     * llega a la app del banco con todo lo que necesita; abierta a mano, la app no sabe qué permiso le pides.
+     */
+    private boolean abrirEnSuApp(Uri u) {
+        if (android.os.Build.VERSION.SDK_INT < 30) return false;
+        try {
+            Intent i = new Intent(Intent.ACTION_VIEW, u).addCategory(Intent.CATEGORY_BROWSABLE)
+                    .addFlags(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER | Intent.FLAG_ACTIVITY_NEW_TASK);
+            startActivity(i);
+            Toast.makeText(this, "Da el permiso en la app de tu banco: al acabar vuelves aquí", Toast.LENGTH_LONG).show();
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /** la vuelta del banco cuando llega al navegador: inversiones://banco?code=…&state=… (la web la reenvía aquí) */
+    private static String vueltaBanco(Intent i) {
+        Uri d = i == null ? null : i.getData();
+        if (d == null || !"inversiones".equals(d.getScheme()) || !"banco".equals(d.getHost()) || d.getEncodedQuery() == null) return null;
+        return WEB + "?" + d.getEncodedQuery() + "#cartera";
     }
 
     /** un enlace de la web del banco que abre su app (intent:// o su propio esquema); si no está, su alternativa */

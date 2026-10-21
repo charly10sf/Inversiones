@@ -31,6 +31,8 @@
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="inversiones" android:host="token" />
+                <!-- la vuelta de dar permiso al banco, cuando el banco la abre en el navegador -->
+                <data android:scheme="inversiones" android:host="banco" />
             </intent-filter>
         </activity>
 

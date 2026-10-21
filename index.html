@@ -263,6 +263,25 @@ a:hover { text-decoration: underline; }
 .sec-cab h2 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -0.015em; }
 .sec-cab .k { font-size: 13px; }
 .sec-cab .der { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+/* Plan y movimientos: cada aportación, compra o posición en una fila de dos líneas (qué y dónde a la izquierda,
+   el importe a la derecha y un botón pequeño para editar) */
+.banco-vuelta { min-height: 100vh; min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; text-align: center; }
+.banco-vuelta h1 { margin: 6px 0 0; font-size: 28px; letter-spacing: -0.03em; }
+.banco-vuelta p { margin: 0; max-width: 340px; color: var(--text-2); line-height: 1.5; }
+.banco-vuelta .btn { min-height: 50px; padding: 0 28px; display: inline-flex; align-items: center; text-decoration: none; }
+.plan-sub { margin: -8px 0 10px; color: var(--text-2); font-size: 13.5px; }
+.plan-l { list-style: none; margin: 0; padding: 0; }
+.plan-l li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; column-gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
+.plan-l li:last-child { border-bottom: 1px solid var(--line); }
+.plan-l .pl-t, .plan-l .pl-n { display: grid; gap: 2px; min-width: 0; }
+.plan-l .pl-t b { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-l .pl-t b span { font-weight: 500; }
+.plan-l small { color: var(--text-2); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.plan-l .pl-n { text-align: right; }
+.plan-l .pl-n b { font-size: 15px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.plan-l .ib { width: 34px; height: 34px; margin-right: -6px; }
+.plan-l .ib svg { width: 17px; height: 17px; }
+.plan-l .ib.peligro:hover { color: var(--down); }
 .pila { display: grid; gap: 48px; align-content: start; min-width: 0; grid-template-columns: minmax(0, 1fr); }
 .dos { display: grid; gap: 48px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 1180px) { .dos { grid-template-columns: minmax(0, 1fr) 400px; gap: 56px; } }
@@ -7194,23 +7213,28 @@ function htmlPlan(M) {
   <div class="dos">
     <div class="pila">
       <section aria-labelledby="hAp">
-        <div class="sec-cab"><h2 id="hAp">Aportaciones periódicas</h2><span class="k">${eur(total, 0)} al mes, ${eur(total * 12, 0)} al año</span><div class="der"><button class="btn peq" data-accion="nueva-ap">${ICONOS.mas}Añadir aportación</button></div></div>
-        ${ap.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Destino</th><th>Plataforma</th><th class="r">Importe</th><th class="r">Día</th><th class="r">Próxima</th><th></th></tr></thead><tbody>
-          ${ap.map(({ a, k }) => { const prox = fechasAportacion({ ...a, desde: a.desde > hoyIso() ? a.desde : hoyIso() }, iso(new Date(Date.now() - 86400000)), iso(new Date(Date.now() + 70 * 86400000)))[0]; return `<tr><td>${activoMini(S.inst[a.instrumento] || { corto: a.instrumento })}</td><td>${esc(a.plataforma || '')}</td><td class="r">${eur(+a.importe, 0)}</td><td class="r">${esc(a.dia)}</td><td class="r">${prox ? fechaCorta(prox) : '—'}</td><td class="r"><button class="btn peq" data-accion="editar-ap" data-k="${k}">${ICONOS.lapiz}Editar</button></td></tr>`; }).join('')}
-        </tbody></table></div>` : '<div class="vacio">No tienes aportaciones automáticas. Añade las que tengas programadas en tu bróker y GrowFolio las irá sumando sola.</div>'}
+        <div class="sec-cab"><h2 id="hAp">Aportaciones periódicas</h2><div class="der"><button class="btn peq" data-accion="nueva-ap" aria-label="Añadir aportación" title="Añadir aportación">${ICONOS.mas}Añadir</button></div></div>
+        ${ap.length ? `<p class="plan-sub">${eur(total, 0)} al mes, ${eur(total * 12, 0)} al año</p>
+        <ul class="plan-l">${ap.map(({ a, k }) => {
+          const prox = fechasAportacion({ ...a, desde: a.desde > hoyIso() ? a.desde : hoyIso() }, iso(new Date(Date.now() - 86400000)), iso(new Date(Date.now() + 70 * 86400000)))[0];
+          const i = S.inst[a.instrumento] || { corto: a.instrumento };
+          return `<li>${logo(i.dominio, i.corto || i.nombre || '?')}<div class="pl-t"><b>${esc(i.corto || i.nombre || a.instrumento)}</b><small>${[esc(a.plataforma || ''), L(`el día ${esc(a.dia)}`, `on day ${esc(a.dia)}`), prox ? L(`próxima ${fechaCorta(prox)}`, `next ${fechaCorta(prox)}`) : ''].filter(Boolean).join(' · ')}</small></div>
+            <div class="pl-n"><b>${eur(+a.importe, 0)}</b><small>${L('al mes', 'a month')}</small></div><button class="ib" data-accion="editar-ap" data-k="${k}" aria-label="${L('Editar', 'Edit')} ${esc(i.corto || '')}" title="${L('Editar', 'Edit')}">${ICONOS.lapiz}</button></li>`;
+        }).join('')}</ul>` : '<div class="vacio">No tienes aportaciones automáticas. Añade las que tengas programadas en tu bróker y GrowFolio las irá sumando sola.</div>'}
         <p class="nota">Cada aportación se suma sola a su posición con el precio del primer día después de la fecha (el que usa el fondo). Si cambias el importe o el día en tu bróker, cámbialo aquí también.</p>
       </section>
       <section aria-labelledby="hMov">
-        <div class="sec-cab"><h2 id="hMov">Compras y ventas</h2><div class="der"><button class="btn peq compra" data-accion="operacion" data-tipo="compra">${ICONOS.compra}Apuntar compra</button><button class="btn peq venta" data-accion="operacion" data-tipo="venta">${ICONOS.venta}Apuntar venta</button></div></div>
-        ${movs.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Operación</th><th class="r">Unidades</th><th class="r">Precio</th><th class="r">Importe</th><th class="r">Resultado</th><th></th></tr></thead><tbody>
-          ${movs.map((m) => `<tr><td><span class="mov-l">${logo((S.inst[m.instrumento] || {}).dominio, nombreI(m.instrumento))}<span><b style="font-weight:500" class="${m.tipo === 'compra' ? 'up' : 'down'}">${m.tipo === 'compra' ? 'Compra' : 'Venta'}</b> ${nombreI(m.instrumento)}<small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></span></span></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${precioFmt(m.precio)}</td><td class="r">${eur(m.importe)}<small>${m.gastos ? 'gastos ' + eur(m.gastos) : ''}</small></td><td class="r ${cls(m.resultado)}">${m.tipo === 'venta' ? eurS(m.resultado || 0, 0) : ''}</td><td class="r"><button class="btn peq peligro" data-accion="borrar-mov" data-id="${esc(m.id)}" aria-label="Borrar del historial">${ICONOS.papelera}</button></td></tr>`).join('')}
-        </tbody></table></div><p class="nota">Borrar una operación del historial no deshace su efecto en la posición: para eso, edita la posición.</p>` : '<div class="vacio">Aquí saldrán las compras y ventas que registres. Al registrarlas se actualizan solas la posición, el efectivo y el resultado para la renta.</div>'}
+        <div class="sec-cab"><h2 id="hMov">Compras y ventas</h2><div class="der"><button class="btn peq compra" data-accion="operacion" data-tipo="compra" aria-label="Apuntar compra" title="Apuntar compra">${ICONOS.compra}Compra</button><button class="btn peq venta" data-accion="operacion" data-tipo="venta" aria-label="Apuntar venta" title="Apuntar venta">${ICONOS.venta}Venta</button></div></div>
+        ${movs.length ? `<ul class="plan-l">${movs.map((m) => {
+          const i = S.inst[m.instrumento] || {}, compra = m.tipo === 'compra';
+          return `<li>${logo(i.dominio, nombreI(m.instrumento))}<div class="pl-t"><b><span class="${compra ? 'up' : 'down'}">${compra ? 'Compra' : 'Venta'}</span> ${nombreI(m.instrumento)}</b><small>${[fechaLarga(m.fecha), esc(m.plataforma || ''), `${oc(fmtNum(m.uds, 4))} ${L('a', 'at')} ${precioFmt(m.precio)}`].filter(Boolean).join(' · ')}</small></div>
+            <div class="pl-n"><b>${eur(m.importe, 0)}</b><small class="${compra ? '' : cls(m.resultado)}">${compra ? (m.gastos ? `${L('gastos', 'fees')} ${eur(m.gastos)}` : '') : eurS(m.resultado || 0, 0)}</small></div><button class="ib peligro" data-accion="borrar-mov" data-id="${esc(m.id)}" aria-label="Borrar del historial" title="Borrar del historial">${ICONOS.papelera}</button></li>`;
+        }).join('')}</ul><p class="nota">Borrar una operación del historial no deshace su efecto en la posición: para eso, edita la posición.</p>` : '<div class="vacio">Aquí saldrán las compras y ventas que registres. Al registrarlas se actualizan solas la posición, el efectivo y el resultado para la renta.</div>'}
       </section>
       <section aria-labelledby="hPosE">
-        <div class="sec-cab"><h2 id="hPosE">Posiciones</h2><div class="der"><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Añadir lo que ya tenía</button></div></div>
-        <div class="tabla-w"><table class="resp tabla-ed"><thead><tr><th>Activo</th><th class="r">Cantidad</th><th class="r">Invertido</th><th class="r">Valor</th><th></th></tr></thead><tbody>
-          ${M.filas.map((f) => `<tr><td>${activoMini(f.inst, `<span>${esc(f.pos.plataforma || '')}</span>`)}</td><td class="r">${f.uds != null ? oc(fmtNum(f.uds, 4)) : '—'}${f.estimada ? '<small>estimada</small>' : ''}</td><td class="r">${eur(f.coste, 0)}</td><td class="r">${eur(f.valor, 0)}</td><td class="r"><button class="btn peq" data-accion="editar-pos" data-id="${esc(f.pos.id)}">${ICONOS.lapiz}Editar</button></td></tr>`).join('')}
-        </tbody></table></div>
+        <div class="sec-cab"><h2 id="hPosE">Posiciones</h2><div class="der"><button class="btn peq" data-accion="nueva-pos">${ICONOS.mas}Lo que ya tenía</button></div></div>
+        <ul class="plan-l">${M.filas.map((f) => `<li>${logo(f.inst.dominio, f.inst.corto || f.inst.nombre || '?')}<div class="pl-t"><b>${esc(f.inst.corto || f.inst.nombre || '?')}</b><small>${[esc(f.pos.plataforma || ''), f.uds != null ? `${f.estimada ? '≈' : ''}${oc(fmtNum(f.uds, f.uds >= 1 ? 2 : 4))} ${L('uds.', 'units')}` : ''].filter(Boolean).join(' · ')}</small></div>
+          <div class="pl-n"><b>${eur(f.valor, 0)}</b><small>${L('invertido', 'invested')} ${eur(f.coste, 0)}</small></div><button class="ib" data-accion="editar-pos" data-id="${esc(f.pos.id)}" aria-label="${L('Editar', 'Edit')} ${esc(f.inst.corto || '')}" title="${L('Editar', 'Edit')}">${ICONOS.lapiz}</button></li>`).join('')}</ul>
       </section>
     </div>
     <aside class="pila lateral">
@@ -11381,6 +11405,7 @@ const NOVEDADES = [
     { d: 'app', t: 'El widget, como la app', x: 'La cifra más gruesa y la curva con el mismo grano dorado, el trazo que se enciende hacia hoy y el halo en el punto de ahora. Llega con la app nueva de Android.' },
     { d: 'grafica', t: 'El widget: 24 horas y escala', x: 'Los plazos de la curva, a la vista arriba a la derecha, junto a refrescar: 24 h, 1 semana, 1 mes, 3 meses y 1 año. Tocas el que quieras y la curva cambia con un fundido. Abajo salen las horas o las fechas, a la izquierda los valores, y al lado de lo de hoy cuánto ha cambiado en ese plazo.' },
     { d: 'intro', t: 'Lo que te perdiste, de una vez', x: 'Si llevas tiempo sin entrar, al volver te salen juntas todas las versiones que te has perdido, cada una con su capítulo: lo más importante en grande y el resto en una lista corta que se abre al tocarla. Los bugs corregidos, todos al final.' },
+    { d: 'calendario', ir: { v: 'cartera', sel: '#hAp', plan: true }, t: 'Plan y movimientos, al grano', x: 'Cada aportación, compra o posición en una fila de dos líneas: qué es y dónde a la izquierda, el importe a la derecha y un lápiz pequeño para cambiarla. Los botones van al lado de cada título, sin huecos.' },
     { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: '«Cómo vas», en Análisis', x: 'La tarjeta que te dice si vas bien sale ahora arriba de Análisis, justo encima de tus objetivos, y ya no en el Paso a paso.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.hero-num' }, t: 'El patrimonio se enciende', x: 'Cuando cambia con los precios en directo, la cifra se pone un momento en verde si sube y en rojo si baja.' },
     { d: 'grafica', ir: { v: 'cartera', sel: '.hero-rangos' }, t: '«Inicio», desde que empezaste a invertir', x: 'La primera vez que lo tocas te pregunta en qué mes y año empezaste a invertir, no cuándo empezaste a usar GrowFolio, y la pastilla dice lo ganado de verdad desde entonces. Lo cambias en tu perfil.' },
@@ -12182,6 +12207,7 @@ function pasoTour(dir = 1) {
   if (p.antes) try { p.antes(); } catch (e) { console.warn(e); }
   if (cambia) location.hash = '#' + p.v;
   if (p.pos && S.carTab === 'plan') { S.carTab = 'pos'; LS.set('inv-car', 'pos'); if (!cambia) pintar(); }
+  if (p.plan && S.carTab !== 'plan') { S.carTab = 'plan'; LS.set('inv-car', 'plan'); if (!cambia) pintar(); }
   const ultimo = TOURE.i === P.length - 1, vacia = !TOURE.nov && !p.empezar && !((S.cartera && S.cartera.posiciones) || []).length;
   const caja = $('.tour-caja', TOURE.capa), x = typeof p.x === 'function' ? p.x() : p.x;
   document.body.classList.toggle('tour-ola', !!p.ola);
@@ -15191,8 +15217,21 @@ function avisoIngles() {
 // lo que se le pide a GrowIA, en el idioma de la app
 const notaIdiomaIA = () => (IDIOMA === 'en' ? '\n\nIDIOMA: el usuario usa GrowFolio en inglés. Escribe en inglés todos los textos que vea él (respuestas, resúmenes, motivos, pasos), aunque estas instrucciones y los datos estén en español. Las claves del JSON no se traducen.' : '');
 
+/* El permiso del banco se pidió desde la app de Android, pero el banco (su app, al acabar) devuelve la vuelta al
+   navegador del móvil, donde no está tu sesión: se le pasa a la app con el código y allí se termina. Si el permiso se
+   pidió en este mismo navegador (está su «inv-banco-pend»), se sigue aquí como siempre. */
+function bancoALaApp() {
+  const q = new URLSearchParams(location.search);
+  if (!q.has('state') || !(q.has('code') || q.has('error')) || q.has('web') || window.InversionesApp || !/Android/i.test(navigator.userAgent) || LS.get('inv-banco-pend', null)) return false;
+  const aqui = location.origin + location.pathname + location.search + '&web=1' + location.hash;
+  const url = `intent://banco${location.search}#Intent;scheme=inversiones;package=es.inversiones.app;S.browser_fallback_url=${encodeURIComponent(aqui)};end`;
+  document.body.innerHTML = `<main class="banco-vuelta"><img src="favicon.svg" alt="" width="64" height="64"><h1>${L('Vuelve a GrowFolio', 'Back to GrowFolio')}</h1><p>${L('El banco ya ha dado el permiso. Ábrelo en la app para terminar de conectar la cuenta.', 'The bank has granted access. Open it in the app to finish connecting the account.')}</p><a class="btn pri" href="${esc(url)}">${L('Abrir la app', 'Open the app')}</a><a class="enlace" href="${esc(aqui)}">${L('Seguir aquí, en el navegador', 'Continue here, in the browser')}</a></main>`;
+  setTimeout(() => { location.href = url; }, 250);
+  return true;
+}
 async function iniciar() {
   cargarIdioma();
+  if (bancoALaApp()) return;
   // quien llega nuevo ve la presentación general, no la de la 0.2; quien venía de la 0.1, se apunta
   if (!LS.get('inv-version', null)) LS.set('inv-estreno-02b', true);
   else if (cmpVer(LS.get('inv-version'), '0.2.0') < 0 || localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc')) LS.set('inv-vino-01', true);
