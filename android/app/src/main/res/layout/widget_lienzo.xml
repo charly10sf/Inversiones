@@ -122,7 +122,7 @@
             android:indeterminateDrawable="@drawable/refresco_gira"
             android:indeterminateDuration="850"
             android:indeterminateOnly="true"
-            android:indeterminateTint="#FFE2B45F"
+            android:indeterminateTint="#FFEDBB45"
             android:indeterminateTintMode="src_in"
             android:maxWidth="24dp"
             android:maxHeight="24dp"

@@ -3,13 +3,13 @@
     <color name="fondo">#FF000000</color>
     <color name="plano">#FF1A1916</color>
     <color name="linea">#FF2A2723</color>
-    <color name="texto">#FFF1EDE5</color>
-    <color name="texto2">#FFBDB6A8</color>
-    <color name="apagado">#FF8E877A</color>
-    <color name="acento">#FFE2B45F</color>
-    <color name="sube">#FF4FC995</color>
-    <color name="baja">#FFEF7461</color>
-    <color name="icono_fondo">#FF1F1D19</color>
+    <color name="texto">#FFF7F2E8</color>
+    <color name="texto2">#FFBCB3A2</color>
+    <color name="apagado">#FF8A8172</color>
+    <color name="acento">#FFEDBB45</color>
+    <color name="sube">#FF4CBF8E</color>
+    <color name="baja">#FFE46A5C</color>
+    <color name="icono_fondo">#FF24201A</color>
 
     <style name="Tema" parent="@android:style/Theme.DeviceDefault.NoActionBar">
         <item name="android:windowBackground">@color/fondo</item>

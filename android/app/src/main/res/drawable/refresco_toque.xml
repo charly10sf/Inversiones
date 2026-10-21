@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- al tocar refrescar: una onda dorada redonda alrededor de la rueda -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
-    android:color="#47E2B45F">
+    android:color="#47EDBB45">
     <item android:id="@android:id/mask">
         <inset
             android:insetBottom="10dp"
