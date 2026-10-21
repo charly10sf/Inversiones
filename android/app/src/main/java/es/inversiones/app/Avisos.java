@@ -35,7 +35,8 @@ import java.util.concurrent.TimeUnit;
  * - una posición que baja de tu precio de salida, o se queda a menos de un 3 % de él;
  * - una posición que sube o baja más de un 5 % en el día;
  * - resultados o dividendos de lo tuyo mañana (a partir de las 18:00) u hoy (por la mañana);
- * - una pregunta de GrowIA que aún no has visto.
+ * - una pregunta de GrowIA que aún no has visto;
+ * - una empresa que sigues (sin tenerla) que baja o sube del precio que le pusiste.
  * Cada aviso, una sola vez; de 22:00 a 8:00, nada. No necesita la contraseña de la cartera: las reglas no llevan
  * importes, solo precios.
  */
@@ -91,7 +92,8 @@ public class Avisos extends Worker {
 
         JSONObject pr = new JSONObject(p.getString("precios", "{}"));
         JSONArray reglas = av.optJSONArray("reglas");
-        boolean faltan = false;   // ¿algo que no está en los precios comunes (del radar o un fondo del catálogo)?
+        JSONArray seguir = av.optJSONArray("seguir");   // 0.3.11: las empresas que sigues, con sus precios de aviso
+        boolean faltan = seguir != null && seguir.length() > 0 && av.optBoolean("seg", true);   // ¿algo que no está en los precios comunes (del radar o un fondo del catálogo)?
         for (int k = 0; reglas != null && k < reglas.length(); k++) {
             JSONObject x = reglas.getJSONObject(k);
             if (pr.optJSONArray(x.optString("id")) == null && (!x.optString("sym").isEmpty() || !x.optString("cid").isEmpty())) faltan = true;
@@ -140,6 +142,20 @@ public class Avisos extends Worker {
                 avisar(c, hechos, "mov:" + id + ":" + hoy, n + (cambio > 0 ? " sube un " : " baja un ") + num(Math.abs(cambio)) + " % hoy",
                         "Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.", "cartera");
             }
+        }
+
+        // las que sigues: una vez cuando bajan del precio que pusiste o suben del otro (precios del radar, en euros)
+        for (int k = 0; av.optBoolean("seg", true) && seguir != null && k < seguir.length(); k++) {
+            JSONObject x = seguir.getJSONObject(k);
+            String sym = x.optString("sym"), n = x.optString("n", sym);
+            JSONArray r = rp.optJSONArray(sym);
+            if (r == null) continue;
+            double precio = r.optDouble(0), baja = x.optDouble("baja", 0), sube = x.optDouble("sube", 0);
+            if (Double.isNaN(precio) || precio <= 0) continue;
+            if (baja > 0 && precio <= baja) avisar(c, hechos, "segb:" + sym + ":" + baja, n + " ha bajado a tu precio",
+                    "Está a " + eur(precio) + ": la seguías para cuando bajara de " + eur(baja) + ".", "expertos");
+            if (sube > 0 && precio >= sube) avisar(c, hechos, "segs:" + sym + ":" + sube, n + " ha subido a tu precio",
+                    "Está a " + eur(precio) + ": querías saber cuándo pasara de " + eur(sube) + ".", "expertos");
         }
 
         JSONArray ev = av.optJSONArray("eventos");
