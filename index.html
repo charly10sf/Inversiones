@@ -1283,6 +1283,19 @@ table.ideas .sub { display: block; font-size: 12px; }
 .evita .ev-res small { color: var(--muted); font-size: 11.5px; }
 .ev-motivo { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.55; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; cursor: pointer; }
 .ev-motivo.abierto { -webkit-line-clamp: unset; display: block; }
+.ev-antes { margin: 0; display: flex; gap: 7px; align-items: flex-start; color: var(--warn); font-size: 13px; line-height: 1.45; }
+.ev-antes svg { width: 15px; height: 15px; flex: none; margin-top: 2px; }
+.cambios-ia { margin-top: 28px; }
+.cambios-ia h3 { margin: 0 0 4px; font-size: 16px; font-weight: 650; }
+.cambios-ia .nota { margin: 0 0 10px; }
+.cambios-ia ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.cambios-ia li { padding: 11px 14px 11px 16px; border-radius: 12px; background: rgba(255, 231, 176, 0.025); border: 1px solid rgba(255, 231, 176, 0.09); position: relative; }
+.cambios-ia li::before { content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: var(--down); }
+.cambios-ia li.entra::before { background: var(--up); }
+.cambios-ia li b { font-weight: 650; }
+.cambios-ia .cm-que { color: var(--muted); font-size: 12.5px; }
+.cambios-ia li p { margin: 4px 0 0; color: var(--text-2); font-size: 13.5px; line-height: 1.5; }
+.cambios-ia .as-fuentes { margin-top: 6px; }
 .evita .as-fuentes { margin: 0; }
 
 /* ---------- cartera: lo que toca ahora ---------- */
@@ -6654,17 +6667,42 @@ function mejoresIdeas(M, excluir = {}) {
   if (!c.has(k)) c.set(k, mejoresIdeas0(M, excluir));
   return c.get(k).slice();
 }
+/* Constancia: lo que GrowFolio ha propuesto estos días (en este dispositivo o, según el escaneo, entre las mejores
+   del radar o las ideas de GrowIA) sigue arriba aunque sus números se muevan un poco. Solo sale si deja de
+   cumplir de verdad (los analistas ya no dicen comprar, ya casi ha llegado al objetivo) o si GrowIA la pasa a
+   "evitar", cosa que solo hace con una noticia que cambia la tesis. Nada de cinco ideas distintas en dos días. */
+const MEM_IDEAS = 'inv-ideas-propuestas';
+function memoriaIdeas() { try { return JSON.parse(localStorage.getItem(MEM_IDEAS) || '{}') || {}; } catch (e) { return {}; } }
+function apuntarIdeas(syms) {
+  const m = memoriaIdeas(), hoy = hoyIso();
+  for (const s of syms) m[s] = { d: (m[s] && m[s].d) || hoy, u: hoy };
+  for (const k of Object.keys(m)) if (diasEntre(m[k].u, hoy) > 30) delete m[k];
+  try { localStorage.setItem(MEM_IDEAS, JSON.stringify(m)); } catch (e) {}
+}
+function propuestaReciente(s) {
+  const hoy = hoyIso(), m = memoriaIdeas()[s];
+  if (m && diasEntre(m.u, hoy) <= 7) return true;
+  const h = S.escaneo && S.escaneo.decision && S.escaneo.decision.hist && S.escaneo.decision.hist[s];
+  return !!h && ['idea', 'radar'].some((k) => h[k] && diasEntre(h[k][1], hoy) <= 7);
+}
+const evitaGrowIA = () => new Set(((S.escaneo && S.escaneo.decision && S.escaneo.decision.evitar) || []).map((v) => v.s));
 function mejoresIdeas0(M, excluir = {}) {
   const r = radarVals();
   if (!r.length) return [];
   const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
   const ctx = ctxIdeas(M);
+  const evita = evitaGrowIA();
+  // las que ya se propusieron tienen un margen: un 9 % de recorrido en vez de 10 o un consenso de 2,5 en vez de 2,4 no las saca
+  const pasa = (x) => {
+    const ya = propuestaReciente(x.s);
+    return x.pot != null && x.pot >= (ya ? 5 : 10) && (x.na || 0) >= (ya ? 6 : 8) && (x.rm ?? 9) <= (ya ? 2.6 : 2.4) && ['buy', 'strong_buy'].includes(x.r) && !(x.c1a < (ya ? -45 : -35));
+  };
   const out = r
-    .filter((x) => !tuyas.has(x.s) && x.pot != null && x.pot >= 10 && (x.na || 0) >= 8 && (x.rm ?? 9) <= 2.4 && ['buy', 'strong_buy'].includes(x.r) && !(x.c1a < -35) && (!excluir.sector || x.sector !== excluir.sector))
-    .map((x) => puntuarIdea(x, ctx))
-    .filter((x) => x.ctr.favor >= 3 && x.ctr.contra <= 2)
+    .filter((x) => !tuyas.has(x.s) && !evita.has(x.s) && pasa(x) && (!excluir.sector || x.sector !== excluir.sector))
+    .map((x) => { const y = puntuarIdea(x, ctx); if (propuestaReciente(x.s)) { y.puntos += 0.8; y.sigue = true; } return y; })
+    .filter((x) => (x.sigue ? x.ctr.favor >= 2 && x.ctr.contra <= 3 : x.ctr.favor >= 3 && x.ctr.contra <= 2))
     .sort((a, b) => b.puntos - a.puntos);
-  if (!excluir.sector) S.ideasTop = out.slice(0, 12).map((x) => x.s);
+  if (!excluir.sector) { S.ideasTop = out.slice(0, 12).map((x) => x.s); apuntarIdeas(out.slice(0, 3).map((x) => x.s)); }
   return out;
 }
 
@@ -6817,7 +6855,7 @@ function esperadaIdea(x) {
 }
 function quienIdea(x) {
   const w = x.web ? (IDIOMA === 'en' ? `GrowFolio's radar (${x.web.puesto === 1 ? 'the best-backed on it' : `number ${x.web.puesto} by backing`})` : `el radar de GrowFolio (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})`) : null;
-  const g = x.gem ? `GrowIA tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')})` : null;
+  const g = x.gem ? `GrowIA tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')}${x.gem.desde && x.gem.desde < hoyIso() ? `, desde el ${fechaCorta(x.gem.desde)}` : ''})` : null;
   const t = x.tuya ? `tu análisis${x.tuya.importe ? `, con ${eur(+x.tuya.importe, 0)}` : ''}` : null;
   const p = [w, g, t].filter(Boolean);
   return `La propone ${yLista(p.map(trad))}.`;
@@ -6888,12 +6926,27 @@ function htmlEvitar() {
     return `<article class="evita">
       <header>${logo(r && r.w, v.n || v.s)}<div><b>${esc(v.n || (r && r.n) || v.s)}</b><small>${r ? lineaOrigenCorta(r) : ''}<span class="ev-tk">${esc(v.s)}</span></small></div>
         <span class="ev-res">${dia != null ? `<b class="${cls(dia)}">${pctS(dia, 1)}</b><small>${L('hoy', 'today')}</small>` : ''}</span></header>
+      ${(() => { const c = cambiosIdeas().find((y) => y.s === v.s && y.ahora === 'evitar'); return c ? `<p class="ev-antes">${ICONOS.alerta}<span>${L('Hasta hace poco estaba entre las ideas. Cambia por una noticia que cambia la tesis.', 'Until recently it was among the ideas. It changes because of news that changes the thesis.')}</span></p>` : ''; })()}
       <p class="ev-motivo" data-ev-abre tabindex="0">${escIA(v.motivo)}</p>
       ${enlacesFuentes(v.fuentes, 3)}
     </article>`;
   };
   return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det" open><summary class="sec-cab"><h3 id="hEvi"><span class="ev-ico" aria-hidden="true">${ICONOS.alerta}</span><span data-no-trad>${conIA('Las que GrowIA evitaría', 'The ones GrowIA would avoid')}</span> <span class="k">${d.evitar.length}, por lo que dice su prensa</span></h3></summary>
     <div class="evitas">${d.evitar.map(tarjeta).join('')}</div></details></section>`;
+}
+/* lo que ha entrado o salido de las ideas en los últimos tres días, con su motivo: si GrowIA cambia de opinión, lo dice */
+function cambiosIdeas() {
+  const d = S.escaneo && S.escaneo.decision, hoy = hoyIso();
+  return ((d && d.cambios) || []).filter((c) => c && c.s && c.d && diasEntre(c.d, hoy) <= 3);
+}
+function htmlCambiosIdeas() {
+  const cs = cambiosIdeas().filter((c) => c.antes !== 'nada' || c.ahora !== 'idea' || c.motivo);
+  if (!cs.length) return '';
+  const que = (c) => c.ahora === 'idea' ? (c.antes === 'evitar' ? L('Deja de estar entre las que evitaría y pasa a idea', 'Moves from avoid to idea') : L('Entra en las ideas', 'Joins the ideas'))
+    : c.ahora === 'evitar' ? L('Sale de las ideas y pasa a evitar', 'Leaves the ideas and moves to avoid') : L('Sale de las ideas', 'Leaves the ideas');
+  return `<section class="cambios-ia" aria-labelledby="hCamb"><h3 id="hCamb">${L('Qué ha cambiado y por qué', 'What changed and why')}</h3>
+    <p class="nota">${L('Las ideas solo cambian de un día para otro si llega una noticia que cambia la tesis o se rompen sus números. Cada cambio, con su motivo:', 'Ideas only change from one day to the next if news changes the thesis or the numbers break. Each change, with its reason:')}</p>
+    <ul>${cs.map((c) => { const r = buscarRadar(c.s); return `<li class="${c.ahora === 'idea' ? 'entra' : 'sale'}"><b>${esc((r && r.n) || c.n || c.s)}</b> <span class="cm-que">${que(c)} · ${fechaCorta(c.d)}</span>${c.motivo ? `<p>${escIA(c.motivo)}</p>` : ''}${enlacesFuentes(c.fuentes, 2)}</li>`; }).join('')}</ul></section>`;
 }
 function htmlIdeas(M, ia) {
   const todas = radarVals();
@@ -6916,8 +6969,9 @@ function htmlIdeas(M, ia) {
   return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowIA y tu análisis</span></div>
     ${d && d.comentario ? `<p class="idea-panorama">${NOM_IA} ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : `<div class="vacio">${L('Ahora mismo ninguna pasa los filtros: mejor esperar.', 'None passes the filters right now: better to wait.')}</div>`}
-    <p class="nota">Cómo se eligen: GrowFolio se queda con las tres mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas. Primero salen las que eligen los dos. En las barras, verde es a favor, rojo en contra y gris neutral.</p>
+    <p class="nota">Cómo se eligen: GrowFolio se queda con las tres mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas una vez al día. Primero salen las que eligen los dos. Lo que ya se ha propuesto se mantiene salvo que llegue una noticia que cambie la tesis o se rompan sus números, y nada sale a la vez como idea y como «evitar». En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
+    ${htmlCambiosIdeas()}
     <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
     <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
@@ -11753,6 +11807,8 @@ const NOVEDADES = [
     { d: 'pulido', t: 'Más sobria, con los colores del logo', x: 'Toda la app usa ya solo el oro, el negro cálido y el blanco del logo. Las tarjetas son como el icono: negro cálido con un filo dorado fino y algo de luz arriba. Lo que eliges (pestañas, plazos, apartados) se marca en oro y los botones principales llevan el degradado del logo. El verde y el rojo quedan para lo que sube y baja, el calendario deja el azul y el rosa, y el botón de GrowIA ya no se confunde con el de avisar de un fallo.' },
     { d: 'avisover', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Un aviso con cada versión nueva', x: 'En la app de Android, cuando salga una versión de GrowFolio te llega un aviso al móvil con lo que trae, aunque no tengas la app abierta. Si además hay app nueva, te lo dice. Viene encendido y se quita en Ajustes > Avisos y resumen.' },
     { d: 'growia', t: 'GrowIA firma con su logo', x: 'Donde habla GrowIA, su nombre sale con la letra del logo: en las ideas de compra y en cada posición de Expertos, en «Lo último», en «GrowIA opina» de Análisis, en el Paso a paso y en Ajustes.' },
+    { d: 'opinion', ir: { v: 'expertos', sel: '.evitar' }, t: 'GrowIA ya no cambia de idea de un día para otro', x: 'Las ideas de compra se deciden una vez al día y se mantienen salvo que llegue una noticia que cambie la tesis o se rompan sus números (los analistas dejan de decir comprar o ya ha llegado a su objetivo). Entran como mucho dos nuevas al día, nada sale a la vez como idea y como «evitar», y lo que se ha recomendado estas semanas no pasa a «evitar» sin una noticia así. Si algo cambia, en Expertos sale «Qué ha cambiado y por qué», con el motivo.' },
+    { d: 'catalogo', t: 'Más de 300 fondos, ETF y cripto', x: 'El catálogo pasa de unos 115 a 310: fondos indexados de Vanguard, iShares, Fidelity y Amundi; ETF de iShares, Vanguard, Xtrackers, Amundi, SPDR, Invesco, VanEck y otras gestoras; oro y plata, y 45 criptos. Cada nombre se comprueba con su ISIN antes de publicarlo, para que no salga un fondo con el precio de otro.' },
     { d: 'tengo', t: 'El precio sale solo al apuntar una compra', x: 'Si pones cuánto pagaste y cuántas participaciones te dieron, el precio de cada una sale solo, el mismo que te cobró el bróker. Con el total y el precio, como antes, salen las participaciones.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.fila.efectivo' }, t: 'El efectivo, a un toque', x: 'En Posiciones, toca el efectivo de una plataforma y se abre para cambiarlo, con ese importe listo para escribir.' },
     { d: 'ficha', t: 'Avisar de un fallo, también en la ficha', x: 'El bichito sale ahora en la ficha de cada posición y en el asesor, que tapan la barra de arriba.' },
@@ -13909,7 +13965,7 @@ function pedidoAnalisis(ids, motivo, conWeb = true) {
 5. Sintetiza: no repitas en una sección lo que ya está en otra. Frases cortas.
 6. Ajústalo todo a su perfil y sus objetivos (edad, cuándo necesita el dinero, cuánto riesgo aguanta, sus límites y sus metas con fecha y cifra, vienen en los datos): si algo de su cartera choca con ellos, dilo y propón cómo encajarlo; en la hoja de ruta, lo que necesite cada meta.
 7. En cada compra o venta explica lo de Hacienda y por qué: lo que pagará, y lo que debe hacer o evitar por fiscalidad (por ejemplo, si vende con pérdidas, no recomprar la misma acción o ETF en dos meses, ni el mismo fondo en un año, porque si no la pérdida no resta ese año; en cripto la de dos meses no se aplica, aunque hay quien defiende la de un año). Si un consejo tiene un motivo fiscal, que se diga.
-8. Sé constante. En los datos viene tu revisión anterior: su fecha, el nivel que diste a cada posición y su hoja de ruta. No cambies el nivel de una posición ni la hoja de ruta salvo que haya algo nuevo e importante: resultados, un cambio de recomendación de los analistas, una subida o caída de más de un 8 %, una noticia que cambie la tesis, o un cambio en su perfil, sus metas o su dinero. Los movimientos de pocos días no son motivo. Si cambias algo, di en su texto qué ha cambiado y por qué. Una revisión seria cambia poco de una semana a otra.
+8. Sé constante. En los datos viene tu revisión anterior: su fecha, el nivel que diste a cada posición y su hoja de ruta. No cambies el nivel de una posición ni la hoja de ruta salvo que haya algo nuevo e importante: resultados, un cambio de recomendación de los analistas, una subida o caída de más de un 8 %, una noticia que cambie la tesis, o un cambio en su perfil, sus metas o su dinero. Los movimientos de pocos días no son motivo. Si cambias algo, di en su texto qué ha cambiado y por qué. Una revisión seria cambia poco de una semana a otra. Lo mismo con las ideas de compra: mantén las que propusiste salvo una noticia que cambie la tesis o que sus números se rompan, y nunca propongas comprar una empresa que GrowIA tiene «a evitar» en sus datos de ideas (ni al revés).
 9. No hacer nada también es un consejo. Esperar, seguir con las aportaciones y no tocar la cartera es muchas veces lo mejor: si este mes no hay nada que hacer, pon en la hoja de ruta un solo paso que lo diga («Este mes, nada: deja que trabajen tus aportaciones»), con "esperar": true, y explica por qué en "por_que" (sin "como": no hay nada que hacer). No inventes cambios por tener algo que proponer.
 10. Las cifras, sin adornos. Si nombras una meta, di a qué distancia está («79.658 € de 500.000 €, un 16 %») y, si viene en los datos, cuándo llegaría al ritmo de ahora. Nunca digas que va «rumbo a», «camino de» o «hacia» una meta sin esas cifras, ni des a entender que está cerca si no lo está. El titular habla de hoy (cómo está la cartera, qué ha pasado y lo urgente), no de metas lejanas.
 
@@ -14275,6 +14331,7 @@ function contextoAsesor(M) {
       if (nv.length) L.push('Nivel que diste a cada posición: ' + nv.join('; ') + '.');
       const hrA = ia.hoja_de_ruta && ia.hoja_de_ruta.mes;
       if (hrA && hrA.length) L.push('Tu hoja de ruta de este mes: ' + hrA.map((x) => T(x.t)).join('; ') + '.');
+      if (Array.isArray(ia.ideas) && ia.ideas.length) L.push('Ideas de compra que propusiste: ' + ia.ideas.map((x) => `${x.nombre}${x.ticker ? ` (${x.ticker})` : ''}`).join('; ') + '.');
       const est = S.cartera.senales || {};
       const cambiosW = Object.entries(est).filter(([, x]) => x.antes && x.d >= sumarDias(hoyIso(), -14)).map(([k, x]) => { const f = M.filas.find((y) => y.pos.id === k); return f ? `${f.inst.corto}: de ${x.antes} a ${x.n} el ${fechaCorta(x.d)}` : ''; }).filter(Boolean);
       if (cambiosW.length) L.push('Cambios de señal de GrowFolio en las dos últimas semanas: ' + cambiosW.join('; ') + '.');

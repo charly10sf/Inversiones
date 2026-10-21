@@ -9,12 +9,14 @@ Lo llama la GitHub Action después de precios.py, en cada pasada (cada 20 minuto
    Se guardan en noticias-cache.json.
 2. Gemini lee la prensa de unas 70 empresas con noticias nuevas y apunta, para cada una, qué ha
    pasado, si es bueno o malo, cuánto importa y si hay un catalizador (escaneo.json, "lectura").
-3. Cada 2 horas:
-   - el informe de tu cartera y del mercado (informe.json): qué ha pasado, si es bueno o malo, qué
-     fuentes coinciden y qué vigilar;
-   - la decisión: entre todas las empresas con buenos números y buena prensa, Gemini elige las que
-     merecen dinero nuevo y las que conviene evitar, contrastando números y noticias (escaneo.json,
-     "decision").
+3. Cada 2 horas, el informe de tu cartera y del mercado (informe.json): qué ha pasado, si es bueno o
+   malo, qué fuentes coinciden y qué vigilar.
+4. Una vez al día, la decisión: entre todas las empresas con buenos números y buena prensa, Gemini elige
+   las que merecen dinero nuevo y las que conviene evitar (escaneo.json, "decision"). Con constancia: ve lo
+   que dijo la vez anterior, las ideas siguen salvo que llegue una noticia que cambie la tesis o se rompan
+   sus números, entran como mucho dos nuevas al día y lo que estas semanas se ha recomendado no pasa a
+   "evitar" sin una noticia así. Entre una decisión y la siguiente solo se revisa eso, sin preguntar a Gemini.
+   Cada cambio queda apuntado con su motivo ("cambios").
 Todo es público y sin cantidades: la cartera cifrada no se toca. Si la clave permite la búsqueda de
 Google, el informe además busca en internet.
 
@@ -45,8 +47,13 @@ LOTE_GOOGLE = 20            # y con Google Noticias en español
 LOTE_LECTURA = 70           # empresas que lee Gemini en cada pasada
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
-CANDIDATAS = 40             # empresas entre las que decide cada 2 horas
-DECISION_V = 5              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
+CANDIDATAS = 40             # empresas entre las que decide
+DECISION_V = 6              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
+HORAS_DECISION = 20         # la decisión se rehace una vez al día; entre medias solo se mira si hay una noticia gorda
+DIAS_MEMORIA = 14           # lo recomendado en estos días no pasa a "evitar" sin una noticia que cambie la tesis
+NUEVAS_POR_DIA = 2          # ideas nuevas por decisión, como mucho (más si otras salen por una noticia gorda)
+DIAS_IDEA = 28              # pasado este tiempo, una idea puede dejar sitio a otra mejor sin noticia de por medio
+MAX_IDEAS_DEC = 5
 NOTICIAS_POR_ACTIVO = 8
 # para los fondos, las noticias de lo que siguen
 NOTICIAS_DE = {"ishares-us": "^GSPC", "amundi-europe": "^STOXX50E", "vanguard-em": "EEM", "vanguard-smallcap": "VSS", "nb-short": None, "phau": "GC=F", "btc": "BTC-USD"}
@@ -563,6 +570,14 @@ Decide tú. Reglas:
   va débil o depende de algo que está cambiando (tipos, divisa, petróleo), exige más a sus empresas y dilo.
 - Máximo 5 ideas, de mejor a peor. Si ninguna está clara, devuelve "ideas" vacío y explícalo en "comentario".
 - Añade hasta 5 empresas a evitar por lo que dice su prensa, aunque los analistas digan comprar.
+- Sé constante. Al final viene lo que dijiste la vez anterior. El inversor no puede recibir cinco ideas
+  distintas en dos días, ni que un día le digas que compre algo y al siguiente que lo evite. Mantén tus ideas
+  anteriores salvo que haya una noticia nueva que cambie la tesis o se hayan roto sus números (los analistas
+  ya no dicen comprar, o ya ha llegado a su objetivo). Una caída de la cotización o una opinión suelta no basta.
+  Como mucho dos ideas nuevas al día.
+- No pongas en "evitar" una empresa que propusiste o que la web lleva entre sus mejores estas semanas (viene
+  en la lista), salvo una noticia nueva que cambie la tesis.
+- En "cambios", cada empresa que entra o sale respecto a la vez anterior, con el motivo y la noticia que lo justifica.
 - En "plazos", para TODAS las candidatas que no descartes por su prensa (aunque no estén entre tus ideas),
   estima en cuántos meses se puede materializar la mayor parte de su subida y cuánto: la web lo usa para
   comparar cualquier idea en "al año". Si no hay un catalizador claro, usa 12 meses y lo de los analistas,
@@ -575,7 +590,149 @@ Responde con un objeto JSON:
 {"comentario": "dos frases: cómo está el panorama y qué has buscado",
  "ideas": [{"s": "ticker", "tesis": "una o dos frases", "catalizador": "qué y cuándo", "riesgo": "...", "contraste": "qué coincide y qué no", "confianza": "alta|media|baja", "plazo_meses": 6, "subida_pct": 20, "fiscalidad": "lo que pagaría o perdería en impuestos, si importa", "fuentes": [n]}],
  "evitar": [{"s": "ticker", "motivo": "...", "fuentes": [n]}],
+ "cambios": [{"s": "ticker", "antes": "idea|evitar|nada", "ahora": "idea|evitar|fuera", "motivo": "...", "fuentes": [n]}],
  "plazos": [{"s": "ticker", "meses": 6, "subida_pct": 15, "por": "qué marca ese plazo, en pocas palabras (por ejemplo: resultados del 6 nov)"}]}"""
+
+
+def gorda(lectura, s, desde=None, signo="negativo"):
+    """Una noticia que cambia la tesis (relevancia 3 de la lectura de prensa), de la última semana y, si se
+    dice, posterior a la decisión anterior. Es lo único que deja cambiar de opinión de un día para otro."""
+    le = lectura.get(s) or {}
+    d = cuando(le.get("d"))
+    if d is None or (le.get("rel") or 0) < 3 or le.get("imp") != signo:
+        return False
+    if d < dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=7):
+        return False
+    return desde is None or d > desde
+
+
+def rota(x):
+    """Los números ya no sostienen la idea: los analistas dejan de decir comprar o ya casi ha llegado al objetivo.
+    Si la empresa no está hoy en el radar (un fallo de datos), no cuenta."""
+    if not x:
+        return None
+    if x.get("r") not in ("buy", "strong_buy"):
+        return "los analistas ya no dicen comprar"
+    if x.get("pot") is not None and x["pot"] < 5:
+        return "ya casi ha llegado al precio que esperaban los analistas"
+    return None
+
+
+def fecha_de(t):
+    try:
+        return dt.date.fromisoformat(str(t)[:10])
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def apuntar(hist, s, k, hoy_s, inicio=None):
+    h = hist.setdefault(s, {})
+    h[k] = [(h.get(k) or [str(inicio or hoy_s)[:10]])[0], hoy_s]
+
+
+def asentar(previa, ideas, evitar, cambios_g, porval, lectura, radar_top):
+    """Constancia sobre lo que propone Gemini (por si no hace caso del encargo):
+    - las ideas de la vez anterior siguen, salvo noticia gorda, números rotos o que lleven casi un mes y
+      Gemini explique por qué deja de proponerla;
+    - entran como mucho NUEVAS_POR_DIA nuevas (o tantas como hayan salido por una noticia gorda);
+    - lo que estas semanas ha estado en "evitar" no pasa a idea sin una noticia buena gorda;
+    - lo que estas semanas se ha propuesto (aquí o entre las mejores de la web) no pasa a "evitar" sin una
+      noticia mala gorda, y nunca está en las dos listas a la vez.
+    Devuelve las ideas, las de evitar, los cambios con su motivo y el historial de cada empresa."""
+    hoy = dt.datetime.now(dt.timezone.utc).date()
+    hoy_s = hoy.isoformat()
+    previa = previa or {}
+    desde = cuando(previa.get("generado"))
+    hist = {k: dict(v) for k, v in (previa.get("hist") or {}).items() if isinstance(v, dict)}
+
+    def reciente(s, k):
+        f = (hist.get(s) or {}).get(k)
+        d = fecha_de(f[1]) if f else None
+        return bool(d) and (hoy - d).days <= DIAS_MEMORIA
+
+    def cambio(s, n, antes, ahora_, motivo, fuentes):
+        return {"s": s, "n": n, "antes": antes, "ahora": ahora_, "motivo": str(motivo or "")[:300], "fuentes": fuentes or [], "d": hoy_s}
+
+    previas = [i for i in (previa.get("ideas") or []) if isinstance(i, dict) and i.get("s")]
+    nuevas = {i["s"]: i for i in ideas}
+    dice = {c.get("s"): c for c in cambios_g if isinstance(c, dict) and c.get("s")}
+    s_evitar = {e["s"] for e in evitar}
+    out, cam, salen = [], [], 0
+    for p in previas:
+        s = p["s"]
+        if s in nuevas:
+            out.append({**nuevas[s], "desde": p.get("desde") or hoy_s})
+            continue
+        le = lectura.get(s) or {}
+        rot = rota(porval.get(s))
+        d0 = fecha_de(p.get("desde"))
+        larga = d0 is not None and (hoy - d0).days > DIAS_IDEA
+        if gorda(lectura, s, desde) or rot:
+            cam.append(cambio(s, p.get("n"), "idea", "evitar" if s in s_evitar else "fuera", le.get("txt") if not rot else rot, le.get("fuentes") if not rot else []))
+            salen += 1
+        elif larga and s in dice:
+            cam.append(cambio(s, p.get("n"), "idea", "fuera", dice[s].get("motivo") or "lleva casi un mes entre las ideas y hay otras mejores", dice[s].get("fuentes")))
+            salen += 1
+        else:
+            out.append({**p, "sigue": 1})
+    cupo = MAX_IDEAS_DEC if not previas else max(NUEVAS_POR_DIA, salen)
+    for i in ideas:
+        if len(out) >= MAX_IDEAS_DEC or cupo <= 0:
+            break
+        s = i["s"]
+        if s in {o["s"] for o in out}:
+            continue
+        if reciente(s, "evitar") and not gorda(lectura, s, None, "positivo"):
+            continue
+        out.append({**i, "desde": hoy_s})
+        cupo -= 1
+        if previas:
+            cam.append(cambio(s, i.get("n"), "evitar" if reciente(s, "evitar") else "nada", "idea", (dice.get(s) or {}).get("motivo") or i.get("tesis"), i.get("fuentes")))
+    ids = {o["s"] for o in out}
+    ev = []
+    for e in evitar:
+        s = e["s"]
+        if s in ids:
+            continue
+        protegida = reciente(s, "idea") or reciente(s, "radar") or s in radar_top
+        if protegida and not gorda(lectura, s):
+            continue
+        ev.append(e)
+        if protegida and not any(c["s"] == s for c in cam):
+            cam.append(cambio(s, e.get("n"), "idea", "evitar", e.get("motivo") or (lectura.get(s) or {}).get("txt"), e.get("fuentes")))
+    for o in out:
+        apuntar(hist, o["s"], "idea", hoy_s, o.get("desde"))
+    for e in ev:
+        apuntar(hist, e["s"], "evitar", hoy_s)
+    for s in radar_top:
+        apuntar(hist, s, "radar", hoy_s)
+    # el historial, solo de lo que ha salido en el último mes
+    hist = {s: h for s, h in hist.items() if any((fecha_de(v[1]) or hoy) >= hoy - dt.timedelta(days=30) for v in h.values() if isinstance(v, list) and v)}
+    viejos = [c for c in (previa.get("cambios") or []) if isinstance(c, dict) and (fecha_de(c.get("d")) or hoy) >= hoy - dt.timedelta(days=3) and not any(x["s"] == c.get("s") for x in cam)]
+    return out, ev, (cam + viejos)[:12], hist
+
+
+def revisar(decision, lectura, valores):
+    """Entre una decisión y la siguiente (cada pasada de 20 minutos): sin preguntar a Gemini, una idea solo sale
+    si llega una noticia que cambia la tesis o se rompen sus números. Lo demás se queda como estaba."""
+    if not decision or not decision.get("ideas"):
+        return decision
+    porval = {x["s"]: x for x in valores}
+    desde = cuando(decision.get("revisada") or decision.get("generado"))
+    hoy_s = dt.datetime.now(dt.timezone.utc).date().isoformat()
+    quedan, cam = [], []
+    for i in decision["ideas"]:
+        s = i.get("s")
+        rot = rota(porval.get(s))
+        if gorda(lectura, s, desde) or rot:
+            le = lectura.get(s) or {}
+            cam.append({"s": s, "n": i.get("n"), "antes": "idea", "ahora": "fuera", "motivo": (rot or le.get("txt") or "")[:300], "fuentes": [] if rot else (le.get("fuentes") or []), "d": hoy_s})
+        else:
+            quedan.append(i)
+    if not cam:
+        return decision
+    print(f"escaneo: salen de las ideas {', '.join(c['s'] for c in cam)} por una noticia gorda o porque se han roto sus números")
+    return {**decision, "ideas": quedan, "cambios": (cam + (decision.get("cambios") or []))[:12], "revisada": ahora()}
 
 
 def contexto_zonas(precios):
@@ -587,7 +744,7 @@ def contexto_zonas(precios):
     return "\n".join(f"- {g}: " + "; ".join(xs) for g, xs in grupos.items())
 
 
-def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None):
+def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previa=None):
     limite = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=7)
     buenas, malas = [], []
     for x in valores:
@@ -619,8 +776,12 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None):
             pts += 0.4 if 0 < perf < 10 else 0.3 if 0 < perf < 15 else 0.1 if 0 < perf < 22 else -0.3 if perf >= 30 else 0
             web.append((pts, x))
     web.sort(key=lambda t: -t[0])
+    radar_top = [x["s"] for _, x in web[:9]]
+    porval = {x["s"]: x for x in valores}
+    # las ideas de la vez anterior entran siempre en la lista, para que Gemini pueda mantenerlas
+    de_antes = [porval[i["s"]] for i in ((previa or {}).get("ideas") or []) if isinstance(i, dict) and i.get("s") in porval and i["s"] not in tuyas]
     vistos, orden = set(), []
-    for x in [x for _, x in web[:20]] + cands:  # primero las de la web: son las que más importa que tengan plazo
+    for x in de_antes + [x for _, x in web[:20]] + cands:  # luego las de la web: son las que más importa que tengan plazo
         if x["s"] not in vistos:
             vistos.add(x["s"])
             orden.append(x)
@@ -639,7 +800,13 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None):
     hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
     obligadas = ", ".join(x["s"] for x in cands[:CANDIDATAS] if x not in [m for _, m in malas[:10]])
     zonas = contexto_zonas(precios or {})
-    pedido = f"Hoy es {hoy}.\n\n" + (f"## Cómo van los mercados por zonas\n{zonas}\n\n" if zonas else "") + "\n\n".join(bloques) + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
+    memoria = ""
+    if previa and (previa.get("ideas") or previa.get("evitar")):
+        li = "\n".join(f"- {i.get('s')} ({i.get('n')}), propuesta desde {i.get('desde') or str(previa.get('generado'))[:10]}: {i.get('tesis') or ''}" for i in previa.get("ideas") or [])
+        le = "\n".join(f"- {e.get('s')} ({e.get('n')}): {e.get('motivo') or ''}" for e in previa.get("evitar") or [])
+        memoria = (f"\n\n## Lo que dijiste la vez anterior ({str(previa.get('generado'))[:16].replace('T', ' ')} UTC)\nIdeas:\n{li or '- ninguna'}\nA evitar:\n{le or '- ninguna'}"
+                   f"\nLas que la web lleva entre sus mejores estos días: {', '.join(radar_top) or 'ninguna'}.")
+    pedido = f"Hoy es {hoy}.\n\n" + (f"## Cómo van los mercados por zonas\n{zonas}\n\n" if zonas else "") + "\n\n".join(bloques) + memoria + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
     cuerpo = {"systemInstruction": {"parts": [{"text": DECIDIR}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
               "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "high"}}}
     texto, _ = texto_de(gemini(cuerpo, clave))
@@ -676,10 +843,17 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None):
         m, sub = num(i.get("meses"), 1, 60), num(i.get("subida_pct"), -80, 400)
         if m and sub is not None:
             plazos[i["s"]] = {"meses": m, "subida_pct": sub, "por": str(i.get("por") or "")[:120]}
+    cambios_g = [{**c, "fuentes": fs_de(c.get("fuentes"))} for c in (d.get("cambios") or []) if isinstance(c, dict) and c.get("s")]
+    ideas, evitar, cambios, hist = asentar(previa, ideas, evitar, cambios_g, porval, lectura, radar_top)
+    # las que siguen de antes conservan su plazo si Gemini no lo ha repetido
+    for s, v in ((previa or {}).get("plazos") or {}).items():
+        if s not in plazos and any(i["s"] == s for i in ideas):
+            plazos[s] = v
     for i in ideas:
         if i.get("plazo_meses") and i.get("subida_pct") is not None and i["s"] not in plazos:
             plazos[i["s"]] = {"meses": i["plazo_meses"], "subida_pct": i["subida_pct"], "por": str(i.get("catalizador") or "")[:120]}
-    return {"generado": ahora(), "modelo": ", ".join(sorted(USADOS)) or MODELO, "v": DECISION_V, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar, "plazos": plazos, "candidatas": len(cands)}
+    return {"generado": ahora(), "modelo": ", ".join(sorted(USADOS)) or MODELO, "v": DECISION_V, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar,
+            "cambios": cambios, "hist": hist, "radar": radar_top, "plazos": plazos, "candidatas": len(cands)}
 
 
 def main(ruta_inst, dir_anterior, dir_salida):
@@ -704,10 +878,13 @@ def main(ruta_inst, dir_anterior, dir_salida):
             except Exception as e:  # noqa: BLE001
                 print(f"escaneo: falló la lectura de Gemini ({str(e)[:200]})")
     nuevo = informe_cartera(ruta_inst, dir_anterior, dir_salida, clave)
-    viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_INFORME)
-    if clave and valores and (nuevo or viejo):
+    # una decisión nueva al día (o si cambia su formato); entre medias, solo se revisa si hay una noticia gorda
+    viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_DECISION)
+    if not viejo and valores:
+        decision = revisar(decision, lectura, valores)
+    if clave and valores and viejo:
         try:
-            d = decidir(lectura, cache, valores, medianas, tuyas, clave, leer(f"{dir_salida}/precios.json"))
+            d = decidir(lectura, cache, valores, medianas, tuyas, clave, leer(f"{dir_salida}/precios.json"), previa=decision)
             if d:
                 decision = d
                 print(f"escaneo: decisión con {d['candidatas']} candidatas, {len(d['ideas'])} ideas y {len(d['evitar'])} a evitar")
