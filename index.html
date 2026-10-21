@@ -62,7 +62,8 @@ body { margin: 0; min-height: 100vh; background: var(--bg); color: var(--text); 
 button, input, select, textarea { font: inherit; color: inherit; }
 button { cursor: pointer; }
 a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
+/* el subrayado al pasar el ratón, solo en los enlaces de texto: las tarjetas que son enlaces no se subrayan */
+a:not([class]):hover, a.enlace:hover, a.noti:hover { text-decoration: underline; }
 [hidden] { display: none !important; }
 :focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; border-radius: 4px; }
 .num, .r { font-variant-numeric: tabular-nums; }
@@ -853,9 +854,9 @@ a.kpi:hover .v { color: var(--accent); }
 .ficha-tabs button[aria-pressed="true"] { border-bottom-color: var(--accent); background: none; }
 .ficha-cuerpo { padding: 22px 24px 0; display: grid; gap: 28px; }
 @media (max-width: 560px) { .ficha-cab, .ficha-top, .ficha-tabs { padding-left: 16px; padding-right: 16px; } .ficha-cuerpo { padding-left: 16px; padding-right: 16px; } }
-.kv { display: grid; grid-template-columns: auto 1fr; gap: 7px 16px; font-size: 14px; margin: 0; }
+.kv { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 7px 16px; font-size: 14px; margin: 0; }
 .kv dt { color: var(--muted); }
-.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
+.kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; max-width: min(15em, 50vw); overflow-wrap: anywhere; }
 .kv-2 { display: grid; gap: 22px 36px; }
 @media (min-width: 560px) { .kv-2 { grid-template-columns: 1fr 1fr; } }
 .bloque h3 { margin: 0 0 10px; font-size: 14px; font-weight: 500; color: var(--text-2); }
@@ -2704,7 +2705,7 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .tr2.tuyo { border-color: rgba(237, 187, 69, 0.6); }
 .tr2.tuyo i { background: var(--accent-bg); }
 .tr2.tuyo b { color: var(--accent); }
-@media (max-width: 560px) { .tr2 { padding: 8px 6px 7px; } .tr2 b { font-size: 15px; } .tr2 small { font-size: 12px; } .tr2 span { top: auto; bottom: auto; position: static; justify-self: start; margin-top: 3px; } }
+@media (max-width: 560px) { .tramos2 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .tr2 { padding: 9px 9px 8px; } .tr2 b { font-size: 16px; } .tr2 small { font-size: 12px; } .tr2 span { top: 8px; right: 8px; } }
 /* guía de la renta */
 .rg-intro { margin: 0 0 22px; font-size: 16px; line-height: 1.55; color: var(--text-2); max-width: 760px; }
 .rg-intro b { color: var(--text); }
@@ -2854,6 +2855,8 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .nov-aviso-b { flex: none; }
 .nov-aviso-x { width: 30px; height: 30px; flex: none; }
 .nov-aviso-x svg { width: 15px; height: 15px; }
+.mas-t:hover, .ir-objetivos:hover { text-decoration: none; border-color: var(--filo-oro, rgba(237, 187, 69, 0.42)); }
+.hero-vacia { grid-area: rangos; margin: 8px 16px 4px; color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 42ch; }
 @media (max-width: 560px) {
   .nov-aviso { display: grid; grid-template-columns: 30px minmax(0, 1fr) 30px; gap: 8px 10px; }
   .nov-aviso-t b { white-space: normal; }
@@ -5456,9 +5459,9 @@ function htmlBloqueCar(k, M) {
             <div class="hs"><span class="k">${L('Ganado desde que compraste', 'Gained since you bought')}</span>${B('pl')}</div>
           </div>
         </div>
-        <div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}"${r === 'Inicio' ? ` title="${L('Desde tu primera compra', 'Since your first purchase')}"` : ''}>${r === 'Inicio' ? L('Inicio', 'Start') : r}</button>`).join('')}</div>
+        ${!M.filas.length ? `<p class="hero-vacia">${L('La gráfica de tu patrimonio sale en cuanto metas lo que tienes.', 'Your net worth chart shows up as soon as you add what you own.')}</p>` : `<div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}"${r === 'Inicio' ? ` title="${L('Desde tu primera compra', 'Since your first purchase')}"` : ''}>${r === 'Inicio' ? L('Inicio', 'Start') : r}</button>`).join('')}</div>
         ${INTRADIA.has(S.rango) || !S.ref ? '' : `<div class="hero-pie"><button type="button" class="hp-cmp" data-accion="comparar" aria-pressed="${!!S.comparar}"><i aria-hidden="true"></i>${L('Comparar con el S&P 500', 'Compare with the S&P 500')}</button></div>`}
-        <div class="chart gh" id="grafEvo"></div>
+        <div class="chart gh" id="grafEvo"></div>`}
         <div class="movers hero-movers">${B('movers')}</div>
       </div>
       ${((pr) => (pr ? `<div class="hero-bajo">${pr}</div>` : ''))(htmlPreguntasIA(true))}
@@ -5786,6 +5789,8 @@ function htmlPosiciones(M) {
 const DIMS = [['clase', 'Tipo'], ['region', 'Región'], ['sector', 'Sector'], ['plataforma', 'Plataforma'], ['producto', 'Producto'], ['riesgo', 'Riesgo']];
 const GRIS = new Set(['Efectivo', 'Sin datos', 'Otros']);
 function htmlReparto(M) {
+  // con la cartera vacía no hay nada que repartir: una frase en vez de las barras vacías
+  if (!M.filas.length && !(M.liquidez > 0)) return `<section aria-labelledby="hRep"><div class="sec-cab"><h2 id="hRep">Reparto</h2></div><div class="vacio">${L('Cuando metas lo que tienes, aquí verás cómo se reparte: por tipo, región, sector, plataforma y producto.', 'Once you add what you own, you will see here how it splits: by type, region, sector, platform and product.')}</div></section>`;
   const r = reparto(M, S.dim, S.base);
   const conBase = S.dim === 'region' || S.dim === 'sector';
   let slot = 0;
@@ -6863,7 +6868,7 @@ function enlacesFuentes(fs, n = 3) {
 }
 function htmlPrensaIA(x, conEtiqueta = true) {
   if (!x || !x.novedades) return '';
-  return `<div class="prensa-ia"><p class="pi-t">${conEtiqueta ? '<span class="fx-de">Prensa</span>' : ''}${chipImpacto(x.impacto)} ${escIA(x.novedades)}</p>${x.contraste ? `<p class="k">${escIA(x.contraste)}</p>` : ''}${x.vigilar ? `<p class="pi-v"><b>Vigilar.</b> ${escIA(x.vigilar)}</p>` : ''}${x.riesgo ? `<p class="k">Riesgo: ${escIA(x.riesgo)}</p>` : ''}${enlacesFuentes(x.fuentes)}</div>`;
+  return `<div class="prensa-ia"><p class="pi-t">${conEtiqueta ? '<span class="fx-de">Prensa</span>' : ''}${chipImpacto(x.impacto)} ${escIA(x.novedades)}</p>${x.contraste ? `<p class="k">${escIA(x.contraste)}</p>` : ''}${x.vigilar && !/^nada( especial)?\.?$/i.test(String(x.vigilar).trim()) ? `<p class="pi-v"><b>Vigilar.</b> ${escIA(x.vigilar)}</p>` : ''}${x.riesgo ? `<p class="k">Riesgo: ${escIA(x.riesgo)}</p>` : ''}${enlacesFuentes(x.fuentes)}</div>`;
 }
 function cabInforme(inf) {
   return `${haceCuanto(inf.generado)}, tras leer ${inf.noticias_leidas || 'las'} noticias${inf.busqueda_google ? ' y buscar en Google' : ''}`;
@@ -6923,7 +6928,9 @@ function datoIA(t) {
   if (/^-?\d\.\d{3,}$/.test(x)) x = x.replace('.', ',');
   return x;
 }
-const limpiaIA = (t) => sinRumbo(String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, ''));
+/* las fechas sueltas que a veces escribe GrowIA (2026-10-28) se leen como el resto: «28 oct» */
+const fechaIA = (t) => String(t).replace(/\b(20\d\d)-(\d\d)-(\d\d)\b/g, (m, a, me, d) => `${+d} ${MESES[+me - 1] || me}${+a !== new Date().getFullYear() ? ` de ${a}` : ''}`);
+const limpiaIA = (t) => fechaIA(sinRumbo(String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, '')));
 const escIA = (t) => esc(limpiaIA(t));
 const noticiasIdea = (sim) => ((S.precios && S.precios.noticias_ideas) || {})[sim] || [];
 /* ---------- las mejores ideas: la web, Gemini y tu análisis, juntas ----------
@@ -7208,7 +7215,7 @@ function vistaMercados(M) {
   <div class="pila pila-merc">
     ${htmlBuscaMercados()}
     <section class="mgrupos-w" aria-labelledby="hMg">
-      <div class="sec-cab"><h2 id="hMg">Cómo van</h2><span class="k">toca uno para ver qué es y qué significa para ti</span></div>
+      <div class="sec-cab"><h2 id="hMg">Cómo van</h2><span class="k">la línea, sus tres últimos meses; la cifra, lo de hoy. Toca uno para ver qué es y qué significa para ti</span></div>
       <div class="mg-tabs" role="tablist" aria-label="Grupos de mercados">${grupos.map(([g]) => `<button type="button" role="tab" data-mg="${esc(g)}" aria-selected="${g === act}">${esc(MG_CORTO[g] || g)}</button>`).join('')}</div>
       <div class="mgrupos">${grupos.map(([g, v]) => `<section class="mgrupo${g === act ? ' act' : ''}" data-g="${esc(g)}" aria-label="${esc(g)}"><h3 class="mg-t">${esc(g)}</h3><div class="mfilas">${v.map(([sym, m]) => filaMercado(sym, m, M)).join('')}</div></section>`).join('')}</div>
     </section>
@@ -8099,7 +8106,8 @@ function miniSpark(sym) {
   if (h.length < 3) return '<span class="mf-spark"></span>';
   const lo = Math.min(...h), hi = Math.max(...h), W = 64, H = 22;
   const pts = h.map((v, i) => `${((i / (h.length - 1)) * W).toFixed(1)},${(H - 2 - ((v - lo) / (hi - lo || 1)) * (H - 4)).toFixed(1)}`).join(' ');
-  return `<svg class="mf-spark ${h[h.length - 1] >= h[0] ? 'up' : 'down'}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts}"/></svg>`;
+  const ch = (h[h.length - 1] / h[0] - 1) * 100;
+  return `<svg class="mf-spark ${ch >= 0 ? 'up' : 'down'}" viewBox="0 0 ${W} ${H}" role="img" aria-label="${L('Últimos tres meses', 'Last three months')}: ${pctS(ch, 1)}"><title>${L('Últimos tres meses', 'Last three months')}: ${pctS(ch, 1)}</title><polyline points="${pts}"/></svg>`;
 }
 
 let rsT;
@@ -8412,8 +8420,8 @@ function htmlFiscalRecom(M, fa) {
   if (!filas.length) return '';
   const tot = sum(filas.filter((x) => !x.opc), (x) => x.v);
   return `<section style="margin-top:44px" aria-labelledby="hFisR"><div class="sec-cab"><h2 id="hFisR">Lo que cuesta lo que te recomienda GrowFolio</h2><span class="k">con lo que ya llevas en ${anio}</span></div>
-    <div class="tabla-w"><table class="resp"><thead><tr><th>Recomendación</th><th>Qué pasa con Hacienda</th><th class="r">Pagas</th></tr></thead><tbody>
-      ${filas.map((x) => `<tr><td><b style="font-weight:600">${x.q}</b>${x.opc ? '<small>opcional</small>' : ''}</td><td class="txt">${x.d}${x.c ? `<small>${esc(x.c)}</small>` : ''}</td><td class="r ${x.v < 0 ? 'up' : ''}">${x.v ? (x.v < 0 ? `te ahorras ${eur(-x.v, 0)}` : eur(x.v, 0)) : '0 €'}</td></tr>`).join('')}
+    <div class="tabla-w"><table class="resp"><thead><tr><th>Recomendación</th><th>Qué pasa con Hacienda</th><th class="r">Impuesto</th></tr></thead><tbody>
+      ${filas.map((x) => `<tr><td><b style="font-weight:600">${x.q}</b>${x.opc ? '<small>opcional</small>' : ''}</td><td class="txt">${x.d}${x.c ? `<small>${esc(x.c)}</small>` : ''}</td><td class="r ${x.v < 0 ? 'up' : ''}">${x.v ? (x.v < 0 ? `${eur(-x.v, 0)} ${L('menos', 'less')}<small>${L('te lo ahorras', 'you save it')}</small>` : eur(x.v, 0)) : '0\u00a0€'}</td></tr>`).join('')}
     </tbody></table></div>
     <p class="nota">Con todo lo que recomienda hacer ya, la renta de ${anio} sube unos ${eur(tot, 0)}${filas.some((x) => x.opc) ? '; con lo opcional, menos' : ''}. Cada cifra sale de tu tramo del ahorro (${fmtNum(fa.marginal * 100, 0)} % ahora) y de lo que ya llevas declarado este año.</p></section>`;
 }
@@ -8567,7 +8575,7 @@ function htmlFiscalGuia(M, fa, x) {
   ].filter(Boolean);
   return `
     <section style="margin-top:44px" aria-labelledby="hTram"><div class="sec-cab"><h2 id="hTram">Cuánto pagas: los tramos del ahorro</h2><span class="k">ganancias de ventas, dividendos e intereses de ${anio}</span></div>
-      <div class="tramos2${nT > 6 ? ' muchos' : ''}">${tramos.map((t, i) => `<div class="tr2${t.tuyo ? ' tuyo' : ''}" style="--h:${(32 + (i * 68) / Math.max(1, nT - 1)).toFixed(0)}%"><i></i><b>${t.t} %</b><small>${t.hasta === Infinity ? `más de ${fmtNum(t.desde, 0)} €` : t.desde ? `${fmtNum(t.desde, 0)} a ${fmtNum(t.hasta, 0)} €` : `hasta ${fmtNum(t.hasta, 0)} €`}</small>${t.tuyo ? '<span>tú</span>' : ''}</div>`).join('')}</div>
+      <div class="tramos2${nT > 6 ? ' muchos' : ''}">${tramos.map((t, i) => `<div class="tr2${t.tuyo ? ' tuyo' : ''}" style="--h:${(32 + (i * 68) / Math.max(1, nT - 1)).toFixed(0)}%"><i></i><b>${t.t} %</b><small>${t.hasta === Infinity ? `más de ${fmtNum(t.desde, 0)}\u00a0€` : t.desde ? `${fmtNum(t.desde, 0)} a ${fmtNum(t.hasta, 0)}\u00a0€` : `hasta ${fmtNum(t.hasta, 0)}\u00a0€`}</small>${t.tuyo ? '<span>tú</span>' : ''}</div>`).join('')}</div>
       <p class="nota">${TRAMOS_FORAL[comunidadUsuario()] ? `<span data-no-trad>${L(`Es la escala foral de ${esc(nombreComunidad(comunidadUsuario()))}, distinta de la del resto de España.`, `This is the foral scale of ${esc(conArticulo(comunidadUsuario()))}, different from the rest of Spain.`)}</span> ` : ''}Cada tramo paga solo lo que cae dentro de él. Tu base del ahorro de ${anio} va por ${eur(fa.base, 0)}: ${eur(fa.cuota, 0)} de cuota. Las pérdidas de ventas se compensan con las ganancias del año y, si sobran, con hasta un 25 % de los dividendos e intereses; lo que quede, en los 4 años siguientes.</p>
     </section>
     ${htmlFiscalComunidad()}
@@ -9602,6 +9610,8 @@ function grafAbanico(cont, pr, meses, opt = {}) {
   const W = Math.max(260, cont.clientWidth || 600), H = opt.alto || 320;
   const ml = 4, mr = 62, mt = 12, mb = 26;
   const hi = Math.max(...pr.p90.slice(0, n)) * 1.04, lo = 0;
+  // sin dinero ni aportaciones no hay nada que proyectar (y la escala saldría de 0 a 0)
+  if (!(hi > 0)) { cont.innerHTML = `<div class="vacio">${L('Pon cuánto aportas al mes, o mete lo que ya tienes, y aquí verás cuánto podrías tener.', 'Enter how much you contribute each month, or add what you already own, and you will see here how much you could have.')}</div>`; return; }
   const x = (i) => ml + (i / (n - 1)) * (W - ml - mr);
   const y = (v) => mt + (1 - (v - lo) / (hi - lo)) * (H - mt - mb);
   const lin = (arr) => arr.slice(0, n).map((v, i) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ');
@@ -9869,7 +9879,7 @@ function fichaExpertos(f) {
   }
   const t = p.tecnico || {};
   return `<div class="vacio">No hay analistas para ${esc(i.corto)}: no es una empresa. Lo que más pesa es la tendencia y la volatilidad.</div>
-    <div class="bloque"><h3>Tendencia</h3>${kv([
+    <div class="bloque"><h3>Cómo va el precio</h3>${kv([
       t.tendencia && ['Tendencia', esc(t.tendencia)],
       t.vs_media200 != null && ['Frente a su media de 200 sesiones', `<span class="${cls(t.vs_media200)}">${pctS(t.vs_media200, 1)}</span>`],
       t.dist_max52 != null && ['Desde su máximo del año', `<span class="${cls(t.dist_max52)}">${pctS(t.dist_max52, 1)}</span>`],
@@ -9889,7 +9899,7 @@ function fichaDatos(f) {
       t.dist_max52 != null && ['Desde su máximo del año', `<span class="${cls(t.dist_max52)}">${pctS(t.dist_max52, 1)}</span>`],
       t.caida_max_1a != null && ['Peor caída del año', `<span class="down">${pct(t.caida_max_1a, 1)}</span>`],
       p.volatilidad && ['Cuánto se mueve (volatilidad del último año)', pct(p.volatilidad, 1)],
-      p.riesgo && ['Riesgo, de 1 a 7 (7 es lo más arriesgado)', `${p.riesgo}, ${RIESGO_TXT[p.riesgo].toLowerCase()}`],
+      p.riesgo && ['Riesgo (de 1 a 7)', `${p.riesgo}, ${RIESGO_TXT[p.riesgo].toLowerCase()}`],
     ])}${t.media50 || t.media200 || t.rsi != null ? `<details class="paso-mas"><summary>Para curiosos: medias y RSI</summary>${kv([
       t.media50 && ['Media de 50 sesiones', precioFmt(t.media50)],
       t.media200 && ['Media de 200 sesiones', precioFmt(t.media200)],
@@ -12680,7 +12690,7 @@ async function abrirOpinion() {
    Tour: la primera vez (y desde Ajustes) enseña cada pestaña, resaltando dónde está.
    ===================================================================== */
 const TOUR = [
-  { v: 'cartera', sel: '.navbar, .nav', logo: true, ola: true, t: 'Bienvenido a GrowFolio', x: () => (innerWidth < 760 ? 'Todo está en estos cinco botones: Inicio en el centro, a la izquierda lo que haces tú y a la derecha lo de fuera. Te enseño cada uno en un minuto.' : 'Todo está en estas cinco pestañas. Te enseño cada una en un minuto y, al final, qué hacer hoy para empezar.') },
+  { v: 'cartera', sel: '.navbar, .nav', logo: true, ola: true, t: 'Te damos la bienvenida', x: () => (innerWidth < 760 ? 'Todo está en estos cinco botones: Inicio en el centro, a la izquierda lo que haces tú y a la derecha lo de fuera. Te enseño cada uno en un minuto.' : 'Todo está en estas cinco pestañas. Te enseño cada una en un minuto y, al final, qué hacer hoy para empezar.') },
   { v: 'cartera', sel: '.hero-cifra', t: 'Inicio: lo que tienes', x: 'Todo sumado, con lo que ganas o pierdes hoy. Desliza el dedo por la gráfica para ver cualquier día. El ojo oculta las cifras.' },
   { v: 'cartera', pos: true, sel: '#hPos ~ .der', t: 'Tus posiciones, justo debajo', x: 'Toca una para ver su ficha; debajo del valor, lo ganado desde que la compraste. El «+» es para lo que ya tenías antes de GrowFolio y las flechas, para cada compra o venta desde hoy. A su lado eliges el orden.' },
   { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', suave: true, t: 'Pasos: qué hacer este mes', x: 'En orden y con lo urgente arriba: qué, cuánto y por qué. Lo haces y lo marcas. Si no toca nada, también te lo dice.' },
@@ -12695,7 +12705,7 @@ const hayClaveIA = () => !!((AS.claves && AS.claves.google) || LS.get(LS_CLAVE.g
 function itemsEmpezar() {
   return [
     { k: 'perfil', ok: !perfilIncompleto(), t: 'Cuéntale quién eres', x: 'Tu edad, tus metas y cuánto riesgo aguantas. Es un minuto.', b: 'Contestar' },
-    { k: 'tengo', ok: ((S.cartera && S.cartera.posiciones) || []).length > 0, t: 'Mete lo que tienes', x: `Buscando por nombre o ISIN, o <button type="button" class="enlace" data-emp="importar">${esc(trad('desde capturas o un extracto de tu bróker'))}</button>.`, b: 'Añadir' },
+    { k: 'tengo', ok: ((S.cartera && S.cartera.posiciones) || []).length > 0, t: 'Mete lo que tienes', x: `Buscando por nombre o ISIN, o <button type="button" class="enlace" data-emp="importar">${esc(trad('desde capturas o un extracto de tu bróker'))}</button>`, b: 'Añadir' },
     { k: 'clave', ok: hayClaveIA(), t: 'Activa GrowIA', x: 'Con una clave gratuita de Google, que pones una vez. Al abrirlo te dice cómo sacarla.', b: 'Activar' },
   ];
 }

@@ -322,9 +322,13 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   noticia concreta del activo o un movimiento grande. No dramatices.
 - Nombra lo que tiene de verdad: sus posiciones son las de los datos (fondos del S&P 500, del mundo, de
   Europa, acciones sueltas...). No le atribuyas "tus tecnológicas" ni nada que no tenga.
-- Nada de soportes, resistencias ni niveles técnicos inventados en "vigilar": una fecha (resultados, BCE,
-  Fed, dividendo) o un precio que salga en las noticias. Si no hay nada concreto, "nada especial".
+- Nada de soportes, resistencias ni niveles técnicos inventados en "vigilar": qué y cuándo, en palabras
+  ("resultados del 29 de octubre", "la Fed, el 28 de octubre") o un precio que salga en las noticias. Nunca
+  una fecha suelta como 2026-10-28. Si no hay nada concreto, "nada especial".
+- No pongas la fecha de hoy en los textos ("este 21 de octubre de 2026"): ya se sabe que es de hoy.
 - Los datos de cada zona y de cada posición son los de hoy: si una noticia dice otra cifra (más vieja), manda la de los datos.
+- "impacto" y el texto dicen lo mismo: si el texto empieza por "malo para…", el impacto es negativo; si es "bueno para…",
+  positivo; si hay de las dos cosas, mixto. Nunca un impacto positivo con un texto que empieza por "malo".
 Responde solo con un bloque ```json con este formato:
 {
   "resumen": "dos frases cortas como mucho: lo que más afecta hoy a esta cartera y por qué",
