@@ -500,25 +500,26 @@ final class Lienzo {
     /**
      * cómo se elige el plazo de la curva, arriba: 2, los cinco a la vista (24 h, 1S, 1M, 3M, 1A) y se toca el que
      * quieras; 1, si el widget es estrecho, una pastilla que pasa al siguiente; 0, sin elegir (una fila o muy pequeño).
-     * Las zonas que se tocan están en widget_lienzo.xml: si cambias SEL_X o SEL_CHIP, cámbialas allí también.
+     * Van arriba a la derecha, junto a refrescar. Las zonas que se tocan están en widget_lienzo.xml (ancladas a la
+     * derecha): si cambias SEL_FIN, SEL_CHIP o el número de plazos, cámbialas allí también.
      */
     static int modoPlazo(float W, float H, Datos.Resultado r) {
         if (!r.hay || H < 110) return 0;
         return W >= 300 ? 2 : W >= 240 ? 1 : 0;
     }
 
-    static final float SEL_X = 16, SEL_CHIP = 36, SEL_ALTO = 22;
+    static final float SEL_FIN = 38, SEL_CHIP = 34, SEL_ALTO = 22;   // SEL_FIN: del final de los plazos al borde derecho
 
     /** los plazos en una cápsula: el elegido, en dorado sobre su pastilla; los demás, apagados */
-    private void selector(int elegido, float yTop) {
+    private void selector(int elegido, float x0, float yTop) {
         int n = Datos.PERIODOS.length;
         float w = SEL_CHIP * n;
         p.reset();
         p.setAntiAlias(true);
         p.setStyle(Paint.Style.FILL);
         p.setColor(alfa(TEXTO, 0x0F));
-        c.drawRoundRect(new RectF(dp(SEL_X), dp(yTop), dp(SEL_X + w), dp(yTop + SEL_ALTO)), dp(SEL_ALTO / 2), dp(SEL_ALTO / 2), p);
-        float xs = SEL_X + SEL_CHIP * elegido;
+        c.drawRoundRect(new RectF(dp(x0), dp(yTop), dp(x0 + w), dp(yTop + SEL_ALTO)), dp(SEL_ALTO / 2), dp(SEL_ALTO / 2), p);
+        float xs = x0 + SEL_CHIP * elegido;
         RectF on = new RectF(dp(xs + 2), dp(yTop + 2), dp(xs + SEL_CHIP - 2), dp(yTop + SEL_ALTO - 2));
         p.setColor(alfa(ACENTO, 0x2E));
         c.drawRoundRect(on, dp(SEL_ALTO / 2 - 2), dp(SEL_ALTO / 2 - 2), p);
@@ -529,7 +530,7 @@ final class Lienzo {
         for (int k = 0; k < n; k++) {
             boolean es = k == elegido;
             estilo(11, es ? 750 : 600, es ? ACENTO : APAGADO, Paint.Align.CENTER);
-            c.drawText(Datos.CORTOS[k], dp(SEL_X + SEL_CHIP * k + SEL_CHIP / 2), dp(yTop + SEL_ALTO / 2 + 3.9f), p);
+            c.drawText(Datos.CORTOS[k], dp(x0 + SEL_CHIP * k + SEL_CHIP / 2), dp(yTop + SEL_ALTO / 2 + 3.9f), p);
         }
     }
 
@@ -553,7 +554,8 @@ final class Lienzo {
         if (conEur) texto(x - 5 - wEur, base, eur, 13, 700, col, false);
     }
 
-    private void periodo(float xDer, float base, String txt) {
+    /** la pastilla del plazo de los widgets estrechos, acabando en xDer; devuelve su ancho */
+    private float periodo(float xDer, float base, String txt) {
         float tw = ancho(txt, 11.5f, 600), w = 10 + tw + 5 + 7 + 9, alto = 22, yTop = base - 15;
         float x = xDer - w;
         p.reset();
@@ -574,6 +576,7 @@ final class Lienzo {
         p.setStrokeJoin(Paint.Join.ROUND);
         p.setColor(APAGADO);
         c.drawPath(f, p);
+        return w;
     }
 
     private void refresco(float cx, float cy, float r) {
@@ -610,7 +613,7 @@ final class Lienzo {
             return;
         }
         boolean hayGraf = r.serie != null && r.serie.length > 1;
-        String diaEur = r.oculto ? Datos.pct(r.diaPct) : Datos.eur(r.dia, true);
+        String diaEur = r.oculto ? Datos.pct(r.diaPct) : Datos.eurDia(r.dia);
         String diaPct = r.oculto ? "" : Datos.pct(r.diaPct);
 
         if (H < 110) {   // una fila: la cifra y hoy a la izquierda; la curva, a la derecha hasta el borde
@@ -625,14 +628,22 @@ final class Lienzo {
             return;
         }
 
-        // cabecera: los plazos de la curva (o «Patrimonio» si no caben), la hora de los precios y refrescar
+        // cabecera: a la derecha, los plazos de la curva junto a refrescar; a la izquierda, «Patrimonio» y la hora de
+        // los precios (lo que quepa)
         float y = pv + 11;
         int modo = modoPlazo(W, H, r);
-        if (modo == 2) selector(Datos.indicePeriodo(r.dias), y - 15);
-        else texto(ph, y, "Patrimonio", 12, 600, APAGADO, false);
         refresco(W - ph - 6, y - 4.2f, 6.2f);
-        texto(W - ph - 19, y, r.horaTxt, 11.5f, 500, APAGADO, true);
-        if (modo == 1) periodo(W - ph - 19 - ancho(r.horaTxt, 11.5f, 500) - 10, y, r.rango);
+        float finIzq = W - ph - 26;
+        if (modo == 2) {
+            float x0 = W - SEL_FIN - SEL_CHIP * Datos.PERIODOS.length;
+            selector(Datos.indicePeriodo(r.dias), x0, y - 15);
+            finIzq = x0 - 10;
+        } else if (modo == 1) finIzq = W - SEL_FIN - periodo(W - SEL_FIN, y, r.rango) - 10;
+        float wPat = ancho("Patrimonio", 12, 600), wHora = ancho(r.horaTxt, 11.5f, 500);
+        if (ph + wPat + 7 + wHora <= finIzq) {
+            texto(ph, y, "Patrimonio", 12, 600, APAGADO, false);
+            texto(ph + wPat + 7, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
+        } else if (ph + wHora <= finIzq) texto(ph, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
 
         // la cifra grande y gruesa
         float maxSp = Math.max(26, Math.min(42, Math.min(H * 0.2f, W * 0.115f)));
@@ -641,7 +652,8 @@ final class Lienzo {
 
         // lo de hoy en su pastilla y «hoy» al lado: es la única cifra que cambia (nada de «en total» ni del mes)
         float yp = yb + 9;
-        float wP = pildora(ph, yp, 24, diaEur, diaPct, color(r.dia), r.dia >= 0);
+        int colHoy = r.dia > 0.005 ? SUBE : r.dia < -0.005 ? BAJA : TEXTO2;
+        float wP = pildora(ph, yp, 24, diaEur, diaPct, colHoy, r.dia >= 0);
         float finHoy = ph + wP;
         if (ancho("hoy", 12.5f, 500) <= util - wP - 8) {
             texto(ph + wP + 9, yp + 16.5f, "hoy", 12.5f, 500, APAGADO, false);

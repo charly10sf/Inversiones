@@ -29,14 +29,15 @@
             android:scaleType="fitXY" />
     </ViewFlipper>
 
-    <!-- los plazos de la curva, encima de los que dibuja Lienzo.selector (empiezan a 16 dp y cada uno mide 36):
-         24 horas, 1 semana, 1 mes, 3 meses y 1 año. Al tocarlos se ilumina la pastilla y cambia la curva -->
+    <!-- los plazos de la curva, encima de los que dibuja Lienzo.selector (arriba a la derecha, acaban a 38 dp del borde,
+         junto a refrescar, y cada uno mide 34): 24 horas, 1 semana, 1 mes, 3 meses y 1 año. Al tocarlos se ilumina la
+         pastilla y cambia la curva -->
     <LinearLayout
         android:id="@+id/plazos"
-        android:layout_width="180dp"
+        android:layout_width="170dp"
         android:layout_height="44dp"
-        android:layout_gravity="top|start"
-        android:layout_marginStart="16dp"
+        android:layout_gravity="top|end"
+        android:layout_marginEnd="38dp"
         android:orientation="horizontal"
         android:visibility="gone">
 
@@ -84,17 +85,17 @@
     <!-- en los widgets estrechos, una sola pastilla con el plazo: al tocarla pasa al siguiente -->
     <FrameLayout
         android:id="@+id/periodo"
-        android:layout_width="96dp"
+        android:layout_width="84dp"
         android:layout_height="44dp"
         android:layout_gravity="top|end"
-        android:layout_marginEnd="52dp"
+        android:layout_marginEnd="38dp"
         android:contentDescription="Cambiar el plazo de la gráfica"
         android:visibility="gone" />
 
     <!-- zona invisible encima del icono de refrescar -->
     <FrameLayout
         android:id="@+id/refrescar"
-        android:layout_width="56dp"
+        android:layout_width="38dp"
         android:layout_height="44dp"
         android:layout_gravity="top|end"
         android:contentDescription="Refrescar" />

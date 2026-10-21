@@ -410,6 +410,13 @@ final class Datos {
         return s + t + " €";
     }
 
+    /** lo de hoy: con céntimos si es menos de 10 € (así «−0,31 €» no se lee como un «0 €» de algo roto) */
+    static String eurDia(double v) {
+        if (Math.abs(v) >= 9.995) return eur(v, true);
+        String t = formato("0.00").format(Math.abs(v));
+        return (v <= -0.005 ? "−" : v >= 0.005 ? "+" : "") + t + " €";
+    }
+
     static String pct(double v) {
         String t = formato(Math.abs(v) < 10 ? "0.00" : "0.0").format(Math.abs(v));
         return (v < -0.0049 ? "−" : v > 0.0049 ? "+" : "") + t + " %";
