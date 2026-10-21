@@ -265,6 +265,9 @@ a:hover { text-decoration: underline; }
 .sec-cab .der { margin-left: auto; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
 /* Plan y movimientos: cada aportación, compra o posición en una fila de dos líneas (qué y dónde a la izquierda,
    el importe a la derecha y un botón pequeño para editar) */
+.bk-enlaces { display: grid; gap: 8px; padding: 12px 14px; border-radius: 12px; background: var(--plane-2); border: 1px solid var(--line-2); color: var(--text-2); font-size: 13.5px; line-height: 1.5; text-align: left; }
+.bk-enlaces > b { color: var(--text); font-size: 14.5px; }
+.bk-enlaces .fila-btns { margin: 4px 0 0; justify-content: flex-start; }
 .banco-vuelta { min-height: 100vh; min-height: 100dvh; display: grid; place-content: center; justify-items: center; gap: 16px; padding: 24px; text-align: center; }
 .banco-vuelta h1 { margin: 6px 0 0; font-size: 28px; letter-spacing: -0.03em; }
 .banco-vuelta p { margin: 0; max-width: 340px; color: var(--text-2); line-height: 1.5; }
@@ -4985,7 +4988,12 @@ function pintar() {
   const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
   setTimeout(() => plegarNotas($('#vista')), 0);
   $('#vista').innerHTML = htmlSubvistas() + html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntaselo a quien te pasó GrowFolio.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance, a través de una GitHub Action.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú.</p>`;
-  if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
+  if (S.scrollA != null) {
+    // volviendo atrás: al punto exacto en el que la dejaste (y otra vez en cuanto se haya pintado todo)
+    const y = S.scrollA; S.scrollA = null; S.scrollTop = false;
+    window.scrollTo(0, y); requestAnimationFrame(() => window.scrollTo(0, y));
+    setTimeout(() => { if (Math.abs(window.scrollY - y) > 40 && window.scrollY < y) window.scrollTo(0, y); }, 300);
+  } else if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if (S.vista === 'cartera') pedirEncajarMovers();
   // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada
   if (S.vista === 'agenda' && S.agIr) {
@@ -10374,6 +10382,16 @@ async function conectarBanco(plataforma) {
     // la app de Android de antes abría el banco en el navegador y la vuelta no llegaba a la app
     const app = window.InversionesApp, dentro = (() => { try { return !!app.bancoDentro(); } catch (e2) { return false; } })();
     if (app && !dentro) { err.textContent = L('Para conectar el banco desde el móvil, actualiza antes la app de GrowFolio (en Ajustes) o hazlo desde el ordenador.', 'To connect your bank from your phone, update the GrowFolio app first (in Settings) or do it from a computer.'); return; }
+    // la app del banco (Trade Republic…) devuelve con un enlace de Enable Banking: si GrowFolio no puede abrirlo, se
+    // abre en el navegador y allí sale «ha caducado». Se pide permitirlo una vez, con el ajuste a un toque
+    const listos = (() => { try { return app ? !!app.enlacesBancoListos() : true; } catch (e2) { return true; } })();
+    if (app && !listos && !b.dataset.sinEnlaces) {
+      err.innerHTML = `<div class="bk-enlaces"><b>${L('Un paso, solo una vez', 'One step, just once')}</b><span>${L('Para que tu banco te devuelva a GrowFolio al dar el permiso, deja que GrowFolio abra los enlaces de Enable Banking: en la pantalla que se abre, «Añadir enlace» y marca <b>auth.enablebanking.com</b> (y tilisy, si sale).', 'So your bank can bring you back to GrowFolio after granting access, let GrowFolio open Enable Banking links: on the screen that opens, «Add link» and tick <b>auth.enablebanking.com</b> (and tilisy, if listed).')}</span>
+        <div class="fila-btns"><button type="button" class="btn peq pri" data-bk-ajuste>${L('Abrir el ajuste', 'Open the setting')}</button><button type="button" class="btn peq" data-bk-seguir>${L('Ya está, seguir', 'Done, continue')}</button></div></div>`;
+      $('[data-bk-ajuste]', err).onclick = () => { try { app.abrirAjustesEnlaces(); } catch (e2) {} };
+      $('[data-bk-seguir]', err).onclick = () => { b.dataset.sinEnlaces = '1'; b.click(); };
+      return;
+    }
     // Trade Republic, en el navegador de un móvil, solo dice «descarga la app» y desde ahí no se puede dar el permiso
     if (!app && /android|iphone|ipad/i.test(navigator.userAgent) && /trade\s*republic/i.test(b.dataset.bk) && !b.dataset.igual) {
       err.innerHTML = L('Trade Republic, en el navegador del móvil, solo te manda a descargar su app y el permiso no llega. Hazlo desde la app de GrowFolio o desde el ordenador.', 'On a phone browser Trade Republic only asks you to download its app, and the permission never arrives. Do it from the GrowFolio app or from a computer.') + ` <button type="button" class="enlace" data-bk-igual>${L('Probar aquí igualmente', 'Try here anyway')}</button>`;
@@ -14953,10 +14971,23 @@ window.addEventListener('hashchange', () => {
   const v = vistaDeHash(); if (!v || !S.cartera) return;
   if (S.ficha) cerrarFicha(true);
   if (v !== S.vista || /^(renta|impuestos|objetivos|proyeccion|plan)$/.test(location.hash.slice(1))) {
-    S.vista = v; S.scrollTop = true; LS.set('inv-vista', v); pintar();
+    const k = history.state && history.state.k, y = k ? SCROLLS[k] : null;
+    S.vista = v; S.scrollTop = !(y > 0); S.scrollA = y > 0 ? y : null; LS.set('inv-vista', v); pintar();
     const vi = $('#vista'); if (vi) { vi.classList.remove('entra'); void vi.offsetWidth; vi.classList.add('entra'); }
   }
 });
+/* «Atrás» vuelve al punto exacto de cada pestaña: cada entrada del historial lleva su clave y se apunta hasta dónde
+   has bajado en ella; al volver a esa entrada, se recupera (ir a una pestaña nueva sigue empezando arriba) */
+const SCROLLS = {};
+try { history.scrollRestoration = 'manual'; } catch (e) {}
+function claveEntrada() {
+  let st = history.state;
+  if (st && st.k) return st.k;
+  st = { ...(st && typeof st === 'object' ? st : {}), k: Math.random().toString(36).slice(2, 10) };
+  try { history.replaceState(st, ''); } catch (e) { return null; }
+  return st.k;
+}
+addEventListener('scroll', () => { if (!S.cartera || document.querySelector('#fichaFondo, .hoja-fondo, #asesorFondo')) return; const k = claveEntrada(); if (k) SCROLLS[k] = window.scrollY; }, { passive: true });
 /* la cabecera gana una sombra fina en cuanto bajas */
 addEventListener('scroll', () => { const t = document.querySelector('.top'); if (t) t.classList.toggle('bajado', scrollY > 8); }, { passive: true });
 /* la cinta se para al tocarla en el móvil y sigue al volver a tocar */

@@ -34,6 +34,16 @@
                 <!-- la vuelta de dar permiso al banco, cuando el banco la abre en el navegador -->
                 <data android:scheme="inversiones" android:host="banco" />
             </intent-filter>
+            <!-- la vuelta de la app del banco (Trade Republic y otras): su enlace de Enable Banking se abre aquí, donde está
+                 la sesión del permiso. Android pide permitirlo una vez en «Abrir de forma predeterminada» -->
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" />
+                <data android:host="auth.enablebanking.com" />
+                <data android:host="tilisy.enablebanking.com" />
+            </intent-filter>
         </activity>
 
         <provider

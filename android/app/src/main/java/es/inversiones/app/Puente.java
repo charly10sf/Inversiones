@@ -55,6 +55,17 @@ public class Puente {
         return true;
     }
 
+    /** si la app del banco podrá devolverte aquí (GrowFolio abre los enlaces de Enable Banking) */
+    @JavascriptInterface
+    public boolean enlacesBancoListos() {
+        return act.enlacesBancoListos();
+    }
+
+    @JavascriptInterface
+    public void abrirAjustesEnlaces() {
+        act.runOnUiThread(() -> act.abrirAjustesEnlaces());
+    }
+
     @JavascriptInterface
     public void toque() {
         act.runOnUiThread(() -> act.getWindow().getDecorView().performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP));

@@ -37,6 +37,7 @@ public class Principal extends Activity {
     private View video;
     private WebChromeClient.CustomViewCallback cerrarVideo;
     private boolean enBanco;      // dando permiso al banco dentro de la app
+    private boolean traspaso;     // se le ha pasado el permiso a la app del banco
     private String agenteMovil;   // el user agent de siempre, para volver a él al acabar
 
     @Override
@@ -165,10 +166,25 @@ public class Principal extends Activity {
         return t;
     }
 
+    /**
+     * La app del banco, al dar el permiso, abre el enlace de vuelta de Enable Banking. Si GrowFolio puede abrir esos
+     * enlaces (Android lo pregunta una vez), llega aquí y se termina en esta misma página, que es la que tiene la
+     * sesión: en el navegador salía «ha caducado» porque allí no la tenía.
+     */
+    private static String enlaceEnableBanking(Intent i) {
+        Uri d = i == null ? null : i.getData();
+        return d != null && "https".equals(d.getScheme()) && esDeEnableBanking(d) ? d.toString() : null;
+    }
+
     /** El widget abre la app en una sección concreta (#ruta, #cartera...); la vuelta del banco, con su código */
     private String direccion(Intent i) {
         String banco = vueltaBanco(i);
         if (banco != null) return banco;
+        String eb = enlaceEnableBanking(i);
+        if (eb != null) {
+            entrarAlBanco();
+            return eb;
+        }
         String h = i != null ? i.getStringExtra("hash") : null;
         return h != null && !h.isEmpty() ? WEB + "#" + h : WEB;
     }
@@ -179,8 +195,16 @@ public class Principal extends Activity {
         setIntent(i);
         String banco = vueltaBanco(i);
         if (banco != null) {
+            traspaso = false;
             if (enBanco) salirDelBanco();
             web.loadUrl(banco);
+            return;
+        }
+        String eb = enlaceEnableBanking(i);
+        if (eb != null) {
+            traspaso = false;   // ha vuelto con la respuesta: que onResume no saque de la página del banco
+            if (!enBanco) entrarAlBanco();
+            web.loadUrl(eb);
             return;
         }
         String t = token(i);
@@ -195,6 +219,32 @@ public class Principal extends Activity {
 
     private static boolean esDeLaWeb(Uri u) {
         return "charly10sf.github.io".equalsIgnoreCase(u.getHost()) && u.getPath() != null && u.getPath().toLowerCase().startsWith("/inversiones");
+    }
+
+    /** Android 12 o más: si el usuario ha dejado que GrowFolio abra los enlaces de Enable Banking («Abrir de forma predeterminada») */
+    boolean enlacesBancoListos() {
+        if (android.os.Build.VERSION.SDK_INT < 31) return true;   // antes de Android 12 pregunta con qué abrirlos
+        try {
+            android.content.pm.verify.domain.DomainVerificationManager m = getSystemService(android.content.pm.verify.domain.DomainVerificationManager.class);
+            android.content.pm.verify.domain.DomainVerificationUserState e = m.getDomainVerificationUserState(getPackageName());
+            if (e == null) return false;
+            for (java.util.Map.Entry<String, Integer> x : e.getHostToStateMap().entrySet())
+                if (x.getKey().endsWith("enablebanking.com") && x.getValue() != android.content.pm.verify.domain.DomainVerificationUserState.DOMAIN_STATE_NONE) return true;
+            return false;
+        } catch (Exception ex) {
+            return false;
+        }
+    }
+
+    void abrirAjustesEnlaces() {
+        try {
+            Intent i = android.os.Build.VERSION.SDK_INT >= 31
+                    ? new Intent(Settings.ACTION_APP_OPEN_BY_DEFAULT_SETTINGS, Uri.parse("package:" + getPackageName()))
+                    : new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName()));
+            startActivity(i);
+        } catch (Exception e) {
+            startActivity(new Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS, Uri.parse("package:" + getPackageName())));
+        }
     }
 
     private static boolean esDeEnableBanking(Uri u) {
@@ -237,6 +287,7 @@ public class Principal extends Activity {
             Intent i = new Intent(Intent.ACTION_VIEW, u).addCategory(Intent.CATEGORY_BROWSABLE)
                     .addFlags(Intent.FLAG_ACTIVITY_REQUIRE_NON_BROWSER | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(i);
+            traspaso = true;
             Toast.makeText(this, "Da el permiso en la app de tu banco: al acabar vuelves aquí", Toast.LENGTH_LONG).show();
             return true;
         } catch (Exception e) {
@@ -398,6 +449,10 @@ public class Principal extends Activity {
     @Override
     public void onBackPressed() {
         if (video != null) salirVideo();
+        else if (enBanco) {   // a medio permiso del banco, atrás vuelve a GrowFolio (nunca sale de la app)
+            salirDelBanco();
+            web.loadUrl(WEB + "#cartera");
+        }
         else if (web.canGoBack()) web.goBack();
         else super.onBackPressed();
     }
@@ -421,5 +476,15 @@ public class Principal extends Activity {
     protected void onResume() {
         super.onResume();
         web.onResume();
+        // de vuelta de la app del banco sin su respuesta (si llega, entra antes por onNewIntent y ya no estamos en el
+        // banco): fuera de la página de Enable Banking, que se quedaba cargando, y a tu cartera con un aviso
+        if (traspaso) {
+            traspaso = false;
+            if (enBanco) {
+                salirDelBanco();
+                web.loadUrl(WEB + "#cartera");
+                Toast.makeText(this, "Tu banco no ha devuelto la respuesta. Si ya diste el permiso, espera un momento: llegará sola; si no, prueba otra vez desde Efectivo.", Toast.LENGTH_LONG).show();
+            }
+        }
     }
 }
