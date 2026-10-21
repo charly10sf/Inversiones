@@ -269,6 +269,12 @@ a:hover { text-decoration: underline; }
 .banco-vuelta h1 { margin: 6px 0 0; font-size: 28px; letter-spacing: -0.03em; }
 .banco-vuelta p { margin: 0; max-width: 340px; color: var(--text-2); line-height: 1.5; }
 .banco-vuelta .btn { min-height: 50px; padding: 0 28px; display: inline-flex; align-items: center; text-decoration: none; }
+.ruta-espera { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); }
+.ruta-espera .re-ico { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.ruta-espera .re-ico svg { width: 17px; height: 17px; }
+.ruta-espera .re-de { display: block; color: var(--accent); font-size: 12.5px; font-weight: 600; margin-bottom: 2px; }
+.ruta-espera > div > b { display: block; font-size: 16px; font-weight: 650; line-height: 1.3; }
+.ruta-espera p { margin: 5px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
 .plan-sub { margin: -8px 0 10px; color: var(--text-2); font-size: 13.5px; }
 .plan-l { list-style: none; margin: 0; padding: 0; }
 .plan-l li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; column-gap: 12px; padding: 10px 0; border-top: 1px solid var(--line); }
@@ -765,20 +771,30 @@ a.kpi:hover .v { color: var(--accent); }
 @media (max-width: 760px) { .ficha { border-left: 0; animation-name: subeFicha; } }
 @keyframes subeFicha { from { transform: translateY(24px); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .ficha { animation: none; } }
-.ficha-cab { position: sticky; top: 0; z-index: 2; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: calc(14px + env(safe-area-inset-top)) 24px 0; border-bottom: 1px solid var(--line); }
-.ficha-tit { display: flex; gap: 12px; align-items: flex-start; }
-.ficha-tit h2 { margin: 0; font-size: 24px; font-weight: 650; letter-spacing: -0.02em; }
-.ficha-tit small { display: block; color: var(--muted); font-size: 13px; margin-top: 2px; }
-.ficha-tit .ib { margin-left: auto; margin-top: -4px; flex: none; }
-.ficha-precio { display: flex; gap: 8px 18px; align-items: baseline; flex-wrap: wrap; margin: 12px 0 10px; }
-.ficha-precio .p { font-size: 34px; font-weight: 200; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.ficha-cab { position: sticky; top: 0; z-index: 3; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); padding: calc(10px + env(safe-area-inset-top)) 24px 10px; }
+.ficha-tit { display: flex; gap: 12px; align-items: center; }
+.ficha-tit .ft-n { min-width: 0; flex: 1; }
+.ficha-tit h2 { margin: 0; font-size: 20px; font-weight: 650; letter-spacing: -0.02em; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ficha-tit small { display: flex; align-items: center; gap: 6px; color: var(--muted); font-size: 12.5px; margin-top: 2px; white-space: nowrap; overflow: hidden; }
+.ficha-tit small > span + span::before { content: '·'; margin-right: 6px; }
+.ficha-tit small > span:last-child { overflow: hidden; text-overflow: ellipsis; }
+.ficha-tit .ib { flex: none; margin-right: -8px; }
+/* el precio pequeño de la barra: sale cuando el grande se ha ido hacia arriba */
+.ficha-mini { display: grid; justify-items: end; gap: 1px; flex: none; text-align: right; font-variant-numeric: tabular-nums; opacity: 0; transform: translateY(4px); transition: opacity 0.2s ease, transform 0.2s ease; pointer-events: none; }
+.ficha-mini [data-b^="pp:"] { font-size: 15px; font-weight: 600; }
+.ficha-mini [data-b^="pd:"] { font-size: 12px; }
+.ficha.enrollada .ficha-mini { opacity: 1; transform: none; }
+.ficha-top { padding: 2px 24px 4px; }
+.ficha-tabs { position: sticky; top: var(--ficha-cab-h, 64px); z-index: 2; margin: 0; padding: 0 24px; background: rgba(0, 0, 0, 0.92); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+.ficha-precio { display: flex; gap: 6px 14px; align-items: baseline; flex-wrap: wrap; margin: 4px 0 8px; }
+.ficha-precio .p { font-size: 30px; font-weight: 200; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .ficha-botones { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-@media (max-width: 560px) { .ficha-botones { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; } .ficha-botones .btn { flex-direction: column; gap: 3px; height: auto; min-height: 54px; padding: 8px 2px; font-size: 12.5px; justify-content: center; } }
-.ficha-cab .tabs { margin-bottom: -1px; }
-.ficha-cab .tabs button { border-radius: 0; padding: 9px 12px; border-bottom: 2px solid transparent; background: none; font-size: 14px; }
-.ficha-cab .tabs button[aria-pressed="true"] { border-bottom-color: var(--accent); background: none; }
+@media (max-width: 560px) { .ficha-botones { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; } .ficha-botones .btn { gap: 5px; height: auto; min-height: 40px; padding: 6px 2px; font-size: 12.5px; justify-content: center; } .ficha-botones .btn svg { width: 15px; height: 15px; flex: none; } }
+.ficha-tabs { margin-bottom: 0; }
+.ficha-tabs button { border-radius: 0; padding: 10px 12px; border-bottom: 2px solid transparent; background: none; font-size: 14px; margin-bottom: -1px; }
+.ficha-tabs button[aria-pressed="true"] { border-bottom-color: var(--accent); background: none; }
 .ficha-cuerpo { padding: 22px 24px 0; display: grid; gap: 28px; }
-@media (max-width: 560px) { .ficha-cab { padding-left: 16px; padding-right: 16px; } .ficha-cuerpo { padding-left: 16px; padding-right: 16px; } }
+@media (max-width: 560px) { .ficha-cab, .ficha-top, .ficha-tabs { padding-left: 16px; padding-right: 16px; } .ficha-cuerpo { padding-left: 16px; padding-right: 16px; } }
 .kv { display: grid; grid-template-columns: auto 1fr; gap: 7px 16px; font-size: 14px; margin: 0; }
 .kv dt { color: var(--muted); }
 .kv dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; }
@@ -1188,7 +1204,26 @@ table.ideas .sub { display: block; font-size: 12px; }
 .idea-panorama { margin: -4px 0 18px; color: var(--text-2); font-size: 14.5px; line-height: 1.6; max-width: 100ch; }
 .idea-panorama b { color: var(--accent); font-weight: 600; }
 .evitar { margin-top: 28px; }
-.evitar .sec-cab h3 { margin: 0; font-size: 15px; font-weight: 650; }
+.evitar .sec-cab h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; margin: 0; font-size: 16px; font-weight: 650; }
+.evitar .sec-cab h3 .k { font-size: 13px; font-weight: 500; }
+.evitar .ev-ico { display: grid; place-items: center; width: 26px; height: 26px; border-radius: 8px; background: color-mix(in srgb, var(--down) 16%, transparent); color: var(--down); }
+.evitar .ev-ico svg { width: 15px; height: 15px; }
+/* las tarjetas: como las de las ideas, pero en clave de «mejor no» */
+.evitas { display: grid; gap: 10px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 900px) { .evitas { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+.evita { position: relative; display: grid; gap: 10px; padding: 14px 16px 14px 18px; border-radius: 14px; background: linear-gradient(135deg, color-mix(in srgb, var(--down) 9%, var(--plane)) 0%, var(--plane) 70%); border: 1px solid color-mix(in srgb, var(--down) 26%, var(--line)); overflow: hidden; }
+.evita::before { content: ''; position: absolute; left: 0; top: 12px; bottom: 12px; width: 3px; border-radius: 0 3px 3px 0; background: var(--down); opacity: 0.85; }
+.evita > header { display: flex; gap: 11px; align-items: center; }
+.evita > header > div { min-width: 0; flex: 1; }
+.evita > header b { display: block; font-weight: 650; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.evita > header small { color: var(--muted); font-size: 12.5px; display: flex; gap: 6px; align-items: center; white-space: nowrap; overflow: hidden; }
+.evita .ev-tk::before { content: '·'; margin-right: 6px; }
+.evita .ev-res { display: grid; justify-items: end; gap: 1px; flex: none; font-variant-numeric: tabular-nums; }
+.evita .ev-res b { font-size: 15px; font-weight: 650; }
+.evita .ev-res small { color: var(--muted); font-size: 11.5px; }
+.ev-motivo { margin: 0; color: var(--text-2); font-size: 14px; line-height: 1.55; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; cursor: pointer; }
+.ev-motivo.abierto { -webkit-line-clamp: unset; display: block; }
+.evita .as-fuentes { margin: 0; }
 
 /* ---------- cartera: lo que toca ahora ---------- */
 .toca { margin-top: 24px; padding: 12px 16px 6px; border: 1px solid var(--line-2); border-left: 3px solid var(--accent); border-radius: 12px; background: var(--plane); }
@@ -6644,7 +6679,19 @@ function tarjetaIdea(x, ctx, compacta = false, puesto = 0) {
 function htmlEvitar() {
   const d = S.escaneo && S.escaneo.decision;
   if (!d || !(d.evitar || []).length) return '';
-  return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det"${innerWidth > 680 ? ' open' : ''}><summary class="sec-cab"><h3 id="hEvi">Las que GrowIA evitaría por lo que dice su prensa <span class="k">(${d.evitar.length})</span></h3></summary><ul class="lista">${d.evitar.map((v) => `<li class="warn">${ICONOS.alerta}<div><b>${esc(v.n || v.s)} (${esc(v.s)})</b><span>${escIA(v.motivo)}</span>${enlacesFuentes(v.fuentes, 2)}</div></li>`).join('')}</ul></details></section>`;
+  // lo contrario de las ideas de compra, con su mismo estilo de tarjeta pero en rojo: quién es, de dónde, cuánto
+  // se ha movido hoy y por qué GrowIA no la compraría (el motivo en tres líneas, entero al tocarlo)
+  const tarjeta = (v) => {
+    const r = buscarRadar(v.s), dia = r && r.v != null ? +r.v : null;
+    return `<article class="evita">
+      <header>${logo(r && r.w, v.n || v.s)}<div><b>${esc(v.n || (r && r.n) || v.s)}</b><small>${r ? lineaOrigenCorta(r) : ''}<span class="ev-tk">${esc(v.s)}</span></small></div>
+        <span class="ev-res">${dia != null ? `<b class="${cls(dia)}">${pctS(dia, 1)}</b><small>${L('hoy', 'today')}</small>` : ''}</span></header>
+      <p class="ev-motivo" data-ev-abre tabindex="0">${escIA(v.motivo)}</p>
+      ${enlacesFuentes(v.fuentes, 3)}
+    </article>`;
+  };
+  return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det" open><summary class="sec-cab"><h3 id="hEvi"><span class="ev-ico" aria-hidden="true">${ICONOS.alerta}</span>Las que GrowIA evitaría <span class="k">${d.evitar.length}, por lo que dice su prensa</span></h3></summary>
+    <div class="evitas">${d.evitar.map(tarjeta).join('')}</div></details></section>`;
 }
 function htmlIdeas(M, ia) {
   const todas = radarVals();
@@ -6950,6 +6997,8 @@ function pasosRuta0(M) {
       if (!x || !x.t) continue;
       const d = /^\d{4}-\d{2}-\d{2}$/.test(x.d || '') ? x.d : null;
       if (d && d < hoy) continue;
+      // «Este mes, nada»: no es una tarea que marcar, es su consejo de esperar (va arriba del plazo, sin botones)
+      if (x.esperar === true || ESPERA_IA.test(String(x.t))) { P[pz].push({ fuente: 'ia', id: 'ia:' + normTxt(x.t).slice(0, 60), espera: true, auto: true, t: rellenarIA(x.t, v), pq: x.por_que ? rellenarIA(x.por_que, v) : rellenarIA(x.detalle || x.como || '', v) }); continue; }
       P[pz].push({ fuente: 'ia', id: 'ia:' + normTxt(x.t).slice(0, 60), d, cuando: d ? fechaCorta(d) : '', t: rellenarIA(x.t, v), pq: x.por_que ? rellenarIA(x.por_que, v) : '', como: x.como ? rellenarIA(x.como, v) : '', imp: x.impuestos ? rellenarIA(x.impuestos, v) : '', det: x.por_que || x.como ? '' : rellenarIA(x.detalle || '', v), autor: ia.autor });
     }
   }
@@ -6960,6 +7009,7 @@ function pasosRuta0(M) {
   }
   return P;
 }
+const ESPERA_IA = /^\s*(?:(?:este|el) mes|esta semana|este trimestre|de momento|por ahora|ahora mismo|hoy)[,:]?\s+nada\b|^\s*nada que (?:hacer|tocar|mover)\b|^\s*no (?:hagas|toques|muevas) nada\b|^\s*(?:esperar?|aguanta)\b/i;
 /* norma antiaplicación (art. 33.5 de la ley del IRPF): si vendes con pérdidas y recompras lo mismo dentro del
    plazo (antes o después de la venta), esa pérdida no resta ese año; se aplaza hasta que vendas lo recomprado */
 function reglaRecompra(inst) {
@@ -7054,7 +7104,8 @@ function htmlRuta(M) {
   const cuenta = [...P.mes, ...P.seis].filter((x) => !x.auto && claseRuta(x) === 'tarea'), hechas = cuenta.filter((x) => x.hecho).length;
   const primero = P.mes.find((x) => !x.hecho && claseRuta(x) === 'tarea') || (!P.mes.some((x) => claseRuta(x) === 'tarea' && !x.hecho) ? P.seis.find((x) => !x.hecho && claseRuta(x) === 'tarea') : null);
   const columna = ([k, t]) => {
-    const tareas = P[k].filter((x) => claseRuta(x) === 'tarea'), fechas = P[k].filter((x) => claseRuta(x) === 'fecha'), solos = P[k].filter((x) => claseRuta(x) === 'solo');
+    const tareas = P[k].filter((x) => claseRuta(x) === 'tarea'), fechas = P[k].filter((x) => claseRuta(x) === 'fecha'), solos = P[k].filter((x) => claseRuta(x) === 'solo' && !x.espera);
+    const espera = P[k].find((x) => x.espera);
     const ht = tareas.filter((x) => x.hecho).length;
     let n = 0;
     const lado = fechas.length || solos.length;
@@ -7062,8 +7113,9 @@ function htmlRuta(M) {
       <header class="rcol-cab"><h2 id="hRuta-${k}">${t}</h2><span class="k">${sub[k]}</span></header>
       <div class="rcol-grid${lado ? ' con-lado' : ''}">
         <div class="rbloque">
+          ${espera ? `<div class="ruta-espera" role="note"><span class="re-ico" aria-hidden="true">${ICONOS.chispa}</span><div><span class="re-de">${esc((ia && ia.autor) || 'GrowIA')} te dice</span><b>${espera.t}</b>${espera.pq ? `<p>${espera.pq}</p>` : ''}</div></div>` : ''}
           <h3 class="rh">Por hacer${tareas.length ? `<span class="k">${ht} de ${tareas.length} hechos</span>` : ''}</h3>
-          ${tareas.length ? `<ol class="tareas">${tareas.map((x) => htmlTarea(x, ++n, x === primero)).join('')}</ol>` : `<div class="ruta-vacio">Nada que hacer tú${k === 'mes' ? ' este mes' : ' en este plazo'}.</div>`}
+          ${tareas.length ? `<ol class="tareas">${tareas.map((x) => htmlTarea(x, ++n, x === primero)).join('')}</ol>` : `<div class="ruta-vacio">${espera ? 'Nada más.' : `Nada que hacer tú${k === 'mes' ? ' este mes' : ' en este plazo'}.`}</div>`}
         </div>
         ${lado ? `<div class="rlado">
           ${fechas.length ? `<div class="rbloque"><h3 class="rh">Fechas que vigilar <a class="rh-mas" href="#agenda">Ver el calendario</a></h3><ul class="rfechas">${fechas.map(htmlFechaRuta).join('')}</ul></div>` : ''}
@@ -7646,6 +7698,7 @@ function dibujarSparkM(el) {
 /* las ideas compactas del móvil se abren al tocar su cabecera */
 function abrirIdea(h) { const a = h.closest('.idea'); if (!a) return; const on = a.classList.toggle('abierta'); h.setAttribute('aria-expanded', String(on)); }
 document.addEventListener('click', (e) => { const h = e.target.closest('[data-idea-toggle]'); if (h && !e.target.closest('a, button')) abrirIdea(h); });
+document.addEventListener('click', (e) => { const m = e.target.closest('[data-ev-abre]'); if (m) m.classList.toggle('abierto'); });
 document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-idea-toggle]')) { e.preventDefault(); abrirIdea(e.target); } });
 document.addEventListener('toggle', (e) => {
   const d = e.target;
@@ -9241,7 +9294,7 @@ function abrirFicha(posId, tab) {
   f.addEventListener('click', (e) => { if (e.target === f) cerrarFicha(); });
   document.body.appendChild(f);
   document.body.style.overflow = 'hidden';
-  try { history.pushState({ ficha: posId }, ''); S.fichaHist = true; } catch (e) { S.fichaHist = false; }
+  S.fichaAtras = conAtras(() => cerrarFicha(true), f);
   refrescarFicha();
   const b = $('#fichaFondo [data-accion="cerrar-ficha"]'); if (b) b.focus();
 }
@@ -9250,10 +9303,11 @@ function cerrarFicha(desdeHistorial) {
   document.body.style.overflow = '';
   const id = S.ficha && S.ficha.id;
   S.ficha = null;
-  if (!desdeHistorial && S.fichaHist) { S.fichaHist = false; try { history.back(); } catch (e) {} }
+  if (!desdeHistorial && S.fichaAtras) S.fichaAtras();
+  S.fichaAtras = null;
   const vuelta = id && $(`[data-pos="${CSS.escape(id)}"]`); if (vuelta) vuelta.focus({ preventScroll: true });
 }
-window.addEventListener('popstate', () => { if (S.ficha) { S.fichaHist = false; cerrarFicha(true); } });
+
 
 function filaFicha() { return S.ficha && S.M && S.M.filas.find((x) => x.pos.id === S.ficha.id); }
 function refrescarFicha() {
@@ -9262,7 +9316,13 @@ function refrescarFicha() {
   if (!f) { cerrarFicha(); return; }
   const top = cont.scrollTop;
   cont.innerHTML = htmlFicha(f);
+  // las pestañas se quedan fijas justo debajo de la barra de arriba; el precio pequeño sale cuando el grande se va
+  const cab = $('.ficha-cab', cont);
+  cont.style.setProperty('--ficha-cab-h', `${cab ? cab.offsetHeight : 64}px`);
+  const mira = () => { const pr = $('.ficha-precio', cont); if (pr && cab) cont.classList.toggle('enrollada', pr.getBoundingClientRect().bottom < cab.getBoundingClientRect().bottom + 4); };
+  cont.onscroll = mira;
   cont.scrollTop = top;
+  mira();
   dibujarFicha();
 }
 
@@ -9274,9 +9334,14 @@ function htmlFicha(f) {
   else if (S.ficha.tab === 'expertos') cuerpo = fichaExpertos(f);
   else if (S.ficha.tab === 'noticias') cuerpo = `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px">Lo que dice la prensa, según GrowIA</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}<section>${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p></section>`;
   else cuerpo = fichaDatos(f);
+  // arriba, fija, solo una barra fina (y el precio pequeño al bajar); el resto se va con el scroll hasta las pestañas,
+  // que se quedan fijas debajo de la barra
   return `<div class="ficha-cab">
-    <div class="ficha-tit">${logo(i.dominio, i.corto || i.nombre)}<div><h2 id="fichaTit">${esc(i.corto || i.nombre)}</h2><small title="${esc(donde(i))}">${origen(i)} ${esc(tipo)} en ${esc(f.pos.plataforma || '')}</small>${i.nombre && i.nombre !== i.corto ? `<small>${esc(i.nombre)}</small>` : ''}</div>
+    <div class="ficha-tit">${logo(i.dominio, i.corto || i.nombre)}<div class="ft-n"><h2 id="fichaTit" title="${esc(i.nombre || '')}">${esc(i.corto || i.nombre)}</h2><small title="${esc(donde(i))}">${origen(i)}<span>${esc(tipo)}</span><span>${esc(f.pos.plataforma || '')}</span></small></div>
+      <div class="ficha-mini" aria-hidden="true">${B('pp:' + id)}${B('pd:' + id)}</div>
       <button class="ib" data-accion="cerrar-ficha" aria-label="Cerrar">${ICONOS.cerrar}</button></div>
+  </div>
+  <div class="ficha-top">
     <div class="ficha-precio"><span class="p">${B('pp:' + id)}</span>${B('pd:' + id)}<span class="k">${f.vivo && S.live[i.id] ? `hoy, ${esc(S.live[i.id].fuente)}` : /^Fondo/.test(i.tipo || '') && p.fecha ? `precio del ${fechaCorta(p.fecha)}: los fondos tienen uno al día` : p.fecha ? `cierre del ${fechaCorta(p.fecha)}` : 'hoy'}</span></div>
     <div class="ficha-precio" style="margin-top:-6px;font-size:15px"><span class="k">Tienes</span>${B('pv:' + id, 'valor')}${B('pg:' + id)}${B('pt:' + id)}</div>
     ${(() => { if (i.clase === 'Efectivo') return ''; const tp = tiempoPos(f); return tp ? `<div class="ficha-anual k">Desde hace ${duracion(tp.dias)}: <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b> (la bolsa suele dar un ${fmtNum(bolsaAnual(), 0)} %)</div>` : `<div class="ficha-anual k">¿Cuánto ganas al año? <button class="enlace acento" data-accion="editar-pos" data-id="${esc(id)}">Pon desde cuándo la tienes</button></div>`; })()}
@@ -9286,8 +9351,8 @@ function htmlFicha(f) {
       <button class="btn" data-accion="editar-pos" data-id="${esc(id)}">${ICONOS.lapiz}Editar</button>
       <button class="btn" data-accion="asesor" data-q="${esc(`¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.chispa}Pregúntale</button>
     </div>
-    <div class="tabs" role="group" aria-label="Apartados">${FTABS.map(([k, t]) => `<button data-ftab="${k}" aria-pressed="${S.ficha.tab === k}">${t}</button>`).join('')}</div>
   </div>
+  <div class="tabs ficha-tabs" role="group" aria-label="Apartados">${FTABS.map(([k, t]) => `<button data-ftab="${k}" aria-pressed="${S.ficha.tab === k}">${t}</button>`).join('')}</div>
   <div class="ficha-cuerpo">${cuerpo}</div>`;
 }
 
@@ -9508,15 +9573,43 @@ function arrastrarParaCerrar(h, cerrar) {
 /* en la app de Android, un toque suave al cambiar de pestaña o elegir algo (si el móvil lo tiene activado) */
 function vibra() { try { const a = window.InversionesApp; if (a && a.toque) a.toque(); } catch (e) {} }
 document.addEventListener('click', (e) => { if (e.target.closest('.navbar a, .navbar .nav-mas, .tabs button, .subvistas button, [data-agm], [data-ag-mes], .agc, .ag-f, .mas-t, .gta-chip, .gta-top')) vibra(); }, true);
+/* «Atrás» (el del móvil, el gesto o el del navegador) cierra lo que esté encima: una hoja, la ficha, el asesor o el GTA,
+   en vez de salir de la app. Cada capa abierta deja una entrada en el historial; si la cierras tú (la ×, el fondo,
+   Escape), se quita su entrada sin cerrar nada más. */
+const ATRAS = { pila: [], ignorar: 0 };
+function conAtras(cerrar, el) {
+  const e = { cerrar, el, id: `${Date.now()}-${Math.random().toString(36).slice(2, 7)}` };
+  try { history.pushState({ capa: e.id }, ''); } catch (x) { return () => {}; }
+  ATRAS.pila.push(e);
+  return () => {
+    const k = ATRAS.pila.indexOf(e); if (k < 0) return;
+    ATRAS.pila.splice(k, 1);
+    // se mira justo después: si al cerrar has ido a otra pestaña (un enlace de la hoja), su entrada se queda y no se
+    // deshace ese paso
+    setTimeout(() => {
+      if (!history.state || history.state.capa !== e.id) return;
+      ATRAS.ignorar++;
+      try { history.back(); } catch (x) { ATRAS.ignorar--; }
+    }, 0);
+  };
+}
+window.addEventListener('popstate', () => {
+  if (ATRAS.ignorar > 0) { ATRAS.ignorar--; return; }
+  let e = ATRAS.pila.pop();
+  while (e && e.el && !e.el.isConnected) e = ATRAS.pila.pop();   // las que ya se quitaron por otro lado
+  if (e) e.cerrar();
+});
 function hoja(titulo, html, alCerrar, ancha) {
   const f = document.createElement('div');
   f.className = 'hoja-fondo';
   f.innerHTML = `<div class="hoja${ancha ? ' ancha' : ''}" role="dialog" aria-modal="true" aria-label="${esc(titulo)}"><div class="hoja-cab"><h2>${esc(titulo)}</h2><button class="ib" data-cerrar aria-label="Cerrar">${ICONOS.cerrar}</button></div>${html}</div>`;
-  const cerrar = (sinAviso) => { f.remove(); document.removeEventListener('keydown', tecla, true); if (alCerrar && sinAviso !== true) alCerrar(); };
+  let quitarAtras = () => {};
+  const cerrar = (sinAviso, desdeAtras) => { if (!f.isConnected) return; f.remove(); document.removeEventListener('keydown', tecla, true); if (desdeAtras !== true) quitarAtras(); if (alCerrar && sinAviso !== true) alCerrar(); };
   const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); cerrar(); } };
   f.addEventListener('click', (e) => { if (e.target === f || e.target.closest('[data-cerrar]')) cerrar(); });
   document.addEventListener('keydown', tecla, true);
   document.body.appendChild(f);
+  quitarAtras = conAtras(() => cerrar(false, true), f);
   arrastrarParaCerrar(f.querySelector('.hoja'), () => cerrar());
   const primero = f.querySelector('input:not([type=hidden]):not([type=checkbox]), select'); if (primero && window.innerWidth > 720) primero.focus();
   return { el: f, cerrar };
@@ -9698,12 +9791,14 @@ function operacion(tipo, id, sim, cand) {
     if (inst) {
       const i = S.inst[inst] || {}, pr = precioInst(inst), ya = S.cartera.posiciones.filter((p) => p.instrumento === inst);
       c.innerHTML = `<div class="op-elegido">${logo(i.dominio, i.corto || i.nombre)}<span class="busca-t"><b>${esc(i.corto || i.nombre)}</b><small>${chipCotiza(i)}${i.yahoo ? ` · ${esc(i.yahoo)}` : ''}${ya.length ? ` · ya tienes en ${esc(ya.map((p) => p.plataforma).join(' y '))}` : ''}</small></span><span class="busca-p">${pr ? precioFmt(pr) : ''}</span><button type="button" class="enlace acento" id="opCambiar">Cambiar</button></div>`;
-      $('#opCambiar', h.el).onclick = () => { inst = null; pintarTodo(); };
+      $('#opCambiar', h.el).onclick = () => { inst = null; pintarTodo(); const b = $('#opQue input', h.el); if (b) b.focus({ preventScroll: true }); };
     } else buscador(c, (nid) => {
       inst = nid; plat = platPor(nid); precioTocado = false;
       if (!q('gastos').dataset.tocado) q('gastos').value = plat === 'Trade Republic' && t !== 'tengo' ? '1' : '';
-      ponerPrecio(); pintarTodo(); setTimeout(() => q('importe').focus(), 50);
-    }, { foco: true });
+      ponerPrecio(); pintarTodo();
+      // en el ordenador, al importe; en el móvil no (el teclado empujaba la hoja hacia abajo y perdías lo elegido)
+      if (!matchMedia('(pointer: coarse)').matches) setTimeout(() => q('importe').focus({ preventScroll: true }), 50);
+    }, { foco: !matchMedia('(pointer: coarse)').matches });
   };
   const pintarPlat = () => {
     const c = $('#opPlat', h.el);
@@ -11296,8 +11391,11 @@ function buscador(cont, alElegir, opt = {}) {
     else if (e.key === 'Enter') { e.preventDefault(); elegir(ul.querySelectorAll('li[role=option]')[sel]); }
     else if (e.key === 'Escape') { ul.hidden = true; }
   });
-  ul.addEventListener('pointerdown', (e) => { const li = e.target.closest('li[role=option]'); if (li) { e.preventDefault(); elegir(li); } });
-  if (opt.foco) setTimeout(() => inp.focus(), 60);
+  // se elige al soltar (con el dedo, al tocar sin arrastrar): antes se elegía al apoyar el dedo y, al intentar
+  // deslizar la lista para buscar otro, se quedaba elegido el que hubiera debajo
+  ul.addEventListener('mousedown', (e) => { if (e.target.closest('li[role=option]')) e.preventDefault(); });
+  ul.addEventListener('click', (e) => { const li = e.target.closest('li[role=option]'); if (li) elegir(li); });
+  if (opt.foco) setTimeout(() => inp.focus({ preventScroll: true }), 60);
   return inp;
 }
 
@@ -11433,6 +11531,8 @@ const NOVEDADES = [
     { d: 'app', t: 'El widget, como la app', x: 'La cifra más gruesa y la curva con el mismo grano dorado, el trazo que se enciende hacia hoy y el halo en el punto de ahora. Llega con la app nueva de Android.' },
     { d: 'grafica', t: 'El widget: 24 horas y escala', x: 'Los plazos de la curva, a la vista arriba a la derecha, junto a refrescar: 24 h, 1 semana, 1 mes, 3 meses y 1 año. Tocas el que quieras y la curva cambia con un fundido. Abajo salen las horas o las fechas, a la izquierda los valores, y al lado de lo de hoy cuánto ha cambiado en ese plazo.' },
     { d: 'intro', t: 'Lo que te perdiste, de una vez', x: 'Si llevas tiempo sin entrar, al volver te salen juntas todas las versiones que te has perdido, cada una con su capítulo: lo más importante en grande y el resto en una lista corta que se abre al tocarla. Los bugs corregidos, todos al final.' },
+    { d: 'ficha', t: 'La ficha, con más sitio', x: 'Arriba solo queda fija una barra fina con el nombre y, al bajar, el precio. El precio grande, lo que tienes y los botones se van con el scroll, y las pestañas se quedan justo debajo de la barra.' },
+    { d: 'aviso', ir: { v: 'expertos', sel: '.evitar' }, t: 'Las que GrowIA evitaría, en tarjetas', x: 'Como las ideas de compra pero al revés, en rojo: cada empresa con su bandera, su sector, cómo va hoy y por qué no la compraría, con sus fuentes.' },
     { d: 'tengo', ir: { v: 'cartera', sel: '#hPos ~ .der', pos: true }, t: 'Tus posiciones, todas iguales', x: 'En el móvil, cada posición con el mismo orden: el nombre, debajo la bandera, el país y la plataforma en una línea y, si hay, sus etiquetas en otra. El nombre largo queda en su ficha.' },
     { d: 'calendario', ir: { v: 'cartera', sel: '#hAp', plan: true }, t: 'Plan y movimientos, al grano', x: 'Cada aportación, compra o posición en una fila de dos líneas: qué es y dónde a la izquierda, el importe a la derecha y un lápiz pequeño para cambiarla. Los botones van al lado de cada título, sin huecos.' },
     { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: '«Cómo vas», en Análisis', x: 'La tarjeta que te dice si vas bien sale ahora arriba de Análisis, justo encima de tus objetivos, y ya no en el Paso a paso.' },
@@ -11452,6 +11552,9 @@ const NOVEDADES = [
     'En las ideas de compra de Expertos, las pestañas medían distinto según el nombre de la bolsa y al bajar se apilaban a saltos.',
     'La pastilla de la bolsa de arriba se salía de su recuadro cuando decía «sin datos».',
     'En el widget, si lo de hoy no llegaba a un euro salía «0 €» y parecía roto: ahora lleva sus céntimos.',
+    'En la app de Android, «atrás» en el GTA (y en las hojas, la ficha o el asesor) te sacaba de la app: ahora cierra lo que esté abierto.',
+    'En «Compra o venta», al elegir un fondo y luego otro, la hoja se iba hacia abajo y perdías lo elegido.',
+    'El consejo de GrowIA de no hacer nada salía como una tarea con «Marcar como hecho»: ahora es un aviso arriba del mes.',
   ] },
   { v: '0.3.0', f: '2026-10-21', h: '00:50', t: 'Más sencilla y con más criterio', cosas: [
     { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar, .nav' }, t: 'Cinco sitios', x: 'Inicio va en el centro de la barra, más grande. A la izquierda, lo que haces tú: Pasos y Análisis, que ahora lleva tus objetivos. A la derecha, lo de fuera: Expertos y Mercados, que ahora lleva el calendario. Hacienda sale en Análisis cuando toca la renta; el resto del año, con un enlace al final.' },
@@ -12981,7 +13084,8 @@ function abrirGTA() {
   let io = null;
   // la música: se abre desde un toque, así que el navegador deja que suene
   if (LS.get('inv-gta-son', true)) musicaGTA(true);
-  const cerrar = () => { clearInterval(tic); musicaGTA(false); if (io) io.disconnect(); fondo.remove(); document.removeEventListener('keydown', tecla, true); document.removeEventListener('visibilitychange', oculta); };
+  let quitarAtras = () => {};
+  const cerrar = (desdeAtras) => { if (!fondo.isConnected) return; clearInterval(tic); musicaGTA(false); if (io) io.disconnect(); fondo.remove(); document.removeEventListener('keydown', tecla, true); document.removeEventListener('visibilitychange', oculta); if (desdeAtras !== true) quitarAtras(); };
   const oculta = () => { if (document.hidden) musicaGTA(false); else if (LS.get('inv-gta-son', true) && fondo.isConnected) musicaGTA(true); };
   document.addEventListener('visibilitychange', oculta);
   const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); cerrar(); } };
@@ -12992,6 +13096,7 @@ function abrirGTA() {
   });
   document.addEventListener('keydown', tecla, true);
   document.body.appendChild(fondo);
+  quitarAtras = conAtras(() => cerrar(true), fondo);
   io = animarGTA($('.gta', fondo));
   $('.gta-x', fondo).focus({ preventScroll: true });
 }
@@ -13553,7 +13658,7 @@ function pedidoAnalisis(ids, motivo, conWeb = true) {
 6. Ajústalo todo a su perfil y sus objetivos (edad, cuándo necesita el dinero, cuánto riesgo aguanta, sus límites y sus metas con fecha y cifra, vienen en los datos): si algo de su cartera choca con ellos, dilo y propón cómo encajarlo; en la hoja de ruta, lo que necesite cada meta.
 7. En cada compra o venta explica lo de Hacienda y por qué: lo que pagará, y lo que debe hacer o evitar por fiscalidad (por ejemplo, si vende con pérdidas, no recomprar la misma acción o ETF en dos meses, ni el mismo fondo en un año, porque si no la pérdida no resta ese año; en cripto la de dos meses no se aplica, aunque hay quien defiende la de un año). Si un consejo tiene un motivo fiscal, que se diga.
 8. Sé constante. En los datos viene tu revisión anterior: su fecha, el nivel que diste a cada posición y su hoja de ruta. No cambies el nivel de una posición ni la hoja de ruta salvo que haya algo nuevo e importante: resultados, un cambio de recomendación de los analistas, una subida o caída de más de un 8 %, una noticia que cambie la tesis, o un cambio en su perfil, sus metas o su dinero. Los movimientos de pocos días no son motivo. Si cambias algo, di en su texto qué ha cambiado y por qué. Una revisión seria cambia poco de una semana a otra.
-9. No hacer nada también es un consejo. Esperar, seguir con las aportaciones y no tocar la cartera es muchas veces lo mejor: si este mes no hay nada que hacer, pon en la hoja de ruta un solo paso que lo diga («Este mes, nada: deja que trabajen tus aportaciones») y explica por qué. No inventes cambios por tener algo que proponer.
+9. No hacer nada también es un consejo. Esperar, seguir con las aportaciones y no tocar la cartera es muchas veces lo mejor: si este mes no hay nada que hacer, pon en la hoja de ruta un solo paso que lo diga («Este mes, nada: deja que trabajen tus aportaciones»), con "esperar": true, y explica por qué en "por_que" (sin "como": no hay nada que hacer). No inventes cambios por tener algo que proponer.
 10. Las cifras, sin adornos. Si nombras una meta, di a qué distancia está («79.658 € de 500.000 €, un 16 %») y, si viene en los datos, cuándo llegaría al ritmo de ahora. Nunca digas que va «rumbo a», «camino de» o «hacia» una meta sin esas cifras, ni des a entender que está cerca si no lo está. El titular habla de hoy (cómo está la cartera, qué ha pasado y lo urgente), no de metas lejanas.
 
 Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
@@ -14587,6 +14692,7 @@ async function abrirAsesor(pregunta, enviar) {
     fondo.addEventListener('click', (e) => { if (e.target === fondo) cerrarAsesor(); else clicAsesor(e); });
     document.body.appendChild(fondo);
     document.body.style.overflow = 'hidden';
+    S.asesorAtras = conAtras(() => cerrarAsesor(true), fondo);
     const ta = $('#asTexto', fondo);
     const ajustar = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 160) + 'px'; };
     ta.addEventListener('input', ajustar);
@@ -14646,10 +14752,12 @@ function dictar() {
   r.onend = () => { dictado = null; oye(false); ta.focus(); };
   try { r.start(); } catch (e) { dictado = null; oye(false); }
 }
-function cerrarAsesor() {
+function cerrarAsesor(desdeAtras) {
   if (dictado) { try { dictado.abort(); } catch (e) {} dictado = null; }
   const f = $('#asesorFondo'); if (!f) return;
   f.remove(); document.body.style.overflow = '';
+  if (desdeAtras !== true && S.asesorAtras) S.asesorAtras();
+  S.asesorAtras = null;
   const b = $('#bAsesor'); if (b) b.focus({ preventScroll: true });
 }
 async function probarClave(clave) {
