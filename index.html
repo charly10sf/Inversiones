@@ -10189,6 +10189,15 @@ async function conectarBanco(plataforma) {
     const pb = e.target.closest('[data-bk-pais]');
     if (pb) { pais = pb.dataset.bkPais; for (const x of $$('[data-bk-pais]', h.el)) x.setAttribute('aria-pressed', String(x === pb)); carga(); return; }
     const b = e.target.closest('[data-bk]'); if (!b) return;
+    // la app de Android de antes abría el banco en el navegador y la vuelta no llegaba a la app
+    const app = window.InversionesApp, dentro = (() => { try { return !!app.bancoDentro(); } catch (e2) { return false; } })();
+    if (app && !dentro) { err.textContent = L('Para conectar el banco desde el móvil, actualiza antes la app de GrowFolio (en Ajustes) o hazlo desde el ordenador.', 'To connect your bank from your phone, update the GrowFolio app first (in Settings) or do it from a computer.'); return; }
+    // Trade Republic, en el navegador de un móvil, solo dice «descarga la app» y desde ahí no se puede dar el permiso
+    if (!app && /android|iphone|ipad/i.test(navigator.userAgent) && /trade\s*republic/i.test(b.dataset.bk) && !b.dataset.igual) {
+      err.innerHTML = L('Trade Republic, en el navegador del móvil, solo te manda a descargar su app y el permiso no llega. Hazlo desde la app de GrowFolio o desde el ordenador.', 'On a phone browser Trade Republic only asks you to download its app, and the permission never arrives. Do it from the GrowFolio app or from a computer.') + ` <button type="button" class="enlace" data-bk-igual>${L('Probar aquí igualmente', 'Try here anyway')}</button>`;
+      $('[data-bk-igual]', err).onclick = () => { b.dataset.igual = '1'; b.click(); };
+      return;
+    }
     b.disabled = true; b.classList.add('cargando'); err.textContent = '';
     try {
       const r = await workerPide('/banco/conectar', { banco: b.dataset.bk, pais, plataforma, max: +b.dataset.max || 0, vuelta: location.origin + location.pathname });

@@ -86,7 +86,14 @@ jobs:
                   h[k] = ant + sorted(semanas.values()) + [x for x in s if x[0] >= diario]
           except Exception as e:
               print("sin cierres para el widget:", e)
-          json.dump({"generado": d.get("generado"), "p": p, "h": h}, open("salida/widget.json", "w"), separators=(",", ":"))
+          # y los precios de cada 30 minutos de los últimos días (los de intradia.json), para las 24 horas y la semana
+          # del widget (desde la 0.3.0b; las APK de antes no los miran)
+          i = {}
+          try:
+              i = json.load(open("salida/intradia.json")).get("p") or {}
+          except Exception as e:
+              print("sin intradía para el widget:", e)
+          json.dump({"generado": d.get("generado"), "p": p, "h": h, "i": i}, open("salida/widget.json", "w"), separators=(",", ":"))
           # Para los avisos de la app (solo los baja si los activas y tienes algo fuera de los precios comunes):
           # el radar {símbolo: [precio en €, % del día]} y el catálogo de fondos {id: [precio, anterior]}
           r, c = {}, {}

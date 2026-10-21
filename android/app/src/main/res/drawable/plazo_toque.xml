@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- al tocar un plazo del widget: una onda dorada con la forma de su pastilla (22 dp de alto, como la dibujada) -->
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#47E2B45F">
+    <item android:id="@android:id/mask">
+        <inset
+            android:insetBottom="12dp"
+            android:insetLeft="2dp"
+            android:insetRight="2dp"
+            android:insetTop="10dp">
+            <shape android:shape="rectangle">
+                <corners android:radius="9dp" />
+                <solid android:color="#FFFFFFFF" />
+            </shape>
+        </inset>
+    </item>
+</ripple>

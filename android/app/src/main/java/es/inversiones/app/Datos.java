@@ -12,8 +12,10 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -68,6 +70,8 @@ final class Datos {
             SharedPreferences.Editor e = prefs(c).edit().putString("precios", j.getJSONObject("p").toString()).putLong("precios_t", t).putLong("bajado_t", System.currentTimeMillis());
             JSONObject h = j.optJSONObject("h");
             if (h != null && h.length() > 0) e.putString("cierres", h.toString());
+            JSONObject in = j.optJSONObject("i");   // los precios de cada 30 minutos, para las 24 horas y la semana
+            if (in != null && in.length() > 0) e.putString("intradia", in.toString());
             e.apply();
             return true;
         } catch (Exception e) {
@@ -123,13 +127,21 @@ final class Datos {
         String toca = "", cuando = "", rango = "", horaTxt = "";
         long hora;
         double[] serie;
+        long[] tiempos;      // cuándo es cada punto de la curva (para la escala de abajo); null si no se sabe
+        boolean porTiempo;   // 24 horas: cada punto en su hora (si no, uno tras otro, sin las noches ni los findes)
+        int dias = 31;       // el plazo elegido
         List<Mov> movs = new ArrayList<>();
     }
 
-    /** los periodos de la curva del widget, en días, y cómo se llaman; se cambian tocando el de arriba */
-    static final int[] PERIODOS = {7, 31, 92, 365};
+    /** los plazos de la curva del widget, en días (1 son las últimas 24 horas), y cómo se llaman */
+    static final int[] PERIODOS = {1, 7, 31, 92, 365};
+    static final String[] CORTOS = {"24 h", "1S", "1M", "3M", "1A"};
     static String nombrePeriodo(int dias) {
-        return dias <= 7 ? "1 semana" : dias <= 31 ? "1 mes" : dias <= 92 ? "3 meses" : "1 año";
+        return dias <= 1 ? "24 h" : dias <= 7 ? "1 semana" : dias <= 31 ? "1 mes" : dias <= 92 ? "3 meses" : "1 año";
+    }
+    static int indicePeriodo(int dias) {
+        for (int k = 0; k < PERIODOS.length; k++) if (PERIODOS[k] == dias) return k;
+        return 2;
     }
 
     static Resultado calcular(Context c) {
@@ -181,22 +193,24 @@ final class Datos {
             r.plPct = inv > 0 ? (totalPos / inv - 1) * 100 : 0;
             r.hora = r.conPrecios ? preciosT : fotoT;
             r.horaTxt = new java.text.SimpleDateFormat("HH:mm", new Locale("es", "ES")).format(new java.util.Date(r.hora));
-            r.rango = f.optString("rango", "");
+            r.dias = dias;
+            r.rango = nombrePeriodo(dias);
             JSONArray se = f.optJSONArray("serie");
-            double[] propia = null;
+            boolean ok = false;
             try {
-                propia = seriePropia(new JSONObject(p.getString("cierres", "{}")), r.movs, r.total, dias);
+                JSONObject cierres = new JSONObject(p.getString("cierres", "{}"));
+                // 24 horas y la semana, con los precios de cada 30 minutos; si no los hay, la semana día a día
+                if (dias <= 7) ok = serieIntradia(r, new JSONObject(p.getString("intradia", "{}")), cierres, dias);
+                if (!ok && dias > 1) ok = seriePropia(r, cierres, dias);
             } catch (Exception e) {
-                propia = null;
+                ok = false;
             }
-            if (propia != null) {   // la del widget va al día aunque no abras la app; la de la web (del mes), de reserva
-                r.serie = propia;
-                r.rango = nombrePeriodo(dias);
-            } else if (se != null && se.length() > 1) {
-                r.rango = "1 mes";
+            // la del widget va al día aunque no abras la app; la de la web (del mes), de reserva
+            if (!ok && dias == 31 && se != null && se.length() > 1) {
                 r.serie = new double[se.length()];
                 for (int k = 0; k < se.length(); k++) r.serie[k] = se.optDouble(k);
                 r.serie[r.serie.length - 1] = r.total;   // el último punto, con los precios de ahora
+                r.tiempos = null;
             }
             Collections.sort(r.movs, (a, b) -> Double.compare(Math.abs(b.dia), Math.abs(a.dia)));
         } catch (Exception e) {
@@ -210,8 +224,10 @@ final class Datos {
      * cantidad de cada posición por su cierre de ese día, y lo que no cotiza (efectivo, fondos sin cantidad)
      * fijo. El último punto es el valor de ahora.
      */
-    static double[] seriePropia(JSONObject cierres, List<Mov> movs, double total, int dias) {
-        if (cierres == null || cierres.length() == 0) return null;
+    static boolean seriePropia(Resultado r, JSONObject cierres, int dias) {
+        if (cierres == null || cierres.length() == 0) return false;
+        List<Mov> movs = r.movs;
+        double total = r.total;
         String desde = LocalDate.now().minusDays(dias).toString(), hoy = LocalDate.now().toString();
         List<Mov> conHist = new ArrayList<>();
         List<JSONArray> hs = new ArrayList<>();
@@ -228,7 +244,7 @@ final class Datos {
                 if (d.compareTo(desde) >= 0 && d.compareTo(hoy) <= 0) fechas.add(d);
             }
         }
-        if (conHist.isEmpty() || fechas.size() < 2) return null;
+        if (conHist.isEmpty() || fechas.size() < 2) return false;
         // el año, semana a semana (el último día de cada una): con un punto por día la curva sería ruido
         if (dias > 120) {
             TreeSet<String> semanal = new TreeSet<>();
@@ -241,6 +257,8 @@ final class Datos {
             if (semanal.size() >= 2) fechas = semanal;
         }
         List<Double> out = new ArrayList<>();
+        List<Long> cuando = new ArrayList<>();
+        ZoneId zona = ZoneId.systemDefault();
         int[] idx = new int[hs.size()];
         double[] ult = new double[hs.size()];
         for (int i = 0; i < hs.size(); i++) ult[i] = hs.get(i).optJSONArray(0).optDouble(1);   // por si empieza después
@@ -255,15 +273,124 @@ final class Datos {
                 }
                 v += conHist.get(i).uds * ult[i];
             }
-            if (!Double.isNaN(v)) out.add(v);
+            if (!Double.isNaN(v)) {
+                out.add(v);
+                cuando.add(LocalDate.parse(d.substring(0, 10)).atTime(12, 0).atZone(zona).toInstant().toEpochMilli());
+            }
             ultima = d;
         }
-        if (hoy.equals(ultima) && !out.isEmpty()) out.set(out.size() - 1, total);
-        else out.add(total);
-        if (out.size() < 2) return null;
-        double[] r = new double[out.size()];
-        for (int k = 0; k < r.length; k++) r[k] = out.get(k);
-        return r;
+        if (hoy.equals(ultima) && !out.isEmpty()) {
+            out.set(out.size() - 1, total);
+            cuando.set(cuando.size() - 1, System.currentTimeMillis());
+        } else {
+            out.add(total);
+            cuando.add(System.currentTimeMillis());
+        }
+        if (out.size() < 2) return false;
+        r.serie = new double[out.size()];
+        r.tiempos = new long[out.size()];
+        for (int k = 0; k < out.size(); k++) {
+            r.serie[k] = out.get(k);
+            r.tiempos[k] = cuando.get(k);
+        }
+        r.porTiempo = false;
+        return true;
+    }
+
+    /**
+     * Las últimas 24 horas (cada punto en su hora) o la semana (un punto cada 30 minutos, sin las horas sin mercado),
+     * como la gráfica de 1 día y 1 semana de la web: cada posición con su precio de ese momento; las que no cotizan
+     * durante el día (los fondos), con su valor liquidativo de ese día; el efectivo y lo que no tiene cantidad, fijos.
+     * El último punto es el valor de ahora.
+     */
+    static boolean serieIntradia(Resultado r, JSONObject intra, JSONObject cierres, int dias) {
+        long ahora = System.currentTimeMillis(), desde = ahora - dias * 86400000L;
+        boolean porTiempo = dias <= 1;
+        ZoneId zona = ZoneId.systemDefault();
+        List<Mov> its = new ArrayList<>();
+        List<long[]> tI = new ArrayList<>();
+        List<double[]> pI = new ArrayList<>();
+        List<String[]> fD = new ArrayList<>();
+        List<double[]> pD = new ArrayList<>();
+        TreeSet<Long> marcas = new TreeSet<>();
+        double fijo = r.total;
+        boolean alguno = false;
+        for (Mov m : r.movs) {
+            if (Double.isNaN(m.uds) || m.uds == 0 || m.id == null || m.id.isEmpty()) continue;
+            JSONArray a = intra == null ? null : intra.optJSONArray(m.id);
+            JSONArray d = cierres == null ? null : cierres.optJSONArray(m.id);
+            int na = a == null ? 0 : a.length(), nd = d == null ? 0 : d.length();
+            if (na == 0 && nd == 0) continue;
+            long[] t = new long[na];
+            double[] pr = new double[na];
+            int n = 0;
+            for (int k = 0; k < na; k++) {
+                JSONArray x = a.optJSONArray(k);
+                if (x == null) continue;
+                double v = x.optDouble(1);
+                if (Double.isNaN(v)) continue;
+                try {
+                    t[n] = OffsetDateTime.parse(x.optString(0)).toInstant().toEpochMilli();
+                } catch (Exception e) {
+                    continue;
+                }
+                pr[n] = v;
+                if (t[n] > desde && t[n] <= ahora) marcas.add(t[n]);
+                n++;
+            }
+            String[] f = new String[nd];
+            double[] pf = new double[nd];
+            for (int k = 0; k < nd; k++) {
+                JSONArray x = d.optJSONArray(k);
+                f[k] = x == null ? "" : x.optString(0);
+                pf[k] = x == null ? Double.NaN : x.optDouble(1);
+            }
+            if (n > 0) alguno = true;
+            its.add(m);
+            tI.add(java.util.Arrays.copyOf(t, n));
+            pI.add(java.util.Arrays.copyOf(pr, n));
+            fD.add(f);
+            pD.add(pf);
+            fijo -= m.valor;
+        }
+        if (its.isEmpty() || (!porTiempo && !alguno)) return false;
+        List<Long> T = new ArrayList<>();
+        if (porTiempo) T.add(desde);
+        for (Long t : marcas) if (ahora - t > 120000L) T.add(t);   // lo de hace menos de 2 minutos ya es «ahora»
+        if (!porTiempo && T.isEmpty()) return false;
+        int n = T.size() + 1;
+        r.serie = new double[n];
+        r.tiempos = new long[n];
+        int[] ia = new int[its.size()];
+        for (int j = 0; j < T.size(); j++) {
+            long t = T.get(j);
+            String fecha = Instant.ofEpochMilli(t).atZone(zona).toLocalDate().toString();
+            double s = fijo;
+            for (int i = 0; i < its.size(); i++) {
+                long[] ti = tI.get(i);
+                double[] pi = pI.get(i);
+                while (ia[i] < ti.length && ti[ia[i]] <= t) ia[i]++;
+                double precio = ia[i] > 0 ? pi[ia[i] - 1] : cierreHasta(fD.get(i), pD.get(i), fecha);
+                if (Double.isNaN(precio)) precio = pi.length > 0 ? pi[0] : its.get(i).valor / its.get(i).uds;
+                s += its.get(i).uds * precio;
+            }
+            r.serie[j] = s;
+            r.tiempos[j] = t;
+        }
+        r.serie[n - 1] = r.total;
+        r.tiempos[n - 1] = ahora;
+        r.porTiempo = porTiempo;
+        return n >= 2;
+    }
+
+    /** el último cierre de ese día o de antes (NaN si no hay) */
+    private static double cierreHasta(String[] fechas, double[] precios, String fecha) {
+        double v = Double.NaN;
+        for (int k = 0; k < fechas.length; k++) {
+            if (fechas[k].compareTo(fecha) > 0) break;
+            if (!Double.isNaN(precios[k])) v = precios[k];
+        }
+        return v;
     }
 
     // ---------- números en español: 79.952 €, −0,07 % ----------

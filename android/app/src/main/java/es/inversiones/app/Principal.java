@@ -36,6 +36,8 @@ public class Principal extends Activity {
     private boolean cargada;
     private View video;
     private WebChromeClient.CustomViewCallback cerrarVideo;
+    private boolean enBanco;      // dando permiso al banco dentro de la app
+    private String agenteMovil;   // el user agent de siempre, para volver a él al acabar
 
     @Override
     protected void onCreate(Bundle guardado) {
@@ -67,9 +69,33 @@ public class Principal extends Activity {
             }
 
             @Override
+            public void onPageStarted(WebView v, String url, android.graphics.Bitmap icono) {
+                // de vuelta en GrowFolio (también con «atrás» a medio permiso): otra vez como móvil
+                if (enBanco && url != null && esDeLaWeb(Uri.parse(url))) salirDelBanco();
+            }
+
+            @Override
             public boolean shouldOverrideUrlLoading(WebView v, WebResourceRequest r) {
                 Uri u = r.getUrl();
-                if (esDeLaWeb(u)) return false;
+                String esquema = u.getScheme() == null ? "" : u.getScheme().toLowerCase();
+                if (esDeLaWeb(u)) {
+                    if (!enBanco) return false;
+                    salirDelBanco();   // el banco ha terminado y devuelve el código a GrowFolio
+                    v.loadUrl(u.toString());
+                    return true;
+                }
+                // el permiso del banco (Enable Banking y luego la web del banco) se da aquí dentro, no en el
+                // navegador: así la vuelta llega a la app, donde tienes la sesión
+                if (!enBanco && esDeEnableBanking(u)) {
+                    entrarAlBanco();
+                    v.loadUrl(u.toString());
+                    return true;
+                }
+                if (enBanco) {
+                    if (esquema.equals("http") || esquema.equals("https")) return false;
+                    abrirApp(u);   // intent:// o el esquema de la app del banco
+                    return true;
+                }
                 abrirFuera(u);
                 return true;
             }
@@ -156,6 +182,50 @@ public class Principal extends Activity {
 
     private static boolean esDeLaWeb(Uri u) {
         return "charly10sf.github.io".equalsIgnoreCase(u.getHost()) && u.getPath() != null && u.getPath().toLowerCase().startsWith("/inversiones");
+    }
+
+    private static boolean esDeEnableBanking(Uri u) {
+        String h = u.getHost() == null ? "" : u.getHost().toLowerCase();
+        return h.equals("enablebanking.com") || h.endsWith(".enablebanking.com");
+    }
+
+    /**
+     * Mientras das permiso al banco, la web va como un Chrome de ordenador: en un móvil, algunos bancos (Trade
+     * Republic) solo enseñan «descarga la app» y, abierta así, su app no sabe qué permiso le pides. En la versión de
+     * ordenador entras con tu número y tu PIN y lo confirmas en su app. También deja las cookies de terceros, que
+     * algunos bancos necesitan para el inicio de sesión.
+     */
+    private void entrarAlBanco() {
+        enBanco = true;
+        String movil = web.getSettings().getUserAgentString();
+        if (agenteMovil == null) agenteMovil = movil;
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("Chrome/[\\d.]+").matcher(movil);
+        String chrome = m.find() ? m.group() : "Chrome/130.0.0.0";
+        web.getSettings().setUserAgentString("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " + chrome + " Safari/537.36");
+        CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
+        Toast.makeText(this, "Abriendo tu banco dentro de GrowFolio…", Toast.LENGTH_SHORT).show();
+    }
+
+    private void salirDelBanco() {
+        enBanco = false;
+        if (agenteMovil != null) web.getSettings().setUserAgentString(agenteMovil);
+    }
+
+    /** un enlace de la web del banco que abre su app (intent:// o su propio esquema); si no está, su alternativa */
+    private void abrirApp(Uri u) {
+        Intent i = null;
+        try {
+            i = "intent".equalsIgnoreCase(u.getScheme()) ? Intent.parseUri(u.toString(), Intent.URI_INTENT_SCHEME) : new Intent(Intent.ACTION_VIEW, u);
+            // solo lo que se abre desde un enlace, nunca una pantalla interna de otra app
+            i.addCategory(Intent.CATEGORY_BROWSABLE);
+            i.setComponent(null);
+            i.setSelector(null);
+            startActivity(i);
+        } catch (Exception e) {
+            String alt = i != null ? i.getStringExtra("browser_fallback_url") : null;
+            if (alt != null && alt.startsWith("http")) web.loadUrl(alt);
+            else Toast.makeText(this, "No se puede abrir la app del banco", Toast.LENGTH_SHORT).show();
+        }
     }
 
     private void abrirFuera(Uri u) {

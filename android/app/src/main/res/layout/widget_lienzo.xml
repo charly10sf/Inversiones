@@ -5,21 +5,91 @@
     android:layout_height="match_parent"
     android:background="@drawable/fondo_widget">
 
-    <ImageView
-        android:id="@+id/lienzo"
+    <!-- el widget dibujado, en dos copias: al cambiar el plazo de la curva, la nueva entra fundiéndose con la de antes -->
+    <ViewFlipper
+        android:id="@+id/lienzos"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:contentDescription="Tu cartera"
-        android:scaleType="fitXY" />
+        android:animateFirstView="false"
+        android:inAnimation="@anim/plazo_entra"
+        android:outAnimation="@anim/plazo_sale">
 
-    <!-- zona invisible encima del periodo de la curva (al tocarla cambia: 1 semana, 1 mes, 3 meses, 1 año) -->
+        <ImageView
+            android:id="@+id/lienzo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Tu cartera"
+            android:scaleType="fitXY" />
+
+        <ImageView
+            android:id="@+id/lienzo2"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="Tu cartera"
+            android:scaleType="fitXY" />
+    </ViewFlipper>
+
+    <!-- los plazos de la curva, encima de los que dibuja Lienzo.selector (empiezan a 16 dp y cada uno mide 36):
+         24 horas, 1 semana, 1 mes, 3 meses y 1 año. Al tocarlos se ilumina la pastilla y cambia la curva -->
+    <LinearLayout
+        android:id="@+id/plazos"
+        android:layout_width="180dp"
+        android:layout_height="44dp"
+        android:layout_gravity="top|start"
+        android:layout_marginStart="16dp"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <FrameLayout
+            android:id="@+id/plazo0"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/plazo_toque"
+            android:contentDescription="Últimas 24 horas" />
+
+        <FrameLayout
+            android:id="@+id/plazo1"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/plazo_toque"
+            android:contentDescription="1 semana" />
+
+        <FrameLayout
+            android:id="@+id/plazo2"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/plazo_toque"
+            android:contentDescription="1 mes" />
+
+        <FrameLayout
+            android:id="@+id/plazo3"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/plazo_toque"
+            android:contentDescription="3 meses" />
+
+        <FrameLayout
+            android:id="@+id/plazo4"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:background="@drawable/plazo_toque"
+            android:contentDescription="1 año" />
+    </LinearLayout>
+
+    <!-- en los widgets estrechos, una sola pastilla con el plazo: al tocarla pasa al siguiente -->
     <FrameLayout
         android:id="@+id/periodo"
         android:layout_width="96dp"
         android:layout_height="44dp"
         android:layout_gravity="top|end"
         android:layout_marginEnd="52dp"
-        android:contentDescription="Cambiar el periodo de la gráfica" />
+        android:contentDescription="Cambiar el plazo de la gráfica"
+        android:visibility="gone" />
 
     <!-- zona invisible encima del icono de refrescar -->
     <FrameLayout

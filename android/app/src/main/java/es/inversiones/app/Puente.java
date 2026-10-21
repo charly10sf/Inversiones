@@ -49,6 +49,12 @@ public class Puente {
     }
 
     /** un toque suave (la vibración de las teclas) al cambiar de pestaña; si el móvil la tiene quitada, nada */
+    /** desde la compilación 32 el permiso del banco se da dentro de la app (antes se iba al navegador y no volvía) */
+    @JavascriptInterface
+    public boolean bancoDentro() {
+        return true;
+    }
+
     @JavascriptInterface
     public void toque() {
         act.runOnUiThread(() -> act.getWindow().getDecorView().performHapticFeedback(android.view.HapticFeedbackConstants.KEYBOARD_TAP));

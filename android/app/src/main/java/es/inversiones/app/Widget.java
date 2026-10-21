@@ -23,6 +23,10 @@ import java.io.ByteArrayOutputStream;
 public class Widget extends AppWidgetProvider {
     static final String REFRESCAR = "es.inversiones.app.REFRESCAR";
     static final String PERIODO = "es.inversiones.app.PERIODO";
+    private static final String DIAS = "dias", DISENO = "diseno";
+    /** sube cuando cambia widget_lienzo.xml de forma que las actualizaciones parciales de antes ya no valgan */
+    private static final int DISENO_ACTUAL = 2;
+    private static final int[] PLAZOS = {R.id.plazo0, R.id.plazo1, R.id.plazo2, R.id.plazo3, R.id.plazo4};
 
     @Override
     public void onUpdate(Context c, AppWidgetManager m, int[] ids) {
@@ -36,13 +40,18 @@ public class Widget extends AppWidgetProvider {
             refrescarEnSegundoPlano(c);
             return;
         }
-        if (PERIODO.equals(i.getAction())) {   // el siguiente: 1 semana, 1 mes, 3 meses, 1 año y vuelta a empezar
+        if (PERIODO.equals(i.getAction())) {
             int id = i.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, AppWidgetManager.INVALID_APPWIDGET_ID);
             if (id == AppWidgetManager.INVALID_APPWIDGET_ID) return;
-            int ahora = periodo(c, id), k = 0;
-            while (k < Datos.PERIODOS.length && Datos.PERIODOS[k] != ahora) k++;
-            Datos.prefs(c).edit().putInt("periodo_" + id, Datos.PERIODOS[(k + 1) % Datos.PERIODOS.length]).apply();
-            pintar(c, AppWidgetManager.getInstance(c), id);
+            // el plazo que has tocado o, en la pastilla de los estrechos, el siguiente (24 h, 1 semana, 1 mes, 3 meses, 1 año)
+            int ahora = periodo(c, id), dias = i.getIntExtra(DIAS, 0);
+            if (dias == 0) dias = Datos.PERIODOS[(Datos.indicePeriodo(ahora) + 1) % Datos.PERIODOS.length];
+            if (dias == ahora) return;
+            Datos.prefs(c).edit().putInt("periodo_" + id, dias).apply();
+            AppWidgetManager m = AppWidgetManager.getInstance(c);
+            // con fundido solo si el toque viene de esta versión (su widget ya tiene las dos copias); si no, de golpe
+            if (i.getIntExtra(DISENO, 0) == DISENO_ACTUAL) cambiarPlazo(c, m, id);
+            else pintar(c, m, id);
             return;
         }
         super.onReceive(c, i);
@@ -71,31 +80,76 @@ public class Widget extends AppWidgetProvider {
         for (int id : m.getAppWidgetIds(new ComponentName(c, Widget.class))) pintar(c, m, id);
     }
 
-    static void pintar(Context c, AppWidgetManager m, int id) {
-        // el tamaño en vertical: ancho mínimo y alto máximo (así lo da Android), en dp
+    /** el tamaño en vertical: ancho mínimo y alto máximo (así lo da Android), en dp */
+    private static float[] tamano(AppWidgetManager m, int id) {
         Bundle o = m.getAppWidgetOptions(id);
         float ancho = o.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, 0), alto = o.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, 0);
         if (ancho < 40 || alto < 40) {
             ancho = 340;
             alto = 180;
         }
-        Datos.Resultado r = Datos.calcular(c, periodo(c, id));
+        return new float[]{ancho, alto};
+    }
+
+    /** el widget dibujado y comprimido: así cabe de sobra en lo que Android deja mandar a la pantalla de inicio */
+    private static Icon imagen(Context c, float ancho, float alto, Datos.Resultado r) {
         Bitmap b = Lienzo.dibujar(c, ancho, alto, r);
-        // la imagen va comprimida: así cabe de sobra en lo que Android deja mandar a la pantalla de inicio
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         b.compress(Build.VERSION.SDK_INT >= 30 ? Bitmap.CompressFormat.WEBP_LOSSLESS : Bitmap.CompressFormat.PNG, 100, out);
         b.recycle();
         byte[] bytes = out.toByteArray();
+        return Icon.createWithData(bytes, 0, bytes.length);
+    }
 
+    private static String descripcion(Datos.Resultado r) {
+        return r.hay ? "Patrimonio " + (r.oculto ? "oculto" : Datos.eur(r.total, false)) + ", hoy " + Datos.pct(r.diaPct) + ", gráfica de " + r.rango : "GrowFolio: abre la app";
+    }
+
+    /**
+     * Todo el widget de nuevo. Va siempre en la primera copia: si se estaba viendo la segunda (tras cambiar de plazo),
+     * se vuelve a la primera con el mismo fundido. Así, si Android lo vuelve a montar desde cero, sale el bueno.
+     */
+    static void pintar(Context c, AppWidgetManager m, int id) {
+        float[] t = tamano(m, id);
+        float ancho = t[0], alto = t[1];
+        Datos.Resultado r = Datos.calcular(c, periodo(c, id));
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_lienzo);
-        v.setImageViewIcon(R.id.lienzo, Icon.createWithData(bytes, 0, bytes.length));
-        v.setContentDescription(R.id.lienzo, r.hay ? "Patrimonio " + (r.oculto ? "oculto" : Datos.eur(r.total, false)) + ", hoy " + Datos.pct(r.diaPct) : "Inversiones: abre la app");
-        v.setOnClickPendingIntent(R.id.lienzo, abrir(c, "cartera", 1));
+        v.setImageViewIcon(R.id.lienzo, imagen(c, ancho, alto, r));
+        String d = descripcion(r);
+        v.setContentDescription(R.id.lienzo, d);
+        v.setContentDescription(R.id.lienzo2, d);
+        if (Datos.prefs(c).getInt("copia_" + id, 0) != 0) {
+            v.setDisplayedChild(R.id.lienzos, 0);
+            Datos.prefs(c).edit().putInt("copia_" + id, 0).apply();
+        }
+        PendingIntent abre = abrir(c, "cartera", 1);
+        v.setOnClickPendingIntent(R.id.lienzo, abre);
+        v.setOnClickPendingIntent(R.id.lienzo2, abre);
         v.setOnClickPendingIntent(R.id.refrescar, refrescar(c));
         v.setViewVisibility(R.id.refrescar, alto >= 110 && r.hay ? View.VISIBLE : View.GONE);
-        v.setOnClickPendingIntent(R.id.periodo, cambiarPeriodo(c, id));
-        v.setViewVisibility(R.id.periodo, Lienzo.conPeriodo(ancho, alto, r) ? View.VISIBLE : View.GONE);
+        int modo = Lienzo.modoPlazo(ancho, alto, r);
+        v.setViewVisibility(R.id.plazos, modo == 2 ? View.VISIBLE : View.GONE);
+        for (int k = 0; k < PLAZOS.length; k++) v.setOnClickPendingIntent(PLAZOS[k], cambiarPeriodo(c, id, Datos.PERIODOS[k]));
+        v.setViewVisibility(R.id.periodo, modo == 1 ? View.VISIBLE : View.GONE);
+        v.setOnClickPendingIntent(R.id.periodo, cambiarPeriodo(c, id, 0));
         m.updateAppWidget(id, v);
+    }
+
+    /**
+     * Solo cambia el plazo: se dibuja en la copia que no se ve y se pasa a ella con un fundido (el ViewFlipper de
+     * widget_lienzo.xml), sin rehacer el resto del widget.
+     */
+    private static void cambiarPlazo(Context c, AppWidgetManager m, int id) {
+        float[] t = tamano(m, id);
+        Datos.Resultado r = Datos.calcular(c, periodo(c, id));
+        int otra = 1 - Datos.prefs(c).getInt("copia_" + id, 0);
+        int vista = otra == 0 ? R.id.lienzo : R.id.lienzo2;
+        RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_lienzo);
+        v.setImageViewIcon(vista, imagen(c, t[0], t[1], r));
+        v.setContentDescription(vista, descripcion(r));
+        v.setDisplayedChild(R.id.lienzos, otra);
+        m.partiallyUpdateAppWidget(id, v);
+        Datos.prefs(c).edit().putInt("copia_" + id, otra).apply();
     }
 
     private static PendingIntent abrir(Context c, String hash, int codigo) {
@@ -107,9 +161,12 @@ public class Widget extends AppWidgetProvider {
         return Datos.prefs(c).getInt("periodo_" + id, 31);
     }
 
-    private static PendingIntent cambiarPeriodo(Context c, int id) {
-        Intent i = new Intent(c, Widget.class).setAction(PERIODO).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id);
-        return PendingIntent.getBroadcast(c, 1000 + id, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+    /** tocar un plazo («dias») o, con 0, pasar al siguiente; cada uno con su código para que Android no los junte */
+    private static PendingIntent cambiarPeriodo(Context c, int id, int dias) {
+        Intent i = new Intent(c, Widget.class).setAction(PERIODO).putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, id)
+                .putExtra(DIAS, dias).putExtra(DISENO, DISENO_ACTUAL);
+        int k = dias == 0 ? 7 : Datos.indicePeriodo(dias);
+        return PendingIntent.getBroadcast(c, 1000 + id * 8 + k, i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
     }
 
     private static PendingIntent refrescar(Context c) {

@@ -17,6 +17,12 @@ import android.graphics.RectF;
 import android.graphics.Shader;
 import android.graphics.Typeface;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.IsoFields;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +49,7 @@ final class Lienzo {
     private final Canvas c;
     private final Bitmap bmp;
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
+    private float ph = 16;   // el margen de los lados, en dp (lo pone todo())
 
     private Lienzo(Context ctx, Bitmap bmp, float s) {
         this.ctx = ctx;
@@ -228,11 +235,42 @@ final class Lienzo {
         return c;
     }
 
+    private static final String[] DIAS = {"lun", "mar", "mié", "jue", "vie", "sáb", "dom"};
+    private static final String[] MESES = {"ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"};
+
+    /** un paso redondo (1, 2 o 5 por una potencia de 10) para que haya unas «quiero» líneas en el rango */
+    private static double pasoRedondo(double rango, int quiero) {
+        double x = Math.max(1e-9, rango / Math.max(1, quiero)), mag = Math.pow(10, Math.floor(Math.log10(x))), f = x / mag;
+        return (f < 1.5 ? 1 : f < 3 ? 2 : f < 7 ? 5 : 10) * mag;
+    }
+
+    /** el valor de una línea de la escala: «80.000 €» o, con la cartera oculta, «+2 %» desde el principio */
+    private static String etiquetaY(double v, double paso, boolean enPct) {
+        if (!enPct) return Datos.eur(v, false);
+        String t = new java.text.DecimalFormat(paso >= 1 ? "0" : "0.0", new java.text.DecimalFormatSymbols(new java.util.Locale("es", "ES"))).format(Math.abs(v));
+        boolean cero = Math.abs(v) < paso / 2;
+        return (cero ? "" : v < 0 ? "−" : "+") + (cero ? "0" : t) + " %";
+    }
+
+    /** texto con un borde oscuro, para que la escala se lea encima de la curva y el relleno */
+    private void textoEscala(float x, float yBase, String t, Paint.Align ancla, int color) {
+        estilo(10, 600, FONDO_B, ancla);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(dp(3));
+        p.setStrokeJoin(Paint.Join.ROUND);
+        p.setAlpha(0xB8);
+        c.drawText(t, dp(x), dp(yBase), p);
+        estilo(10, 600, color, ancla);
+        c.drawText(t, dp(x), dp(yBase), p);
+    }
+
     /**
      * la curva del periodo entre (x0, y0) y (x1, y1), en dp; el relleno baja hasta «suelo». Con «entra», lo de la
-     * izquierda aparece poco a poco (la curva pequeña de una fila no empieza de golpe).
+     * izquierda aparece poco a poco (la curva pequeña de una fila no empieza de golpe). Con «ejes», la escala:
+     * unas líneas tenues con su valor y, abajo, las horas (24 h), los días (la semana), las semanas (el mes) o los meses.
      */
-    private void grafica(float x0, float y0, float x1, float y1, float suelo, double[] serie, boolean ref, boolean entra) {
+    private void grafica(float x0, float y0, float x1, float y1, float suelo, Datos.Resultado r, boolean ref, boolean entra, boolean ejes) {
+        double[] serie = r.serie;
         if (serie == null || serie.length < 2 || x1 - x0 < 30 || y1 - y0 < 16) return;
         double lo = Double.MAX_VALUE, hi = -Double.MAX_VALUE;
         for (double v : serie) {
@@ -244,12 +282,72 @@ final class Lienzo {
         lo -= rango * 0.12;
         hi += rango * 0.05;
         int n = serie.length;
+        long[] tt = r.tiempos != null && r.tiempos.length == n ? r.tiempos : null;
+        boolean porHora = r.porTiempo && tt != null && tt[n - 1] > tt[0];
         float[] xs = new float[n], ys = new float[n];
         float arriba = Float.MAX_VALUE;
         for (int k = 0; k < n; k++) {
-            xs[k] = dp(x0 + (x1 - x0) * k / (float) (n - 1));
+            float fx = porHora ? (tt[k] - tt[0]) / (float) (tt[n - 1] - tt[0]) : k / (float) (n - 1);
+            xs[k] = dp(x0 + (x1 - x0) * fx);
             ys[k] = dp((float) (y1 - (y1 - y0) * (serie[k] - lo) / (hi - lo)));
             arriba = Math.min(arriba, ys[k]);
+        }
+
+        // la escala: dónde van las líneas (y) y las marcas de abajo (x), en dp
+        List<Float> yL = new ArrayList<>(), xM = new ArrayList<>();
+        List<String> yT = new ArrayList<>(), xT = new ArrayList<>();
+        if (ejes) {
+            double base = serie[0];
+            boolean enPct = r.oculto || base <= 0;
+            double a = enPct ? (lo / base - 1) * 100 : lo, b = enPct ? (hi / base - 1) * 100 : hi;
+            float alto = y1 - y0;
+            double paso = pasoRedondo(b - a, alto < 64 ? 2 : alto < 120 ? 3 : 4);
+            String antes = "";
+            for (long k = (long) Math.ceil(a / paso); k <= (long) Math.floor(b / paso); k++) {
+                double v = k * paso, val = enPct ? base * (1 + v / 100) : v;
+                float y = (float) (y1 - (y1 - y0) * (val - lo) / (hi - lo));
+                String t = etiquetaY(v, paso, enPct);
+                if (y < y0 + 10 || y > y1 - 3 || t.equals(antes)) continue;
+                yL.add(y);
+                yT.add(t);
+                antes = t;
+            }
+            // las marcas de abajo: candidatas y luego, de izquierda a derecha, las que caben sin pisarse
+            List<Float> cx = new ArrayList<>();
+            List<String> ct = new ArrayList<>();
+            if (tt != null) {
+                ZoneId z = ZoneId.systemDefault();
+                if (porHora) {   // cada 6 horas en punto
+                    ZonedDateTime m = Instant.ofEpochMilli(tt[0]).atZone(z).truncatedTo(ChronoUnit.HOURS).plusHours(1);
+                    while (m.getHour() % 6 != 0) m = m.plusHours(1);
+                    for (; m.toInstant().toEpochMilli() < tt[n - 1]; m = m.plusHours(6)) {
+                        cx.add(x0 + (x1 - x0) * (m.toInstant().toEpochMilli() - tt[0]) / (float) (tt[n - 1] - tt[0]));
+                        ct.add(String.format(java.util.Locale.ROOT, "%02d:00", m.getHour()));
+                    }
+                } else {
+                    for (int k = 1; k < n; k++) {
+                        LocalDate da = Instant.ofEpochMilli(tt[k - 1]).atZone(z).toLocalDate(), db = Instant.ofEpochMilli(tt[k]).atZone(z).toLocalDate();
+                        String t = null;
+                        if (r.dias <= 7) {
+                            if (!db.equals(da)) t = DIAS[db.getDayOfWeek().getValue() - 1];
+                        } else if (r.dias <= 31) {
+                            if (db.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) != da.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)) t = db.getDayOfMonth() + " " + MESES[db.getMonthValue() - 1];
+                        } else if (db.getMonthValue() != da.getMonthValue()) t = MESES[db.getMonthValue() - 1];
+                        if (t != null) {
+                            cx.add(x0 + (x1 - x0) * k / (float) (n - 1));
+                            ct.add(t);
+                        }
+                    }
+                }
+            }
+            float der = -1e9f;
+            for (int k = 0; k < cx.size(); k++) {
+                float w = ancho(ct.get(k), 10, 600), l = cx.get(k) - w / 2;
+                if (l < ph || cx.get(k) + w / 2 > x1 - 14 || l < der + 12) continue;
+                xM.add(cx.get(k));
+                xT.add(ct.get(k));
+                der = cx.get(k) + w / 2;
+            }
         }
         Path curva = curvaSuave(xs, ys);
         // el relleno sigue plano hasta el borde derecho, para que no acabe en un corte
@@ -260,6 +358,17 @@ final class Lienzo {
         relleno.close();
 
         int capa = entra ? c.saveLayer(null, null) : c.save();
+        // la rejilla, por debajo de todo: muy tenue, para dar la escala sin quitarle protagonismo a la curva
+        if (!yL.isEmpty() || !xM.isEmpty()) {
+            p.reset();
+            p.setAntiAlias(true);
+            p.setStyle(Paint.Style.STROKE);
+            p.setStrokeWidth(Math.max(1, dp(0.8f)));
+            p.setColor(alfa(TEXTO, 0x14));
+            for (float y : yL) c.drawLine(dp(x0), dp(y), dp(x1), dp(y), p);
+            p.setColor(alfa(TEXTO, 0x0E));
+            for (float x : xM) c.drawLine(dp(x), dp(y0 - 4), dp(x), dp(suelo - 17), p);
+        }
         p.reset();
         p.setAntiAlias(true);
         p.setStyle(Paint.Style.FILL);
@@ -318,6 +427,10 @@ final class Lienzo {
         p.setStrokeWidth(dp(1.6f));
         p.setColor(FONDO_B);
         c.drawCircle(xs[n - 1], ys[n - 1], dp(3.4f), p);
+
+        // los valores de la escala, encima: a la izquierda los de las líneas y abajo las horas o las fechas
+        for (int k = 0; k < yL.size(); k++) textoEscala(ph, yL.get(k) - 3.5f, yT.get(k), Paint.Align.LEFT, alfa(TEXTO2, 0xC8));
+        for (int k = 0; k < xM.size(); k++) textoEscala(xM.get(k), suelo - 7, xT.get(k), Paint.Align.CENTER, alfa(APAGADO, 0xE6));
 
         if (entra) {   // lo de la izquierda se funde con el fondo
             Paint m = new Paint();
@@ -381,9 +494,60 @@ final class Lienzo {
         c.clipPath(marco);
     }
 
-    /** el periodo de la curva arriba, en una pastilla con su flecha: al tocarlo cambia (lo hace Widget) */
-    static boolean conPeriodo(float W, float H, Datos.Resultado r) {
-        return r.hay && H >= 110 && W >= 240 && r.serie != null && r.serie.length > 1 && !r.rango.isEmpty();
+    /**
+     * cómo se elige el plazo de la curva, arriba: 2, los cinco a la vista (24 h, 1S, 1M, 3M, 1A) y se toca el que
+     * quieras; 1, si el widget es estrecho, una pastilla que pasa al siguiente; 0, sin elegir (una fila o muy pequeño).
+     * Las zonas que se tocan están en widget_lienzo.xml: si cambias SEL_X o SEL_CHIP, cámbialas allí también.
+     */
+    static int modoPlazo(float W, float H, Datos.Resultado r) {
+        if (!r.hay || H < 110) return 0;
+        return W >= 300 ? 2 : W >= 240 ? 1 : 0;
+    }
+
+    static final float SEL_X = 16, SEL_CHIP = 36, SEL_ALTO = 22;
+
+    /** los plazos en una cápsula: el elegido, en dorado sobre su pastilla; los demás, apagados */
+    private void selector(int elegido, float yTop) {
+        int n = Datos.PERIODOS.length;
+        float w = SEL_CHIP * n;
+        p.reset();
+        p.setAntiAlias(true);
+        p.setStyle(Paint.Style.FILL);
+        p.setColor(alfa(TEXTO, 0x0F));
+        c.drawRoundRect(new RectF(dp(SEL_X), dp(yTop), dp(SEL_X + w), dp(yTop + SEL_ALTO)), dp(SEL_ALTO / 2), dp(SEL_ALTO / 2), p);
+        float xs = SEL_X + SEL_CHIP * elegido;
+        RectF on = new RectF(dp(xs + 2), dp(yTop + 2), dp(xs + SEL_CHIP - 2), dp(yTop + SEL_ALTO - 2));
+        p.setColor(alfa(ACENTO, 0x2E));
+        c.drawRoundRect(on, dp(SEL_ALTO / 2 - 2), dp(SEL_ALTO / 2 - 2), p);
+        p.setStyle(Paint.Style.STROKE);
+        p.setStrokeWidth(Math.max(1, dp(0.8f)));
+        p.setColor(alfa(ACENTO, 0x59));
+        c.drawRoundRect(on, dp(SEL_ALTO / 2 - 2), dp(SEL_ALTO / 2 - 2), p);
+        for (int k = 0; k < n; k++) {
+            boolean es = k == elegido;
+            estilo(11, es ? 750 : 600, es ? ACENTO : APAGADO, Paint.Align.CENTER);
+            c.drawText(Datos.CORTOS[k], dp(SEL_X + SEL_CHIP * k + SEL_CHIP / 2), dp(yTop + SEL_ALTO / 2 + 3.9f), p);
+        }
+    }
+
+    /**
+     * lo que ha cambiado la cartera en el plazo de la curva, entre «desde» y «hasta» (en dp), alineado a la derecha:
+     * «+1.230 € +1,6 % en 1 mes»; si no cabe, sin los euros; si ni así, nada. Con la cartera oculta, solo el %
+     */
+    private void variacion(Datos.Resultado r, float desde, float hasta, float base) {
+        double[] s = r.serie;
+        double v = s[s.length - 1] - s[0], pc = s[0] != 0 ? (s[s.length - 1] / s[0] - 1) * 100 : 0;
+        int col = Math.abs(pc) < 0.005 ? TEXTO2 : pc > 0 ? SUBE : BAJA;
+        String eur = r.oculto ? "" : Datos.eur(v, true), pct = Datos.pct(pc), etq = "en " + r.rango;
+        float wEtq = ancho(etq, 12.5f, 500), wPct = ancho(pct, 12, 600), wEur = eur.isEmpty() ? 0 : ancho(eur, 13, 700);
+        float libre = hasta - desde;
+        boolean conEur = !eur.isEmpty() && wEur + 5 + wPct + 6 + wEtq <= libre;
+        if (!conEur && wPct + 6 + wEtq > libre) return;
+        float x = hasta - wEtq;
+        texto(x, base, etq, 12.5f, 500, APAGADO, false);
+        x -= 6 + wPct;
+        texto(x, base, pct, 12, 600, alfa(col, 0xCC), false);
+        if (conEur) texto(x - 5 - wEur, base, eur, 13, 700, col, false);
     }
 
     private void periodo(float xDer, float base, String txt) {
@@ -434,6 +598,7 @@ final class Lienzo {
         c.save();
         recortarAlMarco();
         float ph = W >= 200 ? 16 : 14, pv = H >= 110 ? 14 : 11;
+        this.ph = ph;
         float util = W - 2 * ph;
         if (!r.hay) {
             texto(ph, H / 2 - 2, "GrowFolio", Math.min(22, H * 0.22f), 700, TEXTO, false);
@@ -452,17 +617,19 @@ final class Lienzo {
             String hoyTxt = diaEur + (diaPct.isEmpty() ? "" : "  " + diaPct) + " hoy";
             if (ancho(hoyTxt, 12, 650) > izq) hoyTxt = diaEur + " hoy";
             texto(ph, yb + 19, recortar(hoyTxt, 12, 650, izq), 12, 650, color(r.dia), false);
-            if (W >= 250) grafica(ph + izq + 12, pv + 4, W - 12, H - pv - 2, H, r.serie, false, true);
+            if (W >= 250) grafica(ph + izq + 12, pv + 4, W - 12, H - pv - 2, H, r, false, true, false);
             c.restore();
             return;
         }
 
-        // cabecera: qué es, la hora de los precios y refrescar
+        // cabecera: los plazos de la curva (o «Patrimonio» si no caben), la hora de los precios y refrescar
         float y = pv + 11;
-        texto(ph, y, "Patrimonio", 12, 600, APAGADO, false);
+        int modo = modoPlazo(W, H, r);
+        if (modo == 2) selector(Datos.indicePeriodo(r.dias), y - 15);
+        else texto(ph, y, "Patrimonio", 12, 600, APAGADO, false);
         refresco(W - ph - 6, y - 4.2f, 6.2f);
         texto(W - ph - 19, y, r.horaTxt, 11.5f, 500, APAGADO, true);
-        if (conPeriodo(W, H, r)) periodo(W - ph - 19 - ancho(r.horaTxt, 11.5f, 500) - 10, y, r.rango);
+        if (modo == 1) periodo(W - ph - 19 - ancho(r.horaTxt, 11.5f, 500) - 10, y, r.rango);
 
         // la cifra grande y gruesa
         float maxSp = Math.max(26, Math.min(42, Math.min(H * 0.2f, W * 0.115f)));
@@ -472,7 +639,13 @@ final class Lienzo {
         // lo de hoy en su pastilla y «hoy» al lado: es la única cifra que cambia (nada de «en total» ni del mes)
         float yp = yb + 9;
         float wP = pildora(ph, yp, 24, diaEur, diaPct, color(r.dia), r.dia >= 0);
-        if (ancho("hoy", 12.5f, 500) <= util - wP - 8) texto(ph + wP + 9, yp + 16.5f, "hoy", 12.5f, 500, APAGADO, false);
+        float finHoy = ph + wP;
+        if (ancho("hoy", 12.5f, 500) <= util - wP - 8) {
+            texto(ph + wP + 9, yp + 16.5f, "hoy", 12.5f, 500, APAGADO, false);
+            finHoy = ph + wP + 9 + ancho("hoy", 12.5f, 500);
+        }
+        // y a la derecha, lo que ha cambiado en el plazo de la curva («+1.230 € +1,6 % en 1 mes»), si cabe
+        if (hayGraf && modo > 0) variacion(r, finHoy + 16, W - ph, yp + 16.5f);
         y = yp + 24;
 
         // abajo, según el alto: lo que toca y lo que más ha movido hoy la cartera (en pastillas, como en la app)
@@ -484,9 +657,11 @@ final class Lienzo {
         float altoFilas = filas.isEmpty() ? 0 : 25 + 31 * filas.size();
         boolean hayAbajo = altoToca + altoFilas > 0;
         float suelo = hayAbajo ? H - pv - altoToca - altoFilas - 8 : H;
-        float graf1 = suelo - (hayAbajo ? 12 : 10);   // abajo ya no va la etiqueta del periodo (está arriba)
-        if (hayGraf) grafica(0, y + 10, W - 12, graf1, suelo, r.serie, true, false);
-        else if (graf1 - y - 10 >= 24) {   // aún sin datos del mes: una línea tenue y qué hacer
+        // con sitio, la escala: abajo van las horas o las fechas, así que la curva se queda algo más arriba
+        boolean ejes = W >= 160 && suelo - y - 10 >= 62;
+        float graf1 = suelo - (ejes ? 25 : hayAbajo ? 12 : 10);
+        if (hayGraf) grafica(0, y + 10, W - 12, graf1, suelo, r, true, false, ejes);
+        else if (graf1 - y - 10 >= 24) {   // aún sin datos de ese plazo: una línea tenue y qué hacer
             float ym = (y + 10 + graf1) / 2;
             p.reset();
             p.setAntiAlias(true);
@@ -496,7 +671,7 @@ final class Lienzo {
             p.setPathEffect(new DashPathEffect(new float[]{dp(3), dp(3)}, 0));
             c.drawLine(dp(ph), dp(ym), dp(W - ph), dp(ym), p);
             p.setPathEffect(null);
-            String aviso = recortar("La gráfica se carga al refrescar", 11.5f, 500, util - 24);
+            String aviso = recortar(r.dias <= 1 ? "Aún no hay precios de las últimas 24 h" : "La gráfica se carga al refrescar", 11.5f, 500, util - 24);
             float wa = ancho(aviso, 11.5f, 500);
             p.reset();
             p.setColor(FONDO_B);
