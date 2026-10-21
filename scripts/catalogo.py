@@ -204,7 +204,9 @@ def main(ruta_cat, dir_anterior, dir_salida):
             try:
                 if not sim:
                     raise RuntimeError("sin símbolo")
-                _, s, meta = serie_cierres(sim, "10y")
+                # en cripto, "s" es el mercado de Bitvavo (para el precio en directo) y "sy", si lo hay, el símbolo de
+                # Yahoo del que sale el histórico (a veces solo en dólares: se pasa a euros como todo lo demás)
+                _, s, meta = serie_cierres(e.get("sy") or sim, "10y")
                 if len(s) < 20 and not e.get("s"):
                     raise RuntimeError("poco histórico")
             except Exception:  # noqa: BLE001
