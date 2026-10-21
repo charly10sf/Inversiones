@@ -119,8 +119,17 @@ a:hover { text-decoration: underline; }
 .top.cab-4 .estado .est-l { display: none; }
 .top.cab-4 .estado .est-c { display: flex; }
 .top.cab-4 .estado { overflow: visible; }
+/* la pastilla mide lo que su texto: «Bolsa / sin datos» no se sale del borde */
+.top.cab-4 .estado-w, .top.cab-4 .estado-b { flex: none; max-width: none; }
+.top.cab-4 .estado-b { padding: 0 11px 0 9px; }
+.top.cab-4 .estado { gap: 7px; }
 .top.cab-5 .fila-top { gap: 10px; }
 .top.cab-5 .marca .ver-chip { display: none; }
+/* en los móviles más estrechos (320 px): la luz se queda con su palabra («abierta») y GTA, con el «VI» */
+.top.cab-6 .estado .est-c small { display: none; }
+.top.cab-6 .estado-b { padding: 0 10px 0 8px; }
+.top.cab-7 .gta-top-d { display: none; }
+.top.cab-7 .gta-top { padding: 0 9px; }
 .estado-b { display: inline-flex; align-items: center; height: 34px; max-width: 100%; min-width: 0; padding: 0 12px 0 10px; border: 1px solid var(--line-2); border-radius: 999px; background: rgba(255, 255, 255, 0.03); cursor: pointer; }
 .estado .est-c { display: none; flex-direction: column; align-items: flex-start; justify-content: center; gap: 1px; line-height: 1.05; }
 .estado .est-c small { display: block; font-size: 9.5px; font-weight: 500; color: var(--muted); }
@@ -128,7 +137,7 @@ a:hover { text-decoration: underline; }
 .estado.on .est-c { color: var(--up); }
 .estado.cerr .est-c { color: var(--text-2); }
 /* con las pestañas arriba y poco sitio, solo la luz (el texto sigue para los lectores de pantalla) */
-@media (min-width: 900px) and (max-width: 1399px) { .estado .est-l { display: none; } .estado .est-c { display: flex; } .estado { overflow: visible; } }
+@media (min-width: 900px) and (max-width: 1399px) { .estado .est-l { display: none; } .estado .est-c { display: flex; } .estado { overflow: visible; } .estado-w, .estado-b { flex: none; max-width: none; } }
 .estado-b:hover, .estado-w.abierto .estado-b { background: var(--plane-2); }
 .estado-panel { display: none; position: absolute; z-index: 40; top: calc(100% + 6px); right: 0; width: 330px; max-width: calc(100vw - 24px); padding: 14px 14px 12px; border-radius: 14px; border: 1px solid var(--line-2); background: var(--plane-2); box-shadow: 0 14px 36px rgba(0, 0, 0, 0.6); }
 @media (hover: hover) { .estado-w:hover .estado-panel { display: block; } }
@@ -12220,7 +12229,7 @@ const MANDO = SVG('<path d="M7 8.5h10a4.3 4.3 0 0 1 4.3 4.6l-.4 3.4a2.5 2.5 0 0 
 /* GTA VI en la cabecera, junto a «En directo»: el mando y los días que faltan, con las letras de neón de la
    sección de GTA (no las del logo del juego) */
 // que la cabecera quepa sin cortar nada: se prueba de más a menos, y para en cuanto cabe y la luz de En directo se lee entera
-var PASOS_CAB = ['cab-1', 'cab-2', 'cab-3', 'cab-4', 'cab-5'];
+var PASOS_CAB = ['cab-1', 'cab-2', 'cab-3', 'cab-4', 'cab-5', 'cab-6', 'cab-7'];
 function encajarCabecera() {
   const top = $('.top'), f = $('.fila-top'); if (!top || !f) return;
   top.classList.remove(...PASOS_CAB);
