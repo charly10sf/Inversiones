@@ -86,6 +86,9 @@ def clase_de(nombre, tipo):
     n = nombre.lower()
     if tipo == "Cripto":
         return "Cripto"
+    # los ETP de cripto (21Shares, CoinShares, WisdomTree Bitcoin…) van con la cripto
+    if tipo in ("ETC", "ETF") and re.search(r"bitcoin|ethereum|crypto|solana|\bxrp\b", n):
+        return "Cripto"
     # las de mineras de oro son acciones, no oro
     if re.search(r"miner|mining", n):
         return "Renta variable"
@@ -235,6 +238,13 @@ def main(ruta_cat, dir_anterior, dir_salida):
                 raise RuntimeError(f"el nombre no cuadra: Yahoo dice «{suyo}»")
             nombre = e.get("n") or suyo or sim
             tipo = e.get("t") or ("Cripto" if sim.endswith("-EUR") else "Fondo" if sim.startswith("0P") else "ETF")
+            # lo pedido por ISIN que Yahoo da como «acción»: si es un ETC o ETP (oro, plata, bitcoin…) va como ETC;
+            # si es una empresa de verdad, no es para el catálogo (la app la pide por su ticker y va al radar)
+            if not e.get("t") and (meta.get("instrumentType") or "").upper() == "EQUITY":
+                if re.search(r"\b(etc|etp|etn|physical)\b", nombre.lower()):
+                    tipo = "ETC"
+                elif not re.search(r"\b(etf|ucits|fund|fonds|index)\b", nombre.lower()):
+                    raise RuntimeError(f"es una acción ({nombre}): va al radar, no al catálogo")
             clase = clase_de(nombre, tipo)
             hoy = s_eur.index[-1]
             salida[cid] = {

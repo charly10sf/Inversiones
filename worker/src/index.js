@@ -1,6 +1,6 @@
 /* GrowFolio: el servidor pequeño (un Cloudflare Worker).
 
-   De momento hace una cosa: leer el saldo de tus cuentas de dinero con Enable Banking (open banking, solo lectura),
+   Hace dos cosas: buscar en Yahoo un ISIN que no está en el catálogo (/isin, más abajo) y leer el saldo de tus cuentas de dinero con Enable Banking (open banking, solo lectura),
    para que el efectivo de GrowFolio cuadre con el del banco. Está aquí y no en la web porque Enable Banking firma cada
    petición con una clave privada que no puede ir en una página pública.
 
@@ -187,20 +187,88 @@ async function lanzarAction(env, flujo) {
   return r.status;
 }
 
+/* ---------- «Añadir con su ISIN»: lo que no está en el catálogo se busca en Yahoo en el momento ----------
+   Devuelve su nombre, el símbolo con histórico de verdad (primero el del fondo, 0P…, y las bolsas en euros), la
+   moneda y el último año de cierres, para que la app lo añada ya con precio y gráfica. Con «pedir=1» y la sesión de
+   GrowFolio, además lanza el catálogo para que en unos minutos lo tengan todos (la app ya lo ha dejado pedido en
+   Firestore). Lo que se encuentra se guarda 6 horas en la caché de Cloudflare: no se le pregunta a Yahoo dos veces. */
+const UA = 'Mozilla/5.0 (Linux; Android 14) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Mobile Safari/537.36';
+function isinValido(c) {
+  if (!/^[A-Z]{2}[A-Z0-9]{9}[0-9]$/.test(c)) return false;
+  const d = c.slice(0, 11).split('').map((x) => (/[0-9]/.test(x) ? x : String(x.charCodeAt(0) - 55))).join('');
+  let s = 0, doble = true;
+  for (let i = d.length - 1; i >= 0; i--) { let n = +d[i]; if (doble) { n *= 2; if (n > 9) n -= 9; } s += n; doble = !doble; }
+  return (10 - (s % 10)) % 10 === +c[11];
+}
+// el del fondo (0P…), luego las bolsas grandes en euros, luego Londres, Suiza o Fráncfort, luego EEUU; al final las regionales alemanas
+const ordenSim = (s) => (s.startsWith('0P') ? 0 : /\.(DE|AS|PA|MI|MC)$/.test(s) ? 1 : /\.(L|SW|F|VI|BR|LS|IR)$/.test(s) ? 2 : !s.includes('.') ? 3 : 4);
+async function yahoo(url) {
+  const r = await fetch(url, { headers: { 'User-Agent': UA, Accept: 'application/json' } });
+  if (!r.ok) throw new Error(`yahoo ${r.status}`);
+  return r.json();
+}
+async function buscarIsin(isin) {
+  const j = await yahoo(`https://query2.finance.yahoo.com/v1/finance/search?q=${isin}&quotesCount=10&newsCount=0&listsCount=0`);
+  const vistos = new Map();
+  for (const q of (j && j.quotes) || []) if (q && q.symbol && !vistos.has(q.symbol)) vistos.set(q.symbol, q);
+  const cands = [...vistos.values()].sort((a, b) => ordenSim(a.symbol) - ordenSim(b.symbol)).slice(0, 6);
+  for (const q of cands) {
+    try {
+      const c = await yahoo(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(q.symbol)}?range=1y&interval=1d`);
+      const r = c && c.chart && c.chart.result && c.chart.result[0];
+      if (!r) continue;
+      const ts = r.timestamp || [], cl = (r.indicators && r.indicators.quote && r.indicators.quote[0] && r.indicators.quote[0].close) || [];
+      const dias = new Map();
+      ts.forEach((t, k) => { const v = cl[k]; if (v != null && isFinite(v) && v > 0) dias.set(new Date(t * 1000).toISOString().slice(0, 10), +(+v).toFixed(6)); });
+      const h = [...dias.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1));
+      if (h.length < 20) continue;
+      const m = r.meta || {};
+      return { isin, s: q.symbol, n: String(m.longName || q.longname || m.shortName || q.shortname || '').trim().slice(0, 120), tipo: q.quoteType || m.instrumentType || '', m: m.currency || '', bolsa: q.exchDisp || q.exchange || '', h };
+    } catch (e) { /* el siguiente símbolo */ }
+  }
+  return null;
+}
+let ultimoCatalogo = 0;
+async function isinRuta(url, req, env, ctx, res, deFuera) {
+  const c = String(url.searchParams.get('c') || '').toUpperCase().replace(/\s+/g, '');
+  if (!isinValido(c)) return res({ error: 'isin' }, 400);
+  const u = req.headers.get('Authorization') ? await quienEs(req, env) : null;
+  if (deFuera && !u) return res({ error: 'no-permitido' }, 403);
+  const cache = caches.default, clave = new Request(`https://growfolio.cache/isin/${c}`);
+  let d = null;
+  const hit = await cache.match(clave);
+  if (hit) d = await hit.json().catch(() => null);
+  if (!d) {
+    let r = null, fallo = '';
+    try { r = await buscarIsin(c); } catch (e) { fallo = String((e && e.message) || e).slice(0, 80); }
+    d = { r, fallo };
+    if (!fallo) ctx.waitUntil(cache.put(clave, new Response(JSON.stringify(d), { headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${r ? 21600 : 1800}` } })));
+  }
+  // el catálogo se lanza como mucho una vez cada 10 minutos por instancia (y GitHub deja una sola en cola)
+  if (url.searchParams.get('pedir') === '1' && u && env.PRECIOS_TOKEN && Date.now() - ultimoCatalogo > 10 * 60e3) {
+    ultimoCatalogo = Date.now();
+    ctx.waitUntil(lanzarAction(env, 'catalogo.yml'));
+  }
+  if (d.fallo) return res({ ok: false, error: 'yahoo', motivo: d.fallo }, 502);
+  return res(d.r ? { ok: true, ...d.r } : { ok: false, error: 'no-esta' });
+}
+
 export default {
   async scheduled(ev, env, ctx) {
     if (!env.PRECIOS_TOKEN) return;
     ctx.waitUntil(lanzarAction(env, ev.cron === CRON_CATALOGO ? 'catalogo.yml' : 'precios.yml'));
   },
-  async fetch(req, env) {
+  async fetch(req, env, ctx) {
     const url = new URL(req.url), origen = req.headers.get('Origin') || '';
     const origenes = [...ORIGENES, ...String(env.ORIGENES_EXTRA || '').split(',').map((x) => x.trim()).filter(Boolean)];
     const cors = { 'Access-Control-Allow-Origin': origenes.includes(origen) ? origen : ORIGENES[0], 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '86400', Vary: 'Origin' };
     const res = (cuerpo, status = 200) => new Response(JSON.stringify(cuerpo), { status, headers: { ...cors, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     try {
-      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN });
+      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true });
       if (url.pathname.startsWith('/banco/')) return await banco(url.pathname.slice(7), url, req, env, res);
+      // desde la web (o la app, que la carga) no hace falta sesión para buscar; desde otro sitio, sí
+      if (url.pathname === '/isin') return await isinRuta(url, req, env, ctx, res, !origenes.includes(origen));
       return res({ error: 'no-existe' }, 404);
     } catch (e) {
       return res({ error: 'fallo', motivo: String((e && e.message) || e).slice(0, 160) }, 500);
