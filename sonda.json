@@ -1,0 +1,89 @@
+{
+ "salud": {
+  "status": 200,
+  "seg": 0.14,
+  "j": {
+   "ok": true,
+   "banco": true,
+   "precios": true,
+   "isin": true
+  }
+ },
+ "DE000A2T0VU5": {
+  "status": 200,
+  "seg": 0.33,
+  "j": {
+   "ok": true,
+   "isin": "DE000A2T0VU5",
+   "s": "XGDU.L",
+   "n": "Xtrackers IE Physical Gold ETC",
+   "tipo": "EQUITY",
+   "m": "USD",
+   "bolsa": "London",
+   "h": "254 cierres, último ['2026-10-21', 63.59]"
+  }
+ },
+ "LU0996182563": {
+  "status": 200,
+  "seg": 0.86,
+  "j": {
+   "ok": true,
+   "isin": "LU0996182563",
+   "s": "0P00012PP6.F",
+   "n": "Amundi IS MSCI World AE-C",
+   "tipo": "MUTUALFUND",
+   "m": "EUR",
+   "bolsa": "Frankfurt",
+   "h": "246 cierres, último ['2026-10-19', 437.649994]"
+  }
+ },
+ "US0378331005": {
+  "status": 200,
+  "seg": 0.77,
+  "j": {
+   "ok": true,
+   "isin": "US0378331005",
+   "s": "AAPL",
+   "n": "Apple Inc.",
+   "tipo": "EQUITY",
+   "m": "USD",
+   "bolsa": "NASDAQ",
+   "h": "252 cierres, último ['2026-10-21', 343.869995]"
+  }
+ },
+ "IE00B4L5Y984": {
+  "status": 400,
+  "seg": 0.11,
+  "j": {
+   "error": "isin"
+  }
+ },
+ "XS0000000000": {
+  "status": 400,
+  "seg": 0.3,
+  "j": {
+   "error": "isin"
+  }
+ },
+ "ES0112611001": {
+  "status": 200,
+  "seg": 0.35,
+  "j": {
+   "ok": true,
+   "isin": "ES0112611001",
+   "s": "0P00016YQ5.F",
+   "n": "Azvalor Internacional FI",
+   "tipo": "MUTUALFUND",
+   "m": "EUR",
+   "bolsa": "Frankfurt",
+   "h": "228 cierres, último ['2026-10-19', 367.895233]"
+  }
+ },
+ "sin_origen": {
+  "status": 403,
+  "seg": 0.67,
+  "j": {
+   "error": "no-permitido"
+  }
+ }
+}
