@@ -94,3 +94,28 @@ jobs:
               print(f"::warning::y {len(fallos) - 8} más: " + ", ".join(f.split(",")[0] for f in fallos[8:]))
           print(f"::notice::Releases: {len(vs)} versiones, la actual {vs[-1]['v']}" + (f", {len(fallos) + len(sin_llave)} sin crear" if fallos or sin_llave else ", todas creadas"))
           PY2
+      # version.json: la versión publicada y su título. La app de Android lo mira cada 3 horas para avisar en el móvil
+      # cuando sale una versión nueva (Versiones.java). Se deja al día aquí para que no dependa de acordarse
+      - name: version.json para el aviso de versiones nuevas
+        run: |
+          python3 - <<'PY3'
+          import json
+          x = json.load(open("versiones.json"))[-1]
+          nuevo = {"v": x["v"], "t": x["nombre"].split(": ", 1)[-1]}
+          try:
+              viejo = json.load(open("version.json"))
+          except Exception:
+              viejo = None
+          if viejo != nuevo:
+              json.dump(nuevo, open("version.json", "w"), ensure_ascii=False)
+              open("version.cambia", "w").write(x["v"])
+              print("version.json:", nuevo)
+          PY3
+          if [ -f version.cambia ]; then
+            git add version.json
+            git commit -q -m "Versión $(cat version.cambia) publicada (version.json)"
+            for i in 1 2 3 4 5; do
+              git pull -q --rebase origin main && git push -q origin HEAD:main && break
+              sleep 6
+            done
+          fi

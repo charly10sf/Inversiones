@@ -86,6 +86,24 @@ public class Puente {
         act.runOnUiThread(() -> act.dictar(idioma));
     }
 
+    /** la versión de la web que se acaba de abrir: de esa ya no hace falta avisar */
+    @JavascriptInterface
+    public void versionVista(String v) {
+        Versiones.vista(ctx, v);
+    }
+
+    /** el aviso de las versiones nuevas: encenderlo o apagarlo (y pedir el permiso de notificaciones si falta) */
+    @JavascriptInterface
+    public void avisosVersiones(boolean on) {
+        Versiones.activar(ctx, on);
+        if (on && !Avisos.permitidos(ctx)) act.runOnUiThread(act::pedirPermisoAvisos);
+    }
+
+    @JavascriptInterface
+    public boolean avisosVersionesActivados() {
+        return Versiones.activados(ctx);
+    }
+
     @JavascriptInterface
     public boolean avisosPermitidos() {
         return Avisos.permitidos(ctx);

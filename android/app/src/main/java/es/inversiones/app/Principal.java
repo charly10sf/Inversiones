@@ -62,6 +62,8 @@ public class Principal extends Activity {
         web.addJavascriptInterface(new Puente(this), "InversionesApp");
         // los avisos, si los tienes activados (por si el sistema canceló el trabajo al actualizar la app)
         if (Avisos.activados(this)) Avisos.programar(this, true);
+        // el aviso de las versiones nuevas (viene encendido; se quita en Ajustes de la web)
+        Versiones.programar(this);
         web.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView v, String url) {
@@ -211,6 +213,11 @@ public class Principal extends Activity {
         if (t != null && !t.isEmpty()) {
             tokenPendiente = t;
             guardarToken();
+            return;
+        }
+        // desde el aviso de una versión nueva: la web se carga de nuevo, para que salga la versión nueva y sus novedades
+        if (i != null && i.getBooleanExtra("version", false)) {
+            web.loadUrl(WEB);
             return;
         }
         String h = i != null ? i.getStringExtra("hash") : null;

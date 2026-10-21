@@ -1287,6 +1287,7 @@ table.ideas .sub { display: block; font-size: 12px; }
 .av-ops input:disabled + span { opacity: 0.45; }
 .av-falta { display: flex; gap: 8px; align-items: flex-start; color: var(--warn); }
 .av-falta svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+.av-ver { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--line); }
 #aAvisos .btn { justify-self: start; }
 /* el resumen de hoy */
 .rdia { display: grid; gap: 22px; }
@@ -4881,11 +4882,36 @@ function htmlAjAvisos() {
     <label class="av-op av-on"><input type="checkbox" data-av="on"${c.on ? ' checked' : ''}${app && !nativo ? ' disabled' : ''}><span><b>Avisarme de lo importante</b><small>${donde}</small></span></label>
     ${c.on && !permiso ? `<p class="nota av-falta">${ICONOS.alerta}Falta el permiso de notificaciones: ${nativo ? 'acéptalo en el aviso del móvil o en Ajustes de Android > Aplicaciones > GrowFolio > Notificaciones.' : 'acéptalo en el navegador (el candado de la barra de direcciones).'}</p>` : ''}
     <div class="av-ops">${fila('stop', 'Cuando algo baja de tu precio de salida o se acerca a menos de un 3 %')}${fila('mov', 'Cuando una de tus posiciones sube o baja más de un 5 % en el día')}${fila('fechas', 'El día antes de los resultados y los dividendos de lo tuyo')}${fila('preg', 'Cuando GrowIA te pregunta algo')}</div>
-    ${c.on ? '<button type="button" class="btn peq" data-av-prueba>Mandar un aviso de prueba</button>' : ''}`;
+    ${c.on ? '<button type="button" class="btn peq" data-av-prueba>Mandar un aviso de prueba</button>' : ''}${htmlAvisoVersiones(permiso)}`;
+}
+// el aviso de las versiones nuevas: en la app de Android, aunque no la tengas abierta (mira cada 3 horas si hay versión)
+const appVersiones = () => { const a = window.InversionesApp; return a && typeof a.avisosVersiones === 'function' ? a : null; };
+function htmlAvisoVersiones(permiso) {
+  const a = appVersiones(); if (!a) return '';
+  let on = true; try { on = a.avisosVersionesActivados(); } catch (e) {}
+  return `<label class="av-op av-on av-ver"><input type="checkbox" data-av-ver${on ? ' checked' : ''}><span><b>Avisarme de las versiones nuevas</b><small>Cuando salga una versión de GrowFolio, un aviso en el móvil con lo que trae.</small></span></label>
+    ${on && !permiso ? `<p class="nota av-falta">${ICONOS.alerta}Falta el permiso de notificaciones: acéptalo en el aviso del móvil o en Ajustes de Android > Aplicaciones > GrowFolio > Notificaciones.</p>` : ''}`;
+}
+// una vez, en la app de Android y si falta el permiso: si quiere que le avisemos de las versiones nuevas
+function pedirAvisoVersiones(intento = 0) {
+  const a = appVersiones(); if (!a || LS.get('inv-ver-pedido', false)) return;
+  let on = true, permiso = true; try { on = a.avisosVersionesActivados(); permiso = a.avisosPermitidos(); } catch (e) { return; }
+  if (!on || permiso) return;
+  if (document.hidden || document.querySelector('.hoja-fondo, .tour, .estreno, .intro, .ficha-fondo') || S.ficha) { if (intento < 10) setTimeout(() => pedirAvisoVersiones(intento + 1), 30000); return; }
+  LS.set('inv-ver-pedido', true);
+  const h = hoja('¿Te aviso cuando haya versión nueva?', `<div class="act-app">
+    ${dibujo('avisover')}
+    <p>Cuando salga una versión de GrowFolio te llega un aviso al móvil con lo que trae, aunque no tengas la app abierta. Para eso, Android te pedirá permiso para las notificaciones.</p>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>Ahora no</button><button type="button" class="btn pri" data-ver-si>Sí, avísame</button></div>
+    <p class="nota">Se cambia cuando quieras en Ajustes > Avisos y resumen.</p>
+  </div>`);
+  $('[data-ver-si]', h.el).onclick = () => { try { a.avisosVersiones(true); } catch (e) {} h.cerrar(); };
 }
 function enlazarAjAvisos(caja) {
   if (!caja) return;
   caja.addEventListener('change', async (e) => {
+    const v = e.target.closest('[data-av-ver]');
+    if (v) { const a = appVersiones(); if (a) { try { a.avisosVersiones(v.checked); } catch (er) {} } caja.innerHTML = htmlAjAvisos(); toast(v.checked ? 'Te avisaremos de las versiones nuevas' : 'Sin avisos de versiones nuevas', 3000); return; }
     const i = e.target.closest('[data-av]'); if (!i) return;
     const c = avisosCfg(); c[i.dataset.av] = i.checked;
     if (i.dataset.av === 'on' && i.checked && !appAvisos() && 'Notification' in window && Notification.permission !== 'granted') {
@@ -11607,8 +11633,11 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.2';
+const VERSION = '0.3.3';
 const NOVEDADES = [
+  { v: '0.3.3', f: '2026-10-21', h: '14:00', t: 'Te avisa de las versiones nuevas', cosas: [
+    { d: 'avisover', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Un aviso con cada versión nueva', x: 'En la app de Android, cuando salga una versión de GrowFolio te llega un aviso al móvil con lo que trae, aunque no tengas la app abierta. Si además hay app nueva, te lo dice. Viene encendido y se quita en Ajustes > Avisos y resumen.' },
+  ] },
   { v: '0.3.2', f: '2026-10-21', h: '13:30', t: 'Logo y letra nuevos', cosas: [
     { d: 'logo', t: 'GrowFolio estrena logo', x: 'La w de Grow sube y se convierte en la F de Folio, de oro a blanco. Lo ves en el icono de la app y en el de la pestaña, arriba en la web, al abrirla, en la presentación y en Ajustes.' },
     { d: 'intro', t: 'Una entrada nueva', x: 'Al abrir la app, los trozos de la wF llegan de todas partes y se juntan, sale el nombre y, por un momento, GrowFolio se convierte en GrowIA antes de volver. Si tienes prisa, la tocas y te la saltas.' },
@@ -11844,6 +11873,8 @@ const DIBUJOS = {
   macro: '<rect class="fp" x="6" y="8" width="52" height="30" rx="6"/><text class="t" x="12" y="20">BCE</text><text class="ta" x="12" y="32">2,00 %</text><rect class="fp" x="62" y="8" width="52" height="30" rx="6"/><text class="t" x="68" y="20">Bono 10a</text><text class="ta" x="68" y="32">5,10 %</text><rect class="fp" x="6" y="44" width="52" height="30" rx="6"/><text class="t" x="12" y="56">EUR/USD</text><text class="ta" x="12" y="68">1,124</text><rect class="fp" x="62" y="44" width="52" height="30" rx="6"/><text class="t" x="68" y="56">Brent</text><text class="ta" x="68" y="68">110 $</text>',
   get logo() { return `<g transform="translate(22.8 2.3) scale(1.55)">${marcaWF()}</g>`; },
   get growia() { const k = idMarca('dg'); return `<g transform="translate(24 4) scale(3)"><defs>${MARCA_IA.grad.replace(/__K__/g, k)}</defs><path d="${MARCA_IA.d}" fill="url(#${k})"/></g>`; },
+  // un aviso del móvil: el icono de GrowFolio, el título y el texto
+  get avisover() { return `<rect class="fp" x="8" y="16" width="104" height="48" rx="12"/><g transform="translate(14 22) scale(0.75)"><rect width="48" height="48" rx="12" fill="#15130F"/>${marcaWF()}</g><rect class="fA" x="56" y="28" width="44" height="7" rx="3.5"/><rect class="fa" x="56" y="41" width="34" height="6" rx="3"/><rect class="fa" x="56" y="51" width="24" height="6" rx="3"/>`; },
   letra: '<text x="60" y="55" text-anchor="middle" style="font: 800 42px var(--f); letter-spacing: -0.02em; fill: var(--text)"><tspan style="fill: var(--accent)">A</tspan>a</text>',
   intro: '<rect class="l" x="40" y="4" width="40" height="72" rx="8"/><rect class="fa" x="46" y="14" width="28" height="22" rx="4"/><path class="a" d="M52 30l5-6 4 3 6-8"/><path class="m" d="M48 44h24M48 51h16"/><circle class="fA" cx="54" cy="64" r="2.4"/><circle class="fp" cx="60" cy="64" r="2.4"/><circle class="fp" cx="66" cy="64" r="2.4"/><path class="a" d="M88 40h18M100 34l6 6-6 6"/><path class="m" d="M14 40h18M20 34l-6 6 6 6"/>',
   opinion: '<path class="a" d="M10 10h66a7 7 0 017 7v24a7 7 0 01-7 7H38l-12 10V48H10a7 7 0 01-7-7V17a7 7 0 017-7z"/><path class="l" d="M16 23h52M16 32h38"/><circle class="fA" cx="96" cy="50" r="14"/><path d="M90 50.5l4 4 8-8.5" fill="none" stroke="#1A1408" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><rect class="fp" x="84" y="12" width="30" height="14" rx="7"/><text class="t" x="89" y="22">idea</text>',
@@ -15101,7 +15132,7 @@ function arrancar() {
   // el análisis y la clave llegan un poco después de pintar: hasta entonces, la tarjeta de GrowIA de Cartera
   // dice «cargando» (antes decía «aún sin activar» aunque la tuvieras activada) y luego se rehace sola
   Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); setTimeout(() => mostrarPreguntaIA(), 3000); });
-  apuntarDiaUso(); setTimeout(() => pedirNota(), 150000);
+  apuntarDiaUso(); setTimeout(() => pedirNota(), 150000); setTimeout(() => pedirAvisoVersiones(), 12000);
   // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)
   { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); }; setTimeout(mira, 6000); }
   clearInterval(tickPrecios); clearInterval(tickEstado);
@@ -15480,6 +15511,7 @@ function bancoALaApp() {
 async function iniciar() {
   cargarIdioma();
   if (bancoALaApp()) return;
+  try { if (window.InversionesApp && typeof InversionesApp.versionVista === 'function') InversionesApp.versionVista(VERSION); } catch (e) {}
   // quien llega nuevo ve la presentación general, no la de la 0.2; quien venía de la 0.1, se apunta
   if (!LS.get('inv-version', null)) LS.set('inv-estreno-02b', true);
   else if (cmpVer(LS.get('inv-version'), '0.2.0') < 0 || localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc')) LS.set('inv-vino-01', true);
