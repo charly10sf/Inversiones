@@ -134,14 +134,21 @@ public class Versiones extends Worker {
         }
     }
 
-    /** 0.3.10 va después de 0.3.9: se comparan los números uno a uno */
+    /** 0.3.10 va después de 0.3.9: se comparan los números uno a uno; con los mismos números, la letra de las de
+        arreglos (0.3.9 < 0.3.9a < 0.3.9b), igual que cmpVer en la web */
     static int comparar(String a, String b) {
         String[] x = a.split("\\."), y = b.isEmpty() ? new String[0] : b.split("\\.");
         for (int k = 0; k < Math.max(x.length, y.length); k++) {
             int i = k < x.length ? num(x[k]) : 0, j = k < y.length ? num(y[k]) : 0;
             if (i != j) return Integer.compare(i, j);
         }
-        return 0;
+        return Integer.signum(letra(a).compareTo(letra(b)));
+    }
+
+    private static String letra(String s) {
+        int i = s.length();
+        while (i > 0 && Character.isLetter(s.charAt(i - 1))) i--;
+        return s.substring(i);
     }
 
     private static int num(String s) {
