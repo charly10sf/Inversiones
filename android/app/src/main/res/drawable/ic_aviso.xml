@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- El icono pequeño de los avisos: la silueta del logo (cartera, gráfica y hoja) en blanco, como pide Android -->
+<!-- El icono pequeño de los avisos: la silueta de la wF de GrowFolio en blanco, como pide Android -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp" android:height="24dp"
-    android:viewportWidth="48" android:viewportHeight="48">
-    <path android:pathData="M8,25C8,23.9 8.9,23 10,23H38C39.1,23 40,23.9 40,25V35.5C40,36.9 38.9,38 37.5,38H10.5C9.1,38 8,36.9 8,35.5Z" android:fillColor="#FFFFFFFF" />
-    <path android:pathData="M12.5,19.5L19.5,13L24,16L31.5,6.5" android:strokeColor="#FFFFFFFF" android:strokeWidth="3.4" android:strokeLineCap="round" android:strokeLineJoin="round" />
-    <path android:pathData="M31.2,7.3C30.6,2.5 33.8,-0.1 39,0.3C39.2,5.3 35.8,8.1 31.2,7.3Z" android:fillColor="#FFFFFFFF" />
+    android:width="24dp" android:height="24dp" android:viewportWidth="48" android:viewportHeight="48">
+    <path android:pathData="M12.24,31.44L16.01,21.38L20.13,21.38L23.85,31.43L29.34,15.08L36.09,10.06L33.19,18.44L34.36,15.08L44.08,15.08L44.08,19.36L32.87,19.36L29.78,28.30L30.80,25.34L38.94,25.34L38.94,29.62L29.32,29.62L26.18,38.69L22.06,38.69L18.06,27.60L14.04,38.69L9.92,38.69L3.96,21.38L8.87,21.38Z" android:fillColor="#FFFFFFFF"/>
 </vector>

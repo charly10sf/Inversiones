@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 4x2 casillas al ponerlo; se puede estirar o encoger: de una fila (el total, hoy y una gráfica pequeña)
-     a 4x4 (además lo que toca y lo que más se mueve hoy). Se dibuja entero a su tamaño, con Manrope. -->
+     a 4x4 (además lo que toca y lo que más se mueve hoy). Se dibuja entero a su tamaño, con Plus Jakarta Sans. -->
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
     android:minWidth="250dp"
     android:minHeight="110dp"

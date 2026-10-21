@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- La silueta de la wF, de un color: para los iconos temáticos de Android 13 o más -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
+    <path android:pathData="M40.28,62.65L44.66,50.92L49.46,50.92L53.81,62.64L60.20,43.58L68.07,37.73L64.68,47.50L66.04,43.58L77.38,43.58L77.38,48.57L64.31,48.57L60.71,58.99L61.91,55.54L71.38,55.54L71.38,60.53L60.17,60.53L56.52,71.09L51.72,71.09L47.06,58.17L42.37,71.09L37.57,71.09L30.62,50.92L36.34,50.92Z" android:fillColor="#FFFFFFFF"/>
+</vector>

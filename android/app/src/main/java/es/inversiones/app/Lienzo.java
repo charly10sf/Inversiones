@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Dibuja el widget entero en una imagen, con Manrope (la letra de la web) y con el mismo estilo que el patrimonio de
+ * Dibuja el widget entero en una imagen, con Plus Jakarta Sans (la letra de la web) y con el mismo estilo que el patrimonio de
  * Cartera: la cifra grande y gruesa, lo de hoy en una pastilla de color y la curva suave con brillo y un relleno
  * dorado que se desvanece, de lado a lado. Así nada se corta: cada texto se mide y se encoge o se recorta con "…".
  * Tamaños: una fila (2x1, 4x1: la cifra, hoy y la curva a la derecha si cabe), dos filas (4x2: además lo ganado en
@@ -73,7 +73,7 @@ final class Lienzo {
         Typeface t = LETRAS.get(peso);
         if (t == null) {
             try {
-                t = new Typeface.Builder(ctx.getAssets(), "manrope.ttf").setFontVariationSettings("'wght' " + peso).build();
+                t = new Typeface.Builder(ctx.getAssets(), "plusjakartasans.ttf").setFontVariationSettings("'wght' " + peso).build();
             } catch (Exception e) {
                 t = null;
             }
@@ -774,7 +774,7 @@ final class Lienzo {
         p.setStyle(Paint.Style.FILL);
         p.setColor(alfa(t.color, 0x2E));
         c.drawRoundRect(new RectF(dp(x), dp(yTop), dp(x + t.w), dp(yTop + ALTO_P)), dp(ALTO_P / 2), dp(ALTO_P / 2), p);
-        // el triángulo dibujado (Manrope no trae ▲ ni ▼)
+        // el triángulo, dibujado a mano para que quede igual en todos los tamaños
         float cx = x + 9 + 3.5f, cy = yTop + ALTO_P / 2;
         if (t.tri) {
             Path tri = new Path();
