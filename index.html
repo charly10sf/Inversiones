@@ -11340,9 +11340,9 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.0b';
+const VERSION = '0.3.1';
 const NOVEDADES = [
-  { v: '0.3.0b', f: '2026-10-21', h: '01:13', t: 'El widget como la app, «Inicio» de verdad y arreglos', cosas: [
+  { v: '0.3.1', f: '2026-10-21', h: '03:05', t: 'El widget con 24 horas, «Inicio» de verdad y arreglos', cosas: [
     { d: 'app', t: 'El widget, como la app', x: 'La cifra más gruesa y la curva con el mismo grano dorado, el trazo que se enciende hacia hoy y el halo en el punto de ahora. Llega con la app nueva de Android.' },
     { d: 'grafica', t: 'El widget: 24 horas y escala', x: 'Los plazos de la curva, a la vista arriba: 24 h, 1 semana, 1 mes, 3 meses y 1 año. Tocas el que quieras y la curva cambia con un fundido. Abajo salen las horas o las fechas, a la izquierda los valores, y al lado de lo de hoy cuánto ha cambiado en ese plazo.' },
     { d: 'hecho', ir: { v: 'analisis', sel: '.ruta-estado' }, t: '«Cómo vas», en Análisis', x: 'La tarjeta que te dice si vas bien sale ahora arriba de Análisis, justo encima de tus objetivos, y ya no en el Paso a paso.' },
@@ -11359,6 +11359,8 @@ const NOVEDADES = [
     'GrowIA podía hablar de una meta lejana como si estuviera cerca («rumbo a los 500.000 €»): ahora dice a qué distancia está.',
     'Al tocar los botones de abajo, en Android salía un recuadro azul.',
     'En el tutorial, el resaltado y la tarjeta pasaban por el centro de la pantalla entre un paso y otro: ahora se deslizan de un sitio al siguiente.',
+    'En las ideas de compra de Expertos, las pestañas medían distinto según el nombre de la bolsa y al bajar se apilaban a saltos.',
+    'La pastilla de la bolsa de arriba se salía de su recuadro cuando decía «sin datos».',
   ] },
   { v: '0.3.0', f: '2026-10-21', h: '00:50', t: 'Más sencilla y con más criterio', cosas: [
     { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar, .nav' }, t: 'Cinco sitios', x: 'Inicio va en el centro de la barra, más grande. A la izquierda, lo que haces tú: Pasos y Análisis, que ahora lleva tus objetivos. A la derecha, lo de fuera: Expertos y Mercados, que ahora lleva el calendario. Hacienda sale en Análisis cuando toca la renta; el resto del año, con un enlace al final.' },
@@ -11707,8 +11709,9 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   const quieta = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const pasos = [], cosas = [];
   const gorda = nuevas.find((n) => /^\d+\.\d+\.0$/.test(n.v));
-  const manda = !!gorda && nuevas.slice(0, nuevas.indexOf(gorda)).every((m) => m.v.startsWith(gorda.v));
-  const juntas = !!gorda && nuevas.every((m) => m.v.startsWith(gorda.v));
+  const serie = gorda ? gorda.v.replace(/0$/, '') : '';   // 0.3.0 → «0.3.»: la 0.3.0b y la 0.3.1 van con ella
+  const manda = !!gorda && nuevas.slice(0, nuevas.indexOf(gorda)).every((m) => m.v.startsWith(serie));
+  const juntas = !!gorda && nuevas.every((m) => m.v.startsWith(serie));
   if (juntas) nuevas = [...nuevas].reverse();
   for (const n of nuevas) for (const c of n.cosas || []) { cosas.push({ ...c, v: n.v, paso: c.ir ? pasos.length : null }); if (c.ir) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
   const arreglos = nuevas.flatMap((n) => (n.arreglos || []).map((t) => ({ t, v: n.v })));
@@ -12916,7 +12919,7 @@ function bienvenida(intento = 0) {
   // la 0.2 llega con su propia pantalla de estreno, una vez
   // la presentación de la 0.2 (la nueva, más completa): una vez a todos los que ya usaban GrowFolio
   if (visto && cmpVer(VERSION, '0.2.0') >= 0 && !LS.get('inv-estreno-02b')) return estreno02(visto, despues);
-  if ((visto === '0.3.0' || visto === '0.3.0b') && !LS.get('inv-nov-030')) return mostrarNovedades('0.2.3b', despues);
+  if (/^0\.3\./.test(visto || '') && !LS.get('inv-nov-030')) return mostrarNovedades('0.2.3b', despues);
   if (!visto || cmpVer(visto, VERSION) < 0) return mostrarNovedades(visto, despues);
   // la 0.2.3b estuvo unos minutos sin sus bugs corregidos: a quien la abrió entonces se le enseña otra vez, una sola
   if (visto === '0.2.3b' && !LS.get('inv-023b-arr')) return mostrarNovedades('0.2.3', despues);
