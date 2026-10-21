@@ -2865,6 +2865,10 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .tabs.sigue-d, .mg-tabs.sigue-d { -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, #000 calc(100% - 36px), transparent); }
 .tabs.sigue-i, .mg-tabs.sigue-i { -webkit-mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to left, #000 calc(100% - 36px), transparent); }
 .tabs.sigue-i.sigue-d, .mg-tabs.sigue-i.sigue-d { -webkit-mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); mask-image: linear-gradient(to right, transparent, #000 36px, #000 calc(100% - 36px), transparent); }
+/* la barra de la ficha va pegada arriba con su fondo: el difuminado de los lados dejaba ver el texto de debajo */
+.ficha-tabs { display: flex; width: 100%; }
+.ficha-tabs.sigue-d, .ficha-tabs.sigue-i { -webkit-mask-image: none; mask-image: none; }
+@media (max-width: 400px) { .ficha-tabs button { padding-left: 9px; padding-right: 9px; } }
 .hero-vacia { grid-area: rangos; margin: 8px 16px 4px; color: var(--muted); font-size: 14px; line-height: 1.5; max-width: 42ch; }
 @media (max-width: 560px) {
   .nov-aviso { display: grid; grid-template-columns: 30px minmax(0, 1fr) 30px; gap: 8px 10px; }
@@ -10038,7 +10042,7 @@ function fichaDatos(f) {
       i.tipo && !p.sector && ['Tipo', esc(i.tipo)],
       moneda && ['Cotiza en', esc(moneda === 'GBp' ? 'peniques de libra (100 = 1 £)' : moneda)],
       !p.fecha && ce.f && ['Último valor publicado', fechaLarga(ce.f)],
-      !p.sector && zonas.length > 1 && ['Dónde invierte', esc(zonas.map(([z, v]) => `${z} ${fmtNum(v, 0)} %`).join(', '))],
+      !p.sector && zonas.length > 1 && ['Dónde invierte', esc(zonas.map(([z, v]) => `${z}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))],
       p.moneda && p.moneda !== 'EUR' && ['Precio en su moneda', fmtNum(p.precio_local, 2)],
       p.historico_desde && ['Histórico desde', fechaLarga(p.historico_desde)],
       p.sector && ['Sector', esc(p.sector)],
@@ -12088,7 +12092,7 @@ function abrirConsulta(c) {
     if (x.sector) datos.push(['Sector', esc(x.sector)]);
     if (x.z) datos.push(['País', esc(x.z)]);
   }
-  if (ca && ca.r && Object.keys(ca.r).length > 1) datos.push(['Dónde invierte', esc(Object.entries(ca.r).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k} ${fmtNum(v, 0)} %`).join(', '))]);
+  if (ca && ca.r && Object.keys(ca.r).length > 1) datos.push(['Dónde invierte', esc(Object.entries(ca.r).sort((a, b) => b[1] - a[1]).map(([k, v]) => `${k}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))]);
   const nots = sim ? noticiasIdea(sim) : [];
   const gnews = `https://news.google.com/search?q=${encodeURIComponent(nombre)}&hl=es&gl=ES&ceid=ES:es`;
   const h = hoja(nombre, `<div class="cons">
@@ -12131,8 +12135,33 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.4';
+const VERSION = '0.3.5';
 const NOVEDADES = [
+  { v: '0.3.5', f: '2026-10-21', h: '18:00', t: 'Cuentas que cuadran y apuntes sin sustos', cosas: [
+    { d: 'tengo', t: 'Apuntar sin meter la pata', x: 'GrowFolio ya no deja guardar cantidades, efectivo ni fechas imposibles: nada en negativo ni en el futuro, y si vendes con una fecha en la que aún no la tenías, te lo dice. Si pagas una compra con el efectivo y no llega, te avisa antes de dejarlo en 0. Y en las participaciones el punto es decimal: «40.048» son algo más de 40, no cuarenta mil.' },
+    { d: 'pasos', t: 'Paso a paso sin repeticiones', x: 'Si GrowIA propone lo mismo que GrowFolio, sale un solo paso con «GrowIA coincide». Cada aportación del mes tiene su paso, y en «Plan y movimientos», «Próximas aportaciones» enseña los tres meses que vienen con cada fondo.' },
+    { d: 'buscar', t: 'Las empresas, por su nombre de siempre', x: 'Inditex, Zara, Google, Facebook o Iberia salen aunque su nombre oficial sea otro. Y buscar «oro» ya no saca Motorola.' },
+    { d: 'ficha', t: 'Más datos en las fichas', x: 'Los fondos y ETF del catálogo traen en Datos lo que han hecho en el último año, cuánto se mueven, su peor caída, su moneda y dónde invierten. En las acciones, «Qué significa cada dato» explica el PER, el PEG, el ROE o la beta en una línea.' },
+    { d: 'mercados', t: 'Mercados, más claro', x: 'Lo que cotiza en dólares sale también en euros al consultarlo, la letra del Tesoro de EEUU lleva su %, el euro/libra su £, y cada mercado dice qué parte de tu cartera mueve.' },
+    { d: 'movil', t: 'El botón Atrás, como esperas', x: 'En el móvil, Atrás cierra Personalizar Inicio, el tutorial y las novedades en vez de salir de la app, y con dos hojas abiertas Escape cierra solo la de arriba. Personalizar Inicio tiene «Cancelar» para dejarlo como estaba.' },
+    { d: 'jerga', t: 'Textos para cualquier bróker', x: 'El modelo 720, las comisiones, las órdenes y el informe fiscal hablan de tus plataformas, no de Trade Republic o MyInvestor por defecto. Y todo usa los nombres de las pestañas: Inicio, Hacienda, Tus objetivos y GrowIA.' },
+  ], arreglos: [
+    'La gráfica grande y «ganado desde que compraste» no contaban el efectivo y no cuadraban con el patrimonio.',
+    'Escribir «1.000» en un importe se leía como 1 € (en compras, metas, gastos y Hacienda).',
+    'Hacienda no aplicaba la regla de recompra: una pérdida con recompra en plazo restaba igualmente.',
+    'Lo que no tenía precio salía como si hubieras perdido el 100 %.',
+    'Una compra hecha hoy contaba en «Hoy» como si hubiera subido o bajado todo el día.',
+    'De enero a junio, el Paso a paso hablaba de la renta del año en curso en vez de la que toca presentar.',
+    'La proyección sumaba lo aportado sin descontar la inflación, y lo que probabas en «¿Y si…?» se quedaba puesto en el resto de la app.',
+    'Tus límites de acciones sueltas, cripto y oro no se usaban en las señales ni en los planes de venta.',
+    'Mercados decía «hoy» o «mañana» con la hora de tu dispositivo, no la de España, y no conocía los festivos de Tokio y Hong Kong.',
+    'Con la cartera vacía, Inicio y la proyección enseñaban gráficas rotas.',
+    'Un fondo con el valor liquidativo atascado de hace días salía en Inicio con «hoy 0,00 €» y el % de aquel día.',
+    'Escape cerraba todas las hojas abiertas a la vez y se perdía lo que estabas escribiendo.',
+    'Al vender eligiendo la posición de la lista, la comisión de Trade Republic se quedaba vacía.',
+    'Los dividendos del calendario salían en bruto, sin restar impuestos.',
+    'En las novedades del móvil, las ilustraciones se pisaban con el logo de arriba.',
+  ] },
   { v: '0.3.4', f: '2026-10-21', h: '16:00', t: 'Ideas más estables, más fondos y fichas completas', cosas: [
     { d: 'opinion', ir: { v: 'expertos', sel: '.evitar' }, t: 'GrowIA no cambia de opinión sin motivo', x: 'Las ideas de compra se deciden una vez al día y siguen salvo que llegue una noticia que cambie la tesis o se rompan sus números (los analistas dejan de decir comprar o ya ha llegado a su objetivo). Entran como mucho dos nuevas al día, nada sale a la vez como idea y como «evitar», y lo recomendado estas semanas no pasa a «evitar» sin una noticia así. Si algo cambia, en Expertos lo explica en «Qué ha cambiado y por qué». El Paso a paso da prioridad a las que también elige GrowIA.' },
     { d: 'ficha', t: 'Las acciones que añades tú, con su ficha entera', x: 'Si tienes una acción que GrowFolio no seguía (por ejemplo, AstraZeneca), su ficha ya trae la gráfica del último año, los analistas y su precio objetivo, la valoración, el negocio, lo que dice su prensa y sus datos, sacados del radar de unas 850 empresas.' },
@@ -12387,7 +12416,7 @@ const DIBUJOS = {
   idioma: '<rect x="18" y="16" width="36" height="24" rx="4" fill="#AA151B"/><rect x="18" y="22" width="36" height="12" fill="#F1BF00"/><clipPath id="dibUKr"><rect x="66" y="16" width="36" height="24" rx="4"/></clipPath><g clip-path="url(#dibUKr)"><svg x="66" y="16" width="36" height="24" viewBox="0 0 60 30" preserveAspectRatio="xMidYMid slice"><clipPath id="dibUKb"><path d="M30 15h30v15zv15H0zH0V0zV0h30z"/></clipPath><path d="M0 0v30h60V0z" fill="#012169" stroke="none"/><path d="M0 0l60 30m0-30L0 30" fill="none" stroke="#fff" stroke-width="6"/><path d="M0 0l60 30m0-30L0 30" clip-path="url(#dibUKb)" fill="none" stroke="#C8102E" stroke-width="4"/><path d="M30 0v30M0 15h60" fill="none" stroke="#fff" stroke-width="10"/><path d="M30 0v30M0 15h60" fill="none" stroke="#C8102E" stroke-width="6"/></svg></g><rect class="fa" x="30" y="52" width="60" height="16" rx="8"/><text class="ta" x="60" y="63.5" text-anchor="middle">en pruebas</text>',
   buscar: '<rect class="fp" x="8" y="6" width="104" height="20" rx="10"/><circle class="a" cx="21" cy="16" r="4.5"/><path class="a" d="M24.5 19.5l3.5 3.5"/><text class="ta" x="35" y="19.5">VWCE</text><path class="a" d="M62 11v10"/><rect class="fa" x="8" y="32" width="104" height="15" rx="5"/><circle class="fA" cx="19" cy="39.5" r="4.5"/><path class="l" d="M30 39.5h44"/><path class="a" d="M90 39.5h14"/><circle class="fp" cx="19" cy="57" r="4.5"/><path class="m" d="M30 57h36"/><path class="m" d="M90 57h14"/><circle class="fp" cx="19" cy="72" r="4.5"/><path class="m" d="M30 72h28"/><path class="m" d="M90 72h14"/>',
   capturas: '<rect class="l" x="14" y="8" width="32" height="64" rx="6"/><path class="m" d="M21 20h18M21 29h11M21 38h18M21 47h9M21 56h15"/><path class="a" d="M9 15V7h8M43 7h8v8M51 65v8h-8M17 73H9v-8"/><path class="a" d="M57 40h13M65 35l5 5-5 5"/><rect class="fa" x="77" y="14" width="36" height="14" rx="4"/><path class="u" d="M81 21l2.5 2.5L88 18.5"/><path class="l" d="M93 21h15"/><rect class="fa" x="77" y="33" width="36" height="14" rx="4"/><path class="u" d="M81 40l2.5 2.5L88 37.5"/><path class="l" d="M93 40h11"/><rect class="fa" x="77" y="52" width="36" height="14" rx="4"/><path class="u" d="M81 59l2.5 2.5L88 56.5"/><path class="l" d="M93 59h13"/>',
-  tengo: '<rect class="fp" x="4" y="10" width="112" height="22" rx="11"/><text class="t" x="12" y="24.5">Compra</text><text class="t" x="46" y="24.5">Venta</text><rect class="fA" x="74" y="12" width="40" height="18" rx="9"/><text class="tn" x="79" y="24.5">La tenía</text><ellipse class="l" cx="60" cy="68" rx="17" ry="5"/><path class="l" d="M43 68v-7M77 68v-7"/><ellipse class="l" cx="60" cy="61" rx="17" ry="5"/><path class="a" d="M43 61v-7M77 61v-7"/><ellipse class="a" cx="60" cy="54" rx="17" ry="5"/>',
+  tengo: '<rect class="fp" x="2" y="10" width="116" height="22" rx="11"/><text class="t" x="18" y="24" text-anchor="middle" style="font-size:7.5px">Compra</text><text class="t" x="44" y="24" text-anchor="middle" style="font-size:7.5px">Venta</text><rect class="fA" x="60" y="12" width="56" height="18" rx="9"/><text class="tn" x="88" y="24" text-anchor="middle" style="font-size:7.5px">Ya la tenías</text><ellipse class="l" cx="60" cy="68" rx="17" ry="5"/><path class="l" d="M43 68v-7M77 68v-7"/><ellipse class="l" cx="60" cy="61" rx="17" ry="5"/><path class="a" d="M43 61v-7M77 61v-7"/><ellipse class="a" cx="60" cy="54" rx="17" ry="5"/>',
   catalogo: '<ellipse class="a" cx="36" cy="15" rx="24" ry="7"/><path class="a" d="M12 15v48c0 4 11 7 24 7s24-3 24-7V15"/><path class="a" d="M12 31c0 4 11 7 24 7s24-3 24-7M12 47c0 4 11 7 24 7s24-3 24-7"/><rect class="fp" x="70" y="10" width="44" height="15" rx="4"/><text class="t" x="75" y="20.5">IE00B…</text><rect class="fp" x="70" y="32" width="44" height="15" rx="4"/><text class="t" x="75" y="42.5">LU168…</text><rect class="fa" x="70" y="54" width="44" height="15" rx="4"/><text class="ta" x="75" y="64.5">BTC</text>',
   aviso: '<rect class="fp" x="4" y="14" width="48" height="36" rx="6"/><text class="t" x="10" y="29">S&amp;P 500</text><text class="tm" x="10" y="41">iShares</text><path class="d" d="M22 58l8 8M30 58l-8 8"/><path class="a" d="M55 32h10M61 28l4 4-4 4"/><rect class="fa" x="68" y="14" width="48" height="36" rx="6"/><text class="ta" x="74" y="29">S&amp;P 500</text><text class="t" x="74" y="41">Fidelity</text><path class="u" d="M86 62l4 4 8-8"/>',
   tour: '<rect class="l" x="30" y="4" width="50" height="72" rx="8"/><path class="m" d="M38 15h26M38 23h18"/><rect class="fp" x="38" y="30" width="34" height="18" rx="4"/><path class="m" d="M30 61h50"/><circle class="fp" cx="42" cy="68.5" r="2.5"/><circle class="fA" cx="55" cy="68.5" r="2.5"/><circle class="fp" cx="68" cy="68.5" r="2.5"/><circle class="a" cx="55" cy="68.5" r="7.5"/><path class="a" d="M61 63l25-12"/><rect class="fa" x="84" y="34" width="32" height="22" rx="5"/><path class="a" d="M90 42h20M90 49h13"/>',
