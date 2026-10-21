@@ -6508,7 +6508,21 @@ function htmlMercadoInforme(abierto = true) {
     ${(inf.macro || []).length ? `<div class="macro-ia">${inf.macro.map((x) => `<div><small>${escIA(x.t)}</small><b>${escIA(x.dato)}</b><p>${escIA(x.lectura)}</p></div>`).join('')}</div>` : ''}
   </details>`;
 }
-const limpiaIA = (t) => String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, '');
+/* GrowIA a veces hablaba de una meta lejana como si estuviera al caer («sostienen el rumbo hacia los 500.000 €»).
+   Los análisis nuevos dicen la distancia, pero los de antes siguen guardados: al enseñarlos, esa coletilla se quita
+   si la cifra es más de vez y media lo que tienes. */
+const NUM_IA = String.raw`\*{0,2}([\d.]+(?:,\d+)?)\s?(?:€|euros)\*{0,2}`;
+const RUMBO_IA = [
+  new RegExp(String.raw`\b(?:el|su|tu) (?:rumbo|camino) (?:hacia|a|de) (?:(?:los|las|tus|tu meta de|la meta de) )?` + NUM_IA, 'gi'),
+  new RegExp(String.raw`,?\s*(?:rumbo|camino) (?:hacia|a|de) (?:(?:los|las|tus|tu meta de|la meta de) )?` + NUM_IA, 'gi'),
+  new RegExp(String.raw`\s+(?:hacia|rumbo a) (?:(?:los|las|tus|tu meta de) )?` + NUM_IA, 'gi'),
+];
+function sinRumbo(t) {
+  const total = (S.M && S.M.total) || 0;
+  const lejos = (x) => total > 0 && +String(x).replace(/\./g, '').replace(',', '.') > total * 1.5;
+  return t.replace(RUMBO_IA[0], (m, x) => (lejos(x) ? 'la cartera' : m)).replace(RUMBO_IA[1], (m, x) => (lejos(x) ? '' : m)).replace(RUMBO_IA[2], (m, x) => (lejos(x) ? '' : m));
+}
+const limpiaIA = (t) => sinRumbo(String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, ''));
 const escIA = (t) => esc(limpiaIA(t));
 const noticiasIdea = (sim) => ((S.precios && S.precios.noticias_ideas) || {})[sim] || [];
 /* ---------- las mejores ideas: la web, Gemini y tu análisis, juntas ----------
@@ -13613,9 +13627,12 @@ async function revisarAnalisisIA() {
   // si has cambiado tus reglas después de su última revisión, la rehace con las nuevas
   const reglas = p && S.ia && S.ia.reglas_fecha && String(S.ia.reglas_fecha) > String(p.fecha);
   const perfilNuevo = p && S.cartera.perfil && S.cartera.perfil.actualizado && String(S.cartera.perfil.actualizado) > String(p.fecha);
+  // los de antes de que GrowIA dijera a qué distancia está cada meta (0.3.0b) se rehacen una vez
+  const metasViejo = p && String(p.fecha) < '2026-10-20T23:15';
   if (edad > limite) generarAnalisisIA(p ? 'revisión diaria' : 'primera revisión');
   else if (reglas) generarAnalisisIA('han cambiado tus reglas');
   else if (perfilNuevo) generarAnalisisIA('has cambiado tu perfil o le has contestado');
+  else if (metasViejo) generarAnalisisIA('ahora dice a qué distancia está cada meta');
   else if (cambio) generarAnalisisIA('ha cambiado la señal de alguna posición');
   else if (prensa) generarAnalisisIA('hay noticias nuevas en el informe de prensa');
 }
