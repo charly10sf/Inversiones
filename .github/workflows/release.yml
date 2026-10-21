@@ -85,6 +85,12 @@ jobs:
                   fallos.append(f"{tag}, release: " + corto(r.stderr))
               else:
                   print(tag, "creado")
+          # las versiones que ya no están en el historial (por ejemplo, una que se juntó con la anterior): fuera su release y su etiqueta
+          validas = {"v" + x["v"] for x in vs}
+          for tag in run("gh", "release", "list", "--limit", "200", "--json", "tagName", "-q", ".[].tagName").stdout.split():
+              if tag.startswith("v") and tag[1:2].isdigit() and tag not in validas:
+                  r = run("gh", "release", "delete", tag, "--yes", "--cleanup-tag")
+                  print(tag, "borrado" if r.returncode == 0 else "sin borrar: " + corto(r.stderr))
           if sin_llave:
               print(f"::warning::Faltan {len(sin_llave)} releases antiguos ({sin_llave[0]} a {sin_llave[-1]}): GitHub no deja que la Action etiquete commits con otras Actions. Pon el secreto RELEASES_TOKEN (está explicado arriba en release.yml)")
           # GitHub enseña como mucho 10 avisos por paso

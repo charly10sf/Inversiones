@@ -164,7 +164,7 @@ public class Versiones extends Worker {
         PendingIntent pi = PendingIntent.getActivity(c, clave.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(c, CANAL)
                 .setSmallIcon(R.drawable.ic_aviso)
-                .setColor(0xFFE2B45F)
+                .setColor(0xFFEDBB45)
                 .setContentTitle(titulo)
                 .setContentText(texto)
                 .setStyle(new Notification.BigTextStyle().bigText(texto))

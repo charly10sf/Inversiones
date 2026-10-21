@@ -37,8 +37,8 @@ import java.util.Random;
  * total y la curva grande) y tres o más (además lo que toca y, en pastillas, lo que más ha movido hoy la cartera).
  */
 final class Lienzo {
-    static final int PLANO = 0xFF1A1916, LINEA = 0xFF2A2723, TEXTO = 0xFFF1EDE5, TEXTO2 = 0xFFBDB6A8,
-            APAGADO = 0xFF8E877A, ACENTO = 0xFFE2B45F, SUBE = 0xFF4FC995, BAJA = 0xFFEF7461,
+    static final int PLANO = 0xFF1A1916, LINEA = 0xFF2A2723, TEXTO = 0xFFF7F2E8, TEXTO2 = 0xFFBCB3A2,
+            APAGADO = 0xFF8A8172, ACENTO = 0xFFEDBB45, SUBE = 0xFF4CBF8E, BAJA = 0xFFE46A5C,
             FONDO_A = 0xFF100F0D, FONDO_B = 0xFF060605;
     private static final float ESPACIADO_CIFRA = -0.06f;   // la cifra grande, gruesa y apretada como en la app (0.3)
     private static final int PESO_CIFRA = 750;
@@ -401,7 +401,7 @@ final class Lienzo {
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeJoin(Paint.Join.ROUND);
         p.setStrokeCap(Paint.Cap.ROUND);
-        Shader trazo = new LinearGradient(dp(x0), 0, dp(x1), 0, new int[]{alfa(ACENTO, 0x80), ACENTO, 0xFFF8DC9C}, new float[]{0f, 0.7f, 1f}, Shader.TileMode.CLAMP);
+        Shader trazo = new LinearGradient(dp(x0), 0, dp(x1), 0, new int[]{alfa(ACENTO, 0x80), ACENTO, 0xFFF9DE9C}, new float[]{0f, 0.7f, 1f}, Shader.TileMode.CLAMP);
         p.setColor(0xFFFFFFFF);
         p.setShader(trazo);
         p.setAlpha(0x73);
