@@ -9874,7 +9874,7 @@ function operacion(tipo, id, sim, cand) {
         <label class="campo"><span id="lImp">Cuánto pagaste en total (€)</span><input name="importe" inputmode="decimal" placeholder="por ejemplo, 1.000"><small id="sImp">Sin la comisión.</small></label>
         <label class="campo"><span id="lFecha">Fecha</span><input name="fecha" type="date" value="${hoyIso()}" max="${hoyIso()}"><small id="sFecha"></small></label>
         <label class="campo"><span id="lPrecio">Precio de cada una (€)</span><input name="precio" inputmode="decimal"><small id="sPrecio"></small></label>
-        <label class="campo"><span id="lUds">Cuántas</span><input name="uds" inputmode="decimal" placeholder="se calcula sola"><small>Sale sola con el total y el precio; cámbiala si tu bróker dice otra cosa.</small></label>
+        <label class="campo"><span id="lUds">Cuántas</span><input name="uds" inputmode="decimal" placeholder="se calcula sola"><small>Sale sola con el total y el precio. Si pones el total y cuántas, sale el precio.</small></label>
         <label class="campo" id="cGastos">Comisión (€)<input name="gastos" inputmode="decimal" placeholder="0"><small id="sGastos"></small></label>
       </div>
       <label class="check" id="cEf"><input type="checkbox" name="efectivo"><span id="tEf"></span></label>
@@ -9897,20 +9897,25 @@ function operacion(tipo, id, sim, cand) {
   const tasaDe = (instId) => { const i = S.inst[instId] || {}; if (i.bolsa && i.bolsa !== i.pais) return null; const pp = S.precios && S.precios.instrumentos && S.precios.instrumentos[instId]; return tasaCompra(i.pais, i.tipo, pp && pp.fundamentales && pp.fundamentales.capitalizacion); };
   const unidad = () => { const i = S.inst[inst] || {}; return i.tipo === 'Acción' ? 'acciones' : i.clase === 'Cripto' ? 'unidades' : /^Fondo/.test(i.tipo || '') ? 'participaciones' : 'unidades'; };
   // el precio que se propone es el del día de la operación (el de hoy si es hoy); si lo cambias tú, se respeta
-  let precioTocado = false, ancla = 'importe', efTocado = false;
+  // los dos últimos que escribe la persona (de total, cuántas y precio): el tercero sale de ellos
+  let precioTocado = false, ultimos = [], efTocado = false;
+  const toca = (k) => { ultimos = [k, ...ultimos.filter((x) => x !== k)].slice(0, 2); };
+  const precioSale = () => ultimos.includes('importe') && ultimos.includes('uds');
   const precioDia = () => {
     if (!inst) return null;
     const fch = q('fecha').value || hoyIso();
     if (fch < hoyIso()) { const h0 = histDe(inst), r = h0 && precioEn(h0, fch, 'antes'); if (r) return r; }
     return precioInst(inst);
   };
-  const ponerPrecio = () => { if (t === 'tengo' || precioTocado) return; const pr = precioDia(); if (pr) q('precio').value = String(+pr.toFixed(pr >= 100 ? 2 : 4)).replace('.', ','); recuadrar(); };
-  // con el total y el precio salen las participaciones; con las participaciones y el precio, el total
+  const ponerPrecio = () => { if (t === 'tengo' || precioTocado || precioSale()) return; const pr = precioDia(); if (pr) q('precio').value = String(+pr.toFixed(pr >= 100 ? 2 : 4)).replace('.', ','); recuadrar(); };
+  // con el total y el precio salen las participaciones; con las participaciones y el precio, el total; y con el total y
+  // las participaciones, el precio (lo que te dice el bróker: «pagaste 1.000 € por 114,279»)
   const recuadrar = () => {
-    const pr = numero(q('precio').value);
+    const imp = numero(q('importe').value), u = numero(q('uds').value), pr = numero(q('precio').value);
+    if (precioSale()) { if (imp > 0 && u > 0) { const x = imp / u; q('precio').value = String(+x.toFixed(x >= 100 ? 2 : 4)).replace('.', ','); } return; }
     if (!(pr > 0)) return;
-    if (ancla === 'importe') { const imp = numero(q('importe').value); q('uds').value = imp > 0 ? String(+(imp / pr).toFixed(6)).replace('.', ',') : ''; }
-    else { const u = numero(q('uds').value); q('importe').value = u > 0 ? String(+(u * pr).toFixed(2)).replace('.', ',') : ''; }
+    if (ultimos.includes('uds')) q('importe').value = u > 0 ? String(+(u * pr).toFixed(2)).replace('.', ',') : '';
+    else q('uds').value = imp > 0 ? String(+(imp / pr).toFixed(6)).replace('.', ',') : '';
   };
   const efectivoDe = (pl) => { const e = (S.cartera.efectivo || []).find((x) => x.plataforma === pl); return e ? +e.importe || 0 : 0; };
   const pintarQue = () => {
@@ -9997,9 +10002,9 @@ function operacion(tipo, id, sim, cand) {
     pintarQue(); pintarPlat(); recalcular();
   };
   for (const b of $$('[data-t]', fm)) b.onclick = () => { if (t === b.dataset.t) return; t = b.dataset.t; precioTocado = false; if (t === 'venta') { posSel = posSel || S.cartera.posiciones.find((p) => p.instrumento === inst) || null; if (posSel) { inst = posSel.instrumento; plat = posSel.plataforma; } } if (t === 'tengo') q('precio').value = ''; else ponerPrecio(); if (!q('gastos').dataset.tocado) q('gastos').value = plat === 'Trade Republic' && t !== 'tengo' ? '1' : ''; pintarTodo(); };
-  q('importe').oninput = () => { ancla = 'importe'; recuadrar(); recalcular(); };
-  q('uds').oninput = () => { ancla = 'uds'; recuadrar(); recalcular(); };
-  q('precio').oninput = () => { precioTocado = true; recuadrar(); recalcular(); };
+  q('importe').oninput = () => { toca('importe'); recuadrar(); recalcular(); };
+  q('uds').oninput = () => { toca('uds'); recuadrar(); recalcular(); };
+  q('precio').oninput = () => { precioTocado = true; toca('precio'); recuadrar(); recalcular(); };
   q('gastos').oninput = () => { q('gastos').dataset.tocado = '1'; recalcular(); };
   // si es de otro día y aún no tenemos su histórico (fondos del catálogo), se baja y se pone el precio de ese día
   q('fecha').onchange = () => { ponerPrecio(); recalcular(); if (inst && (q('fecha').value || hoyIso()) < hoyIso() && !histDe(inst)) cargarHistCatalogo([inst]).then(() => { ponerPrecio(); recalcular(); }).catch(() => {}); };
@@ -11677,6 +11682,7 @@ const NOVEDADES = [
     { d: 'pulido', t: 'Más sobria, con los colores del logo', x: 'Toda la app usa ya solo el oro, el negro cálido y el blanco del logo, y el verde y el rojo quedan para lo que sube y baja. El calendario deja el azul y el rosa, y el botón de GrowIA ya no se confunde con el de avisar de un fallo.' },
     { d: 'avisover', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Un aviso con cada versión nueva', x: 'En la app de Android, cuando salga una versión de GrowFolio te llega un aviso al móvil con lo que trae, aunque no tengas la app abierta. Si además hay app nueva, te lo dice. Viene encendido y se quita en Ajustes > Avisos y resumen.' },
     { d: 'growia', t: 'GrowIA firma con su logo', x: 'Donde habla GrowIA, su nombre sale con la letra del logo: en las ideas de compra y en cada posición de Expertos, en «Lo último», en «GrowIA opina» de Análisis, en el Paso a paso y en Ajustes.' },
+    { d: 'tengo', t: 'El precio sale solo al apuntar una compra', x: 'Si pones cuánto pagaste y cuántas participaciones te dieron, el precio de cada una sale solo, el mismo que te cobró el bróker. Con el total y el precio, como antes, salen las participaciones.' },
     { d: 'cifras', ir: { v: 'cartera', sel: '.fila.efectivo' }, t: 'El efectivo, a un toque', x: 'En Posiciones, toca el efectivo de una plataforma y se abre para cambiarlo, con ese importe listo para escribir.' },
     { d: 'ficha', t: 'Avisar de un fallo, también en la ficha', x: 'El bichito sale ahora en la ficha de cada posición y en el asesor, que tapan la barra de arriba.' },
     { d: 'calendario', t: 'El calendario, a todo el ancho', x: 'En el ordenador, «Próximos» va en tres columnas y, debajo, la semana y lo que viene más adelante a la izquierda y las noticias a la derecha.' },
