@@ -4,6 +4,7 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.graphics.drawable.Icon;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -106,18 +107,23 @@ public class Versiones extends Worker {
             String titulo = en ? "GrowFolio " + v + " is here" : "GrowFolio " + v + " ya está aquí";
             String lo = t.isEmpty() ? "" : t + ". ";
             String texto = !apk || intentada ? lo + (en ? "Open it to see what's new." : "Ábrela para ver qué hay de nuevo.")
-                    : sola ? lo + (en ? "There's a new app too: it will install itself when you're not using it, or open it and tap Update." : "También hay app nueva: se instalará sola cuando no la estés usando, o ábrela y toca Actualizar.")
-                    : lo + (en ? "It comes with a new version of the app: open it, tap Update and it installs without losing anything." : "Trae una versión nueva de la app: ábrela, toca Actualizar y se instala sin perder nada.");
-            mostrar(c, "version:" + v, titulo, texto);
+                    : sola ? lo + (en ? "There's a new app too: it installs itself when you're not using it, or tap Update." : "También hay app nueva: se instala sola cuando no la estés usando, o toca Actualizar.")
+                    : lo + (en ? "There's a new app too: tap Update and it installs over this one, without losing anything." : "También hay app nueva: toca Actualizar y se instala encima, sin perder nada.");
+            mostrar(c, "version:" + v, v, titulo, texto, apk && !intentada, en);
         } else if (apk && !intentada) {
-            mostrar(c, "app:" + app, en ? "New version of the app" : "Versión nueva de la app",
-                    sola ? (en ? "It will install itself when you're not using it, or open it and tap Update. Nothing is lost." : "Se instalará sola cuando no la estés usando, o ábrela y toca Actualizar. No se pierde nada.")
-                            : (en ? "Open it and tap Update: it installs over the current one without losing anything." : "Ábrela y toca Actualizar: se instala encima sin perder nada."));
+            mostrar(c, "app:" + app, null, en ? "New version of the app" : "Versión nueva de la app",
+                    sola ? (en ? "It installs itself when you're not using it, or tap Update. Nothing is lost." : "Se instala sola cuando no la estés usando, o toca Actualizar. No se pierde nada.")
+                            : (en ? "Tap Update: it downloads and installs over the current one without losing anything." : "Toca Actualizar: se baja y se instala encima sin perder nada."), true, en);
         }
         SharedPreferences.Editor e = p.edit();
         if (web) e.putString("version_avisada", v);
         if (apk && !intentada) e.putInt("app_avisada", app);
         e.apply();
+    }
+
+    /** app.json (la última versión de la app y dónde está su APK), para «Actualizar» desde el aviso */
+    static JSONObject app(Context c) {
+        return leer(Datos.raw(c, "main", "app.json"));
     }
 
     private static JSONObject leer(String url) {
@@ -166,7 +172,9 @@ public class Versiones extends Worker {
         }
     }
 
-    private static void mostrar(Context c, String clave, String titulo, String texto) {
+    /** el aviso; con app nueva, un botón «Actualizar» que abre GrowFolio y empieza a bajarla (y tocar el aviso de la app,
+     *  lo mismo) */
+    private static void mostrar(Context c, String clave, String v, String titulo, String texto, boolean conApp, boolean en) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         if (nm == null) return;
         if (nm.getNotificationChannel(CANAL) == null) {
@@ -174,17 +182,22 @@ public class Versiones extends Worker {
             ch.setDescription("Cuando sale una versión nueva de GrowFolio, con lo que trae");
             nm.createNotificationChannel(ch);
         }
-        Intent i = new Intent(c, Principal.class).putExtra("version", true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        Intent i = new Intent(c, Principal.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+        if (v != null) i.putExtra("version", true).putExtra("v", v); else i.putExtra("actualizarApp", true);
         PendingIntent pi = PendingIntent.getActivity(c, clave.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-        Notification n = new Notification.Builder(c, CANAL)
+        Notification.Builder nb = new Notification.Builder(c, CANAL)
                 .setSmallIcon(R.drawable.ic_aviso)
                 .setColor(0xFFEDBB45)
                 .setContentTitle(titulo)
                 .setContentText(texto)
                 .setStyle(new Notification.BigTextStyle().bigText(texto))
                 .setContentIntent(pi)
-                .setAutoCancel(true)
-                .build();
-        nm.notify(clave.hashCode(), n);
+                .setAutoCancel(true);
+        if (conApp) {
+            Intent ia = new Intent(c, Principal.class).putExtra("actualizarApp", true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            PendingIntent pa = PendingIntent.getActivity(c, (clave + ":app").hashCode(), ia, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
+            nb.addAction(new Notification.Action.Builder(Icon.createWithResource(c, R.drawable.ic_aviso), en ? "Update" : "Actualizar", pa).build());
+        }
+        nm.notify(clave.hashCode(), nb.build());
     }
 }

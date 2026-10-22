@@ -2,7 +2,7 @@
    última versión; si la red no contesta en 3 segundos o no hay conexión, sale la copia guardada.
    El resto (iconos, letras) sale de la copia y se renueva por detrás.
    Los datos (precios, cartera cifrada, GitHub, Yahoo, Bitvavo) nunca pasan por aquí: la página los guarda aparte. */
-var CACHE = 'inv-v122';
+var CACHE = 'inv-v123';
 var CORE = ['./', 'index.html', 'manifest.webmanifest', 'favicon.svg', 'growfolio.svg', 'growfolio-32.png', 'growfolio-192.png', 'growfolio-512.png', 'growfolio-maskable-512.png', 'growfolio-180.png', 'icon-192.png', 'growfolio-nombre.svg', 'growia.svg', 'growfolio-aviso.png'];
 var DATOS = /(^|\/)(opinion\.json|instrumentos\.json|cartera\.enc\.json|analisis-ia\.json|analisis\.enc\.json)$/;
 self.addEventListener('install', function (e) {

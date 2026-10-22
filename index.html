@@ -2253,6 +2253,10 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .dib .tn { fill: var(--on-accent); }
 .dib .tm { fill: var(--muted); font-weight: 500; }
 .dib .tu { fill: var(--up); }
+.dib .td { fill: var(--down); }
+.dib .fdn { fill: var(--down-bg); stroke: none; }
+.dib .mm { fill: #3A342B; }
+.dib .mapita path { stroke: #1A1713; stroke-width: 0.45; }
 .hoja-nov .hoja { max-width: 580px; }
 .novedades { display: grid; gap: 20px; }
 .nov-cab { display: flex; align-items: center; gap: 8px; }
@@ -3111,7 +3115,7 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .nov-aviso-t { flex: 1; min-width: 0; display: grid; gap: 1px; text-align: left; border: 0; background: none; padding: 0; color: inherit; cursor: pointer; }
 .nov-aviso-t small { color: var(--accent); font-size: 12px; font-weight: 600; }
 .nov-aviso-t b { font-size: 14px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nov-aviso-b { flex: none; }
+.nov-aviso-b { flex: none; display: flex; gap: 6px; flex-wrap: wrap; }
 .nov-aviso-x { width: 30px; height: 30px; flex: none; }
 .nov-aviso-x svg { width: 15px; height: 15px; }
 .mas-t:hover, .ir-objetivos:hover { text-decoration: none; border-color: var(--filo-oro, rgba(237, 187, 69, 0.42)); }
@@ -3277,7 +3281,26 @@ body.con-ixn { overflow: hidden; }
 .mapa-izq { display: grid; gap: 12px; min-width: 0; align-content: start; }
 .mapa-caja { position: relative; min-width: 0; border-radius: 18px; overflow: hidden; background-color: rgba(255, 255, 255, 0.012); background-image: radial-gradient(circle at 1px 1px, rgba(247, 242, 232, 0.055) 0.9px, transparent 1.3px); background-size: 12px 12px; }
 .mapa-svg { aspect-ratio: 1000 / 439; }
-.mapa-svg svg { display: block; width: 100%; height: 100%; touch-action: manipulation; }
+.mapa-svg svg { display: block; width: 100%; height: 100%; }
+/* de lejos, el dedo en vertical mueve la página y el resto (pellizcar, dos toques) lo coge el mapa; de cerca, todo el mapa */
+.mapa-caja { touch-action: pan-y; -webkit-user-select: none; user-select: none; }
+.mapa-caja.cerca { touch-action: none; }
+.mapa-caja.cerca .mapa-svg { cursor: grab; }
+.mapa-caja.arrastrando .mapa-svg, .mapa-caja.arrastrando .me { cursor: grabbing; }
+/* abajo a la izquierda: de lejos ahí solo hay océano (el Pacífico) */
+.mapa-zoom { position: absolute; left: 8px; bottom: 8px; z-index: 1; display: flex; gap: 4px; }
+.mapa-zoom button { display: grid; place-items: center; width: 30px; height: 30px; padding: 0; border-radius: 9px; border: 1px solid rgba(247, 242, 232, 0.1); background: rgba(9, 8, 6, 0.8); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); color: var(--text); transition: opacity 0.2s ease, transform 0.12s ease; }
+.mapa-zoom button:active { transform: scale(0.92); }
+.mapa-zoom button:disabled { opacity: 0.35; }
+.mapa-zoom svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; }
+.mapa-pista { display: flex; align-items: center; gap: 7px; margin: -4px 2px 0; font-size: 12px; line-height: 1.4; color: var(--muted); }
+.mapa-pista svg { width: 15px; height: 15px; flex: none; fill: none; stroke: var(--accent); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.mapa-elegido { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, 0.03); color: var(--text); font: inherit; text-align: left; }
+.mapa-elegido[hidden] { display: none; }
+.mapa-elegido b { flex: 1; min-width: 0; font-size: 14px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mapa-elegido .me-ver { display: inline-flex; align-items: center; gap: 2px; color: var(--muted); font-size: 12.5px; }
+.mapa-elegido .me-ver svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+@media (min-width: 1080px) { .mapa-elegido { display: none !important; } }
 .mapa-svg path, .mapa-svg .aro { stroke: var(--mapa-fondo); stroke-width: 0.7; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: fill 0.35s ease; }
 .mapa-svg [data-c] { cursor: pointer; }
 .mapa-svg path.sel, .mapa-svg .aro.sel { stroke: var(--accent); stroke-width: 1.8; }
@@ -3288,10 +3311,17 @@ body.con-ixn { overflow: hidden; }
 .mp-u1 { fill: #4D634C; background: #4D634C; } .mp-u2 { fill: #518263; background: #518263; } .mp-u3 { fill: #51A078; background: #51A078; } .mp-u4 { fill: #4CBF8E; background: #4CBF8E; }
 .mp-d1 { fill: #744B3E; background: #744B3E; } .mp-d2 { fill: #9A5749; background: #9A5749; } .mp-d3 { fill: #BF6152; background: #BF6152; } .mp-d4 { fill: #E46A5C; background: #E46A5C; }
 .mp-a1 { fill: #75613B; background: #75613B; } .mp-a2 { fill: #9D8041; background: #9D8041; } .mp-a3 { fill: #C49D44; background: #C49D44; } .mp-a4 { fill: #EDBB45; background: #EDBB45; }
-.mapa-etqs { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.mapa-etqs { position: absolute; inset: 0; pointer-events: none; opacity: 0; will-change: transform; }
 .mapa-etqs.listas { opacity: 1; transition: opacity 0.25s ease; }
 .me { position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: rgba(9, 8, 6, 0.82); border: 1px solid rgba(247, 242, 232, 0.09); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); font-size: 11.5px; font-weight: 600; line-height: 1.25; color: var(--text); white-space: nowrap; letter-spacing: -0.005em; }
 .me b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.mapa-etqs.listas .me { pointer-events: auto; cursor: pointer; }
+.me.grupo { font-family: var(--f); color: var(--text); border-color: rgba(237, 187, 69, 0.38); background: rgba(20, 16, 8, 0.88); }
+.me.grupo svg { width: 11px; height: 11px; flex: none; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; }
+.me.compacto { gap: 4px; padding: 2px 6px 2px 3px; font-size: 10.5px; }
+.me.compacto img.bandera, .me.grupo img.bandera { width: 14px; height: 10px; border-radius: 2px; flex: none; }
+.me.compacto.tuyo { border-color: rgba(237, 187, 69, 0.55); }
+.me-punto { position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 1.5px rgba(9, 8, 6, 0.85); pointer-events: none; }
 .me b.up { color: var(--up); } .me b.down { color: var(--down); } .me b.flat { color: var(--text-2); } .me b.oro { color: var(--accent); }
 .me i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
 .mapa-tip { position: absolute; pointer-events: none; z-index: 2; display: grid; gap: 2px; padding: 8px 11px; background: rgba(20, 18, 15, 0.96); border: 1px solid var(--line-2); border-radius: 12px; font-size: 12.5px; white-space: nowrap; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); }
@@ -3353,21 +3383,43 @@ body.con-ixn { overflow: hidden; }
   .mapa-caja { margin: 0 -6px; border-radius: 14px; }
   .me { font-size: 10.5px; padding: 2px 6px; gap: 4px; }
   .me i { width: 5px; height: 5px; }
+
   .ml-barra { width: 140px; }
 }
 /* 0.4: tu cartera de un vistazo (rectángulos del tamaño de cada posición) y tu peor caída */
 .mc-w { display: grid; gap: 12px; }
 .mc-w .sec-cab { margin-bottom: 0; }
 .mc-caja { position: relative; min-height: 240px; border-radius: 16px; overflow: hidden; }
-.mc-t { position: absolute; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 7px 9px; border: 0; color: var(--text); text-align: left; overflow: hidden; line-height: 1.2; font-family: var(--f); cursor: pointer; transition: filter 0.15s ease, box-shadow 0.15s ease; }
+.mc-t { position: absolute; display: flex; flex-direction: column; align-items: flex-start; gap: 2px; padding: 8px 10px; border: 0; color: var(--text); text-align: left; overflow: hidden; line-height: 1.2; font-family: var(--f); cursor: pointer; transition: filter 0.15s ease, box-shadow 0.15s ease; }
 .mc-n { max-width: 100%; font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.mc-v { font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.mc-v { font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -0.015em; }
 .mc-e { font-size: 0.8em; font-weight: 600; opacity: 0.78; font-variant-numeric: tabular-nums; }
+/* grande: logo y nombre arriba, cómo va en grande y lo que vale; mediano: logo, nombre y cómo va; pequeño: el logo */
+.mc-g, .mc-m { justify-content: space-between; }
+.mc-g { padding: 12px 14px; }
+.mc-abj { display: grid; gap: 2px; max-width: 100%; min-width: 0; }
+.mc-g .mc-n, .mc-m .mc-n { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.15; }
+.mc-g .mc-v { font-size: 1.55em; line-height: 1.1; margin-top: 2px; }
+.mc-m { padding: 8px 9px; }
+.mc-c { align-items: center; justify-content: center; gap: 4px; padding: 3px; }
+.mc-c .mc-n { font-size: 10px; font-weight: 600; max-width: 100%; text-align: center; }
+.mc-c .mc-v { font-size: 10.5px; }
+.mc-x { padding: 0; }   /* tan pequeño que el relleno lo sacaría de su sitio */
+.mc-logo { width: var(--lg, 24px); height: var(--lg, 24px); border-radius: calc(var(--lg, 24px) * 0.27); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); }
+.mc-logo > span { font-size: calc(var(--lg, 24px) * 0.38); }
+.mc-logo img { inset: calc(var(--lg, 24px) * 0.14); width: calc(100% - var(--lg, 24px) * 0.28); height: calc(100% - var(--lg, 24px) * 0.28); }
+.mc-logo-ef { background: #2A251D; } .mc-logo-ef > span { color: var(--accent); font-size: calc(var(--lg, 24px) * 0.5); }
+.mc-logo-mas { background: rgba(247, 242, 232, 0.92); } .mc-logo-mas > span { font-size: calc(var(--lg, 24px) * 0.34); letter-spacing: -0.03em; }
+.mc-otras { display: grid; gap: 8px; width: 100%; }
+.mc-otras ul { list-style: none; margin: 0 -8px; padding: 0; display: grid; }
+.mc-otra { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; align-items: center; gap: 10px; width: 100%; padding: 6px 8px; border: 0; border-radius: 10px; background: transparent; color: var(--text); font: inherit; font-size: 14px; text-align: left; }
+.mc-otra > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.mc-otra small { color: var(--muted); font-size: 12.5px; font-variant-numeric: tabular-nums; }
+@media (hover: hover) { .mc-otra:not(:disabled):hover { background: rgba(255, 255, 255, 0.04); } }
 .mc-t.mp-u3, .mc-t.mp-u4, .mc-t.mp-d4 { color: #0D0B08; }
 .mc-ef, .mc-ef-i { background: repeating-linear-gradient(135deg, #26211B 0 6px, #1C1914 6px 12px); color: var(--text-2); }
 .mc-ef-i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; }
 .mc-t.sel { box-shadow: inset 0 0 0 2px var(--accent); }
-.mc-t.mini { padding: 0; }   /* tan estrecho que el relleno lo sacaría de su sitio */
 @media (hover: hover) { .mc-t:hover { filter: brightness(1.12); } }
 .mc-pie { display: flex; justify-content: flex-end; }
 .mc-det { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; min-height: 22px; }
@@ -3382,12 +3434,32 @@ body.con-ixn { overflow: hidden; }
 .caida-txt b.down { color: var(--down); }
 @media (max-width: 759px) { .mc-pie { justify-content: flex-start; } }
 /* 0.4: lo nuevo de Mercados, con un punto que late en su botón hasta que entras */
+/* lo nuevo de la versión: «Nuevo» en dorado junto al botón, que late, y el icono con un brillo que respira */
 .nav a.nuevo, .navbar a.nuevo { position: relative; }
-.nav a.nuevo::after, .navbar a.nuevo::after { content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg); animation: latido 1.6s ease-out infinite; }
-.nav a.nuevo::after { top: 5px; right: 4px; }
-.navbar a.nuevo::after { top: 4px; left: calc(50% + 14px); }
-@keyframes latido { 0% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 2px rgba(237, 187, 69, 0.55); } 70% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 9px rgba(237, 187, 69, 0); } 100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 9px rgba(237, 187, 69, 0); } }
-@media (prefers-reduced-motion: reduce) { .nav a.nuevo::after, .navbar a.nuevo::after { animation: none; } }
+.nav a.nuevo::after, .navbar a.nuevo::after { content: attr(data-nuevo); position: absolute; padding: 0 6px; border-radius: 999px; background: var(--accent); color: var(--on-accent); font-size: 9.5px; font-weight: 750; line-height: 15px; letter-spacing: 0.01em; box-shadow: 0 0 0 2px var(--bg); animation: latido-nuevo 1.8s ease-out infinite; }
+.nav a.nuevo::after { top: -7px; right: -6px; }
+.navbar a.nuevo::after { top: -9px; left: 50%; transform: translateX(-50%); }
+.navbar a.nuevo svg { color: var(--accent); animation: brillo-nuevo 2.2s ease-in-out infinite; }
+.nav a.nuevo { color: var(--accent); }
+@keyframes latido-nuevo { 0% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 2px rgba(237, 187, 69, 0.6); } 70% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 10px rgba(237, 187, 69, 0); } 100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 10px rgba(237, 187, 69, 0); } }
+@keyframes brillo-nuevo { 0%, 100% { background-color: rgba(237, 187, 69, 0.06); } 50% { background-color: rgba(237, 187, 69, 0.2); } }
+@media (prefers-reduced-motion: reduce) { .nav a.nuevo::after, .navbar a.nuevo::after, .navbar a.nuevo svg { animation: none; } }
+/* el globo que señala lo nuevo */
+.globo-nuevo { position: fixed; z-index: 60; width: min(300px, calc(100vw - 24px)); display: grid; gap: 6px; justify-items: start; padding: 14px 16px 14px; border-radius: 18px; background: linear-gradient(180deg, #1E1A12, #15120D); border: 1px solid rgba(237, 187, 69, 0.35); box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55); animation: globo-entra 0.35s cubic-bezier(.2, .9, .3, 1.2) both; }
+.globo-nuevo b { font-size: 16px; font-weight: 700; letter-spacing: -0.015em; padding-right: 22px; }
+.globo-nuevo p { margin: 0 0 4px; font-size: 13.5px; line-height: 1.45; color: var(--text-2); }
+.globo-eti { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 650; color: var(--accent); }
+.globo-eti svg { width: 13px; height: 13px; }
+.globo-x { position: absolute; top: 8px; right: 8px; display: grid; place-items: center; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 8px; background: transparent; color: var(--muted); }
+.globo-x svg { width: 16px; height: 16px; }
+.globo-pico { position: absolute; bottom: -7px; left: calc(var(--pico, 50%) - 7px); width: 14px; height: 14px; transform: rotate(45deg); background: #15120D; border-right: 1px solid rgba(237, 187, 69, 0.35); border-bottom: 1px solid rgba(237, 187, 69, 0.35); }
+.globo-nuevo.abajo .globo-pico { bottom: auto; top: -7px; background: #1E1A12; border: 0; border-left: 1px solid rgba(237, 187, 69, 0.35); border-top: 1px solid rgba(237, 187, 69, 0.35); }
+@keyframes globo-entra { from { opacity: 0; transform: translateY(8px) scale(0.96); } }
+.globo-nuevo.abajo { animation-name: globo-entra-abajo; }
+@keyframes globo-entra-abajo { from { opacity: 0; transform: translateY(-8px) scale(0.96); } }
+@media (prefers-reduced-motion: reduce) { .globo-nuevo { animation: none; } }
+.nov-guia-fila { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 14px; }
+.ixn-guia { margin-top: 22px; }
 .mgrupos { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 900px) { .mgrupos { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 32px; align-items: start; } }
 .mg-t { margin: 0 0 6px; font-size: 13px; font-weight: 650; color: var(--muted); letter-spacing: 0.01em; }
@@ -5995,10 +6067,8 @@ function pintar() {
   // un punto en Análisis (donde están tus objetivos) mientras te falte el perfil
   const faltaP = perfilIncompleto();
   for (const a of $$('.nav [data-ir="analisis"], .navbar [data-ir="analisis"]')) a.classList.toggle('falta', faltaP);
-  // 0.4: un punto que late en Mercados hasta que entras a ver lo nuevo (el mapa)
-  if (S.vista === 'mercados') LS.set('inv-nuevo-mapa', 1);
-  const nuevoM = !LS.get('inv-nuevo-mapa', 0);
-  for (const a of $$('.nav [data-ir="mercados"], .navbar [data-ir="mercados"]')) { a.classList.toggle('nuevo', nuevoM); if (nuevoM) a.setAttribute('aria-label', L('Mercados (hay algo nuevo)', 'Markets (something new)')); else a.removeAttribute('aria-label'); }
+  // lo nuevo de la versión: el botón de su sección lleva «Nuevo» y late hasta que lo ves de verdad
+  pintarNavNuevo();
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
   pintarGtaTop();
   cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
@@ -6162,7 +6232,7 @@ function htmlAvisoNovedades() {
   if (diasEntre(vista.d, hoyIso()) > 3) return '';
   return `<div class="nov-aviso" role="note"><span class="nov-aviso-ic" aria-hidden="true">${ICONOS.chispa}</span>
     <button type="button" class="nov-aviso-t" data-accion="novedades-detalle"><small data-no-trad>${L(`Novedades de la ${esc(VERSION)}`, `What's new in ${esc(VERSION)}`)}</small><b>${esc(n.t)}</b></button>
-    <button type="button" class="btn peq nov-aviso-b" data-accion="novedades-detalle">${L('Ver en detalle', 'See details')}</button>
+    <span class="nov-aviso-b">${pasosGuia().length ? `<button type="button" class="btn peq pri" data-accion="novedades-guia">${L('Guíame', 'Show me')}</button>` : ''}<button type="button" class="btn peq" data-accion="novedades-detalle">${L('Ver en detalle', 'See details')}</button></span>
     <button type="button" class="ib nov-aviso-x" data-accion="novedades-ocultar" aria-label="${L('Quitar el aviso', 'Dismiss')}">${ICONOS.cerrar}</button></div>`;
 }
 function htmlBloqueCar(k, M) {
@@ -8034,7 +8104,7 @@ document.addEventListener('click', (e) => {
 /* =========================== Mercados: el mapa del mundo (0.4) =========================== */
 /* Cada país, entero, del color de su bolsa (hoy, en el mes o en lo que va de año) o, en «Tu dinero», de lo que tienes
    allí. Las formas salen de Natural Earth ya proyectadas: el mundo (mapa-mundo.json, a 1:110 millones) se pide la
-   primera vez que abres Mercados; Europa y Asia (mapa-eu.json, mapa-as.json, más detalladas) cuando te acercas.
+   primera vez que abres Mercados; el mismo mundo con más detalle (mapa-detalle.json, a 1:50 millones) cuando te acercas.
    Los nombres van primero en los mercados que más pesan en el mundo, y en dorado donde tienes dinero. */
 const BOLSA_PAIS = { ES: ['^IBEX'], DE: ['^GDAXI'], FR: ['^FCHI'], GB: ['^FTSE'], US: ['^GSPC', '^NDX', '^RUT'], JP: ['^N225'], CN: ['000001.SS'], HK: ['^HSI'], IN: ['^NSEI'], BR: ['^BVSP'] };
 const MAPA_MODOS = [['hoy', 'Hoy', 'Today'], ['mes', '1 mes', '1 month'], ['anio', 'En el año', 'This year'], ['tuyo', 'Tu dinero', 'Your money']];
@@ -8143,48 +8213,129 @@ function textoValorMapa(v, modo) {
   if (modo !== 'tuyo') return `${pctS(v, 1)} ${etqModoMapa(modo)}`;
   return pn ? L(`${n}\u00a0% de ${pn}`, `${n}% of ${pn}`) : L(`${n}\u00a0% de tu cartera`, `${n}% of your portfolio`);
 }
-const cajaVistaMapa = (v) => (v !== 'mundo' && S.mapaGeo.zonas[v] ? S.mapaGeo.zonas[v] : [0, 0, S.mapaGeo.w, S.mapaGeo.h]);
-// la zona apretada en la que cae un país (para acercarse al tocarlo en el móvil)
-function zonaDeMapa(c) {
-  const p = S.mapaGeo.c[c];
-  if (!p) return null;
-  return Object.entries(S.mapaGeo.zonas).find(([, [x, y, w, h]]) => p[0] >= x + w * 0.06 && p[0] <= x + w * 0.94 && p[1] >= y && p[1] <= y + h * 0.95)?.[0] || null;
-}
+/* lo que se ve del mapa: un recuadro [x, y, ancho, alto] en las coordenadas del mundo (1000 × 439). Se acerca con dos
+   dedos, tocando dos veces (doble clic con ratón), con + y − o con los botones de Europa y Asia, y de cerca se arrastra
+   con el dedo o el ratón. De lejos, el dedo vertical mueve la página como siempre */
+const MAPA_ZOOM_MAX = 12, MAPA_DETALLE_DESDE = 1.7;
+const vbMundoMapa = () => [0, 0, S.mapaGeo.w, S.mapaGeo.h];
+const cajaVistaMapa = (v) => (v !== 'mundo' && S.mapaGeo.zonas[v] ? S.mapaGeo.zonas[v] : vbMundoMapa());
 const anchoMapa = () => { const w = $('#mapaMundo'); return (w && w.clientWidth) || Math.min(innerWidth - 32, 1000); };
-function caminosMapa(vista, modo, ex) {
-  const G = S.mapaGeo, P = vista !== 'mundo' && S.mapaZonas && S.mapaZonas[vista] ? S.mapaZonas[vista] : G.mundo;
+const zoomMapa = (vb = S.mapaVB) => (vb && S.mapaGeo ? S.mapaGeo.w / vb[2] : 1);
+function limitarVB(vb) {
+  const G = S.mapaGeo;
+  const w = Math.min(G.w, Math.max(G.w / MAPA_ZOOM_MAX, vb[2])), h = (w * G.h) / G.w;
+  const cx = vb[0] + vb[2] / 2, cy = vb[1] + (vb[3] || (vb[2] * G.h) / G.w) / 2;
+  return [Math.min(Math.max(cx - w / 2, 0), G.w - w), Math.min(Math.max(cy - h / 2, 0), G.h - h), w, h];
+}
+// el botón de vista encendido: el de la zona que estás viendo, o ninguno si te has ido a otra parte
+function vistaDeVB(vb) {
+  for (const [k] of MAPA_VISTAS) {
+    const z = cajaVistaMapa(k);
+    if (Math.abs(z[2] - vb[2]) / z[2] < 0.08 && Math.abs(z[0] + z[2] / 2 - vb[0] - vb[2] / 2) < z[2] * 0.1 && Math.abs(z[1] + z[3] / 2 - vb[1] - vb[3] / 2) < z[3] * 0.12) return k;
+  }
+  return null;
+}
+// las formas: de lejos, las del mapa del mundo (ligeras); de cerca, las de detalle, que se piden la primera vez
+function caminosMapa(modo, ex) {
+  const G = S.mapaGeo, P = S.mapaDet && zoomMapa() >= MAPA_DETALLE_DESDE ? S.mapaDet : G.mundo;
+  S.mapaCapa = P === G.mundo ? 'mundo' : 'detalle';
   // el elegido, el último: así su borde dorado se ve entero por encima de los vecinos
   const orden = Object.keys(P).filter((c) => c !== '_').sort((a, b) => (a === S.mapaSel) - (b === S.mapaSel));
   return (P._ ? `<path d="${P._}" class="mp-0"/>` : '') + orden.map((c) => `<path d="${P[c]}" data-c="${c}" class="${tonoMapa(valorMapa(c, modo, ex), modo)}${c === S.mapaSel ? ' sel' : ''}"/>`).join('');
 }
-/* los nombres: pastillas con la letra de la app encima del mapa. Primero los que más pesan en el mundo (en «Tu dinero»,
-   donde más tienes); solo en países lo bastante grandes en pantalla, y los que se pisan con otro se quitan al colocarlos */
-function etiquetasMapa(vb, esc1, modo, ex) {
-  const G = S.mapaGeo, out = [];
-  const lista = paisesMapa(modo, ex).map((x) => ({ ...x, peso: modo === 'tuyo' ? x.v : PESO_MUNDO[x.c] || 0 })).sort((a, b) => b.peso - a.peso);
-  const exTodo = S.mapaExTodo || ex;
-  for (const x of lista) {
-    const p = G.c[x.c];
-    if (!p || (G.a[x.c] || 0) * esc1 * esc1 < 260) continue;
-    const l = ((p[0] - vb[0]) / vb[2]) * 100, t = ((p[1] - vb[1]) / vb[3]) * 100;
-    if (l < 2 || l > 98 || t < 3 || t > 97) continue;
-    const tuyo = modo !== 'tuyo' && exTodo.get(x.c) && exTodo.get(x.c).pct >= 0.5;
-    out.push(`<span class="me${tuyo ? ' tuyo' : ''}" style="left:${l.toFixed(2)}%;top:${t.toFixed(2)}%">${tuyo ? '<i></i>' : ''}<span>${esc(cortoPaisMapa(x.c))}</span><b class="${modo === 'tuyo' ? 'oro' : cls(x.v)}">${valorCortoMapa(x.v, modo)}</b></span>`);
-  }
-  return out.join('');
+async function cargarDetalleMapa() {
+  if (S.mapaDet || S.mapaDetPidiendo) return;
+  S.mapaDetPidiendo = true;
+  try { const r = await fetch('mapa-detalle.json?v=1'); if (r.ok) S.mapaDet = await r.json(); } catch (e) { /* se queda con el del mundo */ }
+  S.mapaDetPidiendo = false;
+  if (S.mapaDet && zoomMapa() >= MAPA_DETALLE_DESDE) ponerVB(S.mapaVB, false);
 }
-// ya en la página: se quitan las que se pisan con una de antes (más importante) o se salen del mapa
+/* Europa de lejos: tantos países juntos no caben. Una pastilla con la media de sus bolsas (cada una por lo que pesa en
+   el mundo) o, en «Tu dinero», lo que tienes allí; al tocarla, el mapa se acerca */
+function valorEuropaMapa(modo, ex) {
+  const cods = Object.keys(ZONA_PAISES.Europa);
+  if (modo === 'tuyo') { const s = sum(cods, (c) => (ex.get(c) || {}).pct || 0); return s > 0 ? s : null; }
+  let n = 0, d = 0;
+  for (const c of cods) { const v = valorMapa(c, modo, ex), w = PESO_MUNDO[c] || 0; if (v != null && isFinite(v) && w) { n += v * w; d += w; } }
+  return d ? n / d : null;
+}
+/* los nombres: pastillas con la letra de la app encima del mapa. Primero los que más pesan en el mundo (en «Tu dinero»,
+   donde más tienes). Un país grande lleva la pastilla encima; uno pequeño pero importante (Japón, Taiwán, Corea, Hong
+   Kong…), al lado, con un punto donde está. Las que no caben sin pisarse se quedan sin poner */
+function etiquetasMapa(vb, esc1, modo, ex) {
+  const G = S.mapaGeo, items = [], exTodo = S.mapaExTodo || ex;
+  // en un mapa estrecho (el móvil), la bandera en vez del nombre: caben el doble y se reconocen igual
+  const compacto = anchoMapa() < 600;
+  const sitio = (p) => { const l = ((p[0] - vb[0]) / vb[2]) * 100, t = ((p[1] - vb[1]) / vb[3]) * 100; return l >= 1 && l <= 99 && t >= 2 && t <= 98 ? [l, t] : null; };
+  // con banderas (el móvil) caben antes que con nombres
+  const eu = G.zonas.eu, euLejos = eu[2] * esc1 < (compacto ? 200 : 380);
+  const enEuropa = (p) => p[0] >= eu[0] && p[0] <= eu[0] + eu[2] && p[1] >= eu[1] && p[1] <= eu[1] + eu[3];
+  if (euLejos) {
+    const s = sitio([eu[0] + eu[2] * 0.5, eu[1] + eu[3] * 0.5]), v = valorEuropaMapa(modo, ex);
+    if (s && v != null) items.push({ s, peso: modo === 'tuyo' ? v : sum(Object.keys(ZONA_PAISES.Europa), (c) => PESO_MUNDO[c] || 0), html: `<button __A__ type="button" class="me grupo" data-mapa-vista="eu" aria-label="${L('Acercar a Europa', 'Zoom to Europe')}">${compacto ? `${bandera('eu')}<span class="sr">${L('Europa', 'Europe')}</span>` : `<span>${L('Europa', 'Europe')}</span>`}<b class="${modo === 'tuyo' ? 'oro' : cls(v)}">${valorCortoMapa(v, modo)}</b><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4L14 14M7 5v4M5 7h4"/></svg></button>` });
+  }
+  for (const x of paisesMapa(modo, ex)) {
+    const p = G.c[x.c];
+    if (!p || (euLejos && enEuropa(p))) continue;
+    const a = (G.a[x.c] || 0) * esc1 * esc1, peso = modo === 'tuyo' ? x.v : PESO_MUNDO[x.c] || 0;
+    const grande = a >= 260, importante = modo === 'tuyo' ? x.v >= 1 : peso >= 0.3;
+    if (!grande && !importante) continue;
+    const s = sitio(p);
+    if (!s) continue;
+    const tuyo = modo !== 'tuyo' && exTodo.get(x.c) && exTodo.get(x.c).pct >= 0.5;
+    const cifra = `<b class="${modo === 'tuyo' ? 'oro' : cls(x.v)}">${valorCortoMapa(x.v, modo)}</b>`;
+    items.push({ s, peso, chico: !grande, html: compacto
+      ? `<span __A__ class="me compacto${tuyo ? ' tuyo' : ''}" data-mapa-c="${x.c}" title="${esc(nombrePaisMapa(x.c))}">${bandera(x.c)}<span class="sr">${esc(nombrePaisMapa(x.c))}</span>${cifra}</span>`
+      : `<span __A__ class="me${tuyo ? ' tuyo' : ''}" data-mapa-c="${x.c}">${tuyo ? '<i></i>' : ''}<span>${esc(cortoPaisMapa(x.c))}</span>${cifra}</span>` });
+  }
+  return items.sort((a, b) => b.peso - a.peso).map((x) => x.html.replace('__A__', `data-l="${x.s[0].toFixed(2)}" data-t="${x.s[1].toFixed(2)}"${x.chico ? ' data-chico="1"' : ''}`)).join('');
+}
+// hacia dónde va mejor la pastilla de cada país si no cabe encima (c encima, d derecha, i izquierda, a arriba, b abajo)
+const MAPA_LADO = { JP: 'dab!', KR: 'bd!', TW: 'db!', HK: 'b', SG: 'b', PH: 'd', MY: 'b', TH: 'i', VN: 'd', ID: 'cb', NZ: 'd', MX: 'i', CL: 'i', AR: 'cd', EU: 'ca',
+  GB: 'i', IE: 'i', PT: 'i', ES: 'ib', FR: 'ic', DE: 'cd', IT: 'bd', CH: 'b', AT: 'bd', NL: 'a', CN: 'cib', IN: 'cb', BE: 'i', DK: 'a', NO: 'ci', SE: 'c', FI: 'cd', PL: 'cd', GR: 'b', TR: 'cb', IL: 'i', AE: 'b', QA: 'b', KW: 'a', SA: 'c', EG: 'cb', ZA: 'c' };
+// ya en la página: cada pastilla en el primer hueco libre (encima del país o, si es pequeño, a un lado), en orden de
+// importancia; las que se pisarían con una de antes o se saldrían del mapa no salen
 function colocarEtiquetasMapa() {
   const capa = $('#mapaEtq');
   if (!capa) return;
+  for (const p of capa.querySelectorAll('.me-punto')) p.remove();
   const W = capa.clientWidth, H = capa.clientHeight, puestas = [];
-  for (const el of capa.children) {
-    const w = el.offsetWidth, h = el.offsetHeight, x = (parseFloat(el.style.left) / 100) * W - w / 2, y = (parseFloat(el.style.top) / 100) * H - h / 2;
-    const r = [x - 3, y - 2, x + w + 3, y + h + 2];
-    const fuera = x < 2 || y < 2 || x + w > W - 2 || y + h > H - 2;
-    if (fuera || puestas.some((q) => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1])) { el.hidden = true; continue; }
-    puestas.push(r);
+  // los botones de + y − y la pista de los gestos también ocupan sitio
+  const c0 = capa.getBoundingClientRect();
+  for (const o of capa.parentElement.querySelectorAll('.mapa-zoom, .mapa-pista')) { const r = o.getBoundingClientRect(); if (r.width) puestas.push([r.left - c0.left - 4, r.top - c0.top - 4, r.right - c0.left + 4, r.bottom - c0.top + 4]); }
+  const cruza = (r, q) => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1];
+  const choca = (r) => r[0] < 2 || r[1] < 2 || r[2] > W - 2 || r[3] > H - 2 || puestas.some((q) => cruza(r, q));
+  for (const el of [...capa.querySelectorAll('.me')]) {
+    const w = el.offsetWidth, h = el.offsetHeight, ax = (+el.dataset.l / 100) * W, ay = (+el.dataset.t / 100) * H, chico = el.dataset.chico === '1';
+    // uno grande, encima; si no cabe, a un lado con un punto donde está (igual que los pequeños, que nunca lo tapan).
+    // Primero hacia donde hay mar o sitio (MAPA_LADO): Japón a la derecha, Reino Unido a la izquierda…
+    const lado = { c: [0, 0], d: [w / 2 + 8, 0], i: [-(w / 2 + 8), 0], a: [0, -(h / 2 + 8)], b: [0, h / 2 + 8] };
+    const pref = MAPA_LADO[el.dataset.mapaC || (el.classList.contains('grupo') ? 'EU' : '')] || '';
+    // con «!», solo esos lados (Japón nunca encima de China)
+    const orden = [...new Set([...pref.replace('!', ''), ...(pref.endsWith('!') ? '' : chico ? 'diab' : 'cabdi')])].filter((k) => !(chico && k === 'c'));
+    // encima, también un poco más arriba o más abajo (sin dejar de tocar su sitio)
+    const huecos = orden.flatMap((k) => (k === 'c' ? [lado.c, [0, -h * 0.4], [0, h * 0.4]] : [lado[k]]));
+    let ok = null;
+    for (const [dx, dy] of huecos) {
+      const x = ax + dx - w / 2, y = ay + dy - h / 2, r = [x - 2, y - 1, x + w + 2, y + h + 1];
+      const lejos = Math.abs(dx) > w / 2 || Math.abs(dy) > h / 2;
+      if (choca(r) || ((chico || lejos) && choca([ax - 4, ay - 4, ax + 4, ay + 4]))) continue;
+      ok = { cx: ax + dx, cy: ay + dy, r };
+      break;
+    }
+    if (!ok) { el.hidden = true; continue; }
+    el.hidden = false;
+    el.style.left = `${ok.cx.toFixed(1)}px`; el.style.top = `${ok.cy.toFixed(1)}px`;
+    puestas.push(ok.r);
+    if (chico || Math.abs(ok.cx - ax) > w / 2 || Math.abs(ok.cy - ay) > h / 2) {
+      const p = document.createElement('i');
+      p.className = 'me-punto';
+      p.style.left = `${ax.toFixed(1)}px`; p.style.top = `${ay.toFixed(1)}px`;
+      capa.appendChild(p);
+      puestas.push([ax - 4, ay - 4, ax + 4, ay + 4]);
+    }
   }
+  capa.style.transform = '';
   capa.classList.add('listas');
 }
 function svgMapa(M) {
@@ -8193,13 +8344,13 @@ function svgMapa(M) {
   if (S.mapaPos && !(M && M.filas.some((f) => f.pos.id === S.mapaPos && f.valor > 0 && paisesDeFila(f)))) S.mapaPos = null;
   const exTodo = exposicionPaises(M), ex = modo === 'tuyo' && S.mapaPos ? exposicionPaises(M, S.mapaPos) : exTodo;
   S.mapaEx = ex; S.mapaExTodo = exTodo;
-  const vb = S.mapaVB || cajaVistaMapa(S.mapaVista), esc1 = anchoMapa() / vb[2];
+  const vb = S.mapaVB;
   const top = paisesMapa(modo, ex).sort((a, b) => b.v - a.v).slice(0, 3).map((x) => `${nombrePaisMapa(x.c)} ${textoValorMapa(x.v, modo)}`);
   const pm = modo === 'tuyo' ? posMapa() : null;
   const resumen = top.length ? (modo === 'tuyo' ? (pm ? L(`Mapa de dónde invierte ${pm.inst.corto || pm.inst.nombre}. Donde más: `, `Map of where ${pm.inst.corto || pm.inst.nombre} invests. Most: `) : L('Mapa de dónde está tu dinero. Donde más: ', 'Map of where your money is. Most: ')) : L(`Mapa de cómo van las bolsas ${etqModoMapa(modo)}. Lo que más sube: `, `Map of how stock markets are doing ${etqModoMapa(modo)}. Best: `)) + top.join('; ') : L('Mapa del mundo', 'World map');
-  // Hong Kong y Singapur no se ven a ninguna escala: en Asia, un aro alrededor para poder tocarlos
-  const aros = S.mapaVista === 'as' ? ['HK', 'SG'].filter((c) => G.c[c]).map((c) => `<circle cx="${G.c[c][0]}" cy="${G.c[c][1]}" r="${(7 / esc1).toFixed(2)}" data-c="${c}" class="aro ${tonoMapa(valorMapa(c, modo, ex), modo)}${c === S.mapaSel ? ' sel' : ''}"/>`).join('') : '';
-  return { svg: `<svg viewBox="${vb.join(' ')}" role="img" aria-label="${esc(resumen)}"><g class="mp-paises">${caminosMapa(S.mapaVista, modo, ex)}</g>${aros}</svg>`, etq: etiquetasMapa(vb, esc1, modo, ex) };
+  // Hong Kong y Singapur no se ven a ninguna escala: de cerca, un aro alrededor para poder tocarlos
+  const aros = ['HK', 'SG'].filter((c) => G.c[c]).map((c) => `<circle cx="${G.c[c][0]}" cy="${G.c[c][1]}" r="1" data-c="${c}" class="aro ${tonoMapa(valorMapa(c, modo, ex), modo)}${c === S.mapaSel ? ' sel' : ''}"/>`).join('');
+  return `<svg viewBox="${vb.map((x) => +x.toFixed(2)).join(' ')}" role="img" aria-label="${esc(resumen)}"><g class="mp-paises">${caminosMapa(modo, ex)}</g><g class="mp-aros">${aros}</g></svg>`;
 }
 function htmlLeyendaMapa(modo) {
   const c = MAPA_CORTES[modo], f = (x) => fmtNumR(x, 2);
@@ -8264,38 +8415,47 @@ function htmlInfoMapa(c, M) {
 function htmlMapaMundo() {
   if (S.mapaModo == null) S.mapaModo = LS.get('inv-mapa', 'hoy');
   if (!MAPA_MODOS.some(([k]) => k === S.mapaModo)) S.mapaModo = 'hoy';
-  if (!S.mapaVista) S.mapaVista = 'mundo';
-  const modo = S.mapaModo;
+  const modo = S.mapaModo, tactil = !!(window.matchMedia && matchMedia('(pointer: coarse)').matches);
   // el mapa y los nombres se dibujan después, ya en la página (dependen de lo ancho que salga)
   return `<section class="mapa-w" aria-labelledby="hMapa">
     <div class="mapa-cab"><div class="mapa-tit"><h2 id="hMapa">${L('El mundo', 'The world')}</h2><p>${L('Cada país, del color de su bolsa. Toca uno para verlo.', 'Each country in the color of its stock market. Tap one to see it.')}</p></div>
       <div class="mapa-modos" role="group" aria-label="${L('Qué colorea el mapa', 'What the map shows')}">${MAPA_MODOS.map(([k, es, en]) => `<button type="button" data-mapa-modo="${k}" aria-pressed="${k === modo}">${L(es, en)}</button>`).join('')}</div></div>
     <div class="mapa-cuerpo">
       <div class="mapa-izq">
-        <div class="mapa-caja"><div class="mapa-svg" id="mapaMundo"></div><div class="mapa-etqs" id="mapaEtq" aria-hidden="true"></div><div class="mapa-tip" hidden></div></div>
-        <div class="mapa-pie"><div class="mapa-vistas" role="group" aria-label="${L('Acercar', 'Zoom')}">${MAPA_VISTAS.map(([k, es, en]) => `<button type="button" data-mapa-vista="${k}" aria-pressed="${k === S.mapaVista}">${L(es, en)}</button>`).join('')}</div><div class="mapa-ley" id="mapaLey">${htmlLeyendaMapa(modo)}</div></div>
+        <div class="mapa-caja"><div class="mapa-svg" id="mapaMundo"></div><div class="mapa-etqs" id="mapaEtq"></div><div class="mapa-tip" hidden></div>
+          <div class="mapa-zoom" role="group" aria-label="${L('Acercar o alejar', 'Zoom')}"><button type="button" data-mapa-zoom="-1" aria-label="${L('Alejar', 'Zoom out')}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8h10"/></svg></button><button type="button" data-mapa-zoom="1" aria-label="${L('Acercar', 'Zoom in')}"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 3v10M3 8h10"/></svg></button></div>
+        </div>
+        ${tactil && !LS.get('inv-mapa-gesto', 0) ? `<p class="mapa-pista"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 13l-4 4M3 13.5V17h3.5M13 7l4-4M13.5 3H17v3.5"/></svg>${L('Pellizca o toca dos veces para acercar; de cerca, arrastra para moverte', 'Pinch or double-tap to zoom in; up close, drag to move around')}</p>` : ''}
+        <button type="button" class="mapa-elegido" id="mapaElegido" hidden></button>
+        <div class="mapa-pie"><div class="mapa-vistas" role="group" aria-label="${L('Ir a', 'Go to')}">${MAPA_VISTAS.map(([k, es, en]) => `<button type="button" data-mapa-vista="${k}" aria-pressed="${k === (S.mapaVista || 'mundo')}">${L(es, en)}</button>`).join('')}</div><div class="mapa-ley" id="mapaLey">${htmlLeyendaMapa(modo)}</div></div>
       </div>
       <div class="mapa-info" id="mapaInfo">${htmlInfoMapa(S.mapaSel, S.M)}</div>
       <p class="sr" id="mapaAnuncio" aria-live="polite"></p>
     </div>
   </section>`;
 }
+// en el móvil, el país elegido en una línea justo debajo del mapa (su ficha queda más abajo): así no se mueve la página
+function htmlElegidoMapa() {
+  const c = S.mapaSel;
+  if (!c || !S.mapaGeo) return '';
+  const v = valorMapa(c, S.mapaModo, S.mapaEx || new Map());
+  return `<span class="mi-ban">${bandera(c)}</span><b>${esc(nombrePaisMapa(c))}</b><span class="mi-v ${S.mapaModo === 'tuyo' || v == null ? 'oro' : cls(v)}">${v == null ? '—' : valorCortoMapa(v, S.mapaModo)}</span><span class="me-ver">${L('Ver', 'See')}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></span>`;
+}
 function repintarMapa() {
   const w = $('#mapaMundo');
-  if (!w || S.mapaMoviendo) return;
+  if (!w) return;
   const M = S.M;
   if (S.mapaGeo) {
-    S.mapaVB = cajaVistaMapa(S.mapaVista);
-    const r = svgMapa(M);
-    w.innerHTML = r.svg;
-    const capa = $('#mapaEtq');
-    if (capa) { capa.classList.remove('listas'); capa.innerHTML = r.etq; colocarEtiquetasMapa(); }
+    S.mapaVB = limitarVB(S.mapaVB || vbMundoMapa());
+    w.innerHTML = svgMapa(M);
+    ponerVB(S.mapaVB, false);
+    pintarEtiquetasMapa();
   }
   const ley = $('#mapaLey'); if (ley) ley.innerHTML = htmlLeyendaMapa(S.mapaModo);
   const inf = $('#mapaInfo'); if (inf) inf.innerHTML = htmlInfoMapa(S.mapaSel, M);
+  const el = $('#mapaElegido'); if (el) { el.innerHTML = htmlElegidoMapa(); el.hidden = !S.mapaSel; }
   const sec = $('.mapa-w'); if (sec) sec.dataset.modo = S.mapaModo;
   for (const b of $$('[data-mapa-modo]')) b.setAttribute('aria-pressed', String(b.dataset.mapaModo === S.mapaModo));
-  for (const b of $$('[data-mapa-vista]')) b.setAttribute('aria-pressed', String(b.dataset.mapaVista === S.mapaVista));
 }
 async function cargarMapa() {
   if (S.mapaGeo || S.mapaCargando) return;
@@ -8308,42 +8468,85 @@ async function cargarMapa() {
   S.mapaFallo = !S.mapaGeo;
   repintarMapa();
 }
-// Europa y Asia de cerca, con fronteras más finas: se piden la primera vez que te acercas
-async function cargarZonaMapa(z) {
-  S.mapaZonas = S.mapaZonas || {};
-  if (S.mapaZonas[z] || S.mapaZonas['_' + z]) return;
-  S.mapaZonas['_' + z] = true;
-  try {
-    const r = await fetch(`mapa-${z}.json?v=1`);
-    if (r.ok) S.mapaZonas[z] = await r.json();
-  } catch (e) { /* se queda con las del mapa entero */ }
-  delete S.mapaZonas['_' + z];
-  if (S.mapaVista === z) repintarMapa();
-}
-/* acercarse o alejarse: el recuadro se mueve poco a poco (salvo con «reducir movimiento»). Al alejarse, primero vuelven
-   las formas del mundo entero, porque las de cerca están recortadas */
-function irVistaMapa(v) {
-  if (!S.mapaGeo || v === S.mapaVista || S.mapaMoviendo) return;
-  if (v !== 'mundo') cargarZonaMapa(v);
-  const desde = S.mapaVB || cajaVistaMapa(S.mapaVista), hasta = cajaVistaMapa(v), antes = S.mapaVista;
-  S.mapaVista = v;
+/* poner el recuadro: el dibujo se mueve al momento; los nombres, al terminar (mientras arrastras, se desplazan con el
+   mapa; mientras acercas, se apagan) */
+function ponerVB(vb, final) {
+  S.mapaVB = vb;
   const svg = $('#mapaMundo svg');
-  if (!svg || matchMedia('(prefers-reduced-motion: reduce)').matches) { repintarMapa(); return; }
-  // durante el viaje, el mundo entero: el detalle de Europa no tiene Asia (y al revés), y al ir de una a otra se
-  // vería vacío por el camino. Al llegar, repintarMapa pone el detalle de la zona.
-  if (v === 'mundo' || antes !== 'mundo') svg.querySelector('.mp-paises').innerHTML = caminosMapa('mundo', S.mapaModo, S.mapaEx || new Map());
-  for (const b of $$('[data-mapa-vista]')) b.setAttribute('aria-pressed', String(b.dataset.mapaVista === v));
-  for (const a of svg.querySelectorAll('.aro')) a.remove();
-  const capa = $('#mapaEtq'); if (capa) capa.classList.remove('listas');
-  S.mapaMoviendo = true;
-  const t0 = performance.now(), dur = 560;
+  if (!svg) return;
+  svg.setAttribute('viewBox', vb.map((x) => +x.toFixed(2)).join(' '));
+  const z = zoomMapa(vb), caja = svg.closest('.mapa-caja');
+  if (caja) caja.classList.toggle('cerca', z > 1.02);
+  if (z >= MAPA_DETALLE_DESDE && !S.mapaDet) cargarDetalleMapa();
+  const quiere = S.mapaDet && z >= MAPA_DETALLE_DESDE ? 'detalle' : 'mundo';
+  if (quiere !== S.mapaCapa) { const g = svg.querySelector('.mp-paises'); if (g) g.innerHTML = caminosMapa(S.mapaModo, S.mapaEx || new Map()); }
+  S.mapaVista = vistaDeVB(vb);
+  for (const b of $$('.mapa-vistas [data-mapa-vista]')) b.setAttribute('aria-pressed', String(b.dataset.mapaVista === S.mapaVista));
+  const zm = $$('[data-mapa-zoom]');
+  for (const b of zm) b.disabled = b.dataset.mapaZoom === '1' ? z >= MAPA_ZOOM_MAX * 0.98 : z <= 1.01;
+  const capa = $('#mapaEtq'), e = S.mapaVBEtq;
+  if (capa && e && !final) {
+    if (Math.abs(e[2] - vb[2]) < 0.01) { const k = capa.clientWidth / vb[2]; capa.style.transform = `translate(${((e[0] - vb[0]) * k).toFixed(1)}px, ${((e[1] - vb[1]) * k).toFixed(1)}px)`; }
+    else capa.classList.remove('listas');
+  }
+  if (final) { clearTimeout(S.mapaEtqT); S.mapaEtqT = setTimeout(pintarEtiquetasMapa, 60); }
+}
+function pintarEtiquetasMapa() {
+  const capa = $('#mapaEtq'), svg = $('#mapaMundo svg');
+  if (!capa || !svg || !S.mapaGeo) return;
+  const vb = S.mapaVB, esc1 = anchoMapa() / vb[2];
+  capa.classList.remove('listas');
+  capa.innerHTML = etiquetasMapa(vb, esc1, S.mapaModo, S.mapaEx || new Map());
+  S.mapaVBEtq = vb.slice();
+  colocarEtiquetasMapa();
+  // los aros de Hong Kong y Singapur, siempre del mismo tamaño en pantalla y solo de cerca
+  for (const a of svg.querySelectorAll('.aro')) { a.setAttribute('r', (7 / esc1).toFixed(2)); a.style.display = zoomMapa(vb) >= 2 ? '' : 'none'; }
+}
+// el viaje de un recuadro a otro: el ancho cambia en escala logarítmica, así acercarse y alejarse van igual de suaves
+function animarVB(hasta, dur = 460) {
+  if (!S.mapaGeo) return;
+  hasta = limitarVB(hasta);
+  const desde = S.mapaVB || vbMundoMapa();
+  cancelAnimationFrame(S.mapaAnim);
+  if (!$('#mapaMundo svg') || matchMedia('(prefers-reduced-motion: reduce)').matches) { ponerVB(hasta, true); return; }
+  const t0 = performance.now(), c0 = [desde[0] + desde[2] / 2, desde[1] + desde[3] / 2], c1 = [hasta[0] + hasta[2] / 2, hasta[1] + hasta[3] / 2];
   const paso = (t) => {
     const k = Math.min(1, (t - t0) / dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
-    svg.setAttribute('viewBox', desde.map((x, i) => (x + (hasta[i] - x) * e).toFixed(2)).join(' '));
-    if (k < 1) requestAnimationFrame(paso);
-    else { S.mapaMoviendo = false; repintarMapa(); }
+    if (k >= 1) { S.mapaAnim = 0; ponerVB(hasta, true); return; }
+    const w = desde[2] * Math.pow(hasta[2] / desde[2], e), h = (w * desde[3]) / desde[2];
+    ponerVB(limitarVB([c0[0] + (c1[0] - c0[0]) * e - w / 2, c0[1] + (c1[1] - c0[1]) * e - h / 2, w, h]), false);
+    S.mapaAnim = requestAnimationFrame(paso);
   };
-  requestAnimationFrame(paso);
+  S.mapaAnim = requestAnimationFrame(paso);
+}
+function irVistaMapa(v) { if (S.mapaGeo) animarVB(cajaVistaMapa(v)); }
+// acercar o alejar por un factor, sin mover el punto (x, y) de la pantalla (por defecto, el centro del mapa)
+function zoomEnMapa(f, x, y) {
+  const el = $('#mapaMundo');
+  if (!el || !S.mapaVB) return;
+  const r = el.getBoundingClientRect(), vb = S.mapaVB;
+  const fx = x == null ? 0.5 : (x - r.left) / r.width, fy = y == null ? 0.5 : (y - r.top) / r.height;
+  const px = vb[0] + fx * vb[2], py = vb[1] + fy * vb[3];
+  let w = vb[2] / f, h = vb[3] / f;
+  if (w > S.mapaGeo.w / 1.3) { w = S.mapaGeo.w; h = S.mapaGeo.h; }
+  animarVB([px - fx * w, py - fy * h, w, h]);
+}
+// un país pequeño: el mapa se acerca hasta que se ve de unos 45 × 45 px, centrado en él
+function acercarAPais(cod) {
+  const G = S.mapaGeo, p = G && G.c[cod];
+  if (!p) return;
+  const base = anchoMapa() / G.w, a = Math.max(G.a[cod] || 0, 0.3);
+  const z = Math.min(MAPA_ZOOM_MAX, Math.max(zoomMapa() * 1.4, Math.sqrt(2000 / a) / base)), w = G.w / z, h = (w * G.h) / G.w;
+  animarVB([p[0] - w / 2, p[1] - h / 2, w, h]);
+}
+// llevar a un país elegido desde la lista o el desplegable: si es pequeño, se acerca; si no se ve, el mapa va hasta él
+function verPaisMapa(cod) {
+  const G = S.mapaGeo, p = G && G.c[cod], vb = S.mapaVB;
+  if (!p || !vb) return;
+  const esc1 = anchoMapa() / vb[2];
+  if ((G.a[cod] || 0) * esc1 * esc1 < 450) { acercarAPais(cod); return; }
+  const dentro = p[0] > vb[0] + vb[2] * 0.08 && p[0] < vb[0] + vb[2] * 0.92 && p[1] > vb[1] + vb[3] * 0.08 && p[1] < vb[1] + vb[3] * 0.92;
+  if (!dentro) animarVB([p[0] - vb[2] / 2, p[1] - vb[3] / 2, vb[2], vb[3]]);
 }
 function elegirPaisMapa(c) {
   S.mapaSel = c || null;
@@ -8351,32 +8554,117 @@ function elegirPaisMapa(c) {
   // el panel se rehace con cada precio: lo que se lee en voz alta es solo el país elegido, una vez
   const an = $('#mapaAnuncio');
   if (an) an.textContent = c ? `${nombrePaisMapa(c)}: ${textoValorMapa(valorMapa(c, S.mapaModo, S.mapaEx || new Map()), S.mapaModo)}` : '';
-  const inf = $('#mapaInfo');
-  if (c && inf && innerWidth < 980) { const r = inf.getBoundingClientRect(); if (r.top > innerHeight - 140) inf.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
 }
+/* los gestos: con un dedo (o el ratón) se arrastra cuando estás cerca; con dos, se acerca o se aleja alrededor de los
+   dedos; dos toques seguidos (o doble clic), acerca ahí. Todo sobre el recuadro, sin esperar a ninguna animación */
+const GM = { p: new Map(), movido: false, ultimo: null };
+function baseGestoMapa() {
+  const el = $('#mapaMundo');
+  if (!el) return;
+  GM.r = el.getBoundingClientRect(); GM.vb0 = (S.mapaVB || vbMundoMapa()).slice();
+  const pts = [...GM.p.values()];
+  if (pts.length >= 2) { GM.d0 = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1; GM.m0 = [(pts[0].x + pts[1].x) / 2, (pts[0].y + pts[1].y) / 2]; }
+  else if (pts.length === 1) GM.m0 = [pts[0].x, pts[0].y];
+}
+function pedirVBMapa(vb) {
+  GM.vb = vb;
+  if (GM.raf) return;
+  GM.raf = requestAnimationFrame(() => { GM.raf = 0; ponerVB(GM.vb, false); });
+}
+document.addEventListener('pointerdown', (e) => {
+  const caja = e.target.closest && e.target.closest('.mapa-caja');
+  if (!caja || e.target.closest('.mapa-zoom') || !S.mapaGeo || !$('#mapaMundo svg')) return;
+  if (e.pointerType === 'mouse' && e.button !== 0) return;
+  cancelAnimationFrame(S.mapaAnim); S.mapaAnim = 0;
+  GM.p.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (GM.p.size === 1) { GM.movido = false; GM.ini = [e.clientX, e.clientY]; }
+  baseGestoMapa();
+  for (const t of $$('.mapa-tip')) t.hidden = true;
+});
+document.addEventListener('pointermove', (e) => {
+  if (!GM.p.has(e.pointerId) || !GM.r) return;
+  GM.p.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  const pts = [...GM.p.values()], r = GM.r, vb0 = GM.vb0;
+  if (pts.length >= 2) {
+    const d = Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y) || 1, m = [(pts[0].x + pts[1].x) / 2, (pts[0].y + pts[1].y) / 2];
+    const w = (vb0[2] * GM.d0) / d, h = (w * vb0[3]) / vb0[2];
+    // el punto del mundo que estaba entre los dedos sigue entre los dedos
+    const px = vb0[0] + ((GM.m0[0] - r.left) / r.width) * vb0[2], py = vb0[1] + ((GM.m0[1] - r.top) / r.height) * vb0[3];
+    GM.movido = true;
+    pedirVBMapa(limitarVB([px - ((m[0] - r.left) / r.width) * w, py - ((m[1] - r.top) / r.height) * h, w, h]));
+    return;
+  }
+  if (!GM.movido && Math.hypot(e.clientX - GM.ini[0], e.clientY - GM.ini[1]) < 6) return;
+  if (zoomMapa(vb0) <= 1.02) return;   // de lejos no hay nada que arrastrar: el dedo mueve la página
+  GM.movido = true;
+  const caja = $('.mapa-caja'); if (caja) caja.classList.add('arrastrando');
+  pedirVBMapa(limitarVB([vb0[0] - ((e.clientX - GM.m0[0]) / r.width) * vb0[2], vb0[1] - ((e.clientY - GM.m0[1]) / r.height) * vb0[3], vb0[2], vb0[3]]));
+});
+function soltarMapa(e) {
+  if (!GM.p.has(e.pointerId)) return;
+  GM.p.delete(e.pointerId);
+  if (GM.p.size) { baseGestoMapa(); return; }   // queda un dedo: se sigue arrastrando desde ahí, sin saltos
+  const caja = $('.mapa-caja'); if (caja) caja.classList.remove('arrastrando');
+  if (GM.movido) {
+    S.mapaSinClic = performance.now();
+    if (GM.raf) { cancelAnimationFrame(GM.raf); GM.raf = 0; }
+    ponerVB(GM.vb || S.mapaVB, true);
+    gestoMapaVisto();
+    return;
+  }
+  if (e.type === 'pointercancel' || e.pointerType === 'mouse') return;
+  // dos toques seguidos en el mismo sitio: acercar ahí (el segundo toque no elige país)
+  const ahora = performance.now(), u = GM.ultimo;
+  if (u && ahora - u.t < 330 && Math.hypot(e.clientX - u.x, e.clientY - u.y) < 32) { GM.ultimo = null; S.mapaSinClic = ahora; dobleToqueMapa(e.clientX, e.clientY); return; }
+  GM.ultimo = { t: ahora, x: e.clientX, y: e.clientY };
+}
+document.addEventListener('pointerup', soltarMapa);
+document.addEventListener('pointercancel', soltarMapa);
+function dobleToqueMapa(x, y) {
+  if (zoomMapa() >= MAPA_ZOOM_MAX * 0.9) irVistaMapa('mundo'); else zoomEnMapa(2.4, x, y);
+  gestoMapaVisto();
+}
+// la pista de los gestos se quita la primera vez que acercas
+function gestoMapaVisto() { if (!LS.get('inv-mapa-gesto', 0)) LS.set('inv-mapa-gesto', 1); for (const p of $$('.mapa-pista')) p.remove(); }
+document.addEventListener('dblclick', (e) => { if (e.target.closest && e.target.closest('#mapaMundo') && S.mapaGeo) { e.preventDefault(); dobleToqueMapa(e.clientX, e.clientY); } });
+// en el ordenador: con el gesto de pellizcar del panel táctil (o Ctrl y la rueda); la rueda sola sigue moviendo la página
+document.addEventListener('wheel', (e) => {
+  if (!e.ctrlKey || !e.target.closest || !e.target.closest('.mapa-caja') || !S.mapaVB) return;
+  e.preventDefault();
+  const el = $('#mapaMundo'), r = el.getBoundingClientRect(), vb = S.mapaVB, f = Math.exp(-e.deltaY * 0.01);
+  const fx = (e.clientX - r.left) / r.width, fy = (e.clientY - r.top) / r.height, px = vb[0] + fx * vb[2], py = vb[1] + fy * vb[3];
+  const w = vb[2] / f, h = vb[3] / f;
+  cancelAnimationFrame(S.mapaAnim); S.mapaAnim = 0;
+  ponerVB(limitarVB([px - fx * w, py - fy * h, w, h]), true);
+  gestoMapaVisto();
+}, { passive: false });
 document.addEventListener('click', (e) => {
   const m = e.target.closest('[data-mapa-modo]');
   if (m) { S.mapaModo = m.dataset.mapaModo; LS.set('inv-mapa', S.mapaModo); repintarMapa(); return; }
+  const zb = e.target.closest('[data-mapa-zoom]');
+  if (zb) { zoomEnMapa(zb.dataset.mapaZoom === '1' ? 2 : 0.5); gestoMapaVisto(); return; }
+  const enMapa = e.target.closest('.mapa-caja');
+  // lo que acaba de ser un arrastre o un doble toque no cuenta como toque
+  if (enMapa && (performance.now() - (S.mapaSinClic || 0) < 400 || e.detail > 1)) return;
   const z = e.target.closest('[data-mapa-vista]');
   if (z) { irVistaMapa(z.dataset.mapaVista); return; }
+  const el = e.target.closest('#mapaElegido');
+  if (el) { const inf = $('#mapaInfo'); if (inf) inf.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); return; }
   const p = e.target.closest('[data-mapa-pais]');
-  if (p) { elegirPaisMapa(p.dataset.mapaPais); return; }
-  const c = e.target.closest('#mapaMundo [data-c]');
+  if (p) { elegirPaisMapa(p.dataset.mapaPais); if (p.dataset.mapaPais && S.mapaGeo) verPaisMapa(p.dataset.mapaPais); return; }
+  const c = e.target.closest('#mapaMundo [data-c], #mapaEtq [data-mapa-c]');
   if (c) {
-    const cod = c.dataset.c;
-    // en el móvil, un país pequeño de una zona apretada (Europa, Asia): primero se acerca, luego ya lo eliges (con el
-    // dedo es fácil haber tocado el de al lado). Con ratón se elige al momento, y solo los diminutos acercan además.
-    if (S.mapaVista === 'mundo' && S.mapaGeo) {
-      const esc1 = anchoMapa() / S.mapaGeo.w, zona = zonaDeMapa(cod), fino = !!(window.matchMedia && matchMedia('(pointer: fine)').matches);
-      if (zona && (S.mapaGeo.a[cod] || 0) * esc1 * esc1 < (fino ? 60 : 700)) { if (fino) elegirPaisMapa(cod); irVistaMapa(zona); return; }
-    }
+    const cod = c.dataset.c || c.dataset.mapaC, G = S.mapaGeo, esc1 = anchoMapa() / S.mapaVB[2], a = (G.a[cod] || 0) * esc1 * esc1;
+    // uno pequeño: se elige y el mapa se acerca a él (con el dedo es fácil haber tocado el de al lado: así se ve claro)
+    const fino = !!(window.matchMedia && matchMedia('(pointer: fine)').matches);
+    if (cod !== S.mapaSel && a < (fino ? 60 : 450) && zoomMapa() < MAPA_ZOOM_MAX * 0.7) { elegirPaisMapa(cod); acercarAPais(cod); return; }
     elegirPaisMapa(cod === S.mapaSel ? null : cod);
     return;
   }
   if (e.target.closest('#mapaMundo svg') && S.mapaSel) elegirPaisMapa(null);
 });
 document.addEventListener('change', (e) => {
-  if (e.target.id === 'mapaPais') { elegirPaisMapa(e.target.value); if (e.target.value && S.mapaGeo && S.mapaVista === 'mundo') { const z = zonaDeMapa(e.target.value), esc1 = anchoMapa() / S.mapaGeo.w; if (z && (S.mapaGeo.a[e.target.value] || 0) * esc1 * esc1 < 700) irVistaMapa(z); } }
+  if (e.target.id === 'mapaPais') { elegirPaisMapa(e.target.value); if (e.target.value && S.mapaGeo) verPaisMapa(e.target.value); }
   if (e.target.id === 'mapaPos') { S.mapaPos = e.target.value || null; repintarMapa(); }
 });
 // con ratón (no con el dedo): el nombre del país y su cifra, junto al puntero
@@ -8385,10 +8673,10 @@ document.addEventListener('pointermove', (e) => {
   const w = e.target.closest ? e.target.closest('.mapa-caja') : null, tip = w && w.querySelector('.mapa-tip');
   for (const t of $$('.mapa-tip:not([hidden])')) if (t !== tip) t.hidden = true;
   if (!tip) return;
-  const c = e.target.closest('[data-c]');
-  if (!c || S.mapaMoviendo) { tip.hidden = true; return; }
+  const c = e.target.closest('[data-c], [data-mapa-c]');
+  if (!c || GM.p.size || S.mapaAnim) { tip.hidden = true; return; }
   // solo se rehace al cambiar de país: rehacerlo en cada movimiento volvía a cargar la bandera y parpadeaba
-  const cod = c.dataset.c, k = `${cod}|${S.mapaModo}|${S.mapaPos || ''}|${IDIOMA}`;
+  const cod = c.dataset.c || c.dataset.mapaC, k = `${cod}|${S.mapaModo}|${S.mapaPos || ''}|${IDIOMA}`;
   if (tip.dataset.k !== k || tip.hidden) {
     const v = valorMapa(cod, S.mapaModo, S.mapaEx || new Map());
     tip.dataset.k = k;
@@ -8404,7 +8692,7 @@ document.addEventListener('mouseleave', quitarTips);
 addEventListener('scroll', () => { quitarTips(); const t = $('#mcTip'); if (t) t.hidden = true; }, { passive: true });
 // los nombres dependen del ancho: al girar el móvil o cambiar la ventana, se vuelven a colocar
 let mapaResize = 0;
-addEventListener('resize', () => { clearTimeout(mapaResize); mapaResize = setTimeout(() => { if ($('#mapaMundo svg')) repintarMapa(); if ($('.mc-caja')) repintarMc(); }, 220); });
+addEventListener('resize', () => { clearTimeout(mapaResize); mapaResize = setTimeout(() => { if ($('#mapaMundo svg')) pintarEtiquetasMapa(); if ($('.mc-caja')) repintarMc(); }, 220); });
 
 /* =========================== Análisis =========================== */
 /* cuatro pestañas: qué hacer, lo que opina la IA, tus números (cinco vistas) y la fiscalidad */
@@ -8992,7 +9280,7 @@ function piezasCartera(M) {
   const por = new Map();
   for (const f of M.filas) {
     if (!(f.valor > 0)) continue;
-    const k = f.inst.id, x = por.get(k) || { id: k, pos: f.pos.id, n: f.inst.corto || f.inst.nombre, valor: 0, dia: 0, coste: 0, conDia: false, sinPrecio: false };
+    const k = f.inst.id, x = por.get(k) || { id: k, pos: f.pos.id, n: f.inst.corto || f.inst.nombre, dom: f.inst.dominio || null, valor: 0, dia: 0, coste: 0, conDia: false, sinPrecio: false };
     x.valor += f.valor; x.coste += f.coste || 0;
     if (f.varDia != null && !f.diaViejo) { x.dia += f.dia || 0; x.conDia = true; }
     if (f.sinPrecio) x.sinPrecio = true;
@@ -9020,6 +9308,30 @@ function squarify(items, W, H) {
   if (fila.length) colocar(fila);
   return out;
 }
+/* los rectángulos, ya colocados. Los que saldrían tan pequeños que no se vería nada (menos de 34 px de lado) van juntos
+   en uno, «y 3 más», con su suma y cómo van entre todos; al tocarlo, salen uno a uno debajo */
+function trozosMc(M, W, H) {
+  const todas = piezasCartera(M);
+  let piezas = todas, t = squarify(todas, W, H);
+  const chica = (x) => Math.min(x.w, x.h) < 34;
+  // se van juntando desde la más pequeña hasta que el grupo y todas las demás se ven bien
+  for (let k = Math.max(2, t.filter(chica).length); t.some(chica) && k < todas.length; k++) {
+    const otras = todas.slice(-k), ids = new Set(otras.map((p) => p.id)), conHoy = otras.filter((p) => p.hoy != null), conTot = otras.filter((p) => p.total != null);
+    const base = sum(conHoy, (p) => p.valor - p.dia), dia = sum(conHoy, (p) => p.dia), coste = sum(conTot, (p) => p.coste), vt = sum(conTot, (p) => p.valor);
+    piezas = [...todas.filter((p) => !ids.has(p.id)), { id: '_otras', n: L(`${otras.length} más`, `${otras.length} more`), otras, valor: sum(otras, (p) => p.valor), dia, hoy: base > 0 ? (dia / base) * 100 : null, total: coste > 0 ? (vt / coste - 1) * 100 : null, pl: vt - coste }].sort((a, b) => b.valor - a.valor);
+    t = squarify(piezas, W, H);
+  }
+  S.mcPiezas = piezas;
+  return t;
+}
+const piezaMc = (id) => ((S.mcPiezas || []).find((x) => x.id === id) || (S.M ? piezasCartera(S.M).find((x) => x.id === id) : null));
+// el logo de cada cosa (el de su web o su gestora; si no carga, sus iniciales), el € del efectivo o el «+3» de las pequeñas
+function logoMc(p, t) {
+  const st = `style="--lg:${t}px"`;
+  if (p.efectivo) return `<span class="logo-a mc-logo mc-logo-ef" ${st} aria-hidden="true"><span>€</span></span>`;
+  if (p.otras) return `<span class="logo-a mc-logo mc-logo-mas" ${st} aria-hidden="true"><span>+${p.otras.length}</span></span>`;
+  return logo(p.dom, p.n, 'mc-logo').replace('class="logo-a mc-logo"', `class="logo-a mc-logo" ${st}`);
+}
 function tonoMc(v, modo) {
   if (v == null || !isFinite(v)) return 'mp-n';
   const c = MC_CORTES[modo], a = Math.abs(v), k = a >= c[3] ? 4 : a >= c[2] ? 3 : a >= c[1] ? 2 : a >= c[0] ? 1 : 0;
@@ -9043,14 +9355,19 @@ function htmlMapaCartera(M, inicio) {
 }
 function textoPiezaMc(p) {
   const pesa = S.M && S.M.total ? (p.valor / S.M.total) * 100 : 0;
+  if (p.otras) return `${L(`${p.otras.length} posiciones pequeñas`, `${p.otras.length} small holdings`)}: ${eur(p.valor, 0)}, ${L(`el ${fmtNumR(pesa, 1)} % de tu cartera`, `${fmtNumR(pesa, 1)}% of your portfolio`)}${p.hoy != null ? `; ${L('hoy', 'today')} ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})` : ''}.`;
   if (p.efectivo) return L(`${eur(p.valor, 0)} en efectivo, el ${fmtNumR(pesa, 1)} % de lo que tienes.`, `${eur(p.valor, 0)} in cash, ${fmtNumR(pesa, 1)}% of what you have.`);
   const hoy = p.hoy != null ? L(`hoy ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`, `today ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`) : L('sin precio de hoy', 'no price today');
   const tot = p.total != null ? L(`desde que la compraste ${pctS(p.total, 1)} (${eurS(p.pl, 0)})`, `since you bought it ${pctS(p.total, 1)} (${eurS(p.pl, 0)})`) : '';
   return `${eur(p.valor, 0)}, ${L(`el ${fmtNumR(pesa, 1)} % de tu cartera`, `${fmtNumR(pesa, 1)}% of your portfolio`)}; ${hoy}${tot ? `; ${tot}` : ''}.`;
 }
 function htmlDetalleMc(M) {
-  const p = S.mcSel && piezasCartera(M).find((x) => x.id === S.mcSel);
+  const p = S.mcSel && piezaMc(S.mcSel);
   if (!p) return `<p class="k">${L('Toca un rectángulo para ver sus cifras.', 'Tap a box to see its numbers.')}</p>`;
+  if (p.otras) {
+    const modo = S.mcModo;
+    return `<div class="mc-otras"><p><b>${esc(p.n)}</b> ${textoPiezaMc(p)}</p><ul>${p.otras.map((x) => { const v = modo === 'hoy' ? x.hoy : x.total; return `<li><button type="button" class="mc-otra" ${x.pos ? `data-mc-ficha="${esc(x.pos)}"` : 'disabled'}>${logoMc(x, 22)}<span>${esc(x.n)}</span><small>${eur(x.valor, 0)}</small>${v == null ? '' : `<span class="mi-v ${cls(v)}">${pctS(v, modo === 'hoy' ? 2 : 1)}</span>`}</button></li>`; }).join('')}</ul></div>`;
+  }
   return `<p><b>${esc(p.n)}</b> ${textoPiezaMc(p)}</p>${p.pos ? `<button type="button" class="enlace acento" data-mc-ficha="${esc(p.pos)}">${L('Ver su ficha', 'Open its page')}</button>` : ''}`;
 }
 function pintarMapaCartera(caja, M) {
@@ -9059,17 +9376,27 @@ function pintarMapaCartera(caja, M) {
   if (!W) return;
   const H = Math.round(Math.max(240, W < 560 ? W * 1.05 : W < 900 ? W * 0.6 : W * 0.4));
   caja.style.height = `${H}px`;
-  const modo = S.mcModo, piezas = piezasCartera(M), G = 3;
-  const t = squarify(piezas, W, H);
+  const modo = S.mcModo, G = 3;
+  const t = trozosMc(M, W, H), piezas = S.mcPiezas;
   // un grupo (no una imagen): dentro hay un botón por posición y el lector de pantalla tiene que poder llegar a ellos
   caja.setAttribute('role', 'group');
   caja.setAttribute('aria-label', L('Mapa de tu cartera: ', 'Map of your portfolio: ') + piezas.slice(0, 5).map((p) => `${p.n} ${eur(p.valor, 0)}`).join(', '));
+  // cuanto más grande el rectángulo, más grande su letra y su logo: los grandes llevan logo, nombre, cómo va y lo que
+  // vale; los medianos, logo, nombre y cómo va; los pequeños, solo el logo (y cómo va, si cabe debajo)
   caja.innerHTML = t.filter((p) => p.w - G >= 1 && p.h - G >= 1).map((p) => {
-    const w = p.w - G, h = p.h - G, v = modo === 'hoy' ? p.hoy : p.total;
-    const lado = Math.min(w, h), fs = Math.max(11, Math.min(17, lado / 6.5));
-    const nombre = w > 54 && h > 30, cifra = w > 58 && h > 48, euros = w > 110 && h > 82;
+    const w = p.w - G, h = p.h - G, v = modo === 'hoy' ? p.hoy : p.total, lado = Math.min(w, h);
+    const tam = w >= 118 && h >= 88 ? 'g' : w >= 66 && h >= 52 ? 'm' : lado >= 28 ? 'c' : 'x';
+    const fs = tam === 'g' ? Math.max(14, Math.min(22, lado / 7.5)) : tam === 'm' ? Math.max(12, Math.min(14.5, lado / 5)) : 12;
+    const lg = tam === 'g' ? Math.round(Math.max(26, Math.min(40, lado / 5))) : tam === 'm' ? 22 : Math.round(Math.max(18, Math.min(26, lado * 0.5)));
     const ton = p.efectivo ? 'mc-ef' : tonoMc(v, modo);
-    return `<button type="button" class="mc-t ${ton}${p.id === S.mcSel ? ' sel' : ''}${w < 26 || h < 22 ? ' mini' : ''}" data-mc="${esc(p.id)}" style="left:${(p.x + G / 2).toFixed(1)}px;top:${(p.y + G / 2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;border-radius:${lado > 90 ? 12 : lado > 40 ? 8 : 5}px;font-size:${fs.toFixed(1)}px" aria-label="${esc(`${p.n}: ${textoPiezaMc(p)}`)}">${nombre ? `<span class="mc-n">${esc(p.n)}</span>` : ''}${cifra && !p.efectivo ? (v == null ? `<span class="mc-e">${modo === 'hoy' ? L('sin precio de hoy', 'no price today') : L('sin datos', 'no data')}</span>` : `<span class="mc-v">${pctS(v, modo === 'hoy' ? 2 : 1)}</span>`) : ''}${euros ? `<span class="mc-e">${eur(p.valor, 0)}</span>` : ''}</button>`;
+    const pct = p.efectivo ? '' : v == null ? `<span class="mc-e">${modo === 'hoy' ? L('sin precio de hoy', 'no price today') : L('sin datos', 'no data')}</span>` : `<span class="mc-v">${pctS(v, modo === 'hoy' ? 2 : 1)}</span>`;
+    const nom = `<span class="mc-n">${esc(p.n)}</span>`;
+    // arriba el logo; abajo el nombre y las cifras (así el rectángulo se lee entero, como una tarjeta)
+    const dentro = tam === 'g' ? `${logoMc(p, lg)}<span class="mc-abj">${nom}${pct}<span class="mc-e">${eur(p.valor, 0)}</span></span>`
+      : tam === 'm' ? `${logoMc(p, lg)}<span class="mc-abj">${nom}${pct}</span>`
+      : tam === 'c' ? `${logoMc(p, lg)}${w >= 46 && h >= 50 ? `<span class="mc-n">${esc(p.n)}</span>` : ''}${h >= 68 && !p.efectivo && v != null ? `<span class="mc-v">${pctS(v, modo === 'hoy' ? 1 : 0)}</span>` : ''}`
+      : '';
+    return `<button type="button" class="mc-t mc-${tam} ${ton}${p.id === S.mcSel ? ' sel' : ''}" data-mc="${esc(p.id)}" style="left:${(p.x + G / 2).toFixed(1)}px;top:${(p.y + G / 2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;border-radius:${lado > 90 ? 12 : lado > 40 ? 8 : 5}px;font-size:${fs.toFixed(1)}px" aria-label="${esc(`${p.n}: ${textoPiezaMc(p)}`)}">${dentro}</button>`;
   }).join('');
 }
 function repintarMc() {
@@ -9097,7 +9424,7 @@ document.addEventListener('pointermove', (e) => {
   if (!tip) { tip = document.createElement('div'); tip.id = 'mcTip'; tip.className = 'mapa-tip mc-tip'; document.body.appendChild(tip); }
   const k = `${t.dataset.mc}|${S.mcModo || ''}`;
   if (tip.dataset.k !== k || tip.hidden) {
-    const p = piezasCartera(S.M).find((x) => x.id === t.dataset.mc);
+    const p = piezaMc(t.dataset.mc);
     if (!p) return;
     tip.dataset.k = k;
     tip.innerHTML = `<b>${esc(p.n)}</b><span>${textoPiezaMc(p)}</span>`;
@@ -12834,7 +13161,8 @@ function pantallaIntro(seguir) {
           <h1 class="ix-marca ix-nom" data-no-trad>${nombreGF()}</h1>
           <div class="ix-lema"><h2>${esc(INTRO[0].t)}</h2><p>${esc(INTRO[0].x)}</p></div>
           <div class="ix-hola"><p class="ix-hola-t">${nombreUsuario() ? `${esc(L('Hola', 'Hi'))}, <b>${esc(nombreUsuario())}</b>` : esc(L('Te damos la bienvenida', 'Welcome'))}</p><p class="ix-hola-s">${esc(L('Baja despacio: el logo se monta mientras bajas y luego te cuento lo que hace GrowFolio.', 'Scroll slowly: the logo comes together as you go, then I\'ll show you what GrowFolio does.'))}</p></div>
-          <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+          ${pasos.length ? `<button type="button" class="btn pri ixn-guia" data-nv="todo">${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}
+        <div class="ix-baja" aria-hidden="true"><span>${L('o ve bajando', 'or scroll down')}</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
         </div>
       </section>
       ${caps.map((d, k) => `<section class="ix-cap" data-lado="${k % 2 ? 'd' : 'i'}" data-color="${COLOR_CAP[d.il || d.dib] || '#EDBB45'}">
@@ -14044,15 +14372,27 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.4';
+const VERSION = '0.4a';
 const NOVEDADES = [
+  { v: '0.4a', f: '2026-10-22', h: '23:19', t: 'El mapa con dos dedos y una guía por lo nuevo', cosas: [
+    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; S.mapaVB = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mapa, con dos dedos', x: 'En el móvil, pellizca para acercarte, toca dos veces o usa + y −, y de cerca arrastra para moverte. De lejos, Europa va en una pastilla con su media que te lleva a verla de cerca, y cada país lleva su bandera: caben el doble y no se tapan. El país que eliges sale justo debajo del mapa, sin que se mueva la página.' },
+    { d: 'tour', ir: { v: 'cartera', sel: '.nov-aviso' }, t: 'Una guía por lo nuevo', x: 'Cada versión trae su guía: te lleva, paso a paso, a cada sitio donde ha cambiado algo. Está arriba en las novedades, en el aviso de Inicio y en un globo que sale junto a la sección que estrena algo, que lleva «Nuevo» hasta que la ves.' },
+    { d: 'rectangulos', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo, con logos', x: 'Cada rectángulo lleva el logo de lo que es y la letra crece con su tamaño. Los más pequeños van juntos en uno, «y 3 más», y al tocarlo salen uno a uno.' },
+    { d: 'app', t: 'Actualizar la app, de un toque', x: 'El aviso del móvil trae un botón Actualizar que empieza a bajar la app nueva al momento, sin pasar por la pantalla de carga ni buscar nada. Y si la versión nueva de la web ya está abierta, tocar el aviso no la vuelve a cargar.' },
+  ], arreglos: [
+    'En el móvil, acercar y alejar el mapa iba a trompicones: había que esperar a que acabara cada viaje y para volver solo valía el botón Mundo.',
+    'En el mapa del mundo del móvil solo salían EEUU, China y Brasil, y nada de Europa.',
+    'El botón de Mercados no llegaba a avisar de lo nuevo (en cuanto entrabas por cualquier camino se apagaba) y su punto se confundía con el de Análisis.',
+    'El punto verde de «En directo» latía en dorado desde la 0.4.',
+    'Los dibujos de las novedades se repetían y a veces no tenían que ver (el mapa salía con unas barras): ahora cada cosa tiene el suyo.',
+  ] },
   { v: '0.4', f: '2026-10-22', h: '22:15', t: 'El mundo en un mapa, tu cartera de un vistazo y tu peor caída', cosas: [
-    { d: 'mercados', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. Los nombres salen primero en los mercados que más pesan, con un punto dorado donde tienes dinero. Toca un país para ver sus bolsas, lo que tienes allí y lo que pesa en un fondo de todo el mundo. Europa y Asia, que tienen muchos países juntos, se ven de cerca; en el móvil, al tocar uno pequeño, el mapa se acerca solo.' },
-    { d: 'cifras', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'tuyo'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede. Puedes verlo todo junto o una sola posición (dónde invierte tu MSCI World, por ejemplo) y compararlo con lo que pesaría cada país en un fondo de todo el mundo: ahí EEUU es casi dos tercios.' },
-    { d: 'cifras', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale y del color de cómo va, hoy o desde que la compraste. Toca uno para ver sus cifras y abrir su ficha. Si lo quieres en Inicio, añádelo desde Personalizar.' },
-    { d: 'grafica', ir: { v: 'analisis', sel: '.caida-w', antes: () => { S.numAbierto = 'riesgo'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: 'Tu peor caída y cuánto tardó en recuperarse', x: 'En Tus números, Riesgo: con lo que tienes hoy, la mayor caída de los últimos años (la de 2020, por ejemplo), cuánto duró, cuánto tardó en volver a donde estaba y a cuánto estás ahora de tu máximo, con una gráfica de cada día.' },
-    { d: 'opinion', ir: { v: 'cartera', sel: '#bFallo' }, t: 'Te contestamos aquí mismo', x: 'Lo que mandas con el botón del bichito o con las estrellas tiene ahora respuesta: cuando te contesten, te sale en pantalla al abrir GrowFolio, junto a lo que escribiste. En ese mismo botón tienes todo lo que has mandado, con sus respuestas.' },
-    { d: 'idioma', t: 'GrowFolio, entero en inglés', x: 'Con la bandera de arriba, todo en inglés: cada pantalla, los avisos del móvil y el widget. Lo que escribe GrowIA para todos (la prensa de cada empresa, las ideas, el informe de los mercados) y los titulares en español llegan también traducidos.' },
+    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. Los nombres salen primero en los mercados que más pesan, con un punto dorado donde tienes dinero. Toca un país para ver sus bolsas, lo que tienes allí y lo que pesa en un fondo de todo el mundo. Acércate con dos dedos o tocando dos veces (en el ordenador, con + y −) y arrastra para moverte; Europa y Asia tienen su botón, y al tocar un país pequeño el mapa se acerca solo.' },
+    { d: 'tudinero', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'tuyo'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede. Puedes verlo todo junto o una sola posición (dónde invierte tu MSCI World, por ejemplo) y compararlo con lo que pesaría cada país en un fondo de todo el mundo: ahí EEUU es casi dos tercios.' },
+    { d: 'rectangulos', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale y del color de cómo va, hoy o desde que la compraste. Toca uno para ver sus cifras y abrir su ficha. Si lo quieres en Inicio, añádelo desde Personalizar.' },
+    { d: 'caida', ir: { v: 'analisis', sel: '.caida-w', antes: () => { S.numAbierto = 'riesgo'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: 'Tu peor caída y cuánto tardó en recuperarse', x: 'En Tus números, Riesgo: con lo que tienes hoy, la mayor caída de los últimos años (la de 2020, por ejemplo), cuánto duró, cuánto tardó en volver a donde estaba y a cuánto estás ahora de tu máximo, con una gráfica de cada día.' },
+    { d: 'respuesta', ir: { v: 'cartera', sel: '#bFallo' }, t: 'Te contestamos aquí mismo', x: 'Lo que mandas con el botón del bichito o con las estrellas tiene ahora respuesta: cuando te contesten, te sale en pantalla al abrir GrowFolio, junto a lo que escribiste. En ese mismo botón tienes todo lo que has mandado, con sus respuestas.' },
+    { d: 'ingles', t: 'GrowFolio, entero en inglés', x: 'Con la bandera de arriba, todo en inglés: cada pantalla, los avisos del móvil y el widget. Lo que escribe GrowIA para todos (la prensa de cada empresa, las ideas, el informe de los mercados) y los titulares en español llegan también traducidos.' },
   ], arreglos: [
     'El número junto al botón del calendario, en Inicio, no se entendía (eran las cosas tuyas de los próximos 7 días): ya no sale. Lo que viene sigue en el propio Inicio y dentro del Calendario.',
     'El aviso del móvil de cada versión nueva decía «Trae app nueva de Android: ábrela y se instala encima». Ahora: «GrowFolio 0.4 ya está aquí» y lo que trae. Si la app se está actualizando sola, no dice nada más; si hace falta que la abras, te lo dice.',
@@ -14079,16 +14419,16 @@ const NOVEDADES = [
     'Los dividendos mes a mes están a la vista en Tus números, debajo de lo que ha rendido tu dinero; la cifra de Dividendos de arriba te lleva hasta ellos. Mientras GrowFolio baja las fechas de los pagos, lo dice en vez de enseñar un gráfico vacío.',
   ] },
   { v: '0.3.11', f: '2026-10-21', h: '23:50', t: 'Empresas que sigues, dividendos mes a mes y fondos que se pisan', cosas: [
-    { d: 'buscar', ir: { v: 'expertos', antes: () => { S.expTab = 'siguiendo'; if (S.vista === 'expertos') pintar(); } }, t: 'Sigue empresas sin tenerlas', x: 'En cualquier idea de compra o empresa del radar, «Seguir». En Expertos, Siguiendo, ves cuánto se han movido desde que las sigues y lo que esperan de ellas, y les pones un aviso: te llega al móvil cuando bajan del precio al que las comprarías o suben del que digas.' },
-    { d: 'renta', ir: { v: 'analisis', sel: '.rf-btn', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tus dividendos, mes a mes', x: 'En Análisis, Tus números, Costes y dividendos: lo que cobrarás cada mes de los próximos 12, en bruto y lo que te queda después de Hacienda y de la retención de fuera. Sale de lo que pagó cada empresa el último año, con tus acciones de hoy.' },
-    { d: 'cifras', ir: { v: 'analisis', antes: () => { S.numAbierto = 'dentro'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: '¿Se pisan tus fondos?', x: 'En Por dentro: si dos fondos tuyos llevan las mismas empresas (un S&P 500 y un MSCI World comparten casi tres cuartos), cuánto se pisan. GrowIA también lo sabe, igual que lo que sigues y tus dividendos.' },
+    { d: 'seguir', ir: { v: 'expertos', antes: () => { S.expTab = 'siguiendo'; if (S.vista === 'expertos') pintar(); } }, t: 'Sigue empresas sin tenerlas', x: 'En cualquier idea de compra o empresa del radar, «Seguir». En Expertos, Siguiendo, ves cuánto se han movido desde que las sigues y lo que esperan de ellas, y les pones un aviso: te llega al móvil cuando bajan del precio al que las comprarías o suben del que digas.' },
+    { d: 'dividendos', ir: { v: 'analisis', sel: '.rf-btn', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tus dividendos, mes a mes', x: 'En Análisis, Tus números, Costes y dividendos: lo que cobrarás cada mes de los próximos 12, en bruto y lo que te queda después de Hacienda y de la retención de fuera. Sale de lo que pagó cada empresa el último año, con tus acciones de hoy.' },
+    { d: 'solape', ir: { v: 'analisis', antes: () => { S.numAbierto = 'dentro'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: '¿Se pisan tus fondos?', x: 'En Por dentro: si dos fondos tuyos llevan las mismas empresas (un S&P 500 y un MSCI World comparten casi tres cuartos), cuánto se pisan. GrowIA también lo sabe, igual que lo que sigues y tus dividendos.' },
   ], arreglos: [] },
   { v: '0.3.10', f: '2026-10-21', h: '23:40', t: 'Lo que ha rendido tu dinero, de verdad', cosas: [
-    { d: 'cifras', ir: { v: 'analisis', sel: '.rent-real', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Lo que ha rendido tu dinero', x: 'En Análisis, Tus números: la TIR, lo que te ha dado tu dinero al año contando cuándo metiste y sacaste cada euro, y la TWR, lo que ha hecho la cartera sin contar tus aportaciones, que es la que se compara con un índice. Lo que ya tenías al apuntarlo no tiene fechas: cuenta con las que mejor cuadran con tu precio medio, y si pones desde cuándo tienes cada cosa, afina.' },
-    { d: 'grafica', ir: { v: 'analisis', sel: '.rr-comp', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Frente al índice que quieras', x: 'Cuánto tendrías con el mismo dinero, los mismos días, en el MSCI World, el S&P 500, el MSCI Europe, los emergentes, un 60/40 o el Ibex. En la gráfica de Inicio, «Comparar con» también deja elegir el índice. Y GrowIA ya sabe cuánto ha rendido tu dinero.' },
+    { d: 'rinde', ir: { v: 'analisis', sel: '.rent-real', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Lo que ha rendido tu dinero', x: 'En Análisis, Tus números: la TIR, lo que te ha dado tu dinero al año contando cuándo metiste y sacaste cada euro, y la TWR, lo que ha hecho la cartera sin contar tus aportaciones, que es la que se compara con un índice. Lo que ya tenías al apuntarlo no tiene fechas: cuenta con las que mejor cuadran con tu precio medio, y si pones desde cuándo tienes cada cosa, afina.' },
+    { d: 'comparar', ir: { v: 'analisis', sel: '.rr-comp', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Frente al índice que quieras', x: 'Cuánto tendrías con el mismo dinero, los mismos días, en el MSCI World, el S&P 500, el MSCI Europe, los emergentes, un 60/40 o el Ibex. En la gráfica de Inicio, «Comparar con» también deja elegir el índice. Y GrowIA ya sabe cuánto ha rendido tu dinero.' },
   ], arreglos: [] },
   { v: '0.3.9a', f: '2026-10-21', h: '23:15', t: 'Lo que esperan de cada acción y GrowIA más fina', cosas: [
-    { d: 'cifras', ir: { v: 'expertos' }, t: 'Lo que esperan de cada acción tuya', x: 'En Expertos, debajo del nombre de cada acción, lo que te quedarías si se cumple lo que esperan, por ejemplo «+18 % en 12 meses», como en las ideas de compra. En su ficha, en Resumen y en Expertos, el precio objetivo, cuánto puede subir o bajar, en cuánto tiempo y lo que te quedas en euros, ya restados los impuestos y con su dividendo.' },
+    { d: 'objetivo', ir: { v: 'expertos' }, t: 'Lo que esperan de cada acción tuya', x: 'En Expertos, debajo del nombre de cada acción, lo que te quedarías si se cumple lo que esperan, por ejemplo «+18 % en 12 meses», como en las ideas de compra. En su ficha, en Resumen y en Expertos, el precio objetivo, cuánto puede subir o bajar, en cuánto tiempo y lo que te quedas en euros, ya restados los impuestos y con su dividendo.' },
     { d: 'pregunta', t: 'GrowIA sigue el hilo y gasta menos', x: 'Si preguntas «¿y si compro más?» justo después de hablar de una empresa, entiende que es de esa. Cada pregunta le llega con un tercio menos de texto: del radar, las 20 mejor contrastadas y la prensa más relevante; lo demás lo busca cuando le hace falta, con una herramienta nueva que filtra el radar por sector, zona, dividendo o noticias.' },
   ], arreglos: [
     'El informe de prensa que lee GrowIA traía posiciones que no tienes: ahora solo las tuyas.',
@@ -14101,7 +14441,7 @@ const NOVEDADES = [
     { d: 'perfil', ir: { v: 'objetivos' }, t: 'Tus límites, sumando de verdad', x: 'Toda la cripto junta, el oro con las materias primas y la misma empresa aunque la tengas en dos brókers. Y con medio punto de margen: por encima del límite pero dentro de ese margen, te dice que no añadas; más allá, cuánto vender. Un límite de 0 % ya vale como tal.' },
     { d: 'renta', ir: { v: 'impuestos' }, t: 'Hacienda, revisada con la norma', x: 'La regla de recompra aplaza solo la parte de la pérdida que vuelves a comprar, y es de un año para lo que cotiza fuera de la UE (EEUU, Reino Unido, Suiza…). El 25 % de compensación con dividendos es un tope conjunto con las pérdidas de años anteriores, y en el País Vasco no hay cruce. Irlanda y Japón, con su convenio. El 720, por bloques.' },
     { d: 'mercados', ir: { v: 'mercados' }, t: 'Mercados dice qué parte tuya lo nota', x: 'Cada bolsa dice cuánto de tu cartera la nota y en qué («23 % de tu cartera (MSCI Europe)»). Los tipos y el VIX, que suban es malo: van en rojo cuando suben, y los tipos cambian en puntos (pp).' },
-    { d: 'tengo', ir: { v: 'cartera' }, t: 'Efectivo de cualquier plataforma', x: 'En Efectivo salen las plataformas que usas y puedes añadir otra (Revolut, Interactive Brokers…). Al comprar, la plataforma que se propone es donde ya tienes cosas parecidas.' },
+    { d: 'efectivo', ir: { v: 'cartera' }, t: 'Efectivo de cualquier plataforma', x: 'En Efectivo salen las plataformas que usas y puedes añadir otra (Revolut, Interactive Brokers…). Al comprar, la plataforma que se propone es donde ya tienes cosas parecidas.' },
   ], arreglos: [
     'Mercados ya no tiene las pestañas «Cómo van» y «Calendario»: entras y ves directamente las bolsas.',
     'En Análisis, «Actualizar ahora» quedaba suelto a media pantalla; las notas de GrowIA dejaban un hueco y cada tarjeta tenía una altura; «Qué mantendría» decía «1 cosas».',
@@ -14140,7 +14480,7 @@ const NOVEDADES = [
   ] },
   { v: '0.3.6', f: '2026-10-21', h: '18:30', t: 'Plata, platino y paladio, cada uno en su sitio', cosas: [
     { d: 'catalogo', t: 'Más oro y metales en el catálogo', x: 'Ya salen al buscarlos por su nombre, su ticker o su ISIN el Xtrackers IE Physical Gold (XGDU), el WisdomTree Core Physical Silver (WSLV) y el WisdomTree Palladium 2x (2PAL), con su precio en euros.' },
-    { d: 'cifras', t: 'Materias primas, aparte', x: 'La plata, el platino, el paladio y las cestas de materias primas cuentan ahora como «Materias primas», no como bolsa: en el reparto, en la proyección (más bruscas que el oro) y en tu límite de oro y materias primas.' },
+    { d: 'oro', t: 'Materias primas, aparte', x: 'La plata, el platino, el paladio y las cestas de materias primas cuentan ahora como «Materias primas», no como bolsa: en el reparto, en la proyección (más bruscas que el oro) y en tu límite de oro y materias primas.' },
     { d: 'aviso', t: 'Aviso en los apalancados', x: 'Lo que lleva 2x o 3x sale con la señal «Vigilar» y una explicación: multiplica lo que se mueve cada día y, con el tiempo, puede perder aunque el precio vuelva a donde estaba.' },
   ], arreglos: [
     'Las ETF de mineras de oro (VanEck Gold Miners) contaban como oro en vez de como acciones.',
@@ -14190,7 +14530,7 @@ const NOVEDADES = [
     { d: 'avisover', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Un aviso con cada versión nueva', x: 'En la app de Android, cuando salga una versión de GrowFolio te llega un aviso al móvil con lo que trae, aunque no tengas la app abierta. Si además hay app nueva, te lo dice. Viene encendido y se quita en Ajustes > Avisos y resumen.' },
     { d: 'growia', t: 'GrowIA firma con su logo', x: 'Donde habla GrowIA, su nombre sale con la letra del logo: en las ideas de compra y en cada posición de Expertos, en «Lo último», en «GrowIA opina» de Análisis, en el Paso a paso y en Ajustes.' },
     { d: 'tengo', t: 'El precio sale solo al apuntar una compra', x: 'Si pones cuánto pagaste y cuántas participaciones te dieron, el precio de cada una sale solo, el mismo que te cobró el bróker. Con el total y el precio, como antes, salen las participaciones.' },
-    { d: 'cifras', ir: { v: 'cartera', sel: '.fila.efectivo' }, t: 'El efectivo, a un toque', x: 'En Tus posiciones, toca el efectivo de una plataforma y se abre para cambiarlo, con ese importe listo para escribir.' },
+    { d: 'efectivo', ir: { v: 'cartera', sel: '.fila.efectivo' }, t: 'El efectivo, a un toque', x: 'En Tus posiciones, toca el efectivo de una plataforma y se abre para cambiarlo, con ese importe listo para escribir.' },
     { d: 'ficha', t: 'Avisar de un fallo, también en la ficha', x: 'El bichito sale ahora en la ficha de cada posición y en GrowIA (Pregúntale), que tapan la barra de arriba.' },
     { d: 'calendario', t: 'El calendario, a todo el ancho', x: 'En el ordenador, «Próximos» va en tres columnas y, debajo, la semana y lo que viene más adelante a la izquierda y las noticias a la derecha.' },
   ], arreglos: [
@@ -14409,8 +14749,43 @@ const cmpVer = (a, b) => { const p = (v) => { const m = String(v || '0').match(/
 // día y hora de publicación de cada versión (la hora, desde la 0.1.17; las de antes salen del historial de GitHub)
 const fechaNov = (f, h) => { const d = deIso(f); return L(`${d.getDate()} ${MESES[d.getMonth()]} ${d.getFullYear()}${h ? `, ${h}` : ''}`, `${MESES_EN[d.getMonth()].slice(0, 3)} ${d.getDate()}, ${d.getFullYear()}${h ? `, ${h}` : ''}`); };
 
+/* un mundo diminuto para los dibujos (116 × 51): los países que importan sueltos, para pintarlos de un color, y el resto
+   junto (sale de Natural Earth 1:110 millones, simplificado al máximo) */
+const MUNDO_DIB = {"CA":"M23,11L22,9L20,7L23,4L27,3L30,4L34,4L35,3L36,5L33,7L33,8L37,8L38,6L41,7L42,10L39,10L38,12L38,11L33,14L34,12L31,11ZM39,3L42,5L41,6L38,5L40,4L36,3ZM33,3L33,4L30,4L30,3ZM38,0L45,0L39,2Z","US":"M23,11L31,11L34,12L33,14L38,11L38,12L32,18L28,18L27,20L25,17L22,17L21,15ZM23,4L20,7L22,9L19,7L15,8L15,5L20,3Z","ID":"M104,30L104,33L102,30ZM96,28L96,31L94,29ZM92,30L91,31L89,27Z","AR":"M40,41L40,42L39,49L37,48L37,38L38,38L41,39Z","RU":"M13,4L13,4L15,5L12,5L12,5L13,4ZM104,5L104,5L104,7L102,7L103,10L101,9L101,7L96,7L95,9L98,11L97,13L97,13L97,13L93,9L91,11L86,10L83,11L83,11L79,9L72,10L72,12L72,14L72,14L70,13L69,12L67,10L66,8L65,8L66,7L65,7L65,4L66,4L68,5L67,5L71,3L78,2L83,2L84,2L98,4L103,4L104,5Z","NO":"M66,4L65,4L63,4L61,7L59,6L63,4Z","ZA":"M63,40L64,39L67,38L68,38L68,39L68,39L68,39L67,42L64,43ZM67,40L67,40L67,40Z","MX":"M22,17L25,17L27,20L28,23L30,22L29,23L28,24L25,22Z","BR":"M42,42L40,41L41,39L39,37L39,36L35,33L35,31L36,29L38,27L40,29L40,28L41,28L42,29L47,31L45,38L43,38Z","FR":"M60,11L60,11L60,12L60,13L59,13L57,13L57,11L59,10L60,11Z","IN":"M89,19L88,21L86,21L84,23L83,26L81,21L80,20L82,16L83,18L86,19L86,19L87,19Z","SE":"M61,7L63,4L64,5L62,9Z","PL":"M65,9L65,10L64,11L63,11L62,10L62,9L63,9L64,9Z","DE":"M62,9L62,10L62,11L61,11L60,11L60,11L60,10L60,10L60,9L60,9L61,9Z","TR":"M72,15L71,15L69,16L66,14L70,14L71,14L71,14Z","ES":"M56,15L55,14L57,13L59,13Z","AU":"M97,42L94,43L94,39L101,34L103,36L104,33L106,39L104,44L101,44L99,41Z","CN":"M82,13L83,11L83,11L87,13L89,14L92,12L91,11L93,9L97,13L95,14L94,15L96,18L95,21L92,21L91,21L90,21L89,19L87,19L86,19L86,19L83,18L82,16L81,15L81,15L80,14Z","IT":"M61,12L62,12L62,12L63,14L60,13L60,12Z","FI":"M65,4L65,7L64,5L63,4Z","SA":"M69,18L70,17L73,18L73,19L74,20L74,20L74,20L76,21L75,22L72,23Z","_":"M69,30L71,31L71,33L69,34L69,33L68,33L68,31L68,30L68,30ZM83,11L82,13L79,13L74,12L75,14L74,14L72,12L72,10L79,9ZM75,14L74,12L79,13L79,14L79,15L78,15ZM104,30L106,33L104,33ZM36,36L37,38L37,48L39,49L37,49L36,43L35,36ZM68,31L68,33L66,33L62,32L62,32L62,31L64,28L67,27L68,28L68,30L67,30ZM72,30L72,28L74,26L74,25L74,27ZM71,31L69,30L69,28L69,27L72,28L72,30ZM66,26L65,25L66,22L66,21L70,21L70,23L70,24L69,26ZM66,22L65,25L63,27L63,25L63,21ZM48,0L55,0L54,1L53,4L48,5L45,7L44,2L42,1ZM35,33L39,36L39,37L38,38L37,38L36,36ZM35,31L35,33L36,36L35,36L33,35L32,31L33,29ZM36,29L35,31L33,29L32,29L33,27L33,26L35,25ZM38,27L36,29L35,25L39,26ZM40,29L38,27L39,26L39,27ZM68,38L67,38L66,36L68,35ZM67,38L64,39L66,36L66,36ZM64,39L63,40L62,36L65,36L66,36ZM53,24L53,23L54,24L54,25L54,25L53,25L53,24ZM54,25L54,24L56,24L56,20L59,22L58,24L56,25L55,26ZM53,21L55,19L56,20L56,24L54,24L53,23ZM63,21L63,25L63,25L59,25L59,25L58,24L59,22L62,20ZM59,27L59,25L63,25L61,28ZM63,25L63,27L63,29L62,29L62,29L61,28L61,28L63,25ZM58,25L58,27L57,27L57,26ZM55,26L56,25L57,26L57,27L55,28L55,26ZM54,25L54,25L55,26L55,26L55,26L54,26L53,25ZM56,25L58,24L59,25L58,25L58,25L57,26ZM67,27L64,28L63,29L63,27L65,25L66,26ZM64,28L62,31L62,31L62,31L62,29L63,29ZM68,33L69,33L69,35L68,35L66,36L66,36L65,36L66,33ZM69,34L71,33L68,39L68,39L68,39L68,38L68,35L69,35ZM62,32L66,33L65,36L62,36ZM74,34L73,39L72,35ZM55,19L55,19L57,16L61,15L61,18L62,20L59,22L56,20ZM70,17L70,17L71,15L72,15L73,18L73,18L73,18ZM76,21L76,20L77,21L75,23L75,22ZM92,24L91,25L91,27L91,27L90,26L90,22ZM93,24L92,24L90,22L90,21L91,21ZM90,22L90,26L88,22L88,21L89,19L90,21ZM92,25L93,24L91,21L92,21L93,25ZM83,11L86,10L91,11L92,12L89,14L87,13ZM82,16L80,20L77,20L77,18L79,18L81,15ZM78,15L79,15L81,15L81,15L79,18L77,18L77,16ZM79,13L82,13L80,14L79,14ZM74,14L75,14L78,15L77,16L74,15ZM73,18L72,15L71,14L72,15L72,15L73,15L74,15L77,16L77,18L77,20ZM69,17L69,17L69,16L69,16L71,15L70,17ZM66,8L67,10L65,10L65,9L65,8ZM67,10L69,12L68,12L68,12L67,12L66,12L66,11L65,11L64,11L64,11L65,10ZM66,12L67,12L66,13L65,13L64,12L65,11L66,11ZM70,24L70,23L72,25L72,25ZM39,37L41,39L38,38ZM75,22L75,23L72,25L72,23ZM57,16L55,19L53,21L56,16ZM70,21L66,21L66,17L69,18L69,18ZM66,21L66,22L63,21L62,20L61,18L62,17L66,17ZM74,26L72,28L69,27L69,26L70,24L72,25L72,25ZM69,30L68,30L68,30L68,28L69,28ZM68,28L67,27L66,26L69,26L69,27L69,28Z"};
+const mundoDib = (col) => Object.entries(MUNDO_DIB).map(([k, d]) => `<path class="${(k !== '_' && col[k]) || 'mm'}" d="${d}"/>`).join('');
+const PILDORA_DIB = (x, y, w) => `<rect x="${x}" y="${y}" width="${w}" height="15" rx="7.5" fill="#0D0C0A" stroke="rgba(247,242,232,.14)" stroke-width="1"/>`;
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  // 0.4: el mapa del mundo (cada país del color de su bolsa, la lupa para acercarse a Europa)
+  get mapa() { return `<g class="mapita" transform="translate(2 26)">${mundoDib({ US: 'mp-u3', CA: 'mp-u1', MX: 'mp-d2', BR: 'mp-u2', AR: 'mp-n', GB: 'mp-d2', FR: 'mp-u3', DE: 'mp-u2', ES: 'mp-d3', IT: 'mp-d1', SE: 'mp-u3', NO: 'mp-u1', FI: 'mp-u2', PL: 'mp-n', TR: 'mp-d1', CN: 'mp-d3', IN: 'mp-u1', JP: 'mp-d2', KR: 'mp-d4', ID: 'mp-u1', AU: 'mp-u4', ZA: 'mp-d1', SA: 'mp-u2' })}</g>${PILDORA_DIB(5, 5, 44)}<circle class="fA" cx="12.5" cy="12.5" r="2.2"/><text class="tu" x="18" y="15.8" data-no-trad>+0,8 %</text>${PILDORA_DIB(72, 8, 42)}<text class="td" x="79" y="18.8" data-no-trad>−1,2 %</text><circle class="a" cx="59" cy="38" r="7.5"/><path class="a" d="M64.5 43.5l5 5M59 35v6M56 38h6"/>`; },
+  // 0.4: dónde está tu dinero (el mapa en dorado, más oscuro donde menos tienes) y lo que pesa EEUU
+  get tudinero() { return `<g class="mapita" transform="translate(2 26)">${mundoDib({ US: 'mp-a4', CA: 'mp-a2', GB: 'mp-a3', FR: 'mp-a2', DE: 'mp-a3', ES: 'mp-a2', IT: 'mp-a1', SE: 'mp-a1', NO: 'mp-a1', JP: 'mp-a2', CN: 'mp-a1', IN: 'mp-a1', KR: 'mp-a1', AU: 'mp-a1', BR: 'mp-a1' })}</g><circle cx="104" cy="15" r="8.5" fill="none" stroke="#2E2820" stroke-width="5"/><circle cx="104" cy="15" r="8.5" fill="none" stroke="var(--accent)" stroke-width="5" stroke-dasharray="33 54" transform="rotate(-90 104 15)"/>${PILDORA_DIB(5, 5, 38)}<text class="ta" x="13" y="15.8" data-no-trad>62 %</text>`; },
+  // 0.4: tu cartera de un vistazo (rectángulos del tamaño de cada cosa, con su logo)
+  rectangulos: '<rect class="mp-u3" x="6" y="6" width="58" height="68" rx="6"/><rect x="11" y="11" width="13" height="13" rx="3.5" fill="#F1EDE5"/><circle cx="17.5" cy="17.5" r="3.6" fill="#C8102E"/><path d="M11 58h28M11 66h18" stroke="#0D0B08" stroke-opacity=".5" stroke-width="3"/><rect class="mp-d2" x="67" y="6" width="47" height="38" rx="5"/><rect x="71" y="10" width="10" height="10" rx="3" fill="#F1EDE5"/><circle cx="76" cy="15" r="2.8" fill="#1A73E8"/><path class="l" d="M71 32h22M71 38h14"/><rect class="mp-n" x="67" y="47" width="25" height="27" rx="4"/><rect x="74" y="55" width="11" height="11" rx="3" fill="#F1EDE5"/><circle cx="79.5" cy="60.5" r="3" fill="#EDBB45"/><rect class="mp-u4" x="95" y="47" width="19" height="27" rx="4"/><rect x="99.5" y="55" width="10" height="10" rx="3" fill="#F1EDE5"/><path d="M102 62l2.5-4.5 2.5 4.5z" fill="#0D0B08"/>',
+  // 0.4: tu peor caída (la cartera por debajo de su máximo, cuánto bajó y lo que tardó en volver)
+  caida: '<path class="a" d="M14 7h92M14 4v6M106 4v6"/><path class="m" d="M6 16h108" stroke-dasharray="3 4"/><path class="fdn" d="M8 16C18 16 24 24 31 38S43 66 51 64 67 42 78 30 96 16 106 16L112 16Z"/><path class="d" d="M8 16C18 16 24 24 31 38S43 66 51 64 67 42 78 30 96 16 106 16L112 16"/><circle class="fp" cx="51" cy="64" r="3.4"/><circle class="d" cx="51" cy="64" r="3.4"/>' + '<rect x="60" y="58" width="38" height="15" rx="7.5" fill="#0D0C0A" stroke="rgba(228,106,92,.4)" stroke-width="1"/><text class="td" x="67" y="68.8">−34 %</text>',
+  // 0.4: te contestan (lo tuyo a la derecha, la respuesta con la marca a la izquierda, ya leída)
+  get respuesta() { return `<rect class="fp" x="40" y="6" width="74" height="26" rx="10"/><path class="m" d="M48 15h52M48 23h34"/><rect class="fa" x="6" y="40" width="86" height="32" rx="10" stroke="rgba(237,187,69,.35)" stroke-width="1"/><g transform="translate(11 45) scale(0.27)"><rect width="48" height="48" rx="12" fill="#15130F"/>${marcaWF()}</g><path class="l" d="M29 51h52M29 59h40M29 66h22"/><circle class="u" cx="105" cy="62" r="8"/><path class="u" d="M101 62l3 3 5-6"/>`; },
+  // 0.4: todo en inglés (la misma cifra, con su nombre en los dos idiomas)
+  ingles: '<rect class="fp" x="6" y="6" width="108" height="27" rx="8"/><rect x="13" y="13.5" width="18" height="12" rx="1.6" fill="#AA151B"/><rect x="13" y="16.5" width="18" height="6" fill="#F1BF00"/><text class="t" x="38" y="23.5" style="font-size:10px" data-no-trad>Patrimonio</text><path class="a" d="M60 36v7M56.5 40l3.5 3.5 3.5-3.5"/><rect class="fa" x="6" y="47" width="108" height="27" rx="8"/><rect x="13" y="54.5" width="18" height="12" rx="1.6" fill="#012169"/><path d="M13 54.5l18 12M31 54.5l-18 12" stroke="#fff" stroke-width="2.6"/><path d="M13 54.5l18 12M31 54.5l-18 12" stroke="#C8102E" stroke-width="1"/><path d="M22 54.5v12M13 60.5h18" stroke="#fff" stroke-width="3.8"/><path d="M22 54.5v12M13 60.5h18" stroke="#C8102E" stroke-width="2.1"/><text class="ta" x="38" y="64.5" style="font-size:10px" data-no-trad>Net worth</text>',
+  // 0.3.8: los primeros pasos, en orden (uno hecho, el que toca y el que falta) y lo que llevas
+  tareas: '<circle class="u" cx="16" cy="14" r="7"/><path class="u" d="M12.5 14l2.5 2.5 4.5-5"/><path class="m" d="M30 14h48"/><circle class="fA" cx="16" cy="36" r="7.5"/><text class="tn" x="13.3" y="39.3">2</text><path class="l" d="M30 33h54M30 40h34"/><rect class="fa" x="91" y="28" width="23" height="15" rx="7.5"/><path class="a" d="M98 35.5h8M103 32.5l3 3-3 3"/><circle class="m" cx="16" cy="58" r="7"/><path class="m" d="M30 58h42"/><rect class="fp" x="6" y="71" width="108" height="5" rx="2.5"/><rect class="fA" x="6" y="71" width="40" height="5" rx="2.5"/>',
+  // 0.3.11: dos fondos que se pisan (lo que tienen en común, en dorado)
+  solape: '<circle class="l" cx="44" cy="40" r="25"/><circle class="a" cx="76" cy="40" r="25"/><path class="fA" d="M60 20.8A25 25 0 0 1 60 59.2A25 25 0 0 1 60 20.8Z"/><text class="tn" x="60" y="43.4" text-anchor="middle" style="font-size:8.5px" data-no-trad>38 %</text><path class="m" d="M26 36h14M28 44h10"/><path class="a" d="M80 36h14M82 44h10"/>',
+  // 0.3.11: los dividendos, mes a mes (los meses que cobras, en dorado)
+  dividendos: '<path class="m" d="M6 73h108"/>' + [6, 10, 26, 8, 7, 30, 9, 6, 22, 8, 10, 36].map((h, k) => `<rect class="${k % 3 === 2 ? 'fA' : 'fp'}" x="${8 + k * 9}" y="${72 - h}" width="6" height="${h}" rx="2"/>`).join('') + '<circle class="fA" cx="103" cy="15" r="9"/><circle cx="103" cy="15" r="6.2" fill="none" stroke="#1A1408" stroke-opacity=".35" stroke-width="1"/><text class="tn" x="99.6" y="18.4" style="font-size:10px">€</text>',
+  // 0.3.11: seguir una empresa sin tenerla (su ficha, su gráfica y la estrella)
+  seguir: '<rect class="fp" x="6" y="14" width="80" height="58" rx="9"/><rect x="12" y="20" width="13" height="13" rx="3.5" fill="#F1EDE5"/><circle cx="18.5" cy="26.5" r="3.6" fill="#4CBF8E"/><path class="l" d="M31 23h34M31 30h22"/><path class="a" d="M13 62l11-7 9 4 12-12 10 4 13-11 10 3"/><path class="m" d="M13 50h64" stroke-dasharray="2 4"/><path class="fA" d="M101 10l3.3 6.7 7.4 1.1-5.4 5.2 1.3 7.4-6.6-3.5-6.6 3.5 1.3-7.4-5.4-5.2 7.4-1.1z"/>',
+  // 0.3.10: lo que ha rendido tu dinero (lo que has metido, a escalones, y lo que vale, por encima)
+  rinde: '<path class="m" d="M8 66h22V56h22V46h22V36h22V26h16"/><path class="fa" d="M8 64C28 58 40 48 60 41S92 20 112 12V66H8Z" opacity=".55"/><path class="a" d="M8 64C28 58 40 48 60 41S92 20 112 12"/><circle class="fA" cx="112" cy="12" r="3"/><rect class="fa" x="8" y="7" width="44" height="16" rx="8"/><text class="ta" x="14" y="18.3" data-no-trad>+7,2 %</text>',
+  // 0.3.10: frente al índice que quieras (la tuya y la del índice, discontinua)
+  comparar: '<path class="l" d="M8 62C28 54 46 52 66 42S98 30 112 27" stroke-dasharray="3 4"/><path class="a" d="M8 64C26 52 44 56 64 36S96 20 112 13"/><circle class="fA" cx="112" cy="13" r="3"/><circle class="l" cx="112" cy="27" r="2.6"/><rect class="fp" x="8" y="5" width="30" height="14" rx="7"/><path class="a" d="M14 12h18"/><rect class="fp" x="42" y="5" width="30" height="14" rx="7"/><path class="l" d="M48 12h18" stroke-dasharray="3 3"/>',
+  // 0.3.9a: lo que esperan de cada acción (la cotización hasta hoy y, en dorado, hasta dónde la ven)
+  objetivo: '<path class="l" d="M8 60l11-4 10 6 12-12 10 4 11-8"/><circle class="fA" cx="62" cy="46" r="3.2"/><path class="a" d="M62 46L100 20" stroke-dasharray="3 4"/><circle class="a" cx="104" cy="18" r="9"/><circle class="a" cx="104" cy="18" r="4.4"/><circle class="fA" cx="104" cy="18" r="1.8"/><rect class="fa" x="70" y="57" width="42" height="16" rx="8"/><text class="tu" x="77" y="68.3" data-no-trad>+18 %</text>',
+  // 0.3.6: las materias primas, aparte (lingotes de oro)
+  oro: '<path class="fA" d="M14 70l8-17h28l8 17z"/><path class="fA" d="M62 70l8-17h28l8 17z"/><path class="fA" d="M38 50l8-17h28l8 17z"/><path d="M24 56h22M72 56h22M48 36h22" stroke="#F9DE9C" stroke-width="1.6"/><path class="a" d="M100 10l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/>',
+  // 0.3.9 y 0.3.3: el efectivo (la cartera con su tarjeta y unas monedas)
+  efectivo: '<rect class="fa" x="22" y="12" width="50" height="18" rx="3"/><rect class="l" x="14" y="22" width="72" height="48" rx="8"/><path class="l" d="M14 34h72"/><rect class="fp" x="64" y="40" width="28" height="16" rx="5"/><circle class="fA" cx="72" cy="48" r="3"/><circle class="fA" cx="104" cy="60" r="9"/><text class="tn" x="100.6" y="63.4" style="font-size:10px">€</text><circle class="a" cx="105" cy="38" r="6.5"/>',
   meta: '<path class="m" d="M6 70H114"/><path class="l" d="M8 70L36 38L52 52L80 18L112 70"/><path class="l" d="M80 18V4"/><path class="fA" d="M80 4h18l-5 6 5 6H80z"/><path class="m" d="M14 64C34 60 54 50 74 26" stroke-dasharray="3 5"/>',
   calendario: '<rect class="l" x="8" y="8" width="64" height="64" rx="10"/><path class="m" d="M8 24h64M22 4v8M58 4v8"/><rect class="m" x="15" y="31" width="9" height="8" rx="2"/><rect class="m" x="28" y="31" width="9" height="8" rx="2"/><rect class="m" x="41" y="31" width="9" height="8" rx="2"/><rect class="m" x="54" y="31" width="9" height="8" rx="2"/><rect class="m" x="15" y="45" width="9" height="8" rx="2"/><rect class="fA" x="28" y="45" width="9" height="8" rx="2"/><rect class="m" x="41" y="45" width="9" height="8" rx="2"/><rect class="m" x="54" y="45" width="9" height="8" rx="2"/><rect class="m" x="15" y="59" width="9" height="8" rx="2"/><rect class="m" x="28" y="59" width="9" height="8" rx="2"/><circle class="fA" cx="45.5" cy="63" r="2.2"/><rect class="fA" x="80" y="20" width="34" height="40" rx="10"/><text class="tn" x="97" y="42" text-anchor="middle" style="font-size:17px;font-weight:800">7</text><text class="tn" x="97" y="53" text-anchor="middle" style="font-size:8px">días</text>',
   pulido: '<rect class="fp" x="12" y="16" width="78" height="52" rx="12"/><path class="m" d="M22 30h40M22 40h28"/><rect class="fA" x="22" y="50" width="30" height="9" rx="4.5"/><path class="a" d="M102 8l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"/><path class="a" d="M96 52l2 4 4 2-4 2-2 4-2-4-4-2 4-2z"/>',
@@ -14569,8 +14944,7 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   const antes = (n) => `<details class="nov-ant"><summary><span class="nov-num peq">${esc(n.v)}</span><span class="nov-ant-t"><b>${esc(n.t)}</b><small>${fechaNov(n.f, n.h)}</small></span></summary>${n.cosas ? `<ul class="nov-lista">${n.cosas.map((c, i) => item(c, i, false)).join('')}</ul>` : ''}${arr(n)}</details>`;
   // si llevabas tiempo sin entrar, salen todas las que te has perdido, enteras, de la más nueva a la más antigua
   const perdidas = nuevas.length > 1 ? `<p class="nov-perdidas">${dibujo('tour')}<span><b>Te has perdido ${nuevas.length} actualizaciones</b>Desde la ${esc(desde)}, que fue la última que viste. Aquí van todas, de la más nueva a la más antigua.</span></p>` : '';
-  const h = hoja(nuevas.length > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}<button type="button" class="btn nov-scroll" data-nov-scroll>${ICONOS.chispa}Verlas una a una, con dibujos</button>${nuevas.map(bloque).join('')}
-    ${pasos.length ? `<button type="button" class="btn pri nov-todo" data-nov-todo>${ICONOS.chispa}Enséñamelo todo, paso a paso</button>` : ''}
+  const h = hoja(nuevas.length > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}<div class="nov-guia-fila">${pasos.length ? `<button type="button" class="btn pri nov-todo" data-nov-todo>${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}<button type="button" class="btn nov-scroll" data-nov-scroll>${L('Verlas con dibujos', 'See them with drawings')}</button></div>${nuevas.map(bloque).join('')}
     ${resto.length ? `<section class="nov-antes" aria-labelledby="hNovAnt"><h3 id="hNovAnt">Versiones anteriores</h3>${resto.map(antes).join('')}</section>` : ''}
     <button type="button" class="enlace nov-reg" data-nov-reg>Ver el registro completo de versiones</button>
     <div class="fila-btns"><button class="btn" data-tour-ya>Ver el tutorial</button><button class="btn" data-cerrar>Cerrar</button></div>
@@ -14578,7 +14952,7 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   h.el.classList.add('hoja-nov');
   $('[data-nov-reg]', h.el).onclick = () => { h.cerrar(true); abrirRegistro(alCerrar); };
   $('[data-nov-scroll]', h.el).onclick = () => { h.cerrar(true); novedadesScroll(nuevas, desde, alCerrar); };
-  const ir = (k) => { h.cerrar(true); iniciarTour(k, alCerrar, pasos); };
+  const ir = (k) => { h.cerrar(true); if (k === 0) guiaNuevo(alCerrar, pasos); else iniciarTour(k, alCerrar, pasos); };
   $('[data-tour-ya]', h.el).onclick = () => { h.cerrar(true); iniciarTour(0, alCerrar); };
   if (pasos.length) $('[data-nov-todo]', h.el).onclick = () => ir(0);
   for (const b of $$('[data-nov-ir]', h.el)) b.onclick = () => { h.cerrar(true); iniciarTour(0, () => mostrarNovedades(desde, alCerrar, true), [pasos[+b.dataset.novIr]], 'Volver a las novedades'); };
@@ -14648,7 +15022,8 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
         <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l, k, a) => `<span aria-hidden="true" style="--k:${k};--d:${(k - (a.length - 1) / 2).toFixed(1)}">${esc(l)}</span>`).join('')}</h1>
         ${varias ? `<ol class="ixn-ruta" data-no-trad aria-label="${L('Las versiones que te has perdido', 'The versions you missed')}">${(() => { const vs = [...nuevas].reverse().map((n) => n.v); const r = vs.length > 6 ? [vs[0], `+${vs.length - 5}`, ...vs.slice(-4)] : vs; return r.map((v, k) => `<li style="--k:${k}"${v === ultima.v ? ' class="hoy"' : v[0] === '+' ? ' class="mas"' : ''}>${esc(v)}</li>`).join(''); })()}</ol>` : ''}
         <div class="ix-lema"><h2>${varias ? L(`Todo lo nuevo desde la ${esc(desde)}, resumido`, `Everything since ${esc(desde)}, in short`) : esc(ultima.t)}</h2><p><span>${fechaNov(ultima.f, ultima.h)}</span> · <span data-no-trad>${cuenta}</span></p></div>
-        <div class="ix-baja" aria-hidden="true"><span>Ve bajando</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
+        ${pasos.length ? `<button type="button" class="btn pri ixn-guia" data-nv="todo">${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}
+        <div class="ix-baja" aria-hidden="true"><span>${L('o ve bajando', 'or scroll down')}</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
       </div></section>
       ${cuerpo}
       ${arreglos.length ? `<section class="ixn-arr${arreglos.length > VISIBLES ? ' corta' : ''}" data-ancla aria-labelledby="ixnArrT"><div class="ixn-arr-in">
@@ -14660,7 +15035,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
         <div class="ix-fin-logo">${logoEntero()}</div>
         <h2>Eso es todo</h2>
         <p>Si algo no va como esperas, dínoslo con el bichito de arriba.</p>
-        ${pasos.length ? '<button type="button" class="btn pri" data-nv="todo">Enséñamelo todo, paso a paso</button>' : ''}
+        ${pasos.length ? `<button type="button" class="btn pri" data-nv="todo">${L('Guíame por lo nuevo, paso a paso', 'Walk me through it, step by step')}</button>` : ''}
         <button type="button" class="btn" data-nv="lista">${ICONOS.plan}${L('Ver las notas en detalle', 'See the full notes')}</button>
         <button type="button" class="btn" data-nv="fin">Seguir a mi cartera</button>
       </section>
@@ -14726,7 +15101,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     const ab = e.target.closest('[data-nv-abre]'); if (ab) { ab.classList.toggle('abierta'); return; }   // la lista corta, entera al tocarla
     const b = e.target.closest('[data-nv]'); if (!b) return;
     if (b.dataset.nv === 'fin') cerrar();
-    else if (b.dataset.nv === 'todo') { quitar(); iniciarTour(0, alCerrar, pasos); }
+    else if (b.dataset.nv === 'todo') { quitar(); guiaNuevo(alCerrar, pasos); }
     else if (b.dataset.nv === 'lista') { quitar(); mostrarNovedades(desde, alCerrar, true); }
     else if (b.dataset.nv === 'bugs') { b.closest('.ixn-arr').classList.remove('corta'); b.remove(); medidas = null; }
   });
@@ -15169,6 +15544,85 @@ function abrirMas() {
 }
 document.addEventListener('click', (e) => { if (e.target.closest('[data-mas]')) abrirMas(); });
 
+/* =====================================================================
+   Lo nuevo de cada versión, a la vista. El botón de la barra de la sección donde está lo más importante lleva «Nuevo»
+   y late hasta que lo ves de verdad (un rato en pantalla), y un globo encima ofrece la guía: te lleva, paso a paso, a
+   cada sitio donde ha cambiado algo. La guía también está arriba en las novedades y en Ajustes.
+   ===================================================================== */
+const pasosGuia = (ns = [NOVEDADES[0]]) => ns.flatMap((n) => (n.cosas || []).filter((c) => c.ir).map((c) => ({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v })));
+function guiaNuevo(alAcabar, pasos = pasosGuia()) {
+  if (!pasos.length) return;
+  LS.set('inv-globo-v', VERSION);
+  quitarGloboNuevo();
+  iniciarTour(0, () => { LS.set('inv-nav-visto', VERSION); pintarNavNuevo(); if (alAcabar) alAcabar(); }, pasos);
+}
+// la sección con «Nuevo»: la de la primera novedad con sitio, mientras no la hayas visto, y solo si ya usabas GrowFolio
+// antes de esta versión (a quien acaba de llegar le sobra: para eso tiene el tutorial)
+function grupoNuevo() {
+  if (LS.get('inv-nav-visto', '') === VERSION || (LS.get('inv-nov-vista') || {}).v !== VERSION) return null;
+  const p = pasosGuia()[0];
+  return p ? grupoDe(p.v).k : null;
+}
+function pintarNavNuevo() {
+  const k = grupoNuevo();
+  for (const a of $$('.nav [data-ir], .navbar [data-ir]')) {
+    const on = a.dataset.ir === k;
+    a.classList.toggle('nuevo', on);
+    if (on) { a.dataset.nuevo = L('Nuevo', 'New'); a.setAttribute('aria-label', `${a.textContent.trim()} (${L('hay algo nuevo', 'something new')})`); }
+    else if (a.dataset.nuevo != null) { delete a.dataset.nuevo; a.removeAttribute('aria-label'); }
+  }
+  if (k && grupoDe(S.vista).k === k) { vigilarNuevo(); quitarGloboNuevo(); }
+}
+// estando en esa sección: cuando lo nuevo lleva un segundo y medio en pantalla, ya está visto
+function vigilarNuevo() {
+  if (S.nuevoT) return;
+  let visto = 0;
+  S.nuevoT = setInterval(() => {
+    const k = grupoNuevo();
+    if (!k || grupoDe(S.vista).k !== k) { clearInterval(S.nuevoT); S.nuevoT = 0; return; }
+    if (document.hidden || document.querySelector('.tour, .intro, .hoja-fondo')) return;
+    const p = pasosGuia().find((x) => grupoDe(x.v).k === k), el = p && p.sel && document.querySelector(p.sel), r = el && el.getBoundingClientRect();
+    const dentro = r && r.height && Math.min(r.bottom, innerHeight) - Math.max(r.top, 0) > Math.min(r.height, innerHeight) * 0.4;
+    visto = dentro ? visto + 500 : 0;
+    if (visto >= 1500) { LS.set('inv-nav-visto', VERSION); clearInterval(S.nuevoT); S.nuevoT = 0; pintarNavNuevo(); quitarGloboNuevo(); }
+  }, 500);
+}
+function quitarGloboNuevo() { clearTimeout(S.globoT); for (const g of $$('.globo-nuevo')) g.remove(); }
+// el globo, una vez por versión: encima del botón con «Nuevo» (en el ordenador, debajo), con la guía a un toque
+function globoNuevo(intento = 0) {
+  const k = grupoNuevo(), pasos = pasosGuia();
+  if (!k || !pasos.length || !S.cartera || LS.get('inv-globo-v', '') === VERSION) return;
+  clearTimeout(S.globoT);
+  if (opiOcupado() || grupoDe(S.vista).k === k) { if (intento < 30) S.globoT = setTimeout(() => globoNuevo(intento + 1), 6000); return; }
+  const a = [...$$(`.navbar [data-ir="${k}"], .nav [data-ir="${k}"]`)].find((x) => x.offsetParent);
+  if (!a) return;
+  LS.set('inv-globo-v', VERSION);
+  const g = document.createElement('div');
+  g.className = 'globo-nuevo';
+  g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', L(`Nuevo en la ${VERSION}`, `New in ${VERSION}`));
+  const mas = pasos.length - 1;
+  g.innerHTML = `<button type="button" class="globo-x" data-globo="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button>
+    <span class="globo-eti">${ICONOS.chispa}${L(`Nuevo en la ${VERSION}`, `New in ${VERSION}`)}</span>
+    <b>${esc(trad(pasos[0].t))}</b>
+    <p>${mas ? L(`Está aquí, en ${esc(GRUPOS.find((x) => x.k === k).t)}, y hay ${mas} ${mas === 1 ? 'cosa más' : 'cosas más'}. Te las enseñamos una a una.`, `It's right here, in ${esc(L(GRUPOS.find((x) => x.k === k).t, GRUPOS.find((x) => x.k === k).en))}, and there ${mas === 1 ? 'is 1 more thing' : `are ${mas} more things`}. We'll show you each one.`) : L('Está aquí. Te lo enseñamos.', "It's right here. We'll show you.")}</p>
+    <button type="button" class="btn pri peq" data-globo="guia">${L('Guíame', 'Show me')}</button>
+    <i class="globo-pico" aria-hidden="true"></i>`;
+  document.body.appendChild(g);
+  const r = a.getBoundingClientRect(), w = g.offsetWidth, abajo = r.top < innerHeight / 2;
+  const left = Math.max(12, Math.min(r.left + r.width / 2 - w / 2, innerWidth - w - 12));
+  g.style.left = `${left}px`;
+  // por encima de la pastilla de «Nuevo», que se siga viendo
+  if (abajo) { g.style.top = `${r.bottom + 12}px`; g.classList.add('abajo'); } else g.style.bottom = `${innerHeight - r.top + 22}px`;
+  g.style.setProperty('--pico', `${r.left + r.width / 2 - left}px`);
+  g.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-globo]');
+    if (!b) return;
+    if (b.dataset.globo === 'guia') guiaNuevo(); else quitarGloboNuevo();
+  });
+  S.globoT = setTimeout(quitarGloboNuevo, 20000);
+}
+addEventListener('resize', () => { if ($('.globo-nuevo')) quitarGloboNuevo(); });
+
 function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
   cerrarTour();
   if (pasos && pasos.length === 1 && pasos[0].tour) pasos = TOUR;
@@ -15332,38 +15786,47 @@ async function revisarApp(forzar) {
   avisoApp(ult);
   return true;
 }
-function avisoApp(ult) {
+function avisoApp(ult, ya) {
   const app = window.InversionesApp;
   const sola = app && typeof app.actualizar === 'function';
   const nueva = nombreUlt(ult);
-  const h = hoja('Hay una versión nueva de la app', `<div class="act-app">
+  for (const x of $$('.hoja-act')) x.remove();
+  const h = hoja(L('Actualiza la app', 'Update the app'), `<div class="act-app">
     ${dibujo('app')}
-    <p>Tienes la ${esc(nombreApp())} y ya está la <b>${esc(nueva)}</b>. Se instala encima: no pierdes la cartera, la contraseña ni el widget.</p>
+    <p>${L(`Hay una <b>${esc(nueva)}</b> (tienes la ${esc(nombreApp())}). Se instala encima en unos segundos y no pierdes nada: ni la cartera, ni la contraseña, ni el widget.`, `There's a <b>${esc(nueva)}</b> (you have ${esc(nombreApp())}). It installs over this one in a few seconds and you lose nothing: not your portfolio, your password or the widget.`)}</p>
     <div class="act-prog" hidden><div class="act-barra"><i></i></div><small></small></div>
-    <div class="fila-btns"><button class="btn" data-luego>Luego</button>${sola ? '<button class="btn pri" data-act>Actualizar ahora</button>' : `<a class="btn pri" href="${esc(ult.apk)}" data-cerrar>Descargar la actualización</a>`}</div>
-    <p class="nota act-nota">${sola ? 'Android te pedirá confirmar la instalación. La primera vez, también permiso para instalar desde la app.' : 'Se abre en Chrome: cuando acabe de bajar, ábrela e instálala encima. Desde esa versión, la app se actualiza desde aquí con un toque.'}</p>
+    <div class="fila-btns"><button class="btn" data-luego>${L('Luego', 'Later')}</button>${sola ? `<button class="btn pri" data-act>${L('Actualizar ahora', 'Update now')}</button>` : `<a class="btn pri" href="${esc(ult.apk)}" data-cerrar>${L('Descargar la actualización', 'Download the update')}</a>`}</div>
+    <p class="nota act-nota">${sola ? L('Se baja aquí mismo. Al acabar, Android te enseña su ventana: toca Instalar. La primera vez te pide además permiso para instalar desde GrowFolio.', 'It downloads right here. When it finishes, Android shows its window: tap Install. The first time it also asks for permission to install from GrowFolio.') : L('Se abre en Chrome: cuando acabe de bajar, ábrela e instálala encima. Desde esa versión, la app se actualiza sola.', 'It opens in Chrome: when it finishes, open it and install it over this one. From that version on, the app updates itself.')}</p>
   </div>`, () => { appLuego = ult.version; });
   h.el.classList.add('hoja-act');
   $('[data-luego]', h.el).onclick = () => h.cerrar();
   const b = $('[data-act]', h.el); if (!b) return;
   const prog = $('.act-prog', h.el), bar = $('.act-barra i', h.el), txt = $('.act-prog small', h.el);
   const bajar = () => {
-    b.disabled = true; b.textContent = 'Descargando…'; prog.hidden = false; bar.style.width = '0%'; txt.textContent = 'Empezando la descarga…';
+    b.disabled = true; b.textContent = L('Bajando…', 'Downloading…'); prog.hidden = false; bar.style.width = '0%'; txt.textContent = L('Empezando a bajar la versión nueva…', 'Starting the download…');
     try { app.actualizar(ult.apk); } catch (e) { window.progresoApp(-1, e.message); }
   };
   window.progresoApp = (pct, estado) => {
     if (!h.el.isConnected) return;
     if (pct < 0) {
-      txt.innerHTML = `No se pudo descargar${estado ? ` (${esc(estado)})` : ''}. Prueba otra vez o <a href="${esc(ult.apk)}">bájala con Chrome</a>.`;
-      b.disabled = false; b.textContent = 'Reintentar'; b.onclick = bajar; return;
+      txt.innerHTML = L(`No se ha podido bajar${estado ? ` (${esc(estado)})` : ''}. Mira la conexión y prueba otra vez, o <a href="${esc(ult.apk)}">bájala con Chrome</a>.`, `Couldn't download it${estado ? ` (${esc(estado)})` : ''}. Check your connection and try again, or <a href="${esc(ult.apk)}">get it with Chrome</a>.`);
+      b.disabled = false; b.textContent = L('Reintentar', 'Try again'); b.onclick = bajar; return;
     }
     bar.style.width = Math.min(100, pct) + '%';
-    if (estado === 'permiso') { txt.textContent = 'Android pide permiso: activa «Permitir de esta fuente» y vuelve atrás.'; b.disabled = false; b.textContent = 'Instalar'; b.onclick = () => app.instalar(); }
-    else if (estado === 'instalar') { txt.textContent = 'Descargada. Pulsa Instalar en la ventana de Android.'; b.disabled = false; b.textContent = 'Instalar'; b.onclick = () => app.instalar(); }
-    else txt.textContent = `Descargando… ${pct} %`;
+    if (estado === 'permiso') { txt.textContent = L('Falta un permiso: en la pantalla que se ha abierto, activa «Permitir de esta fuente» y vuelve con la flecha de atrás. Luego toca Instalar.', 'One permission missing: on the screen that opened, turn on «Allow from this source» and go back. Then tap Install.'); b.disabled = false; b.textContent = L('Instalar', 'Install'); b.onclick = () => app.instalar(); }
+    else if (estado === 'instalar') { txt.textContent = L('Bajada. Toca Instalar en la ventana de Android (si no la ves, toca Instalar aquí).', 'Downloaded. Tap Install in the Android window (if you don\'t see it, tap Install here).'); b.disabled = false; b.textContent = L('Instalar', 'Install'); b.onclick = () => app.instalar(); }
+    else txt.textContent = L(`Bajando la versión nueva… ${pct} %`, `Downloading the new version… ${pct}%`);
   };
   b.onclick = bajar;
+  // desde «Actualizar» en el aviso del móvil: sin tocar nada más, empieza a bajar
+  if (ya) bajar();
 }
+/* lo que llama la app al tocar «Actualizar» en su aviso: el aviso de aquí, ya bajando (o, si ya la tienes, que lo diga) */
+window.actualizarAppYa = async () => {
+  const ult = await ultimaApp();
+  if (ult && ult.version > versionApp()) avisoApp(ult, true);
+  else toast(L('Ya tienes la última versión de la app.', 'You already have the latest version of the app.'), 4000);
+};
 
 /* =====================================================================
    GTA VI: cuenta atrás hasta su salida y unas cuentas con tu cartera, con más dibujo que texto.
@@ -16073,8 +16536,8 @@ function avisoWebNueva() {
   if ($('#avisoWeb')) return;
   const d = document.createElement('div');
   d.id = 'avisoWeb'; d.className = 'aviso-web'; d.setAttribute('role', 'status');
-  d.innerHTML = `${ICONOS.chispa}<span>Hay una versión nueva de GrowFolio</span><button class="btn peq pri">Actualizar</button><button class="ib" aria-label="Cerrar el aviso">${ICONOS.cerrar}</button>`;
-  d.querySelector('.btn').onclick = () => location.reload();
+  d.innerHTML = `${ICONOS.chispa}<span>${L('Hay una versión nueva de GrowFolio. Se pone en un segundo, sin perder nada.', 'A new version of GrowFolio is ready. It takes a second and you lose nothing.')}</span><button class="btn peq pri">${L('Ponerla', 'Get it')}</button><button class="ib" aria-label="${L('Cerrar el aviso', 'Close')}">${ICONOS.cerrar}</button>`;
+  d.querySelector('.btn').onclick = () => { d.querySelector('.btn').textContent = L('Poniéndola…', 'Updating…'); location.reload(); };
   d.querySelector('.ib').onclick = () => d.remove();
   document.body.appendChild(d);
 }
@@ -17872,6 +18335,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'recorte') iniciarRecorte();
     else if (a === 'idioma') menuIdioma(t);
     else if (a === 'novedades-detalle') mostrarNovedades(null, () => {}, true);
+    else if (a === 'novedades-guia') guiaNuevo();
     else if (a === 'novedades-ocultar') { LS.set('inv-nov-cerrada', VERSION); const x = t.closest('.nov-aviso'); if (x) x.remove(); }
     else if (a === 'ordenar-cartera') abrirCarEdit();
     else if (a === 'ia-actualizar') generarAnalisisIA('la pides tú');
@@ -17977,6 +18441,7 @@ function arrancar() {
   Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); setTimeout(() => mostrarPreguntaIA(), 3000); });
   apuntarDiaUso(); setTimeout(() => pedirNota(), 150000); setTimeout(() => pedirAvisoVersiones(), 12000);
   if (PERFIL_CUENTA) setTimeout(() => revisarRespuestas(), 5000);
+  setTimeout(() => globoNuevo(), 3500);
   // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)
   { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); refrescarCatLocal().catch(() => {}); }; setTimeout(mira, 6000); }
   clearInterval(tickPrecios); clearInterval(tickEstado);

@@ -176,14 +176,21 @@ async function banco(ruta, url, req, env, res) {
 // tocan), así que las lanza este Worker con su cron, que sí se cumple (los horarios están en wrangler.toml). Necesita el
 // secreto PRECIOS_TOKEN: un token de grano fino solo de este repositorio con Actions en lectura y escritura, que sirve
 // para lanzar Actions y nada más. Sin él, el cron no hace nada.
-const REPO = 'charly10sf/Inversiones';
+// el repositorio por su número, que no cambia aunque cambie su nombre (Inversiones → GrowFolio): así el Worker sigue
+// lanzando las Actions el día del cambio sin tener que tocarlo
+const REPO_ID = 1423240718;
 const CRON_CATALOGO = '23 5 * * *';
 async function lanzarAction(env, flujo) {
-  const r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${flujo}/dispatches`, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${env.PRECIOS_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'growfolio-worker', 'Content-Type': 'application/json' },
-    body: JSON.stringify({ ref: 'main' }),
-  });
+  // por su número y, si GitHub no lo encontrara así, por sus dos nombres
+  let r = null;
+  for (const base of [`repositories/${REPO_ID}`, 'repos/charly10sf/GrowFolio', 'repos/charly10sf/Inversiones']) {
+    r = await fetch(`https://api.github.com/${base}/actions/workflows/${flujo}/dispatches`, {
+      method: 'POST',
+      headers: { Authorization: `Bearer ${env.PRECIOS_TOKEN}`, Accept: 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28', 'User-Agent': 'growfolio-worker', 'Content-Type': 'application/json' },
+      body: JSON.stringify({ ref: 'main' }),
+    });
+    if (r.status !== 404) break;
+  }
   if (r.status !== 204) console.log(`No se ha podido lanzar ${flujo}: ${r.status} ${(await r.text()).slice(0, 200)}`);
   return r.status;
 }

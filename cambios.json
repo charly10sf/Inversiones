@@ -1,13 +1,41 @@
 {
  "versiones": [
   {
+   "v": "0.4a",
+   "f": "2026-10-22",
+   "h": "23:19",
+   "t": "El mapa con dos dedos y una guía por lo nuevo",
+   "commits": [
+    {
+     "cuando": "2026-10-22 23:19",
+     "asunto": "0.4a: el mapa con dos dedos, guía de lo nuevo, mapa de la cartera con logos y actualizar la app de un toque",
+     "detalle": [
+      "Mapa: pellizcar, dos toques, + y −, arrastrar de cerca; nada espera a que acabe una animación; detalle 1:50 millones del mundo entero al acercarse (mapa-detalle.json, fuera mapa-eu y mapa-as)",
+      "Nombres del mapa: Europa en una pastilla con su media de lejos; en el móvil, banderas en vez de nombres; cada pastilla a un lado de su país si no cabe encima, con un punto donde está",
+      "El país elegido, en una fila bajo el mapa (la página ya no se mueve)",
+      "Lo nuevo de cada versión: «Nuevo» en el botón de su sección hasta que lo ves, un globo con la guía y la guía arriba en las novedades y en el aviso de Inicio",
+      "Tu cartera de un vistazo: logos, letra según el tamaño y las pequeñas juntas en «y N más»",
+      "Dibujos nuevos para las novedades (mapa, tu dinero, rectángulos, caída, respuestas, inglés, primeros pasos, fondos que se pisan, dividendos, seguir, rentabilidad, comparar, objetivos, oro y efectivo)",
+      "App de Android: «Actualizar» en el aviso empieza a bajar la app al momento; el aviso de la web solo recarga si hace falta; textos más claros",
+      "El punto de «En directo» vuelve a latir en verde",
+      "Worker: lanza las Actions por el número del repositorio (vale con el nombre de ahora y con GrowFolio)"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.4",
    "f": "2026-10-22",
    "h": "22:15",
    "t": "El mundo en un mapa, tu cartera de un vistazo y tu peor caída",
    "commits": [
     {
-     "cuando": "2026-10-22 22:15",
+     "cuando": "2026-10-22 22:07",
+     "asunto": "Releases: versiones de dos números (0.4) en el orden y en el registro de cambios",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-22 22:04",
      "asunto": "0.4: responder opiniones desde la app y arreglos de la revisión",
      "detalle": [
       "Opiniones recibidas: botón Responder en cada una, la respuesta se puede cambiar y se ve si quien la mandó ya la ha leído",
