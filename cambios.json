@@ -1,18 +1,749 @@
 {
  "versiones": [
   {
-   "v": "0.2.3b",
-   "f": "2026-10-20",
-   "h": "20:58",
-   "t": "Precios al día y avisos que se van",
+   "v": "0.4",
+   "f": "2026-10-22",
+   "h": "22:15",
+   "t": "El mundo en un mapa, tu cartera de un vistazo y tu peor caída",
    "commits": [
+    {
+     "cuando": "2026-10-22 22:15",
+     "asunto": "0.4: responder opiniones desde la app y arreglos de la revisión",
+     "detalle": [
+      "Opiniones recibidas: botón Responder en cada una, la respuesta se puede cambiar y se ve si quien la mandó ya la ha leído",
+      "Quien la mandó ve la respuesta en pantalla al abrir GrowFolio (o al volver a ella) junto a lo que escribió; en el formulario del bichito, todo lo que ha mandado con sus respuestas",
+      "Reglas de Firestore: el dueño escribe la respuesta, cada cuenta lee las suyas y solo puede marcarlas como leídas",
+      "Mapa: con ratón se elige el país al momento; lo mismo en dos brókers cuenta una vez; de Europa a Asia se ve el mundo por el camino; «% de» la posición elegida; el tooltip ya no parpadea; bolsas sin datos de la última semana salen sin datos en «Hoy»",
+      "Accesibilidad: el mapa de la cartera deja llegar a cada rectángulo y el país elegido se anuncia una vez",
+      "Traducción de la Action: un fallo de red ya no borra lo traducido, una tanda que no cuadra se parte y la pasada tiene su propio límite de tiempo",
+      "App de Android: el aviso de versión no promete que se instala sola cuando aún no se sabe; chips del widget en inglés; título del aviso en inglés (version.json)",
+      "Si el navegador se queda sin sitio, se borran las copias de datos públicos antes de no guardar la cartera",
+      "Registro de cambios al día"
+     ]
+    },
+    {
+     "cuando": "2026-10-22 21:12",
+     "asunto": "0.4: repaso — rectángulos diminutos, nombres de países cortos, sin aviso de inglés a medias, etiquetas de tablas en inglés",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-22 21:05",
+     "asunto": "0.4: novedades del inglés y del aviso de versión",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-22 21:04",
+     "asunto": "0.4: inglés completo (diccionario de todo el código, frases montadas a trozos, avisos y widget de Android), traducción en la Action de lo que escribe Gemini, aviso de versión mejor redactado",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-22 20:32",
+     "asunto": "0.4: tu cartera de un vistazo, tu peor caída, novedades",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-22 20:26",
+     "asunto": "0.4: mapa en un panel como el del patrimonio, nombres en pastillas, Tu dinero por posición, sin el número del botón del calendario",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-22 20:15",
+     "asunto": "0.4: mapa del mundo en Mercados (siluetas por país, Europa y Asia de cerca, Tu dinero), bolsas del mapa en precios.py y punto que late en Mercados",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.11e",
+   "f": "2026-10-22",
+   "h": "20:00",
+   "t": "La app de Android se actualiza sola",
+   "commits": [
+    {
+     "cuando": "2026-10-22 19:36",
+     "asunto": "0.3.11e: la app de Android se actualiza sola (PackageInstaller sin confirmación en Android 12+), en segundo plano y cuando no la estás usando",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.11c",
+   "f": "2026-10-22",
+   "h": "19:45",
+   "t": "Importar varias capturas, mejor",
+   "commits": [
+    {
+     "cuando": "2026-10-22 19:17",
+     "asunto": "0.3.11c: importar varias capturas leyendo cada una por separado y juntándolas sin duplicados; espera en el límite por minuto; aviso de cupo más claro",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.11d",
+   "f": "2026-10-22",
+   "h": "19:40",
+   "t": "Actualiza la app de Android: GrowFolio cambia de dirección",
+   "commits": [
+    {
+     "cuando": "2026-10-22 19:38",
+     "asunto": "Action de la app: app.json sube aunque main se haya movido a la vez",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-22 19:27",
+     "asunto": "0.3.11d: preparar el cambio de nombre a GrowFolio (app de Android válida con los dos nombres, growfolio.apk, salto automático de la dirección vieja a la nueva)",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.11b",
+   "f": "2026-10-22",
+   "h": "01:50",
+   "t": "La pantalla ya no se queda corrida",
+   "commits": [
+    {
+     "cuando": "2026-10-22 01:39",
+     "asunto": "0.3.11b: la página no se desplaza de lado (al volver de segundo plano en Android se quedaba corrida)",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.11a",
+   "f": "2026-10-22",
+   "h": "00:45",
+   "t": "Hacienda siempre a mano y los dividendos a la vista",
+   "commits": [
+    {
+     "cuando": "2026-10-22 00:39",
+     "asunto": "0.3.11a: Hacienda siempre en las pestañas de Análisis, dividendos mes a mes a la vista y lo cobrado este año en Hacienda",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.11",
+   "f": "2026-10-21",
+   "h": "23:50",
+   "t": "Empresas que sigues, dividendos mes a mes y fondos que se pisan",
+   "commits": [
+    {
+     "cuando": "2026-10-21 23:38",
+     "asunto": "0.3.11: empresas que sigues con aviso de precio (web y app), dividendos de los próximos 12 meses netos y fondos que se pisan; la Action guarda los pagos de dividendo de cada acción",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.10",
+   "f": "2026-10-21",
+   "h": "23:40",
+   "t": "Lo que ha rendido tu dinero, de verdad",
+   "commits": [
+    {
+     "cuando": "2026-10-21 23:23",
+     "asunto": "0.3.10: lo que ha rendido tu dinero (TIR y TWR, con compras supuestas que cuadran con el precio medio) y comparar con MSCI World, S&P 500, MSCI Europe, emergentes, 60/40 o Ibex",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.9a",
+   "f": "2026-10-21",
+   "h": "23:15",
+   "t": "Lo que esperan de cada acción y GrowIA más fina",
+   "commits": [
+    {
+     "cuando": "2026-10-21 23:03",
+     "asunto": "0.3.9a: lo que esperan de cada acción (Expertos y ficha) y GrowIA con menos texto, siguiendo el hilo y con la herramienta radar",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 22:42",
+     "asunto": "App Android: el aviso de versión nueva cuenta la letra de las versiones de arreglos (0.3.9 < 0.3.9a < 0.3.9b)",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.9",
+   "f": "2026-10-21",
+   "h": "22:15",
+   "t": "Un repaso a fondo: cuentas, Hacienda y cada pantalla",
+   "commits": [
+    {
+     "cuando": "2026-10-21 22:02",
+     "asunto": "Privacidad: fuera el análisis de partida público (analisis-ia.json) y las capturas de p22",
+     "detalle": [
+      "analisis-ia.json llevaba datos del dueño (edad, posiciones, reglas): la app ya no lo pide; sin clave de GrowIA sale la",
+      "caja que explica cómo activarlo. En modo de pruebas usa una muestra local (dev/, que no se sube)",
+      "p22/ eran capturas con cifras reales de la cartera y no las usa nada",
+      "README al día; caché del service worker a inv-v113; una línea más en las novedades de la 0.3.9"
+     ]
+    },
+    {
+     "cuando": "2026-10-21 21:44",
+     "asunto": "0.3.9: calendario en Inicio, Análisis con GrowIA arriba y barrido completo de cuentas, Hacienda y pantallas",
+     "detalle": [
+      "Calendario: icono junto a Personalizar en Inicio (con lo tuyo de la semana), vuelta a Inicio y Mercados sin pestañas",
+      "Análisis: GrowIA primero, notas a lo ancho e iguales, riesgos y «qué mantendría» en dos columnas; vacío con siguiente paso",
+      "Cuentas: proyección que depende de la mezcla, límites sumados por grupo con margen único, colchón primero con lo de",
+      "las ventas, metas que restan lo anterior con su crecimiento, fondos con valor viejo, lo que va de año, caída y",
+      "volatilidad, dividendos por empresa, precio medio, precios diminutos, redondeos y formatos",
+      "Hacienda: recompra proporcional y de un año fuera de la UE, 25 % conjunto, País Vasco sin cruce, convenios de",
+      "Irlanda y Japón, Revolut de fuera, 720 por bloques, plazos de fecha a fecha, sin vender con pérdidas lo que aportas",
+      "Pantallas: botones fijos abajo en las hojas, buscador que no tapa, efectivo de cualquier plataforma, nombres e",
+      "iniciales limpios, industria en español, Mercados con quién nota cada bolsa y colores de tipos y VIX al revés",
+      "Novedades de la 0.3.9 en español e inglés"
+     ]
+    },
+    {
+     "cuando": "2026-10-21 19:54",
+     "asunto": "Nombre GrowFolio: la o de Folio más cerca de la F; visitas con Cloudflare Web Analytics (sin cookies, solo en la web publicada)",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.8",
+   "f": "2026-10-21",
+   "h": "19:45",
+   "t": "Te guía desde el primer minuto",
+   "commits": [
+    {
+     "cuando": "2026-10-21 19:21",
+     "asunto": "0.3.8: primeros pasos guiados (bienvenida, lista en Inicio con lo que toca, llevarla en el móvil), alta en dos pasos claros e invitación solo con el enlace",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.7",
+   "f": "2026-10-21",
+   "h": "19:15",
+   "t": "Lo que no encuentres, con su ISIN",
+   "commits": [
+    {
+     "cuando": "2026-10-21 18:54",
+     "asunto": "0.3.7: «¿No lo encuentras? Añádelo con su ISIN»: se busca en el momento (Worker + Yahoo), se añade con precio y gráfica y queda pedido para el catálogo de todos",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 18:47",
+     "asunto": "Worker: /isin busca en Yahoo un ISIN que no está en el catálogo (y lanza el catálogo si lo pide alguien con sesión); catálogo: ETP de cripto y acciones pedidas por ISIN",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 18:33",
+     "asunto": "Novedades: el bloque de arriba sube y se apaga entero (no se pisan título y versiones) y sin el botón repetido de las notas en detalle",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.6",
+   "f": "2026-10-21",
+   "h": "18:30",
+   "t": "Plata, platino y paladio, cada uno en su sitio",
+   "commits": [
+    {
+     "cuando": "2026-10-21 17:59",
+     "asunto": "0.3.6: oro de Xtrackers, plata y paladio de WisdomTree en el catálogo; clase «Materias primas»; aviso en los apalancados; mineras de oro como acciones",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.5",
+   "f": "2026-10-21",
+   "h": "18:00",
+   "t": "Cuentas que cuadran y apuntes sin sustos",
+   "commits": [
+    {
+     "cuando": "2026-10-21 17:21",
+     "asunto": "0.3.5: últimos arreglos del barrido (unidades de cripto, «e» delante de i-, pérdidas en Hacienda, cabecera de la ficha en el móvil) y más inglés",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 17:10",
+     "asunto": "0.3.5: notas de la versión, barra de la ficha con fondo, dibujo de «Ya la tenías» y traducciones",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 16:57",
+     "asunto": "0.3.5: arreglos del barrido de flujos (validaciones, Atrás y Escape, buscador por nombre común, Personalizar con Cancelar), textos y glosario",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 16:31",
+     "asunto": "0.3.5: arreglos de cálculos (gráfica con efectivo, punto de miles, regla de recompra, sin precio, límites propios, proyección y metas) y textos sin brókeres fijos",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 16:11",
+     "asunto": "0.3.5: cartera vacía sin gráficas rotas, tramos en el móvil, fechas de GrowIA legibles y arreglos de la ficha",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.4",
+   "f": "2026-10-21",
+   "h": "16:00",
+   "t": "Ideas más estables, más fondos y fichas completas",
+   "commits": [
+    {
+     "cuando": "2026-10-21 15:26",
+     "asunto": "0.3.4: ideas constantes, fichas completas de lo que añade cada uno, 48 fondos más, notas a la vista y GrowIA más prudente",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 14:58",
+     "asunto": "GrowIA constante: una decisión al día, las ideas siguen salvo noticia gorda o números rotos, nada a la vez en ideas y evitar, y «Qué ha cambiado y por qué»",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 14:47",
+     "asunto": "Catálogo: nombres corregidos con los de Yahoo, fuera los que no tienen precio y cripto con su histórico en dólares",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 14:40",
+     "asunto": "Catálogo: 240 fondos, ETF, ETC y cripto más, con el nombre comprobado contra Yahoo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 13:53",
+     "asunto": "0.3.4: GrowIA firma con su logo, el calendario a todo el ancho y la rueda del widget sin cortar",
+     "detalle": [
+      "El nombre de GrowIA con la letra de su logo donde firma: ideas de compra y posiciones de Expertos, «Lo último»,",
+      "«Lo que dice la prensa», «Las que GrowIA evitaría», la pastilla «GrowIA opina», «GrowIA te dice» en el Paso a",
+      "paso y «GrowIA y la app» en Ajustes (traducido aparte, sin partir las frases)",
+      "Calendario: en pantallas de 1180 px o más, «Próximos» en tres columnas y debajo el mes y «Más adelante» a la",
+      "izquierda y «Lo último» a la derecha; en el móvil, igual que antes",
+      "Widget: la rueda de refrescar dibujada con curvas (sin arcos) en un cuadro de 24 dp con aire alrededor, en el",
+      "mismo sitio; en algunos móviles salía cortada por abajo",
+      "Novedades de la 0.3.4 en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.3.3",
+   "f": "2026-10-21",
+   "h": "14:30",
+   "t": "Más sobria, con los colores del logo",
+   "commits": [
+    {
+     "cuando": "2026-10-21 14:34",
+     "asunto": "0.3.3: rediseño como el icono (losetas con filo dorado, lo elegido en oro, botones con el degradado del logo)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 14:24",
+     "asunto": "0.3.3: con lo pagado y las participaciones, el precio sale solo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 14:16",
+     "asunto": "0.3.3: colores del logo, arreglos de ideas, efectivo, bichito, entrada y resumen",
+     "detalle": [
+      "Paleta única sacada del logo (oro del degradado, negro cálido, blanco roto); verde y rojo solo para subir y",
+      "bajar; el calendario, el reparto, la presentación y el widget con esos tonos. Pregúntale es el único botón de",
+      "oro de arriba y «Avisar de un fallo» pasa a gris",
+      "Ideas de compra: las tres mejores llevaban la clase «top», la misma que la barra de arriba (fija y encima de",
+      "todo), y la abierta se quedaba pegada arriba al bajar. Ahora se llama «podio»",
+      "El efectivo de Posiciones se toca y abre su edición con ese importe listo; fuera el texto de ayuda",
+      "El botón de avisar de un fallo también en la ficha y en el asesor",
+      "Entrada: la wF quieta de una pieza y las barras sin la pestañita que se veía como un corte",
+      "Resumen del día: los apartados en oro, pequeños y con una línea",
+      "Botones de la ficha en el móvil: icono encima del nombre (el wIA ya no se sale)",
+      "Presentación: un saludo en medio al empezar, que se va al bajar",
+      "La Action del release borra los releases de versiones que ya no están en el historial (la 0.3.4)"
+     ]
+    },
+    {
+     "cuando": "2026-10-21 13:55",
+     "asunto": "Todo lo de la 0.3.4 pasa a la 0.3.3 (una sola versión)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 13:41",
+     "asunto": "Entrada: la wF se dibuja de un trazo, como una gráfica, en vez de juntarse a trozos",
+     "detalle": [
+      "La w y el palo son un solo trazado que se descubre detrás de un lápiz con luz: baja, sube, baja y sube hasta",
+      "la punta, donde da un destello; luego llegan las dos barras de la F desde la derecha y encajan con un latido",
+      "Sin costuras entre tramos (un recorte por franjas que se pisan un poco)",
+      "Las letras salen cuando la wF ya casi ha llegado a su sitio; el resto, igual (unos 4,3 s, se salta tocándola)"
+     ]
+    },
+    {
+     "cuando": "2026-10-21 13:32",
+     "asunto": "0.3.3: aviso en el móvil con cada versión nueva",
+     "detalle": [
+      "App de Android: un trabajo cada 3 horas (Versiones.java) mira version.json y app.json; si hay una versión",
+      "que no has abierto, un aviso con su título (y si trae app nueva, lo dice). Canal propio «Versiones nuevas»,",
+      "encendido por defecto, de 22:00 a 9:00 nada, cada versión una vez. Al tocarlo, la web se vuelve a cargar",
+      "Web: le dice a la app qué versión estás viendo, el ajuste en Ajustes > Avisos y resumen y, una vez, si falta",
+      "el permiso de notificaciones, pregunta si quieres el aviso",
+      "La Action del release deja version.json al día con la versión publicada y su título",
+      "Novedades de la 0.3.3 en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.3.2",
+   "f": "2026-10-21",
+   "h": "13:30",
+   "t": "Logo y letra nuevos",
+   "commits": [
+    {
+     "cuando": "2026-10-21 13:24",
+     "asunto": "Entrada nueva: la wF se junta desde todas partes, sale GrowFolio, pasa a GrowIA y vuelve",
+     "detalle": [
+      "Los trozos de la wF llegan girando de todos lados y se juntan en grande; la wF baja a su sitio y salen",
+      "«Gro» y «olio» de detrás de ella, con un brillo",
+      "«olio» y las barras de la F se recogen, sale «IA» del palo, el degradado pasa al de GrowIA y el nombre",
+      "se recoloca; luego vuelve a GrowFolio",
+      "Unos 4 s; tocándola se salta. Con «reducir movimiento», GrowFolio quieto",
+      "En las novedades de la 0.3.2, en español e inglés"
+     ]
+    },
+    {
+     "cuando": "2026-10-21 13:13",
+     "asunto": "0.3.2: logo y letra nuevos",
+     "detalle": [
+      "Plus Jakarta Sans en toda la web y en el widget de Android (sustituye a Manrope)",
+      "La marca nueva: la wF (la w de Grow sube y es el palo de la F, de oro a blanco) en los iconos de la web,",
+      "el icono adaptable de Android (con monocromo), el icono de los avisos, la cabecera, la entrada, la",
+      "presentación (trozos de la wF y el nombre letra a letra) y Ajustes",
+      "GrowIA con su marca: la wIA en pequeño donde antes iba la chispa, su icono con cuadro cuando habla y",
+      "su nombre con la letra del logo en sus títulos",
+      "Novedades de la 0.3.2 en español e inglés"
+     ]
+    },
+    {
+     "cuando": "2026-10-21 07:12",
+     "asunto": "Precios: la hora del último precio de Yahoo puede llegar como fecha, no solo como número",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 06:54",
+     "asunto": "Precios: si el histórico de Yahoo aún no trae la vela del último día, se añade el último cierre que sí viene en sus datos (IAG salía con el cierre del 19 cuando ya estaba el del 20)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 06:44",
+     "asunto": "Expertos: el desplegable de cada posición en una sola columna (el botón «Abrir su ficha» ya no aplasta el texto)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 05:34",
+     "asunto": "Posiciones: la cabecera en una línea (orden en pastilla, compra o venta con flechas verde y roja, «+» para lo que ya tenía) y sin el texto de ayuda",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 04:46",
+     "asunto": "Widget: la rueda de refrescar gira en dorado mientras baja los precios (ahora es una vista, con onda al tocarla)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 04:22",
+     "asunto": "Banco: la vuelta de la app del banco (enlace de Enable Banking) se abre en GrowFolio, donde está la sesión, con el ajuste de enlaces a un toque; sin quedarse cargando ni salir con atrás. Atrás vuelve al punto exacto de cada pestaña",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 03:43",
+     "asunto": "GrowIA: fuera la coletilla de una meta lejana («el rumbo hacia los 500.000 €») en los análisis ya guardados, y los de antes de la regla de las metas se rehacen una vez",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 03:35",
+     "asunto": "Plan y movimientos compacto (filas de dos líneas y botones junto al título); banco: la página de cada banco pasa a su app con el enlace entero, las webs de banco con fondo blanco y la vuelta que llega al navegador vuelve a la app",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 03:29",
+     "asunto": "Widget: los plazos arriba a la derecha junto a refrescar (Patrimonio y la hora a la izquierda) y lo de hoy con céntimos si no llega a 10 €, para que «−0,31 €» no se lea como un 0 roto",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.1",
+   "f": "2026-10-21",
+   "h": "03:05",
+   "t": "El widget con 24 horas, «Inicio» de verdad y arreglos",
+   "commits": [
+    {
+     "cuando": "2026-10-21 04:23",
+     "asunto": "0.3.1: atrás vuelve al punto exacto, en las novedades",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 04:16",
+     "asunto": "0.3.1: la ficha con una barra fija fina, «atrás» cierra el GTA, las hojas, la ficha y el asesor sin salir de la app, compra o venta sin saltos al cambiar de fondo, el consejo de no hacer nada como aviso y las que GrowIA evitaría en tarjetas rojas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 03:45",
+     "asunto": "0.3.1: tus posiciones en el móvil, todas con el mismo orden (nombre; bandera, país y plataforma en una línea; etiquetas en otra) y sin el nombre largo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 03:22",
+     "asunto": "0.3.1: si te has perdido varias versiones, salen todas juntas en la presentación, cada una con su capítulo (lo importante en grande y el resto en lista corta) y los bugs al final; si son muchas, las de antes en un capítulo resumido",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 02:57",
+     "asunto": "0.3.1: todo lo de después de la 0.3.0 (el widget con 24 horas y escala, «Inicio» de verdad, Expertos, la luz de las bolsas, el tutorial y los arreglos) en una versión propia; quien no vio la 0.3.0 grande la sigue viendo primero",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 02:42",
+     "asunto": "0.3.0b: el tutorial se desliza de un paso a otro (ya no pasa por el centro de la pantalla ni salta la tarjeta)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 02:34",
+     "asunto": "0.3.0b: el widget con los plazos a la vista y la escala, en las novedades",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 02:33",
+     "asunto": "Widget: arreglo de compilación y, en el año, solo los trimestres en la escala",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 02:31",
+     "asunto": "Widget: plazos a la vista (24 h, 1S, 1M, 3M, 1A) con fundido al cambiar, escala con valores y fechas, y lo que ha cambiado en el plazo; banco: el permiso se da dentro de la app (versión de ordenador) y vuelve solo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 02:04",
+     "asunto": "0.3.0b: «Bolsa / sin datos» ya no se sale de su pastilla (mide lo que su texto) y en los móviles de 320 px la cabecera cabe entera",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 02:00",
+     "asunto": "0.3.0b: la luz de las bolsas, en una pastilla con su texto: «En directo» en el ordenador y «Bolsa / abierta» en el móvil, en verde cuando hay bolsa",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 01:41",
+     "asunto": "0.3.0b: ideas de compra todas de la misma altura y apilándose limpio al bajar en el móvil; las novedades, con la 0.3.0 al frente (y lo de la b dentro), sin GTA VI y una vez más para quien ya las vio",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 01:35",
+     "asunto": "0.3.0b: Expertos más directo: cabecera corta sin el botón suelto, la frescura en una línea con su «i» y tus posiciones antes que lo último de la prensa",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 01:13",
+     "asunto": "0.3.0b: «Inicio» desde que empezaste a invertir (te lo pregunta la primera vez, con lo ganado de verdad), la presentación en el orden de la barra y las notas con todo lo de esta corrección",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 01:07",
+     "asunto": "Ajustes sin «Ver lo nuevo de la 0.2»; el «VI» de GTA parpadea de vez en cuando como un neón y la pastilla respira",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 01:05",
+     "asunto": "0.3.0b: el widget como la app, «Cómo vas» en Análisis, el patrimonio que se enciende al cambiar y los arreglos tras la 0.3.0",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 01:03",
+     "asunto": "Widget como la app 0.3: la cifra más gruesa y apretada, y la curva con grano dorado, el trazo que se enciende hacia hoy, el brillo más ancho y el halo con su haz en el punto de ahora",
+     "detalle": []
+    }
+   ]
+  },
+  {
+   "v": "0.3.0",
+   "f": "2026-10-21",
+   "h": "00:50",
+   "t": "Más sencilla y con más criterio",
+   "commits": [
+    {
+     "cuando": "2026-10-21 01:00",
+     "asunto": "0.3.0: arreglos tras publicar",
+     "detalle": [
+      "El número de versión de las novedades entra solo al abrir y queda nítido (las últimas cifras salían borrosas)",
+      "La cifra del patrimonio ya no pierde los euros al cambiar con los precios en directo; al subir se enciende en verde y al bajar en rojo",
+      "GrowIA dice a qué distancia está cada meta y el titular habla de hoy, no de metas lejanas",
+      "«Cómo vas» pasa del Paso a paso a Análisis, encima de tus objetivos",
+      "Las metas repetidas (al repetir el perfil guiado) se quedan en una y no se vuelven a añadir",
+      "Sin el recuadro azul de Android al tocar; en la barra, el icono se enciende en dorado"
+     ]
+    },
+    {
+     "cuando": "2026-10-21 00:48",
+     "asunto": "0.3.0: publicada el 21 de octubre a las 00:50",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 00:48",
+     "asunto": "0.3: fuera la cinta de cotizaciones de arriba en todas las pestañas (los mercados están en Mercados y en la luz de En directo); tus posiciones suben otros 40 px en el móvil",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 00:45",
+     "asunto": "0.3: la gráfica de Inicio, con grano dorado fino bajo la curva (una imagen pequeña que se repite, sin filtros, para que pasar el dedo vaya fino en cualquier móvil)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 00:42",
+     "asunto": "0.3: «VI» de la cabecera más grueso y con un neón más intenso; fuera la trama de puntos de la gráfica, con tres texturas para elegir (ecos de la curva, rayas verticales o grano)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 00:39",
+     "asunto": "0.3: textura en la gráfica de Inicio: trama de puntos dorados bajo la curva que se apaga hacia abajo y una rejilla de puntos muy tenue de fondo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 00:18",
+     "asunto": "0.3: gráfica de Inicio con más fuerza (trazo más grueso que se enciende hacia hoy, relleno más intenso, halo y haz en el punto de ahora y la curva usando más alto) y cifra del móvil más grande, con más cuerpo y que se encoge si no cabe",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 00:13",
+     "asunto": "0.3: en el móvil, los nombres de lo que más se mueve se resumen en vez de cortarse: sin flechitas y letra algo menor si hace falta, sin la gestora ni palabras de relleno, y abreviaturas como «MSCI Eur.» solo si ni así cabe",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 00:09",
+     "asunto": "0.3: en el móvil, lo que más ha movido hoy en dos y dos, en rectángulos de una línea como las pastillas del widget",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 00:06",
+     "asunto": "0.3: en el móvil, lo que más ha movido hoy en una sola fila (de unos 200 a 112 px) y la barra con iconos más claros: Análisis, una tarta; Expertos, una bombilla de ideas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-21 00:00",
+     "asunto": "0.3: Inicio con menos aire entre bloques (tus posiciones suben otros 70-90 px) y lo que más se mueve ocupando todo el ancho en el ordenador",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 23:45",
+     "asunto": "0.3.0 lista para publicar: novedades con sus bugs corregidos, inglés de todo lo nuevo y caché nueva",
+     "detalle": [
+      "Novedades de la 0.3.0: 16 cosas (lo de la 0.2.4 y la 0.3) y 5 bugs corregidos; «Enséñamelo» del tutorial abre el tutorial entero",
+      "Inglés: el tutorial, Para empezar, la presentación, las novedades, Mercados y los periodos de la gráfica (1Y, 3Y, 5Y); el saludo, la versión de la app y las etiquetas de Personalizar",
+      "Caché inv-v79"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 23:22",
+     "asunto": "0.3: tutorial nuevo, en 9 pasos y no 15",
+     "detalle": [
+      "Empieza por la barra (Inicio en el centro, a la izquierda lo que haces y a la derecha lo de fuera), pasa por cada sitio con el fondo a medio oscurecer para que se vea la pantalla y acaba en «Para empezar hoy»: perfil, lo que tienes y la clave de GrowIA, cada uno con su botón. Esa lista se queda en Inicio el primer mes, o mientras la cartera esté vacía, hasta que esté hecha o la quites. La tarjeta del tutorial va junto a lo que señala. La presentación, con menos texto."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 23:10",
+     "asunto": "0.3: en Inicio, tus posiciones justo debajo del patrimonio y GrowIA más corta en el móvil",
+     "detalle": [
+      "Si tenías un orden guardado con GrowIA por encima de tus posiciones, se cambia una vez al pasar a la 0.3."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 23:06",
+     "asunto": "0.3: Personalizar sobre la propia página, arrastrando cada bloque por su barra, y una animación al apuntar una compra o una venta",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 23:01",
+     "asunto": "0.3: Expertos más claro. Las ideas empiezan compactas y numeradas, con las tres mejores en verde, y se abren al tocarlas; cada posición en una fila con su señal y si GrowIA coincide",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 22:59",
+     "asunto": "0.3: criterio. Señales que no cambian de un día para otro, GrowIA constante y con permiso para no hacer nada, tus objetivos frente a tu cartera en Análisis y «cómo vas» en el Paso a paso",
+     "detalle": [
+      "Cada posición recuerda su señal: una nueva entra si no puede esperar (tu salida, tu objetivo), si la anterior lleva 7 días y la nueva se ve dos días, o al mes; mientras, se dice por qué sigue la de antes",
+      "GrowIA recibe el nivel que dio a cada posición, su hoja de ruta y los cambios de señal, y tiene que justificar cualquier cambio; esperar es un consejo válido",
+      "Análisis empieza por tus objetivos frente a tu cartera: bolsa frente a tu perfil, límites, colchón y cada meta, con su cifra, su barra y qué hacer",
+      "Paso a paso dice si vas bien, lo urgente que queda o, si no hay nada, que este mes toca esperar"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 22:55",
+     "asunto": "0.3: la gráfica con «Inicio» (desde tu primera compra), el año en el eje y 3A, 5A y Máx que llegan atrás de verdad",
+     "detalle": [
+      "Lo que aún no cotizaba (HBX salió a bolsa en febrero de 2025) cortaba toda la gráfica en su primer día: ahora cuenta a su primer precio."
+     ]
+    },
+    {
+     "cuando": "2026-10-20 22:52",
+     "asunto": "0.3: cinco sitios. Inicio en el centro de la barra y más grande; Análisis con tus objetivos (y Hacienda en época de renta) y Mercados con el calendario, con pestañas dentro",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 22:37",
+     "asunto": "GTA VI con letra de rótulo de neón de los ochenta y las noticias se leen dentro: GrowIA resume la noticia entera al tocarla",
+     "detalle": [
+      "«VI» en Yellowtail con brillo rosa, como los rótulos de Vice City (no es la letra del logo del juego)",
+      "Al tocar una noticia (Mercados, Cartera, fichas, Calendario) sale una hoja con su resumen: Gemini con tu clave lee el enlace y, si no puede, la busca por su titular y su medio; aparte, «Para tu cartera» si te afecta, y abajo la original",
+      "Sin clave de Google, la hoja ofrece activar GrowIA o abrir la noticia; con Ctrl o Cmd se abre la web como siempre"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 22:24",
+     "asunto": "Calendario: solo «Solo lo mío» y «En general», y Próximos en entradas compactas (seis a la vista, dos columnas en el ordenador)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 22:21",
+     "asunto": "Mercados: las gráficas arriba; en el móvil un grupo cada vez con pestañas, y GrowIA y las que más se han movido plegadas con un adelanto",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-20 22:17",
+     "asunto": "Widget: el periodo de la curva se elige tocándolo arriba (1 semana, 1 mes, 3 meses, 1 año) y lo de hoy siempre con euros y %",
+     "detalle": [
+      "Cada widget recuerda su periodo; el año va semana a semana",
+      "Las pastillas de lo que más ha movido hoy llevan siempre el %: si no cabe, todas con la letra un poco más pequeña y sin el triángulo, y solo después se recorta el nombre",
+      "El widget de una fila, también con el % de hoy"
+     ]
+    },
+    {
+     "cuando": "2026-10-20 21:40",
+     "asunto": "Cartera más limpia: el ojo junto a Patrimonio, el idioma solo en Ajustes, lo que más ha movido hoy como en el widget y comparar junto a los periodos; el widget, solo con lo de hoy",
+     "detalle": [
+      "Fuera de la cabecera el ojo (va pequeño junto a «Patrimonio») y la bandera (el idioma está en Ajustes)",
+      "Lo que más ha movido hoy (hasta 4) dentro de la pieza, en rejilla y como en el widget",
+      "Comparar con el S&P 500, un interruptor bajo los periodos (desde 1M); la nota de debajo, detrás de una «i» junto a la pastilla",
+      "En 1D no se repite «Hoy»; la pastilla sigue a los precios en directo",
+      "Sin el hueco de debajo (la tarjeta de GrowIA llevaba margen de más)",
+      "«En directo» ya no se corta en la cabecera",
+      "Widget: fuera «en total» y el % del mes; «hoy» junto a la pastilla y la curva con «Último mes»"
+     ]
+    },
     {
      "cuando": "2026-10-20 22:17",
      "asunto": "Widget.json con un año de cierres (día a día los últimos 100 días y semana a semana antes), para elegir el periodo en el widget",
      "detalle": [
       "Las APK de antes solo miran el último mes, así que no les afecta."
      ]
-    },
+    }
+   ]
+  },
+  {
+   "v": "0.2.3b",
+   "f": "2026-10-20",
+   "h": "20:58",
+   "t": "Precios al día y avisos que se van",
+   "commits": [
     {
      "cuando": "2026-10-20 22:12",
      "asunto": "0.2.3b: las opiniones van solo a Firebase y el dueño las lee en Ajustes > Opiniones recibidas",

@@ -1023,7 +1023,9 @@ def bolsas_mapa(anterior):
                 out[sim] = v
             except Exception as e:  # noqa: BLE001
                 fallos.append(str(e))
-                viejo = next(((k, v) for k, v in prev.items() if v.get("p") == pais), None)
+                # el de la pasada anterior, mientras no tenga más de diez días: después, mejor sin dato que uno viejo
+                limite = (dt.date.today() - dt.timedelta(days=10)).isoformat()
+                viejo = next(((k, v) for k, v in prev.items() if v.get("p") == pais and str(v.get("f") or "") >= limite), None)
                 if viejo:
                     out[viejo[0]] = viejo[1]
     if fallos:

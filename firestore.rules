@@ -6,19 +6,33 @@ service cloud.firestore {
     match /usuarios/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
     }
-    // opiniones y fallos: cualquiera con cuenta puede mandar una (a su nombre y con texto). Solo las lee el dueño,
+    // opiniones y fallos: cualquiera con cuenta puede mandar una (a su nombre y con texto). Las lee el dueño (y cada uno las suyas),
     // desde Ajustes > Opiniones recibidas (y en la consola de Firebase). __DUENOS__ no se queda así: la Action «Reglas
     // de Firestore» lo cambia al publicar por los correos del secreto BANCO_EMAILS, que no están en el repositorio.
     // Si se pegan a mano en la consola, hay que cambiarlo por 'tu@correo' (o por nada, y no las lee nadie).
+    // 0.4: el dueño puede responder a cada una (respuesta, respondida, por, y «vista» a falso para que salga como
+    // nueva), y quien la mandó la lee con su respuesta y solo puede marcarla como vista.
     match /opiniones/{id} {
+      function esDueno() {
+        return request.auth != null && request.auth.token.email_verified == true
+          && request.auth.token.email.lower() in [__DUENOS__];
+      }
       allow create: if request.auth != null
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.texto is string
         && request.resource.data.texto.size() > 0
-        && request.resource.data.texto.size() <= 4000;
-      allow read: if request.auth != null && request.auth.token.email_verified == true
-        && request.auth.token.email.lower() in [__DUENOS__];
-      allow update, delete: if false;
+        && request.resource.data.texto.size() <= 4000
+        && !('respuesta' in request.resource.data);
+      allow read: if esDueno() || (request.auth != null && resource.data.uid == request.auth.uid);
+      allow update: if (esDueno()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['respuesta', 'respondida', 'por', 'vista'])
+          && request.resource.data.respuesta is string
+          && request.resource.data.respuesta.size() > 0
+          && request.resource.data.respuesta.size() <= 2000)
+        || (request.auth != null && resource.data.uid == request.auth.uid
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vista'])
+          && request.resource.data.vista == true);
+      allow delete: if false;
     }
     // precios que pedir: el ticker o el ISIN de lo que alguien mete a mano y GrowFolio no seguía (sin quién lo
     // pide). Cualquiera con cuenta puede apuntar uno nuevo; lo lee la Action de precios, sin clave

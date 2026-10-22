@@ -170,6 +170,7 @@ final class Datos {
     /** los plazos de la curva del widget, en días (1 son las últimas 24 horas), y cómo se llaman */
     static final int[] PERIODOS = {1, 7, 31, 92, 365};
     static final String[] CORTOS = {"24 h", "1S", "1M", "3M", "1A"};
+    static final String[] CORTOS_EN = {"24 h", "1W", "1M", "3M", "1Y"};
     static String nombrePeriodo(int dias, boolean en) {
         if (en) return dias <= 1 ? "24 h" : dias <= 7 ? "1 week" : dias <= 31 ? "1 month" : dias <= 92 ? "3 months" : "1 year";
         return dias <= 1 ? "24 h" : dias <= 7 ? "1 semana" : dias <= 31 ? "1 mes" : dias <= 92 ? "3 meses" : "1 año";

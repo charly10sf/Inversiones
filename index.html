@@ -2284,6 +2284,47 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .opr p { margin: 8px 0 6px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
 .opr small { color: var(--muted); font-size: 12.5px; }
 .opr-hoja .fila-btns { margin-top: 16px; }
+/* 0.4: responder desde la app. Debajo de cada opinión, el botón o la respuesta ya dada, con si la ha leído */
+.opr-intro { margin: 0 0 12px; }
+.opr-r:empty { display: none; }
+.opr-r { margin-top: 10px; }
+.opr-responder { padding: 7px 13px; font-size: 13.5px; }
+.opr-resp { padding: 10px 12px 11px; border-radius: 12px; background: var(--accent-bg); }
+.opr-resp-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 12.5px; color: var(--muted); }
+.opr-resp-cab b { color: var(--accent); font-weight: 650; }
+.opr-leida { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+.opr-leida.si { color: var(--up); }
+.opr-leida svg { width: 14px; height: 14px; }
+.opr .opr-resp p { margin: 6px 0 8px; }
+.opr-resp .enlace { font-size: 13px; font-weight: 600; }
+.opr-f { display: grid; gap: 6px; }
+.opr-f .campo { margin: 0; }
+.opr-f textarea { min-height: 96px; }
+.opr-f .fila-btns { margin-top: 4px; }
+.opr .opr-f-nota { font-size: 12.5px; }
+/* lo que ve quien la mandó: como una conversación, lo suyo a la derecha y la respuesta a la izquierda, con la marca */
+.resp-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.resp { display: grid; gap: 8px; }
+.resp + .resp { padding-top: 18px; border-top: 1px solid var(--line); }
+.resp-tuyo, .resp-suya { max-width: 88%; padding: 10px 13px 11px; }
+.resp-tuyo { justify-self: end; border-radius: 16px 16px 5px 16px; background: var(--plane-3); }
+.resp-suya { justify-self: start; border-radius: 16px 16px 16px 5px; background: var(--accent-bg); border: 1px solid rgba(237, 187, 69, 0.22); }
+.resp-meta { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted); }
+.resp-meta time { margin-left: auto; padding-left: 10px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.resp-suya .resp-meta b { color: var(--text); font-weight: 650; }
+.resp-marca { width: 22px; height: 22px; flex: none; border-radius: 6px; background: #15130F; }
+.resp-est { display: block; margin-top: 4px; color: var(--accent); letter-spacing: 1px; }
+.resp-tuyo p, .resp-suya p { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+.resp-tuyo p { color: var(--text-2); }
+.resp-suya p { font-size: 15px; }
+.resp-espera { margin: 0; justify-self: start; color: var(--muted); font-size: 13px; }
+.resp-hoja > .nota { margin: 0 0 14px; }
+.resp-hoja .fila-btns { margin-top: 20px; }
+.opi-mias { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--plane); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.opi-mias:hover { border-color: var(--line-2); }
+.opi-mias > svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+.opi-mias span { display: grid; gap: 1px; flex: 1; min-width: 0; font-weight: 600; font-size: 14px; }
+.opi-mias small { color: var(--muted); font-size: 12.5px; font-weight: 400; }
 @keyframes nov-entra { from { opacity: 0; transform: translateY(8px); } }
 @media (max-width: 480px) { .nov-lista li { align-items: flex-start; gap: 12px; } .nov-lista .dib { width: 88px; height: 59px; padding: 5px; border-radius: 10px; } }
 /* la hoja «Más» del móvil */
@@ -3931,10 +3972,18 @@ const MODO = (() => {
 const PERFIL_LOCAL = MODO !== 'github', PERFIL_CUENTA = MODO === 'cuenta';
 const PRIVADAS = new Set(['inv-bloqueo', 'inv-bloqueo-t', 'inv-cache-enc', 'inv-pend-enc', 'inv-cuenta-enc', 'inv-pend-cuenta', 'inv-token', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-cfg2', 'inv-ia-propio', 'inv-ia-agotados', 'inv-gkey-modo', 'inv-cache-ia', 'inv-oculto', 'inv-proy']);
 const IDB_CLAVE = PERFIL_CUENTA ? 'clave-cuenta' : PERFIL_LOCAL ? 'clave-local' : 'clave';
+const LS_SOBRA = ['inv-cache-tren', 'inv-cache-escaneo', 'inv-cache-hist', 'inv-cache-radar', 'inv-cache-informe', 'inv-cache-precios', 'inv-cache-cat', 'inv-cache-inst'];
 const LS = {
   k(k) { return PERFIL_LOCAL && PRIVADAS.has(k) ? (PERFIL_CUENTA ? 'invC-' : 'invL-') + k.slice(4) : k; },
   get(k, d = null) { try { const v = localStorage.getItem(this.k(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem(this.k(k), JSON.stringify(v)); } catch (e) {} },
+  set(k, v) {
+    const kk = this.k(k), s = JSON.stringify(v);
+    try { localStorage.setItem(kk, s); } catch (e) {
+      // sin sitio (Safari da unos 5 MB): fuera las copias de datos públicos, que se vuelven a bajar, y otra vez. Así
+      // nunca se queda sin guardar la cartera por culpa de una caché.
+      try { for (const x of LS_SOBRA) if (x !== kk) localStorage.removeItem(x); localStorage.setItem(kk, s); } catch (e2) {}
+    }
+  },
   del(k) { try { localStorage.removeItem(this.k(k)); } catch (e) {} },
 };
 function cambiarPerfil(modo) {
@@ -7484,7 +7533,7 @@ async function cargarTrEn() {
     else { const r = await fetch(GH.raw('traduccion-en.json', 'datos') + '?v=' + Math.floor(Date.now() / 900000), { cache: 'no-cache' }).catch(() => null); if (r && r.ok) txt = await r.text(); }
   } catch (e) { /* sin conexión: lo guardado */ }
   try {
-    if (txt) { S.trEn = JSON.parse(txt).t || {}; try { localStorage.setItem('inv-cache-tren', txt); } catch (e) {} }
+    if (txt) { S.trEn = JSON.parse(txt).t || {}; try { localStorage.setItem('inv-cache-tren', JSON.stringify({ t: S.trEn })); } catch (e) {} }
     else if (!S.trEn) { const c = localStorage.getItem('inv-cache-tren'); if (c) S.trEn = JSON.parse(c).t || {}; }
   } catch (e) {}
   S.trEnT = Date.now(); S.trEnCargando = false;
@@ -8023,7 +8072,7 @@ function paisesDeFila(f) {
     else if (r === 'Global') add(ZONA_PAISES.Mundo, peso);
     // «Otros»: no se sabe dónde, no se pinta
   }
-  return out;
+  return Object.keys(out).length ? out : null;
 }
 // cuánto tienes en cada país (con posId, solo esa posición, y el % sobre ella)
 function exposicionPaises(M, posId) {
@@ -8039,7 +8088,10 @@ function exposicionPaises(M, posId) {
       const v = f.valor * x;
       if (v < 0.5) continue;
       const e = out.get(c) || { v: 0, de: [] };
-      e.v += v; e.de.push({ n: f.inst.corto || f.inst.nombre, v, fondo: f.inst.tipo !== 'Acción' });
+      // lo mismo en dos brókers cuenta una vez, sumado
+      const ya = e.de.find((d) => d.id === f.inst.id);
+      if (ya) ya.v += v; else e.de.push({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, v, fondo: f.inst.tipo !== 'Acción' });
+      e.v += v;
       out.set(c, e);
     }
   }
@@ -8064,6 +8116,8 @@ function valorMapa(c, modo, ex) {
   if (modo === 'tuyo') { const e = ex.get(c); return e ? e.pct : null; }
   const b = bolsasDe(c)[0];
   if (!b) return null;
+  // «hoy» con un cierre de hace más de una semana (la bolsa dejó de llegar) no es hoy: sin datos
+  if (modo === 'hoy' && b.f && Date.now() - Date.parse(b.f) > 7 * 864e5) return null;
   return modo === 'hoy' ? b.v : modo === 'mes' ? b.m : b.y;
 }
 function tonoMapa(v, modo) {
@@ -8080,9 +8134,14 @@ function paisesMapa(modo, ex) {
   const cods = new Set([...Object.keys(BOLSA_PAIS), ...Object.values((S.precios && S.precios.mapa) || {}).map((x) => x.p), ...ex.keys()]);
   return [...cods].map((c) => ({ c, v: valorMapa(c, modo, ex) })).filter((x) => x.v != null && isFinite(x.v));
 }
+// en «Tu dinero» con una sola posición elegida, su nombre (las cifras son % de esa posición, no de la cartera)
+const posMapa = () => (S.mapaPos && S.M && S.M.filas.find((f) => f.pos.id === S.mapaPos)) || null;
 function textoValorMapa(v, modo) {
-  if (v == null || !isFinite(v)) return modo === 'tuyo' ? L('nada de tu cartera', 'none of your portfolio') : L('sin datos de su bolsa', 'no stock market data');
-  return modo === 'tuyo' ? L(`${fmtNumR(v, v < 1 ? 2 : 1)}\u00a0% de tu cartera`, `${fmtNumR(v, v < 1 ? 2 : 1)}% of your portfolio`) : `${pctS(v, 1)} ${etqModoMapa(modo)}`;
+  const pos = modo === 'tuyo' ? posMapa() : null, pn = pos ? pos.inst.corto || pos.inst.nombre : '';
+  if (v == null || !isFinite(v)) return modo === 'tuyo' ? (pn ? L(`nada de ${pn}`, `none of ${pn}`) : L('nada de tu cartera', 'none of your portfolio')) : L('sin datos de su bolsa', 'no stock market data');
+  const n = fmtNumR(v, v < 1 ? 2 : 1);
+  if (modo !== 'tuyo') return `${pctS(v, 1)} ${etqModoMapa(modo)}`;
+  return pn ? L(`${n}\u00a0% de ${pn}`, `${n}% of ${pn}`) : L(`${n}\u00a0% de tu cartera`, `${n}% of your portfolio`);
 }
 const cajaVistaMapa = (v) => (v !== 'mundo' && S.mapaGeo.zonas[v] ? S.mapaGeo.zonas[v] : [0, 0, S.mapaGeo.w, S.mapaGeo.h]);
 // la zona apretada en la que cae un país (para acercarse al tocarlo en el móvil)
@@ -8136,7 +8195,8 @@ function svgMapa(M) {
   S.mapaEx = ex; S.mapaExTodo = exTodo;
   const vb = S.mapaVB || cajaVistaMapa(S.mapaVista), esc1 = anchoMapa() / vb[2];
   const top = paisesMapa(modo, ex).sort((a, b) => b.v - a.v).slice(0, 3).map((x) => `${nombrePaisMapa(x.c)} ${textoValorMapa(x.v, modo)}`);
-  const resumen = top.length ? (modo === 'tuyo' ? L('Mapa de dónde está tu dinero. Donde más: ', 'Map of where your money is. Most: ') : L(`Mapa de cómo van las bolsas ${etqModoMapa(modo)}. Lo que más sube: `, `Map of how stock markets are doing ${etqModoMapa(modo)}. Best: `)) + top.join('; ') : L('Mapa del mundo', 'World map');
+  const pm = modo === 'tuyo' ? posMapa() : null;
+  const resumen = top.length ? (modo === 'tuyo' ? (pm ? L(`Mapa de dónde invierte ${pm.inst.corto || pm.inst.nombre}. Donde más: `, `Map of where ${pm.inst.corto || pm.inst.nombre} invests. Most: `) : L('Mapa de dónde está tu dinero. Donde más: ', 'Map of where your money is. Most: ')) : L(`Mapa de cómo van las bolsas ${etqModoMapa(modo)}. Lo que más sube: `, `Map of how stock markets are doing ${etqModoMapa(modo)}. Best: `)) + top.join('; ') : L('Mapa del mundo', 'World map');
   // Hong Kong y Singapur no se ven a ninguna escala: en Asia, un aro alrededor para poder tocarlos
   const aros = S.mapaVista === 'as' ? ['HK', 'SG'].filter((c) => G.c[c]).map((c) => `<circle cx="${G.c[c][0]}" cy="${G.c[c][1]}" r="${(7 / esc1).toFixed(2)}" data-c="${c}" class="aro ${tonoMapa(valorMapa(c, modo, ex), modo)}${c === S.mapaSel ? ' sel' : ''}"/>`).join('') : '';
   return { svg: `<svg viewBox="${vb.join(' ')}" role="img" aria-label="${esc(resumen)}"><g class="mp-paises">${caminosMapa(S.mapaVista, modo, ex)}</g>${aros}</svg>`, etq: etiquetasMapa(vb, esc1, modo, ex) };
@@ -8215,7 +8275,8 @@ function htmlMapaMundo() {
         <div class="mapa-caja"><div class="mapa-svg" id="mapaMundo"></div><div class="mapa-etqs" id="mapaEtq" aria-hidden="true"></div><div class="mapa-tip" hidden></div></div>
         <div class="mapa-pie"><div class="mapa-vistas" role="group" aria-label="${L('Acercar', 'Zoom')}">${MAPA_VISTAS.map(([k, es, en]) => `<button type="button" data-mapa-vista="${k}" aria-pressed="${k === S.mapaVista}">${L(es, en)}</button>`).join('')}</div><div class="mapa-ley" id="mapaLey">${htmlLeyendaMapa(modo)}</div></div>
       </div>
-      <div class="mapa-info" id="mapaInfo" aria-live="polite">${htmlInfoMapa(S.mapaSel, S.M)}</div>
+      <div class="mapa-info" id="mapaInfo">${htmlInfoMapa(S.mapaSel, S.M)}</div>
+      <p class="sr" id="mapaAnuncio" aria-live="polite"></p>
     </div>
   </section>`;
 }
@@ -8264,11 +8325,13 @@ async function cargarZonaMapa(z) {
 function irVistaMapa(v) {
   if (!S.mapaGeo || v === S.mapaVista || S.mapaMoviendo) return;
   if (v !== 'mundo') cargarZonaMapa(v);
-  const desde = S.mapaVB || cajaVistaMapa(S.mapaVista), hasta = cajaVistaMapa(v);
+  const desde = S.mapaVB || cajaVistaMapa(S.mapaVista), hasta = cajaVistaMapa(v), antes = S.mapaVista;
   S.mapaVista = v;
   const svg = $('#mapaMundo svg');
   if (!svg || matchMedia('(prefers-reduced-motion: reduce)').matches) { repintarMapa(); return; }
-  if (v === 'mundo') svg.querySelector('.mp-paises').innerHTML = caminosMapa('mundo', S.mapaModo, S.mapaEx || new Map());
+  // durante el viaje, el mundo entero: el detalle de Europa no tiene Asia (y al revés), y al ir de una a otra se
+  // vería vacío por el camino. Al llegar, repintarMapa pone el detalle de la zona.
+  if (v === 'mundo' || antes !== 'mundo') svg.querySelector('.mp-paises').innerHTML = caminosMapa('mundo', S.mapaModo, S.mapaEx || new Map());
   for (const b of $$('[data-mapa-vista]')) b.setAttribute('aria-pressed', String(b.dataset.mapaVista === v));
   for (const a of svg.querySelectorAll('.aro')) a.remove();
   const capa = $('#mapaEtq'); if (capa) capa.classList.remove('listas');
@@ -8285,6 +8348,9 @@ function irVistaMapa(v) {
 function elegirPaisMapa(c) {
   S.mapaSel = c || null;
   repintarMapa();
+  // el panel se rehace con cada precio: lo que se lee en voz alta es solo el país elegido, una vez
+  const an = $('#mapaAnuncio');
+  if (an) an.textContent = c ? `${nombrePaisMapa(c)}: ${textoValorMapa(valorMapa(c, S.mapaModo, S.mapaEx || new Map()), S.mapaModo)}` : '';
   const inf = $('#mapaInfo');
   if (c && inf && innerWidth < 980) { const r = inf.getBoundingClientRect(); if (r.top > innerHeight - 140) inf.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
 }
@@ -8298,10 +8364,11 @@ document.addEventListener('click', (e) => {
   const c = e.target.closest('#mapaMundo [data-c]');
   if (c) {
     const cod = c.dataset.c;
-    // en el móvil, un país pequeño de una zona apretada (Europa, Asia): primero se acerca, luego ya lo eliges
+    // en el móvil, un país pequeño de una zona apretada (Europa, Asia): primero se acerca, luego ya lo eliges (con el
+    // dedo es fácil haber tocado el de al lado). Con ratón se elige al momento, y solo los diminutos acercan además.
     if (S.mapaVista === 'mundo' && S.mapaGeo) {
-      const esc1 = anchoMapa() / S.mapaGeo.w, zona = zonaDeMapa(cod);
-      if (zona && (S.mapaGeo.a[cod] || 0) * esc1 * esc1 < 700) { irVistaMapa(zona); return; }
+      const esc1 = anchoMapa() / S.mapaGeo.w, zona = zonaDeMapa(cod), fino = !!(window.matchMedia && matchMedia('(pointer: fine)').matches);
+      if (zona && (S.mapaGeo.a[cod] || 0) * esc1 * esc1 < (fino ? 60 : 700)) { if (fino) elegirPaisMapa(cod); irVistaMapa(zona); return; }
     }
     elegirPaisMapa(cod === S.mapaSel ? null : cod);
     return;
@@ -8320,8 +8387,13 @@ document.addEventListener('pointermove', (e) => {
   if (!tip) return;
   const c = e.target.closest('[data-c]');
   if (!c || S.mapaMoviendo) { tip.hidden = true; return; }
-  const cod = c.dataset.c, v = valorMapa(cod, S.mapaModo, S.mapaEx || new Map());
-  tip.innerHTML = `<span class="mt-n"><span class="mi-ban">${bandera(cod)}</span><b>${esc(nombrePaisMapa(cod))}</b></span><span class="${S.mapaModo === 'tuyo' || v == null ? '' : cls(v)}">${esc(textoValorMapa(v, S.mapaModo))}</span>`;
+  // solo se rehace al cambiar de país: rehacerlo en cada movimiento volvía a cargar la bandera y parpadeaba
+  const cod = c.dataset.c, k = `${cod}|${S.mapaModo}|${S.mapaPos || ''}|${IDIOMA}`;
+  if (tip.dataset.k !== k || tip.hidden) {
+    const v = valorMapa(cod, S.mapaModo, S.mapaEx || new Map());
+    tip.dataset.k = k;
+    tip.innerHTML = `<span class="mt-n"><span class="mi-ban">${bandera(cod)}</span><b>${esc(nombrePaisMapa(cod))}</b></span><span class="${S.mapaModo === 'tuyo' || v == null ? '' : cls(v)}">${esc(textoValorMapa(v, S.mapaModo))}</span>`;
+  }
   tip.hidden = false;
   const r = w.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
   tip.style.left = `${Math.max(4, Math.min(x + 14, r.width - tip.offsetWidth - 4))}px`;
@@ -8989,7 +9061,8 @@ function pintarMapaCartera(caja, M) {
   caja.style.height = `${H}px`;
   const modo = S.mcModo, piezas = piezasCartera(M), G = 3;
   const t = squarify(piezas, W, H);
-  caja.setAttribute('role', 'img');
+  // un grupo (no una imagen): dentro hay un botón por posición y el lector de pantalla tiene que poder llegar a ellos
+  caja.setAttribute('role', 'group');
   caja.setAttribute('aria-label', L('Mapa de tu cartera: ', 'Map of your portfolio: ') + piezas.slice(0, 5).map((p) => `${p.n} ${eur(p.valor, 0)}`).join(', '));
   caja.innerHTML = t.filter((p) => p.w - G >= 1 && p.h - G >= 1).map((p) => {
     const w = p.w - G, h = p.h - G, v = modo === 'hoy' ? p.hoy : p.total;
@@ -9022,9 +9095,13 @@ document.addEventListener('pointermove', (e) => {
   const t = e.target.closest('[data-mc]');
   if (!t) { if (tip) tip.hidden = true; return; }
   if (!tip) { tip = document.createElement('div'); tip.id = 'mcTip'; tip.className = 'mapa-tip mc-tip'; document.body.appendChild(tip); }
-  const p = piezasCartera(S.M).find((x) => x.id === t.dataset.mc);
-  if (!p) return;
-  tip.innerHTML = `<b>${esc(p.n)}</b><span>${textoPiezaMc(p)}</span>`;
+  const k = `${t.dataset.mc}|${S.mcModo || ''}`;
+  if (tip.dataset.k !== k || tip.hidden) {
+    const p = piezasCartera(S.M).find((x) => x.id === t.dataset.mc);
+    if (!p) return;
+    tip.dataset.k = k;
+    tip.innerHTML = `<b>${esc(p.n)}</b><span>${textoPiezaMc(p)}</span>`;
+  }
   tip.hidden = false;
   const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8), y = e.clientY + tip.offsetHeight + 24 > innerHeight ? e.clientY - tip.offsetHeight - 12 : e.clientY + 16;
   tip.style.left = `${x}px`; tip.style.top = `${y}px`;
@@ -13969,15 +14046,16 @@ document.addEventListener('click', (e) => {
    ===================================================================== */
 const VERSION = '0.4';
 const NOVEDADES = [
-  { v: '0.4', f: '2026-10-22', h: '23:30', t: 'El mundo en un mapa, tu cartera de un vistazo y tu peor caída', cosas: [
+  { v: '0.4', f: '2026-10-22', h: '22:15', t: 'El mundo en un mapa, tu cartera de un vistazo y tu peor caída', cosas: [
     { d: 'mercados', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. Los nombres salen primero en los mercados que más pesan, con un punto dorado donde tienes dinero. Toca un país para ver sus bolsas, lo que tienes allí y lo que pesa en un fondo de todo el mundo. Europa y Asia, que tienen muchos países juntos, se ven de cerca; en el móvil, al tocar uno pequeño, el mapa se acerca solo.' },
     { d: 'cifras', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'tuyo'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede. Puedes verlo todo junto o una sola posición (dónde invierte tu MSCI World, por ejemplo) y compararlo con lo que pesaría cada país en un fondo de todo el mundo: ahí EEUU es casi dos tercios.' },
     { d: 'cifras', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale y del color de cómo va, hoy o desde que la compraste. Toca uno para ver sus cifras y abrir su ficha. Si lo quieres en Inicio, añádelo desde Personalizar.' },
     { d: 'grafica', ir: { v: 'analisis', sel: '.caida-w', antes: () => { S.numAbierto = 'riesgo'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: 'Tu peor caída y cuánto tardó en recuperarse', x: 'En Tus números, Riesgo: con lo que tienes hoy, la mayor caída de los últimos años (la de 2020, por ejemplo), cuánto duró, cuánto tardó en volver a donde estaba y a cuánto estás ahora de tu máximo, con una gráfica de cada día.' },
+    { d: 'opinion', ir: { v: 'cartera', sel: '#bFallo' }, t: 'Te contestamos aquí mismo', x: 'Lo que mandas con el botón del bichito o con las estrellas tiene ahora respuesta: cuando te contesten, te sale en pantalla al abrir GrowFolio, junto a lo que escribiste. En ese mismo botón tienes todo lo que has mandado, con sus respuestas.' },
     { d: 'idioma', t: 'GrowFolio, entero en inglés', x: 'Con la bandera de arriba, todo en inglés: cada pantalla, los avisos del móvil y el widget. Lo que escribe GrowIA para todos (la prensa de cada empresa, las ideas, el informe de los mercados) y los titulares en español llegan también traducidos.' },
   ], arreglos: [
     'El número junto al botón del calendario, en Inicio, no se entendía (eran las cosas tuyas de los próximos 7 días): ya no sale. Lo que viene sigue en el propio Inicio y dentro del Calendario.',
-    'El aviso del móvil de cada versión nueva decía «Trae app nueva de Android: ábrela y se instala encima». Ahora: «GrowFolio 0.4 ya está aquí», lo que trae y, si hay app nueva, que se instala sola.',
+    'El aviso del móvil de cada versión nueva decía «Trae app nueva de Android: ábrela y se instala encima». Ahora: «GrowFolio 0.4 ya está aquí» y lo que trae. Si la app se está actualizando sola, no dice nada más; si hace falta que la abras, te lo dice.',
   ] },
   { v: '0.3.11e', f: '2026-10-22', h: '20:00', t: 'La app de Android se actualiza sola', arreglos: [
     'La app de Android se actualiza sola, sin que tengas que tocar nada: cuando hay una nueva y no la estás usando, se baja y se instala encima (Android 12 o más; en móviles más antiguos, el aviso de siempre). Esta vez hay que actualizarla a mano una última vez.',
@@ -14717,23 +14795,144 @@ async function filaOpiniones(h) {
   const l = await leerOpiniones(); if (!l || !document.body.contains(w)) return;
   const visto = LS.get('inv-opis-vistas', 0), ult = fechaOpi(l[0] || {});
   const nuevas = l.filter((o) => (fechaOpi(o) || 0) > visto).length;
-  w.innerHTML = `<button class="aj-fila" id="aOpisB">${ICONOS.globo}<span><b>Opiniones recibidas${nuevas ? ` <em class="aj-nuevas">${nuevas} ${nuevas === 1 ? 'nueva' : 'nuevas'}</em>` : ''}</b><small>${l.length ? `${l.length}${l.length >= 200 ? ' o más' : ''} en total, la última ${ult ? haceCuanto(ult.toISOString()) : 'sin fecha'}. Solo las ves tú.` : 'Todavía no ha llegado ninguna. Solo las ves tú.'}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+  const sin = l.filter((o) => !o.respuesta && o.uid).length;
+  w.innerHTML = `<button class="aj-fila" id="aOpisB">${ICONOS.globo}<span><b>${L('Opiniones recibidas', 'Feedback received')}${nuevas ? ` <em class="aj-nuevas">${nuevas} ${nuevas === 1 ? L('nueva', 'new') : L('nuevas', 'new')}</em>` : ''}</b><small>${l.length ? `${L(`${l.length}${l.length >= 200 ? ' o más' : ''} en total, la última ${ult ? haceCuanto(ult.toISOString()) : 'sin fecha'}`, `${l.length}${l.length >= 200 ? ' or more' : ''} in total, the latest ${ult ? haceCuanto(ult.toISOString()) : 'undated'}`)}${sin ? L(`, ${sin} sin responder`, `, ${sin} not answered`) : ''}. ${L('Solo las ves tú.', 'Only you can see them.')}` : L('Todavía no ha llegado ninguna. Solo las ves tú.', 'Nothing has come in yet. Only you can see them.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
   $('#aOpisB', h.el).onclick = () => { h.cerrar(true); verOpiniones(l, visto); };
 }
 function verOpiniones(l, visto) {
   LS.set('inv-opis-vistas', Date.now());
-  const cuando = (d) => (d ? d.toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'sin fecha');
   const item = (o) => {
-    const d = fechaOpi(o), quien = [o.quien && !/^(amigo sin nombre|el dueño)$/.test(o.quien) ? o.quien : '', o.correo || ''].filter(Boolean).join(', ') || 'sin nombre';
-    const estrellas = o.nota != null ? `<span class="opr-nota" aria-label="${o.nota} de 5">${'★'.repeat(o.nota)}${'☆'.repeat(Math.max(0, 5 - o.nota))}</span>` : '';
-    return `<li class="opr${d && d > visto ? ' nueva' : ''}">
-      <div class="opr-cab">${o.tipo ? `<span class="opr-tipo">${esc(o.tipo)}</span>` : ''}${o.sitio ? `<span class="opr-sitio">${esc(o.sitio)}</span>` : ''}${estrellas}<time>${esc(cuando(d))}</time></div>
-      ${o.texto ? `<p>${esc(o.texto)}</p>` : ''}
-      <small>${esc(quien)}${o.v ? `, versión ${esc(o.v)}` : ''}</small>
+    const d = fechaOpi(o), quien = quienOpi(o);
+    const estrellas = o.nota != null ? `<span class="opr-nota" aria-label="${L(`${o.nota} de 5`, `${o.nota} out of 5`)}">${'★'.repeat(o.nota)}${'☆'.repeat(Math.max(0, 5 - o.nota))}</span>` : '';
+    // las de las estrellas llegan como tipo «puntuacion» y con las estrellas también en el texto: se enseñan una vez
+    const nota = o.tipo === 'puntuacion', texto = textoOpi(o);
+    return `<li class="opr${d && d > visto ? ' nueva' : ''}" data-opr="${esc(o.id)}">
+      <div class="opr-cab">${o.tipo ? `<span class="opr-tipo">${nota ? L('Nota', 'Rating') : esc(trad(o.tipo))}</span>` : ''}${o.sitio && !/^(general|La app en general)$/.test(o.sitio) ? `<span class="opr-sitio">${esc(trad(o.sitio))}</span>` : ''}${estrellas}<time>${esc(cuandoOpi(d))}</time></div>
+      ${texto ? `<p>${esc(texto)}</p>` : ''}
+      <small>${esc(quien)}${o.v ? `, ${L('versión', 'version')} ${esc(o.v)}` : ''}</small>
+      <div class="opr-r">${htmlRespOpr(o)}</div>
     </li>`;
   };
-  hoja('Opiniones recibidas', `<div class="opr-hoja">${l.length ? `<ul class="opr-lista">${l.map(item).join('')}</ul>` : '<p class="nota">Todavía no ha llegado ninguna.</p>'}
-    <div class="fila-btns"><button class="btn" data-cerrar>Cerrar</button></div></div>`, () => abrirAjustes());
+  const sin = l.filter((o) => !o.respuesta && o.uid).length;
+  const h = hoja(L('Opiniones recibidas', 'Feedback received'), `<div class="opr-hoja">
+    ${l.length ? `<p class="nota opr-intro"><span class="opr-sin">${textoSinResp(sin)}</span>${L('Lo que respondas le sale en pantalla a quien la mandó la próxima vez que abra GrowFolio, y aquí ves si ya lo ha leído.', 'Whatever you reply shows up on screen for the sender the next time they open GrowFolio, and you can see here whether they have read it.')}</p>` : ''}
+    ${l.length ? `<ul class="opr-lista">${l.map(item).join('')}</ul>` : `<p class="nota">${L('Todavía no ha llegado ninguna.', 'Nothing has come in yet.')}</p>`}
+    <div class="fila-btns"><button class="btn" data-cerrar>${L('Cerrar', 'Close')}</button></div></div>`, () => abrirAjustes());
+  const porId = new Map(l.map((o) => [o.id, o]));
+  h.el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-opr-resp], [data-opr-cancelar]'); if (!b) return;
+    const li = b.closest('[data-opr]'), o = li && porId.get(li.dataset.opr); if (!o) return;
+    const caja = $('.opr-r', li);
+    if (b.hasAttribute('data-opr-cancelar')) { caja.innerHTML = htmlRespOpr(o); return; }
+    caja.innerHTML = `<form class="opr-f" novalidate>
+      <label class="campo">${L(`Tu respuesta a ${esc(quienOpi(o, true))}`, `Your reply to ${esc(quienOpi(o, true))}`)}<textarea name="r" rows="4" maxlength="2000" placeholder="${L('Gracias por avisar: ya está arreglado en la versión…', 'Thanks for letting me know: it is fixed in version…')}">${esc(o.respuesta || '')}</textarea></label>
+      <small class="opr-f-nota">${L('Le saldrá en pantalla cuando abra GrowFolio.', 'It will show up on their screen when they open GrowFolio.')}</small>
+      <div class="error"></div>
+      <div class="fila-btns"><button type="button" class="btn" data-opr-cancelar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri">${ICONOS.enviar}${o.respuesta ? L('Guardar', 'Save') : L('Responder', 'Reply')}</button></div>
+    </form>`;
+    const f = $('.opr-f', caja), t = f.r; t.focus(); t.setSelectionRange(t.value.length, t.value.length);
+    t.oninput = () => { $('.error', f).textContent = ''; };
+    f.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const r = t.value.trim(); if (!r) { $('.error', f).textContent = L('Escribe la respuesta.', 'Write your reply.'); return; }
+      const bt = $('button[type=submit]', f); bt.disabled = true; bt.textContent = L('Enviando…', 'Sending…');
+      try {
+        const por = nombreUsuario() || null;
+        await conTiempo(FB.fs.updateDoc(FB.fs.doc(FB.db, 'opiniones', o.id), { respuesta: r, respondida: FB.fs.serverTimestamp(), por, vista: false }), 10000);
+        Object.assign(o, { respuesta: r, respondida: { toDate: () => new Date() }, por, vista: false });
+        caja.innerHTML = htmlRespOpr(o);
+        const sp = $('.opr-sin', h.el); if (sp) sp.textContent = textoSinResp(l.filter((x) => !x.respuesta && x.uid).length);
+        toast(L('Respuesta enviada: la verá al abrir GrowFolio.', 'Reply sent: they will see it when they open GrowFolio.'));
+      } catch (er) {
+        console.warn(er);
+        bt.disabled = false; bt.innerHTML = ICONOS.enviar + (o.respuesta ? L('Guardar', 'Save') : L('Responder', 'Reply'));
+        $('.error', f).textContent = /permission/i.test(String((er && er.code) || er))
+          ? L('Firestore no deja responder todavía: hay que publicar las reglas nuevas (la Action «Reglas de Firestore» o a mano en la consola).', 'Firestore does not allow replies yet: the new rules have to be published (the «Firestore rules» Action or by hand in the console).')
+          : L('No se ha podido enviar (¿sin conexión?). Prueba otra vez.', 'Could not send it (offline?). Try again.');
+      }
+    };
+  });
+}
+const textoSinResp = (n) => (n ? (n === 1 ? L('1 sin responder. ', '1 not answered yet. ') : L(`${n} sin responder. `, `${n} not answered yet. `)) : '');
+const textoOpi = (o) => String(o.texto || '').replace(o.tipo === 'puntuacion' ? /^[★☆]+ \(\d\/5\)\n?/ : /^$/, '').trim();
+/* a quién se le contesta: el nombre que puso o, si no, su correo */
+function quienOpi(o, corto) {
+  const n = o.quien && !/^(amigo sin nombre|el dueño)$/.test(o.quien) ? o.quien : '';
+  if (corto) return n || o.correo || L('quien la mandó', 'the sender');
+  return [n, o.correo || ''].filter(Boolean).join(', ') || L('sin nombre', 'no name');
+}
+const cuandoOpi = (d) => (d ? d.toLocaleString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : L('sin fecha', 'no date'));
+/* lo que ve el dueño debajo de cada opinión: su respuesta (con si ya la ha leído) o el botón para responder. Las que
+   no tienen cuenta detrás (las de antes, sin uid) no se pueden contestar: no hay a quién enseñárselo. */
+function htmlRespOpr(o) {
+  if (o.respuesta) {
+    const d = fechaOpi({ cuando: o.respondida });
+    return `<div class="opr-resp">
+      <div class="opr-resp-cab"><b>${L('Tu respuesta', 'Your reply')}</b>${d ? `<time>${esc(cuandoOpi(d))}</time>` : ''}<span class="opr-leida${o.vista ? ' si' : ''}">${o.vista ? ICONOS.ok + L('La ha leído', 'Read') : L('Aún no la ha leído', 'Not read yet')}</span></div>
+      <p>${esc(o.respuesta)}</p>
+      <button type="button" class="enlace acento" data-opr-resp>${L('Cambiar la respuesta', 'Edit the reply')}</button>
+    </div>`;
+  }
+  return o.uid ? `<button type="button" class="btn opr-responder" data-opr-resp>${ICONOS.enviar}${L('Responder', 'Reply')}</button>` : '';
+}
+
+/* =====================================================================
+   Las respuestas a lo que mandaste (0.4). Quien hace GrowFolio puede contestar cada opinión o fallo desde
+   Ajustes > Opiniones recibidas; a quien la mandó le sale la respuesta en pantalla al abrir GrowFolio (o al volver a
+   ella), una vez: al cerrarla queda como leída y el dueño lo ve. Las reglas de Firestore solo dejan que cada cuenta lea
+   las suyas y que lo único que pueda cambiar en ellas sea marcarlas como leídas.
+   ===================================================================== */
+async function misOpiniones() {
+  if (!PERFIL_CUENTA) return null;
+  await fbCargar(); if (!FB.user) return null;
+  const f = FB.fs;
+  try {
+    // sin orderBy: con un solo «where» Firestore no necesita un índice compuesto; se ordenan aquí
+    const r = await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.where('uid', '==', FB.user.uid), f.limit(100))), 10000);
+    return r.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (fechaOpi(b) || 0) - (fechaOpi(a) || 0));
+  } catch (e) { console.warn('opiniones', e); return null; }
+}
+const opiOcupado = () => document.hidden || !!document.querySelector('.hoja-fondo, .tour, .estreno, .intro, .ficha-fondo') || !!S.ficha;
+async function revisarRespuestas(intento = 0) {
+  if (!PERFIL_CUENTA || !S.cartera || S.mirandoResp) return;
+  clearTimeout(S.respLuego);
+  const luego = () => { if (intento < 12) S.respLuego = setTimeout(() => revisarRespuestas(intento + 1), 20000); };
+  if (opiOcupado()) { luego(); return; }
+  S.mirandoResp = true;
+  let l = null;
+  try { l = await misOpiniones(); } finally { S.mirandoResp = false; }
+  if (!l) return;
+  S.respMirado = Date.now();
+  const nuevas = l.filter((o) => o.respuesta && o.vista !== true);
+  if (!nuevas.length) return;
+  if (opiOcupado()) { luego(); return; }
+  verRespuestas(nuevas, true);
+}
+// al volver a GrowFolio (la app se queda abierta en segundo plano), como mucho cada diez minutos
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.cartera && Date.now() - (S.respMirado || 0) > 10 * 60e3) revisarRespuestas(); });
+/* l: las que enseñar; nuevas: si son respuestas sin leer (al cerrar quedan leídas) o el historial que se abre a mano */
+function verRespuestas(l, nuevas) {
+  const tuyo = (o) => {
+    const t = textoOpi(o);
+    const est = o.nota != null ? `<span class="resp-est" aria-label="${L(`${o.nota} de 5`, `${o.nota} out of 5`)}">${'★'.repeat(o.nota)}${'☆'.repeat(Math.max(0, 5 - o.nota))}</span>` : '';
+    return `<div class="resp-tuyo"><div class="resp-meta">${L('Tú', 'You')}${o.tipo && o.tipo !== 'puntuacion' ? `, ${esc(trad(o.tipo).toLowerCase())}` : ''}${o.sitio && o.sitio !== 'La app en general' && o.tipo !== 'puntuacion' ? ` ${L('en', 'in')} ${esc(trad(o.sitio))}` : ''}<time>${esc(cuandoOpi(fechaOpi(o)))}</time></div>${est}${t ? `<p>${esc(t.length > 600 ? t.slice(0, 600) + '…' : t)}</p>` : ''}</div>`;
+  };
+  const suyo = (o) => o.respuesta ? `<div class="resp-suya">
+      <div class="resp-meta">${svgMarca('resp-marca')}<b>${esc(o.por ? L(`${o.por}, de GrowFolio`, `${o.por}, from GrowFolio`) : 'GrowFolio')}</b><time>${esc(cuandoOpi(fechaOpi({ cuando: o.respondida })))}</time></div>
+      <p>${esc(o.respuesta)}</p>
+    </div>` : `<p class="resp-espera">${L('Sin respuesta todavía.', 'No reply yet.')}</p>`;
+  const titulo = nuevas ? (l.length === 1 ? L('Te han respondido', 'You have a reply') : L(`Tienes ${l.length} respuestas`, `You have ${l.length} replies`)) : L('Lo que has mandado', 'What you have sent');
+  const h = hoja(titulo, `<div class="resp-hoja">
+      ${nuevas ? `<p class="nota">${l.length === 1 ? L('A lo que mandaste a GrowFolio:', 'To what you sent to GrowFolio:') : L('A lo que mandaste a GrowFolio, de lo más nuevo a lo más antiguo:', 'To what you sent to GrowFolio, newest first:')}</p>` : ''}
+      <ul class="resp-lista">${l.map((o) => `<li class="resp">${tuyo(o)}${suyo(o)}</li>`).join('')}</ul>
+      <div class="fila-btns"><button type="button" class="btn" id="bRespOtra">${L('Escribir otra vez', 'Write again')}</button><button type="button" class="btn pri" data-cerrar>${nuevas ? L('Entendido', 'Got it') : L('Cerrar', 'Close')}</button></div>
+    </div>`, () => { if (nuevas) marcarLeidas(l); });
+  h.el.classList.add('hoja-resp');
+  $('#bRespOtra', h.el).onclick = () => { h.cerrar(); abrirOpinion(); };
+}
+async function marcarLeidas(l) {
+  const f = FB.fs; if (!f || !FB.user) return;
+  await Promise.all(l.filter((o) => o.respuesta && o.vista !== true).map((o) => conTiempo(f.updateDoc(f.doc(FB.db, 'opiniones', o.id), { vista: true }), 10000).then(() => { o.vista = true; }).catch((e) => console.warn('opiniones', e))));
 }
 /* ¿Qué te parece GrowFolio? Cuando alguien la ha usado 5 días distintos (no hace falta seguidos), un rato después de
    abrirla le sale una vez: de 1 a 5 estrellas y, si quiere, un comentario (con 3 o menos, qué mejoraría). Llega como
@@ -14793,11 +14992,18 @@ async function abrirOpinion() {
     <label class="campo">Dónde<select name="sitio">${SITIOS_OP.map(([k, t]) => `<option value="${k}"${k === sitio ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
     <label class="campo">Cuéntalo<textarea name="txt" rows="5" placeholder="Qué ves, qué esperabas o qué se te ha ocurrido. Si es algo que falla, qué estabas haciendo."></textarea>${directa ? '' : '<small>Si es algo visual, manda también una captura en el mismo chat.</small>'}</label>
     ${directa ? `<label class="campo">Tu nombre<input name="quien" maxlength="40" value="${esc(LS.get('inv-opi-nombre', '') || '')}" placeholder="Opcional, para saber quién lo dice"></label>` : ''}
-    <p class="nota" style="margin:0">${directa ? 'Llega directamente a quien hace GrowFolio.' : 'Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó GrowFolio.'} Solo va lo que escribes, la sección y la versión, nada de tu cartera.${hist.length ? ` Llevas ${hist.length} ${hist.length === 1 ? 'enviada' : 'enviadas'}: gracias.` : ''}</p>
+    <p class="nota" style="margin:0">${directa ? L('Llega directamente a quien hace GrowFolio, que te puede contestar aquí mismo.', 'It goes straight to the people who make GrowFolio, who can reply to you right here.') : L('Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó GrowFolio.', 'WhatsApp opens with the message written: pick the chat of whoever shared GrowFolio with you.')} ${L('Solo va lo que escribes, la sección y la versión, nada de tu cartera.', 'Only what you write, the section and the version are sent, nothing from your portfolio.')}${hist.length ? ' ' + (hist.length === 1 ? L('Llevas 1 enviada: gracias.', "You've sent 1 so far: thanks.") : L(`Llevas ${hist.length} enviadas: gracias.`, `You've sent ${hist.length} so far: thanks.`)) : ''}</p>
+    ${directa ? '<div id="opiMias"></div>' : ''}
     <div class="error" id="errOpi"></div>
     <div class="fila-btns">${directa ? '' : `<button type="button" class="btn" id="bOpiCopiar">Copiar</button>${navigator.share ? '<button type="button" class="btn" id="bOpiComp">Compartir…</button>' : ''}`}<button type="submit" class="btn pri" id="bOpiEnviar">${ICONOS.globo}${directa ? 'Enviar' : 'Enviar por WhatsApp'}</button></div>
   </form>`);
   const f = $('#fOpi', h.el);
+  if (directa) misOpiniones().then((l) => {
+    const w = $('#opiMias', h.el); if (!l || !l.length || !w) return;
+    const r = l.filter((o) => o.respuesta).length;
+    w.innerHTML = `<button type="button" class="opi-mias">${ICONOS.globo}<span>${L(`Lo que has mandado (${l.length})`, `What you have sent (${l.length})`)}<small>${r ? (r === 1 ? L('1 con respuesta', '1 with a reply') : L(`${r} con respuesta`, `${r} with a reply`)) : L('Sin respuestas todavía', 'No replies yet')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+    $('.opi-mias', w).onclick = () => { h.cerrar(true); verRespuestas(l, false); };
+  });
   const texto = () => {
     const tipo = (f.querySelector('[name=tipo]:checked') || {}).value || 'otra', sitio = f.sitio.value, t = f.txt.value.trim();
     if (!t) { $('#errOpi', h.el).textContent = 'Escribe qué pasa o qué se te ocurre.'; return null; }
@@ -14818,7 +15024,7 @@ async function abrirOpinion() {
       try {
         await mandarOpinion({ tipo: (TIPOS_OP.find(([k]) => k === tipo) || [])[1], sitio: (SITIOS_OP.find(([k]) => k === st) || [])[1], texto: f.txt.value.trim(), quien: quien || (PERFIL_LOCAL ? 'amigo sin nombre' : 'el dueño'), info: t.split('\n').pop().replace(/^\(|\)$/g, '') });
         LS.set('inv-opi-hist', [...hist, { f: hoyIso(), tipo, sitio: st }].slice(-30));
-        h.el.querySelector('.hoja').innerHTML = `<div class="opi-ok">${dibujo('logo')}<h2>Recibido, gracias</h2><p>Con lo que mandáis se arregla y se mejora GrowFolio. Si es algo visual y quieres, manda también una captura por WhatsApp.</p><div class="fila-btns"><button class="btn pri" data-cerrar>Cerrar</button></div></div>`;
+        h.el.querySelector('.hoja').innerHTML = `<div class="opi-ok">${dibujo('logo')}<h2>Recibido, gracias</h2><p>Con lo que mandáis se arregla y se mejora GrowFolio. Si te contestan, te saldrá la respuesta al abrir la app. Si es algo visual, manda también una captura por WhatsApp.</p><div class="fila-btns"><button class="btn pri" data-cerrar>Cerrar</button></div></div>`;
       } catch (e) {
         b.disabled = false; b.innerHTML = ICONOS.globo + 'Enviar';
         $('#errOpi', h.el).textContent = 'No se ha podido enviar (¿sin conexión?). Prueba otra vez en un rato.';
@@ -14837,7 +15043,7 @@ async function abrirOpinion() {
 const TOUR = [
   { v: 'cartera', sel: '.navbar, .nav', logo: true, ola: true, t: 'Te damos la bienvenida', x: () => (innerWidth < 760 ? 'Todo está en estos cinco botones: Inicio en el centro, a la izquierda lo que haces tú y a la derecha lo de fuera. Te enseñamos cada uno en un minuto.' : 'Todo está en estas cinco pestañas. Te enseñamos cada una en un minuto y, al final, qué hacer hoy para empezar.') },
   { v: 'cartera', sel: '.hero-cifra', t: 'Inicio: lo que tienes', x: 'Todo sumado, con lo que ganas o pierdes hoy. Desliza el dedo por la gráfica para ver cualquier día. El ojo oculta las cifras.' },
-  { v: 'cartera', sel: '.car-agenda-mini', t: 'Tu calendario', x: 'Resultados y dividendos de lo que tienes, tus aportaciones, la Fed y el BCE y las fechas de la renta, con los días que faltan. El número dice cuántas cosas tuyas hay esta semana.' },
+  { v: 'cartera', sel: '.car-agenda-mini', t: 'Tu calendario', x: 'Resultados y dividendos de lo que tienes, tus aportaciones, la Fed y el BCE y las fechas de la renta, con los días que faltan.' },
   { v: 'cartera', pos: true, sel: '#hPos ~ .der', t: 'Tus posiciones, justo debajo', x: 'Toca una para ver su ficha; debajo del valor, lo ganado desde que la compraste. El «+» es para lo que ya tenías antes de GrowFolio y las flechas, para cada compra o venta desde hoy. A su lado eliges el orden.' },
   { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', suave: true, t: 'Pasos: qué hacer este mes', x: 'En orden y con lo urgente arriba: qué, cuánto y por qué. Lo haces y lo marcas. Si no toca nada, también te lo dice.' },
   { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', suave: true, t: 'Análisis: cómo vas', x: 'La nota de GrowIA a tu cartera, tus objetivos frente a lo que tienes y cuánto podrías llegar a tener. En época de renta, también Hacienda.' },
@@ -17770,6 +17976,7 @@ function arrancar() {
   // dice «cargando» (antes decía «aún sin activar» aunque la tuvieras activada) y luego se rehace sola
   Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); setTimeout(() => mostrarPreguntaIA(), 3000); });
   apuntarDiaUso(); setTimeout(() => pedirNota(), 150000); setTimeout(() => pedirAvisoVersiones(), 12000);
+  if (PERFIL_CUENTA) setTimeout(() => revisarRespuestas(), 5000);
   // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)
   { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); refrescarCatLocal().catch(() => {}); }; setTimeout(mira, 6000); }
   clearInterval(tickPrecios); clearInterval(tickEstado);

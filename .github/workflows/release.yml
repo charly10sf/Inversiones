@@ -105,9 +105,22 @@ jobs:
       - name: version.json para el aviso de versiones nuevas
         run: |
           python3 - <<'PY3'
-          import json
+          import json, re
           x = json.load(open("versiones.json"))[-1]
           nuevo = {"v": x["v"], "t": x["nombre"].split(": ", 1)[-1]}
+          # 0.4: el título también en inglés (sale de en.json, como en la web), para el aviso del móvil en inglés
+          try:
+              tr = json.load(open("en.json", encoding="utf-8"))["t"]
+              num = re.compile(r"[-+−]?\d+(?:[.,]\d+)*")
+              te = tr.get(nuevo["t"])
+              if te is None and num.search(nuevo["t"]):
+                  cifras = iter(num.findall(nuevo["t"]))
+                  te = tr.get(num.sub("#", nuevo["t"]))
+                  te = re.sub("#", lambda m: next(cifras, "#"), te) if te else None
+              if te:
+                  nuevo["te"] = te
+          except Exception as e:
+              print("sin título en inglés:", e)
           try:
               viejo = json.load(open("version.json"))
           except Exception:

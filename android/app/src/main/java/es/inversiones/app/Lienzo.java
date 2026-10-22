@@ -513,7 +513,7 @@ final class Lienzo {
     static final float SEL_FIN = 38, SEL_CHIP = 34, SEL_ALTO = 22;   // SEL_FIN: del final de los plazos al borde derecho
 
     /** los plazos en una cápsula: el elegido, en dorado sobre su pastilla; los demás, apagados */
-    private void selector(int elegido, float x0, float yTop) {
+    private void selector(int elegido, float x0, float yTop, boolean en) {
         int n = Datos.PERIODOS.length;
         float w = SEL_CHIP * n;
         p.reset();
@@ -532,7 +532,7 @@ final class Lienzo {
         for (int k = 0; k < n; k++) {
             boolean es = k == elegido;
             estilo(11, es ? 750 : 600, es ? ACENTO : APAGADO, Paint.Align.CENTER);
-            c.drawText(Datos.CORTOS[k], dp(x0 + SEL_CHIP * k + SEL_CHIP / 2), dp(yTop + SEL_ALTO / 2 + 3.9f), p);
+            c.drawText((en ? Datos.CORTOS_EN : Datos.CORTOS)[k], dp(x0 + SEL_CHIP * k + SEL_CHIP / 2), dp(yTop + SEL_ALTO / 2 + 3.9f), p);
         }
     }
 
@@ -620,7 +620,7 @@ final class Lienzo {
         float finIzq = W - ph - 26;
         if (modo == 2) {
             float x0 = W - SEL_FIN - SEL_CHIP * Datos.PERIODOS.length;
-            selector(Datos.indicePeriodo(r.dias), x0, y - 15);
+            selector(Datos.indicePeriodo(r.dias), x0, y - 15, r.en);
             finIzq = x0 - 10;
         } else if (modo == 1) finIzq = W - SEL_FIN - periodo(W - SEL_FIN, y, r.rango) - 10;
         String pat = r.en ? "Net worth" : "Patrimonio";
