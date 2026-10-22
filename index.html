@@ -1852,7 +1852,7 @@ button.mv-c:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 .hero-top .hero-hola { margin: 0; }
 .car-ordenar-mini { margin-left: auto; min-height: 30px; padding: 0 11px; gap: 5px; font-size: 13px; color: var(--text-2); }
 .car-ordenar-mini svg { width: 14px; height: 14px; }
-/* 0.3.9: el calendario, junto a Personalizar; el número, lo tuyo de esta semana (resultados, dividendos, aportaciones) */
+/* 0.3.9: el calendario, junto a Personalizar (0.4: sin el número de lo tuyo de la semana, que no se entendía) */
 .car-agenda-mini { margin-left: auto; position: relative; min-height: 30px; padding: 0 11px; gap: 6px; font-size: 13px; color: var(--text-2); text-decoration: none; }
 .car-agenda-mini svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
 .car-agenda-mini + .car-ordenar-mini { margin-left: 0; }
@@ -3218,70 +3218,101 @@ body.con-ixn { overflow: hidden; }
 .cons-btns { justify-content: flex-start; }
 .cons-not { display: grid; gap: 8px; }
 .cons-not h3 { margin: 0; font-size: 15px; }
-/* 0.4: el mapa del mundo de Mercados. Cada país en una pieza, separadas por una raya del color del fondo; los tonos
-   van del gris (ni sube ni baja) al verde o al rojo de la app, y en «Tu dinero», al oro */
-.mapa-cuerpo { display: grid; gap: 14px; grid-template-columns: minmax(0, 1fr); }
-@media (min-width: 980px) { .mapa-cuerpo { grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; } }
-.mapa-svg { position: relative; aspect-ratio: 1000 / 439; background: var(--plane); border: 1px solid var(--line); border-radius: 16px; overflow: hidden; }
+/* 0.4: el mapa del mundo de Mercados, en un panel como el del patrimonio. Cada país en una pieza, separadas por una
+   raya del color del fondo; los tonos van del gris (ni sube ni baja) al verde o al rojo de la app, y en «Tu dinero»,
+   al oro. Los nombres, en pastillas con la letra de la app, por encima del dibujo */
+.mapa-w { --mapa-fondo: #0B0A08; display: grid; gap: 16px; padding: 22px 24px 22px; border: 1px solid var(--line); border-radius: 28px; background: radial-gradient(55% 75% at 0% 0%, rgba(237, 187, 69, 0.09), rgba(237, 187, 69, 0) 70%), linear-gradient(180deg, #0D0C0A, #070605); }
+.mapa-cab { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.mapa-tit h2 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.025em; }
+.mapa-tit p { margin: 3px 0 0; color: var(--muted); font-size: 13.5px; }
+.mapa-modos, .mapa-vistas { display: flex; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.mapa-modos::-webkit-scrollbar, .mapa-vistas::-webkit-scrollbar { display: none; }
+.mapa-modos button, .mapa-vistas button { flex: 1 0 auto; border: 0; background: transparent; padding: 6px 13px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; transition: background-color 0.2s ease, color 0.2s ease; }
+.mapa-vistas button { padding: 5px 12px; font-size: 12.5px; }
+.mapa-modos button[aria-pressed="true"], .mapa-vistas button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); }
+@media (hover: hover) { .mapa-modos button:hover, .mapa-vistas button:hover { color: var(--text); } .mapa-modos button[aria-pressed="true"]:hover, .mapa-vistas button[aria-pressed="true"]:hover { color: var(--accent); } }
+.mapa-cuerpo { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1080px) { .mapa-cuerpo { grid-template-columns: minmax(0, 1fr) 312px; gap: 0; } .mapa-info { border-left: 1px solid var(--line); padding-left: 22px; margin-left: 22px; } }
+.mapa-izq { display: grid; gap: 12px; min-width: 0; align-content: start; }
+.mapa-caja { position: relative; min-width: 0; border-radius: 18px; overflow: hidden; background-color: rgba(255, 255, 255, 0.012); background-image: radial-gradient(circle at 1px 1px, rgba(247, 242, 232, 0.055) 0.9px, transparent 1.3px); background-size: 12px 12px; }
+.mapa-svg { aspect-ratio: 1000 / 439; }
 .mapa-svg svg { display: block; width: 100%; height: 100%; touch-action: manipulation; }
-.mapa-svg path, .mapa-svg .aro { stroke: var(--plane); stroke-width: 0.8; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: fill 0.35s ease; }
+.mapa-svg path, .mapa-svg .aro { stroke: var(--mapa-fondo); stroke-width: 0.7; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: fill 0.35s ease; }
 .mapa-svg [data-c] { cursor: pointer; }
-.mapa-svg path.sel, .mapa-svg .aro.sel { stroke: var(--accent); stroke-width: 2; }
-@media (hover: hover) { .mapa-svg path[data-c]:hover { stroke: var(--text-2); stroke-width: 1.2; } .mapa-svg path.sel:hover { stroke: var(--accent); stroke-width: 2; } }
+.mapa-svg path.sel, .mapa-svg .aro.sel { stroke: var(--accent); stroke-width: 1.8; }
+@media (hover: hover) { .mapa-svg path[data-c]:hover { stroke: var(--text-2); stroke-width: 1.1; } .mapa-svg path.sel:hover { stroke: var(--accent); stroke-width: 1.8; } }
 .mapa-svg .aro { stroke: var(--text-2); stroke-width: 1.2; }
-.mp-etq { pointer-events: none; transition: opacity 0.2s ease; }
-.moviendo .mp-etq { opacity: 0; transition: none; }
-.mp-etq text { fill: var(--text); font-family: var(--f); font-weight: 600; text-anchor: middle; paint-order: stroke; stroke: rgba(10, 8, 6, 0.72); stroke-width: 3px; stroke-linejoin: round; letter-spacing: -0.01em; }
-.mp-etq text .v { font-weight: 750; font-variant-numeric: tabular-nums; }
-.mp-etq text.tuyo tspan:first-child { fill: var(--accent-hi); }
-.mp-0 { fill: #211D18; background: #211D18; }
+.mp-0 { fill: #1D1A15; background: #1D1A15; }
 .mp-n { fill: #423B30; background: #423B30; }
 .mp-u1 { fill: #4D634C; background: #4D634C; } .mp-u2 { fill: #518263; background: #518263; } .mp-u3 { fill: #51A078; background: #51A078; } .mp-u4 { fill: #4CBF8E; background: #4CBF8E; }
 .mp-d1 { fill: #744B3E; background: #744B3E; } .mp-d2 { fill: #9A5749; background: #9A5749; } .mp-d3 { fill: #BF6152; background: #BF6152; } .mp-d4 { fill: #E46A5C; background: #E46A5C; }
 .mp-a1 { fill: #75613B; background: #75613B; } .mp-a2 { fill: #9D8041; background: #9D8041; } .mp-a3 { fill: #C49D44; background: #C49D44; } .mp-a4 { fill: #EDBB45; background: #EDBB45; }
-.mapa-caja { position: relative; min-width: 0; }
-.mapa-vistas { position: absolute; left: 10px; bottom: 10px; display: flex; gap: 2px; padding: 3px; background: rgba(18, 16, 13, 0.82); border: 1px solid var(--line-2); border-radius: 999px; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
-.mapa-vistas button { border: 0; background: transparent; color: var(--text-2); font-size: 12.5px; font-weight: 600; padding: 5px 11px; border-radius: 999px; min-height: 30px; }
-.mapa-vistas button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); }
-.mapa-tip { position: absolute; pointer-events: none; z-index: 2; display: grid; gap: 1px; padding: 7px 10px; background: var(--plane-3); border: 1px solid var(--line-2); border-radius: 9px; font-size: 12.5px; white-space: nowrap; box-shadow: 0 8px 22px rgba(0, 0, 0, 0.45); }
-.mapa-tip b { font-weight: 650; }
-.mapa-lado { display: grid; gap: 14px; align-content: start; }
-.mapa-ley { display: grid; gap: 6px; font-size: 12.5px; color: var(--text-2); }
-.ml-t { color: var(--text-2); font-weight: 600; }
-.ml-escala { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; height: 10px; max-width: 300px; }
+.mapa-etqs { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.mapa-etqs.listas { opacity: 1; transition: opacity 0.25s ease; }
+.me { position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: rgba(9, 8, 6, 0.82); border: 1px solid rgba(247, 242, 232, 0.09); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); font-size: 11.5px; font-weight: 600; line-height: 1.25; color: var(--text); white-space: nowrap; letter-spacing: -0.005em; }
+.me b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.me b.up { color: var(--up); } .me b.down { color: var(--down); } .me b.flat { color: var(--text-2); } .me b.oro { color: var(--accent); }
+.me i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
+.mapa-tip { position: absolute; pointer-events: none; z-index: 2; display: grid; gap: 2px; padding: 8px 11px; background: rgba(20, 18, 15, 0.96); border: 1px solid var(--line-2); border-radius: 12px; font-size: 12.5px; white-space: nowrap; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); }
+.mapa-tip .mt-n { display: flex; align-items: center; gap: 7px; }
+.mapa-tip b { font-weight: 650; font-size: 13px; }
+.mapa-pie { display: flex; align-items: center; justify-content: space-between; gap: 10px 20px; flex-wrap: wrap; }
+.mapa-ley { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--text-2); }
+.ml-t { color: var(--muted); font-weight: 500; }
+.ml-barra { display: grid; gap: 3px; width: 168px; }
+.ml-escala { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; height: 8px; }
 .ml-escala i { border-radius: 2px; }
-.ml-escala i:first-child { border-radius: 5px 2px 2px 5px; } .ml-escala i:last-child { border-radius: 2px 5px 5px 2px; }
-.ml-et { display: flex; justify-content: space-between; max-width: 300px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ml-escala i:first-child { border-radius: 4px 2px 2px 4px; } .ml-escala i:last-child { border-radius: 2px 4px 4px 2px; }
+.ml-et { display: flex; justify-content: space-between; color: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
 .ml-pasos { display: flex; flex-wrap: wrap; gap: 6px 14px; }
-.ml-pasos span { display: inline-flex; align-items: center; gap: 6px; }
-.ml-pasos i { display: inline-block; width: 12px; height: 12px; border-radius: 3px; }
-.ml-tuyo { color: var(--accent-hi); }
-.mapa-info { display: grid; gap: 10px; padding: 14px; background: var(--plane); border: 1px solid var(--line); border-radius: 16px; }
-.mi-t { margin: 0; font-size: 14px; font-weight: 650; }
-.mi-t .k { font-weight: 500; font-size: 12.5px; }
-.mi-lista { display: grid; margin: -2px -6px 4px; }
-.mi-p { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; border: 0; background: transparent; color: var(--text); text-align: left; padding: 7px 6px; border-radius: 8px; min-height: 36px; font-size: 14px; }
-.mi-p b { font-weight: 650; font-variant-numeric: tabular-nums; }
-@media (hover: hover) { .mi-p:hover { background: var(--plane-2); } }
-.mi-cab { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.mi-cab h3 { margin: 0; font-size: 17px; font-weight: 650; letter-spacing: -0.01em; }
+.ml-pasos span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.ml-pasos i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; }
+.ml-tu i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.mapa-info { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.mi-sec { display: grid; gap: 4px; }
+.mi-t { margin: 0 0 2px; font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+.mi-t span { color: var(--muted); font-weight: 500; font-size: 12.5px; margin-left: 3px; }
+.mi-lista { display: grid; margin: 0 -8px; }
+.mi-p { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--text); text-align: left; padding: 7px 8px; border-radius: 11px; min-height: 44px; font: inherit; transition: background-color 0.15s ease; }
+@media (hover: hover) { .mi-p:hover { background: rgba(255, 255, 255, 0.04); } }
+.mi-ban { display: block; flex: none; width: 20px; height: 14px; border-radius: 3px; overflow: hidden; background: var(--plane-3); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08); }
+.mi-ban .bandera { display: block; width: 100%; height: 100%; border-radius: 0; }
+.mi-cab .mi-ban { width: 24px; height: 17px; }
+.mi-p .mi-v { justify-self: end; }
+.mi-pn { display: grid; min-width: 0; }
+.mi-pn b { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mi-pn small { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mi-v { display: inline-flex; align-items: center; justify-content: center; padding: 3px 9px; border-radius: 999px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; white-space: nowrap; }
+.mi-v.up { background: var(--up-bg); color: var(--up); } .mi-v.down { background: var(--down-bg); color: var(--down); } .mi-v.flat { background: var(--plane-2); color: var(--text-2); } .mi-v.oro { background: var(--accent-bg); color: var(--accent); }
+.mi-cab { display: flex; align-items: center; gap: 10px; }
+.mi-cab h3 { margin: 0; flex: 1; min-width: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
 .mi-x { flex: none; }
 .mi-bolsas { width: 100%; border-collapse: collapse; font-size: 13.5px; }
-.mi-bolsas th, .mi-bolsas td { padding: 5px 0; }
-.mi-bolsas thead th { color: var(--muted); font-weight: 500; font-size: 12px; text-align: right; }
+.mi-bolsas th, .mi-bolsas td { padding: 7px 0; }
+.mi-bolsas thead th { color: var(--muted); font-weight: 500; font-size: 11.5px; text-align: right; padding: 0 0 2px; }
 .mi-bolsas tbody th { text-align: left; font-weight: 600; }
 .mi-bolsas tbody th small { display: block; color: var(--muted); font-weight: 500; font-size: 11.5px; }
-.mi-bolsas td { text-align: right; font-variant-numeric: tabular-nums; font-weight: 600; padding-left: 10px; }
+.mi-bolsas td { text-align: right; padding-left: 6px; }
+.mi-bolsas .mi-v { padding: 2px 7px; font-size: 12.5px; }
 .mi-bolsas tbody tr + tr > * { border-top: 1px solid var(--line); }
-.mi-que, .mi-tuyo, .mi-peso, .mi-nota { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.5; }
-.mi-tuyo b, .mi-peso b { color: var(--text); }
-.mi-nota { font-size: 12.5px; }
-.mi-elige { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); }
-.mi-elige select { background: var(--plane-2); border: 1px solid var(--line-2); border-radius: 9px; padding: 8px 10px; color: var(--text); font-size: 14px; }
+.mi-que { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.55; }
+.mi-datos { display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line); }
+.mi-datos p { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.5; }
+.mi-datos b { color: var(--text); font-weight: 650; }
+.mi-nota { margin: -4px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.mi-elige { display: grid; gap: 5px; font-size: 12px; color: var(--muted); }
+.mi-elige select { appearance: none; -webkit-appearance: none; background: rgba(255, 255, 255, 0.035) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23BCB3A2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center; border: 1px solid var(--line-2); border-radius: 11px; padding: 9px 34px 9px 12px; color: var(--text); font: inherit; font-size: 14px; }
+.mi-pos select { border-color: rgba(237, 187, 69, 0.35); }
+@media (max-width: 1079px) { .mapa-info { border-top: 1px solid var(--line); padding-top: 16px; } }
 @media (max-width: 759px) {
-  .mapa-svg { margin: 0 calc(-1 * var(--gutter)); border-radius: 0; border-left: 0; border-right: 0; }
-  .mapa-w .sec-cab .der { margin-left: 0; width: 100%; }
-  .mapa-vistas { position: static; display: inline-flex; margin-top: 10px; }
+  .mapa-w { margin: 0 calc(-1 * var(--gutter) + 8px); padding: 18px 14px 16px; border-radius: 24px; gap: 14px; }
+  .mapa-tit h2 { font-size: 19px; }
+  .mapa-cab { align-items: stretch; flex-direction: column; }
+  .mapa-modos { align-self: stretch; }
+  .mapa-caja { margin: 0 -6px; border-radius: 14px; }
+  .me { font-size: 10.5px; padding: 2px 6px; gap: 4px; }
+  .me i { width: 5px; height: 5px; }
+  .ml-barra { width: 140px; }
 }
 /* 0.4: lo nuevo de Mercados, con un punto que late en su botón hasta que entras */
 .nav a.nuevo, .navbar a.nuevo { position: relative; }
@@ -6063,7 +6094,7 @@ function htmlBloqueCar(k, M) {
     if (k === 'patrimonio') {
       return `<section class="car-patrimonio car-hero" aria-label="Patrimonio">
       ${htmlAvisoNovedades()}
-      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}${(() => { let n = 0; try { n = eventos(M, 7).length; } catch (e) {} return `<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L(`Calendario${n ? `: ${n} cosas tuyas esta semana` : ''}`, `Calendar${n ? `: ${n} of your things this week` : ''}`))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span>${n ? `<b class="cal-n" aria-hidden="true">${n}</b>` : ''}</a>`; })()}<button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
+      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L('Calendario', 'Calendar'))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span></a><button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
       <div class="hero-panel">
         <div class="hero-cifra">
           <div class="hero-lbl"><span id="heroLbl">${L('Patrimonio', 'Net worth')}</span><button type="button" class="hero-ojo" data-accion="ocultar" aria-pressed="${!!S.oculto}" title="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}" aria-label="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}">${S.oculto ? ICONOS.ojoNo : ICONOS.ojo}</button></div>
@@ -7924,11 +7955,14 @@ function paisesDeFila(f) {
   }
   return out;
 }
-function exposicionPaises(M) {
+// cuánto tienes en cada país (con posId, solo esa posición, y el % sobre ella)
+function exposicionPaises(M, posId) {
   const out = new Map();
   if (!M || !(M.total > 0)) return out;
-  for (const f of M.filas) {
-    if (!(f.valor > 0)) continue;
+  const filas = M.filas.filter((f) => f.valor > 0 && (!posId || f.pos.id === posId));
+  const base = posId ? sum(filas, (f) => f.valor) : M.total;
+  if (!(base > 0)) return out;
+  for (const f of filas) {
     const w = paisesDeFila(f);
     if (!w) continue;
     for (const [c, x] of Object.entries(w)) {
@@ -7939,7 +7973,7 @@ function exposicionPaises(M) {
       out.set(c, e);
     }
   }
-  for (const e of out.values()) { e.pct = (e.v / M.total) * 100; e.de.sort((a, b) => b.v - a.v); }
+  for (const e of out.values()) { e.pct = (e.v / base) * 100; e.de.sort((a, b) => b.v - a.v); }
   return out;
 }
 /* las bolsas de un país: las de Mercados (con su precio en directo) y las que solo están para el mapa */
@@ -7994,97 +8028,124 @@ function caminosMapa(vista, modo, ex) {
   const orden = Object.keys(P).filter((c) => c !== '_').sort((a, b) => (a === S.mapaSel) - (b === S.mapaSel));
   return (P._ ? `<path d="${P._}" class="mp-0"/>` : '') + orden.map((c) => `<path d="${P[c]}" data-c="${c}" class="${tonoMapa(valorMapa(c, modo, ex), modo)}${c === S.mapaSel ? ' sel' : ''}"/>`).join('');
 }
-/* los nombres: primero los que más pesan (en «Tu dinero», donde más tienes), solo si el país es lo bastante grande en
-   pantalla para llevarlo y sin pisarse unos con otros */
+/* los nombres: pastillas con la letra de la app encima del mapa. Primero los que más pesan en el mundo (en «Tu dinero»,
+   donde más tienes); solo en países lo bastante grandes en pantalla, y los que se pisan con otro se quitan al colocarlos */
 function etiquetasMapa(vb, esc1, modo, ex) {
-  const G = S.mapaGeo, puestas = [], out = [];
+  const G = S.mapaGeo, out = [];
   const lista = paisesMapa(modo, ex).map((x) => ({ ...x, peso: modo === 'tuyo' ? x.v : PESO_MUNDO[x.c] || 0 })).sort((a, b) => b.peso - a.peso);
-  const fN = 11, fV = 11.5;
+  const exTodo = S.mapaExTodo || ex;
   for (const x of lista) {
-    const p = G.c[x.c], area = (G.a[x.c] || 0) * esc1 * esc1;
-    if (!p || area < 240) continue;
-    const sx = (p[0] - vb[0]) * esc1, sy = (p[1] - vb[1]) * esc1;
-    if (sx < 18 || sy < 14 || sx > vb[2] * esc1 - 18 || sy > vb[3] * esc1 - 14) continue;
-    const nom = cortoPaisMapa(x.c), val = valorCortoMapa(x.v, modo);
-    const w = Math.max(nom.length * fN * 0.58, val.length * fV * 0.6) + 6, h = fN + fV + 4;
-    const r = [sx - w / 2, sy - h / 2, sx + w / 2, sy + h / 2];
-    if (puestas.some((q) => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1])) continue;
-    puestas.push(r);
-    const tuyo = modo !== 'tuyo' && ex.get(x.c) && ex.get(x.c).pct >= 0.5;
-    const u = 1 / esc1;
-    out.push(`<text x="${p[0]}" y="${p[1]}" class="${tuyo ? 'tuyo' : ''}" style="font-size:${(fN * u).toFixed(2)}px"><tspan x="${p[0]}" dy="${(-0.15 * fN * u).toFixed(2)}">${esc(nom)}</tspan><tspan x="${p[0]}" dy="${((fN + 1) * u).toFixed(2)}" class="v" style="font-size:${(fV * u).toFixed(2)}px">${esc(val)}</tspan></text>`);
+    const p = G.c[x.c];
+    if (!p || (G.a[x.c] || 0) * esc1 * esc1 < 260) continue;
+    const l = ((p[0] - vb[0]) / vb[2]) * 100, t = ((p[1] - vb[1]) / vb[3]) * 100;
+    if (l < 2 || l > 98 || t < 3 || t > 97) continue;
+    const tuyo = modo !== 'tuyo' && exTodo.get(x.c) && exTodo.get(x.c).pct >= 0.5;
+    out.push(`<span class="me${tuyo ? ' tuyo' : ''}" style="left:${l.toFixed(2)}%;top:${t.toFixed(2)}%">${tuyo ? '<i></i>' : ''}<span>${esc(cortoPaisMapa(x.c))}</span><b class="${modo === 'tuyo' ? 'oro' : cls(x.v)}">${valorCortoMapa(x.v, modo)}</b></span>`);
   }
-  // Hong Kong y Singapur no se ven a ninguna escala: un aro alrededor, para poder tocarlos de cerca
-  const aros = S.mapaVista === 'as' ? ['HK', 'SG'].filter((c) => G.c[c]).map((c) => `<circle cx="${G.c[c][0]}" cy="${G.c[c][1]}" r="${(7 / esc1).toFixed(2)}" data-c="${c}" class="aro ${tonoMapa(valorMapa(c, modo, ex), modo)}${c === S.mapaSel ? ' sel' : ''}"/>`).join('') : '';
-  return aros + out.join('');
+  return out.join('');
+}
+// ya en la página: se quitan las que se pisan con una de antes (más importante) o se salen del mapa
+function colocarEtiquetasMapa() {
+  const capa = $('#mapaEtq');
+  if (!capa) return;
+  const W = capa.clientWidth, H = capa.clientHeight, puestas = [];
+  for (const el of capa.children) {
+    const w = el.offsetWidth, h = el.offsetHeight, x = (parseFloat(el.style.left) / 100) * W - w / 2, y = (parseFloat(el.style.top) / 100) * H - h / 2;
+    const r = [x - 3, y - 2, x + w + 3, y + h + 2];
+    const fuera = x < 2 || y < 2 || x + w > W - 2 || y + h > H - 2;
+    if (fuera || puestas.some((q) => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1])) { el.hidden = true; continue; }
+    puestas.push(r);
+  }
+  capa.classList.add('listas');
 }
 function svgMapa(M) {
-  const G = S.mapaGeo, modo = S.mapaModo, ex = exposicionPaises(M);
-  S.mapaEx = ex;
+  const G = S.mapaGeo, modo = S.mapaModo;
+  // en «Tu dinero» se puede ver una sola posición: dónde invierte ese fondo o esa acción
+  if (S.mapaPos && !(M && M.filas.some((f) => f.pos.id === S.mapaPos && f.valor > 0 && paisesDeFila(f)))) S.mapaPos = null;
+  const exTodo = exposicionPaises(M), ex = modo === 'tuyo' && S.mapaPos ? exposicionPaises(M, S.mapaPos) : exTodo;
+  S.mapaEx = ex; S.mapaExTodo = exTodo;
   const vb = S.mapaVB || cajaVistaMapa(S.mapaVista), esc1 = anchoMapa() / vb[2];
   const top = paisesMapa(modo, ex).sort((a, b) => b.v - a.v).slice(0, 3).map((x) => `${nombrePaisMapa(x.c)} ${textoValorMapa(x.v, modo)}`);
   const resumen = top.length ? (modo === 'tuyo' ? L('Mapa de dónde está tu dinero. Donde más: ', 'Map of where your money is. Most: ') : L(`Mapa de cómo van las bolsas ${etqModoMapa(modo)}. Lo que más sube: `, `Map of how stock markets are doing ${etqModoMapa(modo)}. Best: `)) + top.join('; ') : L('Mapa del mundo', 'World map');
-  return `<svg viewBox="${vb.join(' ')}" role="img" aria-label="${esc(resumen)}"><g class="mp-paises">${caminosMapa(S.mapaVista, modo, ex)}</g><g class="mp-etq">${etiquetasMapa(vb, esc1, modo, ex)}</g></svg>
-    <div class="mapa-tip" hidden></div>`;
+  // Hong Kong y Singapur no se ven a ninguna escala: en Asia, un aro alrededor para poder tocarlos
+  const aros = S.mapaVista === 'as' ? ['HK', 'SG'].filter((c) => G.c[c]).map((c) => `<circle cx="${G.c[c][0]}" cy="${G.c[c][1]}" r="${(7 / esc1).toFixed(2)}" data-c="${c}" class="aro ${tonoMapa(valorMapa(c, modo, ex), modo)}${c === S.mapaSel ? ' sel' : ''}"/>`).join('') : '';
+  return { svg: `<svg viewBox="${vb.join(' ')}" role="img" aria-label="${esc(resumen)}"><g class="mp-paises">${caminosMapa(S.mapaVista, modo, ex)}</g>${aros}</svg>`, etq: etiquetasMapa(vb, esc1, modo, ex) };
 }
 function htmlLeyendaMapa(modo) {
   const c = MAPA_CORTES[modo], f = (x) => fmtNumR(x, 2);
   if (modo === 'tuyo') {
-    const t = [['mp-a1', L(`menos del ${f(c[1])}\u00a0%`, `under ${f(c[1])}%`)], ['mp-a2', `${f(c[1])}–${f(c[2])}\u00a0%`], ['mp-a3', `${f(c[2])}–${f(c[3])}\u00a0%`], ['mp-a4', L(`${f(c[3])}\u00a0% o más`, `${f(c[3])}% or more`)]];
-    return `<span class="ml-t">${L('Lo que tienes en cada país, sobre toda tu cartera', 'What you hold in each country, out of your whole portfolio')}</span><div class="ml-pasos">${t.map(([k, x]) => `<span><i class="${k}"></i>${x}</span>`).join('')}<span><i class="mp-0"></i>${L('nada', 'none')}</span></div>`;
+    const pos = S.mapaPos && S.M && S.M.filas.find((x) => x.pos.id === S.mapaPos);
+    const t = [['mp-a1', L(`menos del ${f(c[1])} %`, `under ${f(c[1])}%`)], ['mp-a2', `${f(c[1])}–${f(c[2])} %`], ['mp-a3', `${f(c[2])}–${f(c[3])} %`], ['mp-a4', L(`${f(c[3])} % o más`, `${f(c[3])}% or more`)]];
+    return `<span class="ml-t">${pos ? L(`Parte de ${esc(pos.inst.corto || pos.inst.nombre)}`, `Share of ${esc(pos.inst.corto || pos.inst.nombre)}`) : L('Parte de tu cartera', 'Share of your portfolio')}</span><div class="ml-pasos">${t.map(([k, x]) => `<span><i class="${k}"></i>${x}</span>`).join('')}</div>`;
   }
   const pasos = [4, 3, 2, 1].map((k) => [`mp-d${k}`, k < 4 ? `${pctS(-c[k], 1)} ${L('a', 'to')} ${pctS(-c[k - 1], 1)}` : L(`${pctS(-c[3], 1)} o peor`, `${pctS(-c[3], 1)} or worse`)]).concat([['mp-n', L(`entre ${pctS(-c[0], 2)} y ${pctS(c[0], 2)}`, `between ${pctS(-c[0], 2)} and ${pctS(c[0], 2)}`)]], [1, 2, 3, 4].map((k) => [`mp-u${k}`, k < 4 ? `${pctS(c[k - 1], 1)} ${L('a', 'to')} ${pctS(c[k], 1)}` : L(`${pctS(c[3], 1)} o mejor`, `${pctS(c[3], 1)} or better`)]));
-  return `<span class="ml-t">${esc(L({ hoy: 'Cómo va hoy su bolsa', mes: 'Su bolsa en el último mes', anio: 'Su bolsa en lo que va de año' }[modo], { hoy: 'Its stock market today', mes: 'Its stock market, last month', anio: 'Its stock market this year' }[modo]))}</span>
-    <div class="ml-escala">${pasos.map(([k, t]) => `<i class="${k}" title="${esc(t)}"></i>`).join('')}</div>
-    <div class="ml-et"><span>${pctS(-c[3], 1)}</span><span>0</span><span>${pctS(c[3], 1)}</span></div>
-    <div class="ml-pasos"><span><i class="mp-0"></i>${L('sin datos', 'no data')}</span><span class="ml-tuyo">${L('En dorado, donde tienes dinero', 'In gold, where you have money')}</span></div>`;
+  return `<span class="ml-t">${esc(L({ hoy: 'Su bolsa hoy', mes: 'Su bolsa en un mes', anio: 'Su bolsa este año' }[modo], { hoy: 'Its market today', mes: 'Its market, 1 month', anio: 'Its market this year' }[modo]))}</span>
+    <div class="ml-barra"><div class="ml-escala">${pasos.map(([k, t]) => `<i class="${k}" title="${esc(t)}"></i>`).join('')}</div><div class="ml-et"><span>${pctS(-c[3], 1)}</span><span>0</span><span>${pctS(c[3], 1)}</span></div></div>
+    <div class="ml-pasos"><span><i class="mp-0"></i>${L('Sin datos', 'No data')}</span><span class="ml-tu"><i></i>${L('Tienes dinero', 'You hold some')}</span></div>`;
 }
 function selectorPaisMapa(sel, ex) {
   const cods = new Set([...Object.keys(BOLSA_PAIS), ...Object.values((S.precios && S.precios.mapa) || {}).map((x) => x.p), ...ex.keys()]);
   if (sel) cods.add(sel);
   const ops = [...cods].map((c) => [c, nombrePaisMapa(c)]).sort((a, b) => a[1].localeCompare(b[1], IDIOMA === 'en' ? 'en' : 'es'));
-  return `<label class="mi-elige"><span>${L('Ver un país', 'Pick a country')}</span><select id="mapaPais"><option value="">${L('Todos (resumen)', 'All (summary)')}</option>${ops.map(([c, n]) => `<option value="${c}"${c === sel ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`;
+  return `<label class="mi-elige"><span>${L('Ir a un país', 'Go to a country')}</span><select id="mapaPais"><option value="">${L('Elige uno', 'Pick one')}</option>${ops.map(([c, n]) => `<option value="${c}"${c === sel ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`;
+}
+// en «Tu dinero»: toda la cartera o una sola posición de bolsa
+function selectorPosMapa(M) {
+  const filas = ((M && M.filas) || []).filter((f) => f.valor > 0 && paisesDeFila(f)).sort((a, b) => b.valor - a.valor);
+  if (filas.length < 2) return '';
+  return `<label class="mi-elige mi-pos"><span>${L('Ver', 'Show')}</span><select id="mapaPos"><option value="">${L('Toda tu cartera', 'Your whole portfolio')}</option>${filas.map((f) => `<option value="${esc(f.pos.id)}"${f.pos.id === S.mapaPos ? ' selected' : ''}>${esc(f.inst.corto || f.inst.nombre)}${f.pos.plataforma && filas.filter((g) => g.inst.id === f.inst.id).length > 1 ? ` (${esc(f.pos.plataforma)})` : ''}</option>`).join('')}</select></label>`;
 }
 function htmlInfoMapa(c, M) {
   if (!S.mapaGeo) return `<p class="k">${S.mapaFallo ? L('No se ha podido cargar el mapa. Vuelve a abrir Mercados con conexión.', "Couldn't load the map. Open Markets again when you're online.") : L('Cargando el mapa…', 'Loading the map…')}</p>`;
   const modo = S.mapaModo, ex = S.mapaEx || exposicionPaises(M);
-  const boton = (x) => `<button type="button" class="mi-p" data-mapa-pais="${x.c}"><span>${esc(nombrePaisMapa(x.c))}</span><b class="${modo === 'tuyo' ? '' : cls(x.v)}">${valorCortoMapa(x.v, modo)}</b></button>`;
+  const fila = (x, sub) => `<button type="button" class="mi-p" data-mapa-pais="${x.c}"><span class="mi-ban">${bandera(x.c)}</span><span class="mi-pn"><b>${esc(nombrePaisMapa(x.c))}</b>${sub ? `<small>${sub}</small>` : ''}</span><span class="mi-v ${modo === 'tuyo' ? 'oro' : cls(x.v)}">${valorCortoMapa(x.v, modo)}</span></button>`;
   if (!c) {
     const lista = paisesMapa(modo, ex).sort((a, b) => b.v - a.v);
     if (modo === 'tuyo') {
-      if (!lista.length) return `<p class="k">${L('Cuando tengas acciones o fondos de bolsa, aquí verás en qué países está tu dinero.', "Once you hold stocks or equity funds, you'll see here which countries your money is in.")}</p>${selectorPaisMapa(null, ex)}`;
-      const fuera = Math.max(0, 100 - sum(lista, (x) => x.v)), us = ex.get('US');
-      return `<h3 class="mi-t">${L('Dónde está tu dinero', 'Where your money is')}</h3><div class="mi-lista">${lista.slice(0, 6).map(boton).join('')}</div>
-        <p class="k mi-nota">${L(`En un fondo de todo el mundo, EEUU sería el ${fmtNumR(PESO_MUNDO.US, 0)}\u00a0%${us ? `; en el tuyo, el ${fmtNumR(us.pct, 0)}\u00a0%` : ''}. Lo de los fondos es aproximado: se reparte como su índice. El ${fmtNumR(fuera, 0)}\u00a0% que falta no es bolsa (oro, cripto, renta fija, efectivo) o no se sabe de qué país es.`, `In a whole-world fund the US would be ${fmtNumR(PESO_MUNDO.US, 0)}%${us ? `; in yours, ${fmtNumR(us.pct, 0)}%` : ''}. Funds are approximate: split like their index. The missing ${fmtNumR(fuera, 0)}% isn't stocks (gold, crypto, bonds, cash) or has no known country.`)}</p>${selectorPaisMapa(null, ex)}`;
+      if (!lista.length) return `${selectorPosMapa(M)}<p class="k">${L('Cuando tengas acciones o fondos de bolsa, aquí verás en qué países está tu dinero.', "Once you hold stocks or equity funds, you'll see here which countries your money is in.")}</p>`;
+      const pos = S.mapaPos && M.filas.find((f) => f.pos.id === S.mapaPos), us = ex.get('US');
+      const fuera = Math.max(0, 100 - sum(lista, (x) => x.v));
+      const titulo = pos ? L(`Dónde invierte ${esc(pos.inst.corto || pos.inst.nombre)}`, `Where ${esc(pos.inst.corto || pos.inst.nombre)} invests`) : L('Dónde está tu dinero', 'Where your money is');
+      const nota = pos
+        ? (pos.inst.tipo === 'Acción' ? L('Una acción va entera al país de su sede, aunque venda en todo el mundo.', 'A stock counts fully in its home country, even if it sells worldwide.') : L('Repartido como su índice, más o menos.', 'Split like its index, roughly.'))
+        : L(`En un fondo de todo el mundo, EEUU sería el ${fmtNumR(PESO_MUNDO.US, 0)} %${us ? `; en el tuyo es el ${fmtNumR(us.pct, 0)} %` : ''}. Los fondos, repartidos como su índice. El ${fmtNumR(fuera, 0)} % que falta no es bolsa (oro, cripto, renta fija, efectivo) o no se sabe de qué país es.`, `In a whole-world fund the US would be ${fmtNumR(PESO_MUNDO.US, 0)}%${us ? `; in yours it's ${fmtNumR(us.pct, 0)}%` : ''}. Funds are split like their index. The missing ${fmtNumR(fuera, 0)}% isn't stocks (gold, crypto, bonds, cash) or has no known country.`);
+      return `${selectorPosMapa(M)}<div class="mi-sec"><h3 class="mi-t">${titulo}</h3><div class="mi-lista">${lista.slice(0, 7).map((x) => fila(x, PESO_MUNDO[x.c] ? L(`en el mundo, ${valorCortoMapa(PESO_MUNDO[x.c], 'tuyo')}`, `world: ${valorCortoMapa(PESO_MUNDO[x.c], 'tuyo')}`) : '')).join('')}</div></div>
+        <p class="mi-nota">${nota}</p>${selectorPaisMapa(null, ex)}`;
     }
     if (!lista.length) return `<p class="k">${L('Aún no hay datos de las bolsas.', 'No stock market data yet.')}</p>`;
+    const indice = (x) => { const b = bolsasDe(x.c)[0]; return b ? esc(b.n) : ''; };
     const suben = lista.filter((x) => x.v > 0).slice(0, 3), bajan = lista.filter((x) => x.v < 0).reverse().slice(0, 3);
-    return `${suben.length ? `<h3 class="mi-t">${L('Lo que más sube', 'Up the most')} <span class="k">${esc(etqModoMapa(modo))}</span></h3><div class="mi-lista">${suben.map(boton).join('')}</div>` : ''}
-      ${bajan.length ? `<h3 class="mi-t">${L('Lo que más baja', 'Down the most')} <span class="k">${esc(etqModoMapa(modo))}</span></h3><div class="mi-lista">${bajan.map(boton).join('')}</div>` : ''}
+    return `${suben.length ? `<div class="mi-sec"><h3 class="mi-t">${L('Lo que más sube', 'Up the most')} <span>${esc(etqModoMapa(modo))}</span></h3><div class="mi-lista">${suben.map((x) => fila(x, indice(x))).join('')}</div></div>` : ''}
+      ${bajan.length ? `<div class="mi-sec"><h3 class="mi-t">${L('Lo que más baja', 'Down the most')} <span>${esc(etqModoMapa(modo))}</span></h3><div class="mi-lista">${bajan.map((x) => fila(x, indice(x))).join('')}</div></div>` : ''}
       ${selectorPaisMapa(null, ex)}`;
   }
-  const bs = bolsasDe(c), e = ex.get(c), hoy = hoyIso(), pm = PESO_MUNDO[c];
+  const bs = bolsasDe(c), exTodo = S.mapaExTodo || ex, e = exTodo.get(c), hoy = hoyIso(), pm = PESO_MUNDO[c];
   const info = bs[0] && MERC_INFO[bs[0].sym];
-  const tabla = bs.length ? `<table class="mi-bolsas"><thead><tr><th scope="col"><span class="sr">${L('Índice', 'Index')}</span></th><th scope="col">${L('Hoy', 'Today')}</th><th scope="col">${L('1 mes', '1 mo')}</th><th scope="col">${L('Año', 'YTD')}</th></tr></thead><tbody>${bs.map((b) => `<tr><th scope="row">${esc(b.n)}${b.f && b.f < hoy ? `<small>${L(`cierre del ${fechaCorta(b.f)}`, `close of ${fechaCortaL(b.f)}`)}</small>` : ''}</th><td class="${cls(b.v)}">${pctS(b.v, 1)}</td><td class="${cls(b.m)}">${pctS(b.m, 1)}</td><td class="${cls(b.y)}">${pctS(b.y, 1)}</td></tr>`).join('')}</tbody></table>` : `<p class="k">${L('No seguimos su bolsa.', "We don't track its stock market.")}</p>`;
-  const de = e ? e.de.slice(0, 3).map((x) => esc(x.n)) : [];
-  const tuyo = e ? L(`En tu cartera: <b>${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)}\u00a0%</b> (${eur(e.v, 0)}), por ${yLista(de)}${e.de.length > 3 ? ` y ${e.de.length - 3} más` : ''}.${e.de.some((x) => x.fondo) ? ' <span class="k">Lo de los fondos, más o menos: se reparte como su índice.</span>' : ''}`, `In your portfolio: <b>${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)}%</b> (${eur(e.v, 0)}), through ${yLista(de)}${e.de.length > 3 ? ` and ${e.de.length - 3} more` : ''}.${e.de.some((x) => x.fondo) ? ' <span class="k">Funds are approximate: split like their index.</span>' : ''}`) : L('No tienes nada aquí.', 'You have nothing here.');
-  const peso = pm ? `<p class="mi-peso">${L(`En un fondo de todo el mundo pesa un <b>${fmtNumR(pm, pm < 1 ? 2 : 1)}\u00a0%</b>.`, `In a whole-world fund it weighs <b>${fmtNumR(pm, pm < 1 ? 2 : 1)}%</b>.`)}</p>` : '';
-  return `<div class="mi-cab"><h3>${esc(nombrePaisMapa(c))}</h3><button type="button" class="ib mi-x" data-mapa-pais="" aria-label="${L('Volver al resumen', 'Back to the summary')}">${ICONOS.cerrar}</button></div>
-    ${tabla}${info && info.que ? `<p class="mi-que">${esc(info.que)}</p>` : ''}<p class="mi-tuyo">${tuyo}</p>${peso}${selectorPaisMapa(c, ex)}`;
+  const celda = (v) => `<td><span class="mi-v ${cls(v)}">${pctS(v, 1)}</span></td>`;
+  const tabla = bs.length ? `<table class="mi-bolsas"><thead><tr><th scope="col"><span class="sr">${L('Índice', 'Index')}</span></th><th scope="col">${L('Hoy', 'Today')}</th><th scope="col">${L('1 mes', '1 mo')}</th><th scope="col">${L('Año', 'YTD')}</th></tr></thead><tbody>${bs.map((b) => `<tr><th scope="row">${esc(b.n)}${b.f && b.f < hoy ? `<small>${L(`cierre del ${fechaCorta(b.f)}`, `close of ${fechaCortaL(b.f)}`)}</small>` : ''}</th>${celda(b.v)}${celda(b.m)}${celda(b.y)}</tr>`).join('')}</tbody></table>` : `<p class="k">${L('No seguimos su bolsa.', "We don't track its stock market.")}</p>`;
+  // «por Repsol, IAG y MSCI Europe», o «por Repsol, IAG, MSCI Europe y 2 más»
+  const de = e ? e.de.slice(0, 3).map((x) => `<b>${esc(x.n)}</b>`) : [], mas = e ? e.de.length - 3 : 0;
+  const porQue = mas > 0 ? `${de.join(', ')} ${L(`y ${mas} más`, `and ${mas} more`)}` : yLista(de);
+  const tuyo = e ? L(`Tienes aquí <b>${eur(e.v, 0)}</b>, el ${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)} % de tu cartera, por ${porQue}.${e.de.some((x) => x.fondo) ? ' Lo de los fondos, más o menos: se reparten como su índice.' : ''}`, `You hold <b>${eur(e.v, 0)}</b> here, ${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)}% of your portfolio, through ${porQue}.${e.de.some((x) => x.fondo) ? ' Funds are approximate: split like their index.' : ''}`) : L('No tienes nada aquí.', 'You have nothing here.');
+  const peso = pm ? L(`En un fondo de todo el mundo pesa un <b>${fmtNumR(pm, pm < 1 ? 2 : 1)} %</b>.`, `In a whole-world fund it weighs <b>${fmtNumR(pm, pm < 1 ? 2 : 1)}%</b>.`) : '';
+  return `<div class="mi-cab"><span class="mi-ban">${bandera(c)}</span><h3>${esc(nombrePaisMapa(c))}</h3><button type="button" class="ib mi-x" data-mapa-pais="" aria-label="${L('Volver al resumen', 'Back to the summary')}">${ICONOS.cerrar}</button></div>
+    ${tabla}${info && info.que ? `<p class="mi-que">${esc(info.que)}</p>` : ''}<div class="mi-datos"><p>${tuyo}</p>${peso ? `<p>${peso}</p>` : ''}</div>${selectorPaisMapa(c, ex)}`;
 }
 function htmlMapaMundo() {
   if (S.mapaModo == null) S.mapaModo = LS.get('inv-mapa', 'hoy');
   if (!MAPA_MODOS.some(([k]) => k === S.mapaModo)) S.mapaModo = 'hoy';
   if (!S.mapaVista) S.mapaVista = 'mundo';
   const modo = S.mapaModo;
-  // el mapa se dibuja después, ya en la página (los nombres dependen de lo ancho que salga)
+  // el mapa y los nombres se dibujan después, ya en la página (dependen de lo ancho que salga)
   return `<section class="mapa-w" aria-labelledby="hMapa">
-    <div class="sec-cab"><h2 id="hMapa">${L('El mundo', 'The world')}</h2><span class="k">${L('Cada país, del color de su bolsa; en «Tu dinero», de lo que tienes allí. Toca uno para verlo.', 'Each country in the color of its stock market; in «Your money», of what you hold there. Tap one to see it.')}</span>
-      <div class="der"><div class="tabs mapa-modos" role="group" aria-label="${L('Qué colorea el mapa', 'What the map shows')}">${MAPA_MODOS.map(([k, es, en]) => `<button type="button" data-mapa-modo="${k}" aria-pressed="${k === modo}">${L(es, en)}</button>`).join('')}</div></div></div>
+    <div class="mapa-cab"><div class="mapa-tit"><h2 id="hMapa">${L('El mundo', 'The world')}</h2><p>${L('Cada país, del color de su bolsa. Toca uno para verlo.', 'Each country in the color of its stock market. Tap one to see it.')}</p></div>
+      <div class="mapa-modos" role="group" aria-label="${L('Qué colorea el mapa', 'What the map shows')}">${MAPA_MODOS.map(([k, es, en]) => `<button type="button" data-mapa-modo="${k}" aria-pressed="${k === modo}">${L(es, en)}</button>`).join('')}</div></div>
     <div class="mapa-cuerpo">
-      <div class="mapa-caja"><div class="mapa-svg" id="mapaMundo"></div>
-        <div class="mapa-vistas" role="group" aria-label="${L('Acercar', 'Zoom')}">${MAPA_VISTAS.map(([k, es, en]) => `<button type="button" data-mapa-vista="${k}" aria-pressed="${k === S.mapaVista}">${L(es, en)}</button>`).join('')}</div></div>
-      <div class="mapa-lado"><div class="mapa-ley" id="mapaLey">${htmlLeyendaMapa(modo)}</div><div class="mapa-info" id="mapaInfo" aria-live="polite">${htmlInfoMapa(S.mapaSel, S.M)}</div></div>
+      <div class="mapa-izq">
+        <div class="mapa-caja"><div class="mapa-svg" id="mapaMundo"></div><div class="mapa-etqs" id="mapaEtq" aria-hidden="true"></div><div class="mapa-tip" hidden></div></div>
+        <div class="mapa-pie"><div class="mapa-vistas" role="group" aria-label="${L('Acercar', 'Zoom')}">${MAPA_VISTAS.map(([k, es, en]) => `<button type="button" data-mapa-vista="${k}" aria-pressed="${k === S.mapaVista}">${L(es, en)}</button>`).join('')}</div><div class="mapa-ley" id="mapaLey">${htmlLeyendaMapa(modo)}</div></div>
+      </div>
+      <div class="mapa-info" id="mapaInfo" aria-live="polite">${htmlInfoMapa(S.mapaSel, S.M)}</div>
     </div>
   </section>`;
 }
@@ -8092,9 +8153,16 @@ function repintarMapa() {
   const w = $('#mapaMundo');
   if (!w || S.mapaMoviendo) return;
   const M = S.M;
-  if (S.mapaGeo) { S.mapaVB = cajaVistaMapa(S.mapaVista); w.innerHTML = svgMapa(M); }
+  if (S.mapaGeo) {
+    S.mapaVB = cajaVistaMapa(S.mapaVista);
+    const r = svgMapa(M);
+    w.innerHTML = r.svg;
+    const capa = $('#mapaEtq');
+    if (capa) { capa.classList.remove('listas'); capa.innerHTML = r.etq; colocarEtiquetasMapa(); }
+  }
   const ley = $('#mapaLey'); if (ley) ley.innerHTML = htmlLeyendaMapa(S.mapaModo);
   const inf = $('#mapaInfo'); if (inf) inf.innerHTML = htmlInfoMapa(S.mapaSel, M);
+  const sec = $('.mapa-w'); if (sec) sec.dataset.modo = S.mapaModo;
   for (const b of $$('[data-mapa-modo]')) b.setAttribute('aria-pressed', String(b.dataset.mapaModo === S.mapaModo));
   for (const b of $$('[data-mapa-vista]')) b.setAttribute('aria-pressed', String(b.dataset.mapaVista === S.mapaVista));
 }
@@ -8132,9 +8200,10 @@ function irVistaMapa(v) {
   if (!svg || matchMedia('(prefers-reduced-motion: reduce)').matches) { repintarMapa(); return; }
   if (v === 'mundo') svg.querySelector('.mp-paises').innerHTML = caminosMapa('mundo', S.mapaModo, S.mapaEx || new Map());
   for (const b of $$('[data-mapa-vista]')) b.setAttribute('aria-pressed', String(b.dataset.mapaVista === v));
-  svg.classList.add('moviendo');
+  for (const a of svg.querySelectorAll('.aro')) a.remove();
+  const capa = $('#mapaEtq'); if (capa) capa.classList.remove('listas');
   S.mapaMoviendo = true;
-  const t0 = performance.now(), dur = 520;
+  const t0 = performance.now(), dur = 560;
   const paso = (t) => {
     const k = Math.min(1, (t - t0) / dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
     svg.setAttribute('viewBox', desde.map((x, i) => (x + (hasta[i] - x) * e).toFixed(2)).join(' '));
@@ -8169,16 +8238,19 @@ document.addEventListener('click', (e) => {
   }
   if (e.target.closest('#mapaMundo svg') && S.mapaSel) elegirPaisMapa(null);
 });
-document.addEventListener('change', (e) => { if (e.target.id === 'mapaPais') elegirPaisMapa(e.target.value); });
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'mapaPais') { elegirPaisMapa(e.target.value); if (e.target.value && S.mapaGeo && S.mapaVista === 'mundo') { const z = zonaDeMapa(e.target.value), esc1 = anchoMapa() / S.mapaGeo.w; if (z && (S.mapaGeo.a[e.target.value] || 0) * esc1 * esc1 < 700) irVistaMapa(z); } }
+  if (e.target.id === 'mapaPos') { S.mapaPos = e.target.value || null; repintarMapa(); }
+});
 // con ratón: el nombre del país y su cifra, junto al puntero
 document.addEventListener('mousemove', (e) => {
-  const w = e.target.closest ? e.target.closest('#mapaMundo') : null, tip = w && w.querySelector('.mapa-tip');
+  const w = e.target.closest ? e.target.closest('.mapa-caja') : null, tip = w && w.querySelector('.mapa-tip');
   for (const t of $$('.mapa-tip:not([hidden])')) if (t !== tip) t.hidden = true;
   if (!tip) return;
   const c = e.target.closest('[data-c]');
   if (!c || S.mapaMoviendo) { tip.hidden = true; return; }
   const cod = c.dataset.c, v = valorMapa(cod, S.mapaModo, S.mapaEx || new Map());
-  tip.innerHTML = `<b>${esc(nombrePaisMapa(cod))}</b><span class="${S.mapaModo === 'tuyo' || v == null ? '' : cls(v)}">${esc(textoValorMapa(v, S.mapaModo))}</span>`;
+  tip.innerHTML = `<span class="mt-n"><span class="mi-ban">${bandera(cod)}</span><b>${esc(nombrePaisMapa(cod))}</b></span><span class="${S.mapaModo === 'tuyo' || v == null ? '' : cls(v)}">${esc(textoValorMapa(v, S.mapaModo))}</span>`;
   tip.hidden = false;
   const r = w.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
   tip.style.left = `${Math.max(4, Math.min(x + 14, r.width - tip.offsetWidth - 4))}px`;
