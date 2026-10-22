@@ -85,7 +85,8 @@ public class Versiones extends Worker {
         if (hora >= 22 || hora < 9) return;
         SharedPreferences p = Datos.prefs(c);
         JSONObject w = leer(Datos.raw(c, "main", "version.json"));
-        String v = w == null ? "" : w.optString("v"), t = w == null ? "" : w.optString("t");
+        boolean en = "en".equals(Datos.prefs(c).getString("idioma", "es"));
+        String v = w == null ? "" : w.optString("v"), t = w == null ? "" : w.optString(en && w.has("te") ? "te" : "t");
         String vista = p.getString("version_vista", ""), avisada = p.getString("version_avisada", "");
         int app = a == null ? 0 : a.optInt("version", 0), appAvisada = p.getInt("app_avisada", 0);
         // la primera vez (recién instalada la app con esto), lo que hay ahora no es nuevo
@@ -95,19 +96,27 @@ public class Versiones extends Worker {
         }
         boolean web = !v.isEmpty() && comparar(v, vista) > 0 && comparar(v, avisada) > 0;
         boolean apk = app > BuildConfig.VERSION_CODE && app > appAvisada;
+        // 0.4: con frases enteras. «GrowFolio 0.4 ya está aquí» y, debajo, lo que trae. Si viene con app nueva y ya se
+        // está instalando sola (autoActualizar acaba de mandarla a Android), no se dice nada de la app: si sale bien, no
+        // hay nada que hacer, y si Android pide confirmación, Instalado lo apunta y en la siguiente vuelta llega el aviso
+        // de la app con lo que hay que tocar. Así ningún aviso promete algo que luego no pasa.
+        boolean intentada = apk && !p.getBoolean("auto_no", false) && p.getInt("auto_intento", 0) >= app;
+        boolean sola = Actualizador.puedeSola(c);
         if (web) {
-            String titulo = "GrowFolio " + v + (t.isEmpty() ? " ya está aquí" : ": " + t);
-            String texto = apk ? "Trae app nueva de Android: ábrela y se instala encima en un momento, sin perder nada."
-                    : "Ábrela para ver qué ha cambiado.";
+            String titulo = en ? "GrowFolio " + v + " is here" : "GrowFolio " + v + " ya está aquí";
+            String lo = t.isEmpty() ? "" : t + ". ";
+            String texto = !apk || intentada ? lo + (en ? "Open it to see what's new." : "Ábrela para ver qué hay de nuevo.")
+                    : sola ? lo + (en ? "There's a new app too: it will install itself when you're not using it, or open it and tap Update." : "También hay app nueva: se instalará sola cuando no la estés usando, o ábrela y toca Actualizar.")
+                    : lo + (en ? "It comes with a new version of the app: open it, tap Update and it installs without losing anything." : "Trae una versión nueva de la app: ábrela, toca Actualizar y se instala sin perder nada.");
             mostrar(c, "version:" + v, titulo, texto);
-        } else if (apk) {
-            String nombre = a.optString("nombre", "");
-            mostrar(c, "app:" + app, "Hay una versión nueva de la app",
-                    (nombre.isEmpty() ? "La nueva" : "La " + nombre) + " se instala encima en un momento: ábrela y toca Actualizar.");
+        } else if (apk && !intentada) {
+            mostrar(c, "app:" + app, en ? "New version of the app" : "Versión nueva de la app",
+                    sola ? (en ? "It will install itself when you're not using it, or open it and tap Update. Nothing is lost." : "Se instalará sola cuando no la estés usando, o ábrela y toca Actualizar. No se pierde nada.")
+                            : (en ? "Open it and tap Update: it installs over the current one without losing anything." : "Ábrela y toca Actualizar: se instala encima sin perder nada."));
         }
         SharedPreferences.Editor e = p.edit();
         if (web) e.putString("version_avisada", v);
-        if (apk) e.putInt("app_avisada", app);
+        if (apk && !intentada) e.putInt("app_avisada", app);
         e.apply();
     }
 

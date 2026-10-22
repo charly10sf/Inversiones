@@ -100,6 +100,12 @@ public class Puente {
     }
 
     /** el aviso de las versiones nuevas: encenderlo o apagarlo (y pedir el permiso de notificaciones si falta) */
+    /** 0.4: el idioma de la web, para que los avisos del móvil salgan en el mismo */
+    @JavascriptInterface
+    public void idioma(String i) {
+        Datos.prefs(ctx).edit().putString("idioma", "en".equals(i) ? "en" : "es").apply();
+    }
+
     @JavascriptInterface
     public void avisosVersiones(boolean on) {
         Versiones.activar(ctx, on);

@@ -107,6 +107,7 @@ public class Avisos extends Worker {
             if (ahora - hechos.optLong(it.next(), 0) > 10L * 86400000L) it.remove();
         }
         String hoy = LocalDate.now().toString(), manana = LocalDate.now().plusDays(1).toString();
+        boolean en = "en".equals(p.getString("idioma", "es"));   // 0.4: en el idioma de la web
 
         for (int k = 0; reglas != null && k < reglas.length(); k++) {
             JSONObject x = reglas.getJSONObject(k);
@@ -131,16 +132,18 @@ public class Avisos extends Worker {
             double stop = x.optDouble("stop", 0);
             if (av.optBoolean("stop", true) && stop > 0) {
                 if (precio <= stop) {
-                    avisar(c, hechos, "stop:" + id + ":" + hoy, n + ": precio de salida roto",
-                            "Está a " + eur(precio) + ", por debajo de tu salida (" + eur(stop) + "). Es lo que te dijiste que harías.", "cartera");
+                    avisar(c, hechos, "stop:" + id + ":" + hoy, n + (en ? ": exit price broken" : ": precio de salida roto"),
+                            en ? "It's at " + eur(precio) + ", below your exit (" + eur(stop) + "). It's what you told yourself you'd do."
+                                    : "Está a " + eur(precio) + ", por debajo de tu salida (" + eur(stop) + "). Es lo que te dijiste que harías.", "cartera");
                 } else if (precio <= stop * 1.03) {
-                    avisar(c, hechos, "stopc:" + id + ":" + hoy, n + " se acerca a tu precio de salida",
-                            "Está a un " + num((precio / stop - 1) * 100) + " % de " + eur(stop) + ".", "cartera");
+                    avisar(c, hechos, "stopc:" + id + ":" + hoy, n + (en ? " is nearing your exit price" : " se acerca a tu precio de salida"),
+                            en ? "It's " + num((precio / stop - 1) * 100) + " % above " + eur(stop) + "." : "Está a un " + num((precio / stop - 1) * 100) + " % de " + eur(stop) + ".", "cartera");
                 }
             }
             if (av.optBoolean("mov", true) && !Double.isNaN(cambio) && Math.abs(cambio) >= 5) {
-                avisar(c, hechos, "mov:" + id + ":" + hoy, n + (cambio > 0 ? " sube un " : " baja un ") + num(Math.abs(cambio)) + " % hoy",
-                        "Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.", "cartera");
+                avisar(c, hechos, "mov:" + id + ":" + hoy, en ? n + (cambio > 0 ? " is up " : " is down ") + num(Math.abs(cambio)) + " % today"
+                                : n + (cambio > 0 ? " sube un " : " baja un ") + num(Math.abs(cambio)) + " % hoy",
+                        en ? "Open GrowFolio to see what happened and what GrowIA says." : "Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.", "cartera");
             }
         }
 
@@ -152,24 +155,24 @@ public class Avisos extends Worker {
             if (r == null) continue;
             double precio = r.optDouble(0), baja = x.optDouble("baja", 0), sube = x.optDouble("sube", 0);
             if (Double.isNaN(precio) || precio <= 0) continue;
-            if (baja > 0 && precio <= baja) avisar(c, hechos, "segb:" + sym + ":" + baja, n + " ha bajado a tu precio",
-                    "Está a " + eur(precio) + ": la seguías para cuando bajara de " + eur(baja) + ".", "expertos");
-            if (sube > 0 && precio >= sube) avisar(c, hechos, "segs:" + sym + ":" + sube, n + " ha subido a tu precio",
-                    "Está a " + eur(precio) + ": querías saber cuándo pasara de " + eur(sube) + ".", "expertos");
+            if (baja > 0 && precio <= baja) avisar(c, hechos, "segb:" + sym + ":" + baja, n + (en ? " has dropped to your price" : " ha bajado a tu precio"),
+                    en ? "It's at " + eur(precio) + ": you were watching for it to drop below " + eur(baja) + "." : "Está a " + eur(precio) + ": la seguías para cuando bajara de " + eur(baja) + ".", "expertos");
+            if (sube > 0 && precio >= sube) avisar(c, hechos, "segs:" + sym + ":" + sube, n + (en ? " has risen to your price" : " ha subido a tu precio"),
+                    en ? "It's at " + eur(precio) + ": you wanted to know when it passed " + eur(sube) + "." : "Está a " + eur(precio) + ": querías saber cuándo pasara de " + eur(sube) + ".", "expertos");
         }
 
         JSONArray ev = av.optJSONArray("eventos");
         for (int k = 0; av.optBoolean("fechas", true) && ev != null && k < ev.length(); k++) {
             JSONObject e = ev.getJSONObject(k);
             String d = e.optString("d"), t = e.optString("t"), s = e.optString("s");
-            if (d.equals(manana) && hora >= 18) avisar(c, hechos, "ev:" + e.optString("k"), "Mañana: " + t, s, "agenda");
-            else if (d.equals(hoy) && hora < 13) avisar(c, hechos, "evh:" + e.optString("k"), "Hoy: " + t, s, "agenda");
+            if (d.equals(manana) && hora >= 18) avisar(c, hechos, "ev:" + e.optString("k"), (en ? "Tomorrow: " : "Mañana: ") + t, s, "agenda");
+            else if (d.equals(hoy) && hora < 13) avisar(c, hechos, "evh:" + e.optString("k"), (en ? "Today: " : "Hoy: ") + t, s, "agenda");
         }
 
         JSONArray pq = av.optJSONArray("preg");
         for (int k = 0; av.optBoolean("preg", true) && pq != null && k < pq.length(); k++) {
             JSONObject x = pq.getJSONObject(k);
-            avisar(c, hechos, "preg:" + x.optString("k"), "GrowIA te pregunta", x.optString("q"), "objetivos");
+            avisar(c, hechos, "preg:" + x.optString("k"), en ? "GrowIA has a question" : "GrowIA te pregunta", x.optString("q"), "objetivos");
         }
         p.edit().putString("avisos_hechos", hechos.toString()).apply();
     }

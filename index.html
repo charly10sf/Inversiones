@@ -1852,7 +1852,7 @@ button.mv-c:focus-visible { outline: 2px solid var(--accent); outline-offset: 2p
 .hero-top .hero-hola { margin: 0; }
 .car-ordenar-mini { margin-left: auto; min-height: 30px; padding: 0 11px; gap: 5px; font-size: 13px; color: var(--text-2); }
 .car-ordenar-mini svg { width: 14px; height: 14px; }
-/* 0.3.9: el calendario, junto a Personalizar; el número, lo tuyo de esta semana (resultados, dividendos, aportaciones) */
+/* 0.3.9: el calendario, junto a Personalizar (0.4: sin el número de lo tuyo de la semana, que no se entendía) */
 .car-agenda-mini { margin-left: auto; position: relative; min-height: 30px; padding: 0 11px; gap: 6px; font-size: 13px; color: var(--text-2); text-decoration: none; }
 .car-agenda-mini svg { width: 15px; height: 15px; flex: none; color: var(--accent); }
 .car-agenda-mini + .car-ordenar-mini { margin-left: 0; }
@@ -2284,6 +2284,47 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .opr p { margin: 8px 0 6px; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
 .opr small { color: var(--muted); font-size: 12.5px; }
 .opr-hoja .fila-btns { margin-top: 16px; }
+/* 0.4: responder desde la app. Debajo de cada opinión, el botón o la respuesta ya dada, con si la ha leído */
+.opr-intro { margin: 0 0 12px; }
+.opr-r:empty { display: none; }
+.opr-r { margin-top: 10px; }
+.opr-responder { padding: 7px 13px; font-size: 13.5px; }
+.opr-resp { padding: 10px 12px 11px; border-radius: 12px; background: var(--accent-bg); }
+.opr-resp-cab { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; font-size: 12.5px; color: var(--muted); }
+.opr-resp-cab b { color: var(--accent); font-weight: 650; }
+.opr-leida { display: inline-flex; align-items: center; gap: 4px; margin-left: auto; }
+.opr-leida.si { color: var(--up); }
+.opr-leida svg { width: 14px; height: 14px; }
+.opr .opr-resp p { margin: 6px 0 8px; }
+.opr-resp .enlace { font-size: 13px; font-weight: 600; }
+.opr-f { display: grid; gap: 6px; }
+.opr-f .campo { margin: 0; }
+.opr-f textarea { min-height: 96px; }
+.opr-f .fila-btns { margin-top: 4px; }
+.opr .opr-f-nota { font-size: 12.5px; }
+/* lo que ve quien la mandó: como una conversación, lo suyo a la derecha y la respuesta a la izquierda, con la marca */
+.resp-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
+.resp { display: grid; gap: 8px; }
+.resp + .resp { padding-top: 18px; border-top: 1px solid var(--line); }
+.resp-tuyo, .resp-suya { max-width: 88%; padding: 10px 13px 11px; }
+.resp-tuyo { justify-self: end; border-radius: 16px 16px 5px 16px; background: var(--plane-3); }
+.resp-suya { justify-self: start; border-radius: 16px 16px 16px 5px; background: var(--accent-bg); border: 1px solid rgba(237, 187, 69, 0.22); }
+.resp-meta { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--muted); }
+.resp-meta time { margin-left: auto; padding-left: 10px; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.resp-suya .resp-meta b { color: var(--text); font-weight: 650; }
+.resp-marca { width: 22px; height: 22px; flex: none; border-radius: 6px; background: #15130F; }
+.resp-est { display: block; margin-top: 4px; color: var(--accent); letter-spacing: 1px; }
+.resp-tuyo p, .resp-suya p { margin: 6px 0 0; white-space: pre-wrap; overflow-wrap: anywhere; line-height: 1.5; }
+.resp-tuyo p { color: var(--text-2); }
+.resp-suya p { font-size: 15px; }
+.resp-espera { margin: 0; justify-self: start; color: var(--muted); font-size: 13px; }
+.resp-hoja > .nota { margin: 0 0 14px; }
+.resp-hoja .fila-btns { margin-top: 20px; }
+.opi-mias { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--plane); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.opi-mias:hover { border-color: var(--line-2); }
+.opi-mias > svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+.opi-mias span { display: grid; gap: 1px; flex: 1; min-width: 0; font-weight: 600; font-size: 14px; }
+.opi-mias small { color: var(--muted); font-size: 12.5px; font-weight: 400; }
 @keyframes nov-entra { from { opacity: 0; transform: translateY(8px); } }
 @media (max-width: 480px) { .nov-lista li { align-items: flex-start; gap: 12px; } .nov-lista .dib { width: 88px; height: 59px; padding: 5px; border-radius: 10px; } }
 /* la hoja «Más» del móvil */
@@ -3218,6 +3259,135 @@ body.con-ixn { overflow: hidden; }
 .cons-btns { justify-content: flex-start; }
 .cons-not { display: grid; gap: 8px; }
 .cons-not h3 { margin: 0; font-size: 15px; }
+/* 0.4: el mapa del mundo de Mercados, en un panel como el del patrimonio. Cada país en una pieza, separadas por una
+   raya del color del fondo; los tonos van del gris (ni sube ni baja) al verde o al rojo de la app, y en «Tu dinero»,
+   al oro. Los nombres, en pastillas con la letra de la app, por encima del dibujo */
+.mapa-w { --mapa-fondo: #0B0A08; display: grid; gap: 16px; padding: 22px 24px 22px; border: 1px solid var(--line); border-radius: 28px; background: radial-gradient(55% 75% at 0% 0%, rgba(237, 187, 69, 0.09), rgba(237, 187, 69, 0) 70%), linear-gradient(180deg, #0D0C0A, #070605); }
+.mapa-cab { display: flex; align-items: flex-end; justify-content: space-between; gap: 12px 24px; flex-wrap: wrap; }
+.mapa-tit h2 { margin: 0; font-size: 21px; font-weight: 700; letter-spacing: -0.025em; }
+.mapa-tit p { margin: 3px 0 0; color: var(--muted); font-size: 13.5px; }
+.mapa-modos, .mapa-vistas { display: flex; padding: 3px; gap: 2px; border-radius: 999px; background: rgba(255, 255, 255, 0.035); border: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.mapa-modos::-webkit-scrollbar, .mapa-vistas::-webkit-scrollbar { display: none; }
+.mapa-modos button, .mapa-vistas button { flex: 1 0 auto; border: 0; background: transparent; padding: 6px 13px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; transition: background-color 0.2s ease, color 0.2s ease; }
+.mapa-vistas button { padding: 5px 12px; font-size: 12.5px; }
+.mapa-modos button[aria-pressed="true"], .mapa-vistas button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); }
+@media (hover: hover) { .mapa-modos button:hover, .mapa-vistas button:hover { color: var(--text); } .mapa-modos button[aria-pressed="true"]:hover, .mapa-vistas button[aria-pressed="true"]:hover { color: var(--accent); } }
+.mapa-cuerpo { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 1080px) { .mapa-cuerpo { grid-template-columns: minmax(0, 1fr) 312px; gap: 0; } .mapa-info { border-left: 1px solid var(--line); padding-left: 22px; margin-left: 22px; } }
+.mapa-izq { display: grid; gap: 12px; min-width: 0; align-content: start; }
+.mapa-caja { position: relative; min-width: 0; border-radius: 18px; overflow: hidden; background-color: rgba(255, 255, 255, 0.012); background-image: radial-gradient(circle at 1px 1px, rgba(247, 242, 232, 0.055) 0.9px, transparent 1.3px); background-size: 12px 12px; }
+.mapa-svg { aspect-ratio: 1000 / 439; }
+.mapa-svg svg { display: block; width: 100%; height: 100%; touch-action: manipulation; }
+.mapa-svg path, .mapa-svg .aro { stroke: var(--mapa-fondo); stroke-width: 0.7; stroke-linejoin: round; vector-effect: non-scaling-stroke; transition: fill 0.35s ease; }
+.mapa-svg [data-c] { cursor: pointer; }
+.mapa-svg path.sel, .mapa-svg .aro.sel { stroke: var(--accent); stroke-width: 1.8; }
+@media (hover: hover) { .mapa-svg path[data-c]:hover { stroke: var(--text-2); stroke-width: 1.1; } .mapa-svg path.sel:hover { stroke: var(--accent); stroke-width: 1.8; } }
+.mapa-svg .aro { stroke: var(--text-2); stroke-width: 1.2; }
+.mp-0 { fill: #1D1A15; background: #1D1A15; }
+.mp-n { fill: #423B30; background: #423B30; }
+.mp-u1 { fill: #4D634C; background: #4D634C; } .mp-u2 { fill: #518263; background: #518263; } .mp-u3 { fill: #51A078; background: #51A078; } .mp-u4 { fill: #4CBF8E; background: #4CBF8E; }
+.mp-d1 { fill: #744B3E; background: #744B3E; } .mp-d2 { fill: #9A5749; background: #9A5749; } .mp-d3 { fill: #BF6152; background: #BF6152; } .mp-d4 { fill: #E46A5C; background: #E46A5C; }
+.mp-a1 { fill: #75613B; background: #75613B; } .mp-a2 { fill: #9D8041; background: #9D8041; } .mp-a3 { fill: #C49D44; background: #C49D44; } .mp-a4 { fill: #EDBB45; background: #EDBB45; }
+.mapa-etqs { position: absolute; inset: 0; pointer-events: none; opacity: 0; }
+.mapa-etqs.listas { opacity: 1; transition: opacity 0.25s ease; }
+.me { position: absolute; transform: translate(-50%, -50%); display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border-radius: 999px; background: rgba(9, 8, 6, 0.82); border: 1px solid rgba(247, 242, 232, 0.09); box-shadow: 0 2px 10px rgba(0, 0, 0, 0.35); font-size: 11.5px; font-weight: 600; line-height: 1.25; color: var(--text); white-space: nowrap; letter-spacing: -0.005em; }
+.me b { font-weight: 700; font-variant-numeric: tabular-nums; }
+.me b.up { color: var(--up); } .me b.down { color: var(--down); } .me b.flat { color: var(--text-2); } .me b.oro { color: var(--accent); }
+.me i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
+.mapa-tip { position: absolute; pointer-events: none; z-index: 2; display: grid; gap: 2px; padding: 8px 11px; background: rgba(20, 18, 15, 0.96); border: 1px solid var(--line-2); border-radius: 12px; font-size: 12.5px; white-space: nowrap; box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5); }
+.mapa-tip .mt-n { display: flex; align-items: center; gap: 7px; }
+.mapa-tip b { font-weight: 650; font-size: 13px; }
+.mapa-pie { display: flex; align-items: center; justify-content: space-between; gap: 10px 20px; flex-wrap: wrap; }
+.mapa-ley { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 16px; font-size: 12px; color: var(--text-2); }
+.ml-t { color: var(--muted); font-weight: 500; }
+.ml-barra { display: grid; gap: 3px; width: 168px; }
+.ml-escala { display: grid; grid-template-columns: repeat(9, 1fr); gap: 2px; height: 8px; }
+.ml-escala i { border-radius: 2px; }
+.ml-escala i:first-child { border-radius: 4px 2px 2px 4px; } .ml-escala i:last-child { border-radius: 2px 4px 4px 2px; }
+.ml-et { display: flex; justify-content: space-between; color: var(--muted); font-size: 10.5px; font-variant-numeric: tabular-nums; }
+.ml-pasos { display: flex; flex-wrap: wrap; gap: 6px 14px; }
+.ml-pasos span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.ml-pasos i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; }
+.ml-tu i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+.mapa-info { display: grid; gap: 16px; align-content: start; min-width: 0; }
+.mi-sec { display: grid; gap: 4px; }
+.mi-t { margin: 0 0 2px; font-size: 14px; font-weight: 650; letter-spacing: -0.01em; }
+.mi-t span { color: var(--muted); font-weight: 500; font-size: 12.5px; margin-left: 3px; }
+.mi-lista { display: grid; margin: 0 -8px; }
+.mi-p { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; border: 0; background: transparent; color: var(--text); text-align: left; padding: 7px 8px; border-radius: 11px; min-height: 44px; font: inherit; transition: background-color 0.15s ease; }
+@media (hover: hover) { .mi-p:hover { background: rgba(255, 255, 255, 0.04); } }
+.mi-ban { display: block; flex: none; width: 20px; height: 14px; border-radius: 3px; overflow: hidden; background: var(--plane-3); box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08); }
+.mi-ban .bandera { display: block; width: 100%; height: 100%; border-radius: 0; }
+.mi-cab .mi-ban { width: 24px; height: 17px; }
+.mi-p .mi-v { justify-self: end; }
+.mi-pn { display: grid; min-width: 0; }
+.mi-pn b { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mi-pn small { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mi-v { display: inline-flex; align-items: center; justify-content: center; padding: 3px 9px; border-radius: 999px; font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; white-space: nowrap; }
+.mi-v.up { background: var(--up-bg); color: var(--up); } .mi-v.down { background: var(--down-bg); color: var(--down); } .mi-v.flat { background: var(--plane-2); color: var(--text-2); } .mi-v.oro { background: var(--accent-bg); color: var(--accent); }
+.mi-cab { display: flex; align-items: center; gap: 10px; }
+.mi-cab h3 { margin: 0; flex: 1; min-width: 0; font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+.mi-x { flex: none; }
+.mi-bolsas { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.mi-bolsas th, .mi-bolsas td { padding: 7px 0; }
+.mi-bolsas thead th { color: var(--muted); font-weight: 500; font-size: 11.5px; text-align: right; padding: 0 0 2px; }
+.mi-bolsas tbody th { text-align: left; font-weight: 600; }
+.mi-bolsas tbody th small { display: block; color: var(--muted); font-weight: 500; font-size: 11.5px; }
+.mi-bolsas td { text-align: right; padding-left: 6px; }
+.mi-bolsas .mi-v { padding: 2px 7px; font-size: 12.5px; }
+.mi-bolsas tbody tr + tr > * { border-top: 1px solid var(--line); }
+.mi-que { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.55; }
+.mi-datos { display: grid; gap: 8px; padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.03); border: 1px solid var(--line); }
+.mi-datos p { margin: 0; font-size: 13.5px; color: var(--text-2); line-height: 1.5; }
+.mi-datos b { color: var(--text); font-weight: 650; }
+.mi-nota { margin: -4px 0 0; font-size: 12.5px; color: var(--muted); line-height: 1.5; }
+.mi-elige { display: grid; gap: 5px; font-size: 12px; color: var(--muted); }
+.mi-elige select { appearance: none; -webkit-appearance: none; background: rgba(255, 255, 255, 0.035) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23BCB3A2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center; border: 1px solid var(--line-2); border-radius: 11px; padding: 9px 34px 9px 12px; color: var(--text); font: inherit; font-size: 14px; }
+.mi-pos select { border-color: rgba(237, 187, 69, 0.35); }
+@media (max-width: 1079px) { .mapa-info { border-top: 1px solid var(--line); padding-top: 16px; } }
+@media (max-width: 759px) {
+  .mapa-w { margin: 0 calc(-1 * var(--gutter) + 8px); padding: 18px 14px 16px; border-radius: 24px; gap: 14px; }
+  .mapa-tit h2 { font-size: 19px; }
+  .mapa-cab { align-items: stretch; flex-direction: column; }
+  .mapa-modos { align-self: stretch; }
+  .mapa-caja { margin: 0 -6px; border-radius: 14px; }
+  .me { font-size: 10.5px; padding: 2px 6px; gap: 4px; }
+  .me i { width: 5px; height: 5px; }
+  .ml-barra { width: 140px; }
+}
+/* 0.4: tu cartera de un vistazo (rectángulos del tamaño de cada posición) y tu peor caída */
+.mc-w { display: grid; gap: 12px; }
+.mc-w .sec-cab { margin-bottom: 0; }
+.mc-caja { position: relative; min-height: 240px; border-radius: 16px; overflow: hidden; }
+.mc-t { position: absolute; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 7px 9px; border: 0; color: var(--text); text-align: left; overflow: hidden; line-height: 1.2; font-family: var(--f); cursor: pointer; transition: filter 0.15s ease, box-shadow 0.15s ease; }
+.mc-n { max-width: 100%; font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-v { font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.mc-e { font-size: 0.8em; font-weight: 600; opacity: 0.78; font-variant-numeric: tabular-nums; }
+.mc-t.mp-u3, .mc-t.mp-u4, .mc-t.mp-d4 { color: #0D0B08; }
+.mc-ef, .mc-ef-i { background: repeating-linear-gradient(135deg, #26211B 0 6px, #1C1914 6px 12px); color: var(--text-2); }
+.mc-ef-i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; }
+.mc-t.sel { box-shadow: inset 0 0 0 2px var(--accent); }
+.mc-t.mini { padding: 0; }   /* tan estrecho que el relleno lo sacaría de su sitio */
+@media (hover: hover) { .mc-t:hover { filter: brightness(1.12); } }
+.mc-pie { display: flex; justify-content: flex-end; }
+.mc-det { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; min-height: 22px; }
+.mc-det p { margin: 0; font-size: 13.5px; color: var(--text-2); }
+.mc-det b { color: var(--text); font-weight: 650; }
+.mc-tip { position: fixed; max-width: 320px; white-space: normal; z-index: 60; }
+.car-mc { padding: 18px; border: 1px solid var(--line); border-radius: 22px; background: var(--plane); }
+.caida-w { display: grid; gap: 8px; margin-bottom: 26px; }
+.caida-t { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
+.caida-txt { margin: 0; font-size: 14px; color: var(--text-2); line-height: 1.55; max-width: 70ch; }
+.caida-txt b { color: var(--text); font-weight: 650; }
+.caida-txt b.down { color: var(--down); }
+@media (max-width: 759px) { .mc-pie { justify-content: flex-start; } }
+/* 0.4: lo nuevo de Mercados, con un punto que late en su botón hasta que entras */
+.nav a.nuevo, .navbar a.nuevo { position: relative; }
+.nav a.nuevo::after, .navbar a.nuevo::after { content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg); animation: latido 1.6s ease-out infinite; }
+.nav a.nuevo::after { top: 5px; right: 4px; }
+.navbar a.nuevo::after { top: 4px; left: calc(50% + 14px); }
+@keyframes latido { 0% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 2px rgba(237, 187, 69, 0.55); } 70% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 9px rgba(237, 187, 69, 0); } 100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 9px rgba(237, 187, 69, 0); } }
+@media (prefers-reduced-motion: reduce) { .nav a.nuevo::after, .navbar a.nuevo::after { animation: none; } }
 .mgrupos { display: grid; gap: 22px; grid-template-columns: minmax(0, 1fr); }
 @media (min-width: 900px) { .mgrupos { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 26px 32px; align-items: start; } }
 .mg-t { margin: 0 0 6px; font-size: 13px; font-weight: 650; color: var(--muted); letter-spacing: 0.01em; }
@@ -3802,10 +3972,18 @@ const MODO = (() => {
 const PERFIL_LOCAL = MODO !== 'github', PERFIL_CUENTA = MODO === 'cuenta';
 const PRIVADAS = new Set(['inv-bloqueo', 'inv-bloqueo-t', 'inv-cache-enc', 'inv-pend-enc', 'inv-cuenta-enc', 'inv-pend-cuenta', 'inv-token', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-cfg2', 'inv-ia-propio', 'inv-ia-agotados', 'inv-gkey-modo', 'inv-cache-ia', 'inv-oculto', 'inv-proy']);
 const IDB_CLAVE = PERFIL_CUENTA ? 'clave-cuenta' : PERFIL_LOCAL ? 'clave-local' : 'clave';
+const LS_SOBRA = ['inv-cache-tren', 'inv-cache-escaneo', 'inv-cache-hist', 'inv-cache-radar', 'inv-cache-informe', 'inv-cache-precios', 'inv-cache-cat', 'inv-cache-inst'];
 const LS = {
   k(k) { return PERFIL_LOCAL && PRIVADAS.has(k) ? (PERFIL_CUENTA ? 'invC-' : 'invL-') + k.slice(4) : k; },
   get(k, d = null) { try { const v = localStorage.getItem(this.k(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; } },
-  set(k, v) { try { localStorage.setItem(this.k(k), JSON.stringify(v)); } catch (e) {} },
+  set(k, v) {
+    const kk = this.k(k), s = JSON.stringify(v);
+    try { localStorage.setItem(kk, s); } catch (e) {
+      // sin sitio (Safari da unos 5 MB): fuera las copias de datos públicos, que se vuelven a bajar, y otra vez. Así
+      // nunca se queda sin guardar la cartera por culpa de una caché.
+      try { for (const x of LS_SOBRA) if (x !== kk) localStorage.removeItem(x); localStorage.setItem(kk, s); } catch (e2) {}
+    }
+  },
   del(k) { try { localStorage.removeItem(this.k(k)); } catch (e) {} },
 };
 function cambiarPerfil(modo) {
@@ -4130,11 +4308,11 @@ const mesAnio = (s) => { if (!s) return '—'; const d = deIso(s); return IDIOMA
 function haceCuanto(t) {
   const min = Math.round((Date.now() - new Date(t).getTime()) / 60000);
   if (!isFinite(min)) return '—';
-  if (min < 1) return 'ahora mismo';
-  if (min < 60) return `hace ${min} min`;
+  if (min < 1) return L('ahora mismo', 'just now');
+  if (min < 60) return L(`hace ${min} min`, `${min} min ago`);
   const h = Math.round(min / 60);
-  if (h < 48) return `hace ${h} h`;
-  return `hace ${Math.round(h / 24)} días`;
+  if (h < 48) return L(`hace ${h} h`, `${h} h ago`);
+  return L(`hace ${Math.round(h / 24)} días`, `${Math.round(h / 24)} days ago`);
 }
 const diasEntre = (a, b) => Math.round((deIso(b) - deIso(a)) / 86400000);
 
@@ -4248,6 +4426,7 @@ async function cargarPrecios() {
   else { try { txt = localStorage.getItem('inv-cache-precios'); } catch (e) {} }
   S.precios = txt ? JSON.parse(txt) : { instrumentos: {}, sectores_etf: {}, generado: null };
   S.ultimaCarga = Date.now();
+  if (IDIOMA === 'en' && S.trEn) trDatos(S.precios.noticias);
 }
 
 async function cargarCifrada() {
@@ -5688,7 +5867,7 @@ function reglasAvisos(M) {
   const reglas = M.filas.filter((f) => f.inst && f.valor > 0).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, sym: f.inst.yahoo ? String(f.inst.yahoo).toUpperCase() : '', cid: f.inst.cat || (catDe(f.inst) ? 'c-' + String(f.inst.isin || '').toLowerCase() : ''), stop: +f.pos.stop || 0, p: f.precio || 0 }));
   const vistos = new Set(), unicas = reglas.filter((r) => !vistos.has(r.id) && vistos.add(r.id));
   let eventos = [];
-  try { eventos = agendaLista(M, 3).filter((e) => ['resultados', 'dividendo', 'cobro'].includes(e.tipo)).map((e) => { const d = document.createElement('div'); d.innerHTML = e.t; return { k: e.id, d: e.d, t: d.textContent, s: String(e.s || '') }; }); } catch (e) {}
+  try { eventos = agendaLista(M, 3).filter((e) => ['resultados', 'dividendo', 'cobro'].includes(e.tipo)).map((e) => { const d = document.createElement('div'); d.innerHTML = e.t; return { k: e.id, d: e.d, t: trad(d.textContent), s: trad(String(e.s || '')) }; }); } catch (e) {}
   const vistas = LS.get('inv-preg-vistas', []);
   const preg = preguntasIA().filter((x) => !vistas.includes(clavePreg(x))).map((x) => ({ k: clavePreg(x), q: x.q }));
   // 0.3.11: las empresas que sigues, con sus precios de aviso (en euros, los del radar)
@@ -5703,17 +5882,17 @@ function revisarAvisos(M) {
   for (const f of M.filas) {
     const stop = +f.pos.stop, pr = f.precio, n = f.inst.corto || f.inst.nombre;
     if (c.stop && stop > 0 && pr > 0) {
-      if (pr <= stop) avisoSistema('stop', `${n}: precio de salida roto`, `Está a ${precioFmt(pr)}, por debajo de tu salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`, '#cartera', `stop:${f.inst.id}:${hoy}`);
-      else if (pr <= stop * 1.03) avisoSistema('stop', `${n} se acerca a tu precio de salida`, `Está a un ${fmtNum((pr / stop - 1) * 100, 1)} % de ${precioFmt(stop)}.`, '#cartera', `stopc:${f.inst.id}:${hoy}`);
+      if (pr <= stop) avisoSistema('stop', L(`${n}: precio de salida roto`, `${n}: exit price broken`), L(`Está a ${precioFmt(pr)}, por debajo de tu salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`, `It's at ${precioFmt(pr)}, below your exit (${precioFmt(stop)}). It's what you told yourself you'd do.`), '#cartera', `stop:${f.inst.id}:${hoy}`);
+      else if (pr <= stop * 1.03) avisoSistema('stop', L(`${n} se acerca a tu precio de salida`, `${n} is nearing your exit price`), L(`Está a un ${fmtNum((pr / stop - 1) * 100, 1)} % de ${precioFmt(stop)}.`, `It's ${fmtNum((pr / stop - 1) * 100, 1)} % above ${precioFmt(stop)}.`), '#cartera', `stopc:${f.inst.id}:${hoy}`);
     }
-    if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', `${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.`, '#cartera', `mov:${f.inst.id}:${hoy}`);
+    if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', L(`${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `${n} is ${f.varDia > 0 ? 'up' : 'down'} ${fmtNum(Math.abs(f.varDia), 1)} % today`), L('Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.', 'Open GrowFolio to see what happened and what GrowIA says.'), '#cartera', `mov:${f.inst.id}:${hoy}`);
   }
-  if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', `Mañana: ${e.t}`, e.s, '#agenda', 'ev:' + e.k);
+  if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', L(`Mañana: ${e.t}`, `Tomorrow: ${e.t}`), e.s, '#agenda', 'ev:' + e.k);
   if (c.seg) for (const it of siguiendo()) {
     const pr = precioSeguido(it), p = pr && pr.eur;
     if (!(p > 0)) continue;
-    if (it.baja && p <= it.baja) avisoSistema('seg', `${it.n} ha bajado a tu precio`, `Está a ${precioFmt(p)}: la seguías para cuando bajara de ${precioFmt(it.baja)}.`, '#expertos', `segb:${it.s}:${it.baja}`);
-    if (it.sube && p >= it.sube) avisoSistema('seg', `${it.n} ha subido a tu precio`, `Está a ${precioFmt(p)}: querías saber cuándo pasara de ${precioFmt(it.sube)}.`, '#expertos', `segs:${it.s}:${it.sube}`);
+    if (it.baja && p <= it.baja) avisoSistema('seg', L(`${it.n} ha bajado a tu precio`, `${it.n} has dropped to your price`), L(`Está a ${precioFmt(p)}: la seguías para cuando bajara de ${precioFmt(it.baja)}.`, `It's at ${precioFmt(p)}: you were watching for it to drop below ${precioFmt(it.baja)}.`), '#expertos', `segb:${it.s}:${it.baja}`);
+    if (it.sube && p >= it.sube) avisoSistema('seg', L(`${it.n} ha subido a tu precio`, `${it.n} has risen to your price`), L(`Está a ${precioFmt(p)}: querías saber cuándo pasara de ${precioFmt(it.sube)}.`, `It's at ${precioFmt(p)}: you wanted to know when it passed ${precioFmt(it.sube)}.`), '#expertos', `segs:${it.s}:${it.sube}`);
   }
 }
 
@@ -5784,7 +5963,7 @@ function enviarWidget(forzar) {
   try {
     const P = pasosRuta(M), pend = [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto);
     const x = pend.find((y) => y.urgente) || pend[0];
-    if (x) { const d = document.createElement('div'); d.innerHTML = x.t; toca = d.textContent.replace(/\s+/g, ' ').trim(); cuando = x.cuando || ''; }
+    if (x) { const d = document.createElement('div'); d.innerHTML = x.t; toca = trad(d.textContent.replace(/\s+/g, ' ').trim()); cuando = trad(x.cuando || ''); }
   } catch (e) {}
   const pos = M.filas.filter((f) => f.valor).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, uds: f.uds || undefined, valor: Math.round(f.valor * 100) / 100, dia: Math.round((f.dia || 0) * 100) / 100 }));
   // la gráfica del widget: el último mes, día a día, con el efectivo sumado para que acabe en el total de hoy
@@ -5816,6 +5995,10 @@ function pintar() {
   // un punto en Análisis (donde están tus objetivos) mientras te falte el perfil
   const faltaP = perfilIncompleto();
   for (const a of $$('.nav [data-ir="analisis"], .navbar [data-ir="analisis"]')) a.classList.toggle('falta', faltaP);
+  // 0.4: un punto que late en Mercados hasta que entras a ver lo nuevo (el mapa)
+  if (S.vista === 'mercados') LS.set('inv-nuevo-mapa', 1);
+  const nuevoM = !LS.get('inv-nuevo-mapa', 0);
+  for (const a of $$('.nav [data-ir="mercados"], .navbar [data-ir="mercados"]')) { a.classList.toggle('nuevo', nuevoM); if (nuevoM) a.setAttribute('aria-label', L('Mercados (hay algo nuevo)', 'Markets (something new)')); else a.removeAttribute('aria-label'); }
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
   pintarGtaTop();
   cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
@@ -5943,6 +6126,7 @@ const BLOQUES_CAR = {
   posiciones: { n: 'Tus posiciones', d: 'Lo que tienes, tu plan y tus movimientos', w: 'grande', fijo: true },
   reparto: { n: 'Reparto', d: 'Por países, sectores, monedas y tipo', w: 'estrecho' },
   agenda: { n: 'Lo que viene', d: 'Resultados, dividendos y fechas de lo tuyo', w: 'estrecho' },
+  mapa: { n: 'Tu cartera de un vistazo', d: 'Cada posición, del tamaño de lo que vale y del color de cómo va', w: 'grande' },
   vistazo: { n: 'Señales de un vistazo', d: 'Qué dicen los números y GrowIA de cada posición', w: 'estrecho' },
   informe: { n: 'Lo último, según GrowIA', d: 'Su resumen de las noticias del día', w: 'estrecho' },
   noticias: { n: 'Noticias de lo tuyo', d: 'Los últimos titulares de lo que tienes', w: 'grande' },
@@ -5987,7 +6171,7 @@ function htmlBloqueCar(k, M) {
     if (k === 'patrimonio') {
       return `<section class="car-patrimonio car-hero" aria-label="Patrimonio">
       ${htmlAvisoNovedades()}
-      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}${(() => { let n = 0; try { n = eventos(M, 7).length; } catch (e) {} return `<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L(`Calendario${n ? `: ${n} cosas tuyas esta semana` : ''}`, `Calendar${n ? `: ${n} of your things this week` : ''}`))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span>${n ? `<b class="cal-n" aria-hidden="true">${n}</b>` : ''}</a>`; })()}<button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
+      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L('Calendario', 'Calendar'))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span></a><button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
       <div class="hero-panel">
         <div class="hero-cifra">
           <div class="hero-lbl"><span id="heroLbl">${L('Patrimonio', 'Net worth')}</span><button type="button" class="hero-ojo" data-accion="ocultar" aria-pressed="${!!S.oculto}" title="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}" aria-label="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}">${S.oculto ? ICONOS.ojoNo : ICONOS.ojo}</button></div>
@@ -6024,6 +6208,7 @@ function htmlBloqueCar(k, M) {
       ${S.carTab === 'plan' ? htmlPlan(M) : `<div class="pila">${htmlAvisosGraves(M)}${htmlPosiciones(M)}${htmlAvisos(M)}</div>`}</div>`;
     if (k === 'reparto') return htmlReparto(M);
     if (k === 'agenda') return htmlAgenda(M);
+    if (k === 'mapa') return htmlMapaCartera(M, true);
     if (k === 'vistazo') return M.filas.length ? htmlVistazo(M, iaActual()).replace(/<button class="enlace acento ver-mas" data-exp="posiciones">([^<]*)<\/button>/, '<a class="enlace acento ver-mas" href="#expertos">$1</a>') : '';
     if (k === 'informe') return htmlResumenInforme(true);
     if (k === 'movidas') return htmlMovidas();
@@ -6951,7 +7136,7 @@ function avisos(M) {
   const lim = +(S.cartera.limite_acciones ?? 20);
   if (sueltas.length) av.push({ n: pctSueltas > lim ? 'warn' : 'info', i: pctSueltas > lim ? ICONOS.alerta : ICONOS.info, t: `Acciones sueltas: ${pct(pctSueltas, 1)} de la cartera`, d: `Tu límite es el ${fmtNum(lim, 0)} %. ${pctSueltas > lim ? 'Lo has pasado.' : `Te queda margen de ${eur(((lim - pctSueltas) / 100) * M.total, 0)}.`}` });
   const estimadas = M.filas.filter((f) => f.estimada);
-  if (estimadas.length) av.push({ n: 'warn', i: ICONOS.alerta, t: `${estimadas.length === 1 ? 'Una posición' : estimadas.length + ' posiciones'} con la cantidad estimada`, d: `${yLista(estimadas.map((f) => f.inst.corto))}. Pon las participaciones exactas en la ficha de cada una (botón Editar) para que cuadre al céntimo.` });
+  if (estimadas.length) av.push({ n: 'warn', i: ICONOS.alerta, t: L(`${estimadas.length === 1 ? 'Una posición' : estimadas.length + ' posiciones'} con la cantidad estimada`, `${estimadas.length === 1 ? 'One holding' : estimadas.length + ' holdings'} with an estimated quantity`), d: L(`${yLista(estimadas.map((f) => f.inst.corto))}. Pon las participaciones exactas en la ficha de cada una (botón Editar) para que cuadre al céntimo.`, `${yLista(estimadas.map((f) => f.inst.corto))}. Enter the exact units on each one's page (Edit button) so it matches to the cent.`) });
   for (const f of M.filas) {
     if (f.p && f.p.estado === 'antiguo') av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto}: precio sin actualizar`, d: `Último precio bueno del ${fechaLarga(f.p.fecha)}.` });
     // solo si de verdad no tiene precio: muchas lo sacan del catálogo, del radar o de su último cierre aunque no estén
@@ -7333,6 +7518,45 @@ const ORDEN_RADAR = { pot: ['Puede subir', (x) => x.pot ?? -999], neto: ['Te que
 // Londres cotiza en peniques (GBp): se enseña en libras, que se entiende mejor
 const precioR = (p, m) => { const v = m === 'GBp' ? p / 100 : p; return `${fmtNum(v, v >= 1000 ? 0 : 2)} ${monedaR(m)}`; };
 const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? '£' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
+/* ---------- 0.4: lo que escribe Gemini en la Action, en inglés ----------
+   El informe, las ideas, las lecturas de prensa y los titulares en español los traduce la propia Action una vez
+   (scripts/traducir.py → traduccion-en.json, rama datos). Con la app en inglés se cambian en los datos al cargarlos;
+   lo que aún no esté traducido se queda en español hasta la siguiente pasada. La clave es la misma que en Python. */
+const claveTr = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0') + s.length.toString(16); };
+async function cargarTrEn() {
+  if (IDIOMA !== 'en' || S.trEnCargando) return;
+  if (S.trEn && Date.now() - (S.trEnT || 0) < 15 * 60000) { aplicarTrEn(); return; }
+  S.trEnCargando = true;
+  let txt = null;
+  try {
+    if (CFG.dev) { const r = await fetch('dev/traduccion-en.json', { cache: 'no-store' }).catch(() => null); if (r && r.ok) txt = await r.text(); }
+    else { const r = await fetch(GH.raw('traduccion-en.json', 'datos') + '?v=' + Math.floor(Date.now() / 900000), { cache: 'no-cache' }).catch(() => null); if (r && r.ok) txt = await r.text(); }
+  } catch (e) { /* sin conexión: lo guardado */ }
+  try {
+    if (txt) { S.trEn = JSON.parse(txt).t || {}; try { localStorage.setItem('inv-cache-tren', JSON.stringify({ t: S.trEn })); } catch (e) {} }
+    else if (!S.trEn) { const c = localStorage.getItem('inv-cache-tren'); if (c) S.trEn = JSON.parse(c).t || {}; }
+  } catch (e) {}
+  S.trEnT = Date.now(); S.trEnCargando = false;
+  aplicarTrEn();
+}
+function trDatos(o) {
+  if (!o || typeof o !== 'object') return 0;
+  let n = 0;
+  for (const k of Object.keys(o)) {
+    const v = o[k];
+    if (typeof v === 'string') { if (v.length >= 12) { const t = S.trEn[claveTr(v.trim())]; if (t) { o[k] = t; n++; } } }
+    else if (v && typeof v === 'object' && k !== 'fuentes' && k !== 'noticias') n += trDatos(v);
+  }
+  return n;
+}
+// cambia lo que haya cargado (se puede llamar varias veces: lo ya cambiado no vuelve a coincidir)
+function aplicarTrEn() {
+  if (IDIOMA !== 'en' || !S.trEn) return 0;
+  const n = trDatos(S.informe) + trDatos(S.escaneo) + trDatos(S.precios && S.precios.noticias);
+  if (n && S.cartera && !S.ficha) pintar();
+  return n;
+}
+
 /* ---------- informe de prensa de Gemini (informe.json, rama datos) ----------
    Lo escribe la Action cada 2 horas con las noticias de tus posiciones, del mercado y de las mejores
    ideas del radar, aunque la web esté cerrada. Sin cantidades: tus cifras las pone la web. */
@@ -7348,6 +7572,7 @@ async function cargarInforme() {
   if (txt) { try { S.informe = JSON.parse(txt); localStorage.setItem('inv-cache-informe', txt); } catch (e) {} }
   else { try { const c = localStorage.getItem('inv-cache-informe'); if (c && !S.informe) S.informe = JSON.parse(c); } catch (e) {} }
   S.informeId = id;
+  if (IDIOMA === 'en') cargarTrEn();
 }
 /* El escaneo de prensa (unos 500 KB) no hace falta para pintar: al abrir se usa el guardado y el nuevo se baja
    después, sin frenar la entrada. Solo lo leen las ideas de Expertos y Mercados. */
@@ -7365,6 +7590,7 @@ async function cargarEscaneo() {
   if (txt) { try { S.escaneo = JSON.parse(txt); localStorage.setItem('inv-cache-escaneo', txt); } catch (e) {} }
   else { try { const c = localStorage.getItem('inv-cache-escaneo'); if (c && !S.escaneo) S.escaneo = JSON.parse(c); } catch (e) {} }
   S.escaneoId = id;
+  if (IDIOMA === 'en') cargarTrEn();
 }
 /* lo que ha leído Gemini de la prensa de una empresa (el escaneo recorre todo el radar) */
 const lecturaDe = (sim) => (S.escaneo && S.escaneo.lectura && S.escaneo.lectura[sim]) || null;
@@ -7656,7 +7882,7 @@ function htmlIdeas(M, ia) {
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
   return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowIA y tu análisis</span></div>
-    ${d && d.comentario ? `<p class="idea-panorama">${NOM_IA} ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
+    ${d && d.comentario ? `<p class="idea-panorama">${NOM_IA} ${haceCuanto(d.generado)}${L(`, tras leer la prensa de ${lecturas} empresas: `, `, after reading the press on ${lecturas} companies: `)}${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : `<div class="vacio">${L('Ahora mismo ninguna pasa los filtros: mejor esperar.', 'None passes the filters right now: better to wait.')}</div>`}
     <p class="nota">Cómo se eligen: GrowFolio se queda con las mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas una vez al día. Primero salen las que eligen los dos. Lo que ya se ha propuesto se mantiene salvo que llegue una noticia que cambie la tesis o se rompan sus números, y nada sale a la vez como idea y como «evitar». En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
@@ -7751,7 +7977,7 @@ function filaMercado(sym, m, M) {
       <div class="chart" data-spark-m="${esc(sym)}"></div>
       <div class="merc-r"><span>1 mes <b class="${cls(m.rent && m.rent['1m'])}">${pctS(m.rent && m.rent['1m'], 1)}</b></span><span>Año <b class="${cls(m.rent && m.rent.ytd)}">${pctS(m.rent && m.rent.ytd, 1)}</b></span><span>1 año <b class="${cls(m.rent && m.rent['1a'])}">${pctS(m.rent && m.rent['1a'], 1)}</b></span></div>
       ${info.sube ? `<p class="merc2-imp ${plano ? '' : (sube !== !!info.inverso) ? 'sube' : 'baja'}"><b>${plano ? 'Si sube' : sube ? 'Hoy sube' : 'Hoy baja'}:</b> ${esc(plano ? info.sube : sube ? info.sube : info.baja)}</p>${plano ? `<p class="merc2-imp"><b>Si baja:</b> ${esc(info.baja)}</p>` : ''}` : ''}
-      ${tuyos.length ? `<p class="merc2-tuyo">Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}</p>` : ''}
+      ${tuyos.length ? `<p class="merc2-tuyo">${L(`Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}`, `Felt in your portfolio by: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` and ${tuyos.length - 4} more` : ''}`)}</p>` : ''}
     </div>
   </details>`;
 }
@@ -7767,7 +7993,7 @@ function tarjetaMercado(sym, m, M) {
     <div class="merc2-g"><div class="chart" data-spark-m="${esc(sym)}"></div>
       <div class="merc-r"><span>1 mes <b class="${cls(m.rent && m.rent['1m'])}">${pctS(m.rent && m.rent['1m'], 1)}</b></span><span>Año <b class="${cls(m.rent && m.rent.ytd)}">${pctS(m.rent && m.rent.ytd, 1)}</b></span><span>1 año <b class="${cls(m.rent && m.rent['1a'])}">${pctS(m.rent && m.rent['1a'], 1)}</b></span></div></div>
     ${info.sube ? `<p class="merc2-imp ${plano ? '' : (sube !== !!info.inverso) ? 'sube' : 'baja'}"><b>${plano ? 'Si sube' : sube ? 'Hoy sube' : 'Hoy baja'}:</b> ${esc(plano ? info.sube : sube ? info.sube : info.baja)}</p>${plano ? `<p class="merc2-imp"><b>Si baja:</b> ${esc(info.baja)}</p>` : ''}` : ''}
-    ${tuyos.length ? `<p class="merc2-tuyo">Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}</p>` : ''}
+    ${tuyos.length ? `<p class="merc2-tuyo">${L(`Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}`, `Felt in your portfolio by: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` and ${tuyos.length - 4} more` : ''}`)}</p>` : ''}
   </article>`;
 }
 function vistaMercados(M) {
@@ -7784,6 +8010,7 @@ function vistaMercados(M) {
   <div class="vista-cab vista-merc"><h1>Mercados</h1><p>Bolsas del mundo, tipos, divisas y materias primas: qué son, cómo van y qué significa que suban o bajen para lo que tienes.</p></div>
   <div class="pila pila-merc">
     ${htmlBuscaMercados()}
+    ${htmlMapaMundo()}
     <section class="mgrupos-w" aria-labelledby="hMg">
       <div class="sec-cab"><h2 id="hMg">Cómo van</h2><span class="k">La línea son sus tres últimos meses y la cifra, lo de hoy. Toca uno para ver qué es y qué significa para ti.</span></div>
       <div class="mg-tabs" role="tablist" aria-label="Grupos de mercados">${grupos.map(([g]) => `<button type="button" role="tab" data-mg="${esc(g)}" aria-selected="${g === act}">${esc(MG_CORTO[g] || g)}</button>`).join('')}</div>
@@ -7804,10 +8031,385 @@ document.addEventListener('click', (e) => {
   for (const el of $$('.mgrupo.act [data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
 });
 
+/* =========================== Mercados: el mapa del mundo (0.4) =========================== */
+/* Cada país, entero, del color de su bolsa (hoy, en el mes o en lo que va de año) o, en «Tu dinero», de lo que tienes
+   allí. Las formas salen de Natural Earth ya proyectadas: el mundo (mapa-mundo.json, a 1:110 millones) se pide la
+   primera vez que abres Mercados; Europa y Asia (mapa-eu.json, mapa-as.json, más detalladas) cuando te acercas.
+   Los nombres van primero en los mercados que más pesan en el mundo, y en dorado donde tienes dinero. */
+const BOLSA_PAIS = { ES: ['^IBEX'], DE: ['^GDAXI'], FR: ['^FCHI'], GB: ['^FTSE'], US: ['^GSPC', '^NDX', '^RUT'], JP: ['^N225'], CN: ['000001.SS'], HK: ['^HSI'], IN: ['^NSEI'], BR: ['^BVSP'] };
+const MAPA_MODOS = [['hoy', 'Hoy', 'Today'], ['mes', '1 mes', '1 month'], ['anio', 'En el año', 'This year'], ['tuyo', 'Tu dinero', 'Your money']];
+const MAPA_VISTAS = [['mundo', 'Mundo', 'World'], ['eu', 'Europa', 'Europe'], ['as', 'Asia', 'Asia']];
+// dónde empieza cada tono (por debajo del primero, gris: ni sube ni baja); en «Tu dinero», % de tu cartera
+const MAPA_CORTES = { hoy: [0.25, 0.75, 1.5, 2.5], mes: [1, 3, 6, 10], anio: [3, 10, 20, 35], tuyo: [0, 1, 5, 20] };
+// lo que pesa cada país en un fondo de todo el mundo (tipo MSCI ACWI), más o menos, en %
+const PESO_MUNDO = { US: 64, JP: 4.8, GB: 3.2, CA: 2.9, CN: 2.8, FR: 2.4, TW: 2.2, CH: 2.1, DE: 2.1, IN: 1.8, AU: 1.6, KR: 1.3, NL: 1, SE: 0.8, IT: 0.7, ES: 0.7, DK: 0.5, BR: 0.5, HK: 0.5, SA: 0.4, SG: 0.35, ZA: 0.35, FI: 0.2, BE: 0.2, IL: 0.2, MX: 0.2, AE: 0.15, NO: 0.15, ID: 0.12, MY: 0.12, TH: 0.1, PL: 0.1, IE: 0.1, QA: 0.07, KW: 0.07, GR: 0.06, NZ: 0.05, AT: 0.05, TR: 0.05, CL: 0.04, PH: 0.04, PT: 0.04, HU: 0.02, PE: 0.02, EG: 0.01, CZ: 0.01, CO: 0.01 };
+// cómo se reparte por países cada zona dentro de un fondo (como sus índices MSCI, más o menos)
+const ZONA_PAISES = {
+  Europa: { GB: 22, FR: 16, CH: 15, DE: 15, NL: 7, SE: 5, IT: 5, ES: 5, DK: 4, FI: 1.5, BE: 1.5, NO: 1, IE: 0.5, PT: 0.3, AT: 0.3, PL: 0.3 },
+  Eurozona: { FR: 33, DE: 28, NL: 15, ES: 10, IT: 8, BE: 3, FI: 2, IE: 1 },
+  Pacifico: { JP: 67, AU: 22, HK: 6, SG: 4, NZ: 1 },
+  Emergentes: { CN: 27, TW: 19, IN: 17, KR: 11, BR: 4, SA: 3, ZA: 3, MX: 2, AE: 1.5, MY: 1.2, ID: 1.2, TH: 1.1, PL: 1, QA: 0.8, KW: 0.7, TR: 0.6, GR: 0.5, PH: 0.5, CL: 0.4, PE: 0.3, HU: 0.3, CZ: 0.1, CO: 0.1, EG: 0.1 },
+  Mundo: { US: 72, JP: 5, GB: 3.5, CA: 3, FR: 2.6, DE: 2.3, CH: 2.2, AU: 1.6, NL: 1.2, SE: 0.9, ES: 0.8, IT: 0.8, DK: 0.6, HK: 0.5, SG: 0.4, FI: 0.3, BE: 0.3, IL: 0.2, NO: 0.2, IE: 0.1, NZ: 0.1, AT: 0.1 },
+};
+const CORTO_MAPA = { US: ['EEUU', 'US'], GB: ['R. Unido', 'UK'], KR: ['Corea', 'Korea'], AE: ['Emiratos', 'UAE'], SA: ['Arabia S.', 'Saudi Ar.'], ZA: ['Sudáfrica', 'S. Africa'], NL: ['P. Bajos', 'Netherl.'], NZ: ['N. Zelanda', 'NZ'], CH: ['Suiza', 'Switz.'] };
+/* en qué países cae cada posición: una acción, en el de su sede; un fondo, según sus zonas (y si el nombre dice un
+   país, ese). Lo que no es bolsa (oro, cripto, renta fija, efectivo) no está en ningún país del mapa */
+function paisesDeFila(f) {
+  const i = f.inst;
+  if (i.clase !== 'Renta variable') return null;
+  if (i.tipo === 'Acción' && /^[A-Z]{2}$/.test(i.pais || '')) return { [i.pais]: 1 };
+  const n = normTxt(i.nombre), out = {};
+  const add = (w, peso) => { const t = sum(Object.values(w)); for (const [k, x] of Object.entries(w)) out[k] = (out[k] || 0) + (peso * x) / t; };
+  const reg = i.region || { Global: 100 }, tot = sum(Object.values(reg)) || 100;
+  for (const [r, x] of Object.entries(reg)) {
+    const peso = x / tot;
+    if (!(peso > 0)) continue;
+    if (r === 'EEUU') add({ US: 1 }, peso);
+    else if (r === 'Canadá') add({ CA: 1 }, peso);
+    else if (r === 'Europa') add(/\bibex\b|espana|spain/.test(n) ? { ES: 1 } : /\bdax\b|german|alemania/.test(n) ? { DE: 1 } : /\bcac\b|france|francia/.test(n) ? { FR: 1 } : /ftse 100|united kingdom|reino unido/.test(n) ? { GB: 1 } : /switzerland|swiss|suiza/.test(n) ? { CH: 1 } : /stoxx 50|euro stoxx|eurozone|\bemu\b|zona euro|euro area/.test(n) ? ZONA_PAISES.Eurozona : ZONA_PAISES.Europa, peso);
+    else if (r === 'Japón y Pacífico') add(/japan|japon|nikkei|topix/.test(n) ? { JP: 1 } : /australia/.test(n) ? { AU: 1 } : ZONA_PAISES.Pacifico, peso);
+    else if (r === 'Emergentes') add(/china|csi 300/.test(n) ? { CN: 1 } : /\bindia\b|nifty/.test(n) ? { IN: 1 } : /brazil|brasil/.test(n) ? { BR: 1 } : /korea|corea/.test(n) ? { KR: 1 } : /taiwan/.test(n) ? { TW: 1 } : ZONA_PAISES.Emergentes, peso);
+    else if (r === 'Global') add(ZONA_PAISES.Mundo, peso);
+    // «Otros»: no se sabe dónde, no se pinta
+  }
+  return Object.keys(out).length ? out : null;
+}
+// cuánto tienes en cada país (con posId, solo esa posición, y el % sobre ella)
+function exposicionPaises(M, posId) {
+  const out = new Map();
+  if (!M || !(M.total > 0)) return out;
+  const filas = M.filas.filter((f) => f.valor > 0 && (!posId || f.pos.id === posId));
+  const base = posId ? sum(filas, (f) => f.valor) : M.total;
+  if (!(base > 0)) return out;
+  for (const f of filas) {
+    const w = paisesDeFila(f);
+    if (!w) continue;
+    for (const [c, x] of Object.entries(w)) {
+      const v = f.valor * x;
+      if (v < 0.5) continue;
+      const e = out.get(c) || { v: 0, de: [] };
+      // lo mismo en dos brókers cuenta una vez, sumado
+      const ya = e.de.find((d) => d.id === f.inst.id);
+      if (ya) ya.v += v; else e.de.push({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, v, fondo: f.inst.tipo !== 'Acción' });
+      e.v += v;
+      out.set(c, e);
+    }
+  }
+  for (const e of out.values()) { e.pct = (e.v / base) * 100; e.de.sort((a, b) => b.v - a.v); }
+  return out;
+}
+/* las bolsas de un país: las de Mercados (con su precio en directo) y las que solo están para el mapa */
+function bolsasDe(c) {
+  const merc = (S.precios && S.precios.mercados) || {}, mapa = (S.precios && S.precios.mapa) || {}, out = [];
+  for (const sym of BOLSA_PAIS[c] || []) {
+    const m = merc[sym];
+    if (!m) continue;
+    const lv = S.liveM && S.liveM[sym];
+    out.push({ sym, n: m.nombre, v: lv && lv.var != null ? lv.var : m.variacion_dia, m: m.rent && m.rent['1m'], y: m.rent && m.rent.ytd, f: m.fecha });
+  }
+  for (const [sym, x] of Object.entries(mapa)) if (x.p === c) out.push({ sym, n: x.n, v: x.v, m: x.m, y: x.y, f: x.f });
+  return out;
+}
+const nombrePaisMapa = (c) => { const n = S.mapaGeo && S.mapaGeo.n[c]; return n ? L(n[0], n[1]) : PAISES[c] || c; };
+const cortoPaisMapa = (c) => (CORTO_MAPA[c] ? L(CORTO_MAPA[c][0], CORTO_MAPA[c][1]) : nombrePaisMapa(c));
+function valorMapa(c, modo, ex) {
+  if (modo === 'tuyo') { const e = ex.get(c); return e ? e.pct : null; }
+  const b = bolsasDe(c)[0];
+  if (!b) return null;
+  // «hoy» con un cierre de hace más de una semana (la bolsa dejó de llegar) no es hoy: sin datos
+  if (modo === 'hoy' && b.f && Date.now() - Date.parse(b.f) > 7 * 864e5) return null;
+  return modo === 'hoy' ? b.v : modo === 'mes' ? b.m : b.y;
+}
+function tonoMapa(v, modo) {
+  if (v == null || !isFinite(v)) return 'mp-0';
+  const c = MAPA_CORTES[modo];
+  if (modo === 'tuyo') return v <= 0 ? 'mp-0' : `mp-a${v >= c[3] ? 4 : v >= c[2] ? 3 : v >= c[1] ? 2 : 1}`;
+  const a = Math.abs(v), k = a >= c[3] ? 4 : a >= c[2] ? 3 : a >= c[1] ? 2 : a >= c[0] ? 1 : 0;
+  return k ? `mp-${v > 0 ? 'u' : 'd'}${k}` : 'mp-n';
+}
+const etqModoMapa = (modo) => ({ hoy: L('hoy', 'today'), mes: L('en el último mes', 'over the last month'), anio: L('en lo que va de año', 'so far this year') }[modo] || '');
+const valorCortoMapa = (v, modo) => (modo === 'tuyo' ? `${fmtNumR(v, v < 1 ? 2 : v < 10 ? 1 : 0)} %` : pctS(v, 1));
+// los países con algo que contar (bolsa o dinero tuyo) y su cifra en el modo elegido
+function paisesMapa(modo, ex) {
+  const cods = new Set([...Object.keys(BOLSA_PAIS), ...Object.values((S.precios && S.precios.mapa) || {}).map((x) => x.p), ...ex.keys()]);
+  return [...cods].map((c) => ({ c, v: valorMapa(c, modo, ex) })).filter((x) => x.v != null && isFinite(x.v));
+}
+// en «Tu dinero» con una sola posición elegida, su nombre (las cifras son % de esa posición, no de la cartera)
+const posMapa = () => (S.mapaPos && S.M && S.M.filas.find((f) => f.pos.id === S.mapaPos)) || null;
+function textoValorMapa(v, modo) {
+  const pos = modo === 'tuyo' ? posMapa() : null, pn = pos ? pos.inst.corto || pos.inst.nombre : '';
+  if (v == null || !isFinite(v)) return modo === 'tuyo' ? (pn ? L(`nada de ${pn}`, `none of ${pn}`) : L('nada de tu cartera', 'none of your portfolio')) : L('sin datos de su bolsa', 'no stock market data');
+  const n = fmtNumR(v, v < 1 ? 2 : 1);
+  if (modo !== 'tuyo') return `${pctS(v, 1)} ${etqModoMapa(modo)}`;
+  return pn ? L(`${n}\u00a0% de ${pn}`, `${n}% of ${pn}`) : L(`${n}\u00a0% de tu cartera`, `${n}% of your portfolio`);
+}
+const cajaVistaMapa = (v) => (v !== 'mundo' && S.mapaGeo.zonas[v] ? S.mapaGeo.zonas[v] : [0, 0, S.mapaGeo.w, S.mapaGeo.h]);
+// la zona apretada en la que cae un país (para acercarse al tocarlo en el móvil)
+function zonaDeMapa(c) {
+  const p = S.mapaGeo.c[c];
+  if (!p) return null;
+  return Object.entries(S.mapaGeo.zonas).find(([, [x, y, w, h]]) => p[0] >= x + w * 0.06 && p[0] <= x + w * 0.94 && p[1] >= y && p[1] <= y + h * 0.95)?.[0] || null;
+}
+const anchoMapa = () => { const w = $('#mapaMundo'); return (w && w.clientWidth) || Math.min(innerWidth - 32, 1000); };
+function caminosMapa(vista, modo, ex) {
+  const G = S.mapaGeo, P = vista !== 'mundo' && S.mapaZonas && S.mapaZonas[vista] ? S.mapaZonas[vista] : G.mundo;
+  // el elegido, el último: así su borde dorado se ve entero por encima de los vecinos
+  const orden = Object.keys(P).filter((c) => c !== '_').sort((a, b) => (a === S.mapaSel) - (b === S.mapaSel));
+  return (P._ ? `<path d="${P._}" class="mp-0"/>` : '') + orden.map((c) => `<path d="${P[c]}" data-c="${c}" class="${tonoMapa(valorMapa(c, modo, ex), modo)}${c === S.mapaSel ? ' sel' : ''}"/>`).join('');
+}
+/* los nombres: pastillas con la letra de la app encima del mapa. Primero los que más pesan en el mundo (en «Tu dinero»,
+   donde más tienes); solo en países lo bastante grandes en pantalla, y los que se pisan con otro se quitan al colocarlos */
+function etiquetasMapa(vb, esc1, modo, ex) {
+  const G = S.mapaGeo, out = [];
+  const lista = paisesMapa(modo, ex).map((x) => ({ ...x, peso: modo === 'tuyo' ? x.v : PESO_MUNDO[x.c] || 0 })).sort((a, b) => b.peso - a.peso);
+  const exTodo = S.mapaExTodo || ex;
+  for (const x of lista) {
+    const p = G.c[x.c];
+    if (!p || (G.a[x.c] || 0) * esc1 * esc1 < 260) continue;
+    const l = ((p[0] - vb[0]) / vb[2]) * 100, t = ((p[1] - vb[1]) / vb[3]) * 100;
+    if (l < 2 || l > 98 || t < 3 || t > 97) continue;
+    const tuyo = modo !== 'tuyo' && exTodo.get(x.c) && exTodo.get(x.c).pct >= 0.5;
+    out.push(`<span class="me${tuyo ? ' tuyo' : ''}" style="left:${l.toFixed(2)}%;top:${t.toFixed(2)}%">${tuyo ? '<i></i>' : ''}<span>${esc(cortoPaisMapa(x.c))}</span><b class="${modo === 'tuyo' ? 'oro' : cls(x.v)}">${valorCortoMapa(x.v, modo)}</b></span>`);
+  }
+  return out.join('');
+}
+// ya en la página: se quitan las que se pisan con una de antes (más importante) o se salen del mapa
+function colocarEtiquetasMapa() {
+  const capa = $('#mapaEtq');
+  if (!capa) return;
+  const W = capa.clientWidth, H = capa.clientHeight, puestas = [];
+  for (const el of capa.children) {
+    const w = el.offsetWidth, h = el.offsetHeight, x = (parseFloat(el.style.left) / 100) * W - w / 2, y = (parseFloat(el.style.top) / 100) * H - h / 2;
+    const r = [x - 3, y - 2, x + w + 3, y + h + 2];
+    const fuera = x < 2 || y < 2 || x + w > W - 2 || y + h > H - 2;
+    if (fuera || puestas.some((q) => r[0] < q[2] && r[2] > q[0] && r[1] < q[3] && r[3] > q[1])) { el.hidden = true; continue; }
+    puestas.push(r);
+  }
+  capa.classList.add('listas');
+}
+function svgMapa(M) {
+  const G = S.mapaGeo, modo = S.mapaModo;
+  // en «Tu dinero» se puede ver una sola posición: dónde invierte ese fondo o esa acción
+  if (S.mapaPos && !(M && M.filas.some((f) => f.pos.id === S.mapaPos && f.valor > 0 && paisesDeFila(f)))) S.mapaPos = null;
+  const exTodo = exposicionPaises(M), ex = modo === 'tuyo' && S.mapaPos ? exposicionPaises(M, S.mapaPos) : exTodo;
+  S.mapaEx = ex; S.mapaExTodo = exTodo;
+  const vb = S.mapaVB || cajaVistaMapa(S.mapaVista), esc1 = anchoMapa() / vb[2];
+  const top = paisesMapa(modo, ex).sort((a, b) => b.v - a.v).slice(0, 3).map((x) => `${nombrePaisMapa(x.c)} ${textoValorMapa(x.v, modo)}`);
+  const pm = modo === 'tuyo' ? posMapa() : null;
+  const resumen = top.length ? (modo === 'tuyo' ? (pm ? L(`Mapa de dónde invierte ${pm.inst.corto || pm.inst.nombre}. Donde más: `, `Map of where ${pm.inst.corto || pm.inst.nombre} invests. Most: `) : L('Mapa de dónde está tu dinero. Donde más: ', 'Map of where your money is. Most: ')) : L(`Mapa de cómo van las bolsas ${etqModoMapa(modo)}. Lo que más sube: `, `Map of how stock markets are doing ${etqModoMapa(modo)}. Best: `)) + top.join('; ') : L('Mapa del mundo', 'World map');
+  // Hong Kong y Singapur no se ven a ninguna escala: en Asia, un aro alrededor para poder tocarlos
+  const aros = S.mapaVista === 'as' ? ['HK', 'SG'].filter((c) => G.c[c]).map((c) => `<circle cx="${G.c[c][0]}" cy="${G.c[c][1]}" r="${(7 / esc1).toFixed(2)}" data-c="${c}" class="aro ${tonoMapa(valorMapa(c, modo, ex), modo)}${c === S.mapaSel ? ' sel' : ''}"/>`).join('') : '';
+  return { svg: `<svg viewBox="${vb.join(' ')}" role="img" aria-label="${esc(resumen)}"><g class="mp-paises">${caminosMapa(S.mapaVista, modo, ex)}</g>${aros}</svg>`, etq: etiquetasMapa(vb, esc1, modo, ex) };
+}
+function htmlLeyendaMapa(modo) {
+  const c = MAPA_CORTES[modo], f = (x) => fmtNumR(x, 2);
+  if (modo === 'tuyo') {
+    const pos = S.mapaPos && S.M && S.M.filas.find((x) => x.pos.id === S.mapaPos);
+    const t = [['mp-a1', L(`menos del ${f(c[1])} %`, `under ${f(c[1])}%`)], ['mp-a2', `${f(c[1])}–${f(c[2])} %`], ['mp-a3', `${f(c[2])}–${f(c[3])} %`], ['mp-a4', L(`${f(c[3])} % o más`, `${f(c[3])}% or more`)]];
+    return `<span class="ml-t">${pos ? L(`Parte de ${esc(pos.inst.corto || pos.inst.nombre)}`, `Share of ${esc(pos.inst.corto || pos.inst.nombre)}`) : L('Parte de tu cartera', 'Share of your portfolio')}</span><div class="ml-pasos">${t.map(([k, x]) => `<span><i class="${k}"></i>${x}</span>`).join('')}</div>`;
+  }
+  const pasos = [4, 3, 2, 1].map((k) => [`mp-d${k}`, k < 4 ? `${pctS(-c[k], 1)} ${L('a', 'to')} ${pctS(-c[k - 1], 1)}` : L(`${pctS(-c[3], 1)} o peor`, `${pctS(-c[3], 1)} or worse`)]).concat([['mp-n', L(`entre ${pctS(-c[0], 2)} y ${pctS(c[0], 2)}`, `between ${pctS(-c[0], 2)} and ${pctS(c[0], 2)}`)]], [1, 2, 3, 4].map((k) => [`mp-u${k}`, k < 4 ? `${pctS(c[k - 1], 1)} ${L('a', 'to')} ${pctS(c[k], 1)}` : L(`${pctS(c[3], 1)} o mejor`, `${pctS(c[3], 1)} or better`)]));
+  return `<span class="ml-t">${esc(L({ hoy: 'Su bolsa hoy', mes: 'Su bolsa en un mes', anio: 'Su bolsa este año' }[modo], { hoy: 'Its market today', mes: 'Its market, 1 month', anio: 'Its market this year' }[modo]))}</span>
+    <div class="ml-barra"><div class="ml-escala">${pasos.map(([k, t]) => `<i class="${k}" title="${esc(t)}"></i>`).join('')}</div><div class="ml-et"><span>${pctS(-c[3], 1)}</span><span>0</span><span>${pctS(c[3], 1)}</span></div></div>
+    <div class="ml-pasos"><span><i class="mp-0"></i>${L('Sin datos', 'No data')}</span><span class="ml-tu"><i></i>${L('Tienes dinero', 'You hold some')}</span></div>`;
+}
+function selectorPaisMapa(sel, ex) {
+  const cods = new Set([...Object.keys(BOLSA_PAIS), ...Object.values((S.precios && S.precios.mapa) || {}).map((x) => x.p), ...ex.keys()]);
+  if (sel) cods.add(sel);
+  const ops = [...cods].map((c) => [c, nombrePaisMapa(c)]).sort((a, b) => a[1].localeCompare(b[1], IDIOMA === 'en' ? 'en' : 'es'));
+  return `<label class="mi-elige"><span>${L('Ir a un país', 'Go to a country')}</span><select id="mapaPais"><option value="">${L('Elige uno', 'Pick one')}</option>${ops.map(([c, n]) => `<option value="${c}"${c === sel ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`;
+}
+// en «Tu dinero»: toda la cartera o una sola posición de bolsa
+function selectorPosMapa(M) {
+  const filas = ((M && M.filas) || []).filter((f) => f.valor > 0 && paisesDeFila(f)).sort((a, b) => b.valor - a.valor);
+  if (filas.length < 2) return '';
+  return `<label class="mi-elige mi-pos"><span>${L('Ver', 'Show')}</span><select id="mapaPos"><option value="">${L('Toda tu cartera', 'Your whole portfolio')}</option>${filas.map((f) => `<option value="${esc(f.pos.id)}"${f.pos.id === S.mapaPos ? ' selected' : ''}>${esc(f.inst.corto || f.inst.nombre)}${f.pos.plataforma && filas.filter((g) => g.inst.id === f.inst.id).length > 1 ? ` (${esc(f.pos.plataforma)})` : ''}</option>`).join('')}</select></label>`;
+}
+function htmlInfoMapa(c, M) {
+  if (!S.mapaGeo) return `<p class="k">${S.mapaFallo ? L('No se ha podido cargar el mapa. Vuelve a abrir Mercados con conexión.', "Couldn't load the map. Open Markets again when you're online.") : L('Cargando el mapa…', 'Loading the map…')}</p>`;
+  const modo = S.mapaModo, ex = S.mapaEx || exposicionPaises(M);
+  const fila = (x, sub) => `<button type="button" class="mi-p" data-mapa-pais="${x.c}"><span class="mi-ban">${bandera(x.c)}</span><span class="mi-pn"><b>${esc(nombrePaisMapa(x.c))}</b>${sub ? `<small>${sub}</small>` : ''}</span><span class="mi-v ${modo === 'tuyo' ? 'oro' : cls(x.v)}">${valorCortoMapa(x.v, modo)}</span></button>`;
+  if (!c) {
+    const lista = paisesMapa(modo, ex).sort((a, b) => b.v - a.v);
+    if (modo === 'tuyo') {
+      if (!lista.length) return `${selectorPosMapa(M)}<p class="k">${L('Cuando tengas acciones o fondos de bolsa, aquí verás en qué países está tu dinero.', "Once you hold stocks or equity funds, you'll see here which countries your money is in.")}</p>`;
+      const pos = S.mapaPos && M.filas.find((f) => f.pos.id === S.mapaPos), us = ex.get('US');
+      const fuera = Math.max(0, 100 - sum(lista, (x) => x.v));
+      const titulo = pos ? L(`Dónde invierte ${esc(pos.inst.corto || pos.inst.nombre)}`, `Where ${esc(pos.inst.corto || pos.inst.nombre)} invests`) : L('Dónde está tu dinero', 'Where your money is');
+      const nota = pos
+        ? (pos.inst.tipo === 'Acción' ? L('Una acción va entera al país de su sede, aunque venda en todo el mundo.', 'A stock counts fully in its home country, even if it sells worldwide.') : L('Repartido como su índice, más o menos.', 'Split like its index, roughly.'))
+        : L(`En un fondo de todo el mundo, EEUU sería el ${fmtNumR(PESO_MUNDO.US, 0)} %${us ? `; en el tuyo es el ${fmtNumR(us.pct, 0)} %` : ''}. Los fondos, repartidos como su índice. El ${fmtNumR(fuera, 0)} % que falta no es bolsa (oro, cripto, renta fija, efectivo) o no se sabe de qué país es.`, `In a whole-world fund the US would be ${fmtNumR(PESO_MUNDO.US, 0)}%${us ? `; in yours it's ${fmtNumR(us.pct, 0)}%` : ''}. Funds are split like their index. The missing ${fmtNumR(fuera, 0)}% isn't stocks (gold, crypto, bonds, cash) or has no known country.`);
+      return `${selectorPosMapa(M)}<div class="mi-sec"><h3 class="mi-t">${titulo}</h3><div class="mi-lista">${lista.slice(0, 7).map((x) => fila(x, PESO_MUNDO[x.c] ? L(`en el mundo, ${valorCortoMapa(PESO_MUNDO[x.c], 'tuyo')}`, `world: ${valorCortoMapa(PESO_MUNDO[x.c], 'tuyo')}`) : '')).join('')}</div></div>
+        <p class="mi-nota">${nota}</p>${selectorPaisMapa(null, ex)}`;
+    }
+    if (!lista.length) return `<p class="k">${L('Aún no hay datos de las bolsas.', 'No stock market data yet.')}</p>`;
+    const indice = (x) => { const b = bolsasDe(x.c)[0]; return b ? esc(b.n) : ''; };
+    const suben = lista.filter((x) => x.v > 0).slice(0, 3), bajan = lista.filter((x) => x.v < 0).reverse().slice(0, 3);
+    return `${suben.length ? `<div class="mi-sec"><h3 class="mi-t">${L('Lo que más sube', 'Up the most')} <span>${esc(etqModoMapa(modo))}</span></h3><div class="mi-lista">${suben.map((x) => fila(x, indice(x))).join('')}</div></div>` : ''}
+      ${bajan.length ? `<div class="mi-sec"><h3 class="mi-t">${L('Lo que más baja', 'Down the most')} <span>${esc(etqModoMapa(modo))}</span></h3><div class="mi-lista">${bajan.map((x) => fila(x, indice(x))).join('')}</div></div>` : ''}
+      ${selectorPaisMapa(null, ex)}`;
+  }
+  const bs = bolsasDe(c), exTodo = S.mapaExTodo || ex, e = exTodo.get(c), hoy = hoyIso(), pm = PESO_MUNDO[c];
+  const info = bs[0] && MERC_INFO[bs[0].sym];
+  const celda = (v) => `<td><span class="mi-v ${cls(v)}">${pctS(v, 1)}</span></td>`;
+  const tabla = bs.length ? `<table class="mi-bolsas"><thead><tr><th scope="col"><span class="sr">${L('Índice', 'Index')}</span></th><th scope="col">${L('Hoy', 'Today')}</th><th scope="col">${L('1 mes', '1 mo')}</th><th scope="col">${L('Año', 'YTD')}</th></tr></thead><tbody>${bs.map((b) => `<tr><th scope="row">${esc(b.n)}${b.f && b.f < hoy ? `<small>${L(`cierre del ${fechaCorta(b.f)}`, `close of ${fechaCortaL(b.f)}`)}</small>` : ''}</th>${celda(b.v)}${celda(b.m)}${celda(b.y)}</tr>`).join('')}</tbody></table>` : `<p class="k">${L('No seguimos su bolsa.', "We don't track its stock market.")}</p>`;
+  // «por Repsol, IAG y MSCI Europe», o «por Repsol, IAG, MSCI Europe y 2 más»
+  const de = e ? e.de.slice(0, 3).map((x) => `<b>${esc(x.n)}</b>`) : [], mas = e ? e.de.length - 3 : 0;
+  const porQue = mas > 0 ? `${de.join(', ')} ${L(`y ${mas} más`, `and ${mas} more`)}` : yLista(de);
+  const tuyo = e ? L(`Tienes aquí <b>${eur(e.v, 0)}</b>, el ${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)} % de tu cartera, por ${porQue}.${e.de.some((x) => x.fondo) ? ' Lo de los fondos, más o menos: se reparten como su índice.' : ''}`, `You hold <b>${eur(e.v, 0)}</b> here, ${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)}% of your portfolio, through ${porQue}.${e.de.some((x) => x.fondo) ? ' Funds are approximate: split like their index.' : ''}`) : L('No tienes nada aquí.', 'You have nothing here.');
+  const peso = pm ? L(`En un fondo de todo el mundo pesa un <b>${fmtNumR(pm, pm < 1 ? 2 : 1)} %</b>.`, `In a whole-world fund it weighs <b>${fmtNumR(pm, pm < 1 ? 2 : 1)}%</b>.`) : '';
+  return `<div class="mi-cab"><span class="mi-ban">${bandera(c)}</span><h3>${esc(nombrePaisMapa(c))}</h3><button type="button" class="ib mi-x" data-mapa-pais="" aria-label="${L('Volver al resumen', 'Back to the summary')}">${ICONOS.cerrar}</button></div>
+    ${tabla}${info && info.que ? `<p class="mi-que">${esc(info.que)}</p>` : ''}<div class="mi-datos"><p>${tuyo}</p>${peso ? `<p>${peso}</p>` : ''}</div>${selectorPaisMapa(c, ex)}`;
+}
+function htmlMapaMundo() {
+  if (S.mapaModo == null) S.mapaModo = LS.get('inv-mapa', 'hoy');
+  if (!MAPA_MODOS.some(([k]) => k === S.mapaModo)) S.mapaModo = 'hoy';
+  if (!S.mapaVista) S.mapaVista = 'mundo';
+  const modo = S.mapaModo;
+  // el mapa y los nombres se dibujan después, ya en la página (dependen de lo ancho que salga)
+  return `<section class="mapa-w" aria-labelledby="hMapa">
+    <div class="mapa-cab"><div class="mapa-tit"><h2 id="hMapa">${L('El mundo', 'The world')}</h2><p>${L('Cada país, del color de su bolsa. Toca uno para verlo.', 'Each country in the color of its stock market. Tap one to see it.')}</p></div>
+      <div class="mapa-modos" role="group" aria-label="${L('Qué colorea el mapa', 'What the map shows')}">${MAPA_MODOS.map(([k, es, en]) => `<button type="button" data-mapa-modo="${k}" aria-pressed="${k === modo}">${L(es, en)}</button>`).join('')}</div></div>
+    <div class="mapa-cuerpo">
+      <div class="mapa-izq">
+        <div class="mapa-caja"><div class="mapa-svg" id="mapaMundo"></div><div class="mapa-etqs" id="mapaEtq" aria-hidden="true"></div><div class="mapa-tip" hidden></div></div>
+        <div class="mapa-pie"><div class="mapa-vistas" role="group" aria-label="${L('Acercar', 'Zoom')}">${MAPA_VISTAS.map(([k, es, en]) => `<button type="button" data-mapa-vista="${k}" aria-pressed="${k === S.mapaVista}">${L(es, en)}</button>`).join('')}</div><div class="mapa-ley" id="mapaLey">${htmlLeyendaMapa(modo)}</div></div>
+      </div>
+      <div class="mapa-info" id="mapaInfo">${htmlInfoMapa(S.mapaSel, S.M)}</div>
+      <p class="sr" id="mapaAnuncio" aria-live="polite"></p>
+    </div>
+  </section>`;
+}
+function repintarMapa() {
+  const w = $('#mapaMundo');
+  if (!w || S.mapaMoviendo) return;
+  const M = S.M;
+  if (S.mapaGeo) {
+    S.mapaVB = cajaVistaMapa(S.mapaVista);
+    const r = svgMapa(M);
+    w.innerHTML = r.svg;
+    const capa = $('#mapaEtq');
+    if (capa) { capa.classList.remove('listas'); capa.innerHTML = r.etq; colocarEtiquetasMapa(); }
+  }
+  const ley = $('#mapaLey'); if (ley) ley.innerHTML = htmlLeyendaMapa(S.mapaModo);
+  const inf = $('#mapaInfo'); if (inf) inf.innerHTML = htmlInfoMapa(S.mapaSel, M);
+  const sec = $('.mapa-w'); if (sec) sec.dataset.modo = S.mapaModo;
+  for (const b of $$('[data-mapa-modo]')) b.setAttribute('aria-pressed', String(b.dataset.mapaModo === S.mapaModo));
+  for (const b of $$('[data-mapa-vista]')) b.setAttribute('aria-pressed', String(b.dataset.mapaVista === S.mapaVista));
+}
+async function cargarMapa() {
+  if (S.mapaGeo || S.mapaCargando) return;
+  S.mapaCargando = true;
+  try {
+    const r = await fetch('mapa-mundo.json?v=1');
+    if (r.ok) S.mapaGeo = await r.json();
+  } catch (e) { /* sin conexión: se dice en el hueco del mapa */ }
+  S.mapaCargando = false;
+  S.mapaFallo = !S.mapaGeo;
+  repintarMapa();
+}
+// Europa y Asia de cerca, con fronteras más finas: se piden la primera vez que te acercas
+async function cargarZonaMapa(z) {
+  S.mapaZonas = S.mapaZonas || {};
+  if (S.mapaZonas[z] || S.mapaZonas['_' + z]) return;
+  S.mapaZonas['_' + z] = true;
+  try {
+    const r = await fetch(`mapa-${z}.json?v=1`);
+    if (r.ok) S.mapaZonas[z] = await r.json();
+  } catch (e) { /* se queda con las del mapa entero */ }
+  delete S.mapaZonas['_' + z];
+  if (S.mapaVista === z) repintarMapa();
+}
+/* acercarse o alejarse: el recuadro se mueve poco a poco (salvo con «reducir movimiento»). Al alejarse, primero vuelven
+   las formas del mundo entero, porque las de cerca están recortadas */
+function irVistaMapa(v) {
+  if (!S.mapaGeo || v === S.mapaVista || S.mapaMoviendo) return;
+  if (v !== 'mundo') cargarZonaMapa(v);
+  const desde = S.mapaVB || cajaVistaMapa(S.mapaVista), hasta = cajaVistaMapa(v), antes = S.mapaVista;
+  S.mapaVista = v;
+  const svg = $('#mapaMundo svg');
+  if (!svg || matchMedia('(prefers-reduced-motion: reduce)').matches) { repintarMapa(); return; }
+  // durante el viaje, el mundo entero: el detalle de Europa no tiene Asia (y al revés), y al ir de una a otra se
+  // vería vacío por el camino. Al llegar, repintarMapa pone el detalle de la zona.
+  if (v === 'mundo' || antes !== 'mundo') svg.querySelector('.mp-paises').innerHTML = caminosMapa('mundo', S.mapaModo, S.mapaEx || new Map());
+  for (const b of $$('[data-mapa-vista]')) b.setAttribute('aria-pressed', String(b.dataset.mapaVista === v));
+  for (const a of svg.querySelectorAll('.aro')) a.remove();
+  const capa = $('#mapaEtq'); if (capa) capa.classList.remove('listas');
+  S.mapaMoviendo = true;
+  const t0 = performance.now(), dur = 560;
+  const paso = (t) => {
+    const k = Math.min(1, (t - t0) / dur), e = k < 0.5 ? 4 * k * k * k : 1 - Math.pow(-2 * k + 2, 3) / 2;
+    svg.setAttribute('viewBox', desde.map((x, i) => (x + (hasta[i] - x) * e).toFixed(2)).join(' '));
+    if (k < 1) requestAnimationFrame(paso);
+    else { S.mapaMoviendo = false; repintarMapa(); }
+  };
+  requestAnimationFrame(paso);
+}
+function elegirPaisMapa(c) {
+  S.mapaSel = c || null;
+  repintarMapa();
+  // el panel se rehace con cada precio: lo que se lee en voz alta es solo el país elegido, una vez
+  const an = $('#mapaAnuncio');
+  if (an) an.textContent = c ? `${nombrePaisMapa(c)}: ${textoValorMapa(valorMapa(c, S.mapaModo, S.mapaEx || new Map()), S.mapaModo)}` : '';
+  const inf = $('#mapaInfo');
+  if (c && inf && innerWidth < 980) { const r = inf.getBoundingClientRect(); if (r.top > innerHeight - 140) inf.scrollIntoView({ block: 'nearest', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); }
+}
+document.addEventListener('click', (e) => {
+  const m = e.target.closest('[data-mapa-modo]');
+  if (m) { S.mapaModo = m.dataset.mapaModo; LS.set('inv-mapa', S.mapaModo); repintarMapa(); return; }
+  const z = e.target.closest('[data-mapa-vista]');
+  if (z) { irVistaMapa(z.dataset.mapaVista); return; }
+  const p = e.target.closest('[data-mapa-pais]');
+  if (p) { elegirPaisMapa(p.dataset.mapaPais); return; }
+  const c = e.target.closest('#mapaMundo [data-c]');
+  if (c) {
+    const cod = c.dataset.c;
+    // en el móvil, un país pequeño de una zona apretada (Europa, Asia): primero se acerca, luego ya lo eliges (con el
+    // dedo es fácil haber tocado el de al lado). Con ratón se elige al momento, y solo los diminutos acercan además.
+    if (S.mapaVista === 'mundo' && S.mapaGeo) {
+      const esc1 = anchoMapa() / S.mapaGeo.w, zona = zonaDeMapa(cod), fino = !!(window.matchMedia && matchMedia('(pointer: fine)').matches);
+      if (zona && (S.mapaGeo.a[cod] || 0) * esc1 * esc1 < (fino ? 60 : 700)) { if (fino) elegirPaisMapa(cod); irVistaMapa(zona); return; }
+    }
+    elegirPaisMapa(cod === S.mapaSel ? null : cod);
+    return;
+  }
+  if (e.target.closest('#mapaMundo svg') && S.mapaSel) elegirPaisMapa(null);
+});
+document.addEventListener('change', (e) => {
+  if (e.target.id === 'mapaPais') { elegirPaisMapa(e.target.value); if (e.target.value && S.mapaGeo && S.mapaVista === 'mundo') { const z = zonaDeMapa(e.target.value), esc1 = anchoMapa() / S.mapaGeo.w; if (z && (S.mapaGeo.a[e.target.value] || 0) * esc1 * esc1 < 700) irVistaMapa(z); } }
+  if (e.target.id === 'mapaPos') { S.mapaPos = e.target.value || null; repintarMapa(); }
+});
+// con ratón (no con el dedo): el nombre del país y su cifra, junto al puntero
+document.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse') return;
+  const w = e.target.closest ? e.target.closest('.mapa-caja') : null, tip = w && w.querySelector('.mapa-tip');
+  for (const t of $$('.mapa-tip:not([hidden])')) if (t !== tip) t.hidden = true;
+  if (!tip) return;
+  const c = e.target.closest('[data-c]');
+  if (!c || S.mapaMoviendo) { tip.hidden = true; return; }
+  // solo se rehace al cambiar de país: rehacerlo en cada movimiento volvía a cargar la bandera y parpadeaba
+  const cod = c.dataset.c, k = `${cod}|${S.mapaModo}|${S.mapaPos || ''}|${IDIOMA}`;
+  if (tip.dataset.k !== k || tip.hidden) {
+    const v = valorMapa(cod, S.mapaModo, S.mapaEx || new Map());
+    tip.dataset.k = k;
+    tip.innerHTML = `<span class="mt-n"><span class="mi-ban">${bandera(cod)}</span><b>${esc(nombrePaisMapa(cod))}</b></span><span class="${S.mapaModo === 'tuyo' || v == null ? '' : cls(v)}">${esc(textoValorMapa(v, S.mapaModo))}</span>`;
+  }
+  tip.hidden = false;
+  const r = w.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  tip.style.left = `${Math.max(4, Math.min(x + 14, r.width - tip.offsetWidth - 4))}px`;
+  tip.style.top = `${y > r.height / 2 ? y - tip.offsetHeight - 12 : y + 16}px`;
+});
+const quitarTips = () => { for (const t of $$('.mapa-tip')) t.hidden = true; };
+document.addEventListener('mouseleave', quitarTips);
+addEventListener('scroll', () => { quitarTips(); const t = $('#mcTip'); if (t) t.hidden = true; }, { passive: true });
+// los nombres dependen del ancho: al girar el móvil o cambiar la ventana, se vuelven a colocar
+let mapaResize = 0;
+addEventListener('resize', () => { clearTimeout(mapaResize); mapaResize = setTimeout(() => { if ($('#mapaMundo svg')) repintarMapa(); if ($('.mc-caja')) repintarMc(); }, 220); });
+
 /* =========================== Análisis =========================== */
 /* cuatro pestañas: qué hacer, lo que opina la IA, tus números (cinco vistas) y la fiscalidad */
 const ANALISIS_P = [['ia', 'GrowIA opina'], ['numeros', 'Tus números']];
-const NUM_T = { rent: ['Rentabilidad', 'lo que ha dado cada posición en 1 y 3 meses, en lo que va de año, a 1, 3, 5 y 10 años y año a año'], riesgo: ['Riesgo', 'cuánto se mueve cada una y su peor caída del último año'], costes: ['Costes y dividendos', 'gastos de los fondos y lo que cobrarás de dividendos, mes a mes'], dentro: ['Por dentro', 'si se pisan tus fondos y las empresas en las que tienes más dinero'], apuestas: ['Tus acciones frente al índice', 'cada acción comparada con el mismo dinero en el S&P 500'] };
+const NUM_T = { rent: ['Rentabilidad', 'lo que ha dado cada posición en 1 y 3 meses, en lo que va de año, a 1, 3, 5 y 10 años y año a año'], riesgo: ['Riesgo', 'tu peor caída y cuánto tardó en recuperarse, y cuánto se mueve cada posición'], costes: ['Costes y dividendos', 'gastos de los fondos y lo que cobrarás de dividendos, mes a mes'], dentro: ['Por dentro', 'si se pisan tus fondos y las empresas en las que tienes más dinero'], apuestas: ['Tus acciones frente al índice', 'cada acción comparada con el mismo dinero en el S&P 500'] };
 const NUMEROS = ['rent', 'riesgo', 'costes', 'dentro', 'apuestas'];
 const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'GrowIA opina'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Acciones sueltas'], ['impuestos', 'Hacienda']];
 /* =====================================================================
@@ -7858,8 +8460,8 @@ function pasosRuta0(M) {
     add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? sumarDias(res, -1) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
       t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : f.inst.clase === 'Cripto' ? 4 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
       pq: esc(f.senal.motivos[0] || ''),
-      como: `${esc(pl.cuando[0].replace(/^Ya: /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? ` Con lo que cobres: ${destino}.` : ''}`,
-      imp: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año. ${(() => { const l = libreRecompra(f.inst, res ? sumarDias(res, -1) : hoy); return l ? `No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}` : reglaRecompra(f.inst).corto; })()}`}`,
+      como: `${esc(pl.cuando[0].replace(/^(Ya|Now): /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? L(` Con lo que cobres: ${destino}.`, ` With what you collect: ${destino}.`) : ''}`,
+      imp: `${pl.ganancia > 0 ? L(`Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.`, `You declare a gain of ${eurS(pl.ganancia, 0)}: about ${eur(pl.impuesto, 0)} in your ${anio} tax return, paid between April and June ${anio + 1}. Keep it in cash until then. Since you're selling at a gain, you can buy it back whenever you like.`) : `${L(`Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año.`, `You declare a loss of ${eur(-pl.ganancia, 0)}: it reduces this year's gains.`)} ${(() => { const l = libreRecompra(f.inst, res ? sumarDias(res, -1) : hoy); return l ? L(`No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}`, `Don't buy it back until ${fechaCortaL(l)} ${l.slice(0, 4)}: ${trad(reglaRecompra(f.inst).corto)}`) : reglaRecompra(f.inst).corto; })()}`}`,
       acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>` });
     const top = pl.ideas[0], dVenta = res ? sumarDias(res, -1) : hoy;
     if (pl.aColchon > 0.5) add('mes', { id: `colchonv:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Pon ${eur(pl.aColchon, 0)} en tu colchón`,
@@ -7873,8 +8475,8 @@ function pasosRuta0(M) {
         imp: `${tasa ? `Al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${esc(tasa.nombre)} (unos ${eur(pl.aIdea * tasa.tipo, 0)}).` : 'Sin tasa al comprar.'} ${esc(fis.txt)}`,
         acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`Voy a comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}. Contrástalo con las noticias de esta semana: ¿lo hago, a qué precio y con qué regla de salida?`)}">Que GrowIA la contraste antes</button>` });
     }
-    if (pl.aNucleo > 0.5) add('mes', { id: `nucleo:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Mete ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^a /, 'en ')}`,
-      pq: pl.nivel === 'reducir' ? 'Bajas riesgo sin dejar de estar invertido.' : pl.aIdea > 0 ? 'La otra parte, a lo seguro.' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite.',
+    if (pl.aNucleo > 0.5) add('mes', { id: `nucleo:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: L(`Mete ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^a /, 'en ')}`, `Put ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^to /, 'into ')}`),
+      pq: pl.nivel === 'reducir' ? L('Bajas riesgo sin dejar de estar invertido.', 'You lower risk without stopping being invested.') : pl.aIdea > 0 ? L('La otra parte, a lo seguro.', 'The other part, somewhere safe.') : L('Tus acciones sueltas no tienen más hueco dentro de tu límite.', 'Your individual stocks have no more room within your limit.'),
       como: (() => { const nf = (S.M && S.M.filas || []).filter((f) => f.inst.tipo === 'Fondo indexado' && f.inst.clase === 'Renta variable').sort((x, y) => y.valor - x.valor)[0]; const de = pl.f.pos.plataforma, a = nf && nf.pos.plataforma; return nf ? (a && de && a !== de ? `Pasa el dinero de ${de} a ${a} y compra participaciones de ${nf.inst.corto}.` : `Compra participaciones de ${nf.inst.corto}${a ? ` en ${a}` : ''}.`) : 'Elige un fondo indexado de todo el mundo con comisión baja (en Mercados puedes buscarlo) y compra participaciones.'; })(), imp: 'Fondo de acumulación: no paga nada hasta que vendas, y entre fondos ni eso (traspaso).' });
   }
   // 2. tus reglas de salida cerca
@@ -7900,7 +8502,7 @@ function pasosRuta0(M) {
   const fa = fiscalAnio(anio);
   if (!fa.otras && !fa.rcm) add('mes', { id: `fiscal:${anio}`, cuando: 'cuando puedas', t: `Apunta tus datos fiscales de ${anio}`, pq: 'Sin ellos, el impuesto de cada consejo de GrowFolio sale más alto o más bajo de lo que es.', como: 'En Análisis > Hacienda, botón «Datos fiscales»: las ventas que hiciste fuera de GrowFolio (ganancia o pérdida), los dividendos e intereses cobrados y lo que ya te retuvieron. Son dos minutos.', acc: `<button class="enlace" data-accion="fiscal">Apuntarlos</button>` });
   const est = M.filas.filter((f) => f.estimada);
-  if (est.length) add('mes', { id: `exactas:${est.map((f) => f.pos.id).join(',')}`, cuando: 'cuando puedas', t: `Pon las participaciones exactas de ${est.length === 1 ? esc(est[0].inst.corto) : `${est.length} posiciones`}`, pq: `${esc(yLista(est.map((f) => f.inst.corto)))} están estimadas: con las exactas cuadran al céntimo el valor, la ganancia y los impuestos.`, como: 'Mira las participaciones en la app de tu bróker y ponlas en su ficha > Editar > Cantidad.', acc: `<a class="enlace" href="#plan">Ir a Plan y movimientos</a>` });
+  if (est.length) add('mes', { id: `exactas:${est.map((f) => f.pos.id).join(',')}`, cuando: 'cuando puedas', t: `Pon las participaciones exactas de ${est.length === 1 ? esc(est[0].inst.corto) : `${est.length} posiciones`}`, pq: L(`${esc(yLista(est.map((f) => f.inst.corto)))} están estimadas: con las exactas cuadran al céntimo el valor, la ganancia y los impuestos.`, `${esc(yLista(est.map((f) => f.inst.corto)))} are estimated: with the exact figures the value, the gain and the taxes match to the cent.`), como: 'Mira las participaciones en la app de tu bróker y ponlas en su ficha > Editar > Cantidad.', acc: `<a class="enlace" href="#plan">Ir a Plan y movimientos</a>` });
   // 5. aportaciones automáticas
   const act = aportacionesActivas();
   const total = sum(act, ({ a }) => +a.importe || 0);
@@ -8189,7 +8791,7 @@ function cuerpoNum(k, M) {
     const serie = serieCartera(M, 366);
     const vol = volatilidadSerie(serie);
     const cr = claseRiesgo(vol);
-    cuerpo = `${cr ? `<div class="resumen-fila"><div><span class="k">Riesgo de tu cartera</span><span class="v">${cr} de 7</span><small class="k">7 es lo más arriesgado</small></div><div><span class="k">Cuánto se ha movido</span><span class="v">${pct(vol, 1)}</span><small class="k">volatilidad del último año</small></div><div><span class="k">Peor caída del último año</span><span class="v down">${pct(caidaMaxima(serie), 1)}</span></div></div>` : ''}
+    cuerpo = `${htmlCaida(M)}${cr ? `<div class="resumen-fila"><div><span class="k">Riesgo de tu cartera</span><span class="v">${cr} de 7</span><small class="k">7 es lo más arriesgado</small></div><div><span class="k">Cuánto se ha movido</span><span class="v">${pct(vol, 1)}</span><small class="k">volatilidad del último año</small></div><div><span class="k">Peor caída del último año</span><span class="v down">${pct(caidaMaxima(serie), 1)}</span></div></div>` : ''}
       <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th>Riesgo</th><th class="r">Volatilidad</th><th class="r">Peor caída 1 año</th><th class="r">Beta</th><th class="r">Peso</th></tr></thead><tbody>
       ${[...M.filas].sort((a, b) => ((b.p && b.p.riesgo) || 0) - ((a.p && a.p.riesgo) || 0)).map((f) => `<tr><td>${nombre(f)}</td><td>${f.p && f.p.riesgo ? `<div class="medidor" style="width:120px;margin-top:6px" role="img" aria-label="${f.p.riesgo} de 7">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<i class="${n <= f.p.riesgo ? 'on' : ''}"></i>`).join('')}</div>` : '—'}</td><td class="r">${f.p ? pct(f.p.volatilidad, 1) : '—'}</td><td class="r down">${f.p && f.p.tecnico ? pct(f.p.tecnico.caida_max_1a, 1) : '—'}</td><td class="r">${f.p && f.p.fundamentales && f.p.fundamentales.beta != null ? fmtNum(f.p.fundamentales.beta, 2) : '—'}</td><td class="r">${pct(f.peso, 1)}</td></tr>`).join('')}
       </tbody></table></div><p class="nota">Riesgo: escala oficial de 1 a 7 según la volatilidad. La beta dice cuánto se mueve una acción cuando se mueve el mercado (1 = igual). El riesgo de tu cartera (arriba) se calcula con tus posiciones de hoy y los precios del último año.</p>`;
@@ -8380,6 +8982,167 @@ function htmlRentReal(M) {
     <p class="nota">${notas.join(' ')}</p>
   </section>`;
 }
+/* =========================== 0.4: tu cartera de un vistazo =========================== */
+/* Cada posición, un rectángulo del tamaño de lo que vale (las de varias plataformas, juntas) y del color de cómo va:
+   hoy o desde que la compraste. El efectivo, en gris. Se reparte con el algoritmo «squarified» (rectángulos lo más
+   cuadrados posible) y se dibuja ya en la página, cuando se sabe lo ancho que es */
+const MC_MODOS = [['hoy', 'Hoy', 'Today'], ['total', 'Desde que compraste', 'Since you bought']];
+const MC_CORTES = { hoy: [0.25, 0.75, 1.5, 2.5], total: [2, 10, 25, 50] };
+function piezasCartera(M) {
+  const por = new Map();
+  for (const f of M.filas) {
+    if (!(f.valor > 0)) continue;
+    const k = f.inst.id, x = por.get(k) || { id: k, pos: f.pos.id, n: f.inst.corto || f.inst.nombre, valor: 0, dia: 0, coste: 0, conDia: false, sinPrecio: false };
+    x.valor += f.valor; x.coste += f.coste || 0;
+    if (f.varDia != null && !f.diaViejo) { x.dia += f.dia || 0; x.conDia = true; }
+    if (f.sinPrecio) x.sinPrecio = true;
+    por.set(k, x);
+  }
+  const out = [...por.values()].map((x) => ({ ...x, hoy: x.conDia && x.valor - x.dia > 0 ? (x.dia / (x.valor - x.dia)) * 100 : null, total: !x.sinPrecio && x.coste > 0 ? (x.valor / x.coste - 1) * 100 : null, pl: x.valor - x.coste }));
+  const ef = sum(M.efectivo.filter((e) => e.importe > 0), (e) => e.importe);
+  if (ef > 0) out.push({ id: '_ef', n: L('Efectivo', 'Cash'), valor: ef, efectivo: true, hoy: null, total: null });
+  return out.sort((a, b) => b.valor - a.valor);
+}
+function squarify(items, W, H) {
+  const tot = sum(items, (x) => x.valor), k = (W * H) / tot, out = [];
+  let x = 0, y = 0, w = W, h = H, fila = [];
+  const peor = (r, lado) => { const s = sum(r, (z) => z.a), mx = Math.max(...r.map((z) => z.a)), mn = Math.min(...r.map((z) => z.a)); return Math.max((lado * lado * mx) / (s * s), (s * s) / (lado * lado * mn)); };
+  const colocar = (r) => {
+    const s = sum(r, (z) => z.a);
+    if (w >= h) { const cw = s / h; let yy = y; for (const z of r) { const zh = z.a / cw; out.push({ ...z, x, y: yy, w: cw, h: zh }); yy += zh; } x += cw; w -= cw; }
+    else { const rh = s / w; let xx = x; for (const z of r) { const zw = z.a / rh; out.push({ ...z, x: xx, y, w: zw, h: rh }); xx += zw; } y += rh; h -= rh; }
+  };
+  const resto = items.map((z) => ({ ...z, a: z.valor * k }));
+  while (resto.length) {
+    const lado = Math.min(w, h), c = resto[0];
+    if (!fila.length || peor([...fila, c], lado) <= peor(fila, lado)) { fila.push(c); resto.shift(); } else { colocar(fila); fila = []; }
+  }
+  if (fila.length) colocar(fila);
+  return out;
+}
+function tonoMc(v, modo) {
+  if (v == null || !isFinite(v)) return 'mp-n';
+  const c = MC_CORTES[modo], a = Math.abs(v), k = a >= c[3] ? 4 : a >= c[2] ? 3 : a >= c[1] ? 2 : a >= c[0] ? 1 : 0;
+  return k ? `mp-${v > 0 ? 'u' : 'd'}${k}` : 'mp-n';
+}
+function htmlLeyendaMc(modo) {
+  const c = MC_CORTES[modo];
+  const pasos = ['mp-d4', 'mp-d3', 'mp-d2', 'mp-d1', 'mp-n', 'mp-u1', 'mp-u2', 'mp-u3', 'mp-u4'];
+  return `<span class="ml-t">${modo === 'hoy' ? L('Cómo va hoy', 'How it does today') : L('Desde que la compraste', 'Since you bought it')}</span><div class="ml-barra"><div class="ml-escala">${pasos.map((k) => `<i class="${k}"></i>`).join('')}</div><div class="ml-et"><span>${pctS(-c[3], c[3] < 10 ? 1 : 0)}</span><span>0</span><span>${pctS(c[3], c[3] < 10 ? 1 : 0)}</span></div></div><div class="ml-pasos"><span><i class="mc-ef-i"></i>${L('Efectivo', 'Cash')}</span></div>`;
+}
+function htmlMapaCartera(M, inicio) {
+  if (!M || !M.filas.some((f) => f.valor > 0)) return '';
+  if (S.mcModo == null) S.mcModo = LS.get('inv-mc', 'hoy') === 'total' ? 'total' : 'hoy';
+  return `<section class="mc-w${inicio ? ' car-mc' : ''}" aria-labelledby="hMc${inicio ? 'i' : ''}">
+    <div class="sec-cab"><h2 id="hMc${inicio ? 'i' : ''}">${L('Tu cartera de un vistazo', 'Your portfolio at a glance')}</h2><span class="k">${L('Cada rectángulo, una posición: su tamaño es lo que vale, y su color, cómo va.', 'Each box is a holding: its size is what it is worth, its color how it is doing.')}</span>
+      <div class="der"><div class="mapa-modos" role="group" aria-label="${L('Qué colorea', 'What the color shows')}">${MC_MODOS.map(([k, es, en]) => `<button type="button" data-mc-modo="${k}" aria-pressed="${k === S.mcModo}">${L(es, en)}</button>`).join('')}</div></div></div>
+    <div class="mc-caja"></div>
+    <div class="mc-pie"><div class="mapa-ley">${htmlLeyendaMc(S.mcModo)}</div></div>
+    <div class="mc-det" aria-live="polite">${htmlDetalleMc(M)}</div>
+  </section>`;
+}
+function textoPiezaMc(p) {
+  const pesa = S.M && S.M.total ? (p.valor / S.M.total) * 100 : 0;
+  if (p.efectivo) return L(`${eur(p.valor, 0)} en efectivo, el ${fmtNumR(pesa, 1)} % de lo que tienes.`, `${eur(p.valor, 0)} in cash, ${fmtNumR(pesa, 1)}% of what you have.`);
+  const hoy = p.hoy != null ? L(`hoy ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`, `today ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`) : L('sin precio de hoy', 'no price today');
+  const tot = p.total != null ? L(`desde que la compraste ${pctS(p.total, 1)} (${eurS(p.pl, 0)})`, `since you bought it ${pctS(p.total, 1)} (${eurS(p.pl, 0)})`) : '';
+  return `${eur(p.valor, 0)}, ${L(`el ${fmtNumR(pesa, 1)} % de tu cartera`, `${fmtNumR(pesa, 1)}% of your portfolio`)}; ${hoy}${tot ? `; ${tot}` : ''}.`;
+}
+function htmlDetalleMc(M) {
+  const p = S.mcSel && piezasCartera(M).find((x) => x.id === S.mcSel);
+  if (!p) return `<p class="k">${L('Toca un rectángulo para ver sus cifras.', 'Tap a box to see its numbers.')}</p>`;
+  return `<p><b>${esc(p.n)}</b> ${textoPiezaMc(p)}</p>${p.pos ? `<button type="button" class="enlace acento" data-mc-ficha="${esc(p.pos)}">${L('Ver su ficha', 'Open its page')}</button>` : ''}`;
+}
+function pintarMapaCartera(caja, M) {
+  if (!caja || !M) return;
+  const W = caja.clientWidth;
+  if (!W) return;
+  const H = Math.round(Math.max(240, W < 560 ? W * 1.05 : W < 900 ? W * 0.6 : W * 0.4));
+  caja.style.height = `${H}px`;
+  const modo = S.mcModo, piezas = piezasCartera(M), G = 3;
+  const t = squarify(piezas, W, H);
+  // un grupo (no una imagen): dentro hay un botón por posición y el lector de pantalla tiene que poder llegar a ellos
+  caja.setAttribute('role', 'group');
+  caja.setAttribute('aria-label', L('Mapa de tu cartera: ', 'Map of your portfolio: ') + piezas.slice(0, 5).map((p) => `${p.n} ${eur(p.valor, 0)}`).join(', '));
+  caja.innerHTML = t.filter((p) => p.w - G >= 1 && p.h - G >= 1).map((p) => {
+    const w = p.w - G, h = p.h - G, v = modo === 'hoy' ? p.hoy : p.total;
+    const lado = Math.min(w, h), fs = Math.max(11, Math.min(17, lado / 6.5));
+    const nombre = w > 54 && h > 30, cifra = w > 58 && h > 48, euros = w > 110 && h > 82;
+    const ton = p.efectivo ? 'mc-ef' : tonoMc(v, modo);
+    return `<button type="button" class="mc-t ${ton}${p.id === S.mcSel ? ' sel' : ''}${w < 26 || h < 22 ? ' mini' : ''}" data-mc="${esc(p.id)}" style="left:${(p.x + G / 2).toFixed(1)}px;top:${(p.y + G / 2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;border-radius:${lado > 90 ? 12 : lado > 40 ? 8 : 5}px;font-size:${fs.toFixed(1)}px" aria-label="${esc(`${p.n}: ${textoPiezaMc(p)}`)}">${nombre ? `<span class="mc-n">${esc(p.n)}</span>` : ''}${cifra && !p.efectivo ? (v == null ? `<span class="mc-e">${modo === 'hoy' ? L('sin precio de hoy', 'no price today') : L('sin datos', 'no data')}</span>` : `<span class="mc-v">${pctS(v, modo === 'hoy' ? 2 : 1)}</span>`) : ''}${euros ? `<span class="mc-e">${eur(p.valor, 0)}</span>` : ''}</button>`;
+  }).join('');
+}
+function repintarMc() {
+  for (const c of $$('.mc-caja')) pintarMapaCartera(c, S.M);
+  for (const d of $$('.mc-det')) d.innerHTML = htmlDetalleMc(S.M);
+  for (const l of $$('.mc-pie .mapa-ley')) l.innerHTML = htmlLeyendaMc(S.mcModo);
+  for (const b of $$('[data-mc-modo]')) b.setAttribute('aria-pressed', String(b.dataset.mcModo === S.mcModo));
+}
+document.addEventListener('click', (e) => {
+  const m = e.target.closest('[data-mc-modo]');
+  if (m) { S.mcModo = m.dataset.mcModo; LS.set('inv-mc', S.mcModo); repintarMc(); return; }
+  const f = e.target.closest('[data-mc-ficha]');
+  if (f) { abrirFicha(f.dataset.mcFicha); return; }
+  const t = e.target.closest('[data-mc]');
+  if (t) { S.mcSel = S.mcSel === t.dataset.mc ? null : t.dataset.mc; repintarMc(); }
+});
+// con ratón (no con el dedo): sus cifras junto al puntero; al desplazar la página, se quita
+document.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse') return;
+  const caja = e.target.closest ? e.target.closest('.mc-caja') : null;
+  let tip = $('#mcTip');
+  if (!caja) { if (tip) tip.hidden = true; return; }
+  const t = e.target.closest('[data-mc]');
+  if (!t) { if (tip) tip.hidden = true; return; }
+  if (!tip) { tip = document.createElement('div'); tip.id = 'mcTip'; tip.className = 'mapa-tip mc-tip'; document.body.appendChild(tip); }
+  const k = `${t.dataset.mc}|${S.mcModo || ''}`;
+  if (tip.dataset.k !== k || tip.hidden) {
+    const p = piezasCartera(S.M).find((x) => x.id === t.dataset.mc);
+    if (!p) return;
+    tip.dataset.k = k;
+    tip.innerHTML = `<b>${esc(p.n)}</b><span>${textoPiezaMc(p)}</span>`;
+  }
+  tip.hidden = false;
+  const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8), y = e.clientY + tip.offsetHeight + 24 > innerHeight ? e.clientY - tip.offsetHeight - 12 : e.clientY + 16;
+  tip.style.left = `${x}px`; tip.style.top = `${y}px`;
+});
+
+/* =========================== 0.4: la peor caída de la cartera =========================== */
+/* Con lo que tienes hoy, hacia atrás (hasta 10 años): la mayor caída desde un máximo, cuánto duró y cuánto tardó en
+   volver a donde estaba; y a cuánto está ahora de su máximo. La gráfica es la distancia al máximo de cada día */
+function caidaDetalle(serie) {
+  if (!serie || serie.length < 30) return null;
+  let pico = 0, peor = null;
+  const dd = [];
+  for (let i = 0; i < serie.length; i++) {
+    if (serie[i].v > serie[pico].v) pico = i;
+    const x = (serie[i].v / serie[pico].v - 1) * 100;
+    dd.push({ d: serie[i].d, v: x });
+    if (!peor || x < peor.pct) peor = { pct: x, pico, valle: i };
+  }
+  if (!peor || peor.pct > -0.5) return { dd, peor: null, ahora: dd[dd.length - 1].v, maximo: serie[pico].d };
+  let rec = null;
+  for (let i = peor.valle + 1; i < serie.length; i++) if (serie[i].v >= serie[peor.pico].v) { rec = i; break; }
+  return { dd, peor: { pct: peor.pct, desde: serie[peor.pico].d, hasta: serie[peor.valle].d, vuelve: rec != null ? serie[rec].d : null }, ahora: dd[dd.length - 1].v, maximo: serie[pico].d, inicio: serie[0].d };
+}
+const fechaConAnio = (d) => `${fechaCortaL(d)}${d.slice(0, 4) !== hoyIso().slice(0, 4) ? ` ${d.slice(0, 4)}` : ''}`;
+function htmlCaida(M) {
+  const c = caidaDetalle(serieCartera(M, 3650));
+  if (!c) return '';
+  const p = c.peor, dias = (a, b) => Math.round((tiempoDe(b) - tiempoDe(a)) / 864e5);
+  const anios = dias(c.inicio || c.dd[0].d, hoyIso()) / 365;
+  const frase = p
+    ? L(`Con lo que tienes hoy, la peor caída de los últimos ${anios >= 1.5 ? `${fmtNum(anios, 0)} años` : duracion(anios * 365)} habría sido del <b class="down">${pctS(p.pct, 1)}</b>: del ${fechaConAnio(p.desde)} al ${fechaConAnio(p.hasta)}, en ${duracion(dias(p.desde, p.hasta))}. ${p.vuelve ? `Tardó ${duracion(dias(p.hasta, p.vuelve))} en volver a donde estaba (el ${fechaConAnio(p.vuelve)}).` : 'Todavía no ha vuelto a donde estaba.'}`, `With what you hold today, the worst drop of the last ${anios >= 1.5 ? `${fmtNum(anios, 0)} years` : `${Math.round(anios * 12)} months`} would have been <b class="down">${pctS(p.pct, 1)}</b>: from ${fechaConAnio(p.desde)} to ${fechaConAnio(p.hasta)}. ${p.vuelve ? `It took until ${fechaConAnio(p.vuelve)} to get back.` : "It hasn't got back yet."}`)
+    : L('Con lo que tienes hoy, no ha tenido caídas que contar.', 'With what you hold today, there have been no drops worth mentioning.');
+  const ahora = c.ahora > -0.3 ? L('Ahora está en máximos.', "It's at its high now.") : L(`Ahora está un <b>${pct(-c.ahora, 1)}</b> por debajo de su máximo, del ${fechaConAnio(c.maximo)}.`, `It's now <b>${pct(-c.ahora, 1)}</b> below its high of ${fechaConAnio(c.maximo)}.`);
+  return `<div class="caida-w"><h3 class="caida-t">${L('Tu peor caída', 'Your worst drop')}</h3><p class="caida-txt">${frase} ${ahora}</p><div class="chart" id="grafCaida"></div><p class="nota">${L('Cada día, lo lejos que estaba tu cartera de su máximo hasta entonces. Es una simulación con tus posiciones de hoy: no cuenta cuándo compraste ni vendiste.', 'Each day, how far your portfolio was from its high up to then. A simulation with your holdings of today: it ignores when you bought or sold.')}</p></div>`;
+}
+function dibujarCaida(el, M) {
+  const c = caidaDetalle(serieCartera(M, 3650));
+  if (!c) return;
+  grafLinea(el, c.dd, { alto: innerWidth < 560 ? 150 : 190, color: 'var(--down)', rellenoA: 0, sinRef: true, titulo: L('Distancia al máximo', 'Distance from the high'), fmt: (v) => pctS(v, 1), ejeFmt: (t) => `${fmtNum(t, 0)} %`, marca: c.peor ? { d: c.peor.hasta, txt: pctS(c.peor.pct, 1) } : null });
+}
+
 function htmlNumeros(M) {
   const serie = serieCartera(M, 366), vol = volatilidadSerie(serie), cr = claseRiesgo(vol);
   const conTer = M.filas.filter((f) => f.inst.ter != null), costeAnual = sum(conTer, (f) => (f.valor * f.inst.ter) / 100), baseTer = sum(conTer, (f) => f.valor);
@@ -8390,6 +9153,7 @@ function htmlNumeros(M) {
       <div><span class="k">Gastos de fondos</span><span class="v">${eur(costeAnual, 0)} al año</span><small class="k">comisión media del ${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</small></div>
       <button type="button" class="rf-btn" data-accion="ver-div12"><span class="k">Dividendos</span><span class="v">${eur(M.dividendos, 0)} al año</span><small class="k">brutos, con el precio de hoy; ${L('mes a mes', 'month by month')} ›</small></button>
     </div>
+    ${htmlMapaCartera(M)}
     ${htmlRentReal(M)}
     ${htmlDividendos12(M)}
     <div class="num-secs">${NUMEROS.map((k) => `<details class="num-sec" id="num-${k}"${S.numAbierto === k ? ' open' : ''}><summary><span><b>${NUM_T[k][0]}</b><small>${NUM_T[k][1]}</small></span></summary><div class="num-cuerpo">${cuerpoNum(k, M)}</div></details>`).join('')}</div>`;
@@ -8544,10 +9308,13 @@ function grafLinea(cont, series, opt = {}) {
   const pBase = pts(base);
   if (!opt.sinRef) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(base[0].v)}" y2="${y(base[0].v)}" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 3"/>`;
   if (opt.linea && opt.linea.v) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(opt.linea.v)}" y2="${y(opt.linea.v)}" stroke="var(--warn)" stroke-width="1" stroke-dasharray="4 4"/><text x="${ml + 4}" y="${y(opt.linea.v) - 6}" font-size="11" fill="var(--warn)">${esc(opt.linea.etiqueta || '')}</text>`;
-  g += `<polygon points="${x(0)},${H - mb} ${pBase} ${x(n - 1)},${H - mb}" fill="${color}" fill-opacity="0.08"/>`;
+  const yRel = opt.rellenoA != null ? y(opt.rellenoA) : H - mb;
+  g += `<polygon points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}" fill="${color}" fill-opacity="${opt.rellenoA != null ? 0.16 : 0.08}"/>`;
+  if (opt.rellenoA != null) g += `<line x1="${ml}" x2="${W - mr}" y1="${yRel}" y2="${yRel}" stroke="var(--line-2)" stroke-width="1"/>`;
   for (const s of series.slice(1)) g += `<polyline points="${pts(s.datos)}" fill="none" stroke="${s.color || 'var(--text-2)'}" stroke-width="1.4" stroke-dasharray="${s.disc ? '5 4' : ''}" stroke-linejoin="round"/>`;
   g += `<polyline points="${pBase}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>`;
   g += `<circle cx="${x(n - 1)}" cy="${y(base[n - 1].v)}" r="3.5" fill="${color}" stroke="var(--bg)" stroke-width="2"/>`;
+  if (opt.marca && idx.has(opt.marca.d)) { const i = idx.get(opt.marca.d), mx = x(i), my = y(base[i].v), izq = mx > W * 0.7; g += `<circle cx="${mx}" cy="${my}" r="4" fill="${color}" stroke="var(--bg)" stroke-width="2"/><text x="${mx + (izq ? -8 : 8)}" y="${Math.min(my + 4, H - mb - 4)}" text-anchor="${izq ? 'end' : 'start'}" font-size="11.5" font-weight="700" fill="${color}" style="font-variant-numeric:tabular-nums">${esc(opt.marca.txt)}</text>`; }
   g += `<g class="cruz" visibility="hidden"><line y1="${mt}" y2="${H - mb}" stroke="var(--line-2)" stroke-width="1"/><circle r="4" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
   g += `<rect x="${ml}" y="0" width="${W - ml - mr}" height="${H}" fill="transparent" class="zona"/>`;
   svg.innerHTML = g;
@@ -8842,6 +9609,9 @@ function dibujar(M) {
     const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
     grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, ref: ref0 && ref0.v, alMover, animar });
   }
+  if ($('#mapaMundo')) { if (S.mapaGeo) repintarMapa(); else cargarMapa(); }
+  for (const c of $$('.mc-caja')) pintarMapaCartera(c, M);
+  const gc = $('#grafCaida'); if (gc && !gc.closest('details:not([open])')) dibujarCaida(gc, M);
   // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
   for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
 }
@@ -8857,6 +9627,7 @@ document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key ==
 document.addEventListener('toggle', (e) => {
   const d = e.target;
   if (d.matches && d.matches('details.mfila') && d.open) { const el = d.querySelector('[data-spark-m]'); if (el) requestAnimationFrame(() => dibujarSparkM(el)); }
+  if (d.matches && d.matches('details.num-sec') && d.open) { const el = d.querySelector('#grafCaida'); if (el) requestAnimationFrame(() => dibujarCaida(el, S.M)); }
 }, true);
 /* lo que antes iba en una nota debajo de la gráfica, ahora detrás de la «i» junto a la pastilla */
 function infoGrafica() {
@@ -9387,7 +10158,7 @@ function htmlFiscalGuia(M, fa, x) {
   }
   // calendario
   const cal = [
-    [`${anio}-12-31`, `31 dic ${anio}`, 'Último día del año para vender con pérdidas y que resten en la renta de ' + anio + ' (ese día la bolsa de Madrid cierra a las 14:00 y en los fondos cuenta la hora de corte: mejor unos días antes). Los traspasos entre fondos no cuentan.'],
+    [`${anio}-12-31`, `31 dic ${anio}`, L('Último día del año para vender con pérdidas y que resten en la renta de ' + anio + ' (ese día la bolsa de Madrid cierra a las 14:00 y en los fondos cuenta la hora de corte: mejor unos días antes). Los traspasos entre fondos no cuentan.', `Last day of the year to sell at a loss and have it count in your ${anio} tax return (that day the Madrid exchange closes at 14:00 and funds have a cut-off time: better a few days before). Transfers between funds don't count.`)],
     [`${anio + 1}-02-15`, `ene-feb ${anio + 1}`, 'Los brókeres publican el informe fiscal del año en su app o su web (en Trade Republic: Perfil, Impuestos).'],
     [`${anio + 1}-03-31`, `31 mar ${anio + 1}`, `Modelos 720 (valores fuera, por un lado, y cuentas fuera, por otro) y 721 (cripto fuera): cada bloque, solo si pasa de 50.000 €; los años siguientes, si sube más de 20.000 €. Tienes ${eur(x.tr, 0)} en brókeres de fuera de España y ${eur(x.cripto, 0)} en cripto.`],
     [`${anio + 1}-04-08`, `abril ${anio + 1}`, `Empieza la renta de ${anio}: revisa en el borrador ventas, dividendos e intereses.`],
@@ -9543,8 +10314,8 @@ function planVenta0(f, M) {
   const res = p.proximos_resultados && p.proximos_resultados >= hoy ? p.proximos_resultados : null;
   const diasRes = res ? diasEntre(hoy, res) : null;
   const pot = a.objetivo ? (a.objetivo / pr - 1) * 100 : null;
-  if (nivel === 'vender' && +f.pos.stop && pr <= +f.pos.stop) cuando.push(`Ya: ha roto tu precio de salida (${precioFmt(+f.pos.stop)}). Cada día que esperas te expones a que siga cayendo.`);
-  else if (pot != null && pot < 3) cuando.push(`Ya: está en el precio objetivo medio de los analistas (${precioFmt(a.objetivo)}). En ${esc(f.pos.plataforma || 'tu bróker')}, pon una orden limitada de venta a ${precioCorto(pr)} (el precio de ahora).`);
+  if (nivel === 'vender' && +f.pos.stop && pr <= +f.pos.stop) cuando.push(L(`Ya: ha roto tu precio de salida (${precioFmt(+f.pos.stop)}). Cada día que esperas te expones a que siga cayendo.`, `Now: it has broken your exit price (${precioFmt(+f.pos.stop)}). Every day you wait you risk it falling further.`));
+  else if (pot != null && pot < 3) cuando.push(L(`Ya: está en el precio objetivo medio de los analistas (${precioFmt(a.objetivo)}). En ${esc(f.pos.plataforma || 'tu bróker')}, pon una orden limitada de venta a ${precioCorto(pr)} (el precio de ahora).`, `Now: it's at the analysts' average price target (${precioFmt(a.objetivo)}). In ${esc(f.pos.plataforma || 'your broker')}, place a limit sell order at ${precioCorto(pr)} (the current price).`));
   else if (pot != null && nivel !== 'vender') cuando.push(`Con una orden limitada a ${precioCorto(a.objetivo)}, el precio objetivo medio: es donde los analistas ven su techo a 12 meses. Si no llega en unas semanas, vende igualmente.`);
   else cuando.push('En los próximos días, sin esperar a un rebote.');
   if (diasRes != null && diasRes <= 21) cuando.push(`Mejor antes de sus resultados del ${fechaLarga(res)} (en ${diasRes} días): con lo que lleva subido, lo bueno ya está en el precio y un mal dato puede tumbarla en una sesión.`);
@@ -9554,7 +10325,7 @@ function planVenta0(f, M) {
   if (queda > 0 && salidaResto) {
     const st = +f.pos.stop, ud = accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones';
     const sube = st && Math.abs(st - salidaResto) > 0.005 && salidaResto > st;
-    cuando.push(`Para las ${oc(fmtNum(queda, Math.abs(queda - Math.round(queda)) < 0.005 ? 0 : 2))} ${ud} que te quedas: ${sube ? `sube tu salida de ${precioCorto(st)} a ${precioCorto(salidaResto)}` : `orden stop a ${precioCorto(salidaResto)}`}${salidaResto === t.media50 ? ' (su media de 50 sesiones)' : sube ? '' : ' (tu precio de salida)'}. Si cierra por debajo, la subida se ha acabado y vendes el resto.`);
+    cuando.push(L(`Para las ${oc(fmtNum(queda, Math.abs(queda - Math.round(queda)) < 0.005 ? 0 : 2))} ${ud} que te quedas: ${sube ? `sube tu salida de ${precioCorto(st)} a ${precioCorto(salidaResto)}` : `orden stop a ${precioCorto(salidaResto)}`}${salidaResto === t.media50 ? ' (su media de 50 sesiones)' : sube ? '' : ' (tu precio de salida)'}. Si cierra por debajo, la subida se ha acabado y vendes el resto.`, `For the ${oc(fmtNum(queda, Math.abs(queda - Math.round(queda)) < 0.005 ? 0 : 2))} ${trad(ud)} you keep: ${sube ? `raise your exit from ${precioCorto(st)} to ${precioCorto(salidaResto)}` : `stop order at ${precioCorto(salidaResto)}`}${salidaResto === t.media50 ? ' (its 50-day average)' : sube ? '' : ' (your exit price)'}. If it closes below, the rise is over and you sell the rest.`));
   }
 
   // adónde
@@ -9599,14 +10370,14 @@ function htmlPlanVenta(pl, compacto) {
   const f = pl.f, i = f.inst;
   const nombre = esc(i.corto || i.nombre);
   const top = pl.ideas[0];
-  const idea = (x, k) => `<li><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b title="${esc(x.n)}">${esc(nombreRadar(x))}</b><span class="k">${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</span></div>
+  const idea = (x, k) => `<li><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b title="${esc(x.n)}">${esc(nombreRadar(x))}</b><span class="k">${esc(trad(x.sector || ''))}${x.sector ? ', ' : ''}${esc(trad(x.z || ''))}</span></div>
     <span>${esc(x.motivos.slice(0, 4).join(', '))}.${x.pegas.length ? ` Pega: ${esc(x.pegas.join('; '))}.` : ''}</span></li>`;
   const destino = [];
   const tasaTop = top ? tasaRadar(top) : null;
   const pegaTop = top && top.pegas.find((x) => !x.startsWith('al comprar pagas'));
   if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(nombreRadar(top))}</b><span>${L(`De las ${radarVals().length} empresas que sigue GrowFolio, la mejor contrastada para una acción nueva que no repita lo que ya tienes: ${top.ctr.favor} de ${top.ctr.total} señales a favor`, `Of the ${radarVals().length} companies GrowFolio follows, the best-backed new stock that doesn't repeat what you hold: ${top.ctr.favor} of ${top.ctr.total} signals in favour`)}: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` ${L('Pega', 'Drawback')}: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} ${(() => { const e = esperadaRadar(top), an = f.p && f.p.analistas, queda = an && an.objetivo ? (an.objetivo / f.precio - 1) * 100 : null; return e ? ` ${planTxt(e)}${queda != null ? ` A ${esc(i.corto)} le queda un ${pct(queda, 1)} hasta su objetivo.` : ''}` : ''; })()} ${esc(fiscalidadSede(origenRadar(top).sede).txt)}</span></div></div>`);
   const nu = nucleo(S.M);
-  if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(nu.d, nu.n)}<div><b>${eur(pl.aNucleo, 0)} ${esc(nu.a)}</b><span>${pl.nivel === 'reducir' ? 'Para bajar riesgo sin dejar de estar invertido. ' : pl.aIdea > 0 ? 'La otra mitad, a lo seguro. ' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite. '}${esc(nu.txt)}</span></div></div>`);
+  if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(nu.d, nu.n)}<div><b>${eur(pl.aNucleo, 0)} ${esc(nu.a)}</b><span>${pl.nivel === 'reducir' ? L('Para bajar riesgo sin dejar de estar invertido. ', 'To lower risk without stopping being invested. ') : pl.aIdea > 0 ? L('La otra mitad, a lo seguro. ', 'The other half, somewhere safe. ') : L('Tus acciones sueltas no tienen más hueco dentro de tu límite. ', 'Your individual stocks have no more room within your limit. ')}${esc(nu.txt)}</span></div></div>`);
   if (pl.aColchon > 0.5) destino.push(`<div class="pv-dest">${logo(null, 'C')}<div><b>${eur(pl.aColchon, 0)} ${L('a tu colchón', 'to your cushion')}</b><span>${L(`Te faltan ${eur(faltaColchon(S.M || calcular()), 0)} para los meses de gastos que te pusiste. Déjalo en el efectivo remunerado o en un fondo monetario antes de meter más en bolsa.`, `You're ${eur(faltaColchon(S.M || calcular()), 0)} short of the months of expenses you set. Keep it in interest-bearing cash or a money-market fund before putting more into stocks.`)}</span></div></div>`);
   if (pl.impuesto > 0) destino.push(`<div class="pv-dest">${logo(null, '€')}<div><b>${eur(pl.impuesto, 0)} aparte para Hacienda</b><span>Se paga en la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}. Déjalo en efectivo o en tu colchón hasta entonces: no lo inviertas en bolsa.</span></div></div>`);
   const plegado = compacto === 'plegado';
@@ -9616,7 +10387,7 @@ function htmlPlanVenta(pl, compacto) {
     `<b>Vende ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : f.inst.clase === 'Cripto' ? 4 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b>${resP ? `, antes del ${fechaCorta(resP)}` : ''}`,
     pl.aIdea > 0 && top ? `<b>Compra ${eur(pl.aIdea, 0)} de ${esc(nombreRadar(top))}</b>${(() => { const e = esperadaRadar(top); return e ? `<small>${esc(planTxt(e).replace(/^Plazo: /, ''))}</small>` : ''; })()}` : '',
     pl.aColchon > 0.5 ? `<b>Pon ${eur(pl.aColchon, 0)} en tu colchón</b><small>${L('te falta para tus meses de gastos', 'you are short of your months of expenses')}</small>` : '',
-    pl.aNucleo > 0.5 ? `<b>Mete ${eur(pl.aNucleo, 0)} ${esc(nucleo(S.M).a.replace(/^a /, 'en '))}</b>` : '',
+    pl.aNucleo > 0.5 ? `<b>${L(`Mete ${eur(pl.aNucleo, 0)} ${esc(nucleo(S.M).a.replace(/^a /, 'en '))}`, `Put ${eur(pl.aNucleo, 0)} ${esc(nucleo(S.M).a.replace(/^to /, 'into '))}`)}</b>` : '',
     pl.impuesto > 0 ? `<b>Aparta ${eur(pl.impuesto, 0)} para Hacienda</b><small>la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}</small>` : '',
   ].filter(Boolean);
   return `<article class="plan-venta${compacto ? ' compacto' : ''}">
@@ -9624,7 +10395,7 @@ function htmlPlanVenta(pl, compacto) {
     ${plegado ? `<p class="pv-porque">${esc(f.senal.motivos[0] || '')}${pl.nivel === 'reducir' && S.M && S.M.total ? ` ${esc(L(`Vendiendo esto, baja al ${pct(Math.max(0, f.valor - pl.importe) / S.M.total * 100, 1)} de tu cartera.`, `Selling this brings it down to ${pct(Math.max(0, f.valor - pl.importe) / S.M.total * 100, 1)} of your portfolio.`))}` : ''}</p><ol class="pv-resumen">${pasos.map((x) => `<li>${x}</li>`).join('')}</ol><details class="mas pv-mas"><summary>${pl.aIdea > 0 && top ? 'El plan completo: cuándo, a qué precio, Hacienda y por qué esa empresa' : 'El plan completo: cuándo, a qué precio, Hacienda y adónde va el dinero'}</summary>` : ''}
     <div class="pv-grid">
       <div class="pv-col">
-        <div class="pv-paso"><span class="pv-n">Cuánto</span><div><b>Vende ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 4))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b><span>${pl.cuanto}${pl.queda > 0 ? ` Te quedas ${oc(fmtNum(pl.queda, Math.abs(pl.queda - Math.round(pl.queda)) < 0.005 ? 0 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.queda * f.precio, 0)}.` : ''}</span></div></div>
+        <div class="pv-paso"><span class="pv-n">Cuánto</span><div><b>Vende ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 4))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b><span>${pl.cuanto}${pl.queda > 0 ? L(` Te quedas ${oc(fmtNum(pl.queda, Math.abs(pl.queda - Math.round(pl.queda)) < 0.005 ? 0 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.queda * f.precio, 0)}.`, ` You keep ${oc(fmtNum(pl.queda, Math.abs(pl.queda - Math.round(pl.queda)) < 0.005 ? 0 : 2))} ${pl.accion ? 'shares' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'units' : 'fund units'}, about ${eur(pl.queda * f.precio, 0)}.`) : ''}</span></div></div>
         <div class="pv-paso"><span class="pv-n">Cuándo</span><div><ul class="motivos">${pl.cuando.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div>
         <div class="pv-paso"><span class="pv-n">Hacienda</span><div>${htmlFiscalVenta(pl)}</div></div>
       </div>
@@ -10661,7 +11432,7 @@ function fichaResumen(f) {
         <div><span class="k">${medio ? 'Ahora' : 'Vale'}</span><b>${medio ? precioFmt(f.precio) : eur(f.valor, 0)}</b></div>
         <div class="dc-res ${cls(f.pl)}"><span class="k">${f.pl >= 0 ? 'Llevas ganado' : 'Llevas perdido'}</span><b>${eurS(f.pl, 0)}</b><span>${pctS(f.plPct, 1)}</span></div>
       </div>
-      <p>${f.uds != null ? `${oc(fmtNum(f.uds, f.uds < 10 ? 4 : 2))} ${ud}, ` : ''}${eur(f.coste, 0)} invertidos${desde ? ` desde el ${fechaLarga(desde)}` : ''}${tp ? ` (${duracion(tp.dias)} de media): un <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b>` : ''}. ${f.estimada ? 'La cantidad es estimada: ponla exacta en Editar.' : 'Incluye comisiones y tasas de compra.'}${!desde ? ' Pon en Editar desde cuándo la tienes y verás cuánto te da al año.' : ''}</p>
+      <p>${L(`${f.uds != null ? `${oc(fmtNum(f.uds, f.uds < 10 ? 4 : 2))} ${ud}, ` : ''}${eur(f.coste, 0)} invertidos${desde ? ` desde el ${fechaLarga(desde)}` : ''}${tp ? ` (${duracion(tp.dias)} de media): un <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b>` : ''}. ${f.estimada ? 'La cantidad es estimada: ponla exacta en Editar.' : 'Incluye comisiones y tasas de compra.'}${!desde ? ' Pon en Editar desde cuándo la tienes y verás cuánto te da al año.' : ''}`, `${f.uds != null ? `${oc(fmtNum(f.uds, f.uds < 10 ? 4 : 2))} ${i.tipo === 'Acción' ? 'shares' : i.clase === 'Cripto' || i.tipo === 'ETC' ? 'units' : 'fund units'}, ` : ''}${eur(f.coste, 0)} invested${desde ? ` since ${fechaCortaL(desde)} ${desde.slice(0, 4)}` : ''}${tp ? ` (${trad(duracion(tp.dias))} on average): <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} a year</b>` : ''}. ${f.estimada ? 'The quantity is estimated: enter the exact one in Edit.' : 'Includes fees and purchase taxes.'}${!desde ? ' Enter in Edit since when you have held it and you will see how much it gives you a year.' : ''}`)}</p>
     </section>`;
   }
   const raro = precioCompraRaro(f);
@@ -10840,7 +11611,7 @@ function fichaDatos(f) {
       i.tipo && !p.sector && ['Tipo', esc(i.tipo)],
       moneda && ['Cotiza en', esc(moneda === 'GBp' ? 'peniques de libra (100 = 1 £)' : moneda)],
       !p.fecha && ce.f && ['Último valor publicado', fechaLarga(ce.f)],
-      !p.sector && zonas.length > 1 && ['Dónde invierte', esc(zonas.map(([z, v]) => `${z}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))],
+      !p.sector && zonas.length > 1 && ['Dónde invierte', esc(zonas.map(([z, v]) => `${trad(z)}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))],
       p.moneda && p.moneda !== 'EUR' && ['Precio en su moneda', fmtNum(p.precio_local, 2)],
       p.historico_desde && ['Histórico desde', fechaLarga(p.historico_desde)],
       p.sector && ['Sector', esc(p.sector)],
@@ -13150,7 +13921,7 @@ function abrirConsulta(c) {
     if (x.sector) datos.push(['Sector', esc(x.sector)]);
     if (x.z) datos.push(['País', esc(x.z)]);
   }
-  if (ca && ca.r && Object.keys(ca.r).length > 1) datos.push(['Dónde invierte', esc(Object.entries(ca.r).sort((a, b) => (a[0] === 'Otros') - (b[0] === 'Otros') || b[1] - a[1]).map(([k, v]) => `${k}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))]);
+  if (ca && ca.r && Object.keys(ca.r).length > 1) datos.push(['Dónde invierte', esc(Object.entries(ca.r).sort((a, b) => (a[0] === 'Otros') - (b[0] === 'Otros') || b[1] - a[1]).map(([k, v]) => `${trad(k)}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))]);
   const nots = sim ? noticiasIdea(sim) : [];
   const gnews = `https://news.google.com/search?q=${encodeURIComponent(nombre)}&hl=es&gl=ES&ceid=ES:es`;
   const h = hoja(nombre, `<div class="cons">
@@ -13273,8 +14044,19 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.11e';
+const VERSION = '0.4';
 const NOVEDADES = [
+  { v: '0.4', f: '2026-10-22', h: '22:15', t: 'El mundo en un mapa, tu cartera de un vistazo y tu peor caída', cosas: [
+    { d: 'mercados', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. Los nombres salen primero en los mercados que más pesan, con un punto dorado donde tienes dinero. Toca un país para ver sus bolsas, lo que tienes allí y lo que pesa en un fondo de todo el mundo. Europa y Asia, que tienen muchos países juntos, se ven de cerca; en el móvil, al tocar uno pequeño, el mapa se acerca solo.' },
+    { d: 'cifras', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'tuyo'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede. Puedes verlo todo junto o una sola posición (dónde invierte tu MSCI World, por ejemplo) y compararlo con lo que pesaría cada país en un fondo de todo el mundo: ahí EEUU es casi dos tercios.' },
+    { d: 'cifras', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale y del color de cómo va, hoy o desde que la compraste. Toca uno para ver sus cifras y abrir su ficha. Si lo quieres en Inicio, añádelo desde Personalizar.' },
+    { d: 'grafica', ir: { v: 'analisis', sel: '.caida-w', antes: () => { S.numAbierto = 'riesgo'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: 'Tu peor caída y cuánto tardó en recuperarse', x: 'En Tus números, Riesgo: con lo que tienes hoy, la mayor caída de los últimos años (la de 2020, por ejemplo), cuánto duró, cuánto tardó en volver a donde estaba y a cuánto estás ahora de tu máximo, con una gráfica de cada día.' },
+    { d: 'opinion', ir: { v: 'cartera', sel: '#bFallo' }, t: 'Te contestamos aquí mismo', x: 'Lo que mandas con el botón del bichito o con las estrellas tiene ahora respuesta: cuando te contesten, te sale en pantalla al abrir GrowFolio, junto a lo que escribiste. En ese mismo botón tienes todo lo que has mandado, con sus respuestas.' },
+    { d: 'idioma', t: 'GrowFolio, entero en inglés', x: 'Con la bandera de arriba, todo en inglés: cada pantalla, los avisos del móvil y el widget. Lo que escribe GrowIA para todos (la prensa de cada empresa, las ideas, el informe de los mercados) y los titulares en español llegan también traducidos.' },
+  ], arreglos: [
+    'El número junto al botón del calendario, en Inicio, no se entendía (eran las cosas tuyas de los próximos 7 días): ya no sale. Lo que viene sigue en el propio Inicio y dentro del Calendario.',
+    'El aviso del móvil de cada versión nueva decía «Trae app nueva de Android: ábrela y se instala encima». Ahora: «GrowFolio 0.4 ya está aquí» y lo que trae. Si la app se está actualizando sola, no dice nada más; si hace falta que la abras, te lo dice.',
+  ] },
   { v: '0.3.11e', f: '2026-10-22', h: '20:00', t: 'La app de Android se actualiza sola', arreglos: [
     'La app de Android se actualiza sola, sin que tengas que tocar nada: cuando hay una nueva y no la estás usando, se baja y se instala encima (Android 12 o más; en móviles más antiguos, el aviso de siempre). Esta vez hay que actualizarla a mano una última vez.',
   ] },
@@ -14013,23 +14795,144 @@ async function filaOpiniones(h) {
   const l = await leerOpiniones(); if (!l || !document.body.contains(w)) return;
   const visto = LS.get('inv-opis-vistas', 0), ult = fechaOpi(l[0] || {});
   const nuevas = l.filter((o) => (fechaOpi(o) || 0) > visto).length;
-  w.innerHTML = `<button class="aj-fila" id="aOpisB">${ICONOS.globo}<span><b>Opiniones recibidas${nuevas ? ` <em class="aj-nuevas">${nuevas} ${nuevas === 1 ? 'nueva' : 'nuevas'}</em>` : ''}</b><small>${l.length ? `${l.length}${l.length >= 200 ? ' o más' : ''} en total, la última ${ult ? haceCuanto(ult.toISOString()) : 'sin fecha'}. Solo las ves tú.` : 'Todavía no ha llegado ninguna. Solo las ves tú.'}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+  const sin = l.filter((o) => !o.respuesta && o.uid).length;
+  w.innerHTML = `<button class="aj-fila" id="aOpisB">${ICONOS.globo}<span><b>${L('Opiniones recibidas', 'Feedback received')}${nuevas ? ` <em class="aj-nuevas">${nuevas} ${nuevas === 1 ? L('nueva', 'new') : L('nuevas', 'new')}</em>` : ''}</b><small>${l.length ? `${L(`${l.length}${l.length >= 200 ? ' o más' : ''} en total, la última ${ult ? haceCuanto(ult.toISOString()) : 'sin fecha'}`, `${l.length}${l.length >= 200 ? ' or more' : ''} in total, the latest ${ult ? haceCuanto(ult.toISOString()) : 'undated'}`)}${sin ? L(`, ${sin} sin responder`, `, ${sin} not answered`) : ''}. ${L('Solo las ves tú.', 'Only you can see them.')}` : L('Todavía no ha llegado ninguna. Solo las ves tú.', 'Nothing has come in yet. Only you can see them.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
   $('#aOpisB', h.el).onclick = () => { h.cerrar(true); verOpiniones(l, visto); };
 }
 function verOpiniones(l, visto) {
   LS.set('inv-opis-vistas', Date.now());
-  const cuando = (d) => (d ? d.toLocaleString('es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : 'sin fecha');
   const item = (o) => {
-    const d = fechaOpi(o), quien = [o.quien && !/^(amigo sin nombre|el dueño)$/.test(o.quien) ? o.quien : '', o.correo || ''].filter(Boolean).join(', ') || 'sin nombre';
-    const estrellas = o.nota != null ? `<span class="opr-nota" aria-label="${o.nota} de 5">${'★'.repeat(o.nota)}${'☆'.repeat(Math.max(0, 5 - o.nota))}</span>` : '';
-    return `<li class="opr${d && d > visto ? ' nueva' : ''}">
-      <div class="opr-cab">${o.tipo ? `<span class="opr-tipo">${esc(o.tipo)}</span>` : ''}${o.sitio ? `<span class="opr-sitio">${esc(o.sitio)}</span>` : ''}${estrellas}<time>${esc(cuando(d))}</time></div>
-      ${o.texto ? `<p>${esc(o.texto)}</p>` : ''}
-      <small>${esc(quien)}${o.v ? `, versión ${esc(o.v)}` : ''}</small>
+    const d = fechaOpi(o), quien = quienOpi(o);
+    const estrellas = o.nota != null ? `<span class="opr-nota" aria-label="${L(`${o.nota} de 5`, `${o.nota} out of 5`)}">${'★'.repeat(o.nota)}${'☆'.repeat(Math.max(0, 5 - o.nota))}</span>` : '';
+    // las de las estrellas llegan como tipo «puntuacion» y con las estrellas también en el texto: se enseñan una vez
+    const nota = o.tipo === 'puntuacion', texto = textoOpi(o);
+    return `<li class="opr${d && d > visto ? ' nueva' : ''}" data-opr="${esc(o.id)}">
+      <div class="opr-cab">${o.tipo ? `<span class="opr-tipo">${nota ? L('Nota', 'Rating') : esc(trad(o.tipo))}</span>` : ''}${o.sitio && !/^(general|La app en general)$/.test(o.sitio) ? `<span class="opr-sitio">${esc(trad(o.sitio))}</span>` : ''}${estrellas}<time>${esc(cuandoOpi(d))}</time></div>
+      ${texto ? `<p>${esc(texto)}</p>` : ''}
+      <small>${esc(quien)}${o.v ? `, ${L('versión', 'version')} ${esc(o.v)}` : ''}</small>
+      <div class="opr-r">${htmlRespOpr(o)}</div>
     </li>`;
   };
-  hoja('Opiniones recibidas', `<div class="opr-hoja">${l.length ? `<ul class="opr-lista">${l.map(item).join('')}</ul>` : '<p class="nota">Todavía no ha llegado ninguna.</p>'}
-    <div class="fila-btns"><button class="btn" data-cerrar>Cerrar</button></div></div>`, () => abrirAjustes());
+  const sin = l.filter((o) => !o.respuesta && o.uid).length;
+  const h = hoja(L('Opiniones recibidas', 'Feedback received'), `<div class="opr-hoja">
+    ${l.length ? `<p class="nota opr-intro"><span class="opr-sin">${textoSinResp(sin)}</span>${L('Lo que respondas le sale en pantalla a quien la mandó la próxima vez que abra GrowFolio, y aquí ves si ya lo ha leído.', 'Whatever you reply shows up on screen for the sender the next time they open GrowFolio, and you can see here whether they have read it.')}</p>` : ''}
+    ${l.length ? `<ul class="opr-lista">${l.map(item).join('')}</ul>` : `<p class="nota">${L('Todavía no ha llegado ninguna.', 'Nothing has come in yet.')}</p>`}
+    <div class="fila-btns"><button class="btn" data-cerrar>${L('Cerrar', 'Close')}</button></div></div>`, () => abrirAjustes());
+  const porId = new Map(l.map((o) => [o.id, o]));
+  h.el.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-opr-resp], [data-opr-cancelar]'); if (!b) return;
+    const li = b.closest('[data-opr]'), o = li && porId.get(li.dataset.opr); if (!o) return;
+    const caja = $('.opr-r', li);
+    if (b.hasAttribute('data-opr-cancelar')) { caja.innerHTML = htmlRespOpr(o); return; }
+    caja.innerHTML = `<form class="opr-f" novalidate>
+      <label class="campo">${L(`Tu respuesta a ${esc(quienOpi(o, true))}`, `Your reply to ${esc(quienOpi(o, true))}`)}<textarea name="r" rows="4" maxlength="2000" placeholder="${L('Gracias por avisar: ya está arreglado en la versión…', 'Thanks for letting me know: it is fixed in version…')}">${esc(o.respuesta || '')}</textarea></label>
+      <small class="opr-f-nota">${L('Le saldrá en pantalla cuando abra GrowFolio.', 'It will show up on their screen when they open GrowFolio.')}</small>
+      <div class="error"></div>
+      <div class="fila-btns"><button type="button" class="btn" data-opr-cancelar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri">${ICONOS.enviar}${o.respuesta ? L('Guardar', 'Save') : L('Responder', 'Reply')}</button></div>
+    </form>`;
+    const f = $('.opr-f', caja), t = f.r; t.focus(); t.setSelectionRange(t.value.length, t.value.length);
+    t.oninput = () => { $('.error', f).textContent = ''; };
+    f.onsubmit = async (ev) => {
+      ev.preventDefault();
+      const r = t.value.trim(); if (!r) { $('.error', f).textContent = L('Escribe la respuesta.', 'Write your reply.'); return; }
+      const bt = $('button[type=submit]', f); bt.disabled = true; bt.textContent = L('Enviando…', 'Sending…');
+      try {
+        const por = nombreUsuario() || null;
+        await conTiempo(FB.fs.updateDoc(FB.fs.doc(FB.db, 'opiniones', o.id), { respuesta: r, respondida: FB.fs.serverTimestamp(), por, vista: false }), 10000);
+        Object.assign(o, { respuesta: r, respondida: { toDate: () => new Date() }, por, vista: false });
+        caja.innerHTML = htmlRespOpr(o);
+        const sp = $('.opr-sin', h.el); if (sp) sp.textContent = textoSinResp(l.filter((x) => !x.respuesta && x.uid).length);
+        toast(L('Respuesta enviada: la verá al abrir GrowFolio.', 'Reply sent: they will see it when they open GrowFolio.'));
+      } catch (er) {
+        console.warn(er);
+        bt.disabled = false; bt.innerHTML = ICONOS.enviar + (o.respuesta ? L('Guardar', 'Save') : L('Responder', 'Reply'));
+        $('.error', f).textContent = /permission/i.test(String((er && er.code) || er))
+          ? L('Firestore no deja responder todavía: hay que publicar las reglas nuevas (la Action «Reglas de Firestore» o a mano en la consola).', 'Firestore does not allow replies yet: the new rules have to be published (the «Firestore rules» Action or by hand in the console).')
+          : L('No se ha podido enviar (¿sin conexión?). Prueba otra vez.', 'Could not send it (offline?). Try again.');
+      }
+    };
+  });
+}
+const textoSinResp = (n) => (n ? (n === 1 ? L('1 sin responder. ', '1 not answered yet. ') : L(`${n} sin responder. `, `${n} not answered yet. `)) : '');
+const textoOpi = (o) => String(o.texto || '').replace(o.tipo === 'puntuacion' ? /^[★☆]+ \(\d\/5\)\n?/ : /^$/, '').trim();
+/* a quién se le contesta: el nombre que puso o, si no, su correo */
+function quienOpi(o, corto) {
+  const n = o.quien && !/^(amigo sin nombre|el dueño)$/.test(o.quien) ? o.quien : '';
+  if (corto) return n || o.correo || L('quien la mandó', 'the sender');
+  return [n, o.correo || ''].filter(Boolean).join(', ') || L('sin nombre', 'no name');
+}
+const cuandoOpi = (d) => (d ? d.toLocaleString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' }) : L('sin fecha', 'no date'));
+/* lo que ve el dueño debajo de cada opinión: su respuesta (con si ya la ha leído) o el botón para responder. Las que
+   no tienen cuenta detrás (las de antes, sin uid) no se pueden contestar: no hay a quién enseñárselo. */
+function htmlRespOpr(o) {
+  if (o.respuesta) {
+    const d = fechaOpi({ cuando: o.respondida });
+    return `<div class="opr-resp">
+      <div class="opr-resp-cab"><b>${L('Tu respuesta', 'Your reply')}</b>${d ? `<time>${esc(cuandoOpi(d))}</time>` : ''}<span class="opr-leida${o.vista ? ' si' : ''}">${o.vista ? ICONOS.ok + L('La ha leído', 'Read') : L('Aún no la ha leído', 'Not read yet')}</span></div>
+      <p>${esc(o.respuesta)}</p>
+      <button type="button" class="enlace acento" data-opr-resp>${L('Cambiar la respuesta', 'Edit the reply')}</button>
+    </div>`;
+  }
+  return o.uid ? `<button type="button" class="btn opr-responder" data-opr-resp>${ICONOS.enviar}${L('Responder', 'Reply')}</button>` : '';
+}
+
+/* =====================================================================
+   Las respuestas a lo que mandaste (0.4). Quien hace GrowFolio puede contestar cada opinión o fallo desde
+   Ajustes > Opiniones recibidas; a quien la mandó le sale la respuesta en pantalla al abrir GrowFolio (o al volver a
+   ella), una vez: al cerrarla queda como leída y el dueño lo ve. Las reglas de Firestore solo dejan que cada cuenta lea
+   las suyas y que lo único que pueda cambiar en ellas sea marcarlas como leídas.
+   ===================================================================== */
+async function misOpiniones() {
+  if (!PERFIL_CUENTA) return null;
+  await fbCargar(); if (!FB.user) return null;
+  const f = FB.fs;
+  try {
+    // sin orderBy: con un solo «where» Firestore no necesita un índice compuesto; se ordenan aquí
+    const r = await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.where('uid', '==', FB.user.uid), f.limit(100))), 10000);
+    return r.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (fechaOpi(b) || 0) - (fechaOpi(a) || 0));
+  } catch (e) { console.warn('opiniones', e); return null; }
+}
+const opiOcupado = () => document.hidden || !!document.querySelector('.hoja-fondo, .tour, .estreno, .intro, .ficha-fondo') || !!S.ficha;
+async function revisarRespuestas(intento = 0) {
+  if (!PERFIL_CUENTA || !S.cartera || S.mirandoResp) return;
+  clearTimeout(S.respLuego);
+  const luego = () => { if (intento < 12) S.respLuego = setTimeout(() => revisarRespuestas(intento + 1), 20000); };
+  if (opiOcupado()) { luego(); return; }
+  S.mirandoResp = true;
+  let l = null;
+  try { l = await misOpiniones(); } finally { S.mirandoResp = false; }
+  if (!l) return;
+  S.respMirado = Date.now();
+  const nuevas = l.filter((o) => o.respuesta && o.vista !== true);
+  if (!nuevas.length) return;
+  if (opiOcupado()) { luego(); return; }
+  verRespuestas(nuevas, true);
+}
+// al volver a GrowFolio (la app se queda abierta en segundo plano), como mucho cada diez minutos
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.cartera && Date.now() - (S.respMirado || 0) > 10 * 60e3) revisarRespuestas(); });
+/* l: las que enseñar; nuevas: si son respuestas sin leer (al cerrar quedan leídas) o el historial que se abre a mano */
+function verRespuestas(l, nuevas) {
+  const tuyo = (o) => {
+    const t = textoOpi(o);
+    const est = o.nota != null ? `<span class="resp-est" aria-label="${L(`${o.nota} de 5`, `${o.nota} out of 5`)}">${'★'.repeat(o.nota)}${'☆'.repeat(Math.max(0, 5 - o.nota))}</span>` : '';
+    return `<div class="resp-tuyo"><div class="resp-meta">${L('Tú', 'You')}${o.tipo && o.tipo !== 'puntuacion' ? `, ${esc(trad(o.tipo).toLowerCase())}` : ''}${o.sitio && o.sitio !== 'La app en general' && o.tipo !== 'puntuacion' ? ` ${L('en', 'in')} ${esc(trad(o.sitio))}` : ''}<time>${esc(cuandoOpi(fechaOpi(o)))}</time></div>${est}${t ? `<p>${esc(t.length > 600 ? t.slice(0, 600) + '…' : t)}</p>` : ''}</div>`;
+  };
+  const suyo = (o) => o.respuesta ? `<div class="resp-suya">
+      <div class="resp-meta">${svgMarca('resp-marca')}<b>${esc(o.por ? L(`${o.por}, de GrowFolio`, `${o.por}, from GrowFolio`) : 'GrowFolio')}</b><time>${esc(cuandoOpi(fechaOpi({ cuando: o.respondida })))}</time></div>
+      <p>${esc(o.respuesta)}</p>
+    </div>` : `<p class="resp-espera">${L('Sin respuesta todavía.', 'No reply yet.')}</p>`;
+  const titulo = nuevas ? (l.length === 1 ? L('Te han respondido', 'You have a reply') : L(`Tienes ${l.length} respuestas`, `You have ${l.length} replies`)) : L('Lo que has mandado', 'What you have sent');
+  const h = hoja(titulo, `<div class="resp-hoja">
+      ${nuevas ? `<p class="nota">${l.length === 1 ? L('A lo que mandaste a GrowFolio:', 'To what you sent to GrowFolio:') : L('A lo que mandaste a GrowFolio, de lo más nuevo a lo más antiguo:', 'To what you sent to GrowFolio, newest first:')}</p>` : ''}
+      <ul class="resp-lista">${l.map((o) => `<li class="resp">${tuyo(o)}${suyo(o)}</li>`).join('')}</ul>
+      <div class="fila-btns"><button type="button" class="btn" id="bRespOtra">${L('Escribir otra vez', 'Write again')}</button><button type="button" class="btn pri" data-cerrar>${nuevas ? L('Entendido', 'Got it') : L('Cerrar', 'Close')}</button></div>
+    </div>`, () => { if (nuevas) marcarLeidas(l); });
+  h.el.classList.add('hoja-resp');
+  $('#bRespOtra', h.el).onclick = () => { h.cerrar(); abrirOpinion(); };
+}
+async function marcarLeidas(l) {
+  const f = FB.fs; if (!f || !FB.user) return;
+  await Promise.all(l.filter((o) => o.respuesta && o.vista !== true).map((o) => conTiempo(f.updateDoc(f.doc(FB.db, 'opiniones', o.id), { vista: true }), 10000).then(() => { o.vista = true; }).catch((e) => console.warn('opiniones', e))));
 }
 /* ¿Qué te parece GrowFolio? Cuando alguien la ha usado 5 días distintos (no hace falta seguidos), un rato después de
    abrirla le sale una vez: de 1 a 5 estrellas y, si quiere, un comentario (con 3 o menos, qué mejoraría). Llega como
@@ -14089,11 +14992,18 @@ async function abrirOpinion() {
     <label class="campo">Dónde<select name="sitio">${SITIOS_OP.map(([k, t]) => `<option value="${k}"${k === sitio ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
     <label class="campo">Cuéntalo<textarea name="txt" rows="5" placeholder="Qué ves, qué esperabas o qué se te ha ocurrido. Si es algo que falla, qué estabas haciendo."></textarea>${directa ? '' : '<small>Si es algo visual, manda también una captura en el mismo chat.</small>'}</label>
     ${directa ? `<label class="campo">Tu nombre<input name="quien" maxlength="40" value="${esc(LS.get('inv-opi-nombre', '') || '')}" placeholder="Opcional, para saber quién lo dice"></label>` : ''}
-    <p class="nota" style="margin:0">${directa ? 'Llega directamente a quien hace GrowFolio.' : 'Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó GrowFolio.'} Solo va lo que escribes, la sección y la versión, nada de tu cartera.${hist.length ? ` Llevas ${hist.length} ${hist.length === 1 ? 'enviada' : 'enviadas'}: gracias.` : ''}</p>
+    <p class="nota" style="margin:0">${directa ? L('Llega directamente a quien hace GrowFolio, que te puede contestar aquí mismo.', 'It goes straight to the people who make GrowFolio, who can reply to you right here.') : L('Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó GrowFolio.', 'WhatsApp opens with the message written: pick the chat of whoever shared GrowFolio with you.')} ${L('Solo va lo que escribes, la sección y la versión, nada de tu cartera.', 'Only what you write, the section and the version are sent, nothing from your portfolio.')}${hist.length ? ' ' + (hist.length === 1 ? L('Llevas 1 enviada: gracias.', "You've sent 1 so far: thanks.") : L(`Llevas ${hist.length} enviadas: gracias.`, `You've sent ${hist.length} so far: thanks.`)) : ''}</p>
+    ${directa ? '<div id="opiMias"></div>' : ''}
     <div class="error" id="errOpi"></div>
     <div class="fila-btns">${directa ? '' : `<button type="button" class="btn" id="bOpiCopiar">Copiar</button>${navigator.share ? '<button type="button" class="btn" id="bOpiComp">Compartir…</button>' : ''}`}<button type="submit" class="btn pri" id="bOpiEnviar">${ICONOS.globo}${directa ? 'Enviar' : 'Enviar por WhatsApp'}</button></div>
   </form>`);
   const f = $('#fOpi', h.el);
+  if (directa) misOpiniones().then((l) => {
+    const w = $('#opiMias', h.el); if (!l || !l.length || !w) return;
+    const r = l.filter((o) => o.respuesta).length;
+    w.innerHTML = `<button type="button" class="opi-mias">${ICONOS.globo}<span>${L(`Lo que has mandado (${l.length})`, `What you have sent (${l.length})`)}<small>${r ? (r === 1 ? L('1 con respuesta', '1 with a reply') : L(`${r} con respuesta`, `${r} with a reply`)) : L('Sin respuestas todavía', 'No replies yet')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+    $('.opi-mias', w).onclick = () => { h.cerrar(true); verRespuestas(l, false); };
+  });
   const texto = () => {
     const tipo = (f.querySelector('[name=tipo]:checked') || {}).value || 'otra', sitio = f.sitio.value, t = f.txt.value.trim();
     if (!t) { $('#errOpi', h.el).textContent = 'Escribe qué pasa o qué se te ocurre.'; return null; }
@@ -14114,7 +15024,7 @@ async function abrirOpinion() {
       try {
         await mandarOpinion({ tipo: (TIPOS_OP.find(([k]) => k === tipo) || [])[1], sitio: (SITIOS_OP.find(([k]) => k === st) || [])[1], texto: f.txt.value.trim(), quien: quien || (PERFIL_LOCAL ? 'amigo sin nombre' : 'el dueño'), info: t.split('\n').pop().replace(/^\(|\)$/g, '') });
         LS.set('inv-opi-hist', [...hist, { f: hoyIso(), tipo, sitio: st }].slice(-30));
-        h.el.querySelector('.hoja').innerHTML = `<div class="opi-ok">${dibujo('logo')}<h2>Recibido, gracias</h2><p>Con lo que mandáis se arregla y se mejora GrowFolio. Si es algo visual y quieres, manda también una captura por WhatsApp.</p><div class="fila-btns"><button class="btn pri" data-cerrar>Cerrar</button></div></div>`;
+        h.el.querySelector('.hoja').innerHTML = `<div class="opi-ok">${dibujo('logo')}<h2>Recibido, gracias</h2><p>Con lo que mandáis se arregla y se mejora GrowFolio. Si te contestan, te saldrá la respuesta al abrir la app. Si es algo visual, manda también una captura por WhatsApp.</p><div class="fila-btns"><button class="btn pri" data-cerrar>Cerrar</button></div></div>`;
       } catch (e) {
         b.disabled = false; b.innerHTML = ICONOS.globo + 'Enviar';
         $('#errOpi', h.el).textContent = 'No se ha podido enviar (¿sin conexión?). Prueba otra vez en un rato.';
@@ -14133,7 +15043,7 @@ async function abrirOpinion() {
 const TOUR = [
   { v: 'cartera', sel: '.navbar, .nav', logo: true, ola: true, t: 'Te damos la bienvenida', x: () => (innerWidth < 760 ? 'Todo está en estos cinco botones: Inicio en el centro, a la izquierda lo que haces tú y a la derecha lo de fuera. Te enseñamos cada uno en un minuto.' : 'Todo está en estas cinco pestañas. Te enseñamos cada una en un minuto y, al final, qué hacer hoy para empezar.') },
   { v: 'cartera', sel: '.hero-cifra', t: 'Inicio: lo que tienes', x: 'Todo sumado, con lo que ganas o pierdes hoy. Desliza el dedo por la gráfica para ver cualquier día. El ojo oculta las cifras.' },
-  { v: 'cartera', sel: '.car-agenda-mini', t: 'Tu calendario', x: 'Resultados y dividendos de lo que tienes, tus aportaciones, la Fed y el BCE y las fechas de la renta, con los días que faltan. El número dice cuántas cosas tuyas hay esta semana.' },
+  { v: 'cartera', sel: '.car-agenda-mini', t: 'Tu calendario', x: 'Resultados y dividendos de lo que tienes, tus aportaciones, la Fed y el BCE y las fechas de la renta, con los días que faltan.' },
   { v: 'cartera', pos: true, sel: '#hPos ~ .der', t: 'Tus posiciones, justo debajo', x: 'Toca una para ver su ficha; debajo del valor, lo ganado desde que la compraste. El «+» es para lo que ya tenías antes de GrowFolio y las flechas, para cada compra o venta desde hoy. A su lado eliges el orden.' },
   { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', suave: true, t: 'Pasos: qué hacer este mes', x: 'En orden y con lo urgente arriba: qué, cuánto y por qué. Lo haces y lo marcas. Si no toca nada, también te lo dice.' },
   { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', suave: true, t: 'Análisis: cómo vas', x: 'La nota de GrowIA a tu cartera, tus objetivos frente a lo que tienes y cuánto podrías llegar a tener. En época de renta, también Hacienda.' },
@@ -17066,6 +17976,7 @@ function arrancar() {
   // dice «cargando» (antes decía «aún sin activar» aunque la tuvieras activada) y luego se rehace sola
   Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); setTimeout(() => mostrarPreguntaIA(), 3000); });
   apuntarDiaUso(); setTimeout(() => pedirNota(), 150000); setTimeout(() => pedirAvisoVersiones(), 12000);
+  if (PERFIL_CUENTA) setTimeout(() => revisarRespuestas(), 5000);
   // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)
   { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); refrescarCatLocal().catch(() => {}); }; setTimeout(mira, 6000); }
   clearInterval(tickPrecios); clearInterval(tickEstado);
@@ -17301,7 +18212,7 @@ const trad = (s) => (IDIOMA === 'en' && I18N.dic ? traducirTexto(s) ?? s : s);
 const yLista = (a) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}${IDIOMA === 'en' ? ' and ' : /^h?[iíIÍ](?![aeouáéóúAEOU])/.test(String(a[a.length - 1]).replace(/^<[^>]*>/, '')) ? ' e ' : ' y '}${a[a.length - 1]}` : a.join(''));
 const I18N = { dic: null };
 const NUM_I18N = /[-+−]?\d+(?:[.,]\d+)*/g;   // el punto o la coma de después de un número no es suyo («en 2026, que…»)
-const ATR_I18N = ['placeholder', 'title', 'aria-label', 'alt'];
+const ATR_I18N = ['placeholder', 'title', 'aria-label', 'alt', 'data-l'];   // data-l: las etiquetas de las tablas en el móvil
 let banderaN = 0;
 function banderaIdioma(c) {
   if (c === 'es') return '<svg class="bandera" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#AA151B"/><rect y="5" width="30" height="10" fill="#F1BF00"/></svg>';
@@ -17313,7 +18224,7 @@ function menuIdioma(btn) {
   const viejo = $('#menuIdioma'); if (viejo) { viejo.cerrar(); return; }
   const m = document.createElement('div');
   m.id = 'menuIdioma'; m.className = 'menu-idioma'; m.setAttribute('role', 'menu'); m.setAttribute('aria-label', 'Idioma / Language'); m.dataset.noTrad = '';
-  m.innerHTML = IDIOMAS.map(([c, n]) => `<button type="button" role="menuitemradio" aria-checked="${c === IDIOMA}" data-idioma="${c}" lang="${c}">${banderaIdioma(c)}<span>${n}</span>${c === 'en' ? '<small>beta</small>' : ''}${c === IDIOMA ? '<span class="mi-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>' : ''}</button>`).join('');
+  m.innerHTML = IDIOMAS.map(([c, n]) => `<button type="button" role="menuitemradio" aria-checked="${c === IDIOMA}" data-idioma="${c}" lang="${c}">${banderaIdioma(c)}<span>${n}</span>${c === IDIOMA ? '<span class="mi-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>' : ''}</button>`).join('');
   document.body.appendChild(m);
   const r = btn.getBoundingClientRect();
   m.style.top = Math.round(r.bottom + 6) + 'px';
@@ -17363,7 +18274,8 @@ function traducirTextoN(s) {
     if (!s.includes(clave)) continue;
     const m = re.exec(s);
     // un hueco de la plantilla es un nombre o una cifra: si se traga media frase (un texto de GrowIA que empieza igual), no vale
-    if (m && m.slice(1).every((g) => !g || g.length <= 48)) return en.replace(/\$(\d)/g, (_, n) => { const g = m[+n] || ''; return traducirTexto(g.trim()) ?? g; });
+    // 0.4: un hueco largo vale si a su vez es una frase que se sabe traducir («…, partiendo de lo que tienes y aportando 16.000 € más»)
+    if (m && m.slice(1).every((g) => !g || g.length <= 48 || traducirTexto(g.trim()) != null)) return en.replace(/\$(\d)/g, (_, n) => { const g = m[+n] || ''; return traducirTexto(g.trim()) ?? g; });
   }
   // frases que empiezan igual y siguen con datos: "Lo que más mueve hoy: Repsol +2 %…"
   for (const [es, en] of I18N.pre || []) if (s.startsWith(es)) return en + s.slice(es.length);
@@ -17415,7 +18327,7 @@ async function cargarIdioma() {
     traducirNodo(document.body);
     document.title = traducirTexto(document.title) || document.title;
     obsI18N.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATR_I18N });
-    avisoIngles();
+    // 0.4: ya está todo en inglés; el aviso de «versión en curso» deja de salir
   }
   raiz.classList.remove('i18n-carga');
 }
@@ -17447,6 +18359,7 @@ async function iniciar() {
   cargarIdioma();
   if (bancoALaApp()) return;
   try { if (window.InversionesApp && typeof InversionesApp.versionVista === 'function') InversionesApp.versionVista(VERSION); } catch (e) {}
+  try { if (window.InversionesApp && typeof InversionesApp.idioma === 'function') InversionesApp.idioma(IDIOMA); } catch (e) {}
   // quien llega nuevo ve la presentación general, no la de la 0.2; quien venía de la 0.1, se apunta
   if (!LS.get('inv-version', null)) LS.set('inv-estreno-02b', true);
   else if (cmpVer(LS.get('inv-version'), '0.2.0') < 0 || localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc')) LS.set('inv-vino-01', true);
