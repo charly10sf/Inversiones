@@ -94,9 +94,17 @@ jobs:
           printf '{"version": %s, "nombre": "%s", "apk": "https://github.com/charly10sf/Inversiones/releases/download/app/inversiones.apk"}\n' "${{ github.run_number }}" "$VERSION_NAME" > app.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add app.json
-          git commit -q -m "App: versión ${{ github.run_number }} publicada" || true
-          git pull -q --rebase origin main && git push -q origin HEAD:main
+          # encima de lo último de main (a la vez suele entrar el version.json de la Action del release): solo app.json.
+          # Antes era «pull --rebase», que con el checkout corto fallaba si main se había movido y app.json no subía
+          for i in 1 2 3 4 5; do
+            git fetch -q origin main
+            git reset -q origin/main
+            git add app.json
+            git diff --cached --quiet && break
+            git commit -q -m "App: versión ${{ github.run_number }} publicada"
+            git push -q origin HEAD:main && break
+            sleep 6
+          done
 
       # el registro de la compilación, en la rama android-registro, para poder revisarlo si falla
       - name: Guardar el registro
