@@ -4258,11 +4258,11 @@ const mesAnio = (s) => { if (!s) return '—'; const d = deIso(s); return IDIOMA
 function haceCuanto(t) {
   const min = Math.round((Date.now() - new Date(t).getTime()) / 60000);
   if (!isFinite(min)) return '—';
-  if (min < 1) return 'ahora mismo';
-  if (min < 60) return `hace ${min} min`;
+  if (min < 1) return L('ahora mismo', 'just now');
+  if (min < 60) return L(`hace ${min} min`, `${min} min ago`);
   const h = Math.round(min / 60);
-  if (h < 48) return `hace ${h} h`;
-  return `hace ${Math.round(h / 24)} días`;
+  if (h < 48) return L(`hace ${h} h`, `${h} h ago`);
+  return L(`hace ${Math.round(h / 24)} días`, `${Math.round(h / 24)} days ago`);
 }
 const diasEntre = (a, b) => Math.round((deIso(b) - deIso(a)) / 86400000);
 
@@ -4376,6 +4376,7 @@ async function cargarPrecios() {
   else { try { txt = localStorage.getItem('inv-cache-precios'); } catch (e) {} }
   S.precios = txt ? JSON.parse(txt) : { instrumentos: {}, sectores_etf: {}, generado: null };
   S.ultimaCarga = Date.now();
+  if (IDIOMA === 'en' && S.trEn) trDatos(S.precios.noticias);
 }
 
 async function cargarCifrada() {
@@ -5816,7 +5817,7 @@ function reglasAvisos(M) {
   const reglas = M.filas.filter((f) => f.inst && f.valor > 0).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, sym: f.inst.yahoo ? String(f.inst.yahoo).toUpperCase() : '', cid: f.inst.cat || (catDe(f.inst) ? 'c-' + String(f.inst.isin || '').toLowerCase() : ''), stop: +f.pos.stop || 0, p: f.precio || 0 }));
   const vistos = new Set(), unicas = reglas.filter((r) => !vistos.has(r.id) && vistos.add(r.id));
   let eventos = [];
-  try { eventos = agendaLista(M, 3).filter((e) => ['resultados', 'dividendo', 'cobro'].includes(e.tipo)).map((e) => { const d = document.createElement('div'); d.innerHTML = e.t; return { k: e.id, d: e.d, t: d.textContent, s: String(e.s || '') }; }); } catch (e) {}
+  try { eventos = agendaLista(M, 3).filter((e) => ['resultados', 'dividendo', 'cobro'].includes(e.tipo)).map((e) => { const d = document.createElement('div'); d.innerHTML = e.t; return { k: e.id, d: e.d, t: trad(d.textContent), s: trad(String(e.s || '')) }; }); } catch (e) {}
   const vistas = LS.get('inv-preg-vistas', []);
   const preg = preguntasIA().filter((x) => !vistas.includes(clavePreg(x))).map((x) => ({ k: clavePreg(x), q: x.q }));
   // 0.3.11: las empresas que sigues, con sus precios de aviso (en euros, los del radar)
@@ -5831,17 +5832,17 @@ function revisarAvisos(M) {
   for (const f of M.filas) {
     const stop = +f.pos.stop, pr = f.precio, n = f.inst.corto || f.inst.nombre;
     if (c.stop && stop > 0 && pr > 0) {
-      if (pr <= stop) avisoSistema('stop', `${n}: precio de salida roto`, `Está a ${precioFmt(pr)}, por debajo de tu salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`, '#cartera', `stop:${f.inst.id}:${hoy}`);
-      else if (pr <= stop * 1.03) avisoSistema('stop', `${n} se acerca a tu precio de salida`, `Está a un ${fmtNum((pr / stop - 1) * 100, 1)} % de ${precioFmt(stop)}.`, '#cartera', `stopc:${f.inst.id}:${hoy}`);
+      if (pr <= stop) avisoSistema('stop', L(`${n}: precio de salida roto`, `${n}: exit price broken`), L(`Está a ${precioFmt(pr)}, por debajo de tu salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`, `It's at ${precioFmt(pr)}, below your exit (${precioFmt(stop)}). It's what you told yourself you'd do.`), '#cartera', `stop:${f.inst.id}:${hoy}`);
+      else if (pr <= stop * 1.03) avisoSistema('stop', L(`${n} se acerca a tu precio de salida`, `${n} is nearing your exit price`), L(`Está a un ${fmtNum((pr / stop - 1) * 100, 1)} % de ${precioFmt(stop)}.`, `It's ${fmtNum((pr / stop - 1) * 100, 1)} % above ${precioFmt(stop)}.`), '#cartera', `stopc:${f.inst.id}:${hoy}`);
     }
-    if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', `${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.`, '#cartera', `mov:${f.inst.id}:${hoy}`);
+    if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', L(`${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `${n} is ${f.varDia > 0 ? 'up' : 'down'} ${fmtNum(Math.abs(f.varDia), 1)} % today`), L('Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.', 'Open GrowFolio to see what happened and what GrowIA says.'), '#cartera', `mov:${f.inst.id}:${hoy}`);
   }
-  if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', `Mañana: ${e.t}`, e.s, '#agenda', 'ev:' + e.k);
+  if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', L(`Mañana: ${e.t}`, `Tomorrow: ${e.t}`), e.s, '#agenda', 'ev:' + e.k);
   if (c.seg) for (const it of siguiendo()) {
     const pr = precioSeguido(it), p = pr && pr.eur;
     if (!(p > 0)) continue;
-    if (it.baja && p <= it.baja) avisoSistema('seg', `${it.n} ha bajado a tu precio`, `Está a ${precioFmt(p)}: la seguías para cuando bajara de ${precioFmt(it.baja)}.`, '#expertos', `segb:${it.s}:${it.baja}`);
-    if (it.sube && p >= it.sube) avisoSistema('seg', `${it.n} ha subido a tu precio`, `Está a ${precioFmt(p)}: querías saber cuándo pasara de ${precioFmt(it.sube)}.`, '#expertos', `segs:${it.s}:${it.sube}`);
+    if (it.baja && p <= it.baja) avisoSistema('seg', L(`${it.n} ha bajado a tu precio`, `${it.n} has dropped to your price`), L(`Está a ${precioFmt(p)}: la seguías para cuando bajara de ${precioFmt(it.baja)}.`, `It's at ${precioFmt(p)}: you were watching for it to drop below ${precioFmt(it.baja)}.`), '#expertos', `segb:${it.s}:${it.baja}`);
+    if (it.sube && p >= it.sube) avisoSistema('seg', L(`${it.n} ha subido a tu precio`, `${it.n} has risen to your price`), L(`Está a ${precioFmt(p)}: querías saber cuándo pasara de ${precioFmt(it.sube)}.`, `It's at ${precioFmt(p)}: you wanted to know when it passed ${precioFmt(it.sube)}.`), '#expertos', `segs:${it.s}:${it.sube}`);
   }
 }
 
@@ -5912,7 +5913,7 @@ function enviarWidget(forzar) {
   try {
     const P = pasosRuta(M), pend = [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto);
     const x = pend.find((y) => y.urgente) || pend[0];
-    if (x) { const d = document.createElement('div'); d.innerHTML = x.t; toca = d.textContent.replace(/\s+/g, ' ').trim(); cuando = x.cuando || ''; }
+    if (x) { const d = document.createElement('div'); d.innerHTML = x.t; toca = trad(d.textContent.replace(/\s+/g, ' ').trim()); cuando = trad(x.cuando || ''); }
   } catch (e) {}
   const pos = M.filas.filter((f) => f.valor).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, uds: f.uds || undefined, valor: Math.round(f.valor * 100) / 100, dia: Math.round((f.dia || 0) * 100) / 100 }));
   // la gráfica del widget: el último mes, día a día, con el efectivo sumado para que acabe en el total de hoy
@@ -7085,7 +7086,7 @@ function avisos(M) {
   const lim = +(S.cartera.limite_acciones ?? 20);
   if (sueltas.length) av.push({ n: pctSueltas > lim ? 'warn' : 'info', i: pctSueltas > lim ? ICONOS.alerta : ICONOS.info, t: `Acciones sueltas: ${pct(pctSueltas, 1)} de la cartera`, d: `Tu límite es el ${fmtNum(lim, 0)} %. ${pctSueltas > lim ? 'Lo has pasado.' : `Te queda margen de ${eur(((lim - pctSueltas) / 100) * M.total, 0)}.`}` });
   const estimadas = M.filas.filter((f) => f.estimada);
-  if (estimadas.length) av.push({ n: 'warn', i: ICONOS.alerta, t: `${estimadas.length === 1 ? 'Una posición' : estimadas.length + ' posiciones'} con la cantidad estimada`, d: `${yLista(estimadas.map((f) => f.inst.corto))}. Pon las participaciones exactas en la ficha de cada una (botón Editar) para que cuadre al céntimo.` });
+  if (estimadas.length) av.push({ n: 'warn', i: ICONOS.alerta, t: L(`${estimadas.length === 1 ? 'Una posición' : estimadas.length + ' posiciones'} con la cantidad estimada`, `${estimadas.length === 1 ? 'One holding' : estimadas.length + ' holdings'} with an estimated quantity`), d: L(`${yLista(estimadas.map((f) => f.inst.corto))}. Pon las participaciones exactas en la ficha de cada una (botón Editar) para que cuadre al céntimo.`, `${yLista(estimadas.map((f) => f.inst.corto))}. Enter the exact units on each one's page (Edit button) so it matches to the cent.`) });
   for (const f of M.filas) {
     if (f.p && f.p.estado === 'antiguo') av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto}: precio sin actualizar`, d: `Último precio bueno del ${fechaLarga(f.p.fecha)}.` });
     // solo si de verdad no tiene precio: muchas lo sacan del catálogo, del radar o de su último cierre aunque no estén
@@ -7467,6 +7468,45 @@ const ORDEN_RADAR = { pot: ['Puede subir', (x) => x.pot ?? -999], neto: ['Te que
 // Londres cotiza en peniques (GBp): se enseña en libras, que se entiende mejor
 const precioR = (p, m) => { const v = m === 'GBp' ? p / 100 : p; return `${fmtNum(v, v >= 1000 ? 0 : 2)} ${monedaR(m)}`; };
 const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? '£' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
+/* ---------- 0.4: lo que escribe Gemini en la Action, en inglés ----------
+   El informe, las ideas, las lecturas de prensa y los titulares en español los traduce la propia Action una vez
+   (scripts/traducir.py → traduccion-en.json, rama datos). Con la app en inglés se cambian en los datos al cargarlos;
+   lo que aún no esté traducido se queda en español hasta la siguiente pasada. La clave es la misma que en Python. */
+const claveTr = (s) => { let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(16).padStart(8, '0') + s.length.toString(16); };
+async function cargarTrEn() {
+  if (IDIOMA !== 'en' || S.trEnCargando) return;
+  if (S.trEn && Date.now() - (S.trEnT || 0) < 15 * 60000) { aplicarTrEn(); return; }
+  S.trEnCargando = true;
+  let txt = null;
+  try {
+    if (CFG.dev) { const r = await fetch('dev/traduccion-en.json', { cache: 'no-store' }).catch(() => null); if (r && r.ok) txt = await r.text(); }
+    else { const r = await fetch(GH.raw('traduccion-en.json', 'datos') + '?v=' + Math.floor(Date.now() / 900000), { cache: 'no-cache' }).catch(() => null); if (r && r.ok) txt = await r.text(); }
+  } catch (e) { /* sin conexión: lo guardado */ }
+  try {
+    if (txt) { S.trEn = JSON.parse(txt).t || {}; try { localStorage.setItem('inv-cache-tren', txt); } catch (e) {} }
+    else if (!S.trEn) { const c = localStorage.getItem('inv-cache-tren'); if (c) S.trEn = JSON.parse(c).t || {}; }
+  } catch (e) {}
+  S.trEnT = Date.now(); S.trEnCargando = false;
+  aplicarTrEn();
+}
+function trDatos(o) {
+  if (!o || typeof o !== 'object') return 0;
+  let n = 0;
+  for (const k of Object.keys(o)) {
+    const v = o[k];
+    if (typeof v === 'string') { if (v.length >= 12) { const t = S.trEn[claveTr(v.trim())]; if (t) { o[k] = t; n++; } } }
+    else if (v && typeof v === 'object' && k !== 'fuentes' && k !== 'noticias') n += trDatos(v);
+  }
+  return n;
+}
+// cambia lo que haya cargado (se puede llamar varias veces: lo ya cambiado no vuelve a coincidir)
+function aplicarTrEn() {
+  if (IDIOMA !== 'en' || !S.trEn) return 0;
+  const n = trDatos(S.informe) + trDatos(S.escaneo) + trDatos(S.precios && S.precios.noticias);
+  if (n && S.cartera && !S.ficha) pintar();
+  return n;
+}
+
 /* ---------- informe de prensa de Gemini (informe.json, rama datos) ----------
    Lo escribe la Action cada 2 horas con las noticias de tus posiciones, del mercado y de las mejores
    ideas del radar, aunque la web esté cerrada. Sin cantidades: tus cifras las pone la web. */
@@ -7482,6 +7522,7 @@ async function cargarInforme() {
   if (txt) { try { S.informe = JSON.parse(txt); localStorage.setItem('inv-cache-informe', txt); } catch (e) {} }
   else { try { const c = localStorage.getItem('inv-cache-informe'); if (c && !S.informe) S.informe = JSON.parse(c); } catch (e) {} }
   S.informeId = id;
+  if (IDIOMA === 'en') cargarTrEn();
 }
 /* El escaneo de prensa (unos 500 KB) no hace falta para pintar: al abrir se usa el guardado y el nuevo se baja
    después, sin frenar la entrada. Solo lo leen las ideas de Expertos y Mercados. */
@@ -7499,6 +7540,7 @@ async function cargarEscaneo() {
   if (txt) { try { S.escaneo = JSON.parse(txt); localStorage.setItem('inv-cache-escaneo', txt); } catch (e) {} }
   else { try { const c = localStorage.getItem('inv-cache-escaneo'); if (c && !S.escaneo) S.escaneo = JSON.parse(c); } catch (e) {} }
   S.escaneoId = id;
+  if (IDIOMA === 'en') cargarTrEn();
 }
 /* lo que ha leído Gemini de la prensa de una empresa (el escaneo recorre todo el radar) */
 const lecturaDe = (sim) => (S.escaneo && S.escaneo.lectura && S.escaneo.lectura[sim]) || null;
@@ -7790,7 +7832,7 @@ function htmlIdeas(M, ia) {
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
   return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowIA y tu análisis</span></div>
-    ${d && d.comentario ? `<p class="idea-panorama">${NOM_IA} ${haceCuanto(d.generado)}, tras leer la prensa de ${lecturas} empresas: ${escIA(d.comentario)}</p>` : ''}
+    ${d && d.comentario ? `<p class="idea-panorama">${NOM_IA} ${haceCuanto(d.generado)}${L(`, tras leer la prensa de ${lecturas} empresas: `, `, after reading the press on ${lecturas} companies: `)}${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : `<div class="vacio">${L('Ahora mismo ninguna pasa los filtros: mejor esperar.', 'None passes the filters right now: better to wait.')}</div>`}
     <p class="nota">Cómo se eligen: GrowFolio se queda con las mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas una vez al día. Primero salen las que eligen los dos. Lo que ya se ha propuesto se mantiene salvo que llegue una noticia que cambie la tesis o se rompan sus números, y nada sale a la vez como idea y como «evitar». En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
@@ -7885,7 +7927,7 @@ function filaMercado(sym, m, M) {
       <div class="chart" data-spark-m="${esc(sym)}"></div>
       <div class="merc-r"><span>1 mes <b class="${cls(m.rent && m.rent['1m'])}">${pctS(m.rent && m.rent['1m'], 1)}</b></span><span>Año <b class="${cls(m.rent && m.rent.ytd)}">${pctS(m.rent && m.rent.ytd, 1)}</b></span><span>1 año <b class="${cls(m.rent && m.rent['1a'])}">${pctS(m.rent && m.rent['1a'], 1)}</b></span></div>
       ${info.sube ? `<p class="merc2-imp ${plano ? '' : (sube !== !!info.inverso) ? 'sube' : 'baja'}"><b>${plano ? 'Si sube' : sube ? 'Hoy sube' : 'Hoy baja'}:</b> ${esc(plano ? info.sube : sube ? info.sube : info.baja)}</p>${plano ? `<p class="merc2-imp"><b>Si baja:</b> ${esc(info.baja)}</p>` : ''}` : ''}
-      ${tuyos.length ? `<p class="merc2-tuyo">Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}</p>` : ''}
+      ${tuyos.length ? `<p class="merc2-tuyo">${L(`Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}`, `Felt in your portfolio by: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` and ${tuyos.length - 4} more` : ''}`)}</p>` : ''}
     </div>
   </details>`;
 }
@@ -7901,7 +7943,7 @@ function tarjetaMercado(sym, m, M) {
     <div class="merc2-g"><div class="chart" data-spark-m="${esc(sym)}"></div>
       <div class="merc-r"><span>1 mes <b class="${cls(m.rent && m.rent['1m'])}">${pctS(m.rent && m.rent['1m'], 1)}</b></span><span>Año <b class="${cls(m.rent && m.rent.ytd)}">${pctS(m.rent && m.rent.ytd, 1)}</b></span><span>1 año <b class="${cls(m.rent && m.rent['1a'])}">${pctS(m.rent && m.rent['1a'], 1)}</b></span></div></div>
     ${info.sube ? `<p class="merc2-imp ${plano ? '' : (sube !== !!info.inverso) ? 'sube' : 'baja'}"><b>${plano ? 'Si sube' : sube ? 'Hoy sube' : 'Hoy baja'}:</b> ${esc(plano ? info.sube : sube ? info.sube : info.baja)}</p>${plano ? `<p class="merc2-imp"><b>Si baja:</b> ${esc(info.baja)}</p>` : ''}` : ''}
-    ${tuyos.length ? `<p class="merc2-tuyo">Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}</p>` : ''}
+    ${tuyos.length ? `<p class="merc2-tuyo">${L(`Lo nota en tu cartera: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` y ${tuyos.length - 4} más` : ''}`, `Felt in your portfolio by: ${esc(tuyos.slice(0, 4).join(', '))}${tuyos.length > 4 ? ` and ${tuyos.length - 4} more` : ''}`)}</p>` : ''}
   </article>`;
 }
 function vistaMercados(M) {
@@ -8345,8 +8387,8 @@ function pasosRuta0(M) {
     add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? sumarDias(res, -1) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
       t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : f.inst.clase === 'Cripto' ? 4 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
       pq: esc(f.senal.motivos[0] || ''),
-      como: `${esc(pl.cuando[0].replace(/^Ya: /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? ` Con lo que cobres: ${destino}.` : ''}`,
-      imp: `${pl.ganancia > 0 ? `Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año. ${(() => { const l = libreRecompra(f.inst, res ? sumarDias(res, -1) : hoy); return l ? `No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}` : reglaRecompra(f.inst).corto; })()}`}`,
+      como: `${esc(pl.cuando[0].replace(/^(Ya|Now): /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? L(` Con lo que cobres: ${destino}.`, ` With what you collect: ${destino}.`) : ''}`,
+      imp: `${pl.ganancia > 0 ? L(`Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.`, `You declare a gain of ${eurS(pl.ganancia, 0)}: about ${eur(pl.impuesto, 0)} in your ${anio} tax return, paid between April and June ${anio + 1}. Keep it in cash until then. Since you're selling at a gain, you can buy it back whenever you like.`) : `${L(`Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año.`, `You declare a loss of ${eur(-pl.ganancia, 0)}: it reduces this year's gains.`)} ${(() => { const l = libreRecompra(f.inst, res ? sumarDias(res, -1) : hoy); return l ? L(`No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}`, `Don't buy it back until ${fechaCortaL(l)} ${l.slice(0, 4)}: ${trad(reglaRecompra(f.inst).corto)}`) : reglaRecompra(f.inst).corto; })()}`}`,
       acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>` });
     const top = pl.ideas[0], dVenta = res ? sumarDias(res, -1) : hoy;
     if (pl.aColchon > 0.5) add('mes', { id: `colchonv:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Pon ${eur(pl.aColchon, 0)} en tu colchón`,
@@ -8361,7 +8403,7 @@ function pasosRuta0(M) {
         acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`Voy a comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}. Contrástalo con las noticias de esta semana: ¿lo hago, a qué precio y con qué regla de salida?`)}">Que GrowIA la contraste antes</button>` });
     }
     if (pl.aNucleo > 0.5) add('mes', { id: `nucleo:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Mete ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^a /, 'en ')}`,
-      pq: pl.nivel === 'reducir' ? 'Bajas riesgo sin dejar de estar invertido.' : pl.aIdea > 0 ? 'La otra parte, a lo seguro.' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite.',
+      pq: pl.nivel === 'reducir' ? L('Bajas riesgo sin dejar de estar invertido.', 'You lower risk without stopping being invested.') : pl.aIdea > 0 ? L('La otra parte, a lo seguro.', 'The other part, somewhere safe.') : L('Tus acciones sueltas no tienen más hueco dentro de tu límite.', 'Your individual stocks have no more room within your limit.'),
       como: (() => { const nf = (S.M && S.M.filas || []).filter((f) => f.inst.tipo === 'Fondo indexado' && f.inst.clase === 'Renta variable').sort((x, y) => y.valor - x.valor)[0]; const de = pl.f.pos.plataforma, a = nf && nf.pos.plataforma; return nf ? (a && de && a !== de ? `Pasa el dinero de ${de} a ${a} y compra participaciones de ${nf.inst.corto}.` : `Compra participaciones de ${nf.inst.corto}${a ? ` en ${a}` : ''}.`) : 'Elige un fondo indexado de todo el mundo con comisión baja (en Mercados puedes buscarlo) y compra participaciones.'; })(), imp: 'Fondo de acumulación: no paga nada hasta que vendas, y entre fondos ni eso (traspaso).' });
   }
   // 2. tus reglas de salida cerca
@@ -8387,7 +8429,7 @@ function pasosRuta0(M) {
   const fa = fiscalAnio(anio);
   if (!fa.otras && !fa.rcm) add('mes', { id: `fiscal:${anio}`, cuando: 'cuando puedas', t: `Apunta tus datos fiscales de ${anio}`, pq: 'Sin ellos, el impuesto de cada consejo de GrowFolio sale más alto o más bajo de lo que es.', como: 'En Análisis > Hacienda, botón «Datos fiscales»: las ventas que hiciste fuera de GrowFolio (ganancia o pérdida), los dividendos e intereses cobrados y lo que ya te retuvieron. Son dos minutos.', acc: `<button class="enlace" data-accion="fiscal">Apuntarlos</button>` });
   const est = M.filas.filter((f) => f.estimada);
-  if (est.length) add('mes', { id: `exactas:${est.map((f) => f.pos.id).join(',')}`, cuando: 'cuando puedas', t: `Pon las participaciones exactas de ${est.length === 1 ? esc(est[0].inst.corto) : `${est.length} posiciones`}`, pq: `${esc(yLista(est.map((f) => f.inst.corto)))} están estimadas: con las exactas cuadran al céntimo el valor, la ganancia y los impuestos.`, como: 'Mira las participaciones en la app de tu bróker y ponlas en su ficha > Editar > Cantidad.', acc: `<a class="enlace" href="#plan">Ir a Plan y movimientos</a>` });
+  if (est.length) add('mes', { id: `exactas:${est.map((f) => f.pos.id).join(',')}`, cuando: 'cuando puedas', t: `Pon las participaciones exactas de ${est.length === 1 ? esc(est[0].inst.corto) : `${est.length} posiciones`}`, pq: L(`${esc(yLista(est.map((f) => f.inst.corto)))} están estimadas: con las exactas cuadran al céntimo el valor, la ganancia y los impuestos.`, `${esc(yLista(est.map((f) => f.inst.corto)))} are estimated: with the exact figures the value, the gain and the taxes match to the cent.`), como: 'Mira las participaciones en la app de tu bróker y ponlas en su ficha > Editar > Cantidad.', acc: `<a class="enlace" href="#plan">Ir a Plan y movimientos</a>` });
   // 5. aportaciones automáticas
   const act = aportacionesActivas();
   const total = sum(act, ({ a }) => +a.importe || 0);
@@ -10038,7 +10080,7 @@ function htmlFiscalGuia(M, fa, x) {
   }
   // calendario
   const cal = [
-    [`${anio}-12-31`, `31 dic ${anio}`, 'Último día del año para vender con pérdidas y que resten en la renta de ' + anio + ' (ese día la bolsa de Madrid cierra a las 14:00 y en los fondos cuenta la hora de corte: mejor unos días antes). Los traspasos entre fondos no cuentan.'],
+    [`${anio}-12-31`, `31 dic ${anio}`, L('Último día del año para vender con pérdidas y que resten en la renta de ' + anio + ' (ese día la bolsa de Madrid cierra a las 14:00 y en los fondos cuenta la hora de corte: mejor unos días antes). Los traspasos entre fondos no cuentan.', `Last day of the year to sell at a loss and have it count in your ${anio} tax return (that day the Madrid exchange closes at 14:00 and funds have a cut-off time: better a few days before). Transfers between funds don't count.`)],
     [`${anio + 1}-02-15`, `ene-feb ${anio + 1}`, 'Los brókeres publican el informe fiscal del año en su app o su web (en Trade Republic: Perfil, Impuestos).'],
     [`${anio + 1}-03-31`, `31 mar ${anio + 1}`, `Modelos 720 (valores fuera, por un lado, y cuentas fuera, por otro) y 721 (cripto fuera): cada bloque, solo si pasa de 50.000 €; los años siguientes, si sube más de 20.000 €. Tienes ${eur(x.tr, 0)} en brókeres de fuera de España y ${eur(x.cripto, 0)} en cripto.`],
     [`${anio + 1}-04-08`, `abril ${anio + 1}`, `Empieza la renta de ${anio}: revisa en el borrador ventas, dividendos e intereses.`],
@@ -10194,8 +10236,8 @@ function planVenta0(f, M) {
   const res = p.proximos_resultados && p.proximos_resultados >= hoy ? p.proximos_resultados : null;
   const diasRes = res ? diasEntre(hoy, res) : null;
   const pot = a.objetivo ? (a.objetivo / pr - 1) * 100 : null;
-  if (nivel === 'vender' && +f.pos.stop && pr <= +f.pos.stop) cuando.push(`Ya: ha roto tu precio de salida (${precioFmt(+f.pos.stop)}). Cada día que esperas te expones a que siga cayendo.`);
-  else if (pot != null && pot < 3) cuando.push(`Ya: está en el precio objetivo medio de los analistas (${precioFmt(a.objetivo)}). En ${esc(f.pos.plataforma || 'tu bróker')}, pon una orden limitada de venta a ${precioCorto(pr)} (el precio de ahora).`);
+  if (nivel === 'vender' && +f.pos.stop && pr <= +f.pos.stop) cuando.push(L(`Ya: ha roto tu precio de salida (${precioFmt(+f.pos.stop)}). Cada día que esperas te expones a que siga cayendo.`, `Now: it has broken your exit price (${precioFmt(+f.pos.stop)}). Every day you wait you risk it falling further.`));
+  else if (pot != null && pot < 3) cuando.push(L(`Ya: está en el precio objetivo medio de los analistas (${precioFmt(a.objetivo)}). En ${esc(f.pos.plataforma || 'tu bróker')}, pon una orden limitada de venta a ${precioCorto(pr)} (el precio de ahora).`, `Now: it's at the analysts' average price target (${precioFmt(a.objetivo)}). In ${esc(f.pos.plataforma || 'your broker')}, place a limit sell order at ${precioCorto(pr)} (the current price).`));
   else if (pot != null && nivel !== 'vender') cuando.push(`Con una orden limitada a ${precioCorto(a.objetivo)}, el precio objetivo medio: es donde los analistas ven su techo a 12 meses. Si no llega en unas semanas, vende igualmente.`);
   else cuando.push('En los próximos días, sin esperar a un rebote.');
   if (diasRes != null && diasRes <= 21) cuando.push(`Mejor antes de sus resultados del ${fechaLarga(res)} (en ${diasRes} días): con lo que lleva subido, lo bueno ya está en el precio y un mal dato puede tumbarla en una sesión.`);
@@ -10205,7 +10247,7 @@ function planVenta0(f, M) {
   if (queda > 0 && salidaResto) {
     const st = +f.pos.stop, ud = accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones';
     const sube = st && Math.abs(st - salidaResto) > 0.005 && salidaResto > st;
-    cuando.push(`Para las ${oc(fmtNum(queda, Math.abs(queda - Math.round(queda)) < 0.005 ? 0 : 2))} ${ud} que te quedas: ${sube ? `sube tu salida de ${precioCorto(st)} a ${precioCorto(salidaResto)}` : `orden stop a ${precioCorto(salidaResto)}`}${salidaResto === t.media50 ? ' (su media de 50 sesiones)' : sube ? '' : ' (tu precio de salida)'}. Si cierra por debajo, la subida se ha acabado y vendes el resto.`);
+    cuando.push(L(`Para las ${oc(fmtNum(queda, Math.abs(queda - Math.round(queda)) < 0.005 ? 0 : 2))} ${ud} que te quedas: ${sube ? `sube tu salida de ${precioCorto(st)} a ${precioCorto(salidaResto)}` : `orden stop a ${precioCorto(salidaResto)}`}${salidaResto === t.media50 ? ' (su media de 50 sesiones)' : sube ? '' : ' (tu precio de salida)'}. Si cierra por debajo, la subida se ha acabado y vendes el resto.`, `For the ${oc(fmtNum(queda, Math.abs(queda - Math.round(queda)) < 0.005 ? 0 : 2))} ${trad(ud)} you keep: ${sube ? `raise your exit from ${precioCorto(st)} to ${precioCorto(salidaResto)}` : `stop order at ${precioCorto(salidaResto)}`}${salidaResto === t.media50 ? ' (its 50-day average)' : sube ? '' : ' (your exit price)'}. If it closes below, the rise is over and you sell the rest.`));
   }
 
   // adónde
@@ -10250,14 +10292,14 @@ function htmlPlanVenta(pl, compacto) {
   const f = pl.f, i = f.inst;
   const nombre = esc(i.corto || i.nombre);
   const top = pl.ideas[0];
-  const idea = (x, k) => `<li><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b title="${esc(x.n)}">${esc(nombreRadar(x))}</b><span class="k">${esc(x.sector || '')}${x.sector ? ', ' : ''}${esc(x.z)}</span></div>
+  const idea = (x, k) => `<li><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b title="${esc(x.n)}">${esc(nombreRadar(x))}</b><span class="k">${esc(trad(x.sector || ''))}${x.sector ? ', ' : ''}${esc(trad(x.z || ''))}</span></div>
     <span>${esc(x.motivos.slice(0, 4).join(', '))}.${x.pegas.length ? ` Pega: ${esc(x.pegas.join('; '))}.` : ''}</span></li>`;
   const destino = [];
   const tasaTop = top ? tasaRadar(top) : null;
   const pegaTop = top && top.pegas.find((x) => !x.startsWith('al comprar pagas'));
   if (pl.aIdea > 0 && top) destino.push(`<div class="pv-dest">${logo(top.w, top.n)}<div><b>${eur(pl.aIdea, 0)} a ${esc(nombreRadar(top))}</b><span>${L(`De las ${radarVals().length} empresas que sigue GrowFolio, la mejor contrastada para una acción nueva que no repita lo que ya tienes: ${top.ctr.favor} de ${top.ctr.total} señales a favor`, `Of the ${radarVals().length} companies GrowFolio follows, the best-backed new stock that doesn't repeat what you hold: ${top.ctr.favor} of ${top.ctr.total} signals in favour`)}: ${esc(top.motivos.slice(0, 3).join(', '))}.${pegaTop ? ` ${L('Pega', 'Drawback')}: ${esc(pegaTop)}.` : ''}${tasaTop ? ` Al comprar pagas el ${fmtNum(tasaTop.tipo * 100, 1)} % de ${esc(tasaTop.nombre)}: unos ${eur(pl.aIdea * tasaTop.tipo, 0)}, que suman a tu precio de compra.` : ''} ${(() => { const e = esperadaRadar(top), an = f.p && f.p.analistas, queda = an && an.objetivo ? (an.objetivo / f.precio - 1) * 100 : null; return e ? ` ${planTxt(e)}${queda != null ? ` A ${esc(i.corto)} le queda un ${pct(queda, 1)} hasta su objetivo.` : ''}` : ''; })()} ${esc(fiscalidadSede(origenRadar(top).sede).txt)}</span></div></div>`);
   const nu = nucleo(S.M);
-  if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(nu.d, nu.n)}<div><b>${eur(pl.aNucleo, 0)} ${esc(nu.a)}</b><span>${pl.nivel === 'reducir' ? 'Para bajar riesgo sin dejar de estar invertido. ' : pl.aIdea > 0 ? 'La otra mitad, a lo seguro. ' : 'Tus acciones sueltas no tienen más hueco dentro de tu límite. '}${esc(nu.txt)}</span></div></div>`);
+  if (pl.aNucleo > 0.5) destino.push(`<div class="pv-dest">${logo(nu.d, nu.n)}<div><b>${eur(pl.aNucleo, 0)} ${esc(nu.a)}</b><span>${pl.nivel === 'reducir' ? L('Para bajar riesgo sin dejar de estar invertido. ', 'To lower risk without stopping being invested. ') : pl.aIdea > 0 ? L('La otra mitad, a lo seguro. ', 'The other half, somewhere safe. ') : L('Tus acciones sueltas no tienen más hueco dentro de tu límite. ', 'Your individual stocks have no more room within your limit. ')}${esc(nu.txt)}</span></div></div>`);
   if (pl.aColchon > 0.5) destino.push(`<div class="pv-dest">${logo(null, 'C')}<div><b>${eur(pl.aColchon, 0)} ${L('a tu colchón', 'to your cushion')}</b><span>${L(`Te faltan ${eur(faltaColchon(S.M || calcular()), 0)} para los meses de gastos que te pusiste. Déjalo en el efectivo remunerado o en un fondo monetario antes de meter más en bolsa.`, `You're ${eur(faltaColchon(S.M || calcular()), 0)} short of the months of expenses you set. Keep it in interest-bearing cash or a money-market fund before putting more into stocks.`)}</span></div></div>`);
   if (pl.impuesto > 0) destino.push(`<div class="pv-dest">${logo(null, '€')}<div><b>${eur(pl.impuesto, 0)} aparte para Hacienda</b><span>Se paga en la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}. Déjalo en efectivo o en tu colchón hasta entonces: no lo inviertas en bolsa.</span></div></div>`);
   const plegado = compacto === 'plegado';
@@ -10275,7 +10317,7 @@ function htmlPlanVenta(pl, compacto) {
     ${plegado ? `<p class="pv-porque">${esc(f.senal.motivos[0] || '')}${pl.nivel === 'reducir' && S.M && S.M.total ? ` ${esc(L(`Vendiendo esto, baja al ${pct(Math.max(0, f.valor - pl.importe) / S.M.total * 100, 1)} de tu cartera.`, `Selling this brings it down to ${pct(Math.max(0, f.valor - pl.importe) / S.M.total * 100, 1)} of your portfolio.`))}` : ''}</p><ol class="pv-resumen">${pasos.map((x) => `<li>${x}</li>`).join('')}</ol><details class="mas pv-mas"><summary>${pl.aIdea > 0 && top ? 'El plan completo: cuándo, a qué precio, Hacienda y por qué esa empresa' : 'El plan completo: cuándo, a qué precio, Hacienda y adónde va el dinero'}</summary>` : ''}
     <div class="pv-grid">
       <div class="pv-col">
-        <div class="pv-paso"><span class="pv-n">Cuánto</span><div><b>Vende ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 4))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b><span>${pl.cuanto}${pl.queda > 0 ? ` Te quedas ${oc(fmtNum(pl.queda, Math.abs(pl.queda - Math.round(pl.queda)) < 0.005 ? 0 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.queda * f.precio, 0)}.` : ''}</span></div></div>
+        <div class="pv-paso"><span class="pv-n">Cuánto</span><div><b>Vende ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 4))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b><span>${pl.cuanto}${pl.queda > 0 ? L(` Te quedas ${oc(fmtNum(pl.queda, Math.abs(pl.queda - Math.round(pl.queda)) < 0.005 ? 0 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.queda * f.precio, 0)}.`, ` You keep ${oc(fmtNum(pl.queda, Math.abs(pl.queda - Math.round(pl.queda)) < 0.005 ? 0 : 2))} ${pl.accion ? 'shares' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'units' : 'fund units'}, about ${eur(pl.queda * f.precio, 0)}.`) : ''}</span></div></div>
         <div class="pv-paso"><span class="pv-n">Cuándo</span><div><ul class="motivos">${pl.cuando.map((x) => `<li>${esc(x)}</li>`).join('')}</ul></div></div>
         <div class="pv-paso"><span class="pv-n">Hacienda</span><div>${htmlFiscalVenta(pl)}</div></div>
       </div>
@@ -11312,7 +11354,7 @@ function fichaResumen(f) {
         <div><span class="k">${medio ? 'Ahora' : 'Vale'}</span><b>${medio ? precioFmt(f.precio) : eur(f.valor, 0)}</b></div>
         <div class="dc-res ${cls(f.pl)}"><span class="k">${f.pl >= 0 ? 'Llevas ganado' : 'Llevas perdido'}</span><b>${eurS(f.pl, 0)}</b><span>${pctS(f.plPct, 1)}</span></div>
       </div>
-      <p>${f.uds != null ? `${oc(fmtNum(f.uds, f.uds < 10 ? 4 : 2))} ${ud}, ` : ''}${eur(f.coste, 0)} invertidos${desde ? ` desde el ${fechaLarga(desde)}` : ''}${tp ? ` (${duracion(tp.dias)} de media): un <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b>` : ''}. ${f.estimada ? 'La cantidad es estimada: ponla exacta en Editar.' : 'Incluye comisiones y tasas de compra.'}${!desde ? ' Pon en Editar desde cuándo la tienes y verás cuánto te da al año.' : ''}</p>
+      <p>${L(`${f.uds != null ? `${oc(fmtNum(f.uds, f.uds < 10 ? 4 : 2))} ${ud}, ` : ''}${eur(f.coste, 0)} invertidos${desde ? ` desde el ${fechaLarga(desde)}` : ''}${tp ? ` (${duracion(tp.dias)} de media): un <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b>` : ''}. ${f.estimada ? 'La cantidad es estimada: ponla exacta en Editar.' : 'Incluye comisiones y tasas de compra.'}${!desde ? ' Pon en Editar desde cuándo la tienes y verás cuánto te da al año.' : ''}`, `${f.uds != null ? `${oc(fmtNum(f.uds, f.uds < 10 ? 4 : 2))} ${i.tipo === 'Acción' ? 'shares' : i.clase === 'Cripto' || i.tipo === 'ETC' ? 'units' : 'fund units'}, ` : ''}${eur(f.coste, 0)} invested${desde ? ` since ${fechaCortaL(desde)} ${desde.slice(0, 4)}` : ''}${tp ? ` (${trad(duracion(tp.dias))} on average): <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} a year</b>` : ''}. ${f.estimada ? 'The quantity is estimated: enter the exact one in Edit.' : 'Includes fees and purchase taxes.'}${!desde ? ' Enter in Edit since when you have held it and you will see how much it gives you a year.' : ''}`)}</p>
     </section>`;
   }
   const raro = precioCompraRaro(f);
@@ -11491,7 +11533,7 @@ function fichaDatos(f) {
       i.tipo && !p.sector && ['Tipo', esc(i.tipo)],
       moneda && ['Cotiza en', esc(moneda === 'GBp' ? 'peniques de libra (100 = 1 £)' : moneda)],
       !p.fecha && ce.f && ['Último valor publicado', fechaLarga(ce.f)],
-      !p.sector && zonas.length > 1 && ['Dónde invierte', esc(zonas.map(([z, v]) => `${z}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))],
+      !p.sector && zonas.length > 1 && ['Dónde invierte', esc(zonas.map(([z, v]) => `${trad(z)}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))],
       p.moneda && p.moneda !== 'EUR' && ['Precio en su moneda', fmtNum(p.precio_local, 2)],
       p.historico_desde && ['Histórico desde', fechaLarga(p.historico_desde)],
       p.sector && ['Sector', esc(p.sector)],
@@ -13801,7 +13843,7 @@ function abrirConsulta(c) {
     if (x.sector) datos.push(['Sector', esc(x.sector)]);
     if (x.z) datos.push(['País', esc(x.z)]);
   }
-  if (ca && ca.r && Object.keys(ca.r).length > 1) datos.push(['Dónde invierte', esc(Object.entries(ca.r).sort((a, b) => (a[0] === 'Otros') - (b[0] === 'Otros') || b[1] - a[1]).map(([k, v]) => `${k}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))]);
+  if (ca && ca.r && Object.keys(ca.r).length > 1) datos.push(['Dónde invierte', esc(Object.entries(ca.r).sort((a, b) => (a[0] === 'Otros') - (b[0] === 'Otros') || b[1] - a[1]).map(([k, v]) => `${trad(k)}\u00a0${fmtNum(v, 0)}\u00a0%`).join(', '))]);
   const nots = sim ? noticiasIdea(sim) : [];
   const gnews = `https://news.google.com/search?q=${encodeURIComponent(nombre)}&hl=es&gl=ES&ceid=ES:es`;
   const h = hoja(nombre, `<div class="cons">
@@ -18022,7 +18064,8 @@ function traducirTextoN(s) {
     if (!s.includes(clave)) continue;
     const m = re.exec(s);
     // un hueco de la plantilla es un nombre o una cifra: si se traga media frase (un texto de GrowIA que empieza igual), no vale
-    if (m && m.slice(1).every((g) => !g || g.length <= 48)) return en.replace(/\$(\d)/g, (_, n) => { const g = m[+n] || ''; return traducirTexto(g.trim()) ?? g; });
+    // 0.4: un hueco largo vale si a su vez es una frase que se sabe traducir («…, partiendo de lo que tienes y aportando 16.000 € más»)
+    if (m && m.slice(1).every((g) => !g || g.length <= 48 || traducirTexto(g.trim()) != null)) return en.replace(/\$(\d)/g, (_, n) => { const g = m[+n] || ''; return traducirTexto(g.trim()) ?? g; });
   }
   // frases que empiezan igual y siguen con datos: "Lo que más mueve hoy: Repsol +2 %…"
   for (const [es, en] of I18N.pre || []) if (s.startsWith(es)) return en + s.slice(es.length);
@@ -18106,6 +18149,7 @@ async function iniciar() {
   cargarIdioma();
   if (bancoALaApp()) return;
   try { if (window.InversionesApp && typeof InversionesApp.versionVista === 'function') InversionesApp.versionVista(VERSION); } catch (e) {}
+  try { if (window.InversionesApp && typeof InversionesApp.idioma === 'function') InversionesApp.idioma(IDIOMA); } catch (e) {}
   // quien llega nuevo ve la presentación general, no la de la 0.2; quien venía de la 0.1, se apunta
   if (!LS.get('inv-version', null)) LS.set('inv-estreno-02b', true);
   else if (cmpVer(LS.get('inv-version'), '0.2.0') < 0 || localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc')) LS.set('inv-vino-01', true);

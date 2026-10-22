@@ -158,6 +158,7 @@ final class Datos {
         boolean hay, oculto, conPrecios;
         double total, dia, diaPct, pl, plPct;
         String toca = "", cuando = "", rango = "", horaTxt = "";
+        boolean en;
         long hora;
         double[] serie;
         long[] tiempos;      // cuándo es cada punto de la curva (para la escala de abajo); null si no se sabe
@@ -169,8 +170,14 @@ final class Datos {
     /** los plazos de la curva del widget, en días (1 son las últimas 24 horas), y cómo se llaman */
     static final int[] PERIODOS = {1, 7, 31, 92, 365};
     static final String[] CORTOS = {"24 h", "1S", "1M", "3M", "1A"};
-    static String nombrePeriodo(int dias) {
+    static String nombrePeriodo(int dias, boolean en) {
+        if (en) return dias <= 1 ? "24 h" : dias <= 7 ? "1 week" : dias <= 31 ? "1 month" : dias <= 92 ? "3 months" : "1 year";
         return dias <= 1 ? "24 h" : dias <= 7 ? "1 semana" : dias <= 31 ? "1 mes" : dias <= 92 ? "3 meses" : "1 año";
+    }
+
+    /** 0.4: el idioma que usa la web (lo guarda al abrirse); los avisos y el widget salen en el mismo */
+    static boolean en(Context c) {
+        return "en".equals(prefs(c).getString("idioma", "es"));
     }
     static int indicePeriodo(int dias) {
         for (int k = 0; k < PERIODOS.length; k++) if (PERIODOS[k] == dias) return k;
@@ -183,6 +190,7 @@ final class Datos {
 
     static Resultado calcular(Context c, int dias) {
         Resultado r = new Resultado();
+        r.en = en(c);
         SharedPreferences p = prefs(c);
         String fotoTxt = p.getString("foto", null);
         if (fotoTxt == null) return r;
@@ -227,7 +235,7 @@ final class Datos {
             r.hora = r.conPrecios ? preciosT : fotoT;
             r.horaTxt = new java.text.SimpleDateFormat("HH:mm", new Locale("es", "ES")).format(new java.util.Date(r.hora));
             r.dias = dias;
-            r.rango = nombrePeriodo(dias);
+            r.rango = nombrePeriodo(dias, r.en);
             JSONArray se = f.optJSONArray("serie");
             boolean ok = false;
             try {

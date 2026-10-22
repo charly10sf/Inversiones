@@ -139,6 +139,11 @@ final class Actualizador {
         }
     }
 
+    /** si este móvil puede instalar la app nueva sin que toques nada (para que el aviso diga lo que de verdad pasará) */
+    static boolean puedeSola(Context c) {
+        return Build.VERSION.SDK_INT >= 31 && !Datos.prefs(c).getBoolean("auto_no", false) && c.getPackageManager().canRequestPackageInstalls();
+    }
+
     /** en segundo plano (el trabajo de Versiones): si hay app nueva y no la estás usando, se baja y se instala sola */
     static void autoActualizar(Context c, org.json.JSONObject app) {
         if (Build.VERSION.SDK_INT < 31 || app == null || Principal.enPantalla) return;

@@ -237,6 +237,8 @@ final class Lienzo {
 
     private static final String[] DIAS = {"lun", "mar", "mié", "jue", "vie", "sáb", "dom"};
     private static final String[] MESES = {"ene", "feb", "mar", "abr", "may", "jun", "jul", "ago", "sep", "oct", "nov", "dic"};
+    private static final String[] DIAS_EN = {"Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"};
+    private static final String[] MESES_EN = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
     /** un paso redondo (1, 2 o 5 por una potencia de 10) para que haya unas «quiero» líneas en el rango */
     private static double pasoRedondo(double rango, int quiero) {
@@ -329,12 +331,12 @@ final class Lienzo {
                         LocalDate da = Instant.ofEpochMilli(tt[k - 1]).atZone(z).toLocalDate(), db = Instant.ofEpochMilli(tt[k]).atZone(z).toLocalDate();
                         String t = null;
                         if (r.dias <= 7) {
-                            if (!db.equals(da)) t = DIAS[db.getDayOfWeek().getValue() - 1];
+                            if (!db.equals(da)) t = (r.en ? DIAS_EN : DIAS)[db.getDayOfWeek().getValue() - 1];
                         } else if (r.dias <= 31) {
-                            if (db.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) != da.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)) t = db.getDayOfMonth() + " " + MESES[db.getMonthValue() - 1];
+                            if (db.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR) != da.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR)) t = r.en ? MESES_EN[db.getMonthValue() - 1] + " " + db.getDayOfMonth() : db.getDayOfMonth() + " " + MESES[db.getMonthValue() - 1];
                         } else if (db.getMonthValue() != da.getMonthValue() && (r.dias <= 92 || db.getMonthValue() % 3 == 1)) {
                             // en el año, solo los trimestres (ene, abr, jul, oct) y enero con su año: «2026»
-                            t = r.dias > 92 && db.getMonthValue() == 1 ? String.valueOf(db.getYear()) : MESES[db.getMonthValue() - 1];
+                            t = r.dias > 92 && db.getMonthValue() == 1 ? String.valueOf(db.getYear()) : (r.en ? MESES_EN : MESES)[db.getMonthValue() - 1];
                         }
                         if (t != null) {
                             cx.add(x0 + (x1 - x0) * k / (float) (n - 1));
@@ -542,7 +544,7 @@ final class Lienzo {
         double[] s = r.serie;
         double v = s[s.length - 1] - s[0], pc = s[0] != 0 ? (s[s.length - 1] / s[0] - 1) * 100 : 0;
         int col = Math.abs(pc) < 0.005 ? TEXTO2 : pc > 0 ? SUBE : BAJA;
-        String eur = r.oculto ? "" : Datos.eur(v, true), pct = Datos.pct(pc), etq = "en " + r.rango;
+        String eur = r.oculto ? "" : Datos.eur(v, true), pct = Datos.pct(pc), etq = (r.en ? "in " : "en ") + r.rango;
         float wEtq = ancho(etq, 12.5f, 500), wPct = ancho(pct, 12, 600), wEur = eur.isEmpty() ? 0 : ancho(eur, 13, 700);
         float libre = hasta - desde;
         boolean conEur = !eur.isEmpty() && wEur + 5 + wPct + 6 + wEtq <= libre;
@@ -589,7 +591,7 @@ final class Lienzo {
         float util = W - 2 * ph;
         if (!r.hay) {
             texto(ph, H / 2 - 2, "GrowFolio", Math.min(22, H * 0.22f), 700, TEXTO, false);
-            texto(ph, H / 2 + 18, recortar("Abre la app una vez para ver aquí tu cartera", 12.5f, 500, util), 12.5f, 500, TEXTO2, false);
+            texto(ph, H / 2 + 18, recortar(r.en ? "Open the app once to see your portfolio here" : "Abre la app una vez para ver aquí tu cartera", 12.5f, 500, util), 12.5f, 500, TEXTO2, false);
             c.restore();
             return;
         }
@@ -601,8 +603,9 @@ final class Lienzo {
             float izq = W < 250 ? util : util * 0.56f;
             float yb = H / 2 + 2;
             numero(r, ph, yb, izq, Math.min(30, H * 0.38f), 15);
-            String hoyTxt = diaEur + (diaPct.isEmpty() ? "" : "  " + diaPct) + " hoy";
-            if (ancho(hoyTxt, 12, 650) > izq) hoyTxt = diaEur + " hoy";
+            String hoyW = r.en ? " today" : " hoy";
+            String hoyTxt = diaEur + (diaPct.isEmpty() ? "" : "  " + diaPct) + hoyW;
+            if (ancho(hoyTxt, 12, 650) > izq) hoyTxt = diaEur + hoyW;
             texto(ph, yb + 19, recortar(hoyTxt, 12, 650, izq), 12, 650, color(r.dia), false);
             if (W >= 250) grafica(ph + izq + 12, pv + 4, W - 12, H - pv - 2, H, r, false, true, false);
             c.restore();
@@ -620,9 +623,10 @@ final class Lienzo {
             selector(Datos.indicePeriodo(r.dias), x0, y - 15);
             finIzq = x0 - 10;
         } else if (modo == 1) finIzq = W - SEL_FIN - periodo(W - SEL_FIN, y, r.rango) - 10;
-        float wPat = ancho("Patrimonio", 12, 600), wHora = ancho(r.horaTxt, 11.5f, 500);
+        String pat = r.en ? "Net worth" : "Patrimonio";
+        float wPat = ancho(pat, 12, 600), wHora = ancho(r.horaTxt, 11.5f, 500);
         if (ph + wPat + 7 + wHora <= finIzq) {
-            texto(ph, y, "Patrimonio", 12, 600, APAGADO, false);
+            texto(ph, y, pat, 12, 600, APAGADO, false);
             texto(ph + wPat + 7, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
         } else if (ph + wHora <= finIzq) texto(ph, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
 
@@ -636,9 +640,10 @@ final class Lienzo {
         int colHoy = r.dia > 0.005 ? SUBE : r.dia < -0.005 ? BAJA : TEXTO2;
         float wP = pildora(ph, yp, 24, diaEur, diaPct, colHoy, r.dia >= 0);
         float finHoy = ph + wP;
-        if (ancho("hoy", 12.5f, 500) <= util - wP - 8) {
-            texto(ph + wP + 9, yp + 16.5f, "hoy", 12.5f, 500, APAGADO, false);
-            finHoy = ph + wP + 9 + ancho("hoy", 12.5f, 500);
+        String hoyP = r.en ? "today" : "hoy";
+        if (ancho(hoyP, 12.5f, 500) <= util - wP - 8) {
+            texto(ph + wP + 9, yp + 16.5f, hoyP, 12.5f, 500, APAGADO, false);
+            finHoy = ph + wP + 9 + ancho(hoyP, 12.5f, 500);
         }
         // y a la derecha, lo que ha cambiado en el plazo de la curva («+1.230 € +1,6 % en 1 mes»), si cabe
         if (hayGraf && modo > 0) variacion(r, finHoy + 16, W - ph, yp + 16.5f);
@@ -648,7 +653,7 @@ final class Lienzo {
         List<List<Pastilla>> filas = new ArrayList<>();
         if (H >= 230) filas = pastillas(r, util, H >= 270 ? 2 : 1);
         List<String> toca = new ArrayList<>();
-        if (H >= 330 && !r.toca.isEmpty()) toca = lineas("Ahora: " + r.toca + (r.cuando.isEmpty() ? "" : ", " + r.cuando), 13, 500, util, H >= 380 ? 2 : 1);
+        if (H >= 330 && !r.toca.isEmpty()) toca = lineas((r.en ? "Now: " : "Ahora: ") + r.toca + (r.cuando.isEmpty() ? "" : ", " + r.cuando), 13, 500, util, H >= 380 ? 2 : 1);
         float altoToca = toca.isEmpty() ? 0 : 14 + 18 * toca.size();
         float altoFilas = filas.isEmpty() ? 0 : 25 + 31 * filas.size();
         boolean hayAbajo = altoToca + altoFilas > 0;
@@ -667,7 +672,7 @@ final class Lienzo {
             p.setPathEffect(new DashPathEffect(new float[]{dp(3), dp(3)}, 0));
             c.drawLine(dp(ph), dp(ym), dp(W - ph), dp(ym), p);
             p.setPathEffect(null);
-            String aviso = recortar(r.dias <= 1 ? "Aún no hay precios de las últimas 24 h" : "La gráfica se carga al refrescar", 11.5f, 500, util - 24);
+            String aviso = recortar(r.dias <= 1 ? (r.en ? "No prices for the last 24 h yet" : "Aún no hay precios de las últimas 24 h") : (r.en ? "The chart loads on refresh" : "La gráfica se carga al refrescar"), 11.5f, 500, util - 24);
             float wa = ancho(aviso, 11.5f, 500);
             p.reset();
             p.setColor(FONDO_B);
@@ -683,7 +688,7 @@ final class Lienzo {
             p.setStrokeWidth(Math.max(1, dp(1)));
             c.drawLine(dp(ph), dp(yy), dp(W - ph), dp(yy), p);
             yy += 18;
-            texto(ph, yy, "Lo que más ha movido hoy tu cartera", 11.5f, 600, APAGADO, false);
+            texto(ph, yy, r.en ? "What moved your portfolio most today" : "Lo que más ha movido hoy tu cartera", 11.5f, 600, APAGADO, false);
             yy += 7;
             for (List<Pastilla> linea : filas) {
                 float x = ph;
@@ -703,9 +708,10 @@ final class Lienzo {
             yy += 18;
             for (int k = 0; k < toca.size(); k++) {
                 String l = toca.get(k);
-                if (k == 0 && l.startsWith("Ahora:")) {
-                    texto(ph, yy, "Ahora:", 13, 700, ACENTO, false);
-                    texto(ph + ancho("Ahora: ", 13, 700), yy, l.substring(Math.min(l.length(), 7)), 13, 500, TEXTO2, false);
+                String ya = r.en ? "Now:" : "Ahora:";
+                if (k == 0 && l.startsWith(ya)) {
+                    texto(ph, yy, ya, 13, 700, ACENTO, false);
+                    texto(ph + ancho(ya + " ", 13, 700), yy, l.substring(Math.min(l.length(), ya.length() + 1)), 13, 500, TEXTO2, false);
                 } else texto(ph, yy, l, 13, 500, TEXTO2, false);
                 yy += 18;
             }

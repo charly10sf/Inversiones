@@ -50,6 +50,7 @@ jobs:
             git show origin/datos:informe.json > anterior/informe.json || true
             git show origin/datos:escaneo.json > anterior/escaneo.json || true
             git show origin/datos:noticias-cache.json > anterior/noticias-cache.json || true
+            git show origin/datos:traduccion-en.json > anterior/traduccion-en.json || true
           fi
           # los precios de los fondos del catálogo, para los avisos del móvil (avisos.json)
           if git fetch --depth=1 origin catalogo 2>/dev/null; then
@@ -124,6 +125,14 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: |
           python scripts/informe.py instrumentos.json anterior salida || echo "el informe no se pudo generar"
+
+      # 0.4: lo que escribe Gemini y los titulares en español, también en inglés (para la app en inglés). Cada
+      # texto se traduce una vez, con el modelo más barato; lo que falte, en la siguiente pasada.
+      - name: Traducir al inglés
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python scripts/traducir.py instrumentos.json anterior salida || echo "sin traducción esta vez"
 
       - name: Publicar en la rama datos
         working-directory: salida

@@ -95,15 +95,21 @@ public class Versiones extends Worker {
         }
         boolean web = !v.isEmpty() && comparar(v, vista) > 0 && comparar(v, avisada) > 0;
         boolean apk = app > BuildConfig.VERSION_CODE && app > appAvisada;
+        // 0.4: con frases enteras. «GrowFolio 0.4 ya está aquí» y, debajo, lo que trae; si viene con app nueva, cómo se
+        // instala (sola en Android 12 o más, salvo que haya fallado antes; en los demás, al abrirla)
+        boolean sola = Actualizador.puedeSola(c);
+        boolean en = "en".equals(p.getString("idioma", "es"));
         if (web) {
-            String titulo = "GrowFolio " + v + (t.isEmpty() ? " ya está aquí" : ": " + t);
-            String texto = apk ? "Trae app nueva de Android: ábrela y se instala encima en un momento, sin perder nada."
-                    : "Ábrela para ver qué ha cambiado.";
+            String titulo = en ? "GrowFolio " + v + " is here" : "GrowFolio " + v + " ya está aquí";
+            String lo = t.isEmpty() ? "" : t + ". ";
+            String texto = !apk ? lo + (en ? "Open it to see what's new." : "Ábrela para ver qué hay de nuevo.")
+                    : sola ? lo + (en ? "The app updates too: it installs itself when you're not using it." : "La app también se actualiza: se instala sola cuando no la estés usando.")
+                    : lo + (en ? "It comes with a new version of the app: open it, tap Update and it installs without losing anything." : "Trae una versión nueva de la app: ábrela, toca Actualizar y se instala sin perder nada.");
             mostrar(c, "version:" + v, titulo, texto);
         } else if (apk) {
-            String nombre = a.optString("nombre", "");
-            mostrar(c, "app:" + app, "Hay una versión nueva de la app",
-                    (nombre.isEmpty() ? "La nueva" : "La " + nombre) + " se instala encima en un momento: ábrela y toca Actualizar.");
+            mostrar(c, "app:" + app, en ? "New version of the app" : "Versión nueva de la app",
+                    sola ? (en ? "It installs itself when you're not using it, without losing anything." : "Se instala sola cuando no la estés usando, sin perder nada.")
+                            : (en ? "Open it and tap Update: it installs over the current one without losing anything." : "Ábrela y toca Actualizar: se instala encima sin perder nada."));
         }
         SharedPreferences.Editor e = p.edit();
         if (web) e.putString("version_avisada", v);

@@ -127,6 +127,7 @@ public class Widget extends AppWidgetProvider {
     }
 
     private static String descripcion(Datos.Resultado r) {
+        if (r.en) return r.hay ? "Net worth " + (r.oculto ? "hidden" : Datos.eur(r.total, false)) + ", today " + Datos.pct(r.diaPct) + ", " + r.rango + " chart" : "GrowFolio: open the app";
         return r.hay ? "Patrimonio " + (r.oculto ? "oculto" : Datos.eur(r.total, false)) + ", hoy " + Datos.pct(r.diaPct) + ", gráfica de " + r.rango : "GrowFolio: abre la app";
     }
 
