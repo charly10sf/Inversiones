@@ -13273,8 +13273,12 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.11c';
+const VERSION = '0.3.11d';
 const NOVEDADES = [
+  { v: '0.3.11d', f: '2026-10-22', h: '19:40', t: 'Actualiza la app de Android: GrowFolio cambia de dirección', arreglos: [
+    'El proyecto aún se llamaba «Inversiones» por dentro y en la dirección (charly10sf.github.io/Inversiones). Pasa a ser GrowFolio en todo: la web estará en charly10sf.github.io/GrowFolio y la app de Android se descarga como growfolio.apk.',
+    'Actualiza la app de Android cuando te avise: la nueva sabe cambiar sola a la dirección nueva; la de antes dejará de abrir GrowFolio cuando se haga el cambio. En el navegador no tienes que hacer nada: te lleva solo, con tus datos.',
+  ] },
   { v: '0.3.11c', f: '2026-10-22', h: '19:45', t: 'Importar varias capturas, mejor', arreglos: [
     'Al importar varias capturas a la vez (por ejemplo, la lista de fondos en dos o tres pantallazos), GrowIA se saltaba posiciones o las repetía. Ahora lee cada captura por separado y las junta: lo que sale en dos capturas cuenta una vez, y si una no se puede leer, te dice cuál y guarda el resto.',
     'Si Google pide esperar un momento (su límite por minuto), la importación espera en vez de pasar a un modelo peor.',
@@ -14211,7 +14215,7 @@ function guiaPrimerosPasos(despues = () => {}) {
 async function abrirEnMovil() {
   const android = /Android/i.test(navigator.userAgent), app = !!window.InversionesApp;
   const url = CFG.dev ? CFG.pages : location.origin + location.pathname;
-  let apk = `https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk`;
+  let apk = `https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/growfolio.apk`;
   let cuerpo, ya = app || COMO_APP;
   if (ya) cuerpo = `<p>${esc(app ? trad('Ya estás en la app de Android. Para el widget: mantén pulsado un hueco de la pantalla de inicio > Widgets > GrowFolio y arrastra «Tu cartera».') : trad('Ya la tienes en la pantalla de inicio: se abre como una app.'))}</p>`;
   else if (ES_IOS) cuerpo = `<p>${esc(trad('En el iPhone, GrowFolio funciona como una app sin pasar por la App Store: a pantalla completa, con su icono y sin las barras de Safari.'))}</p>${htmlPasosIOS()}`;
@@ -15183,7 +15187,7 @@ async function pintarAjustesApp(el) {
   try { const r = await fetch(GH.raw('app.json', 'main') + '?v=' + Date.now(), { cache: 'no-store' }); if (r.ok) ult = await r.json(); } catch (e) {}
   const app = window.InversionesApp;
   const tengo = app ? versionApp() : 0;
-  const apk = (ult && ult.apk) || `https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/inversiones.apk`;
+  const apk = (ult && ult.apk) || `https://github.com/${CFG.owner}/${CFG.repo}/releases/download/app/growfolio.apk`;
   const android = /Android/i.test(navigator.userAgent);
   const tok = GH.token();
   if (ES_IOS) {
@@ -17630,6 +17634,23 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
     if (e.data && e.data.type === 'inv-ir' && /^#[a-z]+$/.test(e.data.hash || '')) location.hash = e.data.hash;
   });
 }
+/* 0.3.11d: el proyecto pasa de llamarse Inversiones a GrowFolio (también la dirección: charly10sf.github.io/GrowFolio/).
+   Desde la dirección vieja, en cuanto la nueva existe, se salta a ella con lo mismo detrás (#cartera…). Tus datos del
+   navegador siguen ahí: es el mismo sitio. La copia guardada de la vieja se borra para que no se quede anclada. Dentro
+   de la app de Android no: la app nueva cambia sola y la de antes no sabe abrir la dirección nueva (hay que actualizarla) */
+(async () => {
+  try {
+    if (!/\.github\.io$/.test(location.hostname) || !/^\/inversiones(\/|$)/i.test(location.pathname)) return;
+    const r = await fetch('/GrowFolio/version.json?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) return;
+    if (window.InversionesApp) {
+      if (typeof window.InversionesApp.repo !== 'function') setTimeout(() => toast(L('GrowFolio ha cambiado de dirección: actualiza la app de Android (Ajustes > App de Android) para seguir al día.', 'GrowFolio has moved: update the Android app (Settings > Android app) to stay up to date.'), 9000), 2500);
+      return;
+    }
+    if (navigator.serviceWorker) for (const rg of await navigator.serviceWorker.getRegistrations()) if (/\/inversiones\//i.test(rg.scope)) await rg.unregister();
+    location.replace('/GrowFolio/' + location.search + location.hash);
+  } catch (e) { /* sin red: a la próxima */ }
+})();
 iniciar();
 /* cuántas visitas tiene GrowFolio (el número, el país y si es móvil u ordenador): Cloudflare Web Analytics, sin cookies y sin
    nada tuyo ni de tu cartera. Solo en la web publicada (las pruebas no cuentan) y cuando el enlace ya no lleva el token */

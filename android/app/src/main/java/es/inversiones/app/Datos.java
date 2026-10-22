@@ -31,15 +31,48 @@ import java.util.TreeSet;
  * Todo se guarda en el almacenamiento privado de la app; nunca la contraseña de la cartera.
  */
 final class Datos {
-    static final String PRECIOS = "https://raw.githubusercontent.com/charly10sf/Inversiones/datos/widget.json";
-    /** los precios del radar y de los fondos del catálogo (para los avisos de lo que añadiste a mano) */
-    static final String AVISOS = "https://raw.githubusercontent.com/charly10sf/Inversiones/datos/avisos.json";
     private static final String PREFS = "widget";
+    /* 0.3.11d: el repositorio (y con él la web) pasa de llamarse Inversiones a GrowFolio. Mientras no se renombre se
+       sigue con el nombre viejo; en cuanto la web nueva responde, la app se queda con ella para siempre. Así la misma
+       app vale antes y después del cambio. */
+    static final String VIEJO = "Inversiones", NUEVO = "GrowFolio";
 
     private Datos() {}
 
     static SharedPreferences prefs(Context c) {
         return c.getSharedPreferences(PREFS, Context.MODE_PRIVATE);
+    }
+
+    static String repo(Context c) {
+        return prefs(c).getString("repo", VIEJO);
+    }
+
+    static String web(Context c) {
+        return "https://charly10sf.github.io/" + repo(c) + "/";
+    }
+
+    static String raw(Context c, String rama, String ruta) {
+        return "https://raw.githubusercontent.com/charly10sf/" + repo(c) + "/" + rama + "/" + ruta;
+    }
+
+    /** ¿ya existe la web con el nombre nuevo? Si responde, se apunta y devuelve true (una vez) */
+    static boolean comprobarNombre(Context c) {
+        if (NUEVO.equals(repo(c))) return false;
+        HttpURLConnection con = null;
+        try {
+            con = (HttpURLConnection) new URL("https://charly10sf.github.io/" + NUEVO + "/version.json?t=" + System.currentTimeMillis()).openConnection();
+            con.setConnectTimeout(6000);
+            con.setReadTimeout(6000);
+            if (con.getResponseCode() == 200) {
+                prefs(c).edit().putString("repo", NUEVO).apply();
+                return true;
+            }
+        } catch (Exception e) {
+            // sin red o aún sin renombrar: se sigue como estaba
+        } finally {
+            if (con != null) con.disconnect();
+        }
+        return false;
     }
 
     /** al cerrar la sesión: el widget vuelve a «Abre la app» y no enseña la cartera de nadie */
@@ -55,7 +88,7 @@ final class Datos {
     static boolean descargar(Context c) {
         HttpURLConnection con = null;
         try {
-            con = (HttpURLConnection) new URL(PRECIOS + "?t=" + (System.currentTimeMillis() / 60000)).openConnection();
+            con = (HttpURLConnection) new URL(raw(c, "datos", "widget.json") + "?t=" + (System.currentTimeMillis() / 60000)).openConnection();
             con.setConnectTimeout(8000);
             con.setReadTimeout(8000);
             con.setRequestProperty("Cache-Control", "no-cache");
@@ -88,7 +121,7 @@ final class Datos {
         if (System.currentTimeMillis() - p.getLong("avisos_bajado_t", 0) < 20 * 60000L) return;
         HttpURLConnection con = null;
         try {
-            con = (HttpURLConnection) new URL(AVISOS + "?t=" + (System.currentTimeMillis() / 60000)).openConnection();
+            con = (HttpURLConnection) new URL(raw(c, "datos", "avisos.json") + "?t=" + (System.currentTimeMillis() / 60000)).openConnection();
             con.setConnectTimeout(8000);
             con.setReadTimeout(10000);
             con.setRequestProperty("Cache-Control", "no-cache");

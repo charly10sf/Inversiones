@@ -13,7 +13,7 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en di
 - **Plan**: aportaciones periódicas, compras y ventas, efectivo y posiciones, todo editable desde la web.
 - **Asesor** (botón de arriba a la derecha): Gemini con toda la cartera delante. Calcula ventas con FIFO e IRPF, compras con su tasa, proyecciones e históricos con el motor de la web, y busca en internet para contrastar.
 
-**Web:** https://charly10sf.github.io/Inversiones/
+**Web:** https://charly10sf.github.io/GrowFolio/
 
 ## Cómo funciona
 
@@ -57,7 +57,7 @@ Sin clave, el botón *Copiar mi cartera* copia los datos y la pregunta para pega
 La web guarda en este repositorio con un *fine-grained personal access token*:
 
 1. GitHub → Settings → Developer settings → Fine-grained tokens → Generate new token.
-2. Repository access: **Only select repositories** → `Inversiones`.
+2. Repository access: **Only select repositories** → `GrowFolio`.
 3. Permissions → Repository permissions → **Contents: Read and write**.
 4. Pegarlo en la web (Ajustes). Para el móvil: Ajustes → *Vincular el móvil* y escanear el QR.
 
@@ -86,7 +86,7 @@ GitHub pausa las tareas programadas de un repositorio público tras 60 días sin
 
 ## Otra persona en la misma web, sin GitHub
 
-Un amigo puede usar esta misma web con su propia cartera: que abra `https://charly10sf.github.io/Inversiones/#mia` (o, en la pantalla de la contraseña, "Crea tu propia cartera en este dispositivo"). Elige su contraseña y su cartera se guarda cifrada solo en su navegador o en la app: no pasa por GitHub y el dueño de la web no la ve. Comparte con todos los precios, el radar, las noticias y las ideas; no ve el análisis ni las reglas del dueño, y el asesor funciona con su propia clave gratuita de Google.
+Un amigo puede usar esta misma web con su propia cartera: que abra `https://charly10sf.github.io/GrowFolio/#mia` (o, en la pantalla de la contraseña, "Crea tu propia cartera en este dispositivo"). Elige su contraseña y su cartera se guarda cifrada solo en su navegador o en la app: no pasa por GitHub y el dueño de la web no la ve. Comparte con todos los precios, el radar, las noticias y las ideas; no ve el análisis ni las reglas del dueño, y el asesor funciona con su propia clave gratuita de Google.
 
 - Salen con precio las acciones del radar (unas 800), todo lo de `instrumentos.json` y los fondos, ETF, oro y cripto de `catalogo.json` (unos 110, con su clase e ISIN exactos). Un fondo que no esté en ninguno se puede dar de alta, pero sin precio diario hasta que se añada su ISIN a `catalogo.json`: la Action *Catálogo* le busca precio e histórico esa misma noche, para todos.
 - Para meter lo que ya tiene: Añadir posición, o Importar desde capturas (lee capturas o PDF del bróker con su clave de Gemini).
@@ -102,4 +102,4 @@ Cada persona necesita su propia copia: los datos van cifrados con su contraseña
 4. Pestaña *Actions*: pulsa el botón para activar los workflows (en los forks vienen apagados).
 5. Opcional, para que Gemini lea la prensa aunque no abras la web: crea tu clave gratis en aistudio.google.com/apikey y guárdala en *Settings → Secrets and variables → Actions* como `GEMINI_API_KEY`.
 6. Crea un token en *Settings → Developer settings → Fine-grained tokens*, solo para tu repositorio, con permiso de lectura y escritura en *Contents*.
-7. Abre `https://TU-USUARIO.github.io/Inversiones/`, pulsa "Empezar de cero", elige tu contraseña, pega el token y añade tus posiciones. Lo que añadas entra en `instrumentos.json` y la Action empieza a descargar sus precios en unos minutos.
+7. Abre `https://TU-USUARIO.github.io/GrowFolio/`, pulsa "Empezar de cero", elige tu contraseña, pega el token y añade tus posiciones. Lo que añadas entra en `instrumentos.json` y la Action empieza a descargar sus precios en unos minutos.

@@ -50,6 +50,13 @@ public class Puente {
 
     /** un toque suave (la vibración de las teclas) al cambiar de pestaña; si el móvil la tiene quitada, nada */
     /** desde la compilación 32 el permiso del banco se da dentro de la app (antes se iba al navegador y no volvía) */
+    /** 0.3.11d: con qué nombre carga la app la web (Inversiones o GrowFolio). Que exista dice además que la app ya sabe
+        cambiar sola al nombre nuevo */
+    @JavascriptInterface
+    public String repo() {
+        return Datos.repo(ctx);
+    }
+
     @JavascriptInterface
     public boolean bancoDentro() {
         return true;

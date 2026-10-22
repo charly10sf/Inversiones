@@ -77,16 +77,21 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cp android/app/build/outputs/apk/release/app-release.apk inversiones.apk
-          gh release view app >/dev/null 2>&1 || gh release create app --title "App de Android" --notes "La web de Inversiones como app, con widget para la pantalla de inicio. Descarga inversiones.apk e instálala."
-          gh release upload app inversiones.apk --clobber
+          cp android/app/build/outputs/apk/release/app-release.apk growfolio.apk
+          # inversiones.apk es la misma: la buscan las apps de antes de que el proyecto se llamara GrowFolio
+          cp growfolio.apk inversiones.apk
+          gh release view app >/dev/null 2>&1 || gh release create app --title "App de Android" --notes "GrowFolio como app, con widget para la pantalla de inicio. Descarga growfolio.apk e instálala."
+          gh release upload app growfolio.apk inversiones.apk --clobber
+          gh release edit app --notes "GrowFolio como app, con widget para la pantalla de inicio. Descarga growfolio.apk e instálala." || true
           gh release edit app --title "App de Android $VERSION_NAME" --latest=false || true
           # y la APK de esta versión en su propio release (vX.Y.Z), que no se borra con las siguientes
-          cp inversiones.apk "growfolio-$VERSION_NAME.apk"
+          cp growfolio.apk "growfolio-$VERSION_NAME.apk"
           # el release lo crea la Action «Release de la versión»: se espera a que esté (hasta 5 minutos)
           for i in $(seq 1 20); do gh release view "v$VERSION_NAME" >/dev/null 2>&1 && break; sleep 15; done
           gh release upload "v$VERSION_NAME" "growfolio-$VERSION_NAME.apk" --clobber || echo "::warning::No se ha podido subir la APK al release v$VERSION_NAME"
-          printf '{"version": %s, "nombre": "%s", "apk": "https://github.com/%s/releases/download/app/inversiones.apk"}\n' "${{ github.run_number }}" "$VERSION_NAME" "${{ github.repository }}" > app.json
+          # la dirección vieja a propósito: las apps de antes de GrowFolio solo aceptan esa, y tras renombrar el repositorio
+          # GitHub la redirige a la nueva. Las apps nuevas aceptan las dos
+          printf '{"version": %s, "nombre": "%s", "apk": "https://github.com/charly10sf/Inversiones/releases/download/app/inversiones.apk"}\n' "${{ github.run_number }}" "$VERSION_NAME" > app.json
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add app.json

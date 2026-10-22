@@ -23,7 +23,7 @@ import java.io.File;
 
 /** La app es la misma web de siempre (GitHub Pages) dentro de un WebView, con un puente para el widget. */
 public class Principal extends Activity {
-    static final String WEB = "https://charly10sf.github.io/Inversiones/";
+    static String WEB = "https://charly10sf.github.io/Inversiones/";
     private static final int ELEGIR_ARCHIVO = 7;
     private static final int PERMISO_INSTALAR = 8;
     static final int ENTRAR_GOOGLE = 9;
@@ -43,6 +43,7 @@ public class Principal extends Activity {
     @Override
     protected void onCreate(Bundle guardado) {
         super.onCreate(guardado);
+        WEB = Datos.web(this);
         web = new WebView(this);
         web.setBackgroundColor(0xFF000000);
         web.setFitsSystemWindows(true);
@@ -145,6 +146,18 @@ public class Principal extends Activity {
         tokenPendiente = token(getIntent());
         if (guardado != null) web.restoreState(guardado);
         else web.loadUrl(direccion(getIntent()));
+        // si la web ya se llama GrowFolio, la app se cambia a ella (los datos del móvil son los mismos: mismo sitio)
+        new Thread(() -> {
+            if (!Datos.comprobarNombre(this)) return;
+            runOnUiThread(() -> {
+                WEB = Datos.web(this);
+                String u = web.getUrl();
+                if (u != null && Uri.parse(u).getPath() != null && Uri.parse(u).getPath().toLowerCase().startsWith("/inversiones")) {
+                    String f = Uri.parse(u).getEncodedFragment();
+                    web.loadUrl(WEB + (f != null ? "#" + f : ""));
+                }
+            });
+        }).start();
     }
 
     /** Guarda el token que llega desde Chrome directamente en la web de la app y recarga, sin depender de la versión de la web */
@@ -225,7 +238,8 @@ public class Principal extends Activity {
     }
 
     private static boolean esDeLaWeb(Uri u) {
-        return "charly10sf.github.io".equalsIgnoreCase(u.getHost()) && u.getPath() != null && u.getPath().toLowerCase().startsWith("/inversiones");
+        String p = u.getPath() != null ? u.getPath().toLowerCase() : "";
+        return "charly10sf.github.io".equalsIgnoreCase(u.getHost()) && (p.startsWith("/inversiones") || p.startsWith("/growfolio"));
     }
 
     /** Android 12 o más: si el usuario ha dejado que GrowFolio abra los enlaces de Enable Banking («Abrir de forma predeterminada») */

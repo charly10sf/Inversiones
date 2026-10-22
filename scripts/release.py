@@ -16,7 +16,7 @@ import sys
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-REPO = "charly10sf/Inversiones"
+REPO = os.environ.get("GITHUB_REPOSITORY") or "charly10sf/GrowFolio"
 MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"]
 CADENA = r"'((?:[^'\\]|\\.)*)'"
 
