@@ -59,10 +59,7 @@ public class Versiones extends Worker {
     /** lo pone en marcha (o lo quita) según el ajuste; se llama al abrir la app y al cambiar el ajuste */
     static void programar(Context c) {
         WorkManager wm = WorkManager.getInstance(c);
-        if (!activados(c)) {
-            wm.cancelUniqueWork(TRABAJO);
-            return;
-        }
+        // 0.3.11e: corre aunque quites los avisos de versión, porque además actualiza la app sola
         Constraints red = new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build();
         PeriodicWorkRequest r = new PeriodicWorkRequest.Builder(Versiones.class, 3, TimeUnit.HOURS).setConstraints(red).build();
         wm.enqueueUniquePeriodicWork(TRABAJO, ExistingPeriodicWorkPolicy.KEEP, r);
@@ -80,12 +77,14 @@ public class Versiones extends Worker {
     }
 
     static void revisar(Context c) throws Exception {
+        Datos.comprobarNombre(c);
+        JSONObject a = leer(Datos.raw(c, "main", "app.json"));
+        Actualizador.autoActualizar(c, a);
         if (!activados(c) || !Avisos.permitidos(c)) return;
         int hora = LocalTime.now().getHour();
         if (hora >= 22 || hora < 9) return;
         SharedPreferences p = Datos.prefs(c);
-        Datos.comprobarNombre(c);
-        JSONObject w = leer(Datos.raw(c, "main", "version.json")), a = leer(Datos.raw(c, "main", "app.json"));
+        JSONObject w = leer(Datos.raw(c, "main", "version.json"));
         String v = w == null ? "" : w.optString("v"), t = w == null ? "" : w.optString("t");
         String vista = p.getString("version_vista", ""), avisada = p.getString("version_avisada", "");
         int app = a == null ? 0 : a.optInt("version", 0), appAvisada = p.getInt("app_avisada", 0);
