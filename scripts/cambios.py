@@ -47,7 +47,7 @@ def commits():
         # lo que se preparaba en una rama antes de publicar («0.3.4 (sin publicar): …», «0.4 (en curso): …»)
         asunto = re.sub(r"^(\d+\.\d+(?:\.\d+)?[a-z]?) \((?:sin publicar|en curso)\)", r"\1", asunto)
         # lo que se guardaba en una rama para la versión siguiente («Reservado para la 0.2.3: …») cuenta en esa versión
-        m = re.match(r"^Reservado para la (\d+\.\d+\.\d+[a-z]?): ?", asunto)
+        m = re.match(r"^Reservado para la (\d+\.\d+(?:\.\d+)?[a-z]?): ?", asunto)
         version = m.group(1) if m else None
         if m:
             asunto = asunto[m.end():]
