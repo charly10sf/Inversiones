@@ -1,13 +1,31 @@
 {
  "versiones": [
   {
+   "v": "0.4e",
+   "f": "2026-10-23",
+   "h": "01:23",
+   "t": "América y Oriente Medio en el mapa, y la presentación de Ajustes",
+   "commits": [
+    {
+     "cuando": "2026-10-23 01:23",
+     "asunto": "0.4e: América y Oriente Medio en el mapa, la presentación de Ajustes y la guía sin cortes",
+     "detalle": [
+      "Presentación (pantallaIntro): fuera el botón «Guíame» que se coló en la 0.4a con una variable que ahí no existe; rompía Ajustes > Ver la presentación y la bienvenida de quien entra por primera vez",
+      "Mapa: botones América (de Canadá a Brasil) y Oriente Medio (Turquía y Egipto a Irán); en esas vistas, solo los nombres de su zona; en el móvil, «O. Medio» para que quepan los cinco",
+      "Guía de la 0.4: texto corto propio (g) en cada paso, el mapa de la cartera resaltado sin su cabecera y las pestañas de Análisis y Hacienda sin pegar mientras dura (body.en-tour): el mapa de la cartera y la peor caída se ven enteros",
+      "Novedades de la 0.4e con su dibujo, en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.4d",
    "f": "2026-10-23",
    "h": "01:04",
    "t": "La presentación de la 0.4, otra vez, y las respuestas al momento",
    "commits": [
     {
-     "cuando": "2026-10-23 01:04",
+     "cuando": "2026-10-23 01:02",
      "asunto": "0.4d: la presentación de la 0.4 otra vez y las respuestas a las opiniones al momento",
      "detalle": [
       "Quien ya iba por la 0.4 (0.4 a 0.4c) ve otra vez la presentación de la 0.4, una sola (inv-nov-04), con la guía y el «Nuevo» de Mercados reiniciados",

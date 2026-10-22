@@ -1266,6 +1266,7 @@ table.ideas .sub { display: block; font-size: 12px; }
 }
 @media (max-width: 860px) {
   .subvistas, .plazos { position: sticky; top: calc(56px + env(safe-area-inset-top)); z-index: 20; box-shadow: 0 0 0 5px var(--bg), 0 10px 18px -4px rgba(0, 0, 0, 0.6); }
+  body.en-tour .subvistas, body.en-tour .plazos { position: static; box-shadow: none; }
 }
 @media (max-width: 680px) {
   .subvistas { width: 100%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin-bottom: 24px; }
@@ -3277,6 +3278,9 @@ body.con-ixn { overflow: hidden; }
 .mapa-modos::-webkit-scrollbar, .mapa-vistas::-webkit-scrollbar { display: none; }
 .mapa-modos button, .mapa-vistas button { flex: 1 0 auto; border: 0; background: transparent; padding: 6px 13px; border-radius: 999px; font-size: 13px; font-weight: 600; color: var(--muted); white-space: nowrap; transition: background-color 0.2s ease, color 0.2s ease; }
 .mapa-vistas button { padding: 5px 12px; font-size: 12.5px; }
+.mapa-vistas { max-width: 100%; }
+.mapa-vistas .mv-corto { display: none; }
+@media (max-width: 520px) { .mapa-vistas { width: 100%; } .mapa-vistas button { flex: 1 1 auto; padding: 5px 6px; } .mapa-vistas .mv-largo { display: none; } .mapa-vistas .mv-corto { display: inline; } }
 .mapa-modos button[aria-pressed="true"], .mapa-vistas button[aria-pressed="true"] { background: var(--accent-bg); color: var(--accent); }
 @media (hover: hover) { .mapa-modos button:hover, .mapa-vistas button:hover { color: var(--text); } .mapa-modos button[aria-pressed="true"]:hover, .mapa-vistas button[aria-pressed="true"]:hover { color: var(--accent); } }
 .mapa-cuerpo { display: grid; gap: 18px; grid-template-columns: minmax(0, 1fr); }
@@ -8127,7 +8131,13 @@ document.addEventListener('click', (e) => {
    Los nombres van primero en los mercados que más pesan en el mundo, y en dorado donde tienes dinero. */
 const BOLSA_PAIS = { ES: ['^IBEX'], DE: ['^GDAXI'], FR: ['^FCHI'], GB: ['^FTSE'], US: ['^GSPC', '^NDX', '^RUT'], JP: ['^N225'], CN: ['000001.SS'], HK: ['^HSI'], IN: ['^NSEI'], BR: ['^BVSP'] };
 const MAPA_MODOS = [['hoy', 'Hoy', 'Today'], ['mes', '1 mes', '1 month'], ['anio', 'En el año', 'This year'], ['tuyo', 'Tu dinero', 'Your money']];
-const MAPA_VISTAS = [['mundo', 'Mundo', 'World'], ['eu', 'Europa', 'Europe'], ['as', 'Asia', 'Asia']];
+const MAPA_VISTAS = [['mundo', 'Mundo', 'World'], ['am', 'América', 'Americas'], ['eu', 'Europa', 'Europe'], ['om', 'Oriente Medio', 'Middle East', 'O. Medio', 'Mid. East'], ['as', 'Asia', 'Asia']];
+/* zonas que no vienen en mapa-mundo.json (en sus coordenadas, 1000 × 439, con la proporción del mapa): América, de
+   Canadá a São Paulo (entera no cabe sin quedarse casi como el mundo), y Oriente Medio, de Turquía y Egipto a Irán */
+const MAPA_ZONAS_MAS = { am: [8, 40, 600, 263], om: [525, 106, 200, 88] };
+// en esas dos vistas, solo los nombres de su zona: por la forma del mapa se cuela algo de Europa, India o Grecia
+const ORIENTE_MEDIO = new Set(['TR', 'IL', 'SA', 'AE', 'QA', 'KW', 'BH', 'OM', 'EG', 'JO', 'LB', 'SY', 'IQ', 'IR', 'YE', 'CY']);
+const FOCO_MAPA = { am: (c, p) => p[0] < 430, om: (c) => ORIENTE_MEDIO.has(c) };
 // dónde empieza cada tono (por debajo del primero, gris: ni sube ni baja); en «Tu dinero», % de tu cartera
 const MAPA_CORTES = { hoy: [0.25, 0.75, 1.5, 2.5], mes: [1, 3, 6, 10], anio: [3, 10, 20, 35], tuyo: [0, 1, 5, 20] };
 // lo que pesa cada país en un fondo de todo el mundo (tipo MSCI ACWI), más o menos, en %
@@ -8287,7 +8297,8 @@ function etiquetasMapa(vb, esc1, modo, ex) {
   const compacto = anchoMapa() < 600;
   const sitio = (p) => { const l = ((p[0] - vb[0]) / vb[2]) * 100, t = ((p[1] - vb[1]) / vb[3]) * 100; return l >= 1 && l <= 99 && t >= 2 && t <= 98 ? [l, t] : null; };
   // con banderas (el móvil) caben antes que con nombres
-  const eu = G.zonas.eu, euLejos = eu[2] * esc1 < (compacto ? 200 : 380);
+  const foco = FOCO_MAPA[S.mapaVista] || null;
+  const eu = G.zonas.eu, euLejos = !foco && eu[2] * esc1 < (compacto ? 200 : 380);
   const enEuropa = (p) => p[0] >= eu[0] && p[0] <= eu[0] + eu[2] && p[1] >= eu[1] && p[1] <= eu[1] + eu[3];
   if (euLejos) {
     const s = sitio([eu[0] + eu[2] * 0.5, eu[1] + eu[3] * 0.5]), v = valorEuropaMapa(modo, ex);
@@ -8295,7 +8306,7 @@ function etiquetasMapa(vb, esc1, modo, ex) {
   }
   for (const x of paisesMapa(modo, ex)) {
     const p = G.c[x.c];
-    if (!p || (euLejos && enEuropa(p))) continue;
+    if (!p || (euLejos && enEuropa(p)) || (foco && !foco(x.c, p))) continue;
     const a = (G.a[x.c] || 0) * esc1 * esc1, peso = modo === 'tuyo' ? x.v : PESO_MUNDO[x.c] || 0;
     const grande = a >= 260, importante = modo === 'tuyo' ? x.v >= 1 : peso >= 0.3;
     if (!grande && !importante) continue;
@@ -8455,7 +8466,7 @@ function htmlMapaMundo() {
         </div>
         ${tactil && !LS.get('inv-mapa-gesto', 0) ? `<p class="mapa-pista"><svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 13l-4 4M3 13.5V17h3.5M13 7l4-4M13.5 3H17v3.5"/></svg>${L('Pellizca o toca dos veces para acercar; de cerca, arrastra para moverte', 'Pinch or double-tap to zoom in; up close, drag to move around')}</p>` : ''}
         <button type="button" class="mapa-elegido" id="mapaElegido" hidden></button>
-        <div class="mapa-pie"><div class="mapa-vistas" role="group" aria-label="${L('Ir a', 'Go to')}">${MAPA_VISTAS.map(([k, es, en]) => `<button type="button" data-mapa-vista="${k}" aria-pressed="${k === (S.mapaVista || 'mundo')}">${L(es, en)}</button>`).join('')}</div><div class="mapa-ley" id="mapaLey">${htmlLeyendaMapa(modo)}</div></div>
+        <div class="mapa-pie"><div class="mapa-vistas" role="group" aria-label="${L('Ir a', 'Go to')}">${MAPA_VISTAS.map(([k, es, en, esC, enC]) => `<button type="button" data-mapa-vista="${k}" aria-pressed="${k === (S.mapaVista || 'mundo')}"${esC ? ` aria-label="${L(es, en)}"` : ''}>${esC ? `<span class="mv-largo">${L(es, en)}</span><span class="mv-corto" aria-hidden="true">${L(esC, enC)}</span>` : L(es, en)}</button>`).join('')}</div><div class="mapa-ley" id="mapaLey">${htmlLeyendaMapa(modo)}</div></div>
       </div>
       <div class="mapa-info" id="mapaInfo">${htmlInfoMapa(S.mapaSel, S.M)}</div>
       <p class="sr" id="mapaAnuncio" aria-live="polite"></p>
@@ -8492,7 +8503,7 @@ async function cargarMapa() {
   S.mapaCargando = true;
   try {
     const r = await fetch('mapa-mundo.json?v=1');
-    if (r.ok) S.mapaGeo = await r.json();
+    if (r.ok) { S.mapaGeo = await r.json(); S.mapaGeo.zonas = { ...MAPA_ZONAS_MAS, ...(S.mapaGeo.zonas || {}) }; }
   } catch (e) { /* sin conexión: se dice en el hueco del mapa */ }
   S.mapaCargando = false;
   S.mapaFallo = !S.mapaGeo;
@@ -13215,7 +13226,6 @@ function pantallaIntro(seguir) {
           <h1 class="ix-marca ix-nom" data-no-trad>${nombreGF()}</h1>
           <div class="ix-lema"><h2>${esc(INTRO[0].t)}</h2><p>${esc(INTRO[0].x)}</p></div>
           <div class="ix-hola"><p class="ix-hola-t">${nombreUsuario() ? `${esc(L('Hola', 'Hi'))}, <b>${esc(nombreUsuario())}</b>` : esc(L('Te damos la bienvenida', 'Welcome'))}</p><p class="ix-hola-s">${esc(L('Baja despacio: el logo se monta mientras bajas y luego te cuento lo que hace GrowFolio.', 'Scroll slowly: the logo comes together as you go, then I\'ll show you what GrowFolio does.'))}</p></div>
-          ${pasos.length ? `<button type="button" class="btn pri ixn-guia" data-nv="todo">${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}
         <div class="ix-baja" aria-hidden="true"><span>${L('o ve bajando', 'or scroll down')}</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
         </div>
       </section>
@@ -14426,8 +14436,14 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.4d';
+const VERSION = '0.4e';
 const NOVEDADES = [
+  { v: '0.4e', f: '2026-10-23', h: '01:23', t: 'América y Oriente Medio en el mapa, y la presentación de Ajustes', cosas: [
+    { d: 'zonas', t: 'América y Oriente Medio, de un toque', x: 'Debajo del mapa, junto a Mundo, Europa y Asia, dos botones más: América (de Canadá a Brasil) y Oriente Medio (de Turquía y Egipto a Irán). En cada una salen solo los nombres de sus países.' },
+  ], arreglos: [
+    'Ajustes > Ver la presentación no se abría desde la 0.4a, y tampoco la presentación de bienvenida de quien entra por primera vez.',
+    'En la guía de la 0.4, el mapa de tu cartera y tu peor caída se ven enteros: la tarjeta lleva un texto más corto y las pestañas de Análisis dejan de estar pegadas arriba mientras dura.',
+  ] },
   { v: '0.4d', f: '2026-10-23', h: '01:04', t: 'La presentación de la 0.4, otra vez, y las respuestas al momento', arreglos: [
     'Quien ya tenía la 0.4 ve otra vez su presentación, una sola vez, con la guía de cinco pasos al día y sin repetir lo que ya cuenta.',
     'Si GrowFolio se abría directamente en Mercados, el mapa contaba como visto y la guía de lo nuevo ya no salía.',
@@ -14456,11 +14472,11 @@ const NOVEDADES = [
     'Los dibujos de las novedades se repetían y a veces no tenían que ver (el mapa salía con unas barras): ahora cada cosa tiene el suyo.',
   ] },
   { v: '0.4', f: '2026-10-22', h: '22:15', t: 'El mundo en un mapa, tu cartera de un vistazo y tu peor caída', cosas: [
-    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-caja', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; S.mapaVB = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. En el móvil, pellizca o toca dos veces para acercarte (en el ordenador, + y −) y arrastra para moverte; de lejos, Europa va en una pastilla que te lleva a verla de cerca. Toca un país para ver sus bolsas.' },
-    { d: 'tudinero', ir: { v: 'mercados', sel: '.mapa-caja', con: '#mapaElegido:not([hidden]), .mi-tuyo', antes: () => { S.mapaModo = 'tuyo'; S.mapaVB = null; S.mapaPos = null; let c = 'US', m = 0; try { for (const [k, x] of exposicionPaises(S.M)) if (x && x.pct > m) { m = x.pct; c = k; } } catch (e) {} S.mapaSel = c; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede, todo junto o una sola posición. Al tocar un país, justo debajo, cuánto tienes allí y qué parte de tu cartera es; en su ficha, frente a lo que pesaría en un fondo de todo el mundo (ahí EEUU es casi dos tercios).' },
-    { d: 'rectangulos', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale, con su logo, y del color de cómo va, hoy o desde que la compraste. Los más pequeños van juntos en uno. Toca uno para ver sus cifras y abrir su ficha; si lo quieres en Inicio, añádelo desde Personalizar.' },
-    { d: 'caida', ir: { v: 'analisis', sel: '.caida-w', antes: () => { S.numAbierto = 'riesgo'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: 'Tu peor caída y cuánto tardó en recuperarse', x: 'En Tus números, Riesgo: con lo que tienes hoy, la mayor caída de los últimos años (la de 2020, por ejemplo), cuánto duró, cuánto tardó en volver a donde estaba y a cuánto estás ahora de tu máximo, con una gráfica de cada día.' },
-    { d: 'respuesta', ir: { v: 'cartera', sel: '#bFallo' }, t: 'Te contestamos aquí mismo', x: 'Lo que mandas con el botón del bichito o con las estrellas tiene ahora respuesta: cuando te contesten, te sale en pantalla al abrir GrowFolio, junto a lo que escribiste. En ese mismo botón tienes todo lo que has mandado, con sus respuestas.' },
+    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-caja', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; S.mapaVB = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', g: 'Cada país, del color de cómo va su bolsa. Pellizca o toca dos veces para acercarte, arrastra para moverte y toca un país para ver sus bolsas.', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. En el móvil, pellizca o toca dos veces para acercarte (en el ordenador, + y −) y arrastra para moverte; de lejos, Europa va en una pastilla que te lleva a verla de cerca. Toca un país para ver sus bolsas.' },
+    { d: 'tudinero', ir: { v: 'mercados', sel: '.mapa-caja', con: '#mapaElegido:not([hidden]), .mi-tuyo', antes: () => { S.mapaModo = 'tuyo'; S.mapaVB = null; S.mapaPos = null; let c = 'US', m = 0; try { for (const [k, x] of exposicionPaises(S.M)) if (x && x.pct > m) { m = x.pct; c = k; } } catch (e) {} S.mapaSel = c; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', g: 'En «Tu dinero», dónde está invertido cada euro tuyo. Debajo del mapa, cuánto tienes en el país que toques y qué parte de tu cartera es.', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede, todo junto o una sola posición. Al tocar un país, justo debajo, cuánto tienes allí y qué parte de tu cartera es; en su ficha, frente a lo que pesaría en un fondo de todo el mundo (ahí EEUU es casi dos tercios).' },
+    { d: 'rectangulos', ir: { v: 'analisis', sel: '.mc-caja', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', g: 'Cada posición es un rectángulo del tamaño de lo que vale y del color de cómo va, con su logo. Toca uno para ver sus cifras.', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale, con su logo, y del color de cómo va, hoy o desde que la compraste. Los más pequeños van juntos en uno. Toca uno para ver sus cifras y abrir su ficha; si lo quieres en Inicio, añádelo desde Personalizar.' },
+    { d: 'caida', ir: { v: 'analisis', sel: '.caida-w', antes: () => { S.numAbierto = 'riesgo'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: 'Tu peor caída y cuánto tardó en recuperarse', g: 'La mayor caída que habría tenido tu cartera de hoy, cuánto tardó en recuperarse y a cuánto estás ahora de tu máximo.', x: 'En Tus números, Riesgo: con lo que tienes hoy, la mayor caída de los últimos años (la de 2020, por ejemplo), cuánto duró, cuánto tardó en volver a donde estaba y a cuánto estás ahora de tu máximo, con una gráfica de cada día.' },
+    { d: 'respuesta', ir: { v: 'cartera', sel: '#bFallo' }, t: 'Te contestamos aquí mismo', g: 'Lo que mandas con este botón tiene respuesta: te sale en pantalla en cuanto te contestan. Aquí está también todo lo que has mandado.', x: 'Lo que mandas con el botón del bichito o con las estrellas tiene ahora respuesta: cuando te contesten, te sale en pantalla al abrir GrowFolio, junto a lo que escribiste. En ese mismo botón tienes todo lo que has mandado, con sus respuestas.' },
     { d: 'ingles', t: 'GrowFolio, entero en inglés', x: 'Con la bandera de arriba, todo en inglés: cada pantalla, los avisos del móvil y el widget. Lo que escribe GrowIA para todos (la prensa de cada empresa, las ideas, el informe de los mercados) y los titulares en español llegan también traducidos.' },
   ], arreglos: [
     'El número junto al botón del calendario, en Inicio, no se entendía (eran las cosas tuyas de los próximos 7 días): ya no sale. Lo que viene sigue en el propio Inicio y dentro del Calendario.',
@@ -14829,6 +14845,8 @@ const DIBUJOS = {
   get mapa() { return `<g class="mapita" transform="translate(2 26)">${mundoDib({ US: 'mp-u3', CA: 'mp-u1', MX: 'mp-d2', BR: 'mp-u2', AR: 'mp-n', GB: 'mp-d2', FR: 'mp-u3', DE: 'mp-u2', ES: 'mp-d3', IT: 'mp-d1', SE: 'mp-u3', NO: 'mp-u1', FI: 'mp-u2', PL: 'mp-n', TR: 'mp-d1', CN: 'mp-d3', IN: 'mp-u1', JP: 'mp-d2', KR: 'mp-d4', ID: 'mp-u1', AU: 'mp-u4', ZA: 'mp-d1', SA: 'mp-u2' })}</g>${PILDORA_DIB(5, 5, 44)}<circle class="fA" cx="12.5" cy="12.5" r="2.2"/><text class="tu" x="18" y="15.8" data-no-trad>+0,8 %</text>${PILDORA_DIB(72, 8, 42)}<text class="td" x="79" y="18.8" data-no-trad>−1,2 %</text><circle class="a" cx="59" cy="38" r="7.5"/><path class="a" d="M64.5 43.5l5 5M59 35v6M56 38h6"/>`; },
   // 0.4b: lo tuyo arriba en la ficha del país (la bandera, lo que tienes, tu barra dorada frente a la del fondo mundial)
   tuyo: '<rect class="fp" x="8" y="7" width="104" height="66" rx="8"/><rect x="16" y="15" width="6" height="12" fill="#0055A4"/><rect x="22" y="15" width="6" height="12" fill="#F1EDE5"/><rect x="28" y="15" width="6" height="12" fill="#EF4135"/><path class="l" d="M41 18h26"/><path class="m" d="M41 25h18"/><text class="ta" x="16" y="45" style="font-size:13px" data-no-trad>2.949 €</text><rect x="16" y="52" width="62" height="5" rx="2.5" fill="var(--accent)"/><rect x="16" y="62" width="62" height="5" rx="2.5" fill="#2E2820"/><rect x="16" y="62" width="40" height="5" rx="2.5" fill="#6B6358"/><path class="a" d="M97 58V24M89 32l8-8 8 8"/>',
+  // 0.4e: los botones de América y Oriente Medio (sus dos recuadros sobre el mundo)
+  get zonas() { return `<g class="mapita" transform="translate(2 22)">${mundoDib({ US: 'mp-u3', CA: 'mp-u1', MX: 'mp-d2', BR: 'mp-u2', AR: 'mp-n', CL: 'mp-u1', SA: 'mp-u2', AE: 'mp-u1', TR: 'mp-d2', EG: 'mp-n', IR: 'mp-n', IL: 'mp-u1' })}<rect x="14" y="-1" width="36" height="52" rx="3" fill="none" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="3 2.5"/><rect x="63" y="11" width="20" height="14" rx="2.5" fill="none" stroke="var(--accent)" stroke-width="1.3" stroke-dasharray="3 2.5"/></g>${PILDORA_DIB(6, 5, 40)}<text class="ta" x="12" y="15.8" data-no-trad>${L('América', 'Americas')}</text>${PILDORA_DIB(70, 5, 44)}<text class="ta" x="76" y="15.8" data-no-trad>${L('O. Medio', 'Mid. East')}</text>`; },
   // 0.4: dónde está tu dinero (el mapa en dorado, más oscuro donde menos tienes) y lo que pesa EEUU
   get tudinero() { return `<g class="mapita" transform="translate(2 26)">${mundoDib({ US: 'mp-a4', CA: 'mp-a2', GB: 'mp-a3', FR: 'mp-a2', DE: 'mp-a3', ES: 'mp-a2', IT: 'mp-a1', SE: 'mp-a1', NO: 'mp-a1', JP: 'mp-a2', CN: 'mp-a1', IN: 'mp-a1', KR: 'mp-a1', AU: 'mp-a1', BR: 'mp-a1' })}</g><circle cx="104" cy="15" r="8.5" fill="none" stroke="#2E2820" stroke-width="5"/><circle cx="104" cy="15" r="8.5" fill="none" stroke="var(--accent)" stroke-width="5" stroke-dasharray="33 54" transform="rotate(-90 104 15)"/>${PILDORA_DIB(5, 5, 38)}<text class="ta" x="13" y="15.8" data-no-trad>62 %</text>`; },
   // 0.4: tu cartera de un vistazo (rectángulos del tamaño de cada cosa, con su logo)
@@ -15013,7 +15031,7 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   if (desde && !lista) return novedadesScroll(nuevas, desde, alCerrar);
   const resto = NOVEDADES.filter((n) => !nuevas.includes(n));
   const pasos = [], idx = new Map();
-  for (const n of nuevas) for (const c of n.cosas || []) if (c.ir && !esParche(n.v)) { idx.set(c, pasos.length); pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
+  for (const n of nuevas) for (const c of n.cosas || []) if (c.ir && !esParche(n.v)) { idx.set(c, pasos.length); pasos.push({ ...c.ir, t: c.t, x: c.g || c.x, dib: c.d, nuevo: n.v }); }
   const item = (c, i, ir) => `<li style="--i:${i}">${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${ir && idx.has(c) ? `<button type="button" class="enlace nov-ir" data-nov-ir="${idx.get(c)}">Enséñamelo</button>` : ''}</div></li>`;
   // los bugs corregidos de cada versión (desde la 0.2.3b), debajo de sus novedades
   const arr = (n) => (n.arreglos && n.arreglos.length ? `<div class="nov-arr"><h4>Arreglos</h4><ul>${n.arreglos.map((a) => `<li>${ICONOS.ok}<span>${esc(a)}</span></li>`).join('')}</ul></div>` : '');
@@ -15071,7 +15089,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     const conBase = g.vs.some((n) => n.v === g.base);
     // con su versión de número en la presentación, lo de letra que ya está contado en ella (junta) no se repite
     const todas = g.vs.flatMap((n) => (n.cosas || []).filter((c) => !(c.junta && conBase)).map((c) => ({ ...c, v: n.v }))), suyas = [...todas.filter((c) => !esParche(c.v)), ...todas.filter((c) => esParche(c.v))];
-    for (const c of suyas) { const g2 = c.ir && !esParche(c.v); c.paso = g2 ? pasos.length : null; if (g2) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: c.v }); cosas.push(c); }
+    for (const c of suyas) { const g2 = c.ir && !esParche(c.v); c.paso = g2 ? pasos.length : null; if (g2) pasos.push({ ...c.ir, t: c.t, x: c.g || c.x, dib: c.d, nuevo: c.v }); cosas.push(c); }
     const deBase = suyas.filter((c) => !esParche(c.v)), cuantas = enGrande(g, k), grandes = deBase.length <= cuantas + 1 ? deBase : deBase.slice(0, cuantas), resto = suyas.slice(grandes.length);
     const prin = g.vs.find((n) => n.v === g.base) || g.vs[0], bugs = g.vs.reduce((t, n) => t + ((n.arreglos || []).length), 0);
     if (k === 0 && viejas) {
@@ -15658,7 +15676,7 @@ const esParche = (v) => /[a-z]$/.test(String(v || ''));
 const baseVer = (v) => String(v || '').replace(/[a-z]+$/, '');
 const GUIA_ID = () => baseVer(VERSION);
 const novBase = () => NOVEDADES.find((n) => n.v === baseVer(VERSION)) || NOVEDADES.find((n) => !esParche(n.v)) || NOVEDADES[0];
-const pasosGuia = (ns = [novBase()]) => ns.filter((n) => !esParche(n.v)).flatMap((n) => (n.cosas || []).filter((c) => c.ir).map((c) => ({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v })));
+const pasosGuia = (ns = [novBase()]) => ns.filter((n) => !esParche(n.v)).flatMap((n) => (n.cosas || []).filter((c) => c.ir).map((c) => ({ ...c.ir, t: c.t, x: c.g || c.x, dib: c.d, nuevo: n.v })));
 // la versión cuyas novedades has visto: con un arreglo de la misma versión se queda el día en que la viste
 function marcarNovVista() {
   const pv = LS.get('inv-nov-vista') || {};
@@ -15746,6 +15764,7 @@ function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
   capa.className = 'tour'; capa.setAttribute('role', 'dialog'); capa.setAttribute('aria-modal', 'true'); capa.setAttribute('aria-label', 'Tour por la app');
   capa.innerHTML = '<div class="tour-foco"></div><div class="tour-caja" tabindex="-1" aria-live="polite"></div>';
   document.body.appendChild(capa);
+  document.body.classList.add('en-tour');
   const reubicar = () => colocarTour();
   const tecla = (e) => {
     if (e.key === 'Escape') { e.stopPropagation(); cerrarTour(true); }
@@ -15779,6 +15798,7 @@ function cerrarTour(hecho, sinVolver, desdeAtras) {
   const { alAcabar, nov, atras } = TOURE;
   cancelAnimationFrame(TOURE.raf);
   TOURE.off(); TOURE.capa.remove(); TOURE = null;
+  document.body.classList.remove('en-tour');
   if (atras && desdeAtras !== true) atras();
   document.body.classList.remove('tour-ola');
   if (nov) { if (alAcabar) alAcabar(); return; }
