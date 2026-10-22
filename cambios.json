@@ -1,13 +1,32 @@
 {
  "versiones": [
   {
+   "v": "0.4b",
+   "f": "2026-10-22",
+   "h": "23:56",
+   "t": "Lo tuyo, lo primero en el mapa",
+   "commits": [
+    {
+     "cuando": "2026-10-22 23:56",
+     "asunto": "0.4b: lo tuyo primero en el mapa, rectángulos sin números cortados y el tutorial sin tapar lo que señala",
+     "detalle": [
+      "Mapa: al elegir un país, debajo dice cuánto tienes allí y qué parte de tu cartera es; en su ficha, lo tuyo va arriba con una barra frente al fondo mundial",
+      "Mapa de la cartera: la letra de cada rectángulo se mide y se ajusta; lo que no cabe se quita en vez de cortarse",
+      "Tutorial y guía de lo nuevo: la tarjeta va siempre al lado de lo resaltado, sin dibujo ni texto de más si no cabe; si lo resaltado es muy alto, se ve su parte de arriba; cuenta la cabecera y las pestañas pegadas; en pantallas anchas se acerca a lo resaltado",
+      "Guía: los pasos del mapa señalan el mapa y no toda la sección",
+      "Novedades de la 0.4b con su guía y dibujo nuevo"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.4a",
    "f": "2026-10-22",
    "h": "23:19",
    "t": "El mapa con dos dedos y una guía por lo nuevo",
    "commits": [
     {
-     "cuando": "2026-10-22 23:19",
+     "cuando": "2026-10-22 23:15",
      "asunto": "0.4a: el mapa con dos dedos, guía de lo nuevo, mapa de la cartera con logos y actualizar la app de un toque",
      "detalle": [
       "Mapa: pellizcar, dos toques, + y −, arrastrar de cerca; nada espera a que acabe una animación; detalle 1:50 millones del mundo entero al acercarse (mapa-detalle.json, fuera mapa-eu y mapa-as)",

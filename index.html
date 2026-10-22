@@ -3000,8 +3000,11 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 @keyframes tour-late { 0% { opacity: 0.9; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.12); } }
 /* la tarjeta siempre se coloca con «top» (en px, lo pone colocarTour): así de un paso a otro se desliza, sin saltos */
 @property --fx { syntax: '<length>'; inherits: false; initial-value: 0px; }
-.tour-caja { transition: top 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), --fx 0.38s cubic-bezier(0.32, 0.72, 0.24, 1); max-height: calc(100vh - var(--nav-h) - 60px); overflow: auto; touch-action: pan-y; }
+.tour-caja { transition: top 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), left 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), --fx 0.38s cubic-bezier(0.32, 0.72, 0.24, 1); max-height: calc(100vh - var(--nav-h) - 60px); overflow: auto; touch-action: pan-y; }
 .tour-caja.con-flecha { overflow: visible; }
+.tour-caja.justa .tour-dib { display: none; }
+.tour-caja.justa h3 { margin-top: 10px; }
+.tour-txt[style*="max-height"] { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 4px; -webkit-mask-image: linear-gradient(#000 calc(100% - 22px), transparent); mask-image: linear-gradient(#000 calc(100% - 22px), transparent); padding-bottom: 14px; }
 .tour-caja.con-flecha::before { content: ''; position: absolute; left: var(--fx, 50%); width: 14px; height: 14px; margin-left: -7px; background: var(--plane); border: 1px solid var(--line-2); transform: rotate(45deg); }
 .tour-caja.con-flecha.abajo::before { top: -8px; border-right: 0; border-bottom: 0; }
 .tour-caja.con-flecha.arriba::before { bottom: -8px; border-left: 0; border-top: 0; }
@@ -3297,7 +3300,25 @@ body.con-ixn { overflow: hidden; }
 .mapa-pista svg { width: 15px; height: 15px; flex: none; fill: none; stroke: var(--accent); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
 .mapa-elegido { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 12px; border: 1px solid var(--line); border-radius: 14px; background: rgba(255, 255, 255, 0.03); color: var(--text); font: inherit; text-align: left; }
 .mapa-elegido[hidden] { display: none; }
-.mapa-elegido b { flex: 1; min-width: 0; font-size: 14px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mapa-elegido .me-txt { flex: 1; min-width: 0; display: grid; gap: 1px; }
+.mapa-elegido b { font-size: 14px; font-weight: 650; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mapa-elegido small { font-size: 12px; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mapa-elegido small.oro { color: var(--accent); white-space: normal; line-height: 1.3; }
+/* lo tuyo en un país: arriba, con tu parte y la de un fondo mundial a la misma escala */
+.mi-tuyo { display: grid; gap: 10px; padding: 14px; border-radius: 16px; background: linear-gradient(180deg, rgba(237, 187, 69, 0.09), rgba(237, 187, 69, 0.03)); border: 1px solid rgba(237, 187, 69, 0.22); }
+.mi-tuyo.vacio { background: rgba(255, 255, 255, 0.03); border-color: var(--line); padding: 12px 14px; }
+.mi-tuyo p { margin: 0; font-size: 13px; color: var(--text-2); line-height: 1.5; }
+.mi-tuyo p b { color: var(--text); font-weight: 650; }
+.mi-tuyo p span { color: var(--muted); }
+.mt-cab { display: grid; gap: 1px; }
+.mt-cab small { font-size: 12px; color: var(--muted); }
+.mt-cab b { font-size: 24px; font-weight: 750; letter-spacing: -0.025em; font-variant-numeric: tabular-nums; }
+.mt-barras { display: grid; gap: 6px; }
+.mt-fila { display: grid; grid-template-columns: 92px minmax(0, 1fr) auto; align-items: center; gap: 10px; font-size: 12.5px; color: var(--text-2); }
+.mt-fila b { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); min-width: 46px; text-align: right; }
+.mt-b { display: block; height: 7px; border-radius: 4px; background: rgba(255, 255, 255, 0.05); overflow: hidden; }
+.mt-b i { display: block; height: 100%; border-radius: 4px; }
+.mt-b i.oro { background: var(--accent); } .mt-b i.gris { background: #6E6556; }
 .mapa-elegido .me-ver { display: inline-flex; align-items: center; gap: 2px; color: var(--muted); font-size: 12.5px; }
 .mapa-elegido .me-ver svg { width: 14px; height: 14px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 @media (min-width: 1080px) { .mapa-elegido { display: none !important; } }
@@ -3396,14 +3417,12 @@ body.con-ixn { overflow: hidden; }
 .mc-e { font-size: 0.8em; font-weight: 600; opacity: 0.78; font-variant-numeric: tabular-nums; }
 /* grande: logo y nombre arriba, cómo va en grande y lo que vale; mediano: logo, nombre y cómo va; pequeño: el logo */
 .mc-g, .mc-m { justify-content: space-between; }
-.mc-g { padding: 12px 14px; }
-.mc-abj { display: grid; gap: 2px; max-width: 100%; min-width: 0; }
-.mc-g .mc-n, .mc-m .mc-n { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; line-height: 1.15; }
-.mc-g .mc-v { font-size: 1.55em; line-height: 1.1; margin-top: 2px; }
-.mc-m { padding: 8px 9px; }
-.mc-c { align-items: center; justify-content: center; gap: 4px; padding: 3px; }
-.mc-c .mc-n { font-size: 10px; font-weight: 600; max-width: 100%; text-align: center; }
-.mc-c .mc-v { font-size: 10.5px; }
+.mc-abj { display: grid; gap: 2px; width: 100%; min-width: 0; }
+.mc-abj .mc-n { line-height: 1.18; }
+.mc-abj .mc-n.dos { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.mc-abj .mc-v { line-height: 1.2; white-space: nowrap; }
+.mc-abj .mc-e { white-space: nowrap; line-height: 1.3; }
+.mc-c { align-items: center; justify-content: center; }
 .mc-x { padding: 0; }   /* tan pequeño que el relleno lo sacaría de su sitio */
 .mc-logo { width: var(--lg, 24px); height: var(--lg, 24px); border-radius: calc(var(--lg, 24px) * 0.27); box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25); }
 .mc-logo > span { font-size: calc(var(--lg, 24px) * 0.38); }
@@ -8407,10 +8426,19 @@ function htmlInfoMapa(c, M) {
   // «por Repsol, IAG y MSCI Europe», o «por Repsol, IAG, MSCI Europe y 2 más»
   const de = e ? e.de.slice(0, 3).map((x) => `<b>${esc(x.n)}</b>`) : [], mas = e ? e.de.length - 3 : 0;
   const porQue = mas > 0 ? `${de.join(', ')} ${L(`y ${mas} más`, `and ${mas} more`)}` : yLista(de);
-  const tuyo = e ? L(`Tienes aquí <b>${eur(e.v, 0)}</b>, el ${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)} % de tu cartera, por ${porQue}.${e.de.some((x) => x.fondo) ? ' Lo de los fondos, más o menos: se reparten como su índice.' : ''}`, `You hold <b>${eur(e.v, 0)}</b> here, ${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)}% of your portfolio, through ${porQue}.${e.de.some((x) => x.fondo) ? ' Funds are approximate: split like their index.' : ''}`) : L('No tienes nada aquí.', 'You have nothing here.');
   const peso = pm ? L(`En un fondo de todo el mundo pesa un <b>${fmtNumR(pm, pm < 1 ? 2 : 1)} %</b>.`, `In a whole-world fund it weighs <b>${fmtNumR(pm, pm < 1 ? 2 : 1)}%</b>.`) : '';
+  /* lo tuyo, lo primero: cuánto tienes aquí, qué parte de tu cartera es y, al lado, lo que pesaría en un fondo de todo el
+     mundo (dos barras a la misma escala); debajo, por qué posiciones */
+  const fp = (x) => `${fmtNumR(x, x < 1 ? 2 : 1)} %`;
+  const tope = Math.max(e ? e.pct : 0, pm || 0) || 1;
+  const barra = (x, cls2, txt) => `<div class="mt-fila"><span>${txt}</span><i class="mt-b"><i class="${cls2}" style="width:${Math.max(2, (x / tope) * 100).toFixed(1)}%"></i></i><b>${fp(x)}</b></div>`;
+  const bloqueTuyo = e
+    ? `<div class="mi-tuyo"><div class="mt-cab"><small>${L('Tienes aquí', 'You hold here')}</small><b>${eur(e.v, 0)}</b></div>
+        <div class="mt-barras">${barra(e.pct, 'oro', L('Tu cartera', 'Your portfolio'))}${pm ? barra(pm, 'gris', L('Fondo mundial', 'World fund')) : ''}</div>
+        <p>${L(`Por ${porQue}.`, `Through ${porQue}.`)}${e.de.some((x) => x.fondo) ? ` <span>${L('Lo de los fondos, más o menos: se reparten como su índice.', 'Funds are approximate: split like their index.')}</span>` : ''}</p></div>`
+    : `<div class="mi-tuyo vacio"><p>${L('No tienes nada aquí.', 'You have nothing here.')}${pm ? ` ${peso}` : ''}</p></div>`;
   return `<div class="mi-cab"><span class="mi-ban">${bandera(c)}</span><h3>${esc(nombrePaisMapa(c))}</h3><button type="button" class="ib mi-x" data-mapa-pais="" aria-label="${L('Volver al resumen', 'Back to the summary')}">${ICONOS.cerrar}</button></div>
-    ${tabla}${info && info.que ? `<p class="mi-que">${esc(info.que)}</p>` : ''}<div class="mi-datos"><p>${tuyo}</p>${peso ? `<p>${peso}</p>` : ''}</div>${selectorPaisMapa(c, ex)}`;
+    ${bloqueTuyo}${tabla}${info && info.que ? `<p class="mi-que">${esc(info.que)}</p>` : ''}${selectorPaisMapa(c, ex)}`;
 }
 function htmlMapaMundo() {
   if (S.mapaModo == null) S.mapaModo = LS.get('inv-mapa', 'hoy');
@@ -8439,7 +8467,9 @@ function htmlElegidoMapa() {
   const c = S.mapaSel;
   if (!c || !S.mapaGeo) return '';
   const v = valorMapa(c, S.mapaModo, S.mapaEx || new Map());
-  return `<span class="mi-ban">${bandera(c)}</span><b>${esc(nombrePaisMapa(c))}</b><span class="mi-v ${S.mapaModo === 'tuyo' || v == null ? 'oro' : cls(v)}">${v == null ? '—' : valorCortoMapa(v, S.mapaModo)}</span><span class="me-ver">${L('Ver', 'See')}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></span>`;
+  const e = (S.mapaExTodo || new Map()).get(c);
+  const mio = e ? L(`Tienes ${eur(e.v, 0)}, el ${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)} % de tu cartera`, `You hold ${eur(e.v, 0)}, ${fmtNumR(e.pct, e.pct < 1 ? 2 : 1)}% of your portfolio`) : L('No tienes nada aquí', 'You have nothing here');
+  return `<span class="mi-ban">${bandera(c)}</span><span class="me-txt"><b>${esc(nombrePaisMapa(c))}</b><small class="${e ? 'oro' : ''}">${mio}</small></span><span class="mi-v ${S.mapaModo === 'tuyo' || v == null ? 'oro' : cls(v)}">${v == null ? '—' : valorCortoMapa(v, S.mapaModo)}</span><span class="me-ver">${L('Más', 'More')}<svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg></span>`;
 }
 function repintarMapa() {
   const w = $('#mapaMundo');
@@ -9324,6 +9354,16 @@ function trozosMc(M, W, H) {
   S.mcPiezas = piezas;
   return t;
 }
+// cómo va, con los decimales justos: hoy, dos si es poco; desde que la compraste, ninguno a partir de +100 %
+const pctMc = (v, modo) => pctS(v, modo === 'hoy' ? (Math.abs(v) < 10 ? 2 : 1) : Math.abs(v) >= 100 ? 0 : 1);
+// lo que ocupa un texto con la letra de la app (para que nada se salga de su rectángulo)
+const medirMc = document.createElement('canvas').getContext('2d');
+let letraMc = '';
+function anchoMc(t, peso, px) {
+  if (!letraMc) letraMc = getComputedStyle(document.body).fontFamily || 'sans-serif';
+  medirMc.font = `${peso} ${px}px ${letraMc}`;
+  return medirMc.measureText(String(t)).width * 1.02;
+}
 const piezaMc = (id) => ((S.mcPiezas || []).find((x) => x.id === id) || (S.M ? piezasCartera(S.M).find((x) => x.id === id) : null));
 // el logo de cada cosa (el de su web o su gestora; si no carga, sus iniciales), el € del efectivo o el «+3» de las pequeñas
 function logoMc(p, t) {
@@ -9381,22 +9421,36 @@ function pintarMapaCartera(caja, M) {
   // un grupo (no una imagen): dentro hay un botón por posición y el lector de pantalla tiene que poder llegar a ellos
   caja.setAttribute('role', 'group');
   caja.setAttribute('aria-label', L('Mapa de tu cartera: ', 'Map of your portfolio: ') + piezas.slice(0, 5).map((p) => `${p.n} ${eur(p.valor, 0)}`).join(', '));
-  // cuanto más grande el rectángulo, más grande su letra y su logo: los grandes llevan logo, nombre, cómo va y lo que
-  // vale; los medianos, logo, nombre y cómo va; los pequeños, solo el logo (y cómo va, si cabe debajo)
+  /* cada rectángulo lleva lo que le cabe, medido de verdad (con la letra de la app), por este orden: cómo va (que
+     encoge hasta caber a lo ancho), el nombre (en dos líneas si hace falta y hay sitio, si no en una con «…»), lo que
+     vale (solo los grandes) y el logo. Nada se corta: lo que no cabe entero no se pone */
   caja.innerHTML = t.filter((p) => p.w - G >= 1 && p.h - G >= 1).map((p) => {
     const w = p.w - G, h = p.h - G, v = modo === 'hoy' ? p.hoy : p.total, lado = Math.min(w, h);
-    const tam = w >= 118 && h >= 88 ? 'g' : w >= 66 && h >= 52 ? 'm' : lado >= 28 ? 'c' : 'x';
-    const fs = tam === 'g' ? Math.max(14, Math.min(22, lado / 7.5)) : tam === 'm' ? Math.max(12, Math.min(14.5, lado / 5)) : 12;
-    const lg = tam === 'g' ? Math.round(Math.max(26, Math.min(40, lado / 5))) : tam === 'm' ? 22 : Math.round(Math.max(18, Math.min(26, lado * 0.5)));
+    const grande = lado >= 86 && w >= 110, pad = grande ? 13 : lado >= 46 ? 8 : 4, aw = w - 2 * pad, ah = h - 2 * pad;
+    const fsN = grande ? Math.max(14, Math.min(22, lado / 7.5)) : Math.max(11, Math.min(14, lado / 5));
+    const sinDato = !p.efectivo && v == null;
+    const tP = p.efectivo ? '' : sinDato ? (modo === 'hoy' ? L('sin precio de hoy', 'no price today') : L('sin datos', 'no data')) : pctMc(v, modo);
+    let fsP = sinDato ? fsN * 0.82 : grande ? fsN * 1.5 : fsN * 1.08;
+    if (tP) { const a = anchoMc(tP, sinDato ? 600 : 750, fsP); if (a > aw) fsP *= aw / a; }
+    const pon = { pct: false, nom: 0, eur: false, logo: false };
+    let usado = 0;
+    if (tP && fsP >= 9 && fsP * 1.2 <= ah) { pon.pct = true; usado += fsP * 1.2; }
+    const lN = fsN * 1.18, dosLineas = anchoMc(p.n, 650, fsN) > aw;
+    if (aw >= 24 && usado + lN + 2 <= ah) { pon.nom = dosLineas && usado + 2 * lN + 2 <= ah ? 2 : 1; usado += pon.nom * lN + 2; }
+    const fsE = fsN * 0.8;
+    if (grande && usado + fsE * 1.3 + 2 <= ah) { pon.eur = true; usado += fsE * 1.3 + 2; }
+    let lg = grande ? Math.round(Math.max(26, Math.min(40, lado / 5))) : Math.round(Math.max(18, Math.min(24, lado * 0.42)));
+    if (usado + lg + 6 > ah) lg = Math.floor(Math.min(lg, ah - usado - 6));
+    if (lg >= 16 && lg <= aw) pon.logo = true;
+    const conTexto = pon.pct || pon.nom;
+    const tam = grande ? 'g' : conTexto ? 'm' : pon.logo ? 'c' : 'x';
     const ton = p.efectivo ? 'mc-ef' : tonoMc(v, modo);
-    const pct = p.efectivo ? '' : v == null ? `<span class="mc-e">${modo === 'hoy' ? L('sin precio de hoy', 'no price today') : L('sin datos', 'no data')}</span>` : `<span class="mc-v">${pctS(v, modo === 'hoy' ? 2 : 1)}</span>`;
-    const nom = `<span class="mc-n">${esc(p.n)}</span>`;
+    const nom = pon.nom ? `<span class="mc-n${pon.nom === 2 ? ' dos' : ''}" style="font-size:${fsN.toFixed(1)}px">${esc(p.n)}</span>` : '';
+    const pct = pon.pct ? `<span class="${sinDato ? 'mc-e' : 'mc-v'}" style="font-size:${fsP.toFixed(1)}px">${tP}</span>` : '';
+    const eu = pon.eur ? `<span class="mc-e" style="font-size:${fsE.toFixed(1)}px">${eur(p.valor, 0)}</span>` : '';
     // arriba el logo; abajo el nombre y las cifras (así el rectángulo se lee entero, como una tarjeta)
-    const dentro = tam === 'g' ? `${logoMc(p, lg)}<span class="mc-abj">${nom}${pct}<span class="mc-e">${eur(p.valor, 0)}</span></span>`
-      : tam === 'm' ? `${logoMc(p, lg)}<span class="mc-abj">${nom}${pct}</span>`
-      : tam === 'c' ? `${logoMc(p, lg)}${w >= 46 && h >= 50 ? `<span class="mc-n">${esc(p.n)}</span>` : ''}${h >= 68 && !p.efectivo && v != null ? `<span class="mc-v">${pctS(v, modo === 'hoy' ? 1 : 0)}</span>` : ''}`
-      : '';
-    return `<button type="button" class="mc-t mc-${tam} ${ton}${p.id === S.mcSel ? ' sel' : ''}" data-mc="${esc(p.id)}" style="left:${(p.x + G / 2).toFixed(1)}px;top:${(p.y + G / 2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;border-radius:${lado > 90 ? 12 : lado > 40 ? 8 : 5}px;font-size:${fs.toFixed(1)}px" aria-label="${esc(`${p.n}: ${textoPiezaMc(p)}`)}">${dentro}</button>`;
+    const dentro = conTexto ? `${pon.logo ? logoMc(p, lg) : '<span></span>'}<span class="mc-abj">${nom}${pct}${eu}</span>` : pon.logo ? logoMc(p, lg) : '';
+    return `<button type="button" class="mc-t mc-${tam} ${ton}${p.id === S.mcSel ? ' sel' : ''}" data-mc="${esc(p.id)}" style="left:${(p.x + G / 2).toFixed(1)}px;top:${(p.y + G / 2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;padding:${pad}px;border-radius:${lado > 90 ? 12 : lado > 40 ? 8 : 5}px" aria-label="${esc(`${p.n}: ${textoPiezaMc(p)}`)}">${dentro}</button>`;
   }).join('');
 }
 function repintarMc() {
@@ -14372,10 +14426,16 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.4a';
+const VERSION = '0.4b';
 const NOVEDADES = [
+  { v: '0.4b', f: '2026-10-22', h: '23:56', t: 'Lo tuyo, lo primero en el mapa', cosas: [
+    { d: 'tuyo', ir: { v: 'mercados', sel: '#mapaElegido:not([hidden]), .mi-tuyo', lado: 'abajo', antes: () => { S.mapaModo = 'hoy'; S.mapaVB = null; let c = 'US', m = 0; try { for (const [k, x] of exposicionPaises(S.M)) if (x && x.pct > m) { m = x.pct; c = k; } } catch (e) {} S.mapaSel = c; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Lo que tienes en cada país, a la vista', x: 'Al tocar un país del mapa, justo debajo dice cuánto tienes allí y qué parte de tu cartera es. En su ficha eso va ahora arriba del todo, con una barra que lo compara con lo que pesa ese país en un fondo de todo el mundo, y después sus bolsas.' },
+  ], arreglos: [
+    'En los rectángulos de tu cartera, algunos números salían cortados: ahora la letra se ajusta a cada rectángulo y lo que no cabe se quita en vez de salir a medias.',
+    'En el tutorial y en la guía de lo nuevo, la tarjeta tapaba a veces justo lo que señalaba (el mapa, los rectángulos o la gráfica de tu peor caída). Ahora va siempre al lado y, si no cabe todo, se ve la parte de arriba.',
+  ] },
   { v: '0.4a', f: '2026-10-22', h: '23:19', t: 'El mapa con dos dedos y una guía por lo nuevo', cosas: [
-    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; S.mapaVB = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mapa, con dos dedos', x: 'En el móvil, pellizca para acercarte, toca dos veces o usa + y −, y de cerca arrastra para moverte. De lejos, Europa va en una pastilla con su media que te lleva a verla de cerca, y cada país lleva su bandera: caben el doble y no se tapan. El país que eliges sale justo debajo del mapa, sin que se mueva la página.' },
+    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-caja', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; S.mapaVB = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mapa, con dos dedos', x: 'En el móvil, pellizca para acercarte, toca dos veces o usa + y −, y de cerca arrastra para moverte. De lejos, Europa va en una pastilla con su media que te lleva a verla de cerca, y cada país lleva su bandera: caben el doble y no se tapan. El país que eliges sale justo debajo del mapa, sin que se mueva la página.' },
     { d: 'tour', ir: { v: 'cartera', sel: '.nov-aviso' }, t: 'Una guía por lo nuevo', x: 'Cada versión trae su guía: te lleva, paso a paso, a cada sitio donde ha cambiado algo. Está arriba en las novedades, en el aviso de Inicio y en un globo que sale junto a la sección que estrena algo, que lleva «Nuevo» hasta que la ves.' },
     { d: 'rectangulos', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo, con logos', x: 'Cada rectángulo lleva el logo de lo que es y la letra crece con su tamaño. Los más pequeños van juntos en uno, «y 3 más», y al tocarlo salen uno a uno.' },
     { d: 'app', t: 'Actualizar la app, de un toque', x: 'El aviso del móvil trae un botón Actualizar que empieza a bajar la app nueva al momento, sin pasar por la pantalla de carga ni buscar nada. Y si la versión nueva de la web ya está abierta, tocar el aviso no la vuelve a cargar.' },
@@ -14387,8 +14447,8 @@ const NOVEDADES = [
     'Los dibujos de las novedades se repetían y a veces no tenían que ver (el mapa salía con unas barras): ahora cada cosa tiene el suyo.',
   ] },
   { v: '0.4', f: '2026-10-22', h: '22:15', t: 'El mundo en un mapa, tu cartera de un vistazo y tu peor caída', cosas: [
-    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. Los nombres salen primero en los mercados que más pesan, con un punto dorado donde tienes dinero. Toca un país para ver sus bolsas, lo que tienes allí y lo que pesa en un fondo de todo el mundo. Acércate con dos dedos o tocando dos veces (en el ordenador, con + y −) y arrastra para moverte; Europa y Asia tienen su botón, y al tocar un país pequeño el mapa se acerca solo.' },
-    { d: 'tudinero', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'tuyo'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede. Puedes verlo todo junto o una sola posición (dónde invierte tu MSCI World, por ejemplo) y compararlo con lo que pesaría cada país en un fondo de todo el mundo: ahí EEUU es casi dos tercios.' },
+    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-caja', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. Los nombres salen primero en los mercados que más pesan, con un punto dorado donde tienes dinero. Toca un país para ver sus bolsas, lo que tienes allí y lo que pesa en un fondo de todo el mundo. Acércate con dos dedos o tocando dos veces (en el ordenador, con + y −) y arrastra para moverte; Europa y Asia tienen su botón, y al tocar un país pequeño el mapa se acerca solo.' },
+    { d: 'tudinero', ir: { v: 'mercados', sel: '.mapa-caja', antes: () => { S.mapaModo = 'tuyo'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede. Puedes verlo todo junto o una sola posición (dónde invierte tu MSCI World, por ejemplo) y compararlo con lo que pesaría cada país en un fondo de todo el mundo: ahí EEUU es casi dos tercios.' },
     { d: 'rectangulos', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale y del color de cómo va, hoy o desde que la compraste. Toca uno para ver sus cifras y abrir su ficha. Si lo quieres en Inicio, añádelo desde Personalizar.' },
     { d: 'caida', ir: { v: 'analisis', sel: '.caida-w', antes: () => { S.numAbierto = 'riesgo'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: 'Tu peor caída y cuánto tardó en recuperarse', x: 'En Tus números, Riesgo: con lo que tienes hoy, la mayor caída de los últimos años (la de 2020, por ejemplo), cuánto duró, cuánto tardó en volver a donde estaba y a cuánto estás ahora de tu máximo, con una gráfica de cada día.' },
     { d: 'respuesta', ir: { v: 'cartera', sel: '#bFallo' }, t: 'Te contestamos aquí mismo', x: 'Lo que mandas con el botón del bichito o con las estrellas tiene ahora respuesta: cuando te contesten, te sale en pantalla al abrir GrowFolio, junto a lo que escribiste. En ese mismo botón tienes todo lo que has mandado, con sus respuestas.' },
@@ -14758,6 +14818,8 @@ const PILDORA_DIB = (x, y, w) => `<rect x="${x}" y="${y}" width="${w}" height="1
 const DIBUJOS = {
   // 0.4: el mapa del mundo (cada país del color de su bolsa, la lupa para acercarse a Europa)
   get mapa() { return `<g class="mapita" transform="translate(2 26)">${mundoDib({ US: 'mp-u3', CA: 'mp-u1', MX: 'mp-d2', BR: 'mp-u2', AR: 'mp-n', GB: 'mp-d2', FR: 'mp-u3', DE: 'mp-u2', ES: 'mp-d3', IT: 'mp-d1', SE: 'mp-u3', NO: 'mp-u1', FI: 'mp-u2', PL: 'mp-n', TR: 'mp-d1', CN: 'mp-d3', IN: 'mp-u1', JP: 'mp-d2', KR: 'mp-d4', ID: 'mp-u1', AU: 'mp-u4', ZA: 'mp-d1', SA: 'mp-u2' })}</g>${PILDORA_DIB(5, 5, 44)}<circle class="fA" cx="12.5" cy="12.5" r="2.2"/><text class="tu" x="18" y="15.8" data-no-trad>+0,8 %</text>${PILDORA_DIB(72, 8, 42)}<text class="td" x="79" y="18.8" data-no-trad>−1,2 %</text><circle class="a" cx="59" cy="38" r="7.5"/><path class="a" d="M64.5 43.5l5 5M59 35v6M56 38h6"/>`; },
+  // 0.4b: lo tuyo arriba en la ficha del país (la bandera, lo que tienes, tu barra dorada frente a la del fondo mundial)
+  tuyo: '<rect class="fp" x="8" y="7" width="104" height="66" rx="8"/><rect x="16" y="15" width="6" height="12" fill="#0055A4"/><rect x="22" y="15" width="6" height="12" fill="#F1EDE5"/><rect x="28" y="15" width="6" height="12" fill="#EF4135"/><path class="l" d="M41 18h26"/><path class="m" d="M41 25h18"/><text class="ta" x="16" y="45" style="font-size:13px" data-no-trad>2.949 €</text><rect x="16" y="52" width="62" height="5" rx="2.5" fill="var(--accent)"/><rect x="16" y="62" width="62" height="5" rx="2.5" fill="#2E2820"/><rect x="16" y="62" width="40" height="5" rx="2.5" fill="#6B6358"/><path class="a" d="M97 58V24M89 32l8-8 8 8"/>',
   // 0.4: dónde está tu dinero (el mapa en dorado, más oscuro donde menos tienes) y lo que pesa EEUU
   get tudinero() { return `<g class="mapita" transform="translate(2 26)">${mundoDib({ US: 'mp-a4', CA: 'mp-a2', GB: 'mp-a3', FR: 'mp-a2', DE: 'mp-a3', ES: 'mp-a2', IT: 'mp-a1', SE: 'mp-a1', NO: 'mp-a1', JP: 'mp-a2', CN: 'mp-a1', IN: 'mp-a1', KR: 'mp-a1', AU: 'mp-a1', BR: 'mp-a1' })}</g><circle cx="104" cy="15" r="8.5" fill="none" stroke="#2E2820" stroke-width="5"/><circle cx="104" cy="15" r="8.5" fill="none" stroke="var(--accent)" stroke-width="5" stroke-dasharray="33 54" transform="rotate(-90 104 15)"/>${PILDORA_DIB(5, 5, 38)}<text class="ta" x="13" y="15.8" data-no-trad>62 %</text>`; },
   // 0.4: tu cartera de un vistazo (rectángulos del tamaño de cada cosa, con su logo)
@@ -15698,6 +15760,7 @@ function pasoTour(dir = 1) {
       ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}`}
       ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar de tu bróker</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq${p.empezar && itemsEmpezar().some((y) => !y.ok) ? '' : ' pri'}" data-t="fin">${TOURE.fin ? esc(TOURE.fin) : TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}
     </div>`;
+  caja.classList.remove('justa');
   const txt = $('.tour-txt', caja);
   if (txt) { txt.classList.remove('entra-d', 'entra-i'); void txt.offsetWidth; txt.classList.add(dir < 0 ? 'entra-i' : 'entra-d'); }
   // el foco y la tarjeta se quedan donde estaban hasta saber adónde van y, entonces, se deslizan hasta allí
@@ -15707,7 +15770,7 @@ function pasoTour(dir = 1) {
     if (!TOURE || TOURE.n !== n) return;
     const el = p.sel ? elVisible(p.sel) : null;
     TOURE.el = el;
-    if (el) { const r = el.getBoundingClientRect(); if (r.top < 64 || r.bottom > innerHeight - 80) el.scrollIntoView({ block: 'center' }); }
+    if (el) encuadrarTour(el, caja, p.lado);
     seguirTour(500);
     caja.focus({ preventScroll: true });
   };
@@ -15740,26 +15803,78 @@ function colocarTour() {
     }
     caja.classList.remove('con-flecha', 'abajo', 'arriba');
     caja.classList.add('centro');
+    caja.style.left = '';
     caja.style.top = `${Math.max(16, Math.round((innerHeight - hc) / 2))}px`;
     return;
   }
-  const r = el.getBoundingClientRect(), m = 6;
+  const r = el.getBoundingClientRect(), B = bordesTour(el), m = TOUR_M, g = TOUR_G;
+  // lo que se ve de lo resaltado: no cuenta lo que queda bajo la cabecera o la barra de abajo
+  let ft = B.fijo ? r.top - m : Math.max(r.top - m, B.arriba + 2), fb = B.fijo ? r.bottom + m : Math.min(r.bottom + m, B.abajo - 2);
+  ft = Math.max(1, ft); fb = Math.min(innerHeight - 1, fb);
+  if (fb < ft + 24) fb = ft + 24;
+  // la tarjeta, al lado donde cabe entera sin pisarlo (primero debajo si está arriba y encima si está abajo). Si no cabe
+  // en ninguno, va debajo (encima si es la barra) y el foco se queda con la parte de arriba, la que se ve: la tarjeta
+  // nunca tapa lo que señala
+  const da = ft - g - B.techo, db = B.suelo - (fb + g), pref = paso.lado ? paso.lado === 'abajo' : (ft + fb) / 2 < innerHeight / 2;
+  const cabeB = db >= hc, cabeA = da >= hc, abajo = cabeB && cabeA ? pref : cabeB || (!cabeA && !B.nav);
+  let top;
+  if (abajo) { top = fb + g; if (top + hc > B.suelo) { top = Math.max(B.techo, B.suelo - hc); fb = Math.max(ft + 24, top - g); } }
+  else { top = ft - g - hc; if (top < B.techo) { top = B.techo; ft = Math.min(fb - 24, top + hc + g); } }
   foco.classList.remove('sin');
-  foco.style.cssText = `left:${(r.left - m).toFixed(1)}px;top:${(r.top - m).toFixed(1)}px;width:${(r.width + 2 * m).toFixed(1)}px;height:${(r.height + 2 * m).toFixed(1)}px`;
-  // la tarjeta, debajo de lo resaltado si está arriba y encima si está abajo; siempre con «top», para que se deslice
-  const abajo = r.top + r.height / 2 < innerHeight * 0.5;
-  const nb = document.querySelector('.navbar'), navH = nb && nb.offsetHeight ? nb.offsetHeight : 0;
-  const top = Math.round(abajo ? Math.max(16, Math.min(r.bottom + m + 12, innerHeight - navH - 16 - hc)) : Math.max(16, Math.min(r.top - m - 12 - hc, innerHeight - 16 - hc)));
+  foco.style.cssText = `left:${(r.left - m).toFixed(1)}px;top:${ft.toFixed(1)}px;width:${(r.width + 2 * m).toFixed(1)}px;height:${(fb - ft).toFixed(1)}px`;
   caja.classList.remove('centro');
   caja.classList.toggle('abajo', abajo);
   caja.classList.toggle('arriba', !abajo);
   caja.style.bottom = 'auto';
-  caja.style.top = `${top}px`;
-  // la flechita de la tarjeta apunta a lo resaltado (con la posición a la que va, no la de mitad de camino)
-  const cw = caja.offsetWidth, cl = (document.documentElement.clientWidth - cw) / 2;
+  caja.style.top = `${Math.round(top)}px`;
+  // en pantallas anchas, la tarjeta se va hacia lo resaltado en vez de quedarse en el centro; la flechita apunta a lo
+  // resaltado (con la posición a la que va, no la de mitad de camino)
+  const cw = caja.offsetWidth, dw = document.documentElement.clientWidth, mg = Math.min(16, (dw - cw) / 2);
+  const cl = Math.max(mg, Math.min(dw - cw - mg, r.left + r.width / 2 - cw / 2));
+  caja.style.left = `${(cl + cw / 2).toFixed(1)}px`;
   caja.style.setProperty('--fx', `${Math.max(22, Math.min(cw - 22, r.left + r.width / 2 - cl)).toFixed(0)}px`);
-  const tapa = abajo ? top < r.bottom + 12 : top + hc > r.top - 12;
-  caja.classList.toggle('con-flecha', !tapa);
+  caja.classList.add('con-flecha');
+}
+/* los bordes de la pantalla para el tutorial: lo resaltado se ve entre la cabecera y la barra de abajo (salvo que esté
+   en ellas, que no se mueven) y la tarjeta va entre el borde de arriba y la barra */
+const TOUR_M = 6, TOUR_G = 10;
+function bordesTour(el) {
+  const tb = document.querySelector('.top'), nb = document.querySelector('.navbar');
+  const enTop = !!(tb && tb.contains(el)), enNav = !!(nb && nb.contains(el));
+  const barra = nb && nb.offsetHeight ? Math.min(innerHeight, nb.getBoundingClientRect().top) : innerHeight;
+  let arriba = enTop || !tb ? 0 : Math.max(0, tb.getBoundingClientRect().bottom);
+  // en el móvil, las pestañas de Análisis o de Hacienda se quedan pegadas bajo la cabecera: lo que va después, bajo ellas
+  if (!enTop) for (const x of document.querySelectorAll('.subvistas, .plazos')) {
+    if (!x.offsetHeight || x.contains(el) || !(x.compareDocumentPosition(el) & Node.DOCUMENT_POSITION_FOLLOWING)) continue;
+    const cs = getComputedStyle(x);
+    if (cs.position === 'sticky') arriba = Math.max(arriba, (parseFloat(cs.top) || 0) + x.offsetHeight + 5);
+  }
+  return { fijo: enTop || enNav, nav: enNav, arriba, abajo: enNav ? innerHeight : barra, techo: 12, suelo: barra - 12 };
+}
+/* al empezar cada paso: si lo resaltado y la tarjeta no caben juntos, la tarjeta se queda sin dibujo y, si aún hace falta,
+   su texto se acorta con barra; luego la página se mueve lo justo para ver lo resaltado (entero si cabe, si no desde
+   arriba) con sitio para la tarjeta al lado */
+function encuadrarTour(el, caja, lado) {
+  const B = bordesTour(el), txt = $('.tour-txt', caja);
+  caja.classList.remove('justa');
+  if (txt) txt.style.maxHeight = '';
+  const r = el.getBoundingClientRect(), alto = r.height + 2 * TOUR_M, arriba = B.fijo ? B.techo : Math.max(B.arriba + 8, B.techo);
+  const sitio = B.suelo - arriba - TOUR_G;
+  let hc = caja.offsetHeight;
+  if (alto + hc > sitio) {
+    caja.classList.add('justa'); hc = caja.offsetHeight;
+    const ver = Math.min(alto, Math.max(150, sitio * 0.42));
+    if (txt && ver + hc > sitio) { txt.style.maxHeight = `${Math.max(96, txt.offsetHeight - (ver + hc - sitio))}px`; hc = caja.offsetHeight; }
+  }
+  if (B.fijo) return;
+  const entero = r.top - TOUR_M >= arriba && r.bottom + TOUR_M <= B.abajo - 8;
+  const cabeAb = B.suelo - (r.bottom + TOUR_M + TOUR_G) >= hc, cabeAr = r.top - TOUR_M - TOUR_G - B.techo >= hc;
+  if (entero && (lado === 'abajo' ? cabeAb : cabeAb || cabeAr)) return;
+  // con la tarjeta debajo a la fuerza (el paso quiere que se vea lo que hay encima), todo lo más abajo posible
+  const libre = B.suelo - arriba - alto - TOUR_G - hc;
+  const y = libre >= 0 ? arriba + (lado === 'abajo' ? libre : libre / 2) : arriba;
+  const d = r.top - TOUR_M - y;
+  if (Math.abs(d) > 2) window.scrollBy(0, d);
 }
 
 /* =====================================================================
