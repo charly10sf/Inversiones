@@ -3004,6 +3004,19 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .tour-caja { transition: top 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), left 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), --fx 0.38s cubic-bezier(0.32, 0.72, 0.24, 1); max-height: calc(100vh - var(--nav-h) - 60px); overflow: auto; touch-action: pan-y; }
 .tour-caja.con-flecha { overflow: visible; }
 .tour-caja.justa .tour-dib { display: none; }
+/* 0.5: el código de recuperación */
+.kit { display: grid; gap: 14px; }
+.kit > p { margin: 0; }
+.kit-cod { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; padding: 14px; border-radius: 14px; background: rgba(0, 0, 0, 0.35); border: 1px solid var(--line-2); }
+.kit-cod span { text-align: center; padding: 8px 4px; border-radius: 9px; font-size: 19px; font-weight: 700; letter-spacing: 0.12em; font-variant-numeric: tabular-nums; color: var(--text); background: rgba(255, 255, 255, 0.04); user-select: all; }
+.kit-cod span.kit-g { color: var(--accent); background: var(--accent-bg); box-shadow: inset 0 0 0 1px rgba(237, 187, 69, 0.45); }
+.kit-btns { justify-content: flex-start; }
+.kit-ok { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--up); font-weight: 600; }
+.kit-ok svg { width: 18px; height: 18px; }
+.kit-comp { display: grid; gap: 10px; }
+.kit-comp input { text-transform: uppercase; letter-spacing: 0.2em; font-weight: 700; max-width: 160px; }
+#rCod { text-transform: uppercase; letter-spacing: 0.06em; }
+@media (max-width: 380px) { .kit-cod span { font-size: 16px; letter-spacing: 0.08em; } }
 .tour-caja.justa h3 { margin-top: 10px; }
 .tour-txt[style*="max-height"] { overflow-y: auto; overscroll-behavior: contain; scrollbar-width: thin; padding-right: 4px; -webkit-mask-image: linear-gradient(#000 calc(100% - 22px), transparent); mask-image: linear-gradient(#000 calc(100% - 22px), transparent); padding-bottom: 14px; }
 .tour-caja.con-flecha::before { content: ''; position: absolute; left: var(--fx, 50%); width: 14px; height: 14px; margin-left: -7px; background: var(--plane); border: 1px solid var(--line-2); transform: rotate(45deg); }
@@ -4276,10 +4289,20 @@ async function resolverConflicto(e) {
   if (!S.preguntarConflicto && document.querySelector('.hoja-fondo form, .ficha')) { clearTimeout(S.subidaT); S.subidaT = setTimeout(() => sincronizarCuenta(), 2000); return; }
   let mio, suyo, base;
   try {
-    if (JSON.parse(d.enc).salt !== JSON.parse(c.texto).salt) throw new Error('otra contraseña');
-    [mio, suyo] = await Promise.all([descifrar(c.texto, S.key), descifrar(d.enc, S.key)]);
+    let keySuya = S.key;
+    if (idClave(d.enc) !== idClave(c.texto)) {
+      // 0.5: lo de aquí sigue en el formato 1 y la cuenta ya está en el 2 (otro dispositivo la pasó): se abre su sobre
+      // con la clave de la contraseña de aquí, se junta y este dispositivo se queda con la clave de datos
+      const r = !S.kv ? await claveRecordada(d.enc, { salt: S.salt ? b64.enc(S.salt) : null, key: S.key }) : null;
+      if (!r || !r.adoptada) throw new Error('otra contraseña');
+      keySuya = r.key; S.adoptarTras = r;
+    }
+    [mio, suyo] = await Promise.all([descifrar(c.texto, S.key), descifrar(d.enc, keySuya)]);
     if (c.base) { try { base = await descifrar(c.base, S.key); } catch (e2) {} }
+    if (S.adoptarTras) { const r = S.adoptarTras, g = await IDB.get(IDB_CLAVE); S.adoptarTras = null; await recifrarLocales(S.key, r.key); fijarSesion({ ...r, cartera: S.cartera }); if (g) await recordarClave(); }
+    adoptarSobre(d.enc);
   } catch (e1) {
+    S.adoptarTras = null;
     // no se puede juntar (otra contraseña): manda la cuenta; lo de aquí, aparte en el dispositivo
     LS.set('inv-cuenta-descartada', { texto: c.texto, cuando: new Date().toISOString() });
     LS.del('inv-pend-cuenta'); S.avisoConflicto = true;
@@ -4423,15 +4446,107 @@ async function derivarClave(pass, salt, iter) {
   const base = await crypto.subtle.importKey('raw', TE.encode(pass), 'PBKDF2', false, ['deriveKey']);
   return crypto.subtle.deriveKey({ name: 'PBKDF2', salt, iterations: iter, hash: 'SHA-256' }, base, { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
 }
-async function cifrar(obj) {
+async function cifrar(obj) { return cifrarCon(obj, S.key, S.kv, S.salt, S.iter); }
+async function cifrarCon(obj, key, kv, salt, iter) {
   const iv = crypto.getRandomValues(new Uint8Array(12));
-  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, S.key, TE.encode(JSON.stringify(obj))));
-  return JSON.stringify({ v: 1, kdf: 'PBKDF2-SHA256', iter: S.iter, salt: b64.enc(S.salt), iv: b64.enc(iv), ct: b64.enc(ct) }, null, 1) + '\n';
+  const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, TE.encode(JSON.stringify(obj))));
+  if (kv) return JSON.stringify({ v: 2, kid: kv.kid, k: kv.k, iv: b64.enc(iv), ct: b64.enc(ct) }, null, 1) + '\n';
+  return JSON.stringify({ v: 1, kdf: 'PBKDF2-SHA256', iter, salt: b64.enc(salt), iv: b64.enc(iv), ct: b64.enc(ct) }, null, 1) + '\n';
 }
 async function descifrar(texto, key) {
   const f = JSON.parse(texto);
   const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64.dec(f.iv) }, key, b64.dec(f.ct));
   return JSON.parse(TD.decode(pt));
+}
+
+/* ---------- 0.5: el kit de recuperación (la cartera, con una clave de datos en un sobre) ----------
+   Formato 1 (hasta la 0.4): la cartera cifrada con la clave que sale de tu contraseña. Olvidarla era perderla, y
+   cambiarla obligaba a volver a cifrar todo y a escribir la nueva en cada dispositivo.
+   Formato 2: la cartera va cifrada con una clave de datos aleatoria, que se guarda dos veces, cerrada: con la clave
+   de tu contraseña (la misma sal y las mismas vueltas que tenía la cartera) y con la de tu código de recuperación
+   (24 caracteres al azar, 120 bits). Con cualquiera de las dos se abre; cambiar la contraseña solo cambia su
+   cierre, así que la cartera no se vuelve a cifrar y los otros dispositivos siguen abriendo. El código también va
+   dentro de la cartera cifrada (cartera.kit), para enseñártelo en cualquier dispositivo y para volver a cerrar la
+   clave de datos sin pedirte nada: quien puede leerlo ya tiene la clave de datos.
+   El dispositivo recuerda la clave de datos (no exportable). Una cartera en formato 1 pasa al 2 sola al abrirla, y
+   un dispositivo que aún recuerda la clave de la contraseña abre el formato 2 con ella sin pedirte nada. */
+const ITER_COD = 100000, ABC_COD = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const formatoDe = (t) => { try { return typeof t === 'string' ? JSON.parse(t) : t; } catch (e) { return null; } };
+// lo que identifica la clave que abre un texto cifrado: la de datos (formato 2) o la sal de la contraseña (1)
+const idClave = (t) => { const f = formatoDe(t); return !f ? null : f.v === 2 ? 'k:' + f.kid : 's:' + f.salt; };
+const importarDatos = (raw) => crypto.subtle.importKey('raw', raw, { name: 'AES-GCM' }, false, ['encrypt', 'decrypt']);
+async function cerrarClave(kek, raw) {
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  return { iv: b64.enc(iv), ct: b64.enc(new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, kek, raw))) };
+}
+async function abrirClave(kek, w) { return new Uint8Array(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64.dec(w.iv) }, kek, b64.dec(w.ct))); }
+// 24 caracteres sin los que se confunden (ni I, O, 0 ni 1), en seis grupos de cuatro; 256 es múltiplo de 32: sin sesgo
+function codigoNuevo() {
+  const r = crypto.getRandomValues(new Uint8Array(24));
+  return Array.from({ length: 6 }, (_, g) => Array.from(r.subarray(g * 4, g * 4 + 4), (x) => ABC_COD[x & 31]).join('')).join('-');
+}
+const normCodigo = (c) => String(c || '').toUpperCase().replace(/[^A-Z0-9]/g, '');
+const codigoValido = (c) => { const n = normCodigo(c); return n.length === 24 && [...n].every((x) => ABC_COD.includes(x)); };
+const claveCodigo = (codigo, salt, iter = ITER_COD) => derivarClave(normCodigo(codigo), salt, iter);
+const cierreDe = async (kek, raw, salt, iter) => ({ kdf: 'PBKDF2-SHA256', iter, salt: b64.enc(salt), ...(await cerrarClave(kek, raw)) });
+// un sobre nuevo: clave de datos al azar, cerrada con la clave de la contraseña (kek) y con un código nuevo
+async function sobreNuevo(kek, salt, iter) {
+  const raw = crypto.getRandomValues(new Uint8Array(32)), codigo = codigoNuevo(), rsalt = crypto.getRandomValues(new Uint8Array(16));
+  const k = { t: new Date().toISOString(), pass: await cierreDe(kek, raw, salt, iter), rec: await cierreDe(await claveCodigo(codigo, rsalt), raw, rsalt, ITER_COD) };
+  return { key: await importarDatos(raw), kv: { kid: b64.enc(crypto.getRandomValues(new Uint8Array(9))), k }, codigo, kit: { codigo, salt: k.rec.salt, creado: k.t } };
+}
+// abrir un texto con la contraseña: formato 2 (abre el cierre de la contraseña) o 1 (la clave de la contraseña es la de la cartera)
+async function abrirConContrasena(texto, pass) {
+  const f = JSON.parse(texto);
+  if (f.v === 2) {
+    const salt = b64.dec(f.k.pass.salt), iter = f.k.pass.iter, kek = await derivarClave(pass, salt, iter);
+    const key = await importarDatos(await abrirClave(kek, f.k.pass));
+    return { cartera: await descifrar(texto, key), key, kv: { kid: f.kid, k: f.k }, kek, salt, iter };
+  }
+  const salt = b64.dec(f.salt), iter = f.iter || 600000, kek = await derivarClave(pass, salt, iter);
+  return { cartera: await descifrar(texto, kek), key: kek, kv: null, kek, salt, iter };
+}
+// lo que este dispositivo recuerda (IndexedDB), si abre ese texto: la clave de datos del mismo sobre, o la clave de la
+// contraseña de antes (formato 1, o un formato 2 recién pasado en otro dispositivo, que se abre con ella)
+async function claveRecordada(texto, g) {
+  const f = formatoDe(texto);
+  if (!f || !g || !g.key) return null;
+  if (f.v !== 2) return g.salt && g.salt === f.salt ? { key: g.key, kv: null, kek: g.key, salt: b64.dec(f.salt), iter: f.iter || 600000 } : null;
+  const base = { kv: { kid: f.kid, k: f.k }, salt: b64.dec(f.k.pass.salt), iter: f.k.pass.iter };
+  if (g.kid && g.kid === f.kid) return { ...base, key: g.key };
+  if (g.salt && g.salt === f.k.pass.salt) {
+    try { return { ...base, key: await importarDatos(await abrirClave(g.key, f.k.pass)), kek: g.key, adoptada: true }; } catch (e) { return null; }
+  }
+  return null;
+}
+// la sesión con lo que se ha abierto
+function fijarSesion(r) { S.cartera = r.cartera || S.cartera; S.key = r.key; S.kv = r.kv || null; S.kek = r.kek || null; S.salt = r.salt; S.iter = r.iter; }
+const recordarClave = () => IDB.set(IDB_CLAVE, S.kv ? { kid: S.kv.kid, key: S.key } : { salt: b64.enc(S.salt), key: S.key });
+// el sobre más reciente entre el de aquí y el de un texto que llega (otro dispositivo cambió la contraseña o el código)
+function adoptarSobre(texto) {
+  const f = formatoDe(texto);
+  if (!S.kv || !f || f.v !== 2 || f.kid !== S.kv.kid || !f.k) return;
+  if (!S.kv.k.t || (f.k.t && f.k.t > S.kv.k.t)) { S.kv = { kid: f.kid, k: f.k }; S.salt = b64.dec(f.k.pass.salt); S.iter = f.k.pass.iter; }
+}
+// lo que va cifrado con la clave de la cartera en este dispositivo (la clave de Gemini, la conversación del asesor, el
+// análisis propio): al cambiar de clave, se descifra con la vieja y se cifra con la nueva
+const LS_CIFRADAS = () => ['inv-ia-propio', 'inv-asesor-conv', 'inv-asesor-clave', ...Object.values(LS_CLAVE)];
+async function recifrarLocales(vieja, nueva) {
+  for (const k of new Set(LS_CIFRADAS())) {
+    const o = LS.get(k);
+    if (!o || !o.iv || !o.ct) continue;
+    try {
+      const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64.dec(o.iv) }, vieja, b64.dec(o.ct));
+      const iv = crypto.getRandomValues(new Uint8Array(12));
+      LS.set(k, { iv: b64.enc(iv), ct: b64.enc(new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, nueva, pt))) });
+    } catch (e) { /* ya estaba con la nueva, o no se puede: se queda como está */ }
+  }
+}
+// la clave de datos en claro (un momento, para volver a cerrarla): con el código guardado en la cartera
+async function claveDatosEnClaro() {
+  const kit = S.cartera && S.cartera.kit;
+  if (!S.kv || !kit || !kit.codigo || kit.salt !== S.kv.k.rec.salt) return null;
+  try { return await abrirClave(await claveCodigo(kit.codigo, b64.dec(S.kv.k.rec.salt), S.kv.k.rec.iter), S.kv.k.rec); } catch (e) { return null; }
 }
 
 /* la clave (no la contraseña) se puede recordar en este dispositivo: IndexedDB guarda la CryptoKey no exportable */
@@ -7217,6 +7332,7 @@ function avisoPrecioRaro(x) {
 function avisos(M) {
   const av = [];
   // quien venía de la 0.1: arriba del todo, una forma fácil de recuperar lo que no llegó a la cuenta
+  if (S.kv && S.cartera && S.cartera.kit && S.cartera.kit.codigo && !S.cartera.kit.guardado) av.push({ n: 'info', grave: true, i: ICONOS.candado, t: L('Guarda tu código de recuperación', 'Save your recovery code'), d: L('Si olvidas la contraseña de tu cartera, con él la recuperas. Sin él y sin la contraseña, nadie puede abrirla, ni GrowFolio.', 'If you forget your portfolio password, it gets your portfolio back. Without it and without the password, nobody can open it, not even GrowFolio.'), acc: `<button class="btn peq pri" data-accion="ver-kit">${L('Verlo y guardarlo', 'See and save it')}</button>` });
   if (PERFIL_CUENTA && LS.get('inv-vino-01') && !LS.get('inv-aviso-rec-ok')) av.push({ n: 'info', grave: true, i: ICONOS.cartera, t: L('¿Te falta algo de tu cartera de antes?', 'Missing anything from your old portfolio?'), d: L('Si alguna compra, venta o posición que tenías en la 0.1 no aparece (por ejemplo, porque la usabas en otro dispositivo), GrowFolio busca tu cartera de antes y añade lo que falte.', "If a buy, sell or holding you had in 0.1 isn't here (for example, because you used it on another device), GrowFolio looks for your previous portfolio and adds what's missing."), acc: `<button class="btn peq pri" data-accion="recuperar-vieja">${L('Recuperar mi cartera de antes', 'Recover my previous portfolio')}</button><button class="btn peq" data-accion="aviso-rec-ok">${L('Está todo', "It's all there")}</button>` });
   for (const f of M.filas) { const x = precioCompraRaro(f); if (x) av.push({ ...avisoPrecioRaro(x), grave: true }); }
   for (const f of M.filas) {
@@ -13579,13 +13695,26 @@ async function aplicarRemoto(enc, rev) {
   let c;
   try { c = await descifrar(enc, S.key); }
   catch (e) {
-    let otraSal = false; try { otraSal = JSON.parse(enc).salt !== JSON.parse(S.enc.texto).salt; } catch (e2) {}
-    if (!otraSal) { console.warn('No se pudo leer el cambio de otro dispositivo', e); return; }
+    // 0.5: otro dispositivo pasó la cartera al formato 2 y aquí aún se tiene la clave de la contraseña: con ella se
+    // abre su sobre y este dispositivo pasa a la clave de datos sin pedir nada
+    const r = !S.kv && S.key ? await claveRecordada(enc, { salt: S.salt ? b64.enc(S.salt) : null, key: S.key }) : null;
+    if (r && r.adoptada) {
+      try {
+        c = await descifrar(enc, r.key);
+        const g = await IDB.get(IDB_CLAVE);
+        await recifrarLocales(S.key, r.key); fijarSesion({ ...r, cartera: c }); if (g) await recordarClave();
+      } catch (e5) { c = null; }
+    }
+    const otraSal = !c && idClave(enc) !== idClave(S.enc && S.enc.texto);
+    if (!c && !otraSal) { console.warn('No se pudo leer el cambio de otro dispositivo', e); return; }
+  }
+  if (!c) {
     if (S.vigilaCuenta) { try { S.vigilaCuenta(); } catch (e3) {} S.vigilaCuenta = null; }
     S.enc = { texto: enc, sha: null }; fijarBase(rev, enc); cacheCuenta.set(enc); LS.del('inv-pend-cuenta');
     S.cartera = null; S.key = null; try { await IDB.del(IDB_CLAVE); } catch (e4) {}
     return pantallaDesbloqueo('', 'La contraseña de tu cartera ha cambiado en otro dispositivo. Escribe la nueva para seguir.');
   }
+  adoptarSobre(enc);
   S.cartera = c; S.enc = { texto: enc, sha: null }; fijarBase(rev, enc); cacheCuenta.set(enc); LS.del('inv-pend-cuenta');
   sumarInstPropios(); pintar();
   toast(S.avisoConflicto ? 'Tu cuenta tenía cambios más recientes de otro dispositivo: se ha quedado esa versión' : 'Tu cartera se ha actualizado con lo que cambiaste en otro dispositivo', 6000);
@@ -13604,7 +13733,7 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
     <div class="error" id="err">${esc(errorTxt)}</div>
     <button class="btn pri" type="submit" id="bEntrar">Entrar</button>
     ${htmlOtroPerfil()}
-    ${PERFIL_CUENTA && FB.user ? '<button type="button" class="enlace cero" id="bCero">No recuerdo esa contraseña: empezar de cero en esta cuenta</button>' : ''}
+    ${formatoDe(S.enc && S.enc.texto) && formatoDe(S.enc.texto).v === 2 ? `<button type="button" class="enlace" id="bOlvido">${L('He olvidado la contraseña', 'I forgot the password')}</button>` : PERFIL_CUENTA && FB.user ? '<button type="button" class="enlace cero" id="bCero">No recuerdo esa contraseña: empezar de cero en esta cuenta</button>' : ''}
     <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
     ${selectorIdioma('pie')}
   </form></div>`;
@@ -13615,16 +13744,17 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
     pantallaCrear();
   };
   $('#bIntro').onclick = () => pantallaIntro(() => pantallaDesbloqueo());
+  if ($('#bOlvido')) $('#bOlvido').onclick = () => pantallaRecuperar();
   $('#fDesb').onsubmit = async (ev) => {
     ev.preventDefault();
     const b = $('#bEntrar'); b.disabled = true; b.textContent = 'Descifrando…'; $('#err').textContent = '';
     try {
-      const f = JSON.parse(S.enc.texto);
-      S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;
-      const key = await derivarClave($('#pass').value, S.salt, S.iter);
-      S.cartera = await descifrar(S.enc.texto, key);
-      S.key = key;
-      if ($('#recordar').checked) await IDB.set(IDB_CLAVE, { salt: f.salt, key });
+      const r = await abrirConContrasena(S.enc.texto, $('#pass').value);
+      // si este dispositivo tenía lo de la cartera cifrado con otra clave (la de la contraseña, antes de pasar al
+      // formato 2 en otro dispositivo), se pasa a la de datos
+      if (r.kv) { const g = await IDB.get(IDB_CLAVE); if (g && g.key && !g.kid) await recifrarLocales(g.key, r.key); await recifrarLocales(r.kek, r.key); }
+      fijarSesion(r);
+      if ($('#recordar').checked) await recordarClave();
       else await IDB.del(IDB_CLAVE);
       marcarDesbloqueo();
       arrancar();
@@ -13634,6 +13764,59 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
       $('#err').textContent = 'Contraseña incorrecta.';
       $('#pass').select();
     }
+  };
+}
+
+/* 0.5: «He olvidado la contraseña»: con el código de recuperación se abre la clave de datos y se cierra con una
+   contraseña nueva. La cartera no se vuelve a cifrar y el código sigue valiendo (se puede cambiar luego en Ajustes) */
+function pantallaRecuperar() {
+  const f = formatoDe(S.enc && S.enc.texto);
+  if (!f || f.v !== 2) return pantallaDesbloqueo();
+  $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fRec" novalidate>
+    <img class="logo" src="icon-192.png" alt="">
+    <h1>${L('Recuperar tu cartera', 'Recover your portfolio')}</h1>
+    <p>${L('Escribe el código de recuperación que guardaste (24 letras y números; los guiones dan igual) y elige una contraseña nueva para tu cartera.', 'Type the recovery code you saved (24 letters and numbers; dashes don\'t matter) and choose a new password for your portfolio.')}</p>
+    <input type="text" name="username" value="${esc(PERFIL_CUENTA && FB.user && FB.user.email ? FB.user.email + ' (cartera)' : '')}" autocomplete="username" hidden>
+    <label class="campo">${L('Código de recuperación', 'Recovery code')}<input id="rCod" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="XXXX-XXXX-XXXX-XXXX-XXXX-XXXX" data-no-trad></label>
+    <label class="campo">${L('Contraseña nueva', 'New password')}<input type="password" id="rP1" autocomplete="new-password" minlength="8"><small>${L('Al menos 8 caracteres.', 'At least 8 characters.')}</small></label>
+    <label class="campo">${L('Repítela', 'Repeat it')}<input type="password" id="rP2" autocomplete="new-password" minlength="8"></label>
+    <label class="check"><input type="checkbox" id="recordar" checked> ${L('Recordar en este dispositivo', 'Remember on this device')}</label>
+    <div class="error" id="err"></div>
+    <button class="btn pri" type="submit" id="bRec">${L('Recuperar', 'Recover')}</button>
+    <button type="button" class="enlace" id="bVolver">${L('Volver', 'Back')}</button>
+    ${PERFIL_CUENTA && FB.user ? `<button type="button" class="enlace cero" id="bCero">${L('No tengo el código: empezar de cero en esta cuenta', "I don't have the code: start from scratch in this account")}</button>` : ''}
+  </form></div>`;
+  $('#bVolver').onclick = () => pantallaDesbloqueo();
+  if ($('#bCero')) $('#bCero').onclick = () => {
+    if (!confirm(trad('Se borrará la cartera guardada en esta cuenta y empezarás una vacía. Sin su contraseña ni su código nadie puede recuperarla. ¿Empezar de cero?'))) return;
+    S.enc = null; S.cuentaNueva = false; S.cuentaLeida = true; LS.del('inv-cuenta-enc'); LS.del('inv-pend-cuenta');
+    pantallaCrear();
+  };
+  $('#rCod').focus();
+  $('#fRec').onsubmit = async (ev) => {
+    ev.preventDefault();
+    const cod = $('#rCod').value, p1 = $('#rP1').value, p2 = $('#rP2').value, err = (t) => { $('#err').textContent = t; };
+    if (!codigoValido(cod)) return err(L('El código tiene 24 letras y números (sin I, O, 0 ni 1). Revísalo.', 'The code has 24 letters and numbers (no I, O, 0 or 1). Check it.'));
+    if (p1.length < 8) return err(L('La contraseña necesita al menos 8 caracteres.', 'The password needs at least 8 characters.'));
+    if (p1 !== p2) return err(L('Las contraseñas no coinciden.', "The passwords don't match."));
+    const b = $('#bRec'); b.disabled = true; b.textContent = L('Comprobando…', 'Checking…'); err('');
+    try {
+      const g = formatoDe(S.enc.texto);
+      let raw;
+      try { raw = await abrirClave(await claveCodigo(cod, b64.dec(g.k.rec.salt), g.k.rec.iter), g.k.rec); }
+      catch (e) { b.disabled = false; b.textContent = L('Recuperar', 'Recover'); return err(L('Ese código no abre esta cartera. Comprueba que es el último que guardaste.', "That code doesn't open this portfolio. Check it's the latest one you saved.")); }
+      const key = await importarDatos(raw), cartera = await descifrar(S.enc.texto, key);
+      const salt = crypto.getRandomValues(new Uint8Array(16)), iter = 600000, kek = await derivarClave(p1, salt, iter);
+      const kv = { kid: g.kid, k: { ...g.k, t: new Date().toISOString(), pass: await cierreDe(kek, raw, salt, iter) } };
+      fijarSesion({ cartera, key, kv, kek, salt, iter });
+      // el código sigue dentro de la cartera; si faltara (no debería), se pone el que acabas de escribir
+      if (!S.cartera.kit || S.cartera.kit.salt !== g.k.rec.salt) S.cartera.kit = { codigo: normCodigo(cod).match(/.{4}/g).join('-'), salt: g.k.rec.salt, creado: g.k.t || new Date().toISOString(), guardado: new Date().toISOString() };
+      if ($('#recordar').checked) await recordarClave(); else await IDB.del(IDB_CLAVE);
+      await guardarCartera('Recuperar con el código');
+      marcarDesbloqueo();
+      toast(L('Contraseña nueva puesta. Tu código de recuperación sigue valiendo.', 'New password set. Your recovery code still works.'), 6000);
+      arrancar();
+    } catch (e) { console.warn(e); b.disabled = false; b.textContent = L('Recuperar', 'Recover'); err(L('No se ha podido recuperar (¿sin conexión?). Prueba otra vez.', "Couldn't recover it (offline?). Try again.")); }
   };
 }
 
@@ -13685,9 +13868,12 @@ function pantallaCrear() {
     if (tok) LS.set('inv-token', tok);
     const b = $('#bCrear'); b.disabled = true; b.textContent = 'Cifrando…';
     S.salt = crypto.getRandomValues(new Uint8Array(16)); S.iter = 600000;
-    S.key = await derivarClave(p1, S.salt, S.iter);
+    const kek = await derivarClave(p1, S.salt, S.iter);
     S.cartera = importada || { version: 1, posiciones: [], efectivo: [], aportaciones: [], limite_acciones: 20 };
-    if ($('#recordar').checked) await IDB.set(IDB_CLAVE, { salt: b64.enc(S.salt), key: S.key });
+    // 0.5: la cartera nueva ya nace en el formato 2, con su código de recuperación (se enseña al entrar)
+    if (PERFIL_CUENTA || PERFIL_LOCAL || CFG.dev) { const sb = await sobreNuevo(kek, S.salt, S.iter); S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.cartera.kit = sb.kit; S.kitRecien = sb.kv.kid; }
+    else { S.key = kek; S.kv = null; }
+    if ($('#recordar').checked) await recordarClave();
     const ok = await guardarCartera('Crear cartera cifrada');
     if (ok) { S.recienCreada = true; arrancar(); } else { b.disabled = false; b.textContent = PERFIL_CUENTA ? 'Crear mi cartera' : 'Cifrar y guardar'; }
   };
@@ -16936,6 +17122,7 @@ function abrirAjustes() {
     <h2 class="aj-grupo">Seguridad</h2>
     <div class="aj-caja">
     ${htmlAjustesBloqueo()}
+    ${S.kv ? `<button class="aj-fila" id="aKit">${ICONOS.candado}<span><b>${L('Código de recuperación', 'Recovery code')}</b><small>${S.cartera && S.cartera.kit && S.cartera.kit.guardado ? L(`Guardado el ${esc(fechaLarga(S.cartera.kit.guardado.slice(0, 10)))}. Por si olvidas la contraseña de tu cartera.`, `Saved on ${esc(S.cartera.kit.guardado.slice(0, 10))}. In case you forget your portfolio password.`) : L('Sin guardar todavía: con él recuperas la cartera si olvidas su contraseña.', 'Not saved yet: it gets your portfolio back if you forget its password.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>` : ''}
     <details class="seccion-ed aj-plegable"><summary><h3>${ICONOS.candado}Cambiar la contraseña</h3><i class="aj-flecha" aria-hidden="true"></i></summary>
       <div class="form-grid"><label class="campo">Nueva contraseña<input type="password" id="aP1" autocomplete="new-password"></label><label class="campo">Repítela<input type="password" id="aP2" autocomplete="new-password"></label></div>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aCambiar">Cambiar contraseña</button></div>
@@ -17012,13 +17199,27 @@ function abrirAjustes() {
     const a = $('#aP1', h.el).value, b = $('#aP2', h.el).value;
     if (a.length < 8) return toast('La contraseña necesita al menos 8 caracteres');
     if (a !== b) return toast('Las contraseñas no coinciden');
-    S.salt = crypto.getRandomValues(new Uint8Array(16));
-    S.key = await derivarClave(a, S.salt, S.iter);
-    if (await IDB.get(IDB_CLAVE)) await IDB.set(IDB_CLAVE, { salt: b64.enc(S.salt), key: S.key });
+    const salt = crypto.getRandomValues(new Uint8Array(16)), iter = S.iter || 600000, kek = await derivarClave(a, salt, iter), recuerda = !!(await IDB.get(IDB_CLAVE));
+    if (S.kv) {
+      // 0.5: solo cambia el cierre de la contraseña; la cartera y los otros dispositivos siguen con la misma clave de datos
+      const raw = await claveDatosEnClaro();
+      if (!raw) return toast(trad('No se ha podido cambiar la contraseña: falta tu código de recuperación en la cartera. Genera uno nuevo en Ajustes, Seguridad.'), 7000);
+      S.kv = { kid: S.kv.kid, k: { ...S.kv.k, t: new Date().toISOString(), pass: await cierreDe(kek, raw, salt, iter) } };
+      S.salt = salt; S.kek = kek;
+    } else {
+      // una cartera aún en el formato 1: pasa al 2 con la contraseña nueva (y lo cifrado de este dispositivo, a la clave nueva)
+      const vieja = S.key, sb = await sobreNuevo(kek, salt, iter);
+      await recifrarLocales(vieja, sb.key);
+      S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.salt = salt; S.iter = iter; S.cartera.kit = sb.kit;
+      if (recuerda) await recordarClave();
+      setTimeout(() => revisarKit(), 1200);
+    }
     await guardarCartera('Cambiar contraseña');
     $('#aP1', h.el).value = $('#aP2', h.el).value = '';
   };
-  $('#aExp', h.el).onclick = () => descargar(`cartera-${hoyIso()}.json`, JSON.stringify(S.cartera, null, 2));
+  if ($('#aKit', h.el)) $('#aKit', h.el).onclick = () => { h.cerrar(true); verKit(); };
+  // la copia sin cifrar va sin el código de recuperación (ese abre la cartera de tu cuenta)
+  $('#aExp', h.el).onclick = () => { const { kit, ...resto } = S.cartera; descargar(`cartera-${hoyIso()}.json`, JSON.stringify(resto, null, 2)); };
   $('#aEjemplo', h.el).onclick = () => descargar('cartera-ejemplo.json', JSON.stringify(EJEMPLO_CARTERA, null, 2));
   $('#aImp', h.el).onchange = async (ev) => {
     let r;
@@ -17026,7 +17227,7 @@ function abrirAjustes() {
     catch (e) { toast(`Ese archivo no parece una cartera: ${e instanceof SyntaxError ? 'el JSON tiene un error de formato' : e.message || 'falta la lista "posiciones"'}`, 6000); ev.target.value = ''; return; }
     ev.target.value = '';
     if (!confirm(`¿Sustituir tu cartera por la del archivo? ${resumenImport(r)}`)) return;
-    S.cartera = r.cartera; sumarInstPropios(); await guardarCartera('Importar copia'); h.cerrar(); pintar();
+    S.cartera = { ...r.cartera, kit: S.cartera.kit }; sumarInstPropios(); await guardarCartera('Importar copia'); h.cerrar(); pintar();
     cargarHistCatalogo().then((x) => { if (x) pintar(); });
     toast(resumenImport(r), 6000);
   };
@@ -17382,6 +17583,94 @@ const eurP = (n, d = 2) => (n > 0 ? '+' : '') + fmtNum(n, d) + ' €';
 const P1 = (n) => (n == null || !isFinite(n) ? '—' : pctS(n, 1));
 const normTxt = (s) => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, ' ').trim();
 const nombreInst = (id) => (S.inst[id] && (S.inst[id].corto || S.inst[id].nombre)) || id;
+
+/* ---------- 0.5: el código de recuperación, en pantalla ----------
+   Sale solo la primera vez (al crear la cartera o al pasar al formato 2), una vez al día mientras no lo guardes, y
+   siempre en Ajustes, Seguridad. Para darlo por guardado hay que escribir uno de sus grupos: así se comprueba que lo
+   tienes apuntado de verdad. «Generar uno nuevo» deja sin valor el anterior. */
+function verKit(desdeAviso) {
+  const kit = S.cartera && S.cartera.kit;
+  if (!S.kv || !kit || !kit.codigo) return toast(L('Tu cartera aún no tiene código de recuperación: sale al volver a abrir GrowFolio.', "Your portfolio has no recovery code yet: it shows up when you open GrowFolio again."), 5000);
+  if (kit.salt !== S.kv.k.rec.salt) return toast(L('El código guardado no coincide con el de tu cartera: genera uno nuevo cambiando la contraseña.', "The stored code doesn't match your portfolio's: change the password to get a new one."), 6000);
+  const grupos = kit.codigo.split('-'), n = crypto.getRandomValues(new Uint8Array(1))[0] % grupos.length, app = !!window.InversionesApp;
+  const correo = FB.user && FB.user.email ? FB.user.email : '';
+  const h = hoja(L('Tu código de recuperación', 'Your recovery code'), `<div class="kit">
+    <p>${L('Si olvidas la contraseña de tu cartera, con este código la recuperas. Guárdalo fuera de este dispositivo: en tu gestor de contraseñas, en un papel o en una foto que no esté en este móvil.', 'If you forget your portfolio password, this code gets it back. Keep it away from this device: in your password manager, on paper or in a photo stored elsewhere.')}</p>
+    <div class="kit-cod" data-no-trad aria-label="${esc(L('Código', 'Code'))}">${grupos.map((g, i) => `<span${i === n && !kit.guardado ? ' class="kit-g"' : ''}>${esc(g)}</span>`).join('')}</div>
+    <div class="fila-btns kit-btns"><button type="button" class="btn" id="kCopiar">${L('Copiar', 'Copy')}</button>${app ? '' : `<button type="button" class="btn" id="kBajar">${L('Descargar', 'Download')}</button>`}</div>
+    <p class="nota">${L('Quien tenga este código y pueda entrar en tu cuenta puede abrir tu cartera. No lo mandes por WhatsApp ni lo guardes junto a la contraseña.', 'Anyone with this code who can sign in to your account can open your portfolio. Don\'t send it by WhatsApp or keep it next to the password.')}${app ? ' ' + L('En la app, cópialo a tu gestor de contraseñas o apúntalo.', 'In the app, copy it to your password manager or write it down.') : ''}</p>
+    ${kit.guardado ? `<p class="kit-ok">${ICONOS.ok}${L(`Lo guardaste el ${esc(fechaLarga(kit.guardado.slice(0, 10)))}.`, `You saved it on ${esc(kit.guardado.slice(0, 10))}.`)}</p>
+      <div class="fila-btns"><button type="button" class="enlace" id="kNuevo">${L('Generar un código nuevo', 'Generate a new code')}</button><button type="button" class="btn pri" data-cerrar>${L('Cerrar', 'Close')}</button></div>`
+      : `<form class="kit-comp" id="kComp" novalidate><label class="campo">${L(`Para comprobar que lo tienes, escribe el grupo ${n + 1} (el marcado)`, `To check you have it, type group ${n + 1} (the highlighted one)`)}<input id="kGrupo" maxlength="4" autocomplete="off" autocapitalize="characters" spellcheck="false" inputmode="text"></label>
+        <div class="error" id="kErr"></div>
+        <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Luego', 'Later')}</button><button type="submit" class="btn pri">${L('Ya lo he guardado', "I've saved it")}</button></div></form>`}
+  </div>`);
+  h.el.classList.add('hoja-kit');
+  LS.set('inv-kit-visto', hoyIso());
+  $('#kCopiar', h.el).onclick = async () => { try { await navigator.clipboard.writeText(kit.codigo); toast(L('Código copiado', 'Code copied')); } catch (e) { toast(kit.codigo, 8000); } };
+  if ($('#kBajar', h.el)) $('#kBajar', h.el).onclick = () => descargarTexto(`growfolio-codigo-recuperacion.txt`, [L('GrowFolio · Código de recuperación de tu cartera', 'GrowFolio · Your portfolio recovery code'), '', kit.codigo, '', correo ? L(`Cuenta: ${correo}`, `Account: ${correo}`) : '', L(`Creado: ${kit.creado.slice(0, 10)}`, `Created: ${kit.creado.slice(0, 10)}`), '', L('Si olvidas la contraseña de tu cartera: en la pantalla de la contraseña, toca «He olvidado la contraseña» y escribe este código.', 'If you forget your portfolio password: on the password screen, tap «I forgot the password» and type this code.')].filter((x, i, a) => x !== '' || a[i - 1] !== '').join('\n'));
+  const comp = $('#kComp', h.el);
+  if (comp) comp.onsubmit = async (ev) => {
+    ev.preventDefault();
+    if (normCodigo($('#kGrupo', h.el).value) !== grupos[n]) { $('#kErr', h.el).textContent = L(`No coincide con el grupo ${n + 1}. Míralo en lo que has guardado.`, `It doesn't match group ${n + 1}. Check what you saved.`); return; }
+    S.cartera.kit = { ...S.cartera.kit, guardado: new Date().toISOString() };
+    await guardarCarteraCallada('Código de recuperación guardado');
+    h.cerrar(true); pintar(); toast(L('Hecho: tu cartera ya tiene salida si olvidas la contraseña', 'Done: your portfolio is safe if you forget the password'), 5000);
+  };
+  const nv = $('#kNuevo', h.el);
+  if (nv) nv.onclick = async () => {
+    if (!confirm(trad('El código que tienes guardado dejará de valer y tendrás que guardar el nuevo. ¿Generar uno nuevo?'))) return;
+    const raw = await claveDatosEnClaro();
+    if (!raw) return toast(L('No se ha podido generar: vuelve a abrir GrowFolio y prueba otra vez.', "Couldn't generate it: reopen GrowFolio and try again."), 5000);
+    const codigo = codigoNuevo(), rsalt = crypto.getRandomValues(new Uint8Array(16));
+    S.kv = { kid: S.kv.kid, k: { ...S.kv.k, t: new Date().toISOString(), rec: await cierreDe(await claveCodigo(codigo, rsalt), raw, rsalt, ITER_COD) } };
+    S.cartera.kit = { codigo, salt: S.kv.k.rec.salt, creado: S.kv.k.t };
+    await guardarCarteraCallada('Código de recuperación nuevo');
+    h.cerrar(true); verKit();
+  };
+}
+function descargarTexto(nombre, texto) {
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([texto], { type: 'text/plain;charset=utf-8' }));
+  a.download = nombre; document.body.appendChild(a); a.click();
+  setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+}
+// al abrir: la cartera pasa al formato 2 si aún no lo está y, mientras el código no esté guardado, se enseña (una vez al día)
+async function revisarKit(intento = 0) {
+  if (!S.cartera || !S.key) return;
+  if (!S.kv) { const ok = await pasarAV2(); if (!ok) { if (intento < 8) setTimeout(() => revisarKit(intento + 1), 8000); return; } }
+  const kit = S.cartera.kit;
+  if (!kit || kit.guardado || !kit.codigo) return;
+  if (S.kitRecien !== S.kv.kid && LS.get('inv-kit-visto') === hoyIso()) return;
+  if (document.querySelector('.hoja-fondo, .tour, .intro, .estreno, .bloqueo, .ficha-fondo') || document.hidden) { if (intento < 30) setTimeout(() => revisarKit(intento + 1), 5000); return; }
+  S.kitRecien = null;
+  verKit();
+}
+// formato 1 → 2: un sobre nuevo con la clave de la contraseña que ya se tiene (no hace falta escribirla), se sube con la
+// transacción de siempre (si la cuenta cambió mientras tanto, no se hace y se reintenta otro día) y solo entonces este
+// dispositivo pasa a la clave de datos
+async function pasarAV2() {
+  if (S.kv) return true;
+  if (!S.key || !S.cartera || !S.salt || !S.enc || S.pasandoV2) return false;
+  if (!(PERFIL_CUENTA || PERFIL_LOCAL || CFG.dev)) return false;
+  if (PERFIL_CUENTA && !CFG.dev && (!S.cuentaLeida || LS.get('inv-pend-cuenta') || navigator.onLine === false)) return false;
+  S.pasandoV2 = true;
+  try {
+    const kek = S.key, iter = S.iter || 600000, sb = await sobreNuevo(kek, S.salt, iter);
+    const cartera = { ...S.cartera, kit: sb.kit };
+    const texto = await cifrarCon(cartera, sb.key, sb.kv);
+    if (CFG.dev) LS.set('inv-dev-enc', texto);
+    else if (PERFIL_CUENTA) { await fbCargar(); const rev = await conTiempo(escribirCuenta(texto, S.baseRev), 15000); fijarBase(rev, texto); cacheCuenta.set(texto); }
+    else LS.set('inv-local-enc', texto);
+    const recuerda = !!(await IDB.get(IDB_CLAVE));
+    await recifrarLocales(kek, sb.key);
+    S.cartera = cartera; S.enc = { texto, sha: null }; S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.iter = iter;
+    if (recuerda) await recordarClave();
+    S.kitRecien = sb.kv.kid;
+    return true;
+  } catch (e) { console.warn('La cartera no ha pasado al formato 2 todavía', e); return false; }
+  finally { S.pasandoV2 = false; }
+}
 
 /* ---------- cifrado local con la clave de la cartera (para la clave de la API y la conversación) ---------- */
 async function cifrarLocal(obj) {
@@ -18529,6 +18818,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'nombre') cambiarNombre();
     else if (a === 'recuperar-vieja') { const antes = document.querySelectorAll('.hoja').length; revisarCarteraVieja(true); setTimeout(() => { if (document.querySelectorAll('.hoja').length <= antes) toast(trad('No hay ninguna cartera de antes con cosas que falten en tu cuenta'), 5000); }, 2500); }
     else if (a === 'aviso-rec-ok') { LS.set('inv-aviso-rec-ok', true); pintar(); }
+    else if (a === 'ver-kit') verKit();
     else if (a === 'importar') importarCapturas();
     else if (a === 'nueva-ap') editarAportacion(null);
     else if (a === 'editar-ap') editarAportacion(+d.k);
@@ -18652,6 +18942,7 @@ function arrancar() {
   apuntarDiaUso(); setTimeout(() => pedirNota(), 150000); setTimeout(() => pedirAvisoVersiones(), 12000);
   if (PERFIL_CUENTA) setTimeout(() => revisarRespuestas(), 5000);
   setTimeout(() => globoNuevo(), 3500);
+  setTimeout(() => revisarKit(), 2500);
   // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)
   { let n = 0; const mira = () => { if ((!S.radar || !S.cat) && n++ < 10) { setTimeout(mira, 5000); return; } revisarPedidos(); refrescarCatLocal().catch(() => {}); }; setTimeout(mira, 6000); }
   clearInterval(tickPrecios); clearInterval(tickEstado);
@@ -18857,7 +19148,7 @@ function ponerPin(recargar) {
     guardarBloqueo({ pin: await hashPin(a, salt), salt: b64.enc(salt), fallos: 0, ...(antes && antes.huella ? { huella: antes.huella } : {}) });
     marcarDesbloqueo();
     // el PIN solo tiene sentido si la clave se recuerda en el dispositivo
-    if (S.key && S.salt) await IDB.set(IDB_CLAVE, { salt: b64.enc(S.salt), key: S.key });
+    if (S.key && (S.kv || S.salt)) await recordarClave();
     h.cerrar();
     const tipo = !antes && (await huellaPosible());
     toast(antes ? 'PIN cambiado.' : 'PIN puesto.');
@@ -19203,11 +19494,10 @@ async function entrar() {
   if (!S.enc && PERFIL_CUENTA) { S.cuentaNueva = true; return intro ? pantallaIntro(bienvenidaCuenta) : bienvenidaCuenta(); }
   if (!S.enc) return intro ? pantallaIntro(pantallaCrear) : pantallaCrear();
   try {
-    const f = JSON.parse(S.enc.texto);
-    const guardada = await IDB.get(IDB_CLAVE);
-    if (guardada && guardada.key && guardada.salt === f.salt) {
-      S.cartera = await descifrar(S.enc.texto, guardada.key);
-      S.key = guardada.key; S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;
+    const r = await claveRecordada(S.enc.texto, await IDB.get(IDB_CLAVE));
+    if (r) {
+      r.cartera = await descifrar(S.enc.texto, r.key);
+      if (r.adoptada) { await recifrarLocales(r.kek, r.key); fijarSesion(r); await recordarClave(); } else fijarSesion(r);
       // con PIN o huella puestos, una vez cada 72 h los pide antes de enseñar nada
       const seguir = () => (necesitaBloqueo() ? pantallaBloqueo(arrancar, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); }) : arrancar());
       // también a quien ya entra solo: la presentación, una vez en cada dispositivo
