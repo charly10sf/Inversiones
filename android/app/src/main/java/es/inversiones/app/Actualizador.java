@@ -12,8 +12,8 @@ import java.net.URL;
 
 /** Baja la versión nueva de la app (el APK de las releases de GitHub) a la caché de la propia app. */
 final class Actualizador {
-    static final String NOMBRE = "inversiones.apk";
-    private static final String ORIGEN = "https://github.com/charly10sf/Inversiones/releases/";
+    static final String NOMBRE = "growfolio.apk";
+    private static final String[] ORIGENES = {"https://github.com/charly10sf/GrowFolio/releases/", "https://github.com/charly10sf/Inversiones/releases/"};
     private static volatile boolean bajando;
 
     private Actualizador() {
@@ -27,7 +27,9 @@ final class Actualizador {
 
     /** Solo acepta el APK publicado en las releases del repositorio, nunca otra dirección */
     static boolean valida(String url) {
-        return url != null && url.startsWith(ORIGEN) && url.endsWith(".apk");
+        if (url == null || !url.endsWith(".apk")) return false;
+        for (String o : ORIGENES) if (url.startsWith(o)) return true;
+        return false;
     }
 
     static void bajar(Principal act, String url) {

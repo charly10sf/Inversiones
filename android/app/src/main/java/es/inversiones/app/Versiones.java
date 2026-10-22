@@ -36,8 +36,6 @@ import java.util.concurrent.TimeUnit;
 public class Versiones extends Worker {
     static final String CANAL = "versiones";
     static final String TRABAJO = "versiones";
-    static final String WEB = "https://raw.githubusercontent.com/charly10sf/Inversiones/main/version.json";
-    static final String APP = "https://raw.githubusercontent.com/charly10sf/Inversiones/main/app.json";
 
     public Versiones(@NonNull Context c, @NonNull WorkerParameters p) {
         super(c, p);
@@ -86,7 +84,8 @@ public class Versiones extends Worker {
         int hora = LocalTime.now().getHour();
         if (hora >= 22 || hora < 9) return;
         SharedPreferences p = Datos.prefs(c);
-        JSONObject w = leer(WEB), a = leer(APP);
+        Datos.comprobarNombre(c);
+        JSONObject w = leer(Datos.raw(c, "main", "version.json")), a = leer(Datos.raw(c, "main", "app.json"));
         String v = w == null ? "" : w.optString("v"), t = w == null ? "" : w.optString("t");
         String vista = p.getString("version_vista", ""), avisada = p.getString("version_avisada", "");
         int app = a == null ? 0 : a.optInt("version", 0), appAvisada = p.getInt("app_avisada", 0);
