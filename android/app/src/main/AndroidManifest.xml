@@ -5,6 +5,8 @@
     <uses-permission android:name="android.permission.USE_BIOMETRIC" />
     <!-- para instalar la versión nueva de la app desde el aviso de la web -->
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+    <!-- 0.3.11e: que la app se actualice sola, sin tocar «Instalar» (Android 12 o más) -->
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
     <!-- los avisos (solo si los activas en Ajustes > Avisos y resumen) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
@@ -51,6 +53,10 @@
             android:authorities="es.inversiones.app.archivos"
             android:exported="false"
             android:grantUriPermissions="true" />
+
+        <receiver
+            android:name=".Instalado"
+            android:exported="false" />
 
         <receiver
             android:name=".Widget"

@@ -13273,8 +13273,11 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.11d';
+const VERSION = '0.3.11e';
 const NOVEDADES = [
+  { v: '0.3.11e', f: '2026-10-22', h: '20:00', t: 'La app de Android se actualiza sola', arreglos: [
+    'La app de Android se actualiza sola, sin que tengas que tocar nada: cuando hay una nueva y no la estás usando, se baja y se instala encima (Android 12 o más; en móviles más antiguos, el aviso de siempre). Esta vez hay que actualizarla a mano una última vez.',
+  ] },
   { v: '0.3.11d', f: '2026-10-22', h: '19:40', t: 'Actualiza la app de Android: GrowFolio cambia de dirección', arreglos: [
     'El proyecto aún se llamaba «Inversiones» por dentro y en la dirección (charly10sf.github.io/Inversiones). Pasa a ser GrowFolio en todo: la web estará en charly10sf.github.io/GrowFolio y la app de Android se descarga como growfolio.apk.',
     'Actualiza la app de Android cuando te avise: la nueva sabe cambiar sola a la dirección nueva; la de antes dejará de abrir GrowFolio cuando se haga el cambio. En el navegador no tienes que hacer nada: te lleva solo, con tus datos.',

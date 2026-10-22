@@ -24,6 +24,8 @@ import java.io.File;
 /** La app es la misma web de siempre (GitHub Pages) dentro de un WebView, con un puente para el widget. */
 public class Principal extends Activity {
     static String WEB = "https://charly10sf.github.io/Inversiones/";
+    /** si la estás mirando: la actualización sola espera a que no la uses (instalar encima la cierra) */
+    static volatile boolean enPantalla;
     private static final int ELEGIR_ARCHIVO = 7;
     private static final int PERMISO_INSTALAR = 8;
     static final int ENTRAR_GOOGLE = 9;
@@ -486,6 +488,7 @@ public class Principal extends Activity {
 
     @Override
     protected void onPause() {
+        enPantalla = false;
         // la web manda al widget lo último antes de quedarse en segundo plano
         web.evaluateJavascript("window.enviarWidget && enviarWidget(true)", null);
         web.onPause();
@@ -496,6 +499,7 @@ public class Principal extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
+        enPantalla = true;
         web.onResume();
         // de vuelta de la app del banco sin su respuesta (si llega, entra antes por onNewIntent y ya no estamos en el
         // banco): fuera de la página de Enable Banking, que se quedaba cargando, y a tu cartera con un aviso
