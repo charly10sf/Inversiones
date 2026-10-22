@@ -14426,22 +14426,27 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.4c';
+const VERSION = '0.4d';
 const NOVEDADES = [
+  { v: '0.4d', f: '2026-10-23', h: '01:04', t: 'La presentación de la 0.4, otra vez, y las respuestas al momento', arreglos: [
+    'Quien ya tenía la 0.4 ve otra vez su presentación, una sola vez, con la guía de cinco pasos al día y sin repetir lo que ya cuenta.',
+    'Si GrowFolio se abría directamente en Mercados, el mapa contaba como visto y la guía de lo nuevo ya no salía.',
+    'Las respuestas a lo que mandas con el bichito o con las estrellas salen al momento, aunque tengas GrowFolio abierto. Antes solo se miraban al abrirla y, al volver a ella, como mucho cada diez minutos.',
+  ] },
   { v: '0.4c', f: '2026-10-23', h: '00:21', t: 'La guía de la 0.4, al día', arreglos: [
-    'La guía de lo nuevo y la presentación son solo para las versiones con novedades. Las de arreglos, como esta, se avisan con un mensaje corto. La guía de la 0.4 está al día con lo que ha cambiado desde entonces y vuelve a salir una vez, y quien venga de antes ve la presentación de la 0.4, no la de su último arreglo.',
+    'La guía de lo nuevo y la presentación salen solo con las versiones que traen novedades; las de arreglos se avisan con un mensaje corto. Quien venga de antes ve la presentación de la versión con novedades, no la de su último arreglo.',
     'En la guía, si el mapa aún no había cargado, la tarjeta salía en medio de la pantalla y lo tapaba.',
   ] },
   { v: '0.4b', f: '2026-10-22', h: '23:56', t: 'Lo tuyo, lo primero en el mapa', cosas: [
-    { d: 'tuyo', t: 'Lo que tienes en cada país, a la vista', x: 'Al tocar un país del mapa, justo debajo dice cuánto tienes allí y qué parte de tu cartera es. En su ficha eso va ahora arriba del todo, con una barra que lo compara con lo que pesa ese país en un fondo de todo el mundo, y después sus bolsas.' },
+    { junta: true, d: 'tuyo', t: 'Lo que tienes en cada país, a la vista', x: 'Al tocar un país del mapa, justo debajo dice cuánto tienes allí y qué parte de tu cartera es. En su ficha eso va ahora arriba del todo, con una barra que lo compara con lo que pesa ese país en un fondo de todo el mundo, y después sus bolsas.' },
   ], arreglos: [
     'En los rectángulos de tu cartera, algunos números salían cortados: ahora la letra se ajusta a cada rectángulo y lo que no cabe se quita en vez de salir a medias.',
     'En el tutorial y en la guía de lo nuevo, la tarjeta tapaba a veces justo lo que señalaba (el mapa, los rectángulos o la gráfica de tu peor caída). Ahora va siempre al lado y, si no cabe todo, se ve la parte de arriba.',
   ] },
   { v: '0.4a', f: '2026-10-22', h: '23:19', t: 'El mapa con dos dedos y una guía por lo nuevo', cosas: [
-    { d: 'mapa', t: 'El mapa, con dos dedos', x: 'En el móvil, pellizca para acercarte, toca dos veces o usa + y −, y de cerca arrastra para moverte. De lejos, Europa va en una pastilla con su media que te lleva a verla de cerca, y cada país lleva su bandera: caben el doble y no se tapan. El país que eliges sale justo debajo del mapa, sin que se mueva la página.' },
+    { junta: true, d: 'mapa', t: 'El mapa, con dos dedos', x: 'En el móvil, pellizca para acercarte, toca dos veces o usa + y −, y de cerca arrastra para moverte. De lejos, Europa va en una pastilla con su media que te lleva a verla de cerca, y cada país lleva su bandera: caben el doble y no se tapan. El país que eliges sale justo debajo del mapa, sin que se mueva la página.' },
     { d: 'tour', t: 'Una guía por lo nuevo', x: 'Cada versión con novedades trae su guía: te lleva, paso a paso, a cada sitio donde ha cambiado algo. Está arriba en las novedades, en el aviso de Inicio y en un globo que sale junto a la sección que estrena algo, que lleva «Nuevo» hasta que la ves.' },
-    { d: 'rectangulos', t: 'Tu cartera de un vistazo, con logos', x: 'Cada rectángulo lleva el logo de lo que es y la letra crece con su tamaño. Los más pequeños van juntos en uno, «y 3 más», y al tocarlo salen uno a uno.' },
+    { junta: true, d: 'rectangulos', t: 'Tu cartera de un vistazo, con logos', x: 'Cada rectángulo lleva el logo de lo que es y la letra crece con su tamaño. Los más pequeños van juntos en uno, «y 3 más», y al tocarlo salen uno a uno.' },
     { d: 'app', t: 'Actualizar la app, de un toque', x: 'El aviso del móvil trae un botón Actualizar que empieza a bajar la app nueva al momento, sin pasar por la pantalla de carga ni buscar nada. Y si la versión nueva de la web ya está abierta, tocar el aviso no la vuelve a cargar.' },
   ], arreglos: [
     'En el móvil, acercar y alejar el mapa iba a trompicones: había que esperar a que acabara cada viaje y para volver solo valía el botón Mundo.',
@@ -15001,7 +15006,7 @@ function arreglosVistos(visto, despues) {
    dibujos y sus textos. */
 function mostrarNovedades(desde, alCerrar, lista = false) {
   if ((LS.get('inv-nov-vista') || {}).v !== VERSION) { marcarNovVista(); if (S.cartera) setTimeout(() => { if (S.vista === 'cartera' && !S.ficha) pintar(); }, 60); }
-  LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); LS.set('inv-023b-arr', true); LS.set('inv-nov-030', true);
+  LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); LS.set('inv-023b-arr', true); LS.set('inv-nov-030', true); LS.set('inv-nov-04', true);
   let nuevas = NOVEDADES.filter((n) => (n.cosas || n.arreglos) && desde && cmpVer(n.v, desde) > 0);
   if (!nuevas.length) nuevas = [NOVEDADES[0]];
   // al estrenar versión, lo nuevo se cuenta bajando (como la presentación); desde Ajustes, la lista
@@ -15063,7 +15068,9 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
       </section>`;
   let cuerpo = '', ne = 0;
   grupos.forEach((g, k) => {
-    const todas = g.vs.flatMap((n) => (n.cosas || []).map((c) => ({ ...c, v: n.v }))), suyas = [...todas.filter((c) => !esParche(c.v)), ...todas.filter((c) => esParche(c.v))];
+    const conBase = g.vs.some((n) => n.v === g.base);
+    // con su versión de número en la presentación, lo de letra que ya está contado en ella (junta) no se repite
+    const todas = g.vs.flatMap((n) => (n.cosas || []).filter((c) => !(c.junta && conBase)).map((c) => ({ ...c, v: n.v }))), suyas = [...todas.filter((c) => !esParche(c.v)), ...todas.filter((c) => esParche(c.v))];
     for (const c of suyas) { const g2 = c.ir && !esParche(c.v); c.paso = g2 ? pasos.length : null; if (g2) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: c.v }); cosas.push(c); }
     const deBase = suyas.filter((c) => !esParche(c.v)), cuantas = enGrande(g, k), grandes = deBase.length <= cuantas + 1 ? deBase : deBase.slice(0, cuantas), resto = suyas.slice(grandes.length);
     const prin = g.vs.find((n) => n.v === g.base) || g.vs[0], bugs = g.vs.reduce((t, n) => t + ((n.arreglos || []).length), 0);
@@ -15346,23 +15353,40 @@ async function misOpiniones() {
   } catch (e) { console.warn('opiniones', e); return null; }
 }
 const opiOcupado = () => document.hidden || !!document.querySelector('.hoja-fondo, .tour, .estreno, .intro, .ficha-fondo') || !!S.ficha;
-async function revisarRespuestas(intento = 0) {
-  if (!PERFIL_CUENTA || !S.cartera || S.mirandoResp) return;
-  clearTimeout(S.respLuego);
-  const luego = () => { if (intento < 12) S.respLuego = setTimeout(() => revisarRespuestas(intento + 1), 20000); };
-  if (opiOcupado()) { luego(); return; }
+/* 0.4d: en vivo. Una suscripción a lo que has mandado: en cuanto te contestan (o cambian la respuesta), sale en
+   pantalla; si estás con otra cosa (una hoja, la guía, una presentación), en cuanto acabas. Antes se miraba al abrir
+   y, al volver a la app, como mucho cada diez minutos: una respuesta podía quedarse sin salir */
+async function vigilarRespuestas() {
+  if (!PERFIL_CUENTA || S.vigilaResp || S.mirandoResp) return;
   S.mirandoResp = true;
-  let l = null;
-  try { l = await misOpiniones(); } finally { S.mirandoResp = false; }
-  if (!l) return;
-  S.respMirado = Date.now();
-  const nuevas = l.filter((o) => o.respuesta && o.vista !== true);
-  if (!nuevas.length) return;
-  if (opiOcupado()) { luego(); return; }
-  verRespuestas(nuevas, true);
+  try { await fbCargar(); } finally { S.mirandoResp = false; }
+  if (!FB.user || !FB.fs || S.vigilaResp) return;
+  const f = FB.fs;
+  try {
+    S.vigilaResp = f.onSnapshot(f.query(f.collection(FB.db, 'opiniones'), f.where('uid', '==', FB.user.uid), f.limit(100)), (snap) => {
+      S.misOpis = snap.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (fechaOpi(b) || 0) - (fechaOpi(a) || 0));
+      S.respMirado = Date.now();
+      respuestasPendientes();
+    }, (e) => { console.warn('opiniones', e); S.vigilaResp = null; });
+  } catch (e) { console.warn('opiniones', e); S.vigilaResp = null; }
 }
-// al volver a GrowFolio (la app se queda abierta en segundo plano), como mucho cada diez minutos
-document.addEventListener('visibilitychange', () => { if (!document.hidden && S.cartera && Date.now() - (S.respMirado || 0) > 10 * 60e3) revisarRespuestas(); });
+function respuestasPendientes() {
+  clearTimeout(S.respLuego);
+  // una respuesta ya enseñada en esta sesión no vuelve (si marcarla como leída fallara, saldría en bucle)
+  const vistas = S.respVistas || (S.respVistas = new Set());
+  const l = (S.misOpis || []).filter((o) => o.respuesta && o.vista !== true && !vistas.has(o.id + '|' + o.respuesta));
+  if (!l.length || !S.cartera || document.querySelector('.hoja-resp')) return;
+  if (opiOcupado()) { S.respLuego = setTimeout(respuestasPendientes, 3000); return; }
+  for (const o of l) vistas.add(o.id + '|' + o.respuesta);
+  verRespuestas(l, true);
+}
+async function revisarRespuestas() {
+  if (!PERFIL_CUENTA || !S.cartera) return;
+  if (S.vigilaResp) return respuestasPendientes();
+  await vigilarRespuestas();
+}
+// al volver a GrowFolio (la app se queda abierta en segundo plano): si la suscripción se cayó, otra; si no, lo pendiente
+document.addEventListener('visibilitychange', () => { if (!document.hidden && S.cartera) revisarRespuestas(); });
 /* l: las que enseñar; nuevas: si son respuestas sin leer (al cerrar quedan leídas) o el historial que se abre a mano */
 function verRespuestas(l, nuevas) {
   const tuyo = (o) => {
@@ -15661,7 +15685,7 @@ function pintarNavNuevo() {
     if (on) { a.dataset.nuevo = L('Nuevo', 'New'); a.setAttribute('aria-label', `${a.textContent.trim()} (${L('hay algo nuevo', 'something new')})`); }
     else if (a.dataset.nuevo != null) { delete a.dataset.nuevo; a.removeAttribute('aria-label'); }
   }
-  if (k && grupoDe(S.vista).k === k) { vigilarNuevo(); quitarGloboNuevo(); }
+  if (k && grupoDe(S.vista).k === k && S.navego) { vigilarNuevo(); quitarGloboNuevo(); }
 }
 // estando en esa sección: cuando lo nuevo lleva un segundo y medio en pantalla, ya está visto
 function vigilarNuevo() {
@@ -16674,6 +16698,9 @@ function bienvenida(intento = 0) {
   // la presentación de la 0.2 (la nueva, más completa): una vez a todos los que ya usaban GrowFolio
   if (visto && cmpVer(VERSION, '0.2.0') >= 0 && !LS.get('inv-estreno-02b')) return estreno02(visto, despues);
   if (/^0\.3\./.test(visto || '') && !LS.get('inv-nov-030')) return mostrarNovedades('0.2.3b', despues);
+  // la 0.4d rehízo la presentación y la guía de la 0.4: quien ya iba por la 0.4 (0.4, 0.4a, 0.4b o 0.4c) las ve otra
+  // vez, una sola, con la guía y el «Nuevo» de Mercados como si acabara de llegar
+  if (visto && baseVer(visto) === '0.4' && !LS.get('inv-nov-04')) { LS.del('inv-guia'); LS.del('inv-guia-globo'); return mostrarNovedades('0.3.11e', despues); }
   if (visto && cmpVer(visto, VERSION) < 0 && baseVer(visto) === baseVer(VERSION)) return arreglosVistos(visto, despues);
   if (!visto || cmpVer(visto, VERSION) < 0) return mostrarNovedades(visto, despues);
   // la 0.2.3b estuvo unos minutos sin sus bugs corregidos: a quien la abrió entonces se le enseña otra vez, una sola
@@ -18545,6 +18572,7 @@ function vistaDeHash() {
 }
 window.addEventListener('hashchange', () => {
   const v = vistaDeHash(); if (!v || !S.cartera) return;
+  S.navego = true;
   if (S.ficha) cerrarFicha(true);
   if (S.carEdit && v !== 'cartera') cerrarCarEdit(true);
   if (v !== S.vista || /^(renta|impuestos|objetivos|proyeccion|plan)$/.test(location.hash.slice(1))) {

@@ -1,13 +1,32 @@
 {
  "versiones": [
   {
+   "v": "0.4d",
+   "f": "2026-10-23",
+   "h": "01:04",
+   "t": "La presentación de la 0.4, otra vez, y las respuestas al momento",
+   "commits": [
+    {
+     "cuando": "2026-10-23 01:04",
+     "asunto": "0.4d: la presentación de la 0.4 otra vez y las respuestas a las opiniones al momento",
+     "detalle": [
+      "Quien ya iba por la 0.4 (0.4 a 0.4c) ve otra vez la presentación de la 0.4, una sola (inv-nov-04), con la guía y el «Nuevo» de Mercados reiniciados",
+      "En la presentación de una versión de número, lo de letra ya contado en ella (junta) no se repite en la lista corta",
+      "«Nuevo»: ver la sección solo cuenta si has ido tú a ella; abrir GrowFolio ya en Mercados no apaga la guía",
+      "Respuestas a opiniones en vivo (onSnapshot de las tuyas): salen al momento o en cuanto cierras lo que tengas abierto; una ya enseñada no vuelve en la misma sesión salvo que cambie",
+      "Notas de la 0.4c reescritas para leerse bien dentro de la presentación de la 0.4"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.4c",
    "f": "2026-10-23",
    "h": "00:21",
    "t": "La guía de la 0.4, al día",
    "commits": [
     {
-     "cuando": "2026-10-23 00:21",
+     "cuando": "2026-10-23 00:19",
      "asunto": "0.4c: las versiones de arreglos sin guía ni presentación, y la guía de la 0.4 al día",
      "detalle": [
       "Solo las versiones de número (0.4, 0.5…) tienen presentación, guía, globo y «Nuevo» en la barra; las de letra se avisan con un mensaje corto",
