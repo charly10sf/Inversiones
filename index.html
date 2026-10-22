@@ -11431,7 +11431,7 @@ function leerArchivo(file) {
     fr.onerror = () => rej(new Error('No se pudo leer ' + file.name));
     fr.onload = () => {
       const url = fr.result;
-      if (!/^image\//.test(file.type) || file.size < 900000) return res({ mime: file.type || 'application/pdf', data: String(url).split(',')[1], nombre: file.name });
+      if (!/^image\//.test(file.type) || file.size < 450000) return res({ mime: file.type || 'application/pdf', data: String(url).split(',')[1], nombre: file.name });
       const img = new Image();
       img.onload = () => {
         const k = Math.min(1, 2000 / Math.max(img.width, img.height));
@@ -11456,23 +11456,69 @@ Responde solo con JSON, con números con punto decimal y sin símbolos:
  "posiciones": [{"nombre": "como aparece", "isin": "si se ve", "ticker": "si se ve", "tipo": "Acción|ETF|Fondo|Cripto|Oro|Otro", "cantidad": número de acciones, participaciones o unidades, "precio_medio": precio medio de compra por unidad en euros, "invertido": total invertido en euros, "valor": valor actual en euros, "plataforma": "app de esta posición si se distingue"}],
  "operaciones": [{"fecha": "AAAA-MM-DD", "tipo": "compra|venta|traspaso_entrada|traspaso_salida|dividendo|interes", "nombre": "", "isin": "", "ticker": "", "tipoActivo": "Acción|ETF|Fondo|Cripto|Oro|Otro", "cantidad": unidades (sin signo), "precio": precio por unidad, "importe": total en euros sin signo, ya con comisiones (en una compra, lo que salió de la cuenta; en una venta, lo que entró), "comisiones": comisiones y tasas en euros, "retencion": impuesto retenido en euros (dividendos e intereses), "moneda": "EUR si no se dice", "plataforma": ""}],
  "efectivo": [{"plataforma": "bróker o banco de esa cuenta", "importe": número, "fecha": "AAAA-MM-DD del saldo, si se ve"}]}`;
-async function leerCapturas(archivos, alPaso) {
-  const partes = [...archivos.map((a) => (a.texto != null ? { text: `Archivo «${a.nombre}»${a.cortado ? ' (cortado: es muy largo)' : ''}:\n${a.texto}` } : { inlineData: { mimeType: a.mime, data: a.data } })), { text: PEDIDO_IMPORTAR }];
-  const cuerpo = { contents: [{ role: 'user', parts: partes }], generationConfig: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 32768 } };
+/* 0.3.11c: con varias capturas, cada una se lee por separado y luego se juntan. Todas en una sola petición, Gemini se
+   saltaba posiciones o las repetía, la respuesta podía no caber y, si fallaba, fallaba todo. Lo que sale en dos
+   capturas (una lista desplazada) cuenta una vez. Si Google pide esperar un momento (su límite por minuto), se
+   espera en vez de pasar a un modelo peor. */
+const partesDe = (archivos, varias) => [...archivos.map((a) => (a.texto != null ? { text: `Archivo «${a.nombre}»${a.cortado ? ' (cortado: es muy largo)' : ''}:\n${a.texto}` } : { inlineData: { mimeType: a.mime, data: a.data } })), { text: PEDIDO_IMPORTAR + (varias ? '\nEs uno de varios archivos de la misma persona que se leen por separado: saca solo lo que se vea en este, completo.' : '') }];
+async function leerUnaVez(partes, alPaso, etq = '') {
+  const cuerpo = (pensar) => ({ contents: [{ role: 'user', parts: partes }], generationConfig: { responseMimeType: 'application/json', temperature: 0, maxOutputTokens: 32768, ...(pensar ? { thinkingConfig: { thinkingLevel: 'low' } } : {}) } });
   let ultimo = null;
   for (const modelo of ordenIA(modeloVivo()).filter((m) => !agotadosIA().includes(m))) {
-    alPaso(`Leyendo con ${MODELOS[modelo].n}…`);
-    let r;
-    try { r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }); }
-    catch (e) { ultimo = new Error('No hay conexión con Google.'); continue; }
-    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} const e = errorGoogle(r.status, j); if (e.diario) marcarAgotado(modelo); ultimo = e; if ([429, 404, 500, 503].includes(r.status)) continue; throw e; }
-    const j = await r.json();
-    const txt = (((j.candidates || [])[0] || {}).content || {}).parts ? j.candidates[0].content.parts.map((x) => x.text || '').join('') : '';
-    const o = extraerJSON(txt);
-    if (o && (Array.isArray(o.posiciones) || Array.isArray(o.operaciones))) { o.posiciones = o.posiciones || []; o.operaciones = o.operaciones || []; return o; }
-    ultimo = new Error('GrowIA no ha devuelto las posiciones. Prueba con capturas más nítidas.');
+    let pensar = !!(MODELOS[modelo] && MODELOS[modelo].pensar);
+    for (let intento = 0; intento < 3; intento++) {
+      alPaso(`${etq}${L('Leyendo con', 'Reading with')} ${MODELOS[modelo].n}…`);
+      let r;
+      try { r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo(pensar)) }); }
+      catch (e) { ultimo = new Error(L('No hay conexión con Google.', 'No connection to Google.')); break; }
+      if (!r.ok) {
+        let j = null; try { j = await r.json(); } catch (e) {}
+        const e = errorGoogle(r.status, j);
+        if (r.status === 400 && pensar && /thinking/i.test(e.msg || '')) { pensar = false; intento--; continue; }
+        if (r.status === 429 && !e.diario && intento < 2) { const seg = Math.ceil(Math.min(60, e.espera || 15 * (intento + 1))); alPaso(`${etq}${L(`Google pide esperar ${seg} s (su límite por minuto)…`, `Google asks to wait ${seg} s (its per-minute limit)…`)}`); await dormir(seg * 1000); continue; }
+        if (e.diario) marcarAgotado(modelo);
+        ultimo = e;
+        if ([429, 404, 500, 503].includes(r.status)) break;
+        throw e;
+      }
+      const j = await r.json(), c = (j.candidates || [])[0] || {};
+      const txt = ((c.content && c.content.parts) || []).map((x) => x.text || '').join('');
+      const o = extraerJSON(txt);
+      if (o && (Array.isArray(o.posiciones) || Array.isArray(o.operaciones))) { o.posiciones = o.posiciones || []; o.operaciones = o.operaciones || []; o.efectivo = o.efectivo || []; return o; }
+      ultimo = new Error(c.finishReason === 'MAX_TOKENS' ? L('Hay demasiado en un solo archivo: súbelo por partes.', 'Too much in one file: upload it in parts.') : L('GrowIA no ha devuelto las posiciones. Prueba con capturas más nítidas.', 'GrowIA returned no positions. Try sharper screenshots.'));
+      break;
+    }
   }
-  throw ultimo || new Error('No se pudo leer.');
+  throw ultimo || new Error(L('No se pudo leer.', 'Could not read it.'));
+}
+// lo leído en cada archivo, junto: cada posición una vez (la que trae más datos, completada con la otra); cada
+// operación, tantas veces como salga en el archivo que más veces la tenga (dos compras iguales el mismo día en una
+// lista son dos; la misma compra en dos capturas que se solapan es una); el efectivo, el saldo más reciente
+function juntarLecturas(lista) {
+  const kAct = (x) => String(x.isin || '').toUpperCase().replace(/\s/g, '') || String(x.ticker || '').toUpperCase().trim() || normTxt(x.nombre || '');
+  const llenos = (x) => Object.values(x).filter((v) => v != null && v !== '').length;
+  const mezclar = (a, b) => { const [mas, menos] = llenos(a) >= llenos(b) ? [a, b] : [b, a]; const out = { ...menos }; for (const [k, v] of Object.entries(mas)) if (v != null && v !== '') out[k] = v; return out; };
+  const pos = new Map(), ops = new Map(), ef = new Map();
+  for (const o of lista) {
+    for (const x of o.posiciones || []) { if (!x || !(x.nombre || x.isin || x.ticker)) continue; const k = `${kAct(x)}|${normTxt(x.plataforma || '')}`; pos.set(k, pos.has(k) ? mezclar(pos.get(k), x) : x); }
+    const aqui = new Map();
+    for (const x of o.operaciones || []) { if (!x) continue; const k = [x.fecha, String(x.tipo || '').toLowerCase(), kAct(x), +x.cantidad || 0, Math.round((+x.importe || 0) * 100)].join('|'); const v = aqui.get(k) || { x, n: 0 }; v.n++; aqui.set(k, v); }
+    for (const [k, v] of aqui) { const y = ops.get(k); if (!y || v.n > y.n) ops.set(k, v); }
+    for (const e of o.efectivo || []) { if (!e) continue; const k = normTxt(e.plataforma || '') || '?'; const y = ef.get(k); if (!y || String(e.fecha || '') > String(y.fecha || '')) ef.set(k, e); }
+  }
+  return { plataforma: (lista.find((o) => o.plataforma) || {}).plataforma || null, posiciones: [...pos.values()], operaciones: [...ops.values()].flatMap((v) => Array(v.n).fill(v.x)), efectivo: [...ef.values()] };
+}
+async function leerCapturas(archivos, alPaso) {
+  if (archivos.length <= 1) return leerUnaVez(partesDe(archivos, false), alPaso);
+  const leidos = [], fallos = [];
+  for (let k = 0; k < archivos.length; k++) {
+    try { leidos.push(await leerUnaVez(partesDe([archivos[k]], true), alPaso, `${k + 1} ${L('de', 'of')} ${archivos.length} · `)); }
+    catch (e) { fallos.push({ n: archivos[k].nombre, e }); }
+  }
+  if (!leidos.length) throw fallos[0].e;
+  const o = juntarLecturas(leidos);
+  if (fallos.length) o.fallos = fallos.map((x) => x.n);
+  return o;
 }
 /* De un listado de operaciones a posiciones: por cada cosa, sus compras como lotes (fecha y coste), las ventas por
    FIFO con su resultado (para Fiscalidad) y los traspasos entre fondos, que se llevan su coste y su antigüedad, como
@@ -11638,6 +11684,8 @@ async function importarCapturas() {
         const inv = +x.invertido > 0 ? +x.invertido : uds && +x.precio_medio > 0 ? uds * +x.precio_medio : null;
         return { x, id: m ? m.id : null, como: m ? m.como : null, ok: !!m, plat, uds, inv };
       });
+      { const vistas = new Map(); filas = filas.filter((f) => { if (!f.id) return true; const k = `${f.id}|${f.plat}`, y = vistas.get(k); if (!y) { vistas.set(k, f); return true; } if (!(y.uds > 0) && f.uds > 0) y.uds = f.uds; if (!(y.inv > 0) && f.inv > 0) y.inv = f.inv; return false; }); }
+      if (o.fallos && o.fallos.length) toast(L(`No he podido leer ${o.fallos.length === 1 ? 'un archivo' : `${o.fallos.length} archivos`} (${o.fallos.join(', ')}): súbelos otra vez luego. Lo demás está abajo.`, `Couldn't read ${o.fallos.length} file(s) (${o.fallos.join(', ')}): upload them again later. The rest is below.`), 7000);
       efectivo = (o.efectivo || []).filter((e) => e && +e.importe >= 0 && isFinite(+e.importe) && e.importe !== null).map((e) => ({ plat: PLATAFORMAS.find((p) => normTxt(e.plataforma || '').includes(normTxt(p))) || e.plataforma || platGen || 'Trade Republic', importe: +e.importe, fecha: /^\d{4}-\d{2}-\d{2}$/.test(String(e.fecha || '')) ? e.fecha : null, ok: true }));
       // las operaciones: lotes y fecha de cada posición, lo que solo sale en operaciones, las ventas y los dividendos
       const R = resumenOps = procesarOperaciones(o.operaciones, platGen);
@@ -13225,8 +13273,13 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.11b';
+const VERSION = '0.3.11c';
 const NOVEDADES = [
+  { v: '0.3.11c', f: '2026-10-22', h: '19:45', t: 'Importar varias capturas, mejor', arreglos: [
+    'Al importar varias capturas a la vez (por ejemplo, la lista de fondos en dos o tres pantallazos), GrowIA se saltaba posiciones o las repetía. Ahora lee cada captura por separado y las junta: lo que sale en dos capturas cuenta una vez, y si una no se puede leer, te dice cuál y guarda el resto.',
+    'Si Google pide esperar un momento (su límite por minuto), la importación espera en vez de pasar a un modelo peor.',
+    'Cuando se acaba el cupo diario de GrowIA, ahora dice claro que es el de tu propia clave de Google, que se renueva hacia las 9:00.',
+  ] },
   { v: '0.3.11b', f: '2026-10-22', h: '01:50', t: 'La pantalla ya no se queda corrida', arreglos: [
     'En la app de Android, al volver de segundo plano la pantalla podía quedarse desplazada hacia un lado y se podía mover de lado a lado. Ahora la página no se mueve de lado nunca.',
   ] },
@@ -16243,7 +16296,7 @@ function errorGoogle(estado, j) {
   else if (estado === 401 || /ACCESS_TOKEN_TYPE_UNSUPPORTED|UNAUTHENTICATED/i.test(m + det)) e = new Error('Google no acepta esta clave desde GrowFolio. Crea otra en aistudio.google.com/apikey y vuelve a probar; si sigue igual, avísanos con el bichito de arriba.');
   else if (estado === 403) e = new Error('Tu clave de Google no tiene permiso para este modelo. Elige Gemini 3.8 Flash en Ajustes de GrowIA, que es gratis.');
   else if (estado === 404) e = new Error('Ese modelo de Gemini no existe para tu clave: elige otro en Ajustes de GrowIA.');
-  else if (estado === 429) e = new Error(/free.?tier|limit: 0/i.test(m) && /pro|argon/i.test(m) ? 'Ese modelo no entra en el plan gratuito: elige Gemini 3.8 Flash en Ajustes de GrowIA.' : 'Has llegado al límite gratuito de Google. Si es el de por minuto, en un momento vuelve a funcionar; si es el diario, mañana.');
+  else if (estado === 429) e = new Error(/free.?tier|limit: 0/i.test(m) && /pro|argon/i.test(m) ? 'Ese modelo no entra en el plan gratuito: elige Gemini 3.8 Flash en Ajustes de GrowIA.' : 'Has llegado al límite gratuito de tu clave de Google. Si es el de por minuto, en un momento vuelve a funcionar; si es el diario, mañana hacia las 9:00. Es el de tu clave: cada uno usa la suya.');
   else if (estado >= 500) e = new Error('Google está saturado ahora mismo. Prueba en un momento.');
   else e = new Error(m || `Error ${estado} de Google`);
   e.estado = estado; e.msg = m;
@@ -16367,7 +16420,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
       if (e.estado === 429 && reintentos < 3 && !(e.espera > 60)) { reintentos++; const seg = Math.ceil(e.espera || 15 * reintentos); turno.partes.push({ tipo: 'paso', txt: `Google pide esperar ${seg} s (límite gratuito por minuto)` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
       if (e.estado >= 500 && reintentos < 2) { reintentos++; const seg = 4 * reintentos; turno.partes.push({ tipo: 'paso', txt: `${MODELOS[modelo] ? MODELOS[modelo].n : 'Gemini'} está saturado: lo intento otra vez en ${seg} s` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
       if (e.estado >= 500 && saltar('está saturado')) { vuelta--; continue; }
-      if (e.estado === 429 && e.diario) e.message = 'Los modelos gratuitos de Gemini han gastado su cupo de hoy. Se renueva hacia las 9:00 de la mañana.';
+      if (e.estado === 429 && e.diario) e.message = 'Tu clave gratis de Google ha gastado hoy el cupo de sus modelos. Se renueva hacia las 9:00 de la mañana. Es el cupo de tu clave, no de GrowFolio: cada uno usa la suya.';
       throw e;
     }
     const pm = MODELOS[modelo] || {};
