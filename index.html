@@ -3326,6 +3326,7 @@ body.con-ixn { overflow: hidden; }
 .mc-ef, .mc-ef-i { background: repeating-linear-gradient(135deg, #26211B 0 6px, #1C1914 6px 12px); color: var(--text-2); }
 .mc-ef-i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; }
 .mc-t.sel { box-shadow: inset 0 0 0 2px var(--accent); }
+.mc-t.mini { padding: 0; }   /* tan estrecho que el relleno lo sacaría de su sitio */
 @media (hover: hover) { .mc-t:hover { filter: brightness(1.12); } }
 .mc-pie { display: flex; justify-content: flex-end; }
 .mc-det { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; min-height: 22px; }
@@ -8402,7 +8403,7 @@ function pasosRuta0(M) {
         imp: `${tasa ? `Al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${esc(tasa.nombre)} (unos ${eur(pl.aIdea * tasa.tipo, 0)}).` : 'Sin tasa al comprar.'} ${esc(fis.txt)}`,
         acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`Voy a comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}. Contrástalo con las noticias de esta semana: ¿lo hago, a qué precio y con qué regla de salida?`)}">Que GrowIA la contraste antes</button>` });
     }
-    if (pl.aNucleo > 0.5) add('mes', { id: `nucleo:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Mete ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^a /, 'en ')}`,
+    if (pl.aNucleo > 0.5) add('mes', { id: `nucleo:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: L(`Mete ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^a /, 'en ')}`, `Put ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^to /, 'into ')}`),
       pq: pl.nivel === 'reducir' ? L('Bajas riesgo sin dejar de estar invertido.', 'You lower risk without stopping being invested.') : pl.aIdea > 0 ? L('La otra parte, a lo seguro.', 'The other part, somewhere safe.') : L('Tus acciones sueltas no tienen más hueco dentro de tu límite.', 'Your individual stocks have no more room within your limit.'),
       como: (() => { const nf = (S.M && S.M.filas || []).filter((f) => f.inst.tipo === 'Fondo indexado' && f.inst.clase === 'Renta variable').sort((x, y) => y.valor - x.valor)[0]; const de = pl.f.pos.plataforma, a = nf && nf.pos.plataforma; return nf ? (a && de && a !== de ? `Pasa el dinero de ${de} a ${a} y compra participaciones de ${nf.inst.corto}.` : `Compra participaciones de ${nf.inst.corto}${a ? ` en ${a}` : ''}.`) : 'Elige un fondo indexado de todo el mundo con comisión baja (en Mercados puedes buscarlo) y compra participaciones.'; })(), imp: 'Fondo de acumulación: no paga nada hasta que vendas, y entre fondos ni eso (traspaso).' });
   }
@@ -8990,12 +8991,12 @@ function pintarMapaCartera(caja, M) {
   const t = squarify(piezas, W, H);
   caja.setAttribute('role', 'img');
   caja.setAttribute('aria-label', L('Mapa de tu cartera: ', 'Map of your portfolio: ') + piezas.slice(0, 5).map((p) => `${p.n} ${eur(p.valor, 0)}`).join(', '));
-  caja.innerHTML = t.map((p) => {
+  caja.innerHTML = t.filter((p) => p.w - G >= 1 && p.h - G >= 1).map((p) => {
     const w = p.w - G, h = p.h - G, v = modo === 'hoy' ? p.hoy : p.total;
     const lado = Math.min(w, h), fs = Math.max(11, Math.min(17, lado / 6.5));
     const nombre = w > 54 && h > 30, cifra = w > 58 && h > 48, euros = w > 110 && h > 82;
     const ton = p.efectivo ? 'mc-ef' : tonoMc(v, modo);
-    return `<button type="button" class="mc-t ${ton}${p.id === S.mcSel ? ' sel' : ''}" data-mc="${esc(p.id)}" style="left:${(p.x + G / 2).toFixed(1)}px;top:${(p.y + G / 2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;border-radius:${lado > 90 ? 12 : lado > 40 ? 8 : 5}px;font-size:${fs.toFixed(1)}px" aria-label="${esc(`${p.n}: ${textoPiezaMc(p)}`)}">${nombre ? `<span class="mc-n">${esc(p.n)}</span>` : ''}${cifra && !p.efectivo ? (v == null ? `<span class="mc-e">${modo === 'hoy' ? L('sin precio de hoy', 'no price today') : L('sin datos', 'no data')}</span>` : `<span class="mc-v">${pctS(v, modo === 'hoy' ? 2 : 1)}</span>`) : ''}${euros ? `<span class="mc-e">${eur(p.valor, 0)}</span>` : ''}</button>`;
+    return `<button type="button" class="mc-t ${ton}${p.id === S.mcSel ? ' sel' : ''}${w < 26 || h < 22 ? ' mini' : ''}" data-mc="${esc(p.id)}" style="left:${(p.x + G / 2).toFixed(1)}px;top:${(p.y + G / 2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;border-radius:${lado > 90 ? 12 : lado > 40 ? 8 : 5}px;font-size:${fs.toFixed(1)}px" aria-label="${esc(`${p.n}: ${textoPiezaMc(p)}`)}">${nombre ? `<span class="mc-n">${esc(p.n)}</span>` : ''}${cifra && !p.efectivo ? (v == null ? `<span class="mc-e">${modo === 'hoy' ? L('sin precio de hoy', 'no price today') : L('sin datos', 'no data')}</span>` : `<span class="mc-v">${pctS(v, modo === 'hoy' ? 2 : 1)}</span>`) : ''}${euros ? `<span class="mc-e">${eur(p.valor, 0)}</span>` : ''}</button>`;
   }).join('');
 }
 function repintarMc() {
@@ -10309,7 +10310,7 @@ function htmlPlanVenta(pl, compacto) {
     `<b>Vende ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : f.inst.clase === 'Cripto' ? 4 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}</b>${resP ? `, antes del ${fechaCorta(resP)}` : ''}`,
     pl.aIdea > 0 && top ? `<b>Compra ${eur(pl.aIdea, 0)} de ${esc(nombreRadar(top))}</b>${(() => { const e = esperadaRadar(top); return e ? `<small>${esc(planTxt(e).replace(/^Plazo: /, ''))}</small>` : ''; })()}` : '',
     pl.aColchon > 0.5 ? `<b>Pon ${eur(pl.aColchon, 0)} en tu colchón</b><small>${L('te falta para tus meses de gastos', 'you are short of your months of expenses')}</small>` : '',
-    pl.aNucleo > 0.5 ? `<b>Mete ${eur(pl.aNucleo, 0)} ${esc(nucleo(S.M).a.replace(/^a /, 'en '))}</b>` : '',
+    pl.aNucleo > 0.5 ? `<b>${L(`Mete ${eur(pl.aNucleo, 0)} ${esc(nucleo(S.M).a.replace(/^a /, 'en '))}`, `Put ${eur(pl.aNucleo, 0)} ${esc(nucleo(S.M).a.replace(/^to /, 'into '))}`)}</b>` : '',
     pl.impuesto > 0 ? `<b>Aparta ${eur(pl.impuesto, 0)} para Hacienda</b><small>la renta de ${pl.fiscal.anio}, entre abril y junio de ${pl.fiscal.anio + 1}</small>` : '',
   ].filter(Boolean);
   return `<article class="plan-venta${compacto ? ' compacto' : ''}">
@@ -18004,7 +18005,7 @@ const trad = (s) => (IDIOMA === 'en' && I18N.dic ? traducirTexto(s) ?? s : s);
 const yLista = (a) => (a.length > 1 ? `${a.slice(0, -1).join(', ')}${IDIOMA === 'en' ? ' and ' : /^h?[iíIÍ](?![aeouáéóúAEOU])/.test(String(a[a.length - 1]).replace(/^<[^>]*>/, '')) ? ' e ' : ' y '}${a[a.length - 1]}` : a.join(''));
 const I18N = { dic: null };
 const NUM_I18N = /[-+−]?\d+(?:[.,]\d+)*/g;   // el punto o la coma de después de un número no es suyo («en 2026, que…»)
-const ATR_I18N = ['placeholder', 'title', 'aria-label', 'alt'];
+const ATR_I18N = ['placeholder', 'title', 'aria-label', 'alt', 'data-l'];   // data-l: las etiquetas de las tablas en el móvil
 let banderaN = 0;
 function banderaIdioma(c) {
   if (c === 'es') return '<svg class="bandera" viewBox="0 0 30 20" aria-hidden="true"><rect width="30" height="20" fill="#AA151B"/><rect y="5" width="30" height="10" fill="#F1BF00"/></svg>';
@@ -18016,7 +18017,7 @@ function menuIdioma(btn) {
   const viejo = $('#menuIdioma'); if (viejo) { viejo.cerrar(); return; }
   const m = document.createElement('div');
   m.id = 'menuIdioma'; m.className = 'menu-idioma'; m.setAttribute('role', 'menu'); m.setAttribute('aria-label', 'Idioma / Language'); m.dataset.noTrad = '';
-  m.innerHTML = IDIOMAS.map(([c, n]) => `<button type="button" role="menuitemradio" aria-checked="${c === IDIOMA}" data-idioma="${c}" lang="${c}">${banderaIdioma(c)}<span>${n}</span>${c === 'en' ? '<small>beta</small>' : ''}${c === IDIOMA ? '<span class="mi-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>' : ''}</button>`).join('');
+  m.innerHTML = IDIOMAS.map(([c, n]) => `<button type="button" role="menuitemradio" aria-checked="${c === IDIOMA}" data-idioma="${c}" lang="${c}">${banderaIdioma(c)}<span>${n}</span>${c === IDIOMA ? '<span class="mi-ok"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></span>' : ''}</button>`).join('');
   document.body.appendChild(m);
   const r = btn.getBoundingClientRect();
   m.style.top = Math.round(r.bottom + 6) + 'px';
@@ -18119,7 +18120,7 @@ async function cargarIdioma() {
     traducirNodo(document.body);
     document.title = traducirTexto(document.title) || document.title;
     obsI18N.observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ATR_I18N });
-    avisoIngles();
+    // 0.4: ya está todo en inglés; el aviso de «versión en curso» deja de salir
   }
   raiz.classList.remove('i18n-carga');
 }
