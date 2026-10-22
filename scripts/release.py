@@ -26,9 +26,9 @@ def limpio(t):
 
 
 def orden(v):
-    """0.2.3 < 0.2.3b < 0.2.4: la letra es una corrección de esa versión"""
-    m = re.match(r"(\d+)\.(\d+)\.(\d+)([a-z]*)", v)
-    return (int(m[1]), int(m[2]), int(m[3]), m[4])
+    """0.2.3 < 0.2.3b < 0.2.4 < 0.4 (= 0.4.0) < 0.4a: la letra es una corrección de esa versión"""
+    m = re.match(r"(\d+)\.(\d+)(?:\.(\d+))?([a-z]*)", v)
+    return (int(m[1]), int(m[2]), int(m[3] or 0), m[4])
 
 
 def versiones():
