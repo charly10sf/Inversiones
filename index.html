@@ -3314,6 +3314,31 @@ body.con-ixn { overflow: hidden; }
   .me i { width: 5px; height: 5px; }
   .ml-barra { width: 140px; }
 }
+/* 0.4: tu cartera de un vistazo (rectángulos del tamaño de cada posición) y tu peor caída */
+.mc-w { display: grid; gap: 12px; }
+.mc-w .sec-cab { margin-bottom: 0; }
+.mc-caja { position: relative; min-height: 240px; border-radius: 16px; overflow: hidden; }
+.mc-t { position: absolute; display: flex; flex-direction: column; align-items: flex-start; gap: 1px; padding: 7px 9px; border: 0; color: var(--text); text-align: left; overflow: hidden; line-height: 1.2; font-family: var(--f); cursor: pointer; transition: filter 0.15s ease, box-shadow 0.15s ease; }
+.mc-n { max-width: 100%; font-weight: 650; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mc-v { font-weight: 750; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.mc-e { font-size: 0.8em; font-weight: 600; opacity: 0.78; font-variant-numeric: tabular-nums; }
+.mc-t.mp-u3, .mc-t.mp-u4, .mc-t.mp-d4 { color: #0D0B08; }
+.mc-ef, .mc-ef-i { background: repeating-linear-gradient(135deg, #26211B 0 6px, #1C1914 6px 12px); color: var(--text-2); }
+.mc-ef-i { display: inline-block; width: 11px; height: 11px; border-radius: 3px; }
+.mc-t.sel { box-shadow: inset 0 0 0 2px var(--accent); }
+@media (hover: hover) { .mc-t:hover { filter: brightness(1.12); } }
+.mc-pie { display: flex; justify-content: flex-end; }
+.mc-det { display: flex; align-items: baseline; flex-wrap: wrap; gap: 4px 12px; min-height: 22px; }
+.mc-det p { margin: 0; font-size: 13.5px; color: var(--text-2); }
+.mc-det b { color: var(--text); font-weight: 650; }
+.mc-tip { position: fixed; max-width: 320px; white-space: normal; z-index: 60; }
+.car-mc { padding: 18px; border: 1px solid var(--line); border-radius: 22px; background: var(--plane); }
+.caida-w { display: grid; gap: 8px; margin-bottom: 26px; }
+.caida-t { margin: 0; font-size: 15px; font-weight: 650; letter-spacing: -0.01em; }
+.caida-txt { margin: 0; font-size: 14px; color: var(--text-2); line-height: 1.55; max-width: 70ch; }
+.caida-txt b { color: var(--text); font-weight: 650; }
+.caida-txt b.down { color: var(--down); }
+@media (max-width: 759px) { .mc-pie { justify-content: flex-start; } }
 /* 0.4: lo nuevo de Mercados, con un punto que late en su botón hasta que entras */
 .nav a.nuevo, .navbar a.nuevo { position: relative; }
 .nav a.nuevo::after, .navbar a.nuevo::after { content: ''; position: absolute; width: 8px; height: 8px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 2px var(--bg); animation: latido 1.6s ease-out infinite; }
@@ -6050,6 +6075,7 @@ const BLOQUES_CAR = {
   posiciones: { n: 'Tus posiciones', d: 'Lo que tienes, tu plan y tus movimientos', w: 'grande', fijo: true },
   reparto: { n: 'Reparto', d: 'Por países, sectores, monedas y tipo', w: 'estrecho' },
   agenda: { n: 'Lo que viene', d: 'Resultados, dividendos y fechas de lo tuyo', w: 'estrecho' },
+  mapa: { n: 'Tu cartera de un vistazo', d: 'Cada posición, del tamaño de lo que vale y del color de cómo va', w: 'grande' },
   vistazo: { n: 'Señales de un vistazo', d: 'Qué dicen los números y GrowIA de cada posición', w: 'estrecho' },
   informe: { n: 'Lo último, según GrowIA', d: 'Su resumen de las noticias del día', w: 'estrecho' },
   noticias: { n: 'Noticias de lo tuyo', d: 'Los últimos titulares de lo que tienes', w: 'grande' },
@@ -6131,6 +6157,7 @@ function htmlBloqueCar(k, M) {
       ${S.carTab === 'plan' ? htmlPlan(M) : `<div class="pila">${htmlAvisosGraves(M)}${htmlPosiciones(M)}${htmlAvisos(M)}</div>`}</div>`;
     if (k === 'reparto') return htmlReparto(M);
     if (k === 'agenda') return htmlAgenda(M);
+    if (k === 'mapa') return htmlMapaCartera(M, true);
     if (k === 'vistazo') return M.filas.length ? htmlVistazo(M, iaActual()).replace(/<button class="enlace acento ver-mas" data-exp="posiciones">([^<]*)<\/button>/, '<a class="enlace acento ver-mas" href="#expertos">$1</a>') : '';
     if (k === 'informe') return htmlResumenInforme(true);
     if (k === 'movidas') return htmlMovidas();
@@ -8242,8 +8269,9 @@ document.addEventListener('change', (e) => {
   if (e.target.id === 'mapaPais') { elegirPaisMapa(e.target.value); if (e.target.value && S.mapaGeo && S.mapaVista === 'mundo') { const z = zonaDeMapa(e.target.value), esc1 = anchoMapa() / S.mapaGeo.w; if (z && (S.mapaGeo.a[e.target.value] || 0) * esc1 * esc1 < 700) irVistaMapa(z); } }
   if (e.target.id === 'mapaPos') { S.mapaPos = e.target.value || null; repintarMapa(); }
 });
-// con ratón: el nombre del país y su cifra, junto al puntero
-document.addEventListener('mousemove', (e) => {
+// con ratón (no con el dedo): el nombre del país y su cifra, junto al puntero
+document.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse') return;
   const w = e.target.closest ? e.target.closest('.mapa-caja') : null, tip = w && w.querySelector('.mapa-tip');
   for (const t of $$('.mapa-tip:not([hidden])')) if (t !== tip) t.hidden = true;
   if (!tip) return;
@@ -8256,15 +8284,17 @@ document.addEventListener('mousemove', (e) => {
   tip.style.left = `${Math.max(4, Math.min(x + 14, r.width - tip.offsetWidth - 4))}px`;
   tip.style.top = `${y > r.height / 2 ? y - tip.offsetHeight - 12 : y + 16}px`;
 });
-document.addEventListener('mouseleave', () => { for (const t of $$('.mapa-tip')) t.hidden = true; });
+const quitarTips = () => { for (const t of $$('.mapa-tip')) t.hidden = true; };
+document.addEventListener('mouseleave', quitarTips);
+addEventListener('scroll', () => { quitarTips(); const t = $('#mcTip'); if (t) t.hidden = true; }, { passive: true });
 // los nombres dependen del ancho: al girar el móvil o cambiar la ventana, se vuelven a colocar
 let mapaResize = 0;
-addEventListener('resize', () => { clearTimeout(mapaResize); mapaResize = setTimeout(() => { if ($('#mapaMundo svg')) repintarMapa(); }, 220); });
+addEventListener('resize', () => { clearTimeout(mapaResize); mapaResize = setTimeout(() => { if ($('#mapaMundo svg')) repintarMapa(); if ($('.mc-caja')) repintarMc(); }, 220); });
 
 /* =========================== Análisis =========================== */
 /* cuatro pestañas: qué hacer, lo que opina la IA, tus números (cinco vistas) y la fiscalidad */
 const ANALISIS_P = [['ia', 'GrowIA opina'], ['numeros', 'Tus números']];
-const NUM_T = { rent: ['Rentabilidad', 'lo que ha dado cada posición en 1 y 3 meses, en lo que va de año, a 1, 3, 5 y 10 años y año a año'], riesgo: ['Riesgo', 'cuánto se mueve cada una y su peor caída del último año'], costes: ['Costes y dividendos', 'gastos de los fondos y lo que cobrarás de dividendos, mes a mes'], dentro: ['Por dentro', 'si se pisan tus fondos y las empresas en las que tienes más dinero'], apuestas: ['Tus acciones frente al índice', 'cada acción comparada con el mismo dinero en el S&P 500'] };
+const NUM_T = { rent: ['Rentabilidad', 'lo que ha dado cada posición en 1 y 3 meses, en lo que va de año, a 1, 3, 5 y 10 años y año a año'], riesgo: ['Riesgo', 'tu peor caída y cuánto tardó en recuperarse, y cuánto se mueve cada posición'], costes: ['Costes y dividendos', 'gastos de los fondos y lo que cobrarás de dividendos, mes a mes'], dentro: ['Por dentro', 'si se pisan tus fondos y las empresas en las que tienes más dinero'], apuestas: ['Tus acciones frente al índice', 'cada acción comparada con el mismo dinero en el S&P 500'] };
 const NUMEROS = ['rent', 'riesgo', 'costes', 'dentro', 'apuestas'];
 const ANALISIS = [['ruta', 'Paso a paso'], ['ia', 'GrowIA opina'], ['rent', 'Rentabilidad'], ['riesgo', 'Riesgo'], ['costes', 'Costes y dividendos'], ['dentro', 'Por dentro'], ['apuestas', 'Acciones sueltas'], ['impuestos', 'Hacienda']];
 /* =====================================================================
@@ -8646,7 +8676,7 @@ function cuerpoNum(k, M) {
     const serie = serieCartera(M, 366);
     const vol = volatilidadSerie(serie);
     const cr = claseRiesgo(vol);
-    cuerpo = `${cr ? `<div class="resumen-fila"><div><span class="k">Riesgo de tu cartera</span><span class="v">${cr} de 7</span><small class="k">7 es lo más arriesgado</small></div><div><span class="k">Cuánto se ha movido</span><span class="v">${pct(vol, 1)}</span><small class="k">volatilidad del último año</small></div><div><span class="k">Peor caída del último año</span><span class="v down">${pct(caidaMaxima(serie), 1)}</span></div></div>` : ''}
+    cuerpo = `${htmlCaida(M)}${cr ? `<div class="resumen-fila"><div><span class="k">Riesgo de tu cartera</span><span class="v">${cr} de 7</span><small class="k">7 es lo más arriesgado</small></div><div><span class="k">Cuánto se ha movido</span><span class="v">${pct(vol, 1)}</span><small class="k">volatilidad del último año</small></div><div><span class="k">Peor caída del último año</span><span class="v down">${pct(caidaMaxima(serie), 1)}</span></div></div>` : ''}
       <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th>Riesgo</th><th class="r">Volatilidad</th><th class="r">Peor caída 1 año</th><th class="r">Beta</th><th class="r">Peso</th></tr></thead><tbody>
       ${[...M.filas].sort((a, b) => ((b.p && b.p.riesgo) || 0) - ((a.p && a.p.riesgo) || 0)).map((f) => `<tr><td>${nombre(f)}</td><td>${f.p && f.p.riesgo ? `<div class="medidor" style="width:120px;margin-top:6px" role="img" aria-label="${f.p.riesgo} de 7">${[1, 2, 3, 4, 5, 6, 7].map((n) => `<i class="${n <= f.p.riesgo ? 'on' : ''}"></i>`).join('')}</div>` : '—'}</td><td class="r">${f.p ? pct(f.p.volatilidad, 1) : '—'}</td><td class="r down">${f.p && f.p.tecnico ? pct(f.p.tecnico.caida_max_1a, 1) : '—'}</td><td class="r">${f.p && f.p.fundamentales && f.p.fundamentales.beta != null ? fmtNum(f.p.fundamentales.beta, 2) : '—'}</td><td class="r">${pct(f.peso, 1)}</td></tr>`).join('')}
       </tbody></table></div><p class="nota">Riesgo: escala oficial de 1 a 7 según la volatilidad. La beta dice cuánto se mueve una acción cuando se mueve el mercado (1 = igual). El riesgo de tu cartera (arriba) se calcula con tus posiciones de hoy y los precios del último año.</p>`;
@@ -8837,6 +8867,162 @@ function htmlRentReal(M) {
     <p class="nota">${notas.join(' ')}</p>
   </section>`;
 }
+/* =========================== 0.4: tu cartera de un vistazo =========================== */
+/* Cada posición, un rectángulo del tamaño de lo que vale (las de varias plataformas, juntas) y del color de cómo va:
+   hoy o desde que la compraste. El efectivo, en gris. Se reparte con el algoritmo «squarified» (rectángulos lo más
+   cuadrados posible) y se dibuja ya en la página, cuando se sabe lo ancho que es */
+const MC_MODOS = [['hoy', 'Hoy', 'Today'], ['total', 'Desde que compraste', 'Since you bought']];
+const MC_CORTES = { hoy: [0.25, 0.75, 1.5, 2.5], total: [2, 10, 25, 50] };
+function piezasCartera(M) {
+  const por = new Map();
+  for (const f of M.filas) {
+    if (!(f.valor > 0)) continue;
+    const k = f.inst.id, x = por.get(k) || { id: k, pos: f.pos.id, n: f.inst.corto || f.inst.nombre, valor: 0, dia: 0, coste: 0, conDia: false, sinPrecio: false };
+    x.valor += f.valor; x.coste += f.coste || 0;
+    if (f.varDia != null && !f.diaViejo) { x.dia += f.dia || 0; x.conDia = true; }
+    if (f.sinPrecio) x.sinPrecio = true;
+    por.set(k, x);
+  }
+  const out = [...por.values()].map((x) => ({ ...x, hoy: x.conDia && x.valor - x.dia > 0 ? (x.dia / (x.valor - x.dia)) * 100 : null, total: !x.sinPrecio && x.coste > 0 ? (x.valor / x.coste - 1) * 100 : null, pl: x.valor - x.coste }));
+  const ef = sum(M.efectivo.filter((e) => e.importe > 0), (e) => e.importe);
+  if (ef > 0) out.push({ id: '_ef', n: L('Efectivo', 'Cash'), valor: ef, efectivo: true, hoy: null, total: null });
+  return out.sort((a, b) => b.valor - a.valor);
+}
+function squarify(items, W, H) {
+  const tot = sum(items, (x) => x.valor), k = (W * H) / tot, out = [];
+  let x = 0, y = 0, w = W, h = H, fila = [];
+  const peor = (r, lado) => { const s = sum(r, (z) => z.a), mx = Math.max(...r.map((z) => z.a)), mn = Math.min(...r.map((z) => z.a)); return Math.max((lado * lado * mx) / (s * s), (s * s) / (lado * lado * mn)); };
+  const colocar = (r) => {
+    const s = sum(r, (z) => z.a);
+    if (w >= h) { const cw = s / h; let yy = y; for (const z of r) { const zh = z.a / cw; out.push({ ...z, x, y: yy, w: cw, h: zh }); yy += zh; } x += cw; w -= cw; }
+    else { const rh = s / w; let xx = x; for (const z of r) { const zw = z.a / rh; out.push({ ...z, x: xx, y, w: zw, h: rh }); xx += zw; } y += rh; h -= rh; }
+  };
+  const resto = items.map((z) => ({ ...z, a: z.valor * k }));
+  while (resto.length) {
+    const lado = Math.min(w, h), c = resto[0];
+    if (!fila.length || peor([...fila, c], lado) <= peor(fila, lado)) { fila.push(c); resto.shift(); } else { colocar(fila); fila = []; }
+  }
+  if (fila.length) colocar(fila);
+  return out;
+}
+function tonoMc(v, modo) {
+  if (v == null || !isFinite(v)) return 'mp-n';
+  const c = MC_CORTES[modo], a = Math.abs(v), k = a >= c[3] ? 4 : a >= c[2] ? 3 : a >= c[1] ? 2 : a >= c[0] ? 1 : 0;
+  return k ? `mp-${v > 0 ? 'u' : 'd'}${k}` : 'mp-n';
+}
+function htmlLeyendaMc(modo) {
+  const c = MC_CORTES[modo];
+  const pasos = ['mp-d4', 'mp-d3', 'mp-d2', 'mp-d1', 'mp-n', 'mp-u1', 'mp-u2', 'mp-u3', 'mp-u4'];
+  return `<span class="ml-t">${modo === 'hoy' ? L('Cómo va hoy', 'How it does today') : L('Desde que la compraste', 'Since you bought it')}</span><div class="ml-barra"><div class="ml-escala">${pasos.map((k) => `<i class="${k}"></i>`).join('')}</div><div class="ml-et"><span>${pctS(-c[3], c[3] < 10 ? 1 : 0)}</span><span>0</span><span>${pctS(c[3], c[3] < 10 ? 1 : 0)}</span></div></div><div class="ml-pasos"><span><i class="mc-ef-i"></i>${L('Efectivo', 'Cash')}</span></div>`;
+}
+function htmlMapaCartera(M, inicio) {
+  if (!M || !M.filas.some((f) => f.valor > 0)) return '';
+  if (S.mcModo == null) S.mcModo = LS.get('inv-mc', 'hoy') === 'total' ? 'total' : 'hoy';
+  return `<section class="mc-w${inicio ? ' car-mc' : ''}" aria-labelledby="hMc${inicio ? 'i' : ''}">
+    <div class="sec-cab"><h2 id="hMc${inicio ? 'i' : ''}">${L('Tu cartera de un vistazo', 'Your portfolio at a glance')}</h2><span class="k">${L('Cada rectángulo, una posición: su tamaño es lo que vale, y su color, cómo va.', 'Each box is a holding: its size is what it is worth, its color how it is doing.')}</span>
+      <div class="der"><div class="mapa-modos" role="group" aria-label="${L('Qué colorea', 'What the color shows')}">${MC_MODOS.map(([k, es, en]) => `<button type="button" data-mc-modo="${k}" aria-pressed="${k === S.mcModo}">${L(es, en)}</button>`).join('')}</div></div></div>
+    <div class="mc-caja"></div>
+    <div class="mc-pie"><div class="mapa-ley">${htmlLeyendaMc(S.mcModo)}</div></div>
+    <div class="mc-det" aria-live="polite">${htmlDetalleMc(M)}</div>
+  </section>`;
+}
+function textoPiezaMc(p) {
+  const pesa = S.M && S.M.total ? (p.valor / S.M.total) * 100 : 0;
+  if (p.efectivo) return L(`${eur(p.valor, 0)} en efectivo, el ${fmtNumR(pesa, 1)} % de lo que tienes.`, `${eur(p.valor, 0)} in cash, ${fmtNumR(pesa, 1)}% of what you have.`);
+  const hoy = p.hoy != null ? L(`hoy ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`, `today ${pctS(p.hoy, 2)} (${eurS(p.dia, 0)})`) : L('sin precio de hoy', 'no price today');
+  const tot = p.total != null ? L(`desde que la compraste ${pctS(p.total, 1)} (${eurS(p.pl, 0)})`, `since you bought it ${pctS(p.total, 1)} (${eurS(p.pl, 0)})`) : '';
+  return `${eur(p.valor, 0)}, ${L(`el ${fmtNumR(pesa, 1)} % de tu cartera`, `${fmtNumR(pesa, 1)}% of your portfolio`)}; ${hoy}${tot ? `; ${tot}` : ''}.`;
+}
+function htmlDetalleMc(M) {
+  const p = S.mcSel && piezasCartera(M).find((x) => x.id === S.mcSel);
+  if (!p) return `<p class="k">${L('Toca un rectángulo para ver sus cifras.', 'Tap a box to see its numbers.')}</p>`;
+  return `<p><b>${esc(p.n)}</b> ${textoPiezaMc(p)}</p>${p.pos ? `<button type="button" class="enlace acento" data-mc-ficha="${esc(p.pos)}">${L('Ver su ficha', 'Open its page')}</button>` : ''}`;
+}
+function pintarMapaCartera(caja, M) {
+  if (!caja || !M) return;
+  const W = caja.clientWidth;
+  if (!W) return;
+  const H = Math.round(Math.max(240, W < 560 ? W * 1.05 : W < 900 ? W * 0.6 : W * 0.4));
+  caja.style.height = `${H}px`;
+  const modo = S.mcModo, piezas = piezasCartera(M), G = 3;
+  const t = squarify(piezas, W, H);
+  caja.setAttribute('role', 'img');
+  caja.setAttribute('aria-label', L('Mapa de tu cartera: ', 'Map of your portfolio: ') + piezas.slice(0, 5).map((p) => `${p.n} ${eur(p.valor, 0)}`).join(', '));
+  caja.innerHTML = t.map((p) => {
+    const w = p.w - G, h = p.h - G, v = modo === 'hoy' ? p.hoy : p.total;
+    const lado = Math.min(w, h), fs = Math.max(11, Math.min(17, lado / 6.5));
+    const nombre = w > 54 && h > 30, cifra = w > 58 && h > 48, euros = w > 110 && h > 82;
+    const ton = p.efectivo ? 'mc-ef' : tonoMc(v, modo);
+    return `<button type="button" class="mc-t ${ton}${p.id === S.mcSel ? ' sel' : ''}" data-mc="${esc(p.id)}" style="left:${(p.x + G / 2).toFixed(1)}px;top:${(p.y + G / 2).toFixed(1)}px;width:${w.toFixed(1)}px;height:${h.toFixed(1)}px;border-radius:${lado > 90 ? 12 : lado > 40 ? 8 : 5}px;font-size:${fs.toFixed(1)}px" aria-label="${esc(`${p.n}: ${textoPiezaMc(p)}`)}">${nombre ? `<span class="mc-n">${esc(p.n)}</span>` : ''}${cifra && !p.efectivo ? (v == null ? `<span class="mc-e">${modo === 'hoy' ? L('sin precio de hoy', 'no price today') : L('sin datos', 'no data')}</span>` : `<span class="mc-v">${pctS(v, modo === 'hoy' ? 2 : 1)}</span>`) : ''}${euros ? `<span class="mc-e">${eur(p.valor, 0)}</span>` : ''}</button>`;
+  }).join('');
+}
+function repintarMc() {
+  for (const c of $$('.mc-caja')) pintarMapaCartera(c, S.M);
+  for (const d of $$('.mc-det')) d.innerHTML = htmlDetalleMc(S.M);
+  for (const l of $$('.mc-pie .mapa-ley')) l.innerHTML = htmlLeyendaMc(S.mcModo);
+  for (const b of $$('[data-mc-modo]')) b.setAttribute('aria-pressed', String(b.dataset.mcModo === S.mcModo));
+}
+document.addEventListener('click', (e) => {
+  const m = e.target.closest('[data-mc-modo]');
+  if (m) { S.mcModo = m.dataset.mcModo; LS.set('inv-mc', S.mcModo); repintarMc(); return; }
+  const f = e.target.closest('[data-mc-ficha]');
+  if (f) { abrirFicha(f.dataset.mcFicha); return; }
+  const t = e.target.closest('[data-mc]');
+  if (t) { S.mcSel = S.mcSel === t.dataset.mc ? null : t.dataset.mc; repintarMc(); }
+});
+// con ratón (no con el dedo): sus cifras junto al puntero; al desplazar la página, se quita
+document.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse') return;
+  const caja = e.target.closest ? e.target.closest('.mc-caja') : null;
+  let tip = $('#mcTip');
+  if (!caja) { if (tip) tip.hidden = true; return; }
+  const t = e.target.closest('[data-mc]');
+  if (!t) { if (tip) tip.hidden = true; return; }
+  if (!tip) { tip = document.createElement('div'); tip.id = 'mcTip'; tip.className = 'mapa-tip mc-tip'; document.body.appendChild(tip); }
+  const p = piezasCartera(S.M).find((x) => x.id === t.dataset.mc);
+  if (!p) return;
+  tip.innerHTML = `<b>${esc(p.n)}</b><span>${textoPiezaMc(p)}</span>`;
+  tip.hidden = false;
+  const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8), y = e.clientY + tip.offsetHeight + 24 > innerHeight ? e.clientY - tip.offsetHeight - 12 : e.clientY + 16;
+  tip.style.left = `${x}px`; tip.style.top = `${y}px`;
+});
+
+/* =========================== 0.4: la peor caída de la cartera =========================== */
+/* Con lo que tienes hoy, hacia atrás (hasta 10 años): la mayor caída desde un máximo, cuánto duró y cuánto tardó en
+   volver a donde estaba; y a cuánto está ahora de su máximo. La gráfica es la distancia al máximo de cada día */
+function caidaDetalle(serie) {
+  if (!serie || serie.length < 30) return null;
+  let pico = 0, peor = null;
+  const dd = [];
+  for (let i = 0; i < serie.length; i++) {
+    if (serie[i].v > serie[pico].v) pico = i;
+    const x = (serie[i].v / serie[pico].v - 1) * 100;
+    dd.push({ d: serie[i].d, v: x });
+    if (!peor || x < peor.pct) peor = { pct: x, pico, valle: i };
+  }
+  if (!peor || peor.pct > -0.5) return { dd, peor: null, ahora: dd[dd.length - 1].v, maximo: serie[pico].d };
+  let rec = null;
+  for (let i = peor.valle + 1; i < serie.length; i++) if (serie[i].v >= serie[peor.pico].v) { rec = i; break; }
+  return { dd, peor: { pct: peor.pct, desde: serie[peor.pico].d, hasta: serie[peor.valle].d, vuelve: rec != null ? serie[rec].d : null }, ahora: dd[dd.length - 1].v, maximo: serie[pico].d, inicio: serie[0].d };
+}
+const fechaConAnio = (d) => `${fechaCortaL(d)}${d.slice(0, 4) !== hoyIso().slice(0, 4) ? ` ${d.slice(0, 4)}` : ''}`;
+function htmlCaida(M) {
+  const c = caidaDetalle(serieCartera(M, 3650));
+  if (!c) return '';
+  const p = c.peor, dias = (a, b) => Math.round((tiempoDe(b) - tiempoDe(a)) / 864e5);
+  const anios = dias(c.inicio || c.dd[0].d, hoyIso()) / 365;
+  const frase = p
+    ? L(`Con lo que tienes hoy, la peor caída de los últimos ${anios >= 1.5 ? `${fmtNum(anios, 0)} años` : duracion(anios * 365)} habría sido del <b class="down">${pctS(p.pct, 1)}</b>: del ${fechaConAnio(p.desde)} al ${fechaConAnio(p.hasta)}, en ${duracion(dias(p.desde, p.hasta))}. ${p.vuelve ? `Tardó ${duracion(dias(p.hasta, p.vuelve))} en volver a donde estaba (el ${fechaConAnio(p.vuelve)}).` : 'Todavía no ha vuelto a donde estaba.'}`, `With what you hold today, the worst drop of the last ${anios >= 1.5 ? `${fmtNum(anios, 0)} years` : `${Math.round(anios * 12)} months`} would have been <b class="down">${pctS(p.pct, 1)}</b>: from ${fechaConAnio(p.desde)} to ${fechaConAnio(p.hasta)}. ${p.vuelve ? `It took until ${fechaConAnio(p.vuelve)} to get back.` : "It hasn't got back yet."}`)
+    : L('Con lo que tienes hoy, no ha tenido caídas que contar.', 'With what you hold today, there have been no drops worth mentioning.');
+  const ahora = c.ahora > -0.3 ? L('Ahora está en máximos.', "It's at its high now.") : L(`Ahora está un <b>${pct(-c.ahora, 1)}</b> por debajo de su máximo, del ${fechaConAnio(c.maximo)}.`, `It's now <b>${pct(-c.ahora, 1)}</b> below its high of ${fechaConAnio(c.maximo)}.`);
+  return `<div class="caida-w"><h3 class="caida-t">${L('Tu peor caída', 'Your worst drop')}</h3><p class="caida-txt">${frase} ${ahora}</p><div class="chart" id="grafCaida"></div><p class="nota">${L('Cada día, lo lejos que estaba tu cartera de su máximo hasta entonces. Es una simulación con tus posiciones de hoy: no cuenta cuándo compraste ni vendiste.', 'Each day, how far your portfolio was from its high up to then. A simulation with your holdings of today: it ignores when you bought or sold.')}</p></div>`;
+}
+function dibujarCaida(el, M) {
+  const c = caidaDetalle(serieCartera(M, 3650));
+  if (!c) return;
+  grafLinea(el, c.dd, { alto: innerWidth < 560 ? 150 : 190, color: 'var(--down)', rellenoA: 0, sinRef: true, titulo: L('Distancia al máximo', 'Distance from the high'), fmt: (v) => pctS(v, 1), ejeFmt: (t) => `${fmtNum(t, 0)} %`, marca: c.peor ? { d: c.peor.hasta, txt: pctS(c.peor.pct, 1) } : null });
+}
+
 function htmlNumeros(M) {
   const serie = serieCartera(M, 366), vol = volatilidadSerie(serie), cr = claseRiesgo(vol);
   const conTer = M.filas.filter((f) => f.inst.ter != null), costeAnual = sum(conTer, (f) => (f.valor * f.inst.ter) / 100), baseTer = sum(conTer, (f) => f.valor);
@@ -8847,6 +9033,7 @@ function htmlNumeros(M) {
       <div><span class="k">Gastos de fondos</span><span class="v">${eur(costeAnual, 0)} al año</span><small class="k">comisión media del ${pct(baseTer ? (costeAnual / baseTer) * 100 : 0, 2)}</small></div>
       <button type="button" class="rf-btn" data-accion="ver-div12"><span class="k">Dividendos</span><span class="v">${eur(M.dividendos, 0)} al año</span><small class="k">brutos, con el precio de hoy; ${L('mes a mes', 'month by month')} ›</small></button>
     </div>
+    ${htmlMapaCartera(M)}
     ${htmlRentReal(M)}
     ${htmlDividendos12(M)}
     <div class="num-secs">${NUMEROS.map((k) => `<details class="num-sec" id="num-${k}"${S.numAbierto === k ? ' open' : ''}><summary><span><b>${NUM_T[k][0]}</b><small>${NUM_T[k][1]}</small></span></summary><div class="num-cuerpo">${cuerpoNum(k, M)}</div></details>`).join('')}</div>`;
@@ -9001,10 +9188,13 @@ function grafLinea(cont, series, opt = {}) {
   const pBase = pts(base);
   if (!opt.sinRef) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(base[0].v)}" y2="${y(base[0].v)}" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 3"/>`;
   if (opt.linea && opt.linea.v) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(opt.linea.v)}" y2="${y(opt.linea.v)}" stroke="var(--warn)" stroke-width="1" stroke-dasharray="4 4"/><text x="${ml + 4}" y="${y(opt.linea.v) - 6}" font-size="11" fill="var(--warn)">${esc(opt.linea.etiqueta || '')}</text>`;
-  g += `<polygon points="${x(0)},${H - mb} ${pBase} ${x(n - 1)},${H - mb}" fill="${color}" fill-opacity="0.08"/>`;
+  const yRel = opt.rellenoA != null ? y(opt.rellenoA) : H - mb;
+  g += `<polygon points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}" fill="${color}" fill-opacity="${opt.rellenoA != null ? 0.16 : 0.08}"/>`;
+  if (opt.rellenoA != null) g += `<line x1="${ml}" x2="${W - mr}" y1="${yRel}" y2="${yRel}" stroke="var(--line-2)" stroke-width="1"/>`;
   for (const s of series.slice(1)) g += `<polyline points="${pts(s.datos)}" fill="none" stroke="${s.color || 'var(--text-2)'}" stroke-width="1.4" stroke-dasharray="${s.disc ? '5 4' : ''}" stroke-linejoin="round"/>`;
   g += `<polyline points="${pBase}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>`;
   g += `<circle cx="${x(n - 1)}" cy="${y(base[n - 1].v)}" r="3.5" fill="${color}" stroke="var(--bg)" stroke-width="2"/>`;
+  if (opt.marca && idx.has(opt.marca.d)) { const i = idx.get(opt.marca.d), mx = x(i), my = y(base[i].v), izq = mx > W * 0.7; g += `<circle cx="${mx}" cy="${my}" r="4" fill="${color}" stroke="var(--bg)" stroke-width="2"/><text x="${mx + (izq ? -8 : 8)}" y="${Math.min(my + 4, H - mb - 4)}" text-anchor="${izq ? 'end' : 'start'}" font-size="11.5" font-weight="700" fill="${color}" style="font-variant-numeric:tabular-nums">${esc(opt.marca.txt)}</text>`; }
   g += `<g class="cruz" visibility="hidden"><line y1="${mt}" y2="${H - mb}" stroke="var(--line-2)" stroke-width="1"/><circle r="4" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
   g += `<rect x="${ml}" y="0" width="${W - ml - mr}" height="${H}" fill="transparent" class="zona"/>`;
   svg.innerHTML = g;
@@ -9300,6 +9490,8 @@ function dibujar(M) {
     grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, ref: ref0 && ref0.v, alMover, animar });
   }
   if ($('#mapaMundo')) { if (S.mapaGeo) repintarMapa(); else cargarMapa(); }
+  for (const c of $$('.mc-caja')) pintarMapaCartera(c, M);
+  const gc = $('#grafCaida'); if (gc && !gc.closest('details:not([open])')) dibujarCaida(gc, M);
   // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
   for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
 }
@@ -9315,6 +9507,7 @@ document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key ==
 document.addEventListener('toggle', (e) => {
   const d = e.target;
   if (d.matches && d.matches('details.mfila') && d.open) { const el = d.querySelector('[data-spark-m]'); if (el) requestAnimationFrame(() => dibujarSparkM(el)); }
+  if (d.matches && d.matches('details.num-sec') && d.open) { const el = d.querySelector('#grafCaida'); if (el) requestAnimationFrame(() => dibujarCaida(el, S.M)); }
 }, true);
 /* lo que antes iba en una nota debajo de la gráfica, ahora detrás de la «i» junto a la pastilla */
 function infoGrafica() {
@@ -13731,8 +13924,16 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.3.11e';
+const VERSION = '0.4';
 const NOVEDADES = [
+  { v: '0.4', f: '2026-10-22', h: '23:30', t: 'El mundo en un mapa, tu cartera de un vistazo y tu peor caída', cosas: [
+    { d: 'mercados', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. Los nombres salen primero en los mercados que más pesan, con un punto dorado donde tienes dinero. Toca un país para ver sus bolsas, lo que tienes allí y lo que pesa en un fondo de todo el mundo. Europa y Asia, que tienen muchos países juntos, se ven de cerca; en el móvil, al tocar uno pequeño, el mapa se acerca solo.' },
+    { d: 'cifras', ir: { v: 'mercados', sel: '.mapa-w', antes: () => { S.mapaModo = 'tuyo'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede. Puedes verlo todo junto o una sola posición (dónde invierte tu MSCI World, por ejemplo) y compararlo con lo que pesaría cada país en un fondo de todo el mundo: ahí EEUU es casi dos tercios.' },
+    { d: 'cifras', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale y del color de cómo va, hoy o desde que la compraste. Toca uno para ver sus cifras y abrir su ficha. Si lo quieres en Inicio, añádelo desde Personalizar.' },
+    { d: 'grafica', ir: { v: 'analisis', sel: '.caida-w', antes: () => { S.numAbierto = 'riesgo'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: 'Tu peor caída y cuánto tardó en recuperarse', x: 'En Tus números, Riesgo: con lo que tienes hoy, la mayor caída de los últimos años (la de 2020, por ejemplo), cuánto duró, cuánto tardó en volver a donde estaba y a cuánto estás ahora de tu máximo, con una gráfica de cada día.' },
+  ], arreglos: [
+    'El número junto al botón del calendario, en Inicio, no se entendía (eran las cosas tuyas de los próximos 7 días): ya no sale. Lo que viene sigue en el propio Inicio y dentro del Calendario.',
+  ] },
   { v: '0.3.11e', f: '2026-10-22', h: '20:00', t: 'La app de Android se actualiza sola', arreglos: [
     'La app de Android se actualiza sola, sin que tengas que tocar nada: cuando hay una nueva y no la estás usando, se baja y se instala encima (Android 12 o más; en móviles más antiguos, el aviso de siempre). Esta vez hay que actualizarla a mano una última vez.',
   ] },
