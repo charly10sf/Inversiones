@@ -36,6 +36,8 @@ public class Principal extends Activity {
     private ValueCallback<Uri[]> archivos;
     private String tokenPendiente;
     private boolean cargada;
+    // 0.4: tocar «Actualizar» en el aviso del móvil: en cuanto la web está lista, empieza a bajar la app nueva
+    private boolean actualizarAlCargar;
     private View video;
     private WebChromeClient.CustomViewCallback cerrarVideo;
     private boolean enBanco;      // dando permiso al banco dentro de la app
@@ -72,6 +74,10 @@ public class Principal extends Activity {
             public void onPageFinished(WebView v, String url) {
                 cargada = true;
                 guardarToken();
+                if (actualizarAlCargar) {
+                    actualizarAlCargar = false;
+                    lanzarActualizacion();
+                }
             }
 
             @Override
@@ -146,6 +152,7 @@ public class Principal extends Activity {
         });
 
         tokenPendiente = token(getIntent());
+        actualizarAlCargar = getIntent() != null && getIntent().getBooleanExtra("actualizarApp", false);
         if (guardado != null) web.restoreState(guardado);
         else web.loadUrl(direccion(getIntent()));
         // si la web ya se llama GrowFolio, la app se cambia a ella (los datos del móvil son los mismos: mismo sitio)
@@ -230,9 +237,20 @@ public class Principal extends Activity {
             guardarToken();
             return;
         }
-        // desde el aviso de una versión nueva: la web se carga de nuevo, para que salga la versión nueva y sus novedades
+        // desde el aviso de la app nueva («Actualizar»): sin recargar nada, empieza a bajarla
+        if (i != null && i.getBooleanExtra("actualizarApp", false)) {
+            if (cargada) lanzarActualizacion(); else actualizarAlCargar = true;
+            return;
+        }
+        // desde el aviso de una versión nueva de la web: solo se recarga si la que tienes abierta es más antigua (si ya
+        // es esa, no hace falta pasar otra vez por la pantalla de carga)
         if (i != null && i.getBooleanExtra("version", false)) {
-            web.loadUrl(WEB);
+            String v = i.getStringExtra("v");
+            if (v == null || v.isEmpty() || !cargada) { web.loadUrl(WEB); return; }
+            web.evaluateJavascript("typeof VERSION === 'string' ? VERSION : ''", r -> {
+                String actual = r == null ? "" : r.replace("\"", "");
+                if (actual.isEmpty() || Versiones.comparar(v, actual) > 0) web.loadUrl(WEB);
+            });
             return;
         }
         String h = i != null ? i.getStringExtra("hash") : null;
@@ -356,6 +374,27 @@ public class Principal extends Activity {
     }
 
     /** Cuenta a la web cómo va la descarga de la versión nueva (-1 si falla) */
+    /** La web enseña su aviso de la app con la barra de progreso y empieza a bajarla; si es una web de antes, lo hace la app */
+    private void lanzarActualizacion() {
+        web.evaluateJavascript("window.actualizarAppYa ? (actualizarAppYa(), 'web') : 'no'", r -> {
+            if (!"\"web\"".equals(r)) actualizarNativo();
+        });
+    }
+
+    private void actualizarNativo() {
+        boolean en = Datos.en(this);
+        Toast.makeText(this, en ? "Downloading the new version of the app…" : "Bajando la versión nueva de la app…", Toast.LENGTH_LONG).show();
+        new Thread(() -> {
+            JSONObject a = Versiones.app(this);
+            String apk = a == null ? "" : a.optString("apk", "");
+            if (a == null || a.optInt("version", 0) <= BuildConfig.VERSION_CODE || !Actualizador.valida(apk)) {
+                runOnUiThread(() -> Toast.makeText(this, en ? "You already have the latest version." : "Ya tienes la última versión.", Toast.LENGTH_LONG).show());
+                return;
+            }
+            Actualizador.bajar(this, apk);
+        }).start();
+    }
+
     void progreso(int pct, String estado) {
         String js = "window.progresoApp && progresoApp(" + pct + "," + JSONObject.quote(estado == null ? "" : estado) + ")";
         runOnUiThread(() -> { if (web != null) web.evaluateJavascript(js, null); });
