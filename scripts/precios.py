@@ -87,6 +87,22 @@ MERCADOS = [
     ("BTC-EUR", "Bitcoin", "Cripto"),
 ]
 
+# 0.4: el mapa del mundo de Mercados. Las bolsas de cada país que no están ya en MERCADOS (esas se reutilizan).
+# (país, símbolos a probar en orden, nombre). Sin histórico: solo hoy, el mes y el año. Argentina y Turquía no
+# están a propósito: con su inflación, su bolsa en moneda local sale siempre en verde y el color engañaría.
+MAPA = [
+    ("CA", ["^GSPTSE"], "S&P/TSX"), ("MX", ["^MXX"], "IPC"), ("CL", ["^IPSA"], "IPSA"),
+    ("IT", ["FTSEMIB.MI"], "FTSE MIB"), ("NL", ["^AEX"], "AEX"), ("CH", ["^SSMI"], "SMI"),
+    ("SE", ["^OMX"], "OMX Estocolmo 30"), ("BE", ["^BFX"], "BEL 20"), ("PT", ["PSI20.LS"], "PSI"),
+    ("AT", ["^ATX"], "ATX"), ("DK", ["^OMXC25", "^OMXC20"], "OMX Copenhague 25"), ("IE", ["^ISEQ"], "ISEQ"),
+    ("NO", ["OBX.OL"], "OBX"), ("FI", ["^OMXH25"], "OMX Helsinki 25"), ("PL", ["WIG20.WA"], "WIG20"),
+    ("GR", ["GD.AT"], "Bolsa de Atenas"), ("KR", ["^KS11"], "KOSPI"), ("TW", ["^TWII"], "Taiex"),
+    ("AU", ["^AXJO"], "ASX 200"), ("NZ", ["^NZ50"], "NZX 50"), ("SG", ["^STI"], "Straits Times"),
+    ("ID", ["^JKSE"], "Yakarta"), ("MY", ["^KLSE"], "KLCI"), ("TH", ["^SET.BK"], "SET"),
+    ("PH", ["PSEI.PS"], "PSEi"), ("IL", ["TA35.TA"], "TA-35"), ("SA", ["^TASI.SR"], "Tadawul"),
+    ("ZA", ["^J203.JO", "STX40.JO"], "Top 40 (Johannesburgo)"), ("EG", ["^CASE30"], "EGX 30"),
+]
+
 # aparte de Mercados: solo para la cuenta atrás de GTA VI de la web (Take-Two es la dueña de Rockstar)
 EXTRA = [("TTWO", "Take-Two Interactive")]
 
@@ -971,6 +987,50 @@ def mercado(simbolo, nombre, grupo=None):
     }
 
 
+def bolsa_mapa(pais, simbolos, nombre):
+    """Lo justo para pintar un país en el mapa: cómo va hoy, en el mes y en el año (en su moneda)."""
+    fallo = None
+    for sim in simbolos:
+        try:
+            _, s, _ = serie_cierres(sim, "1y")
+            hoy = s.index[-1]
+            if pd.Timestamp.now() - hoy > pd.Timedelta(days=10):
+                raise RuntimeError("sin datos recientes")
+            ant = float(s.iloc[-2]) if len(s) > 1 else None
+            return sim, {
+                "n": nombre, "p": pais, "f": hoy.date().isoformat(),
+                "v": num((float(s.iloc[-1]) / ant - 1) * 100, 2) if ant else None,
+                "m": rentabilidad(s, hoy - pd.Timedelta(days=30)),
+                "y": rentabilidad(s, pd.Timestamp(year=hoy.year, month=1, day=1) - pd.Timedelta(days=1)),
+            }
+        except Exception as e:  # noqa: BLE001
+            fallo = e
+    raise RuntimeError(f"{pais} {simbolos}: {fallo}")
+
+
+def bolsas_mapa(anterior):
+    """Todas las del mapa a la vez (en paralelo: son casi 30 y cada una tarda lo suyo). Si una falla, se queda
+    la de la vez anterior; si no había, ese país sale en gris."""
+    import concurrent.futures as cf
+    prev = anterior.get("mapa") or {}
+    out, fallos = {}, []
+    with cf.ThreadPoolExecutor(max_workers=6) as ex:
+        futuros = {ex.submit(bolsa_mapa, *x): x for x in MAPA}
+        for fu in cf.as_completed(futuros):
+            pais, simbolos, _ = futuros[fu]
+            try:
+                sim, v = fu.result()
+                out[sim] = v
+            except Exception as e:  # noqa: BLE001
+                fallos.append(str(e))
+                viejo = next(((k, v) for k, v in prev.items() if v.get("p") == pais), None)
+                if viejo:
+                    out[viejo[0]] = viejo[1]
+    if fallos:
+        print("mapa, sin datos:", "; ".join(fallos))
+    return out
+
+
 def dominio(web):
     """repsol.com a partir de https://www.repsol.com/es/index.html (para el logo)."""
     if not web:
@@ -1432,6 +1492,12 @@ def main(ruta_inst, dir_anterior, dir_salida):
             errores.append(f"mercado {sim}: {e}")
             if sim in prev_merc:
                 salida["mercados"][sim] = prev_merc[sim]
+
+    try:
+        salida["mapa"] = bolsas_mapa(anterior)
+    except Exception as e:  # noqa: BLE001
+        traceback.print_exc()
+        salida["mapa"] = anterior.get("mapa") or {}
 
     prev_extra = anterior.get("extra", {})
     for sim, nombre in EXTRA:
