@@ -3014,6 +3014,9 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--text-2); margin-botto
 .kit-ok { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--up); font-weight: 600; }
 .kit-ok svg { width: 18px; height: 18px; }
 .kit-comp { display: grid; gap: 10px; }
+.copia { display: grid; gap: 14px; }
+.copia > p { margin: 0; }
+.copia-btns { justify-content: flex-start; }
 .kit-comp input { text-transform: uppercase; letter-spacing: 0.2em; font-weight: 700; max-width: 160px; }
 #rCod { text-transform: uppercase; letter-spacing: 0.06em; }
 @media (max-width: 380px) { .kit-cod span { font-size: 16px; letter-spacing: 0.08em; } }
@@ -7333,7 +7336,7 @@ function avisos(M) {
   const av = [];
   // quien venía de la 0.1: arriba del todo, una forma fácil de recuperar lo que no llegó a la cuenta
   if (S.kv && S.cartera && S.cartera.kit && S.cartera.kit.codigo && !S.cartera.kit.guardado) av.push({ n: 'info', grave: true, i: ICONOS.candado, t: L('Guarda tu código de recuperación', 'Save your recovery code'), d: L('Si olvidas la contraseña de tu cartera, con él la recuperas. Sin él y sin la contraseña, nadie puede abrirla, ni GrowFolio.', 'If you forget your portfolio password, it gets your portfolio back. Without it and without the password, nobody can open it, not even GrowFolio.'), acc: `<button class="btn peq pri" data-accion="ver-kit">${L('Verlo y guardarlo', 'See and save it')}</button>` });
-  if (PERFIL_CUENTA && LS.get('inv-vino-01') && !LS.get('inv-aviso-rec-ok')) av.push({ n: 'info', grave: true, i: ICONOS.cartera, t: L('¿Te falta algo de tu cartera de antes?', 'Missing anything from your old portfolio?'), d: L('Si alguna compra, venta o posición que tenías en la 0.1 no aparece (por ejemplo, porque la usabas en otro dispositivo), GrowFolio busca tu cartera de antes y añade lo que falte.', "If a buy, sell or holding you had in 0.1 isn't here (for example, because you used it on another device), GrowFolio looks for your previous portfolio and adds what's missing."), acc: `<button class="btn peq pri" data-accion="recuperar-vieja">${L('Recuperar mi cartera de antes', 'Recover my previous portfolio')}</button><button class="btn peq" data-accion="aviso-rec-ok">${L('Está todo', "It's all there")}</button>` });
+  // 0.5: fuera «¿Te falta algo de tu cartera de antes?» (la de la 0.1 en GitHub o en el dispositivo): ya no queda nadie con ella
   for (const f of M.filas) { const x = precioCompraRaro(f); if (x) av.push({ ...avisoPrecioRaro(x), grave: true }); }
   for (const f of M.filas) {
     const s = f.senal;
@@ -11501,7 +11504,7 @@ function tocaPerfilGuiado() {
   return Date.now() - l.t > (l.n <= 1 ? 2 : l.n === 2 ? 4 : 7) * 864e5;
 }
 // si este dispositivo tiene una cartera de antes sin revisar, primero eso (puede traer ya tu perfil)
-const copiaViejaPendiente = () => { try { return PERFIL_CUENTA && !LS.get('inv-disp-rev2') && !!(localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc')); } catch (e) { return false; } };
+const copiaViejaPendiente = () => false;   // 0.5: ya no se busca la cartera de antes
 function pedirPerfil(siSale, siNo) {
   if (!tocaPerfilGuiado() || copiaViejaPendiente() || document.querySelector('.hoja-fondo, .tour, .estreno, .intro')) return siNo();
   perfilGuiado(siSale);
@@ -17107,7 +17110,7 @@ function abrirAjustes() {
       <div class="seccion-ed"><h3>${ICONOS.perfil}${esc(nombreUsuario() || 'Tu cuenta')}</h3><p class="nota" style="margin:0">${FB.user && FB.user.email ? `${esc(FB.user.email)}, ` : ''}${FB.user && (FB.user.providerData || []).some((x) => x.providerId === 'google.com') ? 'con Google' : 'con correo y contraseña'}. Tu cartera se guarda cifrada en tu cuenta y se sincroniza sola entre tus dispositivos.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNombre">${ICONOS.perfil}Cambiar nombre</button><button class="btn peq" id="aSalir">Cerrar sesión</button></div></div>
       <div id="aOpis"></div>
-      <button class="aj-fila" id="aVieja">${ICONOS.cartera}<span><b>Recuperar tu cartera de antes</b><small>Si en la 0.1 tenías compras, ventas o posiciones que no están en tu cuenta (en GitHub o en este dispositivo).</small></span><i class="aj-flecha" aria-hidden="true"></i></button></div>`
+</div>`
     : `<h2 class="aj-grupo">Tu cuenta</h2><div class="aj-caja"><button class="aj-fila" id="aCuenta">${ICONOS.perfil}<span><b>Guarda tu cartera en una cuenta</b><small>Con Google o con tu correo: la tendrás en el móvil, en el ordenador y en la app, cifrada igual que ahora.</small></span><i class="aj-flecha" aria-hidden="true"></i></button></div>`}
     <h2 class="aj-grupo">General</h2>
     <div class="aj-caja">
@@ -17123,6 +17126,7 @@ function abrirAjustes() {
     <div class="aj-caja">
     ${htmlAjustesBloqueo()}
     ${S.kv ? `<button class="aj-fila" id="aKit">${ICONOS.candado}<span><b>${L('Código de recuperación', 'Recovery code')}</b><small>${S.cartera && S.cartera.kit && S.cartera.kit.guardado ? L(`Guardado el ${esc(fechaLarga(S.cartera.kit.guardado.slice(0, 10)))}. Por si olvidas la contraseña de tu cartera.`, `Saved on ${esc(S.cartera.kit.guardado.slice(0, 10))}. In case you forget your portfolio password.`) : L('Sin guardar todavía: con él recuperas la cartera si olvidas su contraseña.', 'Not saved yet: it gets your portfolio back if you forget its password.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>` : ''}
+    ${S.kv ? `<button class="aj-fila" id="aCopia">${ICONOS.descargar || ICONOS.cartera}<span><b>${L('Copia de seguridad', 'Backup')}</b><small>${L('Tu cartera en un archivo cifrado, para guardarla donde quieras y cargarla si algún día hace falta.', 'Your portfolio in an encrypted file, to keep wherever you like and load it if you ever need to.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>` : ''}
     <details class="seccion-ed aj-plegable"><summary><h3>${ICONOS.candado}Cambiar la contraseña</h3><i class="aj-flecha" aria-hidden="true"></i></summary>
       <div class="form-grid"><label class="campo">Nueva contraseña<input type="password" id="aP1" autocomplete="new-password"></label><label class="campo">Repítela<input type="password" id="aP2" autocomplete="new-password"></label></div>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aCambiar">Cambiar contraseña</button></div>
@@ -17218,6 +17222,7 @@ function abrirAjustes() {
     $('#aP1', h.el).value = $('#aP2', h.el).value = '';
   };
   if ($('#aKit', h.el)) $('#aKit', h.el).onclick = () => { h.cerrar(true); verKit(); };
+  if ($('#aCopia', h.el)) $('#aCopia', h.el).onclick = () => { h.cerrar(true); copiaSeguridad(); };
   // la copia sin cifrar va sin el código de recuperación (ese abre la cartera de tu cuenta)
   $('#aExp', h.el).onclick = () => { const { kit, ...resto } = S.cartera; descargar(`cartera-${hoyIso()}.json`, JSON.stringify(resto, null, 2)); };
   $('#aEjemplo', h.el).onclick = () => descargar('cartera-ejemplo.json', JSON.stringify(EJEMPLO_CARTERA, null, 2));
@@ -17627,6 +17632,59 @@ function verKit(desdeAviso) {
     S.cartera.kit = { codigo, salt: S.kv.k.rec.salt, creado: S.kv.k.t };
     await guardarCarteraCallada('Código de recuperación nuevo');
     h.cerrar(true); verKit();
+  };
+}
+/* 0.5: copia de seguridad cifrada. Es la cartera tal cual va a tu cuenta (formato 2): se abre con su contraseña o con
+   su código de recuperación, también los de entonces si luego los cambiaste. Al cargarla, sustituye a la cartera de
+   ahora (que antes se guarda en este dispositivo) y se cifra con tus claves de hoy */
+function copiaSeguridad() {
+  const app = !!window.InversionesApp, ult = LS.get('inv-copia-hecha');
+  const h = hoja(L('Copia de seguridad', 'Backup'), `<div class="copia">
+    <p>${L('Un archivo con toda tu cartera, cifrado igual que en tu cuenta: sin su contraseña o su código de recuperación no se puede abrir. Guárdalo en tu ordenador, en un pendrive o en tu nube.', 'A file with your whole portfolio, encrypted just like in your account: it cannot be opened without its password or recovery code. Keep it on your computer, a USB stick or your cloud.')}</p>
+    ${ult ? `<p class="nota">${L(`La última la descargaste el ${esc(fechaLarga(ult))} en este dispositivo.`, `You last downloaded one on ${esc(ult)} on this device.`)}</p>` : ''}
+    <div class="fila-btns copia-btns">${app ? '' : `<button type="button" class="btn pri" id="cBajar">${L('Descargar la copia', 'Download the backup')}</button>`}<label class="btn">${L('Cargar una copia', 'Load a backup')}<input type="file" id="cSubir" accept=".growfolio,.json,application/json" hidden></label></div>
+    ${app ? `<p class="nota">${L('La app de Android no puede guardar archivos: descárgala desde GrowFolio en el navegador del móvil o del ordenador.', 'The Android app cannot save files: download it from GrowFolio in the phone or computer browser.')}</p>` : ''}
+  </div>`);
+  h.el.classList.add('hoja-copia');
+  if ($('#cBajar', h.el)) $('#cBajar', h.el).onclick = () => {
+    if (!S.enc || !S.enc.texto || formatoDe(S.enc.texto).v !== 2) return toast(L('Aún no se puede: tu cartera todavía no ha pasado al formato nuevo. Vuelve a abrir GrowFolio.', "Not yet: your portfolio hasn't moved to the new format. Reopen GrowFolio."), 5000);
+    descargarTexto(`growfolio-copia-${hoyIso()}.growfolio`, S.enc.texto);
+    LS.set('inv-copia-hecha', hoyIso());
+    toast(L('Copia descargada. Guárdala fuera de este dispositivo.', 'Backup downloaded. Keep it off this device.'), 5000);
+  };
+  $('#cSubir', h.el).onchange = async (ev) => {
+    const file = ev.target.files[0]; ev.target.value = '';
+    if (!file) return;
+    let texto, f;
+    try { texto = await file.text(); f = JSON.parse(texto); } catch (e) { return toast(L('Ese archivo no es una copia de GrowFolio.', "That file isn't a GrowFolio backup."), 5000); }
+    if (!f || !f.ct || !f.iv || !(f.v === 2 || f.salt)) return toast(L('Ese archivo no es una copia cifrada. Las copias sin cifrar (.json) se cargan en Ajustes, Avanzado.', "That file isn't an encrypted backup. Unencrypted copies (.json) are loaded in Settings, Advanced."), 6000);
+    h.cerrar(true); abrirCopia(texto, f);
+  };
+}
+function abrirCopia(texto, f) {
+  const h = hoja(L('Cargar una copia', 'Load a backup'), `<form class="copia" id="fCopia" novalidate>
+    <p>${L('Escribe la contraseña que tenía tu cartera cuando hiciste la copia, o su código de recuperación.', 'Type the password your portfolio had when you made the backup, or its recovery code.')}</p>
+    <label class="campo">${L('Contraseña o código', 'Password or code')}<input type="password" id="cPass" autocomplete="off"></label>
+    <div class="error" id="cErr"></div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri">${L('Abrir la copia', 'Open the backup')}</button></div>
+  </form>`);
+  $('#cPass', h.el).focus();
+  $('#fCopia', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
+    const x = $('#cPass', h.el).value, b = $('#fCopia .btn.pri', h.el);
+    if (!x) return;
+    b.disabled = true; b.textContent = L('Abriendo…', 'Opening…'); $('#cErr', h.el).textContent = '';
+    let copia = null;
+    try { copia = (await abrirConContrasena(texto, x)).cartera; } catch (e) {}
+    if (!copia && f.v === 2 && codigoValido(x)) { try { copia = await descifrar(texto, await importarDatos(await abrirClave(await claveCodigo(x, b64.dec(f.k.rec.salt), f.k.rec.iter), f.k.rec))); } catch (e) {} }
+    if (!copia) { b.disabled = false; b.textContent = L('Abrir la copia', 'Open the backup'); $('#cErr', h.el).textContent = L('No abre esta copia. Prueba con la contraseña de cuando la hiciste o con su código.', "It doesn't open this backup. Try the password from when you made it, or its code."); return; }
+    const n = (copia.posiciones || []).length, cuando = copia.actualizado ? fechaLarga(String(copia.actualizado).slice(0, 10)) : '';
+    if (!confirm(trad(`¿Sustituir tu cartera de ahora por la de la copia${cuando ? ` (del ${cuando})` : ''}, con ${n} posiciones? La de ahora se guarda antes en este dispositivo.`))) { h.cerrar(true); return; }
+    if (S.enc && S.enc.texto) LS.set('inv-copia-anterior', { texto: S.enc.texto, cuando: new Date().toISOString() });
+    S.cartera = { ...copia, kit: S.cartera.kit };
+    sumarInstPropios(); await guardarCartera(L('Cargar copia de seguridad', 'Load backup'));
+    h.cerrar(true); pintar();
+    toast(L(`Cartera cargada de la copia: ${n} posiciones.`, `Portfolio loaded from the backup: ${n} holdings.`), 6000);
   };
 }
 function descargarTexto(nombre, texto) {
@@ -18961,7 +19019,6 @@ function arrancar() {
     nombreEnCuenta();
     vigilarCuenta();
     if (S.avisoConflicto) { S.avisoConflicto = false; setTimeout(() => toast('Tu cuenta tenía cambios más recientes de otro dispositivo: se ha quedado esa versión', 6000), 1200); }
-    setTimeout(revisarCarteraVieja, 2500);
     setTimeout(avisoIOS, 6000);
     if (!S.cuentaLeida || LS.get('inv-pend-cuenta')) setTimeout(sincronizarCuenta, 3000);
   }
