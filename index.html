@@ -6246,11 +6246,11 @@ const anchoCar = (k) => (k === 'posiciones' && S.carTab === 'plan' ? 'lleno' : B
 /* los cuatro días siguientes a una versión nueva, arriba en Inicio: qué versión es, su título y «Ver en detalle»
    (las notas completas). Se quita con la x o sola pasados esos días. */
 function htmlAvisoNovedades() {
-  const vista = LS.get('inv-nov-vista'), n = NOVEDADES[0];
-  if (!vista || vista.v !== VERSION || !n || n.v !== VERSION || LS.get('inv-nov-cerrada') === VERSION) return '';
+  const vista = LS.get('inv-nov-vista'), n = novBase(), cerrada = LS.get('inv-nov-cerrada');
+  if (!vista || !n || baseVer(vista.v) !== baseVer(VERSION) || (cerrada && baseVer(cerrada) === n.v)) return '';
   if (diasEntre(vista.d, hoyIso()) > 3) return '';
   return `<div class="nov-aviso" role="note"><span class="nov-aviso-ic" aria-hidden="true">${ICONOS.chispa}</span>
-    <button type="button" class="nov-aviso-t" data-accion="novedades-detalle"><small data-no-trad>${L(`Novedades de la ${esc(VERSION)}`, `What's new in ${esc(VERSION)}`)}</small><b>${esc(n.t)}</b></button>
+    <button type="button" class="nov-aviso-t" data-accion="novedades-detalle"><small data-no-trad>${L(`Novedades de la ${esc(n.v)}`, `What's new in ${esc(n.v)}`)}</small><b>${esc(n.t)}</b></button>
     <span class="nov-aviso-b">${pasosGuia().length ? `<button type="button" class="btn peq pri" data-accion="novedades-guia">${L('Guíame', 'Show me')}</button>` : ''}<button type="button" class="btn peq" data-accion="novedades-detalle">${L('Ver en detalle', 'See details')}</button></span>
     <button type="button" class="ib nov-aviso-x" data-accion="novedades-ocultar" aria-label="${L('Quitar el aviso', 'Dismiss')}">${ICONOS.cerrar}</button></div>`;
 }
@@ -14426,18 +14426,22 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.4b';
+const VERSION = '0.4c';
 const NOVEDADES = [
+  { v: '0.4c', f: '2026-10-23', h: '00:21', t: 'La guía de la 0.4, al día', arreglos: [
+    'La guía de lo nuevo y la presentación son solo para las versiones con novedades. Las de arreglos, como esta, se avisan con un mensaje corto. La guía de la 0.4 está al día con lo que ha cambiado desde entonces y vuelve a salir una vez, y quien venga de antes ve la presentación de la 0.4, no la de su último arreglo.',
+    'En la guía, si el mapa aún no había cargado, la tarjeta salía en medio de la pantalla y lo tapaba.',
+  ] },
   { v: '0.4b', f: '2026-10-22', h: '23:56', t: 'Lo tuyo, lo primero en el mapa', cosas: [
-    { d: 'tuyo', ir: { v: 'mercados', sel: '#mapaElegido:not([hidden]), .mi-tuyo', lado: 'abajo', antes: () => { S.mapaModo = 'hoy'; S.mapaVB = null; let c = 'US', m = 0; try { for (const [k, x] of exposicionPaises(S.M)) if (x && x.pct > m) { m = x.pct; c = k; } } catch (e) {} S.mapaSel = c; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Lo que tienes en cada país, a la vista', x: 'Al tocar un país del mapa, justo debajo dice cuánto tienes allí y qué parte de tu cartera es. En su ficha eso va ahora arriba del todo, con una barra que lo compara con lo que pesa ese país en un fondo de todo el mundo, y después sus bolsas.' },
+    { d: 'tuyo', t: 'Lo que tienes en cada país, a la vista', x: 'Al tocar un país del mapa, justo debajo dice cuánto tienes allí y qué parte de tu cartera es. En su ficha eso va ahora arriba del todo, con una barra que lo compara con lo que pesa ese país en un fondo de todo el mundo, y después sus bolsas.' },
   ], arreglos: [
     'En los rectángulos de tu cartera, algunos números salían cortados: ahora la letra se ajusta a cada rectángulo y lo que no cabe se quita en vez de salir a medias.',
     'En el tutorial y en la guía de lo nuevo, la tarjeta tapaba a veces justo lo que señalaba (el mapa, los rectángulos o la gráfica de tu peor caída). Ahora va siempre al lado y, si no cabe todo, se ve la parte de arriba.',
   ] },
   { v: '0.4a', f: '2026-10-22', h: '23:19', t: 'El mapa con dos dedos y una guía por lo nuevo', cosas: [
-    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-caja', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; S.mapaVB = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mapa, con dos dedos', x: 'En el móvil, pellizca para acercarte, toca dos veces o usa + y −, y de cerca arrastra para moverte. De lejos, Europa va en una pastilla con su media que te lleva a verla de cerca, y cada país lleva su bandera: caben el doble y no se tapan. El país que eliges sale justo debajo del mapa, sin que se mueva la página.' },
-    { d: 'tour', ir: { v: 'cartera', sel: '.nov-aviso' }, t: 'Una guía por lo nuevo', x: 'Cada versión trae su guía: te lleva, paso a paso, a cada sitio donde ha cambiado algo. Está arriba en las novedades, en el aviso de Inicio y en un globo que sale junto a la sección que estrena algo, que lleva «Nuevo» hasta que la ves.' },
-    { d: 'rectangulos', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo, con logos', x: 'Cada rectángulo lleva el logo de lo que es y la letra crece con su tamaño. Los más pequeños van juntos en uno, «y 3 más», y al tocarlo salen uno a uno.' },
+    { d: 'mapa', t: 'El mapa, con dos dedos', x: 'En el móvil, pellizca para acercarte, toca dos veces o usa + y −, y de cerca arrastra para moverte. De lejos, Europa va en una pastilla con su media que te lleva a verla de cerca, y cada país lleva su bandera: caben el doble y no se tapan. El país que eliges sale justo debajo del mapa, sin que se mueva la página.' },
+    { d: 'tour', t: 'Una guía por lo nuevo', x: 'Cada versión con novedades trae su guía: te lleva, paso a paso, a cada sitio donde ha cambiado algo. Está arriba en las novedades, en el aviso de Inicio y en un globo que sale junto a la sección que estrena algo, que lleva «Nuevo» hasta que la ves.' },
+    { d: 'rectangulos', t: 'Tu cartera de un vistazo, con logos', x: 'Cada rectángulo lleva el logo de lo que es y la letra crece con su tamaño. Los más pequeños van juntos en uno, «y 3 más», y al tocarlo salen uno a uno.' },
     { d: 'app', t: 'Actualizar la app, de un toque', x: 'El aviso del móvil trae un botón Actualizar que empieza a bajar la app nueva al momento, sin pasar por la pantalla de carga ni buscar nada. Y si la versión nueva de la web ya está abierta, tocar el aviso no la vuelve a cargar.' },
   ], arreglos: [
     'En el móvil, acercar y alejar el mapa iba a trompicones: había que esperar a que acabara cada viaje y para volver solo valía el botón Mundo.',
@@ -14447,9 +14451,9 @@ const NOVEDADES = [
     'Los dibujos de las novedades se repetían y a veces no tenían que ver (el mapa salía con unas barras): ahora cada cosa tiene el suyo.',
   ] },
   { v: '0.4', f: '2026-10-22', h: '22:15', t: 'El mundo en un mapa, tu cartera de un vistazo y tu peor caída', cosas: [
-    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-caja', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. Los nombres salen primero en los mercados que más pesan, con un punto dorado donde tienes dinero. Toca un país para ver sus bolsas, lo que tienes allí y lo que pesa en un fondo de todo el mundo. Acércate con dos dedos o tocando dos veces (en el ordenador, con + y −) y arrastra para moverte; Europa y Asia tienen su botón, y al tocar un país pequeño el mapa se acerca solo.' },
-    { d: 'tudinero', ir: { v: 'mercados', sel: '.mapa-caja', antes: () => { S.mapaModo = 'tuyo'; S.mapaSel = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede. Puedes verlo todo junto o una sola posición (dónde invierte tu MSCI World, por ejemplo) y compararlo con lo que pesaría cada país en un fondo de todo el mundo: ahí EEUU es casi dos tercios.' },
-    { d: 'rectangulos', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale y del color de cómo va, hoy o desde que la compraste. Toca uno para ver sus cifras y abrir su ficha. Si lo quieres en Inicio, añádelo desde Personalizar.' },
+    { d: 'mapa', ir: { v: 'mercados', sel: '.mapa-caja', antes: () => { S.mapaModo = 'hoy'; S.mapaSel = null; S.mapaVB = null; if (S.vista === 'mercados') repintarMapa(); } }, t: 'El mundo en un mapa', x: 'En Mercados, arriba del todo: cada país del color de cómo va su bolsa hoy, en el último mes o en lo que va de año. En el móvil, pellizca o toca dos veces para acercarte (en el ordenador, + y −) y arrastra para moverte; de lejos, Europa va en una pastilla que te lleva a verla de cerca. Toca un país para ver sus bolsas.' },
+    { d: 'tudinero', ir: { v: 'mercados', sel: '.mapa-caja', con: '#mapaElegido:not([hidden]), .mi-tuyo', antes: () => { S.mapaModo = 'tuyo'; S.mapaVB = null; S.mapaPos = null; let c = 'US', m = 0; try { for (const [k, x] of exposicionPaises(S.M)) if (x && x.pct > m) { m = x.pct; c = k; } } catch (e) {} S.mapaSel = c; if (S.vista === 'mercados') repintarMapa(); } }, t: 'Dónde está tu dinero, país a país', x: 'En el mapa, «Tu dinero»: cada fondo repartido por países como su índice y cada acción en el de su sede, todo junto o una sola posición. Al tocar un país, justo debajo, cuánto tienes allí y qué parte de tu cartera es; en su ficha, frente a lo que pesaría en un fondo de todo el mundo (ahí EEUU es casi dos tercios).' },
+    { d: 'rectangulos', ir: { v: 'analisis', sel: '.mc-w', antes: () => { if (S.califTab !== 'numeros') { S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } } }, t: 'Tu cartera de un vistazo', x: 'En Análisis, Tus números: cada posición es un rectángulo del tamaño de lo que vale, con su logo, y del color de cómo va, hoy o desde que la compraste. Los más pequeños van juntos en uno. Toca uno para ver sus cifras y abrir su ficha; si lo quieres en Inicio, añádelo desde Personalizar.' },
     { d: 'caida', ir: { v: 'analisis', sel: '.caida-w', antes: () => { S.numAbierto = 'riesgo'; if (S.califTab !== 'numeros') S.califTab = 'numeros'; if (S.vista === 'analisis') pintar(); } }, t: 'Tu peor caída y cuánto tardó en recuperarse', x: 'En Tus números, Riesgo: con lo que tienes hoy, la mayor caída de los últimos años (la de 2020, por ejemplo), cuánto duró, cuánto tardó en volver a donde estaba y a cuánto estás ahora de tu máximo, con una gráfica de cada día.' },
     { d: 'respuesta', ir: { v: 'cartera', sel: '#bFallo' }, t: 'Te contestamos aquí mismo', x: 'Lo que mandas con el botón del bichito o con las estrellas tiene ahora respuesta: cuando te contesten, te sale en pantalla al abrir GrowFolio, junto a lo que escribiste. En ese mismo botón tienes todo lo que has mandado, con sus respuestas.' },
     { d: 'ingles', t: 'GrowFolio, entero en inglés', x: 'Con la bandera de arriba, todo en inglés: cada pantalla, los avisos del móvil y el widget. Lo que escribe GrowIA para todos (la prensa de cada empresa, las ideas, el informe de los mercados) y los titulares en español llegan también traducidos.' },
@@ -14982,11 +14986,21 @@ function estreno02(visto, despues) {
   marcar(0);
   setTimeout(() => sig.focus({ preventScroll: true }), 900);
 }
+// de una versión a un arreglo suyo (0.4 → 0.4b): sin presentación ni guía, un aviso de lo arreglado
+function arreglosVistos(visto, despues) {
+  const ns = NOVEDADES.filter((n) => cmpVer(n.v, visto) > 0 && cmpVer(n.v, VERSION) <= 0);
+  const a = ns.reduce((t, n) => t + (n.arreglos || []).length, 0), m = ns.reduce((t, n) => t + (n.cosas || []).length, 0);
+  marcarNovVista(); LS.set('inv-version', VERSION); LS.set('inv-vnum', 2);
+  const que = [a ? L(`${a} ${a === 1 ? 'arreglo' : 'arreglos'}`, `${a} ${a === 1 ? 'fix' : 'fixes'}`) : '', m ? L(`${m} ${m === 1 ? 'mejora' : 'mejoras'}`, `${m} ${m === 1 ? 'improvement' : 'improvements'}`) : ''].filter(Boolean).join(L(' y ', ' and '));
+  if (que) toast(L(`GrowFolio ${VERSION}: ${que}. Lo tienes en Ajustes, Novedades.`, `GrowFolio ${VERSION}: ${que}. See it in Settings, What's new.`), 5000);
+  if (S.cartera) setTimeout(() => { if (S.vista === 'cartera' && !S.ficha) pintar(); }, 60);
+  despues();
+}
 /* qué se ha mejorado: lo nuevo arriba, cada cosa con un «Enséñamelo» que te lleva hasta ella resaltada (como el
    tutorial) y un «Enséñamelo todo» que las recorre en orden. Las versiones anteriores, plegadas una a una con sus
    dibujos y sus textos. */
 function mostrarNovedades(desde, alCerrar, lista = false) {
-  if ((LS.get('inv-nov-vista') || {}).v !== VERSION) { LS.set('inv-nov-vista', { v: VERSION, d: hoyIso() }); if (S.cartera) setTimeout(() => { if (S.vista === 'cartera' && !S.ficha) pintar(); }, 60); }
+  if ((LS.get('inv-nov-vista') || {}).v !== VERSION) { marcarNovVista(); if (S.cartera) setTimeout(() => { if (S.vista === 'cartera' && !S.ficha) pintar(); }, 60); }
   LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); LS.set('inv-023b-arr', true); LS.set('inv-nov-030', true);
   let nuevas = NOVEDADES.filter((n) => (n.cosas || n.arreglos) && desde && cmpVer(n.v, desde) > 0);
   if (!nuevas.length) nuevas = [NOVEDADES[0]];
@@ -14994,7 +15008,7 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   if (desde && !lista) return novedadesScroll(nuevas, desde, alCerrar);
   const resto = NOVEDADES.filter((n) => !nuevas.includes(n));
   const pasos = [], idx = new Map();
-  for (const n of nuevas) for (const c of n.cosas || []) if (c.ir) { idx.set(c, pasos.length); pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
+  for (const n of nuevas) for (const c of n.cosas || []) if (c.ir && !esParche(n.v)) { idx.set(c, pasos.length); pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v }); }
   const item = (c, i, ir) => `<li style="--i:${i}">${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${ir && idx.has(c) ? `<button type="button" class="enlace nov-ir" data-nov-ir="${idx.get(c)}">Enséñamelo</button>` : ''}</div></li>`;
   // los bugs corregidos de cada versión (desde la 0.2.3b), debajo de sus novedades
   const arr = (n) => (n.arreglos && n.arreglos.length ? `<div class="nov-arr"><h4>Arreglos</h4><ul>${n.arreglos.map((a) => `<li>${ICONOS.ok}<span>${esc(a)}</span></li>`).join('')}</ul></div>` : '');
@@ -15005,8 +15019,9 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   </section>`;
   const antes = (n) => `<details class="nov-ant"><summary><span class="nov-num peq">${esc(n.v)}</span><span class="nov-ant-t"><b>${esc(n.t)}</b><small>${fechaNov(n.f, n.h)}</small></span></summary>${n.cosas ? `<ul class="nov-lista">${n.cosas.map((c, i) => item(c, i, false)).join('')}</ul>` : ''}${arr(n)}</details>`;
   // si llevabas tiempo sin entrar, salen todas las que te has perdido, enteras, de la más nueva a la más antigua
-  const perdidas = nuevas.length > 1 ? `<p class="nov-perdidas">${dibujo('tour')}<span><b>Te has perdido ${nuevas.length} actualizaciones</b>Desde la ${esc(desde)}, que fue la última que viste. Aquí van todas, de la más nueva a la más antigua.</span></p>` : '';
-  const h = hoja(nuevas.length > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}<div class="nov-guia-fila">${pasos.length ? `<button type="button" class="btn pri nov-todo" data-nov-todo>${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}<button type="button" class="btn nov-scroll" data-nov-scroll>${L('Verlas con dibujos', 'See them with drawings')}</button></div>${nuevas.map(bloque).join('')}
+  const nBases = new Set(nuevas.map((n) => baseVer(n.v))).size;
+  const perdidas = nBases > 1 ? `<p class="nov-perdidas">${dibujo('tour')}<span><b>Te has perdido ${nuevas.length} actualizaciones</b>Desde la ${esc(desde)}, que fue la última que viste. Aquí van todas, de la más nueva a la más antigua.</span></p>` : '';
+  const h = hoja(nBases > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}<div class="nov-guia-fila">${pasos.length ? `<button type="button" class="btn pri nov-todo" data-nov-todo>${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}<button type="button" class="btn nov-scroll" data-nov-scroll>${L('Verlas con dibujos', 'See them with drawings')}</button></div>${nuevas.map(bloque).join('')}
     ${resto.length ? `<section class="nov-antes" aria-labelledby="hNovAnt"><h3 id="hNovAnt">Versiones anteriores</h3>${resto.map(antes).join('')}</section>` : ''}
     <button type="button" class="enlace nov-reg" data-nov-reg>Ver el registro completo de versiones</button>
     <div class="fila-btns"><button class="btn" data-tour-ya>Ver el tutorial</button><button class="btn" data-cerrar>Cerrar</button></div>
@@ -15029,13 +15044,14 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   const pasos = [], cosas = [];
   // con varias versiones perdidas, cada una con su capítulo (de la más antigua a la de ahora) y condensada: lo que
   // más importa de cada una en grande, el resto en una lista corta; los bugs, todos juntos al final
-  const varias = nuevas.length > 1;
-  const ultima = nuevas[0];
   const grupos = [];
   for (const n of [...nuevas].reverse()) {   // la 0.2.3b va con la 0.2.3: un capítulo por número
-    const base = n.v.replace(/[a-z]+$/, ''), g = grupos[grupos.length - 1];
+    const base = baseVer(n.v), g = grupos[grupos.length - 1];
     if (g && g.base === base) g.vs.push(n); else grupos.push({ base, vs: [n] });
   }
+  // la que se presenta es la versión de número (la 0.4, aunque ya vayas por la 0.4b); varias, si te has perdido más de una
+  const varias = grupos.length > 1;
+  const ultima = nuevas.find((n) => !esParche(n.v)) || nuevas[0];
   // si son muchas, las cuatro últimas con su capítulo y las de antes, juntas en uno, solo en lista corta
   const muchas = grupos.length > 4, viejas = grupos.length > 5 ? grupos.length - 4 : 0;
   const enGrande = (g, k) => (!varias ? 99 : k < viejas ? 0 : /\.0$/.test(g.base) ? (muchas ? 3 : 4) : muchas ? 1 : 2);
@@ -15047,10 +15063,10 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
       </section>`;
   let cuerpo = '', ne = 0;
   grupos.forEach((g, k) => {
-    const suyas = g.vs.flatMap((n) => (n.cosas || []).map((c) => ({ ...c, v: n.v })));
-    for (const c of suyas) { c.paso = c.ir ? pasos.length : null; if (c.ir) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: c.v }); cosas.push(c); }
-    const cuantas = enGrande(g, k), grandes = suyas.length <= cuantas + 1 ? suyas : suyas.slice(0, cuantas), resto = suyas.slice(grandes.length);
-    const prin = g.vs[0], bugs = g.vs.reduce((t, n) => t + ((n.arreglos || []).length), 0);
+    const todas = g.vs.flatMap((n) => (n.cosas || []).map((c) => ({ ...c, v: n.v }))), suyas = [...todas.filter((c) => !esParche(c.v)), ...todas.filter((c) => esParche(c.v))];
+    for (const c of suyas) { const g2 = c.ir && !esParche(c.v); c.paso = g2 ? pasos.length : null; if (g2) pasos.push({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: c.v }); cosas.push(c); }
+    const deBase = suyas.filter((c) => !esParche(c.v)), cuantas = enGrande(g, k), grandes = deBase.length <= cuantas + 1 ? deBase : deBase.slice(0, cuantas), resto = suyas.slice(grandes.length);
+    const prin = g.vs.find((n) => n.v === g.base) || g.vs[0], bugs = g.vs.reduce((t, n) => t + ((n.arreglos || []).length), 0);
     if (k === 0 && viejas) {
       const nv = grupos.slice(0, viejas).reduce((t, x) => t + x.vs.reduce((u, n) => u + (n.cosas || []).length, 0), 0);
       cuerpo += `<section class="ixn-capv" data-ancla><div class="ixn-capv-in">
@@ -15060,7 +15076,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
       </div></section>`;
     }
     if (varias && k >= viejas) cuerpo += `<section class="ixn-capv" data-ancla><div class="ixn-capv-in">
-        <h2 class="ixn-capv-v" data-no-trad>${esc(g.vs.map((n) => n.v).join(' y '))}</h2>
+        <h2 class="ixn-capv-v" data-no-trad>${esc(g.base)}</h2>
         <h3>${esc(prin.t)}</h3>
         <p><span>${fechaNov(g.vs[g.vs.length - 1].f, g.vs[g.vs.length - 1].h)}</span> · <span data-no-trad>${[suyas.length ? L(`${suyas.length} ${suyas.length === 1 ? 'novedad' : 'novedades'}`, `${suyas.length} new ${suyas.length === 1 ? 'thing' : 'things'}`) : '', bugs ? L(`${bugs} ${bugs === 1 ? 'bug corregido' : 'bugs corregidos'}`, `${bugs} ${bugs === 1 ? 'bug fixed' : 'bugs fixed'}`) : ''].filter(Boolean).join(' · ')}</span></p>
       </div></section>`;
@@ -15080,9 +15096,9 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     <div class="ix-cab"><span class="intro-marca" style="opacity:1"><img src="growfolio-nombre.svg" alt="GrowFolio"></span><button class="ixn-det" type="button" data-nv="lista">${ICONOS.plan}${L('En detalle', 'In detail')}</button><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
       <section class="ixn-heroe"><div class="ix-escena">
-        <p class="ixn-eti" data-no-trad>${varias ? L(`Te has perdido ${nuevas.length} versiones`, `You've missed ${nuevas.length} versions`) : L('Lo nuevo', "What's new")}</p>
+        <p class="ixn-eti" data-no-trad>${varias ? L(`Te has perdido ${grupos.length} versiones`, `You've missed ${grupos.length} versions`) : L('Lo nuevo', "What's new")}</p>
         <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l, k, a) => `<span aria-hidden="true" style="--k:${k};--d:${(k - (a.length - 1) / 2).toFixed(1)}">${esc(l)}</span>`).join('')}</h1>
-        ${varias ? `<ol class="ixn-ruta" data-no-trad aria-label="${L('Las versiones que te has perdido', 'The versions you missed')}">${(() => { const vs = [...nuevas].reverse().map((n) => n.v); const r = vs.length > 6 ? [vs[0], `+${vs.length - 5}`, ...vs.slice(-4)] : vs; return r.map((v, k) => `<li style="--k:${k}"${v === ultima.v ? ' class="hoy"' : v[0] === '+' ? ' class="mas"' : ''}>${esc(v)}</li>`).join(''); })()}</ol>` : ''}
+        ${varias ? `<ol class="ixn-ruta" data-no-trad aria-label="${L('Las versiones que te has perdido', 'The versions you missed')}">${(() => { const vs = grupos.map((g) => g.base); const r = vs.length > 6 ? [vs[0], `+${vs.length - 5}`, ...vs.slice(-4)] : vs; return r.map((v, k) => `<li style="--k:${k}"${v === baseVer(ultima.v) ? ' class="hoy"' : v[0] === '+' ? ' class="mas"' : ''}>${esc(v)}</li>`).join(''); })()}</ol>` : ''}
         <div class="ix-lema"><h2>${varias ? L(`Todo lo nuevo desde la ${esc(desde)}, resumido`, `Everything since ${esc(desde)}, in short`) : esc(ultima.t)}</h2><p><span>${fechaNov(ultima.f, ultima.h)}</span> · <span data-no-trad>${cuenta}</span></p></div>
         ${pasos.length ? `<button type="button" class="btn pri ixn-guia" data-nv="todo">${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}
         <div class="ix-baja" aria-hidden="true"><span>${L('o ve bajando', 'or scroll down')}</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
@@ -15611,17 +15627,29 @@ document.addEventListener('click', (e) => { if (e.target.closest('[data-mas]')) 
    y late hasta que lo ves de verdad (un rato en pantalla), y un globo encima ofrece la guía: te lleva, paso a paso, a
    cada sitio donde ha cambiado algo. La guía también está arriba en las novedades y en Ajustes.
    ===================================================================== */
-const pasosGuia = (ns = [NOVEDADES[0]]) => ns.flatMap((n) => (n.cosas || []).filter((c) => c.ir).map((c) => ({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v })));
+/* Solo las versiones con novedades (0.4, 0.5…) tienen guía, «Nuevo» en la barra y presentación. Las de letra (0.4a,
+   0.4b…) son arreglos: se suman a su versión y se avisan con un mensaje corto. La guía es la de la versión de número
+   en la que estás (en la 0.4b, la de la 0.4) y sale hasta que la haces o ves lo nuevo */
+const esParche = (v) => /[a-z]$/.test(String(v || ''));
+const baseVer = (v) => String(v || '').replace(/[a-z]+$/, '');
+const GUIA_ID = () => baseVer(VERSION);
+const novBase = () => NOVEDADES.find((n) => n.v === baseVer(VERSION)) || NOVEDADES.find((n) => !esParche(n.v)) || NOVEDADES[0];
+const pasosGuia = (ns = [novBase()]) => ns.filter((n) => !esParche(n.v)).flatMap((n) => (n.cosas || []).filter((c) => c.ir).map((c) => ({ ...c.ir, t: c.t, x: c.x, dib: c.d, nuevo: n.v })));
+// la versión cuyas novedades has visto: con un arreglo de la misma versión se queda el día en que la viste
+function marcarNovVista() {
+  const pv = LS.get('inv-nov-vista') || {};
+  if (pv.v !== VERSION) LS.set('inv-nov-vista', { v: VERSION, d: pv.d && baseVer(pv.v) === baseVer(VERSION) ? pv.d : hoyIso() });
+}
 function guiaNuevo(alAcabar, pasos = pasosGuia()) {
   if (!pasos.length) return;
-  LS.set('inv-globo-v', VERSION);
+  LS.set('inv-guia-globo', GUIA_ID());
   quitarGloboNuevo();
-  iniciarTour(0, () => { LS.set('inv-nav-visto', VERSION); pintarNavNuevo(); if (alAcabar) alAcabar(); }, pasos);
+  iniciarTour(0, () => { LS.set('inv-guia', GUIA_ID()); pintarNavNuevo(); if (alAcabar) alAcabar(); }, pasos);
 }
 // la sección con «Nuevo»: la de la primera novedad con sitio, mientras no la hayas visto, y solo si ya usabas GrowFolio
 // antes de esta versión (a quien acaba de llegar le sobra: para eso tiene el tutorial)
 function grupoNuevo() {
-  if (LS.get('inv-nav-visto', '') === VERSION || (LS.get('inv-nov-vista') || {}).v !== VERSION) return null;
+  if (LS.get('inv-guia', '') === GUIA_ID() || baseVer((LS.get('inv-nov-vista') || {}).v) !== baseVer(VERSION)) return null;
   const p = pasosGuia()[0];
   return p ? grupoDe(p.v).k : null;
 }
@@ -15646,25 +15674,25 @@ function vigilarNuevo() {
     const p = pasosGuia().find((x) => grupoDe(x.v).k === k), el = p && p.sel && document.querySelector(p.sel), r = el && el.getBoundingClientRect();
     const dentro = r && r.height && Math.min(r.bottom, innerHeight) - Math.max(r.top, 0) > Math.min(r.height, innerHeight) * 0.4;
     visto = dentro ? visto + 500 : 0;
-    if (visto >= 1500) { LS.set('inv-nav-visto', VERSION); clearInterval(S.nuevoT); S.nuevoT = 0; pintarNavNuevo(); quitarGloboNuevo(); }
+    if (visto >= 1500) { LS.set('inv-guia', GUIA_ID()); clearInterval(S.nuevoT); S.nuevoT = 0; pintarNavNuevo(); quitarGloboNuevo(); }
   }, 500);
 }
 function quitarGloboNuevo() { clearTimeout(S.globoT); for (const g of $$('.globo-nuevo')) g.remove(); }
 // el globo, una vez por versión: encima del botón con «Nuevo» (en el ordenador, debajo), con la guía a un toque
 function globoNuevo(intento = 0) {
   const k = grupoNuevo(), pasos = pasosGuia();
-  if (!k || !pasos.length || !S.cartera || LS.get('inv-globo-v', '') === VERSION) return;
+  if (!k || !pasos.length || !S.cartera || LS.get('inv-guia-globo', '') === GUIA_ID()) return;
   clearTimeout(S.globoT);
   if (opiOcupado() || grupoDe(S.vista).k === k) { if (intento < 30) S.globoT = setTimeout(() => globoNuevo(intento + 1), 6000); return; }
   const a = [...$$(`.navbar [data-ir="${k}"], .nav [data-ir="${k}"]`)].find((x) => x.offsetParent);
   if (!a) return;
-  LS.set('inv-globo-v', VERSION);
-  const g = document.createElement('div');
+  LS.set('inv-guia-globo', GUIA_ID());
+  const g = document.createElement('div'), bv = esc(pasos[0].nuevo);
   g.className = 'globo-nuevo';
-  g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', L(`Nuevo en la ${VERSION}`, `New in ${VERSION}`));
+  g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', L(`Nuevo en la ${bv}`, `New in ${bv}`));
   const mas = pasos.length - 1;
   g.innerHTML = `<button type="button" class="globo-x" data-globo="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button>
-    <span class="globo-eti">${ICONOS.chispa}${L(`Nuevo en la ${VERSION}`, `New in ${VERSION}`)}</span>
+    <span class="globo-eti">${ICONOS.chispa}${L(`Nuevo en la ${bv}`, `New in ${bv}`)}</span>
     <b>${esc(trad(pasos[0].t))}</b>
     <p>${mas ? L(`Está aquí, en ${esc(GRUPOS.find((x) => x.k === k).t)}, y hay ${mas} ${mas === 1 ? 'cosa más' : 'cosas más'}. Te las enseñamos una a una.`, `It's right here, in ${esc(L(GRUPOS.find((x) => x.k === k).t, GRUPOS.find((x) => x.k === k).en))}, and there ${mas === 1 ? 'is 1 more thing' : `are ${mas} more things`}. We'll show you each one.`) : L('Está aquí. Te lo enseñamos.', "It's right here. We'll show you.")}</p>
     <button type="button" class="btn pri peq" data-globo="guia">${L('Guíame', 'Show me')}</button>
@@ -15769,9 +15797,9 @@ function pasoTour(dir = 1) {
   const busca = () => {
     if (!TOURE || TOURE.n !== n) return;
     const el = p.sel ? elVisible(p.sel) : null;
-    TOURE.el = el;
+    TOURE.el = el; TOURE.vigila = performance.now() + 4000; TOURE.dt0 = null;
     if (el) encuadrarTour(el, caja, p.lado);
-    seguirTour(500);
+    seguirTour(4000);
     caja.focus({ preventScroll: true });
   };
   // al cambiar de pestaña, se espera a que esté pintada y quieta (si no, el deslizamiento iría a trompicones)
@@ -15789,9 +15817,20 @@ function seguirTour(ms) {
 function colocarTour() {
   if (!TOURE) return;
   const foco = $('.tour-foco', TOURE.capa), caja = $('.tour-caja', TOURE.capa);
+  const paso = TOURE.pasos[TOURE.i] || {};
   let el = TOURE.el;
-  if (el && !el.isConnected) el = TOURE.el = elVisible(TOURE.pasos[TOURE.i].sel);
-  const paso = TOURE.pasos[TOURE.i] || {}, hc = caja.offsetHeight;
+  if (el && !el.isConnected) el = TOURE.el = elVisible(paso.sel);
+  // los primeros segundos de cada paso: si lo resaltado aún no estaba (el mapa tarda en cargar) o se ha movido porque
+  // algo de encima ha terminado de pintarse, la página se vuelve a encuadrar
+  if (TOURE.vigila > performance.now() && paso.sel) {
+    if (!el && (el = TOURE.el = elVisible(paso.sel))) { TOURE.dt0 = null; encuadrarTour(el, caja, paso.lado); }
+    if (el) {
+      const dt = rectTour(el).top + scrollY;
+      if (TOURE.dt0 != null && Math.abs(dt - TOURE.dt0) > 24) encuadrarTour(el, caja, paso.lado);
+      TOURE.dt0 = dt;
+    }
+  }
+  const hc = caja.offsetHeight;
   foco.classList.toggle('suave', !!paso.suave);
   if (!el) {
     // nada que señalar: el foco se cierra sobre su propio centro y la tarjeta se desliza al centro de la pantalla
@@ -15807,7 +15846,7 @@ function colocarTour() {
     caja.style.top = `${Math.max(16, Math.round((innerHeight - hc) / 2))}px`;
     return;
   }
-  const r = el.getBoundingClientRect(), B = bordesTour(el), m = TOUR_M, g = TOUR_G;
+  const r = rectTour(el), B = bordesTour(el), m = TOUR_M, g = TOUR_G;
   // lo que se ve de lo resaltado: no cuenta lo que queda bajo la cabecera o la barra de abajo
   let ft = B.fijo ? r.top - m : Math.max(r.top - m, B.arriba + 2), fb = B.fijo ? r.bottom + m : Math.min(r.bottom + m, B.abajo - 2);
   ft = Math.max(1, ft); fb = Math.min(innerHeight - 1, fb);
@@ -15838,6 +15877,13 @@ function colocarTour() {
 /* los bordes de la pantalla para el tutorial: lo resaltado se ve entre la cabecera y la barra de abajo (salvo que esté
    en ellas, que no se mueven) y la tarjeta va entre el borde de arriba y la barra */
 const TOUR_M = 6, TOUR_G = 10;
+// lo resaltado puede ser dos cosas juntas (el mapa y el país elegido debajo): el recuadro que las abarca
+function rectTour(el) {
+  const r = el.getBoundingClientRect(), p = TOURE && TOURE.pasos[TOURE.i], o = p && p.con ? elVisible(p.con) : null;
+  if (!o) return r;
+  const q = o.getBoundingClientRect(), left = Math.min(r.left, q.left), top = Math.min(r.top, q.top), right = Math.max(r.right, q.right), bottom = Math.max(r.bottom, q.bottom);
+  return { left, top, right, bottom, width: right - left, height: bottom - top };
+}
 function bordesTour(el) {
   const tb = document.querySelector('.top'), nb = document.querySelector('.navbar');
   const enTop = !!(tb && tb.contains(el)), enNav = !!(nb && nb.contains(el));
@@ -15858,7 +15904,7 @@ function encuadrarTour(el, caja, lado) {
   const B = bordesTour(el), txt = $('.tour-txt', caja);
   caja.classList.remove('justa');
   if (txt) txt.style.maxHeight = '';
-  const r = el.getBoundingClientRect(), alto = r.height + 2 * TOUR_M, arriba = B.fijo ? B.techo : Math.max(B.arriba + 8, B.techo);
+  const r = rectTour(el), alto = r.height + 2 * TOUR_M, arriba = B.fijo ? B.techo : Math.max(B.arriba + 8, B.techo);
   const sitio = B.suelo - arriba - TOUR_G;
   let hc = caja.offsetHeight;
   if (alto + hc > sitio) {
@@ -16628,6 +16674,7 @@ function bienvenida(intento = 0) {
   // la presentación de la 0.2 (la nueva, más completa): una vez a todos los que ya usaban GrowFolio
   if (visto && cmpVer(VERSION, '0.2.0') >= 0 && !LS.get('inv-estreno-02b')) return estreno02(visto, despues);
   if (/^0\.3\./.test(visto || '') && !LS.get('inv-nov-030')) return mostrarNovedades('0.2.3b', despues);
+  if (visto && cmpVer(visto, VERSION) < 0 && baseVer(visto) === baseVer(VERSION)) return arreglosVistos(visto, despues);
   if (!visto || cmpVer(visto, VERSION) < 0) return mostrarNovedades(visto, despues);
   // la 0.2.3b estuvo unos minutos sin sus bugs corregidos: a quien la abrió entonces se le enseña otra vez, una sola
   if (visto === '0.2.3b' && !LS.get('inv-023b-arr')) return mostrarNovedades('0.2.3', despues);
@@ -18451,7 +18498,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'idioma') menuIdioma(t);
     else if (a === 'novedades-detalle') mostrarNovedades(null, () => {}, true);
     else if (a === 'novedades-guia') guiaNuevo();
-    else if (a === 'novedades-ocultar') { LS.set('inv-nov-cerrada', VERSION); const x = t.closest('.nov-aviso'); if (x) x.remove(); }
+    else if (a === 'novedades-ocultar') { LS.set('inv-nov-cerrada', baseVer(VERSION)); const x = t.closest('.nov-aviso'); if (x) x.remove(); }
     else if (a === 'ordenar-cartera') abrirCarEdit();
     else if (a === 'ia-actualizar') generarAnalisisIA('la pides tú');
     else if (a === 'asesor-ajustes') { AS.vista = 'ajustes'; abrirAsesor().then(() => { AS.vista = 'ajustes'; pintarAsesor(); }); }

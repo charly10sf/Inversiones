@@ -1,6 +1,26 @@
 {
  "versiones": [
   {
+   "v": "0.4c",
+   "f": "2026-10-23",
+   "h": "00:21",
+   "t": "La guía de la 0.4, al día",
+   "commits": [
+    {
+     "cuando": "2026-10-23 00:21",
+     "asunto": "0.4c: las versiones de arreglos sin guía ni presentación, y la guía de la 0.4 al día",
+     "detalle": [
+      "Solo las versiones de número (0.4, 0.5…) tienen presentación, guía, globo y «Nuevo» en la barra; las de letra se avisan con un mensaje corto",
+      "La guía es la de la versión de número en la que estás (en la 0.4c, la de la 0.4) y se guarda aparte (inv-guia, inv-guia-globo): vuelve a salir una vez",
+      "Quien viene de antes ve la presentación de la 0.4 (sus arreglos de letra, en la lista corta), no la de su último arreglo",
+      "Aviso de Inicio de la 0.4 y fecha de la versión vista conservada en sus arreglos",
+      "Guía de la 0.4 repasada: el mapa con los gestos, «Tu dinero» con el país donde más tienes elegido (mapa y país resaltados juntos) y los rectángulos con logos",
+      "Tutorial: si lo resaltado aún no está (el mapa tarda en cargar) o se mueve al pintarse lo de encima, se vuelve a encuadrar"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.4b",
    "f": "2026-10-22",
    "h": "23:56",
