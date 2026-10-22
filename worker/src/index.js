@@ -15,7 +15,7 @@ const FB_PROYECTO = 'growfolio-a79a9';
 const FB_JWKS = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
 const ORIGENES = ['https://charly10sf.github.io'];
 // la primera es la de por defecto; la web manda la suya (la de GrowFolio, en cuanto el repositorio se renombre)
-const VUELTAS = ['https://charly10sf.github.io/Inversiones/', 'https://charly10sf.github.io/GrowFolio/'];
+const VUELTAS = ['https://charly10sf.github.io/GrowFolio/', 'https://charly10sf.github.io/Inversiones/'];
 // el saldo que vale para «tu efectivo»: el disponible si lo dan; si no, el contable
 const ORDEN_SALDO = ['ITAV', 'CLAV', 'ITBD', 'CLBD', 'XPCD', 'OPAV', 'OPBD', 'PRCD', 'FWAV', 'INFO', 'OTHR'];
 
@@ -176,7 +176,7 @@ async function banco(ruta, url, req, env, res) {
 // tocan), así que las lanza este Worker con su cron, que sí se cumple (los horarios están en wrangler.toml). Necesita el
 // secreto PRECIOS_TOKEN: un token de grano fino solo de este repositorio con Actions en lectura y escritura, que sirve
 // para lanzar Actions y nada más. Sin él, el cron no hace nada.
-const REPO = 'charly10sf/Inversiones';
+const REPO = 'charly10sf/GrowFolio';
 const CRON_CATALOGO = '23 5 * * *';
 async function lanzarAction(env, flujo) {
   const r = await fetch(`https://api.github.com/repos/${REPO}/actions/workflows/${flujo}/dispatches`, {
