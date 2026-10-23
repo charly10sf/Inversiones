@@ -68,10 +68,18 @@ test('GrowIA lee las fichas y busca en internet una vez por pregunta como mucho'
   if (idea) expect(JSON.stringify(idea.valoracion_de_la_web || '')).not.toContain('puesto');
   // el cupo de hoy, a la vista, y el modelo de la respuesta
   expect(await page.evaluate(() => usoIAHoy()['gemini-3.8-flash'])).toBe(3);
-  await expect(page.locator('#asSub')).toContainText('3 de 20 hoy');
-  await expect(page.locator('.as-modelo-de')).toContainText('Gemini 3.8 Flash');
-  // con una clave que da más de 20, no se queda en «20 de 20»
-  expect(await page.evaluate(() => cupoTxt('gemini-3.8-flash', 25))).toBe('25 hoy');
+  // lo que se ve es GrowIA: ni el modelo de Google arriba ni debajo de cada respuesta
+  await expect(page.locator('#asSub')).toHaveText('Con tu cartera y las noticias de hoy');
+  await expect(page.locator('.as-modelo-de')).toHaveCount(0);
+  await expect(page.locator('#asesorFondo')).not.toContainText('Gemini');
+  // arriba, el cupo solo cuando queda poco (el 3.8 y el 3.6 cuentan juntos: 40)
+  await page.evaluate(() => { LS.set('inv-ia-uso', { d: diaGoogle(), m: { 'gemini-3.8-flash': 20, 'gemini-3.6-flash': 16 } }); pintarAsesor(); });
+  await expect(page.locator('#asSub')).toHaveText('Te quedan 4 respuestas normales hoy');
+  // solo si contesta la rápida porque la normal se ha quedado sin cupo, lo dice
+  await page.evaluate(() => { AS.conv.push({ rol: 'yo', texto: 'otra' }, { rol: 'ia', partes: [{ tipo: 'texto', texto: 'Con la rápida.' }], citas: [], resultados: [], modelo: MODELO_RAPIDO }); pintarAsesor(); });
+  await expect(page.locator('.as-modelo-de')).toContainText('la normal había gastado su cupo');
+  // con una clave que da más de 40, no se queda en «40 de 40» (Detalles técnicos de Ajustes de GrowIA)
+  expect(await page.evaluate(() => cupoNormalTxt({ 'gemini-3.8-flash': 25, 'gemini-3.6-flash': 20 }))).toBe('45 hoy');
 });
 
 test('si el modelo se agota a mitad, el siguiente puede buscar en internet (la búsqueda del anterior no la ha leído)', async ({ page, context, errores }) => {
@@ -98,7 +106,10 @@ test('si el modelo se agota a mitad, el siguiente puede buscar en internet (la b
   await expect(page.locator('#asCuerpo')).toContainText('según la búsqueda', { timeout: 30_000 });
   expect(busquedas).toBe(2);
   expect(modelos).toEqual(['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.6-flash']);
-  await expect(page.locator('.as-modelo-de')).toContainText('Gemini 3.6 Flash');
+  // del 3.8 al 3.6 sigue siendo la respuesta normal: sin aviso ni nombres de Google
+  await expect(page.locator('#asCuerpo')).not.toContainText('sigo con');
+  await expect(page.locator('#asCuerpo')).not.toContainText('Gemini');
+  expect(await page.evaluate(() => AS.conv[AS.conv.length - 1].modelo)).toBe('gemini-3.6-flash');
 });
 
 test('la revisión automática va en una sola llamada, sin herramientas, con el 3.6 y las fichas', async ({ page, context, errores }) => {

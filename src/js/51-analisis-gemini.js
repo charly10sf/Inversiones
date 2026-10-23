@@ -159,7 +159,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
       const min = [5, 15, 30][IA.reintentos++];
       IA.reintento = Date.now() + min * 60000;
       IA.reintentoT = setTimeout(() => { if (S.cartera && !IA.generando) generarAnalisisIA(motivo, true); }, min * 60000);
-      if (e.estado >= 500) IA.error = 'Google está saturado ahora mismo, también con los otros modelos gratuitos de Gemini.';
+      if (e.estado >= 500) IA.error = 'Google está saturado ahora mismo: GrowIA lo vuelve a intentar sola en unos minutos.';
       else if (e.estado === 429) IA.error = 'Google pide esperar un poco (el límite gratuito por minuto).';
     }
   }

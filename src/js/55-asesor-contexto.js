@@ -495,9 +495,9 @@ function errorGoogle(estado, j) {
   let e;
   if (/API key not valid|API_KEY_INVALID/i.test(m + det)) e = new Error('Google dice que la clave no es válida. Cópiala otra vez entera desde aistudio.google.com/apikey (sin espacios al principio ni al final).');
   else if (estado === 401 || /ACCESS_TOKEN_TYPE_UNSUPPORTED|UNAUTHENTICATED/i.test(m + det)) e = new Error('Google no acepta esta clave desde GrowFolio. Crea otra en aistudio.google.com/apikey y vuelve a probar; si sigue igual, avísanos con el bichito de arriba.');
-  else if (estado === 403) e = new Error('Tu clave de Google no tiene permiso para este modelo. Elige Gemini 3.8 Flash en Ajustes de GrowIA, que es gratis.');
-  else if (estado === 404) e = new Error('Ese modelo de Gemini no existe para tu clave: elige otro en Ajustes de GrowIA.');
-  else if (estado === 429) e = new Error(/free.?tier|limit: 0/i.test(m) && /pro|argon/i.test(m) ? 'Ese modelo no entra en el plan gratuito: elige Gemini 3.8 Flash en Ajustes de GrowIA.' : `Has llegado al límite gratuito de tu clave de Google. Si es el de por minuto, en un momento vuelve a funcionar; si es el diario, a las ${horaRenuevaIA()}. Es el de tu clave: cada uno usa la suya.`);
+  else if (estado === 403) e = new Error('Tu clave de Google no tiene permiso para esta respuesta. Elige la normal en Ajustes de GrowIA, que es gratis.');
+  else if (estado === 404) e = new Error('Tu clave de Google no tiene esta respuesta: elige la otra en Ajustes de GrowIA.');
+  else if (estado === 429) e = new Error(/free.?tier|limit: 0/i.test(m) && /pro|argon/i.test(m) ? 'Esta respuesta no entra en el plan gratuito de Google: elige la normal en Ajustes de GrowIA.' : `Has llegado al límite gratuito de tu clave de Google. Si es el de por minuto, en un momento vuelve a funcionar; si es el diario, a las ${horaRenuevaIA()}. Es el de tu clave: cada uno usa la suya.`);
   else if (estado >= 500) e = new Error('Google está saturado ahora mismo. Prueba en un momento.');
   else e = new Error(m || `Error ${estado} de Google`);
   e.estado = estado; e.msg = m;
@@ -616,16 +616,18 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
   let reintentos = 0, conPensar = true, cambiado = false;
   const orden = () => (cadena ? cadena.filter((m) => MODELOS[m]) : ordenIA(cfg.modelo));
   let modelo = cadena ? orden().find((m) => !agotadosIA().includes(m)) : modeloVivo(cfg);
-  if (!modelo) { turno.modelo = orden()[0]; const e = new Error(`Hoy ya no queda cupo de ${orden().map((m) => MODELOS[m].n).join(' ni de ')} en tu clave: se hará cuando se renueve, a las ${horaRenuevaIA()}.`); e.estado = 429; e.diario = true; e.previsto = true; throw e; }
+  if (!modelo) { turno.modelo = orden()[0]; const e = new Error(`Hoy ya no queda cupo en tu clave para la revisión automática: se hará cuando se renueve, a las ${horaRenuevaIA()}.`); e.estado = 429; e.diario = true; e.previsto = true; throw e; }
   const inicio = contents.length, probados = new Set([modelo]);
   AS.modeloVivo = modelo; turno.modelo = modelo;
-  if (!cadena && modelo !== cfg.modelo) turno.partes.push({ tipo: 'paso', txt: `${MODELOS[cfg.modelo].n} ya ha gastado su cupo de hoy: contesta ${MODELOS[modelo].n}` });
+  // del 3.8 al 3.6 sigue siendo la respuesta normal: solo se avisa si contesta la rápida
+  if (!cadena && esRapida(modelo) && !esRapida(cfg.modelo)) turno.partes.push({ tipo: 'paso', txt: 'La respuesta normal ya ha gastado su cupo de hoy: contesta la rápida' });
   // si el modelo se agota a mitad, se empieza la respuesta de nuevo con el siguiente
   const saltar = (porque) => {
     const fuera = agotadosIA(), otro = orden().find((x) => !probados.has(x) && !fuera.includes(x));
     if (!otro) return false;
     turno.partes = turno.partes.filter((x) => x.tipo === 'paso');
-    turno.partes.push({ tipo: 'paso', txt: `${MODELOS[modelo].n} ${porque}: sigo con ${MODELOS[otro].n}` });
+    // del 3.8 al 3.6 sigue siendo la respuesta normal: sin aviso; a la rápida, sí
+    if (esRapida(otro) && !esRapida(modelo)) turno.partes.push({ tipo: 'paso', txt: `La respuesta normal ${porque.replace('saturado', 'saturada')}: sigo con la rápida` });
     modelo = otro; probados.add(otro); AS.modeloVivo = otro; turno.modelo = otro; contents.length = inicio; reintentos = 0; conPensar = true;
     // empieza de cero: lo que buscó el anterior no lo ha leído este
     busquedas = 0; intentos = 0; turno.citas.length = 0; turno.resultados.length = 0;
@@ -654,7 +656,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
       if (e.estado === 429 && e.diario) { marcarAgotado(modelo); if (saltar('ha gastado su cupo de hoy')) { vuelta--; continue; } }
       if (e.estado === 429 && reintentos >= 3 && saltar('sigue pidiendo esperar')) { vuelta--; continue; }
       if (e.estado === 429 && reintentos < 3 && !(e.espera > 60)) { reintentos++; const seg = Math.ceil(e.espera || 15 * reintentos); turno.partes.push({ tipo: 'paso', txt: `Google pide esperar ${seg} s (límite gratuito por minuto)` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
-      if (e.estado >= 500 && reintentos < 2) { reintentos++; const seg = 4 * reintentos; turno.partes.push({ tipo: 'paso', txt: `${MODELOS[modelo] ? MODELOS[modelo].n : 'Gemini'} está saturado: lo intento otra vez en ${seg} s` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
+      if (e.estado >= 500 && reintentos < 2) { reintentos++; const seg = 4 * reintentos; turno.partes.push({ tipo: 'paso', txt: `Google está saturado: lo intento otra vez en ${seg} s` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
       if (e.estado >= 500 && saltar('está saturado')) { vuelta--; continue; }
       if (e.estado === 429 && e.diario) e.message = `Tu clave gratis de Google ha gastado hoy el cupo de sus modelos. Se renueva a las ${horaRenuevaIA()}. Es el cupo de tu clave, no de GrowFolio: cada uno usa la suya.`;
       throw e;

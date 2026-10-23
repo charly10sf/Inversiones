@@ -79,11 +79,25 @@ function horaRenuevaIA() {
     return new Date(ahora.getTime() + 864e5 - pasado).toLocaleTimeString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { hour: 'numeric', minute: '2-digit' });
   } catch (e) { return '9:00'; }
 }
-/* lo gastado hoy de un modelo con cupo conocido: «7 de 20»; si pasa de 20 sin agotarse (una clave de pago, o Google
-   da más), solo la cuenta */
-function cupoTxt(k, u = usoIAHoy()[k] || 0) {
-  if (!CUPO_DIA[k]) return String(u);
-  return u > CUPO_DIA[k] && !agotadosIA().includes(k) ? L(`${u} hoy`, `${u} today`) : L(`${Math.min(u, CUPO_DIA[k])} de ${CUPO_DIA[k]} hoy`, `${Math.min(u, CUPO_DIA[k])} of ${CUPO_DIA[k]} today`);
+/* 0.7: lo que ve la persona es GrowIA, normal o rápida; los modelos de Google, en Ajustes de GrowIA (y en la
+   privacidad). La normal es el 3.8 y, cuando se le acaba el cupo, el 3.6: los dos piensan a fondo, así que su cupo
+   se cuenta junto (20 + 20) */
+const esRapida = (m) => m === MODELO_RAPIDO;
+function cupoNormalTxt(u = usoIAHoy()) {
+  const ks = Object.keys(CUPO_DIA), n = ks.reduce((a, k) => a + (u[k] || 0), 0), tot = ks.reduce((a, k) => a + CUPO_DIA[k], 0);
+  return n > tot && !ks.every((k) => agotadosIA().includes(k)) ? L(`${n} hoy`, `${n} today`) : L(`${Math.min(n, tot)} de ${tot} hoy`, `${Math.min(n, tot)} of ${tot} today`);
+}
+/* debajo del nombre de GrowIA, solo lo que sirve: si contesta la rápida porque la normal se ha quedado sin cupo, o
+   si a la normal le quedan 5 o menos hoy; si no, una frase fija */
+function subtituloIA(cfg = cfgAsesor()) {
+  const vivo = modeloVivo(cfg);
+  if (esRapida(vivo) && !esRapida(cfg.modelo)) return L('La respuesta normal ha gastado su cupo de hoy: contesta la rápida', "The normal answer has used up today's quota: the fast one replies");
+  if (!esRapida(vivo)) {
+    const u = usoIAHoy(), ks = Object.keys(CUPO_DIA), n = ks.reduce((a, k) => a + (u[k] || 0), 0), tot = ks.reduce((a, k) => a + CUPO_DIA[k], 0);
+    const quedan = tot - n;
+    if (quedan >= 0 && quedan <= 5) return quedan === 1 ? L('Te queda 1 respuesta normal hoy', 'You have 1 normal answer left today') : L(`Te quedan ${quedan} respuestas normales hoy`, `You have ${quedan} normal answers left today`);
+  }
+  return L('Con tu cartera y las noticias de hoy', "With your portfolio and today's news");
 }
 function usoIAHoy() { const u = LS.get('inv-ia-uso', {}); return u && u.d === diaGoogle() ? u.m || {} : {}; }
 const marcarAgotado = (m) => { const d = diaGoogle(), a = Object.fromEntries(Object.entries(LS.get('inv-ia-agotados', {})).filter(([, v]) => v === d)); a[m] = d; LS.set('inv-ia-agotados', a); };

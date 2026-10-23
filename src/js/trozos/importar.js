@@ -71,7 +71,7 @@ async function leerUnaVez(partes, alPaso, etq = '') {
   for (const modelo of ordenIA(modeloVivo()).filter((m) => !agotadosIA().includes(m))) {
     let pensar = !!(MODELOS[modelo] && MODELOS[modelo].pensar);
     for (let intento = 0; intento < 3; intento++) {
-      alPaso(`${etq}${L('Leyendo con', 'Reading with')} ${MODELOS[modelo].n}…`);
+      alPaso(`${etq}${L('GrowIA está leyendo', 'GrowIA is reading')}…`);
       let r;
       try { r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo(pensar)) }); }
       catch (e) { ultimo = new Error(L('No hay conexión con Google.', 'No connection to Google.')); break; }
