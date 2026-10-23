@@ -1,6 +1,28 @@
 {
  "versiones": [
   {
+   "v": "0.6",
+   "f": "2026-10-23",
+   "h": "15:00",
+   "t": "Abre antes",
+   "commits": [
+    {
+     "cuando": "2026-10-23 15:00",
+     "asunto": "0.6: Abre antes",
+     "detalle": [
+      "index.html partido por secciones en src/ con build de Vite (dist/ minificado y con huella); la web se publica desde Actions",
+      "Carga por trozos: mapa del mundo, GrowIA y recorte, GTA VI, novedades, banco, opiniones y leer capturas se bajan al abrirlos; en.json partido y solo en inglés",
+      "Por la red, de 932 a 750 KB al abrir; lista en 1,6–1,9 s con un móvil lento",
+      "La entrada entera la primera vez de cada día; las demás, corta (GrowFolio montado y dentro en cuanto ha cargado)",
+      "Pruebas en el repositorio que pasan en Actions en cada push: Playwright en 360, 390 y 1.440 con Firebase y Gemini de imitación, presupuesto de rendimiento, subida desde la versión publicada y Python",
+      "Revisión aparte del build, los trozos y el service worker: 13 hallazgos, arreglados",
+      "El build funciona también en Windows (rutas y saltos de línea)",
+      "Novedades de la 0.6 en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.5d",
    "f": "2026-10-23",
    "h": "13:30",

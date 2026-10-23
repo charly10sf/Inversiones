@@ -238,7 +238,7 @@ test.describe('trozos: las novedades', () => {
     await page.locator('#entrada').click({ timeout: 20_000 }).catch(() => {});
     await expect(page.locator('.ixn, .estreno, .hoja-fondo').first()).toBeVisible({ timeout: 30_000 });
     expect(await page.evaluate(() => typeof novedadesScroll)).toBe('function');
-    expect(await page.locator('body').innerText()).toMatch(/0\.5|contraseña|código/i);
+    expect(await page.locator('body').innerText()).toMatch(/0\.6|Abre antes|0\.5|contraseña|código/i);
   });
 });
 
@@ -369,5 +369,26 @@ test.describe('GrowIA busca en internet', () => {
     busquedas.length = 0;
     await preguntar('¿Y la semana que viene?');
     expect(busquedas).toEqual(['gemini-3.8-flash']);
+  });
+});
+
+test.describe('la entrada', () => {
+  test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
+
+  test('entera la primera vez del día; las demás, corta', async ({ pagina: page }) => {
+    await crearCuenta(page);
+    await quitarCapas(page);
+    expect(await page.evaluate(() => LS.get('inv-entrada-dia') === hoyIso())).toBe(true);
+    // la segunda vez del día: corta, y dentro enseguida
+    await page.reload();
+    await expect(page.locator('#entrada.corta')).toBeAttached({ timeout: 10_000 });
+    const t = Date.now();
+    await expect(page.locator('#entrada')).toHaveCount(0, { timeout: 10_000 });
+    expect(Date.now() - t).toBeLessThan(4000);
+    // otro día, entera otra vez
+    await page.evaluate(() => LS.set('inv-entrada-dia', '2026-01-01'));
+    await page.reload();
+    await expect(page.locator('#entrada')).toBeAttached({ timeout: 10_000 });
+    expect(await page.locator('#entrada').getAttribute('class')).not.toContain('corta');
   });
 });

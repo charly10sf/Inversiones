@@ -5,6 +5,14 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.6', f: '2026-10-23', h: '15:00', t: 'Abre antes', cosas: [
+    { d: 'trozos', t: 'Abre antes', x: 'GrowFolio baja un 20 % menos al abrir y está lista antes. El mapa del mundo, GrowIA, GTA VI y las novedades se cargan la primera vez que los abres, y el inglés solo si lo usas.' },
+    { d: 'entrada', t: 'La entrada, más corta', x: 'La animación del logo sale entera la primera vez de cada día. Las demás veces, GrowFolio aparece ya montado y entras en cuanto ha cargado, sin esperar a la animación.' },
+    { d: 'pruebas', t: 'Más probada antes de llegarte', x: 'Cada cambio pasa por pruebas automáticas en un móvil grande, uno pequeño y un ordenador, en español y en inglés, antes de publicarse. Si algo se rompe, no sale.' },
+  ], arreglos: [
+    'En inglés, el recuento de señales de Expertos, los nombres de algunas bolsas y una frase del plan de venta salían en español.',
+    'La guía de lo nuevo ya no se descoloca si aparece un aviso a mitad de un paso.',
+  ] },
   { v: '0.5d', f: '2026-10-23', h: '13:30', t: 'Banderas en el mapa del ordenador', arreglos: [
     'En el ordenador, el mapa del mundo lleva la bandera de cada país al lado de su nombre, como en el móvil.',
     'Los desplegables del ordenador, como «Ir a un país», salen con los colores y la letra de GrowFolio, y la lista de países con sus banderas. En Windows la lista salía en blanco, con la letra casi invisible.',
@@ -439,6 +447,10 @@ const mundoDib = (col) => Object.entries(MUNDO_DIB).map(([k, d]) => `<path class
 const PILDORA_DIB = (x, y, w) => `<rect x="${x}" y="${y}" width="${w}" height="15" rx="7.5" fill="#0D0C0A" stroke="rgba(247,242,232,.14)" stroke-width="1"/>`;
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  // 0.6: lo que se baja al abrir y lo que llega después (los trozos), el cronómetro de la entrada corta y las pruebas en tres pantallas
+  trozos: '<rect class="fp" x="8" y="10" width="58" height="60" rx="9"/><path class="l" d="M18 24h36M18 34h28M18 44h32"/><rect class="fA" x="18" y="54" width="22" height="7" rx="3.5"/><rect class="fa" x="78" y="10" width="34" height="16" rx="5"/><rect class="fa" x="78" y="32" width="34" height="16" rx="5"/><rect class="fa" x="78" y="54" width="34" height="16" rx="5"/><path class="a" d="M70 18h4M70 40h4M70 62h4"/>',
+  entrada: '<circle class="l" cx="56" cy="44" r="26"/><path class="l" d="M50 12h12M56 12v6"/><path class="a" d="M56 18A26 26 0 0 1 78.5 31"/><path class="a" d="M56 44l9-15"/><circle class="fA" cx="56" cy="44" r="3"/><rect class="fA" x="88" y="36" width="26" height="15" rx="7.5"/><text class="tn" x="94" y="46.5">1 s</text>',
+  pruebas: '<rect class="l" x="8" y="22" width="20" height="38" rx="4"/><rect class="l" x="34" y="16" width="26" height="48" rx="5"/><rect class="l" x="66" y="16" width="48" height="32" rx="4"/><path class="l" d="M82 58h16M90 48v10"/><path class="u" d="M12.5 41l3 3 6-6"/><path class="u" d="M40 40l4 4 8-8"/><path class="u" d="M83 32l4 4 8-8"/>',
   // 0.5: el código de recuperación (seis grupos, uno marcado), la copia de seguridad (un archivo cerrado que baja) y los dos modos
   codigo: '<rect class="fp" x="8" y="12" width="104" height="50" rx="9"/><rect class="fa" x="15" y="20" width="27" height="14" rx="4"/><rect class="fa" x="46" y="20" width="27" height="14" rx="4"/><rect class="fA" x="77" y="20" width="27" height="14" rx="4"/><rect class="fa" x="15" y="40" width="27" height="14" rx="4"/><rect class="fa" x="46" y="40" width="27" height="14" rx="4"/><rect class="fa" x="77" y="40" width="27" height="14" rx="4"/><text class="ta" x="18.5" y="30.2" style="font-size:8px" data-no-trad>K7QM</text><text class="ta" x="49.5" y="30.2" style="font-size:8px" data-no-trad>X2HP</text><text class="tn" x="80.5" y="30.2" style="font-size:8px" data-no-trad>9RWT</text><text class="ta" x="18.5" y="50.2" style="font-size:8px" data-no-trad>BN4E</text><text class="ta" x="49.5" y="50.2" style="font-size:8px" data-no-trad>Z8LC</text><text class="ta" x="80.5" y="50.2" style="font-size:8px" data-no-trad>F3YD</text><circle class="a" cx="22" cy="71" r="4"/><path class="a" d="M26 71h14M35 71v3.5M39 71v3"/>',
   copia: '<path class="l" d="M30 8h36l14 14v44a5 5 0 0 1-5 5H30a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z"/><path class="m" d="M66 8v14h14"/><rect class="fa" x="40" y="34" width="20" height="16" rx="4"/><path class="a" d="M44 34v-4a6 6 0 0 1 12 0v4"/><circle class="fA" cx="50" cy="42" r="2.2"/><path class="a" d="M98 30v26M90 48l8 8 8-8"/><path class="l" d="M88 66h20"/>',

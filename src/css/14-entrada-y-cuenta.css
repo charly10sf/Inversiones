@@ -14,6 +14,11 @@
 @keyframes enAparece { to { opacity: 1; } }
 @keyframes enCorre { from { transform: translateX(-100%); } to { transform: translateX(250%); } }
 .entrada.quieta *, .estreno.quieta * { animation: none !important; }
+/* 0.6: la entrada corta (de la segunda vez del día en adelante): el nombre aparece ya montado y el saludo, enseguida */
+.entrada.corta .en-nombre { animation: enCorta 0.32s cubic-bezier(.2, .8, .2, 1) both; }
+.entrada.corta .en-saludo { animation-delay: 0.08s; animation-duration: 0.45s; }
+.entrada.corta .en-barra { animation-delay: 1.2s; }
+@keyframes enCorta { from { opacity: 0; transform: scale(0.97); } to { opacity: 1; transform: none; } }
 
 /* ---------- entrar con tu cuenta ---------- */
 .caja.caja-cuenta { gap: 14px; }
