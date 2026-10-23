@@ -24,6 +24,7 @@ Necesita el secreto GEMINI_API_KEY en el repositorio. Sin él, solo se actualiza
 """
 import concurrent.futures as cf
 import datetime as dt
+import inspect
 import hashlib
 import json
 import os
@@ -150,15 +151,26 @@ ERRORES = []                # lo que ha fallado con Gemini en esta pasada (va a 
 FALLOS = []                 # las llamadas que no salieron ni con los modelos de reserva
 USADOS = set()              # los modelos que han respondido
 RESERVA = ["gemini-3.6-flash", "gemini-3.5-flash-lite"]  # si se acaba el cupo gratuito del modelo principal
+USO = []                    # 0.6d: los tokens de cada llamada de esta pasada (para saber lo que costaría la IA de pago)
+
+
+def apuntar_uso(modelo, resp, que):
+    """Apunta los tokens de una respuesta de Gemini: entrada (y cuánta salió de la caché), salida y razonamiento."""
+    u = (resp or {}).get("usageMetadata") or {}
+    USO.append({"t": ahora(), "m": modelo, "que": que, "in": u.get("promptTokenCount") or 0, "cache": u.get("cachedContentTokenCount") or 0,
+                "out": u.get("candidatesTokenCount") or 0, "pensar": u.get("thoughtsTokenCount") or 0, "herr": u.get("toolUsePromptTokenCount") or 0,
+                "busq": bool(((resp or {}).get("candidates") or [{}])[0].get("groundingMetadata"))})
 
 
 def gemini(cuerpo, clave, reserva=True):
     """Llama a Gemini; si se acaba el cupo del modelo (429), prueba con los de reserva, que tienen su
     propio cupo gratuito. Si un modelo no acepta el nivel de razonamiento, lo quita."""
+    que = inspect.stack()[1].function
     for modelo in [MODELO] + ([m for m in RESERVA if m != MODELO] if reserva else []):
         try:
             r = gemini_modelo(cuerpo, clave, modelo)
             USADOS.add(modelo)
+            apuntar_uso(modelo, r, que)
             return r
         except RuntimeError as e:
             txt = str(e)
@@ -168,6 +180,7 @@ def gemini(cuerpo, clave, reserva=True):
                 try:
                     r = gemini_modelo({**cuerpo, "generationConfig": gc}, clave, modelo)
                     USADOS.add(modelo)
+                    apuntar_uso(modelo, r, que)
                     return r
                 except RuntimeError as e2:
                     txt = str(e2)
@@ -909,7 +922,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: falló la decisión de Gemini ({str(e)[:200]})")
     hace24 = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=24)
-    salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "intento_decision": intento if (decision or {}).get("generado", "") < (intento or "") else None, "gemini": {"ok": not FALLOS, "errores": (FALLOS or ERRORES)[-4:], "modelos": sorted(USADOS), "con_clave": bool(clave)},
+    salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "intento_decision": intento if (decision or {}).get("generado", "") < (intento or "") else None, "gemini": {"ok": not FALLOS, "errores": (FALLOS or ERRORES)[-4:], "modelos": sorted(USADOS), "con_clave": bool(clave),
+                                     "uso": [x for x in ((esc.get("gemini") or {}).get("uso") or []) if hace_menos_de(x.get("t") or "", 48)] + USO},
               "con_noticias": sum(1 for v in cache.values() if v.get("n")), "leidas_24h": sum(1 for v in lectura.values() if cuando(v.get("d")) and cuando(v["d"]) > hace24),
               "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores), "fuentes_pasada": DIAG}
     with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:

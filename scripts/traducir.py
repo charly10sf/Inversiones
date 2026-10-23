@@ -84,6 +84,7 @@ def traducir(lista, clave_api):
     # solo el modelo barato: el principal tiene su propio cupo gratis y lo necesita informe.py
     try:
         r = I.gemini_modelo(cuerpo, clave_api, MODELO_TRAD)
+        I.apuntar_uso(MODELO_TRAD, r, "traducir")
     except Exception as e:  # noqa: BLE001  (HTTP, red, tiempo de espera, JSON roto…)
         raise Parar(f"{MODELO_TRAD} no responde ({str(e)[:120]})") from e
     try:
@@ -133,7 +134,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
 
     def guardar(t, usado, dudoso, nopedir):
         with open(f"{dir_salida}/traduccion-en.json", "w", encoding="utf-8") as f:
-            json.dump({"v": 1, "generado": I.ahora(), "t": t, "u": usado, "x": dudoso, "n": nopedir}, f,
+            json.dump({"v": 1, "generado": I.ahora(), "t": t, "u": usado, "x": dudoso, "n": nopedir,
+                       "uso": [x for x in (previo.get("uso") or []) if I.hace_menos_de(x.get("t") or "", 48)] + I.USO}, f,
                       ensure_ascii=False, separators=(",", ":"))
 
     try:
