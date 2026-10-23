@@ -234,3 +234,22 @@ test.describe('trozos: las novedades', () => {
     expect(await page.locator('body').innerText()).toMatch(/0\.5|contraseña|código/i);
   });
 });
+
+test.describe('trozos: el mapa', () => {
+  test.beforeEach(({}, info) => test.skip(info.project.name === 'movil-pequeno', 'en 390 y 1440'));
+
+  test('el mapa del mundo se baja al abrir Mercados y se pinta entero', async ({ pagina: page }) => {
+    await crearCuenta(page);
+    await quitarCapas(page);
+    await meterCartera(page);
+    expect(await page.evaluate(() => typeof svgMapa)).toBe('undefined');
+    await page.evaluate(() => { location.hash = 'mercados'; });
+    await expect(page.locator('#mapaMundo svg')).toBeVisible({ timeout: 20_000 });
+    expect(await page.evaluate(() => typeof svgMapa)).toBe('function');
+    await expect(page.locator('#mapaLey')).not.toBeEmpty();
+    await expect(page.locator('#mapaInfo')).not.toBeEmpty();
+    // «Tu dinero»: los países donde tienes algo
+    await tocar(page, '[data-mapa-modo="tuyo"]');
+    await expect(page.locator('.mapa-w')).toHaveAttribute('data-modo', 'tuyo');
+  });
+});

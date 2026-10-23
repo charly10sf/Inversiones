@@ -118,6 +118,9 @@
   },
   "importar": [
    "trozos/importar.js"
+  ],
+  "mapa": [
+   "trozos/mapa.js"
   ]
  }
 }
