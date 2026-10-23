@@ -384,7 +384,7 @@ function reglasAvisos(M) {
   let eventos = [];
   try { eventos = agendaLista(M, 3).filter((e) => ['resultados', 'dividendo', 'cobro'].includes(e.tipo)).map((e) => { const d = document.createElement('div'); d.innerHTML = e.t; return { k: e.id, d: e.d, t: trad(d.textContent), s: trad(String(e.s || '')) }; }); } catch (e) {}
   const vistas = LS.get('inv-preg-vistas', []);
-  const preg = preguntasIA().filter((x) => !vistas.includes(clavePreg(x))).map((x) => ({ k: clavePreg(x), q: x.q }));
+  const preg = preguntasIA().filter((x) => !preguntaVista(x, vistas)).map((x) => ({ k: clavePreg(x), q: x.q }));
   // 0.3.11: las empresas que sigues, con sus precios de aviso (en euros, los del radar)
   const seguir = siguiendo().filter((x) => x.baja || x.sube).map((x) => ({ sym: x.s, n: x.n, baja: +x.baja || 0, sube: +x.sube || 0 }));
   return { reglas: unicas, eventos, preg, seguir };

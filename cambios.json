@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.5c",
+   "f": "2026-10-23",
+   "h": "12:40",
+   "t": "GrowIA no vuelve a preguntarte lo que ya contestaste",
+   "commits": [
+    {
+     "cuando": "2026-10-23 12:40",
+     "asunto": "0.5c: GrowIA no vuelve a preguntarte lo que ya contestaste",
+     "detalle": [
+      "preguntasIA: fuera las preguntas parecidas a una ya contestada (comparten al menos dos palabras que cuentan y son la mitad o más de las de la más corta), y las repetidas dentro de la misma revisión",
+      "La hoja que sale sola al entrar y el aviso del móvil miran también si ya viste una parecida",
+      "El prompt de la revisión (fundador y estándar) pide no volver a preguntar lo contestado, tampoco con otras palabras",
+      "Prueba nueva: GrowIA te pregunta"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.5b",
    "f": "2026-10-23",
    "h": "12:10",

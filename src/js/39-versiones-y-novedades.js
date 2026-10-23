@@ -5,6 +5,10 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.5c', f: '2026-10-23', h: '12:40', t: 'GrowIA no vuelve a preguntarte lo que ya contestaste', arreglos: [
+    'GrowIA ya no te vuelve a preguntar lo que contestaste otro día, aunque te lo pregunte con otras palabras (por ejemplo, si quieres ajustar la cripto a tu límite).',
+    'Si dejas una pregunta de GrowIA para luego, no te vuelve a salir sola al entrar aunque la revisión siguiente la escriba de otra forma: la tienes en Tus objetivos para contestarla cuando quieras.',
+  ] },
   { v: '0.5b', f: '2026-10-23', h: '12:10', t: 'GrowIA gasta menos de tu cupo al buscar noticias', arreglos: [
     'Cuando GrowIA busca en internet, lo hace con Gemini Flash-Lite, el modelo con más cupo gratis de tu clave de Google. El de la conversación ya no se gasta en cada búsqueda, así que tarda mucho más en agotarse.',
     'Antes de buscar, GrowIA mira las noticias que GrowFolio ya tiene de cada empresa y lo que ya ha leído de su prensa: solo busca en internet lo que no está ahí o es de hoy.',

@@ -214,6 +214,8 @@ test.describe('trozos: el asesor', () => {
     await expect(page.locator('#asesorFondo')).toBeVisible();
     expect(await page.evaluate(() => typeof sugerencias)).toBe('function');
     await page.keyboard.press('Escape');
+    // falló una vez en pc con toda la tanda a la vez y no se ha vuelto a ver: si vuelve, que diga qué había
+    if (await page.locator('#asesorFondo').count()) console.log('GrowIA sigue abierta tras Escape:', await page.evaluate(() => JSON.stringify({ hojas: [...document.querySelectorAll('.hoja-fondo')].map((x) => x.textContent.slice(0, 80)), foco: document.activeElement && (document.activeElement.id || document.activeElement.tagName), pila: ATRAS.pila.length })));
     await expect(page.locator('#asesorFondo')).toHaveCount(0);
   });
 });
@@ -266,5 +268,37 @@ test.describe('trozos: si no se pueden bajar', () => {
     const siguio = await page.evaluate(() => new Promise((ok) => { LS.del('inv-gta'); avisoGTA(() => ok(true)); setTimeout(() => ok(false), 8000); }));
     expect(siguio, 'avisoGTA sigue con lo de después aunque no baje su trozo').toBe(true);
     await expect(page.locator('#avisoWeb')).toBeVisible();
+  });
+});
+
+test.describe('GrowIA te pregunta', () => {
+  test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
+
+  test('no vuelve a preguntar lo que ya contestaste ni lo que ya viste, aunque venga con otras palabras', async ({ pagina: page }) => {
+    await crearCuenta(page); await quitarCapas(page);
+    const qs = await page.evaluate(() => {
+      S.cartera.perfil = { ...(S.cartera.perfil || {}), respuestas: [{ q: '¿Quieres vender parte de tu cripto para volver a tu límite del 5 %?', a: 'En la renta del 27', f: '2026-10-22' }] };
+      S.iaPropio = { json: { publico: true, posiciones: {}, preguntas: [
+        { q: '¿Te plantearías realizar algún ajuste en tu criptomoneda para ajustarla al límite del 5 %?', opciones: ['Sí, rebalancear pronto', 'No, dejarlo como está'] },
+        { q: '¿Cuándo vas a necesitar el dinero de tu meta de la casa?', opciones: ['En 2 años', 'En 5 años'] },
+        { q: '¿Cuándo necesitarás el dinero para la meta de la casa?', opciones: ['Pronto'] },
+      ] }, fecha: hoyIso(), modelo: MODELO_RAPIDO };
+      return preguntasIA().map((x) => x.q);
+    });
+    expect(qs).toEqual(['¿Cuándo vas a necesitar el dinero de tu meta de la casa?']);
+
+    // la hoja sale una vez; si la dejas para luego y en la revisión siguiente viene escrita de otra forma, ya no sale sola
+    await quitarCapas(page);
+    await page.evaluate(() => mostrarPreguntaIA());
+    await expect(page.locator('.pregia h3')).toHaveText('¿Cuándo vas a necesitar el dinero de tu meta de la casa?');
+    await page.click('.pregia-luego');
+    await expect(page.locator('.pregia')).toHaveCount(0);
+    await page.evaluate(() => { S.iaPropio.json.preguntas = [{ q: '¿Para cuándo necesitas el dinero de la meta de la casa?', opciones: ['Pronto'] }]; mostrarPreguntaIA(); });
+    await page.waitForTimeout(600);
+    await expect(page.locator('.pregia')).toHaveCount(0);
+    // sigue en Tus objetivos para contestarla cuando quieras, y al contestarla desaparece
+    expect(await page.evaluate(() => preguntasIA().length)).toBe(1);
+    await page.evaluate(() => responderIA(0, 'En 2 años'));
+    expect(await page.evaluate(() => preguntasIA().length)).toBe(0);
   });
 });

@@ -140,9 +140,31 @@ function textoMeta(m) {
 /* lo que la IA preguntó en su última revisión y aún no has contestado */
 function preguntasIA() {
   const ia = iaActual(); if (!ia || !Array.isArray(ia.preguntas)) return [];
-  const hechas = new Set((perfil().respuestas || []).map((r) => normTxt(r.q)));
-  return ia.preguntas.filter((x) => x && x.q && !hechas.has(normTxt(x.q))).slice(0, 3);
+  const hechas = (perfil().respuestas || []).map((r) => r.q);
+  return ia.preguntas.filter((x) => x && x.q && !hechas.some((q) => mismaPregunta(q, x.q)))
+    .filter((x, k, v) => v.findIndex((y) => mismaPregunta(y.q, x.q)) === k).slice(0, 3);
 }
+/* 0.5c: GrowIA a veces vuelve a preguntar lo mismo con otras palabras («¿Ajustarías tu cripto al 5 %?» y al día
+   siguiente «¿Te plantearías algún ajuste en tu criptomoneda para dejarla en el límite del 5 %?»). Dos preguntas son
+   la misma si comparten al menos dos de las palabras que cuentan y son la mitad o más de las de la más corta. */
+const PREG_VACIAS = new Set('para como cuando cuanto cuanta cuantos cuantas quieres querrias prefieres piensas plantearias planteas tienes harias hacer realizar deberias podrias seria estas estaria algun alguna alguno algo esta este estos esos esas sobre desde hasta entre pero ahora tuyo tuya tuyos tuyas cartera dinero inversion inversiones invertir meta metas parte mantener seguir cosa dejar dejarla dejarlo posicion'.split(' '));
+const PREG_IGUAL = { bitcoin: 'cript', btc: 'cript', ethereum: 'cript', eth: 'cript', criptomoneda: 'cript', criptomonedas: 'cript', criptos: 'cript', rebalancear: 'ajust', reducir: 'ajust', recortar: 'ajust', vender: 'ajust', ajustar: 'ajust', ajustarla: 'ajust', ajustarlo: 'ajust', ajuste: 'ajust', oro: 'oro', etf: 'etf' };
+function rasgosPreg(q) {
+  const s = new Set();
+  for (const w of normTxt(q).split(' ')) {
+    if (PREG_IGUAL[w]) s.add(PREG_IGUAL[w]);
+    else if (/^\d+$/.test(w)) s.add(w);
+    else if (w.length >= 4 && !PREG_VACIAS.has(w)) s.add(w.slice(0, 5));
+  }
+  return s;
+}
+function mismaPregunta(a, b) {
+  if (normTxt(a) === normTxt(b)) return true;
+  const A = rasgosPreg(a), B = rasgosPreg(b); let n = 0;
+  for (const x of A) if (B.has(x)) n++;
+  return n >= 2 && n / Math.min(A.size, B.size) >= 0.5;
+}
+const preguntaVista = (x, vistas = LS.get('inv-preg-vistas', [])) => vistas.some((v) => mismaPregunta(v, x.q));
 function htmlPreguntasIA(compacto) {
   const qs = preguntasIA(); if (!qs.length) return '';
   if (compacto) return `<a class="ia-pregunta-aviso" href="#objetivos">${ICONOS.growia}<span><b>GrowIA quiere saber ${qs.length === 1 ? 'una cosa' : `${qs.length} cosas`} de ti</b> para afinar sus consejos</span><span class="k">Contestar</span></a>`;
@@ -157,7 +179,7 @@ function htmlPreguntasIA(compacto) {
 const clavePreg = (x) => normTxt(x.q).slice(0, 80);
 function preguntaNueva() {
   const vistas = LS.get('inv-preg-vistas', []);
-  return preguntasIA().map((x, i) => ({ x, i })).find(({ x }) => !vistas.includes(clavePreg(x))) || null;
+  return preguntasIA().map((x, i) => ({ x, i })).find(({ x }) => !preguntaVista(x, vistas)) || null;
 }
 function mostrarPreguntaIA(seguir = () => {}) {
   const p = preguntaNueva();
