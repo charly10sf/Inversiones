@@ -52,6 +52,8 @@ jobs:
             git show origin/datos:noticias-cache.json > anterior/noticias-cache.json || true
             git show origin/datos:traduccion-en.json > anterior/traduccion-en.json || true
             git show origin/datos:fichas.json > anterior/fichas.json || true
+            git show origin/datos:banco.json > anterior/banco.json || true
+            git show origin/datos:banco-muestra.json > anterior/banco-muestra.json || true
           fi
           # los precios de los fondos del catálogo, para los avisos del móvil (avisos.json)
           if git fetch --depth=1 origin catalogo 2>/dev/null; then
@@ -146,6 +148,11 @@ jobs:
       - name: Guardar las fichas anteriores si no hay nuevas
         run: |
           [ -f salida/fichas.json ] || cp anterior/fichas.json salida/ 2>/dev/null || true
+
+      # 0.7: lo que escribe la Action «Banco de GrowIA» (por la noche) se queda en la rama datos
+      - name: Guardar el banco de GrowIA
+        run: |
+          for f in banco.json banco-muestra.json; do [ -s anterior/$f ] && cp anterior/$f salida/ || true; done
 
       - name: Publicar en la rama datos
         working-directory: salida
