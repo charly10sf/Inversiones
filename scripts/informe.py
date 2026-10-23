@@ -151,6 +151,9 @@ ERRORES = []                # lo que ha fallado con Gemini en esta pasada (va a 
 FALLOS = []                 # las llamadas que no salieron ni con los modelos de reserva
 USADOS = set()              # los modelos que han respondido
 RESERVA = ["gemini-3.6-flash", "gemini-3.5-flash-lite"]  # si se acaba el cupo gratuito del modelo principal
+# La lectura de prensa va con Flash-Lite (el de más cupo gratis y el más barato): así el 3.8, con 20 peticiones al
+# día en el plan gratis, queda para el informe y las ideas. Si a Flash-Lite se le acaba el cupo, el 3.6; nunca el 3.8.
+LECTURA = ["gemini-3.5-flash-lite", "gemini-3.6-flash"]
 USO = []                    # 0.6d: los tokens de cada llamada de esta pasada (para saber lo que costaría la IA de pago)
 
 
@@ -162,11 +165,13 @@ def apuntar_uso(modelo, resp, que):
                 "busq": bool(((resp or {}).get("candidates") or [{}])[0].get("groundingMetadata"))})
 
 
-def gemini(cuerpo, clave, reserva=True):
+def gemini(cuerpo, clave, reserva=True, modelos=None):
     """Llama a Gemini; si se acaba el cupo del modelo (429), prueba con los de reserva, que tienen su
-    propio cupo gratuito. Si un modelo no acepta el nivel de razonamiento, lo quita."""
+    propio cupo gratuito. Si un modelo no acepta el nivel de razonamiento, lo quita. `modelos` cambia
+    la lista entera (el primero y sus reservas)."""
     que = inspect.stack()[1].function
-    for modelo in [MODELO] + ([m for m in RESERVA if m != MODELO] if reserva else []):
+    orden = list(modelos) if modelos else [MODELO] + ([m for m in RESERVA if m != MODELO] if reserva else [])
+    for modelo in orden:
         try:
             r = gemini_modelo(cuerpo, clave, modelo)
             USADOS.add(modelo)
@@ -403,6 +408,7 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
             print(f"informe: sin búsqueda de Google ({str(e)[:160]})")
             busqueda = False
             resp = gemini(base, clave)
+        modelo_usado = USO[-1]["m"] if USO else MODELO
         texto_r, cand = texto_de(resp)
         for g in ((cand.get("groundingMetadata") or {}).get("groundingChunks") or []):
             w = g.get("web") or {}
@@ -433,7 +439,7 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
     for v in inf.get("mercado") or []:
         if isinstance(v, dict):
             v["fuentes"] = fuentes_de(v.get("fuentes"))
-    inf.update({"generado": ahora(), "modelo": MODELO, "noticias_leidas": len(fuentes), "busqueda_google": busqueda, "web": web[:15]})
+    inf.update({"generado": ahora(), "modelo": modelo_usado, "noticias_leidas": len(fuentes), "busqueda_google": busqueda, "web": web[:15]})
     with open(destino, "w", encoding="utf-8") as f:
         json.dump(inf, f, ensure_ascii=False, separators=(",", ":"))
     marcar_inf(inf["generado"])
@@ -547,7 +553,7 @@ def leer_lote(lectura, cache, valores, medianas, clave):
     hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
     cuerpo = {"systemInstruction": {"parts": [{"text": LEER}]}, "contents": [{"role": "user", "parts": [{"text": f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques)}]}],
               "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
-    texto, _ = texto_de(gemini(cuerpo, clave))
+    texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
     res = extraer_json(texto) or {}
     n = 0
     for _, x, h in lote:
@@ -836,6 +842,7 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previ
     cuerpo = {"systemInstruction": {"parts": [{"text": DECIDIR}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
               "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "high"}}}
     texto, _ = texto_de(gemini(cuerpo, clave))
+    modelo_usado = USO[-1]["m"] if USO else MODELO  # el que ha decidido (la lectura de esta pasada va con otro)
     d = extraer_json(texto)
     if not d:
         ERRORES.append(f"decisión: la respuesta no traía JSON ({len(texto)} caracteres)")
@@ -878,7 +885,7 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previ
     for i in ideas:
         if i.get("plazo_meses") and i.get("subida_pct") is not None and i["s"] not in plazos:
             plazos[i["s"]] = {"meses": i["plazo_meses"], "subida_pct": i["subida_pct"], "por": str(i.get("catalizador") or "")[:120]}
-    return {"generado": ahora(), "modelo": ", ".join(sorted(USADOS)) or MODELO, "v": DECISION_V, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar,
+    return {"generado": ahora(), "modelo": modelo_usado, "v": DECISION_V, "comentario": d.get("comentario") or "", "ideas": ideas, "evitar": evitar,
             "cambios": cambios, "hist": hist, "radar": radar_top, "plazos": plazos, "candidatas": len(cands)}
 
 
