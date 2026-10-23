@@ -479,7 +479,23 @@ function informeVisible() {
   // si no, sin lo que habla de esa otra cartera: el resumen y el «Para tu cartera» de cada noticia del mercado
   return { ...inf, resumen: '', mercado: (inf.mercado || []).map((m) => ({ ...m, implica: '' })), alertas: (inf.alertas || []).filter((a) => a.id && ids.has(a.id)), posiciones: Object.fromEntries(Object.entries(inf.posiciones || {}).filter(([id]) => ids.has(id))) };
 }
-function htmlResumenInforme(corto) {
+/* 0.7, en Inicio (al lado del mapa de tu cartera en el ordenador): debajo del resumen, lo que más se ha movido hoy de
+   lo tuyo y por qué, según el informe de la prensa (el mismo para todos). Sin el «Bueno/Malo para tu…» del principio:
+   el color de la cifra ya dice si sube o baja, y en estándar no es un consejo */
+function htmlHoyInforme(M) {
+  const inf = informeVisible(), P = (inf && inf.posiciones) || {};
+  if (!M) return '';
+  const vistos = new Set(), top = [];
+  for (const f of [...M.filas].filter((x) => P[x.inst.id] && P[x.inst.id].novedades && x.varDia != null).sort((a, b) => Math.abs(b.dia || 0) - Math.abs(a.dia || 0))) {
+    if (vistos.has(f.inst.id)) continue;
+    vistos.add(f.inst.id); top.push(f);
+    if (top.length === 5) break;
+  }
+  if (!top.length) return '';
+  const porque = (t) => { let s = String(limpiaIA(t || '')).trim(); const m = /^[^:.]{3,48}:\s+/.exec(s); if (m) s = s.slice(m[0].length); return s.charAt(0).toUpperCase() + s.slice(1); };
+  return `<div class="ini-hoy"><p class="ini-hoy-t">${L('Hoy, en lo tuyo', 'Today, in your holdings')}</p><ul>${top.map((f) => `<li><button type="button" data-mc-ficha="${esc(f.pos.id)}">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'peq')}<span class="ini-hoy-n"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small data-no-trad>${escIA(porque(P[f.inst.id].novedades))}</small></span><span class="ini-hoy-v ${cls(f.varDia)}">${esc(pctS(f.varDia, 1))}</span></button></li>`).join('')}</ul></div>`;
+}
+function htmlResumenInforme(corto, extra = '') {
   const inf = informeVisible();
   if (!inf || (!inf.resumen && !(inf.alertas || []).length)) return '';
   if (corto) {
@@ -487,6 +503,7 @@ function htmlResumenInforme(corto) {
     return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según GrowIA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>
       ${fr[0] ? `<p class="informe-res">${esc(fr[0])}</p>` : (inf.alertas || []).length ? `<p class="informe-res informe-al">${inf.alertas[0].urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}${escIA(inf.alertas[0].t)}</p>` : ''}
       ${fr.length > 1 || (inf.alertas || []).length ? `<details class="mas"><summary>${(inf.alertas || []).length ? `Seguir leyendo y ${inf.alertas.length} ${inf.alertas.length === 1 ? 'alerta' : 'alertas'}` : 'Seguir leyendo'}</summary>${fr.length > 1 ? `<p class="informe-res">${esc(fr.slice(1).join(' '))}</p>` : ''}${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}</details>` : ''}
+      ${extra}
     </section>`;
   }
   return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según GrowIA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>

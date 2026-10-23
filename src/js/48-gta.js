@@ -47,7 +47,7 @@ addEventListener('resize', () => { cancelAnimationFrame(encajarT); encajarT = re
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => encajarCabecera());
 
 /* Lo que más ha movido hoy, en el móvil: si un nombre no cabe, como en el widget se prueba de menos a más hasta que
-   cabe: primero fuera las flechitas (el signo y el color ya lo dicen), luego la letra un poco más pequeña en todas, y
+   cabe: primero fuera los logos (0.7; antes, las flechitas), luego la letra un poco más pequeña en todas, y
    solo entonces se resume el nombre que no cabe («MSCI Europe» → «MSCI Eur.»); los puntos, solo si ni así */
 const ABREV_MV = [
   [/\s*\b(Index|Indexado|Fund|Fondo|ETF|UCITS|Acc|Dist|EUR|USD|Class|Clase|Inc)\b\.?/gi, ''],

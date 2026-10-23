@@ -112,7 +112,8 @@ function pintarMapaCartera(caja, M) {
   if (!caja || !M) return;
   const W = caja.clientWidth;
   if (!W) return;
-  const H = Math.round(Math.max(240, W < 560 ? W * 1.05 : W < 900 ? W * 0.6 : W * 0.4));
+  // 0.7: en el ordenador, como mucho 440 px de alto (a todo lo ancho de una pantalla grande salían 700)
+  const H = Math.round(W < 560 ? Math.max(240, W * 1.05) : Math.min(440, Math.max(300, W * 0.5)));
   caja.style.height = `${H}px`;
   const modo = S.mcModo, G = 3;
   const t = trozosMc(M, W, H), piezas = S.mcPiezas;

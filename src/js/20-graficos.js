@@ -314,6 +314,9 @@ window.addEventListener('resize', () => setTimeout(enSuSitio, 50));
 function dibujar(M) {
   enSuSitio();
   etiquetarTablas($('#vista'));
+  // el mapa de la cartera primero (su alto cuenta para repartir las columnas de Inicio) y después, las columnas
+  for (const c of $$('.mc-caja')) pintarMapaCartera(c, M);
+  equilibrarCar();
   const gp = $('#grafProy'); if (gp) grafAbanico(gp, proyeccion(M, cfgProy()), (S.horizonte || 20) * 12);
   const g = $('#grafEvo');
   if (g) {
@@ -372,7 +375,6 @@ function dibujar(M) {
     grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, ref: ref0 && ref0.v, alMover, animar });
   }
   if ($('#mapaMundo')) { if (S.mapaGeo) repintarMapa(); else cargarMapa(); }
-  for (const c of $$('.mc-caja')) pintarMapaCartera(c, M);
   const gc = $('#grafCaida'); if (gc && !gc.closest('details:not([open])')) dibujarCaida(gc, M);
   // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
   for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
