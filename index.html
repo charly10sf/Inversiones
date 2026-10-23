@@ -2558,6 +2558,20 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .act-barra i { display: block; width: 0; height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.2s; }
 .aviso-web { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + var(--nav-h) + env(safe-area-inset-bottom, 0px)); z-index: 8000; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 8px 8px 8px 14px; background: var(--plane-2); border: 1px solid rgba(237, 187, 69, 0.55); border-radius: 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5); }
 .aviso-web > svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+.aviso-arr { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + var(--nav-h) + env(safe-area-inset-bottom, 0px)); z-index: 7990; width: min(520px, calc(100vw - 32px)); box-sizing: border-box; padding: 14px 14px 12px 16px; background: var(--plane-2); border: 1px solid rgba(237, 187, 69, 0.45); border-radius: 16px; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55); display: grid; gap: 10px; animation: aaEntra 0.35s ease-out; transition: opacity 0.3s, transform 0.3s; }
+.aviso-arr.fuera { opacity: 0; transform: translate(-50%, 12px); }
+@keyframes aaEntra { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.aa-cab { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.aa-cab > svg { width: 20px; height: 20px; color: var(--accent); }
+.aa-cab b { display: block; font-size: 16px; font-weight: 650; }
+.aa-cab small { display: block; font-size: 13.5px; color: var(--text-2); margin-top: 1px; }
+.aa-t { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.4; }
+.aa-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.aa-l li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 9px; font-size: 14.5px; line-height: 1.45; color: var(--text-2); }
+.aa-l li svg { width: 16px; height: 16px; margin-top: 2px; color: var(--up); }
+.aa-l li span { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.aa-pie { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+@media (prefers-reduced-motion: reduce) { .aviso-arr { animation: none; transition: none; } }
 .aviso-web span { font-weight: 600; font-size: 14.5px; }
 @media (prefers-reduced-motion: reduce) { .tour-foco, .tour-prog i, .act-barra i { transition: none; } .nov-lista li { animation: none; } }
 
@@ -6032,14 +6046,18 @@ function htmlResumenDia(M) {
     ${prox.length ? `<section><h3>Hoy y mañana</h3><ul class="rdia-prox">${prox.map((e) => `<li><span class="ag-cd">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span><b>${tituloAg(e)}</b><small>${esc(e.s || '')}</small></span></li>`).join('')}</ul></section>` : ''}
   </div>`;
 }
+// 0.4f: no sale de madrugada (si abres GrowFolio pasada la medianoche antes de dormir, no era «el resumen de hoy»): solo
+// desde esta hora, la primera vez de cada día
+const HORA_RESUMEN = 6;
 function resumenDelDia(seguir = () => {}, forzar = false) {
   if (!S.cartera || !S.M) return seguir();
+  if (!forzar && new Date().getHours() < HORA_RESUMEN) return seguir();
   if (!forzar && (LS.get('inv-resumen-off', false) || LS.get('inv-resumen-dia', '') === hoyIso() || !S.M.filas.length || document.querySelector('.hoja-fondo, .tour, .estreno, .intro'))) return seguir();
   LS.set('inv-resumen-dia', hoyIso());
   const h = hoja(`${saludoHora()}${nombreUsuario() ? `, ${nombreUsuario()}` : ''}`, `${htmlResumenDia(S.M)}
     <div class="fila-btns rdia-pie"><label class="check-mini"><input type="checkbox" id="rdiaOff" ${LS.get('inv-resumen-off', false) ? 'checked' : ''}> No enseñarlo cada día</label><button type="button" class="btn pri" data-cerrar>Ver mi cartera</button></div>`, () => seguir());
   h.el.classList.add('hoja-rdia');
-  $('#rdiaOff', h.el).onchange = (e) => { LS.set('inv-resumen-off', e.target.checked); toast(e.target.checked ? 'Ya no saldrá solo: lo tienes en Ajustes' : 'Saldrá la primera vez que abras cada día', 3500); };
+  $('#rdiaOff', h.el).onchange = (e) => { LS.set('inv-resumen-off', e.target.checked); toast(e.target.checked ? 'Ya no saldrá solo: lo tienes en Ajustes' : 'Saldrá la primera vez que abras cada día, desde las 6 de la mañana', 3500); };
   h.el.addEventListener('click', (e) => { if (e.target.closest('a[href^="#"], [data-pos]')) h.cerrar(true); });
 }
 
@@ -14436,8 +14454,12 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.4e';
+const VERSION = '0.4f';
 const NOVEDADES = [
+  { v: '0.4f', f: '2026-10-23', h: '03:20', t: 'El resumen del día, desde las 6, y el aviso de arreglos que se lee', arreglos: [
+    'El resumen del día ya no sale de madrugada: desde las 6 de la mañana, la primera vez que abres GrowFolio.',
+    'Las versiones de arreglos, como esta, se avisan en esta tarjeta en vez de en un mensaje pequeño que se iba solo.',
+  ] },
   { v: '0.4e', f: '2026-10-23', h: '01:23', t: 'América y Oriente Medio en el mapa, y la presentación de Ajustes', cosas: [
     { d: 'zonas', t: 'América y Oriente Medio, de un toque', x: 'Debajo del mapa, junto a Mundo, Europa y Asia, dos botones más: América (de Canadá a Brasil) y Oriente Medio (de Turquía y Egipto a Irán). En cada una salen solo los nombres de sus países.' },
   ], arreglos: [
@@ -15015,9 +15037,29 @@ function arreglosVistos(visto, despues) {
   const a = ns.reduce((t, n) => t + (n.arreglos || []).length, 0), m = ns.reduce((t, n) => t + (n.cosas || []).length, 0);
   marcarNovVista(); LS.set('inv-version', VERSION); LS.set('inv-vnum', 2);
   const que = [a ? L(`${a} ${a === 1 ? 'arreglo' : 'arreglos'}`, `${a} ${a === 1 ? 'fix' : 'fixes'}`) : '', m ? L(`${m} ${m === 1 ? 'mejora' : 'mejoras'}`, `${m} ${m === 1 ? 'improvement' : 'improvements'}`) : ''].filter(Boolean).join(L(' y ', ' and '));
-  if (que) toast(L(`GrowFolio ${VERSION}: ${que}. Lo tienes en Ajustes, Novedades.`, `GrowFolio ${VERSION}: ${que}. See it in Settings, What's new.`), 5000);
+  if (que) setTimeout(() => avisoArreglos(ns, que, visto), 900);
   if (S.cartera) setTimeout(() => { if (S.vista === 'cartera' && !S.ficha) pintar(); }, 60);
   despues();
+}
+/* 0.4f: el aviso de una versión de arreglos, en una tarjeta que se lee (antes era un mensaje pequeño que se iba solo):
+   la versión, su título, los primeros arreglos y «Ver todo», que abre las novedades desde la que tenías */
+function avisoArreglos(ns, que, visto, intento = 0) {
+  if (document.querySelector('.hoja-fondo, .tour, .intro, .estreno, .bloqueo')) { if (intento < 20) setTimeout(() => avisoArreglos(ns, que, visto, intento + 1), 3000); return; }
+  $$('.aviso-arr').forEach((x) => x.remove());
+  const ult = ns.find((n) => n.v === VERSION) || ns[0] || {}, lista = ns.flatMap((n) => [...(n.cosas || []).map((c) => c.t), ...(n.arreglos || [])]).filter(Boolean);
+  const d = document.createElement('div');
+  d.className = 'aviso-arr'; d.setAttribute('role', 'status');
+  d.innerHTML = `<div class="aa-cab">${ICONOS.chispa}<div><b>GrowFolio ${esc(VERSION)}</b><small>${esc(que)}</small></div><button type="button" class="ib" data-aa="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button></div>
+    ${ult.t ? `<p class="aa-t">${esc(trad(ult.t))}</p>` : ''}
+    <ul class="aa-l">${lista.slice(0, 3).map((x) => `<li>${ICONOS.ok}<span>${esc(trad(x))}</span></li>`).join('')}</ul>
+    <div class="aa-pie">${lista.length > 3 ? `<span class="k">${L(`y ${lista.length - 3} más`, `and ${lista.length - 3} more`)}</span>` : '<span></span>'}<button type="button" class="btn peq" data-aa="ver">${L('Ver todo', 'See all')}</button></div>`;
+  document.body.appendChild(d);
+  const fuera = () => { d.classList.add('fuera'); setTimeout(() => d.remove(), 300); };
+  d.querySelector('[data-aa="x"]').onclick = fuera;
+  d.querySelector('[data-aa="ver"]').onclick = () => { fuera(); mostrarNovedades(visto, () => {}); };
+  // se va sola al rato, salvo que la estés tocando o leyendo con el ratón encima
+  let t = setTimeout(fuera, 20000);
+  d.addEventListener('pointerenter', () => clearTimeout(t)); d.addEventListener('pointerleave', () => { clearTimeout(t); t = setTimeout(fuera, 8000); });
 }
 /* qué se ha mejorado: lo nuevo arriba, cada cosa con un «Enséñamelo» que te lleva hasta ella resaltada (como el
    tutorial) y un «Enséñamelo todo» que las recorre en orden. Las versiones anteriores, plegadas una a una con sus
@@ -16953,7 +16995,7 @@ function abrirAjustes() {
     <h2 class="aj-grupo">Avisos y resumen</h2>
     <div class="aj-caja">
       <button class="aj-fila" id="aResumen" data-cerrar>${ICONOS.agenda}<span><b>El resumen de hoy</b><small>Cómo va tu cartera, lo que mueve los mercados y las noticias de lo tuyo.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <label class="aj-fila aj-check"><input type="checkbox" id="aResumenAuto"${LS.get('inv-resumen-off', false) ? '' : ' checked'}><span><b>Enseñarme el resumen al abrir</b><small>La primera vez que abres GrowFolio cada día.</small></span></label>
+      <label class="aj-fila aj-check"><input type="checkbox" id="aResumenAuto"${LS.get('inv-resumen-off', false) ? '' : ' checked'}><span><b>Enseñarme el resumen al abrir</b><small>La primera vez que abres GrowFolio cada día, desde las 6 de la mañana.</small></span></label>
       <div class="seccion-ed" id="aAvisos">${htmlAjAvisos()}</div>
     </div>
     <h2 class="aj-grupo">Ayuda</h2>

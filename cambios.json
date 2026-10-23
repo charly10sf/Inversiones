@@ -1,6 +1,23 @@
 {
  "versiones": [
   {
+   "v": "0.4f",
+   "f": "2026-10-23",
+   "h": "03:20",
+   "t": "El resumen del día, desde las 6, y el aviso de arreglos que se lee",
+   "commits": [
+    {
+     "cuando": "2026-10-23 03:20",
+     "asunto": "0.4f: el resumen del día desde las 6 y el aviso de arreglos en una tarjeta",
+     "detalle": [
+      "Resumen del día: no sale antes de las 6 de la mañana (HORA_RESUMEN); textos de Ajustes al día",
+      "Versiones de arreglos: el aviso deja de ser un toast de 5 segundos y pasa a una tarjeta abajo con la versión, su título, los tres primeros arreglos y «Ver todo» (abre las novedades desde la que tenías); se va sola a los 20 segundos",
+      "Novedades de la 0.4f en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.4e",
    "f": "2026-10-23",
    "h": "01:23",
