@@ -118,7 +118,7 @@ function resumenSenales(M) {
   }
   const c = {};
   for (const f of M.filas) c[f.senal.nivel] = (c[f.senal.nivel] || 0) + 1;
-  return ORDEN_SENAL.filter((k) => c[k]).map((k) => `${c[k]} ${SENALES[k].toLowerCase()}`).join(', ');
+  return ORDEN_SENAL.filter((k) => c[k]).map((k) => `${c[k]} ${trad(SENALES[k]).toLowerCase()}`).join(', ');
 }
 const ZONAS = ['Todas', 'España', 'Europa', 'EEUU'];
 /* ---------- de qué lado cae cada recomendación (para ver si la web y la IA coinciden) ---------- */

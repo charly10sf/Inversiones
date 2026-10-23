@@ -43,7 +43,7 @@ function planVenta0(f, M) {
   if (nivel === 'vender') { uds = f.uds; cuanto = 'Toda la posición.'; }
   else if (nivel === 'recoger') {
     uds = redondea(f.coste / pr);
-    cuanto = `Lo que pusiste (${eur(f.coste, 0)}): recuperas tu dinero y lo que te quedas es ganancia que sigue trabajando.`;
+    cuanto = L(`Lo que pusiste (${eur(f.coste, 0)}): recuperas tu dinero y lo que te quedas es ganancia que sigue trabajando.`, `What you put in (${eur(f.coste, 0)}): you get your money back and what you keep is profit that keeps working.`);
   } else {
     // hasta quedar algo por debajo de su límite (el de empresa, cripto u oro que se puso cada uno)
     const k = f.inst.clase === 'Cripto' ? 'cripto' : ['Oro', 'Materias primas'].includes(f.inst.clase) ? 'oro' : 'empresa', obj = Math.max(0, limiteDe(k) - 2);
