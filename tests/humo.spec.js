@@ -401,3 +401,32 @@ test.describe('la entrada', () => {
     expect(await page.locator('#entrada').getAttribute('class')).not.toContain('corta');
   });
 });
+
+test.describe('GrowIA y los cortes de conexión', () => {
+  test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
+
+  test('si la petición se corta a mitad de la conversación, la repite y contesta', async ({ pagina: page, context }) => {
+    // Gemini de imitación: pide una herramienta; la petición con su resultado se corta una vez (como le pasó a Carlos
+    // con NWG.L el 23 oct) y a la segunda contesta
+    let cortes = 0;
+    const sse = (parts) => `data: ${JSON.stringify({ candidates: [{ content: { role: 'model', parts }, finishReason: 'STOP' }], usageMetadata: {} })}\r\n\r\n`;
+    await context.route('https://generativelanguage.googleapis.com/**', (r) => {
+      const url = r.request().url(), cuerpo = r.request().postData() || '';
+      if (/:streamGenerateContent/.test(url)) {
+        if (!/"functionResponse"/.test(cuerpo)) return r.fulfill({ status: 200, contentType: 'text/event-stream', body: sse([{ functionCall: { name: 'buscar_empresa', args: { consulta: 'NWG.L' } } }]) });
+        if (cortes++ === 0) return r.abort('failed');
+        return r.fulfill({ status: 200, contentType: 'text/event-stream', body: sse([{ text: 'NatWest cotiza a 625 peniques.' }]) });
+      }
+      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ models: [] }) });
+    });
+    await crearCuenta(page);
+    await quitarCapas(page);
+    await meterCartera(page);
+    await page.evaluate(() => { guardarCfgAsesor({ auto: 'manual' }); AS.clave = 'AQ.prueba-de-growfolio'; });
+    await page.evaluate(() => abrirAsesor('¿Compro NatWest Group plc (NWG.L)?', true));
+    await expect(page.locator('#asCuerpo')).toContainText('NatWest cotiza a 625 peniques', { timeout: 30_000 });
+    await expect(page.locator('#asCuerpo')).toContainText('Se ha cortado la conexión con Google: lo intento otra vez');
+    await expect(page.locator('#asCuerpo')).not.toContainText('No hay conexión');
+    expect(cortes).toBe(2);
+  });
+});

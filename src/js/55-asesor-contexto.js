@@ -486,8 +486,19 @@ function errorGoogle(estado, j) {
   e.diario = estado === 429 && (/PerDay|per.?day|daily/i.test(m + det) || e.espera > 60);
   return e;
 }
+/* 0.6c: si Google no empieza a contestar en 90 s, la petición se corta y cuenta como un corte de conexión (se reintenta).
+   Con el móvil, una petición colgada tanto rato acababa en «No hay conexión» sin más */
+const ESPERA_GEMINI = 90000;
+const esCorteRed = (e) => e && e.name !== 'AbortError' && (e.corte || /Failed to fetch|NetworkError|network error|Load failed|ERR_/i.test(e.message || ''));
 async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar) {
-  const r = await fetchGoogle(`${GEMINI}/models/${modelo}:streamGenerateContent?alt=sse`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }, clave);
+  const ctl = new AbortController(); let tarde = false;
+  const reloj = setTimeout(() => { tarde = true; ctl.abort(); }, ESPERA_GEMINI);
+  const parar = () => ctl.abort();
+  if (signal) { if (signal.aborted) ctl.abort(); else signal.addEventListener('abort', parar, { once: true }); }
+  let r;
+  try { r = await fetchGoogle(`${GEMINI}/models/${modelo}:streamGenerateContent?alt=sse`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }, clave); }
+  catch (e) { if (tarde) { const t = new Error(`Google no ha contestado en ${ESPERA_GEMINI / 1000} s`); t.corte = true; throw t; } throw e; }
+  finally { clearTimeout(reloj); if (signal) signal.removeEventListener('abort', parar); }
   if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorGoogle(r.status, j); }
   const lector = r.body.getReader(), dec = new TextDecoder();
   let buf = '', fin = null, uso = {}, bloqueo = null, texto = null, vista = null;
@@ -593,8 +604,10 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     modelo = otro; probados.add(otro); AS.modeloVivo = otro; contents.length = inicio; reintentos = 0; conPensar = true;
     alCambiar(); return true;
   };
+  let cortes = 0;
   for (let vuelta = 0; vuelta < 14; vuelta++) {
     const m = MODELOS[modelo] || {};
+    const pasosAntes = turno.partes.length;
     const cuerpo = {
       systemInstruction: { parts: [{ text: sysTexto }] }, contents, tools: herramientasGemini(usarWeb),
       generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: m.pensar } } : {}) },
@@ -603,6 +616,11 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     try { r = await llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar); }
     catch (e) {
       if (e.name === 'AbortError') throw e;
+      // 0.6c: un corte de la conexión (o Google sin contestar) a mitad de la conversación: se repite esa misma petición,
+      // hasta dos veces, quitando lo que hubiera empezado a escribir; a la tercera, con otro modelo si lo hay
+      if (esCorteRed(e) && cortes < 2) { cortes++; turno.partes.length = pasosAntes; turno.partes.push({ tipo: 'paso', txt: `Se ha cortado la conexión con Google: lo intento otra vez${cortes > 1 ? ` (${cortes}.ª)` : ''}` }); alCambiar(); await dormir(1500 * cortes, signal); vuelta--; continue; }
+      if (esCorteRed(e) && saltar('no contesta')) { cortes = 0; vuelta--; continue; }
+      if (esCorteRed(e)) { const t = new Error(`Se ha cortado la conexión con Google tres veces seguidas (${e.message}). Mira tu conexión y vuelve a preguntar.`); t.corte = true; throw t; }
       if (e.estado === 400 && conPensar && /thinking/i.test(e.msg || '')) { conPensar = false; vuelta--; continue; }
       if (e.estado === 404 && (pedido || modelo !== cfg.modelo) && saltar('no está disponible con tu clave')) { vuelta--; continue; }
       if (e.estado === 404 && !pedido && !cambiado && modelo === cfg.modelo) { const nuevo = await mejorFlash(clave); if (nuevo && nuevo !== cfg.modelo) { guardarCfgAsesor({ modelo: nuevo }); cfg = cfgAsesor(); modelo = nuevo; AS.modeloVivo = nuevo; probados.add(nuevo); cambiado = true; vuelta--; continue; } }
@@ -662,7 +680,7 @@ async function preguntarAsesor(texto) {
   try {
     await conversar({ mensajes: [...AS.api, { role: 'user', content: contenido }], turno, sistema: [].concat(sistemaAsesor()).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []), alCambiar, signal: AS.ctrl.signal });
   } catch (e) {
-    turno.error = e.name === 'AbortError' ? 'Parado.' : /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
+    turno.error = e.name === 'AbortError' ? 'Parado.' : !e.corte && /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
   }
   AS.cargando = false; AS.ctrl = null;
   const final = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim();

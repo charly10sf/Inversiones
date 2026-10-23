@@ -1,6 +1,25 @@
 {
  "versiones": [
   {
+   "v": "0.6c",
+   "f": "2026-10-23",
+   "h": "16:30",
+   "t": "GrowIA aguanta los cortes de conexión",
+   "commits": [
+    {
+     "cuando": "2026-10-23 16:30",
+     "asunto": "0.6c: GrowIA aguanta los cortes de conexión",
+     "detalle": [
+      "conversarGemini: un corte de red (Failed to fetch, network error) o Google sin contestar en 90 s se reintenta en la misma petición hasta dos veces, quitando lo que hubiera empezado a escribir; a la tercera, con otro modelo; si no, un error que lo dice",
+      "llamarGemini: límite de 90 s hasta que Google empieza a contestar",
+      "Lo vio Carlos con «¿Compro NatWest Group plc (NWG.L)?»: la petición con los resultados de las herramientas se cortaba. Repetida con la clave de la Action desde GitHub, Google contestaba bien (o con un 503 de saturación), así que era la conexión",
+      "Prueba nueva: GrowIA y los cortes de conexión (la petición con el resultado de la herramienta se corta una vez)",
+      "Novedades de la 0.6c en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.6b",
    "f": "2026-10-23",
    "h": "16:00",
