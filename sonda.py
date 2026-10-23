@@ -19,11 +19,15 @@ def pedir(modelo, contents, pensar=None, forzar=False):
     datos = json.dumps(cuerpo, ensure_ascii=False).encode()
     req = urllib.request.Request(f"{BASE}/models/{modelo}:streamGenerateContent?alt=sse", data=datos, method="POST",
                                  headers={"content-type": "application/json", "x-goog-api-key": CLAVE, "Origin": ORIGEN})
+    import time
+    t0 = time.time()
     try:
-        with urllib.request.urlopen(req, timeout=120) as r:
+        with urllib.request.urlopen(req, timeout=150) as r:
             st, cab, txt = r.status, dict(r.headers), r.read().decode("utf-8", "replace")
     except urllib.error.HTTPError as e:
         st, cab, txt = e.code, dict(e.headers), e.read().decode("utf-8", "replace")
+    except Exception as e:  # noqa: BLE001
+        st, cab, txt = f"EXCEPCION {type(e).__name__}: {e} tras {time.time() - t0:.0f} s", {}, ""
     partes = []
     for bloque in txt.replace("\r", "").split("\n\n"):
         d = "".join(l[5:].strip() for l in bloque.split("\n") if l.startswith("data:"))
@@ -69,5 +73,10 @@ def preflight():
         return e.code, dict(e.headers)
 
 
-res = {"preflight": preflight(), "lite": caso("gemini-3.5-flash-lite"), "lite2": caso("gemini-3.5-flash-lite"), "flash38": caso("gemini-3.8-flash", "high")}
-print(json.dumps(res, ensure_ascii=False, indent=1, default=str))
+res = {}
+for nombre, args in (("lite", ("gemini-3.5-flash-lite",)), ("lite2", ("gemini-3.5-flash-lite",)), ("flash38", ("gemini-3.8-flash", "high"))):
+    try:
+        res[nombre] = caso(*args)
+    except Exception as e:  # noqa: BLE001
+        res[nombre] = {"error": repr(e)}
+    json.dump(res, open("resultado.json", "w"), ensure_ascii=False, indent=1, default=str)

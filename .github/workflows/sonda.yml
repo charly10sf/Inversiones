@@ -12,7 +12,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python sonda.py > resultado.json 2> errores.txt || true
+      - run: python sonda.py 2> errores.txt || true
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       - run: |
