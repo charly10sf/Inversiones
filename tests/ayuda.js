@@ -83,8 +83,8 @@ export async function tocar(page, selector) {
 }
 
 /** Crea una cuenta de correo nueva y su cartera vacía; acaba en Inicio. */
-export async function crearCuenta(page, { nombre = 'Lucía', correo = 'lucia@prueba.com', pass = 'secreta1', cartera = 'cartera-123', ruta = '' } = {}) {
-  await page.goto(BASE + ruta + '#cuenta');
+export async function crearCuenta(page, { nombre = 'Lucía', correo = 'lucia@prueba.com', pass = 'secreta1', cartera = 'cartera-123', ruta = '', base = BASE } = {}) {
+  await page.goto(base + ruta + '#cuenta');
   await page.waitForSelector('.intro, #fCorreo', { timeout: 30000 });
   if (await page.$('.intro')) { await page.click('.intro-saltar'); }
   await page.waitForSelector('#fCorreo', { timeout: 15000 });

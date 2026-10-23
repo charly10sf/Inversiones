@@ -50,16 +50,19 @@ export function relevos(p = partes()) {
 }
 
 /** el código que va al principio del núcleo: dónde está cada trozo, cómo se baja y las funciones de relevo */
-function cargador(urls, rel) {
-  const r = [`/* generado por el build (build/growfolio-vite.js): los trozos que se bajan la primera vez que se usan */`,
+function cargador(urls, rel, en) {
+  const r = [`/* generado por el build (build/growfolio-vite.js): los trozos que se bajan la primera vez que se usan, y el diccionario de`,
+    `   inglés partido igual (EN.nucleo al abrir en inglés; el de cada trozo, con él) */`,
     `const TROZOS = ${JSON.stringify(urls)};`,
+    `const EN = ${JSON.stringify(en)};`,
     `const trozosEnCamino = {};`,
     `function cargarTrozo(n) {`,
-    `  return trozosEnCamino[n] || (trozosEnCamino[n] = new Promise((ok, no) => {`,
+    `  return trozosEnCamino[n] || (trozosEnCamino[n] = Promise.all([new Promise((ok, no) => {`,
     `    const s = document.createElement('script'); s.src = TROZOS[n];`,
-    `    s.onload = () => ok(); s.onerror = () => { delete trozosEnCamino[n]; s.remove(); no(new Error('Sin conexión: no se ha podido bajar ' + n)); };`,
+    `    s.onload = () => ok(); s.onerror = () => { s.remove(); no(new Error('Sin conexión: no se ha podido bajar ' + n)); };`,
     `    document.head.appendChild(s);`,
-    `  }));`,
+    `  }), IDIOMA === 'en' && EN.trozos[n] ? fetch(EN.trozos[n]).then((r) => (r.ok ? r.json() : null)).then((j) => { if (j && j.t && I18N.dic) Object.assign(I18N.dic, j.t); }).catch(() => {}) : null])`,
+    `    .catch((e) => { delete trozosEnCamino[n]; throw e; }));`,
     `}`,
     `function trozoFallido(e) { console.warn(e); try { toast(L('Sin conexión: no se ha podido abrir. Prueba otra vez en un momento.', "No connection: it couldn't be opened. Try again in a moment."), 6000); } catch (x) {} }`];
   for (const [n, fs] of Object.entries(rel)) for (const { f, quieta } of fs) {
@@ -68,17 +71,51 @@ function cargador(urls, rel) {
   return r.join('\n') + '\n';
 }
 
+/* NOVEDADES (la historia de todas las versiones, unos 75 KB) va casi entera en el trozo de novedades: en el núcleo se quedan
+   las de la versión actual hasta su versión de número (lo que usan la guía de lo nuevo y el botón de la barra) y el resto
+   se añade al cargar el trozo (NOVEDADES.push). En src/ sigue siendo una sola lista, la que leen release.py y cambios.py. */
+const ARCHIVO_NOV = '39-versiones-y-novedades.js';
+export function partirNovedades(texto) {
+  const i = texto.indexOf('const NOVEDADES = [\n'), j = texto.indexOf('\n];', i);
+  if (i < 0 || j < 0) throw new Error('No encuentro NOVEDADES en ' + ARCHIVO_NOV);
+  const ini = i + 'const NOVEDADES = [\n'.length, cuerpo = texto.slice(ini, j + 1);
+  const cortes = [...cuerpo.matchAll(/^ {2}\{ v: '([\d.]+[a-z]?)'/gm)];
+  const k = cortes.findIndex((m) => !/[a-z]$/.test(m[1]));   // la primera de número (sin letra)
+  if (k < 0 || k + 1 >= cortes.length) return { nucleo: texto, resto: '' };
+  const corte = cortes[k + 1].index;
+  return { nucleo: texto.slice(0, ini) + cuerpo.slice(0, corte) + texto.slice(j + 1), resto: 'NOVEDADES.push(\n' + cuerpo.slice(corte) + ');\n' };
+}
+const leerParte = (a) => { const t = readFileSync(join(RAIZ, 'src', 'js', a), 'utf8'); return a === ARCHIVO_NOV ? partirNovedades(t).nucleo : t; };
+
 /** el núcleo: las partes de src/partes.json con el cargador detrás de la versión (lo primero sigue siendo 'use strict') */
-export function juntarJS(urls, p = partes()) {
+export function juntarJS(urls, p = partes(), en = { nucleo: 'en.json', trozos: {} }) {
   const rel = relevos(p), tr = Object.keys(p.trozos || {});
   const u = urls || Object.fromEntries(tr.map((n) => [n, `/@gf/trozo/${n}.js`]));
-  return p.js.map((a) => readFileSync(join(RAIZ, 'src', 'js', a), 'utf8') + (a === 'version.js' ? cargador(u, rel) : '')).join('');
+  return p.js.map((a) => leerParte(a) + (a === 'version.js' ? cargador(u, rel, en) : '')).join('');
 }
-const juntarTrozo = (n, p = partes()) => "'use strict';\n" + leer('js', archivosDe(p.trozos[n]));
+
+/* en.json partido: cada entrada va con el trozo en cuyo código sale (su trozo más largo sin cifras, con o sin comillas
+   escapadas); lo que sale en el núcleo o en ninguna parte (lo que viene de los datos), en el del núcleo. */
+export function partirIngles(p = partes()) {
+  const en = JSON.parse(readFileSync(join(RAIZ, 'en.json'), 'utf8'));
+  const nucleo = juntarJS(null, p), trozos = Object.fromEntries(Object.keys(p.trozos || {}).map((n) => [n, juntarTrozo(n, p)]));
+  const frag = (k) => k.split('#').map((x) => x.trim()).filter((x) => x.length > 3).sort((a, b) => b.length - a.length)[0] || k;
+  const esta = (txt, k) => { const f = frag(k); return txt.includes(f) || txt.includes(f.replace(/'/g, "\\'")); };
+  const out = { nucleo: { ...en, t: {} } };
+  for (const [k, v] of Object.entries(en.t || {})) {
+    let d = 'nucleo';
+    if (!esta(nucleo, k)) { const t = Object.keys(trozos).filter((n) => esta(trozos[n], k)); if (t.length === 1) d = t[0]; }
+    (out[d] || (out[d] = { t: {} })).t[k] = v;
+  }
+  return out;
+}
+const juntarTrozo = (n, p = partes()) => "'use strict';\n"
+  + (n === 'novedades' ? partirNovedades(readFileSync(join(RAIZ, 'src', 'js', ARCHIVO_NOV), 'utf8')).resto : '')
+  + leer('js', archivosDe(p.trozos[n]));
 
 export default function growfolio() {
   let modo = 'serve';
-  const salida = { trozos: {} };   // en el build: { css: {nombre, codigo}, js: {...}, trozos: {n: {...}} }
+  const salida = { trozos: {}, en: [] };   // en el build: { css: {nombre, codigo}, js, trozos: {n: {...}}, en: [{nombre, codigo}] }
   return {
     name: 'growfolio',
     configResolved(c) { modo = c.command; },
@@ -110,7 +147,14 @@ export default function growfolio() {
         salida.trozos[n] = { nombre: `assets/${n}-${huella(c)}.js`, codigo: c };
         urls[n] = salida.trozos[n].nombre;
       }
-      const js = await min(juntarJS(urls, p));
+      const ing = partirIngles(p), enUrls = { nucleo: '', trozos: {} };
+      salida.en = [];
+      for (const [n, d] of Object.entries(ing)) {
+        const t = JSON.stringify(d), nombre = `en/${n}-${huella(t)}.json`;
+        salida.en.push({ nombre, codigo: t });
+        if (n === 'nucleo') enUrls.nucleo = nombre; else enUrls.trozos[n] = nombre;
+      }
+      const js = await min(juntarJS(urls, p, enUrls));
       salida.js = { nombre: `assets/app-${huella(js)}.js`, codigo: js };
     },
 
@@ -126,7 +170,7 @@ export default function growfolio() {
     },
 
     generateBundle() {
-      for (const x of [salida.css, salida.js, ...Object.values(salida.trozos)]) this.emitFile({ type: 'asset', fileName: x.nombre, source: x.codigo });
+      for (const x of [salida.css, salida.js, ...Object.values(salida.trozos), ...salida.en]) this.emitFile({ type: 'asset', fileName: x.nombre, source: x.codigo });
     },
 
     // los archivos de siempre y el service worker con la caché de esta versión
@@ -137,7 +181,7 @@ export default function growfolio() {
         if (!existsSync(de)) continue;
         cpSync(de, join(dist, p), { recursive: true });
       }
-      const assets = readdirSync(join(dist, 'assets')).map((a) => `assets/${a}`);
+      const assets = [...readdirSync(join(dist, 'assets')).map((a) => `assets/${a}`), ...(existsSync(join(dist, 'en')) ? readdirSync(join(dist, 'en')).map((a) => `en/${a}`) : [])];
       const todo = assets.map((a) => readFileSync(join(dist, a), 'utf8')).join('') + readFileSync(join(dist, 'index.html'), 'utf8');
       let sw = readFileSync(join(RAIZ, 'sw.js'), 'utf8');
       // la caché, con la versión y la huella de todo; los trozos van también en CORE: se guardan al instalar (después de

@@ -55,6 +55,18 @@ jobs:
       - name: Presupuesto de rendimiento (solo, sin otras pruebas a la vez)
         run: npm run rendimiento
 
+      # «nadie nota nada»: una cartera creada con lo que hay publicado (main) se abre igual con este build
+      - name: Subida desde la versión publicada
+        run: |
+          git fetch -q --depth=1 origin main
+          git worktree add -q /tmp/antes origin/main
+          if [ -f /tmp/antes/package.json ] && grep -q '"build"' /tmp/antes/package.json; then
+            (cd /tmp/antes && npm ci --silent && npm run build --silent) && export GF_ANTES=/tmp/antes/dist
+          else
+            export GF_ANTES=/tmp/antes
+          fi
+          GF_ANTES=$GF_ANTES npx playwright test tests/subida.spec.js --project=movil
+
       - name: Informe si algo falla
         if: failure()
         uses: actions/upload-artifact@v4
