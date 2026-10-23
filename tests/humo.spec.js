@@ -68,6 +68,11 @@ test.describe('modo fundador', () => {
     // Ajustes del dueño: el modo de cada cuenta
     await page.evaluate(() => abrirAjustes());
     await expect(page.locator('#aAcceso')).toBeVisible();
+    // 0.6b: en la lista, el modo que tiene cada cuenta se distingue (antes los dos botones salían iguales)
+    await page.evaluate(() => verModos());
+    await expect(page.locator('.modo-l [aria-pressed="true"]').first()).toBeVisible({ timeout: 15_000 });
+    const fondos = await page.evaluate(() => [...document.querySelectorAll('.modo-l li:first-child [data-modo]')].map((b) => getComputedStyle(b).backgroundColor));
+    expect(fondos[0]).not.toBe(fondos[1]);
   });
 });
 

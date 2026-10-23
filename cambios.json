@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.6b",
+   "f": "2026-10-23",
+   "h": "16:00",
+   "t": "El modo de cada cuenta, a la vista",
+   "commits": [
+    {
+     "cuando": "2026-10-23 16:00",
+     "asunto": "0.6b: El modo de cada cuenta, a la vista",
+     "detalle": [
+      ".modo-op con su estilo (como un selector de dos): el modo que tiene la cuenta, en dorado. Lo pidió Carlos",
+      "Desplegables con base-select: el texto centrado en alto (align-items: center); .hp-sel con menos relleno a la derecha. Lo vio Carlos en «Comparado con»",
+      "Prueba: en la del modo fundador, los dos botones de modo tienen fondos distintos",
+      "Novedades de la 0.6b en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.6a",
    "f": "2026-10-23",
    "h": "15:45",

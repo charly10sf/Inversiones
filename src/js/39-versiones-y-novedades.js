@@ -5,6 +5,10 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.6b', f: '2026-10-23', h: '16:00', t: 'El modo de cada cuenta, a la vista', arreglos: [
+    'En Ajustes, «Modo de cada cuenta», el modo que tiene cada una sale en dorado: antes los dos botones se veían iguales.',
+    'En el ordenador, el índice de «Comparado con» ya no sale más arriba que su recuadro.',
+  ] },
   { v: '0.6a', f: '2026-10-23', h: '15:45', t: 'Oriente Medio, de vuelta en el mapa', arreglos: [
     'En el mapa vuelven Arabia Saudí y Egipto, y llegan Emiratos, Catar y Kuwait. Yahoo ha dejado de dar el histórico de sus bolsas: «hoy» sale de su último cierre, y el mes y el año, del ETF de cada país (en dólares). Egipto, de momento, solo con «hoy».',
   ] },

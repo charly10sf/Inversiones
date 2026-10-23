@@ -236,7 +236,11 @@ svg.ic-ia path { stroke: none !important; }
 .modo-t b { font-weight: 600; overflow-wrap: anywhere; }
 .modo-t em { font-style: normal; color: var(--muted); font-weight: 500; }
 .modo-t small { color: var(--muted); }
-.modo-op { flex: none; }
+/* 0.6b: el modo de cada cuenta, a la vista (antes los dos botones salían iguales): el que tiene, en dorado */
+.modo-op { flex: none; display: inline-flex; gap: 3px; padding: 3px; border: 1px solid var(--line); border-radius: 10px; background: var(--plane); }
+.modo-op button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 500; padding: 6px 11px; border-radius: 7px; min-height: 32px; cursor: pointer; }
+.modo-op button:hover { color: var(--text); }
+.modo-op button[aria-pressed="true"] { background: var(--accent); color: var(--on-accent); font-weight: 600; cursor: default; }
 .modo-nota { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--plane-2); font-style: italic; }
 .aj-info { cursor: default; }
 .ruta-espera { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); }

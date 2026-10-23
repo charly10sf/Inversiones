@@ -176,7 +176,9 @@ select option, select optgroup { background-color: var(--plane-2); color: var(--
 @media (hover: hover) and (pointer: fine) {
   @supports (appearance: base-select) {
     select, .mi-elige select, ::picker(select) { appearance: base-select; }
-    select { cursor: pointer; }
+    /* el texto, centrado en alto (con min-height y sin relleno arriba y abajo se quedaba arriba: «Comparado con») */
+    select { cursor: pointer; align-items: center; }
+    .hp-sel { padding-right: 10px; gap: 6px; }
     select::picker-icon { color: var(--muted); transition: rotate 0.2s; }
     select:open::picker-icon { rotate: 180deg; }
     .mi-elige select::picker-icon { display: none; }
