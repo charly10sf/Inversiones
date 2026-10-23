@@ -64,7 +64,7 @@ class Traducir(unittest.TestCase):
 
     def test_fichas(self):
         # 0.7: lo que pesa en cada empresa y los temas también se traducen (las claves y los nombres, no)
-        self.escribir("fichas.json", {"v": 1, "temas": [{"k": "aranceles-acero", "fa": "politico", "txt": "Estados Unidos sube los aranceles al acero europeo", "afecta": [{"zona": "Europa", "sector": "Materiales"}]}],
+        self.escribir("fichas.json", {"v": 1, "temas": [{"k": "aranceles-acero", "fa": "politico", "txt": "Estados Unidos sube los aranceles al acero de Europa y la UE responde", "afecta": [{"zona": "Europa", "sector": "Materiales"}]}],
                                       "e": {"REP.MC": {"n": "Repsol", "fa": {"negocio": {"s": "+", "p": 2, "plazo": "medio", "txt": "Recompra acciones y sube el dinero para el accionista"}}, "tit": {"1c8f8911": ["negocio", "+", 2, "2026-10-23"]}}}})
         pedidos = []
 
@@ -72,7 +72,7 @@ class Traducir(unittest.TestCase):
             pedidos.extend(lista)
             return ["EN " + x for x in lista]
         out = self.correr(falso)
-        self.assertEqual(sorted(pedidos), ["Estados Unidos sube los aranceles al acero europeo", "Recompra acciones y sube el dinero para el accionista"])
+        self.assertEqual(sorted(pedidos), ["Estados Unidos sube los aranceles al acero de Europa y la UE responde", "Recompra acciones y sube el dinero para el accionista"])
         self.assertEqual(len(out["t"]), 2)
 
     def test_sin_clave_no_rompe(self):
