@@ -38,6 +38,7 @@ import urllib.request
 import yfinance as yf
 
 import precios as P  # noqa: E402  (noticias de Google, contraste de las ideas)
+import fichas as F  # noqa: E402  (0.7: fichas por empresa con seis factores)
 
 MODELO = os.environ.get("GEMINI_MODELO", "gemini-3.8-flash")
 GEMINI = "https://generativelanguage.googleapis.com/v1beta"
@@ -45,7 +46,7 @@ HORAS_INFORME = 2          # como mucho uno cada 2 horas
 MAX_IDEAS = 0               # las ideas ya no van en el informe: salen del escaneo
 LOTE_YAHOO = 45             # empresas por pasada con noticias de Yahoo Finance
 LOTE_GOOGLE = 20            # y con Google Noticias en español
-LOTE_LECTURA = 70           # empresas que lee Gemini en cada pasada
+LOTE_LECTURA = 50           # empresas que lee Gemini en cada pasada (0.7: 50, porque ahora clasifica cada titular)
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
 CANDIDATAS = 40             # empresas entre las que decide
@@ -516,18 +517,35 @@ def datos_idea(x, medianas):
 
 LEER = """Vigilas la prensa de cientos de empresas para un inversor particular español. Para cada empresa
 tienes sus datos y sus noticias numeradas (titulares de Google Noticias en español y de Yahoo Finance con
-su resumen). Para cada una, en una frase: qué dicen de verdad las noticias (con fecha), si es bueno o
-malo para la acción, cuánto importa y si hay un catalizador próximo. Ignora el relleno (anuncios de
-productos, gráficos de cotización, notas de prensa vacías, noticias de otra empresa con el mismo nombre).
-Solo lo que digan las noticias: nada inventado. En español de España, con palabras normales (sin jerga como
-catalizador, soportes o múltiplos) y con proporción: un movimiento pequeño sin noticia propia no es ni bueno ni malo.
-Responde con un objeto JSON: {"<ticker>": {"imp": "positivo|negativo|neutral|mixto", "rel": 0-3, "txt": "una frase", "cat": "catalizador y fecha, o vacío", "fuentes": [números]}}
-"rel": 0 si no hay nada relevante, 1 poco, 2 importante, 3 cambia la tesis. Una entrada por empresa."""
+su resumen). Para cada empresa:
+1. En una frase: qué dicen de verdad las noticias (con fecha), si es bueno o malo para la acción, cuánto
+   importa y si hay algo con fecha que pueda moverla pronto.
+2. Cada titular numerado, en uno de estos factores, con su signo para la acción ("+" bueno, "-" malo,
+   "=" neutro, "±" mixto) y su peso (0 relleno, 1 poco, 2 importante, 3 cambia la tesis):
+   - negocio: resultados, ventas, márgenes, deuda, previsiones, dividendos, contratos, directivos, compras de empresas.
+   - sector: lo que les pasa a su sector y a sus competidores; precios de lo que vende o de lo que compra.
+   - macro: tipos de interés, inflación, divisa, materias primas, cómo va la economía de sus países.
+   - politico: aranceles, sanciones, elecciones, leyes, impuestos, multas, reguladores, juicios.
+   - social: huelgas, boicots, quejas de clientes, reputación, hábitos de consumo, medio ambiente.
+   - mercado: cambios de recomendación o de precio objetivo de los analistas, entradas y salidas de índices,
+     compras y ventas de grandes accionistas, movimientos de la cotización.
+3. Para cada factor con alguna noticia de peso 1 o más: una frase con lo que pasa, su signo, su peso y a qué
+   plazo pesa ("corto": días o semanas; "medio": meses; "largo": años).
+El relleno (anuncios de productos, gráficos de cotización, notas de prensa vacías, noticias de otra empresa
+con el mismo nombre) lleva peso 0 y no cuenta para los factores. Solo lo que digan las noticias: nada
+inventado. En español de España, con palabras normales (sin jerga como catalizador, soportes o múltiplos) y
+con proporción: un movimiento pequeño sin noticia propia no es ni bueno ni malo.
+Responde con un objeto JSON:
+{"<ticker>": {"imp": "positivo|negativo|neutral|mixto", "rel": 0-3, "txt": "una frase", "cat": "lo que puede moverla y cuándo, o vacío", "fuentes": [números],
+  "tit": {"<número>": ["factor", "signo", peso]},
+  "fa": {"<factor>": {"s": "signo", "p": peso, "plazo": "corto|medio|largo", "txt": "una frase", "fuentes": [números]}}}}
+"rel": 0 si no hay nada relevante, 1 poco, 2 importante, 3 cambia la tesis. Una entrada por empresa; en "fa",
+solo los factores que tengan noticias de peso 1 o más."""
 
 
-def leer_lote(lectura, cache, valores, medianas, clave):
-    """Gemini lee la prensa de las empresas con noticias que todavía no ha leído (las de mejores
-    números, primero)."""
+def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
+    """Gemini lee la prensa de las empresas con noticias que todavía no ha leído (las de las carteras y las de
+    mejores números, primero). 0.7: de paso clasifica cada titular por factor y rellena las fichas."""
     pend = []
     for x in valores:
         e = cache.get(x["s"]) or {}
@@ -537,7 +555,7 @@ def leer_lote(lectura, cache, valores, medianas, clave):
         if (lectura.get(x["s"]) or {}).get("h") == h:
             continue
         fav, con = P.contraste_idea(x, medianas)
-        pend.append((fav - 0.9 * con + min(x.get("pot") or 0, 50) / 50, x, h))
+        pend.append((fav - 0.9 * con + min(x.get("pot") or 0, 50) / 50 + (20 if x["s"] in tuyas else 0), x, h))
     pend.sort(key=lambda t: -t[0])
     lote = pend[:LOTE_LECTURA]
     if not lote:
@@ -574,6 +592,8 @@ def leer_lote(lectura, cache, valores, medianas, clave):
             rel = 0
         lectura[x["s"]] = {"d": ahora(), "h": h, "imp": r.get("imp") if r.get("imp") in ("positivo", "negativo", "neutral", "mixto") else "neutral",
                            "rel": rel, "txt": (r.get("txt") or "")[:300], "cat": (r.get("cat") or "")[:160], "fuentes": fs}
+        if fichas is not None:
+            F.aplicar_lectura(fichas, x["s"], r, fuentes, lectura[x["s"]]["d"], x.get("n"))
         n += 1
     print(f"escaneo: Gemini ha leído la prensa de {n} empresas")
     return n
@@ -889,6 +909,30 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previ
             "cambios": cambios, "hist": hist, "radar": radar_top, "plazos": plazos, "candidatas": len(cands)}
 
 
+def noticias_de_carteras(cache, instrumentos, valores, precios):
+    """0.7: los titulares de las acciones de las carteras (los de precios.json, que son los que la app enseña en
+    cada ficha) también se leen y se marcan, junto con los del radar."""
+    en_radar = {x["s"] for x in valores}
+    nots = (precios or {}).get("noticias") or {}
+    n = 0
+    for i in instrumentos:
+        s, lista = i.get("yahoo"), nots.get(i.get("id")) or []
+        if i.get("tipo") == "Acción" and s in en_radar and lista:
+            antes = huella((cache.get(s) or {}).get("n") or [])
+            mezclar(cache, s, lista, "fp")
+            n += huella(cache[s]["n"]) != antes
+    if n:
+        print(f"escaneo: titulares nuevos de {n} acciones de las carteras")
+
+
+def guardar_fichas(fichas, dir_salida, validos):
+    F.podar(fichas, validos)
+    fichas["generado"] = ahora()
+    with open(f"{dir_salida}/fichas.json", "w", encoding="utf-8") as f:
+        json.dump(fichas, f, ensure_ascii=False, separators=(",", ":"))
+    print(f"fichas: {len(fichas['e'])} empresas, {sum(len(x['fa']) for x in fichas['e'].values())} factores, {len(fichas.get('temas') or [])} temas")
+
+
 def main(ruta_inst, dir_anterior, dir_salida):
     clave = (os.environ.get("GEMINI_API_KEY") or "").strip()
     instrumentos = leer(ruta_inst).get("instrumentos") or []
@@ -900,14 +944,19 @@ def main(ruta_inst, dir_anterior, dir_salida):
     decision = esc.get("decision")
     medianas = P.per_sector_mediano(valores)
     tuyas = {(i.get("yahoo") or "") for i in instrumentos}
+    fichas = leer(f"{dir_anterior}/fichas.json") or F.nuevas()
     if valores:
         try:
             actualizar_noticias(cache, valores)
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: fallaron las noticias ({e})")
+        try:
+            noticias_de_carteras(cache, instrumentos, valores, leer(f"{dir_salida}/precios.json"))
+        except Exception as e:  # noqa: BLE001
+            print(f"escaneo: fallaron las noticias de las carteras ({e})")
         if clave:
             try:
-                leer_lote(lectura, cache, valores, medianas, clave)
+                leer_lote(lectura, cache, valores, medianas, clave, fichas, tuyas)
             except Exception as e:  # noqa: BLE001
                 print(f"escaneo: falló la lectura de Gemini ({str(e)[:200]})")
     nuevo = informe_cartera(ruta_inst, dir_anterior, dir_salida, clave)
@@ -935,6 +984,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
               "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores), "fuentes_pasada": DIAG}
     with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, separators=(",", ":"))
+    guardar_fichas(fichas, dir_salida, {x["s"] for x in valores} if valores else None)
     with open(f"{dir_salida}/escaneo.json", "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
     marcar(dir_salida, "escaneo_id", salida["generado"])

@@ -51,6 +51,7 @@ jobs:
             git show origin/datos:escaneo.json > anterior/escaneo.json || true
             git show origin/datos:noticias-cache.json > anterior/noticias-cache.json || true
             git show origin/datos:traduccion-en.json > anterior/traduccion-en.json || true
+            git show origin/datos:fichas.json > anterior/fichas.json || true
           fi
           # los precios de los fondos del catálogo, para los avisos del móvil (avisos.json)
           if git fetch --depth=1 origin catalogo 2>/dev/null; then
@@ -141,6 +142,10 @@ jobs:
       - name: Guardar la traducción anterior si no hay nueva
         run: |
           [ -f salida/traduccion-en.json ] || cp anterior/traduccion-en.json salida/ 2>/dev/null || true
+
+      - name: Guardar las fichas anteriores si no hay nuevas
+        run: |
+          [ -f salida/fichas.json ] || cp anterior/fichas.json salida/ 2>/dev/null || true
 
       - name: Publicar en la rama datos
         working-directory: salida
