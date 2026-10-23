@@ -1,6 +1,51 @@
 {
  "versiones": [
   {
+   "v": "0.5",
+   "f": "2026-10-23",
+   "h": "04:05",
+   "t": "Si olvidas la contraseña, no pierdes tu cartera",
+   "commits": [
+    {
+     "cuando": "2026-10-23 01:40",
+     "asunto": "Kit de recuperación",
+     "detalle": [
+      "Formato 2 de la cartera: clave de datos al azar (AES-GCM 256) cerrada dos veces, con la contraseña (PBKDF2, 600.000) y con un código de recuperación de 24 caracteres; cada cierre lleva un número que sube con cada cambio",
+      "Paso automático del formato 1 al 2 a los 3 días de tener la 0.5 en el dispositivo (o al crear el código, cambiar la contraseña o descargar una copia), por la cola de subidas y con un puente hasta que la cuenta lo confirma",
+      "«He olvidado la contraseña» con el código; cambiar la contraseña solo cambia su cierre; código nuevo desde Ajustes; ver un código ya guardado pide la contraseña",
+      "Dos revisiones aparte y sus arreglos: carreras al pasar al formato 2, juntar sobres sin reloj, el análisis sin sobre, lo cifrado del dispositivo tras un cambio de contraseña en otro"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 01:50",
+     "asunto": "Copia de seguridad y limpieza",
+     "detalle": [
+      "Ajustes > Copia de seguridad: descargar un .growfolio cifrado y cargarlo con la contraseña o el código (guarda antes la cartera de ahora)",
+      "Fuera cartera.enc.json, analisis.enc.json y «Recuperar tu cartera de antes»"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 03:20",
+     "asunto": "Modo fundador y modo estándar",
+     "detalle": [
+      "Reglas: modos/{correo} (lo pone el dueño, con nota) y cuentas/{uid} (correo y fecha de alta de cada cuenta, para el dueño)",
+      "Fundador: el dueño, las cuentas creadas antes del 23 de octubre de 2026 y las que el dueño pase a fundador. Estándar: sin Paso a paso («Tu plan», que llega en la 0.9), sin planes de venta, GrowIA que explica y calcula sin recomendar valores, ideas iguales para todos y lo que opinan los analistas en lugar de la señal de cada posición",
+      "Ajustes del dueño: «Modo de cada cuenta»; quien cambia de modo lo ve al abrir, con la nota"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 04:05",
+     "asunto": "0.5: novedades, guía y dibujos en español e inglés",
+     "detalle": [
+      "Novedades de la 0.5 con cuatro dibujos (código, dos equipos, copia, fundador y estándar) y guía en Ajustes, en español e inglés",
+      "Versión 0.5, caché del service worker y README al día",
+      "Fundadores: las cuentas creadas antes del 23 de octubre de 2026 (las cinco de ahora); las nuevas, estándar, y el dueño las cambia en Ajustes",
+      "Resumen del día desde las 6 y aviso de arreglos en una tarjeta (de la 0.4f)"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.4f",
    "f": "2026-10-23",
    "h": "03:20",

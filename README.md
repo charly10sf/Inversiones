@@ -89,7 +89,8 @@ Un amigo puede usar esta misma web con su propia cartera: que abra `https://char
 
 - Salen con precio las acciones del radar (unas 800), todo lo de `instrumentos.json` y los fondos, ETF, oro y cripto de `catalogo.json` (unos 110, con su clase e ISIN exactos). Un fondo que no esté en ninguno se puede dar de alta, pero sin precio diario hasta que se añada su ISIN a `catalogo.json`: la Action *Catálogo* le busca precio e histórico esa misma noche, para todos.
 - Para meter lo que ya tiene: Añadir posición, o Importar desde capturas (lee capturas o PDF del bróker con su clave de Gemini).
-- La cartera vive en ese dispositivo: para tener copia o pasarla a otro móvil, Ajustes, Copias.
+- La cartera vive en su cuenta, cifrada: para tener una copia aparte, Ajustes, Seguridad, Copia de seguridad. Si olvida la contraseña, entra con su código de recuperación (Ajustes, Seguridad).
+- Modos (0.5): las cuentas creadas antes de la 0.5 son de fundador (todo, con el Paso a paso y GrowIA que recomienda). Las nuevas empiezan en estándar: sin recomendaciones personalizadas sobre valores concretos («Tu plan» en lugar del Paso a paso, GrowIA que explica y calcula, ideas iguales para todos y lo que opinan los analistas en cada posición). El dueño cambia el modo de cualquier cuenta en Ajustes, Modo de cada cuenta (Firestore: `modos/{correo}` y `cuentas/{uid}`).
 
 ## Usarla con tus propios datos en tu propia web
 

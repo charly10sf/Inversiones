@@ -13984,7 +13984,7 @@ function pantallaRecuperar() {
   </form></div>`;
   $('#bVolver').onclick = () => pantallaDesbloqueo();
   if ($('#bCero')) $('#bCero').onclick = () => {
-    if (!confirm(trad('Se borrará la cartera guardada en esta cuenta y empezarás una vacía. Sin su contraseña ni su código nadie puede recuperarla. ¿Empezar de cero?'))) return;
+    if (!confirm(L('Se borrará la cartera guardada en esta cuenta y empezarás una vacía. Sin su contraseña ni su código nadie puede recuperarla. ¿Empezar de cero?', 'The portfolio saved in this account will be deleted and you will start an empty one. Without its password or its code nobody can recover it. Start from scratch?'))) return;
     S.enc = null; S.cuentaNueva = false; S.cuentaLeida = true; LS.del('inv-cuenta-enc'); LS.del('inv-pend-cuenta');
     pantallaCrear();
   };
@@ -14819,8 +14819,17 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.4f';
+const VERSION = '0.5';
 const NOVEDADES = [
+  { v: '0.5', f: '2026-10-23', h: '04:05', t: 'Si olvidas la contraseña, no pierdes tu cartera', cosas: [
+    { d: 'codigo', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Tu código de recuperación', x: 'Si olvidas la contraseña de tu cartera, con este código (24 letras y números) pones una nueva y no pierdes nada. Créalo en Ajustes, Seguridad, o desde el aviso que te saldrá en Inicio, y guárdalo fuera del móvil: en tu gestor de contraseñas o en un papel.', g: 'Toca la rueda: en Ajustes, Seguridad, está tu código de recuperación. Créalo y guárdalo fuera del móvil.' },
+    { d: 'dosequipos', t: 'Cambiar la contraseña ya no molesta', x: 'Si cambias la contraseña de tu cartera en el móvil, el ordenador sigue entrando sin pedirte la nueva. Y para volver a ver tu código, una vez guardado, te pide la contraseña.' },
+    { d: 'copia', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Tu cartera en un archivo', x: 'En Ajustes, Seguridad, «Copia de seguridad»: un archivo con toda tu cartera, cifrado igual que en tu cuenta. Guárdalo donde quieras y, si algún día hace falta, cárgalo con tu contraseña o con tu código.', g: 'También en Ajustes, Seguridad: descarga una copia cifrada de tu cartera y cárgala cuando haga falta.' },
+    { d: 'fundador', t: 'Modo fundador y modo estándar', x: 'GrowFolio tiene ya dos modos. Quienes ya la usabais sois fundadores: todo como hasta ahora, con el Paso a paso y GrowIA cuando dice qué comprar o vender. Quien llegue nuevo empieza en el estándar, sin recomendaciones personalizadas sobre valores concretos: es lo que permitirá abrir GrowFolio a cualquiera. Tu modo lo ves en Ajustes.' },
+  ], arreglos: [
+    'Fuera del repositorio la copia cifrada de la cartera de antes y «Recuperar tu cartera de antes»: ya no hacían falta.',
+    'Si cambian la contraseña de tu cartera en otro dispositivo, la clave de GrowIA y tu conversación con ella se conservan en este.',
+  ] },
   { v: '0.4f', f: '2026-10-23', h: '03:20', t: 'El resumen del día, desde las 6, y el aviso de arreglos que se lee', arreglos: [
     'El resumen del día ya no sale de madrugada: desde las 6 de la mañana, la primera vez que abres GrowFolio.',
     'Las versiones de arreglos, como esta, se avisan en esta tarjeta en vez de en un mensaje pequeño que se iba solo.',
@@ -15228,6 +15237,11 @@ const mundoDib = (col) => Object.entries(MUNDO_DIB).map(([k, d]) => `<path class
 const PILDORA_DIB = (x, y, w) => `<rect x="${x}" y="${y}" width="${w}" height="15" rx="7.5" fill="#0D0C0A" stroke="rgba(247,242,232,.14)" stroke-width="1"/>`;
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  // 0.5: el código de recuperación (seis grupos, uno marcado), la copia de seguridad (un archivo cerrado que baja) y los dos modos
+  codigo: '<rect class="fp" x="8" y="12" width="104" height="50" rx="9"/><rect class="fa" x="15" y="20" width="27" height="14" rx="4"/><rect class="fa" x="46" y="20" width="27" height="14" rx="4"/><rect class="fA" x="77" y="20" width="27" height="14" rx="4"/><rect class="fa" x="15" y="40" width="27" height="14" rx="4"/><rect class="fa" x="46" y="40" width="27" height="14" rx="4"/><rect class="fa" x="77" y="40" width="27" height="14" rx="4"/><text class="ta" x="18.5" y="30.2" style="font-size:8px" data-no-trad>K7QM</text><text class="ta" x="49.5" y="30.2" style="font-size:8px" data-no-trad>X2HP</text><text class="tn" x="80.5" y="30.2" style="font-size:8px" data-no-trad>9RWT</text><text class="ta" x="18.5" y="50.2" style="font-size:8px" data-no-trad>BN4E</text><text class="ta" x="49.5" y="50.2" style="font-size:8px" data-no-trad>Z8LC</text><text class="ta" x="80.5" y="50.2" style="font-size:8px" data-no-trad>F3YD</text><circle class="a" cx="22" cy="71" r="4"/><path class="a" d="M26 71h14M35 71v3.5M39 71v3"/>',
+  copia: '<path class="l" d="M30 8h36l14 14v44a5 5 0 0 1-5 5H30a5 5 0 0 1-5-5V13a5 5 0 0 1 5-5z"/><path class="m" d="M66 8v14h14"/><rect class="fa" x="40" y="34" width="20" height="16" rx="4"/><path class="a" d="M44 34v-4a6 6 0 0 1 12 0v4"/><circle class="fA" cx="50" cy="42" r="2.2"/><path class="a" d="M98 30v26M90 48l8 8 8-8"/><path class="l" d="M88 66h20"/>',
+  fundador: '<rect class="fp" x="5" y="24" width="110" height="30" rx="15"/><rect class="fA" x="9" y="28" width="58" height="22" rx="11"/><text class="tn" x="18" y="42.5" style="font-size:9px">Fundador</text><text class="tm" x="76" y="42.5" style="font-size:9px">Estándar</text><path class="a" d="M38 6l2.6 5.3 5.8.8-4.2 4.1 1 5.8-5.2-2.7-5.2 2.7 1-5.8-4.2-4.1 5.8-.8z"/>',
+  dosequipos: '<rect class="l" x="14" y="12" width="30" height="54" rx="6"/><path class="m" d="M24 59h10"/><rect class="l" x="58" y="16" width="50" height="34" rx="4"/><path class="l" d="M52 58h62"/><circle class="fa" cx="29" cy="34" r="9"/><path class="u" d="M24.5 34.5l3 3 6-6.5"/><circle class="fa" cx="83" cy="33" r="9"/><path class="u" d="M78.5 33.5l3 3 6-6.5"/><circle class="a" cx="47" cy="72" r="3.2"/><path class="a" d="M50.2 72H64M60 72v3M63 72v2.6"/>',
   // 0.4: el mapa del mundo (cada país del color de su bolsa, la lupa para acercarse a Europa)
   get mapa() { return `<g class="mapita" transform="translate(2 26)">${mundoDib({ US: 'mp-u3', CA: 'mp-u1', MX: 'mp-d2', BR: 'mp-u2', AR: 'mp-n', GB: 'mp-d2', FR: 'mp-u3', DE: 'mp-u2', ES: 'mp-d3', IT: 'mp-d1', SE: 'mp-u3', NO: 'mp-u1', FI: 'mp-u2', PL: 'mp-n', TR: 'mp-d1', CN: 'mp-d3', IN: 'mp-u1', JP: 'mp-d2', KR: 'mp-d4', ID: 'mp-u1', AU: 'mp-u4', ZA: 'mp-d1', SA: 'mp-u2' })}</g>${PILDORA_DIB(5, 5, 44)}<circle class="fA" cx="12.5" cy="12.5" r="2.2"/><text class="tu" x="18" y="15.8" data-no-trad>+0,8 %</text>${PILDORA_DIB(72, 8, 42)}<text class="td" x="79" y="18.8" data-no-trad>−1,2 %</text><circle class="a" cx="59" cy="38" r="7.5"/><path class="a" d="M64.5 43.5l5 5M59 35v6M56 38h6"/>`; },
   // 0.4b: lo tuyo arriba en la ficha del país (la bandera, lo que tienes, tu barra dorada frente a la del fondo mundial)
@@ -15705,9 +15719,9 @@ const nombreModo = (a) => (a === 'publico' ? L('modo estándar', 'standard mode'
 const errPermiso = (e) => /permission/i.test(String((e && e.code) || e));
 // con correo y contraseña, el correo hay que confirmarlo (las reglas solo dejan leer tu modo con el correo confirmado)
 const correoSinConfirmar = () => !!(FB.user && !FB.user.emailVerified && (FB.user.providerData || []).some((x) => x.providerId === 'password'));
-/* Fundadores: las cuentas creadas antes de que saliera la 0.5 (los amigos que ya usaban GrowFolio). La fecha de alta la
-   pone Firebase. Al publicar la 0.5, este día pasa a ser el suyo */
-const ALTA_FUNDADORES = '2026-10-24';
+/* Fundadores: las cuentas creadas antes del día que salió la 0.5 (los amigos que ya usaban GrowFolio). La fecha de alta
+   la pone Firebase. Las que se creen después empiezan en estándar; el dueño las pasa a fundador en Ajustes */
+const ALTA_FUNDADORES = '2026-10-23';
 const altaDe = (u) => { const t = Date.parse((u && u.metadata && u.metadata.creationTime) || ''); return isFinite(t) ? new Date(t).toISOString().slice(0, 10) : null; };
 const esFundadorPorAlta = (alta) => !!alta && alta < ALTA_FUNDADORES;
 async function comprobarAcceso() {
@@ -18063,7 +18077,7 @@ async function verKit() {
 async function nuevoCodigo(motivo) {
   if (!S.kv || !S.cartera) return;
   if (!confirmadoV2()) return toast(L('Ahora no se puede: hace falta conexión. Prueba en un momento.', "Not right now: it needs a connection. Try again in a moment."), 5000);
-  if (!confirm(trad(motivo ? `${motivo} ¿Generar uno nuevo ahora?` : 'El código que tienes guardado dejará de abrir tu cartera y tendrás que guardar el nuevo. Las copias de seguridad que descargaste antes se siguen abriendo con él. ¿Generar uno nuevo?'))) return;
+  if (!confirm(motivo ? `${motivo} ${L('¿Generar uno nuevo ahora?', 'Generate a new one now?')}` : L('El código que tienes guardado dejará de abrir tu cartera y tendrás que guardar el nuevo. Las copias de seguridad que descargaste antes se siguen abriendo con él. ¿Generar uno nuevo?', 'The code you saved will stop opening your portfolio and you will have to save the new one. Backups you downloaded before still open with it. Generate a new one?'))) return;
   const raw = await claveDatosEnClaro(L('Para generar un código nuevo, escribe la contraseña de tu cartera.', 'To generate a new code, type your portfolio password.'));
   if (!raw) return;
   const kid = S.kv.kid, codigo = codigoNuevo(), rsalt = crypto.getRandomValues(new Uint8Array(16));
@@ -18122,7 +18136,7 @@ function abrirCopia(texto, f) {
     if (!copia && f.v === 2 && codigoValido(x)) { try { copia = await descifrar(texto, await importarDatos(await abrirClave(await claveCodigo(x, b64.dec(f.k.rec.salt), f.k.rec.iter), f.k.rec))); } catch (e) {} }
     if (!copia) { b.disabled = false; b.textContent = L('Abrir la copia', 'Open the backup'); $('#cErr', h.el).textContent = L('No abre esta copia. Prueba con la contraseña de cuando la hiciste o con su código.', "It doesn't open this backup. Try the password from when you made it, or its code."); return; }
     const n = (copia.posiciones || []).length, cuando = copia.actualizado ? fechaLarga(String(copia.actualizado).slice(0, 10)) : '';
-    if (!confirm(trad(`¿Sustituir tu cartera de ahora por la de la copia${cuando ? ` (del ${cuando})` : ''}, con ${n} posiciones? La de ahora se guarda antes en este dispositivo.`))) { h.cerrar(true); return; }
+    if (!confirm(L(`¿Sustituir tu cartera de ahora por la de la copia${cuando ? ` (del ${cuando})` : ''}, con ${n} posiciones? La de ahora se guarda antes en este dispositivo.`, `Replace your current portfolio with the backup${copia.actualizado ? ` (from ${String(copia.actualizado).slice(0, 10)})` : ''}, with ${n} holdings? The current one is saved on this device first.`))) { h.cerrar(true); return; }
     if (S.enc && S.enc.texto) LS.set('inv-copia-anterior', { texto: S.enc.texto, cuando: new Date().toISOString() });
     S.cartera = { ...copia, kit: S.cartera.kit };
     sumarInstPropios(); await guardarCartera(L('Cargar copia de seguridad', 'Load backup'));
