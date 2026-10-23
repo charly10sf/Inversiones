@@ -35,17 +35,28 @@ service cloud.firestore {
           && request.resource.data.vista == true);
       allow delete: if false;
     }
-    // 0.5: acceso completo (modo privado: el Paso a paso y GrowIA que recomienda). Un documento por correo, en
-    // minúsculas, sin nada más que quién lo añadió y cuándo. Lo escribe y lo lista solo el dueño; cada cuenta solo puede
-    // leer el suyo, con el correo verificado (Google y Apple lo traen verificado; con correo y contraseña, al confirmarlo).
-    match /privados/{correo} {
+    // 0.5: modo fundador o estándar de cada cuenta, por su correo en minúsculas. Lo pone, lo lista y lo quita solo el
+    // dueño (con una nota corta opcional para esa persona); cada cuenta solo puede leer el suyo, con el correo confirmado
+    // (Google y Apple lo traen confirmado; con correo y contraseña, al confirmarlo).
+    match /modos/{correo} {
       allow get: if esDueno() || (request.auth != null && request.auth.token.email_verified == true
         && request.auth.token.email.lower() == correo);
-      allow list: if esDueno();
+      allow list, delete: if esDueno();
       allow create, update: if esDueno() && correo == correo.lower() && correo.matches('^[^@/ ]+@[^@/ ]+$')
-        && request.resource.data.keys().hasOnly(['por', 'cuando', 'nota'])
-        && (!('nota' in request.resource.data) || (request.resource.data.nota is string && request.resource.data.nota.size() <= 80));
-      allow delete: if esDueno();
+        && request.resource.data.keys().hasOnly(['modo', 'por', 'cuando', 'nota'])
+        && request.resource.data.modo in ['fundador', 'estandar']
+        && (!('nota' in request.resource.data) || (request.resource.data.nota is string && request.resource.data.nota.size() <= 140));
+    }
+    // 0.5: cada cuenta apunta su correo y su fecha de alta (nada más), para que el dueño las vea todas en Ajustes y
+    // pueda cambiarles el modo. Solo la escribe su dueño, con su propio correo; la lee él y el dueño de GrowFolio.
+    match /cuentas/{uid} {
+      allow get: if esDueno() || (request.auth != null && request.auth.uid == uid);
+      allow list: if esDueno();
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['correo', 'alta'])
+        && request.resource.data.correo == request.auth.token.email.lower()
+        && request.resource.data.alta is string && request.resource.data.alta.size() <= 10;
+      allow delete: if request.auth != null && request.auth.uid == uid;
     }
     // precios que pedir: el ticker o el ISIN de lo que alguien mete a mano y GrowFolio no seguía (sin quién lo
     // pide). Cualquiera con cuenta puede apuntar uno nuevo; lo lee la Action de precios, sin clave

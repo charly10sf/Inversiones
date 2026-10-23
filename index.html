@@ -311,6 +311,14 @@ svg.ic-ia path { stroke: none !important; }
 .priv-l li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 8px 8px 14px; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
 .priv-l li:first-child { border-top: 0; }
 .priv-l li.vacio { padding: 14px; color: var(--muted); }
+.modo-l li { flex-wrap: wrap; padding: 10px 10px 10px 14px; }
+.modo-t { display: grid; gap: 2px; min-width: 0; flex: 1 1 180px; }
+.modo-t b { font-weight: 600; overflow-wrap: anywhere; }
+.modo-t em { font-style: normal; color: var(--muted); font-weight: 500; }
+.modo-t small { color: var(--muted); }
+.modo-op { flex: none; }
+.modo-nota { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--plane-2); font-style: italic; }
+.aj-info { cursor: default; }
 .ruta-espera { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); }
 .ruta-espera .re-ico { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
 .ruta-espera .re-ico svg { width: 17px; height: 17px; }
@@ -422,6 +430,7 @@ button.fila:hover { background: var(--plane); }
 .senal.vigilar, .senal.reducir { color: var(--warn); background: var(--warn-bg); }
 .senal.recoger { color: var(--accent); background: var(--accent-bg); }
 .senal.mantener, .senal.aportar { color: var(--text-2); background: var(--plane-2); }
+.senal:empty { display: none; }
 
 /* ---------- reparto ---------- */
 .apilada { display: flex; gap: 2px; height: 12px; border-radius: 4px; overflow: hidden; margin: 4px 0 18px; }
@@ -2574,6 +2583,20 @@ table .activo-l.mini .activo small, .activo-l.mini .activo small { display: flex
 .act-barra i { display: block; width: 0; height: 100%; border-radius: 4px; background: var(--accent); transition: width 0.2s; }
 .aviso-web { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + var(--nav-h) + env(safe-area-inset-bottom, 0px)); z-index: 8000; display: flex; align-items: center; gap: 10px; width: max-content; max-width: calc(100vw - 32px); box-sizing: border-box; padding: 8px 8px 8px 14px; background: var(--plane-2); border: 1px solid rgba(237, 187, 69, 0.55); border-radius: 14px; box-shadow: 0 16px 40px rgba(0, 0, 0, 0.5); }
 .aviso-web > svg { width: 18px; height: 18px; flex: none; color: var(--accent); }
+.aviso-arr { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(16px + var(--nav-h) + env(safe-area-inset-bottom, 0px)); z-index: 7990; width: min(520px, calc(100vw - 32px)); box-sizing: border-box; padding: 14px 14px 12px 16px; background: var(--plane-2); border: 1px solid rgba(237, 187, 69, 0.45); border-radius: 16px; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55); display: grid; gap: 10px; animation: aaEntra 0.35s ease-out; transition: opacity 0.3s, transform 0.3s; }
+.aviso-arr.fuera { opacity: 0; transform: translate(-50%, 12px); }
+@keyframes aaEntra { from { opacity: 0; transform: translate(-50%, 14px); } to { opacity: 1; transform: translate(-50%, 0); } }
+.aa-cab { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.aa-cab > svg { width: 20px; height: 20px; color: var(--accent); }
+.aa-cab b { display: block; font-size: 16px; font-weight: 650; }
+.aa-cab small { display: block; font-size: 13.5px; color: var(--text-2); margin-top: 1px; }
+.aa-t { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.4; }
+.aa-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.aa-l li { display: grid; grid-template-columns: 16px minmax(0, 1fr); gap: 9px; font-size: 14.5px; line-height: 1.45; color: var(--text-2); }
+.aa-l li svg { width: 16px; height: 16px; margin-top: 2px; color: var(--up); }
+.aa-l li span { display: -webkit-box; -webkit-line-clamp: 4; -webkit-box-orient: vertical; overflow: hidden; }
+.aa-pie { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+@media (prefers-reduced-motion: reduce) { .aviso-arr { animation: none; transition: none; } }
 .aviso-web span { font-weight: 600; font-size: 14.5px; }
 @media (prefers-reduced-motion: reduce) { .tour-foco, .tour-prog i, .act-barra i { transition: none; } .nov-lista li { animation: none; } }
 
@@ -5290,8 +5313,10 @@ function calcular() {
   // empresa en dos brókers. Antes, BTC 4 % + ETH 4 % con un límite del 5 % no saltaba en ninguna señal
   M.pesoLim = {}; M.nLim = {};
   for (const f of filas) { const g = grupoLim(f); M.pesoLim[g] = (M.pesoLim[g] || 0) + f.peso; M.nLim[g] = (M.nLim[g] || 0) + 1; }
-  for (const f of filas) f.senal = senal(f, M);
-  estabilizarSenales(filas);
+  // 0.5, modo estándar: en vez de la señal de GrowFolio (una recomendación para ti), lo que opinan los analistas
+  const est = esPublico();
+  for (const f of filas) f.senal = est ? senalAnalistas(f) : senal(f, M);
+  if (!est) estabilizarSenales(filas);
   return M;
 }
 
@@ -5623,6 +5648,26 @@ const SENALES = {
   comprar: 'Comprar más', aportar: 'Seguir aportando', mantener: 'Mantener', vigilar: 'Vigilar',
   recoger: 'Recoger beneficios', reducir: 'Reducir peso', vender: 'Vender',
 };
+/* 0.5, modo estándar: la etiqueta de cada posición es lo que opinan los analistas (Yahoo Finance), no un consejo de
+   GrowFolio: es su opinión y es la misma para cualquiera que tenga esa acción. Sin analistas (fondos, ETF, oro,
+   cripto) no lleva etiqueta. Debajo, sus datos: cuántos dicen qué, su precio objetivo y la tendencia, sin veredicto */
+function senalAnalistas(f) {
+  const p = f.p || {}, a = p.analistas || {}, v = votosResumen(a.votos && a.votos.ahora), pr = f.precio, motivos = [];
+  if (!v) return { nivel: 'nada', txt: '', motivos: [L('No hay analistas que la sigan (los fondos, los ETF, el oro y la cripto no los tienen).', 'No analysts cover it (funds, ETFs, gold and crypto have none).')], analistas: true };
+  const vv = (a.votos && a.votos.ahora) || {};
+  const media = (1 * (vv.strongBuy || 0) + 2 * (vv.buy || 0) + 3 * (vv.hold || 0) + 4 * (vv.sell || 0) + 5 * (vv.strongSell || 0)) / v.n;
+  const nivel = media <= 2.5 ? 'comprar' : media <= 3.5 ? 'mantener' : 'vender';
+  const palabra = { comprar: L('comprar', 'buy'), mantener: L('mantener', 'hold'), vender: L('vender', 'sell') }[nivel];
+  motivos.push(L(`De ${v.n} analistas, ${v.compra} dicen comprar, ${v.mantener} mantener y ${v.venta} vender (Yahoo Finance).`, `Of ${v.n} analysts, ${v.compra} say buy, ${v.mantener} hold and ${v.venta} sell (Yahoo Finance).`));
+  const antes = votosResumen(a.votos.hace3m);
+  if (antes) { const dif = v.compra / v.n - antes.compra / antes.n; if (dif >= 0.08) motivos.push(L('Hay más analistas a favor que hace 3 meses.', 'More analysts in favour than 3 months ago.')); if (dif <= -0.08) motivos.push(L('Hay menos analistas a favor que hace 3 meses.', 'Fewer analysts in favour than 3 months ago.')); }
+  const pot = a.objetivo && pr ? (a.objetivo / pr - 1) * 100 : null;
+  if (pot != null) motivos.push(pot >= 0 ? L(`Su precio objetivo medio (${precioFmt(a.objetivo)}) está un ${fmtNum(pot, 1)} % por encima del de hoy.`, `Their average target (${precioFmt(a.objetivo)}) is ${fmtNum(pot, 1)} % above today's price.`) : L(`Cotiza un ${fmtNum(-pot, 1)} % por encima de su precio objetivo medio (${precioFmt(a.objetivo)}).`, `It trades ${fmtNum(-pot, 1)} % above their average target (${precioFmt(a.objetivo)}).`));
+  const t = p.tecnico || {};
+  if (t.tendencia === 'alcista' && t.vs_media200 != null) motivos.push(L(`Cotiza un ${fmtNum(t.vs_media200, 1)} % por encima de su media de 200 sesiones.`, `It trades ${fmtNum(t.vs_media200, 1)} % above its 200-session average.`));
+  if (t.tendencia === 'bajista' && t.vs_media200 != null) motivos.push(L(`Cotiza un ${fmtNum(Math.abs(t.vs_media200), 1)} % por debajo de su media de 200 sesiones.`, `It trades ${fmtNum(Math.abs(t.vs_media200), 1)} % below its 200-session average.`));
+  return { nivel, txt: `${L('Analistas', 'Analysts')}: ${palabra} · ${v.n}`, motivos, analistas: true };
+}
 function votosResumen(v) {
   if (!v) return null;
   const n = v.strongBuy + v.buy + v.hold + v.sell + v.strongSell;
@@ -6247,14 +6292,18 @@ function htmlResumenDia(M) {
     ${prox.length ? `<section><h3>Hoy y mañana</h3><ul class="rdia-prox">${prox.map((e) => `<li><span class="ag-cd">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span><b>${tituloAg(e)}</b><small>${esc(e.s || '')}</small></span></li>`).join('')}</ul></section>` : ''}
   </div>`;
 }
+// 0.4f: no sale de madrugada (si abres GrowFolio pasada la medianoche antes de dormir, no era «el resumen de hoy»): solo
+// desde esta hora, la primera vez de cada día
+const HORA_RESUMEN = 6;
 function resumenDelDia(seguir = () => {}, forzar = false) {
   if (!S.cartera || !S.M) return seguir();
+  if (!forzar && new Date().getHours() < HORA_RESUMEN) return seguir();
   if (!forzar && (LS.get('inv-resumen-off', false) || LS.get('inv-resumen-dia', '') === hoyIso() || !S.M.filas.length || document.querySelector('.hoja-fondo, .tour, .estreno, .intro'))) return seguir();
   LS.set('inv-resumen-dia', hoyIso());
   const h = hoja(`${saludoHora()}${nombreUsuario() ? `, ${nombreUsuario()}` : ''}`, `${htmlResumenDia(S.M)}
     <div class="fila-btns rdia-pie"><label class="check-mini"><input type="checkbox" id="rdiaOff" ${LS.get('inv-resumen-off', false) ? 'checked' : ''}> No enseñarlo cada día</label><button type="button" class="btn pri" data-cerrar>Ver mi cartera</button></div>`, () => seguir());
   h.el.classList.add('hoja-rdia');
-  $('#rdiaOff', h.el).onchange = (e) => { LS.set('inv-resumen-off', e.target.checked); toast(e.target.checked ? 'Ya no saldrá solo: lo tienes en Ajustes' : 'Saldrá la primera vez que abras cada día', 3500); };
+  $('#rdiaOff', h.el).onchange = (e) => { LS.set('inv-resumen-off', e.target.checked); toast(e.target.checked ? 'Ya no saldrá solo: lo tienes en Ajustes' : 'Saldrá la primera vez que abras cada día, desde las 6 de la mañana', 3500); };
   h.el.addEventListener('click', (e) => { if (e.target.closest('a[href^="#"], [data-pos]')) h.cerrar(true); });
 }
 
@@ -6753,10 +6802,10 @@ function htmlPosiciones(M) {
   const ef = M.efectivo.map((e) => `<button class="fila efectivo" data-accion="efectivo" data-plat="${esc(e.plataforma)}" aria-label="Cambiar el efectivo de ${esc(e.plataforma)}"><span class="activo-l">${logo(null, '€')}<span class="activo"><b>Efectivo</b><small>${esc(e.plataforma)}</small></span></span><span class="c-precio"></span><span class="c-hoy"></span><span class="r valor num c-val">${eur(e.importe)}</span><span class="r c-peso k num">${pct(M.total ? (e.importe / M.total) * 100 : 0, 1)}</span><span class="c-gan"></span><span class="c-pct"></span><span class="c-senal"></span></button>`).join('');
   return `<section aria-labelledby="hPos">
     <div class="sec-cab pos-cab"><h2 id="hPos">Posiciones</h2><span class="k">${M.filas.length}<span class="pos-act"> activos</span></span>
-      <div class="der">${M.filas.length > 1 ? `<label class="orden-chip" title="Ordenar">${ICONOS.orden}<span>${ORDEN_CORTO[S.ordenPos.k] || 'Valor'}</span><i>${S.ordenPos.k === 'activo' ? (S.ordenPos.dir === 'asc' ? 'A-Z' : 'Z-A') : S.ordenPos.dir === 'asc' ? '↑' : '↓'}</i><select data-orden-pos-sel aria-label="Ordenar las posiciones">` + COLS_POS.map(([k, t]) => [[k, 'desc'], [k, 'asc']].map(([kk, d]) => `<option value="${kk}|${d}"${S.ordenPos.k === kk && S.ordenPos.dir === d ? ' selected' : ''}>${t === '%' ? 'Ganancia en %' : t} ${kk === 'activo' ? (d === 'asc' ? 'A-Z' : 'Z-A') : kk === 'senal' ? (d === 'asc' ? 'más urgente' : 'menos urgente') : d === 'desc' ? 'mayor a menor' : 'menor a mayor'}</option>`).join('')).join('') + '</select></label>' : ''}<button class="btn peq btn-op" data-accion="operacion" title="Apuntar una compra o una venta" aria-label="Compra o venta">${ICONOS.compraVenta}<span class="txt-pc">Apuntar compra o venta</span></button><button class="btn peq btn-ya" data-accion="nueva-pos" title="Añadir lo que ya tenías antes de GrowFolio" aria-label="Lo que ya tenías">${ICONOS.mas}<span class="txt-pc">Añadir lo que ya tenía</span></button></div></div>
+      <div class="der">${M.filas.length > 1 ? `<label class="orden-chip" title="Ordenar">${ICONOS.orden}<span>${tituloCol(ORDEN_CORTO[S.ordenPos.k] || 'Valor')}</span><i>${S.ordenPos.k === 'activo' ? (S.ordenPos.dir === 'asc' ? 'A-Z' : 'Z-A') : S.ordenPos.dir === 'asc' ? '↑' : '↓'}</i><select data-orden-pos-sel aria-label="Ordenar las posiciones">` + COLS_POS.map(([k, t]) => [[k, 'desc'], [k, 'asc']].map(([kk, d]) => `<option value="${kk}|${d}"${S.ordenPos.k === kk && S.ordenPos.dir === d ? ' selected' : ''}>${t === '%' ? 'Ganancia en %' : tituloCol(t)} ${kk === 'activo' ? (d === 'asc' ? 'A-Z' : 'Z-A') : kk === 'senal' ? (esPublico() ? (d === 'asc' ? L('vender primero', 'sell first') : L('comprar primero', 'buy first')) : d === 'asc' ? 'más urgente' : 'menos urgente') : d === 'desc' ? 'mayor a menor' : 'menor a mayor'}</option>`).join('')).join('') + '</select></label>' : ''}<button class="btn peq btn-op" data-accion="operacion" title="Apuntar una compra o una venta" aria-label="Compra o venta">${ICONOS.compraVenta}<span class="txt-pc">Apuntar compra o venta</span></button><button class="btn peq btn-ya" data-accion="nueva-pos" title="Añadir lo que ya tenías antes de GrowFolio" aria-label="Lo que ya tenías">${ICONOS.mas}<span class="txt-pc">Añadir lo que ya tenía</span></button></div></div>
 
     <div class="tabla-pos">
-      <div class="fila cab">${COLS_POS.map(([k, t, c]) => { const on = S.ordenPos && S.ordenPos.k === k; return `<span class="${c}"><button class="th" data-orden-pos="${k}" aria-pressed="${on}" title="Ordenar por ${t.toLowerCase()}">${t}${on ? `<span class="fl">${S.ordenPos.dir === 'asc' ? '↑' : '↓'}</span>` : ''}</button></span>`; }).join('')}</div>
+      <div class="fila cab">${COLS_POS.map(([k, t0, c]) => { const t = tituloCol(t0), on = S.ordenPos && S.ordenPos.k === k; return `<span class="${c}"><button class="th" data-orden-pos="${k}" aria-pressed="${on}" title="Ordenar por ${t.toLowerCase()}">${t}${on ? `<span class="fl">${S.ordenPos.dir === 'asc' ? '↑' : '↓'}</span>` : ''}</button></span>`; }).join('')}</div>
       ${filas || '<div class="vacio">Todavía no hay nada. Pulsa «+» (Añadir lo que ya tenías) y busca cada inversión por su nombre o su ISIN.</div>'}${ef}
     </div>
   </section>`;
@@ -7439,7 +7488,7 @@ function avisos(M) {
   for (const f of M.filas) { const x = precioCompraRaro(f); if (x) av.push({ ...avisoPrecioRaro(x), grave: true }); }
   for (const f of M.filas) {
     const s = f.senal;
-    if (s.nivel === 'vender' && (+f.pos.stop && f.precio <= +f.pos.stop)) av.push({ n: 'bad', i: ICONOS.stop, t: `${f.inst.corto}: precio de salida alcanzado`, d: s.motivos[0] });
+    if ((s.analistas || s.nivel === 'vender') && (+f.pos.stop && f.precio <= +f.pos.stop)) av.push({ n: 'bad', i: ICONOS.stop, t: `${f.inst.corto}: precio de salida alcanzado`, d: s.analistas ? L(`Está a ${precioFmt(f.precio)}, por debajo del precio de salida que pusiste (${precioFmt(+f.pos.stop)}).`, `It is at ${precioFmt(f.precio)}, below the exit price you set (${precioFmt(+f.pos.stop)}).`) : s.motivos[0] });
     else if (+f.pos.stop && f.precio && (f.precio / +f.pos.stop - 1) * 100 < 5) av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto} se acerca a tu salida`, d: `Está a un ${fmtNum((f.precio / f.pos.stop - 1) * 100, 1)} % de ${precioFmt(+f.pos.stop)}.` });
   }
   const sueltas = M.filas.filter((f) => f.inst.tipo === 'Acción');
@@ -7582,6 +7631,12 @@ Si no encuentras la noticia, contesta solo NO_ENCONTRADA.`;
 
 const ORDEN_SENAL = ['vender', 'recoger', 'reducir', 'comprar', 'vigilar', 'aportar', 'mantener'];
 function resumenSenales(M) {
+  if (esPublico()) {
+    const c = {}; for (const f of M.filas) if (f.senal.nivel !== 'nada') c[f.senal.nivel] = (c[f.senal.nivel] || 0) + 1;
+    const pal = { comprar: L('comprar', 'buy'), mantener: L('mantener', 'hold'), vender: L('vender', 'sell') };
+    const t = ['comprar', 'mantener', 'vender'].filter((k) => c[k]).map((k) => `${c[k]} ${pal[k]}`).join(', ');
+    return t ? `${L('Analistas', 'Analysts')}: ${t}` : '';
+  }
   const c = {};
   for (const f of M.filas) c[f.senal.nivel] = (c[f.senal.nivel] || 0) + 1;
   return ORDEN_SENAL.filter((k) => c[k]).map((k) => `${c[k]} ${SENALES[k].toLowerCase()}`).join(', ');
@@ -7675,7 +7730,8 @@ function filaExperto(f, ia, vIA = {}) {
 
 /* Expertos va en tres pestañas: el resumen (qué hacer), el detalle de cada posición y las ideas de compra */
 const EXPERTOS = [['posiciones', 'Tus posiciones'], ['ideas', 'Ideas de compra'], ['siguiendo', 'Siguiendo']];
-const ordenSenales = (M) => [...M.filas].sort((a, b) => ORDEN_SENAL.indexOf(a.senal.nivel) - ORDEN_SENAL.indexOf(b.senal.nivel) || b.valor - a.valor);
+const idxSenal = (n) => { const i = ORDEN_SENAL.indexOf(n); return i < 0 ? 99 : i; };
+const ordenSenales = (M) => [...M.filas].sort((a, b) => idxSenal(a.senal.nivel) - idxSenal(b.senal.nivel) || b.valor - a.valor);
 function htmlVistazo(M, ia) {
   const vistos = new Set();
   const filas = ordenSenales(M).filter((f) => { if (vistos.has(f.inst.id)) return false; vistos.add(f.inst.id); return true; });
@@ -7707,7 +7763,7 @@ function vistaExpertos(M) {
     <section aria-labelledby="hSen" class="bloque-sec">
       <div class="sec-cab"><h2 id="hSen">Posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
       <div class="fx3-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; const vistos = new Set(); return ordenSenales(M).filter((f) => !vistos.has(f.pos.id) && vistos.add(f.pos.id)).map((f) => filaExperto2(f, ia, vIA)).join(''); })()}</div>
-      <p class="nota">GrowFolio mira el consenso de los analistas, lo que queda hasta su precio objetivo, la tendencia, tus reglas de salida y lo que pesa en tu cartera. GrowIA, además, lee las noticias. Si no coinciden, lee los dos motivos antes de decidir.</p>
+      <p class="nota">${esPublico() ? L('La etiqueta es lo que opinan los analistas que siguen cada empresa (Yahoo Finance): su opinión, no un consejo de GrowFolio. GrowIA lee las noticias de cada una.', 'The label is what the analysts covering each company think (Yahoo Finance): their opinion, not advice from GrowFolio. GrowIA reads the news on each one.') : 'GrowFolio mira el consenso de los analistas, lo que queda hasta su precio objetivo, la tendencia, tus reglas de salida y lo que pesa en tu cartera. GrowIA, además, lee las noticias. Si no coinciden, lee los dos motivos antes de decidir.'}</p>
     </section>
     ${htmlResumenInforme(true)}
     <details class="num-sec"><summary><span><b>Analistas en prensa</b><small>titulares sobre lo que tienes, de los últimos 30 días</small></span></summary><div class="num-cuerpo">${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10)}</div></details>`;
@@ -8229,7 +8285,7 @@ function vigilarRecomendaciones(M) {
   const antes = Object.fromEntries(S.firmaPintada.split('#')[0].split('|').map((x) => x.split(':')));
   for (const fila of M.filas) {
     const a = antes[fila.pos.id];
-    if (a && a !== fila.senal.nivel) toast(`${fila.inst.corto}: la señal pasa de «${SENALES[a] || a}» a «${fila.senal.txt}»`, 6000);
+    if (a && a !== fila.senal.nivel && !esPublico()) toast(`${fila.inst.corto}: la señal pasa de «${SENALES[a] || a}» a «${fila.senal.txt}»`, 6000);
   }
   S.firmaPintada = f;
   clearTimeout(repintadoT);
@@ -10354,11 +10410,12 @@ const dominioWeb = (u) => { try { return u ? new URL(/^https?:/.test(u) ? u : 'h
    Orden de la tabla de posiciones
    ===================================================================== */
 const ORDEN_CORTO = { activo: 'Nombre', precio: 'Precio', hoy: 'Hoy', valor: 'Valor', peso: 'Peso', gan: 'Ganado', pct: '%', senal: 'Señal' };
+const tituloCol = (t) => (t === 'Señal' && esPublico() ? L('Analistas', 'Analysts') : t);
 const COLS_POS = [['activo', 'Activo', ''], ['precio', 'Precio', 'r c-precio'], ['hoy', 'Hoy', 'r c-hoy'], ['valor', 'Valor', 'r c-val'], ['peso', 'Peso', 'r c-peso'], ['gan', 'Desde la compra', 'r c-gan'], ['pct', '%', 'r c-pct'], ['senal', 'Señal', 'r c-senal']];
 const CLAVE_POS = {
   activo: (f) => (f.inst.corto || f.inst.nombre || '').toLowerCase(),
   precio: (f) => f.precio ?? -Infinity, hoy: (f) => f.varDia ?? -Infinity, valor: (f) => f.valor, peso: (f) => f.peso,
-  gan: (f) => f.pl, pct: (f) => f.plPct ?? -Infinity, senal: (f) => ORDEN_SENAL.indexOf(f.senal.nivel),
+  gan: (f) => f.pl, pct: (f) => f.plPct ?? -Infinity, senal: (f) => idxSenal(f.senal.nivel),
 };
 const DIR_INICIAL = { activo: 'asc', senal: 'asc' };
 function ordenarPos(filas) {
@@ -12080,7 +12137,7 @@ function fichaResumen(f) {
     ${p.proxy ? `<p class="nota">Hasta el ${fechaLarga(p.proxy_hasta)} es el precio de ${esc(p.proxy)}, un ETF del mismo índice, porque el fondo no existía.</p>` : ''}
   </section>
   <section class="tarjeta" style="background:var(--plane)">
-    <h3>Señal <span class="senal ${f.senal.nivel}" style="margin-left:auto">${f.senal.txt}</span></h3>
+    <h3>${f.senal.analistas ? L('Analistas', 'Analysts') : 'Señal'} <span class="senal ${f.senal.nivel}" style="margin-left:auto">${f.senal.analistas ? esc(f.senal.txt.replace(/^[^:]+:\s*/, '')) : f.senal.txt}</span></h3>
     <ul class="motivos">${f.senal.motivos.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>
   </section>
   ${htmlPlanVenta(planVenta(f, S.M), true)}
@@ -15341,9 +15398,29 @@ function arreglosVistos(visto, despues) {
   const a = ns.reduce((t, n) => t + (n.arreglos || []).length, 0), m = ns.reduce((t, n) => t + (n.cosas || []).length, 0);
   marcarNovVista(); LS.set('inv-version', VERSION); LS.set('inv-vnum', 2);
   const que = [a ? L(`${a} ${a === 1 ? 'arreglo' : 'arreglos'}`, `${a} ${a === 1 ? 'fix' : 'fixes'}`) : '', m ? L(`${m} ${m === 1 ? 'mejora' : 'mejoras'}`, `${m} ${m === 1 ? 'improvement' : 'improvements'}`) : ''].filter(Boolean).join(L(' y ', ' and '));
-  if (que) toast(L(`GrowFolio ${VERSION}: ${que}. Lo tienes en Ajustes, Novedades.`, `GrowFolio ${VERSION}: ${que}. See it in Settings, What's new.`), 5000);
+  if (que) setTimeout(() => avisoArreglos(ns, que, visto), 900);
   if (S.cartera) setTimeout(() => { if (S.vista === 'cartera' && !S.ficha) pintar(); }, 60);
   despues();
+}
+/* 0.4f: el aviso de una versión de arreglos, en una tarjeta que se lee (antes era un mensaje pequeño que se iba solo):
+   la versión, su título, los primeros arreglos y «Ver todo», que abre las novedades desde la que tenías */
+function avisoArreglos(ns, que, visto, intento = 0) {
+  if (document.querySelector('.hoja-fondo, .tour, .intro, .estreno, .bloqueo')) { if (intento < 20) setTimeout(() => avisoArreglos(ns, que, visto, intento + 1), 3000); return; }
+  $$('.aviso-arr').forEach((x) => x.remove());
+  const ult = ns.find((n) => n.v === VERSION) || ns[0] || {}, lista = ns.flatMap((n) => [...(n.cosas || []).map((c) => c.t), ...(n.arreglos || [])]).filter(Boolean);
+  const d = document.createElement('div');
+  d.className = 'aviso-arr'; d.setAttribute('role', 'status');
+  d.innerHTML = `<div class="aa-cab">${ICONOS.chispa}<div><b>GrowFolio ${esc(VERSION)}</b><small>${esc(que)}</small></div><button type="button" class="ib" data-aa="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button></div>
+    ${ult.t ? `<p class="aa-t">${esc(trad(ult.t))}</p>` : ''}
+    <ul class="aa-l">${lista.slice(0, 3).map((x) => `<li>${ICONOS.ok}<span>${esc(trad(x))}</span></li>`).join('')}</ul>
+    <div class="aa-pie">${lista.length > 3 ? `<span class="k">${L(`y ${lista.length - 3} más`, `and ${lista.length - 3} more`)}</span>` : '<span></span>'}<button type="button" class="btn peq" data-aa="ver">${L('Ver todo', 'See all')}</button></div>`;
+  document.body.appendChild(d);
+  const fuera = () => { d.classList.add('fuera'); setTimeout(() => d.remove(), 300); };
+  d.querySelector('[data-aa="x"]').onclick = fuera;
+  d.querySelector('[data-aa="ver"]').onclick = () => { fuera(); mostrarNovedades(visto, () => {}); };
+  // se va sola al rato, salvo que la estés tocando o leyendo con el ratón encima
+  let t = setTimeout(fuera, 20000);
+  d.addEventListener('pointerenter', () => clearTimeout(t)); d.addEventListener('pointerleave', () => { clearTimeout(t); t = setTimeout(fuera, 8000); });
 }
 /* qué se ha mejorado: lo nuevo arriba, cada cosa con un «Enséñamelo» que te lleva hasta ella resaltada (como el
    tutorial) y un «Enséñamelo todo» que las recorre en orden. Las versiones anteriores, plegadas una a una con sus
@@ -15595,13 +15672,16 @@ async function leerOpiniones(n = 200) {
   }
 }
 /* =====================================================================
-   0.5: modo privado y modo público
-   Privado (acceso completo): el dueño (los correos de BANCO_EMAILS) y los correos que él apunta en privados/{correo}
-   desde Ajustes. Ahí sale todo, también el Paso a paso y GrowIA cuando dice qué comprar o vender.
-   Público: el resto de GrowFolio, sin recomendaciones personalizadas sobre valores concretos (eso es asesoramiento y
+   0.5: modo fundador y modo estándar
+   Fundador: todo GrowFolio, también el Paso a paso y GrowIA cuando dice qué comprar o vender. Lo tienen el dueño (los
+   correos de BANCO_EMAILS), las cuentas creadas antes de la 0.5 y las que el dueño ponga en fundador.
+   Estándar: el resto de GrowFolio, sin recomendaciones personalizadas sobre valores concretos (eso es asesoramiento y
    necesita autorización de la CNMV). En el sitio del Paso a paso sale «Tu plan», que llega completo en la 0.9.
+   El dueño puede poner cualquier cuenta (también la suya) en un modo u otro desde Ajustes, con una nota que esa persona
+   ve al abrir: modos/{correo}. Para que vea todas las cuentas, cada una apunta su correo en cuentas/{uid}.
    Se comprueba al entrar. El último modo se guarda en el dispositivo para no parpadear y para cuando no hay red; sin
-   nada guardado, quien ya usaba GrowFolio antes de la 0.5 empieza en privado (lo era) y quien llega nuevo, en público.
+   nada guardado, quien ya usaba GrowFolio antes de la 0.5 empieza en fundador y quien llega nuevo, en estándar.
+   (Por dentro: 'privado' es fundador y 'publico' es estándar.)
    ===================================================================== */
 const VENIA_DE_ANTES = (() => { try { return /^0\.[0-4](\D|$)/.test(String(LS.get('inv-version', '') || '')); } catch (e) { return false; } })();
 function accesoInicial() {
@@ -15614,106 +15694,137 @@ function accesoInicial() {
   return ini;
 }
 function esPublico() {
-  if (S.verPublico) return true;
   if (!S.acceso) S.acceso = accesoInicial();
   return S.acceso === 'publico';
 }
-S.verPublico = !!LS.get('inv-ver-publico', false);
+const nombreModo = (a) => (a === 'publico' ? L('modo estándar', 'standard mode') : L('modo fundador', 'founder mode'));
 const errPermiso = (e) => /permission/i.test(String((e && e.code) || e));
-/* Fundadores: las cuentas creadas antes de que saliera la 0.5 (los amigos que ya usaban GrowFolio) tienen el acceso
-   completo sin estar en la lista. La fecha de alta la pone Firebase. Al publicar la 0.5, este día pasa a ser el suyo */
-const ALTA_FUNDADORES = '2026-10-24';
-const esFundador = (u) => { const t = Date.parse((u && u.metadata && u.metadata.creationTime) || ''); return isFinite(t) && new Date(t).toISOString().slice(0, 10) < ALTA_FUNDADORES; };
-// con correo y contraseña, el correo hay que confirmarlo (las reglas solo dan el acceso completo con el correo confirmado)
+// con correo y contraseña, el correo hay que confirmarlo (las reglas solo dejan leer tu modo con el correo confirmado)
 const correoSinConfirmar = () => !!(FB.user && !FB.user.emailVerified && (FB.user.providerData || []).some((x) => x.providerId === 'password'));
+/* Fundadores: las cuentas creadas antes de que saliera la 0.5 (los amigos que ya usaban GrowFolio). La fecha de alta la
+   pone Firebase. Al publicar la 0.5, este día pasa a ser el suyo */
+const ALTA_FUNDADORES = '2026-10-24';
+const altaDe = (u) => { const t = Date.parse((u && u.metadata && u.metadata.creationTime) || ''); return isFinite(t) ? new Date(t).toISOString().slice(0, 10) : null; };
+const esFundadorPorAlta = (alta) => !!alta && alta < ALTA_FUNDADORES;
 async function comprobarAcceso() {
   if (!PERFIL_CUENTA || CFG.dev) return;
   try {
     await fbCargar(); const u = FB.user; if (!u) return;
     // si lo acaba de confirmar, la sesión aún no lo sabe: se refresca (solo con correo y contraseña sin confirmar)
     if (correoSinConfirmar()) { try { await conTiempo(u.reload(), 8000); if (u.emailVerified) await conTiempo(u.getIdToken(true), 8000); } catch (e) {} }
-    const f = FB.fs, correo = String(u.email || '').trim().toLowerCase();
-    let a = esFundador(u) ? 'privado' : 'publico';
-    if (a === 'publico' && correo) {
-      try { const d = await conTiempo(f.getDoc(f.doc(FB.db, 'privados', correo)), 10000); if (d.exists()) a = 'privado'; }
+    const f = FB.fs, correo = String(u.email || '').trim().toLowerCase(), alta = altaDe(u);
+    apuntarCuenta(u, correo, alta);
+    // lo que haya puesto el dueño para esta cuenta manda
+    let puesto = null;
+    if (correo) {
+      try { const d = await conTiempo(f.getDoc(f.doc(FB.db, 'modos', correo)), 10000); if (d.exists()) puesto = d.data(); }
       catch (e) { if (!errPermiso(e)) return; }
     }
-    // el dueño: puede leer todas las opiniones (las reglas de siempre); no hace falta que esté en la lista. Se mira siempre,
-    // también siendo fundador, para enseñarle la lista en Ajustes
-    try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); a = 'privado'; S.esDueno = true; S.noDueno = false; }
-    catch (e) { if (!errPermiso(e)) { if (a === 'publico') return; } else S.noDueno = true; }
-    if (!S.esDueno) S.verPublico = false;
-    fijarAcceso(a, u.uid);
-  } catch (e) { console.warn('No se ha podido comprobar el acceso', e); }
+    // el dueño: puede leer todas las opiniones (las reglas de siempre)
+    try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); S.esDueno = true; S.noDueno = false; }
+    catch (e) { if (errPermiso(e)) S.noDueno = true; else if (!puesto && !esFundadorPorAlta(alta)) return; }
+    const a = puesto && (puesto.modo === 'fundador' || puesto.modo === 'estandar') ? (puesto.modo === 'fundador' ? 'privado' : 'publico')
+      : S.esDueno || esFundadorPorAlta(alta) ? 'privado' : 'publico';
+    fijarAcceso(a, u.uid, puesto);
+  } catch (e) { console.warn('No se ha podido comprobar el modo', e); }
 }
-/* En Ajustes: el dueño, la lista del acceso completo; quien entró con correo y contraseña sin confirmarlo, el botón
-   para confirmarlo */
-async function filaAcceso(h) {
-  const w = $('#aAcceso', h.el); if (!w || !PERFIL_CUENTA) return;
-  if (S.esDueno) {
-    w.innerHTML = `<button class="aj-fila" id="aPriv">${ICONOS.candado}<span><b>${L('Acceso completo', 'Full access')}</b><small>${L('Quién ve el Paso a paso y las recomendaciones de GrowIA. Solo lo ves tú.', 'Who sees Steps and GrowIA recommendations. Only you see this.')}${S.verPublico ? ' ' + L('Ahora lo estás viendo como público.', 'You are now viewing it as public.') : ''}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
-    $('#aPriv', h.el).onclick = () => { h.cerrar(true); verPrivados(); };
-  } else if (correoSinConfirmar()) {
-    w.innerHTML = `<button class="aj-fila" id="aVerif">${ICONOS.alerta}<span><b>${L('Confirma tu correo', 'Confirm your email')}</b><small>${L('Te mandamos un enlace a tu correo. Hace falta, por ejemplo, para el acceso completo si te lo han dado.', 'We send a link to your email. It is needed, for example, for full access if you have been given it.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
-    $('#aVerif', h.el).onclick = async () => {
-      try { await fbCargar(); await FB.au.sendEmailVerification(FB.user); toast(L(`Te he mandado un correo a ${FB.user.email}. Cuando lo confirmes, vuelve a abrir GrowFolio.`, `I've sent an email to ${FB.user.email}. Once you confirm it, open GrowFolio again.`), 7000); }
-      catch (e) { toast(L('No se ha podido mandar ahora. Prueba en un rato.', "Couldn't send it now. Try again later."), 5000); }
-    };
-  }
+// tu correo y tu fecha de alta, para que el dueño vea todas las cuentas en Ajustes (una vez por dispositivo)
+async function apuntarCuenta(u, correo, alta) {
+  if (!correo || LS.get('inv-cuenta-apuntada') === u.uid) return;
+  try { const f = FB.fs; await conTiempo(f.setDoc(f.doc(FB.db, 'cuentas', u.uid), { correo, alta: alta || '' }), 10000); LS.set('inv-cuenta-apuntada', u.uid); }
+  catch (e) { /* sin las reglas nuevas o sin red: a la próxima */ }
 }
-async function leerPrivados() {
-  await fbCargar(); const f = FB.fs;
-  const r = await conTiempo(f.getDocs(f.collection(FB.db, 'privados')), 10000);
-  return r.docs.map((d) => ({ correo: d.id, ...d.data() })).sort((a, b) => a.correo.localeCompare(b.correo));
-}
-async function verPrivados() {
-  let l;
-  try { l = await leerPrivados(); }
-  catch (e) { return toast(errPermiso(e) ? L('La lista aún no se puede leer: faltan las reglas nuevas de Firestore, que se publican con la 0.5.', "The list can't be read yet: the new Firestore rules, published with 0.5, are missing.") : L('No se ha podido leer la lista (¿sin conexión?).', "Couldn't read the list (offline?)."), 7000); }
-  const yo = String((FB.user && FB.user.email) || '').toLowerCase(), esta = new Set(l.map((x) => x.correo));
-  // sugerencias: quien te ha mandado opiniones y aún no está
-  const opis = (await leerOpiniones().catch(() => null)) || [];
-  const sug = [...new Set(opis.map((o) => String(o.correo || '').trim().toLowerCase()).filter((c) => c && c !== yo && !esta.has(c)))].slice(0, 12);
-  const h = hoja(L('Acceso completo', 'Full access'), `<div class="priv">
-    <p>${L('Quien esté en esta lista ve GrowFolio entero: el Paso a paso y GrowIA cuando dice qué comprar o vender. El resto lo ve sin recomendaciones personalizadas (el modo público). Tú siempre lo ves entero.', 'Anyone on this list sees all of GrowFolio: Steps and GrowIA when it says what to buy or sell. Everyone else sees it without personalised recommendations (public mode). You always see it all.')}</p>
-    <form id="pvF" class="priv-add" novalidate><label class="campo">${L('Añadir un correo', 'Add an email')}<input id="pvC" type="email" autocomplete="off" inputmode="email" placeholder="${L('amigo@gmail.com', 'friend@gmail.com')}"></label><button class="btn pri" type="submit">${L('Añadir', 'Add')}</button></form>
-    <div class="error" id="pvErr"></div>
-    ${sug.length ? `<div class="priv-sug"><span class="k">${L('Te han mandado opiniones:', 'Sent you feedback:')}</span>${sug.map((c) => `<button type="button" class="chip-btn" data-pv-sug="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
-    <ul class="priv-l">${l.length ? l.map((x) => `<li><span data-no-trad>${esc(x.correo)}</span><button type="button" class="ib peligro" data-pv-quitar="${esc(x.correo)}" aria-label="${esc(L('Quitar', 'Remove'))} ${esc(x.correo)}" title="${esc(L('Quitar', 'Remove'))}">${ICONOS.papelera}</button></li>`).join('') : `<li class="vacio">${L('Nadie todavía.', 'Nobody yet.')}</li>`}</ul>
-    <p class="nota">${L('Con Google o Apple vale al momento. Quien entre con correo y contraseña tiene que confirmar su correo: GrowFolio se lo pide en Ajustes.', 'With Google or Apple it works straight away. Anyone signing in with email and password has to confirm their email: GrowFolio asks them in Settings.')}</p>
-    <label class="check"><input type="checkbox" id="pvVer" ${S.verPublico ? 'checked' : ''}> ${L('Verlo como alguien sin acceso completo (solo en este dispositivo)', 'View it as someone without full access (this device only)')}</label>
-  </div>`);
-  h.el.classList.add('hoja-priv');
-  const f = FB.fs, err = (t) => { $('#pvErr', h.el).textContent = t; };
-  const anadir = async (c) => {
-    c = String(c || '').trim().toLowerCase();
-    if (!/^[^@\s/]+@[^@\s/]+\.[^@\s/]+$/.test(c)) return err(L('Ese correo no parece válido.', "That email doesn't look valid."));
-    if (esta.has(c)) return err(L('Ya está en la lista.', 'Already on the list.'));
-    try { await conTiempo(f.setDoc(f.doc(FB.db, 'privados', c), { por: yo, cuando: f.serverTimestamp() }), 10000); h.cerrar(true); verPrivados(); toast(L(`${c} ya tiene acceso completo`, `${c} now has full access`)); }
-    catch (e) { err(errPermiso(e) ? L('Firestore no deja escribir la lista: faltan las reglas nuevas.', "Firestore won't let you write the list: the new rules are missing.") : L('No se ha podido guardar (¿sin conexión?).', "Couldn't save it (offline?).")); }
-  };
-  $('#pvF', h.el).onsubmit = (ev) => { ev.preventDefault(); anadir($('#pvC', h.el).value); };
-  for (const b of $$('[data-pv-sug]', h.el)) b.onclick = () => anadir(b.dataset.pvSug);
-  for (const b of $$('[data-pv-quitar]', h.el)) b.onclick = async () => {
-    const c = b.dataset.pvQuitar;
-    if (!confirm(trad(`¿Quitar el acceso completo a ${c}? Dejará de ver el Paso a paso la próxima vez que abra GrowFolio.`))) return;
-    try { await conTiempo(f.deleteDoc(f.doc(FB.db, 'privados', c)), 10000); h.cerrar(true); verPrivados(); }
-    catch (e) { toast(L('No se ha podido quitar (¿sin conexión?).', "Couldn't remove it (offline?)."), 5000); }
-  };
-  $('#pvVer', h.el).onchange = (e) => { S.verPublico = e.target.checked; LS.set('inv-ver-publico', S.verPublico); cambioDeAcceso(); toast(S.verPublico ? L('Así lo ve alguien sin acceso completo. Para volver, desmárcalo aquí.', 'This is how someone without full access sees it. Untick it here to go back.') : L('Vuelves a verlo entero', 'You see it all again'), 4500); };
-}
-function fijarAcceso(a, uid) {
-  const antes = esPublico();
+function fijarAcceso(a, uid, puesto) {
+  const ant = LS.get('inv-acceso'), antes = esPublico();
   S.acceso = a; LS.set('inv-acceso', { a, uid: uid || null, t: Date.now() });
   if (esPublico() !== antes) cambioDeAcceso();
+  // si el modo de esta cuenta ha cambiado (no la primera vez en este dispositivo), se le cuenta, con la nota del dueño
+  if (ant && !ant.provisional && ant.uid === uid && ant.a !== a) setTimeout(() => avisoCambioModo(a, puesto), 1200);
+}
+function avisoCambioModo(a, puesto, intento = 0) {
+  if (document.querySelector('.hoja-fondo, .tour, .intro, .estreno, .bloqueo')) { if (intento < 20) setTimeout(() => avisoCambioModo(a, puesto, intento + 1), 4000); return; }
+  const nota = puesto && puesto.nota ? String(puesto.nota) : '';
+  hoja(L(`Tu cuenta está ahora en ${nombreModo(a)}`, `Your account is now in ${nombreModo(a)}`), `<div class="priv">
+    ${nota ? `<p class="modo-nota">«${esc(nota)}»</p>` : ''}
+    <p>${a === 'publico' ? L('Ves GrowFolio sin recomendaciones personalizadas: en el sitio del Paso a paso está «Tu plan», GrowIA te explica y calcula pero no te dice qué comprar o vender, y en cada posición sale lo que opinan los analistas. Tu cartera y todo lo demás siguen igual.', 'You see GrowFolio without personalised recommendations: Your plan replaces Steps, GrowIA explains and calculates but does not tell you what to buy or sell, and each holding shows what analysts think. Your portfolio and everything else stay the same.') : L('Vuelves a ver GrowFolio entero: el Paso a paso, las señales de cada posición y GrowIA cuando dice qué comprar o vender.', 'You see all of GrowFolio again: Steps, the signal on each holding and GrowIA when it says what to buy or sell.')}</p>
+    <div class="fila-btns"><button type="button" class="btn pri" data-cerrar>${L('Entendido', 'Got it')}</button></div></div>`);
 }
 // los nombres de la barra (Paso a paso o Tu plan) y la pestaña de ahora, con el modo nuevo
 function cambioDeAcceso() {
   const g = GRUPOS.find((x) => x.k === 'ruta');
   for (const a of $$('.nav [data-ir="ruta"]')) a.textContent = L(g.t, g.en);
   for (const sp of $$('.navbar [data-ir="ruta"] span')) sp.textContent = L(g.c || g.t, g.en);
-  if (S.M) cacheDe(S.M, '__ruta').delete('r');
+  if (S.M) { cacheDe(S.M, '__ruta').delete('r'); cacheDe(S.M, '__ideas').clear(); cacheDe(S.M, '__plan').clear(); }
   if (S.cartera && $('#vista') && !document.querySelector('.hoja-fondo form, .ficha')) pintar();
+}
+/* En Ajustes: el dueño, los modos de las cuentas; quien entró con correo y contraseña sin confirmarlo, el botón para
+   confirmarlo; los demás, en qué modo están */
+async function filaAcceso(h) {
+  const w = $('#aAcceso', h.el); if (!w || !PERFIL_CUENTA) return;
+  if (S.esDueno) {
+    w.innerHTML = `<button class="aj-fila" id="aPriv">${ICONOS.candado}<span><b>${L('Modo de cada cuenta', 'Each account\'s mode')}</b><small>${L(`Fundador o estándar, también la tuya (ahora, ${nombreModo(S.acceso)}). Solo lo ves tú.`, `Founder or standard, yours too (now ${nombreModo(S.acceso)}). Only you see this.`)}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+    $('#aPriv', h.el).onclick = () => { h.cerrar(true); verModos(); };
+  } else if (correoSinConfirmar()) {
+    w.innerHTML = `<button class="aj-fila" id="aVerif">${ICONOS.alerta}<span><b>${L('Confirma tu correo', 'Confirm your email')}</b><small>${L('Te mandamos un enlace a tu correo. Hace falta, por ejemplo, para el modo fundador si te lo han dado.', 'We send a link to your email. It is needed, for example, for founder mode if you have been given it.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+    $('#aVerif', h.el).onclick = async () => {
+      try { await fbCargar(); await FB.au.sendEmailVerification(FB.user); toast(L(`Te he mandado un correo a ${FB.user.email}. Cuando lo confirmes, vuelve a abrir GrowFolio.`, `I've sent an email to ${FB.user.email}. Once you confirm it, open GrowFolio again.`), 7000); }
+      catch (e) { toast(L('No se ha podido mandar ahora. Prueba en un rato.', "Couldn't send it now. Try again later."), 5000); }
+    };
+  } else {
+    w.innerHTML = `<div class="aj-fila aj-info">${ICONOS.candado}<span><b>${L('Tu modo', 'Your mode')}: ${esc(nombreModo(S.acceso))}</b><small>${esPublico() ? L('Sin recomendaciones personalizadas: «Tu plan» en lugar del Paso a paso.', 'No personalised recommendations: Your plan instead of Steps.') : L('GrowFolio entero, con el Paso a paso.', 'All of GrowFolio, with Steps.')}</small></span></div>`;
+  }
+}
+// las cuentas que conoce GrowFolio (las que han abierto la 0.5) y lo que les ha puesto el dueño
+async function leerModos() {
+  await fbCargar(); const f = FB.fs;
+  const [rc, rm] = await Promise.all([conTiempo(f.getDocs(f.collection(FB.db, 'cuentas')), 10000), conTiempo(f.getDocs(f.collection(FB.db, 'modos')), 10000)]);
+  const m = new Map();
+  for (const d of rc.docs) { const x = d.data(); if (x.correo) m.set(x.correo, { correo: x.correo, alta: x.alta || null }); }
+  for (const d of rm.docs) m.set(d.id, { ...(m.get(d.id) || { correo: d.id, alta: null }), puesto: d.data() });
+  return [...m.values()].map((x) => ({ ...x, modo: x.puesto && x.puesto.modo ? x.puesto.modo : esFundadorPorAlta(x.alta) ? 'fundador' : 'estandar' }))
+    .sort((a, b) => (a.correo === yoCorreo() ? -1 : b.correo === yoCorreo() ? 1 : String(a.alta || '9').localeCompare(String(b.alta || '9')) || a.correo.localeCompare(b.correo)));
+}
+const yoCorreo = () => String((FB.user && FB.user.email) || '').toLowerCase();
+async function verModos() {
+  let l;
+  try { l = await leerModos(); }
+  catch (e) { return toast(errPermiso(e) ? L('Aún no se pueden leer: faltan las reglas nuevas de Firestore, que se publican con la 0.5.', "Can't read them yet: the new Firestore rules, published with 0.5, are missing.") : L('No se ha podido leer (¿sin conexión?).', "Couldn't read them (offline?)."), 7000); }
+  const yo = yoCorreo();
+  if (yo && !l.some((x) => x.correo === yo)) l.unshift({ correo: yo, alta: altaDe(FB.user), modo: S.acceso === 'publico' ? 'estandar' : 'fundador' });
+  const fila = (x) => `<li data-correo="${esc(x.correo)}"><div class="modo-t"><b data-no-trad>${esc(x.correo)}${x.correo === yo ? ` <em>${L('(tú)', '(you)')}</em>` : ''}</b><small>${x.alta ? L(`Cuenta del ${esc(fechaLarga(x.alta))}`, `Account from ${esc(x.alta)}`) : L('Aún no ha entrado con la 0.5', 'Not signed in with 0.5 yet')}${x.puesto ? ` · ${L('lo pusiste tú', 'set by you')}` : esFundadorPorAlta(x.alta) ? ` · ${L('fundador por fecha', 'founder by date')}` : ''}</small></div>
+      <div class="dos-op modo-op" role="group" aria-label="${esc(L('Modo', 'Mode'))}"><button type="button" data-modo="fundador" aria-pressed="${x.modo === 'fundador'}">${L('Fundador', 'Founder')}</button><button type="button" data-modo="estandar" aria-pressed="${x.modo === 'estandar'}">${L('Estándar', 'Standard')}</button></div></li>`;
+  const h = hoja(L('Modo de cada cuenta', "Each account's mode"), `<div class="priv">
+    <p>${L('Fundador: GrowFolio entero, con el Paso a paso y GrowIA cuando dice qué comprar o vender. Estándar: sin recomendaciones personalizadas («Tu plan» en lugar del Paso a paso y lo que opinan los analistas en cada posición). Las cuentas creadas antes de la 0.5 son fundador; las nuevas, estándar, salvo que lo cambies aquí.', 'Founder: all of GrowFolio, with Steps and GrowIA when it says what to buy or sell. Standard: no personalised recommendations (Your plan instead of Steps and what analysts think on each holding). Accounts created before 0.5 are founders; new ones, standard, unless you change it here.')}</p>
+    <ul class="priv-l modo-l">${l.map(fila).join('')}</ul>
+    <form id="pvF" class="priv-add" novalidate><label class="campo">${L('Otra cuenta, por su correo', 'Another account, by email')}<input id="pvC" type="email" autocomplete="off" inputmode="email" placeholder="${L('amigo@gmail.com', 'friend@gmail.com')}"></label><button class="btn" type="submit">${L('Añadir', 'Add')}</button></form>
+    <div class="error" id="pvErr"></div>
+    <p class="nota">${L('Las cuentas salen aquí cuando abren la 0.5. El cambio le llega al volver a abrir GrowFolio, con tu nota si le dejas una. Con Google o Apple vale al momento; con correo y contraseña, tiene que confirmar su correo.', 'Accounts show up here once they open 0.5. The change reaches them when they next open GrowFolio, with your note if you leave one. With Google or Apple it works straight away; with email and password, they must confirm their email.')}</p>
+  </div>`);
+  h.el.classList.add('hoja-priv');
+  const f = FB.fs, err = (t) => { $('#pvErr', h.el).textContent = t; };
+  const poner = (correo, modo) => {
+    const n = hoja(L(`${correo}: ${modo === 'fundador' ? 'modo fundador' : 'modo estándar'}`, `${correo}: ${modo === 'fundador' ? 'founder mode' : 'standard mode'}`), `<form id="mdF" class="priv" novalidate>
+      <label class="campo">${L('Nota para esa persona (opcional; la ve al abrir GrowFolio)', 'Note for them (optional; they see it when opening GrowFolio)')}<textarea id="mdN" rows="3" maxlength="140" placeholder="${esc(modo === 'estandar' ? L('Te he puesto en estándar unos días: pruébalo y me dices qué tal.', "I've put you on standard for a few days: try it and tell me how it goes.") : '')}"></textarea></label>
+      <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri">${L('Cambiar', 'Change')}</button></div></form>`);
+    $('#mdF', n.el).onsubmit = async (ev) => {
+      ev.preventDefault();
+      const nota = $('#mdN', n.el).value.trim().slice(0, 140), b = $('#mdF .btn.pri', n.el); b.disabled = true;
+      try {
+        await conTiempo(f.setDoc(f.doc(FB.db, 'modos', correo), { modo, por: yoCorreo(), cuando: f.serverTimestamp(), ...(nota ? { nota } : {}) }), 10000);
+        n.cerrar(true); h.cerrar(true);
+        toast(L(`${correo}: ${modo === 'fundador' ? 'modo fundador' : 'modo estándar'}. Le llega al volver a abrir GrowFolio.`, `${correo}: ${modo === 'fundador' ? 'founder mode' : 'standard mode'}. It reaches them when they next open GrowFolio.`), 5000);
+        if (correo === yoCorreo()) comprobarAcceso(); else verModos();
+      } catch (e) { b.disabled = false; toast(errPermiso(e) ? L('Firestore no lo deja guardar: faltan las reglas nuevas.', "Firestore won't save it: the new rules are missing.") : L('No se ha podido guardar (¿sin conexión?).', "Couldn't save it (offline?)."), 6000); }
+    };
+  };
+  for (const b of $$('[data-modo]', h.el)) b.onclick = () => { if (b.getAttribute('aria-pressed') === 'true') return; poner(b.closest('li').dataset.correo, b.dataset.modo); };
+  $('#pvF', h.el).onsubmit = (ev) => {
+    ev.preventDefault();
+    const c = $('#pvC', h.el).value.trim().toLowerCase();
+    if (!/^[^@\s/]+@[^@\s/]+\.[^@\s/]+$/.test(c)) return err(L('Ese correo no parece válido.', "That email doesn't look valid."));
+    if (l.some((x) => x.correo === c)) return err(L('Ya está en la lista: cámbialo ahí.', 'Already on the list: change it there.'));
+    poner(c, 'fundador');
+  };
 }
 async function filaOpiniones(h) {
   const w = $('#aOpis', h.el); if (!w) return;
@@ -17403,7 +17514,7 @@ function abrirAjustes() {
     <h2 class="aj-grupo">Avisos y resumen</h2>
     <div class="aj-caja">
       <button class="aj-fila" id="aResumen" data-cerrar>${ICONOS.agenda}<span><b>El resumen de hoy</b><small>Cómo va tu cartera, lo que mueve los mercados y las noticias de lo tuyo.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <label class="aj-fila aj-check"><input type="checkbox" id="aResumenAuto"${LS.get('inv-resumen-off', false) ? '' : ' checked'}><span><b>Enseñarme el resumen al abrir</b><small>La primera vez que abres GrowFolio cada día.</small></span></label>
+      <label class="aj-fila aj-check"><input type="checkbox" id="aResumenAuto"${LS.get('inv-resumen-off', false) ? '' : ' checked'}><span><b>Enseñarme el resumen al abrir</b><small>La primera vez que abres GrowFolio cada día, desde las 6 de la mañana.</small></span></label>
       <div class="seccion-ed" id="aAvisos">${htmlAjAvisos()}</div>
     </div>
     <h2 class="aj-grupo">Ayuda</h2>
@@ -18146,7 +18257,7 @@ function fichaTexto(f, corto = false) {
   L.push(`### ${i.corto || i.nombre} (id "${f.pos.id}")`);
   L.push(`${i.nombre || ''}. ${i.tipo || ''}, ${i.clase || ''}${i.pais ? `, ${PAISES[i.pais] || i.pais}` : ''}, en ${f.pos.plataforma || '?'}. ${[i.yahoo && 'Ticker ' + i.yahoo, i.isin && 'ISIN ' + i.isin].filter(Boolean).join(', ')}.`);
   L.push(`Tiene ${f.uds != null ? fmtNum(f.uds, f.uds < 10 ? 6 : 4) : '?'} ${i.tipo === 'Acción' ? 'acciones' : 'participaciones'}${f.estimada ? ' (cantidad estimada por GrowFolio, no exacta)' : ''} a ${f.precio != null ? fmtNum(f.precio, 4) + ' €' : 'sin precio'} (hoy ${P1(f.varDia)}${p.fecha ? `, último cierre ${p.fecha}` : ''}${f.vivo ? ', precio en directo' : ''}). Valor ${E2(f.valor)}, el ${fmtNum(f.peso, 1)} % del total. Coste ${E2(f.coste)}${f.uds ? `, precio medio ${fmtNum(f.coste / f.uds, 4)} €` : ''}. Ganancia latente ${eurP(f.pl)} (${P1(f.plPct)}).`);
-  L.push(`Señal automática de GrowFolio: ${f.senal.txt}. ${f.senal.motivos.join(' ')}`);
+  L.push(f.senal.analistas ? `Lo que opinan los analistas: ${f.senal.txt || 'no la sigue ninguno'}. ${f.senal.motivos.join(' ')}` : `Señal automática de GrowFolio: ${f.senal.txt}. ${f.senal.motivos.join(' ')}`);
   if (a.num) {
     const v = a.votos && a.votos.ahora, v3 = a.votos && a.votos.hace3m;
     L.push(`Analistas: ${a.num}, consenso ${a.recomendacion || '?'} (nota media ${a.media != null ? fmtNum(a.media, 2) : '?'}, de 1 compra fuerte a 5 venta fuerte)${v ? `; ahora ${v.strongBuy} compra fuerte, ${v.buy} comprar, ${v.hold} mantener, ${v.sell} vender, ${v.strongSell} venta fuerte` : ''}${v3 ? `; hace 3 meses ${v3.strongBuy}/${v3.buy}/${v3.hold}/${v3.sell}/${v3.strongSell}` : ''}. Objetivo medio ${fmtNum(a.objetivo, 2)} € (${P1(f.precio ? (a.objetivo / f.precio - 1) * 100 : null)}), rango ${fmtNum(a.objetivo_bajo, 2)} a ${fmtNum(a.objetivo_alto, 2)} €.`);
