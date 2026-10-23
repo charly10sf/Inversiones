@@ -8124,7 +8124,7 @@ function tarjetaIdea(x, ctx, compacta = false, puesto = 0) {
     ${htmlCifrasIdea(r, x.esp)}
     ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
     ${mas ? `<details class="mas"><summary>Qué la mueve, pegas, impuestos y señales</summary><div class="idea-mas">${mas}</div></details>` : ''}
-    <div class="idea-btns"><button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.growia}¿Cuánto meto?</button>${r && r.s ? `<button class="btn peq" data-accion="operacion" data-tipo="compra" data-sim="${esc(r.s)}">${ICONOS.compra}Ya la he comprado</button>${botonSeguir(r.s, nombreRadar(x))}` : ''}</div>
+    <div class="idea-btns">${esPublico() ? `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Qué hace ${x.n} (${x.s}) y qué dicen los analistas? Contrástalo con las noticias de esta semana y dime qué pagaría de impuestos y comisiones si la comprara.`)}">${ICONOS.growia}${L('Pregúntale', 'Ask')}</button>` : `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.growia}¿Cuánto meto?</button>`}${r && r.s ? `<button class="btn peq" data-accion="operacion" data-tipo="compra" data-sim="${esc(r.s)}">${ICONOS.compra}Ya la he comprado</button>${botonSeguir(r.s, nombreRadar(x))}` : ''}</div>
   </article>`;
 }
 function htmlEvitar() {
@@ -8177,7 +8177,7 @@ function htmlIdeas(M, ia) {
   S.radarVisibles = [...new Set([...v.map((x) => x.s), ...juntas.filter((x) => x.r).map((x) => x.r.s)])];
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
-  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">las que eligen el radar, GrowIA y tu análisis</span></div>
+  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">${esPublico() ? L('las que eligen el radar y GrowIA, iguales para todos', 'picked by the radar and GrowIA, the same for everyone') : 'las que eligen el radar, GrowIA y tu análisis'}</span></div>
     ${d && d.comentario ? `<p class="idea-panorama">${NOM_IA} ${haceCuanto(d.generado)}${L(`, tras leer la prensa de ${lecturas} empresas: `, `, after reading the press on ${lecturas} companies: `)}${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : `<div class="vacio">${L('Ahora mismo ninguna pasa los filtros: mejor esperar.', 'None passes the filters right now: better to wait.')}</div>`}
     <p class="nota">Cómo se eligen: GrowFolio se queda con las mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas una vez al día. Primero salen las que eligen los dos. Lo que ya se ha propuesto se mantiene salvo que llegue una noticia que cambie la tesis o se rompan sus números, y nada sale a la vez como idea y como «evitar». En las barras, verde es a favor, rojo en contra y gris neutral.</p>
@@ -10877,6 +10877,8 @@ function nucleo(M) {
 }
 
 function planVenta(f, M) {
+  // 0.5, modo público: sin planes de venta (qué vender y adónde mover el dinero es una recomendación personalizada)
+  if (esPublico()) return null;
   const c = cacheDe(M, '__plan');
   if (!c.has(f)) c.set(f, planVenta0(f, M));
   return c.get(f);
@@ -12017,7 +12019,7 @@ function htmlFicha(f) {
       <button class="btn compra" data-accion="operacion" data-tipo="compra" data-id="${esc(id)}">${ICONOS.compra}Comprar</button>
       <button class="btn venta" data-accion="operacion" data-tipo="venta" data-id="${esc(id)}">${ICONOS.venta}Vender</button>
       <button class="btn" data-accion="editar-pos" data-id="${esc(id)}">${ICONOS.lapiz}Editar</button>
-      <button class="btn" data-accion="asesor" data-q="${esc(`¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.growia}Pregúntale</button>
+      <button class="btn" data-accion="asesor" data-q="${esc(esPublico() ? `¿Qué está pasando con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y lo que dicen los analistas.` : `¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.growia}Pregúntale</button>
     </div>
   </div>
   <div class="tabs ficha-tabs" role="group" aria-label="Apartados">${FTABS.map(([k, t]) => `<button data-ftab="${k}" aria-pressed="${S.ficha.tab === k}">${t}</button>`).join('')}</div>
@@ -18889,6 +18891,17 @@ function md(src) {
 /* ---------- el panel ---------- */
 function sugerencias(M) {
   const s = [], anio = new Date().getFullYear();
+  // 0.5, modo público: preguntas que GrowIA sí contesta (explicar, comparar, calcular)
+  if (esPublico()) {
+    const f0 = [...M.filas].sort((a, b) => (b.valor || 0) - (a.valor || 0))[0];
+    if (f0) s.push(`¿Qué ha pasado con ${f0.inst.corto} este mes y qué dicen los analistas?`);
+    s.push(`¿Cuánto voy a pagar en la renta de ${anio}?`);
+    s.push('¿Cuánto me cuestan al año las comisiones de mis fondos?');
+    s.push('¿Qué ha pasado hoy en los mercados que me afecte?');
+    s.push('Si la bolsa cae un 30 %, ¿cuánto bajaría mi cartera?');
+    s.push('¿Se repiten empresas entre mis fondos?');
+    return s.slice(0, 6);
+  }
   const pl = M.filas.map((f) => planVenta(f, M)).filter(Boolean)[0];
   if (pl) { const res = pl.f.p && pl.f.p.proximos_resultados; s.push(`¿Vendo ya ${pl.f.inst.corto} o espero${res && res >= hoyIso() ? ` a sus resultados del ${fechaCorta(res)}` : ''}?`); }
   s.push('Este mes me sobran 500 €: ¿dónde los meto?');
