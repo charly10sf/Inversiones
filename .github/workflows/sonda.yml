@@ -1,4 +1,4 @@
-name: Sonda Yahoo (temporal)
+name: Sonda (temporal)
 on:
   push:
     branches: [sonda-yahoo]
@@ -12,8 +12,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install "yfinance==1.7.0" "pandas>=2.2"
       - run: python sonda.py > resultado.json 2> errores.txt || true
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
       - run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
