@@ -13,8 +13,12 @@ function factorTxt(k) {
 }
 const signoClase = (s) => ({ '+': 'up', '-': 'down', '±': 'warn' })[s] || 'flat';
 const flechaSigno = (s) => ({ '+': '▲', '-': '▼', '±': '◆' })[s] || '•';
-function signoTxt(s) { return ({ '+': L('bueno para la acción', 'good for the stock'), '-': L('malo para la acción', 'bad for the stock'), '±': L('mixto', 'mixed') })[s] || L('neutro', 'neutral'); }
-function pesoTxt(p) { return [L('relleno', 'filler'), L('pesa poco', 'minor'), L('importante', 'important'), L('cambia la tesis', 'changes the thesis')][p] || ''; }
+/* 0.7, revisión aparte: es lo que lee la prensa (igual para todos), no un consejo: «positivo para la empresa», no «bueno
+   para la acción», y «muy relevante», no «cambia la tesis» */
+function signoTxt(s) { return ({ '+': L('positivo para la empresa', 'positive for the company'), '-': L('negativo para la empresa', 'negative for the company'), '±': L('mixto', 'mixed') })[s] || L('neutro', 'neutral'); }
+function pesoTxt(p) { return [L('relleno', 'filler'), L('pesa poco', 'minor'), L('importante', 'important'), L('muy relevante', 'very relevant')][p] || ''; }
+// solo enlaces de verdad (http o https): un «javascript:» en un enlace de la prensa no llega a la página
+function urlSegura(u) { return /^https?:\/\//i.test(String(u || '')) ? String(u) : ''; }
 function plazoFactorTxt(p) { return ({ corto: L('días o semanas', 'days or weeks'), medio: L('meses', 'months'), largo: L('años', 'years') })[p] || ''; }
 
 /* La clave de un titular: la misma cuenta que clave_titulo en scripts/fichas.py (si cambia una, cambia la otra).
@@ -43,7 +47,9 @@ async function cargarFichas() {
   })();
   return S.fichasCargando;
 }
-/* desde una lista de noticias o una ficha sin las fichas bajadas: se bajan y se vuelve a pintar lo que se ve */
+/* desde una lista de noticias o una ficha sin las fichas bajadas: se bajan y se vuelve a pintar lo que se ve. Tres
+   intentos como mucho; si vuelve la red, otros tres */
+window.addEventListener('online', () => { S.fichasPedidas = 0; });
 function fichasLuego() {
   if ((S.fichas && S.fichasId === ((S.precios && S.precios.fichas_id) || '')) || S.fichasCargando || S.fichasPedidas > 2) return;
   S.fichasPedidas = (S.fichasPedidas || 0) + 1;
@@ -133,26 +139,32 @@ function htmlFichaFactores(sim) {
   if (!S.fichas) { fichasLuego(); return `<div class="ficha-ia-sitio" data-ficha-sim="${esc(sim)}"></div>`; }
   const F = fichaDe(sim);
   if (!F) return '';
-  const fuentes = (fs) => { const v = [], vistos = new Set(); for (const f of fs || []) { const k = f.f || L('fuente', 'source'); if (f.u && !vistos.has(k)) { vistos.add(k); v.push(`<a href="${esc(f.u)}" target="_blank" rel="noopener noreferrer" class="enlace">${esc(k)}</a>`); } } return v.length ? ' · ' + v.slice(0, 2).join(', ') : ''; };
+  const fuentes = (fs) => { const v = [], vistos = new Set(); for (const f of fs || []) { const k = f.f || L('fuente', 'source'); if (urlSegura(f.u) && !vistos.has(k)) { vistos.add(k); v.push(`<a href="${esc(urlSegura(f.u))}" target="_blank" rel="noopener noreferrer" class="enlace">${esc(k)}</a>`); } } return v.length ? ' · ' + v.slice(0, 2).join(', ') : ''; };
   const fila = (x, tema) => `<li class="fac ${signoClase(x.s)}"><span class="fac-k"><i aria-hidden="true">${flechaSigno(x.s)}</i>${esc(factorTxt(x.fa || x.k))}${tema ? `<em>${L('tema', 'theme')}</em>` : ''}</span><p data-no-trad>${escIA(x.txt)}</p><small>${esc(signoTxt(x.s))} · ${esc(pesoTxt(x.p || 1))}${x.plazo ? ` · ${L('pesa a', 'over')} ${esc(plazoFactorTxt(x.plazo))}` : ''} · ${haceCuanto(x.d)}${fuentes(x.fuentes)}</small></li>`;
   return `<section class="ficha-ia" aria-labelledby="hFichaIA"><div class="sec-cab"><h3 id="hFichaIA" data-no-trad>${conIA('Lo que pesa ahora, según GrowIA', 'What matters now, according to GrowIA')}</h3><span class="k">${F.d ? `${L('leído', 'read')} ${haceCuanto(F.d)}` : ''}</span></div>
-    <ul class="factores">${F.fa.map((x) => fila(x, false)).join('')}${F.temas.map((t) => fila(t, true)).join('')}</ul></section>`;
+    <ul class="factores">${F.fa.map((x) => fila(x, false)).join('')}${F.temas.map((t) => fila(t, true)).join('')}</ul>
+    <p class="nota">${L('Lectura automática de los titulares, hecha con IA e igual para todos: lo que dice la prensa, no una recomendación.', 'An automatic AI reading of the headlines, the same for everyone: what the press says, not a recommendation.')}</p></section>`;
 }
 
 /* ---------- lo que lee GrowIA ----------
    En vez de titulares sueltos, la ficha de cada acción en pocas líneas: así sabe qué pesa en cada factor sin tener
    que buscar en internet, y gasta menos (src/js/55-asesor-contexto.js y la herramienta buscar_empresa) */
-function fichaGrowIA(sim, maxTemas = 3) {
+// en español siempre: la foto de GrowIA está en español aunque la app esté en inglés (la respuesta sí sale en inglés)
+const enEs = (f) => (...a) => { const i = L.es; L.es = true; try { return f(...a); } finally { L.es = i; } };
+function fichaGrowIA(sim, maxTemas = 3) { return enEs(fichaGrowIA0)(sim, maxTemas); }
+function fichaGrowIA0(sim, maxTemas) {
   const F = fichaDe(sim);
   if (!F) return null;
-  const linea = (x, k) => `${factorTxt(k)} (${signoTxt(x.s)}, ${pesoTxt(x.p || 1)}${x.plazo ? `, pesa a ${plazoFactorTxt(x.plazo)}` : ''}, ${String(x.d || '').slice(0, 10)}): ${x.txt}`;
+  const linea = (x, k) => `${factorTxt(k)} (la prensa lo lee como ${signoTxt(x.s)}, ${pesoTxt(x.p || 1)}${x.plazo ? `, pesa a ${plazoFactorTxt(x.plazo)}` : ''}, ${String(x.d || '').slice(0, 10)}): ${x.txt}`;
   return { leida: F.d ? String(F.d).slice(0, 10) : null, factores: F.fa.map((x) => linea(x, x.k)), temas: F.temas.slice(0, maxTemas).map((t) => linea(t, t.fa)) };
 }
 /* los temas de la semana que más pesan, para todos (aranceles, tipos, huelgas…), con a quién tocan */
-function temasGrowIA(n = 6) {
+function temasGrowIA(n = 6) { return enEs(temasGrowIA0)(n); }
+function temasGrowIA0(n) {
   const lugar = (a) => [a.pais || a.zona, a.sector, a.industria].filter(Boolean).join(' · ') || L('todos', 'everyone');
   return ((S.fichas && S.fichas.temas) || []).map((t) => ({ t, p: Math.max(1, ...(t.afecta || []).map((a) => a.p || 1)) })).sort((a, b) => b.p - a.p || String(b.t.d).localeCompare(String(a.t.d))).slice(0, n)
     .map(({ t }) => `${factorTxt(t.fa)}, ${String(t.d || '').slice(0, 10)}: ${t.txt} (toca a: ${(t.afecta || []).slice(0, 4).map((a) => `${lugar(a)} ${a.s}`).join('; ')})`);
 }
 /* un titular para GrowIA, con su marca si la tiene */
-const titularGrowIA = (n, m = marcaTitular(n)) => `${n.d ? String(n.d).slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})${m ? ` [${factorTxt(m[0])}, ${signoTxt(m[1])}, ${pesoTxt(m[2])}]` : ''}`;
+const titularGrowIA = (n, m = marcaTitular(n)) => enEs(titularGrowIA0)(n, m);
+const titularGrowIA0 = (n, m) => `${n.d ? String(n.d).slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})${m ? ` [${factorTxt(m[0])}, la prensa: ${signoTxt(m[1])}, ${pesoTxt(m[2])}]` : ''}`;

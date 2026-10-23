@@ -5,8 +5,9 @@
    (escaneo.json → gemini.uso); y los fallos de GrowIA que no se arreglaron solos (Firestore fallos_ia, sin preguntas
    ni carteras).
    ===================================================================== */
-const TIPOS_FALLO = () => ({ corte: L('Se cortó la conexión tres veces', 'Connection dropped three times'), red: L('Sin conexión', 'No connection'), cupo: L('Cupo diario agotado', 'Daily quota used up'),
-  espera: L('Google pidió esperar', 'Google asked to wait'), google: L('Google saturado', 'Google overloaded'), clave: L('Clave o modelo no válido', 'Key or model not valid'),
+// «red» y «cupo» son del lado de quien pregunta (su conexión, su clave), no de GrowIA: se cuentan, pero aparte
+const TIPOS_FALLO = () => ({ corte: L('Se cortó la conexión tres veces', 'Connection dropped three times'), red: L('Sin conexión (la suya)', 'No connection (theirs)'), cupo: L('Cupo diario agotado (su clave)', 'Daily quota used up (their key)'),
+  espera: L('Google pidió esperar', 'Google asked to wait'), google: L('Google saturado', 'Google overloaded'), clave: L('Clave o modelo no válido', 'Key or model not valid'), peticion: L('Google rechazó la petición', 'Google rejected the request'),
   bloqueo: L('Filtros de Google', "Google's filters"), vacia: L('Respuesta vacía', 'Empty answer'), formato: L('Revisión incompleta', 'Incomplete review'), otro: L('Otro', 'Other') });
 async function leerDatosRama(f) {
   try {
@@ -19,15 +20,17 @@ async function leerFallosIA() {
     await fbCargar();
     const f = FB.fs;
     const r = await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'fallos_ia'), f.orderBy('t', 'desc'), f.limit(100))), 10000);
-    return r.docs.map((d) => d.data());
+    // la hora la pone el servidor (un Timestamp de Firestore)
+    return r.docs.map((d) => { const x = d.data() || {}; return { ...x, t: x.t && typeof x.t.toDate === 'function' ? x.t.toDate().toISOString() : String(x.t || '') }; });
   } catch (e) { return { error: e.message }; }
 }
 function htmlBancoIA(b, titulo) {
   if (!b) return `<section><h3>${titulo}</h3><p class="nota">${L('Todavía no hay resultados: la Action los escribe cada noche.', 'No results yet: the Action writes them every night.')}</p></section>`;
-  const mal = (b.preguntas || []).filter((x) => !x.ok);
+  const mal = (Array.isArray(b.preguntas) ? b.preguntas : []).filter((x) => x && !x.ok);
+  const N = (v) => Number(v) || 0;
   return `<section><h3>${titulo}</h3>
-    <p class="salud-num"><b>${b.bien} ${L('de', 'of')} ${b.total}</b> ${L('bien', 'right')} (${b.pct} %) · ${fmtNum(b.peticiones_media, 1)} ${L('peticiones por pregunta', 'requests per question')} · ${esc(MODELOS[b.modelo] ? MODELOS[b.modelo].n : b.modelo)} · ${haceCuanto(b.generado)}</p>
-    ${mal.length ? `<ul class="lista salud-mal">${mal.map((x) => `<li><details><summary><b>${esc(x.id)}</b> ${esc(x.mal.join(' · '))}</summary><p class="k">${esc(x.q)}</p><p class="nota" data-no-trad>${esc(x.respuesta || '')}</p></details></li>`).join('')}</ul>` : ''}</section>`;
+    <p class="salud-num"><b>${N(b.bien)} ${L('de', 'of')} ${N(b.total)}</b> ${L('bien', 'right')} (${fmtNum(N(b.pct), 1)} %) · ${fmtNum(N(b.peticiones_media), 1)} ${L('peticiones por pregunta', 'requests per question')} · ${esc(MODELOS[b.modelo] ? MODELOS[b.modelo].n : b.modelo)} · ${haceCuanto(b.generado)}</p>
+    ${mal.length ? `<ul class="lista salud-mal">${mal.map((x) => `<li><details><summary><b>${esc(x.id)}</b> ${esc((Array.isArray(x.mal) ? x.mal : [x.mal]).filter(Boolean).join(' · '))}</summary><p class="k">${esc(x.q)}</p><p class="nota" data-no-trad>${esc(x.respuesta || '')}</p></details></li>`).join('')}</ul>` : ''}</section>`;
 }
 function htmlCupoAction() {
   const uso = ((S.escaneo && S.escaneo.gemini && S.escaneo.gemini.uso) || []);
@@ -46,12 +49,17 @@ function htmlFallosIA(fs) {
   for (const x of sem) cuenta[x.tipo] = (cuenta[x.tipo] || 0) + 1;
   return `<section><h3>${L('Fallos de GrowIA que no se arreglaron solos', "GrowIA failures that didn't fix themselves")}</h3>
     <p>${sem.length ? `${L('Últimos 7 días', 'Last 7 days')}: ${Object.entries(cuenta).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${esc(T[k] || k)} <b>${n}</b>`).join(' · ')}` : L('Ninguno en los últimos 7 días.', 'None in the last 7 days.')}</p>
-    ${fs.length ? `<ul class="lista salud-fallos">${fs.slice(0, 20).map((x) => `<li><span>${esc(T[x.tipo] || x.tipo)}${x.estado ? ` (${x.estado})` : ''}</span><small>${haceCuanto(x.t)} · ${esc(x.donde || '')} · ${esc(MODELOS[x.modelo] ? MODELOS[x.modelo].corto : x.modelo || '—')} · ${esc(x.v || '')}</small></li>`).join('')}</ul>` : ''}
+    ${fs.length ? `<ul class="lista salud-fallos">${fs.slice(0, 20).map((x) => `<li><span>${esc(T[x.tipo] || x.tipo)}${Number(x.estado) ? ` (${Number(x.estado)})` : ''}</span><small>${haceCuanto(x.t)} · ${esc(x.donde || '')} · ${esc(MODELOS[x.modelo] ? MODELOS[x.modelo].corto : x.modelo || '—')} · ${esc(x.v || '')}</small></li>`).join('')}</ul>` : ''}
     <p class="nota">${L('Sin preguntas ni carteras: solo el tipo, el modelo, dónde y la versión.', 'No questions or portfolios: only the type, model, where and version.')}</p></section>`;
 }
 async function verSaludIA() {
   const h = hoja(L('Cómo va GrowIA', 'How GrowIA is doing'), `<div class="salud-ia"><p class="nota">${L('Cargando…', 'Loading…')}</p></div>`);
-  const [banco, muestra, fallos] = await Promise.all([leerDatosRama('banco.json'), leerDatosRama('banco-muestra.json'), leerFallosIA(), cargarEscaneo().catch(() => null)]);
-  const cont = $('.salud-ia', h.el); if (!cont) return;
-  cont.innerHTML = `${htmlBancoIA(banco, L('Banco de preguntas de cada noche', 'Nightly question bank'))}${htmlBancoIA(muestra, L('Muestra de los domingos, con el modelo bueno', 'Sunday sample, with the better model'))}${htmlCupoAction()}${htmlFallosIA(fallos)}`;
+  const cont = $('.salud-ia', h.el);
+  try {
+    const [banco, muestra, fallos] = await Promise.all([leerDatosRama('banco.json'), leerDatosRama('banco-muestra.json'), leerFallosIA(), cargarEscaneo().catch(() => null)]);
+    if (cont) cont.innerHTML = `${htmlBancoIA(banco, L('Banco de preguntas de cada noche', 'Nightly question bank'))}${htmlBancoIA(muestra, L('Muestra de los domingos, con el modelo bueno', 'Sunday sample, with the better model'))}${htmlCupoAction()}${htmlFallosIA(fallos)}`;
+  } catch (e) {
+    console.warn(e);
+    if (cont) cont.innerHTML = `<p class="nota">${L('No se ha podido cargar ahora. Vuelve a abrirla en un momento.', "Couldn't load it now. Open it again in a moment.")}</p>`;
+  }
 }

@@ -52,7 +52,7 @@ function pedidoAnalisis(ids, motivo, conWeb = true, sinHerramientas = false) {
   if (esPublico()) return pedidoAnalisisPublico(ids, motivo, conWeb, sinHerramientas);
   return `Haz la revisión de hoy de mi cartera (${motivo}). Antes de escribir:
 0. Lee el informe de prensa de GrowIA que viene en los datos (noticias de cada posición, del mercado y de las ideas, ya contrastadas) y úsalo como base.
-1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.' : 'No puedes buscar en internet: usa las fichas de GrowIA (lo que pesa en cada empresa, factor por factor), los temas de la semana y los titulares de los datos, y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
+1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular. Tienes tres búsquedas como mucho: antes, mira las fichas de GrowIA (lo que pesa en cada empresa, factor por factor) y busca solo lo que no esté ahí.' : 'No puedes buscar en internet: usa las fichas de GrowIA (lo que pesa en cada empresa, factor por factor), los temas de la semana y los titulares de los datos, y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
 2. ${sinHerramientas ? 'En esta revisión no tienes herramientas: si recomiendas vender algo, usa lo que ya calcula GrowFolio en los datos (lo que pagaría si vendiera hoy cada posición y sus planes de venta) y di que el detalle se calcula al pulsar Vender; si recomiendas comprar una acción, di su tasa de compra.' : 'Si recomiendas vender algo, calcúlalo con simular_venta. Si recomiendas comprar una acción, con simular_compra.'}
 3. Para las ideas de compra, parte de las que ha elegido GrowIA en su escaneo de prensa de toda la bolsa, del radar y de las que mejor encajan conmigo, y quédate solo con las bien contrastadas: al menos 4 señales a favor en el contraste de GrowFolio y noticias recientes que no lo contradigan. Si ninguna lo está, no recomiendes ninguna y dilo en el resumen.
 4. Ten en cuenta el plazo y los impuestos en todo: no es lo mismo ganar un 50 % en 3 meses que en 3 años. Para cada idea, estima en cuántos meses se puede materializar la subida y cuánto, y compárala en "al año" y neta de impuestos con mi fondo indexado. Para cada venta o compra, di lo que pago (ganancia, tasa, retención de dividendos que no recupero).
@@ -85,7 +85,7 @@ Escribe en español de España, tuteando, con frases cortas y concretas. Pon las
 function pedidoAnalisisPublico(ids, motivo, conWeb, sinHerramientas = false) {
   return `Haz la revisión de hoy de mi cartera (${motivo}). No me digas que compre, venda, mantenga ni traspase nada concreto, ni cuánto: explícame cómo está y qué ha pasado, con cifras. Antes de escribir:
 0. Lee el informe de prensa de GrowIA que viene en los datos (noticias de cada posición y del mercado, ya contrastadas) y úsalo como base.
-1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones: resultados, cambios de recomendación de los analistas, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta.' : `No puedes buscar en internet${sinHerramientas ? ' ni usar herramientas' : ''}: usa las fichas de GrowIA (lo que pesa en cada empresa, factor por factor), los temas de la semana y los titulares de los datos.`}
+1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones: resultados, cambios de recomendación de los analistas, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta. Tienes tres búsquedas como mucho: antes, mira las fichas de GrowIA y busca solo lo que no esté ahí.' : `No puedes buscar en internet${sinHerramientas ? ' ni usar herramientas' : ''}: usa las fichas de GrowIA (lo que pesa en cada empresa, factor por factor), los temas de la semana y los titulares de los datos.`}
 2. Mira mis límites, mi perfil y mis metas (vienen en los datos) y di qué se sale de ellos y por cuánto, sin decirme qué valor comprar o vender para arreglarlo.
 3. Sé constante: en los datos viene tu revisión anterior. No cambies lo que dijiste salvo que haya algo nuevo e importante.
 4. Las cifras, sin adornos. Si nombras una meta, di a qué distancia está («79.658 € de 500.000 €, un 16 %»).
@@ -126,23 +126,24 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   let marco = 0;
   const alCambiar = () => { if (!marco) marco = setTimeout(() => { marco = 0; refrescarProgresoIA(); }, 400); };
   try {
-    await cargarFichas().catch(() => null);
+    await conTiempo(cargarFichas(), 3000).catch(() => null);
     refrescarFoto(true);
     const M = S.M || calcular();
     const ids = [...new Set(M.filas.map((f) => f.inst.id))];
     const cfgA = cfgAsesor();
-    // las revisiones automáticas van con el 3.6, que tiene su propio cupo: así no gastan el del 3.8, que queda para tus
-    // preguntas. 0.7: y en una sola llamada, sin herramientas ni búsquedas: con las fichas de GrowIA y los cálculos de
-    // venta que ya vienen en los datos. La que pides tú puede buscar y calcular
+    // las revisiones automáticas van con el 3.6, que tiene su propio cupo, y si se agota, con Flash-Lite; nunca con el
+    // 3.8, que queda para tus preguntas (sin cupo en los dos, se deja para mañana). 0.7: y en una sola llamada, sin
+    // herramientas ni búsquedas: con las fichas de GrowIA y los cálculos de venta que ya vienen en los datos. La que
+    // pides tú puede buscar (tres veces como mucho) y calcular
     const auto = motivo !== 'la pides tú';
-    await conversar({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto) }], turno, sistema: [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: contextoAsesor(M, 'completo') }], maxTokens: 12000, alCambiar, modelo: auto ? 'gemini-3.6-flash' : undefined, herramientas: !auto, web: !auto });
+    await conversar({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto) }], turno, sistema: [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: contextoAsesor(M, 'completo') }], maxTokens: 12000, alCambiar, modelo: auto ? 'gemini-3.6-flash' : undefined, cadena: auto ? ['gemini-3.6-flash', MODELO_RAPIDO] : null, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
     const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');
     const json = extraerJSON(texto);
     if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');
     const vistas = new Set();
     json.fuentes = [...turno.citas, ...(Array.isArray(json.fuentes) ? json.fuentes : [])].filter((x) => x && /^https?:\/\//.test(x.u || '') && !vistas.has(x.u) && vistas.add(x.u)).slice(0, 20);
     json.publico = esPublico();
-    S.iaPropio = { fecha: new Date().toISOString(), modelo: AS.modeloVivo || cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo };
+    S.iaPropio = { fecha: new Date().toISOString(), modelo: turno.modelo || AS.modeloVivo || cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo };
     AS.gasto += turno.coste || 0; guardarConv();
     await guardarAnalisisPropio();
     toast(`${nombreIA()} ha actualizado el análisis de tu cartera`);
@@ -152,7 +153,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   } catch (e) {
     IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}.` : e.message;
     // al dueño, los que no se van a reintentar solos (los que sí, cuando fallen del todo)
-    if (!((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3)) avisarFalloIA(e, 'revision');
+    if (!((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3)) avisarFalloIA(e, 'revision', turno.modelo);
     // saturado o «espera un momento»: lo vuelve a intentar sola a los 5, 15 y 30 minutos
     if ((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3) {
       const min = [5, 15, 30][IA.reintentos++];

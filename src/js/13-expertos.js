@@ -33,12 +33,12 @@ function noticiasCartera(soloAnalistas) {
   const vistos = new Set();
   return out.sort((a, b) => ((b.d || '') > (a.d || '') ? 1 : -1)).filter((n) => { const k = n.t.slice(0, 50); if (vistos.has(k)) return false; vistos.add(k); return true; });
 }
-/* 0.7: cada titular, con su marca de las fichas de GrowIA (factor, bueno o malo, cuánto importa); lo importante
+/* 0.7: cada titular, con su marca de las fichas de GrowIA (factor, positivo o negativo para la empresa según la prensa, cuánto importa); lo importante
    arriba, el relleno abajo y el mismo titular de varios medios, una vez (13b-fichas.js) */
 function htmlNoticias(lista, conActivo = false, max = 12, desde = 0) {
   if (!lista.length) return '<div class="vacio">No hay noticias recientes.</div>';
   if (!S.fichas) fichasLuego();
-  return `<ul class="noticias">${ordenarNoticias(lista).slice(desde, desde + max).map(({ n, m, mas }) => `<li${m && m[2] === 0 ? ' class="relleno"' : ''}><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${chipMarca(m)}${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}${mas ? `<span class="mas-medios">${L(`y ${mas} ${mas === 1 ? 'medio más' : 'medios más'}`, `and ${mas} more ${mas === 1 ? 'outlet' : 'outlets'}`)}</span>` : ''}</small></li>`).join('')}</ul>`;
+  return `<ul class="noticias">${ordenarNoticias(lista).slice(desde, desde + max).map(({ n, m, mas }) => `<li${m && m[2] === 0 ? ' class="relleno"' : ''}><a class="noti" href="${esc(urlSegura(n.u))}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${chipMarca(m)}${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}${mas ? `<span class="mas-medios">${L(`y ${mas} ${mas === 1 ? 'medio más' : 'medios más'}`, `and ${mas} more ${mas === 1 ? 'outlet' : 'outlets'}`)}</span>` : ''}</small></li>`).join('')}</ul>`;
 }
 
 /* Las noticias se leen dentro (0.2.4): al tocar una sale una hoja con su resumen, que escribe GrowIA (Gemini, con tu
@@ -146,7 +146,7 @@ function htmlFrescura() {
     <details><summary><span class="vivo-dot${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? ' viejo' : ''}">${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? L(`Precios de ${haceCuanto(S.precios.generado)}`, `Prices from ${haceCuanto(S.precios.generado)}`) : L('Al día', 'Up to date')}${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? '' : `<span class="fr-hora"> · ${B('recalc')}</span>`}</span>${S.informe && S.informe.generado ? `<span>· ${L('prensa de', 'news from')} ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas" title="${L('De cuándo es cada dato', 'How fresh each figure is')}" aria-label="${L('De cuándo es cada dato', 'How fresh each figure is')}">${ICONOS.info}</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
     ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">GrowIA ya lee la prensa para todos; con tu clave gratis de Google revisará también tus cifras cada día</button>'}
-    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? 'se ha acabado el cupo gratuito de Google por hoy; se renueva sobre las 9:00' : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowIA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
+    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? `se ha acabado el cupo gratuito de Google por hoy; se renueva a las ${horaRenuevaIA()}` : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowIA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
   </div>`;
 }
 

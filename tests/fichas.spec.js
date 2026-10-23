@@ -31,6 +31,16 @@ test('las fichas de GrowIA: lo que pesa ahora y las noticias marcadas', async ({
   await expect(filas.nth(0)).toContainText('Recompra acciones');
   await expect(filas.nth(2)).toContainText('tema');
   await expect(filas.nth(2)).toContainText('Italia');
+  // lo que dice la prensa, no un consejo (revisión aparte de la 0.7)
+  await expect(page.locator('.ficha-ia')).toContainText('no una recomendación');
+  await expect(filas.nth(0)).toContainText('positivo para la empresa');
+  // un enlace «javascript:» de la prensa no llega a la página, ni en la ficha ni en las noticias
+  const malos = await page.evaluate(() => {
+    S.fichas.e['REP.MC'].fa.negocio.fuentes = [{ f: 'Trampa', u: 'javascript:alert(1)' }, { f: 'EFE', u: 'https://efe.com/x' }];
+    return [htmlFichaFactores('REP.MC'), htmlNoticias([{ t: 'Repsol, con trampa en el enlace', u: 'javascript:alert(1)', f: 'X', d: '2026-10-23' }])];
+  });
+  for (const h of malos) expect(h).not.toContain('javascript:');
+  expect(malos[0]).toContain('https://efe.com/x');
   await expect(page.locator('.ficha-ia')).not.toContainText('No toca a Repsol');
   await expect(page.locator('.ficha-ia')).not.toContainText('Tampoco toca a Repsol');
 

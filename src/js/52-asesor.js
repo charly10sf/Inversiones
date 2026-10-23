@@ -37,19 +37,46 @@ function tipoFalloIA(e) {
   if (/Failed to fetch|NetworkError|Load failed/i.test(m)) return 'red';
   if (e && e.estado === 429) return e.diario ? 'cupo' : 'espera';
   if (e && e.estado >= 500) return 'google';
-  if (e && [400, 401, 403, 404].includes(e.estado)) return 'clave';
+  // un 400 es una clave mal copiada solo si Google lo dice; si no, es la petición (demasiado larga, una herramienta…)
+  if (e && ([401, 403, 404].includes(e.estado) || (e.estado === 400 && /API.?key|clave no es válida/i.test(`${e.msg || ''} ${m}`)))) return 'clave';
+  if (e && e.estado === 400) return 'peticion';
   if (/bloqueado|filtros/i.test(m)) return 'bloqueo';
   if (/no ha devuelto respuesta|no ha llegado completa/i.test(m)) return /completa/.test(m) ? 'formato' : 'vacia';
   return 'otro';
 }
+/* Revisión aparte de la 0.7: el tope de 5 al día lo ponen las reglas de Firestore, no solo este dispositivo. Cada
+   aviso es el documento «<uid>_<AAAAMMDD>_<0 a 4>» (día de UTC) y no se puede reescribir: el sexto del día no entra.
+   La hora la pone el servidor y se borra solo a los 30 días (TTL de Firestore sobre «caduca») */
 async function avisarFalloIA(e, donde = 'chat', modelo = null) {
   try {
     if (!e || e.name === 'AbortError' || !PERFIL_CUENTA || !FB.user || !FB.fs || CFG.dev) return;
-    const d = hoyIso(), c = LS.get('inv-fallos-ia', {}), n = c && c.d === d ? c.n || 0 : 0;
-    if (n >= 5) return;
-    LS.set('inv-fallos-ia', { d, n: n + 1 });
-    await conTiempo(FB.fs.addDoc(FB.fs.collection(FB.db, 'fallos_ia'), { uid: FB.user.uid, t: new Date().toISOString(), tipo: tipoFalloIA(e), estado: Number.isInteger(e.estado) ? e.estado : null, modelo: modelo || AS.modeloVivo || null, donde, v: String(VERSION).slice(0, 12) }), 10000);
+    const dia = new Date().toISOString().slice(0, 10), c = LS.get('inv-fallos-ia', {});
+    let n = c && c.d === dia ? c.n || 0 : 0;
+    const f = FB.fs, mod = modelo || AS.modeloVivo || null;
+    const datos = { t: f.serverTimestamp(), caduca: new Date(Date.now() + 30 * 864e5), tipo: tipoFalloIA(e), estado: Number.isInteger(e.estado) ? e.estado : null, modelo: /^gemini-[0-9a-z.-]{1,32}$/.test(mod || '') ? mod : null, donde, v: String(VERSION).slice(0, 12) };
+    // si otro dispositivo de la misma cuenta ya ha usado ese número, las reglas lo rechazan: se prueba con el siguiente
+    for (; n < 5; n++) {
+      LS.set('inv-fallos-ia', { d: dia, n: n + 1 });
+      try { await conTiempo(f.setDoc(f.doc(FB.db, 'fallos_ia', `${FB.user.uid}_${dia.replace(/-/g, '')}_${n}`), datos), 10000); return; }
+      catch (x) { if (!/permission/i.test(String((x && (x.code || x.message)) || ''))) return; }
+    }
   } catch (x) { /* sin red o sin permiso: nada */ }
+}
+/* a qué hora de aquí se renueva el cupo gratis: a medianoche de California (las 9:00 en España casi todo el año; las
+   8:00 las semanas en que uno ha cambiado la hora y el otro no) */
+function horaRenuevaIA() {
+  try {
+    const ahora = new Date();
+    const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', { timeZone: 'America/Los_Angeles', hour: 'numeric', minute: 'numeric', second: 'numeric', hourCycle: 'h23' }).formatToParts(ahora).map((x) => [x.type, x.value]));
+    const pasado = ((+p.hour % 24) * 3600 + +p.minute * 60 + +p.second) * 1000;
+    return new Date(ahora.getTime() + 864e5 - pasado).toLocaleTimeString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { hour: 'numeric', minute: '2-digit' });
+  } catch (e) { return '9:00'; }
+}
+/* lo gastado hoy de un modelo con cupo conocido: «7 de 20»; si pasa de 20 sin agotarse (una clave de pago, o Google
+   da más), solo la cuenta */
+function cupoTxt(k, u = usoIAHoy()[k] || 0) {
+  if (!CUPO_DIA[k]) return String(u);
+  return u > CUPO_DIA[k] && !agotadosIA().includes(k) ? L(`${u} hoy`, `${u} today`) : L(`${Math.min(u, CUPO_DIA[k])} de ${CUPO_DIA[k]} hoy`, `${Math.min(u, CUPO_DIA[k])} of ${CUPO_DIA[k]} today`);
 }
 function usoIAHoy() { const u = LS.get('inv-ia-uso', {}); return u && u.d === diaGoogle() ? u.m || {} : {}; }
 const marcarAgotado = (m) => { const d = diaGoogle(), a = Object.fromEntries(Object.entries(LS.get('inv-ia-agotados', {})).filter(([, v]) => v === d)); a[m] = d; LS.set('inv-ia-agotados', a); };
