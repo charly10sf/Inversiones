@@ -1,0 +1,26 @@
+/* ---------- importar desde capturas ---------- */
+.imp-cont { display: grid; gap: 14px; }
+.imp-sube { display: block; cursor: pointer; }
+.imp-sube-c { display: grid; justify-items: center; gap: 4px; padding: 26px 16px; border: 1.5px dashed var(--line-2); border-radius: 16px; background: var(--plane); text-align: center; }
+.imp-sube-c svg { width: 26px; height: 26px; color: var(--accent); }
+.imp-sube-c b { font-weight: 600; }
+.imp-sube-c small { color: var(--muted); font-size: 12.5px; }
+.imp-sube:hover .imp-sube-c { border-color: var(--accent); }
+.imp-estado { font-size: 13.5px; min-height: 18px; }
+.imp-tit { margin: 6px 0 2px; font-size: 16px; font-weight: 600; }
+.imp-lista { display: grid; gap: 8px; }
+.imp-f { display: grid; grid-template-columns: 24px minmax(0, 1fr); gap: 10px; padding: 12px; border-radius: 12px; background: var(--plane); border: 1px solid var(--line); }
+.imp-f.off { opacity: 0.6; }
+.imp-ck input { width: 18px; height: 18px; margin-top: 6px; }
+.imp-c { display: grid; gap: 8px; min-width: 0; }
+.imp-inst { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; border: 0; background: none; color: var(--text); text-align: left; padding: 0; }
+.imp-inst .logo-a { width: 30px; height: 30px; border-radius: 8px; }
+.imp-inst .k { font-size: 12px; color: var(--accent); }
+.imp-leido { color: var(--muted); font-size: 12px; }
+.imp-num { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; align-items: end; }
+.imp-num label { display: grid; gap: 3px; font-size: 12px; color: var(--muted); }
+.imp-num input, .imp-num select { width: 100%; min-width: 0; }
+@media (max-width: 480px) { .imp-num { grid-template-columns: 1fr 1fr; } .imp-num select { grid-column: 1 / -1; } }
+
+.busca-l { color: var(--text-2) !important; font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block !important; }
+

@@ -1,4 +1,5 @@
-"""El release de GitHub de cada versión: nombre y descripción, sacados de NOVEDADES (index.html) y de cambios.json.
+"""El release de GitHub de cada versión: nombre y descripción, sacados de NOVEDADES (src/js/39-versiones-y-novedades.js;
+antes de la 0.6, index.html) y de cambios.json.
 
 Uso:
   python3 scripts/release.py --version 0.2.3 --nombre   -> «0.2.3: Cartera nueva y los días sin bolsa»
@@ -31,8 +32,11 @@ def orden(v):
     return (int(m[1]), int(m[2]), int(m[3] or 0), m[4])
 
 
+NOVEDADES_JS = RAIZ / "src" / "js" / "39-versiones-y-novedades.js"   # desde la 0.6; antes, index.html
+
+
 def versiones():
-    html = (RAIZ / "index.html").read_text(encoding="utf-8")
+    html = (NOVEDADES_JS if NOVEDADES_JS.exists() else RAIZ / "index.html").read_text(encoding="utf-8")
     i = html.index("const NOVEDADES = [")
     j = html.index("\n];", i)
     bloque = html[i:j]
@@ -91,7 +95,7 @@ def historial(vs):
                          cwd=RAIZ, capture_output=True, text=True, check=True, env={**os.environ, "TZ": "Europe/Madrid"}).stdout
     commits = sorted(((l[41:], l[:40]) for l in log.strip().split("\n") if l), key=lambda x: x[0])
     def estreno(v):   # el commit (de main) que puso VERSION = v, si lo hay (desde la 0.1.17)
-        r = subprocess.run(["git", "log", "HEAD", "--first-parent", "--reverse", "--format=%H", f"-Sconst VERSION = '{v}';", "--", "index.html"],
+        r = subprocess.run(["git", "log", "HEAD", "--first-parent", "--reverse", "--format=%H", f"-Sconst VERSION = '{v}';", "--", "index.html", "src/js/version.js"],
                            cwd=RAIZ, capture_output=True, text=True).stdout.split()
         return r[0] if r else None
     out = {}

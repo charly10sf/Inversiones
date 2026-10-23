@@ -2,12 +2,35 @@
    última versión; si la red no contesta en 3 segundos o no hay conexión, sale la copia guardada.
    El resto (iconos, letras) sale de la copia y se renueva por detrás.
    Los datos (precios, cartera cifrada, GitHub, Yahoo, Bitvavo) nunca pasan por aquí: la página los guarda aparte. */
-var CACHE = 'inv-v133';
+var CACHE = 'inv-v131';
 var CORE = ['./', 'index.html', 'manifest.webmanifest', 'favicon.svg', 'growfolio.svg', 'growfolio-32.png', 'growfolio-192.png', 'growfolio-512.png', 'growfolio-maskable-512.png', 'growfolio-180.png', 'icon-192.png', 'growfolio-nombre.svg', 'growia.svg', 'growfolio-aviso.png'];
 var DATOS = /(^|\/)(opinion\.json|instrumentos\.json|cartera\.enc\.json|analisis-ia\.json|analisis\.enc\.json)$/;
+// 0.6: lo de CORE se pide sin la caché del navegador (la página podía venir vieja, de hace hasta 10 minutos), y los
+// archivos con huella en el nombre (assets/…, en/…) que ya estaban en la caché de la versión anterior no se vuelven a bajar:
+// si se llaman igual, son iguales
+var HUELLA = /^(assets|en)\//;
 self.addEventListener('install', function (e) {
-  e.waitUntil(caches.open(CACHE).then(function (c) { return c.addAll(CORE); }).then(function () { return self.skipWaiting(); }));
+  e.waitUntil(caches.open(CACHE).then(function (c) {
+    return Promise.all(CORE.map(function (u) {
+      return (HUELLA.test(u) ? caches.match(u) : Promise.resolve(null)).then(function (hit) {
+        return hit ? c.put(u, hit) : c.add(new Request(u, { cache: 'reload' }));
+      });
+    }));
+  }).then(function () { return self.skipWaiting(); }));
 });
+// la página nueva solo se guarda cuando ya están guardados el CSS y el JS que pide (assets/…): si no, al abrirla sin
+// conexión saldría en blanco. Si alguno no se puede bajar, se queda la copia de antes, que sí tiene los suyos
+function guardarPagina(c, clave, res) {
+  return res.clone().text().then(function (html) {
+    var refs = [], m, re = /(?:src|href)="(assets\/[^"]+)"/g;
+    while ((m = re.exec(html))) refs.push(new URL(m[1], self.registration.scope).href);
+    return Promise.all(refs.map(function (u) {
+      return c.match(u).then(function (hit) {
+        return hit || fetch(u, { cache: 'reload' }).then(function (r) { if (!r.ok) throw new Error('sin ' + u); return c.put(u, r); });
+      });
+    })).then(function () { return c.put(clave, res); });
+  });
+}
 self.addEventListener('activate', function (e) {
   e.waitUntil(caches.keys().then(function (ks) {
     return Promise.all(ks.filter(function (k) { return k !== CACHE; }).map(function (k) { return caches.delete(k); }));
@@ -37,7 +60,7 @@ self.addEventListener('fetch', function (e) {
         return c.match(clave).then(function (hit) {
           var x = hit && (hit.headers.get('etag') || hit.headers.get('last-modified')), y = otra.headers.get('etag') || otra.headers.get('last-modified');
           if (porCopia && x && y && x !== y) avisar();
-          return c.put(clave, otra);
+          return guardarPagina(c, clave, otra).catch(function () {});
         });
       });
     }).catch(function () {}));

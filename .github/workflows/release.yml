@@ -1,5 +1,5 @@
 # Un release de GitHub por versión. Cada vez que cambia el código en main, la etiqueta de la versión que está publicada
-# (vX.Y.Z, la de VERSION en index.html) se mueve a ese commit, así que siempre apunta a cómo quedó esa versión con sus
+# (vX.Y.Z, la de VERSION en src/js/version.js) se mueve a ese commit, así que siempre apunta a cómo quedó esa versión con sus
 # arreglos; y su release se crea o se actualiza con las novedades y los cambios (scripts/release.py). La APK la añade la
 # Action «App Android» cuando compila. Para comparar dos versiones: github.com/<repo>/compare/v0.1.1...v0.2.3
 #
@@ -14,6 +14,8 @@ on:
     branches: [main]
     paths:
       - "index.html"
+      - "src/**"
+      - "build/**"
       - "sw.js"
       - "en.json"
       - "cambios.json"

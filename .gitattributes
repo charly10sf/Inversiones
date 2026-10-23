@@ -1,0 +1,8 @@
+# Siempre con \n, también al bajarlo en Windows (si no, Git puede poner \r\n y el build no encuentra lo que busca)
+* text=auto eol=lf
+*.png binary
+*.jpg binary
+*.ico binary
+*.woff2 binary
+*.apk binary
+*.jar binary
