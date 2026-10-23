@@ -113,8 +113,9 @@
 .me.grupo { font-family: var(--f); color: var(--text); border-color: rgba(237, 187, 69, 0.38); background: rgba(20, 16, 8, 0.88); }
 .me.grupo svg { width: 11px; height: 11px; flex: none; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; }
 .me.compacto { gap: 4px; padding: 2px 6px 2px 3px; font-size: 10.5px; }
-.me.compacto img.bandera, .me.grupo img.bandera { width: 14px; height: 10px; border-radius: 2px; flex: none; }
-.me.compacto.tuyo { border-color: rgba(237, 187, 69, 0.55); }
+.me img.bandera { width: 16px; height: 11px; border-radius: 2px; flex: none; }
+.me.compacto img.bandera, .me.grupo img.bandera { width: 14px; height: 10px; }
+.me.tuyo { border-color: rgba(237, 187, 69, 0.55); }
 .me-punto { position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 1.5px rgba(9, 8, 6, 0.85); pointer-events: none; }
 .me b.up { color: var(--up); } .me b.down { color: var(--down); } .me b.flat { color: var(--text-2); } .me b.oro { color: var(--accent); }
 .me i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
@@ -168,6 +169,25 @@
 .mi-elige { display: grid; gap: 5px; font-size: 12px; color: var(--muted); }
 .mi-elige select { appearance: none; -webkit-appearance: none; background: rgba(255, 255, 255, 0.035) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23BCB3A2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center; border: 1px solid var(--line-2); border-radius: 11px; padding: 9px 34px 9px 12px; color: var(--text); font: inherit; font-size: 14px; }
 .mi-pos select { border-color: rgba(237, 187, 69, 0.35); }
+/* 0.5d: los desplegables, con los colores y la letra de la app. En el ordenador, la lista entera (Chrome y Edge, con
+   appearance: base-select); en el móvil, la del sistema, que ya va bien. Donde no se puede, al menos el fondo oscuro:
+   Chrome en Windows pintaba la lista con el fondo casi transparente del desplegable, en blanco y con la letra clara */
+select option, select optgroup { background-color: var(--plane-2); color: var(--text); }
+@media (hover: hover) and (pointer: fine) {
+  @supports (appearance: base-select) {
+    select, .mi-elige select, ::picker(select) { appearance: base-select; }
+    select { cursor: pointer; }
+    select::picker-icon { color: var(--muted); transition: rotate 0.2s; }
+    select:open::picker-icon { rotate: 180deg; }
+    .mi-elige select::picker-icon { display: none; }
+    ::picker(select) { margin-block: 6px; padding: 6px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--plane-2); color: var(--text); font-family: var(--f); font-size: 14px; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55); max-height: min(380px, 60vh); scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+    select option { padding: 8px 12px; border-radius: 8px; background: transparent; color: var(--text-2); }
+    select option:hover, select option:focus-visible { background: rgba(255, 255, 255, 0.06); color: var(--text); outline: none; }
+    select option:checked { color: var(--accent); font-weight: 600; }
+    select option::checkmark { display: none; }
+    select option img.bandera { width: 18px; height: 13px; border-radius: 2px; margin-right: 10px; flex: none; }
+  }
+}
 @media (max-width: 1079px) { .mapa-info { border-top: 1px solid var(--line); padding-top: 16px; } }
 @media (max-width: 759px) {
   .mapa-w { margin: 0 calc(-1 * var(--gutter) + 8px); padding: 18px 14px 16px; border-radius: 24px; gap: 14px; }

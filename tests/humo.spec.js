@@ -245,7 +245,9 @@ test.describe('trozos: las novedades', () => {
 test.describe('trozos: el mapa', () => {
   test.beforeEach(({}, info) => test.skip(info.project.name === 'movil-pequeno', 'en 390 y 1440'));
 
-  test('el mapa del mundo se baja al abrir Mercados y se pinta entero', async ({ pagina: page }) => {
+  test('el mapa del mundo se baja al abrir Mercados y se pinta entero', async ({ pagina: page, context }, info) => {
+    // las banderas vienen de flagcdn: aquí, una de mentira
+    await context.route(/flagcdn\.com\/.*\.svg/, (r) => r.fulfill({ status: 200, contentType: 'image/svg+xml', body: '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 3 2"><rect width="3" height="2" fill="#c60b1e"/></svg>' }));
     await crearCuenta(page);
     await quitarCapas(page);
     await meterCartera(page);
@@ -255,6 +257,13 @@ test.describe('trozos: el mapa', () => {
     expect(await page.evaluate(() => typeof svgMapa)).toBe('function');
     await expect(page.locator('#mapaLey')).not.toBeEmpty();
     await expect(page.locator('#mapaInfo')).not.toBeEmpty();
+    // 0.5d: la bandera en cada país, también en el ordenador (al lado del nombre)
+    await expect(page.locator('.mapa-etqs .me img.bandera').first()).toBeVisible();
+    if (info.project.name === 'pc') {
+      expect(await page.locator('.mapa-etqs .me:not(.compacto):not(.grupo)').count()).toBeGreaterThan(0);
+      // y el desplegable de países, con los colores y la letra de la app
+      expect(await page.evaluate(() => getComputedStyle(document.querySelector('#mapaPais')).appearance)).toBe('base-select');
+    }
     // «Tu dinero»: los países donde tienes algo
     await tocar(page, '[data-mapa-modo="tuyo"]');
     await expect(page.locator('.mapa-w')).toHaveAttribute('data-modo', 'tuyo');

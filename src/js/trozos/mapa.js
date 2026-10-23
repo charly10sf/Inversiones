@@ -112,7 +112,7 @@ function valorEuropaMapa(modo, ex) {
    Kong…), al lado, con un punto donde está. Las que no caben sin pisarse se quedan sin poner */
 function etiquetasMapa(vb, esc1, modo, ex) {
   const G = S.mapaGeo, items = [], exTodo = S.mapaExTodo || ex;
-  // en un mapa estrecho (el móvil), la bandera en vez del nombre: caben el doble y se reconocen igual
+  // en un mapa estrecho (el móvil), la bandera en vez del nombre: caben el doble y se reconocen igual; en uno ancho, las dos
   const compacto = anchoMapa() < 600;
   const sitio = (p) => { const l = ((p[0] - vb[0]) / vb[2]) * 100, t = ((p[1] - vb[1]) / vb[3]) * 100; return l >= 1 && l <= 99 && t >= 2 && t <= 98 ? [l, t] : null; };
   // con banderas (el móvil) caben antes que con nombres
@@ -121,7 +121,7 @@ function etiquetasMapa(vb, esc1, modo, ex) {
   const enEuropa = (p) => p[0] >= eu[0] && p[0] <= eu[0] + eu[2] && p[1] >= eu[1] && p[1] <= eu[1] + eu[3];
   if (euLejos) {
     const s = sitio([eu[0] + eu[2] * 0.5, eu[1] + eu[3] * 0.5]), v = valorEuropaMapa(modo, ex);
-    if (s && v != null) items.push({ s, peso: modo === 'tuyo' ? v : sum(Object.keys(ZONA_PAISES.Europa), (c) => PESO_MUNDO[c] || 0), html: `<button __A__ type="button" class="me grupo" data-mapa-vista="eu" aria-label="${L('Acercar a Europa', 'Zoom to Europe')}">${compacto ? `${bandera('eu')}<span class="sr">${L('Europa', 'Europe')}</span>` : `<span>${L('Europa', 'Europe')}</span>`}<b class="${modo === 'tuyo' ? 'oro' : cls(v)}">${valorCortoMapa(v, modo)}</b><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4L14 14M7 5v4M5 7h4"/></svg></button>` });
+    if (s && v != null) items.push({ s, peso: modo === 'tuyo' ? v : sum(Object.keys(ZONA_PAISES.Europa), (c) => PESO_MUNDO[c] || 0), html: `<button __A__ type="button" class="me grupo" data-mapa-vista="eu" aria-label="${L('Acercar a Europa', 'Zoom to Europe')}">${compacto ? `${bandera('eu')}<span class="sr">${L('Europa', 'Europe')}</span>` : `${bandera('eu')}<span>${L('Europa', 'Europe')}</span>`}<b class="${modo === 'tuyo' ? 'oro' : cls(v)}">${valorCortoMapa(v, modo)}</b><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4L14 14M7 5v4M5 7h4"/></svg></button>` });
   }
   for (const x of paisesMapa(modo, ex)) {
     const p = G.c[x.c];
@@ -135,7 +135,7 @@ function etiquetasMapa(vb, esc1, modo, ex) {
     const cifra = `<b class="${modo === 'tuyo' ? 'oro' : cls(x.v)}">${valorCortoMapa(x.v, modo)}</b>`;
     items.push({ s, peso, chico: !grande, html: compacto
       ? `<span __A__ class="me compacto${tuyo ? ' tuyo' : ''}" data-mapa-c="${x.c}" title="${esc(nombrePaisMapa(x.c))}">${bandera(x.c)}<span class="sr">${esc(nombrePaisMapa(x.c))}</span>${cifra}</span>`
-      : `<span __A__ class="me${tuyo ? ' tuyo' : ''}" data-mapa-c="${x.c}">${tuyo ? '<i></i>' : ''}<span>${esc(cortoPaisMapa(x.c))}</span>${cifra}</span>` });
+      : `<span __A__ class="me${tuyo ? ' tuyo' : ''}" data-mapa-c="${x.c}">${bandera(x.c)}<span>${esc(cortoPaisMapa(x.c))}</span>${cifra}</span>` });
   }
   return items.sort((a, b) => b.peso - a.peso).map((x) => x.html.replace('__A__', `data-l="${x.s[0].toFixed(2)}" data-t="${x.s[1].toFixed(2)}"${x.chico ? ' data-chico="1"' : ''}`)).join('');
 }
@@ -217,7 +217,7 @@ function selectorPaisMapa(sel, ex) {
   const cods = new Set([...Object.keys(BOLSA_PAIS), ...Object.values((S.precios && S.precios.mapa) || {}).map((x) => x.p), ...ex.keys()]);
   if (sel) cods.add(sel);
   const ops = [...cods].map((c) => [c, nombrePaisMapa(c)]).sort((a, b) => a[1].localeCompare(b[1], IDIOMA === 'en' ? 'en' : 'es'));
-  return `<label class="mi-elige"><span>${L('Ir a un país', 'Go to a country')}</span><select id="mapaPais"><option value="">${L('Elige uno', 'Pick one')}</option>${ops.map(([c, n]) => `<option value="${c}"${c === sel ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`;
+  return `<label class="mi-elige"><span>${L('Ir a un país', 'Go to a country')}</span><select id="mapaPais"><option value="">${L('Elige uno', 'Pick one')}</option>${ops.map(([c, n]) => `<option value="${c}"${c === sel ? ' selected' : ''}>${bandera(c)}${esc(n)}</option>`).join('')}</select></label>`;
 }
 // en «Tu dinero»: toda la cartera o una sola posición de bolsa
 function selectorPosMapa(M) {

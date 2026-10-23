@@ -5,8 +5,10 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.5d', f: '2026-10-23', h: '13:10', t: 'El aviso de versión nueva dice «Actualizar»', arreglos: [
-    'El aviso de que hay una versión nueva de GrowFolio dice «Actualizar» y «Se actualiza en un segundo», en vez de «Ponerla».',
+  { v: '0.5d', f: '2026-10-23', h: '13:30', t: 'Banderas en el mapa del ordenador', arreglos: [
+    'En el ordenador, el mapa del mundo lleva la bandera de cada país al lado de su nombre, como en el móvil.',
+    'Los desplegables del ordenador, como «Ir a un país», salen con los colores y la letra de GrowFolio, y la lista de países con sus banderas. En Windows la lista salía en blanco, con la letra casi invisible.',
+    'El aviso de que hay una versión nueva dice «Actualizar» en vez de «Ponerla».',
   ] },
   { v: '0.5c', f: '2026-10-23', h: '12:40', t: 'GrowIA no vuelve a preguntarte lo que ya contestaste', arreglos: [
     'GrowIA ya no te vuelve a preguntar lo que contestaste otro día, aunque te lo pregunte con otras palabras (por ejemplo, si quieres ajustar la cripto a tu límite).',

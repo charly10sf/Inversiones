@@ -3,13 +3,15 @@
   {
    "v": "0.5d",
    "f": "2026-10-23",
-   "h": "13:10",
-   "t": "El aviso de versión nueva dice «Actualizar»",
+   "h": "13:30",
+   "t": "Banderas en el mapa del ordenador",
    "commits": [
     {
-     "cuando": "2026-10-23 13:10",
-     "asunto": "0.5d: El aviso de versión nueva dice «Actualizar»",
+     "cuando": "2026-10-23 13:30",
+     "asunto": "0.5d: Banderas en el mapa del ordenador",
      "detalle": [
+      "Mapa del mundo en el ordenador: la bandera al lado del nombre de cada país y de Europa (en el móvil ya iba en vez del nombre); lo tuyo, con el filo dorado en vez del punto",
+      "Desplegables en el ordenador con appearance: base-select (Chrome y Edge): la lista con el fondo, la letra y el dorado de la app, y la de países con banderas. Fuera de eso, al menos las opciones con fondo oscuro (en Windows salía la lista en blanco con la letra clara)",
       "avisoWebNueva: el botón dice «Actualizar» (antes «Ponerla») y el texto «Se actualiza en un segundo, sin perder nada»; en inglés, «Update»",
       "Novedades de la 0.5d en español e inglés"
      ]
