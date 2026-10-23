@@ -1,0 +1,82 @@
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: TASI.SR"}}}
+$TASI.SR: No data found, symbol may be delisted
+HTTP Error 404: {"quoteSummary":{"result":null,"error":{"code":"Not Found","description":"Quote not found for symbol: TASI.SR"}}}
+$TASI.SR: No data found, symbol may be delisted
+$TASI.SR: possibly delisted; no timezone found
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+^CASE30: Period 'max' is invalid, must be one of: 1d, 5d
+$^EGX30: No data found, symbol may be delisted
+$^EGX30: No data found, symbol may be delisted
+$^EGX30: possibly delisted; no timezone found
+$EGX30.CA: No data found, symbol may be delisted
+$EGX30.CA: No data found, symbol may be delisted
+$EGX30.CA: possibly delisted; no timezone found
+$^CASE: No data found, symbol may be delisted
+$^CASE: No data found, symbol may be delisted
+$^CASE: possibly delisted; no timezone found
+$^FADGI: No data found, symbol may be delisted
+$^FADGI: No data found, symbol may be delisted
+$^FADGI: possibly delisted; no timezone found
+$FADGI.AD: No data found, symbol may be delisted
+$FADGI.AD: No data found, symbol may be delisted
+$FADGI.AD: possibly delisted; no timezone found
+$^ADI: No data found, symbol may be delisted
+$^ADI: No data found, symbol may be delisted
+$^ADI: possibly delisted; no timezone found
+$^DFMGI: No data found, symbol may be delisted
+$^DFMGI: No data found, symbol may be delisted
+$^DFMGI: possibly delisted; no timezone found
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+$^ADX: No data found, symbol may be delisted
+$^ADX: No data found, symbol may be delisted
+$^ADX: possibly delisted; no timezone found
+$^QSI: No data found, symbol may be delisted
+$^QSI: No data found, symbol may be delisted
+$^QSI: possibly delisted; no timezone found
+$QSI.QA: No data found, symbol may be delisted
+$QSI.QA: No data found, symbol may be delisted
+$QSI.QA: possibly delisted; no timezone found
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+/opt/hostedtoolcache/Python/3.12.15/x64/lib/python3.12/site-packages/yfinance/utils.py:568: Pandas4Warning: The inplace keyword in DataFrame.sort_index is deprecated and will be removed in a future version (PDEP-8).
+See https://pandas.pydata.org/docs/dev/whatsnew/v3.1.0.html#deprecation-inplace for more details.
+  quotes.sort_index(inplace=True)
+^GNRI.QA: Period 'max' is invalid, must be one of: 1d, 5d
+$^QEAS: No data found, symbol may be delisted
+$^QEAS: No data found, symbol may be delisted
+$^QEAS: possibly delisted; no timezone found
+$^BKP: No data found, symbol may be delisted
+$^BKP: No data found, symbol may be delisted
+$^BKP: possibly delisted; no timezone found
+$^KWSE: No data found, symbol may be delisted
+$^KWSE: No data found, symbol may be delisted
+$^KWSE: possibly delisted; no timezone found
+$BKP.KW: No data found, symbol may be delisted
+$BKP.KW: No data found, symbol may be delisted
+$BKP.KW: possibly delisted; no timezone found
+$^MKWI: No data found, symbol may be delisted
+$^MKWI: No data found, symbol may be delisted
+$^MKWI: possibly delisted; no timezone found
