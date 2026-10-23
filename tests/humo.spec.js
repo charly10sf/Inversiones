@@ -324,3 +324,50 @@ test.describe('GrowIA te pregunta', () => {
     expect(await page.evaluate(() => preguntasIA().length)).toBe(0);
   });
 });
+
+test.describe('GrowIA busca en internet', () => {
+  test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
+
+  test('busca con Flash-Lite y, si se le acaba el cupo, con el modelo de la conversación', async ({ pagina: page, context }) => {
+    // Gemini de imitación: la conversación pide buscar y luego contesta; la búsqueda apunta con qué modelo se hizo
+    const busquedas = [];
+    let liteSinCupo = false;
+    const sse = (parts) => `data: ${JSON.stringify({ candidates: [{ content: { role: 'model', parts }, finishReason: 'STOP' }], usageMetadata: {} })}\r\n\r\n`;
+    await context.route('https://generativelanguage.googleapis.com/**', (r) => {
+      const url = r.request().url(), cuerpo = r.request().postData() || '', modelo = (url.match(/models\/([\w.-]+):/) || [])[1];
+      if (/:streamGenerateContent/.test(url)) {
+        const parts = /"functionResponse"/.test(cuerpo) ? [{ text: 'Repsol baja un 3 % por el petróleo.' }] : [{ functionCall: { name: 'buscar_en_internet', args: { consulta: 'Repsol hoy' } } }];
+        return r.fulfill({ status: 200, contentType: 'text/event-stream', body: sse(parts) });
+      }
+      if (/:generateContent/.test(url) && /Busca en internet/.test(cuerpo)) {
+        busquedas.push(modelo);
+        if (liteSinCupo && /flash-lite/.test(modelo)) return r.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify({ error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'Quota exceeded for metric: generate_content_free_tier_requests, limit: 20 (GenerateRequestsPerDayPerProjectPerModel-FreeTier)' } }) });
+        return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Repsol cae un 3 % hoy.' }] }, groundingMetadata: { groundingChunks: [{ web: { uri: 'https://ejemplo.es/repsol', title: 'ejemplo.es' } }] } }] }) });
+      }
+      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ models: [], candidates: [{ content: { parts: [{ text: '{}' }] } }] }) });
+    });
+    await crearCuenta(page);
+    await quitarCapas(page);
+    await meterCartera(page);
+    // la revisión diaria, a mano: si no, empezaría sola con la clave puesta y también buscaría
+    await page.evaluate(() => { guardarCfgAsesor({ auto: 'manual' }); AS.clave = 'AQ.prueba-de-growfolio'; LS.del('inv-ia-agotados'); });
+    let respuestas = 0;
+    const preguntar = async (q) => {
+      await page.evaluate(() => { if (typeof cerrarAsesor === 'function') cerrarAsesor(); });
+      await page.evaluate((x) => abrirAsesor(x, true), q);
+      respuestas++;
+      await expect.poll(async () => (await page.locator('#asCuerpo').innerText()).split('Repsol baja un 3 %').length - 1, { timeout: 30_000 }).toBe(respuestas);
+    };
+    await preguntar('¿Qué ha pasado hoy con Repsol?');
+    expect(busquedas).toEqual(['gemini-3.5-flash-lite']);
+
+    // sin cupo hoy en Flash-Lite: busca con el de la conversación y se apunta, para no volver a probar con él hoy
+    liteSinCupo = true; busquedas.length = 0;
+    await preguntar('¿Y mañana?');
+    expect(busquedas).toEqual(['gemini-3.5-flash-lite', 'gemini-3.8-flash']);
+    expect(await page.evaluate(() => agotadosIA())).toContain('gemini-3.5-flash-lite');
+    busquedas.length = 0;
+    await preguntar('¿Y la semana que viene?');
+    expect(busquedas).toEqual(['gemini-3.8-flash']);
+  });
+});
