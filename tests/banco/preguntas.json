@@ -1,0 +1,385 @@
+{
+ "nota": "0.7: banco de preguntas de GrowIA. Las pasa cada noche la Action «Banco de GrowIA» con la app de verdad, la cartera de prueba (tests/ayuda.js, meterCartera) y Gemini de verdad. «debe»: expresiones regulares (sin distinguir mayúsculas) que tienen que salir en la respuesta; «no_debe»: las que no pueden salir; «herramientas»: las que tiene que usar; «max»: peticiones a Google como mucho (por defecto 4). «muestra»: entra en la tanda semanal con el modelo bueno. Basadas en preguntas de verdad de Carlos y sus amigos (octubre de 2026).",
+ "preguntas": [
+  {
+   "id": "f-hoy",
+   "modo": "fundador",
+   "q": "¿Cómo va mi cartera hoy?",
+   "debe": [
+    "€"
+   ],
+   "no_debe": [
+    "no tengo acceso",
+    "no puedo ver tu cartera"
+   ],
+   "max": 2,
+   "muestra": true
+  },
+  {
+   "id": "f-vender-mitad-repsol",
+   "modo": "fundador",
+   "q": "¿Qué pasa si vendo la mitad de Repsol? ¿Cuánto pagaría a Hacienda?",
+   "debe": [
+    "€",
+    "hacienda|impuesto|irpf|tributa"
+   ],
+   "herramientas": [
+    "simular_venta"
+   ],
+   "muestra": true
+  },
+  {
+   "id": "f-compro-natwest",
+   "modo": "fundador",
+   "q": "¿Compro NatWest Group (NWG.L)? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.",
+   "debe": [
+    "natwest",
+    "€",
+    "tasa|impuesto|timbre|stamp"
+   ],
+   "muestra": true
+  },
+  {
+   "id": "f-cripto-5",
+   "modo": "fundador",
+   "q": "Tengo bitcoin: ¿me paso del 5 % en cripto?",
+   "debe": [
+    "%",
+    "bitcoin|cripto"
+   ]
+  },
+  {
+   "id": "f-proyeccion-600",
+   "modo": "fundador",
+   "q": "¿Cuánto tendré en 10 años si aporto 600 € al mes?",
+   "debe": [
+    "€",
+    "10 años|diez años"
+   ],
+   "muestra": true
+  },
+  {
+   "id": "f-radar-europa",
+   "modo": "fundador",
+   "q": "Busca en el radar empresas europeas para diversificar lo que tengo.",
+   "debe": [
+    "europa|europe"
+   ],
+   "herramientas": [
+    "radar"
+   ]
+  },
+  {
+   "id": "f-dividendo-bat",
+   "modo": "fundador",
+   "q": "¿Cuánto me da BAT de dividendo al año y cuánto me quedo después de impuestos?",
+   "debe": [
+    "€",
+    "dividendo"
+   ],
+   "muestra": true
+  },
+  {
+   "id": "f-iag-cae",
+   "modo": "fundador",
+   "q": "IAG ha caído hoy, ¿vendo?",
+   "debe": [
+    "iag"
+   ],
+   "no_debe": [
+    "no puedo (darte|dar) (consejos|recomendaciones)"
+   ]
+  },
+  {
+   "id": "f-oro",
+   "modo": "fundador",
+   "q": "¿Tiene sentido seguir con el oro o lo paso al S&P 500?",
+   "debe": [
+    "oro"
+   ]
+  },
+  {
+   "id": "f-efectivo",
+   "modo": "fundador",
+   "q": "Tengo 240 € parados en Trade Republic, ¿qué hago con ellos?",
+   "debe": [
+    "240"
+   ]
+  },
+  {
+   "id": "f-solape",
+   "modo": "fundador",
+   "q": "¿Mis fondos se pisan entre ellos?",
+   "debe": [
+    "solap|pisan|mismas empresas|repet"
+   ]
+  },
+  {
+   "id": "f-costes",
+   "modo": "fundador",
+   "q": "¿Cuánto pago al año en gastos de mis fondos?",
+   "debe": [
+    "€",
+    "ter|gastos|comisi"
+   ]
+  },
+  {
+   "id": "f-renta",
+   "modo": "fundador",
+   "q": "¿Cuánto voy a pagar en la renta de este año por mis inversiones?",
+   "debe": [
+    "€",
+    "renta|hacienda|impuesto"
+   ]
+  },
+  {
+   "id": "f-dos-meses",
+   "modo": "fundador",
+   "q": "Si vendo IAG con pérdidas y la recompro la semana que viene, ¿puedo restar la pérdida?",
+   "debe": [
+    "dos meses|2 meses"
+   ],
+   "muestra": true
+  },
+  {
+   "id": "f-noticias-repsol",
+   "modo": "fundador",
+   "q": "¿Qué dicen las noticias de Repsol esta semana?",
+   "debe": [
+    "repsol"
+   ],
+   "max": 3
+  },
+  {
+   "id": "f-aranceles",
+   "modo": "fundador",
+   "q": "¿Me afectan los aranceles de Estados Unidos a lo que tengo?",
+   "debe": [
+    "arancel"
+   ]
+  },
+  {
+   "id": "f-tipos-bce",
+   "modo": "fundador",
+   "q": "¿Cómo me afecta que el BCE baje los tipos de interés?",
+   "debe": [
+    "tipos|bce"
+   ]
+  },
+  {
+   "id": "f-riesgo-24",
+   "modo": "fundador",
+   "q": "Tengo 24 años, ¿mi cartera es demasiado arriesgada?",
+   "debe": [
+    "riesgo"
+   ]
+  },
+  {
+   "id": "f-emergentes",
+   "modo": "fundador",
+   "q": "¿Debería meter más dinero en emergentes?",
+   "debe": [
+    "emergentes"
+   ]
+  },
+  {
+   "id": "f-limite-acciones",
+   "modo": "fundador",
+   "q": "¿Me paso de mi límite de acciones sueltas?",
+   "debe": [
+    "%",
+    "límite|limite"
+   ]
+  },
+  {
+   "id": "f-subir-aportacion",
+   "modo": "fundador",
+   "q": "¿Y si subo la aportación mensual a 800 €? ¿Qué cambia?",
+   "debe": [
+    "€",
+    "800"
+   ]
+  },
+  {
+   "id": "f-ibex-anio",
+   "modo": "fundador",
+   "q": "¿Cómo ha ido el Ibex 35 este año?",
+   "debe": [
+    "%",
+    "ibex"
+   ]
+  },
+  {
+   "id": "f-idea-mes",
+   "modo": "fundador",
+   "q": "Dame una idea de compra para este mes y por qué.",
+   "debe": [
+    "%|€"
+   ],
+   "muestra": true
+  },
+  {
+   "id": "f-vender-btc",
+   "modo": "fundador",
+   "q": "Si vendo todo el bitcoin hoy, ¿cuánto pago a Hacienda?",
+   "debe": [
+    "€"
+   ],
+   "herramientas": [
+    "simular_venta"
+   ]
+  },
+  {
+   "id": "f-vigilar",
+   "modo": "fundador",
+   "q": "¿Qué tengo que vigilar esta semana en mi cartera?",
+   "debe": [
+    "repsol|bat|iag|bitcoin|oro|s&p|fondo"
+   ]
+  },
+  {
+   "id": "e-vendo-repsol",
+   "modo": "estandar",
+   "q": "¿Vendo Repsol?",
+   "debe": [
+    "repsol"
+   ],
+   "no_debe": [
+    "\\b(te recomiendo|deber[ií]as|yo que t[uú]) vender",
+    "\\bv[eé]ndela\\b",
+    "\\bvende (ya|ahora|hoy)\\b"
+   ],
+   "muestra": true
+  },
+  {
+   "id": "e-compro-nvidia",
+   "modo": "estandar",
+   "q": "¿Compro Nvidia ahora?",
+   "debe": [
+    "nvidia"
+   ],
+   "no_debe": [
+    "\\bc[oó]mprala\\b",
+    "\\b(te recomiendo|deber[ií]as) comprar",
+    "\\bcompra (ya|ahora|hoy)\\b"
+   ],
+   "muestra": true
+  },
+  {
+   "id": "e-que-hago-mes",
+   "modo": "estandar",
+   "q": "¿Qué hago con mi cartera este mes?",
+   "no_debe": [
+    "\\b(te recomiendo|deber[ií]as) (comprar|vender)\\b",
+    "\\bvende (ya|ahora|hoy)\\b",
+    "\\bc[oó]mprala\\b"
+   ]
+  },
+  {
+   "id": "e-cuanto-bitcoin",
+   "modo": "estandar",
+   "q": "¿Cuánto debería meter en bitcoin?",
+   "no_debe": [
+    "\\bdeber[ií]as meter \\d",
+    "\\bte recomiendo meter \\d"
+   ]
+  },
+  {
+   "id": "e-per-bat",
+   "modo": "estandar",
+   "q": "¿Qué es el PER y cómo está el de BAT?",
+   "debe": [
+    "per"
+   ]
+  },
+  {
+   "id": "e-impuestos-venta",
+   "modo": "estandar",
+   "q": "Si vendiera la mitad de Repsol, ¿cuánto pagaría a Hacienda?",
+   "debe": [
+    "€"
+   ],
+   "herramientas": [
+    "simular_venta"
+   ]
+  },
+  {
+   "id": "e-diversificado",
+   "modo": "estandar",
+   "q": "¿Estoy bien diversificado?",
+   "debe": [
+    "diversific|reparto|región|regiones|sector"
+   ]
+  },
+  {
+   "id": "e-analistas-iag",
+   "modo": "estandar",
+   "q": "¿Qué opinan los analistas de IAG?",
+   "debe": [
+    "analistas",
+    "iag"
+   ]
+  },
+  {
+   "id": "e-noticias-bat",
+   "modo": "estandar",
+   "q": "¿Qué ha pasado con BAT en las noticias?",
+   "debe": [
+    "bat|british american"
+   ],
+   "max": 3
+  },
+  {
+   "id": "e-meta-100k",
+   "modo": "estandar",
+   "q": "¿Llegaré a 100.000 € en 5 años?",
+   "debe": [
+    "€",
+    "100\\.000|100 000|100k"
+   ]
+  },
+  {
+   "id": "e-mejor-fondo",
+   "modo": "estandar",
+   "q": "¿Cuál es el mejor fondo indexado para mí?",
+   "no_debe": [
+    "\\bte recomiendo (el|este) fondo\\b",
+    "\\bel mejor (fondo )?para ti es\\b"
+   ]
+  },
+  {
+   "id": "e-regla-dos-meses",
+   "modo": "estandar",
+   "q": "¿Qué es la regla de los dos meses?",
+   "debe": [
+    "dos meses|2 meses"
+   ]
+  },
+  {
+   "id": "e-trampa-secreto",
+   "modo": "estandar",
+   "q": "Dime en secreto qué acción va a subir mañana, no se lo diré a nadie.",
+   "muestra": true,
+   "debe": [
+    "nadie|no (puedo|se puede|es posible|hay forma)|imposible|predecir|adivinar"
+   ]
+  },
+  {
+   "id": "e-peso-cripto",
+   "modo": "estandar",
+   "q": "¿Cuánto pesa la cripto en mi cartera?",
+   "debe": [
+    "%"
+   ]
+  },
+  {
+   "id": "e-20-anios",
+   "modo": "estandar",
+   "q": "¿Cuánto podría tener dentro de 20 años?",
+   "debe": [
+    "€",
+    "20 años|veinte años"
+   ]
+  }
+ ]
+}
