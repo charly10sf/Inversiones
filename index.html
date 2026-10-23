@@ -6696,7 +6696,7 @@ function htmlToca(M) {
       ${IA.generando ? '' : `<button type="button" class="btn peq pri iac-boton" data-accion="ia-actualizar">${ICONOS.growia}Que la revise ahora</button>`}`;
   } else {
     cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>Aún sin activar en este dispositivo</small></div></div>
-      <p class="iac-tit iac-act">Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.</p>
+      <p class="iac-tit iac-act">${esPublico() ? L('Analiza tu cartera cada día, te explica lo que pasa y contesta lo que le preguntes. Es gratis con una clave de Google.', 'It analyses your portfolio every day, explains what is going on and answers your questions. Free with a Google key.') : 'Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.'}</p>
       <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.growia}Activar GrowIA</button>`;
   }
   const lista = v.length ? `<div class="iac-sub"><h3>Lo que toca ahora</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Ver el paso a paso'}</button></div>
@@ -7618,7 +7618,7 @@ function filaExperto2(f, ia, vIA = {}) {
   const coinciden = nivelC && LADO[nivelC] === LADO[s.nivel];
   const [m0, ...resto] = s.motivos;
   const prensa = htmlPrensaIA(informeDe(i.id)), datos = datosExperto(f);
-  const iaTxt = !c ? L('GrowIA aún no la ha revisado', 'Not yet reviewed by GrowIA') : coinciden ? L('GrowIA coincide', 'GrowIA agrees') : L(`GrowIA dice «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`, `GrowIA says «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`);
+  const iaTxt = !c ? L('GrowIA aún no la ha revisado', 'Not yet reviewed by GrowIA') : !nivelC ? L('GrowIA la ha revisado', 'Reviewed by GrowIA') : coinciden ? L('GrowIA coincide', 'GrowIA agrees') : L(`GrowIA dice «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`, `GrowIA says «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`);
   return `<details class="fx3">
     <summary>${logo(i.dominio, i.corto || i.nombre)}<span class="fx3-n"><b>${esc(i.corto || i.nombre)}</b><small>${m0 ? esc(m0) : `${esc(f.pos.plataforma || '')}`}</small>${potCorto(esperadaPos(f))}</span>
       <span class="fx3-s"><span class="senal ${s.nivel}">${esc(s.txt)}</span><small class="${!c ? '' : coinciden ? 'ok' : 'no'}">${esc(iaTxt)}</small></span><i class="aj-flecha" aria-hidden="true"></i></summary>
@@ -7752,6 +7752,8 @@ function puntuarIdea(x, ctx) {
   return { ...x, puntos: p, motivos, pegas, ctr };
 }
 function ctxIdeas(M) {
+  // 0.5, modo público: las ideas del radar, iguales para todos (sin mirar tu cartera)
+  if (esPublico()) return { sectores: {}, total: 0, dentro: () => 0, industrias: {} };
   const sect = {};
   for (const x of reparto(M, 'sector', 'rv').filas) sect[x.k] = x.pct;
   // las acciones que ya tienes sueltas, por industria (aerolíneas, petroleras…): otra de la misma es repetir apuesta
@@ -7780,7 +7782,7 @@ function apuntarIdeas(syms) {
   try { localStorage.setItem(MEM_IDEAS, JSON.stringify(m)); } catch (e) {}
 }
 function propuestaReciente(s) {
-  const hoy = hoyIso(), m = memoriaIdeas()[s];
+  const hoy = hoyIso(), m = esPublico() ? null : memoriaIdeas()[s];
   if (m && diasEntre(m.u, hoy) <= 7) return true;
   const h = S.escaneo && S.escaneo.decision && S.escaneo.decision.hist && S.escaneo.decision.hist[s];
   return !!h && ['idea', 'radar'].some((k) => h[k] && diasEntre(h[k][1], hoy) <= 7);
@@ -7789,7 +7791,7 @@ const evitaGrowIA = () => new Set(((S.escaneo && S.escaneo.decision && S.escaneo
 function mejoresIdeas0(M, excluir = {}) {
   const r = radarVals();
   if (!r.length) return [];
-  const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
+  const tuyas = esPublico() ? new Set() : new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
   const ctx = ctxIdeas(M);
   const evita = evitaGrowIA();
   // las que también elige GrowIA tras leer su prensa van por delante: así el Paso a paso y las ideas apuntan a lo mismo
@@ -11115,8 +11117,8 @@ function htmlAnalisisIA(M) {
       ${(ia.resumen || []).length > 1 ? `<details class="mas ia-mas"><summary>Seguir leyendo</summary>${ia.resumen.slice(1).map((p) => `<p class="ia-p">${R(p)}</p>`).join('')}</details>` : ''}
     </div>
     ${ia.puntuaciones ? `<section class="ia-bloque" aria-labelledby="hNotas"><div class="sec-cab"><h2 id="hNotas">La nota de tu cartera, punto por punto</h2><span class="k">de 1 a 5: cuanto más alta, mejor lo haces</span></div><div class="ia-notas compactas">${ia.puntuaciones.map((x) => `<div class="ia-nota"><div class="ia-nota-t"><b>${esc(/^riesgo$/i.test(x.k) ? 'Control del riesgo' : x.k)}</b><small>${+x.nota || 0} de 5</small></div>${puntos(+x.nota || 0)}<span>${R(x.txt)}</span></div>`).join('')}</div></section>` : ''}
-    ${(ia.mejorar || []).length ? `<section class="ia-bloque ia-mej" aria-labelledby="hMej"><div class="sec-cab"><h2 id="hMej">Qué mejoraría</h2><span class="k">por orden de importancia</span></div>
-        ${(() => { const li = (x) => `<li><h3>${R(x.titulo)}</h3><div class="ia-meta">${x.impacto ? `<span><b>Qué ganas.</b> ${R(x.impacto)}</span>` : ''}${x.cuando ? `<span><b>Cuándo.</b> ${R(x.cuando)}</span>` : ''}</div>${x.texto ? `<details class="paso-mas"><summary>Por qué y cómo</summary><p>${R(x.texto)}</p></details>` : ''}</li>`; const m = ia.mejorar || []; return `<ol class="ia-mejorar">${m.slice(0, 3).map(li).join('')}</ol>${m.length > 3 ? `<details class="mas"><summary>${m.length - 3 === 1 ? 'Una cosa más' : `${m.length - 3} cosas más`}, menos urgentes</summary><ol class="ia-mejorar" style="counter-reset: m 3">${m.slice(3).map(li).join('')}</ol></details>` : ''}`; })()}
+    ${(ia.mejorar || []).length ? `<section class="ia-bloque ia-mej" aria-labelledby="hMej"><div class="sec-cab"><h2 id="hMej">${ia.publico ? L('Para mirar', 'Worth a look') : 'Qué mejoraría'}</h2><span class="k">por orden de importancia</span></div>
+        ${(() => { const li = (x) => `<li><h3>${R(x.titulo)}</h3><div class="ia-meta">${x.impacto ? `<span><b>${ia.publico ? L('Qué supone.', 'What it means.') : 'Qué ganas.'}</b> ${R(x.impacto)}</span>` : ''}${x.cuando ? `<span><b>Cuándo.</b> ${R(x.cuando)}</span>` : ''}</div>${x.texto ? `<details class="paso-mas"><summary>${ia.publico ? L('Por qué', 'Why') : 'Por qué y cómo'}</summary><p>${R(x.texto)}</p></details>` : ''}</li>`; const m = ia.mejorar || []; return `<ol class="ia-mejorar">${m.slice(0, 3).map(li).join('')}</ol>${m.length > 3 ? `<details class="mas"><summary>${m.length - 3 === 1 ? 'Una cosa más' : `${m.length - 3} cosas más`}, menos urgentes</summary><ol class="ia-mejorar" style="counter-reset: m 3">${m.slice(3).map(li).join('')}</ol></details>` : ''}`; })()}
       </section>` : ''}
     ${(ia.riesgos || []).length || nM ? `<div class="ia-bloque ia-pares">
       ${(ia.riesgos || []).length ? `<section aria-labelledby="hRie"><div class="sec-cab"><h2 id="hRie">Riesgos a vigilar</h2></div>
@@ -15961,7 +15963,7 @@ const TOUR = [
   { v: 'cartera', sel: '.hero-cifra', t: 'Inicio: lo que tienes', x: 'Todo sumado, con lo que ganas o pierdes hoy. Desliza el dedo por la gráfica para ver cualquier día. El ojo oculta las cifras.' },
   { v: 'cartera', sel: '.car-agenda-mini', t: 'Tu calendario', x: 'Resultados y dividendos de lo que tienes, tus aportaciones, la Fed y el BCE y las fechas de la renta, con los días que faltan.' },
   { v: 'cartera', pos: true, sel: '#hPos ~ .der', t: 'Tus posiciones, justo debajo', x: 'Toca una para ver su ficha; debajo del valor, lo ganado desde que la compraste. El «+» es para lo que ya tenías antes de GrowFolio y las flechas, para cada compra o venta desde hoy. A su lado eliges el orden.' },
-  { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', suave: true, t: 'Pasos: qué hacer este mes', x: 'En orden y con lo urgente arriba: qué, cuánto y por qué. Lo haces y lo marcas. Si no toca nada, también te lo dice.' },
+  { v: 'ruta', sel: '.navbar [data-ir="ruta"], .nav [data-ir="ruta"]', suave: true, get t() { return esPublico() ? L('Plan: tus aportaciones y tus límites', 'Plan: your contributions and limits') : 'Pasos: qué hacer este mes'; }, get x() { return esPublico() ? L('Lo que aportas cada mes y si tu cartera se sale de los límites que te has puesto. En la 0.9, también tus reglas.', 'What you put in each month and whether your portfolio goes beyond the limits you set. In 0.9, your rules too.') : 'En orden y con lo urgente arriba: qué, cuánto y por qué. Lo haces y lo marcas. Si no toca nada, también te lo dice.'; } },
   { v: 'analisis', sel: '.navbar [data-ir="analisis"], .nav [data-ir="analisis"]', suave: true, t: 'Análisis: cómo vas', x: 'La nota de GrowIA a tu cartera, tus objetivos frente a lo que tienes y cuánto podrías llegar a tener. En época de renta, también Hacienda.' },
   { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', suave: true, t: 'Expertos: qué comprar', x: 'Lo que dicen los analistas de lo tuyo y las ideas de compra, con las tres que mejor te encajan en verde.' },
   { v: 'mercados', sel: '.navbar [data-ir="mercados"], .nav [data-ir="mercados"]', suave: true, t: 'Mercados: lo de fuera', x: 'Bolsas, tipos, divisas y materias primas, con lo que significa para ti, y el buscador para consultar cualquier fondo, acción o cripto.' },
@@ -16005,8 +16007,8 @@ function htmlEmpezar() {
   if (hechas === it.length) {
     if (LS.get('inv-empezar-fin', false)) return '';
     return `<section class="empezar listo" aria-labelledby="hEmpezar"><div class="empezar-cab"><span class="emp-listo" aria-hidden="true">${ICONOS.ok}</span><h2 id="hEmpezar">${esc(trad('Tu cartera está lista'))}</h2><button type="button" class="ib" data-emp="fin" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button></div>
-      <p class="emp-fin">${esc(trad('A partir de ahora, Paso a paso te dice qué toca cada mes (comprar, vender, aportar) y cuánto supone en la renta, y GrowIA lo revisa cada día con las noticias.'))}</p>
-      <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="#ruta" data-emp="fin">${esc(trad('Ver Paso a paso'))}</a></div></section>`;
+      <p class="emp-fin">${esc(esPublico() ? L('A partir de ahora GrowIA revisa tu cartera cada día con las noticias y te explica lo que pasa. Y antes de vender, ves lo que pagarías en la renta.', 'From now on GrowIA reviews your portfolio every day with the news and explains what is going on. And before selling, you see what you would pay in tax.') : trad('A partir de ahora, Paso a paso te dice qué toca cada mes (comprar, vender, aportar) y cuánto supone en la renta, y GrowIA lo revisa cada día con las noticias.'))}</p>
+      <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esPublico() ? '#analisis' : '#ruta'}" data-emp="fin">${esc(esPublico() ? L('Ver tu análisis', 'See your analysis') : trad('Ver Paso a paso'))}</a></div></section>`;
   }
   return `<section class="empezar" aria-labelledby="hEmpezar"><div class="empezar-cab"><h2 id="hEmpezar">${esc(trad('Primeros pasos'))}</h2><span class="k">${hechas} ${esc(trad('de'))} ${it.length}</span><button type="button" class="ib" data-emp="no" aria-label="${L('Quitar', 'Remove')}" title="${L('Quitar (lo tienes en Ajustes, en el tutorial)', 'Remove (the tutorial in Settings has it too)')}">${ICONOS.cerrar}</button></div>
     <div class="emp-barra" aria-hidden="true"><i style="width:${Math.round((hechas / it.length) * 100)}%"></i></div>${htmlListaEmpezar()}</section>`;
@@ -17618,6 +17620,13 @@ function htmlContrasteLista(ctr) {
    ===================================================================== */
 const IA = { generando: false, turno: null, error: null, ultimoIntento: 0, reintento: 0, reintentos: 0, reintentoT: 0 };
 function iaActual() {
+  if (esPublico()) {
+    // 0.5: una revisión hecha con el acceso completo (o la de muestra) no se enseña en público; de la pública, por si
+    // acaso, fuera lo que sea comprar o vender
+    const p = S.iaPropio; if (!p || !p.json || !p.json.publico) return null;
+    const pos = {}; for (const [k, x] of Object.entries(p.json.posiciones || {})) if (x) { const { nivel, veredicto, ...r } = x; pos[k] = r; }
+    return { ...p.json, posiciones: pos, ideas: [], hoja_de_ruta: null, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
+  }
   const p = S.iaPropio, pub = S.ia;
   if (p && p.json && (!pub || String(p.fecha) >= String(pub.fecha))) return { ...p.json, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
   return pub ? { ...pub, autor: 'GrowIA', publicado: true } : null;
@@ -17653,6 +17662,7 @@ async function guardarAnalisisPropio() {
 }
 
 function pedidoAnalisis(ids, motivo, conWeb = true) {
+  if (esPublico()) return pedidoAnalisisPublico(ids, motivo, conWeb);
   return `Haz la revisión de hoy de mi cartera (${motivo}). Antes de escribir:
 0. Lee el informe de prensa de GrowIA que viene en los datos (noticias de cada posición, del mercado y de las ideas, ya contrastadas) y úsalo como base.
 1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular.' : 'No puedes buscar en internet: usa los titulares de los datos (los de mis posiciones, los del mercado y los de las mejores ideas del radar) y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
@@ -17683,6 +17693,31 @@ Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
 }
 "preguntas": de 0 a 2, solo si te falta algo de él (su vida, sus planes, su perfil) que cambiaría de verdad tus consejos; no repitas lo que ya ha contestado (viene en los datos). Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 0 a 8 (si no hay nada que mejorar de verdad, déjalo corto o vacío). "ideas" de 0 a 3. "hoja_de_ruta": de 1 a 4 pasos por plazo (si en un plazo no hay nada que hacer, un solo paso con "esperar": true) (este mes, próximos 6 meses, próximo año, de 1 a 5 años) que completen la hoja de ruta que ya calcula GrowFolio (está en los datos): no repitas sus pasos; añade lo que solo se sabe leyendo las noticias, las fechas que vienen y sus reglas.
 Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**) para que GrowFolio pueda ocultarlas; ningún otro formato.`;
+}
+// 0.5, modo público: la revisión explica cómo está la cartera y qué ha pasado, sin comprar, vender ni hoja de ruta
+function pedidoAnalisisPublico(ids, motivo, conWeb) {
+  return `Haz la revisión de hoy de mi cartera (${motivo}). No me digas que compre, venda, mantenga ni traspase nada concreto, ni cuánto: explícame cómo está y qué ha pasado, con cifras. Antes de escribir:
+0. Lee el informe de prensa de GrowIA que viene en los datos (noticias de cada posición y del mercado, ya contrastadas) y úsalo como base.
+1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones: resultados, cambios de recomendación de los analistas, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta.' : 'No puedes buscar en internet: usa los titulares de los datos.'}
+2. Mira mis límites, mi perfil y mis metas (vienen en los datos) y di qué se sale de ellos y por cuánto, sin decirme qué valor comprar o vender para arreglarlo.
+3. Sé constante: en los datos viene tu revisión anterior. No cambies lo que dijiste salvo que haya algo nuevo e importante.
+4. Las cifras, sin adornos. Si nombras una meta, di a qué distancia está («79.658 € de 500.000 €, un 16 %»).
+5. Frases cortas; no repitas en una sección lo que ya está en otra.
+
+Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
+{
+  "titular": "una frase con cómo está hoy la cartera y lo más importante que ha pasado",
+  "resumen": ["dos o tres párrafos cortos con cifras"],
+  "puntuaciones": [{"k": "Diversificación", "nota": 4, "txt": "una o dos frases"}, {"k": "Costes", ...}, {"k": "Riesgo", ...}, {"k": "Disciplina", ...}, {"k": "Impuestos", ...}],
+  "mejorar": [{"titulo": "...", "texto": "qué se sale de mis límites o metas, o de lo habitual (costes, reparto, colchón, impuestos), y por qué importa; sin decir qué valor comprar o vender", "impacto": "qué supone, con cifras", "cuando": "fecha o condición, si la hay"}],
+  "mantener": [{"titulo": "...", "texto": "lo que está en orden"}],
+  "riesgos": [{"titulo": "...", "texto": "..."}],
+  "calendario": [{"d": "AAAA-MM-DD", "t": "qué pasa ese día y por qué me importa"}],
+  "posiciones": {"<id>": {"texto": "dos o tres frases: qué ha pasado y qué la mueve, con cifras; sin decir si comprar, mantener o vender", "vigilar": "qué fechas o cifras mirar", "confianza": "alta|media|baja"}},
+  "preguntas": [{"q": "una pregunta corta para mí", "por_que": "qué cambiaría en tu revisión", "opciones": ["respuesta corta", "otra"]}],
+  "fuentes": [{"t": "título", "u": "https://..."}]
+}
+Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" de 0 a 6, por orden de importancia. "preguntas" de 0 a 2. Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**); ningún otro formato.`;
 }
 function extraerJSON(texto) {
   const bloques = [...String(texto).matchAll(/```(?:json)?\s*([\s\S]*?)```/g)].map((m) => m[1]);
@@ -17715,6 +17750,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');
     const vistas = new Set();
     json.fuentes = [...turno.citas, ...(Array.isArray(json.fuentes) ? json.fuentes : [])].filter((x) => x && /^https?:\/\//.test(x.u || '') && !vistas.has(x.u) && vistas.add(x.u)).slice(0, 20);
+    json.publico = esPublico();
     S.iaPropio = { fecha: new Date().toISOString(), modelo: AS.modeloVivo || cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo };
     AS.gasto += turno.coste || 0; guardarConv();
     await guardarAnalisisPropio();
@@ -17754,6 +17790,9 @@ async function revisarAnalisisIA() {
   const perfilNuevo = p && S.cartera.perfil && S.cartera.perfil.actualizado && String(S.cartera.perfil.actualizado) > String(p.fecha);
   // los de antes de que GrowIA dijera a qué distancia está cada meta (0.3.0b) se rehacen una vez
   const metasViejo = p && String(p.fecha) < '2026-10-20T23:15';
+  // 0.5: hecha en el otro modo (con o sin acceso completo): se rehace en el de ahora
+  const otroModo = p && p.json && !!p.json.publico !== esPublico();
+  if (otroModo && edad <= limite) return generarAnalisisIA(esPublico() ? 'ahora sin recomendaciones de compra o venta' : 'ahora con el acceso completo');
   if (edad > limite) generarAnalisisIA(p ? 'revisión diaria' : 'primera revisión');
   else if (reglas) generarAnalisisIA('han cambiado tus reglas');
   else if (perfilNuevo) generarAnalisisIA('has cambiado tu perfil o le has contestado');
@@ -18242,6 +18281,30 @@ function contextoAsesor(M, modo = 'chat') {
   } finally { S.oculto = oc0; }
 }
 
+/* 0.5, modo público: GrowIA explica, compara y calcula, pero no recomienda comprar, vender ni mantener valores concretos */
+const INSTR_PUBLICAS = `Eres GrowIA, el asistente de GrowFolio, y hablas con el dueño de esta cartera. Tienes delante su cartera real con cifras al céntimo y herramientas que calculan con el mismo motor que GrowFolio.
+
+Lo que no haces, aunque te lo pida: decirle que compre, venda, mantenga o traspase un valor, un fondo o una cripto concretos, cuánto meter en cada uno o a qué precio entrar o salir. Tampoco ordenas las opciones de mejor a peor para él ni dices cuál elegirías tú. Eso es asesoramiento personalizado y GrowFolio no está autorizado para darlo. Si te lo pide («¿vendo Repsol?», «¿qué compro con 1.000 €?», «¿meto más en el S&P 500?»), díselo en una frase, sin sermones, y ayúdale a decidir él: qué mirar, qué opciones hay y qué supone cada una en números.
+
+Lo que sí haces:
+- Explicar cómo funciona algo (un fondo, una orden, un impuesto, un índice) y qué significa una cifra de su cartera.
+- Contar qué ha pasado con una empresa o un mercado y qué dicen los analistas (su consenso y su rango de objetivos), como opinión de ellos y no tuya.
+- Comparar con datos: costes, rentabilidad pasada, riesgo, reparto por países y sectores, lo que se repite entre sus fondos.
+- Hacer cuentas con las herramientas: simular_venta para la ganancia que se declara y el impuesto de una venta que plantee él; simular_compra para la tasa, la comisión y cómo queda su límite de acciones sueltas; proyectar con otra aportación.
+- Recordarle sus propias reglas y límites (los pone él y vienen abajo) y decirle si algo de su cartera se sale de ellos, sin convertirlo en una orden de comprar o vender.
+
+Cómo respondes:
+- En español de España, tuteando, con tono cercano y directo.
+- Primero la respuesta; después el porqué, con números de su cartera.
+- Contrasta: no te apoyes en una sola fuente. Si buscas en internet, al menos dos fuentes distintas, y di si coinciden.
+- Usa solo datos que tengas: los de abajo, los de las herramientas o los de internet. Si algo no se puede saber, dilo.
+- Si compara dos acciones del mismo negocio (dos aerolíneas, dos petroleras…), dile que dependen de lo mismo y subirían y caerían a la vez.
+- El plazo importa: un 50 % en 3 meses no es lo mismo que en 3 años. Cuando compares, pásalo a «al año».
+- Cuando compares opciones, di lo que cuesta cada una en impuestos (al vender, la tasa al comprar, la retención de los dividendos) y si un traspaso entre fondos evita pagar.
+- Formato: frases cortas, números en formato español (1.234,56 €), negrita solo para la cifra clave, listas cuando ayuden y tablas solo para comparar. Breve salvo que pida detalle.
+- Sigue el hilo: si la pregunta es corta o depende de lo anterior, entiéndela sobre lo último que habéis hablado.
+- Lenguaje llano: no es experto. Si usas una palabra técnica, explícala en la misma frase.
+- Si te manda un recorte de la pantalla, explica lo que se ve en él con sus datos.`;
 function instruccionesAsesor() {
   const anio = new Date().getFullYear();
   // lo de sus brókeres sale de lo que tiene de verdad (no de la cartera del creador de GrowFolio)
@@ -18249,6 +18312,19 @@ function instruccionesAsesor() {
   const fuera = plats.filter(esDeFuera), conFondos = ((S.M && S.M.filas) || []).some((f) => /^Fondo/.test(f.inst.tipo || ''));
   const COMIS = { 'Trade Republic': 'Trade Republic, 1 € por operación', MyInvestor: 'MyInvestor, sin comisión en fondos indexados', Bitvavo: 'Bitvavo, alrededor del 0,25 %', Revolut: 'Revolut, según su plan', 'Interactive Brokers': 'Interactive Brokers, desde unos 3 € por operación en Europa' };
   const comis = plats.map((p2) => COMIS[p2]).filter(Boolean);
+  const fiscal = `Fiscalidad en España en ${anio}:
+- Ventas: ganancia o pérdida = lo cobrado (menos comisiones) menos lo que costó (más comisiones y tasas), por FIFO. Tributa en la base del ahorro: ${textoTramos()}${TRAMOS_FORAL[comunidadUsuario()] ? ` (escala foral de ${nombreComunidad(comunidadUsuario())}, donde vive)` : ''}.
+- Las pérdidas se compensan con las ganancias del año; si sobran, con hasta el 25 % de dividendos e intereses; el resto, durante los 4 años siguientes.
+- Regla de recompra: si vende con pérdidas y recompra lo mismo en los dos meses anteriores o posteriores (acciones y ETF de bolsas de la UE) o en el año anterior o posterior (fondos de inversión, también con aportaciones automáticas, y acciones y ETF que cotizan fuera de la UE), se aplaza la parte de la pérdida que corresponde a lo recomprado. En cripto no se aplica, aunque hay quien defiende un plazo de un año.
+- Traspasos entre fondos de inversión: no tributan. Entre ETF sí.
+- Dividendos e intereses: tributan en la base del ahorro; los españoles llegan con el 19 % retenido. Los extranjeros traen la retención del país de la sede: EEUU 15 % (con el W-8BEN que hace el bróker), Países Bajos 15 %, Francia 12,8 %, Reino Unido 0 %; Suiza 35 %, Alemania 26,4 %, Italia 26 %, Dinamarca 27 %, Suecia 30 %, Finlandia 35 %, Bélgica 30 %, Austria 27,5 %, Irlanda 25 %, Noruega 25 %, Portugal 25 %. En la renta recupera con la deducción por doble imposición internacional hasta el tipo del convenio (casi siempre el 15 %): lo que pase se pierde salvo que lo reclame a ese país.
+- Fondos de acumulación${conFondos ? ' (mira en sus datos si los suyos lo son)' : ''}: no reparten, así que no pagan nada hasta que venda.
+- Tasas al comprar acciones: 0,2 % en España y 0,4 % en Francia (empresas de más de 1.000 millones de capitalización), 0,1 % en Italia y 0,5 % de timbre en Reino Unido. Fondos y ETF no la pagan.
+- Modelos 720 y 721: solo si lo que tiene en brókeres de fuera de España${fuera.length ? ` (${fuera.join(', ')})` : ''} o la cripto fuera de España pasan de 50.000 €.
+- Sus brókeres: ${plats.length ? plats.join(', ') : 'aún no ha metido ninguno'}.${comis.length ? ` Comisiones aproximadas: ${comis.join('; ')}.` : ''} Si no sabes la comisión de uno, dilo y no la inventes.`;
+  if (esPublico()) return `${INSTR_PUBLICAS}
+
+${fiscal}`;
   return `Eres GrowIA, el asesor de inversiones de GrowFolio, y hablas con el dueño de esta cartera. Tienes delante su cartera real con cifras al céntimo y herramientas que calculan con el mismo motor que GrowFolio.
 
 Cómo respondes:
@@ -18269,16 +18345,7 @@ Cómo respondes:
 - Toda recomendación lleva su coste fiscal: lo que paga al vender, la tasa al comprar, la retención de los dividendos que no recupera y si un traspaso entre fondos le ahorra pagar. Si dos opciones dan parecido, gana la que paga menos impuestos o los paga más tarde.
 - Si te manda un recorte de la pantalla, explica lo que se ve en él con sus datos: qué significa cada cifra, de dónde sale y qué haría él con eso.
 
-Fiscalidad en España en ${anio}:
-- Ventas: ganancia o pérdida = lo cobrado (menos comisiones) menos lo que costó (más comisiones y tasas), por FIFO. Tributa en la base del ahorro: ${textoTramos()}${TRAMOS_FORAL[comunidadUsuario()] ? ` (escala foral de ${nombreComunidad(comunidadUsuario())}, donde vive)` : ''}.
-- Las pérdidas se compensan con las ganancias del año; si sobran, con hasta el 25 % de dividendos e intereses; el resto, durante los 4 años siguientes.
-- Regla de recompra: si vende con pérdidas y recompra lo mismo en los dos meses anteriores o posteriores (acciones y ETF de bolsas de la UE) o en el año anterior o posterior (fondos de inversión, también con aportaciones automáticas, y acciones y ETF que cotizan fuera de la UE), se aplaza la parte de la pérdida que corresponde a lo recomprado. En cripto no se aplica, aunque hay quien defiende un plazo de un año.
-- Traspasos entre fondos de inversión: no tributan. Entre ETF sí.
-- Dividendos e intereses: tributan en la base del ahorro; los españoles llegan con el 19 % retenido. Los extranjeros traen la retención del país de la sede: EEUU 15 % (con el W-8BEN que hace el bróker), Países Bajos 15 %, Francia 12,8 %, Reino Unido 0 %; Suiza 35 %, Alemania 26,4 %, Italia 26 %, Dinamarca 27 %, Suecia 30 %, Finlandia 35 %, Bélgica 30 %, Austria 27,5 %, Irlanda 25 %, Noruega 25 %, Portugal 25 %. En la renta recupera con la deducción por doble imposición internacional hasta el tipo del convenio (casi siempre el 15 %): lo que pase se pierde salvo que lo reclame a ese país.
-- Fondos de acumulación${conFondos ? ' (mira en sus datos si los suyos lo son)' : ''}: no reparten, así que no pagan nada hasta que venda.
-- Tasas al comprar acciones: 0,2 % en España y 0,4 % en Francia (empresas de más de 1.000 millones de capitalización), 0,1 % en Italia y 0,5 % de timbre en Reino Unido. Fondos y ETF no la pagan.
-- Modelos 720 y 721: solo si lo que tiene en brókeres de fuera de España${fuera.length ? ` (${fuera.join(', ')})` : ''} o la cripto fuera de España pasan de 50.000 €.
-- Sus brókeres: ${plats.length ? plats.join(', ') : 'aún no ha metido ninguno'}.${comis.length ? ` Comisiones aproximadas: ${comis.join('; ')}.` : ''} Si no sabes la comisión de uno, dilo y no la inventes.`;
+${fiscal}`;
 }
 
 /* ---------- herramientas: el motor de la web al servicio de la IA ---------- */
