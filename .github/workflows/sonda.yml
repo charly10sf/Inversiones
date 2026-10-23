@@ -7,11 +7,23 @@ permissions:
 jobs:
   sonda:
     runs-on: ubuntu-latest
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          path: repo
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
+      - run: pip install -r repo/scripts/requirements.txt
+      - name: Datos de hoy
+        run: |
+          mkdir -p anterior salida
+          cd repo && git fetch --depth=1 origin datos && cd ..
+          for f in precios.json historico.json radar.json radar-hist.json informe.json escaneo.json noticias-cache.json traduccion-en.json; do git -C repo show origin/datos:$f > anterior/$f || true; done
+          cp anterior/radar.json anterior/precios.json salida/
       - run: python sonda.py 2> errores.txt || true
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
