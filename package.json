@@ -8,11 +8,14 @@
     "dev": "vite",
     "build": "vite build",
     "preview": "node tests/servidor.js dist 8766",
-    "test:solo": "playwright test"
+    "test:solo": "playwright test",
+    "rendimiento": "GF_RENDIMIENTO=1 playwright test tests/rendimiento.spec.js --project=movil --workers=1"
   },
   "devDependencies": {
     "@fontsource-variable/plus-jakarta-sans": "^5.2.6",
     "@playwright/test": "1.63.0",
+    "acorn": "^8.19.0",
+    "acorn-walk": "^8.3.5",
     "esbuild": "^0.28.2",
     "vite": "^8.3.5"
   }

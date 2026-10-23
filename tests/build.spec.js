@@ -11,7 +11,7 @@ test('VERSION está en un solo sitio y es la primera de NOVEDADES', () => {
   const v = readFileSync(join(RAIZ, 'src/js/version.js'), 'utf8').match(/const VERSION = '([^']+)'/)[1];
   const nov = readFileSync(join(RAIZ, 'src/js/39-versiones-y-novedades.js'), 'utf8');
   expect(nov.match(/const NOVEDADES = \[\n {2}\{ v: '([^']+)'/)[1]).toBe(v);
-  const todo = readdirSync(join(RAIZ, 'src/js')).map((f) => readFileSync(join(RAIZ, 'src/js', f), 'utf8')).join('');
+  const todo = readdirSync(join(RAIZ, 'src/js'), { recursive: true }).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(RAIZ, 'src/js', f), 'utf8')).join('');
   expect(todo.match(/const VERSION = /g)).toHaveLength(1);
   // el service worker publicado lleva la versión en el nombre de su caché
   expect(readFileSync(dist('sw.js'), 'utf8')).toContain(`var CACHE = 'gf-${v}-`);

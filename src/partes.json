@@ -86,5 +86,10 @@
   "60-bloqueo.js",
   "61-idiomas.js",
   "62-arranque.js"
- ]
+ ],
+ "trozos": {
+  "gta": [
+   "trozos/gta.js"
+  ]
+ }
 }

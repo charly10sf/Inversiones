@@ -1,6 +1,6 @@
 // Pruebas de humo: lo que tiene que funcionar siempre, en el móvil (390 y 360) y en el ordenador (1440).
 import { test as base, expect } from '@playwright/test';
-import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
+import { preparar, crearCuenta, meterCartera, quitarCapas, tocar } from './ayuda.js';
 
 const VISTAS = ['cartera', 'ruta', 'analisis', 'expertos', 'mercados'];
 
@@ -28,8 +28,7 @@ async function recorrerVistas(page, vp) {
     // y las pestañas de dentro (Expertos, Mercados, Análisis…)
     const n = await page.locator('.subvistas button:visible').count();
     for (let i = 0; i < Math.min(n, 6); i++) {
-      await quitarCapas(page);   // el aviso del código de recuperación sale solo al rato y taparía la pestaña
-      await page.locator('.subvistas button:visible').nth(i).click();
+      await tocar(page, `.subvistas button:visible >> nth=${i}`);   // por si sale un aviso encima al rato
       await page.waitForTimeout(250);
       await quitarCapas(page);
       expect(await ancho(page), `la vista ${v}, pestaña ${i + 1}, no se sale`).toBeLessThanOrEqual(vp.width + 1);
@@ -180,5 +179,23 @@ test.describe('la guía', () => {
       }
       if (i < pasos - 1) await page.evaluate(() => irPasoTour(1));
     }
+  });
+});
+
+// 0.6: lo que va en trozos se baja al usarlo (y funciona igual)
+test.describe('trozos', () => {
+  test.beforeEach(({}, info) => test.skip(info.project.name === 'movil-pequeno', 'en 390 y 1440'));
+
+  test('la hoja de GTA VI se baja al abrirla', async ({ pagina: page }) => {
+    await crearCuenta(page);
+    await quitarCapas(page);
+    await meterCartera(page);
+    test.skip(!(await page.evaluate(() => gtaActivo())), 'GTA VI ya ha salido');
+    expect(await page.evaluate(() => typeof htmlGTA)).toBe('undefined');
+    await tocar(page, '[data-gta]:visible');
+    await expect(page.locator('.gta-marco')).toBeVisible();
+    expect(await page.evaluate(() => typeof htmlGTA)).toBe('function');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('.gta-marco')).toHaveCount(0);
   });
 });

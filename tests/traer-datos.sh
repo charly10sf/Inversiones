@@ -4,7 +4,7 @@
 set -e
 cd "$(dirname "$0")/.."
 for rama in datos catalogo; do
-  git fetch -q --depth=1 origin "$rama:refs/remotes/origin/$rama"
+  git fetch -q --depth=1 origin "+$rama:refs/remotes/origin/$rama"
   rm -rf "tests/.datos/$rama" && mkdir -p "tests/.datos/$rama"
   git archive "origin/$rama" | tar -x -C "tests/.datos/$rama"
 done

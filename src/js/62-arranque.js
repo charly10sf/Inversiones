@@ -13,6 +13,8 @@ async function iniciar() {
   try {
     const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), escaneoDeCache(), cargarCatalogo()]).then(() => escaneoLuego())), cargarCifrada(), leerAnalisisRemoto()]);
     S.enc = enc; S.iaRemoto = iaRem || S.iaCuenta || null;
+    // 0.6: cuándo está todo lo de arrancar (lo mide la prueba de rendimiento)
+    try { performance.mark('gf-listo'); } catch (e) {}
   } catch (e) {
     console.error(e);
     quitarEntrada();

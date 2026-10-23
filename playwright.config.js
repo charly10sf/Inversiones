@@ -7,6 +7,8 @@ const puerto = 8766;
 export default defineConfig({
   testDir: 'tests',
   testMatch: /.*\.spec\.js$/,
+  // el rendimiento se mide aparte y solo (npm run rendimiento): con otras pruebas a la vez, la CPU no es la de un móvil
+  testIgnore: process.env.GF_RENDIMIENTO ? [] : [/rendimiento\.spec\.js$/],
   timeout: 90_000,
   expect: { timeout: 15_000 },
   fullyParallel: true,

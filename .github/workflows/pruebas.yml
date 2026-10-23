@@ -52,6 +52,9 @@ jobs:
       - name: Pruebas de la web (sobre el build)
         run: npx playwright test
 
+      - name: Presupuesto de rendimiento (solo, sin otras pruebas a la vez)
+        run: npm run rendimiento
+
       - name: Informe si algo falla
         if: failure()
         uses: actions/upload-artifact@v4

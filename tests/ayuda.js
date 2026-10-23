@@ -44,6 +44,8 @@ export async function preparar(context, { idioma = 'es', ajustes = {} } = {}) {
       if (location.protocol !== 'http:' || sessionStorage.getItem('__prep')) return;
       sessionStorage.setItem('__prep', '1');
       if (idioma === 'en') localStorage.setItem('inv-idioma', JSON.stringify('en'));
+      // el aviso a pantalla completa de GTA VI sale solo una vez y al rato (lo prueba su propia prueba)
+      localStorage.setItem('inv-gta', 'true');
       for (const [k, v] of Object.entries(ajustes)) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
     } catch (e) {}
   }, { idioma, ajustes });
@@ -66,8 +68,18 @@ export function vigilar(page, errores) {
 export async function quitarCapas(page) {
   await page.evaluate(() => {
     try { if (typeof cerrarTour === 'function') cerrarTour(); } catch (e) {}
+    // el código de recuperación sale solo al rato de crear la cartera: por hoy, visto (su prueba lo abre a mano)
+    try { S.kitRecien = null; LS.set('inv-kit-visto', hoyIso()); } catch (e) {}
     document.querySelectorAll('.tour, .hoja-fondo, .estreno, .intro, .nov-scroll, .ixn').forEach((x) => x.remove());
   });
+}
+
+/** Toca algo aunque al rato salga una hoja encima (avisos que aparecen solos): las quita y vuelve a probar */
+export async function tocar(page, selector) {
+  for (let i = 0; i < 6; i++) {
+    await quitarCapas(page);
+    try { await page.locator(selector).first().click({ timeout: 2500 }); return; } catch (e) { if (i === 5) throw e; }
+  }
 }
 
 /** Crea una cuenta de correo nueva y su cartera vacía; acaba en Inicio. */

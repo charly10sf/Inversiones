@@ -6,6 +6,9 @@ import { gzipSync } from 'node:zlib';
 import { extname, join, normalize, resolve } from 'node:path';
 
 const raiz = resolve(process.argv[2] || '.');
+// /__datos/<rama>/<archivo>: los datos de las ramas (tests/.datos) por este mismo servidor, comprimidos y con la red
+// limitada como el resto (la prueba de rendimiento los pide aquí en vez de a raw.githubusercontent.com)
+const datos = resolve(new URL('.', import.meta.url).pathname, '.datos');
 const puerto = +(process.argv[3] || 8765);
 const TIPOS = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
@@ -18,12 +21,13 @@ createServer(async (req, res) => {
   try {
     let ruta = decodeURIComponent(new URL(req.url, 'http://x').pathname);
     if (ruta.endsWith('/')) ruta += 'index.html';
-    const f = normalize(join(raiz, ruta));
-    if (!f.startsWith(raiz)) { res.writeHead(403).end(); return; }
+    const base = ruta.startsWith('/__datos/') ? datos : raiz;
+    const f = normalize(join(base, ruta.replace(/^\/__datos\//, '/')));
+    if (!f.startsWith(base)) { res.writeHead(403).end(); return; }
     const st = await stat(f).catch(() => null);
     if (!st || !st.isFile()) { res.writeHead(404, { 'Content-Type': 'text/plain' }).end('404'); return; }
     let cuerpo = await readFile(f);
-    const ext = extname(f), cab = { 'Content-Type': TIPOS[ext] || 'application/octet-stream', 'Cache-Control': 'no-cache', 'Last-Modified': st.mtime.toUTCString() };
+    const ext = extname(f), cab = { 'Content-Type': TIPOS[ext] || 'application/octet-stream', 'Cache-Control': 'no-cache', 'Last-Modified': st.mtime.toUTCString(), 'Access-Control-Allow-Origin': '*' };
     if (COMPRIME.has(ext) && /\bgzip\b/.test(req.headers['accept-encoding'] || '')) { cuerpo = gzipSync(cuerpo, { level: 9 }); cab['Content-Encoding'] = 'gzip'; }
     cab['Content-Length'] = cuerpo.length;
     res.writeHead(200, cab).end(req.method === 'HEAD' ? undefined : cuerpo);
