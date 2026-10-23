@@ -401,15 +401,21 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
     base = {"systemInstruction": {"parts": [{"text": INSTRUCCIONES}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
             "generationConfig": {"maxOutputTokens": 32768, "thinkingConfig": {"thinkingLevel": "high"}}}
     busqueda, web = True, []
+    intentos = []  # por qué no salió con el modelo principal (se guarda en informe.json para verlo sin los registros)
     try:
         try:
             n_err = len(ERRORES)
             resp = gemini({**base, "tools": [{"google_search": {}}]}, clave, reserva=False)
         except RuntimeError as e:
+            intentos += [f"con búsqueda: {x}" for x in ERRORES[n_err:]]
             del ERRORES[n_err:]  # sin búsqueda en el plan gratuito: es lo esperado, no un fallo
             print(f"informe: sin búsqueda de Google ({str(e)[:160]})")
             busqueda = False
-            resp = gemini(base, clave)
+            n_err = len(ERRORES)
+            try:
+                resp = gemini(base, clave)
+            finally:
+                intentos += ERRORES[n_err:]
         modelo_usado = USO[-1]["m"] if USO else MODELO
         texto_r, cand = texto_de(resp)
         for g in ((cand.get("groundingMetadata") or {}).get("groundingChunks") or []):
@@ -441,7 +447,8 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
     for v in inf.get("mercado") or []:
         if isinstance(v, dict):
             v["fuentes"] = fuentes_de(v.get("fuentes"))
-    inf.update({"generado": ahora(), "modelo": modelo_usado, "noticias_leidas": len(fuentes), "busqueda_google": busqueda, "web": web[:15]})
+    inf.update({"generado": ahora(), "modelo": modelo_usado, "noticias_leidas": len(fuentes), "busqueda_google": busqueda, "web": web[:15],
+                "intentos": [str(x)[:240] for x in intentos][-6:]})
     with open(destino, "w", encoding="utf-8") as f:
         json.dump(inf, f, ensure_ascii=False, separators=(",", ":"))
     marcar_inf(inf["generado"])
