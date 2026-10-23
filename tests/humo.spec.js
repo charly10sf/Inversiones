@@ -253,3 +253,18 @@ test.describe('trozos: el mapa', () => {
     await expect(page.locator('.mapa-w')).toHaveAttribute('data-modo', 'tuyo');
   });
 });
+
+test.describe('trozos: si no se pueden bajar', () => {
+  test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
+
+  test('avisa de la versión nueva y lo que venía detrás sigue', async ({ pagina: page, context }) => {
+    await crearCuenta(page);
+    await quitarCapas(page);
+    await meterCartera(page);
+    // como si el trozo de antes ya no estuviera publicado
+    await context.route(/\/assets\/gta-[0-9a-f]+\.js$/, (r) => r.fulfill({ status: 404, body: '' }));
+    const siguio = await page.evaluate(() => new Promise((ok) => { LS.del('inv-gta'); avisoGTA(() => ok(true)); setTimeout(() => ok(false), 8000); }));
+    expect(siguio, 'avisoGTA sigue con lo de después aunque no baje su trozo').toBe(true);
+    await expect(page.locator('#avisoWeb')).toBeVisible();
+  });
+});

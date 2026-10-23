@@ -1,15 +1,17 @@
-# Publica GrowFolio en GitHub Pages desde el build (0.6): npm run build → dist/ → Pages.
-# Para que valga, en GitHub: Settings → Pages → Build and deployment → Source: «GitHub Actions» (una vez).
-# Mientras siga en «Deploy from a branch», Pages publica la raíz de main tal cual y esta Action no hace nada útil.
+# Publica GrowFolio en GitHub Pages desde el build (0.6): npm run build → dist/ → Pages, solo cuando la Action «Pruebas»
+# ha pasado en ese commit de main (o a mano, desde Actions).
+#
+# ORDEN AL PASAR A ESTO (una vez): primero Settings → Pages → Build and deployment → Source: «GitHub Actions» y lanzar
+# esta Action a mano con main todavía en la 0.5x (publica la 0.5x tal cual, sin build: ver el paso «La web»); comprobar
+# que la web abre. Después, el merge de la 0.6 a main. Al revés, Pages publicaría la raíz de main, que desde la 0.6 es
+# solo la cáscara de index.html, y la web saldría en blanco.
 name: Pages
 
 on:
-  push:
+  workflow_run:
+    workflows: [Pruebas]
+    types: [completed]
     branches: [main]
-    paths-ignore:
-      - "README.md"
-      - "android/**"
-      - "worker/**"
   workflow_dispatch:
 
 permissions:
@@ -23,15 +25,43 @@ concurrency:
 
 jobs:
   build:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-          cache: npm
-      - run: npm ci
-      - run: npm run build
+
+      # con build (desde la 0.6): dist/; sin él (main aún en la 0.5x), la raíz tal cual, como la publicaba Pages
+      - name: La web
+        run: |
+          if [ -f package.json ] && grep -q '"build"' package.json; then
+            npm ci && npm run build
+          else
+            mkdir -p dist && cp -r $(ls -A | grep -v -E '^(\.git|\.github|dist|android|worker|scripts|tests)$') dist/
+          fi
+
+      # Los archivos con huella de lo publicado ahora (assets/ y en/) se quedan una versión más: una pestaña o la app de
+      # Android abiertas desde antes siguen pidiendo los trozos de su versión hasta que recargan
+      - name: Lo de la versión anterior
+        env:
+          BASE: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}/
+        run: |
+          html=$(curl -fsSL "${BASE}index.html") || { echo "sin web publicada"; exit 0; }
+          lista="$(echo "$html" | grep -oE 'assets/[A-Za-z0-9._-]+' || true)"
+          lista="$lista $(curl -fsSL "${BASE}sw.js" 2>/dev/null | grep -oE '(assets|en)/[A-Za-z0-9._-]+' || true)"
+          # el núcleo de antes dice dónde están sus trozos y su inglés
+          app=$(echo "$html" | grep -oE 'assets/app-[a-f0-9]+\.js' | head -1 || true)
+          [ -n "$app" ] && lista="$lista $(curl -fsSL "${BASE}$app" | grep -oE '(assets|en)/[A-Za-z0-9_-]+\.(js|json)' || true)"
+          for f in $(echo $lista | tr ' ' '\n' | sort -u); do
+            [ -f "dist/$f" ] && continue
+            mkdir -p "dist/$(dirname "$f")"
+            if curl -fsSL "${BASE}$f" -o "dist/$f"; then echo "se queda $f"; else rm -f "dist/$f"; fi
+          done
+
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

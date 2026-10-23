@@ -185,4 +185,5 @@ document.addEventListener('pointermove', (e) => {
   const x = Math.min(e.clientX + 14, innerWidth - tip.offsetWidth - 8), y = e.clientY + tip.offsetHeight + 24 > innerHeight ? e.clientY - tip.offsetHeight - 12 : e.clientY + 16;
   tip.style.left = `${x}px`; tip.style.top = `${y}px`;
 });
-
+// al hacer scroll, la etiqueta del rectángulo tocado se esconde (antes iba con el mapa del mundo, que ahora es un trozo)
+addEventListener('scroll', () => { const t = $('#mcTip'); if (t) t.hidden = true; }, { passive: true });

@@ -123,7 +123,7 @@ async function cargarIdioma() {
   try {
     // 0.6: el build parte el diccionario (EN.nucleo, y el de cada trozo con él); sin build, en.json entero
     const r = await fetch(EN.nucleo === 'en.json' ? 'en.json?v=' + VERSION : EN.nucleo);
-    if (r.ok) { const j = await r.json(); I18N.dic = j.t || null; I18N.pre = Object.entries(j.p || {}).sort((x, y) => y[0].length - x[0].length); I18N.re = (j.r || []).map(([p, en, c]) => [new RegExp(p), en, c]); }
+    if (r.ok) { const j = await r.json(); I18N.dic = j.t || null; if (I18N.dic && I18N.pend) { for (const t of I18N.pend) Object.assign(I18N.dic, t); I18N.pend = null; } I18N.pre = Object.entries(j.p || {}).sort((x, y) => y[0].length - x[0].length); I18N.re = (j.r || []).map(([p, en, c]) => [new RegExp(p), en, c]); }
   } catch (e) { console.warn('Sin diccionario de inglés', e); }
   clearTimeout(ver);
   if (I18N.dic) {

@@ -527,7 +527,7 @@ document.addEventListener('pointermove', (e) => {
 });
 const quitarTips = () => { for (const t of $$('.mapa-tip')) t.hidden = true; };
 document.addEventListener('mouseleave', quitarTips);
-addEventListener('scroll', () => { quitarTips(); const t = $('#mcTip'); if (t) t.hidden = true; }, { passive: true });
+addEventListener('scroll', quitarTips, { passive: true });   // la etiqueta del mapa de la cartera se esconde en el núcleo (17)
 // los nombres dependen del ancho: al girar el móvil o cambiar la ventana, se vuelven a colocar
 let mapaResize = 0;
 addEventListener('resize', () => { clearTimeout(mapaResize); mapaResize = setTimeout(() => { if ($('#mapaMundo svg')) pintarEtiquetasMapa(); if ($('.mc-caja')) repintarMc(); }, 220); });

@@ -14,6 +14,8 @@ import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { transform } from 'esbuild';
 import { analizar, entradas } from './analizar.js';
+import { parse } from 'acorn';
+import { simple } from 'acorn-walk';
 
 const RAIZ = join(dirname(new URL(import.meta.url).pathname), '..');
 // lo que se sirve tal cual desde la raíz del repositorio
@@ -45,6 +47,12 @@ export function relevos(p = partes()) {
     for (const q of quietas) if (!r.entradas.some((e) => e.nombre === q)) malos.push(`${n}: siNoEsta dice ${q}, que no es una entrada del trozo`);
     out[n] = r.entradas.map((e) => ({ f: e.nombre, quieta: quietas.has(e.nombre) })).sort((a, b) => a.f.localeCompare(b.f));
   }
+  // un nombre declarado arriba en dos sitios sería un error de sintaxis al bajar el trozo (o pisaría el cargador)
+  const visto = new Map([['TROZOS', 'el cargador'], ['EN', 'el cargador'], ['trozosEnCamino', 'el cargador'], ['cargarTrozo', 'el cargador'], ['enTrozo', 'el cargador'], ['trozoFallido', 'el cargador']]);
+  for (const a of todos) for (const [nombre, tipo] of A.info[a].decl) {
+    if (visto.has(nombre) && !(tipo === 'function' && visto.get(nombre).endsWith('function'))) malos.push(`${nombre} está declarado en ${a} y en ${visto.get(nombre)}`);
+    visto.set(nombre, `${a} (${tipo === 'function' ? 'function' : tipo})`);
+  }
   if (malos.length) throw new Error('Esto de un trozo se usa desde fuera de una forma que no puede esperar a bajarlo; tiene que ir en el núcleo:\n  ' + malos.join('\n  '));
   return out;
 }
@@ -61,12 +69,22 @@ function cargador(urls, rel, en) {
     `    const s = document.createElement('script'); s.src = TROZOS[n];`,
     `    s.onload = () => ok(); s.onerror = () => { s.remove(); no(new Error('Sin conexión: no se ha podido bajar ' + n)); };`,
     `    document.head.appendChild(s);`,
-    `  }), IDIOMA === 'en' && EN.trozos[n] ? fetch(EN.trozos[n]).then((r) => (r.ok ? r.json() : null)).then((j) => { if (j && j.t && I18N.dic) Object.assign(I18N.dic, j.t); }).catch(() => {}) : null])`,
+    `  }), IDIOMA === 'en' && EN.trozos[n] ? fetch(EN.trozos[n]).then((r) => (r.ok ? r.json() : null)).then((j) => { if (j && j.t) enTrozo(j.t); }).catch(() => {}) : null])`,
     `    .catch((e) => { delete trozosEnCamino[n]; throw e; }));`,
     `}`,
-    `function trozoFallido(e) { console.warn(e); try { toast(L('Sin conexión: no se ha podido abrir. Prueba otra vez en un momento.', "No connection: it couldn't be opened. Try again in a moment."), 6000); } catch (x) {} }`];
+    `// el inglés de un trozo: al diccionario si ya está; si no (red lenta), cuando llegue (cargarIdioma lo junta)`,
+    `function enTrozo(t) { if (I18N.dic) Object.assign(I18N.dic, t); else (I18N.pend || (I18N.pend = [])).push(t); }`,
+    `// no se ha podido bajar: con conexión, lo normal es que GrowFolio se haya actualizado y el trozo de antes ya no esté`,
+    `// (se avisa para recargar); sin ella, se dice. Y lo que venía detrás (el último argumento, si es una función) sigue`,
+    `function trozoFallido(e, a) {`,
+    `  console.warn(e);`,
+    `  try { if (navigator.onLine !== false && typeof avisoWebNueva === 'function') avisoWebNueva(); else toast(L('Sin conexión: no se ha podido abrir. Prueba otra vez en un momento.', "No connection: it couldn't be opened. Try again in a moment."), 6000); } catch (x) {}`,
+    `  const sigue = a && a[a.length - 1];`,
+    `  if (typeof sigue === 'function') try { sigue(); } catch (x) { console.warn(x); }`,
+    `}`];
+  // si el trozo se baja, la función de verdad se llama fuera del catch: sus errores salen como cualquier otro
   for (const [n, fs] of Object.entries(rel)) for (const { f, quieta } of fs) {
-    r.push(`function ${f}(...a) { ${quieta ? `if (!trozosEnCamino[${JSON.stringify(n)}]) return; ` : ''}const yo = ${f}; return cargarTrozo(${JSON.stringify(n)}).then(() => { if (${f} === yo) throw new Error('El trozo ${n} no trae ${f}'); return ${f}(...a); }).catch(trozoFallido); }`);
+    r.push(`function ${f}(...a) { ${quieta ? `if (!trozosEnCamino[${JSON.stringify(n)}]) return; ` : ''}const yo = ${f}; return cargarTrozo(${JSON.stringify(n)}).then(() => true, (e) => { trozoFallido(e, a); return false; }).then((ok) => { if (!ok) return; if (${f} === yo) throw new Error('El trozo ${n} no trae ${f}'); return ${f}(...a); }); }`);
   }
   return r.join('\n') + '\n';
 }
@@ -94,17 +112,29 @@ export function juntarJS(urls, p = partes(), en = { nucleo: 'en.json', trozos: {
   return p.js.map((a) => leerParte(a) + (a === 'version.js' ? cargador(u, rel, en) : '')).join('');
 }
 
-/* en.json partido: cada entrada va con el trozo en cuyo código sale (su trozo más largo sin cifras, con o sin comillas
-   escapadas); lo que sale en el núcleo o en ninguna parte (lo que viene de los datos), en el del núcleo. */
+/* en.json partido. Una entrada va al trozo solo si es, entera, uno de los textos de su código (una cadena, o un trozo de
+   una plantilla entre etiquetas, con las cifras y los ${…} como «#») y no sale en el núcleo ni entera ni a trozos; todo lo
+   demás (lo del núcleo, lo que se monta al vuelo, lo que viene de los datos) va en el del núcleo. Ante la duda, núcleo:
+   ahí siempre se traduce. */
+function textosDe(codigo) {
+  const out = new Set(), poner = (t) => { for (const x of String(t).split(/<[^>]*>/)) { const y = x.replace(/[-+−]?\d+(?:[.,]\d+)*/g, '#').replace(/\s+/g, ' ').trim(); if (y) out.add(y); } };
+  const ast = parse(codigo, { ecmaVersion: 'latest', sourceType: 'script' });
+  simple(ast, {
+    Literal(n) { if (typeof n.value === 'string') poner(n.value); },
+    TemplateLiteral(n) { poner(n.quasis.map((q) => q.value.cooked ?? q.value.raw).join('#')); },
+  });
+  return out;
+}
 export function partirIngles(p = partes()) {
   const en = JSON.parse(readFileSync(join(RAIZ, 'en.json'), 'utf8'));
-  const nucleo = juntarJS(null, p), trozos = Object.fromEntries(Object.keys(p.trozos || {}).map((n) => [n, juntarTrozo(n, p)]));
+  const nucleo = juntarJS(null, p), enNucleo = textosDe(nucleo);
+  const trozos = Object.fromEntries(Object.keys(p.trozos || {}).map((n) => [n, textosDe(juntarTrozo(n, p))]));
   const frag = (k) => k.split('#').map((x) => x.trim()).filter((x) => x.length > 3).sort((a, b) => b.length - a.length)[0] || k;
-  const esta = (txt, k) => { const f = frag(k); return txt.includes(f) || txt.includes(f.replace(/'/g, "\\'")); };
+  const enElNucleo = (k) => enNucleo.has(k) || nucleo.includes(frag(k)) || nucleo.includes(frag(k).replace(/'/g, "\\'"));
   const out = { nucleo: { ...en, t: {} } };
   for (const [k, v] of Object.entries(en.t || {})) {
     let d = 'nucleo';
-    if (!esta(nucleo, k)) { const t = Object.keys(trozos).filter((n) => esta(trozos[n], k)); if (t.length === 1) d = t[0]; }
+    if (!enElNucleo(k)) { const t = Object.keys(trozos).filter((n) => trozos[n].has(k)); if (t.length === 1) d = t[0]; }
     (out[d] || (out[d] = { t: {} })).t[k] = v;
   }
   return out;
@@ -181,11 +211,12 @@ export default function growfolio() {
         if (!existsSync(de)) continue;
         cpSync(de, join(dist, p), { recursive: true });
       }
-      const assets = [...readdirSync(join(dist, 'assets')).map((a) => `assets/${a}`), ...(existsSync(join(dist, 'en')) ? readdirSync(join(dist, 'en')).map((a) => `en/${a}`) : [])];
-      const todo = assets.map((a) => readFileSync(join(dist, a), 'utf8')).join('') + readFileSync(join(dist, 'index.html'), 'utf8');
+      const assets = readdirSync(join(dist, 'assets')).map((a) => `assets/${a}`);
+      const ingles = existsSync(join(dist, 'en')) ? readdirSync(join(dist, 'en')).map((a) => `en/${a}`) : [];
+      const todo = [...assets, ...ingles].map((a) => readFileSync(join(dist, a), 'utf8')).join('') + readFileSync(join(dist, 'index.html'), 'utf8');
       let sw = readFileSync(join(RAIZ, 'sw.js'), 'utf8');
-      // la caché, con la versión y la huella de todo; los trozos van también en CORE: se guardan al instalar (después de
-      // abrir), así funcionan sin conexión aunque no se hayan usado nunca
+      // la caché, con la versión y la huella de todo; los trozos de código van también en CORE: se guardan al instalar (después
+      // de abrir), así funcionan sin conexión aunque no se hayan usado nunca. El inglés (en/) no: se guarda al pedirlo
       sw = sw.replace(/var CACHE = '[^']*';/, `var CACHE = 'gf-${version()}-${huella(todo)}';`)
         .replace(/var CORE = \[([^\]]*)\];/, (m, lista) => `var CORE = [${lista}, ${assets.map((a) => `'${a}'`).join(', ')}];`);
       writeFileSync(join(dist, 'sw.js'), sw);

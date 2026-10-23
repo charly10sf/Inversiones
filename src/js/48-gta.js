@@ -121,6 +121,11 @@ function avisoGTA(seguir) {
   if (!gtaActivo() || LS.get('inv-gta', null) || !S.cartera) return seguir && seguir();
   avisoGTAPantalla(seguir);
 }
-document.addEventListener('click', (e) => { if (e.target.closest('[data-gta]')) abrirGTA(); });
+// en el iPhone el sonido solo arranca dentro del toque: el contexto de audio se crea aquí, antes de bajar la hoja (0.6)
+function sonidoEnElToque() {
+  if (!LS.get('inv-gta-son', true) || window.__gfAudio) return;
+  try { const AC = window.AudioContext || window.webkitAudioContext; if (AC) { window.__gfAudio = new AC(); window.__gfAudio.resume(); } } catch (e) { /* sin sonido */ }
+}
+document.addEventListener('click', (e) => { if (e.target.closest('[data-gta]')) { sonidoEnElToque(); abrirGTA(); } });
 
 /* al entrar: tour la primera vez, novedades si hay versión nueva y, después, el aviso de la app */

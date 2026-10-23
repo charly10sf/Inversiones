@@ -244,7 +244,7 @@ function sonidoGTA() {
   const AC = window.AudioContext || window.webkitAudioContext;
   if (!AC) return null;
   if (MUSICA.ctx) return MUSICA.ctx;
-  const ctx = new AC();
+  const ctx = window.__gfAudio || new AC();   // el del toque (48-gta.js), si lo hay
   const gan = (v = 1) => { const x = ctx.createGain(); x.gain.value = v; return x; };
   const lado = (v) => { if (!ctx.createStereoPanner) return gan(); const p = ctx.createStereoPanner(); p.pan.value = v; return p; };
   // mezcla → filtro general (se abre en la intro) → compresor que lo pega todo → volumen con fundido

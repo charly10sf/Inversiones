@@ -46,7 +46,7 @@ El código ya no está en un solo `index.html`: está partido por secciones en `
 - **Trozos** (`src/partes.json`, `trozos`; código en `src/js/trozos/`): lo que no hace falta para abrir Inicio (el mapa del mundo, GrowIA, GTA VI, las novedades, el banco, las opiniones, leer capturas) se baja la primera vez que se usa. El build pone en el núcleo una función de relevo por cada una que se usa desde fuera; si algo de un trozo se usa de una forma que no puede esperar a bajarlo, el build se para y dice qué. `node build/analizar.js` enseña las entradas de cada trozo y `node build/mover.js` pasa declaraciones de un archivo a otro.
 - **La versión** está en `src/js/version.js` y tiene que ser la primera de `NOVEDADES` (en `src/js/39-versiones-y-novedades.js`).
 - **Pruebas**: `sh tests/traer-datos.sh` (los datos de verdad de las ramas `datos` y `catalogo`), `npx playwright install chromium` y `npm test` (build y Playwright en 390, 360 y 1440, con Firebase de imitación y sin salir a internet). `npm run rendimiento` mide lo que baja y lo que tarda al abrir, con un móvil medio y 4G. Las de los scripts: `python -m unittest discover -s tests/scripts`. Todo esto lo pasa la Action «Pruebas» en cada push.
-- **Publicar**: la Action «Pages» hace el build y lo publica (hace falta Settings → Pages → Source: GitHub Actions).
+- **Publicar**: la Action «Pages» hace el build y lo publica cuando «Pruebas» pasa en main (hace falta Settings → Pages → Source: GitHub Actions). Se queda también lo de la versión anterior (assets/ y en/), para quien la tenga abierta. **El día que se pase a esto, primero el cambio en Settings y una publicación a mano con main aún en la 0.5x; después el merge.** Al revés, la web saldría en blanco.
 
 ## La IA: Gemini, gratis
 
@@ -109,7 +109,7 @@ Cada persona necesita su propia copia: los datos van cifrados con su contraseña
 
 1. Crea una cuenta en GitHub y haz un *fork* de este repositorio (deja marcado "Copy the main branch only").
 2. (Desde la 0.5 el repositorio ya no lleva ninguna cartera: cada una va en su cuenta.)
-3. *Settings → Pages*: publica desde la rama `main`, carpeta raíz.
+3. *Settings → Pages*: Source «GitHub Actions» (la Action «Pages» hace el build y lo publica cuando pasan las pruebas). Desde la 0.6, publicar la raíz de `main` tal cual ya no vale: `index.html` es solo la cáscara.
 4. Pestaña *Actions*: pulsa el botón para activar los workflows (en los forks vienen apagados).
 5. Opcional, para que Gemini lea la prensa aunque no abras la web: crea tu clave gratis en aistudio.google.com/apikey y guárdala en *Settings → Secrets and variables → Actions* como `GEMINI_API_KEY`.
 6. Crea un token en *Settings → Developer settings → Fine-grained tokens*, solo para tu repositorio, con permiso de lectura y escritura en *Contents*.
