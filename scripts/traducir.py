@@ -157,11 +157,18 @@ def main(ruta_inst, dir_anterior, dir_salida):
         for sim, x in sorted(lect.items(), key=lambda kv: str((kv[1] or {}).get("d") or ""), reverse=True):
             textos(x, hace_falta, 1 if sim in destacadas else 3)
         pre = leer(f"{dir_salida}/precios.json") or {}
-        for lista in (pre.get("noticias") or {}).values():
-            for n in lista or []:
-                s = str((n or {}).get("t") or "").strip()
-                if es_espanol(s) and s not in hace_falta:
-                    hace_falta[s] = 2
+        for clave_n, lista in (pre.get("noticias") or {}).items():
+            # 0.5b: noticias["_region"] no es una lista sino {comunidad: [noticias]} (desde la 0.2.2). Antes se recorría
+            # como lista, fallaba toda la traducción y lo de GrowIA no salía nunca en inglés
+            if isinstance(lista, dict):
+                trozos, prio = [x for x in lista.values() if isinstance(x, list)], 3
+            else:
+                trozos, prio = [lista if isinstance(lista, list) else []], 2
+            for trozo in trozos:
+                for n in trozo:
+                    s = str((n.get("t") if isinstance(n, dict) else "") or "").strip()
+                    if es_espanol(s) and s not in hace_falta:
+                        hace_falta[s] = prio
 
         reciente = (dt.date.today() - dt.timedelta(days=DIAS_FALLO)).isoformat()
         falta = [s for s, p in sorted(hace_falta.items(), key=lambda kv: (clave(kv[0]) in dudoso, kv[1]))

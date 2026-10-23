@@ -7,6 +7,14 @@
    "t": "Asia, del este, e Israel en el mapa",
    "commits": [
     {
+     "cuando": "2026-10-23 07:28",
+     "asunto": "Traducción al inglés: no se paraba con las noticias de cada comunidad",
+     "detalle": [
+      "scripts/traducir.py: noticias[\"_region\"] es {comunidad: [noticias]} y se recorría como una lista; el error tumbaba toda la traducción y lo de GrowIA no salía nunca en inglés. Ahora entra con prioridad baja",
+      "tests/scripts/test_traducir.py: pruebas con Gemini de imitación y con los datos de verdad de la rama datos"
+     ]
+    },
+    {
      "cuando": "2026-10-23 04:33",
      "asunto": "0.5a: Asia, del este, e Israel en el mapa",
      "detalle": [

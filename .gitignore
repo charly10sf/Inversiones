@@ -4,3 +4,8 @@ __pycache__/
 anterior.json
 salida/
 anterior/
+node_modules/
+tests/.datos/
+test-results/
+playwright-report/
+dist/
