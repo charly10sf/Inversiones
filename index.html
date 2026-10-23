@@ -295,6 +295,22 @@ svg.ic-ia path { stroke: none !important; }
 .banco-vuelta h1 { margin: 6px 0 0; font-size: 28px; letter-spacing: -0.03em; }
 .banco-vuelta p { margin: 0; max-width: 340px; color: var(--text-2); line-height: 1.5; }
 .banco-vuelta .btn { min-height: 50px; padding: 0 28px; display: inline-flex; align-items: center; text-decoration: none; }
+.tp-llega { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; margin: 0 0 22px; padding: 16px 18px; border-radius: 16px; background: color-mix(in srgb, var(--accent) 7%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 26%, transparent); }
+.tp-llega h2 { margin: 2px 0 6px; font-size: 17px; }
+.tp-llega p { margin: 0 0 8px; max-width: 68ch; }
+.tp-llega p:last-child { margin-bottom: 0; }
+.tp-llega .re-ico { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
+.tp-llega .re-ico svg { width: 18px; height: 18px; }
+.tp-dos { align-items: start; }
+.priv { display: grid; gap: 12px; }
+.priv p { margin: 0; }
+.priv-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: end; }
+.priv-add .campo { margin: 0; }
+.priv-sug { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.priv-l { list-style: none; margin: 0; padding: 0; border: 1px solid var(--line); border-radius: 14px; }
+.priv-l li { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 8px 8px 14px; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.priv-l li:first-child { border-top: 0; }
+.priv-l li.vacio { padding: 14px; color: var(--muted); }
 .ruta-espera { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--accent) 8%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent); }
 .ruta-espera .re-ico { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 9px; background: color-mix(in srgb, var(--accent) 16%, transparent); color: var(--accent); }
 .ruta-espera .re-ico svg { width: 17px; height: 17px; }
@@ -5859,7 +5875,8 @@ const VISTAS_APARTE = [];
    centro y más grande: a la izquierda lo que haces (Pasos, Análisis) y a la derecha lo de fuera (Expertos, Mercados) */
 const GRUPOS = [
   { k: 'cartera', t: 'Inicio', en: 'Home', vistas: ['cartera', 'agenda'] },
-  { k: 'ruta', t: 'Paso a paso', c: 'Pasos', en: 'Steps', vistas: ['ruta'] },
+  // en el modo público (0.5) su sitio es «Tu plan», que llega completo en la 0.9
+  { k: 'ruta', get t() { return esPublico() ? 'Tu plan' : 'Paso a paso'; }, get c() { return esPublico() ? 'Plan' : 'Pasos'; }, get en() { return esPublico() ? 'Plan' : 'Steps'; }, vistas: ['ruta'] },
   { k: 'analisis', t: 'Análisis', en: 'Analysis', vistas: ['analisis', 'futuro', 'fiscal'] },
   { k: 'expertos', t: 'Expertos', en: 'Experts', vistas: ['expertos'] },
   { k: 'mercados', t: 'Mercados', en: 'Markets', vistas: ['mercados'] },
@@ -8955,6 +8972,8 @@ function pasosParecidos(a, b) {
   return !!empresa && temas.some((ts) => ts.some((t) => A.has(t)) && ts.some((t) => B.has(t)));
 }
 function pasosRuta(M) {
+  // 0.5: en el modo público no hay Paso a paso (ni nada sacado de él: lo que toca en Inicio, el widget, el resumen del día)
+  if (esPublico()) return { mes: [], seis: [], anio: [], largo: [] };
   // un segundo vale: si cambias algo del paso a paso se vuelve a pintar con un cálculo nuevo
   const c = cacheDe(M, '__ruta'), x = c.get('r');
   if (x && performance.now() - x.t < 1000) return x.v;
@@ -9234,6 +9253,7 @@ function htmlRuta(M) {
 /* Cómo vas (en Análisis, encima de tus objetivos): lo urgente que queda del Paso a paso, lo del mes y tus objetivos.
    Si no hay nada que hacer, se dice: esperar también vale */
 function htmlComoVas(M) {
+  if (esPublico()) return '';
   let P; try { P = pasosRuta(M); } catch (e) { return ''; }
   const C = comparaObjetivos(M), tareasMes = P.mes.filter((x) => claseRuta(x) === 'tarea' && !x.auto);
   const urg = tareasMes.filter((x) => x.urgente && !x.hecho).length, pend = tareasMes.filter((x) => !x.hecho).length;
@@ -9244,7 +9264,26 @@ function htmlComoVas(M) {
     : L('Vas bien. Este mes no hace falta tocar nada: tus aportaciones siguen trabajando. Esperar también es una decisión, y a menudo la mejor.', 'On track. Nothing to touch this month: your contributions keep working. Waiting is a decision too, and often the best one.');
   return `<div class="ruta-estado ${est}"><span class="re-ic">${est === 'bien' ? ICONOS.ok : ICONOS.alerta}</span><div><b>${est === 'bien' ? L('Vas bien', 'On track') : L('Ojo', 'Heads up')}</b><p>${esc(frase)}</p>${urg || pend ? `<a class="re-obj ${urg ? 'fuera' : ''}" href="#ruta">${L('Ir al Paso a paso', 'Go to Steps')}</a>` : ''}</div></div>`;
 }
+/* 0.5, modo público: en el sitio del Paso a paso, «Tu plan». Completo llega en la 0.9 (tus reglas escritas por ti y lo
+   que suponen este mes); mientras, lo que ya sirve: tus aportaciones y tus límites, sin decirte qué comprar o vender */
+function vistaTuPlan(M) {
+  const ap = aportacionesActivas(), total = sum(ap, ({ a }) => +a.importe || 0);
+  const nombreI = (id) => esc((S.inst[id] && (S.inst[id].corto || S.inst[id].nombre)) || id);
+  return `<div class="vista-cab"><h1>${L('Tu plan', 'Your plan')}</h1><p>${L('Tus reglas para invertir y lo que suponen cada mes.', 'Your investing rules and what they mean each month.')}</p></div>
+    <section class="tp-llega" aria-labelledby="hTpLlega"><span class="re-ico" aria-hidden="true">${ICONOS.ruta}</span><div>
+      <h2 id="hTpLlega">${L('Llega en la 0.9', 'Coming in 0.9')}</h2>
+      <p>${L('Escribes tus reglas (cuánto aportar cada mes, cada cuánto repartir, cuánto como máximo en cada cosa) y GrowFolio te dice lo que suponen este mes y lo que pagarías a Hacienda. Las reglas las pones tú: GrowFolio no te dice qué comprar ni qué vender.', 'You write your rules (how much to put in each month, how often to rebalance, the most you want in each thing) and GrowFolio tells you what they mean this month and what you would pay in tax. You set the rules: GrowFolio does not tell you what to buy or sell.')}</p>
+      <p class="k">${L('Mientras tanto, aquí tienes lo que ya funciona: tus aportaciones y tus límites.', 'Meanwhile, here is what already works: your contributions and your limits.')}</p></div></section>
+    <div class="dos tp-dos"><section aria-labelledby="hTpAp">
+      <div class="sec-cab"><h2 id="hTpAp">${L('Tus aportaciones', 'Your contributions')}</h2><div class="der"><a class="btn peq" href="#plan">${L('Ver y cambiar', 'See and change')}</a></div></div>
+      ${ap.length ? `<p class="plan-sub">${L(`${eur(total, 0)} al mes, ${eur(total * 12, 0)} al año`, `${eur(total, 0)} a month, ${eur(total * 12, 0)} a year`)}</p>
+      <ul class="plan-l">${ap.map(({ a }) => { const i = S.inst[a.instrumento] || { corto: a.instrumento }; return `<li>${logo(i.dominio, i.corto || i.nombre || '?')}<div class="pl-t"><b>${nombreI(a.instrumento)}</b><small>${[esc(a.plataforma || ''), L(`el día ${esc(a.dia)}`, `on day ${esc(a.dia)}`)].filter(Boolean).join(' · ')}</small></div><div class="pl-n"><b>${eur(+a.importe, 0)}</b><small>${L('al mes', 'a month')}</small></div></li>`; }).join('')}</ul>`
+        : `<div class="vacio">${L('No tienes aportaciones periódicas. Si tienes alguna programada en tu bróker, añádela en Inicio, Plan y movimientos, y GrowFolio la irá sumando sola.', 'You have no regular contributions. If you have one scheduled at your broker, add it in Home, Plan and activity, and GrowFolio will add it up by itself.')}</div>`}
+    </section>
+    <div>${htmlObjetivosVs(M)}<p class="nota">${L('Tus límites, tu perfil y tus metas se cambian en', 'Your limits, profile and goals are changed in')} <a href="#objetivos">${L('Análisis, Tus objetivos', 'Analysis, Your goals')}</a>.</p></div></div>`;
+}
 function vistaRuta(M) {
+  if (esPublico()) return vistaTuPlan(M);
   return `<div class="vista-cab"><h1>Paso a paso</h1><p>Qué te toca hacer y cuándo: lo urgente primero, con el porqué, el cómo y lo que pagas a Hacienda.</p></div>${htmlRuta(M)}`;
 }
 /* Los pasos de la IA cambian de texto cada vez que revisa la cartera («Pon un stop en Repsol» un día, «Protege
@@ -15532,6 +15571,124 @@ async function leerOpiniones(n = 200) {
     return null;
   }
 }
+/* =====================================================================
+   0.5: modo privado y modo público
+   Privado (acceso completo): el dueño (los correos de BANCO_EMAILS) y los correos que él apunta en privados/{correo}
+   desde Ajustes. Ahí sale todo, también el Paso a paso y GrowIA cuando dice qué comprar o vender.
+   Público: el resto de GrowFolio, sin recomendaciones personalizadas sobre valores concretos (eso es asesoramiento y
+   necesita autorización de la CNMV). En el sitio del Paso a paso sale «Tu plan», que llega completo en la 0.9.
+   Se comprueba al entrar. El último modo se guarda en el dispositivo para no parpadear y para cuando no hay red; sin
+   nada guardado, quien ya usaba GrowFolio antes de la 0.5 empieza en privado (lo era) y quien llega nuevo, en público.
+   ===================================================================== */
+const VENIA_DE_ANTES = (() => { try { return /^0\.[0-4](\D|$)/.test(String(LS.get('inv-version', '') || '')); } catch (e) { return false; } })();
+function accesoInicial() {
+  if (CFG.dev) return /[?&]publico\b/.test(location.search) ? 'publico' : 'privado';
+  if (!PERFIL_CUENTA) return 'privado';
+  const a = LS.get('inv-acceso');
+  if (a && (a.a === 'privado' || a.a === 'publico') && (!a.uid || !FB.user || a.uid === FB.user.uid)) return a.a;
+  const ini = VENIA_DE_ANTES ? 'privado' : 'publico';
+  LS.set('inv-acceso', { a: ini, uid: null, t: Date.now(), provisional: true });
+  return ini;
+}
+function esPublico() {
+  if (S.verPublico) return true;
+  if (!S.acceso) S.acceso = accesoInicial();
+  return S.acceso === 'publico';
+}
+S.verPublico = !!LS.get('inv-ver-publico', false);
+const errPermiso = (e) => /permission/i.test(String((e && e.code) || e));
+// con correo y contraseña, el correo hay que confirmarlo (las reglas solo dan el acceso completo con el correo confirmado)
+const correoSinConfirmar = () => !!(FB.user && !FB.user.emailVerified && (FB.user.providerData || []).some((x) => x.providerId === 'password'));
+async function comprobarAcceso() {
+  if (!PERFIL_CUENTA || CFG.dev) return;
+  try {
+    await fbCargar(); const u = FB.user; if (!u) return;
+    // si lo acaba de confirmar, la sesión aún no lo sabe: se refresca (solo con correo y contraseña sin confirmar)
+    if (correoSinConfirmar()) { try { await conTiempo(u.reload(), 8000); if (u.emailVerified) await conTiempo(u.getIdToken(true), 8000); } catch (e) {} }
+    const f = FB.fs, correo = String(u.email || '').trim().toLowerCase();
+    let a = 'publico';
+    if (correo) {
+      try { const d = await conTiempo(f.getDoc(f.doc(FB.db, 'privados', correo)), 10000); if (d.exists()) a = 'privado'; }
+      catch (e) { if (!errPermiso(e)) return; }
+    }
+    // el dueño: puede leer todas las opiniones (las reglas de siempre); no hace falta que esté en la lista
+    if (a === 'publico') {
+      try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); a = 'privado'; S.esDueno = true; S.noDueno = false; }
+      catch (e) { if (!errPermiso(e)) return; S.noDueno = true; }
+    }
+    if (!S.esDueno) S.verPublico = false;
+    fijarAcceso(a, u.uid);
+  } catch (e) { console.warn('No se ha podido comprobar el acceso', e); }
+}
+/* En Ajustes: el dueño, la lista del acceso completo; quien entró con correo y contraseña sin confirmarlo, el botón
+   para confirmarlo */
+async function filaAcceso(h) {
+  const w = $('#aAcceso', h.el); if (!w || !PERFIL_CUENTA) return;
+  if (S.esDueno) {
+    w.innerHTML = `<button class="aj-fila" id="aPriv">${ICONOS.candado}<span><b>${L('Acceso completo', 'Full access')}</b><small>${L('Quién ve el Paso a paso y las recomendaciones de GrowIA. Solo lo ves tú.', 'Who sees Steps and GrowIA recommendations. Only you see this.')}${S.verPublico ? ' ' + L('Ahora lo estás viendo como público.', 'You are now viewing it as public.') : ''}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+    $('#aPriv', h.el).onclick = () => { h.cerrar(true); verPrivados(); };
+  } else if (correoSinConfirmar()) {
+    w.innerHTML = `<button class="aj-fila" id="aVerif">${ICONOS.alerta}<span><b>${L('Confirma tu correo', 'Confirm your email')}</b><small>${L('Te mandamos un enlace a tu correo. Hace falta, por ejemplo, para el acceso completo si te lo han dado.', 'We send a link to your email. It is needed, for example, for full access if you have been given it.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+    $('#aVerif', h.el).onclick = async () => {
+      try { await fbCargar(); await FB.au.sendEmailVerification(FB.user); toast(L(`Te he mandado un correo a ${FB.user.email}. Cuando lo confirmes, vuelve a abrir GrowFolio.`, `I've sent an email to ${FB.user.email}. Once you confirm it, open GrowFolio again.`), 7000); }
+      catch (e) { toast(L('No se ha podido mandar ahora. Prueba en un rato.', "Couldn't send it now. Try again later."), 5000); }
+    };
+  }
+}
+async function leerPrivados() {
+  await fbCargar(); const f = FB.fs;
+  const r = await conTiempo(f.getDocs(f.collection(FB.db, 'privados')), 10000);
+  return r.docs.map((d) => ({ correo: d.id, ...d.data() })).sort((a, b) => a.correo.localeCompare(b.correo));
+}
+async function verPrivados() {
+  let l;
+  try { l = await leerPrivados(); }
+  catch (e) { return toast(errPermiso(e) ? L('La lista aún no se puede leer: faltan las reglas nuevas de Firestore, que se publican con la 0.5.', "The list can't be read yet: the new Firestore rules, published with 0.5, are missing.") : L('No se ha podido leer la lista (¿sin conexión?).', "Couldn't read the list (offline?)."), 7000); }
+  const yo = String((FB.user && FB.user.email) || '').toLowerCase(), esta = new Set(l.map((x) => x.correo));
+  // sugerencias: quien te ha mandado opiniones y aún no está
+  const opis = (await leerOpiniones().catch(() => null)) || [];
+  const sug = [...new Set(opis.map((o) => String(o.correo || '').trim().toLowerCase()).filter((c) => c && c !== yo && !esta.has(c)))].slice(0, 12);
+  const h = hoja(L('Acceso completo', 'Full access'), `<div class="priv">
+    <p>${L('Quien esté en esta lista ve GrowFolio entero: el Paso a paso y GrowIA cuando dice qué comprar o vender. El resto lo ve sin recomendaciones personalizadas (el modo público). Tú siempre lo ves entero.', 'Anyone on this list sees all of GrowFolio: Steps and GrowIA when it says what to buy or sell. Everyone else sees it without personalised recommendations (public mode). You always see it all.')}</p>
+    <form id="pvF" class="priv-add" novalidate><label class="campo">${L('Añadir un correo', 'Add an email')}<input id="pvC" type="email" autocomplete="off" inputmode="email" placeholder="${L('amigo@gmail.com', 'friend@gmail.com')}"></label><button class="btn pri" type="submit">${L('Añadir', 'Add')}</button></form>
+    <div class="error" id="pvErr"></div>
+    ${sug.length ? `<div class="priv-sug"><span class="k">${L('Te han mandado opiniones:', 'Sent you feedback:')}</span>${sug.map((c) => `<button type="button" class="chip-btn" data-pv-sug="${esc(c)}">${esc(c)}</button>`).join('')}</div>` : ''}
+    <ul class="priv-l">${l.length ? l.map((x) => `<li><span data-no-trad>${esc(x.correo)}</span><button type="button" class="ib peligro" data-pv-quitar="${esc(x.correo)}" aria-label="${esc(L('Quitar', 'Remove'))} ${esc(x.correo)}" title="${esc(L('Quitar', 'Remove'))}">${ICONOS.papelera}</button></li>`).join('') : `<li class="vacio">${L('Nadie todavía.', 'Nobody yet.')}</li>`}</ul>
+    <p class="nota">${L('Con Google o Apple vale al momento. Quien entre con correo y contraseña tiene que confirmar su correo: GrowFolio se lo pide en Ajustes.', 'With Google or Apple it works straight away. Anyone signing in with email and password has to confirm their email: GrowFolio asks them in Settings.')}</p>
+    <label class="check"><input type="checkbox" id="pvVer" ${S.verPublico ? 'checked' : ''}> ${L('Verlo como alguien sin acceso completo (solo en este dispositivo)', 'View it as someone without full access (this device only)')}</label>
+  </div>`);
+  h.el.classList.add('hoja-priv');
+  const f = FB.fs, err = (t) => { $('#pvErr', h.el).textContent = t; };
+  const anadir = async (c) => {
+    c = String(c || '').trim().toLowerCase();
+    if (!/^[^@\s/]+@[^@\s/]+\.[^@\s/]+$/.test(c)) return err(L('Ese correo no parece válido.', "That email doesn't look valid."));
+    if (esta.has(c)) return err(L('Ya está en la lista.', 'Already on the list.'));
+    try { await conTiempo(f.setDoc(f.doc(FB.db, 'privados', c), { por: yo, cuando: f.serverTimestamp() }), 10000); h.cerrar(true); verPrivados(); toast(L(`${c} ya tiene acceso completo`, `${c} now has full access`)); }
+    catch (e) { err(errPermiso(e) ? L('Firestore no deja escribir la lista: faltan las reglas nuevas.', "Firestore won't let you write the list: the new rules are missing.") : L('No se ha podido guardar (¿sin conexión?).', "Couldn't save it (offline?).")); }
+  };
+  $('#pvF', h.el).onsubmit = (ev) => { ev.preventDefault(); anadir($('#pvC', h.el).value); };
+  for (const b of $$('[data-pv-sug]', h.el)) b.onclick = () => anadir(b.dataset.pvSug);
+  for (const b of $$('[data-pv-quitar]', h.el)) b.onclick = async () => {
+    const c = b.dataset.pvQuitar;
+    if (!confirm(trad(`¿Quitar el acceso completo a ${c}? Dejará de ver el Paso a paso la próxima vez que abra GrowFolio.`))) return;
+    try { await conTiempo(f.deleteDoc(f.doc(FB.db, 'privados', c)), 10000); h.cerrar(true); verPrivados(); }
+    catch (e) { toast(L('No se ha podido quitar (¿sin conexión?).', "Couldn't remove it (offline?)."), 5000); }
+  };
+  $('#pvVer', h.el).onchange = (e) => { S.verPublico = e.target.checked; LS.set('inv-ver-publico', S.verPublico); cambioDeAcceso(); toast(S.verPublico ? L('Así lo ve alguien sin acceso completo. Para volver, desmárcalo aquí.', 'This is how someone without full access sees it. Untick it here to go back.') : L('Vuelves a verlo entero', 'You see it all again'), 4500); };
+}
+function fijarAcceso(a, uid) {
+  const antes = esPublico();
+  S.acceso = a; LS.set('inv-acceso', { a, uid: uid || null, t: Date.now() });
+  if (esPublico() !== antes) cambioDeAcceso();
+}
+// los nombres de la barra (Paso a paso o Tu plan) y la pestaña de ahora, con el modo nuevo
+function cambioDeAcceso() {
+  const g = GRUPOS.find((x) => x.k === 'ruta');
+  for (const a of $$('.nav [data-ir="ruta"]')) a.textContent = L(g.t, g.en);
+  for (const sp of $$('.navbar [data-ir="ruta"] span')) sp.textContent = L(g.c || g.t, g.en);
+  if (S.M) cacheDe(S.M, '__ruta').delete('r');
+  if (S.cartera && $('#vista') && !document.querySelector('.hoja-fondo form, .ficha')) pintar();
+}
 async function filaOpiniones(h) {
   const w = $('#aOpis', h.el); if (!w) return;
   const l = await leerOpiniones(); if (!l || !document.body.contains(w)) return;
@@ -17185,6 +17342,7 @@ function abrirAjustes() {
       <div class="seccion-ed"><h3>${ICONOS.perfil}${esc(nombreUsuario() || 'Tu cuenta')}</h3><p class="nota" style="margin:0">${FB.user && FB.user.email ? `${esc(FB.user.email)}, ` : ''}${FB.user && (FB.user.providerData || []).some((x) => x.providerId === 'google.com') ? 'con Google' : 'con correo y contraseña'}. Tu cartera se guarda cifrada en tu cuenta y se sincroniza sola entre tus dispositivos.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNombre">${ICONOS.perfil}Cambiar nombre</button><button class="btn peq" id="aSalir">Cerrar sesión</button></div></div>
       <div id="aOpis"></div>
+      <div id="aAcceso"></div>
 </div>`
     : `<h2 class="aj-grupo">Tu cuenta</h2><div class="aj-caja"><button class="aj-fila" id="aCuenta">${ICONOS.perfil}<span><b>Guarda tu cartera en una cuenta</b><small>Con Google o con tu correo: la tendrás en el móvil, en el ordenador y en la app, cifrada igual que ahora.</small></span><i class="aj-flecha" aria-hidden="true"></i></button></div>`}
     <h2 class="aj-grupo">General</h2>
@@ -17315,6 +17473,7 @@ function abrirAjustes() {
     await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
   if ($('#aSalir', h.el)) $('#aSalir', h.el).onclick = () => cerrarSesion();
   filaOpiniones(h);   // solo sale si eres el dueño (las reglas no dejan leerlas a nadie más)
+  filaAcceso(h);
   if ($('#aNombre', h.el)) $('#aNombre', h.el).onclick = () => { h.cerrar(true); cambiarNombre(); };
   if ($('#aVieja', h.el)) $('#aVieja', h.el).onclick = async () => { h.cerrar(true); const antes = document.querySelectorAll('.hoja').length; await revisarCarteraVieja(true); setTimeout(() => { if (document.querySelectorAll('.hoja').length <= antes) toast('No hay ninguna cartera de antes con cosas que falten en tu cuenta', 5000); }, 2500); };
   if ($('#aCuenta', h.el)) $('#aCuenta', h.el).onclick = () => cambiarPerfil('cuenta');
@@ -19098,6 +19257,7 @@ function arrancar() {
   Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); setTimeout(() => mostrarPreguntaIA(), 3000); });
   apuntarDiaUso(); setTimeout(() => pedirNota(), 150000); setTimeout(() => pedirAvisoVersiones(), 12000);
   if (PERFIL_CUENTA) setTimeout(() => revisarRespuestas(), 5000);
+  if (PERFIL_CUENTA) comprobarAcceso();
   setTimeout(() => globoNuevo(), 3500);
   setTimeout(() => revisarKit(), 2500);
   // lo que tienes metido a mano y GrowFolio aún no sigue: se pide su precio (cuando ya están el radar y el catálogo)

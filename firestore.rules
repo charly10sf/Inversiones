@@ -2,6 +2,11 @@ rules_version = '2';
 // Reglas de Firestore de GrowFolio (se pegan en Firebase > Firestore Database > Reglas > Publicar).
 service cloud.firestore {
   match /databases/{database}/documents {
+    // el dueño de GrowFolio: los correos de BANCO_EMAILS (ver opiniones, abajo)
+    function esDueno() {
+      return request.auth != null && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in [__DUENOS__];
+    }
     // la cartera de cada cuenta: solo la lee y la escribe su dueño (va cifrada con la contraseña de su cartera)
     match /usuarios/{uid} {
       allow read, write: if request.auth != null && request.auth.uid == uid;
@@ -13,10 +18,6 @@ service cloud.firestore {
     // 0.4: el dueño puede responder a cada una (respuesta, respondida, por, y «vista» a falso para que salga como
     // nueva), y quien la mandó la lee con su respuesta y solo puede marcarla como vista.
     match /opiniones/{id} {
-      function esDueno() {
-        return request.auth != null && request.auth.token.email_verified == true
-          && request.auth.token.email.lower() in [__DUENOS__];
-      }
       allow create: if request.auth != null
         && request.resource.data.uid == request.auth.uid
         && request.resource.data.texto is string
@@ -33,6 +34,18 @@ service cloud.firestore {
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vista'])
           && request.resource.data.vista == true);
       allow delete: if false;
+    }
+    // 0.5: acceso completo (modo privado: el Paso a paso y GrowIA que recomienda). Un documento por correo, en
+    // minúsculas, sin nada más que quién lo añadió y cuándo. Lo escribe y lo lista solo el dueño; cada cuenta solo puede
+    // leer el suyo, con el correo verificado (Google y Apple lo traen verificado; con correo y contraseña, al confirmarlo).
+    match /privados/{correo} {
+      allow get: if esDueno() || (request.auth != null && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() == correo);
+      allow list: if esDueno();
+      allow create, update: if esDueno() && correo == correo.lower() && correo.matches('^[^@/ ]+@[^@/ ]+$')
+        && request.resource.data.keys().hasOnly(['por', 'cuando', 'nota'])
+        && (!('nota' in request.resource.data) || (request.resource.data.nota is string && request.resource.data.nota.size() <= 80));
+      allow delete: if esDueno();
     }
     // precios que pedir: el ticker o el ISIN de lo que alguien mete a mano y GrowFolio no seguía (sin quién lo
     // pide). Cualquiera con cuenta puede apuntar uno nuevo; lo lee la Action de precios, sin clave
