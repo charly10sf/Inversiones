@@ -1,0 +1,22 @@
+name: Sonda Yahoo (temporal)
+on:
+  push:
+    branches: [sonda-yahoo]
+permissions:
+  contents: write
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install yfinance pandas
+      - run: python sonda.py > resultado.json 2> errores.txt || true
+      - run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add resultado.json errores.txt
+          git commit -m "resultado de la sonda"
+          git push
