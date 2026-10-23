@@ -27,7 +27,7 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en di
 | rama `datos` → `informe.json` | El informe de prensa de Gemini de tu cartera y del mercado, contrastado y con enlaces. Sin cantidades. | Sí |
 | rama `datos` → `escaneo.json` | Lo que ha leído Gemini de la prensa de cada empresa del radar y las que ha elegido (o evitaría). | Sí |
 | rama `datos` → `noticias-cache.json` | Las noticias recientes de cada empresa del radar (no la lee la web). | Sí |
-| `index.html`, `sw.js`, `manifest.webmanifest` | La web (instalable en el móvil). | Sí |
+| `src/` (desde la 0.6), `index.html`, `sw.js`, `manifest.webmanifest` | La web (instalable en el móvil). El código está en `src/` y Vite lo junta en `dist/`, que es lo que se publica. | Sí |
 
 - La contraseña no se guarda en ningún sitio. Si marco "Recordar en este dispositivo", el navegador guarda la clave derivada (no exportable) en IndexedDB.
 - Precios en directo, sin recargar: la web abre dos WebSockets públicos.
@@ -36,6 +36,17 @@ Web para ver mi cartera (MyInvestor, Trade Republic y Bitvavo) con precios en di
 - Con cada precio se recalculan las señales, los planes de venta y las mejores ideas. Si cambia una recomendación, la página se repinta sola y avisa.
 - `scripts/precios.py` (Yahoo Finance con `yfinance`) corre cada 20 minutos de lunes a viernes y una vez al día el fin de semana; la web vuelve a leer `precios.json` sola cada 2 minutos. Analistas y noticias se renuevan como mucho cada 2 horas; las fichas del radar cada 3 horas y sus precios en cada ejecución.
 - Los fondos más jóvenes se completan hacia atrás con un ETF del mismo índice (`proxy` en `instrumentos.json`).
+
+## Desarrollo (desde la 0.6)
+
+El código ya no está en un solo `index.html`: está partido por secciones en `src/css` y `src/js` (el orden, en `src/partes.json`). Siguen siendo un único script clásico con el ámbito global compartido, como antes: se juntan en ese orden.
+
+- `npm ci` una vez; `npm run dev` abre GrowFolio en http://localhost:5173 y se recarga al guardar.
+- `npm run build` deja en `dist/` la web minificada (CSS y JS con huella en el nombre), con el service worker y la versión puestos.
+- **Trozos** (`src/partes.json`, `trozos`; código en `src/js/trozos/`): lo que no hace falta para abrir Inicio (el mapa del mundo, GrowIA, GTA VI, las novedades, el banco, las opiniones, leer capturas) se baja la primera vez que se usa. El build pone en el núcleo una función de relevo por cada una que se usa desde fuera; si algo de un trozo se usa de una forma que no puede esperar a bajarlo, el build se para y dice qué. `node build/analizar.js` enseña las entradas de cada trozo y `node build/mover.js` pasa declaraciones de un archivo a otro.
+- **La versión** está en `src/js/version.js` y tiene que ser la primera de `NOVEDADES` (en `src/js/39-versiones-y-novedades.js`).
+- **Pruebas**: `sh tests/traer-datos.sh` (los datos de verdad de las ramas `datos` y `catalogo`), `npx playwright install chromium` y `npm test` (build y Playwright en 390, 360 y 1440, con Firebase de imitación y sin salir a internet). `npm run rendimiento` mide lo que baja y lo que tarda al abrir, con un móvil medio y 4G. Las de los scripts: `python -m unittest discover -s tests/scripts`. Todo esto lo pasa la Action «Pruebas» en cada push.
+- **Publicar**: la Action «Pages» hace el build y lo publica (hace falta Settings → Pages → Source: GitHub Actions).
 
 ## La IA: Gemini, gratis
 
