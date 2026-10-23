@@ -74,7 +74,7 @@ async function marcarLeidas(l) {
 }
 async function pedirNota(intento = 0) {
   if (!tocaNota()) return;
-  if (document.hidden || document.querySelector('.hoja-fondo, .tour, .estreno, .intro, .ficha-fondo') || S.ficha) { if (intento < 8) setTimeout(() => pedirNota(intento + 1), 60000); return; }
+  if (document.hidden || document.querySelector('.hoja-fondo, #asesorFondo, .tour, .estreno, .intro, .ficha-fondo') || S.ficha) { if (intento < 8) setTimeout(() => pedirNota(intento + 1), 60000); return; }
   const est = (n) => `<button type="button" class="nota-est" data-nota="${n}" aria-label="${n} de 5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg></button>`;
   const dias = LS.get('inv-dias-uso', []).length;
   let nota = 0, enviada = false;

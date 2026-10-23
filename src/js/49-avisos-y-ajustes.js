@@ -58,7 +58,7 @@ const htmlPasosIOS = () => `<ol class="ios-pasos">
 </ol>`;
 function avisoIOS() {
   if (!ES_IOS || COMO_APP || LS.get('inv-ios-aviso')) return;
-  if (document.querySelector('.hoja-fondo, .tour, .estreno, .bloqueo')) { setTimeout(avisoIOS, 5000); return; }
+  if (document.querySelector('.hoja-fondo, #asesorFondo, .tour, .estreno, .bloqueo')) { setTimeout(avisoIOS, 5000); return; }
   LS.set('inv-ios-aviso', true);
   const h = hoja(trad('Ponla en tu pantalla de inicio'), `<div class="ios-aviso">${dibujo('movil')}<p>${trad('En el iPhone, GrowFolio funciona como una app sin pasar por la App Store: a pantalla completa, con su icono y sin las barras de Safari.')}</p>${htmlPasosIOS()}<div class="fila-btns"><button class="btn pri" data-cerrar>${trad('Entendido')}</button></div></div>`);
   h.el.classList.add('hoja-ios');
@@ -108,7 +108,7 @@ function difCarteras(vieja, cuenta) {
 async function revisarCarteraVieja(forzar) {
   if (!PERFIL_CUENTA || !S.cartera || !S.key || !S.salt) return;
   if (forzar) { LS.del('inv-gh-rev2'); LS.del('inv-disp-rev2'); }
-  if (!forzar && document.querySelector('.hoja-fondo, .tour, .estreno, .bloqueo')) { setTimeout(revisarCarteraVieja, 4000); return; }
+  if (!forzar && document.querySelector('.hoja-fondo, #asesorFondo, .tour, .estreno, .bloqueo')) { setTimeout(revisarCarteraVieja, 4000); return; }
   const mia = b64.enc(S.salt);
   // 1) la de GitHub (solo la del dueño: se abre con su clave)
   if (!LS.get('inv-gh-rev2')) {

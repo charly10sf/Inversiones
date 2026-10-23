@@ -329,7 +329,7 @@ function pedirAvisoVersiones(intento = 0) {
   const a = appVersiones(); if (!a || LS.get('inv-ver-pedido', false)) return;
   let on = true, permiso = true; try { on = a.avisosVersionesActivados(); permiso = a.avisosPermitidos(); } catch (e) { return; }
   if (!on || permiso) return;
-  if (document.hidden || document.querySelector('.hoja-fondo, .tour, .estreno, .intro, .ficha-fondo') || S.ficha) { if (intento < 10) setTimeout(() => pedirAvisoVersiones(intento + 1), 30000); return; }
+  if (document.hidden || document.querySelector('.hoja-fondo, #asesorFondo, .tour, .estreno, .intro, .ficha-fondo') || S.ficha) { if (intento < 10) setTimeout(() => pedirAvisoVersiones(intento + 1), 30000); return; }
   LS.set('inv-ver-pedido', true);
   const h = hoja('¿Te aviso cuando haya versión nueva?', `<div class="act-app">
     ${dibujo('avisover')}
@@ -458,7 +458,7 @@ const HORA_RESUMEN = 6;
 function resumenDelDia(seguir = () => {}, forzar = false) {
   if (!S.cartera || !S.M) return seguir();
   if (!forzar && new Date().getHours() < HORA_RESUMEN) return seguir();
-  if (!forzar && (LS.get('inv-resumen-off', false) || LS.get('inv-resumen-dia', '') === hoyIso() || !S.M.filas.length || document.querySelector('.hoja-fondo, .tour, .estreno, .intro'))) return seguir();
+  if (!forzar && (LS.get('inv-resumen-off', false) || LS.get('inv-resumen-dia', '') === hoyIso() || !S.M.filas.length || document.querySelector('.hoja-fondo, #asesorFondo, .tour, .estreno, .intro'))) return seguir();
   LS.set('inv-resumen-dia', hoyIso());
   const h = hoja(`${saludoHora()}${nombreUsuario() ? `, ${nombreUsuario()}` : ''}`, `${htmlResumenDia(S.M)}
     <div class="fila-btns rdia-pie"><label class="check-mini"><input type="checkbox" id="rdiaOff" ${LS.get('inv-resumen-off', false) ? 'checked' : ''}> No enseñarlo cada día</label><button type="button" class="btn pri" data-cerrar>Ver mi cartera</button></div>`, () => seguir());

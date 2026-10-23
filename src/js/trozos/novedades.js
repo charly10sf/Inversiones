@@ -104,7 +104,7 @@ function arreglosVistos(visto, despues) {
 /* 0.4f: el aviso de una versión de arreglos, en una tarjeta que se lee (antes era un mensaje pequeño que se iba solo):
    la versión, su título, los primeros arreglos y «Ver todo», que abre las novedades desde la que tenías */
 function avisoArreglos(ns, que, visto, intento = 0) {
-  if (document.querySelector('.hoja-fondo, .tour, .intro, .estreno, .bloqueo')) { if (intento < 20) setTimeout(() => avisoArreglos(ns, que, visto, intento + 1), 3000); return; }
+  if (document.querySelector('.hoja-fondo, #asesorFondo, .tour, .intro, .estreno, .bloqueo')) { if (intento < 20) setTimeout(() => avisoArreglos(ns, que, visto, intento + 1), 3000); return; }
   $$('.aviso-arr').forEach((x) => x.remove());
   const ult = ns.find((n) => n.v === VERSION) || ns[0] || {}, lista = ns.flatMap((n) => [...(n.cosas || []).map((c) => c.t), ...(n.arreglos || [])]).filter(Boolean);
   const d = document.createElement('div');

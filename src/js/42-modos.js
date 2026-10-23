@@ -69,7 +69,7 @@ function fijarAcceso(a, uid, puesto) {
   if (ant && !ant.provisional && ant.uid === uid && ant.a !== a) setTimeout(() => avisoCambioModo(a, puesto), 1200);
 }
 function avisoCambioModo(a, puesto, intento = 0) {
-  if (document.querySelector('.hoja-fondo, .tour, .intro, .estreno, .bloqueo')) { if (intento < 20) setTimeout(() => avisoCambioModo(a, puesto, intento + 1), 4000); return; }
+  if (document.querySelector('.hoja-fondo, #asesorFondo, .tour, .intro, .estreno, .bloqueo')) { if (intento < 20) setTimeout(() => avisoCambioModo(a, puesto, intento + 1), 4000); return; }
   const nota = puesto && puesto.nota ? String(puesto.nota) : '';
   hoja(L(`Tu cuenta está ahora en ${nombreModo(a)}`, `Your account is now in ${nombreModo(a)}`), `<div class="priv">
     ${nota ? `<p class="modo-nota">«${esc(nota)}»</p>` : ''}

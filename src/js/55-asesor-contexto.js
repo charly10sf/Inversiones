@@ -467,7 +467,7 @@ function esquemaGemini(x) {
   for (const [k, v] of Object.entries(x)) o[k] = k === 'type' && typeof v === 'string' ? v.toUpperCase() : k === 'properties' ? Object.fromEntries(Object.entries(v).map(([kk, vv]) => [kk, esquemaGemini(vv)])) : esquemaGemini(v);
   return o;
 }
-const BUSCAR_GEMINI = { name: 'buscar_en_internet', description: 'Busca en internet con Google noticias y datos recientes y devuelve un resumen con sus fuentes. Úsala para contrastar lo que no esté en los datos, con al menos dos fuentes.', parameters: { type: 'OBJECT', properties: { consulta: { type: 'STRING', description: 'qué buscar: concreto, con el nombre de la empresa y el tema' } }, required: ['consulta'] } };
+const BUSCAR_GEMINI = { name: 'buscar_en_internet', description: 'Busca en internet con Google noticias y datos recientes y devuelve un resumen con sus fuentes. Antes de usarla, mira lo que ya tienes: los datos de abajo y buscar_empresa (los titulares de los últimos días y lo que GrowIA ya ha leído de su prensa). Úsala solo para lo que no esté ahí o sea de hoy, con al menos dos fuentes. Cada búsqueda gasta del cupo diario de la clave del usuario.', parameters: { type: 'OBJECT', properties: { consulta: { type: 'STRING', description: 'qué buscar: concreto, con el nombre de la empresa y el tema' } }, required: ['consulta'] } };
 const herramientasGemini = (web) => [{ functionDeclarations: [...HERRAMIENTAS.map((h) => ({ name: h.name, description: h.description, parameters: esquemaGemini(h.input_schema) })), ...(web ? [BUSCAR_GEMINI] : [])] }];
 function errorGoogle(estado, j) {
   const e0 = (j && j.error) || {}, m = e0.message || '', det = JSON.stringify(e0.details || '');
@@ -531,13 +531,24 @@ async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar) {
   return { contenido: partes.filter((p) => !(typeof p.text === 'string' && !p.text && !p.thoughtSignature)), fin, uso, bloqueo };
 }
 /* búsqueda con Google: una llamada aparte con la herramienta de búsqueda de Gemini */
+/* 0.5b: cada búsqueda es una petición más a Google con la clave del usuario. Va con Flash-Lite, el modelo con más cupo gratis,
+   y no con el de la conversación (el 3.8 Flash tiene muy poco cupo diario y las búsquedas lo agotaban). Si Flash-Lite no puede
+   (sin cupo hoy o sin búsqueda en ese modelo), con el de la conversación, como antes. */
 async function buscarGoogle(consulta, turno, signal) {
   if (!consulta) return { error: 'Falta qué buscar.' };
-  const modelo = AS.modeloVivo || modeloVivo();
-  let r;
-  try {
-    r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
-  } catch (e) { if (e.name === 'AbortError') throw e; return { error: 'No se pudo conectar para buscar.' }; }
+  const vivo = AS.modeloVivo || modeloVivo(), fuera = agotadosIA();
+  const modelos = [MODELO_RAPIDO, vivo].filter((m, k, v) => MODELOS[m] && v.indexOf(m) === k && (m === vivo || !fuera.includes(m)));
+  let r, modelo;
+  for (let k = 0; k < modelos.length; k++) {
+    modelo = modelos[k];
+    try {
+      r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
+    } catch (e) { if (e.name === 'AbortError') throw e; return { error: 'No se pudo conectar para buscar.' }; }
+    if (r.ok || k === modelos.length - 1) break;
+    // no ha podido el de más cupo: se apunta si es que se le ha acabado y se prueba con el de la conversación
+    let j0 = null; try { j0 = await r.json(); } catch (e) {}
+    if (errorGoogle(r.status, j0).diario) marcarAgotado(modelo);
+  }
   if (!r.ok) {
     let j = null; try { j = await r.json(); } catch (e) {}
     const e = errorGoogle(r.status, j);

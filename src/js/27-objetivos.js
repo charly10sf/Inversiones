@@ -161,7 +161,7 @@ function preguntaNueva() {
 }
 function mostrarPreguntaIA(seguir = () => {}) {
   const p = preguntaNueva();
-  if (!p || copiaViejaPendiente() || document.querySelector('.hoja-fondo, .tour, .estreno, .intro')) return seguir();
+  if (!p || copiaViejaPendiente() || document.querySelector('.hoja-fondo, #asesorFondo, .tour, .estreno, .intro')) return seguir();
   const { x, i } = p, total = preguntasIA().length;
   LS.set('inv-preg-vistas', [...LS.get('inv-preg-vistas', []), clavePreg(x)].slice(-40));
   const h = hoja('GrowIA te pregunta', `<div class="pregia">
@@ -348,7 +348,7 @@ function tocaPerfilGuiado() {
 // si este dispositivo tiene una cartera de antes sin revisar, primero eso (puede traer ya tu perfil)
 const copiaViejaPendiente = () => false;   // 0.5: ya no se busca la cartera de antes
 function pedirPerfil(siSale, siNo) {
-  if (!tocaPerfilGuiado() || copiaViejaPendiente() || document.querySelector('.hoja-fondo, .tour, .estreno, .intro')) return siNo();
+  if (!tocaPerfilGuiado() || copiaViejaPendiente() || document.querySelector('.hoja-fondo, #asesorFondo, .tour, .estreno, .intro')) return siNo();
   perfilGuiado(siSale);
 }
 const METAS_RAPIDAS = [['Entrada de un piso', 'gastar', 40000, 5], ['Un coche', 'gastar', 20000, 3], ['Llegar a 100.000 €', 'llegar', 100000, null], ['Dejar de trabajar antes', 'llegar', 500000, null]];

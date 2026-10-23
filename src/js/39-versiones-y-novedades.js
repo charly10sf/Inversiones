@@ -5,6 +5,11 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.5b', f: '2026-10-23', h: '12:10', t: 'GrowIA gasta menos de tu cupo al buscar noticias', arreglos: [
+    'Cuando GrowIA busca en internet, lo hace con Gemini Flash-Lite, el modelo con más cupo gratis de tu clave de Google. El de la conversación ya no se gasta en cada búsqueda, así que tarda mucho más en agotarse.',
+    'Antes de buscar, GrowIA mira las noticias que GrowFolio ya tiene de cada empresa y lo que ya ha leído de su prensa: solo busca en internet lo que no está ahí o es de hoy.',
+    'En inglés, lo que escribe GrowIA cada día (el informe, las ideas y lo que lee de cada empresa) vuelve a salir traducido: la traducción automática se paraba.',
+  ] },
   { v: '0.5a', f: '2026-10-23', h: '04:33', t: 'Asia, del este, e Israel en el mapa', arreglos: [
     'En el mapa, Asia se centra en el este: de la India a Japón y de Corea a Indonesia. Ya no salen Turquía ni Arabia Saudí, que están en Oriente Medio.',
     'En Oriente Medio sale Israel (y cualquier país de la zona con bolsa), aunque sea pequeño.',

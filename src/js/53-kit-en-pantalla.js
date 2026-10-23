@@ -133,7 +133,7 @@ async function revisarKit(intento = 0) {
   const kit = S.cartera.kit;
   if (!kit || kit.guardado || !kit.codigo) return;
   if (S.kitRecien !== S.kv.kid && LS.get('inv-kit-visto') === hoyIso()) return;
-  const ocupado = document.querySelector('.hoja-fondo, .tour, .intro, .estreno, .bloqueo, .ficha-fondo') || document.hidden || !confirmadoV2();
+  const ocupado = document.querySelector('.hoja-fondo, #asesorFondo, .tour, .intro, .estreno, .bloqueo, .ficha-fondo') || document.hidden || !confirmadoV2();
   if (ocupado) { if (intento < 30) setTimeout(() => revisarKit(intento + 1), 5000); return; }
   S.kitRecien = null;
   verKit();
