@@ -14,7 +14,6 @@ async function misOpiniones() {
     return r.docs.map((d) => ({ id: d.id, ...d.data() })).sort((a, b) => (fechaOpi(b) || 0) - (fechaOpi(a) || 0));
   } catch (e) { console.warn('opiniones', e); return null; }
 }
-const opiOcupado = () => document.hidden || !!document.querySelector('.hoja-fondo, .tour, .estreno, .intro, .ficha-fondo') || !!S.ficha;
 /* 0.4d: en vivo. Una suscripción a lo que has mandado: en cuanto te contestan (o cambian la respuesta), sale en
    pantalla; si estás con otra cosa (una hoja, la guía, una presentación), en cuanto acabas. Antes se miraba al abrir
    y, al volver a la app, como mucho cada diez minutos: una respuesta podía quedarse sin salir */
@@ -72,19 +71,6 @@ function verRespuestas(l, nuevas) {
 async function marcarLeidas(l) {
   const f = FB.fs; if (!f || !FB.user) return;
   await Promise.all(l.filter((o) => o.respuesta && o.vista !== true).map((o) => conTiempo(f.updateDoc(f.doc(FB.db, 'opiniones', o.id), { vista: true }), 10000).then(() => { o.vista = true; }).catch((e) => console.warn('opiniones', e))));
-}
-/* ¿Qué te parece GrowFolio? Cuando alguien la ha usado 5 días distintos (no hace falta seguidos), un rato después de
-   abrirla le sale una vez: de 1 a 5 estrellas y, si quiere, un comentario (con 3 o menos, qué mejoraría). Llega como
-   las opiniones, con la nota. Si la cierra sin contestar, vuelve al mes, y como mucho dos veces. */
-function apuntarDiaUso() {
-  const d = LS.get('inv-dias-uso', []), h = hoyIso();
-  if (!d.includes(h)) LS.set('inv-dias-uso', [...d, h].slice(-60));
-}
-function tocaNota() {
-  if (!S.cartera || LS.get('inv-nota', null) || !PERFIL_CUENTA) return false;
-  if (LS.get('inv-dias-uso', []).length < 5) return false;
-  const l = LS.get('inv-nota-luego', null);
-  return !l || (l.n < 2 && Date.now() - l.t > 30 * 864e5);
 }
 async function pedirNota(intento = 0) {
   if (!tocaNota()) return;

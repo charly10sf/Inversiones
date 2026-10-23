@@ -56,6 +56,8 @@ function referencias(ast) {
         const q = anc[anc.length - 3];
         como = !q || q.type === 'ExpressionStatement' ? 'llamada' : q.type === 'AwaitExpression' ? 'await'
           : q.type === 'ArrowFunctionExpression' && q.body === p ? 'llamada-flecha' : q.type === 'UnaryExpression' && q.operator === 'void' ? 'llamada'
+          : q.type === 'MemberExpression' && !q.computed && q.object === p && ['then', 'catch', 'finally'].includes(q.property.name) ? 'await'
+          : q.type === 'ReturnStatement' ? 'retorno'
           : q.type === 'LogicalExpression' && anc[anc.length - 4] && anc[anc.length - 4].type === 'ExpressionStatement' ? 'llamada' : 'resultado';
       }
       u.como.add(como);
@@ -92,15 +94,16 @@ export function entradas(trozo, todos, analisis = analizar(todos)) {
       out.set(n, e);
     }
   }
-  return { entradas: [...out.values()].map((e) => ({ ...e, desde: [...e.desde], como: [...e.como], aplazable: e.tipo === 'function' && !e.alCargar && [...e.como].every((c) => c !== 'resultado' && c !== 'valor') })), bytes: trozo.reduce((s, a) => s + info[a].bytes, 0) };
+  return { entradas: [...out.values()].map((e) => ({ ...e, desde: [...e.desde], como: [...e.como], aplazable: e.tipo === 'function' && !e.alCargar && [...e.como].every((c) => c !== 'resultado' && c !== 'valor' && c !== 'retorno') })), bytes: trozo.reduce((s, a) => s + info[a].bytes, 0) };
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const partes = JSON.parse(readFileSync(join(RAIZ, 'src', 'partes.json'), 'utf8'));
-  const todos = [...partes.js, ...Object.values(partes.trozos || {}).flat()];
+  const archivosDe = (t) => (Array.isArray(t) ? t : t.archivos);
+  const todos = [...partes.js, ...Object.values(partes.trozos || {}).map(archivosDe).flat()];
   const A = analizar(todos);
   const pedidos = process.argv.slice(2);
-  const grupos = pedidos.length ? { pedido: pedidos } : partes.trozos || {};
+  const grupos = pedidos.length ? { pedido: pedidos } : Object.fromEntries(Object.entries(partes.trozos || {}).map(([n, t]) => [n, archivosDe(t)]));
   for (const [nombre, archivos] of Object.entries(grupos)) {
     const r = entradas(archivos, todos, A);
     console.log(`\n== ${nombre}: ${archivos.join(', ')} (${Math.round(r.bytes / 1024)} KB)`);

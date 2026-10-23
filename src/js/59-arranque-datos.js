@@ -29,7 +29,8 @@ function arrancar() {
   // el análisis y la clave llegan un poco después de pintar: hasta entonces, la tarjeta de GrowIA de Cartera
   // dice «cargando» (antes decía «aún sin activar» aunque la tuvieras activada) y luego se rehace sola
   Promise.all([cargarAsesor(), cargarAnalisisPropio(S.iaRemoto)]).then(() => { S.iaListo = true; if (['analisis', 'expertos'].includes(S.vista)) pintar(); refrescarToca(); setTimeout(revisarAnalisisIA, 4000); setTimeout(() => mostrarPreguntaIA(), 3000); });
-  apuntarDiaUso(); setTimeout(() => pedirNota(), 150000); setTimeout(() => pedirAvisoVersiones(), 12000);
+  // 0.6: pedirNota va en el trozo de opiniones; solo se baja si toca pedirla
+  apuntarDiaUso(); setTimeout(() => { if (tocaNota()) pedirNota(); }, 150000); setTimeout(() => pedirAvisoVersiones(), 12000);
   if (PERFIL_CUENTA) setTimeout(() => revisarRespuestas(), 5000);
   if (PERFIL_CUENTA) comprobarAcceso();
   setTimeout(() => globoNuevo(), 3500);
@@ -44,9 +45,11 @@ function arrancar() {
   tickEstado = setInterval(programarParche, 30000);
   setTimeout(bienvenida, 700);
   // el banco: la vuelta de dar permiso y el saldo del efectivo (al abrir y cada pocas horas)
-  setTimeout(() => vueltaDelBanco().catch((e) => console.warn('banco', e)), 1500);
-  setTimeout(() => { sincronizarBancos(false); avisoCaducaBanco(); }, 9000);
-  clearInterval(S.tickBanco); S.tickBanco = setInterval(() => { if (!document.hidden) sincronizarBancos(false); }, 30 * 60e3);
+  // 0.6: lo del banco va en su trozo; solo se baja al volver de dar permiso al banco o si tienes alguno conectado
+  const q = new URLSearchParams(location.search);
+  if (q.has('state') && (q.has('code') || q.has('error'))) setTimeout(() => vueltaDelBanco().catch((e) => console.warn('banco', e)), 1500);
+  setTimeout(() => { if (bancosDe().length) { sincronizarBancos(false); avisoCaducaBanco(); } }, 9000);
+  clearInterval(S.tickBanco); S.tickBanco = setInterval(() => { if (!document.hidden && bancosDe().length) sincronizarBancos(false); }, 30 * 60e3);
   // con cuenta: el nombre va también dentro de tu perfil cifrado y los cambios de otros dispositivos llegan solos
   if (PERFIL_CUENTA) {
     nombreEnCuenta();

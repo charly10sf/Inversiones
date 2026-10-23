@@ -31,13 +31,19 @@ export const juntarCSS = (archivos = partes().css) => leer('css', archivos);
 const huella = (t) => createHash('sha256').update(t).digest('hex').slice(0, 10);
 
 /** las funciones de relevo de cada trozo; se para si algo del trozo se usa de una forma que no puede esperar */
+// un trozo es una lista de archivos o { archivos, siNoEsta, retornoOk }: siNoEsta, funciones que sin el trozo bajado no hacen
+// nada (las de pintar o cerrar algo que solo existe si ya se abrió); retornoOk, funciones que alguien devuelve con «return f()»
+// y se ha comprobado a mano que quien llama no usa lo que devuelven (o lo espera)
+export const archivosDe = (t) => (Array.isArray(t) ? t : t.archivos);
 export function relevos(p = partes()) {
-  const trozos = p.trozos || {}, todos = [...p.js, ...Object.values(trozos).flat()];
+  const trozos = p.trozos || {}, todos = [...p.js, ...Object.values(trozos).map(archivosDe).flat()];
   const A = analizar(todos), out = {}, malos = [];
-  for (const [n, archivos] of Object.entries(trozos)) {
-    const r = entradas(archivos, todos, A);
+  for (const [n, t] of Object.entries(trozos)) {
+    const r = entradas(archivosDe(t), todos, A), quietas = new Set(t.siNoEsta || []), retOk = new Set(t.retornoOk || []);
+    for (const e of r.entradas) if (retOk.has(e.nombre) && e.tipo === 'function' && !e.alCargar && e.como.every((c) => c !== 'resultado' && c !== 'valor')) e.aplazable = true;
     for (const e of r.entradas) if (!e.aplazable) malos.push(`${n}: ${e.tipo} ${e.nombre} (${e.como.join(', ')}${e.alCargar ? ', al cargar' : ''}) desde ${e.desde.join(', ')}`);
-    out[n] = r.entradas.map((e) => e.nombre).sort();
+    for (const q of quietas) if (!r.entradas.some((e) => e.nombre === q)) malos.push(`${n}: siNoEsta dice ${q}, que no es una entrada del trozo`);
+    out[n] = r.entradas.map((e) => ({ f: e.nombre, quieta: quietas.has(e.nombre) })).sort((a, b) => a.f.localeCompare(b.f));
   }
   if (malos.length) throw new Error('Esto de un trozo se usa desde fuera de una forma que no puede esperar a bajarlo; tiene que ir en el núcleo:\n  ' + malos.join('\n  '));
   return out;
@@ -56,8 +62,8 @@ function cargador(urls, rel) {
     `  }));`,
     `}`,
     `function trozoFallido(e) { console.warn(e); try { toast(L('Sin conexión: no se ha podido abrir. Prueba otra vez en un momento.', "No connection: it couldn't be opened. Try again in a moment."), 6000); } catch (x) {} }`];
-  for (const [n, fs] of Object.entries(rel)) for (const f of fs) {
-    r.push(`function ${f}(...a) { const yo = ${f}; return cargarTrozo(${JSON.stringify(n)}).then(() => { if (${f} === yo) throw new Error('El trozo ${n} no trae ${f}'); return ${f}(...a); }).catch(trozoFallido); }`);
+  for (const [n, fs] of Object.entries(rel)) for (const { f, quieta } of fs) {
+    r.push(`function ${f}(...a) { ${quieta ? `if (!trozosEnCamino[${JSON.stringify(n)}]) return; ` : ''}const yo = ${f}; return cargarTrozo(${JSON.stringify(n)}).then(() => { if (${f} === yo) throw new Error('El trozo ${n} no trae ${f}'); return ${f}(...a); }).catch(trozoFallido); }`);
   }
   return r.join('\n') + '\n';
 }
@@ -68,7 +74,7 @@ export function juntarJS(urls, p = partes()) {
   const u = urls || Object.fromEntries(tr.map((n) => [n, `/@gf/trozo/${n}.js`]));
   return p.js.map((a) => readFileSync(join(RAIZ, 'src', 'js', a), 'utf8') + (a === 'version.js' ? cargador(u, rel) : '')).join('');
 }
-const juntarTrozo = (n, p = partes()) => "'use strict';\n" + leer('js', p.trozos[n]);
+const juntarTrozo = (n, p = partes()) => "'use strict';\n" + leer('js', archivosDe(p.trozos[n]));
 
 export default function growfolio() {
   let modo = 'serve';

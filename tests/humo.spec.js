@@ -199,3 +199,38 @@ test.describe('trozos', () => {
     await expect(page.locator('.gta-marco')).toHaveCount(0);
   });
 });
+
+test.describe('trozos: el asesor', () => {
+  test.beforeEach(({}, info) => test.skip(info.project.name === 'movil-pequeno', 'en 390 y 1440'));
+
+  test('GrowIA se baja al abrirla y el recorte de pantalla también funciona', async ({ pagina: page }) => {
+    await crearCuenta(page);
+    await quitarCapas(page);
+    expect(await page.evaluate(() => typeof sugerencias)).toBe('undefined');
+    // cerrarla sin haberla abierto no baja nada
+    await page.evaluate(() => cerrarAsesor());
+    expect(await page.evaluate(() => typeof sugerencias)).toBe('undefined');
+    await tocar(page, '#bAsesor');
+    await expect(page.locator('#asesorFondo')).toBeVisible();
+    expect(await page.evaluate(() => typeof sugerencias)).toBe('function');
+    await page.keyboard.press('Escape');
+    await expect(page.locator('#asesorFondo')).toHaveCount(0);
+  });
+});
+
+test.describe('trozos: las novedades', () => {
+  test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
+
+  test('quien viene de una versión anterior ve las novedades (se bajan al momento)', async ({ pagina: page }) => {
+    await crearCuenta(page);
+    await quitarCapas(page);
+    await meterCartera(page);
+    // como si la última vista fuera la 0.4f
+    await page.evaluate(() => { LS.set('inv-version', '0.4f'); LS.set('inv-vnum', 2); LS.set('inv-perfil-pedido', true); });
+    await page.reload();
+    await page.locator('#entrada').click({ timeout: 20_000 }).catch(() => {});
+    await expect(page.locator('.ixn, .estreno, .hoja-fondo').first()).toBeVisible({ timeout: 30_000 });
+    expect(await page.evaluate(() => typeof novedadesScroll)).toBe('function');
+    expect(await page.locator('body').innerText()).toMatch(/0\.5|contraseña|código/i);
+  });
+});
