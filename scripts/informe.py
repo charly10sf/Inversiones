@@ -1008,6 +1008,7 @@ def guardar_fichas(fichas, dir_salida, validos):
     fichas["generado"] = ahora()
     with open(f"{dir_salida}/fichas.json", "w", encoding="utf-8") as f:
         json.dump(fichas, f, ensure_ascii=False, separators=(",", ":"))
+    marcar(dir_salida, "fichas_id", fichas["generado"])
     print(f"fichas: {len(fichas['e'])} empresas, {sum(len(x['fa']) for x in fichas['e'].values())} factores, {len(fichas.get('temas') or [])} temas")
 
 

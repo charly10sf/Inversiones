@@ -115,11 +115,14 @@ class LecturaConFichas(unittest.TestCase):
         fichas = F.nuevas()
         F.aplicar_lectura(fichas, "SAN.MC", LEIDO, FUENTES, I.ahora())
         with tempfile.TemporaryDirectory() as d:
+            Path(d, "precios.json").write_text("{\"generado\": \"x\"}")
             I.guardar_fichas(fichas, d, {"SAN.MC"})
             leidas = json.loads(Path(d, "fichas.json").read_text())
+            marca = json.loads(Path(d, "precios.json").read_text()).get("fichas_id")
         self.assertEqual(leidas["v"], 1)
         self.assertIn("SAN.MC", leidas["e"])
         self.assertTrue(leidas["generado"])
+        self.assertEqual(marca, leidas["generado"])  # la app sabe por precios.json cuándo volver a bajarlas
 
 
 if __name__ == "__main__":
