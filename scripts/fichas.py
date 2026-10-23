@@ -74,7 +74,9 @@ def _fuentes(nums, fuentes, n=2):
             f = fuentes[int(k) - 1]
         except (ValueError, IndexError, TypeError):
             continue
-        if f.get("u") and len(out) < n and all(f.get("u") != o.get("u") for o in out):
+        # solo enlaces de verdad: un «javascript:» de un RSS no llega a la app (revisión aparte de la 0.7)
+        u = str(f.get("u") or "")
+        if re.match(r"^https?://", u, re.I) and len(out) < n and all(u != o.get("u") for o in out):
             out.append({kk: f.get(kk) for kk in ("t", "u", "f", "d") if f.get(kk)})
     return out
 
@@ -145,7 +147,7 @@ def aplicar_temas(fichas, temas, fuentes, ahora):
 
 
 def podar(fichas, validos, ahora_dt=None):
-    """Quita lo viejo: factores de más de 60 días, marcas de titulares de más de 30, temas de más de 21 y las
+    """Quita lo viejo: factores de más de 60 días, marcas de titulares de más de 30, temas de más de 7 y las
     empresas que ya no están en el radar ni en las carteras."""
     ahora_dt = ahora_dt or dt.datetime.now(dt.timezone.utc)
     lim_f = ahora_dt - dt.timedelta(days=DIAS_FACTOR)
