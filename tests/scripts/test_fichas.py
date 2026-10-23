@@ -51,6 +51,13 @@ class Fichas(unittest.TestCase):
         self.assertEqual(e["tit"][F.clave_titulo(FUENTES[2]["t"])][2], 0)
         self.assertEqual(len(e["tit"]), 3)  # el 9 no existe en el lote
 
+    def test_solo_enlaces_http(self):
+        # revisión aparte de la 0.7: un enlace «javascript:» de un RSS no llega a la ficha
+        fuentes = [{"t": "Trampa", "u": "javascript:alert(1)", "f": "X"}, {"t": "Buena", "u": "https://ejemplo.es/b", "f": "EFE"}]
+        fichas = F.nuevas()
+        F.aplicar_lectura(fichas, "SAN.MC", {"fa": {"negocio": {"s": "+", "p": 2, "txt": "Gana más.", "fuentes": [1, 2]}}}, fuentes, "2026-10-23T10:00:00+00:00")
+        self.assertEqual([f["u"] for f in fichas["e"]["SAN.MC"]["fa"]["negocio"]["fuentes"]], ["https://ejemplo.es/b"])
+
     def test_lo_nuevo_sustituye_y_lo_demas_se_queda(self):
         fichas = F.nuevas()
         F.aplicar_lectura(fichas, "SAN.MC", LEIDO, FUENTES, "2026-10-20T10:00:00+00:00")
