@@ -1,6 +1,23 @@
 {
  "versiones": [
   {
+   "v": "0.5a",
+   "f": "2026-10-23",
+   "h": "04:33",
+   "t": "Asia, del este, e Israel en el mapa",
+   "commits": [
+    {
+     "cuando": "2026-10-23 04:33",
+     "asunto": "0.5a: Asia, del este, e Israel en el mapa",
+     "detalle": [
+      "Mapa: la vista de Asia pasa a [655, 112, 345, 151] (de la India a Japón, de Corea a Indonesia) y manda sobre la de mapa-mundo.json; sin nombres de Oriente Medio en ella",
+      "Vistas de zona (América, Oriente Medio, Asia): salen todos los países de la zona con datos de su bolsa, también los pequeños como Israel",
+      "Novedades de la 0.5a en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.5",
    "f": "2026-10-23",
    "h": "04:05",

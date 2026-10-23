@@ -8408,12 +8408,13 @@ document.addEventListener('click', (e) => {
 const BOLSA_PAIS = { ES: ['^IBEX'], DE: ['^GDAXI'], FR: ['^FCHI'], GB: ['^FTSE'], US: ['^GSPC', '^NDX', '^RUT'], JP: ['^N225'], CN: ['000001.SS'], HK: ['^HSI'], IN: ['^NSEI'], BR: ['^BVSP'] };
 const MAPA_MODOS = [['hoy', 'Hoy', 'Today'], ['mes', '1 mes', '1 month'], ['anio', 'En el año', 'This year'], ['tuyo', 'Tu dinero', 'Your money']];
 const MAPA_VISTAS = [['mundo', 'Mundo', 'World'], ['am', 'América', 'Americas'], ['eu', 'Europa', 'Europe'], ['om', 'Oriente Medio', 'Middle East', 'O. Medio', 'Mid. East'], ['as', 'Asia', 'Asia']];
-/* zonas que no vienen en mapa-mundo.json (en sus coordenadas, 1000 × 439, con la proporción del mapa): América, de
-   Canadá a São Paulo (entera no cabe sin quedarse casi como el mundo), y Oriente Medio, de Turquía y Egipto a Irán */
-const MAPA_ZONAS_MAS = { am: [8, 40, 600, 263], om: [525, 106, 200, 88] };
-// en esas dos vistas, solo los nombres de su zona: por la forma del mapa se cuela algo de Europa, India o Grecia
+/* zonas (en las coordenadas de mapa-mundo.json, 1000 × 439, con la proporción del mapa; mandan sobre las suyas): América,
+   de Canadá a São Paulo (entera no cabe sin quedarse casi como el mundo); Oriente Medio, de Turquía y Egipto a Irán; y
+   Asia (0.5a), del este: de la India a Japón y de Corea a Indonesia, sin Oriente Medio (antes salían Turquía y Arabia) */
+const MAPA_ZONAS_MAS = { am: [8, 40, 600, 263], om: [525, 106, 200, 88], as: [655, 112, 345, 151] };
+// en esas vistas, solo los nombres de su zona: por la forma del mapa se cuela algo de Europa, India o Grecia
 const ORIENTE_MEDIO = new Set(['TR', 'IL', 'SA', 'AE', 'QA', 'KW', 'BH', 'OM', 'EG', 'JO', 'LB', 'SY', 'IQ', 'IR', 'YE', 'CY']);
-const FOCO_MAPA = { am: (c, p) => p[0] < 430, om: (c) => ORIENTE_MEDIO.has(c) };
+const FOCO_MAPA = { am: (c, p) => p[0] < 430, om: (c) => ORIENTE_MEDIO.has(c), as: (c, p) => !ORIENTE_MEDIO.has(c) && p[0] >= 655 };
 // dónde empieza cada tono (por debajo del primero, gris: ni sube ni baja); en «Tu dinero», % de tu cartera
 const MAPA_CORTES = { hoy: [0.25, 0.75, 1.5, 2.5], mes: [1, 3, 6, 10], anio: [3, 10, 20, 35], tuyo: [0, 1, 5, 20] };
 // lo que pesa cada país en un fondo de todo el mundo (tipo MSCI ACWI), más o menos, en %
@@ -8584,7 +8585,7 @@ function etiquetasMapa(vb, esc1, modo, ex) {
     const p = G.c[x.c];
     if (!p || (euLejos && enEuropa(p)) || (foco && !foco(x.c, p))) continue;
     const a = (G.a[x.c] || 0) * esc1 * esc1, peso = modo === 'tuyo' ? x.v : PESO_MUNDO[x.c] || 0;
-    const grande = a >= 260, importante = modo === 'tuyo' ? x.v >= 1 : peso >= 0.3;
+    const grande = a >= 260, importante = foco ? (modo === 'tuyo' ? x.v >= 0.1 : true) : modo === 'tuyo' ? x.v >= 1 : peso >= 0.3;
     if (!grande && !importante) continue;
     const s = sitio(p);
     if (!s) continue;
@@ -8779,7 +8780,7 @@ async function cargarMapa() {
   S.mapaCargando = true;
   try {
     const r = await fetch('mapa-mundo.json?v=1');
-    if (r.ok) { S.mapaGeo = await r.json(); S.mapaGeo.zonas = { ...MAPA_ZONAS_MAS, ...(S.mapaGeo.zonas || {}) }; }
+    if (r.ok) { S.mapaGeo = await r.json(); S.mapaGeo.zonas = { ...(S.mapaGeo.zonas || {}), ...MAPA_ZONAS_MAS }; }
   } catch (e) { /* sin conexión: se dice en el hueco del mapa */ }
   S.mapaCargando = false;
   S.mapaFallo = !S.mapaGeo;
@@ -14819,8 +14820,12 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.5';
+const VERSION = '0.5a';
 const NOVEDADES = [
+  { v: '0.5a', f: '2026-10-23', h: '04:33', t: 'Asia, del este, e Israel en el mapa', arreglos: [
+    'En el mapa, Asia se centra en el este: de la India a Japón y de Corea a Indonesia. Ya no salen Turquía ni Arabia Saudí, que están en Oriente Medio.',
+    'En Oriente Medio sale Israel (y cualquier país de la zona con bolsa), aunque sea pequeño.',
+  ] },
   { v: '0.5', f: '2026-10-23', h: '04:05', t: 'Si olvidas la contraseña, no pierdes tu cartera', cosas: [
     { d: 'codigo', ir: { v: 'cartera', sel: '#bAjustes' }, t: 'Tu código de recuperación', x: 'Si olvidas la contraseña de tu cartera, con este código (24 letras y números) pones una nueva y no pierdes nada. Créalo en Ajustes, Seguridad, o desde el aviso que te saldrá en Inicio, y guárdalo fuera del móvil: en tu gestor de contraseñas o en un papel.', g: 'Toca la rueda: en Ajustes, Seguridad, está tu código de recuperación. Créalo y guárdalo fuera del móvil.' },
     { d: 'dosequipos', t: 'Cambiar la contraseña ya no molesta', x: 'Si cambias la contraseña de tu cartera en el móvil, el ordenador sigue entrando sin pedirte la nueva. Y para volver a ver tu código, una vez guardado, te pide la contraseña.' },
