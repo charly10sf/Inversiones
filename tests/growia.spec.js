@@ -83,3 +83,38 @@ test('la revisión automática va en una sola llamada, sin herramientas, con el 
   expect(c.contents[0].parts[0].text).toContain('No puedes buscar en internet ni usar herramientas: usa las fichas de GrowIA');
   expect(c.systemInstruction.parts[0].text).toContain('Lo que pesa ahora en sus acciones');
 });
+
+// el dueño ve en Ajustes cómo va GrowIA: el banco de cada noche y los fallos que no se arreglaron solos
+const testDueno = base.extend({
+  errores: async ({ context }, use) => {
+    const errores = await preparar(context, { ajustes: { 'stub-dueno': 'lucia@prueba.com' } });
+    await use(errores);
+    expect(errores, 'errores de JavaScript en la página').toEqual([]);
+  },
+});
+testDueno('Cómo va GrowIA: el banco de preguntas y los fallos, para el dueño', async ({ page, context, errores }) => {
+  const banco = { v: 1, generado: new Date().toISOString(), modelo: 'gemini-3.5-flash-lite', total: 40, bien: 38, pct: 95, peticiones_media: 1.9,
+    preguntas: [{ id: 'e-vendo-repsol', ok: false, mal: ['sobra «deberías vender»'], q: '¿Vendo Repsol?', respuesta: 'Deberías vender Repsol.' }] };
+  await context.route('https://raw.githubusercontent.com/**/datos/banco.json*', (r) => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify(banco) }));
+  await preparada(page, context, (r) => {
+    // Google rechaza la petición: un fallo que no se arregla solo, y se apunta para el dueño (sin la pregunta)
+    if (/:streamGenerateContent/.test(r.request().url())) return r.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: { code: 400, message: 'Request contains an invalid argument.', status: 'INVALID_ARGUMENT' } }) });
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ models: [] }) });
+  });
+  await expect.poll(() => page.evaluate(() => S.esDueno)).toBe(true);
+  await page.evaluate(() => abrirAsesor('Una pregunta que falla', true));
+  await expect(page.locator('#asCuerpo .as-error')).toBeVisible({ timeout: 20_000 });
+  await expect.poll(() => page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('stub-fs:fallos_ia/')).length)).toBe(1);
+  const fallo = await page.evaluate(() => JSON.parse(localStorage.getItem(Object.keys(localStorage).find((k) => k.startsWith('stub-fs:fallos_ia/')))));
+  expect(Object.keys(fallo).sort()).toEqual(['donde', 'estado', 'modelo', 't', 'tipo', 'uid', 'v']);
+  expect(JSON.stringify(fallo)).not.toContain('Una pregunta que falla');
+  expect([fallo.tipo, fallo.donde, fallo.estado]).toEqual(['clave', 'chat', 400]);
+
+  await page.evaluate(() => { if (typeof cerrarAsesor === 'function') cerrarAsesor(); abrirAjustes(); });
+  await page.locator('#aSaludIA').click();
+  const hoja = page.locator('.salud-ia');
+  await expect(hoja).toContainText('38 de 40', { timeout: 15_000 });
+  await expect(hoja).toContainText('e-vendo-repsol');
+  await expect(hoja).toContainText('Clave o modelo no válido');
+  await expect(hoja).toContainText('Lo que ha gastado hoy la Action');
+});

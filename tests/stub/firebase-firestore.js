@@ -33,6 +33,7 @@ function puedeLeer(ruta) {
   if (col === 'usuarios') return id === u.uid;
   if (col === 'modos') return esDueno() || (id === String(u.email || '').toLowerCase() && (u.emailVerified || u.proveedor !== 'password'));
   if (col === 'cuentas' || col === 'opiniones') return esDueno() || (crudo(ruta) || {}).uid === u.uid;
+  if (col === 'fallos_ia') return esDueno();
   return true;
 }
 function snap(ruta) {

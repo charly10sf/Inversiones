@@ -151,6 +151,8 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     if (preguntaNueva()) { if (document.hidden) avisoSistema('pregunta', 'GrowIA te pregunta', preguntaNueva().x.q, '#objetivos', 'preg:' + clavePreg(preguntaNueva().x)); else setTimeout(() => mostrarPreguntaIA(), 1200); }
   } catch (e) {
     IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}.` : e.message;
+    // al dueño, los que no se van a reintentar solos (los que sí, cuando fallen del todo)
+    if (!((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3)) avisarFalloIA(e, 'revision');
     // saturado o «espera un momento»: lo vuelve a intentar sola a los 5, 15 y 30 minutos
     if ((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3) {
       const min = [5, 15, 30][IA.reintentos++];

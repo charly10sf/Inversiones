@@ -122,6 +122,9 @@
   ],
   "mapa": [
    "trozos/mapa.js"
+  ],
+  "salud": [
+   "trozos/salud-ia.js"
   ]
  }
 }

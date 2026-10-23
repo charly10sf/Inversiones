@@ -58,6 +58,23 @@ service cloud.firestore {
         && request.resource.data.alta is string && request.resource.data.alta.size() <= 10;
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
+    // 0.7: los fallos de GrowIA que no se arreglan solos (la conexión se corta tres veces, Google no contesta, la clave
+    // falla…), para que el dueño los vea sin que nadie se lo cuente. Sin la pregunta, sin la respuesta y sin nada de la
+    // cartera: de qué tipo, con qué modelo, dónde (chat, revisión…), el código de Google y la versión. Cualquiera con
+    // cuenta puede apuntar uno a su nombre (como mucho 5 al día, lo cuenta la app); solo los lee y los borra el dueño.
+    match /fallos_ia/{id} {
+      allow create: if request.auth != null
+        && request.resource.data.keys().hasOnly(['uid', 't', 'tipo', 'estado', 'modelo', 'donde', 'v'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.t is string && request.resource.data.t.size() <= 30
+        && request.resource.data.tipo in ['corte', 'red', 'cupo', 'espera', 'google', 'clave', 'bloqueo', 'vacia', 'formato', 'otro']
+        && (request.resource.data.estado == null || (request.resource.data.estado is int && request.resource.data.estado >= 0 && request.resource.data.estado < 1000))
+        && (request.resource.data.modelo == null || (request.resource.data.modelo is string && request.resource.data.modelo.size() <= 40))
+        && request.resource.data.donde in ['chat', 'revision', 'busqueda', 'noticia', 'captura']
+        && request.resource.data.v is string && request.resource.data.v.size() <= 12;
+      allow read, delete: if esDueno();
+      allow update: if false;
+    }
     // precios que pedir: el ticker o el ISIN de lo que alguien mete a mano y GrowFolio no seguía (sin quién lo
     // pide). Cualquiera con cuenta puede apuntar uno nuevo; lo lee la Action de precios, sin clave
     match /simbolos/{id} {

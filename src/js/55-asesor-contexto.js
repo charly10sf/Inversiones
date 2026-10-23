@@ -702,6 +702,7 @@ async function preguntarAsesor(texto) {
     await conversar({ mensajes: [...AS.api, { role: 'user', content: contenido }], turno, sistema: [].concat(sistemaAsesor()).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []), alCambiar, signal: AS.ctrl.signal });
   } catch (e) {
     turno.error = e.name === 'AbortError' ? 'Parado.' : !e.corte && /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
+    avisarFalloIA(e, 'chat');
   }
   AS.cargando = false; AS.ctrl = null;
   const final = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim();
