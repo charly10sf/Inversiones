@@ -1,4 +1,4 @@
-# 0.7 · Banco de preguntas de GrowIA: cada noche, unas 40 preguntas reales a GrowIA con la app de verdad (el build),
+# 0.7 · Banco de preguntas de GrowIA: cada noche, unas 42 preguntas reales a GrowIA con la app de verdad (el build),
 # la cartera de prueba y Gemini de verdad (la clave de la Action, con Flash-Lite); los domingos, una muestra de 10 con
 # el 3.6 Flash (casi igual que el 3.8 y con su propio cupo, que la Action apenas usa). El resultado va a la rama datos
 # (banco.json y banco-muestra.json) y el dueño lo ve en Ajustes. Se puede lanzar a mano sobre otra rama (por ejemplo,
@@ -12,22 +12,21 @@ on:
   workflow_dispatch:
     inputs:
       muestra:
-        description: "Solo la muestra de 10 con el 3.6 (si no, las 40 con Flash-Lite)"
+        description: "Solo la muestra de 10 con el 3.6 (si no, todas con Flash-Lite)"
         type: boolean
         default: false
 
 permissions:
   contents: write
 
-# lo mismo que «Precios», que publica la rama datos a la fuerza: nunca a la vez
-concurrency:
-  group: precios
-  cancel-in-progress: false
-
+# Las preguntas tardan (hasta hora y media) y no frenan los precios: solo el paso de publicar va en el grupo de
+# «Precios», que publica la rama datos a la fuerza (nunca a la vez)
 jobs:
-  banco:
+  preguntas:
     runs-on: ubuntu-latest
-    timeout-minutes: 120   # 42 preguntas de hasta 4 minutos; el banco guarda lo hecho tras cada una
+    timeout-minutes: 110
+    outputs:
+      hay: ${{ steps.hay.outputs.si }}
     steps:
       - uses: actions/checkout@v4
 
@@ -52,24 +51,49 @@ jobs:
 
       - name: Preguntas a GrowIA
         if: steps.hay.outputs.si
+        timeout-minutes: 98   # el banco guarda lo hecho tras cada pregunta: si se corta, se publica lo que haya
         env:
           GF_BANCO_CLAVE: ${{ secrets.GEMINI_API_KEY }}
           GF_BANCO_MUESTRA: ${{ ((github.event_name == 'schedule' && github.event.schedule == '37 3 * * 0') || inputs.muestra) && '1' || '0' }}
         run: |
-          if [ "$GF_BANCO_MUESTRA" = "1" ]; then export GF_BANCO_MODELO=gemini-3.6-flash GF_BANCO_SALIDA=$PWD/banco-muestra.json; else export GF_BANCO_MODELO=gemini-3.5-flash-lite GF_BANCO_SALIDA=$PWD/banco.json; fi
-          echo "salida=$GF_BANCO_SALIDA" >> "$GITHUB_ENV"
+          mkdir -p salida
+          if [ "$GF_BANCO_MUESTRA" = "1" ]; then export GF_BANCO_MODELO=gemini-3.6-flash GF_BANCO_SALIDA=$PWD/salida/banco-muestra.json; else export GF_BANCO_MODELO=gemini-3.5-flash-lite GF_BANCO_SALIDA=$PWD/salida/banco.json; fi
           npx playwright test tests/banco.spec.js --project=pc --reporter=list || echo "el banco no ha terminado bien"
-          ls -la "$GF_BANCO_SALIDA" || true
+          ls -la salida || true
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.hay.outputs.si
+        with:
+          name: banco
+          path: salida/
+          if-no-files-found: ignore
+          retention-days: 7
+
+  publicar:
+    needs: preguntas
+    if: always() && needs.preguntas.outputs.hay == '1'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    concurrency:
+      group: precios
+      cancel-in-progress: false
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        continue-on-error: true
+        with:
+          name: banco
+          path: salida
 
       - name: Publicar en la rama datos
-        if: steps.hay.outputs.si
         run: |
-          [ -f "$salida" ] || { echo "sin resultado"; exit 0; }
+          ls salida/*.json >/dev/null 2>&1 || { echo "sin resultado"; exit 0; }
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           for i in 1 2 3; do
             git fetch -q --depth=1 origin datos && git worktree add -q -f /tmp/datos origin/datos || exit 1
-            cp "$salida" /tmp/datos/
+            cp salida/*.json /tmp/datos/
             (cd /tmp/datos && git add -A && git commit -q -m "Banco de GrowIA $(date -u +%Y-%m-%dT%H:%MZ)" && git push -q origin HEAD:datos) && break
             git worktree remove -f /tmp/datos; sleep 20
           done
