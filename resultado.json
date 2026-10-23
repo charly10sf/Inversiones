@@ -1,0 +1,396 @@
+{
+ "inicio": "2026-10-23 15:00:09 UTC",
+ "app": {
+  "fundador": {
+   "conteo_chat_base": 19497,
+   "conteo_solo_sistema": 18232,
+   "conteo_revision": 35197,
+   "resultados_tokens": {
+    "buscar_empresa": 1215,
+    "simular_compra": 435,
+    "simular_venta": 363,
+    "radar": 1959,
+    "proyectar": 420,
+    "historico": 165
+   },
+   "preguntas": {
+    "¿Cómo va mi cartera hoy?": [
+     {
+      "uso": {
+       "promptTokenCount": 19503,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 298,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 19801
+      },
+      "seg": 4.1,
+      "llamadas": [],
+      "texto_chars": 971
+     }
+    ],
+    "¿Compro NatWest Group plc (NWG.L)? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.": [
+     {
+      "uso": {
+       "promptTokenCount": 19528,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 20,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 19548
+      },
+      "seg": 1.2,
+      "llamadas": [
+       "buscar_empresa"
+      ],
+      "texto_chars": 0
+     },
+     {
+      "uso": {
+       "promptTokenCount": 20702,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 38,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 20740
+      },
+      "seg": 0.9,
+      "llamadas": [
+       "simular_compra"
+      ],
+      "texto_chars": 0
+     },
+     {
+      "uso": {
+       "promptTokenCount": 21142,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 687,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 21829
+      },
+      "seg": 3.4,
+      "llamadas": [],
+      "texto_chars": 2484
+     }
+    ],
+    "¿Qué pasa si vendo la mitad de Repsol? ¿Cuánto pagaría a Hacienda?": [
+     {
+      "uso": {
+       "promptTokenCount": 19514,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 26,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 19540
+      },
+      "seg": 1.4,
+      "llamadas": [
+       "simular_venta"
+      ],
+      "texto_chars": 0
+     },
+     {
+      "uso": {
+       "promptTokenCount": 19870,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 352,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 20222
+      },
+      "seg": 2.3,
+      "llamadas": [],
+      "texto_chars": 1180
+     }
+    ],
+    "¿Cuánto tendré en 10 años si aporto 600 € al mes?": [
+     {
+      "uso": {
+       "promptTokenCount": 19516,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 319,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 19835
+      },
+      "seg": 2.0,
+      "llamadas": [],
+      "texto_chars": 1096
+     }
+    ],
+    "Busca en el radar empresas europeas para diversificar lo que tengo.": [
+     {
+      "uso": {
+       "promptTokenCount": 19511,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 36,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 19547
+      },
+      "seg": 1.0,
+      "llamadas": [
+       "radar"
+      ],
+      "texto_chars": 0
+     },
+     {
+      "uso": {
+       "promptTokenCount": 21396,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 367,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 21763
+      },
+      "seg": 2.0,
+      "llamadas": [],
+      "texto_chars": 1232
+     }
+    ]
+   },
+   "revision_lite": {
+    "estado": 200,
+    "uso": {
+     "promptTokenCount": 33932,
+     "cachedContentTokenCount": null,
+     "candidatesTokenCount": 3951,
+     "thoughtsTokenCount": null,
+     "toolUsePromptTokenCount": null,
+     "totalTokenCount": 37883
+    },
+    "seg": 11.4,
+    "error": null
+   }
+  },
+  "estandar": {
+   "conteo_chat_base": 18099,
+   "conteo_solo_sistema": 16834,
+   "conteo_revision": 32630,
+   "resultados_tokens": {
+    "buscar_empresa": 1214,
+    "simular_compra": 435,
+    "simular_venta": 363,
+    "radar": 1959,
+    "proyectar": 420,
+    "historico": 165
+   },
+   "preguntas": {
+    "¿Cómo va mi cartera hoy?": [
+     {
+      "uso": {
+       "promptTokenCount": 18105,
+       "cachedContentTokenCount": null,
+       "candidatesTokenCount": 520,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 18625
+      },
+      "seg": 5.9,
+      "llamadas": [],
+      "texto_chars": 1300
+     }
+    ],
+    "¿Compro NatWest Group plc (NWG.L)? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.": [
+     {
+      "uso": {
+       "promptTokenCount": 18130,
+       "cachedContentTokenCount": 14284,
+       "candidatesTokenCount": 20,
+       "thoughtsTokenCount": null,
+       "toolUsePromptTokenCount": null,
+       "totalTokenCount": 18150
+      },
+      "seg": 4.4,
+      "llamadas": [
+       "buscar_empresa"
+      ],
+      "texto_chars": 0
+     },
+     {
+      "estado": 429,
+      "error": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex"
+     }
+    ],
+    "¿Qué pasa si vendo la mitad de Repsol? ¿Cuánto pagaría a Hacienda?": [
+     {
+      "estado": 429,
+      "error": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex"
+     }
+    ],
+    "¿Cuánto tendré en 10 años si aporto 600 € al mes?": [
+     {
+      "estado": 429,
+      "error": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex"
+     }
+    ],
+    "Busca en el radar empresas europeas para diversificar lo que tengo.": [
+     {
+      "estado": 429,
+      "error": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex"
+     }
+    ]
+   }
+  }
+ },
+ "action": [
+  {
+   "pila": [
+    "gemini",
+    "leer_lote",
+    "main",
+    "parte_a",
+    "<module>"
+   ],
+   "modelo_pedido": "gemini-3.8-flash",
+   "entrada_conteo": 14724,
+   "con_busqueda": false,
+   "max_salida": 32768,
+   "pensar": "low",
+   "lite_estado": 429,
+   "lite_uso": null,
+   "lite_seg": 0.1,
+   "lite_error": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex"
+  },
+  {
+   "pila": [
+    "gemini",
+    "leer_lote",
+    "main",
+    "parte_a",
+    "<module>"
+   ],
+   "modelo_pedido": "gemini-3.6-flash",
+   "entrada_conteo": 14724,
+   "con_busqueda": false,
+   "max_salida": 32768,
+   "pensar": "low",
+   "lite_estado": 429,
+   "lite_uso": null,
+   "lite_seg": 0.1,
+   "lite_error": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex"
+  },
+  {
+   "pila": [
+    "gemini",
+    "leer_lote",
+    "main",
+    "parte_a",
+    "<module>"
+   ],
+   "modelo_pedido": "gemini-3.5-flash-lite",
+   "entrada_conteo": 14724,
+   "con_busqueda": false,
+   "max_salida": 32768,
+   "pensar": "low",
+   "lite_estado": 429,
+   "lite_uso": null,
+   "lite_seg": 0.2,
+   "lite_error": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \\n* Quota ex"
+  },
+  {
+   "pila": [
+    "gemini",
+    "informe_cartera",
+    "main",
+    "parte_a",
+    "<module>"
+   ],
+   "modelo_pedido": "gemini-3.8-flash",
+   "entrada_conteo": 16183,
+   "con_busqueda": true,
+   "max_salida": 32768,
+   "pensar": "high",
+   "lite_estado": 429,
+   "lite_uso": null,
+   "lite_seg": 0.1,
+   "lite_error": "{\n  \"error\": {\n    \"code\": 429,\n    \"message\": \"You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \",\n    \"stat"
+  },
+  {
+   "pila": [
+    "gemini",
+    "informe_cartera",
+    "main",
+    "parte_a",
+    "<module>"
+   ],
+   "modelo_pedido": "gemini-3.8-flash",
+   "entrada_conteo": 16183,
+   "con_busqueda": false,
+   "max_salida": 32768,
+   "pensar": "high",
+   "lite_estado": 200,
+   "lite_uso": {
+    "promptTokenCount": 16183,
+    "cachedContentTokenCount": null,
+    "candidatesTokenCount": 3204,
+    "thoughtsTokenCount": null,
+    "toolUsePromptTokenCount": null,
+    "totalTokenCount": 19387
+   },
+   "lite_seg": 10.0,
+   "lite_error": null
+  },
+  {
+   "pila": [
+    "gemini",
+    "decidir",
+    "main",
+    "parte_a",
+    "<module>"
+   ],
+   "modelo_pedido": "gemini-3.8-flash",
+   "entrada_conteo": 20732,
+   "con_busqueda": false,
+   "max_salida": 32768,
+   "pensar": "high",
+   "lite_estado": 200,
+   "lite_uso": {
+    "promptTokenCount": 20732,
+    "cachedContentTokenCount": null,
+    "candidatesTokenCount": 3528,
+    "thoughtsTokenCount": null,
+    "toolUsePromptTokenCount": null,
+    "totalTokenCount": 24260
+   },
+   "lite_seg": 8.8,
+   "lite_error": null
+  },
+  {
+   "pila": [
+    "traducir",
+    "traducir_todo",
+    "main",
+    "parte_a",
+    "<module>"
+   ],
+   "modelo_pedido": "gemini-3.5-flash-lite",
+   "entrada_conteo": 1050,
+   "con_busqueda": false,
+   "max_salida": 16000,
+   "pensar": null,
+   "lite_estado": 200,
+   "lite_uso": {
+    "promptTokenCount": 1050,
+    "cachedContentTokenCount": null,
+    "candidatesTokenCount": 823,
+    "thoughtsTokenCount": null,
+    "toolUsePromptTokenCount": null,
+    "totalTokenCount": 1873
+   },
+   "lite_seg": 3.6,
+   "lite_error": null
+  }
+ ],
+ "datos": {
+  "leidas_24h": 501,
+  "con_noticias": 820,
+  "noticias": 4834,
+  "empresas": 892,
+  "noticias_leidas_informe": 188,
+  "modelos_escaneo": [],
+  "textos_traducidos": 1908
+ },
+ "fin": "2026-10-23 15:01:34 UTC"
+}
