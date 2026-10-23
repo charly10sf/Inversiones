@@ -12,9 +12,10 @@ PREGUNTA = "¿Compro NatWest Group plc (NWG.L)? Contrástalo con las noticias y 
 ORIGEN = "https://charly10sf.github.io"
 
 
-def pedir(modelo, contents, pensar=None):
+def pedir(modelo, contents, pensar=None, forzar=False):
     cuerpo = {"systemInstruction": {"parts": [{"text": C["sistema"]}]}, "contents": contents, "tools": C["herramientas"],
-              "generationConfig": {"maxOutputTokens": 16384, **({"thinkingConfig": {"thinkingLevel": pensar}} if pensar else {})}}
+              "generationConfig": {"maxOutputTokens": 16384, **({"thinkingConfig": {"thinkingLevel": pensar}} if pensar else {})},
+              **({"toolConfig": {"functionCallingConfig": {"mode": "ANY", "allowedFunctionNames": ["buscar_empresa", "simular_compra"]}}} if forzar else {})}
     datos = json.dumps(cuerpo, ensure_ascii=False).encode()
     req = urllib.request.Request(f"{BASE}/models/{modelo}:streamGenerateContent?alt=sse", data=datos, method="POST",
                                  headers={"content-type": "application/json", "x-goog-api-key": CLAVE, "Origin": ORIGEN})
@@ -44,7 +45,7 @@ def caso(modelo, pensar=None):
     out = {"modelo": modelo}
     contents = [{"role": "user", "parts": [{"text": PREGUNTA}]}]
     for vuelta in range(6):
-        st, cab, txt, partes, tam = pedir(modelo, contents, pensar)
+        st, cab, txt, partes, tam = pedir(modelo, contents, pensar, forzar=(vuelta == 0))
         paso = {"estado": st, "cabeceras": cab, "bytes_enviados": tam, "llamadas": [p["functionCall"] for p in partes if "functionCall" in p],
                 "texto": "".join(p.get("text", "") for p in partes if "text" in p)[:600], "firma": any("thoughtSignature" in p for p in partes)}
         if st != 200:
@@ -68,5 +69,5 @@ def preflight():
         return e.code, dict(e.headers)
 
 
-res = {"preflight": preflight(), "lite": caso("gemini-3.5-flash-lite"), "flash36": caso("gemini-3.6-flash", "high")}
+res = {"preflight": preflight(), "lite": caso("gemini-3.5-flash-lite"), "lite2": caso("gemini-3.5-flash-lite"), "flash38": caso("gemini-3.8-flash", "high")}
 print(json.dumps(res, ensure_ascii=False, indent=1, default=str))
