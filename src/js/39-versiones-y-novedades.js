@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.6a', f: '2026-10-23', h: '15:45', t: 'Oriente Medio, de vuelta en el mapa', arreglos: [
+    'En el mapa vuelven Arabia Saudí y Egipto, y llegan Emiratos, Catar y Kuwait. Yahoo ha dejado de dar el histórico de sus bolsas: «hoy» sale de su último cierre, y el mes y el año, del ETF de cada país (en dólares). Egipto, de momento, solo con «hoy».',
+  ] },
   { v: '0.6', f: '2026-10-23', h: '15:00', t: 'Abre antes', cosas: [
     { d: 'partes', t: 'Rehecha por dentro', x: 'Toda la app se ha reorganizado por dentro: lo que era un único archivo enorme son ahora casi 90 partes, una por sección, que se juntan solas al publicar. Por fuera no cambia nada, pero cada arreglo y cada novedad llegan antes y con menos riesgo de romper otra cosa.' },
     { d: 'trozos', t: 'Abre antes', x: 'GrowFolio baja un 20 % menos al abrir y está lista antes. El mapa del mundo, GrowIA, GTA VI y las novedades se cargan la primera vez que los abres, y el inglés solo si lo usas.' },

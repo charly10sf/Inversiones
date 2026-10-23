@@ -1,6 +1,26 @@
 {
  "versiones": [
   {
+   "v": "0.6a",
+   "f": "2026-10-23",
+   "h": "15:45",
+   "t": "Oriente Medio, de vuelta en el mapa",
+   "commits": [
+    {
+     "cuando": "2026-10-23 15:45",
+     "asunto": "0.6a: Oriente Medio, de vuelta en el mapa",
+     "detalle": [
+      "scripts/precios.py: si Yahoo da el año de un índice con menos de 20 cierres, se prueba con dos años y, si tampoco, «hoy» sale de su último cierre y el anterior (metadatos con plazo de un día) y el mes y el año, del ETF de iShares del país",
+      "Tadawul (con KSA), EGX 30 (solo hoy), y nuevos DFM de Dubái (UAE), QE Index de Catar (QAT) y Boursa Kuwait 50 (KWT). Comprobado contra Yahoo con una Action de prueba",
+      "Si una bolsa falla, la de la pasada anterior solo se queda si tenía algún dato",
+      "Mapa: en la tabla del país, «el mes y el año, del ETF … (en dólares)» cuando vienen del ETF",
+      "Pruebas de Python nuevas: tests/scripts/test_precios_mapa.py (sin Yahoo)",
+      "Novedades de la 0.6a en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.6",
    "f": "2026-10-23",
    "h": "15:00",

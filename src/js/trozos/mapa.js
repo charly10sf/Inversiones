@@ -25,7 +25,7 @@ function bolsasDe(c) {
     const lv = S.liveM && S.liveM[sym];
     out.push({ sym, n: m.nombre, v: lv && lv.var != null ? lv.var : m.variacion_dia, m: m.rent && m.rent['1m'], y: m.rent && m.rent.ytd, f: m.fecha });
   }
-  for (const [sym, x] of Object.entries(mapa)) if (x.p === c) out.push({ sym, n: x.n, v: x.v, m: x.m, y: x.y, f: x.f });
+  for (const [sym, x] of Object.entries(mapa)) if (x.p === c) out.push({ sym, n: x.n, v: x.v, m: x.m, y: x.y, f: x.f, my: x.my });
   return out;
 }
 const nombrePaisMapa = (c) => { const n = S.mapaGeo && S.mapaGeo.n[c]; return n ? L(n[0], n[1]) : PAISES[c] || c; };
@@ -252,7 +252,7 @@ function htmlInfoMapa(c, M) {
   const bs = bolsasDe(c), exTodo = S.mapaExTodo || ex, e = exTodo.get(c), hoy = hoyIso(), pm = PESO_MUNDO[c];
   const info = bs[0] && MERC_INFO[bs[0].sym];
   const celda = (v) => `<td><span class="mi-v ${cls(v)}">${pctS(v, 1)}</span></td>`;
-  const tabla = bs.length ? `<table class="mi-bolsas"><thead><tr><th scope="col"><span class="sr">${L('Índice', 'Index')}</span></th><th scope="col">${L('Hoy', 'Today')}</th><th scope="col">${L('1 mes', '1 mo')}</th><th scope="col">${L('Año', 'YTD')}</th></tr></thead><tbody>${bs.map((b) => `<tr><th scope="row">${esc(b.n)}${b.f && b.f < hoy ? `<small>${L(`cierre del ${fechaCorta(b.f)}`, `close of ${fechaCortaL(b.f)}`)}</small>` : ''}</th>${celda(b.v)}${celda(b.m)}${celda(b.y)}</tr>`).join('')}</tbody></table>` : `<p class="k">${L('No seguimos su bolsa.', "We don't track its stock market.")}</p>`;
+  const tabla = bs.length ? `<table class="mi-bolsas"><thead><tr><th scope="col"><span class="sr">${L('Índice', 'Index')}</span></th><th scope="col">${L('Hoy', 'Today')}</th><th scope="col">${L('1 mes', '1 mo')}</th><th scope="col">${L('Año', 'YTD')}</th></tr></thead><tbody>${bs.map((b) => `<tr><th scope="row">${esc(b.n)}${b.f && b.f < hoy ? `<small>${L(`cierre del ${fechaCorta(b.f)}`, `close of ${fechaCortaL(b.f)}`)}</small>` : ''}${b.my ? `<small>${L(`el mes y el año, del ETF ${esc(b.my)} (en dólares)`, `month and YTD from the ${esc(b.my)} ETF (in dollars)`)}</small>` : ''}</th>${celda(b.v)}${celda(b.m)}${celda(b.y)}</tr>`).join('')}</tbody></table>` : `<p class="k">${L('No seguimos su bolsa.', "We don't track its stock market.")}</p>`;
   // «por Repsol, IAG y MSCI Europe», o «por Repsol, IAG, MSCI Europe y 2 más»
   const de = e ? e.de.slice(0, 3).map((x) => `<b>${esc(x.n)}</b>`) : [], mas = e ? e.de.length - 3 : 0;
   const porQue = mas > 0 ? `${de.join(', ')} ${L(`y ${mas} más`, `and ${mas} more`)}` : yLista(de);

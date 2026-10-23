@@ -264,6 +264,10 @@ test.describe('trozos: el mapa', () => {
       // y el desplegable de países, con los colores y la letra de la app
       expect(await page.evaluate(() => getComputedStyle(document.querySelector('#mapaPais')).appearance)).toBe('base-select');
     }
+    // 0.6a: un país con el mes y el año sacados del ETF lo dice en su tabla
+    await page.evaluate(() => { S.precios.mapa['^TASI.SR'] = { n: 'Tadawul', p: 'SA', f: hoyIso(), v: -2.32, m: -9.77, y: -7.44, my: 'KSA' }; });
+    await page.locator('#mapaPais').selectOption('SA');
+    await expect(page.locator('.mi-bolsas')).toContainText('del ETF KSA');
     // «Tu dinero»: los países donde tienes algo
     await tocar(page, '[data-mapa-modo="tuyo"]');
     await expect(page.locator('.mapa-w')).toHaveAttribute('data-modo', 'tuyo');

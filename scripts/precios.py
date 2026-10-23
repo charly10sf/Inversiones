@@ -88,7 +88,9 @@ MERCADOS = [
 ]
 
 # 0.4: el mapa del mundo de Mercados. Las bolsas de cada país que no están ya en MERCADOS (esas se reutilizan).
-# (país, símbolos a probar en orden, nombre). Sin histórico: solo hoy, el mes y el año. Argentina y Turquía no
+# (país, símbolos a probar en orden, nombre[, ETF para el mes y el año]). Sin histórico: solo hoy, el mes y el año.
+# Oriente Medio (23 oct): Yahoo ya no da el histórico de sus índices, solo el último cierre y el anterior; «hoy» sale de
+# ahí y el mes y el año, del ETF de iShares de ese país (en dólares, a los que esas monedas van atadas). Argentina y Turquía no
 # están a propósito: con su inflación, su bolsa en moneda local sale siempre en verde y el color engañaría.
 MAPA = [
     ("CA", ["^GSPTSE"], "S&P/TSX"), ("MX", ["^MXX"], "IPC"), ("CL", ["^IPSA"], "IPSA"),
@@ -99,8 +101,9 @@ MAPA = [
     ("GR", ["GD.AT"], "Bolsa de Atenas"), ("KR", ["^KS11"], "KOSPI"), ("TW", ["^TWII"], "Taiex"),
     ("AU", ["^AXJO"], "ASX 200"), ("NZ", ["^NZ50"], "NZX 50"), ("SG", ["^STI"], "Straits Times"),
     ("ID", ["^JKSE"], "Yakarta"), ("MY", ["^KLSE"], "KLCI"), ("TH", ["^SET.BK"], "SET"),
-    ("PH", ["PSEI.PS"], "PSEi"), ("IL", ["TA35.TA"], "TA-35"), ("SA", ["^TASI.SR"], "Tadawul"),
+    ("PH", ["PSEI.PS"], "PSEi"), ("IL", ["TA35.TA"], "TA-35"), ("SA", ["^TASI.SR"], "Tadawul", "KSA"),
     ("ZA", ["^J203.JO", "STX40.JO"], "Top 40 (Johannesburgo)"), ("EG", ["^CASE30"], "EGX 30"),
+    ("AE", ["DFMGI.AE"], "DFM (Dubái)", "UAE"), ("QA", ["^GNRI.QA"], "QE Index", "QAT"), ("KW", ["^BKM50.KW"], "Boursa Kuwait 50", "KWT"),
 ]
 
 # aparte de Mercados: solo para la cuenta atrás de GTA VI de la web (Take-Two es la dueña de Rockstar)
@@ -987,12 +990,51 @@ def mercado(simbolo, nombre, grupo=None):
     }
 
 
-def bolsa_mapa(pais, simbolos, nombre):
+def hoy_por_meta(simbolo):
+    """El último cierre y el anterior, de los metadatos de Yahoo (para los índices de los que ya no da el histórico).
+    Con el plazo de un día, «chartPreviousClose» es el cierre del día de antes. Devuelve (fecha, variación %)."""
+    t = yf.Ticker(simbolo)
+    t.history(period="1d", interval="1d", auto_adjust=False)
+    m = t.history_metadata or {}
+    p, ant, ts = m.get("regularMarketPrice"), m.get("chartPreviousClose"), m.get("regularMarketTime")
+    if not p or not ant or p <= 0 or ant <= 0 or not ts:
+        raise RuntimeError("sin último cierre")
+    cuando = pd.Timestamp(ts, unit="s", tz="UTC") if isinstance(ts, (int, float)) else pd.Timestamp(ts)
+    if cuando.tzinfo is None:
+        cuando = cuando.tz_localize("UTC")
+    cuando = cuando.tz_convert(m.get("exchangeTimezoneName") or "UTC")
+    if pd.Timestamp.now(tz=cuando.tz) - cuando > pd.Timedelta(days=10):
+        raise RuntimeError("sin datos recientes")
+    return cuando.date().isoformat(), num((p / ant - 1) * 100, 2)
+
+
+def mes_y_anio(simbolo):
+    """El mes y el año de un ETF (el respaldo de los índices sin histórico): (mes %, año %) o (None, None)."""
+    try:
+        _, s, _ = serie_cierres(simbolo, "1y")
+    except Exception:  # noqa: BLE001
+        return None, None
+    if len(s) < 20:
+        return None, None
+    hoy = s.index[-1]
+    return rentabilidad(s, hoy - pd.Timedelta(days=30)), rentabilidad(s, pd.Timestamp(year=hoy.year, month=1, day=1) - pd.Timedelta(days=1))
+
+
+def bolsa_mapa(pais, simbolos, nombre, etf=None):
     """Lo justo para pintar un país en el mapa: cómo va hoy, en el mes y en el año (en su moneda)."""
     fallo = None
     for sim in simbolos:
         try:
-            _, s, _ = serie_cierres(sim, "1y")
+            # 23 oct: Yahoo devolvía el año de Tadawul y del EGX 30 con un solo cierre; si el año viene así, se prueba
+            # con dos años, y si tampoco, con su último cierre y el anterior (y el mes y el año, del ETF si lo hay)
+            for periodo in ("1y", "2y"):
+                _, s, _ = serie_cierres(sim, periodo)
+                if len(s) >= 20:
+                    break
+            if len(s) < 20:
+                f, v = hoy_por_meta(sim)
+                m, y = mes_y_anio(etf) if etf else (None, None)
+                return sim, {"n": nombre, "p": pais, "f": f, "v": v, "m": m, "y": y, **({"my": etf} if m is not None or y is not None else {})}
             hoy = s.index[-1]
             if pd.Timestamp.now() - hoy > pd.Timedelta(days=10):
                 raise RuntimeError("sin datos recientes")
@@ -1017,7 +1059,7 @@ def bolsas_mapa(anterior):
     with cf.ThreadPoolExecutor(max_workers=6) as ex:
         futuros = {ex.submit(bolsa_mapa, *x): x for x in MAPA}
         for fu in cf.as_completed(futuros):
-            pais, simbolos, _ = futuros[fu]
+            pais, simbolos = futuros[fu][:2]
             try:
                 sim, v = fu.result()
                 out[sim] = v
@@ -1025,7 +1067,8 @@ def bolsas_mapa(anterior):
                 fallos.append(str(e))
                 # el de la pasada anterior, mientras no tenga más de diez días: después, mejor sin dato que uno viejo
                 limite = (dt.date.today() - dt.timedelta(days=10)).isoformat()
-                viejo = next(((k, v) for k, v in prev.items() if v.get("p") == pais and str(v.get("f") or "") >= limite), None)
+                viejo = next(((k, v) for k, v in prev.items() if v.get("p") == pais and str(v.get("f") or "") >= limite
+                              and any(v.get(c) is not None for c in ("v", "m", "y"))), None)
                 if viejo:
                     out[viejo[0]] = viejo[1]
     if fallos:
