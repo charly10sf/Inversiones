@@ -74,3 +74,5 @@
 .as-modelo b { display: block; font-weight: 600; font-size: 14px; }
 .as-modelo small { color: var(--muted); font-size: 12.5px; }
 
+/* 0.7: con qué modelo ha contestado */
+.as-modelo-de { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }

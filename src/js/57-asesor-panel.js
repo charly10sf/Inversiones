@@ -70,7 +70,14 @@ function htmlTurno(t, k) {
     ${vivo && !(ult && ult.tipo === 'texto' && ult.texto) ? '<div class="as-pensando" aria-label="Pensando"><i></i><i></i><i></i></div>' : ''}
     ${t.error ? `<div class="as-error">${esc(t.error)} <button class="enlace" data-as="reintentar">Volver a preguntar</button></div>` : ''}
     ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(x.d || dom(x.u))}</a>`).join('')}</div>` : ''}
+    ${!vivo && t.modelo && MODELOS[t.modelo] && !t.error ? `<small class="as-modelo-de">${L('Con', 'With')} ${esc(MODELOS[t.modelo].n)}</small>` : ''}
   </div>`;
+}
+/* 0.7: lo gastado hoy de cada modelo desde este dispositivo */
+function htmlCupoIA() {
+  const u = usoIAHoy();
+  const partes = Object.keys(MODELOS).map((k) => `${esc(MODELOS[k].corto || MODELOS[k].n)} ${CUPO_DIA[k] ? `${Math.min(u[k] || 0, CUPO_DIA[k])} ${L('de', 'of')} ${CUPO_DIA[k]}` : u[k] || 0}${agotadosIA().includes(k) ? ` (${L('agotado', 'used up')})` : ''}`);
+  return `${L('Hoy, desde este dispositivo', 'Today, from this device')}: ${partes.join(' · ')}. ${L('Se renueva a medianoche de California (las 9:00 en España). Si usas la clave en otro sitio, también gasta.', 'It resets at midnight California time (9:00 in Spain). Using the key elsewhere also counts.')}`;
 }
 function htmlClaveAsesor() {
   const cfg = cfgAsesor();
@@ -107,6 +114,7 @@ function htmlAjustesAsesor() {
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
     <div class="seccion-ed"><h3>Clave de Google</h3>
       <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[cfg.prov]] ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'}</p>
+      ${AS.clave ? `<p class="nota as-cupo" style="margin:0">${htmlCupoIA()}</p>` : ''}
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-as="cambiar-clave">${AS.clave ? 'Cambiar clave' : 'Poner clave'}</button>${AS.clave ? '<button class="btn peq peligro" data-as="borrar-clave">Borrar clave</button>' : ''}</div>
     </div>
   </div>`;
@@ -116,7 +124,8 @@ function pintarAsesor(alFinal) {
   const cfg = cfgAsesor();
   const cuerpo = $('#asCuerpo', fondo), pie = $('#asPie', fondo);
   const vivo = modeloVivo(cfg);
-  $('#asSub', fondo).textContent = `${MODELOS[vivo].n}${vivo !== cfg.modelo ? ` (el ${MODELOS[cfg.modelo].corto || MODELOS[cfg.modelo].n} ha gastado su cupo de hoy)` : ''}${cfg.web && !AS.sinWeb ? ', con búsqueda en internet' : ''}`;
+  const usados = usoIAHoy()[vivo] || 0;
+  $('#asSub', fondo).textContent = `${MODELOS[vivo].n}${vivo !== cfg.modelo ? ` (el ${MODELOS[cfg.modelo].corto || MODELOS[cfg.modelo].n} ha gastado su cupo de hoy)` : ''}${CUPO_DIA[vivo] ? ` · ${L(`${Math.min(usados, CUPO_DIA[vivo])} de ${CUPO_DIA[vivo]} hoy`, `${Math.min(usados, CUPO_DIA[vivo])} of ${CUPO_DIA[vivo]} today`)}` : ''}${cfg.web && !AS.sinWeb ? ', con búsqueda en internet' : ''}`;
   const rapida = cfg.modelo === MODELO_RAPIDO;
   $('#asModo', fondo).innerHTML = `<span>Respuesta</span><div class="seg" role="group" aria-label="Tipo de respuesta"><button type="button" data-as="modo" data-m="normal" aria-pressed="${!rapida}">Normal</button><button type="button" data-as="modo" data-m="rapida" aria-pressed="${rapida}">Rápida</button></div><small>${rapida ? 'Contesta en segundos y gasta mucho menos cupo' : 'Piensa más a fondo; si se agota, salta sola a otro modelo'}</small>`;
   const vista = !AS.clave && AS.vista !== 'ajustes' ? 'clave' : AS.vista;

@@ -33,9 +33,12 @@ function noticiasCartera(soloAnalistas) {
   const vistos = new Set();
   return out.sort((a, b) => ((b.d || '') > (a.d || '') ? 1 : -1)).filter((n) => { const k = n.t.slice(0, 50); if (vistos.has(k)) return false; vistos.add(k); return true; });
 }
+/* 0.7: cada titular, con su marca de las fichas de GrowIA (factor, bueno o malo, cuánto importa); lo importante
+   arriba, el relleno abajo y el mismo titular de varios medios, una vez (13b-fichas.js) */
 function htmlNoticias(lista, conActivo = false, max = 12) {
   if (!lista.length) return '<div class="vacio">No hay noticias recientes.</div>';
-  return `<ul class="noticias">${lista.slice(0, max).map((n) => `<li><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}</small></li>`).join('')}</ul>`;
+  if (!S.fichas) fichasLuego();
+  return `<ul class="noticias">${ordenarNoticias(lista).slice(0, max).map(({ n, m, mas }) => `<li${m && m[2] === 0 ? ' class="relleno"' : ''}><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${chipMarca(m)}${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}${mas ? `<span class="mas-medios">${L(`y ${mas} ${mas === 1 ? 'medio más' : 'medios más'}`, `and ${mas} more ${mas === 1 ? 'outlet' : 'outlets'}`)}</span>` : ''}</small></li>`).join('')}</ul>`;
 }
 
 /* Las noticias se leen dentro (0.2.4): al tocar una sale una hoja con su resumen, que escribe GrowIA (Gemini, con tu
@@ -392,7 +395,9 @@ function trDatos(o) {
   let n = 0;
   for (const k of Object.keys(o)) {
     const v = o[k];
-    if (typeof v === 'string') { if (v.length >= 12) { const t = S.trEn[claveTr(v.trim())]; if (t) { o[k] = t; n++; } } }
+    // 0.7: el titular en español se guarda en t0, que es con el que se buscan sus marcas en las fichas de GrowIA
+    if (k === 't0') continue;
+    if (typeof v === 'string') { if (v.length >= 12) { const t = S.trEn[claveTr(v.trim())]; if (t) { if (k === 't' && o.t0 == null) o.t0 = v; o[k] = t; n++; } } }
     else if (v && typeof v === 'object' && k !== 'fuentes' && k !== 'noticias') n += trDatos(v);
   }
   return n;
@@ -400,7 +405,7 @@ function trDatos(o) {
 // cambia lo que haya cargado (se puede llamar varias veces: lo ya cambiado no vuelve a coincidir)
 function aplicarTrEn() {
   if (IDIOMA !== 'en' || !S.trEn) return 0;
-  const n = trDatos(S.informe) + trDatos(S.escaneo) + trDatos(S.precios && S.precios.noticias);
+  const n = trDatos(S.informe) + trDatos(S.escaneo) + trDatos(S.precios && S.precios.noticias) + trDatos(S.fichas && { e: S.fichas.e, temas: S.fichas.temas });
   if (n && S.cartera && !S.ficha) pintar();
   return n;
 }

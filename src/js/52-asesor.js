@@ -18,6 +18,17 @@ const MODELO_DEF = 'gemini-3.8-flash', MODELO_RAPIDO = 'gemini-3.5-flash-lite';
 const CADENA_IA = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
 const diaGoogle = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
 const agotadosIA = () => { const a = LS.get('inv-ia-agotados', {}), d = diaGoogle(); return Object.keys(a).filter((k) => a[k] === d); };
+/* 0.7: cuántas peticiones lleva hoy cada modelo desde este dispositivo. El cupo es de la clave (si la usas en otro
+   sitio, también gasta): es una cuenta aproximada, para que se vea cuánto queda */
+const CUPO_DIA = { 'gemini-3.8-flash': 20, 'gemini-3.6-flash': 20 };
+function contarPeticion(url) {
+  const m = /\/models\/([^:/?]+):(?:streamGenerateContent|generateContent)/.exec(String(url || ''));
+  if (!m) return;
+  const d = diaGoogle(), u = LS.get('inv-ia-uso', {}), hoy = u && u.d === d ? u : { d, m: {} };
+  hoy.m[m[1]] = (hoy.m[m[1]] || 0) + 1;
+  LS.set('inv-ia-uso', hoy);
+}
+function usoIAHoy() { const u = LS.get('inv-ia-uso', {}); return u && u.d === diaGoogle() ? u.m || {} : {}; }
 const marcarAgotado = (m) => { const d = diaGoogle(), a = Object.fromEntries(Object.entries(LS.get('inv-ia-agotados', {})).filter(([, v]) => v === d)); a[m] = d; LS.set('inv-ia-agotados', a); };
 // la elegida y, detrás, las demás: primero las más baratas que ella y luego las más caras
 function ordenIA(elegido) {

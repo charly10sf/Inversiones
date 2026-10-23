@@ -122,3 +122,28 @@ export async function meterCartera(page) {
     pintar();
   });
 }
+
+// la misma cuenta que claveTitular (src/js/13b-fichas.js) y clave_titulo (scripts/fichas.py)
+const norm = (t) => String(t || '').normalize('NFD').replace(/[^\x00-\x7f]/g, '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, 120);
+function clave(t) { const s = norm(t); let h = 0x811c9dc5; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return (h >>> 0).toString(16).padStart(8, '0'); }
+
+/** 0.7: unas fichas de GrowIA de prueba con los titulares de verdad de Repsol (tests/.datos) */
+export function fichasDePrueba() {
+  const nots = JSON.parse(readFileSync(join(DATOS, 'datos', 'precios.json'), 'utf8')).noticias.repsol || [];
+  const ahora = new Date().toISOString(), hoy = ahora.slice(0, 10);
+  const f0 = nots[0] || { t: 'Repsol gana más', u: 'https://ejemplo.es/1', f: 'EFE', d: ahora };
+  return {
+    nots,
+    fichas: {
+      v: 1, generado: ahora,
+      e: { 'REP.MC': { n: 'Repsol', d: ahora,
+        fa: { negocio: { s: '+', p: 2, plazo: 'medio', txt: 'Recompra acciones y prepara más dinero para el accionista.', d: ahora, fuentes: [{ t: f0.t, u: f0.u, f: f0.f, d: f0.d }] },
+          politico: { s: '-', p: 1, plazo: 'largo', txt: 'El impuesto a las energéticas sigue en el aire.', d: ahora, fuentes: [] } },
+        tit: Object.fromEntries([nots[0] && [clave(nots[0].t), ['negocio', '+', 3, hoy]], nots[1] && [clave(nots[1].t), ['mercado', '=', 0, hoy]]].filter(Boolean)) } },
+      temas: [{ k: 'impuestos-energeticas', fa: 'politico', txt: 'Italia sopesa subir impuestos a las energéticas.', plazo: 'medio', d: ahora, fuentes: [],
+        afecta: [{ zona: 'Europa', sector: 'Energía', s: '-', p: 2 }] },
+      { k: 'bancos-eeuu', fa: 'macro', txt: 'No toca a Repsol.', plazo: 'corto', d: ahora, fuentes: [], afecta: [{ zona: 'EEUU', sector: 'Financiero', s: '+', p: 3 }] },
+      { k: 'renovables', fa: 'sector', txt: 'Tampoco toca a Repsol: solo a las renovables.', plazo: 'medio', d: ahora, fuentes: [], afecta: [{ pais: 'Spain', zona: 'España', sector: 'Energía', industria: 'Utilities - Renewable', s: '+', p: 3 }] }],
+    },
+  };
+}

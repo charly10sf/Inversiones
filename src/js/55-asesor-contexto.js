@@ -119,30 +119,43 @@ function contextoAsesor(M, modo = 'chat') {
     L.push('', '## Planes de venta que propone GrowFolio ahora');
     if (!planes.length) L.push('Ninguno: ninguna posición pide vender.');
     for (const pl of planes) L.push(`- ${pl.f.inst.corto} (${pl.f.senal.txt.toLowerCase()}): vender ${fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 4)} por unos ${E0(pl.importe)} y quedarse ${fmtNum(pl.queda, pl.accion && esEntero(pl.queda) ? 0 : 4)}. Ganancia que se declara ${eurP(pl.ganancia, 0)}, impuesto ${E0(pl.impuesto)}. Cuándo: ${pl.cuando.join(' ')} Destino: ${pl.aColchon > 0.5 ? `${E0(pl.aColchon)} a su colchón (le falta), ` : ''}${pl.aIdea > 0 && pl.ideas[0] ? `${E0(pl.aIdea)} a ${pl.ideas[0].n} y ` : ''}${E0(pl.aNucleo)} ${nucleo(S.M || calcular()).a}; ${E0(pl.impuesto)} apartados para Hacienda.`);
-    const ideas = mejoresIdeas(M).slice(0, 8);
+    const ideas = mejoresIdeas(M).slice(0, chat ? 5 : 8);
     if (ideas.length) {
       L.push('', '## Las ideas de compra que mejor encajan con su cartera según GrowFolio');
-      for (const x of ideas) L.push(`- ${x.n} (${x.s}, ${x.z}${x.sector ? ', ' + x.sector : ''}): ${!chat && noticiasIdea(x.s).length ? `[titulares: ${noticiasIdea(x.s).slice(0, 3).map((n) => `${n.d ? n.d.slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})`).join(' / ')}] ` : ''}${x.motivos.join(', ')}${x.pegas.length ? `. Pegas: ${x.pegas.join('; ')}` : ''}${chat && lecturaDe(x.s) && lecturaDe(x.s).txt ? `. Prensa (${lecturaDe(x.s).imp}): ${String(lecturaDe(x.s).txt).slice(0, 240)}` : ''}. Contraste: ${x.ctr.favor} de ${x.ctr.total} señales a favor (${x.ctr.checks.filter((c) => c.ok).map((c) => c.k.toLowerCase()).join(', ')})${x.ctr.contra ? `, ${x.ctr.contra} en contra (${x.ctr.checks.filter((c) => c.ok === -1).map((c) => c.k.toLowerCase()).join(', ')})` : ''}.`);
+      for (const x of ideas) L.push(`- ${x.n} (${x.s}, ${x.z}${x.sector ? ', ' + x.sector : ''}): ${!chat && noticiasIdea(x.s).length ? `[titulares: ${noticiasIdea(x.s).slice(0, 3).map((n) => `${n.d ? n.d.slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})`).join(' / ')}] ` : ''}${x.motivos.join(', ')}${x.pegas.length ? `. Pegas: ${x.pegas.join('; ')}` : ''}. Contraste: ${x.ctr.favor} de ${x.ctr.total} señales a favor (${x.ctr.checks.filter((c) => c.ok).map((c) => c.k.toLowerCase()).join(', ')})${x.ctr.contra ? `, ${x.ctr.contra} en contra (${x.ctr.checks.filter((c) => c.ok === -1).map((c) => c.k.toLowerCase()).join(', ')})` : ''}.`);
     }
     // del radar entran las mejor contrastadas (20 en el chat, 120 en el análisis); el resto, con las herramientas radar y buscar_empresa
     const todasR = radarVals();
-    const rad = todasR.filter((x) => x.pot != null && (x.na || 0) >= 5).map((x) => ({ x, c: contraste(x) })).sort((a, b) => (b.c.favor - b.c.contra) - (a.c.favor - a.c.contra) || (b.x.pot || 0) - (a.x.pot || 0)).slice(0, chat ? 20 : 120).map((o) => o.x);
+    const rad = todasR.filter((x) => x.pot != null && (x.na || 0) >= 5).map((x) => ({ x, c: contraste(x) })).sort((a, b) => (b.c.favor - b.c.contra) - (a.c.favor - a.c.contra) || (b.x.pot || 0) - (a.x.pot || 0)).slice(0, chat ? 10 : 120).map((o) => o.x);
     if (rad.length) {
       L.push('', `## Radar de GrowFolio: las ${rad.length} mejor contrastadas de ${todasR.length} empresas; ${chat ? 'para buscar entre todas (por sector, zona, dividendo, potencial o prensa) usa la herramienta radar, y para los datos completos de una, buscar_empresa' : 'del resto, pide los datos con buscar_empresa'} (nombre | ticker | zona | sector | precio | potencial hasta el objetivo medio | rango de objetivos | consenso y nº de analistas | PER futuro | crecimiento esperado del beneficio | dividendo | 1 año | sobre la media de 200 sesiones)`);
       for (const x of rad) L.push([x.n, x.s, x.z, x.sector || '', `${fmtNum(x.p, 2)} ${x.m}`, P1(x.pot), x.tb && x.ta ? `${fmtNum(x.tb, 2)}-${fmtNum(x.ta, 2)}` : '—', `${CONSENSO[x.r] || '—'} ${x.na || 0}`, x.perf > 0 ? fmtNum(x.perf, 1) : '—', P1(x.epsg ?? x.eg), x.div ? fmtNum(x.div, 1) + ' %' : '—', P1(x.c1a), x.m200 && x.p ? P1((x.p / x.m200 - 1) * 100) : '—'].join(' | '));
     }
     L.push('', '## Mercados');
-    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}; L.push(`- ${m.grupo ? `[${m.grupo}] ` : ''}${m.nombre}: ${fmtMerc(sym, d.precio)} (hoy ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
+    // 0.7: en el chat, más corto (hoy, un mes y en el año)
+    for (const [sym, m] of Object.entries((S.precios && S.precios.mercados) || {})) { const d = datoMerc(sym), r = m.rent || {}; L.push(chat ? `- ${m.nombre} ${fmtMerc(sym, d.precio)}: hoy ${P1(d.var)}, 1 mes ${P1(r['1m'])}, año ${P1(r.ytd)}` : `- ${m.grupo ? `[${m.grupo}] ` : ''}${m.nombre}: ${fmtMerc(sym, d.precio)} (hoy ${P1(d.var)}; 1 mes ${P1(r['1m'])}; en el año ${P1(r.ytd)}; 1 año ${P1(r['1a'])})`); }
     try {
       const pr = proyeccion(M), c = pr.cfg;
       L.push('', `## Proyección de GrowFolio (2.000 escenarios aportando ${E0(c.aport)} al mes${c.subida ? `, subiendo un ${c.subida} % cada año` : ''}, bolsa al ${c.bolsa} % anual)`);
       for (const a of [5, 10, 20, 30]) L.push(`- ${a} años: si va mal ${E0(pr.p10[a * 12])}, lo probable ${E0(pr.p50[a * 12])}, si va bien ${E0(pr.p90[a * 12])}; habrá puesto ${E0(pr.aportado[a * 12])}.`);
     } catch (e) {}
+    // 0.7: de sus acciones, la ficha de GrowIA (lo que pesa en cada factor) en vez de titulares sueltos; los temas de la
+    // semana que tocan a muchas empresas; y los titulares, con su marca (factor, bueno o malo, cuánto importa)
     const N = (S.precios && S.precios.noticias) || {};
-    const tit = (arr, n) => (arr || []).slice(0, n).map((x) => `- ${x.d ? x.d.slice(0, 10) : ''} ${x.t} (${x.f || ''})`).join('\n');
+    const tit = (arr, n) => ordenarNoticias(arr || []).slice(0, n).map(({ n: x, m }) => `- ${titularGrowIA(x, m)}`).join('\n');
+    const conFicha = new Set();
+    const fichasPos = [];
+    for (const f of M.filas) {
+      if (f.inst.tipo !== 'Acción' || conFicha.has(f.inst.id)) continue;
+      const fi = fichaGrowIA((f.p && f.p.simbolo) || f.inst.yahoo, chat ? 2 : 4);
+      if (fi && fi.factores.length) { conFicha.add(f.inst.id); fichasPos.push(`${nombreInst(f.inst.id)} (leída el ${fi.leida}):`, ...fi.factores.map((x) => `- ${x}`), ...fi.temas.map((x) => `- Tema: ${x}`)); }
+    }
+    if (fichasPos.length) L.push('', `## Lo que pesa ahora en sus acciones, según la prensa (fichas de GrowIA, factor por factor: negocio, sector, economía, política y leyes, sociedad y mercado)${chat ? '; la de cualquier otra empresa viene con buscar_empresa' : ''}`, ...fichasPos);
+    const temas = temasGrowIA(chat ? 5 : 10);
+    if (temas.length) L.push('', '## Temas de la semana que tocan a muchas empresas (con a quién y si es bueno o malo para ellas)', ...temas.map((x) => `- ${x}`));
     L.push('', '## Titulares recientes (Google Noticias)');
     if (N.mercado) L.push('Mercado:\n' + tit(N.mercado, chat ? 6 : 10));
-    for (const id of new Set(M.filas.map((f) => f.inst.id))) if (N[id] && N[id].length) L.push(`${nombreInst(id)}:\n` + tit(N[id], chat ? 3 : 5));
+    for (const id of new Set(M.filas.map((f) => f.inst.id))) if (N[id] && N[id].length && !(chat && conFicha.has(id))) L.push(`${nombreInst(id)}:\n` + tit(N[id], chat ? 2 : 5));
     const inf = informeVisible();
     if (inf && (inf.resumen || (inf.mercado || []).length)) {
       L.push('', `## Informe de prensa de GrowIA (${cabInforme(inf)}; ${inf.busqueda_google ? 'con búsqueda en Google' : 'con titulares de Google Noticias y Yahoo Finance'})`, inf.resumen ? `Resumen: ${inf.resumen}` : 'Solo lo del mercado y lo de sus posiciones.');
@@ -162,9 +175,9 @@ function contextoAsesor(M, modo = 'chat') {
     }
     if (esc0 && esc0.lectura) {
       const hace7 = Date.now() - 7 * 864e5;
-      const imp = Object.entries(esc0.lectura).filter(([, l]) => l.rel >= 2 && new Date(l.d).getTime() > hace7).sort((a, b) => b[1].rel - a[1].rel).slice(0, chat ? 10 : 80);
+      const imp = Object.entries(esc0.lectura).filter(([, l]) => l.rel >= 2 && new Date(l.d).getTime() > hace7).sort((a, b) => b[1].rel - a[1].rel).slice(0, chat ? 6 : 80);
       const corta = (t) => (chat && String(t || '').length > 240 ? String(t).slice(0, 237).replace(/\s+\S*$/, '') + '…' : t || '');
-      if (imp.length) L.push('', `## Prensa importante de la última semana en el radar (escaneo de GrowIA)${chat ? ': las 10 noticias más relevantes; la de cualquier otra empresa, con buscar_empresa o radar' : ''}`, ...imp.map(([s0, l]) => `- ${s0} (${l.imp}, relevancia ${l.rel}): ${corta(l.txt)}${l.cat && !chat ? ` Catalizador: ${l.cat}.` : ''}`));
+      if (imp.length) L.push('', `## Prensa importante de la última semana en el radar (escaneo de GrowIA)${chat ? ': las 6 noticias más relevantes; la de cualquier otra empresa, con buscar_empresa o radar' : ''}`, ...imp.map(([s0, l]) => `- ${s0} (${l.imp}, relevancia ${l.rel}): ${corta(l.txt)}${l.cat && !chat ? ` Catalizador: ${l.cat}.` : ''}`));
     }
     const ia = iaActual();
     if (ia) {
@@ -271,7 +284,7 @@ ${fiscal}`;
 const HERRAMIENTAS = [
   { name: 'simular_venta', description: 'Calcula una venta de una de sus posiciones con el motor de GrowFolio: unidades, importe, comisión, valor de compra por FIFO, ganancia o pérdida y el impuesto extra en la renta de este año contando lo que ya lleva. Úsala siempre antes de recomendar vender.', input_schema: { type: 'object', properties: { posicion: { type: 'string', description: 'id o nombre de la posición, por ejemplo "repsol" o "S&P 500"' }, unidades: { type: 'number' }, importe: { type: 'number', description: 'euros a vender, en vez de unidades' }, porcentaje: { type: 'number', description: 'porcentaje de la posición a vender, en vez de unidades' }, precio: { type: 'number', description: 'precio de venta en euros; si no se pone, el actual' } }, required: ['posicion'] } },
   { name: 'simular_compra', description: 'Calcula la compra de una acción o fondo (de su cartera o del radar de GrowFolio, con cientos de empresas de EEUU y Europa): tasa del país, comisión, unidades, cómo queda su límite de acciones sueltas, cuánto pesa ya ese sector y cuánto tiene ya de esa empresa dentro de sus fondos.', input_schema: { type: 'object', properties: { empresa: { type: 'string', description: 'ticker o nombre' }, importe: { type: 'number', description: 'euros a invertir' }, plataforma: { type: 'string', description: 'Trade Republic, MyInvestor o Bitvavo' } }, required: ['empresa', 'importe'] } },
-  { name: 'buscar_empresa', description: 'Todos los datos que tiene GrowFolio de una empresa o fondo: precio, analistas y su evolución, rango de objetivos, valoración, crecimiento, deuda, tendencia, el contraste de señales y cuánto tiene ya dentro de sus fondos. Busca en su cartera y en el radar de GrowFolio (cientos de empresas de EEUU y Europa); si no está, usa la búsqueda web.', input_schema: { type: 'object', properties: { consulta: { type: 'string', description: 'ticker o nombre' } }, required: ['consulta'] } },
+  { name: 'buscar_empresa', description: 'Todos los datos que tiene GrowFolio de una empresa o fondo: precio, analistas y su evolución, rango de objetivos, valoración, crecimiento, deuda, tendencia, el contraste de señales, cuánto tiene ya dentro de sus fondos y la ficha de GrowIA (lo que pesa ahora en su prensa, factor por factor, y los temas que le tocan). Busca en su cartera y en el radar de GrowFolio (cientos de empresas de EEUU y Europa); si no está, usa la búsqueda web.', input_schema: { type: 'object', properties: { consulta: { type: 'string', description: 'ticker o nombre' } }, required: ['consulta'] } },
   { name: 'radar', description: 'Busca en el radar de GrowFolio (cientos de empresas de EEUU y Europa) con filtros y devuelve las mejores según el orden que pidas, con su potencial, consenso, PER futuro, dividendo, señales a favor y lo que ha leído GrowIA de su prensa esta semana. Úsala para buscar candidatas (por sector, zona, dividendo…) o noticias de empresas que no están en el resumen.', input_schema: { type: 'object', properties: { sector: { type: 'string', description: 'sector o industria, en español o inglés: salud, tecnología, bancos, energía, semiconductores…' }, zona: { type: 'string', description: 'EEUU, Europa, España, Alemania, Reino Unido…' }, potencial_min: { type: 'number', description: '% mínimo hasta el objetivo medio de los analistas' }, dividendo_min: { type: 'number', description: '% mínimo de dividendo' }, orden: { type: 'string', enum: ['contraste', 'potencial', 'dividendo', 'barata', 'prensa'], description: 'contraste (por defecto): más señales a favor; barata: menor PER futuro; prensa: mejores noticias de la semana' }, cuantas: { type: 'integer', description: 'de 1 a 25, por defecto 12' } } } },
   { name: 'proyectar', description: 'Simula 2.000 escenarios de su cartera con otra aportación mensual, subida anual de la aportación o rentabilidad de la bolsa.', input_schema: { type: 'object', properties: { aportacion_mensual: { type: 'number' }, anios: { type: 'integer', description: 'de 1 a 30' }, subida_anual_aportacion: { type: 'number', description: '% al año' }, rentabilidad_bolsa: { type: 'number', description: '% anual a largo plazo, por defecto 7' } }, required: ['aportacion_mensual'] } },
   { name: 'historico', description: 'Evolución de una de sus posiciones o de un índice entre dos fechas: precio inicial y final, cambio, máximo, mínimo y peor caída. Índices: Ibex 35, Euro Stoxx 50, DAX, S&P 500, Nasdaq 100, Nikkei 225, Brent, Oro, Bitcoin, Euro/dólar, VIX, Bono EEUU 10 años.', input_schema: { type: 'object', properties: { activo: { type: 'string' }, desde: { type: 'string', description: 'AAAA-MM-DD' }, hasta: { type: 'string', description: 'AAAA-MM-DD, por defecto hoy' } }, required: ['activo', 'desde'] } },
@@ -339,7 +352,8 @@ function hBuscarEmpresa(q) {
     const N = ((S.precios && S.precios.noticias) || {})[f.inst.id] || (sim ? noticiasIdea(sim) : []);
     return { en_su_cartera: true, datos: fichaTexto(f),
       prensa_segun_growia: inf ? { impacto: inf.impacto, novedades: inf.novedades, contraste: inf.contraste, vigilar: inf.vigilar } : le ? { impacto: le.imp, relevancia: le.rel, resumen: le.txt, catalizador: le.cat, fecha: le.d } : 'sin leer todavía',
-      titulares_recientes: N.slice(0, 6).map((n) => `${n.d ? n.d.slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})`) };
+      ficha_growia: (sim && fichaGrowIA(sim, 4)) || 'sin ficha todavía',
+      titulares_recientes: ordenarNoticias(N).slice(0, 6).map(({ n, m }) => titularGrowIA(n, m)) };
   }
   const x = buscarRadar(q.consulta);
   const M = S.M;
@@ -357,7 +371,8 @@ function hBuscarEmpresa(q) {
     tasa_de_compra: tasa ? `${fmtNum(tasa.tipo * 100, 1)} % (${tasa.nombre})` : 'no paga',
     ya_tiene_dentro_de_sus_fondos_eur: R2(dentroDeFondos(M)(x.n), 0),
     valoracion_de_la_web: k >= 0 ? { puesto: k + 1, de: ideas.length, motivos: ideas[k].motivos, pegas: ideas[k].pegas } : 'No pasa el filtro de ideas de GrowFolio (potencial de al menos un 10 %, 8 analistas o más, consenso de compra, 3 señales a favor y no haber caído más de un 35 % en un año).',
-    titulares_recientes: noticiasIdea(x.s).slice(0, 5).map((n) => `${n.d ? n.d.slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})`),
+    ficha_growia: fichaGrowIA(x.s, 4) || 'sin ficha todavía: lo leído de su prensa viene en prensa_leida_por_gemini',
+    titulares_recientes: ordenarNoticias(noticiasIdea(x.s)).slice(0, 5).map(({ n, m }) => titularGrowIA(n, m)),
     prensa_leida_por_gemini: lecturaDe(x.s) ? { impacto: lecturaDe(x.s).imp, relevancia: lecturaDe(x.s).rel, resumen: lecturaDe(x.s).txt, catalizador: lecturaDe(x.s).cat, fecha: lecturaDe(x.s).d } : 'sin leer todavía',
     datos_de: x.f || (S.radar && S.radar.generado),
   };
@@ -449,12 +464,13 @@ let MODO_CLAVE_G = LS.get('inv-gkey-modo', 'cabecera');
 async function fetchGoogle(url, opts = {}, clave = AS.clave) {
   const hacer = (modo) => fetch(modo === 'query' ? `${url}${url.includes('?') ? '&' : '?'}key=${encodeURIComponent(clave)}` : url, { ...opts, headers: { ...(opts.headers || {}), ...(modo === 'cabecera' ? { 'x-goog-api-key': clave } : {}) } });
   const r = await hacer(MODO_CLAVE_G);
+  if (r.ok) contarPeticion(url);
   if ([400, 401, 403].includes(r.status)) {
     const otro = MODO_CLAVE_G === 'cabecera' ? 'query' : 'cabecera';
     let txt = ''; try { txt = await r.clone().text(); } catch (e) {}
     if (/API key|API_KEY|ACCESS_TOKEN_TYPE|UNAUTHENTICATED|credential/i.test(txt)) {
       const r2 = await hacer(otro);
-      if (r2.ok || ![400, 401, 403].includes(r2.status)) { MODO_CLAVE_G = otro; LS.set('inv-gkey-modo', otro); return r2; }
+      if (r2.ok || ![400, 401, 403].includes(r2.status)) { MODO_CLAVE_G = otro; LS.set('inv-gkey-modo', otro); if (r2.ok) contarPeticion(url); return r2; }
     }
   }
   return r;
@@ -583,7 +599,7 @@ async function mejorFlash(clave) {
     return v[0] || null;
   } catch (e) { return null; }
 }
-async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, modelo: pedido }) {
+async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, modelo: pedido, herramientas = true }) {
   let cfg = cfgAsesor();
   if (pedido && MODELOS[pedido]) cfg = { ...cfg, modelo: pedido };
   const clave = AS.clave;
@@ -604,12 +620,12 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     modelo = otro; probados.add(otro); AS.modeloVivo = otro; contents.length = inicio; reintentos = 0; conPensar = true;
     alCambiar(); return true;
   };
-  let cortes = 0;
+  let cortes = 0, busquedas = 0;
   for (let vuelta = 0; vuelta < 14; vuelta++) {
     const m = MODELOS[modelo] || {};
     const pasosAntes = turno.partes.length;
     const cuerpo = {
-      systemInstruction: { parts: [{ text: sysTexto }] }, contents, tools: herramientasGemini(usarWeb),
+      systemInstruction: { parts: [{ text: sysTexto }] }, contents, ...(herramientas ? { tools: herramientasGemini(usarWeb) } : {}),
       generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: m.pensar } } : {}) },
     };
     let r;
@@ -645,13 +661,16 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
       const respuestas = [];
       for (const pt of llamadas) {
         const fc = pt.functionCall;
-        const out = fc.name === 'buscar_en_internet' ? await buscarGoogle(fc.args && fc.args.consulta, turno, signal) : ejecutarHerramienta(fc.name, fc.args || {});
+        // 0.7: una búsqueda en internet por pregunta como mucho (cada una gasta del cupo de su clave); para lo demás,
+        // las fichas de GrowIA y los titulares que ya tiene
+        const out = fc.name === 'buscar_en_internet' ? (busquedas++ ? { error: 'Ya has buscado en internet una vez en esta pregunta: contesta con lo que tienes (la búsqueda, las fichas de GrowIA y los titulares de los datos) y di qué no has podido comprobar.' } : await buscarGoogle(fc.args && fc.args.consulta, turno, signal)) : ejecutarHerramienta(fc.name, fc.args || {});
         respuestas.push({ functionResponse: { name: fc.name, ...(fc.id ? { id: fc.id } : {}), response: out && typeof out === 'object' && !Array.isArray(out) ? out : { resultado: out } } });
       }
       contents.push({ role: 'user', parts: respuestas });
       alCambiar();
       continue;
     }
+    turno.modelo = modelo;
     if (r.fin === 'MAX_TOKENS') turno.partes.push({ tipo: 'paso', txt: 'La respuesta se ha cortado por larga. Pídele que siga.' });
     else if (/SAFETY|RECITATION|PROHIBITED|BLOCKLIST/.test(r.fin || '')) turno.partes.push({ tipo: 'paso', txt: 'Google ha cortado la respuesta por sus filtros.' });
     break;
@@ -660,14 +679,16 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
 }
 const sistemaAsesor = () => [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: AS.foto }];
 function refrescarFoto(forzar) {
-  if (forzar || !AS.foto || Date.now() - AS.fotoT > 10 * 60000) { S.M = S.M || calcular(); AS.foto = contextoAsesor(S.M); AS.fotoT = Date.now(); }
+  if (forzar || !AS.foto || Date.now() - AS.fotoT > 10 * 60000) { S.M = S.M || calcular(); AS.foto = contextoAsesor(S.M); AS.fotoT = Date.now(); AS.fotoFichas = S.fichasId; }
 }
 
 async function preguntarAsesor(texto) {
   texto = String(texto || '').trim();
   if (!texto || AS.cargando) return;
   if (!AS.clave) { AS.vista = 'clave'; pintarAsesor(); return; }
-  refrescarFoto(!AS.api.length);
+  // 0.7: las fichas de GrowIA van en la foto: si no están, se bajan antes (y si llegan nuevas, la foto se rehace)
+  if (!S.fichas || S.fichasId !== ((S.precios && S.precios.fichas_id) || '')) await cargarFichas().catch(() => null);
+  refrescarFoto(!AS.api.length || AS.fotoFichas !== S.fichasId);
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
   const adj = AS.adjunto; AS.adjunto = null; pintarAdjunto();
   const textoApi = adj ? `${texto}\n\n[Te mando un recorte de la pantalla de GrowFolio, de ${adj.donde}. ${adj.img ? 'Va en la imagen. ' : ''}El texto que se lee en esa zona es: «${adj.texto || 'sin texto'}». Respóndeme sobre lo que se ve ahí, con mis datos y tus herramientas si hace falta, y explica lo que haga falta para entenderlo.]` : texto;

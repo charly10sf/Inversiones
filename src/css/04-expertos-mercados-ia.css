@@ -105,3 +105,26 @@ img.bandera.ok { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08); }
 @media (max-width: 400px) { .pos-act { display: none; } }
 @media (max-width: 680px) { .ordenar-m { display: flex; gap: 8px; align-items: center; color: var(--muted); font-size: 13px; width: 100%; } .ordenar-m select { flex: 1; background: var(--plane); border: 1px solid var(--line-2); border-radius: 8px; padding: 7px 9px; color: var(--text); } }
 
+
+/* 0.7 · marcas de las fichas de GrowIA en cada titular: factor, si es bueno o malo y cuánto importa */
+.noticias small .marca { margin-right: 8px; }
+.marca { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; line-height: 18px; padding: 0 7px; border-radius: 999px; white-space: nowrap; vertical-align: 1px; color: var(--text-2); background: var(--plane-3); }
+.marca i { font-style: normal; font-size: 9px; line-height: 1; }
+.marca.up i { color: var(--up); } .marca.down i { color: var(--down); } .marca.warn i { color: var(--warn); } .marca.flat i { color: var(--muted); }
+.marca.fuerte.up { color: var(--up); background: var(--up-bg); } .marca.fuerte.down { color: var(--down); background: var(--down-bg); } .marca.fuerte.warn { color: var(--warn); background: var(--warn-bg); }
+.noticias li.relleno a.noti { color: var(--muted); }
+.noticias .mas-medios { margin-left: 6px; }
+.noticias .mas-medios::before { content: '· '; }
+/* «Lo que pesa ahora», arriba de las noticias de una empresa */
+.ficha-ia { border: 1px solid var(--line-2); border-left: 3px solid var(--accent); border-radius: 14px; padding: 14px 18px; background: var(--plane); }
+.ficha-ia h3 { margin: 0; font-size: 15px; }
+.factores { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 0; }
+.factores li { display: grid; gap: 3px; padding: 10px 0; border-top: 1px solid var(--line); }
+.factores li:first-child { border-top: 0; padding-top: 4px; }
+.fac-k { display: inline-flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; letter-spacing: .02em; text-transform: uppercase; color: var(--text-2); }
+.fac-k i { font-style: normal; font-size: 10px; }
+.fac-k em { font-style: normal; font-weight: 600; text-transform: none; letter-spacing: 0; color: var(--muted); padding: 0 6px; border: 1px solid var(--line-2); border-radius: 999px; font-size: 11px; line-height: 16px; }
+.fac.up .fac-k i { color: var(--up); } .fac.down .fac-k i { color: var(--down); } .fac.warn .fac-k i { color: var(--warn); } .fac.flat .fac-k i { color: var(--muted); }
+.factores p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--text); }
+.factores small { color: var(--muted); font-size: 12.5px; }
+.factores small a.enlace { color: var(--muted); text-decoration: underline; text-underline-offset: 2px; }

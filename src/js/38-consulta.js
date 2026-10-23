@@ -94,6 +94,7 @@ function abrirConsulta(c) {
       <div class="fila-btns cons-btns"><button type="button" class="btn pri" data-cons-add>${ICONOS.mas}Añadir a mi cartera</button><button type="button" class="btn" data-cons-ia>${ICONOS.growia}Pregúntale a GrowIA</button>${x ? botonSeguir(x.s, nombre, false) : ''}</div>
       ${datos.length ? `<dl class="kv">${datos.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : ''}
       ${x ? `<details class="mas"><summary>Las siete señales de GrowFolio</summary>${htmlContrasteLista(contraste(x))}</details>` : ''}
+      ${x ? htmlFichaFactores(x.s) : ''}
       <section class="cons-not"><h3>Noticias</h3>${nots.length ? htmlNoticias(nots, false, 5) : ''}<a class="enlace" href="${esc(gnews)}" target="_blank" rel="noopener noreferrer">Ver las noticias de ${esc(nombre)} en Google Noticias</a></section>
     </div>`);
   $('[data-cons-add]', h.el).onclick = () => { h.cerrar(); operacion('compra', null, null, c); };
