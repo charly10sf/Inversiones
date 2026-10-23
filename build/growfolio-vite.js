@@ -10,6 +10,7 @@
 // sitio. Solo vale para funciones a las que se llama sin usar lo que devuelven (o con await): si el resto usara una
 // constante del trozo o lo que devuelve una función suya, el build se para y dice cuál (build/analizar.js).
 import { readFileSync, writeFileSync, cpSync, existsSync, readdirSync } from 'node:fs';
+import { fileURLToPath } from 'node:url';
 import { createHash } from 'node:crypto';
 import { join, dirname } from 'node:path';
 import { transform } from 'esbuild';
@@ -17,7 +18,11 @@ import { analizar, entradas } from './analizar.js';
 import { parse } from 'acorn';
 import { simple } from 'acorn-walk';
 
-const RAIZ = join(dirname(new URL(import.meta.url).pathname), '..');
+// fileURLToPath y no .pathname: en Windows, .pathname da /C:/… y la ruta acaba en C:\C:\…
+const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
+// el texto de los archivos, siempre con \n: en Windows, Git los puede bajar con \r\n (core.autocrlf) y los cortes por
+// líneas (NOVEDADES, el cargador) no los encontrarían
+const texto = (f) => readFileSync(f, 'utf8').replace(/\r\n?/g, '\n');
 // lo que se sirve tal cual desde la raíz del repositorio
 const PUBLICOS = [
   'manifest.webmanifest', 'favicon.svg', 'growfolio.svg', 'growfolio-nombre.svg', 'growia.svg', 'growia-nombre.svg',
@@ -26,9 +31,9 @@ const PUBLICOS = [
   'instrumentos.json', 'mapa-mundo.json', 'mapa-detalle.json', 'cambios.json', 'version.json', 'app.json', 'en.json', 'lib',
 ];
 
-export const version = () => (readFileSync(join(RAIZ, 'src', 'js', 'version.js'), 'utf8').match(/const VERSION = '([^']+)'/) || [])[1] || '0';
+export const version = () => (texto(join(RAIZ, 'src', 'js', 'version.js')).match(/const VERSION = '([^']+)'/) || [])[1] || '0';
 export const partes = () => JSON.parse(readFileSync(join(RAIZ, 'src', 'partes.json'), 'utf8'));
-const leer = (dir, archivos) => archivos.map((a) => readFileSync(join(RAIZ, 'src', dir, a), 'utf8')).join('');
+const leer = (dir, archivos) => archivos.map((a) => texto(join(RAIZ, 'src', dir, a))).join('');
 export const juntarCSS = (archivos = partes().css) => leer('css', archivos);
 const huella = (t) => createHash('sha256').update(t).digest('hex').slice(0, 10);
 
@@ -103,7 +108,7 @@ export function partirNovedades(texto) {
   const corte = cortes[k + 1].index;
   return { nucleo: texto.slice(0, ini) + cuerpo.slice(0, corte) + texto.slice(j + 1), resto: 'NOVEDADES.push(\n' + cuerpo.slice(corte) + ');\n' };
 }
-const leerParte = (a) => { const t = readFileSync(join(RAIZ, 'src', 'js', a), 'utf8'); return a === ARCHIVO_NOV ? partirNovedades(t).nucleo : t; };
+const leerParte = (a) => { const t = texto(join(RAIZ, 'src', 'js', a)); return a === ARCHIVO_NOV ? partirNovedades(t).nucleo : t; };
 
 /** el núcleo: las partes de src/partes.json con el cargador detrás de la versión (lo primero sigue siendo 'use strict') */
 export function juntarJS(urls, p = partes(), en = { nucleo: 'en.json', trozos: {} }) {
@@ -140,7 +145,7 @@ export function partirIngles(p = partes()) {
   return out;
 }
 const juntarTrozo = (n, p = partes()) => "'use strict';\n"
-  + (n === 'novedades' ? partirNovedades(readFileSync(join(RAIZ, 'src', 'js', ARCHIVO_NOV), 'utf8')).resto : '')
+  + (n === 'novedades' ? partirNovedades(texto(join(RAIZ, 'src', 'js', ARCHIVO_NOV))).resto : '')
   + leer('js', archivosDe(p.trozos[n]));
 
 export default function growfolio() {
@@ -214,7 +219,7 @@ export default function growfolio() {
       const assets = readdirSync(join(dist, 'assets')).map((a) => `assets/${a}`);
       const ingles = existsSync(join(dist, 'en')) ? readdirSync(join(dist, 'en')).map((a) => `en/${a}`) : [];
       const todo = [...assets, ...ingles].map((a) => readFileSync(join(dist, a), 'utf8')).join('') + readFileSync(join(dist, 'index.html'), 'utf8');
-      let sw = readFileSync(join(RAIZ, 'sw.js'), 'utf8');
+      let sw = texto(join(RAIZ, 'sw.js'));
       // la caché, con la versión y la huella de todo; los trozos de código van también en CORE: se guardan al instalar (después
       // de abrir), así funcionan sin conexión aunque no se hayan usado nunca. El inglés (en/) no: se guarda al pedirlo
       sw = sw.replace(/var CACHE = '[^']*';/, `var CACHE = 'gf-${version()}-${huella(todo)}';`)

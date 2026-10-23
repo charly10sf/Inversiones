@@ -8,7 +8,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
-const leer = (a) => readFileSync(join(RAIZ, 'src', 'js', a), 'utf8');
+const leer = (a) => readFileSync(join(RAIZ, 'src', 'js', a), 'utf8').replace(/\r\n?/g, '\n');
 
 // declaraciones de arriba del todo: nombre → tipo
 function declaraciones(ast) {

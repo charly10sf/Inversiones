@@ -3,12 +3,13 @@
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { gzipSync } from 'node:zlib';
-import { extname, join, normalize, resolve } from 'node:path';
+import { dirname, extname, join, normalize, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 const raiz = resolve(process.argv[2] || '.');
 // /__datos/<rama>/<archivo>: los datos de las ramas (tests/.datos) por este mismo servidor, comprimidos y con la red
 // limitada como el resto (la prueba de rendimiento los pide aquí en vez de a raw.githubusercontent.com)
-const datos = resolve(new URL('.', import.meta.url).pathname, '.datos');
+const datos = resolve(dirname(fileURLToPath(import.meta.url)), '.datos');
 const puerto = +(process.argv[3] || 8765);
 const TIPOS = {
   '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.mjs': 'text/javascript; charset=utf-8',
