@@ -3399,8 +3399,9 @@ body.con-ixn { overflow: hidden; }
 .me.grupo { font-family: var(--f); color: var(--text); border-color: rgba(237, 187, 69, 0.38); background: rgba(20, 16, 8, 0.88); }
 .me.grupo svg { width: 11px; height: 11px; flex: none; fill: none; stroke: var(--accent); stroke-width: 1.8; stroke-linecap: round; }
 .me.compacto { gap: 4px; padding: 2px 6px 2px 3px; font-size: 10.5px; }
-.me.compacto img.bandera, .me.grupo img.bandera { width: 14px; height: 10px; border-radius: 2px; flex: none; }
-.me.compacto.tuyo { border-color: rgba(237, 187, 69, 0.55); }
+.me img.bandera { width: 16px; height: 11px; border-radius: 2px; flex: none; }
+.me.compacto img.bandera, .me.grupo img.bandera { width: 14px; height: 10px; }
+.me.tuyo { border-color: rgba(237, 187, 69, 0.55); }
 .me-punto { position: absolute; width: 5px; height: 5px; margin: -2.5px 0 0 -2.5px; border-radius: 50%; background: var(--text); box-shadow: 0 0 0 1.5px rgba(9, 8, 6, 0.85); pointer-events: none; }
 .me b.up { color: var(--up); } .me b.down { color: var(--down); } .me b.flat { color: var(--text-2); } .me b.oro { color: var(--accent); }
 .me i { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; }
@@ -3454,6 +3455,25 @@ body.con-ixn { overflow: hidden; }
 .mi-elige { display: grid; gap: 5px; font-size: 12px; color: var(--muted); }
 .mi-elige select { appearance: none; -webkit-appearance: none; background: rgba(255, 255, 255, 0.035) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%23BCB3A2' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M1 1.5l5 5 5-5'/%3E%3C/svg%3E") no-repeat right 12px center; border: 1px solid var(--line-2); border-radius: 11px; padding: 9px 34px 9px 12px; color: var(--text); font: inherit; font-size: 14px; }
 .mi-pos select { border-color: rgba(237, 187, 69, 0.35); }
+/* 0.5d: los desplegables, con los colores y la letra de la app. En el ordenador, la lista entera (Chrome y Edge, con
+   appearance: base-select); en el móvil, la del sistema, que ya va bien. Donde no se puede, al menos el fondo oscuro:
+   Chrome en Windows pintaba la lista con el fondo casi transparente del desplegable, en blanco y con la letra clara */
+select option, select optgroup { background-color: var(--plane-2); color: var(--text); }
+@media (hover: hover) and (pointer: fine) {
+  @supports (appearance: base-select) {
+    select, .mi-elige select, ::picker(select) { appearance: base-select; }
+    select { cursor: pointer; }
+    select::picker-icon { color: var(--muted); transition: rotate 0.2s; }
+    select:open::picker-icon { rotate: 180deg; }
+    .mi-elige select::picker-icon { display: none; }
+    ::picker(select) { margin-block: 6px; padding: 6px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--plane-2); color: var(--text); font-family: var(--f); font-size: 14px; box-shadow: 0 18px 44px rgba(0, 0, 0, 0.55); max-height: min(380px, 60vh); scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+    select option { padding: 8px 12px; border-radius: 8px; background: transparent; color: var(--text-2); }
+    select option:hover, select option:focus-visible { background: rgba(255, 255, 255, 0.06); color: var(--text); outline: none; }
+    select option:checked { color: var(--accent); font-weight: 600; }
+    select option::checkmark { display: none; }
+    select option img.bandera { width: 18px; height: 13px; border-radius: 2px; margin-right: 10px; flex: none; }
+  }
+}
 @media (max-width: 1079px) { .mapa-info { border-top: 1px solid var(--line); padding-top: 16px; } }
 @media (max-width: 759px) {
   .mapa-w { margin: 0 calc(-1 * var(--gutter) + 8px); padding: 18px 14px 16px; border-radius: 24px; gap: 14px; }
@@ -8570,7 +8590,7 @@ function valorEuropaMapa(modo, ex) {
    Kong…), al lado, con un punto donde está. Las que no caben sin pisarse se quedan sin poner */
 function etiquetasMapa(vb, esc1, modo, ex) {
   const G = S.mapaGeo, items = [], exTodo = S.mapaExTodo || ex;
-  // en un mapa estrecho (el móvil), la bandera en vez del nombre: caben el doble y se reconocen igual
+  // en un mapa estrecho (el móvil), la bandera en vez del nombre: caben el doble y se reconocen igual; en uno ancho, las dos
   const compacto = anchoMapa() < 600;
   const sitio = (p) => { const l = ((p[0] - vb[0]) / vb[2]) * 100, t = ((p[1] - vb[1]) / vb[3]) * 100; return l >= 1 && l <= 99 && t >= 2 && t <= 98 ? [l, t] : null; };
   // con banderas (el móvil) caben antes que con nombres
@@ -8579,7 +8599,7 @@ function etiquetasMapa(vb, esc1, modo, ex) {
   const enEuropa = (p) => p[0] >= eu[0] && p[0] <= eu[0] + eu[2] && p[1] >= eu[1] && p[1] <= eu[1] + eu[3];
   if (euLejos) {
     const s = sitio([eu[0] + eu[2] * 0.5, eu[1] + eu[3] * 0.5]), v = valorEuropaMapa(modo, ex);
-    if (s && v != null) items.push({ s, peso: modo === 'tuyo' ? v : sum(Object.keys(ZONA_PAISES.Europa), (c) => PESO_MUNDO[c] || 0), html: `<button __A__ type="button" class="me grupo" data-mapa-vista="eu" aria-label="${L('Acercar a Europa', 'Zoom to Europe')}">${compacto ? `${bandera('eu')}<span class="sr">${L('Europa', 'Europe')}</span>` : `<span>${L('Europa', 'Europe')}</span>`}<b class="${modo === 'tuyo' ? 'oro' : cls(v)}">${valorCortoMapa(v, modo)}</b><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4L14 14M7 5v4M5 7h4"/></svg></button>` });
+    if (s && v != null) items.push({ s, peso: modo === 'tuyo' ? v : sum(Object.keys(ZONA_PAISES.Europa), (c) => PESO_MUNDO[c] || 0), html: `<button __A__ type="button" class="me grupo" data-mapa-vista="eu" aria-label="${L('Acercar a Europa', 'Zoom to Europe')}">${compacto ? `${bandera('eu')}<span class="sr">${L('Europa', 'Europe')}</span>` : `${bandera('eu')}<span>${L('Europa', 'Europe')}</span>`}<b class="${modo === 'tuyo' ? 'oro' : cls(v)}">${valorCortoMapa(v, modo)}</b><svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="7" cy="7" r="4.6"/><path d="M10.4 10.4L14 14M7 5v4M5 7h4"/></svg></button>` });
   }
   for (const x of paisesMapa(modo, ex)) {
     const p = G.c[x.c];
@@ -8593,7 +8613,7 @@ function etiquetasMapa(vb, esc1, modo, ex) {
     const cifra = `<b class="${modo === 'tuyo' ? 'oro' : cls(x.v)}">${valorCortoMapa(x.v, modo)}</b>`;
     items.push({ s, peso, chico: !grande, html: compacto
       ? `<span __A__ class="me compacto${tuyo ? ' tuyo' : ''}" data-mapa-c="${x.c}" title="${esc(nombrePaisMapa(x.c))}">${bandera(x.c)}<span class="sr">${esc(nombrePaisMapa(x.c))}</span>${cifra}</span>`
-      : `<span __A__ class="me${tuyo ? ' tuyo' : ''}" data-mapa-c="${x.c}">${tuyo ? '<i></i>' : ''}<span>${esc(cortoPaisMapa(x.c))}</span>${cifra}</span>` });
+      : `<span __A__ class="me${tuyo ? ' tuyo' : ''}" data-mapa-c="${x.c}">${bandera(x.c)}<span>${esc(cortoPaisMapa(x.c))}</span>${cifra}</span>` });
   }
   return items.sort((a, b) => b.peso - a.peso).map((x) => x.html.replace('__A__', `data-l="${x.s[0].toFixed(2)}" data-t="${x.s[1].toFixed(2)}"${x.chico ? ' data-chico="1"' : ''}`)).join('');
 }
@@ -8675,7 +8695,7 @@ function selectorPaisMapa(sel, ex) {
   const cods = new Set([...Object.keys(BOLSA_PAIS), ...Object.values((S.precios && S.precios.mapa) || {}).map((x) => x.p), ...ex.keys()]);
   if (sel) cods.add(sel);
   const ops = [...cods].map((c) => [c, nombrePaisMapa(c)]).sort((a, b) => a[1].localeCompare(b[1], IDIOMA === 'en' ? 'en' : 'es'));
-  return `<label class="mi-elige"><span>${L('Ir a un país', 'Go to a country')}</span><select id="mapaPais"><option value="">${L('Elige uno', 'Pick one')}</option>${ops.map(([c, n]) => `<option value="${c}"${c === sel ? ' selected' : ''}>${esc(n)}</option>`).join('')}</select></label>`;
+  return `<label class="mi-elige"><span>${L('Ir a un país', 'Go to a country')}</span><select id="mapaPais"><option value="">${L('Elige uno', 'Pick one')}</option>${ops.map(([c, n]) => `<option value="${c}"${c === sel ? ' selected' : ''}>${bandera(c)}${esc(n)}</option>`).join('')}</select></label>`;
 }
 // en «Tu dinero»: toda la cartera o una sola posición de bolsa
 function selectorPosMapa(M) {
@@ -14855,8 +14875,13 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.5c';
+const VERSION = '0.5d';
 const NOVEDADES = [
+  { v: '0.5d', f: '2026-10-23', h: '13:30', t: 'Banderas en el mapa del ordenador', arreglos: [
+    'En el ordenador, el mapa del mundo lleva la bandera de cada país al lado de su nombre, como en el móvil.',
+    'Los desplegables del ordenador, como «Ir a un país», salen con los colores y la letra de GrowFolio, y la lista de países con sus banderas. En Windows la lista salía en blanco, con la letra casi invisible.',
+    'El aviso de que hay una versión nueva dice «Actualizar» en vez de «Ponerla».',
+  ] },
   { v: '0.5c', f: '2026-10-23', h: '12:40', t: 'GrowIA no vuelve a preguntarte lo que ya contestaste', arreglos: [
     'GrowIA ya no te vuelve a preguntar lo que contestaste otro día, aunque te lo pregunte con otras palabras (por ejemplo, si quieres ajustar la cripto a tu límite).',
     'Si dejas una pregunta de GrowIA para luego, no te vuelve a salir sola al entrar aunque la revisión siguiente la escriba de otra forma: la tienes en Tus objetivos para contestarla cuando quieras.',
@@ -17370,7 +17395,7 @@ function avisoWebNueva() {
   if ($('#avisoWeb')) return;
   const d = document.createElement('div');
   d.id = 'avisoWeb'; d.className = 'aviso-web'; d.setAttribute('role', 'status');
-  d.innerHTML = `${ICONOS.chispa}<span>${L('Hay una versión nueva de GrowFolio. Se pone en un segundo, sin perder nada.', 'A new version of GrowFolio is ready. It takes a second and you lose nothing.')}</span><button class="btn peq pri">${L('Ponerla', 'Get it')}</button><button class="ib" aria-label="${L('Cerrar el aviso', 'Close')}">${ICONOS.cerrar}</button>`;
+  d.innerHTML = `${ICONOS.chispa}<span>${L('Hay una versión nueva de GrowFolio. Se actualiza en un segundo, sin perder nada.', 'A new version of GrowFolio is ready. It updates in a second and you lose nothing.')}</span><button class="btn peq pri">${L('Actualizar', 'Update')}</button><button class="ib" aria-label="${L('Cerrar el aviso', 'Close')}">${ICONOS.cerrar}</button>`;
   d.querySelector('.btn').onclick = () => { d.querySelector('.btn').textContent = L('Poniéndola…', 'Updating…'); location.reload(); };
   d.querySelector('.ib').onclick = () => d.remove();
   document.body.appendChild(d);
