@@ -1,6 +1,22 @@
 {
  "versiones": [
   {
+   "v": "0.5d",
+   "f": "2026-10-23",
+   "h": "13:10",
+   "t": "El aviso de versión nueva dice «Actualizar»",
+   "commits": [
+    {
+     "cuando": "2026-10-23 13:10",
+     "asunto": "0.5d: El aviso de versión nueva dice «Actualizar»",
+     "detalle": [
+      "avisoWebNueva: el botón dice «Actualizar» (antes «Ponerla») y el texto «Se actualiza en un segundo, sin perder nada»; en inglés, «Update»",
+      "Novedades de la 0.5d en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.5c",
    "f": "2026-10-23",
    "h": "12:40",
@@ -10,9 +26,11 @@
      "cuando": "2026-10-23 12:40",
      "asunto": "0.5c: GrowIA no vuelve a preguntarte lo que ya contestaste",
      "detalle": [
-      "preguntasIA: fuera las preguntas parecidas a una ya contestada (comparten al menos dos palabras que cuentan y son la mitad o más de las de la más corta), y las repetidas dentro de la misma revisión",
+      "preguntasIA: fuera las preguntas parecidas a una contestada en los últimos 6 meses y las repetidas dentro de la misma revisión. Se comparan las palabras que cuentan; las cifras y los verbos de mover la cartera suman, pero solos no bastan («¿Reducir la cripto al 10 %?» y «¿Reducir las acciones sueltas al 10 %?» son dos preguntas)",
       "La hoja que sale sola al entrar y el aviso del móvil miran también si ya viste una parecida",
-      "El prompt de la revisión (fundador y estándar) pide no volver a preguntar lo contestado, tampoco con otras palabras",
+      "La respuesta se guarda con la pregunta que viste, aunque la revisión termine con la hoja abierta (antes iba por su sitio en la lista)",
+      "El prompt de la revisión (fundador y estándar) pide no volver a preguntar lo contestado, tampoco con otras palabras; GrowIA ve las respuestas de los últimos 6 meses (antes, las 12 últimas)",
+      "Revisión aparte del arreglo y del prompt estándar (otro agente): sus hallazgos, arreglados",
       "Prueba nueva: GrowIA te pregunta"
      ]
     }

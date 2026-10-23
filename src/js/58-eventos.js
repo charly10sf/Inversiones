@@ -32,7 +32,7 @@ document.addEventListener('click', (e) => {
   else if (d.car) { S.carTab = d.car; LS.set('inv-car', S.carTab); pintar(); irArriba('#carTabs'); }
   else if (d.fis) { S.fisTab = d.fis; LS.set('inv-fistab', S.fisTab); pintar(); irArriba('#fisTabs'); }
   else if (d.fut) { S.futTab = d.fut; LS.set('inv-futtab', S.futTab); pintar(); irArriba('#futTabs'); }
-  else if ('resp' in d) { const q = t.closest('[data-preg]'); if (q) responderIA(+q.dataset.preg, d.resp); }
+  else if ('resp' in d) { const q = t.closest('[data-preg]'); if (q) responderIA(q.dataset.q ? { q: q.dataset.q } : +q.dataset.preg, d.resp); }
   else if (d.zona) { S.radarZona = d.zona; S.radarTodo = false; LS.set('inv-zona', S.radarZona); pintar(); }
   else if (d.orden) { S.radarOrden = d.orden; LS.set('inv-orden2', S.radarOrden); pintar(); }
   else if ('radarTodo' in d) { S.radarTodo = !S.radarTodo; pintar(); }
@@ -94,7 +94,7 @@ document.addEventListener('submit', (e) => {
   const f = e.target.closest && e.target.closest('.pf-otra'); if (!f) return;
   e.preventDefault();
   const q = f.closest('[data-preg]'), v = f.querySelector('input').value;
-  if (q && v.trim()) responderIA(+q.dataset.preg, v);
+  if (q && v.trim()) responderIA(q.dataset.q ? { q: q.dataset.q } : +q.dataset.preg, v);
 });
 document.addEventListener('change', (e) => {
   const t = e.target;

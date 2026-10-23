@@ -137,39 +137,52 @@ function textoMeta(m) {
   return `Te faltarían unos ${eur(m.falta, 0)}: súbele unos ${eur(Math.ceil(m.extraMes / 10) * 10, 0)} al mes a la aportación o retrásala.${conAntes}`;
 }
 
+/* lo que contestaste a GrowIA en los últimos 6 meses (como mucho 25): lo de antes puede haber cambiado y puede volver
+   a preguntarlo */
+function respuestasVivas() {
+  const desde = new Date(Date.now() - 183 * 864e5).toISOString().slice(0, 10);
+  return (perfil().respuestas || []).filter((r) => r && r.q && (!r.f || r.f >= desde)).slice(-25);
+}
 /* lo que la IA preguntó en su última revisión y aún no has contestado */
 function preguntasIA() {
   const ia = iaActual(); if (!ia || !Array.isArray(ia.preguntas)) return [];
-  const hechas = (perfil().respuestas || []).map((r) => r.q);
+  const hechas = respuestasVivas().map((r) => r.q);
   return ia.preguntas.filter((x) => x && x.q && !hechas.some((q) => mismaPregunta(q, x.q)))
     .filter((x, k, v) => v.findIndex((y) => mismaPregunta(y.q, x.q)) === k).slice(0, 3);
 }
 /* 0.5c: GrowIA a veces vuelve a preguntar lo mismo con otras palabras («¿Ajustarías tu cripto al 5 %?» y al día
-   siguiente «¿Te plantearías algún ajuste en tu criptomoneda para dejarla en el límite del 5 %?»). Dos preguntas son
-   la misma si comparten al menos dos de las palabras que cuentan y son la mitad o más de las de la más corta. */
-const PREG_VACIAS = new Set('para como cuando cuanto cuanta cuantos cuantas quieres querrias prefieres piensas plantearias planteas tienes harias hacer realizar deberias podrias seria estas estaria algun alguna alguno algo esta este estos esos esas sobre desde hasta entre pero ahora tuyo tuya tuyos tuyas cartera dinero inversion inversiones invertir meta metas parte mantener seguir cosa dejar dejarla dejarlo posicion'.split(' '));
-const PREG_IGUAL = { bitcoin: 'cript', btc: 'cript', ethereum: 'cript', eth: 'cript', criptomoneda: 'cript', criptomonedas: 'cript', criptos: 'cript', rebalancear: 'ajust', reducir: 'ajust', recortar: 'ajust', vender: 'ajust', ajustar: 'ajust', ajustarla: 'ajust', ajustarlo: 'ajust', ajuste: 'ajust', oro: 'oro', etf: 'etf' };
+   siguiente «¿Te plantearías algún ajuste en tu criptomoneda para dejarla en el límite del 5 %?»). Se comparan las
+   palabras que cuentan. Las cifras y los verbos de mover la cartera (vender, reducir, comprar, subir…) suman, pero
+   solos no bastan: «¿Reducir la cripto al 10 %?» y «¿Reducir las acciones sueltas al 10 %?» son dos preguntas. */
+const PREG_VACIAS = new Set('para como cuando cuanto cuanta cuantos cuantas quieres querrias prefieres piensas plantearias planteas tienes harias hacer realizar deberias podrias seria estas estaria algun alguna alguno algo esta este estos esos esas sobre desde hasta entre pero ahora tuyo tuya tuyos tuyas cartera dinero inversion inversiones invertir meta metas parte mantener seguir cosa dejar dejarla dejarlo posicion cada proximo proximos proxima proximas anos meses dias semanas'.split(' '));
+const PREG_IGUAL = { bitcoin: 'cript', btc: 'cript', ethereum: 'cript', eth: 'cript', criptomoneda: 'cript', criptomonedas: 'cript', criptos: 'cript', oro: 'oro', etf: 'etf' };
+const PREG_VERBOS = [['-baja', /^(vend|reduc|recort|rebal|ajust|baja|bajar)/], ['-sube', /^(compr|aument|subi|subir|anadi|anadir|meter)/]];
 function rasgosPreg(q) {
-  const s = new Set();
+  const f = new Set(), d = new Set();
   for (const w of normTxt(q).split(' ')) {
-    if (PREG_IGUAL[w]) s.add(PREG_IGUAL[w]);
-    else if (/^\d+$/.test(w)) s.add(w);
-    else if (w.length >= 4 && !PREG_VACIAS.has(w)) s.add(w.slice(0, 5));
+    const v = PREG_VERBOS.find(([, re]) => re.test(w));
+    if (PREG_IGUAL[w]) f.add(PREG_IGUAL[w]);
+    else if (/^\d+$/.test(w)) d.add(w);
+    else if (v) d.add(v[0]);
+    else if (w.length >= 4 && !PREG_VACIAS.has(w)) f.add(w.slice(0, 5));
   }
-  return s;
+  return { f, d };
 }
 function mismaPregunta(a, b) {
   if (normTxt(a) === normTxt(b)) return true;
-  const A = rasgosPreg(a), B = rasgosPreg(b); let n = 0;
-  for (const x of A) if (B.has(x)) n++;
-  return n >= 2 && n / Math.min(A.size, B.size) >= 0.5;
+  const A = rasgosPreg(a), B = rasgosPreg(b);
+  const comun = (x, y) => { let n = 0; for (const k of x) if (y.has(k)) n++; return n; };
+  const f = comun(A.f, B.f), t = f + comun(A.d, B.d), menor = Math.min(A.f.size + A.d.size, B.f.size + B.d.size);
+  // las cortas, de una sola palabra que cuente: «¿Tienes hipoteca?» = «¿Pagas hipoteca ahora?»
+  if (menor === 1 && f === 1 && !A.d.size && !B.d.size) return true;
+  return (f >= 2 || (f >= 1 && t >= 3)) && t / menor >= 0.5;
 }
 const preguntaVista = (x, vistas = LS.get('inv-preg-vistas', [])) => vistas.some((v) => mismaPregunta(v, x.q));
 function htmlPreguntasIA(compacto) {
   const qs = preguntasIA(); if (!qs.length) return '';
   if (compacto) return `<a class="ia-pregunta-aviso" href="#objetivos">${ICONOS.growia}<span><b>GrowIA quiere saber ${qs.length === 1 ? 'una cosa' : `${qs.length} cosas`} de ti</b> para afinar sus consejos</span><span class="k">Contestar</span></a>`;
   return `<section class="pf-preguntas" aria-labelledby="hPreg"><div class="sec-cab"><h2 id="hPreg" data-no-trad>${conIA('GrowIA quiere saber', 'GrowIA wants to know')}</h2><span class="k">con tu respuesta rehace sus consejos</span></div>
-    ${qs.map((x, i) => `<div class="pf-preg" data-preg="${i}"><b>${esc(x.q)}</b>${x.por_que ? `<p class="k">${esc(x.por_que)}</p>` : ''}
+    ${qs.map((x, i) => `<div class="pf-preg" data-preg="${i}" data-q="${esc(x.q)}"><b>${esc(x.q)}</b>${x.por_que ? `<p class="k">${esc(x.por_que)}</p>` : ''}
       <div class="pf-opc">${(x.opciones || []).slice(0, 5).map((o) => `<button type="button" class="chip-btn" data-resp="${esc(o)}">${esc(o)}</button>`).join('')}</div>
       <form class="pf-otra"><input placeholder="${(x.opciones || []).length ? 'O escríbelo tú' : 'Tu respuesta'}" aria-label="Tu respuesta"><button class="btn peq">Responder</button></form></div>`).join('')}
   </section>`;
@@ -193,12 +206,12 @@ function mostrarPreguntaIA(seguir = () => {}) {
       <form class="pregia-otra"><input placeholder="${(x.opciones || []).length ? 'O escríbelo con tus palabras' : 'Tu respuesta'}" aria-label="Tu respuesta" maxlength="300"><button class="btn pri">Responder</button></form>
       <button type="button" class="enlace pregia-luego" data-cerrar>Luego (la tienes en Tus objetivos)</button>
     </div>`, () => seguir());
-  const responde = async (a) => { if (!String(a || '').trim()) return; h.cerrar(true); await responderIA(i, a); setTimeout(() => mostrarPreguntaIA(seguir), 400); };
+  const responde = async (a) => { if (!String(a || '').trim()) return; h.cerrar(true); await responderIA(x, a); setTimeout(() => mostrarPreguntaIA(seguir), 400); };
   h.el.addEventListener('click', (e) => { const b = e.target.closest('[data-pregia]'); if (b) responde(b.dataset.pregia); });
   $('.pregia-otra', h.el).onsubmit = (e) => { e.preventDefault(); responde(e.target.querySelector('input').value); };
 }
 async function responderIA(i, a) {
-  const x = preguntasIA()[i]; if (!x || !String(a || '').trim()) return;
+  const x = typeof i === 'object' ? i : preguntasIA()[i]; if (!x || !x.q || !String(a || '').trim()) return;
   const p = S.cartera.perfil = S.cartera.perfil || {};
   p.respuestas = [...(p.respuestas || []), { q: x.q, a: String(a).trim().slice(0, 300), f: hoyIso() }].slice(-25);
   p.actualizado = new Date().toISOString();
@@ -569,7 +582,7 @@ function textoPerfil(M) {
   L.push(`Sus límites: acciones sueltas ${fmtNum(+(S.cartera.limite_acciones ?? 20), 0)} % (lleva ${fmtNum(e.pctSueltas, 1)} %), cripto ${fmtNum(+p.limite_cripto, 0)} % (lleva ${fmtNum(e.pctCripto, 1)} %), una sola empresa ${fmtNum(+p.limite_empresa, 0)} %${e.mayor ? ` (la mayor, ${e.mayor.f.inst.corto}, ${fmtNum(e.mayor.pct, 1)} %)` : ''}.`);
   if (e.colchon) L.push(`Colchón que quiere: ${p.colchon_meses} meses de gastos, ${E0(e.colchon)}. Tiene ${E0(e.seguro)} entre efectivo, monetarios y renta fija.`);
   for (const m of e.metas) L.push(`- Meta "${m.n}": ${m.tipo === 'llegar' ? 'llegar a tener' : 'gastar'} ${E0(m.importe)}${m.anio ? ` en ${m.anio}` : ''}. Hoy tiene ${E0(M.total)}, un ${fmtNum(m.pct, 0)} % de la meta. ${textoMeta(m).replace(/<[^>]+>/g, '')}`);
-  for (const r of (p.respuestas || []).slice(-12)) L.push(`- Le preguntaste "${r.q}" y contestó: "${r.a}" (${r.f}).`);
+  for (const r of respuestasVivas()) L.push(`- Le preguntaste "${r.q}" y contestó: "${r.a}" (${r.f}).`);
   return L;
 }
 

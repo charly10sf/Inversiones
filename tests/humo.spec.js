@@ -160,9 +160,7 @@ test.describe('la guía', () => {
     await meterCartera(page);
     await page.evaluate(() => iniciarTour(0));
     const pasos = await page.evaluate(() => TOUR.length);
-    for (let i = 0; i < pasos; i++) {
-      await page.waitForTimeout(900);
-      const r = await page.evaluate(() => {
+    const medir = () => page.evaluate(() => {
         const p = TOURE && TOURE.pasos[TOURE.i]; if (!p || !p.sel) return { sin: true };
         const el = Array.from(document.querySelectorAll(p.sel)).find((x) => { const r = x.getBoundingClientRect(), cs = getComputedStyle(x); return r.width > 0 && r.height > 0 && cs.visibility !== 'hidden' && cs.display !== 'none'; });
         const caja = document.querySelector('.tour-caja');
@@ -170,8 +168,13 @@ test.describe('la guía', () => {
         const a = el.getBoundingClientRect(), b = caja.getBoundingClientRect();
         const ix = Math.max(0, Math.min(a.right, b.right) - Math.max(a.left, b.left)), iy = Math.max(0, Math.min(a.bottom, b.bottom) - Math.max(a.top, b.top));
         const tapa = (ix * iy) / Math.max(1, Math.min(a.width * a.height, innerWidth * innerHeight));
-        return { sel: p.sel, tapa, dentro: a.bottom > 0 && a.top < innerHeight };
+        return { sel: p.sel, tapa, dentro: a.bottom > 0 && a.top < innerHeight, donde: [Math.round(a.top), Math.round(b.top)] };
       });
+    for (let i = 0; i < pasos; i++) {
+      // se mide cuando la tarjeta ya está quieta (si algo aparece encima a mitad del paso, se recoloca)
+      await page.waitForTimeout(900);
+      let r = await medir();
+      for (let k = 0; k < 10; k++) { await page.waitForTimeout(250); const r2 = await medir(); const quieto = JSON.stringify(r2.donde) === JSON.stringify(r.donde); r = r2; if (quieto) break; }
       if (!r.sin) {
         expect(r.falta, `paso ${i + 1}: ${r.sel} existe`).toBeFalsy();
         expect(r.dentro, `paso ${i + 1}: ${r.sel} se ve`).toBe(true);
@@ -227,7 +230,9 @@ test.describe('trozos: las novedades', () => {
     await crearCuenta(page);
     await quitarCapas(page);
     await meterCartera(page);
-    // como si la última vista fuera la 0.4f
+    // como si la última vista fuera la 0.4f (después de que la bienvenida de la cuenta nueva apunte la de ahora, que con
+    // toda la tanda a la vez puede llegar tarde y pisarla)
+    await page.waitForFunction(() => LS.get('inv-version') === VERSION, null, { timeout: 30_000 });
     await page.evaluate(() => { LS.set('inv-version', '0.4f'); LS.set('inv-vnum', 2); LS.set('inv-perfil-pedido', true); });
     await page.reload();
     await page.locator('#entrada').click({ timeout: 20_000 }).catch(() => {});
@@ -268,6 +273,9 @@ test.describe('trozos: si no se pueden bajar', () => {
     const siguio = await page.evaluate(() => new Promise((ok) => { LS.del('inv-gta'); avisoGTA(() => ok(true)); setTimeout(() => ok(false), 8000); }));
     expect(siguio, 'avisoGTA sigue con lo de después aunque no baje su trozo').toBe(true);
     await expect(page.locator('#avisoWeb')).toBeVisible();
+    // 0.5d: el botón dice «Actualizar» (antes «Ponerla»)
+    await expect(page.locator('#avisoWeb .btn')).toHaveText('Actualizar');
+    await expect(page.locator('#avisoWeb')).toContainText('Se actualiza en un segundo');
   });
 });
 
@@ -287,18 +295,23 @@ test.describe('GrowIA te pregunta', () => {
     });
     expect(qs).toEqual(['¿Cuándo vas a necesitar el dinero de tu meta de la casa?']);
 
-    // la hoja sale una vez; si la dejas para luego y en la revisión siguiente viene escrita de otra forma, ya no sale sola
-    await quitarCapas(page);
-    await page.evaluate(() => mostrarPreguntaIA());
+    // la hoja sale una vez (si sale otra hoja sola al crear la cuenta, espera: se quita y se vuelve a probar)
+    for (let k = 0; k < 8 && !(await page.locator('.pregia').count()); k++) { await quitarCapas(page); await page.evaluate(() => mostrarPreguntaIA()); await page.waitForTimeout(400); }
     await expect(page.locator('.pregia h3')).toHaveText('¿Cuándo vas a necesitar el dinero de tu meta de la casa?');
     await page.click('.pregia-luego');
     await expect(page.locator('.pregia')).toHaveCount(0);
-    await page.evaluate(() => { S.iaPropio.json.preguntas = [{ q: '¿Para cuándo necesitas el dinero de la meta de la casa?', opciones: ['Pronto'] }]; mostrarPreguntaIA(); });
-    await page.waitForTimeout(600);
-    await expect(page.locator('.pregia')).toHaveCount(0);
-    // sigue en Tus objetivos para contestarla cuando quieras, y al contestarla desaparece
+    // si la dejas para luego y la revisión siguiente la escribe de otra forma, ya no sale sola…
+    await page.evaluate(() => { S.iaPropio.json.preguntas = [{ q: '¿Para cuándo necesitas el dinero de la meta de la casa?', opciones: ['Pronto'] }]; });
+    expect(await page.evaluate(() => preguntaNueva())).toBeNull();
+    // …pero sigue en Tus objetivos, y la respuesta se guarda con la pregunta que viste aunque la revisión cambie entretanto
     expect(await page.evaluate(() => preguntasIA().length)).toBe(1);
-    await page.evaluate(() => responderIA(0, 'En 2 años'));
+    await page.evaluate(() => { const x = preguntasIA()[0]; S.iaPropio.json.preguntas = [{ q: '¿Tienes hipoteca?' }]; return responderIA(x, 'En 2 años'); });
+    expect(await page.evaluate(() => S.cartera.perfil.respuestas.at(-1).q)).toBe('¿Para cuándo necesitas el dinero de la meta de la casa?');
+    expect(await page.evaluate(() => preguntasIA().map((x) => x.q))).toEqual(['¿Tienes hipoteca?']);
+    // lo contestado hace más de 6 meses ya no cuenta: GrowIA puede volver a preguntarlo
+    await page.evaluate(() => { S.cartera.perfil.respuestas.push({ q: '¿Pagas hipoteca ahora?', a: 'No', f: '2026-01-10' }); });
+    expect(await page.evaluate(() => preguntasIA().length)).toBe(1);
+    await page.evaluate(() => { S.cartera.perfil.respuestas.push({ q: '¿Pagas hipoteca ahora?', a: 'No', f: hoyIso() }); });
     expect(await page.evaluate(() => preguntasIA().length)).toBe(0);
   });
 });

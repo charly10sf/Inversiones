@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.5d', f: '2026-10-23', h: '13:10', t: 'El aviso de versión nueva dice «Actualizar»', arreglos: [
+    'El aviso de que hay una versión nueva de GrowFolio dice «Actualizar» y «Se actualiza en un segundo», en vez de «Ponerla».',
+  ] },
   { v: '0.5c', f: '2026-10-23', h: '12:40', t: 'GrowIA no vuelve a preguntarte lo que ya contestaste', arreglos: [
     'GrowIA ya no te vuelve a preguntar lo que contestaste otro día, aunque te lo pregunte con otras palabras (por ejemplo, si quieres ajustar la cripto a tu límite).',
     'Si dejas una pregunta de GrowIA para luego, no te vuelve a salir sola al entrar aunque la revisión siguiente la escriba de otra forma: la tienes en Tus objetivos para contestarla cuando quieras.',

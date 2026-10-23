@@ -106,7 +106,11 @@ function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
     else if (e.key === 'ArrowLeft') irPasoTour(-1);
   };
   window.addEventListener('resize', reubicar); window.addEventListener('scroll', reubicar, true); document.addEventListener('keydown', tecla, true);
-  TOURE = { capa, i: paso, el: null, alAcabar, pasos: pasos || TOUR, nov: !!pasos, fin, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); } };
+  // si algo aparece encima a mitad de un paso (el aviso del código de recuperación, una tarjeta que llega tarde), la página
+  // cambia de alto sin que haya scroll: la tarjeta y el foco lo siguen un momento
+  const ro = window.ResizeObserver ? new ResizeObserver(() => { if (TOURE && TOURE.capa === capa) seguirTour(700); }) : null;
+  if (ro) ro.observe(document.body);
+  TOURE = { capa, i: paso, el: null, alAcabar, pasos: pasos || TOUR, nov: !!pasos, fin, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); if (ro) ro.disconnect(); } };
   // en el móvil, deslizar la tarjeta pasa de paso
   let x0 = null, y0 = null;
   capa.addEventListener('touchstart', (e) => { if (!e.target.closest('.tour-caja')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });

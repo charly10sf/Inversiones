@@ -43,7 +43,7 @@ function avisoWebNueva() {
   if ($('#avisoWeb')) return;
   const d = document.createElement('div');
   d.id = 'avisoWeb'; d.className = 'aviso-web'; d.setAttribute('role', 'status');
-  d.innerHTML = `${ICONOS.chispa}<span>${L('Hay una versión nueva de GrowFolio. Se pone en un segundo, sin perder nada.', 'A new version of GrowFolio is ready. It takes a second and you lose nothing.')}</span><button class="btn peq pri">${L('Ponerla', 'Get it')}</button><button class="ib" aria-label="${L('Cerrar el aviso', 'Close')}">${ICONOS.cerrar}</button>`;
+  d.innerHTML = `${ICONOS.chispa}<span>${L('Hay una versión nueva de GrowFolio. Se actualiza en un segundo, sin perder nada.', 'A new version of GrowFolio is ready. It updates in a second and you lose nothing.')}</span><button class="btn peq pri">${L('Actualizar', 'Update')}</button><button class="ib" aria-label="${L('Cerrar el aviso', 'Close')}">${ICONOS.cerrar}</button>`;
   d.querySelector('.btn').onclick = () => { d.querySelector('.btn').textContent = L('Poniéndola…', 'Updating…'); location.reload(); };
   d.querySelector('.ib').onclick = () => d.remove();
   document.body.appendChild(d);
