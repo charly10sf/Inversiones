@@ -6224,7 +6224,7 @@ function reglasAvisos(M) {
   let eventos = [];
   try { eventos = agendaLista(M, 3).filter((e) => ['resultados', 'dividendo', 'cobro'].includes(e.tipo)).map((e) => { const d = document.createElement('div'); d.innerHTML = e.t; return { k: e.id, d: e.d, t: trad(d.textContent), s: trad(String(e.s || '')) }; }); } catch (e) {}
   const vistas = LS.get('inv-preg-vistas', []);
-  const preg = preguntasIA().filter((x) => !vistas.includes(clavePreg(x))).map((x) => ({ k: clavePreg(x), q: x.q }));
+  const preg = preguntasIA().filter((x) => !preguntaVista(x, vistas)).map((x) => ({ k: clavePreg(x), q: x.q }));
   // 0.3.11: las empresas que sigues, con sus precios de aviso (en euros, los del radar)
   const seguir = siguiendo().filter((x) => x.baja || x.sube).map((x) => ({ sym: x.s, n: x.n, baja: +x.baja || 0, sube: +x.sube || 0 }));
   return { reglas: unicas, eventos, preg, seguir };
@@ -11478,17 +11478,52 @@ function textoMeta(m) {
   return `Te faltarían unos ${eur(m.falta, 0)}: súbele unos ${eur(Math.ceil(m.extraMes / 10) * 10, 0)} al mes a la aportación o retrásala.${conAntes}`;
 }
 
+/* lo que contestaste a GrowIA en los últimos 6 meses (como mucho 25): lo de antes puede haber cambiado y puede volver
+   a preguntarlo */
+function respuestasVivas() {
+  const desde = new Date(Date.now() - 183 * 864e5).toISOString().slice(0, 10);
+  return (perfil().respuestas || []).filter((r) => r && r.q && (!r.f || r.f >= desde)).slice(-25);
+}
 /* lo que la IA preguntó en su última revisión y aún no has contestado */
 function preguntasIA() {
   const ia = iaActual(); if (!ia || !Array.isArray(ia.preguntas)) return [];
-  const hechas = new Set((perfil().respuestas || []).map((r) => normTxt(r.q)));
-  return ia.preguntas.filter((x) => x && x.q && !hechas.has(normTxt(x.q))).slice(0, 3);
+  const hechas = respuestasVivas().map((r) => r.q);
+  return ia.preguntas.filter((x) => x && x.q && !hechas.some((q) => mismaPregunta(q, x.q)))
+    .filter((x, k, v) => v.findIndex((y) => mismaPregunta(y.q, x.q)) === k).slice(0, 3);
 }
+/* 0.5c: GrowIA a veces vuelve a preguntar lo mismo con otras palabras («¿Ajustarías tu cripto al 5 %?» y al día
+   siguiente «¿Te plantearías algún ajuste en tu criptomoneda para dejarla en el límite del 5 %?»). Se comparan las
+   palabras que cuentan. Las cifras y los verbos de mover la cartera (vender, reducir, comprar, subir…) suman, pero
+   solos no bastan: «¿Reducir la cripto al 10 %?» y «¿Reducir las acciones sueltas al 10 %?» son dos preguntas. */
+const PREG_VACIAS = new Set('para como cuando cuanto cuanta cuantos cuantas quieres querrias prefieres piensas plantearias planteas tienes harias hacer realizar deberias podrias seria estas estaria algun alguna alguno algo esta este estos esos esas sobre desde hasta entre pero ahora tuyo tuya tuyos tuyas cartera dinero inversion inversiones invertir meta metas parte mantener seguir cosa dejar dejarla dejarlo posicion cada proximo proximos proxima proximas anos meses dias semanas'.split(' '));
+const PREG_IGUAL = { bitcoin: 'cript', btc: 'cript', ethereum: 'cript', eth: 'cript', criptomoneda: 'cript', criptomonedas: 'cript', criptos: 'cript', oro: 'oro', etf: 'etf' };
+const PREG_VERBOS = [['-baja', /^(vend|reduc|recort|rebal|ajust|baja|bajar)/], ['-sube', /^(compr|aument|subi|subir|anadi|anadir|meter)/]];
+function rasgosPreg(q) {
+  const f = new Set(), d = new Set();
+  for (const w of normTxt(q).split(' ')) {
+    const v = PREG_VERBOS.find(([, re]) => re.test(w));
+    if (PREG_IGUAL[w]) f.add(PREG_IGUAL[w]);
+    else if (/^\d+$/.test(w)) d.add(w);
+    else if (v) d.add(v[0]);
+    else if (w.length >= 4 && !PREG_VACIAS.has(w)) f.add(w.slice(0, 5));
+  }
+  return { f, d };
+}
+function mismaPregunta(a, b) {
+  if (normTxt(a) === normTxt(b)) return true;
+  const A = rasgosPreg(a), B = rasgosPreg(b);
+  const comun = (x, y) => { let n = 0; for (const k of x) if (y.has(k)) n++; return n; };
+  const f = comun(A.f, B.f), t = f + comun(A.d, B.d), menor = Math.min(A.f.size + A.d.size, B.f.size + B.d.size);
+  // las cortas, de una sola palabra que cuente: «¿Tienes hipoteca?» = «¿Pagas hipoteca ahora?»
+  if (menor === 1 && f === 1 && !A.d.size && !B.d.size) return true;
+  return (f >= 2 || (f >= 1 && t >= 3)) && t / menor >= 0.5;
+}
+const preguntaVista = (x, vistas = LS.get('inv-preg-vistas', [])) => vistas.some((v) => mismaPregunta(v, x.q));
 function htmlPreguntasIA(compacto) {
   const qs = preguntasIA(); if (!qs.length) return '';
   if (compacto) return `<a class="ia-pregunta-aviso" href="#objetivos">${ICONOS.growia}<span><b>GrowIA quiere saber ${qs.length === 1 ? 'una cosa' : `${qs.length} cosas`} de ti</b> para afinar sus consejos</span><span class="k">Contestar</span></a>`;
   return `<section class="pf-preguntas" aria-labelledby="hPreg"><div class="sec-cab"><h2 id="hPreg" data-no-trad>${conIA('GrowIA quiere saber', 'GrowIA wants to know')}</h2><span class="k">con tu respuesta rehace sus consejos</span></div>
-    ${qs.map((x, i) => `<div class="pf-preg" data-preg="${i}"><b>${esc(x.q)}</b>${x.por_que ? `<p class="k">${esc(x.por_que)}</p>` : ''}
+    ${qs.map((x, i) => `<div class="pf-preg" data-preg="${i}" data-q="${esc(x.q)}"><b>${esc(x.q)}</b>${x.por_que ? `<p class="k">${esc(x.por_que)}</p>` : ''}
       <div class="pf-opc">${(x.opciones || []).slice(0, 5).map((o) => `<button type="button" class="chip-btn" data-resp="${esc(o)}">${esc(o)}</button>`).join('')}</div>
       <form class="pf-otra"><input placeholder="${(x.opciones || []).length ? 'O escríbelo tú' : 'Tu respuesta'}" aria-label="Tu respuesta"><button class="btn peq">Responder</button></form></div>`).join('')}
   </section>`;
@@ -11498,7 +11533,7 @@ function htmlPreguntasIA(compacto) {
 const clavePreg = (x) => normTxt(x.q).slice(0, 80);
 function preguntaNueva() {
   const vistas = LS.get('inv-preg-vistas', []);
-  return preguntasIA().map((x, i) => ({ x, i })).find(({ x }) => !vistas.includes(clavePreg(x))) || null;
+  return preguntasIA().map((x, i) => ({ x, i })).find(({ x }) => !preguntaVista(x, vistas)) || null;
 }
 function mostrarPreguntaIA(seguir = () => {}) {
   const p = preguntaNueva();
@@ -11512,12 +11547,12 @@ function mostrarPreguntaIA(seguir = () => {}) {
       <form class="pregia-otra"><input placeholder="${(x.opciones || []).length ? 'O escríbelo con tus palabras' : 'Tu respuesta'}" aria-label="Tu respuesta" maxlength="300"><button class="btn pri">Responder</button></form>
       <button type="button" class="enlace pregia-luego" data-cerrar>Luego (la tienes en Tus objetivos)</button>
     </div>`, () => seguir());
-  const responde = async (a) => { if (!String(a || '').trim()) return; h.cerrar(true); await responderIA(i, a); setTimeout(() => mostrarPreguntaIA(seguir), 400); };
+  const responde = async (a) => { if (!String(a || '').trim()) return; h.cerrar(true); await responderIA(x, a); setTimeout(() => mostrarPreguntaIA(seguir), 400); };
   h.el.addEventListener('click', (e) => { const b = e.target.closest('[data-pregia]'); if (b) responde(b.dataset.pregia); });
   $('.pregia-otra', h.el).onsubmit = (e) => { e.preventDefault(); responde(e.target.querySelector('input').value); };
 }
 async function responderIA(i, a) {
-  const x = preguntasIA()[i]; if (!x || !String(a || '').trim()) return;
+  const x = typeof i === 'object' ? i : preguntasIA()[i]; if (!x || !x.q || !String(a || '').trim()) return;
   const p = S.cartera.perfil = S.cartera.perfil || {};
   p.respuestas = [...(p.respuestas || []), { q: x.q, a: String(a).trim().slice(0, 300), f: hoyIso() }].slice(-25);
   p.actualizado = new Date().toISOString();
@@ -11888,7 +11923,7 @@ function textoPerfil(M) {
   L.push(`Sus límites: acciones sueltas ${fmtNum(+(S.cartera.limite_acciones ?? 20), 0)} % (lleva ${fmtNum(e.pctSueltas, 1)} %), cripto ${fmtNum(+p.limite_cripto, 0)} % (lleva ${fmtNum(e.pctCripto, 1)} %), una sola empresa ${fmtNum(+p.limite_empresa, 0)} %${e.mayor ? ` (la mayor, ${e.mayor.f.inst.corto}, ${fmtNum(e.mayor.pct, 1)} %)` : ''}.`);
   if (e.colchon) L.push(`Colchón que quiere: ${p.colchon_meses} meses de gastos, ${E0(e.colchon)}. Tiene ${E0(e.seguro)} entre efectivo, monetarios y renta fija.`);
   for (const m of e.metas) L.push(`- Meta "${m.n}": ${m.tipo === 'llegar' ? 'llegar a tener' : 'gastar'} ${E0(m.importe)}${m.anio ? ` en ${m.anio}` : ''}. Hoy tiene ${E0(M.total)}, un ${fmtNum(m.pct, 0)} % de la meta. ${textoMeta(m).replace(/<[^>]+>/g, '')}`);
-  for (const r of (p.respuestas || []).slice(-12)) L.push(`- Le preguntaste "${r.q}" y contestó: "${r.a}" (${r.f}).`);
+  for (const r of respuestasVivas()) L.push(`- Le preguntaste "${r.q}" y contestó: "${r.a}" (${r.f}).`);
   return L;
 }
 
@@ -14820,8 +14855,12 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.5b';
+const VERSION = '0.5c';
 const NOVEDADES = [
+  { v: '0.5c', f: '2026-10-23', h: '12:40', t: 'GrowIA no vuelve a preguntarte lo que ya contestaste', arreglos: [
+    'GrowIA ya no te vuelve a preguntar lo que contestaste otro día, aunque te lo pregunte con otras palabras (por ejemplo, si quieres ajustar la cripto a tu límite).',
+    'Si dejas una pregunta de GrowIA para luego, no te vuelve a salir sola al entrar aunque la revisión siguiente la escriba de otra forma: la tienes en Tus objetivos para contestarla cuando quieras.',
+  ] },
   { v: '0.5b', f: '2026-10-23', h: '12:10', t: 'GrowIA gasta menos de tu cupo al buscar noticias', arreglos: [
     'Cuando GrowIA busca en internet, lo hace con Gemini Flash-Lite, el modelo con más cupo gratis de tu clave de Google. El de la conversación ya no se gasta en cada búsqueda, así que tarda mucho más en agotarse.',
     'Antes de buscar, GrowIA mira las noticias que GrowFolio ya tiene de cada empresa y lo que ya ha leído de su prensa: solo busca en internet lo que no está ahí o es de hoy.',
@@ -17864,7 +17903,7 @@ Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
   "preguntas": [{"q": "una pregunta corta para él", "por_que": "qué cambiaría en tus consejos según lo que conteste", "opciones": ["respuesta corta", "otra", "otra"]}],
   "fuentes": [{"t": "título", "u": "https://..."}]
 }
-"preguntas": de 0 a 2, solo si te falta algo de él (su vida, sus planes, su perfil) que cambiaría de verdad tus consejos; no repitas lo que ya ha contestado (viene en los datos). Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 0 a 8 (si no hay nada que mejorar de verdad, déjalo corto o vacío). "ideas" de 0 a 3. "hoja_de_ruta": de 1 a 4 pasos por plazo (si en un plazo no hay nada que hacer, un solo paso con "esperar": true) (este mes, próximos 6 meses, próximo año, de 1 a 5 años) que completen la hoja de ruta que ya calcula GrowFolio (está en los datos): no repitas sus pasos; añade lo que solo se sabe leyendo las noticias, las fechas que vienen y sus reglas.
+"preguntas": de 0 a 2, solo si te falta algo de él (su vida, sus planes, su perfil) que cambiaría de verdad tus consejos; no vuelvas a preguntar lo que ya ha contestado, tampoco con otras palabras (sus respuestas de los últimos meses vienen en los datos, en «Le preguntaste»): úsalas como están, aunque no sean del todo claras. Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" por orden de importancia, de 0 a 8 (si no hay nada que mejorar de verdad, déjalo corto o vacío). "ideas" de 0 a 3. "hoja_de_ruta": de 1 a 4 pasos por plazo (si en un plazo no hay nada que hacer, un solo paso con "esperar": true) (este mes, próximos 6 meses, próximo año, de 1 a 5 años) que completen la hoja de ruta que ya calcula GrowFolio (está en los datos): no repitas sus pasos; añade lo que solo se sabe leyendo las noticias, las fechas que vienen y sus reglas.
 Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**) para que GrowFolio pueda ocultarlas; ningún otro formato.`;
 }
 // 0.5, modo público: la revisión explica cómo está la cartera y qué ha pasado, sin comprar, vender ni hoja de ruta
@@ -17890,7 +17929,7 @@ Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
   "preguntas": [{"q": "una pregunta corta para mí", "por_que": "qué cambiaría en tu revisión", "opciones": ["respuesta corta", "otra"]}],
   "fuentes": [{"t": "título", "u": "https://..."}]
 }
-Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" de 0 a 6, por orden de importancia. "preguntas" de 0 a 2. Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**); ningún otro formato.`;
+Una entrada en "posiciones" por cada uno de estos ids: ${ids.join(', ')}. "mejorar" de 0 a 6, por orden de importancia. "preguntas" de 0 a 2, sin volver a preguntar lo que ya he contestado, tampoco con otras palabras (mis respuestas vienen en los datos). Escribe en español de España, tuteando, con frases cortas y concretas. Pon las cantidades en euros y los precios entre dobles asteriscos (por ejemplo **2.920 €**); ningún otro formato.`;
 }
 function extraerJSON(texto) {
   const bloques = [...String(texto).matchAll(/```(?:json)?\s*([\s\S]*?)```/g)].map((m) => m[1]);
@@ -19367,7 +19406,7 @@ document.addEventListener('click', (e) => {
   else if (d.car) { S.carTab = d.car; LS.set('inv-car', S.carTab); pintar(); irArriba('#carTabs'); }
   else if (d.fis) { S.fisTab = d.fis; LS.set('inv-fistab', S.fisTab); pintar(); irArriba('#fisTabs'); }
   else if (d.fut) { S.futTab = d.fut; LS.set('inv-futtab', S.futTab); pintar(); irArriba('#futTabs'); }
-  else if ('resp' in d) { const q = t.closest('[data-preg]'); if (q) responderIA(+q.dataset.preg, d.resp); }
+  else if ('resp' in d) { const q = t.closest('[data-preg]'); if (q) responderIA(q.dataset.q ? { q: q.dataset.q } : +q.dataset.preg, d.resp); }
   else if (d.zona) { S.radarZona = d.zona; S.radarTodo = false; LS.set('inv-zona', S.radarZona); pintar(); }
   else if (d.orden) { S.radarOrden = d.orden; LS.set('inv-orden2', S.radarOrden); pintar(); }
   else if ('radarTodo' in d) { S.radarTodo = !S.radarTodo; pintar(); }
@@ -19429,7 +19468,7 @@ document.addEventListener('submit', (e) => {
   const f = e.target.closest && e.target.closest('.pf-otra'); if (!f) return;
   e.preventDefault();
   const q = f.closest('[data-preg]'), v = f.querySelector('input').value;
-  if (q && v.trim()) responderIA(+q.dataset.preg, v);
+  if (q && v.trim()) responderIA(q.dataset.q ? { q: q.dataset.q } : +q.dataset.preg, v);
 });
 document.addEventListener('change', (e) => {
   const t = e.target;
