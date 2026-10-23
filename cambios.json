@@ -17,6 +17,7 @@
       "Pruebas en el repositorio que pasan en Actions en cada push: Playwright en 360, 390 y 1.440 con Firebase y Gemini de imitación, presupuesto de rendimiento, subida desde la versión publicada y Python",
       "Revisión aparte del build, los trozos y el service worker: 13 hallazgos, arreglados",
       "El build funciona también en Windows (rutas y saltos de línea)",
+      "Novedades: «Rehecha por dentro» (lo que era un único archivo son ahora casi 90 partes, una por sección), a petición de Carlos",
       "Novedades de la 0.6 en español e inglés"
      ]
     }
