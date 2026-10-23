@@ -1,251 +1,72 @@
 {
- "indices": {
-  "^TASI.SR": {
-   "dias": 1,
-   "semanas": 1,
-   "meta": {
-    "regularMarketPrice": 9695.86,
-    "chartPreviousClose": 9926.62,
-    "previousClose": null,
-    "regularMarketTime": "2026-10-22 15:19:59+03:00",
-    "currency": "SAR",
-    "exchangeTimezoneName": "Asia/Riyadh",
-    "fiftyTwoWeekHigh": 13949.13,
-    "fiftyTwoWeekLow": 9639.69,
-    "longName": "Tadawul All Shares Index",
-    "shortName": "Tadawul All Shares Index"
-   }
-  },
-  "^CASE30": {
-   "dias": 1,
-   "semanas": 1,
-   "meta": {
-    "regularMarketPrice": 51052.3,
-    "chartPreviousClose": 52854.9,
-    "previousClose": null,
-    "regularMarketTime": "2026-10-22 14:25:12+03:00",
-    "currency": "EGP",
-    "exchangeTimezoneName": "Africa/Cairo",
-    "fiftyTwoWeekHigh": 52867.6,
-    "fiftyTwoWeekLow": 51020.2,
-    "longName": "EGX 30 Price Return Index",
-    "shortName": "EGX 30 Price Return Index"
-   }
-  },
-  "DFMGI.AE": {
-   "dias": 1,
-   "semanas": 1,
-   "meta": {
-    "regularMarketPrice": 5734.19,
-    "chartPreviousClose": 5817.76,
-    "previousClose": null,
-    "regularMarketTime": "2026-10-23 15:00:21+04:00",
-    "currency": "AED",
-    "exchangeTimezoneName": "Asia/Dubai",
-    "fiftyTwoWeekHigh": 5821.38,
-    "fiftyTwoWeekLow": 3946.4,
-    "longName": "DFM General Index",
-    "shortName": "DFM General Index"
-   }
-  },
-  "^GNRI.QA": {
-   "dias": 1,
-   "semanas": 1,
-   "meta": {
-    "regularMarketPrice": 8611.1,
-    "chartPreviousClose": 8643.471,
-    "previousClose": null,
-    "regularMarketTime": "2026-10-22 13:15:00+03:00",
-    "currency": "QAR",
-    "exchangeTimezoneName": "Asia/Qatar",
-    "fiftyTwoWeekHigh": 8643.68,
-    "fiftyTwoWeekLow": 8571.18,
-    "longName": "QE Index",
-    "shortName": "QE Index"
-   }
-  },
-  "^BKM50.KW": {
-   "dias": 1,
-   "semanas": 1,
-   "meta": {
-    "regularMarketPrice": 9086.19,
-    "chartPreviousClose": 9099.84,
-    "previousClose": null,
-    "regularMarketTime": "2026-10-22 13:15:00+03:00",
-    "currency": "KWF",
-    "exchangeTimezoneName": "Asia/Kuwait",
-    "fiftyTwoWeekHigh": 9113.63,
-    "fiftyTwoWeekLow": 8908.55,
-    "longName": "Boursa Kuwait Main Market 50 In",
-    "shortName": "Boursa Kuwait Main Market 50 In"
-   }
-  },
-  "WIKWT.FGI": {
-   "dias": 1,
-   "semanas": 1,
-   "meta": {
-    "regularMarketPrice": 570.65,
-    "chartPreviousClose": 570.65,
-    "previousClose": null,
-    "regularMarketTime": "2026-10-22 11:19:47+01:00",
-    "currency": "KWD",
-    "exchangeTimezoneName": "Europe/London",
-    "fiftyTwoWeekHigh": 572.8,
-    "fiftyTwoWeekLow": 564.63,
-    "longName": "FTSE Kuwait Index",
-    "shortName": "FTSE Kuwait Index"
-   }
-  },
-  "WIKWT-LOC.FGI": {
-   "dias": 1,
-   "semanas": 1,
-   "meta": {
-    "regularMarketPrice": 570.65,
-    "chartPreviousClose": 572.798,
-    "previousClose": null,
-    "regularMarketTime": "2026-10-22 22:20:02+01:00",
-    "currency": null,
-    "exchangeTimezoneName": "Europe/London",
-    "fiftyTwoWeekHigh": 570.65,
-    "fiftyTwoWeekLow": 570.65,
-    "longName": null,
-    "shortName": "FTSE Kuwait Index"
-   }
+ "IL": [
+  "TA35.TA",
+  {
+   "n": "TA-35",
+   "p": "IL",
+   "f": "2026-10-23",
+   "v": -1.01,
+   "m": -4.01,
+   "y": 13.96
   }
- },
- "etf": {
-  "KSA": {
-   "dias": 251,
-   "ultimo": "2026-10-22",
-   "hoy": -2.46
-  },
-  "UAE": {
-   "dias": 251,
-   "ultimo": "2026-10-22",
-   "hoy": -2.28
-  },
-  "QAT": {
-   "dias": 251,
-   "ultimo": "2026-10-22",
-   "hoy": -0.49
-  },
-  "KWT": {
-   "dias": 251,
-   "ultimo": "2026-10-22",
-   "hoy": -0.52
-  },
-  "EGPT": {
-   "dias": 0,
-   "ultimo": null,
-   "hoy": null
-  },
-  "FLSA": {
-   "dias": 251,
-   "ultimo": "2026-10-22",
-   "hoy": -2.47
+ ],
+ "SA": [
+  "^TASI.SR",
+  {
+   "n": "Tadawul",
+   "p": "SA",
+   "f": "2026-10-22",
+   "v": -2.32,
+   "m": -9.77,
+   "y": -7.44,
+   "my": "KSA"
   }
- },
- "buscar": {
-  "FTSE ADX General": [
-   {
-    "symbol": "FADGI.FGI",
-    "shortname": "FTSE ADX General Index",
-    "quoteType": "INDEX"
-   },
-   {
-    "symbol": "FADTECI.FGI",
-    "shortname": "FTSE ADX General Technology Ind",
-    "quoteType": "INDEX"
-   }
-  ],
-  "ADX General Index": [
-   {
-    "symbol": "FADGI.FGI",
-    "shortname": "FTSE ADX General Index",
-    "quoteType": "INDEX"
-   }
-  ],
-  "QE Index": [
-   {
-    "symbol": "^GNRI.QA",
-    "shortname": "QE Index",
-    "quoteType": "INDEX"
-   },
-   {
-    "symbol": "QETF.QA",
-    "shortname": "QE INDEX ETF QAR1 QE INDEX ETF ",
-    "quoteType": "ETF"
-   }
-  ],
-  "Qatar All Share": [],
-  "MSCI Saudi Arabia ETF": [
-   {
-    "symbol": "KSA",
-    "shortname": "iShares MSCI Saudi Arabia ETF",
-    "quoteType": "ETF"
-   },
-   {
-    "symbol": "KSA.MX",
-    "shortname": "ISHARES TRUST MSCI SAUDI ARABIA",
-    "quoteType": "ETF"
-   },
-   {
-    "symbol": "MSAU.SW",
-    "shortname": "IVZ MSCI Saudi Arabia ETF",
-    "quoteType": "ETF"
-   },
-   {
-    "symbol": "MSAP.L",
-    "shortname": "INVESCO MARKETS PLC INVESCO MSC",
-    "quoteType": "ETF"
-   },
-   {
-    "symbol": "MSAU.L",
-    "shortname": "INVESCO MARKETS PLC INVESCO MSC",
-    "quoteType": "ETF"
-   },
-   {
-    "symbol": "^KSA-TC",
-    "shortname": "iShares MSCI Saudi Arabia ETF T",
-    "quoteType": "INDEX"
-   }
-  ],
-  "MSCI UAE ETF": [
-   {
-    "symbol": "UAE",
-    "shortname": "iShares MSCI UAE ETF",
-    "quoteType": "ETF"
-   },
-   {
-    "symbol": "UAE.MX",
-    "shortname": "ISHARES TRUST MSCI UAE ETF",
-    "quoteType": "ETF"
-   }
-  ],
-  "MSCI Qatar ETF": [
-   {
-    "symbol": "QAT",
-    "shortname": "iShares MSCI Qatar ETF",
-    "quoteType": "ETF"
-   }
-  ],
-  "MSCI Kuwait ETF": [
-   {
-    "symbol": "KWT",
-    "shortname": "iShares MSCI Kuwait ETF",
-    "quoteType": "ETF"
-   },
-   {
-    "symbol": "6PS5.HA",
-    "shortname": "InvescoMI MSCI Kuwait ETF     R",
-    "quoteType": "ETF"
-   },
-   {
-    "symbol": "6PS5.HM",
-    "shortname": "InvescoMI MSCI Kuwait ETF     R",
-    "quoteType": "ETF"
-   }
-  ],
-  "Egypt ETF": []
- }
+ ],
+ "EG": [
+  "^CASE30",
+  {
+   "n": "EGX 30",
+   "p": "EG",
+   "f": "2026-10-22",
+   "v": -3.41,
+   "m": null,
+   "y": null
+  }
+ ],
+ "AE": [
+  "DFMGI.AE",
+  {
+   "n": "DFM (Dubái)",
+   "p": "AE",
+   "f": "2026-10-23",
+   "v": -1.44,
+   "m": -4.56,
+   "y": 0.78,
+   "my": "UAE"
+  }
+ ],
+ "QA": [
+  "^GNRI.QA",
+  {
+   "n": "QE Index",
+   "p": "QA",
+   "f": "2026-10-22",
+   "v": -0.37,
+   "m": -8.47,
+   "y": -18.73,
+   "my": "QAT"
+  }
+ ],
+ "KW": [
+  "^BKM50.KW",
+  {
+   "n": "Boursa Kuwait 50",
+   "p": "KW",
+   "f": "2026-10-22",
+   "v": -0.15,
+   "m": -5.78,
+   "y": -9.7,
+   "my": "KWT"
+  }
+ ]
 }
