@@ -78,8 +78,15 @@ test('banco de preguntas de GrowIA', async ({ page, context, errores }) => {
     return salida;
   };
   for (const q of BANCO) {
-    // al cambiar de modo, las señales se recalculan (en estándar son las de los analistas, no las de GrowFolio)
-    await page.evaluate((modo) => { S.acceso = modo === 'estandar' ? 'publico' : 'privado'; S.M = calcular(); AS.conv = []; AS.api = []; AS.foto = null; window.__herr = []; if (typeof cerrarAsesor === 'function') cerrarAsesor(); }, q.modo);
+    // al cambiar de modo, las señales se recalculan (en estándar son las de los analistas, no las de GrowFolio).
+    // Los modelos que no se prueban, como agotados: la clave es la de la Action, y si GrowIA saltaba al 3.6 o al 3.8
+    // cuando Flash-Lite no contestaba, les gastaba el cupo que necesitan el informe y las ideas (23 oct: el banco dejó
+    // al 3.6 sin cupo y el informe salió con Flash-Lite)
+    await page.evaluate(({ modo, modelo }) => {
+      S.acceso = modo === 'estandar' ? 'publico' : 'privado'; S.M = calcular(); AS.conv = []; AS.api = []; AS.foto = null; window.__herr = [];
+      const d = diaGoogle(); LS.set('inv-ia-agotados', Object.fromEntries(['gemini-3.8-flash', 'gemini-3.6-flash'].filter((m) => m !== modelo).map((m) => [m, d])));
+      if (typeof cerrarAsesor === 'function') cerrarAsesor();
+    }, { modo: q.modo, modelo: MODELO });
     const antes = peticiones.length, t0 = Date.now();
     await page.evaluate((x) => abrirAsesor(x, true), q.q);
     await expect.poll(() => page.evaluate(() => !AS.cargando && AS.conv.length >= 2), { timeout: 240_000, intervals: [1000] }).toBe(true);
