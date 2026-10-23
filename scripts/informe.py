@@ -925,6 +925,84 @@ def noticias_de_carteras(cache, instrumentos, valores, precios):
         print(f"escaneo: titulares nuevos de {n} acciones de las carteras")
 
 
+# 0.7: noticias por tema, país y sector (lo que toca a muchas empresas a la vez). Las del mercado (precios.json,
+# noticias["mercado"]: bolsas, tipos, divisas, materias primas) se suman a estas.
+TEMAS_CONSULTAS = [
+    "aranceles comercio exterior empresas", "sanciones Rusia China empresas", "elecciones mercados inversores",
+    "Comisión Europea regulación multa empresas", "impuesto banca energéticas Gobierno", "Estados Unidos aranceles importaciones",
+    "huelga trabajadores empresa", "boicot consumidores marca", "consumo hogares gasto confianza",
+    "economía España PIB", "economía Alemania", "economía China", "economía Estados Unidos empleo",
+    "sector bancario banca márgenes", "sector eléctrico renovables precio luz", "farmacéuticas medicamentos precios",
+    "fabricantes automóvil coche eléctrico", "semiconductores chips inteligencia artificial", "sector inmobiliario vivienda precios",
+    "defensa gasto militar empresas", "lujo moda ventas", "operadoras telecomunicaciones", "aerolíneas turismo reservas",
+    "construcción infraestructuras contratos", "aseguradoras seguros",
+]
+HORAS_TEMAS = 3
+SECTORES = ["Industria", "Financiero", "Tecnología", "Salud", "Consumo cíclico", "Materiales", "Consumo básico", "Energía",
+            "Comunicaciones", "Servicios públicos", "Inmobiliario"]
+LEER_TEMAS = """Lees titulares de economía, política y sociedad de los últimos días para un inversor particular
+español con acciones de España, Europa y EEUU. Junta los que hablen de lo mismo en temas (como mucho 15: los que
+más pueden mover las acciones) y, para cada uno:
+- "fa": "macro" (tipos de interés, inflación, divisa, materias primas, economía de un país), "politico" (aranceles,
+  sanciones, elecciones, leyes, impuestos, multas, reguladores), "social" (huelgas, boicots, consumo, reputación) o
+  "sector" (lo que le pasa a un sector entero).
+- "txt": una frase con lo que pasa y por qué importa a quien tiene acciones.
+- "afecta": a qué acciones toca, por "zona" (España, Europa o EEUU), por "pais" (en inglés, como United States,
+  Spain, Germany, France, United Kingdom, Italy, Switzerland, Netherlands, China, Japan) y por "sector" (uno de:
+  {sectores}), con el signo para esas acciones ("+" bueno, "-" malo, "=" neutro, "±" mixto) y su peso (1 poco,
+  2 importante, 3 cambia mucho). Un tema puede ser bueno para unos y malo para otros: unos aranceles son malos para
+  quien exporta y buenos para quien compite con lo importado. Pon solo lo que se deduzca de los titulares.
+- "plazo": "corto" (días o semanas), "medio" (meses) o "largo" (años). "fuentes": los números de los titulares.
+- "k": una clave corta del tema. Si un tema sigue de la vez anterior (abajo), usa su misma clave.
+Nada inventado y nada de relleno (opiniones sueltas, listas de «acciones para comprar»). En español de
+España, con palabras normales.
+Responde con un objeto JSON: {{"temas": [{{"k": "...", "fa": "...", "txt": "...", "plazo": "...", "fuentes": [números],
+"afecta": [{{"zona": "...", "pais": "...", "sector": "...", "s": "...", "p": 2}}]}}]}}"""
+
+
+def leer_temas(fichas, clave, precios):
+    """0.7: cada 3 horas, Flash-Lite lee los titulares por tema y por sector (y los del mercado) y dice a qué
+    zonas, países y sectores toca cada tema. Van a fichas.json → temas; la app los junta con la ficha de cada
+    empresa por su país, su zona y su sector."""
+    if not clave or hace_menos_de(fichas.get("temas_d") or "", HORAS_TEMAS):
+        return 0
+    fuentes, vistos = [], set()
+
+    def sumar(lista):
+        for n in lista or []:
+            k = F.clave_titulo(n.get("t"))
+            if n.get("t") and k not in vistos and not P.RUIDO.search(n["t"]):
+                vistos.add(k)
+                fuentes.append({kk: n.get(kk) for kk in ("t", "f", "d", "u") if n.get(kk)})
+    sumar(((precios or {}).get("noticias") or {}).get("mercado"))
+    for q in TEMAS_CONSULTAS:
+        try:
+            sumar(P.noticias(q, 4, cuando="3d"))
+            DIAG["google"] += 1
+        except Exception as e:  # noqa: BLE001
+            DIAG["google_error"] += 1
+            print(f"temas «{q}»: {e}")
+        time.sleep(0.3)
+    if len(fuentes) < 10:
+        print(f"temas: solo {len(fuentes)} titulares, lo dejo para la próxima")
+        return 0
+    lineas = [f"[{i}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}" for i, n in enumerate(fuentes, 1)]
+    antes = [f"- {t['k']}: {t['txt']}" for t in fichas.get("temas") or []][:20]
+    pedido = "Titulares:\n" + "\n".join(lineas) + ("\n\nTemas de la vez anterior:\n" + "\n".join(antes) if antes else "")
+    cuerpo = {"systemInstruction": {"parts": [{"text": LEER_TEMAS.format(sectores=", ".join(SECTORES))}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
+              "generationConfig": {"maxOutputTokens": 16384, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
+    texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
+    res = extraer_json(texto) or {}
+    temas = res.get("temas") if isinstance(res, dict) else None
+    if not isinstance(temas, list):
+        ERRORES.append(f"temas: la respuesta no traía la lista ({len(texto)} caracteres)")
+        return 0
+    F.aplicar_temas(fichas, temas, fuentes, ahora())
+    fichas["temas_d"] = ahora()
+    print(f"temas: {len(temas)} de {len(fuentes)} titulares")
+    return len(temas)
+
+
 def guardar_fichas(fichas, dir_salida, validos):
     F.podar(fichas, validos)
     fichas["generado"] = ahora()
@@ -959,6 +1037,10 @@ def main(ruta_inst, dir_anterior, dir_salida):
                 leer_lote(lectura, cache, valores, medianas, clave, fichas, tuyas)
             except Exception as e:  # noqa: BLE001
                 print(f"escaneo: falló la lectura de Gemini ({str(e)[:200]})")
+            try:
+                leer_temas(fichas, clave, leer(f"{dir_salida}/precios.json"))
+            except Exception as e:  # noqa: BLE001
+                print(f"temas: falló la lectura de Gemini ({str(e)[:200]})")
     nuevo = informe_cartera(ruta_inst, dir_anterior, dir_salida, clave)
     # una decisión nueva al día (o si cambia su formato); entre medias, solo se revisa si hay una noticia gorda
     viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_DECISION)

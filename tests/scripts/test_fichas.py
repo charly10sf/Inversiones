@@ -124,3 +124,36 @@ class LecturaConFichas(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
+
+
+class Temas(unittest.TestCase):
+    def setUp(self):
+        self.gm, self.nt, self.dormir = I.gemini_modelo, I.P.noticias, I.time.sleep
+        I.time.sleep = lambda x: None
+        self.pedidos = []
+        I.USO.clear()
+
+    def tearDown(self):
+        I.gemini_modelo, I.P.noticias, I.time.sleep = self.gm, self.nt, self.dormir
+        I.USO.clear()
+
+    def test_leer_temas_cada_3_horas_con_flash_lite(self):
+        I.P.noticias = lambda q, n=6, debe=None, cuando="30d": [{"t": f"{q}, titular {i}", "u": f"https://ejemplo.es/{i}", "f": "EFE", "d": "2026-10-23T08:00:00+00:00"} for i in range(n)]
+        temas = {"temas": [{"k": "aranceles acero", "fa": "politico", "txt": "Suben los aranceles al acero.", "plazo": "medio", "fuentes": [1],
+                            "afecta": [{"zona": "Europa", "sector": "Materiales", "s": "-", "p": 2}]}]}
+
+        def gemini_de_prueba(cuerpo, clave, modelo):
+            self.pedidos.append(modelo)
+            return {"candidates": [{"content": {"parts": [{"text": json.dumps(temas)}]}}], "usageMetadata": {}}
+        I.gemini_modelo = gemini_de_prueba
+        fichas = F.nuevas()
+        precios = {"noticias": {"mercado": [{"t": "El BCE mantiene los tipos", "f": "EFE", "d": "2026-10-23T07:00:00+00:00", "u": "https://ejemplo.es/m"}]}}
+        self.assertEqual(I.leer_temas(fichas, "clave", precios), 1)
+        self.assertEqual(self.pedidos, ["gemini-3.5-flash-lite"])
+        self.assertEqual(fichas["temas"][0]["afecta"][0]["sector"], "Materiales")
+        self.assertEqual(fichas["temas"][0]["fuentes"][0]["u"], "https://ejemplo.es/m")  # las del mercado van primero
+        self.assertEqual(I.leer_temas(fichas, "clave", precios), 0)  # hasta dentro de 3 horas, nada
+        self.assertEqual(len(self.pedidos), 1)
+
+    def test_sin_clave_no_hace_nada(self):
+        self.assertEqual(I.leer_temas(F.nuevas(), "", {}), 0)

@@ -20,7 +20,7 @@ SIGNOS = ("+", "-", "=", "±")
 PLAZOS = ("corto", "medio", "largo")
 DIAS_FACTOR = 60      # un factor sin noticias nuevas en 60 días se borra
 DIAS_TITULAR = 30     # las marcas de los titulares, 30 días (las listas de noticias de la app enseñan 30)
-DIAS_TEMA = 21        # un tema, 3 semanas
+DIAS_TEMA = 7         # un tema que no se repite, una semana
 MAX_TEMAS = 40
 
 
