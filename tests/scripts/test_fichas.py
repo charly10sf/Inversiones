@@ -75,11 +75,12 @@ class Fichas(unittest.TestCase):
     def test_temas(self):
         fichas = F.nuevas()
         F.aplicar_temas(fichas, [{"k": "Aranceles al acero", "fa": "Política", "txt": "EEUU sube los aranceles al acero.", "plazo": "medio", "fuentes": [1, 2],
-                                  "afecta": [{"pais": "United States", "sector": "Materiales", "s": "+", "p": 2}, {"zona": "Europa", "sector": "Materiales", "s": "-", "p": 2}, {"s": "+"}]},
+                                  "afecta": [{"pais": "United States", "sector": "Materiales", "s": "+", "p": 2}, {"zona": "Europa", "sector": "Materiales", "industria": "Steel", "s": "-", "p": 2}, {"s": "+"}]},
                                  {"k": "sin afectados", "fa": "macro", "txt": "Nada.", "afecta": []}], FUENTES, "2026-10-23T10:00:00+00:00")
         self.assertEqual(len(fichas["temas"]), 1)
         t = fichas["temas"][0]
         self.assertEqual((t["k"], t["fa"], len(t["afecta"]), len(t["fuentes"])), ("aranceles-al-acero", "politico", 2, 2))
+        self.assertEqual(t["afecta"][1]["industria"], "Steel")
 
 
 class LecturaConFichas(unittest.TestCase):

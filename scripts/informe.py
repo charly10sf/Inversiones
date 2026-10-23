@@ -22,6 +22,7 @@ Google, el informe además busca en internet.
 
 Necesita el secreto GEMINI_API_KEY en el repositorio. Sin él, solo se actualizan las noticias.
 """
+import collections
 import concurrent.futures as cf
 import datetime as dt
 import inspect
@@ -947,20 +948,23 @@ más pueden mover las acciones) y, para cada uno:
   sanciones, elecciones, leyes, impuestos, multas, reguladores), "social" (huelgas, boicots, consumo, reputación) o
   "sector" (lo que le pasa a un sector entero).
 - "txt": una frase con lo que pasa y por qué importa a quien tiene acciones.
-- "afecta": a qué acciones toca, por "zona" (España, Europa o EEUU), por "pais" (en inglés, como United States,
-  Spain, Germany, France, United Kingdom, Italy, Switzerland, Netherlands, China, Japan) y por "sector" (uno de:
-  {sectores}), con el signo para esas acciones ("+" bueno, "-" malo, "=" neutro, "±" mixto) y su peso (1 poco,
+- "afecta": a qué acciones toca: por "zona" (España, Europa o EEUU) o, si es de un país concreto, por "pais" (en
+  inglés, como United States, Spain, Germany, France, United Kingdom, Italy, Switzerland, Netherlands, China, Japan;
+  no hace falta poner los dos), y por "sector" (uno de: {sectores}; sin sector si toca a todos). Si dentro del
+  sector solo toca a un tipo de empresa (aerolíneas, defensa, bancos, eléctricas, petroleras…), pon también
+  "industria", tal cual en esta lista: {industrias}. Con el signo para esas acciones ("+" bueno, "-" malo, "=" neutro, "±" mixto) y su peso (1 poco,
   2 importante, 3 cambia mucho). Un tema puede ser bueno para unos y malo para otros: unos aranceles son malos para
   quien exporta y buenos para quien compite con lo importado. Pon solo lo que se deduzca de los titulares.
 - "plazo": "corto" (días o semanas), "medio" (meses) o "largo" (años). "fuentes": los números de los titulares.
 - "k": una clave corta del tema. Si un tema sigue de la vez anterior (abajo), usa su misma clave.
+Un tema toca a muchas empresas: lo de una sola empresa (sus contratos, sus resultados) no es un tema.
 Nada inventado y nada de relleno (opiniones sueltas, listas de «acciones para comprar»). En español de
 España, con palabras normales.
 Responde con un objeto JSON: {{"temas": [{{"k": "...", "fa": "...", "txt": "...", "plazo": "...", "fuentes": [números],
-"afecta": [{{"zona": "...", "pais": "...", "sector": "...", "s": "...", "p": 2}}]}}]}}"""
+"afecta": [{{"zona": "...", "pais": "...", "sector": "...", "industria": "...", "s": "...", "p": 2}}]}}]}}"""
 
 
-def leer_temas(fichas, clave, precios):
+def leer_temas(fichas, clave, precios, valores=()):
     """0.7: cada 3 horas, Flash-Lite lee los titulares por tema y por sector (y los del mercado) y dice a qué
     zonas, países y sectores toca cada tema. Van a fichas.json → temas; la app los junta con la ficha de cada
     empresa por su país, su zona y su sector."""
@@ -989,7 +993,8 @@ def leer_temas(fichas, clave, precios):
     lineas = [f"[{i}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}" for i, n in enumerate(fuentes, 1)]
     antes = [f"- {t['k']}: {t['txt']}" for t in fichas.get("temas") or []][:20]
     pedido = "Titulares:\n" + "\n".join(lineas) + ("\n\nTemas de la vez anterior:\n" + "\n".join(antes) if antes else "")
-    cuerpo = {"systemInstruction": {"parts": [{"text": LEER_TEMAS.format(sectores=", ".join(SECTORES))}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
+    industrias = [k for k, _ in collections.Counter(x.get("ind") for x in valores if x.get("ind")).most_common(70)]
+    cuerpo = {"systemInstruction": {"parts": [{"text": LEER_TEMAS.format(sectores=", ".join(SECTORES), industrias=", ".join(industrias) or "Airlines, Banks - Regional")}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
               "generationConfig": {"maxOutputTokens": 16384, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
     texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
     res = extraer_json(texto) or {}
@@ -1039,7 +1044,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
             except Exception as e:  # noqa: BLE001
                 print(f"escaneo: falló la lectura de Gemini ({str(e)[:200]})")
             try:
-                leer_temas(fichas, clave, leer(f"{dir_salida}/precios.json"))
+                leer_temas(fichas, clave, leer(f"{dir_salida}/precios.json"), valores)
             except Exception as e:  # noqa: BLE001
                 print(f"temas: falló la lectura de Gemini ({str(e)[:200]})")
     nuevo = informe_cartera(ruta_inst, dir_anterior, dir_salida, clave)

@@ -8,7 +8,7 @@ La Action las rellena al leer la prensa con Flash-Lite (informe.py) y las guarda
                                           "fuentes": [{"t", "u", "f", "d"}]}},
                       "tit": {"<clave del titular>": ["factor", "signo", peso, "AAAA-MM-DD"]}}},
    "temas": [{"k": "...", "fa": "macro|politico|social", "txt": "...", "plazo": "...", "d": "...", "fuentes": [...],
-              "afecta": [{"pais": "...", "sector": "...", "s": "+", "p": 2}]}]}
+              "afecta": [{"pais": "...", "zona": "...", "sector": "...", "industria": "...", "s": "+", "p": 2}]}]}
 La app junta en cada ficha lo de la empresa y los temas de su país y su sector, y marca cada titular de sus listas
 de noticias con la clave del titular (la misma cuenta en src/js: claveTitular)."""
 import datetime as dt
@@ -137,7 +137,7 @@ def aplicar_temas(fichas, temas, fuentes, ahora):
         for a in t.get("afecta") or []:
             if not isinstance(a, dict) or not (a.get("pais") or a.get("sector") or a.get("zona")):
                 continue
-            afecta.append({kk: str(a[kk])[:40] for kk in ("pais", "sector", "zona") if a.get(kk)} | {"s": signo_de(a.get("s")), "p": peso_de(a.get("p"), 1)})
+            afecta.append({kk: str(a[kk])[:48] for kk in ("pais", "sector", "zona", "industria") if a.get(kk)} | {"s": signo_de(a.get("s")), "p": peso_de(a.get("p"), 1)})
         if not afecta:
             continue
         lista[k] = {"k": k, "fa": fa, "txt": txt[:280], "plazo": plazo_de(t.get("plazo")), "d": ahora, "fuentes": _fuentes(t.get("fuentes"), fuentes, 3), "afecta": afecta[:12]}
