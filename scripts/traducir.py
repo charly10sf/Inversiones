@@ -4,7 +4,7 @@
 Uso: python scripts/traducir.py instrumentos.json anterior/ salida/
 
 Lo llama la Action después de informe.py. Junta los textos en español del informe de prensa (informe.json), de la
-decisión de ideas y de las lecturas de prensa de cada empresa (escaneo.json) y los titulares de lo que sigue
+decisión de ideas y de las lecturas de prensa de cada empresa (escaneo.json), de las fichas (fichas.json) y los titulares de lo que sigue
 GrowFolio (precios.json); los que aún no tiene traducidos se los pasa a Gemini (el modelo más barato, Flash-Lite)
 por tandas, y lo guarda todo en traduccion-en.json: {clave del texto en español: el texto en inglés}. Cada texto se
 traduce una sola vez; lo que deja de usarse se borra a los tres días. La web en inglés cambia los textos al cargarlos.
@@ -158,6 +158,13 @@ def main(ruta_inst, dir_anterior, dir_salida):
         lect = esc.get("lectura") or {}
         for sim, x in sorted(lect.items(), key=lambda kv: str((kv[1] or {}).get("d") or ""), reverse=True):
             textos(x, hace_falta, 1 if sim in destacadas else 3)
+        # 0.7: las fichas de GrowIA (lo que pesa en cada empresa y los temas): las de las carteras y los temas, como las
+        # ideas; las del resto del radar, como sus lecturas
+        fichas = leer(f"{dir_salida}/fichas.json") or {}
+        for t_ in fichas.get("temas") or []:
+            textos(t_.get("txt"), hace_falta, 1)
+        for sim, x in (fichas.get("e") or {}).items():
+            textos((x or {}).get("fa") or {}, hace_falta, 1 if sim in destacadas else 3)
         pre = leer(f"{dir_salida}/precios.json") or {}
         for clave_n, lista in (pre.get("noticias") or {}).items():
             # 0.5b: noticias["_region"] no es una lista sino {comunidad: [noticias]} (desde la 0.2.2). Antes se recorría
