@@ -44,6 +44,9 @@ import fichas as F  # noqa: E402  (0.7: fichas por empresa con seis factores)
 MODELO = os.environ.get("GEMINI_MODELO", "gemini-3.8-flash")
 GEMINI = "https://generativelanguage.googleapis.com/v1beta"
 HORAS_INFORME = 2          # como mucho uno cada 2 horas
+HORAS_INFORME_LITE = 6     # con un informe de menos de 6 horas, si el 3.8 y el 3.6 no responden se queda ese (no
+                           # se publica uno hecho con Flash-Lite, más flojo); uno de Flash-Lite se rehace en la
+                           # siguiente pasada en que el 3.8 o el 3.6 contesten
 MAX_IDEAS = 0               # las ideas ya no van en el informe: salen del escaneo
 LOTE_YAHOO = 45             # empresas por pasada con noticias de Yahoo Finance
 LOTE_GOOGLE = 20            # y con Google Noticias en español
@@ -389,8 +392,12 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
 
     if not clave:
         return conservar("sin GEMINI_API_KEY, se deja el anterior")
-    if previo.get("generado") and hace_menos_de(previo["generado"], HORAS_INFORME) and not os.environ.get("INFORME_FORZAR"):
+    previo_lite = "flash-lite" in str(previo.get("modelo") or "")
+    if previo.get("generado") and not previo_lite and hace_menos_de(previo["generado"], HORAS_INFORME) and not os.environ.get("INFORME_FORZAR"):
         return conservar("el último tiene menos de 2 horas")
+    # sin Flash-Lite mientras el que hay sea reciente: mejor uno de hace unas horas que uno nuevo más flojo
+    buenos = [m for m in [MODELO] + RESERVA if "flash-lite" not in m]
+    vale_lite = not previo.get("generado") or not hace_menos_de(previo["generado"], HORAS_INFORME_LITE)
     instrumentos = leer(ruta_inst).get("instrumentos") or []
     precios = leer(f"{dir_salida}/precios.json")
     radar = leer(f"{dir_salida}/radar.json")
@@ -413,7 +420,9 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
             busqueda = False
             n_err = len(ERRORES)
             try:
-                resp = gemini(base, clave)
+                # si el 3.8 y el 3.6 no contestan, salta al except de abajo y se queda el anterior (sin marcarlo como
+                # fallo: es lo esperado, y se reintenta en la siguiente pasada)
+                resp = gemini(base, clave) if vale_lite else gemini(base, clave, reserva=False, modelos=buenos)
             finally:
                 intentos += ERRORES[n_err:]
         modelo_usado = USO[-1]["m"] if USO else MODELO
