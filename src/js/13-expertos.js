@@ -35,10 +35,10 @@ function noticiasCartera(soloAnalistas) {
 }
 /* 0.7: cada titular, con su marca de las fichas de GrowIA (factor, bueno o malo, cuánto importa); lo importante
    arriba, el relleno abajo y el mismo titular de varios medios, una vez (13b-fichas.js) */
-function htmlNoticias(lista, conActivo = false, max = 12) {
+function htmlNoticias(lista, conActivo = false, max = 12, desde = 0) {
   if (!lista.length) return '<div class="vacio">No hay noticias recientes.</div>';
   if (!S.fichas) fichasLuego();
-  return `<ul class="noticias">${ordenarNoticias(lista).slice(0, max).map(({ n, m, mas }) => `<li${m && m[2] === 0 ? ' class="relleno"' : ''}><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${chipMarca(m)}${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}${mas ? `<span class="mas-medios">${L(`y ${mas} ${mas === 1 ? 'medio más' : 'medios más'}`, `and ${mas} more ${mas === 1 ? 'outlet' : 'outlets'}`)}</span>` : ''}</small></li>`).join('')}</ul>`;
+  return `<ul class="noticias">${ordenarNoticias(lista).slice(desde, desde + max).map(({ n, m, mas }) => `<li${m && m[2] === 0 ? ' class="relleno"' : ''}><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${chipMarca(m)}${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}${mas ? `<span class="mas-medios">${L(`y ${mas} ${mas === 1 ? 'medio más' : 'medios más'}`, `and ${mas} more ${mas === 1 ? 'outlet' : 'outlets'}`)}</span>` : ''}</small></li>`).join('')}</ul>`;
 }
 
 /* Las noticias se leen dentro (0.2.4): al tocar una sale una hoja con su resumen, que escribe GrowIA (Gemini, con tu

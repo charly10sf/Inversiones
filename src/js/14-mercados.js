@@ -89,7 +89,7 @@ function vistaMercados(M) {
     </section>
     ${htmlMercadoInforme(abierto)}
     ${htmlMovidas(abierto)}
-    <section aria-labelledby="hNotM"><div class="sec-cab"><h2 id="hNotM">Noticias de mercado</h2><span class="k">bolsas, bancos centrales, petróleo y divisas</span></div>${htmlNoticias(N.slice(0, 6), false, 6).replace('class="noticias"', 'class="noticias dos-col"')}${N.length > 6 ? `<details class="mas-noticias"><summary>Ver ${Math.min(N.length, 16) - 6} noticias más</summary>${htmlNoticias(N.slice(6, 16), false, 10).replace('class="noticias"', 'class="noticias dos-col"')}</details>` : ''}</section>
+    <section aria-labelledby="hNotM"><div class="sec-cab"><h2 id="hNotM">Noticias de mercado</h2><span class="k">bolsas, bancos centrales, petróleo y divisas</span></div>${htmlNoticias(N, false, 6).replace('class="noticias"', 'class="noticias dos-col"')}${ordenarNoticias(N).length > 6 ? `<details class="mas-noticias"><summary>Ver ${Math.min(ordenarNoticias(N).length, 16) - 6} noticias más</summary>${htmlNoticias(N, false, 10, 6).replace('class="noticias"', 'class="noticias dos-col"')}</details>` : ''}</section>
   </div>`;
 }
 const MG_CORTO = { 'Asia y emergentes': 'Asia', 'Tipos y riesgo': 'Tipos', 'Materias primas': 'Materias primas' };
