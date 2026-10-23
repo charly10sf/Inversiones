@@ -1,9 +1,8 @@
-// Pruebas de GrowFolio (npm test). Sirven la raíz del repositorio o, con GF_DIST=1, lo que sale del build (dist/).
-// Antes hace falta: npm ci, npx playwright install chromium y sh tests/traer-datos.sh (los datos de las ramas).
+// Pruebas de GrowFolio (npm test): sobre lo que sale del build (dist/), que es lo que se publica. El build lo hace el
+// propio npm test; en CI va antes, aparte. Hace falta: npm ci, npx playwright install chromium y sh tests/traer-datos.sh.
 import { defineConfig, devices } from '@playwright/test';
 
-const dist = !!process.env.GF_DIST;
-const puerto = dist ? 8766 : 8765;
+const puerto = 8766;
 
 export default defineConfig({
   testDir: 'tests',
@@ -28,7 +27,7 @@ export default defineConfig({
     { name: 'pc', use: { ...devices['Desktop Chrome'], viewport: { width: 1440, height: 900 } } },
   ],
   webServer: {
-    command: `node tests/servidor.js ${dist ? 'dist' : '.'} ${puerto}`,
+    command: `node tests/servidor.js dist ${puerto}`,
     port: puerto,
     reuseExistingServer: !process.env.CI,
   },

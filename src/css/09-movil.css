@@ -1,0 +1,68 @@
+/* ---------- móvil: letra algo mayor, toques cómodos y menos aire vacío ---------- */
+@media (max-width: 680px) {
+  body { font-size: 15.5px; }
+  .vista-cab { margin-bottom: 18px; }
+  .vista-cab h1 { font-size: 28px; }
+  .vista-cab p { font-size: 14.5px; }
+  .pila { gap: 40px; }
+  .sec-cab h2 { font-size: 18px; }
+  .sec-cab .k { font-size: 13.5px; }
+  .nota { font-size: 13.5px; }
+  .chip { font-size: 12px; line-height: 20px; }
+  .imp { font-size: 12px; line-height: 20px; }
+  .senal { font-size: 13px; padding: 3px 9px; }
+  .fx-de, .fx-quien .k { font-size: 13px; }
+  .fx-op p { font-size: 14.5px; }
+  .fx-datos { font-size: 13.5px; }
+  .fx-op details.mas > summary { font-size: 14px; }
+  .prensa-ia { font-size: 14px; }
+  .ctr-lista { font-size: 13.5px; }
+  .ctr-lista li { grid-template-columns: 8px 84px minmax(0, 1fr); }
+  .idea-cifras .k { font-size: 12.5px; }
+  .idea-pega, .idea-prensa { font-size: 14px; }
+  .noticias a { font-size: 15px; }
+  .noticias small, .objetivo-ley, .votos-ley { font-size: 13px; }
+  .lista li { font-size: 15px; }
+  .lista span { font-size: 14px; }
+  .pv-paso { font-size: 14.5px; }
+  .pv-paso > div > span { font-size: 14px; }
+  .motivos { font-size: 14px; }
+  .ruta-pasos b { font-size: 15px; }
+  .ruta-pasos p { font-size: 14px; }
+  .ruta-meta { font-size: 12.5px; }
+  .ruta-acc { font-size: 14px; }
+  .btn.peq { min-height: 38px; padding: 8px 13px; font-size: 14px; }
+  .tabs button { padding: 7px 11px; font-size: 13.5px; min-height: 36px; }
+  .tabs.envuelve { flex-wrap: wrap; overflow: visible; gap: 6px; }
+  .tabs.envuelve button { border: 1px solid var(--line-2); }
+  .tabs.envuelve button[aria-pressed="true"] { border-color: var(--plane-3); }
+  details.mas > summary { padding: 6px 0; font-size: 14px; }
+  .check-mini { font-size: 13.5px; min-height: 32px; }
+  .agenda li { grid-template-columns: 46px minmax(0, 1fr) auto; }
+  .ia-p { font-size: 15.5px; }
+  .ia-notas > div { font-size: 14px; }
+  table.resp td[data-l]::before { font-size: 13px; }
+  td small { font-size: 12.5px; }
+}
+/* mercados en el móvil: dos por fila y más bajas */
+@media (max-width: 559px) {
+  .merc { padding: 12px; gap: 4px; }
+  .merc-cab { flex-wrap: wrap; gap: 0 8px; }
+  .merc-n { font-size: 13px; }
+  .merc-p { font-size: 20px; }
+  .merc-r { font-size: 12px; gap: 0 10px; }
+  .merc:last-child:nth-child(odd) { grid-column: 1 / -1; }
+}
+
+.txt-m { display: none; }
+@media (max-width: 680px) {
+  .txt-pc { display: none; } .txt-m { display: inline; }
+  .subvistas button, .plazos button { flex-direction: column; gap: 3px; }
+  .subvistas .cuenta, .plazos .cuenta { height: 17px; min-width: 17px; font-size: 11px; }
+}
+@media (max-width: 899px) and (min-width: 681px) { .plazos button { flex-direction: column; gap: 3px; } }
+
+/* "lo que toca": bajo las cifras en el móvil, bajo el gráfico en pantallas anchas */
+.toca.en-evo { display: none; }
+@media (min-width: 1180px) { .toca.en-hero { display: none; } .toca.en-evo { display: block; margin: 0 0 22px; } }
+

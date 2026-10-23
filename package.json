@@ -3,8 +3,12 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "test": "playwright test",
-    "datos": "sh tests/traer-datos.sh"
+    "test": "vite build --logLevel warn && playwright test",
+    "datos": "sh tests/traer-datos.sh",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "node tests/servidor.js dist 8766",
+    "test:solo": "playwright test"
   },
   "devDependencies": {
     "@fontsource-variable/plus-jakarta-sans": "^5.2.6",

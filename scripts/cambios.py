@@ -15,7 +15,7 @@ import sys
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
-CODIGO = ["index.html", "sw.js", "en.json", "scripts", "android", "worker", ".github"]
+CODIGO = ["index.html", "src", "build", "vite.config.js", "package.json", "tests", "sw.js", "en.json", "scripts", "android", "worker", ".github"]
 FUERA = re.compile(r"^(Co-Authored-By|Claude-Session|Signed-off-by):", re.I)
 # cambios que se publicaron un rato y se quitaron para la versión siguiente (no cuentan en la que estaban; su cambio va
 # en la versión que los publicó de verdad), y el que los quitó
@@ -23,7 +23,8 @@ RESERVADOS = {"c7f439a", "4f9b948", "92a42b5"}
 
 
 def versiones():
-    html = (RAIZ / "index.html").read_text(encoding="utf-8")
+    nov = RAIZ / "src" / "js" / "39-versiones-y-novedades.js"   # desde la 0.6; antes, index.html
+    html = (nov if nov.exists() else RAIZ / "index.html").read_text(encoding="utf-8")
     out = []
     for m in re.finditer(r"\{ v: '([\d.]+[a-z]?)', f: '([\d-]+)'(?:, h: '([\d:]+)')?, t: '((?:[^'\\]|\\.)*)'", html):
         v, f, h, t = m.groups()
@@ -64,7 +65,7 @@ def commits():
 def main():
     vs = versiones()
     if not vs:
-        sys.exit("No encuentro NOVEDADES en index.html")
+        sys.exit("No encuentro NOVEDADES en src/js/39-versiones-y-novedades.js")
     por = {x["v"]: [] for x in vs}
     for c in commits():
         destino = c.pop("version", None)

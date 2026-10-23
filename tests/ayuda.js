@@ -6,7 +6,7 @@ import { fileURLToPath } from 'node:url';
 
 const AQUI = dirname(fileURLToPath(import.meta.url));
 export const DATOS = join(AQUI, '.datos');
-export const BASE = process.env.GF_URL || `http://localhost:${process.env.GF_DIST ? 8766 : 8765}/`;
+export const BASE = process.env.GF_URL || 'http://localhost:8766/';
 const LETRAS = join(AQUI, '..', 'node_modules', '@fontsource-variable', 'plus-jakarta-sans', 'files');
 
 const LETRA = `@font-face { font-family: 'Plus Jakarta Sans'; font-style: normal; font-display: swap; font-weight: 200 800;

@@ -1,0 +1,70 @@
+/* =====================================================================
+   Como el icono (0.3.3): cada tarjeta es una loseta de negro cálido con un filo dorado fino y una luz arriba,
+   igual que el icono de la app. Lo elegido (pestañas, segmentos, plazos) va en oro y los botones principales
+   llevan el degradado del logo. Va lo último para mandar sobre todo lo de arriba.
+   ===================================================================== */
+:root {
+  --tile: #100E0B;
+  --tile-luz: radial-gradient(560px 200px at 20% -70px, rgba(233, 190, 98, 0.14), rgba(233, 190, 98, 0) 72%);
+  --tile-grad: linear-gradient(180deg, #221E18 0, #15130F 150px, #100E0B 100%);
+  --filo: rgba(255, 231, 176, 0.16);
+  --filo-2: rgba(255, 231, 176, 0.22);
+  --filo-oro: rgba(237, 187, 69, 0.42);
+  --luz: inset 0 1px 0 rgba(255, 231, 176, 0.13);
+  --oro-grad: linear-gradient(180deg, #F9DE9C 0%, #EDBB45 52%, #D7A033 100%);
+  --oro-suave: linear-gradient(180deg, rgba(249, 222, 156, 0.17), rgba(215, 160, 51, 0.07));
+}
+/* las tarjetas de primer nivel */
+:is(.tarjeta, .plan-venta, .idea, .informe, .fx2, .fx3-lista, .ruta-hero, .ruta-prog, .fis-vacio, .num-sec, .desde-compra, .merc2, .mas-t,
+    .nov-ant, .tarea, .pf-card, .merc-busca, .mfilas, .ir-objetivos, .aj-caja, .ag-mes2, .agp-c, .toca, .opr, .empezar, .ov-lista, .ia-nota) {
+  background-color: var(--tile);
+  background-image: var(--tile-luz), var(--tile-grad);
+  border-top-color: var(--filo); border-right-color: var(--filo); border-bottom-color: var(--filo); border-left-color: var(--filo);
+  box-shadow: var(--luz), 0 1px 2px rgba(0, 0, 0, 0.45), 0 16px 34px -20px rgba(0, 0, 0, 0.85);
+}
+/* lo que antes llevaba una raya de oro a la izquierda: ahora el filo entero, algo más dorado */
+:is(.plan-venta, .informe, .toca, .ruta-hero) { border-left-width: 1px; border-color: rgba(237, 187, 69, 0.30); }
+.toca.iac { border-color: rgba(237, 187, 69, 0.34); background-image: radial-gradient(520px 200px at 15% -60px, rgba(233, 190, 98, 0.16), rgba(233, 190, 98, 0) 72%), var(--tile-grad); }
+/* las que destacan (lo primero que toca, empezar, hoy en el calendario) */
+.tarea.primero, .empezar, .agp-hoy { border-color: var(--filo-oro); background-image: radial-gradient(560px 200px at 18% -60px, rgba(233, 190, 98, 0.17), rgba(233, 190, 98, 0) 72%), var(--tile-grad); }
+.tarea.hecho { background: none; box-shadow: none; border-color: var(--line-2); }
+.ia-notas > .ia-nota { background-color: var(--tile); background-image: var(--tile-luz), var(--tile-grad); box-shadow: var(--luz), 0 16px 34px -20px rgba(0, 0, 0, 0.85); }
+/* las cajitas de dentro de una tarjeta: planas, con el filo apenas visible, para no hacer loseta sobre loseta */
+:is(.tramo, .fis-c, .rg-c, .car-fut-f) { background: rgba(255, 231, 176, 0.025); border-color: rgba(255, 231, 176, 0.09); }
+.car-fut-f b { color: var(--text); }
+/* el calendario: la siguiente cita, loseta con el tono de su tipo arriba */
+.ag-prox { background-color: var(--tile); background-image: radial-gradient(560px 220px at 18% -60px, color-mix(in srgb, var(--ag) 20%, transparent), transparent 72%), var(--tile-grad); border-color: color-mix(in srgb, var(--ag) 34%, var(--filo)); box-shadow: var(--luz), 0 16px 34px -20px rgba(0, 0, 0, 0.85); }
+
+/* lo elegido, en oro */
+:is(.subvistas, .plazos, .op-modo) { background-color: var(--tile); background-image: var(--tile-grad); border-color: var(--filo); box-shadow: var(--luz); }
+.hero-rangos { border-color: var(--filo); background: rgba(255, 231, 176, 0.025); }
+:is(.subvistas, .plazos, .tabs, .as-modo, .op-modo, .cuenta-modo, .hero-rangos) button[aria-pressed="true"] {
+  background: var(--oro-suave); color: var(--accent-hi);
+  box-shadow: inset 0 0 0 1px var(--filo-oro), inset 0 1px 0 rgba(255, 231, 176, 0.16);
+}
+.tabs.envuelve button[aria-pressed="true"] { border-color: var(--filo-oro); }
+.ficha-tabs button[aria-pressed="true"] { color: var(--accent-hi); background: none; box-shadow: none; }
+/* cajitas hundidas dentro de las losetas (lo de Hacienda en cada tarea) y el buscador */
+.tarea .t-imp, .tarea.primero .t-imp { background: rgba(0, 0, 0, 0.3); box-shadow: inset 0 0 0 1px rgba(255, 231, 176, 0.07); }
+.busca input { background: rgba(0, 0, 0, 0.35); border: 1px solid var(--filo-2); border-radius: 10px; color: var(--text); padding-top: 11px; padding-bottom: 11px; }
+.busca input:focus { outline: 2px solid var(--accent); outline-offset: 0; border-color: transparent; }
+.busca input::placeholder { color: var(--muted); }
+
+/* los botones: el principal con el degradado del logo; el resto, losetas pequeñas */
+.btn { background: linear-gradient(180deg, #221E18, #15130F); border-color: var(--filo-2); box-shadow: var(--luz); }
+.btn:hover { border-color: var(--filo-oro); }
+.btn.pri { background: var(--oro-grad); border-color: #D7A033; color: var(--on-accent); font-weight: 650; box-shadow: inset 0 1px 0 rgba(255, 253, 246, 0.6), inset 0 -1px 0 rgba(138, 82, 0, 0.28), 0 8px 20px -10px rgba(237, 187, 69, 0.6); }
+
+/* las hojas que suben: el filo dorado arriba */
+.hoja { border-color: var(--filo-2); border-bottom-width: 0; box-shadow: inset 0 1px 0 rgba(255, 231, 176, 0.14), 0 -14px 44px rgba(0, 0, 0, 0.55); }
+
+/* la cabecera y la barra de abajo, con el mismo filo */
+.top.bajado { box-shadow: 0 1px 0 var(--filo), 0 10px 30px -18px rgba(0, 0, 0, 0.8); }
+@media (max-width: 960px) {
+  .navbar { background: linear-gradient(180deg, rgba(22, 19, 15, 0.94), rgba(6, 6, 5, 0.96)); border-top-color: var(--filo); box-shadow: inset 0 1px 0 rgba(255, 231, 176, 0.06); }
+  .navbar a[aria-current="page"] { color: var(--accent-hi); }
+  .navbar a[aria-current="page"] svg, .navbar .nav-mas[aria-current="page"] svg { background: var(--oro-suave); box-shadow: inset 0 0 0 1px var(--filo-oro); }
+  .navbar a.nav-centro svg, .navbar a.nav-centro[aria-current="page"] svg { background: var(--oro-grad); box-shadow: inset 0 1px 0 rgba(255, 253, 246, 0.6), 0 6px 18px rgba(237, 187, 69, 0.28), 0 0 0 5px #060605; }
+  .navbar a.nav-centro:not([aria-current="page"]) svg { background: linear-gradient(180deg, #2A251D, #14120E); box-shadow: inset 0 0 0 1px var(--filo-oro), 0 0 0 5px #060605; }
+  .navbar a.nav-centro[aria-current="page"] { color: var(--text); }
+}

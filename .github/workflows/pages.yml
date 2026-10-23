@@ -1,0 +1,47 @@
+# Publica GrowFolio en GitHub Pages desde el build (0.6): npm run build → dist/ → Pages.
+# Para que valga, en GitHub: Settings → Pages → Build and deployment → Source: «GitHub Actions» (una vez).
+# Mientras siga en «Deploy from a branch», Pages publica la raíz de main tal cual y esta Action no hace nada útil.
+name: Pages
+
+on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "README.md"
+      - "android/**"
+      - "worker/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist
+
+  publicar:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.pages.outputs.page_url }}
+    steps:
+      - id: pages
+        uses: actions/deploy-pages@v4

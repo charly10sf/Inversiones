@@ -1,0 +1,32 @@
+/* =====================================================================
+   Acabado (0.2): superficies con algo de profundidad, títulos que se reparten bien en líneas,
+   cifras alineadas y un brillo dorado detrás de tu patrimonio. Va al final para mandar sobre lo de arriba.
+   ===================================================================== */
+body { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; text-rendering: optimizeLegibility; }
+::selection { background: rgba(237, 187, 69, 0.32); color: #fff; }
+* { scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; }
+/* en el móvil (y en la app) nada de barra de desplazamiento a la derecha: se desliza con el dedo, como una app */
+@media (hover: none) and (pointer: coarse) {
+  html, body, *, .gta { scrollbar-width: none !important; }
+  ::-webkit-scrollbar { display: none; width: 0; height: 0; }
+}
+h1, h2, h3, .ag-tx b, .fx2-cab button { text-wrap: balance; }
+p, .nota, .ag-det p, li > span { text-wrap: pretty; }
+.vista-cab h1 { font-size: clamp(30px, 4.2vw, 38px); font-weight: 300; letter-spacing: -0.035em; line-height: 1.05; }
+.vista-cab p { font-size: 14.5px; line-height: 1.5; max-width: 62ch; }
+.sec-cab h2 { font-size: 18px; letter-spacing: -0.02em; }
+.kpi .v, .ag-imp, .leyenda .p, .leyenda .e, td.r, th.r, .tk-p, .tk-v, .mv-c, .ag-cd, .ag-fe b { font-variant-numeric: tabular-nums; }
+/* las tarjetas: un degradado muy suave arriba, un filo de luz y una sombra que las separa del fondo */
+:is(.tarjeta, .plan-venta, .idea, .informe, .fx2, .ruta-hero, .ruta-prog, .fis-vacio, .num-sec, .desde-compra, .merc2, .mas-t, .nov-ant, .tarea, .pf-card, .merc-busca, .mfilas, .ir-objetivos, .aj-caja, .ag-prox, .toca) {
+  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.028), rgba(255, 255, 255, 0) 55%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 1px 2px rgba(0, 0, 0, 0.3), 0 10px 28px -14px rgba(0, 0, 0, 0.55);
+}
+.hoja { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 -12px 40px rgba(0, 0, 0, 0.45); }
+.car-patrimonio { position: relative; isolation: isolate; }
+/* la cabecera fija gana una línea fina al bajar */
+.top { transition: box-shadow 0.25s ease; }
+.top.bajado { box-shadow: 0 1px 0 var(--line), 0 10px 30px -18px rgba(0, 0, 0, 0.8); }
+/* los botones principales, con relieve */
+.btn.pri { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 18px -8px rgba(237, 187, 69, 0.6); }
+.btn.pri:hover { filter: brightness(1.05); }
+

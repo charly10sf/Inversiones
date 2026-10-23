@@ -1,5 +1,5 @@
-# Las pruebas de GrowFolio en cada push (cualquier rama de código) y en cada pull request:
-# las de Python de los scripts y las de Playwright de la web (tests/), en el móvil y en el ordenador, sin salir a internet:
+# Las pruebas de GrowFolio en cada push (cualquier rama de código) y en cada pull request: el build con Vite,
+# las de Python de los scripts y las de Playwright de la web (tests/) sobre ese build, en el móvil y en el ordenador, sin salir a internet:
 # Firebase de imitación y los datos de verdad de las ramas datos y catalogo.
 name: Pruebas
 
@@ -46,7 +46,10 @@ jobs:
       - name: Pruebas de los scripts
         run: python -m unittest discover -s tests/scripts -v
 
-      - name: Pruebas de la web
+      - name: Build (Vite)
+        run: npm run build
+
+      - name: Pruebas de la web (sobre el build)
         run: npx playwright test
 
       - name: Informe si algo falla
