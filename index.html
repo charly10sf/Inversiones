@@ -14820,8 +14820,13 @@ document.addEventListener('click', (e) => {
    (0.1.9 → 0.1.10 → 0.1.11) y el del medio solo con un salto grande, como pasar a beta (0.2.0). La primera
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
-const VERSION = '0.5a';
+const VERSION = '0.5b';
 const NOVEDADES = [
+  { v: '0.5b', f: '2026-10-23', h: '12:10', t: 'GrowIA gasta menos de tu cupo al buscar noticias', arreglos: [
+    'Cuando GrowIA busca en internet, lo hace con Gemini Flash-Lite, el modelo con más cupo gratis de tu clave de Google. El de la conversación ya no se gasta en cada búsqueda, así que tarda mucho más en agotarse.',
+    'Antes de buscar, GrowIA mira las noticias que GrowFolio ya tiene de cada empresa y lo que ya ha leído de su prensa: solo busca en internet lo que no está ahí o es de hoy.',
+    'En inglés, lo que escribe GrowIA cada día (el informe, las ideas y lo que lee de cada empresa) vuelve a salir traducido: la traducción automática se paraba.',
+  ] },
   { v: '0.5a', f: '2026-10-23', h: '04:33', t: 'Asia, del este, e Israel en el mapa', arreglos: [
     'En el mapa, Asia se centra en el este: de la India a Japón y de Corea a Indonesia. Ya no salen Turquía ni Arabia Saudí, que están en Oriente Medio.',
     'En Oriente Medio sale Israel (y cualquier país de la zona con bolsa), aunque sea pequeño.',
@@ -18721,7 +18726,7 @@ function esquemaGemini(x) {
   for (const [k, v] of Object.entries(x)) o[k] = k === 'type' && typeof v === 'string' ? v.toUpperCase() : k === 'properties' ? Object.fromEntries(Object.entries(v).map(([kk, vv]) => [kk, esquemaGemini(vv)])) : esquemaGemini(v);
   return o;
 }
-const BUSCAR_GEMINI = { name: 'buscar_en_internet', description: 'Busca en internet con Google noticias y datos recientes y devuelve un resumen con sus fuentes. Úsala para contrastar lo que no esté en los datos, con al menos dos fuentes.', parameters: { type: 'OBJECT', properties: { consulta: { type: 'STRING', description: 'qué buscar: concreto, con el nombre de la empresa y el tema' } }, required: ['consulta'] } };
+const BUSCAR_GEMINI = { name: 'buscar_en_internet', description: 'Busca en internet con Google noticias y datos recientes y devuelve un resumen con sus fuentes. Antes de usarla, mira lo que ya tienes: los datos de abajo y buscar_empresa (los titulares de los últimos días y lo que GrowIA ya ha leído de su prensa). Úsala solo para lo que no esté ahí o sea de hoy, con al menos dos fuentes. Cada búsqueda gasta del cupo diario de la clave del usuario.', parameters: { type: 'OBJECT', properties: { consulta: { type: 'STRING', description: 'qué buscar: concreto, con el nombre de la empresa y el tema' } }, required: ['consulta'] } };
 const herramientasGemini = (web) => [{ functionDeclarations: [...HERRAMIENTAS.map((h) => ({ name: h.name, description: h.description, parameters: esquemaGemini(h.input_schema) })), ...(web ? [BUSCAR_GEMINI] : [])] }];
 function errorGoogle(estado, j) {
   const e0 = (j && j.error) || {}, m = e0.message || '', det = JSON.stringify(e0.details || '');
@@ -18785,13 +18790,24 @@ async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar) {
   return { contenido: partes.filter((p) => !(typeof p.text === 'string' && !p.text && !p.thoughtSignature)), fin, uso, bloqueo };
 }
 /* búsqueda con Google: una llamada aparte con la herramienta de búsqueda de Gemini */
+/* 0.5b: cada búsqueda es una petición más a Google con la clave del usuario. Va con Flash-Lite, el modelo con más cupo gratis,
+   y no con el de la conversación (el 3.8 Flash tiene muy poco cupo diario y las búsquedas lo agotaban). Si Flash-Lite no puede
+   (sin cupo hoy o sin búsqueda en ese modelo), con el de la conversación, como antes. */
 async function buscarGoogle(consulta, turno, signal) {
   if (!consulta) return { error: 'Falta qué buscar.' };
-  const modelo = AS.modeloVivo || modeloVivo();
-  let r;
-  try {
-    r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
-  } catch (e) { if (e.name === 'AbortError') throw e; return { error: 'No se pudo conectar para buscar.' }; }
+  const vivo = AS.modeloVivo || modeloVivo(), fuera = agotadosIA();
+  const modelos = [MODELO_RAPIDO, vivo].filter((m, k, v) => MODELOS[m] && v.indexOf(m) === k && (m === vivo || !fuera.includes(m)));
+  let r, modelo;
+  for (let k = 0; k < modelos.length; k++) {
+    modelo = modelos[k];
+    try {
+      r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
+    } catch (e) { if (e.name === 'AbortError') throw e; return { error: 'No se pudo conectar para buscar.' }; }
+    if (r.ok || k === modelos.length - 1) break;
+    // no ha podido el de más cupo: se apunta si es que se le ha acabado y se prueba con el de la conversación
+    let j0 = null; try { j0 = await r.json(); } catch (e) {}
+    if (errorGoogle(r.status, j0).diario) marcarAgotado(modelo);
+  }
   if (!r.ok) {
     let j = null; try { j = await r.json(); } catch (e) {}
     const e = errorGoogle(r.status, j);

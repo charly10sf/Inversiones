@@ -1,6 +1,23 @@
 {
  "versiones": [
   {
+   "v": "0.5b",
+   "f": "2026-10-23",
+   "h": "12:10",
+   "t": "GrowIA gasta menos de tu cupo al buscar noticias",
+   "commits": [
+    {
+     "cuando": "2026-10-23 12:19",
+     "asunto": "0.5b: GrowIA gasta menos de tu cupo al buscar noticias",
+     "detalle": [
+      "buscarGoogle: la búsqueda en internet va con Flash-Lite (el modelo con más cupo gratis de la clave del usuario); si no puede (sin cupo hoy o sin búsqueda en ese modelo), con el de la conversación, como antes",
+      "La herramienta buscar_en_internet pide mirar antes los datos y buscar_empresa (titulares y lo que GrowIA ya ha leído de la prensa) y dice que cada búsqueda gasta cupo",
+      "Novedades de la 0.5b en español e inglés (también el arreglo de la traducción de lo que escribe GrowIA)"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.5a",
    "f": "2026-10-23",
    "h": "04:33",
