@@ -9,6 +9,11 @@ on:
     - cron: "7,27,47 6-21 * * 1-5"
     - cron: "17 */4 * * 0,6"
   workflow_dispatch:
+    inputs:
+      informe:
+        description: "Rehacer el informe aunque tenga menos de 2 horas"
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -126,6 +131,7 @@ jobs:
       - name: Escaneo de prensa e informe de Gemini
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          INFORME_FORZAR: ${{ inputs.informe && '1' || '' }}
         run: |
           python scripts/informe.py instrumentos.json anterior salida || echo "el informe no se pudo generar"
 
