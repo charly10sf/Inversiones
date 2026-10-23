@@ -127,7 +127,8 @@ function pintarAsesor(alFinal) {
   const cuerpo = $('#asCuerpo', fondo), pie = $('#asPie', fondo);
   const vivo = modeloVivo(cfg);
   const usados = usoIAHoy()[vivo] || 0;
-  $('#asSub', fondo).textContent = `${MODELOS[vivo].n}${vivo !== cfg.modelo ? ` (el ${MODELOS[cfg.modelo].corto || MODELOS[cfg.modelo].n} ha gastado su cupo de hoy)` : ''}${CUPO_DIA[vivo] ? ` · ${cupoTxt(vivo, usados)}` : ''}${cfg.web && !AS.sinWeb ? ', con búsqueda en internet' : ''}`;
+  // 0.7: el nombre corto (en un móvil estrecho, «Gemini 3.8 Flash · 7 de 20 hoy» no cabía)
+  $('#asSub', fondo).textContent = `${MODELOS[vivo].corto || MODELOS[vivo].n}${vivo !== cfg.modelo ? ` (el ${MODELOS[cfg.modelo].corto || MODELOS[cfg.modelo].n} ha gastado su cupo de hoy)` : ''}${CUPO_DIA[vivo] ? ` · ${cupoTxt(vivo, usados)}` : ''}${cfg.web && !AS.sinWeb ? ', con búsqueda en internet' : ''}`;
   const rapida = cfg.modelo === MODELO_RAPIDO;
   $('#asModo', fondo).innerHTML = `<span>Respuesta</span><div class="seg" role="group" aria-label="Tipo de respuesta"><button type="button" data-as="modo" data-m="normal" aria-pressed="${!rapida}">Normal</button><button type="button" data-as="modo" data-m="rapida" aria-pressed="${rapida}">Rápida</button></div><small>${rapida ? 'Contesta en segundos y gasta mucho menos cupo' : 'Piensa más a fondo; si se agota, salta sola a otro modelo'}</small>`;
   const vista = !AS.clave && AS.vista !== 'ajustes' ? 'clave' : AS.vista;

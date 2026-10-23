@@ -29,7 +29,8 @@ test.beforeEach(({}, info) => {
   test.skip(!CLAVE, 'sin clave de Gemini (GF_BANCO_CLAVE): el banco solo corre en su Action');
   test.skip(info.project.name !== 'pc', 'una vez, en el ordenador');
 });
-test.setTimeout(45 * 60_000);
+// 42 preguntas de hasta 4 minutos cada una en el peor caso: hora y media, y lo hecho se guarda tras cada pregunta
+test.setTimeout(100 * 60_000);
 
 /** Lo que sale mal de una respuesta (vacío si está bien) */
 export function revisar(q, r) {
@@ -65,8 +66,20 @@ test('banco de preguntas de GrowIA', async ({ page, context, errores }) => {
   }, { clave: CLAVE, modelo: MODELO });
 
   const resultados = [];
+  const guardar = (parcial) => {
+    const bien = resultados.filter((x) => x.ok).length;
+    const salida = {
+      v: 1, generado: new Date().toISOString(), modelo: MODELO, muestra: process.env.GF_BANCO_MUESTRA === '1', ...(parcial ? { parcial: true, de: BANCO.length } : {}),
+      total: resultados.length, bien, pct: resultados.length ? Math.round((bien / resultados.length) * 100) : 0,
+      peticiones_media: resultados.length ? Math.round((resultados.reduce((s, x) => s + x.peticiones, 0) / resultados.length) * 10) / 10 : 0,
+      errores_pagina: errores.slice(0, 10), preguntas: resultados,
+    };
+    writeFileSync(SALIDA, JSON.stringify(salida, null, 1));
+    return salida;
+  };
   for (const q of BANCO) {
-    await page.evaluate((modo) => { S.acceso = modo === 'estandar' ? 'publico' : 'privado'; AS.conv = []; AS.api = []; AS.foto = null; window.__herr = []; if (typeof cerrarAsesor === 'function') cerrarAsesor(); }, q.modo);
+    // al cambiar de modo, las señales se recalculan (en estándar son las de los analistas, no las de GrowFolio)
+    await page.evaluate((modo) => { S.acceso = modo === 'estandar' ? 'publico' : 'privado'; S.M = calcular(); AS.conv = []; AS.api = []; AS.foto = null; window.__herr = []; if (typeof cerrarAsesor === 'function') cerrarAsesor(); }, q.modo);
     const antes = peticiones.length, t0 = Date.now();
     await page.evaluate((x) => abrirAsesor(x, true), q.q);
     await expect.poll(() => page.evaluate(() => !AS.cargando && AS.conv.length >= 2), { timeout: 240_000, intervals: [1000] }).toBe(true);
@@ -81,16 +94,11 @@ test('banco de preguntas de GrowIA', async ({ page, context, errores }) => {
     const mal = revisar(q, r);
     resultados.push({ id: q.id, modo: q.modo, q: q.q, ok: !mal.length, mal, peticiones: r.peticiones, segundos: r.segundos, modelo: r.modelo, herramientas: [...new Set(r.herramientas)], respuesta: r.texto.slice(0, 800) });
     console.log(`${mal.length ? '✘' : '✓'} ${q.id} (${r.peticiones} peticiones, ${r.segundos} s)${mal.length ? ': ' + mal.join('; ') : ''}`);
+    // si la Action se queda sin tiempo, lo hecho hasta aquí se publica igual
+    guardar(true);
     // Google cuenta las peticiones por minuto: un respiro entre pregunta y pregunta
     await page.waitForTimeout(4000);
   }
-  const bien = resultados.filter((x) => x.ok).length;
-  const salida = {
-    v: 1, generado: new Date().toISOString(), modelo: MODELO, muestra: process.env.GF_BANCO_MUESTRA === '1',
-    total: resultados.length, bien, pct: resultados.length ? Math.round((bien / resultados.length) * 100) : 0,
-    peticiones_media: resultados.length ? Math.round((resultados.reduce((s, x) => s + x.peticiones, 0) / resultados.length) * 10) / 10 : 0,
-    errores_pagina: errores.slice(0, 10), preguntas: resultados,
-  };
-  writeFileSync(SALIDA, JSON.stringify(salida, null, 1));
-  console.log(`banco: ${bien} de ${resultados.length} (${salida.pct} %), ${salida.peticiones_media} peticiones de media`);
+  const salida = guardar(false);
+  console.log(`banco: ${salida.bien} de ${salida.total} (${salida.pct} %), ${salida.peticiones_media} peticiones de media`);
 });

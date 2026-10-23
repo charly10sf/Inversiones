@@ -49,17 +49,24 @@ function tipoFalloIA(e) {
    La hora la pone el servidor y se borra solo a los 30 días (TTL de Firestore sobre «caduca») */
 async function avisarFalloIA(e, donde = 'chat', modelo = null) {
   try {
-    if (!e || e.name === 'AbortError' || !PERFIL_CUENTA || !FB.user || !FB.fs || CFG.dev) return;
-    const dia = new Date().toISOString().slice(0, 10), c = LS.get('inv-fallos-ia', {});
-    let n = c && c.d === dia ? c.n || 0 : 0;
+    // «red» es la conexión de quien pregunta (y su aviso llegaría tarde, quizá ya en otro día); lo previsto (la
+    // revisión automática que se deja para mañana sin cupo) no es un fallo
+    if (!e || e.name === 'AbortError' || e.previsto || !PERFIL_CUENTA || !FB.user || !FB.fs || CFG.dev) return;
+    const tipo = tipoFalloIA(e), v = String(VERSION);
+    if (tipo === 'red' || !/^[0-9]{1,2}([.][0-9]{1,2}){1,2}[a-z]?$/.test(v)) return;
+    const dia = new Date().toISOString().slice(0, 10), c = LS.get('inv-fallos-ia', {}) || {};
+    if (c.pausa && Date.now() < c.pausa) return;
+    const n0 = c.d === dia ? c.n || 0 : 0;
     const f = FB.fs, mod = modelo || AS.modeloVivo || null;
-    const datos = { t: f.serverTimestamp(), caduca: new Date(Date.now() + 30 * 864e5), tipo: tipoFalloIA(e), estado: Number.isInteger(e.estado) ? e.estado : null, modelo: /^gemini-[0-9a-z.-]{1,32}$/.test(mod || '') ? mod : null, donde, v: String(VERSION).slice(0, 12) };
-    // si otro dispositivo de la misma cuenta ya ha usado ese número, las reglas lo rechazan: se prueba con el siguiente
-    for (; n < 5; n++) {
-      LS.set('inv-fallos-ia', { d: dia, n: n + 1 });
-      try { await conTiempo(f.setDoc(f.doc(FB.db, 'fallos_ia', `${FB.user.uid}_${dia.replace(/-/g, '')}_${n}`), datos), 10000); return; }
+    const datos = { t: f.serverTimestamp(), caduca: new Date(Date.now() + 30 * 864e5), tipo, estado: Number.isInteger(e.estado) ? e.estado : null, modelo: /^gemini-[0-9a-z.-]{1,32}$/.test(mod || '') ? mod : null, donde, v };
+    // si otro dispositivo de la misma cuenta ya ha usado ese número, las reglas lo rechazan: se prueba con el siguiente.
+    // El contador solo avanza con lo que entra; si no entra ninguno (el reloj de este dispositivo no va con el del
+    // servidor, o ya van 5 hoy), una hora de pausa
+    for (let n = n0; n < 5; n++) {
+      try { await conTiempo(f.setDoc(f.doc(FB.db, 'fallos_ia', `${FB.user.uid}_${dia.replace(/-/g, '')}_${n}`), datos), 10000); LS.set('inv-fallos-ia', { d: dia, n: n + 1 }); return; }
       catch (x) { if (!/permission/i.test(String((x && (x.code || x.message)) || ''))) return; }
     }
+    LS.set('inv-fallos-ia', { d: dia, n: n0, pausa: Date.now() + 36e5 });
   } catch (x) { /* sin red o sin permiso: nada */ }
 }
 /* a qué hora de aquí se renueva el cupo gratis: a medianoche de California (las 9:00 en España casi todo el año; las

@@ -77,7 +77,7 @@ service cloud.firestore {
         && (request.resource.data.estado == null || (request.resource.data.estado is int && request.resource.data.estado >= 0 && request.resource.data.estado < 1000))
         && (request.resource.data.modelo == null || (request.resource.data.modelo is string && request.resource.data.modelo.matches('^gemini-[0-9a-z.-]{1,32}$')))
         && request.resource.data.donde in ['chat', 'revision', 'busqueda', 'noticia', 'captura']
-        && request.resource.data.v is string && request.resource.data.v.matches('^[0-9]{1,2}[.][0-9]{1,2}[a-z]?$');
+        && request.resource.data.v is string && request.resource.data.v.matches('^[0-9]{1,2}([.][0-9]{1,2}){1,2}[a-z]?$');
       allow read, delete: if esDueno();
       allow update: if false;
     }

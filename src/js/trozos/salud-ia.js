@@ -29,7 +29,7 @@ function htmlBancoIA(b, titulo) {
   const mal = (Array.isArray(b.preguntas) ? b.preguntas : []).filter((x) => x && !x.ok);
   const N = (v) => Number(v) || 0;
   return `<section><h3>${titulo}</h3>
-    <p class="salud-num"><b>${N(b.bien)} ${L('de', 'of')} ${N(b.total)}</b> ${L('bien', 'right')} (${fmtNum(N(b.pct), 1)} %) · ${fmtNum(N(b.peticiones_media), 1)} ${L('peticiones por pregunta', 'requests per question')} · ${esc(MODELOS[b.modelo] ? MODELOS[b.modelo].n : b.modelo)} · ${haceCuanto(b.generado)}</p>
+    <p class="salud-num"><b>${N(b.bien)} ${L('de', 'of')} ${N(b.total)}</b> ${L('bien', 'right')} (${fmtNum(N(b.pct), 1)} %) · ${fmtNum(N(b.peticiones_media), 1)} ${L('peticiones por pregunta', 'requests per question')} · ${esc(MODELOS[b.modelo] ? MODELOS[b.modelo].n : b.modelo)} · ${haceCuanto(b.generado)}${b.parcial ? ` · <b>${L(`a medias: ${N(b.total)} de ${N(b.de)}`, `partial: ${N(b.total)} of ${N(b.de)}`)}</b>` : ''}</p>
     ${mal.length ? `<ul class="lista salud-mal">${mal.map((x) => `<li><details><summary><b>${esc(x.id)}</b> ${esc((Array.isArray(x.mal) ? x.mal : [x.mal]).filter(Boolean).join(' · '))}</summary><p class="k">${esc(x.q)}</p><p class="nota" data-no-trad>${esc(x.respuesta || '')}</p></details></li>`).join('')}</ul>` : ''}</section>`;
 }
 function htmlCupoAction() {

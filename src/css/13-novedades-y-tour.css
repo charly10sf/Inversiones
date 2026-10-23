@@ -157,7 +157,9 @@
 .salud-ia h3 { margin: 0 0 6px; font-size: 15px; }
 .salud-ia p { margin: 0 0 6px; }
 .salud-num b { font-size: 17px; }
+/* .lista pone una columna de 18 px para el icono: aquí no hay icono, la fila entera para el texto */
+.salud-mal li { grid-template-columns: minmax(0, 1fr); }
 .salud-mal summary { cursor: pointer; line-height: 1.45; }
 .salud-mal p { margin: 6px 0 0; }
-.salud-fallos li { display: grid; gap: 2px; }
+.salud-fallos li { display: grid; grid-template-columns: minmax(0, 1fr); gap: 2px; }
 .salud-fallos small { color: var(--muted); }

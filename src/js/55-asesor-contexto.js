@@ -374,7 +374,8 @@ function hBuscarEmpresa(q) {
     contraste: { a_favor: ctr.favor, en_contra: ctr.contra, de: ctr.total, detalle: ctr.checks.map((c) => `${c.k}: ${c.ok === 1 ? 'a favor' : c.ok === -1 ? 'en contra' : 'neutral'} (${c.txt})`) },
     tasa_de_compra: tasa ? `${fmtNum(tasa.tipo * 100, 1)} % (${tasa.nombre})` : 'no paga',
     ya_tiene_dentro_de_sus_fondos_eur: R2(dentroDeFondos(M)(x.n), 0),
-    valoracion_de_la_web: k >= 0 ? { puesto: k + 1, de: ideas.length, motivos: ideas[k].motivos, pegas: ideas[k].pegas } : 'No pasa el filtro de ideas de GrowFolio (potencial de al menos un 10 %, 8 analistas o más, consenso de compra, 3 señales a favor y no haber caído más de un 35 % en un año).',
+    // en estándar, sin puesto: ordenar de mejor a peor es justo lo que no puede hacer (revisión aparte de la 0.7)
+    valoracion_de_la_web: k >= 0 ? (esPublico() ? { entre_las_ideas_del_radar: 'sí, iguales para todos (no es una recomendación para él)', motivos: ideas[k].motivos, pegas: ideas[k].pegas } : { puesto: k + 1, de: ideas.length, motivos: ideas[k].motivos, pegas: ideas[k].pegas }) : 'No pasa el filtro de ideas de GrowFolio (potencial de al menos un 10 %, 8 analistas o más, consenso de compra, 3 señales a favor y no haber caído más de un 35 % en un año).',
     ficha_growia: fichaGrowIA(x.s, 4) || 'sin ficha todavía: lo leído de su prensa viene en prensa_leida_por_gemini',
     titulares_recientes: ordenarNoticias(noticiasIdea(x.s)).slice(0, 5).map(({ n, m }) => titularGrowIA(n, m)),
     prensa_leida_por_gemini: lecturaDe(x.s) ? { impacto: lecturaDe(x.s).imp, relevancia: lecturaDe(x.s).rel, resumen: lecturaDe(x.s).txt, catalizador: lecturaDe(x.s).cat, fecha: lecturaDe(x.s).d } : 'sin leer todavía',
@@ -615,7 +616,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
   let reintentos = 0, conPensar = true, cambiado = false;
   const orden = () => (cadena ? cadena.filter((m) => MODELOS[m]) : ordenIA(cfg.modelo));
   let modelo = cadena ? orden().find((m) => !agotadosIA().includes(m)) : modeloVivo(cfg);
-  if (!modelo) { const e = new Error(`Hoy ya no queda cupo de ${orden().map((m) => MODELOS[m].n).join(' ni de ')} en tu clave: se hará cuando se renueve, a las ${horaRenuevaIA()}.`); e.estado = 429; e.diario = true; throw e; }
+  if (!modelo) { turno.modelo = orden()[0]; const e = new Error(`Hoy ya no queda cupo de ${orden().map((m) => MODELOS[m].n).join(' ni de ')} en tu clave: se hará cuando se renueve, a las ${horaRenuevaIA()}.`); e.estado = 429; e.diario = true; e.previsto = true; throw e; }
   const inicio = contents.length, probados = new Set([modelo]);
   AS.modeloVivo = modelo; turno.modelo = modelo;
   if (!cadena && modelo !== cfg.modelo) turno.partes.push({ tipo: 'paso', txt: `${MODELOS[cfg.modelo].n} ya ha gastado su cupo de hoy: contesta ${MODELOS[modelo].n}` });

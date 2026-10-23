@@ -63,6 +63,9 @@ test('GrowIA lee las fichas y busca en internet una vez por pregunta como mucho'
   // buscar_empresa también trae la ficha
   const be = await page.evaluate(() => ejecutarHerramienta('buscar_empresa', { consulta: 'Repsol' }));
   expect(be.ficha_growia.factores[0]).toContain('Recompra acciones');
+  // en estándar, una idea del radar no lleva puesto (sería ordenarlas de mejor a peor para él)
+  const idea = await page.evaluate(() => { const i = mejoresIdeas(S.M || calcular())[0]; return i ? ejecutarHerramienta('buscar_empresa', { consulta: i.s }) : null; });
+  if (idea) expect(JSON.stringify(idea.valoracion_de_la_web || '')).not.toContain('puesto');
   // el cupo de hoy, a la vista, y el modelo de la respuesta
   expect(await page.evaluate(() => usoIAHoy()['gemini-3.8-flash'])).toBe(3);
   await expect(page.locator('#asSub')).toContainText('3 de 20 hoy');
@@ -163,9 +166,14 @@ testDueno('Cómo va GrowIA: el banco de preguntas y los fallos, para el dueño',
   // un 400 sin «API key» es la petición, no la clave
   expect([fallo.tipo, fallo.donde, fallo.estado, fallo.modelo]).toEqual(['peticion', 'chat', 400, 'gemini-3.8-flash']);
   expect(await page.evaluate(() => tipoFalloIA({ estado: 400, msg: 'API key not valid. Please pass a valid API key.' }))).toBe('clave');
-  // el segundo del día va al siguiente número; el sexto ya no entra
+  // sin conexión es cosa de quien pregunta: no se apunta; lo previsto (sin cupo para la revisión automática), tampoco
+  await page.evaluate(() => avisarFalloIA(new Error('Failed to fetch'), 'chat'));
+  await page.evaluate(() => avisarFalloIA(Object.assign(new Error('sin cupo'), { estado: 429, diario: true, previsto: true }), 'revision'));
+  expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('stub-fs:fallos_ia/')).length)).toBe(1);
+  // el segundo del día va al siguiente número; el sexto ya no entra y deja una hora de pausa
   for (let i = 0; i < 6; i++) await page.evaluate(() => avisarFalloIA({ estado: 503, message: 'saturado' }, 'chat'));
   expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('stub-fs:fallos_ia/')).length)).toBe(5);
+  expect(await page.evaluate(() => LS.get('inv-fallos-ia', {}).pausa > Date.now())).toBe(true);
 
   await page.evaluate(() => { if (typeof cerrarAsesor === 'function') cerrarAsesor(); abrirAjustes(); });
   await page.locator('#aSaludIA').click();
