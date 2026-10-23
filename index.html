@@ -4204,7 +4204,7 @@ const cacheCuenta = {
   },
 };
 // lo último que se sabe que hay en la cuenta (revisión y texto): sobre eso se hacen los cambios de aquí
-function fijarBase(rev, texto) { S.baseRev = rev || 0; S.baseTexto = texto || null; }
+function fijarBase(rev, texto) { S.baseRev = rev || 0; S.baseTexto = texto || null; if (S.puente && S.kv && idClave(texto) === 'k:' + S.kv.kid) soltarPuente(); }
 /* sube lo último del dispositivo; nunca dos a la vez (si cambias algo mientras, se sube después) */
 let subidaEnCurso = null;
 function subirPendiente() {
@@ -4311,20 +4311,22 @@ async function resolverConflicto(e) {
     let keySuya = S.key;
     const fs = formatoDe(d.enc);
     if (idClave(d.enc) !== idClave(c.texto)) {
-      if (S.kv && S.kek && fs && fs.v !== 2 && fs.salt === S.kv.k.pass.salt) {
+      const pu = puenteV1();
+      if (S.kv && pu && fs && fs.v !== 2 && fs.salt === pu.salt) {
         // 0.5: aquí ya se pasó al formato 2 y la cuenta sigue en el 1 (otro dispositivo guardó antes de que llegara): se
         // abre con la clave de la contraseña, se junta y se sube en el 2
-        keySuya = S.kek;
+        keySuya = pu.kek;
       } else {
-        // lo de aquí sigue en el formato 1 y la cuenta ya está en el 2 (otro dispositivo la pasó): se abre su sobre con la
-        // clave de la contraseña de aquí, se junta y este dispositivo se queda con la clave de datos
-        const r = !S.kv ? await claveRecordada(d.enc, { salt: S.salt ? b64.enc(S.salt) : null, key: S.key }) : null;
+        // la cuenta ya está en el formato 2 de otro dispositivo (aquí en el 1, o en un 2 propio que aún no había llegado):
+        // se abre su sobre con la clave de la contraseña de aquí, se junta y este dispositivo se queda con su clave de datos
+        const g = !S.kv ? { salt: S.salt ? b64.enc(S.salt) : null, key: S.key } : pu ? { salt: pu.salt, key: pu.kek } : null;
+        const r = g && g.key ? await claveRecordada(d.enc, g) : null;
         if (!r || !r.adoptada) throw new Error('otra contraseña');
         keySuya = r.key; S.adoptarTras = r;
       }
     }
     [mio, suyo] = await Promise.all([descifrar(c.texto, S.key), descifrar(d.enc, keySuya)]);
-    if (c.base) for (const k of [S.key, S.kek]) { if (!k) continue; try { base = await descifrar(c.base, k); break; } catch (e2) {} }
+    if (c.base) for (const k of [S.key, S.kek, S.puente && S.puente.kek]) { if (!k) continue; try { base = await descifrar(c.base, k); break; } catch (e2) {} }
     if (S.adoptarTras) { const r = S.adoptarTras, g = await IDB.get(IDB_CLAVE), vieja = S.key; S.adoptarTras = null; fijarSesion({ ...r, cartera: S.cartera }); await recifrarLocales(vieja, r.key); if (g) await recordarClave(); }
     else if (S.kv && fs && fs.v === 2 && fs.kid === S.kv.kid && fs.k) {
       // los dos con la misma clave de datos: cada cierre (contraseña y código) por separado
@@ -4551,15 +4553,30 @@ async function claveRecordada(texto, g) {
   if (!f || !g || !g.key) return null;
   if (f.v !== 2) return g.salt && g.salt === f.salt ? { key: g.key, kv: null, kek: g.key, salt: b64.dec(f.salt), iter: f.iter || 600000 } : null;
   const base = { kv: { kid: f.kid, k: f.k }, salt: b64.dec(f.k.pass.salt), iter: f.k.pass.iter };
-  if (g.kid && g.kid === f.kid) return { ...base, key: g.key };
+  if (g.kid && g.kid === f.kid) return { ...base, key: g.key, puente: g.puente || null };
   if (g.salt && g.salt === f.k.pass.salt) {
     try { return { ...base, key: await importarDatos(await abrirClave(g.key, f.k.pass)), kek: g.key, adoptada: true }; } catch (e) { return null; }
   }
   return null;
 }
+// al abrir con la contraseña o el código: lo cifrado en este dispositivo con cualquier clave de antes (la recordada, la
+// de antes de un cambio de contraseña en otro dispositivo, la de la contraseña) pasa a la de ahora
+async function pasarLocalesA(nueva, ...otras) {
+  const g = await IDB.get(IDB_CLAVE), gv = await IDB.get('clave-vieja');
+  for (const k of new Set([g && g.key, gv && gv.key, S.keyVieja, ...otras].filter(Boolean))) if (k !== nueva) await recifrarLocales(k, nueva);
+  S.keyVieja = null; IDB.del('clave-vieja');
+}
 // la sesión con lo que se ha abierto
-function fijarSesion(r) { S.cartera = r.cartera || S.cartera; S.key = r.key; S.kv = r.kv || null; S.kek = r.kek || null; S.salt = r.salt; S.iter = r.iter; }
-const recordarClave = () => IDB.set(IDB_CLAVE, S.kv ? { kid: S.kv.kid, key: S.key } : { salt: b64.enc(S.salt), key: S.key });
+function fijarSesion(r) { S.cartera = r.cartera || S.cartera; S.key = r.key; S.kv = r.kv || null; S.kek = r.kek || null; S.salt = r.salt; S.iter = r.iter; S.puente = r.puente || null; }
+// con el paso al formato 2 aún sin llegar a la cuenta, también el puente (la sal y la clave de la contraseña del formato 1)
+const recordarClave = () => IDB.set(IDB_CLAVE, S.kv ? { kid: S.kv.kid, key: S.key, ...(S.puente ? { puente: S.puente } : {}) } : { salt: b64.enc(S.salt), key: S.key });
+/* El puente: desde que este dispositivo pasa al formato 2 hasta que la cuenta lo tiene, se guarda la sal y la clave de la
+   contraseña del formato 1. Con él se entiende lo que llegue de la cuenta aún en el formato 1 (lo guardó otro dispositivo
+   entretanto) y el formato 2 de otro dispositivo que pasó a la vez, con la misma contraseña. Se suelta al confirmarse. */
+const puenteV1 = () => S.puente || (S.kv && S.kek ? { salt: S.kv.k.pass.salt, kek: S.kek } : null);
+// la cuenta ya tiene el formato 2 de esta clave de datos (en modo local o de pruebas, al guardar)
+const confirmadoV2 = () => !!S.kv && (!PERFIL_CUENTA || CFG.dev || idClave(S.baseTexto) === 'k:' + S.kv.kid);
+function soltarPuente() { S.puente = null; IDB.get(IDB_CLAVE).then((g) => { if (g && g.puente && S.kv && g.kid === S.kv.kid && S.key) recordarClave(); }).catch(() => {}); }
 // lo que llega de la cuenta sin cambios de aquí por subir manda entero, también su sobre (otro dispositivo cambió la
 // contraseña o el código). Si cambió el cierre de la contraseña, la clave de la de antes ya no sirve
 function tomarSobre(texto) {
@@ -4615,7 +4632,7 @@ async function claveDatosEnClaro(pedir) {
 async function claveConContrasena(texto) {
   if (!S.kv) return null;
   const pass = S.kv.k.pass, p = await pedirContrasenaActual(texto); if (!p) return null;
-  try { const kek = await derivarClave(p, b64.dec(pass.salt), pass.iter), raw = await abrirClave(kek, pass); S.kek = kek; return raw; }
+  try { const kek = await derivarClave(p, b64.dec(pass.salt), pass.iter), raw = await abrirClave(kek, pass); if (S.kv && S.kv.k.pass === pass) S.kek = kek; return raw; }
   catch (e) { toast(L('Esa no es la contraseña de tu cartera.', "That isn't your portfolio password."), 5000); return null; }
 }
 // la contraseña de ahora, en una hoja (para enseñar el código o cambiarlo cuando no hay otra forma de comprobar que eres tú)
@@ -7417,7 +7434,7 @@ function avisos(M) {
   // quien venía de la 0.1: arriba del todo, una forma fácil de recuperar lo que no llegó a la cuenta
   if (S.kv && S.cartera && S.cartera.kit && S.cartera.kit.codigo && !S.cartera.kit.guardado) av.push({ n: 'info', grave: true, i: ICONOS.candado, t: L('Guarda tu código de recuperación', 'Save your recovery code'), d: L('Si olvidas la contraseña de tu cartera, con él la recuperas. Sin él y sin la contraseña, nadie puede abrirla, ni GrowFolio.', 'If you forget your portfolio password, it gets your portfolio back. Without it and without the password, nobody can open it, not even GrowFolio.'), acc: `<button class="btn peq pri" data-accion="ver-kit">${L('Verlo y guardarlo', 'See and save it')}</button>` });
   // 0.5: aún en el formato 1 (el paso es solo a los días): se puede crear ya
-  else if (!S.kv && S.cartera && conKit()) av.push({ n: 'info', grave: true, i: ICONOS.candado, t: L('Crea tu código de recuperación', 'Create your recovery code'), d: L('Con él recuperas tu cartera si algún día olvidas su contraseña. Se crea en un segundo. Si tienes GrowFolio abierto en otro móvil u ordenador, ciérralo y vuelve a abrirlo después.', 'It gets your portfolio back if you ever forget its password. It takes a second. If GrowFolio is open on another phone or computer, close it and open it again afterwards.'), acc: `<button class="btn peq pri" data-accion="ver-kit">${L('Crearlo', 'Create it')}</button>` });
+  else if (!S.kv && S.cartera && conKit() && LS.get('inv-05-desde') && diasEntre(LS.get('inv-05-desde'), hoyIso()) >= 1) av.push({ n: 'info', grave: true, i: ICONOS.candado, t: L('Crea tu código de recuperación', 'Create your recovery code'), d: L('Con él recuperas tu cartera si algún día olvidas su contraseña. Se crea en un segundo. Si tienes GrowFolio abierto en otro móvil u ordenador, ciérralo y vuelve a abrirlo después.', 'It gets your portfolio back if you ever forget its password. It takes a second. If GrowFolio is open on another phone or computer, close it and open it again afterwards.'), acc: `<button class="btn peq pri" data-accion="ver-kit">${L('Crearlo', 'Create it')}</button>` });
   // 0.5: fuera «¿Te falta algo de tu cartera de antes?» (la de la 0.1 en GitHub o en el dispositivo): ya no queda nadie con ella
   for (const f of M.filas) { const x = precioCompraRaro(f); if (x) av.push({ ...avisoPrecioRaro(x), grave: true }); }
   for (const f of M.filas) {
@@ -13808,7 +13825,9 @@ async function aplicarRemoto(enc, rev) {
   catch (e) {
     // 0.5: otro dispositivo pasó la cartera al formato 2 y aquí aún se tiene la clave de la contraseña: con ella se
     // abre su sobre y este dispositivo pasa a la clave de datos sin pedir nada
-    const r = !S.kv && S.key ? await claveRecordada(enc, { salt: S.salt ? b64.enc(S.salt) : null, key: S.key }) : null;
+    const pu = puenteV1();
+    const gg = !S.kv && S.key ? { salt: S.salt ? b64.enc(S.salt) : null, key: S.key } : S.kv && pu ? { salt: pu.salt, key: pu.kek } : null;
+    const r = gg ? await claveRecordada(enc, gg) : null;
     if (r && r.adoptada) {
       try {
         c = await descifrar(enc, r.key);
@@ -13819,7 +13838,7 @@ async function aplicarRemoto(enc, rev) {
     // al revés: aquí ya en el formato 2 y la cuenta otra vez en el 1 con la misma contraseña (lo guardó una versión de
     // antes): se lee con la clave de la contraseña y se vuelve a subir en el 2
     const fr = formatoDe(enc);
-    if (!c && S.kv && S.kek && fr && fr.v !== 2 && fr.salt === S.kv.k.pass.salt) { try { c = await descifrar(enc, S.kek); volverAV2 = true; } catch (e7) { c = null; } }
+    if (!c && S.kv && pu && fr && fr.v !== 2 && fr.salt === pu.salt) { try { c = await descifrar(enc, pu.kek); volverAV2 = true; } catch (e7) { c = null; } }
     const otraSal = !c && idClave(enc) !== idClave(S.enc && S.enc.texto);
     if (!c && !otraSal) { console.warn('No se pudo leer el cambio de otro dispositivo', e); return; }
   }
@@ -13828,8 +13847,8 @@ async function aplicarRemoto(enc, rev) {
     S.enc = { texto: enc, sha: null }; fijarBase(rev, enc); cacheCuenta.set(enc); LS.del('inv-pend-cuenta');
     // la clave de ahora se queda en memoria hasta que escribas la nueva: con ella se pasa a la nueva lo cifrado en este
     // dispositivo (la clave de Gemini, la conversación del asesor)
-    if (S.key) S.keyVieja = S.key;
-    S.cartera = null; S.key = null; try { await IDB.del(IDB_CLAVE); } catch (e4) {}
+    if (S.key) { S.keyVieja = S.key; try { await IDB.set('clave-vieja', { key: S.key }); } catch (e8) {} }
+    S.cartera = null; S.key = null; S.puente = null; try { await IDB.del(IDB_CLAVE); } catch (e4) {}
     return pantallaDesbloqueo('', 'La contraseña de tu cartera ha cambiado en otro dispositivo. Escribe la nueva para seguir.');
   }
   if (!volverAV2) tomarSobre(enc);
@@ -13872,8 +13891,7 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
       const r = await abrirConContrasena(S.enc.texto, $('#pass').value);
       // si este dispositivo tenía lo de la cartera cifrado con otra clave (la de la contraseña, antes de pasar al
       // formato 2 en otro dispositivo), se pasa a la de datos
-      if (r.kv) { const g = await IDB.get(IDB_CLAVE); if (g && g.key && !g.kid) await recifrarLocales(g.key, r.key); await recifrarLocales(r.kek, r.key); }
-      if (S.keyVieja) { await recifrarLocales(S.keyVieja, r.key); S.keyVieja = null; }
+      await pasarLocalesA(r.key, r.kek);
       fijarSesion(r);
       if ($('#recordar').checked) await recordarClave();
       else await IDB.del(IDB_CLAVE);
@@ -13929,6 +13947,7 @@ function pantallaRecuperar() {
       const key = await importarDatos(raw), cartera = await descifrar(S.enc.texto, key);
       const salt = crypto.getRandomValues(new Uint8Array(16)), iter = 600000, kek = await derivarClave(p1, salt, iter);
       const pass = await cierreDe(kek, raw, salt, iter, (+g.k.pass.n || 0) + 1), kv = { kid: g.kid, k: { ...g.k, pass } };
+      await pasarLocalesA(key);
       fijarSesion({ cartera, key, kv, kek, salt, iter });
       // el código sigue dentro de la cartera; si faltara (no debería), se pone el que acabas de escribir
       if (!S.cartera.kit || S.cartera.kit.salt !== g.k.rec.salt) S.cartera.kit = { codigo: normCodigo(cod).match(/.{4}/g).join('-'), salt: g.k.rec.salt, creado: new Date().toISOString(), guardado: new Date().toISOString() };
@@ -15601,6 +15620,10 @@ function esPublico() {
 }
 S.verPublico = !!LS.get('inv-ver-publico', false);
 const errPermiso = (e) => /permission/i.test(String((e && e.code) || e));
+/* Fundadores: las cuentas creadas antes de que saliera la 0.5 (los amigos que ya usaban GrowFolio) tienen el acceso
+   completo sin estar en la lista. La fecha de alta la pone Firebase. Al publicar la 0.5, este día pasa a ser el suyo */
+const ALTA_FUNDADORES = '2026-10-24';
+const esFundador = (u) => { const t = Date.parse((u && u.metadata && u.metadata.creationTime) || ''); return isFinite(t) && new Date(t).toISOString().slice(0, 10) < ALTA_FUNDADORES; };
 // con correo y contraseña, el correo hay que confirmarlo (las reglas solo dan el acceso completo con el correo confirmado)
 const correoSinConfirmar = () => !!(FB.user && !FB.user.emailVerified && (FB.user.providerData || []).some((x) => x.providerId === 'password'));
 async function comprobarAcceso() {
@@ -15610,16 +15633,15 @@ async function comprobarAcceso() {
     // si lo acaba de confirmar, la sesión aún no lo sabe: se refresca (solo con correo y contraseña sin confirmar)
     if (correoSinConfirmar()) { try { await conTiempo(u.reload(), 8000); if (u.emailVerified) await conTiempo(u.getIdToken(true), 8000); } catch (e) {} }
     const f = FB.fs, correo = String(u.email || '').trim().toLowerCase();
-    let a = 'publico';
-    if (correo) {
+    let a = esFundador(u) ? 'privado' : 'publico';
+    if (a === 'publico' && correo) {
       try { const d = await conTiempo(f.getDoc(f.doc(FB.db, 'privados', correo)), 10000); if (d.exists()) a = 'privado'; }
       catch (e) { if (!errPermiso(e)) return; }
     }
-    // el dueño: puede leer todas las opiniones (las reglas de siempre); no hace falta que esté en la lista
-    if (a === 'publico') {
-      try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); a = 'privado'; S.esDueno = true; S.noDueno = false; }
-      catch (e) { if (!errPermiso(e)) return; S.noDueno = true; }
-    }
+    // el dueño: puede leer todas las opiniones (las reglas de siempre); no hace falta que esté en la lista. Se mira siempre,
+    // también siendo fundador, para enseñarle la lista en Ajustes
+    try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); a = 'privado'; S.esDueno = true; S.noDueno = false; }
+    catch (e) { if (!errPermiso(e)) { if (a === 'publico') return; } else S.noDueno = true; }
     if (!S.esDueno) S.verPublico = false;
     fijarAcceso(a, u.uid);
   } catch (e) { console.warn('No se ha podido comprobar el acceso', e); }
@@ -17444,7 +17466,17 @@ function abrirAjustes() {
     try {
       // 0.5: una cartera aún en el formato 1 pasa antes al 2 (con la contraseña de ahora y la transacción de siempre); si no
       // se puede (sin conexión), no se cambia nada
-      if (!S.kv && !(await pasarAV2(true))) return toast(L('Ahora no se puede cambiar la contraseña: hace falta conexión. Prueba en un momento.', "The password can't be changed right now: it needs a connection. Try again in a moment."), 6000);
+      if (!conKit()) {
+        // sin código de recuperación (la cartera de GitHub, solo para pruebas): como hasta la 0.4, se vuelve a cifrar con la nueva
+        const vieja = S.key, salt = crypto.getRandomValues(new Uint8Array(16)), iter = S.iter || 600000, kek = await derivarClave(a, salt, iter);
+        if (!vieja || S.key !== vieja) return;
+        S.key = kek; S.kek = kek; S.salt = salt; S.iter = iter; S.kv = null;
+        await recifrarLocales(vieja, kek); if (await IDB.get(IDB_CLAVE)) await recordarClave();
+        await guardarCartera('Cambiar contraseña'); $('#aP1', h.el).value = $('#aP2', h.el).value = '';
+        return;
+      }
+      if (!S.kv) await pasarAV2(true);
+      if (!confirmadoV2()) return toast(L('Ahora no se puede cambiar la contraseña: hace falta conexión. Prueba en un momento.', "The password can't be changed right now: it needs a connection. Try again in a moment."), 6000);
       // solo cambia el cierre de la contraseña: la cartera y los otros dispositivos siguen con la misma clave de datos
       const raw = await claveDatosEnClaro(L('Para cambiarla, escribe primero la contraseña de ahora.', 'To change it, first type the current password.'));
       if (!raw) return;
@@ -17474,7 +17506,7 @@ function abrirAjustes() {
   };
   $('#aBloq', h.el).onclick = async () => {
     if (cfgBloqueo()) { LS.del('inv-bloqueo-t'); h.cerrar(); return pantallaBloqueo(() => {}, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); }); }
-    await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; h.cerrar(); pantallaDesbloqueo(); };
+    await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; S.kitAbierto = null; S.puente = null; h.cerrar(); pantallaDesbloqueo(); };
   if ($('#aSalir', h.el)) $('#aSalir', h.el).onclick = () => cerrarSesion();
   filaOpiniones(h);   // solo sale si eres el dueño (las reglas no dejan leerlas a nadie más)
   filaAcceso(h);
@@ -17871,10 +17903,10 @@ const conKit = () => !!(S.kv || PERFIL_LOCAL || CFG.dev);
 async function verKit() {
   if (!S.cartera || !conKit()) return;
   // una cartera aún en el formato 1: se pasa ahora (el código nace con ella)
-  if (!S.kv) {
-    toast(L('Creando tu código de recuperación…', 'Creating your recovery code…'), 3000);
-    if (!(await pasarAV2(true))) return toast(L('Ahora no se puede crear: hace falta conexión. Prueba en un momento.', "It can't be created right now: it needs a connection. Try again in a moment."), 6000);
-  }
+  if (!S.kv) { toast(L('Creando tu código de recuperación…', 'Creating your recovery code…'), 3000); await pasarAV2(true); }
+  if (!S.kv) return toast(L('Ahora no se puede crear: hace falta conexión. Prueba en un momento.', "It can't be created right now: it needs a connection. Try again in a moment."), 6000);
+  // creado aquí, pero aún sin llegar a tu cuenta: se enseña en cuanto llegue (si no llegara, no valdría)
+  if (!confirmadoV2()) { toast(L('Tu código está listo: te lo enseño en cuanto llegue a tu cuenta.', 'Your code is ready: I will show it as soon as it reaches your account.'), 5000); setTimeout(() => revisarKit(), 3000); return; }
   const kit = S.cartera.kit;
   // el código de dentro no es el que abre la cartera (si se cambió a la vez en dos dispositivos): uno nuevo
   if (!kit || !kit.codigo || kit.salt !== S.kv.k.rec.salt) return nuevoCodigo(L('Tu cartera no tiene un código de recuperación que la abra (pasa si se cambió a la vez en dos dispositivos).', "Your portfolio has no recovery code that opens it (it happens if it was changed on two devices at once)."));
@@ -17915,6 +17947,7 @@ async function verKit() {
 // seguridad que descargaste antes se siguen abriendo con lo de entonces)
 async function nuevoCodigo(motivo) {
   if (!S.kv || !S.cartera) return;
+  if (!confirmadoV2()) return toast(L('Ahora no se puede: hace falta conexión. Prueba en un momento.', "Not right now: it needs a connection. Try again in a moment."), 5000);
   if (!confirm(trad(motivo ? `${motivo} ¿Generar uno nuevo ahora?` : 'El código que tienes guardado dejará de abrir tu cartera y tendrás que guardar el nuevo. Las copias de seguridad que descargaste antes se siguen abriendo con él. ¿Generar uno nuevo?'))) return;
   const raw = await claveDatosEnClaro(L('Para generar un código nuevo, escribe la contraseña de tu cartera.', 'To generate a new code, type your portfolio password.'));
   if (!raw) return;
@@ -17993,11 +18026,11 @@ function descargarTexto(nombre, texto) {
 async function revisarKit(intento = 0) {
   if (!S.cartera || !S.key) return;
   if (!LS.get('inv-05-desde')) LS.set('inv-05-desde', hoyIso());
-  if (!S.kv) { const ok = await pasarAV2(); if (!ok) { if (intento < 8 && conKit()) setTimeout(() => revisarKit(intento + 1), 8000); return; } }
+  if (!S.kv) { await pasarAV2(); if (!S.kv) { if (intento < 8 && conKit()) setTimeout(() => revisarKit(intento + 1), 8000); return; } }
   const kit = S.cartera.kit;
   if (!kit || kit.guardado || !kit.codigo) return;
   if (S.kitRecien !== S.kv.kid && LS.get('inv-kit-visto') === hoyIso()) return;
-  const ocupado = document.querySelector('.hoja-fondo, .tour, .intro, .estreno, .bloqueo, .ficha-fondo') || document.hidden || (PERFIL_CUENTA && LS.get('inv-pend-cuenta'));
+  const ocupado = document.querySelector('.hoja-fondo, .tour, .intro, .estreno, .bloqueo, .ficha-fondo') || document.hidden || !confirmadoV2();
   if (ocupado) { if (intento < 30) setTimeout(() => revisarKit(intento + 1), 5000); return; }
   S.kitRecien = null;
   verKit();
@@ -18017,15 +18050,19 @@ function pasarAV2(ya) {
   if (!ya) { const d = LS.get('inv-05-desde'); if (!d || diasEntre(d, hoyIso()) < DIAS_PASO_V2) return Promise.resolve(false); }
   S.pasoV2 = (async () => {
     const kek = S.key, salt = S.salt, iter = S.iter || 600000;
-    const sb = await sobreNuevo(kek, salt, iter);
+    const sb = await sobreNuevo(kek, salt, iter), recuerda = !!(await IDB.get(IDB_CLAVE));
     // mientras se hacía el sobre: bloqueada, otra contraseña o ya en el formato 2 → nada
-    if (S.key !== kek || S.kv || !S.cartera) return !!S.kv;
+    if (S.key !== kek || S.kv || !S.cartera) return confirmadoV2();
     S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.iter = iter; S.cartera.kit = sb.kit; S.kitRecien = sb.kv.kid;
-    if (await IDB.get(IDB_CLAVE)) await recordarClave();
-    await recifrarLocales(kek, sb.key);
+    if (PERFIL_CUENTA && !CFG.dev) S.puente = { salt: b64.enc(salt), kek };
     await guardarCarteraCallada('Formato 2');
-    return true;
-  })().catch((e) => { console.warn('La cartera no ha pasado al formato 2 todavía', e); return !!S.kv; }).finally(() => { S.pasoV2 = null; });
+    // lo del dispositivo, solo si de verdad se ha guardado el formato 2 (si se bloqueó en medio, se queda como estaba)
+    if (S.enc && idClave(S.enc.texto) === 'k:' + sb.kv.kid) {
+      if (recuerda && S.key === sb.key) await recordarClave();
+      await recifrarLocales(kek, sb.key);
+    }
+    return confirmadoV2();
+  })().catch((e) => { console.warn('La cartera no ha pasado al formato 2 todavía', e); return confirmadoV2(); }).finally(() => { S.pasoV2 = null; });
   return S.pasoV2;
 }
 
@@ -19426,6 +19463,7 @@ const pedirHuella = (c) => (c.huella && c.huella.tipo === 'app' ? huellaApp() : 
 
 /* la pantalla: cuatro puntos, teclado numérico grande y, si la hay, la huella */
 function pantallaBloqueo(alAbrir, conContrasena) {
+  S.kitAbierto = null;
   const c = cfgBloqueo(); if (!c) return alAbrir();
   $$('.bloqueo').forEach((x) => x.remove());
   const el = document.createElement('div');
