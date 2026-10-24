@@ -85,6 +85,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'novedades-guia') guiaNuevo();
     else if (a === 'novedades-ocultar') { LS.set('inv-nov-cerrada', baseVer(VERSION)); const x = t.closest('.nov-aviso'); if (x) x.remove(); }
     else if (a === 'ordenar-cartera') abrirCarEdit();
+    else if (a === 'demo-salir') salirDemo();
     else if (a === 'ia-actualizar') generarAnalisisIA('la pides tú');
     else if (a === 'asesor-ajustes') { AS.vista = 'ajustes'; abrirAsesor().then(() => { AS.vista = 'ajustes'; pintarAsesor(); }); }
     else if (a === 'borrar-mov') borrarMovimiento(d.id, t);

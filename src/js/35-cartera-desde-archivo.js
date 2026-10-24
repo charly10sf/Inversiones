@@ -63,6 +63,7 @@ function sumarInstPropios() {
   }
 }
 async function guardarLocal(interactivo) {
+  if (S.demo) return true;  // 0.6d: con la cartera de prueba no se guarda nada
   S.cartera.inst_propios = instPropios();
   S.cartera.actualizado = new Date().toISOString();
   const texto = await cifrar(S.cartera);
@@ -87,6 +88,7 @@ async function guardarLocal(interactivo) {
   return true;
 }
 async function guardarCartera(mensaje) {
+  if (S.demo) { toast(L('Es la cartera de prueba: se ve el cambio, pero no se guarda.', "It's the demo portfolio: you see the change, but it isn't saved.")); return true; }
   if (PERFIL_LOCAL) {
     await guardarLocal(true); const ok = !PERFIL_CUENTA || !LS.get('inv-pend-cuenta');
     // con la subida parada ya hay un aviso que explica por qué: no se tapa

@@ -21,14 +21,14 @@ async function cargarAsesor() {
   if (h) { try { const o = await descifrarLocal(h); AS.conv = o.conv || []; AS.api = o.api || []; AS.gasto = o.gasto || 0; } catch (e) { LS.del('inv-asesor-conv'); } }
 }
 async function guardarConv() {
-  if (!S.key) return;
+  if (!S.key || S.demo) return;
   try { LS.set('inv-asesor-conv', await cifrarLocal({ conv: AS.conv.slice(-60).map(({ adj, ...t }, k, v) => (t.mini && v.slice(k + 1).filter((y) => y.mini).length >= 4 ? { ...t, mini: undefined } : t)), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
 }
 function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, claves: { google: null }, cargada: false, gasto: 0 }); }
 
 /* guarda la cartera sin avisos ni descargas (para lo que hace la web sola, como el análisis diario) */
 async function guardarCarteraCallada(mensaje) {
-  if (!S.key || !S.cartera) return false;
+  if (!S.key || !S.cartera || S.demo) return false;
   if (PERFIL_LOCAL) return guardarLocal();
   S.cartera.actualizado = new Date().toISOString();
   const texto = await cifrar(S.cartera);

@@ -475,7 +475,7 @@ function resumenDelDia(seguir = () => {}, forzar = false) {
 let widgetT = 0, widgetFirma = '';
 function enviarWidget(forzar) {
   const app = window.InversionesApp;
-  if (!app || !S.cartera || !S.M) return;
+  if (!app || !S.cartera || !S.M || S.demo) return;
   if (!forzar && Date.now() - widgetT < 60000) return;
   const M = S.M;
   let toca = '', cuando = '';

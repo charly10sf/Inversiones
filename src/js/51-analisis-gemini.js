@@ -38,7 +38,7 @@ async function leerAnalisisRemoto() {
   } catch (e) { return null; }
 }
 async function guardarAnalisisPropio() {
-  const o = S.iaPropio; if (!o || !S.key) return;
+  const o = S.iaPropio; if (!o || !S.key || S.demo) return;
   try { LS.set('inv-ia-propio', await cifrarLocal(o)); } catch (e) {}
   try {
     const texto = await cifrarSinSobre(o);
@@ -161,7 +161,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
 }
 /* ¿toca revisar? cada día (o semana) y, si es diario, también cuando cambia alguna señal */
 async function revisarAnalisisIA() {
-  if (IA.generando || !S.cartera || document.hidden || !S.key) return;
+  if (IA.generando || !S.cartera || document.hidden || !S.key || S.demo) return;
   await cargarAsesor();
   if (!AS.clave) return;
   const cfg = cfgAsesor();

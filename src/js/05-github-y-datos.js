@@ -141,6 +141,7 @@ function pantallaSinCuenta() {
 }
 /* con conexión otra vez, al volver a la app o cuando toca reintentar: lo de aquí sube o llega lo de la cuenta */
 async function sincronizarCuenta() {
+  if (S.demo) return;
   if (!PERFIL_CUENTA || S.sincronizando) return;
   S.sincronizando = true;
   try {

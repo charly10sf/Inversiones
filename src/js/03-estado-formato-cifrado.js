@@ -82,6 +82,8 @@ async function cifrar(obj) { return cifrarCon(obj, S.key, S.kv, S.salt, S.iter);
 // guardado aparte seguiría abriéndose con la contraseña o el código de antes aunque los cambies
 async function cifrarSinSobre(obj) { return S.kv ? cifrarCon(obj, S.key, { kid: S.kv.kid }) : cifrar(obj); }
 async function cifrarCon(obj, key, kv, salt, iter) {
+  // 0.6d: la cartera de prueba no se cifra nunca (así no puede acabar guardada encima de la tuya)
+  if (S.demo || (obj && obj.demo === true)) throw new Error('La cartera de prueba no se guarda');
   const iv = crypto.getRandomValues(new Uint8Array(12));
   const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, TE.encode(JSON.stringify(obj))));
   if (kv) return JSON.stringify({ v: 2, kid: kv.kid, ...(kv.k ? { k: kv.k } : {}), iv: b64.enc(iv), ct: b64.enc(ct) }, null, 1) + '\n';

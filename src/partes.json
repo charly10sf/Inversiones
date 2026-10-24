@@ -81,7 +81,8 @@
   "59-arranque-datos.js",
   "60-bloqueo.js",
   "61-idiomas.js",
-  "62-arranque.js"
+  "62-arranque.js",
+  "63-demo.js"
  ],
  "trozos": {
   "gta": [
