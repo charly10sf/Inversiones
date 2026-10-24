@@ -92,12 +92,36 @@ function bloquesCartera() {
     if (ip > -1 && ia > -1 && ia < ip) { g.splice(ip, 1); g.splice(Math.max(0, g.indexOf('patrimonio')) + 1, 0, 'posiciones'); }
     S.senalesSucias = true;
   }
+  // 0.7, una vez: el mapa de tu cartera solo ocupaba todo el ancho; si no tienes «Lo último, según GrowIA», se pone a
+  // su lado (el mapa dice qué se ha movido hoy y el informe, por qué). Se puede quitar en Personalizar Inicio
+  if (g && !ini.v07) {
+    ini.v07 = true;
+    // solo si el mapa va solo en su fila (sin un estrecho justo delante ni detrás, que ya se pondría a su lado)
+    const im = g.indexOf('mapa'), estr = (k) => !!(BLOQUES_CAR[k] && BLOQUES_CAR[k].w === 'estrecho');
+    if (im > -1 && !g.includes('informe') && !estr(g[im - 1]) && !estr(g[im + 1])) { g.splice(im + 1, 0, 'informe'); S.senalesSucias = true; }
+  }
   const v = (g || CAR_DEFECTO).filter((k, i, a) => BLOQUES_CAR[k] && a.indexOf(k) === i);
   // los que no se pueden quitar vuelven a su sitio si faltan (por ejemplo, tras juntar dos dispositivos)
   for (const k of Object.keys(BLOQUES_CAR)) if (BLOQUES_CAR[k].fijo && !v.includes(k)) v.splice(Math.min(v.length, CAR_DEFECTO.indexOf(k)), 0, k);
   return v;
 }
 const anchoCar = (k) => (k === 'posiciones' && S.carTab === 'plan' ? 'lleno' : BLOQUES_CAR[k].w);
+/* 0.7: en el ordenador, si la columna de los estrechos es mucho más larga que la del grande que tiene al lado (GrowIA
+   con el reparto y lo que viene debajo), quedaba un hueco negro: el último estrecho pasa debajo del grande mientras
+   eso deje las dos columnas más parejas. Antes de dibujar las gráficas, para que se dibujen con su ancho nuevo */
+function equilibrarCar() {
+  if (innerWidth < 1180 || S.carEdit) return;
+  for (const f of $$('.car-fila.par-der, .car-fila.par-izq')) {
+    const [a, b] = f.children;
+    if (!a || !b) continue;
+    const estr = f.classList.contains('par-der') ? b : a, gran = estr === a ? b : a;
+    for (let i = 0; i < 4 && estr.children.length > 1; i++) {
+      const d = estr.offsetHeight - gran.offsetHeight, ult = estr.lastElementChild, h = ult.offsetHeight + 40;
+      if (d < 160 || h >= d) break;
+      gran.appendChild(ult);
+    }
+  }
+}
 /* los cuatro días siguientes a una versión nueva, arriba en Inicio: qué versión es, su título y «Ver en detalle»
    (las notas completas). Se quita con la x o sola pasados esos días. */
 function htmlAvisoNovedades() {
@@ -154,7 +178,7 @@ function htmlBloqueCar(k, M) {
     if (k === 'agenda') return htmlAgenda(M);
     if (k === 'mapa') return htmlMapaCartera(M, true);
     if (k === 'vistazo') return M.filas.length ? htmlVistazo(M, iaActual()).replace(/<button class="enlace acento ver-mas" data-exp="posiciones">([^<]*)<\/button>/, '<a class="enlace acento ver-mas" href="#expertos">$1</a>') : '';
-    if (k === 'informe') return htmlResumenInforme(true);
+    if (k === 'informe') return htmlResumenInforme(true, htmlHoyInforme(M));
     if (k === 'movidas') return htmlMovidas();
     if (k === 'noticias') {
       const n = pasadoAg('mio');

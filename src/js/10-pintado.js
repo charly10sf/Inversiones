@@ -186,9 +186,10 @@ function binds(M) {
   }
   b.recalc = { txt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) };
   const mueven = [...M.filas].filter((f) => Math.abs(f.dia) >= 1).sort((a, z) => Math.abs(z.dia) - Math.abs(a.dia)).slice(0, 4);
-  // las que más han movido hoy tu cartera (hasta cuatro), como en el widget: nombre arriba y, debajo, euros y % con su color
+  // las que más han movido hoy tu cartera (hasta cuatro), como en el widget: nombre arriba y, debajo, euros y % con su
+  // color. 0.7: con su logo (el mismo que en el mapa) en vez de la flechita: el signo y el color ya dicen si sube o baja
   const tm = mueven.map((f) => `${f.inst.corto} ${eurS(f.dia, 0)} ${pctS(f.varDia, 1)}`).join(', ');
-  b.movers = { txt: tm, html: mueven.length ? `<p class="mv-t">${L('Lo que más ha movido hoy tu cartera', 'What moved your portfolio most today')}</p><div class="mv-l" style="--n:${mueven.length}">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-n"><i aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</i><span class="mv-nn">${esc(f.inst.corto)}</span></span><span class="mv-v">${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span></button>`).join('')}</div>` : '' };
+  b.movers = { txt: tm, html: mueven.length ? `<p class="mv-t">${L('Lo que más ha movido hoy tu cartera', 'What moved your portfolio most today')}</p><div class="mv-l" style="--n:${mueven.length}">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-n">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'mv-logo')}<span class="mv-nn">${esc(f.inst.corto)}</span></span><span class="mv-v">${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span></button>`).join('')}</div>` : '' };
   const vis = new Set([...(S.radarVisibles || []), ...(S.ideasTop || [])]);
   if (vis.size) for (const x of radarVals()) {
     if (!vis.has(x.s)) continue;

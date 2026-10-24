@@ -4,7 +4,8 @@ function md(src) {
     .replace(/`([^`]+)`/g, '<code>$1</code>')
     .replace(/\*\*([^*]+)\*\*/g, '<b>$1</b>')
     .replace(/(^|[^*\w])\*([^*\n]+)\*(?!\w)/g, '$1<i>$2</i>')
-    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+    // 0.7: cada enlace dice a qué web lleva (un texto de la prensa podría colar uno que parezca otra cosa)
+    .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, (m0, t, u) => { let h = ''; try { h = new URL(u.replace(/&amp;/g, '&')).hostname.replace(/^www\./, ''); } catch (e) {} return `<a href="${u}" target="_blank" rel="noopener noreferrer">${t}</a>${h && !t.includes(h) ? ` <small class="as-dom">(${h})</small>` : ''}`; });
   const lineas = esc(src).split('\n');
   let html = '', lista = null, tabla = null, par = [];
   const cerrarPar = () => { if (par.length) { html += `<p>${inline(par.join('<br>'))}</p>`; par = []; } };
@@ -69,14 +70,22 @@ function htmlTurno(t, k) {
   return `<div class="as-ia${vivo ? ' vivo' : ''}" id="asT${k}">${partes}
     ${vivo && !(ult && ult.tipo === 'texto' && ult.texto) ? '<div class="as-pensando" aria-label="Pensando"><i></i><i></i><i></i></div>' : ''}
     ${t.error ? `<div class="as-error">${esc(t.error)} <button class="enlace" data-as="reintentar">Volver a preguntar</button></div>` : ''}
-    ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(x.d || dom(x.u))}</a>`).join('')}</div>` : ''}
+    ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.filter((x) => urlSegura(x.u)).map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(x.d || dom(x.u))}</a>`).join('')}</div>` : ''}
+    ${!vivo && esRapida(t.modelo) && !esRapida(cfgAsesor().modelo) && !t.error ? `<small class="as-modelo-de">${L('Contestada con la respuesta rápida: la normal había gastado su cupo de hoy.', 'Answered with the fast answer: the normal one had used up today\'s quota.')}</small>` : ''}
   </div>`;
+}
+/* 0.7: el rincón de los detalles (Ajustes de GrowIA): con qué modelos de Google funciona, lo gastado hoy desde este
+   dispositivo y lo que se apunta de los fallos */
+function htmlCupoIA() {
+  const u = usoIAHoy(), h = horaRenuevaIA();
+  const rapida = `${u[MODELO_RAPIDO] || 0} ${L('hoy', 'today')}${agotadosIA().includes(MODELO_RAPIDO) ? ` (${L('agotada', 'used up')})` : ''}`;
+  return `${L('GrowIA funciona con Gemini, de Google. La respuesta normal es Gemini 3.8 Flash y, cuando se le acaba el cupo del día, 3.6 Flash; la rápida, 3.5 Flash-Lite.', 'GrowIA runs on Gemini, by Google. The normal answer is Gemini 3.8 Flash and, once its daily quota runs out, 3.6 Flash; the fast one, 3.5 Flash-Lite.')}<br>${L('Hoy, desde este dispositivo', 'Today, from this device')}: ${L('normal', 'normal')} ${cupoNormalTxt(u)} · ${L('rápida', 'fast')} ${rapida}. ${L(`Se renueva a medianoche de California (a las ${h} aquí). Si usas la clave en otro sitio, también gasta.`, `It resets at midnight California time (${h} here). Using the key elsewhere also counts.`)}<br>${L('Si GrowIA falla y no se arregla sola, GrowFolio apunta con tu cuenta el tipo de fallo, el modelo y la versión, sin tu pregunta ni tu cartera, para arreglarlo. Se borra a los 30 días.', "If GrowIA fails and doesn't recover, GrowFolio logs the type of failure, the model and the version with your account, without your question or portfolio, so it can be fixed. It's deleted after 30 days.")}`;
 }
 function htmlClaveAsesor() {
   const cfg = cfgAsesor();
   return `<div class="as-config">
     <h3 data-no-trad>${conIA('Activa GrowIA, gratis', 'Turn on GrowIA, for free')}</h3>
-    <p>GrowIA funciona con ${esc(MODELOS[cfg.modelo].n)}, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
+    <p>GrowIA funciona con Gemini, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
     <ol class="as-pasos-clave">
       <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
       <li>Pulsa «Create API key» y copia la clave entera: empieza por <code>AQ.</code> (o por <code>AIza</code> si es de las antiguas).</li>
@@ -89,8 +98,8 @@ function htmlClaveAsesor() {
     <p class="nota" style="margin:0">El plan gratuito tiene un tope de preguntas por minuto y por día (los tuyos, en aistudio.google.com/rate-limit); si lo pasas, GrowIA espera o te avisa. No actives la facturación en ese proyecto o empezará a cobrarte. Desde España, por las condiciones de Google para la UE, lo que mandas con la clave gratuita no se usa para mejorar sus productos.</p>
     <div class="as-sin-clave">
       <b>Sin clave</b>
-      <p>Copia tu cartera de ahora mismo junto con tu pregunta y pégala en un chat de Gemini. No hace los cálculos de GrowFolio en directo, pero tiene todos tus datos.</p>
-      <button class="btn" data-as="copiar">${ICONOS.copiar}Copiar mi cartera para Gemini</button>
+      <p>Copia tu cartera de ahora mismo junto con tu pregunta y pégala en el chat de IA que uses. No hace los cálculos de GrowFolio en directo, pero tiene todos tus datos.</p>
+      <button class="btn" data-as="copiar">${ICONOS.copiar}Copiar mi cartera para otra IA</button>
     </div>
   </div>`;
 }
@@ -99,7 +108,7 @@ function htmlAjustesAsesor() {
   const yo = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
   return `<div class="as-config">
     <h3>Ajustes de GrowIA</h3>
-    <fieldset class="as-modelos"><legend>Modelo de Gemini (todos gratis con tu clave)</legend>${Object.entries(MODELOS).map(([k, m]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${cfg.modelo === k ? ' checked' : ''}><span><b>${m.n}</b><small>${m.txt}</small></span></label>`).join('')}</fieldset>
+    <fieldset class="as-modelos"><legend>Respuesta</legend>${[[MODELO_DEF, 'Normal', 'Piensa a fondo. Si se le acaba el cupo gratis del día, sigue sola con la de reserva y, después, con la rápida.'], [MODELO_RAPIDO, 'Rápida', 'Contesta en segundos y tiene mucho más cupo, pero piensa menos.']].map(([k, n, t]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${(k === MODELO_RAPIDO) === esRapida(cfg.modelo) ? ' checked' : ''}><span><b>${n}</b><small>${t}</small></span></label>`).join('')}</fieldset>
     <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> Puede buscar en internet con Google</label>
     ${cfg.webFalla ? '<p class="nota" style="margin:-6px 0 0">Tu plan de Google no incluye la búsqueda en internet: de momento GrowIA contrasta con los titulares que baja GrowFolio. Lo vuelve a intentar dentro de unos días.</p>' : ''}
     <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe GrowIA con tus cifras y las noticias del día, en Análisis, Expertos y Paso a paso. Gratis.</small></label>
@@ -107,6 +116,7 @@ function htmlAjustesAsesor() {
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
     <div class="seccion-ed"><h3>Clave de Google</h3>
       <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[cfg.prov]] ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'}</p>
+      ${AS.clave ? `<details class="as-detalle"><summary>${L('Detalles técnicos', 'Technical details')}</summary><p class="nota as-cupo">${htmlCupoIA()}</p></details>` : ''}
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-as="cambiar-clave">${AS.clave ? 'Cambiar clave' : 'Poner clave'}</button>${AS.clave ? '<button class="btn peq peligro" data-as="borrar-clave">Borrar clave</button>' : ''}</div>
     </div>
   </div>`;
@@ -116,9 +126,10 @@ function pintarAsesor(alFinal) {
   const cfg = cfgAsesor();
   const cuerpo = $('#asCuerpo', fondo), pie = $('#asPie', fondo);
   const vivo = modeloVivo(cfg);
-  $('#asSub', fondo).textContent = `${MODELOS[vivo].n}${vivo !== cfg.modelo ? ` (el ${MODELOS[cfg.modelo].corto || MODELOS[cfg.modelo].n} ha gastado su cupo de hoy)` : ''}${cfg.web && !AS.sinWeb ? ', con búsqueda en internet' : ''}`;
+  // 0.7: lo que ve la persona es GrowIA; los modelos de Google y su cupo, en Ajustes de GrowIA (Detalles técnicos)
+  $('#asSub', fondo).textContent = subtituloIA(cfg);
   const rapida = cfg.modelo === MODELO_RAPIDO;
-  $('#asModo', fondo).innerHTML = `<span>Respuesta</span><div class="seg" role="group" aria-label="Tipo de respuesta"><button type="button" data-as="modo" data-m="normal" aria-pressed="${!rapida}">Normal</button><button type="button" data-as="modo" data-m="rapida" aria-pressed="${rapida}">Rápida</button></div><small>${rapida ? 'Contesta en segundos y gasta mucho menos cupo' : 'Piensa más a fondo; si se agota, salta sola a otro modelo'}</small>`;
+  $('#asModo', fondo).innerHTML = `<span>Respuesta</span><div class="seg" role="group" aria-label="Tipo de respuesta"><button type="button" data-as="modo" data-m="normal" aria-pressed="${!rapida}">Normal</button><button type="button" data-as="modo" data-m="rapida" aria-pressed="${rapida}">Rápida</button></div><small>${rapida ? 'Contesta en segundos y gasta mucho menos cupo' : 'Piensa más a fondo'}</small>`;
   const vista = !AS.clave && AS.vista !== 'ajustes' ? 'clave' : AS.vista;
   if (vista === 'clave') cuerpo.innerHTML = htmlClaveAsesor();
   else if (vista === 'ajustes') cuerpo.innerHTML = htmlAjustesAsesor();
@@ -236,9 +247,9 @@ async function probarClave(clave) {
 async function copiarCartera() {
   refrescarFoto(true);
   const q = ($('#asTexto') && $('#asTexto').value.trim()) || '';
-  const ia = 'Gemini';
+  const ia = L('IA', 'AI');
   const texto = `${instruccionesAsesor()}\n\n${contextoAsesor(S.M || calcular(), 'completo')}\n\n${q ? `Mi pregunta: ${q}` : 'Mi pregunta: '}`;
-  try { await navigator.clipboard.writeText(texto); toast(`Copiado. Pégalo en un chat de ${ia} y escribe tu pregunta al final.`, 6000); }
+  try { await navigator.clipboard.writeText(texto); toast(`Copiado. Pégalo en el chat de ${ia} que uses y escribe tu pregunta al final.`, 6000); }
   catch (e) { descargar(`cartera-para-la-ia-${hoyIso()}.txt`, texto); toast('No se pudo copiar: te lo he descargado como texto.', 6000); }
   window.open('https://gemini.google.com/app', '_blank', 'noopener');
 }

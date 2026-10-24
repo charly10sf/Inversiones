@@ -71,6 +71,11 @@
 .as-modelo { display: flex; gap: 10px; align-items: flex-start; border: 1px solid var(--line-2); border-radius: 12px; padding: 10px 12px; cursor: pointer; }
 .as-modelo:has(input:checked) { border-color: var(--accent); background: var(--accent-bg); }
 .as-modelo input { accent-color: var(--accent); margin-top: 4px; }
+/* 0.7: los modelos de Google y el cupo, plegados en Ajustes de GrowIA */
+.as-detalle summary { cursor: pointer; color: var(--text-2); font-size: 13.5px; }
+.as-detalle .as-cupo { margin: 6px 0 0; }
 .as-modelo b { display: block; font-weight: 600; font-size: 14px; }
 .as-modelo small { color: var(--muted); font-size: 12.5px; }
 
+/* 0.7: con qué modelo ha contestado */
+.as-modelo-de { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }

@@ -251,7 +251,7 @@ function abrirAjustes() {
     </div>
     <h2 class="aj-grupo" data-no-trad>${conIA('GrowIA y la app', 'GrowIA and the app')}</h2>
     <div class="aj-caja">
-      <button class="aj-fila" data-accion="asesor-ajustes" data-cerrar>${ICONOS.growia}<span><b data-no-trad>${conIA('Ajustes de GrowIA', 'GrowIA settings')}</b><small>Funciona con Gemini, la IA de Google, gratis con una clave tuya: responde a lo que le preguntes y revisa tu cartera cada día.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" data-accion="asesor-ajustes" data-cerrar>${ICONOS.growia}<span><b data-no-trad>${conIA('Ajustes de GrowIA', 'GrowIA settings')}</b><small>Gratis con una clave tuya de Google: responde a lo que le preguntes y revisa tu cartera cada día.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <div class="seccion-ed"><h3>${ICONOS.cartera}App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
     </div>
     <h2 class="aj-grupo">Avisos y resumen</h2>

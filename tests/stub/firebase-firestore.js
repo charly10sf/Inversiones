@@ -1,6 +1,6 @@
 // Firestore de imitación (ver firebase-app.js): cada documento es una clave «stub-fs:<ruta>» de localStorage.
 // Imita las reglas de firestore.rules en lo que la app nota: el dueño (stub-dueno, su correo) es el único que puede
-// listar opiniones, cuentas y modos; cada cuenta lee solo su usuarios/{uid} y su modos/{correo} (con el correo
+// listar opiniones, cuentas, modos y fallos_ia; cada cuenta lee solo su usuarios/{uid} y su modos/{correo} (con el correo
 // confirmado si entró con correo y contraseña).
 const P = 'stub-fs:';
 const yo = () => { try { return JSON.parse(localStorage.getItem('stub-auth-user') || 'null'); } catch (e) { return null; } };
@@ -18,6 +18,7 @@ function revivir(v) {
   return v;
 }
 function plano(v) {
+  if (v instanceof Date) return { __ts: v.getTime() };
   if (v && typeof v === 'object') {
     if (v.__ts === 'server') return { __ts: Date.now() };
     if (typeof v.toMillis === 'function') return { __ts: v.toMillis() };
@@ -33,6 +34,7 @@ function puedeLeer(ruta) {
   if (col === 'usuarios') return id === u.uid;
   if (col === 'modos') return esDueno() || (id === String(u.email || '').toLowerCase() && (u.emailVerified || u.proveedor !== 'password'));
   if (col === 'cuentas' || col === 'opiniones') return esDueno() || (crudo(ruta) || {}).uid === u.uid;
+  if (col === 'fallos_ia') return esDueno();
   return true;
 }
 function snap(ruta) {
@@ -55,7 +57,8 @@ export function limit(n) { return { t: 'limit', n }; }
 export function query(col, ...cond) { return { tipo: 'query', path: col.path, cond }; }
 
 export async function getDoc(ref) { if (!puedeLeer(ref.path)) throw sinPermiso(); return snap(ref.path); }
-export async function setDoc(ref, data, o) { poner(ref.path, data, o && o.merge); }
+// fallos_ia: se crean y no se reescriben (las reglas no dejan update)
+export async function setDoc(ref, data, o) { if (ref.path.startsWith('fallos_ia/') && crudo(ref.path)) throw sinPermiso(); poner(ref.path, data, o && o.merge); }
 export async function updateDoc(ref, data) { if (!crudo(ref.path)) { const e = new Error('No document to update'); e.code = 'not-found'; throw e; } poner(ref.path, data, true); }
 export async function addDoc(col, data) {
   const id = Math.random().toString(36).slice(2, 12), ruta = col.path + '/' + id;
@@ -66,6 +69,7 @@ export async function getDocs(q) {
   const filtro = cond.filter((c) => c.t === 'where');
   const soloLoSuyo = filtro.some((c) => c.campo === 'uid' && yo() && c.valor === yo().uid);
   if ((q.path === 'opiniones' || q.path === 'cuentas' || q.path === 'modos') && !esDueno() && !soloLoSuyo) throw sinPermiso();
+  if (q.path === 'fallos_ia' && !esDueno()) throw sinPermiso();
   let docs = [];
   for (let i = 0; i < localStorage.length; i++) {
     const k = localStorage.key(i);

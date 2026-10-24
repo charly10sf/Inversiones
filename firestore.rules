@@ -58,6 +58,29 @@ service cloud.firestore {
         && request.resource.data.alta is string && request.resource.data.alta.size() <= 10;
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
+    // 0.7: los fallos de GrowIA que no se arreglan solos (la conexión se corta tres veces, Google no contesta, la clave
+    // falla…), para que el dueño los vea sin que nadie se lo cuente. Sin la pregunta, sin la respuesta y sin nada de la
+    // cartera: de qué tipo, con qué modelo, dónde (chat, revisión…), el código de Google y la versión. Cualquiera con
+    // cuenta puede apuntar uno a su nombre; solo los lee y los borra el dueño. Revisión aparte: el tope de 5 al día lo
+    // ponen estas reglas (el id es «<uid>_<AAAAMMDD de hoy en UTC>_<0 a 4>» y no se puede reescribir), la hora la pone
+    // el servidor, el modelo y la versión tienen su forma (nada de texto libre) y «caduca» (de 1 a 31 días) es el campo
+    // del TTL de Firestore que los borra solos.
+    match /fallos_ia/{id} {
+      allow create: if request.auth != null
+        && id.matches('^' + request.auth.uid + '_' + string(request.time.year() * 10000 + request.time.month() * 100 + request.time.day()) + '_[0-4]$')
+        && request.resource.data.keys().hasOnly(['t', 'caduca', 'tipo', 'estado', 'modelo', 'donde', 'v'])
+        && request.resource.data.t == request.time
+        && request.resource.data.caduca is timestamp
+        && request.resource.data.caduca > request.time + duration.value(1, 'd')
+        && request.resource.data.caduca < request.time + duration.value(31, 'd')
+        && request.resource.data.tipo in ['corte', 'red', 'cupo', 'espera', 'google', 'clave', 'peticion', 'bloqueo', 'vacia', 'formato', 'otro']
+        && (request.resource.data.estado == null || (request.resource.data.estado is int && request.resource.data.estado >= 0 && request.resource.data.estado < 1000))
+        && (request.resource.data.modelo == null || (request.resource.data.modelo is string && request.resource.data.modelo.matches('^gemini-[0-9a-z.-]{1,32}$')))
+        && request.resource.data.donde in ['chat', 'revision', 'busqueda', 'noticia', 'captura']
+        && request.resource.data.v is string && request.resource.data.v.matches('^[0-9]{1,2}([.][0-9]{1,2}){1,2}[a-z]?$');
+      allow read, delete: if esDueno();
+      allow update: if false;
+    }
     // precios que pedir: el ticker o el ISIN de lo que alguien mete a mano y GrowFolio no seguía (sin quién lo
     // pide). Cualquiera con cuenta puede apuntar uno nuevo; lo lee la Action de precios, sin clave
     match /simbolos/{id} {

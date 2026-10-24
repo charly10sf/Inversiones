@@ -73,7 +73,8 @@ const MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'ju
 const DIAS_EN = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
 const MESES_EN = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
 // en el calendario y en GTA VI las frases llevan nombres y cifras dentro: van escritas en los dos idiomas
-const L = (es, en) => (IDIOMA === 'en' ? en : es);
+// L.es: mientras está puesto, todo en español (0.7: lo que lee GrowIA va en español aunque la app esté en inglés)
+const L = (es, en) => (IDIOMA === 'en' && !L.es ? en : es);
 const mesL = (m) => L(MESES_LARGOS[m], MESES_EN[m]), diaSemL = (d) => L(DIAS_SEM[d], DIAS_EN[d].slice(0, 3));
 const fechaCortaL = (d) => { const x = deIso(d); return L(`${x.getDate()} ${MESES[x.getMonth()]}`, `${MESES_EN[x.getMonth()].slice(0, 3)} ${x.getDate()}`); };
 // el índice que copia cada fondo, para saber qué empresas lleva dentro (las diez mayores, de la Action)

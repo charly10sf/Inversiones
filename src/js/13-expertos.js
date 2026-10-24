@@ -33,9 +33,12 @@ function noticiasCartera(soloAnalistas) {
   const vistos = new Set();
   return out.sort((a, b) => ((b.d || '') > (a.d || '') ? 1 : -1)).filter((n) => { const k = n.t.slice(0, 50); if (vistos.has(k)) return false; vistos.add(k); return true; });
 }
-function htmlNoticias(lista, conActivo = false, max = 12) {
+/* 0.7: cada titular, con su marca de las fichas de GrowIA (factor, positivo o negativo para la empresa según la prensa, cuánto importa); lo importante
+   arriba, el relleno abajo y el mismo titular de varios medios, una vez (13b-fichas.js) */
+function htmlNoticias(lista, conActivo = false, max = 12, desde = 0) {
   if (!lista.length) return '<div class="vacio">No hay noticias recientes.</div>';
-  return `<ul class="noticias">${lista.slice(0, max).map((n) => `<li><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}</small></li>`).join('')}</ul>`;
+  if (!S.fichas) fichasLuego();
+  return `<ul class="noticias">${ordenarNoticias(lista).slice(desde, desde + max).map(({ n, m, mas }) => `<li${m && m[2] === 0 ? ' class="relleno"' : ''}><a class="noti" href="${esc(urlSegura(n.u))}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${chipMarca(m)}${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}${mas ? `<span class="mas-medios">${L(`y ${mas} ${mas === 1 ? 'medio más' : 'medios más'}`, `and ${mas} more ${mas === 1 ? 'outlet' : 'outlets'}`)}</span>` : ''}</small></li>`).join('')}</ul>`;
 }
 
 /* Las noticias se leen dentro (0.2.4): al tocar una sale una hoja con su resumen, que escribe GrowIA (Gemini, con tu
@@ -143,7 +146,7 @@ function htmlFrescura() {
     <details><summary><span class="vivo-dot${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? ' viejo' : ''}">${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? L(`Precios de ${haceCuanto(S.precios.generado)}`, `Prices from ${haceCuanto(S.precios.generado)}`) : L('Al día', 'Up to date')}${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? '' : `<span class="fr-hora"> · ${B('recalc')}</span>`}</span>${S.informe && S.informe.generado ? `<span>· ${L('prensa de', 'news from')} ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas" title="${L('De cuándo es cada dato', 'How fresh each figure is')}" aria-label="${L('De cuándo es cada dato', 'How fresh each figure is')}">${ICONOS.info}</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
     ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">GrowIA ya lee la prensa para todos; con tu clave gratis de Google revisará también tus cifras cada día</button>'}
-    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? 'se ha acabado el cupo gratuito de Google por hoy; se renueva sobre las 9:00' : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowIA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
+    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? `se ha acabado el cupo gratuito de Google por hoy; se renueva a las ${horaRenuevaIA()}` : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowIA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
   </div>`;
 }
 
@@ -393,7 +396,9 @@ function trDatos(o) {
   let n = 0;
   for (const k of Object.keys(o)) {
     const v = o[k];
-    if (typeof v === 'string') { if (v.length >= 12) { const t = S.trEn[claveTr(v.trim())]; if (t) { o[k] = t; n++; } } }
+    // 0.7: el titular en español se guarda en t0, que es con el que se buscan sus marcas en las fichas de GrowIA
+    if (k === 't0') continue;
+    if (typeof v === 'string') { if (v.length >= 12) { const t = S.trEn[claveTr(v.trim())]; if (t) { if (k === 't' && o.t0 == null) o.t0 = v; o[k] = t; n++; } } }
     else if (v && typeof v === 'object' && k !== 'fuentes' && k !== 'noticias') n += trDatos(v);
   }
   return n;
@@ -401,7 +406,7 @@ function trDatos(o) {
 // cambia lo que haya cargado (se puede llamar varias veces: lo ya cambiado no vuelve a coincidir)
 function aplicarTrEn() {
   if (IDIOMA !== 'en' || !S.trEn) return 0;
-  const n = trDatos(S.informe) + trDatos(S.escaneo) + trDatos(S.precios && S.precios.noticias);
+  const n = trDatos(S.informe) + trDatos(S.escaneo) + trDatos(S.precios && S.precios.noticias) + trDatos(S.fichas && { e: S.fichas.e, temas: S.fichas.temas });
   if (n && S.cartera && !S.ficha) pintar();
   return n;
 }
@@ -475,7 +480,23 @@ function informeVisible() {
   // si no, sin lo que habla de esa otra cartera: el resumen y el «Para tu cartera» de cada noticia del mercado
   return { ...inf, resumen: '', mercado: (inf.mercado || []).map((m) => ({ ...m, implica: '' })), alertas: (inf.alertas || []).filter((a) => a.id && ids.has(a.id)), posiciones: Object.fromEntries(Object.entries(inf.posiciones || {}).filter(([id]) => ids.has(id))) };
 }
-function htmlResumenInforme(corto) {
+/* 0.7, en Inicio (al lado del mapa de tu cartera en el ordenador): debajo del resumen, lo que más se ha movido hoy de
+   lo tuyo y por qué, según el informe de la prensa (el mismo para todos). Sin el «Bueno/Malo para tu…» del principio:
+   el color de la cifra ya dice si sube o baja, y en estándar no es un consejo */
+function htmlHoyInforme(M) {
+  const inf = informeVisible(), P = (inf && inf.posiciones) || {};
+  if (!M) return '';
+  const vistos = new Set(), top = [];
+  for (const f of [...M.filas].filter((x) => P[x.inst.id] && P[x.inst.id].novedades && x.varDia != null).sort((a, b) => Math.abs(b.dia || 0) - Math.abs(a.dia || 0))) {
+    if (vistos.has(f.inst.id)) continue;
+    vistos.add(f.inst.id); top.push(f);
+    if (top.length === 5) break;
+  }
+  if (!top.length) return '';
+  const porque = (t) => { let s = String(limpiaIA(t || '')).trim(); const m = /^[^:.]{3,48}:\s+/.exec(s); if (m) s = s.slice(m[0].length); return s.charAt(0).toUpperCase() + s.slice(1); };
+  return `<div class="ini-hoy"><p class="ini-hoy-t">${L('Hoy, en lo tuyo', 'Today, in your holdings')}</p><ul>${top.map((f) => `<li><button type="button" data-mc-ficha="${esc(f.pos.id)}">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'peq')}<span class="ini-hoy-n"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small data-no-trad>${escIA(porque(P[f.inst.id].novedades))}</small></span><span class="ini-hoy-v ${cls(f.varDia)}">${esc(pctS(f.varDia, 1))}</span></button></li>`).join('')}</ul></div>`;
+}
+function htmlResumenInforme(corto, extra = '') {
   const inf = informeVisible();
   if (!inf || (!inf.resumen && !(inf.alertas || []).length)) return '';
   if (corto) {
@@ -483,6 +504,7 @@ function htmlResumenInforme(corto) {
     return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según GrowIA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>
       ${fr[0] ? `<p class="informe-res">${esc(fr[0])}</p>` : (inf.alertas || []).length ? `<p class="informe-res informe-al">${inf.alertas[0].urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}${escIA(inf.alertas[0].t)}</p>` : ''}
       ${fr.length > 1 || (inf.alertas || []).length ? `<details class="mas"><summary>${(inf.alertas || []).length ? `Seguir leyendo y ${inf.alertas.length} ${inf.alertas.length === 1 ? 'alerta' : 'alertas'}` : 'Seguir leyendo'}</summary>${fr.length > 1 ? `<p class="informe-res">${esc(fr.slice(1).join(' '))}</p>` : ''}${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}</details>` : ''}
+      ${extra}
     </section>`;
   }
   return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según GrowIA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>

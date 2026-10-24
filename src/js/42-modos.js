@@ -89,8 +89,10 @@ function cambioDeAcceso() {
 async function filaAcceso(h) {
   const w = $('#aAcceso', h.el); if (!w || !PERFIL_CUENTA) return;
   if (S.esDueno) {
-    w.innerHTML = `<button class="aj-fila" id="aPriv">${ICONOS.candado}<span><b>${L('Modo de cada cuenta', 'Each account\'s mode')}</b><small>${L(`Fundador o estándar, también la tuya (ahora, ${nombreModo(S.acceso)}). Solo lo ves tú.`, `Founder or standard, yours too (now ${nombreModo(S.acceso)}). Only you see this.`)}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+    w.innerHTML = `<button class="aj-fila" id="aPriv">${ICONOS.candado}<span><b>${L('Modo de cada cuenta', 'Each account\'s mode')}</b><small>${L(`Fundador o estándar, también la tuya (ahora, ${nombreModo(S.acceso)}). Solo lo ves tú.`, `Founder or standard, yours too (now ${nombreModo(S.acceso)}). Only you see this.`)}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aSaludIA">${ICONOS.growia}<span><b>${L('Cómo va GrowIA', 'How GrowIA is doing')}</b><small>${L('El banco de preguntas de cada noche, lo que gasta la Action y los fallos que no se arreglaron solos. Solo lo ves tú.', 'The nightly question bank, what the Action uses and the failures that didn\'t fix themselves. Only you see this.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
     $('#aPriv', h.el).onclick = () => { h.cerrar(true); verModos(); };
+    $('#aSaludIA', h.el).onclick = () => { h.cerrar(true); verSaludIA(); };
   } else if (correoSinConfirmar()) {
     w.innerHTML = `<button class="aj-fila" id="aVerif">${ICONOS.alerta}<span><b>${L('Confirma tu correo', 'Confirm your email')}</b><small>${L('Te mandamos un enlace a tu correo. Hace falta, por ejemplo, para el modo fundador si te lo han dado.', 'We send a link to your email. It is needed, for example, for founder mode if you have been given it.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
     $('#aVerif', h.el).onclick = async () => {
