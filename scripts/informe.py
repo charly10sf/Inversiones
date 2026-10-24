@@ -257,6 +257,22 @@ def extraer_json(texto):
     return None
 
 
+def extraer_por_clave(texto, claves):
+    """Si el JSON entero no se lee (un carácter roto en una de 50 empresas), lo que venga bien de cada una."""
+    dec, res = json.JSONDecoder(), {}
+    for k in claves:
+        m = re.search(r'"' + re.escape(k) + r'"\s*:\s*\{', texto)
+        if not m:
+            continue
+        try:
+            o, _ = dec.raw_decode(texto, m.end() - 1)
+        except ValueError:
+            continue
+        if isinstance(o, dict):
+            res[k] = o
+    return res
+
+
 def material(instrumentos, precios, radar):
     """Todo lo que lee Gemini, con cada noticia numerada para que pueda citarla."""
     fuentes, bloques = [], []
@@ -594,7 +610,10 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
     cuerpo = {"systemInstruction": {"parts": [{"text": LEER}]}, "contents": [{"role": "user", "parts": [{"text": f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques)}]}],
               "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
     texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
-    res = extraer_json(texto) or {}
+    res = extraer_json(texto)
+    if res is None:
+        res = extraer_por_clave(texto, [x["s"] for _, x, _ in lote])
+        print(f"escaneo: la respuesta no era un JSON entero; se aprovechan {len(res)} de {len(lote)} empresas")
     n = 0
     for _, x, h in lote:
         r = res.get(x["s"])

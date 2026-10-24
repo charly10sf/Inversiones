@@ -135,6 +135,18 @@ class LecturaConFichas(unittest.TestCase):
         # y la pasada siguiente, ya nada que leer
         self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 0)
 
+    def test_un_json_roto_no_tira_toda_la_pasada(self):
+        # una comilla sin escapar en una empresa: las demás se leen igual
+        bien = json.dumps(dict(LEIDO, tit={"1": ["negocio", "+", 2]}, fa={"negocio": LEIDO["fa"]["negocio"]}))
+        texto = '{"SAN.MC": ' + bien + ', "BBVA.MC": {"imp": "positivo", "txt": "Dice "hola" sin escapar"}, "REP.MC": ' + bien + '}'
+        I.gemini_modelo = lambda cuerpo, clave, modelo: {"candidates": [{"content": {"parts": [{"text": texto}]}}], "usageMetadata": {}}
+        cache = {"SAN.MC": {"n": FUENTES[:1]}, "BBVA.MC": {"n": FUENTES[1:2]}, "REP.MC": {"n": FUENTES[2:3]}}
+        valores = [{"s": s, "n": s, "p": 8.1, "m": "EUR", "pot": 12, "sector": "Financiero"} for s in cache]
+        lectura, fichas = {}, F.nuevas()
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 2)
+        self.assertEqual(sorted(lectura), ["REP.MC", "SAN.MC"])
+        self.assertEqual(sorted(fichas["e"]), ["REP.MC", "SAN.MC"])
+
     def test_las_noticias_de_las_carteras_entran_en_la_lectura(self):
         cache = {"REP.MC": {"n": [{"t": "Repsol, en el radar", "d": "2026-10-20T08:00:00+00:00"}]}}
         hoy = dt.datetime.now(dt.timezone.utc).isoformat()
