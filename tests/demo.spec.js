@@ -57,6 +57,9 @@ test('la cartera de prueba: aparte de la tuya, sin guardar nada y con contraseñ
   await expect(page.locator('#aDemoSalir')).toBeVisible();
   await expect(page.locator('#aCuenta, #aKit, #aCopia, #aDemo')).toHaveCount(0);
   await page.keyboard.press('Escape');
+  // al cerrar la hoja se vuelve atrás en el historial: se espera a que termine antes de recargar
+  await expect(page.locator('#aDemoSalir')).toHaveCount(0);
+  await page.waitForTimeout(600);
 
   // recargar no saca de la prueba
   await page.reload();
