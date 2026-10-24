@@ -1,6 +1,36 @@
 {
  "versiones": [
   {
+   "v": "0.7",
+   "f": "2026-10-24",
+   "h": "16:35",
+   "t": "GrowIA lee todo lo que pesa en cada empresa",
+   "commits": [
+    {
+     "cuando": "2026-10-24 16:35",
+     "asunto": "0.7: GrowIA lee todo lo que pesa en cada empresa",
+     "detalle": [
+      "Action: la lectura de prensa pasa a Flash-Lite y clasifica cada titular (factor, bueno o malo, cuánto pesa y a qué plazo); cada empresa tiene su ficha con seis factores: negocio, sector, macro, político, social y mercado (scripts/fichas.py, fichas.json en la rama datos, fichas_id en precios.json)",
+      "Action: cada 3 horas, 25 consultas de Google Noticias por tema (bancos centrales, aranceles, elecciones, huelgas…) que Flash-Lite convierte en temas con a quién tocan (zona, país, sector y, si hace falta, industria). Un tema no puede ser de una sola empresa",
+      "Action: la clave de Gemini en su propio proyecto de Google; el informe y las ideas, con el 3.8 todo el día",
+      "Noticias: cada titular con su marca (factor y si es bueno o malo); lo importante arriba, el relleno abajo y apagado, y el mismo titular de varios medios una vez, con «y N medios más». Sin fotos",
+      "Ficha de cada acción, en Noticias: «Lo que pesa ahora, según GrowIA», factor por factor y con los temas que le tocan",
+      "GrowIA: la ficha de cada acción de la cartera y los temas de la semana en su contexto, que baja de 39,7k a 35,8k caracteres; la ficha también en buscar_empresa; una búsqueda en internet por pregunta como mucho",
+      "Revisión automática de la cartera: una sola llamada, sin herramientas, con el 3.6 y si se agota con Flash-Lite, nunca con el 3.8 (antes, de 1 a 3 llamadas)",
+      "Cupo de hoy (contado en el dispositivo) arriba en GrowIA y en Ajustes, sin nombres de modelos: «Normal» o «Rápida», y los modelos de Gemini plegados en Ajustes de GrowIA › Detalles técnicos (lo pidió Carlos)",
+      "Inicio en el ordenador: logos en «Lo que más ha movido hoy», el mapa más bajo con el informe al lado y las columnas parejas, sin hueco",
+      "Action: el informe no pasa a Flash-Lite si el 3.8 y el 3.6 fallan y el anterior tiene menos de 6 horas (informe.json → intentos); las empresas leídas antes de las fichas se vuelven a leer una vez",
+      "Banco de 42 preguntas reales (25 de fundador y 17 de estándar): la Action «Banco de GrowIA» las pasa cada noche con Flash-Lite y los domingos una muestra de 10 con el 3.6; guarda lo hecho tras cada pregunta",
+      "Fallos de GrowIA a Firestore (fallos_ia: tipo, estado, modelo, dónde y versión, sin la pregunta ni la cartera; 5 al día por cuenta, puesto por las reglas, y se borran a los 30 días) y «Cómo va GrowIA» en Ajustes para el dueño",
+      "Pruebas nuevas: fichas en español y en inglés, GrowIA con las fichas y una búsqueda, la revisión en una llamada, Cómo va GrowIA; en Python, fichas y temas",
+      "Revisión aparte del prompt público de GrowIA y de las reglas de fallos_ia: 11 hallazgos, arreglados. En estándar las fichas son lo que lee la prensa, igual para todos, y no un consejo; solo enlaces http y https; el tope de avisos en las reglas; búsquedas que se reinician al cambiar de modelo. Si las fichas cuentan como recomendación de inversión, lo mira el abogado de la 0.9",
+      "Fichas al día del 92,9 % de las empresas del radar con noticias de la semana (659 de 709) y de las 4 acciones de las carteras; banco de 42 preguntas sobre la versión que sale: 42 bien (100 %) con Flash-Lite y 1,6 peticiones por pregunta; rendimiento: 760 KB y lista en 1,96 s",
+      "Novedades de la 0.7 en español e inglés, con dibujos y guía"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.6d",
    "f": "2026-10-24",
    "h": "15:00",
