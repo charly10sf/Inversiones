@@ -181,6 +181,7 @@ async function bienvenidaCuenta() {
   for (const r of $$('[name=que]')) r.onchange = () => { const x = $('#bPassL'); if (x) x.hidden = !(r.checked && r.value === 'subir' && S.pidePassLocal); };
 }
 async function cerrarSesion() {
+  if (S.demo) return salirDemo();
   if (LS.get('inv-pend-cuenta')) {
     if (navigator.onLine !== false && !S.subidaParada) try { await conTiempo(sincronizarCuenta(), 8000); } catch (e) {}
     if (LS.get('inv-pend-cuenta') && !confirm(trad('Hay cambios de este dispositivo que aún no han llegado a tu cuenta (falta conexión). Si cierras la sesión ahora, se pierden. ¿Cerrarla igualmente?'))) return;
@@ -279,6 +280,7 @@ async function aplicarRemoto(enc, rev) {
 }
 
 function pantallaDesbloqueo(errorTxt = '', texto = '') {
+  if (S.demo) return salirDemo();
   const n = nombreUsuario();
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fDesb" autocomplete="on">
     <img class="logo" src="icon-192.png" alt="">

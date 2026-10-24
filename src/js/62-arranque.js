@@ -1,7 +1,7 @@
 async function iniciar() {
   // 0.6d: en la cartera de prueba, lo que se escriba en el dispositivo se queda en memoria desde el primer momento
   const demo = demoActiva();
-  if (demo) LS_DEMO = new Map(); else { try { localStorage.removeItem('inv-demo-g'); } catch (e) {} }
+  if (demo) LS_DEMO = new Map();
   cargarIdioma();
   if (bancoALaApp()) return;
   try { if (window.InversionesApp && typeof InversionesApp.versionVista === 'function') InversionesApp.versionVista(VERSION); } catch (e) {}

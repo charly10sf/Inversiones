@@ -43,10 +43,14 @@ const LS_SOBRA = ['inv-cache-tren', 'inv-cache-escaneo', 'inv-cache-hist', 'inv-
 /* 0.6d: con la cartera de prueba, lo que se escribe se queda en esta capa en memoria y se tira al salir: lo tuyo del
    dispositivo (ajustes, GrowIA, avisos vistos…) ni se lee si se ha cambiado en la prueba ni se toca */
 let LS_DEMO = null;
+/* y de lo tuyo, en la prueba solo se lee lo que no dice nada de ti: idioma, avisos vistos, cómo tienes cada pestaña y
+   las copias de los datos públicos. Tu nombre, tu PIN, GrowIA, tus notas o tus avisos, no: como si no hubiera nada. */
+const LS_DEMO_LEE = new Set([...LS_SOBRA, 'inv-version', 'inv-vnum', 'inv-idioma', 'inv-acceso', 'inv-asesor-cfg2', 'inv-ia-agotados', 'inv-gta', 'inv-gta-son', 'inv-resumen-off', 'inv-intro2', 'inv-estreno-02b', 'inv-ya-entro', 'inv-vista', 'inv-rango', 'inv-proy', 'inv-horizonte', 'inv-comparar', 'inv-bench', 'inv-mc', 'inv-mapa', 'inv-mapa-gesto', 'inv-mgrupo', 'inv-zona', 'inv-orden2', 'inv-orden-pos', 'inv-radar-solidas', 'inv-radar-min', 'inv-exp', 'inv-futtab', 'inv-frango', 'inv-fistab', 'inv-dim', 'inv-base', 'inv-car', 'inv-calif3', 'inv-ruta-plazo', 'inv-agmodo', 'inv-movil-ok', 'inv-guia', 'inv-guia-globo', 'inv-tour', 'inv-nov-vista', 'inv-nov-cerrada', 'inv-nov-04', 'inv-nov-030', 'inv-entrada-dia', 'inv-worker-dev', 'inv-repo', 'inv-gkey-modo', 'inv-023b-arr', 'inv-demo-salida']);
 const LS = {
   k(k) { return PERFIL_LOCAL && PRIVADAS.has(k) ? (PERFIL_CUENTA ? 'invC-' : 'invL-') + k.slice(4) : k; },
   get(k, d = null) {
     if (LS_DEMO && LS_DEMO.has(k)) { const v = LS_DEMO.get(k); return v == null ? d : JSON.parse(v); }
+    if (LS_DEMO && !LS_DEMO_LEE.has(k)) return d;
     try { const v = localStorage.getItem(this.k(k)); return v == null ? d : JSON.parse(v); } catch (e) { return d; }
   },
   set(k, v) {

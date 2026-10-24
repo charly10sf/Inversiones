@@ -326,7 +326,7 @@ function mejoresIdeas(M, excluir = {}) {
    cumplir de verdad (los analistas ya no dicen comprar, ya casi ha llegado al objetivo) o si GrowIA la pasa a
    "evitar", cosa que solo hace con una noticia que cambia la tesis. Nada de cinco ideas distintas en dos días. */
 const MEM_IDEAS = 'inv-ideas-propuestas';
-function memoriaIdeas() { try { return JSON.parse(localStorage.getItem(MEM_IDEAS) || '{}') || {}; } catch (e) { return {}; } }
+function memoriaIdeas() { if (S.demo) return {}; try { return JSON.parse(localStorage.getItem(MEM_IDEAS) || '{}') || {}; } catch (e) { return {}; } }
 function apuntarIdeas(syms) {
   if (S.demo) return;  // 0.6d: las ideas de la cartera de prueba no cuentan para las tuyas
   const m = memoriaIdeas(), hoy = hoyIso();

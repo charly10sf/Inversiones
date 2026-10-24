@@ -1,6 +1,27 @@
 {
  "versiones": [
   {
+   "v": "0.6d",
+   "f": "2026-10-24",
+   "h": "15:00",
+   "t": "Una cartera de prueba para enseñar la app",
+   "commits": [
+    {
+     "cuando": "2026-10-24 15:00",
+     "asunto": "0.6d: una cartera de prueba para enseñar la app",
+     "detalle": [
+      "Ajustes › «Enseñar la app con una cartera de prueba» (63-demo.js): GrowFolio se recarga en esta pestaña sin abrir tu cartera (S.key y S.enc a null, sin Firebase) y con una inventada de unos 20.000 € (fondos, acciones del radar y cripto a precios de hoy)",
+      "Lo que se escribe en el dispositivo va a una capa en memoria (LS_DEMO) y de lo tuyo solo se lee lo que no dice nada de ti (LS_DEMO_LEE): ni tu nombre ni tu PIN",
+      "cifrarCon, los guardados, la cuenta, el widget, las ideas y las opiniones se niegan en la prueba; dentro no salta el bloqueo",
+      "GrowIA, con tu clave de Google: pasa cifrada con una clave de un solo uso en sessionStorage, 24 horas como mucho",
+      "Al salir, con PIN el PIN; sin PIN la contraseña, y antes de entrar se comprueba que la sabes. Las demás pestañas con tu cartera abierta se cierran (evento storage) y atrás/adelante vuelve a cargar (pageshow)",
+      "Dos revisiones aparte (toca el cifrado y la sesión)",
+      "Pruebas nuevas: tests/demo.spec.js (la prueba entera, con PIN y con otra pestaña)"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.6c",
    "f": "2026-10-23",
    "h": "16:30",

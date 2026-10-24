@@ -29,7 +29,21 @@ test('la cartera de prueba: aparte de la tuya, sin guardar nada y con contraseñ
   // desde Ajustes: se vuelve a abrir GrowFolio, en la prueba
   await page.evaluate(() => abrirAjustes());
   await page.locator('#aDemo').click();
+  // sin PIN: antes de entrar, que sabes la contraseña (al salir se pedirá). Mal, no entra; bien, sí
+  await expect(page.locator('#pAct')).toBeVisible({ timeout: 10_000 });
+  await page.fill('#pAct', 'otra-cosa');
+  await page.locator('#fPAct button[type=submit]').click();
+  await expect(page.locator('#pAct')).toHaveCount(0);
+  await page.waitForTimeout(1200);
+  expect(await page.evaluate(() => !!S.demo)).toBe(false);
+  await page.evaluate(() => { entrarDemo(); });
+  await expect(page.locator('#pAct')).toBeVisible({ timeout: 10_000 });
+  await page.fill('#pAct', 'cartera-123');
+  await page.locator('#fPAct button[type=submit]').click();
   await expect(page.locator('#demoBanda')).toBeVisible({ timeout: 30_000 });
+  // de lo tuyo del dispositivo, nada que diga quién eres: ni tu nombre (tampoco en la pantalla de entrada) ni tu PIN
+  expect(await page.evaluate(() => [LS.get('inv-nombre'), LS.get('inv-bloqueo'), LS.get('inv-asesor-conv'), memoriaIdeas()])).toEqual([null, null, null, {}]);
+  await expect(page.locator('body')).not.toContainText('Lucía');
   const antes = await guardado(page);
   const demo = await page.evaluate(() => ({ demo: S.demo, key: S.key, enc: S.enc, marca: S.cartera.demo, pos: S.cartera.posiciones.map((p) => p.instrumento), total: (S.M || calcular()).total, nombre: nombreUsuario(), clave: AS.clave }));
   // tu cartera ni se ha abierto: sin su clave ni su texto cifrado en memoria
@@ -85,7 +99,31 @@ test('con PIN, al salir de la cartera de prueba se pide el PIN aunque se hubiera
   await page.evaluate(async () => { const salt = crypto.getRandomValues(new Uint8Array(16)); guardarBloqueo({ pin: await hashPin('2468', salt), salt: b64.enc(salt), fallos: 0 }); marcarDesbloqueo(); });
   await page.evaluate(() => entrarDemo());
   await expect(page.locator('#demoBanda')).toBeVisible({ timeout: 30_000 });
+  // dentro de la prueba no salta el bloqueo (no hay nada tuyo que bloquear: desde ahí se llegaría a lo tuyo)
+  await page.evaluate(() => { localStorage.removeItem(LS.k('inv-bloqueo-t')); document.dispatchEvent(new Event('visibilitychange')); pantallaBloqueo(() => {}, () => {}); });
+  await page.waitForTimeout(500);
+  await expect(page.locator('.bq-caja')).toHaveCount(0);
   await page.locator('#demoBanda button').click();
   await expect(page.locator('.bq-caja')).toBeVisible({ timeout: 30_000 });
   await expect(page.locator('.hero-num')).toHaveCount(0);
+});
+
+test('si se abre la prueba en una pestaña, las demás con tu cartera la cierran y piden la contraseña', async ({ page, context, errores }, info) => {
+  test.skip(info.project.name !== 'movil', 'en el móvil');
+  await crearCuenta(page);
+  await meterCartera(page);
+  await quitarCapas(page);
+  const otra = await context.newPage();
+  await otra.goto(page.url());
+  await expect(otra.locator('.hero-num')).toBeVisible({ timeout: 30_000 });
+  // en la otra, sin PIN: la contraseña antes de entrar en la prueba
+  await otra.evaluate(() => { entrarDemo(); });
+  await expect(otra.locator('#pAct')).toBeVisible({ timeout: 10_000 });
+  await otra.fill('#pAct', 'cartera-123');
+  await otra.locator('#fPAct button[type=submit]').click();
+  await expect(otra.locator('#demoBanda')).toBeVisible({ timeout: 30_000 });
+  // y esta, que tenía tu cartera abierta, se ha cerrado
+  await expect(page.locator('#pass')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('.hero-num')).toHaveCount(0);
+  await otra.close();
 });
