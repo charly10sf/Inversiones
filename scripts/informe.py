@@ -51,6 +51,7 @@ MAX_IDEAS = 0               # las ideas ya no van en el informe: salen del escan
 LOTE_YAHOO = 45             # empresas por pasada con noticias de Yahoo Finance
 LOTE_GOOGLE = 20            # y con Google Noticias en español
 LOTE_LECTURA = 50           # empresas que lee Gemini en cada pasada (0.7: 50, porque ahora clasifica cada titular)
+INICIO_FICHAS = "2026-10-23T16:20"  # desde aquí, cada lectura rellena la ficha de la empresa (0.7)
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
 CANDIDATAS = 40             # empresas entre las que decide
@@ -569,7 +570,11 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
         if not e.get("n"):
             continue
         h = huella(e["n"])
-        if (lectura.get(x["s"]) or {}).get("h") == h:
+        antes = lectura.get(x["s"]) or {}
+        # leída ya con estas noticias: no se vuelve a leer. Salvo si fue antes de las fichas y no tiene la suya: si no,
+        # una empresa sin titulares nuevos se quedaría sin ficha hasta que salieran (el 24 oct, 322 de 814)
+        sin_ficha = fichas is not None and x["s"] not in fichas.get("e", {}) and (antes.get("d") or "") < INICIO_FICHAS
+        if antes.get("h") == h and not sin_ficha:
             continue
         fav, con = P.contraste_idea(x, medianas)
         pend.append((fav - 0.9 * con + min(x.get("pot") or 0, 50) / 50 + (20 if x["s"] in tuyas else 0), x, h))
