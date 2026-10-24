@@ -361,7 +361,7 @@ function editarPerfil() {
     if ([lim, cri, emp].some((x) => x != null && (x < 0 || x > 100))) { $('#errPerfil', h.el).textContent = 'Los límites van de 0 a 100 %.'; return; }
     const antes = S.cartera.perfil || {};
     const nombre = (f.nombre.value || '').trim().slice(0, 40) || null;
-    if (nombre) LS.set('inv-nombre', nombre); else LS.del('inv-nombre');
+    if (!S.demo) { if (nombre) LS.set('inv-nombre', nombre); else LS.del('inv-nombre'); }
     S.cartera.perfil = { ...antes, inicio_inversion: f.ini.value || (antes.inicio_inversion === 'auto' ? 'auto' : null), nombre, edad, comunidad: f.comunidad.value || null, horizonte: n(f.horizonte.value), situacion: [...f.querySelectorAll('[name=situacion]:checked')].map((x) => x.value).join(',') || null, riesgo: r('riesgo'), experiencia: r('experiencia'), estilo: r('estilo'), deudas: r('deudas'), gastos_mes: n(f.gastos.value), colchon_meses: n(f.colchon.value) || 6, ingresos_mes: n(f.ingresos.value), limite_cripto: cri ?? 5, limite_empresa: emp ?? 10, limite_oro: n(f.oro.value) ?? 10, actualizado: new Date().toISOString() };
     if (lim != null) S.cartera.limite_acciones = lim;
     AS.foto = null;
@@ -478,7 +478,7 @@ function perfilGuiado(seguir = () => {}) {
     for (const k of ['colchon_meses', 'limite_cripto', 'limite_empresa', 'limite_oro']) if (nuevo[k] == null) nuevo[k] = PERFIL_DEF[k];
     nuevo.actualizado = new Date().toISOString();
     S.cartera.perfil = nuevo;
-    if (d.nombre) LS.set('inv-nombre', d.nombre);
+    if (d.nombre && !S.demo) LS.set('inv-nombre', d.nombre);
     if (meta.n && meta.importe > 0 && !(S.cartera.metas || []).some((x) => claveMeta(x) === claveMeta(meta))) S.cartera.metas = [...(S.cartera.metas || []), { id: nuevoId('m-'), n: meta.n, tipo: meta.tipo, importe: meta.importe, anio: meta.anio || null }];
     AS.foto = null;
     await guardarCartera('Perfil de inversor');

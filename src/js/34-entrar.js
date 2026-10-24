@@ -181,6 +181,7 @@ async function bienvenidaCuenta() {
   for (const r of $$('[name=que]')) r.onchange = () => { const x = $('#bPassL'); if (x) x.hidden = !(r.checked && r.value === 'subir' && S.pidePassLocal); };
 }
 async function cerrarSesion() {
+  if (S.demo) return salirDemo();
   if (LS.get('inv-pend-cuenta')) {
     if (navigator.onLine !== false && !S.subidaParada) try { await conTiempo(sincronizarCuenta(), 8000); } catch (e) {}
     if (LS.get('inv-pend-cuenta') && !confirm(trad('Hay cambios de este dispositivo que aún no han llegado a tu cuenta (falta conexión). Si cierras la sesión ahora, se pierden. ¿Cerrarla igualmente?'))) return;
@@ -201,7 +202,8 @@ function vigilarCuenta() {
   if (S.vigilaCuenta) { try { S.vigilaCuenta(); } catch (e) {} S.vigilaCuenta = null; }
   try {
     S.vigilaCuenta = FB.fs.onSnapshot(docCuenta(), async (d) => {
-      if (d.metadata.hasPendingWrites) return;
+      // con la cartera de prueba, lo que llegue de tu cuenta espera: al salir se vuelve a abrir todo
+      if (d.metadata.hasPendingWrites || S.demo) return;
       const x = d.data();
       if (!d.metadata.fromCache) S.cuentaLeida = true;
       if (!S.key || !S.cartera || !x || !x.enc) return;
@@ -218,6 +220,7 @@ function vigilarCuenta() {
 }
 /* el nombre de la bienvenida, dentro de tu perfil cifrado: solo con la cuenta ya leída, para no pisar nada */
 function nombreEnCuenta() {
+  if (S.demo) return;
   const nom = LS.get('inv-nombre', ''), suyo = S.cartera && S.cartera.perfil && S.cartera.perfil.nombre;
   // el de tu perfil (el mismo en todos tus dispositivos) pasa a este dispositivo, para saludarte al abrir
   if (suyo) { if (suyo !== nom) LS.set('inv-nombre', suyo); return; }
@@ -227,6 +230,7 @@ function nombreEnCuenta() {
 /* llega una versión de la cuenta: si estás editando algo, espera a que cierres; si ya no abre con tu clave
    (cambiaste la contraseña en otro dispositivo), se bloquea y pide la nueva */
 async function aplicarRemoto(enc, rev) {
+  if (S.demo) return;
   if (document.querySelector('.hoja-fondo form, .ficha')) {
     // se aplica al cerrar; si mientras tanto guardas, manda lo tuyo (es lo último que has hecho) y esta se descarta
     const antes = S.enc && S.enc.texto;
@@ -276,6 +280,7 @@ async function aplicarRemoto(enc, rev) {
 }
 
 function pantallaDesbloqueo(errorTxt = '', texto = '') {
+  if (S.demo) return salirDemo();
   const n = nombreUsuario();
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fDesb" autocomplete="on">
     <img class="logo" src="icon-192.png" alt="">

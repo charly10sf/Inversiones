@@ -110,6 +110,7 @@ async function pedirNota(intento = 0) {
   };
 }
 async function abrirOpinion() {
+  if (S.demo) { toast(L('En la cartera de prueba no se mandan opiniones: sal de ella para mandar la tuya.', "Feedback isn't sent from the demo portfolio: exit it to send yours.")); return; }
   const sitio = document.getElementById('asesorFondo') ? 'asesor' : S.ficha ? 'ficha' : S.vista === 'cartera' && S.carTab === 'plan' ? 'plan' : S.vista || 'general';
   const directa = PERFIL_CUENTA, hist = LS.get('inv-opi-hist', []);
   const h = hoja('Avisar de un fallo o una idea', `<form id="fOpi" class="pf-form" novalidate>

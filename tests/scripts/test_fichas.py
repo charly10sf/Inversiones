@@ -110,6 +110,31 @@ class LecturaConFichas(unittest.TestCase):
         self.assertEqual(fichas["e"]["SAN.MC"]["fa"]["negocio"]["txt"], "Beneficio un 12 % mayor.")
         self.assertIn(F.clave_titulo(FUENTES[0]["t"]), fichas["e"]["SAN.MC"]["tit"])
 
+    def test_lo_leido_antes_de_las_fichas_se_vuelve_a_leer_una_vez(self):
+        # leída antes de las fichas, con las mismas noticias: sin ficha, se vuelve a leer; con ficha o leída ya con
+        # las fichas (aunque no saliera ninguna), no
+        respuesta = {"SAN.MC": dict(LEIDO, tit={"1": ["negocio", "+", 2]}, fa={"negocio": LEIDO["fa"]["negocio"]})}
+        pedidas = []
+        def gemini(cuerpo, clave, modelo):
+            pedidas.append(cuerpo["contents"][0]["parts"][0]["text"])
+            return {"candidates": [{"content": {"parts": [{"text": json.dumps(respuesta)}]}}], "usageMetadata": {}}
+        I.gemini_modelo = gemini
+        cache = {"SAN.MC": {"n": FUENTES[:1]}, "BBVA.MC": {"n": FUENTES[1:2]}, "REP.MC": {"n": FUENTES[2:3]}}
+        valores = [{"s": s, "n": s, "p": 8.1, "m": "EUR", "pot": 12, "sector": "Financiero"} for s in cache]
+        fichas = F.nuevas()
+        F.aplicar_lectura(fichas, "BBVA.MC", LEIDO, FUENTES, I.ahora())
+        lectura = {"SAN.MC": {"d": "2026-10-22T10:00:00+00:00", "h": I.huella(cache["SAN.MC"]["n"])},
+                   "BBVA.MC": {"d": "2026-10-22T10:00:00+00:00", "h": I.huella(cache["BBVA.MC"]["n"])},
+                   "REP.MC": {"d": "2026-10-24T08:00:00+00:00", "h": I.huella(cache["REP.MC"]["n"])}}
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 1)
+        self.assertEqual(len(pedidas), 1)
+        self.assertIn("## SAN.MC", pedidas[0])
+        self.assertNotIn("## BBVA.MC", pedidas[0])
+        self.assertNotIn("## REP.MC", pedidas[0])
+        self.assertIn("SAN.MC", fichas["e"])
+        # y la pasada siguiente, ya nada que leer
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 0)
+
     def test_las_noticias_de_las_carteras_entran_en_la_lectura(self):
         cache = {"REP.MC": {"n": [{"t": "Repsol, en el radar", "d": "2026-10-20T08:00:00+00:00"}]}}
         hoy = dt.datetime.now(dt.timezone.utc).isoformat()

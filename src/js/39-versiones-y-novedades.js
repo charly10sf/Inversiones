@@ -14,6 +14,9 @@ const NOVEDADES = [
   ], arreglos: [
     'El informe del día y las ideas del radar se hacen con el mejor modelo todo el día: antes, a media mañana pasaban a uno más flojo porque la lectura de la prensa se gastaba su cupo.',
   ] },
+  { v: '0.6d', f: '2026-10-24', h: '15:00', t: 'Una cartera de prueba para enseñar la app', arreglos: [
+    'En Ajustes, «Enseñar la app con una cartera de prueba»: GrowFolio se vuelve a abrir con una cartera inventada (fondos, acciones y cripto a precios de hoy) para enseñársela a alguien sin que vea lo tuyo. Tu cartera ni se abre, nada de lo que se haga se guarda y GrowIA contesta con tu clave. Al salir te pide tu PIN o tu contraseña (sin PIN, antes de entrar se comprueba que la sabes), y las demás pestañas con tu cartera abierta se cierran. Lo pidió Carlos.',
+  ] },
   { v: '0.6c', f: '2026-10-23', h: '16:30', t: 'GrowIA aguanta los cortes de conexión', arreglos: [
     'Si la conexión con Google se corta a mitad de una pregunta, o Google tarda más de 90 segundos en empezar a contestar, GrowIA lo intenta otra vez (hasta dos veces) y después con otro modelo, en vez de quedarse en «No hay conexión con Google».',
   ] },

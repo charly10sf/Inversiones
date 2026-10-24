@@ -1,4 +1,7 @@
 async function iniciar() {
+  // 0.6d: en la cartera de prueba, lo que se escriba en el dispositivo se queda en memoria desde el primer momento
+  const demo = demoActiva();
+  if (demo) LS_DEMO = new Map();
   cargarIdioma();
   if (bancoALaApp()) return;
   try { if (window.InversionesApp && typeof InversionesApp.versionVista === 'function') InversionesApp.versionVista(VERSION); } catch (e) {}
@@ -11,7 +14,7 @@ async function iniciar() {
   $('#app').innerHTML = '';
   const t0 = mostrarEntrada();
   try {
-    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), escaneoDeCache(), cargarCatalogo()]).then(() => escaneoLuego())), cargarCifrada(), leerAnalisisRemoto()]);
+    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), escaneoDeCache(), cargarCatalogo()]).then(() => escaneoLuego())), demo ? null : cargarCifrada(), demo ? null : leerAnalisisRemoto()]);
     S.enc = enc; S.iaRemoto = iaRem || S.iaCuenta || null;
     // 0.6: cuándo está todo lo de arrancar (lo mide la prueba de rendimiento)
     try { performance.mark('gf-listo'); } catch (e) {}
@@ -22,6 +25,8 @@ async function iniciar() {
     return;
   }
   await esperarEntrada(t0);
+  // en la prueba, ni se lee ni se abre tu cartera: la inventada y adentro
+  if (demo) { await arrancarDemo(); quitarEntrada(); return; }
   await entrar();
   quitarEntrada();
 }
@@ -181,7 +186,9 @@ async function entrar() {
   if (!S.enc && PERFIL_CUENTA) { S.cuentaNueva = true; return intro ? pantallaIntro(bienvenidaCuenta) : bienvenidaCuenta(); }
   if (!S.enc) return intro ? pantallaIntro(pantallaCrear) : pantallaCrear();
   try {
-    const r = await claveRecordada(S.enc.texto, await IDB.get(IDB_CLAVE));
+    // 0.6d: al volver de la cartera de prueba, sin PIN puesto se pide la contraseña (con PIN, ya se pide el PIN)
+    const trasPrueba = LS.get('inv-demo-salida', false) && !(cfgBloqueo() && cfgBloqueo().pin);
+    const r = trasPrueba ? null : await claveRecordada(S.enc.texto, await IDB.get(IDB_CLAVE));
     if (r) {
       r.cartera = await descifrar(S.enc.texto, r.key);
       if (r.adoptada) { await recifrarLocales(r.kek, r.key); fijarSesion(r); await recordarClave(); } else fijarSesion(r);

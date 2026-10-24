@@ -14,6 +14,7 @@ const EJEMPLO_CARTERA = {
 function normalizarCartera(j) {
   if (Array.isArray(j)) j = { posiciones: j };
   if (!j || !Array.isArray(j.posiciones)) throw new Error('Falta la lista "posiciones".');
+  delete j.demo;  // una copia sacada de la cartera de prueba no puede quedarse marcada (no se podría guardar nunca)
   for (const i of j.inst_propios || []) if (i && i.id && !S.inst[i.id]) { S.inst[i.id] = i; S.instOrden.push(i.id); }
   const n = (v) => { if (v == null || v === '') return null; const x = typeof v === 'number' ? v : numero(v); return isFinite(x) ? x : null; };
   const fechaOk = (f) => (/^\d{4}-\d{2}-\d{2}$/.test(String(f || '')) ? String(f) : /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(f || '')) ? String(f).split('/').reverse().map((x) => x.padStart(2, '0')).join('-') : null);
@@ -63,6 +64,7 @@ function sumarInstPropios() {
   }
 }
 async function guardarLocal(interactivo) {
+  if (S.demo) return true;  // 0.6d: con la cartera de prueba no se guarda nada
   S.cartera.inst_propios = instPropios();
   S.cartera.actualizado = new Date().toISOString();
   const texto = await cifrar(S.cartera);
@@ -87,6 +89,7 @@ async function guardarLocal(interactivo) {
   return true;
 }
 async function guardarCartera(mensaje) {
+  if (S.demo) { toast(L('Es la cartera de prueba: se ve el cambio, pero no se guarda.', "It's the demo portfolio: you see the change, but it isn't saved.")); return true; }
   if (PERFIL_LOCAL) {
     await guardarLocal(true); const ok = !PERFIL_CUENTA || !LS.get('inv-pend-cuenta');
     // con la subida parada ya hay un aviso que explica por qué: no se tapa

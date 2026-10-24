@@ -51,7 +51,7 @@ async function avisarFalloIA(e, donde = 'chat', modelo = null) {
   try {
     // «red» es la conexión de quien pregunta (y su aviso llegaría tarde, quizá ya en otro día); lo previsto (la
     // revisión automática que se deja para mañana sin cupo) no es un fallo
-    if (!e || e.name === 'AbortError' || e.previsto || !PERFIL_CUENTA || !FB.user || !FB.fs || CFG.dev) return;
+    if (!e || S.demo || e.name === 'AbortError' || e.previsto || !PERFIL_CUENTA || !FB.user || !FB.fs || CFG.dev) return;
     const tipo = tipoFalloIA(e), v = String(VERSION);
     if (tipo === 'red' || !/^[0-9]{1,2}([.][0-9]{1,2}){1,2}[a-z]?$/.test(v)) return;
     const dia = new Date().toISOString().slice(0, 10), c = LS.get('inv-fallos-ia', {}) || {};

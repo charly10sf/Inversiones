@@ -364,6 +364,7 @@ window.permisoAvisos = (ok) => {
   if (!ok) toast('Sin el permiso de notificaciones no te llegará ningún aviso. Puedes darlo en Ajustes de Android > Aplicaciones > GrowFolio.', 6000);
 };
 async function avisoSistema(tipo, titulo, cuerpo, hash = '#cartera', clave = '', forzar = false) {
+  if (S.demo) return;  // 0.6d: la cartera de prueba no manda avisos
   const c = avisosCfg();
   if (!forzar && (!c.on || (tipo !== 'prueba' && c[{ pregunta: 'preg' }[tipo] || tipo] === false))) return;
   const h = new Date().getHours();
@@ -476,7 +477,7 @@ function resumenDelDia(seguir = () => {}, forzar = false) {
 let widgetT = 0, widgetFirma = '';
 function enviarWidget(forzar) {
   const app = window.InversionesApp;
-  if (!app || !S.cartera || !S.M) return;
+  if (!app || !S.cartera || !S.M || S.demo) return;
   if (!forzar && Date.now() - widgetT < 60000) return;
   const M = S.M;
   let toca = '', cuando = '';
