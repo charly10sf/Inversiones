@@ -51,6 +51,7 @@ MAX_IDEAS = 0               # las ideas ya no van en el informe: salen del escan
 LOTE_YAHOO = 45             # empresas por pasada con noticias de Yahoo Finance
 LOTE_GOOGLE = 20            # y con Google Noticias en español
 LOTE_LECTURA = 50           # empresas que lee Gemini en cada pasada (0.7: 50, porque ahora clasifica cada titular)
+LOTE_MIN_PARTIR = 3         # si se atasca, se parte el lote hasta grupos de este tamaño
 INICIO_FICHAS = "2026-10-23T16:20"  # desde aquí, cada lectura rellena la ficha de la empresa (0.7)
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
@@ -176,6 +177,7 @@ def gemini(cuerpo, clave, reserva=True, modelos=None):
     propio cupo gratuito. Si un modelo no acepta el nivel de razonamiento, lo quita. `modelos` cambia
     la lista entera (el primero y sus reservas)."""
     que = inspect.stack()[1].function
+    que = {"leer_trozo": "leer_lote"}.get(que, que)  # una pasada de lectura, aunque se parta en trozos
     orden = list(modelos) if modelos else [MODELO] + ([m for m in RESERVA if m != MODELO] if reserva else [])
     for modelo in orden:
         try:
@@ -592,6 +594,8 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
         sin_ficha = fichas is not None and x["s"] not in fichas.get("e", {}) and (antes.get("d") or "") < INICIO_FICHAS
         if antes.get("h") == h and not sin_ficha:
             continue
+        if fichas is not None and (fichas.get("sin") or {}).get(x["s"]) == h:
+            continue
         fav, con = P.contraste_idea(x, medianas)
         pend.append((fav - 0.9 * con + min(x.get("pot") or 0, 50) / 50 + (20 if x["s"] in tuyas else 0), x, h))
     pend.sort(key=lambda t: -t[0])
@@ -599,43 +603,70 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
     if not lote:
         print("escaneo: nada nuevo que leer")
         return 0
-    fuentes, bloques = [], []
-    for _, x, _ in lote:
-        lineas = []
-        for n in (cache[x["s"]]["n"] or [])[:6]:
-            fuentes.append(n)
-            lineas.append(f"[{len(fuentes)}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}" + (f" — {n['r'][:300]}" if n.get("r") else ""))
-        bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n" + "\n".join(lineas))
-    hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
-    cuerpo = {"systemInstruction": {"parts": [{"text": LEER}]}, "contents": [{"role": "user", "parts": [{"text": f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques)}]}],
-              "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
-    texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
-    res = extraer_json(texto)
-    if res is None:
-        res = extraer_por_clave(texto, [x["s"] for _, x, _ in lote])
-        print(f"escaneo: la respuesta no era un JSON entero; se aprovechan {len(res)} de {len(lote)} empresas")
-    n = 0
-    for _, x, h in lote:
-        r = res.get(x["s"])
-        if not isinstance(r, dict):
-            continue
-        fs = []
-        for k in r.get("fuentes") or []:
-            try:
-                f = fuentes[int(k) - 1]
-            except (ValueError, IndexError, TypeError):
+    sin = fichas.setdefault("sin", {}) if fichas is not None else {}
+    t0 = time.time()
+
+    def leer_trozo(trozo):
+        """Una llamada a Flash-Lite con estas empresas; apunta lo leído y devuelve las que no han venido."""
+        fuentes, bloques = [], []
+        for _, x, _ in trozo:
+            lineas = []
+            for n in (cache[x["s"]]["n"] or [])[:6]:
+                fuentes.append(n)
+                lineas.append(f"[{len(fuentes)}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}" + (f" — {n['r'][:300]}" if n.get("r") else ""))
+            bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n" + "\n".join(lineas))
+        hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
+        cuerpo = {"systemInstruction": {"parts": [{"text": LEER}]}, "contents": [{"role": "user", "parts": [{"text": f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques)}]}],
+                  "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
+        texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
+        res = extraer_json(texto)
+        if res is None:
+            res = extraer_por_clave(texto, [x["s"] for _, x, _ in trozo])
+            print(f"escaneo: la respuesta no era un JSON entero; se aprovechan {len(res)} de {len(trozo)} empresas")
+        n = 0
+        for _, x, h in trozo:
+            r = res.get(x["s"])
+            if not isinstance(r, dict):
                 continue
-            if f.get("u") and len(fs) < 2:
-                fs.append({kk: f.get(kk) for kk in ("t", "u", "f", "d")})
-        try:
-            rel = max(0, min(3, int(r.get("rel") or 0)))
-        except (TypeError, ValueError):
-            rel = 0
-        lectura[x["s"]] = {"d": ahora(), "h": h, "imp": r.get("imp") if r.get("imp") in ("positivo", "negativo", "neutral", "mixto") else "neutral",
-                           "rel": rel, "txt": (r.get("txt") or "")[:300], "cat": (r.get("cat") or "")[:160], "fuentes": fs}
-        if fichas is not None:
-            F.aplicar_lectura(fichas, x["s"], r, fuentes, lectura[x["s"]]["d"], x.get("n"))
-        n += 1
+            fs = []
+            for k in r.get("fuentes") or []:
+                try:
+                    f = fuentes[int(k) - 1]
+                except (ValueError, IndexError, TypeError):
+                    continue
+                if f.get("u") and len(fs) < 2:
+                    fs.append({kk: f.get(kk) for kk in ("t", "u", "f", "d")})
+            try:
+                rel = max(0, min(3, int(r.get("rel") or 0)))
+            except (TypeError, ValueError):
+                rel = 0
+            lectura[x["s"]] = {"d": ahora(), "h": h, "imp": r.get("imp") if r.get("imp") in ("positivo", "negativo", "neutral", "mixto") else "neutral",
+                               "rel": rel, "txt": (r.get("txt") or "")[:300], "cat": (r.get("cat") or "")[:160], "fuentes": fs}
+            if fichas is not None:
+                F.aplicar_lectura(fichas, x["s"], r, fuentes, lectura[x["s"]]["d"], x.get("n"))
+            n += 1
+        return n, [t for t in trozo if not isinstance(res.get(t[1]["s"]), dict)]
+
+    # Si Gemini se atasca con algo del lote (el 24 oct, 377 tokens para 50 empresas, dos pasadas seguidas con el
+    # mismo lote), se parte en dos lo que no ha venido, hasta grupos de 3 o 4. Lo que tampoco sale así se aparta
+    # (fichas.json → sin, con la huella de sus noticias) hasta que tenga noticias nuevas: si no, frenaría siempre.
+    n, faltan = leer_trozo(lote)
+    nivel = 0
+    while faltan and len(faltan) > LOTE_MIN_PARTIR and nivel < 4 and time.time() - t0 < 180 and (n or nivel == 0):
+        mitad = (len(faltan) + 1) // 2
+        nivel += 1
+        print(f"escaneo: {len(faltan)} empresas sin leer; otra vez en dos mitades")
+        quedan = []
+        for parte in (faltan[:mitad], faltan[mitad:]):
+            m, f2 = leer_trozo(parte)
+            n += m
+            quedan += f2
+        faltan = quedan
+    # solo si se ha llegado a un grupo pequeño (si se ha parado por tiempo, se sigue en la siguiente pasada)
+    if faltan and n and nivel and len(faltan) <= 2 * LOTE_MIN_PARTIR:
+        for _, x, h in faltan:
+            sin[x["s"]] = h
+        print(f"escaneo: {len(faltan)} empresas apartadas hasta que tengan noticias nuevas: {', '.join(x['s'] for _, x, _ in faltan)}")
     print(f"escaneo: Gemini ha leído la prensa de {n} empresas")
     return n
 

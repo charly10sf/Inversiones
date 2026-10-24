@@ -5,6 +5,7 @@ Uso: python3 -m unittest discover -s tests/scripts
 """
 import datetime as dt
 import json
+import re
 import sys
 import tempfile
 import unittest
@@ -146,6 +147,47 @@ class LecturaConFichas(unittest.TestCase):
         self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 2)
         self.assertEqual(sorted(lectura), ["REP.MC", "SAN.MC"])
         self.assertEqual(sorted(fichas["e"]), ["REP.MC", "SAN.MC"])
+
+    def test_un_lote_atascado_se_parte_y_lo_que_no_sale_se_aparta(self):
+        # Gemini no devuelve nada si en el lote va TOX.MC: se parte hasta un grupo pequeño, lo demás se lee y el grupo
+        # de TOX.MC se aparta hasta que tenga noticias nuevas
+        llamadas = []
+        def gemini(cuerpo, clave, modelo):
+            texto = cuerpo["contents"][0]["parts"][0]["text"]
+            syms = re.findall(r"^## (\S+)", texto, flags=re.M)
+            llamadas.append(syms)
+            res = {} if "TOX.MC" in syms else {s: dict(LEIDO, tit={"1": ["negocio", "+", 2]}, fa={"negocio": LEIDO["fa"]["negocio"]}) for s in syms}
+            return {"candidates": [{"content": {"parts": [{"text": json.dumps(res)}]}}], "usageMetadata": {}}
+        I.gemini_modelo = gemini
+        syms = [f"E{i:02d}.MC" for i in range(15)] + ["TOX.MC"] + [f"E{i:02d}.MC" for i in range(15, 30)]
+        cache = {s: {"n": [dict(FUENTES[0], t=f"{s} gana más")]} for s in syms}
+        valores = [{"s": s, "n": s, "p": 8.1, "m": "EUR", "pot": 12, "sector": "Financiero"} for s in syms]
+        lectura, fichas = {}, F.nuevas()
+        n = I.leer_lote(lectura, cache, valores, {}, "clave", fichas)
+        self.assertGreaterEqual(n, len(syms) - 2 * I.LOTE_MIN_PARTIR)
+        self.assertNotIn("TOX.MC", lectura)
+        self.assertIn("TOX.MC", fichas["sin"])
+        self.assertLessEqual(len(fichas["sin"]), 2 * I.LOTE_MIN_PARTIR)
+        self.assertLessEqual(len(llamadas), 9)
+        # la siguiente pasada no las vuelve a pedir; con noticias nuevas, sí
+        llamadas.clear()
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 0)
+        self.assertEqual(llamadas, [])
+        cache["E03.MC" if "E03.MC" in fichas["sin"] else next(iter(fichas["sin"]))]["n"].append(dict(FUENTES[1]))
+        I.leer_lote(lectura, cache, valores, {}, "clave", fichas)
+        self.assertEqual(len(llamadas), 1)
+        # y al podar, solo las que siguen en el radar
+        F.podar(fichas, {"TOX.MC"})
+        self.assertEqual(list(fichas["sin"]), ["TOX.MC"])
+
+    def test_si_gemini_no_lee_nada_no_se_aparta_nada(self):
+        I.gemini_modelo = lambda cuerpo, clave, modelo: {"candidates": [{"content": {"parts": [{"text": "{}"}]}}], "usageMetadata": {}}
+        syms = [f"E{i:02d}.MC" for i in range(20)]
+        cache = {s: {"n": [dict(FUENTES[0], t=f"{s} gana más")]} for s in syms}
+        valores = [{"s": s, "n": s, "p": 8.1, "m": "EUR", "pot": 12, "sector": "Financiero"} for s in syms]
+        lectura, fichas = {}, F.nuevas()
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 0)
+        self.assertEqual(fichas.get("sin") or {}, {})
 
     def test_las_noticias_de_las_carteras_entran_en_la_lectura(self):
         cache = {"REP.MC": {"n": [{"t": "Repsol, en el radar", "d": "2026-10-20T08:00:00+00:00"}]}}

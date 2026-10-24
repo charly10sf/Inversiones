@@ -164,4 +164,7 @@ def podar(fichas, validos, ahora_dt=None):
         if not x["fa"] and not x["tit"]:
             del e[s]
     fichas["temas"] = [t for t in fichas.get("temas") or [] if (_fecha(t.get("d")) or ahora_dt) >= lim_tema]
+    # las apartadas porque Gemini no las leía (informe.leer_lote), solo mientras sigan en el radar o en las carteras
+    if "sin" in fichas:
+        fichas["sin"] = {k: v for k, v in (fichas.get("sin") or {}).items() if validos is None or k in validos}
     return fichas
