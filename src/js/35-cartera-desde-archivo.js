@@ -14,6 +14,7 @@ const EJEMPLO_CARTERA = {
 function normalizarCartera(j) {
   if (Array.isArray(j)) j = { posiciones: j };
   if (!j || !Array.isArray(j.posiciones)) throw new Error('Falta la lista "posiciones".');
+  delete j.demo;  // una copia sacada de la cartera de prueba no puede quedarse marcada (no se podría guardar nunca)
   for (const i of j.inst_propios || []) if (i && i.id && !S.inst[i.id]) { S.inst[i.id] = i; S.instOrden.push(i.id); }
   const n = (v) => { if (v == null || v === '') return null; const x = typeof v === 'number' ? v : numero(v); return isFinite(x) ? x : null; };
   const fechaOk = (f) => (/^\d{4}-\d{2}-\d{2}$/.test(String(f || '')) ? String(f) : /^\d{1,2}\/\d{1,2}\/\d{4}$/.test(String(f || '')) ? String(f).split('/').reverse().map((x) => x.padStart(2, '0')).join('-') : null);

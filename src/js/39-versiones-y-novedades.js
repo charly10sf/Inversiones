@@ -6,7 +6,7 @@
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
   { v: '0.6d', f: '2026-10-24', h: 'HORA', t: 'Una cartera de prueba para enseñar la app', arreglos: [
-    'En Ajustes, «Enseñar la app con una cartera de prueba»: GrowFolio pone una cartera inventada (fondos, acciones y cripto a precios de hoy) para enseñársela a alguien sin que vea lo tuyo. Nada se guarda y tu cartera no se toca; al salir (o al recargar) vuelve, y si tienes PIN te lo pide. Lo pidió Carlos.',
+    'En Ajustes, «Enseñar la app con una cartera de prueba»: GrowFolio se vuelve a abrir con una cartera inventada (fondos, acciones y cripto a precios de hoy) para enseñársela a alguien sin que vea lo tuyo. Tu cartera ni se abre y nada de lo que se haga se guarda; GrowIA contesta con tu clave. Al salir te pide tu PIN o tu contraseña. Lo pidió Carlos.',
   ] },
   { v: '0.6c', f: '2026-10-23', h: '16:30', t: 'GrowIA aguanta los cortes de conexión', arreglos: [
     'Si la conexión con Google se corta a mitad de una pregunta, o Google tarda más de 90 segundos en empezar a contestar, GrowIA lo intenta otra vez (hasta dos veces) y después con otro modelo, en vez de quedarse en «No hay conexión con Google».',

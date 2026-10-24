@@ -213,6 +213,7 @@ function cambiarNombre() {
   };
 }
 function abrirAjustes() {
+  if (S.demo) return ajustesDemo();
   const tok = GH.token();
   const h = hoja('Ajustes', `
     <div class="aj-cab"><img src="favicon.svg" alt=""><div><img class="aj-nom" src="growfolio-nombre.svg" alt="GrowFolio"><small>Versión ${VERSION} alfa, ${PERFIL_CUENTA ? 'con la cartera guardada en tu cuenta' : PERFIL_LOCAL ? 'con la cartera guardada en este dispositivo' : 'con la cartera guardada en GitHub'}</small></div><button class="btn peq" id="aNov" data-cerrar>${ICONOS.chispa}Novedades</button></div>
@@ -228,7 +229,7 @@ function abrirAjustes() {
       <div class="seccion-ed aj-idioma"><h3>${ICONOS.mercados}Idioma</h3>${selectorIdioma()}<small>${IDIOMA === 'en' ? 'English is still in progress: some texts are in Spanish.' : 'El inglés está en pruebas: parte de los textos siguen en español.'}</small></div>
       <button class="aj-fila" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aOrdenar" data-cerrar>${ICONOS.cartera}<span><b>Inicio a tu gusto</b><small>Ordena, quita y añade lo que sale en Inicio.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <button class="aj-fila" id="aDemo" data-cerrar>${ICONOS.ojo}<span><b>${S.demo ? L('Salir de la cartera de prueba', 'Exit the demo portfolio') : L('Enseñar la app con una cartera de prueba', 'Show the app with a demo portfolio')}</b><small>${S.demo ? L('Vuelve tu cartera de siempre (con tu PIN, si lo tienes).', 'Your own portfolio comes back (with your PIN, if you have one).') : L('Para enseñársela a alguien sin que vea lo tuyo: una cartera inventada. Lo tuyo no se toca ni se ve, y al salir vuelve.', 'To show it to someone without them seeing yours: a made-up portfolio. Yours is not touched or shown, and it comes back when you exit.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aDemo" data-cerrar>${ICONOS.ojo}<span><b>${L('Enseñar la app con una cartera de prueba', 'Show the app with a demo portfolio')}</b><small>${L('Para enseñársela a alguien sin que vea lo tuyo: una cartera inventada. La tuya ni se abre; al salir te pide tu PIN o tu contraseña.', "To show it to someone without them seeing yours: a made-up portfolio. Yours isn't even opened; when you exit it asks for your PIN or password.")}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aIntro" data-cerrar><img src="favicon.svg" alt=""><span><b>Ver la presentación</b><small>Qué es GrowFolio y qué puedes hacer con él.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
     </div>
     ${PERFIL_LOCAL && !PERFIL_CUENTA ? `<h2 class="aj-grupo">Tu cartera</h2><div class="aj-caja"><div class="seccion-ed"><h3>${ICONOS.cartera}Guardada en este dispositivo</h3>
@@ -283,7 +284,7 @@ function abrirAjustes() {
   $('#aNov', h.el).onclick = () => setTimeout(() => mostrarNovedades(null), 0);
   for (const b of $$('#aTour, #aTour2', h.el)) b.onclick = () => setTimeout(() => iniciarTour(0), 0);
   $('#aIntro', h.el).onclick = () => setTimeout(() => pantallaIntro(() => { montar(); pintar(); }), 0);
-  $('#aDemo', h.el).onclick = () => setTimeout(() => (S.demo ? salirDemo() : entrarDemo()), 0);
+  $('#aDemo', h.el).onclick = () => setTimeout(() => entrarDemo(), 0);
   $('#aResumen', h.el).onclick = () => setTimeout(() => resumenDelDia(() => {}, true), 0);
   $('#aResumenAuto', h.el).onchange = (e) => LS.set('inv-resumen-off', !e.target.checked);
   enlazarAjAvisos($('#aAvisos', h.el));

@@ -328,6 +328,7 @@ function mejoresIdeas(M, excluir = {}) {
 const MEM_IDEAS = 'inv-ideas-propuestas';
 function memoriaIdeas() { try { return JSON.parse(localStorage.getItem(MEM_IDEAS) || '{}') || {}; } catch (e) { return {}; } }
 function apuntarIdeas(syms) {
+  if (S.demo) return;  // 0.6d: las ideas de la cartera de prueba no cuentan para las tuyas
   const m = memoriaIdeas(), hoy = hoyIso();
   for (const s of syms) m[s] = { d: (m[s] && m[s].d) || hoy, u: hoy };
   for (const k of Object.keys(m)) if (diasEntre(m[k].u, hoy) > 30) delete m[k];

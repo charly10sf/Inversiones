@@ -276,7 +276,7 @@ async function clicAsesor(e) {
     t.disabled = true; t.textContent = 'Probando…'; err.textContent = '';
     try {
       await probarClave(c);
-      AS.clave = c; LS.set(LS_CLAVE[pv], await cifrarLocal(c));
+      AS.clave = c; if (!S.demo) LS.set(LS_CLAVE[pv], await cifrarLocal(c));
       if ($('#asSync', fondo).checked) { S.cartera.asesor = { ...(S.cartera.asesor || {}), [CAMPO_CLAVE[pv]]: c }; await guardarCartera('Asesor: clave'); }
       AS.vista = 'chat'; toast('Clave guardada: ya puedes preguntar'); pintarAsesor(); revisarAnalisisIA();
     } catch (x) { err.textContent = /Failed to fetch|NetworkError|Load failed/i.test(x.message) ? `No se pudo conectar con ${PROV[pv].n}.` : x.message; t.disabled = false; t.textContent = 'Guardar y probar'; }

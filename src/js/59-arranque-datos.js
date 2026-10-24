@@ -16,6 +16,7 @@ async function recargarPrecios() {
   revisarWeb();
 }
 function arrancar() {
+  LS.del('inv-demo-salida');  // ya has vuelto a abrir tu cartera (con tu PIN o tu contraseña)
   if (!S.pendRevisado && LS.get('inv-pend-enc')) { S.pendRevisado = true; aplicarPendiente().finally(arrancar); return; }
   sumarInstPropios();
   setTimeout(() => cargarHistCatalogo().then((n) => { if (n) pintar(); }), 50);
