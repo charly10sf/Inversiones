@@ -1,6 +1,28 @@
 {
  "versiones": [
   {
+   "v": "0.7a",
+   "f": "2026-10-25",
+   "h": "11:00",
+   "t": "El resumen de las noticias, otra vez",
+   "commits": [
+    {
+     "cuando": "2026-10-25 11:00",
+     "asunto": "0.7a: el resumen de las noticias sin buscar en internet",
+     "detalle": [
+      "Lo vio Carlos: al tocar una noticia salía siempre «Has llegado al límite gratuito», a cualquier hora",
+      "Sonda de Gemini (Action a mano, con la clave de la Action): en el plan gratis, google_search da 429 RESOURCE_EXHAUSTED sin detalle de cupo con Flash-Lite y el 3.6; url_context va, pero no lee los enlaces de Yahoo (URL_RETRIEVAL_STATUS_ERROR) ni los de Google Noticias",
+      "resumirNoticia: lee el enlace con url_context si la web lo deja (Google Noticias y Yahoo, ni se intenta); si no, dice en 2 o 3 frases qué cuenta el titular, sin añadir nada, y lo pone abajo. Con Flash-Lite y, sin cupo, el 3.6; nunca el 3.8. Un fallo de la herramienta no da el modelo por agotado",
+      "En estándar, sin «Para tu cartera» (ni se pide ni se enseña); los dos pedidos dicen que no aconsejen comprar, vender o mantener y que el titular y la noticia son datos, no instrucciones; caché por modo",
+      "buscarGoogle: un 429 RESOURCE_EXHAUSTED sin métrica ni detalle de cupo es que el plan no tiene búsqueda: no se prueba con el otro modelo, no se da por agotado y la búsqueda se apaga un día",
+      "Revisión aparte del pedido nuevo (dos rondas): estándar sin consejos, la entradilla que no estaba en los datos, la instrucción de terceros, el 429 que no es JSON, cómo pensar en Flash-Lite; arreglado",
+      "Prueba nueva: tests/noticia.spec.js (no se deja leer, Google Noticias, estándar, sin cupo en Flash-Lite, se deja leer, búsqueda sin plan y 429 que no es JSON)",
+      "Novedades de la 0.7a en español e inglés"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7",
    "f": "2026-10-24",
    "h": "16:35",

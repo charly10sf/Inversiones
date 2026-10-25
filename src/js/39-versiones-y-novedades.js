@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7a', f: '2026-10-25', h: '11:00', t: 'El resumen de las noticias, otra vez', arreglos: [
+    'Al tocar una noticia, GrowIA ya no dice «has llegado al límite»: el plan gratis de Google no deja buscar en internet y el resumen la buscaba. Ahora lee la noticia si su web lo deja y, si no, te la explica con el titular y la entradilla (y lo pone abajo). En las preguntas, GrowIA deja de intentar buscar en internet al primer fallo y tira de las fichas y los titulares, sin gastar peticiones. Lo vio Carlos.',
+  ] },
   { v: '0.7', f: '2026-10-24', h: '16:35', t: 'GrowIA lee todo lo que pesa en cada empresa', cosas: [
     { d: 'fichas', ir: { v: 'mercados', sel: '#hNotM' }, t: 'Lo que pesa en cada acción', x: 'GrowIA lee la prensa de cada empresa y la ordena en seis factores: su negocio, su sector, la economía, la política y las leyes, la sociedad y el mercado. De cada uno, si la prensa lo lee como bueno o malo para la empresa, cuánto importa y a qué plazo, y además los temas de la semana que le tocan (aranceles, impuestos, huelgas…). Lo tienes en la ficha de cada acción, en Noticias.', g: 'Cada titular lleva su marca: de qué va, si la prensa lo lee como bueno o malo para la empresa y cuánto importa. Y en la ficha de cada acción, en Noticias, «Lo que pesa ahora», factor por factor.' },
     { d: 'marcas', t: 'Las noticias, con lo importante arriba', x: 'Cada titular dice de qué va y si la noticia es buena o mala para la empresa. Lo importante sale arriba, el relleno abajo y apagado, y la misma noticia contada por cinco periódicos sale una vez, con cuántos más la cuentan. Sin fotos: no dicen nada para invertir, pesan y le dirían a cada periódico que entras.' },

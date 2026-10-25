@@ -505,6 +505,10 @@ function errorGoogle(estado, j) {
   if (ri && ri.retryDelay) e.espera = parseFloat(ri.retryDelay);
   // el cupo de por día (no el de por minuto): no merece la pena esperar
   e.diario = estado === 429 && (/PerDay|per.?day|daily/i.test(m + det) || e.espera > 60);
+  // 0.7a: la búsqueda en Google con el plan gratis da siempre un 429 RESOURCE_EXHAUSTED sin el detalle del cupo
+  // (comprobado el 25 oct). El cupo de verdad dice qué métrica y trae su detalle; un 429 que no es JSON, no cuenta
+  e.sinDetalle = estado === 429 && e0.status === 'RESOURCE_EXHAUSTED' && !/Quota exceeded for metric|limit:/i.test(m)
+    && !(e0.details || []).some((d) => /QuotaFailure|RetryInfo/.test(d['@type'] || ''));
   return e;
 }
 /* 0.6c: si Google no empieza a contestar en 90 s, la petición se corta y cuenta como un corte de conexión (se reintenta).
@@ -576,16 +580,20 @@ async function buscarGoogle(consulta, turno, signal) {
     try {
       r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
     } catch (e) { if (e.name === 'AbortError') throw e; return { error: 'No se pudo conectar para buscar.' }; }
-    if (r.ok || k === modelos.length - 1) break;
-    // no ha podido el de más cupo: se apunta si es que se le ha acabado y se prueba con el de la conversación
+    if (r.ok) break;
+    // no ha podido el de más cupo: se apunta si es que se le ha acabado y se prueba con el de la conversación. Si es
+    // que el plan no tiene búsqueda (429 sin detalle del cupo), no: con el otro modelo pasaría lo mismo
     let j0 = null; try { j0 = await r.json(); } catch (e) {}
-    if (errorGoogle(r.status, j0).diario) marcarAgotado(modelo);
+    const e0 = errorGoogle(r.status, j0); r.err = e0;
+    if (e0.sinDetalle || k === modelos.length - 1) break;
+    if (e0.diario) marcarAgotado(modelo);
   }
   if (!r.ok) {
-    let j = null; try { j = await r.json(); } catch (e) {}
-    const e = errorGoogle(r.status, j);
-    if (e.diario) marcarAgotado(modelo);
-    if (r.status !== 429 && r.status < 500) { guardarCfgAsesor({ web_falla: Date.now() }); AS.sinWeb = true; turno.partes.push({ tipo: 'paso', web: true, txt: 'Tu plan de Google no incluye la búsqueda en internet: sigo con los titulares de GrowFolio' }); }
+    const e = r.err || errorGoogle(r.status, null);
+    if (e.diario && !e.sinDetalle) marcarAgotado(modelo);
+    // sin búsqueda en el plan: se vuelve a probar en un día (web_falla dura 7; por si fuera un 429 de saturación)
+    if (e.sinDetalle || (r.status !== 429 && r.status < 500)) { guardarCfgAsesor({ web_falla: e.sinDetalle ? Date.now() - 6 * 864e5 : Date.now() }); AS.sinWeb = true; turno.partes.push({ tipo: 'paso', web: true, txt: 'Tu plan de Google no incluye la búsqueda en internet: sigo con los titulares de GrowFolio' }); }
+    if (e.sinDetalle) return { error: 'La búsqueda en internet no entra en el plan gratuito de Google. Contesta con las fichas y los titulares que tienes en los datos.' };
     return { error: `No se pudo buscar en internet (${e.message}). Contrasta con los titulares que tienes en los datos.` };
   }
   const j = await r.json(), c = (j.candidates || [])[0] || {};
