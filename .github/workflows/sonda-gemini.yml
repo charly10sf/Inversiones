@@ -4,6 +4,11 @@ name: Sonda de Gemini
 
 on:
   workflow_dispatch:
+    inputs:
+      urls:
+        description: "Enlaces de noticias para probar el resumen (separados por espacios)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -16,6 +21,7 @@ jobs:
       - name: Probar
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          URLS: ${{ inputs.urls }}
         run: |
           python3 - <<'PY'
           import json, os, re, urllib.request, urllib.error
@@ -23,9 +29,13 @@ jobs:
           pruebas = [("gemini-3.5-flash-lite", None), ("gemini-3.5-flash-lite", [{"google_search": {}}]),
                      ("gemini-3.5-flash-lite", [{"url_context": {}}]), ("gemini-3.6-flash", [{"google_search": {}}]),
                      ("gemini-3.6-flash", [{"url_context": {}}])]
-          for modelo, tools in pruebas:
-              cuerpo = {"contents": [{"role": "user", "parts": [{"text": "Resume en una frase la noticia más reciente sobre Inditex. Si usas un enlace, este: https://www.inditex.com"}]}],
-                        "generationConfig": {"maxOutputTokens": 200}}
+          if os.environ.get("URLS", "").strip():
+              pruebas = [("gemini-3.5-flash-lite", [{"url_context": {}}], u) for u in os.environ["URLS"].split()]
+          else:
+              pruebas = [p + (None,) for p in pruebas]
+          for modelo, tools, url in pruebas:
+              texto = f"Lee esta noticia y resúmela en dos frases en español. Enlace: {url}. Si no puedes abrir el enlace, contesta solo NO_ENCONTRADA." if url else "Resume en una frase la noticia más reciente sobre Inditex. Si usas un enlace, este: https://www.inditex.com"
+              cuerpo = {"contents": [{"role": "user", "parts": [{"text": texto}]}], "generationConfig": {"maxOutputTokens": 400}}
               if tools: cuerpo["tools"] = tools
               req = urllib.request.Request(f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent",
                                            data=json.dumps(cuerpo).encode(), headers={"content-type": "application/json", "x-goog-api-key": clave})
@@ -35,7 +45,9 @@ jobs:
                       j = json.load(r)
                   c = (j.get("candidates") or [{}])[0]
                   g = c.get("groundingMetadata") or {}
-                  print(f"::notice title={nombre}::200 · búsqueda {bool(g.get('groundingChunks') or g.get('webSearchQueries'))} · url {bool(c.get('urlContextMetadata'))}")
+                  um = [m.get("urlRetrievalStatus") or m.get("url_retrieval_status") for m in (c.get("urlContextMetadata") or {}).get("urlMetadata", [])]
+                  resp = re.sub(r"\s+", " ", "".join(p.get("text", "") for p in (c.get("content") or {}).get("parts", [])))[:220]
+                  print(f"::notice title={nombre} {'google' if url and 'news.google' in url else 'directo' if url else ''}::200 · búsqueda {bool(g.get('groundingChunks') or g.get('webSearchQueries'))} · url {um} · {resp}")
               except urllib.error.HTTPError as e:
                   txt = e.read().decode(errors="replace")
                   try:
