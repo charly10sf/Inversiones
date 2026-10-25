@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7b', f: '2026-10-25', h: '11:50', t: 'Resúmenes sin «Según el titular»', arreglos: [
+    'El resumen de una noticia ya no empieza por «Según el titular»: abajo ya pone que sale del titular. Lo pidió Carlos.',
+  ] },
   { v: '0.7a', f: '2026-10-25', h: '11:00', t: 'El resumen de las noticias, otra vez', arreglos: [
     'Al tocar una noticia, GrowIA ya no dice «has llegado al límite»: el plan gratis de Google no deja buscar en internet y el resumen la buscaba. Ahora lee la noticia si su web lo deja y, si no, te la explica con el titular y la entradilla (y lo pone abajo). En las preguntas, GrowIA deja de intentar buscar en internet al primer fallo y tira de las fichas y los titulares, sin gastar peticiones. Lo vio Carlos.',
   ] },

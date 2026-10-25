@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.7b",
+   "f": "2026-10-25",
+   "h": "11:50",
+   "t": "Resúmenes sin «Según el titular»",
+   "commits": [
+    {
+     "cuando": "2026-10-25 11:50",
+     "asunto": "0.7b: resúmenes de noticias sin «Según el titular»",
+     "detalle": [
+      "Lo pidió Carlos: todos los resúmenes empezaban por «Según el titular». El pedido ya no lo pide (abajo ya pone que sale del titular) y, si aun así llega, se quita al pintarlo (solo con la coma detrás, para no comerse «Según el titular de Expansión…»)",
+      "Si el titular dice adónde irá el precio, GrowIA dice que lo dice el medio (para que no parezca suyo)",
+      "Revisión aparte del cambio en el pedido: aprobado con esos dos ajustes",
+      "tests/noticia.spec.js: comprueba que no sale «Según el titular»"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7a",
    "f": "2026-10-25",
    "h": "11:00",
