@@ -35,10 +35,21 @@ function noticiasCartera(soloAnalistas) {
 }
 /* 0.7: cada titular, con su marca de las fichas de GrowIA (factor, positivo o negativo para la empresa según la prensa, cuánto importa); lo importante
    arriba, el relleno abajo y el mismo titular de varios medios, una vez (13b-fichas.js) */
+/* 0.7c: la web del medio, para su logo (la Action la guarda en «w»; si no, la del enlace, si no es de Google Noticias ni
+   de Yahoo, que no son el medio). Lo pidió Carlos: fotos de la prensa, no (no son nuestras; con el Worker, en la 0.8) */
+function webMedio(n) {
+  if (n.w) return String(n.w);
+  try { const h = new URL(n.u).hostname.replace(/^www\./, ''); return /(^|\.)(news\.google\.com|yahoo\.com)$/i.test(h) ? '' : h; } catch (e) { return ''; }
+}
+// en una lista de varias empresas (las de tu cartera), el logo de la empresa; si no, el del medio
+function logoNoticia(n, conActivo) {
+  const i = conActivo && n.id && S.inst[n.id];
+  return i && i.dominio ? logo(i.dominio, i.corto || i.nombre, 'not-logo') : logo(webMedio(n), n.f || '?', 'not-logo');
+}
 function htmlNoticias(lista, conActivo = false, max = 12, desde = 0) {
   if (!lista.length) return '<div class="vacio">No hay noticias recientes.</div>';
   if (!S.fichas) fichasLuego();
-  return `<ul class="noticias">${ordenarNoticias(lista).slice(desde, desde + max).map(({ n, m, mas }) => `<li${m && m[2] === 0 ? ' class="relleno"' : ''}><a class="noti" href="${esc(urlSegura(n.u))}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}">${esc(n.t)}</a><small>${chipMarca(m)}${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}${mas ? `<span class="mas-medios">${L(`y ${mas} ${mas === 1 ? 'medio más' : 'medios más'}`, `and ${mas} more ${mas === 1 ? 'outlet' : 'outlets'}`)}</span>` : ''}</small></li>`).join('')}</ul>`;
+  return `<ul class="noticias">${ordenarNoticias(lista).slice(desde, desde + max).map(({ n, m, mas }) => `<li class="con-logo${m && m[2] === 0 ? ' relleno' : ''}">${logoNoticia(n, conActivo)}<a class="noti" href="${esc(urlSegura(n.u))}" target="_blank" rel="noopener noreferrer" data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}" data-nw="${esc(webMedio(n))}">${esc(n.t)}</a><small>${chipMarca(m)}${conActivo && n.id ? `${esc((S.inst[n.id] && S.inst[n.id].corto) || n.id)}, ` : ''}${esc(n.f || '')}${n.d ? `, ${haceCuanto(n.d)}` : ''}${mas ? `<span class="mas-medios">${L(`y ${mas} ${mas === 1 ? 'medio más' : 'medios más'}`, `and ${mas} more ${mas === 1 ? 'outlet' : 'outlets'}`)}</span>` : ''}</small></li>`).join('')}</ul>`;
 }
 
 /* Las noticias se leen dentro (0.2.4): al tocar una sale una hoja con su resumen, que escribe GrowIA (Gemini, con tu
@@ -51,15 +62,15 @@ const RES_NOT = new Map();
 document.addEventListener('click', (e) => {
   const a = e.target.closest('a.noti'); if (!a || e.ctrlKey || e.metaKey || e.shiftKey || e.altKey || e.button) return;
   e.preventDefault();
-  abrirNoticia({ t: a.textContent.trim(), f: a.dataset.nf || '', d: a.dataset.nd || '', u: a.href });
+  abrirNoticia({ t: a.textContent.trim(), f: a.dataset.nf || '', d: a.dataset.nd || '', u: a.href, w: a.dataset.nw || '' });
 });
 function abrirNoticia(n) {
   const clave = AS.claves && AS.claves.google;
   const h = hoja(L('La noticia', 'The article'), `<div class="not-h">
-    <p class="not-src">${esc(n.f || '')}${n.d ? `${n.f ? ', ' : ''}${haceCuanto(n.d)}` : ''}</p>
+    <p class="not-src">${n.f ? logo(webMedio(n), n.f, 'not-logo') : ''}<span>${esc(n.f || '')}${n.d ? `${n.f ? ', ' : ''}${haceCuanto(n.d)}` : ''}</span></p>
     <h3 class="not-t" data-no-trad>${esc(n.t)}</h3>
     <div class="not-cuerpo" aria-live="polite">${clave ? `<p class="not-lee">${ICONOS.growia}${L('GrowIA está leyendo la noticia…', 'GrowIA is reading the article…')}</p><div class="not-esq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>`
-      : `<p class="nota" style="margin:0">${L('Con GrowIA activada (gratis, con tu clave de Google) aquí te sale el resumen de la noticia entera sin salir de GrowFolio.', 'With GrowIA on (free, with your Google key) you get a summary of the whole article here, without leaving GrowFolio.')}</p>`}</div>
+      : `<p class="nota" style="margin:0">${L('Con GrowIA activada (gratis, con tu clave de Google) aquí te sale de qué va la noticia sin salir de GrowFolio.', 'With GrowIA on (free, with your Google key) you get what the article is about here, without leaving GrowFolio.')}</p>`}</div>
     <div class="fila-btns not-btns">${clave ? '' : `<button type="button" class="btn pri" data-not-ia>${ICONOS.growia}${L('Activar GrowIA', 'Turn on GrowIA')}</button>`}<a class="btn" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${L('Abrir la original', 'Open the original')}</a></div>
   </div>`);
   h.el.classList.add('hoja-not');

@@ -110,7 +110,7 @@ def noticias_yahoo(simbolo, n=NOTICIAS_POR_ACTIVO):
             except Exception:  # noqa: BLE001
                 fecha = None
             desc = re.sub(r"<[^>]+>", "", it.findtext("description") or "").strip()
-            out.append({"t": titulo, "r": desc[:500], "f": (it.findtext("source") or "Yahoo Finance").strip(), "d": fecha, "u": it.findtext("link")})
+            out.append({"t": titulo, "r": desc[:500], "f": (it.findtext("source") or "Yahoo Finance").strip(), "d": fecha, "u": it.findtext("link"), "w": P.web_medio(it)})
             if len(out) >= n:
                 break
         DIAG["yahoo_rss" if out else "yahoo_rss_vacias"] += 1
@@ -133,7 +133,8 @@ def noticias_yahoo(simbolo, n=NOTICIAS_POR_ACTIVO):
             fecha = c.get("pubDate") or c.get("displayTime")
             if not fecha and c.get("providerPublishTime"):
                 fecha = dt.datetime.fromtimestamp(c["providerPublishTime"], dt.timezone.utc).isoformat()
-            out.append({"t": titulo, "r": (c.get("summary") or "")[:500], "f": ((c.get("provider") or {}).get("displayName") or c.get("publisher") or "Yahoo Finance"), "d": fecha, "u": url})
+            web = re.sub(r"^www\.", "", (urllib.parse.urlparse((c.get("provider") or {}).get("url") or "").hostname or "").lower()) or None
+            out.append({"t": titulo, "r": (c.get("summary") or "")[:500], "f": ((c.get("provider") or {}).get("displayName") or c.get("publisher") or "Yahoo Finance"), "d": fecha, "u": url, "w": web})
         if out:
             DIAG["yahoo_api"] += 1
     except Exception as e:  # noqa: BLE001
@@ -513,7 +514,7 @@ def mezclar(cache, sim, nuevas, campo):
         if not k or k in vistos or (f and f < limite) or P.RUIDO.search(x.get("t") or ""):
             continue
         vistos.add(k)
-        out.append({kk: x.get(kk) for kk in ("t", "r", "f", "d", "u") if x.get(kk)})
+        out.append({kk: x.get(kk) for kk in ("t", "r", "f", "d", "u", "w") if x.get(kk)})
     out.sort(key=lambda x: x.get("d") or "", reverse=True)
     e["n"] = out[:MAX_NOTICIAS]
     e[campo] = ahora()
@@ -635,7 +636,7 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
                 except (ValueError, IndexError, TypeError):
                     continue
                 if f.get("u") and len(fs) < 2:
-                    fs.append({kk: f.get(kk) for kk in ("t", "u", "f", "d")})
+                    fs.append({kk: f.get(kk) for kk in ("t", "u", "f", "d", "w") if f.get(kk)})
             try:
                 rel = max(0, min(3, int(r.get("rel") or 0)))
             except (TypeError, ValueError):

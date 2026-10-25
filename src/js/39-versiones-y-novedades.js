@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7c', f: '2026-10-25', h: '12:10', t: 'Las noticias, con el logo de su medio', arreglos: [
+    'Cada noticia lleva el logo de su medio (Expansión, Cinco Días…) y, en las de tu cartera, el de la empresa; también arriba en la hoja de la noticia. Fotos de la prensa, no: no son nuestras (más adelante, con permiso). Lo pidió Carlos.',
+  ] },
   { v: '0.7b', f: '2026-10-25', h: '11:50', t: 'Resúmenes sin «Según el titular»', arreglos: [
     'El resumen de una noticia ya no empieza por «Según el titular»: abajo ya pone que sale del titular. Lo pidió Carlos.',
   ] },

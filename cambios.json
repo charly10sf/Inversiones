@@ -1,6 +1,25 @@
 {
  "versiones": [
   {
+   "v": "0.7c",
+   "f": "2026-10-25",
+   "h": "12:10",
+   "t": "Las noticias, con el logo de su medio",
+   "commits": [
+    {
+     "cuando": "2026-10-25 12:10",
+     "asunto": "0.7c: las noticias, con el logo de su medio",
+     "detalle": [
+      "Lo pidió Carlos («¿no se podrían meter fotos?»). Fotos de la prensa, no: no son nuestras, cargarlas de su web da la IP de cada uno y Google Noticias ni las da; con el Worker y el abogado (0.8 y 0.9)",
+      "Action: cada noticia guarda la web de su medio en «w» (precios.web_medio, del <source url> del RSS de Google Noticias y Yahoo, o del proveedor de yfinance); pasa al caché de noticias y a las fuentes de las fichas",
+      "App: logo del medio a la izquierda de cada noticia (el de la empresa en las listas de tu cartera) y junto al medio en la hoja de la noticia; sin web, las iniciales. En dos columnas, el titular y su línea van juntos",
+      "Sin GrowIA, la hoja dice «de qué va la noticia» y no «la noticia entera» (0.7a)",
+      "Pruebas nuevas: tests/scripts/test_web_medio.py y el logo en tests/noticia.spec.js"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7b",
    "f": "2026-10-25",
    "h": "11:50",

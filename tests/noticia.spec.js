@@ -130,3 +130,33 @@ test('en las preguntas, si el plan no tiene búsqueda, deja de buscar sin dar el
   expect(otro.sinWeb).toBe(false);
   expect(otro.falla).toBe(false);
 });
+
+test('cada noticia lleva el logo de su medio (o de la empresa, en las de tu cartera), también en su hoja', async ({ page, context, errores }) => {
+  await preparada(page, context, (r) => json(r, texto('Inditex abre su tienda más grande.')));
+  // sin internet en las pruebas, el icono no carga y se queda en las iniciales: se mira lo que se pinta
+  const r = await page.evaluate(() => {
+    const id = Object.keys(S.inst).find((k) => S.inst[k].dominio);
+    const d = new Date().toISOString();
+    const lista = [
+      { t: 'Repsol sube con el petróleo', f: 'Expansión', d, u: 'https://news.google.com/rss/articles/A1', w: 'expansion.com' },
+      { t: 'Un titular de Yahoo', f: 'Simply Wall St', d, u: 'https://finance.yahoo.com/news/x.html' },
+      { t: 'Un medio con su web en el enlace', f: 'El Economista', d, u: 'https://www.eleconomista.es/mercados/x.html' },
+    ];
+    const lis = (h) => { const t = document.createElement('template'); t.innerHTML = h; return [...t.content.querySelectorAll('li')].map((li) => ({ img: (li.querySelector('.not-logo img') || {}).getAttribute?.('src') || '', ini: li.querySelector('.not-logo span').textContent })); };
+    document.body.insertAdjacentHTML('beforeend', `<div id="pruebaNot">${htmlNoticias(lista)}</div>`);
+    return { normal: lis(htmlNoticias(lista)), cartera: lis(htmlNoticias([{ ...lista[0], id }], true)), dominio: S.inst[id].dominio };
+  });
+  // el de Google Noticias, con la web que guarda la Action; el de Yahoo, sin web (iniciales); el directo, la de su enlace
+  expect(r.normal[0].img).toMatch(/domain=expansion\.com/);
+  expect(r.normal[1]).toEqual({ img: '', ini: 'SW' });
+  expect(r.normal[2].img).toMatch(/domain=eleconomista\.es/);
+  // en las de tu cartera, el de la empresa
+  expect(r.cartera[0].img).toContain('domain=' + encodeURIComponent(r.dominio));
+  // el titular, a la derecha del logo, sin salirse
+  const li = page.locator('#pruebaNot li').first();
+  const caja = await li.locator('a.noti').boundingBox(), logo = await li.locator('.not-logo').boundingBox();
+  expect(caja.x).toBeGreaterThanOrEqual(logo.x + logo.width);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(page.viewportSize().width + 1);
+  // y en la hoja de la noticia, junto al medio
+  expect(await page.evaluate(() => { abrirNoticia({ t: 'Repsol sube', f: 'Expansión', d: new Date().toISOString(), u: 'https://news.google.com/rss/articles/A1', w: 'expansion.com' }); return document.querySelector('.hoja-not .not-src .not-logo').outerHTML; })).toMatch(/domain=expansion\.com/);
+});

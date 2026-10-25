@@ -583,6 +583,14 @@ def comprimir(s, anios_diario=ANIOS_DIARIO, cifras=6):
 RUIDO = re.compile(r"^Precio de acciones, noticias|Gráfico de acciones|^Cotización de |\(\w+\d{6}[CP]\d+\)|cotización e historial", re.I)
 
 
+def web_medio(it):
+    """0.7c: la web del medio (<source url="https://www.expansion.com">) para su logo en la app: «expansion.com»."""
+    src = it.find("source")
+    url = (src.get("url") if src is not None else None) or ""
+    host = urllib.parse.urlparse(url).hostname or ""
+    return re.sub(r"^www\.", "", host.lower()) or None
+
+
 def noticias(consulta, n=6, debe=None, cuando="30d"):
     url = "https://news.google.com/rss/search?q=" + urllib.parse.quote(consulta + " when:" + cuando) + "&hl=es&gl=ES&ceid=ES:es"
     req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 (inversiones)"})
@@ -603,7 +611,7 @@ def noticias(consulta, n=6, debe=None, cuando="30d"):
             fecha = email.utils.parsedate_to_datetime(it.findtext("pubDate")).astimezone(dt.timezone.utc).replace(microsecond=0).isoformat()
         except Exception:  # noqa: BLE001
             fecha = None
-        out.append({"t": titulo, "f": fuente, "d": fecha, "u": it.findtext("link")})
+        out.append({"t": titulo, "f": fuente, "d": fecha, "u": it.findtext("link"), "w": web_medio(it)})
         if len(out) >= n * 3:
             break
     out.sort(key=lambda x: x["d"] or "", reverse=True)

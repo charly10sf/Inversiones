@@ -113,6 +113,13 @@ img.bandera.ok { box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.08); }
 .marca.up i { color: var(--up); } .marca.down i { color: var(--down); } .marca.warn i { color: var(--warn); } .marca.flat i { color: var(--muted); }
 .marca.fuerte.up { color: var(--up); background: var(--up-bg); } .marca.fuerte.down { color: var(--down); background: var(--down-bg); } .marca.fuerte.warn { color: var(--warn); background: var(--warn-bg); }
 .noticias li.relleno a.noti { color: var(--muted); }
+/* 0.7c: el logo del medio (o de la empresa) a la izquierda de cada noticia */
+.noticias li.con-logo { grid-template-columns: 28px minmax(0, 1fr); column-gap: 11px; align-items: start; align-content: start; }
+.noticias li.con-logo > :not(.logo-a) { grid-column: 2; }
+.noticias li.con-logo > .not-logo { grid-row: 1 / span 2; margin-top: 1px; }
+.not-logo { width: 28px; height: 28px; border-radius: 7px; }
+.not-logo > span { font-size: 10.5px; }
+.noticias li.relleno > .not-logo { opacity: 0.6; }
 .noticias .mas-medios { margin-left: 6px; }
 .noticias .mas-medios::before { content: '· '; }
 /* «Lo que pesa ahora», arriba de las noticias de una empresa */
