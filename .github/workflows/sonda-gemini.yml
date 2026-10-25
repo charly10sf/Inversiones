@@ -1,0 +1,48 @@
+# Sonda a mano: qué deja hacer el plan gratis de Gemini con la clave de la Action (búsqueda en Google y leer enlaces).
+# Saca el estado y el mensaje de error de cada prueba como avisos de la ejecución (sin la clave). Se puede borrar.
+name: Sonda de Gemini
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  sonda:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probar
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: |
+          python3 - <<'PY'
+          import json, os, re, urllib.request, urllib.error
+          clave = os.environ["GEMINI_API_KEY"]
+          pruebas = [("gemini-3.5-flash-lite", None), ("gemini-3.5-flash-lite", [{"google_search": {}}]),
+                     ("gemini-3.5-flash-lite", [{"url_context": {}}]), ("gemini-3.6-flash", [{"google_search": {}}]),
+                     ("gemini-3.6-flash", [{"url_context": {}}])]
+          for modelo, tools in pruebas:
+              cuerpo = {"contents": [{"role": "user", "parts": [{"text": "Resume en una frase la noticia más reciente sobre Inditex. Si usas un enlace, este: https://www.inditex.com"}]}],
+                        "generationConfig": {"maxOutputTokens": 200}}
+              if tools: cuerpo["tools"] = tools
+              req = urllib.request.Request(f"https://generativelanguage.googleapis.com/v1beta/models/{modelo}:generateContent",
+                                           data=json.dumps(cuerpo).encode(), headers={"content-type": "application/json", "x-goog-api-key": clave})
+              nombre = f"{modelo} {list(tools[0])[0] if tools else 'sin herramientas'}"
+              try:
+                  with urllib.request.urlopen(req, timeout=60) as r:
+                      j = json.load(r)
+                  c = (j.get("candidates") or [{}])[0]
+                  g = c.get("groundingMetadata") or {}
+                  print(f"::notice title={nombre}::200 · búsqueda {bool(g.get('groundingChunks') or g.get('webSearchQueries'))} · url {bool(c.get('urlContextMetadata'))}")
+              except urllib.error.HTTPError as e:
+                  txt = e.read().decode(errors="replace")
+                  try:
+                      err = json.loads(txt).get("error", {})
+                  except Exception:
+                      err = {"message": txt[:300]}
+                  ids = [v.get("quotaId", "") + " limit=" + str(v.get("quotaValue", "")) for d in err.get("details", []) for v in d.get("violations", []) if isinstance(v, dict)]
+                  msg = re.sub(r"\s+", " ", err.get("message", ""))[:400]
+                  print(f"::notice title={nombre}::{e.code} · {msg} · {'; '.join(ids)[:400]}")
+          PY
