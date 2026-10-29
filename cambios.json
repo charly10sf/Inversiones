@@ -20,7 +20,10 @@
       "Cambiar la contraseña: el sobre se comprueba antes de verificar (si llega otro de otro dispositivo, no se toca), los campos van en un formulario con el usuario «correo (cartera)» para el gestor de contraseñas y la de ahora se borra siempre",
       "Banco: con las cabeceras PSU, un 400 o 422 se repite sin ellas; «caducada» solo si la sesión de Enable Banking ha terminado (GET /sessions: EXPIRED, REVOKED, CLOSED, CANCELLED, INVALID o 404); la app manda la sesión de cada cuenta. El freno cuenta desde el último intento en el dispositivo (una cuenta que falla ya no pide una y otra vez), cuándo se miró va en el dispositivo y la cartera solo se guarda, en silencio, si cambia el saldo o caduca un permiso. Como tuyo solo con GrowFolio a la vista y desbloqueada; con un Worker de antes, cada 4 horas",
       "Ideas: Flash-Lite vale también si las de antes son de otro formato o no traen ninguna, y unas de Flash-Lite se intentan mejorar cada 2 horas",
-      "GrowIA: del modelo saturado, solo al que va justo detrás en su orden (quien eligió el 3.6 no gasta el 3.8); si un modelo no acepta el razonamiento en medio, se pide con el suyo antes que sin ninguno"
+      "GrowIA: del modelo saturado, solo al que va justo detrás en su orden (quien eligió el 3.6 no gasta el 3.8); si un modelo no acepta el razonamiento en medio, se pide con el suyo antes que sin ninguno",
+      "Segunda revisión aparte (1 media, varias leves), arreglada: conectar un banco se guarda al momento (la lectura de después solo guarda si cambia el efectivo y la conexión se podía perder); el código que se ve sin contraseña va ligado a su cierre (la sal: otro código generado en otro dispositivo ya no vale), caduca a los 30 minutos y al darlo por guardado; pasar al formato 2 desde «Descargar la copia» ya no lo deja ver gratis; claveDatosEnClaro, fuera",
+      "Banco: el Worker dice «presente» solo si ninguna lectura ha tenido que repetirse sin las cabeceras PSU; al volver a GrowFolio, el saldo se pide después de que el bloqueo decida si pide el PIN; si un banco lleva más de 3 días sin dejar leer, un aviso para volver a conectarlo; los datos del banco del dispositivo se borran al cerrar la sesión",
+      "Ideas: las hechas con Flash-Lite se revisan como las demás si llega una noticia gorda"
      ]
     }
    ]
