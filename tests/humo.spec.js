@@ -1,6 +1,6 @@
 // Pruebas de humo: lo que tiene que funcionar siempre, en el móvil (390 y 360) y en el ordenador (1440).
 import { test as base, expect } from '@playwright/test';
-import { preparar, crearCuenta, meterCartera, quitarCapas, tocar } from './ayuda.js';
+import { preparar, crearCuenta, meterCartera, quitarCapas, tocar, BASE } from './ayuda.js';
 
 const VISTAS = ['cartera', 'ruta', 'analisis', 'expertos', 'mercados'];
 
@@ -107,6 +107,49 @@ test.describe('seguridad de la cartera', () => {
     await expect.poll(() => page.evaluate(() => !!(S.cartera.kit && S.cartera.kit.guardado))).toBe(true);
   });
 
+  test('la pantalla de la cuenta dice de qué contraseña es cada «He olvidado» (0.7d)', async ({ pagina: page }) => {
+    await page.goto(BASE + '#cuenta');
+    await page.waitForSelector('.intro, #fCorreo', { timeout: 30000 });
+    if (await page.$('.intro')) await page.click('.intro-saltar');
+    await expect(page.locator('#bOlvido')).toHaveText('He olvidado la contraseña de la cuenta');
+    await expect(page.locator('.cuenta-priv')).toContainText('código de recuperación');
+  });
+
+  test('cambiar la contraseña pide la de ahora o el código (0.7d)', async ({ pagina: page }) => {
+    await crearCuenta(page);
+    await quitarCapas(page);
+    const cierre = () => page.evaluate(() => S.kv && S.kv.k.pass.ct);
+    const codigo = await page.evaluate(() => S.cartera.kit.codigo);
+    const antes = await cierre();
+    await page.evaluate(() => abrirAjustes());
+    await page.locator('summary', { hasText: 'Cambiar la contraseña de tu cartera' }).click();
+    await expect(page.locator('#aP0')).toBeVisible();
+    const probar = async (ahora, nueva) => {
+      await page.fill('#aP0', ahora); await page.fill('#aP1', nueva); await page.fill('#aP2', nueva);
+      await page.click('#aCambiar');
+      await expect(page.locator('#aCambiar')).toBeEnabled({ timeout: 20_000 });
+    };
+    // sin la de ahora: no cambia
+    await probar('', 'nueva-clave-1');
+    await expect(page.locator('#toast')).toContainText('contraseña de ahora');
+    expect(await cierre()).toBe(antes);
+    // con una que no es: tampoco
+    await probar('no-es-esta-9', 'nueva-clave-1');
+    await expect(page.locator('#toast')).toContainText('no es la contraseña');
+    expect(await cierre()).toBe(antes);
+    // con la de ahora: cambia, y la nueva abre la cartera y la vieja ya no
+    await probar('cartera-123', 'nueva-clave-1');
+    await expect.poll(cierre, { timeout: 20_000 }).not.toBe(antes);
+    expect(await page.evaluate(async () => !!(await claveConActual('nueva-clave-1')))).toBe(true);
+    expect(await page.evaluate(async () => !!(await claveConActual('cartera-123')))).toBe(false);
+    // y con el código en lugar de la contraseña, también
+    const segundo = await cierre();
+    await probar(codigo, 'tercera-clave-3');
+    await expect.poll(cierre, { timeout: 20_000 }).not.toBe(segundo);
+    expect(await page.evaluate(async () => !!(await claveConActual('tercera-clave-3')))).toBe(true);
+    await expect(page.locator('#aP0')).toHaveValue('');
+  });
+
   test('al recargar entra sola y con la contraseña olvidada se recupera con el código', async ({ pagina: page }) => {
     await crearCuenta(page);
     await quitarCapas(page);
@@ -121,7 +164,8 @@ test.describe('seguridad de la cartera', () => {
     await page.evaluate(async () => { await IDB.del(IDB_CLAVE); guardarBloqueo(null); LS.del('inv-bloqueo-t'); });
     await page.reload();
     await expect(page.locator('#pass'), 'sin la clave guardada pide la contraseña').toBeVisible({ timeout: 30_000 });
-    await page.getByRole('button', { name: /olvidado|olvidé/i }).click();
+    // 0.7d: el botón dice de qué contraseña es (el de la cuenta, en la primera pantalla, manda un correo)
+    await page.getByRole('button', { name: 'He olvidado la contraseña de mi cartera' }).click();
     await page.fill('#rCod', codigo);
     await page.fill('#rP1', 'otra-clave-99');
     await page.fill('#rP2', 'otra-clave-99');

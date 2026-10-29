@@ -58,6 +58,10 @@ DIAS_NOTICIA = 21
 CANDIDATAS = 40             # empresas entre las que decide
 DECISION_V = 6              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
 HORAS_DECISION = 20         # la decisión se rehace una vez al día; entre medias solo se mira si hay una noticia gorda
+HORAS_DECISION_LITE = 48    # 0.7d: ideas con Flash-Lite solo si las que hay tienen más de 2 días (o no hay ninguna)
+# 0.7d: en el plan gratis la búsqueda en Google da 429 siempre (comprobado el 25 oct): el informe ya no la intenta en cada
+# pasada. Con la clave de pago, GEMINI_BUSQUEDA=1 en el workflow
+BUSQUEDA = os.environ.get("GEMINI_BUSQUEDA") == "1"
 DIAS_MEMORIA = 14           # lo recomendado en estos días no pasa a "evitar" sin una noticia que cambie la tesis
 NUEVAS_POR_DIA = 2          # ideas nuevas por decisión, como mucho (más si otras salen por una noticia gorda)
 DIAS_IDEA = 28              # pasado este tiempo, una idea puede dejar sitio a otra mejor sin noticia de por medio
@@ -430,8 +434,10 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
     busqueda, web = True, []
     intentos = []  # por qué no salió con el modelo principal (se guarda en informe.json para verlo sin los registros)
     try:
+        n_err = len(ERRORES)
         try:
-            n_err = len(ERRORES)
+            if not BUSQUEDA:
+                raise RuntimeError("sin búsqueda en Google (plan gratis)")
             resp = gemini({**base, "tools": [{"google_search": {}}]}, clave, reserva=False)
         except RuntimeError as e:
             intentos += [f"con búsqueda: {x}" for x in ERRORES[n_err:]]
@@ -934,7 +940,12 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previ
     pedido = f"Hoy es {hoy}.\n\n" + (f"## Cómo van los mercados por zonas\n{zonas}\n\n" if zonas else "") + "\n\n".join(bloques) + memoria + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
     cuerpo = {"systemInstruction": {"parts": [{"text": DECIDIR}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
               "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "high"}}}
-    texto, _ = texto_de(gemini(cuerpo, clave))
+    # 0.7d: las ideas, con el 3.8 o el 3.6. Si no contesta ninguno (saturados o sin cupo), se quedan las de la vez anterior
+    # y se reintenta en otra pasada; Flash-Lite solo si no hay ideas de menos de 2 días (el 28 oct salieron con él y se
+    # quedaron todo el día). Con reserva=False no sale como fallo en la web: es lo esperado
+    vale_lite = not (previa or {}).get("generado") or not hace_menos_de(previa["generado"], HORAS_DECISION_LITE)
+    buenos = [m for m in [MODELO] + RESERVA if "flash-lite" not in m]
+    texto, _ = texto_de(gemini(cuerpo, clave) if vale_lite else gemini(cuerpo, clave, reserva=False, modelos=buenos))
     modelo_usado = USO[-1]["m"] if USO else MODELO  # el que ha decidido (la lectura de esta pasada va con otro)
     d = extraer_json(texto)
     if not d:

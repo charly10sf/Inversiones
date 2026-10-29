@@ -1,5 +1,7 @@
 const BANCO = { estado: null, sincT: 0, enCurso: false, avisado: new Set() };
-const BANCO_CADA_H = 4;
+// solo, sin ti delante, cada 4 horas (muchos bancos dejan unas 4 lecturas al día así); al abrir GrowFolio o volver a
+// ella, si hace más de 10 minutos, y al pulsar «Actualizar», va como pedido por ti y no tiene ese tope (0.7d)
+const BANCO_CADA_H = 4, BANCO_PRESENTE_MIN = 10;
 async function workerPide(ruta, cuerpo) {
   if (!urlWorker() || !FB.user) throw new Error('sin-worker');
   const t = await FB.user.getIdToken();
@@ -110,15 +112,17 @@ async function vueltaDelBanco() {
   };
 }
 
-/* el saldo de cada cuenta conectada pasa al efectivo de su plataforma (al abrir y cada BANCO_CADA_H horas) */
-async function sincronizarBancos(forzar, avisar) {
+/* el saldo de cada cuenta conectada pasa al efectivo de su plataforma (al abrir, al volver a GrowFolio y cada
+   BANCO_CADA_H horas). presente: lo pides tú (has abierto GrowFolio o has pulsado «Actualizar») */
+async function sincronizarBancos(forzar, avisar, presente) {
   const bs = bancosDe().filter((b) => !b.caducada);
   if (!S.cartera || !bs.length || BANCO.enCurso) return false;
-  if (!forzar && Date.now() - BANCO.sincT < BANCO_CADA_H * 3600e3 && bs.every((b) => b.ultimo && Date.now() - b.ultimo.t < BANCO_CADA_H * 3600e3)) return false;
+  const cada = presente ? BANCO_PRESENTE_MIN * 60e3 : BANCO_CADA_H * 3600e3;
+  if (!forzar && Date.now() - BANCO.sincT < cada && bs.every((b) => b.ultimo && Date.now() - b.ultimo.t < cada)) return false;
   if (!(await bancoDisponible())) return false;
   BANCO.enCurso = true;
   try {
-    const r = await workerPide('/banco/saldos', { cuentas: bs.map((b) => b.cuenta) });
+    const r = await workerPide('/banco/saldos', { cuentas: bs.map((b) => b.cuenta), presente: !!(presente || forzar) });
     BANCO.sincT = Date.now();
     const porPlat = new Map(), caducadas = [];
     for (const b of bs) {

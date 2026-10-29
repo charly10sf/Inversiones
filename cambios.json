@@ -1,6 +1,26 @@
 {
  "versiones": [
   {
+   "v": "0.7d",
+   "f": "2026-10-29",
+   "h": "21:00",
+   "t": "Tu contraseña, más segura; GrowIA, más rápida",
+   "commits": [
+    {
+     "cuando": "2026-10-29 21:00",
+     "asunto": "0.7d: contraseña con la de ahora, botones de «He olvidado» con su nombre, banco al abrir, ideas sin Flash-Lite y GrowIA más rápida",
+     "detalle": [
+      "Lo vio Carlos al probar la 0.5 (29 oct): «Cambiar la contraseña» solo pedía la nueva. Ahora hay que escribir la de ahora o el código de recuperación (claveConActual / esContrasenaV1); con la cartera abierta ya no basta",
+      "«He olvidado la contraseña de la cuenta» (correo de Firebase) y «He olvidado la contraseña de mi cartera» (el código); la pantalla de la cuenta avisa de que el código se usa después. Carlos pulsó el de la cuenta buscando el código",
+      "Banco: al abrir GrowFolio, al volver a ella (si hace más de 10 minutos) y al pulsar «Actualizar», la lectura del saldo va con las cabeceras PSU del navegador (Psu-Ip-Address, Psu-User-Agent…) y el banco no aplica su tope de unas 4 al día; sola, cada 4 horas y sin ellas. Si el banco pide alguna que no hay, el Worker la repite sin ninguna",
+      "Action: las ideas del día solo con el 3.8 o el 3.6 (el 28 oct salieron con Flash-Lite y se quedaron todo el día); Flash-Lite solo si no hay ideas de menos de 2 días. El informe ya no prueba la búsqueda en Google en cada pasada (429 siempre en el plan gratis; GEMINI_BUSQUEDA=1 cuando se pague)",
+      "GrowIA: en las preguntas, la respuesta normal razona en medio (el análisis de la cartera sigue en alto) y, con el 3.8 saturado, salta al 3.6 sin esperar 4 + 8 s; solo espera cuando no queda otro de la respuesta normal",
+      "Pruebas nuevas: la contraseña y los botones en tests/humo.spec.js, tests/efectivo-banco.spec.js, tests/worker.spec.js (el Worker con fetch de imitación), el salto al 3.6 en tests/growia.spec.js y las ideas en tests/scripts/test_informe_modelos.py"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7c",
    "f": "2026-10-25",
    "h": "12:10",

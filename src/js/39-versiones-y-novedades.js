@@ -5,6 +5,12 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7d', f: '2026-10-29', h: '21:00', t: 'Tu contraseña, más segura; GrowIA, más rápida', arreglos: [
+    'Para cambiar la contraseña de tu cartera hay que escribir la de ahora (o tu código de recuperación): con la app abierta ya no basta. Y cada «He olvidado la contraseña» dice de cuál es, la de la cuenta o la de tu cartera. Lo vio Carlos.',
+    'GrowIA contesta antes: en las preguntas razona algo menos a fondo y, si Google está saturado, pasa al otro modelo de la respuesta normal sin esperar.',
+    'Si tienes el banco conectado, el efectivo se mira al abrir GrowFolio o al volver a ella (si hace más de 10 minutos), no cada 4 horas. Lo vio Carlos.',
+    'Las ideas del día ya no salen con el modelo rápido cuando Google se satura: se quedan las de antes hasta que contesta el bueno.',
+  ] },
   { v: '0.7c', f: '2026-10-25', h: '12:10', t: 'Las noticias, con el logo de su medio', arreglos: [
     'Cada noticia lleva el logo de su medio (Expansión, Cinco Días…) y, en las de tu cartera, el de la empresa; también arriba en la hoja de la noticia. Fotos de la prensa, no: no son nuestras (más adelante, con permiso). Lo pidió Carlos.',
   ] },

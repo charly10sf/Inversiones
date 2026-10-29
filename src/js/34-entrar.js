@@ -22,9 +22,9 @@ function pantallaCuenta(errorTxt = '') {
       <label class="campo">Contraseña de la cuenta<input type="password" id="cPass" autocomplete="current-password" minlength="6" required></label>
       <div class="error" id="err">${esc(errorTxt)}</div>
       <button class="btn pri" type="submit" id="bCorreo">Entrar</button>
-      <button type="button" class="enlace" id="bOlvido">He olvidado la contraseña</button>
+      <button type="button" class="enlace" id="bOlvido">${L('He olvidado la contraseña de la cuenta', 'I forgot my account password')}</button>
     </form>
-    <p class="nota cuenta-priv">La contraseña de la cuenta solo sirve para entrar. Tus cifras van cifradas con otra, la de tu cartera, que no sale de tu dispositivo: ni GrowFolio ni Google pueden leerlas.</p>
+    <p class="nota cuenta-priv">${L('La contraseña de la cuenta solo sirve para entrar. Tus cifras van cifradas con otra, la de tu cartera, que no sale de tu dispositivo: ni GrowFolio ni Google pueden leerlas. Si la que has olvidado es la de tu cartera, entra con tu cuenta: te la pide después, y ahí puedes usar tu código de recuperación.', "The account password is only for signing in. Your figures are encrypted with another one, your portfolio password, which never leaves your device: neither GrowFolio nor Google can read them. If the one you forgot is your portfolio password, sign in with your account: it's asked for next, and there you can use your recovery code.")}</p>
     <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
     ${selectorIdioma('pie')}
   </div></div>`;
@@ -112,7 +112,7 @@ function pantallaCuenta(errorTxt = '') {
   $('#bOlvido').onclick = async () => {
     const email = $('#cEmail').value.trim();
     if (!email) { err('Escribe arriba tu correo y vuelve a pulsar aquí.'); $('#cEmail').focus(); return; }
-    try { await fbCargar(); await FB.au.sendPasswordResetEmail(FB.auth, email); err(''); toast(`Te he mandado un correo a ${email} para poner una contraseña nueva`, 6000); }
+    try { await fbCargar(); await FB.au.sendPasswordResetEmail(FB.auth, email); err(''); toast(L(`Te he mandado un correo a ${email} para poner una contraseña nueva a tu cuenta. La de tu cartera no cambia.`, `I've sent an email to ${email} to set a new account password. Your portfolio password doesn't change.`), 7000); }
     catch (e) { err(errorFb(e)); }
   };
 }
@@ -292,7 +292,7 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
     <div class="error" id="err">${esc(errorTxt)}</div>
     <button class="btn pri" type="submit" id="bEntrar">Entrar</button>
     ${htmlOtroPerfil()}
-    ${formatoDe(S.enc && S.enc.texto) && formatoDe(S.enc.texto).v === 2 ? `<button type="button" class="enlace" id="bOlvido">${L('He olvidado la contraseña', 'I forgot the password')}</button>` : PERFIL_CUENTA && FB.user ? '<button type="button" class="enlace cero" id="bCero">No recuerdo esa contraseña: empezar de cero en esta cuenta</button>' : ''}
+    ${formatoDe(S.enc && S.enc.texto) && formatoDe(S.enc.texto).v === 2 ? `<button type="button" class="enlace" id="bOlvido">${L('He olvidado la contraseña de mi cartera', 'I forgot my portfolio password')}</button>` : PERFIL_CUENTA && FB.user ? '<button type="button" class="enlace cero" id="bCero">No recuerdo esa contraseña: empezar de cero en esta cuenta</button>' : ''}
     <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
     ${selectorIdioma('pie')}
   </form></div>`;
