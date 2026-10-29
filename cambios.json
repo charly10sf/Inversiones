@@ -2,12 +2,12 @@
  "versiones": [
   {
    "v": "0.7d",
-   "f": "2026-10-29",
-   "h": "22:30",
+   "f": "2026-10-30",
+   "h": "00:05",
    "t": "Tu contraseña, más segura; GrowIA, más rápida",
    "commits": [
     {
-     "cuando": "2026-10-29 22:30",
+     "cuando": "2026-10-30 00:05",
      "asunto": "0.7d: contraseña con la de ahora, botones de «He olvidado» con su nombre, banco al abrir, ideas sin Flash-Lite y GrowIA más rápida",
      "detalle": [
       "Lo vio Carlos al probar la 0.5 (29 oct): «Cambiar la contraseña» solo pedía la nueva. Ahora hay que escribir la de ahora o el código de recuperación (claveConActual / esContrasenaV1); con la cartera abierta ya no basta",

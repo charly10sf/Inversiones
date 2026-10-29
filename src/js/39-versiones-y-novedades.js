@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.7d', f: '2026-10-29', h: '22:30', t: 'Tu contraseña, más segura; GrowIA, más rápida', arreglos: [
+  { v: '0.7d', f: '2026-10-30', h: '00:05', t: 'Tu contraseña, más segura; GrowIA, más rápida', arreglos: [
     'Para cambiar la contraseña de tu cartera hay que escribir la de ahora (o tu código de recuperación), y para ver el código o generar otro, la contraseña: con la app abierta ya no basta. Y cada «He olvidado la contraseña» dice de cuál es, la de la cuenta o la de tu cartera. Lo vio Carlos.',
     'GrowIA contesta antes: en las preguntas razona algo menos a fondo y, si Google está saturado, pasa al otro modelo de la respuesta normal sin esperar.',
     'Si tienes el banco conectado, el efectivo se mira al abrir GrowFolio o al volver a ella (si hace más de 10 minutos), no cada 4 horas, y ya no sale «Guardado en tu cuenta» cada vez que lo mira. Lo vio Carlos.',
