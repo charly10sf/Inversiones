@@ -96,6 +96,8 @@ async function vueltaDelBanco() {
     for (const v of viejas) workerPide('/banco/borrar', { sesion: v }).catch(() => {});
     S.cartera.bancos = ((S.cartera && S.cartera.bancos) || []).filter((b) => b.plataforma !== plataforma);
     for (const c of cuentas) S.cartera.bancos.push({ id: `bk-${c.uid}`, plataforma, banco: r.banco || (pend && pend.banco) || '', pais: r.pais || '', sesion: r.sesion, cuenta: c.uid, nombre: c.nombre, fin: c.fin, hasta: r.hasta || null });
+    // la conexión se guarda ya: la lectura de después solo guarda si cambia el efectivo (segunda revisión de la 0.7d)
+    await guardarCartera(L('Conectar el banco', 'Connect the bank'));
     BANCO.sincT = 0;
     await sincronizarBancos(true, true);
   };
@@ -137,6 +139,10 @@ async function sincronizarBancos(forzar, avisar, presente) {
     for (const b of bs) {
       const x = (r.saldos || {})[b.cuenta]; if (!x) continue;
       if (x.error === 'caducada') { b.caducada = true; caducadas.push(b.plataforma); tocaGuardar = true; continue; }
+      if (x.error === 'fallo' && bancoLeido(b) && Date.now() - bancoLeido(b) > 3 * 864e5 && !BANCO.avisado.has('mudo:' + b.plataforma)) {
+        BANCO.avisado.add('mudo:' + b.plataforma);
+        toast(L(`Hace días que el banco de ${b.plataforma} no deja leer el saldo: si sigue así, vuelve a conectarlo en Efectivo.`, `The bank for ${b.plataforma} hasn't let us read the balance for days: if it keeps happening, reconnect it in Cash.`), 7000);
+      }
       if (x.error || !isFinite(x.importe) || (x.moneda && x.moneda !== 'EUR')) continue;
       leidas[b.cuenta] = Date.now();
       // en la cartera, solo si cambia el saldo de esa cuenta (así no sube a la cuenta en cada lectura)

@@ -6,8 +6,14 @@ const conKit = () => !!(S.kv || PERFIL_LOCAL || CFG.dev);
 // 0.7d: con el código se puede cambiar la contraseña, así que verlo pide siempre la contraseña de la cartera, salvo el
 // código recién creado en esta sesión y lo ya abierto hace menos de 5 minutos (se olvida al salir de GrowFolio o al
 // bloquear). Antes se enseñaba sin pedir nada mientras no lo hubieras guardado
-const KIT_ABIERTO_MS = 5 * 60e3;
-const kitLibre = () => !!S.kv && (S.kitSesion === S.kv.kid || (S.kitAbierto === S.kv.kid && Date.now() - (S.kitAbiertoT || 0) < KIT_ABIERTO_MS));
+// (segunda revisión) los dos van con el código concreto (la sal de su cierre: si se genera otro en otro dispositivo, ya no
+// valen) y caducan: el recién creado, a los 30 minutos o al darlo por guardado; lo abierto con la contraseña, a los 5
+const KIT_ABIERTO_MS = 5 * 60e3, KIT_SESION_MS = 30 * 60e3;
+const saltKit = () => (S.kv && S.kv.k && S.kv.k.rec && S.kv.k.rec.salt) || null;
+const kitVale = (x, ms) => !!x && !!saltKit() && x.salt === saltKit() && Date.now() - x.t < ms;
+const kitLibre = () => kitVale(S.kitSesion, KIT_SESION_MS) || kitVale(S.kitAbierto, KIT_ABIERTO_MS);
+// el código recién creado aquí (al crear la cartera, al pasar al formato 2 después de escribir la contraseña o al generar otro)
+function marcarKitSesion() { S.kitSesion = saltKit() ? { salt: saltKit(), t: Date.now() } : null; }
 function olvidarKitAbierto() { S.kitAbierto = null; S.kitSesion = null; }
 document.addEventListener('visibilitychange', () => { if (document.hidden) olvidarKitAbierto(); });
 async function verKit() {
@@ -17,7 +23,8 @@ async function verKit() {
     const p = await pedirContrasenaActual(L('Para crear tu código de recuperación, escribe la contraseña de tu cartera.', 'To create your recovery code, type your portfolio password.'));
     if (!p) return;
     if (!(await esContrasenaV1(p))) return toast(L('Esa no es la contraseña de tu cartera.', "That isn't your portfolio password."), 5000);
-    toast(L('Creando tu código de recuperación…', 'Creating your recovery code…'), 3000); await pasarAV2(true);
+    toast(L('Creando tu código de recuperación…', 'Creating your recovery code…'), 3000);
+    if (await pasarAV2(true) && S.kv) marcarKitSesion();
   }
   if (!S.kv) return toast(L('Ahora no se puede crear: hace falta conexión. Prueba en un momento.', "It can't be created right now: it needs a connection. Try again in a moment."), 6000);
   // creado aquí, pero aún sin llegar a tu cuenta: se enseña en cuanto llegue (si no llegara, no valdría)
@@ -27,7 +34,7 @@ async function verKit() {
   if (!kit || !kit.codigo || kit.salt !== S.kv.k.rec.salt) return nuevoCodigo(L('Tu cartera no tiene un código de recuperación que la abra (pasa si se cambió a la vez en dos dispositivos).', "Your portfolio has no recovery code that opens it (it happens if it was changed on two devices at once)."));
   if (!kitLibre()) {
     if (!(await claveConContrasena(L('Para ver tu código de recuperación, escribe la contraseña de tu cartera.', 'To see your recovery code, type your portfolio password.')))) return;
-    S.kitAbierto = S.kv.kid; S.kitAbiertoT = Date.now();
+    S.kitAbierto = { salt: saltKit(), t: Date.now() };
   }
   const grupos = kit.codigo.split('-'), n = crypto.getRandomValues(new Uint8Array(1))[0] % grupos.length, app = !!window.InversionesApp;
   const correo = FB.user && FB.user.email ? FB.user.email : '';
@@ -51,6 +58,7 @@ async function verKit() {
     ev.preventDefault();
     if (normCodigo($('#kGrupo', h.el).value) !== grupos[n]) { $('#kErr', h.el).textContent = L(`No coincide con el grupo ${n + 1}. Míralo en lo que has guardado.`, `It doesn't match group ${n + 1}. Check what you saved.`); return; }
     S.cartera.kit = { ...S.cartera.kit, guardado: new Date().toISOString() };
+    S.kitSesion = null;
     await guardarCarteraCallada('Código de recuperación guardado');
     h.cerrar(true); pintar(); toast(L('Hecho: tu cartera ya tiene salida si olvidas la contraseña', 'Done: your portfolio is safe if you forget the password'), 5000);
   };
@@ -71,7 +79,7 @@ async function nuevoCodigo(motivo) {
   if (!S.kv || S.kv.kid !== kid || !S.cartera) return toast(L('Tu cartera acaba de cambiar en otro dispositivo. Vuelve a intentarlo.', 'Your portfolio just changed on another device. Try again.'), 5000);
   S.kv = { kid, k: { ...S.kv.k, rec } };
   S.cartera.kit = { codigo, salt: rec.salt, creado: new Date().toISOString() };
-  S.kitSesion = kid;
+  marcarKitSesion();
   await guardarCarteraCallada('Código de recuperación nuevo');
   verKit();
 }
@@ -140,7 +148,8 @@ function descargarTexto(nombre, texto) {
 async function revisarKit(intento = 0) {
   if (!S.cartera || !S.key) return;
   if (!LS.get('inv-05-desde')) LS.set('inv-05-desde', hoyIso());
-  if (!S.kv) { await pasarAV2(); if (!S.kv) { if (intento < 8 && conKit()) setTimeout(() => revisarKit(intento + 1), 8000); return; } }
+  // el paso solo al formato 2 (a los 3 días): el código nace aquí y se enseña esa primera vez sin pedir nada
+  if (!S.kv) { await pasarAV2(); if (!S.kv) { if (intento < 8 && conKit()) setTimeout(() => revisarKit(intento + 1), 8000); return; } marcarKitSesion(); }
   const kit = S.cartera.kit;
   if (!kit || kit.guardado || !kit.codigo) return;
   if (S.kitRecien !== S.kv.kid && LS.get('inv-kit-visto') === hoyIso()) return;
@@ -169,7 +178,7 @@ function pasarAV2(ya) {
     const sb = await sobreNuevo(kek, salt, iter), recuerda = !!(await IDB.get(IDB_CLAVE));
     // mientras se hacía el sobre: bloqueada, otra contraseña o ya en el formato 2 → nada
     if (S.key !== kek || S.kv || !S.cartera) return confirmadoV2();
-    S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.iter = iter; S.cartera.kit = sb.kit; S.kitRecien = sb.kv.kid; S.kitSesion = sb.kv.kid;
+    S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.iter = iter; S.cartera.kit = sb.kit; S.kitRecien = sb.kv.kid;
     if (PERFIL_CUENTA && !CFG.dev) S.puente = { salt: b64.enc(salt), kek };
     await guardarCarteraCallada('Formato 2');
     // lo del dispositivo, solo si de verdad se ha guardado el formato 2 (si se bloqueó en medio, se queda como estaba)

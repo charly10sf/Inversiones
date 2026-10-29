@@ -1134,10 +1134,10 @@ def main(ruta_inst, dir_anterior, dir_salida):
     nuevo = informe_cartera(ruta_inst, dir_anterior, dir_salida, clave)
     # una decisión nueva al día (o si cambia su formato); entre medias, solo se revisa si hay una noticia gorda
     viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_DECISION)
-    # 0.7d: unas ideas hechas con Flash-Lite se intentan mejorar en cuanto contesten el 3.8 o el 3.6 (cada 2 horas)
-    viejo = viejo or "flash-lite" in str((decision or {}).get("modelo") or "")
     if not viejo and valores:
         decision = revisar(decision, lectura, valores)
+    # 0.7d: unas ideas hechas con Flash-Lite (revisadas como las demás) se intentan mejorar con el 3.8 o el 3.6, cada 2 horas
+    viejo = viejo or "flash-lite" in str((decision or {}).get("modelo") or "")
     # si la última vez falló (cuota de Gemini agotada, por ejemplo), no se reintenta hasta pasadas 2 horas
     intento = esc.get("intento_decision")
     if viejo and intento and hace_menos_de(intento, 2):

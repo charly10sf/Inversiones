@@ -188,7 +188,7 @@ async function cerrarSesion() {
   }
   try { await fbCargar(); await FB.au.signOut(FB.auth); } catch (e) { console.warn(e); }
   try { await IDB.del(IDB_CLAVE); await IDB.del('clave-local'); await IDB.del('clave'); } catch (e) {}
-  for (const k of ['inv-cuenta-enc', 'inv-pend-cuenta', 'inv-cuenta-descartada', 'inv-bloqueo', 'inv-bloqueo-t', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-asesor-cfg2', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-token', 'inv-gkey-modo', 'inv-ia-agotados']) LS.del(k);
+  for (const k of ['inv-cuenta-enc', 'inv-pend-cuenta', 'inv-cuenta-descartada', 'inv-bloqueo', 'inv-bloqueo-t', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-asesor-cfg2', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-token', 'inv-gkey-modo', 'inv-ia-agotados', 'inv-banco-t', 'inv-banco-intento', 'inv-banco-sin-psu']) LS.del(k);
   try { localStorage.removeItem('inv-token'); } catch (e) {}
   LS.del('inv-nombre');
   // el widget de Android no puede seguir enseñando la cartera de quien se ha ido
@@ -431,7 +431,7 @@ function pantallaCrear() {
     const kek = await derivarClave(p1, S.salt, S.iter);
     S.cartera = importada || { version: 1, posiciones: [], efectivo: [], aportaciones: [], limite_acciones: 20 };
     // 0.5: la cartera nueva ya nace en el formato 2, con su código de recuperación (se enseña al entrar)
-    if (PERFIL_CUENTA || PERFIL_LOCAL || CFG.dev) { const sb = await sobreNuevo(kek, S.salt, S.iter); S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.cartera.kit = sb.kit; S.kitRecien = sb.kv.kid; S.kitSesion = sb.kv.kid; }
+    if (PERFIL_CUENTA || PERFIL_LOCAL || CFG.dev) { const sb = await sobreNuevo(kek, S.salt, S.iter); S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.cartera.kit = sb.kit; S.kitRecien = sb.kv.kid; marcarKitSesion(); }
     else { S.key = kek; S.kv = null; }
     if ($('#recordar').checked) await recordarClave();
     const ok = await guardarCartera('Crear cartera cifrada');

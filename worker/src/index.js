@@ -180,10 +180,11 @@ async function banco(ruta, url, req, env, res) {
     // la sesión de cada cuenta (la app desde la 0.7d): con ella se comprueba si el permiso ha caducado de verdad
     const sesiones = datos.sesiones && typeof datos.sesiones === 'object' ? datos.sesiones : {};
     const vistas = new Map();
+    let sinPsu = false;   // alguna se ha tenido que leer sin las cabeceras: esa lectura gasta del tope del banco
     await Promise.all(ids.map(async (id) => {
       const camino = `/accounts/${encodeURIComponent(id)}/balances`;
       let r = await eb(env, 'GET', camino, null, psu);
-      if (psu && fallaConPsu(r)) r = await eb(env, 'GET', camino);
+      if (psu && fallaConPsu(r)) { r = await eb(env, 'GET', camino); sinPsu = true; }
       if (!r.ok) {
         let caducada;
         if (r.status === 429 || r.status >= 500) caducada = false;
@@ -198,7 +199,7 @@ async function banco(ruta, url, req, env, res) {
       const b = elegirSaldo(r.j.balances);
       saldos[id] = b ? { importe: +b.balance_amount.amount, moneda: b.balance_amount.currency || 'EUR', tipo: b.balance_type || '', fecha: b.reference_date || b.last_change_date_time || null } : { error: 'sin-saldo' };
     }));
-    return res({ saldos, presente: !!psu });
+    return res({ saldos, presente: !!psu && !sinPsu });
   }
   // desconectar: se borra la sesión en Enable Banking (el permiso deja de valer)
   if (ruta === 'borrar') {

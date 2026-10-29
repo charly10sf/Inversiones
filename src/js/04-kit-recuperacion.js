@@ -120,16 +120,8 @@ async function recifrarLocales(vieja, nueva) {
     } catch (e) { /* ya estaba con la nueva, o no se puede: se queda como está */ }
   }
 }
-// la clave de datos en claro (un momento, para volver a cerrarla): con el código guardado en la cartera, con la clave
-// de la contraseña de esta sesión o, si no hay otra forma y pedir es true, con la contraseña de ahora
-async function claveDatosEnClaro(pedir) {
-  if (!S.kv) return null;
-  const kit = S.cartera && S.cartera.kit, rec = S.kv.k.rec, pass = S.kv.k.pass;
-  if (kit && kit.codigo && kit.salt === rec.salt) { try { return await abrirClave(await claveCodigo(kit.codigo, b64.dec(rec.salt), rec.iter), rec); } catch (e) {} }
-  if (S.kek) { try { return await abrirClave(S.kek, pass); } catch (e) {} }
-  return pedir ? claveConContrasena(typeof pedir === 'string' ? pedir : '') : null;
-}
-// comprobar que eres tú: la contraseña de ahora abre su cierre. Devuelve la clave de datos en claro (o null)
+// comprobar que eres tú: la contraseña de ahora abre su cierre. Devuelve la clave de datos en claro (o null). 0.7d: ya
+// no hay un camino que la dé sin pedir nada (claveDatosEnClaro, que tiraba del código guardado dentro o de la sesión)
 async function claveConContrasena(texto) {
   if (!S.kv) return null;
   const pass = S.kv.k.pass, p = await pedirContrasenaActual(texto); if (!p) return null;

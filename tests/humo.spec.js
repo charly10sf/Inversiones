@@ -127,7 +127,8 @@ test.describe('seguridad de la cartera', () => {
     const probar = async (ahora, nueva) => {
       await page.fill('#aP0', ahora); await page.fill('#aP1', nueva); await page.fill('#aP2', nueva);
       await page.click('#aCambiar');
-      await expect(page.locator('#aCambiar')).toBeEnabled({ timeout: 20_000 });
+      // dos PBKDF2 de 600.000 vueltas: con la máquina cargada (todas las pruebas a la vez) pueden tardar
+      await expect(page.locator('#aCambiar')).toBeEnabled({ timeout: 45_000 });
     };
     // sin la de ahora: no cambia
     await probar('', 'nueva-clave-1');
@@ -139,13 +140,13 @@ test.describe('seguridad de la cartera', () => {
     expect(await cierre()).toBe(antes);
     // con la de ahora: cambia, y la nueva abre la cartera y la vieja ya no
     await probar('cartera-123', 'nueva-clave-1');
-    await expect.poll(cierre, { timeout: 20_000 }).not.toBe(antes);
+    await expect.poll(cierre, { timeout: 45_000 }).not.toBe(antes);
     expect(await page.evaluate(async () => !!(await claveConActual('nueva-clave-1')))).toBe(true);
     expect(await page.evaluate(async () => !!(await claveConActual('cartera-123')))).toBe(false);
     // y con el código en lugar de la contraseña, también
     const segundo = await cierre();
     await probar(codigo, 'tercera-clave-3');
-    await expect.poll(cierre, { timeout: 20_000 }).not.toBe(segundo);
+    await expect.poll(cierre, { timeout: 45_000 }).not.toBe(segundo);
     expect(await page.evaluate(async () => !!(await claveConActual('tercera-clave-3')))).toBe(true);
     await expect(page.locator('#aP0')).toHaveValue('');
   });
@@ -157,7 +158,10 @@ test.describe('seguridad de la cartera', () => {
     await page.evaluate(() => { verKit(); });
     await expect(page.locator('.kit-cod span')).toHaveCount(6);
     await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove()));
-    // pasado eso (al salir de GrowFolio o al bloquear se olvida): la contraseña, aunque aún no lo hayas guardado
+    // a los 30 minutos ya no (ni al salir de GrowFolio, ni al bloquear): la contraseña, aunque aún no lo hayas guardado
+    await page.evaluate(() => { S.kitSesion.t -= 31 * 60e3; verKit(); });
+    await expect(page.locator('#pAct')).toBeVisible();
+    await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove()));
     await page.evaluate(() => olvidarKitAbierto());
     await page.evaluate(() => { verKit(); });
     await expect(page.locator('#pAct')).toBeVisible();

@@ -67,6 +67,7 @@ test('el saldo va con las cabeceras PSU solo si estás delante', async () => {
     vistas.length = 0;
     r = await pedir({ cuentas: ['acc-exige'], presente: true });
     expect(r.saldos['acc-exige']).toMatchObject({ importe: 1234.56 });
+    expect(r.presente, 'leída sin las cabeceras: la app tiene que saber que gasta del tope').toBe(false);
     expect(vistas.length).toBe(2);
     expect(Object.keys(vistas[1].h).filter((k) => k.startsWith('psu-'))).toEqual([]);
     vistas.length = 0;

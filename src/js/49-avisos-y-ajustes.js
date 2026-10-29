@@ -345,7 +345,7 @@ function abrirAjustes() {
         await guardarCartera('Cambiar contraseña'); limpiar();
         return;
       }
-      if (!S.kv) { await pasarAV2(true); kid0 = S.kv && S.kv.kid; raw = await claveConActual(ahora); }
+      if (!S.kv) { await pasarAV2(true); kid0 = S.kv && S.kv.kid; raw = await claveConActual(ahora); if (raw) marcarKitSesion(); }
       if (!confirmadoV2()) return toast(L('Ahora no se puede cambiar la contraseña: hace falta conexión. Prueba en un momento.', "The password can't be changed right now: it needs a connection. Try again in a moment."), 6000);
       // solo cambia el cierre de la contraseña: la cartera y los otros dispositivos siguen con la misma clave de datos
       if (!raw) return toast(L('No se ha podido cambiar la contraseña. Vuelve a intentarlo.', "The password couldn't be changed. Try again."), 5000);
