@@ -150,6 +150,37 @@ test.describe('seguridad de la cartera', () => {
     await expect(page.locator('#aP0')).toHaveValue('');
   });
 
+  test('ver el código o generar otro pide la contraseña, salvo recién creado (0.7d)', async ({ pagina: page }) => {
+    await crearCuenta(page);
+    await quitarCapas(page);
+    // recién creado, en la misma sesión: se ve sin pedir nada
+    await page.evaluate(() => { verKit(); });
+    await expect(page.locator('.kit-cod span')).toHaveCount(6);
+    await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove()));
+    // pasado eso (al salir de GrowFolio o al bloquear se olvida): la contraseña, aunque aún no lo hayas guardado
+    await page.evaluate(() => olvidarKitAbierto());
+    await page.evaluate(() => { verKit(); });
+    await expect(page.locator('#pAct')).toBeVisible();
+    await expect(page.locator('.kit-cod')).toHaveCount(0);
+    await page.fill('#pAct', 'no-es-esta-9');
+    await page.locator('#fPAct button[type=submit]').click();
+    await expect(page.locator('#toast')).toContainText('no es la contraseña');
+    await expect(page.locator('.kit-cod')).toHaveCount(0);
+    await page.evaluate(() => { verKit(); });
+    await page.fill('#pAct', 'cartera-123');
+    await page.locator('#fPAct button[type=submit]').click();
+    await expect(page.locator('.kit-cod span')).toHaveCount(6);
+    await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove()));
+    // generar uno nuevo, siempre con la contraseña
+    page.once('dialog', (d) => d.accept());
+    const antes = await page.evaluate(() => S.kv.k.rec.ct);
+    await page.evaluate(() => { nuevoCodigo(); });
+    await expect(page.locator('#pAct')).toBeVisible();
+    await page.fill('#pAct', 'cartera-123');
+    await page.locator('#fPAct button[type=submit]').click();
+    await expect.poll(() => page.evaluate(() => S.kv.k.rec.ct), { timeout: 20_000 }).not.toBe(antes);
+  });
+
   test('al recargar entra sola y con la contraseña olvidada se recupera con el código', async ({ pagina: page }) => {
     await crearCuenta(page);
     await quitarCapas(page);

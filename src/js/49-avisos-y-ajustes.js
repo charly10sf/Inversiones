@@ -241,9 +241,12 @@ function abrirAjustes() {
     ${conKit() ? `<button class="aj-fila" id="aKit">${ICONOS.candado}<span><b>${L('Código de recuperación', 'Recovery code')}</b><small>${!S.kv ? L('Créalo: con él recuperas la cartera si olvidas su contraseña.', 'Create it: it gets your portfolio back if you forget its password.') : S.cartera && S.cartera.kit && S.cartera.kit.guardado ? L(`Guardado el ${esc(fechaLarga(S.cartera.kit.guardado.slice(0, 10)))}. Por si olvidas la contraseña de tu cartera.`, `Saved on ${esc(S.cartera.kit.guardado.slice(0, 10))}. In case you forget your portfolio password.`) : L('Sin guardar todavía: con él recuperas la cartera si olvidas su contraseña.', 'Not saved yet: it gets your portfolio back if you forget its password.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>` : ''}
     ${conKit() ? `<button class="aj-fila" id="aCopia">${ICONOS.descargar || ICONOS.cartera}<span><b>${L('Copia de seguridad', 'Backup')}</b><small>${L('Tu cartera en un archivo cifrado, para guardarla donde quieras y cargarla si algún día hace falta.', 'Your portfolio in an encrypted file, to keep wherever you like and load it if you ever need to.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>` : ''}
     <details class="seccion-ed aj-plegable"><summary><h3>${ICONOS.candado}${L('Cambiar la contraseña de tu cartera', 'Change your portfolio password')}</h3><i class="aj-flecha" aria-hidden="true"></i></summary>
+      <form id="fCambiarPw" novalidate>
+      <input type="text" name="username" value="${esc(PERFIL_CUENTA && FB.user && FB.user.email ? FB.user.email + ' (cartera)' : '')}" autocomplete="username" hidden>
       <label class="campo">${L('Contraseña de ahora', 'Current password')}<input type="password" id="aP0" autocomplete="current-password">${S.kv ? `<small>${L('¿No la recuerdas? Escribe aquí tu código de recuperación.', "Don't remember it? Type your recovery code here.")}</small>` : ''}</label>
       <div class="form-grid"><label class="campo">Nueva contraseña<input type="password" id="aP1" autocomplete="new-password"></label><label class="campo">Repítela<input type="password" id="aP2" autocomplete="new-password"></label></div>
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aCambiar">Cambiar contraseña</button></div>
+      <div class="fila-btns" style="justify-content:flex-start"><button type="submit" class="btn peq" id="aCambiar">Cambiar contraseña</button></div>
+      </form>
     </details>
     <div class="seccion-ed"><h3>${ICONOS.perfil}Este dispositivo</h3>
       <p class="nota" style="margin:0">${cfgBloqueo() ? 'Bloquear te pedirá el PIN o la huella ahora mismo.' : 'Bloquear te pedirá la contraseña la próxima vez.'} ${PERFIL_CUENTA ? 'Olvidar cierra la sesión y borra de aquí la clave y la copia: tu cartera sigue en tu cuenta.' : PERFIL_LOCAL ? 'Olvidar borra tu cartera de este dispositivo: descarga antes una copia.' : 'Olvidar borra también el token y la copia local.'}</p>
@@ -314,7 +317,8 @@ function abrirAjustes() {
       box.innerHTML = `<div class="qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div><p class="nota" style="text-align:center">Escanéalo con el móvil: abrirá GrowFolio con el token ya puesto. La contraseña te la pedirá igual. No compartas esta imagen.</p>`;
     } catch (e) { box.innerHTML = '<div class="vacio">No se pudo cargar el generador de QR.</div>'; }
   };
-  $('#aCambiar', h.el).onclick = async () => {
+  $('#fCambiarPw', h.el).onsubmit = async (ev) => {
+    ev.preventDefault();
     const ahora = $('#aP0', h.el).value, a = $('#aP1', h.el).value, b = $('#aP2', h.el).value;
     const limpiar = () => { for (const id of ['#aP0', '#aP1', '#aP2']) $(id, h.el).value = ''; };
     // 0.7d: siempre con la contraseña de ahora (o el código): con la cartera abierta en un dispositivo no basta
@@ -322,6 +326,8 @@ function abrirAjustes() {
     if (a.length < 8) return toast('La contraseña necesita al menos 8 caracteres');
     if (a !== b) return toast('Las contraseñas no coinciden');
     const bt = $('#aCambiar', h.el); bt.disabled = true;
+    // el sobre con el que se comprueba: si mientras tanto llega otro (otro dispositivo cambió la cartera), no se toca nada
+    let kid0 = S.kv && S.kv.kid;
     try {
       let raw = S.kv ? await claveConActual(ahora) : null;
       if (S.kv ? !raw : !(await esContrasenaV1(ahora))) {
@@ -339,18 +345,20 @@ function abrirAjustes() {
         await guardarCartera('Cambiar contraseña'); limpiar();
         return;
       }
-      if (!S.kv) { await pasarAV2(true); raw = await claveConActual(ahora); }
+      if (!S.kv) { await pasarAV2(true); kid0 = S.kv && S.kv.kid; raw = await claveConActual(ahora); }
       if (!confirmadoV2()) return toast(L('Ahora no se puede cambiar la contraseña: hace falta conexión. Prueba en un momento.', "The password can't be changed right now: it needs a connection. Try again in a moment."), 6000);
       // solo cambia el cierre de la contraseña: la cartera y los otros dispositivos siguen con la misma clave de datos
       if (!raw) return toast(L('No se ha podido cambiar la contraseña. Vuelve a intentarlo.', "The password couldn't be changed. Try again."), 5000);
-      const kid = S.kv.kid, salt = crypto.getRandomValues(new Uint8Array(16)), iter = S.iter || 600000, kek = await derivarClave(a, salt, iter);
+      const cambiada = () => toast(L('Tu cartera acaba de cambiar en otro dispositivo. Vuelve a intentarlo.', 'Your portfolio just changed on another device. Try again.'), 5000);
+      if (!S.kv || S.kv.kid !== kid0) return cambiada();
+      const kid = kid0, salt = crypto.getRandomValues(new Uint8Array(16)), iter = S.iter || 600000, kek = await derivarClave(a, salt, iter);
       const pass = await cierreDe(kek, raw, salt, iter, (+S.kv.k.pass.n || 0) + 1);
       // lo de la sesión se lee después de cerrar (con el PBKDF2 por medio pudo llegar otro sobre); otra clave de datos: no se toca
-      if (!S.kv || S.kv.kid !== kid) return toast(L('Tu cartera acaba de cambiar en otro dispositivo. Vuelve a intentarlo.', 'Your portfolio just changed on another device. Try again.'), 5000);
+      if (!S.kv || S.kv.kid !== kid) return cambiada();
       S.kv = { kid, k: { ...S.kv.k, pass } }; S.salt = salt; S.iter = iter; S.kek = kek;
       await guardarCartera('Cambiar contraseña');
       limpiar();
-    } finally { bt.disabled = false; }
+    } finally { bt.disabled = false; $('#aP0', h.el).value = ''; }
   };
   if ($('#aKit', h.el)) $('#aKit', h.el).onclick = () => { h.cerrar(true); verKit(); };
   if ($('#aCopia', h.el)) $('#aCopia', h.el).onclick = () => { h.cerrar(true); copiaSeguridad(); };
@@ -369,7 +377,7 @@ function abrirAjustes() {
   };
   $('#aBloq', h.el).onclick = async () => {
     if (cfgBloqueo()) { LS.del('inv-bloqueo-t'); h.cerrar(); return pantallaBloqueo(() => {}, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); }); }
-    await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; S.kitAbierto = null; S.puente = null; h.cerrar(); pantallaDesbloqueo(); };
+    await IDB.del(IDB_CLAVE); cerrarAsesor(); olvidarAsesor(); S.iaPropio = null; S.key = null; S.cartera = null; S.kitAbierto = null; S.kitSesion = null; S.puente = null; h.cerrar(); pantallaDesbloqueo(); };
   if ($('#aSalir', h.el)) $('#aSalir', h.el).onclick = () => cerrarSesion();
   filaOpiniones(h);   // solo sale si eres el dueño (las reglas no dejan leerlas a nadie más)
   filaAcceso(h);

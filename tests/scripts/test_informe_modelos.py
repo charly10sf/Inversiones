@@ -149,9 +149,10 @@ class IdeasSinFlashLite(unittest.TestCase):
             return respuesta_ideas()
         I.gemini_modelo = gemini_de_prueba
 
-    def decidir(self, horas_previa):
+    def decidir(self, horas_previa, v=None, ideas=True):
         valores = [{"s": "PRB.MC", "n": "Prueba", "pot": 20, "na": 3, "rm": 2.0, "r": "buy", "perf": 0, "c1a": 5}]
-        previa = {"generado": hace(horas_previa), "v": I.DECISION_V, "ideas": [], "evitar": []} if horas_previa is not None else None
+        idea = [{"s": "PRB.MC", "n": "Prueba", "tesis": "La de ayer."}] if ideas else []
+        previa = {"generado": hace(horas_previa), "v": I.DECISION_V if v is None else v, "ideas": idea, "evitar": []} if horas_previa is not None else None
         return I.decidir({}, {}, valores, {}, set(), "clave", {}, previa=previa)
 
     def test_con_ideas_de_ayer_no_usa_flash_lite(self):
@@ -165,6 +166,15 @@ class IdeasSinFlashLite(unittest.TestCase):
         self.google(contestan={"gemini-3.6-flash"})
         self.decidir(22)
         self.assertEqual(self.pedidos, ["gemini-3.8-flash", "gemini-3.6-flash"])
+
+    def test_con_las_de_antes_en_otro_formato_o_sin_ideas_vale_flash_lite(self):
+        # revisión aparte de la 0.7d: si cambió el formato de las ideas o no había ninguna, mejor unas de Flash-Lite
+        self.google(contestan={LITE})
+        self.decidir(5, v=I.DECISION_V - 1)
+        self.assertEqual(self.pedidos[-1], LITE)
+        self.pedidos.clear()
+        self.decidir(5, ideas=False)
+        self.assertEqual(self.pedidos[-1], LITE)
 
     def test_sin_ideas_recientes_vale_flash_lite(self):
         self.google(contestan={LITE})

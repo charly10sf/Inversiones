@@ -34,6 +34,12 @@ test('el saldo va con las cabeceras PSU solo si estás delante', async () => {
       vistas.push({ url, h });
       // un banco que pide la ubicación: con las otras cabeceras dice que falta una; sin ninguna, contesta
       if (url.includes('acc-exige') && h['psu-ip-address']) return new Response(JSON.stringify({ code: 422, error: 'PSU_HEADER_NOT_PROVIDED', message: 'Psu-Geo-Location' }), { status: 422 });
+      // otro al que no le gusta una de las cabeceras (422 sin decir PSU_HEADER): también se repite sin ellas
+      if (url.includes('acc-ipv6') && h['psu-ip-address']) return new Response(JSON.stringify({ code: 422, error: 'WRONG_REQUEST_PARAMETERS', message: 'psu-ip-address' }), { status: 422 });
+      // cuentas cuya lectura falla: el permiso solo está caducado si su sesión ha terminado
+      if (url.includes('acc-falla')) return new Response(JSON.stringify({ code: 403, error: 'ASPSP_ERROR' }), { status: 403 });
+      if (url.includes('/sessions/ses-viva')) return new Response(JSON.stringify({ status: 'AUTHORIZED' }));
+      if (url.includes('/sessions/ses-muerta')) return new Response(JSON.stringify({ status: 'EXPIRED' }));
       return new Response(JSON.stringify({ balances: [{ balance_type: 'CLBD', balance_amount: { amount: '10.00', currency: 'EUR' } }, { balance_type: 'ITAV', balance_amount: { amount: '1234.56', currency: 'EUR' } }] }));
     }
     throw new Error('fuera de la prueba: ' + url);
@@ -63,6 +69,18 @@ test('el saldo va con las cabeceras PSU solo si estás delante', async () => {
     expect(r.saldos['acc-exige']).toMatchObject({ importe: 1234.56 });
     expect(vistas.length).toBe(2);
     expect(Object.keys(vistas[1].h).filter((k) => k.startsWith('psu-'))).toEqual([]);
+    vistas.length = 0;
+    r = await pedir({ cuentas: ['acc-ipv6'], presente: true });
+    expect(r.saldos['acc-ipv6']).toMatchObject({ importe: 1234.56 });
+    expect(vistas.length).toBe(2);
+
+    // revisión aparte de la 0.7d: un fallo de lectura no es «caducada» si la sesión sigue viva
+    r = await pedir({ cuentas: ['acc-falla-1', 'acc-falla-2'], sesiones: { 'acc-falla-1': 'ses-viva', 'acc-falla-2': 'ses-muerta' } });
+    expect(r.saldos['acc-falla-1'].error).toBe('fallo');
+    expect(r.saldos['acc-falla-2'].error).toBe('caducada');
+    // una app de antes (sin las sesiones): como hasta ahora
+    r = await pedir({ cuentas: ['acc-falla-3'] });
+    expect(r.saldos['acc-falla-3'].error).toBe('caducada');
   } finally {
     globalThis.fetch = fetchAntes;
   }

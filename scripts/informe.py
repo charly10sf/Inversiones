@@ -943,7 +943,8 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previ
     # 0.7d: las ideas, con el 3.8 o el 3.6. Si no contesta ninguno (saturados o sin cupo), se quedan las de la vez anterior
     # y se reintenta en otra pasada; Flash-Lite solo si no hay ideas de menos de 2 días (el 28 oct salieron con él y se
     # quedaron todo el día). Con reserva=False no sale como fallo en la web: es lo esperado
-    vale_lite = not (previa or {}).get("generado") or not hace_menos_de(previa["generado"], HORAS_DECISION_LITE)
+    previa_ok = previa and previa.get("v") == DECISION_V and previa.get("ideas")
+    vale_lite = not previa_ok or not hace_menos_de(previa.get("generado") or "", HORAS_DECISION_LITE)
     buenos = [m for m in [MODELO] + RESERVA if "flash-lite" not in m]
     texto, _ = texto_de(gemini(cuerpo, clave) if vale_lite else gemini(cuerpo, clave, reserva=False, modelos=buenos))
     modelo_usado = USO[-1]["m"] if USO else MODELO  # el que ha decidido (la lectura de esta pasada va con otro)
@@ -1133,6 +1134,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
     nuevo = informe_cartera(ruta_inst, dir_anterior, dir_salida, clave)
     # una decisión nueva al día (o si cambia su formato); entre medias, solo se revisa si hay una noticia gorda
     viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_DECISION)
+    # 0.7d: unas ideas hechas con Flash-Lite se intentan mejorar en cuanto contesten el 3.8 o el 3.6 (cada 2 horas)
+    viejo = viejo or "flash-lite" in str((decision or {}).get("modelo") or "")
     if not viejo and valores:
         decision = revisar(decision, lectura, valores)
     # si la última vez falló (cuota de Gemini agotada, por ejemplo), no se reintenta hasta pasadas 2 horas

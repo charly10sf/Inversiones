@@ -228,3 +228,26 @@ test('con el 3.8 saturado contesta el 3.6 sin esperar, y razonando en medio', as
   await expect(page.locator('#asCuerpo')).toContainText('Contesta gemini-3.5-flash-lite', { timeout: 40_000 });
   expect(pedidas.map((p) => p.modelo)).toEqual(['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.6-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite']);
 });
+
+// revisión aparte de la 0.7d: quien eligió el 3.6 no gasta el 3.8 porque el 3.6 se sature, y si un modelo no acepta el
+// razonamiento en medio, se pide con el suyo antes que sin ninguno
+test('con el 3.6 elegido no salta al 3.8, y sin «medio» prueba su nivel antes que ninguno', async ({ page, context, errores }) => {
+  const pedidas = [];
+  await preparada(page, context, (r) => {
+    const url = r.request().url(), cuerpo = JSON.parse(r.request().postData() || '{}');
+    const modelo = (url.match(/models\/([\w.-]+):/) || [])[1];
+    if (/:streamGenerateContent/.test(url)) {
+      const pensar = ((cuerpo.generationConfig || {}).thinkingConfig || {}).thinkingLevel || null;
+      pedidas.push({ modelo, pensar });
+      if (modelo === 'gemini-3.6-flash' && pensar === 'medium') return r.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: { code: 400, message: 'thinking level medium is not supported for this model', status: 'INVALID_ARGUMENT' } }) });
+      if (modelo === 'gemini-3.6-flash') return r.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: { code: 503, message: 'high demand', status: 'UNAVAILABLE' } }) });
+      return r.fulfill({ status: 200, contentType: 'text/event-stream', body: sse([{ text: `Contesta ${modelo}.` }]) });
+    }
+    return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ models: [], candidates: [{ content: { parts: [{ text: '{}' }] } }] }) });
+  });
+  await page.evaluate(() => guardarCfgAsesor({ modelo: 'gemini-3.6-flash' }));
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  await expect(page.locator('#asCuerpo')).toContainText('Contesta gemini-3.5-flash-lite', { timeout: 40_000 });
+  // medio → 400 → alto → saturado (y sus dos reintentos) → la rápida; nunca el 3.8
+  expect(pedidas.map((p) => `${p.modelo}:${p.pensar}`)).toEqual(['gemini-3.6-flash:medium', 'gemini-3.6-flash:high', 'gemini-3.6-flash:high', 'gemini-3.6-flash:high', 'gemini-3.5-flash-lite:null']);
+});

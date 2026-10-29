@@ -431,7 +431,7 @@ function pantallaCrear() {
     const kek = await derivarClave(p1, S.salt, S.iter);
     S.cartera = importada || { version: 1, posiciones: [], efectivo: [], aportaciones: [], limite_acciones: 20 };
     // 0.5: la cartera nueva ya nace en el formato 2, con su código de recuperación (se enseña al entrar)
-    if (PERFIL_CUENTA || PERFIL_LOCAL || CFG.dev) { const sb = await sobreNuevo(kek, S.salt, S.iter); S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.cartera.kit = sb.kit; S.kitRecien = sb.kv.kid; }
+    if (PERFIL_CUENTA || PERFIL_LOCAL || CFG.dev) { const sb = await sobreNuevo(kek, S.salt, S.iter); S.key = sb.key; S.kv = sb.kv; S.kek = kek; S.cartera.kit = sb.kit; S.kitRecien = sb.kv.kid; S.kitSesion = sb.kv.kid; }
     else { S.key = kek; S.kv = null; }
     if ($('#recordar').checked) await recordarClave();
     const ok = await guardarCartera('Crear cartera cifrada');
