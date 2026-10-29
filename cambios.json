@@ -1,6 +1,34 @@
 {
  "versiones": [
   {
+   "v": "0.7d",
+   "f": "2026-10-30",
+   "h": "00:05",
+   "t": "Tu contraseña, más segura; GrowIA, más rápida",
+   "commits": [
+    {
+     "cuando": "2026-10-30 00:05",
+     "asunto": "0.7d: contraseña con la de ahora, botones de «He olvidado» con su nombre, banco al abrir, ideas sin Flash-Lite y GrowIA más rápida",
+     "detalle": [
+      "Lo vio Carlos al probar la 0.5 (29 oct): «Cambiar la contraseña» solo pedía la nueva. Ahora hay que escribir la de ahora o el código de recuperación (claveConActual / esContrasenaV1); con la cartera abierta ya no basta",
+      "«He olvidado la contraseña de la cuenta» (correo de Firebase) y «He olvidado la contraseña de mi cartera» (el código); la pantalla de la cuenta avisa de que el código se usa después. Carlos pulsó el de la cuenta buscando el código",
+      "Banco: al abrir GrowFolio, al volver a ella (si hace más de 10 minutos) y al pulsar «Actualizar», la lectura del saldo va con las cabeceras PSU del navegador (Psu-Ip-Address, Psu-User-Agent…) y el banco no aplica su tope de unas 4 al día; sola, cada 4 horas y sin ellas. Si el banco pide alguna que no hay, el Worker la repite sin ninguna",
+      "Action: las ideas del día solo con el 3.8 o el 3.6 (el 28 oct salieron con Flash-Lite y se quedaron todo el día); Flash-Lite solo si no hay ideas de menos de 2 días. El informe ya no prueba la búsqueda en Google en cada pasada (429 siempre en el plan gratis; GEMINI_BUSQUEDA=1 cuando se pague)",
+      "GrowIA: en las preguntas, la respuesta normal razona en medio (el análisis de la cartera sigue en alto) y, con el 3.8 saturado, salta al 3.6 sin esperar 4 + 8 s; solo espera cuando no queda otro de la respuesta normal",
+      "Pruebas nuevas: la contraseña y los botones en tests/humo.spec.js, tests/efectivo-banco.spec.js, tests/worker.spec.js (el Worker con fetch de imitación), el salto al 3.6 en tests/growia.spec.js y las ideas en tests/scripts/test_informe_modelos.py",
+      "Revisión aparte (1 media de seguridad, 2 medias del banco, varias leves; nada grave), todo arreglado: ver el código de recuperación y generar otro piden siempre la contraseña, salvo el recién creado en esta sesión (se olvida al salir de GrowFolio o al bloquear; lo abierto, a los 5 minutos); el recordatorio diario ya no la pide solo, avisa. Con el código se podía cambiar la contraseña sin saberla",
+      "Cambiar la contraseña: el sobre se comprueba antes de verificar (si llega otro de otro dispositivo, no se toca), los campos van en un formulario con el usuario «correo (cartera)» para el gestor de contraseñas y la de ahora se borra siempre",
+      "Banco: con las cabeceras PSU, un 400 o 422 se repite sin ellas; «caducada» solo si la sesión de Enable Banking ha terminado (GET /sessions: EXPIRED, REVOKED, CLOSED, CANCELLED, INVALID o 404); la app manda la sesión de cada cuenta. El freno cuenta desde el último intento en el dispositivo (una cuenta que falla ya no pide una y otra vez), cuándo se miró va en el dispositivo y la cartera solo se guarda, en silencio, si cambia el saldo o caduca un permiso. Como tuyo solo con GrowFolio a la vista y desbloqueada; con un Worker de antes, cada 4 horas",
+      "Ideas: Flash-Lite vale también si las de antes son de otro formato o no traen ninguna, y unas de Flash-Lite se intentan mejorar cada 2 horas",
+      "GrowIA: del modelo saturado, solo al que va justo detrás en su orden (quien eligió el 3.6 no gasta el 3.8); si un modelo no acepta el razonamiento en medio, se pide con el suyo antes que sin ninguno",
+      "Segunda revisión aparte (1 media, varias leves), arreglada: conectar un banco se guarda al momento (la lectura de después solo guarda si cambia el efectivo y la conexión se podía perder); el código que se ve sin contraseña va ligado a su cierre (la sal: otro código generado en otro dispositivo ya no vale), caduca a los 30 minutos y al darlo por guardado; pasar al formato 2 desde «Descargar la copia» ya no lo deja ver gratis; claveDatosEnClaro, fuera",
+      "Banco: el Worker dice «presente» solo si ninguna lectura ha tenido que repetirse sin las cabeceras PSU; al volver a GrowFolio, el saldo se pide después de que el bloqueo decida si pide el PIN; si un banco lleva más de 3 días sin dejar leer, un aviso para volver a conectarlo; los datos del banco del dispositivo se borran al cerrar la sesión",
+      "Ideas: las hechas con Flash-Lite se revisan como las demás si llega una noticia gorda"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7c",
    "f": "2026-10-25",
    "h": "12:10",

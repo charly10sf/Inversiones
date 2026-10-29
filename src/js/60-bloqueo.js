@@ -54,7 +54,7 @@ const pedirHuella = (c) => (c.huella && c.huella.tipo === 'app' ? huellaApp() : 
 /* la pantalla: cuatro puntos, teclado numérico grande y, si la hay, la huella */
 function pantallaBloqueo(alAbrir, conContrasena) {
   if (S.demo) return;  // 0.6d: en la cartera de prueba no hay nada tuyo que bloquear (el PIN se pide al salir)
-  S.kitAbierto = null;
+  S.kitAbierto = null; S.kitSesion = null;
   const c = cfgBloqueo(); if (!c) return alAbrir();
   $$('.bloqueo').forEach((x) => x.remove());
   const el = document.createElement('div');

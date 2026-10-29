@@ -120,21 +120,27 @@ async function recifrarLocales(vieja, nueva) {
     } catch (e) { /* ya estaba con la nueva, o no se puede: se queda como está */ }
   }
 }
-// la clave de datos en claro (un momento, para volver a cerrarla): con el código guardado en la cartera, con la clave
-// de la contraseña de esta sesión o, si no hay otra forma y pedir es true, con la contraseña de ahora
-async function claveDatosEnClaro(pedir) {
-  if (!S.kv) return null;
-  const kit = S.cartera && S.cartera.kit, rec = S.kv.k.rec, pass = S.kv.k.pass;
-  if (kit && kit.codigo && kit.salt === rec.salt) { try { return await abrirClave(await claveCodigo(kit.codigo, b64.dec(rec.salt), rec.iter), rec); } catch (e) {} }
-  if (S.kek) { try { return await abrirClave(S.kek, pass); } catch (e) {} }
-  return pedir ? claveConContrasena(typeof pedir === 'string' ? pedir : '') : null;
-}
-// comprobar que eres tú: la contraseña de ahora abre su cierre. Devuelve la clave de datos en claro (o null)
+// comprobar que eres tú: la contraseña de ahora abre su cierre. Devuelve la clave de datos en claro (o null). 0.7d: ya
+// no hay un camino que la dé sin pedir nada (claveDatosEnClaro, que tiraba del código guardado dentro o de la sesión)
 async function claveConContrasena(texto) {
   if (!S.kv) return null;
   const pass = S.kv.k.pass, p = await pedirContrasenaActual(texto); if (!p) return null;
   try { const kek = await derivarClave(p, b64.dec(pass.salt), pass.iter), raw = await abrirClave(kek, pass); if (S.kv && S.kv.k.pass === pass) S.kek = kek; return raw; }
   catch (e) { toast(L('Esa no es la contraseña de tu cartera.', "That isn't your portfolio password."), 5000); return null; }
+}
+// 0.7d: para cambiar la contraseña no vale con tener la cartera abierta: hay que escribir la de ahora o el código de
+// recuperación. Devuelve la clave de datos en claro si lo escrito abre uno de los dos cierres (o null)
+async function claveConActual(x) {
+  if (!S.kv || !x) return null;
+  const { pass, rec } = S.kv.k;
+  if (rec && codigoValido(x)) { try { return await abrirClave(await claveCodigo(x, b64.dec(rec.salt), rec.iter), rec); } catch (e) { /* no era el código: se prueba como contraseña */ } }
+  try { return await abrirClave(await derivarClave(x, b64.dec(pass.salt), pass.iter), pass); } catch (e) { return null; }
+}
+// lo mismo con una cartera aún en el formato 1: la contraseña de ahora tiene que abrir lo último guardado
+async function esContrasenaV1(x) {
+  const t = S.enc && S.enc.texto, f = formatoDe(t);
+  if (!x || !f || f.v === 2) return false;
+  try { await abrirConContrasena(t, x); return true; } catch (e) { return false; }
 }
 // la contraseña de ahora, en una hoja (para enseñar el código o cambiarlo cuando no hay otra forma de comprobar que eres tú)
 function pedirContrasenaActual(texto) {

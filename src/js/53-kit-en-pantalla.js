@@ -3,20 +3,38 @@
    siempre en Ajustes, Seguridad. Para darlo por guardado hay que escribir uno de sus grupos: así se comprueba que lo
    tienes apuntado de verdad. «Generar uno nuevo» deja sin valor el anterior. */
 const conKit = () => !!(S.kv || PERFIL_LOCAL || CFG.dev);
+// 0.7d: con el código se puede cambiar la contraseña, así que verlo pide siempre la contraseña de la cartera, salvo el
+// código recién creado en esta sesión y lo ya abierto hace menos de 5 minutos (se olvida al salir de GrowFolio o al
+// bloquear). Antes se enseñaba sin pedir nada mientras no lo hubieras guardado
+// (segunda revisión) los dos van con el código concreto (la sal de su cierre: si se genera otro en otro dispositivo, ya no
+// valen) y caducan: el recién creado, a los 30 minutos o al darlo por guardado; lo abierto con la contraseña, a los 5
+const KIT_ABIERTO_MS = 5 * 60e3, KIT_SESION_MS = 30 * 60e3;
+const saltKit = () => (S.kv && S.kv.k && S.kv.k.rec && S.kv.k.rec.salt) || null;
+const kitVale = (x, ms) => !!x && !!saltKit() && x.salt === saltKit() && Date.now() - x.t < ms;
+const kitLibre = () => kitVale(S.kitSesion, KIT_SESION_MS) || kitVale(S.kitAbierto, KIT_ABIERTO_MS);
+// el código recién creado aquí (al crear la cartera, al pasar al formato 2 después de escribir la contraseña o al generar otro)
+function marcarKitSesion() { S.kitSesion = saltKit() ? { salt: saltKit(), t: Date.now() } : null; }
+function olvidarKitAbierto() { S.kitAbierto = null; S.kitSesion = null; }
+document.addEventListener('visibilitychange', () => { if (document.hidden) olvidarKitAbierto(); });
 async function verKit() {
   if (!S.cartera || !conKit()) return;
-  // una cartera aún en el formato 1: se pasa ahora (el código nace con ella)
-  if (!S.kv) { toast(L('Creando tu código de recuperación…', 'Creating your recovery code…'), 3000); await pasarAV2(true); }
+  // una cartera aún en el formato 1: se pasa ahora (el código nace con ella), después de comprobar la contraseña
+  if (!S.kv) {
+    const p = await pedirContrasenaActual(L('Para crear tu código de recuperación, escribe la contraseña de tu cartera.', 'To create your recovery code, type your portfolio password.'));
+    if (!p) return;
+    if (!(await esContrasenaV1(p))) return toast(L('Esa no es la contraseña de tu cartera.', "That isn't your portfolio password."), 5000);
+    toast(L('Creando tu código de recuperación…', 'Creating your recovery code…'), 3000);
+    if (await pasarAV2(true) && S.kv) marcarKitSesion();
+  }
   if (!S.kv) return toast(L('Ahora no se puede crear: hace falta conexión. Prueba en un momento.', "It can't be created right now: it needs a connection. Try again in a moment."), 6000);
   // creado aquí, pero aún sin llegar a tu cuenta: se enseña en cuanto llegue (si no llegara, no valdría)
   if (!confirmadoV2()) { toast(L('Tu código está listo: te lo enseño en cuanto llegue a tu cuenta.', 'Your code is ready: I will show it as soon as it reaches your account.'), 5000); setTimeout(() => revisarKit(), 3000); return; }
   const kit = S.cartera.kit;
   // el código de dentro no es el que abre la cartera (si se cambió a la vez en dos dispositivos): uno nuevo
   if (!kit || !kit.codigo || kit.salt !== S.kv.k.rec.salt) return nuevoCodigo(L('Tu cartera no tiene un código de recuperación que la abra (pasa si se cambió a la vez en dos dispositivos).', "Your portfolio has no recovery code that opens it (it happens if it was changed on two devices at once)."));
-  // ya guardado: para volver a verlo, la contraseña (una vez por sesión)
-  if (kit.guardado && S.kitAbierto !== S.kv.kid) {
+  if (!kitLibre()) {
     if (!(await claveConContrasena(L('Para ver tu código de recuperación, escribe la contraseña de tu cartera.', 'To see your recovery code, type your portfolio password.')))) return;
-    S.kitAbierto = S.kv.kid;
+    S.kitAbierto = { salt: saltKit(), t: Date.now() };
   }
   const grupos = kit.codigo.split('-'), n = crypto.getRandomValues(new Uint8Array(1))[0] % grupos.length, app = !!window.InversionesApp;
   const correo = FB.user && FB.user.email ? FB.user.email : '';
@@ -34,12 +52,13 @@ async function verKit() {
   h.el.classList.add('hoja-kit');
   LS.set('inv-kit-visto', hoyIso());
   $('#kCopiar', h.el).onclick = async () => { try { await navigator.clipboard.writeText(kit.codigo); toast(L('Código copiado', 'Code copied')); } catch (e) { toast(kit.codigo, 8000); } };
-  if ($('#kBajar', h.el)) $('#kBajar', h.el).onclick = () => descargarTexto(`growfolio-codigo-recuperacion.txt`, [L('GrowFolio · Código de recuperación de tu cartera', 'GrowFolio · Your portfolio recovery code'), '', kit.codigo, '', correo ? L(`Cuenta: ${correo}`, `Account: ${correo}`) : '', L(`Creado: ${kit.creado.slice(0, 10)}`, `Created: ${kit.creado.slice(0, 10)}`), '', L('Si olvidas la contraseña de tu cartera: en la pantalla de la contraseña, toca «He olvidado la contraseña» y escribe este código.', 'If you forget your portfolio password: on the password screen, tap «I forgot the password» and type this code.')].filter((x, i, a) => x !== '' || a[i - 1] !== '').join('\n'));
+  if ($('#kBajar', h.el)) $('#kBajar', h.el).onclick = () => descargarTexto(`growfolio-codigo-recuperacion.txt`, [L('GrowFolio · Código de recuperación de tu cartera', 'GrowFolio · Your portfolio recovery code'), '', kit.codigo, '', correo ? L(`Cuenta: ${correo}`, `Account: ${correo}`) : '', L(`Creado: ${kit.creado.slice(0, 10)}`, `Created: ${kit.creado.slice(0, 10)}`), '', (correo ? L('Si olvidas la contraseña de tu cartera: entra con tu cuenta y, en la pantalla que te pide la contraseña de tu cartera, toca «He olvidado la contraseña de mi cartera» y escribe este código.', 'If you forget your portfolio password: sign in with your account and, on the screen that asks for your portfolio password, tap «I forgot my portfolio password» and type this code.') : L('Si olvidas la contraseña de tu cartera: en la pantalla que te pide la contraseña, toca «He olvidado la contraseña de mi cartera» y escribe este código.', 'If you forget your portfolio password: on the screen that asks for the password, tap «I forgot my portfolio password» and type this code.'))].filter((x, i, a) => x !== '' || a[i - 1] !== '').join('\n'));
   const comp = $('#kComp', h.el);
   if (comp) comp.onsubmit = async (ev) => {
     ev.preventDefault();
     if (normCodigo($('#kGrupo', h.el).value) !== grupos[n]) { $('#kErr', h.el).textContent = L(`No coincide con el grupo ${n + 1}. Míralo en lo que has guardado.`, `It doesn't match group ${n + 1}. Check what you saved.`); return; }
     S.cartera.kit = { ...S.cartera.kit, guardado: new Date().toISOString() };
+    S.kitSesion = null;
     await guardarCarteraCallada('Código de recuperación guardado');
     h.cerrar(true); pintar(); toast(L('Hecho: tu cartera ya tiene salida si olvidas la contraseña', 'Done: your portfolio is safe if you forget the password'), 5000);
   };
@@ -52,7 +71,7 @@ async function nuevoCodigo(motivo) {
   if (!S.kv || !S.cartera) return;
   if (!confirmadoV2()) return toast(L('Ahora no se puede: hace falta conexión. Prueba en un momento.', "Not right now: it needs a connection. Try again in a moment."), 5000);
   if (!confirm(motivo ? `${motivo} ${L('¿Generar uno nuevo ahora?', 'Generate a new one now?')}` : L('El código que tienes guardado dejará de abrir tu cartera y tendrás que guardar el nuevo. Las copias de seguridad que descargaste antes se siguen abriendo con él. ¿Generar uno nuevo?', 'The code you saved will stop opening your portfolio and you will have to save the new one. Backups you downloaded before still open with it. Generate a new one?'))) return;
-  const raw = await claveDatosEnClaro(L('Para generar un código nuevo, escribe la contraseña de tu cartera.', 'To generate a new code, type your portfolio password.'));
+  const raw = await claveConContrasena(L('Para generar un código nuevo, escribe la contraseña de tu cartera.', 'To generate a new code, type your portfolio password.'));
   if (!raw) return;
   const kid = S.kv.kid, codigo = codigoNuevo(), rsalt = crypto.getRandomValues(new Uint8Array(16));
   const rec = await cierreDe(await claveCodigo(codigo, rsalt), raw, rsalt, ITER_COD, (+S.kv.k.rec.n || 0) + 1);
@@ -60,7 +79,7 @@ async function nuevoCodigo(motivo) {
   if (!S.kv || S.kv.kid !== kid || !S.cartera) return toast(L('Tu cartera acaba de cambiar en otro dispositivo. Vuelve a intentarlo.', 'Your portfolio just changed on another device. Try again.'), 5000);
   S.kv = { kid, k: { ...S.kv.k, rec } };
   S.cartera.kit = { codigo, salt: rec.salt, creado: new Date().toISOString() };
-  S.kitAbierto = kid;
+  marcarKitSesion();
   await guardarCarteraCallada('Código de recuperación nuevo');
   verKit();
 }
@@ -129,13 +148,16 @@ function descargarTexto(nombre, texto) {
 async function revisarKit(intento = 0) {
   if (!S.cartera || !S.key) return;
   if (!LS.get('inv-05-desde')) LS.set('inv-05-desde', hoyIso());
-  if (!S.kv) { await pasarAV2(); if (!S.kv) { if (intento < 8 && conKit()) setTimeout(() => revisarKit(intento + 1), 8000); return; } }
+  // el paso solo al formato 2 (a los 3 días): el código nace aquí y se enseña esa primera vez sin pedir nada
+  if (!S.kv) { await pasarAV2(); if (!S.kv) { if (intento < 8 && conKit()) setTimeout(() => revisarKit(intento + 1), 8000); return; } marcarKitSesion(); }
   const kit = S.cartera.kit;
   if (!kit || kit.guardado || !kit.codigo) return;
   if (S.kitRecien !== S.kv.kid && LS.get('inv-kit-visto') === hoyIso()) return;
   const ocupado = document.querySelector('.hoja-fondo, #asesorFondo, .tour, .intro, .estreno, .bloqueo, .ficha-fondo') || document.hidden || !confirmadoV2();
   if (ocupado) { if (intento < 30) setTimeout(() => revisarKit(intento + 1), 5000); return; }
   S.kitRecien = null;
+  // 0.7d: si para verlo hace falta la contraseña, no se pide sola: un aviso que lleva a él
+  if (!kitLibre()) { LS.set('inv-kit-visto', hoyIso()); return toast(L('Aún no has guardado tu código de recuperación: está en Ajustes, Seguridad.', "You haven't saved your recovery code yet: it's in Settings, Security."), 7000); }
   verKit();
 }
 /* Formato 1 → 2: un sobre nuevo con la clave de la contraseña que ya se tiene (no hace falta escribirla). La sesión pasa

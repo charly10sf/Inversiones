@@ -49,7 +49,7 @@ function arrancar() {
   // 0.6: lo del banco va en su trozo; solo se baja al volver de dar permiso al banco o si tienes alguno conectado
   const q = new URLSearchParams(location.search);
   if (q.has('state') && (q.has('code') || q.has('error'))) setTimeout(() => vueltaDelBanco().catch((e) => console.warn('banco', e)), 1500);
-  setTimeout(() => { if (bancosDe().length) { sincronizarBancos(false); avisoCaducaBanco(); } }, 9000);
+  setTimeout(() => { if (bancosDe().length) { bancoComoTuyo(); avisoCaducaBanco(); } }, 9000);
   clearInterval(S.tickBanco); S.tickBanco = setInterval(() => { if (!document.hidden && bancosDe().length) sincronizarBancos(false); }, 30 * 60e3);
   // con cuenta: el nombre va también dentro de tu perfil cifrado y los cambios de otros dispositivos llegan solos
   if (PERFIL_CUENTA) {
@@ -66,6 +66,16 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden || !S.cartera) return;
   LIVE.asegurar();
   if (Date.now() - S.ultimaCarga > 60000) recargarPrecios(); else { programarParche(); revisarAnalisisIA(); }
+  // 0.7d: al volver a GrowFolio, el saldo del banco como pedido por ti (si hace más de 10 minutos); después de que el
+  // bloqueo (que va más abajo) haya decidido si pide el PIN
+  setTimeout(bancoComoTuyo, 0);
 });
+/* 0.7d: el saldo del banco como pedido por ti, solo si de verdad estás delante: GrowFolio a la vista y desbloqueada (con
+   el PIN o la huella en pantalla, espera a que entres) */
+function bancoComoTuyo(intento = 0) {
+  if (!S.cartera || S.demo || !bancosDe().length || document.hidden) return;
+  if (document.querySelector('.bloqueo') || (typeof necesitaBloqueo === 'function' && necesitaBloqueo())) { if (intento < 60) setTimeout(() => bancoComoTuyo(intento + 1), 5000); return; }
+  sincronizarBancos(false, false, true);
+}
 window.addEventListener('online', () => { S.fallosSubir = 0; if (S.cartera) { LIVE.asegurar(); recargarPrecios(); } if (PERFIL_CUENTA && (S.cartera || LS.get('inv-pend-cuenta'))) sincronizarCuenta(); });
 

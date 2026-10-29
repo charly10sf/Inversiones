@@ -45,10 +45,10 @@ async function tokenEB(env) {
   const firmado = `${json64({ typ: 'JWT', alg: 'RS256', kid: String(env.EB_APP).trim() })}.${json64({ iss: 'enablebanking.com', aud: 'api.enablebanking.com', iat, exp: iat + 3600 })}`;
   return `${firmado}.${b64u(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', claveEB, te.encode(firmado)))}`;
 }
-async function eb(env, metodo, ruta, cuerpo) {
+async function eb(env, metodo, ruta, cuerpo, extra) {
   const r = await fetch((env.EB_API || EB_API) + ruta, {
     method: metodo,
-    headers: { Authorization: `Bearer ${await tokenEB(env)}`, 'Content-Type': 'application/json', Accept: 'application/json' },
+    headers: { Authorization: `Bearer ${await tokenEB(env)}`, 'Content-Type': 'application/json', Accept: 'application/json', ...(extra || {}) },
     body: cuerpo ? JSON.stringify(cuerpo) : undefined,
   });
   const txt = await r.text();
@@ -56,6 +56,28 @@ async function eb(env, metodo, ruta, cuerpo) {
   return { ok: r.ok, status: r.status, j: j || {} };
 }
 const motivoEB = (r) => String((r.j && (r.j.message || r.j.detail || r.j.error)) || '').slice(0, 160);
+/* 0.7d: con la app abierta delante (al abrirla o al pulsar «Actualizar»), la lectura del saldo lleva las cabeceras PSU
+   de tu navegador. Así cuenta como pedida por ti y el banco no aplica su tope de unas 4 lecturas al día cuando no estás
+   (lo que se pide solo, cada 4 horas, va sin ellas). No se guarda nada: van del navegador a Enable Banking y al banco.
+   Sin la ubicación (Psu-Geo-Location): no la tenemos ni hace falta. */
+const PSU_DE = [['User-Agent', 'Psu-User-Agent'], ['Referer', 'Psu-Referer'], ['Accept', 'Psu-Accept'], ['Accept-Charset', 'Psu-Accept-Charset'], ['Accept-Encoding', 'Psu-Accept-Encoding'], ['Accept-Language', 'Psu-Accept-language']];
+function cabecerasPsu(req) {
+  const ip = req.headers.get('CF-Connecting-IP');
+  if (!ip) return null;
+  const o = { 'Psu-Ip-Address': ip };
+  for (const [de, a] of PSU_DE) { const v = req.headers.get(de); if (v) o[a] = v.slice(0, 400); }
+  return o;
+}
+// con las cabeceras PSU, el banco dice que la petición está mal (pide alguna que no tenemos, todas o ninguna, o no le
+// gusta una): se lee como siempre, sin ellas, antes de pensar que el permiso ha caducado
+const fallaConPsu = (r) => !r.ok && ([400, 422].includes(r.status) || /PSU_HEADER/i.test(JSON.stringify(r.j || {})));
+// 0.7d: el código HTTP no basta para saber si el permiso ha caducado: se mira el estado de la sesión en Enable Banking
+const SESION_TERMINADA = ['EXPIRED', 'REVOKED', 'CLOSED', 'CANCELLED', 'INVALID'];
+async function sesionTerminada(env, sesion) {
+  const r = await eb(env, 'GET', `/sessions/${encodeURIComponent(sesion)}`);
+  if (r.status === 404) return true;
+  return r.ok && SESION_TERMINADA.includes(String(r.j.status || '').toUpperCase());
+}
 
 /* ---------- quién llama: el token de Firebase de su cuenta de GrowFolio ---------- */
 let jwks = null, jwksT = 0;
@@ -154,14 +176,30 @@ async function banco(ruta, url, req, env, res) {
   // el saldo de cada cuenta
   if (ruta === 'saldos') {
     const ids = (Array.isArray(datos.cuentas) ? datos.cuentas : []).filter(idValido).slice(0, 12);
-    const saldos = {};
+    const saldos = {}, psu = datos.presente === true ? cabecerasPsu(req) : null;
+    // la sesión de cada cuenta (la app desde la 0.7d): con ella se comprueba si el permiso ha caducado de verdad
+    const sesiones = datos.sesiones && typeof datos.sesiones === 'object' ? datos.sesiones : {};
+    const vistas = new Map();
+    let sinPsu = false;   // alguna se ha tenido que leer sin las cabeceras: esa lectura gasta del tope del banco
     await Promise.all(ids.map(async (id) => {
-      const r = await eb(env, 'GET', `/accounts/${encodeURIComponent(id)}/balances`);
-      if (!r.ok) { saldos[id] = { error: [401, 403, 404, 422].includes(r.status) ? 'caducada' : 'fallo', status: r.status }; return; }
+      const camino = `/accounts/${encodeURIComponent(id)}/balances`;
+      let r = await eb(env, 'GET', camino, null, psu);
+      if (psu && fallaConPsu(r)) { r = await eb(env, 'GET', camino); sinPsu = true; }
+      if (!r.ok) {
+        let caducada;
+        if (r.status === 429 || r.status >= 500) caducada = false;
+        else if (idValido(sesiones[id])) {
+          const ses = sesiones[id];
+          if (!vistas.has(ses)) vistas.set(ses, sesionTerminada(env, ses).catch(() => false));
+          caducada = await vistas.get(ses);
+        } else caducada = [401, 403, 404, 422].includes(r.status);   // una app de antes, sin la sesión: como siempre
+        saldos[id] = { error: caducada ? 'caducada' : 'fallo', status: r.status, motivo: motivoEB(r) };
+        return;
+      }
       const b = elegirSaldo(r.j.balances);
       saldos[id] = b ? { importe: +b.balance_amount.amount, moneda: b.balance_amount.currency || 'EUR', tipo: b.balance_type || '', fecha: b.reference_date || b.last_change_date_time || null } : { error: 'sin-saldo' };
     }));
-    return res({ saldos });
+    return res({ saldos, presente: !!psu && !sinPsu });
   }
   // desconectar: se borra la sesión en Enable Banking (el permiso deja de valer)
   if (ruta === 'borrar') {

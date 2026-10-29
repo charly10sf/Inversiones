@@ -614,14 +614,15 @@ async function mejorFlash(clave) {
 }
 /* cadena: los modelos que puede usar, en orden (la revisión automática, solo el 3.6 y Flash-Lite: el cupo del 3.8 queda
    para las preguntas); maxBusquedas: búsquedas en internet que salen bien como mucho (0.7: una por pregunta) */
-async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, modelo: pedido, herramientas = true, cadena = null, maxBusquedas = 1 }) {
+async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, modelo: pedido, herramientas = true, cadena = null, maxBusquedas = 1, pensar = null }) {
   let cfg = cfgAsesor();
   if (pedido && MODELOS[pedido]) cfg = { ...cfg, modelo: pedido };
   const clave = AS.clave;
   const contents = mensajes.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: typeof m.content === 'string' ? [{ text: m.content }] : m.content }));
   const sysTexto = (Array.isArray(sistema) ? sistema.map((b) => b.text) : [String(sistema || '')]).join('\n\n');
   const usarWeb = web !== false && cfg.web && !AS.sinWeb;
-  let reintentos = 0, conPensar = true, cambiado = false;
+  // nivel: el razonamiento pedido (0.7d: 'medium' en las preguntas); si un modelo no lo acepta, el suyo; y si tampoco, sin él
+  let reintentos = 0, conPensar = true, cambiado = false, nivel = pensar;
   const orden = () => (cadena ? cadena.filter((m) => MODELOS[m]) : ordenIA(cfg.modelo));
   let modelo = cadena ? orden().find((m) => !agotadosIA().includes(m)) : modeloVivo(cfg);
   if (!modelo) { turno.modelo = orden()[0]; const e = new Error(`Hoy ya no queda cupo en tu clave para la revisión automática: se hará cuando se renueve, a las ${horaRenuevaIA()}.`); e.estado = 429; e.diario = true; e.previsto = true; throw e; }
@@ -630,13 +631,13 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
   // del 3.8 al 3.6 sigue siendo la respuesta normal: solo se avisa si contesta la rápida
   if (!cadena && esRapida(modelo) && !esRapida(cfg.modelo)) turno.partes.push({ tipo: 'paso', txt: 'La respuesta normal ya ha gastado su cupo de hoy: contesta la rápida' });
   // si el modelo se agota a mitad, se empieza la respuesta de nuevo con el siguiente
-  const saltar = (porque) => {
-    const fuera = agotadosIA(), otro = orden().find((x) => !probados.has(x) && !fuera.includes(x));
+  const saltar = (porque, vale = () => true) => {
+    const fuera = agotadosIA(), otro = orden().find((x) => !probados.has(x) && !fuera.includes(x) && vale(x));
     if (!otro) return false;
     turno.partes = turno.partes.filter((x) => x.tipo === 'paso');
     // del 3.8 al 3.6 sigue siendo la respuesta normal: sin aviso; a la rápida, sí
     if (esRapida(otro) && !esRapida(modelo)) turno.partes.push({ tipo: 'paso', txt: `La respuesta normal ${porque.replace('saturado', 'saturada')}: sigo con la rápida` });
-    modelo = otro; probados.add(otro); AS.modeloVivo = otro; turno.modelo = otro; contents.length = inicio; reintentos = 0; conPensar = true;
+    modelo = otro; probados.add(otro); AS.modeloVivo = otro; turno.modelo = otro; contents.length = inicio; reintentos = 0; conPensar = true; nivel = pensar;
     // empieza de cero: lo que buscó el anterior no lo ha leído este
     busquedas = 0; intentos = 0; turno.citas.length = 0; turno.resultados.length = 0;
     alCambiar(); return true;
@@ -647,7 +648,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     const pasosAntes = turno.partes.length;
     const cuerpo = {
       systemInstruction: { parts: [{ text: sysTexto }] }, contents, ...(herramientas ? { tools: herramientasGemini(usarWeb) } : {}),
-      generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: m.pensar } } : {}) },
+      generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: nivel || m.pensar } } : {}) },
     };
     let r;
     try { r = await llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar); }
@@ -658,12 +659,17 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
       if (esCorteRed(e) && cortes < 2) { cortes++; turno.partes.length = pasosAntes; turno.partes.push({ tipo: 'paso', txt: `Se ha cortado la conexión con Google: lo intento otra vez${cortes > 1 ? ` (${cortes}.ª)` : ''}` }); alCambiar(); await dormir(1500 * cortes, signal); vuelta--; continue; }
       if (esCorteRed(e) && saltar('no contesta')) { cortes = 0; vuelta--; continue; }
       if (esCorteRed(e)) { const t = new Error(`Se ha cortado la conexión con Google tres veces seguidas (${e.message}). Mira tu conexión y vuelve a preguntar.`); t.corte = true; throw t; }
-      if (e.estado === 400 && conPensar && /thinking/i.test(e.msg || '')) { conPensar = false; vuelta--; continue; }
+      if (e.estado === 400 && conPensar && /thinking/i.test(e.msg || '')) { if (nivel && nivel !== m.pensar) nivel = null; else conPensar = false; vuelta--; continue; }
       if (e.estado === 404 && (pedido || modelo !== cfg.modelo) && saltar('no está disponible con tu clave')) { vuelta--; continue; }
       if (e.estado === 404 && !pedido && !cambiado && modelo === cfg.modelo) { const nuevo = await mejorFlash(clave); if (nuevo && nuevo !== cfg.modelo) { guardarCfgAsesor({ modelo: nuevo }); cfg = cfgAsesor(); modelo = nuevo; AS.modeloVivo = nuevo; turno.modelo = nuevo; probados.add(nuevo); cambiado = true; vuelta--; continue; } }
       if (e.estado === 429 && e.diario) { marcarAgotado(modelo); if (saltar('ha gastado su cupo de hoy')) { vuelta--; continue; } }
       if (e.estado === 429 && reintentos >= 3 && saltar('sigue pidiendo esperar')) { vuelta--; continue; }
       if (e.estado === 429 && reintentos < 3 && !(e.espera > 60)) { reintentos++; const seg = Math.ceil(e.espera || 15 * reintentos); turno.partes.push({ tipo: 'paso', txt: `Google pide esperar ${seg} s (límite gratuito por minuto)` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
+      // 0.7d: el 3.8 saturado pasa al 3.6 (que sigue siendo la respuesta normal) sin esperar; solo se espera y se reintenta
+      // cuando no queda otro de la respuesta normal
+      // (solo al que va justo detrás en su orden: quien eligió el 3.6 no gasta el cupo del 3.8 por esto)
+      const detras = orden().slice(orden().indexOf(modelo) + 1).find((x) => !probados.has(x) && !agotadosIA().includes(x));
+      if (e.estado >= 500 && detras && !esRapida(modelo) && !esRapida(detras) && saltar('está saturado', (x) => x === detras)) { vuelta--; continue; }
       if (e.estado >= 500 && reintentos < 2) { reintentos++; const seg = 4 * reintentos; turno.partes.push({ tipo: 'paso', txt: `Google está saturado: lo intento otra vez en ${seg} s` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
       if (e.estado >= 500 && saltar('está saturado')) { vuelta--; continue; }
       if (e.estado === 429 && e.diario) e.message = `Tu clave gratis de Google ha gastado hoy el cupo de sus modelos. Se renueva a las ${horaRenuevaIA()}. Es el cupo de tu clave, no de GrowFolio: cada uno usa la suya.`;
@@ -725,7 +731,8 @@ async function preguntarAsesor(texto) {
     // contesta sin ellas) y si llegan nuevas, la foto se rehace
     if (!S.fichas || S.fichasId !== ((S.precios && S.precios.fichas_id) || '')) await conTiempo(cargarFichas(), 3000).catch(() => null);
     refrescarFoto(!AS.api.length || AS.fotoFichas !== S.fichasId);
-    await conversar({ mensajes: [...AS.api, { role: 'user', content: contenido }], turno, sistema: [].concat(sistemaAsesor()).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []), alCambiar, signal: AS.ctrl.signal });
+    // 0.7d: en las preguntas, la respuesta normal razona en medio (el análisis de la cartera, en alto): contesta antes
+    await conversar({ mensajes: [...AS.api, { role: 'user', content: contenido }], turno, sistema: [].concat(sistemaAsesor()).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []), alCambiar, signal: AS.ctrl.signal, pensar: 'medium' });
   } catch (e) {
     turno.error = e.name === 'AbortError' ? 'Parado.' : !e.corte && /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
     avisarFalloIA(e, 'chat', turno.modelo);

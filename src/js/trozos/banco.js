@@ -1,5 +1,7 @@
 const BANCO = { estado: null, sincT: 0, enCurso: false, avisado: new Set() };
-const BANCO_CADA_H = 4;
+// solo, sin ti delante, cada 4 horas (muchos bancos dejan unas 4 lecturas al día así); al abrir GrowFolio o volver a
+// ella, si hace más de 10 minutos, y al pulsar «Actualizar», va como pedido por ti y no tiene ese tope (0.7d)
+const BANCO_CADA_H = 4, BANCO_PRESENTE_MIN = 10;
 async function workerPide(ruta, cuerpo) {
   if (!urlWorker() || !FB.user) throw new Error('sin-worker');
   const t = await FB.user.getIdToken();
@@ -94,6 +96,8 @@ async function vueltaDelBanco() {
     for (const v of viejas) workerPide('/banco/borrar', { sesion: v }).catch(() => {});
     S.cartera.bancos = ((S.cartera && S.cartera.bancos) || []).filter((b) => b.plataforma !== plataforma);
     for (const c of cuentas) S.cartera.bancos.push({ id: `bk-${c.uid}`, plataforma, banco: r.banco || (pend && pend.banco) || '', pais: r.pais || '', sesion: r.sesion, cuenta: c.uid, nombre: c.nombre, fin: c.fin, hasta: r.hasta || null });
+    // la conexión se guarda ya: la lectura de después solo guarda si cambia el efectivo (segunda revisión de la 0.7d)
+    await guardarCartera(L('Conectar el banco', 'Connect the bank'));
     BANCO.sincT = 0;
     await sincronizarBancos(true, true);
   };
@@ -110,24 +114,42 @@ async function vueltaDelBanco() {
   };
 }
 
-/* el saldo de cada cuenta conectada pasa al efectivo de su plataforma (al abrir y cada BANCO_CADA_H horas) */
-async function sincronizarBancos(forzar, avisar) {
+/* el saldo de cada cuenta conectada pasa al efectivo de su plataforma (al abrir, al volver a GrowFolio y cada
+   BANCO_CADA_H horas). presente: lo pides tú (has abierto GrowFolio o has pulsado «Actualizar»).
+   0.7d (revisión aparte): el freno cuenta desde el último intento en este dispositivo, salga bien o mal (una cuenta que
+   falla ya no hace que se pida una y otra vez), y cuándo se miró cada cuenta se apunta en el dispositivo, no en la
+   cartera: solo se guarda la cartera, en silencio, si cambia el efectivo o caduca un permiso */
+const bancoLeido = (b) => Math.max((b.ultimo && b.ultimo.t) || 0, (LS.get('inv-banco-t', {}) || {})[b.cuenta] || 0);
+async function sincronizarBancos(forzar, avisar, presente) {
   const bs = bancosDe().filter((b) => !b.caducada);
   if (!S.cartera || !bs.length || BANCO.enCurso) return false;
-  if (!forzar && Date.now() - BANCO.sincT < BANCO_CADA_H * 3600e3 && bs.every((b) => b.ultimo && Date.now() - b.ultimo.t < BANCO_CADA_H * 3600e3)) return false;
+  // con un Worker que aún no manda las cabeceras PSU (no dice «presente»), cada lectura gasta del tope del banco
+  const sinPsu = Date.now() - (+LS.get('inv-banco-sin-psu', 0) || 0) < 24 * 3600e3;
+  const cada = presente && !sinPsu ? BANCO_PRESENTE_MIN * 60e3 : BANCO_CADA_H * 3600e3;
+  const intento = Math.max(BANCO.sincT || 0, +LS.get('inv-banco-intento', 0) || 0);
+  if (!forzar && Date.now() - intento < cada) return false;
   if (!(await bancoDisponible())) return false;
-  BANCO.enCurso = true;
+  BANCO.enCurso = true; BANCO.sincT = Date.now(); LS.set('inv-banco-intento', BANCO.sincT);
+  const comoTuyo = !!(presente || forzar);
   try {
-    const r = await workerPide('/banco/saldos', { cuentas: bs.map((b) => b.cuenta) });
-    BANCO.sincT = Date.now();
-    const porPlat = new Map(), caducadas = [];
+    const r = await workerPide('/banco/saldos', { cuentas: bs.map((b) => b.cuenta), presente: comoTuyo, sesiones: Object.fromEntries(bs.map((b) => [b.cuenta, b.sesion])) });
+    if (comoTuyo) { if (r.presente === true) LS.del('inv-banco-sin-psu'); else LS.set('inv-banco-sin-psu', Date.now()); }
+    const porPlat = new Map(), caducadas = [], leidas = LS.get('inv-banco-t', {}) || {};
+    let tocaGuardar = false;
     for (const b of bs) {
       const x = (r.saldos || {})[b.cuenta]; if (!x) continue;
-      if (x.error === 'caducada') { b.caducada = true; caducadas.push(b.plataforma); continue; }
+      if (x.error === 'caducada') { b.caducada = true; caducadas.push(b.plataforma); tocaGuardar = true; continue; }
+      if (x.error === 'fallo' && bancoLeido(b) && Date.now() - bancoLeido(b) > 3 * 864e5 && !BANCO.avisado.has('mudo:' + b.plataforma)) {
+        BANCO.avisado.add('mudo:' + b.plataforma);
+        toast(L(`Hace días que el banco de ${b.plataforma} no deja leer el saldo: si sigue así, vuelve a conectarlo en Efectivo.`, `The bank for ${b.plataforma} hasn't let us read the balance for days: if it keeps happening, reconnect it in Cash.`), 7000);
+      }
       if (x.error || !isFinite(x.importe) || (x.moneda && x.moneda !== 'EUR')) continue;
-      b.ultimo = { importe: x.importe, t: Date.now(), fecha: x.fecha || null };
+      leidas[b.cuenta] = Date.now();
+      // en la cartera, solo si cambia el saldo de esa cuenta (así no sube a la cuenta en cada lectura)
+      if (!b.ultimo || Math.abs((+b.ultimo.importe || 0) - x.importe) >= 0.005) { b.ultimo = { importe: x.importe, t: Date.now(), fecha: x.fecha || null }; tocaGuardar = true; }
       porPlat.set(b.plataforma, (porPlat.get(b.plataforma) || 0) + x.importe);
     }
+    LS.set('inv-banco-t', leidas);
     const cambios = [];
     S.cartera.efectivo = S.cartera.efectivo || [];
     for (const [pl, imp] of porPlat) {
@@ -136,7 +158,7 @@ async function sincronizarBancos(forzar, avisar) {
       const nuevo = Math.round(imp * 100) / 100;
       if (Math.abs((+e.importe || 0) - nuevo) >= 0.005) { cambios.push([pl, nuevo]); e.importe = nuevo; }
     }
-    await guardarCartera(L('Efectivo del banco', 'Cash from the bank'));
+    if (cambios.length || tocaGuardar) await guardarCarteraCallada(L('Efectivo del banco', 'Cash from the bank'));
     if (cambios.length) pintar();
     if (cambios.length && avisar) toast(L(`Efectivo al día con el banco: ${cambios.map(([pl, v]) => `${pl}, ${eur(v)}`).join('; ')}`, `Cash synced with the bank: ${cambios.map(([pl, v]) => `${pl}, ${eur(v)}`).join('; ')}`), 5000);
     else if (avisar) toast(L('Efectivo al día con el banco', 'Cash synced with the bank'));
@@ -165,7 +187,7 @@ async function pintarBancosEf(h) {
   for (const w of $$('[data-ef-banco]', h.el)) {
     const pl = w.dataset.efBanco, bs = bancosDe(pl), inp = w.closest('.campo-ef').querySelector('input');
     if (!bs.length) { w.innerHTML = `<button type="button" class="enlace acento" data-bk-con="${esc(pl)}">${ICONOS.banco}${L('Conectar con el banco', 'Connect the bank')}</button>`; continue; }
-    const cad = bs.some((b) => b.caducada), ult = Math.max(0, ...bs.map((b) => (b.ultimo && b.ultimo.t) || 0));
+    const cad = bs.some((b) => b.caducada), ult = Math.max(0, ...bs.map(bancoLeido));
     inp.readOnly = !cad; inp.classList.toggle('del-banco', !cad);
     w.innerHTML = cad
       ? `<span class="bk-mal">${L('El permiso del banco ha caducado.', 'The bank access has expired.')}</span> <button type="button" class="enlace acento" data-bk-con="${esc(pl)}">${L('Volver a conectar', 'Reconnect')}</button>`
