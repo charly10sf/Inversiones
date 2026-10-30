@@ -251,6 +251,8 @@ function restoEnPerdidas(M, planes) {
 }
 /* lo que pagas (o te ahorras) con cada cosa que te recomienda la web, todo junto */
 function htmlFiscalRecom(M, fa) {
+  // 0.7g: en el modo de todos (estándar) GrowFolio no recomienda nada (CNMV): sin esta tabla ni lo que la anuncia
+  if (esPublico()) return '';
   const anio = new Date().getFullYear(), filas = [];
   const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
   let gan = 0;
@@ -307,6 +309,8 @@ function htmlFiscalDividendos(M) {
 function htmlImpuestos(M) {
   const anio = new Date().getFullYear();
   const fa = fiscalAnio(anio);
+  // lo que cuesta lo que recomienda GrowFolio (vacío en el modo de todos o si no hay nada): solo se anuncia si sale
+  const recom = htmlFiscalRecom(M, fa);
   const nombreI = (id) => esc((S.inst[id] && S.inst[id].corto) || id);
   // si vendieras cada posición hoy (FIFO sobre todo lo que tienes = valor menos coste total)
   const latentes = M.filas.map((f) => {
@@ -322,7 +326,7 @@ function htmlImpuestos(M) {
   const divs = M.filas.filter((f) => f.p && f.p.dividendo_pct);
   return `
     <div class="sec-cab"><h2>Renta de ${anio}</h2><span class="k">se presenta entre abril y junio de ${anio + 1}</span><div class="der"><button class="btn peq" data-accion="fiscal">${ICONOS.lapiz}Datos fiscales de ${anio}</button></div></div>
-    ${!fa.ventas.length && !fa.otras && !fa.rcm && !fa.retenido ? `<div class="fis-vacio"><p><b>${M.dividendos >= 1 ? `Por ahora no has apuntado nada para la renta de ${anio}.` : `Por ahora no pagas nada en la renta de ${anio}.`}</b> ${M.dividendos >= 1 ? (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return `${da && da.bruto >= 1 ? `Por lo que han pagado tus acciones, este año habrás cobrado unos ${eur(da.bruto, 0)} brutos en dividendos (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}), que` : `Tus posiciones reparten unos ${eur(M.dividendos, 0)} brutos al año en dividendos, que`} tributan (desde un ${pctTramo(tramosAhorro()[0][1])} %) aunque no vendas: mira el informe de tu bróker y apunta lo cobrado en «Datos fiscales» para que salga en la cuenta.`; })() : 'Este año no has apuntado ventas ni dividendos.'} Cuando vendas algo, apúntalo en Inicio con «Apuntar compra o venta» y aquí verás lo que te toca.${M.dividendos >= 1 ? '' : ' Si has cobrado dividendos o intereses, ponlos en «Datos fiscales».'}</p><p class="k">Más abajo, lo que pagarías si sigues lo que te recomienda GrowFolio.</p></div>` : `<div class="resumen-fila">
+    ${!fa.ventas.length && !fa.otras && !fa.rcm && !fa.retenido ? `<div class="fis-vacio"><p><b>${M.dividendos >= 1 ? `Por ahora no has apuntado nada para la renta de ${anio}.` : `Por ahora no pagas nada en la renta de ${anio}.`}</b> ${M.dividendos >= 1 ? (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return `${da && da.bruto >= 1 ? `Por lo que han pagado tus acciones, este año habrás cobrado unos ${eur(da.bruto, 0)} brutos en dividendos (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}), que` : `Tus posiciones reparten unos ${eur(M.dividendos, 0)} brutos al año en dividendos, que`} tributan (desde un ${pctTramo(tramosAhorro()[0][1])} %) aunque no vendas: mira el informe de tu bróker y apunta lo cobrado en «Datos fiscales» para que salga en la cuenta.`; })() : 'Este año no has apuntado ventas ni dividendos.'} Cuando vendas algo, apúntalo en Inicio con «Apuntar compra o venta» y aquí verás lo que te toca.${M.dividendos >= 1 ? '' : ' Si has cobrado dividendos o intereses, ponlos en «Datos fiscales».'}</p>${recom ? '<p class="k">Más abajo, lo que pagarías si sigues lo que te recomienda GrowFolio.</p>' : ''}</div>` : `<div class="resumen-fila">
       <div><span class="k">Ventas del año</span><span class="v ${cls(fa.gp)}">${eurS(fa.gp, 0)}</span><small class="k">${fa.ventas.length} en GrowFolio${fa.otras ? `, ${eurS(fa.otras, 0)} fuera` : ''}</small></div>
       <div><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm, 0)}</span><small class="k">${fa.rcm ? 'los que has apuntado' : (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return da && da.bruto >= 1 ? `este año, unos ${eur(da.bruto, 0)} brutos por lo que han pagado tus acciones (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}): mira el informe de tu bróker y apúntalos en Datos fiscales` : 'apúntalos en Datos fiscales'; })()}</small></div>
       <div><span class="k">Base del ahorro</span><span class="v">${eur(fa.base, 0)}</span><small class="k">tramo del ${pctTramo(fa.marginal)} %</small></div>
@@ -331,7 +335,7 @@ function htmlImpuestos(M) {
     </div>`}
     ${fa.ventas.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Venta</th><th class="r">Unidades</th><th class="r">Valor de venta</th><th class="r" title="Hacienda cuenta que vendes primero las que compraste antes (FIFO)">Lo que te costó</th><th class="r">Resultado</th></tr></thead><tbody>${fa.ventas.map((m) => `<tr><td><b style="font-weight:600">${nombreI(m.instrumento)}</b><small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${eur(m.importe || 0)}<small>gastos restados</small></td><td class="r">${eur(m.coste_vendido || 0)}<small>${m.fifo && m.fifo.length ? `${m.fifo.length} ${m.fifo.length === 1 ? 'lote' : 'lotes'}${m.mezcla ? ', con el de partida' : ''}` : ''}</small></td><td class="r ${cls(m.resultado)}">${eurS(m.resultado || 0)}</td></tr>`).join('')}</tbody></table></div>` : ''}
 
-    ${htmlFiscalRecom(M, fa)}
+    ${recom}
     ${plegarSec(htmlFiscalDividendos(M))}
     <div style="margin-top:28px">
       <details class="num-sec"><summary><span><b>Si vendieras hoy</b><small>vender todo costaría unos ${eur(todo, 0)} en la renta de ${anio}; posición a posición</small></span></summary><div class="num-cuerpo">
@@ -449,7 +453,7 @@ function htmlFiscalGuia(M, fa, x) {
 }
 function vistaFiscal(M) {
   const t = S.fisTab === 'renta' ? 'renta' : 'tu';
-  return `<div class="vista-cab"><h1>Hacienda</h1><p>Lo que pagarás en la renta, lo que cuesta cada recomendación, cómo tributa cada cosa y cómo hacer la declaración.</p></div>
+  return `<div class="vista-cab"><h1>Hacienda</h1><p>${esPublico() ? 'Lo que pagarás en la renta, cómo tributa cada cosa y cómo hacer la declaración.' : 'Lo que pagarás en la renta, lo que cuesta cada recomendación, cómo tributa cada cosa y cómo hacer la declaración.'}</p></div>
   <div class="subvistas dos-op" id="fisTabs" role="group" aria-label="Qué ver"><button data-fis="tu" aria-pressed="${t === 'tu'}">${ICONOS.calc}Lo que pagas</button><button data-fis="renta" aria-pressed="${t === 'renta'}">${ICONOS.fiscal}Guía de la renta</button></div>
   ${t === 'renta' ? htmlGuiaRenta(M) : htmlImpuestos(M)}`;
 }

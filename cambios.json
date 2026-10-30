@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.7g",
+   "f": "2026-10-30",
+   "h": "05:00",
+   "t": "Hacienda y GrowIA, más claras",
+   "commits": [
+    {
+     "cuando": "2026-10-30 05:00",
+     "asunto": "0.7g: Hacienda sin recomendaciones en estándar y GrowIA sin la letra pequeña",
+     "detalle": [
+      "Lo vio Claude el 30 oct haciendo capturas para las redes con una cuenta estándar: Hacienda enseñaba «Lo que cuesta lo que te recomienda GrowFolio» (aportar, y desde julio «Vender … con pérdidas») y lo anunciaba arriba y en la cabecera. htmlFiscalRecom no miraba esPublico()",
+      "Ahora, en estándar, sin esa tabla, sin la frase que la anuncia y con la cabecera sin «lo que cuesta cada recomendación». En fundador, la frase solo sale si la tabla tiene algo",
+      "GrowIA: fuera la nota «Gratis con tu clave de Google…» debajo de la caja (lo pidió Carlos: quitaba seriedad). Lo de que los datos solo van de tu navegador a Google sigue en la pantalla de poner la clave",
+      "Prueba nueva: tests/modo-estandar.spec.js"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7f",
    "f": "2026-10-30",
    "h": "02:30",
