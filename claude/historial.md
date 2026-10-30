@@ -51,6 +51,6 @@ Tomadas (23 oct, tarde): la entrada, entera solo la primera vez del día; Pages 
 
 ## Cabecera del roadmap (hasta el 30 oct 2026)
 
-Roadmap de GrowFolio hasta el lanzamiento (23 oct 2026; al día el 30 oct, con la 0.7i publicada).
+Roadmap de GrowFolio hasta el lanzamiento (23 oct 2026; al día el 30 oct, con la 0.7j publicada).
 
 Documento completo, con mercado, competencia, costes y rediseño: https://claude.ai/artifact/2PF3o5DS37iLorTumdTjTb. Este archivo es la copia de trabajo: cada sesión empieza leyéndolo («dime en qué versión estamos y qué toca»). Lo marcado está hecho; lo que no está aquí no se hace. El plan detallado de cada versión está en claude/plan-0.X.md. El de la IA (costes, qué de pago y qué gratis, fases), en claude/plan-ia.md. Las redes (bios, publicaciones, vídeos), en claude/redes.md.
