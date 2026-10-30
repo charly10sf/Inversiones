@@ -386,7 +386,8 @@ function dibujarSparkM(el) {
 /* las ideas compactas del móvil se abren al tocar su cabecera */
 function abrirIdea(h) { const a = h.closest('.idea'); if (!a) return; const on = a.classList.toggle('abierta'); h.setAttribute('aria-expanded', String(on)); }
 document.addEventListener('click', (e) => { const h = e.target.closest('[data-idea-toggle]'); if (h && !e.target.closest('a, button')) abrirIdea(h); });
-document.addEventListener('click', (e) => { const m = e.target.closest('[data-ev-abre]'); if (m) m.classList.toggle('abierto'); });
+// 0.7i: el motivo se abre o se cierra solo si está recortado (o ya abierto); si no, el toque es para abrir la empresa
+document.addEventListener('click', (e) => { const m = e.target.closest('[data-ev-abre]'); if (m && (m.classList.contains('abierto') || m.scrollHeight > m.clientHeight + 2)) { m.classList.toggle('abierto'); e.gfHecho = true; } });
 document.addEventListener('keydown', (e) => { if ((e.key === 'Enter' || e.key === ' ') && e.target.matches && e.target.matches('[data-idea-toggle]')) { e.preventDefault(); abrirIdea(e.target); } });
 document.addEventListener('toggle', (e) => {
   const d = e.target;

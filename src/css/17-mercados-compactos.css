@@ -414,3 +414,42 @@ select option, select optgroup { background-color: var(--plane-2); color: var(--
   .tabla-ed td:last-child .btn svg { width: 17px; height: 17px; }
 }
 
+
+/* ---------- 0.7i: Expertos en el ordenador (lo vio Carlos: «está todo a lo ancho») ---------- */
+/* Tus posiciones: lo tuyo a la izquierda; lo último de GrowIA y los analistas en prensa, a la derecha. En el móvil
+   las cajas no existen (display: contents) y todo sigue uno debajo de otro, como antes */
+.exp-dos, .exp-main, .exp-lado { display: contents; }
+@media (min-width: 1100px) {
+  .exp-dos { display: grid; grid-template-columns: minmax(0, 1.75fr) minmax(340px, 1fr); gap: 28px; align-items: start; }
+  .exp-main { display: grid; gap: 48px; min-width: 0; align-content: start; }
+  .exp-lado { display: grid; gap: 14px; min-width: 0; align-content: start; }
+  .exp-lado > * { margin: 0; }
+}
+/* las ideas: nueve, en tres filas de tres; las que evitaría, también de tres en tres */
+@media (min-width: 1200px) {
+  .ideas-top3 { grid-template-columns: repeat(3, minmax(0, 1fr)) !important; }
+  .evitas { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+/* la idea abierta, en dos columnas: cifras, tesis y botones a la izquierda; qué la mueve, pegas y señales a la derecha */
+@media (min-width: 1100px) {
+  .idea[data-compacta].abierta { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); grid-template-rows: repeat(5, auto) 1fr; column-gap: 28px; row-gap: 14px; align-items: start; padding: 18px 22px 20px; }
+  .idea[data-compacta].abierta > header, .idea[data-compacta].abierta > .idea-quien { grid-column: 1 / -1; }
+  .idea[data-compacta].abierta > .idea-cifras4, .idea[data-compacta].abierta > .idea-tesis, .idea[data-compacta].abierta > .idea-btns { grid-column: 1; }
+  .idea[data-compacta].abierta > details.mas { grid-column: 2; grid-row: 3 / -1; padding-left: 28px; border-left: 1px solid var(--line); }
+  .idea[data-compacta].abierta .idea-tesis { margin: 0; }
+}
+/* lo que abre la empresa: las tarjetas de las que evitaría y las filas del radar */
+.evita[data-consulta] { cursor: pointer; transition: border-color 0.15s; }
+.evita[data-consulta]:hover { border-color: color-mix(in srgb, var(--down) 50%, var(--line)); }
+.evita[data-consulta] > header::after { content: '›'; color: var(--muted); font-size: 20px; line-height: 1; margin-left: 2px; }
+.evita .ev-n { display: block; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 650; font-size: 15px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.radar-n { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
+table.ideas tbody tr[data-consulta] { cursor: pointer; }
+@media (hover: hover) { table.ideas tbody tr[data-consulta]:hover td { background: rgba(255, 231, 176, 0.03); } .radar-n:hover b, .evita .ev-n:hover { color: var(--accent); } }
+/* en la hoja de la empresa: si GrowIA la evitaría o la tiene entre sus ideas, y por qué */
+.cons-ia { display: flex; gap: 9px; align-items: flex-start; margin: 0; padding: 10px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.5; color: var(--text-2); }
+.cons-ia svg { width: 16px; height: 16px; flex: none; margin-top: 2px; }
+.cons-ia b { color: var(--text); font-weight: 600; }
+.cons-ia.ev { background: color-mix(in srgb, var(--down) 9%, transparent); border: 1px solid color-mix(in srgb, var(--down) 26%, var(--line)); }
+.cons-ia.ev svg { color: var(--down); }
+.cons-ia.idea { background: rgba(76, 191, 142, 0.07); border: 1px solid rgba(76, 191, 142, 0.25); }

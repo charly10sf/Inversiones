@@ -5,6 +5,11 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7i', f: '2026-10-30', h: '14:35', t: 'Expertos, a la medida del ordenador', arreglos: [
+    'Expertos, mejor en el ordenador: las ideas van de tres en tres y la que abres se lee en dos columnas (las cifras y la tesis a un lado; qué la mueve, las pegas y las señales al otro). En Tus posiciones, lo último de GrowIA y los analistas en prensa van al lado. Lo pidió Carlos.',
+    'Las que GrowIA evitaría y las empresas del radar se abren al tocarlas: su precio, su gráfica y, si es una de las que evitaría, por qué. Lo pidió Carlos.',
+    'En el ordenador, cada título de las tablas (el radar, Hacienda, el Paso a paso) va encima de su columna: estaban descuadrados.',
+  ] },
   { v: '0.7h', f: '2026-10-30', h: '13:35', t: 'Tu patrimonio, el mismo en todas partes', arreglos: [
     'El patrimonio que nombra GrowIA es siempre el de ahora, el mismo que sale al lado, y no el que tenías cuando revisó tu cartera. Lo vio Carlos en el resumen del día: arriba 81.215 € y, en lo que dice GrowIA, 80.853,80 €.',
   ] },

@@ -71,8 +71,9 @@
 .opr .opr-f-nota { font-size: 12.5px; }
 /* lo que ve quien la mandó: como una conversación, lo suyo a la derecha y la respuesta a la izquierda, con la marca */
 .resp-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 18px; }
-.resp { display: grid; gap: 8px; }
-.resp + .resp { padding-top: 18px; border-top: 1px solid var(--line); }
+/* 0.7i: solo las de la lista (antes «.resp» también cogía las tablas «table.resp» y en el ordenador les descuadraba las columnas) */
+.resp-lista > .resp { display: grid; gap: 8px; }
+.resp-lista > .resp + .resp { padding-top: 18px; border-top: 1px solid var(--line); }
 .resp-tuyo, .resp-suya { max-width: 88%; padding: 10px 13px 11px; }
 .resp-tuyo { justify-self: end; border-radius: 16px 16px 5px 16px; background: var(--plane-3); }
 .resp-suya { justify-self: start; border-radius: 16px 16px 16px 5px; background: var(--accent-bg); border: 1px solid rgba(237, 187, 69, 0.22); }
