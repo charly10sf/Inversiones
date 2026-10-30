@@ -30,11 +30,20 @@ test('en estándar, Hacienda no habla de lo que recomienda GrowFolio; en fundado
   await expect(vista).not.toContainText('recomienda GrowFolio');
   await expect(vista).not.toContainText('cuesta cada recomendación');
   await expect(page.locator('#hFisR')).toHaveCount(0);
+  // «Para pagar menos»: la regla, sin decir qué vender, y los nombres con «&» sin escapar dos veces
+  await expect(vista).not.toContainText('vender también estas');
+  await expect(vista).not.toContainText('&amp;');
+  // la Guía de la renta, en estándar, sin «el Paso a paso te lo propone»
+  await page.evaluate(() => { S.fisTab = 'renta'; pintar(); });
+  await expect(vista).toContainText('Guía de la renta');
+  await expect(vista).not.toContainText('te lo propone');
+  await page.evaluate(() => { S.fisTab = 'tu'; pintar(); });
 
   await page.evaluate(() => { S.acceso = 'privado'; pintar(); });
   await expect(page.locator('#hFisR')).toBeVisible();
   await expect(vista).toContainText('Aportar 300 € al mes');
   await expect(vista).toContainText('cuesta cada recomendación');
+  await expect(vista).toContainText('Más abajo, lo que pagarías');
 });
 
 // Carlos, 30 oct: la letra pequeña de Google debajo de la caja de GrowIA le quitaba seriedad. Lo de adónde van los datos
@@ -47,5 +56,9 @@ test('GrowIA, sin la letra pequeña de Google debajo de la caja; la explicación
   await expect(page.locator('#asNota')).toHaveCount(0);
   await expect(page.locator('#asPie')).not.toContainText('cifrados en el camino');
   await page.evaluate(() => { cerrarAsesor(); AS.clave = null; abrirAsesor(''); });
-  await expect(page.locator('#asCuerpo')).toContainText('solo viaja de tu navegador a Google');
+  await expect(page.locator('#asCuerpo')).toContainText('no pasan por GrowFolio');
+  // y con la clave ya puesta, en Ajustes de GrowIA
+  await page.evaluate(() => { cerrarAsesor(); AS.clave = 'AQ.prueba-de-growfolio'; AS.vista = 'ajustes'; abrirAsesor(''); });
+  await page.evaluate(() => { AS.vista = 'ajustes'; pintarAsesor(); });
+  await expect(page.locator('#asCuerpo')).toContainText('no pasan por GrowFolio');
 });

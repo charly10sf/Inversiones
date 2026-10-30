@@ -342,7 +342,7 @@ function htmlImpuestos(M) {
         <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r">Ganancia o pérdida</th><th class="r">Impuesto si vendes todo</th><th class="r">Tipo</th></tr></thead><tbody>
           ${latentes.map((x) => `<tr><td><b style="font-weight:600">${esc(x.f.inst.corto || x.f.inst.nombre)}</b><small>${esc(x.f.pos.plataforma || '')}${/^Fondo/.test(x.f.inst.tipo || '') ? ', se puede traspasar sin pagar' : ''}</small></td><td class="r ${cls(x.g)}">${eurS(x.g, 0)}</td><td class="r">${x.imp > 0 ? eur(x.imp, 0) : '—'}</td><td class="r">${x.g > 0 ? pct((x.imp / x.g) * 100, 1) : x.g < 0 ? '<span class="k">resta</span>' : '—'}</td></tr>`).join('')}
         </tbody></table></div>
-        <p class="nota">Vender todo hoy costaría unos ${eur(todo, 0)} en la renta de ${anio}. Las pérdidas restan de las ganancias del mismo año; por eso el impuesto de cada fila depende de lo que ya llevas. ${perdidas.length ? `Ahora tienes pérdidas sin vender en ${yLista(perdidas.map((x) => esc(x.f.inst.corto)))}: si algún día las vendes, hazlo el mismo año que una venta con ganancia para compensarla.` : ''}</p>
+        <p class="nota">Vender todo hoy costaría unos ${eur(todo, 0)} en la renta de ${anio}. Las pérdidas restan de las ganancias del mismo año; por eso el impuesto de cada fila depende de lo que ya llevas. ${perdidas.length ? `Ahora tienes pérdidas sin vender en ${yLista(perdidas.map((x) => esc(x.f.inst.corto)))}: si algún día las vendes, restan de las ganancias de ese año.` : ''}</p>
       </div></details>
     </div>
     ${htmlFiscalGuia(M, fa, { tr, cripto, fondos, divs })}`;
@@ -413,7 +413,7 @@ function htmlFiscalGuia(M, fa, x) {
     if (!r || !r.meses) continue;
     const ap = perdidaAplazada(v), libre = libreRecompra(S.inst[v.instrumento], v.fecha);
     if (ap) dosMeses.push({ n: 'warn', t: ap.parte >= 0.999 ? `La pérdida de ${nombreInst(v.instrumento)} (${eurS(v.resultado, 0)}) no cuenta todavía` : `De la pérdida de ${nombreInst(v.instrumento)} (${eurS(v.resultado, 0)}), ${eurS(ap.importe, 0)} no cuentan todavía`, d: `${ap.aporte ? `Tu aportación automática del ${fechaLarga(ap.fecha)}` : `Compraste el ${fechaLarga(ap.fecha)}`}, a menos de ${r.plazo} de la venta${ap.parte < 0.999 ? `, un ${fmtNum(ap.parte * 100, 0)} % de lo que vendiste` : ''}. Esa parte contará cuando vendas lo recomprado; en lo que te calcula GrowFolio ya no resta.` });
-    else if (libre >= hoy) dosMeses.push({ n: 'info', t: `No recompres ${nombreInst(v.instrumento)} antes del ${fechaLarga(libre)}`, d: `Lo vendiste con ${eurS(v.resultado, 0)} el ${fechaLarga(v.fecha)}: si lo recompras antes (${r.plazo}), esa pérdida no resta este año.` });
+    else if (libre >= hoy) dosMeses.push({ n: 'info', t: `Si recompras ${nombreInst(v.instrumento)} antes del ${fechaLarga(libre)}, esa pérdida no resta este año`, d: `Lo vendiste con ${eurS(v.resultado, 0)} el ${fechaLarga(v.fecha)}; la regla de la recompra (${r.plazo}) la deja para cuando vendas lo recomprado.` });
   }
   // calendario
   const cal = [
@@ -428,7 +428,7 @@ function htmlFiscalGuia(M, fa, x) {
   const perd = latentes.filter((y) => y.g < -50), gan = latentes.filter((y) => y.g > 50);
   const trucos = [
     x.fondos.length && ['Usa traspasos, no ventas', 'Para cambiar de un fondo a otro, traspasa: no pagas nada hasta el día que saques el dinero.'],
-    perd.length && gan.length && ['Junta ganancias y pérdidas en el mismo año', `Tienes pérdidas sin vender en ${lista(perd.map((y) => y.f))}: si un año vendes algo con ganancia, vender también estas lo compensa.`],
+    perd.length && gan.length && ['Junta ganancias y pérdidas en el mismo año', `Tienes pérdidas sin vender en ${yLista(perd.map((y) => y.f.inst.corto))}. Las pérdidas de lo que vendes restan de las ganancias del mismo año.`],
     ['Vende poco a poco si la ganancia es grande', `Los primeros ${fmtNum(TA[0][0], 0)} € de la base del ahorro pagan el ${pctTramo(TA[0][1])} %; de ahí a ${fmtNum(TA[1][0], 0)} €, el ${pctTramo(TA[1][1])} %. Repartir una venta grande entre dos años puede dejarla en el tramo bajo.`],
     ['Acumulación mejor que reparto', 'Un fondo o ETF de acumulación reinvierte los dividendos sin que pagues por ellos cada año; uno de reparto te los da y tributan.'],
     fa.sobra > 0 && ['Aprovecha tus pérdidas pendientes', `Te quedan ${eur(fa.sobra, 0)} para compensar en los próximos 4 años.`],

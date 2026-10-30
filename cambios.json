@@ -11,8 +11,8 @@
      "asunto": "0.7g: Hacienda sin recomendaciones en estándar y GrowIA sin la letra pequeña",
      "detalle": [
       "Lo vio Claude el 30 oct haciendo capturas para las redes con una cuenta estándar: Hacienda enseñaba «Lo que cuesta lo que te recomienda GrowFolio» (aportar, y desde julio «Vender … con pérdidas») y lo anunciaba arriba y en la cabecera. htmlFiscalRecom no miraba esPublico()",
-      "Ahora, en estándar, sin esa tabla, sin la frase que la anuncia y con la cabecera sin «lo que cuesta cada recomendación». En fundador, la frase solo sale si la tabla tiene algo",
-      "GrowIA: fuera la nota «Gratis con tu clave de Google…» debajo de la caja (lo pidió Carlos: quitaba seriedad). Lo de que los datos solo van de tu navegador a Google sigue en la pantalla de poner la clave",
+      "Ahora, en estándar, sin esa tabla, sin la frase que la anuncia y con la cabecera sin «lo que cuesta cada recomendación». En fundador, la frase solo sale si la tabla tiene algo. Revisión aparte: la Guía de la renta decía en estándar «el Paso a paso te lo propone» (ahora, la regla sola), «Para pagar menos» decía «vender también estas lo compensa» con tus posiciones en pérdidas y «No recompres X» (ahora, la regla en neutro) y escapaba dos veces los nombres (salía «S&amp;P 500»)",
+      "GrowIA: fuera la nota «Gratis con tu clave de Google…» debajo de la caja (lo pidió Carlos: quitaba seriedad). Lo de que tus preguntas y los datos de tu cartera van de tu navegador a Google sin pasar por GrowFolio, ahora en la pantalla de poner la clave y en Ajustes de GrowIA (la revisión aparte vio que con la clave puesta ya no salía en ningún sitio)",
       "Prueba nueva: tests/modo-estandar.spec.js"
      ]
     }
