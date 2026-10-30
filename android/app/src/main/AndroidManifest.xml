@@ -9,6 +9,10 @@
     <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
     <!-- los avisos (solo si los activas en Ajustes > Avisos y resumen) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- 0.7f: que GrowIA siga contestando con la app en segundo plano (un servicio con su notificación, solo mientras
+         contesta). Android 14 o más usa shortService, que no pide permiso aparte; antes, dataSync -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
 
     <application
         android:allowBackup="false"
@@ -53,6 +57,11 @@
             android:authorities="es.inversiones.app.archivos"
             android:exported="false"
             android:grantUriPermissions="true" />
+
+        <service
+            android:name=".GrowiaServicio"
+            android:exported="false"
+            android:foregroundServiceType="shortService|dataSync" />
 
         <receiver
             android:name=".Instalado"

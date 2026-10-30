@@ -525,6 +525,25 @@ public class Principal extends Activity {
         web.saveState(salida);
     }
 
+    /** 0.7f: mientras GrowIA contesta, la parte de la app que mueve la web no pierde prioridad al quedar fuera de la
+     *  vista (Android la mataría antes que a otras); al acabar, como estaba */
+    private Integer prioridadAntes;
+    private boolean renunciaAntes;
+
+    void webImportante(boolean si) {
+        if (web == null) return;
+        if (si) {
+            if (prioridadAntes == null) {
+                prioridadAntes = web.getRendererRequestedPriority();
+                renunciaAntes = web.getRendererPriorityWaivedWhenNotVisible();
+            }
+            web.setRendererPriorityPolicy(WebView.RENDERER_PRIORITY_IMPORTANT, false);
+        } else if (prioridadAntes != null) {
+            web.setRendererPriorityPolicy(prioridadAntes, renunciaAntes);
+            prioridadAntes = null;
+        }
+    }
+
     @Override
     protected void onPause() {
         enPantalla = false;
@@ -540,6 +559,8 @@ public class Principal extends Activity {
         super.onResume();
         enPantalla = true;
         web.onResume();
+        // 0.7f: ya estás en la app: el aviso de que GrowIA ha contestado sobra
+        GrowiaServicio.quitarAviso(this);
         // de vuelta de la app del banco sin su respuesta (si llega, entra antes por onNewIntent y ya no estamos en el
         // banco): fuera de la página de Enable Banking, que se quedaba cargando, y a tu cartera con un aviso
         if (traspaso) {

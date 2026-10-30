@@ -129,6 +129,21 @@ public class Puente {
         Avisos.mostrar(ctx, "web:" + titulo, titulo == null ? "GrowFolio" : titulo, cuerpo == null ? "" : cuerpo, h.isEmpty() ? "cartera" : h);
     }
 
+    /** 0.7f: GrowIA empieza a contestar: la app se queda viva en segundo plano hasta que acabe (la web solo lo pide
+     *  con la app a la vista; desde segundo plano Android no deja) */
+    @JavascriptInterface
+    public void growiaEmpieza(String texto) {
+        act.runOnUiThread(() -> act.webImportante(true));
+        GrowiaServicio.empezar(ctx, texto);
+    }
+
+    /** GrowIA ha acabado (o espera a que vuelvas): fuera el servicio y, si no estás en la app y hay título, el aviso */
+    @JavascriptInterface
+    public void growiaTermina(String titulo, String texto) {
+        act.runOnUiThread(() -> act.webImportante(false));
+        GrowiaServicio.terminar(ctx, titulo, texto);
+    }
+
     @JavascriptInterface
     public void borrarWidget() {
         Datos.borrar(ctx);
