@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.7h', f: '2026-10-30', h: '13:30', t: 'Tu patrimonio, el mismo en todas partes', arreglos: [
+  { v: '0.7h', f: '2026-10-30', h: '13:35', t: 'Tu patrimonio, el mismo en todas partes', arreglos: [
     'El patrimonio que nombra GrowIA es siempre el de ahora, el mismo que sale al lado, y no el que tenías cuando revisó tu cartera. Lo vio Carlos en el resumen del día: arriba 81.215 € y, en lo que dice GrowIA, 80.853,80 €.',
   ] },
   { v: '0.7g', f: '2026-10-30', h: '04:40', t: 'Hacienda y GrowIA, más claras', arreglos: [
