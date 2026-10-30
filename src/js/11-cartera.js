@@ -38,7 +38,11 @@ function serieIntradia(M, rango) {
   let inicio;
   if (rango === '1D') { const dia = orden[orden.length - 1].slice(0, 10); const antes = orden.filter((t) => t.slice(0, 10) < dia); inicio = antes.length ? antes[antes.length - 1] : orden[0]; }
   else { const lim = new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 16) + 'Z'; inicio = orden.find((t) => t >= lim) || orden[0]; }
-  const extra = M.total - sum(items, (f) => f.valor);
+  // lo fijo: el efectivo, lo que no tiene cantidad y las aportaciones de hoy aún sin valor liquidativo (f.pendiente,
+  // que va dentro de f.valor). 0.7e: antes lo pendiente solo entraba en el último punto (el de ahora) y la aportación
+  // automática del día salía como una subida de la semana (lo vio Carlos el 30 oct: +1.926 € con los 1.250 € de su
+  // aportación dentro)
+  const extra = M.total - sum(items, (f) => f.valor - (f.pendiente || 0));
   const idx = items.map(() => 0), ult = items.map(() => null), out = [];
   for (const t of orden) {
     let v = extra;

@@ -1,6 +1,23 @@
 {
  "versiones": [
   {
+   "v": "0.7e",
+   "f": "2026-10-30",
+   "h": "02:05",
+   "t": "Tu aportación no es una subida",
+   "commits": [
+    {
+     "cuando": "2026-10-30 02:05",
+     "asunto": "0.7e: la aportación automática del día no sale como subida en la gráfica",
+     "detalle": [
+      "Lo vio Carlos el 30 oct a la 1:44: en Inicio, «1S» daba +1.926 € (+2,44 %) con un salto al final; dentro iban los 1.250 € de sus aportaciones del día 30 (600 S&P 500, 400 MSCI Europe y 250 Emergentes)",
+      "Por qué: una aportación de un día sin valor liquidativo todavía va en f.pendiente (dentro de f.valor y del total). serieIntradia (1D y 1S) ponía lo fijo como el total menos el valor de las posiciones, así que lo pendiente solo entraba en el último punto, el de ahora. Ahora va en lo fijo, igual en todos los puntos. La serie diaria (1M en adelante) ya lo hacía bien (se ajusta entera al total)",
+      "Prueba nueva: tests/grafica-aportacion.spec.js (25.000 € pendientes: antes, un salto de 24.965 € en 1D)"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7d",
    "f": "2026-10-30",
    "h": "00:05",

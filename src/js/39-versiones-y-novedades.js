@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7e', f: '2026-10-30', h: '02:05', t: 'Tu aportación no es una subida', arreglos: [
+    'Tu aportación automática del día ya no sale en la gráfica como una subida de la semana (ni de hoy ni del mes): mientras su fondo no publica el valor de ese día, cuenta igual al principio que al final. Lo vio Carlos: en «1S» salían +1.926 € con los 1.250 € de su aportación dentro.',
+  ] },
   { v: '0.7d', f: '2026-10-30', h: '00:05', t: 'Tu contraseña, más segura; GrowIA, más rápida', arreglos: [
     'Para cambiar la contraseña de tu cartera hay que escribir la de ahora (o tu código de recuperación), y para ver el código o generar otro, la contraseña: con la app abierta ya no basta. Y cada «He olvidado la contraseña» dice de cuál es, la de la cuenta o la de tu cartera. Lo vio Carlos.',
     'GrowIA contesta antes: en las preguntas razona algo menos a fondo y, si Google está saturado, pasa al otro modelo de la respuesta normal sin esperar.',
