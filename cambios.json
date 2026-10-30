@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.7j",
+   "f": "2026-10-30",
+   "h": "15:53",
+   "t": "La prensa, sin consejos",
+   "commits": [
+    {
+     "cuando": "2026-10-30 15:53",
+     "asunto": "0.7j: la prensa, sin «bueno para la acción»",
+     "detalle": [
+      "La 0.7i no se publicó: «Pruebas» falló dos veces en tests/growia.spec.js (en estándar, lo que ve GrowIA no puede decir «bueno para la acción»). No era de la 0.7i: desde las 13:30 UTC del 30 oct la lectura de prensa de la Action escribía «lo que es muy bueno para la acción» (Repsol, SK hynix) y el informe «Muy bueno para la acción: …»",
+      "App: prensaNeutra() cambia «(muy) bueno/malo para la acción» por «(muy) positivo/negativo para la empresa», en limpiaIA (todo lo que se enseña de GrowIA) y en todo el contexto de GrowIA",
+      "Action (scripts/informe.py): el informe y la lectura piden «positivo o negativo para la empresa» y el signo de cada titular «para la empresa»",
+      "Prueba nueva en tests/modo-estandar.spec.js"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7i",
    "f": "2026-10-30",
    "h": "14:35",

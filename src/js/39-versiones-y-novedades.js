@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7j', f: '2026-10-30', h: '15:53', t: 'La prensa, sin consejos', arreglos: [
+    'Lo que lee GrowIA en la prensa ya no dice «bueno para la acción» ni «malo para la acción», que sonaba a consejo: dice si es positivo o negativo para la empresa, como el resto de la app.',
+  ] },
   { v: '0.7i', f: '2026-10-30', h: '14:35', t: 'Expertos, a la medida del ordenador', arreglos: [
     'Expertos, mejor en el ordenador: las ideas van de tres en tres y la que abres se lee en dos columnas (las cifras y la tesis a un lado; qué la mueve, las pegas y las señales al otro). En Tus posiciones, lo último de GrowIA y los analistas en prensa van al lado. Lo pidió Carlos.',
     'Las que GrowIA evitaría y las empresas del radar se abren al tocarlas: su precio, su gráfica y, si es una de las que evitaría, por qué. Lo pidió Carlos.',
