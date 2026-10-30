@@ -87,7 +87,7 @@ El botón "¿Algo se ve mal o tienes una idea?" (al final de cada pestaña y en 
 
 ## Versiones
 
-La web va por la `0.x` mientras esté en alfa: el número del medio sube con cada tanda de mejoras (0.9 → 0.10) y el último con los arreglos (0.9.0 → 0.9.1). Se cambia en `const VERSION` de `index.html`, y lo nuevo se apunta arriba de `NOVEDADES`, con un dibujo por cambio: la primera vez que alguien abre la web tras una versión nueva le sale *¿Qué se ha mejorado?*. La app de Android toma el mismo número al compilarse y, cuando hay una nueva, la web le ofrece descargarla e instalarla encima.
+La web va por la `0.x` mientras esté en alfa: el número sube con cada tanda de mejoras (0.6 → 0.7) y los arreglos llevan letra (0.7a, 0.7b…). La versión está en `src/js/version.js` y tiene que ser la primera de `NOVEDADES` (`src/js/39-versiones-y-novedades.js`). Una versión de número lleva sus novedades en español e inglés, un dibujo por cambio y su sitio en la guía: la primera vez que alguien abre la web tras ella le sale *¿Qué se ha mejorado?*. Un arreglo lleva solo su línea en `arreglos`, sin presentación ni guía. La app de Android toma el mismo número al compilarse y, cuando hay una nueva, la web le ofrece descargarla e instalarla encima. El proceso entero, en `claude/cerrar-version.md`.
 
 ## Si los precios dejan de actualizarse
 

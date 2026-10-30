@@ -1,26 +1,30 @@
 # GrowFolio: cómo se trabaja en este repositorio
 
-GrowFolio es la web y app de Android de Carlos para llevar inversiones (GitHub Pages + Firebase + Actions). El roadmap y el plan de cada versión están en el Proyecto de claude.ai (claude/roadmap.md, claude/plan-0.X.md): se trabaja ciñéndose a ellos.
+GrowFolio es la web y app de Android de Carlos para llevar inversiones (GitHub Pages + Firebase + Actions). Lo que toca está en ESTADO.md, en el Proyecto de claude.ai. En `claude/` de este repositorio: cada versión pendiente (`versiones/0.X.md`), sus planes, el historial, el backlog, la marca y las redes. Se trabaja ciñéndose a ellos.
 
-## Código (desde la 0.6)
+## Código
 
 - El código está en `src/css` y `src/js`, partido por secciones; el orden, en `src/partes.json`. Es un único script clásico: todas las secciones comparten el ámbito global (no son módulos). No hace falta importar nada entre archivos.
 - Lo que no hace falta para abrir Inicio va en trozos (`src/js/trozos`, `trozos` en `src/partes.json`), que se bajan al usarlos. El build pone funciones de relevo en el núcleo y se para si un trozo se usa de una forma que no puede esperar. `node build/analizar.js` enseña las entradas de cada trozo; `node build/mover.js <de> <a> nombres…` mueve declaraciones entre archivos.
 - `index.html` es solo la cáscara: el build (`npm run build`, Vite + `build/growfolio-vite.js`) mete el CSS y el JS minificados con huella en `dist/`.
 - `npm run dev` para trabajar (http://localhost:5173). `?dev` en la dirección carga los datos de `dev/` y salta Firebase en algunas cosas: para probar de verdad, las pruebas de Playwright.
 
-## Versiones
-
-- `src/js/version.js` tiene VERSION y tiene que ser la primera de `NOVEDADES` (`src/js/39-versiones-y-novedades.js`).
-- Arreglos: letra (0.5a, 0.5b), con su línea en `arreglos` y sin presentación ni guía. Novedades: número, con `cosas` en español e inglés (en.json), dibujo y guía.
-- Cada actualización lleva sus novedades. `cambios.json` se edita a mano si el clon es corto (cambios.py necesita todo el historial).
-- version.json lo escribe la Action del release; app.json, la de Android.
-
 ## Pruebas
 
 - `sh tests/traer-datos.sh`, `npx playwright install chromium`, `npm test` (build + Playwright en 390, 360 y 1440; Firebase de imitación en tests/stub y sin internet). `npm run rendimiento` (presupuesto: < 800 KB por la red y lista en < 2 s). `python -m unittest discover -s tests/scripts`.
 - Una prueba nueva por cada cosa nueva. Todo pasa en la Action «Pruebas» en cada push.
 - Antes de publicar algo de cifrado, cuentas, Hacienda, pagos o el prompt público de GrowIA: revisión aparte.
+
+## Desplegar
+
+- Se trabaja en una rama (v0.X, o v0.Xa para un arreglo) y se publica con el merge a main.
+- En main, «Pruebas» y, si pasa, «Pages» hace el build y publica (unos 10 minutos). A mano: `gh workflow run pages.yml --ref main`.
+- «Release de la versión» crea el release con la etiqueta de VERSION y escribe version.json; «App Android» compila la APK y escribe app.json. No se tocan a mano.
+- Un cambio en `firestore.rules` lo publica «Reglas de Firestore»; uno en `worker/`, «Worker».
+
+## Versiones
+
+Para cerrar una versión, lee claude/cerrar-version.md.
 
 ## Textos
 
