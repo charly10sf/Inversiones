@@ -3,11 +3,11 @@
   {
    "v": "0.7f",
    "f": "2026-10-30",
-   "h": "02:40",
+   "h": "02:30",
    "t": "GrowIA sigue aunque salgas",
    "commits": [
     {
-     "cuando": "2026-10-30 02:40",
+     "cuando": "2026-10-30 02:30",
      "asunto": "0.7f: GrowIA sigue en segundo plano",
      "detalle": [
       "Lo vio Carlos el 30 oct a la 1:57: salió de la app mientras GrowIA contestaba y acabó en «Se ha cortado la conexión con Google tres veces seguidas (Failed to fetch)»",
