@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7k', f: '2026-10-30', h: '16:40', t: 'Los avisos de fallos caducan', arreglos: [
+    'Los avisos de fallos de GrowIA se borran a los 30 días, como decía la 0.7. Ahora lo hace la propia app, sin depender de un ajuste de Google.',
+  ] },
   { v: '0.7j', f: '2026-10-30', h: '15:53', t: 'La prensa, sin consejos', arreglos: [
     'Lo que lee GrowIA en la prensa ya no dice «bueno para la acción» ni «malo para la acción», que sonaba a consejo: dice si es positivo o negativo para la empresa, como el resto de la app.',
   ] },

@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.7k",
+   "f": "2026-10-30",
+   "h": "16:40",
+   "t": "Los avisos de fallos caducan",
+   "commits": [
+    {
+     "cuando": "2026-10-30 16:40",
+     "asunto": "0.7k: los fallos de GrowIA caducados los borra el dueño",
+     "detalle": [
+      "El TTL de Firestore sobre «caduca» no se puede crear: pide facturación y el proyecto sigue en el plan gratis (403 «billing disabled»)",
+      "App: limpiarFallosIA() (42-modos.js) borra los fallos_ia con «caduca» pasada, una vez al día, la primera vez que abre GrowFolio el dueño (las reglas solo le dejan a él leer y borrar); hasta 200 por tanda, y sin red o con un borrado que falla se prueba en la próxima apertura",
+      "Si algún día hay facturación, el TTL usa el mismo campo y la limpieza sobra",
+      "Prueba nueva en tests/growia.spec.js; el Firestore de imitación entiende where con < y > en fechas, y deleteDoc"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7j",
    "f": "2026-10-30",
    "h": "15:53",

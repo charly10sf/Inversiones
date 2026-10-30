@@ -71,7 +71,7 @@ Los datos e importación pasan a ser la 0.8, con las fechas que tenían (última
 
 - Publicada el 24 oct a las 16:35 (merge de v0.7 a main; reglas de Firestore publicadas por su Action). Banco sobre la versión que sale: 42 de 42 (100 %), 1,6 peticiones por pregunta.
 
-- Para Carlos, después de publicar: activar el TTL de Firestore en fallos_ia sobre el campo «caduca» (consola de Firebase → Firestore → TTL), para que los avisos se borren solos a los 30 días
+- Los avisos se borran a los 30 días. El TTL de Firestore pide facturación (el proyecto sigue en Spark), así que desde la 0.7k los borra el dueño al abrir la app (limpiarFallosIA)
 
 ## Medido el 29 oct (rama datos, 18:50 hora de España; sin cambios en main desde la 0.7c del 25 oct)
 

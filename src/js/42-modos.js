@@ -48,12 +48,26 @@ async function comprobarAcceso() {
       catch (e) { if (!errPermiso(e)) return; }
     }
     // el dueño: puede leer todas las opiniones (las reglas de siempre)
-    try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); S.esDueno = true; S.noDueno = false; }
+    try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); S.esDueno = true; S.noDueno = false; limpiarFallosIA(); }
     catch (e) { if (errPermiso(e)) S.noDueno = true; else if (!puesto && !esFundadorPorAlta(alta)) return; }
     const a = puesto && (puesto.modo === 'fundador' || puesto.modo === 'estandar') ? (puesto.modo === 'fundador' ? 'privado' : 'publico')
       : S.esDueno || esFundadorPorAlta(alta) ? 'privado' : 'publico';
     fijarAcceso(a, u.uid, puesto);
   } catch (e) { console.warn('No se ha podido comprobar el modo', e); }
+}
+/* Los fallos de GrowIA (fallos_ia) llevan «caduca» a 30 días. El TTL de Firestore pide facturación y el proyecto sigue
+   en el plan gratis, así que los borra el dueño, que es a quien las reglas dejan: una vez al día, la primera vez que
+   abre GrowFolio. Si algún día hay facturación, el TTL usa el mismo campo y esto sobra. Sin red o con un borrado que
+   falla, no se marca el día y se prueba en la próxima apertura */
+async function limpiarFallosIA() {
+  try {
+    const hoy = new Date().toISOString().slice(0, 10), tanda = 200;
+    if (!FB.fs || LS.get('inv-fallos-limpio') === hoy) return;
+    const f = FB.fs;
+    const r = await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'fallos_ia'), f.where('caduca', '<', new Date()), f.limit(tanda))), 10000);
+    await Promise.all(r.docs.map((d) => conTiempo(f.deleteDoc(d.ref), 10000)));
+    if (r.docs.length < tanda) LS.set('inv-fallos-limpio', hoy);
+  } catch (e) { /* mañana, o en la próxima apertura */ }
 }
 // tu correo y tu fecha de alta, para que el dueño vea todas las cuentas en Ajustes (una vez por dispositivo)
 async function apuntarCuenta(u, correo, alta) {

@@ -59,6 +59,11 @@ export function query(col, ...cond) { return { tipo: 'query', path: col.path, co
 export async function getDoc(ref) { if (!puedeLeer(ref.path)) throw sinPermiso(); return snap(ref.path); }
 // fallos_ia: se crean y no se reescriben (las reglas no dejan update)
 export async function setDoc(ref, data, o) { if (ref.path.startsWith('fallos_ia/') && crudo(ref.path)) throw sinPermiso(); poner(ref.path, data, o && o.merge); }
+// fallos_ia: las reglas dejan borrar solo al dueño
+export async function deleteDoc(ref) {
+  if (ref.path.startsWith('fallos_ia/') && !esDueno()) throw sinPermiso();
+  localStorage.removeItem(P + ref.path); escribe(); avisarCambio(ref.path);
+}
 export async function updateDoc(ref, data) { if (!crudo(ref.path)) { const e = new Error('No document to update'); e.code = 'not-found'; throw e; } poner(ref.path, data, true); }
 export async function addDoc(col, data) {
   const id = Math.random().toString(36).slice(2, 12), ruta = col.path + '/' + id;
@@ -75,7 +80,16 @@ export async function getDocs(q) {
     const k = localStorage.key(i);
     if (k.startsWith(P + base) && !k.slice((P + base).length).includes('/')) docs.push(snap(k.slice(P.length)));
   }
-  for (const c of filtro) docs = docs.filter((d) => { const v = d.data()[c.campo]; return c.op === '==' ? v === c.valor : c.op === '!=' ? v !== c.valor : true; });
+  const num = (v) => (v && typeof v.toMillis === 'function' ? v.toMillis() : v instanceof Date ? v.getTime() : v);
+  for (const c of filtro) docs = docs.filter((d) => {
+    const v = d.data()[c.campo];
+    if (c.op === '<' || c.op === '<=' || c.op === '>' || c.op === '>=') {
+      if (v == null) return false;
+      const a = num(v), b = num(c.valor);
+      return c.op === '<' ? a < b : c.op === '<=' ? a <= b : c.op === '>' ? a > b : a >= b;
+    }
+    return c.op === '==' ? v === c.valor : c.op === '!=' ? v !== c.valor : true;
+  });
   const ord = cond.find((c) => c.t === 'orderBy');
   if (ord) {
     const val = (d) => { const v = d.data()[ord.campo]; return v && v.toMillis ? v.toMillis() : v; };

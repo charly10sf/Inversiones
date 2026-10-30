@@ -46,7 +46,7 @@ function tipoFalloIA(e) {
 }
 /* Revisión aparte de la 0.7: el tope de 5 al día lo ponen las reglas de Firestore, no solo este dispositivo. Cada
    aviso es el documento «<uid>_<AAAAMMDD>_<0 a 4>» (día de UTC) y no se puede reescribir: el sexto del día no entra.
-   La hora la pone el servidor y se borra solo a los 30 días (TTL de Firestore sobre «caduca») */
+   La hora la pone el servidor y a los 30 días caduca: lo borra el dueño al abrir la app (limpiarFallosIA, en 42-modos.js) */
 async function avisarFalloIA(e, donde = 'chat', modelo = null) {
   try {
     // «red» es la conexión de quien pregunta (y su aviso llegaría tarde, quizá ya en otro día); lo previsto (la

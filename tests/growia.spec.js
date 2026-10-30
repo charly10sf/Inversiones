@@ -196,6 +196,34 @@ testDueno('Cómo va GrowIA: el banco de preguntas y los fallos, para el dueño',
   await expect(hoja).toContainText('Lo que ha gastado hoy la Action');
 });
 
+// 0.7k: el TTL de Firestore pide facturación y el proyecto sigue en el plan gratis: los fallos caducados los borra el
+// dueño al abrir la app, una vez al día
+testDueno('Los fallos de GrowIA caducados los borra el dueño al abrir la app, una vez al día', async ({ page, context, errores }) => {
+  await context.addInitScript(() => {
+    try {
+      if (location.protocol !== 'http:' || sessionStorage.getItem('__sembrado')) return;
+      sessionStorage.setItem('__sembrado', '1');
+      const doc = (dias) => JSON.stringify({ t: { __ts: Date.now() - 30 * 864e5 }, caduca: { __ts: Date.now() + dias * 864e5 }, tipo: 'google', estado: 503, modelo: null, donde: 'chat', v: '0.7j' });
+      localStorage.setItem('stub-fs:fallos_ia/ajena_20260101_0', doc(-2));
+      localStorage.setItem('stub-fs:fallos_ia/ajena_20260101_1', doc(-0.5));
+      localStorage.setItem('stub-fs:fallos_ia/ajena_20260202_0', doc(10));
+    } catch (e) {}
+  });
+  await crearCuenta(page);
+  await quitarCapas(page);
+  const quedan = () => page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('stub-fs:fallos_ia/')).map((k) => k.split('/').pop()).sort());
+  // al entrar, el dueño borra los dos caducados y deja el que aún no
+  await expect.poll(() => page.evaluate(() => S.esDueno)).toBe(true);
+  await expect.poll(quedan).toEqual(['ajena_20260202_0']);
+  expect(await page.evaluate(() => LS.get('inv-fallos-limpio'))).toBe(new Date().toISOString().slice(0, 10));
+  // el mismo día no vuelve a mirar: uno que caduque después espera a mañana (o a la próxima apertura sin marca)
+  await page.evaluate(() => localStorage.setItem('stub-fs:fallos_ia/ajena_20260203_0', JSON.stringify({ t: { __ts: Date.now() - 31 * 864e5 }, caduca: { __ts: Date.now() - 864e5 }, tipo: 'red', estado: null, modelo: null, donde: 'chat', v: '0.7j' })));
+  await page.evaluate(() => limpiarFallosIA());
+  expect(await quedan()).toEqual(['ajena_20260202_0', 'ajena_20260203_0']);
+  await page.evaluate(() => { LS.del('inv-fallos-limpio'); return limpiarFallosIA(); });
+  expect(await quedan()).toEqual(['ajena_20260202_0']);
+});
+
 // 0.7d: GrowIA más rápida. En las preguntas, la respuesta normal razona en medio (el análisis de la cartera, en alto) y,
 // si el 3.8 está saturado, pasa al 3.6 sin esperar; solo espera y reintenta cuando no queda otro de la respuesta normal
 test('con el 3.8 saturado contesta el 3.6 sin esperar, y razonando en medio', async ({ page, context, errores }) => {
