@@ -46,10 +46,41 @@ function valoresIA(M) {
   // el colchón: el fondo de renta fija en el que más tiene cada uno
   const nb = [...agrupado.values()].filter((g) => g.f.inst.clase === 'Renta fija').sort((x, y) => y.valor - x.valor)[0];
   v.mejora_colchon = nb && nb.f.p && nb.f.p.rent ? eur((nb.valor * Math.max(0, 2.5 - (nb.f.p.rent['1a'] || 0))) / 100, 0) : '—';
+  // 0.7h: el total que había cuando GrowIA escribió la revisión (con mayúscula para que ninguna {marca} lo alcance)
+  v._totalIA = totalDeIA(iaActual(), M);
   return v;
 }
+/* 0.7h: GrowIA escribe el patrimonio de cuando revisó («Tu patrimonio alcanza 80.853,80 €») y al lado sale el de ahora
+   (81.215 €). Lo vio Carlos el 30 oct en el resumen del día. Ese importe se cambia por el de ahora, como si hubiera escrito
+   {total}: el que coincide al euro con el de la revisión o, redondeado a la centena, no se aleja más de un 0,5 %.
+   Sin tocar los importes con signo (lo que sube o baja) ni los de dentro de otra cifra */
+const RE_EUR_IA = /(^|[^\d.,+\-−])(\*\*)?(\d{1,3}(?:\.\d{3})+|\d+)(?:,(\d{1,2}))?[  ]?€/g;
+const numEurIA = (ent, dec) => Number(ent.replace(/\./g, '') + '.' + (dec || '0'));
+function totalDeIA(ia, M) {
+  if (!ia || !ia.propio || !M || !(M.total > 0)) return null;
+  if (ia.total > 0) return ia.total;
+  // las de antes de la 0.7h no lo guardaban: el importe del titular (o del primer párrafo) más cercano al total de
+  // ahora, si no se aleja más de un 5 %
+  let mejor = null;
+  for (const t of [ia.titular, (ia.resumen || [])[0]]) {
+    for (const m of String(t || '').matchAll(RE_EUR_IA)) {
+      const n = numEurIA(m[3], m[4]), dif = Math.abs(n - M.total);
+      if (dif <= M.total * 0.05 && (mejor == null || dif < Math.abs(mejor - M.total))) mejor = n;
+    }
+    if (mejor != null) break;
+  }
+  return mejor;
+}
+function totalAlDiaIA(txt, antes) {
+  if (!(antes > 0)) return txt;
+  return String(txt).replace(RE_EUR_IA, (m, pre, ast, ent, dec) => {
+    const n = numEurIA(ent, dec);
+    const igual = Math.abs(n - antes) <= 1 || (!dec && n % 100 === 0 && Math.abs(n - antes) <= antes * 0.005);
+    return igual ? `${pre}${ast || ''}{total}` : m;
+  });
+}
 function rellenarIA(txt, v) {
-  return esc(limpiaIA(txt))
+  return esc(totalAlDiaIA(limpiaIA(txt), v && v.total && v._totalIA))
     .replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (m, k, id) => {
       const val = id ? v[k] && v[k][id] : v[k];
       return val != null && typeof val !== 'object' ? `<b class="dato">${esc(val)}</b>` : '—';

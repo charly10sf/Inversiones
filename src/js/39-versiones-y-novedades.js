@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7h', f: '2026-10-30', h: '13:35', t: 'Tu patrimonio, el mismo en todas partes', arreglos: [
+    'El patrimonio que nombra GrowIA es siempre el de ahora, el mismo que sale al lado, y no el que tenías cuando revisó tu cartera. Lo vio Carlos en el resumen del día: arriba 81.215 € y, en lo que dice GrowIA, 80.853,80 €.',
+  ] },
   { v: '0.7g', f: '2026-10-30', h: '04:40', t: 'Hacienda y GrowIA, más claras', arreglos: [
     'En el modo estándar, Hacienda ya no enseña «Lo que cuesta lo que te recomienda GrowFolio» ni propone qué vender: en ese modo GrowFolio no recomienda nada. Y los nombres con «&» ya salen bien en «Para pagar menos».',
     'GrowIA, sin la letra pequeña de Google debajo de la caja de escribir. Adónde van tus datos está en la pantalla de poner la clave y en Ajustes de GrowIA. Lo pidió Carlos.',
