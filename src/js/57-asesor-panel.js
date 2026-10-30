@@ -91,6 +91,7 @@ function htmlClaveAsesor() {
       <li>Pulsa «Create API key» y copia la clave entera: empieza por <code>AQ.</code> (o por <code>AIza</code> si es de las antiguas).</li>
       <li>Pégala aquí. Se guarda cifrada con la clave de tu cartera y solo viaja de tu navegador a Google.</li>
     </ol>
+    <p class="nota">Tus preguntas y lo que necesita de tu cartera van de tu navegador a Google, cifrados en el camino; no pasan por GrowFolio.</p>
     <label class="campo">Clave de Google<input type="password" id="asClave" placeholder="AQ.… o AIza…" autocomplete="off" spellcheck="false"></label>
     <label class="check"><input type="checkbox" id="asSync"> Guardarla también en tu cartera cifrada, para no tener que ponerla en el móvil</label>
     <div class="error" id="asErr"></div>
@@ -115,6 +116,7 @@ function htmlAjustesAsesor() {
     <label class="campo">Lo que quieres que sepa de ti<textarea id="asYo" rows="6" placeholder="Por ejemplo: tu edad, para qué inviertes, si piensas comprar casa y cuándo, cuánto riesgo aguantas, tus reglas para las acciones sueltas…">${esc(yo)}</textarea><small>Va dentro de tu cartera cifrada y lo lee al empezar cada conversación.</small></label>
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
     <div class="seccion-ed"><h3>Clave de Google</h3>
+      <p class="nota" style="margin:0 0 8px">Tus preguntas y lo que necesita de tu cartera van de tu navegador a Google, cifrados en el camino; no pasan por GrowFolio.</p>
       <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[cfg.prov]] ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'}</p>
       ${AS.clave ? `<details class="as-detalle"><summary>${L('Detalles técnicos', 'Technical details')}</summary><p class="nota as-cupo">${htmlCupoIA()}</p></details>` : ''}
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-as="cambiar-clave">${AS.clave ? 'Cambiar clave' : 'Poner clave'}</button>${AS.clave ? '<button class="btn peq peligro" data-as="borrar-clave">Borrar clave</button>' : ''}</div>
@@ -140,7 +142,6 @@ function pintarAsesor(alFinal) {
   b.classList.toggle('parar', AS.cargando); b.innerHTML = AS.cargando ? ICONOS.parar : ICONOS.enviar;
   b.setAttribute('aria-label', AS.cargando ? 'Parar' : 'Enviar'); b.disabled = false;
   pintarAdjunto();
-  $('#asNota', fondo).textContent = 'Gratis con tu clave de Google. Tus datos van de tu navegador a Google, cifrados en el camino; no pasan por GrowFolio.';
   if (vista === 'chat') cuerpo.scrollTop = cuerpo.scrollHeight; else cuerpo.scrollTop = 0;
 }
 function pintarTurno(k) {
@@ -163,7 +164,7 @@ async function abrirAsesor(pregunta, enviar) {
         <button class="ib ib-bicho" data-accion="opinion" title="Avisar de un fallo o mandar una idea" aria-label="Avisar de un fallo">${ICONOS.bicho}</button>
         <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
       <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
-      <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea>${dictadoPosible() ? `<button type="button" class="as-adj as-voz" data-as="voz" title="Dictar la pregunta" aria-label="Dictar la pregunta" aria-pressed="false">${ICONOS.micro}</button>` : ''}<button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form><small id="asNota"></small></footer>
+      <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea>${dictadoPosible() ? `<button type="button" class="as-adj as-voz" data-as="voz" title="Dictar la pregunta" aria-label="Dictar la pregunta" aria-pressed="false">${ICONOS.micro}</button>` : ''}<button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form></footer>
     </section>`;
     fondo.addEventListener('click', (e) => { if (e.target === fondo) cerrarAsesor(); else clicAsesor(e); });
     document.body.appendChild(fondo);
