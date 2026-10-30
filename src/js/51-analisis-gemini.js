@@ -126,7 +126,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   // 0.7f: en la app de Android, viva en segundo plano mientras revisa; si la has pedido tú y no la miras, te avisa al acabar
   const pedida = motivo === 'la pides tú';
   let fin = '';
-  appGrowiaEmpieza();
+  appGrowiaEmpieza(true, L('GrowIA está revisando tu cartera…', 'GrowIA is reviewing your portfolio…'));
   let marco = 0;
   const alCambiar = () => { if (!marco) marco = setTimeout(() => { marco = 0; refrescarProgresoIA(); }, 400); };
   try {

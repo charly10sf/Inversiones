@@ -73,11 +73,11 @@ const GROWIA_APP = { n: 0 };
 const puenteGrowia = (m) => { const a = window.InversionesApp; return a && typeof a[m] === 'function' ? a : null; };
 // la app se queda viva en segundo plano mientras GrowIA trabaja (solo se puede empezar con GrowFolio a la vista)
 const appSigueEnFondo = () => !!puenteGrowia('growiaEmpieza');
-function appGrowiaEmpieza(nueva = true) {
+function appGrowiaEmpieza(nueva = true, texto = '') {
   if (nueva) GROWIA_APP.n++;
   const a = puenteGrowia('growiaEmpieza');
   if (!a || document.hidden) return;
-  try { a.growiaEmpieza(L('GrowIA está contestando…', 'GrowIA is answering…')); } catch (e) {}
+  try { a.growiaEmpieza(texto || L('GrowIA está contestando…', 'GrowIA is answering…')); } catch (e) {}
 }
 // pausa: se ha cortado y GrowIA espera a que vuelvas (se cierra el servicio, pero la tarea sigue pendiente)
 function appGrowiaTermina(titulo = '', texto = '', pausa = false) {
