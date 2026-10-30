@@ -3,11 +3,11 @@
   {
    "v": "0.7g",
    "f": "2026-10-30",
-   "h": "05:00",
+   "h": "04:40",
    "t": "Hacienda y GrowIA, más claras",
    "commits": [
     {
-     "cuando": "2026-10-30 05:00",
+     "cuando": "2026-10-30 04:40",
      "asunto": "0.7g: Hacienda sin recomendaciones en estándar y GrowIA sin la letra pequeña",
      "detalle": [
       "Lo vio Claude el 30 oct haciendo capturas para las redes con una cuenta estándar: Hacienda enseñaba «Lo que cuesta lo que te recomienda GrowFolio» (aportar, y desde julio «Vender … con pérdidas») y lo anunciaba arriba y en la cabecera. htmlFiscalRecom no miraba esPublico()",

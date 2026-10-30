@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.7g', f: '2026-10-30', h: '05:00', t: 'Hacienda y GrowIA, más claras', arreglos: [
+  { v: '0.7g', f: '2026-10-30', h: '04:40', t: 'Hacienda y GrowIA, más claras', arreglos: [
     'En el modo estándar, Hacienda ya no enseña «Lo que cuesta lo que te recomienda GrowFolio» ni propone qué vender: en ese modo GrowFolio no recomienda nada. Y los nombres con «&» ya salen bien en «Para pagar menos».',
     'GrowIA, sin la letra pequeña de Google debajo de la caja de escribir. Adónde van tus datos está en la pantalla de poner la clave y en Ajustes de GrowIA. Lo pidió Carlos.',
   ] },
