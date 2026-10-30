@@ -1,0 +1,7 @@
+run 55 firma buena 2026-10-30T01:28:04Z
+total 2788
+drwxr-xr-x 3 runner runner    4096 Oct 30 01:27 .
+drwxr-xr-x 3 runner runner    4096 Oct 30 01:27 ..
+-rw-r--r-- 1 runner runner 2835972 Oct 30 01:27 app-release.apk
+drwxr-xr-x 4 runner runner    4096 Oct 30 01:27 baselineProfiles
+-rw-r--r-- 1 runner runner     708 Oct 30 01:27 output-metadata.json
