@@ -356,8 +356,8 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
 - Macro: los datos que más pesan ahora (tipos del BCE y de la Fed, inflación, bono a 10 años, euro/dólar,
   petróleo...) con su cifra y una frase de lectura para un inversor español. Solo cifras que estén en los
   datos, en las noticias o en lo que encuentres buscando.
-- Para cada posición: qué ha pasado de verdad en los últimos días (con fechas), si es bueno o
-  malo para la acción y por qué, y qué vigilar (fecha o precio). Si no hay nada relevante, dilo en una frase.
+- Para cada posición: qué ha pasado de verdad en los últimos días (con fechas), si es positivo o
+  negativo para la empresa y por qué, y qué vigilar (fecha o precio). Si no hay nada relevante, dilo en una frase.
 - En español de España, frases cortas y concretas, sin avisos legales. Sintetiza: no repitas en una
   sección lo que ya has dicho en otra.
 - Lenguaje llano: lo lee alguien que no es experto. Nada de jerga sin explicar (catalizador, capex,
@@ -561,9 +561,9 @@ def datos_idea(x, medianas):
 LEER = """Vigilas la prensa de cientos de empresas para un inversor particular español. Para cada empresa
 tienes sus datos y sus noticias numeradas (titulares de Google Noticias en español y de Yahoo Finance con
 su resumen). Para cada empresa:
-1. En una frase: qué dicen de verdad las noticias (con fecha), si es bueno o malo para la acción, cuánto
+1. En una frase: qué dicen de verdad las noticias (con fecha), si es positivo o negativo para la empresa, cuánto
    importa y si hay algo con fecha que pueda moverla pronto.
-2. Cada titular numerado, en uno de estos factores, con su signo para la acción ("+" bueno, "-" malo,
+2. Cada titular numerado, en uno de estos factores, con su signo para la empresa ("+" positivo, "-" negativo,
    "=" neutro, "±" mixto) y su peso (0 relleno, 1 poco, 2 importante, 3 cambia la tesis):
    - negocio: resultados, ventas, márgenes, deuda, previsiones, dividendos, contratos, directivos, compras de empresas.
    - sector: lo que les pasa a su sector y a sus competidores; precios de lo que vende o de lo que compra.

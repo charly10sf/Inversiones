@@ -62,3 +62,19 @@ test('GrowIA, sin la letra pequeña de Google debajo de la caja; la explicación
   await page.evaluate(() => { AS.vista = 'ajustes'; pintarAsesor(); });
   await expect(page.locator('#asCuerpo')).toContainText('no pasan por GrowFolio');
 });
+
+// 0.7j: desde el 30 oct, la lectura de la prensa de la Action decía «lo que es muy bueno para la acción» (Repsol, SK hynix)
+// y eso le llegaba a GrowIA en estándar, donde suena a consejo. En la app y en lo que ve GrowIA: «positivo para la empresa»
+test('lo que lee GrowIA en la prensa no dice «bueno para la acción»', async ({ page, errores }) => {
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  const r = await page.evaluate(() => {
+    S.escaneo = S.escaneo || {};
+    S.escaneo.lectura = { ...(S.escaneo.lectura || {}), 'REP.MC': { imp: 'positivo', rel: 3, d: new Date().toISOString(), txt: 'Repsol gana más de lo previsto, lo que es muy bueno para la acción.' } };
+    return { txt: prensaNeutra('Muy bueno para la acción: sube; en cambio, es malo para la acción.'), ctx: contextoAsesor(S.M || calcular(), 'completo') };
+  });
+  expect(r.txt).toBe('Muy positivo para la empresa: sube; en cambio, es negativo para la empresa.');
+  expect(r.ctx).toContain('lo que es muy positivo para la empresa');
+  expect(r.ctx).not.toMatch(/(bueno|malo) para la acci/i);
+});

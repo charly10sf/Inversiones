@@ -211,7 +211,8 @@ function contextoAsesor(M, modo = 'chat') {
     if (reglas.length) L.push('', '## Sus reglas de inversión', ...reglas.map((r) => '- ' + r));
     const yo = S.cartera.asesor && S.cartera.asesor.sobre_mi;
     if (yo) L.push('', '## Lo que cuenta de sí mismo', String(yo).slice(0, 3000));
-    return L.join('\n');
+    // 0.7j: lo que viene de la prensa, sin «bueno para la acción» (ver prensaNeutra)
+    return prensaNeutra(L.join('\n'));
   } finally { S.oculto = oc0; }
 }
 

@@ -588,7 +588,14 @@ function datoIA(t) {
 }
 /* las fechas sueltas que a veces escribe GrowIA (2026-10-28) se leen como el resto: «28 oct» */
 const fechaIA = (t) => String(t).replace(/\b(20\d\d)-(\d\d)-(\d\d)\b/g, (m, a, me, d) => `${+d} ${MESES[+me - 1] || me}${+a !== new Date().getFullYear() ? ` de ${a}` : ''}`);
-const limpiaIA = (t) => fechaIA(sinRumbo(String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, '')));
+/* 0.7j: la lectura de la prensa a veces dice «es muy bueno para la acción», que suena a consejo (en estándar no puede
+   salir: lo vigila tests/growia.spec.js). Se dice como el resto de la app: positivo o negativo para la empresa */
+const RE_ACCION_IA = /\b(muy |bastante |algo )?(buen[oa]|mal[oa]|positiv[oa]|negativ[oa]) para (?:la|las|sus|su) acci(?:ón|ones)\b/gi;
+const prensaNeutra = (t) => String(t).replace(RE_ACCION_IA, (m, adv, adj) => {
+  const x = `${adv || ''}${/^(buen|positiv)/i.test(adj) ? 'positivo' : 'negativo'} para la empresa`;
+  return /^\p{Lu}/u.test(m) ? x.charAt(0).toUpperCase() + x.slice(1).toLowerCase() : x.toLowerCase();
+});
+const limpiaIA = (t) => fechaIA(sinRumbo(prensaNeutra(String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, ''))));
 const escIA = (t) => esc(limpiaIA(t));
 const noticiasIdea = (sim) => ((S.precios && S.precios.noticias_ideas) || {})[sim] || [];
 /* ---------- las mejores ideas: la web, Gemini y tu análisis, juntas ----------
