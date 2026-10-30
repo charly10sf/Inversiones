@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.7e', f: '2026-10-30', h: '02:15', t: 'Tu aportación no es una subida', arreglos: [
+  { v: '0.7e', f: '2026-10-30', h: '02:05', t: 'Tu aportación no es una subida', arreglos: [
     'Tu aportación automática del día ya no sale en la gráfica como una subida de la semana (ni de hoy ni del mes): mientras su fondo no publica el valor de ese día, cuenta igual al principio que al final. Lo vio Carlos: en «1S» salían +1.926 € con los 1.250 € de su aportación dentro.',
   ] },
   { v: '0.7d', f: '2026-10-30', h: '00:05', t: 'Tu contraseña, más segura; GrowIA, más rápida', arreglos: [
