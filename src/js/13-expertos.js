@@ -277,7 +277,8 @@ function vistaExpertos(M) {
   let cuerpo = '';
   if (S.expTab === 'posiciones') {
     const prensa = noticiasCartera(true);
-    cuerpo = `${planes.length ? `<section aria-labelledby="hPlanV">
+    // 0.7i: en el ordenador, lo tuyo a la izquierda y lo de la prensa a la derecha (en el móvil, uno debajo de otro, como antes)
+    cuerpo = `<div class="exp-dos"><div class="exp-main">${planes.length ? `<section aria-labelledby="hPlanV">
       <div class="sec-cab"><h2 id="hPlanV">Qué vender o recortar</h2><span class="k">${planes.length === 1 ? 'una posición' : planes.length + ' posiciones'}, con el plan completo</span></div>
       <div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl, 'plegado')).join('')}</div>
     </section>` : ''}
@@ -285,9 +286,9 @@ function vistaExpertos(M) {
       <div class="sec-cab"><h2 id="hSen">Posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
       <div class="fx3-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; const vistos = new Set(); return ordenSenales(M).filter((f) => !vistos.has(f.pos.id) && vistos.add(f.pos.id)).map((f) => filaExperto2(f, ia, vIA)).join(''); })()}</div>
       <p class="nota">${esPublico() ? L('La etiqueta es lo que opinan los analistas que siguen cada empresa (Yahoo Finance): su opinión, no un consejo de GrowFolio. GrowIA lee las noticias de cada una.', 'The label is what the analysts covering each company think (Yahoo Finance): their opinion, not advice from GrowFolio. GrowIA reads the news on each one.') : 'GrowFolio mira el consenso de los analistas, lo que queda hasta su precio objetivo, la tendencia, tus reglas de salida y lo que pesa en tu cartera. GrowIA, además, lee las noticias. Si no coinciden, lee los dos motivos antes de decidir.'}</p>
-    </section>
-    ${htmlResumenInforme(true)}
-    <details class="num-sec"><summary><span><b>Analistas en prensa</b><small>titulares sobre lo que tienes, de los últimos 30 días</small></span></summary><div class="num-cuerpo">${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10)}</div></details>`;
+    </section></div>
+    <div class="exp-lado">${htmlResumenInforme(true)}
+    <details class="num-sec"><summary><span><b>Analistas en prensa</b><small>titulares sobre lo que tienes, de los últimos 30 días</small></span></summary><div class="num-cuerpo">${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10)}</div></details></div></div>`;
   } else if (S.expTab === 'siguiendo') {
     cuerpo = htmlSiguiendo(M);
   } else {
@@ -737,8 +738,8 @@ function tarjetaIdea(x, ctx, compacta = false, puesto = 0) {
     <p class="idea-quien">${quienIdea(x)}${ctr ? ` <span class="ctr-q">${htmlContraste(ctr, true)} señales a favor</span>` : ''}</p>
     ${htmlCifrasIdea(r, x.esp)}
     ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
-    ${mas ? `<details class="mas"><summary>Qué la mueve, pegas, impuestos y señales</summary><div class="idea-mas">${mas}</div></details>` : ''}
-    <div class="idea-btns">${esPublico() ? `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Qué hace ${x.n} (${x.s}) y qué dicen los analistas? Contrástalo con las noticias de esta semana y dime qué pagaría de impuestos y comisiones si la comprara.`)}">${ICONOS.growia}${L('Pregúntale', 'Ask')}</button>` : `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.growia}¿Cuánto meto?</button>`}${r && r.s ? `<button class="btn peq" data-accion="operacion" data-tipo="compra" data-sim="${esc(r.s)}">${ICONOS.compra}Ya la he comprado</button>${botonSeguir(r.s, nombreRadar(x))}` : ''}</div>
+    ${mas ? `<details class="mas"${innerWidth >= 1100 ? ' open' : ''}><summary>Qué la mueve, pegas, impuestos y señales</summary><div class="idea-mas">${mas}</div></details>` : ''}
+    <div class="idea-btns">${esPublico() ? `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Qué hace ${x.n} (${x.s}) y qué dicen los analistas? Contrástalo con las noticias de esta semana y dime qué pagaría de impuestos y comisiones si la comprara.`)}">${ICONOS.growia}${L('Pregúntale', 'Ask')}</button>` : `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.growia}¿Cuánto meto?</button>`}${r && r.s ? `<button class="btn peq" data-accion="operacion" data-tipo="compra" data-sim="${esc(r.s)}">${ICONOS.compra}Ya la he comprado</button>${botonSeguir(r.s, nombreRadar(x))}<button type="button" class="btn peq" data-consulta="${esc(r.s)}">${L('Ver la empresa', 'See the company')}</button>` : ''}</div>
   </article>`;
 }
 function htmlEvitar() {
@@ -748,8 +749,10 @@ function htmlEvitar() {
   // se ha movido hoy y por qué GrowIA no la compraría (el motivo en tres líneas, entero al tocarlo)
   const tarjeta = (v) => {
     const r = buscarRadar(v.s), dia = r && r.v != null ? +r.v : null;
-    return `<article class="evita">
-      <header>${logo(r && r.w, v.n || v.s)}<div><b>${esc(v.n || (r && r.n) || v.s)}</b><small>${r ? lineaOrigenCorta(r) : ''}<span class="ev-tk">${esc(v.s)}</span></small></div>
+    // 0.7i: toda la tarjeta abre la empresa (lo pidió Carlos); el nombre es el botón, para el teclado
+    const nom = esc(v.n || (r && r.n) || v.s);
+    return `<article class="evita"${r ? ` data-consulta="${esc(r.s)}"` : ''}>
+      <header>${logo(r && r.w, v.n || v.s)}<div>${r ? `<button type="button" class="ev-n" data-consulta="${esc(r.s)}">${nom}</button>` : `<b>${nom}</b>`}<small>${r ? lineaOrigenCorta(r) : ''}<span class="ev-tk">${esc(v.s)}</span></small></div>
         <span class="ev-res">${dia != null ? `<b class="${cls(dia)}">${pctS(dia, 1)}</b><small>${L('hoy', 'today')}</small>` : ''}</span></header>
       ${(() => { const c = cambiosIdeas().find((y) => y.s === v.s && y.ahora === 'evitar'); return c ? `<p class="ev-antes">${ICONOS.alerta}<span>${L('Hasta hace poco estaba entre las ideas. Cambia por una noticia que cambia la tesis.', 'Until recently it was among the ideas. It changes because of news that changes the thesis.')}</span></p>` : ''; })()}
       <p class="ev-motivo" data-ev-abre tabindex="0">${escIA(v.motivo)}</p>
@@ -802,7 +805,7 @@ function htmlIdeas(M, ia) {
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
       <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
     <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Puede subir')}${th('neto', 'Te quedas')}${th('ctr', 'Señales', '')}<th>Prensa</th>${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
-    ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<b style="font-weight:600">${esc(nombreRadar(x))}</b></div><small>${lineaOrigen(x)}</small></td>
+    ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}" data-consulta="${esc(x.s)}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<button type="button" class="radar-n" data-consulta="${esc(x.s)}"><b style="font-weight:600">${esc(nombreRadar(x))}</b></button></div><small>${lineaOrigen(x)}</small></td>
       <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
       <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que te quedaría si se cumple lo esperado (en el plazo de GrowIA o en los 12 meses de los analistas), con su dividendo y ya restados la tasa de compra, la retención que no se recupera y tus impuestos">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}

@@ -47,6 +47,16 @@ function rangoConsulta(x) {
     <div class="cr-barra" role="img" aria-label="Precio ${precioR(x.p, x.m)} entre ${precioR(x.mn, x.m)} y ${precioR(x.mx, x.m)}"><i class="cr-p" style="left:${p(x.p)}%"></i>${x.obj ? `<i class="cr-o" style="left:${p(Math.min(x.obj, x.mx))}%" title="Objetivo medio de los analistas"></i>` : ''}</div>
     <div class="cr-et"><span>${precioR(x.mn, x.m)}</span>${x.obj ? `<span class="cr-leg"><i></i>objetivo ${precioR(x.obj, x.m)}</span>` : ''}<span>${precioR(x.mx, x.m)}</span></div></div>`;
 }
+/* 0.7i: si GrowIA la tiene entre las que evitaría o entre sus ideas, la hoja de la empresa lo dice, con su motivo */
+function htmlConsultaIA(sim) {
+  const d = S.escaneo && S.escaneo.decision;
+  if (!sim || !d) return '';
+  const ev = (d.evitar || []).find((v) => v && v.s === sim);
+  if (ev) return `<p class="cons-ia ev">${ICONOS.alerta}<span><b>${L('GrowIA la evitaría, por lo que dice su prensa.', 'GrowIA would avoid it, going by its press.')}</b> ${escIA(ev.motivo || '')}</span></p>`;
+  const id = (d.ideas || []).find((v) => v && v.s === sim);
+  if (id) return `<p class="cons-ia idea">${ICONOS.growia}<span><b>${esPublico() ? L('Está entre las ideas de GrowIA, iguales para todos.', "It's among GrowIA's ideas, the same for everyone.") : L('Está entre las ideas de GrowIA.', "It's among GrowIA's ideas.")}</b> ${escIA(id.tesis || '')}</span></p>`;
+  return '';
+}
 function abrirConsulta(c) {
   if (!c) return;
   if (c.k.startsWith('merc:')) {
@@ -92,6 +102,7 @@ function abrirConsulta(c) {
       ${precio != null ? `<div class="cons-precio"><b>${precioR(precio, mon)}</b>${mon !== 'EUR' && enEur ? `<span class="k">≈ ${precioFmt(enEur)}</span>` : ''}${dia != null ? `<span class="${cls(dia)}">${pctS(dia, 2)}</span>` : ''}<small class="k">${fecha ? `${fondo ? 'valor liquidativo del' : 'cierre del'} ${fechaCorta(fecha)}` : 'último cierre'}</small></div>` : ''}
       <div id="consGraf">${cid || (idI && histDe(idI)) ? '<div class="vacio">Cargando la gráfica…</div>' : x ? rangoConsulta(x) : ''}</div>
       <div class="fila-btns cons-btns"><button type="button" class="btn pri" data-cons-add>${ICONOS.mas}Añadir a mi cartera</button><button type="button" class="btn" data-cons-ia>${ICONOS.growia}Pregúntale a GrowIA</button>${x ? botonSeguir(x.s, nombre, false) : ''}</div>
+      ${htmlConsultaIA(sim)}
       ${datos.length ? `<dl class="kv">${datos.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : ''}
       ${x ? `<details class="mas"><summary>Las siete señales de GrowFolio</summary>${htmlContrasteLista(contraste(x))}</details>` : ''}
       ${x ? htmlFichaFactores(x.s) : ''}
@@ -197,7 +208,10 @@ document.addEventListener('click', (e) => {
   else seguir(b.dataset.seguir, b.dataset.seguirN);
 }, true);
 document.addEventListener('click', (e) => {
-  const b = e.target.closest('[data-consulta]'); if (!b || !S.cartera) return;
+  const b = e.target.closest('[data-consulta]'); if (!b || !S.cartera || e.gfHecho) return;
+  // 0.7i: en una tarjeta o fila que abre la empresa, los enlaces y botones de dentro hacen lo suyo
+  const dentro = e.target.closest('a, button, input, select, label, summary');
+  if (dentro && dentro !== b && b.contains(dentro)) return;
   const sim = b.dataset.consulta, c = candidatoDeSim(sim);
   const x = radarPorSim(sim);
   abrirConsulta(c || (x ? { k: 'radar:' + sim, n: nombreRadar(x), l: x.n, s: sim, isin: '', dom: x.w, cot: { cod: null, txt: x.z || '' }, tengo: false } : null));

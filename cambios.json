@@ -1,6 +1,26 @@
 {
  "versiones": [
   {
+   "v": "0.7i",
+   "f": "2026-10-30",
+   "h": "14:35",
+   "t": "Expertos, a la medida del ordenador",
+   "commits": [
+    {
+     "cuando": "2026-10-30 14:35",
+     "asunto": "0.7i: Expertos en el ordenador; evitar y radar abren la empresa; tablas cuadradas",
+     "detalle": [
+      "Lo pidió Carlos el 30 oct con capturas de su ordenador: «está todo a lo ancho» (la idea abierta ocupaba los 1.680 px con dos cifras por fila y líneas de texto de lado a lado) y las que GrowIA evitaría no llevaban a ninguna parte",
+      "Ideas: tres columnas desde 1.200 px (son nueve, tres filas de tres; antes cuatro y una suelta). La abierta, desde 1.100 px, en dos columnas: quién la propone arriba; cifras, tesis y botones a la izquierda; «Qué la mueve, pegas, impuestos y señales» a la derecha y ya abierto. Las que evitaría, de tres en tres",
+      "Tus posiciones, desde 1.100 px: «Qué vender o recortar» y «Posición a posición» a la izquierda; «Lo último, según GrowIA» y «Analistas en prensa» a la derecha. En el móvil las cajas van con display: contents y todo sigue como antes",
+      "Las que evitaría: toda la tarjeta abre la hoja de la empresa (data-consulta; el nombre es un botón, para el teclado; los enlaces de las fuentes y el motivo recortado hacen lo suyo). Las filas del radar, igual, y cada idea tiene «Ver la empresa». La hoja de la empresa dice si GrowIA la evitaría (con su motivo) o si está entre sus ideas",
+      "Tablas: la regla .resp de las respuestas a opiniones (display: grid) cogía también las table.resp y, por encima de 680 px, los títulos no iban encima de sus columnas (radar, Hacienda, Paso a paso). Ahora es .resp-lista > .resp",
+      "Prueba nueva: tests/expertos-pc.spec.js"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7h",
    "f": "2026-10-30",
    "h": "13:35",
