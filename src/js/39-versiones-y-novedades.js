@@ -5,6 +5,10 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7f', f: '2026-10-30', h: '02:30', t: 'GrowIA sigue aunque salgas', arreglos: [
+    'Si sales de GrowFolio mientras GrowIA contesta, ya no acaba en «Se ha cortado la conexión con Google tres veces seguidas»: espera a que vuelvas y sigue sola, con el mismo modelo. Lo vio Carlos.',
+    'Con la app de Android nueva, GrowIA sigue contestando aunque cambies de app o apagues la pantalla (mientras tanto sale una notificación) y, si no la estás mirando, te avisa cuando acaba.',
+  ] },
   { v: '0.7e', f: '2026-10-30', h: '02:05', t: 'Tu aportación no es una subida', arreglos: [
     'Tu aportación automática del día ya no sale en la gráfica como una subida de la semana (ni de hoy ni del mes): mientras su fondo no publica el valor de ese día, cuenta igual al principio que al final. Lo vio Carlos: en «1S» salían +1.926 € con los 1.250 € de su aportación dentro.',
   ] },

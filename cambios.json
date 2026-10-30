@@ -1,6 +1,25 @@
 {
  "versiones": [
   {
+   "v": "0.7f",
+   "f": "2026-10-30",
+   "h": "02:30",
+   "t": "GrowIA sigue aunque salgas",
+   "commits": [
+    {
+     "cuando": "2026-10-30 02:30",
+     "asunto": "0.7f: GrowIA sigue en segundo plano",
+     "detalle": [
+      "Lo vio Carlos el 30 oct a la 1:57: salió de la app mientras GrowIA contestaba y acabó en «Se ha cortado la conexión con Google tres veces seguidas (Failed to fetch)»",
+      "Por qué: al salir, Android congela la app al poco y corta las conexiones de la página. GrowIA lo contaba como un fallo de Google, reintentaba con la app aún fuera (y se volvía a cortar) y a la tercera se rendía",
+      "Web: un corte con GrowFolio fuera de la vista (o sin conexión) no cuenta para los tres intentos ni pasa a la rápida: espera a que vuelvas y repite esa petición con el mismo modelo",
+      "Android: mientras GrowIA contesta, un servicio en primer plano con su notificación (shortService en Android 14 o más; dataSync antes) mantiene viva la app, y la web sigue con prioridad alta. Si no la miras, al acabar avisa «GrowIA ya te ha contestado», sin nada de la respuesta. Hace falta la app nueva",
+      "Prueba nueva: tests/growia-fondo.spec.js (en el navegador espera; con la app, reintenta dos veces sin esperarte y avisa)"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7e",
    "f": "2026-10-30",
    "h": "02:05",

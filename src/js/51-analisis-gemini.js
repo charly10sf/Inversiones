@@ -123,6 +123,10 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   IA.generando = true; IA.error = null; IA.ultimoIntento = Date.now();
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [] };
   IA.turno = turno; refrescarProgresoIA();
+  // 0.7f: en la app de Android, viva en segundo plano mientras revisa; si la has pedido tú y no la miras, te avisa al acabar
+  const pedida = motivo === 'la pides tú';
+  let fin = '';
+  appGrowiaEmpieza(true, L('GrowIA está revisando tu cartera…', 'GrowIA is reviewing your portfolio…'));
   let marco = 0;
   const alCambiar = () => { if (!marco) marco = setTimeout(() => { marco = 0; refrescarProgresoIA(); }, 400); };
   try {
@@ -147,6 +151,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     AS.gasto += turno.coste || 0; guardarConv();
     await guardarAnalisisPropio();
     toast(`${nombreIA()} ha actualizado el análisis de tu cartera`);
+    if (pedida) fin = L('GrowIA ha revisado tu cartera', 'GrowIA has reviewed your portfolio');
     IA.reintentos = 0;
     // si trae una pregunta nueva: a la vista (y aviso al móvil si lo tienes activado y no estás mirando)
     if (preguntaNueva()) { if (document.hidden) avisoSistema('pregunta', 'GrowIA te pregunta', preguntaNueva().x.q, '#objetivos', 'preg:' + clavePreg(preguntaNueva().x)); else setTimeout(() => mostrarPreguntaIA(), 1200); }
@@ -164,6 +169,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     }
   }
   IA.generando = false; IA.turno = null;
+  appGrowiaTermina(fin, fin && L('Toca para verla.', 'Tap to see it.'));
   if (['analisis', 'expertos', 'cartera'].includes(S.vista) && !$('.hoja-fondo')) pintar(); else refrescarProgresoIA();
 }
 /* ¿toca revisar? cada día (o semana) y, si es diario, también cuando cambia alguna señal */

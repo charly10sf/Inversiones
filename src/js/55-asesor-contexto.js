@@ -515,6 +515,25 @@ function errorGoogle(estado, j) {
    Con el móvil, una petición colgada tanto rato acababa en «No hay conexión» sin más */
 const ESPERA_GEMINI = 90000;
 const esCorteRed = (e) => e && e.name !== 'AbortError' && (e.corte || /Failed to fetch|NetworkError|network error|Load failed|ERR_/i.test(e.message || ''));
+/* 0.7f: GrowIA en segundo plano. Al salir de GrowFolio (otra app, la pantalla apagada), el móvil corta al poco las
+   conexiones de la página. Ese corte no es un fallo de Google: no cuenta para los tres intentos ni hace pasar a la
+   rápida. GrowIA espera a que vuelvas (y a que haya conexión) y repite esa petición. En la app de Android, que se queda
+   viva mientras contesta, lo vuelve a intentar antes sin esperarte */
+let ocultaT = document.hidden ? Date.now() : 0;
+document.addEventListener('visibilitychange', () => { if (document.hidden) ocultaT = Date.now(); });
+const fueraDesde = (t) => document.hidden || ocultaT >= t || navigator.onLine === false;
+function esperarVuelta(signal) {
+  return new Promise((ok, mal) => {
+    const listo = () => !document.hidden && navigator.onLine !== false;
+    if (listo()) return ok();
+    const quitar = () => { document.removeEventListener('visibilitychange', mirar); window.removeEventListener('online', mirar); if (signal) signal.removeEventListener('abort', parar); };
+    const mirar = () => { if (listo()) { quitar(); ok(); } };
+    const parar = () => { quitar(); mal(new DOMException('Parado', 'AbortError')); };
+    if (signal && signal.aborted) return mal(new DOMException('Parado', 'AbortError'));
+    document.addEventListener('visibilitychange', mirar); window.addEventListener('online', mirar);
+    if (signal) signal.addEventListener('abort', parar, { once: true });
+  });
+}
 async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar) {
   const ctl = new AbortController(); let tarde = false;
   const reloj = setTimeout(() => { tarde = true; ctl.abort(); }, ESPERA_GEMINI);
@@ -642,10 +661,10 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     busquedas = 0; intentos = 0; turno.citas.length = 0; turno.resultados.length = 0;
     alCambiar(); return true;
   };
-  let cortes = 0, busquedas = 0, intentos = 0;
+  let cortes = 0, busquedas = 0, intentos = 0, pausas = 0;
   for (let vuelta = 0; vuelta < 14; vuelta++) {
     const m = MODELOS[modelo] || {};
-    const pasosAntes = turno.partes.length;
+    const pasosAntes = turno.partes.length, t0 = Date.now();
     const cuerpo = {
       systemInstruction: { parts: [{ text: sysTexto }] }, contents, ...(herramientas ? { tools: herramientasGemini(usarWeb) } : {}),
       generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: nivel || m.pensar } } : {}) },
@@ -654,6 +673,23 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     try { r = await llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar); }
     catch (e) {
       if (e.name === 'AbortError') throw e;
+      // 0.7f: cortado con GrowFolio en segundo plano o sin conexión: se espera y se repite, sin contarlo como fallo
+      // (8 veces como mucho en una respuesta; cada una necesita que vuelvas o que vuelva la conexión)
+      if (esCorteRed(e) && fueraDesde(t0) && pausas < 8) {
+        pausas++; turno.partes.length = pasosAntes; turno.partes = turno.partes.filter((x) => !x.fondo);
+        const sinRed = navigator.onLine === false, yaSigue = appSigueEnFondo() && !sinRed && pausas <= 2;
+        const paso = { tipo: 'paso', fondo: true, txt: sinRed ? L('Sin conexión: sigo en cuanto vuelva', 'No connection: I\'ll carry on as soon as it\'s back') : yaSigue ? L('Se ha cortado la conexión con Google: lo intento otra vez', 'The connection to Google dropped: trying again') : L('Se ha cortado al salir de GrowFolio: sigo en cuanto vuelvas', 'It dropped when you left GrowFolio: I\'ll carry on when you\'re back') };
+        turno.partes.push(paso); alCambiar();
+        if (yaSigue) await dormir(2000 * pausas, signal);
+        else {
+          if (document.hidden) appGrowiaTermina(L('GrowIA se ha quedado a medias', 'GrowIA stopped halfway'), L('Se cortó la conexión al salir. Abre GrowFolio y seguirá sola.', 'The connection dropped when you left. Open GrowFolio and it will carry on.'), true);
+          await esperarVuelta(signal);
+          paso.txt = sinRed ? L('Se cortó la conexión: he seguido al volver', 'The connection dropped: I carried on when it came back') : L('Se cortó mientras estabas fuera: he seguido al volver', 'It dropped while you were away: I carried on when you came back');
+          appGrowiaEmpieza(false); alCambiar();
+          await dormir(300, signal);
+        }
+        vuelta--; continue;
+      }
       // 0.6c: un corte de la conexión (o Google sin contestar) a mitad de la conversación: se repite esa misma petición,
       // hasta dos veces, quitando lo que hubiera empezado a escribir; a la tercera, con otro modelo si lo hay
       if (esCorteRed(e) && cortes < 2) { cortes++; turno.partes.length = pasosAntes; turno.partes.push({ tipo: 'paso', txt: `Se ha cortado la conexión con Google: lo intento otra vez${cortes > 1 ? ` (${cortes}.ª)` : ''}` }); alCambiar(); await dormir(1500 * cortes, signal); vuelta--; continue; }
@@ -723,6 +759,7 @@ async function preguntarAsesor(texto) {
   const contenido = adj && adj.img ? [{ inlineData: { mimeType: 'image/jpeg', data: adj.img.split(',')[1] } }, { text: textoApi }] : textoApi;
   AS.conv.push({ rol: 'yo', texto, mini: adj && adj.mini, donde: adj && adj.donde, adj: adj || undefined }, turno);
   AS.cargando = true; AS.ctrl = new AbortController();
+  appGrowiaEmpieza();
   pintarAsesor(true);
   let marco = 0;
   const alCambiar = () => { if (!marco) marco = requestAnimationFrame(() => { marco = 0; pintarTurno(AS.conv.length - 1); }); };
@@ -739,6 +776,10 @@ async function preguntarAsesor(texto) {
   }
   AS.cargando = false; AS.ctrl = null;
   const final = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim();
+  // 0.7f: en la app de Android, si no la estás mirando, el aviso de que ya ha contestado (sin nada de la respuesta)
+  if (turno.error === 'Parado.') appGrowiaTermina();
+  else if (turno.error) appGrowiaTermina(L('GrowIA no ha podido contestar', "GrowIA couldn't answer"), L('Toca para ver qué ha pasado.', 'Tap to see what happened.'));
+  else appGrowiaTermina(L('GrowIA ya te ha contestado', 'GrowIA has answered'), L('Toca para leer la respuesta.', 'Tap to read the answer.'));
   if (final) { AS.api.push({ role: 'user', content: textoApi }, { role: 'assistant', content: final }); AS.api = AS.api.slice(-24); }
   AS.gasto += turno.coste || 0;
   guardarConv();
