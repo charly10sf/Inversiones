@@ -12,10 +12,10 @@ function iaActual() {
     // acaso, fuera lo que sea comprar o vender
     const p = S.iaPropio; if (!p || !p.json || !p.json.publico) return null;
     const pos = {}; for (const [k, x] of Object.entries(p.json.posiciones || {})) if (x) { const { nivel, veredicto, ...r } = x; pos[k] = r; }
-    return { ...p.json, posiciones: pos, ideas: [], hoja_de_ruta: null, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
+    return { ...p.json, posiciones: pos, ideas: [], hoja_de_ruta: null, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo, total: p.total };
   }
   const p = S.iaPropio, pub = S.ia;
-  if (p && p.json && (!pub || String(p.fecha) >= String(pub.fecha))) return { ...p.json, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo };
+  if (p && p.json && (!pub || String(p.fecha) >= String(pub.fecha))) return { ...p.json, fecha: p.fecha, autor: nombreIA(p.modelo), propio: true, modelo: p.modelo, busquedas: p.busquedas, motivo: p.motivo, total: p.total };
   return pub ? { ...pub, autor: 'GrowIA', publicado: true } : null;
 }
 const firmaSenales = (M) => [...new Set(M.filas.map((f) => `${f.inst.id}:${f.senal.nivel}`))].sort().join('|');
@@ -147,7 +147,8 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     const vistas = new Set();
     json.fuentes = [...turno.citas, ...(Array.isArray(json.fuentes) ? json.fuentes : [])].filter((x) => x && /^https?:\/\//.test(x.u || '') && !vistas.has(x.u) && vistas.add(x.u)).slice(0, 20);
     json.publico = esPublico();
-    S.iaPropio = { fecha: new Date().toISOString(), modelo: turno.modelo || AS.modeloVivo || cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo };
+    // 0.7h: con el total que ha visto GrowIA, para cambiarlo por el de ahora al enseñarlo (totalAlDiaIA)
+    S.iaPropio = { fecha: new Date().toISOString(), modelo: turno.modelo || AS.modeloVivo || cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo, total: M.total };
     AS.gasto += turno.coste || 0; guardarConv();
     await guardarAnalisisPropio();
     toast(`${nombreIA()} ha actualizado el análisis de tu cartera`);
