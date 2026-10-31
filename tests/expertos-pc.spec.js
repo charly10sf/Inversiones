@@ -37,13 +37,19 @@ test('en el ordenador: ideas de tres en tres, la abierta en dos columnas y el ra
   await abrirIdeas(page);
   const cols = await page.evaluate(() => getComputedStyle(document.querySelector('.ideas-top3')).gridTemplateColumns.split(' ').length);
   expect(cols).toBe(3);
-  // la idea abierta: «Qué la mueve…» abierto y a la derecha de las cifras
-  await page.locator('.ideas-top3 [data-idea-toggle]').first().click();
-  const idea = page.locator('.ideas-top3 .idea.abierta');
-  await expect(idea.locator('details.mas')).toHaveAttribute('open', '');
-  const [cif, mas] = await Promise.all([idea.locator('.idea-cifras4').boundingBox(), idea.locator('details.mas').boundingBox()]);
-  expect(mas.x).toBeGreaterThan(cif.x + cif.width - 1);
-  expect(mas.y).toBeLessThan(cif.y + cif.height);
+  // la idea abierta: «Qué la mueve…» abierto y a la derecha de las cifras. 0.7l: abrir y medir en el mismo paso (si
+  // llegan precios o el escaneo, la vista se repinta y la idea se cierra; con la máquina de la Action cargada pasaba)
+  await expect.poll(() => page.evaluate(() => {
+    let idea = document.querySelector('.ideas-top3 .idea.abierta');
+    if (!idea) { const h = document.querySelector('.ideas-top3 [data-idea-toggle]'); if (h) abrirIdea(h); idea = document.querySelector('.ideas-top3 .idea.abierta'); }
+    const cif = idea && idea.querySelector('.idea-cifras4'), mas = idea && idea.querySelector('details.mas');
+    if (!cif || !mas || !mas.open) return null;
+    const a = cif.getBoundingClientRect(), b = mas.getBoundingClientRect();
+    return { masX: b.x, masY: b.y, fin: a.x + a.width, abajo: a.y + a.height };
+  }), { timeout: 30_000 }).not.toBeNull();
+  const caja = await page.evaluate(() => { const idea = document.querySelector('.ideas-top3 .idea.abierta'); const a = idea.querySelector('.idea-cifras4').getBoundingClientRect(), b = idea.querySelector('details.mas').getBoundingClientRect(); return { masX: b.x, masY: b.y, fin: a.x + a.width, abajo: a.y + a.height }; });
+  expect(caja.masX).toBeGreaterThan(caja.fin - 1);
+  expect(caja.masY).toBeLessThan(caja.abajo);
   // el radar ocupa todo el ancho y cada título va encima de su columna (antes .resp lo hacía rejilla y se descuadraban)
   const r = await page.evaluate(() => {
     const t = document.querySelector('table.ideas'), th = t.querySelectorAll('thead th'), td = t.querySelectorAll('tbody tr:first-child td');
@@ -82,9 +88,13 @@ test('Tus posiciones: en el ordenador, la prensa al lado; en el móvil, debajo c
   await crearCuenta(page);
   await quitarCapas(page);
   await meterCartera(page);
+  // 0.7l: con el escaneo ya llegado (la prensa sale de ahí) y esperando a que se pinte: con la máquina de la Action
+  // cargada, la prensa aún no estaba al medir
+  await page.waitForFunction(() => S.escaneo && S.escaneo.decision, null, { timeout: 45_000 });
   await page.evaluate(() => { document.querySelectorAll('.hoja-fondo').forEach((h) => h.remove()); S.acceso = 'privado'; S.expTab = 'posiciones'; location.hash = '#expertos'; pintar(); });
   const pos = page.locator('#hSen'), prensa = page.locator('.exp-lado .num-sec');
   await expect(pos).toBeVisible();
+  await expect(prensa).toBeVisible({ timeout: 30_000 });
   const [a, b] = await Promise.all([pos.boundingBox(), prensa.boundingBox()]);
   if (info.project.name === 'pc') {
     expect(b.x).toBeGreaterThan(a.x + 400);
