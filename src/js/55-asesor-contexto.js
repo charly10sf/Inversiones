@@ -512,78 +512,123 @@ function errorGoogle(estado, j) {
     && !(e0.details || []).some((d) => /QuotaFailure|RetryInfo/.test(d['@type'] || ''));
   return e;
 }
-/* 0.6c: si Google no empieza a contestar en 90 s, la petición se corta y cuenta como un corte de conexión (se reintenta).
-   Con el móvil, una petición colgada tanto rato acababa en «No hay conexión» sin más */
-const ESPERA_GEMINI = 90000;
+/* 0.7l: cuánto se espera a Google y qué se hace con cada corte (lo de antes, desde la 0.6c, solo vigilaba los primeros
+   90 s: una vez que Google empezaba a contestar no había límite y, si la conexión se moría a mitad, GrowIA se quedaba
+   pensando para siempre). Ahora se vigila cada dato que llega: antes del primero (la respuesta normal razona antes de
+   escribir) se esperan 120 s; con la respuesta ya llegando, 60 s sin un dato nuevo; y si cambia la red (de wifi a
+   datos), 8 s. Un corte de red se repite con el mismo modelo, esperando cada vez más (2, 4, 8, 15 y 30 s: con mala
+   cobertura, 4,5 s eran poco); solo cuando Google no contesta se prueba con otro. Se puede cambiar en las pruebas */
+const RED_IA = { espera: 120000, hilo: 60000, cambio: 8000, esperas: [2, 4, 8, 15, 30], sinRed: 120000 };
 const esCorteRed = (e) => e && e.name !== 'AbortError' && (e.corte || /Failed to fetch|NetworkError|network error|Load failed|ERR_/i.test(e.message || ''));
 /* 0.7f: GrowIA en segundo plano. Al salir de GrowFolio (otra app, la pantalla apagada), el móvil corta al poco las
-   conexiones de la página. Ese corte no es un fallo de Google: no cuenta para los tres intentos ni hace pasar a la
+   conexiones de la página. Ese corte no es un fallo de Google: no cuenta para los intentos ni hace pasar a la
    rápida. GrowIA espera a que vuelvas (y a que haya conexión) y repite esa petición. En la app de Android, que se queda
-   viva mientras contesta, lo vuelve a intentar antes sin esperarte */
+   viva mientras contesta, lo vuelve a intentar sin esperarte */
 let ocultaT = document.hidden ? Date.now() : 0;
-document.addEventListener('visibilitychange', () => { if (document.hidden) ocultaT = Date.now(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden) ocultaT = Date.now();
+  if (AS.cargando || (typeof IA !== 'undefined' && IA.generando)) diarioIA(document.hidden ? 'Sales de GrowFolio' : 'Vuelves a GrowFolio');
+});
 const fueraDesde = (t) => document.hidden || ocultaT >= t || navigator.onLine === false;
-function esperarVuelta(signal) {
+/* espera a que vuelvas a GrowFolio y haya conexión; con soloRed, solo a la conexión (la app sigue viva fuera). Con max,
+   se rinde a los max ms (devuelve false). Si navigator.onLine se quedara mal en «sin red», a los 20 s lo intenta igual */
+function esperarVuelta(signal, { soloRed = false, max = 0 } = {}) {
   return new Promise((ok, mal) => {
-    const listo = () => !document.hidden && navigator.onLine !== false;
-    if (listo()) return ok();
-    const quitar = () => { document.removeEventListener('visibilitychange', mirar); window.removeEventListener('online', mirar); if (signal) signal.removeEventListener('abort', parar); };
-    const mirar = () => { if (listo()) { quitar(); ok(); } };
+    const listo = () => (soloRed || !document.hidden) && navigator.onLine !== false;
+    if (listo()) return ok(true);
+    let t1 = 0, t2 = 0;
+    const quitar = () => { clearTimeout(t1); clearInterval(t2); document.removeEventListener('visibilitychange', mirar); window.removeEventListener('online', mirar); if (signal) signal.removeEventListener('abort', parar); };
+    const mirar = () => { if (listo()) { quitar(); ok(true); } };
     const parar = () => { quitar(); mal(new DOMException('Parado', 'AbortError')); };
     if (signal && signal.aborted) return mal(new DOMException('Parado', 'AbortError'));
     document.addEventListener('visibilitychange', mirar); window.addEventListener('online', mirar);
     if (signal) signal.addEventListener('abort', parar, { once: true });
+    if (max) t1 = setTimeout(() => { quitar(); ok(false); }, max);
+    // a la vista y «sin red» más de 20 s: se prueba igual (por si navigator.onLine no se ha enterado de que ha vuelto)
+    const desde = Date.now();
+    t2 = setInterval(() => { if ((soloRed || !document.hidden) && Date.now() - desde > 20000) { quitar(); ok(true); } }, 5000);
   });
 }
-async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar) {
-  const ctl = new AbortController(); let tarde = false;
-  const reloj = setTimeout(() => { tarde = true; ctl.abort(); }, ESPERA_GEMINI);
+/* las peticiones a Google en marcha: si cambia la red, cada una se da 8 s para seguir recibiendo; si no llega nada, se
+   corta y se repite al momento por la red nueva (por la vieja ya no va a llegar) */
+const VIVAS_IA = new Set();
+window.redCambiada = (tipo) => {
+  if (tipo === 'sin') { window.dispatchEvent(new Event('offline')); return; }
+  if (VIVAS_IA.size) diarioIA(`Cambia la red (${tipo}) con GrowIA pidiendo`);
+  for (const f of VIVAS_IA) f();
+};
+async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, info = {}) {
+  const ctl = new AbortController(), t0 = Date.now();
+  let motivo = null, cambioRed = false, primero = 0, reloj = 0, bytes = 0;
+  // vigila: si en ms no llega nada, se corta (y cuenta como corte de conexión, que se repite)
+  const vigilar = (ms) => { clearTimeout(reloj); reloj = setTimeout(() => { motivo = cambioRed ? 'cambio' : primero ? 'hilo' : 'tiempo'; ctl.abort(); }, ms); };
   const parar = () => ctl.abort();
+  const cambio = () => { cambioRed = true; vigilar(RED_IA.cambio); };
   if (signal) { if (signal.aborted) ctl.abort(); else signal.addEventListener('abort', parar, { once: true }); }
-  let r;
-  try { r = await fetchGoogle(`${GEMINI}/models/${modelo}:streamGenerateContent?alt=sse`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }, clave); }
-  catch (e) { if (tarde) { const t = new Error(`Google no ha contestado en ${ESPERA_GEMINI / 1000} s`); t.corte = true; throw t; } throw e; }
-  finally { clearTimeout(reloj); if (signal) signal.removeEventListener('abort', parar); }
-  if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorGoogle(r.status, j); }
-  const lector = r.body.getReader(), dec = new TextDecoder();
-  let buf = '', fin = null, uso = {}, bloqueo = null, texto = null, vista = null;
+  VIVAS_IA.add(cambio);
+  vigilar(RED_IA.espera);
+  const seg = () => Math.round((Date.now() - t0) / 1000);
+  let r, fin = null, uso = {}, bloqueo = null, texto = null, vista = null;
   const partes = [];
-  const procesar = (ch) => {
-    if (ch.error) throw errorGoogle(ch.error.code || 500, ch);
-    if (ch.usageMetadata) uso = ch.usageMetadata;
-    if (ch.promptFeedback && ch.promptFeedback.blockReason) bloqueo = ch.promptFeedback.blockReason;
-    const c = (ch.candidates || [])[0];
-    if (!c) return;
-    if (c.finishReason) fin = c.finishReason;
-    for (const pt of (c.content && c.content.parts) || []) {
-      if (pt.thought) { if (pt.thoughtSignature) partes.push({ ...pt }); continue; }
-      if (pt.functionCall) {
-        partes.push(JSON.parse(JSON.stringify(pt))); texto = null;
-        const fc = pt.functionCall;
-        turno.partes.push({ tipo: 'paso', web: fc.name === 'buscar_en_internet', txt: pasoTxt(fc.name, fc.args || {}) });
-      } else if (typeof pt.text === 'string') {
-        if (!texto) { texto = { text: '' }; partes.push(texto); vista = { tipo: 'texto', texto: '' }; turno.partes.push(vista); }
-        texto.text += pt.text; vista.texto = texto.text;
-        if (pt.thoughtSignature) texto.thoughtSignature = pt.thoughtSignature;
-      } else partes.push(JSON.parse(JSON.stringify(pt)));
+  try {
+    r = await fetchGoogle(`${GEMINI}/models/${modelo}:streamGenerateContent?alt=sse`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }, clave);
+    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorGoogle(r.status, j); }
+    // ya ha contestado: lo que queda es la respuesta llegando
+    vigilar(RED_IA.espera);
+    const lector = r.body.getReader(), dec = new TextDecoder();
+    let buf = '';
+    const procesar = (ch) => {
+      if (ch.error) throw errorGoogle(ch.error.code || 500, ch);
+      if (ch.usageMetadata) uso = ch.usageMetadata;
+      if (ch.promptFeedback && ch.promptFeedback.blockReason) bloqueo = ch.promptFeedback.blockReason;
+      const c = (ch.candidates || [])[0];
+      if (!c) return;
+      if (c.finishReason) fin = c.finishReason;
+      for (const pt of (c.content && c.content.parts) || []) {
+        if (pt.thought) { if (pt.thoughtSignature) partes.push({ ...pt }); continue; }
+        if (pt.functionCall) {
+          partes.push(JSON.parse(JSON.stringify(pt))); texto = null;
+          const fc = pt.functionCall;
+          turno.partes.push({ tipo: 'paso', web: fc.name === 'buscar_en_internet', txt: pasoTxt(fc.name, fc.args || {}) });
+        } else if (typeof pt.text === 'string') {
+          if (!texto) { texto = { text: '' }; partes.push(texto); vista = { tipo: 'texto', texto: '' }; turno.partes.push(vista); }
+          texto.text += pt.text; vista.texto = texto.text;
+          if (pt.thoughtSignature) texto.thoughtSignature = pt.thoughtSignature;
+        } else partes.push(JSON.parse(JSON.stringify(pt)));
+      }
+      alCambiar();
+    };
+    for (;;) {
+      const { done, value } = await lector.read();
+      if (done) break;
+      bytes += value ? value.length : 0;
+      if (!primero) primero = Date.now();
+      // llega algo: si había cambiado la red, la conexión ha aguantado
+      cambioRed = false; vigilar(RED_IA.hilo);
+      buf += dec.decode(value, { stream: true }).replace(/\r/g, '');
+      let i;
+      while ((i = buf.indexOf('\n\n')) >= 0) {
+        const trozo = buf.slice(0, i); buf = buf.slice(i + 2);
+        const datos = trozo.split('\n').filter((l) => l.startsWith('data:')).map((l) => l.slice(5).trim()).join('');
+        if (!datos) continue;
+        let ch; try { ch = JSON.parse(datos); } catch (e) { continue; }
+        procesar(ch);
+      }
     }
-    alCambiar();
-  };
-  for (;;) {
-    const { done, value } = await lector.read();
-    if (done) break;
-    buf += dec.decode(value, { stream: true }).replace(/\r/g, '');
-    let i;
-    while ((i = buf.indexOf('\n\n')) >= 0) {
-      const trozo = buf.slice(0, i); buf = buf.slice(i + 2);
-      const datos = trozo.split('\n').filter((l) => l.startsWith('data:')).map((l) => l.slice(5).trim()).join('');
-      if (!datos) continue;
-      let ch; try { ch = JSON.parse(datos); } catch (e) { continue; }
-      procesar(ch);
+    if (buf.trim().startsWith('data:')) { try { procesar(JSON.parse(buf.trim().slice(5))); } catch (e) {} }
+  } catch (e) {
+    // lo ha cortado la vigilancia (no tú): es un corte de conexión, con su tipo
+    if (motivo) {
+      const t = new Error(motivo === 'tiempo' ? `Google no ha contestado en ${RED_IA.espera / 1000} s` : motivo === 'cambio' ? 'Ha cambiado la red y por la vieja ya no llega nada' : `La respuesta se ha quedado parada ${RED_IA.hilo / 1000} s`);
+      t.corte = true; t.tipo = motivo === 'tiempo' ? 'tiempo' : motivo === 'cambio' ? 'cambio' : 'red'; t.seg = seg(); t.datos = !!primero;
+      throw t;
     }
-  }
-  if (buf.trim().startsWith('data:')) { try { procesar(JSON.parse(buf.trim().slice(5))); } catch (e) {} }
+    if (e && e.name !== 'AbortError' && esCorteRed(e)) { e.tipo = e.tipo || 'red'; e.seg = seg(); e.datos = !!primero; }
+    throw e;
+  } finally { clearTimeout(reloj); VIVAS_IA.delete(cambio); if (signal) signal.removeEventListener('abort', parar); }
   turno.partes = turno.partes.filter((p) => p.tipo !== 'texto' || p.texto);
+  const ms = (x) => `${Math.round(x / 100) / 10} s`;
+  diarioIA(`${(MODELOS[modelo] || {}).corto || modelo} · ronda ${info.ronda || 1}: primer dato a los ${primero ? ms(primero - t0) : '—'}, acaba a los ${ms(Date.now() - t0)}${uso.thoughtsTokenCount ? ` · razona ${fmtNum(uso.thoughtsTokenCount, 0)}` : ''}${fin && fin !== 'STOP' ? ` · ${fin}` : ''}`);
   return { contenido: partes.filter((p) => !(typeof p.text === 'string' && !p.text && !p.thoughtSignature)), fin, uso, bloqueo };
 }
 /* búsqueda con Google: una llamada aparte con la herramienta de búsqueda de Gemini */
@@ -662,7 +707,23 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     busquedas = 0; intentos = 0; turno.citas.length = 0; turno.resultados.length = 0;
     alCambiar(); return true;
   };
-  let cortes = 0, busquedas = 0, intentos = 0, pausas = 0;
+  // 0.7l: cortes, los cortes de red seguidos (vuelve a 0 con cada petición que llega bien); pausas, las veces que espera
+  // a que vuelvas; lentos, las veces seguidas que Google no ha contestado; cambios, las repeticiones por un cambio de red
+  let cortes = 0, busquedas = 0, intentos = 0, pausas = 0, lentos = 0, cambios = 0, ronda = 0;
+  const corto = () => (MODELOS[modelo] || {}).corto || modelo;
+  // el aviso del corte, en una sola línea que se va cambiando (antes, una por intento); hecho: lo que dice si sale bien
+  const avisoRed = (txt, hecho = null) => { turno.partes = turno.partes.filter((x) => !x.red); const p = { tipo: 'paso', red: true, txt, hecho }; turno.partes.push(p); alCambiar(); return p; };
+  // espera a que vuelvas a GrowFolio (y a que haya red); en la app de Android, sin el servicio mientras tanto
+  const pausaHastaVolver = async (sinRed) => {
+    pausas++;
+    const p = avisoRed(sinRed ? L('Sin conexión: sigo en cuanto vuelva', "No connection: I'll carry on as soon as it's back") : L('Se ha cortado al salir de GrowFolio: sigo en cuanto vuelvas', "It dropped when you left GrowFolio: I'll carry on when you're back"));
+    diarioIA(`Espera a que vuelvas${sinRed ? ' y haya red' : ''}`);
+    if (document.hidden) appGrowiaTermina(L('GrowIA se ha quedado a medias', 'GrowIA stopped halfway'), L('Se cortó la conexión al salir. Abre GrowFolio y seguirá sola.', 'The connection dropped when you left. Open GrowFolio and it will carry on.'), true);
+    await esperarVuelta(signal);
+    p.txt = sinRed ? L('Se cortó la conexión: he seguido al volver', 'The connection dropped: I carried on when it came back') : L('Se cortó mientras estabas fuera: he seguido al volver', 'It dropped while you were away: I carried on when you came back');
+    appGrowiaEmpieza(false); alCambiar(); cortes = 0;
+    await dormir(300, signal);
+  };
   for (let vuelta = 0; vuelta < 14; vuelta++) {
     const m = MODELOS[modelo] || {};
     const pasosAntes = turno.partes.length, t0 = Date.now();
@@ -671,31 +732,45 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
       generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: nivel || m.pensar } } : {}) },
     };
     let r;
-    try { r = await llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar); }
+    ronda++;
+    try { r = await llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, { ronda }); }
     catch (e) {
       if (e.name === 'AbortError') throw e;
-      // 0.7f: cortado con GrowFolio en segundo plano o sin conexión: se espera y se repite, sin contarlo como fallo
-      // (8 veces como mucho en una respuesta; cada una necesita que vuelvas o que vuelva la conexión)
-      if (esCorteRed(e) && fueraDesde(t0) && pausas < 8) {
-        pausas++; turno.partes.length = pasosAntes; turno.partes = turno.partes.filter((x) => !x.fondo);
-        const sinRed = navigator.onLine === false, yaSigue = appSigueEnFondo() && !sinRed && pausas <= 2;
-        const paso = { tipo: 'paso', fondo: true, txt: sinRed ? L('Sin conexión: sigo en cuanto vuelva', 'No connection: I\'ll carry on as soon as it\'s back') : yaSigue ? L('Se ha cortado la conexión con Google: lo intento otra vez', 'The connection to Google dropped: trying again') : L('Se ha cortado al salir de GrowFolio: sigo en cuanto vuelvas', 'It dropped when you left GrowFolio: I\'ll carry on when you\'re back') };
-        turno.partes.push(paso); alCambiar();
-        if (yaSigue) await dormir(2000 * pausas, signal);
-        else {
-          if (document.hidden) appGrowiaTermina(L('GrowIA se ha quedado a medias', 'GrowIA stopped halfway'), L('Se cortó la conexión al salir. Abre GrowFolio y seguirá sola.', 'The connection dropped when you left. Open GrowFolio and it will carry on.'), true);
-          await esperarVuelta(signal);
-          paso.txt = sinRed ? L('Se cortó la conexión: he seguido al volver', 'The connection dropped: I carried on when it came back') : L('Se cortó mientras estabas fuera: he seguido al volver', 'It dropped while you were away: I carried on when you came back');
-          appGrowiaEmpieza(false); alCambiar();
-          await dormir(300, signal);
+      if (esCorteRed(e)) {
+        // fuera lo que hubiera empezado a escribir
+        if (turno.partes.length > pasosAntes) turno.partes.length = pasosAntes;
+        const tipo = e.tipo || 'red', vivo = appSigueEnFondo(), sinRed = navigator.onLine === false;
+        diarioIA(`${corto()} · ronda ${ronda}: corte (${{ tiempo: 'Google no contesta', cambio: 'cambio de red', red: 'conexión' }[tipo] || tipo}) a los ${e.seg != null ? e.seg : '?'} s${e.datos ? ' con la respuesta llegando' : ''}${document.hidden ? ' · GrowFolio fuera' : ''}${vivo ? ` · servicio ${deApp('growiaViva') ? 'sí' : 'no'}` : ''}${deApp('bateriaRestringida') ? ' · batería restringida' : ''}${redIA()} · ${String(e.message || '').slice(0, 60)}`);
+        // 1) ha cambiado la red: se repite al momento por la nueva (3 veces como mucho en una respuesta)
+        if (tipo === 'cambio' && cambios < 3) { cambios++; avisoRed(L('Ha cambiado tu conexión: lo repito', 'Your connection changed: repeating it'), L('Cambió tu conexión: lo he repetido', 'Your connection changed: I repeated it')); await dormir(500, signal); vuelta--; continue; }
+        // 2) Google no contesta (y hay red): una vez más con el mismo y luego el siguiente de su orden
+        if (tipo === 'tiempo' && !sinRed && !(document.hidden && !vivo)) {
+          if (lentos < 1) { lentos++; avisoRed(L('Google está tardando mucho en contestar: lo intento otra vez', 'Google is taking too long to answer: trying again'), L('Google tardaba mucho: lo he repetido', 'Google was taking too long: I repeated it')); vuelta--; continue; }
+          if (saltar('no contesta')) { lentos = 0; cortes = 0; diarioIA(`Pasa a ${corto()}`); vuelta--; continue; }
         }
-        vuelta--; continue;
+        // 3) en el navegador, con GrowFolio fuera de la vista (o lo ha estado): el móvil corta la página. A esperar a
+        // que vuelvas, sin contarlo como fallo (0.7f)
+        if (!vivo && fueraDesde(t0) && pausas < 8) { await pausaHastaVolver(sinRed); vuelta--; continue; }
+        // 4) sin conexión: espera a que vuelva (con GrowFolio fuera, 2 minutos como mucho; luego, a que vuelvas tú)
+        if (sinRed && pausas < 8) {
+          const p = avisoRed(L('Sin conexión: sigo en cuanto vuelva', "No connection: I'll carry on as soon as it's back"));
+          diarioIA('Espera a que vuelva la red');
+          const hay = await esperarVuelta(signal, { soloRed: true, max: document.hidden ? RED_IA.sinRed : 0 });
+          if (!hay) await pausaHastaVolver(true);
+          else { pausas++; p.txt = L('Se cortó la conexión: he seguido al volver', 'The connection dropped: I carried on when it came back'); alCambiar(); }
+          vuelta--; continue;
+        }
+        // 5) con red: otra vez con el mismo modelo, esperando cada vez más (2, 4, 8, 15 y 30 s)
+        if (cortes < RED_IA.esperas.length) {
+          const seg = RED_IA.esperas[cortes++];
+          avisoRed(cortes > 1 ? L(`Se ha cortado la conexión con Google: lo intento otra vez (${cortes}.ª)`, `The connection to Google dropped: trying again (${cortes})`) : L('Se ha cortado la conexión con Google: lo intento otra vez', 'The connection to Google dropped: trying again'), L('Se cortó la conexión con Google: lo he repetido', 'The connection to Google dropped: I repeated it'));
+          await dormir(seg * 1000, signal); vuelta--; continue;
+        }
+        // 6) nada: con GrowFolio fuera, a esperar a que vuelvas; a la vista, se acaba aquí
+        if (document.hidden && pausas < 8) { await pausaHastaVolver(false); vuelta--; continue; }
+        const t = new Error(L(`No consigo hablar con Google: la conexión se ha cortado ${cortes + 1} veces seguidas (${e.message}). Mira tu conexión y vuelve a preguntar.`, `I can't reach Google: the connection dropped ${cortes + 1} times in a row (${e.message}). Check your connection and ask again.`)); t.corte = true; throw t;
       }
-      // 0.6c: un corte de la conexión (o Google sin contestar) a mitad de la conversación: se repite esa misma petición,
-      // hasta dos veces, quitando lo que hubiera empezado a escribir; a la tercera, con otro modelo si lo hay
-      if (esCorteRed(e) && cortes < 2) { cortes++; turno.partes.length = pasosAntes; turno.partes.push({ tipo: 'paso', txt: `Se ha cortado la conexión con Google: lo intento otra vez${cortes > 1 ? ` (${cortes}.ª)` : ''}` }); alCambiar(); await dormir(1500 * cortes, signal); vuelta--; continue; }
-      if (esCorteRed(e) && saltar('no contesta')) { cortes = 0; vuelta--; continue; }
-      if (esCorteRed(e)) { const t = new Error(`Se ha cortado la conexión con Google tres veces seguidas (${e.message}). Mira tu conexión y vuelve a preguntar.`); t.corte = true; throw t; }
+      diarioIA(`${corto()} · ronda ${ronda}: error ${e.estado || ''}${e.diario ? ' (cupo del día)' : e.estado === 429 ? ' (espera)' : ''} · ${String(e.msg || e.message || '').slice(0, 80)}`);
       if (e.estado === 400 && conPensar && /thinking/i.test(e.msg || '')) { if (nivel && nivel !== m.pensar) nivel = null; else conPensar = false; vuelta--; continue; }
       if (e.estado === 404 && (pedido || modelo !== cfg.modelo) && saltar('no está disponible con tu clave')) { vuelta--; continue; }
       if (e.estado === 404 && !pedido && !cambiado && modelo === cfg.modelo) { const nuevo = await mejorFlash(clave); if (nuevo && nuevo !== cfg.modelo) { guardarCfgAsesor({ modelo: nuevo }); cfg = cfgAsesor(); modelo = nuevo; AS.modeloVivo = nuevo; turno.modelo = nuevo; probados.add(nuevo); cambiado = true; vuelta--; continue; } }
@@ -712,6 +787,9 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
       if (e.estado === 429 && e.diario) e.message = `Tu clave gratis de Google ha gastado hoy el cupo de sus modelos. Se renueva a las ${horaRenuevaIA()}. Es el cupo de tu clave, no de GrowFolio: cada uno usa la suya.`;
       throw e;
     }
+    // ha llegado bien: los cortes seguidos vuelven a 0 y el aviso del corte pasa a «lo he repetido»
+    cortes = 0; lentos = 0;
+    for (const x of turno.partes) if (x.red && x.hecho) { x.txt = x.hecho; x.hecho = null; }
     const pm = MODELOS[modelo] || {};
     if (pm.in) turno.coste = (turno.coste || 0) + ((r.uso.promptTokenCount || 0) * pm.in + ((r.uso.candidatesTokenCount || 0) + (r.uso.thoughtsTokenCount || 0)) * pm.out) / 1e6;
     if (r.bloqueo) throw new Error('Google ha bloqueado la pregunta por sus filtros. Prueba a decirlo de otra forma.');
@@ -762,7 +840,11 @@ async function preguntarAsesor(texto) {
   AS.cargando = true; AS.ctrl = new AbortController();
   appGrowiaEmpieza();
   pintarAsesor(true);
+  diarioIA(`Pregunta · ${(MODELOS[modeloVivo()] || {}).corto || modeloVivo()}${redIA()}`);
+  // 0.7l: mientras piensa (y aún no ha escrito nada), los segundos que lleva, para que se vea que sigue trabajando
+  const tic = setInterval(() => { const el = document.querySelector('.as-ia.vivo .as-seg'); if (el) { const s = Math.round((Date.now() - turno.t) / 1000); el.textContent = s >= 3 ? `${s} s` : ''; } }, 1000);
   let marco = 0;
+  // fuera de la vista no se pinta (requestAnimationFrame no corre): al volver se pinta lo último
   const alCambiar = () => { if (!marco) marco = requestAnimationFrame(() => { marco = 0; pintarTurno(AS.conv.length - 1); }); };
   try {
     // 0.7: las fichas de GrowIA van en la foto: si no están, se bajan antes (3 s como mucho: con mala cobertura,
@@ -775,8 +857,12 @@ async function preguntarAsesor(texto) {
     turno.error = e.name === 'AbortError' ? 'Parado.' : !e.corte && /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
     avisarFalloIA(e, 'chat', turno.modelo);
   }
+  clearInterval(tic);
   AS.cargando = false; AS.ctrl = null;
   const final = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim();
+  diarioIA(turno.error === 'Parado.' ? 'La paras tú' : turno.error ? `No contesta (${tipoFalloIA({ message: turno.error, corte: /conexión se ha cortado/.test(turno.error) })}) a los ${Math.round((Date.now() - turno.t) / 1000)} s` : `Contesta en ${Math.round((Date.now() - turno.t) / 1000)} s con ${(MODELOS[turno.modelo] || {}).corto || turno.modelo || '?'}`);
+  // la revisión automática que no ha empezado por estar contestando, ahora
+  setTimeout(() => { if (typeof revisarAnalisisIA === 'function') revisarAnalisisIA(); }, 3000);
   // 0.7f: en la app de Android, si no la estás mirando, el aviso de que ya ha contestado (sin nada de la respuesta)
   if (turno.error === 'Parado.') appGrowiaTermina();
   else if (turno.error) appGrowiaTermina(L('GrowIA no ha podido contestar', "GrowIA couldn't answer"), L('Toca para ver qué ha pasado.', 'Tap to see what happened.'));

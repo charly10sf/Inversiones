@@ -144,6 +144,30 @@ public class Puente {
         GrowiaServicio.terminar(ctx, titulo, texto);
     }
 
+    /** 0.7l: lo que ha apuntado la app (el servicio y la red) para el registro de GrowIA en Ajustes */
+    @JavascriptInterface
+    public String diarioApp() {
+        return Diario.json();
+    }
+
+    /** 0.7l: la red de ahora («wifi», «datos», «sin red»…), para el registro de GrowIA */
+    @JavascriptInterface
+    public String red() {
+        return act.red();
+    }
+
+    /** 0.7l: si Android tiene la app con la batería restringida: entonces el servicio no la protege al salir */
+    @JavascriptInterface
+    public boolean bateriaRestringida() {
+        return GrowiaServicio.restringida(ctx);
+    }
+
+    /** 0.7l: si el servicio sigue en marcha (para el registro) */
+    @JavascriptInterface
+    public boolean growiaViva() {
+        return GrowiaServicio.vivo();
+    }
+
     @JavascriptInterface
     public void borrarWidget() {
         Datos.borrar(ctx);

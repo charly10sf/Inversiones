@@ -79,3 +79,14 @@
 
 /* 0.7: con qué modelo ha contestado */
 .as-modelo-de { display: block; margin-top: 6px; color: var(--muted); font-size: 12px; }
+/* 0.7l: los segundos que lleva pensando y el registro de GrowIA (Ajustes, Detalles técnicos) */
+.as-pensando { align-items: center; }
+.as-pensando .as-seg { margin-left: 6px; font-size: 11.5px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.as-diario { margin-top: 12px; }
+.as-diario > b { display: block; font-size: 13px; }
+.as-diario > small { display: block; color: var(--muted); font-size: 12px; margin: 2px 0 8px; line-height: 1.4; }
+.as-diario ol { list-style: none; margin: 0 0 8px; padding: 0; max-height: 260px; overflow: auto; font-size: 11.5px; line-height: 1.45; color: var(--muted); }
+.as-diario li { padding: 3px 0; border-top: 1px solid var(--line); overflow-wrap: anywhere; }
+.as-diario time { font-variant-numeric: tabular-nums; margin-right: 6px; color: var(--text); }
+.as-diario li i { font-style: normal; font-size: 10px; border: 1px solid currentColor; border-radius: 4px; padding: 0 3px; margin-right: 5px; }
+.as-aviso-bateria { color: var(--warn); }

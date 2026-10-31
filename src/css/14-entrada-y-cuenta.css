@@ -197,3 +197,7 @@
 .macro-ia b { display: block; font-size: 17px; font-weight: 700; margin: 2px 0 4px; font-variant-numeric: tabular-nums; }
 .macro-ia p { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.4; }
 
+/* 0.7l: el avance de Toisón (una vez, al abrir) */
+.toison-avance img { display: block; width: 100%; height: auto; aspect-ratio: 560 / 320; border-radius: 14px; margin: 0 0 14px; background: #4E101D; }
+.toison-avance p { margin: 0 0 10px; }
+.toison-avance .fila-btns { margin-top: 14px; }

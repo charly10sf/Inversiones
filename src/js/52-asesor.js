@@ -69,6 +69,26 @@ async function avisarFalloIA(e, donde = 'chat', modelo = null) {
     LS.set('inv-fallos-ia', { d: dia, n: n0, pausa: Date.now() + 36e5 });
   } catch (x) { /* sin red o sin permiso: nada */ }
 }
+/* 0.7l: el registro de GrowIA. Qué hace cada respuesta (con qué modelo, cuánto tarda en llegar el primer dato y en
+   acabar, cada corte y por qué, si GrowFolio estaba a la vista) y, en la app de Android, el servicio y la red. Sin la
+   pregunta, la respuesta ni nada de la cartera. Solo en este dispositivo (los últimos 80); se ve y se copia en Ajustes
+   de GrowIA, para saber dónde falla cuando algo va mal en un móvil que no se puede probar desde aquí */
+const DIARIO_IA = 'inv-ia-diario';
+function diarioIA(x) {
+  try { const d = LS.get(DIARIO_IA, []); const v = Array.isArray(d) ? d : []; v.push({ t: Date.now(), x: String(x).slice(0, 200) }); LS.set(DIARIO_IA, v.slice(-80)); } catch (e) {}
+}
+const deApp = (m, ...a) => { try { const p = window.InversionesApp; return p && typeof p[m] === 'function' ? p[m](...a) : null; } catch (e) { return null; } };
+function diarioIATodo() {
+  let app = []; try { app = JSON.parse(deApp('diarioApp') || '[]') || []; } catch (e) {}
+  const web = LS.get(DIARIO_IA, []);
+  return [...(Array.isArray(web) ? web : []), ...(Array.isArray(app) ? app : []).map((x) => ({ ...x, app: true }))].filter((x) => x && x.t && x.x).sort((a, b) => a.t - b.t).slice(-60);
+}
+function textoDiarioIA() {
+  const h = (t) => new Date(t).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return diarioIATodo().map((x) => `${h(x.t)} ${x.app ? '[app] ' : ''}${x.x}`).join('\n');
+}
+// la red y el servicio de la app, para el registro (en el navegador, nada)
+const redIA = () => { const r = deApp('red'); return r ? ` · ${r}` : navigator.onLine === false ? ' · sin red' : ''; };
 /* a qué hora de aquí se renueva el cupo gratis: a medianoche de California (las 9:00 en España casi todo el año; las
    8:00 las semanas en que uno ha cambiado la hora y el otro no) */
 function horaRenuevaIA() {

@@ -46,6 +46,8 @@ export async function preparar(context, { idioma = 'es', ajustes = {} } = {}) {
       if (idioma === 'en') localStorage.setItem('inv-idioma', JSON.stringify('en'));
       // el aviso a pantalla completa de GTA VI sale solo una vez y al rato (lo prueba su propia prueba)
       localStorage.setItem('inv-gta', 'true');
+      // 0.7l: el avance de Toisón, igual: una vez al abrir (lo prueba tests/toison.spec.js)
+      localStorage.setItem('inv-toison-avance', 'true');
       for (const [k, v] of Object.entries(ajustes)) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
     } catch (e) {}
   }, { idioma, ajustes });

@@ -10,9 +10,14 @@
     <!-- los avisos (solo si los activas en Ajustes > Avisos y resumen) -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <!-- 0.7f: que GrowIA siga contestando con la app en segundo plano (un servicio con su notificación, solo mientras
-         contesta). Android 14 o más usa shortService, que no pide permiso aparte; antes, dataSync -->
+         contesta). 0.7l: siempre dataSync (shortService se paraba a los 3 minutos) y, mientras tanto, que el móvil no
+         se duerma (wakelock parcial con tope de 10 minutos) -->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <!-- 0.7l: ver el estado de la red. Sin él, el WebView no se entera de que pasas de wifi a datos y sigue con una
+         conexión muerta (GrowIA se colgaba o se cortaba); y navigator.onLine siempre decía que había red -->
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
 
     <application
         android:allowBackup="false"

@@ -1,3 +1,17 @@
+/* 0.7l: el avance de Toisón, una vez, a quien ya usa GrowFolio (lo pidió Carlos el 31 oct). En el rediseño de diciembre
+   GrowFolio pasa a llamarse Toisón; la marca ya está presentada en la OEPM (31 oct), así que el nombre se puede enseñar.
+   El logo es la marca del manual 1.2 (símbolo y palabra sobre borgoña vino), en toison-avance.svg. Hasta fin de año */
+function avisoToison(seguir) {
+  if (LS.get('inv-toison-avance') || !S.cartera || S.demo || Date.now() >= Date.parse('2027-01-01')) return seguir && seguir();
+  LS.set('inv-toison-avance', Date.now());
+  hoja(L('GrowFolio tiene los días contados', "GrowFolio's days are numbered"), `<div class="toison-avance">
+    <img src="toison-avance.svg" alt="Toisón" width="560" height="320">
+    <p><b>${L('Pero es por algo bueno.', "But it's for a good reason.")}</b> ${L('En diciembre GrowFolio cambia de nombre y de cara: pasa a llamarse Toisón.', 'In December GrowFolio gets a new name and a new look: it becomes Toisón.')}</p>
+    <p>${L('Un toisón es un vellón de lana, y el de oro es el del mito de Jasón. El logo junta las dos primeras letras: una T hecha columna que atraviesa una O.', "A toisón is a fleece, and the golden one is the fleece of the Jason myth. The logo joins the first two letters: a T shaped like a column running through an O.")}</p>
+    <p class="nota">${L('No tienes que hacer nada. Tu cartera, tu contraseña y tus ajustes siguen como están: cambian el nombre, el logo y el aspecto de la app.', "You don't need to do anything. Your portfolio, your password and your settings stay as they are: only the name, the logo and the look of the app change.")}</p>
+    <div class="fila-btns"><button class="btn pri" data-cerrar>${L('Tengo ganas de verlo', "Can't wait to see it")}</button></div>
+  </div>`, () => seguir && seguir());
+}
 function bienvenida(intento = 0) {
   if (!S.cartera) return;
   // primero el aviso de la app, si lo hay; las novedades, después
@@ -9,7 +23,7 @@ function bienvenida(intento = 0) {
   const fin = () => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); };
   // si te falta el perfil, primero eso (y esa vez nada más: el resto, la próxima)
   // con una cartera de antes por recuperar en este dispositivo, eso va primero y lo demás espera a la próxima vez
-  const despues = () => (copiaViejaPendiente() ? fin() : pedirPerfil(fin, () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin)))));
+  const despues = () => (copiaViejaPendiente() ? fin() : pedirPerfil(fin, () => avisoToison(() => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin))))));
   // quien acaba de llegar: sus primeros pasos (y desde ahí, si quiere, el tutorial)
   if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); if (!LS.get('inv-empezar', 0)) LS.set('inv-empezar', Date.now()); return guiaPrimerosPasos(fin); }
   // la 0.2 llega con su propia pantalla de estreno, una vez

@@ -68,7 +68,7 @@ function htmlTurno(t, k) {
   const fuentes = (t.citas.length ? t.citas : t.resultados.slice(0, 5)).filter((x) => !vistas.has(x.u) && vistas.add(x.u)).slice(0, 8);
   const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
   return `<div class="as-ia${vivo ? ' vivo' : ''}" id="asT${k}">${partes}
-    ${vivo && !(ult && ult.tipo === 'texto' && ult.texto) ? '<div class="as-pensando" aria-label="Pensando"><i></i><i></i><i></i></div>' : ''}
+    ${vivo && !(ult && ult.tipo === 'texto' && ult.texto) ? `<div class="as-pensando" aria-label="Pensando"><i></i><i></i><i></i><small class="as-seg">${t.t && Date.now() - t.t >= 3000 ? `${Math.round((Date.now() - t.t) / 1000)} s` : ''}</small></div>` : ''}
     ${t.error ? `<div class="as-error">${esc(t.error)} <button class="enlace" data-as="reintentar">Volver a preguntar</button></div>` : ''}
     ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.filter((x) => urlSegura(x.u)).map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(x.d || dom(x.u))}</a>`).join('')}</div>` : ''}
     ${!vivo && esRapida(t.modelo) && !esRapida(cfgAsesor().modelo) && !t.error ? `<small class="as-modelo-de">${L('Contestada con la respuesta rápida: la normal había gastado su cupo de hoy.', 'Answered with the fast answer: the normal one had used up today\'s quota.')}</small>` : ''}
@@ -80,6 +80,16 @@ function htmlCupoIA() {
   const u = usoIAHoy(), h = horaRenuevaIA();
   const rapida = `${u[MODELO_RAPIDO] || 0} ${L('hoy', 'today')}${agotadosIA().includes(MODELO_RAPIDO) ? ` (${L('agotada', 'used up')})` : ''}`;
   return `${L('GrowIA funciona con Gemini, de Google. La respuesta normal es Gemini 3.8 Flash y, cuando se le acaba el cupo del día, 3.6 Flash; la rápida, 3.5 Flash-Lite.', 'GrowIA runs on Gemini, by Google. The normal answer is Gemini 3.8 Flash and, once its daily quota runs out, 3.6 Flash; the fast one, 3.5 Flash-Lite.')}<br>${L('Hoy, desde este dispositivo', 'Today, from this device')}: ${L('normal', 'normal')} ${cupoNormalTxt(u)} · ${L('rápida', 'fast')} ${rapida}. ${L(`Se renueva a medianoche de California (a las ${h} aquí). Si usas la clave en otro sitio, también gasta.`, `It resets at midnight California time (${h} here). Using the key elsewhere also counts.`)}<br>${L('Si GrowIA falla y no se arregla sola, GrowFolio apunta con tu cuenta el tipo de fallo, el modelo y la versión, sin tu pregunta ni tu cartera, para arreglarlo. Se borra a los 30 días.', "If GrowIA fails and doesn't recover, GrowFolio logs the type of failure, the model and the version with your account, without your question or portfolio, so it can be fixed. It's deleted after 30 days.")}`;
+}
+/* 0.7l: el registro de GrowIA (lo que ha hecho, sin preguntas ni respuestas) y, en la app de Android, si tiene la
+   batería restringida, que es lo que hace que se corte al salir */
+function htmlDiarioIA() {
+  const d = diarioIATodo().slice(-25).reverse();
+  const h = (t) => new Date(t).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const restringida = deApp('bateriaRestringida') === true;
+  return `${restringida ? `<p class="nota as-aviso-bateria">${L('Android tiene GrowFolio con la batería restringida: así GrowIA se corta cuando sales de la app. Cámbialo en los ajustes del móvil: Aplicaciones, GrowFolio, Batería, «Sin restricciones» u «Optimizada».', 'Android has GrowFolio\'s battery restricted: that\'s why GrowIA gets cut off when you leave the app. Change it in your phone settings: Apps, GrowFolio, Battery, "Unrestricted" or "Optimised".')}</p>` : ''}
+    <div class="as-diario"><b>${L('Lo último de GrowIA', "GrowIA's latest activity")}</b><small>${L('Qué ha hecho cada respuesta, sin tus preguntas ni tus cifras. Si algo falla, cópialo y pásaselo a quien te dio GrowFolio.', "What each answer did, without your questions or figures. If something fails, copy it and send it to whoever gave you GrowFolio.")}</small>
+    ${d.length ? `<ol>${d.map((x) => `<li><time>${h(x.t)}</time>${x.app ? '<i>app</i>' : ''}${esc(x.x)}</li>`).join('')}</ol><button class="btn peq" data-as="copiar-diario">${ICONOS.copiar}${L('Copiar', 'Copy')}</button>` : `<p class="nota">${L('Aún no hay nada.', 'Nothing yet.')}</p>`}</div>`;
 }
 function htmlClaveAsesor() {
   const cfg = cfgAsesor();
@@ -118,7 +128,7 @@ function htmlAjustesAsesor() {
     <div class="seccion-ed"><h3>Clave de Google</h3>
       <p class="nota" style="margin:0 0 8px">Tus preguntas y lo que necesita de tu cartera van de tu navegador a Google, cifrados en el camino; no pasan por GrowFolio.</p>
       <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[cfg.prov]] ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'}</p>
-      ${AS.clave ? `<details class="as-detalle"><summary>${L('Detalles técnicos', 'Technical details')}</summary><p class="nota as-cupo">${htmlCupoIA()}</p></details>` : ''}
+      ${AS.clave ? `<details class="as-detalle"><summary>${L('Detalles técnicos', 'Technical details')}</summary><p class="nota as-cupo">${htmlCupoIA()}</p>${htmlDiarioIA()}</details>` : ''}
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-as="cambiar-clave">${AS.clave ? 'Cambiar clave' : 'Poner clave'}</button>${AS.clave ? '<button class="btn peq peligro" data-as="borrar-clave">Borrar clave</button>' : ''}</div>
     </div>
   </div>`;
@@ -270,6 +280,11 @@ async function clicAsesor(e) {
   else if (a === 'chat') { AS.vista = 'chat'; pintarAsesor(true); }
   else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }
   else if (a === 'copiar') copiarCartera();
+  else if (a === 'copiar-diario') {
+    const txt = `GrowFolio ${VERSION}${deApp('version') ? ` · app ${deApp('version')}` : ''} · ${navigator.userAgent.replace(/^.*?\(([^)]*)\).*$/, '$1')}\n${textoDiarioIA()}`;
+    try { await navigator.clipboard.writeText(txt); toast(L('Copiado el registro de GrowIA.', "GrowIA's log copied."), 3000); }
+    catch (e) { descargar(`registro-growia-${hoyIso()}.txt`, txt); toast(L('No se pudo copiar: te lo he descargado como texto.', "Couldn't copy it: I've downloaded it as text."), 5000); }
+  }
   else if (a === 'recorte') iniciarRecorte();
   else if (a === 'voz') dictar();
   else if (a === 'quitar-adjunto') { AS.adjunto = null; pintarAdjunto(); }

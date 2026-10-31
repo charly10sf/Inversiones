@@ -123,6 +123,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   IA.generando = true; IA.error = null; IA.ultimoIntento = Date.now();
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [] };
   IA.turno = turno; refrescarProgresoIA();
+  diarioIA(`Revisión de la cartera (${motivo === 'la pides tú' ? 'pedida' : 'automática'})${redIA()}`);
   // 0.7f: en la app de Android, viva en segundo plano mientras revisa; si la has pedido tú y no la miras, te avisa al acabar
   const pedida = motivo === 'la pides tú';
   let fin = '';
@@ -169,13 +170,15 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
       else if (e.estado === 429) IA.error = 'Google pide esperar un poco (el límite gratuito por minuto).';
     }
   }
+  diarioIA(IA.error ? `Revisión sin acabar: ${String(IA.error).slice(0, 80)}` : `Revisión hecha en ${Math.round((Date.now() - IA.ultimoIntento) / 1000)} s`);
   IA.generando = false; IA.turno = null;
   appGrowiaTermina(fin, fin && L('Toca para verla.', 'Tap to see it.'));
   if (['analisis', 'expertos', 'cartera'].includes(S.vista) && !$('.hoja-fondo')) pintar(); else refrescarProgresoIA();
 }
 /* ¿toca revisar? cada día (o semana) y, si es diario, también cuando cambia alguna señal */
 async function revisarAnalisisIA() {
-  if (IA.generando || !S.cartera || document.hidden || !S.key || S.demo) return;
+  // 0.7l: con GrowIA contestando una pregunta, después (al acabar la vuelve a mirar): no se pisan en el móvil
+  if (IA.generando || AS.cargando || !S.cartera || document.hidden || !S.key || S.demo) return;
   await cargarAsesor();
   if (!AS.clave) return;
   const cfg = cfgAsesor();

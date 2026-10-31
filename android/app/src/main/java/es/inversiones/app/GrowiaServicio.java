@@ -12,25 +12,37 @@ import android.os.Build;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.os.PowerManager;
 
 /** 0.7f: mientras GrowIA contesta, la app sigue viva en segundo plano: un servicio en primer plano con una notificación
  *  discreta. Sin él, Android congela la app al poco de salir de ella y se corta la conexión con Google (lo vio Carlos el
  *  30 oct: «tres veces seguidas (Failed to fetch)»). Al acabar, si no estás mirando la app, avisa de que ya ha contestado.
  *
- *  Android 14 o más: shortService (hasta unos 3 minutos, de sobra para una respuesta); antes, dataSync. Todo se hace en
- *  el hilo principal, así empezar y terminar no se cruzan con onStartCommand. */
+ *  0.7l: siempre dataSync. En la 0.7f, con Android 14 o más, era shortService, y Android lo para a los 3 minutos: una
+ *  respuesta con reintentos pasa de ahí, se quitaba la notificación y se cortaba la conexión (lo vio Carlos el 30 oct).
+ *  Mientras trabaja, además, un wakelock parcial (con su tope) para que el móvil no se duerma con la pantalla apagada.
+ *  Todo se hace en el hilo principal, así empezar y terminar no se cruzan con onStartCommand.
+ *  Para la Play Store, dataSync pide declararlo en la consola (con un vídeo de GrowIA contestando con la app fuera). */
 public class GrowiaServicio extends Service {
     private static final String CANAL = "growia";
     private static final String CANAL_FIN = "growia-fin";
     private static final int ID = 7701, ID_FIN = 7702;
-    /** por si la web no llega a decir que ha acabado (en Android 13 o menos no hay tope del sistema) */
-    private static final long TOPE_MS = 6 * 60_000L;
+    /** por si la web no llega a decir que ha acabado: la web se rinde antes (unos 2 minutos sin conexión con la app fuera) */
+    private static final long TOPE_MS = 10 * 60_000L;
     private static final Handler HILO = new Handler(Looper.getMainLooper());
 
     /** pedido arrancar y aún sin startForeground: si llega «terminar» antes, se para en cuanto arranca (pararlo antes de
      *  startForeground hace que Android cierre la app) */
     private static boolean arrancando, enMarcha, pararAlArrancar;
-    private final Runnable tope = this::stopSelf;
+    private PowerManager.WakeLock despierto;
+    private final Runnable tope = () -> {
+        Diario.apunta("Servicio: tope de 10 minutos, lo paro");
+        stopSelf();
+    };
+
+    static boolean vivo() {
+        return enMarcha || arrancando;
+    }
 
     static void empezar(Context c, String texto) {
         HILO.post(() -> {
@@ -43,6 +55,7 @@ public class GrowiaServicio extends Service {
             } catch (Exception e) {
                 // con la app ya en segundo plano, Android 12 o más no deja empezarlo: GrowIA sigue sin él
                 arrancando = false;
+                Diario.apunta("Servicio: Android no deja arrancarlo (" + e.getClass().getSimpleName() + ")");
             }
         });
     }
@@ -118,18 +131,28 @@ public class GrowiaServicio extends Service {
                 .setProgress(0, 0, true)
                 .build();
         try {
-            if (Build.VERSION.SDK_INT >= 34) startForeground(ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_SHORT_SERVICE);
-            else if (Build.VERSION.SDK_INT >= 29) startForeground(ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+            if (Build.VERSION.SDK_INT >= 29) startForeground(ID, n, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
             else startForeground(ID, n);
         } catch (Exception e) {
             arrancando = false;
+            Diario.apunta("Servicio: no arranca (" + e.getClass().getSimpleName() + ")");
             stopSelf();
             return START_NOT_STICKY;
         }
+        boolean yaEstaba = enMarcha;
         enMarcha = true;
         arrancando = false;
+        if (despierto == null) {
+            PowerManager pm = getSystemService(PowerManager.class);
+            if (pm != null) {
+                despierto = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "GrowFolio:growia");
+                despierto.setReferenceCounted(false);
+            }
+        }
+        if (despierto != null) despierto.acquire(TOPE_MS);
         HILO.removeCallbacks(tope);
         HILO.postDelayed(tope, TOPE_MS);
+        if (!yaEstaba) Diario.apunta("Servicio en marcha" + (restringida(this) ? " (ojo: batería restringida)" : ""));
         if (pararAlArrancar) {
             pararAlArrancar = false;
             stopSelf();
@@ -137,20 +160,32 @@ public class GrowiaServicio extends Service {
         return START_NOT_STICKY;
     }
 
-    /** Android 14 o más: se acaba el tiempo del shortService. Hay que pararlo ya o Android cierra la app */
+    /** Android tiene la app con la batería restringida (en Samsung, «Restringido» o «En suspensión profunda»): así el
+     *  servicio no la protege al salir y se corta la conexión */
+    static boolean restringida(Context c) {
+        if (Build.VERSION.SDK_INT < 28) return false;
+        android.app.ActivityManager am = c.getSystemService(android.app.ActivityManager.class);
+        return am != null && am.isBackgroundRestricted();
+    }
+
+    /** si algún día pasa a targetSdk 35: dataSync tiene un tope de 6 horas al día. Hay que pararlo ya o Android cierra la app */
     @Override
     public void onTimeout(int startId) {
+        Diario.apunta("Servicio: Android ha pedido pararlo (tiempo)");
         stopSelf();
     }
 
     @Override
     public void onTimeout(int startId, int tipo) {
+        Diario.apunta("Servicio: Android ha pedido pararlo (tiempo)");
         stopSelf();
     }
 
     @Override
     public void onDestroy() {
         HILO.removeCallbacks(tope);
+        if (despierto != null && despierto.isHeld()) despierto.release();
+        if (enMarcha) Diario.apunta("Servicio parado");
         enMarcha = false;
         arrancando = false;
         stopForeground(STOP_FOREGROUND_REMOVE);

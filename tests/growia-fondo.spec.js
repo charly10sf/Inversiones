@@ -66,7 +66,9 @@ test('en el navegador: el corte al salir no es un fallo; espera a que vuelvas y 
   expect(modelos[1], 'sigue con el mismo modelo').toBe(modelos[0]);
 });
 
-test('en la app de Android: se queda viva, reintenta sin esperarte y te avisa al acabar', async ({ page, context, errores }) => {
+// 0.7l: con la app viva, los cortes fuera de la vista se repiten con esperas que crecen (2, 4, 8, 15 y 30 s) y solo
+// cuando se acaban espera a que vuelvas. En la prueba, esperas cortas
+test('en la app de Android: se queda viva, reintenta sin esperarte y, si no hay manera, espera a que vuelvas', async ({ page, context, errores }) => {
   await preguntar(page);
   const fuera = await conVista(page);
   // la app nueva: growiaEmpieza y growiaTermina (version alta para que no salga el aviso de actualizar)
@@ -77,27 +79,51 @@ test('en la app de Android: se queda viva, reintenta sin esperarte y te avisa al
       growiaEmpieza: (t) => window.__app.push(['empieza', t, document.hidden]),
       growiaTermina: (t, x) => window.__app.push(['termina', t, x]),
     };
+    RED_IA.esperas = [0.2, 0.2, 0.2, 0.2, 0.2];
   });
-  // tres cortes seguidos fuera de la vista: dos reintentos sin esperar y, al tercero, a esperar a que vuelvas
-  const modelos = await gemini(context, fuera, 3);
+  // seis cortes seguidos fuera de la vista: cinco reintentos sin esperar y, al sexto, a esperar a que vuelvas
+  const modelos = await gemini(context, fuera, 6);
   const app = () => page.evaluate(() => window.__app);
   await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
-  await expect.poll(() => modelos.length, { timeout: 20_000 }).toBe(3);
+  await expect.poll(() => modelos.length, { timeout: 20_000 }).toBe(6);
   await expect.poll(async () => (await app()).length, { timeout: 15_000 }).toBe(2);
   let a = await app();
   expect(a[0]).toEqual(['empieza', 'GrowIA está contestando…', false]);
   expect(a[1][0]).toBe('termina');
   expect(a[1][1]).toBe('GrowIA se ha quedado a medias');
   await page.waitForTimeout(1500);
-  expect(modelos.length, 'al tercero ya no reintenta fuera de la vista').toBe(3);
+  expect(modelos.length, 'agotados los reintentos, ya no lo pide fuera de la vista').toBe(6);
   await fuera(false);
   await expect(page.locator('#asCuerpo')).toContainText('sigue con tus aportaciones', { timeout: 15_000 });
-  await expect(page.locator('#asCuerpo')).not.toContainText('tres veces');
+  await expect(page.locator('#asCuerpo')).not.toContainText('veces seguidas');
   a = await app();
   expect(a.map((x) => x[0])).toEqual(['empieza', 'termina', 'empieza', 'termina']);
   expect(a[3][1]).toBe('GrowIA ya te ha contestado');
   expect(a[3][2]).not.toMatch(/cartera va bien/);   // el aviso no lleva nada de la respuesta
   expect(new Set(modelos).size, 'siempre el mismo modelo').toBe(1);
+});
+
+test('en la app de Android, unos cuantos cortes fuera de la vista se arreglan solos, sin esperarte', async ({ page, context, errores }) => {
+  await preguntar(page);
+  const fuera = await conVista(page);
+  await page.evaluate(() => {
+    window.__app = [];
+    window.InversionesApp = { version: () => 99999, nombreVersion: () => '9.9', growiaEmpieza: (t) => window.__app.push(['empieza', t]), growiaTermina: (t) => window.__app.push(['termina', t]) };
+    RED_IA.esperas = [0.2, 0.2, 0.2, 0.2, 0.2];
+  });
+  const modelos = await gemini(context, fuera, 3);
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  await expect.poll(() => page.evaluate(() => window.__app.map((x) => x[0]).join()), { timeout: 20_000 }).toBe('empieza,termina');
+  expect(await page.evaluate(() => document.hidden)).toBe(true);
+  expect((await page.evaluate(() => window.__app))[1][1]).toBe('GrowIA ya te ha contestado');
+  expect(modelos.length).toBe(4);
+  expect(new Set(modelos).size, 'un corte de red no hace cambiar de modelo').toBe(1);
+  await fuera(false);
+  const cuerpo = page.locator('#asCuerpo');
+  await expect(cuerpo).toContainText('sigue con tus aportaciones');
+  // un solo aviso del corte, que dice lo que pasó
+  await expect(cuerpo.locator('.as-paso')).toHaveCount(1);
+  await expect(cuerpo).toContainText('Se cortó la conexión con Google: lo he repetido');
 });
 
 test('con la app viva, un corte fuera de la vista se reintenta solo y acaba sin esperarte', async ({ page, context, errores }) => {
@@ -116,4 +142,121 @@ test('con la app viva, un corte fuera de la vista se reintenta solo y acaba sin 
   expect(modelos.length).toBe(2);
   await fuera(false);
   await expect(page.locator('#asCuerpo')).toContainText('sigue con tus aportaciones');
+});
+
+// 0.7l: Gemini de imitación dentro de la página (fetch), para lo que no se puede imitar con route: una respuesta que
+// se queda parada a mitad o que no llega nunca. guion: lo que hace cada petición ('parada', 'nunca' o 'bien')
+async function geminiFetch(page, guion) {
+  await page.evaluate((g) => {
+    const real = window.fetch, enc = new TextEncoder();
+    window.__pet = [];
+    const trozo = (parts, fin) => `data: ${JSON.stringify({ candidates: [{ content: { role: 'model', parts }, ...(fin ? { finishReason: 'STOP' } : {}) }], usageMetadata: {} })}\n\n`;
+    const abortar = (o, c) => o.signal && o.signal.addEventListener('abort', () => c(new DOMException('The user aborted a request.', 'AbortError')), { once: true });
+    window.fetch = (url, o = {}) => {
+      if (!/generativelanguage/.test(String(url))) return real(url, o);
+      const n = window.__pet.push(/models\/([^:]+):/.exec(String(url))[1]);
+      const paso = g[n - 1] || 'bien';
+      if (paso === 'nunca') return new Promise((_, no) => abortar(o, no));
+      if (paso === 'parada') {
+        const body = new ReadableStream({ start(c) { c.enqueue(enc.encode(trozo([{ text: 'Empiezo a mirar tu' }]))); abortar(o, (e) => c.error(e)); } });
+        return Promise.resolve(new Response(body, { status: 200, headers: { 'content-type': 'text/event-stream' } }));
+      }
+      return Promise.resolve(new Response(trozo([{ text: 'Tu cartera va bien: sigue con tus aportaciones.' }], true), { status: 200, headers: { 'content-type': 'text/event-stream' } }));
+    };
+  }, guion);
+  return () => page.evaluate(() => window.__pet);
+}
+
+test('una respuesta que se queda parada a mitad se corta y se repite (antes se quedaba pensando para siempre)', async ({ page, errores }) => {
+  await preguntar(page);
+  await page.evaluate(() => { RED_IA.hilo = 1500; RED_IA.esperas = [0.2, 0.2, 0.2, 0.2, 0.2]; });
+  const pet = await geminiFetch(page, ['parada', 'bien']);
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  const cuerpo = page.locator('#asCuerpo');
+  await expect(cuerpo).toContainText('sigue con tus aportaciones', { timeout: 15_000 });
+  await expect(cuerpo).not.toContainText('Empiezo a mirar tu');
+  await expect(cuerpo).toContainText('lo he repetido');
+  const p = await pet();
+  expect(p.length).toBe(2);
+  expect(p[1], 'con el mismo modelo').toBe(p[0]);
+  // el registro lo apunta, sin la pregunta ni la respuesta
+  const diario = await page.evaluate(() => textoDiarioIA());
+  expect(diario).toMatch(/corte \(conexión\) a los \d+ s con la respuesta llegando/);
+  expect(diario).toMatch(/Contesta en \d+ s/);
+  expect(diario).not.toMatch(/cartera va bien|Cómo va mi cartera/);
+});
+
+test('si Google no contesta, lo repite una vez y luego pasa al 3.6, sin la rápida', async ({ page, errores }) => {
+  await preguntar(page);
+  await page.evaluate(() => { RED_IA.espera = 1500; });
+  const pet = await geminiFetch(page, ['nunca', 'nunca', 'bien']);
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  const cuerpo = page.locator('#asCuerpo');
+  // mientras espera, los segundos que lleva
+  await expect(cuerpo.locator('.as-seg')).toHaveText(/^\d+ s$/, { timeout: 10_000 });
+  await expect(cuerpo).toContainText('sigue con tus aportaciones', { timeout: 15_000 });
+  expect(await pet()).toEqual(['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.6-flash']);
+  await expect(cuerpo).not.toContainText('rápida');
+});
+
+test('si cambia la red mientras pide (de wifi a datos), lo repite enseguida por la nueva', async ({ page, errores }) => {
+  await preguntar(page);
+  await page.evaluate(() => { RED_IA.cambio = 400; });
+  const pet = await geminiFetch(page, ['nunca', 'bien']);
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  await expect.poll(async () => (await pet()).length).toBe(1);
+  const t0 = Date.now();
+  await page.evaluate(() => redCambiada('datos'));
+  const cuerpo = page.locator('#asCuerpo');
+  await expect(cuerpo).toContainText('sigue con tus aportaciones', { timeout: 10_000 });
+  expect(Date.now() - t0, 'sin esperar los 120 s').toBeLessThan(8000);
+  await expect(cuerpo).toContainText('Cambió tu conexión: lo he repetido');
+  expect((await pet()).length).toBe(2);
+});
+
+test('«Parar» corta también una respuesta que ya está llegando', async ({ page, errores }) => {
+  await preguntar(page);
+  await geminiFetch(page, ['parada']);
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  const cuerpo = page.locator('#asCuerpo');
+  await expect(cuerpo).toContainText('Empiezo a mirar tu', { timeout: 10_000 });
+  // el botón de enviar, que mientras contesta es «Parar» (sin el ratón: a ratos sale encima la guía)
+  await expect(page.locator('#asEnviar')).toHaveAttribute('aria-label', 'Parar');
+  await page.evaluate(() => document.querySelector('#asEnviar').click());
+  await expect(cuerpo).toContainText('Parado.', { timeout: 5_000 });
+  expect(await page.evaluate(() => AS.cargando)).toBe(false);
+});
+
+test('el registro de GrowIA se ve en Ajustes, con el aviso de la batería restringida en la app', async ({ page, context, errores }) => {
+  await preguntar(page);
+  await page.evaluate(() => {
+    window.InversionesApp = {
+      version: () => 99999, nombreVersion: () => '9.9', growiaEmpieza: () => {}, growiaTermina: () => {},
+      red: () => 'wifi', bateriaRestringida: () => true, growiaViva: () => true,
+      diarioApp: () => JSON.stringify([{ t: Date.now() - 500, x: 'Servicio en marcha' }]),
+    };
+  });
+  await gemini(context, async () => {}, 0);
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  await expect(page.locator('#asCuerpo')).toContainText('sigue con tus aportaciones', { timeout: 15_000 });
+  await page.evaluate(() => { AS.vista = 'ajustes'; pintarAsesor(); document.querySelector('.as-detalle').open = true; });
+  const reg = page.locator('.as-diario');
+  await expect(reg).toContainText('Pregunta · 3.8 Flash · wifi');
+  await expect(reg).toContainText('Servicio en marcha');
+  await expect(reg).toContainText(/Contesta en \d+ s con 3\.8 Flash/);
+  await expect(page.locator('.as-aviso-bateria')).toContainText('batería restringida');
+  await expect(reg).not.toContainText('Cómo va mi cartera');
+});
+
+test('la revisión automática no empieza mientras GrowIA contesta una pregunta', async ({ page, errores }) => {
+  await preguntar(page);
+  const r = await page.evaluate(async () => {
+    guardarCfgAsesor({ auto: 'diario' }); S.iaPropio = null;
+    const pedidas = []; window.generarAnalisisIA = (m) => pedidas.push(m);
+    IA.ultimoIntento = 0; AS.cargando = true; await revisarAnalisisIA();
+    const durante = pedidas.length;
+    IA.ultimoIntento = 0; AS.cargando = false; await revisarAnalisisIA();
+    return [durante, pedidas.length];
+  });
+  expect(r, 'mientras contesta, nada; al acabar, sí').toEqual([0, 1]);
 });

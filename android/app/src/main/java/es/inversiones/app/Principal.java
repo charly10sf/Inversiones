@@ -2,6 +2,9 @@ package es.inversiones.app;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.Network;
+import android.net.NetworkCapabilities;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -65,6 +68,7 @@ public class Principal extends Activity {
         CookieManager.getInstance().setAcceptCookie(true);
 
         web.addJavascriptInterface(new Puente(this), "InversionesApp");
+        vigilarRed();
         // los avisos, si los tienes activados (por si el sistema canceló el trabajo al actualizar la app)
         if (Avisos.activados(this)) Avisos.programar(this, true);
         // el aviso de las versiones nuevas (viene encendido; se quita en Ajustes de la web)
@@ -542,6 +546,92 @@ public class Principal extends Activity {
             web.setRendererPriorityPolicy(prioridadAntes, renunciaAntes);
             prioridadAntes = null;
         }
+    }
+
+    /** 0.7l: la red. Sin el permiso ACCESS_NETWORK_STATE, el WebView no se enteraba de que pasabas de wifi a datos (ni de
+     *  que te quedabas sin red): seguía con una conexión muerta y GrowIA se quedaba colgada o se cortaba. Con el permiso
+     *  el WebView ya lo ve; además se le dice a la web (navigator.onLine, los eventos online/offline y redCambiada, que
+     *  repite al momento lo que estaba pidiendo) y se apunta en el diario */
+    private ConnectivityManager.NetworkCallback vigiaRed;
+    private Network redActual, redUltima;
+    private volatile String redTipo = "?";
+    private final android.os.Handler hiloRed = new android.os.Handler(android.os.Looper.getMainLooper());
+    private final Runnable sinRed = () -> {
+        if (redActual != null) return;
+        redTipo = "sin red";
+        Diario.apunta("Red: sin conexión");
+        if (web != null) {
+            web.setNetworkAvailable(false);
+            web.evaluateJavascript("window.redCambiada && redCambiada('sin')", null);
+        }
+    };
+
+    String red() {
+        return redTipo;
+    }
+
+    private String tipoRed(ConnectivityManager cm, Network n) {
+        NetworkCapabilities c = cm.getNetworkCapabilities(n);
+        if (c == null) return "red";
+        if (c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return "wifi";
+        if (c.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) return "datos";
+        if (c.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) return "cable";
+        return "red";
+    }
+
+    private void vigilarRed() {
+        ConnectivityManager cm = getSystemService(ConnectivityManager.class);
+        if (cm == null || vigiaRed != null) return;
+        vigiaRed = new ConnectivityManager.NetworkCallback() {
+            @Override
+            public void onAvailable(Network n) {
+                String tipo = tipoRed(cm, n);
+                hiloRed.post(() -> {
+                    hiloRed.removeCallbacks(sinRed);
+                    boolean primera = "?".equals(redTipo);
+                    boolean otra = redUltima != null && !redUltima.equals(n) || "sin red".equals(redTipo);
+                    redActual = n;
+                    redUltima = n;
+                    redTipo = tipo;
+                    if (primera) return;
+                    Diario.apunta("Red: " + tipo);
+                    if (web != null) {
+                        web.setNetworkAvailable(true);
+                        if (otra) web.evaluateJavascript("window.redCambiada && redCambiada('" + tipo + "')", null);
+                    }
+                });
+            }
+
+            @Override
+            public void onLost(Network n) {
+                hiloRed.post(() -> {
+                    if (!n.equals(redActual)) return;
+                    redActual = null;
+                    // al pasar de wifi a datos, la nueva llega enseguida: «sin red» solo si en 1,5 s no hay otra
+                    hiloRed.postDelayed(sinRed, 1500);
+                });
+            }
+        };
+        try {
+            cm.registerDefaultNetworkCallback(vigiaRed);
+        } catch (Exception e) {
+            vigiaRed = null;
+        }
+    }
+
+    @Override
+    protected void onDestroy() {
+        ConnectivityManager cm = getSystemService(ConnectivityManager.class);
+        if (cm != null && vigiaRed != null) {
+            try {
+                cm.unregisterNetworkCallback(vigiaRed);
+            } catch (Exception e) {
+                // ya no estaba
+            }
+        }
+        vigiaRed = null;
+        hiloRed.removeCallbacks(sinRed);
+        super.onDestroy();
     }
 
     @Override
