@@ -272,7 +272,7 @@ function datosImagenGTA(M, conCopias) {
     pct: T ? T.pct : null, juego: T ? T.juego : null, falta: f ? f.d : null, salido: !f,
   };
 }
-const FUENTE_NEON = '"Tilt Neon", Impact, "Arial Narrow", sans-serif', FUENTE_SCRIPT = 'Yellowtail, "Brush Script MT", cursive';
+const FUENTE_NEON = '"Passion One", Impact, "Arial Narrow", sans-serif', FUENTE_SCRIPT = 'Yellowtail, "Brush Script MT", cursive';
 // cabe en un ancho: baja la letra hasta que entra
 function letraQueCabe(ctx, txt, tam, familia, peso, max) {
   let t = tam;

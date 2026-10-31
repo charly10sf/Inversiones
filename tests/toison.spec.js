@@ -131,12 +131,12 @@ test('0.7n: las partes van más juntas y cada dibujo se acaba cuando lo tienes e
     // lo de dentro asoma por abajo: aún sin dibujar
     await s.evaluate((x) => { const d = x.closest('.estreno'); d.scrollBy(0, x.firstElementChild.getBoundingClientRect().top - d.clientHeight); });
     await expect.poll(() => s.evaluate((x) => +x.style.getPropertyValue('--p'))).toBe(0);
-    // entero a la vista (lo de dentro acaba en el 88 % de la pantalla): ya dibujado
-    await s.evaluate((x) => { const d = x.closest('.estreno'), r = x.lastElementChild.getBoundingClientRect(); d.scrollBy(0, r.bottom - d.clientHeight * 0.88); });
+    // entero a la vista (lo de dentro acaba en el 88 % de la pantalla; si no cabe, arriba del todo): ya dibujado
+    const alto = await s.evaluate((x) => { const d = x.closest('.estreno'), a = x.firstElementChild.getBoundingClientRect().top, h = x.lastElementChild.getBoundingClientRect().bottom - a; d.scrollBy(0, a - Math.max(d.clientHeight * 0.04, d.clientHeight * 0.88 - h)); return h; });
     await expect.poll(() => s.evaluate((x) => +x.style.getPropertyValue('--p'))).toBe(1);
     const r = await s.evaluate((x) => [x.firstElementChild.getBoundingClientRect().top, x.lastElementChild.getBoundingClientRect().bottom]);
     expect(r[0]).toBeGreaterThanOrEqual(0);
-    expect(r[1]).toBeLessThanOrEqual(vh);
+    if (alto <= vh * 0.84) expect(r[1]).toBeLessThanOrEqual(vh);
   }
 });
 

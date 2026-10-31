@@ -115,3 +115,10 @@ test('con los importes ocultos, la imagen va sin copias y el interruptor no se p
   await expect(p).toContainText('Tienes los importes ocultos');
   expect(await page.evaluate(() => datosImagenGTA(S.M || calcular(), true).copias)).toBeNull();
 });
+
+test('la letra de títulos y cifras se parece a la de GTA: Passion One (Pricedown solo es libre para uso personal)', async ({ page, errores }) => {
+  const g = await abrir(page);
+  await expect(page.locator('link#fuenteGTA')).toHaveAttribute('href', /family=Passion\+One/);
+  for (const sel of ['.gta-tit', '.gta-reloj b']) expect(await g.locator(sel).first().evaluate((x) => getComputedStyle(x).fontFamily)).toMatch(/^"?Passion One"?/);
+  expect(await page.evaluate(() => FUENTE_NEON)).toMatch(/^"Passion One"/);
+});

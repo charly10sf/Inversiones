@@ -190,7 +190,7 @@ function avisoToison(seguir, forzar = false, enlace = false) {
       let p = 1;
       if (!quieto) {
         const arriba = s.firstElementChild.getBoundingClientRect().top, alto = s.lastElementChild.getBoundingClientRect().bottom - arriba;
-        const empieza = vh * 0.95, acaba = Math.max(vh * 0.06, vh * 0.9 - alto);
+        const empieza = vh * 0.95, acaba = Math.max(vh * 0.1, vh * 0.9 - alto);
         p = alFinal && arriba < vh ? 1 : Math.max(0, Math.min(1, (empieza - arriba) / Math.max(1, empieza - acaba)));
       }
       const v = p.toFixed(3);

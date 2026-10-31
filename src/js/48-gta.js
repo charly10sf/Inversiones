@@ -109,11 +109,13 @@ function chipGTA() {
   const txt = !f ? L('ya está aquí', 'out now') : f.d ? L(`${f.d} ${f.d === 1 ? 'día' : 'días'}`, `${f.d} ${f.d === 1 ? 'day' : 'days'}`) : `${f.h} h`;
   return `<button class="gta-chip" type="button" data-gta aria-label="GTA VI: ${esc(txt)}. ${L('Cuenta atrás y cuentas con tu cartera', 'Countdown and your portfolio in numbers')}">${MANDO}<b>GTA VI</b><span>${esc(txt)}</span></button>`;
 }
-// letras de neón de los ochenta (no las del logo del juego): Tilt Neon para títulos y cifras, Yellowtail para los rótulos
+// 0.7n (lo pidió Carlos el 1 nov: «que la tipografía de GTA sea de GTA o parecida»): para títulos y cifras, Passion One, la
+// libre que más se parece a Pricedown, la letra de los logos de GTA (Pricedown solo es gratis para uso personal y el logo es
+// de Rockstar: aquí, parecida, no la suya). Yellowtail para los rótulos, a pincel como el «Vice City» de los ochenta
 function fuenteGTA() {
   if ($('#fuenteGTA')) return;
   const l = document.createElement('link');
-  l.id = 'fuenteGTA'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Tilt+Neon&family=Yellowtail&display=swap';  // 0.7m: sin Anton, que no se usaba
+  l.id = 'fuenteGTA'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Passion+One&family=Yellowtail&display=swap';  // 0.7n: Passion One en vez de Tilt Neon
   document.head.appendChild(l);
 }
 // la primera vez, el aviso a pantalla completa (su dibujo y su música van en el trozo de GTA, que se baja solo si sale)
