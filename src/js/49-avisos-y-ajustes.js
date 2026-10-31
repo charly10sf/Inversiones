@@ -1,21 +1,51 @@
-/* 0.7l: el avance de Toisón, una vez, a quien ya usa GrowFolio (lo pidió Carlos el 31 oct). En el rediseño de diciembre
-   GrowFolio pasa a llamarse Toisón; la marca ya está presentada en la OEPM (31 oct), así que el nombre se puede enseñar.
-   El logo es la marca del manual 1.2 (símbolo y palabra sobre borgoña vino), en toison-avance.svg. Hasta fin de año */
+/* 0.7l: el estreno de Toisón, una vez, a todos los que entran (también a quien acaba de llegar), en el móvil, la app y el
+   ordenador. Lo pidió Carlos el 31 oct: GrowFolio tiene los días contados, por algo bueno; en el rediseño de diciembre
+   pasa a llamarse Toisón. La marca está solicitada en la OEPM (31 oct) y los tres dominios, registrados: el nombre ya se
+   puede enseñar. Primero se despide GrowFolio y luego aparece la marca en relieve del manual (toison-avance.webp, hecha
+   con relief3.py del Design System «Toisón»), con un brillo que la recorre. Sin animaciones si el móvil las tiene
+   quitadas. Hasta fin de año */
 function avisoToison(seguir) {
-  if (LS.get('inv-toison-avance') || !S.cartera || S.demo || Date.now() >= Date.parse('2027-01-01')) return seguir && seguir();
+  if (LS.get('inv-toison-avance') || S.demo || Date.now() >= Date.parse('2027-01-01')) return seguir && seguir();
   LS.set('inv-toison-avance', Date.now());
-  hoja(L('GrowFolio tiene los días contados', "GrowFolio's days are numbered"), `<div class="toison-avance">
-    <img src="toison-avance.svg" alt="Toisón" width="560" height="320">
-    <p><b>${L('Pero es por algo bueno.', "But it's for a good reason.")}</b> ${L('En diciembre GrowFolio cambia de nombre y de cara: pasa a llamarse Toisón.', 'In December GrowFolio gets a new name and a new look: it becomes Toisón.')}</p>
-    <p>${L('Un toisón es un vellón de lana, y el de oro es el del mito de Jasón. El logo junta las dos primeras letras: una T hecha columna que atraviesa una O.', "A toisón is a fleece, and the golden one is the fleece of the Jason myth. The logo joins the first two letters: a T shaped like a column running through an O.")}</p>
-    <p class="nota">${L('No tienes que hacer nada. Tu cartera, tu contraseña y tus ajustes siguen como están: cambian el nombre, el logo y el aspecto de la app.', "You don't need to do anything. Your portfolio, your password and your settings stay as they are: only the name, the logo and the look of the app change.")}</p>
-    <div class="fila-btns"><button class="btn pri" data-cerrar>${L('Tengo ganas de verlo', "Can't wait to see it")}</button></div>
-  </div>`, () => seguir && seguir());
+  const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const d = document.createElement('div');
+  d.className = 'estreno ts' + (quieto ? ' quieta' : '');
+  d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'Toisón');
+  d.innerHTML = `<button type="button" class="ib ts-x" data-ts="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button>
+    <div class="ts-adios" aria-hidden="true"><img src="growfolio-nombre.svg" alt=""><p>${L('tiene los días contados…', 'has its days numbered…')}</p></div>
+    <div class="ts-c">
+      <div class="ts-marca"><img src="toison-avance.webp" alt="Toisón" width="1120" height="640"><i class="ts-brillo" aria-hidden="true"></i></div>
+      <h2 class="ts-t">${L('GrowFolio tiene los días contados', "GrowFolio's days are numbered")}</h2>
+      <p class="ts-p"><b>${L('Pero es por algo bueno.', "But it's for a good reason.")}</b> ${L('En diciembre cambia de nombre y de cara: pasa a llamarse Toisón.', 'In December it gets a new name and a new look: it becomes Toisón.')}</p>
+      <p class="ts-p">${L('Un toisón es un vellón de lana, y el de oro es el del mito de Jasón. El logo junta las dos primeras letras: una T hecha columna que atraviesa una O.', 'A toisón is a fleece, and the golden one is the fleece of the Jason myth. The logo joins the first two letters: a T shaped like a column running through an O.')}</p>
+      <ul class="ts-hechos">
+        <li>${ICONOS.ok}<span>${L('Dominios registrados: <b>toison.es</b>, <b>toison.app</b> y <b>toisonapp.com</b>', 'Domains registered: <b>toison.es</b>, <b>toison.app</b> and <b>toisonapp.com</b>')}</span></li>
+        <li>${ICONOS.ok}<span>${L('Marca TOISÓN solicitada en la Oficina Española de Patentes y Marcas', 'TOISÓN trademark filed with the Spanish Patent and Trademark Office')}</span></li>
+      </ul>
+      <p class="ts-nota">${L('No tienes que hacer nada. Tu cartera, tu contraseña y tus ajustes siguen como están: cambian el nombre, el logo y el aspecto de la app.', "You don't need to do anything. Your portfolio, your password and your settings stay as they are: only the name, the logo and the look of the app change.")}</p>
+      <button type="button" class="btn pri ts-ok" data-ts="ok">${L('Tengo ganas de verlo', "Can't wait to see it")}</button>
+    </div>`;
+  document.body.appendChild(d);
+  let quitarAtras = () => {};
+  const cerrar = (desdeAtras) => {
+    if (!d.isConnected || d.classList.contains('fuera')) return;
+    if (desdeAtras !== true) quitarAtras();
+    document.removeEventListener('keydown', tecla, true);
+    d.classList.add('fuera');
+    setTimeout(() => { d.remove(); if (seguir) seguir(); }, quieto ? 0 : 450);
+  };
+  const tecla = (e) => { if (e.key === 'Escape') { e.preventDefault(); cerrar(); } };
+  document.addEventListener('keydown', tecla, true);
+  quitarAtras = conAtras(() => cerrar(true), d);
+  d.addEventListener('click', (e) => { if (e.target.closest('[data-ts]')) cerrar(); });
+  setTimeout(() => { const b = d.querySelector('.ts-ok'); if (b && d.isConnected) b.focus({ preventScroll: true }); }, quieto ? 0 : 4200);
 }
 function bienvenida(intento = 0) {
   if (!S.cartera) return;
   // primero el aviso de la app, si lo hay; las novedades, después
   if (appEnCurso || (window.InversionesApp && !appRevisadaT) || document.querySelector('.hoja-fondo, .tour, #asesorFondo')) { if (intento < 40) setTimeout(() => bienvenida(intento + 1), intento ? 1500 : 800); return; }
+  // 0.7l: el estreno de Toisón, una vez, a todos (también a quien acaba de llegar) y antes que nada; después, lo de siempre
+  if (!LS.get('inv-toison-avance') && !S.demo && Date.now() < Date.parse('2027-01-01')) return avisoToison(() => bienvenida());
   let visto = LS.get('inv-version', null);
   if (!LS.get('inv-vnum') && /^0\.[2-9]\.0$/.test(visto || '')) visto = '0.1.' + visto.split('.')[1];  // numeración de antes: 0.9.0 es la 0.1.9
   const nuevo = S.recienCreada || (!(S.cartera.posiciones || []).length && !LS.get('inv-tour', null));
@@ -23,7 +53,7 @@ function bienvenida(intento = 0) {
   const fin = () => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); };
   // si te falta el perfil, primero eso (y esa vez nada más: el resto, la próxima)
   // con una cartera de antes por recuperar en este dispositivo, eso va primero y lo demás espera a la próxima vez
-  const despues = () => (copiaViejaPendiente() ? fin() : pedirPerfil(fin, () => avisoToison(() => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin))))));
+  const despues = () => (copiaViejaPendiente() ? fin() : pedirPerfil(fin, () => avisoGTA(() => resumenDelDia(() => mostrarPreguntaIA(fin)))));
   // quien acaba de llegar: sus primeros pasos (y desde ahí, si quiere, el tutorial)
   if (nuevo) { LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); if (!LS.get('inv-empezar', 0)) LS.set('inv-empezar', Date.now()); return guiaPrimerosPasos(fin); }
   // la 0.2 llega con su propia pantalla de estreno, una vez

@@ -8,14 +8,14 @@
    "commits": [
     {
      "cuando": "2026-10-31 20:30",
-     "asunto": "0.7l: GrowIA, más firme en el móvil, y el avance de Toisón",
+     "asunto": "0.7l: GrowIA, más firme en el móvil, y el estreno de Toisón",
      "detalle": [
       "Web: llamarGemini vigila cada dato que llega (120 s hasta el primero, 60 s entre datos, 8 s tras un cambio de red); antes solo vigilaba los primeros 90 s y una respuesta parada a mitad dejaba a GrowIA pensando para siempre",
       "Web: un corte de red se repite con el mismo modelo esperando 2, 4, 8, 15 y 30 s (antes 1,5 y 3 s y luego otro modelo); solo cambia de modelo cuando Google no contesta (una vez más con el mismo y luego el siguiente de su orden); sin red espera al evento online (con la app fuera, 2 minutos como mucho); un solo aviso del corte que pasa a «lo he repetido»",
       "Web: «Parar» corta también la respuesta que ya está llegando; la revisión automática no empieza mientras GrowIA contesta (la mira al acabar); los segundos que lleva pensando",
       "Web: registro de GrowIA (inv-ia-diario, los últimos 80, sin preguntas ni respuestas) en Ajustes de GrowIA, Detalles técnicos, con «Copiar» y lo que apunta la app",
       "App de Android: el servicio de GrowIA pasa de shortService (Android 14 lo para a los 3 minutos) a dataSync, con wakelock parcial de 10 minutos como mucho; permiso ACCESS_NETWORK_STATE (el WebView no se enteraba de los cambios de red) y vigía de la red que avisa a la web (redCambiada, setNetworkAvailable); diario del servicio y de la red; aviso de batería restringida",
-      "Avance de Toisón: una vez, al abrir, «GrowFolio tiene los días contados» con la marca del manual (toison-avance.svg); lo pidió Carlos",
+      "Estreno de Toisón: una vez, a todos los que entran (nuevos o no, móvil, app y ordenador), «GrowFolio tiene los días contados», por algo bueno: en diciembre pasa a llamarse Toisón. Se despide GrowFolio y aparece la marca en relieve (toison-avance.webp, hecha con relief3.py del Design System) con un brillo; dominios registrados y marca solicitada en la OEPM; sin animaciones si están quitadas. Lo pidió Carlos",
       "Pruebas nuevas en tests/growia-fondo.spec.js (respuesta parada, Google que no contesta, cambio de red, Parar, registro, revisión que espera) y tests/toison.spec.js"
      ]
     }

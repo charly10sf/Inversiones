@@ -197,7 +197,40 @@
 .macro-ia b { display: block; font-size: 17px; font-weight: 700; margin: 2px 0 4px; font-variant-numeric: tabular-nums; }
 .macro-ia p { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.4; }
 
-/* 0.7l: el avance de Toisón (una vez, al abrir) */
-.toison-avance img { display: block; width: 100%; height: auto; aspect-ratio: 560 / 320; border-radius: 14px; margin: 0 0 14px; background: #4E101D; }
-.toison-avance p { margin: 0 0 10px; }
-.toison-avance .fila-btns { margin-top: 14px; }
+/* 0.7l: el estreno de Toisón (una vez, al entrar). Primero se despide GrowFolio (0-2 s); luego el fondo borgoña, la marca
+   en relieve con su brillo y los textos, uno detrás de otro. Unos 4 s; con las animaciones quitadas, todo quieto */
+.estreno.ts { display: block; overflow-y: auto; overscroll-behavior: contain; background: #000; animation: tsEntra .35s ease both; }
+.estreno.ts::before { content: ''; position: fixed; inset: 0; background: radial-gradient(120% 80% at 50% 28%, #5C1526 0%, #3A0A16 48%, #12030A 100%); opacity: 0; animation: tsFondo 1.1s ease 1.7s forwards; pointer-events: none; }
+.ts-x { position: fixed; top: calc(10px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); z-index: 2; color: #F2E6D2; }
+.ts-adios { position: fixed; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; animation: tsAdios 2.1s ease forwards; pointer-events: none; }
+.ts-adios img { width: min(240px, 60vw); height: auto; }
+.ts-adios p { margin: 0; color: var(--text-2); font-size: 17px; letter-spacing: .02em; opacity: 0; animation: tsSube .6s ease .55s forwards; }
+.ts-c { position: relative; box-sizing: border-box; max-width: 600px; margin: 0 auto; min-height: 100%; padding: calc(56px + env(safe-area-inset-top)) 22px calc(28px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; justify-content: center; color: #F2E6D2; }
+.ts-marca { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(227, 180, 95, .18); opacity: 0; transform: scale(.92); animation: tsMarca 1s cubic-bezier(.2, .7, .2, 1) 2s forwards; }
+.ts-marca img { display: block; width: 100%; height: auto; aspect-ratio: 1120 / 640; background: #4E101D; }
+.ts-brillo { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 240, 196, .28) 48%, rgba(255, 250, 235, .45) 50%, rgba(255, 240, 196, .28) 52%, transparent 65%); transform: translateX(-120%); animation: tsBrillo 1.3s ease-in-out 2.9s forwards; mix-blend-mode: screen; }
+.ts-t { margin: 22px 0 8px; font-size: 22px; line-height: 1.25; color: #F6EAD5; }
+.ts-p { margin: 0 0 10px; color: #E2D3BC; }
+.ts-p b { color: #F6EAD5; }
+.ts-hechos { list-style: none; margin: 6px 0 12px; padding: 0; display: grid; gap: 8px; }
+.ts-hechos li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: rgba(227, 180, 95, .10); border: 1px solid rgba(227, 180, 95, .28); font-size: 14px; line-height: 1.4; color: #EADBC2; }
+.ts-hechos li svg { width: 18px; height: 18px; flex: none; color: #E3B45F; margin-top: 1px; }
+.ts-hechos b { color: #F6EAD5; font-weight: 600; }
+.ts-nota { margin: 0 0 18px; font-size: 13px; color: #BFAE95; }
+.ts-ok { align-self: flex-start; background: linear-gradient(180deg, #EAC572, #C9963F); color: #2A0A12; border-color: transparent; }
+.ts-c > .ts-t, .ts-c > .ts-p, .ts-c > .ts-hechos, .ts-c > .ts-nota, .ts-c > .ts-ok { opacity: 0; animation: tsSube .6s ease forwards; }
+.ts-c > .ts-t { animation-delay: 3.0s; } .ts-c > .ts-p { animation-delay: 3.25s; } .ts-c > .ts-p + .ts-p { animation-delay: 3.45s; }
+.ts-c > .ts-hechos { animation-delay: 3.7s; } .ts-c > .ts-nota { animation-delay: 3.9s; } .ts-c > .ts-ok { animation-delay: 4.05s; }
+@keyframes tsEntra { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tsFondo { to { opacity: 1; } }
+@keyframes tsAdios { 0% { opacity: 0; transform: scale(.98); } 18% { opacity: 1; transform: none; } 72% { opacity: 1; filter: blur(0); } 100% { opacity: 0; transform: translateY(-18px) scale(.96); filter: blur(6px); visibility: hidden; } }
+@keyframes tsSube { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
+@keyframes tsMarca { 0% { opacity: 0; transform: scale(.92); clip-path: inset(46% 0 46% 0 round 18px); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; clip-path: inset(0 0 0 0 round 18px); } }
+@keyframes tsBrillo { to { transform: translateX(120%); } }
+@media (min-width: 900px) { .ts-t { font-size: 26px; } }
+.estreno.ts.quieta::before { opacity: 1; }
+.estreno.ts.quieta .ts-adios { display: none; }
+.estreno.ts.quieta .ts-marca, .estreno.ts.quieta .ts-c > * { opacity: 1; transform: none; clip-path: none; }
+.estreno.ts.quieta .ts-brillo { display: none; }
+.estreno.ts.fuera { animation: tsSale .4s ease forwards; }
+@keyframes tsSale { from { opacity: 1; } to { opacity: 0; } }
