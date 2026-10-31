@@ -11,19 +11,33 @@ import android.provider.OpenableColumns;
 import java.io.File;
 import java.io.FileNotFoundException;
 
-/** Le deja al instalador de Android leer el APK descargado (y nada más) con un permiso temporal. */
+/** Le deja al instalador de Android leer el APK descargado con un permiso temporal y, desde la 0.7n, a la app con la que
+ *  compartes leer la imagen que has hecho en GrowFolio («Mi cartera en GTA VI»). Nada más. */
 public class Archivos extends ContentProvider {
     static final String AUTORIDAD = "es.inversiones.app.archivos";
     private static final String TIPO = "application/vnd.android.package-archive";
+    static final String IMAGEN = "compartir.png";
 
     static Uri uri() {
         return Uri.parse("content://" + AUTORIDAD + "/" + Actualizador.NOMBRE);
     }
 
+    static Uri uriImagen() {
+        return Uri.parse("content://" + AUTORIDAD + "/" + IMAGEN);
+    }
+
+    /** la imagen para compartir: una sola, en la caché, que se pisa cada vez */
+    static File imagen(android.content.Context c) {
+        File d = new File(c.getCacheDir(), "compartir");
+        if (!d.exists()) d.mkdirs();
+        return new File(d, IMAGEN);
+    }
+
     private File archivo(Uri u) {
-        if (u == null || !Actualizador.NOMBRE.equals(u.getLastPathSegment()) || getContext() == null) return null;
-        File f = Actualizador.archivo(getContext());
-        return f.exists() ? f : null;
+        if (u == null || getContext() == null) return null;
+        String n = u.getLastPathSegment();
+        File f = Actualizador.NOMBRE.equals(n) ? Actualizador.archivo(getContext()) : IMAGEN.equals(n) ? imagen(getContext()) : null;
+        return f != null && f.exists() ? f : null;
     }
 
     @Override
@@ -40,7 +54,7 @@ public class Archivos extends ContentProvider {
 
     @Override
     public String getType(Uri u) {
-        return TIPO;
+        return u != null && IMAGEN.equals(u.getLastPathSegment()) ? "image/png" : TIPO;
     }
 
     @Override

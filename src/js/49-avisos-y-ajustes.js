@@ -1,16 +1,63 @@
 /* 0.7l: el estreno de Toisón, una vez, a todos los que entran (también a quien acaba de llegar), en el móvil, la app y el
-   ordenador. Lo pidió Carlos el 31 oct: GrowFolio tiene los días contados, por algo bueno; en el rediseño de diciembre
-   pasa a llamarse Toisón. La marca está solicitada en la OEPM (31 oct) y los tres dominios, registrados: el nombre ya se
-   puede enseñar. Primero se despide GrowFolio y aparece la marca en relieve con un brillo (por tiempo); luego, al bajar,
-   cada parte se dibuja según vas deslizando (--p de 0 a 1 en cada sección): la O áurea, las medidas del símbolo y la
-   marca en mármol negro, y al final lo que ya está hecho. Las imágenes, con relief3.py del Design System «Toisón» (O
-   áurea de la 1.3). Sin animaciones si el móvil las tiene quitadas. Hasta fin de año */
-const TS_SIMBOLO = '<path class="ts-o" d="M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z"/><path class="ts-tt" d="M-61.15 -76L61.15 -76L61.15 -66.7L16.25 -66.7L9.05 -57L12.25 60L20.5 60L20.5 67.2L-20.5 67.2L-20.5 60L-12.25 60L-9.05 -57L-16.25 -66.7L-61.15 -66.7ZM-6.45 -40.5L-6.45 38.5L-4.55 38.5L-4.55 -40.5ZM-0.95 -40.5L-0.95 38.5L0.95 38.5L0.95 -40.5ZM4.55 -40.5L4.55 38.5L6.45 38.5L6.45 -40.5Z"/>';
+   ordenador. Lo pidió Carlos el 31 oct: GrowFolio tiene los días contados, por algo bueno; pasa a llamarse Toisón. La
+   marca está solicitada en la OEPM (31 oct) y los tres dominios, registrados: el nombre ya se puede enseñar. Primero se
+   despide GrowFolio y aparece la marca; luego, al bajar, cada parte se dibuja según vas deslizando (--p de 0 a 1 en cada
+   sección): la O áurea, las medidas del símbolo, la marca en mármol negro, el icono en un móvil y lo que ya está hecho.
+   Las imágenes, con relief3.py del Design System «Toisón» (O áurea de la 1.3). Sin animaciones si el móvil las tiene
+   quitadas. Hasta fin de año.
+   0.7n (lo pidió Carlos el 1 nov): la marca sale del fondo, sin recuadro, y antes se dibuja en vector (la O y la T que baja
+   hasta atravesarla); las partes, más juntas y cada dibujo acabado a la vista; el icono en la pantalla de inicio de un
+   móvil con lo que falta (el cambio es en noviembre, sin día fijado: lo dijo Carlos el 1 nov); y un botón para mandarlo
+   por WhatsApp, con un enlace (#toison) que abre el estreno también a quien no tiene cuenta */
+const TS_O_D = 'M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z';
+const TS_T_D = 'M-61.15 -76L61.15 -76L61.15 -66.7L16.25 -66.7L9.05 -57L12.25 60L20.5 60L20.5 67.2L-20.5 67.2L-20.5 60L-12.25 60L-9.05 -57L-16.25 -66.7L-61.15 -66.7ZM-6.45 -40.5L-6.45 38.5L-4.55 38.5L-4.55 -40.5ZM-0.95 -40.5L-0.95 38.5L0.95 38.5L0.95 -40.5ZM4.55 -40.5L4.55 38.5L6.45 38.5L6.45 -40.5Z';
+const TS_SIMBOLO = `<path class="ts-o" d="${TS_O_D}"/><path class="ts-tt" d="${TS_T_D}"/>`;
+// el cambio de nombre: en noviembre, sin día fijado. Se cuenta hasta el 1 dic y se dice «como mucho»
+const TS_LLEGA = Date.parse('2026-12-01T00:00:00+01:00');
+const tsFaltan = () => Math.ceil((TS_LLEGA - Date.now()) / 864e5);
+// apps inventadas alrededor del icono (como en las tandas del logo): nombre, dos colores y un dibujo propio en 24 × 24
+const TS_APPS = [
+  ['Nubo', '#5AB0FF', '#2A62D6', 'M7 17h10a4 4 0 0 0 .5-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 17z'],
+  ['Pulso', '#FF7A8A', '#D2334F', 'M3 12h4l2-5 4 10 2-5h6'],
+  ['Ruta', '#5EE0A0', '#13996A', 'M12 21s-6-6.2-6-11a6 6 0 0 1 12 0c0 4.8-6 11-6 11zM14.2 10a2.2 2.2 0 1 1-4.4 0 2.2 2.2 0 0 1 4.4 0z'],
+  ['Fotos', '#FFC75A', '#E07A1F', 'M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4'],
+  ['Notas', '#FFE58A', '#D9A520', 'M6 4h12v16H6zM9 9h6M9 13h6M9 17h4'],
+  null,
+  ['Reloj', '#3B3F4A', '#15171C', 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM12 7v5l3 2'],
+  ['Correo', '#6EC3FF', '#1F7FD1', 'M3 6h18v12H3zM3 7l9 6 9-6'],
+  ['Ritmo', '#FF6FB5', '#B42A86', 'M9 18V6l10-2v12M9 18a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0zM19 16a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z'],
+  ['Agenda', '#F4F1EA', '#C9C2B4', 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4', '#C2412D'],
+  ['Lupa', '#9C8CFF', '#5B45D6', 'M16 10.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0zM14.5 14.5L20 20'],
+  ['Libros', '#FF9D5C', '#C9501E', 'M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1zM12 6v14'],
+  ['Viajes', '#54D6E8', '#1C8FB0', 'M3 11l18-7-7 18-3-8z'],
+  ['Huerto', '#9BE07A', '#3D9A35', 'M5 19C5 10 11 5 20 5c0 9-5 15-14 15M5 19l8-8'],
+  ['Dados', '#E85D5D', '#9E2424', 'M5 5h14v14H5zM9 9h.01M15 15h.01M12 12h.01M15 9h.01M9 15h.01'],
+  ['Radio', '#C792FF', '#7B3FD1', 'M12 13a1 1 0 1 0 0-2M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8'],
+];
+const TS_DOCK = [
+  ['', '#5EE08A', '#1E9E52', 'M6 3h3l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2z'],
+  ['', '#6FB8FF', '#2C6FE0', 'M4 5h16v11H9l-5 4z'],
+  ['', '#F4F1EA', '#BDB6A8', 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18', '#2C6FE0'],
+  ['', '#4A4F5C', '#1C1F26', 'M4 7h3l2-2h6l2 2h3v12H4zM15.5 13a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z'],
+];
+const tsApp = ([n, c1, c2, d, tinta]) => `<span class="ts-app"><i class="ts-ic" style="background:linear-gradient(160deg,${c1},${c2})"><svg viewBox="0 0 24 24"><path d="${d}" stroke="${tinta || '#fff'}"/></svg></i>${n ? `<small>${n}</small>` : ''}</span>`;
+function htmlMovilToison() {
+  const ahora = new Date(), hora = `${ahora.getHours()}:${String(ahora.getMinutes()).padStart(2, '0')}`;
+  const mia = `<span class="ts-app ts-mia"><i class="ts-ic"><img class="ts-gf" src="growfolio-192.png" alt="" width="192" height="192"><img class="ts-to" src="toison-icono.webp" alt="" width="256" height="256" loading="lazy"></i><small><b class="ts-gf">GrowFolio</b><b class="ts-to">Toisón</b></small></span>`;
+  return `<div class="ts-movil-w"><div class="ts-movil" role="img" aria-label="${L('El icono de Toisón en la pantalla de inicio de un móvil', 'The Toisón icon on a phone home screen')}">
+    <div class="ts-pant">
+      <div class="ts-barra" aria-hidden="true"><span>${hora}</span><i></i></div>
+      <div class="ts-wid" aria-hidden="true"><b>${hora}</b><span>${esc(ahora.toLocaleDateString(L('es-ES', 'en-GB'), { weekday: 'long', day: 'numeric', month: 'long' }))}</span></div>
+      <div class="ts-rejilla" aria-hidden="true">${TS_APPS.map((a) => (a ? tsApp(a) : mia)).join('')}</div>
+      <div class="ts-dock" aria-hidden="true">${TS_DOCK.map(tsApp).join('')}</div>
+    </div>
+  </div></div>`;
+}
 function htmlToison() {
   // la O áurea: el rectángulo de 161,8 × 100, sus cuadrados (al quitar uno, lo que queda vuelve a ser áureo), la espiral
   // y la O dentro. pathLength=1 para dibujarlos con --p
   const aurea = `<svg class="ts-dib" viewBox="0 0 200 150" aria-hidden="true">
-    <g transform="translate(100 70)"><path class="ts-oo" d="M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z" pathLength="2"/></g>
+    <g transform="translate(100 70)"><path class="ts-oo" d="${TS_O_D}" pathLength="2"/></g>
     <rect class="ts-l ts-a1" x="19.1" y="20" width="161.8" height="100" pathLength="1"/>
     <path class="ts-l ts-a2" d="M119.1 20V120M119.1 81.8H180.9M142.7 81.8V120M119.1 96.4H142.7M133.7 81.8V96.4" pathLength="1"/>
     <path class="ts-l ts-esp" d="M19.1 120A100 100 0 0 1 119.1 20A61.8 61.8 0 0 1 180.9 81.8A38.2 38.2 0 0 1 142.7 120A23.6 23.6 0 0 1 119.1 96.4A14.6 14.6 0 0 1 133.7 81.8" pathLength="1"/>
@@ -29,13 +76,18 @@ function htmlToison() {
     ${cota('c5', 20.5, 74, -20.5, 74, '41', 30, 76.5)}
   </svg>`;
   const ok = ICONOS.ok, tactil = !window.matchMedia || matchMedia('(pointer: coarse)').matches;
+  const faltan = tsFaltan();
+  // el símbolo en vector, en el mismo sitio que en la imagen en relieve (centro 558, 249 y 2,08 px por u, medido en
+  // toison-avance.webp): se dibuja la O, baja la T y, encima, aparece el relieve
+  const vec = `<svg class="ts-vec" viewBox="0 0 1120 640" aria-hidden="true"><g transform="translate(558 249) scale(2.08)">
+    <path class="ts-vo" d="${TS_O_D}" pathLength="2"/><g class="ts-vt"><path class="ts-vtt" d="${TS_T_D}" pathLength="1"/></g></g></svg>`;
   return `<button type="button" class="ib ts-x" data-ts="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button>
     <div class="ts-adios" aria-hidden="true"><img src="growfolio-nombre.svg" alt=""><p>${L('tiene los días contados…', 'has its days numbered…')}</p></div>
     <div class="ts-c">
       <section class="ts-s ts-hero">
-        <div class="ts-marca"><img src="toison-avance.webp" alt="Toisón" width="1120" height="640"><i class="ts-brillo" aria-hidden="true"></i></div>
+        <div class="ts-marca ts-fundida"><img src="toison-avance.webp" alt="Toisón" width="1120" height="640">${vec}<i class="ts-brillo" aria-hidden="true"></i></div>
         <h2 class="ts-t">${L('GrowFolio tiene los días contados', "GrowFolio's days are numbered")}</h2>
-        <p class="ts-p"><b>${L('Pero es por algo bueno.', "But it's for a good reason.")}</b> ${L('En diciembre cambia de nombre y de cara: pasa a llamarse Toisón.', 'In December it gets a new name and a new look: it becomes Toisón.')}</p>
+        <p class="ts-p"><b>${L('Pero es por algo bueno.', "But it's for a good reason.")}</b> ${L('En noviembre cambia de nombre y de cara: pasa a llamarse Toisón.', 'In November it gets a new name and a new look: it becomes Toisón.')}</p>
         <p class="ts-p">${L('Un toisón es un vellón de lana, y el de oro es el del mito de Jasón. El logo junta las dos primeras letras: una T hecha columna que atraviesa una O.', 'A toisón is a fleece, and the golden one is the fleece of the Jason myth. The logo joins the first two letters: a T shaped like a column running through an O.')}</p>
         <button type="button" class="ts-baja" data-ts-baja>${tactil ? L('Desliza hacia abajo', 'Scroll down') : L('Baja para ver más', 'Scroll down')}<i aria-hidden="true"></i></button>
       </section>
@@ -62,6 +114,13 @@ function htmlToison() {
         <div class="ts-marca ts-marmol"><img src="toison-marmol.webp" alt="${L('Toisón sobre mármol negro', 'Toisón on black marble')}" width="1120" height="640" loading="lazy"></div>
         <p class="ts-p">${L('El mismo relieve sobre mármol negro, para las piezas especiales. La T es de pan de oro; la O, de mármol crema con vetas; y la luz viene siempre de arriba a la izquierda.', 'The same relief on black marble, for special pieces. The T is gold leaf; the O, veined cream marble; and the light always comes from the top left.')}</p>
       </section>
+      <section class="ts-s ts-mov" data-ts-p>
+        <p class="ts-k">${L('En tu móvil', 'On your phone')}</p>
+        ${htmlMovilToison()}
+        <div class="ts-falta">${faltan > 0 ? `<b>${faltan}</b><span>${L(faltan === 1 ? 'día,<br>como mucho' : 'días,<br>como mucho', faltan === 1 ? 'day,<br>at most' : 'days,<br>at most')}</span>` : `<span>${L('Muy pronto', 'Very soon')}</span>`}</div>
+        <h3 class="ts-h">${faltan > 0 ? L('Llega en noviembre', 'It arrives in November') : L('Llega muy pronto', 'It arrives very soon')}</h3>
+        <p class="ts-p">${L('Ese día cambian el nombre, el logo y el aspecto de la app, y en tu pantalla de inicio verás este icono: la T y la O en relieve sobre borgoña.', "That day the name, the logo and the look of the app change, and you'll see this icon on your home screen: the T and the O in relief on burgundy.")}</p>
+      </section>
       <section class="ts-s ts-fin" data-ts-p>
         <p class="ts-k">${L('Lo que ya está hecho', 'Already done')}</p>
         <ul class="ts-hechos">
@@ -69,9 +128,23 @@ function htmlToison() {
           <li>${ok}<span>${L('Marca TOISÓN solicitada en la Oficina Española de Patentes y Marcas', 'TOISÓN trademark filed with the Spanish Patent and Trademark Office')}</span></li>
         </ul>
         <p class="ts-nota">${L('No tienes que hacer nada. Tu cartera, tu contraseña y tus ajustes siguen como están: cambian el nombre, el logo y el aspecto de la app.', "You don't need to do anything. Your portfolio, your password and your settings stay as they are: only the name, the logo and the look of the app change.")}</p>
-        <button type="button" class="btn pri ts-ok" data-ts="ok">${L('Tengo ganas de verlo', "Can't wait to see it")}</button>
+        <div class="ts-btns">
+          <button type="button" class="btn pri ts-ok" data-ts="ok">${L('Tengo ganas de verlo', "Can't wait to see it")}</button>
+          <button type="button" class="btn ts-wa" data-ts-wa>${ICONO_CHAT}${L('Mandarlo por WhatsApp', 'Send it on WhatsApp')}</button>
+        </div>
       </section>
     </div>`;
+}
+const ICONO_CHAT = SVG('<path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 10.5h7"/>', 1.9);
+/* 0.7n: mandarlo por WhatsApp. Con navigator.share (el menú de compartir del móvil, donde está WhatsApp) el enlace y una
+   frase; si no lo hay (la app de Android no lo tiene: su WebView no trae navigator.share), wa.me, que la app abre fuera */
+function enlaceToison() { return (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#toison'; }
+function compartirToison() {
+  const url = enlaceToison();
+  const txt = L('GrowFolio cambia de nombre: en noviembre pasa a llamarse Toisón. Mira la marca nueva, con su O áurea:', 'GrowFolio is changing its name: in November it becomes Toisón. Take a look at the new brand and its golden O:');
+  const wa = () => { const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(`${txt}\n\n${url}`); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); };
+  if (navigator.share && !window.InversionesApp) { navigator.share({ title: 'Toisón', text: txt, url }).catch((e) => { if (!e || e.name !== 'AbortError') wa(); }); return; }
+  wa();
 }
 /* 0.7l: en Inicio, arriba, una tarjeta de Toisón que abre el estreno entero cuando quieras (lo pidió Carlos). Con el
    símbolo dibujado aquí mismo (sin bajar ninguna imagen). Hasta fin de año o hasta que la quites con la ×.
@@ -90,31 +163,39 @@ function htmlTarjetaToison(enAjustes = false) {
     : `<button type="button" class="ib ts-tj-x" data-accion="toison-fuera" aria-label="${L('Quitar de Inicio (seguirá en Ajustes)', 'Remove from Home (it stays in Settings)')}">${ICONOS.cerrar}</button>`}
   </div>`;
 }
-/* forzar: desde la tarjeta de Inicio, aunque ya lo hayas visto (y también en la cartera de prueba) */
-function avisoToison(seguir, forzar = false) {
+/* forzar: desde la tarjeta de Inicio, aunque ya lo hayas visto (y también en la cartera de prueba). enlace (0.7n): desde el
+   enlace que se manda por WhatsApp (#toison), encima de todo, también de la entrada y de la presentación */
+function avisoToison(seguir, forzar = false, enlace = false) {
   // hecho: por si el almacenamiento no guarda (lleno), que no vuelva a salir solo en esta sesión
   if (!forzar && (avisoToison.hecho || LS.get('inv-toison-avance') || S.demo || Date.now() >= Date.parse('2027-01-01'))) return seguir && seguir();
   if (document.querySelector('.estreno.ts')) return;
   avisoToison.hecho = true; LS.set('inv-toison-avance', Date.now());
   const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const d = document.createElement('div');
-  d.className = 'estreno ts' + (quieto ? ' quieta' : '');
+  d.className = 'estreno ts' + (quieto ? ' quieta' : '') + (enlace ? ' ts-enlace' : '');
   d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'Toisón'); d.tabIndex = -1;
   d.innerHTML = htmlToison();
   const antes = document.activeElement;
   document.body.appendChild(d);
   d.focus({ preventScroll: true });
-  // cada sección se dibuja según bajas: --p va de 0 (asoma por abajo) a 1 (ya la tienes delante)
+  // 0.7n: cada parte se dibuja según bajas, con --p de 0 (lo de dentro asoma por abajo) a 1 (lo tienes entero a la vista,
+  // con un margen por abajo). Se mide lo que hay dentro de la sección, sin sus márgenes; si no cabe en la pantalla, se
+  // acaba cuando su parte de arriba llega casi arriba. Al final del todo, lo que se ve ya está acabado
   const secs = [...d.querySelectorAll('[data-ts-p]')];
   let marco = 0;
   const medir = () => {
     marco = 0;
-    const vh = d.clientHeight || innerHeight;
-    const ps = secs.map((s) => { const r = s.getBoundingClientRect(); return quieto ? 1 : Math.max(0, Math.min(1, (vh * 0.92 - r.top) / Math.max(1, Math.min(r.height, vh) * 0.62))); });
-    secs.forEach((s, i) => {
-      const v = ps[i].toFixed(3);
+    const vh = d.clientHeight || innerHeight, alFinal = d.scrollTop + d.clientHeight >= d.scrollHeight - 4;
+    secs.forEach((s) => {
+      let p = 1;
+      if (!quieto) {
+        const arriba = s.firstElementChild.getBoundingClientRect().top, alto = s.lastElementChild.getBoundingClientRect().bottom - arriba;
+        const empieza = vh * 0.95, acaba = Math.max(vh * 0.1, vh * 0.9 - alto);
+        p = alFinal && arriba < vh ? 1 : Math.max(0, Math.min(1, (empieza - arriba) / Math.max(1, empieza - acaba)));
+      }
+      const v = p.toFixed(3);
       if (s.dataset.p !== v) { s.dataset.p = v; s.style.setProperty('--p', v); }
-      if (ps[i] > 0.02 && !s.classList.contains('on')) s.classList.add('on');
+      if (p > 0.02 && !s.classList.contains('on')) s.classList.add('on');
     });
   };
   const alBajar = () => { if (!marco) marco = requestAnimationFrame(medir); };
@@ -136,6 +217,7 @@ function avisoToison(seguir, forzar = false) {
   quitarAtras = conAtras(() => cerrar(true), d);
   d.addEventListener('click', (e) => {
     if (e.target.closest('[data-ts-baja]')) { if (secs[0]) d.scrollTo({ top: secs[0].offsetTop, behavior: quieto ? 'auto' : 'smooth' }); return; }
+    if (e.target.closest('[data-ts-wa]')) { compartirToison(); return; }
     if (e.target.closest('[data-ts]')) cerrar();
   });
 }

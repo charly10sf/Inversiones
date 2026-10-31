@@ -202,34 +202,49 @@
    desplazamiento): la O áurea, las medidas, el mármol y lo hecho. Con las animaciones quitadas, todo quieto y a la vista */
 .estreno.ts { display: block; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background: #000; animation: tsEntra .35s ease both; color: #F2E6D2; }
 .estreno.ts.fuera { animation: tsSale .4s ease forwards; }
-.estreno.ts::before { content: ''; position: fixed; inset: 0; background: radial-gradient(120% 80% at 50% 28%, #5C1526 0%, #3A0A16 48%, #12030A 100%); opacity: 0; animation: tsFondo 1.1s ease 1.7s forwards; pointer-events: none; }
+.estreno.ts::before { content: ''; position: fixed; inset: 0; background: radial-gradient(120% 80% at 50% 30%, #4E1120 0%, #3A0A16 50%, #12030A 100%); opacity: 0; animation: tsFondo 1.1s ease 1.7s forwards; pointer-events: none; }
 .ts-x { position: fixed; top: calc(10px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); z-index: 3; color: #F2E6D2; background: rgba(18, 3, 10, .45); border-radius: 50%; }
 .ts-adios { position: fixed; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 14px; animation: tsAdios 2.1s ease forwards; pointer-events: none; }
 .ts-adios img { width: min(240px, 60vw); height: auto; }
 .ts-adios p { margin: 0; color: var(--text-2); font-size: 17px; letter-spacing: .02em; opacity: 0; animation: tsSube .6s ease .55s forwards; }
 .ts-c { position: relative; box-sizing: border-box; max-width: 600px; margin: 0 auto; padding: 0 22px calc(28px + env(safe-area-inset-bottom)); }
-.ts-s { min-height: 88vh; min-height: 88svh; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; padding: 40px 0; }
+/* 0.7n: sin alto mínimo (cada parte medía 88svh y quedaba mucho vacío): lo que mide lo de dentro y un margen */
+.ts-s { box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; padding: 52px 0; }
 .ts-hero { min-height: 100vh; min-height: 100svh; padding-top: calc(56px + env(safe-area-inset-top)); }
-.ts-marca { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(227, 180, 95, .18); }
-.ts-hero .ts-marca { opacity: 0; transform: scale(.92); animation: tsMarca 1s cubic-bezier(.2, .7, .2, 1) 2s forwards; }
-.ts-marca img { display: block; width: 100%; height: auto; aspect-ratio: 1120 / 640; background: #4E101D; }
+.ts-marca { position: relative; }
+.ts-marca img { display: block; width: 100%; height: auto; aspect-ratio: 1120 / 640; }
+.ts-marmol { border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(227, 180, 95, .18); }
 .ts-marmol img { background: #151817; }
-.ts-brillo { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 240, 196, .28) 48%, rgba(255, 250, 235, .45) 50%, rgba(255, 240, 196, .28) 52%, transparent 65%); transform: translateX(-120%); animation: tsBrillo 1.3s ease-in-out 2.9s forwards; mix-blend-mode: screen; }
+/* 0.7n: la marca sale del fondo, sin recuadro: los bordes de la imagen se funden con una máscara elíptica. Antes, el símbolo
+   en vector en el mismo sitio: se dibuja la O, la T baja dibujada hasta atravesarla, se rellenan y encima aparece el relieve */
+.ts-fundida { overflow: hidden; -webkit-mask-image: radial-gradient(50% 50% at 50% 50%, #000 74%, transparent 100%); mask-image: radial-gradient(50% 50% at 50% 50%, #000 74%, transparent 100%); }
+.ts-hero .ts-fundida { margin: 0 -8%; }
+.ts-hero .ts-fundida > img { animation: tsRelieve .6s ease 3.3s both; }
+.ts-vec { position: absolute; inset: 0; width: 100%; height: 100%; opacity: 0; animation: tsVec 2.1s linear 1.8s both; pointer-events: none; }
+.ts-vo { fill: #F6EAD5; fill-opacity: 0; stroke: #F6EAD5; stroke-width: 1.6; vector-effect: non-scaling-stroke; stroke-dasharray: 2; stroke-dashoffset: 2; animation: tsVecTraza .8s ease-out 1.9s forwards, tsVecRelleno .35s ease 3s forwards; }
+.ts-vt { animation: tsVecBaja .9s cubic-bezier(.2, .7, .2, 1) 2.2s both; }
+.ts-vtt { fill: #E3B45F; fill-opacity: 0; stroke: #E3B45F; stroke-width: 1.4; vector-effect: non-scaling-stroke; stroke-dasharray: 1; stroke-dashoffset: 1; animation: tsVecTraza .55s ease-out 2.2s forwards, tsVecRelleno .35s ease 3s forwards; }
+@keyframes tsRelieve { from { opacity: 0; } }
+@keyframes tsVec { 0% { opacity: 0; } 6% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; } }
+@keyframes tsVecTraza { to { stroke-dashoffset: 0; } }
+@keyframes tsVecRelleno { to { fill-opacity: 1; } }
+@keyframes tsVecBaja { from { transform: translateY(-150px); } }
+.ts-brillo { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 240, 196, .28) 48%, rgba(255, 250, 235, .45) 50%, rgba(255, 240, 196, .28) 52%, transparent 65%); transform: translateX(-120%); animation: tsBrillo 1.3s ease-in-out 3.9s forwards; mix-blend-mode: screen; }
 .ts-t { margin: 22px 0 8px; font-size: 22px; line-height: 1.25; color: #F6EAD5; }
 .ts-h { margin: 14px 0 8px; font-size: 19px; line-height: 1.3; color: #F6EAD5; }
 .ts-k { margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #E3B45F; }
 .ts-p { margin: 0 0 10px; color: #E2D3BC; }
 .ts-p b { color: #F6EAD5; }
 .ts-hero > .ts-t, .ts-hero > .ts-p, .ts-hero > .ts-baja { opacity: 0; animation: tsSube .6s ease forwards; }
-.ts-hero > .ts-t { animation-delay: 3.0s; } .ts-hero > .ts-p { animation-delay: 3.25s; } .ts-hero > .ts-p + .ts-p { animation-delay: 3.45s; } .ts-hero > .ts-baja { animation-delay: 4.1s; }
+.ts-hero > .ts-t { animation-delay: 3.7s; } .ts-hero > .ts-p { animation-delay: 3.95s; } .ts-hero > .ts-p + .ts-p { animation-delay: 4.15s; } .ts-hero > .ts-baja { animation-delay: 4.8s; }
 .ts-baja { margin: 14px 0 0; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 16px; border: 0; border-radius: 12px; background: none; font: inherit; font-size: 13px; color: #BFAE95; cursor: pointer; }
 .ts-baja:focus-visible { outline: 2px solid #E3B45F; outline-offset: 2px; }
 .estreno.ts:focus { outline: none; }
 .ts-baja i { width: 12px; height: 12px; border-right: 2px solid #E3B45F; border-bottom: 2px solid #E3B45F; transform: rotate(45deg); animation: tsBaja 1.4s ease-in-out infinite; }
 /* lo que entra al bajar: el texto sube al aparecer la sección; los dibujos, con --p */
-.ts-s[data-ts-p] > .ts-k, .ts-s[data-ts-p] > .ts-h, .ts-s[data-ts-p] > .ts-p, .ts-s[data-ts-p] > .ts-marca, .ts-s[data-ts-p] > .ts-hechos, .ts-s[data-ts-p] > .ts-nota, .ts-s[data-ts-p] > .ts-ok { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+.ts-s[data-ts-p] > .ts-k, .ts-s[data-ts-p] > .ts-h, .ts-s[data-ts-p] > .ts-p, .ts-s[data-ts-p] > .ts-marca, .ts-s[data-ts-p] > .ts-hechos, .ts-s[data-ts-p] > .ts-nota, .ts-s[data-ts-p] > .ts-btns, .ts-s[data-ts-p] > .ts-falta { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
 .ts-s.on > * { opacity: 1 !important; transform: none !important; }
-.ts-s.on > .ts-h { transition-delay: .25s; } .ts-s.on > .ts-p { transition-delay: .4s; } .ts-s.on > .ts-marca { transition-delay: .1s; } .ts-s.on > .ts-hechos { transition-delay: .15s; } .ts-s.on > .ts-nota { transition-delay: .35s; } .ts-s.on > .ts-ok { transition-delay: .5s; }
+.ts-s.on > .ts-h { transition-delay: .25s; } .ts-s.on > .ts-p { transition-delay: .4s; } .ts-s.on > .ts-marca { transition-delay: .1s; } .ts-s.on > .ts-hechos { transition-delay: .15s; } .ts-s.on > .ts-nota { transition-delay: .35s; } .ts-s.on > .ts-btns { transition-delay: .5s; } .ts-s.on > .ts-falta { transition-delay: .15s; }
 .ts-s[data-ts-p] { --p: 0; }
 .ts-dib { display: block; width: 100%; height: auto; overflow: visible; margin: 4px 0 6px; }
 .ts-l, .ts-oo { fill: none; stroke-dasharray: 1; vector-effect: non-scaling-stroke; }
@@ -259,20 +274,55 @@
 .ts-hechos li svg { width: 18px; height: 18px; flex: none; color: #E3B45F; margin-top: 1px; }
 .ts-hechos b { color: #F6EAD5; font-weight: 600; }
 .ts-nota { margin: 0 0 18px; font-size: 13px; color: #BFAE95; }
-.ts-ok { align-self: flex-start; background: linear-gradient(180deg, #EAC572, #C9963F); color: #2A0A12; border-color: transparent; }
-.ts-fin { min-height: 70vh; min-height: 70svh; }
+.ts-btns { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.ts-ok { background: linear-gradient(180deg, #EAC572, #C9963F); color: #2A0A12; border-color: transparent; }
+.ts-wa { display: inline-flex; align-items: center; gap: 8px; background: rgba(227, 180, 95, .10); color: #F6EAD5; border-color: rgba(227, 180, 95, .45); }
+.ts-wa svg { width: 18px; height: 18px; color: #E3B45F; flex: none; }
+.ts-wa:hover { background: rgba(227, 180, 95, .18); }
+.ts-fin { padding-bottom: 72px; }
+/* 0.7n: desde el enlace (#toison) va encima de todo: también de la entrada, la presentación o la guía */
+.estreno.ts.ts-enlace { z-index: 9500; }
+/* 0.7n: el icono en la pantalla de inicio de un móvil. Al bajar (--p), el de GrowFolio se va y llega el de Toisón */
+.ts-movil-w { display: grid; justify-items: center; margin: 4px 0 18px; }
+.ts-movil { width: min(210px, 56vw); aspect-ratio: 9 / 18.6; box-sizing: border-box; padding: 7px; border-radius: 34px; background: linear-gradient(150deg, #3A343C, #141116 60%, #2A2529); box-shadow: 0 24px 60px rgba(0, 0, 0, .6), inset 0 0 0 1px rgba(255, 255, 255, .08); transform: translateY(calc(28px * (1 - clamp(0, var(--p) * 2.2, 1)))) rotate(calc(-4deg * (1 - clamp(0, var(--p) * 2.2, 1)))); }
+.ts-pant { position: relative; height: 100%; box-sizing: border-box; border-radius: 28px; overflow: hidden; display: flex; flex-direction: column; padding: 8px 10px 10px; background: radial-gradient(120% 70% at 20% 0%, #4A2B45 0%, transparent 60%), radial-gradient(90% 60% at 100% 100%, #1F3550 0%, transparent 65%), linear-gradient(180deg, #221A27, #0F0C14); }
+.ts-barra { display: flex; justify-content: space-between; align-items: center; padding: 0 6px 10px; font: 600 10px var(--f); color: #F2EDE6; font-variant-numeric: tabular-nums; }
+.ts-barra i { width: 26px; height: 9px; border-radius: 3px; border: 1px solid rgba(242, 237, 230, .7); box-sizing: border-box; background: linear-gradient(90deg, #F2EDE6 0 70%, transparent 70%) content-box; padding: 1px; }
+.ts-wid { display: grid; justify-items: center; gap: 1px; margin: 6px 0 16px; color: #F2EDE6; }
+.ts-wid b { font: 300 34px/1 var(--f); letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
+.ts-wid span { font: 500 9.5px var(--f); opacity: .85; }
+.ts-wid span::first-letter { text-transform: uppercase; }
+.ts-rejilla { display: grid; grid-template-columns: repeat(4, 1fr); gap: 11px 6px; }
+.ts-app { display: grid; justify-items: center; gap: 3px; min-width: 0; }
+.ts-ic { position: relative; display: grid; place-items: center; width: 100%; max-width: 38px; aspect-ratio: 1; border-radius: 27%; overflow: hidden; box-shadow: 0 2px 6px rgba(0, 0, 0, .35); }
+.ts-ic svg { width: 58%; height: 58%; fill: none; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.ts-app small { font: 500 8px/1.1 var(--f); color: #EDE7DF; white-space: nowrap; max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.ts-dock { margin-top: auto; display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; padding: 8px 6px; border-radius: 20px; background: rgba(255, 255, 255, .10); }
+.ts-mia .ts-ic { box-shadow: 0 2px 6px rgba(0, 0, 0, .35), 0 0 0 calc(2px * clamp(0, (var(--p) - .62) * 6, 1)) rgba(227, 180, 95, .8); overflow: visible; }
+.ts-mia .ts-ic img { position: absolute; inset: 0; width: 100%; height: 100%; border-radius: 27%; }
+.ts-mia img.ts-gf { opacity: calc(1 - clamp(0, (var(--p) - .45) * 6, 1)); transform: scale(calc(1 - .4 * clamp(0, (var(--p) - .45) * 6, 1))); }
+.ts-mia img.ts-to { opacity: clamp(0, (var(--p) - .5) * 6, 1); transform: scale(calc(.55 + .45 * clamp(0, (var(--p) - .5) * 6, 1))); }
+.ts-mia small { display: grid; }
+.ts-mia small b { grid-area: 1 / 1; font-weight: 600; text-align: center; }
+.ts-mia small b.ts-gf { opacity: calc(1 - clamp(0, (var(--p) - .45) * 6, 1)); }
+.ts-mia small b.ts-to { opacity: clamp(0, (var(--p) - .5) * 6, 1); color: #F6D9A0; }
+.ts-falta { display: flex; align-items: center; gap: 10px; margin: 0 0 2px; }
+.ts-falta b { font: 700 46px/1 var(--f); color: #E3B45F; font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.ts-falta span { font-size: 13px; line-height: 1.25; color: #BFAE95; }
+.ts-falta > span:only-child { font: 700 13px var(--f); letter-spacing: .14em; text-transform: uppercase; color: #E3B45F; }
 @keyframes tsEntra { from { opacity: 0; } to { opacity: 1; } }
 @keyframes tsSale { from { opacity: 1; } to { opacity: 0; } }
 @keyframes tsFondo { to { opacity: 1; } }
 @keyframes tsAdios { 0% { opacity: 0; transform: scale(.98); } 18% { opacity: 1; transform: none; } 72% { opacity: 1; filter: blur(0); } 100% { opacity: 0; transform: translateY(-18px) scale(.96); filter: blur(6px); visibility: hidden; } }
 @keyframes tsSube { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
-@keyframes tsMarca { 0% { opacity: 0; transform: scale(.92); clip-path: inset(46% 0 46% 0 round 18px); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; clip-path: inset(0 0 0 0 round 18px); } }
 @keyframes tsBrillo { to { transform: translateX(120%); } }
 @keyframes tsBaja { 0%, 100% { transform: translateY(0) rotate(45deg); opacity: .6; } 50% { transform: translateY(5px) rotate(45deg); opacity: 1; } }
 @media (min-width: 900px) { .ts-t { font-size: 26px; } .ts-h { font-size: 22px; } .ts-dib { max-width: 480px; margin-left: auto; margin-right: auto; } }
 .estreno.ts.quieta::before { opacity: 1; }
 .estreno.ts.quieta .ts-adios, .estreno.ts.quieta .ts-brillo, .estreno.ts.quieta .ts-baja i { display: none; }
 .estreno.ts.quieta .ts-hero .ts-marca, .estreno.ts.quieta .ts-s > * { opacity: 1; transform: none; clip-path: none; }
+.estreno.ts.quieta .ts-vec { display: none; }
+.estreno.ts.quieta .ts-movil { transform: none; }
 /* 0.7l: la tarjeta de Toisón en Inicio */
 .ts-tarjeta { position: relative; margin-bottom: 14px; border-radius: 16px; background: radial-gradient(140% 120% at 0% 0%, #6A1A2B 0%, #4E101D 45%, #2E0710 100%); border: 1px solid rgba(227, 180, 95, .35); box-shadow: 0 8px 24px rgba(0, 0, 0, .35); overflow: hidden; }
 .ts-tarjeta::after { content: ''; position: absolute; inset: 0; background: linear-gradient(105deg, transparent 40%, rgba(255, 240, 196, .16) 50%, transparent 60%); transform: translateX(-100%); animation: tsBrillo 1.6s ease-in-out 1s 1 forwards; pointer-events: none; }

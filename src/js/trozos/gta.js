@@ -31,7 +31,30 @@ const rotulo = (id, es, en) => `<h3 class="gta-rotulo gta-rev" id="${id}" data-n
 
 /* la escena: cielo de noche, estrellas, un sol a rayas que se pone y el suelo de rejilla en movimiento */
 const escenaGTA = () => '<div class="gta-cielo" aria-hidden="true"><i class="gta-estrellas"></i></div>';
-const paisajeGTA = () => '<div class="gta-paisaje" aria-hidden="true"><i class="gta-sol"></i><i class="gta-horizonte"></i><i class="gta-suelo"></i></div>';
+/* 0.7n (lo pidió Carlos el 1 nov): una ciudad al atardecer en el horizonte y palmeras a los lados, siluetas de los
+   ochenta dibujadas por GrowFolio (nada del juego ni de su logo). Quietas: solo suben una vez al abrir (transform).
+   Los mismos trazados pintan la imagen para compartir */
+const CIUDAD_GTA = (() => {
+  // edificios inventados en 600 × 90, más altos a los lados para que el sol asome por el centro, con alguna antena y
+  // alguna ventana encendida. Siempre la misma ciudad (números pseudoaleatorios con semilla fija)
+  let sem = 11; const r = () => (sem = (sem * 16807) % 2147483647) / 2147483647;
+  let x = 0, d = '', v = '';
+  while (x < 600) {
+    const w = 12 + Math.round(r() * 24), lado = x < 190 || x > 400, h = Math.round(lado ? 26 + r() * 58 : 12 + r() * 26);
+    d += `M${x} 90V${90 - h}h${w}V90z`;
+    if (lado && r() > 0.55) { const a = 5 + Math.round(r() * 12); d += `M${x + Math.round(w / 2) - 1} ${90 - h}v-${a}h2v${a}z`; }
+    for (let y = 90 - h + 5; y < 85; y += 7) for (let k = x + 3; k < x + w - 4; k += 6) if (r() > 0.8) v += `M${k} ${y}h2.5v3h-2.5z`;
+    x += w + (r() > 0.7 ? 2 : 0);
+  }
+  return { d, v };
+})();
+// una palmera en 120 × 200: el tronco que se curva y siete hojas desde la copa
+const PALMA_GTA = 'M52 200C56 150 61 100 72 44L79 46C68 100 64 150 63 200Z'
+  + 'M75 42Q45 26 10 52Q44 36 76 47ZM75 42Q50 6 20 12Q52 18 76 47ZM75 42Q92 4 120 10Q92 20 76 47ZM75 42Q110 32 120 68Q102 42 76 47Z'
+  + 'M75 42Q56 52 42 88Q62 56 76 47ZM75 42Q96 56 100 94Q86 58 76 47ZM75 42Q72 14 58 0Q80 14 78 45Z';
+const ciudadSVG = () => `<svg class="gta-ciudad" viewBox="0 0 600 90" preserveAspectRatio="xMidYMax meet"><path d="${CIUDAD_GTA.d}"/><path class="v" d="${CIUDAD_GTA.v}"/></svg>`;
+const palmaSVG = (lado) => `<svg class="gta-palma ${lado}" viewBox="0 0 120 200"><path d="${PALMA_GTA}"${lado === 'der' ? ' transform="matrix(-1 0 0 1 120 0)"' : ''}/></svg>`;
+const paisajeGTA = () => `<div class="gta-paisaje" aria-hidden="true"><i class="gta-sol"></i>${ciudadSVG()}<i class="gta-horizonte"></i><i class="gta-suelo"></i>${palmaSVG('izq')}${palmaSVG('der')}</div>`;
 
 /* de GTA V a GTA VI: cuánto camino llevamos */
 function caminoGTA5() {
@@ -133,6 +156,7 @@ function htmlCopiasGTA(M) {
     </div>
     ${barras.length > 1 ? `<div class="gta-pos gta-rev"><p class="gta-sub">${L('Lo que tienes, en copias', 'What you own, in copies')}</p><ul>${barras.map(([n, v], i) => `<li style="--w:${Math.max(2, (v / mx) * 100).toFixed(1)}%;--i:${i}"><span class="n">${esc(n)}</span><span class="b"><i></i></span><b>${O ? '' : nGTA(v / GTA.precio)}</b></li>`).join('')}</ul></div>` : ''}
     ${mini.length ? `<ul class="gta-mini">${mini.map(([n, t, k], i) => `<li class="${k} gta-rev" style="--i:${i % 2}"><b>${esc(n)}</b><span>${esc(t)}</span></li>`).join('')}</ul>` : ''}
+    <button type="button" class="gta-b gta-img-b gta-rev" data-gta-img>${ICONO_IMG_GTA}${L('Compartir «Mi cartera en GTA VI»', 'Share «My portfolio in GTA VI»')}</button>
   </section>`;
 }
 
@@ -183,14 +207,34 @@ function htmlAdderGTA(M) {
 
 /* tu cartera de hoy, con los precios desde el primer tráiler: lo que habría hecho mientras esperabas,
    y qué posición ha pagado más copias (o las ha costado) */
-function htmlDesdeTrailerGTA(M) {
-  if (!M.total) return '';
+/* la serie de tu cartera de hoy desde el primer tráiler, la de «mientras esperabas» (también la usa la imagen para
+   compartir); null si no hay datos para contarlo. juego (0.7n): los 79,99 € del juego con esa misma evolución */
+function desdeTrailerGTA(M) {
+  if (!M.total) return null;
   const T1 = GTA.trailer1;
   const dias = diasEntre(T1, hoyIso()) + 4;
   let serie = [];
-  try { serie = serieCartera(M, dias).filter((x) => x.d.slice(0, 10) >= T1); } catch (e) { return ''; }
-  if (serie.length < 30 || diasEntre(T1, serie[0].d.slice(0, 10)) > 10) return '';
-  const v0 = serie[0].v, v1 = serie[serie.length - 1].v, pct = (v1 / v0 - 1) * 100;
+  try { serie = serieCartera(M, dias).filter((x) => x.d.slice(0, 10) >= T1); } catch (e) { return null; }
+  if (serie.length < 30 || diasEntre(T1, serie[0].d.slice(0, 10)) > 10) return null;
+  const v0 = serie[0].v, v1 = serie[serie.length - 1].v;
+  if (!(v0 > 0) || !isFinite(v1)) return null;
+  return { serie, v0, v1, pct: (v1 / v0 - 1) * 100, juego: GTA.precio * (v1 / v0) };
+}
+/* 0.7n (lo pidió Carlos el 1 nov): los 79,99 € del juego, como si el día del primer tráiler hubieran ido a lo que tienes
+   hoy. Solo lo que habría pasado («habrían sido»), sin decir qué hacer. No deja ver cuánto tienes: sale también con los
+   importes ocultos, como el porcentaje */
+function htmlJuegoGTA(D) {
+  const j = D.juego, dif = j - GTA.precio, a = fmtNum(GTA.precio, 2), b = fmtNum(j, 2), c = fmtNum(Math.abs(dif), 2);
+  return `<div class="gta-juego gta-rev">
+      <div class="gta-juego-f"><span class="gta-juego-c" aria-hidden="true">${CAJA}</span><span class="gta-juego-a">${a} €</span><i aria-hidden="true">→</i>${numGTA({ n: `${b} €`, v: j, f: 'eur2' })}</div>
+      <p>${dif >= 0 ? L(`Si el día del primer tráiler hubieras metido los ${a} € del juego en lo que tienes hoy, habrían sido ${b} €: ${c} € más.`, `If on the day of the first trailer you’d put the game’s €${a} into what you own today, it would have become €${b}: €${c} more.`)
+    : L(`Si el día del primer tráiler hubieras metido los ${a} € del juego en lo que tienes hoy, se habrían quedado en ${b} €: ${c} € menos.`, `If on the day of the first trailer you’d put the game’s €${a} into what you own today, it would have dropped to €${b}: €${c} less.`)}</p>
+    </div>`;
+}
+function htmlDesdeTrailerGTA(M) {
+  const D = desdeTrailerGTA(M);
+  if (!D) return '';
+  const T1 = GTA.trailer1, { serie, v0, v1, pct } = D;
   const W = 320, H = 110, vs = serie.map((x) => x.v), mn = Math.min(...vs), mx = Math.max(...vs), k = Math.max(1, Math.ceil(serie.length / 160));
   const pts = serie.filter((_, i) => i % k === 0 || i === serie.length - 1);
   const X = (i) => (i / (pts.length - 1)) * W, Y = (v) => H - 8 - ((v - mn) / (mx - mn || 1)) * (H - 26);
@@ -211,8 +255,167 @@ function htmlDesdeTrailerGTA(M) {
       <svg class="gta-linea" viewBox="-8 -4 ${W + 16} ${H + 22}" aria-hidden="true"><defs><linearGradient id="gtaLG" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#2DE2E6" stop-opacity=".4"/><stop offset="1" stop-color="#2DE2E6" stop-opacity="0"/></linearGradient></defs><polygon points="0,${H} ${linea} ${W},${H}" fill="url(#gtaLG)"/><polyline points="${linea}" fill="none" stroke="#2DE2E6" stroke-width="2.2" vector-effect="non-scaling-stroke" pathLength="100"/>
         ${marcas.map(([x, y, t], i) => `<g class="gta-marca" style="--i:${i}"><circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="4.2"/><text x="${Math.min(W - 2, Math.max(2, x)).toFixed(1)}" y="${(H + 14).toFixed(1)}" text-anchor="${x > W - 30 ? 'end' : x < 30 ? 'start' : 'middle'}">${esc(t)}</text></g>`).join('')}</svg>
     </div>
+    ${htmlJuegoGTA(D)}
     ${lista.length && !S.oculto ? `<div class="gta-quien gta-rev"><p class="gta-sub">${L('Lo que más copias te ha pagado mientras esperabas', 'Who paid for the most copies while you waited')}</p><ul>${lista.map(([n, v], i) => `<li class="${v >= 0 ? 'mas' : 'menos'}" style="--w:${((Math.abs(v) / qmx) * 50).toFixed(1)}%;--i:${i}"><span class="n">${esc(n)}</span><span class="b"><i></i></span><b>${v >= 0 ? '+' : '−'}${nGTA(Math.abs(v) / GTA.precio)}</b></li>`).join('')}</ul></div>` : ''}
   </section>`;
+}
+
+/* 0.7n (lo pidió Carlos el 1 nov): «Mi cartera en GTA VI» como imagen para compartir, de 1080 × 1350 (lo que mejor se ve
+   en WhatsApp e Instagram), con el mismo atardecer de la hoja. Las copias dejan adivinar cuánto tienes (copias × 79,99 €),
+   así que van solo si lo eliges al compartir (apagado de entrada, lo decidió Carlos) y nunca con los importes ocultos.
+   Sin las copias: lo que ha hecho tu cartera desde el primer tráiler, los 79,99 € del juego y los días que faltan */
+const ICONO_IMG_GTA = SVG('<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M3.5 16l5-5 4 4 3-3 5 5"/><circle cx="15.5" cy="9" r="1.6"/>', 1.8);
+function datosImagenGTA(M, conCopias) {
+  const P = Math.max(0, M.total || 0), c = P / GTA.precio, T = desdeTrailerGTA(M), f = gtaFalta();
+  return {
+    copias: conCopias && !S.oculto && P > 0 ? { n: nGTA(c), txt: copiasTxt(c) } : null,
+    pct: T ? T.pct : null, juego: T ? T.juego : null, falta: f ? f.d : null, salido: !f,
+  };
+}
+const FUENTE_NEON = '"Passion One", Impact, "Arial Narrow", sans-serif', FUENTE_SCRIPT = 'Yellowtail, "Brush Script MT", cursive';
+// cabe en un ancho: baja la letra hasta que entra
+function letraQueCabe(ctx, txt, tam, familia, peso, max) {
+  let t = tam;
+  do { ctx.font = `${peso} ${t}px ${familia}`; if (ctx.measureText(txt).width <= max) break; t -= 4; } while (t > 12);
+  return t;
+}
+function neonGTA(ctx, txt, x, y, color, brillo, desenf) {
+  ctx.fillStyle = color; ctx.shadowColor = brillo;
+  for (const b of [desenf * 2.2, desenf, desenf * 0.35]) { ctx.shadowBlur = b; ctx.fillText(txt, x, y); }
+  ctx.shadowBlur = 0; ctx.fillText(txt, x, y);
+}
+function pintarImagenGTA(cv, D) {
+  const W = 1080, H = 1350, HZ = 1090, ctx = cv.getContext('2d');
+  cv.width = W; cv.height = H;
+  const sans = (getComputedStyle(document.body).fontFamily || 'sans-serif');
+  // cielo, estrellas y la franja del atardecer
+  let g = ctx.createLinearGradient(0, 0, 0, HZ);
+  g.addColorStop(0, '#08031A'); g.addColorStop(0.42, '#1C0838'); g.addColorStop(0.62, '#3A0F4D'); g.addColorStop(0.74, '#7A1F6B'); g.addColorStop(0.86, '#D23C70'); g.addColorStop(0.94, '#FF7A55'); g.addColorStop(1, '#FFB347');
+  ctx.fillStyle = g; ctx.fillRect(0, 0, W, HZ);
+  let sem = 5; const r = () => (sem = (sem * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 90; i++) { ctx.globalAlpha = 0.35 + r() * 0.6; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(r() * W, r() * 620, 0.8 + r() * 1.8, 0, 7); ctx.fill(); }
+  ctx.globalAlpha = 1;
+  // el sol a rayas, medio hundido en el horizonte
+  const sx = W / 2, sy = HZ + 30, sr = 250;
+  ctx.save(); ctx.beginPath();
+  const corte = [[0, 0.5], [0.54, 0.6], [0.66, 0.72], [0.77, 0.83], [0.88, 1]];
+  for (const [a, b] of corte) ctx.rect(0, sy - sr + a * (HZ - (sy - sr)), W, (b - a) * (HZ - (sy - sr)));
+  ctx.clip();
+  g = ctx.createLinearGradient(0, sy - sr, 0, HZ);
+  g.addColorStop(0, '#FFE97A'); g.addColorStop(0.35, '#FFC23F'); g.addColorStop(0.65, '#FF7A45'); g.addColorStop(1, '#FF3EA5');
+  ctx.fillStyle = g; ctx.shadowColor = 'rgba(255, 62, 165, .7)'; ctx.shadowBlur = 70;
+  ctx.beginPath(); ctx.arc(sx, sy, sr, 0, 7); ctx.fill(); ctx.restore();
+  // la ciudad en el horizonte
+  ctx.save(); ctx.translate(0, HZ - 90 * (W / 600)); ctx.scale(W / 600, W / 600);
+  ctx.fillStyle = '#1A0731'; ctx.fill(new Path2D(CIUDAD_GTA.d)); ctx.globalAlpha = 0.6; ctx.fillStyle = '#FF8FCB'; ctx.fill(new Path2D(CIUDAD_GTA.v)); ctx.restore();
+  // el suelo de rejilla
+  ctx.fillStyle = '#12051E'; ctx.fillRect(0, HZ, W, H - HZ);
+  ctx.save(); ctx.beginPath(); ctx.rect(0, HZ, W, H - HZ); ctx.clip(); ctx.lineWidth = 2;
+  ctx.strokeStyle = 'rgba(177, 74, 237, .6)';
+  for (let i = -14; i <= 14; i++) { ctx.beginPath(); ctx.moveTo(sx + i * 26, HZ); ctx.lineTo(sx + i * 210, H); ctx.stroke(); }
+  ctx.strokeStyle = 'rgba(255, 62, 165, .75)';
+  for (let k = 1; k <= 9; k++) { const y = HZ + Math.pow(k / 9, 2) * (H - HZ); ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke(); }
+  ctx.restore();
+  g = ctx.createLinearGradient(0, 0, W, 0);
+  g.addColorStop(0, 'rgba(255,62,165,0)'); g.addColorStop(0.2, '#FF3EA5'); g.addColorStop(0.5, '#fff'); g.addColorStop(0.8, '#FF3EA5'); g.addColorStop(1, 'rgba(255,62,165,0)');
+  ctx.save(); ctx.fillStyle = g; ctx.shadowColor = 'rgba(255, 62, 165, .9)'; ctx.shadowBlur = 24; ctx.fillRect(0, HZ - 2, W, 4); ctx.restore();
+  // palmeras a los lados
+  const palma = new Path2D(PALMA_GTA);
+  ctx.fillStyle = '#0D0318';
+  ctx.save(); ctx.translate(-60, H - 530); ctx.scale(2.9, 2.9); ctx.fill(palma); ctx.restore();
+  ctx.save(); ctx.translate(W + 60, H - 500); ctx.scale(-2.6, 2.6); ctx.fill(palma); ctx.restore();
+  // abajo, más oscuro para que se lea el pie
+  g = ctx.createLinearGradient(0, H - 150, 0, H); g.addColorStop(0, 'rgba(10, 3, 20, 0)'); g.addColorStop(1, 'rgba(10, 3, 20, .85)');
+  ctx.fillStyle = g; ctx.fillRect(0, H - 150, W, 150);
+  // los textos
+  ctx.textAlign = 'center'; ctx.textBaseline = 'alphabetic';
+  ctx.save(); ctx.translate(sx, 165); ctx.rotate(-0.05); ctx.font = `400 96px ${FUENTE_SCRIPT}`;
+  neonGTA(ctx, L('mi cartera en', 'my portfolio in'), 0, 0, '#B9FBFC', 'rgba(45, 226, 230, .9)', 18); ctx.restore();
+  ctx.font = `400 270px ${FUENTE_NEON}`;
+  neonGTA(ctx, 'GTA VI', sx, 405, '#FFE7F4', 'rgba(255, 62, 165, .95)', 34);
+  const fechaSalida = L('19 de noviembre de 2026', '19 November 2026');
+  let grande, rotulo, sub, color = 'rgba(255, 62, 165, .95)';
+  if (D.copias) { grande = D.copias.n; rotulo = L(`${D.copias.txt} de GTA VI`, `${D.copias.txt} of GTA VI`); sub = L(`a ${fmtNum(GTA.precio, 2)} € cada una`, `at €${fmtNum(GTA.precio, 2)} each`); }
+  else if (D.pct != null) { grande = pctS(D.pct, 1).replace(/ /g, ' '); rotulo = L('mi cartera desde el primer tráiler', 'my portfolio since the first trailer'); sub = L('lo que tengo hoy, desde el 5 de diciembre de 2023', 'what I own today, since 5 December 2023'); if (D.pct >= 0) color = 'rgba(45, 226, 230, .95)'; }
+  else if (!D.salido) { grande = String(D.falta); rotulo = L(D.falta === 1 ? 'día para GTA VI' : 'días para GTA VI', D.falta === 1 ? 'day to GTA VI' : 'days to GTA VI'); sub = fechaSalida; }
+  else { grande = L('¡Ya está!', 'It’s out!'); rotulo = L('GTA VI, a la venta', 'GTA VI, on sale'); sub = fechaSalida; }
+  letraQueCabe(ctx, grande, 190, FUENTE_NEON, 400, 900);
+  neonGTA(ctx, grande, sx, 600, '#FFFFFF', color, 26);
+  letraQueCabe(ctx, rotulo, 56, FUENTE_NEON, 400, 940);
+  neonGTA(ctx, rotulo, sx, 672, '#FFD1EA', 'rgba(255, 62, 165, .6)', 12);
+  ctx.font = `500 34px ${sans}`; ctx.fillStyle = '#E6D6F2'; ctx.fillText(sub, sx, 722);
+  if (D.juego != null) {
+    const a = fmtNum(GTA.precio, 2), b = fmtNum(D.juego, 2);
+    const l1 = L(`Los ${a} € del juego, en mi cartera desde el primer tráiler,`, `The game’s €${a}, in my portfolio since the first trailer,`);
+    const l2 = D.juego >= GTA.precio ? L(`habrían sido ${b} €`, `would have become €${b}`) : L(`se habrían quedado en ${b} €`, `would have dropped to €${b}`);
+    ctx.save(); ctx.shadowColor = 'rgba(16, 5, 28, .9)'; ctx.shadowBlur = 14; ctx.fillStyle = '#FFFFFF';
+    letraQueCabe(ctx, l1, 33, sans, 500, 960); ctx.fillText(l1, sx, 792);
+    ctx.font = `700 40px ${sans}`; ctx.fillStyle = '#FFE2B8'; ctx.fillText(l2, sx, 842); ctx.restore();
+  }
+  // la cuenta atrás, en una pastilla
+  if (D.copias || D.pct != null) {
+    const t = D.salido ? L('Ya a la venta', 'Out now') : D.falta === 0 ? L('Sale en menos de un día', 'Out in less than a day') : L(`Faltan ${D.falta} ${D.falta === 1 ? 'día' : 'días'} · 19 de noviembre`, `${D.falta} ${D.falta === 1 ? 'day' : 'days'} to go · 19 November`);
+    ctx.font = `400 44px ${FUENTE_NEON}`;
+    const w = ctx.measureText(t).width + 70, y = 900;
+    ctx.save(); ctx.fillStyle = 'rgba(16, 5, 28, .78)'; ctx.strokeStyle = 'rgba(255, 159, 67, .6)'; ctx.lineWidth = 2;
+    ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(sx - w / 2, y, w, 76, 38); else ctx.rect(sx - w / 2, y, w, 76); ctx.fill(); ctx.stroke(); ctx.restore();
+    neonGTA(ctx, t, sx, y + 53, '#FFE2B8', 'rgba(255, 159, 67, .8)', 10);
+  }
+  ctx.font = `800 32px ${sans}`; ctx.fillStyle = '#FFE7F4'; ctx.fillText(L('Hecho con GrowFolio', 'Made with GrowFolio'), sx, H - 62);
+  ctx.font = `500 21px ${sans}`; ctx.fillStyle = '#B9A3D0'; ctx.fillText(L('GrowFolio no tiene relación con Rockstar Games ni con Take-Two.', 'GrowFolio has no connection with Rockstar Games or Take-Two.'), sx, H - 26);
+}
+// las letras de neón, si llegan a tiempo (sin red, las de reserva)
+function letrasGTA() {
+  if (!document.fonts || !document.fonts.load) return Promise.resolve();
+  return Promise.race([Promise.all([document.fonts.load(`400 200px ${FUENTE_NEON}`), document.fonts.load(`400 90px ${FUENTE_SCRIPT}`)]).catch(() => {}), new Promise((ok) => setTimeout(ok, 2500))]);
+}
+/* compartir: en la app de Android nueva, su menú de compartir (Puente.compartirImagen); en el móvil, navigator.share con el
+   archivo; si no se puede, se descarga. La app de antes no sabe compartir imágenes: se dice que la actualices */
+async function compartirImagenGTA(cv) {
+  const url = CFG.dev ? CFG.pages : location.origin + location.pathname;
+  const texto = L(`Mi cartera en GTA VI, hecha con GrowFolio: ${url}`, `My portfolio in GTA VI, made with GrowFolio: ${url}`);
+  const app = window.InversionesApp;
+  if (app && typeof app.compartirImagen === 'function') { app.compartirImagen(cv.toDataURL('image/png').split(',')[1], texto); return 'app'; }
+  if (app) { toast(L('Para compartir la imagen, actualiza la app de Android (Ajustes > App de Android) o abre GrowFolio en Chrome.', 'To share the image, update the Android app (Settings > Android app) or open GrowFolio in Chrome.'), 6000); return 'app-vieja'; }
+  const blob = await new Promise((ok) => cv.toBlob(ok, 'image/png'));
+  if (!blob) return 'nada';
+  const nombre = L('mi-cartera-en-gta-vi.png', 'my-portfolio-in-gta-vi.png');
+  const file = new File([blob], nombre, { type: 'image/png' });
+  if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], text: texto }); return 'compartida'; } catch (e) { if (e && e.name === 'AbortError') return 'cancelada'; }
+  }
+  const u = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = u; a.download = nombre; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 5000);
+  toast(L('Imagen guardada: la tienes en Descargas', 'Image saved: it’s in your Downloads'));
+  return 'descargada';
+}
+/* el panel, encima de la hoja de GTA: la vista previa, el interruptor de las copias y «Compartir» */
+function abrirImagenGTA(marco, M) {
+  if ($('.gta-comp', marco)) return;
+  const O = !!S.oculto;
+  const p = document.createElement('div');
+  p.className = 'gta-comp';
+  p.setAttribute('role', 'dialog'); p.setAttribute('aria-modal', 'true'); p.setAttribute('aria-label', L('Mi cartera en GTA VI, como imagen', 'My portfolio in GTA VI, as an image'));
+  p.innerHTML = `<div class="gta-comp-c">
+    <button type="button" class="gta-comp-x" data-comp-x aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button>
+    <p class="gta-rotulo" data-no-trad>${L('compártelo', 'share it')}</p>
+    <canvas class="gta-comp-img" width="1080" height="1350" role="img" aria-label="${L('Vista previa de la imagen', 'Image preview')}"></canvas>
+    <label class="gta-comp-sw"><input type="checkbox" data-comp-copias${O ? ' disabled' : ''}><span>${L('Enseñar las copias', 'Show the copies')}</span></label>
+    <small class="gta-comp-nota">${O ? L('Tienes los importes ocultos: la imagen va sin cifras.', 'Your amounts are hidden: the image has no figures.') : L('Con las copias se puede adivinar cuánto tienes. Sin ellas salen lo que ha hecho tu cartera desde el primer tráiler y los días que faltan.', 'With the copies, people can work out how much you have. Without them, the image shows what your portfolio has done since the first trailer and the days to go.')}</small>
+    <button type="button" class="gta-b pri" data-comp-ok>${L('Compartir', 'Share')}</button>
+  </div>`;
+  marco.appendChild(p);
+  const cv = $('canvas', p), sw = $('[data-comp-copias]', p);
+  const pintar = () => pintarImagenGTA(cv, datosImagenGTA(M, sw.checked && !O));
+  pintar();
+  letrasGTA().then(() => { if (p.isConnected) pintar(); });
+  sw.onchange = pintar;
+  p.addEventListener('click', async (e) => {
+    if (e.target === p || e.target.closest('[data-comp-x]')) { p.remove(); return; }
+    const b = e.target.closest('[data-comp-ok]');
+    if (b && !b.disabled) { b.disabled = true; try { pintar(); await compartirImagenGTA(cv); } finally { b.disabled = false; } }
+  });
+  setTimeout(() => { const x = $('[data-comp-ok]', p); if (x) x.focus({ preventScroll: true }); }, 50);
 }
 
 /* música original de fondo: synthwave de los ochenta con producción de ahora, hecha en el navegador
@@ -469,7 +672,7 @@ function contarGTA(el) {
   const to = +el.dataset.to, fm = el.dataset.f, fin = el.dataset.fin || el.textContent;
   if (!isFinite(to)) return;
   const desde = fm === 'anio' ? new Date().getFullYear() : 0;
-  const fmt = (x) => (fm === 'anio' ? 'Año ' + Math.round(x) : fm === 'signo' ? (x >= 0 ? '+' : '−') + nGTA(Math.abs(x)) : fm === 'anos' ? nGTA(x, x < 10 ? 1 : 0) + (x < 2 ? ' año' : ' años') : fm === 'eur' ? fmtNum(x, 0) + ' €' : fm === 'pct' ? pctS(x, 1) : fm === 'pct1' ? fmtNum(x, 1) + ' %' : fm === 'pct0' ? fmtNum(x, 0) + ' %' : fm === 'n1' ? nGTA(x, 1) : nGTA(x));
+  const fmt = (x) => (fm === 'anio' ? 'Año ' + Math.round(x) : fm === 'signo' ? (x >= 0 ? '+' : '−') + nGTA(Math.abs(x)) : fm === 'anos' ? nGTA(x, x < 10 ? 1 : 0) + (x < 2 ? ' año' : ' años') : fm === 'eur' ? fmtNum(x, 0) + ' €' : fm === 'eur2' ? fmtNum(x, 2) + ' €' : fm === 'pct' ? pctS(x, 1) : fm === 'pct1' ? fmtNum(x, 1) + ' %' : fm === 'pct0' ? fmtNum(x, 0) + ' %' : fm === 'n1' ? nGTA(x, 1) : nGTA(x));
   const t0 = performance.now(), dur = 1200;
   const paso = (t) => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); el.textContent = k < 1 ? fmt(desde + (to - desde) * e) : fin; if (k < 1 && el.isConnected) requestAnimationFrame(paso); };
   requestAnimationFrame(paso);
@@ -509,8 +712,10 @@ function abrirGTA() {
   const cerrar = (desdeAtras) => { if (!fondo.isConnected) return; clearInterval(tic); musicaGTA(false); if (io) io.disconnect(); fondo.remove(); document.removeEventListener('keydown', tecla, true); document.removeEventListener('visibilitychange', oculta); if (desdeAtras !== true) quitarAtras(); };
   const oculta = () => { if (document.hidden) musicaGTA(false); else if (LS.get('inv-gta-son', true) && fondo.isConnected) musicaGTA(true); };
   document.addEventListener('visibilitychange', oculta);
-  const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); cerrar(); } };
+  const tecla = (e) => { if (e.key === 'Escape') { e.stopPropagation(); const c = $('.gta-comp', fondo); if (c) c.remove(); else cerrar(); } };
   fondo.addEventListener('click', (e) => {
+    if (e.target.closest('.gta-comp')) return;
+    if (e.target.closest('[data-gta-img]')) { abrirImagenGTA($('.gta-marco', fondo), M); return; }
     const son = e.target.closest('[data-son]');
     if (son) { const on = !LS.get('inv-gta-son', true); LS.set('inv-gta-son', on); musicaGTA(on); son.outerHTML = botonSonGTA(); vibra(); return; }
     if (e.target === fondo || e.target.closest('[data-cerrar]')) cerrar(); else if (e.target.closest('.gta-baja')) $('.gta-cuerpo', fondo).scrollIntoView({ behavior: 'smooth' });

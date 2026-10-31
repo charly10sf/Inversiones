@@ -1,8 +1,9 @@
 // 0.7l: el estreno de Toisón. Lo pidió Carlos el 31 oct: a todos los que entran (nuevos o no, en el móvil, la app y el
-// ordenador), una vez, que GrowFolio tiene los días contados, por algo bueno: en diciembre pasa a llamarse Toisón. Con
-// la marca en relieve, los dominios registrados y la marca solicitada en la OEPM
+// ordenador), una vez, que GrowFolio tiene los días contados, por algo bueno: pasa a llamarse Toisón (en noviembre, dijo
+// Carlos el 1 nov). Con la marca en relieve, los dominios registrados y la marca solicitada en la OEPM.
+// 0.7n: la marca sale del fondo y antes se dibuja, partes más juntas, el icono en un móvil y el botón de WhatsApp
 import { test as base, expect } from '@playwright/test';
-import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
+import { preparar, crearCuenta, meterCartera, quitarCapas, BASE } from './ayuda.js';
 
 const test = base.extend({
   errores: async ({ context }, use) => {
@@ -31,7 +32,7 @@ test('el estreno de Toisón sale una vez: la marca en relieve y, al bajar, la O 
   await expect(e.locator('.ts-baja')).toHaveCSS('opacity', '1', { timeout: 8000 });
   // al bajar, cada sección se dibuja: --p de 0 a 1
   const secs = e.locator('[data-ts-p]');
-  await expect(secs).toHaveCount(4);
+  await expect(secs).toHaveCount(5);
   expect(await secs.first().evaluate((s) => +s.style.getPropertyValue('--p'))).toBe(0);
   // 0.7m: «Desliza hacia abajo» es un botón que baja a lo siguiente
   await e.locator('.ts-baja').click();
@@ -39,13 +40,13 @@ test('el estreno de Toisón sale una vez: la marca en relieve y, al bajar, la O 
   await expect(secs.first()).toContainText('1,618 de ancho por 1 de alto');
   await expect(secs.nth(1).locator('.ts-cotas')).toContainText('161,8 × 100 u');
   await expect(secs.nth(1).locator('.ts-cotas')).toContainText('122,3 u');
-  for (let i = 0; i < 4; i++) {
+  for (let i = 0; i < 5; i++) {
     await secs.nth(i).evaluate((s) => s.closest('.estreno').scrollTo(0, s.offsetTop));
     await expect.poll(() => secs.nth(i).evaluate((s) => +s.style.getPropertyValue('--p'))).toBe(1);
   }
   const marmol = e.locator('img[src="toison-marmol.webp"]');
   await expect.poll(() => marmol.evaluate((i) => i.complete && i.naturalWidth)).toBe(1120);
-  const fin = secs.nth(3);
+  const fin = secs.nth(4);
   // la marca está solicitada, no concedida: nada de «ya es nuestra»
   await expect(fin.locator('.ts-k')).toHaveText('Lo que ya está hecho');
   await expect(fin.locator('.ts-hechos')).toContainText('toison.es');
@@ -74,6 +75,139 @@ test('con las animaciones quitadas, el estreno de Toisón sale entero y quieto',
   await expect(e).toBeVisible();
   for (const s of await e.locator('[data-ts-p]').all()) expect(await s.evaluate((x) => x.style.getPropertyValue('--p'))).toBe('1.000');
   await expect(e.getByRole('button', { name: 'Tengo ganas de verlo' })).toHaveCSS('opacity', '1');
+  // 0.7n: sin el dibujo en vector; la marca en relieve, ya a la vista; en el móvil, ya el icono de Toisón
+  await expect(e.locator('.ts-vec')).toBeHidden();
+  await expect(e.locator('.ts-hero img[alt="Toisón"]')).toHaveCSS('opacity', '1');
+  await expect(e.locator('.ts-mia img.ts-to')).toHaveCSS('opacity', '1');
+});
+
+test('0.7n: la marca sale del fondo, sin recuadro, y antes se dibuja: la O y la T que baja hasta atravesarla', async ({ page, errores }) => {
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.evaluate(() => { LS.del('inv-toison-avance'); avisoToison(() => {}); });
+  const e = page.locator('.estreno.ts');
+  await expect(e).toBeVisible();
+  const marca = e.locator('.ts-hero .ts-marca');
+  // sin recuadro: ni sombra ni borde, y los bordes de la imagen fundidos con una máscara
+  const css = await marca.evaluate((m) => { const c = getComputedStyle(m); return { sombra: c.boxShadow, mascara: c.maskImage || c.webkitMaskImage }; });
+  expect(css.sombra).toBe('none');
+  expect(css.mascara).toContain('radial-gradient');
+  // el símbolo en vector, con las mismas formas que el de la tarjeta
+  await expect(marca.locator('.ts-vec .ts-vo')).toHaveCount(1);
+  await expect(marca.locator('.ts-vec .ts-vt .ts-vtt')).toHaveCount(1);
+  // se para el tiempo y se mira la T: a los 2,3 s está arriba, aún bajando; a los 3,2 s, en su sitio y rellena
+  await page.evaluate(() => document.getAnimations().forEach((a) => a.pause()));
+  const enT = (t) => page.evaluate((t) => {
+    document.getAnimations().forEach((a) => { a.currentTime = t; });
+    const tt = document.querySelector('.ts-vtt'), o = document.querySelector('.ts-vo'), img = document.querySelector('.ts-hero .ts-marca > img');
+    return { t: tt.getBoundingClientRect().top, o: o.getBoundingClientRect().top, rellenoT: +getComputedStyle(tt).fillOpacity, trazoO: +getComputedStyle(o).strokeDashoffset.replace('px', ''), relieve: +getComputedStyle(img).opacity };
+  }, t);
+  const a = await enT(2300), b = await enT(3400), c = await enT(5000);
+  expect(a.t).toBeLessThan(b.t - 20);
+  expect(a.relieve).toBe(0);
+  expect(b.rellenoT).toBe(1);
+  expect(b.trazoO).toBe(0);
+  // la barra de la T, por encima de la O (la atraviesa)
+  expect(b.t).toBeLessThan(b.o);
+  // y al final, el relieve
+  expect(c.relieve).toBe(1);
+});
+
+test('0.7n: las partes van más juntas y cada dibujo se acaba cuando lo tienes entero delante', async ({ page, errores }) => {
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.evaluate(() => { LS.del('inv-toison-avance'); avisoToison(() => {}); });
+  const e = page.locator('.estreno.ts');
+  await expect(e).toBeVisible();
+  const vh = await e.evaluate((x) => x.clientHeight);
+  const secs = e.locator('[data-ts-p]');
+  for (let i = 0; i < 4; i++) {
+    const s = secs.nth(i);
+    // antes cada parte medía el 88 % de la pantalla aunque tuviera poco dentro: ahora, lo de dentro y un margen
+    const hueco = await s.evaluate((x) => x.offsetHeight - (x.lastElementChild.getBoundingClientRect().bottom - x.firstElementChild.getBoundingClientRect().top));
+    expect(hueco).toBeLessThan(150);
+    // lo de dentro asoma por abajo: aún sin dibujar
+    await s.evaluate((x) => { const d = x.closest('.estreno'); d.scrollBy(0, x.firstElementChild.getBoundingClientRect().top - d.clientHeight); });
+    await expect.poll(() => s.evaluate((x) => +x.style.getPropertyValue('--p'))).toBe(0);
+    // entero a la vista (lo de dentro acaba en el 88 % de la pantalla; si no cabe, arriba del todo): ya dibujado
+    const alto = await s.evaluate((x) => { const d = x.closest('.estreno'), a = x.firstElementChild.getBoundingClientRect().top, h = x.lastElementChild.getBoundingClientRect().bottom - a; d.scrollBy(0, a - Math.max(d.clientHeight * 0.04, d.clientHeight * 0.88 - h)); return h; });
+    await expect.poll(() => s.evaluate((x) => +x.style.getPropertyValue('--p'))).toBe(1);
+    const r = await s.evaluate((x) => [x.firstElementChild.getBoundingClientRect().top, x.lastElementChild.getBoundingClientRect().bottom]);
+    expect(r[0]).toBeGreaterThanOrEqual(0);
+    if (alto <= vh * 0.84) expect(r[1]).toBeLessThanOrEqual(vh);
+  }
+});
+
+test('0.7n: el icono de Toisón en la pantalla de inicio de un móvil y lo que falta (noviembre)', async ({ page, errores }) => {
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.evaluate(() => { LS.del('inv-toison-avance'); avisoToison(() => {}); });
+  const e = page.locator('.estreno.ts');
+  const m = e.locator('.ts-s.ts-mov');
+  await expect(m).toHaveCount(1);
+  // apps inventadas alrededor y, en medio, GrowFolio, que pasa a Toisón
+  expect(await m.locator('.ts-app:not(.ts-mia)').count()).toBeGreaterThanOrEqual(15);
+  const mia = m.locator('.ts-mia');
+  await expect(mia.locator('img.ts-gf')).toHaveAttribute('src', 'growfolio-192.png');
+  await expect(mia.locator('b.ts-to')).toHaveText('Toisón');
+  // lo que falta: sin día fijado, hasta el 1 dic «como mucho»
+  const dias = await page.evaluate(() => Math.ceil((Date.parse('2026-12-01T00:00:00+01:00') - Date.now()) / 864e5));
+  if (dias > 0) {
+    await expect(m.locator('.ts-h')).toHaveText('Llega en noviembre');
+    await expect(m.locator('.ts-falta b')).toHaveText(String(dias));
+    await expect(m.locator('.ts-falta')).toContainText('como mucho');
+  } else await expect(m.locator('.ts-h')).toHaveText('Llega muy pronto');
+  await expect(e.locator('.ts-hero')).toContainText('En noviembre cambia de nombre');
+  await expect(e).not.toContainText('diciembre');
+  // al tenerlo entero a la vista, ya está el icono de Toisón (en relieve, la imagen nueva)
+  await m.evaluate((x) => { const d = x.closest('.estreno'), r = x.lastElementChild.getBoundingClientRect(); d.scrollBy(0, r.bottom - d.clientHeight * 0.85); });
+  await expect.poll(() => m.evaluate((x) => +x.style.getPropertyValue('--p'))).toBe(1);
+  const to = mia.locator('img.ts-to');
+  await expect.poll(() => to.evaluate((i) => i.complete && i.naturalWidth)).toBe(256);
+  await expect(to).toHaveCSS('opacity', '1');
+  await expect(mia.locator('img.ts-gf')).toHaveCSS('opacity', '0');
+});
+
+test('0.7n: «Mandarlo por WhatsApp» manda el enlace del estreno, con el menú de compartir o con wa.me', async ({ page, errores }) => {
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  // con el menú de compartir del móvil
+  await page.evaluate(() => {
+    window.__comp = null; window.__wa = null;
+    Object.defineProperty(navigator, 'share', { configurable: true, value: (d) => { window.__comp = d; return Promise.resolve(); } });
+    HTMLAnchorElement.prototype.click = function () { window.__wa = this.href; };
+    LS.del('inv-toison-avance'); avisoToison(() => {});
+  });
+  const e = page.locator('.estreno.ts');
+  const wa = e.getByRole('button', { name: 'Mandarlo por WhatsApp' });
+  await wa.evaluate((b) => b.click());
+  const d = await page.evaluate(() => window.__comp);
+  expect(d.url).toMatch(/#toison$/);
+  expect(d.text).toContain('en noviembre pasa a llamarse Toisón');
+  // sin él (la app de Android no lo tiene): wa.me con la frase y el enlace
+  await page.evaluate(() => Object.defineProperty(navigator, 'share', { configurable: true, value: undefined }));
+  await wa.evaluate((b) => b.click());
+  const href = await page.evaluate(() => window.__wa);
+  expect(href.startsWith('https://wa.me/?text=')).toBe(true);
+  const txt = decodeURIComponent(href.split('text=')[1]);
+  expect(txt).toContain('Toisón');
+  expect(txt).toMatch(/#toison$/);
+  // el estreno sigue abierto
+  await expect(e).toBeVisible();
+});
+
+test('0.7n: el enlace del estreno (#toison) lo abre a cualquiera, también sin cuenta, encima de todo', async ({ page, errores }) => {
+  await page.goto(BASE + '#toison');
+  const e = page.locator('.estreno.ts.ts-enlace');
+  await expect(e).toBeVisible({ timeout: 20_000 });
+  expect(await page.evaluate(() => location.hash)).toBe('');
+  expect(await e.evaluate((x) => +getComputedStyle(x).zIndex)).toBeGreaterThan(9000);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.estreno.ts')).toHaveCount(0);
 });
 
 test('al entrar, también quien acaba de llegar ve el estreno de Toisón antes que nada', async ({ page, errores }) => {

@@ -4,6 +4,9 @@ async function iniciar() {
   if (demo) LS_DEMO = new Map();
   cargarIdioma();
   if (bancoALaApp()) return;
+  // 0.7n: el enlace del estreno de Toisón (#toison, el que se manda por WhatsApp) lo abre a cualquiera, también sin cuenta
+  const verToison = location.hash === '#toison';
+  if (verToison) try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}
   try { if (window.InversionesApp && typeof InversionesApp.versionVista === 'function') InversionesApp.versionVista(VERSION); } catch (e) {}
   try { if (window.InversionesApp && typeof InversionesApp.idioma === 'function') InversionesApp.idioma(IDIOMA); } catch (e) {}
   // quien llega nuevo ve la presentación general, no la de la 0.2; quien venía de la 0.1, se apunta
@@ -25,6 +28,7 @@ async function iniciar() {
     return;
   }
   await esperarEntrada(t0);
+  if (verToison) avisoToison(null, true, true);
   // en la prueba, ni se lee ni se abre tu cartera: la inventada y adentro
   if (demo) { await arrancarDemo(); quitarEntrada(); return; }
   await entrar();
