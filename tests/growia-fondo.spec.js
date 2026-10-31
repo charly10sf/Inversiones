@@ -199,14 +199,22 @@ test('si Google no contesta, lo repite una vez y luego pasa al 3.6, sin la rápi
   await expect(cuerpo).not.toContainText('rápida');
 });
 
-test('si cambia la red mientras pide (de wifi a datos), lo repite enseguida por la nueva', async ({ page, errores }) => {
+test('si se pierde la red por la que iba (de wifi a datos), lo repite enseguida por la nueva', async ({ page, errores }) => {
   await preguntar(page);
   await page.evaluate(() => { RED_IA.cambio = 400; });
   const pet = await geminiFetch(page, ['nunca', 'bien']);
   await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
   await expect.poll(async () => (await pet()).length).toBe(1);
+  // una red nueva sin perder la vieja (de datos a wifi: Android mantiene la vieja un rato) no corta nada
+  await page.evaluate(() => redCambiada('nueva', Date.now()));
+  await page.waitForTimeout(1200);
+  expect((await pet()).length).toBe(1);
+  // lo que empieza después de perderla ya va por la nueva: no se toca
+  await page.evaluate(() => redCambiada('perdida', Date.now() - 600000));
+  await page.waitForTimeout(1200);
+  expect((await pet()).length).toBe(1);
   const t0 = Date.now();
-  await page.evaluate(() => redCambiada('datos'));
+  await page.evaluate(() => redCambiada('perdida', Date.now()));
   const cuerpo = page.locator('#asCuerpo');
   await expect(cuerpo).toContainText('sigue con tus aportaciones', { timeout: 10_000 });
   expect(Date.now() - t0, 'sin esperar los 120 s').toBeLessThan(8000);

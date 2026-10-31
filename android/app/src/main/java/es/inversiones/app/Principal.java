@@ -550,14 +550,16 @@ public class Principal extends Activity {
 
     /** 0.7l: la red. Sin el permiso ACCESS_NETWORK_STATE, el WebView no se enteraba de que pasabas de wifi a datos (ni de
      *  que te quedabas sin red): seguía con una conexión muerta y GrowIA se quedaba colgada o se cortaba. Con el permiso
-     *  el WebView ya lo ve; además se le dice a la web (navigator.onLine, los eventos online/offline y redCambiada, que
-     *  repite al momento lo que estaba pidiendo) y se apunta en el diario */
+     *  el WebView ya lo ve; además se le dice a la web: navigator.onLine y los eventos online/offline
+     *  (setNetworkAvailable) y redCambiada con la hora, que solo corta lo que iba por una red que se ha perdido (al pasar
+     *  de datos a wifi, Android mantiene un rato la vieja y no se toca nada). Todo se apunta en el diario */
     private ConnectivityManager.NetworkCallback vigiaRed;
-    private Network redActual, redUltima;
+    private Network redActual;
     private volatile String redTipo = "?";
+    private boolean destruida;
     private final android.os.Handler hiloRed = new android.os.Handler(android.os.Looper.getMainLooper());
     private final Runnable sinRed = () -> {
-        if (redActual != null) return;
+        if (destruida || redActual != null) return;
         redTipo = "sin red";
         Diario.apunta("Red: sin conexión");
         if (web != null) {
@@ -570,8 +572,7 @@ public class Principal extends Activity {
         return redTipo;
     }
 
-    private String tipoRed(ConnectivityManager cm, Network n) {
-        NetworkCapabilities c = cm.getNetworkCapabilities(n);
+    private static String tipoRed(NetworkCapabilities c) {
         if (c == null) return "red";
         if (c.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) return "wifi";
         if (c.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) return "datos";
@@ -585,28 +586,46 @@ public class Principal extends Activity {
         vigiaRed = new ConnectivityManager.NetworkCallback() {
             @Override
             public void onAvailable(Network n) {
-                String tipo = tipoRed(cm, n);
+                final long t = System.currentTimeMillis();
                 hiloRed.post(() -> {
+                    if (destruida) return;
                     hiloRed.removeCallbacks(sinRed);
                     boolean primera = "?".equals(redTipo);
-                    boolean otra = redUltima != null && !redUltima.equals(n) || "sin red".equals(redTipo);
+                    boolean nueva = !n.equals(redActual);
                     redActual = n;
-                    redUltima = n;
-                    redTipo = tipo;
-                    if (primera) return;
-                    Diario.apunta("Red: " + tipo);
+                    if (primera) {
+                        redTipo = "red";
+                        return;
+                    }
+                    if (!nueva && !"sin red".equals(redTipo)) return;
+                    if ("sin red".equals(redTipo)) redTipo = "red";
                     if (web != null) {
                         web.setNetworkAvailable(true);
-                        if (otra) web.evaluateJavascript("window.redCambiada && redCambiada('" + tipo + "')", null);
+                        web.evaluateJavascript("window.redCambiada && redCambiada('nueva', " + t + ")", null);
                     }
+                });
+            }
+
+            /** el tipo (wifi, datos) llega aquí: en onAvailable puede no estar todavía */
+            @Override
+            public void onCapabilitiesChanged(Network n, NetworkCapabilities c) {
+                final String tipo = tipoRed(c);
+                hiloRed.post(() -> {
+                    if (destruida || !n.equals(redActual) || tipo.equals(redTipo)) return;
+                    redTipo = tipo;
+                    Diario.apunta("Red: " + tipo);
                 });
             }
 
             @Override
             public void onLost(Network n) {
+                final long t = System.currentTimeMillis();
                 hiloRed.post(() -> {
-                    if (!n.equals(redActual)) return;
+                    if (destruida || !n.equals(redActual)) return;
                     redActual = null;
+                    Diario.apunta("Red perdida (" + redTipo + ")");
+                    // lo que iba por esta red ya no va a llegar
+                    if (web != null) web.evaluateJavascript("window.redCambiada && redCambiada('perdida', " + t + ")", null);
                     // al pasar de wifi a datos, la nueva llega enseguida: «sin red» solo si en 1,5 s no hay otra
                     hiloRed.postDelayed(sinRed, 1500);
                 });
@@ -621,6 +640,7 @@ public class Principal extends Activity {
 
     @Override
     protected void onDestroy() {
+        destruida = true;
         ConnectivityManager cm = getSystemService(ConnectivityManager.class);
         if (cm != null && vigiaRed != null) {
             try {
@@ -630,7 +650,7 @@ public class Principal extends Activity {
             }
         }
         vigiaRed = null;
-        hiloRed.removeCallbacks(sinRed);
+        hiloRed.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
 

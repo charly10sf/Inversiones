@@ -197,40 +197,77 @@
 .macro-ia b { display: block; font-size: 17px; font-weight: 700; margin: 2px 0 4px; font-variant-numeric: tabular-nums; }
 .macro-ia p { margin: 0; color: var(--text-2); font-size: 13.5px; line-height: 1.4; }
 
-/* 0.7l: el estreno de Toisón (una vez, al entrar). Primero se despide GrowFolio (0-2 s); luego el fondo borgoña, la marca
-   en relieve con su brillo y los textos, uno detrás de otro. Unos 4 s; con las animaciones quitadas, todo quieto */
-.estreno.ts { display: block; overflow-y: auto; overscroll-behavior: contain; background: #000; animation: tsEntra .35s ease both; }
+/* 0.7l: el estreno de Toisón (una vez, al entrar). Arriba, por tiempo: se despide GrowFolio (0-2 s), entra el borgoña y
+   la marca en relieve con su brillo. Al bajar, cada sección se dibuja con --p (0 a 1, lo pone el JavaScript según el
+   desplazamiento): la O áurea, las medidas, el mármol y lo hecho. Con las animaciones quitadas, todo quieto y a la vista */
+.estreno.ts { display: block; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; background: #000; animation: tsEntra .35s ease both; color: #F2E6D2; }
+.estreno.ts.fuera { animation: tsSale .4s ease forwards; }
 .estreno.ts::before { content: ''; position: fixed; inset: 0; background: radial-gradient(120% 80% at 50% 28%, #5C1526 0%, #3A0A16 48%, #12030A 100%); opacity: 0; animation: tsFondo 1.1s ease 1.7s forwards; pointer-events: none; }
-.ts-x { position: fixed; top: calc(10px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); z-index: 2; color: #F2E6D2; }
-.ts-adios { position: fixed; inset: 0; display: grid; place-content: center; justify-items: center; gap: 14px; animation: tsAdios 2.1s ease forwards; pointer-events: none; }
+.ts-x { position: fixed; top: calc(10px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); z-index: 3; color: #F2E6D2; background: rgba(18, 3, 10, .45); border-radius: 50%; }
+.ts-adios { position: fixed; inset: 0; z-index: 2; display: grid; place-content: center; justify-items: center; gap: 14px; animation: tsAdios 2.1s ease forwards; pointer-events: none; }
 .ts-adios img { width: min(240px, 60vw); height: auto; }
 .ts-adios p { margin: 0; color: var(--text-2); font-size: 17px; letter-spacing: .02em; opacity: 0; animation: tsSube .6s ease .55s forwards; }
-.ts-c { position: relative; box-sizing: border-box; max-width: 600px; margin: 0 auto; min-height: 100%; padding: calc(56px + env(safe-area-inset-top)) 22px calc(28px + env(safe-area-inset-bottom)); display: flex; flex-direction: column; justify-content: center; color: #F2E6D2; }
-.ts-marca { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(227, 180, 95, .18); opacity: 0; transform: scale(.92); animation: tsMarca 1s cubic-bezier(.2, .7, .2, 1) 2s forwards; }
+.ts-c { position: relative; box-sizing: border-box; max-width: 600px; margin: 0 auto; padding: 0 22px calc(28px + env(safe-area-inset-bottom)); }
+.ts-s { min-height: 88vh; min-height: 88svh; box-sizing: border-box; display: flex; flex-direction: column; justify-content: center; padding: 40px 0; }
+.ts-hero { min-height: 100vh; min-height: 100svh; padding-top: calc(56px + env(safe-area-inset-top)); }
+.ts-marca { position: relative; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(227, 180, 95, .18); }
+.ts-hero .ts-marca { opacity: 0; transform: scale(.92); animation: tsMarca 1s cubic-bezier(.2, .7, .2, 1) 2s forwards; }
 .ts-marca img { display: block; width: 100%; height: auto; aspect-ratio: 1120 / 640; background: #4E101D; }
+.ts-marmol img { background: #151817; }
 .ts-brillo { position: absolute; inset: 0; background: linear-gradient(105deg, transparent 35%, rgba(255, 240, 196, .28) 48%, rgba(255, 250, 235, .45) 50%, rgba(255, 240, 196, .28) 52%, transparent 65%); transform: translateX(-120%); animation: tsBrillo 1.3s ease-in-out 2.9s forwards; mix-blend-mode: screen; }
 .ts-t { margin: 22px 0 8px; font-size: 22px; line-height: 1.25; color: #F6EAD5; }
+.ts-h { margin: 14px 0 8px; font-size: 19px; line-height: 1.3; color: #F6EAD5; }
+.ts-k { margin: 0 0 12px; font-size: 12px; font-weight: 700; letter-spacing: .14em; text-transform: uppercase; color: #E3B45F; }
 .ts-p { margin: 0 0 10px; color: #E2D3BC; }
 .ts-p b { color: #F6EAD5; }
+.ts-hero > .ts-t, .ts-hero > .ts-p, .ts-hero > .ts-baja { opacity: 0; animation: tsSube .6s ease forwards; }
+.ts-hero > .ts-t { animation-delay: 3.0s; } .ts-hero > .ts-p { animation-delay: 3.25s; } .ts-hero > .ts-p + .ts-p { animation-delay: 3.45s; } .ts-hero > .ts-baja { animation-delay: 4.1s; }
+.ts-baja { margin: 18px 0 0; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; color: #BFAE95; }
+.ts-baja i { width: 12px; height: 12px; border-right: 2px solid #E3B45F; border-bottom: 2px solid #E3B45F; transform: rotate(45deg); animation: tsBaja 1.4s ease-in-out infinite; }
+/* lo que entra al bajar: el texto sube al aparecer la sección; los dibujos, con --p */
+.ts-s[data-ts-p] > .ts-k, .ts-s[data-ts-p] > .ts-h, .ts-s[data-ts-p] > .ts-p, .ts-s[data-ts-p] > .ts-marca, .ts-s[data-ts-p] > .ts-hechos, .ts-s[data-ts-p] > .ts-nota, .ts-s[data-ts-p] > .ts-ok { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
+.ts-s.on > * { opacity: 1 !important; transform: none !important; }
+.ts-s.on > .ts-h { transition-delay: .25s; } .ts-s.on > .ts-p { transition-delay: .4s; } .ts-s.on > .ts-marca { transition-delay: .1s; } .ts-s.on > .ts-hechos { transition-delay: .15s; } .ts-s.on > .ts-nota { transition-delay: .35s; } .ts-s.on > .ts-ok { transition-delay: .5s; }
+.ts-s[data-ts-p] { --p: 0; }
+.ts-dib { display: block; width: 100%; height: auto; overflow: visible; margin: 4px 0 6px; }
+.ts-l, .ts-oo { fill: none; stroke-dasharray: 1; vector-effect: non-scaling-stroke; }
+.ts-cota path { fill: none; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; }
+.ts-l { stroke: #E3B45F; stroke-width: 1.4; }
+.ts-a1 { stroke-dashoffset: calc(1 - clamp(0, var(--p) * 4, 1)); }
+.ts-a2 { stroke-dashoffset: calc(1 - clamp(0, (var(--p) - .2) * 4, 1)); stroke-opacity: .75; }
+.ts-esp { stroke: #E3B45F; stroke-width: 1.8; stroke-dashoffset: calc(1 - clamp(0, (var(--p) - .3) * 3, 1)); }
+.ts-oo { stroke: #F6EAD5; stroke-width: 2; stroke-dasharray: 2; stroke-dashoffset: calc(2 - clamp(0, (var(--p) - .45) * 3.2, 1) * 2); fill: #F6EAD5; fill-opacity: clamp(0, (var(--p) - .72) * 2, .3); fill-rule: evenodd; }
+.ts-n { font: 600 8px var(--f); fill: #E3B45F; text-anchor: middle; opacity: clamp(0, (var(--p) - .12) * 5, 1); }
+.ts-phi { font: 600 12px var(--f); fill: #F6EAD5; text-anchor: middle; letter-spacing: .04em; opacity: clamp(0, (var(--p) - .8) * 6, 1); }
+.ts-sim .ts-o { fill: #F6EAD5; } .ts-sim .ts-tt { fill: #E3B45F; }
+.ts-sim { opacity: clamp(0, var(--p) * 5, 1); transform: scale(calc(.9 + .1 * clamp(0, var(--p) * 5, 1))); transform-origin: 0 0; }
+.ts-cota path { stroke: #F6EAD5; stroke-width: 1; stroke-opacity: .8; }
+.ts-cota text { font: 600 8px var(--f); fill: #F6EAD5; text-anchor: middle; }
+.ts-cota.c1 { --a: clamp(0, (var(--p) - .15) * 7, 1); } .ts-cota.c2 { --a: clamp(0, (var(--p) - .28) * 7, 1); } .ts-cota.c3 { --a: clamp(0, (var(--p) - .41) * 7, 1); }
+.ts-cota.c4 { --a: clamp(0, (var(--p) - .54) * 7, 1); } .ts-cota.c5 { --a: clamp(0, (var(--p) - .67) * 7, 1); }
+.ts-cota.c5 text { text-anchor: start; }
+.ts-cota.sobre path { stroke: #4E101D; stroke-opacity: 1; } .ts-cota.sobre text { fill: #4E101D; }
+.ts-cota.h path { transform: scaleX(var(--a)); } .ts-cota.v path { transform: scaleY(var(--a)); } .ts-cota text { opacity: var(--a); }
+.ts-cotas { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 7px; font-size: 14px; line-height: 1.45; color: #E2D3BC; }
+.ts-cotas li { padding-left: 14px; position: relative; opacity: clamp(0, (var(--p) - .1 - var(--i) * .12) * 6, 1); transform: translateY(calc(8px * (1 - clamp(0, (var(--p) - .1 - var(--i) * .12) * 6, 1)))); }
+.ts-cotas li::before { content: ''; position: absolute; left: 0; top: .6em; width: 6px; height: 6px; border-radius: 50%; background: #E3B45F; }
+.ts-cotas b { color: #F6EAD5; font-weight: 600; }
 .ts-hechos { list-style: none; margin: 6px 0 12px; padding: 0; display: grid; gap: 8px; }
 .ts-hechos li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: rgba(227, 180, 95, .10); border: 1px solid rgba(227, 180, 95, .28); font-size: 14px; line-height: 1.4; color: #EADBC2; }
 .ts-hechos li svg { width: 18px; height: 18px; flex: none; color: #E3B45F; margin-top: 1px; }
 .ts-hechos b { color: #F6EAD5; font-weight: 600; }
 .ts-nota { margin: 0 0 18px; font-size: 13px; color: #BFAE95; }
 .ts-ok { align-self: flex-start; background: linear-gradient(180deg, #EAC572, #C9963F); color: #2A0A12; border-color: transparent; }
-.ts-c > .ts-t, .ts-c > .ts-p, .ts-c > .ts-hechos, .ts-c > .ts-nota, .ts-c > .ts-ok { opacity: 0; animation: tsSube .6s ease forwards; }
-.ts-c > .ts-t { animation-delay: 3.0s; } .ts-c > .ts-p { animation-delay: 3.25s; } .ts-c > .ts-p + .ts-p { animation-delay: 3.45s; }
-.ts-c > .ts-hechos { animation-delay: 3.7s; } .ts-c > .ts-nota { animation-delay: 3.9s; } .ts-c > .ts-ok { animation-delay: 4.05s; }
+.ts-fin { min-height: 70vh; min-height: 70svh; }
 @keyframes tsEntra { from { opacity: 0; } to { opacity: 1; } }
+@keyframes tsSale { from { opacity: 1; } to { opacity: 0; } }
 @keyframes tsFondo { to { opacity: 1; } }
 @keyframes tsAdios { 0% { opacity: 0; transform: scale(.98); } 18% { opacity: 1; transform: none; } 72% { opacity: 1; filter: blur(0); } 100% { opacity: 0; transform: translateY(-18px) scale(.96); filter: blur(6px); visibility: hidden; } }
 @keyframes tsSube { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 @keyframes tsMarca { 0% { opacity: 0; transform: scale(.92); clip-path: inset(46% 0 46% 0 round 18px); } 60% { opacity: 1; } 100% { opacity: 1; transform: none; clip-path: inset(0 0 0 0 round 18px); } }
 @keyframes tsBrillo { to { transform: translateX(120%); } }
-@media (min-width: 900px) { .ts-t { font-size: 26px; } }
+@keyframes tsBaja { 0%, 100% { transform: translateY(0) rotate(45deg); opacity: .6; } 50% { transform: translateY(5px) rotate(45deg); opacity: 1; } }
+@media (min-width: 900px) { .ts-t { font-size: 26px; } .ts-h { font-size: 22px; } .ts-dib { max-width: 480px; margin-left: auto; margin-right: auto; } }
 .estreno.ts.quieta::before { opacity: 1; }
-.estreno.ts.quieta .ts-adios { display: none; }
-.estreno.ts.quieta .ts-marca, .estreno.ts.quieta .ts-c > * { opacity: 1; transform: none; clip-path: none; }
-.estreno.ts.quieta .ts-brillo { display: none; }
-.estreno.ts.fuera { animation: tsSale .4s ease forwards; }
-@keyframes tsSale { from { opacity: 1; } to { opacity: 0; } }
+.estreno.ts.quieta .ts-adios, .estreno.ts.quieta .ts-brillo, .estreno.ts.quieta .ts-baja i { display: none; }
+.estreno.ts.quieta .ts-hero .ts-marca, .estreno.ts.quieta .ts-s > * { opacity: 1; transform: none; clip-path: none; }

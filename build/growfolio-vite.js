@@ -27,7 +27,7 @@ const texto = (f) => readFileSync(f, 'utf8').replace(/\r\n?/g, '\n');
 const PUBLICOS = [
   'manifest.webmanifest', 'favicon.svg', 'growfolio.svg', 'growfolio-nombre.svg', 'growia.svg', 'growia-nombre.svg',
   'growfolio-16.png', 'growfolio-32.png', 'growfolio-180.png', 'growfolio-192.png', 'growfolio-512.png', 'growfolio-maskable-512.png',
-  'growfolio-aviso.png', 'toison-avance.webp', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
+  'growfolio-aviso.png', 'toison-avance.webp', 'toison-marmol.webp', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
   'instrumentos.json', 'mapa-mundo.json', 'mapa-detalle.json', 'cambios.json', 'version.json', 'app.json', 'en.json', 'lib',
 ];
 

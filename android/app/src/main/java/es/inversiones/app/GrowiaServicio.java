@@ -33,7 +33,7 @@ public class GrowiaServicio extends Service {
 
     /** pedido arrancar y aún sin startForeground: si llega «terminar» antes, se para en cuanto arranca (pararlo antes de
      *  startForeground hace que Android cierre la app) */
-    private static boolean arrancando, enMarcha, pararAlArrancar;
+    private static volatile boolean arrancando, enMarcha, pararAlArrancar;
     private PowerManager.WakeLock despierto;
     private final Runnable tope = () -> {
         Diario.apunta("Servicio: tope de 10 minutos, lo paro");

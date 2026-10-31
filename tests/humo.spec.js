@@ -504,7 +504,8 @@ test.describe('GrowIA y los cortes de conexión', () => {
     await page.evaluate(() => { guardarCfgAsesor({ auto: 'manual' }); AS.clave = 'AQ.prueba-de-growfolio'; });
     await page.evaluate(() => abrirAsesor('¿Compro NatWest Group plc (NWG.L)?', true));
     await expect(page.locator('#asCuerpo')).toContainText('NatWest cotiza a 625 peniques', { timeout: 30_000 });
-    await expect(page.locator('#asCuerpo')).toContainText('Se ha cortado la conexión con Google: lo intento otra vez');
+    // 0.7l: un solo aviso del corte, que al salir bien dice lo que pasó
+    await expect(page.locator('#asCuerpo')).toContainText('Se cortó la conexión con Google: lo he repetido');
     await expect(page.locator('#asCuerpo')).not.toContainText('No hay conexión');
     expect(cortes).toBe(2);
   });
