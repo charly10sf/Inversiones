@@ -3,11 +3,11 @@
   {
    "v": "0.7l",
    "f": "2026-10-31",
-   "h": "20:30",
+   "h": "21:30",
    "t": "GrowIA, más firme en el móvil",
    "commits": [
     {
-     "cuando": "2026-10-31 20:30",
+     "cuando": "2026-10-31 21:30",
      "asunto": "0.7l: GrowIA, más firme en el móvil, y el estreno de Toisón",
      "detalle": [
       "Web: llamarGemini vigila cada dato que llega (120 s hasta el primero, 60 s entre datos, 8 s tras un cambio de red); antes solo vigilaba los primeros 90 s y una respuesta parada a mitad dejaba a GrowIA pensando para siempre",

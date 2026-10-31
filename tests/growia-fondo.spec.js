@@ -188,13 +188,14 @@ test('una respuesta que se queda parada a mitad se corta y se repite (antes se q
 
 test('si Google no contesta, lo repite una vez y luego pasa al 3.6, sin la rápida', async ({ page, errores }) => {
   await preguntar(page);
-  await page.evaluate(() => { RED_IA.espera = 1500; });
+  // 5 s de espera: da tiempo a ver los segundos que lleva (salen a partir de los 3)
+  await page.evaluate(() => { RED_IA.espera = 5000; });
   const pet = await geminiFetch(page, ['nunca', 'nunca', 'bien']);
   await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
   const cuerpo = page.locator('#asCuerpo');
   // mientras espera, los segundos que lleva
   await expect(cuerpo.locator('.as-seg')).toHaveText(/^\d+ s$/, { timeout: 10_000 });
-  await expect(cuerpo).toContainText('sigue con tus aportaciones', { timeout: 15_000 });
+  await expect(cuerpo).toContainText('sigue con tus aportaciones', { timeout: 30_000 });
   expect(await pet()).toEqual(['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.6-flash']);
   await expect(cuerpo).not.toContainText('rápida');
 });

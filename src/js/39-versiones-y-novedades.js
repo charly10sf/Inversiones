@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.7l', f: '2026-10-31', h: '20:30', t: 'GrowIA, más firme en el móvil', arreglos: [
+  { v: '0.7l', f: '2026-10-31', h: '21:30', t: 'GrowIA, más firme en el móvil', arreglos: [
     'GrowIA ya no se queda pensando para siempre: si la respuesta se para a mitad (pasa con mala cobertura), la corta y la repite sola. Mientras piensa, ves los segundos que lleva. Lo vio Carlos.',
     'Si se corta la conexión, lo sigue intentando más rato y con el mismo modelo, y te dice si es que no tienes red, que Google tarda o que has pasado de wifi a datos. Solo cambia de modelo cuando Google no contesta.',
     'Con la app de Android nueva, GrowIA sigue contestando con la app fuera aunque tarde más de 3 minutos (Android la paraba a los 3) y se entera al momento de que cambias de wifi a datos.',
