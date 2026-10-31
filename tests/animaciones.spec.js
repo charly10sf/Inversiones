@@ -32,12 +32,14 @@ test('en Inicio, lo que no para solo cambia opacidad y posición; con una hoja e
   expect(queRepintan(l), JSON.stringify(l)).toEqual([]);
   if (!(await page.evaluate(() => gtaActivo()))) return;
   const pastilla = () => page.evaluate(() => document.getAnimations().filter((a) => ['gtaNeon', 'gtaPastilla'].includes(a.animationName)).map((a) => a.playState).sort());
-  expect(await pastilla()).toEqual(['running', 'running']);
+  // sin nada encima, en marcha (lo que se abre solo al entrar, como Primeros pasos, puede llegar tarde: se quita cada vez)
+  const sinNada = async () => { await page.evaluate(() => document.querySelectorAll('body > .hoja-fondo, body > .tour, body > .estreno').forEach((e) => e.remove())); return pastilla(); };
+  await expect.poll(sinNada).toEqual(['running', 'running']);
   await page.evaluate(() => abrirAjustes());
   await expect(page.locator('.hoja[aria-label="Ajustes"]')).toBeVisible();
   expect(await pastilla()).toEqual(['paused', 'paused']);
   await page.keyboard.press('Escape');
-  await expect.poll(pastilla).toEqual(['running', 'running']);
+  await expect.poll(sinNada).toEqual(['running', 'running']);
 });
 
 test('la hoja de GTA VI: lo que no para solo cambia opacidad y posición, y el reloj cambia solo las cifras', async ({ page, errores }) => {
