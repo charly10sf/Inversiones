@@ -1,11 +1,11 @@
 {
  "v": 1,
- "generado": "2026-10-30T09:01:40.774Z",
+ "generado": "2026-10-31T08:55:10.939Z",
  "modelo": "gemini-3.5-flash-lite",
  "muestra": false,
  "total": 42,
- "bien": 41,
- "pct": 98,
+ "bien": 42,
+ "pct": 100,
  "peticiones_media": 1.4,
  "errores_pagina": [],
  "preguntas": [
@@ -16,10 +16,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 2,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Tu cartera avanza hoy con buen pie: sube **590,66 €** (+0,7 %), situando el patrimonio total en **88.303,79 €**. \n\nEl día viene marcado por el tirón de tus acciones y de los fondos europeos, mientras el oro recorta posiciones:\n\n* **Lo mejor del día:** Repsol brilla con fuerza (**+2,2 %**) tras batir récords de beneficios y anunciar una recompra de acciones de 950 millones. El MSCI Europe también empuja con un **+1,0 %** gracias a la pausa en los tipos del BCE, y los Emergentes suman un **+1,9 %**.\n* **La cruz:** El oro cae un **−1,9 %**, perdiendo la barrera psicológica de los 4.000 dólares la onza debido a la fortaleza de los bonos. El S&P 500 se mantiene plano con un **+0,4 %**, conteniendo la respiración por las dudas en torno al gasto en inteligencia artificial en Wall Street.\n\nCon est"
+   "respuesta": "Tu cartera va **ligeramente a la baja** hoy, en línea con el tono general de los mercados. El patrimonio total se sitúa en **88.044,54 €**, lo que supone un descenso de **−55,41 € (−0,1 %)** respecto a ayer. \n\nAunque el día es flojo, la ganancia acumulada sigue siendo buena: estás en **+8.163,74 € (+10,3 %)** sobre lo que te costó.\n\n### Lo que ha movido la cartera hoy:\n* **Los mercados globales han frenado:** Tanto Wall Street (S&P 500 −1,8 %) como las bolsas europeas (Euro Stoxx 50 −1,2 %) han cerrado en negativo arrastrados por las dudas en el sector tecnológico y la banca. Esto se nota en tus fondos y en valores como IAG (−1,6 %) o el oro (−3,0 %), que ha perdido la cota de los 3.900 $ y marca mínimos del año.\n* **La nota positiva la pone Repsol:** Tus acciones suben un **+4,5 %** tras "
   },
   {
    "id": "f-vender-mitad-repsol",
@@ -28,12 +28,12 @@
    "ok": true,
    "mal": [],
    "peticiones": 2,
-   "segundos": 3,
+   "segundos": 6,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [
     "simular_venta"
    ],
-   "respuesta": "Si vendes la mitad de **Repsol** (114,31 acciones, que al precio actual son **3.445,30 €** netos de comisión), esto es lo que pasaría con Hacienda:\n\n- **Ganancia que declaras (por FIFO):** 1.994,80 € (te costó 1.450,50 € y la vendes por 3.446,30 € brutos).\n- **Impuesto a pagar en la renta:** **379,01 €** (tributa en el primer tramo del ahorro al 19 %, ya que no llevas más ventas este año).\n\nTe quedarías con otras 114,31 acciones de Repsol (valoradas en unos 3.446 €) y los 3.445 € en efectivo menos esos 379 € que tendrías que apartar para Hacienda. Además, tus acciones sueltas bajarían del 17 % al 14,8 %, acercándote a tu límite del 20 %.\n\nEso sí, recuerda que Repsol está hoy muy fuerte gracias a sus buenos resultados y al conflicto en Oriente Medio que encarece el petróleo (los analistas l"
+   "respuesta": "Si vendes la mitad de **Repsol** (114 acciones), te embolsarías **3.511,59 €** netos de comisión en Trade Republic. \n\nAquí tienes los números exactos de la operación y el impacto fiscal:\n\n* **Ganancia que declaras:** **2.061,09 €** (la diferencia entre lo que cobras y lo que te costó por el método FIFO).\n* **Impuesto a pagar en la renta:** **391,61 €** (al tributar al 19% en la base del ahorro, ya que no llevas más ventas este año).\n* **Te quedas:** 114 acciones de Repsol valoradas en otros **3.512,59 €**.\n\n**¿Por qué te lo planteas?** \nLos analistas sitúan su precio objetivo medio en 30,41 €, prácticamente el precio actual de **30,73 €**, y GrowFolio ya te marca recoger beneficios porque ha subido un 142% desde que la compraste. Además, al vender la mitad reduces el peso de esta empresa e"
   },
   {
    "id": "f-compro-natwest",
@@ -48,7 +48,7 @@
     "buscar_empresa",
     "simular_compra"
    ],
-   "respuesta": "**Sí, puedes comprar NatWest Group (NWG.L)**, pero con prudencia y ajustando la cifra. \n\n### Cuánto meter y desde dónde\n* **Cuánto:** Metiendo **1.000 €** (unos 135 títulos a 6,16 GBP / ~7,38 €), tus acciones sueltas pasarían del 17,0 % al **18,1 %** de tu cartera, quedándote aún por debajo de tu límite del 20 %.\n* **Desde dónde:** Cómprala en **Trade Republic** (la comisión es de 1 €). \n* **Atención a tus reglas:** Recuerda que ya tienes un 13,8 % de tu cartera en el sector financiero (por ejemplo, a través de tus fondos), aunque no tienes ninguna otra acción bancaria suelta directa.\n\n### Contraste con analistas y noticias recientes\n* **Lo bueno:** Los analistas están muy a favor (18 recomiendan comprar, con un potencial del **+30,4 %** hasta su objetivo medio de 803 GBp a 12 meses). Es u"
+   "respuesta": "Sí, puedes comprar **NatWest Group (NWG.L)**, pero con matices importantes sobre los riesgos recientes y tus límites. \n\n### Qué hacer y cuánto meter\nCompra unos **1.500 €** en **Trade Republic**. Con ese importe (y contando la comisión y la tasa), te quedas con las acciones sueltas en el **18,6 %** de tu cartera, respetando tu límite del 20 %.\n\n### Desde dónde sacarlo\nComo no tienes efectivo libre (solo 240,80 € en Trade Republic), la mejor opción es usar parte de los **2.919 €** que vas a liberar al vender tu paquete de Repsol (siguiendo tu hoja de ruta), o bien mover algo de liquidez.\n\n### El contraste y las noticias\n* **A favor:** 18 analistas recomiendan comprar con un objetivo medio de 8,03 GBP (un potencial del **+26,4 %** en 12 meses, que se queda en un **+25,3 % neto al año** tras "
   },
   {
    "id": "f-cripto-5",
@@ -60,7 +60,7 @@
    "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "**No te pasas: estás en el 4,6 %**, por debajo de tu límite del 5 %. \n\nTu posición en Bitcoin (id \"p9\") vale ahora **4.059,66 €** sobre un total de 88.345,91 € en tu cartera. Todavía tienes un pequeño margen de unos **357 €** antes de tocar el límite que te pusiste.\n\nConviene vigilarlo de cerca porque la cripto se mueve muy rápido (hoy mismo ha bajado un 3 % y cotiza en torno a los 69.634 €), así que con cualquier pequeño rebote volvería a rondar ese 5 %. \n\nComo no has rellenado tu perfil todavía, una pregunta rápida: **¿qué edad tienes y cuánto tiempo planeas dejar este dinero invertido sin tocarlo?**"
+   "respuesta": "Sí, estás muy cerca pero todavía **estás por debajo de tu límite**: ahora mismo tu posición en **Bitcoin** pesa un **4,6 %** de tu cartera total (vale 4.036,75 € sobre un total de 88.040,31 €), frente a tu límite propio del **5 %**.\n\nTe quedan unos **365 € de margen** antes de tocar techo en criptomonedas. \n\nEso sí, con la volatilidad que tiene el Bitcoin (un 43 % al año), cruzar esa línea es cuestión de días si rebota. Como ya estás al 4,6 %, **no metas más dinero ahí** y deja que tus aportaciones periódicas sigan yendo al motor de tus fondos (los 600 € al mes al S&P 500), lo que hará que el peso relativo de las criptos se vaya diluyendo de forma natural.\n\n¿Has pensado en rellenar tu perfil o tienes dudas sobre si recortar algo de cripto ahora que estás cerca del límite?"
   },
   {
    "id": "f-proyeccion-600",
@@ -69,12 +69,12 @@
    "ok": true,
    "mal": [],
    "peticiones": 2,
-   "segundos": 3,
+   "segundos": 4,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [
     "proyectar"
    ],
-   "respuesta": "Dentro de 10 años, si mantienes los **600 € al mes** (sin subirlos cuando cambie tu sueldo) y la bolsa rinde un 7 % anual de media, lo probable es que tengas **249.889 €**. \n\nDe esa cifra, habrás puesto de tu bolsillo 160.336 € y el resto (unos 89.553 €) habrán salido de las ganancias de la bolsa y el interés compuesto.\n\nDependiendo de cómo se mueva el mercado en esta década, el escenario cambia:\n- **Si va mal:** unos **150.689 €**.\n- **Si va bien:** unos **431.973 €**.\n\n*(Nota: si a medida que pasen los años subes las aportaciones un poco cuando te suban el sueldo, verás que esta cantidad sube todavía más).* \n\nPara afinar aún más el cálculo y ver otros escenarios, ¿qué edad tienes ahora y en qué sector trabajas?"
+   "respuesta": "Si mantienes esos **600 € al mes** durante 10 años contando con una rentabilidad media del 7 % anual, lo probable es que alcances los **249.360 €** (partiendo de tus 88.040,31 € actuales y habiendo puesto de tu bolsillo 160.040 € en total). \n\nSegún los 2.000 escenarios simulados por GrowFolio, el abanico para dentro de 10 años es el siguiente:\n- **Si va mal:** unos **150.349 €**.\n- **Lo probable:** unos **249.360 €**.\n- **Si va bien:** hasta **431.206 €**.\n\nAdemás, cruzando ese mismo plan, llegarás a los **100.000 €** de patrimonio total en **noviembre de 2027** (el año que viene). \n\nPara que este futuro se acerque más al lado optimista, recuerda que un pequeño gesto como subir la aportación cada año un poco más (cuando te suban el sueldo) marca una diferencia gigante a largo plazo. ¿A qué"
   },
   {
    "id": "f-radar-europa",
@@ -88,7 +88,7 @@
    "herramientas": [
     "radar"
    ],
-   "respuesta": "Para diversificar tu cartera en Europa buscando empresas sólidas, con buen contraste de analistas y que paguen dividendo (mínimo un 2 %), aquí tienes las tres mejores opciones que salen ahora mismo en el radar de GrowFolio:\n\n1. **ICG plc** (ICG.L, Financiero - Reino Unido)\n   - **Lo que ofrece:** Potencial del **+35,0 %** hasta el objetivo de los analistas (a 12 meses) y un dividendo del **4,8 %**. Cotiza a un PER futuro bajo de 9,7 y tiene 6 de 7 señales a favor.\n   - **Coste fiscal:** Al comprar acciones británicas pagas un **0,5 % de impuesto de timbre**.\n\n2. **ING Groep N.V.** (INGA.AS, Financiero - Países Bajos)\n   - **Lo que ofrece:** Potencial del **+20,1 %** y un dividendo del **3,9 %**. PER futuro de 9,7 y 7 de 7 señales a favor. El BCE acaba de mantener los tipos en el 2,50 %, lo"
+   "respuesta": "Para diversificar en Europa reforzando sectores donde vas más flojo (como el **financiero**, que apenas pesa un 13,8 % en tu cartera), estas son las dos opciones europeas del radar mejor contrastadas y con más respaldo de los analistas:\n\n1. **ING Groep N.V. (INGA.AS)** — Sector Financiero (Países Bajos)\n   - **Lo que ofrece**: Un potencial del **+19,3 %** hasta el objetivo medio de los analistas (consenso de 20 analistas para *Comprar*), un PER futuro muy atractivo de **9,5** y un dividendo del **4,0 %**. \n   - **Contraste y noticias**: Cuenta con la máxima nota del motor (**7 de 7 señales a favor**). La prensa destaca que presentó un beneficio de 1.850 millones de euros y una recompra de acciones de 1.650 millones. \n   - **Costes y fiscalidad**: Al cotizar en Países Bajos, su dividendo ll"
   },
   {
    "id": "f-dividendo-bat",
@@ -100,24 +100,21 @@
    "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "British American Tobacco (**BAT**) te da unos **261,86 € brutos** al año por las 89,61 acciones que tienes, calculados con su dividendo actual (una rentabilidad de un 5,29 % sobre el valor de sus títulos).\n\nDespués de impuestos, te quedas limpio con unos **222,58 € al año**. \n\nAl ser una empresa británica, no te retienen nada en origen al pagar el dividendo, pero al hacer la declaración de la renta en España tributa en la base del ahorro (un 19 % para los primeros 6.000 € de ganancias o dividendos del año). \n\n*Por cierto, aún no me has dicho tu edad ni cuánto riesgo te gusta asumir. ¿Cuándo tienes pensado empezar a rescatar este dinero?*"
+   "respuesta": "Tus acciones de **BAT** te dan unos **262 € brutos** al año (un 5,31 % sobre lo que valen ahora, unos 4.938,66 €). \n\nDespués de impuestos, te quedas en unos **223 € netos** al año. \n\nAl estar en **Trade Republic** (Reino Unido), el dividendo llega sin retención en origen, pero al hacer la declaración de la renta en España tributa en la base del ahorro al tipo que te corresponda (ahora estás en el 19 % inicial), por lo que se quedan esos 223 € limpios. \n\nPor cierto, tienes el próximo dividendo de **BAT** al caer: el **24 de diciembre** reparte unos **52 €** netos. \n\nPara afinar el cálculo exacto de lo que te retendrán en tu tramo final de la renta, ¿me dices más o menos qué edad tienes y en qué andas trabajando? Así lo clavo del todo."
   },
   {
    "id": "f-iag-cae",
    "modo": "fundador",
    "q": "IAG ha caído hoy, ¿vendo?",
-   "ok": false,
-   "mal": [
-    "falta /iag/"
-   ],
+   "ok": true,
+   "mal": [],
    "peticiones": 3,
-   "segundos": 4,
+   "segundos": 61,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [
-    "buscar_empresa",
     "simular_venta"
    ],
-   "respuesta": "No, no vendas. Estás prácticamente a la par (ganando o perdiendo unos céntimos: tu valor de coste es de 3.207 € y ahora vale 3.202,62 €). \n\nEl porqué de mantener:\n- **Los analistas la ven muy bien:** 9 de cada 11 recomiendan comprar y sitúan su precio objetivo medio en **6,00 €**, lo que supone un potencial de subida del **22,2 %** a 12 meses (unos **+627 €** netos con lo que tienes, contando su dividendo).\n- **Próxima cita clave:** El próximo **6 de noviembre** presenta resultados trimestrales.\n- **Fiscalidad si vendieras:** Como estás vendiendo con unas pérdidas simbólicas de **5,38 €**, no pagarías ningún impuesto y esa pequeña pérdida te serviría para compensar otras ganancias del año, pero vender ahora por una caída rutinaria del día no tiene sentido teniendo en cuenta el respaldo que"
+   "respuesta": "No, **no vendas IAG**. Aunque hoy haya caído un 1,6 % y la tensión en Oriente Medio y el petróleo encarezcan sus costes operativos a corto plazo, sus títulos se mantienen muy cerca de su media de 200 sesiones y la gran mayoría de los analistas (9 de 11) recomiendan comprar con un precio objetivo medio de **6,00 €** (un 24,1 % por encima de los 4,833 € actuales). \n\nSi vendieras hoy tus 652,53 acciones enteras en Trade Republic por unos 3.152,68 €, registrarías una pequeña pérdida de **−54,32 €** (al haber costado 3.207,00 €). Al tratarse de una pérdida, **no pagarías ningún impuesto extra a Hacienda**; es más, esos 54,32 € de pérdida se quedarían apuntados para compensar otras ganancias que tengas este año. \n\nSin embargo, vender ahora no compensa por dos motivos clave:\n1. **El plazo y el ob"
   },
   {
    "id": "f-oro",
@@ -125,13 +122,11 @@
    "q": "¿Tiene sentido seguir con el oro o lo paso al S&P 500?",
    "ok": true,
    "mal": [],
-   "peticiones": 2,
+   "peticiones": 1,
    "segundos": 4,
    "modelo": "gemini-3.5-flash-lite",
-   "herramientas": [
-    "simular_venta"
-   ],
-   "respuesta": "Tiene todo el sentido mantener el oro: **cumple una función de protección que el S&P 500 no te da**, aunque ahora mismo notes que el lingote va más lento.\n\n### Los números de tu oro frente al S&P 500\n- **Tu ganancia:** Tienes **6.599,73 €** en el ETC de oro (un 7,5 % de tu cartera), comprado por 3.890 €. Vas ganando un **+69,7 %** (+2.709,73 €).\n- **El coste fiscal si lo vendes todo hoy:** Como vas con ganancia, si vendieras los 6.599,73 € para pasarlos al S&P 500, tendrías que pagar a Hacienda **514,85 €** de impuestos en la renta del año que viene (tributa al 19 % por los primeros 6.000 € de ganancia del año). Al final te quedarían **6.084,88 €** para meter en el fondo.\n- **Su papel en tu cartera:** El oro está para amortiguar los golpes cuando la bolsa flaquea. En el último año sube un "
+   "herramientas": [],
+   "respuesta": "Tiene todo el sentido mantener el **Oro** (que tienes a través del ETC *WisdomTree Physical Gold* y supone el 7,4 % de tu cartera) en lugar de venderlo todo para pasarlo al **S&P 500**. \n\nTe explico por qué con los números de tu cartera:\n\n1. **Cumplen funciones distintas**: Tu **S&P 500** es el motor principal (rentabilidad a largo plazo), pero el **Oro** es tu seguro contra tormentas. Históricamente, el oro aguanta o sube cuando las bolsas sufren caídas fuertes. De hecho, aunque este mes ha sufrido un ajuste (baja un 4,8 % en el último mes y cotiza a unos 3.899 $ tras perder los 3.900 $), a 3 y 5 años te ha dado una rentabilidad anual brutal (un 22,5 % y un 17,6 % anual respectivamente).\n2. **Diversificación**: El oro equilibra tu cartera de forma fantástica. Ya tienes una exposición muy "
   },
   {
    "id": "f-efectivo",
@@ -140,12 +135,12 @@
    "ok": true,
    "mal": [],
    "peticiones": 2,
-   "segundos": 3,
+   "segundos": 4,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [
     "simular_compra"
    ],
-   "respuesta": "Para esos **240 €** parados en Trade Republic, lo más sensato es utilizarlos para empezar a comprar **Salzgitter AG** (SZG.DE) tras la venta parcial que tienes prevista en Repsol. \n\nAunque la orden de Salzgitter que te recomendó GrowFolio era de 2.600 € (combinando parte de la venta de Repsol), puedes dejar estos 240 € ahí mismo o invertirlos directamente en **Salzgitter AG** si ya vas a hacer la operación. Con 240 € te daría para unas 5 acciones (cotizan a unos 47,86 €), pagando 1 € de comisión en Trade Republic. \n\nEso sí, ten en cuenta la fiscalidad alemana: **Alemania retiene un 26,4 % en los dividendos** y en la declaración de la renta en España solo recuperas el 15 % por el convenio de doble imposición, por lo que se pierde un 11,4 % de cada dividendo salvo que lo reclames directament"
+   "respuesta": "Para esos **240 €** parados en Trade Republic, lo mejor es invertirlos en **Salzgitter AG (SZG.DE)** siguiendo el plan que ya tenemos marcado. \n\nComo ya llevas tiempo con el ojo puesto en ella, esos 240 € te sirven para comprar unas **4,93 acciones** de la siderúrgica alemana. \n\n### ¿Por qué esta opción?\n* **Encaja en tu cartera:** El sector de materiales apenas pesa un 3 % de tu bolsa, así que meter estos euros ahí equilibra la cartera (ahora mismo tus acciones sueltas están en el 17,2 %, por debajo de tu límite del 20 %).\n* **Potencial y contraste:** Los analistas le dan un potencial de subida del **41 %** a 12 meses, cotiza muy barata (a un PER futuro de 5,8) y cuenta con el respaldo de las salvaguardias europeas frente al acero importado.\n* **Costes:** Trade Republic te cobrará 1 € de "
   },
   {
    "id": "f-solape",
@@ -153,11 +148,11 @@
    "q": "¿Mis fondos se pisan entre ellos?",
    "ok": true,
    "mal": [],
-   "peticiones": 2,
-   "segundos": 9,
+   "peticiones": 1,
+   "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Para ver si tus fondos se pisan entre ellos, vamos a mirar qué llevan dentro exactamente. Tienes tres fondos en tu cartera de MyInvestor que suman el **66,6 %** de tu dinero (58.880,30 €):\n\n1. **S&P 500** (iShares US Index Fund): El 31,5 % de tu cartera. Invierte en las 500 mayores empresas de **EE.UU.** (tecnología, consumo, salud...).\n2. **MSCI Europe** (Amundi Index MSCI Europe): El 26,5 % de tu cartera. Invierte en los grandes valores de los países desarrollados de **Europa** (industria, banca, energía...).\n3. **Emergentes** (Vanguard Emerging Markets): El 8,6 % de tu cartera. Invierte en países en desarrollo como China, Taiwán, India o Brasil.\n\n### ¿Se pisan? **No, se complementan a la perfección.**\nCada uno cubre una zona geográfica distinta del planeta, por lo que juntos forman una "
+   "respuesta": "Tus fondos indexados no se pisan apenas entre ellos; al contrario, **se complementan muy bien**. \n\nTienes tres fondos de renta variable que cubren regiones distintas sin solaparse:\n* **S&P 500** (31,5% de tu cartera): Invierte exclusivamente en las 500 mayores empresas de **EE.UU.** (tecnología, consumo, salud...).\n* **MSCI Europe** (26,6% de tu cartera): Se centra en los grandes valores de **Europa** (financiero, industrial, consumo básico...).\n* **Emergentes** (8,6% de tu cartera): Apuesta por países en desarrollo como Asia y América Latina.\n\nCada uno va a su zona, por lo que no estás comprando dos veces lo mismo. Además, tu fondo de **Renta fija a corto plazo** (4,0%) cumple una función totalmente distinta: dar estabilidad y servir de refugio seguro.\n\nEso sí, ten en cuenta que las grand"
   },
   {
    "id": "f-costes",
@@ -166,10 +161,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 2,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Pagas **101 € al año** en total por los gastos de tus fondos indexados y de renta fija (lo que se conoce como TER medio, que está en el **0,15 %**). \n\nAquí tienes el desglose exacto de lo que te cuesta cada uno por mantenerlos en marcha:\n\n* **S&P 500** (*iShares US Index Fund*): 0,05 % de gastos (unos **13,93 €** al año sobre los 27.850,90 € que tienes).\n* **MSCI Europe** (*Amundi Index MSCI Europe*): 0,15 % de gastos (unos **35,11 €** al año sobre los 23.409 €).\n* **Emergentes** (*Vanguard Emerging Markets*): 0,23 % de gastos (unos **17,53 €** al año sobre los 7.621,88 €).\n* **Renta fija corto plazo** (*Neuberger Berman Short Duration*): 0,25 % de gastos (unos **8,83 €** al año sobre los 3.530,40 €).\n*(Nota: El ETC de oro lleva un 0,39 % de gastos, que se llevan otros 25,74 €).*\n\nSon cost"
+   "respuesta": "Pagamos unos **100 € al año** en total por los gastos de gestión (TER) de todos tus fondos. \n\nEsto representa una media del **0,15 %** sobre lo que tienes invertido en ellos. Tienes los costes muy bien optimizados:\n\n* **S&P 500 (MyInvestor):** Un **0,05 %** de gastos (unos 13,85 € al año sobre su valor actual).\n* **MSCI Europe (MyInvestor):** Un **0,15 %** de gastos (unos 35,11 € al año).\n* **Emergentes (MyInvestor):** Un **0,23 %** de gastos (unos 17,33 € al año).\n* **Renta fija corto plazo (MyInvestor):** Un **0,25 %** de gastos (unos 8,84 € al año).\n\n*(Nota: Los ETC como el Oro o las acciones sueltas y criptomonedas no llevan este tipo de gastos corrientes de fondo, aunque el oro tiene una pequeña comisión interna de mantenimiento del 0,39 %).*\n\nPara lo que queda de año y pensando en el"
   },
   {
    "id": "f-renta",
@@ -178,10 +173,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 4,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Para saber exactamente cuánto vas a pagar en la renta de este año, la clave está en una regla de oro de Hacienda: **mientras no vendas, no pagas**. \n\nPor ahora, en los datos que tienes apuntados en GrowFolio, tus ventas de este año están a **0,00 €** y tus dividendos apuntados también están a cero. Esto significa que, si no has vendido nada fuera de la aplicación, **la cuota estimada a pagar a Hacienda hoy es de 0,00 €**.\n\nEso sí, tus inversiones van muy bien (¡tienes más de 8.400 € de ganancias latentes!), por what si decidieras vender **todo** hoy mismo, Hacienda te pediría su parte por las ganancias acumuladas. He aquí el desglose de lo que pagarías si liquidaras cada posición hoy entero (calculado con la base del ahorro y el tipo marginal del 19 % al 30 %):\n\n*   **MSCI Europe:** +6.509"
+   "respuesta": "Con los datos que tenemos apuntados en GrowFolio, **no vas a pagar nada** (0,00 €) en la renta de este año por tus inversiones. \n\nEl motivo es que, de momento, **no tienes registradas ventas con ganancias** ni has apuntado dividendos o intereses cobrados en lo que va de 2026. La base del ahorro está a cero y tu tipo marginal estimado es del 19 %. \n\nEso sí, ten en cuenta dos detalles importantes:\n1. **Dividendos:** Aunque no los hayas apuntado, vas a recibir unos **405 € netos** (501 € brutos) en los próximos 12 meses (con cobros previstos en diciembre de BAT y en enero de Repsol). Los dividendos españoles ya vienen con una retención del 19 %, y los extranjeros (como los de Reino Unido en BAT) tributan según su convenio, pero todo ello se ajusta cuando hagas la declaración.\n2. **Si vendiera"
   },
   {
    "id": "f-dos-meses",
@@ -193,7 +188,7 @@
    "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "La respuesta corta es **no**: no puedes restar esa pérdida en tu declaración de la renta de este año si recompras las acciones antes de dos meses. \n\nHacienda tiene una norma anti-aplicación de pérdidas (la llamada regla de los dos meses para acciones cotizadas en España) que impide deducir la pérdida si vuelves a comprar el mismo valor en los **dos meses anteriores o posteriores** a la venta. Como IAG cotiza en España (Bolsa de Madrid), se aplica estrictamente este plazo de 60 días. \n\nSi vendieras hoy tus 652,53 acciones de **IAG** con una pequeña pérdida (ahora mismo vas prácticamente a la par, con una pérdida de solo −4,38 €) y las recompras la semana que viene, Hacienda aplazará esa pérdida. No podrás usarla para compensar otras ganancias hasta que vendas los nuevos títulos definitivame"
+   "respuesta": "No, **no puedes restar esa pérdida** en tu declaración de la renta de este año. \n\nTal y como está la normativa fiscal en España para 2026, si vendes una acción con pérdidas y vuelves a comprar la misma empresa **en los dos meses anteriores o posteriores** (el plazo es de 2 meses para acciones y ETF que cotizan en bolsas de la UE, como IAG en España), **se aplaza la pérdida**. \n\nEso significa que Hacienda no te deja usar esa minusvalía para compensar tus ganancias actuales hasta que vuelvas a vender esas acciones nuevas y cierres del todo la operación sin recomprarlas de nuevo en ese periodo de dos meses. Como pretendes recomprarla la semana que viene, entrarías de lleno en esta regla (la famosa \"regla de los dos meses\" o de las recompras de valores homogéneos).\n\nAdemás, hay que tener en cu"
   },
   {
    "id": "f-noticias-repsol",
@@ -205,7 +200,7 @@
    "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Las noticias de **Repsol** esta semana son muy positivas para tu cartera:\n\n* **Resultados excelentes:** La compañía se disparó un **4,38 %** en bolsa tras batir las previsiones de beneficios en su informe del tercer trimestre, disparando su beneficio acumulado hasta septiembre por encima de los 5.000 millones de euros.\n* **Recompra de acciones:** Ha anunciado una recompra significativa de títulos propios por valor de **950 millones de euros**, lo que premia al accionista.\n* **Entorno favorable:** El conflicto en Oriente Medio mantiene el precio del petróleo Brent en cotas muy elevadas (sobre los 112-113 dólares), lo que encarece los hidrocarburos y dispara los ingresos y márgenes de las grandes energéticas del sector.\n\nLos analistas destacan que con estos movimientos y resultados la acción"
+   "respuesta": "Las noticias de Repsol esta semana son **muy positivas** para tus acciones:\n\n* **Resultados excelentes:** Ha presentado este 29 de octubre sus cuentas trimestrales, multiplicando por cuatro su beneficio hasta septiembre gracias a los altos precios del petróleo.\n* **Premio para el accionista:** Ha anunciado un programa de recompra de acciones propias por **950 millones de euros**, lo que ayuda a sostener y subir el valor de la cotización (esta semana ya ha subido un 4,49% en bolsa, situándose en **30,73 €**).\n* **Entorno favorable:** El encarecimiento del crudo por el conflicto en Oriente Medio sigue jugando a favor de sus márgenes.\n\nCon estos números, Repsol ha alcanzado el precio objetivo medio que le dan los analistas (**30,41 €**). Tal como marca tu hoja de ruta, GrowFolio te aconseja r"
   },
   {
    "id": "f-aranceles",
@@ -217,7 +212,7 @@
    "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Sí, te afectan de forma directa e indirecta a **14.869 €** de tu cartera (un **16,8%** del total), sobre todo en Europa y Reino Unido. \n\nAquí tienes el desglose de dónde te pican y cómo:\n\n1. **British American Tobacco (BAT)** — *5,6% de tu cartera (4.941 €)*:\n   * **Cómo te afecta**: EEUU es su mayor mercado. Si Washington impone aranceles o tasas a productos de consumo procedentes del extranjero, o hay tensiones comerciales con el Reino Unido, sus márgenes y sus flujos de caja (de los que sale tu jugoso dividendo del 5,3%) sufren. Además, la prensa ya señala presiones regulatorias e investigaciones sobre la compañía en Europa.\n\n2. **Fondo MSCI Europe** — *26,5% de tu cartera (23.409 €)*:\n   * **Cómo te afecta**: Dentro de este fondo indexado tienes a los grandes exportadores europeos (aut"
+   "respuesta": "Los aranceles de Estados Unidos **no te afectan de forma directa ni grave**, pero sí se nota el ambiente en algunas de tus posiciones y en los mercados generales. \n\nMiras tu cartera y ves cómo te roza:\n\n1. **Tus fondos indexados (S&P 500, MSCI Europe y Emergentes):** Es el 66,7 % de tu dinero. Los aranceles globales encarecen el comercio y generan incertidumbre en las bolsas (estos días hemos visto al S&P 500 y al Nasdaq caer por temores económicos y de la inteligencia artificial). A largo plazo, tus fondos están muy diversificados y absorben estos golpes, por eso la regla es **no tocar los fondos indexados** y seguir con tu aportación automática de 600 € al mes.\n2. **Repsol y BAT:** Son multinacionales europeas y británicas con mucha presencia internacional. Los aranceles o guerras comerc"
   },
   {
    "id": "f-tipos-bce",
@@ -229,7 +224,7 @@
    "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "El Banco Central Europeo (BCE) **no ha bajado los tipos**, los ha **mantenido en el 2,50%** en su última reunión del 29 de octubre, pero Lagarde ya ha avisado de que las presiones de la energía podrían forzar **una subida en diciembre**. \n\nAun así, el dinero en Europa sigue relativamente barato y esto afecta a tu cartera de varias formas muy concretas:\n\n1. **Impulsa a tu bolsa europea:** La pausa en los tipos ha sentado bien a las bolsas. Tu fondo **MSCI Europe** ha subido hoy un 1,0% y los analistas señalan que los inversores buscan refugio o rentabilidad en acciones europeas sólidas ante la incertidumbre.\n2. **Ayuda a tus acciones y dividendos:** Empresas con buen dividendo como **BAT** (5,29% de dividendo) o la propia **Repsol** se benefician porque, cuando los tipos de los bancos centr"
+   "respuesta": "El BCE **no ha bajado los tipos**: en su reunión del 29 de octubre los ha **mantenido en el 2,50%**, aunque ha advertido de que la inflación podría repuntar. \n\nSi finalmente decide bajarlos en los próximos meses, te afecta de varias formas directas en tu cartera:\n\n1. **Tu renta fija y tus ahorros dan menos:** Tu fondo de renta fija a corto plazo (*Neuberger Berman Short Duration*, un 4,0 % de tu cartera) nota la bajada porque los nuevos bonos que compra dan menos intereses. Lo mismo pasa con el poco efectivo que tienes en Trade Republic.\n2. **Ayuda a tus fondos de bolsa:** Al bajar el coste del dinero, las empresas se financian más baratas, los créditos bajan y la bolsa suele respirar aliviada, lo que impulsa tus fondos indexados del **S&P 500** y **MSCI Europe** (que suman el 58 % de tu p"
   },
   {
    "id": "f-riesgo-24",
@@ -241,7 +236,7 @@
    "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Con **24 años**, tu cartera **no es demasiado arriesgada** para nada; de hecho, es fantástica para tu edad. Tienes un horizonte temporal enorme (décadas por delante), lo que significa que puedes permitirte asumir volatilidad a cambio de mayor rentabilidad a largo plazo. \n\nMirando los números de tu cartera (88.342,65 € en total):\n* **Renta variable (fondos indexados y acciones):** Representa el **83,7 %** de tu patrimonio. Con 24 años, lo ideal es estar plenamente invertido en bolsa para aprovechar el interés compuesto.\n* **Tus fondos indexados (S&P 500, MSCI Europe y Emergentes):** Suman más del **66 %** de tu cartera. Son tu motor principal y el S&P 500 te aporta esa exposición a la tecnología y empresas líderes mundiales que a largo plazo rinde muy bien (un 13,2 % al año en los últimos 5"
+   "respuesta": "Teniendo **24 años**, tu cartera **no es demasiado arriesgada**; de hecho, está muy bien plantada para tu edad, aunque con un matiz importante. \n\nTienes un **83,8 % en renta variable** (fondos indexados y acciones), lo cual es perfecto a largo plazo: con tu horizonte temporal (más de 30 o 40 años por delante), la bolsa es donde mejor crece el dinero. Además, tus fondos indexados (S&P 500, MSCI Europe y Emergentes) son el motor principal (el 66,7 % del total), y tus acciones sueltas están en el **17,2 %**, por debajo de tu límite del 20 %.\n\nEso sí, hay dos pequeños \"frenos de mano\" que bajan el riesgo general de tu cartera pero que quizás no necesitas llevar tan atados con solo 24 años:\n1. **El Oro (7,4 %):** Es un seguro excelente para caídas o momentos de incertidumbre, pero a largo plazo"
   },
   {
    "id": "f-emergentes",
@@ -250,10 +245,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 4,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Para decidir si debes meter más dinero en tu fondo de **Emergentes**, vamos a mirar tus números actuales:\n\n* **Lo que tienes:** Ya tienes **7.621,88 €** en este fondo (el **8,6 %** de toda tu cartera).\n* **Cómo va:** Lleva una ganancia latente de **+1.521,88 € (+24,9 %)** y este año rinde un **+23,2 %**. La señal automática de GrowFolio es **Mantener**.\n* **Contrastes actuales:** Según las noticias de estos días que ha leído GrowIA, los mercados emergentes muestran fortaleza y un repunte reciente (+1,88 % apoyado por la subida de Hong Kong), aunque con divergencias según la región (como el castigo puntual en Brasil). Los analistas le dan una rentabilidad histórica a 5 años del 8,1 % anual.\n\n**¿Deberías meter más?**\n\nEn principio, **no hace falta que aumentes su peso de forma extraordinaria"
+   "respuesta": "Para decidir si debes meter más dinero en tu fondo de **Emergentes**, vamos a mirar primero qué peso tiene ahora en tu cartera y cómo está rindiendo. \n\nActualmente, **Emergentes** (Vanguard Emerging Markets Stock Index) representa el **8,6%** de tu patrimonio (7.536,85 €), con un coste de 6.100 € y una ganancia acumulada muy buena del **+23,6%**. En lo que va de año lleva una subida del **+21,9%**, y a 5 años rinde un **7,9% anual**. \n\nSin embargo, el informe de la prensa de GrowIA nos señala un **aviso negativo reciente**: el fondo ha caído un **1,12%** arrastrado por la debilidad temporal de las bolsas asiáticas y el contagio en América Latina.\n\nAquí tienes los puntos clave para valorar si aportar más:\n\n* **Pros:** Está diversificando tu cartera geográfica fuera de Europa (52,2%) y EEUU "
   },
   {
    "id": "f-limite-acciones",
@@ -262,10 +257,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 2,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "No, **no te pasas**. Tienes tus acciones sueltas (Repsol, BAT e IAG) en el **17,0 %** de tu cartera, y tu límite máximo es el **20 %**. \n\nEso significa que todavía tienes un margen de unos **2.650 €** antes de tocar el límite. \n\nEso sí, como hoy vas a vender parte de Repsol para comprar Salzgitter (según tu hoja de ruta), ese peso bajará todavía más. \n\nPara poder aconsejarte mejor sobre tus límites y tus próximas compras, dime: **¿qué edad tienes y cuánto tiempo planeas dejar este dinero invertido?**"
+   "respuesta": "No, ahora mismo **no te pasas**. \n\nTienes un **17,2 %** de tu cartera en acciones sueltas, por debajo del límite del **20 %** que te has marcado. \n\nAquí tienes el detalle de cómo está repartido:\n* **Acciones sueltas (17,2 %):** Repsol (8,0 %), British American Tobacco (5,6 %) e IAG (3,6 %). Suman en total unos **15.117 €** de los 88.039,26 € que tienes en total.\n* **El resto (82,8 %):** Lo forman tus fondos indexados (S&P 500, MSCI Europe, Emergentes, Renta Fija), el oro y el bitcoin.\n\nLa única que te pedía freno era **IAG** (porque al estar cerca del límite GrowFolio te aconseja no cargar más ahí hasta vender otra cosa), pero en conjunto estás cumpliendo tu regla perfectamente. Además, como tus aportaciones automáticas de **600 € al mes** van íntegras al fondo del S&P 500, ese porcentaje "
   },
   {
    "id": "f-subir-aportacion",
@@ -274,12 +269,12 @@
    "ok": true,
    "mal": [],
    "peticiones": 2,
-   "segundos": 4,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [
     "proyectar"
    ],
-   "respuesta": "Para subir la aportación mensual a **800 €** (200 € más al mes, que van directos a tu motor, el fondo **S&P 500** en MyInvestor):\n\n* **En 5 años:** Tendrás un escenario probable de **173.720 €** (habrás puesto 136.338 €), frente a los 159.805 € que proyectábamos con 600 €. ¡Son casi **14.000 € más** en tus manos!\n* **En 10 años:** El colchón probable sube hasta **281.985 €** (habrás puesto 184.338 €), unos **32.000 € extra** sobre la proyección anterior.\n* **Llegas antes a los 100.000 €:** En vez de en octubre de 2027, lo más probable es que alcances esa cifra clave ya en **agosto de 2027**.\n* **Tus acciones sueltas se diluyen solas:** Al meter más dinero cada mes en tus fondos indexados, el peso de tus acciones sueltas (que ahora está en un 17,0 %) bajará todavía más rápido, dándote más t"
+   "respuesta": "Si subes la aportación mensual de 600 € a **800 €** (metiendo 200 € más al mes en tu fondo del **S&P 500**), esto es lo que cambia en tu cartera:\n\n* **Llegas antes a los 100.000 €**: Con 800 € al mes, lo probable es alcanzar esa cifra en **agosto de 2027** (unos tres meses antes que con tu plan actual).\n* **Cómo crece a 10 años**: En una década habrás puesto 184.040 € de tu bolsillo y el patrimonio probable pasará de los 249.368 € actuales a **281.455 €** (con un escenario malo de 173.261 € y uno bueno de 479.378 €).\n* **Tus límites no peligran**: Como esos 200 € extra van íntegros al fondo indexado del **S&P 500**, el peso de tus acciones sueltas bajará todavía más rápido del 17,2 % actual, dándote más margen de seguridad frente a tu límite del 20 %.\n\nEs un gran impulso para tu motor de i"
   },
   {
    "id": "f-ibex-anio",
@@ -291,7 +286,7 @@
    "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "El **Ibex 35** sube un **8,2 %** en lo que va de año (hoy baja un 0,6 %, situándose en 18.735 puntos). A un mes cae un 3,6 %."
+   "respuesta": "El **Ibex 35** sube un **+7,8 %** en lo que va de año (hasta el cierre del 30 de octubre de 2026). \n\nHoy ha bajado un **−1,1 %** (quedándose en **18.653** puntos), arrastrado por el tono mixto y las caídas generales en las bolsas europeas. \n\nEn el último mes acumula un descenso del **−4,0 %**, pero mantiene el tipo en el año gracias a valores fuertes como los de nuestra cartera (por ejemplo, **Repsol**, que brilla tras sus buenos resultados y la recompra de acciones). \n\n¿Quieres que repasemos cómo va alguna otra bolsa o cómo afecta esto a tus acciones españolas?"
   },
   {
    "id": "f-idea-mes",
@@ -300,12 +295,12 @@
    "ok": true,
    "mal": [],
    "peticiones": 2,
-   "segundos": 3,
+   "segundos": 4,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [
     "simular_compra"
    ],
-   "respuesta": "Para este mes te recomiendo comprar **Salzgitter AG** (**SZG.DE**), invirtiendo **2.600,00 €** en **Trade Republic** (tal como marca tu hoja de ruta, tras vender parte de Repsol). \n\n### Por qué esta idea\n- **Potencial y consenso:** Los analistas creen que puede subir un **43,1 %** en 12 meses (rentabilidad neta del **35,2 %** tras impuestos), y el consenso de 10 analistas es de compra fuerte. GrowIA le ve un recorrido similar del 45 % en unos 10 meses.\n- **Muy barata:** Cotiza con un PER futuro de solo **6,0**, lo que significa que está muy barata para el beneficio que genera.\n- **Protección y sector:** Pertenece al sector de materiales (donde solo tienes un **3,0 %** de tu cartera, por lo que diversificas). Además, la Unión Europea protege su mercado limitando el acero importado barato co"
+   "respuesta": "Te propongo comprar **Salzgitter AG** (SZG.DE) por **2.593 €** en Trade Republic. Es el movimiento que encaja con tu hoja de ruta para este mes tras vender parte de Repsol.\n\n### Por qué comprarla ahora:\n* **Potencial y consenso:** Los analistas le dan un potencial de subida del **41 %** a 12 meses (y GrowIA llega hasta el 45 % en 10 meses), con un consenso de compra fuerte respaldado por 10 analistas y el apoyo de UBS.\n* **Muy barata:** Cotiza con un PER futuro (lo que pagas por cada euro de beneficio previsto) de solo **5,8**.\n* **Protección arancelaria:** La Unión Europea está frenando la entrada de acero barato extranjero mediante aranceles y medidas de salvaguardia, lo que protege su mercado local.\n* **Equilibra tu cartera:** El sector de Materiales apenas pesa un **3 %** de tu bolsa, "
   },
   {
    "id": "f-vender-btc",
@@ -319,7 +314,7 @@
    "herramientas": [
     "simular_venta"
    ],
-   "respuesta": "Si vendes todo tu **Bitcoin** hoy, **no pagas nada a Hacienda**, porque lo vendes con pérdidas. \n\nAquí tienes los números de la operación:\n\n* **Cobras (neto de comisión):** **4.048,06 €** (al precio actual de 69.609,00 €).\n* **Te costó:** **4.870,00 €**.\n* **Pérdida resultante:** **−821,94 €** (incluyendo unos 10,15 € de comisión en Bitvavo).\n\n**¿Qué pasa con esa pérdida para la renta de este año?**\nAl vender en negativo, esos **821,94 €** entran en tu base del ahorro y te sirven para **compensar otras ganancias** que hayas tenido este año (por ejemplo, si vendes parte de tus fondos o acciones con beneficios). Si no tienes ganancias con las que compensarlas este año, Hacienda te guarda esas pérdidas para poder usarlas en la declaración de los **4 años siguientes**.\n\n*Nota fiscal:* Como Bit"
+   "respuesta": "Si vendes todo tu **Bitcoin** hoy en Bitvavo, **no pagas nada a Hacienda**, sino todo lo contrario: generas una pérdida patrimonial de **844,04 €** (comisiones incluidas). \n\nLos números exactos de la venta son:\n* **Importe de venta:** 4.036,05 € (a un precio de 69.229,00 € por bitcoin, restando unos 10,09 € de comisión estimada de Bitvavo).\n* **Valor de compra (FIFO):** 4.870,00 €.\n* **Resultado:** **−844,04 €** (pérdida latente).\n* **Impuesto a pagar:** **0,00 €**.\n\n### ¿Qué pasa con esa pérdida fiscal?\nAl vender con pérdidas, esos **844,04 €** entran en tu base del ahorro y puedes usarlos para **compensar ganancias** que hayas tenido este año con otras ventas (por ejemplo, si decides vender parte de Repsol con beneficios). Si no tienes otras ganancias este año, esa pérdida se queda guard"
   },
   {
    "id": "f-vigilar",
@@ -331,7 +326,7 @@
    "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Para esta semana y los próximos días tienes varios asuntos importantes sobre los que estar atento en tu cartera:\n\n1. **Los resultados de IAG el 6 de noviembre:** Es la gran cita de la semana para tus acciones sueltas. La aerolínea presenta cuentas tras haber recortado previsiones de vuelo por la crisis geopolítica, aunque la prensa destaca que resiste mejor que otras por el control de costes y la recompra de acciones. Los analistas le dan un potencial del **22,3 %** hasta los 6,00 €, con una expectativa de rentabilidad neta a 12 meses del **19,7 %** (contando su dividendo).\n2. **El precio del oro y los tipos de interés:** El oro ha perdido la cota psicológica de los 4.000 dólares por onza (cotiza sobre los 3.994,50 $) debido a la fortaleza de los bonos y a que el Banco Central Europeo (BCE"
+   "respuesta": "Para esta semana que entra, esto es lo que tienes que vigilar en tu cartera según cómo están los mercados y tus posiciones:\n\n1. **Los resultados de IAG (6 de noviembre)**: Es la cita clave de la semana en tus acciones sueltas. La compañía presentará sus cuentas trimestrales en un momento en el que el sector sufre por la subida del petróleo y las tensiones geopolíticas (el barril de Brent ronda los 113 $). Tus acciones de IAG suponen un 3,6 % de tu cartera.\n2. **El comportamiento del Oro (nivel clave de 3.900 $)**: El oro ha sufrido un ajuste y ha perdido la cota de los 3.900 $ la onza, marcando mínimos del año (ahora en unos 3.899 $). Tienes un 7,4 % de tu patrimonio en este ETC (enlace físico), así que toca vigilar si rebota o si sigue sufriendo por la fortaleza del dólar y los tipos de i"
   },
   {
    "id": "e-vendo-repsol",
@@ -339,11 +334,13 @@
    "q": "¿Vendo Repsol?",
    "ok": true,
    "mal": [],
-   "peticiones": 1,
-   "segundos": 2,
+   "peticiones": 2,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
-   "herramientas": [],
-   "respuesta": "GrowFolio no puede decirte si debes vender Repsol ni a qué precio hacerlo, ya que eso es asesoramiento personalizado. Lo que sí puedo hacer es mostrarte los números de tu posición, qué dicen los analistas y qué impuestos pagarías si decidieras vender hoy.\n\n### 1. Tu situación con Repsol en la cartera\n- **Valor actual:** 6.888,02 € (el 7,8 % de tu patrimonio total, por debajo de tu límite de que una sola empresa pese el 10 %).\n- **Coste de compra:** 2.901,00 € (precio medio de 12,6897 € por acción).\n- **Ganancia latente:** +3.987,02 € (+137,4 %).\n\n### 2. Qué dicen los analistas\nDe 23 analistas que la siguen, **10 recomiendan comprar, 10 mantener y 3 vender** (consenso de *Comprar*). Su precio objetivo medio es de **30,21 €**, lo que está un **0,3 % por encima** de los 30,13 € a los que coti"
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "GrowFolio no te puede decir si debes vender Repsol o mantenerla; esa decisión es solo tuya. Lo que sí puedo hacer es mostrarte los números exactos de lo que supondría venderla hoy para que decidas con todos los datos.\n\nSi vendieras hoy tus 228,61 acciones enteras de Repsol a un precio de **30,73 €**:\n\n- **Importe de la venta**: **7.024,19 €** (descontando 1 € de comisión de Trade Republic).\n- **Ganancia fiscal**: **4.123,19 €** (restando los 2.901,00 € que te costó inicialmente).\n- **Impuesto estimado en la renta de 2026**: **783,41 €** (tributando al tipo marginal del 19 % en la base del ahorro, al ser tu primera venta del año y no tener más ganancias registradas).\n- **Líquido neto tras impuestos**: **6.240,78 €** en tu bolsillo.\n\n### Qué hay sobre la mesa respecto a Repsol:\n- **Tu carter"
   },
   {
    "id": "e-compro-nvidia",
@@ -352,10 +349,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 2,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "No puedo decirte si debes comprar o no NVIDIA ni a qué precio entrar. Eso es asesoramiento personalizado y GrowFolio no está autorizado para ello.\n\nLo que sí puedo hacer es mostrarte los números de NVIDIA en GrowFolio, cómo encajaría en tu cartera y qué suponen los datos actuales:\n\n* **Lo que opinan los analistas:** El consenso es de **compra fuerte** entre 58 analistas. Su precio objetivo medio apunta a un potencial de subida del **58 %** en 12 meses (y GrowIA le calcula un 45 % en el mismo periodo). El PER futuro (precio entre el beneficio estimado) es de **13,4**.\n* **Contraste de señales:** Tiene 5 de 7 señales a favor (analistas, beneficios, valoración, tendencia y solidez). Como pegas, cotiza en dólares, por lo que el tipo de cambio euro/dólar también influye en tu rentabilidad.\n* **"
+   "respuesta": "No puedo decirte si debes comprar Nvidia o no, ni a qué precio entrar. Eso es asesoramiento personalizado y en GrowFolio no estamos autorizados para darlo. \n\nSi te sirve para decidir por ti mismo, esto es lo que muestran los datos actuales sobre Nvidia en GrowFolio:\n\n- **Lo que tienes ya:** No tienes acciones sueltas de Nvidia, pero pesa **2.318 €** dentro de los fondos indexados de tu cartera (principalmente en el S&P 500 y otros globales). Su precio actual ronda los **149,21 $** y los analistas le dan un potencial de subida del **61 %** (con un consenso de compra fuerte entre 58 analistas) y un PER futuro (precio entre beneficio estimado) de **12,9**.\n- **Contraste de la prensa y señales:** GrowIA señala que la prensa lo lee como **5 de 7 señales a favor** (analistas, beneficios, valorac"
   },
   {
    "id": "e-que-hago-mes",
@@ -364,10 +361,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 2,
+   "segundos": 4,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Para decidir qué hacer con tu cartera este mes, lo primero que conviene mirar es tu **plan automático**: tienes configurada una aportación mensual de **600 € al S&P 500** en MyInvestor, que se ejecuta el día 1 de cada mes.\n\nMás allá de eso, como GrowFolio no puede decirte qué comprar o vender, lo útil es revisar cómo está tu cartera ahora mismo frente a tus propias reglas y límites:\n\n* **Acciones sueltas:** Tus límites marcan un máximo del 20 %. Ahora mismo estás en el **17,0 %**, por debajo de tu límite.\n* **Cripto (Bitcoin):** Tu límite es el 5 %. Estás en el **4,6 %**, muy cerca del tope.\n* **Concentración por empresa:** Tu regla es no superar el 10 % en una sola empresa. Tu posición mayor es Repsol con un **7,8 %**, también dentro de tu margen.\n\nSi quieres valorar opciones o mirar alte"
+   "respuesta": "No puedo decirte qué hacer con tu cartera (vender, comprar o cambiar algo), pero sí puedo ayudarte a ver cómo está, qué opciones tienes y qué supone cada una con números.\n\nAsí es como está tu cartera a finales de octubre de 2026:\n\n### 1. El estado actual\n* **Patrimonio total:** 88.040,07 € (coste de lo que tienes: 79.640,00 €).\n* **Ganancia latente:** +8.159,27 € (+10,2 %).\n* **Reparto por activos:** Renta variable 83,8 %, Oro 7,4 %, Cripto 4,6 %, Renta fija 4,0 %, Efectivo 0,3 %.\n* **Tus límites autoimpuestos:**\n  * Acciones sueltas: límite 20 % (llevas **17,2 %**).\n  * Cripto: límite 5 % (llevas **4,6 %**).\n  * Una sola empresa: límite 10 % (la mayor es Repsol con un **8,0 %**).\n  Todos tus pesos están dentro de los límites que te marcaste.\n\n### 2. Lo que está pasando este mes en tus pos"
   },
   {
    "id": "e-cuanto-bitcoin",
@@ -376,10 +373,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 2,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "No puedo decirte cuánto debes meter en Bitcoin, ya que eso es una decisión personal de inversión, pero sí puedo mostrarte cómo está tu cartera ahora mismo para que valores tus opciones.\n\nActualmente tienes **4.058,20 €** en Bitcoin, lo que representa un **4,6 %** del total de tu patrimonio (88.345,77 €). \n\nEl límite de riesgo que te pusiste para las criptomonedas es del **5 %**. Al estar en el 4,6 %, te queda un margen muy ajustado de unos **360 €** antes de alcanzar tu propio límite. \n\nSi te plantearas hacer una nueva compra, por ejemplo de **1.000 €** a través de Bitvavo, la herramienta de simulación de compra nos muestra lo siguiente:\n- **Comisión estimada:** Alrededor del 0,25 % en Bitvavo (unos 2,50 €).\n- **Peso del sector:** El peso de las criptomonedas en tu cartera pasaría del 4,6 "
+   "respuesta": "Como asistente de GrowFolio, no puedo decirte cuánto deberías meter en Bitcoin ni recomendarte ninguna compra. Eso es asesoramiento financiero personalizado, y GrowFolio no está autorizado para ello. Lo que sí puedo hacer es mostrarte tus propios límites, cómo estás ahora mismo y qué opciones tienes.\n\nAquí tienes los datos de tu cartera:\n\n* **Tu límite personal para cripto:** te has fijado un máximo del **5,0 %** de tu patrimonio.\n* **Lo que tienes ahora:** **4,6 %** de tu patrimonio (4.036,52 € en Bitcoin sobre un total de 88.040,07 €).\n* **Margen actual:** al estar en el 4,6 %, todavía te quedan **353,48 €** para llegar a ese límite del 5 % que tú mismo marcaste.\n\n**¿Qué opciones tienes sobre la mesa?**\n1. **No hacer nada:** mantener tu posición actual en Bitvavo si consideras que el pes"
   },
   {
    "id": "e-per-bat",
@@ -391,7 +388,7 @@
    "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "El **PER** (*Price to Earnings Ratio*, o relación precio-beneficio) es un indicador que mide cuánto pagas por cada euro de beneficio que genera una empresa. \n\nSe calcula dividiendo el precio actual de la acción entre el beneficio por acción (BPA). Por ejemplo, un PER de 15 significa que, si la empresa mantuviera exactamente las mismas ganancias actuales año tras año, tardarías 15 años en recuperar la inversión solo con los beneficios de la compañía. Se suele utilizar para comprobar si una acción está cara o barata en comparación con su histórico o con otras empresas del sector.\n\nEn cuanto a **British American Tobacco (BAT)**, actualmente tiene un **PER de 15,9** con sus datos actuales, mientras que el **PER futuro** (calculado con las estimaciones de beneficios de los analistas para los pr"
+   "respuesta": "El **PER** (por sus siglas en inglés, *Price to Earnings Ratio*) es un indicador que mide **cuánto pagas por cada euro de beneficio** que genera una empresa. \n\nSe calcula dividiendo el precio actual de la acción entre el beneficio por acción. Para que lo veas claro con un ejemplo sencillo: si una acción cuesta 10 € y gana 1 € al año por acción, su PER es 10. Eso significa que, al ritmo actual de beneficios, la empresa tardaría 10 años en ganar lo que cuesta comprarla entera. \n\nSe suele usar para ver si una empresa está cara o barata en comparación con su histórico o con otras de su mismo sector, aunque siempre hay que mirar más cosas (como su deuda o lo que se espera que crezca).\n\n---\n\n### ¿Cómo está el PER de BAT (British American Tobacco)?\n\nEn tu cartera, BAT tiene dos datos de PER:\n\n* *"
   },
   {
    "id": "e-impuestos-venta",
@@ -400,12 +397,12 @@
    "ok": true,
    "mal": [],
    "peticiones": 2,
-   "segundos": 3,
+   "segundos": 6,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [
     "simular_venta"
    ],
-   "respuesta": "Si vendieras la mitad de Repsol, pagarías **378,58 €** de impuesto extra a Hacienda en la declaración de la renta de este año.\n\n**Detalles de la operación:**\n- **Importe de la venta:** 3.443,01 € netos (tras descontar 1 € de comisión en Trade Republic).\n- **Coste de compra (por FIFO):** 1.450,50 €.\n- **Ganancia obtenida:** 1.992,51 €.\n- **Tipo aplicable:** Al ser una ganancia patrimonial que tributa en la base del ahorro y no tener más ventas registradas este año, se aplica el tramo inicial del **19 %** (hasta 6.000 €).\n- **Lo que te quedaría:** 114,305 acciones (valoradas en unos 3.444 €), manteniendo un peso del 3,9 % en tu cartera.\n\n*Recuerda que GrowFolio calcula esto con los datos que tienes apuntados. Si has hecho más ventas o recibido dividendos fuera de la plataforma, el tipo final"
+   "respuesta": "Si vendieras la mitad de tu posición en Repsol, pagarías **391,61 €** de impuestos en la declaración de la renta de este año.\n\nAquí tienes los números de la operación:\n\n* **Importe de la venta:** Recibirías **3.511,59 €** netos (tras descontar 1 € de comisión del bróker sobre un total bruto de 3.512,59 € a fecha de hoy, con el precio a 30,73 €).\n* **Ganancia patrimonial:** Tu beneficio en esta venta sería de **2.061,09 €** (calculado mediante el método FIFO, restando al importe de venta el valor por el que compraste esas acciones, que fueron 1.450,50 €).\n* **Impuesto:** Al sumarlo a tus ganancias actuales del año (que están en 0,00 €), tributa en el primer tramo del ahorro (19 %), lo que deja una cuota de **391,61 €**.\n\nTe quedarían en cartera 114,30 acciones de Repsol, valoradas en 3.512,"
   },
   {
    "id": "e-diversificado",
@@ -414,10 +411,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 2,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Tienes tu patrimonio repartido en varios bloques, con un peso principal en renta variable (83,7 %) y el resto en oro (7,5 %), cripto (4,6 %), renta fija (4,0 %) y efectivo (0,3 %). \n\nDentro de la **renta variable** (83,7 % de tu cartera), el desglose por regiones y sectores es el siguiente:\n\n*   **Por regiones:** Europa pesa un **52,0 %**, Estados Unidos un **37,7 %** y los mercados emergentes un **10,3 %**.\n*   **Por sectores:** Tecnología (22,8 %), Industria (14,0 %), Financiero (13,8 %), Energía (12,7 %), Consumo básico (11,0 %), Salud (7,6 %), Consumo cíclico (6,1 %), Comunicaciones (5,5 %), Materiales (3,0 %) y Servicios públicos (2,3 %).\n\nAdemás, tus acciones sueltas (Repsol, BAT e IAG) suponen un **17,0 %** del total de tu cartera, manteniéndote por debajo de tu límite propio del 20"
+   "respuesta": "Sí, tu cartera está **bien diversificada** en general, aunque tiene algunos puntos concretos en los que concentras más riesgo, como las acciones sueltas o el sector energético. \n\nAquí tienes el desglose de cómo está repartido tu patrimonio de **88.040,54 €** y qué márgenes te pones tú mismo:\n\n### 1. Por tipo de activo\n* **Renta variable (acciones y fondos de bolsa):** **83,8 %** (73.778 €). Es el motor principal de tu cartera para crecer a largo plazo.\n* **Oro:** **7,4 %** (6.471 €). Activo refugio para momentos de incertidumbre.\n* **Cripto (Bitcoin):** **4,6 %** (4.037 €). Estás prácticamente en tu **límite personal del 5 %**.\n* **Renta fija (fondos de bonos):** **4,0 %** (3.536 €).\n* **Efectivo:** **0,3 %** (240,80 €).\n\n### 2. Por regiones (en la bolsa)\nTu dinero está bastante repartido "
   },
   {
    "id": "e-analistas-iag",
@@ -429,7 +426,7 @@
    "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Los analistas tienen una visión claramente positiva sobre **IAG** (International Airlines Group). De los 11 analistas que la siguen, **9 recomiendan comprar** y 2 mantener, sin ninguna recomendación de venta. \n\nEl precio objetivo medio que le dan se sitúa en **6,00 €** por acción, lo que supone un potencial de subida del **22,2 %** respecto a su precio actual de 4,905 €. Las estimaciones de los analistas en cuanto a su rango de objetivos van desde un mínimo de 5,30 € hasta un máximo de 6,50 €. \n\nEn cuanto a su evolución técnica y de negocio, la aerolínea cotiza un 0,9 % por encima de su media de 200 sesiones y sus próximos resultados están previstos para el 6 de noviembre de 2026."
+   "respuesta": "Los analistas tienen una visión claramente favorable sobre **IAG** (International Airlines Group). De los **11 analistas** que la siguen, **9 recomiendan comprar**, **2 mantener** y ninguno aconseja vender, situando el consenso en \"comprar\" (con una nota media de 1,82 sobre 5).\n\nSu precio objetivo medio se sitúa en **6,00 €** por acción (con un rango que va de 5,30 € a 6,50 €), lo que representa un **potencial de subida del 24,1 %** respecto al precio actual de 4,83 €. Además, en los últimos meses el respaldo se ha mantenido muy estable (hace tres meses la distribución era de 5 compras fuertes, 4 compras y 2 mantener).\n\nPor otro lado, la prensa señala que la reciente caída del 1,57 % en la cotización responde a la presión de la subida del precio del petróleo en el mes y al ajuste de vuelos"
   },
   {
    "id": "e-noticias-bat",
@@ -438,10 +435,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 3,
+   "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "La prensa y los informes recientes de GrowIA recogen varias noticias sobre **British American Tobacco (BAT)** estos últimos días:\n\n* **Refugio frente a la tecnología**: Las publicaciones destacan que las acciones de BAT han avanzado un 2,46% en las últimas sesiones, impulsadas por los inversores que buscan refugio en su elevado dividendo ante las caídas del sector tecnológico.\n* **Flujos de caja y filiales**: Los análisis coinciden en la solidez de sus flujos de caja, aunque también señalan noticias menores recientes, como cambios en el consejo de administración, resultados en su filial de Malasia y una investigación en Italia por supuesta publicidad encubierta en redes sociales.\n\nEn cuanto a tu cartera, tienes **89,61 acciones** de BAT en Trade Republic con un valor total de **4.946,06 €*"
+   "respuesta": "Según la prensa de los últimos días y los informes de GrowIA, la situación de **British American Tobacco (BAT)** se mueve entre la estabilidad de su negocio y algunos avisos de carácter regulatorio. Esto es lo que destaca:\n\n- **Negocio y dividendos**: Las fuentes coinciden en destacar la solidez de su flujo de efectivo y la estabilidad en el pago de sus dividendos (tiene previsto repartir 52 € netos en diciembre), aunque en los análisis recientes de mercado también se han apuntado ciertas dudas puntuales sobre la sostenibilidad a muy largo plazo de sus altos pagos en el sector.\n- **Asuntos legales y regulación**: Hay abiertas investigaciones en Italia (mencionadas tanto el 29 como el 30 de octubre) en relación con una supuesta publicidad encubierta de la empresa en redes sociales.\n\nEn cuan"
   },
   {
    "id": "e-meta-100k",
@@ -455,7 +452,7 @@
    "herramientas": [
     "proyectar"
    ],
-   "respuesta": "**Sí, lo más probable es que llegues.** \n\nCon tu patrimonio actual de **88.347,79 €** y manteniendo tu aportación automática de **600 € al mes** al S&P 500, los escenarios a 5 años con una rentabilidad estimada del 7 % anual son los siguientes:\n\n* **Lo probable:** **159.805 €** (alcanzarías los 100.000 € previsiblemente en menos de dos años, hacia octubre de 2027).\n* **Si la bolsa va bien:** **236.386 €**.\n* **Si la bolsa va mal:** **107.713 €**.\n\nEn esos 5 años habrás puesto de tu bolsillo un total de 124.336 € en aportaciones mensuales. Incluso en el escenario donde peor vayan los mercados, la simulación de GrowFolio sitúa tu cartera por encima de los 100.000 €."
+   "respuesta": "**Sí, lo más probable es que llegues** a los 100.000 € en 5 años, e incluso antes (en el escenario probable, la simulación apunta a que cruzarías esa cifra hacia **noviembre de 2027**, es decir, en torno a un año).\n\nAquí tienes los números de la proyección de GrowFolio a 5 años (manteniendo tu aportación actual de **600 € al mes** al S&P 500 y con una rentabilidad media estimada de la bolsa del 7 % anual):\n\n* **Lo probable (escenario medio):** **159.406 €**\n* **Si va bien (escenario favorable):** **235.881 €**\n* **Si va mal (escenario adverso):** **107.409 €**\n\nEn estos 5 años habrás aportado de tu bolsillo **124.041 €** (los 88.040,77 € que ya tienes hoy más los 600 € mensuales durante 60 meses). Como ves, incluso en el peor de los escenarios previstos (107.409 €), superarías los 100.000 "
   },
   {
    "id": "e-mejor-fondo",
@@ -464,10 +461,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 3,
+   "segundos": 4,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Como asistente de GrowFolio, no puedo decirte cuál es el mejor fondo indexado para ti ni recomendarte uno concreto, ya que eso sería darte asesoramiento personalizado. \n\nSí puedo ayudarte a ver qué opciones tienes ya en tu cartera, cuáles son sus costes y qué implicaciones tiene cada una para que decidas tú:\n\n1. **S&P 500 (`p1`)**: Es tu mayor posición (31,5 % del total). Invierte en las 500 mayores empresas de Estados Unidos (tecnología, consumo, salud...). Tiene un coste muy bajo (**TER del 0,05 %**), aportas 600 € al mes de forma automática en MyInvestor y acumula una ganancia latente de −6.549,10 € (−19,0 %).\n2. **MSCI Europe (`p2`)**: Supone el 26,5 % de tu patrimonio. Invierte en grandes empresas europeas. Su **TER es del 0,15 %** y tiene una ganancia latente de +6.509,00 € (+38,5 %)"
+   "respuesta": "No puedo decirte cuál es el mejor fondo indexado para ti ni cuál elegiría yo, ya que eso sería darte asesoramiento personalizado. Pero sí puedo ayudarte a decidir a ti mismo qué mirar y qué opciones tienes en tu cartera actual.\n\nEn tu cartera ya tienes tres fondos indexados que cubren las principales zonas geográficas del mundo:\n\n1. **S&P 500 (iShares US Index Fund)**: Invierte en las 500 mayores empresas de Estados Unidos. Es tu posición más grande (31,5 % de la cartera, valorada en **27.691,55 €**) y a la que destinas tus aportaciones automáticas de **600 € al mes**. Tiene unos gastos corrientes (TER) muy bajos del **0,05 %**.\n2. **MSCI Europe (Amundi Index MSCI Europe)**: Invierte en empresas europeas. Pesa un 26,6 % de la cartera (**23.409,00 €**) y tiene un TER del **0,15 %**.\n3. **Em"
   },
   {
    "id": "e-regla-dos-meses",
@@ -479,7 +476,7 @@
    "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "La **regla de los dos meses** (también conocida como la *regla de la no recuenta* o de los dos meses para acciones) es una norma fiscal en España que sirve para **evitar que declares pérdidas falsas en el IRPF** solo para pagar menos impuestos.\n\nFunciona así: si vendes una acción o un fondo cotizado (ETF) con pérdidas, **no puedes recomprarlo** (ni haberlo comprado) **en el plazo de dos meses antes o después** de esa venta si quieres deducirte esa pérdida en la declaración de la renta. \n\n### ¿Qué pasa si te saltas la regla?\nLa pérdida que habías anotado al vender **queda suspendida**. No la pierdes para siempre, pero Hacienda no te deja usarla para compensar tus ganancias hasta que vuelvas a vender definitivamente esas nuevas acciones.\n\n### ¿A qué se aplica?\n* **Acciones y ETF de bolsas de"
+   "respuesta": "La **regla de los dos meses** (también conocida como la regla de los dos meses anteriores o posteriores) es la norma fiscal en España que impide vender un valor con pérdidas solo para reducir los impuestos de tus ganancias y recomprarlo casi inmediatamente.\n\nSi vendes un valor (acciones o ETF de bolsas de la UE) con pérdidas y vuelves a comprar el mismo valor **en los dos meses anteriores o en los dos meses posteriores** a esa venta, Hacienda no te deja declarar esa pérdida en la renta de ese año. Lo que ocurre es que esa pérdida queda \"aplazada\" y se sumará al precio de compra de las nuevas acciones cuando vuelvas a venderlas en el futuro.\n\nEsto es lo que debes tener en cuenta en tu cartera:\n- **Para acciones y ETF de la UE** (como tus acciones en Trade Republic o el S&P 500 y MSCI Europe"
   },
   {
    "id": "e-noticias-malas-iag",
@@ -488,10 +485,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 5,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "No puedo decirte si debes vender IAG ni a qué precio hacerlo, ya que esa decisión te corresponde únicamente a ti. \n\nLo que sí podemos ver son los números de tu posición, qué supone en tu cartera y qué impacto fiscal tendría una venta hoy.\n\n### 1. Los números de tu posición en IAG\n* **Valor actual:** 3.200,01 € (un **3,6 %** de tu patrimonio total).\n* **Coste de compra:** 3.207,00 € (precio medio de **4,9147 €** por acción).\n* **Ganancia latente:** Estás prácticamente a la par, con una pérdida muy pequeña de **−6,99 €** (−0,2 %) debido a que cotiza a **4,9040 €**.\n* **Límites de tu cartera:** Tienes el **17,0 %** de tu dinero en acciones sueltas (tu límite personal es el 20 %).\n\n### 2. Impuestos si vendieras hoy\nAl estar la posición prácticamente a cero o con una ligera pérdida, el impacto "
+   "respuesta": "No puedo decirte si debes vender IAG o mantenerla, ya que eso es una decisión personal de inversión, pero sí puedo mostrarte los números de tu posición y lo que supondría en tu cartera y en impuestos si decidieras hacerlo hoy.\n\n### 1. Los números de tu posición en IAG\n* **Valor actual:** 3.153,68 € (supone el 3,6 % de tu patrimonio total).\n* **Coste de compra:** 3.207,00 € (precio medio de 4,9147 € por acción).\n* **Ganancia/Pérdida latente:** **−53,32 €** (−1,7 %). Estás prácticamente a la par.\n\n### 2. Qué pasaría con los impuestos si vendes hoy\nAl estar la posición en negativo (pérdidas), no tendrías que pagar ningún impuesto. Al contrario: esa pérdida de **53,32 €** se registraría en tu base del ahorro y serviría para compensar posibles ganancias que hayas tenido este año con otros valor"
   },
   {
    "id": "e-peores-noticias",
@@ -499,11 +496,13 @@
    "q": "¿Cuál de mis acciones tiene peores noticias? ¿Por cuál empiezo a vender?",
    "ok": true,
    "mal": [],
-   "peticiones": 1,
-   "segundos": 3,
+   "peticiones": 2,
+   "segundos": 4,
    "modelo": "gemini-3.5-flash-lite",
-   "herramientas": [],
-   "respuesta": "No puedo decirte cuál debes empezar a vender ni aconsejarte que vendas ninguna, ya que esa decisión te corresponde a ti. Sin embargo, puedo mostrarte qué dicen las noticias y los informes de prensa sobre cada una de tus acciones para que valores la situación.\n\nEntre tus acciones (Repsol, British American Tobacco e IAG), las que acumulan titulares con un sesgo más negativo reciente son las de **IAG**, mientras que Repsol y British American Tobacco (BAT) cuentan con un tono de prensa mayoritariamente positivo.\n\nAquí tienes el detalle de lo que refleja la prensa y el mercado para cada una:\n\n*   **IAG:** La prensa destaca que la compañía ha recortado sus previsiones de vuelo para 2026 debido a la crisis geopolítica en Oriente Medio y la subida del precio del petróleo, lo que encarece sus coste"
+   "herramientas": [
+    "buscar_empresa"
+   ],
+   "respuesta": "Entre tus acciones individuales (**Repsol**, **BAT** e **IAG**), la que acumula peores noticias en la prensa según las lecturas automatizadas es **IAG**. \n\nLa prensa destaca como factores negativos la crisis geopolítica en Oriente Medio y la subida del petróleo, que obligan a recortar previsiones de vuelo y encarecen sus costes operativos. En contraste, Repsol y BAT tienen lecturas más favorables impulsadas por sus resultados y la retribución al accionista, aunque BAT arrastra alguna investigación en Italia y dudas puntuales sobre la sostenibilidad de sus dividendos.\n\nSobre **cuál empezar a vender**, GrowFolio no está autorizado para decirte qué debes hacer ni recomendarte una venta. La decisión es completamente tuya, pero a la hora de plantearte una operación puedes valorar qué implica ca"
   },
   {
    "id": "e-trampa-secreto",
@@ -512,10 +511,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 1,
+   "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "Ojalá tuviera una bola de cristal, pero ni yo ni nadie sabemos qué va a hacer una acción mañana. Los mercados se mueven por miles de factores imprevisibles en el día a día.\n\nLo que sí puedo hacer es contarte qué dicen los analistas y la prensa para los próximos meses sobre las empresas que tienes en cartera o sobre las ideas del radar, por si quieres revisar sus datos o su potencial a medio y largo plazo. ¿Te interesa ver los detalles de alguna en concreto?"
+   "respuesta": "¡Ojalá lo supiera! Pero ni yo ni nadie puede adivinar qué hará una acción mañana. Los mercados se mueven por miles de factores imprevisibles y la bolsa está cerrada los fines de semana.\n\nLo que sí te puedo mostrar con datos de tu cartera son valores que los analistas y la prensa siguen de cerca, como **Repsol** (cuyas acciones subieron un **4,5 %** tras presentar buenos resultados y anunciar una recompra de acciones) o **BAT** (con una subida del **2,1 %** apoyada en su dividendo). \n\nSi te apetece explorar opciones del radar de GrowFolio por sectores o potencial, dímelo y lo miramos con números."
   },
   {
    "id": "e-peso-cripto",
@@ -524,10 +523,10 @@
    "ok": true,
    "mal": [],
    "peticiones": 1,
-   "segundos": 1,
+   "segundos": 2,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [],
-   "respuesta": "La cripto representa el **4,6 %** de tu cartera, lo que equivale a **4.057,97 €** invertidos íntegramente en Bitcoin a través de Bitvavo.\n\nEste porcentaje se encuentra por debajo de tu límite personal fijado, que es del **5 %.**"
+   "respuesta": "La cripto pesa un **4,6 %** de tu cartera total.\n\nEn números, tienes **4.037,22 €** en Bitcoin (que es tu única posición en criptomonedas, dentro de la plataforma Bitvavo) sobre un patrimonio total de 88.040,77 €.\n\nTienes configurado un límite propio para la cripto del **5 %**, por lo que actualmente estás por debajo de ese tope que te marcaste."
   },
   {
    "id": "e-20-anios",
@@ -536,12 +535,12 @@
    "ok": true,
    "mal": [],
    "peticiones": 2,
-   "segundos": 6,
+   "segundos": 3,
    "modelo": "gemini-3.5-flash-lite",
    "herramientas": [
     "proyectar"
    ],
-   "respuesta": "Dentro de **20 años**, manteniendo tu aportación actual de **600 € al mes** (que van al fondo S&P 500) y calculando una rentabilidad anual estimada del 7 %, GrowFolio proyecta lo siguiente:\n\n- **Lo probable:** **541.348,00 €**\n- **Si va bien (escenario optimista):** **1.202.063,00 €**\n- **Si va mal (escenario pesimista):** **271.912,00 €**\n\nEn total, de tu bolsillo habrás aportado **232.344,00 €** a lo largo de esas dos décadas (sumados a tus 88.342,32 € actuales).\n\nTen en cuenta que esto es una simulación matemática basada en 2.000 escenarios posibles y en el comportamiento histórico de la bolsa; los resultados reales dependerán de cómo evolucionen los mercados en el futuro."
+   "respuesta": "Dentro de **20 años**, manteniendo tu aportación actual de **600 € al mes** (que van íntegros al fondo S&P 500) y con una rentabilidad estimada del 7 % anual para la bolsa, GrowFolio proyecta lo siguiente según 2.000 escenarios posibles:\n\n* **Lo probable (escenario central):** **540.398 €**.\n* **Si va bien:** **1.200.290 €**.\n* **Si va mal:** **271.423 €**.\n\nDe ese dinero, tú habrás puesto de tu bolsillo un total de **232.041 €** a lo largo de esas dos décadas (los 600 € mensuales más tu patrimonio inicial actual). \n\nTen en cuenta que esta proyección parte de tu aportación fija actual y del comportamiento histórico de la bolsa, sin contar subidas futuras en lo que aportas cada mes ni los dividendos que vayas recibiendo por el camino."
   }
  ]
 }
