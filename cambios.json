@@ -3,11 +3,11 @@
   {
    "v": "0.7n",
    "f": "2026-11-01",
-   "h": "__HORA__",
+   "h": "00:58",
    "t": "Toisón y GTA VI, para compartir",
    "commits": [
     {
-     "cuando": "2026-11-01 __HORA__",
+     "cuando": "2026-11-01 00:58",
      "asunto": "0.7n: el estreno de Toisón se dibuja, con el icono en un móvil y para mandarlo por WhatsApp; GTA VI con palmeras, los 79,99 € desde el primer tráiler y su imagen para compartir",
      "detalle": [
       "Estreno de Toisón: la marca sale del fondo sin el recuadro (los bordes de toison-avance.webp se funden con una máscara elíptica y el fondo del estreno se acerca a su borgoña). Antes, el símbolo en vector en el mismo sitio (centro 558, 249 y 2,08 px por u, medido en la imagen): se dibuja la O, la T baja dibujada desde arriba hasta atravesarla, se rellenan y encima aparece el relieve. Quieto con las animaciones quitadas",
