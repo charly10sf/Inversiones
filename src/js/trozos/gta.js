@@ -1,6 +1,15 @@
 /* 0.6: la hoja de GTA VI (sus cuentas, el dibujo, la música) se baja al abrirla: es un trozo (src/partes.json, «trozos»).
    En el núcleo se quedan la cuenta atrás de la cabecera (48-gta.js) y lo que decide si sale el aviso. */
 const dosC = (n) => String(n).padStart(2, '0');
+/* 0.7m: cada segundo, solo las cifras que cambian; el reloj entero se rehace solo si cambia de forma (al salir el juego) */
+function tocarReloj(r) {
+  if (!r) return;
+  const t = document.createElement('div'); t.innerHTML = relojGTA();
+  const nuevo = t.firstElementChild, viejo = r.firstElementChild;
+  if (!viejo || viejo.className !== nuevo.className || viejo.children.length !== nuevo.children.length) { r.replaceChildren(nuevo); return; }
+  const a = viejo.querySelectorAll('b, i'), b = nuevo.querySelectorAll('b, i');
+  b.forEach((x, k) => { if (a[k].textContent !== x.textContent) a[k].textContent = x.textContent; });
+}
 function relojGTA() {
   const f = gtaFalta();
   if (!f) {
@@ -50,6 +59,7 @@ const GTA_HITOS = [
   ['2023-12-05', ['Primer tráiler', 'First trailer'], ['Más de 90 millones de visitas en 24 horas.', 'Over 90 million views in 24 hours.'], [['Primer tráiler', 'First trailer'], 1, 'end']],
   ['2025-05-06', ['Segundo tráiler', 'Second trailer'], ['475 millones de visitas en 24 horas, según Rockstar.', '475 million views in 24 hours, according to Rockstar.'], [['Segundo tráiler', 'Second trailer'], 2, 'end']],
   ['2025-11-06', ['Último retraso', 'Last delay'], ['Al 19 de noviembre de 2026.', 'To 19 November 2026.']],
+  ['2026-06-25', ['Abren las reservas', 'Pre-orders open'], [`La edición normal, a ${fmtNum(GTA.precio, 2)} €.`, `Standard edition at €${fmtNum(GTA.precio, 2)}.`]],
   ['2026-11-12', ['Precarga', 'Pre-load'], ['Se puede descargar antes de que salga.', 'You can download it before release.']],
   ['2026-11-19', ['Sale GTA VI', 'GTA VI comes out'], ['En PS5 y Xbox Series X y S.', 'On PS5 and Xbox Series X|S.'], ['GTA VI', 1, 'end']],
 ];
@@ -438,7 +448,7 @@ function htmlGTA(M) {
       ${escenaGTA()}
       <div class="gta-hero-c">
         <p class="gta-rotulo gta-pre" data-no-trad>${f ? L('cuenta atrás', 'countdown') : L('ya a la venta', 'out now')}</p>
-        <h2 class="gta-tit">GTA VI</h2>
+        <h2 class="gta-tit" data-t="GTA VI">GTA VI</h2>
         <div id="gtaReloj">${relojGTA()}</div>
         <p class="gta-fecha">${L(`19 de noviembre de 2026, en PS5 y Xbox Series X y S, a ${fmtNum(GTA.precio, 2)} €.${f && f.d > 7 ? ' Precarga desde el 12 de noviembre.' : ''}`, `19 November 2026, on PS5 and Xbox Series X|S, at €${fmtNum(GTA.precio, 2)}.${f && f.d > 7 ? ' Pre-load from 12 November.' : ''}`)}</p>
         ${f ? esperaGTA() : ''}
@@ -471,8 +481,9 @@ function animarGTA(raiz) {
   // la línea del camino se va rellenando según bajas
   const camino = $('.gta-camino', raiz);
   if (camino) {
-    const prog = () => { const r = camino.getBoundingClientRect(), c = raiz.getBoundingClientRect(); const k = Math.max(0, Math.min(1, (c.top + c.height * 0.62 - r.top) / (r.height || 1))); camino.style.setProperty('--prog', k.toFixed(3)); };
-    raiz.addEventListener('scroll', prog, { passive: true }); prog();
+    const prog = () => { const r = camino.getBoundingClientRect(), c = raiz.getBoundingClientRect(); const k = Math.max(0, Math.min(1, (c.top + c.height * 0.62 - r.top) / (r.height || 1))); const v = k.toFixed(3); if (camino.dataset.prog !== v) { camino.dataset.prog = v; camino.style.setProperty('--prog', v); } };
+    let marco = 0;
+    raiz.addEventListener('scroll', () => { if (!marco) marco = requestAnimationFrame(() => { marco = 0; prog(); }); }, { passive: true }); prog();
   }
   const io = new IntersectionObserver((ents) => {
     for (const en of ents) {
@@ -490,7 +501,7 @@ function abrirGTA() {
   const fondo = document.createElement('div');
   fondo.className = 'hoja-fondo gta-fondo';
   fondo.innerHTML = `<div class="gta-marco" role="dialog" aria-modal="true" aria-label="${L('GTA VI y tu cartera', 'GTA VI and your portfolio')}">${botonSonGTA()}<button class="gta-x" type="button" data-cerrar aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button><div class="gta">${htmlGTA(M)}</div></div>`;
-  const tic = setInterval(() => { const r = $('#gtaReloj', fondo); if (r) r.innerHTML = relojGTA(); }, 1000);
+  const tic = setInterval(() => tocarReloj($('#gtaReloj', fondo)), 1000);
   let io = null;
   // la música: se abre desde un toque, así que el navegador deja que suene
   if (LS.get('inv-gta-son', true)) musicaGTA(true);
@@ -522,7 +533,7 @@ function avisoGTAPantalla(seguir) {
     ${escenaGTA()}
     <div class="gta-hero-c">
       <p class="gta-rotulo gta-pre" data-no-trad>${L('nuevo en GrowFolio', 'new in GrowFolio')}</p>
-      <h2 class="gta-tit">GTA VI</h2>
+      <h2 class="gta-tit" data-t="GTA VI">GTA VI</h2>
       <div id="gtaReloj">${relojGTA()}</div>
       <p class="gta-lead">${L(`${f ? 'Sale el 19 de noviembre. Para la espera' : 'Ya ha salido. Para celebrarlo'}, unas cuentas con tu cartera: cuántos GTA VI vale, cuántos Adders podría hacer Rockstar con ella y cuánto llevamos de camino desde GTA V.`, `${f ? 'It’s out on 19 November. While you wait' : 'It’s out. To celebrate'}, your portfolio in numbers: how many copies of GTA VI it’s worth, how many Adders Rockstar could build with it and how far we’ve come since GTA V.`)}</p>
       <p class="gta-donde">${L('Lo tienes siempre arriba, junto a «En directo», con los días que faltan.', 'It’s always at the top, next to «Live», with the days to go.')}</p>
@@ -530,7 +541,7 @@ function avisoGTAPantalla(seguir) {
     </div>
     ${paisajeGTA()}
   </header></div></div>`;
-  const tic = setInterval(() => { const r = $('#gtaReloj', fondo); if (r) r.innerHTML = relojGTA(); }, 1000);
+  const tic = setInterval(() => tocarReloj($('#gtaReloj', fondo)), 1000);
   const cerrar = (ver) => {
     clearInterval(tic); fondo.remove(); document.removeEventListener('keydown', tecla, true);
     if (ver) abrirGTA();

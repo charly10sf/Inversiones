@@ -5,6 +5,12 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7m', f: '2026-10-31', h: '23:50', t: 'GrowFolio, más ligero', arreglos: [
+    'La app gasta mucha menos batería estando quieta. La pastilla de GTA VI de arriba se repintaba entera en cada fotograma, en todas las pantallas; ahora brilla igual sin trabajo de más para el móvil y se para cuando tienes algo encima.',
+    'La hoja de GTA VI va más suelta al bajar: el suelo, el título y las barras se mueven sin volver a pintarse, y el reloj solo cambia las cifras. En el camino hasta GTA VI está también el día en que abrieron las reservas.',
+    'Si quitas de Inicio la tarjeta de Toisón, la tienes en Ajustes, arriba, para volver a ver el estreno o devolverla a Inicio. Lo pidió Carlos.',
+    'El estreno de Toisón se maneja también con el teclado, y «Desliza hacia abajo» te lleva a lo siguiente. Al final pone «Lo que ya está hecho»: la marca está solicitada, aún no concedida.',
+  ] },
   { v: '0.7l', f: '2026-10-31', h: '21:30', t: 'GrowIA, más firme en el móvil', arreglos: [
     'GrowIA ya no se queda pensando para siempre: si la respuesta se para a mitad (pasa con mala cobertura), la corta y la repite sola. Mientras piensa, ves los segundos que lleva. Lo vio Carlos.',
     'Si se corta la conexión, lo sigue intentando más rato y con el mismo modelo, y te dice si es que no tienes red, que Google tarda o que has pasado de wifi a datos. Solo cambia de modelo cuando Google no contesta.',

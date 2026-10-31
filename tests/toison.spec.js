@@ -20,6 +20,8 @@ test('el estreno de Toisón sale una vez: la marca en relieve y, al bajar, la O 
   await page.evaluate(() => { LS.del('inv-toison-avance'); window.__siguio = 0; avisoToison(() => window.__siguio++); });
   const e = page.locator('.estreno.ts');
   await expect(e).toBeVisible();
+  // 0.7m: el foco va al estreno (con el teclado se baja con las flechas y la barra)
+  await expect(e).toBeFocused();
   // primero se despide GrowFolio; luego, Toisón
   await expect(e.locator('.ts-adios')).toContainText('tiene los días contados');
   await expect(e.locator('.ts-t')).toHaveText('GrowFolio tiene los días contados');
@@ -31,7 +33,8 @@ test('el estreno de Toisón sale una vez: la marca en relieve y, al bajar, la O 
   const secs = e.locator('[data-ts-p]');
   await expect(secs).toHaveCount(4);
   expect(await secs.first().evaluate((s) => +s.style.getPropertyValue('--p'))).toBe(0);
-  await e.evaluate((el) => el.scrollTo(0, el.querySelector('[data-ts-p]').offsetTop - el.clientHeight * 0.5));
+  // 0.7m: «Desliza hacia abajo» es un botón que baja a lo siguiente
+  await e.locator('.ts-baja').click();
   await expect.poll(() => secs.first().evaluate((s) => +s.style.getPropertyValue('--p'))).toBeGreaterThan(0);
   await expect(secs.first()).toContainText('1,618 de ancho por 1 de alto');
   await expect(secs.nth(1).locator('.ts-cotas')).toContainText('161,8 × 100 u');
@@ -43,6 +46,8 @@ test('el estreno de Toisón sale una vez: la marca en relieve y, al bajar, la O 
   const marmol = e.locator('img[src="toison-marmol.webp"]');
   await expect.poll(() => marmol.evaluate((i) => i.complete && i.naturalWidth)).toBe(1120);
   const fin = secs.nth(3);
+  // la marca está solicitada, no concedida: nada de «ya es nuestra»
+  await expect(fin.locator('.ts-k')).toHaveText('Lo que ya está hecho');
   await expect(fin.locator('.ts-hechos')).toContainText('toison.es');
   await expect(fin.locator('.ts-hechos')).toContainText('toisonapp.com');
   await expect(fin.locator('.ts-hechos')).toContainText('Marca TOISÓN solicitada en la Oficina Española de Patentes y Marcas');
@@ -100,4 +105,41 @@ test('en Inicio, la tarjeta de Toisón abre el estreno entero aunque ya lo hayas
   await expect(page.locator('.ts-tarjeta')).toHaveCount(0);
   await page.evaluate(() => pintar());
   await expect(page.locator('.ts-tarjeta')).toHaveCount(0);
+});
+
+test('quitada de Inicio, la tarjeta de Toisón se ve en Ajustes: abre el estreno y se puede devolver a Inicio', async ({ page, errores }) => {
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.evaluate(() => { LS.del('inv-toison-tarjeta'); location.hash = 'cartera'; pintar(); });
+  await expect(page.locator('.car .ts-tarjeta')).toBeVisible();
+  // mientras está en Inicio, en Ajustes no sale
+  await page.evaluate(() => abrirAjustes());
+  const aj = page.locator('.hoja[aria-label="Ajustes"]');
+  await expect(aj).toBeVisible();
+  await expect(aj.locator('.ts-tarjeta')).toHaveCount(0);
+  await page.keyboard.press('Escape');
+  await expect(aj).toHaveCount(0);
+  // con la ×, fuera de Inicio, y avisa de que está en Ajustes
+  await page.evaluate(() => document.querySelector('.ts-tarjeta [data-accion="toison-fuera"]').click());
+  await expect(page.locator('.car .ts-tarjeta')).toHaveCount(0);
+  await expect(page.locator('#toast')).toContainText('La tienes en Ajustes');
+  await page.evaluate(() => abrirAjustes());
+  const t = aj.locator('.ts-tarjeta');
+  await expect(t).toBeVisible();
+  await expect(t).toContainText('GrowFolio pasa a llamarse Toisón');
+  // abre el estreno encima de Ajustes; al cerrarlo, sigues en Ajustes
+  await page.evaluate(() => document.querySelector('.hoja .ts-tarjeta [data-accion="toison"]').click());
+  const e = page.locator('.estreno.ts');
+  await expect(e).toBeVisible();
+  await expect(e.locator('.ts-t')).toHaveText('GrowFolio tiene los días contados');
+  await page.keyboard.press('Escape');
+  await expect(e).toHaveCount(0);
+  await expect(aj).toBeVisible();
+  // y vuelve a Inicio
+  await page.evaluate(() => document.querySelector('.hoja .ts-tarjeta [data-accion="toison-inicio"]').click());
+  await expect(aj.locator('.ts-tarjeta')).toHaveCount(0);
+  await expect(page.locator('#toast')).toContainText('Vuelve a estar en Inicio');
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.car .ts-tarjeta')).toBeVisible();
 });

@@ -113,7 +113,7 @@ function chipGTA() {
 function fuenteGTA() {
   if ($('#fuenteGTA')) return;
   const l = document.createElement('link');
-  l.id = 'fuenteGTA'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Anton&family=Tilt+Neon&family=Yellowtail&display=swap';
+  l.id = 'fuenteGTA'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Tilt+Neon&family=Yellowtail&display=swap';  // 0.7m: sin Anton, que no se usaba
   document.head.appendChild(l);
 }
 // la primera vez, el aviso a pantalla completa (su dibujo y su música van en el trozo de GTA, que se baja solo si sale)

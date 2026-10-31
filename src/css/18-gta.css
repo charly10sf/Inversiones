@@ -14,7 +14,7 @@
   position: relative; width: min(820px, calc(100% - 32px)); height: min(94vh, 1000px); border-radius: 24px; overflow: hidden; border: 1px solid rgba(255, 62, 165, 0.35); box-shadow: 0 30px 90px rgba(0, 0, 0, 0.65), 0 0 60px rgba(177, 74, 237, 0.18); }
 @media (max-width: 720px) { .gta-marco { width: 100%; height: 100%; border-radius: 0; border: 0; } }
 .gta { height: 100%; overflow: auto; overscroll-behavior: contain; color: var(--g-t); background: #10051C; scrollbar-width: thin; scrollbar-color: #5A1F5E transparent; }
-.gta-x { position: absolute; z-index: 5; top: calc(12px + env(safe-area-inset-top)); right: 12px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(14, 4, 26, 0.6); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); color: var(--g-t); }
+.gta-x { position: absolute; z-index: 5; top: calc(12px + env(safe-area-inset-top)); right: 12px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(14, 4, 26, 0.82); color: var(--g-t); }
 .gta-x svg { width: 18px; height: 18px; }
 .gta-x:hover { border-color: var(--g-rosa); }
 .gta-marco :focus-visible { outline-color: var(--g-cian); }
@@ -32,8 +32,9 @@
   filter: drop-shadow(0 0 38px rgba(255, 62, 165, 0.6)); animation: gtaSol 1.8s cubic-bezier(0.2, 0.8, 0.2, 1) both 0.2s; }
 @keyframes gtaSol { from { transform: translate(-50%, 90%); opacity: 0; } }
 .gta-horizonte { position: absolute; left: 0; right: 0; bottom: 30%; height: 2px; background: linear-gradient(90deg, transparent, var(--g-rosa) 20%, #fff 50%, var(--g-rosa) 80%, transparent); box-shadow: 0 0 18px 2px rgba(255, 62, 165, 0.8); }
-.gta-suelo { position: absolute; left: -60%; right: -60%; bottom: 0; height: 30%; background-color: #12051E; background-image: linear-gradient(0deg, rgba(255, 62, 165, 0.75) 2px, transparent 2px), linear-gradient(90deg, rgba(177, 74, 237, 0.6) 2px, transparent 2px); background-size: 64px 34px; transform: perspective(260px) rotateX(58deg); transform-origin: top; animation: gtaSuelo 1.4s linear infinite; }
-@keyframes gtaSuelo { to { background-position: 0 34px, 0 0; } }
+.gta-suelo { position: absolute; left: -60%; right: -60%; bottom: 0; height: 30%; background-color: #12051E; background-image: linear-gradient(90deg, rgba(177, 74, 237, 0.6) 2px, transparent 2px); background-size: 64px 34px; transform: perspective(260px) rotateX(58deg); transform-origin: top; overflow: hidden; }
+.gta-suelo::before { content: ''; position: absolute; left: 0; right: 0; top: -34px; bottom: 0; background-image: linear-gradient(0deg, rgba(255, 62, 165, 0.75) 2px, transparent 2px); background-size: 64px 34px; animation: gtaSuelo 1.4s linear infinite; }
+@keyframes gtaSuelo { to { transform: translateY(34px); } }
 .gta-paisaje::after { content: ''; position: absolute; left: 0; right: 0; bottom: 0; height: 30%; background: #12051E; z-index: 2; }
 .gta-sol { z-index: 1; } .gta-suelo { z-index: 3; } .gta-horizonte { z-index: 4; }
 .gta-hero-c { position: relative; z-index: 1; display: grid; justify-items: center; max-width: 640px; margin: 0 auto; }
@@ -42,12 +43,15 @@
 .gta-rotulo { margin: 0; font: 400 clamp(30px, 7vw, 40px)/1.1 var(--g-script); color: var(--g-cian); text-shadow: 0 0 6px rgba(45, 226, 230, 0.9), 0 0 22px rgba(45, 226, 230, 0.55); transform: rotate(-3deg); letter-spacing: 0.01em; }
 .gta-pre { font-size: clamp(28px, 6vw, 36px); }
 .gta-tit { margin: 0 0 14px; font: 400 clamp(84px, 22vw, 140px)/0.95 var(--g-neon); letter-spacing: 0.03em; color: #FFE7F4;
-  text-shadow: 0 0 3px #fff, 0 0 10px var(--g-rosa), 0 0 24px var(--g-rosa), 0 0 52px rgba(177, 74, 237, 0.85), 0 0 90px rgba(177, 74, 237, 0.5);
-  animation: gtaEnciende 1.8s steps(1) 1, gtaRespira 4s ease-in-out 1.8s infinite alternate; }
+  position: relative; text-shadow: 0 0 2px #fff, 0 0 8px var(--g-rosa), 0 0 18px var(--g-rosa), 0 0 40px rgba(177, 74, 237, 0.7), 0 0 70px rgba(177, 74, 237, 0.35);
+  animation: gtaEnciende 1.8s steps(1) 1; }
+.gta-tit::after { content: attr(data-t); position: absolute; inset: 0; color: transparent; pointer-events: none;
+  text-shadow: 0 0 3px #fff, 0 0 12px var(--g-rosa), 0 0 28px var(--g-rosa), 0 0 56px rgba(177, 74, 237, 0.7), 0 0 96px rgba(177, 74, 237, 0.4);
+  animation: gtaRespira 4s ease-in-out 1.8s infinite alternate; }
 @keyframes gtaEnciende { 0% { opacity: 0.1; } 10% { opacity: 1; } 16% { opacity: 0.3; } 24% { opacity: 1; } 31% { opacity: 0.55; } 37% { opacity: 1; } }
-@keyframes gtaRespira { to { text-shadow: 0 0 2px #fff, 0 0 8px var(--g-rosa), 0 0 18px var(--g-rosa), 0 0 40px rgba(177, 74, 237, 0.7), 0 0 70px rgba(177, 74, 237, 0.35); } }
+@keyframes gtaRespira { to { opacity: 0; } }
 .gta-reloj { display: flex; justify-content: center; gap: clamp(8px, 2.6vw, 18px); }
-.gta-reloj span { display: grid; justify-items: center; min-width: clamp(64px, 18vw, 100px); padding: 10px 6px 9px; border-radius: 16px; background: rgba(16, 5, 28, 0.55); border: 1px solid rgba(255, 159, 67, 0.35); box-shadow: inset 0 0 18px rgba(255, 62, 165, 0.12), 0 0 16px rgba(255, 159, 67, 0.12); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
+.gta-reloj span { display: grid; justify-items: center; min-width: clamp(64px, 18vw, 100px); padding: 10px 6px 9px; border-radius: 16px; background: rgba(16, 5, 28, 0.7); border: 1px solid rgba(255, 159, 67, 0.35); box-shadow: inset 0 0 18px rgba(255, 62, 165, 0.12), 0 0 16px rgba(255, 159, 67, 0.12); }
 .gta-reloj b { font: 400 clamp(36px, 10vw, 58px)/1 var(--g-neon); font-variant-numeric: tabular-nums; color: #FFE2B8; text-shadow: 0 0 4px #fff3, 0 0 12px var(--g-nar), 0 0 26px rgba(255, 159, 67, 0.6); }
 .gta-reloj span:first-child b { color: #FFD1EA; text-shadow: 0 0 12px var(--g-rosa), 0 0 28px rgba(255, 62, 165, 0.6); }
 .gta-reloj i { font-style: normal; font-size: 12px; color: var(--g-t2); margin-top: 5px; }
@@ -55,8 +59,8 @@
 .gta-fecha { margin: 16px auto 0; color: var(--g-t2); font-size: 14px; max-width: 46ch; text-shadow: 0 1px 8px #10051C; }
 .gta-espera { width: min(420px, 100%); margin-top: 16px; display: grid; gap: 7px; }
 .gta-barra { height: 8px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
-.gta-barra i { display: block; height: 100%; width: var(--p); border-radius: inherit; background: linear-gradient(90deg, var(--g-lila), var(--g-rosa), var(--g-nar)); box-shadow: 0 0 14px rgba(255, 62, 165, 0.7); animation: gtaBarra 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) both 0.3s; }
-@keyframes gtaBarra { from { width: 0; } }
+.gta-barra i { display: block; height: 100%; width: var(--p); border-radius: inherit; transform-origin: left; background: linear-gradient(90deg, var(--g-lila), var(--g-rosa), var(--g-nar)); box-shadow: 0 0 14px rgba(255, 62, 165, 0.7); animation: gtaBarra 1.6s cubic-bezier(0.2, 0.8, 0.2, 1) both 0.3s; }
+@keyframes gtaBarra { from { transform: scaleX(0); } }
 .gta-espera small { color: var(--g-t2); font-size: 12.5px; text-shadow: 0 1px 8px #10051C; }
 .gta-baja { position: absolute; z-index: 1; left: 50%; bottom: 14px; transform: translateX(-50%); width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; color: #fff; background: rgba(16, 5, 28, 0.5); border: 1px solid rgba(255, 255, 255, 0.2); cursor: pointer; animation: gtaBaja 1.8s ease-in-out infinite; }
 .gta-baja svg { width: 20px; height: 20px; }
@@ -84,8 +88,10 @@
 .gta-camino li { position: relative; }
 .gta-camino li::before { content: ''; position: absolute; left: -21px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: #10051C; border: 2px solid var(--g-rosa); }
 .gta-camino li.hecho::before { background: var(--g-rosa); box-shadow: 0 0 10px var(--g-rosa); }
-.gta-camino li.siguiente::before { background: var(--g-sol); border-color: var(--g-sol); box-shadow: 0 0 0 0 rgba(255, 210, 63, 0.6); animation: gtaLatido 1.6s ease-out infinite; }
-@keyframes gtaLatido { 70% { box-shadow: 0 0 0 10px rgba(255, 210, 63, 0); } 100% { box-shadow: 0 0 0 0 rgba(255, 210, 63, 0); } }
+.gta-camino li::before { z-index: 1; }
+.gta-camino li.siguiente::before { background: var(--g-sol); border-color: var(--g-sol); }
+.gta-camino li.siguiente::after { content: ''; position: absolute; left: -21px; top: 5px; width: 12px; height: 12px; border-radius: 50%; background: rgba(255, 210, 63, 0.6); animation: gtaLatido 1.6s ease-out infinite; }
+@keyframes gtaLatido { 70%, 100% { transform: scale(2.7); opacity: 0; } }
 .gc-d { display: block; color: var(--g-nar); font-size: 12.5px; font-weight: 650; }
 .gta-camino b { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; font-size: 16px; font-weight: 650; color: #fff; }
 .gta-camino em { font-style: normal; font-size: 12px; font-weight: 700; color: #1A0718; background: var(--g-sol); border-radius: 99px; padding: 1px 8px; box-shadow: 0 0 12px rgba(255, 210, 63, 0.6); }
@@ -128,6 +134,7 @@
 .gta-unidad { color: var(--g-t2); font-size: 12.5px; }
 .gta-mini { list-style: none; margin: 12px 0 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
 .gta-mini li { padding: 12px 14px; border-radius: 14px; background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.08); display: grid; gap: 2px; }
+@media (max-width: 500px) { .gta-mini li:last-child:nth-child(odd) { grid-column: 1 / -1; } }
 .gta-mini .c0 { --c: var(--g-rosa); } .gta-mini .c1 { --c: var(--g-nar); } .gta-mini .c2 { --c: var(--g-cian); }
 .gta-mini b { font: 400 28px/1.1 var(--g-neon); color: #fff; text-shadow: 0 0 10px var(--c), 0 0 22px var(--c); font-variant-numeric: tabular-nums; }
 .gta-mini span { color: var(--g-t2); font-size: 13px; line-height: 1.4; }
@@ -169,16 +176,16 @@
 .gta-pos li, .gta-quien li { display: grid; grid-template-columns: minmax(84px, 34%) minmax(0, 1fr) 54px; gap: 10px; align-items: center; font-size: 13.5px; }
 .gta-pos .n, .gta-quien .n { color: var(--g-t); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .gta-pos .b, .gta-quien .b { height: 12px; border-radius: 99px; background: rgba(255, 255, 255, 0.06); position: relative; }
-.gta-pos .b i, .gta-quien .b i { position: absolute; top: 0; bottom: 0; left: 0; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--g-lila), var(--g-rosa)); box-shadow: 0 0 12px rgba(255, 62, 165, 0.55); transition: width 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(var(--i) * 80ms + 0.15s); }
-.gta-pos.vis .b i, .gta-quien.vis .b i { width: var(--w); }
+.gta-pos .b i, .gta-quien .b i { position: absolute; top: 0; bottom: 0; left: 0; width: var(--w); border-radius: inherit; background: linear-gradient(90deg, var(--g-lila), var(--g-rosa)); box-shadow: 0 0 12px rgba(255, 62, 165, 0.55); transform: scaleX(0); transform-origin: left; transition: transform 0.9s cubic-bezier(0.2, 0.8, 0.2, 1); transition-delay: calc(var(--i) * 80ms + 0.15s); }
+.gta-pos.vis .b i, .gta-quien.vis .b i { transform: none; }
 .gta-pos b, .gta-quien b { font: 400 17px/1 var(--g-neon); color: #fff; text-align: right; font-variant-numeric: tabular-nums; }
 .gta-quien .b i { left: 50%; }
 .gta-quien .b::before { content: ''; position: absolute; left: 50%; top: -3px; bottom: -3px; width: 1px; background: rgba(255, 255, 255, 0.3); }
 .gta-quien .mas .b i { background: linear-gradient(90deg, var(--g-cian), #7CF29C); box-shadow: 0 0 12px rgba(45, 226, 230, 0.55); }
-.gta-quien .menos .b i { left: auto; right: 50%; background: linear-gradient(270deg, var(--g-rosa), var(--g-nar)); }
+.gta-quien .menos .b i { left: auto; right: 50%; transform-origin: right; background: linear-gradient(270deg, var(--g-rosa), var(--g-nar)); }
 .gta-quien .mas b { color: #B8FBFC; } .gta-quien .menos b { color: #FFC2DC; }
 /* el botón de la música, arriba a la izquierda */
-.gta-son { position: absolute; z-index: 5; top: calc(12px + env(safe-area-inset-top)); left: 12px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(16, 5, 28, 0.6); color: #fff; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); }
+.gta-son { position: absolute; z-index: 5; top: calc(12px + env(safe-area-inset-top)); left: 12px; width: 42px; height: 42px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(16, 5, 28, 0.82); color: #fff; }
 .gta-son svg { width: 19px; height: 19px; }
 .gta-son[aria-pressed="true"] { border-color: rgba(45, 226, 230, 0.7); color: var(--g-cian); box-shadow: 0 0 14px rgba(45, 226, 230, 0.35); }
 /* el coche: faros que se encienden y un reflejo que recorre la carrocería */
@@ -211,10 +218,9 @@
 .gta-b:hover { filter: brightness(1.08); }
 @media (prefers-reduced-motion: reduce) {
   .gb i, .gb-n { transition: none !important; transform: none !important; opacity: 1 !important; }
-  .gta-tit, .gta-chip.pulsa, .gta-top.pulsa, .gta-suelo, .gta-sol, .gta-estrellas, .gta-baja, .gta-barra i, .gta-camino li.siguiente::before, .gta-desde .gta-linea polyline { animation: none !important; }
+  .gta-tit, .gta-tit::after, .gta-chip.pulsa, .gta-top.pulsa, .gta-suelo::before, .gta-sol, .gta-estrellas, .gta-baja, .gta-barra i, .gta-camino li.siguiente::after, .gta-desde .gta-linea polyline { animation: none !important; }
   .gta-coche-svg, .gta-rueda, .gta-estela path, .gta-pista-f, .gta-picto i, .gta-pila i, .gta-marca circle, .gta-marca text, .gta-haz, .gta-faro, .gta-pos .b i, .gta-quien .b i { animation: none !important; transition: none !important; opacity: 1 !important; transform: none !important; }
   .gta-reflejo { display: none; }
-  .gta-pos .b i, .gta-quien .b i { width: var(--w) !important; }
   .gta-pista-f { width: var(--p); }
   .gta-rev { opacity: 1; transform: none; transition: none; }
 }

@@ -222,7 +222,9 @@
 .ts-p b { color: #F6EAD5; }
 .ts-hero > .ts-t, .ts-hero > .ts-p, .ts-hero > .ts-baja { opacity: 0; animation: tsSube .6s ease forwards; }
 .ts-hero > .ts-t { animation-delay: 3.0s; } .ts-hero > .ts-p { animation-delay: 3.25s; } .ts-hero > .ts-p + .ts-p { animation-delay: 3.45s; } .ts-hero > .ts-baja { animation-delay: 4.1s; }
-.ts-baja { margin: 18px 0 0; display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 13px; color: #BFAE95; }
+.ts-baja { margin: 14px 0 0; align-self: center; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 6px 16px; border: 0; border-radius: 12px; background: none; font: inherit; font-size: 13px; color: #BFAE95; cursor: pointer; }
+.ts-baja:focus-visible { outline: 2px solid #E3B45F; outline-offset: 2px; }
+.estreno.ts:focus { outline: none; }
 .ts-baja i { width: 12px; height: 12px; border-right: 2px solid #E3B45F; border-bottom: 2px solid #E3B45F; transform: rotate(45deg); animation: tsBaja 1.4s ease-in-out infinite; }
 /* lo que entra al bajar: el texto sube al aparecer la sección; los dibujos, con --p */
 .ts-s[data-ts-p] > .ts-k, .ts-s[data-ts-p] > .ts-h, .ts-s[data-ts-p] > .ts-p, .ts-s[data-ts-p] > .ts-marca, .ts-s[data-ts-p] > .ts-hechos, .ts-s[data-ts-p] > .ts-nota, .ts-s[data-ts-p] > .ts-ok { opacity: 0; transform: translateY(16px); transition: opacity .6s ease, transform .6s ease; }
@@ -286,4 +288,10 @@
 .ts-tj-fl { width: 9px; height: 9px; border-right: 2px solid #E3B45F; border-top: 2px solid #E3B45F; transform: rotate(45deg); margin-right: 4px; }
 .ts-tj-x { position: absolute; top: 6px; right: 6px; color: #D9C7AC; }
 .car > .ts-tarjeta + .empezar, .car > .ts-tarjeta + .pf-recuerda { margin-top: 0; }
+/* 0.7m: quitada de Inicio, en Ajustes (sin la ×, con un botón para devolverla) */
+.ts-aj { margin: 12px 0 4px; }
+.ts-aj .ts-tj-abre { padding-right: 12px; }
+.ts-tj-ini { display: block; width: 100%; padding: 10px 14px; border: 0; border-top: 1px solid rgba(227, 180, 95, .22); background: rgba(10, 2, 5, .18); color: #E3B45F; font: 600 13px var(--f); text-align: left; cursor: pointer; }
+.ts-tj-ini:hover { background: rgba(10, 2, 5, .3); }
+.ts-tj-ini:focus-visible { outline: 2px solid #E3B45F; outline-offset: -2px; }
 @media (prefers-reduced-motion: reduce) { .ts-tarjeta::after { display: none; } }

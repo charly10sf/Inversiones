@@ -1,6 +1,26 @@
 {
  "versiones": [
   {
+   "v": "0.7m",
+   "f": "2026-10-31",
+   "h": "23:50",
+   "t": "GrowFolio, más ligero",
+   "commits": [
+    {
+     "cuando": "2026-10-31 23:50",
+     "asunto": "0.7m: la pastilla de GTA VI deja de repintarse; la hoja de GTA, más suelta; la tarjeta de Toisón, en Ajustes al quitarla",
+     "detalle": [
+      "Cabecera: la pastilla de GTA VI animaba text-shadow (gtaNeon) y, por un nombre repetido, también text-shadow en el botón (gtaRespira de 18-gta.css pisaba la de 02-cabecera, así que no respiraba): repintado en cada fotograma en todas las pantallas. Con la CPU de un móvil normal (×6 en Chrome), Inicio quieto pasa de 3,1 s de trabajo cada 4 s a 0,24 s. Ahora solo opacidad: el «VI» parpadea con opacity y el brillo va en ::before (gtaPastilla). Con una hoja, el estreno o la guía encima, se para (body:has)",
+      "Hoja de GTA VI: el brillo del título en ::after con data-t (opacidad); el suelo, con una capa que se desplaza (transform) en vez de background-position; el halo de «lo siguiente», con transform; las barras de lo que tienes y la del principio crecen con scaleX en vez de width; sin backdrop-filter en los botones fijos y el reloj; el reloj cambia solo las cifras (tocarReloj) en vez de rehacerse cada segundo; la línea del camino, una medida por fotograma y solo si cambia; fuera Anton de Google Fonts. Quieta pasa de 2,7 s a 0,33 s cada 3 s; al bajar, de 28 a 38 fotogramas por segundo",
+      "GTA VI: hito de las reservas (25 jun 2026); en el móvil, la última cifra corta suelta va a lo ancho",
+      "Toisón: la tarjeta quitada de Inicio sale arriba en Ajustes (htmlTarjetaToison(true)), con «Volver a ponerla en Inicio» (toison-inicio); al quitarla, un aviso de que está en Ajustes. Lo pidió Carlos",
+      "Estreno de Toisón: el foco va al estreno y vuelve al cerrar; «Desliza hacia abajo» es un botón que baja a lo siguiente («Baja para ver más» en el ordenador); al bajar se mide todo antes de escribir y solo se escribe --p si cambia; «Ya es nuestra» pasa a «Lo que ya está hecho» (la marca está solicitada, no concedida)",
+      "Pruebas: tests/animaciones.spec.js (lo que no para solo cambia opacidad y transform en Inicio, la hoja de GTA y el estreno; la pastilla se para con una hoja encima; el reloj cambia solo las cifras) y en tests/toison.spec.js la tarjeta en Ajustes, el foco y el botón de bajar. La de animaciones falla con el código de la 0.7l"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7l",
    "f": "2026-10-31",
    "h": "21:30",

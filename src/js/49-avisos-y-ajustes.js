@@ -28,7 +28,7 @@ function htmlToison() {
     ${cota('c4 sobre', -80.9, 0, -54.1, 0, '26,8', -67.5, -6)}
     ${cota('c5', 20.5, 74, -20.5, 74, '41', 30, 76.5)}
   </svg>`;
-  const ok = ICONOS.ok;
+  const ok = ICONOS.ok, tactil = !window.matchMedia || matchMedia('(pointer: coarse)').matches;
   return `<button type="button" class="ib ts-x" data-ts="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button>
     <div class="ts-adios" aria-hidden="true"><img src="growfolio-nombre.svg" alt=""><p>${L('tiene los días contados…', 'has its days numbered…')}</p></div>
     <div class="ts-c">
@@ -37,7 +37,7 @@ function htmlToison() {
         <h2 class="ts-t">${L('GrowFolio tiene los días contados', "GrowFolio's days are numbered")}</h2>
         <p class="ts-p"><b>${L('Pero es por algo bueno.', "But it's for a good reason.")}</b> ${L('En diciembre cambia de nombre y de cara: pasa a llamarse Toisón.', 'In December it gets a new name and a new look: it becomes Toisón.')}</p>
         <p class="ts-p">${L('Un toisón es un vellón de lana, y el de oro es el del mito de Jasón. El logo junta las dos primeras letras: una T hecha columna que atraviesa una O.', 'A toisón is a fleece, and the golden one is the fleece of the Jason myth. The logo joins the first two letters: a T shaped like a column running through an O.')}</p>
-        <p class="ts-baja">${L('Desliza hacia abajo', 'Scroll down')}<i aria-hidden="true"></i></p>
+        <button type="button" class="ts-baja" data-ts-baja>${tactil ? L('Desliza hacia abajo', 'Scroll down') : L('Baja para ver más', 'Scroll down')}<i aria-hidden="true"></i></button>
       </section>
       <section class="ts-s" data-ts-p>
         <p class="ts-k">${L('La O áurea', 'The golden O')}</p>
@@ -63,7 +63,7 @@ function htmlToison() {
         <p class="ts-p">${L('El mismo relieve sobre mármol negro, para las piezas especiales. La T es de pan de oro; la O, de mármol crema con vetas; y la luz viene siempre de arriba a la izquierda.', 'The same relief on black marble, for special pieces. The T is gold leaf; the O, veined cream marble; and the light always comes from the top left.')}</p>
       </section>
       <section class="ts-s ts-fin" data-ts-p>
-        <p class="ts-k">${L('Ya es nuestra', "It's ours now")}</p>
+        <p class="ts-k">${L('Lo que ya está hecho', 'Already done')}</p>
         <ul class="ts-hechos">
           <li>${ok}<span>${L('Dominios registrados: <b>toison.es</b>, <b>toison.app</b> y <b>toisonapp.com</b>', 'Domains registered: <b>toison.es</b>, <b>toison.app</b> and <b>toisonapp.com</b>')}</span></li>
           <li>${ok}<span>${L('Marca TOISÓN solicitada en la Oficina Española de Patentes y Marcas', 'TOISÓN trademark filed with the Spanish Patent and Trademark Office')}</span></li>
@@ -74,16 +74,20 @@ function htmlToison() {
     </div>`;
 }
 /* 0.7l: en Inicio, arriba, una tarjeta de Toisón que abre el estreno entero cuando quieras (lo pidió Carlos). Con el
-   símbolo dibujado aquí mismo (sin bajar ninguna imagen). Hasta fin de año o hasta que la quites con la × */
-function htmlTarjetaToison() {
-  if (LS.get('inv-toison-tarjeta') || Date.now() >= Date.parse('2027-01-01')) return '';
-  return `<div class="ts-tarjeta" role="note">
+   símbolo dibujado aquí mismo (sin bajar ninguna imagen). Hasta fin de año o hasta que la quites con la ×.
+   0.7m: quitada de Inicio, pasa a Ajustes, arriba, con un botón para devolverla a Inicio (lo pidió Carlos el 31 oct) */
+function htmlTarjetaToison(enAjustes = false) {
+  if (Date.now() >= Date.parse('2027-01-01')) return '';
+  const quitada = !!LS.get('inv-toison-tarjeta');
+  if (quitada !== enAjustes) return '';
+  return `<div class="ts-tarjeta${enAjustes ? ' ts-aj' : ''}" role="note">
     <button type="button" class="ts-tj-abre" data-accion="toison">
       <span class="ts-tj-ic" aria-hidden="true"><svg viewBox="-92 -86 184 162"><g class="ts-sim">${TS_SIMBOLO}</g></svg></span>
       <span class="ts-tj-t"><small>${L('Muy pronto', 'Coming soon')}</small><b>${L('GrowFolio pasa a llamarse Toisón', 'GrowFolio is becoming Toisón')}</b><span>${L('Toca para ver la marca, la O áurea y sus medidas', 'Tap to see the brand, the golden O and its measurements')}</span></span>
       <span class="ts-tj-fl" aria-hidden="true"></span>
     </button>
-    <button type="button" class="ib ts-tj-x" data-accion="toison-fuera" aria-label="${L('Quitar', 'Remove')}">${ICONOS.cerrar}</button>
+    ${enAjustes ? `<button type="button" class="ts-tj-ini" data-accion="toison-inicio">${L('Volver a ponerla en Inicio', 'Put it back on Home')}</button>`
+    : `<button type="button" class="ib ts-tj-x" data-accion="toison-fuera" aria-label="${L('Quitar de Inicio (seguirá en Ajustes)', 'Remove from Home (it stays in Settings)')}">${ICONOS.cerrar}</button>`}
   </div>`;
 }
 /* forzar: desde la tarjeta de Inicio, aunque ya lo hayas visto (y también en la cartera de prueba) */
@@ -95,21 +99,23 @@ function avisoToison(seguir, forzar = false) {
   const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const d = document.createElement('div');
   d.className = 'estreno ts' + (quieto ? ' quieta' : '');
-  d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'Toisón');
+  d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'Toisón'); d.tabIndex = -1;
   d.innerHTML = htmlToison();
+  const antes = document.activeElement;
   document.body.appendChild(d);
+  d.focus({ preventScroll: true });
   // cada sección se dibuja según bajas: --p va de 0 (asoma por abajo) a 1 (ya la tienes delante)
   const secs = [...d.querySelectorAll('[data-ts-p]')];
   let marco = 0;
   const medir = () => {
     marco = 0;
     const vh = d.clientHeight || innerHeight;
-    for (const s of secs) {
-      const r = s.getBoundingClientRect();
-      const p = quieto ? 1 : Math.max(0, Math.min(1, (vh * 0.92 - r.top) / Math.max(1, Math.min(r.height, vh) * 0.62)));
-      s.style.setProperty('--p', p.toFixed(3));
-      if (p > 0.02) s.classList.add('on');
-    }
+    const ps = secs.map((s) => { const r = s.getBoundingClientRect(); return quieto ? 1 : Math.max(0, Math.min(1, (vh * 0.92 - r.top) / Math.max(1, Math.min(r.height, vh) * 0.62))); });
+    secs.forEach((s, i) => {
+      const v = ps[i].toFixed(3);
+      if (s.dataset.p !== v) { s.dataset.p = v; s.style.setProperty('--p', v); }
+      if (ps[i] > 0.02 && !s.classList.contains('on')) s.classList.add('on');
+    });
   };
   const alBajar = () => { if (!marco) marco = requestAnimationFrame(medir); };
   d.addEventListener('scroll', alBajar, { passive: true });
@@ -121,13 +127,17 @@ function avisoToison(seguir, forzar = false) {
     if (desdeAtras !== true) quitarAtras();
     window.removeEventListener('keydown', tecla, true); window.removeEventListener('resize', alBajar);
     d.classList.add('fuera');
+    if (antes && antes.isConnected && antes.focus) antes.focus({ preventScroll: true });
     setTimeout(() => { d.remove(); if (seguir) seguir(); }, quieto ? 0 : 450);
   };
   // en window y antes que nadie: el estreno va encima de todo (también de una hoja abierta debajo)
   const tecla = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); cerrar(); } };
   window.addEventListener('keydown', tecla, true);
   quitarAtras = conAtras(() => cerrar(true), d);
-  d.addEventListener('click', (e) => { if (e.target.closest('[data-ts]')) cerrar(); });
+  d.addEventListener('click', (e) => {
+    if (e.target.closest('[data-ts-baja]')) { if (secs[0]) d.scrollTo({ top: secs[0].offsetTop, behavior: quieto ? 'auto' : 'smooth' }); return; }
+    if (e.target.closest('[data-ts]')) cerrar();
+  });
 }
 function bienvenida(intento = 0) {
   if (!S.cartera) return;
@@ -350,6 +360,7 @@ function abrirAjustes() {
   const tok = GH.token();
   const h = hoja('Ajustes', `
     <div class="aj-cab"><img src="favicon.svg" alt=""><div><img class="aj-nom" src="growfolio-nombre.svg" alt="GrowFolio"><small>Versión ${VERSION} alfa, ${PERFIL_CUENTA ? 'con la cartera guardada en tu cuenta' : PERFIL_LOCAL ? 'con la cartera guardada en este dispositivo' : 'con la cartera guardada en GitHub'}</small></div><button class="btn peq" id="aNov" data-cerrar>${ICONOS.chispa}Novedades</button></div>
+    ${htmlTarjetaToison(true)}
     ${PERFIL_CUENTA ? `<h2 class="aj-grupo">Tu cuenta</h2><div class="aj-caja">
       <div class="seccion-ed"><h3>${ICONOS.perfil}${esc(nombreUsuario() || 'Tu cuenta')}</h3><p class="nota" style="margin:0">${FB.user && FB.user.email ? `${esc(FB.user.email)}, ` : ''}${FB.user && (FB.user.providerData || []).some((x) => x.providerId === 'google.com') ? 'con Google' : 'con correo y contraseña'}. Tu cartera se guarda cifrada en tu cuenta y se sincroniza sola entre tus dispositivos.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNombre">${ICONOS.perfil}Cambiar nombre</button><button class="btn peq" id="aSalir">Cerrar sesión</button></div></div>
