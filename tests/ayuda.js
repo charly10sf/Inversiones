@@ -48,6 +48,7 @@ export async function preparar(context, { idioma = 'es', ajustes = {} } = {}) {
       localStorage.setItem('inv-gta', 'true');
       // 0.7l: el avance de Toisón, igual: una vez al abrir (lo prueba tests/toison.spec.js)
       localStorage.setItem('inv-toison-avance', 'true');
+      localStorage.setItem('inv-toison-tarjeta', 'true');
       for (const [k, v] of Object.entries(ajustes)) localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
     } catch (e) {}
   }, { idioma, ajustes });

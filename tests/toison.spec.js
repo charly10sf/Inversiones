@@ -79,3 +79,25 @@ test('al entrar, también quien acaba de llegar ve el estreno de Toisón antes q
   await expect(page.locator('.estreno.ts')).toHaveCount(0);
   expect(await page.evaluate(() => !!LS.get('inv-toison-avance'))).toBe(true);
 });
+
+test('en Inicio, la tarjeta de Toisón abre el estreno entero aunque ya lo hayas visto; con la × se quita', async ({ page, errores }) => {
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.evaluate(() => { LS.del('inv-toison-tarjeta'); location.hash = 'cartera'; pintar(); });
+  const t = page.locator('.ts-tarjeta');
+  await expect(t).toBeVisible();
+  await expect(t).toContainText('GrowFolio pasa a llamarse Toisón');
+  expect(await page.evaluate(() => !!LS.get('inv-toison-avance'))).toBe(true);
+  // sin el ratón: a ratos sale encima la guía de Inicio
+  await page.evaluate(() => document.querySelector('.ts-tarjeta [data-accion="toison"]').click());
+  const e = page.locator('.estreno.ts');
+  await expect(e).toBeVisible();
+  await expect(e.locator('.ts-t')).toHaveText('GrowFolio tiene los días contados');
+  await page.keyboard.press('Escape');
+  await expect(e).toHaveCount(0);
+  await page.evaluate(() => document.querySelector('.ts-tarjeta [data-accion="toison-fuera"]').click());
+  await expect(page.locator('.ts-tarjeta')).toHaveCount(0);
+  await page.evaluate(() => pintar());
+  await expect(page.locator('.ts-tarjeta')).toHaveCount(0);
+});

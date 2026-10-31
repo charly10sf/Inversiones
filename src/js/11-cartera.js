@@ -233,7 +233,8 @@ function vistaCartera(M) {
   const empezar = S.demo ? '' : htmlEmpezar();
   const aviso = S.demo ? '' : empezar || (perfilIncompleto() && Date.now() - (LS.get('inv-perfil-aviso', 0) || 0) > 3 * 864e5
     ? `<div class="pf-recuerda" role="note"><span class="pf-r-ic">${ICONOS.perfil}</span><span class="pf-r-t"><b>${perfilVacio() ? 'Te falta tu perfil de inversor' : 'Tu perfil de inversor está a medias'}</b><small>Sin tu edad, tu plazo y el riesgo que aguantas, GrowIA te aconseja como a cualquiera. Es un minuto.</small></span><button type="button" class="btn peq pri" data-accion="perfil-guiado">${perfilVacio() ? 'Hacerlo ahora' : 'Terminarlo'}</button><button type="button" class="ib" data-accion="perfil-aviso-no" aria-label="Ahora no" title="Ahora no (vuelve en unos días)">${ICONOS.cerrar}</button></div>` : '');
-  return `<div class="car">${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
+  // 0.7l: arriba del todo, la tarjeta de Toisón (abre el estreno)
+  return `<div class="car">${htmlTarjetaToison()}${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
     : f.t === 'suelta' ? `<div class="car-fila suelta">${f.a.map((x) => `<div class="car-col">${x.html}</div>`).join('')}</div>`
     : `<div class="car-fila ${f.t}">${f.t === 'par-izq' ? col(f.a) + col(f.b) : col(f.a) + col(f.b, ' lado')}</div>`)).join('')}
     <div class="car-pie"><button type="button" class="btn peq car-ordenar" data-accion="ordenar-cartera">${ICONOS.ordenar}Personalizar Inicio</button></div></div>`;

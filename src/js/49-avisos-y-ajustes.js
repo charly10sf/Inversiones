@@ -73,9 +73,24 @@ function htmlToison() {
       </section>
     </div>`;
 }
-function avisoToison(seguir) {
-  // hecho: por si el almacenamiento no guarda (lleno), que no vuelva a salir en esta sesión
-  if (avisoToison.hecho || LS.get('inv-toison-avance') || S.demo || Date.now() >= Date.parse('2027-01-01')) return seguir && seguir();
+/* 0.7l: en Inicio, arriba, una tarjeta de Toisón que abre el estreno entero cuando quieras (lo pidió Carlos). Con el
+   símbolo dibujado aquí mismo (sin bajar ninguna imagen). Hasta fin de año o hasta que la quites con la × */
+function htmlTarjetaToison() {
+  if (LS.get('inv-toison-tarjeta') || Date.now() >= Date.parse('2027-01-01')) return '';
+  return `<div class="ts-tarjeta" role="note">
+    <button type="button" class="ts-tj-abre" data-accion="toison">
+      <span class="ts-tj-ic" aria-hidden="true"><svg viewBox="-92 -86 184 162"><g class="ts-sim">${TS_SIMBOLO}</g></svg></span>
+      <span class="ts-tj-t"><small>${L('Muy pronto', 'Coming soon')}</small><b>${L('GrowFolio pasa a llamarse Toisón', 'GrowFolio is becoming Toisón')}</b><span>${L('Toca para ver la marca, la O áurea y sus medidas', 'Tap to see the brand, the golden O and its measurements')}</span></span>
+      <span class="ts-tj-fl" aria-hidden="true"></span>
+    </button>
+    <button type="button" class="ib ts-tj-x" data-accion="toison-fuera" aria-label="${L('Quitar', 'Remove')}">${ICONOS.cerrar}</button>
+  </div>`;
+}
+/* forzar: desde la tarjeta de Inicio, aunque ya lo hayas visto (y también en la cartera de prueba) */
+function avisoToison(seguir, forzar = false) {
+  // hecho: por si el almacenamiento no guarda (lleno), que no vuelva a salir solo en esta sesión
+  if (!forzar && (avisoToison.hecho || LS.get('inv-toison-avance') || S.demo || Date.now() >= Date.parse('2027-01-01'))) return seguir && seguir();
+  if (document.querySelector('.estreno.ts')) return;
   avisoToison.hecho = true; LS.set('inv-toison-avance', Date.now());
   const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const d = document.createElement('div');
@@ -104,12 +119,13 @@ function avisoToison(seguir) {
   const cerrar = (desdeAtras) => {
     if (!d.isConnected || d.classList.contains('fuera')) return;
     if (desdeAtras !== true) quitarAtras();
-    document.removeEventListener('keydown', tecla, true); window.removeEventListener('resize', alBajar);
+    window.removeEventListener('keydown', tecla, true); window.removeEventListener('resize', alBajar);
     d.classList.add('fuera');
     setTimeout(() => { d.remove(); if (seguir) seguir(); }, quieto ? 0 : 450);
   };
-  const tecla = (e) => { if (e.key === 'Escape') { e.preventDefault(); cerrar(); } };
-  document.addEventListener('keydown', tecla, true);
+  // en window y antes que nadie: el estreno va encima de todo (también de una hoja abierta debajo)
+  const tecla = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); cerrar(); } };
+  window.addEventListener('keydown', tecla, true);
   quitarAtras = conAtras(() => cerrar(true), d);
   d.addEventListener('click', (e) => { if (e.target.closest('[data-ts]')) cerrar(); });
 }
