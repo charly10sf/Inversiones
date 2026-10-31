@@ -14,7 +14,9 @@ export default defineConfig({
   fullyParallel: true,
   workers: process.env.CI ? 2 : 4,
   retries: process.env.CI ? 1 : 0,
-  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
+  // 0.7l: en CI también «github», que deja cada fallo como anotación de la Action (se lee con la API; los registros y
+  // el informe no se pueden bajar desde las sesiones de Claude)
+  reporter: process.env.CI ? [['list'], ['html', { open: 'never' }], ['github']] : 'list',
   use: {
     baseURL: `http://localhost:${puerto}/`,
     locale: 'es-ES',
