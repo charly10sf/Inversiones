@@ -5,6 +5,13 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7n', f: '2026-11-01', h: '__HORA__', t: 'Toisón y GTA VI, para compartir', arreglos: [
+    'El estreno de Toisón empieza dibujando la marca: la O y la T que baja hasta atravesarla. Luego sale en relieve, ya sin el recuadro de alrededor. Lo pidió Carlos.',
+    'Al bajar, las partes del estreno van más seguidas y cada dibujo se acaba cuando lo tienes entero delante. Hay una parte nueva: el icono de Toisón en la pantalla de inicio de un móvil y lo que falta para el cambio, que será en noviembre.',
+    'Al final del estreno, «Mandarlo por WhatsApp». El enlace abre el estreno a quien lo reciba, aunque no use GrowFolio.',
+    'En GTA VI, «Mi cartera en GTA VI» como imagen para compartir. Las copias del juego solo salen si lo eliges, porque con ellas se adivina cuánto tienes; con los importes ocultos, nunca. Con la app de Android nueva, se comparte desde el menú de compartir del móvil.',
+    'Arriba de GTA VI, palmeras y una ciudad al atardecer. Y en «mientras esperabas», lo que habrían sido los 79,99 € del juego si el día del primer tráiler hubieran ido a lo que tienes hoy.',
+  ] },
   { v: '0.7m', f: '2026-10-31', h: '23:50', t: 'GrowFolio, más ligero', arreglos: [
     'La app gasta mucha menos batería estando quieta. La pastilla de GTA VI de arriba se repintaba entera en cada fotograma, en todas las pantallas; ahora brilla igual sin trabajo de más para el móvil y se para cuando tienes algo encima.',
     'La hoja de GTA VI va más suelta al bajar: el suelo, el título y las barras se mueven sin volver a pintarse, y el reloj solo cambia las cifras. En el camino hasta GTA VI está también el día en que abrieron las reservas.',

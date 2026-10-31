@@ -1,6 +1,29 @@
 {
  "versiones": [
   {
+   "v": "0.7n",
+   "f": "2026-11-01",
+   "h": "__HORA__",
+   "t": "Toisón y GTA VI, para compartir",
+   "commits": [
+    {
+     "cuando": "2026-11-01 __HORA__",
+     "asunto": "0.7n: el estreno de Toisón se dibuja, con el icono en un móvil y para mandarlo por WhatsApp; GTA VI con palmeras, los 79,99 € desde el primer tráiler y su imagen para compartir",
+     "detalle": [
+      "Estreno de Toisón: la marca sale del fondo sin el recuadro (los bordes de toison-avance.webp se funden con una máscara elíptica y el fondo del estreno se acerca a su borgoña). Antes, el símbolo en vector en el mismo sitio (centro 558, 249 y 2,08 px por u, medido en la imagen): se dibuja la O, la T baja dibujada desde arriba hasta atravesarla, se rellenan y encima aparece el relieve. Quieto con las animaciones quitadas",
+      "Las partes del estreno sin alto mínimo (medían 88svh): lo de dentro y 52 px de margen. --p se mide con lo de dentro de cada sección: 0 cuando asoma por abajo y 1 cuando lo tienes entero a la vista, con margen; si no cabe, cuando su parte de arriba llega casi arriba; al final del todo, lo que se ve está acabado",
+      "Parte nueva «En tu móvil»: una pantalla de inicio con quince apps inventadas, un reloj y el dock; al bajar, el icono de GrowFolio deja paso al de Toisón en relieve (toison-icono.webp, recortado de la imagen del estreno). Lo que falta: el cambio es en noviembre sin día fijado (Carlos, 1 nov), así que cuenta hasta el 1 dic y dice «como mucho». Los «en diciembre» del estreno pasan a «en noviembre»",
+      "«Mandarlo por WhatsApp» al final: navigator.share con el enlace y una frase; sin él (la app de Android no lo tiene), wa.me, que la app abre fuera. El enlace lleva #toison, que abre el estreno a cualquiera al entrar, también sin cuenta, encima de la entrada y la presentación",
+      "GTA VI: una ciudad al atardecer en el horizonte y dos palmeras, siluetas propias en SVG (nada del juego), quietas; solo suben una vez al abrir (transform). También en el aviso de la primera vez",
+      "GTA VI, «mientras esperabas»: los 79,99 € del juego con la misma serie desde el primer tráiler (desdeTrailerGTA, que sacaba htmlDesdeTrailerGTA): «habrían sido» o «se habrían quedado en», sin decir qué hacer. Sale también con los importes ocultos",
+      "GTA VI: «Mi cartera en GTA VI» como imagen de 1080 × 1350 en un lienzo, con el atardecer, la ciudad y las palmeras. Las copias solo con el interruptor «Enseñar las copias» (apagado de entrada; lo decidió Carlos) y nunca con los importes ocultos; sin ellas, el % desde el primer tráiler, los 79,99 € y los días que faltan. Se comparte con navigator.share (archivo PNG) o se descarga",
+      "App de Android: Puente.compartirImagen (el PNG en base64 a la caché y el menú de compartir de Android, con permiso de lectura por ClipData); Archivos sirve también esa imagen. La app de antes avisa de que la actualices",
+      "Pruebas: cinco nuevas en tests/toison.spec.js y tests/gta.spec.js (cuatro)"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7m",
    "f": "2026-10-31",
    "h": "23:50",

@@ -2,13 +2,17 @@ package es.inversiones.app;
 
 import android.annotation.TargetApi;
 import android.app.KeyguardManager;
+import android.content.ClipData;
 import android.content.Context;
+import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.hardware.biometrics.BiometricManager;
 import android.hardware.biometrics.BiometricPrompt;
 import android.os.Build;
 import android.os.CancellationSignal;
+import android.util.Base64;
 import android.webkit.JavascriptInterface;
+import android.widget.Toast;
 
 import androidx.credentials.Credential;
 import androidx.credentials.CredentialManager;
@@ -182,6 +186,38 @@ public class Puente {
     @JavascriptInterface
     public String nombreVersion() {
         return BuildConfig.VERSION_NAME;
+    }
+
+    /** 0.7n: comparte una imagen hecha en la web (un PNG en base64, como «Mi cartera en GTA VI») con el menú de compartir
+     *  de Android, con un texto. El WebView no trae navigator.share: sin esto, desde la app no se podía */
+    @JavascriptInterface
+    public void compartirImagen(String base64, String texto) {
+        if (base64 == null || base64.isEmpty() || base64.length() > 12_000_000) return;
+        new Thread(() -> {
+            try {
+                byte[] b = Base64.decode(base64, Base64.DEFAULT);
+                try (java.io.FileOutputStream o = new java.io.FileOutputStream(Archivos.imagen(ctx))) {
+                    o.write(b);
+                }
+                act.runOnUiThread(() -> {
+                    try {
+                        android.net.Uri u = Archivos.uriImagen();
+                        Intent i = new Intent(Intent.ACTION_SEND);
+                        i.setType("image/png");
+                        i.putExtra(Intent.EXTRA_STREAM, u);
+                        if (texto != null && !texto.isEmpty()) i.putExtra(Intent.EXTRA_TEXT, texto);
+                        // ClipData para que el permiso de leerla pase del menú de compartir a la app que elijas
+                        i.setClipData(ClipData.newRawUri("", u));
+                        i.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                        act.startActivity(Intent.createChooser(i, null));
+                    } catch (Exception e) {
+                        Toast.makeText(act, "No se ha podido compartir la imagen", Toast.LENGTH_SHORT).show();
+                    }
+                });
+            } catch (Exception e) {
+                act.runOnUiThread(() -> Toast.makeText(act, "No se ha podido preparar la imagen", Toast.LENGTH_SHORT).show());
+            }
+        }).start();
     }
 
     /** Baja el APK nuevo y abre el instalador; el progreso llega a la web por progresoApp(pct, estado) */

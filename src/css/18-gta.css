@@ -216,6 +216,38 @@
 .gta-b { height: 48px; border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.25); background: rgba(16, 5, 28, 0.55); color: var(--g-t); font-weight: 650; font-size: 15.5px; backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); }
 .gta-b.pri { background: linear-gradient(95deg, #FF3EA5, #FF9F43); border: 0; color: #1A0718; box-shadow: 0 0 22px rgba(255, 62, 165, 0.5); }
 .gta-b:hover { filter: brightness(1.08); }
+/* 0.7n: la ciudad en el horizonte y las palmeras a los lados (quietas; suben una vez al abrir, con transform) */
+.gta-ciudad { position: absolute; left: 0; bottom: 30%; width: 100%; height: auto; aspect-ratio: 600 / 90; z-index: 2; display: block; }
+.gta-ciudad path { fill: #1A0731; } .gta-ciudad path.v { fill: #FF8FCB; opacity: 0.55; }
+.gta-palma { position: absolute; bottom: 0; z-index: 5; height: 82%; width: auto; aspect-ratio: 120 / 200; fill: #0D0318; animation: gtaPalma 1.4s cubic-bezier(0.2, 0.8, 0.2, 1) 0.35s both; }
+.gta-palma.izq { left: -5%; } .gta-palma.der { right: -4%; height: 70%; }
+@keyframes gtaPalma { from { transform: translateY(26%); } }
+@media (min-width: 721px) { .gta-palma.izq { left: 1%; } .gta-palma.der { right: 2%; } }
+/* 0.7n: los 79,99 € del juego desde el primer tráiler */
+.gta-juego { margin-top: 14px; padding: 16px 18px; border-radius: 18px; background: rgba(255, 159, 67, 0.07); border: 1px solid rgba(255, 159, 67, 0.32); display: grid; gap: 8px; }
+.gta-juego-f { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.gta-juego-c svg { width: 22px; height: 28px; fill: none; stroke: var(--g-nar); stroke-width: 1.6; }
+.gta-juego-a { font: 400 24px/1 var(--g-neon); color: var(--g-t2); text-decoration: line-through; text-decoration-color: rgba(255, 159, 67, 0.6); }
+.gta-juego-f > i { font-style: normal; color: var(--g-nar); font-size: 20px; }
+.gta-juego .gta-num { --c: var(--g-nar); font-size: clamp(32px, 9vw, 42px); }
+.gta-juego p { margin: 0; color: var(--g-t2); font-size: 14px; line-height: 1.5; }
+/* 0.7n: «Mi cartera en GTA VI» como imagen */
+.gta-img-b { display: flex; align-items: center; justify-content: center; gap: 9px; width: 100%; margin-top: 14px; border-color: rgba(45, 226, 230, 0.45); color: #CFFDFE; }
+.gta-img-b svg { width: 20px; height: 20px; color: var(--g-cian); }
+.gta-comp { position: absolute; inset: 0; z-index: 8; display: grid; place-items: center; padding: calc(14px + env(safe-area-inset-top)) 14px calc(14px + env(safe-area-inset-bottom)); background: rgba(8, 2, 16, 0.86); overflow: auto; }
+.gta-comp-c { position: relative; width: min(420px, 100%); display: grid; gap: 12px; justify-items: center; text-align: center; }
+.gta-comp-x { position: absolute; top: -4px; right: -2px; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 50%; border: 1px solid rgba(255, 255, 255, 0.18); background: rgba(14, 4, 26, 0.9); color: var(--g-t); }
+.gta-comp-x svg { width: 17px; height: 17px; }
+.gta-comp .gta-rotulo { color: var(--g-cian); }
+.gta-comp-img { width: auto; max-width: 100%; height: min(52vh, 460px); aspect-ratio: 1080 / 1350; border-radius: 14px; box-shadow: 0 16px 50px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 62, 165, 0.3); }
+.gta-comp-sw { display: flex; align-items: center; gap: 10px; color: var(--g-t); font-size: 15px; font-weight: 600; cursor: pointer; }
+.gta-comp-sw input { width: 20px; height: 20px; accent-color: var(--g-rosa); }
+.gta-comp-sw:has(input:disabled) { opacity: 0.55; cursor: default; }
+.gta-comp-nota { color: var(--g-t2); font-size: 12.5px; line-height: 1.45; max-width: 36ch; }
+.gta-comp .gta-b.pri { width: 100%; }
+@media (prefers-reduced-motion: reduce) {
+  .gta-palma { animation: none !important; }
+}
 @media (prefers-reduced-motion: reduce) {
   .gb i, .gb-n { transition: none !important; transform: none !important; opacity: 1 !important; }
   .gta-tit, .gta-tit::after, .gta-chip.pulsa, .gta-top.pulsa, .gta-suelo::before, .gta-sol, .gta-estrellas, .gta-baja, .gta-barra i, .gta-camino li.siguiente::after, .gta-desde .gta-linea polyline { animation: none !important; }
