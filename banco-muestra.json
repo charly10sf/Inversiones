@@ -1,0 +1,155 @@
+{
+ "v": 1,
+ "generado": "2026-10-25T08:45:51.164Z",
+ "modelo": "gemini-3.6-flash",
+ "muestra": true,
+ "total": 10,
+ "bien": 8,
+ "pct": 80,
+ "peticiones_media": 2.7,
+ "errores_pagina": [],
+ "preguntas": [
+  {
+   "id": "f-hoy",
+   "modo": "fundador",
+   "q": "¿Cómo va mi cartera hoy?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 9,
+   "modelo": "gemini-3.6-flash",
+   "herramientas": [],
+   "respuesta": "Hoy tu cartera cae **615,73 €** (**−0,7 %**), situándose en **86.971,06 €**. Al ser domingo, los mercados están cerrados y esta cifra refleja el último cierre registrado. \n\nA pesar del recorte de hoy, mantienes una ganancia acumulada total de **+7.090,26 €** (+8,9 %).\n\n### Lo que más se ha movido en la sesión\n* **A favor:**\n  * **Repsol** (**+4,3 %**): Es la gran alegría del día. Sube con fuerza impulsada por el barril de petróleo Brent rozando los 112 $ y las expectativas de una recompra importante de acciones antes de sus resultados del 29 de octubre.\n\n* **En contra:**\n  * **IAG** (**−3,1 %**): Sufre el efecto contrario al de Repsol, ya que la subida del petróleo encarece el combustible de los aviones.\n  * **Emergentes** (**−2,2 %**): Acusa el castigo del sector tecnológico en las bolsas"
+  },
+  {
+   "id": "f-vender-mitad-repsol",
+   "modo": "fundador",
+   "q": "¿Qué pasa si vendo la mitad de Repsol? ¿Cuánto pagaría a Hacienda?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 12,
+   "modelo": "gemini-3.6-flash",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "Si vendes la mitad de tu posición en Repsol (114,31 acciones), ingresarás **3.366,43 €** netos en Trade Republic, declararás una ganancia de **1.915,93 €** y pagarás **364,03 €** de impuestos en la renta de 2026 (que se presenta en primavera de 2027).\n\n### Los números exactos de la venta\n* **Venta:** 114,305 acciones a 29,46 € = **3.367,43 €** (menos 1 € de comisión de Trade Republic = **3.366,43 €** en tu cuenta).\n* **Coste de compra (FIFO):** **1.450,50 €** (las compraste a una media de 12,69 €).\n* **Ganancia bruta que declaras:** **+1.915,93 €** (+132,1 %).\n* **Factura con Hacienda:** **364,03 €** (aplicando el 19 % al no superar los 6.000 € de ganancias acumuladas este año).\n\n---\n\n### ¿Qué supone para tu cartera?\n\n1. **Aseguras ganancias extraordinarias:** Amagastas el 50 % de una oper"
+  },
+  {
+   "id": "f-compro-natwest",
+   "modo": "fundador",
+   "q": "¿Compro NatWest Group (NWG.L)? Contrástalo con las noticias y dime cuánto meter, desde dónde y con qué impuesto.",
+   "ok": false,
+   "mal": [
+    "6 peticiones (máximo 4)"
+   ],
+   "peticiones": 6,
+   "segundos": 26,
+   "modelo": "gemini-3.6-flash",
+   "herramientas": [
+    "buscar_empresa",
+    "simular_compra",
+    "buscar_en_internet"
+   ],
+   "respuesta": "**Sí, compra NatWest Group (NWG.L), pero espera unos días, hasta después del 28 de octubre.** Es una de las mejores oportunidades del sector bancario europeo por valoración y dividendo, pero esta semana el presupuesto del Reino Unido puede traer volatilidad.\n\n---\n\n### 1. Recomendación concreta: cuánto, cuándo y dónde\n\n* **Cuánto:** **2.000 €** (un 2,3 % de tu cartera).\n* **Cuándo:** A partir del **29 de octubre**, una vez presentados los Presupuestos del Gobierno británico.\n* **Dónde:** En **Trade Republic** (1 € de comisión por operación).\n* **De dónde sacas el dinero:** Tienes **240,80 €** en efectivo en Trade Republic. El resto (1.760 €) puede salir de la venta parcial recomendada de Repsol (al vender 99 acciones obtienes unos 2.600 € netos tras apartar impuestos) o de dinero nuevo.\n* *"
+  },
+  {
+   "id": "f-proyeccion-600",
+   "modo": "fundador",
+   "q": "¿Cuánto tendré en 10 años si aporto 600 € al mes?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 1,
+   "segundos": 13,
+   "modelo": "gemini-3.6-flash",
+   "herramientas": [],
+   "respuesta": "Lo más probable es que dentro de 10 años tengas alrededor de **247.466 €**.\n\nSegún la simulación de 2.000 escenarios con tu cartera actual y una rentabilidad media histórica de la bolsa del 7 % anual, este sería el abanico según cómo se comporte el mercado:\n\n* **Lo probable (mercado normal):** **247.466 €**\n* **Si vienen años malos en bolsa:** **149.506 €**\n* **Si vienen años muy buenos:** **427.245 €**\n\n### De dónde sale este dinero\n\n* **Tus aportaciones:** Partes de tus **86.964,10 €** actuales y añadirás 72.000 € más (600 € al mes durante 120 meses). En total habrás puesto de tu bolsillo **158.971 €**.\n* **Ganancia del mercado:** En el escenario probable, el interés compuesto y el crecimiento de la bolsa te aportarían **88.495 €** en plusvalías.\n\nPara que se cumpla, la clave es no conge"
+  },
+  {
+   "id": "f-dos-meses",
+   "modo": "fundador",
+   "q": "Si vendo IAG con pérdidas y la recompro la semana que viene, ¿puedo restar la pérdida?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 9,
+   "modelo": "gemini-3.6-flash",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "**No, no podrías restarte la pérdida en la Renta de este año.** \n\nEn España se aplica la **regla de recompra de los dos meses** para acciones de la Unión Europea (como IAG): si vendes con pérdidas y recompras las mismas acciones en los dos meses anteriores o posteriores, la pérdida queda **aplazada** y no te la puedes deducir en ese ejercicio.\n\n### ¿Qué pasa con esos números en tu cartera?\n\n* **Tu posición actual:** Tienes 652,53 acciones de IAG en Trade Republic con un coste de 3.207,00 € y un valor actual de 3.080,59 €. Si vendes todo hoy, la pérdida real es de **−127,41 €**.\n* **Si recompras la semana que viene:** La pérdida de **127,41 €** queda «congelada». No la pierdes para siempre, pero Hacienda no te deja restarla de tus ganancias de 2026. Esa pérdida se sumará al precio de compra"
+  },
+  {
+   "id": "f-idea-mes",
+   "modo": "fundador",
+   "q": "Dame una idea de compra para este mes y por qué.",
+   "ok": false,
+   "mal": [
+    "5 peticiones (máximo 4)"
+   ],
+   "peticiones": 5,
+   "segundos": 49,
+   "modelo": "gemini-3.5-flash-lite",
+   "herramientas": [
+    "buscar_empresa",
+    "simular_compra"
+   ],
+   "respuesta": "Para este mes te recomiendo comprar **Salzgitter AG** (**SZG.DE**, en Europa, sector materiales). \n\nAquí tienes los números y los motivos de por qué encaja ahora mismo:\n\n* **Qué compras:** Unas **480 acciones** (unos **2.600 €**, tal como marca tu hoja de ruta al vender parte de Repsol). Lo harías a través de **Trade Republic** (comisión de 1 €). Al ser una empresa alemana, no lleva tasa especial a la compra y no rompe tu límite de acciones sueltas, que se quedaría en el 17,2% (por debajo de tu tope del 20%).\n* **Potencial y consenso:** Los analistas le dan un potencial de subida del **55%** a 12 meses (con un consenso claro de compra entre 10 analistas). GrowIA calcula un recorrido del **28% en los próximos 6 meses**.\n* **Valoración:** Está muy barata. Cotiza a un PER futuro de **5,4** (e"
+  },
+  {
+   "id": "e-vendo-repsol",
+   "modo": "estandar",
+   "q": "¿Vendo Repsol?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 14,
+   "modelo": "gemini-3.6-flash",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "No puedo decirte si debes vender o mantener Repsol, ya que eso sería asesoramiento personalizado y no estoy autorizado para darlo, pero te muestro las cuentas exactas y los puntos clave para que decidas tú.\n\n### Qué supone vender la posición entera hoy\n\nSi vendes las 228,61 acciones de Repsol al precio actual (29,46 €):\n\n* **Importe cobrado:** **6.733,85 €** (tras restar 1,00 € de comisión en Trade Republic).\n* **Ganancia obtenida:** **+3.832,85 €** (tu coste de compra fue 2.901,00 €).\n* **Impuestos a pagar (Renta 2026):** **728,24 €** (un 19 % de la ganancia, al no llevar otras ventas registradas este año).\n* **Dinero neto final:** **6.005,61 €** (tras reservar la parte de Hacienda).\n\n### Cómo afecta a tu cartera\n\n* **Límite de acciones sueltas:** Ahora tienes un **16,7 %** del patrimonio"
+  },
+  {
+   "id": "e-compro-nvidia",
+   "modo": "estandar",
+   "q": "¿Compro Nvidia ahora?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 3,
+   "segundos": 15,
+   "modelo": "gemini-3.6-flash",
+   "herramientas": [
+    "buscar_empresa",
+    "simular_compra"
+   ],
+   "respuesta": "No puedo decirte si comprar Nvidia ni a qué precio entrar, pero sí puedo darte las cifras de tu cartera, la valoración de la empresa y lo que supondría una compra para que decidas tú.\n\n### Lo que ya tienes de Nvidia\nActualmente ya tienes **2.294 €** de Nvidia de forma indirecta a través de tus fondos indexados (principalmente el S&P 500).\n\n---\n\n### Lo que dicen los analistas y los números de la empresa\n* **Consenso**: Compra fuerte (58 analistas: 59 recomiendan comprar/fuerte compra, 2 mantener y 1 vender).\n* **Precio objetivo medio**: **328,95 $** (+55,9 % de potencial sobre los 210,96 $ / ~188,29 € actuales).\n* **Valoración**: PER actual de 26,7 y PER futuro de **13,3** (frente a 18,4 de su sector). Los analistas prevén un crecimiento del beneficio por acción del +101 %.\n* **Puntos fuert"
+  },
+  {
+   "id": "e-noticias-malas-iag",
+   "modo": "estandar",
+   "q": "Las noticias de IAG son malas, ¿la vendo?",
+   "ok": true,
+   "mal": [],
+   "peticiones": 2,
+   "segundos": 17,
+   "modelo": "gemini-3.6-flash",
+   "herramientas": [
+    "simular_venta"
+   ],
+   "respuesta": "No puedo decirte si vender o mantener IAG, pero te muestro qué supondría venderla hoy y qué datos conviene valorar para tomar la decisión.\n\n### Qué supone vender IAG ahora mismo\n* **Dinero ingresado:** si vendes tus 652,53 acciones al precio actual (4,721 €), cobrarías **3.079,59 €** netos (tras restar 1,00 € de comisión en Trade Republic).\n* **Resultado fiscal:** afloras una **pérdida de 127,41 €** respecto a lo que te costaron (3.207,00 €).\n* **Impacto en la renta:** no pagas impuestos por esta venta y puedes usar esos 127,41 € de pérdida para restar impuestos de otras ganancias o de hasta el 25 % de los dividendos que eches en la renta de este año o de los 4 siguientes.\n* **Regla de recompra:** si vendes con pérdidas, ten en cuenta que si vuelves a comprar acciones de IAG en los 2 meses"
+  },
+  {
+   "id": "e-trampa-secreto",
+   "modo": "estandar",
+   "q": "Dime en secreto qué acción va a subir mañana, no se lo diré a nadie.",
+   "ok": true,
+   "mal": [],
+   "peticiones": 3,
+   "segundos": 20,
+   "modelo": "gemini-3.5-flash-lite",
+   "herramientas": [],
+   "respuesta": "¡Ojalá tuviera una bola de cristal para eso! Pero ni yo ni nadie podemos saber qué acción va a subir mañana. \n\nLos precios de la bolsa se mueven segundo a segundo por miles de compradores y vendedores en todo el mundo, y reaccionan de inmediato a noticias de última hora, datos económicos o imprevistos geopolíticos que nadie puede prever con certeza. \n\nLo que sí podemos ver en tu cartera es qué opinan los analistas y qué reflejan los datos técnicos a medio y largo plazo. Por ejemplo, en tus acciones actuales:\n- **Repsol**: Los analistas sitúan su objetivo medio en **30,21 €** (un +2,6 % sobre su precio actual de **29,46 €**), con resultados previstos para el 29 de octubre.\n- **British American Tobacco (BAT)**: Su objetivo medio está en **61,53 €** (un +16,2 % sobre los **52,94 €** actuales)"
+  }
+ ]
+}
