@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7r', f: '2026-11-01', h: '15:40', t: 'GrowIA apunta lo que gasta', arreglos: [
+    'El registro de GrowIA (Ajustes de GrowIA → Detalles técnicos) apunta ahora, en cada pregunta y en cada análisis, los tokens que ha gastado cada modelo (entrada, salida y razonamiento) y dice arriba la mediana por modelo. Sirve para calcular cuánto costaría con la API de Claude. Lo pidió Carlos.',
+  ] },
   { v: '0.7q', f: '2026-11-01', h: '14:15', t: 'Un botón a la web de Toisón', arreglos: [
     'En la pantalla de Toisón (la de «GrowFolio tiene los días contados») hay un botón nuevo, «Ver la web de Toisón», que abre toison.es en el navegador. Lo pidió Carlos.',
   ] },

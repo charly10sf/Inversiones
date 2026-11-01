@@ -462,7 +462,11 @@ function pasoTxt(nombre, q = {}) {
 }
 
 /* Una vuelta completa: la IA responde, pide herramientas, se las damos y sigue hasta terminar */
-function conversar(o) { return conversarGemini(o); }
+// 0.7r: al acabar la pregunta (también si falla o la paras) se cierra la cuenta de tokens
+async function conversar(o) {
+  try { return await conversarGemini(o); }
+  finally { cerrarTokensIA(o.turno, o.tipo || 'pregunta'); }
+}
 
 /* ---------- Gemini (API de Google AI Studio): mismas herramientas, mismo formato de turnos ---------- */
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
@@ -540,6 +544,41 @@ function resumenTiemposIA() {
     const v = t[m], ok = v.filter((x) => x >= 0).sort((a, b) => a - b), cortes = v.length - ok.length;
     const med = ok.length ? ok[Math.floor((ok.length - 1) / 2)] : null;
     return `${(MODELOS[m] || {}).corto || m}: primer dato, mediana ${med == null ? '—' : `${fmtNum(med, 1)} s`} (${ok.length} ${ok.length === 1 ? 'ronda' : 'rondas'}${cortes ? `, ${cortes} sin empezar a tiempo` : ''})`;
+  }).join('\n');
+}
+/* 0.7r: tokens por pregunta y por modelo, para calcular lo que costaría con la API de Claude (créditos del plan Max).
+   Cada ronda que Google contesta suma al turno, por modelo: entrada (el prompt, con lo que la búsqueda de Google lee), salida
+   (lo que escribe, sin el razonamiento) y razonamiento. También suman las búsquedas en internet, que son otra petición.
+   Al acabar la pregunta (conversar) se apunta una línea en el registro y se guarda (LS inv-ia-tokens, las últimas 30). Las
+   rondas cortadas antes de acabar no traen la cuenta de Google y no suman */
+const LS_TOKENS = 'inv-ia-tokens';
+function sumarTokensIA(turno, modelo, uso, busqueda = false) {
+  if (!turno || !uso) return;
+  const t = turno.tokens = turno.tokens || {}, x = t[modelo] = t[modelo] || { e: 0, s: 0, r: 0, n: 0, b: 0 };
+  x.e += (uso.promptTokenCount || 0) + (uso.toolUsePromptTokenCount || 0);
+  x.s += uso.candidatesTokenCount || 0;
+  x.r += uso.thoughtsTokenCount || 0;
+  if (busqueda) x.b++; else x.n++;
+}
+function cerrarTokensIA(turno, tipo = 'pregunta') {
+  const t = turno && turno.tokens;
+  if (!t) return;
+  delete turno.tokens;
+  const ms = Object.keys(t);
+  if (!ms.length) return;
+  try { const h = LS.get(LS_TOKENS, []); LS.set(LS_TOKENS, [...(Array.isArray(h) ? h : []), { t: Date.now(), tipo, m: t }].slice(-30)); } catch (e) {}
+  for (const m of ms) {
+    const x = t[m];
+    diarioIA(`Tokens de${tipo === 'análisis' ? 'l análisis' : ' la pregunta'} · ${(MODELOS[m] || {}).corto || m}: entrada ${fmtNum(x.e, 0)} · salida ${fmtNum(x.s, 0)} · razonamiento ${fmtNum(x.r, 0)} (${x.n} ${x.n === 1 ? 'ronda' : 'rondas'}${x.b ? `, ${x.b} ${x.b === 1 ? 'búsqueda' : 'búsquedas'}` : ''})`);
+  }
+}
+function resumenTokensIA() {
+  const h = LS.get(LS_TOKENS, []), por = {};
+  for (const q of Array.isArray(h) ? h : []) for (const m of Object.keys(q.m || {})) (por[`${q.tipo || 'pregunta'}|${m}`] = por[`${q.tipo || 'pregunta'}|${m}`] || []).push(q.m[m]);
+  const med = (v, k) => { const o = v.map((x) => x[k] || 0).sort((a, b) => a - b); return o[Math.floor((o.length - 1) / 2)]; };
+  return Object.keys(por).map((k) => {
+    const [tipo, m] = k.split('|'), v = por[k], n = v.length;
+    return `${(MODELOS[m] || {}).corto || m}, por ${tipo === 'análisis' ? 'análisis' : 'pregunta'}: entrada ${fmtNum(med(v, 'e'), 0)} · salida ${fmtNum(med(v, 's'), 0)} · razonamiento ${fmtNum(med(v, 'r'), 0)} (mediana de ${n} ${tipo === 'análisis' ? 'análisis' : n === 1 ? 'pregunta' : 'preguntas'}, ${med(v, 'n')} ${med(v, 'n') === 1 ? 'ronda' : 'rondas'})`;
   }).join('\n');
 }
 const esCorteRed = (e) => e && e.name !== 'AbortError' && (e.corte || /Failed to fetch|NetworkError|network error|Load failed|ERR_/i.test(e.message || ''));
@@ -719,6 +758,7 @@ async function buscarGoogleYa(consulta, turno, signal) {
     return { error: `No se pudo buscar en internet (${e.message}). Contrasta con los titulares que tienes en los datos.` };
   }
   const j = await r.json(), c = (j.candidates || [])[0] || {};
+  sumarTokensIA(turno, modelo, j.usageMetadata, true);
   const texto = ((c.content && c.content.parts) || []).map((x) => x.text || '').join('').trim();
   const fuentes = ((c.groundingMetadata && c.groundingMetadata.groundingChunks) || []).map((g) => g.web).filter((w) => w && w.uri).map((w) => ({ t: w.title || w.uri, u: w.uri, d: w.title }));
   turno.resultados.push(...fuentes); turno.citas.push(...fuentes);
@@ -862,6 +902,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     cortes = 0; lentos = 0;
     for (const x of turno.partes) if (x.red && x.hecho) { x.txt = x.hecho; x.hecho = null; }
     const pm = MODELOS[modelo] || {};
+    sumarTokensIA(turno, modelo, r.uso);
     if (pm.in) turno.coste = (turno.coste || 0) + ((r.uso.promptTokenCount || 0) * pm.in + ((r.uso.candidatesTokenCount || 0) + (r.uso.thoughtsTokenCount || 0)) * pm.out) / 1e6;
     if (r.bloqueo) throw new Error('Google ha bloqueado la pregunta por sus filtros. Prueba a decirlo de otra forma.');
     if (!r.contenido.length) {

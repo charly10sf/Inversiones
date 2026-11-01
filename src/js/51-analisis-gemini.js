@@ -141,7 +141,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     // herramientas ni búsquedas: con las fichas de GrowIA y los cálculos de venta que ya vienen en los datos. La que
     // pides tú puede buscar (tres veces como mucho) y calcular
     const auto = motivo !== 'la pides tú';
-    await conversar({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto) }], turno, sistema: [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: contextoAsesor(M, 'completo') }], maxTokens: 12000, alCambiar, modelo: auto ? 'gemini-3.6-flash' : undefined, cadena: auto ? ['gemini-3.6-flash', MODELO_RAPIDO] : null, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
+    await conversar({ tipo: 'análisis', mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto) }], turno, sistema: [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: contextoAsesor(M, 'completo') }], maxTokens: 12000, alCambiar, modelo: auto ? 'gemini-3.6-flash' : undefined, cadena: auto ? ['gemini-3.6-flash', MODELO_RAPIDO] : null, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
     const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');
     const json = extraerJSON(texto);
     if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');

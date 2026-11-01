@@ -325,3 +325,29 @@ test('la revisión automática no empieza mientras GrowIA contesta una pregunta'
   });
   expect(r, 'mientras contesta, nada; al acabar, sí').toEqual([0, 1]);
 });
+
+test('el registro apunta los tokens de cada pregunta por modelo (entrada, salida y razonamiento) y los resume arriba (0.7r)', async ({ page, context, errores }) => {
+  let n = 0;
+  const trozo = (parts, uso) => `data: ${JSON.stringify({ candidates: [{ content: { role: 'model', parts }, finishReason: 'STOP' }], usageMetadata: uso })}\r\n\r\n`;
+  await context.route('https://generativelanguage.googleapis.com/**', (r) => {
+    if (!/:streamGenerateContent/.test(r.request().url())) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ models: [] }) });
+    n++;
+    // ronda 1: pide una herramienta; ronda 2: contesta
+    const body = n % 2 === 1
+      ? trozo([{ functionCall: { name: 'radar', args: { sector: 'salud' } } }], { promptTokenCount: 1000, candidatesTokenCount: 20, thoughtsTokenCount: 300 })
+      : trozo([{ text: 'Tu cartera va bien: sigue con tus aportaciones.' }], { promptTokenCount: 2000, candidatesTokenCount: 100, thoughtsTokenCount: 500, toolUsePromptTokenCount: 50 });
+    return r.fulfill({ status: 200, contentType: 'text/event-stream', body });
+  });
+  await preguntar(page);
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  await expect(page.locator('#asCuerpo')).toContainText('sigue con tus aportaciones', { timeout: 30_000 });
+  await expect.poll(() => page.evaluate(() => textoDiarioIA()), { timeout: 10_000 }).toMatch(/Tokens de la pregunta/);
+  const diario = await page.evaluate(() => textoDiarioIA());
+  // la línea de la pregunta: 1.000 + 2.000 + 50 de entrada, 20 + 100 de salida, 300 + 500 de razonamiento, en 2 rondas
+  expect(diario).toMatch(/Tokens de la pregunta · 3\.[68] Flash: entrada 3\.?050 · salida 120 · razonamiento 800 \(2 rondas\)/);
+  // arriba del registro, el resumen por modelo, antes de las líneas con hora
+  expect(diario.split('\n')[0]).toMatch(/primer dato|por pregunta/);
+  expect(diario).toMatch(/^3\.[68] Flash, por pregunta: entrada 3\.?050 · salida 120 · razonamiento 800 \(mediana de 1 pregunta, 2 rondas\)$/m);
+  // queda guardado para la siguiente vez
+  expect(await page.evaluate(() => (LS.get('inv-ia-tokens', []) || []).length)).toBe(1);
+});

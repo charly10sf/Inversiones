@@ -1,6 +1,23 @@
 {
  "versiones": [
   {
+   "v": "0.7r",
+   "f": "2026-11-01",
+   "h": "15:40",
+   "t": "GrowIA apunta lo que gasta",
+   "commits": [
+    {
+     "cuando": "2026-11-01 15:40",
+     "asunto": "0.7r: tokens por pregunta y modelo en el registro de GrowIA",
+     "detalle": [
+      "Cada ronda suma entrada, salida y razonamiento al modelo que contestó (también las búsquedas en internet); al acabar la pregunta o el análisis se apunta una línea y se guarda (LS inv-ia-tokens, las últimas 30)",
+      "Arriba del registro, la mediana por modelo y por pregunta o análisis",
+      "Prueba nueva en tests/growia-fondo.spec.js"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7q",
    "f": "2026-11-01",
    "h": "14:15",
