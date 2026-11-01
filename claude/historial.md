@@ -1,6 +1,6 @@
 # Historial de GrowFolio
 
-Versiones terminadas y decisiones tomadas, sacadas de claude/roadmap.md el 30 oct 2026 sin cambios. Lo pendiente está en ESTADO.md (en el Proyecto de claude.ai) y en claude/versiones/.
+Versiones terminadas y decisiones tomadas, sacadas de claude/roadmap.md el 30 oct 2026 sin cambios. Desde el 1 nov, al final, las sesiones que salen de ESTADO.md. Lo pendiente está en ESTADO.md (en el Proyecto de claude.ai) y en claude/versiones/.
 
 ## Ya hecho antes del roadmap
 
@@ -54,3 +54,34 @@ Tomadas (23 oct, tarde): la entrada, entera solo la primera vez del día; Pages 
 Roadmap de GrowFolio hasta el lanzamiento (23 oct 2026; al día el 30 oct, con la 0.7j publicada).
 
 Documento completo, con mercado, competencia, costes y rediseño: https://claude.ai/artifact/2PF3o5DS37iLorTumdTjTb. Este archivo es la copia de trabajo: cada sesión empieza leyéndolo («dime en qué versión estamos y qué toca»). Lo marcado está hecho; lo que no está aquí no se hace. El plan detallado de cada versión está en claude/plan-0.X.md. El de la IA (costes, qué de pago y qué gratis, fases), en claude/plan-ia.md. Las redes (bios, publicaciones, vídeos), en claude/redes.md.
+
+## Sesiones (sacadas de ESTADO.md, tal cual; la más nueva arriba)
+
+### Sesión del 1 nov, 11:20 a 11:40: publicar más rápido, HECHO
+- Carlos: «haz lo de publicar más rápido de ESTADO» y, a la pregunta de si lo subía, «Sí, súbelos al repo». Dos commits en la rama pruebas-rapidas (5c5bf78 y a3d2260) y main avanzado a a3d2260 (el mismo commit, sin merge). La app no cambia: sigue la 0.7o («Release de la versión» movió la etiqueta v0.7o a a3d2260). Cuando se cree la 0.7p, scripts/cambios.py le pone estos dos commits (van por hora).
+- «Pruebas» (pruebas.yml) va ahora en 5 trabajos: «previo» (solo en los push a main: mira por la API si ese commit ya pasó «Pruebas» en otra rama, por push o a mano, en las últimas 24 h; si es así, los demás se saltan y la ejecución acaba en éxito), y a la vez «web 1/3», «web 2/3», «web 3/3» y «scripts, rendimiento y subida». Chromium de Playwright guardado entre ejecuciones (actions/cache). Pages no cambia de lógica.
+- Reparto: con playwright --shard no valía (corta la lista en trozos seguidos: cada parte se llevaba un tamaño de pantalla entero y casi todo se salta fuera de «movil»; en la primera tanda, 5,4 min, 2,4 min y 46 s). Ahora cada parte saca la lista entera ordenada (--list, LC_ALL=C sort), se queda una de cada tres (awk NR % 3) y la pasa con --test-list; si Playwright no reconoce alguna línea de la lista, la parte falla, para que ninguna se quede sin pasar. 252 en la lista, 84 por parte; pasan 122, como antes (el resto se salta por tamaño).
+- Medido: en la rama, 4 min de principio a fin (las partes, 3,1, 2,4 y 3,1 min de pruebas; antes eran de 9 a 14 min); en main, 7 s («Este commit ya pasó «Pruebas» en pruebas-rapidas. No se repiten.»); Pages publicó 40 s después del push a main (despliegue de a3d2260 a las 11:36). Por versión, de unos 25 min a unos 5.
+- Puesto también en CLAUDE.md (Desplegar) y en el comentario de pages.yml.
+- La rama pruebas-rapidas sigue en GitHub; se puede borrar.
+- Avisos de la Action, sin tocar: checkout, setup-node y cache v4 usan Node 20 y GitHub las fuerza a Node 24; ubuntu-latest pasa a Ubuntu 26 desde el 19 oct 2026. Si algo falla por eso, subir de versión esas acciones.
+
+### Sesión del 1 nov, 03:35 a 03:55 (corta): menos espera y menos tokens
+- Carlos: que publicar no tarde tanto y gaste menos tokens, sin perder eficacia. Y en ESTADO.md no se corta información («quiero siempre un trabajo de calidad»).
+- Hecho: los dos documentos de archivo (búsqueda del nombre y del logo; cómo comprobar nombres y marcas y el registro en la OEPM) pasan al repo, tal cual, en claude/archivo-nombre-y-logo.md y claude/comprobar-nombres-y-marcas.md (commit 44c8223, con [skip ci]: sin pruebas ni publicación), y salen del proyecto de Claude: ya no se cargan en cada sesión. En el proyecto queda solo ESTADO.md, entero.
+- Publicar más rápido, (a) y (b) de «PUBLICAR MÁS RÁPIDO»: hecho en la sesión siguiente (la de las 11:20).
+
+### Sesión del 1 nov, 01:17 a 02:16: 0.7o «Toisón, con su historia»
+- Carlos: en el estreno sobraban las medidas. Fuera «Las medidas»; en su lugar, «De dónde viene el nombre», una línea del tiempo que se dibuja al bajar (el mito de Jasón, 1430 en Brujas, Carlos I y ahora: el dragón que guardaba el vellocino y tu contraseña que guarda tu cartera), con la nota de que Toisón no tiene relación con la orden. La O áurea, contada desde el oro («oro en el mito, oro en la orden y oro en la O»). Textos más cortos en el héroe, el mármol y la tarjeta, y 18 px de aire debajo del mármol (lo vio Carlos).
+- La 0.7o salió a las 01:45 sin bca68cd (la otra sesión lo subió a la rama a la vez que el merge). Completada a las 02:00: main dentro de v0.7o, las tres horas de cambios.json puestas (la de la versión y la de bca68cd, 02:00; la del primer commit, 01:45, que es cuando salió), «Pruebas» y la app compiladas en la rama, y main avanzado a aceb520.
+- OJO: la etiqueta del release se llama igual que la rama (v0.7o). En git, refs/heads/v0.7o: con «v0.7o» a secas, git coge la etiqueta.
+
+### Sesión del 1 nov, 00:06 a 01:15: 0.7n «Toisón y GTA VI, para compartir»
+Hecho todo lo que pidió Carlos (las siete cosas y, a mitad, «que la tipografía de GTA sea de GTA o parecida»):
+- Estreno de Toisón: la marca sale del fondo sin recuadro (máscara elíptica) y antes se dibuja en vector en el mismo sitio (centro 558, 249, 2,08 px por u en toison-avance.webp): la O, la T que baja hasta atravesarla y el relleno. Partes sin alto mínimo y --p medido con lo de dentro. Parte «En tu móvil»: quince apps inventadas y el icono en relieve (toison-icono.webp, recortado de la imagen del estreno) que sustituye al de GrowFolio al bajar; «Llega en noviembre» y los días hasta el 1 dic «como mucho». «Mandarlo por WhatsApp»: navigator.share o wa.me (la app lo abre fuera); el enlace lleva #toison y abre el estreno a cualquiera, también sin cuenta.
+- GTA VI: ciudad al atardecer y palmeras (SVG propios, quietos); los 79,99 € del juego desde el primer tráiler («habrían sido»); «Mi cartera en GTA VI» como imagen de 1080 × 1350 con el interruptor «Enseñar las copias», apagado de entrada (lo eligió Carlos) y bloqueado con importes ocultos. En la app, Puente.compartirImagen (Archivos sirve la imagen); la app de antes avisa de actualizar. Letra de títulos y cifras: Passion One, la libre más parecida a Pricedown (Pricedown, la de GTA, es gratis solo para uso personal y el logo es de Rockstar).
+- Pruebas: tests/gta.spec.js (cinco) y cinco más en tests/toison.spec.js. En claude/versiones/0.7.md pone «app 59» y es la 60: corregirlo con el próximo cambio. En la Action, --p se quedaba en 0,98 en una parte con otras letras: ahora acaba con lo de dentro al 10 % de arriba si no cabe.
+- FALTA: que Carlos pruebe en el móvil la imagen de GTA (con la app 62 y en Chrome) y el enlace de WhatsApp. Las letras de neón y Passion One no cargan en las pruebas (sin internet): las capturas de las pruebas salen con las de reserva.
+
+### Publicar más rápido: lo que había en «Siguiente» de ESTADO.md (1 nov)
+- PUBLICAR MÁS RÁPIDO, HECHO (1 nov, 11:37; detalle en la sesión de las 11:20). Lo que había: Carlos, 1 nov, «últimamente tardas muchísimo en hacer pruebas». Medido en la Action: «Pruebas» tardaba unos 6 min el 30 oct y luego de 9 a 14 (crecen con cada versión: 84 pruebas en 3 tamaños). Y cada versión esperaba dos tandas seguidas: en la rama (la regla desde la 0.7m) y otra vez en main, aunque fuera el mismo commit (aceb520 pasó en la rama a las 02:12 y main la repitió a las 02:13). Con algún fallo o un retoque, eran 30-40 min de espera por versión. Se hizo: (a) main no repite «Pruebas» si ese mismo commit ya pasó en una rama (se mira por la API en el workflow); (b) «Pruebas» partida en 3 trabajos a la vez para la web, más uno con lo demás (con --test-list, no --shard: ver arriba); (c) aquí, solo las pruebas de lo que se toca (ya se hacía). Resultado: de unos 25 min a unos 5 por versión (4 en la rama, segundos en main). Cómo se le explicó a Carlos (no entiende «rama», «commit», «workflow» ni «shard»): «la app pasa unas pruebas antes de publicar y las pasaba dos veces seguidas; se quita la segunda y se reparten entre tres máquinas a la vez». (a) solo vale si main recibe el mismo commit que pasó en la rama, sin merge nuevo (ya se hace así); con un merge de verdad, o si la rama no ha terminado, main las pasa enteras (unos 4 min).
