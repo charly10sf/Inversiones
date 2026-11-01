@@ -18,7 +18,7 @@ GrowFolio es la web y app de Android de Carlos para llevar inversiones (GitHub P
 ## Desplegar
 
 - Se trabaja en una rama (v0.X, o v0.Xa para un arreglo) y se publica con el merge a main.
-- «Pruebas» va en 4 trabajos a la vez (la web partida en 3, uno por tamaño de pantalla, y otro con los scripts, el rendimiento y la subida). En main no se repite si ese mismo commit ya pasó en una rama en las últimas 24 h: por eso el paso a main es el mismo commit que pasó en la rama, sin merge nuevo. Después «Pages» hace el build y publica. A mano: `gh workflow run pages.yml --ref main`.
+- «Pruebas» va en 4 trabajos a la vez (la web partida en 3, una de cada tres pruebas para cada uno, y otro con los scripts, el rendimiento y la subida). En main no se repite si ese mismo commit ya pasó en una rama en las últimas 24 h: por eso el paso a main es el mismo commit que pasó en la rama, sin merge nuevo. Después «Pages» hace el build y publica. A mano: `gh workflow run pages.yml --ref main`.
 - «Release de la versión» crea el release con la etiqueta de VERSION y escribe version.json; «App Android» compila la APK y escribe app.json. No se tocan a mano.
 - Un cambio en `firestore.rules` lo publica «Reglas de Firestore»; uno en `worker/`, «Worker».
 
