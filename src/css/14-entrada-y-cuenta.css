@@ -213,7 +213,7 @@
 .ts-hero { min-height: 100vh; min-height: 100svh; padding-top: calc(56px + env(safe-area-inset-top)); }
 .ts-marca { position: relative; }
 .ts-marca img { display: block; width: 100%; height: auto; aspect-ratio: 1120 / 640; }
-.ts-marmol { border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(227, 180, 95, .18); }
+.ts-marmol { margin: 2px 0 18px; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(227, 180, 95, .18); }
 .ts-marmol img { background: #151817; }
 /* 0.7n: la marca sale del fondo, sin recuadro: los bordes de la imagen se funden con una máscara elíptica. Antes, el símbolo
    en vector en el mismo sitio: se dibuja la O, la T baja dibujada hasta atravesarla, se rellenan y encima aparece el relieve */
@@ -248,7 +248,6 @@
 .ts-s[data-ts-p] { --p: 0; }
 .ts-dib { display: block; width: 100%; height: auto; overflow: visible; margin: 4px 0 6px; }
 .ts-l, .ts-oo { fill: none; stroke-dasharray: 1; vector-effect: non-scaling-stroke; }
-.ts-cota path { fill: none; vector-effect: non-scaling-stroke; transform-box: fill-box; transform-origin: center; }
 .ts-l { stroke: #E3B45F; stroke-width: 1.4; }
 .ts-a1 { stroke-dashoffset: calc(1 - clamp(0, var(--p) * 4, 1)); }
 .ts-a2 { stroke-dashoffset: calc(1 - clamp(0, (var(--p) - .2) * 4, 1)); stroke-opacity: .75; }
@@ -257,18 +256,14 @@
 .ts-n { font: 600 8px var(--f); fill: #E3B45F; text-anchor: middle; opacity: clamp(0, (var(--p) - .12) * 5, 1); }
 .ts-phi { font: 600 12px var(--f); fill: #F6EAD5; text-anchor: middle; letter-spacing: .04em; opacity: clamp(0, (var(--p) - .8) * 6, 1); }
 .ts-sim .ts-o { fill: #F6EAD5; } .ts-sim .ts-tt { fill: #E3B45F; }
-.ts-sim { opacity: clamp(0, var(--p) * 5, 1); transform: scale(calc(.9 + .1 * clamp(0, var(--p) * 5, 1))); transform-origin: 0 0; }
-.ts-cota path { stroke: #F6EAD5; stroke-width: 1; stroke-opacity: .8; }
-.ts-cota text { font: 600 8px var(--f); fill: #F6EAD5; text-anchor: middle; }
-.ts-cota.c1 { --a: clamp(0, (var(--p) - .15) * 7, 1); } .ts-cota.c2 { --a: clamp(0, (var(--p) - .28) * 7, 1); } .ts-cota.c3 { --a: clamp(0, (var(--p) - .41) * 7, 1); }
-.ts-cota.c4 { --a: clamp(0, (var(--p) - .54) * 7, 1); } .ts-cota.c5 { --a: clamp(0, (var(--p) - .67) * 7, 1); }
-.ts-cota.c5 text { text-anchor: start; }
-.ts-cota.sobre path { stroke: #4E101D; stroke-opacity: 1; } .ts-cota.sobre text { fill: #4E101D; }
-.ts-cota.h path { transform: scaleX(var(--a)); } .ts-cota.v path { transform: scaleY(var(--a)); } .ts-cota text { opacity: var(--a); }
-.ts-cotas { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 7px; font-size: 14px; line-height: 1.45; color: #E2D3BC; }
-.ts-cotas li { padding-left: 14px; position: relative; opacity: clamp(0, (var(--p) - .1 - var(--i) * .12) * 6, 1); transform: translateY(calc(8px * (1 - clamp(0, (var(--p) - .1 - var(--i) * .12) * 6, 1)))); }
-.ts-cotas li::before { content: ''; position: absolute; left: 0; top: .6em; width: 6px; height: 6px; border-radius: 50%; background: #E3B45F; }
-.ts-cotas b { color: #F6EAD5; font-weight: 600; }
+/* 0.7o: de dónde viene el nombre, en una línea del tiempo que se dibuja al bajar (--p): la línea crece y cada hito entra */
+.ts-hist { position: relative; list-style: none; margin: 6px 0 14px; padding: 0 0 0 24px; display: grid; gap: 18px; }
+.ts-hist::before { content: ''; position: absolute; left: 5px; top: 8px; bottom: 8px; width: 2px; border-radius: 1px; background: linear-gradient(#E3B45F, rgba(227, 180, 95, .3)); transform-origin: top; transform: scaleY(clamp(0, var(--p) * 1.25, 1)); }
+.ts-hist li { position: relative; display: grid; gap: 4px; opacity: clamp(0, (var(--p) - .05 - var(--i) * .2) * 5, 1); transform: translateY(calc(10px * (1 - clamp(0, (var(--p) - .05 - var(--i) * .2) * 5, 1)))); }
+.ts-hist li::before { content: ''; position: absolute; left: -24px; top: 2px; width: 12px; height: 12px; box-sizing: border-box; border-radius: 50%; border: 2px solid #E3B45F; background: #2A0610; }
+.ts-hist li.ts-hoy::before { background: #E3B45F; box-shadow: 0 0 0 4px rgba(227, 180, 95, .18); }
+.ts-hist b { font: 700 12px var(--f); letter-spacing: .12em; text-transform: uppercase; color: #E3B45F; }
+.ts-hist span { font-size: 15px; line-height: 1.5; color: #E2D3BC; }
 .ts-hechos { list-style: none; margin: 6px 0 12px; padding: 0; display: grid; gap: 8px; }
 .ts-hechos li { display: flex; gap: 10px; align-items: flex-start; padding: 10px 12px; border-radius: 12px; background: rgba(227, 180, 95, .10); border: 1px solid rgba(227, 180, 95, .28); font-size: 14px; line-height: 1.4; color: #EADBC2; }
 .ts-hechos li svg { width: 18px; height: 18px; flex: none; color: #E3B45F; margin-top: 1px; }

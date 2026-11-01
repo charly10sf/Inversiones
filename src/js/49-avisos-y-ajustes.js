@@ -2,13 +2,15 @@
    ordenador. Lo pidió Carlos el 31 oct: GrowFolio tiene los días contados, por algo bueno; pasa a llamarse Toisón. La
    marca está solicitada en la OEPM (31 oct) y los tres dominios, registrados: el nombre ya se puede enseñar. Primero se
    despide GrowFolio y aparece la marca; luego, al bajar, cada parte se dibuja según vas deslizando (--p de 0 a 1 en cada
-   sección): la O áurea, las medidas del símbolo, la marca en mármol negro, el icono en un móvil y lo que ya está hecho.
+   sección): la historia del nombre, la O áurea, la marca en mármol negro, el icono en un móvil y lo que ya está hecho.
    Las imágenes, con relief3.py del Design System «Toisón» (O áurea de la 1.3). Sin animaciones si el móvil las tiene
    quitadas. Hasta fin de año.
    0.7n (lo pidió Carlos el 1 nov): la marca sale del fondo, sin recuadro, y antes se dibuja en vector (la O y la T que baja
    hasta atravesarla); las partes, más juntas y cada dibujo acabado a la vista; el icono en la pantalla de inicio de un
    móvil con lo que falta (el cambio es en noviembre, sin día fijado: lo dijo Carlos el 1 nov); y un botón para mandarlo
-   por WhatsApp, con un enlace (#toison) que abre el estreno también a quien no tiene cuenta */
+   por WhatsApp, con un enlace (#toison) que abre el estreno también a quien no tiene cuenta.
+   0.7o (Carlos, 1 nov: tantas medidas no venían al caso): fuera «Las medidas»; en su lugar, de dónde viene el nombre (el
+   mito, la orden de 1430, Carlos I y ahora), y la O áurea contada desde el oro */
 const TS_O_D = 'M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z';
 const TS_T_D = 'M-61.15 -76L61.15 -76L61.15 -66.7L16.25 -66.7L9.05 -57L12.25 60L20.5 60L20.5 67.2L-20.5 67.2L-20.5 60L-12.25 60L-9.05 -57L-16.25 -66.7L-61.15 -66.7ZM-6.45 -40.5L-6.45 38.5L-4.55 38.5L-4.55 -40.5ZM-0.95 -40.5L-0.95 38.5L0.95 38.5L0.95 -40.5ZM4.55 -40.5L4.55 38.5L6.45 38.5L6.45 -40.5Z';
 const TS_SIMBOLO = `<path class="ts-o" d="${TS_O_D}"/><path class="ts-tt" d="${TS_T_D}"/>`;
@@ -64,17 +66,6 @@ function htmlToison() {
     <text class="ts-n ts-n1" x="100" y="13">161,8</text><text class="ts-n ts-n2" x="190" y="73" transform="rotate(90 190 70)">100</text>
     <text class="ts-phi" x="100" y="146">φ = 1,618…</text>
   </svg>`;
-  // las medidas: el símbolo y sus cotas, una detrás de otra
-  // cada cota: la línea con sus topes, que crece desde el medio, y su número
-  const cota = (c, x1, y1, x2, y2, t, tx, ty, rot) => { const h = y1 === y2; return `<g class="ts-cota ${c} ${h ? 'h' : 'v'}"><path d="M${x1} ${y1}L${x2} ${y2}${h ? `M${x1} ${y1 - 3}v6M${x2} ${y2 - 3}v6` : `M${x1 - 3} ${y1}h6M${x2 - 3} ${y2}h6`}"/><text x="${tx}" y="${ty}"${rot ? ` transform="rotate(-90 ${tx} ${ty})"` : ''}>${t}</text></g>`; };
-  const medidas = `<svg class="ts-dib ts-med" viewBox="-112 -104 224 206" aria-hidden="true">
-    <g class="ts-sim">${TS_SIMBOLO}</g>
-    ${cota('c1', -80.9, 82, 80.9, 82, '161,8', 0, 96)}
-    ${cota('c2', -95, -50, -95, 50, '100', -101, 0, true)}
-    ${cota('c3', -61.15, -88, 61.15, -88, '122,3', 0, -93)}
-    ${cota('c4 sobre', -80.9, 0, -54.1, 0, '26,8', -67.5, -6)}
-    ${cota('c5', 20.5, 74, -20.5, 74, '41', 30, 76.5)}
-  </svg>`;
   const ok = ICONOS.ok, tactil = !window.matchMedia || matchMedia('(pointer: coarse)').matches;
   const faltan = tsFaltan();
   // el símbolo en vector, en el mismo sitio que en la imagen en relieve (centro 558, 249 y 2,08 px por u, medido en
@@ -88,31 +79,29 @@ function htmlToison() {
         <div class="ts-marca ts-fundida"><img src="toison-avance.webp" alt="Toisón" width="1120" height="640">${vec}<i class="ts-brillo" aria-hidden="true"></i></div>
         <h2 class="ts-t">${L('GrowFolio tiene los días contados', "GrowFolio's days are numbered")}</h2>
         <p class="ts-p"><b>${L('Pero es por algo bueno.', "But it's for a good reason.")}</b> ${L('En noviembre cambia de nombre y de cara: pasa a llamarse Toisón.', 'In November it gets a new name and a new look: it becomes Toisón.')}</p>
-        <p class="ts-p">${L('Un toisón es un vellón de lana, y el de oro es el del mito de Jasón. El logo junta las dos primeras letras: una T hecha columna que atraviesa una O.', 'A toisón is a fleece, and the golden one is the fleece of the Jason myth. The logo joins the first two letters: a T shaped like a column running through an O.')}</p>
+        <p class="ts-p">${L('El nombre viene de un mito griego y de una orden de caballeros, y el logo junta sus dos primeras letras: una T hecha columna que atraviesa una O áurea.', 'The name comes from a Greek myth and an order of knights, and the logo joins its first two letters: a T shaped like a column running through a golden O.')}</p>
         <button type="button" class="ts-baja" data-ts-baja>${tactil ? L('Desliza hacia abajo', 'Scroll down') : L('Baja para ver más', 'Scroll down')}<i aria-hidden="true"></i></button>
+      </section>
+      <section class="ts-s" data-ts-p>
+        <p class="ts-k">${L('De dónde viene el nombre', 'Where the name comes from')}</p>
+        <ol class="ts-hist">
+          <li style="--i:0"><b>${L('El mito', 'The myth')}</b><span>${L('Jasón y los argonautas cruzan el mar Negro hasta la Cólquide para traerse el vellocino de oro: la piel de un carnero de oro que guardaba un dragón que nunca dormía.', 'Jason and the Argonauts cross the Black Sea to Colchis to bring back the Golden Fleece: the hide of a golden ram, guarded by a dragon that never slept.')}</span></li>
+          <li style="--i:1"><b>${L('1430, Brujas', '1430, Bruges')}</b><span>${L('Felipe el Bueno, duque de Borgoña, funda la Orden del Toisón de Oro. <i>Toison</i> es «vellón» en francés.', 'Philip the Good, Duke of Burgundy, founds the Order of the Golden Fleece. <i>Toison</i> is French for fleece.')}</span></li>
+          <li style="--i:2"><b>${L('Siglo XVI', '16th century')}</b><span>${L('Con Carlos I, nieto de María de Borgoña, la orden pasa a los reyes de España, que la siguen concediendo.', 'Under Charles I of Spain, grandson of Mary of Burgundy, the order passes to the kings of Spain, who still award it.')}</span></li>
+          <li style="--i:3" class="ts-hoy"><b>${L('Ahora', 'Now')}</b><span>${L('Nos quedamos con la idea: algo de oro, bien guardado. Como el dragón con el vellocino, tu contraseña guarda tu cartera, y nadie más la ve.', 'We keep the idea: something golden, well guarded. Like the dragon with the fleece, your password guards your portfolio, and nobody else sees it.')}</span></li>
+        </ol>
+        <p class="ts-nota">${L('Toisón no tiene relación con la Orden del Toisón de Oro.', 'Toisón has no connection with the Order of the Golden Fleece.')}</p>
       </section>
       <section class="ts-s" data-ts-p>
         <p class="ts-k">${L('La O áurea', 'The golden O')}</p>
         ${aurea}
-        <h3 class="ts-h">${L('1,618 de ancho por 1 de alto', '1.618 wide by 1 high')}</h3>
-        <p class="ts-p">${L('La O no es un círculo: cabe justa en un rectángulo áureo, de 161,8 de ancho por 100 de alto. Es φ, el número de oro: (1 + √5) / 2. Si a ese rectángulo le quitas un cuadrado, lo que queda vuelve a ser áureo, y así sin fin; por eso sale la espiral.', "The O isn't a circle: it fits exactly in a golden rectangle, 161.8 wide by 100 high. That's φ, the golden ratio: (1 + √5) / 2. Take a square off that rectangle and what's left is golden again, endlessly; that's where the spiral comes from.")}</p>
-      </section>
-      <section class="ts-s" data-ts-p>
-        <p class="ts-k">${L('Las medidas', 'The measurements')}</p>
-        ${medidas}
-        <ul class="ts-cotas">
-          <li style="--i:0">${L('Todo se mide en <b>u</b>, la centésima parte del alto de la O.', 'Everything is measured in <b>u</b>, a hundredth of the height of the O.')}</li>
-          <li style="--i:1">${L('La O: <b>161,8 × 100 u</b>. Sus lados, <b>26,8 u</b>: una sexta parte del ancho.', 'The O: <b>161.8 × 100 u</b>. Its sides, <b>26.8 u</b>: a sixth of its width.')}</li>
-          <li style="--i:2">${L('La barra de la T: <b>122,3 u</b>, el 75,6 % del ancho de la O.', 'The bar of the T: <b>122.3 u</b>, 75.6% of the width of the O.')}</li>
-          <li style="--i:3">${L('El fuste: de <b>18,1 u</b> arriba a <b>24,5</b> abajo, con tres estrías de 1,9 cada 5,5.', 'The shaft: from <b>18.1 u</b> at the top to <b>24.5</b> at the bottom, with three flutes of 1.9 every 5.5.')}</li>
-          <li style="--i:4">${L('El plinto: <b>41 × 7,2 u</b>. De arriba abajo, el símbolo mide <b>143,2 u</b>.', 'The plinth: <b>41 × 7.2 u</b>. Top to bottom, the symbol is <b>143.2 u</b>.')}</li>
-          <li style="--i:5">${L('Alrededor, siempre un aire de al menos <b>26,8 u</b>, lo que mide el lado de la O.', 'Around it, always at least <b>26.8 u</b> of clear space, the width of the side of the O.')}</li>
-        </ul>
+        <h3 class="ts-h">${L('Áureo quiere decir «de oro»', 'Áureo means golden')}</h3>
+        <p class="ts-p">${L('El número de oro, φ = 1,618…, es una proporción que ya describió Euclides y que en el Renacimiento llamaron divina. La O de Toisón cabe justa en un rectángulo de 1,618 de ancho por 1 de alto: si le quitas un cuadrado, lo que queda tiene otra vez la misma forma, y así sin fin; de ahí sale la espiral. Oro en el mito, oro en la orden y oro en la O.', 'The golden ratio, φ = 1.618…, is a proportion Euclid already described and the Renaissance called divine. The Toisón O fits exactly in a rectangle 1.618 wide by 1 high: take a square off it and what is left has the same shape again, endlessly; that is where the spiral comes from. Gold in the myth, gold in the order and gold in the O.')}</p>
       </section>
       <section class="ts-s" data-ts-p>
         <p class="ts-k">${L('En mármol negro', 'On black marble')}</p>
         <div class="ts-marca ts-marmol"><img src="toison-marmol.webp" alt="${L('Toisón sobre mármol negro', 'Toisón on black marble')}" width="1120" height="640" loading="lazy"></div>
-        <p class="ts-p">${L('El mismo relieve sobre mármol negro, para las piezas especiales. La T es de pan de oro; la O, de mármol crema con vetas; y la luz viene siempre de arriba a la izquierda.', 'The same relief on black marble, for special pieces. The T is gold leaf; the O, veined cream marble; and the light always comes from the top left.')}</p>
+        <p class="ts-p">${L('Oro y mármol, los materiales de lo que se hace para durar. Esta versión, sobre mármol negro, es para las piezas especiales.', 'Gold and marble, the materials of things made to last. This version, on black marble, is for special pieces.')}</p>
       </section>
       <section class="ts-s ts-mov" data-ts-p>
         <p class="ts-k">${L('En tu móvil', 'On your phone')}</p>
@@ -156,7 +145,7 @@ function htmlTarjetaToison(enAjustes = false) {
   return `<div class="ts-tarjeta${enAjustes ? ' ts-aj' : ''}" role="note">
     <button type="button" class="ts-tj-abre" data-accion="toison">
       <span class="ts-tj-ic" aria-hidden="true"><svg viewBox="-92 -86 184 162"><g class="ts-sim">${TS_SIMBOLO}</g></svg></span>
-      <span class="ts-tj-t"><small>${L('Muy pronto', 'Coming soon')}</small><b>${L('GrowFolio pasa a llamarse Toisón', 'GrowFolio is becoming Toisón')}</b><span>${L('Toca para ver la marca, la O áurea y sus medidas', 'Tap to see the brand, the golden O and its measurements')}</span></span>
+      <span class="ts-tj-t"><small>${L('Muy pronto', 'Coming soon')}</small><b>${L('GrowFolio pasa a llamarse Toisón', 'GrowFolio is becoming Toisón')}</b><span>${L('Toca para ver la marca, su historia y la O áurea', 'Tap to see the brand, its story and the golden O')}</span></span>
       <span class="ts-tj-fl" aria-hidden="true"></span>
     </button>
     ${enAjustes ? `<button type="button" class="ts-tj-ini" data-accion="toison-inicio">${L('Volver a ponerla en Inicio', 'Put it back on Home')}</button>`

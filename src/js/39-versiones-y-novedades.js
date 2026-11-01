@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7o', f: '2026-11-01', h: '01:45', t: 'Toisón, con su historia', arreglos: [
+    'El estreno de Toisón cuenta de dónde viene el nombre, del mito del vellocino de oro a la orden de 1430, y qué tiene que ver con la O áurea. Ya no salen las medidas del logo. Lo pidió Carlos.',
+  ] },
   { v: '0.7n', f: '2026-11-01', h: '00:58', t: 'Toisón y GTA VI, para compartir', arreglos: [
     'El estreno de Toisón empieza dibujando la marca: la O y la T que baja hasta atravesarla. Luego sale en relieve, ya sin el recuadro de alrededor. Lo pidió Carlos.',
     'Al bajar, las partes del estreno van más seguidas y cada dibujo se acaba cuando lo tienes entero delante. Hay una parte nueva: el icono de Toisón en la pantalla de inicio de un móvil y lo que falta para el cambio, que será en noviembre.',
