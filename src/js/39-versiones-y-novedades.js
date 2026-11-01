@@ -5,6 +5,12 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7p', f: '2026-11-01', h: '14:00', t: 'GrowIA, más rápida', arreglos: [
+    'GrowIA ya no se queda esperando minutos a Google. El 3.8 Flash gratis iba en cola y tardaba hasta minuto y medio en empezar cada paso, así que una pregunta llegó a tardar 7 minutos. Ahora, si no empieza en 40 segundos, contesta el 3.6 Flash, que sigue siendo la respuesta normal, y las preguntas de la media hora siguiente empiezan directamente con él. Lo vio Carlos.',
+    'GrowIA pide de una vez todos los datos que necesita de tu cartera, en vez de uno detrás de otro: menos vueltas a Google y menos espera.',
+    'La revisión automática de tu cartera que se corta porque sales de la app ya no cuenta como hecha: se vuelve a hacer cuando vuelves.',
+    'El registro de GrowIA (Ajustes de GrowIA → Detalles técnicos) dice arriba cuánto tarda cada modelo en empezar a contestar, para ver cuál va mejor.',
+  ] },
   { v: '0.7o', f: '2026-11-01', h: '02:00', t: 'Toisón, con su historia', arreglos: [
     'El estreno de Toisón cuenta de dónde viene el nombre, del mito del vellocino de oro a la orden de 1430, y qué tiene que ver con la O áurea. Ya no salen las medidas del logo. Lo pidió Carlos.',
     'En la app de Android, GrowIA sigue contestando aunque salgas. Hasta ahora Android congelaba la página de GrowFolio al minuto de irte, aunque la app siguiera en marcha, y la respuesta no avanzaba hasta que volvías (o se perdía si cambiabas de wifi a datos). Ahora la página sigue despierta mientras GrowIA contesta y, al acabar, se duerme como siempre para no gastar batería. Hace falta la app nueva.',

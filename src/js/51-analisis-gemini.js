@@ -159,10 +159,15 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     if (preguntaNueva()) { if (fueraDeVista()) avisoSistema('pregunta', 'GrowIA te pregunta', preguntaNueva().x.q, '#objetivos', 'preg:' + clavePreg(preguntaNueva().x)); else setTimeout(() => mostrarPreguntaIA(), 1200); }
   } catch (e) {
     IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}.` : e.message;
+    // 0.7p: la automática que se corta porque has salido de GrowFolio (o se ha ido la red) no cuenta como intento: se
+    // vuelve a hacer cuando vuelvas (antes quedaba «hecha» una hora y, si el reintento se congelaba con la página
+    // dormida, a veces no se repetía)
+    const alSalir = !pedida && e.name !== 'AbortError' && (e.corte || esCorteRed(e) || /conexión/.test(IA.error)) && fueraDesde(IA.ultimoIntento);
+    if (alSalir) { IA.ultimoIntento = 0; IA.error = null; diarioIA('Revisión cortada al salir: se repite cuando vuelvas'); }
     // al dueño, los que no se van a reintentar solos (los que sí, cuando fallen del todo)
-    if (!((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3)) avisarFalloIA(e, 'revision', turno.modelo);
+    if (!alSalir && !((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3)) avisarFalloIA(e, 'revision', turno.modelo);
     // saturado o «espera un momento»: lo vuelve a intentar sola a los 5, 15 y 30 minutos
-    if ((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3) {
+    else if ((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3) {
       const min = [5, 15, 30][IA.reintentos++];
       IA.reintento = Date.now() + min * 60000;
       IA.reintentoT = setTimeout(() => { if (S.cartera && !IA.generando) generarAnalisisIA(motivo, true); }, min * 60000);
@@ -170,7 +175,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
       else if (e.estado === 429) IA.error = 'Google pide esperar un poco (el límite gratuito por minuto).';
     }
   }
-  diarioIA(IA.error ? `Revisión sin acabar: ${String(IA.error).slice(0, 80)}` : `Revisión hecha en ${Math.round((Date.now() - IA.ultimoIntento) / 1000)} s`);
+  if (IA.ultimoIntento) diarioIA(IA.error ? `Revisión sin acabar: ${String(IA.error).slice(0, 80)}` : `Revisión hecha en ${Math.round((Date.now() - IA.ultimoIntento) / 1000)} s`);
   IA.generando = false; IA.turno = null;
   appGrowiaTermina(fin, fin && L('Toca para verla.', 'Tap to see it.'));
   if (['analisis', 'expertos', 'cartera'].includes(S.vista) && !$('.hoja-fondo')) pintar(); else refrescarProgresoIA();

@@ -518,7 +518,30 @@ function errorGoogle(estado, j) {
    escribir) se esperan 120 s; con la respuesta ya llegando, 60 s sin un dato nuevo; y si cambia la red (de wifi a
    datos), 8 s. Un corte de red se repite con el mismo modelo, esperando cada vez más (2, 4, 8, 15 y 30 s: con mala
    cobertura, 4,5 s eran poco); solo cuando Google no contesta se prueba con otro. Se puede cambiar en las pruebas */
-const RED_IA = { espera: 120000, hilo: 60000, cambio: 8000, esperas: [2, 4, 8, 15, 30], sinRed: 120000, busqueda: 60000 };
+const RED_IA = { espera: 120000, hilo: 60000, cambio: 8000, esperas: [2, 4, 8, 15, 30], sinRed: 120000, busqueda: 60000, primero: 40000, lento: 1800000 };
+/* 0.7p: GrowIA lenta. El 1 nov el 3.8 Flash gratis tardaba 60-100 s en dar el primer dato en cada ronda (en cola en
+   Google: razonaba 186 en 92 s, cuando el 3.6 razona 6.924 en 33 s) y una pregunta con 5 rondas llegó a 421 s. Ahora:
+   - el razonamiento llega mientras se hace (includeThoughts), así que el primer dato dice cuándo empieza Google a
+     trabajar, no cuándo acaba de pensar;
+   - si hay otro de la respuesta normal detrás (del 3.8, el 3.6), se le dan 40 s (primero) en vez de 120 y, si no
+     empieza, se pasa a ese sin repetir;
+   - el que ha ido lento queda apartado 30 min (lento): las preguntas siguientes empiezan con el otro;
+   - cada modelo apunta cuánto tarda en dar el primer dato (las últimas 20), y se ve arriba del registro */
+const LS_LENTO = 'inv-ia-lento', LS_TIEMPOS = 'inv-ia-tiempos';
+const lentoIA = (m) => { const l = LS.get(LS_LENTO, {}) || {}; return !!(l[m] && l[m] > Date.now()); };
+const marcarLento = (m) => { const l = LS.get(LS_LENTO, {}) || {}, a = Date.now(); LS.set(LS_LENTO, Object.fromEntries([...Object.entries(l).filter(([, v]) => v > a), [m, a + RED_IA.lento]])); };
+// seg: segundos hasta el primer dato; con corte, los que se esperaron sin que llegara nada
+function apuntarTiempoIA(m, seg, corte = false) {
+  try { const t = LS.get(LS_TIEMPOS, {}) || {}, v = Array.isArray(t[m]) ? t[m] : []; v.push(corte ? -Math.round(seg) : Math.round(seg * 10) / 10); t[m] = v.slice(-20); LS.set(LS_TIEMPOS, t); } catch (e) {}
+}
+function resumenTiemposIA() {
+  const t = LS.get(LS_TIEMPOS, {}) || {};
+  return Object.keys(t).filter((m) => Array.isArray(t[m]) && t[m].length).map((m) => {
+    const v = t[m], ok = v.filter((x) => x >= 0).sort((a, b) => a - b), cortes = v.length - ok.length;
+    const med = ok.length ? ok[Math.floor((ok.length - 1) / 2)] : null;
+    return `${(MODELOS[m] || {}).corto || m}: primer dato, mediana ${med == null ? '—' : `${fmtNum(med, 1)} s`} (${ok.length} ${ok.length === 1 ? 'ronda' : 'rondas'}${cortes ? `, ${cortes} sin empezar a tiempo` : ''})`;
+  }).join('\n');
+}
 const esCorteRed = (e) => e && e.name !== 'AbortError' && (e.corte || /Failed to fetch|NetworkError|network error|Load failed|ERR_/i.test(e.message || ''));
 /* 0.7f: GrowIA en segundo plano. Al salir de GrowFolio (otra app, la pantalla apagada), el móvil corta al poco las
    conexiones de la página. Ese corte no es un fallo de Google: no cuenta para los intentos ni hace pasar a la
@@ -573,15 +596,15 @@ window.redCambiada = (tipo, t = Date.now()) => {
   for (const v of antes) v.f();
 };
 async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, info = {}) {
-  const ctl = new AbortController(), t0 = Date.now();
-  let motivo = null, cambioRed = false, primero = 0, reloj = 0, bytes = 0;
+  const ctl = new AbortController(), t0 = Date.now(), espera = info.espera || RED_IA.espera;
+  let motivo = null, cambioRed = false, primero = 0, primerTexto = 0, reloj = 0, bytes = 0;
   // vigila: si en ms no llega nada, se corta (y cuenta como corte de conexión, que se repite)
   const vigilar = (ms) => { clearTimeout(reloj); reloj = setTimeout(() => { motivo = cambioRed ? 'cambio' : primero ? 'hilo' : 'tiempo'; ctl.abort(); }, ms); };
   const parar = () => ctl.abort();
   const viva = { t0, f: () => { cambioRed = true; vigilar(RED_IA.cambio); } };
   if (signal) { if (signal.aborted) ctl.abort(); else signal.addEventListener('abort', parar, { once: true }); }
   VIVAS_IA.add(viva);
-  vigilar(RED_IA.espera);
+  vigilar(espera);
   const seg = () => Math.round((Date.now() - t0) / 1000);
   let r, fin = null, uso = {}, bloqueo = null, texto = null, vista = null;
   const partes = [];
@@ -589,7 +612,7 @@ async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, inf
     r = await fetchGoogle(`${GEMINI}/models/${modelo}:streamGenerateContent?alt=sse`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }, clave);
     if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorGoogle(r.status, j); }
     // ya ha contestado: si había cambiado la red, la conexión ha aguantado (los 120 s siguen contando desde el principio)
-    if (cambioRed) { cambioRed = false; vigilar(Math.max(RED_IA.cambio, RED_IA.espera - (Date.now() - t0))); }
+    if (cambioRed) { cambioRed = false; vigilar(Math.max(RED_IA.cambio, espera - (Date.now() - t0))); }
     const lector = r.body.getReader(), dec = new TextDecoder();
     let buf = '';
     const procesar = (ch) => {
@@ -601,6 +624,7 @@ async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, inf
       if (c.finishReason) fin = c.finishReason;
       for (const pt of (c.content && c.content.parts) || []) {
         if (pt.thought) { if (pt.thoughtSignature) partes.push({ ...pt }); continue; }
+        if (!primerTexto) primerTexto = Date.now();
         if (pt.functionCall) {
           partes.push(JSON.parse(JSON.stringify(pt))); texto = null;
           const fc = pt.functionCall;
@@ -634,8 +658,9 @@ async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, inf
   } catch (e) {
     // lo ha cortado la vigilancia (no tú): es un corte de conexión, con su tipo
     if (motivo) {
-      const t = new Error(motivo === 'tiempo' ? `Google no ha contestado en ${RED_IA.espera / 1000} s` : motivo === 'cambio' ? 'Ha cambiado la red y por la vieja ya no llega nada' : `La respuesta se ha quedado parada ${RED_IA.hilo / 1000} s`);
-      t.corte = true; t.tipo = motivo === 'tiempo' ? 'tiempo' : motivo === 'cambio' ? 'cambio' : 'red'; t.seg = seg(); t.datos = !!primero;
+      if (motivo === 'tiempo') apuntarTiempoIA(modelo, (Date.now() - t0) / 1000, true);
+      const t = new Error(motivo === 'tiempo' ? `Google no ha empezado a contestar en ${Math.round(espera / 1000)} s` : motivo === 'cambio' ? 'Ha cambiado la red y por la vieja ya no llega nada' : `La respuesta se ha quedado parada ${RED_IA.hilo / 1000} s`);
+      t.corte = true; t.tipo = motivo === 'tiempo' ? 'tiempo' : motivo === 'cambio' ? 'cambio' : 'red'; t.seg = seg(); t.datos = !!primero; t.lento = motivo === 'tiempo' && espera < RED_IA.espera;
       throw t;
     }
     if (e && e.name !== 'AbortError' && esCorteRed(e)) { e.tipo = e.tipo || 'red'; e.seg = seg(); e.datos = !!primero; }
@@ -643,7 +668,8 @@ async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, inf
   } finally { clearTimeout(reloj); VIVAS_IA.delete(viva); if (signal) signal.removeEventListener('abort', parar); }
   turno.partes = turno.partes.filter((p) => p.tipo !== 'texto' || p.texto);
   const ms = (x) => `${Math.round(x / 100) / 10} s`;
-  diarioIA(`${(MODELOS[modelo] || {}).corto || modelo} · ronda ${info.ronda || 1}: primer dato a los ${primero ? ms(primero - t0) : '—'}, acaba a los ${ms(Date.now() - t0)}${uso.thoughtsTokenCount ? ` · razona ${fmtNum(uso.thoughtsTokenCount, 0)}` : ''}${fin && fin !== 'STOP' ? ` · ${fin}` : ''}`);
+  if (primero) apuntarTiempoIA(modelo, (primero - t0) / 1000);
+  diarioIA(`${(MODELOS[modelo] || {}).corto || modelo} · ronda ${info.ronda || 1}: primer dato a los ${primero ? ms(primero - t0) : '—'}${primerTexto && primerTexto - primero > 1000 ? ` (texto a los ${ms(primerTexto - t0)})` : ''}, acaba a los ${ms(Date.now() - t0)}${uso.thoughtsTokenCount ? ` · razona ${fmtNum(uso.thoughtsTokenCount, 0)}` : ''}${fin && fin !== 'STOP' ? ` · ${fin}` : ''}`);
   return { contenido: partes.filter((p) => !(typeof p.text === 'string' && !p.text && !p.thoughtSignature)), fin, uso, bloqueo };
 }
 /* búsqueda con Google: una llamada aparte con la herramienta de búsqueda de Gemini */
@@ -715,12 +741,18 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
   if (pedido && MODELOS[pedido]) cfg = { ...cfg, modelo: pedido };
   const clave = AS.clave;
   const contents = mensajes.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: typeof m.content === 'string' ? [{ text: m.content }] : m.content }));
-  const sysTexto = (Array.isArray(sistema) ? sistema.map((b) => b.text) : [String(sistema || '')]).join('\n\n');
+  // 0.7p: cada tanda de herramientas es otra petición a Google (y otra espera): mejor todas a la vez
+  const sysTexto = (Array.isArray(sistema) ? sistema.map((b) => b.text) : [String(sistema || '')]).join('\n\n') + (herramientas ? '\n\nHerramientas: cada vez que las usas es una vuelta más a Google y la respuesta tarda más. Piensa primero todo lo que vas a necesitar y pide todas las herramientas a la vez, en la misma tanda; no pidas una, esperes y luego otra, salvo que la segunda dependa de lo que devuelva la primera. Si lo que tienes en los datos basta, contesta sin herramientas.' : '');
   const usarWeb = web !== false && cfg.web && !AS.sinWeb;
   // nivel: el razonamiento pedido (0.7d: 'medium' en las preguntas); si un modelo no lo acepta, el suyo; y si tampoco, sin él
   let reintentos = 0, conPensar = true, cambiado = false, nivel = pensar;
   const orden = () => (cadena ? cadena.filter((m) => MODELOS[m]) : ordenIA(cfg.modelo));
   let modelo = cadena ? orden().find((m) => !agotadosIA().includes(m)) : modeloVivo(cfg);
+  // 0.7p: el de la respuesta normal que va justo detrás (del 3.8, el 3.6); la rápida no cuenta
+  // (solo el que va justo detrás: quien eligió el 3.6 tiene detrás la rápida y no gasta el cupo del 3.8 por esto)
+  const normalDetras = (m, probados = new Set()) => { const o = orden(), x = o.slice(o.indexOf(m) + 1).find((y) => !probados.has(y) && !agotadosIA().includes(y)); return x && !esRapida(x) ? x : null; };
+  // si el que toca ha ido lento hace poco, se empieza con el de detrás (el lento queda de reserva)
+  if (modelo && !esRapida(modelo) && lentoIA(modelo)) { const d = normalDetras(modelo); if (d && !lentoIA(d)) { diarioIA(`Empieza con ${(MODELOS[d] || {}).corto || d}: ${(MODELOS[modelo] || {}).corto || modelo} iba lento`); modelo = d; } }
   if (!modelo) { turno.modelo = orden()[0]; const e = new Error(`Hoy ya no queda cupo en tu clave para la revisión automática: se hará cuando se renueve, a las ${horaRenuevaIA()}.`); e.estado = 429; e.diario = true; e.previsto = true; throw e; }
   const inicio = contents.length, probados = new Set([modelo]);
   AS.modeloVivo = modelo; turno.modelo = modelo;
@@ -760,11 +792,13 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     const pasosAntes = turno.partes.length, t0 = Date.now();
     const cuerpo = {
       systemInstruction: { parts: [{ text: sysTexto }] }, contents, ...(herramientas ? { tools: herramientasGemini(usarWeb) } : {}),
-      generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: nivel || m.pensar } } : {}) },
+      generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: nivel || m.pensar, includeThoughts: true } } : {}) },
     };
     let r;
     ronda++;
-    try { r = await llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, { ronda }); }
+    // 0.7p: con otro de la respuesta normal detrás, 40 s para empezar; si no, los 120 de siempre
+    const detrasNormal = normalDetras(modelo, probados);
+    try { r = await llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, { ronda, espera: detrasNormal ? RED_IA.primero : RED_IA.espera }); }
     catch (e) {
       if (e.name === 'AbortError') throw e;
       // fuera lo que hubiera empezado a escribir (también si Google corta a mitad con un error)
@@ -778,6 +812,8 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
         // 2) Google no contesta (y hay red): una vez más con el mismo y luego el siguiente de su orden
         // (si GrowFolio ha estado fuera sin el servicio, el reloj se ha congelado: no es que Google tarde)
         if (tipo === 'tiempo' && !sinRed && !(!vivo && fueraDesde(t0))) {
+          // 0.7p: no ha empezado en 40 s y hay otro de la respuesta normal: a ese, sin repetir, y este, apartado un rato
+          if (e.lento) { const antes = corto(); marcarLento(modelo); if (saltar('va lenta', (x) => x === detrasNormal)) { lentos = 0; cortes = 0; diarioIA(`${antes} no empieza: pasa a ${corto()}`); vuelta--; continue; } }
           if (lentos < 1) { lentos++; avisoRed(L('Google está tardando mucho en contestar: lo intento otra vez', 'Google is taking too long to answer: trying again'), L('Google tardaba mucho: lo he repetido', 'Google was taking too long: I repeated it')); vuelta--; continue; }
           if (saltar('no contesta')) { lentos = 0; cortes = 0; diarioIA(`Pasa a ${corto()}`); vuelta--; continue; }
           // ya no queda otro: no tiene sentido seguir esperando 2 minutos cada vez

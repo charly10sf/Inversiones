@@ -70,6 +70,9 @@ document.addEventListener('visibilitychange', () => {
   // bloqueo (que va más abajo) haya decidido si pide el PIN
   setTimeout(bancoComoTuyo, 0);
 });
+// 0.7p: en la app, con GrowIA trabajando la página no se oculta al salir: la vuelta llega por appFuera(false). Si una
+// revisión automática se cortó al salir, se repite ahora
+window.addEventListener('vuelta-app', () => setTimeout(() => { if (S.cartera && !fueraDeVista()) revisarAnalisisIA(); }, 1500));
 /* 0.7d: el saldo del banco como pedido por ti, solo si de verdad estás delante: GrowFolio a la vista y desbloqueada (con
    el PIN o la huella en pantalla, espera a que entres) */
 function bancoComoTuyo(intento = 0) {

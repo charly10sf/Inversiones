@@ -85,7 +85,9 @@ function diarioIATodo() {
 }
 function textoDiarioIA() {
   const h = (t) => new Date(t).toLocaleString('es-ES', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit' });
-  return diarioIATodo().map((x) => `${h(x.t)} ${x.app ? '[app] ' : ''}${x.x}`).join('\n');
+  // 0.7p: arriba, cuánto tarda cada modelo en empezar (55-asesor-contexto)
+  const tiempos = typeof resumenTiemposIA === 'function' ? resumenTiemposIA() : '';
+  return (tiempos ? `${tiempos}\n\n` : '') + diarioIATodo().map((x) => `${h(x.t)} ${x.app ? '[app] ' : ''}${x.x}`).join('\n');
 }
 // la red y el servicio de la app, para el registro (en el navegador, nada)
 const redIA = () => { const r = deApp('red'); return r ? ` · ${r}` : navigator.onLine === false ? ' · sin red' : ''; };

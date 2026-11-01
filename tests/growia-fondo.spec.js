@@ -221,18 +221,39 @@ test('una respuesta que se queda parada a mitad se corta y se repite (antes se q
   expect(diario).not.toMatch(/cartera va bien|Cómo va mi cartera/);
 });
 
-test('si Google no contesta, lo repite una vez y luego pasa al 3.6, sin la rápida', async ({ page, errores }) => {
+test('si el 3.8 no empieza a tiempo, pasa al 3.6 sin repetir, y las siguientes empiezan con el 3.6 (0.7p)', async ({ page, errores }) => {
   await preguntar(page);
-  // 5 s de espera: da tiempo a ver los segundos que lleva (salen a partir de los 3)
-  await page.evaluate(() => { RED_IA.espera = 5000; });
-  const pet = await geminiFetch(page, ['nunca', 'nunca', 'bien']);
+  // 5 s para empezar: da tiempo a ver los segundos que lleva (salen a partir de los 3)
+  await page.evaluate(() => { RED_IA.primero = 5000; });
+  const pet = await geminiFetch(page, ['nunca', 'bien', 'bien']);
   await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
   const cuerpo = page.locator('#asCuerpo');
   // mientras espera, los segundos que lleva
   await expect(cuerpo.locator('.as-seg')).toHaveText(/^\d+ s$/, { timeout: 10_000 });
   await expect(cuerpo).toContainText('sigue con tus aportaciones', { timeout: 30_000 });
-  expect(await pet()).toEqual(['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.6-flash']);
+  expect(await pet()).toEqual(['gemini-3.8-flash', 'gemini-3.6-flash']);
   await expect(cuerpo).not.toContainText('rápida');
+  // el 3.8 queda apartado un rato: la pregunta siguiente va directa al 3.6
+  await page.evaluate(() => preguntarAsesor('¿Y mañana?'));
+  await expect.poll(async () => (await pet()).length, { timeout: 15_000 }).toBe(3);
+  expect((await pet())[2]).toBe('gemini-3.6-flash');
+  const diario = await page.evaluate(() => textoDiarioIA());
+  expect(diario).toMatch(/3\.8 Flash no empieza: pasa a 3\.6 Flash/);
+  expect(diario).toMatch(/Empieza con 3\.6 Flash: 3\.8 Flash iba lento/);
+  // arriba del registro, cuánto tarda cada modelo en empezar
+  expect(diario).toMatch(/3\.8 Flash: primer dato, mediana — \(0 rondas, 1 sin empezar a tiempo\)/);
+  expect(diario).toMatch(/3\.6 Flash: primer dato, mediana [\d,]+ s \(2 rondas\)/);
+});
+
+test('el 3.6, sin otro de la respuesta normal detrás, sigue esperando 120 s y repite una vez', async ({ page, errores }) => {
+  await preguntar(page);
+  await page.evaluate(() => { RED_IA.espera = 3000; RED_IA.primero = 100; guardarCfgAsesor({ modelo: 'gemini-3.6-flash' }); });
+  const pet = await geminiFetch(page, ['nunca', 'bien']);
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  const cuerpo = page.locator('#asCuerpo');
+  await expect(cuerpo).toContainText('sigue con tus aportaciones', { timeout: 30_000 });
+  expect(await pet()).toEqual(['gemini-3.6-flash', 'gemini-3.6-flash']);
+  await expect(cuerpo).toContainText('Google tardaba mucho: lo he repetido');
 });
 
 test('si se pierde la red por la que iba (de wifi a datos), lo repite enseguida por la nueva', async ({ page, errores }) => {

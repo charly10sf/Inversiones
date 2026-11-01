@@ -1,6 +1,52 @@
 {
  "versiones": [
   {
+   "v": "0.7p",
+   "f": "2026-11-01",
+   "h": "14:00",
+   "t": "GrowIA, más rápida",
+   "commits": [
+    {
+     "cuando": "2026-11-01 14:00",
+     "asunto": "0.7p: GrowIA, más rápida (el 3.8 en cola pasa al 3.6 a los 40 s)",
+     "detalle": [
+      "Registro de Carlos del 1 nov (app 62): 421 s con el 3.8 Flash en 5 rondas, casi todo espera antes del primer dato",
+      "includeThoughts: el razonamiento llega mientras se hace y el primer dato mide la cola de Google",
+      "Con el 3.6 detrás, el 3.8 tiene 40 s para empezar (RED_IA.primero); si no, pasa al 3.6 sin repetir y queda apartado 30 min (inv-ia-lento)",
+      "Las instrucciones piden todas las herramientas en la misma tanda",
+      "Primer dato por modelo (inv-ia-tiempos, últimas 20), resumido arriba del registro de GrowIA",
+      "Revisión automática cortada al salir: no cuenta como intento y se repite al volver (también con vuelta-app)",
+      "Pruebas nuevas en tests/growia-fondo.spec.js"
+     ]
+    },
+    {
+     "cuando": "2026-11-01 11:31",
+     "asunto": "Pruebas: cada parte se lleva una de cada tres pruebas, no un tamaño de pantalla entero",
+     "detalle": [
+      "Con --shard, Playwright corta la lista en trozos seguidos: cada parte se llevaba una medida, y casi todas las",
+      "pruebas se saltan fuera de «movil». En la primera tanda: 5,4 min el móvil, 2,4 el ordenador y 46 s el móvil",
+      "pequeño. Ahora cada parte saca la lista entera (ordenada igual en las tres), se queda una de cada tres y la pasa",
+      "con --test-list. Si Playwright no reconoce alguna línea, la parte falla (no se queda ninguna sin pasar)."
+     ]
+    },
+    {
+     "cuando": "2026-11-01 04:26",
+     "asunto": "Pruebas más rápidas: en 3 máquinas a la vez y sin repetirlas en main",
+     "detalle": [
+      "Carlos (1 nov): «últimamente tardas muchísimo en hacer pruebas». Eran de 9 a 14 min, y dos veces por versión",
+      "(en la rama y otra vez en main con el mismo commit).",
+      "Las de la web, en 3 trabajos a la vez (playwright --shard): cada uno se lleva un tamaño de pantalla (84 de 252).",
+      "Los scripts, el rendimiento y la subida, en un cuarto trabajo a la vez que esos.",
+      "En main, el trabajo «previo» mira por la API si ese commit ya pasó «Pruebas» en una rama en las últimas 24 h; si",
+      "es así, los demás se saltan y la ejecución acaba en éxito, y Pages publica enseguida. Con un commit nuevo en main",
+      "o si la API no contesta, se pasan todas.",
+      "Chromium de Playwright guardado entre ejecuciones (actions/cache).",
+      "Pages, sin cambios de lógica: solo el comentario de arriba."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7o",
    "f": "2026-11-01",
    "h": "02:00",
