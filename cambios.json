@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.7o",
+   "f": "2026-11-01",
+   "h": "__HORA__",
+   "t": "Toisón, con su historia",
+   "commits": [
+    {
+     "cuando": "2026-11-01 __HORA__",
+     "asunto": "0.7o: el estreno de Toisón cuenta la historia del nombre en vez de las medidas del logo",
+     "detalle": [
+      "Carlos (1 nov): tantas medidas no venían al caso. Fuera la parte «Las medidas» (el símbolo con cotas y seis datos en u) y su CSS",
+      "Parte nueva «De dónde viene el nombre», antes de la O áurea: una línea del tiempo que se dibuja al bajar con cuatro hitos (el mito de Jasón y el vellocino, la Orden del Toisón de Oro en Brujas en 1430, Carlos I y los reyes de España, y ahora: el dragón que guardaba el vellocino y tu contraseña que guarda tu cartera). Con la nota de que Toisón no tiene relación con la orden",
+      "La O áurea, contada desde el oro: áureo quiere decir de oro; Euclides y la divina proporción; «oro en el mito, oro en la orden y oro en la O». El héroe, el mármol y la tarjeta, con textos más cortos y sin datos de diseño",
+      "Pruebas: tests/toison.spec.js con la historia en vez de las medidas"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7n",
    "f": "2026-11-01",
    "h": "00:58",

@@ -1,7 +1,8 @@
 // 0.7l: el estreno de Toisón. Lo pidió Carlos el 31 oct: a todos los que entran (nuevos o no, en el móvil, la app y el
 // ordenador), una vez, que GrowFolio tiene los días contados, por algo bueno: pasa a llamarse Toisón (en noviembre, dijo
 // Carlos el 1 nov). Con la marca en relieve, los dominios registrados y la marca solicitada en la OEPM.
-// 0.7n: la marca sale del fondo y antes se dibuja, partes más juntas, el icono en un móvil y el botón de WhatsApp
+// 0.7n: la marca sale del fondo y antes se dibuja, partes más juntas, el icono en un móvil y el botón de WhatsApp.
+// 0.7o: la historia del nombre en vez de las medidas del logo (Carlos: tantas medidas no venían al caso)
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas, BASE } from './ayuda.js';
 
@@ -37,9 +38,10 @@ test('el estreno de Toisón sale una vez: la marca en relieve y, al bajar, la O 
   // 0.7m: «Desliza hacia abajo» es un botón que baja a lo siguiente
   await e.locator('.ts-baja').click();
   await expect.poll(() => secs.first().evaluate((s) => +s.style.getPropertyValue('--p'))).toBeGreaterThan(0);
-  await expect(secs.first()).toContainText('1,618 de ancho por 1 de alto');
-  await expect(secs.nth(1).locator('.ts-cotas')).toContainText('161,8 × 100 u');
-  await expect(secs.nth(1).locator('.ts-cotas')).toContainText('122,3 u');
+  // 0.7o: primero, de dónde viene el nombre; luego, la O áurea (sin las medidas del logo)
+  await expect(secs.first()).toContainText('vellocino de oro');
+  await expect(secs.nth(1)).toContainText('Áureo quiere decir «de oro»');
+  await expect(e).not.toContainText('Las medidas');
   for (let i = 0; i < 5; i++) {
     await secs.nth(i).evaluate((s) => s.closest('.estreno').scrollTo(0, s.offsetTop));
     await expect.poll(() => secs.nth(i).evaluate((s) => +s.style.getPropertyValue('--p'))).toBe(1);
@@ -276,4 +278,32 @@ test('quitada de Inicio, la tarjeta de Toisón se ve en Ajustes: abre el estreno
   await expect(page.locator('#toast')).toContainText('Vuelve a estar en Inicio');
   await page.keyboard.press('Escape');
   await expect(page.locator('.car .ts-tarjeta')).toBeVisible();
+});
+
+test('0.7o: cuenta de dónde viene el nombre, en una línea que se dibuja al bajar, y lo une con la O áurea', async ({ page, errores }) => {
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.evaluate(() => { LS.del('inv-toison-avance'); avisoToison(() => {}); });
+  const e = page.locator('.estreno.ts');
+  await expect(e).toBeVisible();
+  const h = e.locator('[data-ts-p]').first();
+  const hitos = h.locator('.ts-hist li');
+  await expect(hitos).toHaveCount(4);
+  await expect(hitos.nth(0)).toContainText('Jasón y los argonautas');
+  await expect(hitos.nth(1)).toContainText('1430');
+  await expect(hitos.nth(1)).toContainText('Orden del Toisón de Oro');
+  await expect(hitos.nth(2)).toContainText('Carlos I');
+  await expect(hitos.nth(3)).toContainText('tu contraseña guarda tu cartera');
+  await expect(h.locator('.ts-nota')).toHaveText('Toisón no tiene relación con la Orden del Toisón de Oro.');
+  // sin dibujar mientras no se ve; entera al tenerla delante
+  expect(await h.evaluate((x) => +x.style.getPropertyValue('--p'))).toBe(0);
+  await expect(hitos.last()).toHaveCSS('opacity', '0');
+  await h.evaluate((x) => { const d = x.closest('.estreno'), a = x.firstElementChild.getBoundingClientRect().top, alto = x.lastElementChild.getBoundingClientRect().bottom - a; d.scrollBy(0, a - Math.max(d.clientHeight * 0.04, d.clientHeight * 0.88 - alto)); });
+  await expect.poll(() => h.evaluate((x) => +x.style.getPropertyValue('--p'))).toBe(1);
+  for (const li of await hitos.all()) await expect(li).toHaveCSS('opacity', '1');
+  // la O áurea, desde el oro; nada de medidas del logo
+  await expect(e.locator('[data-ts-p]').nth(1)).toContainText('Oro en el mito, oro en la orden y oro en la O.');
+  await expect(e.locator('.ts-cotas, .ts-med')).toHaveCount(0);
+  await expect(e).not.toContainText(/\d+,\d u\b/);
 });
