@@ -3,11 +3,11 @@
   {
    "v": "0.7o",
    "f": "2026-11-01",
-   "h": "__HORA__",
+   "h": "02:00",
    "t": "Toisón, con su historia",
    "commits": [
     {
-     "cuando": "2026-11-01 __HORA__",
+     "cuando": "2026-11-01 01:45",
      "asunto": "0.7o: el estreno de Toisón cuenta la historia del nombre en vez de las medidas del logo",
      "detalle": [
       "Carlos (1 nov): tantas medidas no venían al caso. Fuera la parte «Las medidas» (el símbolo con cotas y seis datos en u) y su CSS",
@@ -18,7 +18,7 @@
      ]
     },
     {
-     "cuando": "2026-11-01 __HORA__",
+     "cuando": "2026-11-01 02:00",
      "asunto": "0.7o: GrowIA sigue contestando con la app fuera; la página ya no se congela al minuto de salir",
      "detalle": [
       "Causa, con el registro de Carlos del 1 nov (app 60, Samsung con Android 17): al salir, el WebView da la página por oculta (la ventana deja de verse: IsClientVisible pide ventana visible y sin onPause) y Blink la congela al minuto (stop-in-background, de serie en Android y que WebView no quita): ni relojes ni carga. La pregunta de las 01:18:38 salió a los 2 s, el límite de 120 s no saltó y a las 01:21:20, con la página congelada desde las 01:19:40, se perdió el wifi. El servicio de GrowIA (0.7f y 0.7l) mantenía viva la app, no la página. evaluateJavascript sí corre con la página congelada (por eso redCambiada se apuntó a su hora)",
