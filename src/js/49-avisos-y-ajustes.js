@@ -119,12 +119,14 @@ function htmlToison() {
         <p class="ts-nota">${L('No tienes que hacer nada. Tu cartera, tu contraseña y tus ajustes siguen como están: cambian el nombre, el logo y el aspecto de la app.', "You don't need to do anything. Your portfolio, your password and your settings stay as they are: only the name, the logo and the look of the app change.")}</p>
         <div class="ts-btns">
           <button type="button" class="btn pri ts-ok" data-ts="ok">${L('Tengo ganas de verlo', "Can't wait to see it")}</button>
+          <a class="btn ts-wa ts-web" href="https://toison.es" target="_blank" rel="noopener" data-no-trad>${ICONO_WEB}${L('Ver la web de Toisón', 'See the Toisón website')}</a>
           <button type="button" class="btn ts-wa" data-ts-wa>${ICONO_CHAT}${L('Mandarlo por WhatsApp', 'Send it on WhatsApp')}</button>
         </div>
       </section>
     </div>`;
 }
 const ICONO_CHAT = SVG('<path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 10.5h7"/>', 1.9);
+const ICONO_WEB = SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>', 1.9);
 /* 0.7n: mandarlo por WhatsApp. Con navigator.share (el menú de compartir del móvil, donde está WhatsApp) el enlace y una
    frase; si no lo hay (la app de Android no lo tiene: su WebView no trae navigator.share), wa.me, que la app abre fuera */
 function enlaceToison() { return (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#toison'; }

@@ -1,6 +1,23 @@
 {
  "versiones": [
   {
+   "v": "0.7q",
+   "f": "2026-11-01",
+   "h": "14:15",
+   "t": "Un botón a la web de Toisón",
+   "commits": [
+    {
+     "cuando": "2026-11-01 14:15",
+     "asunto": "0.7q: botón «Ver la web de Toisón» en el estreno",
+     "detalle": [
+      "Enlace a https://toison.es (target _blank, noopener) junto a «Tengo ganas de verlo» y «Mandarlo por WhatsApp»; no cierra el estreno",
+      "Web de espera de Toisón en toison.es, toison.app y toisonapp.com (repos toison-web, toison-app y toisonapp-com)",
+      "Prueba nueva en tests/toison.spec.js"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7p",
    "f": "2026-11-01",
    "h": "14:00",

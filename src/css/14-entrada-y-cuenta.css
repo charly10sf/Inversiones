@@ -274,6 +274,7 @@
 .ts-wa { display: inline-flex; align-items: center; gap: 8px; background: rgba(227, 180, 95, .10); color: #F6EAD5; border-color: rgba(227, 180, 95, .45); }
 .ts-wa svg { width: 18px; height: 18px; color: #E3B45F; flex: none; }
 .ts-wa:hover { background: rgba(227, 180, 95, .18); }
+.ts-web { text-decoration: none; }
 .ts-fin { padding-bottom: 72px; }
 /* 0.7n: desde el enlace (#toison) va encima de todo: también de la entrada, la presentación o la guía */
 .estreno.ts.ts-enlace { z-index: 9500; }

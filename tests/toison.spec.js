@@ -311,3 +311,20 @@ test('0.7o: cuenta de dónde viene el nombre, en una línea que se dibuja al baj
   await expect.poll(() => m.evaluate((x) => x.querySelector('.ts-marmol + .ts-p').getBoundingClientRect().top - x.querySelector('.ts-marmol').getBoundingClientRect().bottom)).toBeGreaterThanOrEqual(14);
   await expect(e).not.toContainText(/\d+,\d u\b/);
 });
+
+// 0.7q: desde el estreno, un botón que abre la web de Toisón (toison.es) fuera de la app (lo pidió Carlos el 1 nov)
+test('el estreno tiene un botón que lleva a toison.es, en otra pestaña y sin pasar por el cierre', async ({ page, errores }) => {
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.evaluate(() => { LS.del('inv-toison-avance'); avisoToison(() => {}); });
+  const web = page.locator('.estreno.ts a.ts-web');
+  await expect(web).toHaveCount(1);
+  await expect(web).toHaveAttribute('href', 'https://toison.es');
+  await expect(web).toHaveAttribute('target', '_blank');
+  await expect(web).toHaveAttribute('rel', /noopener/);
+  // pulsarlo no cierra el estreno
+  await web.evaluate((a) => a.addEventListener('click', (e) => e.preventDefault(), { once: true }));
+  await web.click({ force: true });
+  await expect(page.locator('.estreno.ts')).toBeVisible();
+});

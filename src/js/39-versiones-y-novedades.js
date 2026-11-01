@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7q', f: '2026-11-01', h: '14:15', t: 'Un botón a la web de Toisón', arreglos: [
+    'En la pantalla de Toisón (la de «GrowFolio tiene los días contados») hay un botón nuevo, «Ver la web de Toisón», que abre toison.es en el navegador. Lo pidió Carlos.',
+  ] },
   { v: '0.7p', f: '2026-11-01', h: '14:00', t: 'GrowIA, más rápida', arreglos: [
     'GrowIA ya no se queda esperando minutos a Google. El 3.8 Flash gratis iba en cola y tardaba hasta minuto y medio en empezar cada paso, así que una pregunta llegó a tardar 7 minutos. Ahora, si no empieza en 40 segundos, contesta el 3.6 Flash, que sigue siendo la respuesta normal, y las preguntas de la media hora siguiente empiezan directamente con él. Lo vio Carlos.',
     'GrowIA pide de una vez todos los datos que necesita de tu cartera, en vez de uno detrás de otro: menos vueltas a Google y menos espera.',
