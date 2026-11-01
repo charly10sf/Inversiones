@@ -305,5 +305,9 @@ test('0.7o: cuenta de dónde viene el nombre, en una línea que se dibuja al baj
   // la O áurea, desde el oro; nada de medidas del logo
   await expect(e.locator('[data-ts-p]').nth(1)).toContainText('Oro en el mito, oro en la orden y oro en la O.');
   await expect(e.locator('.ts-cotas, .ts-med')).toHaveCount(0);
+  // el texto de debajo del mármol, con aire (iba pegado a la imagen)
+  const m = e.locator('[data-ts-p]').nth(2);
+  await m.evaluate((x) => x.closest('.estreno').scrollBy(0, x.getBoundingClientRect().top - 60));
+  await expect.poll(() => m.evaluate((x) => x.querySelector('.ts-marmol + .ts-p').getBoundingClientRect().top - x.querySelector('.ts-marmol').getBoundingClientRect().bottom)).toBeGreaterThanOrEqual(14);
   await expect(e).not.toContainText(/\d+,\d u\b/);
 });

@@ -213,7 +213,7 @@
 .ts-hero { min-height: 100vh; min-height: 100svh; padding-top: calc(56px + env(safe-area-inset-top)); }
 .ts-marca { position: relative; }
 .ts-marca img { display: block; width: 100%; height: auto; aspect-ratio: 1120 / 640; }
-.ts-marmol { border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(227, 180, 95, .18); }
+.ts-marmol { margin: 2px 0 18px; border-radius: 18px; overflow: hidden; box-shadow: 0 18px 50px rgba(0, 0, 0, .55), 0 0 0 1px rgba(227, 180, 95, .18); }
 .ts-marmol img { background: #151817; }
 /* 0.7n: la marca sale del fondo, sin recuadro: los bordes de la imagen se funden con una máscara elíptica. Antes, el símbolo
    en vector en el mismo sitio: se dibuja la O, la T baja dibujada hasta atravesarla, se rellenan y encima aparece el relieve */
