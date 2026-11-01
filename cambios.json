@@ -3,11 +3,11 @@
   {
    "v": "0.7o",
    "f": "2026-11-01",
-   "h": "__HORA__",
+   "h": "01:45",
    "t": "Toisón, con su historia",
    "commits": [
     {
-     "cuando": "2026-11-01 __HORA__",
+     "cuando": "2026-11-01 01:45",
      "asunto": "0.7o: el estreno de Toisón cuenta la historia del nombre en vez de las medidas del logo",
      "detalle": [
       "Carlos (1 nov): tantas medidas no venían al caso. Fuera la parte «Las medidas» (el símbolo con cotas y seis datos en u) y su CSS",
