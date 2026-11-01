@@ -70,13 +70,18 @@ window.actualizarAppYa = async () => {
    la conexión con Google. Las apps de antes no tienen growiaEmpieza: con ellas no hace nada.
    Con dos cosas a la vez (una pregunta y la revisión de la cartera), el servicio sigue hasta que acaba la última */
 const GROWIA_APP = { n: 0 };
+/* 0.7o: con GrowIA contestando, la app no deja que la página se entere de que has salido (si se enterara, Chrome la
+   congelaría al minuto: ni relojes ni datos de Google hasta volver). La app lo dice con appFuera (55-asesor-contexto);
+   fueraDeVista junta las dos cosas: la página oculta o la app fuera */
+let APP_FUERA = false;
+const fueraDeVista = () => document.hidden || APP_FUERA;
 const puenteGrowia = (m) => { const a = window.InversionesApp; return a && typeof a[m] === 'function' ? a : null; };
 // la app se queda viva en segundo plano mientras GrowIA trabaja (solo se puede empezar con GrowFolio a la vista)
 const appSigueEnFondo = () => !!puenteGrowia('growiaEmpieza');
 function appGrowiaEmpieza(nueva = true, texto = '') {
   if (nueva) GROWIA_APP.n++;
   const a = puenteGrowia('growiaEmpieza');
-  if (!a || document.hidden) return;
+  if (!a || fueraDeVista()) return;
   try { a.growiaEmpieza(texto || L('GrowIA está contestando…', 'GrowIA is answering…')); } catch (e) {}
 }
 // pausa: se ha cortado y GrowIA espera a que vuelvas (se cierra el servicio, pero la tarea sigue pendiente)

@@ -7,6 +7,8 @@
 const NOVEDADES = [
   { v: '0.7o', f: '2026-11-01', h: '__HORA__', t: 'Toisón, con su historia', arreglos: [
     'El estreno de Toisón cuenta de dónde viene el nombre, del mito del vellocino de oro a la orden de 1430, y qué tiene que ver con la O áurea. Ya no salen las medidas del logo. Lo pidió Carlos.',
+    'En la app de Android, GrowIA sigue contestando aunque salgas. Hasta ahora Android congelaba la página de GrowFolio al minuto de irte, aunque la app siguiera en marcha, y la respuesta no avanzaba hasta que volvías (o se perdía si cambiabas de wifi a datos). Ahora la página sigue despierta mientras GrowIA contesta y, al acabar, se duerme como siempre para no gastar batería. Hace falta la app nueva.',
+    'El registro de GrowIA (Ajustes de GrowIA → Detalles técnicos) apunta cuándo sales con la página despierta y cuándo se duerme al acabar.',
   ] },
   { v: '0.7n', f: '2026-11-01', h: '00:58', t: 'Toisón y GTA VI, para compartir', arreglos: [
     'El estreno de Toisón empieza dibujando la marca: la O y la T que baja hasta atravesarla. Luego sale en relieve, ya sin el recuadro de alrededor. Lo pidió Carlos.',

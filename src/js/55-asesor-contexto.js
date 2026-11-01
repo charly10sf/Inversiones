@@ -529,25 +529,35 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden) ocultaT = Date.now();
   if (AS.cargando || (typeof IA !== 'undefined' && IA.generando)) diarioIA(document.hidden ? 'Sales de GrowFolio' : 'Vuelves a GrowFolio');
 });
-const fueraDesde = (t) => document.hidden || ocultaT >= t || navigator.onLine === false;
+/* 0.7o: la app de Android dice que has salido (o vuelto) con GrowIA contestando: la página sigue despierta (no se oculta)
+   y GrowIA sigue sin esperarte. Para lo que espera a que vuelvas, un aviso «vuelta-app» */
+window.appFuera = (si) => {
+  si = !!si;
+  if (si === APP_FUERA) return;
+  APP_FUERA = si;
+  if (si) ocultaT = Date.now();
+  if (AS.cargando || (typeof IA !== 'undefined' && IA.generando)) diarioIA(si ? 'Sales de GrowFolio (la app la mantiene despierta)' : 'Vuelves a GrowFolio');
+  if (!si) window.dispatchEvent(new Event('vuelta-app'));
+};
+const fueraDesde = (t) => fueraDeVista() || ocultaT >= t || navigator.onLine === false;
 /* espera a que vuelvas a GrowFolio y haya conexión; con soloRed, solo a la conexión (la app sigue viva fuera). Con max,
    se rinde a los max ms (devuelve false). Si navigator.onLine se quedara mal en «sin red», a los 20 s lo intenta igual */
 function esperarVuelta(signal, { soloRed = false, max = 0 } = {}) {
   return new Promise((ok, mal) => {
-    const listo = () => (soloRed || !document.hidden) && navigator.onLine !== false;
+    const listo = () => (soloRed || !fueraDeVista()) && navigator.onLine !== false;
     if (listo()) return ok(true);
     let t1 = 0, t2 = 0;
-    const quitar = () => { clearTimeout(t1); clearInterval(t2); document.removeEventListener('visibilitychange', mirar); window.removeEventListener('online', mirar); if (signal) signal.removeEventListener('abort', parar); };
+    const quitar = () => { clearTimeout(t1); clearInterval(t2); document.removeEventListener('visibilitychange', mirar); window.removeEventListener('online', mirar); window.removeEventListener('vuelta-app', mirar); if (signal) signal.removeEventListener('abort', parar); };
     const mirar = () => { if (listo()) { quitar(); ok(true); } };
     const parar = () => { quitar(); mal(new DOMException('Parado', 'AbortError')); };
     if (signal && signal.aborted) return mal(new DOMException('Parado', 'AbortError'));
-    document.addEventListener('visibilitychange', mirar); window.addEventListener('online', mirar);
+    document.addEventListener('visibilitychange', mirar); window.addEventListener('online', mirar); window.addEventListener('vuelta-app', mirar);
     if (signal) signal.addEventListener('abort', parar, { once: true });
     if (max) t1 = setTimeout(() => { quitar(); ok(false); }, max);
     // a la vista y «sin red» más de 20 s: se prueba igual (por si navigator.onLine no se ha enterado de que ha vuelto).
     // Fuera de la vista no: en la app, navigator.onLine es fiable (la app se lo dice al WebView)
     const desde = Date.now();
-    t2 = setInterval(() => { if (!document.hidden && Date.now() - desde > 20000) { quitar(); ok(true); } }, 5000);
+    t2 = setInterval(() => { if (!fueraDeVista() && Date.now() - desde > 20000) { quitar(); ok(true); } }, 5000);
   });
 }
 /* las peticiones a Google en marcha ({t0, f}). Si la app dice que se ha perdido la red por la que iban (redCambiada
@@ -739,7 +749,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
     pausas++;
     const p = avisoRed(sinRed ? L('Sin conexión: sigo en cuanto vuelva', "No connection: I'll carry on as soon as it's back") : L('Se ha cortado al salir de GrowFolio: sigo en cuanto vuelvas', "It dropped when you left GrowFolio: I'll carry on when you're back"));
     diarioIA(`Espera a que vuelvas${sinRed ? ' y haya red' : ''}`);
-    if (document.hidden) appGrowiaTermina(L('GrowIA se ha quedado a medias', 'GrowIA stopped halfway'), L('Se cortó la conexión al salir. Abre GrowFolio y seguirá sola.', 'The connection dropped when you left. Open GrowFolio and it will carry on.'), true);
+    if (fueraDeVista()) appGrowiaTermina(L('GrowIA se ha quedado a medias', 'GrowIA stopped halfway'), L('Se cortó la conexión al salir. Abre GrowFolio y seguirá sola.', 'The connection dropped when you left. Open GrowFolio and it will carry on.'), true);
     await esperarVuelta(signal);
     p.txt = sinRed ? L('Se cortó la conexión: he seguido al volver', 'The connection dropped: I carried on when it came back') : L('Se cortó mientras estabas fuera: he seguido al volver', 'It dropped while you were away: I carried on when you came back');
     appGrowiaEmpieza(false); alCambiar(); cortes = 0;
@@ -762,7 +772,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
       if (esCorteRed(e)) {
         // vivo: la app de Android con su servicio en marcha de verdad (las de antes no lo dicen: se dan por vivas)
         const tipo = e.tipo || 'red', vivo = appSigueEnFondo() && deApp('growiaViva') !== false, sinRed = navigator.onLine === false;
-        diarioIA(`${corto()} · ronda ${ronda}: corte (${{ tiempo: 'Google no contesta', cambio: 'cambio de red', red: 'conexión' }[tipo] || tipo}) a los ${e.seg != null ? e.seg : '?'} s${e.datos ? ' con la respuesta llegando' : ''}${document.hidden ? ' · GrowFolio fuera' : ''}${vivo ? ` · servicio ${deApp('growiaViva') ? 'sí' : 'no'}` : ''}${deApp('bateriaRestringida') ? ' · batería restringida' : ''}${redIA()} · ${String(e.message || '').slice(0, 60)}`);
+        diarioIA(`${corto()} · ronda ${ronda}: corte (${{ tiempo: 'Google no contesta', cambio: 'cambio de red', red: 'conexión' }[tipo] || tipo}) a los ${e.seg != null ? e.seg : '?'} s${e.datos ? ' con la respuesta llegando' : ''}${fueraDeVista() ? ` · GrowFolio fuera${APP_FUERA ? ' (despierta)' : ''}` : ''}${vivo ? ` · servicio ${deApp('growiaViva') ? 'sí' : 'no'}` : ''}${deApp('bateriaRestringida') ? ' · batería restringida' : ''}${redIA()} · ${String(e.message || '').slice(0, 60)}`);
         // 1) ha cambiado la red: se repite al momento por la nueva (3 veces como mucho en una respuesta)
         if (tipo === 'cambio' && cambios < 3) { cambios++; avisoRed(L('Ha cambiado tu conexión: lo repito', 'Your connection changed: repeating it'), L('Cambió tu conexión: lo he repetido', 'Your connection changed: I repeated it')); await dormir(500, signal); vuelta--; continue; }
         // 2) Google no contesta (y hay red): una vez más con el mismo y luego el siguiente de su orden
@@ -780,7 +790,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
         if (sinRed && pausas < 8) {
           const p = avisoRed(L('Sin conexión: sigo en cuanto vuelva', "No connection: I'll carry on as soon as it's back"));
           diarioIA('Espera a que vuelva la red');
-          const hay = await esperarVuelta(signal, { soloRed: true, max: document.hidden ? RED_IA.sinRed : 0 });
+          const hay = await esperarVuelta(signal, { soloRed: true, max: fueraDeVista() ? RED_IA.sinRed : 0 });
           if (!hay) await pausaHastaVolver(true);
           else { pausas++; if (navigator.onLine !== false) { p.txt = L('Se cortó la conexión: he seguido al volver', 'The connection dropped: I carried on when it came back'); alCambiar(); } }
           vuelta--; continue;
@@ -792,7 +802,7 @@ async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alC
           await dormir(seg * 1000, signal); vuelta--; continue;
         }
         // 6) nada: con GrowFolio fuera, a esperar a que vuelvas; a la vista, se acaba aquí
-        if (document.hidden && pausas < 8) { await pausaHastaVolver(false); vuelta--; continue; }
+        if (fueraDeVista() && pausas < 8) { await pausaHastaVolver(false); vuelta--; continue; }
         const t = new Error(L(`No consigo hablar con Google: la conexión se ha cortado ${cortes + 1} veces seguidas (${e.message}). Mira tu conexión y vuelve a preguntar.`, `I can't reach Google: the connection dropped ${cortes + 1} times in a row (${e.message}). Check your connection and ask again.`)); t.corte = true; throw t;
       }
       diarioIA(`${corto()} · ronda ${ronda}: error ${e.estado || ''}${e.diario ? ' (cupo del día)' : e.estado === 429 ? ' (espera)' : ''} · ${String(e.msg || e.message || '').slice(0, 80)}`);

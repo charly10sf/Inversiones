@@ -35,7 +35,7 @@ public class Principal extends Activity {
     private static final int PERMISO_AVISOS = 10;
     private static final int DICTAR = 11;
     private File pendiente;
-    private WebView web;
+    private Web web;
     private ValueCallback<Uri[]> archivos;
     private String tokenPendiente;
     private boolean cargada;
@@ -51,7 +51,7 @@ public class Principal extends Activity {
     protected void onCreate(Bundle guardado) {
         super.onCreate(guardado);
         WEB = Datos.web(this);
-        web = new WebView(this);
+        web = new Web(this);
         web.setBackgroundColor(0xFF000000);
         web.setFitsSystemWindows(true);
         // sin la barra de desplazamiento del navegador a la derecha: en la app se desliza con el dedo
@@ -546,7 +546,50 @@ public class Principal extends Activity {
             web.setRendererPriorityPolicy(prioridadAntes, renunciaAntes);
             prioridadAntes = null;
         }
+        // 0.7o: la página, despierta mientras GrowIA contesta (ver Web). Si acaba contigo fuera, se duerme como siempre
+        boolean oculta = web.despertar(si);
+        if (!si && oculta) Diario.apunta("GrowIA acaba con la app fuera: la página se duerme");
+        if (!si && !enPantalla && !pausada) {
+            web.onPause();
+            pausada = true;
+        }
     }
+
+    /** 0.7o: el WebView de la app. Al salir de GrowFolio (otra app, la pantalla apagada) Android le dice que la ventana
+     *  ya no se ve; el WebView da la página por oculta y, al minuto, Chrome la congela entera (stop-in-background, de
+     *  serie en Android): ni relojes ni datos de Google hasta que vuelves. El servicio de GrowIA mantenía viva la app,
+     *  pero no la página, y por eso GrowIA se quedaba a medias aunque el servicio siguiera en marcha (registro del 1 nov:
+     *  120 s sin saltar el límite). Mientras GrowIA contesta, el WebView no se entera de que la ventana se ha ido y la
+     *  página sigue como a la vista; la web lo sabe por appFuera. Al acabar, se le dice cómo está la ventana de verdad */
+    static final class Web extends WebView {
+        boolean despierta;
+        private int ventana = VISIBLE;
+
+        Web(android.content.Context c) {
+            super(c);
+        }
+
+        @Override
+        protected void onWindowVisibilityChanged(int v) {
+            ventana = v;
+            super.onWindowVisibilityChanged(despierta ? VISIBLE : v);
+        }
+
+        /** GrowIA empieza (si) o acaba; con la ventana oculta de verdad, se le dice ahora. Devuelve si lo está */
+        boolean despertar(boolean si) {
+            boolean oculta = ventana != VISIBLE;
+            if (despierta != si) {
+                despierta = si;
+                if (oculta) super.onWindowVisibilityChanged(si ? VISIBLE : ventana);
+            }
+            return oculta;
+        }
+    }
+
+    /** 0.7o: web.onPause() hecho (con GrowIA contestando no se hace: daría la página por oculta) */
+    private boolean pausada;
+    /** se le ha dicho a la web que has salido con GrowIA contestando */
+    private boolean fueraAvisada;
 
     /** 0.7l: la red. Sin el permiso ACCESS_NETWORK_STATE, el WebView no se enteraba de que pasabas de wifi a datos (ni de
      *  que te quedabas sin red): seguía con una conexión muerta y GrowIA se quedaba colgada o se cortaba. Con el permiso
@@ -659,9 +702,33 @@ public class Principal extends Activity {
         enPantalla = false;
         // la web manda al widget lo último antes de quedarse en segundo plano
         web.evaluateJavascript("window.enviarWidget && enviarWidget(true)", null);
-        web.onPause();
+        // 0.7o: con GrowIA contestando, sin onPause: daría la página por oculta y se congelaría (ver Web)
+        if (!web.despierta) {
+            web.onPause();
+            pausada = true;
+        }
         CookieManager.getInstance().flush();
         super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        // 0.7o: sales con GrowIA contestando: la página sigue despierta, pero tiene que saber que no la miras
+        if (web != null && web.despierta) {
+            fueraAvisada = true;
+            Diario.apunta("Sales con GrowIA contestando: la página sigue despierta");
+            web.evaluateJavascript("window.appFuera && appFuera(true)", null);
+        }
+        super.onStop();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (fueraAvisada && web != null) {
+            fueraAvisada = false;
+            web.evaluateJavascript("window.appFuera && appFuera(false)", null);
+        }
     }
 
     @Override
@@ -669,6 +736,7 @@ public class Principal extends Activity {
         super.onResume();
         enPantalla = true;
         web.onResume();
+        pausada = false;
         // 0.7f: ya estás en la app: el aviso de que GrowIA ha contestado sobra
         GrowiaServicio.quitarAviso(this);
         // de vuelta de la app del banco sin su respuesta (si llega, entra antes por onNewIntent y ya no estamos en el

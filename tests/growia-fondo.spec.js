@@ -144,6 +144,41 @@ test('con la app viva, un corte fuera de la vista se reintenta solo y acaba sin 
   await expect(page.locator('#asCuerpo')).toContainText('sigue con tus aportaciones');
 });
 
+// 0.7o: en la app de Android, al salir con GrowIA contestando, la página ya no se da por oculta (si se ocultara, Chrome la
+// congelaría al minuto: el registro de Carlos del 1 nov, 120 s sin saltar el límite). La app lo dice con appFuera: fuera,
+// los reintentos van solos y, si se acaban, espera a que vuelvas (appFuera(false)), aunque document.hidden siga en false
+test('en la app de Android, al salir con GrowIA contestando la página sigue despierta: reintenta sola y, si no hay manera, sigue al volver', async ({ page, context, errores }) => {
+  await preguntar(page);
+  await page.evaluate(() => {
+    window.__app = [];
+    window.InversionesApp = { version: () => 99999, nombreVersion: () => '9.9', growiaViva: () => true, growiaEmpieza: (t) => window.__app.push(['empieza', t]), growiaTermina: (t) => window.__app.push(['termina', t]) };
+    RED_IA.esperas = [0.2, 0.2, 0.2, 0.2, 0.2];
+  });
+  const modelos = [];
+  await context.route('https://generativelanguage.googleapis.com/**', async (r) => {
+    const url = r.request().url();
+    if (!/:streamGenerateContent/.test(url)) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ models: [] }) });
+    modelos.push(/models\/([^:]+):/.exec(url)[1]);
+    if (modelos.length === 1) await page.evaluate(() => appFuera(true));
+    if (modelos.length <= 6) return r.abort('failed');
+    return r.fulfill({ status: 200, contentType: 'text/event-stream', body: sse([{ text: 'Tu cartera va bien: sigue con tus aportaciones.' }]) });
+  });
+  await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
+  await expect.poll(() => modelos.length, { timeout: 20_000 }).toBe(6);
+  await expect.poll(() => page.evaluate(() => window.__app.map((x) => x[0]).join()), { timeout: 15_000 }).toBe('empieza,termina');
+  expect(await page.evaluate(() => document.hidden), 'la página no se ha ocultado').toBe(false);
+  expect((await page.evaluate(() => window.__app))[1][1]).toBe('GrowIA se ha quedado a medias');
+  await page.waitForTimeout(1000);
+  expect(modelos.length, 'agotados los reintentos, ya no lo pide con la app fuera').toBe(6);
+  await page.evaluate(() => appFuera(false));
+  await expect(page.locator('#asCuerpo')).toContainText('sigue con tus aportaciones', { timeout: 15_000 });
+  const diario = await page.evaluate(() => diarioIATodo().map((x) => x.x).join('\n'));
+  expect(diario).toContain('Sales de GrowFolio (la app la mantiene despierta)');
+  expect(diario).toContain('GrowFolio fuera (despierta)');
+  expect(diario).toContain('Vuelves a GrowFolio');
+  expect(new Set(modelos).size, 'siempre el mismo modelo').toBe(1);
+});
+
 // 0.7l: Gemini de imitación dentro de la página (fetch), para lo que no se puede imitar con route: una respuesta que
 // se queda parada a mitad o que no llega nunca. guion: lo que hace cada petición ('parada', 'nunca' o 'bien')
 async function geminiFetch(page, guion) {

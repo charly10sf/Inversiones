@@ -156,7 +156,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     if (pedida) fin = L('GrowIA ha revisado tu cartera', 'GrowIA has reviewed your portfolio');
     IA.reintentos = 0;
     // si trae una pregunta nueva: a la vista (y aviso al móvil si lo tienes activado y no estás mirando)
-    if (preguntaNueva()) { if (document.hidden) avisoSistema('pregunta', 'GrowIA te pregunta', preguntaNueva().x.q, '#objetivos', 'preg:' + clavePreg(preguntaNueva().x)); else setTimeout(() => mostrarPreguntaIA(), 1200); }
+    if (preguntaNueva()) { if (fueraDeVista()) avisoSistema('pregunta', 'GrowIA te pregunta', preguntaNueva().x.q, '#objetivos', 'preg:' + clavePreg(preguntaNueva().x)); else setTimeout(() => mostrarPreguntaIA(), 1200); }
   } catch (e) {
     IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}.` : e.message;
     // al dueño, los que no se van a reintentar solos (los que sí, cuando fallen del todo)
@@ -178,7 +178,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
 /* ¿toca revisar? cada día (o semana) y, si es diario, también cuando cambia alguna señal */
 async function revisarAnalisisIA() {
   // 0.7l: con GrowIA contestando una pregunta, después (al acabar la vuelve a mirar): no se pisan en el móvil
-  if (IA.generando || AS.cargando || !S.cartera || document.hidden || !S.key || S.demo) return;
+  if (IA.generando || AS.cargando || !S.cartera || fueraDeVista() || !S.key || S.demo) return;
   await cargarAsesor();
   if (!AS.clave) return;
   const cfg = cfgAsesor();

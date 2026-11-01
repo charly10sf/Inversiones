@@ -13,8 +13,18 @@
       "Carlos (1 nov): tantas medidas no venían al caso. Fuera la parte «Las medidas» (el símbolo con cotas y seis datos en u) y su CSS",
       "Parte nueva «De dónde viene el nombre», antes de la O áurea: una línea del tiempo que se dibuja al bajar con cuatro hitos (el mito de Jasón y el vellocino, la Orden del Toisón de Oro en Brujas en 1430, Carlos I y los reyes de España, y ahora: el dragón que guardaba el vellocino y tu contraseña que guarda tu cartera). Con la nota de que Toisón no tiene relación con la orden",
       "La O áurea, contada desde el oro: áureo quiere decir de oro; Euclides y la divina proporción; «oro en el mito, oro en la orden y oro en la O». El héroe, el mármol y la tarjeta, con textos más cortos y sin datos de diseño",
-       "Debajo del mármol negro, el texto ya no va pegado a la imagen (18 px de aire; lo vio Carlos)",
+      "Debajo del mármol negro, el texto ya no va pegado a la imagen (18 px de aire; lo vio Carlos)",
       "Pruebas: tests/toison.spec.js con la historia en vez de las medidas"
+     ]
+    },
+    {
+     "cuando": "2026-11-01 __HORA__",
+     "asunto": "0.7o: GrowIA sigue contestando con la app fuera; la página ya no se congela al minuto de salir",
+     "detalle": [
+      "Causa, con el registro de Carlos del 1 nov (app 60, Samsung con Android 17): al salir, el WebView da la página por oculta (la ventana deja de verse: IsClientVisible pide ventana visible y sin onPause) y Blink la congela al minuto (stop-in-background, de serie en Android y que WebView no quita): ni relojes ni carga. La pregunta de las 01:18:38 salió a los 2 s, el límite de 120 s no saltó y a las 01:21:20, con la página congelada desde las 01:19:40, se perdió el wifi. El servicio de GrowIA (0.7f y 0.7l) mantenía viva la app, no la página. evaluateJavascript sí corre con la página congelada (por eso redCambiada se apuntó a su hora)",
+      "App (Principal.java): un WebView propio (Principal.Web) que, mientras GrowIA contesta, no se entera de que la ventana se ha ido (onWindowVisibilityChanged con VISIBLE), y sin web.onPause() en ese rato: la página sigue como a la vista, con relojes, reintentos y datos de Google. Si GrowIA acaba con la app fuera, se le pasa la visibilidad de verdad y onPause, y se duerme como siempre. En el diario de la app: «Sales con GrowIA contestando: la página sigue despierta» y «GrowIA acaba con la app fuera: la página se duerme»",
+      "Web: la app avisa con appFuera(true) en onStop y appFuera(false) en onStart. fueraDeVista() (document.hidden o la app fuera, en 47-app-android.js) sustituye a document.hidden en lo de GrowIA: esperarVuelta (que también escucha «vuelta-app»), fueraDesde, el aviso de «a medias», el máximo sin red, la espera a que vuelvas, appGrowiaEmpieza, la pregunta de GrowIA por aviso del sistema y la revisión automática, que no empieza con la app fuera. En el registro: «Sales de GrowFolio (la app la mantiene despierta)» y «GrowFolio fuera (despierta)» en los cortes",
+      "Prueba nueva en tests/growia-fondo.spec.js: con appFuera(true) y document.hidden en false, cinco reintentos solos; al sexto corte, «a medias» y espera; con appFuera(false), sigue con el mismo modelo y acaba"
      ]
     }
    ]
