@@ -1,5 +1,6 @@
 # Publica GrowFolio en GitHub Pages desde el build (0.6): npm run build → dist/ → Pages, solo cuando la Action «Pruebas»
-# ha pasado en ese commit de main (o a mano, desde Actions).
+# ha pasado en ese commit de main (o a mano, desde Actions). Desde el 1 nov 2026, si ese commit ya pasó «Pruebas» en una
+# rama, en main no se repiten (ver pruebas.yml): «Pruebas» acaba en unos segundos con éxito y esto empieza enseguida.
 #
 # ORDEN AL PASAR A ESTO (una vez): primero Settings → Pages → Build and deployment → Source: «GitHub Actions» y lanzar
 # esta Action a mano con main todavía en la 0.5x (publica la 0.5x tal cual, sin build: ver el paso «La web»); comprobar

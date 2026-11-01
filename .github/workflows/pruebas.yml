@@ -1,6 +1,15 @@
 # Las pruebas de GrowFolio en cada push (cualquier rama de código) y en cada pull request: el build con Vite,
 # las de Python de los scripts y las de Playwright de la web (tests/) sobre ese build, en el móvil y en el ordenador, sin salir a internet:
 # Firebase de imitación y los datos de verdad de las ramas datos y catalogo.
+#
+# Más rápido desde el 1 nov 2026 (Carlos: «últimamente tardas muchísimo en hacer pruebas»; eran de 9 a 14 min, y dos
+# veces por versión):
+# - Las de la web van en 3 máquinas a la vez (playwright --shard, «web 1/3», «web 2/3», «web 3/3»), y los scripts, el
+#   rendimiento y la subida en una cuarta. Como fullyParallel está activado, cada parte se lleva un tercio de las pruebas.
+# - En main no se repiten si ese mismo commit ya pasó «Pruebas» en una rama en las últimas 24 h (el paso a main es el
+#   mismo commit, sin merge nuevo): el trabajo «previo» lo mira por la API, los demás se saltan y la ejecución acaba en
+#   éxito, así que Pages publica enseguida. Si main trae un commit nuevo (un merge de verdad) o la rama no ha
+#   terminado, se pasan todas, como antes.
 name: Pruebas
 
 on:
@@ -11,13 +20,90 @@ on:
 
 permissions:
   contents: read
+  actions: read
 
 concurrency:
   group: pruebas-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  pruebas:
+  # solo en los push a main: ¿pasó ya este commit en una rama?
+  previo:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      ya: ${{ steps.mirar.outputs.ya }}
+    steps:
+      - id: mirar
+        name: ¿Pasó ya en una rama?
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          rama=$(gh api "repos/$GITHUB_REPOSITORY/actions/workflows/pruebas.yml/runs?head_sha=$GITHUB_SHA&status=success&per_page=50" \
+            --jq '[.workflow_runs[]
+                   | select(.head_branch != "main" and (.event == "push" or .event == "workflow_dispatch"))
+                   | select((now - (.updated_at | fromdateiso8601)) < 86400)][0]
+                  | if . then "\(.head_branch) (\(.html_url))" else empty end') || rama=""
+          if [ -n "$rama" ]; then
+            echo "ya=true" >> "$GITHUB_OUTPUT"
+            echo "::notice title=Pruebas ya pasadas::Este commit ya pasó «Pruebas» en $rama. No se repiten."
+          else
+            echo "No ha pasado en ninguna rama en las últimas 24 h (o la API no contesta): se pasan todas."
+          fi
+
+  web:
+    name: web ${{ matrix.parte }}/3
+    needs: previo
+    if: ${{ !cancelled() && needs.previo.outputs.ya != 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        parte: [1, 2, 3]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Chromium de Playwright (guardado entre ejecuciones)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
+      - name: Dependencias
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+
+      - name: Datos de las ramas datos y catalogo
+        run: sh tests/traer-datos.sh
+
+      - name: Build (Vite)
+        run: npm run build
+
+      - name: Pruebas de la web (parte ${{ matrix.parte }} de 3, sobre el build)
+        run: npx playwright test --shard=${{ matrix.parte }}/3
+
+      - name: Informe si algo falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: informe-pruebas-web-${{ matrix.parte }}
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 7
+
+  resto:
+    name: scripts, rendimiento y subida
+    needs: previo
+    if: ${{ !cancelled() && needs.previo.outputs.ya != 'true' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -34,6 +120,12 @@ jobs:
           cache: pip
           cache-dependency-path: scripts/requirements.txt
 
+      - name: Chromium de Playwright (guardado entre ejecuciones)
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: playwright-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
+
       - name: Dependencias
         run: |
           npm ci
@@ -48,9 +140,6 @@ jobs:
 
       - name: Build (Vite)
         run: npm run build
-
-      - name: Pruebas de la web (sobre el build)
-        run: npx playwright test
 
       - name: Presupuesto de rendimiento (solo, sin otras pruebas a la vez)
         run: npm run rendimiento
@@ -71,7 +160,7 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: informe-pruebas
+          name: informe-pruebas-resto
           path: |
             playwright-report/
             test-results/
