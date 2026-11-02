@@ -107,7 +107,8 @@ body:has(> .estreno, > .hoja-fondo, > .tour) .gta-top-t, body:has(> .estreno, > 
 .bp-pie { margin: 8px 0 0; color: var(--muted); font-size: 12px; line-height: 1.45; }
 .estado::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: var(--muted); flex: none; }
 .estado.on::before { background: var(--up); box-shadow: 0 0 0 3px rgba(76, 191, 142, 0.18); animation: latido 2.4s ease-in-out infinite; }
-@keyframes latido { 50% { box-shadow: 0 0 0 6px rgba(76, 191, 142, 0); } }
+/* 0.7s: el punto «en directo» late con opacidad y tamaño (lo mueve el móvil sin repintar); antes animaba la sombra, y se repintaba en cada fotograma mientras la bolsa estaba abierta */
+@keyframes latido { 50% { transform: scale(1.3); opacity: 0.55; } }
 .acciones { display: flex; gap: 2px; flex: none; }
 .ib { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; border: 0; background: transparent; color: var(--text-2); }
 .ib:hover { background: var(--plane-2); color: var(--text); }

@@ -1,6 +1,31 @@
 {
  "versiones": [
   {
+   "v": "0.7s",
+   "f": "2026-11-02",
+   "h": "14:15",
+   "t": "El punto de «en directo», más ligero",
+   "commits": [
+    {
+     "cuando": "2026-11-02 14:15",
+     "asunto": "0.7s: el punto de «en directo» late con opacidad y tamaño, no con la sombra",
+     "detalle": [
+      "La pulsación del punto verde de la cabecera (.estado.on) animaba box-shadow, que se repinta en cada fotograma; ahora anima transform y opacity. Las pruebas de animaciones lo cazaron en un día de bolsa abierta (el domingo no salía)",
+      "El aro de 3 px se queda fijo"
+     ]
+    },
+    {
+     "cuando": "2026-11-02 13:50",
+     "asunto": "0.7s: Worker, ruta /claude para reenviar a la API de Claude las preguntas de GrowIA (la app aún no la usa)",
+     "detalle": [
+      "Guarda ANTHROPIC_API_KEY, comprueba el token de Firebase y la lista CLAUDE_EMAILS, y limita modelos, salida, búsquedas, herramientas, adjuntos y tamaño; tope de preguntas por minuto y por día y correo (Durable Object Cuotas). No guarda nada",
+      "Los fallos llegan claros a la app: sin-creditos (402), clave, claude, sin-conexion, tope-diario, cuotas",
+      "Revisado aparte antes de publicar. Pruebas nuevas en tests/worker-claude.spec.js"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7r",
    "f": "2026-11-01",
    "h": "15:40",

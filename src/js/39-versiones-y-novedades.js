@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7s', f: '2026-11-02', h: '14:15', t: 'El punto de «en directo», más ligero', arreglos: [
+    'El puntito verde de la cabecera que avisa de que la bolsa está abierta latía moviendo una sombra, y eso obligaba al móvil a repintarlo sin parar mientras la bolsa estaba abierta. Ahora late creciendo y atenuándose, que el móvil mueve sin esfuerzo: se ve casi igual y gasta menos.',
+  ] },
   { v: '0.7r', f: '2026-11-01', h: '15:40', t: 'GrowIA apunta lo que gasta', arreglos: [
     'El registro de GrowIA (Ajustes de GrowIA → Detalles técnicos) apunta ahora, en cada pregunta y en cada análisis, los tokens que ha gastado cada modelo (entrada, salida y razonamiento) y dice arriba la mediana por modelo. Sirve para calcular cuánto costaría con la API de Claude. Lo pidió Carlos.',
   ] },
