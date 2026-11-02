@@ -132,7 +132,8 @@ function vistaDeHash() {
   if (v === 'renta') { S.fisTab = 'renta'; return 'fiscal'; }
   if (v === 'objetivos') { S.futTab = 'perfil'; return 'futuro'; }
   if (v === 'proyeccion') { S.futTab = 'proy'; return 'futuro'; }
-  return esVista(v) ? v : null;
+  const w = vistaSegunNav(v);
+  return esVista(w) ? w : null;
 }
 window.addEventListener('hashchange', () => {
   const v = vistaDeHash(); if (!v || !S.cartera) return;

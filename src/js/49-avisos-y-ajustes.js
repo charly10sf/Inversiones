@@ -612,3 +612,37 @@ function abrirAjustes() {
   };
 }
 
+
+/* 0.8 (Toisón): la pestaña Tú. Lo tuyo (perfil, metas, lo que podrías tener, el Paso a paso o tu plan, el calendario)
+   y lo de la app (diseño, ajustes, novedades y avisar de un fallo), que con Toisón ya no están en la cabecera */
+function vistaTu(M) {
+  const falta = perfilIncompleto(), vacio = perfilVacio();
+  let metas = []; try { metas = estadoPerfil(M).metas || []; } catch (e) {}
+  const flecha = '<i class="aj-flecha" aria-hidden="true"></i>';
+  const fila = (ic, b, x, attrs, extra = '') => `<a class="aj-fila${extra}" ${attrs}>${ic}<span><b>${b}</b><small>${x}</small></span>${flecha}</a>`;
+  const boton = (ic, b, x, accion) => `<button type="button" class="aj-fila" data-accion="${accion}">${ic}<span><b>${b}</b><small>${x}</small></span>${flecha}</button>`;
+  const ruta = GRUPOS.find((x) => x.k === 'ruta');
+  const nom = nombreUsuario();
+  return `<div class="tu">
+    <section class="tu-cab" aria-label="${L('Tu cuenta', 'Your account')}">
+      <span class="tu-ini" aria-hidden="true">${esc((nom || '·').slice(0, 1).toUpperCase())}</span>
+      <div><p class="tu-nom">${nom ? esc(nom) : L('Tu cuenta', 'Your account')}</p><small>${FB.user && FB.user.email ? esc(FB.user.email) : PERFIL_LOCAL ? L('Cartera guardada en este dispositivo', 'Portfolio saved on this device') : ''}</small></div>
+      ${falta ? `<button type="button" class="btn peq pri" data-accion="perfil-guiado">${vacio ? L('Hacer tu perfil', 'Set up your profile') : L('Terminar tu perfil', 'Finish your profile')}</button>` : ''}
+    </section>
+    <h2 class="aj-grupo">${L('Lo tuyo', 'Yours')}</h2>
+    <div class="aj-caja">
+      ${fila(ICONOS.perfil, L('Tu perfil de inversor', 'Your investor profile'), falta ? L('A medias: sin tu edad, tu plazo y el riesgo que aguantas, la IA te habla como a cualquiera.', 'Unfinished: without your age, horizon and risk, the AI talks to you like anyone else.') : L('Tu edad, tu plazo, el riesgo que aguantas y tus límites.', 'Your age, horizon, risk and limits.'), 'href="#objetivos"', falta ? ' falta' : '')}
+      ${fila(ICONOS.futuro, L('Tus metas', 'Your goals'), metas.length ? L(`${metas.length === 1 ? 'Una meta' : `${metas.length} metas`}: si llegas con lo que aportas.`, `${metas.length} goal${metas.length === 1 ? '' : 's'}: whether you get there.`) : L('Algo con cifra y fecha: la entrada de un piso, llegar a 100.000 €…', 'Something with an amount and a date.'), 'href="#objetivos"')}
+      ${fila(ICONOS.proy, L('Lo que podrías tener', 'What you could have'), L('En 5, 10 y 20 años si sigues aportando como ahora.', 'In 5, 10 and 20 years if you keep contributing.'), 'href="#proyeccion"')}
+      ${fila(esPublico() ? ICONOS.plan : ICONOS.ruta, L(ruta.t, ruta.en), esPublico() ? L('Tus aportaciones y si tu cartera se sale de tus límites.', 'Your contributions and whether your portfolio goes beyond your limits.') : L('Lo que hay cada mes, en orden y con lo que supone en la renta.', 'What there is each month, in order, with its tax effect.'), 'href="#ruta"')}
+      ${fila(ICONOS.agenda, L('Calendario', 'Calendar'), L('Resultados, dividendos y tus aportaciones, con los días que faltan.', 'Earnings, dividends and your contributions, with a countdown.'), 'href="#agenda"')}
+    </div>
+    <h2 class="aj-grupo">${L('La app', 'The app')}</h2>
+    <div class="aj-caja">
+      ${S.esDueno ? htmlSelectorTema() : ''}
+      ${boton(ICONOS.ajustes, L('Ajustes', 'Settings'), L('Cuenta, idioma, seguridad, avisos y la app de Android.', 'Account, language, security, alerts and the Android app.'), 'ajustes')}
+      ${boton(ICONOS.chispa, L('Novedades', "What's new"), L(`Versión ${VERSION} alfa: qué se ha mejorado.`, `Version ${VERSION} alpha: what's improved.`), 'novedades')}
+      ${boton(ICONOS.bicho, L('Avisar de un fallo', 'Report a bug'), L('Es una alfa: cuéntanos cualquier fallo o idea. Lo leemos todo.', "It's an alpha: tell us about any bug or idea."), 'opinion')}
+    </div>
+  </div>`;
+}

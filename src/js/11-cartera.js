@@ -143,7 +143,7 @@ function htmlBloqueCar(k, M) {
     if (k === 'patrimonio') {
       return `<section class="car-patrimonio car-hero" aria-label="Patrimonio">
       ${htmlAvisoNovedades()}
-      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L('Calendario', 'Calendar'))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span></a><button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
+      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${navToison() ? `<small class="hola-fecha">${esc(new Date().toLocaleDateString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' }))}</small>` : ''}${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L('Calendario', 'Calendar'))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span></a><button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
       <div class="hero-panel">
         <div class="hero-cifra">
           <div class="hero-lbl"><span id="heroLbl">${L('Patrimonio', 'Net worth')}</span><button type="button" class="hero-ojo" data-accion="ocultar" aria-pressed="${!!S.oculto}" title="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}" aria-label="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}">${S.oculto ? ICONOS.ojoNo : ICONOS.ojo}</button></div>
@@ -208,9 +208,16 @@ function htmlBloqueCar(k, M) {
   } catch (e) { console.warn('bloque de Cartera', k, e); }
   return '';
 }
+// 0.8: con Toisón, Hoy no lleva tus posiciones ni el reparto (van en Cartera)
+const fueraDeHoy = (k) => navToison() && EN_CARTERA_TS.has(k);
+/* Cartera de Toisón, subpestaña Posiciones: lo que tienes (con el plan y los movimientos) y el reparto. El total va
+   encima, en htmlSubvistas */
+function vistaPosiciones(M) {
+  return `<div class="car car-ts">${htmlBloqueCar('posiciones', M)}${htmlReparto(M)}</div>`;
+}
 function vistaCartera(M) {
   if (S.carEdit) return vistaCarteraEditar(M);
-  const lista = bloquesCartera().map((k) => ({ k, w: anchoCar(k), html: htmlBloqueCar(k, M) })).filter((b) => b.html);
+  const lista = bloquesCartera().filter((k) => !fueraDeHoy(k)).map((k) => ({ k, w: anchoCar(k), html: htmlBloqueCar(k, M) })).filter((b) => b.html);
   // filas: los estrechos seguidos se ponen al lado de los grandes que vengan detrás (el patrimonio, junto a la
   // gráfica y GrowIA), menos del grande que tenga sus propios estrechos detrás, que hace su fila con ellos (tus
   // posiciones con el reparto y lo que viene)
@@ -245,12 +252,12 @@ function vistaCartera(M) {
 const ASA_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="6" r="1.6"/><circle cx="15" cy="6" r="1.6"/><circle cx="9" cy="12" r="1.6"/><circle cx="15" cy="12" r="1.6"/><circle cx="9" cy="18" r="1.6"/><circle cx="15" cy="18" r="1.6"/></svg>';
 const flechaCE = (d) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
 function vistaCarteraEditar(M) {
-  const v = bloquesCartera(), fuera = Object.keys(BLOQUES_CAR).filter((k) => !v.includes(k));
+  const v = bloquesCartera(), fuera = Object.keys(BLOQUES_CAR).filter((k) => !v.includes(k) && !fueraDeHoy(k)), vis = v.filter((k) => !fueraDeHoy(k));
   return `<div class="ce">
     <div class="ce-cab"><h1>${L('Tu Inicio, a tu gusto', 'Your Home, your way')}</h1><p>${L('Arrastra cada bloque por su barra a donde quieras. Con la × lo quitas; abajo tienes lo que puedes añadir.', 'Drag each block by its bar to wherever you want. The × removes it; below is what you can add.')}</p></div>
-    <ol class="ce-l" id="ceL">${v.map((k, i) => { const b = BLOQUES_CAR[k]; return `<li class="ce-b" data-k="${k}">
+    <ol class="ce-l" id="ceL">${v.map((k) => { const b = BLOQUES_CAR[k]; return `<li class="ce-b" data-k="${k}"${fueraDeHoy(k) ? ' hidden' : ''}>
       <div class="ce-barra-b"><span class="ce-asa" aria-hidden="true">${ASA_SVG}</span><span class="ce-t"><b>${esc(b.n)}</b><small class="ce-w">${esc(ANCHO_CAR[b.w])}</small></span>
-        <button type="button" class="ib" data-ce="sube" aria-label="${L('Subir', 'Move up')} ${esc(trad(b.n))}"${i ? '' : ' disabled'}>${flechaCE('M6 15l6-6 6 6')}</button><button type="button" class="ib" data-ce="baja" aria-label="${L('Bajar', 'Move down')} ${esc(trad(b.n))}"${i < v.length - 1 ? '' : ' disabled'}>${flechaCE('M6 9l6 6 6-6')}</button>
+        <button type="button" class="ib" data-ce="sube" aria-label="${L('Subir', 'Move up')} ${esc(trad(b.n))}"${vis.indexOf(k) > 0 ? '' : ' disabled'}>${flechaCE('M6 15l6-6 6 6')}</button><button type="button" class="ib" data-ce="baja" aria-label="${L('Bajar', 'Move down')} ${esc(trad(b.n))}"${vis.indexOf(k) < vis.length - 1 ? '' : ' disabled'}>${flechaCE('M6 9l6 6 6-6')}</button>
         ${b.fijo ? `<span class="ce-fijo" title="${esc(L('Este bloque va siempre en Inicio', 'This block is always on Home'))}">${L('Fijo', 'Fixed')}</span>` : `<button type="button" class="ib ce-quita" data-ce="quita" aria-label="${L('Quitar', 'Remove')} ${esc(trad(b.n))}">${ICONOS.cerrar}</button>`}</div>
       <div class="ce-prev" aria-hidden="true" inert>${htmlBloqueCar(k, M) || `<p class="nota">${esc(b.d)}</p>`}</div></li>`; }).join('')}</ol>
     ${fuera.length ? `<h2 class="ce-h">${L('Puedes añadir', 'You can add')}</h2><div class="ce-mas">${fuera.map((k) => { const b = BLOQUES_CAR[k]; return `<button type="button" class="ce-add" data-ce-add="${k}">${ICONOS.mas}<span><b>${esc(b.n)}</b><small>${esc(b.d)}</small></span></button>`; }).join('')}</div>` : ''}
@@ -300,15 +307,17 @@ document.addEventListener('click', (e) => {
   if (a === 'listo') { cerrarCarEdit(true); toast(L('Inicio guardado a tu gusto', 'Home saved your way'), 2500); return; }
   if (a === 'cancelar') { cerrarCarEdit(false); return; }
   if (a === 'defecto') { ceGuardar([...CAR_DEFECTO]); toast(L('Inicio como venía', 'Home reset'), 2500); return; }
-  if (a === 'sube' && i > 0) { ceFlip(ul, () => ul.insertBefore(li, li.previousElementSibling)); v.splice(i, 1); v.splice(i - 1, 0, k); ceGuardar(v, false); ceFlechas(); }
-  else if (a === 'baja' && i >= 0 && i < v.length - 1) { ceFlip(ul, () => ul.insertBefore(li.nextElementSibling, li)); v.splice(i, 1); v.splice(i + 1, 0, k); ceGuardar(v, false); ceFlechas(); }
+  // con Toisón, los bloques escondidos (van en Cartera) se saltan: se cambia con el de al lado que se ve
+  const vecino = (el, dir) => { let x = el[dir]; while (x && x.hidden) x = x[dir]; return x; };
+  if (a === 'sube' && vecino(li, 'previousElementSibling')) { const o = vecino(li, 'previousElementSibling'), j = v.indexOf(o.dataset.k); ceFlip(ul, () => ul.insertBefore(li, o)); v.splice(i, 1); v.splice(j, 0, k); ceGuardar(v, false); ceFlechas(); }
+  else if (a === 'baja' && i >= 0 && vecino(li, 'nextElementSibling')) { const o = vecino(li, 'nextElementSibling'), j = v.indexOf(o.dataset.k); ceFlip(ul, () => ul.insertBefore(o, li)); v.splice(i, 1); v.splice(j, 0, k); ceGuardar(v, false); ceFlechas(); }
   else if (a === 'quita' && i >= 0 && !BLOQUES_CAR[k].fijo) {
     li.classList.add('se-va'); v.splice(i, 1);
     setTimeout(() => { ceGuardar(v); toast(L(`Quitado: ${BLOQUES_CAR[k].n}. Lo tienes abajo para volver a añadirlo.`, `Removed: ${BLOQUES_CAR[k].n}. It’s below if you want it back.`), 3500); }, matchMedia('(prefers-reduced-motion: reduce)').matches ? 0 : 230);
   }
 });
 // las flechas de arriba y abajo, encendidas o no según el sitio de cada uno (tras mover sin repintar)
-function ceFlechas() { const ls = $$('#ceL > .ce-b'); ls.forEach((li, i) => { const s1 = li.querySelector('[data-ce="sube"]'), b1 = li.querySelector('[data-ce="baja"]'); if (s1) s1.disabled = !i; if (b1) b1.disabled = i === ls.length - 1; }); }
+function ceFlechas() { const ls = $$('#ceL > .ce-b:not([hidden])'); ls.forEach((li, i) => { const s1 = li.querySelector('[data-ce="sube"]'), b1 = li.querySelector('[data-ce="baja"]'); if (s1) s1.disabled = !i; if (b1) b1.disabled = i === ls.length - 1; }); }
 // arrastrar por la barra: el bloque sigue al dedo y, al pasar la mitad del de al lado, se cambian; cerca del borde
 // de la pantalla, la página se desplaza sola
 document.addEventListener('pointerdown', (e) => {

@@ -296,7 +296,7 @@ function vistaExpertos(M) {
   }
   const marca = { posiciones: planes.length, siguiendo: siguiendo().length };
   return `
-  <div class="vista-cab vc-corta"><h1>Expertos</h1><p>Lo que dicen analistas, prensa y GrowIA de lo tuyo y de lo que podrías comprar.</p></div>
+  <div class="vista-cab vc-corta"><h1>${navToison() ? L('Ideas', 'Ideas') : 'Expertos'}</h1><p>Lo que dicen analistas, prensa y GrowIA de lo tuyo y de lo que podrías comprar.</p></div>
   ${htmlFrescura()}
   <div class="subvistas exp-tabs" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
   <div class="pila">${cuerpo}</div>`;

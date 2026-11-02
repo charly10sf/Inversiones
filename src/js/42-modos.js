@@ -132,7 +132,8 @@ function activarSelectorTema(el) {
   for (const b of $$('[data-elige-tema]', el)) b.onclick = () => {
     ponerTema(b.dataset.eligeTema);
     for (const x of $$('[data-elige-tema]', el)) x.setAttribute('aria-pressed', String(x === b));
-    if (S.cartera && $('#vista') && !document.querySelector('.hoja-fondo form, .ficha')) pintar();
+    // si cambia la navegación (de GrowFolio a Toisón o al revés) se repinta aunque haya una hoja abierta
+    if (S.cartera && $('#vista') && (S.navTs !== navToison() || !document.querySelector('.hoja-fondo form, .ficha'))) pintar();
   };
 }
 // las cuentas que conoce GrowFolio (las que han abierto la 0.5) y lo que les ha puesto el dueño

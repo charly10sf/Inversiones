@@ -90,7 +90,8 @@ const ICONOS = {
 const VISTAS = [
   ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['agenda', 'Calendario', 'Calendario'], ['mercados', 'Mercados', 'Mercados'],
 ];
-const VISTAS_APARTE = [];
+// 0.8: las dos que solo tiene Toisón (Cartera con tus posiciones, y Tú)
+const VISTAS_APARTE = [['posiciones', 'Cartera', 'Cartera'], ['tu', 'Tú', 'Tú']];
 /* 0.3: cinco sitios. Análisis lleva dentro tus objetivos (y Hacienda, que solo se enseña de marzo a junio, cuando
    toca la renta; el resto del año, con un enlace al final). El calendario se abre desde Inicio, con su icono junto al
    patrimonio (0.3.9: dentro de Mercados no lo encontraba nadie). En el móvil, Inicio en el
@@ -104,15 +105,49 @@ const GRUPOS = [
   { k: 'mercados', t: 'Mercados', en: 'Markets', vistas: ['mercados'] },
 ];
 const ORDEN_BARRA = ['ruta', 'analisis', 'cartera', 'expertos', 'mercados'];
-const grupoDe = (v) => GRUPOS.find((g) => g.vistas.includes(v)) || GRUPOS[0];
 const SUBVISTAS = { analisis: [['analisis', 'Tu cartera', 'Your portfolio'], ['futuro', 'Tus objetivos', 'Your goals'], ['fiscal', 'Hacienda', 'Taxes']] };
+/* 0.8 (rediseño, decidido con Carlos el 2 nov a las 21:44): con un diseño de Toisón la app se ordena de otra forma.
+   Abajo, cinco: Cartera · Mercados · Hoy (el medallón, se abre ahí) · Ideas · Tú. Hoy es lo de Inicio sin tus
+   posiciones ni el reparto; Cartera lleva tu total en pequeño y Posiciones, Análisis y Hacienda; Ideas es lo de
+   Expertos; Tú, tu cuenta, tus objetivos y el Paso a paso (solo fundador y amigos; en estándar, «Tu plan»). La IA va
+   arriba, solo con su logo. Las claves de siempre no cambian (Hoy sigue siendo «cartera»): con GrowFolio, la de antes */
+const navToison = () => !!temaActual();
+const GRUPOS_TS = [
+  { k: 'posiciones', t: 'Cartera', en: 'Portfolio', vistas: ['posiciones', 'analisis', 'fiscal'] },
+  { k: 'mercados', t: 'Mercados', en: 'Markets', vistas: ['mercados'] },
+  { k: 'cartera', t: 'Hoy', en: 'Today', vistas: ['cartera', 'agenda'] },
+  { k: 'expertos', t: 'Ideas', en: 'Ideas', vistas: ['expertos'] },
+  { k: 'tu', t: 'Tú', en: 'You', vistas: ['tu', 'futuro', 'ruta'] },
+];
+const grupos = () => (navToison() ? GRUPOS_TS : GRUPOS);
+const ordenBarra = () => (navToison() ? GRUPOS_TS.map((g) => g.k) : ORDEN_BARRA);
+// los bloques de Inicio que con Toisón van a Cartera y no a Hoy
+const EN_CARTERA_TS = new Set(['posiciones', 'reparto']);
+function subvistas(k) {
+  if (!navToison()) return SUBVISTAS[k];
+  if (k === 'posiciones') return [['posiciones', 'Posiciones', 'Holdings'], ['analisis', 'Análisis', 'Analysis'], ['fiscal', 'Hacienda', 'Taxes']];
+  if (k === 'tu') { const r = GRUPOS.find((x) => x.k === 'ruta'); return [['tu', 'Tu cuenta', 'Your account'], ['futuro', 'Objetivos', 'Goals'], ['ruta', r.t, r.en]]; }
+  return null;
+}
+// las vistas que solo existen con Toisón vuelven a su sitio de GrowFolio (y las direcciones nuevas, a las de siempre)
+function vistaSegunNav(v) {
+  if (v === 'hoy') return 'cartera';
+  if (v === 'ideas') return 'expertos';
+  if (navToison()) return v;
+  return v === 'posiciones' ? 'cartera' : v === 'tu' ? 'futuro' : v;
+}
+const grupoDe = (v) => grupos().find((g) => g.vistas.includes(v)) || grupos().find((g) => g.k === 'cartera');
 const epocaRenta = () => { const m = new Date().getMonth(); return m >= 2 && m <= 5; };
 function htmlSubvistas() {
-  const g = grupoDe(S.vista), sv = SUBVISTAS[g.k]; if (!sv) return '';
+  const g = grupoDe(S.vista), sv = subvistas(g.k); if (!sv) return '';
   // 0.3.11a: Hacienda, siempre (antes solo de marzo a junio y aparecía y desaparecía según desde dónde entraras)
   const lista = sv;
   const falta = perfilIncompleto();
-  return `<nav class="grupo-tabs" aria-label="${esc(g.t)}">${lista.map(([k, t, en]) => `<a href="#${k}" aria-current="${S.vista === k ? 'page' : 'false'}"${k === 'futuro' && falta ? ' class="falta"' : ''}>${L(t, en)}</a>`).join('')}</nav>`;
+  const nav = `<nav class="grupo-tabs" aria-label="${esc(L(g.t, g.en))}">${lista.map(([k, t, en]) => `<a href="#${k}" aria-current="${S.vista === k ? 'page' : 'false'}"${k === 'futuro' && falta ? ' class="falta"' : ''}>${L(t, en)}</a>`).join('')}</nav>`;
+  // Toisón: en Cartera, tu total en pequeño encima (la gráfica está en Hoy) y el título de la pestaña
+  if (navToison() && g.k === 'posiciones') return `<div class="ts-grupo"><h1 class="ts-tit">${L('Cartera', 'Portfolio')}</h1><div class="ts-total"><span class="ts-total-n">${B('total')}</span><span class="ts-total-v">${B('dia')}<small>${L('hoy', 'today')}</small></span><span class="ts-total-v">${B('pl')}<small>${L('ganado', 'gained')}</small></span></div>${nav}</div>`;
+  if (navToison() && g.k === 'tu') return `<div class="ts-grupo"><h1 class="ts-tit">${L('Tú', 'You')}</h1>${nav}</div>`;
+  return nav;
 }
 // en el móvil caben cinco: estas cuatro y «Más», que abre el calendario, Mercados, Fiscalidad y Objetivos
 const EN_BARRA = new Set(['cartera', 'ruta', 'expertos', 'analisis']);
@@ -268,30 +303,39 @@ function parchear() {
 }
 
 /* ---------- estructura fija: cabecera, cinta, contenido y barra inferior ---------- */
+// los iconos de la barra con Toisón: Hoy es el medallón con el símbolo
+const ICONOS_TS = {
+  posiciones: () => ICONOS.cartera, mercados: () => ICONOS.mercados, expertos: () => ICONOS.expertos, tu: () => ICONOS.perfil,
+  cartera: () => `<svg class="nav-med" viewBox="-82 -78 164 147" aria-hidden="true"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg>`,
+};
 function montar() {
+  const ts = navToison();
   $('#app').innerHTML = `
   <header class="top"><div class="wrap fila-top">
     <div class="marca"><img src="favicon.svg" alt="GrowFolio"><span class="marca-nom"><img src="growfolio-nombre.svg" alt="GrowFolio"></span><span class="marca-ts" aria-hidden="true"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i><b>TOISÓN</b></span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
-    <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`).join('')}</nav>
+    <nav class="nav" aria-label="Secciones">${grupos().map((g) => `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`).join('')}</nav>
     ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <div class="acciones">
-      <button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowIA por tu cartera" aria-label="Pregúntale a GrowIA">${ICONOS.growia}<span>${L('Pregúntale', 'Ask GrowIA')}</span></button>
+      ${ts ? `<button class="as-boton as-ts" id="bAsesor" data-accion="asesor" title="${L('Pregúntale a la IA por tu cartera', 'Ask the AI about your portfolio')}" aria-label="${L('Pregúntale a la IA', 'Ask the AI')}">${ICONOS.chispa}</button>`
+    : `<button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowIA por tu cartera" aria-label="Pregúntale a GrowIA">${ICONOS.growia}<span>${L('Pregúntale', 'Ask GrowIA')}</span></button>`}
       <button class="ib ib-fallo" id="bFallo" data-accion="opinion" title="Es una alfa: avisa de cualquier fallo o idea" aria-label="Avisar de un fallo">${ICONOS.bicho}<span class="fallo-t">Avisar de un fallo</span></button>
       <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
     </div>
   </div></header>
   <main class="wrap" id="vista"></main>
-  <nav class="navbar" aria-label="Secciones">${ORDEN_BARRA.map((k) => { const g = GRUPOS.find((x) => x.k === k); return `<a href="#${k}" data-ir="${k}"${k === 'cartera' ? ' class="nav-centro"' : ''}>${ICONOS[k]}<span>${L(g.c || g.t, g.en)}</span></a>`; }).join('')}</nav>`;
-  S.tickerFirma = null;
+  <nav class="navbar" aria-label="Secciones">${ordenBarra().map((k) => { const g = grupos().find((x) => x.k === k); return `<a href="#${k}" data-ir="${k}"${k === 'cartera' ? ' class="nav-centro"' : ''}>${ts ? ICONOS_TS[k]() : ICONOS[k]}<span>${L(g.c || g.t, g.en)}</span></a>`; }).join('')}</nav>`;
+  S.tickerFirma = null; S.navTs = ts;
+  document.body.classList.toggle('nav-ts', ts);
   // la luz de arriba: al pasar el ratón (o tocarla) se despliegan las bolsas
   const ew = $('#estadoW'), eb = $('#estadoB'), ep = $('#estadoPanel');
   const rellena = () => { ep.innerHTML = htmlBolsasPanel(); };
   const abre = (si) => { ew.classList.toggle('abierto', si); eb.setAttribute('aria-expanded', String(si)); if (si) rellena(); };
   ew.addEventListener('mouseenter', rellena);
   eb.addEventListener('click', () => abre(!ew.classList.contains('abierto')));
-  document.addEventListener('click', (e) => { if (ew.classList.contains('abierto') && !ew.contains(e.target)) abre(false); });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && ew.classList.contains('abierto')) { abre(false); eb.focus(); } });
+  // se vuelve a montar al cambiar de diseño: los del documento, una sola vez y con la cabecera de ahora
+  S.cierraEstado = (e) => { if (ew.classList.contains('abierto') && (e.type === 'click' ? !ew.contains(e.target) : e.key === 'Escape')) { abre(false); if (e.type === 'keydown') eb.focus(); } };
+  if (!S.cierraEstadoPuesto) { S.cierraEstadoPuesto = true; document.addEventListener('click', (e) => S.cierraEstado(e)); document.addEventListener('keydown', (e) => S.cierraEstado(e)); }
 }
 
 /* Avisos (0.2.2), solo si los activas (Ajustes > Avisos y resumen), en cada dispositivo por separado:
@@ -509,13 +553,15 @@ document.addEventListener('visibilitychange', () => { if (document.hidden) envia
 
 function pintar() {
   if (!S.cartera) return;
-  if (!$('#vista')) montar();
+  // al cambiar entre GrowFolio y Toisón cambia la navegación: se vuelve a montar la cabecera y la barra
+  if (!$('#vista') || S.navTs !== navToison()) montar();
+  const vn = vistaSegunNav(S.vista); if (vn !== S.vista) { S.vista = vn; LS.set('inv-vista', vn); }
   const M = calcular(); S.M = M; S.binds = binds(M);
   const gAct = grupoDe(S.vista).k;
   for (const a of $$('[data-ir]')) a.setAttribute('aria-current', a.dataset.ir === gAct ? 'page' : 'false');
-  // un punto en Análisis (donde están tus objetivos) mientras te falte el perfil
-  const faltaP = perfilIncompleto();
-  for (const a of $$('.nav [data-ir="analisis"], .navbar [data-ir="analisis"]')) a.classList.toggle('falta', faltaP);
+  // un punto en Análisis (donde están tus objetivos; con Toisón, en Tú) mientras te falte el perfil
+  const faltaP = perfilIncompleto(), kFalta = navToison() ? 'tu' : 'analisis';
+  for (const a of $$('.nav [data-ir], .navbar [data-ir]')) a.classList.toggle('falta', faltaP && a.dataset.ir === kFalta);
   // lo nuevo de la versión: el botón de su sección lleva «Nuevo» y late hasta que lo ves de verdad
   pintarNavNuevo();
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
@@ -524,7 +570,7 @@ function pintar() {
   for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
   pintarTicker(M);
   const scroll = window.scrollY;
-  const html = { cartera: vistaCartera, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
+  const html = { cartera: vistaCartera, posiciones: vistaPosiciones, tu: vistaTu, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
   setTimeout(() => { plegarNotas($('#vista')); marcarDeslizables($('#vista')); }, 0);
   $('#vista').innerHTML = sinCortes(htmlSubvistas() + html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntanoslo: lo leemos todo.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú. Las visitas se cuentan con Cloudflare, sin cookies ni datos tuyos.</p>`);
   if (S.scrollA != null) {
@@ -534,6 +580,7 @@ function pintar() {
     setTimeout(() => { if (Math.abs(window.scrollY - y) > 40 && window.scrollY < y) window.scrollTo(0, y); }, 300);
   } else if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if (S.vista === 'cartera') pedirEncajarMovers();
+  if (S.vista === 'tu') activarSelectorTema($('#vista'));
   // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada
   if (S.vista === 'agenda' && S.agIr) {
     const id = S.agIr; S.agIr = null;
