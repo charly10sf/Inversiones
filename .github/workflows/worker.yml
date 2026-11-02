@@ -3,6 +3,10 @@
 #   CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID  para publicar
 #   EB_CLAVE (el .pem de Enable Banking), EB_APP (su Application ID) y BANCO_EMAILS (quién puede usar el banco)
 #   PRECIOS_TOKEN (token de grano fino de este repositorio con Actions en escritura: el Worker lanza con él los precios)
+#   ANTHROPIC_API_KEY (la clave de la API de Claude, de un workspace con límite de gasto) y CLAUDE_EMAILS (los correos que
+#   pueden preguntar a GrowIA con Claude, separados por comas): mientras no estén puestas, GrowIA sigue con Gemini.
+#   OJO: quitarlas de GitHub NO las borra del Worker (esta Action solo pone las que tienen valor). Para cortar Claude de
+#   golpe: revocar la clave en la Console de Anthropic, o «npx wrangler secret delete ANTHROPIC_API_KEY» dentro de worker/.
 # Ninguno se escribe en el repositorio ni sale en el registro. Lo que pase sale como aviso en la ejecución.
 name: Worker
 
@@ -63,6 +67,8 @@ jobs:
           EB_APP: ${{ secrets.EB_APP }}
           BANCO_EMAILS: ${{ secrets.BANCO_EMAILS }}
           PRECIOS_TOKEN: ${{ secrets.PRECIOS_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CLAUDE_EMAILS: ${{ secrets.CLAUDE_EMAILS }}
         run: |
           poner() {
             if [ -n "$2" ]; then
@@ -75,5 +81,7 @@ jobs:
           poner EB_APP "$EB_APP"
           poner BANCO_EMAILS "$BANCO_EMAILS"
           poner PRECIOS_TOKEN "$PRECIOS_TOKEN" "la actualización de precios cada 20 minutos"
+          poner ANTHROPIC_API_KEY "$ANTHROPIC_API_KEY" "GrowIA con Claude"
+          poner CLAUDE_EMAILS "$CLAUDE_EMAILS" "GrowIA con Claude"
           # la clave para firmar la vuelta del banco: se crea una vez y se queda
           if ! npx --yes wrangler@4 secret list 2>/dev/null | grep -q '"ESTADO"'; then poner ESTADO "$(openssl rand -hex 32)"; fi

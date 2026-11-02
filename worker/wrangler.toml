@@ -1,9 +1,18 @@
-# El Worker de GrowFolio (servidor pequeño para el banco y para lanzar la actualización de precios). Lo publica la GitHub Action «Worker» (.github/workflows/worker.yml); los secretos
-# (EB_CLAVE, EB_APP, BANCO_EMAILS, ESTADO, PRECIOS_TOKEN) los pone esa Action y nunca están en el repositorio.
+# El Worker de GrowFolio (servidor pequeño para el banco, para lanzar la actualización de precios y para reenviar a Claude las preguntas de GrowIA). Lo publica la GitHub Action «Worker» (.github/workflows/worker.yml); los secretos
+# (EB_CLAVE, EB_APP, BANCO_EMAILS, ESTADO, PRECIOS_TOKEN, ANTHROPIC_API_KEY, CLAUDE_EMAILS) los pone esa Action y nunca están en el repositorio.
 name = "growfolio"
 main = "src/index.js"
 compatibility_date = "2025-06-01"
 workers_dev = true
+
+# El contador de preguntas a Claude por correo y día (clase Cuotas, en src/index.js). SQLite porque es lo que admite el plan gratis.
+[[durable_objects.bindings]]
+name = "CUOTAS"
+class_name = "Cuotas"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["Cuotas"]
 
 # Cuándo lanza las Actions (en UTC, como las de GitHub): los precios cada 20 minutos de lunes a viernes de 6:00 a 21:59 y
 # cada 4 horas el fin de semana; el catálogo de fondos, una vez al día. El de catálogo tiene que ser igual que CRON_CATALOGO.

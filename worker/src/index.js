@@ -1,7 +1,7 @@
 /* GrowFolio: el servidor pequeño (un Cloudflare Worker).
 
-   Hace dos cosas: buscar en Yahoo un ISIN que no está en el catálogo (/isin, más abajo) y leer el saldo de tus cuentas de dinero con Enable Banking (open banking, solo lectura),
-   para que el efectivo de GrowFolio cuadre con el del banco. Está aquí y no en la web porque Enable Banking firma cada
+   Hace tres cosas: buscar en Yahoo un ISIN que no está en el catálogo (/isin, más abajo), leer el saldo de tus cuentas de dinero con Enable Banking (open banking, solo lectura),
+   para que el efectivo de GrowFolio cuadre con el del banco, y reenviar a Claude las preguntas de GrowIA (/claude, más abajo). Está aquí y no en la web porque Enable Banking firma cada
    petición con una clave privada que no puede ir en una página pública.
 
    - Solo atiende a quien entra con su cuenta de GrowFolio (el token de Firebase, comprobado con las claves públicas de
@@ -299,6 +299,110 @@ async function isinRuta(url, req, env, ctx, res, deFuera) {
   return res(d.r ? { ok: true, ...d.r } : { ok: false, error: 'no-esta' });
 }
 
+/* ---------- GrowIA con Claude (0.7s): el Worker guarda la clave de la API de Claude y reenvía las preguntas ----------
+   La clave no puede ir en la web (es estática). La app manda aquí la misma petición que mandaría a la API de Mensajes
+   de Claude, con el token de Firebase de quien pregunta; el Worker comprueba quién es, la limpia y la reenvía con la
+   clave. No guarda ni apunta nada de lo que pasa (ni la cartera ni las respuestas): lo devuelve tal cual, también en
+   directo (stream). Lo que decide el Worker, no la app, para que nadie gaste de más:
+   - solo quien esté en CLAUDE_EMAILS (con el correo verificado);
+   - solo los modelos de CLAUDE_MODELOS, un máximo de salida y un máximo de búsquedas en internet por pregunta;
+   - como mucho CLAUDE_POR_DIA preguntas al día por correo (el contador vive en un Durable Object, el mismo para todas
+     las instancias del Worker; si falla, no se pregunta: mejor Gemini que gasto sin freno) y CLAUDE_POR_MINUTO por minuto
+     (este se cuenta por instancia del Worker: solo frena rachas; el tope de verdad es el límite de gasto del workspace en
+     la Console de Anthropic);
+   - solo pasan los campos de la API que la app usa; el resto se quita, y solo valen las herramientas propias de la app y
+     la búsqueda en internet (nada de web_fetch ni de ejecutar código) y los adjuntos en base64 (no por URL: los bajaría
+     Anthropic y no contarían en el tamaño). */
+const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
+const CLAUDE_MODELOS = ['claude-haiku-5-5', 'claude-sonnet-5-5'];
+const CLAUDE_CAMPOS = ['model', 'max_tokens', 'system', 'messages', 'tools', 'tool_choice', 'thinking', 'output_config', 'stream', 'temperature'];
+const CLAUDE_MAX_SALIDA = 16000, CLAUDE_MAX_CUERPO = 400e3, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 30;
+const rafagas = new Map();
+const puedeClaude = (u, env) => !!u && u.verificado && !!u.email && lista(env.CLAUDE_EMAILS).includes(u.email);
+// un adjunto que no va dentro de la petición (una URL, un archivo ya subido) lo baja Anthropic: no lo dejamos pasar
+function adjuntoFuera(x) {
+  if (Array.isArray(x)) return x.some(adjuntoFuera);
+  if (!x || typeof x !== 'object') return false;
+  if (x.source && typeof x.source === 'object' && !['base64', 'text'].includes(x.source.type)) return true;
+  return adjuntoFuera(x.content);
+}
+// el contador de cada correo: cuántas preguntas lleva hoy (día UTC). Un Durable Object por correo, con su almacén propio.
+export class Cuotas {
+  constructor(estado) { this.estado = estado; }
+  async fetch(req) {
+    const { dia, tope } = await req.json();
+    let c = (await this.estado.storage.get('c')) || { dia, n: 0 };
+    if (c.dia !== dia) c = { dia, n: 0 };
+    if (c.n >= tope) return new Response(JSON.stringify({ ok: false, n: c.n }));
+    c.n += 1;
+    await this.estado.storage.put('c', c);
+    return new Response(JSON.stringify({ ok: true, n: c.n }));
+  }
+}
+
+async function claude(req, env, cors, res) {
+  if (req.method !== 'POST') return res({ error: 'metodo' }, 405);
+  if (!env.ANTHROPIC_API_KEY) return res({ error: 'sin-clave' }, 503);
+  const u = await quienEs(req, env);
+  if (!u) return res({ error: 'sin-sesion' }, 401);
+  if (!puedeClaude(u, env)) return res({ error: 'no-permitido' }, 403);
+  // los límites se cuentan por correo, no por uid: una misma persona podría tener varias cuentas con el mismo correo
+  const ahora = Date.now(), tope = Number(env.CLAUDE_POR_MINUTO) || CLAUDE_POR_MINUTO;
+  const recientes = (rafagas.get(u.email) || []).filter((t) => ahora - t < 60e3);
+  if (recientes.length >= tope) return res({ error: 'demasiadas' }, 429);
+  recientes.push(ahora);
+  if (rafagas.size > 500) for (const [k, v] of rafagas) if (!v.some((t) => ahora - t < 60e3)) rafagas.delete(k);
+  rafagas.set(u.email, recientes);
+  const texto = await req.text();
+  if (texto.length > CLAUDE_MAX_CUERPO) return res({ error: 'grande' }, 413);
+  let c;
+  try { c = JSON.parse(texto); } catch (e) { return res({ error: 'json' }, 400); }
+  if (!c || typeof c !== 'object' || Array.isArray(c)) return res({ error: 'json' }, 400);
+  const modelos = lista(env.CLAUDE_MODELOS).length ? lista(env.CLAUDE_MODELOS) : CLAUDE_MODELOS;
+  if (!modelos.includes(String(c.model || '').toLowerCase())) return res({ error: 'peticion', motivo: 'modelo' }, 400);
+  const maxSalida = Number(env.CLAUDE_MAX_SALIDA) || CLAUDE_MAX_SALIDA;
+  if (!Number.isInteger(c.max_tokens) || c.max_tokens < 1 || c.max_tokens > maxSalida) return res({ error: 'peticion', motivo: 'max_tokens' }, 400);
+  if (!Array.isArray(c.messages) || !c.messages.length) return res({ error: 'peticion', motivo: 'messages' }, 400);
+  const cuerpo = {};
+  for (const k of CLAUDE_CAMPOS) if (c[k] !== undefined) cuerpo[k] = c[k];
+  const maxBusquedas = Number(env.CLAUDE_MAX_BUSQUEDAS) || CLAUDE_MAX_BUSQUEDAS;
+  if (cuerpo.tools !== undefined) {
+    // solo herramientas propias de la app (sin type, o «custom») y la búsqueda en internet, con su tope de usos
+    if (!Array.isArray(cuerpo.tools) || cuerpo.tools.some((h) => !h || typeof h !== 'object' || (h.type && h.type !== 'custom' && !/^web_search_/.test(String(h.type))))) return res({ error: 'peticion', motivo: 'tools' }, 400);
+    cuerpo.tools = cuerpo.tools.map((h) => (/^web_search_/.test(String(h.type || '')) ? { ...h, max_uses: Math.min(Number(h.max_uses) || maxBusquedas, maxBusquedas) } : h));
+  }
+  if (adjuntoFuera(cuerpo.messages) || adjuntoFuera(cuerpo.system)) return res({ error: 'peticion', motivo: 'adjunto' }, 400);
+  // el tope del día, al final de las comprobaciones de la petición: lo que se rechaza arriba no gasta pregunta
+  if (env.CUOTAS) {
+    let q;
+    try {
+      const dia = new Date(ahora).toISOString().slice(0, 10);
+      const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(u.email)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA }) });
+      q = await rc.json();
+    } catch (e) { return res({ error: 'cuotas' }, 503); }
+    if (!q || !q.ok) return res({ error: 'tope-diario' }, 429);
+  }
+  let r;
+  try {
+    r = await fetch(env.CLAUDE_API || CLAUDE_API, {
+      method: 'POST', signal: req.signal,
+      headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' },
+      body: JSON.stringify(cuerpo),
+    });
+  } catch (e) {
+    return res({ error: 'sin-conexion', motivo: String((e && e.message) || e).slice(0, 120) }, 502);
+  }
+  if (r.ok) {
+    return new Response(r.body, { status: r.status, headers: { ...cors, 'Content-Type': r.headers.get('content-type') || 'application/json', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no' } });
+  }
+  // un fallo de Claude: la app lo necesita claro para pasar a Gemini sin esperar
+  const fallo = await r.json().catch(() => ({})), e = (fallo && fallo.error) || {}, msg = String(e.message || '');
+  // sin saldo, o tope de gasto del workspace alcanzado (según el caso llega como 400 o como 429): hasta que se renueve, Gemini
+  if ((r.status === 400 || r.status === 429) && /credit balance|usage limits?|spend(ing)? limit/i.test(msg)) return res({ error: 'sin-creditos' }, 402);
+  if (r.status === 401 || r.status === 403) return res({ error: 'clave', estado: r.status }, 502);
+  return res({ error: 'claude', estado: r.status, tipo: String(e.type || ''), motivo: msg.slice(0, 200) }, r.status >= 500 ? 502 : r.status);
+}
+
 export default {
   async scheduled(ev, env, ctx) {
     if (!env.PRECIOS_TOKEN) return;
@@ -311,8 +415,9 @@ export default {
     const res = (cuerpo, status = 200) => new Response(JSON.stringify(cuerpo), { status, headers: { ...cors, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     try {
-      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true });
+      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true, claude: !!env.ANTHROPIC_API_KEY, cuotas: !!env.CUOTAS });
       if (url.pathname.startsWith('/banco/')) return await banco(url.pathname.slice(7), url, req, env, res);
+      if (url.pathname === '/claude') return await claude(req, env, cors, res);
       // desde la web (o la app, que la carga) no hace falta sesión para buscar; desde otro sitio, sí
       if (url.pathname === '/isin') return await isinRuta(url, req, env, ctx, res, !origenes.includes(origen));
       return res({ error: 'no-existe' }, 404);
