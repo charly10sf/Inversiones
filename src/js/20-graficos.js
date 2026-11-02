@@ -147,18 +147,25 @@ let grafHeroN = 0;
    imagen pequeña hecha una vez (a la resolución de la pantalla) que se repite: sin filtros, para que pasar el dedo por
    la curva vaya igual de fino en cualquier móvil */
 let granoCache = null;
+// el polvo de oro, del color de la gráfica del diseño de Toisón (--grafica); sin diseño, el oro de GrowFolio
+function rgbGrafica() {
+  const v = temaActual() ? getComputedStyle(document.documentElement).getPropertyValue('--grafica').trim() : '';
+  const m = /^#([0-9a-f]{6})$/i.exec(v);
+  return m ? [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)) : [236, 192, 112];
+}
 function granoGraf() {
-  if (granoCache) return granoCache;
+  const rgb = rgbGrafica();
+  if (granoCache && granoCache.rgb === rgb.join()) return granoCache;
   try {
     const dpr = Math.min(3, Math.max(1, Math.round(window.devicePixelRatio || 1))), px = 96 * dpr;
     const c = document.createElement('canvas'); c.width = c.height = px;
     const x = c.getContext('2d'), im = x.createImageData(px, px), d = im.data;
     for (let i = 0; i < d.length; i += 4) {
       const a = Math.max(0, Math.min(1, Math.random() * 2.2 - 0.95));
-      d[i] = 236; d[i + 1] = 192; d[i + 2] = 112; d[i + 3] = Math.round(a * 255);
+      d[i] = rgb[0]; d[i + 1] = rgb[1]; d[i + 2] = rgb[2]; d[i + 3] = Math.round(a * 255);
     }
     x.putImageData(im, 0, 0);
-    granoCache = { url: c.toDataURL('image/png'), l: 96 };
+    granoCache = { url: c.toDataURL('image/png'), l: 96, rgb: rgb.join() };
   } catch (e) { granoCache = null; }
   return granoCache;
 }
@@ -185,7 +192,7 @@ function grafHero(cont, series, opt = {}) {
   const xt = (t) => ml + ((t - t0) / (t1 - t0)) * (W - ml - mr);
   const y = (v) => mt + (1 - (v - lo) / (hi - lo)) * (H - mt - mb);
   const P = base.map((p, i) => [xt(T[i]), y(p.v)]);
-  const color = series[0].color || 'var(--accent)';
+  const color = series[0].color || 'var(--grafica, var(--accent))';
   const curva = curvaSuave(P), suelo = H - mb;
   const area = `${curva}L${P[n - 1][0].toFixed(1)},${suelo}L${P[0][0].toFixed(1)},${suelo}Z`;
   // fechas de abajo, metidas hacia dentro para que no peguen al borde
@@ -345,7 +352,7 @@ function dibujar(M) {
     const ahora = { d: hoyIso(), v: isFinite(M.total) ? M.total : (serie[serie.length - 1] || {}).v };
     const real = (M2) => (S.rango === 'Inicio' && isFinite(M2.pl) && isFinite(M2.plPct) ? { d: M2.pl, p: M2.plPct } : null);
     if (serie.length > 1) pintarVar(ref0, ahora, etqRango, real(M));
-    const series = [{ datos: serie, color: 'var(--accent)' }];
+    const series = [{ datos: serie, color: 'var(--grafica, var(--accent))' }];
     if (S.comparar && !intra) series.push({ datos: serieComparada(serie, S.bench), color: 'var(--text-2)', disc: true, nombre: nombreBench(benchDe(S.bench)) });
     // al pasar el dedo, la cifra grande de arriba enseña lo que tenías ese día y la pastilla, lo que iba desde el
     // principio del periodo; al soltar, todo vuelve a ahora

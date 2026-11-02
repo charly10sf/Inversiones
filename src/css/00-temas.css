@@ -151,3 +151,128 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .top.cab-8 .marca-ts b { display: none; }
 /* .marca también es la etiqueta de las noticias (04-expertos-mercados-ia.css): en la cabecera, sin su píldora */
 [data-tema] .top .marca { background: none; padding: 0; border: 0; box-shadow: none; }
+
+/* =====================================================================
+   Losetas, cajas, segmentos y campos con el acabado de la maqueta (0.7v, adelanto del paso 2): superficie lisa, borde de
+   2 px, radio 16 y sombra en capas; lo elegido, de metal. Sustituye al acabado de 21-como-el-icono.css (pensado solo
+   para el negro de GrowFolio) sin tocarlo.
+   ===================================================================== */
+[data-tema] :is(.tarjeta, .plan-venta, .idea, .informe, .fx2, .fx3-lista, .ruta-hero, .ruta-prog, .fis-vacio, .num-sec, .desde-compra, .merc2, .mas-t,
+    .nov-ant, .tarea, .pf-card, .merc-busca, .mfilas, .ir-objetivos, .aj-caja, .ag-mes2, .agp-c, .toca, .opr, .empezar, .ov-lista, .ia-nota, .ag-prox) {
+  background-color: var(--superficie); background-image: none;
+  border-style: solid; border-width: 2px; border-color: var(--borde); border-radius: var(--r-l);
+  box-shadow: var(--sombra-t);
+}
+/* las que destacan: el filo de oro */
+[data-tema] :is(.plan-venta, .informe, .toca, .ruta-hero, .tarea.primero, .empezar, .agp-hoy) { border-color: var(--hilo); }
+[data-tema] .tarea.hecho { background: none; box-shadow: none; border-color: var(--sep); }
+[data-tema] .ag-prox { background-image: radial-gradient(560px 220px at 18% -60px, color-mix(in srgb, var(--ag) 14%, transparent), transparent 72%); }
+/* cajitas de dentro: planas, sin hacer loseta sobre loseta */
+[data-tema] :is(.tramo, .fis-c, .rg-c, .car-fut-f) { background: color-mix(in srgb, var(--texto) 3%, transparent); border-color: var(--sep); }
+[data-tema] :is(.tarea .t-imp, .tarea.primero .t-imp) { background: color-mix(in srgb, var(--texto) 4%, transparent); box-shadow: inset 0 0 0 1px var(--sep); }
+
+/* segmentos y pestañas: carril fino y lo elegido de metal, como los periodos de la maqueta */
+[data-tema] :is(.subvistas, .plazos, .op-modo) { background: color-mix(in srgb, var(--texto) 3%, transparent); background-image: none; border-color: var(--sep); box-shadow: none; }
+[data-tema] .hero-rangos { border-color: var(--sep); background: none; }
+[data-tema] :is(.subvistas, .plazos, .tabs, .as-modo, .op-modo, .cuenta-modo, .hero-rangos, .modo-op) button[aria-pressed="true"] {
+  background: var(--metal); color: var(--sobre-primario);
+  box-shadow: inset 0 1px 0 var(--brillo), 0 2px 6px -2px var(--hondo);
+}
+[data-tema] :is(.subvistas, .plazos, .tabs) button[aria-pressed="true"] :is(small, em, i, span) { color: inherit; }
+[data-tema] .tabs.envuelve button[aria-pressed="true"] { border-color: transparent; }
+[data-tema] .ficha-tabs button[aria-pressed="true"] { color: var(--oro-texto); background: none; box-shadow: none; }
+
+/* campos y buscador */
+[data-tema] .busca input { background: var(--fondo); border: 2px solid var(--borde); border-radius: var(--r-m); color: var(--texto); }
+[data-tema] .busca input:focus { outline: 2px solid var(--oro-texto); outline-offset: 0; border-color: transparent; }
+[data-tema] .busca input::placeholder { color: var(--texto-2); }
+
+/* las hojas que suben */
+[data-tema] .hoja { background: var(--superficie); border-color: var(--borde); box-shadow: inset 0 1px 0 var(--hilo), 0 -14px 44px var(--hondo); }
+[data-tema] .top.bajado { box-shadow: 0 1px 0 var(--sep), 0 10px 30px -18px var(--hondo); }
+
+/* =====================================================================
+   El mapa del mundo (Mercados e Inicio) con los tokens: la tarjeta, el mar de puntos y la escala de cada país sale de
+   mezclar sube, baja u oro con la superficie (el mismo escalón en los tres diseños)
+   ===================================================================== */
+[data-tema] .mapa-w { --mapa-fondo: var(--superficie); background: radial-gradient(55% 75% at 0% 0%, color-mix(in srgb, var(--oro-texto) 8%, transparent), transparent 70%), var(--superficie);
+  border: 2px solid var(--borde); border-radius: var(--r-l); box-shadow: var(--sombra-t); }
+[data-tema] .mapa-tit h2 { font-family: var(--marca); font-weight: 500; letter-spacing: 0; font-size: 23px; }
+[data-tema] :is(.mapa-modos, .mapa-vistas) { background: color-mix(in srgb, var(--texto) 3%, transparent); border-color: var(--sep); }
+[data-tema] :is(.mapa-modos, .mapa-vistas) button[aria-pressed="true"] { background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo); }
+[data-tema] .mapa-caja { background-color: color-mix(in srgb, var(--texto) 2%, transparent); background-image: radial-gradient(circle at 1px 1px, color-mix(in srgb, var(--texto) 9%, transparent) 0.9px, transparent 1.3px); }
+[data-tema] .mapa-zoom button { border-color: var(--sep); background: color-mix(in srgb, var(--superficie) 85%, transparent); color: var(--texto); }
+[data-tema] .mp-0 { fill: color-mix(in srgb, var(--texto) 7%, var(--superficie)); background: color-mix(in srgb, var(--texto) 7%, var(--superficie)); }
+[data-tema] .mp-n { fill: color-mix(in srgb, var(--texto) 20%, var(--superficie)); background: color-mix(in srgb, var(--texto) 20%, var(--superficie)); }
+[data-tema] .mp-u1 { fill: color-mix(in srgb, var(--sube) 32%, var(--superficie)); background: color-mix(in srgb, var(--sube) 32%, var(--superficie)); }
+[data-tema] .mp-u2 { fill: color-mix(in srgb, var(--sube) 52%, var(--superficie)); background: color-mix(in srgb, var(--sube) 52%, var(--superficie)); }
+[data-tema] .mp-u3 { fill: color-mix(in srgb, var(--sube) 74%, var(--superficie)); background: color-mix(in srgb, var(--sube) 74%, var(--superficie)); }
+[data-tema] .mp-u4 { fill: var(--sube); background: var(--sube); }
+[data-tema] .mp-d1 { fill: color-mix(in srgb, var(--baja) 32%, var(--superficie)); background: color-mix(in srgb, var(--baja) 32%, var(--superficie)); }
+[data-tema] .mp-d2 { fill: color-mix(in srgb, var(--baja) 52%, var(--superficie)); background: color-mix(in srgb, var(--baja) 52%, var(--superficie)); }
+[data-tema] .mp-d3 { fill: color-mix(in srgb, var(--baja) 74%, var(--superficie)); background: color-mix(in srgb, var(--baja) 74%, var(--superficie)); }
+[data-tema] .mp-d4 { fill: var(--baja); background: var(--baja); }
+[data-tema] .mp-a1 { fill: color-mix(in srgb, var(--oro-texto) 32%, var(--superficie)); background: color-mix(in srgb, var(--oro-texto) 32%, var(--superficie)); }
+[data-tema] .mp-a2 { fill: color-mix(in srgb, var(--oro-texto) 52%, var(--superficie)); background: color-mix(in srgb, var(--oro-texto) 52%, var(--superficie)); }
+[data-tema] .mp-a3 { fill: color-mix(in srgb, var(--oro-texto) 74%, var(--superficie)); background: color-mix(in srgb, var(--oro-texto) 74%, var(--superficie)); }
+[data-tema] .mp-a4 { fill: var(--oro-texto); background: var(--oro-texto); }
+[data-tema] .mc-t:is(.mp-u3, .mp-u4, .mp-d4) { color: var(--superficie); }
+[data-tema] .me { background: color-mix(in srgb, var(--superficie) 90%, transparent); border-color: var(--sep); box-shadow: 0 2px 10px var(--hondo); color: var(--texto); }
+[data-tema] .me.grupo { border-color: var(--hilo); background: color-mix(in srgb, var(--superficie) 92%, transparent); }
+[data-tema] .me-punto { background: var(--texto); box-shadow: 0 0 0 1.5px var(--superficie); }
+[data-tema] .mapa-tip { background: var(--superficie); border-color: var(--borde); box-shadow: 0 10px 28px var(--hondo); }
+[data-tema] :is(.mapa-elegido, .mi-datos, .mi-tuyo.vacio) { background: color-mix(in srgb, var(--texto) 3%, transparent); border-color: var(--sep); }
+[data-tema] .mi-tuyo { background: color-mix(in srgb, var(--oro-texto) 7%, transparent); border-color: var(--hilo); }
+[data-tema] .mt-b { background: color-mix(in srgb, var(--texto) 7%, transparent); }
+[data-tema] .mt-b i.gris { background: var(--reparto-6); }
+[data-tema] .mi-elige select { background-color: color-mix(in srgb, var(--texto) 3%, transparent); }
+[data-tema] .mc-ef, [data-tema] .mc-ef-i { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--texto) 8%, var(--superficie)) 0 6px, color-mix(in srgb, var(--texto) 4%, var(--superficie)) 6px 12px); }
+[data-tema] .mc-logo-ef { background: var(--superficie-2); }
+
+/* =====================================================================
+   Cabecera: los botones como aros finos (maqueta). GTA VI, de momento en sobrio (sin neón): «VI» en Ibarra cursiva
+   de oro dentro de un aro; la remodelación entera de la cuenta atrás es del paso 4
+   ===================================================================== */
+[data-tema] .estado-b { border-color: var(--aro); background: none; }
+[data-tema] :is(.estado-b:hover, .estado-w.abierto .estado-b) { background: color-mix(in srgb, var(--texto) 5%, transparent); }
+[data-tema] .as-boton { border: 1px solid var(--hilo); background: var(--superficie); color: var(--oro-texto); box-shadow: none; }
+[data-tema] .as-boton:hover { background: color-mix(in srgb, var(--oro-texto) 12%, var(--superficie)); }
+[data-tema] .gta-top { border: 1px solid var(--hilo); background: none; color: var(--texto); box-shadow: none; }
+[data-tema] .gta-top:hover { border-color: var(--oro-texto); box-shadow: none; }
+[data-tema] .gta-top:focus-visible { outline-color: var(--oro-texto); }
+[data-tema] .gta-top::before { display: none; animation: none; }
+[data-tema] .gta-top-t { animation: none; font-family: var(--marca); font-style: italic; font-weight: 600; font-size: 19px; color: var(--oro-texto); -webkit-text-stroke: 0; text-shadow: none; padding: 0 2px 1px; }
+[data-tema] .gta-top :is(svg, .gta-top-g) { color: var(--texto-2); }
+
+/* El nombre de GrowIA es una imagen de oro (growia-nombre.svg): sobre crema la «IA» casi blanca no se lee y sobre el
+   metal se pierde. De una sola tinta donde haga falta (el manual admite la versión a una tinta) */
+[data-tema="marfil"] .gia-nom { filter: brightness(0); opacity: .82; }
+[data-tema] :is([aria-pressed="true"], [aria-current="page"], .btn.pri) .gia-nom { filter: brightness(0); opacity: .78; }
+[data-tema="marfil"] :is([aria-pressed="true"], [aria-current="page"], .btn.pri) .gia-nom { filter: brightness(0) invert(1); opacity: .92; }
+/* las subpestañas de Análisis (enlaces): lo elegido, de metal como los segmentos */
+[data-tema] .grupo-tabs { background: color-mix(in srgb, var(--texto) 3%, transparent); border-color: var(--sep); box-shadow: none; }
+[data-tema] .grupo-tabs a[aria-current="page"] { background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo), 0 2px 6px -2px var(--hondo); }
+[data-tema="marfil"] .aj-nom { filter: brightness(0); opacity: .82; }
+
+/* =====================================================================
+   Inicio: saludo y patrimonio como en la maqueta (tarjeta con hilo de oro arriba, luz detrás de la curva y la cifra
+   en Inter 500, sin el peso 750 de GrowFolio)
+   ===================================================================== */
+[data-tema] .hero-hola { font: 400 22px/1.25 var(--marca); color: var(--texto); letter-spacing: -.005em; }
+[data-tema] .hola-nom { font-weight: 500; color: var(--oro-texto); }
+[data-tema="borgona"] .hero-hola { font-style: italic; }
+[data-tema] .hero-num { font-weight: 500; letter-spacing: -.04em; }
+[data-tema] .hero-num span.dec { font-weight: 500; color: var(--texto-2); }
+[data-tema] .hero-panel {
+  margin: 0; border: 2px solid var(--borde); border-radius: var(--r-l); overflow: hidden; box-shadow: var(--sombra-t);
+  background: radial-gradient(90% 70% at 85% 62%, color-mix(in srgb, var(--grafica) var(--luz-graf), transparent), transparent 70%),
+    radial-gradient(70% 60% at 0% 0%, color-mix(in srgb, var(--oro-texto) 9%, transparent), transparent 70%), var(--superficie);
+}
+[data-tema] .hero-panel::after { content: ''; position: absolute; z-index: 3; top: 0; left: 22px; right: 22px; height: 2px; pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--oro-texto) 30%, var(--oro-texto) 70%, transparent); }
+@media (max-width: 759px) {
+  [data-tema] .hero-panel { --gp: var(--e4); padding: var(--e5) 0 var(--e4); }
+  [data-tema] .hero-cifra { padding: 0 var(--e4); }
+  [data-tema] .car-patrimonio::before { background: radial-gradient(closest-side, color-mix(in srgb, var(--oro-texto) 10%, transparent), transparent); }
+}
+[data-tema] .hero-movers { border-top-color: var(--sep); }
