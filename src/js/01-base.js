@@ -82,8 +82,42 @@ function ponerTema(t) {
   if (t) document.documentElement.setAttribute('data-tema', t); else document.documentElement.removeAttribute('data-tema');
   try { if (t) localStorage.setItem('inv-tema', JSON.stringify(t)); else localStorage.removeItem('inv-tema'); } catch (e) {}
   colorBarraTema();
+  acabadoTema();
 }
 colorBarraTema();
+/* el acabado de fondo de los diseños de Toisón (maqueta aprobada): un grano fino del color del texto (en Marfil, como
+   de papel; cuánto se ve lo dice el token --grano) y, solo en Mármol, vetas finas con alguna de oro. Una capa fija
+   detrás de todo, que no se toca ni se anima; sin diseño de Toisón, no existe */
+function acabadoTema() {
+  if (!document.body) { document.addEventListener('DOMContentLoaded', acabadoTema, { once: true }); return; }
+  const t = temaActual();
+  let capa = document.getElementById('acabadoTema');
+  if (!t) { if (capa) capa.remove(); return; }
+  if (capa && capa.dataset.t === t) return;
+  if (!capa) { capa = document.createElement('div'); capa.id = 'acabadoTema'; capa.setAttribute('aria-hidden', 'true'); document.body.prepend(capa); }
+  capa.dataset.t = t;
+  let grano = '';
+  try {
+    const m = /^#([0-9a-f]{6})$/i.exec(getComputedStyle(document.documentElement).getPropertyValue('--texto').trim());
+    const rgb = m ? [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)) : null;
+    if (rgb) {
+      const px = 96 * Math.min(3, Math.max(1, Math.round(window.devicePixelRatio || 1)));
+      const c = document.createElement('canvas'); c.width = c.height = px;
+      const x = c.getContext('2d'), im = x.createImageData(px, px), d = im.data;
+      for (let i = 0; i < d.length; i += 4) { d[i] = rgb[0]; d[i + 1] = rgb[1]; d[i + 2] = rgb[2]; d[i + 3] = Math.random() < 0.5 ? Math.round(Math.random() * 255) : 0; }
+      x.putImageData(im, 0, 0); grano = c.toDataURL('image/png');
+    }
+  } catch (e) {}
+  // las vetas, siempre las mismas (semilla fija): cada una cruza la pantalla de lado a lado con curvas suaves
+  let vetas = '';
+  if (t === 'marmol') {
+    let sem = 1430; const r = () => (sem = (sem * 16807) % 2147483647) / 2147483647;
+    const linea = (cls) => { let y0 = r() * 900, d = `M-20 ${y0.toFixed(0)}`; for (let x = 0; x < 420; x += 105) { const y1 = y0 + (r() - 0.45) * 260; d += `C${(x + 35).toFixed(0)} ${(y0 + (r() - 0.5) * 120).toFixed(0)} ${(x + 70).toFixed(0)} ${(y1 + (r() - 0.5) * 120).toFixed(0)} ${x + 105} ${y1.toFixed(0)}`; y0 = y1; } return `<path class="${cls}" d="${d}"/>`; };
+    vetas = `<svg viewBox="0 0 400 900" preserveAspectRatio="xMidYMid slice">${['vb', 'vb', 'vb', 'vf', 'vf', 'vf', 'vf', 'vo', 'vo'].map(linea).join('')}</svg>`;
+  }
+  capa.innerHTML = `${grano ? `<i class="grano" style="background-image:url(${grano})"></i>` : ''}${vetas}`;
+}
+acabadoTema();
 function cambiarPerfil(modo) {
   const m = modo === true ? 'local' : modo === false ? 'github' : modo;
   try { localStorage.setItem('inv-perfil', JSON.stringify(m)); } catch (e) {}

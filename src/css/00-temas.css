@@ -382,3 +382,37 @@ img.tema-muestra { background: none; box-shadow: none; }
 
 /* el saludo con la fecha encima en versalitas pequeñas, como en la maqueta («LUNES, 2 DE NOVIEMBRE») */
 [data-tema] .hola-fecha { display: block; margin-bottom: 6px; font: 500 11px/14px var(--ui); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
+
+/* la gráfica de Hoy como la maqueta: barritas de cada día al pie (verde si subió, roja si bajó), la lectura con el dedo
+   en una pastilla de metal y, junto a «Patrimonio», si la bolsa está abierta («En directo» con el punto que late) */
+[data-tema] .gh-dias rect { opacity: .55; }
+[data-tema] .gh-dias .gd-s { fill: var(--sube); }
+[data-tema] .gh-dias .gd-b { fill: var(--baja); }
+[data-tema] .gh svg.mirando .gh-dias { opacity: .4; }
+[data-tema] .gh svg.entra .gh-dias { opacity: 0; animation: ghAparece .5s .55s ease forwards; }
+[data-tema] .gh-fecha { background: var(--metal); border: 0; color: var(--sobre-primario); font-weight: 650; box-shadow: inset 0 1px 0 var(--brillo), 0 6px 14px -6px var(--hondo); }
+[data-tema] .gh-fecha small { color: inherit; opacity: .8; }
+[data-tema] .gh-ext text { fill: var(--texto-2); }
+[data-tema] .hero-lbl .ts-vivo { margin-left: auto; font: 500 12px/1 var(--ui); color: var(--texto-2); gap: 6px; }
+[data-tema] .hero-lbl .ts-vivo .est-c { display: none; }
+[data-tema] .hero-lbl .ts-vivo .est-l { display: inline; }
+[data-tema] .hero-lbl .ts-vivo::before { width: 6px; height: 6px; }
+
+/* filas de tus posiciones (maqueta, «Lo que tienes»): lo ganado desde que compraste en una pastilla teñida de su color */
+[data-tema] .tabla-pos .fila .c-desde > span:is(.up, .down) { display: inline-block; padding: 1px 8px; border-radius: var(--r-p); background: color-mix(in srgb, currentColor 13%, transparent); font-weight: 650; }
+[data-tema] .tabla-pos .fila:not(.cab) { border-color: var(--sep); }
+[data-tema] .tabla-pos .fila .activo b { font-weight: 600; }
+/* los días que faltan para GTA VI, del oro del diseño (el naranja de neón no se leía sobre el crema de Marfil) */
+[data-tema] .gta-top-d { color: var(--oro-texto); text-shadow: none; font: 650 13px/1 var(--ui); }
+
+/* el acabado de fondo (acabadoTema en 01-base.js): una capa fija detrás de la app con el grano y, en Mármol, las vetas.
+   #app va encima en su propia capa para que la de fondo no tape nada */
+#acabadoTema { display: none; }
+[data-tema] #acabadoTema { display: block; position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+[data-tema] #app { position: relative; z-index: 1; }
+[data-tema] #acabadoTema .grano { position: absolute; inset: 0; opacity: var(--grano); background-size: 96px 96px; }
+[data-tema] #acabadoTema svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+[data-tema] #acabadoTema path { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
+[data-tema] #acabadoTema .vb { stroke: var(--texto); opacity: .07; stroke-width: 1.1; }
+[data-tema] #acabadoTema .vf { stroke: var(--texto); opacity: .045; stroke-width: .7; }
+[data-tema] #acabadoTema .vo { stroke: var(--oro-texto); opacity: .22; stroke-width: .9; }

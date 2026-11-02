@@ -21,7 +21,7 @@ function arrancar() {
   sumarInstPropios();
   setTimeout(() => cargarHistCatalogo().then((n) => { if (n) pintar(); }), 50);
   S.vista = vistaDeHash() || LS.get('inv-vista', 'cartera');
-  if (S.vista === 'plan') { S.vista = 'cartera'; S.carTab = 'plan'; }
+  if (S.vista === 'plan') { S.vista = navToison() ? 'posiciones' : 'cartera'; S.carTab = 'plan'; }
   if (!esVista(S.vista)) S.vista = 'cartera';
   montar();
   pintar();

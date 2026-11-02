@@ -187,7 +187,8 @@ function grafHero(cont, series, opt = {}) {
   const refVis = ref >= dmin - dr * 0.6 && ref <= dmax + dr * 0.6;
   if (refVis) vals.push(ref);
   const vmin = Math.min(...vals), vmax = Math.max(...vals), rango = vmax - vmin || Math.abs(vmax) * 0.02 || 1;
-  const lo = vmin - rango * 0.12, hi = vmax + rango * 0.05;
+  // con Toisón, más aire abajo: ahí van las barritas de cada día y no deben pisar la curva ni la cifra del mínimo
+  const lo = vmin - rango * (temaActual() ? 0.32 : 0.12), hi = vmax + rango * 0.05;
   const n = base.length, T = base.map((p) => tiempoDe(p.d)), t0 = T[0], t1 = T[n - 1] > t0 ? T[n - 1] : t0 + 1;
   const xt = (t) => ml + ((t - t0) / (t1 - t0)) * (W - ml - mr);
   const y = (v) => mt + (1 - (v - lo) / (hi - lo)) * (H - mt - mb);
@@ -245,6 +246,14 @@ function grafHero(cont, series, opt = {}) {
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="10" opacity="0.45" filter="url(#${id}b)"/>
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="${opt.grueso || 2.8}" stroke-linejoin="round" stroke-linecap="round"/>
   </g>`;
+  // Toisón (maqueta aprobada): al pie de la curva, una barrita por día (o por tramo, si no caben) verde si subió y roja
+  // si bajó, del alto de cuánto cambió. Solo dice la forma, no cifras: sale también con los importes ocultos
+  if (temaActual() && n > 2) {
+    const nb = Math.min(n - 1, Math.max(12, Math.floor((W - ml - mr) / 7))), paso = (n - 1) / nb, cambios = [];
+    for (let b = 0; b < nb; b++) { const i0 = Math.round(b * paso), i1 = Math.round((b + 1) * paso); if (i1 > i0) cambios.push([i0, i1, base[i1].v - base[i0].v]); }
+    const top = Math.max(...cambios.map((c) => Math.abs(c[2]))) || 1, alto = Math.min(14, H * 0.055), ancho = Math.max(1.2, ((W - ml - mr) / cambios.length) * 0.55);
+    g += `<g class="gh-dias" aria-hidden="true">${cambios.map(([i0, i1, d]) => { const h = Math.max(1.5, (Math.abs(d) / top) * alto), x = (P[i0][0] + P[i1][0]) / 2 - ancho / 2; return `<rect class="${d >= 0 ? 'gd-s' : 'gd-b'}" x="${x.toFixed(1)}" y="${(suelo - h).toFixed(1)}" width="${ancho.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(1, ancho / 2).toFixed(1)}"/>`; }).join('')}</g>`;
+  }
   // el máximo y el mínimo del periodo (si no son el punto de ahora, que ya está arriba en grande)
   if (!opt.oculto) {
     let iMax = 0, iMin = 0; base.forEach((p, i) => { if (p.v > base[iMax].v) iMax = i; if (p.v < base[iMin].v) iMin = i; });
