@@ -38,6 +38,7 @@ test.describe('sin diseño elegido', () => {
     expect(x.fondo).toBe('rgb(0, 0, 0)');
     expect(x.barra).toBe('#000000');
     expect(x.letra).toContain('Plus Jakarta Sans');
+    await expect(page.locator('.top .marca-ts')).toBeHidden();
   });
 });
 
@@ -58,6 +59,9 @@ for (const t of Object.keys(FONDO)) {
       expect(x.ibarra).toBe(true);
       // los nombres de GrowFolio apuntan a los tokens: el texto de la app es el --texto del diseño
       expect(x.texto).not.toBe('#F7F2E8');
+      // la carcasa: el símbolo de Toisón en la cabecera y la cabecera sin cortar (encajarCabecera)
+      await expect(page.locator('.top .marca-ts svg')).toBeVisible();
+      expect(await page.evaluate(() => { const f = document.querySelector('.fila-top'); return f.scrollWidth <= f.clientWidth + 1; })).toBe(true);
       await page.screenshot({ path: test.info().outputPath(`inicio-${t}.png`) });
     });
   });

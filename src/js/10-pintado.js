@@ -271,7 +271,7 @@ function parchear() {
 function montar() {
   $('#app').innerHTML = `
   <header class="top"><div class="wrap fila-top">
-    <div class="marca"><img src="favicon.svg" alt="GrowFolio"><span class="marca-nom"><img src="growfolio-nombre.svg" alt="GrowFolio"></span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
+    <div class="marca"><img src="favicon.svg" alt="GrowFolio"><span class="marca-nom"><img src="growfolio-nombre.svg" alt="GrowFolio"></span><span class="marca-ts" aria-hidden="true"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i><b>TOISÓN</b></span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`).join('')}</nav>
     ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>

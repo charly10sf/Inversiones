@@ -35,7 +35,7 @@ const MANDO = SVG('<path d="M7 8.5h10a4.3 4.3 0 0 1 4.3 4.6l-.4 3.4a2.5 2.5 0 0 
 /* GTA VI en la cabecera, junto a «En directo»: el mando y los días que faltan, con las letras de neón de la
    sección de GTA (no las del logo del juego) */
 // que la cabecera quepa sin cortar nada: se prueba de más a menos, y para en cuanto cabe y la luz de En directo se lee entera
-var PASOS_CAB = ['cab-1', 'cab-2', 'cab-3', 'cab-4', 'cab-5', 'cab-6', 'cab-7'];
+var PASOS_CAB = ['cab-1', 'cab-2', 'cab-3', 'cab-4', 'cab-5', 'cab-6', 'cab-7', 'cab-8'];  // cab-8: solo con un diseño de Toisón, fuera la palabra TOISÓN (queda el símbolo)
 function encajarCabecera() {
   const top = $('.top'), f = $('.fila-top'); if (!top || !f) return;
   top.classList.remove(...PASOS_CAB);
