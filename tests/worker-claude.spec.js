@@ -94,7 +94,7 @@ test('rechaza lo que gastaría de más o no es una pregunta', async () => {
     const casos = [
       [{ ...PEDIDO, model: 'claude-fable-5-1' }, 'modelo'],
       [{ ...PEDIDO, model: undefined }, 'modelo'],
-      [{ ...PEDIDO, max_tokens: 16001 }, 'max_tokens'],
+      [{ ...PEDIDO, max_tokens: 32001 }, 'max_tokens'],
       [{ ...PEDIDO, max_tokens: 0 }, 'max_tokens'],
       [{ ...PEDIDO, max_tokens: 'mucho' }, 'max_tokens'],
       [{ ...PEDIDO, messages: [] }, 'messages'],

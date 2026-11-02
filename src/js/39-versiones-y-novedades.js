@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7u', f: '2026-11-02', h: '16:30', t: 'La revisión de la cartera con Claude ya llega entera', arreglos: [
+    'Cuando GrowIA revisaba tu cartera con Claude (Haiku) y buscaba en internet, se quedaba sin espacio para escribir y la revisión salía cortada («La respuesta no ha llegado completa»). Ahora piensa con menos esfuerzo, tiene más espacio y, si aun así se queda corto, lo repite una vez sin buscar en internet.',
+  ] },
   { v: '0.7t', f: '2026-11-02', h: '16:00', t: 'GrowIA puede contestar con Claude', arreglos: [
     'En el modo estándar, GrowIA puede contestar con Claude, de Anthropic, además de con Gemini. De momento solo para quien Carlos ha dado acceso; el modo fundador sigue con Gemini. La primera vez te pregunta si estás de acuerdo, porque tus preguntas y lo que necesita de tu cartera pasarían por el servidor de GrowFolio (que no guarda nada) hasta Anthropic, que lo procesa fuera de la Unión Europea. Si no quieres, di que no y todo sigue yendo directo a Google, con tu clave.',
     'Si Claude no puede contestar (sin conexión con el servidor, sin saldo, saturado), contesta Gemini sin que tengas que hacer nada. En Ajustes de GrowIA, una vez que has aceptado, eliges quién contesta.',

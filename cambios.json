@@ -1,6 +1,22 @@
 {
  "versiones": [
   {
+   "v": "0.7u",
+   "f": "2026-11-02",
+   "h": "16:30",
+   "t": "La revisión de la cartera con Claude ya llega entera",
+   "commits": [
+    {
+     "cuando": "2026-11-02 16:30",
+     "asunto": "0.7u: la revisión con Claude ya no sale cortada por falta de espacio",
+     "detalle": [
+      "La revisión que pedía el usuario iba con esfuerzo alto y dos búsquedas en internet: Haiku gastó 16.731 tokens de salida contra un tope de 16.000 y el JSON salió cortado. Ahora va con esfuerzo medio, el tope sube a 32.000 (app y Worker) y, si aun así se queda sin espacio, se repite una vez con esfuerzo bajo y sin búsqueda",
+      "Prueba nueva en tests/claude-app.spec.js"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7t",
    "f": "2026-11-02",
    "h": "16:00",

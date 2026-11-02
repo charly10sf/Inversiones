@@ -141,7 +141,7 @@ test('en modo estándar contesta Claude: manda lo que debe, pinta el directo, us
   expect(await page.evaluate(() => AS.api.at(-1).content)).toContain('Repsol ha subido este mes');
 });
 
-test('la revisión automática va con Haiku, sin herramientas ni búsqueda; la que pides tú, con esfuerzo alto', async ({ page }) => {
+test('la revisión automática va con Haiku, sin herramientas ni búsqueda; la que pides tú, con herramientas y búsqueda', async ({ page }) => {
   await preparada(page);
   await page.evaluate(() => LS.set('inv-claude-ok', true));   // una revisión automática no puede preguntar: va después de aceptar
   const w = await worker(page.context(), () => ({ sse: stream([{ tipo: 'texto', texto: '{"titular":"ok"}' }]) }));
@@ -152,17 +152,40 @@ test('la revisión automática va con Haiku, sin herramientas ni búsqueda; la q
   }, extra);
   expect(await pedir({ herramientas: false, web: false, maxBusquedas: 0 })).toBe('{"titular":"ok"}');
   const auto = w.peticiones[0].cuerpo;
-  expect(auto).toMatchObject({ model: 'claude-haiku-5-5', output_config: { effort: 'medium' }, max_tokens: 16000 });
+  expect(auto).toMatchObject({ model: 'claude-haiku-5-5', output_config: { effort: 'medium' }, max_tokens: 24000 });
   expect(auto).not.toHaveProperty('tools');
   // la que pide el usuario: con herramientas y búsqueda (3 como mucho) y más esfuerzo
   await pedir({ herramientas: true, web: true, maxBusquedas: 3 });
   const pedida = w.peticiones[1].cuerpo;
-  expect(pedida.output_config.effort).toBe('high');
+  expect(pedida.output_config.effort).toBe('medium');
   expect(pedida.tools.find((t) => t.name === 'web_search').max_uses).toBe(3);
   // el modelo se puede elegir en Ajustes de GrowIA
   await page.evaluate(() => LS.set('inv-ia-motor', 'sonnet'));
   await pedir({ herramientas: false, web: false, maxBusquedas: 0 });
   expect(w.peticiones[2].cuerpo.model).toBe('claude-sonnet-5-5');
+});
+
+test('un análisis que se queda sin espacio (max_tokens) se repite con esfuerzo bajo y sin búsqueda, y no sale cortado', async ({ page }) => {
+  await preparada(page);
+  await page.evaluate(() => LS.set('inv-claude-ok', true));
+  const w = await worker(page.context(), (c, n) => (n === 1
+    ? { sse: stream([{ tipo: 'busqueda', consulta: 'cartera', fuentes: ['https://a.es/x'] }, { tipo: 'texto', texto: '{"titular":"cortado' }], 'max_tokens', usoIni, 16731) }
+    : { sse: stream([{ tipo: 'texto', texto: '{"titular":"entero","posiciones":{}}' }]) }));
+  const texto = await page.evaluate(async () => {
+    const turno = { rol: 'ia', partes: [], citas: [], resultados: [] };
+    await conversar({ tipo: 'análisis', mensajes: [{ role: 'user', content: 'Revisa' }], turno, sistema: [{ type: 'text', text: 'I' }, { type: 'text', text: 'D' }], maxTokens: 12000, alCambiar() {}, herramientas: true, web: true, maxBusquedas: 3 });
+    return [turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join(''), turno.citas.length];
+  });
+  expect(texto).toEqual(['{"titular":"entero","posiciones":{}}', 0]);
+  expect(w.peticiones.length).toBe(2);
+  const [a, b] = w.peticiones.map((p) => p.cuerpo);
+  expect(a.output_config.effort).toBe('medium');
+  expect(a.tools.some((t) => t.name === 'web_search')).toBe(true);
+  expect(b.output_config.effort).toBe('low');
+  expect(b.tools.some((t) => t.name === 'web_search')).toBe(false);
+  expect(await page.evaluate(() => textoDiarioIA())).toMatch(/se ha quedado sin espacio \(16\.731 de salida\)/);
+  // dos intentos: se cuentan los dos en los tokens (se han gastado)
+  expect(await page.evaluate(() => LS.get('inv-ia-tokens', []).at(-1).m['claude-haiku-5-5'].n)).toBe(2);
 });
 
 test('si Claude no tiene créditos pasa a Gemini, se aparta y la pregunta siguiente va directa a Gemini', async ({ page, context }) => {

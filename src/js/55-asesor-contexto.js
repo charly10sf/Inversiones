@@ -969,6 +969,7 @@ const nombreMod = (m) => (MODELOS[m] || MODELOS_CLAUDE[m] || {}).corto || m;
 const LS_MOTOR = 'inv-ia-motor', LS_CLAUDE_PAUSA = 'inv-claude-pausa', LS_CLAUDE_OK = 'inv-claude-ok';
 const motorElegido = () => { const m = LS.get(LS_MOTOR, 'auto'); return ['auto', 'haiku', 'sonnet', 'gemini'].includes(m) ? m : 'auto'; };
 // tiempos de Claude: el primer dato (message_start llega enseguida; lo que tarda es el Worker o la red), y sin nada nuevo
+const CLAUDE_MAX_SALIDA = 32000;   // el mismo tope que el Worker (worker/src/index.js)
 const RED_CLAUDE = { primero: 30000, hilo: 60000, esperas: [2, 5] };
 function claudePausado() {
   const p = LS.get(LS_CLAUDE_PAUSA, null);
@@ -1176,8 +1177,9 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
   let conWeb = usarWeb;
   const propias = herramientas ? HERRAMIENTAS.map((h) => ({ name: h.name, description: h.description, input_schema: h.input_schema })) : [];
   const herrs = () => [...propias, ...(conWeb ? [{ type: 'web_search_20250305', name: 'web_search', max_uses: maxBusquedas }] : [])];
-  // la revisión que pide el usuario razona más; la automática y las preguntas, en medio
-  const esfuerzo = tipo === 'análisis' && herramientas ? 'high' : 'medium';
+  // esfuerzo medio siempre: con «alto» y dos búsquedas, Haiku se gastó todo el espacio pensando y el JSON salió cortado (2 nov).
+  // Si aun así se queda sin sitio en un análisis, se repite una vez con esfuerzo bajo y sin búsqueda (maxRepetido)
+  let esfuerzo = 'medium', maxRepetido = false;
   turno.modelo = modelo;
   let ronda = 0, cortes = 0, pausas = 0, cambios = 0, vacias = 0, enviada = false;
   const avisoRed = (txt) => { turno.partes = turno.partes.filter((x) => !x.red); const p = { tipo: 'paso', red: true, txt }; turno.partes.push(p); alCambiar(); return p; };
@@ -1186,7 +1188,7 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
     const tools = herrs();
     let r;
     ronda++;
-    const cuerpo = { model: modelo, max_tokens: Math.min(16000, Math.max(maxTokens * 2, 12000)), system: sis, messages: conCacheClaude(msgs), ...(tools.length ? { tools } : {}), stream: true, output_config: { effort: esfuerzo }, ronda: enviada ? Math.max(ronda, 2) : ronda };
+    const cuerpo = { model: modelo, max_tokens: Math.min(CLAUDE_MAX_SALIDA, Math.max(maxTokens * 2, 12000)), system: sis, messages: conCacheClaude(msgs), ...(tools.length ? { tools } : {}), stream: true, output_config: { effort: esfuerzo }, ronda: enviada ? Math.max(ronda, 2) : ronda };
     enviada = true;   // si hay que repetir la primera ronda, ya no cuenta como pregunta nueva en el Worker
     try { r = await llamarClaude(cuerpo, turno, signal, alCambiar, { ronda }); }
     catch (e) {
@@ -1213,6 +1215,13 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
     cortes = 0; turno.partes = turno.partes.filter((x) => !x.red);
     sumarTokensClaude(turno, modelo, r.uso);
     turno.coste = (turno.coste || 0) + costeClaude(modelo, r.uso);
+    // un análisis que se queda sin espacio no sirve (el JSON sale cortado): una vez más, pensando menos y sin buscar en internet
+    if (r.stop === 'max_tokens' && tipo === 'análisis' && !maxRepetido) {
+      maxRepetido = true; esfuerzo = 'low'; conWeb = false;
+      turno.partes.length = pasosAntes; turno.citas.length = 0; turno.resultados.length = 0;
+      diarioIA(`${nombreMod(modelo)}: se ha quedado sin espacio (${fmtNum((r.uso && r.uso.output_tokens) || 0, 0)} de salida): repite con esfuerzo bajo y sin búsqueda`);
+      vuelta--; continue;
+    }
     if (!r.contenido.length) {
       if (vacias++ < 1) { vuelta--; continue; }
       throw new Error('Claude no ha devuelto respuesta');
