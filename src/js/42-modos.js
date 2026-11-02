@@ -49,7 +49,7 @@ async function comprobarAcceso() {
     }
     // el dueño: puede leer todas las opiniones (las reglas de siempre)
     try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); S.esDueno = true; S.noDueno = false; limpiarFallosIA(); }
-    catch (e) { if (errPermiso(e)) S.noDueno = true; else if (!puesto && !esFundadorPorAlta(alta)) return; }
+    catch (e) { if (errPermiso(e)) { S.noDueno = true; if (temaActual()) ponerTema(''); } else if (!puesto && !esFundadorPorAlta(alta)) return; }
     const a = puesto && (puesto.modo === 'fundador' || puesto.modo === 'estandar') ? (puesto.modo === 'fundador' ? 'privado' : 'publico')
       : S.esDueno || esFundadorPorAlta(alta) ? 'privado' : 'publico';
     fijarAcceso(a, u.uid, puesto);
@@ -104,9 +104,11 @@ async function filaAcceso(h) {
   const w = $('#aAcceso', h.el); if (!w || !PERFIL_CUENTA) return;
   if (S.esDueno) {
     w.innerHTML = `<button class="aj-fila" id="aPriv">${ICONOS.candado}<span><b>${L('Modo de cada cuenta', 'Each account\'s mode')}</b><small>${L(`Fundador o estándar, también la tuya (ahora, ${nombreModo(S.acceso)}). Solo lo ves tú.`, `Founder or standard, yours too (now ${nombreModo(S.acceso)}). Only you see this.`)}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <button class="aj-fila" id="aSaludIA">${ICONOS.growia}<span><b>${L('Cómo va GrowIA', 'How GrowIA is doing')}</b><small>${L('El banco de preguntas de cada noche, lo que gasta la Action y los fallos que no se arreglaron solos. Solo lo ves tú.', 'The nightly question bank, what the Action uses and the failures that didn\'t fix themselves. Only you see this.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+      <button class="aj-fila" id="aSaludIA">${ICONOS.growia}<span><b>${L('Cómo va GrowIA', 'How GrowIA is doing')}</b><small>${L('El banco de preguntas de cada noche, lo que gasta la Action y los fallos que no se arreglaron solos. Solo lo ves tú.', 'The nightly question bank, what the Action uses and the failures that didn\'t fix themselves. Only you see this.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      ${htmlSelectorTema()}`;
     $('#aPriv', h.el).onclick = () => { h.cerrar(true); verModos(); };
     $('#aSaludIA', h.el).onclick = () => { h.cerrar(true); verSaludIA(); };
+    activarSelectorTema(h.el);
   } else if (correoSinConfirmar()) {
     w.innerHTML = `<button class="aj-fila" id="aVerif">${ICONOS.alerta}<span><b>${L('Confirma tu correo', 'Confirm your email')}</b><small>${L('Te mandamos un enlace a tu correo. Hace falta, por ejemplo, para el modo fundador si te lo han dado.', 'We send a link to your email. It is needed, for example, for founder mode if you have been given it.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
     $('#aVerif', h.el).onclick = async () => {
@@ -116,6 +118,22 @@ async function filaAcceso(h) {
   } else {
     w.innerHTML = `<div class="aj-fila aj-info">${ICONOS.candado}<span><b>${L('Tu modo', 'Your mode')}: ${esc(nombreModo(S.acceso))}</b><small>${esPublico() ? L('Sin recomendaciones personalizadas: «Tu plan» en lugar del Paso a paso.', 'No personalised recommendations: Your plan instead of Steps.') : L('GrowFolio entero, con el Paso a paso.', 'All of GrowFolio, with Steps.')}</small></span></div>`;
   }
+}
+/* 0.7v: el diseño de Toisón, en pruebas (paso 1 del rediseño): solo el dueño lo elige y solo en este dispositivo.
+   Cada muestra lleva data-tema, así enseña los colores de su diseño (src/css/00-temas.css) */
+function htmlSelectorTema() {
+  const t = temaActual(), nom = { marmol: 'Mármol', marfil: 'Marfil', borgona: 'Borgoña' };
+  const b = (k, muestra, n) => `<button type="button" data-elige-tema="${k}" aria-pressed="${t === k}">${muestra}<span>${n}</span></button>`;
+  return `<div class="seccion-ed aj-idioma"><h3>${ICONOS.ojo}${L('Toisón: el diseño nuevo (en pruebas)', 'Toisón: the new design (testing)')}</h3>
+    <div class="idiomas temas" role="group" aria-label="${esc(L('Diseño', 'Design'))}" data-no-trad>${b('', '<img class="tema-muestra" src="favicon.svg" alt="">', 'GrowFolio')}${TEMAS.map((k) => b(k, `<i class="tema-muestra" data-tema="${k}" aria-hidden="true"></i>`, nom[k])).join('')}</div>
+    <small>${L('Solo lo ves tú y solo en este dispositivo; los demás siguen viendo la app como ahora hasta la 0.8. Es el primer paso: cambian los colores y la letra, y muchas partes todavía no están adaptadas.', 'Only you see this, on this device only. First step: colours and type change; many parts are not adapted yet.')}</small></div>`;
+}
+function activarSelectorTema(el) {
+  for (const b of $$('[data-elige-tema]', el)) b.onclick = () => {
+    ponerTema(b.dataset.eligeTema);
+    for (const x of $$('[data-elige-tema]', el)) x.setAttribute('aria-pressed', String(x === b));
+    if (S.cartera && $('#vista') && !document.querySelector('.hoja-fondo form, .ficha')) pintar();
+  };
 }
 // las cuentas que conoce GrowFolio (las que han abierto la 0.5) y lo que les ha puesto el dueño
 async function leerModos() {

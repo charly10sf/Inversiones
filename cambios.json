@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.7v",
+   "f": "2026-11-02",
+   "h": "21:00",
+   "t": "Preparando Toisón por dentro",
+   "commits": [
+    {
+     "cuando": "2026-11-02 21:00",
+     "asunto": "0.7v: tokens y sistema de temas de Toisón (paso 1 del rediseño)",
+     "detalle": [
+      "Tres diseños de Toisón (Mármol, Marfil y Borgoña) con data-tema en <html>, puesto antes de pintar, y el color de la barra desde el token --fondo; los nombres de GrowFolio (--bg, --accent…) apuntan a los tokens nuevos",
+      "Letras Inter e Ibarra Real Nova (con cursiva) de la casa, solo con un diseño de Toisón",
+      "Selector en Ajustes, solo para el dueño; sin él, la app sigue como estaba",
+      "Prueba de colores sueltos con tope por archivo (tests/colores-sueltos.spec.js) y pruebas de los temas (tests/temas.spec.js)"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7u",
    "f": "2026-11-02",
    "h": "16:30",

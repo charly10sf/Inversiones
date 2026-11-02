@@ -1,0 +1,105 @@
+/* =====================================================================
+   Los tres diseños de Toisón (0.7v, paso 1 del rediseño a la 0.8).
+   Se eligen con data-tema en <html> (marmol | marfil | borgona); sin él, la app sigue con el aspecto de GrowFolio
+   (los :root de 01-base.css y 21-como-el-icono.css). Mientras dure el rediseño, solo el dueño puede elegirlos (Ajustes).
+   Los colores de cada diseño están SOLO aquí, en sus bloques. El resto del CSS usa los tokens; la prueba
+   tests/colores-sueltos.spec.js cuenta los colores escritos a mano fuera de estos bloques y no deja que suban.
+   Los selectores son :root[data-tema=…] (ganan a los :root de después) y [data-tema=…] (así una muestra suelta,
+   como las del selector de Ajustes, lleva los colores de su diseño).
+   ===================================================================== */
+
+/* ---------- Mármol: negro verdoso con vetas, oro ---------- */
+:root[data-tema="marmol"], [data-tema="marmol"] {
+  --fondo: #151817; --fondo-2: #101312; --superficie: #1c1f1e; --superficie-2: #272b29; --borde: #353a38;
+  --texto: #f2ede6; --texto-2: #c8bfb7; --oro-texto: #e3b45f; --grafica: #e3b45f;
+  --sube: #4fdc96; --baja: #ff8466; --aviso: #f2a65a;
+  --primario: #e3b45f; --sobre-primario: #2a0e14; --sim-o: #f6ead5; --sim-t: #e3b45f;
+  --metal: linear-gradient(180deg, #f7dfa8 0%, #e3b45f 52%, #b5863a 100%);
+  --brillo: rgb(255 255 255 / .38); --hondo: rgb(0 0 0 / .55);
+  --reparto-1: #e3b45f; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
+  --grano: .06; --resplandor: .6; --luz-graf: 16%; --polvo: .9;
+  color-scheme: dark;
+}
+
+/* ---------- Marfil: crema (no blanco), tinta y borgoña ---------- */
+:root[data-tema="marfil"], [data-tema="marfil"] {
+  --fondo: #f2e7d5; --fondo-2: #ebdfca; --superficie: #f9f1e4; --superficie-2: #eadcc5; --borde: #d8c8af;
+  --texto: #1e1a17; --texto-2: #4d4640; --oro-texto: #684910; --grafica: #8a6216;
+  --sube: #08573a; --baja: #982d0e; --aviso: #8a4b0c;
+  --primario: #4e101d; --sobre-primario: #f6ead5; --sim-o: #4e101d; --sim-t: #8a6216;
+  --metal: linear-gradient(180deg, #6e2333 0%, #4e101d 55%, #3a0a15 100%);
+  --brillo: rgb(255 255 255 / .22); --hondo: rgb(70 48 22 / .22);
+  --reparto-1: #8a6216; --reparto-2: #2f5d8c; --reparto-3: #7b6bae; --reparto-4: #3d8a8c; --reparto-5: #c29a6b; --reparto-6: #9a928a;
+  --grano: .09; --resplandor: .28; --luz-graf: 10%; --polvo: .55;
+  color-scheme: light;
+}
+
+/* ---------- Borgoña: fondo borgoña muy oscuro, oro ---------- */
+:root[data-tema="borgona"], [data-tema="borgona"] {
+  --fondo: #2a0e14; --fondo-2: #1f0a0f; --superficie: #3c0b16; --superficie-2: #4e101d;
+  --borde: color-mix(in srgb, #e3b45f 26%, #3c0b16);
+  --texto: #f6ead5; --texto-2: #ead9c2; --oro-texto: #e3b45f; --grafica: #e3b45f;
+  --sube: #6eeaa8; --baja: #ff9478; --aviso: #ffb877;
+  --primario: #e3b45f; --sobre-primario: #3c0b16; --sim-o: #f6ead5; --sim-t: #e3b45f;
+  --metal: linear-gradient(180deg, #f7dfa8 0%, #e3b45f 52%, #b5863a 100%);
+  --brillo: rgb(255 255 255 / .38); --hondo: rgb(10 2 4 / .6);
+  --reparto-1: #e3b45f; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
+  --grano: .06; --resplandor: .55; --luz-graf: 14%; --polvo: .8;
+  color-scheme: dark;
+}
+
+/* ---------- Comunes a los tres: letras, medidas y derivados (sin un solo color) ---------- */
+:root[data-tema], [data-tema] {
+  --marca: 'Ibarra Real Nova', Georgia, 'Times New Roman', serif;
+  --ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --r-xs: 4px; --r-s: 8px; --r-m: 12px; --r-l: 16px; --r-xl: 26px; --r-p: 999px;
+  --e1: 4px; --e2: 8px; --e3: 12px; --e4: 16px; --e5: 20px; --e6: 24px; --e7: 32px;
+  --toque: 48px;
+  --hilo: color-mix(in srgb, var(--oro-texto) 40%, transparent);
+  --sep: color-mix(in srgb, var(--texto) 10%, transparent);
+  --aro: color-mix(in srgb, var(--texto) 16%, transparent);
+  --sombra-t: 0 1px 2px var(--hondo), 0 22px 44px -30px var(--hondo);
+}
+
+/* ---------- Los nombres de GrowFolio, apuntando a los tokens (para no romper nada mientras se cambian) ----------
+   Se irán quitando a medida que cada parte use los nombres nuevos (pasos 2 a 5). */
+:root[data-tema] {
+  --bg: var(--fondo);
+  --plane: var(--superficie);
+  --plane-2: var(--superficie-2);
+  --plane-3: color-mix(in srgb, var(--superficie-2) 88%, var(--texto));
+  --line: var(--sep);
+  --line-2: var(--borde);
+  --text: var(--texto);
+  --text-2: var(--texto-2);
+  --muted: color-mix(in srgb, var(--texto-2) 78%, var(--fondo));
+  --accent: var(--primario);
+  --accent-2: var(--oro-texto);
+  --accent-hi: color-mix(in srgb, var(--primario) 65%, var(--texto));
+  --on-accent: var(--sobre-primario);
+  --up: var(--sube);
+  --down: var(--baja);
+  --warn: var(--aviso);
+  --up-bg: color-mix(in srgb, var(--sube) 13%, transparent);
+  --down-bg: color-mix(in srgb, var(--baja) 13%, transparent);
+  --warn-bg: color-mix(in srgb, var(--aviso) 13%, transparent);
+  --accent-bg: color-mix(in srgb, var(--primario) 13%, transparent);
+  --c1: var(--reparto-1); --c2: var(--reparto-2); --c3: var(--reparto-3); --c4: var(--reparto-4); --c5: var(--reparto-5); --c0: var(--reparto-6);
+  --f: var(--ui);
+  --fc: var(--ui);
+  /* los de 21-como-el-icono.css (la loseta de GrowFolio) */
+  --tile: var(--superficie);
+  --tile-luz: radial-gradient(560px 200px at 20% -70px, color-mix(in srgb, var(--oro-texto) 9%, transparent), transparent 72%);
+  --tile-grad: linear-gradient(180deg, var(--superficie), var(--superficie));
+  --filo: var(--borde);
+  --filo-2: color-mix(in srgb, var(--borde) 80%, var(--texto));
+  --filo-oro: var(--hilo);
+  --luz: inset 0 1px 0 color-mix(in srgb, var(--brillo) 30%, transparent);
+  --oro-grad: var(--metal);
+  --oro-suave: linear-gradient(180deg, color-mix(in srgb, var(--oro-texto) 17%, transparent), color-mix(in srgb, var(--oro-texto) 7%, transparent));
+}
+
+/* ---------- El selector de diseño (Ajustes, solo el dueño): cada muestra lleva los colores de su diseño ---------- */
+.temas button { gap: 9px; }
+.tema-muestra { width: 18px; height: 18px; border-radius: 50%; flex: none; background: var(--fondo); box-shadow: inset 0 0 0 2px var(--primario), 0 0 0 1px var(--sep); }
+img.tema-muestra { background: none; box-shadow: none; }

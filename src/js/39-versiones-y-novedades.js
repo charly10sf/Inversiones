@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7v', f: '2026-11-02', h: '21:00', t: 'Preparando Toisón por dentro', arreglos: [
+    'Por dentro, GrowFolio ya tiene la base del diseño de Toisón: sus colores, sus letras y los tres estilos (Mármol, Marfil y Borgoña). Para ti no cambia nada todavía: lo verás entero cuando llegue Toisón.',
+  ] },
   { v: '0.7u', f: '2026-11-02', h: '16:30', t: 'La revisión de la cartera con Claude ya llega entera', arreglos: [
     'Cuando GrowIA revisaba tu cartera con Claude (Haiku) y buscaba en internet, se quedaba sin espacio para escribir y la revisión salía cortada («La respuesta no ha llegado completa»). Ahora piensa con menos esfuerzo, tiene más espacio y, si aun así se queda corto, lo repite una vez sin buscar en internet.',
   ] },
