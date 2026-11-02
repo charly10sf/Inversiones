@@ -19,7 +19,7 @@ function token(uid, email = 'amigo@prueba.com', verificado = true) {
   return `${cab}.${cue}.${b64u(createSign('RSA-SHA256').update(`${cab}.${cue}`).sign(fb.privateKey))}`;
 }
 // el aviso por minuto se sube aquí para que las pruebas no se estorben entre sí (la de ráfagas lo baja)
-const ENV = { ANTHROPIC_API_KEY: 'sk-ant-de-prueba', CLAUDE_EMAILS: 'amigo@prueba.com, otra@prueba.com', CLAUDE_POR_MINUTO: '1000', FB_JWKS: 'https://jwks.prueba', CLAUDE_API: 'https://claude.prueba/v1/messages' };
+const ENV = { ANTHROPIC_API_KEY: 'sk-ant-de-prueba', CLAUDE_EMAILS: 'amigo@prueba.com, otra@prueba.com', CLAUDE_POR_MINUTO: '1000', CLAUDE_POR_DIA: '100000', CLAUDE_RONDAS_POR_DIA: '100000', CUOTAS: cuotasDeMentira(), FB_JWKS: 'https://jwks.prueba', CLAUDE_API: 'https://claude.prueba/v1/messages' };
 const PEDIDO = { model: 'claude-sonnet-5-5', max_tokens: 4096, messages: [{ role: 'user', content: 'hola' }] };
 
 // pone un fetch de imitación; `claude` decide qué contesta Claude y devuelve lo que le llegó en `vistas`
@@ -77,7 +77,7 @@ test('reenvía a Claude con la clave y limpia la petición', async () => {
     expect(v.h['x-api-key']).toBe('sk-ant-de-prueba');
     expect(v.h['anthropic-version']).toBe('2023-06-01');
     // solo los campos de la lista; las búsquedas se bajan al máximo del Worker; las herramientas de la app, intactas
-    expect(Object.keys(v.cuerpo).sort()).toEqual(['max_tokens', 'messages', 'model', 'stream', 'tools']);
+    expect(Object.keys(v.cuerpo).sort()).toEqual(['max_tokens', 'messages', 'model', 'stream', 'system', 'tools']);
     expect(v.cuerpo.tools[0].max_uses).toBe(5);
     expect(v.cuerpo.tools[1]).toEqual({ name: 'cartera', description: 'd', input_schema: { type: 'object' } });
     // una búsqueda sin tope pedido sale con el del Worker
@@ -106,7 +106,7 @@ test('rechaza lo que gastaría de más o no es una pregunta', async () => {
     }
     expect((await pedir('uid-f', '{no es json')).status).toBe(400);
     expect((await pedir('uid-f', '[1,2]')).status).toBe(400);
-    expect((await pedir('uid-f', { ...PEDIDO, messages: [{ role: 'user', content: 'x'.repeat(400e3) }] })).status).toBe(413);
+    expect((await pedir('uid-f', { ...PEDIDO, messages: [{ role: 'user', content: 'x'.repeat(600e3) }] })).status).toBe(413);
     expect((await worker.fetch(new Request('https://w.prueba/claude'), ENV, { waitUntil() {} })).status).toBe(405);
     expect(vistas.length).toBe(0);
     // el Haiku vale, y la lista de modelos se puede cambiar
@@ -247,9 +247,69 @@ test('tope de preguntas al día por correo, y si el contador falla no se pregunt
   });
 });
 
+// 0.8: una pregunta de GrowIA son varias peticiones (una por ronda de herramientas); la app dice en «ronda» cuál es
+test('las rondas de herramientas de una misma pregunta no gastan preguntas, pero tienen su propio tope', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: '2', CLAUDE_RONDAS_POR_DIA: '7' };
+    // dos preguntas de tres rondas: 2 preguntas y 6 peticiones
+    for (let q = 0; q < 2; q++) for (let ronda = 1; ronda <= 3; ronda++) expect((await pedir('uid-r', { ...PEDIDO, ronda }, env)).status).toBe(200);
+    // una tercera pregunta no entra
+    let r = await pedir('uid-r', { ...PEDIDO, ronda: 1 }, env);
+    expect(r.status).toBe(429);
+    expect(await r.json()).toEqual({ error: 'tope-diario' });
+    // sin «ronda» cuenta como pregunta nueva
+    expect((await pedir('uid-r', PEDIDO, env)).status).toBe(429);
+    // otra ronda de la última sí entra (7.ª petición)...
+    expect((await pedir('uid-r', { ...PEDIDO, ronda: 2 }, env)).status).toBe(200);
+    // ...y la 8.ª no: el tope de peticiones impide saltarse el de preguntas diciendo siempre «ronda 2»
+    r = await pedir('uid-r', { ...PEDIDO, ronda: 2 }, env);
+    expect(r.status).toBe(429);
+    // «ronda» es de la app y del Worker: no llega a Claude
+    expect(vistas.length).toBe(7);
+    for (const v of vistas) expect(v.cuerpo).not.toHaveProperty('ronda');
+  });
+});
+
+// 0.8: la app pregunta «¿puedo?» con una petición vacía antes de mandar nada de la cartera
+test('una petición vacía dice si el correo puede usar Claude sin gastar nada ni leer cartera', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: '1' };
+    let r = await pedir('uid-s', '{}', env);
+    expect(r.status).toBe(400);
+    expect(await r.json()).toMatchObject({ error: 'peticion' });
+    // quien no está en la lista recibe un 403 antes de leer el cuerpo
+    r = await pedir('uid-s2', '{}', env, { email: 'otro@prueba.com' });
+    expect(r.status).toBe(403);
+    // ni lo uno ni lo otro ha gastado la pregunta del día ni ha llegado a Claude
+    expect((await pedir('uid-s', PEDIDO, env)).status).toBe(200);
+    expect(vistas.length).toBe(1);
+  });
+});
+
+// 0.8: las reglas de uso las pone el Worker (no la app) y sin contador no se pregunta
+test('el Worker pone delante la nota de que GrowIA es una IA y no da consejos personalizados, y sin contador no pregunta', async () => {
+  await con(ok, async (vistas) => {
+    // con un «system» de la app, o con texto suelto, o sin nada: la nota va siempre la primera y lo demás se conserva
+    await pedir('uid-y1', { ...PEDIDO, system: [{ type: 'text', text: 'de la app', cache_control: { type: 'ephemeral' } }] });
+    await pedir('uid-y2', { ...PEDIDO, system: 'suelto' });
+    await pedir('uid-y3', PEDIDO);
+    const [a, b, c] = vistas.map((v) => v.cuerpo.system);
+    for (const x of [a, b, c]) { expect(x[0].text).toContain('es una IA'); expect(x[0].text).toContain('No da asesoramiento personalizado'); }
+    expect(a[1]).toEqual({ type: 'text', text: 'de la app', cache_control: { type: 'ephemeral' } });
+    expect(b[1].text).toBe('suelto');
+    expect(c.length).toBe(1);
+    expect((await pedir('uid-y4', { ...PEDIDO, system: 5 })).status).toBe(400);
+    // sin el contador de preguntas (Durable Object) no hay tope diario: no se pregunta
+    const r = await pedir('uid-y5', PEDIDO, { ...ENV, CUOTAS: undefined });
+    expect(r.status).toBe(503);
+    expect(await r.json()).toEqual({ error: 'cuotas' });
+    expect(vistas.length).toBe(3);
+  });
+});
+
 test('/salud dice si Claude está listo, sin enseñar la clave', async () => {
   const salud = async (env) => worker.fetch(new Request('https://w.prueba/salud'), env, { waitUntil() {} }).then((r) => r.text());
-  expect(JSON.parse(await salud(ENV))).toMatchObject({ claude: true, cuotas: false });
+  expect(JSON.parse(await salud({ ...ENV, CUOTAS: undefined }))).toMatchObject({ claude: true, cuotas: false });
   expect(JSON.parse(await salud({ ...ENV, CUOTAS: cuotasDeMentira() }))).toMatchObject({ claude: true, cuotas: true });
   expect(JSON.parse(await salud({})).claude).toBe(false);
   expect(await salud(ENV)).not.toContain('sk-ant');

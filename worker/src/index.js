@@ -306,8 +306,11 @@ async function isinRuta(url, req, env, ctx, res, deFuera) {
    directo (stream). Lo que decide el Worker, no la app, para que nadie gaste de más:
    - solo quien esté en CLAUDE_EMAILS (con el correo verificado);
    - solo los modelos de CLAUDE_MODELOS, un máximo de salida y un máximo de búsquedas en internet por pregunta;
-   - como mucho CLAUDE_POR_DIA preguntas al día por correo (el contador vive en un Durable Object, el mismo para todas
-     las instancias del Worker; si falla, no se pregunta: mejor Gemini que gasto sin freno) y CLAUDE_POR_MINUTO por minuto
+   - como mucho CLAUDE_POR_DIA preguntas al día por correo y CLAUDE_RONDAS_POR_DIA peticiones en total (una pregunta de
+     GrowIA son varias peticiones: una por cada ronda de herramientas; la app dice en «ronda» cuál es, y solo la primera
+     cuenta como pregunta; el tope de peticiones es el que impide que alguien se salte el de preguntas diciendo siempre
+     «ronda 2»). El contador vive en un Durable Object, el mismo para todas las instancias del Worker; si falla, no se
+     pregunta: mejor Gemini que gasto sin freno) y CLAUDE_POR_MINUTO por minuto
      (este se cuenta por instancia del Worker: solo frena rachas; el tope de verdad es el límite de gasto del workspace en
      la Console de Anthropic);
    - solo pasan los campos de la API que la app usa; el resto se quita, y solo valen las herramientas propias de la app y
@@ -316,7 +319,9 @@ async function isinRuta(url, req, env, ctx, res, deFuera) {
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
 const CLAUDE_MODELOS = ['claude-haiku-5-5', 'claude-sonnet-5-5'];
 const CLAUDE_CAMPOS = ['model', 'max_tokens', 'system', 'messages', 'tools', 'tool_choice', 'thinking', 'output_config', 'stream', 'temperature'];
-const CLAUDE_MAX_SALIDA = 16000, CLAUDE_MAX_CUERPO = 400e3, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 30;
+const CLAUDE_MAX_SALIDA = 16000, CLAUDE_MAX_CUERPO = 600e3, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 30, CLAUDE_RONDAS_POR_DIA = 90;
+// las reglas de uso, puestas por el Worker y no por la app: quien llame a /claude con su propio «system» no se las salta
+const CLAUDE_NOTA = 'GrowIA es una IA (funciona con Claude, de Anthropic) y debe decirlo si se lo preguntan. No da asesoramiento personalizado de inversión ni de impuestos: no dice a nadie que compre, venda o mantenga un valor concreto, ni cuánto meter ni a qué precio. Explica, compara y calcula; las decisiones son de cada persona.';
 const rafagas = new Map();
 const puedeClaude = (u, env) => !!u && u.verificado && !!u.email && lista(env.CLAUDE_EMAILS).includes(u.email);
 // un adjunto que no va dentro de la petición (una URL, un archivo ya subido) lo baja Anthropic: no lo dejamos pasar
@@ -326,17 +331,20 @@ function adjuntoFuera(x) {
   if (x.source && typeof x.source === 'object' && !['base64', 'text'].includes(x.source.type)) return true;
   return adjuntoFuera(x.content);
 }
-// el contador de cada correo: cuántas preguntas lleva hoy (día UTC). Un Durable Object por correo, con su almacén propio.
+// el contador de cada correo (día UTC): n, las preguntas que lleva hoy (peticiones «primera»), y r, todas las peticiones,
+// rondas de herramientas incluidas. Un Durable Object por correo, con su almacén propio.
 export class Cuotas {
   constructor(estado) { this.estado = estado; }
   async fetch(req) {
-    const { dia, tope } = await req.json();
-    let c = (await this.estado.storage.get('c')) || { dia, n: 0 };
-    if (c.dia !== dia) c = { dia, n: 0 };
-    if (c.n >= tope) return new Response(JSON.stringify({ ok: false, n: c.n }));
-    c.n += 1;
+    const { dia, tope, topeRondas, primera = true } = await req.json();
+    let c = (await this.estado.storage.get('c')) || { dia, n: 0, r: 0 };
+    if (c.dia !== dia) c = { dia, n: 0, r: 0 };
+    c.r = c.r || 0;
+    if ((primera && c.n >= tope) || (topeRondas && c.r >= topeRondas)) return new Response(JSON.stringify({ ok: false, n: c.n, r: c.r }));
+    if (primera) c.n += 1;
+    c.r += 1;
     await this.estado.storage.put('c', c);
-    return new Response(JSON.stringify({ ok: true, n: c.n }));
+    return new Response(JSON.stringify({ ok: true, n: c.n, r: c.r }));
   }
 }
 
@@ -372,12 +380,18 @@ async function claude(req, env, cors, res) {
     cuerpo.tools = cuerpo.tools.map((h) => (/^web_search_/.test(String(h.type || '')) ? { ...h, max_uses: Math.min(Number(h.max_uses) || maxBusquedas, maxBusquedas) } : h));
   }
   if (adjuntoFuera(cuerpo.messages) || adjuntoFuera(cuerpo.system)) return res({ error: 'peticion', motivo: 'adjunto' }, 400);
+  if (cuerpo.system !== undefined && typeof cuerpo.system !== 'string' && !Array.isArray(cuerpo.system)) return res({ error: 'peticion', motivo: 'system' }, 400);
+  cuerpo.system = [{ type: 'text', text: CLAUDE_NOTA }, ...(typeof cuerpo.system === 'string' ? (cuerpo.system ? [{ type: 'text', text: cuerpo.system }] : []) : cuerpo.system || [])];
   // el tope del día, al final de las comprobaciones de la petición: lo que se rechaza arriba no gasta pregunta
-  if (env.CUOTAS) {
+  {
+    // sin el contador no hay tope diario: no se pregunta (la app pasa a Gemini)
+    if (!env.CUOTAS) return res({ error: 'cuotas' }, 503);
     let q;
     try {
       const dia = new Date(ahora).toISOString().slice(0, 10);
-      const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(u.email)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA }) });
+      // «ronda»: 1 (o sin ponerla) es una pregunta nueva; 2 o más, otra ronda de herramientas de la misma pregunta
+      const primera = !(Number.isInteger(c.ronda) && c.ronda > 1);
+      const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(u.email)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA, topeRondas: Number(env.CLAUDE_RONDAS_POR_DIA) || CLAUDE_RONDAS_POR_DIA, primera }) });
       q = await rc.json();
     } catch (e) { return res({ error: 'cuotas' }, 503); }
     if (!q || !q.ok) return res({ error: 'tope-diario' }, 429);

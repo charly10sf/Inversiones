@@ -1,6 +1,25 @@
 {
  "versiones": [
   {
+   "v": "0.7t",
+   "f": "2026-11-02",
+   "h": "16:00",
+   "t": "GrowIA puede contestar con Claude",
+   "commits": [
+    {
+     "cuando": "2026-11-02 16:00",
+     "asunto": "0.7t: la app habla con Claude (modo estándar) a través del Worker, con Gemini de reserva",
+     "detalle": [
+      "conversarClaude junto a conversarGemini: mismas herramientas de la cartera, búsqueda en internet de Claude, respuesta en directo y caché; Sonnet para las preguntas y Haiku para las revisiones automáticas",
+      "Antes de mandar nada de la cartera se comprueba (petición vacía) que el correo puede usar Claude, y la primera vez se pide permiso con el aviso de privacidad",
+      "Cualquier fallo pasa a Gemini y, si se va a repetir, Claude se aparta un rato. Ajustes de GrowIA: «Quién contesta». Tokens y coste de Claude en el registro",
+      "Worker: el tope diario cuenta preguntas (la app manda la ronda) y aparte las peticiones; sin contador no se pregunta; pone él la nota de que GrowIA es una IA y no da consejos personalizados; cuerpo hasta 600 KB",
+      "Revisado aparte antes de publicar. Pruebas nuevas: tests/claude-app.spec.js y más en tests/worker-claude.spec.js"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.7s",
    "f": "2026-11-02",
    "h": "14:15",

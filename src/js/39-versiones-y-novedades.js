@@ -5,6 +5,11 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.7t', f: '2026-11-02', h: '16:00', t: 'GrowIA puede contestar con Claude', arreglos: [
+    'En el modo estándar, GrowIA puede contestar con Claude, de Anthropic, además de con Gemini. De momento solo para quien Carlos ha dado acceso; el modo fundador sigue con Gemini. La primera vez te pregunta si estás de acuerdo, porque tus preguntas y lo que necesita de tu cartera pasarían por el servidor de GrowFolio (que no guarda nada) hasta Anthropic, que lo procesa fuera de la Unión Europea. Si no quieres, di que no y todo sigue yendo directo a Google, con tu clave.',
+    'Si Claude no puede contestar (sin conexión con el servidor, sin saldo, saturado), contesta Gemini sin que tengas que hacer nada. En Ajustes de GrowIA, una vez que has aceptado, eliges quién contesta.',
+    'El texto que escribe GrowIA con la búsqueda en internet ya no sale partido en trozos cuando Claude cita sus fuentes.',
+  ] },
   { v: '0.7s', f: '2026-11-02', h: '14:15', t: 'El punto de «en directo», más ligero', arreglos: [
     'El puntito verde de la cabecera que avisa de que la bolsa está abierta latía moviendo una sombra, y eso obligaba al móvil a repintarlo sin parar mientras la bolsa estaba abierta. Ahora late creciendo y atenuándose, que el móvil mueve sin esfuerzo: se ve casi igual y gasta menos.',
   ] },
