@@ -733,3 +733,5 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="marmol"] .hola-nom { font-weight: 600; }
 /* en Ibarra, el saludo y el título de la cuenta van más finos (como estaban) */
 [data-tema]:is([data-tema="marfil"], [data-tema="borgona"]) :is(.hero-hola, .caja h1, .bq-caja h1) { font-weight: 400; }
+/* 0.8a: el correo de Tú no se parte en dos líneas en los móviles estrechos (a 360 px salía «lucia@prueba» y «.com»): una línea con puntos suspensivos */
+[data-tema] .tu-cab > div small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
