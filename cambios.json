@@ -1,6 +1,54 @@
 {
  "versiones": [
   {
+   "v": "0.8a",
+   "f": "2026-11-03",
+   "h": "23:30",
+   "t": "La IA, sin clave de Google",
+   "commits": [
+    {
+     "cuando": "2026-11-03 22:53",
+     "asunto": "0.8a: novedades para todos o solo para el dueño",
+     "detalle": [
+      "Una cosa con solo: 'dueno', o un arreglo escrito como { t: '…', solo: 'dueno' }, lo ve el dueño y nadie más: en el mensaje corto de las versiones de letra, en «¿Qué se ha mejorado?», en la guía «Nuevo» y en el historial (novVisibles, 46-lo-nuevo.js).",
+      "Si una versión de letra se queda sin nada para los demás, a ellos no les sale el mensaje ni sale en el historial. La lista detallada del historial (cambios.json) solo la ve el dueño.",
+      "El dueño se recuerda en el dispositivo (inv-dueno) y, con versión nueva, la bienvenida espera unos segundos a comprobar el acceso.",
+      "En la 0.8a, «El correo de Tú, en una línea» pasa a ser solo para el dueño.",
+      "release.py entiende los arreglos con marca; la regla, en claude/cerrar-version.md; prueba en tests/novedades-dueno.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 20:45",
+     "asunto": "0.8a con la IA sin clave: la noticia e Importar llevan a la clave, el texto a medias se marca",
+     "detalle": [
+      "La noticia y las capturas de Importar (que siguen con Gemini) abren la pantalla de la clave de",
+      "Google también a quien ya usa la IA con Claude sin clave, explicándolo; el sondeo ya no la cierra.",
+      "Si Claude se corta a mitad sin clave, lo escrito se queda marcado como incompleto y el error lo dice.",
+      "Pruebas: fundador y provisional sin clave, corte a mitad, noticia e Importar.",
+      "La 0.8a lleva ahora «La IA, sin clave de Google» en sus arreglos (con inglés)."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 20:20",
+     "asunto": "0.9 (empezada): la IA sin clave de Google, con Claude; plan de la 0.9 por sesiones",
+     "detalle": [
+      "Quien tiene Claude en su cuenta (CLAUDE_EMAILS) usa la IA sin poner la clave de Google: iaLista, claudeSinClave, sondearClaude y errorSinIA en 55-asesor-contexto.js",
+      "Sin clave no hay Gemini de reserva: si Claude no puede, se dice claro; decir que no al aviso no deja sin salida",
+      "El sondeo que falla se aparta 5 minutos; la revisión automática solo con el aviso aceptado",
+      "Arreglos de la revisión aparte; pruebas nuevas en tests/claude-app.spec.js",
+      "claude/versiones/0.9.md: plan por sesiones, el modo avanzado de trece pestañas y la mudanza a toison.es"
+     ]
+    },
+    {
+     "cuando": "2026-11-03 19:34",
+     "asunto": "0.8a: el correo de Tú, en una línea",
+     "detalle": [
+      "En los móviles estrechos el correo de Tú se partía en dos líneas; ahora va en una con puntos suspensivos"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8",
    "f": "2026-11-03",
    "h": "16:00",
