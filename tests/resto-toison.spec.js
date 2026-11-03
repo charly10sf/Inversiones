@@ -33,7 +33,7 @@ conTema('borgona')('con Toisón: tutorial, Ajustes, entrada, presentación y GTA
   await expect(page.locator('.tour-caja svg.simb-ts.tour-logo')).toHaveCount(1);
   await expect(page.locator('.tour-n')).toHaveText('1 de 5');
   await page.evaluate(() => irPasoTour(5));
-  await expect(page.locator('.tour-caja h3')).toHaveText('Cartera: lo tuyo, fila a fila');
+  await expect(page.locator('.tour-caja h3')).toHaveText('Análisis: tu cartera por dentro');
   await page.evaluate(() => cerrarTour());
   // Ajustes: TOISÓN arriba y sin «Muy pronto: GrowFolio pasa a llamarse Toisón»
   await page.evaluate(() => abrirAjustes());

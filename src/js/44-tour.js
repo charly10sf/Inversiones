@@ -6,7 +6,7 @@
    deslizar el dedo por algo); «toca» es un botón de la barra que, al tocarlo, lleva al paso siguiente él solo. «si»
    quita el paso cuando no hay con qué enseñarlo (sin posiciones no hay gráfica ni fichas). El motor está en
    46-lo-nuevo.js. La maqueta aprobada (3 nov) es https://claude.ai/artifact/THN75znmPR44S1A94LYbev */
-const TOUR_CAP = ['Hoy', 'Cartera', 'Mercados', 'Ideas', 'Tú', 'La IA'];
+const TOUR_CAP = ['Hoy', 'Análisis', 'Mercados', 'Ideas', 'Tú', 'La IA'];
 const ROMANOS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
 const conPosiciones = () => ((S.cartera && S.cartera.posiciones) || []).length > 0;
 const navSel = (k) => `.navbar [data-ir="${k}"], .nav [data-ir="${k}"], .riel [data-ir="${k}"]`;
@@ -17,8 +17,8 @@ const TOUR = [
   { c: 0, v: 'cartera', sel: '.hero-rangos', si: conPosiciones, t: 'Cualquier periodo', x: 'Un día, una semana, un año o desde tu primera compra.', prueba: () => `Toca ${otroRango()}`, hecho: () => `.hero-rangos [data-rango="${otroRango()}"]` },
   { c: 0, v: 'cartera', sel: '.hero-ojo', t: 'El ojo esconde las cifras', x: 'Para abrir la app en el metro sin que nadie vea cuánto tienes. Otro toque y vuelven.', prueba: 'Tócalo', hecho: '.hero-ojo', salir: () => { if (TOURE && TOURE.oculto0 != null && S.oculto !== TOURE.oculto0) { S.oculto = TOURE.oculto0; LS.set('inv-oculto', S.oculto); pintar(); } }, antes: () => { if (TOURE) TOURE.oculto0 = !!S.oculto; } },
   { c: 0, v: 'cartera', sel: '.ag-card, .car-agenda-mini', t: 'Tu mes y lo que viene', x: 'Tus aportaciones programadas, los resultados de lo que tienes y las fechas que importan, con los días que faltan.' },
-  { c: 1, v: 'cartera', sel: navSel('posiciones'), toca: 'posiciones', t: 'Cartera: lo tuyo, fila a fila', x: 'Todo lo que tienes, con lo que gana o pierde cada cosa.', prueba: 'Toca Cartera' },
-  { c: 1, v: 'posiciones', sel: '.grupo-tabs', t: 'Tres partes', x: 'Posiciones, lo que tienes; Análisis, lo que opina la IA y tus números; Hacienda, lo que pagarías en la renta y la guía de la declaración.' },
+  { c: 1, v: 'cartera', sel: navSel('posiciones'), toca: 'posiciones', t: 'Análisis: tu cartera por dentro', x: 'Lo que tienes, fila a fila, y en pestañas la rentabilidad, el riesgo, el reparto, Hacienda y más.', prueba: 'Toca Análisis' },
+  { c: 1, v: 'posiciones', sel: '.pest-av', t: 'Todo, en pestañas', x: 'Posiciones, rentabilidad, riesgo, reparto, dividendos, costes, Hacienda y lo que opina la IA. En modo básico, solo las de siempre.' },
   { c: 1, v: 'posiciones', sel: '.car-pos .fila[data-pos]', si: conPosiciones, conFicha: true, t: 'Cada posición, su ficha', x: 'Su gráfica, lo que opinan los analistas y lo que pagarías si la vendieras hoy.', prueba: 'Toca una', hecho: '.fila[data-pos]' },
   { c: 2, v: 'posiciones', sel: navSel('mercados'), toca: 'mercados', t: 'Mercados: lo de fuera', x: 'Bolsas, tipos, divisas y materias primas, y en una frase lo que significa para lo tuyo.', prueba: 'Toca Mercados' },
   { c: 2, v: 'mercados', sel: '.merc-busca', t: 'Busca lo que quieras', x: 'Cualquier fondo, acción, ETF o cripto, aunque no lo tengas: su precio, su ficha y lo que opinan los analistas.' },

@@ -82,9 +82,10 @@ const BLOQUES_CAR = {
   futuro: { n: 'Tu futuro', d: 'Lo que podrías tener en 5, 10 y 20 años', w: 'estrecho' },
   metas: { n: 'Tus metas', d: 'Si llegas a cada una con lo que aportas', w: 'estrecho' },
   renta: { n: 'Hacienda de este año', d: 'Lo que llevas ganado y lo que pagarías', w: 'estrecho' },
+  plan: { n: 'Tu plan y tus movimientos', d: 'Tus aportaciones programadas y lo último que has hecho', w: 'grande' },
 };
 // 0.3: tus posiciones, justo debajo del patrimonio; GrowIA, después y más corta
-const CAR_DEFECTO = ['patrimonio', 'posiciones', 'ia', 'reparto', 'agenda'];
+const CAR_DEFECTO = ['patrimonio', 'posiciones', 'ia', 'reparto', 'agenda', 'plan'];
 const ANCHO_CAR = { grande: 'Ancho', estrecho: 'Estrecho', lleno: 'De lado a lado' };
 function bloquesCartera() {
   const ini = S.cartera && S.cartera.inicio;
@@ -104,6 +105,8 @@ function bloquesCartera() {
     const im = g.indexOf('mapa'), estr = (k) => !!(BLOQUES_CAR[k] && BLOQUES_CAR[k].w === 'estrecho');
     if (im > -1 && !g.includes('informe') && !estr(g[im - 1]) && !estr(g[im + 1])) { g.splice(im + 1, 0, 'informe'); S.senalesSucias = true; }
   }
+  // 0.9, una vez: tu plan y tus movimientos pasan de Cartera a Hoy (detrás de lo que viene, o al final)
+  if (g && !ini.v09) { ini.v09 = true; if (!g.includes('plan')) { const ia = g.indexOf('agenda'); g.splice(ia > -1 ? ia + 1 : g.length, 0, 'plan'); } S.senalesSucias = true; }
   const v = (g || CAR_DEFECTO).filter((k, i, a) => BLOQUES_CAR[k] && a.indexOf(k) === i);
   // los que no se pueden quitar vuelven a su sitio si faltan (por ejemplo, tras juntar dos dispositivos)
   for (const k of Object.keys(BLOQUES_CAR)) if (BLOQUES_CAR[k].fijo && !v.includes(k)) v.splice(Math.min(v.length, CAR_DEFECTO.indexOf(k)), 0, k);
@@ -175,6 +178,7 @@ function htmlBloqueCar(k, M) {
     }
     if (k === 'gta') return gtaActivo() ? `<section class="car-gta" aria-label="GTA VI">${chipGTA()}<p class="k">La cuenta atrás y tu cartera en copias del juego.</p></section>` : '';
     if (k === 'ia') return htmlToca(M);
+    if (k === 'plan') return `<section class="car-plan" aria-labelledby="hPlanC"><div class="sec-cab"><h2 id="hPlanC">${L('Tu plan y tus movimientos', 'Your plan and your moves')}</h2></div>${htmlPlan(M).replace(/<section aria-labelledby="hPosE">[\s\S]*?<\/section>/, '').replace(/<section aria-labelledby="hEf">[\s\S]*?<\/section>/, '')}</section>`;
     if (k === 'posiciones') return `<div class="car-pos">
       <div class="subvistas dos-op car-tabs" id="carTabs" role="group" aria-label="Qué ver"><button data-car="pos" aria-pressed="${S.carTab !== 'plan'}">${ICONOS.cartera}Tus posiciones</button><button data-car="plan" aria-pressed="${S.carTab === 'plan'}">${ICONOS.plan}Plan y movimientos</button></div>
       ${S.carTab === 'plan' ? htmlPlan(M) : `<div class="pila">${htmlAvisosGraves(M)}${htmlPosiciones(M)}${htmlAvisos(M)}</div>`}</div>`;
@@ -213,13 +217,11 @@ const fueraDeHoy = (k) => EN_CARTERA_TS.has(k);
 /* Cartera de Toisón, subpestaña Posiciones: lo que tienes (con el plan y los movimientos) y el reparto. El total va
    encima, en htmlSubvistas */
 function vistaPosiciones(M) {
-  return `<div class="car car-ts">${htmlBloqueCar('posiciones', M)}${htmlReparto(M)}</div>`;
+  // 0.9: solo lo que tienes (el plan y los movimientos están en Hoy)
+  return `<div class="car car-ts"><div class="car-pos"><div class="pila">${htmlAvisosGraves(M)}${htmlPosiciones(M)}${htmlAvisos(M)}</div></div>${htmlReparto(M)}</div>`;
 }
 function vistaCartera(M) {
   if (S.carEdit) return vistaCarteraEditar(M);
-  // 0.9: en avanzado, las pestañas encima; el Resumen es Hoy de siempre
-  const pest = enAvanzado() ? htmlPestAv() : '';
-  if (pest && pestAv() !== 'resumen') return pest + htmlPanelAv();
   const lista = bloquesCartera().filter((k) => !fueraDeHoy(k)).map((k) => ({ k, w: anchoCar(k), html: conQueEs(k, htmlBloqueCar(k, M)) })).filter((b) => b.html);
   // filas: los estrechos seguidos se ponen al lado de los grandes que vengan detrás (el patrimonio, junto a la
   // gráfica y GrowIA), menos del grande que tenga sus propios estrechos detrás, que hace su fila con ellos (tus
@@ -243,7 +245,7 @@ function vistaCartera(M) {
   const empezar = S.demo ? '' : htmlEmpezar();
   const aviso = S.demo ? '' : empezar || (perfilIncompleto() && Date.now() - (LS.get('inv-perfil-aviso', 0) || 0) > 3 * 864e5
     ? `<div class="pf-recuerda" role="note"><span class="pf-r-ic">${ICONOS.perfil}</span><span class="pf-r-t"><b>${perfilVacio() ? 'Te falta tu perfil de inversor' : 'Tu perfil de inversor está a medias'}</b><small>Sin tu edad, tu plazo y el riesgo que aguantas, la IA te habla como a cualquiera. Es un minuto.</small></span><button type="button" class="btn peq pri" data-accion="perfil-guiado">${perfilVacio() ? 'Hacerlo ahora' : 'Terminarlo'}</button><button type="button" class="ib" data-accion="perfil-aviso-no" aria-label="Ahora no" title="Ahora no (vuelve en unos días)">${ICONOS.cerrar}</button></div>` : '');
-  return `${pest}<div class="car">${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
+  return `<div class="car">${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
     : f.t === 'suelta' ? `<div class="car-fila suelta">${f.a.map((x) => `<div class="car-col">${x.html}</div>`).join('')}</div>`
     : `<div class="car-fila ${f.t}">${f.t === 'par-izq' ? col(f.a) + col(f.b) : col(f.a) + col(f.b, ' lado')}</div>`)).join('')}
     <div class="car-pie"><button type="button" class="btn peq car-ordenar" data-accion="ordenar-cartera">${ICONOS.ordenar}Personalizar Inicio</button></div></div>`;

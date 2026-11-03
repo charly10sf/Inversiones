@@ -148,7 +148,7 @@ function preguntasIA() {
   const ia = iaActual(); if (!ia || !Array.isArray(ia.preguntas)) return [];
   const hechas = respuestasVivas().map((r) => r.q);
   return ia.preguntas.filter((x) => x && x.q && !hechas.some((q) => mismaPregunta(q, x.q)))
-    .filter((x, k, v) => v.findIndex((y) => mismaPregunta(y.q, x.q)) === k).slice(0, 3);
+    .filter((x, k, v) => v.findIndex((y) => mismaPregunta(y.q, x.q)) === k).slice(0, 4);
 }
 /* 0.5c: GrowIA a veces vuelve a preguntar lo mismo con otras palabras («¿Ajustarías tu cripto al 5 %?» y al día
    siguiente «¿Te plantearías algún ajuste en tu criptomoneda para dejarla en el límite del 5 %?»). Se comparan las

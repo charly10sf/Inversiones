@@ -32,7 +32,7 @@ test('en el ordenador, el mapa va más bajo y con el informe al lado', async ({ 
   test.skip(info.project.name !== 'pc', 'en el ordenador');
   // quien tenía el mapa solo en su fila: una vez, «Lo último, según GrowIA» se pone a su lado
   await inicio(page, ['patrimonio', 'mapa', 'posiciones', 'ia', 'reparto', 'agenda']);
-  expect(await page.evaluate(() => bloquesCartera())).toEqual(['patrimonio', 'mapa', 'informe', 'posiciones', 'ia', 'reparto', 'agenda']);
+  expect(await page.evaluate(() => bloquesCartera())).toEqual(['patrimonio', 'mapa', 'informe', 'posiciones', 'ia', 'reparto', 'agenda', 'plan']);
   const fila = page.locator('.car-fila.par-der', { has: page.locator('.mc-caja') });
   await expect(fila.locator('.informe')).toBeVisible();
   // y en él, lo que más se ha movido hoy de lo tuyo y por qué (del informe de la prensa)

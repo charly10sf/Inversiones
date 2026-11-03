@@ -71,9 +71,9 @@ conTema('marmol')('el tutorial: por capítulos, lo que se pide cuenta y lo demá
   expect(await page.evaluate(() => S.oculto)).toBe(false);
   // tocar el botón de la barra que pide lleva al paso siguiente solo
   await page.evaluate(() => irPasoTour(1));
-  await expect(page.locator('.tour-caja h3')).toHaveText('Cartera: lo tuyo, fila a fila');
+  await expect(page.locator('.tour-caja h3')).toHaveText('Análisis: tu cartera por dentro');
   await page.locator('.navbar [data-ir="posiciones"]').click();
-  await expect(page.locator('.tour-caja h3')).toHaveText('Tres partes');
+  await expect(page.locator('.tour-caja h3')).toHaveText('Todo, en pestañas');
   await expect(page.locator('.tour-k')).toContainText('Cartera');
   await expect(page.locator('.tour-n')).toHaveText('2 de 3');
   // el final: los primeros pasos y empezar por el primero que falta

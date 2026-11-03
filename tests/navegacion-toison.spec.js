@@ -28,11 +28,11 @@ test('cinco abajo con Hoy en el medallón, la IA arriba y cada cosa en su pesta�
   // Hoy: el patrimonio, sin tus posiciones
   await expect(page.locator('#vista .car-patrimonio')).toBeVisible();
   await expect(page.locator('#vista .car-pos')).toHaveCount(0);
-  // Cartera: el total en pequeño, las tres subpestañas y tus posiciones
+  // 0.9: Análisis (lo que era Cartera), sin el patrimonio (ya está en Hoy), con sus pestañas y tus posiciones
   await ir(page, 'posiciones');
   expect(await barra(page)).toBe('posiciones*,mercados,cartera,expertos,tu');
-  await expect(page.locator('.ts-total')).toBeVisible();
-  expect(await page.locator('.grupo-tabs a').allInnerTexts()).toEqual(['Posiciones', 'Análisis', 'Hacienda']);
+  await expect(page.locator('.ts-total')).toHaveCount(0);
+  expect((await page.locator('.pest-av a').allInnerTexts()).slice(0, 3)).toEqual(['Posiciones', 'Rentabilidad', 'Riesgo']);
   await expect(page.locator('#vista .car-pos')).toBeVisible();
   // las direcciones de siempre siguen valiendo: Análisis y Hacienda están en Cartera; Objetivos, en Tú
   await ir(page, 'fiscal');

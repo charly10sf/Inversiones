@@ -58,3 +58,49 @@ body:not(.modo-basico) .que-es { display: none; }
 }
 /* con el menú y la IA al lado, Hoy es más estrecho: la cifra grande no puede pisar los rangos de la gráfica */
 @media (min-width: 1180px) { body.ia-lado .hero-num { font-size: clamp(54px, 5.2vw, 80px); } }
+
+/* ---------- Análisis (lo que era Cartera): título sin el patrimonio y la fila de pestañas ---------- */
+.ts-grupo .ts-sub { margin: -2px 0 10px; font-size: 13px; color: var(--tenue); }
+.pest-av a { flex: none; min-height: 40px; display: inline-flex; align-items: center; padding: 0 15px; border-radius: 999px; color: var(--texto-2); font: 600 13px/1 var(--ui); white-space: nowrap; text-decoration: none; transition: background .2s, color .2s; }
+.pest-av a:hover { color: var(--texto); }
+.pest-av a[aria-current="page"] { background: var(--metal, var(--primario)); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo); }
+
+/* «Pregúntale»: en la cabecera de cada tarjeta */
+.preg-ia { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; min-height: 28px; padding: 0 10px 0 8px; border: 0; border-radius: 999px; background: color-mix(in srgb, var(--oro-texto) 12%, transparent); color: var(--oro-texto); font: 600 12px/1 var(--ui); letter-spacing: 0; text-transform: none; font-style: normal; cursor: pointer; flex: none; transition: background .2s, transform .12s; }
+.preg-ia:hover { background: color-mix(in srgb, var(--oro-texto) 20%, transparent); }
+.preg-ia:active { transform: scale(.95); }
+.preg-ia svg { width: 14px; height: 14px; }
+.sec-cab:has(.der) .preg-ia { margin-left: 8px; }
+.sec-cab .der + .preg-ia, .pav-et a + .preg-ia, .pav-et button + .preg-ia { margin-left: 8px; }
+@media (max-width: 420px) { .preg-ia span { display: none; } .preg-ia { padding: 0 8px; } }
+
+/* la silueta de una pestaña mientras llega */
+.pav-esq { grid-column: 1 / -1; display: grid; gap: 12px; grid-template-columns: repeat(12, minmax(0, 1fr)); }
+.pav-esq i { position: relative; overflow: hidden; height: 150px; border-radius: var(--r-l); background: var(--superficie); border: 1px solid var(--borde); grid-column: span 12; }
+@media (min-width: 900px) { .pav-esq i:nth-child(2) { grid-column: span 4; } .pav-esq i:nth-child(3) { grid-column: span 8; } }
+.pav-esq i::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--texto) 6%, transparent), transparent); transform: translateX(-100%); animation: pavBrillo 1.4s ease-in-out infinite; }
+@keyframes pavBrillo { to { transform: translateX(100%); } }
+
+/* el móvil: al bajar por Hoy, el patrimonio arriba en pequeño */
+.top-mini { display: none; }
+@media (max-width: 1179px) {
+  body.mini-total .top-mini { display: flex; flex-direction: column; align-items: flex-end; margin-left: auto; line-height: 1.1; font-variant-numeric: tabular-nums; animation: miniEntra .25s ease-out; }
+  body.mini-total .top-mini b { font: 600 15px/1.1 var(--ui); white-space: nowrap; }
+  body.mini-total .top-mini small { font-size: 11px; white-space: nowrap; }
+  body.mini-total .top .gta-top-w { display: none; }
+  body.mini-total .top .acciones { margin-left: 10px; }
+}
+@keyframes miniEntra { from { opacity: 0; transform: translateY(5px); } }
+
+/* tarjetas y filas que responden al pulsar */
+.tabla-pos .fila, .pav-t, .mv-c, .agp-lista li, .car-plan .plan-fila { transition: transform .16s cubic-bezier(.2, .8, .2, 1); }
+.tabla-pos .fila:active, .mv-c:active, .agp-lista li:active { transform: scale(.985); }
+
+/* el filo de oro de la tarjeta del patrimonio, como el canto de una tarjeta metálica */
+[data-tema] .car-hero { position: relative; }
+[data-tema] .car-hero::after { content: ""; position: absolute; left: 24px; right: 24px; top: 0; height: 1px; pointer-events: none; background: linear-gradient(90deg, transparent, var(--oro-texto), transparent); opacity: .55; }
+/* en máximos: la etiqueta y un brillo de oro al entrar, una sola vez */
+.hero-max { display: inline-flex; align-items: center; gap: 4px; margin-left: 8px; padding: 3px 8px; border-radius: 999px; background: color-mix(in srgb, var(--oro-texto) 14%, transparent); color: var(--oro-texto); font: 650 10.5px/1 var(--ui); letter-spacing: .04em; text-transform: none; animation: maxEntra .6s cubic-bezier(.2, .8, .2, 1); }
+.hero-max svg { width: 12px; height: 12px; }
+@keyframes maxEntra { from { opacity: 0; transform: scale(.8); } }
+@media (prefers-reduced-motion: reduce) { .pav-esq i::after, .hero-max, body.mini-total .top-mini { animation: none; } .tabla-pos .fila, .pav-t, .mv-c { transition: none; } }

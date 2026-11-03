@@ -24,23 +24,27 @@ function marcarModo() {
   document.body.classList.toggle('modo-avanzado', m === 'avanzado');
   for (const b of $$('[data-modo]')) b.setAttribute('aria-pressed', String(b.dataset.modo === m));
 }
+// las pestañas que se pintan en el trozo «avanzado» (vista «av»); las demás de Análisis son pantallas de siempre
 const PEST_AV = [
-  ['resumen', 'Resumen', 'Summary'], ['rentab', 'Rentabilidad', 'Returns'], ['pos', 'Posiciones', 'Holdings'],
-  ['pnl', 'Día a día', 'Day by day'], ['grafico', 'Gráfico técnico', 'Technical chart'], ['reparto', 'Reparto y X-Ray', 'Allocation and X-Ray'],
-  ['riesgo', 'Riesgo', 'Risk'], ['div', 'Dividendos', 'Dividends'], ['costes', 'Costes', 'Costs'], ['hacienda', 'Hacienda', 'Taxes'],
-  ['mov', 'Movimientos', 'Transactions'], ['rebal', 'Tu reparto objetivo', 'Your target mix'], ['lab', 'Laboratorio', 'Lab'],
+  ['rentab', 'Rentabilidad', 'Returns'], ['riesgo', 'Riesgo', 'Risk'], ['reparto', 'Reparto y X-Ray', 'Allocation and X-Ray'],
+  ['div', 'Dividendos', 'Dividends'], ['costes', 'Costes', 'Costs'], ['mov', 'Movimientos', 'Transactions'], ['pnl', 'Día a día', 'Day by day'],
+  ['grafico', 'Gráfico técnico', 'Technical chart'], ['rebal', 'Tu reparto objetivo', 'Your target mix'], ['lab', 'Laboratorio', 'Lab'],
 ];
 function pestAv() {
-  const p = S.pestAv || LS.get(LS_PEST_AV, 'resumen');
-  return PEST_AV.some(([k]) => k === p) ? p : 'resumen';
+  const p = S.pestAv || LS.get(LS_PEST_AV, 'rentab');
+  return PEST_AV.some(([k]) => k === p) ? p : 'rentab';
 }
-const enAvanzado = () => modoApp() === 'avanzado' && !S.carEdit;
-function htmlPestAv() {
-  const p = pestAv();
-  return `<nav class="pest-av" role="tablist" aria-label="${L('Pestañas del modo avanzado', 'Advanced mode tabs')}">${PEST_AV.map(([k, t, en]) => `<button type="button" role="tab" data-pest-av="${k}" aria-selected="${p === k}">${L(t, en)}</button>`).join('')}</nav>`;
+/* 0.9 (propuesta A): Análisis, lo que era Cartera. En avanzado, todas; en básico, las cuatro de siempre */
+function htmlPestAna() {
+  const p = pestAv(), av = modoApp() === 'avanzado';
+  const t = (k, n, en, v) => ({ k, n: L(n, en), v });
+  const lista = [t('posiciones', 'Posiciones', 'Holdings', 'posiciones'), ...PEST_AV.slice(0, 5).map(([k, n, en]) => t(k, n, en, 'av')), t('fiscal', 'Hacienda', 'Taxes', 'fiscal'), t('analisis', 'La IA opina', 'AI review', 'analisis'), ...PEST_AV.slice(5).map(([k, n, en]) => t(k, n, en, 'av'))]
+    .filter((x) => av || ['posiciones', 'reparto', 'fiscal', 'analisis'].includes(x.k));
+  const actual = (x) => (x.v === 'av' ? S.vista === 'av' && p === x.k : S.vista === x.v);
+  return `<nav class="pest-av" aria-label="${L('Qué ver', 'What to see')}">${lista.map((x) => `<a href="#${x.v}"${x.v === 'av' ? ` data-pest-av="${x.k}"` : ''} aria-current="${actual(x) ? 'page' : 'false'}">${x.n}</a>`).join('')}</nav>`;
 }
-// el sitio de una pestaña que no es el Resumen: lo llena pintarPanelAv (en el trozo) después de pintar
-const htmlPanelAv = () => `<div class="panel-av" id="panelAv" data-p="${pestAv()}" role="tabpanel" aria-busy="true"><p class="nota pav-carga">${L('Preparando la pestaña…', 'Getting the tab ready…')}</p></div>`;
+// el sitio de una pestaña de «av»: lo llena pintarPanelAv (en el trozo) después de pintar
+const htmlPanelAv = () => `<div class="panel-av" id="panelAv" data-p="${pestAv()}" aria-busy="true"><div class="pav-esq" aria-label="${L('Preparando la pestaña…', 'Getting the tab ready…')}"><i></i><i></i><i></i><i></i></div></div>`;
 function htmlSelectorModo(enRiel) {
   const m = modoApp();
   const bs = `<button type="button" data-modo="basico" aria-pressed="${m === 'basico'}">${L('Básico', 'Basic')}</button><button type="button" data-modo="avanzado" aria-pressed="${m === 'avanzado'}">${L('Avanzado', 'Advanced')}</button>`;
@@ -71,11 +75,30 @@ document.addEventListener('click', (e) => {
   if (m) { ponerModo(m.dataset.modo); return; }
   const t = e.target.closest('[data-pest-av]');
   if (t) {
-    S.pestAv = t.dataset.pestAv; LS.set(LS_PEST_AV, S.pestAv);
-    pintar();
-    const n = $(`[data-pest-av="${S.pestAv}"]`); if (n) { n.scrollIntoView({ block: 'nearest', inline: 'center' }); n.focus({ preventScroll: true }); }
+    e.preventDefault();
+    S.pestAv = t.dataset.pestAv; LS.set(LS_PEST_AV, S.pestAv); vibrar();
+    if (S.vista !== 'av') location.hash = 'av'; else { S.scrollTop = true; pintar(); }
   }
 });
+// la pestaña elegida, a la vista en la fila (al cambiar de pantalla se repinta entera)
+function centrarPest() { const n = $('.pest-av [aria-current="page"]'); if (n && n.scrollIntoView) n.scrollIntoView({ block: 'nearest', inline: 'center' }); }
+/* «Pregúntale» en cada tarjeta: abre la IA con lo que hay en ella (su título y lo que se lee) */
+function ponerPreguntale(raiz) {
+  if (!raiz || !['cartera', 'posiciones', 'av', 'fiscal'].includes(S.vista)) return;
+  for (const c of $$('.sec-cab, .pav-et', raiz)) {
+    if (c.querySelector('.preg-ia') || (c.closest('.car-plan') && !c.querySelector('#hPlanC'))) continue;
+    const h = c.querySelector('h2, h3') || c, tit = (h.firstChild && h.firstChild.textContent || h.textContent || '').trim().slice(0, 60);
+    if (!tit) continue;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'preg-ia'; b.dataset.accion = 'asesor';
+    b.dataset.q = L(`Explícame «${tit}» con mi cartera: qué significa, de dónde salen las cifras y qué hay que vigilar.`, `Explain «${tit}» with my portfolio: what it means, where the numbers come from and what to watch.`);
+    b.innerHTML = `${ICONOS_PL.asistente}<span>${L('Pregúntale', 'Ask')}</span>`;
+    b.setAttribute('aria-label', L(`Preguntarle a la IA por ${tit}`, `Ask the AI about ${tit}`));
+    c.appendChild(b);
+  }
+}
+// un toque corto en Android al cambiar de pestaña o marcar algo (se puede quitar: LS inv-vibrar = false)
+function vibrar(ms = 8) { try { if (LS.get('inv-vibrar', true) !== false && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
 // las flechas mueven entre pestañas (como en cualquier lista de pestañas)
 document.addEventListener('keydown', (e) => {
   const t = e.target.closest && e.target.closest('[data-pest-av]');
@@ -85,3 +108,44 @@ document.addEventListener('keydown', (e) => {
   const j = e.key === 'Home' ? 0 : e.key === 'End' ? ks.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + ks.length) % ks.length;
   const b = $(`[data-pest-av="${ks[j]}"]`); if (b) b.click();
 });
+
+/* ---------- 0.9 · acabado (Carlos, 3 nov: «muchísima mayor calidad percibida»; maqueta claude.ai/artifact/3JSdgotzA9gSQmwNGYLHCn) ---------- */
+const sinMovimiento = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
+function pulirHoy(M) {
+  if (S.vista !== 'cartera') return;
+  // la cifra que cuenta: la primera vez que se ve Hoy en esta visita sube hasta su valor
+  const n = $('#heroNum [data-b="totalE"]');
+  if (n && !S.contado && !S.oculto && !sinMovimiento()) {
+    S.contado = true;
+    const fin = n.textContent, v = +fin.replace(/\D/g, '');
+    if (v > 999) {
+      const t0 = performance.now();
+      let puesto = fin;
+      const paso = (t) => {
+        if (n.textContent !== puesto) return;   // llegó un precio nuevo a mitad: manda el dato
+        const k = Math.min(1, (t - t0) / 900), e = 1 - (1 - k) ** 3;
+        puesto = k < 1 ? fmtNum(Math.round(v * (0.94 + 0.06 * e)), 0) : fin;
+        n.textContent = puesto;
+        if (k < 1) requestAnimationFrame(paso);
+      };
+      requestAnimationFrame(paso);
+    }
+  }
+  // un momento: si tu patrimonio está en su máximo, se dice (una vez al día se calcula)
+  const h = $('.car-hero'); if (!h || !M.filas.length) return;
+  if (!S.maxCalc || S.maxCalc.d !== hoyIso()) { let c = null; try { c = caidaDetalle(serieCartera(M, 3650)); } catch (e) {} S.maxCalc = { d: hoyIso(), en: !!(c && c.ahora > -0.3 && c.dd.length > 60) }; }
+  if (S.maxCalc.en && !h.querySelector('.hero-max')) {
+    h.classList.add('en-maximo');
+    const lbl = h.querySelector('.hero-lbl');
+    if (lbl) lbl.insertAdjacentHTML('beforeend', `<span class="hero-max">${ICONOS.chispa || ''}${L('En máximos', 'At its high')}</span>`);
+  }
+}
+// la cabecera del móvil: al bajar por Hoy, el patrimonio se queda arriba en pequeño
+addEventListener('scroll', () => {
+  const m = $('#topMini'); if (!m) return;
+  const h = S.vista === 'cartera' && $('.car-hero'), on = !!h && h.getBoundingClientRect().bottom < 80;
+  if (on) { const t = $('#heroNum'), d = $('.hero-sub [data-b="dia"]'); m.innerHTML = `<b>${esc(t ? t.textContent.trim() : '')}</b>${d ? `<small class="${esc(d.className)}">${esc(d.textContent.trim())}</small>` : ''}`; }
+  document.body.classList.toggle('mini-total', on);
+}, { passive: true });
+// un toque corto al cambiar de sección o de pestaña
+document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.navbar [data-ir], .riel [data-ir], .grupo-tabs a, .tabs button, .chip-btn')) vibrar(); }, true);

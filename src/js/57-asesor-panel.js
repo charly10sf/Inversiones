@@ -59,6 +59,16 @@ function sugerencias(M) {
   s.push('Si la bolsa cae un 30 %, ¿cuánto bajaría mi cartera?');
   return s.slice(0, 6);
 }
+/* 0.9: seis funciones de un toque, además del chat (maqueta del 3 nov). Explican y calculan; lo que hagas lo decides tú */
+const FUNCIONES_IA = [
+  ['ok', 'Revisar mi cartera', 'Lo que va bien y lo que hay que vigilar', 'Revisa mi cartera punto por punto: qué va bien, qué riesgos hay que vigilar y qué supondría cada cambio. Lo decido yo.'],
+  ['info', 'Explícame una cifra', 'Recorta cualquier número de la app', null],
+  ['analisis', '¿Y si…?', 'Una caída, aportar más, jubilarte antes', '¿Qué supondría para mi cartera que la bolsa cayera un 20 %? ¿Y aportar 200 € más al mes durante 10 años?'],
+  ['calendario', 'Tu semana', 'Lo que ha pasado con lo tuyo', 'Resúmeme mi semana: qué ha pasado con lo que tengo, por qué, y qué viene la semana que viene.'],
+  ['novedades', 'Noticias de lo tuyo', 'Leídas y resumidas', 'Lee las noticias de los últimos días de lo que tengo y dime en pocas líneas qué me afecta y por qué.'],
+  ['fiscalidad', 'Tus números para la renta', 'El cálculo de la app, explicado', 'Explícame mis números para la renta de este año con los cálculos de la app: lo que llevo, lo que supondría y por qué.'],
+];
+const htmlFuncionesIA = () => `<div class="as-funcs">${FUNCIONES_IA.map(([ic, t, s, q]) => `<button type="button" class="as-func" ${q ? `data-as-q="${esc(q)}"` : 'data-as="recorte"'}>${ICONOS_PL[ic] || ''}<b>${t}</b><small>${s}</small></button>`).join('')}</div>`;
 function htmlTurno(t, k) {
   if (t.rol === 'yo') return `<div class="as-yo">${t.mini || t.donde ? `<div class="as-yo-rec">${t.mini ? `<img src="${esc(t.mini)}" alt="Recorte de la pantalla">` : ''}<small>Recorte de ${esc(t.donde || 'la pantalla')}</small></div>` : ''}${esc(t.texto)}</div>`;
   const vivo = AS.cargando && k === AS.conv.length - 1;
@@ -148,7 +158,7 @@ function pintarAsesor(alFinal) {
   const vista = !iaLista() && AS.vista !== 'ajustes' && !AS.conv.length ? 'clave' : AS.vista;
   if (vista === 'clave') cuerpo.innerHTML = htmlClaveAsesor();
   else if (vista === 'ajustes') cuerpo.innerHTML = htmlAjustesAsesor();
-  else if (!AS.conv.length) cuerpo.innerHTML = `<div class="as-vacio"><h3>¿Qué quieres saber?</h3><p>Tiene delante tu cartera de ahora mismo: lo que tienes y lo que te costó, tus aportaciones, lo que llevas de renta este año, los analistas, cientos de empresas de EEUU y Europa para buscar ideas y las noticias. Calcula ventas con FIFO e impuestos${cfg.web ? ' y busca en internet lo que le falte' : ''}.</p><div class="as-sug">${sugerencias(S.M || calcular()).map((q) => `<button data-as-q="${esc(q)}">${esc(q)}</button>`).join('')}<button type="button" class="as-sug-rec" data-as="recorte">${ICONOS.recorte}<span>Recorta un trozo de la pantalla y pregúntale por él</span></button></div></div>`;
+  else if (!AS.conv.length) cuerpo.innerHTML = `<div class="as-vacio"><h3>¿Qué quieres saber?</h3>${htmlFuncionesIA()}<p>Tiene delante tu cartera de ahora mismo: lo que tienes y lo que te costó, tus aportaciones, lo que llevas de renta este año, los analistas, cientos de empresas de EEUU y Europa para buscar ideas y las noticias. Calcula ventas con FIFO e impuestos${cfg.web ? ' y busca en internet lo que le falte' : ''}.</p><div class="as-sug">${sugerencias(S.M || calcular()).map((q) => `<button data-as-q="${esc(q)}">${esc(q)}</button>`).join('')}<button type="button" class="as-sug-rec" data-as="recorte">${ICONOS.recorte}<span>Recorta un trozo de la pantalla y pregúntale por él</span></button></div></div>`;
   else cuerpo.innerHTML = AS.conv.map(htmlTurno).join('');
   pie.hidden = vista !== 'chat';
   const b = $('#asEnviar', fondo);

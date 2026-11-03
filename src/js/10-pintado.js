@@ -126,7 +126,7 @@ const VISTAS = [
   ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['agenda', 'Calendario', 'Calendario'], ['mercados', 'Mercados', 'Mercados'],
 ];
 // 0.8: las dos que solo tiene Toisón (Cartera con tus posiciones, y Tú)
-const VISTAS_APARTE = [['posiciones', 'Cartera', 'Cartera'], ['tu', 'Tú', 'Tú']];
+const VISTAS_APARTE = [['posiciones', 'Análisis', 'Análisis'], ['tu', 'Tú', 'Tú'], ['av', 'Análisis', 'Análisis']];
 // el nombre de la pestaña del Paso a paso: en el modo público (0.5) su sitio es «Tu plan», que llega completo en la 0.9
 const RUTA_NOM = { get t() { return esPublico() ? 'Tu plan' : 'Paso a paso'; }, get c() { return esPublico() ? 'Plan' : 'Pasos'; }, get en() { return esPublico() ? 'Plan' : 'Steps'; } };
 /* 0.8 (rediseño, decidido con Carlos el 2 nov a las 21:44): con un diseño de Toisón la app se ordena de otra forma.
@@ -135,7 +135,8 @@ const RUTA_NOM = { get t() { return esPublico() ? 'Tu plan' : 'Paso a paso'; }, 
    Expertos; Tú, tu cuenta, tus objetivos y el Paso a paso (solo fundador y amigos; en estándar, «Tu plan»). La IA va
    arriba, solo con su logo. Las claves de siempre no cambian (Hoy sigue siendo «cartera») */
 const GRUPOS = [
-  { k: 'posiciones', t: 'Cartera', en: 'Portfolio', vistas: ['posiciones', 'analisis', 'fiscal'] },
+  // 0.9 (propuesta A del 3 nov): Cartera pasa a llamarse Análisis y lleva las pestañas del detalle; Hoy, tu plan
+  { k: 'posiciones', t: 'Análisis', en: 'Analysis', vistas: ['posiciones', 'av', 'analisis', 'fiscal'] },
   { k: 'mercados', t: 'Mercados', en: 'Markets', vistas: ['mercados'] },
   { k: 'cartera', t: 'Hoy', en: 'Today', vistas: ['cartera', 'agenda'] },
   { k: 'expertos', t: 'Ideas', en: 'Ideas', vistas: ['expertos'] },
@@ -163,7 +164,8 @@ function htmlSubvistas() {
   const falta = perfilIncompleto();
   const nav = `<nav class="grupo-tabs" aria-label="${esc(L(g.t, g.en))}">${lista.map(([k, t, en]) => `<a href="#${k}" aria-current="${S.vista === k ? 'page' : 'false'}"${k === 'futuro' && falta ? ' class="falta"' : ''}>${L(t, en)}</a>`).join('')}</nav>`;
   // en Cartera, tu total en pequeño encima (la gráfica está en Hoy) y el título de la pestaña
-  if (g.k === 'posiciones') return `<div class="ts-grupo"><h1 class="ts-tit">${L('Cartera', 'Portfolio')}</h1><div class="ts-total"><span class="ts-total-n">${B('total')}</span><span class="ts-total-v">${B('dia')}<small>${L('hoy', 'today')}</small></span><span class="ts-total-v">${B('pl')}<small>${L('ganado', 'gained')}</small></span></div>${nav}</div>`;
+  // 0.9: sin el patrimonio arriba (ya está en Hoy) y con las pestañas del detalle
+  if (g.k === 'posiciones') return `<div class="ts-grupo"><h1 class="ts-tit">${L('Análisis', 'Analysis')}</h1><p class="ts-sub">${L('Todo el detalle de tu cartera, por dentro.', 'All the detail of your portfolio, inside out.')}</p>${htmlPestAna()}</div>`;
   if (g.k === 'tu') return `<div class="ts-grupo"><h1 class="ts-tit">${L('Tú', 'You')}</h1>${nav}</div>`;
   return nav;
 }
@@ -324,7 +326,7 @@ const simboloTs = (c = '') => `<svg class="simb-ts ${c}" viewBox="-82 -78 164 14
 // el logo de las pantallas de entrar, crear la cartera y desbloquear: el símbolo en un disco
 const logoEntrada = () => `<span class="logo logo-ts">${simboloTs()}</span>`;
 const ICONOS_TS = {
-  posiciones: () => ICONOS_PL.cartera, mercados: () => ICONOS_PL.mercados, expertos: () => ICONOS_PL.expertos, tu: () => ICONOS_PL.tu,
+  posiciones: () => ICONOS_PL.analisis, mercados: () => ICONOS_PL.mercados, expertos: () => ICONOS_PL.expertos, tu: () => ICONOS_PL.tu,
   cartera: () => `<svg class="nav-med" viewBox="-82 -78 164 147" aria-hidden="true"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg>`,
 };
 function montar() {
@@ -334,6 +336,7 @@ function montar() {
     <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`).join('')}</nav>
     ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
+    <span class="top-mini" id="topMini" aria-hidden="true"></span>
     <div class="acciones">
       <button class="as-boton as-ts" id="bAsesor" data-accion="asesor" title="${L('Pregúntale a la IA por tu cartera', 'Ask the AI about your portfolio')}" aria-label="${L('Pregúntale a la IA', 'Ask the AI')}">${ICONOS_PL.asistente}</button>
       <button class="ib ib-fallo" id="bFallo" data-accion="opinion" title="Es una alfa: avisa de cualquier fallo o idea" aria-label="Avisar de un fallo">${ICONOS.bicho}<span class="fallo-t">Avisar de un fallo</span></button>
@@ -586,7 +589,7 @@ function pintar() {
   for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
   pintarTicker(M);
   const scroll = window.scrollY;
-  const html = { cartera: vistaCartera, posiciones: vistaPosiciones, tu: vistaTu, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
+  const html = { av: () => htmlPanelAv(), cartera: vistaCartera, posiciones: vistaPosiciones, tu: vistaTu, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
   setTimeout(() => { plegarNotas($('#vista')); marcarDeslizables($('#vista')); }, 0);
   $('#vista').innerHTML = sinCortes(htmlSubvistas() + html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntanoslo: lo leemos todo.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas y futuros, al instante. Analistas, histórico e ideas: Yahoo Finance.">Precios de Yahoo Finance (Madrid, con 15 minutos de retraso) y de Bitvavo; los fondos se actualizan una vez al día. Noticias de Google Noticias. Tus cantidades van cifradas: solo las ves tú. Las visitas se cuentan con Cloudflare, sin cookies ni datos tuyos.</p>`);
   if (S.scrollA != null) {
@@ -597,7 +600,9 @@ function pintar() {
   } else if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if (S.vista === 'cartera') { if ($('[data-que-es]')) ponerQueEs($('#vista')); pedirEncajarMovers(); }
   // 0.9: una pestaña del modo avanzado se llena después (su código va en un trozo aparte)
-  if (S.vista === 'cartera' && $('#panelAv')) pintarPanelAv();
+  if (S.vista === 'av' && $('#panelAv')) pintarPanelAv();
+  ponerPreguntale($('#vista')); pulirHoy(M); if (grupoDe(S.vista).k === 'posiciones') centrarPest();
+  if (S.irPlan && S.vista === 'cartera') { S.irPlan = false; setTimeout(() => { const p = $('.car-plan'); if (p) p.scrollIntoView({ block: 'start' }); }, 60); }
   if (S.vista === 'tu') activarSelectorTema($('#vista'));
   // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada
   if (S.vista === 'agenda' && S.agIr) {

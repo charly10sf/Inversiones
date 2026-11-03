@@ -18,20 +18,25 @@ const lista = async (page) => {
 };
 const pest = (page, p) => page.evaluate((x) => document.querySelector(`[data-pest-av="${x}"]`).click(), p);
 
-test('avanzado: trece pestañas encima de Hoy y las de datos se llenan con tu cartera', async ({ page }, info) => {
+test('avanzado: Análisis lleva todas las pestañas y las de datos se llenan con tu cartera; Hoy, sin pestañas', async ({ page }, info) => {
   test.skip(info.project.name === 'movil-pequeno', 'basta con el móvil y el ordenador');
   await lista(page);
   await page.evaluate(() => ponerModo('avanzado'));
-  await expect(page.locator('.pest-av [data-pest-av]')).toHaveCount(13);
-  await expect(page.locator('[data-pest-av="resumen"]')).toHaveAttribute('aria-selected', 'true');
-  await expect(page.locator('.car-patrimonio')).toBeVisible();
-  await expect(page.locator('.que-es')).toHaveCount(0);
-  for (const [p, texto] of [['rentab', 'Por periodo'], ['riesgo', 'Medidas de riesgo'], ['hacienda', 'Renta de'], ['reparto', 'Por clase de activo'], ['div', 'Tus números'], ['costes', 'Lo que pagas']]) {
+  await expect(page.locator('#vista .pest-av')).toHaveCount(0);
+  await expect(page.locator('.car-plan')).toBeVisible();
+  await page.evaluate(() => { location.hash = 'posiciones'; });
+  await expect(page.locator('.ts-tit')).toHaveText('Análisis');
+  await expect(page.locator('.ts-total')).toHaveCount(0);
+  await expect(page.locator('.pest-av a')).toHaveCount(13);
+  await expect(page.locator('.pest-av a[href="#posiciones"]')).toHaveAttribute('aria-current', 'page');
+  for (const [p, texto] of [['rentab', 'Por periodo'], ['riesgo', 'Medidas de riesgo'], ['reparto', 'Por clase de activo'], ['div', 'Tus números'], ['costes', 'Lo que pagas']]) {
     await pest(page, p);
     await expect(page.locator('#panelAv')).toContainText(texto, { timeout: 15_000 });
     await expect(page.locator('#panelAv .pav-como').first()).toContainText('Cómo se calcula');
-    await expect(page.locator('.car-patrimonio')).toHaveCount(0);
+    await expect(page.locator(`.pest-av [data-pest-av="${p}"]`)).toHaveAttribute('aria-current', 'page');
   }
+  // cada tarjeta lleva su «Pregúntale»
+  await expect(page.locator('#panelAv .pav-et .preg-ia').first()).toBeVisible();
   // el riesgo y la caída salen de verdad (no «—»)
   await pest(page, 'riesgo');
   await expect(page.locator('#panelAv .pav-kpi').first().locator('b')).toHaveText(/\d/, { timeout: 15_000 });
@@ -40,10 +45,10 @@ test('avanzado: trece pestañas encima de Hoy y las de datos se llenan con tu ca
   await pest(page, 'rebal');
   await expect(page.locator('#panelAv')).toContainText('se llena en las próximas versiones');
   await expect(page.locator('#panelAv a.btn')).toHaveAttribute('href', '#futuro');
-  // la pestaña se recuerda
   expect(await page.evaluate(() => LS.get('inv-pest-av'))).toBe('rebal');
-  await pest(page, 'resumen');
-  await expect(page.locator('.car-patrimonio')).toBeVisible();
+  // Hacienda y La IA opina son las pantallas de siempre
+  await page.locator('.pest-av a[href="#fiscal"]').evaluate((a) => a.click());
+  await expect(page.locator('.pest-av a[href="#fiscal"]')).toHaveAttribute('aria-current', 'page');
 });
 
 test('básico: sin pestañas y con un «¿Qué es?» en cada bloque; se elige en Tú y se recuerda', async ({ page }, info) => {
@@ -55,11 +60,13 @@ test('básico: sin pestañas y con un «¿Qué es?» en cada bloque; se elige en
   expect(await page.evaluate(() => LS.get('inv-modo'))).toBe('basico');
   await page.evaluate(() => { location.hash = 'cartera'; });
   await page.waitForTimeout(600);
-  await expect(page.locator('.pest-av')).toHaveCount(0);
   await expect(page.locator('.car-patrimonio .que-es')).toContainText('¿Qué es?');
   expect(await page.locator('#vista .que-es').count()).toBeGreaterThan(2);
   // dentro de su bloque y detrás de su cabecera, no suelto
   expect(await page.evaluate(() => [...document.querySelectorAll('#vista .que-es')].every((p) => p.closest('section, .car-pos, .car-hero')))).toBe(true);
+  // en básico, Análisis solo con las de siempre
+  await page.evaluate(() => { location.hash = 'posiciones'; });
+  await expect(page.locator('.pest-av a')).toHaveText(['Posiciones', 'Reparto y X-Ray', 'Hacienda', 'La IA opina']);
 });
 
 test('sin elegir: empezando sale básico y, si no, avanzado', async ({ page }, info) => {

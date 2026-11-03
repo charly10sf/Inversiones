@@ -103,7 +103,7 @@ function pintarPanelAv() {
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
-  el.innerHTML = html; el.removeAttribute('aria-busy');
+  el.innerHTML = html; el.removeAttribute('aria-busy'); ponerPreguntale(el);
   requestAnimationFrame(() => dibujarPanelAv(p, M));
 }
 const pavSinCartera = () => `<section class="pav-t pav-c12 pav-vacio"><h2>${L('Aquí salen tus números', 'Your numbers show up here')}</h2><p>${L('En cuanto metas lo que tienes, esta pestaña se llena con tus datos.', 'As soon as you add what you own, this tab fills up with your data.')}</p><button type="button" class="btn pri" data-accion="nueva-pos">${ICONOS.mas}${L('Meter lo que tengo', 'Add what I own')}</button></section>`;
