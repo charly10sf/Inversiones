@@ -139,8 +139,11 @@ window.addEventListener('hashchange', () => {
   if (S.carEdit && v !== 'cartera') cerrarCarEdit(true);
   if (v !== S.vista || /^(renta|impuestos|objetivos|proyeccion|plan)$/.test(location.hash.slice(1))) {
     const k = history.state && history.state.k, y = k ? SCROLLS[k] : null;
+    // 0.9 · acabado: la pantalla entra desde el lado del botón que has tocado (a la derecha en la barra, desde la derecha)
+    const ks = GRUPOS.map((g) => g.k), ia = ks.indexOf(grupoDe(S.vista).k), ib = ks.indexOf(grupoDe(v).k);
+    const dx = ia < 0 || ib < 0 || ia === ib ? 0 : ib > ia ? 18 : -18;
     S.vista = v; S.scrollTop = !(y > 0); S.scrollA = y > 0 ? y : null; LS.set('inv-vista', v); pintar();
-    const vi = $('#vista'); if (vi) { vi.classList.remove('entra'); void vi.offsetWidth; vi.classList.add('entra'); }
+    const vi = $('#vista'); if (vi) { vi.style.setProperty('--dx', `${dx}px`); vi.classList.remove('entra'); void vi.offsetWidth; vi.classList.add('entra'); }
   }
 });
 /* «Atrás» vuelve al punto exacto de cada pestaña: cada entrada del historial lleva su clave y se apunta hasta dónde

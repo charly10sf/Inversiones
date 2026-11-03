@@ -42,9 +42,9 @@ test('avanzado: Análisis lleva todas las pestañas y las de datos se llenan con
   await expect(page.locator('#panelAv .pav-kpi').first().locator('b')).toHaveText(/\d/, { timeout: 15_000 });
   await expect(page.locator('#pavCaida svg')).toHaveCount(1, { timeout: 10_000 });
   // las que aún no tienen sus datos dicen qué llevarán y adónde ir mientras
+  // las cinco que faltaban ya se llenan (noche del 3 nov): tests/pestanas-nuevas.spec.js las prueba una a una
   await pest(page, 'rebal');
-  await expect(page.locator('#panelAv')).toContainText('se llena en las próximas versiones');
-  await expect(page.locator('#panelAv a.btn')).toHaveAttribute('href', '#futuro');
+  await expect(page.locator('#panelAv')).toContainText('Tu reparto objetivo', { timeout: 15_000 });
   expect(await page.evaluate(() => LS.get('inv-pest-av'))).toBe('rebal');
   // Hacienda y La IA opina son las pantallas de siempre
   await page.locator('.pest-av a[href="#fiscal"]').evaluate((a) => a.click());

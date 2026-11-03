@@ -34,7 +34,7 @@ button.otro-perfil { justify-self: center; }
 @media (max-width: 719px) { .hoja::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--borde); margin: -8px auto 8px; } }
 /* al cambiar de pestaña, lo nuevo entra suave */
 #vista.entra { animation: vistaEntra 0.3s cubic-bezier(0.2, 0.8, 0.2, 1) backwards; }
-@keyframes vistaEntra { from { opacity: 0; transform: translateY(10px); } }
+@keyframes vistaEntra { from { opacity: 0; transform: translate(var(--dx, 0px), 10px); } }
 @media (min-width: 720px) { .hoja-fondo { align-items: center; } }
 .hoja { width: min(640px, 100%); max-height: min(92vh, 980px); overflow: auto; overscroll-behavior: contain; border: 1px solid var(--borde); border-radius: 18px 18px 0 0; padding: 18px 20px calc(20px + env(safe-area-inset-bottom)); }
 .hoja.ancha { width: min(820px, 100%); }

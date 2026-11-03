@@ -114,6 +114,7 @@ document.addEventListener('keydown', (e) => {
 const sinMovimiento = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return false; } };
 function pulirHoy(M) {
   if (S.vista !== 'cartera') return;
+  celebrarMetas(M);
   // la cifra que cuenta: la primera vez que se ve Hoy en esta visita sube hasta su valor
   const n = $('#heroNum [data-b="totalE"]');
   if (n && !S.contado && !S.oculto && !sinMovimiento()) {
@@ -140,6 +141,23 @@ function pulirHoy(M) {
     const lbl = h.querySelector('.hero-lbl');
     if (lbl) lbl.insertAdjacentHTML('beforeend', `<span class="hero-max">${ICONOS.chispa || ''}${L('En máximos', 'At its high')}</span>`);
   }
+}
+/* el destello al cumplir una meta: la primera vez que tu patrimonio llega a lo que pide una meta, su fila de Hoy brilla
+   en oro una vez y un aviso lo dice. Cada meta, una sola vez (LS inv-metas-hechas) */
+function celebrarMetas(M) {
+  // sin la proyección: basta con lo que tienes hoy contra lo que pide cada una (lo mismo que su barra en Hoy)
+  const ms = ((S.cartera && S.cartera.metas) || []).filter((m) => m && +m.importe > 0 && isFinite(M.total));
+  const hechas = new Set(LS.get('inv-metas-hechas', []) || []), nuevas = ms.filter((m) => M.total >= +m.importe && !hechas.has(claveMeta(m)));
+  if (!nuevas.length) return;
+  for (const m of nuevas) hechas.add(claveMeta(m));
+  LS.set('inv-metas-hechas', [...hechas].slice(-50));
+  const m = nuevas[0];
+  setTimeout(() => {
+    const li = $$('.car-metas li').find((x) => textoLimpio(x.querySelector('b')) === String(m.n || '').trim());
+    if (li && !sinMovimiento()) { li.classList.remove('meta-brilla'); void li.offsetWidth; li.classList.add('meta-brilla'); }
+    vibrar(30);
+    toast(L(`Has llegado a tu meta «${m.n}»: tu patrimonio ya pasa de ${eur(m.importe, 0)}.`, `You reached your goal «${m.n}»: your net worth is now above ${eur(m.importe, 0)}.`), 6000);
+  }, 1200);
 }
 // la cabecera del móvil: al bajar por Hoy, el patrimonio se queda arriba en pequeño
 addEventListener('scroll', () => {

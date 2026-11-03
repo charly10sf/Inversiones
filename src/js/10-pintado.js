@@ -210,7 +210,7 @@ function binds(M) {
   // la cifra grande, partida en euros y céntimos a partir del mismo número ya redondeado (79.999,999 → 80.000,00)
   const tR = Math.round(M.total * 100) / 100, tE = Math.trunc(Math.abs(tR)), tC = Math.round((Math.abs(tR) - tE) * 100);
   b.totalE = { txt: S.oculto ? '••••' : (tR < 0 ? '−' : '') + fmtNum(tE, 0), n: M.total };
-  b.totalD = { txt: S.oculto ? '\u00a0€' : ',' + String(tC).padStart(2, '0') + '\u00a0€', n: tC };
+  b.totalD = { txt: S.oculto ? '\u202f€' : ',' + String(tC).padStart(2, '0') + '\u202f€', n: tC };
   b.dia = { txt: `${eurS(M.dia)} (${pctS(M.diaPct)})`, n: M.dia, cls: cls(M.dia) };
   b.pl = { txt: `${eurS(M.pl)} (${pctS(M.plPct)})`, n: M.pl, cls: cls(M.pl) };
   b.estado = estadoDirecto();

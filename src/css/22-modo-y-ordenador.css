@@ -125,3 +125,15 @@ body:not(.modo-basico) .que-es { display: none; }
 .globo-cifra .gc-ia svg { width: 16px; height: 16px; }
 .globo-cifra .gc-nota { margin: 0; font-size: 12px; line-height: 1.35; color: var(--texto-2); }
 @media (prefers-reduced-motion: reduce) { .globo-cifra.entra { animation: none; } }
+
+/* la línea de 30 días en cada posición, pegada a la derecha de su nombre */
+.tabla-pos .activo-l .pos-spark { flex: none; width: 56px; height: 20px; margin-left: auto; opacity: .9; }
+.pos-spark polyline { fill: none; stroke-width: 1.5; stroke-linejoin: round; stroke-linecap: round; }
+.pos-spark.up polyline { stroke: var(--sube); } .pos-spark.down polyline { stroke: var(--baja); }
+@media (max-width: 360px) { .tabla-pos .activo-l .pos-spark { display: none; } }
+
+/* la meta cumplida: un barrido de oro, una vez */
+.car-metas li { position: relative; overflow: hidden; }
+.car-metas li.meta-brilla::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(105deg, transparent 30%, color-mix(in srgb, var(--oro-texto) 38%, transparent) 50%, transparent 70%); transform: translateX(-100%); animation: metaBrilla 1.4s cubic-bezier(.2, .8, .2, 1) 2; }
+@keyframes metaBrilla { to { transform: translateX(100%); } }
+@media (prefers-reduced-motion: reduce) { .car-metas li.meta-brilla::after { animation: none; } }

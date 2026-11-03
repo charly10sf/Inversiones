@@ -24,16 +24,16 @@ function fmtNum(n, d = 2) {
 // sin «,0» cuando, ya redondeado, es entero (25,04 → «25»)
 const fmtNumR = (n, d = 1) => fmtNum(n, isFinite(n) && Number(Math.abs(n).toFixed(d)) % 1 === 0 ? 0 : d);
 const oc = (s) => (S.oculto ? '••••' : s);
-const eur = (n, d = 2) => oc(fmtNum(n, d)) + '\u00a0€';
+const eur = (n, d = 2) => oc(fmtNum(n, d)) + '\u202f€';
 // el «+» solo si lo que se ve no es cero (+0,00 € o +0 % no tenían sentido)
 const masSi = (n, d) => (n > 0 && Math.abs(n).toFixed(d) !== (0).toFixed(d) ? '+' : '');
-const eurS = (n, d = 2) => (S.oculto ? '••••' : masSi(n, d) + fmtNum(n, d)) + '\u00a0€';
-const pct = (n, d = 2) => (n == null || !isFinite(n) ? '—' : fmtNum(n, d) + '\u00a0%');
-const pctS = (n, d = 2) => (n == null || !isFinite(n) ? '—' : masSi(n, d) + fmtNum(n, d) + '\u00a0%');
+const eurS = (n, d = 2) => (S.oculto ? '••••' : masSi(n, d) + fmtNum(n, d)) + '\u202f€';
+const pct = (n, d = 2) => (n == null || !isFinite(n) ? '—' : fmtNum(n, d) + '\u202f%');
+const pctS = (n, d = 2) => (n == null || !isFinite(n) ? '—' : masSi(n, d) + fmtNum(n, d) + '\u202f%');
 const cls = (n) => (n > 0.00001 ? 'up' : n < -0.00001 ? 'down' : 'flat');
 const flecha = (n) => (n > 0.00001 ? '▲ ' : n < -0.00001 ? '▼ ' : '');
 const decPrecio = (p) => { const a = Math.abs(p); const d = a >= 999.5 ? 0 : a >= 9.995 ? 2 : a >= 0.9995 ? 3 : a > 0 ? Math.min(10, 3 - Math.floor(Math.log10(a))) : 2; return d; };
-const precioFmt = (p) => (p == null ? '—' : fmtNum(p, decPrecio(p)) + '\u00a0€');
+const precioFmt = (p) => (p == null ? '—' : fmtNum(p, decPrecio(p)) + '\u202f€');
 function compacto(n) {
   // se redondea antes de elegir la unidad (999.999 salía «1.000 mil»)
   const a = Math.abs(n);

@@ -60,6 +60,29 @@ const PAV_CSS = `
 .panel-av .chart { margin-top: 6px; }
 
 .pav-kpi b.warn { color: var(--aviso); }
+/* las cinco de la noche del 3 nov */
+.pav-filtros { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: 14px 0 12px; }
+.pav-sel { display: inline-flex; align-items: center; gap: 8px; font-size: 13px; color: var(--texto-2); }
+.pav-sel select, .pav-sel input, .pav-rebal input { min-height: 40px; padding: 0 10px; border-radius: var(--r-s); border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); font: 500 14px/1 var(--ui); font-variant-numeric: tabular-nums; }
+.pav-sel input { width: 96px; } .pav-rebal input { width: 74px; }
+.pav-ley { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 8px 0 14px; font-size: 12px; color: var(--texto-2); }
+.pav-ley i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: -8px; }
+.pav-warn { color: var(--aviso); }
+.pnl-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font: 600 15px/1.2 var(--ui); }
+.pnl-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.pnl-ds { font: 600 10.5px/1 var(--ui); color: var(--tenue); text-align: center; padding: 4px 0; text-transform: uppercase; letter-spacing: .04em; }
+.pnl-d { min-height: 58px; padding: 5px 6px; border-radius: var(--r-s); display: grid; align-content: space-between; font-variant-numeric: tabular-nums; overflow: hidden; }
+.pnl-d small { font-size: 10.5px; color: var(--texto-2); }
+.pnl-d b { font: 600 12px/1.1 var(--ui); white-space: nowrap; }
+.pnl-d span { font-size: 10.5px; color: var(--texto-2); white-space: nowrap; }
+.pnl-d.vacio { background: color-mix(in srgb, var(--superficie) 40%, transparent); opacity: .55; }
+@media (max-width: 480px) { .pnl-d { min-height: 46px; padding: 4px; } .pnl-d span { display: none; } .pnl-d b { font-size: 10.5px; } }
+.mov-t { display: inline-block; padding: 2px 8px; border-radius: var(--r-p); font-size: 12px; font-weight: 600; background: color-mix(in srgb, var(--texto) 8%, transparent); }
+.mov-t.compra { color: var(--sube); background: color-mix(in srgb, var(--sube) 13%, transparent); }
+.mov-t.venta { color: var(--baja); background: color-mix(in srgb, var(--baja) 13%, transparent); }
+.mov-pl { display: block; font-size: 11.5px; color: var(--tenue); }
+.mov-f { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.lab-campos { margin-top: 0; }
 `;
 const ponerCssAv = () => { if (!$('#pavCss')) { const s = document.createElement('style'); s.id = 'pavCss'; s.textContent = PAV_CSS; document.head.appendChild(s); } };
 
@@ -99,7 +122,7 @@ function pintarPanelAv() {
   const el = $('#panelAv'); if (!el) return;
   ponerCssAv();
   const p = el.dataset.p, M = S.M || calcular();
-  const f = { rentab: pavRentab, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes }[p];
+  const f = { rentab: pavRentab, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
@@ -372,8 +395,242 @@ function dibujarPanelAv(p, M) {
     const b0 = b[0].idx;
     grafLinea(el, [{ datos: s.map((x) => ({ d: x.d, v: (x.idx - 1) * 100 })), color: 'var(--grafica)' }, { datos: b.map((x) => ({ d: x.d, v: (x.idx / b0 - 1) * 100 })), color: 'var(--reparto-2)' }], { alto: 220, sinRef: true, titulo: L('Tu cartera frente al MSCI World', 'Your portfolio vs the MSCI World'), fmt: (v) => pctS(v, 1), ejeFmt: (t) => `${fmtNum(t, 0)} %` });
   }
+  if (p === 'grafico') {
+    const el = $('#pavGraf'), { f } = pavGrafPos(M); if (!el || !f) return;
+    const h = (histDe(f.pos.instrumento) || []).filter((x) => x && x[1] != null).map(([d, v]) => ({ d, v }));
+    const dias = (PAV_RANGOS.find(([k]) => k === (S.grafRango || '1A')) || PAV_RANGOS[1])[1], desde = diasAtras(dias), corta = (xs) => xs.filter((x) => x.d >= desde);
+    grafLinea(el, [{ datos: corta(h), color: 'var(--grafica)' }, { datos: corta(pavMedia(h, 50)), color: 'var(--reparto-2)' }, { datos: corta(pavMedia(h, 200)), color: 'var(--reparto-4)' }], { alto: innerWidth < 560 ? 200 : 280, sinRef: true, titulo: esc(f.inst.corto || f.inst.nombre), fmt: (v) => precioFmt(v) });
+  }
   if (p === 'riesgo') {
     const el = $('#pavCaida'), c = caidaDetalle(serieCartera(M, 3650)); if (!el || !c) return;
     grafLinea(el, c.dd, { alto: innerWidth < 560 ? 150 : 180, color: 'var(--baja)', rellenoA: 0, sinRef: true, titulo: L('Distancia al máximo', 'Distance from the high'), fmt: (v) => pctS(v, 1), ejeFmt: (t) => `${fmtNum(t, 0)} %`, marca: c.peor ? { d: c.peor.hasta, txt: pctS(c.peor.pct, 1) } : null });
   }
 }
+
+/* =========================== 0.9 · las cinco pestañas que faltaban (noche del 3 nov) ===========================
+   Día a día, Movimientos, Gráfico técnico, Tu reparto objetivo y Laboratorio. Todo con lo que ya tiene la app. Ni
+   «compra» ni «vende»: lo que supondría, y lo decide el usuario. Los botones y los campos de estas pestañas se
+   atienden aquí abajo, una vez, al bajarse el trozo. */
+const PAV_MESES = () => (IDIOMA === 'en' ? ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] : ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']);
+const pavChips = (attr, actual, xs) => `<div class="tabs" role="group">${xs.map(([k, t]) => `<button type="button" ${attr}="${k}" aria-pressed="${actual === k}">${t}</button>`).join('')}</div>`;
+
+/* ---------- Día a día ---------- */
+function pavDias(M) {
+  const s = serieCartera(M, 420), out = [];
+  for (let i = 1; i < s.length; i++) if (s[i - 1].v > 0) out.push({ d: s[i].d, e: s[i].v - s[i - 1].v, p: (s[i].v / s[i - 1].v - 1) * 100 });
+  return out;
+}
+function pavPnl(M) {
+  const ds = pavDias(M);
+  if (ds.length < 5) return pavT('c12', L('Día a día', 'Day by day'), `<p class="nota" style="margin:0">${L('Aún no hay precios de suficientes días para contarlo.', 'Not enough days of prices yet.')}</p>`);
+  const meses = [...new Set(ds.map((x) => x.d.slice(0, 7)))].sort();
+  let mes = S.pnlMes && meses.includes(S.pnlMes) ? S.pnlMes : meses[meses.length - 1];
+  const i = meses.indexOf(mes), delMes = ds.filter((x) => x.d.startsWith(mes)), porDia = new Map(delMes.map((x) => [x.d, x]));
+  const [a, m] = mes.split('-').map(Number), primero = new Date(a, m - 1, 1), nd = new Date(a, m, 0).getDate(), hueco = (primero.getDay() + 6) % 7;
+  const DS = IDIOMA === 'en' ? ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] : ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom'];
+  let celdas = '';
+  for (let k = 0; k < hueco; k++) celdas += '<i></i>';
+  for (let d = 1; d <= nd; d++) {
+    const k = `${mes}-${String(d).padStart(2, '0')}`, x = porDia.get(k);
+    celdas += x ? `<div class="pnl-d ${cls(x.e)}" style="${pavColor(x.p, 2)}" title="${esc(fechaCorta(k))}"><small>${d}</small><b>${S.oculto ? '••' : euCorto(x.e)}</b><span>${pctS(x.p, 1)}</span></div>` : `<div class="pnl-d vacio"><small>${d}</small></div>`;
+  }
+  const tot = sum(delMes, (x) => x.e), verdes = delMes.filter((x) => x.e > 0).length;
+  const mejor = delMes.reduce((b, x) => (!b || x.e > b.e ? x : b), null), peor = delMes.reduce((b, x) => (!b || x.e < b.e ? x : b), null);
+  const cab = `<div class="pnl-cab"><button type="button" class="ib" data-pnl-mes="${esc(meses[i - 1] || '')}" ${i > 0 ? '' : 'disabled'} aria-label="${L('Mes anterior', 'Previous month')}">‹</button><b>${PAV_MESES()[m - 1]} ${a}</b><button type="button" class="ib" data-pnl-mes="${esc(meses[i + 1] || '')}" ${i < meses.length - 1 ? '' : 'disabled'} aria-label="${L('Mes siguiente', 'Next month')}">›</button></div>`;
+  const cal = `${cab}<div class="pnl-cal">${DS.map((x) => `<span class="pnl-ds">${x}</span>`).join('')}${celdas}</div>`;
+  const kpis = pavKpis([
+    [L('En el mes', 'This month'), eurS(tot, 0), cls(tot)],
+    [L('Días en verde', 'Green days'), `${verdes} ${L('de', 'of')} ${delMes.length}`],
+    mejor ? [L('Mejor día', 'Best day'), eurS(mejor.e, 0), 'up', `${Number(mejor.d.slice(8))} · ${pctS(mejor.p, 2)}`] : null,
+    peor ? [L('Peor día', 'Worst day'), eurS(peor.e, 0), 'down', `${Number(peor.d.slice(8))} · ${pctS(peor.p, 2)}`] : null,
+  ], 4);
+  // los últimos doce meses, sumados
+  const ult = meses.slice(-12).map((k) => [k, sum(ds.filter((x) => x.d.startsWith(k)), (x) => x.e)]);
+  const maxM = Math.max(1, ...ult.map(([, v]) => Math.abs(v)));
+  const barras = ult.map(([k, v]) => pavDos(`${PAV_MESES()[+k.slice(5) - 1].slice(0, 3)} ${k.slice(2, 4)}`, v, maxM)).join('');
+  // lo que más ha movido tu cartera el último día
+  const mov = M.filas.filter((f) => f.dia != null && f.varDia != null && !f.diaViejo).map((f) => [f.inst.corto || f.inst.nombre, f.dia]).filter(([, v]) => isFinite(v) && Math.abs(v) > 0.005).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1])).slice(0, 6);
+  const maxD = Math.max(1, ...mov.map(([, v]) => Math.abs(v)));
+  return [
+    pavT('c8', L('Tu cartera, día a día', 'Your portfolio, day by day'), kpis + `<div style="margin-top:16px">${cal}</div>`, L('Con lo que tienes hoy y el precio de cierre de cada día de bolsa: lo que cambió su valor de un día al siguiente. No cuenta las compras ni las ventas que hiciste por medio, así que un día en que compraste no sale como una subida.', 'With what you own today and each trading day\'s close: how its value changed from one day to the next. Purchases and sales in between are not counted.')),
+    pavT('c4', L('Mes a mes', 'Month by month'), barras, L('La suma de los días de cada mes, en euros, con lo que tienes hoy.', 'The sum of each month\'s days, in euros, with what you own today.')),
+    mov.length ? pavT('c12', L('Lo que más ha movido tu cartera hoy', 'What moved your portfolio most today'), mov.map(([n, v]) => pavDos(n, v, maxD)).join(''), L('Lo que ha ganado o perdido cada posición en la última sesión, en euros.', 'What each holding gained or lost in the last session, in euros.')) : '',
+  ].join('');
+}
+
+/* ---------- Movimientos ---------- */
+function pavListaMov(M) {
+  const xs = [], vistas = new Set();
+  for (const m of S.cartera.movimientos || []) {
+    if (!m || !m.fecha) continue;
+    const t = m.tipo === 'venta' ? 'venta' : m.tipo === 'compra' ? 'compra' : 'otro';
+    if (t === 'compra') vistas.add(`${m.instrumento}|${m.fecha}`);
+    xs.push({ d: m.fecha, t, n: nombreInst(m.instrumento), u: +m.uds || null, imp: +m.importe || (m.precio && m.uds ? m.precio * m.uds : 0), res: t === 'venta' && m.resultado != null ? +m.resultado : null, pl: m.plataforma || '' });
+  }
+  // las compras que salen de tus posiciones (la primera, las aportaciones programadas, los lotes) y no están apuntadas
+  for (const f of M.filas) {
+    let lotes = []; try { lotes = lotesDe(f.pos); } catch (e) {}
+    for (const l of lotes) {
+      if (!(l.c > 0) || vistas.has(`${f.pos.instrumento}|${l.f}`)) continue;
+      xs.push({ d: l.f, t: 'compra', n: f.inst.corto || f.inst.nombre, u: l.u || null, imp: l.c, aprox: !!l.mezcla, pl: f.pos.plataforma || '' });
+    }
+  }
+  return xs.sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : 0));
+}
+function pavMov(M) {
+  const todos = pavListaMov(M), fil = S.movFil || 'todo', xs = todos.filter((x) => fil === 'todo' || x.t === fil);
+  const T = { compra: L('Compra', 'Buy'), venta: L('Venta', 'Sale'), otro: L('Otro', 'Other') };
+  const comprado = sum(todos.filter((x) => x.t === 'compra'), (x) => x.imp), vendido = sum(todos.filter((x) => x.t === 'venta'), (x) => x.imp);
+  const res = sum(todos.filter((x) => x.res != null), (x) => x.res);
+  const kpis = pavKpis([
+    [L('Operaciones', 'Transactions'), fmtNum(todos.length, 0)],
+    [L('Comprado', 'Bought'), eur(comprado, 0)],
+    [L('Vendido', 'Sold'), eur(vendido, 0)],
+    [L('Resultado de lo vendido', 'Result of sales'), eurS(res, 0), cls(res)],
+  ], 4);
+  const MAX = 150;
+  const filas = xs.slice(0, MAX).map((x) => [`<span class="mov-f">${esc(x.d)}</span>`, `<b>${esc(x.n)}</b>${x.pl ? `<small class="mov-pl">${esc(x.pl)}</small>` : ''}`, `<span class="mov-t ${x.t}">${T[x.t]}</span>${x.aprox ? ` <small title="${L('Sin fecha exacta: la de la posición', 'No exact date: the holding\'s')}">≈</small>` : ''}`, x.u != null ? fmtNum(x.u, x.u < 10 ? 4 : 2) : '—', `${eur(x.imp, 2)}${x.res != null ? `<small class="${cls(x.res)}"> ${eurS(x.res, 0)}</small>` : ''}`]);
+  const tabla = xs.length ? pavTabla([L('Fecha', 'Date'), L('Qué', 'What'), L('Tipo', 'Type'), L('Particip.', 'Units'), L('Importe', 'Amount')], filas, 'pav-mov') + (xs.length > MAX ? `<p class="nota">${L(`Y ${xs.length - MAX} más antiguas.`, `And ${xs.length - MAX} older ones.`)}</p>` : '') : `<p class="nota" style="margin:0">${L('No hay movimientos de este tipo.', 'No transactions of this type.')}</p>`;
+  // lo que has metido cada mes (las compras), el último año
+  const desde = diasAtras(365).slice(0, 7), porMes = new Map();
+  for (const x of todos) if (x.t === 'compra' && x.d.slice(0, 7) >= desde) porMes.set(x.d.slice(0, 7), (porMes.get(x.d.slice(0, 7)) || 0) + x.imp);
+  const ms = [...porMes.entries()].sort(), maxM = Math.max(1, ...ms.map(([, v]) => v));
+  return [
+    pavT('c12', L('Tus operaciones', 'Your transactions'), kpis + `<div class="pav-filtros">${pavChips('data-mov-f', fil, [['todo', L('Todas', 'All')], ['compra', L('Compras', 'Buys')], ['venta', L('Ventas', 'Sales')]])}</div>` + tabla, L('Las compras y ventas que has apuntado o importado y, si no lo están, las compras que salen de tus posiciones (la primera compra, los lotes y las aportaciones programadas). Las marcadas con ≈ no tienen fecha exacta.', 'The buys and sales you recorded or imported and, if missing, the buys that come from your holdings. Those marked ≈ have no exact date.')),
+    ms.length ? pavT('c12', L('Lo que has metido cada mes', 'What you put in each month'), ms.map(([k, v]) => pavFila(`${PAV_MESES()[+k.slice(5) - 1].slice(0, 3)} ${k.slice(0, 4)}`, v, maxM, 'var(--grafica)', eur(v, 0))).join(''), L('La suma de las compras de cada mes, el último año.', 'The sum of each month\'s buys, over the last year.')) : '',
+  ].join('');
+}
+
+/* ---------- Gráfico técnico ---------- */
+// la media de los últimos n días de bolsa en cada punto (los datos viejos son semanales: se promedia lo que caiga en
+// ese tramo de calendario, n días de bolsa ≈ n·7/5 días de calendario)
+function pavMedia(h, n) {
+  const ms = (n * 7 / 5) * 864e5, out = [];
+  let j = 0, s = 0;
+  for (let i = 0; i < h.length; i++) {
+    s += h[i].v;
+    const t = Date.parse(h[i].d);
+    while (j < i && Date.parse(h[j].d) <= t - ms) { s -= h[j].v; j++; }
+    if (t - Date.parse(h[0].d) >= ms * 0.9) out.push({ d: h[i].d, v: s / (i - j + 1) });
+  }
+  return out;
+}
+function pavRsi(h, n = 14) {
+  // solo con datos diarios (entre puntos, como mucho 5 días)
+  const xs = []; for (let i = h.length - 1; i > 0 && xs.length < 120; i--) { if (Date.parse(h[i].d) - Date.parse(h[i - 1].d) > 5 * 864e5) break; xs.unshift(h[i].v - h[i - 1].v); }
+  if (xs.length < n + 1) return null;
+  let g = 0, p = 0;
+  for (let i = 0; i < n; i++) { if (xs[i] > 0) g += xs[i]; else p -= xs[i]; }
+  g /= n; p /= n;
+  for (let i = n; i < xs.length; i++) { g = (g * (n - 1) + Math.max(0, xs[i])) / n; p = (p * (n - 1) + Math.max(0, -xs[i])) / n; }
+  return p === 0 ? 100 : 100 - 100 / (1 + g / p);
+}
+const PAV_RANGOS = [['6M', 182], ['1A', 365], ['3A', 1095], ['5A', 1826]];
+function pavGrafPos(M) {
+  const fs = M.filas.filter((f) => histDe(f.pos.instrumento));
+  const f = fs.find((x) => x.pos.id === S.grafPos) || [...fs].sort((a, b) => b.valor - a.valor)[0];
+  return { fs, f };
+}
+function pavGrafico(M) {
+  const { fs, f } = pavGrafPos(M);
+  if (!f) return pavT('c12', L('Gráfico técnico', 'Technical chart'), `<p class="nota" style="margin:0">${L('Ninguna de tus posiciones tiene todavía historial de precios.', 'None of your holdings has price history yet.')}</p>`);
+  const h = (histDe(f.pos.instrumento) || []).filter((x) => x && x[1] != null).map(([d, v]) => ({ d, v }));
+  const ult = h[h.length - 1], m50 = pavMedia(h, 50), m200 = pavMedia(h, 200), rsi = pavRsi(h);
+  const ano = h.filter((x) => x.d >= diasAtras(365)), hi = Math.max(...ano.map((x) => x.v)), lo = Math.min(...ano.map((x) => x.v));
+  const sobre = (m) => (m.length ? (ult.v / m[m.length - 1].v - 1) * 100 : null);
+  const s50 = sobre(m50), s200 = sobre(m200), rango = S.grafRango || '1A';
+  const sel = `<label class="pav-sel"><span>${L('Posición', 'Holding')}</span><select data-graf-pos>${fs.map((x) => `<option value="${esc(x.pos.id)}"${x === f ? ' selected' : ''}>${pavNom(x)}</option>`).join('')}</select></label>`;
+  const kpis = pavKpis([
+    [L('Último precio', 'Last price'), precioFmt(ult.v), '', esc(ult.d)],
+    [L('Frente a su media de 50 días', 'Against its 50-day average'), s50 == null ? '—' : pctS(s50, 1), s50 == null ? '' : cls(s50)],
+    [L('Frente a su media de 200 días', 'Against its 200-day average'), s200 == null ? '—' : pctS(s200, 1), s200 == null ? '' : cls(s200)],
+    [L('RSI de 14 días', '14-day RSI'), rsi == null ? '—' : fmtNum(rsi, 0), rsi == null ? '' : rsi >= 70 || rsi <= 30 ? 'warn' : '', rsi == null ? '' : rsi >= 70 ? L('ha subido mucho y deprisa', 'rose a lot, fast') : rsi <= 30 ? L('ha bajado mucho y deprisa', 'fell a lot, fast') : L('en la zona media', 'in the middle range')],
+    ano.length > 5 ? [L('Máximo de un año', '1-year high'), precioFmt(hi), '', pctS((ult.v / hi - 1) * 100, 1)] : null,
+    ano.length > 5 ? [L('Mínimo de un año', '1-year low'), precioFmt(lo), '', pctS((ult.v / lo - 1) * 100, 1)] : null,
+  ], 3);
+  return [
+    pavT('c12', L('Gráfico técnico', 'Technical chart'), `<div class="pav-filtros">${sel}${pavChips('data-graf-r', rango, PAV_RANGOS.map(([k]) => [k, k]))}</div><div class="chart" id="pavGraf"></div><p class="pav-ley"><i style="background:var(--grafica)"></i>${L('Precio', 'Price')} <i style="background:var(--reparto-2)"></i>${L('Media de 50 días', '50-day average')} <i style="background:var(--reparto-4)"></i>${L('Media de 200 días', '200-day average')}</p>` + kpis,
+      L('Con el precio de cierre de cada día en euros (los años viejos, semana a semana): por eso no hay velas ni volumen. Las medias son las de los últimos 50 y 200 días de bolsa. El RSI mide, de 0 a 100, cuánto han pesado las subidas frente a las bajadas en las últimas 14 sesiones. Son cálculos sobre el precio, no una señal para comprar ni vender.', 'With each day\'s closing price in euros (older years, weekly): hence no candles or volume. The averages are those of the last 50 and 200 trading days. RSI measures, from 0 to 100, how much rises weighed against falls over the last 14 sessions. These are price calculations, not a buy or sell signal.')),
+  ].join('');
+}
+
+/* ---------- Tu reparto objetivo ---------- */
+const LS_OBJ = 'inv-reparto-obj';
+function pavObjetivo(r) {
+  const o = LS.get(LS_OBJ, null);
+  if (o && typeof o === 'object') return o;
+  // sin objetivo puesto: lo que tienes hoy, redondeado a 5, para empezar desde ahí
+  return Object.fromEntries(r.filas.map((x) => [x.k, Math.round(x.pct / 5) * 5]));
+}
+function pavRebal(M) {
+  const r = reparto(M, 'clase', 'todo'), obj = pavObjetivo(r), total = r.total || M.total;
+  const ks = [...new Set([...r.filas.map((x) => x.k), ...Object.keys(obj)])];
+  const tienes = (k) => (r.filas.find((x) => x.k === k) || { pct: 0, v: 0 });
+  const sumObj = sum(ks, (k) => +obj[k] || 0), puesto = !!LS.get(LS_OBJ, null);
+  const aport = Math.max(0, +(S.rebalAport != null ? S.rebalAport : cfgProy().aport) || 0);
+  // la aportación repartida hacia el objetivo: primero a lo que más falta (en euros, con el total de después)
+  const tras = total + aport, falta = ks.map((k) => [k, Math.max(0, ((+obj[k] || 0) / 100) * tras - tienes(k).v)]), sf = sum(falta, ([, v]) => v);
+  const reparte = new Map(falta.map(([k, v]) => [k, sf > 0 ? (v / sf) * Math.min(aport, sf) : 0]));
+  const filas = ks.map((k) => {
+    const t = tienes(k), o = +obj[k] || 0, dif = t.pct - o, eu = (dif / 100) * total, desp = tras > 0 ? ((t.v + (reparte.get(k) || 0)) / tras) * 100 : 0;
+    return [`<b>${esc(trad(k))}</b>`, pct(t.pct, 1), `<input type="number" inputmode="decimal" min="0" max="100" step="1" value="${o}" data-obj-k="${esc(k)}" aria-label="${L(`Objetivo para ${esc(k)}, en %`, `Target for ${esc(k)}, in %`)}">`, `<span class="${Math.abs(dif) < 2 ? '' : dif > 0 ? 'up' : 'down'}">${masSi(dif, 1)}${fmtNum(dif, 1)} pp</span><small> ${eurS(eu, 0)}</small>`, aport > 0 ? `${eur(reparte.get(k) || 0, 0)}<small> → ${pct(desp, 1)}</small>` : '—'];
+  });
+  const aviso = Math.abs(sumObj - 100) > 0.5 ? `<p class="nota pav-warn">${L(`Tu objetivo suma ${fmtNum(sumObj, 0)} %: tiene que sumar 100.`, `Your target adds up to ${fmtNum(sumObj, 0)}%: it must add up to 100.`)}</p>` : '';
+  const campo = `<label class="pav-sel"><span>${L('Si aportaras', 'If you put in')}</span><input type="number" inputmode="decimal" min="0" step="50" value="${aport}" data-rebal-aport aria-label="${L('Importe de la aportación, en euros', 'Contribution amount, in euros')}"> €</label>`;
+  const desv = sum(ks, (k) => Math.abs(tienes(k).pct - (+obj[k] || 0))) / 2;
+  return [
+    pavT('c12', L('Tu reparto objetivo', 'Your target mix'), pavKpis([[L('Lejos de tu objetivo', 'Away from your target'), `${fmtNum(desv, 1)} pp`, desv > 10 ? 'warn' : ''], [L('Objetivo', 'Target'), puesto ? L('Puesto por ti', 'Set by you') : L('Sin poner (es lo que tienes hoy)', 'Not set (it is what you own today)')]], 2)
+      + `<div class="pav-filtros">${campo}</div>` + pavTabla([L('Tipo', 'Type'), L('Tienes', 'You have'), L('Objetivo %', 'Target %'), L('Diferencia', 'Difference'), L('La aportación, hacia el objetivo', 'The contribution, towards the target')], filas, 'pav-rebal') + aviso,
+      L('Escribe el porcentaje que quieres de cada tipo (se guarda en este dispositivo). La última columna es un cálculo: cómo quedaría si esa aportación fuera a lo que más se queda por debajo de tu objetivo. Es una cuenta, no una recomendación: lo decides tú.', 'Type the percentage you want of each type (saved on this device). The last column is a calculation: how it would look if that contribution went to what is most below your target. It is a sum, not a recommendation: your call.')),
+  ].join('');
+}
+
+/* ---------- Laboratorio ---------- */
+function pavFuturo(ini, mes, anual, anios) { const r = Math.pow(1 + anual / 100, 1 / 12) - 1, n = Math.round(anios * 12); let v = ini; for (let i = 0; i < n; i++) v = v * (1 + r) + mes; return v; }
+function pavLabRes(M) {
+  const c = cfgProy(), L0 = S.lab || {}, mes = +(L0.mes ?? c.aport) || 0, anios = Math.max(1, Math.min(50, +(L0.anios ?? 10) || 10)), r = +(L0.r ?? c.bolsa ?? 7);
+  const base = pavFuturo(M.total, mes, r, anios), mas = pavFuturo(M.total, mes + 100, r, anios), puesto = M.total + mes * anios * 12;
+  const esc3 = [[L('Si va peor (−2 puntos)', 'If worse (−2 points)'), r - 2], [L('Con lo que has puesto', 'With your figure'), r], [L('Si va mejor (+2 puntos)', 'If better (+2 points)'), r + 2]];
+  return pavKpis([
+    ...esc3.map(([n, x]) => [n, euCorto(pavFuturo(M.total, mes, x, anios)), '', `${fmtNum(x, 1)} % ${L('al año', 'a year')}`]),
+    [L('Lo que habrías puesto tú', 'What you would have put in'), euCorto(puesto)],
+    [L('Con 100 € más al mes', 'With €100 more a month'), `+${euCorto(mas - base)}`, 'up', L(`en ${anios} años`, `in ${anios} years`)],
+  ], 3);
+}
+function pavLab(M) {
+  const c = cfgProy(), L0 = S.lab || {};
+  const campo = (k, t, v, paso, suf) => `<label class="pav-sel"><span>${t}</span><input type="number" inputmode="decimal" step="${paso}" value="${v}" data-lab="${k}"> ${suf}</label>`;
+  const s = serieCartera(M, 3650);
+  const per = [[L('1 año', '1 year'), 365], [L('3 años', '3 years'), 1095], [L('5 años', '5 years'), 1826], [L('10 años', '10 years'), 3650]];
+  const back = s.length > 20 ? per.map(([n, d]) => { const v = pavDesde(s, diasAtras(d), 'v'); if (v == null) return null; const anual = d > 400 ? (Math.pow(1 + v / 100, 365 / d) - 1) * 100 : null; return [n, pctS(v, 1), cls(v), anual != null ? L(`${pctS(anual, 1)} al año`, `${pctS(anual, 1)} a year`) : '']; }) : [];
+  let caida = null; try { caida = caidaDetalle(s); } catch (e) {}
+  const prueba = back.filter(Boolean).length ? pavKpis([...back, caida && caida.peor ? [L('Peor caída en ese tiempo', 'Worst drop in that time'), pctS(caida.peor.pct, 1), 'down'] : null], 3) : `<p class="nota" style="margin:0">${L('Faltan precios para mirar atrás.', 'Not enough prices to look back.')}</p>`;
+  return [
+    pavT('c7', L('¿Y si…?', 'What if…?'), `<div class="pav-filtros lab-campos">${campo('mes', L('Aportas al mes', 'You put in monthly'), L0.mes ?? c.aport, 50, '€')}${campo('anios', L('Durante', 'For'), L0.anios ?? 10, 1, L('años', 'years'))}${campo('r', L('Rentabilidad al año', 'Return a year'), L0.r ?? c.bolsa, 0.5, '%')}</div><div id="labRes">${pavLabRes(M)}</div>`,
+      L('Una cuenta con interés compuesto: lo que tienes hoy más lo que aportes cada mes, creciendo a esa rentabilidad cada año, sin impuestos ni inflación. Los mercados no suben en línea recta: para ver la horquilla de lo probable, mira «Lo que podrías tener».', 'A compound-interest sum: what you own today plus what you put in each month, growing at that return each year, before tax and inflation. Markets do not rise in a straight line: for the likely range, see «What you could have».'), pavIr('#proyeccion', L('Lo que podrías tener', 'What you could have'))),
+    pavT('c5', L('Lo de hoy, con el pasado', 'Today\'s mix, with the past'), prueba, L('Lo que habría hecho la cartera que tienes hoy (las mismas participaciones) con los precios de cada día del pasado. No cuenta lo que compraste o vendiste por medio. Lo pasado no dice lo que va a pasar.', 'What today\'s portfolio (same units) would have done with past prices. It ignores what you bought or sold in between. The past does not tell the future.')),
+  ].join('');
+}
+
+// los botones y campos de estas pestañas
+document.addEventListener('click', (e) => {
+  const t = e.target.closest && e.target.closest('[data-pnl-mes], [data-mov-f], [data-graf-r]'); if (!t || !$('#panelAv')) return;
+  if (t.dataset.pnlMes != null) { if (!t.dataset.pnlMes) return; S.pnlMes = t.dataset.pnlMes; }
+  if (t.dataset.movF) S.movFil = t.dataset.movF;
+  if (t.dataset.grafR) S.grafRango = t.dataset.grafR;
+  vibrar(); pintarPanelAv();
+});
+document.addEventListener('change', (e) => {
+  const t = e.target; if (!$('#panelAv') || !t.closest || !t.closest('#panelAv')) return;
+  if (t.matches('[data-graf-pos]')) { S.grafPos = t.value; pintarPanelAv(); }
+  else if (t.matches('[data-obj-k]')) {
+    const o = { ...pavObjetivo(reparto(S.M || calcular(), 'clase', 'todo')) };
+    for (const x of $$('[data-obj-k]', $('#panelAv'))) o[x.dataset.objK] = Math.max(0, Math.min(100, +x.value || 0));
+    LS.set(LS_OBJ, o); pintarPanelAv();
+  } else if (t.matches('[data-rebal-aport]')) { S.rebalAport = Math.max(0, +t.value || 0); pintarPanelAv(); }
+});
+document.addEventListener('input', (e) => {
+  const t = e.target; if (!t.matches || !t.matches('#panelAv [data-lab]')) return;
+  S.lab = { ...(S.lab || {}), [t.dataset.lab]: t.value === '' ? undefined : +t.value };
+  const r = $('#labRes'); if (r) { r.innerHTML = pavLabRes(S.M || calcular()); marcarCifras(r); }
+});

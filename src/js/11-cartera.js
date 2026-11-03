@@ -418,7 +418,7 @@ function htmlPosiciones(M) {
   const filas = ordenarPos(M.filas).map((f) => {
     const id = f.pos.id;
     return `<button class="fila" data-pos="${esc(id)}">
-        <span class="activo-l">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}<span class="activo"><b>${esc(f.inst.corto || f.inst.nombre)}</b>${nombreReal(f.inst) ? `<span class="nombre-real" title="${esc(nombreReal(f.inst))}">${esc(nombreReal(f.inst))}</span>` : ''}<small class="pos-donde">${origen(f.inst)}<span class="pos-pl">${esc(f.pos.plataforma || '')}</span></small>${(() => { const ch = chipsPos(f) + (['mantener', 'aportar'].includes(f.senal.nivel) ? '' : `<span class="senal ${f.senal.nivel} solo-movil">${f.senal.txt}</span>`); return ch ? `<small class="pos-chips">${ch}</small>` : ''; })()}</span></span>
+        <span class="activo-l">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}<span class="activo"><b>${esc(f.inst.corto || f.inst.nombre)}</b>${nombreReal(f.inst) ? `<span class="nombre-real" title="${esc(nombreReal(f.inst))}">${esc(nombreReal(f.inst))}</span>` : ''}<small class="pos-donde">${origen(f.inst)}<span class="pos-pl">${esc(f.pos.plataforma || '')}</span></small>${(() => { const ch = chipsPos(f) + (['mantener', 'aportar'].includes(f.senal.nivel) ? '' : `<span class="senal ${f.senal.nivel} solo-movil">${f.senal.txt}</span>`); return ch ? `<small class="pos-chips">${ch}</small>` : ''; })()}</span>${sparkPos(f.pos.instrumento)}</span>
         <span class="r c-precio">${B('pp:' + id)}</span>
         <span class="r c-hoy"><span class="k hoy-l">hoy </span>${B('pdE:' + id)}<small class="hoy-pct">${B('pd:' + id)}</small></span>
         <span class="r valor c-val">${B('pv:' + id)}</span>

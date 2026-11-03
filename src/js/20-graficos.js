@@ -441,6 +441,26 @@ function plegarNotas(raiz) {
   }
 }
 /* la mini gráfica de cada fila de Mercados: los últimos 3 meses, sin ejes */
+/* 0.9 · acabado: la línea de los últimos 30 días en cada fila de Posiciones (como en las apps de bolsa serias), con
+   su color según suba o baje en ese tiempo. Sin datos suficientes, nada. Se guarda por instrumento y por histórico */
+const SPARK_POS = new Map();
+function sparkPos(id) {
+  const h = histDe(id); if (!h || !h.length) return '';
+  const k = id + '|' + ((S.hist && S.hist.generado) || '') + '|' + h.length;
+  if (SPARK_POS.has(k)) return SPARK_POS.get(k);
+  const desde = new Date(Date.now() - 31 * 864e5).toISOString().slice(0, 10);
+  let xs = h.filter((x) => x && x[0] >= desde && x[1] != null).map((x) => x[1]);
+  if (xs.length < 4) xs = h.slice(-6).map((x) => x && x[1]).filter((v) => v != null);
+  let out = '';
+  if (xs.length >= 3) {
+    const lo = Math.min(...xs), hi = Math.max(...xs), W = 56, H = 20;
+    const pts = xs.map((v, i) => `${((i / (xs.length - 1)) * W).toFixed(1)},${(H - 2 - ((v - lo) / (hi - lo || 1)) * (H - 4)).toFixed(1)}`).join(' ');
+    const ch = (xs[xs.length - 1] / xs[0] - 1) * 100;
+    out = `<svg class="pos-spark ${ch >= 0 ? 'up' : 'down'}" viewBox="0 0 ${W} ${H}" aria-hidden="true"><polyline points="${pts}"/></svg>`;
+  }
+  SPARK_POS.set(k, out);
+  return out;
+}
 function miniSpark(sym) {
   const h = (histMercado(sym) || []).slice(-66).map(([, v]) => v).filter((v) => v != null);
   if (h.length < 3) return '<span class="mf-spark"></span>';
