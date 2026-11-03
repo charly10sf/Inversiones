@@ -130,7 +130,7 @@ async function cargarDeCuenta() {
 /* sin conexión al abrir: ni se crea una cartera nueva ni se toca la cuenta; se reintenta */
 function pantallaSinCuenta() {
   $('#app').innerHTML = `<div class="pantalla"><div class="caja caja-cuenta">
-    <img class="logo" src="icon-192.png" alt="">
+    ${logoEntrada()}
     <h1>No he podido leer tu cuenta</h1>
     <p>Comprueba que tienes conexión y vuelve a probar. Tu cartera sigue a salvo en tu cuenta: no se ha tocado nada.</p>
     <button class="btn pri" type="button" id="bReintentar">Reintentar</button>

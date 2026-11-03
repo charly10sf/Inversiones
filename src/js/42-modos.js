@@ -126,7 +126,7 @@ function htmlSelectorTema() {
   const b = (k, muestra, n) => `<button type="button" data-elige-tema="${k}" aria-pressed="${t === k}">${muestra}<span>${n}</span></button>`;
   return `<div class="seccion-ed aj-idioma"><h3>${navToison() ? ICONOS_PL.ver : ICONOS.ojo}${L('Toisón: el diseño nuevo (en pruebas)', 'Toisón: the new design (testing)')}</h3>
     <div class="idiomas temas" role="group" aria-label="${esc(L('Diseño', 'Design'))}" data-no-trad>${b('', '<img class="tema-muestra" src="favicon.svg" alt="">', 'GrowFolio')}${TEMAS.map((k) => b(k, `<i class="tema-muestra" data-tema="${k}" aria-hidden="true"></i>`, nom[k])).join('')}</div>
-    <small>${L('Solo lo ves tú y solo en este dispositivo; los demás siguen viendo la app como ahora hasta la 0.8. Es el primer paso: cambian los colores y la letra, y muchas partes todavía no están adaptadas.', 'Only you see this, on this device only. First step: colours and type change; many parts are not adapted yet.')}</small></div>`;
+    <small>${L('Solo lo ves tú y solo en este dispositivo; los demás siguen viendo la app como ahora hasta la 0.8. Casi todo está ya con el diseño nuevo; lo que falta se termina antes de la 0.8.', 'Only you see this, on this device only; everyone else sees the app as it is until 0.8. Almost everything already has the new design; the rest is finished before 0.8.')}</small></div>`;
 }
 function activarSelectorTema(el) {
   for (const b of $$('[data-elige-tema]', el)) b.onclick = () => {

@@ -562,3 +562,160 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .as-enviar { border-radius: 50%; background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo); }
 [data-tema] .as-enviar.parar { background: var(--superficie-2); color: var(--texto); box-shadow: none; }
 [data-tema] .as-modelo { border-color: var(--borde); border-radius: var(--r-m); }
+
+/* ---------- Paso 4 · el resto (3 nov) ---------- */
+/* el símbolo de Toisón suelto (simboloTs en 10-pintado.js): tutorial, entrada, Primeros pasos, Ajustes, presentación */
+.simb-ts { display: block; overflow: visible; }
+[data-tema] .simb-ts .s-o { fill: var(--sim-o); }
+[data-tema] .simb-ts .s-t { fill: var(--sim-t); }
+[data-tema] .tour-logo.simb-ts { width: 54px; height: auto; margin: 2px 0 12px; filter: drop-shadow(0 6px 14px var(--hondo)); }
+[data-tema] .guia-cab .guia-simb { width: 58px; height: auto; margin-bottom: 10px; }
+/* entrar, crear la cartera y desbloquear: el símbolo en un disco con aro de oro, como el de la cabecera */
+[data-tema] .logo.logo-ts { display: grid; place-items: center; width: 64px; height: 64px; border-radius: var(--r-p); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--hilo), var(--sombra-t); }
+[data-tema] .logo.logo-ts .simb-ts { width: 40px; height: auto; }
+[data-tema] .caja h1, [data-tema] .bq-caja h1 { font: 400 32px/1.15 var(--marca); letter-spacing: .005em; }
+[data-tema="borgona"] .caja h1, [data-tema="borgona"] .bq-caja h1 { font-style: italic; }
+[data-tema] .caja .paso-chip { color: var(--oro-texto); font: 600 11.5px/1.3 var(--ui); letter-spacing: .14em; text-transform: uppercase; }
+/* Ajustes: arriba el símbolo y TOISÓN (la tarjeta «Muy pronto» ya no sale: estás en Toisón) */
+[data-tema] .aj-cab .aj-simb { width: 46px; height: auto; flex: none; }
+[data-tema] .aj-cab .aj-ts { display: block; font: 500 17px/1.2 var(--marca); letter-spacing: .12em; text-transform: uppercase; color: var(--texto); }
+[data-tema] .aj-fila > .simb-ts { width: 22px; height: auto; flex: none; }
+/* el aviso de abajo (toast): pastilla si cabe en una línea; si son dos, una caja redondeada, no un óvalo */
+[data-tema] .toast { border-radius: var(--r-xl); }
+/* las pestañas de texto que se quedan arriba al bajar (Hacienda, Análisis…) llevan el fondo debajo: si no, el texto
+   de la pantalla se leía a través */
+[data-tema] .subvistas.dos-op { background: var(--fondo); }
+/* Borgoña: el filete corto va bajo el título y no bajo toda la cabecera (cuando el botón baja de línea quedaba suelto) */
+[data-tema="borgona"] .sec-cab { padding-bottom: 0; }
+[data-tema="borgona"] .sec-cab::after { content: none; }
+[data-tema="borgona"] .sec-cab h2 { position: relative; padding-bottom: 9px; }
+[data-tema="borgona"] .sec-cab h2::after { content: ''; position: absolute; bottom: 0; left: 0; width: 32px; height: 1px; background: var(--oro-texto); }
+/* Hoy: «Personalizar» ya está arriba, junto al saludo; el de abajo sobraba */
+[data-tema] .car-pie:has(> .car-ordenar:only-child) { display: none; }
+
+/* La presentación (33-presentacion.js): con el fondo y el oro de cada diseño; el símbolo se monta al bajar */
+[data-tema] .intro, [data-tema] .intro.ix { background: radial-gradient(120% 70% at 50% 0%, var(--superficie) 0%, var(--fondo) 62%); --ixg: var(--oro-texto); }
+[data-tema] .ix-cab, [data-tema] .ixn .ix-cab { background: linear-gradient(var(--fondo), color-mix(in srgb, var(--fondo) 90%, transparent) 70%, transparent); }
+[data-tema] :is(.ix-hola-t, .ix-hola-s) { text-shadow: none; }
+[data-tema] .ix-hola-t { font: 400 clamp(30px, 8vw, 46px)/1.1 var(--marca); letter-spacing: 0; }
+[data-tema="borgona"] .ix-hola-t { font-style: italic; }
+[data-tema] .ix-hola-t b { color: var(--oro-texto); font-weight: 500; }
+[data-tema] .ix-lema h2, [data-tema] .ix-cap h2, [data-tema] .ix-fin h2 { font-family: var(--marca); font-weight: 500; letter-spacing: 0; color: var(--oro-texto); }
+[data-tema] .ix-ts, [data-tema] .ix-cab .intro-marca .ix-ts { font: 500 15px/1 var(--marca); letter-spacing: .14em; color: var(--texto); }
+[data-tema] .ix-emblema .simb-ts .s-o, [data-tema] .ix-emblema .ix-flota .s-o { fill: var(--sim-o); }
+[data-tema] .ix-emblema .simb-ts .s-t, [data-tema] .ix-emblema .ix-flota .s-t { fill: var(--sim-t); }
+[data-tema] .ix-nom .nombre-ts { width: auto; display: flex; justify-content: center; gap: .1em; aspect-ratio: auto; font: 500 clamp(40px, 12vw, 72px)/1 var(--marca); letter-spacing: .12em; color: var(--texto); }
+[data-tema] .ix-nom .nombre-ts > span { position: static; display: inline-block; }
+[data-tema] .ix-fin-logo .ix-simb { width: 72px; height: auto; margin: 0 auto; }
+[data-tema] .ix-donde { color: var(--oro-texto); }
+
+/* La cuenta atrás de GTA VI (18-gta.css y trozos/gta.js), en premium: sin neón. Los colores de la escena salen de los
+   tokens: cielo del fondo del diseño, sol de metal a rayas, ciudad y palmeras en silueta, rejilla de hilo de oro,
+   cifras en Ibarra. Los dibujos siguen siendo propios (nada del juego ni de su logo) */
+[data-tema] .gta-marco {
+  --g-rosa: var(--oro-texto); --g-nar: var(--oro-texto); --g-sol: var(--oro-texto); --g-cian: var(--oro-texto);
+  --g-lila: var(--borde); --g-t: var(--texto); --g-t2: var(--texto-2); --g-neon: var(--marca); --g-script: var(--marca);
+  border-color: var(--hilo); box-shadow: 0 30px 90px var(--hondo);
+}
+[data-tema] .gta-fondo { background: color-mix(in srgb, var(--fondo-2) 82%, transparent); }
+[data-tema] .gta { background: var(--fondo); scrollbar-color: var(--borde) transparent; }
+[data-tema] .gta-marco *, [data-tema] .gta-marco *::before, [data-tema] .gta-marco *::after { text-shadow: none; }
+[data-tema] .gta-marco .gta-reloj span b, [data-tema] .gta-marco .gta-sec > .gta-rotulo { text-shadow: none; }
+[data-tema] .gta-marco .gta-sec > .gta-rotulo { color: var(--oro-texto); transform: none; font-size: clamp(20px, 5vw, 24px); }
+/* las tareas del Adder (cada una con su color en ADDER.tareas): con Toisón, los del reparto del diseño */
+[data-tema] .gta-pila i:nth-child(6n+1), [data-tema] .gta-pila-ley li:nth-child(6n+1) { --c: var(--reparto-1); }
+[data-tema] .gta-pila i:nth-child(6n+2), [data-tema] .gta-pila-ley li:nth-child(6n+2) { --c: var(--reparto-2); }
+[data-tema] .gta-pila i:nth-child(6n+3), [data-tema] .gta-pila-ley li:nth-child(6n+3) { --c: var(--reparto-3); }
+[data-tema] .gta-pila i:nth-child(6n+4), [data-tema] .gta-pila-ley li:nth-child(6n+4) { --c: var(--reparto-4); }
+[data-tema] .gta-pila i:nth-child(6n+5), [data-tema] .gta-pila-ley li:nth-child(6n+5) { --c: var(--reparto-5); }
+[data-tema] .gta-pila i:nth-child(6n), [data-tema] .gta-pila-ley li:nth-child(6n) { --c: var(--reparto-6); }
+[data-tema] .gta-pila-ley i { box-shadow: none; }
+[data-tema] :is(.gta-x, .gta-son, .gta-baja) { border: 1px solid var(--aro); background: color-mix(in srgb, var(--superficie) 86%, transparent); color: var(--texto); box-shadow: none; }
+[data-tema] .gta-son[aria-pressed="true"] { border-color: var(--hilo); box-shadow: inset 0 0 0 1px var(--hilo); }
+/* la escena */
+[data-tema] .gta-cielo { background: linear-gradient(180deg, var(--fondo-2) 0%, var(--fondo) 55%, var(--superficie) 100%); }
+[data-tema] .gta-estrellas { display: none; }
+[data-tema] .gta-paisaje { background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--oro-texto) 10%, var(--superficie)) 52%, color-mix(in srgb, var(--oro-texto) 24%, var(--superficie)) 69.9%, var(--fondo-2) 70%); }
+[data-tema] .gta-sol { background: var(--metal); filter: drop-shadow(0 0 40px color-mix(in srgb, var(--oro-texto) calc(var(--resplandor) * 60%), transparent)); }
+[data-tema] .gta-horizonte { background: linear-gradient(90deg, transparent, var(--oro-texto) 25%, var(--oro-texto) 75%, transparent); box-shadow: none; height: 1px; }
+[data-tema] .gta-suelo { background-color: var(--fondo-2); background-image: linear-gradient(90deg, var(--hilo) 1px, transparent 1px); }
+[data-tema] .gta-suelo::before { background-image: linear-gradient(0deg, var(--hilo) 1px, transparent 1px); }
+[data-tema] .gta-paisaje::after { background: var(--fondo-2); }
+[data-tema] .gta-ciudad path { fill: color-mix(in srgb, var(--fondo-2) 80%, var(--texto)); }
+[data-tema] .gta-ciudad path.v { fill: color-mix(in srgb, var(--oro-texto) 70%, transparent); }
+[data-tema] .gta-palma { fill: var(--fondo-2); }
+[data-tema="marfil"] .gta-ciudad path { fill: color-mix(in srgb, var(--texto) 78%, var(--fondo)); }
+[data-tema="marfil"] .gta-palma { fill: var(--texto); }
+/* letras: «cuenta atrás» en cursiva de oro, GTA VI en Ibarra de metal, el reloj en tarjetas */
+[data-tema] .gta-rotulo { font: italic 400 clamp(20px, 5vw, 26px)/1.2 var(--marca); letter-spacing: .02em; transform: none; color: var(--oro-texto); }
+[data-tema] .gta-pre { font-size: clamp(19px, 4.6vw, 24px); }
+[data-tema] .gta-tit { font: 500 clamp(64px, 18vw, 112px)/1 var(--marca); letter-spacing: .08em; margin: 4px 0 18px; color: var(--oro-texto); background: var(--metal); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; animation: none; }
+[data-tema] .gta-tit::after { content: none; }
+[data-tema] .gta-reloj span { background: var(--superficie); border: 2px solid var(--borde); border-radius: var(--r-l); box-shadow: var(--sombra-t), inset 0 1px 0 color-mix(in srgb, var(--brillo) 30%, transparent); }
+[data-tema] .gta-reloj b, [data-tema] .gta-reloj span:first-child b { font: 500 clamp(32px, 9vw, 50px)/1 var(--ui); font-variant-numeric: tabular-nums; color: var(--texto); }
+[data-tema] .gta-marco .gta-reloj span:first-child b { color: var(--oro-texto); }
+[data-tema] .gta-reloj i { font: 600 10.5px/1.2 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
+[data-tema] .gta-fecha { color: var(--texto-2); }
+[data-tema] .gta-barra { background: var(--superficie-2); }
+[data-tema] .gta-barra i, [data-tema] .gta-pista-f, [data-tema] .gta-pos .b i, [data-tema] .gta-quien .b i { background: var(--metal); box-shadow: none; }
+[data-tema] .gta-pista, [data-tema] :is(.gta-pos, .gta-quien) .b { background: var(--superficie-2); }
+[data-tema] .gta-pista-f::after { background: var(--texto); box-shadow: 0 0 0 4px var(--hilo); }
+/* el cuerpo: tarjetas del diseño, cifras en Ibarra y el camino con hilo de oro */
+[data-tema] .gta-cuerpo { background: var(--fondo); }
+[data-tema] :is(.gta-desde, .gta-v6, .gta-copias2, .gta-pos, .gta-quien, .gta-juego) { background: var(--superficie); border: 2px solid var(--borde); border-radius: var(--r-l); box-shadow: var(--sombra-t); }
+[data-tema] .gta-mini li { background: var(--superficie-2); border-color: var(--borde); }
+[data-tema] .gta-num { color: var(--oro-texto); font-family: var(--marca); font-weight: 500; }
+[data-tema] .gta-sec > .gta-rotulo { color: var(--oro-texto); }
+[data-tema] .gta-camino::before { background: var(--sep); }
+[data-tema] .gta-camino::after { background: var(--metal); box-shadow: none; width: 1px; }
+[data-tema] .gta-camino li::before { background: var(--fondo); border: 2px solid var(--oro-texto); }
+[data-tema] .gta-camino li.hecho::before { background: var(--oro-texto); box-shadow: none; }
+[data-tema] .gta-camino li.siguiente::before { background: var(--texto); border-color: var(--texto); }
+[data-tema] .gta-camino li.siguiente::after { background: var(--hilo); }
+[data-tema] .gta-camino b, [data-tema] .gta-mini b, [data-tema] :is(.gta-pos, .gta-quien) b { color: var(--texto); }
+[data-tema] .gta-camino em, [data-tema] .gta-pila-tu em { color: var(--oro-texto); box-shadow: none; }
+[data-tema] .gta-hito i { background: var(--fondo); }
+[data-tema] .gta-hito.f1::before { background: var(--hilo); }
+[data-tema] :is(.gta-anios span, .gta-pila-ley span, .gta-est, .gta-pila-ley b) { color: var(--texto-2); }
+[data-tema] .gta-pila i { box-shadow: none; }
+[data-tema] .gta-pila-tu { background: var(--texto); box-shadow: none; }
+[data-tema] .gta-quien .mas b { color: var(--sube); } [data-tema] .gta-quien .menos b { color: var(--baja); }
+[data-tema] .gta-quien .mas .b i { background: var(--sube); box-shadow: none; }
+[data-tema] .gta-quien .b::before { background: var(--sep); }
+[data-tema] .gta-pie { border-top-color: var(--sep); color: var(--texto-2); }
+[data-tema] :is(.gta-picto svg, .gta-coche .gta-cuerpo-coche) { filter: none; }
+[data-tema] .gta-picto svg { stroke: var(--oro-texto); }
+/* el coche (dibujo propio): carrocería de la superficie, líneas de oro */
+[data-tema] .gta-coche-svg stop { stop-color: var(--oro-texto); }
+[data-tema] .gta-coche-svg [stroke]:not([stroke="none"]) { stroke: var(--oro-texto); }
+[data-tema] .gta-coche-svg :is(path, circle)[fill^="#"], [data-tema] .gta-coche-svg path[fill^="rgba"] { fill: var(--superficie-2); }
+/* botones de la hoja (compartir la imagen…) */
+[data-tema] .gta-b { border: 1px solid var(--aro); background: var(--superficie); color: var(--texto); border-radius: var(--r-p); }
+[data-tema] .gta-b.pri { background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo); }
+[data-tema] .gta-marco :focus-visible { outline-color: var(--oro-texto); }
+/* Novedades con dibujos (trozos/novedades.js): el número de la versión en Ibarra, como las cifras de marca */
+[data-tema] .ixn-ver { font-family: var(--marca); font-weight: 500; letter-spacing: .02em; }
+[data-tema] .ixn-eti { font: 600 11.5px/1.3 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--oro-texto); }
+[data-tema] .ixn-capv h3 { font-family: var(--marca); font-weight: 500; letter-spacing: 0; color: var(--oro-texto); }
+[data-tema] .ixn-arr li { border-top-color: var(--sep); }
+[data-tema] .ixn-ruta li { background: var(--superficie-2); }
+[data-tema] .ixn-ruta li + li::before { background: var(--sep); }
+[data-tema] .ixn-det { border-color: var(--hilo); background: color-mix(in srgb, var(--oro-texto) 10%, transparent); color: var(--texto); }
+/* el botón principal de las pantallas de entrar, con el texto centrado */
+[data-tema] .caja .btn.pri { justify-content: center; text-align: center; }
+/* La entrada (entradaTs en 62-arranque.js): el símbolo sube con su luz y TOISÓN sale letra a letra */
+[data-tema] .entrada { background: radial-gradient(60% 45% at 50% 46%, color-mix(in srgb, var(--oro-texto) 14%, transparent), transparent 70%), var(--fondo); }
+.entrada-ts .ets-simb { display: block; width: clamp(96px, 26vw, 132px); filter: drop-shadow(0 14px 30px var(--hondo)); animation: etsSimb 1s cubic-bezier(.2, .8, .2, 1) both; }
+.entrada-ts .ets-simb .simb-ts { width: 100%; height: auto; }
+.entrada-ts .ets-nom { display: flex; gap: .12em; font: 500 clamp(26px, 7vw, 34px)/1 var(--marca); letter-spacing: .12em; color: var(--texto); }
+.entrada-ts .ets-nom span { display: inline-block; animation: etsLetra .6s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(.45s + var(--k) * 70ms); }
+.entrada-ts .en-saludo { font: 400 clamp(20px, 5.4vw, 26px)/1.2 var(--marca); letter-spacing: 0; animation-delay: 1.05s; }
+[data-tema="borgona"] .entrada-ts .en-saludo { font-style: italic; }
+.entrada-ts .en-saludo b { font-weight: 500; background: none; color: var(--oro-texto); animation: none; }
+.entrada-ts .en-barra { background: var(--superficie-2); animation-delay: 2s; }
+.entrada-ts .en-barra i { background: var(--metal); }
+.entrada-ts.corta .ets-simb, .entrada-ts.corta .ets-nom span { animation-duration: .35s; animation-delay: 0s; }
+.entrada-ts.corta .en-saludo { animation-delay: .08s; }
+@keyframes etsSimb { from { opacity: 0; transform: translateY(14px) scale(.92); } }
+@keyframes etsLetra { from { opacity: 0; transform: translateY(8px); } }
+@media (prefers-reduced-motion: reduce) { .entrada-ts * { animation: none !important; } }

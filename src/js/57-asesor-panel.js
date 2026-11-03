@@ -50,13 +50,13 @@ function sugerencias(M) {
     return s.slice(0, 6);
   }
   const pl = M.filas.map((f) => planVenta(f, M)).filter(Boolean)[0];
-  if (pl) { const res = pl.f.p && pl.f.p.proximos_resultados; s.push(`¿Vendo ya ${pl.f.inst.corto} o espero${res && res >= hoyIso() ? ` a sus resultados del ${fechaCorta(res)}` : ''}?`); }
-  s.push('Este mes me sobran 500 €: ¿dónde los meto?');
+  if (pl) { const res = pl.f.p && pl.f.p.proximos_resultados; s.push(`¿Qué supondría vender ya ${pl.f.inst.corto} o esperar${res && res >= hoyIso() ? ` a sus resultados del ${fechaCorta(res)}` : ''}?`); }
+  s.push('Este mes me sobran 500 €: ¿qué opciones tengo?');
   const top = M.filas.filter((f) => f.inst.tipo === 'Acción' && f.plPct > 40).sort((a, b) => b.plPct - a.plPct)[0];
   s.push(top ? `Búscame otra jugada como la de ${top.inst.corto}, bien contrastada` : 'Búscame una acción con un motor claro y bien contrastada');
   s.push(`¿Cuánto voy a pagar en la renta de ${anio}?`);
   s.push('¿Qué ha pasado hoy en los mercados que me afecte?');
-  s.push('Si la bolsa cae un 30 %, ¿cuánto pierdo y qué hago?');
+  s.push('Si la bolsa cae un 30 %, ¿cuánto bajaría mi cartera?');
   return s.slice(0, 6);
 }
 function htmlTurno(t, k) {

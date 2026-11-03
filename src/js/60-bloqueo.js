@@ -61,7 +61,7 @@ function pantallaBloqueo(alAbrir, conContrasena) {
   el.className = 'bloqueo'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'GrowFolio bloqueado');
   const teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', c.huella ? 'huella' : '', '0', 'borrar'];
   el.innerHTML = `<div class="bq-caja">
-    <img class="logo" src="favicon.svg" alt="">
+    ${logoEntrada('favicon.svg')}
     <h1>Hola de nuevo</h1>
     <p class="bq-txt">${c.huella ? 'Pon tu huella o tu PIN para ver tu cartera.' : 'Pon tu PIN para ver tu cartera.'}</p>
     <div class="bq-puntos" aria-hidden="true"><i></i><i></i><i></i><i></i></div>

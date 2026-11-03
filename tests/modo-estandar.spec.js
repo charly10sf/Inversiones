@@ -29,6 +29,7 @@ test('en estándar, Hacienda no habla de lo que recomienda GrowFolio; en fundado
   await expect(vista).toContainText('Lo que pagas');
   await expect(vista).not.toContainText('recomienda GrowFolio');
   await expect(vista).not.toContainText('cuesta cada recomendación');
+  await expect(vista).not.toContainText('costaría cada paso de tu plan');
   await expect(page.locator('#hFisR')).toHaveCount(0);
   // «Para pagar menos»: la regla, sin decir qué vender, y los nombres con «&» sin escapar dos veces
   await expect(vista).not.toContainText('vender también estas');
@@ -42,8 +43,10 @@ test('en estándar, Hacienda no habla de lo que recomienda GrowFolio; en fundado
   await page.evaluate(() => { S.acceso = 'privado'; pintar(); });
   await expect(page.locator('#hFisR')).toBeVisible();
   await expect(vista).toContainText('Aportar 300 € al mes');
-  await expect(vista).toContainText('cuesta cada recomendación');
-  await expect(vista).toContainText('Más abajo, lo que pagarías');
+  // 0.8 (paso 4): en fundador tampoco «te recomienda» (regla de la CNMV): es «cada paso de tu plan»
+  await expect(vista).toContainText('costaría cada paso de tu plan');
+  await expect(vista).not.toContainText('recomienda GrowFolio');
+  await expect(vista).toContainText('Más abajo, lo que supondría en la renta');
 });
 
 // Carlos, 30 oct: la letra pequeña de Google debajo de la caja de GrowIA le quitaba seriedad. Lo de adónde van los datos

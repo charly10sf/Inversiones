@@ -387,6 +387,10 @@ function parchear() {
 
 /* ---------- estructura fija: cabecera, cinta, contenido y barra inferior ---------- */
 // los iconos de la barra con Toisón: Hoy es el medallón con el símbolo
+/* 0.8 (paso 4): el símbolo de Toisón (O áurea y T) para el tutorial, la entrada, Primeros pasos y Ajustes */
+const simboloTs = (c = '') => `<svg class="simb-ts ${c}" viewBox="-82 -78 164 147" aria-hidden="true"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg>`;
+// el logo de las pantallas de entrar, crear la cartera y desbloquear: con Toisón, su símbolo en un disco
+const logoEntrada = (img = 'icon-192.png') => (temaActual() ? `<span class="logo logo-ts">${simboloTs()}</span>` : `<img class="logo" src="${img}" alt="">`);
 const ICONOS_TS = {
   posiciones: () => ICONOS_PL.cartera, mercados: () => ICONOS_PL.mercados, expertos: () => ICONOS_PL.expertos, tu: () => ICONOS_PL.tu,
   cartera: () => `<svg class="nav-med" viewBox="-82 -78 164 147" aria-hidden="true"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg>`,

@@ -220,7 +220,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   raiz.className = `intro ix ixn${varias ? ' ixn-varias' : ''}${quieta ? ' quieta' : ''}`;
   raiz.setAttribute('role', 'dialog'); raiz.setAttribute('aria-modal', 'true'); raiz.setAttribute('aria-label', `Novedades de la ${ver}`);
   raiz.innerHTML = `<div class="ix-luz" aria-hidden="true"></div><div class="ix-barra" aria-hidden="true"></div>
-    <div class="ix-cab"><span class="intro-marca" style="opacity:1"><img src="growfolio-nombre.svg" alt="GrowFolio"></span><button class="ixn-det" type="button" data-nv="lista">${ICONOS.plan}${L('En detalle', 'In detail')}</button><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
+    <div class="ix-cab"><span class="intro-marca" style="opacity:1">${navToison() ? '<b class="ix-ts">TOISÓN</b>' : '<img src="growfolio-nombre.svg" alt="GrowFolio">'}</span><button class="ixn-det" type="button" data-nv="lista">${ICONOS.plan}${L('En detalle', 'In detail')}</button><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
       <section class="ixn-heroe"><div class="ix-escena">
         <p class="ixn-eti" data-no-trad>${varias ? L(`Te has perdido ${grupos.length} versiones`, `You've missed ${grupos.length} versions`) : L('Lo nuevo', "What's new")}</p>

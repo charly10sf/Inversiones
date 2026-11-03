@@ -281,7 +281,7 @@ function vistaExpertos(M) {
     const prensa = noticiasCartera(true);
     // 0.7i: en el ordenador, lo tuyo a la izquierda y lo de la prensa a la derecha (en el móvil, uno debajo de otro, como antes)
     cuerpo = `<div class="exp-dos"><div class="exp-main">${planes.length ? `<section aria-labelledby="hPlanV">
-      <div class="sec-cab"><h2 id="hPlanV">Qué vender o recortar</h2><span class="k">${planes.length === 1 ? 'una posición' : planes.length + ' posiciones'}, con el plan completo</span></div>
+      <div class="sec-cab"><h2 id="hPlanV">Lo que podrías vender o recortar</h2><span class="k">${planes.length === 1 ? 'una posición' : planes.length + ' posiciones'}, con el plan completo</span></div>
       <div class="pila" style="gap:16px">${planes.map((pl) => htmlPlanVenta(pl, 'plegado')).join('')}</div>
     </section>` : ''}
     <section aria-labelledby="hSen" class="bloque-sec">

@@ -52,24 +52,24 @@ function pasosRuta0(M) {
     const f = pl.f, p = f.p || {}, res = p.proximos_resultados && p.proximos_resultados >= hoy && diasEntre(hoy, p.proximos_resultados) <= 31 ? p.proximos_resultados : null;
     const destino = [pl.aColchon > 0.5 ? `${eur(pl.aColchon, 0)} a tu colchón` : '', pl.aIdea > 0 && pl.ideas[0] ? `${eur(pl.aIdea, 0)} a ${esc(nombreRadar(pl.ideas[0]))}` : '', pl.aNucleo > 0.5 ? `${eur(pl.aNucleo, 0)} ${nucleo(M).a}` : ''].filter(Boolean).join(IDIOMA === 'en' ? ' and ' : ' y ');
     add('mes', { id: `venta:${f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: res ? sumarDias(res, -1) : hoy, cuando: res ? `antes del ${fechaCorta(res)}` : 'ya',
-      t: `${pl.nivel === 'vender' ? 'Vende' : 'Vende parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : f.inst.clase === 'Cripto' ? 4 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
+      t: `${pl.nivel === 'vender' ? 'Vender' : 'Vender parte de'} ${esc(f.inst.corto)}: ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : f.inst.clase === 'Cripto' ? 4 : 2))} ${pl.accion ? 'acciones' : f.inst.clase === 'Cripto' || f.inst.tipo === 'ETC' ? 'unidades' : 'participaciones'}, unos ${eur(pl.importe, 0)}`,
       pq: esc(f.senal.motivos[0] || ''),
       como: `${esc(pl.cuando[0].replace(/^(Ya|Now): /, '').replace(/^./, (c) => c.toUpperCase()))}${destino ? L(` Con lo que cobres: ${destino}.`, ` With what you collect: ${destino}.`) : ''}`,
       imp: `${pl.ganancia > 0 ? L(`Declaras ${eurS(pl.ganancia, 0)} de ganancia: unos ${eur(pl.impuesto, 0)} en la renta de ${anio}, que se paga entre abril y junio de ${anio + 1}. Déjalos en efectivo hasta entonces. Como vendes con ganancia, puedes volver a comprarla cuando quieras.`, `You declare a gain of ${eurS(pl.ganancia, 0)}: about ${eur(pl.impuesto, 0)} in your ${anio} tax return, paid between April and June ${anio + 1}. Keep it in cash until then. Since you're selling at a gain, you can buy it back whenever you like.`) : `${L(`Declaras una pérdida de ${eur(-pl.ganancia, 0)}: resta de tus ganancias del año.`, `You declare a loss of ${eur(-pl.ganancia, 0)}: it reduces this year's gains.`)} ${(() => { const l = libreRecompra(f.inst, res ? sumarDias(res, -1) : hoy); return l ? L(`No la recompres hasta el ${fechaLarga(l)}: ${reglaRecompra(f.inst).corto}`, `Don't buy it back until ${fechaCortaL(l)} ${l.slice(0, 4)}: ${trad(reglaRecompra(f.inst).corto)}`) : reglaRecompra(f.inst).corto; })()}`}`,
       acc: `<a class="enlace" href="#expertos" data-exp="resumen">Ver el plan completo</a>` });
     const top = pl.ideas[0], dVenta = res ? sumarDias(res, -1) : hoy;
-    if (pl.aColchon > 0.5) add('mes', { id: `colchonv:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Pon ${eur(pl.aColchon, 0)} en tu colchón`,
+    if (pl.aColchon > 0.5) add('mes', { id: `colchonv:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Poner ${eur(pl.aColchon, 0)} en tu colchón`,
       pq: `Te faltan ${eur(faltaColchon(M), 0)} para los meses de gastos que te pusiste: va antes que meter más en bolsa.`,
       como: 'Déjalo en el efectivo remunerado de tu bróker o en un fondo monetario: no baja y lo tienes cuando lo necesites.' });
     if (pl.aIdea > 0 && top) {
       const e = esperadaRadar(top), tasa = tasaRadar(top), fis = fiscalidadSede(origenRadar(top).sede);
-      add('mes', { id: `compra:${top.s}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Compra ${eur(pl.aIdea, 0)} de ${esc(nombreRadar(top))}`,
+      add('mes', { id: `compra:${top.s}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: `Comprar ${eur(pl.aIdea, 0)} de ${esc(nombreRadar(top))}`,
         pq: `De las ${radarVals().length} empresas del radar, la mejor contrastada para una acción nueva que no repita lo que ya tienes: ${top.ctr.favor} de ${top.ctr.total} señales a favor. ${e ? planTxt(e) : ''}`,
         como: `En ${esc(pl.f.pos.plataforma || 'Trade Republic')}: busca ${esc(nombreRadar(top))} (${esc(top.s)}), Comprar, orden limitada a ${precioR(top.p, top.m)} (el precio de ahora) por unos ${eur(pl.aIdea, 0)}. Ponle tu regla de salida en su ficha cuando la tengas.`,
         imp: `${tasa ? `Al comprar, ${fmtNum(tasa.tipo * 100, 1)} % de ${esc(tasa.nombre)} (unos ${eur(pl.aIdea * tasa.tipo, 0)}).` : 'Sin tasa al comprar.'} ${esc(fis.txt)}`,
         acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`Voy a comprar ${eur(pl.aIdea, 0)} de ${top.n} (${top.s}) con lo que saque de ${pl.f.inst.corto}. Contrástalo con las noticias de esta semana: ¿lo hago, a qué precio y con qué regla de salida?`)}">Que GrowIA la contraste antes</button>` });
     }
-    if (pl.aNucleo > 0.5) add('mes', { id: `nucleo:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: L(`Mete ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^a /, 'en ')}`, `Put ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^to /, 'into ')}`),
+    if (pl.aNucleo > 0.5) add('mes', { id: `nucleo:${pl.f.pos.id}:${anio}-${new Date().getMonth()}`, urgente: true, d: dVenta, cuando: 'después de vender', t: L(`Meter ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^a /, 'en ')}`, `Putting ${eur(pl.aNucleo, 0)} ${nucleo(M).a.replace(/^to /, 'into ')}`),
       pq: pl.nivel === 'reducir' ? L('Bajas riesgo sin dejar de estar invertido.', 'You lower risk without stopping being invested.') : pl.aIdea > 0 ? L('La otra parte, a lo seguro.', 'The other part, somewhere safe.') : L('Tus acciones sueltas no tienen más hueco dentro de tu límite.', 'Your individual stocks have no more room within your limit.'),
       como: (() => { const nf = (S.M && S.M.filas || []).filter((f) => f.inst.tipo === 'Fondo indexado' && f.inst.clase === 'Renta variable').sort((x, y) => y.valor - x.valor)[0]; const de = pl.f.pos.plataforma, a = nf && nf.pos.plataforma; return nf ? (a && de && a !== de ? `Pasa el dinero de ${de} a ${a} y compra participaciones de ${nf.inst.corto}.` : `Compra participaciones de ${nf.inst.corto}${a ? ` en ${a}` : ''}.`) : 'Elige un fondo indexado de todo el mundo con comisión baja (en Mercados puedes buscarlo) y compra participaciones.'; })(), imp: 'Fondo de acumulación: no paga nada hasta que vendas, y entre fondos ni eso (traspaso).' });
   }
@@ -94,7 +94,7 @@ function pasosRuta0(M) {
   }
   // 4. datos que le faltan a la web
   const fa = fiscalAnio(anio);
-  if (!fa.otras && !fa.rcm) add('mes', { id: `fiscal:${anio}`, cuando: 'cuando puedas', t: `Apunta tus datos fiscales de ${anio}`, pq: 'Sin ellos, el impuesto de cada consejo de GrowFolio sale más alto o más bajo de lo que es.', como: 'En Análisis > Hacienda, botón «Datos fiscales»: las ventas que hiciste fuera de GrowFolio (ganancia o pérdida), los dividendos e intereses cobrados y lo que ya te retuvieron. Son dos minutos.', acc: `<button class="enlace" data-accion="fiscal">Apuntarlos</button>` });
+  if (!fa.otras && !fa.rcm) add('mes', { id: `fiscal:${anio}`, cuando: 'cuando puedas', t: `Apunta tus datos fiscales de ${anio}`, pq: 'Sin ellos, el impuesto de cada paso sale más alto o más bajo de lo que es.', como: 'En Análisis > Hacienda, botón «Datos fiscales»: las ventas que hiciste fuera de GrowFolio (ganancia o pérdida), los dividendos e intereses cobrados y lo que ya te retuvieron. Son dos minutos.', acc: `<button class="enlace" data-accion="fiscal">Apuntarlos</button>` });
   const est = M.filas.filter((f) => f.estimada);
   if (est.length) add('mes', { id: `exactas:${est.map((f) => f.pos.id).join(',')}`, cuando: 'cuando puedas', t: `Pon las participaciones exactas de ${est.length === 1 ? esc(est[0].inst.corto) : `${est.length} posiciones`}`, pq: L(`${esc(yLista(est.map((f) => f.inst.corto)))} están estimadas: con las exactas cuadran al céntimo el valor, la ganancia y los impuestos.`, `${esc(yLista(est.map((f) => f.inst.corto)))} are estimated: with the exact figures the value, the gain and the taxes match to the cent.`), como: 'Mira las participaciones en la app de tu bróker y ponlas en su ficha > Editar > Cantidad.', acc: `<a class="enlace" href="#plan">Ir a Plan y movimientos</a>` });
   // 5. aportaciones automáticas
@@ -116,7 +116,7 @@ function pasosRuta0(M) {
       const ahorro = fiscalAnio(anio, ganPrevista).cuota - fiscalAnio(anio, ganPrevista + x.g).cuota;
       if (ahorro < 15) continue;
       const cripto = x.f.inst.clase === 'Cripto';
-      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Plantéate vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas para pagar menos`, pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de tus ganancias${ganPrevista ? ` (contando ${planes.length > 1 ? 'las ventas que propone' : 'la venta que propone'} GrowFolio)` : ''}` : (comunidadUsuario() === 'paisvasco' ? 'quedaría para compensar ganancias de los 4 años siguientes' : 'compensa hasta un 25 % de tus dividendos')}.`, como: cripto ? `Véndelo en ${esc(x.f.pos.plataforma || 'tu plataforma')} antes del 31 de diciembre. Si quieres seguir dentro, lo más seguro es comprar otra cripto distinta o esperar.` : `Véndela antes del 31 de diciembre${/^Fondo/.test(x.f.inst.tipo || '') ? '. Si quieres seguir invertido, véndelo (reembolso, no traspaso: con un traspaso la pérdida no cuenta) y compra otro fondo parecido de otra gestora' : ' y, si quieres seguir dentro, compra otra empresa o un ETF parecido, no la misma'}.`, imp: `Unos ${eur(ahorro, 0)} menos en la renta de ${anio}. ${cripto ? reglaRecompra(x.f.inst).corto : `No vuelvas a comprar${/^Fondo/.test(x.f.inst.tipo || '') ? ' ese mismo fondo' : 'la'} hasta pasado ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'un año' : 'dos meses'} de la venta (ni la hayas comprado en ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'el año' : 'los dos meses'} anterior${reglaRecompra(x.f.inst).plazo === 'un año' ? '' : 'es'}). ${reglaRecompra(x.f.inst).corto}`}`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a GrowIA</button>` });
+      add('seis', { id: `perdida:${x.f.pos.id}:${anio}`, d: `${anio}-12-15`, cuando: `antes del 31 dic`, t: `Opción: vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas para pagar menos`, pq: `Pierde ${eur(-x.g, 0)}. Venderlo este año ${base > 0 ? `resta de tus ganancias${ganPrevista ? ` (contando ${planes.length > 1 ? 'las ventas que propone' : 'la venta que propone'} GrowFolio)` : ''}` : (comunidadUsuario() === 'paisvasco' ? 'quedaría para compensar ganancias de los 4 años siguientes' : 'compensa hasta un 25 % de tus dividendos')}.`, como: cripto ? `Véndelo en ${esc(x.f.pos.plataforma || 'tu plataforma')} antes del 31 de diciembre. Si quieres seguir dentro, lo más seguro es comprar otra cripto distinta o esperar.` : `Véndela antes del 31 de diciembre${/^Fondo/.test(x.f.inst.tipo || '') ? '. Si quieres seguir invertido, véndelo (reembolso, no traspaso: con un traspaso la pérdida no cuenta) y compra otro fondo parecido de otra gestora' : ' y, si quieres seguir dentro, compra otra empresa o un ETF parecido, no la misma'}.`, imp: `Unos ${eur(ahorro, 0)} menos en la renta de ${anio}. ${cripto ? reglaRecompra(x.f.inst).corto : `No vuelvas a comprar${/^Fondo/.test(x.f.inst.tipo || '') ? ' ese mismo fondo' : 'la'} hasta pasado ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'un año' : 'dos meses'} de la venta (ni la hayas comprado en ${reglaRecompra(x.f.inst).plazo === 'un año' ? 'el año' : 'los dos meses'} anterior${reglaRecompra(x.f.inst).plazo === 'un año' ? '' : 'es'}). ${reglaRecompra(x.f.inst).corto}`}`, acc: `<button class="enlace" data-accion="asesor" data-q="${esc(`¿Me compensa vender ${x.f.inst.corto} con pérdidas antes de fin de año? Calcúlalo con mis ventas de este año.`)}">Pregúntale a GrowIA</button>` });
     }
   }
   // 7. colchón que rinde poco
@@ -208,13 +208,15 @@ const TIPO_PASO = [
   [/^exactas:/, 'dato', 'lapiz'], [/^ia:/, 'ia', 'growia'],
 ];
 function tipoPaso(x) { for (const [re, c, i] of TIPO_PASO) if (re.test(x.id)) return { c, i }; return { c: 'info', i: 'futuro' }; }
-const ICONO_PASO = {
+// 0.8 (paso 4): con Toisón, los de plumilla de su pareja (los de GrowFolio se quedan para GrowFolio)
+const PAREJA_PASO = { venta: 'bajar', compra: 'subir', fondo: 'futuro', alerta: 'aviso', calendario: 'calendario', fiscal: 'fiscalidad', lapiz: 'lapiz', growia: 'asistente', chispa: 'asistente', futuro: 'objetivos' };
+const ICONO_PASO = new Proxy({
   venta: SVG('<path d="M12 5v14M6 13l6 6 6-6"/>', 2), compra: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2), fondo: SVG('<path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/>', 2),
   alerta: SVG('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5v.5"/>', 2), calendario: SVG('<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/>', 1.8),
   fiscal: SVG('<path d="M6 3h12v18l-3-1.8-3 1.8-3-1.8L6 21z"/><path d="M9 8h6M9 12h6"/>', 1.8), lapiz: SVG('<path d="M4 20h4L19 9l-4-4L4 16z"/>', 1.8),
   get growia() { return iconoIA(); },
   chispa: SVG('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>', 1.8), futuro: SVG('<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', 1.8),
-};
+}, { get: (o, k) => (PAREJA_PASO[k] && navToison() && ICONOS_PL[PAREJA_PASO[k]]) || o[k] });
 function htmlPaso(x, n) {
   const tp = tipoPaso(x);
   const detalle = x.como || x.imp;
@@ -231,7 +233,7 @@ function htmlPaso(x, n) {
   </li>`;
 }
 /* cada paso, según lo que pide: algo que hacer tú (numerado y con su casilla), una fecha que vigilar o algo que va solo */
-const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Completa tus datos', ia: 'Lo propone GrowIA', info: 'Plan', fecha: 'Fecha' };
+const TIPO_ETQ = { venta: 'Vender', compra: 'Comprar', aviso: 'Vigilar', fiscal: 'Hacienda', dato: 'Completa tus datos', ia: 'Lo hablaste con GrowIA', info: 'Plan', fecha: 'Fecha' };
 const claseRuta = (x) => (x.auto ? 'solo' : tipoPaso(x).c === 'fecha' ? 'fecha' : 'tarea');
 function checkRuta(x, n) {
   return `<button class="t-check" data-ruta="${esc(x.id)}" aria-pressed="${x.hecho}" aria-label="${x.hecho ? 'Hecho. Marcar como pendiente' : 'Marcar como hecho'}" title="${x.hecho ? 'Hecho. Pulsa para desmarcar' : 'Marcar como hecho'}"><span>${n || ''}</span></button>`;

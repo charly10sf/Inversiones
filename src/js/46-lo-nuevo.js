@@ -25,6 +25,8 @@ function guiaNuevo(alAcabar, pasos = pasosGuia()) {
 // la sección con «Nuevo»: la de la primera novedad con sitio, mientras no la hayas visto, y solo si ya usabas GrowFolio
 // antes de esta versión (a quien acaba de llegar le sobra: para eso tiene el tutorial)
 function grupoNuevo() {
+  // 0.8 (paso 4): con Toisón, la guía de la 0.7 apuntaría a botones de GrowFolio; la 0.8 trae la suya
+  if (navToison()) return null;
   if (LS.get('inv-guia', '') === GUIA_ID() || baseVer((LS.get('inv-nov-vista') || {}).v) !== baseVer(VERSION)) return null;
   const p = pasosGuia()[0];
   return p ? grupoDe(p.v).k : null;
@@ -91,7 +93,7 @@ addEventListener('resize', () => { if ($('.globo-nuevo')) quitarGloboNuevo(); })
 
 function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
   cerrarTour();
-  if (pasos && pasos.length === 1 && pasos[0].tour) pasos = TOUR;
+  if (pasos && pasos.length === 1 && pasos[0].tour) pasos = tourBase();
   if (S.ficha) cerrarFicha(true);
   document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
   const capa = document.createElement('div');
@@ -110,7 +112,7 @@ function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
   // cambia de alto sin que haya scroll: la tarjeta y el foco lo siguen un momento
   const ro = window.ResizeObserver ? new ResizeObserver(() => { if (TOURE && TOURE.capa === capa) seguirTour(700); }) : null;
   if (ro) ro.observe(document.body);
-  TOURE = { capa, i: paso, el: null, alAcabar, pasos: pasos || TOUR, nov: !!pasos, fin, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); if (ro) ro.disconnect(); } };
+  TOURE = { capa, i: paso, el: null, alAcabar, pasos: pasos || tourBase(), nov: !!pasos, fin, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); if (ro) ro.disconnect(); } };
   // en el móvil, deslizar la tarjeta pasa de paso
   let x0 = null, y0 = null;
   capa.addEventListener('touchstart', (e) => { if (!e.target.closest('.tour-caja')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
@@ -165,7 +167,7 @@ function pasoTour(dir = 1) {
   $('.tour-foco', TOURE.capa).classList.toggle('suave', !!p.suave);
   const solo = P.length === 1;
   caja.innerHTML = `<button type="button" class="ib tour-x" data-t="fin" aria-label="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}" title="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}">${ICONOS.cerrar}</button>${solo ? '' : `<div class="tour-prog" aria-hidden="true">${P.map((_, i) => `<i class="${i === TOURE.i ? 'on' : i < TOURE.i ? 'ya' : ''}"></i>`).join('')}</div>`}
-    <div class="tour-txt">${p.logo ? '<img class="tour-logo" src="favicon.svg" alt="">' : ''}${p.dib ? `<div class="tour-dib">${dibujo(p.dib)}</div>` : ''}${p.nuevo ? `<span class="tour-nuevo">Nuevo en la ${esc(p.nuevo)}</span>` : ''}<h3>${esc(p.t)}</h3><p>${esc(x)}</p>${p.empezar ? htmlListaEmpezar() : ''}</div>
+    <div class="tour-txt">${p.logo ? (navToison() ? simboloTs('tour-logo') : '<img class="tour-logo" src="favicon.svg" alt="">') : ''}${p.dib ? `<div class="tour-dib">${dibujo(p.dib)}</div>` : ''}${p.nuevo ? `<span class="tour-nuevo">Nuevo en la ${esc(p.nuevo)}</span>` : ''}<h3>${esc(p.t)}</h3><p>${esc(x)}</p>${p.empezar ? htmlListaEmpezar() : ''}</div>
     <div class="tour-btns">${solo ? '<span class="tour-n"></span>' : `<small class="tour-n">${TOURE.i + 1} de ${P.length}</small>
       ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}`}
       ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar de tu bróker</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq${p.empezar && itemsEmpezar().some((y) => !y.ok) ? '' : ' pri'}" data-t="fin">${TOURE.fin ? esc(TOURE.fin) : TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}

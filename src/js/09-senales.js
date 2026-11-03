@@ -110,7 +110,7 @@ function senal(f, M) {
         const tp = tiempoPos(f), b = bolsaAnual();
         motivos.unshift(tp
           ? `Ganas un ${fmtNum(f.plPct, 0)} % en ${duracion(tp.dias)}: un ${fmtNum(tp.anual, 0)} % al año${tp.anual > 2 * b ? `, ${tp.anual > 10 * b ? 'más de diez veces' : `unas ${fmtNum(tp.anual / b, 0)} veces`} lo que suele dar la bolsa` : ''}. Los analistas ven poco recorrido: plantéate vender una parte y asegurar.`
-          : `Ganas un ${fmtNum(f.plPct, 0)} % y los analistas creen que ya le queda poco por subir: plantéate vender una parte y asegurar lo ganado.`);
+          : `Ganas un ${fmtNum(f.plPct, 0)} % y los analistas creen que ya le queda poco por subir: una opción es vender una parte y asegurar lo ganado.`);
         return fin('recoger');
       }
       motivos.unshift(`Ya recogiste beneficios el ${fechaLarga(ya[ya.length - 1].fecha)}: lo que queda es ganancia. Protégela con una orden stop en su media de 50 sesiones.`);

@@ -145,6 +145,7 @@ function mostrarEntrada() {
   const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const corta = !quieto && LS.get('inv-entrada-dia', '') === hoyIso();
   if (!quieto && !corta) LS.set('inv-entrada-dia', hoyIso());
+  if (temaActual()) return entradaTs(quieto, corta);
   const n = nombreUsuario();
   const d = document.createElement('div');
   d.className = 'entrada' + (quieto ? ' quieta' : corta ? ' corta' : ''); d.id = 'entrada'; d.setAttribute('role', 'status'); d.setAttribute('aria-label', 'GrowFolio');
@@ -166,6 +167,18 @@ function mostrarEntrada() {
   if (!quieto) requestAnimationFrame(paso);
   // tocarla la salta: queda GrowFolio quieto y entra en cuanto haya cargado
   d.addEventListener('click', () => { if (fin) return; fin = true; pintaEntrada(svg, Infinity); t0.min = 0; if (t0.saltar) t0.saltar(); });
+  return t0;
+}
+/* 0.8 (paso 4): con un diseño de Toisón, la entrada es su símbolo, que aparece con la luz del diseño, y TOISÓN letra a
+   letra (solo opacity y transform); tocarla la salta igual. La de GrowFolio (la wF que se dibuja) sigue para GrowFolio */
+const FIN_ENTRADA_TS = 1900;
+function entradaTs(quieto, corta) {
+  const n = nombreUsuario(), d = document.createElement('div');
+  d.className = 'entrada entrada-ts' + (quieto ? ' quieta' : corta ? ' corta' : ''); d.id = 'entrada'; d.setAttribute('role', 'status'); d.setAttribute('aria-label', 'Toisón');
+  d.innerHTML = `<div class="en-c"><span class="ets-simb">${simboloTs()}</span><b class="ets-nom" aria-hidden="true">${[...'TOISÓN'].map((c, k) => `<span style="--k:${k}">${c}</span>`).join('')}</b><p class="en-saludo">${esc(saludoHora())}${n ? `, <b>${esc(n)}</b>` : ''}</p><div class="en-barra" aria-hidden="true"><i></i></div></div>`;
+  document.body.appendChild(d);
+  const t0 = { t: performance.now(), min: quieto ? 0 : corta ? FIN_CORTA : FIN_ENTRADA_TS, saltar: null };
+  d.addEventListener('click', () => { d.classList.add('quieta'); t0.min = 0; if (t0.saltar) t0.saltar(); });
   return t0;
 }
 const esperarEntrada = (t0) => new Promise((r) => { t0.saltar = r; setTimeout(r, Math.max(0, t0.min - (performance.now() - t0.t))); });

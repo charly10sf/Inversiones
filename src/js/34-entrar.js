@@ -10,7 +10,7 @@ function pantallaCuenta(errorTxt = '') {
   // quien llega por primera vez (con el enlace que le pasan) ve «Crea tu cuenta», paso 1 de 2
   const primeraVez = !LS.get('inv-ya-entro', false) && !(() => { try { return localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc'); } catch (e) { return null; } })();
   $('#app').innerHTML = `<div class="pantalla"><div class="caja caja-cuenta">
-    <img class="logo" src="icon-192.png" alt="">
+    ${logoEntrada()}
     ${primeraVez ? `<p class="paso-chip">${esc(trad('Paso 1 de 2: tu cuenta'))}</p>` : ''}
     <h1>${primeraVez ? 'Crea tu cuenta' : 'Entra en GrowFolio'}</h1>
     <p>Con tu cuenta, tu cartera se guarda cifrada y la ves igual en el móvil, en el ordenador y en la app.${(() => { try { return localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc'); } catch (e) { return null; } })() ? ' Si ya usabas GrowFolio aquí, después de entrar te ofrece subir tu cartera tal cual.' : ''}</p>
@@ -126,7 +126,7 @@ async function bienvenidaCuenta() {
   // la web en ese modo tienen la del dueño, que no pueden abrir): sin clave, ni se ofrece
   if (local && local.clave === 'clave') { try { const g = await IDB.get('clave'); if (!(g && g.key && g.salt === JSON.parse(local.texto).salt)) local = null; } catch (e) { local = null; } }
   $('#app').innerHTML = `<div class="pantalla"><form class="caja caja-cuenta" id="fBien" novalidate>
-    <img class="logo" src="icon-192.png" alt="">
+    ${logoEntrada()}
     <h1>${sugerido ? `¡Hola, ${esc(sugerido)}!` : '¡Hola!'}</h1>
     <p>Tu cuenta está lista${FB.user && FB.user.email ? ` (${esc(FB.user.email)})` : ''}. Antes de empezar, dos cosas.</p>
     <label class="campo">¿Cómo quieres que te llame?<input id="bNombre" maxlength="40" autocomplete="given-name" value="${esc(sugerido)}" placeholder="Tu nombre"><small>Para saludarte al entrar. Lo puedes cambiar en tu perfil.</small></label>
@@ -283,7 +283,7 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
   if (S.demo) return salirDemo();
   const n = nombreUsuario();
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fDesb" autocomplete="on">
-    <img class="logo" src="icon-192.png" alt="">
+    ${logoEntrada()}
     <h1>${PERFIL_CUENTA && n ? `${esc(saludoHora())}, ${esc(n)}` : '<img class="h1-nom" src="growfolio-nombre.svg" alt="GrowFolio">'}</h1>
     <p>${texto ? esc(texto) : PERFIL_CUENTA ? 'Tu cartera está cifrada en tu cuenta. Escribe la contraseña de tu cartera para verla en este dispositivo.' : PERFIL_LOCAL ? 'Tu cartera de este dispositivo está cifrada. Escribe tu contraseña para verla.' : 'Tu cartera está cifrada. Escribe tu contraseña para verla.'}</p>
     <input type="text" name="username" value="${esc(PERFIL_CUENTA && FB.user && FB.user.email ? FB.user.email + ' (cartera)' : CFG.owner)}" autocomplete="username" hidden>
@@ -332,7 +332,7 @@ function pantallaRecuperar() {
   const f = formatoDe(S.enc && S.enc.texto);
   if (!f || f.v !== 2) return pantallaDesbloqueo();
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fRec" novalidate>
-    <img class="logo" src="icon-192.png" alt="">
+    ${logoEntrada()}
     <h1>${L('Recuperar tu cartera', 'Recover your portfolio')}</h1>
     <p>${L('Escribe el código de recuperación que guardaste (24 letras y números; los guiones dan igual) y elige una contraseña nueva para tu cartera.', 'Type the recovery code you saved (24 letters and numbers; dashes don\'t matter) and choose a new password for your portfolio.')}</p>
     <input type="text" name="username" value="${esc(PERFIL_CUENTA && FB.user && FB.user.email ? FB.user.email + ' (cartera)' : '')}" autocomplete="username" hidden>
@@ -390,7 +390,7 @@ function htmlOtroPerfil() {
 function enlazarOtroPerfil() { const b = $('#bPerfil'); if (b) b.onclick = () => (PERFIL_CUENTA ? cerrarSesion() : cambiarPerfil(!PERFIL_LOCAL)); }
 function pantallaCrear() {
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fCrear">
-    <img class="logo" src="icon-192.png" alt="">
+    ${logoEntrada()}
     ${PERFIL_CUENTA ? `<p class="paso-chip">${esc(trad('Paso 2 de 2: tu contraseña'))}</p>` : ''}
     <h1>${PERFIL_CUENTA ? 'La contraseña de tu cartera' : 'Crear tu cartera'}</h1>
     ${PERFIL_CUENTA ? '<p>Es distinta de la de entrar. Con ella se cifran tus cifras en este dispositivo antes de subirlas, así que ni GrowFolio ni Google pueden verlas.</p><p class="crear-aviso"><b>Apúntala en un sitio seguro.</b> Si la pierdes, nadie puede recuperar tus datos.</p>' : PERFIL_LOCAL
