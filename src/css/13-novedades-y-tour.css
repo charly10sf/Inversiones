@@ -163,3 +163,67 @@
 .demo-banda svg { width: 16px; height: 16px; flex: none; }
 .demo-banda .btn { background: var(--fondo); color: var(--primario); border-color: transparent; }
 @media (min-width: 760px) { .demo-banda { bottom: 20px; } }
+/* ---------- 0.8 (paso 5p) · el tutorial: capítulos, aro de oro que se dibuja, tarjeta de cristal y pasos que se tocan ----------
+   La capa deja pasar el dedo (lo que no pide el paso lo para el JS) y solo la tarjeta recoge los toques */
+.tour { pointer-events: none; }
+.tour-caja { pointer-events: auto; }
+[data-tema] .tour-foco { border-radius: 14px; box-shadow: 0 0 26px 9999px color-mix(in srgb, var(--velo) 76%, transparent); }
+[data-tema] .tour-foco.sin { box-shadow: 0 0 0 9999px color-mix(in srgb, var(--velo) 76%, transparent); }
+[data-tema] .tour-foco.suave { box-shadow: 0 0 26px 9999px color-mix(in srgb, var(--velo) 50%, transparent); }
+[data-tema] .tour-foco.redondo { border-radius: 50%; }
+.tour { transition: none; }
+.tour-foco { transition-property: left, top, width, height, opacity; }
+.tour.libre .tour-foco { opacity: 0; }
+.tour-aro { position: absolute; inset: -5px; width: calc(100% + 10px); height: calc(100% + 10px); overflow: visible; pointer-events: none; }
+.tour-aro rect { fill: none; stroke: var(--oro-texto); stroke-width: 1.6; stroke-dasharray: 1; stroke-dashoffset: 1; filter: drop-shadow(0 0 6px color-mix(in srgb, var(--oro-texto) 70%, transparent)); }
+.tour-foco.traza .tour-aro rect { animation: tour-traza 0.9s cubic-bezier(.6, 0, .2, 1) 0.35s forwards; }
+@keyframes tour-traza { to { stroke-dashoffset: 0; } }
+.tour-foco.sin .tour-aro { display: none; }
+/* la onda que late, solo en los pasos que piden tocar algo */
+[data-tema] .tour-foco::after { display: none; }
+[data-tema] .tour-foco.pulsa::after { display: block; inset: -5px; border-radius: inherit; border: 2px solid var(--oro-texto); animation: tour-onda 1.9s ease-out 1.3s infinite; }
+[data-tema] .tour-foco.pulsa.sin::after { display: none; }
+@keyframes tour-onda { 0% { transform: scale(1); opacity: 0.75; } 100% { transform: scale(1.18); opacity: 0; } }
+[data-tema] .tour-caja { border: 0; border-radius: 22px; padding: 14px 16px 12px; background: color-mix(in srgb, var(--superficie) 90%, transparent); -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%); box-shadow: inset 0 0 0 1px var(--hilo), inset 0 1px 0 color-mix(in srgb, var(--brillo) 40%, transparent), 0 30px 60px -20px var(--hondo); }
+[data-tema] .tour-caja.con-flecha::before { background: color-mix(in srgb, var(--superficie) 90%, transparent); border-color: var(--hilo); }
+.tour-caps { display: flex; gap: 4px; margin: 2px 38px 12px 0; }
+.tour-caps i { flex: 1; height: 3px; border-radius: 2px; background: var(--aro); position: relative; overflow: hidden; }
+.tour-caps i::after { content: ''; position: absolute; inset: 0; background: var(--metal); transform: scaleX(var(--f, 0)); transform-origin: left; }
+.tour-kk { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin: 0 0 6px; }
+.tour-k { display: flex; align-items: center; gap: 8px; margin: 0; font: 600 11px/1 var(--ui); letter-spacing: .16em; text-transform: uppercase; color: var(--oro-texto); }
+.tour-k .rom { font: 500 15px/1 var(--marca); letter-spacing: .06em; }
+.tour-k::after { content: ''; width: 22px; height: 1px; background: var(--hilo); }
+[data-tema="marfil"] .tour-k { font: 600 13px/1 var(--marca); font-variant: small-caps; text-transform: lowercase; letter-spacing: .1em; color: var(--texto); }
+[data-tema="marfil"] .tour-k::after { background: var(--texto); }
+[data-tema="borgona"] .tour-k { font: italic 500 15px/1 var(--marca); text-transform: none; letter-spacing: 0; }
+[data-tema] .tour-kk .tour-n { margin: 0; font: 500 13px/1 var(--marca); letter-spacing: .06em; color: var(--texto-2); }
+[data-tema] .tour-caja h3 { margin: 4px 0 6px; font: 500 22px/1.15 var(--marca); letter-spacing: 0; color: var(--texto); }
+[data-tema="borgona"] .tour-caja h3 { font-style: italic; }
+[data-tema] .tour-caja p { font-size: 14.5px; }
+[data-tema] .tour-logo.simb-ts { width: 52px; margin: 6px 0 8px; }
+.tour-prueba { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 9px 12px; border-radius: var(--r-m); background: color-mix(in srgb, var(--oro-texto) 10%, transparent); font: 600 13px/1.3 var(--ui); color: var(--oro-texto); transition: background 0.3s, color 0.3s; }
+.tour-prueba svg { width: 18px; height: 18px; flex: none; }
+.tour-prueba.ok { background: var(--sube-fondo); color: var(--sube); }
+.tour-indice { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 12px; }
+.tour-indice span { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: var(--r-m); background: var(--superficie-2); font: 600 12.5px/1.2 var(--ui); }
+.tour-indice b { min-width: 22px; font: 500 14px/1 var(--marca); color: var(--oro-texto); }
+.tour-btns .tour-esp { flex: 1; }
+.tour-medalla { position: relative; width: 84px; height: 84px; margin: 6px auto 10px; border-radius: 50%; display: grid; place-items: center; background: var(--superficie-2); box-shadow: inset 0 0 0 1.5px var(--hilo), 0 14px 30px -14px var(--hondo); }
+.tour-medalla .simb-ts { width: 48px; height: auto; }
+.tour-estallido { position: absolute; left: 50%; top: 50%; width: 0; height: 0; }
+.tour-estallido i { position: absolute; width: 5px; height: 5px; border-radius: 50%; background: var(--oro-texto); opacity: 0; animation: tour-estalla 1.6s cubic-bezier(.2, .8, .3, 1) forwards; animation-delay: var(--d); }
+@keyframes tour-estalla { 0% { opacity: 1; transform: translate(0, 0) scale(1); } 100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(0.3); } }
+.tour-caja.fin { text-align: center; }
+.tour-caja.fin .tour-btns { justify-content: center; }
+.tour-pp { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; text-align: left; }
+.tour-pp li { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: var(--r-m); background: var(--superficie-2); }
+.tour-pp li b { display: block; font-size: 13.5px; }
+.tour-pp li small { font-size: 12px; color: var(--texto-2); }
+.tour-pp .n { width: 26px; height: 26px; border-radius: 50%; flex: none; display: grid; place-items: center; font: 500 14px/1 var(--marca); color: var(--oro-texto); box-shadow: inset 0 0 0 1.5px var(--hilo); }
+.tour-pp .n svg { width: 14px; height: 14px; }
+.tour-pp li.ok { opacity: 0.7; }
+.tour-pp li.ok .n { color: var(--sube); }
+/* el contenido cambia con un fundido corto */
+[data-tema] .tour-txt.entra-d, [data-tema] .tour-txt.entra-i { animation: tour-fundido 0.28s ease both; }
+@keyframes tour-fundido { from { opacity: 0; transform: translateY(4px); } }
+@media (prefers-reduced-motion: reduce) { .tour-aro rect { stroke-dashoffset: 0; animation: none !important; } [data-tema] .tour-foco.pulsa::after { animation: none; } .tour-estallido { display: none; } [data-tema] .tour-txt.entra-d, [data-tema] .tour-txt.entra-i { animation: none; } }

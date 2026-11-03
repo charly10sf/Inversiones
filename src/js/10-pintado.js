@@ -32,9 +32,10 @@ const conIA = (es, en = es) => esc(textoIA(L(es, en)));
    las Actions antes de la 0.8 (análisis guardados, informes, respuestas) y aún dice «GrowIA». Solo en español; para la
    mayúscula mira lo que va justo antes */
 const ATR_IA = ['title', 'aria-label', 'placeholder'];
+// (la novedad de la 0.8 «GrowIA ahora es «la IA»» se deja tal cual: es la que cuenta el cambio de nombre)
 function nodoIA(raiz) {
   if (!raiz) return;
-  const tn = (n) => { const v = n.nodeValue; if (!v.includes('GrowIA')) return; const p = n.previousSibling || (n.parentElement && n.parentElement.previousSibling); n.nodeValue = textoIA(v, v.trim() === v.trimEnd() && p ? p.textContent || '' : ''); };
+  const tn = (n) => { const v = n.nodeValue; if (!v.includes('GrowIA') || v.includes('GrowIA ahora es')) return; const p = n.previousSibling || (n.parentElement && n.parentElement.previousSibling); n.nodeValue = textoIA(v, v.trim() === v.trimEnd() && p ? p.textContent || '' : ''); };
   const at = (el) => { for (const a of ATR_IA) { const v = el.getAttribute(a); if (v && v.includes('GrowIA')) el.setAttribute(a, textoIA(v)); } };
   if (raiz.nodeType === 3) return tn(raiz);
   if (raiz.nodeType !== 1 || !raiz.textContent.includes('GrowIA') && !raiz.querySelector('[title*="GrowIA"],[aria-label*="GrowIA"],[placeholder*="GrowIA"]')) return;

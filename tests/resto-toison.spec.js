@@ -28,11 +28,11 @@ conTema('borgona')('con Toisón: tutorial, Ajustes, entrada, presentación y GTA
   if (await page.$('.intro')) await page.click('.intro-saltar');
   await expect(page.locator('.caja-cuenta .logo.logo-ts svg.simb-ts')).toHaveCount(1);
   await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
-  // el tutorial: nueve pasos por la barra de Toisón, el primero con el símbolo
+  // el tutorial: por capítulos (Hoy tiene cinco pasos con posiciones), el primero con el símbolo
   await page.evaluate(() => iniciarTour(0));
   await expect(page.locator('.tour-caja svg.simb-ts.tour-logo')).toHaveCount(1);
-  await expect(page.locator('.tour-n')).toHaveText('1 de 9');
-  await page.evaluate(() => irPasoTour(3));
+  await expect(page.locator('.tour-n')).toHaveText('1 de 5');
+  await page.evaluate(() => irPasoTour(5));
   await expect(page.locator('.tour-caja h3')).toHaveText('Cartera: lo tuyo, fila a fila');
   await page.evaluate(() => cerrarTour());
   // Ajustes: TOISÓN arriba y sin «Muy pronto: GrowFolio pasa a llamarse Toisón»
@@ -51,10 +51,10 @@ conTema('borgona')('con Toisón: tutorial, Ajustes, entrada, presentación y GTA
   expect(est.a).toBe('none');
   expect(await page.locator('.gta-sec > .gta-rotulo').first().evaluate((e) => getComputedStyle(e).textShadow)).toBe('none');
   await page.evaluate(() => document.querySelectorAll('.gta-fondo').forEach((x) => x.remove()));
-  // la presentación: el símbolo y TOISÓN
+  // la presentación (0.8, paso 5p): TOISÓN y el símbolo en la medalla del final
   await page.evaluate(() => pantallaIntro(() => {}));
-  await expect(page.locator('.ix-nom .nombre-ts')).toHaveAttribute('aria-label', 'Toisón');
-  await expect(page.locator('.ix-entero .simb-ts')).toHaveCount(1);
+  await expect(page.locator('.pr-palabra')).toHaveAttribute('aria-label', 'Toisón');
+  await expect(page.locator('.pr-medalla-fin .simb-ts')).toHaveCount(1);
 });
 
 conTema('marfil')('CNMV: el Paso a paso y las sugerencias de la IA, sin órdenes', async ({ page }, info) => {

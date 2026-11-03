@@ -10,7 +10,9 @@ const esParche = (v) => /[a-z]$/.test(String(v || ''));
 const baseVer = (v) => String(v || '').replace(/[a-z]+$/, '');
 const GUIA_ID = () => baseVer(VERSION);
 const novBase = () => NOVEDADES.find((n) => n.v === baseVer(VERSION)) || NOVEDADES.find((n) => !esParche(n.v)) || NOVEDADES[0];
-const pasosGuia = (ns = [novBase()]) => ns.filter((n) => !esParche(n.v)).flatMap((n) => (n.cosas || []).filter((c) => c.ir).map((c) => ({ ...c.ir, t: c.t, x: c.g || c.x, dib: c.d, nuevo: n.v })));
+// los pasos de la guía de una novedad: «ir» puede ser uno o varios (cada uno con su título y su texto si los trae)
+const pasosDeCosa = (c, v) => (Array.isArray(c.ir) ? c.ir : [c.ir]).map((ir) => ({ t: c.t, x: c.g || c.x, dib: c.d, ...ir, nuevo: v }));
+const pasosGuia = (ns = [novBase()]) => ns.filter((n) => !esParche(n.v)).flatMap((n) => (n.cosas || []).filter((c) => c.ir).flatMap((c) => pasosDeCosa(c, n.v)));
 // la versión cuyas novedades has visto: con un arreglo de la misma versión se queda el día en que la viste
 function marcarNovVista() {
   const pv = LS.get('inv-nov-vista') || {};
@@ -24,12 +26,12 @@ function guiaNuevo(alAcabar, pasos = pasosGuia()) {
 }
 // la sección con «Nuevo»: la de la primera novedad con sitio, mientras no la hayas visto, y solo si ya usabas GrowFolio
 // antes de esta versión (a quien acaba de llegar le sobra: para eso tiene el tutorial)
-// 0.8 (paso 4): apagada; la guía de la 0.7 apuntaría a botones de GrowFolio y la de la 0.8 llega en la sesión 5p
-const GUIA_NUEVO = false;
+// 0.8 (paso 5p): encendida, con la guía de la 0.8 (la de las novedades: de GrowFolio a Toisón y dónde quedó cada cosa)
+const GUIA_NUEVO = true;
 function grupoNuevo() {
   if (!GUIA_NUEVO) return null;
   if (LS.get('inv-guia', '') === GUIA_ID() || baseVer((LS.get('inv-nov-vista') || {}).v) !== baseVer(VERSION)) return null;
-  const p = pasosGuia()[0];
+  const ps = pasosGuia(), p = ps.find((x) => x.nav) || ps[0];
   return p ? grupoDe(p.v).k : null;
 }
 function pintarNavNuevo() {
@@ -92,14 +94,21 @@ function globoNuevo(intento = 0) {
 }
 addEventListener('resize', () => { if ($('.globo-nuevo')) quitarGloboNuevo(); });
 
+// lo que cuenta como hecho en un paso que se toca: el botón de la barra, un selector o el que se calcula al empezar el paso
+const objetivoTour = (p) => (!p ? null : p.toca ? navSel(p.toca) : p.hecho && p.hecho.mueve ? p.hecho.mueve : typeof p.hecho === 'string' ? p.hecho : TOURE && TOURE.hechoSel);
+const DEDO_TOUR = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3.2" fill="currentColor"/><circle cx="12" cy="12" r="7.5" fill="none" stroke="currentColor" stroke-width="1.4" opacity=".55"/></svg>';
 function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
   cerrarTour();
   if (pasos && pasos.length === 1 && pasos[0].tour) pasos = TOUR;
+  const nov = !!pasos;
+  // sin con qué enseñarlo (una cartera vacía no tiene gráfica ni fichas), el paso no sale
+  pasos = (pasos || TOUR).filter((p) => !p.si || p.si());
   if (S.ficha) cerrarFicha(true);
   document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
   const capa = document.createElement('div');
-  capa.className = 'tour'; capa.setAttribute('role', 'dialog'); capa.setAttribute('aria-modal', 'true'); capa.setAttribute('aria-label', 'Tour por la app');
-  capa.innerHTML = '<div class="tour-foco"></div><div class="tour-caja" tabindex="-1" aria-live="polite"></div>';
+  capa.className = 'tour'; capa.setAttribute('role', 'dialog'); capa.setAttribute('aria-modal', 'true'); capa.setAttribute('aria-label', trad('Tutorial de Toisón'));
+  // el aro de oro que se dibuja alrededor de lo que se explica
+  capa.innerHTML = '<div class="tour-foco"><svg class="tour-aro" aria-hidden="true"><rect x="0" y="0" width="100%" height="100%" rx="19" pathLength="1"/></svg></div><div class="tour-caja" tabindex="-1" aria-live="polite"></div>';
   document.body.appendChild(capa);
   document.body.classList.add('en-tour');
   const reubicar = () => colocarTour();
@@ -108,12 +117,29 @@ function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
     else if (e.key === 'ArrowRight') irPasoTour(1);
     else if (e.key === 'ArrowLeft') irPasoTour(-1);
   };
+  // la capa deja pasar el dedo (para que se pueda tocar lo que pide cada paso), pero solo cuenta lo que pide: lo demás
+  // no hace nada mientras dura el tutorial
+  const filtro = (e) => {
+    if (!TOURE || TOURE.capa !== capa) return;
+    const t = e.target && e.target.closest ? e.target : null;
+    if (t && t.closest('.tour-caja')) return;
+    const p = TOURE.pasos[TOURE.i], obj = TOURE.hecho && !p.toca && !p.abre ? (p.conFicha ? '.ficha-fondo' : null) : objetivoTour(p);
+    if (t && obj && t.closest(obj)) { if (!TOURE.hecho) setTimeout(() => hechoTour(p), 0); return; }
+    e.preventDefault(); e.stopPropagation(); e.stopImmediatePropagation();
+  };
+  // deslizar el dedo (o el ratón) por la gráfica
+  const mueve = (e) => {
+    const p = TOURE && TOURE.capa === capa && TOURE.pasos[TOURE.i];
+    if (!p || TOURE.hecho || !p.hecho || !p.hecho.mueve || !e.target.closest || !e.target.closest(p.hecho.mueve)) return;
+    if (++TOURE.mov > 8) hechoTour(p);
+  };
   window.addEventListener('resize', reubicar); window.addEventListener('scroll', reubicar, true); document.addEventListener('keydown', tecla, true);
+  document.addEventListener('click', filtro, true); document.addEventListener('pointermove', mueve, true); document.addEventListener('touchmove', mueve, { capture: true, passive: true });
   // si algo aparece encima a mitad de un paso (el aviso del código de recuperación, una tarjeta que llega tarde), la página
   // cambia de alto sin que haya scroll: la tarjeta y el foco lo siguen un momento
   const ro = window.ResizeObserver ? new ResizeObserver(() => { if (TOURE && TOURE.capa === capa) seguirTour(700); }) : null;
   if (ro) ro.observe(document.body);
-  TOURE = { capa, i: paso, el: null, alAcabar, pasos: pasos || TOUR, nov: !!pasos, fin, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); if (ro) ro.disconnect(); } };
+  TOURE = { capa, i: paso, el: null, alAcabar, pasos, nov, fin, mov: 0, off: () => { window.removeEventListener('resize', reubicar); window.removeEventListener('scroll', reubicar, true); document.removeEventListener('keydown', tecla, true); document.removeEventListener('click', filtro, true); document.removeEventListener('pointermove', mueve, true); document.removeEventListener('touchmove', mueve, { capture: true }); if (ro) ro.disconnect(); } };
   // en el móvil, deslizar la tarjeta pasa de paso
   let x0 = null, y0 = null;
   capa.addEventListener('touchstart', (e) => { if (!e.target.closest('.tour-caja')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; }, { passive: true });
@@ -128,20 +154,35 @@ function iniciarTour(paso = 0, alAcabar, pasos, fin = null) {
     if (a === 'sig') irPasoTour(1);
     else if (a === 'ant') irPasoTour(-1);
     else if (a === 'fin') cerrarTour(true);
-    else if (a === 'tengo') { cerrarTour(true, true); operacion('tengo'); }
-    else if (a === 'importar') { cerrarTour(true, true); importarCapturas(); }
   });
   $('.tour-caja', capa).classList.add('pop');
   pasoTour();
 }
+// hecho lo que pedía el paso: «¡Eso es!» en verde y, si era un botón de la barra o la IA, sigue solo
+function hechoTour(p) {
+  if (!TOURE || TOURE.hecho || TOURE.pasos[TOURE.i] !== p) return;
+  TOURE.hecho = true;
+  const caja = $('.tour-caja', TOURE.capa), pr = $('.tour-prueba', caja), sig = $('[data-t="sig"]', caja);
+  if (pr) { pr.classList.add('ok'); $('span', pr).textContent = trad('¡Eso es!'); }
+  if (sig) { sig.classList.add('pri'); sig.textContent = trad('Siguiente'); }
+  $('.tour-foco', TOURE.capa).classList.remove('pulsa');
+  if (p.conFicha) { TOURE.capa.classList.add('libre'); seguirTour(900); }
+  if (p.toca || p.abre) setTimeout(() => { if (TOURE && TOURE.pasos[TOURE.i] === p) irPasoTour(1); }, p.abre ? 750 : 550);
+}
+function salirPasoTour() {
+  const p = TOURE && TOURE.pasos[TOURE.i];
+  if (p && p.salir) try { p.salir(); } catch (e) { console.warn(e); }
+}
 function cerrarTour(hecho, sinVolver, desdeAtras) {
   if (!TOURE) return;
+  salirPasoTour();
   const { alAcabar, nov, atras } = TOURE;
   cancelAnimationFrame(TOURE.raf);
   TOURE.off(); TOURE.capa.remove(); TOURE = null;
   document.body.classList.remove('en-tour');
   if (atras && desdeAtras !== true) atras();
   document.body.classList.remove('tour-ola');
+  if (S.ficha) cerrarFicha(true);
   if (nov) { if (alAcabar) alAcabar(); return; }
   if (!hecho) return;
   LS.set('inv-tour', VERSION);
@@ -153,34 +194,58 @@ function irPasoTour(d) {
   if (!TOURE) return;
   const n = TOURE.i + d;
   if (n < 0) return;
+  const p0 = TOURE.pasos[TOURE.i];
   if (n >= TOURE.pasos.length) return cerrarTour(true);
+  salirPasoTour();
+  // hacia atrás desde la IA abierta: se cierra
+  if (d < 0 && p0 && p0.ia) cerrarAsesor();
   TOURE.i = n; pasoTour(d);
 }
+// la barra de capítulos: cada uno se llena según sus pasos (en la guía de lo nuevo, una sola, paso a paso)
+function capsTour(P, i) {
+  const p = P[i];
+  if (TOURE.nov || p.c == null && !p.fin) return `<div class="tour-caps" aria-hidden="true"><i style="--f:${((i + 1) / P.length).toFixed(3)}"></i></div>`;
+  return `<div class="tour-caps" aria-hidden="true">${TOUR_CAP.map((_, c) => { const de = P.filter((q) => q.c === c && !q.fin); if (!de.length) return ''; const ya = de.filter((q) => P.indexOf(q) <= i).length; return `<i style="--f:${(p.fin || c < p.c ? 1 : c > p.c ? 0 : ya / de.length).toFixed(3)}"></i>`; }).join('')}</div>`;
+}
+const estallidoTour = () => `<span class="tour-estallido" aria-hidden="true">${Array.from({ length: 22 }, (_, j) => { const a = j / 22 * Math.PI * 2, d = 60 + (j % 3) * 26; return `<i style="--x:${(Math.cos(a) * d).toFixed(0)}px;--y:${(Math.sin(a) * d).toFixed(0)}px;--d:${(j % 4) * 60}ms"></i>`; }).join('')}</span>`;
 function pasoTour(dir = 1) {
   const P = TOURE.pasos, p = P[TOURE.i], cambia = p.v && S.vista !== p.v;
+  TOURE.hecho = false; TOURE.mov = 0; TOURE.capa.classList.remove('libre');
+  TOURE.hechoSel = typeof p.hecho === 'function' ? p.hecho() : null;
+  if (S.ficha && !p.conFicha) cerrarFicha(true);
   if (p.antes) try { p.antes(); } catch (e) { console.warn(e); }
   if (cambia) location.hash = '#' + p.v;
   if (p.pos && S.carTab === 'plan') { S.carTab = 'pos'; LS.set('inv-car', 'pos'); if (!cambia) pintar(); }
   if (p.plan && S.carTab !== 'plan') { S.carTab = 'plan'; LS.set('inv-car', 'plan'); if (!cambia) pintar(); }
-  const ultimo = TOURE.i === P.length - 1, vacia = !TOURE.nov && !p.empezar && !((S.cartera && S.cartera.posiciones) || []).length;
-  const caja = $('.tour-caja', TOURE.capa), x = typeof p.x === 'function' ? p.x() : p.x;
+  const ultimo = TOURE.i === P.length - 1;
+  const caja = $('.tour-caja', TOURE.capa), x = typeof p.x === 'function' ? p.x() : p.x, prueba = typeof p.prueba === 'function' ? p.prueba() : p.prueba;
   document.body.classList.toggle('tour-ola', !!p.ola);
-  $('.tour-foco', TOURE.capa).classList.toggle('suave', !!p.suave);
-  const solo = P.length === 1;
-  caja.innerHTML = `<button type="button" class="ib tour-x" data-t="fin" aria-label="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}" title="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}">${ICONOS.cerrar}</button>${solo ? '' : `<div class="tour-prog" aria-hidden="true">${P.map((_, i) => `<i class="${i === TOURE.i ? 'on' : i < TOURE.i ? 'ya' : ''}"></i>`).join('')}</div>`}
-    <div class="tour-txt">${p.logo ? simboloTs('tour-logo') : ''}${p.dib ? `<div class="tour-dib">${dibujo(p.dib)}</div>` : ''}${p.nuevo ? `<span class="tour-nuevo">Nuevo en la ${esc(p.nuevo)}</span>` : ''}<h3>${esc(p.t)}</h3><p>${esc(x)}</p>${p.empezar ? htmlListaEmpezar() : ''}</div>
-    <div class="tour-btns">${solo ? '<span class="tour-n"></span>' : `<small class="tour-n">${TOURE.i + 1} de ${P.length}</small>
-      ${TOURE.i ? '<button class="btn peq" data-t="ant">Atrás</button>' : '<button class="btn peq" data-t="fin">Saltar</button>'}`}
-      ${ultimo ? (vacia ? '<button class="btn peq" data-t="importar">Importar de tu bróker</button><button class="btn peq pri" data-t="tengo">Meter lo que tengo</button>' : `<button class="btn peq${p.empezar && itemsEmpezar().some((y) => !y.ok) ? '' : ' pri'}" data-t="fin">${TOURE.fin ? esc(TOURE.fin) : TOURE.nov ? 'Listo' : 'Terminar'}</button>`) : `<button class="btn peq pri" data-t="sig">${TOURE.i || TOURE.nov ? 'Siguiente' : 'Empezar'}</button>`}
-    </div>`;
+  const foco = $('.tour-foco', TOURE.capa);
+  foco.classList.toggle('suave', !!p.suave);
+  foco.classList.toggle('pulsa', !!prueba);
+  foco.classList.remove('traza'); void foco.offsetWidth; foco.classList.add('traza');
+  const de = p.c != null ? P.filter((q) => q.c === p.c && !q.fin) : P, n = de.indexOf(p) + 1;
+  const kicker = p.fin ? `<div class="tour-medalla">${simboloTs()}${matchMedia('(prefers-reduced-motion: reduce)').matches ? '' : estallidoTour()}</div>`
+    : TOURE.nov || p.c == null ? `<div class="tour-kk"><p class="tour-k">${p.nuevo ? esc(L(`Lo nuevo de la ${p.nuevo}`, `New in ${p.nuevo}`)) : esc(trad('Toisón'))}</p><small class="tour-n">${TOURE.i + 1} de ${P.length}</small></div>`
+    : `<div class="tour-kk"><p class="tour-k"><span class="rom" data-no-trad>${ROMANOS[p.c]}</span>${esc(TOUR_CAP[p.c])}</p><small class="tour-n">${n} de ${de.length}</small></div>`;
+  const indice = p.indice ? `<div class="tour-indice">${TOUR_CAP.map((c, j) => `<span><b data-no-trad>${ROMANOS[j]}</b>${esc(c)}</span>`).join('')}</div>` : '';
+  const items = p.empezar ? itemsEmpezar() : [], prim = items.find((y) => !y.ok);
+  const lista = p.empezar ? `<ol class="tour-pp">${items.filter((y) => !y.opcional || !y.ok).slice(0, 4).map((y, k) => `<li class="${y.ok ? 'ok' : ''}"><span class="n" aria-hidden="true">${y.ok ? ICONOS.ok : k + 1}</span><span><b>${esc(y.t)}</b><small>${esc(y.ok ? trad('Hecho') : y.min)}</small></span></li>`).join('')}</ol>` : '';
+  const izq = !TOURE.i ? `<button class="btn peq" data-t="fin">${P.length === 1 ? 'Cerrar' : 'Ahora no'}</button>` : ultimo && p.empezar ? (prim ? '<button class="btn peq" data-t="fin">Luego</button>' : '') : '<button class="btn peq" data-t="ant">Atrás</button>';
+  const der = ultimo ? (p.empezar && prim ? `<button class="btn peq pri" data-emp="${esc(prim.k)}">Empezar por el primero</button>` : `<button class="btn peq pri" data-t="fin">${TOURE.fin ? esc(TOURE.fin) : TOURE.nov ? 'Listo' : 'Terminar'}</button>`)
+    : `<button class="btn peq${prueba ? '' : ' pri'}" data-t="sig">${prueba ? 'Saltar este' : TOURE.i ? 'Siguiente' : 'Empezar'}</button>`;
+  caja.classList.toggle('fin', !!p.fin);
+  caja.innerHTML = `<button type="button" class="ib tour-x" data-t="fin" aria-label="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}" title="${TOURE.fin ? esc(TOURE.fin) : 'Cerrar'}">${ICONOS.cerrar}</button>${P.length > 1 ? capsTour(P, TOURE.i) : ''}
+    <div class="tour-txt">${kicker}${p.logo ? simboloTs('tour-logo') : ''}${p.dib ? `<div class="tour-dib">${dibujo(p.dib)}</div>` : ''}<h3>${esc(p.t)}</h3><p>${esc(x)}</p>${indice}${prueba ? `<div class="tour-prueba">${DEDO_TOUR}<span>${esc(prueba)}</span></div>` : ''}${lista}</div>
+    <div class="tour-btns">${izq}<span class="tour-esp"></span>${der}</div>`;
   caja.classList.remove('justa');
   const txt = $('.tour-txt', caja);
   if (txt) { txt.classList.remove('entra-d', 'entra-i'); void txt.offsetWidth; txt.classList.add(dir < 0 ? 'entra-i' : 'entra-d'); }
   // el foco y la tarjeta se quedan donde estaban hasta saber adónde van y, entonces, se deslizan hasta allí
   // (antes pasaban por el centro de la pantalla entre un paso y otro)
-  const n = (TOURE.n = (TOURE.n || 0) + 1);
+  const k = (TOURE.n = (TOURE.n || 0) + 1);
   const busca = () => {
-    if (!TOURE || TOURE.n !== n) return;
+    if (!TOURE || TOURE.n !== k) return;
     const el = p.sel ? elVisible(p.sel) : null;
     TOURE.el = el; TOURE.vigila = performance.now() + 4000; TOURE.dt0 = null;
     if (el) encuadrarTour(el, caja, p.lado);
@@ -217,6 +282,12 @@ function colocarTour() {
   }
   const hc = caja.offsetHeight;
   foco.classList.toggle('suave', !!paso.suave);
+  if (TOURE.capa.classList.contains('libre')) {
+    caja.classList.remove('con-flecha', 'abajo', 'arriba', 'centro');
+    caja.style.left = '';
+    caja.style.top = `${Math.max(16, Math.round(innerHeight - hc - 16))}px`;
+    return;
+  }
   if (!el) {
     // nada que señalar: el foco se cierra sobre su propio centro y la tarjeta se desliza al centro de la pantalla
     if (!foco.classList.contains('sin')) {
@@ -232,6 +303,10 @@ function colocarTour() {
     return;
   }
   const r = rectTour(el), B = bordesTour(el), m = TOUR_M, g = TOUR_G;
+  // lo redondo (el ojo, el botón de la IA), con el foco y el aro redondos
+  const redondo = /50%|999/.test(getComputedStyle(el).borderRadius) && Math.abs(r.width - r.height) < 6;
+  foco.classList.toggle('redondo', redondo);
+  $('rect', foco).setAttribute('rx', redondo ? '50%' : '19');
   // lo que se ve de lo resaltado: no cuenta lo que queda bajo la cabecera o la barra de abajo
   let ft = B.fijo ? r.top - m : Math.max(r.top - m, B.arriba + 2), fb = B.fijo ? r.bottom + m : Math.min(r.bottom + m, B.abajo - 2);
   ft = Math.max(1, ft); fb = Math.min(innerHeight - 1, fb);

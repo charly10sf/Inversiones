@@ -1,17 +1,34 @@
 /* =====================================================================
    Tour: la primera vez (y desde Ajustes) enseña cada pestaña, resaltando dónde está.
    ===================================================================== */
-/* 0.8 (rediseño, paso 4): el tutorial recorre la barra (Cartera · Mercados · Hoy · Ideas · Tú) y la IA de la cabecera */
+/* 0.8 (paso 5p): el tutorial por capítulos, uno por cada botón de la barra y la IA (TOUR_CAP), con su número romano. Casi
+   todo se toca: «prueba» es lo que se pide y «hecho» lo que cuenta como hecho (un selector que se toca, o «mueve» para
+   deslizar el dedo por algo); «toca» es un botón de la barra que, al tocarlo, lleva al paso siguiente él solo. «si»
+   quita el paso cuando no hay con qué enseñarlo (sin posiciones no hay gráfica ni fichas). El motor está en
+   46-lo-nuevo.js. La maqueta aprobada (3 nov) es https://claude.ai/artifact/THN75znmPR44S1A94LYbev */
+const TOUR_CAP = ['Hoy', 'Cartera', 'Mercados', 'Ideas', 'Tú', 'La IA'];
+const ROMANOS = ['I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII'];
+const conPosiciones = () => ((S.cartera && S.cartera.posiciones) || []).length > 0;
+const navSel = (k) => `.navbar [data-ir="${k}"], .nav [data-ir="${k}"]`;
+const otroRango = () => (S.rango === '1A' ? '1M' : '1A');
 const TOUR = [
-  { v: 'cartera', sel: '.navbar, .nav', logo: true, ola: true, t: 'Te damos la bienvenida', x: () => (innerWidth < 760 ? 'Todo está en estos cinco botones: Hoy en el centro, tu cartera y los mercados a la izquierda, y las ideas y lo tuyo a la derecha. Te lo enseñamos en un minuto.' : 'Todo está en estas cinco pestañas. Te enseñamos cada una en un minuto y, al final, por dónde empezar.') },
-  { v: 'cartera', sel: '.hero-cifra', t: 'Hoy: lo que tienes', x: 'Todo sumado, con lo que ganas o pierdes hoy. Desliza el dedo por la gráfica para ver cualquier día. El ojo oculta las cifras.' },
-  { v: 'cartera', sel: '.car-agenda-mini, .ag-card', t: 'Lo que viene', x: 'Resultados y dividendos de lo que tienes, tus aportaciones, la Fed y el BCE y las fechas de la renta, con los días que faltan.' },
-  { v: 'posiciones', sel: '.navbar [data-ir="posiciones"], .nav [data-ir="posiciones"]', suave: true, t: 'Cartera: lo tuyo, fila a fila', x: 'Tus posiciones, lo que opina la IA de tu cartera y lo que pagarás en la renta. Toca una posición para ver su ficha.' },
-  { v: 'mercados', sel: '.navbar [data-ir="mercados"], .nav [data-ir="mercados"]', suave: true, t: 'Mercados: lo de fuera', x: 'Bolsas, tipos, divisas y materias primas, con lo que significa para tu cartera, y el buscador para consultar cualquier fondo, acción o cripto.' },
-  { v: 'expertos', sel: '.navbar [data-ir="expertos"], .nav [data-ir="expertos"]', suave: true, t: 'Ideas: lo que dicen los analistas', x: 'Su opinión sobre lo tuyo, las ideas del radar y las que sigues. Son las mismas para todos; lo que hagas lo decides tú.' },
-  { v: 'tu', sel: '.navbar [data-ir="tu"], .nav [data-ir="tu"]', suave: true, t: 'Tú: tus metas y tus ajustes', get x() { return esPublico() ? 'Tu perfil, tus objetivos, tu plan de aportaciones y los ajustes, con este tutorial por si quieres repetirlo.' : 'Tu perfil, tus objetivos, el Paso a paso y los ajustes, con este tutorial por si quieres repetirlo.'; } },
-  { v: 'cartera', sel: '#bAsesor', t: 'La IA, desde cualquier pantalla', x: '«¿Cómo va Repsol?» o «¿qué supondría aportar 500 € más?». Contesta con tus números delante.' },
-  { v: 'cartera', empezar: true, t: 'Tus primeros pasos', x: 'Empieza por el primero. Los tienes en Hoy hasta que acabes, y el tutorial queda en Tú por si quieres repetirlo.' },
+  { c: 0, v: 'cartera', sel: '.navbar, .nav', logo: true, ola: true, indice: true, t: 'Te enseño Toisón', x: 'Seis capítulos cortos, uno por cada botón y la IA. Puedes saltarlo y repetirlo cuando quieras desde Tú.' },
+  { c: 0, v: 'cartera', sel: '#grafEvo', si: conPosiciones, t: 'Tu patrimonio, día a día', x: 'Todo sumado, con lo de hoy y lo ganado desde que compraste.', prueba: () => (matchMedia('(hover: hover)').matches ? 'Pasa el ratón por la gráfica' : 'Desliza el dedo por la gráfica'), hecho: { mueve: '#grafEvo' } },
+  { c: 0, v: 'cartera', sel: '.hero-rangos', si: conPosiciones, t: 'Cualquier periodo', x: 'Un día, una semana, un año o desde tu primera compra.', prueba: () => `Toca ${otroRango()}`, hecho: () => `.hero-rangos [data-rango="${otroRango()}"]` },
+  { c: 0, v: 'cartera', sel: '.hero-ojo', t: 'El ojo esconde las cifras', x: 'Para abrir la app en el metro sin que nadie vea cuánto tienes. Otro toque y vuelven.', prueba: 'Tócalo', hecho: '.hero-ojo', salir: () => { if (TOURE && TOURE.oculto0 != null && S.oculto !== TOURE.oculto0) { S.oculto = TOURE.oculto0; LS.set('inv-oculto', S.oculto); pintar(); } }, antes: () => { if (TOURE) TOURE.oculto0 = !!S.oculto; } },
+  { c: 0, v: 'cartera', sel: '.ag-card, .car-agenda-mini', t: 'Tu mes y lo que viene', x: 'Tus aportaciones programadas, los resultados de lo que tienes y las fechas que importan, con los días que faltan.' },
+  { c: 1, v: 'cartera', sel: navSel('posiciones'), toca: 'posiciones', t: 'Cartera: lo tuyo, fila a fila', x: 'Todo lo que tienes, con lo que gana o pierde cada cosa.', prueba: 'Toca Cartera' },
+  { c: 1, v: 'posiciones', sel: '.grupo-tabs', t: 'Tres partes', x: 'Posiciones, lo que tienes; Análisis, lo que opina la IA y tus números; Hacienda, lo que pagarías en la renta y la guía de la declaración.' },
+  { c: 1, v: 'posiciones', sel: '.car-pos .fila[data-pos]', si: conPosiciones, conFicha: true, t: 'Cada posición, su ficha', x: 'Su gráfica, lo que opinan los analistas y lo que pagarías si la vendieras hoy.', prueba: 'Toca una', hecho: '.fila[data-pos]' },
+  { c: 2, v: 'posiciones', sel: navSel('mercados'), toca: 'mercados', t: 'Mercados: lo de fuera', x: 'Bolsas, tipos, divisas y materias primas, y en una frase lo que significa para lo tuyo.', prueba: 'Toca Mercados' },
+  { c: 2, v: 'mercados', sel: '.merc-busca', t: 'Busca lo que quieras', x: 'Cualquier fondo, acción, ETF o cripto, aunque no lo tengas: su precio, su ficha y lo que opinan los analistas.' },
+  { c: 3, v: 'mercados', sel: navSel('expertos'), toca: 'expertos', t: 'Ideas: lo que dicen los analistas', x: 'Su opinión sobre lo tuyo, las ideas del radar de unas 840 empresas y las que sigues.', prueba: 'Toca Ideas' },
+  { c: 3, v: 'expertos', sel: '.exp-tabs', t: 'Lo tuyo, el radar y lo que sigues', x: 'Las ideas del radar son las mismas para todos; con cada una ves qué cambiaría en tu cartera. Lo que hagas lo decides tú.' },
+  { c: 4, v: 'expertos', sel: navSel('tu'), toca: 'tu', t: 'Tú: lo tuyo y tus ajustes', get x() { return esPublico() ? 'Tu perfil, tus objetivos, tu plan de aportaciones, las novedades y este tutorial.' : 'Tu perfil, tus objetivos, el Paso a paso, las novedades y este tutorial.'; }, prueba: 'Toca Tú' },
+  { c: 4, v: 'tu', sel: '.temas', t: 'Tu diseño', x: 'Mármol, Marfil o Borgoña. Se cambia al momento y se recuerda.', prueba: 'Toca uno', hecho: '[data-elige-tema]' },
+  { c: 5, v: 'tu', sel: '#bAsesor', abre: true, t: 'La IA, desde cualquier pantalla', x: 'Siempre arriba a la derecha, con tus números delante.', prueba: 'Tócala', hecho: '#bAsesor' },
+  { c: 5, v: 'tu', sel: '.asesor .as-cab', ia: true, antes: () => { if (!document.querySelector('.asesor')) abrirAsesor(); }, t: 'Pregúntale', get x() { return hayClaveIA() ? 'Explica y calcula con tu cartera: «¿Cómo va Repsol?» o «¿qué supondría aportar 500 € más?». Lo que hagas lo decides tú.' : 'Explica y calcula con tu cartera. Para contestarte necesita una clave gratuita de Google: aquí mismo te dice cómo sacarla en dos minutos.'; } },
+  { fin: true, v: 'cartera', empezar: true, antes: () => cerrarAsesor(), t: 'Ya conoces Toisón', get x() { return itemsEmpezar().some((y) => !y.ok) ? 'Quedan unos pasos para que la app trabaje con tus números. Te esperan en Hoy hasta que acabes.' : 'Tu cartera ya está lista. El tutorial se queda en Tú por si quieres repetirlo.'; } },
 ];
 /* Para empezar: lo mismo al final del tutorial y en Inicio mientras falte algo (a los nuevos, el primer mes) */
 const hayClaveIA = () => !!((AS.claves && AS.claves.google) || LS.get(LS_CLAVE.google) || (S.cartera && S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE.google]));

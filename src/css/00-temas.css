@@ -588,18 +588,9 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* La presentación (33-presentacion.js): con el fondo y el oro de cada diseño; el símbolo se monta al bajar */
 [data-tema] .intro, [data-tema] .intro.ix { background: radial-gradient(120% 70% at 50% 0%, var(--superficie) 0%, var(--fondo) 62%); --ixg: var(--oro-texto); }
 [data-tema] .ix-cab, [data-tema] .ixn .ix-cab { background: linear-gradient(var(--fondo), color-mix(in srgb, var(--fondo) 90%, transparent) 70%, transparent); }
-[data-tema] :is(.ix-hola-t, .ix-hola-s) { text-shadow: none; }
-[data-tema] .ix-hola-t { font: 400 clamp(30px, 8vw, 46px)/1.1 var(--marca); letter-spacing: 0; }
-[data-tema="borgona"] .ix-hola-t { font-style: italic; }
-[data-tema] .ix-hola-t b { color: var(--oro-texto); font-weight: 500; }
 [data-tema] .ix-lema h2, [data-tema] .ix-cap h2, [data-tema] .ix-fin h2 { font-family: var(--marca); font-weight: 500; letter-spacing: 0; color: var(--oro-texto); }
 [data-tema] .ix-ts, [data-tema] .ix-cab .intro-marca .ix-ts { font: 500 15px/1 var(--marca); letter-spacing: .14em; color: var(--texto); }
-[data-tema] .ix-emblema .simb-ts .s-o, [data-tema] .ix-emblema .ix-flota .s-o { fill: var(--sim-o); }
-[data-tema] .ix-emblema .simb-ts .s-t, [data-tema] .ix-emblema .ix-flota .s-t { fill: var(--sim-t); }
-[data-tema] .ix-nom .nombre-ts { width: auto; display: flex; justify-content: center; gap: .1em; aspect-ratio: auto; font: 500 clamp(40px, 12vw, 72px)/1 var(--marca); letter-spacing: .12em; color: var(--texto); }
-[data-tema] .ix-nom .nombre-ts > span { position: static; display: inline-block; }
 [data-tema] .ix-fin-logo .ix-simb { width: 72px; height: auto; margin: 0 auto; }
-[data-tema] .ix-donde { color: var(--oro-texto); }
 
 /* La cuenta atrás de GTA VI (18-gta.css y trozos/gta.js), en premium: sin neón. Los colores de la escena salen de los
    tokens: cielo del fondo del diseño, sol de metal a rayas, ciudad y palmeras en silueta, rejilla de hilo de oro,

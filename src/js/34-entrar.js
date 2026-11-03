@@ -45,7 +45,9 @@ function pantallaCuenta(errorTxt = '') {
     $('#cPass').autocomplete = modo === 'crear' ? 'new-password' : 'current-password';
     $('#bOlvido').hidden = modo === 'crear'; err('');
   };
-  if (primeraVez) { const bc = $('.cuenta-modo button[data-m="crear"]'); if (bc) bc.click(); }
+  // desde el final de la presentación: «Crear mi cartera» abre en crear y «Ya tengo cuenta: entrar», en entrar
+  const pm = S.modoCuenta; S.modoCuenta = null;
+  if (pm ? pm === 'crear' : primeraVez) { const bc = $('.cuenta-modo button[data-m="crear"]'); if (bc) bc.click(); }
   if ($('#bGoogle')) $('#bGoogle').onclick = async () => {
     const b = $('#bGoogle'); err(''); b.disabled = true;
     if (nativo) {

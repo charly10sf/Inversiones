@@ -68,8 +68,8 @@ async function entrar() {
   const intro = !LS.get('inv-intro2', false);
   // no se pudo leer la cuenta y aquí no hay copia: nunca se da por vacía
   if (!S.enc && PERFIL_CUENTA && (S.cuentaSinRed || !S.cuentaLeida)) return pantallaSinCuenta();
-  if (!S.enc && PERFIL_CUENTA) { S.cuentaNueva = true; return intro ? pantallaIntro(bienvenidaCuenta) : bienvenidaCuenta(); }
-  if (!S.enc) return intro ? pantallaIntro(pantallaCrear) : pantallaCrear();
+  if (!S.enc && PERFIL_CUENTA) { S.cuentaNueva = true; if (intro) return void pantallaIntro(bienvenidaCuenta); return bienvenidaCuenta(); }
+  if (!S.enc) { if (intro) return void pantallaIntro(pantallaCrear); return pantallaCrear(); }
   try {
     // 0.6d: al volver de la cartera de prueba, sin PIN puesto se pide la contraseña (con PIN, ya se pide el PIN)
     const trasPrueba = LS.get('inv-demo-salida', false) && !(cfgBloqueo() && cfgBloqueo().pin);
@@ -80,7 +80,7 @@ async function entrar() {
       // con PIN o huella puestos, una vez cada 72 h los pide antes de enseñar nada
       const seguir = () => (necesitaBloqueo() ? pantallaBloqueo(arrancar, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); }) : arrancar());
       // también a quien ya entra solo: la presentación, una vez en cada dispositivo
-      return intro ? pantallaIntro(seguir) : seguir();
+      if (intro) return void pantallaIntro(seguir); return seguir();
     }
   } catch (e) { console.warn('La clave guardada no sirve', e); }
   if (intro) pantallaIntro(() => pantallaDesbloqueo()); else pantallaDesbloqueo();

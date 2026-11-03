@@ -420,7 +420,8 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--texto-2); margin-bott
 .tour-foco.sin::after { display: none; }
 @keyframes tour-late { 0% { opacity: 0.9; transform: scale(1); } 70%, 100% { opacity: 0; transform: scale(1.12); } }
 /* la tarjeta siempre se coloca con «top» (en px, lo pone colocarTour): así de un paso a otro se desliza, sin saltos */
-@property --fx { syntax: '<length>'; inherits: false; initial-value: 0px; }
+/* (0.8, paso 5p) inherits: true: con false, la flechita (::before) no recibía --fx y se quedaba en el borde izquierdo */
+@property --fx { syntax: '<length>'; inherits: true; initial-value: 0px; }
 .tour-caja { transition: top 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), left 0.38s cubic-bezier(0.32, 0.72, 0.24, 1), --fx 0.38s cubic-bezier(0.32, 0.72, 0.24, 1); max-height: calc(100vh - var(--nav-h) - 60px); overflow: auto; touch-action: pan-y; }
 .tour-caja.con-flecha { overflow: visible; }
 .tour-caja.justa .tour-dib { display: none; }

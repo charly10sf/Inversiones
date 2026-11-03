@@ -133,7 +133,7 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   if (desde && !lista) return novedadesScroll(nuevas, desde, alCerrar);
   const resto = NOVEDADES.filter((n) => !nuevas.includes(n));
   const pasos = [], idx = new Map();
-  for (const n of nuevas) for (const c of n.cosas || []) if (c.ir && !esParche(n.v)) { idx.set(c, pasos.length); pasos.push({ ...c.ir, t: c.t, x: c.g || c.x, dib: c.d, nuevo: n.v }); }
+  for (const n of nuevas) for (const c of n.cosas || []) if (c.ir && !esParche(n.v)) { idx.set(c, pasos.length); pasos.push(...pasosDeCosa(c, n.v)); }
   const item = (c, i, ir) => `<li style="--i:${i}">${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${ir && idx.has(c) ? `<button type="button" class="enlace nov-ir" data-nov-ir="${idx.get(c)}">Enséñamelo</button>` : ''}</div></li>`;
   // los bugs corregidos de cada versión (desde la 0.2.3b), debajo de sus novedades
   const arr = (n) => (n.arreglos && n.arreglos.length ? `<div class="nov-arr"><h4>Arreglos</h4><ul>${n.arreglos.map((a) => `<li>${ICONOS.ok}<span>${esc(a)}</span></li>`).join('')}</ul></div>` : '');
@@ -191,7 +191,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     const conBase = g.vs.some((n) => n.v === g.base);
     // con su versión de número en la presentación, lo de letra que ya está contado en ella (junta) no se repite
     const todas = g.vs.flatMap((n) => (n.cosas || []).filter((c) => !(c.junta && conBase)).map((c) => ({ ...c, v: n.v }))), suyas = [...todas.filter((c) => !esParche(c.v)), ...todas.filter((c) => esParche(c.v))];
-    for (const c of suyas) { const g2 = c.ir && !esParche(c.v); c.paso = g2 ? pasos.length : null; if (g2) pasos.push({ ...c.ir, t: c.t, x: c.g || c.x, dib: c.d, nuevo: c.v }); cosas.push(c); }
+    for (const c of suyas) { const g2 = c.ir && !esParche(c.v); c.paso = g2 ? pasos.length : null; if (g2) pasos.push(...pasosDeCosa(c, c.v)); cosas.push(c); }
     const deBase = suyas.filter((c) => !esParche(c.v)), cuantas = enGrande(g, k), grandes = deBase.length <= cuantas + 1 ? deBase : deBase.slice(0, cuantas), resto = suyas.slice(grandes.length);
     const prin = g.vs.find((n) => n.v === g.base) || g.vs[0], bugs = g.vs.reduce((t, n) => t + ((n.arreglos || []).length), 0);
     if (k === 0 && viejas) {

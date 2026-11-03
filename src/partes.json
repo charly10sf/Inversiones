@@ -127,6 +127,14 @@
   ],
   "salud": [
    "trozos/salud-ia.js"
-  ]
+  ],
+  "presentacion": {
+   "archivos": [
+    "trozos/presentacion.js"
+   ],
+   "retornoOk": [
+    "pantallaIntro"
+   ]
+  }
  }
 }

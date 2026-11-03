@@ -27,7 +27,7 @@ const texto = (f) => readFileSync(f, 'utf8').replace(/\r\n?/g, '\n');
 const PUBLICOS = [
   'manifest.webmanifest', 'favicon.svg',
   'toison-16.png', 'toison-32.png', 'toison-180.png', 'toison-192.png', 'toison-512.png', 'toison-maskable-512.png',
-  'toison-aviso.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
+  'toison-aviso.png', 'toison-marmol.webp', 'toison-sello.webp', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
   'instrumentos.json', 'mapa-mundo.json', 'mapa-detalle.json', 'cambios.json', 'version.json', 'app.json', 'en.json', 'lib',
 ];
 
