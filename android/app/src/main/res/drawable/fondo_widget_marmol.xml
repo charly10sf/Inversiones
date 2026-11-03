@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 0.8: el fondo del widget con el diseño marmol de Toisón (lo de debajo del dibujo de Lienzo; los colores de Tema.java) -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="#FF1C1F1E" />
+    <stroke android:width="1dp" android:color="#FF353A38" />
+    <corners android:radius="24dp" />
+</shape>

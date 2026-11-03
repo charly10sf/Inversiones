@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 0.8: el icono pequeño de los avisos con un diseño de Toisón: el símbolo (la O y la T de TS_O_D y TS_T_D de
+     49-avisos-y-ajustes.js, viewBox -82 -78 164 147) en blanco, a una tinta, como pide Android. Centrado en 180 × 180 -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp" android:height="24dp" android:viewportWidth="180" android:viewportHeight="180">
+    <group android:translateX="90" android:translateY="94.5">
+        <path android:fillType="evenOdd" android:fillColor="#FFFFFFFF"
+            android:pathData="M-80.9,0A80.9,50 0,1 1,80.9 0A80.9,50 0,1 1,-80.9 0ZM-54.1,0A54.1,46.4 0,1 0,54.1 0A54.1,46.4 0,1 0,-54.1 0Z" />
+        <path android:fillColor="#FFFFFFFF"
+            android:pathData="M-61.15,-76L61.15,-76L61.15,-66.7L16.25,-66.7L9.05,-57L12.25,60L20.5,60L20.5,67.2L-20.5,67.2L-20.5,60L-12.25,60L-9.05,-57L-16.25,-66.7L-61.15,-66.7Z" />
+    </group>
+</vector>

@@ -52,7 +52,7 @@ public class Principal extends Activity {
         super.onCreate(guardado);
         WEB = Datos.web(this);
         web = new Web(this);
-        web.setBackgroundColor(0xFF000000);
+        pintarTema();
         web.setFitsSystemWindows(true);
         // sin la barra de desplazamiento del navegador a la derecha: en la app se desliza con el dedo
         web.setVerticalScrollBarEnabled(false);
@@ -319,7 +319,14 @@ public class Principal extends Activity {
     private void salirDelBanco() {
         enBanco = false;
         if (agenteMovil != null) web.getSettings().setUserAgentString(agenteMovil);
-        web.setBackgroundColor(0xFF000000);
+        web.setBackgroundColor(Tema.de(this).fondoWeb());
+    }
+
+    /** 0.8: las barras del móvil y el fondo de la web con los colores del diseño elegido (lo guarda Puente.tema) */
+    void pintarTema() {
+        Tema t = Tema.de(this);
+        t.pintarBarras(this);
+        if (web != null && !enBanco) web.setBackgroundColor(t.fondoWeb());
     }
 
     /**

@@ -105,8 +105,8 @@ public class GrowiaServicio extends Service {
         if (nm == null) return;
         canales(c, nm);
         Notification n = new Notification.Builder(c, CANAL_FIN)
-                .setSmallIcon(R.drawable.ic_aviso)
-                .setColor(0xFFEDBB45)
+                .setSmallIcon(Tema.de(c).icono())
+                .setColor(Tema.de(c).aviso)
                 .setContentTitle(titulo)
                 .setContentText(texto == null ? "" : texto)
                 .setContentIntent(abrir(c, ID_FIN))
@@ -120,10 +120,10 @@ public class GrowiaServicio extends Service {
         NotificationManager nm = getSystemService(NotificationManager.class);
         if (nm != null) canales(this, nm);
         String texto = i != null ? i.getStringExtra("texto") : null;
-        if (texto == null || texto.isEmpty()) texto = en(this) ? "GrowIA is answering…" : "GrowIA está contestando…";
+        if (texto == null || texto.isEmpty()) texto = en(this) ? "GrowIA is answering…" : Tema.de(this).ia(false, true) + " está contestando…";
         Notification n = new Notification.Builder(this, CANAL)
-                .setSmallIcon(R.drawable.ic_aviso)
-                .setColor(0xFFEDBB45)
+                .setSmallIcon(Tema.de(this).icono())
+                .setColor(Tema.de(this).aviso)
                 .setContentTitle(texto)
                 .setContentIntent(abrir(this, ID))
                 .setOngoing(true)

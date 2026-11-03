@@ -186,8 +186,8 @@ public class Versiones extends Worker {
         if (v != null) i.putExtra("version", true).putExtra("v", v); else i.putExtra("actualizarApp", true);
         PendingIntent pi = PendingIntent.getActivity(c, clave.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification.Builder nb = new Notification.Builder(c, CANAL)
-                .setSmallIcon(R.drawable.ic_aviso)
-                .setColor(0xFFEDBB45)
+                .setSmallIcon(Tema.de(c).icono())
+                .setColor(Tema.de(c).aviso)
                 .setContentTitle(titulo)
                 .setContentText(texto)
                 .setStyle(new Notification.BigTextStyle().bigText(texto))

@@ -98,3 +98,19 @@ test('el selector de diseño solo lo ve el dueño, y cambia el diseño al moment
   await page.locator('[data-elige-tema=""]').evaluate((b) => b.click());
   expect(await page.evaluate(() => [document.documentElement.getAttribute('data-tema'), localStorage.getItem('inv-tema'), document.querySelector('meta[name="theme-color"]').content])).toEqual([null, null, '#000000']);
 });
+
+// 0.8 (paso 4b): la app de Android pinta el widget, los avisos y las barras con el diseño elegido. La web se lo dice
+// por el puente (InversionesApp.tema) al abrir y cada vez que cambia; aquí, un puente de imitación apunta lo que recibe
+test.describe('la app de Android sabe el diseño', () => {
+  test.use({ ajustes: { 'inv-tema': JSON.stringify('marmol'), 'stub-dueno': 'lucia@prueba.com' } });
+  test('al abrir y al cambiarlo', async ({ page }, info) => {
+    test.skip(info.project.name !== 'movil', 'una vez basta');
+    await page.addInitScript(() => { window.__temas = []; window.InversionesApp = { tema: (t) => window.__temas.push(t) }; });
+    await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
+    expect((await page.evaluate(() => window.__temas))[0]).toBe('marmol');
+    await page.evaluate(() => { S.esDueno = true; abrirAjustes(); });
+    await page.locator('[data-elige-tema="marfil"]').evaluate((b) => b.click());
+    await page.locator('[data-elige-tema=""]').evaluate((b) => b.click());
+    expect((await page.evaluate(() => window.__temas)).slice(-2)).toEqual(['marfil', '']);
+  });
+});

@@ -108,6 +108,8 @@ public class Avisos extends Worker {
         }
         String hoy = LocalDate.now().toString(), manana = LocalDate.now().plusDays(1).toString();
         boolean en = "en".equals(p.getString("idioma", "es"));   // 0.4: en el idioma de la web
+        Tema tm = Tema.de(c);   // 0.8: con un diseño de Toisón, «Toisón» y «la IA» (en inglés sigue GrowIA, como la web)
+        String app = tm.toison ? "Toisón" : "GrowFolio";
 
         for (int k = 0; reglas != null && k < reglas.length(); k++) {
             JSONObject x = reglas.getJSONObject(k);
@@ -143,7 +145,7 @@ public class Avisos extends Worker {
             if (av.optBoolean("mov", true) && !Double.isNaN(cambio) && Math.abs(cambio) >= 5) {
                 avisar(c, hechos, "mov:" + id + ":" + hoy, en ? n + (cambio > 0 ? " is up " : " is down ") + num(Math.abs(cambio)) + " % today"
                                 : n + (cambio > 0 ? " sube un " : " baja un ") + num(Math.abs(cambio)) + " % hoy",
-                        en ? "Open GrowFolio to see what happened and what GrowIA says." : "Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.", "cartera");
+                        en ? "Open " + app + " to see what happened and what GrowIA says." : "Abre " + app + " para ver qué ha pasado y qué dice " + tm.ia(false, false) + ".", "cartera");
             }
         }
 
@@ -172,7 +174,7 @@ public class Avisos extends Worker {
         JSONArray pq = av.optJSONArray("preg");
         for (int k = 0; av.optBoolean("preg", true) && pq != null && k < pq.length(); k++) {
             JSONObject x = pq.getJSONObject(k);
-            avisar(c, hechos, "preg:" + x.optString("k"), en ? "GrowIA has a question" : "GrowIA te pregunta", x.optString("q"), "objetivos");
+            avisar(c, hechos, "preg:" + x.optString("k"), en ? "GrowIA has a question" : tm.ia(false, true) + " te pregunta", x.optString("q"), "objetivos");
         }
         p.edit().putString("avisos_hechos", hechos.toString()).apply();
     }
@@ -198,8 +200,8 @@ public class Avisos extends Worker {
         Intent i = new Intent(c, Principal.class).putExtra("hash", hash).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pi = PendingIntent.getActivity(c, clave.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(c, CANAL)
-                .setSmallIcon(R.drawable.ic_aviso)
-                .setColor(0xFFEDBB45)
+                .setSmallIcon(Tema.de(c).icono())
+                .setColor(Tema.de(c).aviso)
                 .setContentTitle(titulo)
                 .setContentText(texto)
                 .setStyle(new Notification.BigTextStyle().bigText(texto))

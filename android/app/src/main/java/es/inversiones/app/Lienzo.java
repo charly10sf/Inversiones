@@ -37,12 +37,13 @@ import java.util.Random;
  * total y la curva grande) y tres o más (además lo que toca y, en pastillas, lo que más ha movido hoy la cartera).
  */
 final class Lienzo {
-    static final int PLANO = 0xFF1A1916, LINEA = 0xFF2A2723, TEXTO = 0xFFF7F2E8, TEXTO2 = 0xFFBCB3A2,
-            APAGADO = 0xFF8A8172, ACENTO = 0xFFEDBB45, SUBE = 0xFF4CBF8E, BAJA = 0xFFE46A5C,
-            FONDO_A = 0xFF100F0D, FONDO_B = 0xFF060605;
-    private static final float ESPACIADO_CIFRA = -0.06f;   // la cifra grande, gruesa y apretada como en la app (0.3)
-    private static final int PESO_CIFRA = 750;
-    private static final Map<Integer, Typeface> LETRAS = new HashMap<>();
+    /** 0.8: los colores salen del diseño elegido en la web (Tema): GrowFolio como siempre o Mármol, Marfil y Borgoña */
+    private final Tema t;
+    private final int LINEA, TEXTO, TEXTO2, APAGADO, ACENTO, ACENTO_LUZ, ORO_TEXTO, SUBE, BAJA, FONDO_A, FONDO_B;
+    /** la cifra grande: en GrowFolio gruesa y apretada como en la app (0.3); con Toisón, Inter 500 como la maqueta */
+    private final float ESPACIADO_CIFRA;
+    private final int PESO_CIFRA;
+    private static final Map<String, Typeface> LETRAS = new HashMap<>();
 
     private final Context ctx;
     private final float s;   // píxeles por dp
@@ -51,11 +52,25 @@ final class Lienzo {
     private final Paint p = new Paint(Paint.ANTI_ALIAS_FLAG | Paint.SUBPIXEL_TEXT_FLAG);
     private float ph = 16;   // el margen de los lados, en dp (lo pone todo())
 
-    private Lienzo(Context ctx, Bitmap bmp, float s) {
+    private Lienzo(Context ctx, Bitmap bmp, float s, Tema t) {
         this.ctx = ctx;
         this.bmp = bmp;
         this.s = s;
         this.c = new Canvas(bmp);
+        this.t = t;
+        LINEA = t.linea;
+        TEXTO = t.texto;
+        TEXTO2 = t.texto2;
+        APAGADO = t.apagado;
+        ACENTO = t.acento;
+        ACENTO_LUZ = t.acentoLuz;
+        ORO_TEXTO = t.oroTexto;
+        SUBE = t.sube;
+        BAJA = t.baja;
+        FONDO_A = t.fondoA;
+        FONDO_B = t.fondoB;
+        ESPACIADO_CIFRA = t.toison ? -0.02f : -0.06f;
+        PESO_CIFRA = t.toison ? 500 : 750;
     }
 
     /** ancho y alto en dp; devuelve la imagen ya dibujada */
@@ -63,24 +78,35 @@ final class Lienzo {
         float densidad = ctx.getResources().getDisplayMetrics().density;
         float s = Math.min(densidad, Math.min(3f, 1400f / Math.max(W, 1)));
         Bitmap b = Bitmap.createBitmap(Math.max(1, Math.round(W * s)), Math.max(1, Math.round(H * s)), Bitmap.Config.ARGB_8888);
-        Lienzo l = new Lienzo(ctx, b, s);
+        Lienzo l = new Lienzo(ctx, b, s, Tema.de(ctx));
         l.todo(W, H, r);
         return b;
     }
 
     // ---------- letra y texto ----------
+    /** la letra del texto: Plus Jakarta Sans con GrowFolio; Inter con Toisón (sin pasar de 600, como en la app) */
     private Typeface letra(int peso) {
-        Typeface t = LETRAS.get(peso);
-        if (t == null) {
+        return t.toison ? fuente("inter.ttf", Math.min(peso, 600)) : fuente("plusjakartasans.ttf", peso);
+    }
+
+    /** la letra de marca de Toisón, Ibarra Real Nova (normal o cursiva), para las etiquetas y el nombre */
+    private Typeface ibarra(int peso, boolean cursiva) {
+        return fuente(cursiva ? "ibarra-cursiva.ttf" : "ibarra.ttf", Math.max(400, Math.min(700, peso)));
+    }
+
+    private Typeface fuente(String archivo, int peso) {
+        String k = archivo + peso;
+        Typeface f = LETRAS.get(k);
+        if (f == null) {
             try {
-                t = new Typeface.Builder(ctx.getAssets(), "plusjakartasans.ttf").setFontVariationSettings("'wght' " + peso).build();
+                f = new Typeface.Builder(ctx.getAssets(), archivo).setFontVariationSettings("'wght' " + peso).build();
             } catch (Exception e) {
-                t = null;
+                f = null;
             }
-            if (t == null) t = Typeface.create("sans-serif", peso >= 600 ? Typeface.BOLD : Typeface.NORMAL);
-            LETRAS.put(peso, t);
+            if (f == null) f = Typeface.create(archivo.startsWith("ibarra") ? "serif" : "sans-serif", peso >= 600 ? Typeface.BOLD : Typeface.NORMAL);
+            LETRAS.put(k, f);
         }
-        return t;
+        return f;
     }
 
     private float dp(float v) {
@@ -154,7 +180,7 @@ final class Lienzo {
         return out;
     }
 
-    private static int color(double v) {
+    private int color(double v) {
         return v > 0.5 ? SUBE : v < -0.5 ? BAJA : TEXTO2;
     }
 
@@ -180,18 +206,22 @@ final class Lienzo {
         return sp;
     }
 
-    private static Bitmap GRANO;
-    private static Bitmap grano() {
+    /** el polvo de la curva, del color de la curva de cada diseño (uno por color, se guardan) */
+    private static final Map<Integer, Bitmap> GRANOS = new HashMap<>();
+    private Bitmap grano() {
+        Bitmap GRANO = GRANOS.get(ACENTO);
         if (GRANO != null) return GRANO;
+        int gr = t.toison ? ACENTO & 0xFFFFFF : (236 << 16) | (192 << 8) | 112;
         try {
             int l = 128;
             int[] px = new int[l * l];
             Random r = new Random(7);
             for (int i = 0; i < px.length; i++) {
                 float a = Math.max(0f, Math.min(1f, r.nextFloat() * 2.2f - 0.95f));
-                px[i] = ((int) (a * 255) << 24) | (236 << 16) | (192 << 8) | 112;
+                px[i] = ((int) (a * 255) << 24) | gr;
             }
             GRANO = Bitmap.createBitmap(px, l, l, Bitmap.Config.ARGB_8888);
+            GRANOS.put(ACENTO, GRANO);
         } catch (Throwable e) {
             GRANO = null;
         }
@@ -403,7 +433,7 @@ final class Lienzo {
         p.setStyle(Paint.Style.STROKE);
         p.setStrokeJoin(Paint.Join.ROUND);
         p.setStrokeCap(Paint.Cap.ROUND);
-        Shader trazo = new LinearGradient(dp(x0), 0, dp(x1), 0, new int[]{alfa(ACENTO, 0x80), ACENTO, 0xFFF9DE9C}, new float[]{0f, 0.7f, 1f}, Shader.TileMode.CLAMP);
+        Shader trazo = new LinearGradient(dp(x0), 0, dp(x1), 0, new int[]{alfa(ACENTO, 0x80), ACENTO, ACENTO_LUZ}, new float[]{0f, 0.7f, 1f}, Shader.TileMode.CLAMP);
         p.setColor(0xFFFFFFFF);
         p.setShader(trazo);
         p.setAlpha(0x73);
@@ -490,6 +520,50 @@ final class Lienzo {
         p.setStrokeWidth(Math.max(1, dp(1)));
         p.setColor(LINEA);
         c.drawRoundRect(new RectF(dp(0.5f), dp(0.5f), bmp.getWidth() - dp(0.5f), bmp.getHeight() - dp(0.5f)), dp(24), dp(24), p);
+        if (t.toison) {   // con Toisón, el hilo de oro de arriba que se difumina hacia los lados, como el patrimonio de la app
+            float w = bmp.getWidth();
+            p.setStyle(Paint.Style.FILL);
+            p.setShader(new LinearGradient(dp(24), 0, w - dp(24), 0, new int[]{alfa(ORO_TEXTO, 0), alfa(ORO_TEXTO, 0x8C), alfa(ORO_TEXTO, 0)}, null, Shader.TileMode.CLAMP));
+            c.drawRect(dp(24), dp(1), w - dp(24), dp(1) + Math.max(1, dp(1.2f)), p);
+            p.setShader(null);
+        }
+    }
+
+    /**
+     * «Patrimonio» arriba a la izquierda, como las etiquetas de las tarjetas de cada diseño: GrowFolio, apagado;
+     * Mármol, Inter en mayúsculas espaciadas; Marfil, Ibarra con una raya de tinta debajo; Borgoña, Ibarra cursiva en
+     * oro. Devuelve el ancho (en dp); con «dibujar» falso solo mide
+     */
+    private float etiqueta(float x, float yBase, String txt, boolean dibujar) {
+        switch (t.id) {
+            case "marmol": {
+                String m = txt.toUpperCase(java.util.Locale.ROOT);
+                float w = ancho(m, 10.5f, 600, 0.14f);
+                if (dibujar) texto(x, yBase, m, 10.5f, 600, APAGADO, false, 0.14f);
+                return w;
+            }
+            case "marfil":
+            case "borgona": {
+                boolean cur = t.id.equals("borgona");
+                float sp = cur ? 15 : 14;
+                estilo(sp, 600, cur ? ORO_TEXTO : TEXTO, Paint.Align.LEFT);
+                p.setTypeface(ibarra(cur ? 500 : 600, cur));
+                float w = p.measureText(txt) / s;
+                if (dibujar) {
+                    c.drawText(txt, dp(x), dp(yBase), p);
+                    // la raya fina de Marfil (de tinta) y el filete corto de Borgoña (de oro)
+                    p.setColor(cur ? alfa(ORO_TEXTO, 0x99) : alfa(TEXTO, 0x8C));
+                    float largo = cur ? Math.min(w, 18) : w;
+                    c.drawRect(dp(x), dp(yBase + 4), dp(x + largo), dp(yBase + 4) + Math.max(1, dp(cur ? 1.2f : 0.9f)), p);
+                }
+                return w;
+            }
+            default: {
+                float w = ancho(txt, 12, 600);
+                if (dibujar) texto(x, yBase, txt, 12, 600, APAGADO, false);
+                return w;
+            }
+        }
     }
 
     /** lo que se dibuja dentro (la curva de lado a lado) no se sale de las esquinas redondeadas */
@@ -531,7 +605,7 @@ final class Lienzo {
         c.drawRoundRect(on, dp(SEL_ALTO / 2 - 2), dp(SEL_ALTO / 2 - 2), p);
         for (int k = 0; k < n; k++) {
             boolean es = k == elegido;
-            estilo(11, es ? 750 : 600, es ? ACENTO : APAGADO, Paint.Align.CENTER);
+            estilo(11, es ? 750 : 600, es ? ORO_TEXTO : APAGADO, Paint.Align.CENTER);
             c.drawText((en ? Datos.CORTOS_EN : Datos.CORTOS)[k], dp(x0 + SEL_CHIP * k + SEL_CHIP / 2), dp(yTop + SEL_ALTO / 2 + 3.9f), p);
         }
     }
@@ -590,7 +664,11 @@ final class Lienzo {
         this.ph = ph;
         float util = W - 2 * ph;
         if (!r.hay) {
-            texto(ph, H / 2 - 2, "GrowFolio", Math.min(22, H * 0.22f), 700, TEXTO, false);
+            if (t.toison) {   // TOISÓN en Ibarra, espaciado como en la cabecera de la app
+                estilo(Math.min(22, H * 0.22f), 600, t.claro ? TEXTO : ORO_TEXTO, Paint.Align.LEFT, 0.12f);
+                p.setTypeface(ibarra(600, false));
+                c.drawText("TOISÓN", dp(ph), dp(H / 2 - 2), p);
+            } else texto(ph, H / 2 - 2, "GrowFolio", Math.min(22, H * 0.22f), 700, TEXTO, false);
             texto(ph, H / 2 + 18, recortar(r.en ? "Open the app once to see your portfolio here" : "Abre la app una vez para ver aquí tu cartera", 12.5f, 500, util), 12.5f, 500, TEXTO2, false);
             c.restore();
             return;
@@ -624,11 +702,12 @@ final class Lienzo {
             finIzq = x0 - 10;
         } else if (modo == 1) finIzq = W - SEL_FIN - periodo(W - SEL_FIN, y, r.rango) - 10;
         String pat = r.en ? "Net worth" : "Patrimonio";
-        float wPat = ancho(pat, 12, 600), wHora = ancho(r.horaTxt, 11.5f, 500);
-        if (ph + wPat + 7 + wHora <= finIzq) {
-            texto(ph, y, pat, 12, 600, APAGADO, false);
-            texto(ph + wPat + 7, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
-        } else if (ph + wHora <= finIzq) texto(ph, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
+        float wPat = etiqueta(ph, y, pat, false), wHora = ancho(r.horaTxt, 11.5f, 500), sepHora = t.toison ? 9 : 7;
+        if (ph + wPat + sepHora + wHora <= finIzq) {
+            etiqueta(ph, y, pat, true);
+            texto(ph + wPat + sepHora, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
+        } else if (t.toison && ph + wPat <= finIzq) etiqueta(ph, y, pat, true);
+        else if (ph + wHora <= finIzq) texto(ph, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
 
         // la cifra grande y gruesa
         float maxSp = Math.max(26, Math.min(42, Math.min(H * 0.2f, W * 0.115f)));
@@ -710,7 +789,7 @@ final class Lienzo {
                 String l = toca.get(k);
                 String ya = r.en ? "Now:" : "Ahora:";
                 if (k == 0 && l.startsWith(ya)) {
-                    texto(ph, yy, ya, 13, 700, ACENTO, false);
+                    texto(ph, yy, ya, 13, 700, ORO_TEXTO, false);
                     texto(ph + ancho(ya + " ", 13, 700), yy, l.substring(Math.min(l.length(), ya.length() + 1)), 13, 500, TEXTO2, false);
                 } else texto(ph, yy, l, 13, 500, TEXTO2, false);
                 yy += 18;

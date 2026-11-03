@@ -110,6 +110,15 @@ public class Puente {
         Datos.prefs(ctx).edit().putString("idioma", "en".equals(i) ? "en" : "es").apply();
     }
 
+    /** 0.8: el diseño elegido en la web («marmol», «marfil», «borgona» o vacío para GrowFolio). Lo manda al abrir y al
+     *  cambiarlo; la app pinta las barras del móvil con su fondo y, si ha cambiado, repinta el widget */
+    @JavascriptInterface
+    public void tema(String t) {
+        boolean cambia = Tema.guardar(ctx, t);
+        act.runOnUiThread(act::pintarTema);
+        if (cambia) Widget.actualizarTodos(ctx);
+    }
+
     @JavascriptInterface
     public void avisosVersiones(boolean on) {
         Versiones.activar(ctx, on);

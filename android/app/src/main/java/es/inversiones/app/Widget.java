@@ -6,6 +6,7 @@ import android.appwidget.AppWidgetProvider;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.ColorStateList;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Icon;
 import android.os.Build;
@@ -126,9 +127,21 @@ public class Widget extends AppWidgetProvider {
         return Icon.createWithData(bytes, 0, bytes.length);
     }
 
-    private static String descripcion(Datos.Resultado r) {
-        if (r.en) return r.hay ? "Net worth " + (r.oculto ? "hidden" : Datos.eur(r.total, false)) + ", today " + Datos.pct(r.diaPct) + ", " + r.rango + " chart" : "GrowFolio: open the app";
-        return r.hay ? "Patrimonio " + (r.oculto ? "oculto" : Datos.eur(r.total, false)) + ", hoy " + Datos.pct(r.diaPct) + ", gráfica de " + r.rango : "GrowFolio: abre la app";
+    private static String descripcion(Datos.Resultado r, Tema tm) {
+        String app = tm.toison ? "Toisón" : "GrowFolio";
+        if (r.en) return r.hay ? "Net worth " + (r.oculto ? "hidden" : Datos.eur(r.total, false)) + ", today " + Datos.pct(r.diaPct) + ", " + r.rango + " chart" : app + ": open the app";
+        return r.hay ? "Patrimonio " + (r.oculto ? "oculto" : Datos.eur(r.total, false)) + ", hoy " + Datos.pct(r.diaPct) + ", gráfica de " + r.rango : app + ": abre la app";
+    }
+
+    /** 0.8: lo que el widget no dibuja en la imagen (el fondo de debajo y la rueda de refrescar) con los colores del
+     *  diseño elegido; con GrowFolio, como siempre */
+    private static void colores(RemoteViews v, Tema tm) {
+        int fondo = "marmol".equals(tm.id) ? R.drawable.fondo_widget_marmol : "marfil".equals(tm.id) ? R.drawable.fondo_widget_marfil
+                : "borgona".equals(tm.id) ? R.drawable.fondo_widget_borgona : R.drawable.fondo_widget;
+        v.setInt(android.R.id.background, "setBackgroundResource", fondo);
+        v.setInt(R.id.refresco_ico, "setColorFilter", tm.toison ? tm.apagado : 0xFF8E877A);
+        if (Build.VERSION.SDK_INT >= 31)
+            v.setColorStateList(R.id.refresco_gira, "setIndeterminateTintList", ColorStateList.valueOf(tm.toison ? tm.oroTexto : 0xFFEDBB45));
     }
 
     /**
@@ -139,9 +152,11 @@ public class Widget extends AppWidgetProvider {
         float[] t = tamano(m, id);
         float ancho = t[0], alto = t[1];
         Datos.Resultado r = Datos.calcular(c, periodo(c, id));
+        Tema tm = Tema.de(c);
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_lienzo);
+        colores(v, tm);
         v.setImageViewIcon(R.id.lienzo, imagen(c, ancho, alto, r));
-        String d = descripcion(r);
+        String d = descripcion(r, tm);
         v.setContentDescription(R.id.lienzo, d);
         v.setContentDescription(R.id.lienzo2, d);
         if (Datos.prefs(c).getInt("copia_" + id, 0) != 0) {
@@ -175,7 +190,7 @@ public class Widget extends AppWidgetProvider {
         int vista = otra == 0 ? R.id.lienzo : R.id.lienzo2;
         RemoteViews v = new RemoteViews(c.getPackageName(), R.layout.widget_lienzo);
         v.setImageViewIcon(vista, imagen(c, t[0], t[1], r));
-        v.setContentDescription(vista, descripcion(r));
+        v.setContentDescription(vista, descripcion(r, Tema.de(c)));
         v.setDisplayedChild(R.id.lienzos, otra);
         m.partiallyUpdateAppWidget(id, v);
         Datos.prefs(c).edit().putInt("copia_" + id, otra).apply();

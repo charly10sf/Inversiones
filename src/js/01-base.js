@@ -83,8 +83,15 @@ function ponerTema(t) {
   try { if (t) localStorage.setItem('inv-tema', JSON.stringify(t)); else localStorage.removeItem('inv-tema'); } catch (e) {}
   colorBarraTema();
   acabadoTema();
+  temaApp();
+}
+/* 0.8: la app de Android pinta con el diseño elegido el widget, los avisos y las barras del móvil (Puente.tema; una
+   app de antes no tiene esa función y no pasa nada) */
+function temaApp() {
+  try { if (window.InversionesApp && typeof InversionesApp.tema === 'function') InversionesApp.tema(temaActual()); } catch (e) {}
 }
 colorBarraTema();
+temaApp();
 /* el acabado de fondo de los diseños de Toisón (maqueta aprobada): un grano fino del color del texto (en Marfil, como
    de papel; cuánto se ve lo dice el token --grano) y, solo en Mármol, vetas finas con alguna de oro. Una capa fija
    detrás de todo, que no se toca ni se anima; sin diseño de Toisón, no existe */
