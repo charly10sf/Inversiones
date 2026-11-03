@@ -427,6 +427,7 @@ function vistaTu(M) {
     <h2 class="aj-grupo">${L('La app', 'The app')}</h2>
     <div class="aj-caja">
       ${htmlSelectorTema()}
+      ${htmlSelectorModo()}
       ${boton(ICONOS_PL.ajustes, L('Ajustes', 'Settings'), L('Cuenta, idioma, seguridad, avisos y la app de Android.', 'Account, language, security, alerts and the Android app.'), 'ajustes')}
       ${boton(ICONOS_PL.novedades, L('Novedades', "What's new"), L(`Versión ${VERSION} alfa: qué se ha mejorado.`, `Version ${VERSION} alpha: what's improved.`), 'novedades')}
       ${boton(ICONOS_PL.enviar, L('Avisar de un fallo', 'Report a bug'), L('Es una alfa: cuéntanos cualquier fallo o idea. Lo leemos todo.', "It's an alpha: tell us about any bug or idea."), 'opinion')}

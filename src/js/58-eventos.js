@@ -78,7 +78,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'perfil-ia') editarSobreMi();
     else if (a === 'meta') editarMeta(d.id || null);
     else if (a === 'fiscal') editarFiscal();
-    else if (a === 'asesor') abrirAsesor(d.q || '', !!d.q);
+    else if (a === 'asesor') { if (!d.q && t.classList.contains('riel-ia') && $('#asesorFondo')) cerrarAsesor(); else abrirAsesor(d.q || '', !!d.q); }
     else if (a === 'recorte') iniciarRecorte();
     else if (a === 'idioma') menuIdioma(t);
     else if (a === 'novedades-detalle') mostrarNovedades(null, () => {}, true);

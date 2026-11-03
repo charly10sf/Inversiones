@@ -188,7 +188,9 @@ async function abrirAsesor(pregunta, enviar) {
     </section>`;
     fondo.addEventListener('click', (e) => { if (e.target === fondo) cerrarAsesor(); else clicAsesor(e); });
     document.body.appendChild(fondo);
-    document.body.style.overflow = 'hidden';
+    // 0.9: en el ordenador la IA se abre al lado, en una columna a la derecha, y Hoy sigue a la vista y se puede mover
+    if (iaAlLado()) { document.body.classList.add('ia-lado'); $('.asesor', fondo).setAttribute('aria-modal', 'false'); for (const b of $$('.riel-ia')) b.setAttribute('aria-expanded', 'true'); }
+    else document.body.style.overflow = 'hidden';
     S.asesorAtras = conAtras(() => cerrarAsesor(true), fondo);
     const ta = $('#asTexto', fondo);
     const ajustar = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 160) + 'px'; };
@@ -256,9 +258,10 @@ function cerrarAsesor(desdeAtras) {
   const f = $('#asesorFondo'); if (!f) return;
   AS.pedirClave = false;
   f.remove(); document.body.style.overflow = '';
+  if (document.body.classList.contains('ia-lado')) { document.body.classList.remove('ia-lado'); for (const b of $$('.riel-ia')) b.setAttribute('aria-expanded', 'false'); }
   if (desdeAtras !== true && S.asesorAtras) S.asesorAtras();
   S.asesorAtras = null;
-  const b = $('#bAsesor'); if (b) b.focus({ preventScroll: true });
+  const b = iaAlLado() ? $('.riel-ia') : $('#bAsesor'); if (b) b.focus({ preventScroll: true });
 }
 async function probarClave(clave) {
   const cfg = cfgAsesor();

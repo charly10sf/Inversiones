@@ -38,7 +38,7 @@ test.describe('sin diseño elegido', () => {
     expect(x.fondo).toBe(rgb(FONDO.marmol));
     expect(x.barra).toBe(FONDO.marmol);
     expect(x.letra.startsWith('Inter')).toBe(true);
-    await expect(page.locator('.top .marca-ts svg')).toBeVisible();
+    await expect(page.locator(':is(.top, .riel) .marca-ts svg:visible').first()).toBeVisible();
     expect(await page.evaluate(() => [document.title, document.querySelector('link[rel="manifest"]') && 1, !!document.querySelector('link[href*="fonts.googleapis"]')])).toEqual(['Toisón', 1, false]);
     // ni la tarjeta «Muy pronto» ni el estreno de Toisón
     await expect(page.locator('.ts-tarjeta, .estreno.ts')).toHaveCount(0);
@@ -63,7 +63,7 @@ for (const t of Object.keys(FONDO)) {
       // 0.8 (5b): los nombres de GrowFolio (--bg, --text, --accent…) ya no existen: todo usa los tokens
       expect(x.viejos).toBe('');
       // la carcasa: el símbolo de Toisón en la cabecera y la cabecera sin cortar (encajarCabecera)
-      await expect(page.locator('.top .marca-ts svg')).toBeVisible();
+      await expect(page.locator(':is(.top, .riel) .marca-ts svg:visible').first()).toBeVisible();
       expect(await page.evaluate(() => { const f = document.querySelector('.fila-top'); return f.scrollWidth <= f.clientWidth + 1; })).toBe(true);
       await page.screenshot({ path: test.info().outputPath(`inicio-${t}.png`) });
     });

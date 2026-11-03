@@ -297,7 +297,7 @@ test.describe('trozos: el asesor', () => {
     // cerrarla sin haberla abierto no baja nada
     await page.evaluate(() => cerrarAsesor());
     expect(await page.evaluate(() => typeof sugerencias)).toBe('undefined');
-    await tocar(page, '#bAsesor');
+    await tocar(page, ':is(#bAsesor, .riel-ia):visible');
     await expect(page.locator('#asesorFondo')).toBeVisible();
     expect(await page.evaluate(() => typeof sugerencias)).toBe('function');
     await page.keyboard.press('Escape');

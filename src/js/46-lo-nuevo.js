@@ -36,7 +36,7 @@ function grupoNuevo() {
 }
 function pintarNavNuevo() {
   const k = grupoNuevo();
-  for (const a of $$('.nav [data-ir], .navbar [data-ir]')) {
+  for (const a of $$('.nav [data-ir], .navbar [data-ir], .riel [data-ir]')) {
     const on = a.dataset.ir === k;
     a.classList.toggle('nuevo', on);
     if (on) { a.dataset.nuevo = L('Nuevo', 'New'); a.setAttribute('aria-label', `${a.textContent.trim()} (${L('hay algo nuevo', 'something new')})`); }
@@ -65,7 +65,7 @@ function globoNuevo(intento = 0) {
   if (!k || !pasos.length || !S.cartera || LS.get('inv-guia-globo', '') === GUIA_ID()) return;
   clearTimeout(S.globoT);
   if (opiOcupado() || grupoDe(S.vista).k === k) { if (intento < 30) S.globoT = setTimeout(() => globoNuevo(intento + 1), 6000); return; }
-  const a = [...$$(`.navbar [data-ir="${k}"], .nav [data-ir="${k}"]`)].find((x) => x.offsetParent);
+  const a = [...$$(`.navbar [data-ir="${k}"], .nav [data-ir="${k}"], .riel [data-ir="${k}"]`)].find((x) => x.offsetParent);
   if (!a) return;
   LS.set('inv-guia-globo', GUIA_ID());
   const g = document.createElement('div'), bv = esc(pasos[0].nuevo);

@@ -328,7 +328,7 @@ const ICONOS_TS = {
   cartera: () => `<svg class="nav-med" viewBox="-82 -78 164 147" aria-hidden="true"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg>`,
 };
 function montar() {
-  $('#app').innerHTML = `
+  $('#app').innerHTML = `${htmlRiel()}
   <header class="top"><div class="wrap fila-top">
     <div class="marca"><span class="marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i><b>TOISÓN</b></span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`).join('')}</nav>
@@ -343,7 +343,7 @@ function montar() {
   <main class="wrap" id="vista"></main>
   <nav class="navbar" aria-label="Secciones">${GRUPOS.map((g) => { const k = g.k; return `<a href="#${k}" data-ir="${k}"${k === 'cartera' ? ' class="nav-centro"' : ''}>${ICONOS_TS[k]()}<span>${L(g.c || g.t, g.en)}</span></a>`; }).join('')}</nav>`;
   S.tickerFirma = null; marcaIA();
-  document.body.classList.add('nav-ts');
+  document.body.classList.add('nav-ts'); marcarModo();
   // la luz de arriba: al pasar el ratón (o tocarla) se despliegan las bolsas
   const ew = $('#estadoW'), eb = $('#estadoB'), ep = $('#estadoPanel');
   const rellena = () => { ep.innerHTML = htmlBolsasPanel(); };
@@ -577,7 +577,7 @@ function pintar() {
   for (const a of $$('[data-ir]')) a.setAttribute('aria-current', a.dataset.ir === gAct ? 'page' : 'false');
   // un punto en Tú (donde están tus objetivos) mientras te falte el perfil
   const faltaP = perfilIncompleto(), kFalta = 'tu';
-  for (const a of $$('.nav [data-ir], .navbar [data-ir]')) a.classList.toggle('falta', faltaP && a.dataset.ir === kFalta);
+  for (const a of $$('.nav [data-ir], .navbar [data-ir], .riel [data-ir]')) a.classList.toggle('falta', faltaP && a.dataset.ir === kFalta);
   // lo nuevo de la versión: el botón de su sección lleva «Nuevo» y late hasta que lo ves de verdad
   pintarNavNuevo();
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
@@ -595,7 +595,9 @@ function pintar() {
     window.scrollTo(0, y); requestAnimationFrame(() => window.scrollTo(0, y));
     setTimeout(() => { if (Math.abs(window.scrollY - y) > 40 && window.scrollY < y) window.scrollTo(0, y); }, 300);
   } else if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
-  if (S.vista === 'cartera') pedirEncajarMovers();
+  if (S.vista === 'cartera') { if ($('[data-que-es]')) ponerQueEs($('#vista')); pedirEncajarMovers(); }
+  // 0.9: una pestaña del modo avanzado se llena después (su código va en un trozo aparte)
+  if (S.vista === 'cartera' && $('#panelAv')) pintarPanelAv();
   if (S.vista === 'tu') activarSelectorTema($('#vista'));
   // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada
   if (S.vista === 'agenda' && S.agIr) {
