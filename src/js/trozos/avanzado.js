@@ -66,7 +66,9 @@ const PAV_CSS = `
 .pav-sel select, .pav-sel input, .pav-rebal input { min-height: 40px; padding: 0 10px; border-radius: var(--r-s); border: 1px solid var(--borde); background: var(--fondo); color: var(--texto); font: 500 14px/1 var(--ui); font-variant-numeric: tabular-nums; }
 .pav-sel input { width: 96px; } .pav-rebal input { width: 74px; }
 .pav-ley { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin: 8px 0 14px; font-size: 12px; color: var(--texto-2); }
-.pav-ley i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; margin-right: -8px; }
+.pav-ley span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
+.pav-ley i { display: inline-block; width: 14px; height: 3px; border-radius: 2px; }
+@media (max-width: 560px) { .pav-mov th:nth-child(4), .pav-mov td:nth-child(4) { display: none; } .pav-rebal small { display: none; } .pav-rebal input { width: 58px; } .pav-rebal th, .pav-rebal td { padding-left: 4px; padding-right: 4px; } }
 .pav-warn { color: var(--aviso); }
 .pnl-cab { display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px; font: 600 15px/1.2 var(--ui); }
 .pnl-cal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
@@ -489,7 +491,7 @@ function pavMov(M) {
     [L('Resultado de lo vendido', 'Result of sales'), eurS(res, 0), cls(res)],
   ], 4);
   const MAX = 150;
-  const filas = xs.slice(0, MAX).map((x) => [`<span class="mov-f">${esc(x.d)}</span>`, `<b>${esc(x.n)}</b>${x.pl ? `<small class="mov-pl">${esc(x.pl)}</small>` : ''}`, `<span class="mov-t ${x.t}">${T[x.t]}</span>${x.aprox ? ` <small title="${L('Sin fecha exacta: la de la posición', 'No exact date: the holding\'s')}">≈</small>` : ''}`, x.u != null ? fmtNum(x.u, x.u < 10 ? 4 : 2) : '—', `${eur(x.imp, 2)}${x.res != null ? `<small class="${cls(x.res)}"> ${eurS(x.res, 0)}</small>` : ''}`]);
+  const filas = xs.slice(0, MAX).map((x) => [`<span class="mov-f">${esc(fechaCorta(x.d))}</span>`, `<b>${esc(x.n)}</b>${x.pl ? `<small class="mov-pl">${esc(x.pl)}</small>` : ''}`, `<span class="mov-t ${x.t}">${T[x.t]}</span>${x.aprox ? ` <small title="${L('Sin fecha exacta: la de la posición', 'No exact date: the holding\'s')}">≈</small>` : ''}`, x.u != null ? fmtNum(x.u, x.u < 10 ? 4 : 2) : '—', `${eur(x.imp, 2)}${x.res != null ? `<small class="${cls(x.res)}"> ${eurS(x.res, 0)}</small>` : ''}`]);
   const tabla = xs.length ? pavTabla([L('Fecha', 'Date'), L('Qué', 'What'), L('Tipo', 'Type'), L('Particip.', 'Units'), L('Importe', 'Amount')], filas, 'pav-mov') + (xs.length > MAX ? `<p class="nota">${L(`Y ${xs.length - MAX} más antiguas.`, `And ${xs.length - MAX} older ones.`)}</p>` : '') : `<p class="nota" style="margin:0">${L('No hay movimientos de este tipo.', 'No transactions of this type.')}</p>`;
   // lo que has metido cada mes (las compras), el último año
   const desde = diasAtras(365).slice(0, 7), porMes = new Map();
@@ -549,7 +551,7 @@ function pavGrafico(M) {
     ano.length > 5 ? [L('Mínimo de un año', '1-year low'), precioFmt(lo), '', pctS((ult.v / lo - 1) * 100, 1)] : null,
   ], 3);
   return [
-    pavT('c12', L('Gráfico técnico', 'Technical chart'), `<div class="pav-filtros">${sel}${pavChips('data-graf-r', rango, PAV_RANGOS.map(([k]) => [k, k]))}</div><div class="chart" id="pavGraf"></div><p class="pav-ley"><i style="background:var(--grafica)"></i>${L('Precio', 'Price')} <i style="background:var(--reparto-2)"></i>${L('Media de 50 días', '50-day average')} <i style="background:var(--reparto-4)"></i>${L('Media de 200 días', '200-day average')}</p>` + kpis,
+    pavT('c12', L('Gráfico técnico', 'Technical chart'), `<div class="pav-filtros">${sel}${pavChips('data-graf-r', rango, PAV_RANGOS.map(([k]) => [k, k]))}</div><div class="chart" id="pavGraf"></div><p class="pav-ley"><span><i style="background:var(--grafica)"></i>${L('Precio', 'Price')}</span><span><i style="background:var(--reparto-2)"></i>${L('Media de 50 días', '50-day average')}</span><span><i style="background:var(--reparto-4)"></i>${L('Media de 200 días', '200-day average')}</span></p>` + kpis,
       L('Con el precio de cierre de cada día en euros (los años viejos, semana a semana): por eso no hay velas ni volumen. Las medias son las de los últimos 50 y 200 días de bolsa. El RSI mide, de 0 a 100, cuánto han pesado las subidas frente a las bajadas en las últimas 14 sesiones. Son cálculos sobre el precio, no una señal para comprar ni vender.', 'With each day\'s closing price in euros (older years, weekly): hence no candles or volume. The averages are those of the last 50 and 200 trading days. RSI measures, from 0 to 100, how much rises weighed against falls over the last 14 sessions. These are price calculations, not a buy or sell signal.')),
   ].join('');
 }
@@ -579,7 +581,7 @@ function pavRebal(M) {
   const campo = `<label class="pav-sel"><span>${L('Si aportaras', 'If you put in')}</span><input type="number" inputmode="decimal" min="0" step="50" value="${aport}" data-rebal-aport aria-label="${L('Importe de la aportación, en euros', 'Contribution amount, in euros')}"> €</label>`;
   const desv = sum(ks, (k) => Math.abs(tienes(k).pct - (+obj[k] || 0))) / 2;
   return [
-    pavT('c12', L('Tu reparto objetivo', 'Your target mix'), pavKpis([[L('Lejos de tu objetivo', 'Away from your target'), `${fmtNum(desv, 1)} pp`, desv > 10 ? 'warn' : ''], [L('Objetivo', 'Target'), puesto ? L('Puesto por ti', 'Set by you') : L('Sin poner (es lo que tienes hoy)', 'Not set (it is what you own today)')]], 2)
+    pavT('c12', L('Tu reparto objetivo', 'Your target mix'), pavKpis([[L('Lejos de tu objetivo', 'Away from your target'), `${fmtNum(desv, 1)} pp`, desv > 10 ? 'warn' : ''], [L('Objetivo', 'Target'), puesto ? L('Puesto por ti', 'Set by you') : L('Sin poner', 'Not set'), '', puesto ? '' : L('de momento, lo que tienes hoy', 'for now, what you own today')]], 2)
       + `<div class="pav-filtros">${campo}</div>` + pavTabla([L('Tipo', 'Type'), L('Tienes', 'You have'), L('Objetivo %', 'Target %'), L('Diferencia', 'Difference'), L('La aportación, hacia el objetivo', 'The contribution, towards the target')], filas, 'pav-rebal') + aviso,
       L('Escribe el porcentaje que quieres de cada tipo (se guarda en este dispositivo). La última columna es un cálculo: cómo quedaría si esa aportación fuera a lo que más se queda por debajo de tu objetivo. Es una cuenta, no una recomendación: lo decides tú.', 'Type the percentage you want of each type (saved on this device). The last column is a calculation: how it would look if that contribution went to what is most below your target. It is a sum, not a recommendation: your call.')),
   ].join('');
@@ -620,14 +622,17 @@ document.addEventListener('click', (e) => {
   if (t.dataset.grafR) S.grafRango = t.dataset.grafR;
   vibrar(); pintarPanelAv();
 });
+// se repinta al momento siguiente: repintar dentro del «change» quita el campo con el foco puesto y el navegador lanza
+// otro «change» a mitad
+const repintarAv = () => { clearTimeout(repintarAv.t); repintarAv.t = setTimeout(pintarPanelAv, 0); };
 document.addEventListener('change', (e) => {
   const t = e.target; if (!$('#panelAv') || !t.closest || !t.closest('#panelAv')) return;
-  if (t.matches('[data-graf-pos]')) { S.grafPos = t.value; pintarPanelAv(); }
+  if (t.matches('[data-graf-pos]')) { S.grafPos = t.value; repintarAv(); }
   else if (t.matches('[data-obj-k]')) {
     const o = { ...pavObjetivo(reparto(S.M || calcular(), 'clase', 'todo')) };
     for (const x of $$('[data-obj-k]', $('#panelAv'))) o[x.dataset.objK] = Math.max(0, Math.min(100, +x.value || 0));
-    LS.set(LS_OBJ, o); pintarPanelAv();
-  } else if (t.matches('[data-rebal-aport]')) { S.rebalAport = Math.max(0, +t.value || 0); pintarPanelAv(); }
+    LS.set(LS_OBJ, o); repintarAv();
+  } else if (t.matches('[data-rebal-aport]')) { S.rebalAport = Math.max(0, +t.value || 0); repintarAv(); }
 });
 document.addEventListener('input', (e) => {
   const t = e.target; if (!t.matches || !t.matches('#panelAv [data-lab]')) return;
