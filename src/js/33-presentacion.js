@@ -7,7 +7,6 @@
    ===================================================================== */
 const ILUS = {
   notas: '<rect class="fp" x="16" y="8" width="208" height="156" rx="16"/><circle class="fA" cx="40" cy="32" r="11"/><path d="M40 25.5l1.8 4.7 4.7 1.8-4.7 1.8-1.8 4.7-1.8-4.7-4.7-1.8 4.7-1.8z" fill="#1A1408"/><path class="l" d="M60 28h104M60 39h66"/><g class="an1"><text class="tm" x="34" y="68">Diversificación</text><rect class="fA" x="122" y="61" width="14" height="7" rx="3.5"/><rect class="fA" x="140" y="61" width="14" height="7" rx="3.5"/><rect class="fA" x="158" y="61" width="14" height="7" rx="3.5"/><rect class="fA" x="176" y="61" width="14" height="7" rx="3.5"/><rect class="ix-vacio" x="194" y="61" width="14" height="7" rx="3.5"/></g><g class="an2"><text class="tm" x="34" y="92">Costes</text><rect class="fA" x="122" y="85" width="14" height="7" rx="3.5"/><rect class="fA" x="140" y="85" width="14" height="7" rx="3.5"/><rect class="fA" x="158" y="85" width="14" height="7" rx="3.5"/><rect class="fA" x="176" y="85" width="14" height="7" rx="3.5"/><rect class="fA" x="194" y="85" width="14" height="7" rx="3.5"/></g><g class="an3"><text class="tm" x="34" y="116">Riesgo</text><rect class="fA" x="122" y="109" width="14" height="7" rx="3.5"/><rect class="fA" x="140" y="109" width="14" height="7" rx="3.5"/><rect class="fA" x="158" y="109" width="14" height="7" rx="3.5"/><rect class="ix-vacio" x="176" y="109" width="14" height="7" rx="3.5"/><rect class="ix-vacio" x="194" y="109" width="14" height="7" rx="3.5"/></g><g class="an4"><text class="tm" x="34" y="140">Impuestos</text><rect class="fA" x="122" y="133" width="14" height="7" rx="3.5"/><rect class="fA" x="140" y="133" width="14" height="7" rx="3.5"/><rect class="fA" x="158" y="133" width="14" height="7" rx="3.5"/><rect class="fA" x="176" y="133" width="14" height="7" rx="3.5"/><rect class="ix-vacio" x="194" y="133" width="14" height="7" rx="3.5"/></g>',
-  get logo() { return `<g transform="translate(43.2 6) scale(3.2)">${marcaWF()}</g><g class="an3"><rect class="fp" x="14" y="128" width="62" height="26" rx="13"/><text class="t" x="25" y="145.5">Fondos</text><rect class="fp" x="84" y="128" width="72" height="26" rx="13"/><text class="t" x="95" y="145.5">Acciones</text><rect class="fp" x="164" y="128" width="62" height="26" rx="13"/><text class="t" x="176" y="145.5">Cripto</text></g>`; },
   pasos: '<rect class="fp" x="20" y="8" width="200" height="40" rx="12"/><circle class="a an1v" cx="44" cy="28" r="10"/><path class="u an1" d="M39 28.5l3.5 3.5 6.5-7"/><path class="l" d="M64 22h100M64 34h66"/><rect class="fp" x="20" y="58" width="200" height="40" rx="12"/><circle class="a an2v" cx="44" cy="78" r="10"/><path class="u an2" d="M39 78.5l3.5 3.5 6.5-7"/><path class="l" d="M64 72h120M64 84h50"/><rect class="fa" x="20" y="108" width="200" height="40" rx="12"/><circle class="a" cx="44" cy="128" r="10"/><path class="l" d="M64 122h90M64 134h70"/><rect class="fA an3" x="170" y="118" width="40" height="20" rx="10"/><text class="tn an3" x="179" y="132">IRPF</text>',
   ia: '<rect class="fp an1" x="96" y="8" width="128" height="34" rx="14"/><text class="t an1" x="110" y="30">¿Cómo va Repsol?</text><path class="a an2" d="M16 52h150a12 12 0 0112 12v26a12 12 0 01-12 12H44l-14 12v-12H16a12 12 0 01-12-12V64a12 12 0 0112-12z"/><path class="l an2" d="M20 70h120M20 84h90"/><rect class="fa an3" x="30" y="122" width="190" height="34" rx="14"/><text class="ta an3" x="44" y="144">¿Cuándo necesitas el dinero?</text>',
   mundo: '<circle class="l" cx="86" cy="82" r="62"/><path class="m" d="M24 82h124M86 20c-26 18-26 106 0 124M86 20c26 18 26 106 0 124M32 52h108M32 112h108"/><circle class="fA late" cx="62" cy="58" r="6"/><circle class="fA late d2" cx="104" cy="54" r="6"/><circle class="fA late d3" cx="124" cy="80" r="6"/><circle class="fA late d4" cx="72" cy="108" r="6"/><g class="an2"><rect class="fa" x="164" y="34" width="66" height="28" rx="9"/><path class="u" d="M174 54l7-8 6 5 9-11"/><path class="a" d="M202 48h20"/></g><g class="an3"><rect class="fa" x="164" y="72" width="66" height="28" rx="9"/><path class="d" d="M174 80l7 8 6-5 9 11"/><path class="a" d="M202 86h20"/></g><g class="an4"><rect class="fa" x="146" y="110" width="84" height="28" rx="9"/><text class="ta" x="154" y="129">840 empresas</text></g>',
@@ -27,15 +26,10 @@ const INTRO = [
 ];
 /* La presentación se cuenta bajando, como una película: primero el logo se monta pieza a pieza según bajas y,
    al acabar, la cámara entra en él; después, cada idea entra con el scroll (el dibujo desde un lado, el título
-   palabra a palabra, el texto detrás) y el fondo cambia de color con cada una. Igual en la web y en la app:
+   palabra a palabra, el texto detrás). Igual en la web y en la app:
    scroll propio y nada de librerías. Con «reducir movimiento», todo quieto y montado. */
-// las tres piezas de la wF (la w, el palo con su punta y las barras), con el mismo degradado de oro a blanco
-const LOGO_PIEZAS = {
-  w: `<path d="${MARCA_PIEZAS.w}" fill="url(#ixpg)"/>`,
-  palo: `<path d="${MARCA_PIEZAS.palo}" fill="url(#ixpg)"/>`,
-  barras: `<path d="${MARCA_PIEZAS.barras}" fill="url(#ixpg)"/>`,
-};
-// ocho trozos: [pieza, recorte (polígono en el lienzo de 48; los de la w, inclinados como el palo), de dónde sale (x, y), giro, tamaño]
+// ocho trozos: [pieza, recorte (polígono en el lienzo de 48), de dónde sale (x, y), giro, tamaño]. Las piezas (w, palo y
+// barras, los nombres de las del logo de GrowFolio) son la O y la T del símbolo
 const ESQUIRLAS = [
   ['w', '0,0 24.6,0 8,48 0,48', -34, 18, -50, 1.3],
   ['w', '24.6,0 29.6,0 13,48 8,48', -24, 40, 36, 1.5],
@@ -46,16 +40,17 @@ const ESQUIRLAS = [
   ['barras', '0,0 48,0 48,22 0,22', 38, -28, 40, 0.7],
   ['barras', '0,22 48,22 48,48 0,48', 42, 8, -52, 1.4],
 ];
-const COLOR_CAP = { grafica: '#EDBB45', pasos: '#F4CB66', notas: '#F9DE9C', mundo: '#D7A033', calendario: '#F4CB66', ia: '#EDBB45', renta: '#D7A033', privada: '#F9DE9C', app: '#EDBB45' };
-const logoEntero = () => (navToison() ? simboloTs('ix-simb') : svgMarca());
-/* 0.8 (paso 4): con Toisón, las piezas que se juntan al bajar son las de su símbolo (la O y la T, metidas en el lienzo
-   de 48 de las del logo de GrowFolio y cortadas con los mismos recortes), y el nombre, TOISÓN letra a letra */
+const logoEntero = () => simboloTs('ix-simb');
+// dónde está cada cosa, con los nombres de las pestañas de GrowFolio (la sesión 5p rehace la presentación con los de Toisón)
+const DONDE_IX = { cartera: ['Inicio', 'Home'], get ruta() { return [RUTA_NOM.c, RUTA_NOM.en]; }, analisis: ['Análisis', 'Analysis'], expertos: ['Expertos', 'Experts'], mercados: ['Mercados', 'Markets'] };
+/* 0.8 (paso 4): las piezas que se juntan al bajar son las del símbolo (la O y la T, metidas en el lienzo de 48 de las
+   del logo de GrowFolio y cortadas con los mismos recortes), y el nombre, TOISÓN letra a letra */
 const TS_EN_48 = (d, c) => `<g transform="translate(24 25.3) scale(.29)"><path class="${c}" d="${d}"/></g>`;
-const piezasTs = () => ({ w: TS_EN_48(TS_O_D, 's-o'), palo: TS_EN_48(TS_T_D, 's-t'), barras: TS_EN_48(TS_T_D, 's-t') });
+const PIEZAS_TS = () => ({ w: TS_EN_48(TS_O_D, 's-o'), palo: TS_EN_48(TS_T_D, 's-t'), barras: TS_EN_48(TS_T_D, 's-t') });
 const enteroTs = () => `<g class="simb-ts">${TS_EN_48(TS_O_D, 's-o')}${TS_EN_48(TS_T_D, 's-t')}</g>`;
 const nombreTs = () => `<span class="nombre-gf nombre-ts" role="img" aria-label="Toisón">${[...'TOISÓN'].map((c) => `<span aria-hidden="true">${c}</span>`).join('')}</span>`;
 function pantallaIntro(seguir) {
-  const ts = navToison(), PIEZAS = ts ? piezasTs() : LOGO_PIEZAS;
+  const PIEZAS = PIEZAS_TS();
   const nuevo = !S.enc;
   const quieta = matchMedia('(prefers-reduced-motion: reduce)').matches;
   const caps = INTRO.slice(1);
@@ -65,21 +60,21 @@ function pantallaIntro(seguir) {
   $('#app').innerHTML = `<div class="intro ix${quieta ? ' quieta' : ''}" role="region" aria-label="Presentación de Toisón">
     <div class="ix-luz" aria-hidden="true"></div>
     <div class="ix-barra" aria-hidden="true"></div>
-    <div class="ix-cab"><span class="intro-marca">${ts ? '<b class="ix-ts">TOISÓN</b>' : '<img src="growfolio-nombre.svg" alt="Toisón">'}</span>${selectorIdioma('mini')}<button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
+    <div class="ix-cab"><span class="intro-marca"><b class="ix-ts">TOISÓN</b></span>${selectorIdioma('mini')}<button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
       <section class="ix-heroe" aria-label="Toisón">
         <div class="ix-escena">
-          <div class="ix-emblema"><svg viewBox="0 0 48 48" aria-hidden="true"><defs>${MARCA_GRAD.replace(/__K__/g, 'ixp')}${recortes}</defs><g class="ix-trozos">${esquirlas}</g><g class="ix-entero">${ts ? enteroTs() : marcaWF('ixm')}</g></svg></div>
-          <h1 class="ix-marca ix-nom" data-no-trad>${ts ? nombreTs() : nombreGF()}</h1>
+          <div class="ix-emblema"><svg viewBox="0 0 48 48" aria-hidden="true"><defs>${recortes}</defs><g class="ix-trozos">${esquirlas}</g><g class="ix-entero">${enteroTs()}</g></svg></div>
+          <h1 class="ix-marca ix-nom" data-no-trad>${nombreTs()}</h1>
           <div class="ix-lema"><h2>${esc(INTRO[0].t)}</h2><p>${esc(INTRO[0].x)}</p></div>
           <div class="ix-hola"><p class="ix-hola-t">${nombreUsuario() ? `${esc(L('Hola', 'Hi'))}, <b>${esc(nombreUsuario())}</b>` : esc(L('Te damos la bienvenida', 'Welcome'))}</p><p class="ix-hola-s">${esc(L('Baja despacio: el logo se monta mientras bajas y luego te cuento lo que hace Toisón.', 'Scroll slowly: the logo comes together as you go, then I\'ll show you what Toisón does.'))}</p></div>
         <div class="ix-baja" aria-hidden="true"><span>${L('o ve bajando', 'or scroll down')}</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
         </div>
       </section>
-      ${caps.map((d, k) => `<section class="ix-cap" data-lado="${k % 2 ? 'd' : 'i'}" data-color="${ts ? '' : COLOR_CAP[d.il || d.dib] || '#EDBB45'}">
+      ${caps.map((d, k) => `<section class="ix-cap" data-lado="${k % 2 ? 'd' : 'i'}">
         <div class="ix-cap-in">
           <div class="ix-ilus"><svg class="dib ilus" viewBox="0 0 240 170" aria-hidden="true">${d.il ? ILUS[d.il] : `<g transform="translate(0 5) scale(2)">${DIBUJOS[d.dib] || ''}</g>`}</svg></div>
-          <div class="ix-txt">${d.donde ? `<span class="ix-donde">${ICONOS[d.donde] || ''}${esc(L('En', 'In'))} ${esc(L((GRUPOS.find((g) => g.k === d.donde) || {}).c || (GRUPOS.find((g) => g.k === d.donde) || {}).t || '', (GRUPOS.find((g) => g.k === d.donde) || {}).en || ''))}</span>` : ''}<h2 data-no-trad data-t="${esc(d.t)}" aria-label="${esc(d.t)}"></h2><p>${esc(d.x)}</p></div>
+          <div class="ix-txt">${d.donde ? `<span class="ix-donde">${ICONOS[d.donde] || ''}${esc(L('En', 'In'))} ${esc(L(...DONDE_IX[d.donde]))}</span>` : ''}<h2 data-no-trad data-t="${esc(d.t)}" aria-label="${esc(d.t)}"></h2><p>${esc(d.x)}</p></div>
         </div>
       </section>`).join('')}
       <section class="ix-fin">
@@ -101,7 +96,7 @@ function pantallaIntro(seguir) {
   if (IDIOMA === 'en' && !I18N.dic) { let n = 0; const t = setInterval(() => { if (I18N.dic || ++n > 20) { clearInterval(t); partir(); pinta(); } }, 250); }
   const tramo = (p, a, b) => Math.min(1, Math.max(0, (p - a) / (b - a)));
   const ease = (t) => 1 - Math.pow(1 - t, 3);
-  let medidas = null, raf = 0, color = '';
+  let medidas = null, raf = 0;
   const medir = () => {
     const vh = sc.clientHeight;
     medidas = { vh, alto: heroe.offsetHeight, caps: capEls.map((c) => ({ c, top: c.offsetTop, h: c.offsetHeight, palabras: $$('h2 span', c), ilus: $('.ix-ilus', c), p: $('p', c), dn: $('.ix-donde', c), lado: c.dataset.lado === 'd' ? 1 : -1 })) };
@@ -146,7 +141,6 @@ function pantallaIntro(seguir) {
     luz.style.setProperty('--luz', (0.35 + 0.5 * tramo(p, 0.1, 0.66) + 0.4 * z).toFixed(3));
     cabMarca.style.opacity = tramo(p, 0.9, 1).toFixed(3);
     // 4. cada idea: el dibujo entra desde un lado, el título palabra a palabra y el texto detrás
-    let mejor = null;
     for (const m of medidas.caps) {
       const q = quieta ? 0.5 : (y + vh - m.top) / (vh + m.h);
       if (q < -0.1 || q > 1.1) continue;
@@ -163,10 +157,7 @@ function pantallaIntro(seguir) {
       m.p.style.transform = `translateY(${((1 - pe) * 26 - ex * 30).toFixed(1)}px)`;
       m.p.style.opacity = (pe * (1 - ex)).toFixed(3);
       m.c.classList.toggle('activa', q > 0.2 && q < 0.9);
-      if (q > 0.25 && q < 0.75 && (!mejor || Math.abs(q - 0.5) < Math.abs(mejor.q - 0.5))) mejor = { q, c: m.c.dataset.color };
     }
-    const nuevoColor = mejor ? mejor.c : p < 1 ? '#EDBB45' : color;
-    if (nuevoColor && nuevoColor !== color) { color = nuevoColor; raiz.style.setProperty('--ixg', color); }
   };
   const pedir = () => { if (!raf) raf = requestAnimationFrame(pinta); };
   const redimensionar = () => { medidas = null; pedir(); };

@@ -357,10 +357,9 @@ function htmlAgenda(M) {
   const fondos = new Set(todos.filter((e) => e.tipo === 'fondo').sort((a, b) => b.euros - a.euros).slice(0, 2).map((e) => e.id));
   const ev = todos.filter((e) => e.tipo !== 'fondo' || fondos.has(e.id)).slice(0, 5);
   if (!ev.length) return '';
-  const ts = navToison();
   return `<section class="ag-card" aria-labelledby="hAg">
     <div class="sec-cab"><h2 id="hAg">${L('Lo que viene', 'Coming up')}</h2><div class="der"><a class="enlace acento" href="#agenda">${L('Ver el calendario', 'See the calendar')}</a></div></div>
-    <ul class="ag-mini">${ev.map((e) => `<li class="t-${e.tipo}"><a href="#agenda" data-ag-ir="${esc(e.id)}">${ts ? diaAg(e) : `<span class="ag-cd${diasEntre(hoyIso(), e.d) <= 1 ? ' pronto' : ''}">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span>`}<span class="ag-tx"><b>${tituloAg(e)}</b><small>${esc(e.s)}${ts ? ` · ${faltan(e.d)}` : ''}</small></span>${importeAg(e)}</a></li>`).join('')}</ul>
+    <ul class="ag-mini">${ev.map((e) => `<li class="t-${e.tipo}"><a href="#agenda" data-ag-ir="${esc(e.id)}">${diaAg(e)}<span class="ag-tx"><b>${tituloAg(e)}</b><small>${esc(e.s)} · ${faltan(e.d)}</small></span>${importeAg(e)}</a></li>`).join('')}</ul>
   </section>`;
 }
 

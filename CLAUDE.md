@@ -11,7 +11,7 @@ GrowFolio es la web y app de Android de Carlos para llevar inversiones (GitHub P
 
 ## Pruebas
 
-- `sh tests/traer-datos.sh`, `npx playwright install chromium`, `npm test` (build + Playwright en 390, 360 y 1440; Firebase de imitación en tests/stub y sin internet). `npm run rendimiento` (presupuesto: < 900 KB por la red hasta el paso 5b del rediseño y lista en < 2 s). `python -m unittest discover -s tests/scripts`.
+- `sh tests/traer-datos.sh`, `npx playwright install chromium`, `npm test` (build + Playwright en 390, 360 y 1440; Firebase de imitación en tests/stub y sin internet). `npm run rendimiento` (presupuesto: < 840 KB por la red, unos 340 de ellos datos del día, y lista en < 2 s). `python -m unittest discover -s tests/scripts`.
 - Una prueba nueva por cada cosa nueva. Todo pasa en la Action «Pruebas» en cada push.
 - Antes de publicar algo de cifrado, cuentas, Hacienda, pagos o el prompt público de GrowIA: revisión aparte.
 

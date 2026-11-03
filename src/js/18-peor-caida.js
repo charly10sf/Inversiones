@@ -31,7 +31,7 @@ function htmlCaida(M) {
 function dibujarCaida(el, M) {
   const c = caidaDetalle(serieCartera(M, 3650));
   if (!c) return;
-  grafLinea(el, c.dd, { alto: innerWidth < 560 ? 150 : 190, color: 'var(--down)', rellenoA: 0, sinRef: true, titulo: L('Distancia al máximo', 'Distance from the high'), fmt: (v) => pctS(v, 1), ejeFmt: (t) => `${fmtNum(t, 0)} %`, marca: c.peor ? { d: c.peor.hasta, txt: pctS(c.peor.pct, 1) } : null });
+  grafLinea(el, c.dd, { alto: innerWidth < 560 ? 150 : 190, color: 'var(--baja)', rellenoA: 0, sinRef: true, titulo: L('Distancia al máximo', 'Distance from the high'), fmt: (v) => pctS(v, 1), ejeFmt: (t) => `${fmtNum(t, 0)} %`, marca: c.peor ? { d: c.peor.hasta, txt: pctS(c.peor.pct, 1) } : null });
 }
 
 function htmlNumeros(M) {

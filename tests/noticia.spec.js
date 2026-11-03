@@ -88,6 +88,8 @@ test('sin cupo en Flash-Lite, el resumen sale con el 3.6 y Flash-Lite se apunta 
   });
   await abrir(page, 'https://news.google.com/rss/articles/CBMiPRUEBA', 'Inditex abre su tienda más grande en Madrid');
   await expect(page.locator('.hoja-not')).toContainText('Inditex abre su tienda más grande', { timeout: 15_000 });
+  // el titular ya trae ese texto: hay que esperar a la segunda petición, no al texto (si no, a veces se mira antes)
+  await expect.poll(() => modelos.length, { timeout: 15_000 }).toBe(2);
   expect(modelos).toEqual(['gemini-3.5-flash-lite', 'gemini-3.6-flash']);
   expect(await page.evaluate(() => agotadosIA())).toContain('gemini-3.5-flash-lite');
 });

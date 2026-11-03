@@ -249,10 +249,9 @@ function filaExperto(f, ia, vIA = {}) {
   </article>`;
 }
 
-/* Expertos va en tres pestañas: el resumen (qué hacer), el detalle de cada posición y las ideas de compra */
-const EXPERTOS = [['posiciones', 'Tus posiciones'], ['ideas', 'Ideas de compra'], ['siguiendo', 'Siguiendo']];
-// con Toisón la pestaña ya se llama Ideas: dentro, de dónde sale cada una (y sin «de compra»: regla de la CNMV)
-const EXPERTOS_TS = { posiciones: ['Lo tuyo', 'Yours'], ideas: ['Del radar', 'From the radar'], siguiendo: ['Siguiendo', 'Following'] };
+/* Ideas (lo que era Expertos) va en tres pestañas, con de dónde sale cada idea (y sin «de compra»: regla de la CNMV):
+   lo tuyo, las del radar y las que sigues */
+const EXPERTOS = [['posiciones', 'Lo tuyo', 'Yours'], ['ideas', 'Del radar', 'From the radar'], ['siguiendo', 'Siguiendo', 'Following']];
 const idxSenal = (n) => { const i = ORDEN_SENAL.indexOf(n); return i < 0 ? 99 : i; };
 const ordenSenales = (M) => [...M.filas].sort((a, b) => idxSenal(a.senal.nivel) - idxSenal(b.senal.nivel) || b.valor - a.valor);
 function htmlVistazo(M, ia) {
@@ -298,9 +297,9 @@ function vistaExpertos(M) {
   }
   const marca = { posiciones: planes.length, siguiendo: siguiendo().length };
   return `
-  <div class="vista-cab vc-corta"><h1>${navToison() ? L('Ideas', 'Ideas') : 'Expertos'}</h1><p>Lo que dicen analistas, prensa y la IA de lo tuyo y de lo que podrías comprar.</p></div>
+  <div class="vista-cab vc-corta"><h1>${L('Ideas', 'Ideas')}</h1><p>Lo que dicen analistas, prensa y la IA de lo tuyo y de lo que podrías comprar.</p></div>
   ${htmlFrescura()}
-  <div class="subvistas exp-tabs" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${navToison() ? L(...EXPERTOS_TS[k]) : t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
+  <div class="subvistas exp-tabs" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t, en]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${L(t, en)}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
   <div class="pila">${cuerpo}</div>`;
 }
 

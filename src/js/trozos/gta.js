@@ -366,7 +366,7 @@ function pintarImagenGTA(cv, D) {
 }
 // las letras de neón, si llegan a tiempo (sin red, las de reserva)
 function letrasGTA() {
-  fuenteGTA(true);
+  fuenteGTA();
   if (!document.fonts || !document.fonts.load) return Promise.resolve();
   return Promise.race([Promise.all([document.fonts.load(`400 200px ${FUENTE_NEON}`), document.fonts.load(`400 90px ${FUENTE_SCRIPT}`)]).catch(() => {}), new Promise((ok) => setTimeout(ok, 2500))]);
 }
@@ -700,7 +700,6 @@ function animarGTA(raiz) {
   return io;
 }
 function abrirGTA() {
-  fuenteGTA();
   const M = S.M || calcular();
   const fondo = document.createElement('div');
   fondo.className = 'hoja-fondo gta-fondo';
@@ -731,7 +730,6 @@ function abrirGTA() {
 function avisoGTAPantalla(seguir) {
   if (!gtaActivo() || LS.get('inv-gta', null) || !S.cartera) return seguir && seguir();
   LS.set('inv-gta', true);
-  fuenteGTA();
   const f = gtaFalta();
   const fondo = document.createElement('div');
   fondo.className = 'hoja-fondo gta-fondo';

@@ -8,7 +8,7 @@ function estreno02(visto, despues) {
   // lo que viene de verdad en tu cartera, si ya está abierta; si no, un ejemplo
   let prox = [];
   try { if (S.M) prox = agendaLista(S.M, 60).filter((e) => e.d >= hoyIso()).slice(0, 3); } catch (e) { prox = []; }
-  const COL = { res: 'var(--c2)', div: 'var(--up)', eco: 'var(--c3)', apo: 'var(--accent)', otro: 'var(--text-2)' };
+  const COL = { res: 'var(--reparto-2)', div: 'var(--sube)', eco: 'var(--reparto-3)', apo: 'var(--primario)', otro: 'var(--texto-2)' };
   const evs = prox.length ? prox.map((e) => { const [ico, cls] = AG_TIPOS[e.tipo] || AG_TIPOS.otro; return { ico: ICONOS[ico] || ICONOS.agenda, col: COL[cls] || COL.otro, t: e.t, f: faltan(e.d, true) }; })
     : [{ ico: ICONOS.dividendo, col: COL.div, t: L('Dividendo de una de tus acciones', 'A dividend from one of your stocks'), f: L('3 días', '3 days') },
        { ico: ICONOS.resultados, col: COL.res, t: L('Resultados de una empresa de tu fondo', 'Earnings from a company in your fund'), f: L('9 días', '9 days') },
@@ -220,7 +220,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   raiz.className = `intro ix ixn${varias ? ' ixn-varias' : ''}${quieta ? ' quieta' : ''}`;
   raiz.setAttribute('role', 'dialog'); raiz.setAttribute('aria-modal', 'true'); raiz.setAttribute('aria-label', `Novedades de la ${ver}`);
   raiz.innerHTML = `<div class="ix-luz" aria-hidden="true"></div><div class="ix-barra" aria-hidden="true"></div>
-    <div class="ix-cab"><span class="intro-marca" style="opacity:1">${navToison() ? '<b class="ix-ts">TOISÓN</b>' : '<img src="growfolio-nombre.svg" alt="Toisón">'}</span><button class="ixn-det" type="button" data-nv="lista">${ICONOS.plan}${L('En detalle', 'In detail')}</button><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
+    <div class="ix-cab"><span class="intro-marca" style="opacity:1"><b class="ix-ts">TOISÓN</b></span><button class="ixn-det" type="button" data-nv="lista">${ICONOS.plan}${L('En detalle', 'In detail')}</button><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
       <section class="ixn-heroe"><div class="ix-escena">
         <p class="ixn-eti" data-no-trad>${varias ? L(`Te has perdido ${grupos.length} versiones`, `You've missed ${grupos.length} versions`) : L('Lo nuevo', "What's new")}</p>

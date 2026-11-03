@@ -107,10 +107,10 @@ function fichaResumen(f) {
   <section>
     <div class="evo-cab"><div class="datos" id="fichaCab"></div><div class="tabs" role="group" aria-label="Periodo">${Object.keys(RANGOS).filter((k) => k !== 'Inicio').map((k) => `<button data-frango="${k}" aria-pressed="${S.fichaRango === k}">${k}</button>`).join('')}</div></div>
     <div class="chart" id="fichaGraf"></div>
-    ${medio ? `<div class="leyenda-graf"><span><i class="disc" style="border-color:var(--warn)"></i>Tu precio medio, ${precioFmt(medio)}</span></div>` : ''}
+    ${medio ? `<div class="leyenda-graf"><span><i class="disc" style="border-color:var(--aviso)"></i>Tu precio medio, ${precioFmt(medio)}</span></div>` : ''}
     ${p.proxy ? `<p class="nota">Hasta el ${fechaLarga(p.proxy_hasta)} es el precio de ${esc(p.proxy)}, un ETF del mismo índice, porque el fondo no existía.</p>` : ''}
   </section>
-  <section class="tarjeta" style="background:var(--plane)">
+  <section class="tarjeta" style="background:var(--superficie)">
     <h3>${f.senal.analistas ? L('Analistas', 'Analysts') : 'Señal'} <span class="senal ${f.senal.nivel}" style="margin-left:auto">${f.senal.analistas ? esc(f.senal.txt.replace(/^[^:]+:\s*/, '')) : f.senal.txt}</span></h3>
     <ul class="motivos">${f.senal.motivos.map((m) => `<li>${esc(m)}</li>`).join('')}</ul>
   </section>

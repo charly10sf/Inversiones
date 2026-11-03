@@ -219,9 +219,8 @@ function cambiarNombre() {
 function abrirAjustes() {
   if (S.demo) return ajustesDemo();
   const tok = GH.token();
-  const ts = navToison();
   const h = hoja('Ajustes', `
-    <div class="aj-cab">${ts ? simboloTs('aj-simb') : '<img src="favicon.svg" alt="">'}<div>${ts ? '<b class="aj-ts">Toisón</b>' : '<img class="aj-nom" src="growfolio-nombre.svg" alt="Toisón">'}<small>Versión ${VERSION} alfa, ${PERFIL_CUENTA ? 'con la cartera guardada en tu cuenta' : PERFIL_LOCAL ? 'con la cartera guardada en este dispositivo' : 'con la cartera guardada en GitHub'}</small></div><button class="btn peq" id="aNov" data-cerrar>${ICONOS.chispa}Novedades</button></div>
+    <div class="aj-cab">${simboloTs('aj-simb')}<div><b class="aj-ts">Toisón</b><small>Versión ${VERSION} alfa, ${PERFIL_CUENTA ? 'con la cartera guardada en tu cuenta' : PERFIL_LOCAL ? 'con la cartera guardada en este dispositivo' : 'con la cartera guardada en GitHub'}</small></div><button class="btn peq" id="aNov" data-cerrar>${ICONOS.chispa}Novedades</button></div>
     ${PERFIL_CUENTA ? `<h2 class="aj-grupo">Tu cuenta</h2><div class="aj-caja">
       <div class="seccion-ed"><h3>${ICONOS.perfil}${esc(nombreUsuario() || 'Tu cuenta')}</h3><p class="nota" style="margin:0">${FB.user && FB.user.email ? `${esc(FB.user.email)}, ` : ''}${FB.user && (FB.user.providerData || []).some((x) => x.providerId === 'google.com') ? 'con Google' : 'con correo y contraseña'}. Tu cartera se guarda cifrada en tu cuenta y se sincroniza sola entre tus dispositivos.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNombre">${ICONOS.perfil}Cambiar nombre</button><button class="btn peq" id="aSalir">Cerrar sesión</button></div></div>
@@ -233,9 +232,9 @@ function abrirAjustes() {
     <div class="aj-caja">
       <div class="seccion-ed aj-idioma"><h3>${ICONOS.mercados}Idioma</h3>${selectorIdioma()}<small>${IDIOMA === 'en' ? 'English is still in progress: some texts are in Spanish.' : 'El inglés está en pruebas: parte de los textos siguen en español.'}</small></div>
       <button class="aj-fila" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <button class="aj-fila" id="aOrdenar" data-cerrar>${ICONOS.cartera}<span><b>${ts ? 'Hoy a tu gusto' : 'Inicio a tu gusto'}</b><small>${ts ? 'Ordena, quita y añade lo que sale en Hoy.' : 'Ordena, quita y añade lo que sale en Inicio.'}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aOrdenar" data-cerrar>${ICONOS.cartera}<span><b>Hoy a tu gusto</b><small>Ordena, quita y añade lo que sale en Hoy.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aDemo" data-cerrar>${ICONOS.ojo}<span><b>${L('Enseñar la app con una cartera de prueba', 'Show the app with a demo portfolio')}</b><small>${L('Para enseñársela a alguien sin que vea lo tuyo: una cartera inventada. La tuya ni se abre; al salir te pide tu PIN o tu contraseña.', "To show it to someone without them seeing yours: a made-up portfolio. Yours isn't even opened; when you exit it asks for your PIN or password.")}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <button class="aj-fila" id="aIntro" data-cerrar>${ts ? simboloTs() : '<img src="favicon.svg" alt="">'}<span><b>Ver la presentación</b><small>Qué es Toisón y qué puedes hacer con él.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aIntro" data-cerrar>${simboloTs()}<span><b>Ver la presentación</b><small>Qué es Toisón y qué puedes hacer con él.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
     </div>
     ${PERFIL_LOCAL && !PERFIL_CUENTA ? `<h2 class="aj-grupo">Tu cartera</h2><div class="aj-caja"><div class="seccion-ed"><h3>${ICONOS.cartera}Guardada en este dispositivo</h3>
       <p class="nota" style="margin:0">Cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (en Avanzado, Copias).</p>
@@ -281,7 +280,7 @@ function abrirAjustes() {
       <p class="nota" style="margin:0">El JSON puede llevar el ISIN, el ticker o el nombre de cada cosa con su cantidad, lo que pagaste (o el precio medio), el bróker y la fecha: Toisón busca cada valor solo.</p>
     </div>
     <div class="seccion-ed" style="display:grid;gap:12px"${PERFIL_LOCAL ? ' hidden' : ''}><h3>GitHub</h3>
-      <div class="campo">Repositorio<div style="color:var(--text)">${esc(CFG.owner)}/${esc(CFG.repo)}</div></div>
+      <div class="campo">Repositorio<div style="color:var(--texto)">${esc(CFG.owner)}/${esc(CFG.repo)}</div></div>
       <label class="campo">Token de GitHub<input type="password" id="aTok" value="${esc(tok || '')}" autocomplete="off" placeholder="github_pat_…"><small>Token "fine-grained" con permiso <b>Contents: Read and write</b> solo para este repositorio. Se guarda en este navegador.</small></label>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aProbar">Guardar y probar</button><button class="btn peq" id="aQR"${tok ? '' : ' disabled'}>Vincular el móvil</button></div>
       <div id="aQRbox"></div>
@@ -402,14 +401,14 @@ function abrirAjustes() {
 
 
 /* 0.8 (Toisón): la pestaña Tú. Lo tuyo (perfil, metas, lo que podrías tener, el Paso a paso o tu plan, el calendario)
-   y lo de la app (diseño, ajustes, novedades y avisar de un fallo), que con Toisón ya no están en la cabecera */
+   y lo de la app (diseño, ajustes, novedades y avisar de un fallo), que ya no están en la cabecera */
 function vistaTu(M) {
   const falta = perfilIncompleto(), vacio = perfilVacio();
   let metas = []; try { metas = estadoPerfil(M).metas || []; } catch (e) {}
   const flecha = '<i class="aj-flecha" aria-hidden="true"></i>';
   const fila = (ic, b, x, attrs, extra = '') => `<a class="aj-fila${extra}" ${attrs}>${ic}<span><b>${b}</b><small>${x}</small></span>${flecha}</a>`;
   const boton = (ic, b, x, accion) => `<button type="button" class="aj-fila" data-accion="${accion}">${ic}<span><b>${b}</b><small>${x}</small></span>${flecha}</button>`;
-  const ruta = GRUPOS.find((x) => x.k === 'ruta');
+  const ruta = RUTA_NOM;
   const nom = nombreUsuario();
   return `<div class="tu">
     <section class="tu-cab" aria-label="${L('Tu cuenta', 'Your account')}">

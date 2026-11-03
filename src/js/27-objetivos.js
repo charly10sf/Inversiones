@@ -640,7 +640,7 @@ function htmlProyeccion(M) {
     </div>
   </section>
   <div class="chart" id="grafProy"></div>
-  <div class="leyenda-graf"><span><i style="border-color:var(--accent);border-top-width:3px"></i>Lo probable</span><span><i class="banda"></i>La mitad de los escenarios</span><span><i class="banda clara"></i>8 de cada 10</span><span><i class="disc" style="border-color:var(--text-2)"></i>Lo que habrás puesto</span></div>
+  <div class="leyenda-graf"><span><i style="border-color:var(--primario);border-top-width:3px"></i>Lo probable</span><span><i class="banda"></i>La mitad de los escenarios</span><span><i class="banda clara"></i>8 de cada 10</span><span><i class="disc" style="border-color:var(--texto-2)"></i>Lo que habrás puesto</span></div>
   <div class="dos" style="margin-top:48px">
     <section aria-labelledby="hHor">
       <div class="sec-cab"><h2 id="hHor">Por horizonte</h2><span class="k">${c.real ? 'en euros de hoy' : 'en euros de cada año'}</span></div>
@@ -677,18 +677,18 @@ function grafAbanico(cont, pr, meses, opt = {}) {
   const banda = (a, b) => `${lin(a)} ${b.slice(0, n).map((v, i) => [i, v]).reverse().map(([i, v]) => `${x(i).toFixed(1)},${y(v).toFixed(1)}`).join(' ')}`;
   let g = '';
   for (const t of niceTicks(lo, hi, 4)) {
-    g += `<line x1="${ml}" x2="${W - mr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" stroke-width="1"/>`;
-    g += `<text x="${W - mr + 8}" y="${y(t) + 4}" font-size="11" fill="var(--muted)" style="font-variant-numeric:tabular-nums">${S.oculto ? '' : compacto(t)}</text>`;
+    g += `<line x1="${ml}" x2="${W - mr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--sep)" stroke-width="1"/>`;
+    g += `<text x="${W - mr + 8}" y="${y(t) + 4}" font-size="11" fill="var(--tenue)" style="font-variant-numeric:tabular-nums">${S.oculto ? '' : compacto(t)}</text>`;
   }
   const anios = meses / 12, caben = Math.max(2, Math.floor((W - ml - mr) / 46));
   const paso = [1, 2, 5, 10].find((p) => anios / p + 1 <= caben) || 10;
-  for (let a = 0; a <= anios; a += paso) g += `<text x="${x(a * 12)}" y="${H - 6}" text-anchor="${a === 0 ? 'start' : a >= anios ? 'end' : 'middle'}" font-size="11" fill="var(--muted)">${anioDe(pr.fechas[a * 12])}</text>`;
-  g += `<polygon points="${banda(pr.p90, pr.p10)}" fill="var(--accent)" fill-opacity="0.10"/>`;
-  g += `<polygon points="${banda(pr.p75, pr.p25)}" fill="var(--accent)" fill-opacity="0.20"/>`;
-  g += `<polyline points="${lin(pr.aportado)}" fill="none" stroke="var(--text-2)" stroke-width="1.4" stroke-dasharray="5 4"/>`;
-  g += `<polyline points="${lin(pr.p50)}" fill="none" stroke="var(--accent)" stroke-width="2.4" stroke-linejoin="round"/>`;
-  g += `<circle cx="${x(n - 1)}" cy="${y(pr.p50[n - 1])}" r="4" fill="var(--accent)" stroke="var(--bg)" stroke-width="2"/>`;
-  g += `<g class="cruz" visibility="hidden"><line y1="${mt}" y2="${H - mb}" stroke="var(--line-2)" stroke-width="1"/><circle r="4.5" fill="var(--accent)" stroke="var(--bg)" stroke-width="2"/></g>`;
+  for (let a = 0; a <= anios; a += paso) g += `<text x="${x(a * 12)}" y="${H - 6}" text-anchor="${a === 0 ? 'start' : a >= anios ? 'end' : 'middle'}" font-size="11" fill="var(--tenue)">${anioDe(pr.fechas[a * 12])}</text>`;
+  g += `<polygon points="${banda(pr.p90, pr.p10)}" fill="var(--primario)" fill-opacity="0.10"/>`;
+  g += `<polygon points="${banda(pr.p75, pr.p25)}" fill="var(--primario)" fill-opacity="0.20"/>`;
+  g += `<polyline points="${lin(pr.aportado)}" fill="none" stroke="var(--texto-2)" stroke-width="1.4" stroke-dasharray="5 4"/>`;
+  g += `<polyline points="${lin(pr.p50)}" fill="none" stroke="var(--primario)" stroke-width="2.4" stroke-linejoin="round"/>`;
+  g += `<circle cx="${x(n - 1)}" cy="${y(pr.p50[n - 1])}" r="4" fill="var(--primario)" stroke="var(--fondo)" stroke-width="2"/>`;
+  g += `<g class="cruz" visibility="hidden"><line y1="${mt}" y2="${H - mb}" stroke="var(--borde)" stroke-width="1"/><circle r="4.5" fill="var(--primario)" stroke="var(--fondo)" stroke-width="2"/></g>`;
   g += `<rect x="${ml}" y="0" width="${W - ml - mr}" height="${H}" fill="transparent" class="zona"/>`;
   const NS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(NS, 'svg');

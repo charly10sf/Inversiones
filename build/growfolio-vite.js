@@ -25,7 +25,7 @@ const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const texto = (f) => readFileSync(f, 'utf8').replace(/\r\n?/g, '\n');
 // lo que se sirve tal cual desde la raíz del repositorio
 const PUBLICOS = [
-  'manifest.webmanifest', 'favicon.svg', 'growfolio-nombre.svg', 'growia.svg', 'growia-nombre.svg',
+  'manifest.webmanifest', 'favicon.svg',
   'toison-16.png', 'toison-32.png', 'toison-180.png', 'toison-192.png', 'toison-512.png', 'toison-maskable-512.png',
   'toison-aviso.png', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
   'instrumentos.json', 'mapa-mundo.json', 'mapa-detalle.json', 'cambios.json', 'version.json', 'app.json', 'en.json', 'lib',

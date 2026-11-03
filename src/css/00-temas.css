@@ -1,7 +1,7 @@
 /* =====================================================================
    Los tres diseños de Toisón (0.7v, paso 1 del rediseño a la 0.8).
-   Se eligen con data-tema en <html> (marmol | marfil | borgona); sin él, la app sigue con el aspecto de GrowFolio
-   (los :root de 01-base.css y 21-como-el-icono.css). Mientras dure el rediseño, solo el dueño puede elegirlos (Ajustes).
+   Se eligen con data-tema en <html> (marmol | marfil | borgona); siempre hay uno (Mármol si no se ha elegido: el script
+   de index.html). Desde la 0.8 los elige cualquiera en Tú.
    Los colores de cada diseño están SOLO aquí, en sus bloques. El resto del CSS usa los tokens; la prueba
    tests/colores-sueltos.spec.js cuenta los colores escritos a mano fuera de estos bloques y no deja que suban.
    Los selectores son :root[data-tema=…] (ganan a los :root de después) y [data-tema=…] (así una muestra suelta,
@@ -18,6 +18,8 @@
   --brillo: rgb(255 255 255 / .38); --hondo: rgb(0 0 0 / .55);
   --reparto-1: #e3b45f; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
   --grano: .06; --resplandor: .6; --luz-graf: 16%; --polvo: .9;
+  --velo: #050706;
+  --claro: #f7f2ea;
   color-scheme: dark;
 }
 
@@ -31,6 +33,8 @@
   --brillo: rgb(255 255 255 / .22); --hondo: rgb(70 48 22 / .22);
   --reparto-1: #8a6216; --reparto-2: #2f5d8c; --reparto-3: #7b6bae; --reparto-4: #3d8a8c; --reparto-5: #c29a6b; --reparto-6: #9a928a;
   --grano: .09; --resplandor: .28; --luz-graf: 10%; --polvo: .55;
+  --velo: #1e1a17;
+  --claro: #f7f2ea;
   color-scheme: light;
 }
 
@@ -45,6 +49,8 @@
   --brillo: rgb(255 255 255 / .38); --hondo: rgb(10 2 4 / .6);
   --reparto-1: #e3b45f; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
   --grano: .06; --resplandor: .55; --luz-graf: 14%; --polvo: .8;
+  --velo: #0f0306;
+  --claro: #f7f2ea;
   color-scheme: dark;
 }
 
@@ -61,41 +67,30 @@
   --sombra-t: 0 1px 2px var(--hondo), 0 22px 44px -30px var(--hondo);
 }
 
-/* ---------- Los nombres de GrowFolio, apuntando a los tokens (para no romper nada mientras se cambian) ----------
-   Se irán quitando a medida que cada parte use los nombres nuevos (pasos 2 a 5). */
+/* ---------- Colores de marcas ajenas, que no cambian con el diseño: los botones de Google y de Apple (sus normas de
+   marca piden esos colores) y el azul de iOS de «añadir a la pantalla de inicio» ---------- */
 :root[data-tema] {
-  --bg: var(--fondo);
-  --plane: var(--superficie);
-  --plane-2: var(--superficie-2);
-  --plane-3: color-mix(in srgb, var(--superficie-2) 88%, var(--texto));
-  --line: var(--sep);
-  --line-2: var(--borde);
-  --text: var(--texto);
-  --text-2: var(--texto-2);
-  --muted: color-mix(in srgb, var(--texto-2) 78%, var(--fondo));
-  --accent: var(--primario);
-  --accent-2: var(--oro-texto);
-  --accent-hi: color-mix(in srgb, var(--primario) 65%, var(--texto));
-  --on-accent: var(--sobre-primario);
-  --up: var(--sube);
-  --down: var(--baja);
-  --warn: var(--aviso);
-  --up-bg: color-mix(in srgb, var(--sube) 13%, transparent);
-  --down-bg: color-mix(in srgb, var(--baja) 13%, transparent);
-  --warn-bg: color-mix(in srgb, var(--aviso) 13%, transparent);
-  --accent-bg: color-mix(in srgb, var(--primario) 13%, transparent);
-  --c1: var(--reparto-1); --c2: var(--reparto-2); --c3: var(--reparto-3); --c4: var(--reparto-4); --c5: var(--reparto-5); --c0: var(--reparto-6);
-  --f: var(--ui);
-  --fc: var(--ui);
-  /* los de 21-como-el-icono.css (la loseta de GrowFolio) */
-  --tile: var(--superficie);
-  --tile-luz: radial-gradient(560px 200px at 20% -70px, color-mix(in srgb, var(--oro-texto) 9%, transparent), transparent 72%);
-  --tile-grad: linear-gradient(180deg, var(--superficie), var(--superficie));
+  --google-fondo: #ffffff; --google-fondo-2: #f6f6f6; --google-texto: #1f1f1f; --google-borde: #dadce0;
+  --apple-fondo: #000000; --apple-texto: #ffffff; --apple-borde: #3a362f;
+  --ios-azul: #0a84ff;
+}
+
+/* ---------- Derivados de los tokens, comunes a los tres diseños (sin un solo color propio) ----------
+   (Hasta el 5b aquí estaban también los nombres de GrowFolio, --bg, --accent, --text…, apuntando a estos; ya no los usa nadie.) */
+:root[data-tema] {
+  --superficie-3: color-mix(in srgb, var(--superficie-2) 88%, var(--texto));
+  --tenue: color-mix(in srgb, var(--texto-2) 78%, var(--fondo));
+  --primario-claro: color-mix(in srgb, var(--primario) 65%, var(--texto));
+  --sube-fondo: color-mix(in srgb, var(--sube) 13%, transparent);
+  --baja-fondo: color-mix(in srgb, var(--baja) 13%, transparent);
+  --aviso-fondo: color-mix(in srgb, var(--aviso) 13%, transparent);
+  --primario-fondo: color-mix(in srgb, var(--primario) 13%, transparent);
+  /* las tarjetas (21-como-el-icono.css): la luz de arriba, el filo y el dorado suave */
+  --loseta-luz: radial-gradient(560px 200px at 20% -70px, color-mix(in srgb, var(--oro-texto) 9%, transparent), transparent 72%);
+  --loseta: linear-gradient(180deg, var(--superficie), var(--superficie));
   --filo: var(--borde);
   --filo-2: color-mix(in srgb, var(--borde) 80%, var(--texto));
-  --filo-oro: var(--hilo);
-  --luz: inset 0 1px 0 color-mix(in srgb, var(--brillo) 30%, transparent);
-  --oro-grad: var(--metal);
+  --luz-arriba: inset 0 1px 0 color-mix(in srgb, var(--brillo) 30%, transparent);
   --oro-suave: linear-gradient(180deg, color-mix(in srgb, var(--oro-texto) 17%, transparent), color-mix(in srgb, var(--oro-texto) 7%, transparent));
 }
 
@@ -106,15 +101,16 @@ img.tema-muestra { background: none; box-shadow: none; }
 
 /* =====================================================================
    La carcasa de Toisón (0.7v): cabecera, barra de abajo, títulos y botones. Lo primero que se ve de la app, así que va
-   ya con el acabado de la maqueta aprobada. [data-tema] delante gana a las reglas de GrowFolio sin tocarlas; en la 0.8
-   se quitan las de GrowFolio y esto pasa a ser la regla normal.
+   ya con el acabado de la maqueta aprobada. [data-tema] delante gana a las reglas de base de 01 a 21. En el 5b (0.8) se
+   quitó de esos archivos todo lo que estas reglas tapaban, pero el [data-tema] se queda: además de elegir el diseño,
+   sube el peso de la regla, y sin él muchas perderían contra reglas de base con más etiquetas (p. ej. «.marca span»
+   ganaría a «.marca-ts»). Quitarlo bien sería reordenar todo el CSS, para nada que se vea.
    ===================================================================== */
 [data-tema] body { background: var(--fondo); }
 
 /* cabecera: el símbolo y TOISÓN a +12 %, sobre cristal del color del fondo */
 .marca-ts { display: none; }
 [data-tema] .top { background: color-mix(in srgb, var(--fondo) 86%, transparent); box-shadow: 0 1px 0 var(--sep); }
-[data-tema] .marca > img, [data-tema] .marca-nom { display: none !important; }
 [data-tema] .marca-ts { display: inline-flex; align-items: center; gap: 10px; }
 [data-tema] .marca-ts i { width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center; background: var(--superficie-2); box-shadow: inset 0 0 0 1px var(--hilo); }
 [data-tema] .marca-ts svg { width: 23px; height: auto; }
@@ -157,14 +153,14 @@ img.tema-muestra { background: none; box-shadow: none; }
    2 px, radio 16 y sombra en capas; lo elegido, de metal. Sustituye al acabado de 21-como-el-icono.css (pensado solo
    para el negro de GrowFolio) sin tocarlo.
    ===================================================================== */
-[data-tema] :is(.tarjeta, .plan-venta, .idea, .informe, .fx2, .fx3-lista, .ruta-hero, .ruta-prog, .fis-vacio, .num-sec, .desde-compra, .merc2, .mas-t,
+[data-tema] :is(.tarjeta, .plan-venta, .idea, .informe, .fx2, .fx3-lista, .fis-vacio, .num-sec, .desde-compra, .merc2,
     .nov-ant, .tarea, .pf-card, .merc-busca, .mfilas, .ir-objetivos, .aj-caja, .ag-mes2, .agp-c, .toca, .opr, .empezar, .ov-lista, .ia-nota, .ag-prox) {
   background-color: var(--superficie); background-image: none;
   border-style: solid; border-width: 2px; border-color: var(--borde); border-radius: var(--r-l);
   box-shadow: var(--sombra-t);
 }
 /* las que destacan: el filo de oro */
-[data-tema] :is(.plan-venta, .informe, .toca, .ruta-hero, .tarea.primero, .empezar, .agp-hoy) { border-color: var(--hilo); }
+[data-tema] :is(.plan-venta, .informe, .toca, .tarea.primero, .empezar, .agp-hoy) { border-color: var(--hilo); }
 [data-tema] .tarea.hecho { background: none; box-shadow: none; border-color: var(--sep); }
 [data-tema] .ag-prox { background-image: radial-gradient(560px 220px at 18% -60px, color-mix(in srgb, var(--ag) 14%, transparent), transparent 72%); }
 /* cajitas de dentro: planas, sin hacer loseta sobre loseta */
@@ -240,18 +236,14 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .gta-top:hover { border-color: var(--oro-texto); box-shadow: none; }
 [data-tema] .gta-top:focus-visible { outline-color: var(--oro-texto); }
 [data-tema] .gta-top::before { display: none; animation: none; }
-[data-tema] .gta-top-t { animation: none; font-family: var(--marca); font-style: italic; font-weight: 600; font-size: 19px; color: var(--oro-texto); -webkit-text-stroke: 0; text-shadow: none; padding: 0 2px 1px; }
+[data-tema] .gta-top-t { animation: none; font-family: 'Ibarra VI', var(--marca); font-style: italic; font-synthesis: style; font-weight: 600; font-size: 19px; color: var(--oro-texto); -webkit-text-stroke: 0; text-shadow: none; padding: 0 2px 1px; }
 [data-tema] .gta-top :is(svg, .gta-top-g) { color: var(--texto-2); }
 
 /* El nombre de GrowIA es una imagen de oro (growia-nombre.svg): sobre crema la «IA» casi blanca no se lee y sobre el
    metal se pierde. De una sola tinta donde haga falta (el manual admite la versión a una tinta) */
-[data-tema="marfil"] .gia-nom { filter: brightness(0); opacity: .82; }
-[data-tema] :is([aria-pressed="true"], [aria-current="page"], .btn.pri) .gia-nom { filter: brightness(0); opacity: .78; }
-[data-tema="marfil"] :is([aria-pressed="true"], [aria-current="page"], .btn.pri) .gia-nom { filter: brightness(0) invert(1); opacity: .92; }
 /* las subpestañas de Análisis (enlaces): lo elegido, de metal como los segmentos */
 [data-tema] .grupo-tabs { background: color-mix(in srgb, var(--texto) 3%, transparent); border-color: var(--sep); box-shadow: none; }
 [data-tema] .grupo-tabs a[aria-current="page"] { background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo), 0 2px 6px -2px var(--hondo); }
-[data-tema="marfil"] .aj-nom { filter: brightness(0); opacity: .82; }
 
 /* =====================================================================
    Inicio: saludo y patrimonio como en la maqueta (tarjeta con hilo de oro arriba, luz detrás de la curva y la cifra
@@ -340,11 +332,11 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="borgona"] .sec-cab h2 { font: italic 500 20px/22px var(--marca); letter-spacing: .01em; text-transform: none; color: var(--oro-texto); }
 
 /* acabado de las tarjetas por diseño (la de patrimonio ya lleva el suyo) */
-[data-tema="marmol"] :is(.tarjeta, .idea, .informe, .fx2, .ruta-hero, .num-sec, .merc2, .pf-card, .mfilas, .aj-caja, .toca, .opr, .ag-prox, .tu-cab) {
+[data-tema="marmol"] :is(.tarjeta, .idea, .informe, .fx2, .num-sec, .merc2, .pf-card, .mfilas, .aj-caja, .toca, .opr, .ag-prox, .tu-cab) {
   background-image: radial-gradient(420px 160px at 20% -60px, color-mix(in srgb, var(--oro-texto) 10%, transparent), transparent 72%);
   box-shadow: inset 0 1px 0 color-mix(in srgb, var(--oro-texto) 16%, transparent), var(--sombra-t);
 }
-[data-tema="borgona"] :is(.tarjeta, .idea, .informe, .fx2, .ruta-hero, .num-sec, .merc2, .pf-card, .mfilas, .aj-caja, .toca, .opr, .tu-cab) {
+[data-tema="borgona"] :is(.tarjeta, .idea, .informe, .fx2, .num-sec, .merc2, .pf-card, .mfilas, .aj-caja, .toca, .opr, .tu-cab) {
   background-image: radial-gradient(420px 160px at 80% -60px, color-mix(in srgb, var(--oro-texto) 7%, transparent), transparent 72%);
 }
 /* Marfil: la cabecera con doble filete de tinta, como un periódico */

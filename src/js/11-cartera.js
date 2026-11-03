@@ -143,15 +143,15 @@ function htmlBloqueCar(k, M) {
     if (k === 'patrimonio') {
       return `<section class="car-patrimonio car-hero" aria-label="Patrimonio">
       ${htmlAvisoNovedades()}
-      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola">${navToison() ? `<small class="hola-fecha">${esc(new Date().toLocaleDateString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' }))}</small>` : ''}${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L('Calendario', 'Calendar'))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span></a><button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
+      <div class="hero-top">${nombreUsuario() ? `<p class="hero-hola"><small class="hola-fecha">${esc(new Date().toLocaleDateString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' }))}</small>${esc(saludoHora())}, <button type="button" class="hola-nom" data-accion="nombre" title="Cambiar nombre">${esc(nombreUsuario())}</button></p>` : ''}<a class="btn peq car-agenda-mini" href="#agenda" title="${esc(L('Calendario: resultados, dividendos, tus aportaciones, la Fed y la renta', 'Calendar: earnings, dividends, your contributions, the Fed and taxes'))}" aria-label="${esc(L('Calendario', 'Calendar'))}">${ICONOS.agenda}<span>${L('Calendario', 'Calendar')}</span></a><button type="button" class="btn peq car-ordenar-mini" data-accion="ordenar-cartera" title="Personalizar Inicio: qué sale y en qué orden" aria-label="Personalizar Inicio">${ICONOS.ordenar}<span>Personalizar</span></button></div>
       <div class="hero-panel">
         <div class="hero-cifra">
-          <div class="hero-lbl"><span id="heroLbl">${L('Patrimonio', 'Net worth')}</span>${navToison() ? B('estado', 'estado ts-vivo') : ''}<button type="button" class="hero-ojo" data-accion="ocultar" aria-pressed="${!!S.oculto}" title="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}" aria-label="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}">${S.oculto ? ICONOS.ojoNo : ICONOS.ojo}</button></div>
+          <div class="hero-lbl"><span id="heroLbl">${L('Patrimonio', 'Net worth')}</span>${B('estado', 'estado ts-vivo')}<button type="button" class="hero-ojo" data-accion="ocultar" aria-pressed="${!!S.oculto}" title="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}" aria-label="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}">${S.oculto ? ICONOS.ojoNo : ICONOS.ojo}</button></div>
           <div class="hero-num" id="heroNum" aria-label="${L('Patrimonio', 'Net worth')}">${B('totalE')}${B('totalD', 'dec')}</div>
           <div class="hero-var"><span class="hv-in" id="evoCab" aria-live="off"></span><button type="button" class="hv-info" data-accion="info-grafica" title="${L('Qué enseña la gráfica', 'What the chart shows')}" aria-label="${L('Qué enseña la gráfica', 'What the chart shows')}">${ICONOS.info}</button></div>
           <div class="hero-sub">
             ${S.rango === '1D' ? '' : `<div class="hs"><span class="k">${L('Hoy', 'Today')}</span>${B('dia')}</div>`}
-            <div class="hs"${navToison() ? ` title="${L('Ganado desde que compraste', 'Gained since you bought')}"` : ''}><span class="k">${navToison() ? L('Ganado', 'Gained') : L('Ganado desde que compraste', 'Gained since you bought')}</span>${B('pl')}</div>
+            <div class="hs" title="${L('Ganado desde que compraste', 'Gained since you bought')}"><span class="k">${L('Ganado', 'Gained')}</span>${B('pl')}</div>
           </div>
         </div>
         ${!M.filas.length ? `<p class="hero-vacia">${L('La gráfica de tu patrimonio sale en cuanto metas lo que tienes.', 'Your net worth chart shows up as soon as you add what you own.')}</p>` : `<div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}"${r === 'Inicio' ? ` title="${L('Desde tu primera compra', 'Since your first purchase')}"` : ''}>${r === 'Inicio' ? L('Total', 'Total') : r}</button>`).join('')}</div>
@@ -209,7 +209,7 @@ function htmlBloqueCar(k, M) {
   return '';
 }
 // 0.8: con Toisón, Hoy no lleva tus posiciones ni el reparto (van en Cartera)
-const fueraDeHoy = (k) => navToison() && EN_CARTERA_TS.has(k);
+const fueraDeHoy = (k) => EN_CARTERA_TS.has(k);
 /* Cartera de Toisón, subpestaña Posiciones: lo que tienes (con el plan y los movimientos) y el reparto. El total va
    encima, en htmlSubvistas */
 function vistaPosiciones(M) {
@@ -390,7 +390,7 @@ function htmlToca(M) {
       <p class="iac-tit iac-act">${esPublico() ? L('Analiza tu cartera cada día, te explica lo que pasa y contesta lo que le preguntes. Es gratis con una clave de Google.', 'It analyses your portfolio every day, explains what is going on and answers your questions. Free with a Google key.') : 'Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.'}</p>
       <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.growia}Activar la IA</button>`;
   }
-  const lista = v.length ? `<div class="iac-sub"><h3>${navToison() ? L('Tu mes', 'Your month') : 'Lo que toca ahora'}</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Ver el paso a paso'}</button></div>
+  const lista = v.length ? `<div class="iac-sub"><h3>${L('Tu mes', 'Your month')}</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Ver el paso a paso'}</button></div>
     <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
   // en el ordenador, a lo ancho debajo de la gráfica: el diagnóstico a la izquierda y lo que toca a la derecha
   return `<section class="toca iac" aria-labelledby="hToca"><div class="iac-in${lista ? ' con-lista' : ''}"><div class="iac-izq">${cab}${tit}${notas}</div>${lista ? `<div class="iac-der">${lista}</div>` : ''}</div></section>`;
@@ -445,9 +445,9 @@ function htmlReparto(M) {
   const conBase = S.dim === 'region' || S.dim === 'sector';
   let slot = 0;
   const color = (x) => {
-    if (S.dim === 'riesgo') { const n = parseInt(x.k, 10); return n ? `rgba(237, 187, 69,${(0.22 + (n / 7) * 0.78).toFixed(2)})` : 'var(--c0)'; }
-    if (GRIS.has(x.k) || slot >= 5) return 'var(--c0)';
-    slot += 1; return `var(--c${slot})`;
+    if (S.dim === 'riesgo') { const n = parseInt(x.k, 10); return n ? `color-mix(in srgb, var(--grafica) ${Math.round((0.22 + (n / 7) * 0.78) * 100)}%, transparent)` : 'var(--reparto-6)'; }
+    if (GRIS.has(x.k) || slot >= 5) return 'var(--reparto-6)';
+    slot += 1; return `var(--reparto-${slot})`;
   };
   const filas = r.filas.map((x) => ({ ...x, col: color(x) }));
   const notas = {

@@ -56,7 +56,7 @@ function verRespuestas(l, nuevas) {
     return `<div class="resp-tuyo"><div class="resp-meta">${L('Tú', 'You')}${o.tipo && o.tipo !== 'puntuacion' ? `, ${esc(trad(o.tipo).toLowerCase())}` : ''}${o.sitio && o.sitio !== 'La app en general' && o.tipo !== 'puntuacion' ? ` ${L('en', 'in')} ${esc(trad(o.sitio))}` : ''}<time>${esc(cuandoOpi(fechaOpi(o)))}</time></div>${est}${t ? `<p>${esc(t.length > 600 ? t.slice(0, 600) + '…' : t)}</p>` : ''}</div>`;
   };
   const suyo = (o) => o.respuesta ? `<div class="resp-suya">
-      <div class="resp-meta">${svgMarca('resp-marca')}<b>${esc(o.por ? L(`${o.por}, de Toisón`, `${o.por}, from Toisón`) : 'Toisón')}</b><time>${esc(cuandoOpi(fechaOpi({ cuando: o.respondida })))}</time></div>
+      <div class="resp-meta">${simboloTs('resp-marca')}<b>${esc(o.por ? L(`${o.por}, de Toisón`, `${o.por}, from Toisón`) : 'Toisón')}</b><time>${esc(cuandoOpi(fechaOpi({ cuando: o.respondida })))}</time></div>
       <p>${esc(o.respuesta)}</p>
     </div>` : `<p class="resp-espera">${L('Sin respuesta todavía.', 'No reply yet.')}</p>`;
   const titulo = nuevas ? (l.length === 1 ? L('Te han respondido', 'You have a reply') : L(`Tienes ${l.length} respuestas`, `You have ${l.length} replies`)) : L('Lo que has mandado', 'What you have sent');

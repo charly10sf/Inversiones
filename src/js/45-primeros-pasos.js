@@ -58,8 +58,8 @@ document.addEventListener('click', (e) => {
 function guiaPrimerosPasos(despues = () => {}) {
   const it = itemsEmpezar(), nom = nombreUsuario();
   const h = hoja(trad('Primeros pasos'), `<div class="guia">
-    <div class="guia-cab">${navToison() ? simboloTs('guia-simb') : logoEntero()}<h2>${esc(nom ? L(`Hola, ${nom}. Tu cartera, lista en unos minutos`, `Hi, ${nom}. Your portfolio, ready in a few minutes`) : L('Tu cartera, lista en unos minutos', 'Your portfolio, ready in a few minutes'))}</h2>
-      <p>${esc(navToison() ? L('Son estos pasos (el último, solo si aportas cada mes). Los tienes en Hoy hasta que acabes, así que puedes dejarlo a medias y seguir otro día.', 'These are the steps (the last one only if you contribute monthly). They stay on Today until you finish, so you can leave it halfway and carry on another day.') : trad('Son estos pasos (el último, solo si aportas cada mes). Los tienes arriba en Inicio hasta que acabes, así que puedes dejarlo a medias y seguir otro día.'))}</p></div>
+    <div class="guia-cab">${simboloTs('guia-simb')}<h2>${esc(nom ? L(`Hola, ${nom}. Tu cartera, lista en unos minutos`, `Hi, ${nom}. Your portfolio, ready in a few minutes`) : L('Tu cartera, lista en unos minutos', 'Your portfolio, ready in a few minutes'))}</h2>
+      <p>${esc(L('Son estos pasos (el último, solo si aportas cada mes). Los tienes en Hoy hasta que acabes, así que puedes dejarlo a medias y seguir otro día.', 'These are the steps (the last one only if you contribute monthly). They stay on Today until you finish, so you can leave it halfway and carry on another day.'))}</p></div>
     <ol class="guia-l">${it.map((x, i) => `<li class="${x.ok ? 'ok' : ''}"><span class="emp-n" aria-hidden="true">${x.ok ? ICONOS.ok : i + 1}</span><span><b>${esc(x.t)}${x.opcional ? ` <em>${esc(trad('opcional'))}</em>` : ''}</b><small>${esc(x.min)}</small></span></li>`).join('')}</ol>
     <div class="guia-btns"><button type="button" class="btn pri" data-guia="tengo">${esc(trad('Empezar: meter lo que tengo'))}</button><button type="button" class="btn" data-guia="tour">${esc(trad('Antes, enséñame la app (1 min)'))}</button></div>
     <button type="button" class="enlace guia-luego" data-cerrar>${esc(trad('Más tarde'))}</button>
@@ -106,10 +106,4 @@ async function abrirEnMovil() {
 
 let TOURE = null;
 const elVisible = (sel) => { if (!sel) return null; for (const el of document.querySelectorAll(sel)) { const r = el.getBoundingClientRect(); if (r.width && r.height) return el; } return null; };
-/* «Más» en la barra del móvil: Calendario, Mercados, Fiscalidad y Objetivos en tarjetas (Ajustes está arriba, en la rueda) */
-function abrirMas() {
-  const h = hoja('Más', `<div class="mas-g">${EN_MAS.map(([k, x]) => { const v = VISTAS.find(([kk]) => kk === k); const falta = k === 'futuro' && perfilIncompleto(); return `<a class="mas-t${S.vista === k ? ' on' : ''}${falta ? ' falta' : ''}" href="#${k}" data-cerrar>${ICONOS[k]}<span><b>${esc(v[1])}${falta ? '<em class="mas-falta">Te falta tu perfil</em>' : ''}</b><small>${esc(x)}</small></span></a>`; }).join('')}</div>`);
-  h.el.classList.add('hoja-mas');
-}
-document.addEventListener('click', (e) => { if (e.target.closest('[data-mas]')) abrirMas(); });
 

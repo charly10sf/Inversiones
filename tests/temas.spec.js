@@ -22,7 +22,7 @@ async function leer(page) {
     const cs = getComputedStyle(document.body), r = getComputedStyle(document.documentElement);
     return {
       tema: document.documentElement.getAttribute('data-tema'),
-      fondo: cs.backgroundColor, letra: cs.fontFamily, bg: r.getPropertyValue('--bg').trim(), texto: r.getPropertyValue('--text').trim(),
+      fondo: cs.backgroundColor, letra: cs.fontFamily, viejos: ['--bg', '--text', '--accent', '--plane', '--c1'].map((v) => r.getPropertyValue(v).trim()).join(''),
       barra: document.querySelector('meta[name="theme-color"]').getAttribute('content'),
       // se bajan de la casa (assets/), no de Google
       inter: (await document.fonts.load('16px Inter')).length > 0, ibarra: (await document.fonts.load('italic 16px "Ibarra Real Nova"')).length > 0,
@@ -60,8 +60,8 @@ for (const t of Object.keys(FONDO)) {
       expect(x.letra.startsWith('Inter')).toBe(true);
       expect(x.inter).toBe(true);
       expect(x.ibarra).toBe(true);
-      // los nombres de GrowFolio apuntan a los tokens: el texto de la app es el --texto del diseño
-      expect(x.texto).not.toBe('#F7F2E8');
+      // 0.8 (5b): los nombres de GrowFolio (--bg, --text, --accent…) ya no existen: todo usa los tokens
+      expect(x.viejos).toBe('');
       // la carcasa: el símbolo de Toisón en la cabecera y la cabecera sin cortar (encajarCabecera)
       await expect(page.locator('.top .marca-ts svg')).toBeVisible();
       expect(await page.evaluate(() => { const f = document.querySelector('.fila-top'); return f.scrollWidth <= f.clientWidth + 1; })).toBe(true);

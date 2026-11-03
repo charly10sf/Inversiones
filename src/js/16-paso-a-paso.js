@@ -208,15 +208,9 @@ const TIPO_PASO = [
   [/^exactas:/, 'dato', 'lapiz'], [/^ia:/, 'ia', 'growia'],
 ];
 function tipoPaso(x) { for (const [re, c, i] of TIPO_PASO) if (re.test(x.id)) return { c, i }; return { c: 'info', i: 'futuro' }; }
-// 0.8 (paso 4): con Toisón, los de plumilla de su pareja (los de GrowFolio se quedan para GrowFolio)
+// 0.8 (paso 4): los de plumilla de su pareja
 const PAREJA_PASO = { venta: 'bajar', compra: 'subir', fondo: 'futuro', alerta: 'aviso', calendario: 'calendario', fiscal: 'fiscalidad', lapiz: 'lapiz', growia: 'asistente', chispa: 'asistente', futuro: 'objetivos' };
-const ICONO_PASO = new Proxy({
-  venta: SVG('<path d="M12 5v14M6 13l6 6 6-6"/>', 2), compra: SVG('<path d="M12 19V5M6 11l6-6 6 6"/>', 2), fondo: SVG('<path d="M4 18l5-6 4 3 7-9"/><path d="M15 6h5v5"/>', 2),
-  alerta: SVG('<path d="M12 4l9 16H3z"/><path d="M12 10v4M12 17.5v.5"/>', 2), calendario: SVG('<rect x="4" y="5" width="16" height="15" rx="2.5"/><path d="M4 10h16M9 3v4M15 3v4"/>', 1.8),
-  fiscal: SVG('<path d="M6 3h12v18l-3-1.8-3 1.8-3-1.8L6 21z"/><path d="M9 8h6M9 12h6"/>', 1.8), lapiz: SVG('<path d="M4 20h4L19 9l-4-4L4 16z"/>', 1.8),
-  get growia() { return iconoIA(); },
-  chispa: SVG('<path d="M12 3l1.8 5.2L19 10l-5.2 1.8L12 17l-1.8-5.2L5 10l5.2-1.8z"/>', 1.8), futuro: SVG('<circle cx="12" cy="12" r="8"/><path d="M12 8v4l3 2"/>', 1.8),
-}, { get: (o, k) => (PAREJA_PASO[k] && navToison() && ICONOS_PL[PAREJA_PASO[k]]) || o[k] });
+const ICONO_PASO = Object.fromEntries(Object.entries(PAREJA_PASO).map(([k, p]) => [k, ICONOS_PL[p]]));
 function htmlPaso(x, n) {
   const tp = tipoPaso(x);
   const detalle = x.como || x.imp;

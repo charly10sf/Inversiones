@@ -33,15 +33,15 @@ function grafLinea(cont, series, opt = {}) {
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
   svg.setAttribute('role', 'img'); svg.setAttribute('aria-label', opt.titulo || 'Gráfico');
   const sube = base[n - 1].v >= base[0].v;
-  const color = series[0].color || opt.color || (sube ? 'var(--up)' : 'var(--down)');
+  const color = series[0].color || opt.color || (sube ? 'var(--sube)' : 'var(--baja)');
   let g = '';
   if (!opt.sinEjes) {
     const ticks = niceTicks(lo, hi, H < 150 ? 3 : 4);
     // si los rótulos compactos se repiten (80k, 80k), con un decimal más
     const fmtEje = (t) => { if (opt.ejeFmt) return opt.ejeFmt(t); const c = ticks.map(compacto); if (new Set(c).size === c.length) return compacto(t); const a = Math.abs(t); return a >= 1e3 ? fmtNum(t / 1e3, ticks.length > 1 && Math.abs(ticks[1] - ticks[0]) < 100 ? 2 : 1) + 'k' : fmtNum(t, 0); };
     for (const t of ticks) {
-      g += `<line x1="${ml}" x2="${W - mr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--line)" stroke-width="1"/>`;
-      g += `<text x="${W - mr + 8}" y="${y(t) + 4}" font-size="11" fill="var(--muted)" style="font-variant-numeric:tabular-nums">${opt.oculto ? '' : fmtEje(t)}</text>`;
+      g += `<line x1="${ml}" x2="${W - mr}" y1="${y(t)}" y2="${y(t)}" stroke="var(--sep)" stroke-width="1"/>`;
+      g += `<text x="${W - mr + 8}" y="${y(t) + 4}" font-size="11" fill="var(--tenue)" style="font-variant-numeric:tabular-nums">${opt.oculto ? '' : fmtEje(t)}</text>`;
     }
     const dias = (t1 - t0) / 864e5;
     const pasos = Math.min(6, Math.max(2, Math.floor((W - ml - mr) / 110)));
@@ -50,34 +50,34 @@ function grafLinea(cont, series, opt = {}) {
       for (let k = 0; k <= pasos; k++) {
         const d = new Date(t0 + (k / pasos) * (t1 - t0));
         const etq = dias < 1.6 ? `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}` : `${DIAS_SEM[d.getDay()]} ${d.getDate()}`;
-        g += `<text x="${xt(d.getTime())}" y="${H - 6}" text-anchor="${k === 0 ? 'start' : k === pasos ? 'end' : 'middle'}" font-size="11" fill="var(--muted)">${etq}</text>`;
+        g += `<text x="${xt(d.getTime())}" y="${H - 6}" text-anchor="${k === 0 ? 'start' : k === pasos ? 'end' : 'middle'}" font-size="11" fill="var(--tenue)">${etq}</text>`;
       }
     } else if (dias > 900) {
       // un rótulo por año, en el 1 de enero
       const anios = [];
       for (let a = new Date(t0).getFullYear() + 1; a <= new Date(t1).getFullYear(); a++) anios.push(a);
       const salto = Math.ceil(anios.length / Math.max(2, Math.floor((W - ml - mr) / 70)));
-      anios.filter((a, k) => k % salto === 0).forEach((a) => { g += `<text x="${xt(new Date(a, 0, 1).getTime())}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--muted)">${a}</text>`; });
+      anios.filter((a, k) => k % salto === 0).forEach((a) => { g += `<text x="${xt(new Date(a, 0, 1).getTime())}" y="${H - 6}" text-anchor="middle" font-size="11" fill="var(--tenue)">${a}</text>`; });
     } else {
       for (let k = 0; k <= pasos; k++) {
         const d = new Date(t0 + (k / pasos) * (t1 - t0));
         const etq = dias > 100 ? `${MESES[d.getMonth()]}${d.getMonth() === 0 || k === 0 ? ' ' + String(d.getFullYear()).slice(2) : ''}` : `${d.getDate()} ${MESES[d.getMonth()]}`;
-        g += `<text x="${xt(d.getTime())}" y="${H - 6}" text-anchor="${k === 0 ? 'start' : k === pasos ? 'end' : 'middle'}" font-size="11" fill="var(--muted)">${etq}</text>`;
+        g += `<text x="${xt(d.getTime())}" y="${H - 6}" text-anchor="${k === 0 ? 'start' : k === pasos ? 'end' : 'middle'}" font-size="11" fill="var(--tenue)">${etq}</text>`;
       }
     }
   }
   const pts = (datos) => datos.map((s) => { const i = idx.get(s.d); return i == null ? null : `${x(i).toFixed(1)},${y(s.v).toFixed(1)}`; }).filter(Boolean).join(' ');
   const pBase = pts(base);
-  if (!opt.sinRef) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(base[0].v)}" y2="${y(base[0].v)}" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 3"/>`;
-  if (opt.linea && opt.linea.v) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(opt.linea.v)}" y2="${y(opt.linea.v)}" stroke="var(--warn)" stroke-width="1" stroke-dasharray="4 4"/><text x="${ml + 4}" y="${y(opt.linea.v) - 6}" font-size="11" fill="var(--warn)">${esc(opt.linea.etiqueta || '')}</text>`;
+  if (!opt.sinRef) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(base[0].v)}" y2="${y(base[0].v)}" stroke="var(--borde)" stroke-width="1" stroke-dasharray="2 3"/>`;
+  if (opt.linea && opt.linea.v) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(opt.linea.v)}" y2="${y(opt.linea.v)}" stroke="var(--aviso)" stroke-width="1" stroke-dasharray="4 4"/><text x="${ml + 4}" y="${y(opt.linea.v) - 6}" font-size="11" fill="var(--aviso)">${esc(opt.linea.etiqueta || '')}</text>`;
   const yRel = opt.rellenoA != null ? y(opt.rellenoA) : H - mb;
   g += `<polygon points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}" fill="${color}" fill-opacity="${opt.rellenoA != null ? 0.16 : 0.08}"/>`;
-  if (opt.rellenoA != null) g += `<line x1="${ml}" x2="${W - mr}" y1="${yRel}" y2="${yRel}" stroke="var(--line-2)" stroke-width="1"/>`;
-  for (const s of series.slice(1)) g += `<polyline points="${pts(s.datos)}" fill="none" stroke="${s.color || 'var(--text-2)'}" stroke-width="1.4" stroke-dasharray="${s.disc ? '5 4' : ''}" stroke-linejoin="round"/>`;
+  if (opt.rellenoA != null) g += `<line x1="${ml}" x2="${W - mr}" y1="${yRel}" y2="${yRel}" stroke="var(--borde)" stroke-width="1"/>`;
+  for (const s of series.slice(1)) g += `<polyline points="${pts(s.datos)}" fill="none" stroke="${s.color || 'var(--texto-2)'}" stroke-width="1.4" stroke-dasharray="${s.disc ? '5 4' : ''}" stroke-linejoin="round"/>`;
   g += `<polyline points="${pBase}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>`;
-  g += `<circle cx="${x(n - 1)}" cy="${y(base[n - 1].v)}" r="3.5" fill="${color}" stroke="var(--bg)" stroke-width="2"/>`;
-  if (opt.marca && idx.has(opt.marca.d)) { const i = idx.get(opt.marca.d), mx = x(i), my = y(base[i].v), izq = mx > W * 0.7; g += `<circle cx="${mx}" cy="${my}" r="4" fill="${color}" stroke="var(--bg)" stroke-width="2"/><text x="${mx + (izq ? -8 : 8)}" y="${Math.min(my + 4, H - mb - 4)}" text-anchor="${izq ? 'end' : 'start'}" font-size="11.5" font-weight="700" fill="${color}" style="font-variant-numeric:tabular-nums">${esc(opt.marca.txt)}</text>`; }
-  g += `<g class="cruz" visibility="hidden"><line y1="${mt}" y2="${H - mb}" stroke="var(--line-2)" stroke-width="1"/><circle r="4" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
+  g += `<circle cx="${x(n - 1)}" cy="${y(base[n - 1].v)}" r="3.5" fill="${color}" stroke="var(--fondo)" stroke-width="2"/>`;
+  if (opt.marca && idx.has(opt.marca.d)) { const i = idx.get(opt.marca.d), mx = x(i), my = y(base[i].v), izq = mx > W * 0.7; g += `<circle cx="${mx}" cy="${my}" r="4" fill="${color}" stroke="var(--fondo)" stroke-width="2"/><text x="${mx + (izq ? -8 : 8)}" y="${Math.min(my + 4, H - mb - 4)}" text-anchor="${izq ? 'end' : 'start'}" font-size="11.5" font-weight="700" fill="${color}" style="font-variant-numeric:tabular-nums">${esc(opt.marca.txt)}</text>`; }
+  g += `<g class="cruz" visibility="hidden"><line y1="${mt}" y2="${H - mb}" stroke="var(--borde)" stroke-width="1"/><circle r="4" fill="${color}" stroke="var(--fondo)" stroke-width="2"/></g>`;
   g += `<rect x="${ml}" y="0" width="${W - ml - mr}" height="${H}" fill="transparent" class="zona"/>`;
   svg.innerHTML = g;
   cont.appendChild(svg);
@@ -147,9 +147,9 @@ let grafHeroN = 0;
    imagen pequeña hecha una vez (a la resolución de la pantalla) que se repite: sin filtros, para que pasar el dedo por
    la curva vaya igual de fino en cualquier móvil */
 let granoCache = null;
-// el polvo de oro, del color de la gráfica del diseño de Toisón (--grafica); sin diseño, el oro de GrowFolio
+// el polvo de oro, del color de la gráfica del diseño (--grafica); si no se puede leer, un oro
 function rgbGrafica() {
-  const v = temaActual() ? getComputedStyle(document.documentElement).getPropertyValue('--grafica').trim() : '';
+  const v = getComputedStyle(document.documentElement).getPropertyValue('--grafica').trim();
   const m = /^#([0-9a-f]{6})$/i.exec(v);
   return m ? [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16)) : [236, 192, 112];
 }
@@ -187,13 +187,13 @@ function grafHero(cont, series, opt = {}) {
   const refVis = ref >= dmin - dr * 0.6 && ref <= dmax + dr * 0.6;
   if (refVis) vals.push(ref);
   const vmin = Math.min(...vals), vmax = Math.max(...vals), rango = vmax - vmin || Math.abs(vmax) * 0.02 || 1;
-  // con Toisón, más aire abajo: ahí van las barritas de cada día y no deben pisar la curva ni la cifra del mínimo
-  const lo = vmin - rango * (temaActual() ? 0.32 : 0.12), hi = vmax + rango * 0.05;
+  // aire abajo: ahí van las barritas de cada día y no deben pisar la curva ni la cifra del mínimo
+  const lo = vmin - rango * 0.32, hi = vmax + rango * 0.05;
   const n = base.length, T = base.map((p) => tiempoDe(p.d)), t0 = T[0], t1 = T[n - 1] > t0 ? T[n - 1] : t0 + 1;
   const xt = (t) => ml + ((t - t0) / (t1 - t0)) * (W - ml - mr);
   const y = (v) => mt + (1 - (v - lo) / (hi - lo)) * (H - mt - mb);
   const P = base.map((p, i) => [xt(T[i]), y(p.v)]);
-  const color = series[0].color || 'var(--grafica, var(--accent))';
+  const color = series[0].color || 'var(--grafica, var(--primario))';
   const curva = curvaSuave(P), suelo = H - mb;
   const area = `${curva}L${P[n - 1][0].toFixed(1)},${suelo}L${P[0][0].toFixed(1)},${suelo}Z`;
   // fechas de abajo, metidas hacia dentro para que no peguen al borde
@@ -224,7 +224,7 @@ function grafHero(cont, series, opt = {}) {
     <mask id="${id}m"><path d="${area}" fill="url(#${id}mg)"/></mask>
     ${(() => { const gr = granoGraf(); return gr ? `<pattern id="${id}n" width="${gr.l}" height="${gr.l}" patternUnits="userSpaceOnUse"><image href="${gr.url}" width="${gr.l}" height="${gr.l}" style="image-rendering:pixelated"/></pattern>` : ''; })()}
     <radialGradient id="${id}r"><stop offset="0" style="stop-color:${color};stop-opacity:0.28"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></radialGradient>
-    <linearGradient id="${id}c" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 20}" x2="0" y2="${suelo}"><stop offset="0" style="stop-color:var(--text-2);stop-opacity:0"/><stop offset="0.3" style="stop-color:var(--text-2);stop-opacity:0.5"/><stop offset="1" style="stop-color:var(--text-2);stop-opacity:0.15"/></linearGradient>
+    <linearGradient id="${id}c" gradientUnits="userSpaceOnUse" x1="0" y1="${mt - 20}" x2="0" y2="${suelo}"><stop offset="0" style="stop-color:var(--texto-2);stop-opacity:0"/><stop offset="0.3" style="stop-color:var(--texto-2);stop-opacity:0.5"/><stop offset="1" style="stop-color:var(--texto-2);stop-opacity:0.15"/></linearGradient>
     <filter id="${id}b" x="-5%" y="-40%" width="110%" height="180%"><feGaussianBlur stdDeviation="6.5"/></filter>
     <clipPath id="${id}k"><rect class="gh-corte" x="0" y="0" width="${W}" height="${H}"/></clipPath>
   </defs>`;
@@ -233,12 +233,12 @@ function grafHero(cont, series, opt = {}) {
     g += `<text class="gh-eje" x="${xx.toFixed(1)}" y="${H - 9}" text-anchor="${xx <= borde + 1 ? 'start' : xx >= W - borde - 1 ? 'end' : 'middle'}">${esc(tx)}</text>`;
   }
   // la línea de donde empezó el periodo, muy tenue
-  if (!opt.sinRef && refVis) g += `<line x1="0" x2="${W}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" stroke="var(--line-2)" stroke-width="1" stroke-dasharray="2 5"/>`;
+  if (!opt.sinRef && refVis) g += `<line x1="0" x2="${W}" y1="${y(ref).toFixed(1)}" y2="${y(ref).toFixed(1)}" stroke="var(--borde)" stroke-width="1" stroke-dasharray="2 5"/>`;
   // la misma curva en gris por debajo: es lo que se ve a la derecha del dedo
-  g += `<path d="${curva}" fill="none" stroke="var(--line-2)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
+  g += `<path d="${curva}" fill="none" stroke="var(--borde)" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>`;
   for (const se of series.slice(1)) {
     const Q = se.datos.map((p) => { const i = base.findIndex((b) => b.d === p.d); return i < 0 ? null : [P[i][0], y(p.v)]; }).filter(Boolean);
-    if (Q.length > 1) g += `<path d="${curvaSuave(Q)}" fill="none" stroke="${se.color || 'var(--text-2)'}" stroke-width="1.5" stroke-dasharray="${se.disc ? '5 5' : ''}" stroke-linejoin="round" opacity="0.85"/>`;
+    if (Q.length > 1) g += `<path d="${curvaSuave(Q)}" fill="none" stroke="${se.color || 'var(--texto-2)'}" stroke-width="1.5" stroke-dasharray="${se.disc ? '5 5' : ''}" stroke-linejoin="round" opacity="0.85"/>`;
   }
   g += `<g clip-path="url(#${id}k)">
     <path class="gh-area" d="${area}" fill="url(#${id}a)" opacity="0.6"/>
@@ -246,9 +246,9 @@ function grafHero(cont, series, opt = {}) {
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="10" opacity="0.45" filter="url(#${id}b)"/>
     <path class="gh-trazo" d="${curva}" fill="none" stroke="url(#${id}t)" stroke-width="${opt.grueso || 2.8}" stroke-linejoin="round" stroke-linecap="round"/>
   </g>`;
-  // Toisón (maqueta aprobada): al pie de la curva, una barrita por día (o por tramo, si no caben) verde si subió y roja
+  // maqueta aprobada: al pie de la curva, una barrita por día (o por tramo, si no caben) verde si subió y roja
   // si bajó, del alto de cuánto cambió. Solo dice la forma, no cifras: sale también con los importes ocultos
-  if (temaActual() && n > 2) {
+  if (n > 2) {
     const nb = Math.min(n - 1, Math.max(12, Math.floor((W - ml - mr) / 7))), paso = (n - 1) / nb, cambios = [];
     for (let b = 0; b < nb; b++) { const i0 = Math.round(b * paso), i1 = Math.round((b + 1) * paso); if (i1 > i0) cambios.push([i0, i1, base[i1].v - base[i0].v]); }
     const top = Math.max(...cambios.map((c) => Math.abs(c[2]))) || 1, alto = Math.min(14, H * 0.055), ancho = Math.max(1.2, ((W - ml - mr) / cambios.length) * 0.55);
@@ -265,8 +265,8 @@ function grafHero(cont, series, opt = {}) {
     g += marca(iMax, true) + marca(iMin, false);
   }
   const [fx, fy] = P[n - 1];
-  g += `<g class="gh-fin"><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${Math.min(80, H * 0.3).toFixed(0)}" fill="url(#${id}r)"/><line x1="${fx.toFixed(1)}" x2="${fx.toFixed(1)}" y1="${(fy + 6).toFixed(1)}" y2="${suelo}" stroke="url(#${id}h)" stroke-width="1.2"/><circle class="gh-pulso" cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4" fill="${color}"/><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4.2" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
-  g += `<g class="gh-cruz" visibility="hidden"><line y1="${mt - 20}" y2="${suelo}" stroke="url(#${id}c)" stroke-width="1"/><circle r="11" fill="${color}" opacity="0.18"/><circle r="4.6" fill="${color}" stroke="var(--bg)" stroke-width="2"/></g>`;
+  g += `<g class="gh-fin"><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="${Math.min(80, H * 0.3).toFixed(0)}" fill="url(#${id}r)"/><line x1="${fx.toFixed(1)}" x2="${fx.toFixed(1)}" y1="${(fy + 6).toFixed(1)}" y2="${suelo}" stroke="url(#${id}h)" stroke-width="1.2"/><circle class="gh-pulso" cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4" fill="${color}"/><circle cx="${fx.toFixed(1)}" cy="${fy.toFixed(1)}" r="4.2" fill="${color}" stroke="var(--fondo)" stroke-width="2"/></g>`;
+  g += `<g class="gh-cruz" visibility="hidden"><line y1="${mt - 20}" y2="${suelo}" stroke="url(#${id}c)" stroke-width="1"/><circle r="11" fill="${color}" opacity="0.18"/><circle r="4.6" fill="${color}" stroke="var(--fondo)" stroke-width="2"/></g>`;
   g += `<rect class="zona" x="0" y="0" width="${W}" height="${H}" fill="transparent"/>`;
   const svg = document.createElementNS(NS, 'svg');
   svg.setAttribute('viewBox', `0 0 ${W} ${H}`); svg.setAttribute('height', H);
@@ -361,8 +361,8 @@ function dibujar(M) {
     const ahora = { d: hoyIso(), v: isFinite(M.total) ? M.total : (serie[serie.length - 1] || {}).v };
     const real = (M2) => (S.rango === 'Inicio' && isFinite(M2.pl) && isFinite(M2.plPct) ? { d: M2.pl, p: M2.plPct } : null);
     if (serie.length > 1) pintarVar(ref0, ahora, etqRango, real(M));
-    const series = [{ datos: serie, color: 'var(--grafica, var(--accent))' }];
-    if (S.comparar && !intra) series.push({ datos: serieComparada(serie, S.bench), color: 'var(--text-2)', disc: true, nombre: nombreBench(benchDe(S.bench)) });
+    const series = [{ datos: serie, color: 'var(--grafica, var(--primario))' }];
+    if (S.comparar && !intra) series.push({ datos: serieComparada(serie, S.bench), color: 'var(--texto-2)', disc: true, nombre: nombreBench(benchDe(S.bench)) });
     // al pasar el dedo, la cifra grande de arriba enseña lo que tenías ese día y la pastilla, lo que iba desde el
     // principio del periodo; al soltar, todo vuelve a ahora
     const alMover = (p) => {

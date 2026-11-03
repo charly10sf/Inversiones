@@ -71,12 +71,10 @@ const LS = {
 const TEMAS = ['marmol', 'marfil', 'borgona'];
 const TEMA_BASE = 'marmol';
 const temaActual = () => { const t = document.documentElement.getAttribute('data-tema'); return TEMAS.includes(t) ? t : TEMA_BASE; };
-let colorBarraGF = null;
 function colorBarraTema() {
   const m = document.querySelector('meta[name="theme-color"]'); if (!m) return;
-  if (colorBarraGF == null) colorBarraGF = m.getAttribute('content');
-  const f = temaActual() ? getComputedStyle(document.documentElement).getPropertyValue('--fondo').trim() : '';
-  m.setAttribute('content', f || colorBarraGF);
+  const f = getComputedStyle(document.documentElement).getPropertyValue('--fondo').trim();
+  if (f) m.setAttribute('content', f);
 }
 function ponerTema(t) {
   t = TEMAS.includes(t) ? t : TEMA_BASE;
@@ -95,12 +93,11 @@ colorBarraTema();
 temaApp();
 /* el acabado de fondo de los diseños de Toisón (maqueta aprobada): un grano fino del color del texto (en Marfil, como
    de papel; cuánto se ve lo dice el token --grano) y, solo en Mármol, vetas finas con alguna de oro. Una capa fija
-   detrás de todo, que no se toca ni se anima; sin diseño de Toisón, no existe */
+   detrás de todo, que no se toca ni se anima */
 function acabadoTema() {
   if (!document.body) { document.addEventListener('DOMContentLoaded', acabadoTema, { once: true }); return; }
   const t = temaActual();
   let capa = document.getElementById('acabadoTema');
-  if (!t) { if (capa) capa.remove(); return; }
   if (capa && capa.dataset.t === t) return;
   if (!capa) { capa = document.createElement('div'); capa.id = 'acabadoTema'; capa.setAttribute('aria-hidden', 'true'); document.body.prepend(capa); }
   capa.dataset.t = t;

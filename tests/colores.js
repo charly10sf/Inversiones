@@ -1,6 +1,6 @@
 // 0.7v: cuenta los colores escritos a mano (#hex, rgb/rgba/hsl/hsla, white y black) fuera de los bloques de tema.
-// Bloques de tema: los que llevan [data-tema en el selector (src/css/00-temas.css) y, mientras siga GrowFolio, los :root
-// de 01-base.css y 21-como-el-icono.css. Lo usan tests/colores-sueltos.spec.js y, a mano, «node tests/colores.js»
+// Bloques de tema: los que llevan [data-tema en el selector (src/css/00-temas.css). Desde el 5b (0.8) no hay otros: los
+// :root de GrowFolio de 01-base.css y 21-como-el-icono.css ya no existen. Lo usan tests/colores-sueltos.spec.js y, a mano, «node tests/colores.js»
 // (dice cuántos hay en cada archivo, para ir bajando los topes de tests/colores-topes.json).
 import { readFileSync, readdirSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -8,7 +8,6 @@ import { fileURLToPath } from 'node:url';
 
 const RAIZ = join(dirname(fileURLToPath(import.meta.url)), '..');
 const COLOR = /#[0-9a-fA-F]{3,8}(?![\w-])|\b(?:rgba?|hsla?)\(|(?<![\w-])(?:white|black)(?![\w-])/g;
-const ROOT_GF = new Set(['01-base.css', '21-como-el-icono.css']);
 
 const contar = (t) => (t.match(COLOR) || []).length;
 
@@ -22,7 +21,7 @@ export function coloresCSS(nombre, css) {
     const c = css[i];
     if (c === '{') {
       const sel = css.slice(desde, i).trim();
-      const esTema = /\[data-tema/.test(sel) || (ROOT_GF.has(nombre) && /^:root$/.test(sel));
+      const esTema = /\[data-tema/.test(sel);
       if (!saltar) n += contar(sel);
       pila.push(esTema);
       if (esTema) saltar++;

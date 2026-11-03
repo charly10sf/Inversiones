@@ -35,7 +35,7 @@ function graficaConsulta(h, mon) {
   if (se.length < 10) return '';
   const W = 600, H = 170, vs = se.map((x) => x[1]), mn = Math.min(...vs), mx = Math.max(...vs);
   const pts = vs.map((v, i) => `${((i / (vs.length - 1)) * W).toFixed(1)},${(H - 8 - ((v - mn) / (mx - mn || 1)) * (H - 22)).toFixed(1)}`);
-  const ch = (vs[vs.length - 1] / vs[0] - 1) * 100, col = ch >= 0 ? 'var(--up)' : 'var(--down)';
+  const ch = (vs[vs.length - 1] / vs[0] - 1) * 100, col = ch >= 0 ? 'var(--sube)' : 'var(--baja)';
   return `<figure class="cons-graf"><svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Precio desde el ${fechaLarga(se[0][0])}: ${pctS(ch, 1)}"><defs><linearGradient id="consG" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${col}" stop-opacity="0.28"/><stop offset="1" stop-color="${col}" stop-opacity="0"/></linearGradient></defs><path d="M0,${H} L${pts.join(' L')} L${W},${H} Z" fill="url(#consG)"/><polyline points="${pts.join(' ')}" fill="none" stroke="${col}" stroke-width="2" vector-effect="non-scaling-stroke"/></svg>
     <figcaption><span class="k">Desde el ${fechaLarga(se[0][0])}</span><b class="${cls(ch)}">${pctS(ch, 1)}</b><span class="k">máximo ${precioR(mx, mon)}, mínimo ${precioR(mn, mon)}</span></figcaption></figure>`;
 }

@@ -92,7 +92,7 @@ function avisoCambioModo(a, puesto, intento = 0) {
 }
 // los nombres de la barra (Paso a paso o Tu plan) y la pestaña de ahora, con el modo nuevo
 function cambioDeAcceso() {
-  const g = GRUPOS.find((x) => x.k === 'ruta');
+  const g = RUTA_NOM;
   for (const a of $$('.nav [data-ir="ruta"]')) a.textContent = L(g.t, g.en);
   for (const sp of $$('.navbar [data-ir="ruta"] span')) sp.textContent = L(g.c || g.t, g.en);
   if (S.M) { cacheDe(S.M, '__ruta').delete('r'); cacheDe(S.M, '__ideas').clear(); cacheDe(S.M, '__plan').clear(); }
@@ -130,8 +130,7 @@ function activarSelectorTema(el) {
   for (const b of $$('[data-elige-tema]', el)) b.onclick = () => {
     ponerTema(b.dataset.eligeTema);
     for (const x of $$('[data-elige-tema]', el)) x.setAttribute('aria-pressed', String(x === b));
-    // si cambia la navegación (de GrowFolio a Toisón o al revés) se repinta aunque haya una hoja abierta
-    if (S.cartera && $('#vista') && (S.navTs !== navToison() || !document.querySelector('.hoja-fondo form, .ficha'))) pintar();
+    if (S.cartera && $('#vista') && !document.querySelector('.hoja-fondo form, .ficha')) pintar();
   };
 }
 // las cuentas que conoce GrowFolio (las que han abierto la 0.5) y lo que les ha puesto el dueño

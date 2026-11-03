@@ -122,8 +122,8 @@ function irArriba(sel) {
 }
 function vistaDeHash() {
   const v = location.hash.slice(1);
-  // con Toisón, tus posiciones (y su plan) están en Cartera, no en Hoy
-  if (v === 'plan') { S.carTab = 'plan'; LS.set('inv-car', 'plan'); return navToison() ? 'posiciones' : 'cartera'; }
+  // tus posiciones (y su plan) están en Cartera, no en Hoy
+  if (v === 'plan') { S.carTab = 'plan'; LS.set('inv-car', 'plan'); return 'posiciones'; }
   if (v === 'impuestos') { S.fisTab = 'tu'; return 'fiscal'; }
   if (v === 'renta') { S.fisTab = 'renta'; return 'fiscal'; }
   if (v === 'objetivos') { S.futTab = 'perfil'; return 'futuro'; }

@@ -284,7 +284,7 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
   const n = nombreUsuario();
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fDesb" autocomplete="on">
     ${logoEntrada()}
-    <h1>${PERFIL_CUENTA && n ? `${esc(saludoHora())}, ${esc(n)}` : '<img class="h1-nom" src="growfolio-nombre.svg" alt="Toisón">'}</h1>
+    <h1>${PERFIL_CUENTA && n ? `${esc(saludoHora())}, ${esc(n)}` : 'Toisón'}</h1>
     <p>${texto ? esc(texto) : PERFIL_CUENTA ? 'Tu cartera está cifrada en tu cuenta. Escribe la contraseña de tu cartera para verla en este dispositivo.' : PERFIL_LOCAL ? 'Tu cartera de este dispositivo está cifrada. Escribe tu contraseña para verla.' : 'Tu cartera está cifrada. Escribe tu contraseña para verla.'}</p>
     <input type="text" name="username" value="${esc(PERFIL_CUENTA && FB.user && FB.user.email ? FB.user.email + ' (cartera)' : CFG.owner)}" autocomplete="username" hidden>
     <label class="campo">${PERFIL_CUENTA ? 'Contraseña de tu cartera' : 'Contraseña'}<input type="password" id="pass" autocomplete="current-password" required autofocus></label>
