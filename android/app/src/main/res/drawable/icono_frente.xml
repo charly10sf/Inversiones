@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- 0.8: el icono de Toisón: el símbolo (la O y la T de TS_O_D y TS_T_D de 49-avisos-y-ajustes.js, viewBox -82 -78 164 147)
-     sobre el borgoña de marca (icono_fondo): la O en crema #f6ead5 y la T de metal (#f7dfa8 → #e3b45f → #b5863a, el --metal de
+     sobre el borgoña de marca (icono_fondo): la O en crema #f6ead5 y la T de metal (#f7dfa8 → #e3b45f → #b5863a, el token metal de
      00-temas.css). Escalado a 55 dp de ancho y centrado en la zona segura de 66 dp de un icono adaptable de 108 dp -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
