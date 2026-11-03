@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.8a', f: '2026-11-03', h: '18:30', t: 'El correo de Tú, en una línea', arreglos: [
+    'En los móviles estrechos, tu correo en Tú se partía en dos líneas («lucia@prueba» y «.com»). Ahora va en una sola y, si no cabe, termina en puntos suspensivos.',
+  ] },
   { v: '0.8', f: '2026-11-03', h: '16:00', t: 'GrowFolio ahora es Toisón', cosas: [
     { d: 'toison', ir: { v: 'cartera', logo: true, dib: null }, t: 'GrowFolio ahora es Toisón', x: 'Nombre nuevo y cara nueva: el símbolo de la O áurea y la T, en la cabecera, el icono y la app de Android. Tu cartera, tu cuenta y todo lo que tenías siguen igual.', g: 'Tu cartera y tus datos siguen donde estaban. Cambian el nombre, el aspecto y dónde está cada cosa. Son seis pasos.' },
     { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar, .nav', dib: null }, t: 'Cinco botones, Hoy en el centro', x: 'Cartera, Mercados, Hoy en el centro, Ideas y Tú. Hoy es lo de cada día: tu patrimonio con la gráfica, lo que más se ha movido, tu mes y lo que viene. Cartera tiene tus posiciones, el análisis y Hacienda; Ideas es lo que antes era Expertos; y Tú, tus metas, tu perfil, el calendario y los ajustes.', g: 'Inicio ahora es Hoy. Análisis y Hacienda están dentro de Cartera; Expertos ahora es Ideas; Objetivos, el Paso a paso y los ajustes, en Tú.' },
