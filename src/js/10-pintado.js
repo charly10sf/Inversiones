@@ -601,7 +601,7 @@ function pintar() {
   if (S.vista === 'cartera') { if ($('[data-que-es]')) ponerQueEs($('#vista')); pedirEncajarMovers(); }
   // 0.9: una pestaña del modo avanzado se llena después (su código va en un trozo aparte)
   if (S.vista === 'av' && $('#panelAv')) pintarPanelAv();
-  ponerPreguntale($('#vista')); pulirHoy(M); if (grupoDe(S.vista).k === 'posiciones') centrarPest();
+  ponerPreguntale($('#vista')); marcarCifras($('#vista')); pulirHoy(M); if (grupoDe(S.vista).k === 'posiciones') centrarPest();
   if (S.irPlan && S.vista === 'cartera') { S.irPlan = false; setTimeout(() => { const p = $('.car-plan'); if (p) p.scrollIntoView({ block: 'start' }); }, 60); }
   if (S.vista === 'tu') activarSelectorTema($('#vista'));
   // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada

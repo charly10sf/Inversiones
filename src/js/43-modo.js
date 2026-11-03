@@ -149,3 +149,77 @@ addEventListener('scroll', () => {
 }, { passive: true });
 // un toque corto al cambiar de sección o de pestaña
 document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('.navbar [data-ir], .riel [data-ir], .grupo-tabs a, .tabs button, .chip-btn')) vibrar(); }, true);
+
+/* ---------- 0.9 · «Explícame una cifra» (encargo de Carlos, 3 nov: la IA metida en toda la app) ----------
+   Tocar una cifra (tu patrimonio, las de Hoy y las de las pestañas de Análisis) abre un globo con lo que es y
+   «Explícamela», que abre la IA con la cifra, su tarjeta y su pestaña. La IA la explica con tu cartera: qué significa,
+   de dónde sale y cómo se compara; no dice qué hacer (CNMV y política de uso de Anthropic). */
+const SEL_CIFRA = '#heroNum, .pav-kpi b, .kpis .kpi:not(a) .v';
+const textoLimpio = (el) => (el ? el.textContent.replace(/\s+/g, ' ').trim() : '');
+function etiquetaCifra(v) {
+  if (v.id === 'heroNum') return textoLimpio($('#heroLbl')) || L('Patrimonio', 'Net worth');
+  const k = v.closest('.pav-kpi, .kpi');
+  const e = k && k.querySelector(':scope > small, :scope > .k');
+  return textoLimpio(e).slice(0, 60);
+}
+function marcarCifras(raiz) {
+  if (!raiz) return;
+  for (const v of $$(SEL_CIFRA, raiz)) {
+    if (v.dataset.cifra || v.closest('a, button')) continue;
+    const et = etiquetaCifra(v); if (!et) continue;
+    v.dataset.cifra = et; v.tabIndex = 0; v.setAttribute('role', 'button'); v.setAttribute('aria-haspopup', 'dialog');
+    v.setAttribute('aria-label', L(`${et}: ${S.oculto ? 'oculta' : textoLimpio(v)}. Toca para que te la explique`, `${et}: ${S.oculto ? 'hidden' : textoLimpio(v)}. Tap for an explanation`));
+  }
+}
+// dónde está la cifra: la tarjeta (su título) y la pestaña o la pantalla
+function dondeCifra(v) {
+  const t = v.closest('.pav-t, .card, .car-bloque, section'), h = t && t.querySelector('h2, h3');
+  const tarjeta = h ? String((h.firstChild && h.firstChild.nodeType === 3 ? h.firstChild.textContent : h.textContent) || '').replace(/\s+/g, ' ').trim().slice(0, 60) : '';
+  const p = $('.pest-av [aria-current="page"]'), pest = S.vista === 'cartera' ? L('Hoy', 'Today') : textoLimpio(p) || '';
+  return { tarjeta, pest };
+}
+function cerrarGloboCifra() { const g = $('#globoCifra'); if (g) { g.remove(); const o = $('[data-cifra].cifra-on'); if (o) { o.classList.remove('cifra-on'); o.focus({ preventScroll: true }); } } }
+function globoCifra(v) {
+  cerrarGloboCifra();
+  const et = v.dataset.cifra, val = S.oculto ? '' : textoLimpio(v), { tarjeta, pest } = dondeCifra(v);
+  const donde = [pest, tarjeta && tarjeta !== et ? tarjeta : ''].filter(Boolean).join(' · ');
+  const q = L(`Explícame la cifra «${et}»${val ? ` (${val})` : ''}${donde ? `, de ${donde},` : ''} con mi cartera: qué significa, de dónde sale y cómo se compara con lo normal. Sin decirme qué hacer.`,
+    `Explain the figure «${et}»${val ? ` (${val})` : ''}${donde ? ` in ${donde}` : ''} with my portfolio: what it means, where it comes from and how it compares with what is usual. Without telling me what to do.`);
+  const g = document.createElement('div');
+  g.id = 'globoCifra'; g.className = 'globo-cifra'; g.setAttribute('role', 'dialog'); g.setAttribute('aria-label', et);
+  g.innerHTML = `<div class="gc-cab"><small>${esc(donde || L('Tu cartera', 'Your portfolio'))}</small><button type="button" class="ib gc-x" data-gc="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button></div>
+    <b class="gc-et">${esc(et)}</b>${val ? `<span class="gc-v">${esc(val)}</span>` : ''}
+    <button type="button" class="btn pri peq gc-ia" data-accion="asesor" data-q="${esc(q)}">${ICONOS_PL.asistente || ''}<span>${L('Explícamela', 'Explain it')}</span></button>
+    <p class="gc-nota">${L('La IA te la explica con tus datos. No te dice qué hacer: eso lo decides tú.', 'The AI explains it with your data. It does not tell you what to do.')}</p>`;
+  document.body.appendChild(g);
+  v.classList.add('cifra-on');
+  // al lado de la cifra: debajo si cabe, si no encima; sin salirse de la pantalla
+  const r = v.getBoundingClientRect(), gw = g.offsetWidth, gh = g.offsetHeight, m = 10;
+  const x = Math.max(m, Math.min(innerWidth - gw - m, r.left + r.width / 2 - gw / 2));
+  const y = r.bottom + gh + m < innerHeight ? r.bottom + 8 : Math.max(m, r.top - gh - 8);
+  g.style.left = `${Math.round(x)}px`; g.style.top = `${Math.round(y)}px`;
+  if (!sinMovimiento()) g.classList.add('entra');
+  vibrar();
+  setTimeout(() => { const b = g.querySelector('.gc-ia'); if (b) b.focus({ preventScroll: true }); }, 30);
+}
+document.addEventListener('click', (e) => {
+  const g = $('#globoCifra');
+  if (g) {
+    if (e.target.closest('[data-gc="x"]')) { cerrarGloboCifra(); return; }
+    if (e.target.closest('.gc-ia')) { setTimeout(() => { const x = $('#globoCifra'); if (x) x.remove(); $$('.cifra-on').forEach((o) => o.classList.remove('cifra-on')); }, 0); return; }
+    if (!g.contains(e.target) && !e.target.closest('[data-cifra]')) cerrarGloboCifra();
+  }
+  const v = e.target.closest && e.target.closest('[data-cifra]');
+  if (!v || e.defaultPrevented) return;
+  // en la gráfica del patrimonio, el dedo que recorre la línea cambia la cifra: ahí no se abre
+  if (v.id === 'heroNum' && v.dataset.antes) return;
+  if (v.classList.contains('cifra-on')) { cerrarGloboCifra(); return; }
+  globoCifra(v);
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && $('#globoCifra')) { cerrarGloboCifra(); return; }
+  const v = e.target.closest && e.target.closest('[data-cifra]');
+  if (v && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); globoCifra(v); }
+});
+addEventListener('scroll', () => { if ($('#globoCifra')) cerrarGloboCifra(); }, { passive: true, capture: true });
+addEventListener('resize', () => { if ($('#globoCifra')) cerrarGloboCifra(); });
