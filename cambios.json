@@ -8,6 +8,14 @@
    "commits": [
     {
      "cuando": "2026-11-03 16:00",
+     "asunto": "0.8: los títulos, otra vez uno por diseño (paso 5c)",
+     "detalle": [
+      "Como en la maqueta de Inicio aprobada: Mármol con títulos modernos en Inter, Marfil de periódico en Ibarra y Borgoña en cursiva de Ibarra (tokens --titulo, --titulo-peso, --titulo-estilo y --titulo-espacio en cada diseño)",
+      "Valen para el título de cada pestaña, el saludo, tu nombre en Tú, las hojas, el mapa, la IA y la cuenta; la palabra TOISÓN, las iniciales, GTA y la presentación no cambian"
+     ]
+    },
+    {
+     "cuando": "2026-11-03 15:39",
      "asunto": "0.8: Toisón sale a todos (paso 5c del rediseño: accesibilidad y salida)",
      "detalle": [
       "Accesibilidad revisada en Mármol, Marfil y Borgoña con axe-core (WCAG 2.1 A y AA) en todas las pantallas, la presentación, la cuenta y el tutorial",

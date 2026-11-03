@@ -18,6 +18,7 @@
   --brillo: rgb(255 255 255 / .38); --hondo: rgb(0 0 0 / .55);
   --reparto-1: #e3b45f; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
   --grano: .06; --resplandor: .6; --luz-graf: 16%; --polvo: .9;
+  --titulo: var(--ui); --titulo-peso: 500; --titulo-estilo: normal; --titulo-espacio: -.02em; /* títulos modernos, en Inter */
   --velo: #050706;
   --claro: #f7f2ea;
   color-scheme: dark;
@@ -33,6 +34,7 @@
   --brillo: rgb(255 255 255 / .22); --hondo: rgb(70 48 22 / .22);
   --reparto-1: #8a6216; --reparto-2: #2f5d8c; --reparto-3: #7b6bae; --reparto-4: #3d8a8c; --reparto-5: #c29a6b; --reparto-6: #9a928a;
   --grano: .09; --resplandor: .28; --luz-graf: 10%; --polvo: .55;
+  --titulo: var(--marca); --titulo-peso: 500; --titulo-estilo: normal; --titulo-espacio: 0; /* títulos de periódico, en Ibarra */
   --tenue-mezcla: 92%; /* 5c: con 78 %, el texto tenue salía a 4,4:1 sobre el fondo crema (AA pide 4,5); con 92 %, 6,2:1 (4,8:1 en la fila marcada) */
   --velo: #1e1a17;
   --claro: #f7f2ea;
@@ -50,6 +52,7 @@
   --brillo: rgb(255 255 255 / .38); --hondo: rgb(10 2 4 / .6);
   --reparto-1: #e3b45f; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
   --grano: .06; --resplandor: .55; --luz-graf: 14%; --polvo: .8;
+  --titulo: var(--marca); --titulo-peso: 500; --titulo-estilo: italic; --titulo-espacio: .005em; /* títulos en cursiva de Ibarra */
   --velo: #0f0306;
   --claro: #f7f2ea;
   color-scheme: dark;
@@ -717,3 +720,16 @@ img.tema-muestra { background: none; box-shadow: none; }
 }
 /* el saludo con el nombre solo se subrayaba al llegar con el teclado: ahora lleva el aro de foco como el resto */
 [data-tema] .hola-nom:focus-visible { outline: 2px solid var(--primario); outline-offset: 2px; border-radius: 4px; }
+
+/* =====================================================================
+   Los títulos, uno por diseño (5c, Carlos: «antes los tres tenían un estilo distinto para los títulos»), como en la
+   maqueta de Inicio aprobada: Mármol moderno, en Inter; Marfil de periódico, en Ibarra; Borgoña en cursiva de Ibarra.
+   Los tokens --titulo* van en el bloque de cada diseño. La palabra TOISÓN, las iniciales, GTA y la presentación no
+   cambian: llevan la letra de marca en los tres.
+   ===================================================================== */
+[data-tema] :is(.vista-cab h1, .ts-tit, .hero-hola, .tu-nom, .hoja-cab h2, .mapa-tit h2, .ov-vacio h2, .as-tit h2, .as-vacio h3, .as-config h3, .caja h1, .bq-caja h1) {
+  font-family: var(--titulo); font-weight: var(--titulo-peso); font-style: var(--titulo-estilo); letter-spacing: var(--titulo-espacio);
+}
+[data-tema="marmol"] .hola-nom { font-weight: 600; }
+/* en Ibarra, el saludo y el título de la cuenta van más finos (como estaban) */
+[data-tema]:is([data-tema="marfil"], [data-tema="borgona"]) :is(.hero-hola, .caja h1, .bq-caja h1) { font-weight: 400; }
