@@ -8,7 +8,7 @@ const NOVEDADES = [
   { v: '0.8a', f: '2026-11-03', h: '21:00', t: 'La IA, sin clave de Google', arreglos: [
     'Si tu cuenta tiene la IA con Claude, ya puedes preguntarle sin poner la clave de Google. La clave solo hace falta para el resumen de las noticias y para leer capturas al importar; si la pones, queda de reserva por si Claude no puede.',
     'Sin la clave de Google, si Claude no puede contestar la IA te dice por qué (el tope de preguntas de hoy, que tu cuenta todavía no lo tiene o que no está disponible) y, si se corta a mitad, lo deja marcado como incompleto.',
-    'En los móviles estrechos, tu correo en Tú se partía en dos líneas («lucia@prueba» y «.com»). Ahora va en una sola y, si no cabe, termina en puntos suspensivos.',
+    { t: 'En los móviles estrechos, tu correo en Tú se partía en dos líneas («lucia@prueba» y «.com»). Ahora va en una sola y, si no cabe, termina en puntos suspensivos.', solo: 'dueno' },
   ] },
   { v: '0.8', f: '2026-11-03', h: '16:00', t: 'GrowFolio ahora es Toisón', cosas: [
     { d: 'toison', ir: { v: 'cartera', logo: true, dib: null }, t: 'GrowFolio ahora es Toisón', x: 'Nombre nuevo y cara nueva: el símbolo de la O áurea y la T, en la cabecera, el icono y la app de Android. Tu cartera, tu cuenta y todo lo que tenías siguen igual.', g: 'Tu cartera y tus datos siguen donde estaban. Cambian el nombre, el aspecto y dónde está cada cosa. Son seis pasos.' },

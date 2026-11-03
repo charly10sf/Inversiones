@@ -9,7 +9,21 @@
 const esParche = (v) => /[a-z]$/.test(String(v || ''));
 const baseVer = (v) => String(v || '').replace(/[a-z]+$/, '');
 const GUIA_ID = () => baseVer(VERSION);
-const novBase = () => NOVEDADES.find((n) => n.v === baseVer(VERSION)) || NOVEDADES.find((n) => !esParche(n.v)) || NOVEDADES[0];
+/* Novedades para todos o solo para el dueño (0.8a; lo pidió Carlos el 3 nov): a los demás solo les sale lo que de verdad
+   es nuevo para ellos. Una cosa con «solo: 'dueno'», o un arreglo escrito como { t: '…', solo: 'dueno' }, lo ve el dueño
+   y nadie más. Una versión de letra que se queda sin nada para ti no sale (ni su mensaje corto ni en el historial).
+   El dueño se sabe al comprobar el acceso (comprobarAcceso, 42-modos.js) y se recuerda en el dispositivo (inv-dueno)
+   para que la próxima vez no haya que esperar. Todo lo que enseña novedades lee novVisibles(), no NOVEDADES */
+const veDueno = () => !!S.esDueno || (!S.noDueno && !!LS.get('inv-dueno', 0));
+const soloDueno = (x) => !!x && typeof x === 'object' && x.solo === 'dueno';
+function novVisibles() {
+  const yo = veDueno(), vale = (x) => yo || !soloDueno(x);
+  return NOVEDADES.map((n) => {
+    const cosas = n.cosas && n.cosas.filter(vale), arreglos = n.arreglos && n.arreglos.filter(vale).map((a) => (typeof a === 'string' ? a : a.t));
+    return { ...n, cosas: cosas && cosas.length ? cosas : undefined, arreglos: arreglos && arreglos.length ? arreglos : undefined };
+  }).filter((n) => !esParche(n.v) || n.cosas || n.arreglos);
+}
+const novBase = () => { const ns = novVisibles(); return ns.find((n) => n.v === baseVer(VERSION)) || ns.find((n) => !esParche(n.v)) || ns[0]; };
 // los pasos de la guía de una novedad: «ir» puede ser uno o varios (cada uno con su título y su texto si los trae)
 const pasosDeCosa = (c, v) => (Array.isArray(c.ir) ? c.ir : [c.ir]).map((ir) => ({ t: c.t, x: c.g || c.x, dib: c.d, ...ir, nuevo: v }));
 const pasosGuia = (ns = [novBase()]) => ns.filter((n) => !esParche(n.v)).flatMap((n) => (n.cosas || []).filter((c) => c.ir).flatMap((c) => pasosDeCosa(c, n.v)));
