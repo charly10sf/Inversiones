@@ -433,23 +433,27 @@ test('sin clave de Google, si Claude se corta a mitad, lo escrito queda marcado 
   await expect(cuerpo.locator('.as-corte')).toContainText('está a medias');
   expect(g.n).toBe(0);
 });
-test('sin clave de Google, con Claude, la noticia y las capturas de Importar llevan a la pantalla de la clave', async ({ page, context }) => {
+test('con Claude en la cuenta, la noticia la resume Claude (con búsqueda) y no se toca Gemini', async ({ page, context }) => {
   await sinClave(page);
-  await gemini(context);
-  await worker(context, () => ({ sse: '' }));
+  const g = await gemini(context);
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Repsol ha subido un 3 % tras presentar resultados.' }]) }));
   await page.evaluate(() => sondearClaude());
-  expect(await page.evaluate(() => iaLista())).toBe(true);
+  expect(await page.evaluate(() => claudeParaTodo())).toBe(true);
   await page.evaluate(() => abrirNoticia({ t: 'Repsol sube', f: 'Expansión', d: '', u: 'https://example.com/n', w: '' }));
-  const h = page.locator('.hoja-not');
-  await expect(h).toContainText('lo hace todavía Gemini');
-  await h.locator('[data-not-ia]').click();
-  await expect(page.locator('#asCuerpo')).toContainText('Tu cuenta ya tiene la IA con Claude', { timeout: 10_000 });
-  await expect(page.locator('#asClave')).toBeVisible();
-  // el sondeo ya dijo que sí: no se vuelve al chat por su cuenta
-  await page.waitForTimeout(800);
-  await expect(page.locator('#asClave')).toBeVisible();
-  await expect(page.locator('#asCuerpo [data-as="chat"]')).toBeVisible();
-  await page.evaluate(() => cerrarAsesor());
-  await page.evaluate(async () => { await cargarTrozo('importar'); await importarCapturas(); });
-  await expect(page.locator('#asClave')).toBeVisible({ timeout: 10_000 });
+  await expect(page.locator('.hoja-not')).toContainText('Repsol ha subido un 3 %', { timeout: 15_000 });
+  await expect(page.locator('.hoja-not [data-not-ia]')).toHaveCount(0);
+  expect(w.peticiones.length).toBe(1);
+  expect(w.peticiones[0].cuerpo.model).toBe('claude-haiku-5-5');
+  expect(JSON.stringify(w.peticiones[0].cuerpo.tools || [])).toContain('web_search');
+  expect(g.n).toBe(0);
+});
+test('con Claude en la cuenta, Importar lee con Claude (Sonnet) y una captura va como imagen', async ({ page, context }) => {
+  await sinClave(page);
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: '{"plataforma":"MyInvestor","posiciones":[{"nombre":"Fondo X","cantidad":3}],"operaciones":[]}' }]) }));
+  await page.evaluate(() => sondearClaude());
+  const o = await page.evaluate(async () => { await cargarTrozo('importar'); LS.set(LS_CLAUDE_OK, true); return leerUnaVez([{ inlineData: { mimeType: 'image/jpeg', data: 'AAAA' } }, { text: 'lee esto' }], () => {}); });
+  expect(o.posiciones[0].nombre).toBe('Fondo X');
+  const c = w.peticiones[0].cuerpo;
+  expect(c.model).toBe('claude-sonnet-5-5');
+  expect(c.messages[0].content[0].type).toBe('image');
 });

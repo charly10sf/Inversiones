@@ -95,7 +95,7 @@ function htmlClaveAsesor() {
   const cfg = cfgAsesor();
   return `<div class="as-config">
     <h3 data-no-trad>${conIA('Activa la IA, gratis', 'Turn on GrowIA, for free')}</h3>
-    ${claudeSinClave() ? `<p class="nota as-sin-clave">${L('Tu cuenta ya tiene la IA con Claude y contesta sin clave. La de Google hace falta para el resumen de las noticias y para leer capturas y extractos al importar, y queda de reserva si Claude no puede.', 'Your account already has the AI with Claude and it answers without a key. The Google one is needed for news summaries and to read screenshots and statements when importing, and it stays as a backup if Claude cannot answer.')}</p>` : ''}
+    ${claudeSinClave() ? `<p class="nota as-sin-clave">${L('Tu cuenta ya tiene la IA con Claude: no te hace falta ninguna clave. Toda la IA de Toisón (preguntas, revisiones, noticias e importar) va con Claude; la de Google solo quedaría de reserva si Claude no puede.', 'Your account already has the AI with Claude: you do not need any key. All of Toisón\'s AI (questions, reviews, news and importing) runs on Claude; the Google one would only be a backup if Claude cannot answer.')}</p>` : ''}
     <p>La IA funciona con Gemini, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
     <ol class="as-pasos-clave">
       <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>

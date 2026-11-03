@@ -1058,6 +1058,14 @@ function sondearClaude() {
   return SONDEO_EN_CURSO;
 }
 /* sin clave de Google no hay reserva: si Claude no puede, se dice claro en vez de pasar a Gemini */
+/* 0.9 · todo con Claude: lo que no es el chat (el resumen de una noticia, leer capturas y extractos al importar) también va
+   con Claude si tu cuenta lo tiene, aunque tengas la clave de Google. Una llamada suelta, sin las herramientas de la app */
+const claudeParaTodo = () => !!modeloClaudeParaIA('pregunta') && sondeoClaudeOk() && !claudePausado();
+async function claudeTexto({ partes, sistema = '', modelo = 'claude-haiku-5-5', web = false, maxBusquedas = 0, maxTokens = 4096, signal }) {
+  const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
+  await conversarClaude({ mensajes: [{ role: 'user', content: partes }], turno, sistema, maxTokens, signal, web, maxBusquedas, claudeModelo: modelo, herramientas: false, tipo: 'suelta' });
+  return { texto: turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim(), citas: turno.citas.length ? turno.citas : turno.resultados };
+}
 function errorSinIA(e, aMedias) {
   const c = e && (e.codigo || e.tipo);
   const porque = AS.claudeNo ? L('Sin tu sí, la IA no puede contestar con Claude.', 'Without your OK, the AI cannot answer with Claude.')
@@ -1123,7 +1131,7 @@ const NOTA_CLAUDE_HERRAMIENTAS = `Si necesitas varias herramientas que no depend
 function aMensajeClaude(m) {
   const rol = m.role === 'assistant' || m.role === 'model' ? 'assistant' : 'user';
   if (typeof m.content === 'string') return m.content.trim() ? { role: rol, content: m.content } : null;
-  const c = (m.content || []).map((p) => (p.inlineData ? { type: 'image', source: { type: 'base64', media_type: p.inlineData.mimeType, data: p.inlineData.data } } : typeof p.text === 'string' && p.text.trim() ? { type: 'text', text: p.text } : p.type ? p : null)).filter(Boolean);
+  const c = (m.content || []).map((p) => (p.inlineData ? { type: p.inlineData.mimeType === 'application/pdf' ? 'document' : 'image', source: { type: 'base64', media_type: p.inlineData.mimeType, data: p.inlineData.data } } : typeof p.text === 'string' && p.text.trim() ? { type: 'text', text: p.text } : p.type ? p : null)).filter(Boolean);
   return c.length ? { role: rol, content: c } : null;
 }
 // una copia de los mensajes con el punto de caché en el último bloque del último mensaje (si es del usuario): así cada ronda
