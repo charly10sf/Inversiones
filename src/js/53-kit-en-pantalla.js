@@ -52,7 +52,7 @@ async function verKit() {
   h.el.classList.add('hoja-kit');
   LS.set('inv-kit-visto', hoyIso());
   $('#kCopiar', h.el).onclick = async () => { try { await navigator.clipboard.writeText(kit.codigo); toast(L('Código copiado', 'Code copied')); } catch (e) { toast(kit.codigo, 8000); } };
-  if ($('#kBajar', h.el)) $('#kBajar', h.el).onclick = () => descargarTexto(`growfolio-codigo-recuperacion.txt`, [L('GrowFolio · Código de recuperación de tu cartera', 'GrowFolio · Your portfolio recovery code'), '', kit.codigo, '', correo ? L(`Cuenta: ${correo}`, `Account: ${correo}`) : '', L(`Creado: ${kit.creado.slice(0, 10)}`, `Created: ${kit.creado.slice(0, 10)}`), '', (correo ? L('Si olvidas la contraseña de tu cartera: entra con tu cuenta y, en la pantalla que te pide la contraseña de tu cartera, toca «He olvidado la contraseña de mi cartera» y escribe este código.', 'If you forget your portfolio password: sign in with your account and, on the screen that asks for your portfolio password, tap «I forgot my portfolio password» and type this code.') : L('Si olvidas la contraseña de tu cartera: en la pantalla que te pide la contraseña, toca «He olvidado la contraseña de mi cartera» y escribe este código.', 'If you forget your portfolio password: on the screen that asks for the password, tap «I forgot my portfolio password» and type this code.'))].filter((x, i, a) => x !== '' || a[i - 1] !== '').join('\n'));
+  if ($('#kBajar', h.el)) $('#kBajar', h.el).onclick = () => descargarTexto(`growfolio-codigo-recuperacion.txt`, [L('Toisón · Código de recuperación de tu cartera', 'Toisón · Your portfolio recovery code'), '', kit.codigo, '', correo ? L(`Cuenta: ${correo}`, `Account: ${correo}`) : '', L(`Creado: ${kit.creado.slice(0, 10)}`, `Created: ${kit.creado.slice(0, 10)}`), '', (correo ? L('Si olvidas la contraseña de tu cartera: entra con tu cuenta y, en la pantalla que te pide la contraseña de tu cartera, toca «He olvidado la contraseña de mi cartera» y escribe este código.', 'If you forget your portfolio password: sign in with your account and, on the screen that asks for your portfolio password, tap «I forgot my portfolio password» and type this code.') : L('Si olvidas la contraseña de tu cartera: en la pantalla que te pide la contraseña, toca «He olvidado la contraseña de mi cartera» y escribe este código.', 'If you forget your portfolio password: on the screen that asks for the password, tap «I forgot my portfolio password» and type this code.'))].filter((x, i, a) => x !== '' || a[i - 1] !== '').join('\n'));
   const comp = $('#kComp', h.el);
   if (comp) comp.onsubmit = async (ev) => {
     ev.preventDefault();
@@ -92,7 +92,7 @@ function copiaSeguridad() {
     <p>${L('Un archivo con toda tu cartera, cifrado igual que en tu cuenta: sin su contraseña o su código de recuperación no se puede abrir. Guárdalo en tu ordenador, en un pendrive o en tu nube.', 'A file with your whole portfolio, encrypted just like in your account: it cannot be opened without its password or recovery code. Keep it on your computer, a USB stick or your cloud.')}</p>
     ${ult ? `<p class="nota">${L(`La última la descargaste el ${esc(fechaLarga(ult))} en este dispositivo.`, `You last downloaded one on ${esc(ult)} on this device.`)}</p>` : ''}
     <div class="fila-btns copia-btns">${app ? '' : `<button type="button" class="btn pri" id="cBajar">${L('Descargar la copia', 'Download the backup')}</button>`}<label class="btn">${L('Cargar una copia', 'Load a backup')}<input type="file" id="cSubir" accept=".growfolio,.json,application/json" hidden></label></div>
-    ${app ? `<p class="nota">${L('La app de Android no puede guardar archivos: descárgala desde GrowFolio en el navegador del móvil o del ordenador.', 'The Android app cannot save files: download it from GrowFolio in the phone or computer browser.')}</p>` : ''}
+    ${app ? `<p class="nota">${L('La app de Android no puede guardar archivos: descárgala desde Toisón en el navegador del móvil o del ordenador.', 'The Android app cannot save files: download it from Toisón in the phone or computer browser.')}</p>` : ''}
   </div>`);
   h.el.classList.add('hoja-copia');
   if ($('#cBajar', h.el)) $('#cBajar', h.el).onclick = async () => {
@@ -106,7 +106,7 @@ function copiaSeguridad() {
     const file = ev.target.files[0]; ev.target.value = '';
     if (!file) return;
     let texto, f;
-    try { texto = await file.text(); f = JSON.parse(texto); } catch (e) { return toast(L('Ese archivo no es una copia de GrowFolio.', "That file isn't a GrowFolio backup."), 5000); }
+    try { texto = await file.text(); f = JSON.parse(texto); } catch (e) { return toast(L('Ese archivo no es una copia de Toisón.', "That file isn't a Toisón backup."), 5000); }
     if (!f || !f.ct || !f.iv || !(f.v === 2 || f.salt)) return toast(L('Ese archivo no es una copia cifrada. Las copias sin cifrar (.json) se cargan en Ajustes, Avanzado.', "That file isn't an encrypted backup. Unencrypted copies (.json) are loaded in Settings, Advanced."), 6000);
     h.cerrar(true); abrirCopia(texto, f);
   };

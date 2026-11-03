@@ -69,9 +69,9 @@ function abrirNoticia(n) {
   const h = hoja(L('La noticia', 'The article'), `<div class="not-h">
     <p class="not-src">${n.f ? logo(webMedio(n), n.f, 'not-logo') : ''}<span>${esc(n.f || '')}${n.d ? `${n.f ? ', ' : ''}${haceCuanto(n.d)}` : ''}</span></p>
     <h3 class="not-t" data-no-trad>${esc(n.t)}</h3>
-    <div class="not-cuerpo" aria-live="polite">${clave ? `<p class="not-lee">${ICONOS.growia}${L('GrowIA está leyendo la noticia…', 'GrowIA is reading the article…')}</p><div class="not-esq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>`
-      : `<p class="nota" style="margin:0">${L('Con GrowIA activada (gratis, con tu clave de Google) aquí te sale de qué va la noticia sin salir de GrowFolio.', 'With GrowIA on (free, with your Google key) you get what the article is about here, without leaving GrowFolio.')}</p>`}</div>
-    <div class="fila-btns not-btns">${clave ? '' : `<button type="button" class="btn pri" data-not-ia>${ICONOS.growia}${L('Activar GrowIA', 'Turn on GrowIA')}</button>`}<a class="btn" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${L('Abrir la original', 'Open the original')}</a></div>
+    <div class="not-cuerpo" aria-live="polite">${clave ? `<p class="not-lee">${ICONOS.growia}${L('La IA está leyendo la noticia…', 'GrowIA is reading the article…')}</p><div class="not-esq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>`
+      : `<p class="nota" style="margin:0">${L('Con la IA activada (gratis, con tu clave de Google) aquí te sale de qué va la noticia sin salir de Toisón.', 'With GrowIA on (free, with your Google key) you get what the article is about here, without leaving Toisón.')}</p>`}</div>
+    <div class="fila-btns not-btns">${clave ? '' : `<button type="button" class="btn pri" data-not-ia>${ICONOS.growia}${L('Activar la IA', 'Turn on GrowIA')}</button>`}<a class="btn" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${L('Abrir la original', 'Open the original')}</a></div>
   </div>`);
   h.el.classList.add('hoja-not');
   const bIA = $('[data-not-ia]', h.el); if (bIA) bIA.onclick = () => { h.cerrar(true); abrirAsesor(); };
@@ -85,7 +85,7 @@ function abrirNoticia(n) {
     // 0.7b: sin «Según el titular» al principio (lo pidió Carlos; abajo ya pone que sale del titular)
     if (!r.entera && par[0]) par[0] = par[0].replace(/^(seg[uú]n|de acuerdo con) (el|este) titular,\s*/i, '').replace(/^\p{Ll}/u, (c) => c.toUpperCase());
     cuerpo.innerHTML = par.map((x) => /^Para tu cartera:/i.test(x) ? `<p class="not-tuyo"><b>${L('Para tu cartera', 'For your portfolio')}:</b> ${esc(x.replace(/^Para tu cartera:\s*/i, ''))}</p>` : `<p>${esc(x)}</p>`).join('')
-      + `<p class="not-pie">${r.entera ? L('Resumen de GrowIA: puede equivocarse en algún detalle; la original manda.', 'Summary by GrowIA: it may get a detail wrong; the original is what counts.') : L('GrowIA no ha podido abrir la noticia entera: esto sale solo del titular. Para el detalle, la original.', "GrowIA couldn't open the full article: this comes from the headline alone. For the details, read the original.")}${r.fuentes.length ? ` ${L('Leído en', 'Read on')} ${r.fuentes.slice(0, 3).map((f) => `<a href="${esc(f.u)}" target="_blank" rel="noopener noreferrer">${esc(f.t)}</a>`).join(', ')}.` : ''}</p>`;
+      + `<p class="not-pie">${r.entera ? L('Resumen de la IA: puede equivocarse en algún detalle; la original manda.', 'Summary by GrowIA: it may get a detail wrong; the original is what counts.') : L('La IA no ha podido abrir la noticia entera: esto sale solo del titular. Para el detalle, la original.', "GrowIA couldn't open the full article: this comes from the headline alone. For the details, read the original.")}${r.fuentes.length ? ` ${L('Leído en', 'Read on')} ${r.fuentes.slice(0, 3).map((f) => `<a href="${esc(f.u)}" target="_blank" rel="noopener noreferrer">${esc(f.t)}</a>`).join(', ')}.` : ''}</p>`;
   }).catch((e) => {
     if (e.name === 'AbortError' || !document.body.contains(cuerpo)) return;
     cuerpo.innerHTML = `<p class="nota" style="margin:0">${esc(e.message || L('No se ha podido hacer el resumen.', 'Could not make the summary.'))} ${L('Puedes abrir la noticia en su web.', 'You can open it on its site.')}</p>`;
@@ -141,7 +141,7 @@ ${terceros} Usa solo lo que dice el titular: no añadas cifras, fechas, nombres 
       break;
     }
     const { texto, cortada } = await leer(r);
-    if (!texto || cortada) { ultimo = new Error(L('GrowIA no ha devuelto el resumen entero.', "GrowIA didn't return the whole summary.")); continue; }
+    if (!texto || cortada) { ultimo = new Error(L('La IA no ha devuelto el resumen entero.', "GrowIA didn't return the whole summary.")); continue; }
     const res = { texto, fuentes: [], entera: false };
     RES_NOT.set(clv, res);
     return res;
@@ -177,15 +177,15 @@ function htmlFrescura() {
   const datos = [
     lento && `Analistas de tus posiciones: ${haceCuanto(lento)}`,
     rg && `Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}`,
-    S.informe && S.informe.generado && `Prensa de tu cartera leída por GrowIA: ${haceCuanto(S.informe.generado)}`,
+    S.informe && S.informe.generado && `Prensa de tu cartera leída por la IA: ${haceCuanto(S.informe.generado)}`,
     S.escaneo && S.escaneo.leidas_24h && `Escaneo de prensa: ${S.escaneo.leidas_24h} empresas leídas en 24 h`,
-    ia && ia.propio ? `Análisis de ${esc(ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '',
+    ia && ia.propio ? `Análisis de ${esc(/^(La IA|GrowIA)$/.test(ia.autor) ? 'la IA' : ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '',
   ].filter(Boolean);
   return `<div class="frescura" aria-label="Frescura de los datos">
     <details><summary><span class="vivo-dot${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? ' viejo' : ''}">${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? L(`Precios de ${haceCuanto(S.precios.generado)}`, `Prices from ${haceCuanto(S.precios.generado)}`) : L('Al día', 'Up to date')}${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? '' : `<span class="fr-hora"> · ${B('recalc')}</span>`}</span>${S.informe && S.informe.generado ? `<span>· ${L('prensa de', 'news from')} ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas" title="${L('De cuándo es cada dato', 'How fresh each figure is')}" aria-label="${L('De cuándo es cada dato', 'How fresh each figure is')}">${ICONOS.info}</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
-    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">GrowIA ya lee la prensa para todos; con tu clave gratis de Google revisará también tus cifras cada día</button>'}
-    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? `se ha acabado el cupo gratuito de Google por hoy; se renueva a las ${horaRenuevaIA()}` : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática GrowIA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
+    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">La IA ya lee la prensa para todos; con tu clave gratis de Google revisará también tus cifras cada día</button>'}
+    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? `se ha acabado el cupo gratuito de Google por hoy; se renueva a las ${horaRenuevaIA()}` : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática la IA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
   </div>`;
 }
 
@@ -211,7 +211,7 @@ function filaExperto2(f, ia, vIA = {}) {
   const coinciden = nivelC && LADO[nivelC] === LADO[s.nivel];
   const [m0, ...resto] = s.motivos;
   const prensa = htmlPrensaIA(informeDe(i.id)), datos = datosExperto(f);
-  const iaTxt = !c ? L('GrowIA aún no la ha revisado', 'Not yet reviewed by GrowIA') : !nivelC ? L('GrowIA la ha revisado', 'Reviewed by GrowIA') : coinciden ? L('GrowIA coincide', 'GrowIA agrees') : L(`GrowIA dice «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`, `GrowIA says «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`);
+  const iaTxt = !c ? L('La IA aún no la ha revisado', 'Not yet reviewed by GrowIA') : !nivelC ? L('La IA la ha revisado', 'Reviewed by GrowIA') : coinciden ? L('La IA coincide', 'GrowIA agrees') : L(`La IA dice «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`, `GrowIA says «${(c.veredicto || SENALES[nivelC] || '').toLowerCase()}»`);
   return `<details class="fx3">
     <summary>${logo(i.dominio, i.corto || i.nombre)}<span class="fx3-n"><b>${esc(i.corto || i.nombre)}</b><small>${m0 ? esc(m0) : `${esc(f.pos.plataforma || '')}`}</small>${potCorto(esperadaPos(f))}</span>
       <span class="fx3-s"><span class="senal ${s.nivel}">${esc(s.txt)}</span><small class="${!c ? '' : coinciden ? 'ok' : 'no'}">${esc(iaTxt)}</small></span><i class="aj-flecha" aria-hidden="true"></i></summary>
@@ -238,7 +238,7 @@ function filaExperto(f, ia, vIA = {}) {
     <div class="fx2-cab">${logo(i.dominio, i.corto || i.nombre)}<div><button class="enlace" data-pos="${esc(f.pos.id)}">${esc(i.corto || i.nombre)}</button><small>${chipCotiza(i)}<span>${esc(f.pos.plataforma || '')}, ${B('pw:' + f.pos.id)} de tu cartera</span></small></div></div>
     ${c && !choca && normTxt(c.veredicto || SENALES[nivelC]) === normTxt(s.txt)
       ? `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números e IA</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-ok">coinciden</span></div>`
-      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${NOM_IA}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="chip" title="Van en la misma dirección, pero GrowIA lo dice con otro matiz: lee su motivo">GrowIA matiza</span>') : ''}</div>`}
+      : `<div class="fx2-senales"><span class="fx-par"><span class="fx-de">Números</span><span class="senal ${s.nivel}">${esc(s.txt)}</span></span><span class="fx-par"><span class="fx-de">${NOM_IA}</span>${c ? `<span class="senal ${nivelC}">${esc(c.veredicto || SENALES[nivelC])}</span>` : '<span class="k">sin revisar</span>'}</span>${c ? (choca ? '<span class="chip warn">no coinciden</span>' : '<span class="chip" title="Van en la misma dirección, pero la IA lo dice con otro matiz: lee su motivo">La IA matiza</span>') : ''}</div>`}
     ${m0 ? `<p class="fx2-m">${esc(m0)}</p>` : ''}
     ${resto.length || c || prensa || datos ? `<details class="mas"><summary>Por qué</summary><div class="fx2-det">
       ${resto.length ? `<div><span class="fx-de">Números</span><ul class="motivos">${resto.map((m) => `<li>${esc(m)}</li>`).join('')}</ul></div>` : ''}
@@ -264,10 +264,10 @@ function htmlVistazo(M, ia) {
       const nivelC = c && NIVELES.has(c.nivel) ? c.nivel : null;
       const choca = nivelC && LADO[nivelC] !== LADO[s.nivel];
       return `<li><button class="vistazo-f" data-pos="${esc(f.pos.id)}">${logo(f.inst.dominio, f.inst.corto || f.inst.nombre)}
-        <span class="vistazo-t"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small>${esc(s.motivos[0] || '')}</small>${choca ? `<small class="vistazo-ia">GrowIA dice otra cosa: ${esc((c.veredicto || SENALES[nivelC]).toLowerCase())}</small>` : ''}</span>
+        <span class="vistazo-t"><b>${esc(f.inst.corto || f.inst.nombre)}</b><small>${esc(s.motivos[0] || '')}</small>${choca ? `<small class="vistazo-ia">La IA dice otra cosa: ${esc((c.veredicto || SENALES[nivelC]).toLowerCase())}</small>` : ''}</span>
         <span class="senal ${s.nivel}">${esc(s.txt)}</span></button></li>`;
     }).join('')}</ul>
-    <button class="enlace acento ver-mas" data-exp="posiciones">Ver los motivos, GrowIA y los analistas de cada una</button>
+    <button class="enlace acento ver-mas" data-exp="posiciones">Ver los motivos, la IA y los analistas de cada una</button>
   </section>`;
 }
 function vistaExpertos(M) {
@@ -287,7 +287,7 @@ function vistaExpertos(M) {
     <section aria-labelledby="hSen" class="bloque-sec">
       <div class="sec-cab"><h2 id="hSen">Posición a posición</h2><span class="k">${resumenSenales(M)}</span></div>
       <div class="fx3-lista">${(() => { const vIA = ia ? valoresIA(M) : {}; const vistos = new Set(); return ordenSenales(M).filter((f) => !vistos.has(f.pos.id) && vistos.add(f.pos.id)).map((f) => filaExperto2(f, ia, vIA)).join(''); })()}</div>
-      <p class="nota">${esPublico() ? L('La etiqueta es lo que opinan los analistas que siguen cada empresa (Yahoo Finance): su opinión, no un consejo de GrowFolio. GrowIA lee las noticias de cada una.', 'The label is what the analysts covering each company think (Yahoo Finance): their opinion, not advice from GrowFolio. GrowIA reads the news on each one.') : 'GrowFolio mira el consenso de los analistas, lo que queda hasta su precio objetivo, la tendencia, tus reglas de salida y lo que pesa en tu cartera. GrowIA, además, lee las noticias. Si no coinciden, lee los dos motivos antes de decidir.'}</p>
+      <p class="nota">${esPublico() ? L('La etiqueta es lo que opinan los analistas que siguen cada empresa (Yahoo Finance): su opinión, no un consejo de Toisón. La IA lee las noticias de cada una.', 'The label is what the analysts covering each company think (Yahoo Finance): their opinion, not advice from Toisón. GrowIA reads the news on each one.') : 'Toisón mira el consenso de los analistas, lo que queda hasta su precio objetivo, la tendencia, tus reglas de salida y lo que pesa en tu cartera. La IA, además, lee las noticias. Si no coinciden, lee los dos motivos antes de decidir.'}</p>
     </section></div>
     <div class="exp-lado">${htmlResumenInforme(true)}
     <details class="num-sec"><summary><span><b>Analistas en prensa</b><small>titulares sobre lo que tienes, de los últimos 30 días</small></span></summary><div class="num-cuerpo">${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10)}</div></details></div></div>`;
@@ -298,7 +298,7 @@ function vistaExpertos(M) {
   }
   const marca = { posiciones: planes.length, siguiendo: siguiendo().length };
   return `
-  <div class="vista-cab vc-corta"><h1>${navToison() ? L('Ideas', 'Ideas') : 'Expertos'}</h1><p>Lo que dicen analistas, prensa y GrowIA de lo tuyo y de lo que podrías comprar.</p></div>
+  <div class="vista-cab vc-corta"><h1>${navToison() ? L('Ideas', 'Ideas') : 'Expertos'}</h1><p>Lo que dicen analistas, prensa y la IA de lo tuyo y de lo que podrías comprar.</p></div>
   ${htmlFrescura()}
   <div class="subvistas exp-tabs" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${navToison() ? L(...EXPERTOS_TS[k]) : t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
   <div class="pila">${cuerpo}</div>`;
@@ -314,7 +314,7 @@ function puntuarIdea(x, ctx) {
   const potG = g ? anualizar(g.subida_pct, Math.max(g.meses, 3)) : null;
   const pot = Math.max(-50, Math.min(potG != null ? (x.pot + potG) / 2 : x.pot, 50));
   p += 1.2 * (pot / 50);
-  motivos.push(L(`los analistas creen que puede subir un ${fmtNum(x.pot, 0)} %${g ? ` y GrowIA, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`, `analysts see ${fmtNum(x.pot, 0)} % upside${g ? ` and GrowIA ${fmtNum(g.subida_pct, 0)} % in ${plazoTxt(g.meses)}` : ''}`));
+  motivos.push(L(`los analistas creen que puede subir un ${fmtNum(x.pot, 0)} %${g ? ` y la IA, un ${fmtNum(g.subida_pct, 0)} % en ${plazoTxt(g.meses)}` : ''}`, `analysts see ${fmtNum(x.pot, 0)} % upside${g ? ` and GrowIA ${fmtNum(g.subida_pct, 0)} % in ${plazoTxt(g.meses)}` : ''}`));
   const rm = x.rm ?? 3;
   p += Math.max(-1, Math.min(1, (2.6 - rm) / 1.6));
   if (rm <= 1.6) motivos.push(L(`consenso de compra fuerte entre ${x.na} analistas`, `strong buy consensus among ${x.na} analysts`));
@@ -543,13 +543,13 @@ function htmlResumenInforme(corto, extra = '') {
   if (!inf || (!inf.resumen && !(inf.alertas || []).length)) return '';
   if (corto) {
     const fr = String(limpiaIA(inf.resumen || '')).replace(/\.\s+/g, '.\u0001').split('\u0001');
-    return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según GrowIA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>
+    return `<section class="informe corto" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según la IA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>
       ${fr[0] ? `<p class="informe-res">${esc(fr[0])}</p>` : (inf.alertas || []).length ? `<p class="informe-res informe-al">${inf.alertas[0].urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}${escIA(inf.alertas[0].t)}</p>` : ''}
       ${fr.length > 1 || (inf.alertas || []).length ? `<details class="mas"><summary>${(inf.alertas || []).length ? `Seguir leyendo y ${inf.alertas.length} ${inf.alertas.length === 1 ? 'alerta' : 'alertas'}` : 'Seguir leyendo'}</summary>${fr.length > 1 ? `<p class="informe-res">${esc(fr.slice(1).join(' '))}</p>` : ''}${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}</details>` : ''}
       ${extra}
     </section>`;
   }
-  return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según GrowIA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>
+  return `<section class="informe" aria-labelledby="hInf"><div class="sec-cab"><h2 id="hInf" data-no-trad>${conIA('Lo último, según la IA', 'The latest, according to GrowIA')}</h2><span class="k">${cabInforme(inf)}</span></div>
     ${inf.resumen ? `<p class="informe-res">${escIA(inf.resumen)}</p>` : ''}
     ${(inf.alertas || []).length ? `<ul class="lista">${inf.alertas.map((a) => `<li class="${a.urgencia === 'alta' ? 'warn' : 'info'}">${a.urgencia === 'alta' ? ICONOS.alerta : ICONOS.info}<div><b>${escIA(a.t)}</b></div></li>`).join('')}</ul>` : ''}
   </section>`;
@@ -559,7 +559,7 @@ function htmlMercadoInforme(abierto = true) {
   const inf = informeVisible();
   if (!inf || !(inf.mercado || []).length) return '';
   // los titulares a la vista; el detalle de cada uno, al tocarlo. Plegado (en el móvil), el primer titular de adelanto
-  return `<details class="informe merc-pleg"${abierto ? ' open' : ''}><summary class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según GrowIA</h2><span class="k">${cabInforme(inf)}</span><span class="mp-ade">${escIA(inf.mercado[0].t)}${inf.mercado.length > 1 ? `<em>${L(`+${inf.mercado.length - 1} ${inf.mercado.length === 2 ? 'tema más' : 'temas más'}`, `+${inf.mercado.length - 1} more`)}</em>` : ''}</span><i class="aj-flecha" aria-hidden="true"></i></summary>
+  return `<details class="informe merc-pleg"${abierto ? ' open' : ''}><summary class="sec-cab"><h2 id="hInfM">Qué mueve hoy los mercados, según la IA</h2><span class="k">${cabInforme(inf)}</span><span class="mp-ade">${escIA(inf.mercado[0].t)}${inf.mercado.length > 1 ? `<em>${L(`+${inf.mercado.length - 1} ${inf.mercado.length === 2 ? 'tema más' : 'temas más'}`, `+${inf.mercado.length - 1} more`)}</em>` : ''}</span><i class="aj-flecha" aria-hidden="true"></i></summary>
     <ul class="informe-merc plegados">${inf.mercado.map((m) => `<li><details><summary>${chipImpacto(m.impacto)}${m.zona ? `<span class="zona-ia">${bandera(ZONA_BANDERA[m.zona])}${esc(m.zona)}</span>` : ''}<b>${escIA(m.t)}</b></summary><p>${escIA(m.detalle)}</p>${m.implica ? `<p class="ia-implica"><b>Para tu cartera:</b> ${escIA(m.implica)}</p>` : ''}${enlacesFuentes(m.fuentes, 2)}</details></li>`).join('')}</ul>
     ${(inf.macro || []).length ? `<div class="macro-ia">${inf.macro.map((x) => `<div><small>${escIA(x.t)}</small><b>${esc(datoIA(x.dato))}</b><p>${escIA(x.lectura)}</p></div>`).join('')}</div>` : ''}
   </details>`;
@@ -636,13 +636,13 @@ const plazoGemini = (sim) => { const p = S.escaneo && S.escaneo.decision && S.es
 function esperadaRadar(r, extra) {
   if (!r || r.pot == null) return null;
   const ana = rentaEsperada(r, r.pot, 12, 'analistas');
-  const g = extra && extra.subida_pct != null && +extra.plazo_meses > 0 ? { meses: +extra.plazo_meses, subida_pct: +extra.subida_pct, por: extra.catalizador || '', fuente: extra.fuente } : plazoGemini(r.s) ? { ...plazoGemini(r.s), fuente: 'GrowIA' } : null;
-  const ia = g ? { ...rentaEsperada(r, g.subida_pct, g.meses, g.fuente || 'GrowIA'), por: g.por } : null;
+  const g = extra && extra.subida_pct != null && +extra.plazo_meses > 0 ? { meses: +extra.plazo_meses, subida_pct: +extra.subida_pct, por: extra.catalizador || '', fuente: extra.fuente } : plazoGemini(r.s) ? { ...plazoGemini(r.s), fuente: 'La IA' } : null;
+  const ia = g ? { ...rentaEsperada(r, g.subida_pct, g.meses, g.fuente || 'la IA'), por: g.por } : null;
   return { ana, ia, prin: ia || ana };
 }
 function esperadaIdea(x) {
   const g = [x.gem, x.tuya].find((y) => y && y.subida_pct != null && +y.plazo_meses > 0);
-  return esperadaRadar(x.r, g ? { ...g, fuente: g === x.gem ? 'GrowIA' : 'tu análisis' } : null);
+  return esperadaRadar(x.r, g ? { ...g, fuente: g === x.gem ? 'la IA' : 'tu análisis' } : null);
 }
 /* lo mismo para una acción que ya tienes: hasta el objetivo medio de los analistas (a 12 meses) o, si GrowIA le ha
    estimado su propio plazo por un catalizador, el suyo. Neto como en las ideas (tu tramo al vender y su dividendo),
@@ -662,7 +662,7 @@ function esperadaPos(f) {
   const sim = p.simbolo || i.yahoo, d = S.escaneo && S.escaneo.decision;
   const gi = sim && d && (d.ideas || []).find((x) => x && x.s === sim && x.subida_pct != null && +x.plazo_meses > 0);
   const g = gi ? { subida_pct: +gi.subida_pct, meses: +gi.plazo_meses, por: gi.catalizador || '' } : sim ? plazoGemini(sim) : null;
-  const ia = g && g.subida_pct != null && +g.meses > 0 ? rentaPos(f, +g.subida_pct, +g.meses, 'GrowIA') : null;
+  const ia = g && g.subida_pct != null && +g.meses > 0 ? rentaPos(f, +g.subida_pct, +g.meses, 'la IA') : null;
   if (ia) Object.assign(ia, { obj: f.precio * (1 + ia.subida / 100), por: g.por || '' });
   return ana || ia ? { ana, ia, prin: ia || ana } : null;
 }
@@ -670,18 +670,18 @@ function esperadaPos(f) {
 function potCorto(e) {
   const p = e && e.prin;
   if (!p || p.netoP == null) return '';
-  return `<span class="fx3-pot ${cls(p.netoP)}" title="${esc(L(`Lo que te quedarías si se cumple ${p === e.ia ? 'lo que estima GrowIA' : 'el objetivo medio de los analistas'}, ya restados los impuestos y con su dividendo`, `What you'd keep if ${p === e.ia ? "GrowIA's estimate" : "the analysts' average target"} is met, after tax and with its dividend`))}">${pctS(p.netoP, 0)} ${L(`en ${plazoTxt(p.meses)}`, `in ${plazoTxt(p.meses)}`)}<span class="fx3-neto">${L(', neto', ', net')}</span></span>`;
+  return `<span class="fx3-pot ${cls(p.netoP)}" title="${esc(L(`Lo que te quedarías si se cumple ${p === e.ia ? 'lo que estima la IA' : 'el objetivo medio de los analistas'}, ya restados los impuestos y con su dividendo`, `What you'd keep if ${p === e.ia ? "GrowIA's estimate" : "the analysts' average target"} is met, after tax and with its dividend`))}">${pctS(p.netoP, 0)} ${L(`en ${plazoTxt(p.meses)}`, `in ${plazoTxt(p.meses)}`)}<span class="fx3-neto">${L(', neto', ', net')}</span></span>`;
 }
 // en la ficha: el objetivo, cuánto puede subir o bajar, en cuánto tiempo y lo que te quedarías, en euros
 function htmlEsperaPos(f) {
   const e = esperadaPos(f), p = e && e.prin;
   if (!p) return '';
   const deIA = p === e.ia, baja = p.subida < 0;
-  const plazoDe = deIA ? (p.por ? L(`según GrowIA: ${limpiaIA(p.por)}`, `according to GrowIA: ${limpiaIA(p.por)}`) : L('según GrowIA', 'according to GrowIA')) : L('el de los analistas', "the analysts' horizon");
+  const plazoDe = deIA ? (p.por ? L(`según la IA: ${limpiaIA(p.por)}`, `according to GrowIA: ${limpiaIA(p.por)}`) : L('según la IA', 'according to GrowIA')) : L('el de los analistas', "the analysts' horizon");
   return `<section class="pos-espera" aria-labelledby="hEspera">
     <h3 id="hEspera">${L('Lo que esperan', 'What they expect')}</h3>
     <div class="idea-cifras4">
-      <div><span class="k">${L('Precio objetivo', 'Price target')}</span><b>${precioFmt(p.obj)}</b><small>${deIA ? L('el que estima GrowIA', "GrowIA's estimate") : p.n ? L(`media de ${p.n} analistas`, `average of ${p.n} analysts`) : L('media de los analistas', 'analysts’ average')}</small></div>
+      <div><span class="k">${L('Precio objetivo', 'Price target')}</span><b>${precioFmt(p.obj)}</b><small>${deIA ? L('el que estima la IA', "GrowIA's estimate") : p.n ? L(`media de ${p.n} analistas`, `average of ${p.n} analysts`) : L('media de los analistas', 'analysts’ average')}</small></div>
       <div><span class="k">${baja ? L('Puede bajar', 'Could fall') : L('Puede subir', 'Could rise')}</span><b class="${cls(p.subida)}">${pctS(p.subida, 0)}</b><small>${deIA && e.ana ? L(`analistas: ${pctS(e.ana.subida, 0)} a 12 meses`, `analysts: ${pctS(e.ana.subida, 0)} in 12 months`) : L('desde el precio de ahora', 'from today’s price')}</small></div>
       <div><span class="k">${L('En cuánto tiempo', 'How long')}</span><b>${plazoTxt(p.meses)}</b><small>${esc(plazoDe)}</small></div>
       <div><span class="k">${L('Te quedas, si se cumple', 'You keep, if it happens')}</span><b class="${cls(p.netoP)}">${pctS(p.netoP, 0)}</b><small>${L(`${eurS(p.netoE, 0)} con lo que tienes, ya restados los impuestos${p.divP > 0 ? ' y con su dividendo' : ''}`, `${eurS(p.netoE, 0)} on what you hold, after tax${p.divP > 0 ? ' and with its dividend' : ''}`)}</small></div>
@@ -689,8 +689,8 @@ function htmlEsperaPos(f) {
   </section>`;
 }
 function quienIdea(x) {
-  const w = x.web ? (IDIOMA === 'en' ? `GrowFolio's radar (${x.web.puesto === 1 ? 'the best-backed on it' : `number ${x.web.puesto} by backing`})` : `el radar de GrowFolio (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})`) : null;
-  const g = x.gem ? `GrowIA tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')}${x.gem.desde && x.gem.desde < hoyIso() ? `, desde el ${fechaCorta(x.gem.desde)}` : ''})` : null;
+  const w = x.web ? (IDIOMA === 'en' ? `Toisón's radar (${x.web.puesto === 1 ? 'the best-backed on it' : `number ${x.web.puesto} by backing`})` : `el radar de Toisón (${x.web.puesto === 1 ? 'la mejor contrastada del radar' : `la ${x.web.puesto}.ª mejor contrastada`})`) : null;
+  const g = x.gem ? `La IA tras leer su prensa (confianza ${esc(x.gem.confianza || 'media')}${x.gem.desde && x.gem.desde < hoyIso() ? `, desde el ${fechaCorta(x.gem.desde)}` : ''})` : null;
   const t = x.tuya ? `tu análisis${x.tuya.importe ? `, con ${eur(+x.tuya.importe, 0)}` : ''}` : null;
   const p = [w, g, t].filter(Boolean);
   return `La propone ${yLista(p.map(trad))}.`;
@@ -768,7 +768,7 @@ function htmlEvitar() {
       ${enlacesFuentes(v.fuentes, 3)}
     </article>`;
   };
-  return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det" open><summary class="sec-cab"><h3 id="hEvi"><span class="ev-ico" aria-hidden="true">${ICONOS.alerta}</span><span data-no-trad>${conIA('Las que GrowIA evitaría', 'The ones GrowIA would avoid')}</span> <span class="k">${d.evitar.length}, por lo que dice su prensa</span></h3></summary>
+  return `<section class="evitar" aria-labelledby="hEvi"><details class="sec-det" open><summary class="sec-cab"><h3 id="hEvi"><span class="ev-ico" aria-hidden="true">${ICONOS.alerta}</span><span data-no-trad>${conIA('Las que la IA evitaría', 'The ones GrowIA would avoid')}</span> <span class="k">${d.evitar.length}, por lo que dice su prensa</span></h3></summary>
     <div class="evitas">${d.evitar.map(tarjeta).join('')}</div></details></section>`;
 }
 /* lo que ha entrado o salido de las ideas en los últimos tres días, con su motivo: si GrowIA cambia de opinión, lo dice */
@@ -803,10 +803,10 @@ function htmlIdeas(M, ia) {
   S.radarVisibles = [...new Set([...v.map((x) => x.s), ...juntas.filter((x) => x.r).map((x) => x.r.s)])];
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
-  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">${esPublico() ? L('las que eligen el radar y GrowIA, iguales para todos', 'picked by the radar and GrowIA, the same for everyone') : 'las que eligen el radar, GrowIA y tu análisis'}</span></div>
+  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">${esPublico() ? L('las que eligen el radar y la IA, iguales para todos', 'picked by the radar and GrowIA, the same for everyone') : 'las que eligen el radar, la IA y tu análisis'}</span></div>
     ${d && d.comentario ? `<p class="idea-panorama">${NOM_IA} ${haceCuanto(d.generado)}${L(`, tras leer la prensa de ${lecturas} empresas: `, `, after reading the press on ${lecturas} companies: `)}${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : `<div class="vacio">${L('Ahora mismo ninguna pasa los filtros: mejor esperar.', 'None passes the filters right now: better to wait.')}</div>`}
-    <p class="nota">Cómo se eligen: GrowFolio se queda con las mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). GrowIA lee sus noticias y elige las suyas una vez al día. Primero salen las que eligen los dos. Lo que ya se ha propuesto se mantiene salvo que llegue una noticia que cambie la tesis o se rompan sus números, y nada sale a la vez como idea y como «evitar». En las barras, verde es a favor, rojo en contra y gris neutral.</p>
+    <p class="nota">Cómo se eligen: Toisón se queda con las mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). La IA lee sus noticias y elige las suyas una vez al día. Primero salen las que eligen los dos. Lo que ya se ha propuesto se mantiene salvo que llegue una noticia que cambie la tesis o se rompan sus números, y nada sale a la vez como idea y como «evitar». En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
     ${htmlCambiosIdeas()}
     <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
@@ -817,10 +817,10 @@ function htmlIdeas(M, ia) {
     ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}" data-consulta="${esc(x.s)}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<button type="button" class="radar-n" data-consulta="${esc(x.s)}"><b style="font-weight:600">${esc(nombreRadar(x))}</b></button></div><small>${lineaOrigen(x)}</small></td>
       <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
       <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
-      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que te quedaría si se cumple lo esperado (en el plazo de GrowIA o en los 12 meses de los analistas), con su dividendo y ya restados la tasa de compra, la retención que no se recupera y tus impuestos">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
+      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que te quedaría si se cumple lo esperado (en el plazo de la IA o en los 12 meses de los analistas), con su dividendo y ya restados la tasa de compra, la retención que no se recupera y tus impuestos">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     ${total > corte ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? `Ver solo las ${corte} primeras` : `Ver las ${total}${S.radarMin ? ' con 5 analistas o más' : S.radarZona !== 'Todas' ? ` de ${esc(S.radarZona)}` : ''}`}</button>` : ''}
-    <p class="nota">Puede subir: cuánto le queda para llegar al precio que esperan los analistas dentro de 12 meses. Te quedas: lo que ganarías si se cumple lo esperado, con el dividendo y ya restados la tasa de compra y los impuestos; si GrowIA tiene su propio objetivo y plazo para esa empresa (sale «en 2 meses», por ejemplo), es el suyo, y si no, el de los analistas a 12 meses. Prensa: lo que ha leído GrowIA en sus noticias. Señales: siete pruebas (analistas, si mejoran su opinión, beneficios, precio frente a su sector, tendencia y solidez del negocio).</p>`;
+    <p class="nota">Puede subir: cuánto le queda para llegar al precio que esperan los analistas dentro de 12 meses. Te quedas: lo que ganarías si se cumple lo esperado, con el dividendo y ya restados la tasa de compra y los impuestos; si la IA tiene su propio objetivo y plazo para esa empresa (sale «en 2 meses», por ejemplo), es el suyo, y si no, el de los analistas a 12 meses. Prensa: lo que ha leído la IA en sus noticias. Señales: siete pruebas (analistas, si mejoran su opinión, beneficios, precio frente a su sector, tendencia y solidez del negocio).</p>`;
 }
 
 /* ---------- repintar solo cuando cambia una recomendación ---------- */

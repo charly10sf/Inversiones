@@ -69,11 +69,4 @@ test('los campos, con los tokens de cada diseño', async ({ page }, info) => {
     await page.locator('#pcTexto').focus();
     await expect.poll(() => page.evaluate(() => getComputedStyle(document.querySelector('#pcTexto')).borderTopColor), { message: `${t}: borde de oro al escribir` }).toBe(e.oro);
   }
-  // con GrowFolio, los campos de siempre
-  await page.evaluate(() => { ponerTema(''); pintar(); }); await page.waitForTimeout(300);
-  await formulario(page);
-  const g = await estilos(page);
-  expect(g.borde).toBe('1px');
-  expect(g.casilla).toBe('none');
-  expect(await page.evaluate(() => document.querySelectorAll('.navbar svg.ic-pl').length)).toBe(0);
 });

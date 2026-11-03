@@ -152,7 +152,7 @@ public class Principal extends Activity {
         });
         web.setDownloadListener((url, agente, disposicion, tipo, largo) -> {
             if (url != null && url.startsWith("http")) abrirFuera(Uri.parse(url));
-            else Toast.makeText(this, "Para descargar archivos, abre GrowFolio en Chrome", Toast.LENGTH_LONG).show();
+            else Toast.makeText(this, "Para descargar archivos, abre Toisón en Chrome", Toast.LENGTH_LONG).show();
         });
 
         tokenPendiente = token(getIntent());
@@ -313,7 +313,7 @@ public class Principal extends Activity {
         CookieManager.getInstance().setAcceptThirdPartyCookies(web, true);
         // las webs de los bancos cuentan con un fondo blanco: con el negro de la app, sus letras oscuras no se veían
         web.setBackgroundColor(0xFFFFFFFF);
-        Toast.makeText(this, "Abriendo tu banco dentro de GrowFolio…", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, "Abriendo tu banco dentro de Toisón…", Toast.LENGTH_SHORT).show();
     }
 
     private void salirDelBanco() {
@@ -487,7 +487,7 @@ public class Principal extends Activity {
             Intent i = new Intent(android.speech.RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
             i.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE_MODEL, android.speech.RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
             i.putExtra(android.speech.RecognizerIntent.EXTRA_LANGUAGE, lang);
-            i.putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, lang.startsWith("en") ? "Ask GrowIA" : "Pregúntale a GrowIA");
+            i.putExtra(android.speech.RecognizerIntent.EXTRA_PROMPT, lang.startsWith("en") ? "Ask GrowIA" : "Pregúntale a la IA");
             i.putExtra(android.speech.RecognizerIntent.EXTRA_MAX_RESULTS, 1);
             startActivityForResult(i, DICTAR);
         } catch (Exception e) {

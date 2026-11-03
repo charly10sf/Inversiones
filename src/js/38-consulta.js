@@ -52,9 +52,9 @@ function htmlConsultaIA(sim) {
   const d = S.escaneo && S.escaneo.decision;
   if (!sim || !d) return '';
   const ev = (d.evitar || []).find((v) => v && v.s === sim);
-  if (ev) return `<p class="cons-ia ev">${ICONOS.alerta}<span><b>${L('GrowIA la evitaría, por lo que dice su prensa.', 'GrowIA would avoid it, going by its press.')}</b> ${escIA(ev.motivo || '')}</span></p>`;
+  if (ev) return `<p class="cons-ia ev">${ICONOS.alerta}<span><b>${L('La IA la evitaría, por lo que dice su prensa.', 'GrowIA would avoid it, going by its press.')}</b> ${escIA(ev.motivo || '')}</span></p>`;
   const id = (d.ideas || []).find((v) => v && v.s === sim);
-  if (id) return `<p class="cons-ia idea">${ICONOS.growia}<span><b>${esPublico() ? L('Está entre las ideas de GrowIA, iguales para todos.', "It's among GrowIA's ideas, the same for everyone.") : L('Está entre las ideas de GrowIA.', "It's among GrowIA's ideas.")}</b> ${escIA(id.tesis || '')}</span></p>`;
+  if (id) return `<p class="cons-ia idea">${ICONOS.growia}<span><b>${esPublico() ? L('Está entre las ideas de la IA, iguales para todos.', "It's among GrowIA's ideas, the same for everyone.") : L('Está entre las ideas de la IA.', "It's among GrowIA's ideas.")}</b> ${escIA(id.tesis || '')}</span></p>`;
   return '';
 }
 function abrirConsulta(c) {
@@ -101,10 +101,10 @@ function abrirConsulta(c) {
       <div class="cons-cab">${logo(c.dom, nombre)}<div class="busca-t"><b>${esc(nombre)}</b><small>${bandera(c.cot.cod)}${esc(c.cot.txt || '')}${c.isin ? ` · ${esc(c.isin)}` : sim ? ` · ${esc(sim)}` : ''}</small></div></div>
       ${precio != null ? `<div class="cons-precio"><b>${precioR(precio, mon)}</b>${mon !== 'EUR' && enEur ? `<span class="k">≈ ${precioFmt(enEur)}</span>` : ''}${dia != null ? `<span class="${cls(dia)}">${pctS(dia, 2)}</span>` : ''}<small class="k">${fecha ? `${fondo ? 'valor liquidativo del' : 'cierre del'} ${fechaCorta(fecha)}` : 'último cierre'}</small></div>` : ''}
       <div id="consGraf">${cid || (idI && histDe(idI)) ? '<div class="vacio">Cargando la gráfica…</div>' : x ? rangoConsulta(x) : ''}</div>
-      <div class="fila-btns cons-btns"><button type="button" class="btn pri" data-cons-add>${ICONOS.mas}Añadir a mi cartera</button><button type="button" class="btn" data-cons-ia>${ICONOS.growia}Pregúntale a GrowIA</button>${x ? botonSeguir(x.s, nombre, false) : ''}</div>
+      <div class="fila-btns cons-btns"><button type="button" class="btn pri" data-cons-add>${ICONOS.mas}Añadir a mi cartera</button><button type="button" class="btn" data-cons-ia>${ICONOS.growia}Pregúntale a la IA</button>${x ? botonSeguir(x.s, nombre, false) : ''}</div>
       ${htmlConsultaIA(sim)}
       ${datos.length ? `<dl class="kv">${datos.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join('')}</dl>` : ''}
-      ${x ? `<details class="mas"><summary>Las siete señales de GrowFolio</summary>${htmlContrasteLista(contraste(x))}</details>` : ''}
+      ${x ? `<details class="mas"><summary>Las siete señales de Toisón</summary>${htmlContrasteLista(contraste(x))}</details>` : ''}
       ${x ? htmlFichaFactores(x.s) : ''}
       <section class="cons-not"><h3>Noticias</h3>${nots.length ? htmlNoticias(nots, false, 5) : ''}<a class="enlace" href="${esc(gnews)}" target="_blank" rel="noopener noreferrer">Ver las noticias de ${esc(nombre)} en Google Noticias</a></section>
     </div>`);
@@ -159,7 +159,7 @@ function editarAvisoSeguido(sim) {
   const it = siguiendo().find((x) => x.s === sim); if (!it) return;
   const pr = precioSeguido(it), ahora = pr && pr.eur;
   const h = hoja(L(`Aviso de ${it.n}`, `${it.n} alert`), `<form id="fSeg" novalidate>
-    <p class="nota" style="margin:0">${ahora ? L(`Ahora está a ${precioFmt(ahora)}.`, `It's at ${precioFmt(ahora)} now.`) : ''} ${L('Te aviso una vez cuando llegue (en el móvil, con la app y los avisos activados; en el navegador, con GrowFolio abierto).', 'I’ll alert you once when it gets there (on your phone with the app and alerts on; in the browser, with GrowFolio open).')}</p>
+    <p class="nota" style="margin:0">${ahora ? L(`Ahora está a ${precioFmt(ahora)}.`, `It's at ${precioFmt(ahora)} now.`) : ''} ${L('Te aviso una vez cuando llegue (en el móvil, con la app y los avisos activados; en el navegador, con Toisón abierto).', 'I’ll alert you once when it gets there (on your phone with the app and alerts on; in the browser, with Toisón open).')}</p>
     <div class="form-grid">
       <label class="campo">${L('Avísame si baja de (€)', 'Alert me if it falls below (€)')}<input name="baja" inputmode="decimal" value="${it.baja ? fmtNum(it.baja, 2) : ''}" placeholder="${ahora ? fmtNum(ahora * 0.9, 2) : ''}"><small>${L('Por ejemplo, el precio al que la comprarías.', 'For example, the price you’d buy at.')}</small></label>
       <label class="campo">${L('Avísame si sube de (€)', 'Alert me if it rises above (€)')}<input name="sube" inputmode="decimal" value="${it.sube ? fmtNum(it.sube, 2) : ''}" placeholder="${ahora ? fmtNum(ahora * 1.1, 2) : ''}"></label>
@@ -199,7 +199,7 @@ function htmlSiguiendo(M) {
   }).join('');
   return `<section aria-labelledby="hSeg" class="bloque-sec"><div class="sec-cab"><h2 id="hSeg">${L('Las que sigues', 'What you follow')}</h2><span class="k">${xs.length === 1 ? L('una empresa', 'one company') : L(`${xs.length} empresas`, `${xs.length} companies`)}</span></div>
     <div class="pila" style="gap:14px">${filas}</div>
-    <p class="nota">${L('Precios del radar de GrowFolio, en euros. Los avisos te llegan una vez, sin abrir la app si la tienes en el móvil con los avisos activados.', 'Prices from the GrowFolio radar, in euros. Alerts reach you once, without opening the app if you have it on your phone with alerts on.')}</p></section>`;
+    <p class="nota">${L('Precios del radar de Toisón, en euros. Los avisos te llegan una vez, sin abrir la app si la tienes en el móvil con los avisos activados.', 'Prices from the Toisón radar, in euros. Alerts reach you once, without opening the app if you have it on your phone with alerts on.')}</p></section>`;
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-seguir],[data-seg-aviso]'); if (!b || !S.cartera) return;

@@ -130,11 +130,11 @@ function editarPosicion(id) {
         <label class="campo">Cantidad<input name="cantidad" inputmode="decimal" value="${val(p.cantidad)}" placeholder="${f && f.uds != null ? 'ahora ' + fmtNum(f.uds, 4) + ' (estimado)' : 'participaciones o acciones'}"><small>Lo que pone tu bróker. Admite coma decimal.</small></label>
         <label class="campo">A fecha de<input name="fecha" type="date" value="${val(p.fecha || hoyIso())}"><small>Las aportaciones automáticas se suman después de esta fecha.</small></label>
         <label class="campo">Invertido (€)<input name="coste" inputmode="decimal" value="${val(p.coste)}"><small>Lo que has puesto en total, con comisiones.</small></label>
-        <label class="campo">Desde cuándo la tienes<input name="desde" type="date" value="${val(p.desde || ((p.lotes || [])[0] || {}).f)}"><small>Más o menos, la fecha de tu primera compra. Con ella GrowFolio calcula cuánto ganas al año.</small></label>
+        <label class="campo">Desde cuándo la tienes<input name="desde" type="date" value="${val(p.desde || ((p.lotes || [])[0] || {}).f)}"><small>Más o menos, la fecha de tu primera compra. Con ella Toisón calcula cuánto ganas al año.</small></label>
       </div>
       <details class="mas"${p.valor_ref || p.stop || p.objetivo || p.entrada || p.notas ? ' open' : ''}><summary>Reglas, apuesta y notas</summary>
         <div class="form-grid">
-          <label class="campo">Valor en esa fecha (€)<input name="valor_ref" inputmode="decimal" value="${val(p.valor_ref)}"><small>Solo si no sabes la cantidad: GrowFolio la calcula.</small></label>
+          <label class="campo">Valor en esa fecha (€)<input name="valor_ref" inputmode="decimal" value="${val(p.valor_ref)}"><small>Solo si no sabes la cantidad: Toisón la calcula.</small></label>
           <label class="campo">Salida si baja de (€)<input name="stop" inputmode="decimal" value="${val(p.stop)}"></label>
           <label class="campo">Revisar si llega a (€)<input name="objetivo" inputmode="decimal" value="${val(p.objetivo)}"></label>
           <label class="campo">Fecha de entrada<input name="entrada_fecha" type="date" value="${val(p.entrada && p.entrada.fecha)}"><small>Para compararla con el S&P 500.</small></label>
@@ -213,7 +213,7 @@ function operacion(tipo, id, sim, cand) {
   const h = hoja('Compra, venta o lo que ya tienes', `
     <form id="fOp" novalidate>
       <div class="op-modo" role="group" aria-label="Qué quieres apuntar"><button type="button" data-t="compra">${ICONOS.compra}${L('Compra', 'Buy')}</button><button type="button" data-t="venta">${ICONOS.venta}${L('Venta', 'Sell')}</button><button type="button" data-t="tengo">${ICONOS.cartera}${L('Ya la tenías', 'Already had it')}</button></div>
-      <button type="button" class="op-imp" id="opImp" data-accion="importar" hidden><span class="op-imp-ic">${ICONOS.recorte}</span><span class="op-imp-t"><b>Importar todo de tu bróker o banco</b><small>Capturas, el PDF de un extracto o los movimientos en CSV o Excel. GrowIA lo lee y tú lo revisas: mucho más rápido que meterlas una a una.</small></span><span class="op-imp-ir" aria-hidden="true">›</span></button>
+      <button type="button" class="op-imp" id="opImp" data-accion="importar" hidden><span class="op-imp-ic">${ICONOS.recorte}</span><span class="op-imp-t"><b>Importar todo de tu bróker o banco</b><small>Capturas, el PDF de un extracto o los movimientos en CSV o Excel. La IA lo lee y tú lo revisas: mucho más rápido que meterlas una a una.</small></span><span class="op-imp-ir" aria-hidden="true">›</span></button>
       <p class="op-ayuda" id="opAyuda"></p>
       <div class="op-paso"><span class="op-lbl">Qué</span><div id="opQue"></div></div>
       <div class="op-paso" id="cPlat"><span class="op-lbl">Dónde</span><div class="op-plats" id="opPlat" role="group" aria-label="Plataforma"></div></div>
@@ -271,7 +271,7 @@ function operacion(tipo, id, sim, cand) {
     const ya = tenidasEn(lotes, f);
     if (ya >= uds - 1e-6) return '';
     const primera = lotes.map((l) => l.f).filter(Boolean).sort()[0];
-    return ya <= 1e-8 ? `El ${fechaLarga(f)} aún no tenías ninguna${primera ? ` (en GrowFolio la tienes desde el ${fechaLarga(primera)})` : ''}. Si es de antes, cambia la fecha en Editar.` : `El ${fechaLarga(f)} solo tenías ${fmtNum(ya, 4)}.`;
+    return ya <= 1e-8 ? `El ${fechaLarga(f)} aún no tenías ninguna${primera ? ` (en Toisón la tienes desde el ${fechaLarga(primera)})` : ''}. Si es de antes, cambia la fecha en Editar.` : `El ${fechaLarga(f)} solo tenías ${fmtNum(ya, 4)}.`;
   };
   const pintarQue = () => {
     const c = $('#opQue', h.el);
@@ -346,7 +346,7 @@ function operacion(tipo, id, sim, cand) {
     const tengo = t === 'tengo';
     // en «Ya la tenía», importar va arriba y bien grande; en compra y venta, abajo como siempre
     $('#opImp', h.el).hidden = t !== 'tengo'; $('.enlace-imp', h.el).hidden = t === 'tengo';
-    $('#opAyuda', h.el).textContent = t === 'tengo' ? 'O mete una a mano: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.' : t === 'compra' ? 'Una compra que acabas de hacer: suma a tu posición y, si quieres, resta del efectivo.' : t === 'venta' ? 'Elige qué vendiste: GrowFolio calcula lo que ganas o pierdes para Hacienda.' : 'Lo que ya tenías antes de usar GrowFolio: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.';
+    $('#opAyuda', h.el).textContent = t === 'tengo' ? 'O mete una a mano: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.' : t === 'compra' ? 'Una compra que acabas de hacer: suma a tu posición y, si quieres, resta del efectivo.' : t === 'venta' ? 'Elige qué vendiste: Toisón calcula lo que ganas o pierdes para Hacienda.' : 'Lo que ya tenías antes de usar Toisón: pon cuántas tienes y tu precio medio (sale en tu bróker). No toca el efectivo ni el historial.';
     $('#lUds', h.el).textContent = `Cuántas ${inst ? unidad() : ''}${tengo ? ' tienes' : t === 'venta' ? ' vendiste' : ''}`.replace(/\s+/g, ' ');
     $('#lPrecio', h.el).textContent = tengo ? 'Tu precio medio (€)' : 'Precio de cada una (€)';
     $('#sPrecio', h.el).textContent = tengo ? 'Sale en tu bróker. Si pones lo invertido y cuántas, no hace falta.' : 'El de ese día. Si tu justificante dice otro, cámbialo.';
@@ -354,7 +354,7 @@ function operacion(tipo, id, sim, cand) {
     $('#sImp', h.el).textContent = tengo ? 'Lo que pagaste por todas: sale en tu bróker.' : t === 'venta' ? 'Antes de restar la comisión.' : 'Sin contar la comisión.';
     // la fecha también es "desde cuándo la tienes": con ella sale cuánto te da al año, así que se pide ya aquí
     $('#lFecha', h.el).textContent = tengo ? 'Desde cuándo la tienes (más o menos)' : t === 'venta' ? 'Cuándo la vendiste' : 'Cuándo la compraste';
-    $('#sFecha', h.el).textContent = tengo ? 'El día de tu primera compra, más o menos. Con él GrowFolio calcula cuánto te da al año.' : t === 'venta' ? 'Cuenta para la renta de ese año.' : 'Si es de hace tiempo, pon ese día: el precio y lo que te da al año salen solos.';
+    $('#sFecha', h.el).textContent = tengo ? 'El día de tu primera compra, más o menos. Con él Toisón calcula cuánto te da al año.' : t === 'venta' ? 'Cuenta para la renta de ese año.' : 'Si es de hace tiempo, pon ese día: el precio y lo que te da al año salen solos.';
     if (!efTocado) q('efectivo').checked = !tengo && !!plat && (t === 'venta' || efectivoDe(plat) > 0);
     // pagar con efectivo solo si hay efectivo en esa plataforma (con 0 € no tenía sentido ofrecerlo)
     const sinEf = t === 'compra' && !!plat && !(efectivoDe(plat) > 0);

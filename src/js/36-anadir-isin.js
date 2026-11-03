@@ -107,7 +107,7 @@ async function refrescarCatLocal() {
    lo que se hace si no se encuentra (en compra: añadirlo a mano y dejarlo pedido) */
 function anadirPorIsin(inicial, alListo, sinEncontrar) {
   const h = hoja(L('Añadir con su ISIN', 'Add by ISIN'), `<form id="fIsin" novalidate>
-    <p class="nota" style="margin:0 0 14px">${L('El ISIN son 12 letras y números, como IE00B4L5Y983. Sale en tu bróker (en la ficha del fondo o en el extracto) y en el folleto. GrowFolio lo busca y lo añade con su precio y su gráfica.', 'The ISIN is 12 letters and numbers, like IE00B4L5Y983. Your broker shows it (on the fund page or your statement), and so does the prospectus. GrowFolio looks it up and adds it with its price and chart.')}</p>
+    <p class="nota" style="margin:0 0 14px">${L('El ISIN son 12 letras y números, como IE00B4L5Y983. Sale en tu bróker (en la ficha del fondo o en el extracto) y en el folleto. Toisón lo busca y lo añade con su precio y su gráfica.', 'The ISIN is 12 letters and numbers, like IE00B4L5Y983. Your broker shows it (on the fund page or your statement), and so does the prospectus. Toisón looks it up and adds it with its price and chart.')}</p>
     <label class="campo">ISIN<input name="isin" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="16" placeholder="IE00B4L5Y983" value="${esc(String(inicial || '').toUpperCase())}"></label>
     <div class="isin-res" id="isinRes" aria-live="polite"></div>
     <div class="error" id="errIsin"></div>
@@ -119,7 +119,7 @@ function anadirPorIsin(inicial, alListo, sinEncontrar) {
   inp.oninput = () => { hallado = null; res.innerHTML = ''; err(''); boton.textContent = L('Buscarlo', 'Look it up'); boton.disabled = false; };
   const terminar = (cid) => { h.cerrar(true); alListo(cid); };
   const pedido = (isin) => {
-    res.innerHTML = `<div class="isin-no">${ICONOS.alerta}<div><b>${L('No lo encontramos ahora mismo', "We couldn't find it right now")}</b><p>${L('Puede que sea muy nuevo o que Yahoo aún no lo tenga. Si lo añades igualmente, queda pedido: GrowFolio lo vuelve a buscar en cada actualización del catálogo y, en cuanto aparezca, sale con su precio. Mientras, pon tú lo que vale en Editar.', "It may be very new or Yahoo may not have it yet. If you add it anyway, it stays requested: GrowFolio looks for it again on every catalog update and, as soon as it shows up, it gets its price. In the meantime, enter its value yourself in Edit.")}</p></div></div>`;
+    res.innerHTML = `<div class="isin-no">${ICONOS.alerta}<div><b>${L('No lo encontramos ahora mismo', "We couldn't find it right now")}</b><p>${L('Puede que sea muy nuevo o que Yahoo aún no lo tenga. Si lo añades igualmente, queda pedido: Toisón lo vuelve a buscar en cada actualización del catálogo y, en cuanto aparezca, sale con su precio. Mientras, pon tú lo que vale en Editar.', "It may be very new or Yahoo may not have it yet. If you add it anyway, it stays requested: Toisón looks for it again on every catalog update and, as soon as it shows up, it gets its price. In the meantime, enter its value yourself in Edit.")}</p></div></div>`;
     boton.textContent = sinEncontrar ? L('Añadirlo igualmente', 'Add it anyway') : L('Dejarlo pedido', 'Request it');
     hallado = { pedido: isin };
   };
@@ -131,7 +131,7 @@ function anadirPorIsin(inicial, alListo, sinEncontrar) {
       // no estaba: se deja pedido (el catálogo lo busca cada día) y, si es una compra, se añade a mano
       pedirComun(isin, '', isin); buscarIsinWorker(isin, true);
       h.cerrar(true);
-      if (sinEncontrar) sinEncontrar(isin); else toast(L('Pedido: en cuanto GrowFolio lo encuentre, saldrá al buscarlo', 'Requested: as soon as GrowFolio finds it, it will show up in search'), 4500);
+      if (sinEncontrar) sinEncontrar(isin); else toast(L('Pedido: en cuanto Toisón lo encuentre, saldrá al buscarlo', 'Requested: as soon as Toisón finds it, it will show up in search'), 4500);
       return;
     }
     if (hallado) {

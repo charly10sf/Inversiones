@@ -7,7 +7,7 @@ function cargarScript(src) {
   return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('No se pudo cargar ' + src)); document.head.appendChild(s); });
 }
 function dondeEstas() {
-  const v = (VISTAS.find(([k]) => k === S.vista) || [])[1] || 'GrowFolio';
+  const v = (VISTAS.find(([k]) => k === S.vista) || [])[1] || 'Toisón';
   if (S.ficha) { const f = (S.M || calcular()).filas.find((x) => x.pos.id === S.ficha.id); return `la ficha de ${f ? f.inst.corto : 'una posición'}`; }
   if (S.vista === 'expertos') return `${v}, pestaña ${((EXPERTOS.find(([k]) => k === S.expTab) || [])[1] || '')}`;
   if (S.vista === 'analisis') return `${v}, pestaña ${((ANALISIS.find(([k]) => k === S.califTab) || [])[1] || '')}`;

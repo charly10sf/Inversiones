@@ -32,7 +32,7 @@ function avisoApp(ult, ya) {
     <p>${L(`Hay una <b>${esc(nueva)}</b> (tienes la ${esc(nombreApp())}). Se instala encima en unos segundos y no pierdes nada: ni la cartera, ni la contraseña, ni el widget.`, `There's a <b>${esc(nueva)}</b> (you have ${esc(nombreApp())}). It installs over this one in a few seconds and you lose nothing: not your portfolio, your password or the widget.`)}</p>
     <div class="act-prog" hidden><div class="act-barra"><i></i></div><small></small></div>
     <div class="fila-btns"><button class="btn" data-luego>${L('Luego', 'Later')}</button>${sola ? `<button class="btn pri" data-act>${L('Actualizar ahora', 'Update now')}</button>` : `<a class="btn pri" href="${esc(ult.apk)}" data-cerrar>${L('Descargar la actualización', 'Download the update')}</a>`}</div>
-    <p class="nota act-nota">${sola ? L('Se baja aquí mismo. Al acabar, Android te enseña su ventana: toca Instalar. La primera vez te pide además permiso para instalar desde GrowFolio.', 'It downloads right here. When it finishes, Android shows its window: tap Install. The first time it also asks for permission to install from GrowFolio.') : L('Se abre en Chrome: cuando acabe de bajar, ábrela e instálala encima. Desde esa versión, la app se actualiza sola.', 'It opens in Chrome: when it finishes, open it and install it over this one. From that version on, the app updates itself.')}</p>
+    <p class="nota act-nota">${sola ? L('Se baja aquí mismo. Al acabar, Android te enseña su ventana: toca Instalar. La primera vez te pide además permiso para instalar desde Toisón.', 'It downloads right here. When it finishes, Android shows its window: tap Install. The first time it also asks for permission to install from Toisón.') : L('Se abre en Chrome: cuando acabe de bajar, ábrela e instálala encima. Desde esa versión, la app se actualiza sola.', 'It opens in Chrome: when it finishes, open it and install it over this one. From that version on, the app updates itself.')}</p>
   </div>`, () => { appLuego = ult.version; });
   h.el.classList.add('hoja-act');
   $('[data-luego]', h.el).onclick = () => h.cerrar();
@@ -82,7 +82,7 @@ function appGrowiaEmpieza(nueva = true, texto = '') {
   if (nueva) GROWIA_APP.n++;
   const a = puenteGrowia('growiaEmpieza');
   if (!a || fueraDeVista()) return;
-  try { a.growiaEmpieza(texto || L('GrowIA está contestando…', 'GrowIA is answering…')); } catch (e) {}
+  try { a.growiaEmpieza(texto || L('La IA está contestando…', 'GrowIA is answering…')); } catch (e) {}
 }
 // pausa: se ha cortado y GrowIA espera a que vuelvas (se cierra el servicio, pero la tarea sigue pendiente)
 function appGrowiaTermina(titulo = '', texto = '', pausa = false) {

@@ -46,7 +46,7 @@ function estabilizarSenales(filas) {
     const dias = diasEntre(e.d, hoy);
     if (f.senal.urgente || (dias >= 7 && e.pd.length >= 2) || dias >= 30) { E[id] = { n: nueva, d: hoy, antes: e.n }; cambio = true; continue; }
     const cuandoCambia = dias >= 7 ? L('mañana', 'tomorrow') : L(`el ${fechaCorta(sumarDias(e.d, 7))}`, `on ${fechaCorta(sumarDias(e.d, 7))}`);
-    f.senal = { nivel: e.n, txt: SENALES[e.n], cruda: nueva, motivos: [L(`Sigue en «${SENALES[e.n]}». Los datos de estos días apuntan a «${SENALES[nueva].toLowerCase()}» (es lo de abajo), pero GrowFolio no cambia de opinión por unos días: si sigue igual, cambiará ${cuandoCambia}.`, `Still «${SENALES[e.n]}». This week's data points to «${SENALES[nueva].toLowerCase()}» (below), but GrowFolio doesn't change its mind over a few days: if it holds, it changes ${cuandoCambia}.`), ...f.senal.motivos] };
+    f.senal = { nivel: e.n, txt: SENALES[e.n], cruda: nueva, motivos: [L(`Sigue en «${SENALES[e.n]}». Los datos de estos días apuntan a «${SENALES[nueva].toLowerCase()}» (es lo de abajo), pero Toisón no cambia de opinión por unos días: si sigue igual, cambiará ${cuandoCambia}.`, `Still «${SENALES[e.n]}». This week's data points to «${SENALES[nueva].toLowerCase()}» (below), but Toisón doesn't change its mind over a few days: if it holds, it changes ${cuandoCambia}.`), ...f.senal.motivos] };
   }
   for (const id of Object.keys(E)) if (!filas.some((f) => f.pos.id === id)) { delete E[id]; cambio = true; }
   if (cambio) S.senalesSucias = true;

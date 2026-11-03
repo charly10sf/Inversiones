@@ -9,7 +9,7 @@
 /* La IA de la web es Gemini, de Google, con una clave gratuita de Google AI Studio. */
 const MODELOS = {
   'gemini-3.8-flash': { n: 'Gemini 3.8 Flash', corto: '3.8 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'El más listo de los gratuitos: piensa a fondo, pero su cupo diario es el que antes se acaba.' },
-  'gemini-3.6-flash': { n: 'Gemini 3.6 Flash', corto: '3.6 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Casi igual de bueno y con su propio cupo. Si el 3.8 se agota, GrowFolio salta a este solo.' },
+  'gemini-3.6-flash': { n: 'Gemini 3.6 Flash', corto: '3.6 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Casi igual de bueno y con su propio cupo. Si el 3.8 se agota, Toisón salta a este solo.' },
   'gemini-3.5-flash-lite': { n: 'Gemini 3.5 Flash-Lite', corto: 'Flash-Lite', prov: 'google', gratis: true, txt: 'El rápido: contesta en segundos, no piensa tanto y su cupo diario es mucho más amplio. Para el día a día.' },
 };
 const MODELO_DEF = 'gemini-3.8-flash', MODELO_RAPIDO = 'gemini-3.5-flash-lite';
@@ -141,7 +141,7 @@ function cfgAsesor() {
   return { modelo, prov, web: c.web !== false && !webFalla, webPedida: c.web !== false, webFalla, auto: ['diario', 'semanal', 'manual'].includes(c.auto) ? c.auto : 'diario' };
 }
 const guardarCfgAsesor = (o) => LS.set('inv-asesor-cfg2', { ...LS.get('inv-asesor-cfg2', {}), ...o });
-const nombreIA = () => 'GrowIA';
+const nombreIA = () => 'La IA';
 const LS_CLAVE = { google: 'inv-asesor-clave-g' }, CAMPO_CLAVE = { google: 'clave_g' };
 const R2 = (n, d = 2) => (n == null || !isFinite(n) ? null : Math.round(n * 10 ** d) / 10 ** d);
 const E0 = (n) => fmtNum(n, 0) + ' €', E2 = (n) => fmtNum(n, 2) + ' €';

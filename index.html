@@ -3,20 +3,20 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>GrowFolio</title>
-<meta name="description" content="GrowFolio: tu cartera de inversión en directo, a tu medida">
+<title>Toisón</title>
+<meta name="description" content="Toisón: tus inversiones en un solo sitio, con los precios en directo">
 <meta name="robots" content="noindex, nofollow">
 <link rel="manifest" href="manifest.webmanifest" vite-ignore>
-<!-- iconos con nombre nuevo: así el navegador deja de enseñar el de antes (Bellota) que tenía guardado -->
-<link rel="icon" href="growfolio-32.png" type="image/png" sizes="32x32" vite-ignore>
-<link rel="icon" href="growfolio.svg" type="image/svg+xml" vite-ignore>
-<link rel="apple-touch-icon" href="growfolio-180.png" vite-ignore>
-<meta name="application-name" content="GrowFolio">
-<meta name="theme-color" content="#000000">
-<!-- 0.7v: el diseño de Toisón elegido (solo el dueño, mientras dura el rediseño), puesto antes de pintar para que no
-     salga un instante el de GrowFolio. El color de la barra lo pone después ponerTema (01-base.js) desde los tokens -->
-<script>try{var t=JSON.parse(localStorage.getItem('inv-tema'));if(t==='marmol'||t==='marfil'||t==='borgona')document.documentElement.setAttribute('data-tema',t);}catch(e){}</script>
-<!-- las letras de Toisón, de la casa (sin Google Fonts); solo se bajan si un diseño de Toisón las usa -->
+<!-- 0.8: los iconos de Toisón, con nombre nuevo para que el navegador deje el de GrowFolio que tenía guardado -->
+<link rel="icon" href="toison-32.png" type="image/png" sizes="32x32" vite-ignore>
+<link rel="icon" href="favicon.svg" type="image/svg+xml" vite-ignore>
+<link rel="apple-touch-icon" href="toison-180.png" vite-ignore>
+<meta name="application-name" content="Toisón">
+<meta name="theme-color" content="#151817">
+<!-- el diseño de Toisón elegido (Mármol si no hay ninguno), puesto antes de pintar. El color de la barra lo pone
+     después ponerTema (01-base.js) desde los tokens -->
+<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='marfil'||g==='borgona')t=g;}catch(e){}document.documentElement.setAttribute('data-tema',t);</script>
+<!-- las letras de Toisón, de la casa (sin Google Fonts) -->
 <style>
 @font-face{font-family:'Inter';src:url(fonts/inter.woff2) format('woff2');font-weight:100 900;font-display:swap}
 @font-face{font-family:'Ibarra Real Nova';src:url(fonts/ibarra.woff2) format('woff2');font-weight:400 700;font-display:swap}
@@ -25,10 +25,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="GrowFolio">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&display=swap" rel="stylesheet">
+<meta name="apple-mobile-web-app-title" content="Toisón">
 <!-- gf:css: el build pone aquí el CSS (src/css, en el orden de src/partes.json) -->
 </head>
 <body>

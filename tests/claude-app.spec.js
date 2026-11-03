@@ -312,7 +312,7 @@ test('en Ajustes de GrowIA, una vez que Claude ha contestado, se puede elegir qu
   await page.evaluate(() => abrirAsesor());
   await clic(page, '[data-as="ajustes"]');
   // antes de usar Claude no hay nada de Claude
-  await expect(page.locator('#asCuerpo')).toContainText('Ajustes de GrowIA');
+  await expect(page.locator('#asCuerpo')).toContainText('Ajustes de la IA');
   await expect(page.locator('#asMotor')).toHaveCount(0);
   await expect(page.locator('#asesorFondo')).not.toContainText('Anthropic');
   await clic(page, '[data-as="chat"]');

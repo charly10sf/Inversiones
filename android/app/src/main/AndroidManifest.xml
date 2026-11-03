@@ -22,7 +22,7 @@
     <application
         android:allowBackup="false"
         android:icon="@mipmap/ic_launcher"
-        android:label="GrowFolio"
+        android:label="Toisón"
         android:supportsRtl="false"
         android:theme="@style/Tema">
 

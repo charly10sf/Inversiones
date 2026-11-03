@@ -50,7 +50,7 @@ function htmlFicha(f) {
   let cuerpo = '';
   if (S.ficha.tab === 'resumen') cuerpo = fichaResumen(f);
   else if (S.ficha.tab === 'expertos') cuerpo = fichaExpertos(f);
-  else if (S.ficha.tab === 'noticias') cuerpo = !(((S.precios && S.precios.noticias) || {})[i.id] || []).length && p.radar ? fichaNoticiasRadar(f) : `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px" data-no-trad>${conIA('Lo que dice la prensa, según GrowIA', 'What the press says, according to GrowIA')}</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}${i.tipo === 'Acción' ? htmlFichaFactores(p.simbolo || i.yahoo) : ''}<section>${(((S.precios && S.precios.noticias) || {})[i.id] || []).length ? `${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p>` : `<div class="vacio">${L('Google Noticias no tiene titulares de esto en los últimos 30 días.', 'Google News has no headlines on this in the last 30 days.')}</div>`}</section>`;
+  else if (S.ficha.tab === 'noticias') cuerpo = !(((S.precios && S.precios.noticias) || {})[i.id] || []).length && p.radar ? fichaNoticiasRadar(f) : `${informeDe(i.id) && informeDe(i.id).novedades ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px" data-no-trad>${conIA('Lo que dice la prensa, según la IA', 'What the press says, according to GrowIA')}</h3><span class="k">${cabInforme(S.informe)}</span></div>${htmlPrensaIA(informeDe(i.id), false).replace('class="prensa-ia"', 'class="prensa-ia" style="border:0;margin:0;padding:0"')}</section>` : ''}${i.tipo === 'Acción' ? htmlFichaFactores(p.simbolo || i.yahoo) : ''}<section>${(((S.precios && S.precios.noticias) || {})[i.id] || []).length ? `${htmlNoticias(((S.precios && S.precios.noticias) || {})[i.id] || [], false, 20)}<p class="nota">Titulares de Google Noticias de los últimos 30 días.</p>` : `<div class="vacio">${L('Google Noticias no tiene titulares de esto en los últimos 30 días.', 'Google News has no headlines on this in the last 30 days.')}</div>`}</section>`;
   else cuerpo = fichaDatos(f);
   // arriba, fija, solo una barra fina (y el precio pequeño al bajar); el resto se va con el scroll hasta las pestañas,
   // que se quedan fijas debajo de la barra
@@ -148,7 +148,7 @@ function fichaNoticiasRadar(f) {
   const vistos = new Set(), lista = [];
   for (const n of [...(sim ? noticiasIdea(sim) : []), ...((le && le.fuentes) || [])]) if (n && n.u && !vistos.has(n.u)) { vistos.add(n.u); lista.push(n); }
   const gnews = `https://news.google.com/search?q=${encodeURIComponent(i.nombre || i.corto)}&hl=es&gl=ES&ceid=ES:es`;
-  return `${le && le.txt ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px" data-no-trad>${conIA('Lo que dice la prensa, según GrowIA', 'What the press says, according to GrowIA')}</h3><span class="k">${haceCuanto(le.d)}</span></div><p class="informe-res" style="font-size:15px">${chipImpacto(le.imp)} ${escIA(le.txt)}</p></section>` : ''}${sim ? htmlFichaFactores(sim) : ''}
+  return `${le && le.txt ? `<section class="informe"><div class="sec-cab"><h3 style="margin:0;font-size:15px" data-no-trad>${conIA('Lo que dice la prensa, según la IA', 'What the press says, according to GrowIA')}</h3><span class="k">${haceCuanto(le.d)}</span></div><p class="informe-res" style="font-size:15px">${chipImpacto(le.imp)} ${escIA(le.txt)}</p></section>` : ''}${sim ? htmlFichaFactores(sim) : ''}
     <section>${lista.length ? htmlNoticias(lista, false, 12) : ''}<p class="nota"><a class="enlace acento" href="${esc(gnews)}" target="_blank" rel="noopener noreferrer">${L(`Ver las noticias de ${esc(i.corto || i.nombre)} en Google Noticias`, `See ${esc(i.corto || i.nombre)} news on Google News`)}</a></p></section>`;
 }
 /* cuando Yahoo da los votos pero no el consenso (BAT): el consenso, de los votos (1 compra fuerte … 5 venta fuerte) */
@@ -204,7 +204,7 @@ function fichaExpertos(f) {
     </dl></details>
     ${a && a.cambios && a.cambios.length ? `<section class="bloque"><h3>Cambios de recomendación</h3><ul class="noticias">${a.cambios.map((c) => `<li><span>${esc(c.firma)}: ${esc(c.accion || '')} ${c.de ? `de ${esc(c.de)} ` : ''}${c.a ? `a ${esc(c.a)}` : ''}${c.objetivo ? `, objetivo ${precioFmt(c.objetivo)}` : ''}</span><small>${fechaLarga(c.fecha)}</small></li>`).join('')}</ul></section>` : ''}
     <section class="bloque"><h3>Analistas en prensa</h3>${htmlNoticias(prensaA.length ? prensaA : prensa, false, 8)}</section>
-    <p class="nota">Datos de Yahoo Finance${p.lento ? `, consultados ${haceCuanto(p.lento)}` : p.radar ? `, del radar de GrowFolio${p.fecha ? ` (${fechaCorta(p.fecha)})` : ''}` : ''}.</p>`;
+    <p class="nota">Datos de Yahoo Finance${p.lento ? `, consultados ${haceCuanto(p.lento)}` : p.radar ? `, del radar de Toisón${p.fecha ? ` (${fechaCorta(p.fecha)})` : ''}` : ''}.</p>`;
   }
   if (/^Fondo/.test(i.tipo || '')) {
     const fo = p.fondo || {};

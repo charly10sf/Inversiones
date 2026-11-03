@@ -27,7 +27,7 @@ test('en estándar, Hacienda no habla de lo que recomienda GrowFolio; en fundado
   });
   const vista = page.locator('#vista');
   await expect(vista).toContainText('Lo que pagas');
-  await expect(vista).not.toContainText('recomienda GrowFolio');
+  await expect(vista).not.toContainText('recomienda Toisón');
   await expect(vista).not.toContainText('cuesta cada recomendación');
   await expect(vista).not.toContainText('costaría cada paso de tu plan');
   await expect(page.locator('#hFisR')).toHaveCount(0);
@@ -45,7 +45,7 @@ test('en estándar, Hacienda no habla de lo que recomienda GrowFolio; en fundado
   await expect(vista).toContainText('Aportar 300 € al mes');
   // 0.8 (paso 4): en fundador tampoco «te recomienda» (regla de la CNMV): es «cada paso de tu plan»
   await expect(vista).toContainText('costaría cada paso de tu plan');
-  await expect(vista).not.toContainText('recomienda GrowFolio');
+  await expect(vista).not.toContainText('recomienda Toisón');
   await expect(vista).toContainText('Más abajo, lo que supondría en la renta');
 });
 
@@ -59,11 +59,11 @@ test('GrowIA, sin la letra pequeña de Google debajo de la caja; la explicación
   await expect(page.locator('#asNota')).toHaveCount(0);
   await expect(page.locator('#asPie')).not.toContainText('cifrados en el camino');
   await page.evaluate(() => { cerrarAsesor(); AS.clave = null; abrirAsesor(''); });
-  await expect(page.locator('#asCuerpo')).toContainText('no pasan por GrowFolio');
+  await expect(page.locator('#asCuerpo')).toContainText('no pasan por Toisón');
   // y con la clave ya puesta, en Ajustes de GrowIA
   await page.evaluate(() => { cerrarAsesor(); AS.clave = 'AQ.prueba-de-growfolio'; AS.vista = 'ajustes'; abrirAsesor(''); });
   await page.evaluate(() => { AS.vista = 'ajustes'; pintarAsesor(); });
-  await expect(page.locator('#asCuerpo')).toContainText('no pasan por GrowFolio');
+  await expect(page.locator('#asCuerpo')).toContainText('no pasan por Toisón');
 });
 
 // 0.7j: desde el 30 oct, la lectura de la prensa de la Action decía «lo que es muy bueno para la acción» (Repsol, SK hynix)

@@ -1,6 +1,6 @@
-// 0.7v · Los diseños de Toisón (paso 1 del rediseño): data-tema en <html> puesto antes de pintar, los tokens de cada
-// diseño con los nombres de GrowFolio apuntando a ellos, las letras de la casa, el color de la barra y el selector,
-// que solo ve el dueño. Sin diseño elegido, todo sigue como en GrowFolio.
+// Los diseños de Toisón: data-tema en <html> puesto antes de pintar, los tokens de cada diseño con los nombres de
+// GrowFolio apuntando a ellos, las letras de la casa, el color de la barra y el selector. 0.8: sin diseño elegido,
+// Mármol; el selector lo ve cualquiera en Tú y ya no hay GrowFolio.
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 
@@ -31,14 +31,17 @@ async function leer(page) {
 }
 
 test.describe('sin diseño elegido', () => {
-  test('todo sigue como en GrowFolio', async ({ page }) => {
+  test('se abre en Mármol, sin nada de GrowFolio', async ({ page }) => {
     await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
     const x = await leer(page);
-    expect(x.tema).toBeNull();
-    expect(x.fondo).toBe('rgb(0, 0, 0)');
-    expect(x.barra).toBe('#000000');
-    expect(x.letra).toContain('Plus Jakarta Sans');
-    await expect(page.locator('.top .marca-ts')).toBeHidden();
+    expect(x.tema).toBe('marmol');
+    expect(x.fondo).toBe(rgb(FONDO.marmol));
+    expect(x.barra).toBe(FONDO.marmol);
+    expect(x.letra.startsWith('Inter')).toBe(true);
+    await expect(page.locator('.top .marca-ts svg')).toBeVisible();
+    expect(await page.evaluate(() => [document.title, document.querySelector('link[rel="manifest"]') && 1, !!document.querySelector('link[href*="fonts.googleapis"]')])).toEqual(['Toisón', 1, false]);
+    // ni la tarjeta «Muy pronto» ni el estreno de Toisón
+    await expect(page.locator('.ts-tarjeta, .estreno.ts')).toHaveCount(0);
   });
 });
 
@@ -69,34 +72,31 @@ for (const t of Object.keys(FONDO)) {
 
 test.describe('otra cuenta con un diseño guardado', () => {
   test.use({ ajustes: { 'inv-tema': JSON.stringify('marfil') } });
-  test('vuelve a GrowFolio en cuanto se sabe que no es el dueño', async ({ page }, info) => {
+  test('se queda con el suyo aunque no sea el dueño', async ({ page }, info) => {
     test.skip(info.project.name !== 'movil', 'una vez basta');
     await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
-    await expect.poll(() => page.evaluate(() => [document.documentElement.getAttribute('data-tema'), localStorage.getItem('inv-tema')])).toEqual([null, null]);
+    await page.waitForTimeout(1500);
+    expect(await page.evaluate(() => [document.documentElement.getAttribute('data-tema'), localStorage.getItem('inv-tema')])).toEqual(['marfil', '"marfil"']);
   });
 });
 
-test('el selector de diseño solo lo ve el dueño, y cambia el diseño al momento', async ({ page }, info) => {
+test('el selector de diseño, en Tú para cualquiera, cambia el diseño al momento', async ({ page }, info) => {
   test.skip(info.project.name !== 'movil', 'una vez basta');
   await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
-  // otra cuenta: no hay selector
-  await page.evaluate(() => { S.esDueno = false; abrirAjustes(); });
-  await expect(page.locator('#aAcceso')).toBeAttached();
-  await expect(page.locator('[data-elige-tema]')).toHaveCount(0);
-  await page.evaluate(() => { for (const b of document.querySelectorAll('[data-cerrar], .hoja-cerrar')) { if (b.closest('.hoja-fondo')) { b.click(); break; } } });
-  await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((h) => h.remove()));
-  // el dueño: cuatro botones (GrowFolio y los tres diseños)
-  await page.evaluate(() => { S.esDueno = true; abrirAjustes(); });
-  await expect(page.locator('[data-elige-tema]')).toHaveCount(4);
-  await expect(page.locator('[data-elige-tema=""]')).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('[data-elige-tema="borgona"]').evaluate((b) => b.click());
+  await page.evaluate(() => { S.esDueno = false; location.hash = 'tu'; pintar(); });
+  // tres botones (ni rastro del de GrowFolio), con Mármol marcado
+  await expect(page.locator('#vista [data-elige-tema]')).toHaveCount(3);
+  await expect(page.locator('#vista [data-elige-tema=""]')).toHaveCount(0);
+  await expect(page.locator('#vista [data-elige-tema="marmol"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('#vista [data-elige-tema="borgona"]').evaluate((b) => b.click());
   expect(await page.evaluate(() => [document.documentElement.getAttribute('data-tema'), localStorage.getItem('inv-tema'), document.querySelector('meta[name="theme-color"]').content])).toEqual(['borgona', '"borgona"', '#2a0e14']);
-  await expect(page.locator('[data-elige-tema="borgona"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#vista [data-elige-tema="borgona"]')).toHaveAttribute('aria-pressed', 'true');
   // cada muestra lleva los colores de su diseño
   expect(await page.locator('.tema-muestra[data-tema="marfil"]').evaluate((i) => getComputedStyle(i).backgroundColor)).toBe(rgb(FONDO.marfil));
-  // y de vuelta a GrowFolio
-  await page.locator('[data-elige-tema=""]').evaluate((b) => b.click());
-  expect(await page.evaluate(() => [document.documentElement.getAttribute('data-tema'), localStorage.getItem('inv-tema'), document.querySelector('meta[name="theme-color"]').content])).toEqual([null, null, '#000000']);
+  // en Ajustes, el dueño ya no tiene selector aparte
+  await page.evaluate(() => { S.esDueno = true; abrirAjustes(); });
+  await expect(page.locator('#aAcceso')).toBeAttached();
+  await expect(page.locator('.hoja-fondo [data-elige-tema]')).toHaveCount(0);
 });
 
 // 0.8 (paso 4b): la app de Android pinta el widget, los avisos y las barras con el diseño elegido. La web se lo dice
@@ -108,9 +108,9 @@ test.describe('la app de Android sabe el diseño', () => {
     await page.addInitScript(() => { window.__temas = []; window.InversionesApp = { tema: (t) => window.__temas.push(t) }; });
     await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
     expect((await page.evaluate(() => window.__temas))[0]).toBe('marmol');
-    await page.evaluate(() => { S.esDueno = true; abrirAjustes(); });
-    await page.locator('[data-elige-tema="marfil"]').evaluate((b) => b.click());
-    await page.locator('[data-elige-tema=""]').evaluate((b) => b.click());
-    expect((await page.evaluate(() => window.__temas)).slice(-2)).toEqual(['marfil', '']);
+    await page.evaluate(() => { location.hash = 'tu'; pintar(); });
+    await page.locator('#vista [data-elige-tema="marfil"]').evaluate((b) => b.click());
+    await page.locator('#vista [data-elige-tema="marmol"]').evaluate((b) => b.click());
+    expect((await page.evaluate(() => window.__temas)).slice(-2)).toEqual(['marfil', 'marmol']);
   });
 });

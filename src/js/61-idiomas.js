@@ -144,7 +144,7 @@ function avisoIngles() {
   document.body.prepend(d);
 }
 // lo que se le pide a GrowIA, en el idioma de la app
-const notaIdiomaIA = () => (IDIOMA === 'en' ? '\n\nIDIOMA: el usuario usa GrowFolio en inglés. Escribe en inglés todos los textos que vea él (respuestas, resúmenes, motivos, pasos), aunque estas instrucciones y los datos estén en español. Las claves del JSON no se traducen.' : '');
+const notaIdiomaIA = () => (IDIOMA === 'en' ? '\n\nIDIOMA: el usuario usa Toisón en inglés. Escribe en inglés todos los textos que vea él (respuestas, resúmenes, motivos, pasos), aunque estas instrucciones y los datos estén en español. Las claves del JSON no se traducen.' : '');
 
 /* El permiso del banco se pidió desde la app de Android, pero el banco (su app, al acabar) devuelve la vuelta al
    navegador del móvil, donde no está tu sesión: se le pasa a la app con el código y allí se termina. Si el permiso se
@@ -154,7 +154,7 @@ function bancoALaApp() {
   if (!q.has('state') || !(q.has('code') || q.has('error')) || q.has('web') || window.InversionesApp || !/Android/i.test(navigator.userAgent) || LS.get('inv-banco-pend', null)) return false;
   const aqui = location.origin + location.pathname + location.search + '&web=1' + location.hash;
   const url = `intent://banco${location.search}#Intent;scheme=inversiones;package=es.inversiones.app;S.browser_fallback_url=${encodeURIComponent(aqui)};end`;
-  document.body.innerHTML = `<main class="banco-vuelta"><img src="favicon.svg" alt="" width="64" height="64"><h1>${L('Vuelve a GrowFolio', 'Back to GrowFolio')}</h1><p>${L('El banco ya ha dado el permiso. Ábrelo en la app para terminar de conectar la cuenta.', 'The bank has granted access. Open it in the app to finish connecting the account.')}</p><a class="btn pri" href="${esc(url)}">${L('Abrir la app', 'Open the app')}</a><a class="enlace" href="${esc(aqui)}">${L('Seguir aquí, en el navegador', 'Continue here, in the browser')}</a></main>`;
+  document.body.innerHTML = `<main class="banco-vuelta"><img src="favicon.svg" alt="" width="64" height="64"><h1>${L('Vuelve a Toisón', 'Back to Toisón')}</h1><p>${L('El banco ya ha dado el permiso. Ábrelo en la app para terminar de conectar la cuenta.', 'The bank has granted access. Open it in the app to finish connecting the account.')}</p><a class="btn pri" href="${esc(url)}">${L('Abrir la app', 'Open the app')}</a><a class="enlace" href="${esc(aqui)}">${L('Seguir aquí, en el navegador', 'Continue here, in the browser')}</a></main>`;
   setTimeout(() => { location.href = url; }, 250);
   return true;
 }

@@ -216,9 +216,9 @@ function fifo(lotes, uds) {
 function editarFiscal(anio = new Date().getFullYear()) {
   const d = datosFiscales(anio);
   const h = hoja(`Datos fiscales de ${anio}`, `<form id="fFis" novalidate>
-    <p class="nota" style="margin:0">Lo que GrowFolio no puede saber solo. Con esto calcula lo que pagarías en la renta de ${anio}, que se presenta entre abril y junio de ${anio + 1}.</p>
+    <p class="nota" style="margin:0">Lo que Toisón no puede saber solo. Con esto calcula lo que pagarías en la renta de ${anio}, que se presenta entre abril y junio de ${anio + 1}.</p>
     <div class="form-grid">
-      <label class="campo">Resultado de ventas no apuntadas (€)<input name="otras" inputmode="decimal" value="${val(d.otras)}" placeholder="0"><small>Ganancia o pérdida neta de lo que vendiste este año sin apuntarlo en GrowFolio. Las pérdidas, en negativo.</small></label>
+      <label class="campo">Resultado de ventas no apuntadas (€)<input name="otras" inputmode="decimal" value="${val(d.otras)}" placeholder="0"><small>Ganancia o pérdida neta de lo que vendiste este año sin apuntarlo en Toisón. Las pérdidas, en negativo.</small></label>
       <label class="campo">Dividendos e intereses cobrados (€)<input name="rcm" inputmode="decimal" value="${val(d.rcm)}" placeholder="0"><small>En bruto, antes de retenciones. Incluye los intereses del efectivo remunerado de tus plataformas.</small></label>
       <label class="campo">Retenciones que ya te han hecho (€)<input name="retenido" inputmode="decimal" value="${val(d.retenido)}" placeholder="0"><small>Las españolas, enteras: se restan de lo que pagas. De lo que te retuvieron fuera, pon como mucho el 15 % de esos dividendos (lo que pasa de ahí no se recupera en la renta).</small></label>
       <label class="campo">Pérdidas de años anteriores sin compensar (€)<input name="pendientes" inputmode="decimal" value="${val(d.pendientes)}" placeholder="0"><small>Las que te queden de los últimos 4 años, en positivo (vienen en tu declaración anterior).</small></label>
@@ -281,7 +281,7 @@ function htmlFiscalRecom(M, fa) {
     <div class="tabla-w"><table class="resp"><thead><tr><th>Recomendación</th><th>Qué pasa con Hacienda</th><th class="r">Impuesto</th></tr></thead><tbody>
       ${filas.map((x) => `<tr><td><b style="font-weight:600">${x.q}</b>${x.opc ? '<small>opcional</small>' : ''}</td><td class="txt">${x.d}${x.c ? `<small>${esc(x.c)}</small>` : ''}</td><td class="r ${x.v < 0 ? 'up' : ''}">${x.v ? (x.v < 0 ? `${eur(-x.v, 0)} ${L('menos', 'less')}<small>${L('te lo ahorras', 'you save it')}</small>` : eur(x.v, 0)) : '0\u00a0€'}</td></tr>`).join('')}
     </tbody></table></div>
-    <p class="nota">Con todo lo que GrowFolio recomienda hacer ya, la renta de ${anio} sube unos ${eur(tot, 0)}${filas.some((x) => x.opc) ? '; con lo opcional, menos' : ''}. Cada cifra sale de tu tramo del ahorro (${pctTramo(fa.marginal)} % ahora) y de lo que ya llevas declarado este año.</p></section>`;
+    <p class="nota">Con todo lo que Toisón recomienda hacer ya, la renta de ${anio} sube unos ${eur(tot, 0)}${filas.some((x) => x.opc) ? '; con lo opcional, menos' : ''}. Cada cifra sale de tu tramo del ahorro (${pctTramo(fa.marginal)} % ahora) y de lo que ya llevas declarado este año.</p></section>`;
 }
 /* una sección con su título pasa a ser un plegable (para las tablas largas) */
 function plegarSec(html) {
@@ -327,7 +327,7 @@ function htmlImpuestos(M) {
   return `
     <div class="sec-cab"><h2>Renta de ${anio}</h2><span class="k">se presenta entre abril y junio de ${anio + 1}</span><div class="der"><button class="btn peq" data-accion="fiscal">${ICONOS.lapiz}Datos fiscales de ${anio}</button></div></div>
     ${!fa.ventas.length && !fa.otras && !fa.rcm && !fa.retenido ? `<div class="fis-vacio"><p><b>${M.dividendos >= 1 ? `Por ahora no has apuntado nada para la renta de ${anio}.` : `Por ahora no pagas nada en la renta de ${anio}.`}</b> ${M.dividendos >= 1 ? (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return `${da && da.bruto >= 1 ? `Por lo que han pagado tus acciones, este año habrás cobrado unos ${eur(da.bruto, 0)} brutos en dividendos (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}), que` : `Tus posiciones reparten unos ${eur(M.dividendos, 0)} brutos al año en dividendos, que`} tributan (desde un ${pctTramo(tramosAhorro()[0][1])} %) aunque no vendas: mira el informe de tu bróker y apunta lo cobrado en «Datos fiscales» para que salga en la cuenta.`; })() : 'Este año no has apuntado ventas ni dividendos.'} Cuando vendas algo, apúntalo en Inicio con «Apuntar compra o venta» y aquí verás lo que te toca.${M.dividendos >= 1 ? '' : ' Si has cobrado dividendos o intereses, ponlos en «Datos fiscales».'}</p>${recom ? '<p class="k">Más abajo, lo que supondría en la renta cada paso de tu plan.</p>' : ''}</div>` : `<div class="resumen-fila">
-      <div><span class="k">Ventas del año</span><span class="v ${cls(fa.gp)}">${eurS(fa.gp, 0)}</span><small class="k">${fa.ventas.length} en GrowFolio${fa.otras ? `, ${eurS(fa.otras, 0)} fuera` : ''}</small></div>
+      <div><span class="k">Ventas del año</span><span class="v ${cls(fa.gp)}">${eurS(fa.gp, 0)}</span><small class="k">${fa.ventas.length} en Toisón${fa.otras ? `, ${eurS(fa.otras, 0)} fuera` : ''}</small></div>
       <div><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm, 0)}</span><small class="k">${fa.rcm ? 'los que has apuntado' : (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return da && da.bruto >= 1 ? `este año, unos ${eur(da.bruto, 0)} brutos por lo que han pagado tus acciones (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}): mira el informe de tu bróker y apúntalos en Datos fiscales` : 'apúntalos en Datos fiscales'; })()}</small></div>
       <div><span class="k">Base del ahorro</span><span class="v">${eur(fa.base, 0)}</span><small class="k">tramo del ${pctTramo(fa.marginal)} %</small></div>
       <div><span class="k">Cuota estimada</span><span class="v">${eur(fa.cuota, 0)}</span><small class="k">${fa.retenido ? `menos ${eur(fa.retenido, 0)} ya retenidos: ${eurS(fa.cuota - fa.retenido, 0)}` : 'antes de restar retenciones'}</small></div>
@@ -363,7 +363,7 @@ function htmlFiscalComunidad() {
   const d = DONACIONES[c], ns = noticiasComunidad(c, 3);
   return `<section class="fis-ccaa" style="margin-top:44px" aria-labelledby="hCcaa"><div class="sec-cab"><h2 id="hCcaa">${L('En', 'In')} ${esc(conArticulo(c))}</h2><button type="button" class="enlace" data-accion="ccaa-cambiar">Cambiar</button></div>
     <div class="fis-como">
-      <div class="fis-c"><b>Tu escala del ahorro</b><small>ventas, dividendos e intereses</small><p>${TRAMOS_FORAL[c] ? L(`Régimen foral: ${textoTramos(c)}. Es la que usa GrowFolio en tus cálculos.`, `Foral regime: ${textoTramos(c, true)}. GrowFolio uses it in your figures.`) : 'La misma en toda España (la de arriba): la parte autonómica del ahorro no cambia de una comunidad a otra.'}</p></div>
+      <div class="fis-c"><b>Tu escala del ahorro</b><small>ventas, dividendos e intereses</small><p>${TRAMOS_FORAL[c] ? L(`Régimen foral: ${textoTramos(c)}. Es la que usa Toisón en tus cálculos.`, `Foral regime: ${textoTramos(c, true)}. Toisón uses it in your figures.`) : 'La misma en toda España (la de arriba): la parte autonómica del ahorro no cambia de una comunidad a otra.'}</p></div>
       ${d ? `<div class="fis-c"><b>Si tus padres te dan dinero</b><small>donación de padres a hijos</small><p>${esc(L(d[0], (DONACIONES_EN[c] || [])[0] || d[0]))} ${esc(L(d[1], (DONACIONES_EN[c] || [])[1] || d[1]))}</p><small class="fis-norma" data-no-trad>${esc(d[2])}</small></div>` : `<div class="fis-c"><b>Si tus padres te dan dinero</b><small>donación de padres a hijos</small><p>${L(`En ${esc(conArticulo(c))} se aplica la norma estatal del impuesto de donaciones, con sus bonificaciones para residentes. Antes de una donación grande, mira la cifra exacta en la Agencia Tributaria.`, `In ${esc(conArticulo(c))} the national gift tax rules apply, with their allowances for residents. Before a large gift, check the exact figure with the Spanish Tax Agency.`)}</p></div>`}
       <div class="fis-c"><b>Cómo hacerlo bien</b><small>para no perder la rebaja</small><p>Por transferencia (que se vea de dónde sale el dinero), con escritura ante notario cuando la comunidad la pide, y presentando el modelo 651 (o el de tu comunidad) en el mes siguiente. Las donaciones del mismo padre en tres años se suman.</p></div>
     </div>
@@ -375,7 +375,7 @@ async function ponerComunidad(c) {
   S.cartera.perfil = { ...(S.cartera.perfil || {}), comunidad: c || null, actualizado: new Date().toISOString() };
   AS.foto = null;
   await guardarYPintar('Tu comunidad');
-  if (c) toast(`Apuntado: ${nombreComunidad(c)}. Hacienda y GrowIA ya cuentan con ello.`, 3500);
+  if (c) toast(`Apuntado: ${nombreComunidad(c)}. Hacienda y la IA ya cuentan con ello.`, 3500);
 }
 function cambiarComunidad() {
   const h = hoja('Tu comunidad', `<form class="pf-form"><label class="campo">Dónde vives<select name="c">${opcionesComunidad(comunidadUsuario())}</select><small>Para tus impuestos y las noticias de tu comunidad que tocan tu dinero. No usa tu ubicación.</small></label>
@@ -412,7 +412,7 @@ function htmlFiscalGuia(M, fa, x) {
     const r = reglaRecompra(S.inst[v.instrumento]);
     if (!r || !r.meses) continue;
     const ap = perdidaAplazada(v), libre = libreRecompra(S.inst[v.instrumento], v.fecha);
-    if (ap) dosMeses.push({ n: 'warn', t: ap.parte >= 0.999 ? `La pérdida de ${nombreInst(v.instrumento)} (${eurS(v.resultado, 0)}) no cuenta todavía` : `De la pérdida de ${nombreInst(v.instrumento)} (${eurS(v.resultado, 0)}), ${eurS(ap.importe, 0)} no cuentan todavía`, d: `${ap.aporte ? `Tu aportación automática del ${fechaLarga(ap.fecha)}` : `Compraste el ${fechaLarga(ap.fecha)}`}, a menos de ${r.plazo} de la venta${ap.parte < 0.999 ? `, un ${fmtNum(ap.parte * 100, 0)} % de lo que vendiste` : ''}. Esa parte contará cuando vendas lo recomprado; en lo que te calcula GrowFolio ya no resta.` });
+    if (ap) dosMeses.push({ n: 'warn', t: ap.parte >= 0.999 ? `La pérdida de ${nombreInst(v.instrumento)} (${eurS(v.resultado, 0)}) no cuenta todavía` : `De la pérdida de ${nombreInst(v.instrumento)} (${eurS(v.resultado, 0)}), ${eurS(ap.importe, 0)} no cuentan todavía`, d: `${ap.aporte ? `Tu aportación automática del ${fechaLarga(ap.fecha)}` : `Compraste el ${fechaLarga(ap.fecha)}`}, a menos de ${r.plazo} de la venta${ap.parte < 0.999 ? `, un ${fmtNum(ap.parte * 100, 0)} % de lo que vendiste` : ''}. Esa parte contará cuando vendas lo recomprado; en lo que te calcula Toisón ya no resta.` });
     else if (libre >= hoy) dosMeses.push({ n: 'info', t: `Si recompras ${nombreInst(v.instrumento)} antes del ${fechaLarga(libre)}, esa pérdida no resta este año`, d: `Lo vendiste con ${eurS(v.resultado, 0)} el ${fechaLarga(v.fecha)}; la regla de la recompra (${r.plazo}) la deja para cuando vendas lo recomprado.` });
   }
   // calendario

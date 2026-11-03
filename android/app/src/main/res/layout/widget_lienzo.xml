@@ -3,7 +3,7 @@
     android:id="@android:id/background"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/fondo_widget">
+    android:background="@drawable/fondo_widget_marmol">
 
     <!-- el widget dibujado, en dos copias: al cambiar el plazo de la curva, la nueva entra fundiéndose con la de antes -->
     <ViewFlipper

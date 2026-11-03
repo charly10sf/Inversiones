@@ -34,6 +34,8 @@ test('en Inicio, lo que no para solo cambia opacidad y posición; con una hoja e
   const pastilla = () => page.evaluate(() => document.getAnimations().filter((a) => ['gtaNeon', 'gtaPastilla'].includes(a.animationName)).map((a) => a.playState).sort());
   // sin nada encima, en marcha (lo que se abre solo al entrar, como Primeros pasos, puede llegar tarde: se quita cada vez)
   const sinNada = async () => { await page.evaluate(() => document.querySelectorAll('body > .hoja-fondo, body > .tour, body > .estreno').forEach((e) => e.remove())); return pastilla(); };
+  // 0.8: con Toisón la pastilla de GTA no lleva neón ni nada que se anime sin parar
+  if (!(await sinNada()).length) return;
   await expect.poll(sinNada).toEqual(['running', 'running']);
   await page.evaluate(() => abrirAjustes());
   await expect(page.locator('.hoja[aria-label="Ajustes"]')).toBeVisible();
@@ -65,15 +67,4 @@ test('la hoja de GTA VI: lo que no para solo cambia opacidad y posición, y el r
   expect(queRepintan(l), JSON.stringify(l)).toEqual([]);
   await page.keyboard.press('Escape');
   await expect(g).toHaveCount(0);
-});
-
-test('el estreno de Toisón: lo que no para solo cambia opacidad y posición', async ({ page, errores }) => {
-  await crearCuenta(page);
-  await quitarCapas(page);
-  await meterCartera(page);
-  await page.evaluate(() => { LS.del('inv-toison-avance'); avisoToison(() => {}); });
-  await expect(page.locator('.estreno.ts')).toBeVisible();
-  await page.waitForTimeout(5000);
-  const l = await page.evaluate(sinParar);
-  expect(queRepintan(l), JSON.stringify(l)).toEqual([]);
 });

@@ -6,8 +6,9 @@ import { test, expect } from '@playwright/test';
 import { writeFileSync, mkdirSync } from 'node:fs';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 
-// 0.8 (Carlos, 3 nov): 830 KB mientras conviven GrowFolio y Toisón; en el paso 5 se quita lo de GrowFolio y vuelve a bajar
-const PRESUPUESTO = { bytes: 830 * 1024, listoMs: 2000 };
+// 0.8 (Carlos, 3 nov): 830 KB mientras conviven GrowFolio y Toisón; en el paso 5a, ya con las letras de Toisón siempre
+// (Inter e Ibarra, ~100 KB), 900 KB (Carlos, 3 nov) hasta el 5b, que quita lo de GrowFolio, aligera las letras y lo vuelve a bajar
+const PRESUPUESTO = { bytes: 900 * 1024, listoMs: 2000 };
 const MOVIL = { cpu: 4, red: { offline: false, latency: 150, downloadThroughput: (9e6 / 8), uploadThroughput: (1.5e6 / 8) } };
 
 test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'se mide en el móvil'));

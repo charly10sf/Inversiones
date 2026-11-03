@@ -65,11 +65,12 @@ const LS = {
   del(k) { if (LS_DEMO) { LS_DEMO.set(k, null); return; } try { localStorage.removeItem(this.k(k)); } catch (e) {} },
 };
 /* 0.7v: los diseños de Toisón (src/css/00-temas.css). El elegido va en data-tema de <html> y en localStorage
-   «inv-tema» (fuera de LS: lo lee también el script de index.html antes de pintar). '' o null = GrowFolio de siempre.
-   Mientras dura el rediseño solo lo elige el dueño (Ajustes → su fila de modos). El color de la barra del navegador
-   sale del token --fondo del diseño, no de un color escrito aquí */
+   «inv-tema» (fuera de LS: lo lee también el script de index.html antes de pintar). Sin elegir, Mármol (Carlos, 3 nov:
+   en la 0.8 GrowFolio desaparece y cualquiera elige el suyo en Tú). El color de la barra del navegador sale del token
+   --fondo del diseño, no de un color escrito aquí */
 const TEMAS = ['marmol', 'marfil', 'borgona'];
-const temaActual = () => { const t = document.documentElement.getAttribute('data-tema'); return TEMAS.includes(t) ? t : ''; };
+const TEMA_BASE = 'marmol';
+const temaActual = () => { const t = document.documentElement.getAttribute('data-tema'); return TEMAS.includes(t) ? t : TEMA_BASE; };
 let colorBarraGF = null;
 function colorBarraTema() {
   const m = document.querySelector('meta[name="theme-color"]'); if (!m) return;
@@ -78,9 +79,9 @@ function colorBarraTema() {
   m.setAttribute('content', f || colorBarraGF);
 }
 function ponerTema(t) {
-  t = TEMAS.includes(t) ? t : '';
-  if (t) document.documentElement.setAttribute('data-tema', t); else document.documentElement.removeAttribute('data-tema');
-  try { if (t) localStorage.setItem('inv-tema', JSON.stringify(t)); else localStorage.removeItem('inv-tema'); } catch (e) {}
+  t = TEMAS.includes(t) ? t : TEMA_BASE;
+  document.documentElement.setAttribute('data-tema', t);
+  try { localStorage.setItem('inv-tema', JSON.stringify(t)); } catch (e) {}
   colorBarraTema();
   acabadoTema();
   temaApp();

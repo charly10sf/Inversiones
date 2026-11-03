@@ -46,21 +46,7 @@ test('cinco abajo con Hoy en el medallón, la IA arriba y cada cosa en su pesta�
   // Tú: lo tuyo, el diseño y los ajustes (que abren la hoja de siempre)
   await ir(page, 'tu');
   await expect(page.locator('.tu-cab')).toBeVisible();
-  await expect(page.locator('#vista [data-elige-tema]')).toHaveCount(4);
+  await expect(page.locator('#vista [data-elige-tema]')).toHaveCount(3);
   await page.locator('#vista .aj-fila[data-accion="ajustes"]').evaluate((b) => b.click());
   await expect(page.locator('.hoja-fondo #aAcceso')).toBeAttached();
-});
-
-test('de vuelta a GrowFolio desde una pestaña que solo tiene Toisón, la barra de siempre', async ({ page }, info) => {
-  test.skip(info.project.name !== 'movil', 'una vez basta');
-  await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
-  await ir(page, 'tu');
-  await page.locator('#vista [data-elige-tema=""]').evaluate((b) => b.click());
-  await page.waitForTimeout(300);
-  expect(await page.evaluate(() => S.vista)).toBe('futuro');
-  expect(await barra(page)).toBe('ruta,analisis*,cartera,expertos,mercados');
-  await expect(page.locator('#bAjustes')).toBeVisible();
-  // y otra vez a Toisón: vuelve la de Toisón sin recargar
-  await page.evaluate(() => { ponerTema('marmol'); pintar(); });
-  expect(await barra(page)).toBe('posiciones,mercados,cartera,expertos,tu*');
 });

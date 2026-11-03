@@ -1,7 +1,7 @@
 // 0.8 (rediseño, paso 3) · Las pantallas con un diseño de Toisón: la IA se llama «la IA» (sin el logo ni el nombre de
 // GrowIA), los iconos de dentro de las pantallas son de plumilla, Hoy lleva «Hoy» y «Ganado» en pastillas y «Lo que viene»
 // con el día en un recuadro, y el pie de cada pestaña (avisar de un fallo, tutorial) ya no sale: está en Tú.
-// Con GrowFolio, todo como siempre.
+// (0.8: GrowFolio ya no existe; las pruebas de «con GrowFolio, como siempre» se quitaron.)
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 
@@ -42,15 +42,4 @@ conTema('marfil')('con Toisón: la IA sin nombre, iconos de plumilla, pastillas 
   await page.locator('#bAsesor').evaluate((b) => b.click());
   await expect(page.locator('#asTit .ia-nom')).toHaveText('La IA');
   await expect(page.locator('.as-ico .ia-av-ts svg.ic-pl')).toHaveCount(1);
-});
-
-conTema('')('con GrowFolio, como siempre: GrowIA con su logo y los iconos de trazo', async ({ page }, info) => {
-  base.skip(info.project.name !== 'movil', 'una vez basta');
-  await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
-  await ir(page, 'cartera');
-  await expect(page.locator('.hero-ojo svg.ic-pl')).toHaveCount(0);
-  await expect(page.locator('.hero-ojo svg[stroke="currentColor"]')).toHaveCount(1);
-  await expect(page.locator('.hero-sub .hs .k').last()).toHaveText('Ganado desde que compraste');
-  await ir(page, 'analisis');
-  await expect(page.locator('#vista .subvistas button img.gia-nom')).toHaveCount(1);
 });

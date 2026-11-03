@@ -11,7 +11,7 @@ GrowFolio es la web y app de Android de Carlos para llevar inversiones (GitHub P
 
 ## Pruebas
 
-- `sh tests/traer-datos.sh`, `npx playwright install chromium`, `npm test` (build + Playwright en 390, 360 y 1440; Firebase de imitación en tests/stub y sin internet). `npm run rendimiento` (presupuesto: < 800 KB por la red y lista en < 2 s). `python -m unittest discover -s tests/scripts`.
+- `sh tests/traer-datos.sh`, `npx playwright install chromium`, `npm test` (build + Playwright en 390, 360 y 1440; Firebase de imitación en tests/stub y sin internet). `npm run rendimiento` (presupuesto: < 900 KB por la red hasta el paso 5b del rediseño y lista en < 2 s). `python -m unittest discover -s tests/scripts`.
 - Una prueba nueva por cada cosa nueva. Todo pasa en la Action «Pruebas» en cada push.
 - Antes de publicar algo de cifrado, cuentas, Hacienda, pagos o el prompt público de GrowIA: revisión aparte.
 
@@ -28,4 +28,4 @@ Para cerrar una versión, lee claude/cerrar-version.md.
 
 ## Textos
 
-- Español natural y directo; la IA se llama GrowIA y la app, GrowFolio. Inglés por en.json (frases con cifras como «#») o `L('es', 'en')` en el código.
+- Español natural y directo. Desde la 0.8 la app se llama Toisón y la IA, «la IA» («La IA» al empezar frase); en inglés, de momento, GrowIA. El historial de NOVEDADES conserva los nombres de cada época. Inglés por en.json (frases con cifras como «#»; la clave es el texto en español exacto) o `L('es', 'en')` en el código.

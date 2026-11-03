@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- El icono pequeño de los avisos: la silueta de la wF de GrowFolio en blanco, como pide Android -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="24dp" android:height="24dp" android:viewportWidth="48" android:viewportHeight="48">
-    <path android:pathData="M12.24,31.44L16.01,21.38L20.13,21.38L23.85,31.43L29.34,15.08L36.09,10.06L33.19,18.44L34.36,15.08L44.08,15.08L44.08,19.36L32.87,19.36L29.78,28.30L30.80,25.34L38.94,25.34L38.94,29.62L29.32,29.62L26.18,38.69L22.06,38.69L18.06,27.60L14.04,38.69L9.92,38.69L3.96,21.38L8.87,21.38Z" android:fillColor="#FFFFFFFF"/>
-</vector>

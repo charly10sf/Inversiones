@@ -88,9 +88,9 @@ test('en la app de Android: se queda viva, reintenta sin esperarte y, si no hay 
   await expect.poll(() => modelos.length, { timeout: 20_000 }).toBe(6);
   await expect.poll(async () => (await app()).length, { timeout: 15_000 }).toBe(2);
   let a = await app();
-  expect(a[0]).toEqual(['empieza', 'GrowIA está contestando…', false]);
+  expect(a[0]).toEqual(['empieza', 'La IA está contestando…', false]);
   expect(a[1][0]).toBe('termina');
-  expect(a[1][1]).toBe('GrowIA se ha quedado a medias');
+  expect(a[1][1]).toBe('La IA se ha quedado a medias');
   await page.waitForTimeout(1500);
   expect(modelos.length, 'agotados los reintentos, ya no lo pide fuera de la vista').toBe(6);
   await fuera(false);
@@ -98,7 +98,7 @@ test('en la app de Android: se queda viva, reintenta sin esperarte y, si no hay 
   await expect(page.locator('#asCuerpo')).not.toContainText('veces seguidas');
   a = await app();
   expect(a.map((x) => x[0])).toEqual(['empieza', 'termina', 'empieza', 'termina']);
-  expect(a[3][1]).toBe('GrowIA ya te ha contestado');
+  expect(a[3][1]).toBe('La IA ya te ha contestado');
   expect(a[3][2]).not.toMatch(/cartera va bien/);   // el aviso no lleva nada de la respuesta
   expect(new Set(modelos).size, 'siempre el mismo modelo').toBe(1);
 });
@@ -115,7 +115,7 @@ test('en la app de Android, unos cuantos cortes fuera de la vista se arreglan so
   await page.evaluate(() => abrirAsesor('¿Cómo va mi cartera?', true));
   await expect.poll(() => page.evaluate(() => window.__app.map((x) => x[0]).join()), { timeout: 20_000 }).toBe('empieza,termina');
   expect(await page.evaluate(() => document.hidden)).toBe(true);
-  expect((await page.evaluate(() => window.__app))[1][1]).toBe('GrowIA ya te ha contestado');
+  expect((await page.evaluate(() => window.__app))[1][1]).toBe('La IA ya te ha contestado');
   expect(modelos.length).toBe(4);
   expect(new Set(modelos).size, 'un corte de red no hace cambiar de modelo').toBe(1);
   await fuera(false);
@@ -138,7 +138,7 @@ test('con la app viva, un corte fuera de la vista se reintenta solo y acaba sin 
   // contesta con GrowFolio aún fuera de la vista
   await expect.poll(() => page.evaluate(() => window.__app.map((x) => x[0]).join()), { timeout: 20_000 }).toBe('empieza,termina');
   expect(await page.evaluate(() => document.hidden)).toBe(true);
-  expect((await page.evaluate(() => window.__app))[1][1]).toBe('GrowIA ya te ha contestado');
+  expect((await page.evaluate(() => window.__app))[1][1]).toBe('La IA ya te ha contestado');
   expect(modelos.length).toBe(2);
   await fuera(false);
   await expect(page.locator('#asCuerpo')).toContainText('sigue con tus aportaciones');
@@ -167,15 +167,15 @@ test('en la app de Android, al salir con GrowIA contestando la página sigue des
   await expect.poll(() => modelos.length, { timeout: 20_000 }).toBe(6);
   await expect.poll(() => page.evaluate(() => window.__app.map((x) => x[0]).join()), { timeout: 15_000 }).toBe('empieza,termina');
   expect(await page.evaluate(() => document.hidden), 'la página no se ha ocultado').toBe(false);
-  expect((await page.evaluate(() => window.__app))[1][1]).toBe('GrowIA se ha quedado a medias');
+  expect((await page.evaluate(() => window.__app))[1][1]).toBe('La IA se ha quedado a medias');
   await page.waitForTimeout(1000);
   expect(modelos.length, 'agotados los reintentos, ya no lo pide con la app fuera').toBe(6);
   await page.evaluate(() => appFuera(false));
   await expect(page.locator('#asCuerpo')).toContainText('sigue con tus aportaciones', { timeout: 15_000 });
   const diario = await page.evaluate(() => diarioIATodo().map((x) => x.x).join('\n'));
-  expect(diario).toContain('Sales de GrowFolio (la app la mantiene despierta)');
-  expect(diario).toContain('GrowFolio fuera (despierta)');
-  expect(diario).toContain('Vuelves a GrowFolio');
+  expect(diario).toContain('Sales de Toisón (la app la mantiene despierta)');
+  expect(diario).toContain('Toisón fuera (despierta)');
+  expect(diario).toContain('Vuelves a Toisón');
   expect(new Set(modelos).size, 'siempre el mismo modelo').toBe(1);
 });
 

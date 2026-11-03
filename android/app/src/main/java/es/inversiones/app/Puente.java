@@ -110,7 +110,7 @@ public class Puente {
         Datos.prefs(ctx).edit().putString("idioma", "en".equals(i) ? "en" : "es").apply();
     }
 
-    /** 0.8: el diseño elegido en la web («marmol», «marfil», «borgona» o vacío para GrowFolio). Lo manda al abrir y al
+    /** 0.8: el diseño elegido en la web («marmol», «marfil», «borgona»; vacío o desconocido = Mármol). Lo manda al abrir y al
      *  cambiarlo; la app pinta las barras del móvil con su fondo y, si ha cambiado, repinta el widget */
     @JavascriptInterface
     public void tema(String t) {
@@ -139,7 +139,7 @@ public class Puente {
     @JavascriptInterface
     public void notificar(String titulo, String cuerpo, String hash) {
         String h = hash == null ? "cartera" : hash.replaceAll("[^a-z]", "");
-        Avisos.mostrar(ctx, "web:" + titulo, titulo == null ? "GrowFolio" : titulo, cuerpo == null ? "" : cuerpo, h.isEmpty() ? "cartera" : h);
+        Avisos.mostrar(ctx, "web:" + titulo, titulo == null ? "Toisón" : titulo, cuerpo == null ? "" : cuerpo, h.isEmpty() ? "cartera" : h);
     }
 
     /** 0.7f: GrowIA empieza a contestar: la app se queda viva en segundo plano hasta que acabe (la web solo lo pide
@@ -278,7 +278,7 @@ public class Puente {
     private void mostrarHuella(String titulo, String botonPin) {
         try {
             BiometricPrompt.Builder b = new BiometricPrompt.Builder(act)
-                    .setTitle(titulo == null || titulo.isEmpty() ? "GrowFolio" : titulo)
+                    .setTitle(titulo == null || titulo.isEmpty() ? "Toisón" : titulo)
                     .setNegativeButton(botonPin == null || botonPin.isEmpty() ? "PIN" : botonPin, act.getMainExecutor(),
                             (d, w) -> act.js("window.resultadoHuella && resultadoHuella(false, 'pin')"));
             if (Build.VERSION.SDK_INT >= 30) b.setAllowedAuthenticators(BiometricManager.Authenticators.BIOMETRIC_WEAK);

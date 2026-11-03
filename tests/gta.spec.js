@@ -94,7 +94,7 @@ test('«Mi cartera en GTA VI» como imagen: sin las copias de entrada, con ellas
   expect(c.tipo).toBe('image/png');
   expect(c.nombre).toBe('mi-cartera-en-gta-vi.png');
   expect(c.peso).toBeGreaterThan(20_000);
-  expect(c.texto).toContain('GrowFolio');
+  expect(c.texto).toContain('Toisón');
   // en la app de Android nueva: su menú de compartir, con el PNG en base64
   await page.evaluate(() => { window.__app = null; window.InversionesApp = { compartirImagen: (b64, t) => { window.__app = { png: b64.slice(0, 8), t }; } }; });
   await p.getByRole('button', { name: 'Compartir' }).click();
@@ -116,9 +116,9 @@ test('con los importes ocultos, la imagen va sin copias y el interruptor no se p
   expect(await page.evaluate(() => datosImagenGTA(S.M || calcular(), true).copias)).toBeNull();
 });
 
-test('la letra de títulos y cifras se parece a la de GTA: Passion One (Pricedown solo es libre para uso personal)', async ({ page, errores }) => {
+test('0.8: la cuenta atrás va con las letras de la casa; Passion One (Google Fonts) solo para la imagen de compartir', async ({ page, errores }) => {
   const g = await abrir(page);
-  await expect(page.locator('link#fuenteGTA')).toHaveAttribute('href', /family=Passion\+One/);
-  for (const sel of ['.gta-tit', '.gta-reloj b']) expect(await g.locator(sel).first().evaluate((x) => getComputedStyle(x).fontFamily)).toMatch(/^"?Passion One"?/);
+  await expect(page.locator('link#fuenteGTA')).toHaveCount(0);
+  expect(await g.locator('.gta-tit').first().evaluate((x) => getComputedStyle(x).fontFamily)).not.toMatch(/Passion One/);
   expect(await page.evaluate(() => FUENTE_NEON)).toMatch(/^"Passion One"/);
 });

@@ -40,20 +40,20 @@ function htmlCupoAction() {
   const pensar = uso.filter((x) => /3\.8/.test(x.m) && x.pensar).map((x) => x.pensar);
   return `<section><h3>${L('Lo que ha gastado hoy la Action', 'What the Action has used today')}</h3>
     <p>${Object.keys(MODELOS).map((k) => `${esc(MODELOS[k].corto || MODELOS[k].n)}: <b>${m[k] || 0}</b>${CUPO_DIA[k] ? ` ${L('de', 'of')} ${CUPO_DIA[k]}` : ''}`).join(' · ')}</p>
-    <p class="nota">${pensar.length ? L(`El 3.8 ha razonado de media ${fmtNum(pensar.reduce((a, b) => a + b, 0) / pensar.length, 0)} tokens por llamada (${pensar.length} llamadas en 48 h).`, `The 3.8 reasoned ${fmtNum(pensar.reduce((a, b) => a + b, 0) / pensar.length, 0)} tokens per call on average (${pensar.length} calls in 48 h).`) : L('Aún no hay llamadas del 3.8 apuntadas en 48 h.', 'No 3.8 calls logged in 48 h yet.')} ${L('Es su propio proyecto de Google: no gasta el cupo de tu GrowIA.', "It's its own Google project: it doesn't use your GrowIA quota.")}</p></section>`;
+    <p class="nota">${pensar.length ? L(`El 3.8 ha razonado de media ${fmtNum(pensar.reduce((a, b) => a + b, 0) / pensar.length, 0)} tokens por llamada (${pensar.length} llamadas en 48 h).`, `The 3.8 reasoned ${fmtNum(pensar.reduce((a, b) => a + b, 0) / pensar.length, 0)} tokens per call on average (${pensar.length} calls in 48 h).`) : L('Aún no hay llamadas del 3.8 apuntadas en 48 h.', 'No 3.8 calls logged in 48 h yet.')} ${L('Es su propio proyecto de Google: no gasta el cupo de tu la IA.', "It's its own Google project: it doesn't use your GrowIA quota.")}</p></section>`;
 }
 function htmlFallosIA(fs) {
-  if (!fs || fs.error) return `<section><h3>${L('Fallos de GrowIA', 'GrowIA failures')}</h3><p class="nota">${L('No se han podido leer ahora.', "Couldn't read them now.")}</p></section>`;
+  if (!fs || fs.error) return `<section><h3>${L('Fallos de la IA', 'GrowIA failures')}</h3><p class="nota">${L('No se han podido leer ahora.', "Couldn't read them now.")}</p></section>`;
   const T = TIPOS_FALLO(), hace7 = new Date(Date.now() - 7 * 864e5).toISOString();
   const sem = fs.filter((x) => String(x.t) >= hace7), cuenta = {};
   for (const x of sem) cuenta[x.tipo] = (cuenta[x.tipo] || 0) + 1;
-  return `<section><h3>${L('Fallos de GrowIA que no se arreglaron solos', "GrowIA failures that didn't fix themselves")}</h3>
+  return `<section><h3>${L('Fallos de la IA que no se arreglaron solos', "GrowIA failures that didn't fix themselves")}</h3>
     <p>${sem.length ? `${L('Últimos 7 días', 'Last 7 days')}: ${Object.entries(cuenta).sort((a, b) => b[1] - a[1]).map(([k, n]) => `${esc(T[k] || k)} <b>${n}</b>`).join(' · ')}` : L('Ninguno en los últimos 7 días.', 'None in the last 7 days.')}</p>
     ${fs.length ? `<ul class="lista salud-fallos">${fs.slice(0, 20).map((x) => `<li><span>${esc(T[x.tipo] || x.tipo)}${Number(x.estado) ? ` (${Number(x.estado)})` : ''}</span><small>${haceCuanto(x.t)} · ${esc(x.donde || '')} · ${esc(MODELOS[x.modelo] ? MODELOS[x.modelo].corto : x.modelo || '—')} · ${esc(x.v || '')}</small></li>`).join('')}</ul>` : ''}
     <p class="nota">${L('Sin preguntas ni carteras: solo el tipo, el modelo, dónde y la versión.', 'No questions or portfolios: only the type, model, where and version.')}</p></section>`;
 }
 async function verSaludIA() {
-  const h = hoja(L('Cómo va GrowIA', 'How GrowIA is doing'), `<div class="salud-ia"><p class="nota">${L('Cargando…', 'Loading…')}</p></div>`);
+  const h = hoja(L('Cómo va la IA', 'How GrowIA is doing'), `<div class="salud-ia"><p class="nota">${L('Cargando…', 'Loading…')}</p></div>`);
   const cont = $('.salud-ia', h.el);
   try {
     const [banco, muestra, fallos] = await Promise.all([leerDatosRama('banco.json'), leerDatosRama('banco-muestra.json'), leerFallosIA(), cargarEscaneo().catch(() => null)]);

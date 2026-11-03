@@ -14,15 +14,15 @@ const ILUS = {
   privada: '<rect class="l" x="70" y="10" width="100" height="150" rx="16"/><path class="m" d="M70 136h100"/><g class="cierra"><path class="a" d="M100 70V56a20 20 0 0140 0v14" stroke-width="5"/></g><rect class="fA" x="90" y="68" width="60" height="46" rx="10"/><circle cx="120" cy="88" r="5" fill="#1A1408"/><path d="M120 92v9" stroke="#1A1408" stroke-width="4" stroke-linecap="round"/><g class="an3"><rect class="fp" x="178" y="44" width="54" height="24" rx="12"/><text class="t" x="184" y="60">cifrada</text><rect class="fp" x="8" y="98" width="56" height="24" rx="12"/><text class="t" x="15" y="114">solo tú</text></g>',
 };
 const INTRO = [
-  { il: 'logo', t: 'Tu dinero, con una IA que te dice qué hacer', x: 'Fondos, acciones, ETF, oro y cripto de cualquier bróker, juntos y con precios en directo. GrowIA los estudia y te dice qué hacer con ellos.' },
+  { il: 'logo', t: 'Tu dinero, con una IA que te dice qué hacer', x: 'Fondos, acciones, ETF, oro y cripto de cualquier bróker, juntos y con precios en directo. La IA los estudia y te dice qué hacer con ellos.' },
   { dib: 'grafica', donde: 'cartera', t: 'Todo lo que tienes, de un vistazo', x: 'Tu patrimonio, lo que ganas hoy y desde que compraste, y la gráfica de cualquier periodo. Tus posiciones, justo debajo.' },
   { il: 'pasos', donde: 'ruta', t: 'Tu mes, de un vistazo', x: 'Tus aportaciones, lo que hay que vigilar y las fechas que importan, con lo que supondría en la renta. Lo que hagas lo decides tú.' },
-  { il: 'notas', donde: 'analisis', t: 'GrowIA revisa tu cartera', x: 'Cada día lee las noticias y repasa lo que tienes según tu edad, tus metas y el riesgo que aguantas. Le pone nota y te dice si vas hacia lo que quieres.' },
+  { il: 'notas', donde: 'analisis', t: 'La IA revisa tu cartera', x: 'Cada día lee las noticias y repasa lo que tienes según tu edad, tus metas y el riesgo que aguantas. Le pone nota y te dice si vas hacia lo que quieres.' },
   { il: 'mundo', donde: 'expertos', t: 'Ideas que encajan contigo', x: 'Más de 800 empresas de España, Europa y EEUU con la opinión de los analistas. Te dice cuáles encajan en tu cartera y por qué.' },
   { dib: 'calendario', donde: 'mercados', t: 'El mundo y lo que viene', x: 'Bolsas, tipos, divisas y materias primas, con lo que significa para ti. Y el calendario: resultados, dividendos y la Fed.' },
   { il: 'ia', t: 'Pregúntale lo que quieras', x: '«¿Qué supondría aportar 500 € más?» o «¿Cómo va Repsol?». Te contesta con tus números y te lo explica fácil.' },
   { dib: 'renta', t: 'Hacienda, sin sorpresas', x: 'Antes de vender ves lo que pagarás en la renta. Y en primavera, una guía para hacer la declaración.' },
-  { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera se cifra con tu contraseña antes de guardarse, y GrowIA usa tu propia clave de Google. Nadie más puede leer tus cifras, tampoco GrowFolio.' },
+  { il: 'privada', t: 'Privada de verdad', x: 'Tu cartera se cifra con tu contraseña antes de guardarse, y la IA usa tu propia clave de Google. Nadie más puede leer tus cifras, tampoco Toisón.' },
   { dib: 'app', t: 'En el móvil, con widget', x: 'En la web o en la app de Android, con un widget para la pantalla de inicio. Está en alfa: si ves algo raro, avisa con el bichito de arriba.' },
 ];
 /* La presentación se cuenta bajando, como una película: primero el logo se monta pieza a pieza según bajas y,
@@ -62,17 +62,17 @@ function pantallaIntro(seguir) {
   const centro = (pol) => { if (!pol) return [24, 24]; const v = pol.split(' ').map((x) => x.split(',').map(Number)); return [v.reduce((a, x) => a + x[0], 0) / v.length, v.reduce((a, x) => a + x[1], 0) / v.length]; };
   const esquirlas = ESQUIRLAS.map(([pz, pol], k) => { const [cx, cy] = centro(pol); return `<g class="ix-esq" style="transform-origin:${cx.toFixed(1)}px ${cy.toFixed(1)}px"><g class="ix-flota" style="--i:${k}"${pol ? ` clip-path="url(#ixc${k})"` : ''}>${PIEZAS[pz]}</g></g>`; }).join('');
   const recortes = ESQUIRLAS.map(([, pol], k) => (pol ? `<clipPath id="ixc${k}"><polygon points="${pol}"/></clipPath>` : '')).join('');
-  $('#app').innerHTML = `<div class="intro ix${quieta ? ' quieta' : ''}" role="region" aria-label="Presentación de GrowFolio">
+  $('#app').innerHTML = `<div class="intro ix${quieta ? ' quieta' : ''}" role="region" aria-label="Presentación de Toisón">
     <div class="ix-luz" aria-hidden="true"></div>
     <div class="ix-barra" aria-hidden="true"></div>
-    <div class="ix-cab"><span class="intro-marca">${ts ? '<b class="ix-ts">TOISÓN</b>' : '<img src="growfolio-nombre.svg" alt="GrowFolio">'}</span>${selectorIdioma('mini')}<button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
+    <div class="ix-cab"><span class="intro-marca">${ts ? '<b class="ix-ts">TOISÓN</b>' : '<img src="growfolio-nombre.svg" alt="Toisón">'}</span>${selectorIdioma('mini')}<button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
-      <section class="ix-heroe" aria-label="GrowFolio">
+      <section class="ix-heroe" aria-label="Toisón">
         <div class="ix-escena">
           <div class="ix-emblema"><svg viewBox="0 0 48 48" aria-hidden="true"><defs>${MARCA_GRAD.replace(/__K__/g, 'ixp')}${recortes}</defs><g class="ix-trozos">${esquirlas}</g><g class="ix-entero">${ts ? enteroTs() : marcaWF('ixm')}</g></svg></div>
           <h1 class="ix-marca ix-nom" data-no-trad>${ts ? nombreTs() : nombreGF()}</h1>
           <div class="ix-lema"><h2>${esc(INTRO[0].t)}</h2><p>${esc(INTRO[0].x)}</p></div>
-          <div class="ix-hola"><p class="ix-hola-t">${nombreUsuario() ? `${esc(L('Hola', 'Hi'))}, <b>${esc(nombreUsuario())}</b>` : esc(L('Te damos la bienvenida', 'Welcome'))}</p><p class="ix-hola-s">${esc(L('Baja despacio: el logo se monta mientras bajas y luego te cuento lo que hace GrowFolio.', 'Scroll slowly: the logo comes together as you go, then I\'ll show you what GrowFolio does.'))}</p></div>
+          <div class="ix-hola"><p class="ix-hola-t">${nombreUsuario() ? `${esc(L('Hola', 'Hi'))}, <b>${esc(nombreUsuario())}</b>` : esc(L('Te damos la bienvenida', 'Welcome'))}</p><p class="ix-hola-s">${esc(L('Baja despacio: el logo se monta mientras bajas y luego te cuento lo que hace Toisón.', 'Scroll slowly: the logo comes together as you go, then I\'ll show you what Toisón does.'))}</p></div>
         <div class="ix-baja" aria-hidden="true"><span>${L('o ve bajando', 'or scroll down')}</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
         </div>
       </section>
@@ -85,7 +85,7 @@ function pantallaIntro(seguir) {
       <section class="ix-fin">
         <div class="ix-fin-logo">${logoEntero()}</div>
         <h2>¿Empezamos?</h2>
-        <p>Al entrar te enseño la app en un minuto y lo que hay que hacer el primer día para que GrowIA te aconseje con tus números.</p>
+        <p>Al entrar te enseño la app en un minuto y lo que hay que hacer el primer día para que la IA te aconseje con tus números.</p>
         <button type="button" class="btn pri" data-in="fin">${nuevo ? 'Crear mi cartera' : 'Entrar'}</button>
         <button type="button" class="enlace ix-arriba" data-in="arriba">Verlo otra vez desde el principio</button>
       </section>

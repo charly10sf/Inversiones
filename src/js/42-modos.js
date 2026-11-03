@@ -49,7 +49,7 @@ async function comprobarAcceso() {
     }
     // el dueño: puede leer todas las opiniones (las reglas de siempre)
     try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); S.esDueno = true; S.noDueno = false; limpiarFallosIA(); }
-    catch (e) { if (errPermiso(e)) { S.noDueno = true; if (temaActual()) ponerTema(''); } else if (!puesto && !esFundadorPorAlta(alta)) return; }
+    catch (e) { if (errPermiso(e)) { S.noDueno = true; } else if (!puesto && !esFundadorPorAlta(alta)) return; }
     const a = puesto && (puesto.modo === 'fundador' || puesto.modo === 'estandar') ? (puesto.modo === 'fundador' ? 'privado' : 'publico')
       : S.esDueno || esFundadorPorAlta(alta) ? 'privado' : 'publico';
     fijarAcceso(a, u.uid, puesto);
@@ -87,7 +87,7 @@ function avisoCambioModo(a, puesto, intento = 0) {
   const nota = puesto && puesto.nota ? String(puesto.nota) : '';
   hoja(L(`Tu cuenta está ahora en ${nombreModo(a)}`, `Your account is now in ${nombreModo(a)}`), `<div class="priv">
     ${nota ? `<p class="modo-nota">«${esc(nota)}»</p>` : ''}
-    <p>${a === 'publico' ? L('Ves GrowFolio sin recomendaciones personalizadas: en el sitio del Paso a paso está «Tu plan», GrowIA te explica y calcula pero no te dice qué comprar o vender, y en cada posición sale lo que opinan los analistas. Tu cartera y todo lo demás siguen igual.', 'You see GrowFolio without personalised recommendations: Your plan replaces Steps, GrowIA explains and calculates but does not tell you what to buy or sell, and each holding shows what analysts think. Your portfolio and everything else stay the same.') : L('Vuelves a ver GrowFolio entero: el Paso a paso, las señales de cada posición y GrowIA cuando dice qué comprar o vender.', 'You see all of GrowFolio again: Steps, the signal on each holding and GrowIA when it says what to buy or sell.')}</p>
+    <p>${a === 'publico' ? L('Ves Toisón sin recomendaciones personalizadas: en el sitio del Paso a paso está «Tu plan», la IA te explica y calcula pero no te dice qué comprar o vender, y en cada posición sale lo que opinan los analistas. Tu cartera y todo lo demás siguen igual.', 'You see Toisón without personalised recommendations: Your plan replaces Steps, GrowIA explains and calculates but does not tell you what to buy or sell, and each holding shows what analysts think. Your portfolio and everything else stay the same.') : L('Vuelves a ver Toisón entero: el Paso a paso, las señales de cada posición y la IA cuando dice qué comprar o vender.', 'You see all of Toisón again: Steps, the signal on each holding and GrowIA when it says what to buy or sell.')}</p>
     <div class="fila-btns"><button type="button" class="btn pri" data-cerrar>${L('Entendido', 'Got it')}</button></div></div>`);
 }
 // los nombres de la barra (Paso a paso o Tu plan) y la pestaña de ahora, con el modo nuevo
@@ -104,29 +104,27 @@ async function filaAcceso(h) {
   const w = $('#aAcceso', h.el); if (!w || !PERFIL_CUENTA) return;
   if (S.esDueno) {
     w.innerHTML = `<button class="aj-fila" id="aPriv">${ICONOS.candado}<span><b>${L('Modo de cada cuenta', 'Each account\'s mode')}</b><small>${L(`Fundador o estándar, también la tuya (ahora, ${nombreModo(S.acceso)}). Solo lo ves tú.`, `Founder or standard, yours too (now ${nombreModo(S.acceso)}). Only you see this.`)}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <button class="aj-fila" id="aSaludIA">${ICONOS.growia}<span><b>${L('Cómo va GrowIA', 'How GrowIA is doing')}</b><small>${L('El banco de preguntas de cada noche, lo que gasta la Action y los fallos que no se arreglaron solos. Solo lo ves tú.', 'The nightly question bank, what the Action uses and the failures that didn\'t fix themselves. Only you see this.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      ${htmlSelectorTema()}`;
+      <button class="aj-fila" id="aSaludIA">${ICONOS.growia}<span><b>${L('Cómo va la IA', 'How GrowIA is doing')}</b><small>${L('El banco de preguntas de cada noche, lo que gasta la Action y los fallos que no se arreglaron solos. Solo lo ves tú.', 'The nightly question bank, what the Action uses and the failures that didn\'t fix themselves. Only you see this.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
     $('#aPriv', h.el).onclick = () => { h.cerrar(true); verModos(); };
     $('#aSaludIA', h.el).onclick = () => { h.cerrar(true); verSaludIA(); };
-    activarSelectorTema(h.el);
   } else if (correoSinConfirmar()) {
     w.innerHTML = `<button class="aj-fila" id="aVerif">${ICONOS.alerta}<span><b>${L('Confirma tu correo', 'Confirm your email')}</b><small>${L('Te mandamos un enlace a tu correo. Hace falta, por ejemplo, para el modo fundador si te lo han dado.', 'We send a link to your email. It is needed, for example, for founder mode if you have been given it.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
     $('#aVerif', h.el).onclick = async () => {
-      try { await fbCargar(); await FB.au.sendEmailVerification(FB.user); toast(L(`Te he mandado un correo a ${FB.user.email}. Cuando lo confirmes, vuelve a abrir GrowFolio.`, `I've sent an email to ${FB.user.email}. Once you confirm it, open GrowFolio again.`), 7000); }
+      try { await fbCargar(); await FB.au.sendEmailVerification(FB.user); toast(L(`Te he mandado un correo a ${FB.user.email}. Cuando lo confirmes, vuelve a abrir Toisón.`, `I've sent an email to ${FB.user.email}. Once you confirm it, open Toisón again.`), 7000); }
       catch (e) { toast(L('No se ha podido mandar ahora. Prueba en un rato.', "Couldn't send it now. Try again later."), 5000); }
     };
   } else {
-    w.innerHTML = `<div class="aj-fila aj-info">${ICONOS.candado}<span><b>${L('Tu modo', 'Your mode')}: ${esc(nombreModo(S.acceso))}</b><small>${esPublico() ? L('Sin recomendaciones personalizadas: «Tu plan» en lugar del Paso a paso.', 'No personalised recommendations: Your plan instead of Steps.') : L('GrowFolio entero, con el Paso a paso.', 'All of GrowFolio, with Steps.')}</small></span></div>`;
+    w.innerHTML = `<div class="aj-fila aj-info">${ICONOS.candado}<span><b>${L('Tu modo', 'Your mode')}: ${esc(nombreModo(S.acceso))}</b><small>${esPublico() ? L('Sin recomendaciones personalizadas: «Tu plan» en lugar del Paso a paso.', 'No personalised recommendations: Your plan instead of Steps.') : L('Toisón entero, con el Paso a paso.', 'All of Toisón, with Steps.')}</small></span></div>`;
   }
 }
-/* 0.7v: el diseño de Toisón, en pruebas (paso 1 del rediseño): solo el dueño lo elige y solo en este dispositivo.
+/* 0.8: el diseño lo elige cualquiera en Tú (Mármol, Marfil o Borgoña; sin elegir, Mármol) y se guarda en el dispositivo.
    Cada muestra lleva data-tema, así enseña los colores de su diseño (src/css/00-temas.css) */
 function htmlSelectorTema() {
   const t = temaActual(), nom = { marmol: 'Mármol', marfil: 'Marfil', borgona: 'Borgoña' };
-  const b = (k, muestra, n) => `<button type="button" data-elige-tema="${k}" aria-pressed="${t === k}">${muestra}<span>${n}</span></button>`;
-  return `<div class="seccion-ed aj-idioma"><h3>${navToison() ? ICONOS_PL.ver : ICONOS.ojo}${L('Toisón: el diseño nuevo (en pruebas)', 'Toisón: the new design (testing)')}</h3>
-    <div class="idiomas temas" role="group" aria-label="${esc(L('Diseño', 'Design'))}" data-no-trad>${b('', '<img class="tema-muestra" src="favicon.svg" alt="">', 'GrowFolio')}${TEMAS.map((k) => b(k, `<i class="tema-muestra" data-tema="${k}" aria-hidden="true"></i>`, nom[k])).join('')}</div>
-    <small>${L('Solo lo ves tú y solo en este dispositivo; los demás siguen viendo la app como ahora hasta la 0.8. Casi todo está ya con el diseño nuevo; lo que falta se termina antes de la 0.8.', 'Only you see this, on this device only; everyone else sees the app as it is until 0.8. Almost everything already has the new design; the rest is finished before 0.8.')}</small></div>`;
+  const b = (k, n) => `<button type="button" data-elige-tema="${k}" aria-pressed="${t === k}"><i class="tema-muestra" data-tema="${k}" aria-hidden="true"></i><span>${n}</span></button>`;
+  return `<div class="seccion-ed aj-idioma"><h3>${ICONOS_PL.ver}${L('Diseño', 'Design')}</h3>
+    <div class="idiomas temas" role="group" aria-label="${esc(L('Diseño', 'Design'))}" data-no-trad>${TEMAS.map((k) => b(k, nom[k])).join('')}</div>
+    <small>${L('Mármol, oscuro y con vetas; Marfil, claro, en crema; Borgoña, rojo oscuro. Se guarda en este dispositivo.', 'Marble, dark and veined; Ivory, light cream; Burgundy, dark red. Saved on this device.')}</small></div>`;
 }
 function activarSelectorTema(el) {
   for (const b of $$('[data-elige-tema]', el)) b.onclick = () => {
@@ -156,17 +154,17 @@ async function verModos() {
   const fila = (x) => `<li data-correo="${esc(x.correo)}"><div class="modo-t"><b data-no-trad>${esc(x.correo)}${x.correo === yo ? ` <em>${L('(tú)', '(you)')}</em>` : ''}</b><small>${x.alta ? L(`Cuenta del ${esc(fechaLarga(x.alta))}`, `Account from ${esc(x.alta)}`) : L('Aún no ha entrado con la 0.5', 'Not signed in with 0.5 yet')}${x.puesto ? ` · ${L('lo pusiste tú', 'set by you')}` : esFundadorPorAlta(x.alta) ? ` · ${L('fundador por fecha', 'founder by date')}` : ''}</small></div>
       <div class="dos-op modo-op" role="group" aria-label="${esc(L('Modo', 'Mode'))}"><button type="button" data-modo="fundador" aria-pressed="${x.modo === 'fundador'}">${L('Fundador', 'Founder')}</button><button type="button" data-modo="estandar" aria-pressed="${x.modo === 'estandar'}">${L('Estándar', 'Standard')}</button></div></li>`;
   const h = hoja(L('Modo de cada cuenta', "Each account's mode"), `<div class="priv">
-    <p>${L('Fundador: GrowFolio entero, con el Paso a paso y GrowIA cuando dice qué comprar o vender. Estándar: sin recomendaciones personalizadas («Tu plan» en lugar del Paso a paso y lo que opinan los analistas en cada posición). Las cuentas creadas antes de la 0.5 son fundador; las nuevas, estándar, salvo que lo cambies aquí.', 'Founder: all of GrowFolio, with Steps and GrowIA when it says what to buy or sell. Standard: no personalised recommendations (Your plan instead of Steps and what analysts think on each holding). Accounts created before 0.5 are founders; new ones, standard, unless you change it here.')}</p>
+    <p>${L('Fundador: Toisón entero, con el Paso a paso y la IA cuando dice qué comprar o vender. Estándar: sin recomendaciones personalizadas («Tu plan» en lugar del Paso a paso y lo que opinan los analistas en cada posición). Las cuentas creadas antes de la 0.5 son fundador; las nuevas, estándar, salvo que lo cambies aquí.', 'Founder: all of Toisón, with Steps and GrowIA when it says what to buy or sell. Standard: no personalised recommendations (Your plan instead of Steps and what analysts think on each holding). Accounts created before 0.5 are founders; new ones, standard, unless you change it here.')}</p>
     <ul class="priv-l modo-l">${l.map(fila).join('')}</ul>
     <form id="pvF" class="priv-add" novalidate><label class="campo">${L('Otra cuenta, por su correo', 'Another account, by email')}<input id="pvC" type="email" autocomplete="off" inputmode="email" placeholder="${L('amigo@gmail.com', 'friend@gmail.com')}"></label><button class="btn" type="submit">${L('Añadir', 'Add')}</button></form>
     <div class="error" id="pvErr"></div>
-    <p class="nota">${L('Las cuentas salen aquí cuando abren la 0.5. El cambio le llega al volver a abrir GrowFolio, con tu nota si le dejas una. Con Google o Apple vale al momento; con correo y contraseña, tiene que confirmar su correo.', 'Accounts show up here once they open 0.5. The change reaches them when they next open GrowFolio, with your note if you leave one. With Google or Apple it works straight away; with email and password, they must confirm their email.')}</p>
+    <p class="nota">${L('Las cuentas salen aquí cuando abren la 0.5. El cambio le llega al volver a abrir Toisón, con tu nota si le dejas una. Con Google o Apple vale al momento; con correo y contraseña, tiene que confirmar su correo.', 'Accounts show up here once they open 0.5. The change reaches them when they next open Toisón, with your note if you leave one. With Google or Apple it works straight away; with email and password, they must confirm their email.')}</p>
   </div>`);
   h.el.classList.add('hoja-priv');
   const f = FB.fs, err = (t) => { $('#pvErr', h.el).textContent = t; };
   const poner = (correo, modo) => {
     const n = hoja(L(`${correo}: ${modo === 'fundador' ? 'modo fundador' : 'modo estándar'}`, `${correo}: ${modo === 'fundador' ? 'founder mode' : 'standard mode'}`), `<form id="mdF" class="priv" novalidate>
-      <label class="campo">${L('Nota para esa persona (opcional; la ve al abrir GrowFolio)', 'Note for them (optional; they see it when opening GrowFolio)')}<textarea id="mdN" rows="3" maxlength="140" placeholder="${esc(modo === 'estandar' ? L('Te he puesto en estándar unos días: pruébalo y me dices qué tal.', "I've put you on standard for a few days: try it and tell me how it goes.") : '')}"></textarea></label>
+      <label class="campo">${L('Nota para esa persona (opcional; la ve al abrir Toisón)', 'Note for them (optional; they see it when opening Toisón)')}<textarea id="mdN" rows="3" maxlength="140" placeholder="${esc(modo === 'estandar' ? L('Te he puesto en estándar unos días: pruébalo y me dices qué tal.', "I've put you on standard for a few days: try it and tell me how it goes.") : '')}"></textarea></label>
       <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri">${L('Cambiar', 'Change')}</button></div></form>`);
     $('#mdF', n.el).onsubmit = async (ev) => {
       ev.preventDefault();
@@ -174,7 +172,7 @@ async function verModos() {
       try {
         await conTiempo(f.setDoc(f.doc(FB.db, 'modos', correo), { modo, por: yoCorreo(), cuando: f.serverTimestamp(), ...(nota ? { nota } : {}) }), 10000);
         n.cerrar(true); h.cerrar(true);
-        toast(L(`${correo}: ${modo === 'fundador' ? 'modo fundador' : 'modo estándar'}. Le llega al volver a abrir GrowFolio.`, `${correo}: ${modo === 'fundador' ? 'founder mode' : 'standard mode'}. It reaches them when they next open GrowFolio.`), 5000);
+        toast(L(`${correo}: ${modo === 'fundador' ? 'modo fundador' : 'modo estándar'}. Le llega al volver a abrir Toisón.`, `${correo}: ${modo === 'fundador' ? 'founder mode' : 'standard mode'}. It reaches them when they next open Toisón.`), 5000);
         if (correo === yoCorreo()) comprobarAcceso(); else verModos();
       } catch (e) { b.disabled = false; toast(errPermiso(e) ? L('Firestore no lo deja guardar: faltan las reglas nuevas.', "Firestore won't save it: the new rules are missing.") : L('No se ha podido guardar (¿sin conexión?).', "Couldn't save it (offline?)."), 6000); }
     };
@@ -213,7 +211,7 @@ function verOpiniones(l, visto) {
   };
   const sin = l.filter((o) => !o.respuesta && o.uid).length;
   const h = hoja(L('Opiniones recibidas', 'Feedback received'), `<div class="opr-hoja">
-    ${l.length ? `<p class="nota opr-intro"><span class="opr-sin">${textoSinResp(sin)}</span>${L('Lo que respondas le sale en pantalla a quien la mandó la próxima vez que abra GrowFolio, y aquí ves si ya lo ha leído.', 'Whatever you reply shows up on screen for the sender the next time they open GrowFolio, and you can see here whether they have read it.')}</p>` : ''}
+    ${l.length ? `<p class="nota opr-intro"><span class="opr-sin">${textoSinResp(sin)}</span>${L('Lo que respondas le sale en pantalla a quien la mandó la próxima vez que abra Toisón, y aquí ves si ya lo ha leído.', 'Whatever you reply shows up on screen for the sender the next time they open Toisón, and you can see here whether they have read it.')}</p>` : ''}
     ${l.length ? `<ul class="opr-lista">${l.map(item).join('')}</ul>` : `<p class="nota">${L('Todavía no ha llegado ninguna.', 'Nothing has come in yet.')}</p>`}
     <div class="fila-btns"><button class="btn" data-cerrar>${L('Cerrar', 'Close')}</button></div></div>`, () => abrirAjustes());
   const porId = new Map(l.map((o) => [o.id, o]));
@@ -224,7 +222,7 @@ function verOpiniones(l, visto) {
     if (b.hasAttribute('data-opr-cancelar')) { caja.innerHTML = htmlRespOpr(o); return; }
     caja.innerHTML = `<form class="opr-f" novalidate>
       <label class="campo">${L(`Tu respuesta a ${esc(quienOpi(o, true))}`, `Your reply to ${esc(quienOpi(o, true))}`)}<textarea name="r" rows="4" maxlength="2000" placeholder="${L('Gracias por avisar: ya está arreglado en la versión…', 'Thanks for letting me know: it is fixed in version…')}">${esc(o.respuesta || '')}</textarea></label>
-      <small class="opr-f-nota">${L('Le saldrá en pantalla cuando abra GrowFolio.', 'It will show up on their screen when they open GrowFolio.')}</small>
+      <small class="opr-f-nota">${L('Le saldrá en pantalla cuando abra Toisón.', 'It will show up on their screen when they open Toisón.')}</small>
       <div class="error"></div>
       <div class="fila-btns"><button type="button" class="btn" data-opr-cancelar>${L('Cancelar', 'Cancel')}</button><button type="submit" class="btn pri">${ICONOS.enviar}${o.respuesta ? L('Guardar', 'Save') : L('Responder', 'Reply')}</button></div>
     </form>`;
@@ -240,7 +238,7 @@ function verOpiniones(l, visto) {
         Object.assign(o, { respuesta: r, respondida: { toDate: () => new Date() }, por, vista: false });
         caja.innerHTML = htmlRespOpr(o);
         const sp = $('.opr-sin', h.el); if (sp) sp.textContent = textoSinResp(l.filter((x) => !x.respuesta && x.uid).length);
-        toast(L('Respuesta enviada: la verá al abrir GrowFolio.', 'Reply sent: they will see it when they open GrowFolio.'));
+        toast(L('Respuesta enviada: la verá al abrir Toisón.', 'Reply sent: they will see it when they open Toisón.'));
       } catch (er) {
         console.warn(er);
         bt.disabled = false; bt.innerHTML = ICONOS.enviar + (o.respuesta ? L('Guardar', 'Save') : L('Responder', 'Reply'));

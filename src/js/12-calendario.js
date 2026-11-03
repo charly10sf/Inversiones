@@ -323,7 +323,7 @@ function agendaLista(M, dias = 120) {
     const n = [...new Set(g.nombres)];
     const pl = esc(yLista([...g.plats]));
     add({ id: `apo:${d}`, d, tipo: 'aportacion', varias: n.length > 1, nombresAp: yLista(n), inst: n.length === 1 ? g.insts[0] : null, t: n.length > 1 ? L('Tus aportaciones automáticas', 'Your automatic contributions') : L(`Aportación a ${n[0]}`, `Contribution to ${n[0]}`), s: n.length > 1 ? yLista(n) : [...g.plats].join(', ') || L('Automática', 'Automatic'), importe: g.importe,
-      det: L(`Se hace sola: ${eur(g.importe, 0)} a ${esc(yLista(n))}${g.plats.size ? ` desde ${pl}` : ''}. GrowFolio la suma a tu cartera con el precio del primer día después (el que usa el fondo).`, `It happens on its own: ${eur(g.importe, 0)} into ${esc(yLista(n))}${g.plats.size ? ` from ${pl}` : ''}. GrowFolio adds it to your portfolio at the price of the next trading day (the one the fund uses).`), acc: `<a class="btn peq" href="#plan">${L('Ver tu plan', 'See your plan')}</a>` });
+      det: L(`Se hace sola: ${eur(g.importe, 0)} a ${esc(yLista(n))}${g.plats.size ? ` desde ${pl}` : ''}. Toisón la suma a tu cartera con el precio del primer día después (el que usa el fondo).`, `It happens on its own: ${eur(g.importe, 0)} into ${esc(yLista(n))}${g.plats.size ? ` from ${pl}` : ''}. Toisón adds it to your portfolio at the price of the next trading day (the one the fund uses).`), acc: `<a class="btn peq" href="#plan">${L('Ver tu plan', 'See your plan')}</a>` });
   }
   // lo que ha visto la IA en las noticias, si no está ya
   const ia = iaActual();
@@ -335,7 +335,7 @@ function agendaLista(M, dias = 120) {
     // si nombra algo tuyo (una posición o algo que vendiste), es tuyo: sale en «Solo lo mío» y no viene «de las noticias»
     const nombres = [...(M.filas || []).map((f) => f.inst.corto), ...(S.cartera.movimientos || []).map((m) => (S.inst[m.instrumento] || {}).corto)].filter((n) => n && n.length >= 3);
     const tuyo = nombres.some((n) => te.includes(normTxt(n)));
-    add({ id: `ia:${e.d}:${normTxt(e.t).slice(0, 24)}`, d: e.d, tipo: 'ia', t: e.t, mio: tuyo, s: tuyo ? L('Lo ha calculado GrowIA con lo tuyo', 'Worked out by GrowIA from your holdings') : L('Lo ha visto GrowIA en las noticias', 'Spotted by GrowFolio AI in the news'), ia: true, det: L('Sale de las noticias que lee GrowIA: la fecha puede moverse.', 'It comes from the news GrowFolio AI reads: the date may move.') });
+    add({ id: `ia:${e.d}:${normTxt(e.t).slice(0, 24)}`, d: e.d, tipo: 'ia', t: e.t, mio: tuyo, s: tuyo ? L('Lo ha calculado la IA con lo tuyo', 'Worked out by GrowIA from your holdings') : L('Lo ha visto la IA en las noticias', 'Spotted by Toisón AI in the news'), ia: true, det: L('Sale de las noticias que lee la IA: la fecha puede moverse.', 'It comes from the news Toisón AI reads: the date may move.') });
   }
   return ev.sort((a, b) => (a.d < b.d ? -1 : a.d > b.d ? 1 : (ordenAg(a) - ordenAg(b))));
 }
@@ -643,9 +643,9 @@ function avisoPrecioRaro(x) {
 function avisos(M) {
   const av = [];
   // quien venía de la 0.1: arriba del todo, una forma fácil de recuperar lo que no llegó a la cuenta
-  if (!S.demo && S.kv && S.cartera && S.cartera.kit && S.cartera.kit.codigo && !S.cartera.kit.guardado) av.push({ n: 'info', grave: true, i: ICONOS.candado, t: L('Guarda tu código de recuperación', 'Save your recovery code'), d: L('Si olvidas la contraseña de tu cartera, con él la recuperas. Sin él y sin la contraseña, nadie puede abrirla, ni GrowFolio.', 'If you forget your portfolio password, it gets your portfolio back. Without it and without the password, nobody can open it, not even GrowFolio.'), acc: `<button class="btn peq pri" data-accion="ver-kit">${L('Verlo y guardarlo', 'See and save it')}</button>` });
+  if (!S.demo && S.kv && S.cartera && S.cartera.kit && S.cartera.kit.codigo && !S.cartera.kit.guardado) av.push({ n: 'info', grave: true, i: ICONOS.candado, t: L('Guarda tu código de recuperación', 'Save your recovery code'), d: L('Si olvidas la contraseña de tu cartera, con él la recuperas. Sin él y sin la contraseña, nadie puede abrirla, ni Toisón.', 'If you forget your portfolio password, it gets your portfolio back. Without it and without the password, nobody can open it, not even Toisón.'), acc: `<button class="btn peq pri" data-accion="ver-kit">${L('Verlo y guardarlo', 'See and save it')}</button>` });
   // 0.5: aún en el formato 1 (el paso es solo a los días): se puede crear ya
-  else if (!S.demo && !S.kv && S.cartera && conKit() && LS.get('inv-05-desde') && diasEntre(LS.get('inv-05-desde'), hoyIso()) >= 1) av.push({ n: 'info', grave: true, i: ICONOS.candado, t: L('Crea tu código de recuperación', 'Create your recovery code'), d: L('Con él recuperas tu cartera si algún día olvidas su contraseña. Se crea en un segundo. Si tienes GrowFolio abierto en otro móvil u ordenador, ciérralo y vuelve a abrirlo después.', 'It gets your portfolio back if you ever forget its password. It takes a second. If GrowFolio is open on another phone or computer, close it and open it again afterwards.'), acc: `<button class="btn peq pri" data-accion="ver-kit">${L('Crearlo', 'Create it')}</button>` });
+  else if (!S.demo && !S.kv && S.cartera && conKit() && LS.get('inv-05-desde') && diasEntre(LS.get('inv-05-desde'), hoyIso()) >= 1) av.push({ n: 'info', grave: true, i: ICONOS.candado, t: L('Crea tu código de recuperación', 'Create your recovery code'), d: L('Con él recuperas tu cartera si algún día olvidas su contraseña. Se crea en un segundo. Si tienes Toisón abierto en otro móvil u ordenador, ciérralo y vuelve a abrirlo después.', 'It gets your portfolio back if you ever forget its password. It takes a second. If Toisón is open on another phone or computer, close it and open it again afterwards.'), acc: `<button class="btn peq pri" data-accion="ver-kit">${L('Crearlo', 'Create it')}</button>` });
   // 0.5: fuera «¿Te falta algo de tu cartera de antes?» (la de la 0.1 en GitHub o en el dispositivo): ya no queda nadie con ella
   for (const f of M.filas) { const x = precioCompraRaro(f); if (x) av.push({ ...avisoPrecioRaro(x), grave: true }); }
   for (const f of M.filas) {
@@ -663,7 +663,7 @@ function avisos(M) {
     if (f.p && f.p.estado === 'antiguo') av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto}: precio sin actualizar`, d: `Último precio bueno del ${fechaLarga(f.p.fecha)}.` });
     // solo si de verdad no tiene precio: muchas lo sacan del catálogo, del radar o de su último cierre aunque no estén
     // en la lista de la Action, y entonces el aviso se quedaba aunque el precio ya saliera
-    if (f.precio == null) av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto || f.pos.instrumento}: sin precio`, d: 'Si lo acabas de añadir, GrowFolio le busca precio en la próxima actualización.' });
+    if (f.precio == null) av.push({ n: 'warn', i: ICONOS.alerta, t: `${f.inst.corto || f.pos.instrumento}: sin precio`, d: 'Si lo acabas de añadir, Toisón le busca precio en la próxima actualización.' });
   }
   if (S.precios && S.precios.generado && (Date.now() - new Date(S.precios.generado)) > 3 * 86400000) av.push({ n: 'warn', i: ICONOS.alerta, t: 'Los datos llevan días sin actualizarse', d: 'Mira la pestaña Actions del repositorio: GitHub pausa las tareas programadas tras 60 días sin actividad.' });
   return av;

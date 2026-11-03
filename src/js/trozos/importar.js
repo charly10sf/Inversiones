@@ -71,7 +71,7 @@ async function leerUnaVez(partes, alPaso, etq = '') {
   for (const modelo of ordenIA(modeloVivo()).filter((m) => !agotadosIA().includes(m))) {
     let pensar = !!(MODELOS[modelo] && MODELOS[modelo].pensar);
     for (let intento = 0; intento < 3; intento++) {
-      alPaso(`${etq}${L('GrowIA está leyendo', 'GrowIA is reading')}…`);
+      alPaso(`${etq}${L('La IA está leyendo', 'GrowIA is reading')}…`);
       let r;
       try { r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo(pensar)) }); }
       catch (e) { ultimo = new Error(L('No hay conexión con Google.', 'No connection to Google.')); break; }
@@ -89,7 +89,7 @@ async function leerUnaVez(partes, alPaso, etq = '') {
       const txt = ((c.content && c.content.parts) || []).map((x) => x.text || '').join('');
       const o = extraerJSON(txt);
       if (o && (Array.isArray(o.posiciones) || Array.isArray(o.operaciones))) { o.posiciones = o.posiciones || []; o.operaciones = o.operaciones || []; o.efectivo = o.efectivo || []; return o; }
-      ultimo = new Error(c.finishReason === 'MAX_TOKENS' ? L('Hay demasiado en un solo archivo: súbelo por partes.', 'Too much in one file: upload it in parts.') : L('GrowIA no ha devuelto las posiciones. Prueba con capturas más nítidas.', 'GrowIA returned no positions. Try sharper screenshots.'));
+      ultimo = new Error(c.finishReason === 'MAX_TOKENS' ? L('Hay demasiado en un solo archivo: súbelo por partes.', 'Too much in one file: upload it in parts.') : L('La IA no ha devuelto las posiciones. Prueba con capturas más nítidas.', 'GrowIA returned no positions. Try sharper screenshots.'));
       break;
     }
   }
@@ -182,11 +182,11 @@ function procesarOperaciones(ops, platGen) {
 const ventaYaApuntada = (id, v) => (S.cartera.movimientos || []).some((m) => m.tipo === 'venta' && m.instrumento === id && m.fecha === v.fecha && Math.abs(+m.uds - v.uds) < 1e-6);
 async function importarCapturas() {
   await cargarAsesor();
-  if (!AS.clave) { toast('Para leer las capturas hace falta activar GrowIA (gratis, con tu clave de Google): te abro dónde ponerla', 5000); abrirAsesor(); return; }
+  if (!AS.clave) { toast('Para leer las capturas hace falta activar la IA (gratis, con tu clave de Google): te abro dónde ponerla', 5000); abrirAsesor(); return; }
   const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
   let hecho = false, filas = [], efectivo = [], ventasImp = [], divsImp = [], resumenOps = null;
   const h = hoja('Importar de tu bróker o banco', `<div class="imp-cont">
-      <p class="nota" style="margin:0">Sirve cualquier bróker, banco o exchange: capturas de la pantalla de posiciones, el PDF de un extracto o del informe fiscal, o la lista de movimientos exportada en CSV o Excel. GrowIA lo lee y aquí revisas lo que ha entendido antes de guardar nada. Con un listado de operaciones sabe además desde cuándo tienes cada cosa, lo que te costó cada compra y el resultado de tus ventas. Los archivos van de tu navegador a Google y no se guardan.</p>
+      <p class="nota" style="margin:0">Sirve cualquier bróker, banco o exchange: capturas de la pantalla de posiciones, el PDF de un extracto o del informe fiscal, o la lista de movimientos exportada en CSV o Excel. La IA lo lee y aquí revisas lo que ha entendido antes de guardar nada. Con un listado de operaciones sabe además desde cuándo tienes cada cosa, lo que te costó cada compra y el resultado de tus ventas. Los archivos van de tu navegador a Google y no se guardan.</p>
       <label class="imp-sube"><input type="file" id="impArch" accept="image/*,application/pdf,.csv,.tsv,.txt,.xlsx,.xls,.ods,text/csv" multiple hidden><span class="imp-sube-c">${ICONOS.recorte}<b>Elegir capturas, PDF, CSV o Excel</b><small>Puedes elegir varios a la vez</small></span></label>
       <div id="impEstado" class="imp-estado" aria-live="polite"></div>
       <div id="impRev"></div>

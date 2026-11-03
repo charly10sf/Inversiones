@@ -128,20 +128,20 @@ public class Widget extends AppWidgetProvider {
     }
 
     private static String descripcion(Datos.Resultado r, Tema tm) {
-        String app = tm.toison ? "Toisón" : "GrowFolio";
+        String app = "Toisón";
         if (r.en) return r.hay ? "Net worth " + (r.oculto ? "hidden" : Datos.eur(r.total, false)) + ", today " + Datos.pct(r.diaPct) + ", " + r.rango + " chart" : app + ": open the app";
         return r.hay ? "Patrimonio " + (r.oculto ? "oculto" : Datos.eur(r.total, false)) + ", hoy " + Datos.pct(r.diaPct) + ", gráfica de " + r.rango : app + ": abre la app";
     }
 
     /** 0.8: lo que el widget no dibuja en la imagen (el fondo de debajo y la rueda de refrescar) con los colores del
-     *  diseño elegido; con GrowFolio, como siempre */
+     *  diseño elegido */
     private static void colores(RemoteViews v, Tema tm) {
-        int fondo = "marmol".equals(tm.id) ? R.drawable.fondo_widget_marmol : "marfil".equals(tm.id) ? R.drawable.fondo_widget_marfil
-                : "borgona".equals(tm.id) ? R.drawable.fondo_widget_borgona : R.drawable.fondo_widget;
+        int fondo = "marfil".equals(tm.id) ? R.drawable.fondo_widget_marfil
+                : "borgona".equals(tm.id) ? R.drawable.fondo_widget_borgona : R.drawable.fondo_widget_marmol;
         v.setInt(android.R.id.background, "setBackgroundResource", fondo);
-        v.setInt(R.id.refresco_ico, "setColorFilter", tm.toison ? tm.apagado : 0xFF8E877A);
+        v.setInt(R.id.refresco_ico, "setColorFilter", tm.apagado);
         if (Build.VERSION.SDK_INT >= 31)
-            v.setColorStateList(R.id.refresco_gira, "setIndeterminateTintList", ColorStateList.valueOf(tm.toison ? tm.oroTexto : 0xFFEDBB45));
+            v.setColorStateList(R.id.refresco_gira, "setIndeterminateTintList", ColorStateList.valueOf(tm.oroTexto));
     }
 
     /**

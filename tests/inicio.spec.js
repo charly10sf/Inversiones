@@ -46,7 +46,8 @@ test('en el ordenador, el mapa va más bajo y con el informe al lado', async ({ 
 });
 
 test('en el ordenador, sin hueco bajo GrowIA: lo que viene pasa debajo si la columna de al lado es más larga', async ({ page, errores }, info) => {
-  test.skip(info.project.name !== 'pc', 'en el ordenador');
+  // 0.8: con Toisón, Hoy no lleva posiciones ni reparto (están en Cartera) y el ordenador se rehará más completo (idea de Carlos, 3 nov)
+  test.skip(true, 'el Inicio de GrowFolio en el ordenador ya no existe');
   await inicio(page, ['patrimonio', 'posiciones', 'ia', 'reparto', 'agenda']);
   await page.waitForTimeout(500);
   const fila = page.locator('.car-fila.par-der', { has: page.locator('.iac, .toca') }).first();

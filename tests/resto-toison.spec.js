@@ -2,7 +2,7 @@
 // barra nueva y lleva el símbolo; Ajustes, la entrada y Primeros pasos, el símbolo y TOISÓN (sin la tarjeta «Muy
 // pronto»); la presentación monta el símbolo y escribe TOISÓN; la cuenta atrás de GTA VI, sin neón y con la letra de la
 // casa. Y la regla de la CNMV en el Paso a paso y en las sugerencias de la IA: ni «Vende…» ni «¿Vendo…?».
-// Con GrowFolio, todo como siempre.
+// (0.8: GrowFolio ya no existe; las pruebas de «con GrowFolio, como siempre» se quitaron.)
 import { test as base, expect } from '@playwright/test';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
@@ -70,19 +70,4 @@ conTema('marfil')('CNMV: el Paso a paso y las sugerencias de la IA, sin órdenes
   // las sugerencias del panel de la IA (salen con la clave puesta): en lo que se publica ya no están las de antes
   const js = readdirSync(join(DIST, 'assets')).filter((f) => f.endsWith('.js')).map((f) => readFileSync(join(DIST, 'assets', f), 'utf8')).join('\n');
   for (const q of ['¿Vendo ya', '¿dónde los meto?', '¿cuánto pierdo y qué hago?', '«¿Vendo Repsol?»', 'Qué vender o recortar']) expect(js, q).not.toContain(q);
-});
-
-conTema('')('con GrowFolio, como siempre: tutorial, Ajustes y GTA de neón', async ({ page }, info) => {
-  base.skip(info.project.name !== 'movil', 'una vez basta');
-  await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
-  await page.evaluate(() => iniciarTour(0));
-  await expect(page.locator('.tour-caja img.tour-logo')).toHaveCount(1);
-  await expect(page.locator('.tour-n')).toHaveText('1 de 10');
-  await page.evaluate(() => cerrarTour());
-  await page.evaluate(() => abrirAjustes());
-  await expect(page.locator('.aj-cab img.aj-nom')).toHaveCount(1);
-  await quitarCapas(page);
-  await page.evaluate(() => abrirGTA());
-  await expect(page.locator('.gta-tit')).toBeVisible();
-  expect(await page.locator('.gta-tit').evaluate((e) => getComputedStyle(e).textShadow)).not.toBe('none');
 });

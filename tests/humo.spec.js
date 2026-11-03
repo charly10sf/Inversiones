@@ -71,7 +71,7 @@ test.describe('modo fundador', () => {
     // 0.6b: en la lista, el modo que tiene cada cuenta se distingue (antes los dos botones salían iguales)
     await page.evaluate(() => verModos());
     await expect(page.locator('.modo-l [aria-pressed="true"]').first()).toBeVisible({ timeout: 15_000 });
-    const fondos = await page.evaluate(() => [...document.querySelectorAll('.modo-l li:first-child [data-modo]')].map((b) => getComputedStyle(b).backgroundColor));
+    const fondos = await page.evaluate(() => [...document.querySelectorAll('.modo-l li:first-child [data-modo]')].map((b) => { const c = getComputedStyle(b); return c.backgroundColor + c.backgroundImage; }));
     expect(fondos[0]).not.toBe(fondos[1]);
   });
 });

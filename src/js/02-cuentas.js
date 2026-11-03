@@ -231,7 +231,7 @@ function falloSubida(e) {
   S.cuentaOk = false; S.toastPend = true;
   const code = String((e && e.code) || '');
   if (/permission-denied|invalid-argument|resource-exhausted|unauthenticated/.test(code)) {
-    if (!S.subidaParada) { S.subidaParada = true; toast(trad(code === 'resource-exhausted' ? 'Hoy no se puede guardar más en tu cuenta (límite de Firebase). Lo tienes en este dispositivo y se subirá mañana al abrir.' : 'No se ha podido guardar en tu cuenta. Lo tienes en este dispositivo; si sigue pasando, avisa a quien te pasó GrowFolio.') + ` (${code})`, 9000); }
+    if (!S.subidaParada) { S.subidaParada = true; toast(trad(code === 'resource-exhausted' ? 'Hoy no se puede guardar más en tu cuenta (límite de Firebase). Lo tienes en este dispositivo y se subirá mañana al abrir.' : 'No se ha podido guardar en tu cuenta. Lo tienes en este dispositivo; si sigue pasando, avisa a quien te pasó Toisón.') + ` (${code})`, 9000); }
     return;
   }
   S.fallosSubir = (S.fallosSubir || 0) + 1;

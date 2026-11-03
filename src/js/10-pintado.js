@@ -19,7 +19,7 @@ const svgMarca = (cls = '') => `<svg${cls ? ` class="${cls}"` : ''} viewBox="0 0
 function nombreGF(cls = '') {
   const { w, h, defs, off, letras } = NOMBRE_GF;
   const pc = (v, t) => `${((v / t) * 100).toFixed(3)}%`;
-  return `<span class="nombre-gf${cls ? ` ${cls}` : ''}" role="img" aria-label="GrowFolio" style="aspect-ratio:${w}/${h}">${letras.map(([d, x, y, lw, lh]) => {
+  return `<span class="nombre-gf${cls ? ` ${cls}` : ''}" role="img" aria-label="Toisón" style="aspect-ratio:${w}/${h}">${letras.map(([d, x, y, lw, lh]) => {
     const k = idMarca('ng');
     return `<span aria-hidden="true" style="left:${pc(x, w)};top:${pc(y, h)};width:${pc(lw, w)};height:${pc(lh, h)}"><svg viewBox="${x} ${y} ${lw} ${lh}"><defs>${defs.replace(/__K__/g, k)}<path id="${k}s" d="${d}"/><clipPath id="${k}c"><use href="#${k}s"/></clipPath></defs><use href="#${k}s" fill="#FFF6DA"/><g clip-path="url(#${k}c)"><g transform="translate(0 ${off})"><use href="#${k}s" fill="url(#${k}d)"/><use href="#${k}s" fill="url(#${k}p)"/></g></g></svg></span>`;
   }).join('')}</span>`;
@@ -31,10 +31,10 @@ const iconoIA = () => { const k = idMarca('gi'); return `<svg class="ic-ia" view
 // hasta que se decida otro; se cambia aquí (NOM_TS) y en textoIA. montar() las vuelve a poner al cambiar de diseño
 const NOM_TS = ['La IA', 'The AI'];
 // (al cargar, las de GrowFolio: IDIOMA aún no existe; montar() pone las buenas antes de pintar nada)
-let AVATAR_IA = '<img class="ia-av-img" src="growia.svg" alt="">', NOM_IA = '<img class="gia-nom" src="growia-nombre.svg" alt="GrowIA">';
+let AVATAR_IA = '<img class="ia-av-img" src="growia.svg" alt="">', NOM_IA = '<img class="gia-nom" src="growia-nombre.svg" alt="La IA">';
 function marcaIA(ts = navToison()) {
   AVATAR_IA = ts ? `<span class="ia-av-ts">${ICONOS_PL.asistente}</span>` : '<img class="ia-av-img" src="growia.svg" alt="">';
-  NOM_IA = ts ? `<span class="ia-nom">${NOM_TS[IDIOMA === 'en' ? 1 : 0]}</span>` : '<img class="gia-nom" src="growia-nombre.svg" alt="GrowIA">';
+  NOM_IA = ts ? `<span class="ia-nom">${NOM_TS[IDIOMA === 'en' ? 1 : 0]}</span>` : '<img class="gia-nom" src="growia-nombre.svg" alt="La IA">';
   vigilarIA(ts);
 }
 // «GrowIA» en un texto, con Toisón: «la IA» (o «La IA» al empezar la frase); en inglés, de momento, se queda
@@ -43,8 +43,9 @@ function textoIA(s, antes = '') {
   return s.replace(/GrowIA/g, (m, i) => { const a = (antes + s.slice(0, i)).trimEnd(); return !a || /[.!?¿¡:«(]$/.test(a) ? NOM_TS[0] : 'la IA'; });
 }
 const conIA = (es, en = es) => (navToison() ? esc(textoIA(L(es, en))) : L(es, en).split('GrowIA').map((t) => esc(t)).join(NOM_IA));
-/* los cientos de «GrowIA» de los textos (se cambian de verdad en el paso 5, con GrowFolio → Toisón): con Toisón y en
-   español, se cambian al pintarse, como hace el inglés con su diccionario. Para la mayúscula mira lo que va justo antes */
+/* 0.8: los textos de la app ya dicen «la IA». Esto queda de red para lo que no escribe la app: lo que escribieron la IA y
+   las Actions antes de la 0.8 (análisis guardados, informes, respuestas) y aún dice «GrowIA». Solo en español; para la
+   mayúscula mira lo que va justo antes */
 const ATR_IA = ['title', 'aria-label', 'placeholder'];
 function nodoIA(raiz) {
   if (!raiz) return;
@@ -399,13 +400,13 @@ function montar() {
   const ts = navToison();
   $('#app').innerHTML = `
   <header class="top"><div class="wrap fila-top">
-    <div class="marca"><img src="favicon.svg" alt="GrowFolio"><span class="marca-nom"><img src="growfolio-nombre.svg" alt="GrowFolio"></span><span class="marca-ts" aria-hidden="true"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i><b>TOISÓN</b></span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
+    <div class="marca"><img src="favicon.svg" alt="Toisón"><span class="marca-nom"><img src="growfolio-nombre.svg" alt="Toisón"></span><span class="marca-ts" aria-hidden="true"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i><b>TOISÓN</b></span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${grupos().map((g) => `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`).join('')}</nav>
     ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <div class="acciones">
       ${ts ? `<button class="as-boton as-ts" id="bAsesor" data-accion="asesor" title="${L('Pregúntale a la IA por tu cartera', 'Ask the AI about your portfolio')}" aria-label="${L('Pregúntale a la IA', 'Ask the AI')}">${ICONOS_PL.asistente}</button>`
-    : `<button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a GrowIA por tu cartera" aria-label="Pregúntale a GrowIA">${ICONOS.growia}<span>${L('Pregúntale', 'Ask GrowIA')}</span></button>`}
+    : `<button class="as-boton" id="bAsesor" data-accion="asesor" title="Pregúntale a la IA por tu cartera" aria-label="Pregúntale a la IA">${ICONOS.growia}<span>${L('Pregúntale', 'Ask GrowIA')}</span></button>`}
       <button class="ib ib-fallo" id="bFallo" data-accion="opinion" title="Es una alfa: avisa de cualquier fallo o idea" aria-label="Avisar de un fallo">${ICONOS.bicho}<span class="fallo-t">Avisar de un fallo</span></button>
       <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
     </div>
@@ -438,14 +439,14 @@ const appAvisos = () => { const a = window.InversionesApp; return a && typeof a.
 function htmlAjAvisos() {
   const c = avisosCfg(), app = window.InversionesApp, nativo = appAvisos();
   const permiso = nativo ? (typeof nativo.avisosPermitidos === 'function' ? nativo.avisosPermitidos() : true) : 'Notification' in window ? Notification.permission === 'granted' : false;
-  const donde = nativo ? 'En el móvil, aunque no tengas la app abierta: la app mira cada media hora tus precios de salida, tus fechas y si GrowIA te pregunta algo.'
+  const donde = nativo ? 'En el móvil, aunque no tengas la app abierta: la app mira cada media hora tus precios de salida, tus fechas y si la IA te pregunta algo.'
     : app ? 'Actualiza la app de Android (Ajustes > App de Android) para tener avisos en el móvil.'
-    : 'Te avisa el navegador mientras GrowFolio esté abierto, aunque sea en otra pestaña. Para tenerlos con todo cerrado, la app de Android.';
+    : 'Te avisa el navegador mientras Toisón esté abierto, aunque sea en otra pestaña. Para tenerlos con todo cerrado, la app de Android.';
   const fila = (k, t) => `<label class="av-op"><input type="checkbox" data-av="${k}"${c[k] ? ' checked' : ''}${c.on ? '' : ' disabled'}><span>${t}</span></label>`;
   return `<h3>${ICONOS.campana}Avisos</h3>
     <label class="av-op av-on"><input type="checkbox" data-av="on"${c.on ? ' checked' : ''}${app && !nativo ? ' disabled' : ''}><span><b>Avisarme de lo importante</b><small>${donde}</small></span></label>
-    ${c.on && !permiso ? `<p class="nota av-falta">${ICONOS.alerta}Falta el permiso de notificaciones: ${nativo ? 'acéptalo en el aviso del móvil o en Ajustes de Android > Aplicaciones > GrowFolio > Notificaciones.' : 'acéptalo en el navegador (el candado de la barra de direcciones).'}</p>` : ''}
-    <div class="av-ops">${fila('stop', 'Cuando algo baja de tu precio de salida o se acerca a menos de un 3 %')}${fila('mov', 'Cuando una de tus posiciones sube o baja más de un 5 % en el día')}${fila('fechas', 'El día antes de los resultados y los dividendos de lo tuyo')}${fila('preg', 'Cuando GrowIA te pregunta algo')}${fila('seg', 'Cuando una empresa que sigues llega al precio que le pusiste')}</div>
+    ${c.on && !permiso ? `<p class="nota av-falta">${ICONOS.alerta}Falta el permiso de notificaciones: ${nativo ? 'acéptalo en el aviso del móvil o en Ajustes de Android > Aplicaciones > Toisón > Notificaciones.' : 'acéptalo en el navegador (el candado de la barra de direcciones).'}</p>` : ''}
+    <div class="av-ops">${fila('stop', 'Cuando algo baja de tu precio de salida o se acerca a menos de un 3 %')}${fila('mov', 'Cuando una de tus posiciones sube o baja más de un 5 % en el día')}${fila('fechas', 'El día antes de los resultados y los dividendos de lo tuyo')}${fila('preg', 'Cuando la IA te pregunta algo')}${fila('seg', 'Cuando una empresa que sigues llega al precio que le pusiste')}</div>
     ${c.on ? '<button type="button" class="btn peq" data-av-prueba>Mandar un aviso de prueba</button>' : ''}${htmlAvisoVersiones(permiso)}`;
 }
 // el aviso de las versiones nuevas: en la app de Android, aunque no la tengas abierta (mira cada 3 horas si hay versión)
@@ -453,8 +454,8 @@ const appVersiones = () => { const a = window.InversionesApp; return a && typeof
 function htmlAvisoVersiones(permiso) {
   const a = appVersiones(); if (!a) return '';
   let on = true; try { on = a.avisosVersionesActivados(); } catch (e) {}
-  return `<label class="av-op av-on av-ver"><input type="checkbox" data-av-ver${on ? ' checked' : ''}><span><b>Avisarme de las versiones nuevas</b><small>Cuando salga una versión de GrowFolio, un aviso en el móvil con lo que trae.</small></span></label>
-    ${on && !permiso ? `<p class="nota av-falta">${ICONOS.alerta}Falta el permiso de notificaciones: acéptalo en el aviso del móvil o en Ajustes de Android > Aplicaciones > GrowFolio > Notificaciones.</p>` : ''}`;
+  return `<label class="av-op av-on av-ver"><input type="checkbox" data-av-ver${on ? ' checked' : ''}><span><b>Avisarme de las versiones nuevas</b><small>Cuando salga una versión de Toisón, un aviso en el móvil con lo que trae.</small></span></label>
+    ${on && !permiso ? `<p class="nota av-falta">${ICONOS.alerta}Falta el permiso de notificaciones: acéptalo en el aviso del móvil o en Ajustes de Android > Aplicaciones > Toisón > Notificaciones.</p>` : ''}`;
 }
 // una vez, en la app de Android y si falta el permiso: si quiere que le avisemos de las versiones nuevas
 function pedirAvisoVersiones(intento = 0) {
@@ -465,7 +466,7 @@ function pedirAvisoVersiones(intento = 0) {
   LS.set('inv-ver-pedido', true);
   const h = hoja('¿Te aviso cuando haya versión nueva?', `<div class="act-app">
     ${dibujo('avisover')}
-    <p>Cuando salga una versión de GrowFolio te llega un aviso al móvil con lo que trae, aunque no tengas la app abierta. Para eso, Android te pedirá permiso para las notificaciones.</p>
+    <p>Cuando salga una versión de Toisón te llega un aviso al móvil con lo que trae, aunque no tengas la app abierta. Para eso, Android te pedirá permiso para las notificaciones.</p>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>Ahora no</button><button type="button" class="btn pri" data-ver-si>Sí, avísame</button></div>
     <p class="nota">Se cambia cuando quieras en Ajustes > Avisos y resumen.</p>
   </div>`);
@@ -492,7 +493,7 @@ function enlazarAjAvisos(caja) {
 // la app de Android contesta aquí cuando aceptas (o no) el permiso de notificaciones al activar los avisos
 window.permisoAvisos = (ok) => {
   const caja = document.getElementById('aAvisos'); if (caja) caja.innerHTML = htmlAjAvisos();
-  if (!ok) toast('Sin el permiso de notificaciones no te llegará ningún aviso. Puedes darlo en Ajustes de Android > Aplicaciones > GrowFolio.', 6000);
+  if (!ok) toast('Sin el permiso de notificaciones no te llegará ningún aviso. Puedes darlo en Ajustes de Android > Aplicaciones > Toisón.', 6000);
 };
 async function avisoSistema(tipo, titulo, cuerpo, hash = '#cartera', clave = '', forzar = false) {
   if (S.demo) return;  // 0.6d: la cartera de prueba no manda avisos
@@ -506,7 +507,7 @@ async function avisoSistema(tipo, titulo, cuerpo, hash = '#cartera', clave = '',
   const app = appAvisos();
   if (app && typeof app.notificar === 'function') { try { app.notificar(trad(titulo), trad(cuerpo), String(hash).replace('#', '')); } catch (e) {} return; }
   if (!('Notification' in window) || Notification.permission !== 'granted') { if (forzar) toast('El navegador no deja mandar avisos: acepta el permiso de notificaciones', 4500); return; }
-  const opc = { body: trad(cuerpo), icon: 'growfolio-192.png', badge: 'growfolio-aviso.png', tag: clave || tipo, data: { hash } };
+  const opc = { body: trad(cuerpo), icon: 'toison-192.png', badge: 'toison-aviso.png', tag: clave || tipo, data: { hash } };
   try { const r = await navigator.serviceWorker.getRegistration(); if (r) { await r.showNotification(trad(titulo), opc); return; } } catch (e) {}
   try { const n = new Notification(trad(titulo), opc); n.onclick = () => { window.focus(); location.hash = hash; n.close(); }; } catch (e) {}
 }
@@ -533,7 +534,7 @@ function revisarAvisos(M) {
       if (pr <= stop) avisoSistema('stop', L(`${n}: precio de salida roto`, `${n}: exit price broken`), L(`Está a ${precioFmt(pr)}, por debajo de tu salida (${precioFmt(stop)}). Es lo que te dijiste que harías.`, `It's at ${precioFmt(pr)}, below your exit (${precioFmt(stop)}). It's what you told yourself you'd do.`), '#cartera', `stop:${f.inst.id}:${hoy}`);
       else if (pr <= stop * 1.03) avisoSistema('stop', L(`${n} se acerca a tu precio de salida`, `${n} is nearing your exit price`), L(`Está a un ${fmtNum((pr / stop - 1) * 100, 1)} % de ${precioFmt(stop)}.`, `It's ${fmtNum((pr / stop - 1) * 100, 1)} % above ${precioFmt(stop)}.`), '#cartera', `stopc:${f.inst.id}:${hoy}`);
     }
-    if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', L(`${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `${n} is ${f.varDia > 0 ? 'up' : 'down'} ${fmtNum(Math.abs(f.varDia), 1)} % today`), L('Abre GrowFolio para ver qué ha pasado y qué dice GrowIA.', 'Open GrowFolio to see what happened and what GrowIA says.'), '#cartera', `mov:${f.inst.id}:${hoy}`);
+    if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', L(`${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `${n} is ${f.varDia > 0 ? 'up' : 'down'} ${fmtNum(Math.abs(f.varDia), 1)} % today`), L('Abre Toisón para ver qué ha pasado y qué dice la IA.', 'Open Toisón to see what happened and what GrowIA says.'), '#cartera', `mov:${f.inst.id}:${hoy}`);
   }
   if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', L(`Mañana: ${e.t}`, `Tomorrow: ${e.t}`), e.s, '#agenda', 'ev:' + e.k);
   if (c.seg) for (const it of siguiendo()) {
@@ -576,7 +577,7 @@ function htmlResumenDia(M) {
     <p class="rdia-fecha" data-no-trad>${esc(fecha[0].toUpperCase() + fecha.slice(1))}</p>
     <section class="rdia-car"><span class="k">Tu cartera hoy</span><b class="rdia-tot">${eur(M.total, 0)}</b><span class="${cls(M.dia)} rdia-dia">${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})</span>
       ${mueven.length ? `<div class="mv-l">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></button>`).join('')}</div>` : ''}</section>
-    ${ia && ia.titular ? `<section class="rdia-ia"><h3 data-no-trad>${conIA('Lo que dice GrowIA', 'What GrowIA says')}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
+    ${ia && ia.titular ? `<section class="rdia-ia"><h3 data-no-trad>${conIA('Lo que dice la IA', 'What GrowIA says')}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
     ${fichas.length || mercado.length ? `<section><h3>Los mercados</h3>${fichas.length ? `<div class="agp-fichas">${fichas.map(([k, n]) => { const v = MK[k].variacion_dia; return `<span class="${v >= 0 ? 'up' : 'down'}"><i>${v >= 0 ? '↑' : '↓'}</i>${esc(n)} <b>${pctS(v, 2)}</b></span>`; }).join('')}</div>` : ''}
       ${mercado.length ? `<ul class="rdia-merc">${mercado.map((m) => `<li>${chipImpacto(m.impacto)}<span>${escIA(m.t)}</span></li>`).join('')}</ul>` : ''}</section>` : ''}
     ${tuyas.length ? `<section><h3>Noticias de lo tuyo</h3><ul class="rdia-not">${tuyas.map(noticia).join('')}</ul></section>` : ''}

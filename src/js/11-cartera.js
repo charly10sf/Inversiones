@@ -70,13 +70,13 @@ const BLOQUES_CAR = {
   patrimonio: { n: 'Patrimonio y gráfica', d: 'Cuánto tienes, lo de hoy, lo ganado y cómo se ha movido', w: 'lleno', fijo: true },
   cifras: { n: 'Tus cifras', d: 'Por plataforma, lo invertido, los dividendos, en 10 años y las ventas del año', w: 'estrecho' },
   gta: { n: 'GTA VI', d: 'La cuenta atrás y tu cartera en copias del juego', w: 'estrecho' },
-  ia: { n: 'GrowIA y lo que toca', d: 'Su diagnóstico, sus notas y lo que toca hacer', w: 'grande' },
+  ia: { n: 'La IA y lo que toca', d: 'Su diagnóstico, sus notas y lo que toca hacer', w: 'grande' },
   posiciones: { n: 'Tus posiciones', d: 'Lo que tienes, tu plan y tus movimientos', w: 'grande', fijo: true },
   reparto: { n: 'Reparto', d: 'Por países, sectores, monedas y tipo', w: 'estrecho' },
   agenda: { n: 'Lo que viene', d: 'Resultados, dividendos y fechas de lo tuyo', w: 'estrecho' },
   mapa: { n: 'Tu cartera de un vistazo', d: 'Cada posición, del tamaño de lo que vale y del color de cómo va', w: 'grande' },
-  vistazo: { n: 'Señales de un vistazo', d: 'Qué dicen los números y GrowIA de cada posición', w: 'estrecho' },
-  informe: { n: 'Lo último, según GrowIA', d: 'Su resumen de las noticias del día', w: 'estrecho' },
+  vistazo: { n: 'Señales de un vistazo', d: 'Qué dicen los números y la IA de cada posición', w: 'estrecho' },
+  informe: { n: 'Lo último, según la IA', d: 'Su resumen de las noticias del día', w: 'estrecho' },
   noticias: { n: 'Noticias de lo tuyo', d: 'Los últimos titulares de lo que tienes', w: 'grande' },
   movidas: { n: 'Lo que más se mueve', d: 'Las empresas que más suben y bajan', w: 'grande' },
   futuro: { n: 'Tu futuro', d: 'Lo que podrías tener en 5, 10 y 20 años', w: 'estrecho' },
@@ -197,7 +197,7 @@ function htmlBloqueCar(k, M) {
     if (k === 'metas') {
       const metas = estadoPerfil(M).metas || [];
       return `<section aria-labelledby="hMetC"><div class="sec-cab"><h2 id="hMetC">Tus metas</h2><div class="der"><a class="enlace acento" href="#objetivos">${metas.length ? 'Verlas' : 'Añadir una'}</a></div></div>
-        ${metas.length ? `<ul class="metas car-metas">${metas.slice(0, 4).map((m) => `<li class="${m.ok === false ? 'falta' : 'ok'}"><div class="meta-cab"><b>${esc(m.n)}</b><span class="k">${eur(m.importe, 0)}${m.anio ? ` en ${m.anio}` : ''}</span></div><div class="pf-barra ok"><i style="width:${(+m.pct || 0).toFixed(0)}%"></i></div></li>`).join('')}</ul>` : '<p class="k">Algo con cifra y fecha: la entrada de un piso, un coche, llegar a 100.000 €… GrowFolio calcula si llegas.</p>'}</section>`;
+        ${metas.length ? `<ul class="metas car-metas">${metas.slice(0, 4).map((m) => `<li class="${m.ok === false ? 'falta' : 'ok'}"><div class="meta-cab"><b>${esc(m.n)}</b><span class="k">${eur(m.importe, 0)}${m.anio ? ` en ${m.anio}` : ''}</span></div><div class="pf-barra ok"><i style="width:${(+m.pct || 0).toFixed(0)}%"></i></div></li>`).join('')}</ul>` : '<p class="k">Algo con cifra y fecha: la entrada de un piso, un coche, llegar a 100.000 €… Toisón calcula si llegas.</p>'}</section>`;
     }
     if (k === 'renta') {
       const fa = fiscalAnio(anio);
@@ -239,9 +239,8 @@ function vistaCartera(M) {
   // 0.6d: con la cartera de prueba, sin «Primeros pasos» ni el aviso del perfil (son tuyos, no de la prueba)
   const empezar = S.demo ? '' : htmlEmpezar();
   const aviso = S.demo ? '' : empezar || (perfilIncompleto() && Date.now() - (LS.get('inv-perfil-aviso', 0) || 0) > 3 * 864e5
-    ? `<div class="pf-recuerda" role="note"><span class="pf-r-ic">${ICONOS.perfil}</span><span class="pf-r-t"><b>${perfilVacio() ? 'Te falta tu perfil de inversor' : 'Tu perfil de inversor está a medias'}</b><small>Sin tu edad, tu plazo y el riesgo que aguantas, GrowIA te habla como a cualquiera. Es un minuto.</small></span><button type="button" class="btn peq pri" data-accion="perfil-guiado">${perfilVacio() ? 'Hacerlo ahora' : 'Terminarlo'}</button><button type="button" class="ib" data-accion="perfil-aviso-no" aria-label="Ahora no" title="Ahora no (vuelve en unos días)">${ICONOS.cerrar}</button></div>` : '');
-  // 0.7l: arriba del todo, la tarjeta de Toisón (abre el estreno)
-  return `<div class="car">${htmlTarjetaToison()}${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
+    ? `<div class="pf-recuerda" role="note"><span class="pf-r-ic">${ICONOS.perfil}</span><span class="pf-r-t"><b>${perfilVacio() ? 'Te falta tu perfil de inversor' : 'Tu perfil de inversor está a medias'}</b><small>Sin tu edad, tu plazo y el riesgo que aguantas, la IA te habla como a cualquiera. Es un minuto.</small></span><button type="button" class="btn peq pri" data-accion="perfil-guiado">${perfilVacio() ? 'Hacerlo ahora' : 'Terminarlo'}</button><button type="button" class="ib" data-accion="perfil-aviso-no" aria-label="Ahora no" title="Ahora no (vuelve en unos días)">${ICONOS.cerrar}</button></div>` : '');
+  return `<div class="car">${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
     : f.t === 'suelta' ? `<div class="car-fila suelta">${f.a.map((x) => `<div class="car-col">${x.html}</div>`).join('')}</div>`
     : `<div class="car-fila ${f.t}">${f.t === 'par-izq' ? col(f.a) + col(f.b) : col(f.a) + col(f.b, ' lado')}</div>`)).join('')}
     <div class="car-pie"><button type="button" class="btn peq car-ordenar" data-accion="ordenar-cartera">${ICONOS.ordenar}Personalizar Inicio</button></div></div>`;
@@ -389,10 +388,10 @@ function htmlToca(M) {
   } else {
     cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>Aún sin activar en este dispositivo</small></div></div>
       <p class="iac-tit iac-act">${esPublico() ? L('Analiza tu cartera cada día, te explica lo que pasa y contesta lo que le preguntes. Es gratis con una clave de Google.', 'It analyses your portfolio every day, explains what is going on and answers your questions. Free with a Google key.') : 'Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.'}</p>
-      <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.growia}Activar GrowIA</button>`;
+      <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.growia}Activar la IA</button>`;
   }
   const lista = v.length ? `<div class="iac-sub"><h3>${navToison() ? L('Tu mes', 'Your month') : 'Lo que toca ahora'}</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Ver el paso a paso'}</button></div>
-    <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según GrowIA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
+    <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
   // en el ordenador, a lo ancho debajo de la gráfica: el diagnóstico a la izquierda y lo que toca a la derecha
   return `<section class="toca iac" aria-labelledby="hToca"><div class="iac-in${lista ? ' con-lista' : ''}"><div class="iac-izq">${cab}${tit}${notas}</div>${lista ? `<div class="iac-der">${lista}</div>` : ''}</div></section>`;
 }
@@ -428,7 +427,7 @@ function htmlPosiciones(M) {
   const ef = M.efectivo.map((e) => `<button class="fila efectivo" data-accion="efectivo" data-plat="${esc(e.plataforma)}" aria-label="Cambiar el efectivo de ${esc(e.plataforma)}"><span class="activo-l">${logo(null, '€')}<span class="activo"><b>Efectivo</b><small>${esc(e.plataforma)}</small></span></span><span class="c-precio"></span><span class="c-hoy"></span><span class="r valor num c-val">${eur(e.importe)}</span><span class="r c-peso k num">${pct(M.total ? (e.importe / M.total) * 100 : 0, 1)}</span><span class="c-gan"></span><span class="c-pct"></span><span class="c-senal"></span></button>`).join('');
   return `<section aria-labelledby="hPos">
     <div class="sec-cab pos-cab"><h2 id="hPos">Posiciones</h2><span class="k">${M.filas.length}<span class="pos-act"> activos</span></span>
-      <div class="der">${M.filas.length > 1 ? `<label class="orden-chip" title="Ordenar">${ICONOS.orden}<span>${tituloCol(ORDEN_CORTO[S.ordenPos.k] || 'Valor')}</span><i>${S.ordenPos.k === 'activo' ? (S.ordenPos.dir === 'asc' ? 'A-Z' : 'Z-A') : S.ordenPos.dir === 'asc' ? '↑' : '↓'}</i><select data-orden-pos-sel aria-label="Ordenar las posiciones">` + COLS_POS.map(([k, t]) => [[k, 'desc'], [k, 'asc']].map(([kk, d]) => `<option value="${kk}|${d}"${S.ordenPos.k === kk && S.ordenPos.dir === d ? ' selected' : ''}>${t === '%' ? 'Ganancia en %' : tituloCol(t)} ${kk === 'activo' ? (d === 'asc' ? 'A-Z' : 'Z-A') : kk === 'senal' ? (esPublico() ? (d === 'asc' ? L('vender primero', 'sell first') : L('comprar primero', 'buy first')) : d === 'asc' ? 'más urgente' : 'menos urgente') : d === 'desc' ? 'mayor a menor' : 'menor a mayor'}</option>`).join('')).join('') + '</select></label>' : ''}<button class="btn peq btn-op" data-accion="operacion" title="Apuntar una compra o una venta" aria-label="Compra o venta">${ICONOS.compraVenta}<span class="txt-pc">Apuntar compra o venta</span></button><button class="btn peq btn-ya" data-accion="nueva-pos" title="Añadir lo que ya tenías antes de GrowFolio" aria-label="Lo que ya tenías">${ICONOS.mas}<span class="txt-pc">Añadir lo que ya tenía</span></button></div></div>
+      <div class="der">${M.filas.length > 1 ? `<label class="orden-chip" title="Ordenar">${ICONOS.orden}<span>${tituloCol(ORDEN_CORTO[S.ordenPos.k] || 'Valor')}</span><i>${S.ordenPos.k === 'activo' ? (S.ordenPos.dir === 'asc' ? 'A-Z' : 'Z-A') : S.ordenPos.dir === 'asc' ? '↑' : '↓'}</i><select data-orden-pos-sel aria-label="Ordenar las posiciones">` + COLS_POS.map(([k, t]) => [[k, 'desc'], [k, 'asc']].map(([kk, d]) => `<option value="${kk}|${d}"${S.ordenPos.k === kk && S.ordenPos.dir === d ? ' selected' : ''}>${t === '%' ? 'Ganancia en %' : tituloCol(t)} ${kk === 'activo' ? (d === 'asc' ? 'A-Z' : 'Z-A') : kk === 'senal' ? (esPublico() ? (d === 'asc' ? L('vender primero', 'sell first') : L('comprar primero', 'buy first')) : d === 'asc' ? 'más urgente' : 'menos urgente') : d === 'desc' ? 'mayor a menor' : 'menor a mayor'}</option>`).join('')).join('') + '</select></label>' : ''}<button class="btn peq btn-op" data-accion="operacion" title="Apuntar una compra o una venta" aria-label="Compra o venta">${ICONOS.compraVenta}<span class="txt-pc">Apuntar compra o venta</span></button><button class="btn peq btn-ya" data-accion="nueva-pos" title="Añadir lo que ya tenías antes de Toisón" aria-label="Lo que ya tenías">${ICONOS.mas}<span class="txt-pc">Añadir lo que ya tenía</span></button></div></div>
 
     <div class="tabla-pos">
       <div class="fila cab">${COLS_POS.map(([k, t0, c]) => { const t = tituloCol(t0), on = S.ordenPos && S.ordenPos.k === k; return `<span class="${c}"><button class="th" data-orden-pos="${k}" aria-pressed="${on}" title="Ordenar por ${t.toLowerCase()}">${t}${on ? `<span class="fl">${S.ordenPos.dir === 'asc' ? '↑' : '↓'}</span>` : ''}</button></span>`; }).join('')}</div>

@@ -4,9 +4,8 @@ async function iniciar() {
   if (demo) LS_DEMO = new Map();
   cargarIdioma();
   if (bancoALaApp()) return;
-  // 0.7n: el enlace del estreno de Toisón (#toison, el que se manda por WhatsApp) lo abre a cualquiera, también sin cuenta
-  const verToison = location.hash === '#toison';
-  if (verToison) try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}
+  // el enlace del estreno de Toisón (#toison, 0.7n) ya no abre nada: se quita de la dirección
+  if (location.hash === '#toison') try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}
   try { if (window.InversionesApp && typeof InversionesApp.versionVista === 'function') InversionesApp.versionVista(VERSION); } catch (e) {}
   try { if (window.InversionesApp && typeof InversionesApp.idioma === 'function') InversionesApp.idioma(IDIOMA); } catch (e) {}
   // quien llega nuevo ve la presentación general, no la de la 0.2; quien venía de la 0.1, se apunta
@@ -28,7 +27,6 @@ async function iniciar() {
     return;
   }
   await esperarEntrada(t0);
-  if (verToison) avisoToison(null, true, true);
   // en la prueba, ni se lee ni se abre tu cartera: la inventada y adentro
   if (demo) { await arrancarDemo(); quitarEntrada(); return; }
   await entrar();
@@ -148,7 +146,7 @@ function mostrarEntrada() {
   if (temaActual()) return entradaTs(quieto, corta);
   const n = nombreUsuario();
   const d = document.createElement('div');
-  d.className = 'entrada' + (quieto ? ' quieta' : corta ? ' corta' : ''); d.id = 'entrada'; d.setAttribute('role', 'status'); d.setAttribute('aria-label', 'GrowFolio');
+  d.className = 'entrada' + (quieto ? ' quieta' : corta ? ' corta' : ''); d.id = 'entrada'; d.setAttribute('role', 'status'); d.setAttribute('aria-label', 'Toisón');
   d.innerHTML = `<div class="en-c">${svgEntrada()}<p class="en-saludo">${esc(saludoHora())}${n ? `, <b>${esc(n)}</b>` : ''}</p><div class="en-barra" aria-hidden="true"><i></i></div></div>`;
   document.body.appendChild(d);
   const dura = corta ? FIN_CORTA : FIN_ENTRADA;
@@ -236,7 +234,7 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
     const r = await fetch('/GrowFolio/version.json?t=' + Date.now(), { cache: 'no-store' });
     if (!r.ok) return;
     if (window.InversionesApp) {
-      if (typeof window.InversionesApp.repo !== 'function') setTimeout(() => toast(L('GrowFolio ha cambiado de dirección: actualiza la app de Android (Ajustes > App de Android) para seguir al día.', 'GrowFolio has moved: update the Android app (Settings > Android app) to stay up to date.'), 9000), 2500);
+      if (typeof window.InversionesApp.repo !== 'function') setTimeout(() => toast(L('Toisón ha cambiado de dirección: actualiza la app de Android (Ajustes > App de Android) para seguir al día.', 'Toisón has moved: update the Android app (Settings > Android app) to stay up to date.'), 9000), 2500);
       return;
     }
     if (navigator.serviceWorker) for (const rg of await navigator.serviceWorker.getRegistrations()) if (/\/inversiones\//i.test(rg.scope)) await rg.unregister();

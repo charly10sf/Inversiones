@@ -19,7 +19,7 @@ async function bancoDisponible() {
 /* elegir el banco y salir a darle permiso; a la vuelta sigue vueltaDelBanco() */
 async function conectarBanco(plataforma) {
   const h = hoja(L('Conectar con tu banco', 'Connect your bank'), `<div class="bk">
-    <p class="nota" style="margin:0">${L(`Elige el banco de <b>${esc(plataforma)}</b>. Te llevará a su web o a su app para dar permiso de <b>solo lectura</b>: GrowFolio verá el saldo de la cuenta, nunca podrá mover dinero. El permiso dura unos 180 días.`, `Pick the bank for <b>${esc(plataforma)}</b>. It takes you to its website or app to grant <b>read-only</b> access: GrowFolio sees the balance and can never move money. Access lasts about 180 days.`)}</p>
+    <p class="nota" style="margin:0">${L(`Elige el banco de <b>${esc(plataforma)}</b>. Te llevará a su web o a su app para dar permiso de <b>solo lectura</b>: Toisón verá el saldo de la cuenta, nunca podrá mover dinero. El permiso dura unos 180 días.`, `Pick the bank for <b>${esc(plataforma)}</b>. It takes you to its website or app to grant <b>read-only</b> access: Toisón sees the balance and can never move money. Access lasts about 180 days.`)}</p>
     <div class="tabs bk-paises" role="group" aria-label="${L('País del banco', 'Bank country')}"><button type="button" data-bk-pais="ES" aria-pressed="true">${L('España', 'Spain')}</button><button type="button" data-bk-pais="DE" aria-pressed="false">${L('Alemania', 'Germany')}</button></div>
     <input class="bk-busca" type="search" placeholder="${L('Busca tu banco', 'Search your bank')}" aria-label="${L('Busca tu banco', 'Search your bank')}">
     <ul class="bk-lista" aria-live="polite"><li class="vacio">${L('Cargando bancos…', 'Loading banks…')}</li></ul>
@@ -43,12 +43,12 @@ async function conectarBanco(plataforma) {
     const b = e.target.closest('[data-bk]'); if (!b) return;
     // la app de Android de antes abría el banco en el navegador y la vuelta no llegaba a la app
     const app = window.InversionesApp, dentro = (() => { try { return !!app.bancoDentro(); } catch (e2) { return false; } })();
-    if (app && !dentro) { err.textContent = L('Para conectar el banco desde el móvil, actualiza antes la app de GrowFolio (en Ajustes) o hazlo desde el ordenador.', 'To connect your bank from your phone, update the GrowFolio app first (in Settings) or do it from a computer.'); return; }
+    if (app && !dentro) { err.textContent = L('Para conectar el banco desde el móvil, actualiza antes la app de Toisón (en Ajustes) o hazlo desde el ordenador.', 'To connect your bank from your phone, update the Toisón app first (in Settings) or do it from a computer.'); return; }
     // la app del banco (Trade Republic…) devuelve con un enlace de Enable Banking: si GrowFolio no puede abrirlo, se
     // abre en el navegador y allí sale «ha caducado». Se pide permitirlo una vez, con el ajuste a un toque
     const listos = (() => { try { return app ? !!app.enlacesBancoListos() : true; } catch (e2) { return true; } })();
     if (app && !listos && !b.dataset.sinEnlaces) {
-      err.innerHTML = `<div class="bk-enlaces"><b>${L('Un paso, solo una vez', 'One step, just once')}</b><span>${L('Para que tu banco te devuelva a GrowFolio al dar el permiso, deja que GrowFolio abra los enlaces de Enable Banking: en la pantalla que se abre, «Añadir enlace» y marca <b>auth.enablebanking.com</b> (y tilisy, si sale).', 'So your bank can bring you back to GrowFolio after granting access, let GrowFolio open Enable Banking links: on the screen that opens, «Add link» and tick <b>auth.enablebanking.com</b> (and tilisy, if listed).')}</span>
+      err.innerHTML = `<div class="bk-enlaces"><b>${L('Un paso, solo una vez', 'One step, just once')}</b><span>${L('Para que tu banco te devuelva a Toisón al dar el permiso, deja que Toisón abra los enlaces de Enable Banking: en la pantalla que se abre, «Añadir enlace» y marca <b>auth.enablebanking.com</b> (y tilisy, si sale).', 'So your bank can bring you back to Toisón after granting access, let Toisón open Enable Banking links: on the screen that opens, «Add link» and tick <b>auth.enablebanking.com</b> (and tilisy, if listed).')}</span>
         <div class="fila-btns"><button type="button" class="btn peq pri" data-bk-ajuste>${L('Abrir el ajuste', 'Open the setting')}</button><button type="button" class="btn peq" data-bk-seguir>${L('Ya está, seguir', 'Done, continue')}</button></div></div>`;
       $('[data-bk-ajuste]', err).onclick = () => { try { app.abrirAjustesEnlaces(); } catch (e2) {} };
       $('[data-bk-seguir]', err).onclick = () => { b.dataset.sinEnlaces = '1'; b.click(); };
@@ -56,7 +56,7 @@ async function conectarBanco(plataforma) {
     }
     // Trade Republic, en el navegador de un móvil, solo dice «descarga la app» y desde ahí no se puede dar el permiso
     if (!app && /android|iphone|ipad/i.test(navigator.userAgent) && /trade\s*republic/i.test(b.dataset.bk) && !b.dataset.igual) {
-      err.innerHTML = L('Trade Republic, en el navegador del móvil, solo te manda a descargar su app y el permiso no llega. Hazlo desde la app de GrowFolio o desde el ordenador.', 'On a phone browser Trade Republic only asks you to download its app, and the permission never arrives. Do it from the GrowFolio app or from a computer.') + ` <button type="button" class="enlace" data-bk-igual>${L('Probar aquí igualmente', 'Try here anyway')}</button>`;
+      err.innerHTML = L('Trade Republic, en el navegador del móvil, solo te manda a descargar su app y el permiso no llega. Hazlo desde la app de Toisón o desde el ordenador.', 'On a phone browser Trade Republic only asks you to download its app, and the permission never arrives. Do it from the Toisón app or from a computer.') + ` <button type="button" class="enlace" data-bk-igual>${L('Probar aquí igualmente', 'Try here anyway')}</button>`;
       $('[data-bk-igual]', err).onclick = () => { b.dataset.igual = '1'; b.click(); };
       return;
     }

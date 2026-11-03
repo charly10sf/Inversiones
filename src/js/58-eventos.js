@@ -82,11 +82,6 @@ document.addEventListener('click', (e) => {
     else if (a === 'recorte') iniciarRecorte();
     else if (a === 'idioma') menuIdioma(t);
     else if (a === 'novedades-detalle') mostrarNovedades(null, () => {}, true);
-    // 0.7l: la tarjeta de Toisón en Inicio abre el estreno entero (aunque ya lo hayas visto); la × la quita.
-    // 0.7m: quitada, sigue en Ajustes, desde donde se puede devolver a Inicio
-    else if (a === 'toison') avisoToison(null, true);
-    else if (a === 'toison-fuera') { LS.set('inv-toison-tarjeta', Date.now()); pintar(); toast(L('Quitada de Inicio. La tienes en Ajustes', 'Removed from Home. You’ll find it in Settings'), 4500); }
-    else if (a === 'toison-inicio') { LS.del('inv-toison-tarjeta'); const x = t.closest('.ts-tarjeta'); if (x) x.remove(); pintar(); toast(L('Vuelve a estar en Inicio', 'Back on Home')); }
     else if (a === 'novedades-guia') guiaNuevo();
     else if (a === 'novedades-ocultar') { LS.set('inv-nov-cerrada', baseVer(VERSION)); const x = t.closest('.nov-aviso'); if (x) x.remove(); }
     else if (a === 'ordenar-cartera') abrirCarEdit();

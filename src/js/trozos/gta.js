@@ -201,7 +201,7 @@ function htmlAdderGTA(M) {
     <div class="gta-pila gta-rev" role="img" aria-label="${esc(ADDER.tareas.map(([t, s]) => `${LL(t)}: ${fmtNum(s, 1)} ${L('semanas', 'weeks')}`).join(', '))}">${ADDER.tareas.map(([, s, , col], i) => `<i style="flex:${s};--c:${col};--i:${i}"></i>`).join('')}${!O && P && n < 1 ? `<span class="gta-pila-tu" style="left:${(n * 100).toFixed(1)}%"><em>${L('tu cartera', 'your portfolio')}</em></span>` : ''}</div>
     <ul class="gta-pila-ley gta-rev" data-no-trad>${ADDER.tareas.map(([t, s, x, col]) => `<li style="--c:${col}"><i></i><b>${esc(LL(t))}</b><span>${fmtNum(s, s % 1 ? 1 : 0)} ${L(s === 1 ? 'semana' : 'semanas', s === 1 ? 'week' : 'weeks')}, ${fmtNum(Math.round((s * ADDER.semanaEUR) / 100) * 100, 0)} €</span><small>${esc(LL(x))}</small></li>`).join('')}</ul>
     ${tu}
-    <p class="gta-est">${L(`Estimación de GrowFolio, entre ${fmtNum(ADDER.min, 0)} y ${fmtNum(ADDER.max, 0)} €: Rockstar no dice cuánto cuesta cada coche. Son ${fmtNum(total, 0)} semanas de trabajo de una persona a lo que le cuesta cada empleado a Rockstar North, con oficina y equipos. La marca y el modelo del juego son inventados, así que no hay licencia que pagar.`, `GrowFolio’s estimate, between €${fmtNum(ADDER.min, 0)} and €${fmtNum(ADDER.max, 0)}: Rockstar doesn’t say what each car costs. It’s ${fmtNum(total, 0)} weeks of one person’s work at what each employee costs Rockstar North, including office and equipment. The in-game brand and model are made up, so there’s no licence to pay.`)}</p>
+    <p class="gta-est">${L(`Estimación de Toisón, entre ${fmtNum(ADDER.min, 0)} y ${fmtNum(ADDER.max, 0)} €: Rockstar no dice cuánto cuesta cada coche. Son ${fmtNum(total, 0)} semanas de trabajo de una persona a lo que le cuesta cada empleado a Rockstar North, con oficina y equipos. La marca y el modelo del juego son inventados, así que no hay licencia que pagar.`, `Toisón’s estimate, between €${fmtNum(ADDER.min, 0)} and €${fmtNum(ADDER.max, 0)}: Rockstar doesn’t say what each car costs. It’s ${fmtNum(total, 0)} weeks of one person’s work at what each employee costs Rockstar North, including office and equipment. The in-game brand and model are made up, so there’s no licence to pay.`)}</p>
   </section>`;
 }
 
@@ -361,11 +361,12 @@ function pintarImagenGTA(cv, D) {
     ctx.beginPath(); if (ctx.roundRect) ctx.roundRect(sx - w / 2, y, w, 76, 38); else ctx.rect(sx - w / 2, y, w, 76); ctx.fill(); ctx.stroke(); ctx.restore();
     neonGTA(ctx, t, sx, y + 53, '#FFE2B8', 'rgba(255, 159, 67, .8)', 10);
   }
-  ctx.font = `800 32px ${sans}`; ctx.fillStyle = '#FFE7F4'; ctx.fillText(L('Hecho con GrowFolio', 'Made with GrowFolio'), sx, H - 62);
-  ctx.font = `500 21px ${sans}`; ctx.fillStyle = '#B9A3D0'; ctx.fillText(L('GrowFolio no tiene relación con Rockstar Games ni con Take-Two.', 'GrowFolio has no connection with Rockstar Games or Take-Two.'), sx, H - 26);
+  ctx.font = `800 32px ${sans}`; ctx.fillStyle = '#FFE7F4'; ctx.fillText(L('Hecho con Toisón', 'Made with Toisón'), sx, H - 62);
+  ctx.font = `500 21px ${sans}`; ctx.fillStyle = '#B9A3D0'; ctx.fillText(L('Toisón no tiene relación con Rockstar Games ni con Take-Two.', 'Toisón has no connection with Rockstar Games or Take-Two.'), sx, H - 26);
 }
 // las letras de neón, si llegan a tiempo (sin red, las de reserva)
 function letrasGTA() {
+  fuenteGTA(true);
   if (!document.fonts || !document.fonts.load) return Promise.resolve();
   return Promise.race([Promise.all([document.fonts.load(`400 200px ${FUENTE_NEON}`), document.fonts.load(`400 90px ${FUENTE_SCRIPT}`)]).catch(() => {}), new Promise((ok) => setTimeout(ok, 2500))]);
 }
@@ -373,10 +374,10 @@ function letrasGTA() {
    archivo; si no se puede, se descarga. La app de antes no sabe compartir imágenes: se dice que la actualices */
 async function compartirImagenGTA(cv) {
   const url = CFG.dev ? CFG.pages : location.origin + location.pathname;
-  const texto = L(`Mi cartera en GTA VI, hecha con GrowFolio: ${url}`, `My portfolio in GTA VI, made with GrowFolio: ${url}`);
+  const texto = L(`Mi cartera en GTA VI, hecha con Toisón: ${url}`, `My portfolio in GTA VI, made with Toisón: ${url}`);
   const app = window.InversionesApp;
   if (app && typeof app.compartirImagen === 'function') { app.compartirImagen(cv.toDataURL('image/png').split(',')[1], texto); return 'app'; }
-  if (app) { toast(L('Para compartir la imagen, actualiza la app de Android (Ajustes > App de Android) o abre GrowFolio en Chrome.', 'To share the image, update the Android app (Settings > Android app) or open GrowFolio in Chrome.'), 6000); return 'app-vieja'; }
+  if (app) { toast(L('Para compartir la imagen, actualiza la app de Android (Ajustes > App de Android) o abre Toisón en Chrome.', 'To share the image, update the Android app (Settings > Android app) or open Toisón in Chrome.'), 6000); return 'app-vieja'; }
   const blob = await new Promise((ok) => cv.toBlob(ok, 'image/png'));
   if (!blob) return 'nada';
   const nombre = L('mi-cartera-en-gta-vi.png', 'my-portfolio-in-gta-vi.png');
@@ -664,7 +665,7 @@ function htmlGTA(M) {
       ${htmlCopiasGTA(M)}
       ${htmlAdderGTA(M)}
       ${htmlDesdeTrailerGTA(M)}
-      <p class="gta-pie">${L('Fechas, precio, plataformas y tráileres: Rockstar Games y Take-Two. Ventas de GTA V: Take-Two. Precio del Adder en el juego: GTA V. Lo que costó hacerlo: estimación de GrowFolio con los gastos de personal de Rockstar North (PCGamesInsider) y lo que se tarda en hacer un coche para un videojuego (GTPlanet). La música es original, hecha por GrowFolio. GrowFolio no tiene relación con Rockstar Games ni con Take-Two.', 'Dates, price, platforms and trailers: Rockstar Games and Take-Two. GTA V sales: Take-Two. Adder in-game price: GTA V. What it cost to make: GrowFolio’s estimate from Rockstar North’s staff costs (PCGamesInsider) and how long a video game car takes to make (GTPlanet). The music is original, made by GrowFolio. GrowFolio has no connection with Rockstar Games or Take-Two.')}</p>
+      <p class="gta-pie">${L('Fechas, precio, plataformas y tráileres: Rockstar Games y Take-Two. Ventas de GTA V: Take-Two. Precio del Adder en el juego: GTA V. Lo que costó hacerlo: estimación de Toisón con los gastos de personal de Rockstar North (PCGamesInsider) y lo que se tarda en hacer un coche para un videojuego (GTPlanet). La música es original, hecha por Toisón. Toisón no tiene relación con Rockstar Games ni con Take-Two.', 'Dates, price, platforms and trailers: Rockstar Games and Take-Two. GTA V sales: Take-Two. Adder in-game price: GTA V. What it cost to make: Toisón’s estimate from Rockstar North’s staff costs (PCGamesInsider) and how long a video game car takes to make (GTPlanet). The music is original, made by Toisón. Toisón has no connection with Rockstar Games or Take-Two.')}</p>
     </div>`;
 }
 /* las cifras cuentan desde cero cuando aparecen en pantalla */
@@ -737,7 +738,7 @@ function avisoGTAPantalla(seguir) {
   fondo.innerHTML = `<div class="gta-marco gta-aviso" role="dialog" aria-modal="true" aria-label="Nuevo: GTA VI"><div class="gta"><header class="gta-hero">
     ${escenaGTA()}
     <div class="gta-hero-c">
-      <p class="gta-rotulo gta-pre" data-no-trad>${L('nuevo en GrowFolio', 'new in GrowFolio')}</p>
+      <p class="gta-rotulo gta-pre" data-no-trad>${L('nuevo en Toisón', 'new in Toisón')}</p>
       <h2 class="gta-tit" data-t="GTA VI">GTA VI</h2>
       <div id="gtaReloj">${relojGTA()}</div>
       <p class="gta-lead">${L(`${f ? 'Sale el 19 de noviembre. Para la espera' : 'Ya ha salido. Para celebrarlo'}, unas cuentas con tu cartera: cuántos GTA VI vale, cuántos Adders podría hacer Rockstar con ella y cuánto llevamos de camino desde GTA V.`, `${f ? 'It’s out on 19 November. While you wait' : 'It’s out. To celebrate'}, your portfolio in numbers: how many copies of GTA VI it’s worth, how many Adders Rockstar could build with it and how far we’ve come since GTA V.`)}</p>

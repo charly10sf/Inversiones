@@ -97,14 +97,14 @@ public class Versiones extends Worker {
         }
         boolean web = !v.isEmpty() && comparar(v, vista) > 0 && comparar(v, avisada) > 0;
         boolean apk = app > BuildConfig.VERSION_CODE && app > appAvisada;
-        // 0.4: con frases enteras. «GrowFolio 0.4 ya está aquí» y, debajo, lo que trae. Si viene con app nueva y ya se
+        // 0.4: con frases enteras. «Toisón 0.8 ya está aquí» y, debajo, lo que trae. Si viene con app nueva y ya se
         // está instalando sola (autoActualizar acaba de mandarla a Android), no se dice nada de la app: si sale bien, no
         // hay nada que hacer, y si Android pide confirmación, Instalado lo apunta y en la siguiente vuelta llega el aviso
         // de la app con lo que hay que tocar. Así ningún aviso promete algo que luego no pasa.
         boolean intentada = apk && !p.getBoolean("auto_no", false) && p.getInt("auto_intento", 0) >= app;
         boolean sola = Actualizador.puedeSola(c);
         if (web) {
-            String titulo = en ? "GrowFolio " + v + " is here" : "GrowFolio " + v + " ya está aquí";
+            String titulo = en ? "Toisón " + v + " is here" : "Toisón " + v + " ya está aquí";
             String lo = t.isEmpty() ? "" : t + ". ";
             String texto = !apk || intentada ? lo + (en ? "Open it to see what's new." : "Ábrela para ver qué hay de nuevo.")
                     : sola ? lo + (en ? "There's a new app too: it installs itself when you're not using it, or tap Update." : "También hay app nueva: se instala sola cuando no la estés usando, o toca Actualizar.")
@@ -172,16 +172,15 @@ public class Versiones extends Worker {
         }
     }
 
-    /** el aviso; con app nueva, un botón «Actualizar» que abre GrowFolio y empieza a bajarla (y tocar el aviso de la app,
+    /** el aviso; con app nueva, un botón «Actualizar» que abre Toisón y empieza a bajarla (y tocar el aviso de la app,
      *  lo mismo) */
     private static void mostrar(Context c, String clave, String v, String titulo, String texto, boolean conApp, boolean en) {
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         if (nm == null) return;
-        if (nm.getNotificationChannel(CANAL) == null) {
-            NotificationChannel ch = new NotificationChannel(CANAL, "Versiones nuevas", NotificationManager.IMPORTANCE_DEFAULT);
-            ch.setDescription("Cuando sale una versión nueva de GrowFolio, con lo que trae");
-            nm.createNotificationChannel(ch);
-        }
+        // 0.8: se crea cada vez (si ya existe, Android solo le cambia el nombre y la descripción)
+        NotificationChannel ch = new NotificationChannel(CANAL, "Versiones nuevas", NotificationManager.IMPORTANCE_DEFAULT);
+        ch.setDescription("Cuando sale una versión nueva de Toisón, con lo que trae");
+        nm.createNotificationChannel(ch);
         Intent i = new Intent(c, Principal.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         if (v != null) i.putExtra("version", true).putExtra("v", v); else i.putExtra("actualizarApp", true);
         PendingIntent pi = PendingIntent.getActivity(c, clave.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
@@ -196,7 +195,7 @@ public class Versiones extends Worker {
         if (conApp) {
             Intent ia = new Intent(c, Principal.class).putExtra("actualizarApp", true).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
             PendingIntent pa = PendingIntent.getActivity(c, (clave + ":app").hashCode(), ia, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
-            nb.addAction(new Notification.Action.Builder(Icon.createWithResource(c, R.drawable.ic_aviso), en ? "Update" : "Actualizar", pa).build());
+            nb.addAction(new Notification.Action.Builder(Icon.createWithResource(c, R.drawable.ic_aviso_ts), en ? "Update" : "Actualizar", pa).build());
         }
         nm.notify(clave.hashCode(), nb.build());
     }

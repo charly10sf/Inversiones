@@ -1,223 +1,11 @@
-/* 0.7l: el estreno de Toisón, una vez, a todos los que entran (también a quien acaba de llegar), en el móvil, la app y el
-   ordenador. Lo pidió Carlos el 31 oct: GrowFolio tiene los días contados, por algo bueno; pasa a llamarse Toisón. La
-   marca está solicitada en la OEPM (31 oct) y los tres dominios, registrados: el nombre ya se puede enseñar. Primero se
-   despide GrowFolio y aparece la marca; luego, al bajar, cada parte se dibuja según vas deslizando (--p de 0 a 1 en cada
-   sección): la historia del nombre, la O áurea, la marca en mármol negro, el icono en un móvil y lo que ya está hecho.
-   Las imágenes, con relief3.py del Design System «Toisón» (O áurea de la 1.3). Sin animaciones si el móvil las tiene
-   quitadas. Hasta fin de año.
-   0.7n (lo pidió Carlos el 1 nov): la marca sale del fondo, sin recuadro, y antes se dibuja en vector (la O y la T que baja
-   hasta atravesarla); las partes, más juntas y cada dibujo acabado a la vista; el icono en la pantalla de inicio de un
-   móvil con lo que falta (el cambio es en noviembre, sin día fijado: lo dijo Carlos el 1 nov); y un botón para mandarlo
-   por WhatsApp, con un enlace (#toison) que abre el estreno también a quien no tiene cuenta.
-   0.7o (Carlos, 1 nov: tantas medidas no venían al caso): fuera «Las medidas»; en su lugar, de dónde viene el nombre (el
-   mito, la orden de 1430, Carlos I y ahora), y la O áurea contada desde el oro */
+/* el símbolo de Toisón (la O áurea y la T), en el lienzo -82 -78 164 147. El estreno de la 0.7l (GrowFolio pasa a
+   llamarse Toisón) y su tarjeta «Muy pronto» se quitaron en la 0.8, como pidió Carlos el 2 nov */
 const TS_O_D = 'M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z';
 const TS_T_D = 'M-61.15 -76L61.15 -76L61.15 -66.7L16.25 -66.7L9.05 -57L12.25 60L20.5 60L20.5 67.2L-20.5 67.2L-20.5 60L-12.25 60L-9.05 -57L-16.25 -66.7L-61.15 -66.7ZM-6.45 -40.5L-6.45 38.5L-4.55 38.5L-4.55 -40.5ZM-0.95 -40.5L-0.95 38.5L0.95 38.5L0.95 -40.5ZM4.55 -40.5L4.55 38.5L6.45 38.5L6.45 -40.5Z';
-const TS_SIMBOLO = `<path class="ts-o" d="${TS_O_D}"/><path class="ts-tt" d="${TS_T_D}"/>`;
-// el cambio de nombre: en noviembre, sin día fijado. Se cuenta hasta el 1 dic y se dice «como mucho»
-const TS_LLEGA = Date.parse('2026-12-01T00:00:00+01:00');
-const tsFaltan = () => Math.ceil((TS_LLEGA - Date.now()) / 864e5);
-// apps inventadas alrededor del icono (como en las tandas del logo): nombre, dos colores y un dibujo propio en 24 × 24
-const TS_APPS = [
-  ['Nubo', '#5AB0FF', '#2A62D6', 'M7 17h10a4 4 0 0 0 .5-8 5.5 5.5 0 0 0-10.6 1.5A3.3 3.3 0 0 0 7 17z'],
-  ['Pulso', '#FF7A8A', '#D2334F', 'M3 12h4l2-5 4 10 2-5h6'],
-  ['Ruta', '#5EE0A0', '#13996A', 'M12 21s-6-6.2-6-11a6 6 0 0 1 12 0c0 4.8-6 11-6 11zM14.2 10a2.2 2.2 0 1 1-4.4 0 2.2 2.2 0 0 1 4.4 0z'],
-  ['Fotos', '#FFC75A', '#E07A1F', 'M4 5h16v14H4zM4 16l5-5 4 4 3-3 4 4'],
-  ['Notas', '#FFE58A', '#D9A520', 'M6 4h12v16H6zM9 9h6M9 13h6M9 17h4'],
-  null,
-  ['Reloj', '#3B3F4A', '#15171C', 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM12 7v5l3 2'],
-  ['Correo', '#6EC3FF', '#1F7FD1', 'M3 6h18v12H3zM3 7l9 6 9-6'],
-  ['Ritmo', '#FF6FB5', '#B42A86', 'M9 18V6l10-2v12M9 18a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0zM19 16a2.5 2.5 0 1 1-5 0 2.5 2.5 0 0 1 5 0z'],
-  ['Agenda', '#F4F1EA', '#C9C2B4', 'M4 6h16v14H4zM4 10h16M8 3v4M16 3v4', '#C2412D'],
-  ['Lupa', '#9C8CFF', '#5B45D6', 'M16 10.5a5.5 5.5 0 1 1-11 0 5.5 5.5 0 0 1 11 0zM14.5 14.5L20 20'],
-  ['Libros', '#FF9D5C', '#C9501E', 'M4 5c3-1 6-1 8 1 2-2 5-2 8-1v14c-3-1-6-1-8 1-2-2-5-2-8-1zM12 6v14'],
-  ['Viajes', '#54D6E8', '#1C8FB0', 'M3 11l18-7-7 18-3-8z'],
-  ['Huerto', '#9BE07A', '#3D9A35', 'M5 19C5 10 11 5 20 5c0 9-5 15-14 15M5 19l8-8'],
-  ['Dados', '#E85D5D', '#9E2424', 'M5 5h14v14H5zM9 9h.01M15 15h.01M12 12h.01M15 9h.01M9 15h.01'],
-  ['Radio', '#C792FF', '#7B3FD1', 'M12 13a1 1 0 1 0 0-2M8.5 15.5a5 5 0 0 1 0-7M15.5 8.5a5 5 0 0 1 0 7M5.6 18.4a9 9 0 0 1 0-12.8M18.4 5.6a9 9 0 0 1 0 12.8'],
-];
-const TS_DOCK = [
-  ['', '#5EE08A', '#1E9E52', 'M6 3h3l2 5-2.5 1.5a11 11 0 0 0 6 6L16 13l5 2v3a2 2 0 0 1-2 2A17 17 0 0 1 4 5a2 2 0 0 1 2-2z'],
-  ['', '#6FB8FF', '#2C6FE0', 'M4 5h16v11H9l-5 4z'],
-  ['', '#F4F1EA', '#BDB6A8', 'M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0zM3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18', '#2C6FE0'],
-  ['', '#4A4F5C', '#1C1F26', 'M4 7h3l2-2h6l2 2h3v12H4zM15.5 13a3.5 3.5 0 1 1-7 0 3.5 3.5 0 0 1 7 0z'],
-];
-const tsApp = ([n, c1, c2, d, tinta]) => `<span class="ts-app"><i class="ts-ic" style="background:linear-gradient(160deg,${c1},${c2})"><svg viewBox="0 0 24 24"><path d="${d}" stroke="${tinta || '#fff'}"/></svg></i>${n ? `<small>${n}</small>` : ''}</span>`;
-function htmlMovilToison() {
-  const ahora = new Date(), hora = `${ahora.getHours()}:${String(ahora.getMinutes()).padStart(2, '0')}`;
-  const mia = `<span class="ts-app ts-mia"><i class="ts-ic"><img class="ts-gf" src="growfolio-192.png" alt="" width="192" height="192"><img class="ts-to" src="toison-icono.webp" alt="" width="256" height="256" loading="lazy"></i><small><b class="ts-gf">GrowFolio</b><b class="ts-to">Toisón</b></small></span>`;
-  return `<div class="ts-movil-w"><div class="ts-movil" role="img" aria-label="${L('El icono de Toisón en la pantalla de inicio de un móvil', 'The Toisón icon on a phone home screen')}">
-    <div class="ts-pant">
-      <div class="ts-barra" aria-hidden="true"><span>${hora}</span><i></i></div>
-      <div class="ts-wid" aria-hidden="true"><b>${hora}</b><span>${esc(ahora.toLocaleDateString(L('es-ES', 'en-GB'), { weekday: 'long', day: 'numeric', month: 'long' }))}</span></div>
-      <div class="ts-rejilla" aria-hidden="true">${TS_APPS.map((a) => (a ? tsApp(a) : mia)).join('')}</div>
-      <div class="ts-dock" aria-hidden="true">${TS_DOCK.map(tsApp).join('')}</div>
-    </div>
-  </div></div>`;
-}
-function htmlToison() {
-  // la O áurea: el rectángulo de 161,8 × 100, sus cuadrados (al quitar uno, lo que queda vuelve a ser áureo), la espiral
-  // y la O dentro. pathLength=1 para dibujarlos con --p
-  const aurea = `<svg class="ts-dib" viewBox="0 0 200 150" aria-hidden="true">
-    <g transform="translate(100 70)"><path class="ts-oo" d="${TS_O_D}" pathLength="2"/></g>
-    <rect class="ts-l ts-a1" x="19.1" y="20" width="161.8" height="100" pathLength="1"/>
-    <path class="ts-l ts-a2" d="M119.1 20V120M119.1 81.8H180.9M142.7 81.8V120M119.1 96.4H142.7M133.7 81.8V96.4" pathLength="1"/>
-    <path class="ts-l ts-esp" d="M19.1 120A100 100 0 0 1 119.1 20A61.8 61.8 0 0 1 180.9 81.8A38.2 38.2 0 0 1 142.7 120A23.6 23.6 0 0 1 119.1 96.4A14.6 14.6 0 0 1 133.7 81.8" pathLength="1"/>
-    <text class="ts-n ts-n1" x="100" y="13">161,8</text><text class="ts-n ts-n2" x="190" y="73" transform="rotate(90 190 70)">100</text>
-    <text class="ts-phi" x="100" y="146">φ = 1,618…</text>
-  </svg>`;
-  const ok = ICONOS.ok, tactil = !window.matchMedia || matchMedia('(pointer: coarse)').matches;
-  const faltan = tsFaltan();
-  // el símbolo en vector, en el mismo sitio que en la imagen en relieve (centro 558, 249 y 2,08 px por u, medido en
-  // toison-avance.webp): se dibuja la O, baja la T y, encima, aparece el relieve
-  const vec = `<svg class="ts-vec" viewBox="0 0 1120 640" aria-hidden="true"><g transform="translate(558 249) scale(2.08)">
-    <path class="ts-vo" d="${TS_O_D}" pathLength="2"/><g class="ts-vt"><path class="ts-vtt" d="${TS_T_D}" pathLength="1"/></g></g></svg>`;
-  return `<button type="button" class="ib ts-x" data-ts="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button>
-    <div class="ts-adios" aria-hidden="true"><img src="growfolio-nombre.svg" alt=""><p>${L('tiene los días contados…', 'has its days numbered…')}</p></div>
-    <div class="ts-c">
-      <section class="ts-s ts-hero">
-        <div class="ts-marca ts-fundida"><img src="toison-avance.webp" alt="Toisón" width="1120" height="640">${vec}<i class="ts-brillo" aria-hidden="true"></i></div>
-        <h2 class="ts-t">${L('GrowFolio tiene los días contados', "GrowFolio's days are numbered")}</h2>
-        <p class="ts-p"><b>${L('Pero es por algo bueno.', "But it's for a good reason.")}</b> ${L('En noviembre cambia de nombre y de cara: pasa a llamarse Toisón.', 'In November it gets a new name and a new look: it becomes Toisón.')}</p>
-        <p class="ts-p">${L('El nombre viene de un mito griego y de una orden de caballeros, y el logo junta sus dos primeras letras: una T hecha columna que atraviesa una O áurea.', 'The name comes from a Greek myth and an order of knights, and the logo joins its first two letters: a T shaped like a column running through a golden O.')}</p>
-        <button type="button" class="ts-baja" data-ts-baja>${tactil ? L('Desliza hacia abajo', 'Scroll down') : L('Baja para ver más', 'Scroll down')}<i aria-hidden="true"></i></button>
-      </section>
-      <section class="ts-s" data-ts-p>
-        <p class="ts-k">${L('De dónde viene el nombre', 'Where the name comes from')}</p>
-        <ol class="ts-hist">
-          <li style="--i:0"><b>${L('El mito', 'The myth')}</b><span>${L('Jasón y los argonautas cruzan el mar Negro hasta la Cólquide para traerse el vellocino de oro: la piel de un carnero de oro que guardaba un dragón que nunca dormía.', 'Jason and the Argonauts cross the Black Sea to Colchis to bring back the Golden Fleece: the hide of a golden ram, guarded by a dragon that never slept.')}</span></li>
-          <li style="--i:1"><b>${L('1430, Brujas', '1430, Bruges')}</b><span>${L('Felipe el Bueno, duque de Borgoña, funda la Orden del Toisón de Oro. <i>Toison</i> es «vellón» en francés.', 'Philip the Good, Duke of Burgundy, founds the Order of the Golden Fleece. <i>Toison</i> is French for fleece.')}</span></li>
-          <li style="--i:2"><b>${L('Siglo XVI', '16th century')}</b><span>${L('Con Carlos I, nieto de María de Borgoña, la orden pasa a los reyes de España, que la siguen concediendo.', 'Under Charles I of Spain, grandson of Mary of Burgundy, the order passes to the kings of Spain, who still award it.')}</span></li>
-          <li style="--i:3" class="ts-hoy"><b>${L('Ahora', 'Now')}</b><span>${L('Nos quedamos con la idea: algo de oro, bien guardado. Como el dragón con el vellocino, tu contraseña guarda tu cartera, y nadie más la ve.', 'We keep the idea: something golden, well guarded. Like the dragon with the fleece, your password guards your portfolio, and nobody else sees it.')}</span></li>
-        </ol>
-        <p class="ts-nota">${L('Toisón no tiene relación con la Orden del Toisón de Oro.', 'Toisón has no connection with the Order of the Golden Fleece.')}</p>
-      </section>
-      <section class="ts-s" data-ts-p>
-        <p class="ts-k">${L('La O áurea', 'The golden O')}</p>
-        ${aurea}
-        <h3 class="ts-h">${L('Áureo quiere decir «de oro»', 'Áureo means golden')}</h3>
-        <p class="ts-p">${L('El número de oro, φ = 1,618…, es una proporción que ya describió Euclides y que en el Renacimiento llamaron divina. La O de Toisón cabe justa en un rectángulo de 1,618 de ancho por 1 de alto: si le quitas un cuadrado, lo que queda tiene otra vez la misma forma, y así sin fin; de ahí sale la espiral. Oro en el mito, oro en la orden y oro en la O.', 'The golden ratio, φ = 1.618…, is a proportion Euclid already described and the Renaissance called divine. The Toisón O fits exactly in a rectangle 1.618 wide by 1 high: take a square off it and what is left has the same shape again, endlessly; that is where the spiral comes from. Gold in the myth, gold in the order and gold in the O.')}</p>
-      </section>
-      <section class="ts-s" data-ts-p>
-        <p class="ts-k">${L('En mármol negro', 'On black marble')}</p>
-        <div class="ts-marca ts-marmol"><img src="toison-marmol.webp" alt="${L('Toisón sobre mármol negro', 'Toisón on black marble')}" width="1120" height="640" loading="lazy"></div>
-        <p class="ts-p">${L('Oro y mármol, los materiales de lo que se hace para durar. Esta versión, sobre mármol negro, es para las piezas especiales.', 'Gold and marble, the materials of things made to last. This version, on black marble, is for special pieces.')}</p>
-      </section>
-      <section class="ts-s ts-mov" data-ts-p>
-        <p class="ts-k">${L('En tu móvil', 'On your phone')}</p>
-        ${htmlMovilToison()}
-        <div class="ts-falta">${faltan > 0 ? `<b>${faltan}</b><span>${L(faltan === 1 ? 'día,<br>como mucho' : 'días,<br>como mucho', faltan === 1 ? 'day,<br>at most' : 'days,<br>at most')}</span>` : `<span>${L('Muy pronto', 'Very soon')}</span>`}</div>
-        <h3 class="ts-h">${faltan > 0 ? L('Llega en noviembre', 'It arrives in November') : L('Llega muy pronto', 'It arrives very soon')}</h3>
-        <p class="ts-p">${L('Ese día cambian el nombre, el logo y el aspecto de la app, y en tu pantalla de inicio verás este icono: la T y la O en relieve sobre borgoña.', "That day the name, the logo and the look of the app change, and you'll see this icon on your home screen: the T and the O in relief on burgundy.")}</p>
-      </section>
-      <section class="ts-s ts-fin" data-ts-p>
-        <p class="ts-k">${L('Lo que ya está hecho', 'Already done')}</p>
-        <ul class="ts-hechos">
-          <li>${ok}<span>${L('Dominios registrados: <b>toison.es</b>, <b>toison.app</b> y <b>toisonapp.com</b>', 'Domains registered: <b>toison.es</b>, <b>toison.app</b> and <b>toisonapp.com</b>')}</span></li>
-          <li>${ok}<span>${L('Marca TOISÓN solicitada en la Oficina Española de Patentes y Marcas', 'TOISÓN trademark filed with the Spanish Patent and Trademark Office')}</span></li>
-        </ul>
-        <p class="ts-nota">${L('No tienes que hacer nada. Tu cartera, tu contraseña y tus ajustes siguen como están: cambian el nombre, el logo y el aspecto de la app.', "You don't need to do anything. Your portfolio, your password and your settings stay as they are: only the name, the logo and the look of the app change.")}</p>
-        <div class="ts-btns">
-          <button type="button" class="btn pri ts-ok" data-ts="ok">${L('Tengo ganas de verlo', "Can't wait to see it")}</button>
-          <a class="btn ts-wa ts-web" href="https://toison.es" target="_blank" rel="noopener" data-no-trad>${ICONO_WEB}${L('Ver la web de Toisón', 'See the Toisón website')}</a>
-          <button type="button" class="btn ts-wa" data-ts-wa>${ICONO_CHAT}${L('Mandarlo por WhatsApp', 'Send it on WhatsApp')}</button>
-        </div>
-      </section>
-    </div>`;
-}
-const ICONO_CHAT = SVG('<path d="M4 5h16v11H9l-5 4z"/><path d="M8.5 10.5h7"/>', 1.9);
-const ICONO_WEB = SVG('<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3.5 3 14.5 0 18M12 3c-3 3.5-3 14.5 0 18"/>', 1.9);
-/* 0.7n: mandarlo por WhatsApp. Con navigator.share (el menú de compartir del móvil, donde está WhatsApp) el enlace y una
-   frase; si no lo hay (la app de Android no lo tiene: su WebView no trae navigator.share), wa.me, que la app abre fuera */
-function enlaceToison() { return (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#toison'; }
-function compartirToison() {
-  const url = enlaceToison();
-  const txt = L('GrowFolio cambia de nombre: en noviembre pasa a llamarse Toisón. Mira la marca nueva, con su O áurea:', 'GrowFolio is changing its name: in November it becomes Toisón. Take a look at the new brand and its golden O:');
-  const wa = () => { const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(`${txt}\n\n${url}`); a.target = '_blank'; a.rel = 'noopener'; document.body.appendChild(a); a.click(); a.remove(); };
-  if (navigator.share && !window.InversionesApp) { navigator.share({ title: 'Toisón', text: txt, url }).catch((e) => { if (!e || e.name !== 'AbortError') wa(); }); return; }
-  wa();
-}
-/* 0.7l: en Inicio, arriba, una tarjeta de Toisón que abre el estreno entero cuando quieras (lo pidió Carlos). Con el
-   símbolo dibujado aquí mismo (sin bajar ninguna imagen). Hasta fin de año o hasta que la quites con la ×.
-   0.7m: quitada de Inicio, pasa a Ajustes, arriba, con un botón para devolverla a Inicio (lo pidió Carlos el 31 oct) */
-function htmlTarjetaToison(enAjustes = false) {
-  if (Date.now() >= Date.parse('2027-01-01')) return '';
-  const quitada = !!LS.get('inv-toison-tarjeta');
-  if (quitada !== enAjustes) return '';
-  return `<div class="ts-tarjeta${enAjustes ? ' ts-aj' : ''}" role="note">
-    <button type="button" class="ts-tj-abre" data-accion="toison">
-      <span class="ts-tj-ic" aria-hidden="true"><svg viewBox="-92 -86 184 162"><g class="ts-sim">${TS_SIMBOLO}</g></svg></span>
-      <span class="ts-tj-t"><small>${L('Muy pronto', 'Coming soon')}</small><b>${L('GrowFolio pasa a llamarse Toisón', 'GrowFolio is becoming Toisón')}</b><span>${L('Toca para ver la marca, su historia y la O áurea', 'Tap to see the brand, its story and the golden O')}</span></span>
-      <span class="ts-tj-fl" aria-hidden="true"></span>
-    </button>
-    ${enAjustes ? `<button type="button" class="ts-tj-ini" data-accion="toison-inicio">${L('Volver a ponerla en Inicio', 'Put it back on Home')}</button>`
-    : `<button type="button" class="ib ts-tj-x" data-accion="toison-fuera" aria-label="${L('Quitar de Inicio (seguirá en Ajustes)', 'Remove from Home (it stays in Settings)')}">${ICONOS.cerrar}</button>`}
-  </div>`;
-}
-/* forzar: desde la tarjeta de Inicio, aunque ya lo hayas visto (y también en la cartera de prueba). enlace (0.7n): desde el
-   enlace que se manda por WhatsApp (#toison), encima de todo, también de la entrada y de la presentación */
-function avisoToison(seguir, forzar = false, enlace = false) {
-  // hecho: por si el almacenamiento no guarda (lleno), que no vuelva a salir solo en esta sesión
-  if (!forzar && (avisoToison.hecho || LS.get('inv-toison-avance') || S.demo || Date.now() >= Date.parse('2027-01-01'))) return seguir && seguir();
-  if (document.querySelector('.estreno.ts')) return;
-  avisoToison.hecho = true; LS.set('inv-toison-avance', Date.now());
-  const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-  const d = document.createElement('div');
-  d.className = 'estreno ts' + (quieto ? ' quieta' : '') + (enlace ? ' ts-enlace' : '');
-  d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'Toisón'); d.tabIndex = -1;
-  d.innerHTML = htmlToison();
-  const antes = document.activeElement;
-  document.body.appendChild(d);
-  d.focus({ preventScroll: true });
-  // 0.7n: cada parte se dibuja según bajas, con --p de 0 (lo de dentro asoma por abajo) a 1 (lo tienes entero a la vista,
-  // con un margen por abajo). Se mide lo que hay dentro de la sección, sin sus márgenes; si no cabe en la pantalla, se
-  // acaba cuando su parte de arriba llega casi arriba. Al final del todo, lo que se ve ya está acabado
-  const secs = [...d.querySelectorAll('[data-ts-p]')];
-  let marco = 0;
-  const medir = () => {
-    marco = 0;
-    const vh = d.clientHeight || innerHeight, alFinal = d.scrollTop + d.clientHeight >= d.scrollHeight - 4;
-    secs.forEach((s) => {
-      let p = 1;
-      if (!quieto) {
-        const arriba = s.firstElementChild.getBoundingClientRect().top, alto = s.lastElementChild.getBoundingClientRect().bottom - arriba;
-        const empieza = vh * 0.95, acaba = Math.max(vh * 0.1, vh * 0.9 - alto);
-        p = alFinal && arriba < vh ? 1 : Math.max(0, Math.min(1, (empieza - arriba) / Math.max(1, empieza - acaba)));
-      }
-      const v = p.toFixed(3);
-      if (s.dataset.p !== v) { s.dataset.p = v; s.style.setProperty('--p', v); }
-      if (p > 0.02 && !s.classList.contains('on')) s.classList.add('on');
-    });
-  };
-  const alBajar = () => { if (!marco) marco = requestAnimationFrame(medir); };
-  d.addEventListener('scroll', alBajar, { passive: true });
-  window.addEventListener('resize', alBajar);
-  medir();
-  let quitarAtras = () => {};
-  const cerrar = (desdeAtras) => {
-    if (!d.isConnected || d.classList.contains('fuera')) return;
-    if (desdeAtras !== true) quitarAtras();
-    window.removeEventListener('keydown', tecla, true); window.removeEventListener('resize', alBajar);
-    d.classList.add('fuera');
-    if (antes && antes.isConnected && antes.focus) antes.focus({ preventScroll: true });
-    setTimeout(() => { d.remove(); if (seguir) seguir(); }, quieto ? 0 : 450);
-  };
-  // en window y antes que nadie: el estreno va encima de todo (también de una hoja abierta debajo)
-  const tecla = (e) => { if (e.key === 'Escape') { e.preventDefault(); e.stopImmediatePropagation(); cerrar(); } };
-  window.addEventListener('keydown', tecla, true);
-  quitarAtras = conAtras(() => cerrar(true), d);
-  d.addEventListener('click', (e) => {
-    if (e.target.closest('[data-ts-baja]')) { if (secs[0]) d.scrollTo({ top: secs[0].offsetTop, behavior: quieto ? 'auto' : 'smooth' }); return; }
-    if (e.target.closest('[data-ts-wa]')) { compartirToison(); return; }
-    if (e.target.closest('[data-ts]')) cerrar();
-  });
-}
 function bienvenida(intento = 0) {
   if (!S.cartera) return;
   // primero el aviso de la app, si lo hay; las novedades, después
   if (appEnCurso || (window.InversionesApp && !appRevisadaT) || document.querySelector('.hoja-fondo, .tour, #asesorFondo')) { if (intento < 40) setTimeout(() => bienvenida(intento + 1), intento ? 1500 : 800); return; }
-  // 0.7l: el estreno de Toisón, una vez, a todos (también a quien acaba de llegar) y antes que nada; después, lo de siempre
-  if (!avisoToison.hecho && !LS.get('inv-toison-avance') && !S.demo && Date.now() < Date.parse('2027-01-01')) return avisoToison(() => bienvenida());
   let visto = LS.get('inv-version', null);
   if (!LS.get('inv-vnum') && /^0\.[2-9]\.0$/.test(visto || '')) visto = '0.1.' + visto.split('.')[1];  // numeración de antes: 0.9.0 es la 0.1.9
   const nuevo = S.recienCreada || (!(S.cartera.posiciones || []).length && !LS.get('inv-tour', null));
@@ -259,7 +47,7 @@ function avisoWebNueva() {
   if ($('#avisoWeb')) return;
   const d = document.createElement('div');
   d.id = 'avisoWeb'; d.className = 'aviso-web'; d.setAttribute('role', 'status');
-  d.innerHTML = `${ICONOS.chispa}<span>${L('Hay una versión nueva de GrowFolio. Se actualiza en un segundo, sin perder nada.', 'A new version of GrowFolio is ready. It updates in a second and you lose nothing.')}</span><button class="btn peq pri">${L('Actualizar', 'Update')}</button><button class="ib" aria-label="${L('Cerrar el aviso', 'Close')}">${ICONOS.cerrar}</button>`;
+  d.innerHTML = `${ICONOS.chispa}<span>${L('Hay una versión nueva de Toisón. Se actualiza en un segundo, sin perder nada.', 'A new version of Toisón is ready. It updates in a second and you lose nothing.')}</span><button class="btn peq pri">${L('Actualizar', 'Update')}</button><button class="ib" aria-label="${L('Cerrar el aviso', 'Close')}">${ICONOS.cerrar}</button>`;
   d.querySelector('.btn').onclick = () => { d.querySelector('.btn').textContent = L('Poniéndola…', 'Updating…'); location.reload(); };
   d.querySelector('.ib').onclick = () => d.remove();
   document.body.appendChild(d);
@@ -270,13 +58,13 @@ const ICO_COMPARTIR = SVG('<path d="M12 15V3.5M8 7.5l4-4 4 4"/><path d="M8 10.5H
 const htmlPasosIOS = () => `<ol class="ios-pasos">
   <li><span class="ios-n">1</span><span>${trad('Ábrela en Safari y toca')} <b class="ios-ico">${ICO_COMPARTIR}</b> ${trad('Compartir (abajo en el iPhone, arriba en el iPad).')}</span></li>
   <li><span class="ios-n">2</span><span>${trad('Baja y elige')} <b>${trad('Añadir a pantalla de inicio')}</b>${trad('. Si no sale, toca «Editar acciones» y añádelo.')}</span></li>
-  <li><span class="ios-n">3</span><span>${trad('Toca')} <b>${trad('Añadir')}</b>${trad('. GrowFolio queda con su icono, como cualquier app.')}</span></li>
+  <li><span class="ios-n">3</span><span>${trad('Toca')} <b>${trad('Añadir')}</b>${trad('. Toisón queda con su icono, como cualquier app.')}</span></li>
 </ol>`;
 function avisoIOS() {
   if (!ES_IOS || COMO_APP || LS.get('inv-ios-aviso')) return;
   if (document.querySelector('.hoja-fondo, #asesorFondo, .tour, .estreno, .bloqueo')) { setTimeout(avisoIOS, 5000); return; }
   LS.set('inv-ios-aviso', true);
-  const h = hoja(trad('Ponla en tu pantalla de inicio'), `<div class="ios-aviso">${dibujo('movil')}<p>${trad('En el iPhone, GrowFolio funciona como una app sin pasar por la App Store: a pantalla completa, con su icono y sin las barras de Safari.')}</p>${htmlPasosIOS()}<div class="fila-btns"><button class="btn pri" data-cerrar>${trad('Entendido')}</button></div></div>`);
+  const h = hoja(trad('Ponla en tu pantalla de inicio'), `<div class="ios-aviso">${dibujo('movil')}<p>${trad('En el iPhone, Toisón funciona como una app sin pasar por la App Store: a pantalla completa, con su icono y sin las barras de Safari.')}</p>${htmlPasosIOS()}<div class="fila-btns"><button class="btn pri" data-cerrar>${trad('Entendido')}</button></div></div>`);
   h.el.classList.add('hoja-ios');
 }
 /* la app de Android: dónde bajarla, qué versión tienes y cómo pasarle el token sin escribirlo */
@@ -290,19 +78,19 @@ async function pintarAjustesApp(el) {
   const android = /Android/i.test(navigator.userAgent);
   const tok = GH.token();
   if (ES_IOS) {
-    el.closest('.seccion-ed').querySelector('h3').innerHTML = `${ICONOS.cartera}${trad('GrowFolio en tu iPhone')}`;
+    el.closest('.seccion-ed').querySelector('h3').innerHTML = `${ICONOS.cartera}${trad('Toisón en tu iPhone')}`;
     el.innerHTML = COMO_APP ? `<p class="nota" style="margin:0">${trad('Ya la tienes en la pantalla de inicio: se abre como una app, a pantalla completa. El widget, por ahora, solo está en Android.')}</p>`
       : `${htmlPasosIOS()}<p class="nota" style="margin:0">${trad('Se abre como una app, a pantalla completa y sin las barras de Safari. El widget, por ahora, solo está en Android.')}</p>`;
     return;
   }
   if (app) {
-    el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (${esc(nombreApp())}). Para el widget: mantén pulsado un hueco de la pantalla de inicio > Widgets > GrowFolio y arrastra «Tu cartera». Se puede estirar o encoger.</p>
+    el.innerHTML = `<p class="nota" style="margin:0">Estás en la app (${esc(nombreApp())}). Para el widget: mantén pulsado un hueco de la pantalla de inicio > Widgets > Toisón y arrastra «Tu cartera». Se puede estirar o encoger.</p>
       ${ult && ult.version > tengo ? `<div class="fila-btns" style="justify-content:flex-start"><button class="btn peq pri" id="aActApp" data-cerrar>Actualizar la app</button></div>` : '<p class="nota" style="margin:0">Tienes la última versión de la app.</p>'}`;
     const b = $('#aActApp', el); if (b) b.onclick = () => avisoApp(ult);
     return;
   }
-  el.innerHTML = `<p class="nota" style="margin:0">GrowFolio como app de Android, con un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo que toca hacer. ${ult ? '' : 'Todavía no hay ninguna versión publicada.'}</p>
-    ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} e instálala: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa «Pasar el token a la app» para que pueda guardar cambios sin escribirlo (necesita la versión 3 de la app o posterior).</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio > Widgets > GrowFolio.</li></ol>
+  el.innerHTML = `<p class="nota" style="margin:0">Toisón como app de Android, con un widget para la pantalla de inicio: tu patrimonio, lo que ganas o pierdes hoy y lo que toca hacer. ${ult ? '' : 'Todavía no hay ninguna versión publicada.'}</p>
+    ${ult ? `<ol class="as-pasos-clave"><li>Descarga la app${android ? '' : ' desde el móvil'} e instálala: Android te pedirá permiso para instalar apps de Chrome la primera vez.</li><li>Ábrela y entra con tu contraseña de siempre.</li>${tok && android ? '<li>Pulsa «Pasar el token a la app» para que pueda guardar cambios sin escribirlo (necesita la versión 3 de la app o posterior).</li>' : ''}<li>Mantén pulsado un hueco de la pantalla de inicio > Widgets > Toisón.</li></ol>
     <div class="fila-btns" style="justify-content:flex-start"><a class="btn peq pri" href="${esc(apk)}">Descargar la app de Android</a>${tok && android ? `<a class="btn peq" href="intent://token#Intent;scheme=inversiones;package=es.inversiones.app;S.t=${encodeURIComponent(tok)};S.browser_fallback_url=${encodeURIComponent(apk)};end">Pasar el token a la app</a>` : ''}</div>` : ''}`;
 }
 /* Carteras de antes (0.1) que no llegaron a la cuenta. Al crear la cuenta se sube la del dispositivo donde la
@@ -433,8 +221,7 @@ function abrirAjustes() {
   const tok = GH.token();
   const ts = navToison();
   const h = hoja('Ajustes', `
-    <div class="aj-cab">${ts ? simboloTs('aj-simb') : '<img src="favicon.svg" alt="">'}<div>${ts ? '<b class="aj-ts">Toisón</b>' : '<img class="aj-nom" src="growfolio-nombre.svg" alt="GrowFolio">'}<small>Versión ${VERSION} alfa, ${PERFIL_CUENTA ? 'con la cartera guardada en tu cuenta' : PERFIL_LOCAL ? 'con la cartera guardada en este dispositivo' : 'con la cartera guardada en GitHub'}</small></div><button class="btn peq" id="aNov" data-cerrar>${ICONOS.chispa}Novedades</button></div>
-    ${ts ? '' : htmlTarjetaToison(true)}
+    <div class="aj-cab">${ts ? simboloTs('aj-simb') : '<img src="favicon.svg" alt="">'}<div>${ts ? '<b class="aj-ts">Toisón</b>' : '<img class="aj-nom" src="growfolio-nombre.svg" alt="Toisón">'}<small>Versión ${VERSION} alfa, ${PERFIL_CUENTA ? 'con la cartera guardada en tu cuenta' : PERFIL_LOCAL ? 'con la cartera guardada en este dispositivo' : 'con la cartera guardada en GitHub'}</small></div><button class="btn peq" id="aNov" data-cerrar>${ICONOS.chispa}Novedades</button></div>
     ${PERFIL_CUENTA ? `<h2 class="aj-grupo">Tu cuenta</h2><div class="aj-caja">
       <div class="seccion-ed"><h3>${ICONOS.perfil}${esc(nombreUsuario() || 'Tu cuenta')}</h3><p class="nota" style="margin:0">${FB.user && FB.user.email ? `${esc(FB.user.email)}, ` : ''}${FB.user && (FB.user.providerData || []).some((x) => x.providerId === 'google.com') ? 'con Google' : 'con correo y contraseña'}. Tu cartera se guarda cifrada en tu cuenta y se sincroniza sola entre tus dispositivos.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aNombre">${ICONOS.perfil}Cambiar nombre</button><button class="btn peq" id="aSalir">Cerrar sesión</button></div></div>
@@ -448,7 +235,7 @@ function abrirAjustes() {
       <button class="aj-fila" id="aTour" data-cerrar>${ICONOS.ruta}<span><b>Ver el tutorial</b><small>Un repaso de un minuto por cada pestaña.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aOrdenar" data-cerrar>${ICONOS.cartera}<span><b>${ts ? 'Hoy a tu gusto' : 'Inicio a tu gusto'}</b><small>${ts ? 'Ordena, quita y añade lo que sale en Hoy.' : 'Ordena, quita y añade lo que sale en Inicio.'}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aDemo" data-cerrar>${ICONOS.ojo}<span><b>${L('Enseñar la app con una cartera de prueba', 'Show the app with a demo portfolio')}</b><small>${L('Para enseñársela a alguien sin que vea lo tuyo: una cartera inventada. La tuya ni se abre; al salir te pide tu PIN o tu contraseña.', "To show it to someone without them seeing yours: a made-up portfolio. Yours isn't even opened; when you exit it asks for your PIN or password.")}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <button class="aj-fila" id="aIntro" data-cerrar>${ts ? simboloTs() : '<img src="favicon.svg" alt="">'}<span><b>Ver la presentación</b><small>Qué es GrowFolio y qué puedes hacer con él.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" id="aIntro" data-cerrar>${ts ? simboloTs() : '<img src="favicon.svg" alt="">'}<span><b>Ver la presentación</b><small>Qué es Toisón y qué puedes hacer con él.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
     </div>
     ${PERFIL_LOCAL && !PERFIL_CUENTA ? `<h2 class="aj-grupo">Tu cartera</h2><div class="aj-caja"><div class="seccion-ed"><h3>${ICONOS.cartera}Guardada en este dispositivo</h3>
       <p class="nota" style="margin:0">Cifrada con tu contraseña. Si borras los datos del navegador o desinstalas la app, se pierde: descarga una copia de vez en cuando (en Avanzado, Copias).</p>
@@ -471,27 +258,27 @@ function abrirAjustes() {
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aBloq">${ICONOS.candado.replace('<svg', '<svg width="15" height="15" style="vertical-align:-2px;margin-right:6px"')}Bloquear</button><button class="btn peq peligro" id="aOlvidar">Olvidar este dispositivo</button></div>
     </div>
     </div>
-    <h2 class="aj-grupo" data-no-trad>${conIA('GrowIA y la app', 'GrowIA and the app')}</h2>
+    <h2 class="aj-grupo" data-no-trad>${conIA('La IA y la app', 'GrowIA and the app')}</h2>
     <div class="aj-caja">
-      <button class="aj-fila" data-accion="asesor-ajustes" data-cerrar>${ICONOS.growia}<span><b data-no-trad>${conIA('Ajustes de GrowIA', 'GrowIA settings')}</b><small>Gratis con una clave tuya de Google: responde a lo que le preguntes y revisa tu cartera cada día.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" data-accion="asesor-ajustes" data-cerrar>${ICONOS.growia}<span><b data-no-trad>${conIA('Ajustes de la IA', 'GrowIA settings')}</b><small>Gratis con una clave tuya de Google: responde a lo que le preguntes y revisa tu cartera cada día.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <div class="seccion-ed"><h3>${ICONOS.cartera}App de Android con widget</h3><div id="aApp"><p class="nota" style="margin:0">Mirando la última versión…</p></div></div>
     </div>
     <h2 class="aj-grupo">Avisos y resumen</h2>
     <div class="aj-caja">
       <button class="aj-fila" id="aResumen" data-cerrar>${ICONOS.agenda}<span><b>El resumen de hoy</b><small>Cómo va tu cartera, lo que mueve los mercados y las noticias de lo tuyo.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
-      <label class="aj-fila aj-check"><input type="checkbox" id="aResumenAuto"${LS.get('inv-resumen-off', false) ? '' : ' checked'}><span><b>Enseñarme el resumen al abrir</b><small>La primera vez que abres GrowFolio cada día, desde las 6 de la mañana.</small></span></label>
+      <label class="aj-fila aj-check"><input type="checkbox" id="aResumenAuto"${LS.get('inv-resumen-off', false) ? '' : ' checked'}><span><b>Enseñarme el resumen al abrir</b><small>La primera vez que abres Toisón cada día, desde las 6 de la mañana.</small></span></label>
       <div class="seccion-ed" id="aAvisos">${htmlAjAvisos()}</div>
     </div>
     <h2 class="aj-grupo">Ayuda</h2>
     <div class="aj-caja">
-      <button class="aj-fila" data-accion="opinion" data-cerrar>${ICONOS.globo}<span><b>Avisar de un fallo o una idea</b><small>Algo que se ve mal, que no funciona o una idea: llega a quien hace GrowFolio.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
+      <button class="aj-fila" data-accion="opinion" data-cerrar>${ICONOS.globo}<span><b>Avisar de un fallo o una idea</b><small>Algo que se ve mal, que no funciona o una idea: llega a quien hace Toisón.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
       <button class="aj-fila" id="aInvita">${ICONOS.enviar}<span><b>Invita a alguien</b><small>Le llega por WhatsApp el enlace y los pasos para empezar, con su propia cuenta: su cartera va cifrada y nadie más la ve, ni tú.</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
     </div>
     <details class="aj-avanzado"><summary>Avanzado: copias y archivos${PERFIL_LOCAL ? '' : ', GitHub'}</summary>
     <div class="seccion-ed"><h3>Copias</h3>
       <p class="nota" style="margin:0">La copia sin cifrar contiene todas tus cantidades: guárdala solo en tu ordenador.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aExp">Descargar copia sin cifrar</button><label class="btn peq" style="display:inline-flex;align-items:center">Importar copia o JSON<input type="file" id="aImp" accept=".json,application/json" hidden></label><button class="btn peq" id="aEjemplo">Ejemplo de JSON</button></div>
-      <p class="nota" style="margin:0">El JSON puede llevar el ISIN, el ticker o el nombre de cada cosa con su cantidad, lo que pagaste (o el precio medio), el bróker y la fecha: GrowFolio busca cada valor solo.</p>
+      <p class="nota" style="margin:0">El JSON puede llevar el ISIN, el ticker o el nombre de cada cosa con su cantidad, lo que pagaste (o el precio medio), el bróker y la fecha: Toisón busca cada valor solo.</p>
     </div>
     <div class="seccion-ed" style="display:grid;gap:12px"${PERFIL_LOCAL ? ' hidden' : ''}><h3>GitHub</h3>
       <div class="campo">Repositorio<div style="color:var(--text)">${esc(CFG.owner)}/${esc(CFG.repo)}</div></div>
@@ -513,7 +300,7 @@ function abrirAjustes() {
   $('#aOrdenar', h.el).onclick = () => setTimeout(() => { if (S.vista !== 'cartera') location.hash = '#cartera'; setTimeout(abrirCarEdit, 120); }, 0);
   $('#aInvita', h.el).onclick = () => {
     const url = (CFG.dev ? CFG.pages : location.origin + location.pathname) + '#mia';
-    const t = `Te paso GrowFolio, para llevar todas tus inversiones en un sitio (fondos, acciones, ETF, oro y cripto de cualquier bróker), con lo que toca hacer cada mes y lo que supone en la renta.\n\n${url}\n\nEntra con Google o con tu correo y la app te guía paso a paso: en unos minutos tienes tu cartera lista. Tus cifras van cifradas con una contraseña tuya: nadie más las ve.\n\nEs una alfa: si algo falla, dale al bichito de arriba.`;
+    const t = `Te paso Toisón, para llevar todas tus inversiones en un sitio (fondos, acciones, ETF, oro y cripto de cualquier bróker), con lo que toca hacer cada mes y lo que supone en la renta.\n\n${url}\n\nEntra con Google o con tu correo y la app te guía paso a paso: en unos minutos tienes tu cartera lista. Tus cifras van cifradas con una contraseña tuya: nadie más las ve.\n\nEs una alfa: si algo falla, dale al bichito de arriba.`;
     const a = document.createElement('a'); a.href = 'https://wa.me/?text=' + encodeURIComponent(t); a.target = '_blank'; a.rel = 'noopener';
     document.body.appendChild(a); a.click(); a.remove();
   };
@@ -532,7 +319,7 @@ function abrirAjustes() {
     try {
       if (!window.qrcode) await new Promise((res, rej) => { const s = document.createElement('script'); s.src = 'https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js'; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
       const qr = window.qrcode(0, 'M'); qr.addData(url); qr.make();
-      box.innerHTML = `<div class="qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div><p class="nota" style="text-align:center">Escanéalo con el móvil: abrirá GrowFolio con el token ya puesto. La contraseña te la pedirá igual. No compartas esta imagen.</p>`;
+      box.innerHTML = `<div class="qr">${qr.createSvgTag({ cellSize: 4, margin: 2, scalable: true })}</div><p class="nota" style="text-align:center">Escanéalo con el móvil: abrirá Toisón con el token ya puesto. La contraseña te la pedirá igual. No compartas esta imagen.</p>`;
     } catch (e) { box.innerHTML = '<div class="vacio">No se pudo cargar el generador de QR.</div>'; }
   };
   $('#fCambiarPw', h.el).onsubmit = async (ev) => {
@@ -640,7 +427,7 @@ function vistaTu(M) {
     </div>
     <h2 class="aj-grupo">${L('La app', 'The app')}</h2>
     <div class="aj-caja">
-      ${S.esDueno ? htmlSelectorTema() : ''}
+      ${htmlSelectorTema()}
       ${boton(ICONOS_PL.ajustes, L('Ajustes', 'Settings'), L('Cuenta, idioma, seguridad, avisos y la app de Android.', 'Account, language, security, alerts and the Android app.'), 'ajustes')}
       ${boton(ICONOS_PL.novedades, L('Novedades', "What's new"), L(`Versión ${VERSION} alfa: qué se ha mejorado.`, `Version ${VERSION} alpha: what's improved.`), 'novedades')}
       ${boton(ICONOS_PL.enviar, L('Avisar de un fallo', 'Report a bug'), L('Es una alfa: cuéntanos cualquier fallo o idea. Lo leemos todo.', "It's an alpha: tell us about any bug or idea."), 'opinion')}

@@ -79,7 +79,7 @@ function htmlTurno(t, k) {
 function htmlCupoIA() {
   const u = usoIAHoy(), h = horaRenuevaIA();
   const rapida = `${u[MODELO_RAPIDO] || 0} ${L('hoy', 'today')}${agotadosIA().includes(MODELO_RAPIDO) ? ` (${L('agotada', 'used up')})` : ''}`;
-  return `${L('GrowIA funciona con Gemini, de Google. La respuesta normal es Gemini 3.8 Flash y, cuando se le acaba el cupo del día, 3.6 Flash; la rápida, 3.5 Flash-Lite.', 'GrowIA runs on Gemini, by Google. The normal answer is Gemini 3.8 Flash and, once its daily quota runs out, 3.6 Flash; the fast one, 3.5 Flash-Lite.')}<br>${L('Hoy, desde este dispositivo', 'Today, from this device')}: ${L('normal', 'normal')} ${cupoNormalTxt(u)} · ${L('rápida', 'fast')} ${rapida}. ${L(`Se renueva a medianoche de California (a las ${h} aquí). Si usas la clave en otro sitio, también gasta.`, `It resets at midnight California time (${h} here). Using the key elsewhere also counts.`)}<br>${L('Si GrowIA falla y no se arregla sola, GrowFolio apunta con tu cuenta el tipo de fallo, el modelo y la versión, sin tu pregunta ni tu cartera, para arreglarlo. Se borra a los 30 días.', "If GrowIA fails and doesn't recover, GrowFolio logs the type of failure, the model and the version with your account, without your question or portfolio, so it can be fixed. It's deleted after 30 days.")}`;
+  return `${L('La IA funciona con Gemini, de Google. La respuesta normal es Gemini 3.8 Flash y, cuando se le acaba el cupo del día, 3.6 Flash; la rápida, 3.5 Flash-Lite.', 'GrowIA runs on Gemini, by Google. The normal answer is Gemini 3.8 Flash and, once its daily quota runs out, 3.6 Flash; the fast one, 3.5 Flash-Lite.')}<br>${L('Hoy, desde este dispositivo', 'Today, from this device')}: ${L('normal', 'normal')} ${cupoNormalTxt(u)} · ${L('rápida', 'fast')} ${rapida}. ${L(`Se renueva a medianoche de California (a las ${h} aquí). Si usas la clave en otro sitio, también gasta.`, `It resets at midnight California time (${h} here). Using the key elsewhere also counts.`)}<br>${L('Si la IA falla y no se arregla sola, Toisón apunta con tu cuenta el tipo de fallo, el modelo y la versión, sin tu pregunta ni tu cartera, para arreglarlo. Se borra a los 30 días.', "If GrowIA fails and doesn't recover, Toisón logs the type of failure, the model and the version with your account, without your question or portfolio, so it can be fixed. It's deleted after 30 days.")}`;
 }
 /* 0.7l: el registro de GrowIA (lo que ha hecho, sin preguntas ni respuestas) y, en la app de Android, si tiene la
    batería restringida, que es lo que hace que se corte al salir */
@@ -87,29 +87,29 @@ function htmlDiarioIA() {
   const d = diarioIATodo().slice(-25).reverse();
   const h = (t) => new Date(t).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
   const restringida = deApp('bateriaRestringida') === true;
-  return `${restringida ? `<p class="nota as-aviso-bateria">${L('Android tiene GrowFolio con la batería restringida: así GrowIA se corta cuando sales de la app. Cámbialo en los ajustes del móvil: Aplicaciones, GrowFolio, Batería, «Sin restricciones» u «Optimizada».', 'Android has GrowFolio\'s battery restricted: that\'s why GrowIA gets cut off when you leave the app. Change it in your phone settings: Apps, GrowFolio, Battery, "Unrestricted" or "Optimised".')}</p>` : ''}
-    <div class="as-diario"><b>${L('Lo último de GrowIA', "GrowIA's latest activity")}</b><small>${L('Qué ha hecho cada respuesta, sin tus preguntas ni tus cifras. Si algo falla, cópialo y pásaselo a quien te dio GrowFolio.', "What each answer did, without your questions or figures. If something fails, copy it and send it to whoever gave you GrowFolio.")}</small>
+  return `${restringida ? `<p class="nota as-aviso-bateria">${L('Android tiene Toisón con la batería restringida: así la IA se corta cuando sales de la app. Cámbialo en los ajustes del móvil: Aplicaciones, Toisón, Batería, «Sin restricciones» u «Optimizada».', 'Android has Toisón\'s battery restricted: that\'s why GrowIA gets cut off when you leave the app. Change it in your phone settings: Apps, Toisón, Battery, "Unrestricted" or "Optimised".')}</p>` : ''}
+    <div class="as-diario"><b>${L('Lo último de la IA', "GrowIA's latest activity")}</b><small>${L('Qué ha hecho cada respuesta, sin tus preguntas ni tus cifras. Si algo falla, cópialo y pásaselo a quien te dio Toisón.', "What each answer did, without your questions or figures. If something fails, copy it and send it to whoever gave you Toisón.")}</small>
     ${d.length ? `<ol>${d.map((x) => `<li><time>${h(x.t)}</time>${x.app ? '<i>app</i>' : ''}${esc(x.x)}</li>`).join('')}</ol><button class="btn peq" data-as="copiar-diario">${ICONOS.copiar}${L('Copiar', 'Copy')}</button>` : `<p class="nota">${L('Aún no hay nada.', 'Nothing yet.')}</p>`}</div>`;
 }
 function htmlClaveAsesor() {
   const cfg = cfgAsesor();
   return `<div class="as-config">
-    <h3 data-no-trad>${conIA('Activa GrowIA, gratis', 'Turn on GrowIA, for free')}</h3>
-    <p>GrowIA funciona con Gemini, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
+    <h3 data-no-trad>${conIA('Activa la IA, gratis', 'Turn on GrowIA, for free')}</h3>
+    <p>La IA funciona con Gemini, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
     <ol class="as-pasos-clave">
       <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
       <li>Pulsa «Create API key» y copia la clave entera: empieza por <code>AQ.</code> (o por <code>AIza</code> si es de las antiguas).</li>
       <li>Pégala aquí. Se guarda cifrada con la clave de tu cartera y solo viaja de tu navegador a Google.</li>
     </ol>
-    <p class="nota">Tus preguntas y lo que necesita de tu cartera van de tu navegador a Google, cifrados en el camino; no pasan por GrowFolio.</p>
+    <p class="nota">Tus preguntas y lo que necesita de tu cartera van de tu navegador a Google, cifrados en el camino; no pasan por Toisón.</p>
     <label class="campo">Clave de Google<input type="password" id="asClave" placeholder="AQ.… o AIza…" autocomplete="off" spellcheck="false"></label>
     <label class="check"><input type="checkbox" id="asSync"> Guardarla también en tu cartera cifrada, para no tener que ponerla en el móvil</label>
     <div class="error" id="asErr"></div>
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${AS.clave ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
-    <p class="nota" style="margin:0">El plan gratuito tiene un tope de preguntas por minuto y por día (los tuyos, en aistudio.google.com/rate-limit); si lo pasas, GrowIA espera o te avisa. No actives la facturación en ese proyecto o empezará a cobrarte. Desde España, por las condiciones de Google para la UE, lo que mandas con la clave gratuita no se usa para mejorar sus productos.</p>
+    <p class="nota" style="margin:0">El plan gratuito tiene un tope de preguntas por minuto y por día (los tuyos, en aistudio.google.com/rate-limit); si lo pasas, la IA espera o te avisa. No actives la facturación en ese proyecto o empezará a cobrarte. Desde España, por las condiciones de Google para la UE, lo que mandas con la clave gratuita no se usa para mejorar sus productos.</p>
     <div class="as-sin-clave">
       <b>Sin clave</b>
-      <p>Copia tu cartera de ahora mismo junto con tu pregunta y pégala en el chat de IA que uses. No hace los cálculos de GrowFolio en directo, pero tiene todos tus datos.</p>
+      <p>Copia tu cartera de ahora mismo junto con tu pregunta y pégala en el chat de IA que uses. No hace los cálculos de Toisón en directo, pero tiene todos tus datos.</p>
       <button class="btn" data-as="copiar">${ICONOS.copiar}Copiar mi cartera para otra IA</button>
     </div>
   </div>`;
@@ -118,16 +118,16 @@ function htmlAjustesAsesor() {
   const cfg = cfgAsesor();
   const yo = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
   return `<div class="as-config">
-    <h3>Ajustes de GrowIA</h3>
+    <h3>Ajustes de la IA</h3>
     <fieldset class="as-modelos"><legend>Respuesta</legend>${[[MODELO_DEF, 'Normal', 'Piensa a fondo. Si se le acaba el cupo gratis del día, sigue sola con la de reserva y, después, con la rápida.'], [MODELO_RAPIDO, 'Rápida', 'Contesta en segundos y tiene mucho más cupo, pero piensa menos.']].map(([k, n, t]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${(k === MODELO_RAPIDO) === esRapida(cfg.modelo) ? ' checked' : ''}><span><b>${n}</b><small>${t}</small></span></label>`).join('')}</fieldset>
     <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> Puede buscar en internet con Google</label>
-    ${cfg.webFalla ? '<p class="nota" style="margin:-6px 0 0">Tu plan de Google no incluye la búsqueda en internet: de momento GrowIA contrasta con los titulares que baja GrowFolio. Lo vuelve a intentar dentro de unos días.</p>' : ''}
+    ${cfg.webFalla ? '<p class="nota" style="margin:-6px 0 0">Tu plan de Google no incluye la búsqueda en internet: de momento la IA contrasta con los titulares que baja Toisón. Lo vuelve a intentar dentro de unos días.</p>' : ''}
     ${esPublico() && LS.get(LS_CLAUDE_OK, false) ? `<label class="campo">${L('Quién contesta', 'Who answers')}<select id="asMotor">${[['auto', L('Claude: Sonnet para preguntas y Haiku para revisiones (recomendado)', 'Claude: Sonnet for questions and Haiku for reviews (recommended)')], ['sonnet', L('Claude Sonnet para todo', 'Claude Sonnet for everything')], ['haiku', L('Claude Haiku para todo', 'Claude Haiku for everything')], ['gemini', L('Solo Gemini, con tu clave de Google', 'Gemini only, with your Google key')]].map(([k, t]) => `<option value="${k}"${motorElegido() === k ? ' selected' : ''}>${t}</option>`).join('')}</select><small>${L('Sonnet piensa más y cuesta más; Haiku es más rápido y barato. Si Claude falla, contesta Gemini.', 'Sonnet thinks more and costs more; Haiku is faster and cheaper. If Claude fails, Gemini answers.')}</small></label>` : ''}
-    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe GrowIA con tus cifras y las noticias del día, en Análisis, Expertos y Paso a paso. Gratis.</small></label>
+    <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe la IA con tus cifras y las noticias del día, en Análisis, Expertos y Paso a paso. Gratis.</small></label>
     <label class="campo">Lo que quieres que sepa de ti<textarea id="asYo" rows="6" placeholder="Por ejemplo: tu edad, para qué inviertes, si piensas comprar casa y cuándo, cuánto riesgo aguantas, tus reglas para las acciones sueltas…">${esc(yo)}</textarea><small>Va dentro de tu cartera cifrada y lo lee al empezar cada conversación.</small></label>
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
     <div class="seccion-ed"><h3>Clave de Google</h3>
-      <p class="nota" style="margin:0 0 8px">${esPublico() && LS.get(LS_CLAUDE_OK, false) && motorElegido() !== 'gemini' ? L('Con Claude, tus preguntas y lo que necesita de tu cartera pasan por el servidor de GrowFolio (que no guarda nada) hasta Anthropic, la empresa de Claude, que lo procesa fuera de la Unión Europea. Si Claude no puede contestar, va a Google con tu clave, directo desde tu navegador.', "With Claude, your questions and what it needs from your portfolio go through GrowFolio's server (which stores nothing) to Anthropic, the company behind Claude, which processes it outside the European Union. If Claude can't answer, it goes to Google with your key, straight from your browser.") : 'Tus preguntas y lo que necesita de tu cartera van de tu navegador a Google, cifrados en el camino; no pasan por GrowFolio.'}</p>
+      <p class="nota" style="margin:0 0 8px">${esPublico() && LS.get(LS_CLAUDE_OK, false) && motorElegido() !== 'gemini' ? L('Con Claude, tus preguntas y lo que necesita de tu cartera pasan por el servidor de Toisón (que no guarda nada) hasta Anthropic, la empresa de Claude, que lo procesa fuera de la Unión Europea. Si Claude no puede contestar, va a Google con tu clave, directo desde tu navegador.', "With Claude, your questions and what it needs from your portfolio go through Toisón's server (which stores nothing) to Anthropic, the company behind Claude, which processes it outside the European Union. If Claude can't answer, it goes to Google with your key, straight from your browser.") : 'Tus preguntas y lo que necesita de tu cartera van de tu navegador a Google, cifrados en el camino; no pasan por Toisón.'}</p>
       <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[cfg.prov]] ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'}</p>
       ${AS.clave ? `<details class="as-detalle"><summary>${L('Detalles técnicos', 'Technical details')}</summary><p class="nota as-cupo">${htmlCupoIA()}</p>${htmlDiarioIA()}</details>` : ''}
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-as="cambiar-clave">${AS.clave ? 'Cambiar clave' : 'Poner clave'}</button>${AS.clave ? '<button class="btn peq peligro" data-as="borrar-clave">Borrar clave</button>' : ''}</div>
@@ -171,7 +171,7 @@ async function abrirAsesor(pregunta, enviar) {
     fondo.innerHTML = `<section class="asesor" role="dialog" aria-modal="true" aria-labelledby="asTit">
       <header class="as-cab"><div class="as-tit"><span class="as-ico ia-av">${AVATAR_IA}</span><div><h2 id="asTit" data-no-trad>${NOM_IA}</h2><small id="asSub"></small></div></div>
         <button class="ib" data-as="nueva" title="Nueva conversación" aria-label="Nueva conversación">${ICONOS.nueva}</button>
-        <button class="ib" data-as="ajustes" title="Ajustes de GrowIA" aria-label="Ajustes de GrowIA">${ICONOS.ajustes}</button>
+        <button class="ib" data-as="ajustes" title="Ajustes de la IA" aria-label="Ajustes de la IA">${ICONOS.ajustes}</button>
         <button class="ib ib-bicho" data-accion="opinion" title="Avisar de un fallo o mandar una idea" aria-label="Avisar de un fallo">${ICONOS.bicho}</button>
         <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
       <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
@@ -282,8 +282,8 @@ async function clicAsesor(e) {
   else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }
   else if (a === 'copiar') copiarCartera();
   else if (a === 'copiar-diario') {
-    const txt = `GrowFolio ${VERSION}${deApp('version') ? ` · app ${deApp('version')}` : ''} · ${navigator.userAgent.replace(/^.*?\(([^)]*)\).*$/, '$1')}\n${textoDiarioIA()}`;
-    try { await navigator.clipboard.writeText(txt); toast(L('Copiado el registro de GrowIA.', "GrowIA's log copied."), 3000); }
+    const txt = `Toisón ${VERSION}${deApp('version') ? ` · app ${deApp('version')}` : ''} · ${navigator.userAgent.replace(/^.*?\(([^)]*)\).*$/, '$1')}\n${textoDiarioIA()}`;
+    try { await navigator.clipboard.writeText(txt); toast(L('Copiado el registro de la IA.', "GrowIA's log copied."), 3000); }
     catch (e) { descargar(`registro-growia-${hoyIso()}.txt`, txt); toast(L('No se pudo copiar: te lo he descargado como texto.', "Couldn't copy it: I've downloaded it as text."), 5000); }
   }
   else if (a === 'recorte') iniciarRecorte();

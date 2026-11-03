@@ -100,7 +100,7 @@ test('una noticia que sí se deja leer sale entera', async ({ page, context, err
   });
   await abrir(page, 'https://www.inditex.com/itxcomweb/es/noticias', 'Inditex gana más');
   await expect(page.locator('.hoja-not')).toContainText('1.500 millones', { timeout: 15_000 });
-  await expect(page.locator('.hoja-not .not-pie')).toContainText('Resumen de GrowIA');
+  await expect(page.locator('.hoja-not .not-pie')).toContainText('Resumen de la IA');
 });
 
 test('en las preguntas, si el plan no tiene búsqueda, deja de buscar sin dar el modelo por agotado', async ({ page, context, errores }) => {

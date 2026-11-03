@@ -30,13 +30,13 @@ window.resultadoHuella = (ok, motivo) => { const r = huellaEspera; huellaEspera 
 function huellaApp() {
   return new Promise((res) => {
     huellaEspera = res;
-    try { window.InversionesApp.pedirHuella(IDIOMA === 'en' ? 'Unlock GrowFolio' : 'Desbloquea GrowFolio', IDIOMA === 'en' ? 'Use PIN' : 'Usar el PIN'); } catch (e) { huellaEspera = null; res({ ok: false, motivo: 'sin puente' }); }
+    try { window.InversionesApp.pedirHuella(IDIOMA === 'en' ? 'Unlock Toisón' : 'Desbloquea Toisón', IDIOMA === 'en' ? 'Use PIN' : 'Usar el PIN'); } catch (e) { huellaEspera = null; res({ ok: false, motivo: 'sin puente' }); }
   });
 }
 async function registrarHuellaWeb() {
   const cred = await navigator.credentials.create({ publicKey: {
-    challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'GrowFolio' },
-    user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'GrowFolio', displayName: 'GrowFolio' },
+    challenge: crypto.getRandomValues(new Uint8Array(32)), rp: { name: 'Toisón' },
+    user: { id: crypto.getRandomValues(new Uint8Array(16)), name: 'Toisón', displayName: 'Toisón' },
     pubKeyCredParams: [{ type: 'public-key', alg: -7 }, { type: 'public-key', alg: -257 }],
     authenticatorSelection: { authenticatorAttachment: 'platform', userVerification: 'required', residentKey: 'discouraged' }, timeout: 60000,
   } });
@@ -58,7 +58,7 @@ function pantallaBloqueo(alAbrir, conContrasena) {
   const c = cfgBloqueo(); if (!c) return alAbrir();
   $$('.bloqueo').forEach((x) => x.remove());
   const el = document.createElement('div');
-  el.className = 'bloqueo'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'GrowFolio bloqueado');
+  el.className = 'bloqueo'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true'); el.setAttribute('aria-label', 'Toisón bloqueado');
   const teclas = ['1', '2', '3', '4', '5', '6', '7', '8', '9', c.huella ? 'huella' : '', '0', 'borrar'];
   el.innerHTML = `<div class="bq-caja">
     ${logoEntrada('favicon.svg')}
@@ -127,9 +127,9 @@ document.addEventListener('visibilitychange', () => {
 function htmlAjustesBloqueo() {
   const c = cfgBloqueo();
   return `<div class="seccion-ed" id="ajBloqueo"><h3>${ICONOS.huella}Bloqueo con PIN o huella</h3>
-    ${c ? `<p class="nota" style="margin:0">Activado${c.huella ? ', con PIN y huella' : ', con PIN'}. GrowFolio se abre sin contraseña, pero te pide ${c.huella ? 'la huella o el PIN' : 'el PIN'} una vez cada ${BLOQUEO_H} horas.</p>
+    ${c ? `<p class="nota" style="margin:0">Activado${c.huella ? ', con PIN y huella' : ', con PIN'}. Toisón se abre sin contraseña, pero te pide ${c.huella ? 'la huella o el PIN' : 'el PIN'} una vez cada ${BLOQUEO_H} horas.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" id="aPin">Cambiar el PIN</button><button class="btn peq" id="aHuella" hidden></button><button class="btn peq" id="aSinPin">Quitar el bloqueo</button></div>`
-    : `<p class="nota" style="margin:0">Pon un PIN de 4 cifras y, si tu móvil u ordenador tiene lector, la huella. GrowFolio se abre sin escribir la contraseña y te pide el PIN o la huella una vez cada ${BLOQUEO_H} horas.</p>
+    : `<p class="nota" style="margin:0">Pon un PIN de 4 cifras y, si tu móvil u ordenador tiene lector, la huella. Toisón se abre sin escribir la contraseña y te pide el PIN o la huella una vez cada ${BLOQUEO_H} horas.</p>
       <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq pri" id="aPin">Poner un PIN</button></div>`}
   </div>`;
 }
@@ -156,7 +156,7 @@ async function activarHuella(tipo, recargar) {
 }
 function ponerPin(recargar) {
   const h = hoja('Tu PIN', `<form id="fPin">
-    <p class="nota" style="margin:0">Cuatro cifras que recuerdes y que no sean obvias (nada de 1234 o tu año de nacimiento). Con él abres GrowFolio en este dispositivo; tu contraseña sigue siendo la llave de verdad.</p>
+    <p class="nota" style="margin:0">Cuatro cifras que recuerdes y que no sean obvias (nada de 1234 o tu año de nacimiento). Con él abres Toisón en este dispositivo; tu contraseña sigue siendo la llave de verdad.</p>
     <label class="campo">PIN nuevo<input type="password" id="pin1" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required></label>
     <label class="campo">Repítelo<input type="password" id="pin2" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required></label>
     <div class="error" id="pinErr"></div>

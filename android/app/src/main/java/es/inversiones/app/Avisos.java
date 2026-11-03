@@ -108,8 +108,8 @@ public class Avisos extends Worker {
         }
         String hoy = LocalDate.now().toString(), manana = LocalDate.now().plusDays(1).toString();
         boolean en = "en".equals(p.getString("idioma", "es"));   // 0.4: en el idioma de la web
-        Tema tm = Tema.de(c);   // 0.8: con un diseño de Toisón, «Toisón» y «la IA» (en inglés sigue GrowIA, como la web)
-        String app = tm.toison ? "Toisón" : "GrowFolio";
+        Tema tm = Tema.de(c);   // 0.8: «Toisón» y «la IA» (en inglés sigue GrowIA, como la web)
+        String app = "Toisón";
 
         for (int k = 0; reglas != null && k < reglas.length(); k++) {
             JSONObject x = reglas.getJSONObject(k);
@@ -192,11 +192,11 @@ public class Avisos extends Worker {
         if (!permitidos(c)) return;
         NotificationManager nm = c.getSystemService(NotificationManager.class);
         if (nm == null) return;
-        if (nm.getNotificationChannel(CANAL) == null) {
-            NotificationChannel ch = new NotificationChannel(CANAL, "Avisos de tu cartera", NotificationManager.IMPORTANCE_DEFAULT);
-            ch.setDescription("Precio de salida, movimientos fuertes, fechas de lo tuyo y preguntas de GrowIA");
-            nm.createNotificationChannel(ch);
-        }
+        // 0.8: se crea cada vez (si ya existe, Android solo le cambia el nombre y la descripción: así los que lo tenían
+        // con «GrowIA» pasan a «la IA»)
+        NotificationChannel ch = new NotificationChannel(CANAL, "Avisos de tu cartera", NotificationManager.IMPORTANCE_DEFAULT);
+        ch.setDescription("Precio de salida, movimientos fuertes, fechas de lo tuyo y preguntas de la IA");
+        nm.createNotificationChannel(ch);
         Intent i = new Intent(c, Principal.class).putExtra("hash", hash).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_SINGLE_TOP);
         PendingIntent pi = PendingIntent.getActivity(c, clave.hashCode(), i, PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE);
         Notification n = new Notification.Builder(c, CANAL)

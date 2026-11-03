@@ -30,17 +30,17 @@ import java.util.Map;
 import java.util.Random;
 
 /**
- * Dibuja el widget entero en una imagen, con Plus Jakarta Sans (la letra de la web) y con el mismo estilo que el patrimonio de
+ * Dibuja el widget entero en una imagen, con Inter e Ibarra Real Nova (las letras de Toisón) y con el mismo estilo que el patrimonio de
  * Cartera: la cifra grande y gruesa, lo de hoy en una pastilla de color y la curva suave con brillo y un relleno
  * dorado que se desvanece, de lado a lado. Así nada se corta: cada texto se mide y se encoge o se recorta con "…".
  * Tamaños: una fila (2x1, 4x1: la cifra, hoy y la curva a la derecha si cabe), dos filas (4x2: además lo ganado en
  * total y la curva grande) y tres o más (además lo que toca y, en pastillas, lo que más ha movido hoy la cartera).
  */
 final class Lienzo {
-    /** 0.8: los colores salen del diseño elegido en la web (Tema): GrowFolio como siempre o Mármol, Marfil y Borgoña */
+    /** 0.8: los colores salen del diseño elegido en la web (Tema): Mármol, Marfil o Borgoña */
     private final Tema t;
     private final int LINEA, TEXTO, TEXTO2, APAGADO, ACENTO, ACENTO_LUZ, ORO_TEXTO, SUBE, BAJA, FONDO_A, FONDO_B;
-    /** la cifra grande: en GrowFolio gruesa y apretada como en la app (0.3); con Toisón, Inter 500 como la maqueta */
+    /** la cifra grande: Inter 500 como la maqueta de Toisón */
     private final float ESPACIADO_CIFRA;
     private final int PESO_CIFRA;
     private static final Map<String, Typeface> LETRAS = new HashMap<>();
@@ -69,8 +69,8 @@ final class Lienzo {
         BAJA = t.baja;
         FONDO_A = t.fondoA;
         FONDO_B = t.fondoB;
-        ESPACIADO_CIFRA = t.toison ? -0.02f : -0.06f;
-        PESO_CIFRA = t.toison ? 500 : 750;
+        ESPACIADO_CIFRA = -0.02f;
+        PESO_CIFRA = 500;
     }
 
     /** ancho y alto en dp; devuelve la imagen ya dibujada */
@@ -84,9 +84,9 @@ final class Lienzo {
     }
 
     // ---------- letra y texto ----------
-    /** la letra del texto: Plus Jakarta Sans con GrowFolio; Inter con Toisón (sin pasar de 600, como en la app) */
+    /** la letra del texto: Inter (sin pasar de 600, como en la app) */
     private Typeface letra(int peso) {
-        return t.toison ? fuente("inter.ttf", Math.min(peso, 600)) : fuente("plusjakartasans.ttf", peso);
+        return fuente("inter.ttf", Math.min(peso, 600));
     }
 
     /** la letra de marca de Toisón, Ibarra Real Nova (normal o cursiva), para las etiquetas y el nombre */
@@ -211,7 +211,7 @@ final class Lienzo {
     private Bitmap grano() {
         Bitmap GRANO = GRANOS.get(ACENTO);
         if (GRANO != null) return GRANO;
-        int gr = t.toison ? ACENTO & 0xFFFFFF : (236 << 16) | (192 << 8) | 112;
+        int gr = ACENTO & 0xFFFFFF;
         try {
             int l = 128;
             int[] px = new int[l * l];
@@ -520,17 +520,16 @@ final class Lienzo {
         p.setStrokeWidth(Math.max(1, dp(1)));
         p.setColor(LINEA);
         c.drawRoundRect(new RectF(dp(0.5f), dp(0.5f), bmp.getWidth() - dp(0.5f), bmp.getHeight() - dp(0.5f)), dp(24), dp(24), p);
-        if (t.toison) {   // con Toisón, el hilo de oro de arriba que se difumina hacia los lados, como el patrimonio de la app
-            float w = bmp.getWidth();
-            p.setStyle(Paint.Style.FILL);
-            p.setShader(new LinearGradient(dp(24), 0, w - dp(24), 0, new int[]{alfa(ORO_TEXTO, 0), alfa(ORO_TEXTO, 0x8C), alfa(ORO_TEXTO, 0)}, null, Shader.TileMode.CLAMP));
-            c.drawRect(dp(24), dp(1), w - dp(24), dp(1) + Math.max(1, dp(1.2f)), p);
-            p.setShader(null);
-        }
+        // el hilo de oro de arriba que se difumina hacia los lados, como el patrimonio de la app
+        float w = bmp.getWidth();
+        p.setStyle(Paint.Style.FILL);
+        p.setShader(new LinearGradient(dp(24), 0, w - dp(24), 0, new int[]{alfa(ORO_TEXTO, 0), alfa(ORO_TEXTO, 0x8C), alfa(ORO_TEXTO, 0)}, null, Shader.TileMode.CLAMP));
+        c.drawRect(dp(24), dp(1), w - dp(24), dp(1) + Math.max(1, dp(1.2f)), p);
+        p.setShader(null);
     }
 
     /**
-     * «Patrimonio» arriba a la izquierda, como las etiquetas de las tarjetas de cada diseño: GrowFolio, apagado;
+     * «Patrimonio» arriba a la izquierda, como las etiquetas de las tarjetas de cada diseño:
      * Mármol, Inter en mayúsculas espaciadas; Marfil, Ibarra con una raya de tinta debajo; Borgoña, Ibarra cursiva en
      * oro. Devuelve el ancho (en dp); con «dibujar» falso solo mide
      */
@@ -664,11 +663,10 @@ final class Lienzo {
         this.ph = ph;
         float util = W - 2 * ph;
         if (!r.hay) {
-            if (t.toison) {   // TOISÓN en Ibarra, espaciado como en la cabecera de la app
-                estilo(Math.min(22, H * 0.22f), 600, t.claro ? TEXTO : ORO_TEXTO, Paint.Align.LEFT, 0.12f);
-                p.setTypeface(ibarra(600, false));
-                c.drawText("TOISÓN", dp(ph), dp(H / 2 - 2), p);
-            } else texto(ph, H / 2 - 2, "GrowFolio", Math.min(22, H * 0.22f), 700, TEXTO, false);
+            // TOISÓN en Ibarra, espaciado como en la cabecera de la app
+            estilo(Math.min(22, H * 0.22f), 600, t.claro ? TEXTO : ORO_TEXTO, Paint.Align.LEFT, 0.12f);
+            p.setTypeface(ibarra(600, false));
+            c.drawText("TOISÓN", dp(ph), dp(H / 2 - 2), p);
             texto(ph, H / 2 + 18, recortar(r.en ? "Open the app once to see your portfolio here" : "Abre la app una vez para ver aquí tu cartera", 12.5f, 500, util), 12.5f, 500, TEXTO2, false);
             c.restore();
             return;
@@ -702,11 +700,11 @@ final class Lienzo {
             finIzq = x0 - 10;
         } else if (modo == 1) finIzq = W - SEL_FIN - periodo(W - SEL_FIN, y, r.rango) - 10;
         String pat = r.en ? "Net worth" : "Patrimonio";
-        float wPat = etiqueta(ph, y, pat, false), wHora = ancho(r.horaTxt, 11.5f, 500), sepHora = t.toison ? 9 : 7;
+        float wPat = etiqueta(ph, y, pat, false), wHora = ancho(r.horaTxt, 11.5f, 500), sepHora = 9;
         if (ph + wPat + sepHora + wHora <= finIzq) {
             etiqueta(ph, y, pat, true);
             texto(ph + wPat + sepHora, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
-        } else if (t.toison && ph + wPat <= finIzq) etiqueta(ph, y, pat, true);
+        } else if (ph + wPat <= finIzq) etiqueta(ph, y, pat, true);
         else if (ph + wHora <= finIzq) texto(ph, y, r.horaTxt, 11.5f, 500, alfa(APAGADO, 0xB0), false);
 
         // la cifra grande y gruesa

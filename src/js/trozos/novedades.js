@@ -3,7 +3,7 @@
 function estreno02(visto, despues) {
   const quieto = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
   const d = document.createElement('div');
-  d.className = 'estreno' + (quieto ? ' quieta' : ''); d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'GrowFolio 0.2');
+  d.className = 'estreno' + (quieto ? ' quieta' : ''); d.setAttribute('role', 'dialog'); d.setAttribute('aria-modal', 'true'); d.setAttribute('aria-label', 'Toisón 0.2');
   const nom = nombreUsuario();
   // lo que viene de verdad en tu cartera, si ya está abierta; si no, un ejemplo
   let prox = [];
@@ -16,7 +16,7 @@ function estreno02(visto, despues) {
   const pasos = [
     { k: 'hola', html: `
       <p class="es-pre">${L('Ya está aquí', "It's here")}</p>
-      <h1 class="es-tit"><span>GrowFolio</span><b>0.2</b></h1>
+      <h1 class="es-tit"><span>Toisón</span><b>0.2</b></h1>
       <p class="es-sub">${L('La versión más grande hasta ahora. Esto es lo que cambia, en un minuto.', 'The biggest version yet. Here is what changes, in a minute.')}</p>
       <div class="es-capitulos">${[[ICONOS.perfil, L('Tu cuenta', 'Your account')], [ICONOS.agenda, L('Calendario', 'Calendar')], [ICONOS.chispa, L('Más cuidada', 'More polished')]].map(([i, t], n) => `<span style="--i:${n}">${i}${t}</span>`).join('')}</div>` },
     { k: 'cuenta', html: `
@@ -28,7 +28,7 @@ function estreno02(visto, despues) {
       </div>
       <h2 class="es-h">${L('Tu cartera, en tu cuenta', 'Your portfolio, in your account')}</h2>
       <p class="es-p">${L('Entras con Google o con tu correo y tu cartera es la misma en el móvil, en el ordenador y en la app. Lo que cambias en uno aparece solo en los demás; si tocas los dos a la vez, se juntan.', "Sign in with Google or your email and your portfolio is the same on your phone, computer and app. What you change on one shows up on the others; if you edit both at once, they're combined.")}</p>
-      <p class="es-chip">${ICONOS.candado}${L('Cifrada con tu contraseña: ni GrowFolio ni Google ven tus cifras', 'Encrypted with your password: neither GrowFolio nor Google can see your numbers')}</p>` },
+      <p class="es-chip">${ICONOS.candado}${L('Cifrada con tu contraseña: ni Toisón ni Google ven tus cifras', 'Encrypted with your password: neither Toisón nor Google can see your numbers')}</p>` },
     { k: 'agenda', html: `
       <div class="es-ilu es-cal" aria-hidden="true">${evs.map((e, n) => `<div class="es-ev" style="--i:${n};--c:${e.col}"><span class="es-ev-i">${e.ico}</span><b>${esc(e.t)}</b><em>${esc(e.f)}</em></div>`).join('')}</div>
       <h2 class="es-h">${L('Lo que viene, en un calendario', "What's coming, in a calendar")}</h2>
@@ -53,7 +53,7 @@ function estreno02(visto, despues) {
       <div class="es-ilu es-ok" aria-hidden="true">${ICONOS.ok}</div>
       <h2 class="es-h">${nom ? L(`Todo listo, ${esc(nom)}`, `All set, ${esc(nom)}`) : L('Todo listo', 'All set')}</h2>
       <p class="es-p">${S.cartera ? L('En «¿Qué se ha mejorado?» están todas las novedades, y cada una te lleva hasta donde está.', 'All the news is in "What’s new", and each item takes you to where it is.') : L('Tu cartera de antes no se pierde: al entrar te ofrece subirla a tu cuenta tal cual, con su misma contraseña.', "Your previous portfolio isn't lost: once you sign in it offers to upload it as is, with the same password.")}</p>
-      <p class="es-alfa">${ICONOS.bicho}<span>${L('<b>Es una versión alfa.</b> Si ves algo que falla o que se ve raro, avisa con el bichito de arriba (o en Ajustes): llega directo a quien hace GrowFolio y se arregla en la siguiente.', "<b>This is an alpha.</b> If something breaks or looks odd, report it with the bug button at the top (or in Settings): it goes straight to whoever gave you GrowFolio and gets fixed in the next one.")}</span></p>
+      <p class="es-alfa">${ICONOS.bicho}<span>${L('<b>Es una versión alfa.</b> Si ves algo que falla o que se ve raro, avisa con el bichito de arriba (o en Ajustes): llega directo a quien hace Toisón y se arregla en la siguiente.', "<b>This is an alpha.</b> If something breaks or looks odd, report it with the bug button at the top (or in Settings): it goes straight to whoever gave you Toisón and gets fixed in the next one.")}</span></p>
       <div class="es-btns">${!PERFIL_CUENTA ? `<button class="btn pri es-cta" data-es="cuenta">${L('Pasar mi cartera a una cuenta', 'Move my portfolio to an account')}</button><button class="btn" data-es="luego">${L('Ahora no', 'Not now')}</button>` : `<button class="btn pri es-cta" data-es="ok">${FB.user ? L('Empezar', 'Start') : L('Crear mi cuenta o entrar', 'Create my account or sign in')}</button>`}
         ${S.cartera ? `<button class="enlace es-mas" data-es="nov">${L('Ver todas las novedades de la 0.2', 'See everything new in 0.2')}</button>` : ''}</div>` },
   ];
@@ -109,7 +109,7 @@ function avisoArreglos(ns, que, visto, intento = 0) {
   const ult = ns.find((n) => n.v === VERSION) || ns[0] || {}, lista = ns.flatMap((n) => [...(n.cosas || []).map((c) => c.t), ...(n.arreglos || [])]).filter(Boolean);
   const d = document.createElement('div');
   d.className = 'aviso-arr'; d.setAttribute('role', 'status');
-  d.innerHTML = `<div class="aa-cab">${ICONOS.chispa}<div><b>GrowFolio ${esc(VERSION)}</b><small>${esc(que)}</small></div><button type="button" class="ib" data-aa="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button></div>
+  d.innerHTML = `<div class="aa-cab">${ICONOS.chispa}<div><b>Toisón ${esc(VERSION)}</b><small>${esc(que)}</small></div><button type="button" class="ib" data-aa="x" aria-label="${L('Cerrar', 'Close')}">${ICONOS.cerrar}</button></div>
     ${ult.t ? `<p class="aa-t">${esc(trad(ult.t))}</p>` : ''}
     <ul class="aa-l">${lista.slice(0, 3).map((x) => `<li>${ICONOS.ok}<span>${esc(trad(x))}</span></li>`).join('')}</ul>
     <div class="aa-pie">${lista.length > 3 ? `<span class="k">${L(`y ${lista.length - 3} más`, `and ${lista.length - 3} more`)}</span>` : '<span></span>'}<button type="button" class="btn peq" data-aa="ver">${L('Ver todo', 'See all')}</button></div>`;
@@ -220,7 +220,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
   raiz.className = `intro ix ixn${varias ? ' ixn-varias' : ''}${quieta ? ' quieta' : ''}`;
   raiz.setAttribute('role', 'dialog'); raiz.setAttribute('aria-modal', 'true'); raiz.setAttribute('aria-label', `Novedades de la ${ver}`);
   raiz.innerHTML = `<div class="ix-luz" aria-hidden="true"></div><div class="ix-barra" aria-hidden="true"></div>
-    <div class="ix-cab"><span class="intro-marca" style="opacity:1">${navToison() ? '<b class="ix-ts">TOISÓN</b>' : '<img src="growfolio-nombre.svg" alt="GrowFolio">'}</span><button class="ixn-det" type="button" data-nv="lista">${ICONOS.plan}${L('En detalle', 'In detail')}</button><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
+    <div class="ix-cab"><span class="intro-marca" style="opacity:1">${navToison() ? '<b class="ix-ts">TOISÓN</b>' : '<img src="growfolio-nombre.svg" alt="Toisón">'}</span><button class="ixn-det" type="button" data-nv="lista">${ICONOS.plan}${L('En detalle', 'In detail')}</button><button class="intro-saltar" type="button" data-nv="fin">Saltar</button></div>
     <div class="ix-scroll" tabindex="-1">
       <section class="ixn-heroe"><div class="ix-escena">
         <p class="ixn-eti" data-no-trad>${varias ? L(`Te has perdido ${grupos.length} versiones`, `You've missed ${grupos.length} versions`) : L('Lo nuevo', "What's new")}</p>
@@ -331,7 +331,7 @@ async function abrirRegistro(alCerrar) {
     </article>`;
   };
   const h = hoja('Registro de cambios', `<div class="registro">
-      <p class="nota">Todas las versiones de GrowFolio con el día y la hora en que salieron: primero lo que cambia contado en corto y después la lista detallada de lo que se hizo, tal como quedó en el historial del proyecto.</p>
+      <p class="nota">Todas las versiones de Toisón con el día y la hora en que salieron: primero lo que cambia contado en corto y después la lista detallada de lo que se hizo, tal como quedó en el historial del proyecto.</p>
       <nav class="reg-indice" aria-label="Versiones">${NOVEDADES.map((n) => `<a href="#reg-${esc(n.v)}">${esc(n.v)}</a>`).join('')}</nav>
       ${NOVEDADES.map(art).join('')}
       <div class="fila-btns"><button class="btn" data-cerrar>Cerrar</button></div>

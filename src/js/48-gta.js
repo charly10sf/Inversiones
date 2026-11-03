@@ -112,7 +112,10 @@ function chipGTA() {
 // 0.7n (lo pidió Carlos el 1 nov: «que la tipografía de GTA sea de GTA o parecida»): para títulos y cifras, Passion One, la
 // libre que más se parece a Pricedown, la letra de los logos de GTA (Pricedown solo es gratis para uso personal y el logo es
 // de Rockstar: aquí, parecida, no la suya). Yellowtail para los rótulos, a pincel como el «Vice City» de los ochenta
-function fuenteGTA() {
+// 0.8: con Toisón la cuenta atrás va en Ibarra e Inter (de la casa); Passion One y Yellowtail (Google Fonts) solo se
+// bajan para la imagen de compartir, que sigue de neón (forzar)
+function fuenteGTA(forzar = false) {
+  if (!forzar && navToison()) return;
   if ($('#fuenteGTA')) return;
   const l = document.createElement('link');
   l.id = 'fuenteGTA'; l.rel = 'stylesheet'; l.href = 'https://fonts.googleapis.com/css2?family=Passion+One&family=Yellowtail&display=swap';  // 0.7n: Passion One en vez de Tilt Neon

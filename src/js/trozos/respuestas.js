@@ -56,12 +56,12 @@ function verRespuestas(l, nuevas) {
     return `<div class="resp-tuyo"><div class="resp-meta">${L('Tú', 'You')}${o.tipo && o.tipo !== 'puntuacion' ? `, ${esc(trad(o.tipo).toLowerCase())}` : ''}${o.sitio && o.sitio !== 'La app en general' && o.tipo !== 'puntuacion' ? ` ${L('en', 'in')} ${esc(trad(o.sitio))}` : ''}<time>${esc(cuandoOpi(fechaOpi(o)))}</time></div>${est}${t ? `<p>${esc(t.length > 600 ? t.slice(0, 600) + '…' : t)}</p>` : ''}</div>`;
   };
   const suyo = (o) => o.respuesta ? `<div class="resp-suya">
-      <div class="resp-meta">${svgMarca('resp-marca')}<b>${esc(o.por ? L(`${o.por}, de GrowFolio`, `${o.por}, from GrowFolio`) : 'GrowFolio')}</b><time>${esc(cuandoOpi(fechaOpi({ cuando: o.respondida })))}</time></div>
+      <div class="resp-meta">${svgMarca('resp-marca')}<b>${esc(o.por ? L(`${o.por}, de Toisón`, `${o.por}, from Toisón`) : 'Toisón')}</b><time>${esc(cuandoOpi(fechaOpi({ cuando: o.respondida })))}</time></div>
       <p>${esc(o.respuesta)}</p>
     </div>` : `<p class="resp-espera">${L('Sin respuesta todavía.', 'No reply yet.')}</p>`;
   const titulo = nuevas ? (l.length === 1 ? L('Te han respondido', 'You have a reply') : L(`Tienes ${l.length} respuestas`, `You have ${l.length} replies`)) : L('Lo que has mandado', 'What you have sent');
   const h = hoja(titulo, `<div class="resp-hoja">
-      ${nuevas ? `<p class="nota">${l.length === 1 ? L('A lo que mandaste a GrowFolio:', 'To what you sent to GrowFolio:') : L('A lo que mandaste a GrowFolio, de lo más nuevo a lo más antiguo:', 'To what you sent to GrowFolio, newest first:')}</p>` : ''}
+      ${nuevas ? `<p class="nota">${l.length === 1 ? L('A lo que mandaste a Toisón:', 'To what you sent to Toisón:') : L('A lo que mandaste a Toisón, de lo más nuevo a lo más antiguo:', 'To what you sent to Toisón, newest first:')}</p>` : ''}
       <ul class="resp-lista">${l.map((o) => `<li class="resp">${tuyo(o)}${suyo(o)}</li>`).join('')}</ul>
       <div class="fila-btns"><button type="button" class="btn" id="bRespOtra">${L('Escribir otra vez', 'Write again')}</button><button type="button" class="btn pri" data-cerrar>${nuevas ? L('Entendido', 'Got it') : L('Cerrar', 'Close')}</button></div>
     </div>`, () => { if (nuevas) marcarLeidas(l); });
@@ -78,7 +78,7 @@ async function pedirNota(intento = 0) {
   const est = (n) => `<button type="button" class="nota-est" data-nota="${n}" aria-label="${n} de 5"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8l2.8 5.8 6.3.9-4.6 4.4 1.1 6.3L12 17.2l-5.6 3 1.1-6.3-4.6-4.4 6.3-.9z"/></svg></button>`;
   const dias = LS.get('inv-dias-uso', []).length;
   let nota = 0, enviada = false;
-  const h = hoja('¿Qué te parece GrowFolio?', `<form class="nota-f" novalidate>
+  const h = hoja('¿Qué te parece Toisón?', `<form class="nota-f" novalidate>
       <p class="nota-intro">${L(`Llevas ${dias} días usándola. ¿Cuántas estrellas le das?`, `You've used it on ${dias} days. How many stars would you give it?`)}</p>
       <div class="nota-ests" role="radiogroup" aria-label="Tu nota">${[1, 2, 3, 4, 5].map(est).join('')}</div>
       <p class="nota-dice" aria-live="polite"></p>
@@ -94,7 +94,7 @@ async function pedirNota(intento = 0) {
     $('.nota-dice', h.el).textContent = DICE[n];
     const c = $('.nota-com', h.el); c.hidden = false;
     $('.nota-q', h.el).textContent = n <= 3 ? '¿Qué mejorarías? (opcional)' : 'Lo que más te gusta o lo que añadirías (opcional)';
-    f.txt.placeholder = n <= 3 ? 'Lo que no te convence, lo que echas en falta o lo que te cuesta entender' : 'Por ejemplo: el Paso a paso, el widget, que GrowIA me pregunte…';
+    f.txt.placeholder = n <= 3 ? 'Lo que no te convence, lo que echas en falta o lo que te cuesta entender' : 'Por ejemplo: el Paso a paso, el widget, que la IA me pregunte…';
     $('button[type=submit]', f).disabled = false;
   };
   h.el.addEventListener('click', (e) => { const b = e.target.closest('[data-nota]'); if (b) marcar(+b.dataset.nota); });
@@ -118,7 +118,7 @@ async function abrirOpinion() {
     <label class="campo">Dónde<select name="sitio">${SITIOS_OP.map(([k, t]) => `<option value="${k}"${k === sitio ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
     <label class="campo">Cuéntalo<textarea name="txt" rows="5" placeholder="Qué ves, qué esperabas o qué se te ha ocurrido. Si es algo que falla, qué estabas haciendo."></textarea>${directa ? '' : '<small>Si es algo visual, manda también una captura en el mismo chat.</small>'}</label>
     ${directa ? `<label class="campo">Tu nombre<input name="quien" maxlength="40" value="${esc(LS.get('inv-opi-nombre', '') || '')}" placeholder="Opcional, para saber quién lo dice"></label>` : ''}
-    <p class="nota" style="margin:0">${directa ? L('Llega directamente a quien hace GrowFolio, que te puede contestar aquí mismo.', 'It goes straight to the people who make GrowFolio, who can reply to you right here.') : L('Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó GrowFolio.', 'WhatsApp opens with the message written: pick the chat of whoever shared GrowFolio with you.')} ${L('Solo va lo que escribes, la sección y la versión, nada de tu cartera.', 'Only what you write, the section and the version are sent, nothing from your portfolio.')}${hist.length ? ' ' + (hist.length === 1 ? L('Llevas 1 enviada: gracias.', "You've sent 1 so far: thanks.") : L(`Llevas ${hist.length} enviadas: gracias.`, `You've sent ${hist.length} so far: thanks.`)) : ''}</p>
+    <p class="nota" style="margin:0">${directa ? L('Llega directamente a quien hace Toisón, que te puede contestar aquí mismo.', 'It goes straight to the people who make Toisón, who can reply to you right here.') : L('Se abre WhatsApp con el mensaje escrito: elige el chat de quien te pasó Toisón.', 'WhatsApp opens with the message written: pick the chat of whoever shared Toisón with you.')} ${L('Solo va lo que escribes, la sección y la versión, nada de tu cartera.', 'Only what you write, the section and the version are sent, nothing from your portfolio.')}${hist.length ? ' ' + (hist.length === 1 ? L('Llevas 1 enviada: gracias.', "You've sent 1 so far: thanks.") : L(`Llevas ${hist.length} enviadas: gracias.`, `You've sent ${hist.length} so far: thanks.`)) : ''}</p>
     ${directa ? '<div id="opiMias"></div>' : ''}
     <div class="error" id="errOpi"></div>
     <div class="fila-btns">${directa ? '' : `<button type="button" class="btn" id="bOpiCopiar">Copiar</button>${navigator.share ? '<button type="button" class="btn" id="bOpiComp">Compartir…</button>' : ''}`}<button type="submit" class="btn pri" id="bOpiEnviar">${ICONOS.globo}${directa ? 'Enviar' : 'Enviar por WhatsApp'}</button></div>
@@ -135,7 +135,7 @@ async function abrirOpinion() {
     if (!t) { $('#errOpi', h.el).textContent = 'Escribe qué pasa o qué se te ocurre.'; return null; }
     const tt = (TIPOS_OP.find(([k]) => k === tipo) || [])[1], st = (SITIOS_OP.find(([k]) => k === sitio) || [])[1];
     const disp = [`web ${VERSION}`, window.InversionesApp ? `app ${(() => { try { return window.InversionesApp.nombreVersion() || versionApp(); } catch (e) { return versionApp(); } })()}` : null, /Android/i.test(navigator.userAgent) ? 'Android' : /iPhone|iPad/i.test(navigator.userAgent) ? 'iPhone' : 'ordenador', `${innerWidth} px`, PERFIL_CUENTA ? `cuenta ${(FB.user && FB.user.providerData && FB.user.providerData[0] && FB.user.providerData[0].providerId === 'google.com') ? 'Google' : 'correo'}` : PERFIL_LOCAL ? 'cartera en el móvil' : null].filter(Boolean).join(', ');
-    return `GrowFolio, ${String(tt).toLowerCase()} en ${st}:\n\n${t}\n\n(${disp})`;
+    return `Toisón, ${String(tt).toLowerCase()} en ${st}:\n\n${t}\n\n(${disp})`;
   };
   if ($('#bOpiCopiar', h.el)) $('#bOpiCopiar', h.el).onclick = async () => { const t = texto(); if (!t) return; try { await navigator.clipboard.writeText(t); toast('Copiado: pégalo donde quieras'); } catch (e) { toast('No se pudo copiar'); } };
   if ($('#bOpiComp', h.el)) $('#bOpiComp', h.el).onclick = async () => { const t = texto(); if (!t) return; try { await navigator.share({ text: t }); h.cerrar(); } catch (e) {} };
@@ -150,7 +150,7 @@ async function abrirOpinion() {
       try {
         await mandarOpinion({ tipo: (TIPOS_OP.find(([k]) => k === tipo) || [])[1], sitio: (SITIOS_OP.find(([k]) => k === st) || [])[1], texto: f.txt.value.trim(), quien: quien || (PERFIL_LOCAL ? 'amigo sin nombre' : 'el dueño'), info: t.split('\n').pop().replace(/^\(|\)$/g, '') });
         LS.set('inv-opi-hist', [...hist, { f: hoyIso(), tipo, sitio: st }].slice(-30));
-        h.el.querySelector('.hoja').innerHTML = `<div class="opi-ok">${dibujo('logo')}<h2>Recibido, gracias</h2><p>Con lo que mandáis se arregla y se mejora GrowFolio. Si te contestan, te saldrá la respuesta al abrir la app. Si es algo visual, manda también una captura por WhatsApp.</p><div class="fila-btns"><button class="btn pri" data-cerrar>Cerrar</button></div></div>`;
+        h.el.querySelector('.hoja').innerHTML = `<div class="opi-ok">${dibujo('logo')}<h2>Recibido, gracias</h2><p>Con lo que mandáis se arregla y se mejora Toisón. Si te contestan, te saldrá la respuesta al abrir la app. Si es algo visual, manda también una captura por WhatsApp.</p><div class="fila-btns"><button class="btn pri" data-cerrar>Cerrar</button></div></div>`;
       } catch (e) {
         b.disabled = false; b.innerHTML = ICONOS.globo + 'Enviar';
         $('#errOpi', h.el).textContent = 'No se ha podido enviar (¿sin conexión?). Prueba otra vez en un rato.';

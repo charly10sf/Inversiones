@@ -68,7 +68,7 @@ test('las que GrowIA evitaría y las filas del radar abren la empresa', async ({
   await ev.locator('header').click();
   const hoja = page.locator('.hoja-fondo .hoja').last();
   await expect(hoja.locator('.cons')).toBeVisible();
-  await expect(hoja.locator('.cons-ia.ev')).toContainText('GrowIA la evitaría');
+  await expect(hoja.locator('.cons-ia.ev')).toContainText('La IA la evitaría');
   await expect(hoja.locator('.cons-ia.ev')).toContainText('Motivo de prueba');
   await hoja.locator('[data-cerrar]').first().click();
   await expect(page.locator('.hoja-fondo')).toHaveCount(0);

@@ -8,7 +8,8 @@ import android.view.Window;
 import android.view.WindowInsetsController;
 
 /**
- * 0.8 (rediseño a Toisón): el diseño que se ha elegido en la web (Mármol, Marfil o Borgoña; vacío = el de GrowFolio)
+ * 0.8 (rediseño a Toisón): el diseño que se ha elegido en la web (Mármol, Marfil o Borgoña; vacío o desconocido = Mármol,
+ * el de por defecto, que es también el de antes de que la web lo mande)
  * y sus colores para lo que pinta la app por su cuenta: el widget, los avisos y las barras del móvil. La web lo manda
  * por el puente (Puente.tema) cada vez que abre y cuando cambia; aquí se guarda para que el widget y los avisos lo
  * sepan aunque la app esté cerrada. Los colores son los tokens de src/css/00-temas.css: si cambian allí, cambiarlos aquí.
@@ -16,8 +17,7 @@ import android.view.WindowInsetsController;
 final class Tema {
     static final String[] TEMAS = {"marmol", "marfil", "borgona"};
 
-    final String id;          // "" (GrowFolio), "marmol", "marfil" o "borgona"
-    final boolean toison;     // un diseño de Toisón: letras Inter e Ibarra, símbolo de Toisón en los avisos
+    final String id;          // "marmol", "marfil" o "borgona"
     final boolean claro;      // fondo claro (Marfil): iconos oscuros en las barras del móvil
     /** el widget: fondo de arriba y de abajo, borde, textos, apagado (--muted), la curva y su brillo, el oro de los
      *  textos, sube y baja */
@@ -28,7 +28,6 @@ final class Tema {
     private Tema(String id, boolean claro, int fondoA, int fondoB, int linea, int texto, int texto2, int apagado,
                  int acento, int acentoLuz, int oroTexto, int sube, int baja, int aviso, int barra) {
         this.id = id;
-        this.toison = !id.isEmpty();
         this.claro = claro;
         this.fondoA = fondoA;
         this.fondoB = fondoB;
@@ -45,9 +44,6 @@ final class Tema {
         this.barra = barra;
     }
 
-    // GrowFolio, como hasta ahora (los de Lienzo y estilos.xml)
-    private static final Tema GROWFOLIO = new Tema("", false, 0xFF100F0D, 0xFF060605, 0xFF2A2723, 0xFFF7F2E8,
-            0xFFBCB3A2, 0xFF8A8172, 0xFFEDBB45, 0xFFF9DE9C, 0xFFEDBB45, 0xFF4CBF8E, 0xFFE46A5C, 0xFFEDBB45, 0xFF000000);
     // Mármol: fondo #151817 → fondo 2 #101312, borde #353a38, apagado = texto 2 al 78 % sobre el fondo
     private static final Tema MARMOL = new Tema("marmol", false, 0xFF1C1F1E, 0xFF101312, 0xFF353A38, 0xFFF2EDE6,
             0xFFC8BFB7, 0xFFA19A94, 0xFFE3B45F, 0xFFF7DFA8, 0xFFE3B45F, 0xFF4FDC96, 0xFFFF8466, 0xFFE3B45F, 0xFF151817);
@@ -61,15 +57,14 @@ final class Tema {
 
     static String limpio(String t) {
         if (t != null) for (String x : TEMAS) if (x.equals(t)) return x;
-        return "";
+        return "marmol";
     }
 
     static Tema de(String t) {
         switch (limpio(t)) {
-            case "marmol": return MARMOL;
             case "marfil": return MARFIL;
             case "borgona": return BORGONA;
-            default: return GROWFOLIO;
+            default: return MARMOL;
         }
     }
 
@@ -80,19 +75,20 @@ final class Tema {
     /** guarda el diseño que manda la web; true si ha cambiado (entonces hay que repintar el widget) */
     static boolean guardar(Context c, String t) {
         String nuevo = limpio(t);
-        if (nuevo.equals(Datos.prefs(c).getString("tema", ""))) return false;
+        if (nuevo.equals(limpio(Datos.prefs(c).getString("tema", "")))) return false;
         Datos.prefs(c).edit().putString("tema", nuevo).apply();
         return true;
     }
 
-    /** el icono pequeño de los avisos: el símbolo de Toisón o la wF de GrowFolio */
+    /** el icono pequeño de los avisos: el símbolo de Toisón a una tinta */
     int icono() {
-        return toison ? R.drawable.ic_aviso_ts : R.drawable.ic_aviso;
+        return R.drawable.ic_aviso_ts;
     }
 
-    /** cómo se llama la IA en los avisos: con Toisón y en español, «la IA» (como en la web: NOM_TS en 10-pintado.js) */
+    /** cómo se llama la IA en los avisos: en español, «la IA» (como en la web: NOM_TS en 10-pintado.js); en inglés, de
+     *  momento, GrowIA */
     String ia(boolean en, boolean mayuscula) {
-        if (!toison || en) return "GrowIA";
+        if (en) return "GrowIA";
         return mayuscula ? "La IA" : "la IA";
     }
 
@@ -118,6 +114,6 @@ final class Tema {
 
     /** el fondo de la vista de la web mientras carga (así no hay un fogonazo negro con Marfil) */
     int fondoWeb() {
-        return toison ? barra : 0xFF000000;
+        return barra;
     }
 }

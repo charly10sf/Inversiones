@@ -85,17 +85,14 @@ public class GrowiaServicio extends Service {
 
     private static void canales(Context c, NotificationManager nm) {
         boolean en = en(c);
-        if (nm.getNotificationChannel(CANAL) == null) {
-            NotificationChannel ch = new NotificationChannel(CANAL, en ? "GrowIA at work" : "GrowIA trabajando", NotificationManager.IMPORTANCE_LOW);
-            ch.setDescription(en ? "While GrowIA answers, so it isn't cut off when you leave the app" : "Mientras GrowIA contesta, para que no se corte al salir de la app");
-            ch.setShowBadge(false);
-            nm.createNotificationChannel(ch);
-        }
-        if (nm.getNotificationChannel(CANAL_FIN) == null) {
-            NotificationChannel ch = new NotificationChannel(CANAL_FIN, en ? "GrowIA's answers" : "Respuestas de GrowIA", NotificationManager.IMPORTANCE_DEFAULT);
-            ch.setDescription(en ? "When GrowIA finishes and you're not in the app" : "Cuando GrowIA acaba y no estás en la app");
-            nm.createNotificationChannel(ch);
-        }
+        // 0.8: se crean cada vez (si ya existen, Android solo cambia el nombre y la descripción: «GrowIA» pasa a «la IA»)
+        NotificationChannel ch = new NotificationChannel(CANAL, en ? "GrowIA at work" : "La IA trabajando", NotificationManager.IMPORTANCE_LOW);
+        ch.setDescription(en ? "While GrowIA answers, so it isn't cut off when you leave the app" : "Mientras la IA contesta, para que no se corte al salir de la app");
+        ch.setShowBadge(false);
+        nm.createNotificationChannel(ch);
+        NotificationChannel fin = new NotificationChannel(CANAL_FIN, en ? "GrowIA's answers" : "Respuestas de la IA", NotificationManager.IMPORTANCE_DEFAULT);
+        fin.setDescription(en ? "When GrowIA finishes and you're not in the app" : "Cuando la IA acaba y no estás en la app");
+        nm.createNotificationChannel(fin);
     }
 
     /** el aviso de que ha acabado: sin nada de la respuesta (se ve en la pantalla de bloqueo) */

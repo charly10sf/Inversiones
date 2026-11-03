@@ -25,7 +25,7 @@ test('el build trae el CSS y el JS minificados, con huella, y todo lo que pide l
   expect(codigo.startsWith('"use strict";'), 'el modo estricto sigue siendo lo primero').toBe(true);
   // las funciones de arriba del todo conservan su nombre (las usan las pruebas, el widget y unas a otras entre secciones)
   for (const f of ['function pintar(', 'function iniciar(', 'function abrirAjustes(', 'NOVEDADES=']) expect(codigo).toContain(f);
-  for (const f of ['manifest.webmanifest', 'favicon.svg', 'growfolio-192.png', 'instrumentos.json', 'mapa-mundo.json', 'lib/html2canvas.min.js', 'sw.js']) {
+  for (const f of ['manifest.webmanifest', 'favicon.svg', 'toison-192.png', 'instrumentos.json', 'mapa-mundo.json', 'lib/html2canvas.min.js', 'sw.js']) {
     expect(existsSync(dist(f)), f).toBe(true);
   }
   const sw = readFileSync(dist('sw.js'), 'utf8');

@@ -12,8 +12,8 @@ function pantallaCuenta(errorTxt = '') {
   $('#app').innerHTML = `<div class="pantalla"><div class="caja caja-cuenta">
     ${logoEntrada()}
     ${primeraVez ? `<p class="paso-chip">${esc(trad('Paso 1 de 2: tu cuenta'))}</p>` : ''}
-    <h1>${primeraVez ? 'Crea tu cuenta' : 'Entra en GrowFolio'}</h1>
-    <p>Con tu cuenta, tu cartera se guarda cifrada y la ves igual en el móvil, en el ordenador y en la app.${(() => { try { return localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc'); } catch (e) { return null; } })() ? ' Si ya usabas GrowFolio aquí, después de entrar te ofrece subir tu cartera tal cual.' : ''}</p>
+    <h1>${primeraVez ? 'Crea tu cuenta' : 'Entra en Toisón'}</h1>
+    <p>Con tu cuenta, tu cartera se guarda cifrada y la ves igual en el móvil, en el ordenador y en la app.${(() => { try { return localStorage.getItem('inv-local-enc') || localStorage.getItem('inv-cache-enc'); } catch (e) { return null; } })() ? ' Si ya usabas Toisón aquí, después de entrar te ofrece subir tu cartera tal cual.' : ''}</p>
     ${app && !nativo ? '<p class="nota" style="margin:0">En la app, de momento, se entra con el correo. Con Google puedes entrar desde la web o desde Chrome.</p>' : `<button type="button" class="btn btn-google" id="bGoogle"><svg class="g-logo" viewBox="0 0 48 48" aria-hidden="true"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.7 29.2 36 24 36c-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 12.9 4 4 12.9 4 24s8.9 20 20 20 20-8.9 20-20c0-1.3-.1-2.6-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.7 15.1 19 12 24 12c3.1 0 5.8 1.2 7.9 3.1l5.7-5.7C34 6.1 29.3 4 24 4 16.3 4 9.7 8.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-8l-6.5 5C9.5 39.6 16.2 44 24 44z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C37 39.2 44 34 44 24c0-1.3-.1-2.6-.4-3.5z"/></svg><span>Continuar con Google</span></button>${FB_APPLE ? `<button type="button" class="btn btn-apple" id="bApple"><svg class="g-logo" viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M16.4 12.6c0-2.4 2-3.5 2-3.6-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.2-2.8.8-3.5.8-.7 0-1.8-.8-3-.8-1.5 0-3 .9-3.8 2.3-1.6 2.8-.4 7 1.2 9.3.8 1.1 1.7 2.4 2.9 2.3 1.2 0 1.6-.7 3-.7s1.8.7 3 .7c1.3 0 2.1-1.1 2.8-2.3.9-1.3 1.3-2.6 1.3-2.6s-2.5-1-2.5-3.6zM14.2 5.6c.6-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.4-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.3z"/></svg><span>Continuar con Apple</span></button>` : ''}<div class="cuenta-o"><span>o con tu correo</span></div>`}
     <form id="fCorreo" class="cuenta-f" novalidate>
       <div class="cuenta-modo" role="group" aria-label="Entrar o crear cuenta"><button type="button" data-m="entrar" aria-pressed="true">Entrar</button><button type="button" data-m="crear" aria-pressed="false">Crear cuenta</button></div>
@@ -24,8 +24,8 @@ function pantallaCuenta(errorTxt = '') {
       <button class="btn pri" type="submit" id="bCorreo">Entrar</button>
       <button type="button" class="enlace" id="bOlvido">${L('He olvidado la contraseña de la cuenta', 'I forgot my account password')}</button>
     </form>
-    <p class="nota cuenta-priv">${L('La contraseña de la cuenta solo sirve para entrar. Tus cifras van cifradas con otra, la de tu cartera, que no sale de tu dispositivo: ni GrowFolio ni Google pueden leerlas. Si la que has olvidado es la de tu cartera, entra con tu cuenta: te la pide después, y ahí puedes usar tu código de recuperación.', "The account password is only for signing in. Your figures are encrypted with another one, your portfolio password, which never leaves your device: neither GrowFolio nor Google can read them. If the one you forgot is your portfolio password, sign in with your account: it's asked for next, and there you can use your recovery code.")}</p>
-    <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
+    <p class="nota cuenta-priv">${L('La contraseña de la cuenta solo sirve para entrar. Tus cifras van cifradas con otra, la de tu cartera, que no sale de tu dispositivo: ni Toisón ni Google pueden leerlas. Si la que has olvidado es la de tu cartera, entra con tu cuenta: te la pide después, y ahí puedes usar tu código de recuperación.', "The account password is only for signing in. Your figures are encrypted with another one, your portfolio password, which never leaves your device: neither Toisón nor Google can read them. If the one you forgot is your portfolio password, sign in with your account: it's asked for next, and there you can use your recovery code.")}</p>
+    <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es Toisón?</button>
     ${selectorIdioma('pie')}
   </div></div>`;
   const err = (t) => { $('#err').textContent = t || ''; };
@@ -284,7 +284,7 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
   const n = nombreUsuario();
   $('#app').innerHTML = `<div class="pantalla"><form class="caja" id="fDesb" autocomplete="on">
     ${logoEntrada()}
-    <h1>${PERFIL_CUENTA && n ? `${esc(saludoHora())}, ${esc(n)}` : '<img class="h1-nom" src="growfolio-nombre.svg" alt="GrowFolio">'}</h1>
+    <h1>${PERFIL_CUENTA && n ? `${esc(saludoHora())}, ${esc(n)}` : '<img class="h1-nom" src="growfolio-nombre.svg" alt="Toisón">'}</h1>
     <p>${texto ? esc(texto) : PERFIL_CUENTA ? 'Tu cartera está cifrada en tu cuenta. Escribe la contraseña de tu cartera para verla en este dispositivo.' : PERFIL_LOCAL ? 'Tu cartera de este dispositivo está cifrada. Escribe tu contraseña para verla.' : 'Tu cartera está cifrada. Escribe tu contraseña para verla.'}</p>
     <input type="text" name="username" value="${esc(PERFIL_CUENTA && FB.user && FB.user.email ? FB.user.email + ' (cartera)' : CFG.owner)}" autocomplete="username" hidden>
     <label class="campo">${PERFIL_CUENTA ? 'Contraseña de tu cartera' : 'Contraseña'}<input type="password" id="pass" autocomplete="current-password" required autofocus></label>
@@ -293,7 +293,7 @@ function pantallaDesbloqueo(errorTxt = '', texto = '') {
     <button class="btn pri" type="submit" id="bEntrar">Entrar</button>
     ${htmlOtroPerfil()}
     ${formatoDe(S.enc && S.enc.texto) && formatoDe(S.enc.texto).v === 2 ? `<button type="button" class="enlace" id="bOlvido">${L('He olvidado la contraseña de mi cartera', 'I forgot my portfolio password')}</button>` : PERFIL_CUENTA && FB.user ? '<button type="button" class="enlace cero" id="bCero">No recuerdo esa contraseña: empezar de cero en esta cuenta</button>' : ''}
-    <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
+    <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es Toisón?</button>
     ${selectorIdioma('pie')}
   </form></div>`;
   enlazarOtroPerfil();
@@ -393,18 +393,18 @@ function pantallaCrear() {
     ${logoEntrada()}
     ${PERFIL_CUENTA ? `<p class="paso-chip">${esc(trad('Paso 2 de 2: tu contraseña'))}</p>` : ''}
     <h1>${PERFIL_CUENTA ? 'La contraseña de tu cartera' : 'Crear tu cartera'}</h1>
-    ${PERFIL_CUENTA ? '<p>Es distinta de la de entrar. Con ella se cifran tus cifras en este dispositivo antes de subirlas, así que ni GrowFolio ni Google pueden verlas.</p><p class="crear-aviso"><b>Apúntala en un sitio seguro.</b> Si la pierdes, nadie puede recuperar tus datos.</p>' : PERFIL_LOCAL
-      ? '<p>Tu cartera se guarda solo en este dispositivo, cifrada con tu contraseña: nadie más la ve, ni quien te pasó GrowFolio ni GitHub. Los precios, el radar, las noticias y las ideas son los mismos para todos.</p><p class="nota" style="margin:0">Para pasarla a otro móvil o tener copia: Ajustes, Descargar copia, y en el otro, Importar copia.</p>'
+    ${PERFIL_CUENTA ? '<p>Es distinta de la de entrar. Con ella se cifran tus cifras en este dispositivo antes de subirlas, así que ni Toisón ni Google pueden verlas.</p><p class="crear-aviso"><b>Apúntala en un sitio seguro.</b> Si la pierdes, nadie puede recuperar tus datos.</p>' : PERFIL_LOCAL
+      ? '<p>Tu cartera se guarda solo en este dispositivo, cifrada con tu contraseña: nadie más la ve, ni quien te pasó Toisón ni GitHub. Los precios, el radar, las noticias y las ideas son los mismos para todos.</p><p class="nota" style="margin:0">Para pasarla a otro móvil o tener copia: Ajustes, Descargar copia, y en el otro, Importar copia.</p>'
       : `<p>Todavía no hay ninguna cartera guardada en <b>${esc(CFG.owner)}/${esc(CFG.repo)}</b>. Importa tu copia de la cartera o empieza de cero.</p>`}
-    ${PERFIL_CUENTA ? '<details class="crear-copia"><summary>¿Tienes una copia de GrowFolio (.json)?</summary>' : ''}<label class="campo">Archivo de cartera (.json)<input type="file" id="archivo" accept=".json,application/json"><small id="archivoInfo">Opcional: una copia de GrowFolio o un JSON con el ISIN o el ticker de cada cosa (<a href="#" id="bEjemplo">descarga un ejemplo</a>). Si no subes nada, empiezas con la cartera vacía y la llenas dentro.</small></label>${PERFIL_CUENTA ? '</details>' : ''}
+    ${PERFIL_CUENTA ? '<details class="crear-copia"><summary>¿Tienes una copia de Toisón (.json)?</summary>' : ''}<label class="campo">Archivo de cartera (.json)<input type="file" id="archivo" accept=".json,application/json"><small id="archivoInfo">Opcional: una copia de Toisón o un JSON con el ISIN o el ticker de cada cosa (<a href="#" id="bEjemplo">descarga un ejemplo</a>). Si no subes nada, empiezas con la cartera vacía y la llenas dentro.</small></label>${PERFIL_CUENTA ? '</details>' : ''}
     <label class="campo">${PERFIL_CUENTA ? 'Contraseña de tu cartera' : 'Contraseña nueva'}<input type="password" id="p1" autocomplete="new-password" minlength="8" required><small>Al menos 8 caracteres. Si la pierdes, no hay forma de recuperar los datos.</small></label>
     <label class="campo">Repite la contraseña<input type="password" id="p2" autocomplete="new-password" minlength="8" required></label>
-    ${PERFIL_LOCAL ? '' : `<label class="campo">Token de GitHub<input type="password" id="tok" value="${esc(GH.token() || '')}" autocomplete="off" placeholder="github_pat_…"><small>Para guardar desde GrowFolio. Si no lo pones, se descarga el archivo cifrado y lo subes tú al repositorio.</small></label>`}
+    ${PERFIL_LOCAL ? '' : `<label class="campo">Token de GitHub<input type="password" id="tok" value="${esc(GH.token() || '')}" autocomplete="off" placeholder="github_pat_…"><small>Para guardar desde Toisón. Si no lo pones, se descarga el archivo cifrado y lo subes tú al repositorio.</small></label>`}
     <label class="check"><input type="checkbox" id="recordar" checked> Recordar en este dispositivo</label>
     <div class="error" id="err"></div>
     <button class="btn pri" type="submit" id="bCrear">${PERFIL_CUENTA ? 'Crear mi cartera' : 'Cifrar y guardar'}</button>
     ${PERFIL_LOCAL ? htmlOtroPerfil() : ''}
-    <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es GrowFolio?</button>
+    <button type="button" class="enlace ver-intro" id="bIntro">¿Qué es Toisón?</button>
     ${selectorIdioma('pie')}
   </form></div>`;
   enlazarOtroPerfil();

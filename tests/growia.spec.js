@@ -129,7 +129,7 @@ test('la revisión automática va en una sola llamada, sin herramientas, con el 
   expect(peticiones[0].url).toContain('gemini-3.6-flash');
   const c = JSON.parse(peticiones[0].cuerpo);
   expect(c.tools).toBeUndefined();
-  expect(c.contents[0].parts[0].text).toContain('No puedes buscar en internet ni usar herramientas: usa las fichas de GrowIA');
+  expect(c.contents[0].parts[0].text).toContain('No puedes buscar en internet ni usar herramientas: usa las fichas de la IA');
   expect(c.systemInstruction.parts[0].text).toContain('Lo que pesa ahora en sus acciones');
 
   // sin cupo del 3.6, con Flash-Lite; nunca con el 3.8, que queda para las preguntas

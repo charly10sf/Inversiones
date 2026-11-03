@@ -2,7 +2,7 @@
    Tu opinión: qué se ve mal, qué falla o qué idea tienes, y en qué parte. Sale como un mensaje de
    WhatsApp (o compartir / copiar) hacia quien te pasó la web: no hay servidor ni se guarda nada fuera.
    ===================================================================== */
-const SITIOS_OP = [['general', 'La app en general'], ['cartera', 'Inicio'], ['plan', 'Inicio: plan y movimientos'], ['ruta', 'Paso a paso'], ['expertos', 'Expertos e ideas'], ['analisis', 'Análisis'], ['fiscal', 'Hacienda'], ['futuro', 'Tus objetivos'], ['mercados', 'Mercados y calendario'], ['asesor', 'GrowIA (Pregúntale)'], ['ficha', 'La ficha de una posición'], ['operacion', 'Apuntar compras o ventas'], ['android', 'App de Android y widget']];
+const SITIOS_OP = [['general', 'La app en general'], ['cartera', 'Inicio'], ['plan', 'Inicio: plan y movimientos'], ['ruta', 'Paso a paso'], ['expertos', 'Expertos e ideas'], ['analisis', 'Análisis'], ['fiscal', 'Hacienda'], ['futuro', 'Tus objetivos'], ['mercados', 'Mercados y calendario'], ['asesor', 'La IA (Pregúntale)'], ['ficha', 'La ficha de una posición'], ['operacion', 'Apuntar compras o ventas'], ['android', 'App de Android y widget']];
 const TIPOS_OP = [['mal', 'Algo se ve mal'], ['falla', 'Algo no funciona'], ['idea', 'Una idea'], ['otra', 'Otra cosa']];
 /* Las opiniones y los fallos van a Firestore (colección «opiniones»), con la cuenta de quien las manda: así se sabe
    seguro que han llegado. Solo las lee el dueño, en Ajustes > Opiniones recibidas (ver leerOpiniones). Sin cuenta no

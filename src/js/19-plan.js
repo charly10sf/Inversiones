@@ -35,7 +35,7 @@ function htmlPlan(M) {
           const i = S.inst[a.instrumento] || { corto: a.instrumento };
           return `<li>${logo(i.dominio, i.corto || i.nombre || '?')}<div class="pl-t"><b>${esc(i.corto || i.nombre || a.instrumento)}</b><small>${[esc(a.plataforma || ''), L(`el día ${esc(a.dia)}`, `on day ${esc(a.dia)}`), prox ? L(`próxima ${fechaCorta(prox)}`, `next ${fechaCorta(prox)}`) : ''].filter(Boolean).join(' · ')}</small></div>
             <div class="pl-n"><b>${eur(+a.importe, 0)}</b><small>${L('al mes', 'a month')}</small></div><button class="ib" data-accion="editar-ap" data-k="${k}" aria-label="${L('Editar', 'Edit')} ${esc(i.corto || '')}" title="${L('Editar', 'Edit')}">${ICONOS.lapiz}</button></li>`;
-        }).join('')}</ul>` : '<div class="vacio">No tienes aportaciones automáticas. Añade las que tengas programadas en tu bróker y GrowFolio las irá sumando sola.</div>'}
+        }).join('')}</ul>` : '<div class="vacio">No tienes aportaciones automáticas. Añade las que tengas programadas en tu bróker y Toisón las irá sumando sola.</div>'}
         <p class="nota">Cada aportación se suma sola a su posición con el precio del primer día después de la fecha (el que usa el fondo). Si cambias el importe o el día en tu bróker, cámbialo aquí también.</p>
       </section>
       <section aria-labelledby="hMov">

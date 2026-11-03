@@ -5,8 +5,12 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.7v', f: '2026-11-02', h: '21:00', t: 'Preparando Toisón por dentro', arreglos: [
-    'Por dentro, GrowFolio ya tiene la base del diseño de Toisón: sus colores, sus letras y los tres estilos (Mármol, Marfil y Borgoña). Para ti no cambia nada todavía: lo verás entero cuando llegue Toisón.',
+  { v: '0.8', f: '2026-11-30', h: '12:00', t: 'GrowFolio ahora es Toisón', cosas: [  // borrador del 3 nov: texto y dibujos definitivos en la sesión de la presentación
+    { d: 'logo', t: 'Toisón', x: 'GrowFolio cambia de nombre y de cara: ahora es Toisón, con su símbolo, la O áurea y la T, en la cabecera, el icono y la app de Android. Tu cartera, tus cuentas y todo lo que tenías siguen igual.' },
+    { d: 'pulido', ir: { v: 'tu' }, t: 'Tres diseños para elegir', x: 'Mármol, oscuro y con vetas; Marfil, claro, en crema; y Borgoña, rojo oscuro. Se abre en Mármol y lo cambias cuando quieras en Tú, en Diseño. Mismas letras y mismos acabados en los tres.' },
+    { d: 'pestanas', t: 'Cinco pestañas nuevas', x: 'Abajo, Cartera, Mercados, Hoy en el centro, Ideas y Tú. Hoy es lo de cada día: tu patrimonio con la gráfica, lo que más se ha movido, tu mes y lo que viene. Cartera tiene tus posiciones, el análisis y Hacienda; Ideas, lo que antes era Expertos; y Tú, tus metas, tu perfil, el calendario y los ajustes.' },
+    { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor' }, t: 'La IA, arriba en todas partes', x: 'La IA ya no se llama GrowIA: es la IA de Toisón. Está en el botón redondo de arriba, desde cualquier pantalla.' },
+    { d: 'app', t: 'El widget y los avisos, a juego', x: 'En la app de Android, el widget, los avisos y las barras del móvil llevan los colores del diseño que elijas.' },
   ] },
   { v: '0.7u', f: '2026-11-02', h: '16:30', t: 'La revisión de la cartera con Claude ya llega entera', arreglos: [
     'Cuando GrowIA revisaba tu cartera con Claude (Haiku) y buscaba en internet, se quedaba sin espacio para escribir y la revisión salía cortada («La respuesta no ha llegado completa»). Ahora piensa con menos esfuerzo, tiene más espacio y, si aun así se queda corto, lo repite una vez sin buscar en internet.',

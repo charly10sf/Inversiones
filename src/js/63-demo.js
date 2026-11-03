@@ -97,7 +97,7 @@ async function arrancarDemo() {
       const k = await crypto.subtle.importKey('raw', b64.dec(d.g), 'AES-GCM', false, ['decrypt']);
       AS.claves.google = TD.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64.dec(x.iv) }, k, b64.dec(x.ct)));
     }
-  } catch (e) { console.warn('GrowIA en la prueba', e); }
+  } catch (e) { console.warn('La IA en la prueba', e); }
   AS.cargada = true;
   S.vista = 'cartera';
   setTimeout(() => cargarHistCatalogo().then((n) => { if (n) pintar(); }), 50);
@@ -131,7 +131,7 @@ try { const x = JSON.parse(localStorage.getItem('inv-demo-g') || 'null'); if (x 
 // en la prueba, Ajustes solo enseña cómo salir y el tutorial: nada de tu cuenta, tu PIN, tu código ni tu copia
 function ajustesDemo() {
   const h = hoja(L('Cartera de prueba', 'Demo portfolio'), `<div class="aj-caja">
-    <div class="seccion-ed"><p>${L('Estás enseñando GrowFolio con una cartera inventada. Tu cartera no está abierta: nada de lo que se haga aquí se guarda ni la toca.', "You're showing GrowFolio with a made-up portfolio. Yours isn't open: nothing done here is saved or touches it.")}</p></div>
+    <div class="seccion-ed"><p>${L('Estás enseñando Toisón con una cartera inventada. Tu cartera no está abierta: nada de lo que se haga aquí se guarda ni la toca.', "You're showing Toisón with a made-up portfolio. Yours isn't open: nothing done here is saved or touches it.")}</p></div>
     <button class="aj-fila" id="aDemoSalir">${ICONOS.ojo}<span><b>${L('Salir de la cartera de prueba', 'Exit the demo portfolio')}</b><small>${L('Vuelve tu cartera: te pedirá tu PIN o tu contraseña. En la app de Android, el widget tapa las cifras mientras tanto.', 'Your portfolio comes back: it will ask for your PIN or password. On the Android app, the widget hides the figures meanwhile.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
     <button class="aj-fila" id="aDemoTour" data-cerrar>${ICONOS.ruta}<span><b>${L('Ver el tutorial', 'See the tutorial')}</b><small>${L('Un repaso de un minuto por cada pestaña.', 'A one-minute tour of each tab.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>
   </div>`);

@@ -1,9 +1,9 @@
-/* Service worker de GrowFolio. La página (index.html) se pide primero a la red, así siempre abres la
+/* Service worker de Toisón. La página (index.html) se pide primero a la red, así siempre abres la
    última versión; si la red no contesta en 3 segundos o no hay conexión, sale la copia guardada.
    El resto (iconos, letras) sale de la copia y se renueva por detrás.
    Los datos (precios, cartera cifrada, GitHub, Yahoo, Bitvavo) nunca pasan por aquí: la página los guarda aparte. */
-var CACHE = 'inv-v131';
-var CORE = ['./', 'index.html', 'manifest.webmanifest', 'favicon.svg', 'growfolio.svg', 'growfolio-32.png', 'growfolio-192.png', 'growfolio-512.png', 'growfolio-maskable-512.png', 'growfolio-180.png', 'icon-192.png', 'growfolio-nombre.svg', 'growia.svg', 'growfolio-aviso.png'];
+var CACHE = 'inv-v132';
+var CORE = ['./', 'index.html', 'manifest.webmanifest', 'favicon.svg', 'toison-32.png', 'toison-192.png', 'toison-512.png', 'toison-maskable-512.png', 'toison-180.png', 'icon-192.png', 'toison-aviso.png'];
 var DATOS = /(^|\/)(opinion\.json|instrumentos\.json|cartera\.enc\.json|analisis-ia\.json|analisis\.enc\.json)$/;
 // 0.6: lo de CORE se pide sin la caché del navegador (la página podía venir vieja, de hace hasta 10 minutos), y los
 // archivos con huella en el nombre (assets/…, en/…) que ya estaban en la caché de la versión anterior no se vuelven a bajar:
