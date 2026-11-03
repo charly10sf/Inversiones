@@ -151,7 +151,7 @@ function htmlBloqueCar(k, M) {
           <div class="hero-var"><span class="hv-in" id="evoCab" aria-live="off"></span><button type="button" class="hv-info" data-accion="info-grafica" title="${L('Qué enseña la gráfica', 'What the chart shows')}" aria-label="${L('Qué enseña la gráfica', 'What the chart shows')}">${ICONOS.info}</button></div>
           <div class="hero-sub">
             ${S.rango === '1D' ? '' : `<div class="hs"><span class="k">${L('Hoy', 'Today')}</span>${B('dia')}</div>`}
-            <div class="hs"><span class="k">${L('Ganado desde que compraste', 'Gained since you bought')}</span>${B('pl')}</div>
+            <div class="hs"${navToison() ? ` title="${L('Ganado desde que compraste', 'Gained since you bought')}"` : ''}><span class="k">${navToison() ? L('Ganado', 'Gained') : L('Ganado desde que compraste', 'Gained since you bought')}</span>${B('pl')}</div>
           </div>
         </div>
         ${!M.filas.length ? `<p class="hero-vacia">${L('La gráfica de tu patrimonio sale en cuanto metas lo que tienes.', 'Your net worth chart shows up as soon as you add what you own.')}</p>` : `<div class="tabs hero-rangos" role="group" aria-label="${L('Periodo', 'Period')}">${Object.keys(RANGOS).map((r) => `<button data-rango="${r}" aria-pressed="${S.rango === r}"${r === 'Inicio' ? ` title="${L('Desde tu primera compra', 'Since your first purchase')}"` : ''}>${r === 'Inicio' ? L('Total', 'Total') : r}</button>`).join('')}</div>
@@ -239,7 +239,7 @@ function vistaCartera(M) {
   // 0.6d: con la cartera de prueba, sin «Primeros pasos» ni el aviso del perfil (son tuyos, no de la prueba)
   const empezar = S.demo ? '' : htmlEmpezar();
   const aviso = S.demo ? '' : empezar || (perfilIncompleto() && Date.now() - (LS.get('inv-perfil-aviso', 0) || 0) > 3 * 864e5
-    ? `<div class="pf-recuerda" role="note"><span class="pf-r-ic">${ICONOS.perfil}</span><span class="pf-r-t"><b>${perfilVacio() ? 'Te falta tu perfil de inversor' : 'Tu perfil de inversor está a medias'}</b><small>Sin tu edad, tu plazo y el riesgo que aguantas, GrowIA te aconseja como a cualquiera. Es un minuto.</small></span><button type="button" class="btn peq pri" data-accion="perfil-guiado">${perfilVacio() ? 'Hacerlo ahora' : 'Terminarlo'}</button><button type="button" class="ib" data-accion="perfil-aviso-no" aria-label="Ahora no" title="Ahora no (vuelve en unos días)">${ICONOS.cerrar}</button></div>` : '');
+    ? `<div class="pf-recuerda" role="note"><span class="pf-r-ic">${ICONOS.perfil}</span><span class="pf-r-t"><b>${perfilVacio() ? 'Te falta tu perfil de inversor' : 'Tu perfil de inversor está a medias'}</b><small>Sin tu edad, tu plazo y el riesgo que aguantas, GrowIA te habla como a cualquiera. Es un minuto.</small></span><button type="button" class="btn peq pri" data-accion="perfil-guiado">${perfilVacio() ? 'Hacerlo ahora' : 'Terminarlo'}</button><button type="button" class="ib" data-accion="perfil-aviso-no" aria-label="Ahora no" title="Ahora no (vuelve en unos días)">${ICONOS.cerrar}</button></div>` : '');
   // 0.7l: arriba del todo, la tarjeta de Toisón (abre el estreno)
   return `<div class="car">${htmlTarjetaToison()}${aviso}${filas.map((f) => (f.t === 'sola' ? `<div class="car-fila">${f.a[0].html}</div>`
     : f.t === 'suelta' ? `<div class="car-fila suelta">${f.a.map((x) => `<div class="car-col">${x.html}</div>`).join('')}</div>`
@@ -391,7 +391,7 @@ function htmlToca(M) {
       <p class="iac-tit iac-act">${esPublico() ? L('Analiza tu cartera cada día, te explica lo que pasa y contesta lo que le preguntes. Es gratis con una clave de Google.', 'It analyses your portfolio every day, explains what is going on and answers your questions. Free with a Google key.') : 'Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.'}</p>
       <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.growia}Activar GrowIA</button>`;
   }
-  const lista = v.length ? `<div class="iac-sub"><h3>Lo que toca ahora</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Ver el paso a paso'}</button></div>
+  const lista = v.length ? `<div class="iac-sub"><h3>${navToison() ? L('Tu mes', 'Your month') : 'Lo que toca ahora'}</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Ver el paso a paso'}</button></div>
     <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según GrowIA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';
   // en el ordenador, a lo ancho debajo de la gráfica: el diagnóstico a la izquierda y lo que toca a la derecha
   return `<section class="toca iac" aria-labelledby="hToca"><div class="iac-in${lista ? ' con-lista' : ''}"><div class="iac-izq">${cab}${tit}${notas}</div>${lista ? `<div class="iac-der">${lista}</div>` : ''}</div></section>`;

@@ -348,6 +348,8 @@ const tituloAg = (e) => (e.ia ? rellenarIA(e.t, {}) : esc(e.t));
 const iconoAg = (e) => (e.tipo === 'otro' ? MANDO : ICONOS[AG_TIPOS[e.tipo][0]] || ICONOS.agenda);
 const importeAg = (e) => (e.importe != null && isFinite(e.importe) ? `<span class="ag-imp${e.tipo === 'cobro' ? ' up' : ''}">${e.tipo === 'cobro' ? '+' : ''}${e.aprox ? '≈ ' : ''}${eur(e.importe, e.importe < 10 ? 2 : 0)}</span>` : '');
 
+// con Toisón (maqueta, «Tu mes»): el día en un recuadro con aro de oro, y lo que falta, detrás del texto
+const diaAg = (e) => { const x = deIso(e.d); return `<span class="ag-dia${diasEntre(hoyIso(), e.d) <= 1 ? ' pronto' : ''}"><b>${x.getDate()}</b><small>${L(MESES[x.getMonth()], MESES_EN[x.getMonth()].slice(0, 3))}</small></span>`; };
 /* en Cartera: lo próximo, con los días que faltan */
 function htmlAgenda(M) {
   // lo tuyo primero: de las empresas de dentro de tus fondos, solo las dos que más te tocan
@@ -355,9 +357,10 @@ function htmlAgenda(M) {
   const fondos = new Set(todos.filter((e) => e.tipo === 'fondo').sort((a, b) => b.euros - a.euros).slice(0, 2).map((e) => e.id));
   const ev = todos.filter((e) => e.tipo !== 'fondo' || fondos.has(e.id)).slice(0, 5);
   if (!ev.length) return '';
+  const ts = navToison();
   return `<section class="ag-card" aria-labelledby="hAg">
     <div class="sec-cab"><h2 id="hAg">${L('Lo que viene', 'Coming up')}</h2><div class="der"><a class="enlace acento" href="#agenda">${L('Ver el calendario', 'See the calendar')}</a></div></div>
-    <ul class="ag-mini">${ev.map((e) => `<li class="t-${e.tipo}"><a href="#agenda" data-ag-ir="${esc(e.id)}"><span class="ag-cd${diasEntre(hoyIso(), e.d) <= 1 ? ' pronto' : ''}">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span class="ag-tx"><b>${tituloAg(e)}</b><small>${esc(e.s)}</small></span>${importeAg(e)}</a></li>`).join('')}</ul>
+    <ul class="ag-mini">${ev.map((e) => `<li class="t-${e.tipo}"><a href="#agenda" data-ag-ir="${esc(e.id)}">${ts ? diaAg(e) : `<span class="ag-cd${diasEntre(hoyIso(), e.d) <= 1 ? ' pronto' : ''}">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span>`}<span class="ag-tx"><b>${tituloAg(e)}</b><small>${esc(e.s)}${ts ? ` · ${faltan(e.d)}` : ''}</small></span>${importeAg(e)}</a></li>`).join('')}</ul>
   </section>`;
 }
 

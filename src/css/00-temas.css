@@ -492,3 +492,73 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .hero-top .hola-fecha { position: absolute; top: 0; left: 0; right: 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 /* Marfil: la raya de tinta de «Posiciones» ya separa; sin ella, el borde de arriba de la tabla hacía doble línea */
 [data-tema="marfil"] .sec-cab ~ .tabla-pos { border-top: 0; }
+
+/* ---------- Paso 3 · pantallas (3 nov) ---------- */
+/* la IA con Toisón: sin logo ni nombre de GrowIA; «La IA» en la letra de la marca y su bocadillo en un disco de metal */
+[data-tema] .ia-nom { font: 500 1em/1.1 var(--marca); color: var(--texto); letter-spacing: 0; }
+[data-tema="borgona"] .ia-nom { font-style: italic; }
+[data-tema] .ia-av:has(.ia-av-ts) { border-radius: 50% !important; }
+[data-tema] .ia-av-ts { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo), 0 2px 8px -3px var(--hondo); }
+[data-tema] .ia-av-ts svg { width: 58%; height: 58%; }
+/* el pie de cada pestaña: «¿Algo se ve mal?» y el tutorial ya están en Tú (y el tutorial aún apunta a la barra de GrowFolio) */
+[data-tema] .pie-btns { display: none; }
+
+/* Hoy, el patrimonio como la maqueta: la cifra, y debajo «Hoy» y «Ganado» con su variación en una pastilla teñida
+   (con flecha, no solo color); la variación del periodo, pegada a la gráfica que la dibuja */
+[data-tema] .hero-cifra { display: flex; flex-direction: column; }
+[data-tema] .hero-sub { order: 3; display: grid; gap: var(--e2); margin-top: var(--e3); }
+[data-tema] .hero-var { order: 4; margin-top: var(--e3); min-height: 0; }
+[data-tema] .hero-sub .hs { display: flex; align-items: center; gap: var(--e2); }
+[data-tema] .hero-sub .hs .k { min-width: 64px; font: 500 13px/1.2 var(--ui); color: var(--texto-2); }
+[data-tema] :is(.hero-sub .hs [data-b], .hv-p, .ts-total-v [data-b]) { display: inline-flex; align-items: center; gap: 5px; padding: 3px 10px; border-radius: var(--r-p); font: 600 13px/1.25 var(--ui); font-variant-numeric: tabular-nums; background: color-mix(in srgb, currentColor 13%, transparent); }
+[data-tema] :is(.hero-sub .hs, .ts-total-v) [data-b]:is(.up, .down)::before { content: '▲' / ''; font-size: .78em; }
+[data-tema] :is(.hero-sub .hs, .ts-total-v) [data-b].down::before { content: '▼' / ''; }
+[data-tema] .hv-p i { font-style: normal; font-size: .78em; }
+[data-tema] .hv-p em { font-style: normal; opacity: .85; }
+[data-tema] .hero-var .k { font: 400 12.5px/1.3 var(--ui); color: var(--texto-2); }
+/* «Patrimonio», con la misma etiqueta que las demás tarjetas (Marfil sin la raya: ya la lleva el hilo de oro) */
+[data-tema] #heroLbl { font: 600 11.5px/14px var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
+[data-tema="marfil"] #heroLbl { font: 600 14px/16px var(--marca); letter-spacing: .14em; color: var(--texto); }
+[data-tema="borgona"] #heroLbl { font: italic 500 20px/22px var(--marca); letter-spacing: .01em; text-transform: none; color: var(--oro-texto); }
+/* «Lo que viene» en Hoy: el día en un recuadro con aro de oro (como «Tu mes» de la maqueta) */
+[data-tema] .ag-mini .ag-dia { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; height: 46px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1px var(--hilo); color: var(--texto); }
+[data-tema] .ag-dia b { display: block; font: 500 18px/1 var(--ui); font-variant-numeric: tabular-nums; }
+[data-tema] .ag-dia small { display: block; margin-top: 3px; font: 600 9.5px/1 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--oro-texto); }
+[data-tema] .ag-dia.pronto { box-shadow: inset 0 0 0 1.5px var(--oro-texto); }
+[data-tema] .ag-mini a { grid-template-columns: 44px minmax(0, 1fr) auto; gap: var(--e3); }
+[data-tema] .ag-mini .ag-tx small { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+[data-tema] :is(.iac-cab, .as-tit) h2 .ia-nom { font-size: 20px; }
+/* Cartera → Posiciones: «Tus posiciones / Plan y movimientos» va debajo de las subpestañas de metal; para que no sean
+   dos carriles iguales, aquí son pestañas de texto con un subrayado de oro. Sin iconos (como Posiciones · Análisis · Hacienda) */
+[data-tema] .subvistas.dos-op { background: none; border: 0; border-bottom: 1px solid var(--sep); border-radius: 0; padding: 0; gap: 0; box-shadow: none; }
+[data-tema] .subvistas.dos-op button { position: relative; min-height: var(--toque); border-radius: 0; background: none; color: var(--texto-2); font: 600 14.5px/1.2 var(--ui); }
+[data-tema] .subvistas.dos-op button[aria-pressed="true"] { background: none; box-shadow: none; color: var(--texto); }
+[data-tema] .subvistas.dos-op button[aria-pressed="true"]::after { content: ''; position: absolute; left: 22%; right: 22%; bottom: -1px; height: 2px; border-radius: 2px; background: var(--metal); }
+[data-tema] :is(.subvistas.dos-op, .op-modo) button svg { display: none; }
+/* la hoja de Compra/venta: «Ya la tenías» se partía en dos líneas */
+[data-tema] .op-modo button { white-space: nowrap; font-size: 13.5px; padding-inline: 4px; }
+/* lo que aún está por hacer (la IA sin revisar, el perfil sin hacer): una tarjeta con filo de oro, no una caja de rayas */
+[data-tema] .ov-vacio { border: 2px solid var(--hilo); border-radius: var(--r-l); background: color-mix(in srgb, var(--oro-texto) 6%, var(--superficie)); box-shadow: var(--sombra-t); padding: var(--e5); }
+[data-tema] .ov-vacio h2 { font: 500 20px/1.2 var(--marca); color: var(--texto); }
+[data-tema="borgona"] .ov-vacio h2 { font-style: italic; }
+[data-tema] .ov-vacio h2 .ia-nom { font: inherit; }
+
+/* el panel de la IA: la hoja del diseño, con su cabecera de cristal y filete de oro, el nombre en la letra de la marca,
+   las preguntas sugeridas en pastillas con filo, la burbuja tuya en superficie 2 y el botón de enviar, de metal y redondo */
+[data-tema] .asesor { background: var(--fondo); border-left-color: var(--borde); }
+[data-tema] .as-cab { border-bottom: 1px solid var(--hilo); background: color-mix(in srgb, var(--superficie) 70%, transparent); }
+[data-tema] .as-ico { width: 38px; height: 38px; border-radius: 50%; }
+[data-tema] .as-tit h2 { font: 500 20px/1.15 var(--marca); letter-spacing: 0; }
+[data-tema] .as-cab .ib { border-radius: 50%; color: var(--texto-2); }
+[data-tema] .as-cab .ib:hover { color: var(--texto); }
+[data-tema] :is(.as-vacio h3, .as-config h3) { font: 500 26px/1.15 var(--marca); letter-spacing: 0; color: var(--texto); }
+[data-tema="borgona"] :is(.as-vacio h3, .as-config h3, .as-tit h2) { font-style: italic; }
+[data-tema] .as-sug button { border: 1px solid var(--hilo); border-radius: var(--r-l); background: var(--superficie); padding: var(--e3) var(--e4); }
+[data-tema] .as-sug button:hover { border-color: var(--oro-texto); }
+[data-tema] .as-sug .as-sug-rec { border-style: solid; border-color: var(--sep); }
+[data-tema] .as-sug .as-sug-rec svg { color: var(--oro-texto); }
+[data-tema] .as-yo { background: var(--superficie-2); border: 0; border-radius: var(--r-l) var(--r-l) var(--r-xs) var(--r-l); }
+[data-tema] .as-pie { border-top-color: var(--sep); background: var(--fondo); }
+[data-tema] .as-enviar { border-radius: 50%; background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo); }
+[data-tema] .as-enviar.parar { background: var(--superficie-2); color: var(--texto); box-shadow: none; }
+[data-tema] .as-modelo { border-color: var(--borde); border-radius: var(--r-m); }

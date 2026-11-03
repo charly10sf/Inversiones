@@ -251,6 +251,8 @@ function filaExperto(f, ia, vIA = {}) {
 
 /* Expertos va en tres pestañas: el resumen (qué hacer), el detalle de cada posición y las ideas de compra */
 const EXPERTOS = [['posiciones', 'Tus posiciones'], ['ideas', 'Ideas de compra'], ['siguiendo', 'Siguiendo']];
+// con Toisón la pestaña ya se llama Ideas: dentro, de dónde sale cada una (y sin «de compra»: regla de la CNMV)
+const EXPERTOS_TS = { posiciones: ['Lo tuyo', 'Yours'], ideas: ['Del radar', 'From the radar'], siguiendo: ['Siguiendo', 'Following'] };
 const idxSenal = (n) => { const i = ORDEN_SENAL.indexOf(n); return i < 0 ? 99 : i; };
 const ordenSenales = (M) => [...M.filas].sort((a, b) => idxSenal(a.senal.nivel) - idxSenal(b.senal.nivel) || b.valor - a.valor);
 function htmlVistazo(M, ia) {
@@ -298,7 +300,7 @@ function vistaExpertos(M) {
   return `
   <div class="vista-cab vc-corta"><h1>${navToison() ? L('Ideas', 'Ideas') : 'Expertos'}</h1><p>Lo que dicen analistas, prensa y GrowIA de lo tuyo y de lo que podrías comprar.</p></div>
   ${htmlFrescura()}
-  <div class="subvistas exp-tabs" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
+  <div class="subvistas exp-tabs" role="group" aria-label="Qué ver">${EXPERTOS.map(([k, t]) => `<button data-exp="${k}" aria-pressed="${S.expTab === k}">${navToison() ? L(...EXPERTOS_TS[k]) : t}${marca[k] ? `<span class="cuenta">${marca[k]}</span>` : ''}</button>`).join('')}</div>
   <div class="pila">${cuerpo}</div>`;
 }
 
