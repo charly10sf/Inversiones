@@ -240,17 +240,20 @@ function pavRiesgo(M) {
   const vol = volatilidadSerie(s), r1 = (s[s.length - 1].v / s[0].v - 1) * 100, rr = pavRetornos(s);
   const dias = diasEntre(s[0].d, s[s.length - 1].d) || 365, k = Math.sqrt((rr.length * 365) / dias);
   const neg = rr.filter((x) => x < 0), dDown = neg.length ? Math.sqrt(sum(neg, (x) => x * x) / rr.length) * k * 100 : null;
-  const sharpe = vol ? r1 / vol : null, sortino = dDown ? r1 / dDown : null;
+  // con menos de un año de precios, la subida se pasa a «al año» para compararla con la volatilidad (que ya es anual)
+  const r1a = dias < 330 ? (Math.pow(1 + r1 / 100, 365 / dias) - 1) * 100 : r1;
+  const sharpe = vol ? r1a / vol : null, sortino = dDown ? r1a / dDown : null;
   const hb = histBench('fidelity-world'), sb = hb ? pavEnFechas(hb, s) : [];
   let beta = null;
   if (sb.length === s.length) { const rb = pavRetornos(sb), n = Math.min(rr.length, rb.length), mb = sum(rb) / n, mr = sum(rr) / n; let cv = 0, vb = 0; for (let i = 0; i < n; i++) { cv += (rr[i] - mr) * (rb[i] - mb); vb += (rb[i] - mb) ** 2; } beta = vb ? cv / vb : null; }
-  const var95 = vol ? 1.645 * (vol / 100) / Math.sqrt(12) * M.total : null;
+  const enSerie = s[s.length - 1].v;   // lo que tiene precios (sin el efectivo, que no cae)
+  const var95 = vol ? 1.645 * (vol / 100) / Math.sqrt(12) * enSerie : null;
   const peor1 = caidaMaxima(s), c10 = caidaDetalle(serieCartera(M, 3650));
   const top = M.filas.find((f) => f.inst.tipo === 'Acción') || M.filas[0], top5 = sum(M.filas.slice(0, 5), (f) => f.peso);
   const cr = claseRiesgo(vol);
   const kp = pavKpis([
     [L('Volatilidad (1 año)', 'Volatility (1 year)'), pct(vol, 1), '', cr ? L(`riesgo ${cr} de 7`, `risk ${cr} of 7`) : ''],
-    [L('Rentabilidad (1 año)', 'Return (1 year)'), pctS(r1, 1), cls(r1)],
+    dias < 330 ? [L(`Rentabilidad (${Math.round(dias / 30)} meses)`, `Return (${Math.round(dias / 30)} months)`), pctS(r1, 1), cls(r1)] : [L('Rentabilidad (1 año)', 'Return (1 year)'), pctS(r1, 1), cls(r1)],
     ['Sharpe', sharpe == null ? '—' : fmtNum(sharpe, 2)],
     ['Sortino', sortino == null ? '—' : fmtNum(sortino, 2)],
     [L('Beta frente al MSCI World', 'Beta vs MSCI World'), beta == null ? '—' : fmtNum(beta, 2)],
@@ -263,14 +266,14 @@ function pavRiesgo(M) {
   // correlación entre tus cinco mayores posiciones con precios
   const cinco = M.filas.filter((f) => histDe(f.inst.id)).slice(0, 5);
   const rets = cinco.map((f) => { const x = pavEnFechas(histDe(f.inst.id), s); return x.length === s.length ? pavRetornos(x) : null; });
-  const matriz = cinco.length > 1 ? `<div class="pav-tabla"><table class="pav-matriz"><thead><tr><th></th>${cinco.map((f) => `<th title="${pavNom(f)}">${pavNom(f).slice(0, 10)}</th>`).join('')}</tr></thead><tbody>${cinco.map((f, i) => `<tr><th style="text-align:left">${pavNom(f)}</th>${cinco.map((g, j) => { if (i === j) return '<td>—</td>'; const c = rets[i] && rets[j] ? pavCorr(rets[i], rets[j]) : null; return c == null ? '<td>·</td>' : `<td style="background: color-mix(in srgb, var(--grafica) ${Math.round(Math.max(0, c) * 55)}%, transparent)">${fmtNum(c, 2)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>` : '';
+  const matriz = cinco.length > 1 ? `<div class="pav-tabla"><table class="pav-matriz"><thead><tr><th></th>${cinco.map((f) => `<th title="${pavNom(f)}">${esc((f.inst.corto || f.inst.nombre).slice(0, 10))}</th>`).join('')}</tr></thead><tbody>${cinco.map((f, i) => `<tr><th style="text-align:left">${pavNom(f)}</th>${cinco.map((g, j) => { if (i === j) return '<td>—</td>'; const c = rets[i] && rets[j] ? pavCorr(rets[i], rets[j]) : null; return c == null ? '<td>·</td>' : `<td style="background: color-mix(in srgb, var(--grafica) ${Math.round(Math.max(0, c) * 55)}%, transparent)">${fmtNum(c, 2)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>` : '';
   const porPos = pavTabla([L('Posición', 'Holding'), L('Peso', 'Weight'), L('Riesgo', 'Risk'), L('Volatilidad', 'Volatility'), 'Beta'], M.filas.map((f) => [`<b>${pavNom(f)}</b>`, pct(f.peso, 1), f.p && f.p.riesgo ? `${f.p.riesgo} / 7` : '—', f.p && f.p.volatilidad != null ? pct(f.p.volatilidad, 1) : '—', f.p && f.p.fundamentales && f.p.fundamentales.beta != null ? fmtNum(f.p.fundamentales.beta, 2) : '—']));
   const caidaTxt = c10 && c10.peor ? L(`La peor de los últimos años: <b class="down">${pctS(c10.peor.pct, 1)}</b>, del ${fechaConAnio(c10.peor.desde)} al ${fechaConAnio(c10.peor.hasta)}${c10.peor.vuelve ? `; volvió a su máximo el ${fechaConAnio(c10.peor.vuelve)}` : '; todavía no ha vuelto a su máximo'}.`, `The worst in recent years: <b class="down">${pctS(c10.peor.pct, 1)}</b>.`) : '';
   return [
     pavT('c12', L('Medidas de riesgo', 'Risk measures'), kp, L('Con tus posiciones de hoy y los precios del último año. <b>Volatilidad</b>: cuánto se mueve al año. <b>Sharpe</b> y <b>Sortino</b>: lo ganado por cada punto de riesgo (Sortino solo cuenta las bajadas; aquí sin restar el tipo sin riesgo). <b>Beta</b>: cuánto se mueve cuando se mueve el MSCI World (1 = igual). <b>VaR</b>: en 19 de cada 20 meses no perderías más que eso, suponiendo que se mueve como hasta ahora.', 'With today\'s holdings and last year\'s prices.')),
     pavT('c6', L('Si pasara…', 'If it happened…'), pavKpis([
       esc20 != null ? [L('La bolsa mundial cae un 20 %', 'World stocks fall 20%'), eurS(esc20, 0), 'down', L(`con tu beta de ${fmtNum(beta, 2)}`, `with your beta of ${fmtNum(beta, 2)}`)] : null,
-      c10 && c10.peor ? [L('Tu peor caída otra vez', 'Your worst drop again'), eurS(M.total * c10.peor.pct / 100, 0), 'down', pctS(c10.peor.pct, 1)] : null,
+      c10 && c10.peor ? [L('Tu peor caída otra vez', 'Your worst drop again'), eurS(enSerie * c10.peor.pct / 100, 0), 'down', pctS(c10.peor.pct, 1)] : null,
       [L('Las 5 mayores posiciones', 'Your 5 largest holdings'), pct(top5, 1), '', L('del total', 'of the total')],
     ], 1), L('Lo que supondría en tu cartera de hoy. No es una previsión.', 'What it would mean for your portfolio today. Not a forecast.')),
     matriz ? pavT('c6', L('Cómo se mueven juntas', 'How they move together'), matriz, L('Correlación del último año, de −1 a 1: cuanto más cerca de 1, más suben y bajan a la vez.', 'Last year\'s correlation, from −1 to 1.')) : '',
@@ -406,7 +409,7 @@ function dibujarPanelAv(p, M) {
     const el = $('#pavGraf'), { f } = pavGrafPos(M); if (!el || !f) return;
     const h = (histDe(f.pos.instrumento) || []).filter((x) => x && x[1] != null).map(([d, v]) => ({ d, v }));
     const dias = (PAV_RANGOS.find(([k]) => k === (S.grafRango || '1A')) || PAV_RANGOS[1])[1], desde = diasAtras(dias), corta = (xs) => xs.filter((x) => x.d >= desde);
-    grafLinea(el, [{ datos: corta(h), color: 'var(--grafica)', nombre: L('Precio', 'Price') }, { datos: corta(pavMedia(h, 50)), color: 'var(--reparto-2)', nombre: L('Media de 50 días', '50-day average') }, { datos: corta(pavMedia(h, 200)), color: 'var(--reparto-4)', nombre: L('Media de 200 días', '200-day average') }], { alto: innerWidth < 560 ? 200 : 280, sinRef: true, titulo: esc(f.inst.corto || f.inst.nombre), fmt: (v) => precioFmt(v) });
+    grafLinea(el, [{ datos: corta(h), color: 'var(--grafica)', nombre: L('Precio', 'Price') }, { datos: corta(pavMedia(h, 50)), color: 'var(--reparto-2)', nombre: L('Media de 50 días', '50-day average') }, { datos: corta(pavMedia(h, 200)), color: 'var(--reparto-4)', nombre: L('Media de 200 días', '200-day average') }], { alto: innerWidth < 560 ? 200 : 280, sinRef: true, titulo: f.inst.corto || f.inst.nombre, fmt: (v) => precioFmt(v) });
   }
   if (p === 'riesgo') {
     const el = $('#pavCaida'), c = caidaDetalle(serieCartera(M, 3650)); if (!el || !c) return;
@@ -423,7 +426,9 @@ const pavChips = (attr, actual, xs) => `<div class="tabs" role="group">${xs.map(
 
 /* ---------- Día a día ---------- */
 function pavDias(M) {
-  const s = serieCartera(M, 420), out = [];
+  // sin cripto, el sábado y el domingo no son días de bolsa (serieCartera pone un punto «hoy» también en fin de semana)
+  const s0 = serieCartera(M, 420), cripto = M.filas.some((f) => f.inst.clase === 'Cripto'), out = [];
+  const s = cripto ? s0 : s0.filter((x) => { const g = deIso(x.d).getDay(); return g !== 0 && g !== 6; });
   for (let i = 1; i < s.length; i++) if (s[i - 1].v > 0) out.push({ d: s[i].d, e: s[i].v - s[i - 1].v, p: (s[i].v / s[i - 1].v - 1) * 100 });
   return out;
 }
@@ -448,8 +453,8 @@ function pavPnl(M) {
   const kpis = pavKpis([
     [L('En el mes', 'This month'), eurS(tot, 0), cls(tot)],
     [L('Días en verde', 'Green days'), `${verdes} ${L('de', 'of')} ${delMes.length}`],
-    mejor ? [L('Mejor día', 'Best day'), eurS(mejor.e, 0), 'up', `${Number(mejor.d.slice(8))} · ${pctS(mejor.p, 2)}`] : null,
-    peor ? [L('Peor día', 'Worst day'), eurS(peor.e, 0), 'down', `${Number(peor.d.slice(8))} · ${pctS(peor.p, 2)}`] : null,
+    mejor ? [L('Mejor día', 'Best day'), eurS(mejor.e, 0), cls(mejor.e), `${Number(mejor.d.slice(8))} · ${pctS(mejor.p, 2)}`] : null,
+    peor ? [L('Peor día', 'Worst day'), eurS(peor.e, 0), cls(peor.e), `${Number(peor.d.slice(8))} · ${pctS(peor.p, 2)}`] : null,
   ], 4);
   // los últimos doce meses, sumados
   const ult = meses.slice(-12).map((k) => [k, sum(ds.filter((x) => x.d.startsWith(k)), (x) => x.e)]);
@@ -496,7 +501,7 @@ function pavMov(M) {
     [L('Resultado de lo vendido', 'Result of sales'), eurS(res, 0), cls(res)],
   ], 4);
   const MAX = 150;
-  const filas = xs.slice(0, MAX).map((x) => [`<span class="mov-f">${esc(fechaCorta(x.d))}</span>`, `<b>${esc(x.n)}</b>${x.pl ? `<small class="mov-pl">${esc(x.pl)}</small>` : ''}`, `<span class="mov-t ${x.t}">${T[x.t]}</span>${x.aprox ? ` <small title="${L('Sin fecha exacta: la de la posición', 'No exact date: the holding\'s')}">≈</small>` : ''}`, x.u != null ? fmtNum(x.u, x.u < 10 ? 4 : 2) : '—', `${eur(x.imp, 2)}${x.res != null ? `<small class="${cls(x.res)}"> ${eurS(x.res, 0)}</small>` : ''}`]);
+  const filas = xs.slice(0, MAX).map((x) => [`<span class="mov-f">${esc(fechaConAnio(x.d))}</span>`, `<b>${esc(x.n)}</b>${x.pl ? `<small class="mov-pl">${esc(x.pl)}</small>` : ''}`, `<span class="mov-t ${x.t}">${T[x.t]}</span>${x.aprox ? ` <small title="${L('Sin fecha exacta: la de la posición', 'No exact date: the holding\'s')}">≈</small>` : ''}`, x.u != null ? fmtNum(x.u, x.u < 10 ? 4 : 2) : '—', `${eur(x.imp, 2)}${x.res != null ? `<small class="${cls(x.res)}"> ${eurS(x.res, 0)}</small>` : ''}`]);
   const tabla = xs.length ? pavTabla([L('Fecha', 'Date'), L('Qué', 'What'), L('Tipo', 'Type'), L('Particip.', 'Units'), L('Importe', 'Amount')], filas, 'pav-mov') + (xs.length > MAX ? `<p class="nota">${L(`Y ${xs.length - MAX} más antiguas.`, `And ${xs.length - MAX} older ones.`)}</p>` : '') : `<p class="nota" style="margin:0">${L('No hay movimientos de este tipo.', 'No transactions of this type.')}</p>`;
   // lo que has metido cada mes (las compras), el último año
   const desde = diasAtras(365).slice(0, 7), porMes = new Map();
@@ -512,13 +517,15 @@ function pavMov(M) {
 // la media de los últimos n días de bolsa en cada punto (los datos viejos son semanales: se promedia lo que caiga en
 // ese tramo de calendario, n días de bolsa ≈ n·7/5 días de calendario)
 function pavMedia(h, n) {
-  const ms = (n * 7 / 5) * 864e5, out = [];
-  let j = 0, s = 0;
+  // cada punto pesa los días que cubre (un dato semanal, 7; uno diario, 1), para que donde se juntan los dos la media no
+  // se tuerza hacia lo diario
+  const ms = (n * 7 / 5) * 864e5, out = [], t = h.map((x) => Date.parse(x.d));
+  const w = t.map((x, i) => (i ? Math.max(1, Math.min(7, Math.round((x - t[i - 1]) / 864e5))) : 1));
+  let j = 0, s = 0, sw = 0;
   for (let i = 0; i < h.length; i++) {
-    s += h[i].v;
-    const t = Date.parse(h[i].d);
-    while (j < i && Date.parse(h[j].d) <= t - ms) { s -= h[j].v; j++; }
-    if (t - Date.parse(h[0].d) >= ms * 0.9) out.push({ d: h[i].d, v: s / (i - j + 1) });
+    s += h[i].v * w[i]; sw += w[i];
+    while (j < i && t[j] <= t[i] - ms) { s -= h[j].v * w[j]; sw -= w[j]; j++; }
+    if (t[i] - t[0] >= ms * 0.9 && sw > 0) out.push({ d: h[i].d, v: s / sw });
   }
   return out;
 }
@@ -530,6 +537,7 @@ function pavRsi(h, n = 14) {
   for (let i = 0; i < n; i++) { if (xs[i] > 0) g += xs[i]; else p -= xs[i]; }
   g /= n; p /= n;
   for (let i = n; i < xs.length; i++) { g = (g * (n - 1) + Math.max(0, xs[i])) / n; p = (p * (n - 1) + Math.max(0, -xs[i])) / n; }
+  if (g === 0 && p === 0) return 50;   // sin moverse
   return p === 0 ? 100 : 100 - 100 / (1 + g / p);
 }
 const PAV_RANGOS = [['6M', 182], ['1A', 365], ['3A', 1095], ['5A', 1826]];
@@ -607,7 +615,7 @@ function pavLabRes(M) {
 function pavLab(M) {
   const c = cfgProy(), L0 = S.lab || {};
   const campo = (k, t, v, paso, suf) => `<label class="pav-sel"><span>${t}</span><input type="number" inputmode="decimal" step="${paso}" value="${v}" data-lab="${k}"> ${suf}</label>`;
-  const s = serieCartera(M, 3650);
+  const s = serieCartera(M, 3660);   // unos días de margen: lo viejo es semanal
   const per = [[L('1 año', '1 year'), 365], [L('3 años', '3 years'), 1095], [L('5 años', '5 years'), 1826], [L('10 años', '10 years'), 3650]];
   const back = s.length > 20 ? per.map(([n, d]) => { const v = pavDesde(s, diasAtras(d), 'v'); if (v == null) return null; const anual = d > 400 ? (Math.pow(1 + v / 100, 365 / d) - 1) * 100 : null; return [n, pctS(v, 1), cls(v), anual != null ? L(`${pctS(anual, 1)} al año`, `${pctS(anual, 1)} a year`) : '']; }) : [];
   let caida = null; try { caida = caidaDetalle(s); } catch (e) {}
@@ -640,7 +648,10 @@ document.addEventListener('change', (e) => {
   } else if (t.matches('[data-rebal-aport]')) { S.rebalAport = Math.max(0, +t.value || 0); repintarAv(); }
 });
 document.addEventListener('input', (e) => {
-  const t = e.target; if (!t.matches || !t.matches('#panelAv [data-lab]')) return;
+  const t = e.target; if (!t.matches) return;
+  if (t.matches('#panelAv [data-obj-k]')) { const o = { ...pavObjetivo(reparto(S.M || calcular(), 'clase', 'todo')), [t.dataset.objK]: Math.max(0, Math.min(100, +t.value || 0)) }; LS.set(LS_OBJ, o); return; }
+  if (t.matches('#panelAv [data-rebal-aport]')) { S.rebalAport = Math.max(0, +t.value || 0); return; }
+  if (!t.matches('#panelAv [data-lab]')) return;
   S.lab = { ...(S.lab || {}), [t.dataset.lab]: t.value === '' ? undefined : +t.value };
   const r = $('#labRes'); if (r) { r.innerHTML = pavLabRes(S.M || calcular()); marcarCifras(r); }
 });

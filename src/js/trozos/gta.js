@@ -336,7 +336,7 @@ function pintarImagenGTA(cv, D) {
   const fechaSalida = L('19 de noviembre de 2026', '19 November 2026');
   let grande, rotulo, sub, color = 'rgba(255, 62, 165, .95)';
   if (D.copias) { grande = D.copias.n; rotulo = L(`${D.copias.txt} de GTA VI`, `${D.copias.txt} of GTA VI`); sub = L(`a ${fmtNum(GTA.precio, 2)} € cada una`, `at €${fmtNum(GTA.precio, 2)} each`); }
-  else if (D.pct != null) { grande = pctS(D.pct, 1).replace(/ /g, ' '); rotulo = L('mi cartera desde el primer tráiler', 'my portfolio since the first trailer'); sub = L('lo que tengo hoy, desde el 5 de diciembre de 2023', 'what I own today, since 5 December 2023'); if (D.pct >= 0) color = 'rgba(45, 226, 230, .95)'; }
+  else if (D.pct != null) { grande = pctS(D.pct, 1).replace(/[\u00a0\u202f]/g, ' '); rotulo = L('mi cartera desde el primer tráiler', 'my portfolio since the first trailer'); sub = L('lo que tengo hoy, desde el 5 de diciembre de 2023', 'what I own today, since 5 December 2023'); if (D.pct >= 0) color = 'rgba(45, 226, 230, .95)'; }
   else if (!D.salido) { grande = String(D.falta); rotulo = L(D.falta === 1 ? 'día para GTA VI' : 'días para GTA VI', D.falta === 1 ? 'day to GTA VI' : 'days to GTA VI'); sub = fechaSalida; }
   else { grande = L('¡Ya está!', 'It’s out!'); rotulo = L('GTA VI, a la venta', 'GTA VI, on sale'); sub = fechaSalida; }
   letraQueCabe(ctx, grande, 190, FUENTE_NEON, 400, 900);

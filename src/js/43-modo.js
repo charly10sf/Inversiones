@@ -82,7 +82,8 @@ document.addEventListener('click', (e) => {
   }
 });
 // la pestaña elegida, a la vista en la fila (al cambiar de pantalla se repinta entera)
-function centrarPest() { const n = $('.pest-av [aria-current="page"]'); if (n && n.scrollIntoView) n.scrollIntoView({ block: 'nearest', inline: 'center' }); }
+// solo se mueve la fila de pestañas, no la página (scrollIntoView subía la página al repintar)
+function centrarPest() { const n = $('.pest-av [aria-current="page"]'), nav = n && n.closest('.pest-av'); if (nav) nav.scrollLeft = n.offsetLeft - (nav.clientWidth - n.offsetWidth) / 2; }
 /* «Pregúntale» en cada tarjeta: abre la IA con lo que hay en ella (su título y lo que se lee) */
 function ponerPreguntale(raiz) {
   if (!raiz || !['cartera', 'posiciones', 'av', 'fiscal'].includes(S.vista)) return;
@@ -126,6 +127,8 @@ function pulirHoy(M) {
       const t0 = performance.now();
       let puesto = fin;
       const paso = (t) => {
+        if (!n.isConnected) return;
+        if ($('#heroNum[data-antes]')) { n.textContent = fin; return; }   // recorres la gráfica: la cuenta se para en el dato
         if (n.textContent !== puesto) return;   // llegó un precio nuevo a mitad: manda el dato
         const k = Math.min(1, (t - t0) / 900), e = 1 - (1 - k) ** 3;
         puesto = k < 1 ? fmtNum(Math.round(v * (0.94 + 0.06 * e)), 0) : fin;
@@ -137,7 +140,8 @@ function pulirHoy(M) {
   }
   // un momento: si tu patrimonio está en su máximo, se dice (una vez al día se calcula)
   const h = $('.car-hero'); if (!h || !M.filas.length) return;
-  if (!S.maxCalc || S.maxCalc.d !== hoyIso()) { let c = null; try { c = caidaDetalle(serieCartera(M, 3650)); } catch (e) {} S.maxCalc = { d: hoyIso(), en: !!(c && c.ahora > -0.3 && c.dd.length > 60) }; }
+  const kMax = `${hoyIso()}|${(S.hist && S.hist.generado) || ''}|${Math.round(M.total / 100)}`;
+  if (!S.maxCalc || S.maxCalc.d !== kMax) { let c = null; try { c = caidaDetalle(serieCartera(M, 3650)); } catch (e) {} S.maxCalc = { d: kMax, en: !!(c && c.ahora > -0.3 && c.dd.length > 60) }; }
   if (S.maxCalc.en && !h.querySelector('.hero-max')) {
     h.classList.add('en-maximo');
     const lbl = h.querySelector('.hero-lbl');
@@ -234,7 +238,7 @@ document.addEventListener('click', (e) => {
   if (g) {
     if (e.target.closest('[data-gc="x"]')) { cerrarGloboCifra(); return; }
     if (e.target.closest('.gc-ia')) { S.origenIA = $('[data-cifra].cifra-on'); setTimeout(() => { const x = $('#globoCifra'); if (x) x.remove(); $$('.cifra-on').forEach((o) => o.classList.remove('cifra-on')); }, 0); return; }
-    if (!g.contains(e.target) && !e.target.closest('[data-cifra]')) cerrarGloboCifra();
+    if (!g.contains(e.target) && !e.target.closest('[data-cifra]')) cerrarGloboCifra(false);
   }
   const v = e.target.closest && e.target.closest('[data-cifra]');
   if (!v || e.defaultPrevented) return;
@@ -253,3 +257,4 @@ document.addEventListener('keydown', (e) => {
 });
 addEventListener('scroll', () => { if ($('#globoCifra')) cerrarGloboCifra(false); }, { passive: true, capture: true });
 addEventListener('resize', () => { if ($('#globoCifra')) cerrarGloboCifra(false); });
+addEventListener('hashchange', () => { if ($('#globoCifra')) cerrarGloboCifra(false); });
