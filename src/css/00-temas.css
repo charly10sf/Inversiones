@@ -182,10 +182,10 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .tabs.envuelve button[aria-pressed="true"] { border-color: transparent; }
 [data-tema] .ficha-tabs button[aria-pressed="true"] { color: var(--oro-texto); background: none; box-shadow: none; }
 
-/* campos y buscador */
-[data-tema] .busca input { background: var(--fondo); border: 2px solid var(--borde); border-radius: var(--r-m); color: var(--texto); }
-[data-tema] .busca input:focus { outline: 2px solid var(--oro-texto); outline-offset: 0; border-color: transparent; }
-[data-tema] .busca input::placeholder { color: var(--texto-2); }
+/* campos y buscador (los campos enteros, más abajo: «Campos») */
+[data-tema] .busca input { background: var(--fondo); border: 2px solid var(--borde); border-radius: var(--r-m); color: var(--texto); transition: border-color .2s ease, box-shadow .2s ease; }
+[data-tema] .busca input:focus { outline: none; border-color: var(--oro-texto); box-shadow: 0 0 0 3px var(--campo-luz); }
+[data-tema] .busca input::placeholder { color: var(--campo-ph); }
 
 /* las hojas que suben */
 [data-tema] .hoja { background: var(--superficie); border-color: var(--borde); box-shadow: inset 0 1px 0 var(--hilo), 0 -14px 44px var(--hondo); }
@@ -225,7 +225,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .mi-tuyo { background: color-mix(in srgb, var(--oro-texto) 7%, transparent); border-color: var(--hilo); }
 [data-tema] .mt-b { background: color-mix(in srgb, var(--texto) 7%, transparent); }
 [data-tema] .mt-b i.gris { background: var(--reparto-6); }
-[data-tema] .mi-elige select { background-color: color-mix(in srgb, var(--texto) 3%, transparent); }
 [data-tema] .mc-ef, [data-tema] .mc-ef-i { background: repeating-linear-gradient(135deg, color-mix(in srgb, var(--texto) 8%, var(--superficie)) 0 6px, color-mix(in srgb, var(--texto) 4%, var(--superficie)) 6px 12px); }
 [data-tema] .mc-logo-ef { background: var(--superficie-2); }
 
@@ -416,3 +415,80 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] #acabadoTema .vb { stroke: var(--texto); opacity: .07; stroke-width: 1.1; }
 [data-tema] #acabadoTema .vf { stroke: var(--texto); opacity: .045; stroke-width: .7; }
 [data-tema] #acabadoTema .vo { stroke: var(--oro-texto); opacity: .22; stroke-width: .9; }
+
+/* ---------- Iconos de plumilla (ICONOS_PL en 10-pintado.js): contornos rellenos, nunca con trazo ---------- */
+[data-tema] svg.ic-pl, [data-tema] svg.ic-pl path { fill: currentColor; stroke: none; }
+
+/* ---------- Campos: cajas, desplegables, textos largos, casillas y botones de opción ----------
+   Hundidos en el fondo (más oscuros que la tarjeta en Mármol y Borgoña; crema más tostado en Marfil), borde de 2 px
+   como las tarjetas, radio 12 y, al escribir, el borde de oro con un halo suave. Las reglas de GrowFolio de cada campo
+   siguen debajo: aquí van con [data-tema] y la clase delante para ganarles. */
+:root[data-tema], [data-tema] {
+  --campo-fondo: var(--fondo);
+  --campo-borde: var(--borde);
+  --campo-encima: color-mix(in srgb, var(--oro-texto) 38%, var(--borde));
+  --campo-luz: color-mix(in srgb, var(--oro-texto) 22%, transparent);
+  --campo-ph: color-mix(in srgb, var(--texto-2) 72%, transparent);
+  --casilla-borde: color-mix(in srgb, var(--texto) 42%, var(--superficie));
+}
+[data-tema] :where(input:not([type=checkbox], [type=radio], [type=range], [type=file], [type=color], [type=hidden]), select, textarea),
+[data-tema] :is(.campo, .campo-ef, .proy-controles, .pf-otra, .pregia-otra, .ordenar-m, .imp-num, .mi-elige) :is(input:not([type=checkbox], [type=radio], [type=range]), select, textarea) {
+  background-color: var(--campo-fondo); border: 2px solid var(--campo-borde); border-radius: var(--r-m); color: var(--texto);
+  font-family: var(--ui); transition: border-color .2s ease, box-shadow .2s ease;
+}
+[data-tema] :is(.campo, .campo-ef, .proy-controles, .pf-otra, .pregia-otra) :is(input:not([type=checkbox], [type=radio], [type=range]), select) { min-height: var(--toque); padding: 10px 14px; font-size: 16px; }
+[data-tema] :is(.campo, .campo-ef) textarea { padding: 12px 14px; font-size: 16px; line-height: 1.5; resize: vertical; }
+[data-tema] :is(input:not([type=checkbox], [type=radio], [type=range]), select, textarea):hover:not(:focus, :disabled) { border-color: var(--campo-encima); }
+[data-tema] :is(input:not([type=checkbox], [type=radio], [type=range]), select, textarea):focus { outline: none; border-color: var(--oro-texto); box-shadow: 0 0 0 3px var(--campo-luz); }
+[data-tema] :is(input, textarea)::placeholder { color: var(--campo-ph); opacity: 1; }
+[data-tema] :is(input, select, textarea):disabled { opacity: .55; cursor: default; }
+[data-tema] :is(input, textarea):read-only:not([type=checkbox], [type=radio], [type=range]) { background-color: var(--superficie-2); }
+[data-tema] :is(input, select, textarea):user-invalid { border-color: var(--baja); }
+[data-tema] :is(.campo, .campo-ef) input.del-banco { color: var(--texto-2); background-color: var(--superficie-2); }
+[data-tema] .campo { gap: var(--e2); color: var(--texto-2); font-size: 13px; letter-spacing: .01em; }
+[data-tema] .campo small { color: var(--texto-2); opacity: .85; }
+/* el desplegable de Mercados (sin la flecha del sistema): la flecha, con dos degradados del color del texto */
+[data-tema] .mi-elige select {
+  background-image: linear-gradient(45deg, transparent 50%, var(--texto-2) 50%), linear-gradient(135deg, var(--texto-2) 50%, transparent 50%);
+  background-position: calc(100% - 19px) 50%, calc(100% - 14px) 50%; background-size: 5px 5px; background-repeat: no-repeat;
+}
+[data-tema] .mi-pos select { border-color: var(--hilo); }
+/* «Comparar con» y los botones de ordenar: pastillas, como los demás chips */
+[data-tema] .hp-sel { border: 1.5px solid var(--aro); border-radius: var(--r-p); background-color: var(--superficie-2); color: var(--texto); }
+/* la caja de preguntar a la IA: el texto va sin borde dentro; el borde y el halo, en la caja */
+[data-tema] .as-form { background: var(--campo-fondo); border: 2px solid var(--campo-borde); border-radius: var(--r-l); transition: border-color .2s ease, box-shadow .2s ease; }
+[data-tema] .as-form:focus-within { border-color: var(--oro-texto); box-shadow: 0 0 0 3px var(--campo-luz); }
+[data-tema] .as-form textarea, [data-tema] .as-form textarea:focus, [data-tema] .as-form textarea:hover { border: 0; background: none; box-shadow: none; min-height: 0; }
+/* casillas y botones de opción: de metal al marcarlos, con la marca del color de encima del metal */
+[data-tema] input:is([type=checkbox], [type=radio]) {
+  appearance: none; -webkit-appearance: none; width: 20px; height: 20px; margin: 0; flex: none; display: inline-grid; place-content: center;
+  border: 2px solid var(--casilla-borde); border-radius: var(--r-xs); background: var(--campo-fondo); cursor: pointer; vertical-align: middle;
+  transition: border-color .15s ease, background-color .15s ease;
+}
+[data-tema] input[type=radio] { border-radius: var(--r-p); }
+[data-tema] input:is([type=checkbox], [type=radio]):hover:not(:disabled, :checked) { border-color: var(--oro-texto); }
+[data-tema] input:is([type=checkbox], [type=radio]):checked { background: var(--metal); border-color: transparent; }
+[data-tema] input[type=checkbox]::after { content: ''; width: 5px; height: 10px; margin-top: -2px; border: solid var(--sobre-primario); border-width: 0 2px 2px 0; transform: rotate(45deg) scale(0); transition: transform .15s ease; }
+[data-tema] input[type=checkbox]:checked::after { transform: rotate(45deg) scale(1); }
+[data-tema] input[type=radio]:checked { box-shadow: inset 0 0 0 3px var(--campo-fondo); }
+[data-tema] input:is([type=checkbox], [type=radio]):focus-visible { outline: 2px solid var(--oro-texto); outline-offset: 2px; }
+[data-tema] input:is([type=checkbox], [type=radio]):disabled { opacity: .45; cursor: default; }
+[data-tema] ::selection { background: color-mix(in srgb, var(--oro-texto) 30%, transparent); color: var(--texto); }
+/* la lista de los desplegables en el ordenador (Chrome y Edge, appearance: base-select) */
+@media (hover: hover) and (pointer: fine) {
+  @supports (appearance: base-select) {
+    [data-tema] select::picker(select) { border: 2px solid var(--borde); border-radius: var(--r-m); background: var(--superficie); color: var(--texto); font-family: var(--ui); box-shadow: 0 18px 44px -12px var(--hondo); }
+    [data-tema] select option:hover, [data-tema] select option:focus-visible { background: color-mix(in srgb, var(--texto) 7%, transparent); }
+    [data-tema] select option:checked { color: var(--oro-texto); }
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-tema] :is(input, select, textarea, .as-form), [data-tema] input[type=checkbox]::after { transition: none; }
+}
+
+/* repaso de capturas a 390 (3 nov) */
+/* la fecha de encima del saludo, en una sola línea a todo el ancho (se partía en dos al lado de Calendario y Personalizar) */
+[data-tema] .hero-top:has(.hola-fecha) { position: relative; padding-top: 22px; }
+[data-tema] .hero-top .hola-fecha { position: absolute; top: 0; left: 0; right: 0; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* Marfil: la raya de tinta de «Posiciones» ya separa; sin ella, el borde de arriba de la tabla hacía doble línea */
+[data-tema="marfil"] .sec-cab ~ .tabla-pos { border-top: 0; }

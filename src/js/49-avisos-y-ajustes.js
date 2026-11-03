@@ -631,18 +631,18 @@ function vistaTu(M) {
     </section>
     <h2 class="aj-grupo">${L('Lo tuyo', 'Yours')}</h2>
     <div class="aj-caja">
-      ${fila(ICONOS.perfil, L('Tu perfil de inversor', 'Your investor profile'), falta ? L('A medias: sin tu edad, tu plazo y el riesgo que aguantas, la IA te habla como a cualquiera.', 'Unfinished: without your age, horizon and risk, the AI talks to you like anyone else.') : L('Tu edad, tu plazo, el riesgo que aguantas y tus límites.', 'Your age, horizon, risk and limits.'), 'href="#objetivos"', falta ? ' falta' : '')}
-      ${fila(ICONOS.futuro, L('Tus metas', 'Your goals'), metas.length ? L(`${metas.length === 1 ? 'Una meta' : `${metas.length} metas`}: si llegas con lo que aportas.`, `${metas.length} goal${metas.length === 1 ? '' : 's'}: whether you get there.`) : L('Algo con cifra y fecha: la entrada de un piso, llegar a 100.000 €…', 'Something with an amount and a date.'), 'href="#objetivos"')}
-      ${fila(ICONOS.proy, L('Lo que podrías tener', 'What you could have'), L('En 5, 10 y 20 años si sigues aportando como ahora.', 'In 5, 10 and 20 years if you keep contributing.'), 'href="#proyeccion"')}
-      ${fila(esPublico() ? ICONOS.plan : ICONOS.ruta, L(ruta.t, ruta.en), esPublico() ? L('Tus aportaciones y si tu cartera se sale de tus límites.', 'Your contributions and whether your portfolio goes beyond your limits.') : L('Lo que hay cada mes, en orden y con lo que supone en la renta.', 'What there is each month, in order, with its tax effect.'), 'href="#ruta"')}
-      ${fila(ICONOS.agenda, L('Calendario', 'Calendar'), L('Resultados, dividendos y tus aportaciones, con los días que faltan.', 'Earnings, dividends and your contributions, with a countdown.'), 'href="#agenda"')}
+      ${fila(ICONOS_PL.tu, L('Tu perfil de inversor', 'Your investor profile'), falta ? L('A medias: sin tu edad, tu plazo y el riesgo que aguantas, la IA te habla como a cualquiera.', 'Unfinished: without your age, horizon and risk, the AI talks to you like anyone else.') : L('Tu edad, tu plazo, el riesgo que aguantas y tus límites.', 'Your age, horizon, risk and limits.'), 'href="#objetivos"', falta ? ' falta' : '')}
+      ${fila(ICONOS_PL.objetivos, L('Tus metas', 'Your goals'), metas.length ? L(`${metas.length === 1 ? 'Una meta' : `${metas.length} metas`}: si llegas con lo que aportas.`, `${metas.length} goal${metas.length === 1 ? '' : 's'}: whether you get there.`) : L('Algo con cifra y fecha: la entrada de un piso, llegar a 100.000 €…', 'Something with an amount and a date.'), 'href="#objetivos"')}
+      ${fila(ICONOS_PL.futuro, L('Lo que podrías tener', 'What you could have'), L('En 5, 10 y 20 años si sigues aportando como ahora.', 'In 5, 10 and 20 years if you keep contributing.'), 'href="#proyeccion"')}
+      ${fila(ICONOS_PL.paso, L(ruta.t, ruta.en), esPublico() ? L('Tus aportaciones y si tu cartera se sale de tus límites.', 'Your contributions and whether your portfolio goes beyond your limits.') : L('Lo que hay cada mes, en orden y con lo que supone en la renta.', 'What there is each month, in order, with its tax effect.'), 'href="#ruta"')}
+      ${fila(ICONOS_PL.calendario, L('Calendario', 'Calendar'), L('Resultados, dividendos y tus aportaciones, con los días que faltan.', 'Earnings, dividends and your contributions, with a countdown.'), 'href="#agenda"')}
     </div>
     <h2 class="aj-grupo">${L('La app', 'The app')}</h2>
     <div class="aj-caja">
       ${S.esDueno ? htmlSelectorTema() : ''}
-      ${boton(ICONOS.ajustes, L('Ajustes', 'Settings'), L('Cuenta, idioma, seguridad, avisos y la app de Android.', 'Account, language, security, alerts and the Android app.'), 'ajustes')}
-      ${boton(ICONOS.chispa, L('Novedades', "What's new"), L(`Versión ${VERSION} alfa: qué se ha mejorado.`, `Version ${VERSION} alpha: what's improved.`), 'novedades')}
-      ${boton(ICONOS.bicho, L('Avisar de un fallo', 'Report a bug'), L('Es una alfa: cuéntanos cualquier fallo o idea. Lo leemos todo.', "It's an alpha: tell us about any bug or idea."), 'opinion')}
+      ${boton(ICONOS_PL.ajustes, L('Ajustes', 'Settings'), L('Cuenta, idioma, seguridad, avisos y la app de Android.', 'Account, language, security, alerts and the Android app.'), 'ajustes')}
+      ${boton(ICONOS_PL.novedades, L('Novedades', "What's new"), L(`Versión ${VERSION} alfa: qué se ha mejorado.`, `Version ${VERSION} alpha: what's improved.`), 'novedades')}
+      ${boton(ICONOS_PL.enviar, L('Avisar de un fallo', 'Report a bug'), L('Es una alfa: cuéntanos cualquier fallo o idea. Lo leemos todo.', "It's an alpha: tell us about any bug or idea."), 'opinion')}
     </div>
   </div>`;
 }
