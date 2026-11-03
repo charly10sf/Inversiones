@@ -60,6 +60,7 @@ function htmlRiel() {
     <nav class="riel-nav">${['cartera', 'posiciones', 'mercados', 'expertos', 'tu'].map((k) => { const g = GRUPOS.find((x) => x.k === k); return `<a href="#${k}" data-ir="${k}">${k === 'cartera' ? `<span class="riel-med">${ICONOS_TS.cartera()}</span>` : ICONOS_TS[k]()}<span>${L(g.t, g.en)}</span></a>`; }).join('')}</nav>
     <button type="button" class="riel-ia" data-accion="asesor" aria-expanded="false">${ICONOS_PL.asistente}<span>${L('Pregúntale a la IA', 'Ask the AI')}</span></button>
     ${htmlSelectorModo(true)}
+    <button type="button" class="riel-aj" data-accion="ajustes">${ICONOS_PL.ajustes}<span>${L('Ajustes', 'Settings')}</span></button>
   </aside>`;
 }
 const iaAlLado = () => innerWidth >= 1180;

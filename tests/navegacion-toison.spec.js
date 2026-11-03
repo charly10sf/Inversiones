@@ -23,7 +23,8 @@ test('cinco abajo con Hoy en el medallón, la IA arriba y cada cosa en su pesta�
   // arriba: la IA sin texto; los ajustes y el bicho ya no
   await expect(page.locator('#bAsesor.as-ts')).toBeVisible();
   expect((await page.locator('#bAsesor').innerText()).trim()).toBe('');
-  await expect(page.locator('#bAjustes')).toBeHidden();
+  // 0.9: Ajustes, a la vista en la cabecera (Carlos, 3 nov); el aviso de fallos sigue en Tú
+  await expect(page.locator('#bAjustes')).toBeVisible();
   await expect(page.locator('#bFallo')).toBeHidden();
   // Hoy: el patrimonio, sin tus posiciones
   await expect(page.locator('#vista .car-patrimonio')).toBeVisible();

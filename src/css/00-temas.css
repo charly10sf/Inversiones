@@ -277,7 +277,11 @@ img.tema-muestra { background: none; box-shadow: none; }
    símbolo, TOISÓN, la cuenta atrás y la IA (su logo en un círculo de metal, sin texto); los ajustes, «avisar de un
    fallo», la versión y la luz de las bolsas pasan a Tú, a Hoy y a Mercados. body.nav-ts lo pone montar()
    ===================================================================== */
-[data-tema] body.nav-ts .top :is(#bFallo, #bAjustes, .ver-chip, .estado-w) { display: none; }
+[data-tema] body.nav-ts .top :is(#bFallo, .ver-chip, .estado-w) { display: none; }
+/* 0.9: Ajustes, a la vista en la cabecera (antes solo dentro de Tú; lo pidió Carlos el 3 nov) */
+[data-tema] body.nav-ts .top #bAjustes { order: -1; color: var(--texto-2); }
+[data-tema] body.nav-ts .top #bAjustes svg { width: 22px; height: 22px; }
+@media (min-width: 1180px) { [data-tema] body.nav-ts .top #bAjustes { display: none; } }   /* en el ordenador va en el menú de la izquierda */
 [data-tema] body.nav-ts .top .acciones { margin-left: auto; }
 [data-tema] body.nav-ts .top .gta-top-w ~ .acciones { margin-left: var(--e2); }
 [data-tema] .as-boton.as-ts { width: 40px; height: 40px; padding: 0; margin: 0; justify-content: center; border-radius: 50%; border: 0;

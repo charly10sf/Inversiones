@@ -340,7 +340,7 @@ function montar() {
     <div class="acciones">
       <button class="as-boton as-ts" id="bAsesor" data-accion="asesor" title="${L('Pregúntale a la IA por tu cartera', 'Ask the AI about your portfolio')}" aria-label="${L('Pregúntale a la IA', 'Ask the AI')}">${ICONOS_PL.asistente}</button>
       <button class="ib ib-fallo" id="bFallo" data-accion="opinion" title="Es una alfa: avisa de cualquier fallo o idea" aria-label="Avisar de un fallo">${ICONOS.bicho}<span class="fallo-t">Avisar de un fallo</span></button>
-      <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="Ajustes" title="Ajustes">${ICONOS.ajustes}</button>
+      <button class="ib" id="bAjustes" data-accion="ajustes" aria-label="${L('Ajustes', 'Settings')}" title="${L('Ajustes', 'Settings')}">${ICONOS_PL.ajustes || ICONOS.ajustes}</button>
     </div>
   </div></header>
   <main class="wrap" id="vista"></main>
