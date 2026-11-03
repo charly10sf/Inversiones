@@ -67,9 +67,9 @@ Responde solo con JSON, con números con punto decimal y sin símbolos:
 const partesDe = (archivos, varias) => [...archivos.map((a) => (a.texto != null ? { text: `Archivo «${a.nombre}»${a.cortado ? ' (cortado: es muy largo)' : ''}:\n${a.texto}` } : { inlineData: { mimeType: a.mime, data: a.data } })), { text: PEDIDO_IMPORTAR + (varias ? '\nEs uno de varios archivos de la misma persona que se leen por separado: saca solo lo que se vea en este, completo.' : '') }];
 // 0.9: con Claude en tu cuenta, lee Claude (Sonnet, que lee mejor las tablas); la primera vez, con tu sí
 async function leerConClaude(partes, alPaso, etq) {
-  if (!LS.get(LS_CLAUDE_OK, false)) {
-    if (!confirm(L('Para leer estos archivos, la IA los manda por el servidor de Toisón (que no guarda nada) hasta Anthropic, que los procesa fuera de la Unión Europea. ¿Seguir?', 'To read these files, the AI sends them through Toisón\'s server (which stores nothing) to Anthropic, which processes them outside the EU. Continue?'))) throw new Error(L('Sin tu sí no se leen los archivos.', 'Without your OK the files are not read.'));
-    LS.set(LS_CLAUDE_OK, true);
+  if (!siDe(LS_CLAUDE_IMP)) {
+    if (!confirm(L('Para leer estos archivos, la IA los manda por el servidor de Toisón (que no guarda nada) hasta Anthropic, que los procesa fuera de la Unión Europea, no los usa para entrenar y los borra pasado un plazo corto según su política. Puede que lleven datos personales (tu nombre, tu DNI, tu IBAN): si quieres, tápalos antes. ¿Seguir?', 'To read these files, the AI sends them through Toisón\'s server (which stores nothing) to Anthropic, which processes them outside the European Union, does not train on them and deletes them after a short period under its policy. They may contain personal data (your name, ID, IBAN): you can cover it first. Continue?'))) throw new Error(L('Sin tu sí no se leen los archivos.', 'Without your OK the files are not read.'));
+    LS.set(LS_CLAUDE_IMP, uidActual() || true);
   }
   alPaso(`${etq}${L('La IA está leyendo', 'The AI is reading')}…`);
   let r;
@@ -202,7 +202,7 @@ async function importarCapturas() {
   const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
   let hecho = false, filas = [], efectivo = [], ventasImp = [], divsImp = [], resumenOps = null;
   const h = hoja('Importar de tu bróker o banco', `<div class="imp-cont">
-      <p class="nota" style="margin:0">Sirve cualquier bróker, banco o exchange: capturas de la pantalla de posiciones, el PDF de un extracto o del informe fiscal, o la lista de movimientos exportada en CSV o Excel. La IA lo lee y aquí revisas lo que ha entendido antes de guardar nada. Con un listado de operaciones sabe además desde cuándo tienes cada cosa, lo que te costó cada compra y el resultado de tus ventas. ${claudeParaTodo() ? 'Los archivos pasan por el servidor de Toisón (que no guarda nada) hasta Anthropic, la empresa de Claude, y no se guardan.' : 'Los archivos van de tu navegador a Google y no se guardan.'}</p>
+      <p class="nota" style="margin:0">Sirve cualquier bróker, banco o exchange: capturas de la pantalla de posiciones, el PDF de un extracto o del informe fiscal, o la lista de movimientos exportada en CSV o Excel. La IA lo lee y aquí revisas lo que ha entendido antes de guardar nada. Con un listado de operaciones sabe además desde cuándo tienes cada cosa, lo que te costó cada compra y el resultado de tus ventas. ${claudeParaTodo() ? 'Los archivos pasan por el servidor de Toisón (que no guarda nada) hasta Anthropic, la empresa de Claude, que no los usa para entrenar y los borra pasado un plazo corto según su política.' : 'Los archivos van de tu navegador a Google y no se guardan.'}</p>
       <label class="imp-sube"><input type="file" id="impArch" accept="image/*,application/pdf,.csv,.tsv,.txt,.xlsx,.xls,.ods,text/csv" multiple hidden><span class="imp-sube-c">${ICONOS.recorte}<b>Elegir capturas, PDF, CSV o Excel</b><small>Puedes elegir varios a la vez</small></span></label>
       <div id="impEstado" class="imp-estado" aria-live="polite"></div>
       <div id="impRev"></div>

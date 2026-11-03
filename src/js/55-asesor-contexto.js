@@ -976,6 +976,17 @@ const MODELOS_CLAUDE = {
 };
 const nombreMod = (m) => (MODELOS[m] || MODELOS_CLAUDE[m] || {}).corto || m;
 const LS_MOTOR = 'inv-ia-motor', LS_CLAUDE_PAUSA = 'inv-claude-pausa', LS_CLAUDE_OK = 'inv-claude-ok';
+/* 0.9 (auditoría de la noche del 3 nov): el sí a Claude va por cuenta (se guarda el uid; el «true» de antes pasa a ser de
+   la cuenta que esté dentro) y se borra al cerrar la sesión. El sí a leer archivos al importar es otro (LS_CLAUDE_IMP):
+   no vale para mandar la cartera */
+const LS_CLAUDE_IMP = 'inv-claude-ok-imp';
+const uidActual = () => (FB.user && FB.user.uid) || '';
+function siDe(k) { const v = LS.get(k, false), uid = uidActual(); if (v === true && uid) { LS.set(k, uid); return true; } return !!v && v === uid; }
+const claudeOk = () => siDe(LS_CLAUDE_OK);
+const marcarClaudeOk = () => LS.set(LS_CLAUDE_OK, uidActual() || true);
+const TXT_SI_CLAUDE = () => L('La IA puede contestar con Claude, de Anthropic. Tus preguntas, lo que necesita de tu cartera, las revisiones automáticas y los resúmenes de noticias pasarían por el servidor de Toisón (que no guarda nada) hasta Anthropic, que lo procesa fuera de la Unión Europea, no lo usa para entrenar y lo borra pasado un plazo corto según su política. Si prefieres que vaya solo a Google, con tu clave, pulsa Cancelar.\n\n¿Usar Claude?', "The AI can answer with Claude, from Anthropic. Your questions, what it needs from your portfolio, automatic reviews and news summaries would go through Toisón's server (which stores nothing) to Anthropic, which processes it outside the European Union, does not train on it and deletes it after a short period under its policy. If you'd rather it only goes to Google, with your key, press Cancel.\n\nUse Claude?");
+// para lo suelto (el resumen de una noticia): el mismo sí, pedido al momento si aún no lo has dado
+function pedirSiClaude() { if (claudeOk()) return true; if (AS.claudeNo) return false; if (confirm(TXT_SI_CLAUDE())) { marcarClaudeOk(); return true; } AS.claudeNo = true; return false; }
 const motorElegido = () => { const m = LS.get(LS_MOTOR, 'auto'); return ['auto', 'haiku', 'sonnet', 'gemini'].includes(m) ? m : 'auto'; };
 // tiempos de Claude: el primer dato (message_start llega enseguida; lo que tarda es el Worker o la red), y sin nada nuevo
 const CLAUDE_MAX_SALIDA = 32000;   // el mismo tope que el Worker (worker/src/index.js)
@@ -1022,9 +1033,9 @@ async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
   if (!puede) return false;
   // la primera vez, antes de mandar nada de la cartera, se dice adónde va y se pide el sí (una vez por dispositivo). Una
   // revisión automática no puede preguntar: espera a que contestes a la primera pregunta
-  if (!LS.get(LS_CLAUDE_OK, false)) {
+  if (!claudeOk()) {
     if (tipo !== 'pregunta') return false;
-    if (confirm(L('La IA puede contestar con Claude, de Anthropic. Tus preguntas y lo que necesita de tu cartera pasarían por el servidor de Toisón (que no guarda nada) hasta Anthropic, que lo procesa fuera de la Unión Europea. Si prefieres que vaya solo a Google, con tu clave, pulsa Cancelar.\n\n¿Usar Claude?', "GrowIA can answer with Claude, from Anthropic. Your questions and what it needs from your portfolio would go through Toisón's server (which stores nothing) to Anthropic, which processes it outside the European Union. If you'd rather it only goes to Google, with your key, press Cancel.\n\nUse Claude?"))) LS.set(LS_CLAUDE_OK, true);
+    if (confirm(TXT_SI_CLAUDE())) marcarClaudeOk();
     // sin clave de Google, «solo Gemini» dejaría la IA sin salida: se recuerda el no solo para esta vez
     else { if (AS.clave) LS.set(LS_MOTOR, 'gemini'); else AS.claudeNo = true; return false; }
   }

@@ -395,7 +395,7 @@ const PASOS_PERFIL = [
   { k: 'experiencia', q: '¿Cuánto llevas invirtiendo?', falta: (d) => !d.experiencia },
   { k: 'estilo', q: '¿Qué buscas con tu dinero?', falta: (d) => !d.estilo },
   { k: 'numeros', q: 'Tus números', sub: 'Opcional. Con tus gastos Toisón te calcula el colchón que deberías tener aparte; con tus ingresos, cuánto podrías aportar.', falta: (d) => !d.gastos_mes && !d.deudas },
-  { k: 'meta', q: '¿Para qué inviertes?', sub: 'Algo con cifra y fecha. Toisón calcula si llegas con lo que aportas. Luego puedes añadir más en Análisis > Tus objetivos.', falta: () => !((S.cartera && S.cartera.metas) || []).length },
+  { k: 'meta', q: '¿Para qué inviertes?', sub: 'Algo con cifra y fecha. Toisón calcula si llegas con lo que aportas. Luego puedes añadir más en Tú > Tus objetivos.', falta: () => !((S.cartera && S.cartera.metas) || []).length },
 ];
 function perfilGuiado(seguir = () => {}) {
   const d = { ...perfil() };
@@ -431,7 +431,7 @@ function perfilGuiado(seguir = () => {}) {
     const r = bolsaRecomendada(d), e = S.M && S.M.total ? estadoPerfil(S.M) : null;
     return `<div class="pg-listo">${ICONOS.ok}<h3>${L('Listo', 'Done')}${d.nombre ? `, ${esc(d.nombre)}` : ''}</h3>
       ${r ? `<p>${L(`Para ti, lo normal es tener entre un <b>${r.min}</b> y un <b>${r.max} %</b> de tu dinero en bolsa${e ? `. Ahora tienes un ${fmtNum(e.pctBolsa, 0)} %` : ''}.`, `For you, the usual is to have between <b>${r.min}</b> and <b>${r.max} %</b> of your money in stocks${e ? `. You now have ${fmtNum(e.pctBolsa, 0)} %` : ''}.`)}</p>` : ''}
-      <p>La IA, el Paso a paso y las ideas ya te aconsejan con esto. Lo puedes cambiar cuando quieras en Análisis > Tus objetivos, donde están también tus límites y tus metas.</p></div>`;
+      <p>La IA, el Paso a paso y las ideas ya te aconsejan con esto. Lo puedes cambiar cuando quieras en Tú > Tus objetivos, donde están también tus límites y tus metas.</p></div>`;
   };
   const pintarPaso = () => {
     err.textContent = '';
@@ -490,7 +490,7 @@ function perfilGuiado(seguir = () => {}) {
     if (perfilIncompleto()) {
       const l = LS.get('inv-perfil-luego', null) || { n: 0 };
       LS.set('inv-perfil-luego', { n: (l.n || 0) + 1, t: Date.now() });
-      toast(tocado ? 'Guardado lo que has contestado. Lo terminas en Análisis > Tus objetivos cuando quieras.' : 'Lo tienes en Análisis > Tus objetivos cuando quieras. Te lo recordaré en unos días.', 4500);
+      toast(tocado ? 'Guardado lo que has contestado. Lo terminas en Tú > Tus objetivos cuando quieras.' : 'Lo tienes en Tú > Tus objetivos cuando quieras. Te lo recordaré en unos días.', 4500);
     }
     seguir();
   };

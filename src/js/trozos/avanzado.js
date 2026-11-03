@@ -3,12 +3,12 @@
    rentabilidadCartera (TWR y TIR), serieCartera, volatilidadSerie, caidaDetalle, fiscalAnio, lotesDe, reparto,
    empresasPorDentro… Cada tarjeta dice cómo se calcula. Sin «compra» ni «vende»: lo que supondría, y lo decide el
    usuario. Las pestañas que aún no tienen sus datos dicen qué llevarán y dónde está hoy esa información. */
-const pavT = (c, titulo, cuerpo, como = '', enlace = '') => `<section class="pav-t pav-${c}"><h2 class="pav-et">${titulo}${enlace}</h2>${cuerpo}${como ? `<p class="pav-como"><b>${L('Cómo se calcula', 'How it is worked out')} ·</b> ${como}</p>` : ''}</section>`;
+const pavT = (c, titulo, cuerpo, como = '', enlace = '') => `<section class="pav-t pav-${c}"><div class="pav-et"><h2>${titulo}</h2>${enlace}</div>${cuerpo}${como ? `<p class="pav-como"><b>${L('Cómo se calcula', 'How it is worked out')} ·</b> ${como}</p>` : ''}</section>`;
 const pavKpis = (xs, cols = 2) => `<div class="pav-kpis" style="--cols:${cols}">${xs.filter(Boolean).map(([k, v, c = '', s = '']) => `<div class="pav-kpi"><small>${k}</small><b class="${c}">${v}</b>${s ? `<span>${s}</span>` : ''}</div>`).join('')}</div>`;
 const pavTabla = (cab, filas, clase = '') => `<div class="pav-tabla"><table class="${clase}"><thead><tr>${cab.map((h) => `<th>${h}</th>`).join('')}</tr></thead><tbody>${filas.map((f) => `<tr>${f.map((x) => `<td>${x}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;
 const pavIr = (href, t) => `<a href="${href}">${t}</a>`;
 const pavNom = (f) => esc(f.inst.corto || f.inst.nombre);
-const pavColor = (v, max = 6) => { const k = Math.min(1, Math.abs(v) / max); return `background: color-mix(in srgb, var(--${v >= 0 ? 'sube' : 'baja'}) ${Math.round(10 + k * 45)}%, transparent)`; };
+const pavColor = (v, max = 6) => { const k = Math.min(1, Math.abs(v) / max); return `background: color-mix(in srgb, var(--${v >= 0 ? 'sube' : 'baja'}) ${Math.round(8 + k * 22)}%, transparent)`; };   // como mucho al 30 %: el texto encima se lee (WCAG AA)
 // una barra de reparto (de 0 al máximo) o una que va a los dos lados del cero (ganado y perdido)
 const pavFila = (n, v, max, col, txt) => `<div class="pav-fila"><span title="${esc(n)}">${esc(n)}</span><span class="pav-pista"><i style="left:0;width:${Math.max(0.5, Math.min(100, (v / (max || 1)) * 100)).toFixed(1)}%;background:${col}"></i></span><span>${txt}</span></div>`;
 const pavDos = (n, v, max) => `<div class="pav-fila"><span title="${esc(n)}">${esc(n)}</span><span class="pav-pista"><i style="${v >= 0 ? 'left:50%' : `left:${(50 - (Math.abs(v) / (max || 1)) * 50).toFixed(1)}%`};width:${((Math.abs(v) / (max || 1)) * 50).toFixed(1)}%;background:var(--${v >= 0 ? 'sube' : 'baja'})"></i><i class="pav-cero"></i></span><span class="${cls(v)}">${eurS(v, 0)}</span></div>`;
@@ -26,6 +26,7 @@ const PAV_CSS = `
 .pav-et { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 12px; font: 600 11px/14px var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
 [data-tema="marfil"] .pav-et { font: 600 13px/16px var(--marca); color: var(--texto); border-bottom: 1px solid var(--texto); padding-bottom: 7px; }
 [data-tema="borgona"] .pav-et { font: italic 500 18px/20px var(--marca); letter-spacing: .01em; text-transform: none; color: var(--oro-texto); }
+.pav-et h2 { margin: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
 .pav-et a, .pav-et button { font: 600 12.5px/1 var(--ui); letter-spacing: 0; text-transform: none; font-style: normal; color: var(--oro-texto); text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; }
 .pav-como { margin: 12px 0 0; font-size: 12px; line-height: 1.45; color: var(--tenue); }
 .pav-como b { font-weight: 650; color: var(--texto-2); }
@@ -78,7 +79,7 @@ const PAV_CSS = `
 .pnl-d b { font: 600 12px/1.1 var(--ui); white-space: nowrap; }
 .pnl-d span { font-size: 10.5px; color: var(--texto-2); white-space: nowrap; }
 .pnl-d.vacio { background: color-mix(in srgb, var(--superficie) 40%, transparent); opacity: .55; }
-@media (max-width: 480px) { .pnl-d { min-height: 46px; padding: 4px; } .pnl-d span { display: none; } .pnl-d b { font-size: 10.5px; } }
+@media (max-width: 480px) { .pnl-d { min-height: 50px; padding: 4px; } .pnl-d span { font-size: 9.5px; } .pnl-d b { font-size: 10.5px; } }
 .mov-t { display: inline-block; padding: 2px 8px; border-radius: var(--r-p); font-size: 12px; font-weight: 600; background: color-mix(in srgb, var(--texto) 8%, transparent); }
 .mov-t.compra { color: var(--sube); background: color-mix(in srgb, var(--sube) 13%, transparent); }
 .mov-t.venta { color: var(--baja); background: color-mix(in srgb, var(--baja) 13%, transparent); }
@@ -128,7 +129,11 @@ function pintarPanelAv() {
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
+  // al repintar (un botón, un campo de la pestaña), el foco vuelve al mismo mando: el mismo atributo y el mismo puesto
+  const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-rebal-aport', 'data-lab'];
+  const at = ae && el.contains(ae) ? ATTR.find((x) => ae.hasAttribute(x)) : null, pos = at ? $$(`[${at}]`, el).indexOf(ae) : -1;
   el.innerHTML = html; el.removeAttribute('aria-busy'); ponerPreguntale(el); marcarCifras(el);
+  if (at) { const n = $$(`[${at}]`, el)[pos]; if (n && !n.disabled) n.focus({ preventScroll: true }); else { const t = el.querySelector('.pav-et h2'); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } } }
   requestAnimationFrame(() => dibujarPanelAv(p, M));
 }
 const pavSinCartera = () => `<section class="pav-t pav-c12 pav-vacio"><h2>${L('Aquí salen tus números', 'Your numbers show up here')}</h2><p>${L('En cuanto metas lo que tienes, esta pestaña se llena con tus datos.', 'As soon as you add what you own, this tab fills up with your data.')}</p><button type="button" class="btn pri" data-accion="nueva-pos">${ICONOS.mas}${L('Meter lo que tengo', 'Add what I own')}</button></section>`;
@@ -215,7 +220,7 @@ function pavRentab(M) {
     pavT('c4', L('De dónde sale lo ganado', 'Where the gain comes from'), lado, L('Lo de las ventas sale de tus ventas apuntadas; los dividendos, de lo que pusiste en Hacienda.', 'Sales come from your recorded sales; dividends, from what you entered in Taxes.')),
     pavT('c8', L('Lo que ha aportado cada posición', 'What each holding has contributed'), pos.map(([n, v]) => pavDos(n, v, maxP)).join(''), L('Lo que vale hoy menos lo que te costó, sin lo ya vendido.', 'Value today minus cost, without what you already sold.')),
     calor ? pavT('c6', L('Mes a mes', 'Month by month'), calor, L('La rentabilidad por tiempo de cada mes; el color, más intenso cuanto más se movió.', 'The time-weighted return of each month; the stronger the colour, the bigger the move.')) : '',
-    s && b ? pavT('c6', L('Contra el MSCI World', 'Against the MSCI World'), '<div class="chart" id="pavBench"></div>', L('Las dos desde tu primera compra, en %. Tu cartera, con la TWR.', 'Both since your first purchase, in %. Your portfolio, with TWR.')) : '',
+    s && b ? pavT('c6', L('Contra el MSCI World', 'Against the MSCI World'), `<div class="chart" id="pavBench"></div><p class="pav-ley"><span><i style="background:var(--grafica)"></i>${L('Tu cartera (TWR)', 'Your portfolio (TWR)')}</span><span><i style="background:var(--reparto-2)"></i>MSCI World</span></p>`, L('Las dos desde tu primera compra, en %. Tu cartera, con la TWR.', 'Both since your first purchase, in %. Your portfolio, with TWR.')) : '',
   ].join('');
 }
 
@@ -395,13 +400,13 @@ function dibujarPanelAv(p, M) {
     const el = $('#pavBench'), R = rentabilidadCartera(M), s = R.twr && R.twr.serie; if (!el || !s) return;
     const b = pavBenchSerie('fidelity-world', s[0].d); if (!b) return;
     const b0 = b[0].idx;
-    grafLinea(el, [{ datos: s.map((x) => ({ d: x.d, v: (x.idx - 1) * 100 })), color: 'var(--grafica)' }, { datos: b.map((x) => ({ d: x.d, v: (x.idx / b0 - 1) * 100 })), color: 'var(--reparto-2)' }], { alto: 220, sinRef: true, titulo: L('Tu cartera frente al MSCI World', 'Your portfolio vs the MSCI World'), fmt: (v) => pctS(v, 1), ejeFmt: (t) => `${fmtNum(t, 0)} %` });
+    grafLinea(el, [{ datos: s.map((x) => ({ d: x.d, v: (x.idx - 1) * 100 })), color: 'var(--grafica)', nombre: L('Tu cartera (TWR)', 'Your portfolio (TWR)') }, { datos: b.map((x) => ({ d: x.d, v: (x.idx / b0 - 1) * 100 })), color: 'var(--reparto-2)', nombre: 'MSCI World' }], { alto: 220, sinRef: true, titulo: L('Tu cartera frente al MSCI World', 'Your portfolio vs the MSCI World'), fmt: (v) => pctS(v, 1), ejeFmt: (t) => `${fmtNum(t, 0)} %` });
   }
   if (p === 'grafico') {
     const el = $('#pavGraf'), { f } = pavGrafPos(M); if (!el || !f) return;
     const h = (histDe(f.pos.instrumento) || []).filter((x) => x && x[1] != null).map(([d, v]) => ({ d, v }));
     const dias = (PAV_RANGOS.find(([k]) => k === (S.grafRango || '1A')) || PAV_RANGOS[1])[1], desde = diasAtras(dias), corta = (xs) => xs.filter((x) => x.d >= desde);
-    grafLinea(el, [{ datos: corta(h), color: 'var(--grafica)' }, { datos: corta(pavMedia(h, 50)), color: 'var(--reparto-2)' }, { datos: corta(pavMedia(h, 200)), color: 'var(--reparto-4)' }], { alto: innerWidth < 560 ? 200 : 280, sinRef: true, titulo: esc(f.inst.corto || f.inst.nombre), fmt: (v) => precioFmt(v) });
+    grafLinea(el, [{ datos: corta(h), color: 'var(--grafica)', nombre: L('Precio', 'Price') }, { datos: corta(pavMedia(h, 50)), color: 'var(--reparto-2)', nombre: L('Media de 50 días', '50-day average') }, { datos: corta(pavMedia(h, 200)), color: 'var(--reparto-4)', nombre: L('Media de 200 días', '200-day average') }], { alto: innerWidth < 560 ? 200 : 280, sinRef: true, titulo: esc(f.inst.corto || f.inst.nombre), fmt: (v) => precioFmt(v) });
   }
   if (p === 'riesgo') {
     const el = $('#pavCaida'), c = caidaDetalle(serieCartera(M, 3650)); if (!el || !c) return;
@@ -434,7 +439,7 @@ function pavPnl(M) {
   for (let k = 0; k < hueco; k++) celdas += '<i></i>';
   for (let d = 1; d <= nd; d++) {
     const k = `${mes}-${String(d).padStart(2, '0')}`, x = porDia.get(k);
-    celdas += x ? `<div class="pnl-d ${cls(x.e)}" style="${pavColor(x.p, 2)}" title="${esc(fechaCorta(k))}"><small>${d}</small><b>${S.oculto ? '••' : euCorto(x.e)}</b><span>${pctS(x.p, 1)}</span></div>` : `<div class="pnl-d vacio"><small>${d}</small></div>`;
+    celdas += x ? `<div class="pnl-d" style="${pavColor(x.p, 2)}" role="img" aria-label="${esc(`${fechaCorta(k)}: ${S.oculto ? '' : eurS(x.e, 0) + ', '}${pctS(x.p, 2)}`)}"><small>${d}</small><b>${S.oculto ? '••' : (x.e > 0 ? '+' : '') + euCorto(x.e)}</b><span>${x.e > 0 ? '▲' : x.e < 0 ? '▼' : ''} ${pctS(x.p, 1)}</span></div>` : `<div class="pnl-d vacio"><small>${d}</small></div>`;
   }
   const tot = sum(delMes, (x) => x.e), verdes = delMes.filter((x) => x.e > 0).length;
   const mejor = delMes.reduce((b, x) => (!b || x.e > b.e ? x : b), null), peor = delMes.reduce((b, x) => (!b || x.e < b.e ? x : b), null);
@@ -546,7 +551,7 @@ function pavGrafico(M) {
     [L('Último precio', 'Last price'), precioFmt(ult.v), '', esc(ult.d)],
     [L('Frente a su media de 50 días', 'Against its 50-day average'), s50 == null ? '—' : pctS(s50, 1), s50 == null ? '' : cls(s50)],
     [L('Frente a su media de 200 días', 'Against its 200-day average'), s200 == null ? '—' : pctS(s200, 1), s200 == null ? '' : cls(s200)],
-    [L('RSI de 14 días', '14-day RSI'), rsi == null ? '—' : fmtNum(rsi, 0), rsi == null ? '' : rsi >= 70 || rsi <= 30 ? 'warn' : '', rsi == null ? '' : rsi >= 70 ? L('ha subido mucho y deprisa', 'rose a lot, fast') : rsi <= 30 ? L('ha bajado mucho y deprisa', 'fell a lot, fast') : L('en la zona media', 'in the middle range')],
+    [L('RSI de 14 días', '14-day RSI'), rsi == null ? '—' : fmtNum(rsi, 0), '', rsi == null ? '' : rsi >= 70 ? L('ha subido mucho en poco tiempo; no dice qué va a pasar', 'rose a lot in a short time; it does not tell what comes next') : rsi <= 30 ? L('ha bajado mucho en poco tiempo; no dice qué va a pasar', 'fell a lot in a short time; it does not tell what comes next') : L('en la zona media', 'in the middle range')],
     ano.length > 5 ? [L('Máximo de un año', '1-year high'), precioFmt(hi), '', pctS((ult.v / hi - 1) * 100, 1)] : null,
     ano.length > 5 ? [L('Mínimo de un año', '1-year low'), precioFmt(lo), '', pctS((ult.v / lo - 1) * 100, 1)] : null,
   ], 3);
@@ -575,14 +580,14 @@ function pavRebal(M) {
   const reparte = new Map(falta.map(([k, v]) => [k, sf > 0 ? (v / sf) * Math.min(aport, sf) : 0]));
   const filas = ks.map((k) => {
     const t = tienes(k), o = +obj[k] || 0, dif = t.pct - o, eu = (dif / 100) * total, desp = tras > 0 ? ((t.v + (reparte.get(k) || 0)) / tras) * 100 : 0;
-    return [`<b>${esc(trad(k))}</b>`, pct(t.pct, 1), `<input type="number" inputmode="decimal" min="0" max="100" step="1" value="${o}" data-obj-k="${esc(k)}" aria-label="${L(`Objetivo para ${esc(k)}, en %`, `Target for ${esc(k)}, in %`)}">`, `<span class="${Math.abs(dif) < 2 ? '' : dif > 0 ? 'up' : 'down'}">${masSi(dif, 1)}${fmtNum(dif, 1)} pp</span><small> ${eurS(eu, 0)}</small>`, aport > 0 ? `${eur(reparte.get(k) || 0, 0)}<small> → ${pct(desp, 1)}</small>` : '—'];
+    return [`<b>${esc(trad(k))}</b>`, pct(t.pct, 1), `<input type="number" inputmode="decimal" min="0" max="100" step="1" value="${o}" data-obj-k="${esc(k)}" aria-label="${L(`Objetivo para ${esc(k)}, en %`, `Target for ${esc(k)}, in %`)}">`, `<span class="${Math.abs(dif) < 2 ? '' : dif > 0 ? 'up' : 'down'}">${masSi(dif, 1)}${fmtNum(dif, 1)} pp</span><small> ${eurS(eu, 0)}</small>`, aport > 0 && puesto ? `${eur(reparte.get(k) || 0, 0)}<small> → ${pct(desp, 1)}</small>` : '—'];
   });
   const aviso = Math.abs(sumObj - 100) > 0.5 ? `<p class="nota pav-warn">${L(`Tu objetivo suma ${fmtNum(sumObj, 0)} %: tiene que sumar 100.`, `Your target adds up to ${fmtNum(sumObj, 0)}%: it must add up to 100.`)}</p>` : '';
-  const campo = `<label class="pav-sel"><span>${L('Si aportaras', 'If you put in')}</span><input type="number" inputmode="decimal" min="0" step="50" value="${aport}" data-rebal-aport aria-label="${L('Importe de la aportación, en euros', 'Contribution amount, in euros')}"> €</label>`;
+  const campo = `<label class="pav-sel"><span>${L('Si aportaras', 'If you put in')}</span><input type="number" inputmode="decimal" min="0" step="50" value="${aport}" data-rebal-aport> €</label>`;
   const desv = sum(ks, (k) => Math.abs(tienes(k).pct - (+obj[k] || 0))) / 2;
   return [
     pavT('c12', L('Tu reparto objetivo', 'Your target mix'), pavKpis([[L('Lejos de tu objetivo', 'Away from your target'), `${fmtNum(desv, 1)} pp`, desv > 10 ? 'warn' : ''], [L('Objetivo', 'Target'), puesto ? L('Puesto por ti', 'Set by you') : L('Sin poner', 'Not set'), '', puesto ? '' : L('de momento, lo que tienes hoy', 'for now, what you own today')]], 2)
-      + `<div class="pav-filtros">${campo}</div>` + pavTabla([L('Tipo', 'Type'), L('Tienes', 'You have'), L('Objetivo %', 'Target %'), L('Diferencia', 'Difference'), L('La aportación, hacia el objetivo', 'The contribution, towards the target')], filas, 'pav-rebal') + aviso,
+      + `<div class="pav-filtros">${campo}</div>` + pavTabla([L('Tipo', 'Type'), L('Tienes', 'You have'), L('Objetivo %', 'Target %'), L('Diferencia', 'Difference'), L('Si la repartieras hacia tu objetivo', 'If you split it towards your target')], filas, 'pav-rebal') + aviso + (puesto ? '' : `<p class="nota">${L('Pon tu objetivo (el % de cada tipo) para ver cómo quedaría la aportación.', 'Set your target (the % of each type) to see how the contribution would look.')}</p>`),
       L('Escribe el porcentaje que quieres de cada tipo (se guarda en este dispositivo). La última columna es un cálculo: cómo quedaría si esa aportación fuera a lo que más se queda por debajo de tu objetivo. Es una cuenta, no una recomendación: lo decides tú.', 'Type the percentage you want of each type (saved on this device). The last column is a calculation: how it would look if that contribution went to what is most below your target. It is a sum, not a recommendation: your call.')),
   ].join('');
 }
@@ -608,7 +613,7 @@ function pavLab(M) {
   let caida = null; try { caida = caidaDetalle(s); } catch (e) {}
   const prueba = back.filter(Boolean).length ? pavKpis([...back, caida && caida.peor ? [L('Peor caída en ese tiempo', 'Worst drop in that time'), pctS(caida.peor.pct, 1), 'down'] : null], 3) : `<p class="nota" style="margin:0">${L('Faltan precios para mirar atrás.', 'Not enough prices to look back.')}</p>`;
   return [
-    pavT('c7', L('¿Y si…?', 'What if…?'), `<div class="pav-filtros lab-campos">${campo('mes', L('Aportas al mes', 'You put in monthly'), L0.mes ?? c.aport, 50, '€')}${campo('anios', L('Durante', 'For'), L0.anios ?? 10, 1, L('años', 'years'))}${campo('r', L('Rentabilidad al año', 'Return a year'), L0.r ?? c.bolsa, 0.5, '%')}</div><div id="labRes">${pavLabRes(M)}</div>`,
+    pavT('c7', L('¿Y si…?', 'What if…?'), `<div class="pav-filtros lab-campos">${campo('mes', L('Aportas al mes', 'You put in monthly'), L0.mes ?? c.aport, 50, '€')}${campo('anios', L('Durante', 'For'), L0.anios ?? 10, 1, L('años', 'years'))}${campo('r', L('Rentabilidad al año', 'Return a year'), L0.r ?? c.bolsa, 0.5, '%')}</div><div id="labRes" aria-live="polite">${pavLabRes(M)}</div>`,
       L('Una cuenta con interés compuesto: lo que tienes hoy más lo que aportes cada mes, creciendo a esa rentabilidad cada año, sin impuestos ni inflación. Los mercados no suben en línea recta: para ver la horquilla de lo probable, mira «Lo que podrías tener».', 'A compound-interest sum: what you own today plus what you put in each month, growing at that return each year, before tax and inflation. Markets do not rise in a straight line: for the likely range, see «What you could have».'), pavIr('#proyeccion', L('Lo que podrías tener', 'What you could have'))),
     pavT('c5', L('Lo de hoy, con el pasado', 'Today\'s mix, with the past'), prueba, L('Lo que habría hecho la cartera que tienes hoy (las mismas participaciones) con los precios de cada día del pasado. No cuenta lo que compraste o vendiste por medio. Lo pasado no dice lo que va a pasar.', 'What today\'s portfolio (same units) would have done with past prices. It ignores what you bought or sold in between. The past does not tell the future.')),
   ].join('');

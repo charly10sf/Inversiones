@@ -39,7 +39,7 @@ function htmlPlan(M) {
         <p class="nota">Cada aportación se suma sola a su posición con el precio del primer día después de la fecha (el que usa el fondo). Si cambias el importe o el día en tu bróker, cámbialo aquí también.</p>
       </section>
       <section aria-labelledby="hMov">
-        <div class="sec-cab"><h2 id="hMov">Compras y ventas</h2><div class="der"><button class="btn peq compra" data-accion="operacion" data-tipo="compra" aria-label="Apuntar compra" title="Apuntar compra">${ICONOS.compra}Compra</button><button class="btn peq venta" data-accion="operacion" data-tipo="venta" aria-label="Apuntar venta" title="Apuntar venta">${ICONOS.venta}Venta</button></div></div>
+        <div class="sec-cab"><h2 id="hMov">Compras y ventas</h2><div class="der"><button class="btn peq compra" data-accion="operacion" data-tipo="compra" aria-label="Apuntar compra" title="Apuntar compra">${ICONOS.compra}${L('Apuntar compra', 'Log a buy')}</button><button class="btn peq venta" data-accion="operacion" data-tipo="venta" aria-label="Apuntar venta" title="Apuntar venta">${ICONOS.venta}${L('Apuntar venta', 'Log a sale')}</button></div></div>
         ${movs.length ? `<ul class="plan-l">${movs.map((m) => {
           const i = S.inst[m.instrumento] || {}, compra = m.tipo === 'compra';
           return `<li>${logo(i.dominio, nombreI(m.instrumento))}<div class="pl-t"><b><span class="${compra ? 'up' : 'down'}">${compra ? 'Compra' : 'Venta'}</span> ${nombreI(m.instrumento)}</b><small>${[fechaLarga(m.fecha), esc(m.plataforma || ''), `${oc(fmtNum(m.uds, 4))} ${L('a', 'at')} ${precioFmt(m.precio)}`].filter(Boolean).join(' · ')}</small></div>
@@ -59,7 +59,7 @@ function htmlPlan(M) {
       <section aria-labelledby="hEf"><div class="sec-cab"><h2 id="hEf">Efectivo</h2><span class="k">${eur(M.liquidez, 0)}</span><div class="der"><button class="btn peq" data-accion="efectivo">${ICONOS.lapiz}Cambiar</button></div></div>
         <ul class="leyenda">${(S.cartera.efectivo || []).map((e) => `<li style="grid-template-columns:minmax(0,1fr) auto"><span class="n">${esc(e.plataforma)}${bancosDe(e.plataforma).some((b) => !b.caducada) ? ` <small class="ef-dbk" title="${esc(L('Saldo del banco', 'Bank balance'))}">${ICONOS.banco}</small>` : ''}</span><span class="p">${eur(+e.importe || 0)}</span></li>`).join('') || '<li class="vacio">Sin efectivo</li>'}</ul>
       </section>
-      <a class="ir-objetivos" href="#objetivos">${ICONOS.futuro}<span><b>Tus límites, tu perfil y tus metas</b><small>están en Análisis > Tus objetivos</small></span></a>
+      <a class="ir-objetivos" href="#objetivos">${ICONOS.futuro}<span><b>Tus límites, tu perfil y tus metas</b><small>están en Tú > Tus objetivos</small></span></a>
     </aside>
   </div>`;
 }

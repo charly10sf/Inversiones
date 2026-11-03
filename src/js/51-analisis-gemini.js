@@ -120,7 +120,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   if (!solo) IA.reintentos = 0;
   await cargarAsesor();
   // 0.9: con Claude no hace falta la clave de Google, pero una revisión no puede pedir el sí del aviso de privacidad
-  if (!AS.clave && !(claudeSinClave() && LS.get(LS_CLAUDE_OK, false))) {
+  if (!AS.clave && !(claudeSinClave() && claudeOk())) {
     if (claudeSinClave()) toast(L('Antes de revisar tu cartera con Claude, hazle una pregunta a la IA: la primera vez te dice adónde van tus datos y te pide el sí.', 'Before reviewing your portfolio with Claude, ask the AI something: the first time it tells you where your data goes and asks for your OK.'), 6000);
     abrirAsesor(); return;
   }
@@ -192,7 +192,7 @@ async function revisarAnalisisIA() {
   await cargarAsesor();
   const cfg = cfgAsesor();
   if (cfg.auto === 'manual' || Date.now() - IA.ultimoIntento < 3600000) return;
-  if (!AS.clave) { await sondearClaude(); if (!(claudeSinClave() && LS.get(LS_CLAUDE_OK, false))) return; }
+  if (!AS.clave) { await sondearClaude(); if (!(claudeSinClave() && claudeOk())) return; }
   const p = S.iaPropio, M = S.M || calcular();
   const edad = p ? Date.now() - new Date(p.fecha).getTime() : Infinity;
   const limite = cfg.auto === 'semanal' ? 7 * 864e5 : 20 * 36e5;

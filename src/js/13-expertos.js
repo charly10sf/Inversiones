@@ -66,7 +66,7 @@ document.addEventListener('click', (e) => {
 });
 function abrirNoticia(n) {
   // 0.9: con Claude en tu cuenta, el resumen lo hace Claude (con o sin clave de Google)
-  const clave = (claudeParaTodo() && 'claude') || (AS.claves && AS.claves.google);
+  const clave = (claudeParaTodo() && pedirSiClaude() && 'claude') || (AS.claves && AS.claves.google);   // con Claude, solo con tu sí
   const h = hoja(L('La noticia', 'The article'), `<div class="not-h">
     <p class="not-src">${n.f ? logo(webMedio(n), n.f, 'not-logo') : ''}<span>${esc(n.f || '')}${n.d ? `${n.f ? ', ' : ''}${haceCuanto(n.d)}` : ''}</span></p>
     <h3 class="not-t" data-no-trad>${esc(n.t)}</h3>
@@ -103,7 +103,7 @@ Si no encuentras la noticia, di en 2 o 3 frases solo lo que cuenta el titular, s
   const r = await claudeTexto({ partes: [{ text: t }], web: true, maxBusquedas: 2, maxTokens: 2500, signal });
   if (!r.texto) throw new Error(L('No se ha podido hacer el resumen.', 'Could not make the summary.'));
   const solo = /^\s*\[SOLO_TITULAR\]/.test(r.texto);
-  const res = { texto: r.texto.replace(/^\s*\[SOLO_TITULAR\]\s*/, ''), entera: !solo, fuentes: (r.citas || []).filter((x) => x && x.u).slice(0, 3).map((x) => ({ u: x.u, t: x.t || x.d || x.u })) };
+  const res = { texto: r.texto.replace(/^\s*\[SOLO_TITULAR\]\s*/, ''), entera: !solo, fuentes: (r.citas || []).filter((x) => x && x.u && urlSegura(x.u)).slice(0, 3).map((x) => ({ u: x.u, t: x.t || x.d || x.u })) };
   RES_NOT.set(clv, res);
   return res;
 }

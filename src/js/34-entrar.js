@@ -190,7 +190,7 @@ async function cerrarSesion() {
   }
   try { await fbCargar(); await FB.au.signOut(FB.auth); } catch (e) { console.warn(e); }
   try { await IDB.del(IDB_CLAVE); await IDB.del('clave-local'); await IDB.del('clave'); } catch (e) {}
-  for (const k of ['inv-cuenta-enc', 'inv-pend-cuenta', 'inv-cuenta-descartada', 'inv-bloqueo', 'inv-bloqueo-t', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-asesor-cfg2', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-token', 'inv-gkey-modo', 'inv-ia-agotados', 'inv-ia-diario', 'inv-banco-t', 'inv-banco-intento', 'inv-banco-sin-psu']) LS.del(k);
+  for (const k of ['inv-cuenta-enc', 'inv-pend-cuenta', 'inv-cuenta-descartada', 'inv-bloqueo', 'inv-bloqueo-t', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-asesor-cfg2', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-token', 'inv-gkey-modo', 'inv-ia-agotados', 'inv-ia-diario', 'inv-banco-t', 'inv-banco-intento', 'inv-banco-sin-psu', 'inv-claude-ok', 'inv-claude-ok-imp', 'inv-ia-motor', 'inv-metas-hechas']) LS.del(k);
   try { localStorage.removeItem('inv-token'); } catch (e) {}
   LS.del('inv-nombre');
   // el widget de Android no puede seguir enseñando la cartera de quien se ha ido

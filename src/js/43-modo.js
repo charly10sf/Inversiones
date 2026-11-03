@@ -94,20 +94,22 @@ function ponerPreguntale(raiz) {
     b.type = 'button'; b.className = 'preg-ia'; b.dataset.accion = 'asesor';
     b.dataset.q = L(`Explícame «${tit}» con mi cartera: qué significa, de dónde salen las cifras y qué hay que vigilar.`, `Explain «${tit}» with my portfolio: what it means, where the numbers come from and what to watch.`);
     b.innerHTML = `${ICONOS_PL.asistente}<span>${L('Pregúntale', 'Ask')}</span>`;
-    b.setAttribute('aria-label', L(`Preguntarle a la IA por ${tit}`, `Ask the AI about ${tit}`));
+    b.setAttribute('aria-label', L(`Pregúntale a la IA por ${tit}`, `Ask the AI about ${tit}`));
     c.appendChild(b);
   }
 }
 // un toque corto en Android al cambiar de pestaña o marcar algo (se puede quitar: LS inv-vibrar = false)
 function vibrar(ms = 8) { try { if (LS.get('inv-vibrar', true) !== false && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
-// las flechas mueven entre pestañas (como en cualquier lista de pestañas)
+// las flechas mueven entre pestañas (todas: Posiciones, Hacienda y La IA opina también) y el foco se queda en la nueva
 document.addEventListener('keydown', (e) => {
-  const t = e.target.closest && e.target.closest('[data-pest-av]');
+  const t = e.target.closest && e.target.closest('.pest-av a');
   if (!t || !/^Arrow(Left|Right)$|^Home$|^End$/.test(e.key)) return;
   e.preventDefault();
-  const ks = PEST_AV.map(([k]) => k), i = ks.indexOf(t.dataset.pestAv);
-  const j = e.key === 'Home' ? 0 : e.key === 'End' ? ks.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + ks.length) % ks.length;
-  const b = $(`[data-pest-av="${ks[j]}"]`); if (b) b.click();
+  const as = $$('.pest-av a'), i = as.indexOf(t);
+  const j = e.key === 'Home' ? 0 : e.key === 'End' ? as.length - 1 : (i + (e.key === 'ArrowRight' ? 1 : -1) + as.length) % as.length;
+  const sel = (a) => (a.dataset.pestAv ? `.pest-av [data-pest-av="${a.dataset.pestAv}"]` : `.pest-av a[href="${a.getAttribute('href')}"]:not([data-pest-av])`), s = sel(as[j]);
+  as[j].click();
+  for (const ms of [0, 120, 400]) setTimeout(() => { const n = $(s); if (n && document.activeElement !== n) n.focus({ preventScroll: true }); }, ms);
 });
 
 /* ---------- 0.9 · acabado (Carlos, 3 nov: «muchísima mayor calidad percibida»; maqueta claude.ai/artifact/3JSdgotzA9gSQmwNGYLHCn) ---------- */
@@ -147,16 +149,21 @@ function pulirHoy(M) {
 function celebrarMetas(M) {
   // sin la proyección: basta con lo que tienes hoy contra lo que pide cada una (lo mismo que su barra en Hoy)
   const ms = ((S.cartera && S.cartera.metas) || []).filter((m) => m && +m.importe > 0 && isFinite(M.total));
-  const hechas = new Set(LS.get('inv-metas-hechas', []) || []), nuevas = ms.filter((m) => M.total >= +m.importe && !hechas.has(claveMeta(m)));
+  // se guarda una huella de cada meta, no su nombre ni su importe (el dispositivo no tiene por qué contarlo)
+  const huella = (m) => { let h = 0x811c9dc5; for (const c of claveMeta(m) + '|' + uidActual()) { h ^= c.charCodeAt(0); h = Math.imul(h, 0x01000193) >>> 0; } return h.toString(36); };
+  const hechas = new Set(LS.get('inv-metas-hechas', []) || []), nuevas = ms.filter((m) => M.total >= +m.importe && !hechas.has(huella(m)));
   if (!nuevas.length) return;
-  for (const m of nuevas) hechas.add(claveMeta(m));
+  for (const m of nuevas) hechas.add(huella(m));
   LS.set('inv-metas-hechas', [...hechas].slice(-50));
   const m = nuevas[0];
   setTimeout(() => {
     const li = $$('.car-metas li').find((x) => textoLimpio(x.querySelector('b')) === String(m.n || '').trim());
     if (li && !sinMovimiento()) { li.classList.remove('meta-brilla'); void li.offsetWidth; li.classList.add('meta-brilla'); }
     vibrar(30);
-    toast(L(`Has llegado a tu meta «${m.n}»: tu patrimonio ya pasa de ${eur(m.importe, 0)}.`, `You reached your goal «${m.n}»: your net worth is now above ${eur(m.importe, 0)}.`), 6000);
+    // «llegar a» se cumple de verdad; las de gastar (un piso, un coche) solo dicen que la cifra ya está, porque tu patrimonio
+    // cuenta para todas a la vez
+    toast(m.tipo === 'llegar' ? L(`Has llegado a tu meta «${m.n}»: tu patrimonio ya pasa de ${eur(m.importe, 0)}.`, `You reached your goal «${m.n}»: your net worth is now above ${eur(m.importe, 0)}.`)
+      : L(`Tu patrimonio ya pasa de ${eur(m.importe, 0)}, lo que pide «${m.n}». Cuenta todo lo que tienes, también lo de otras metas.`, `Your net worth is now above ${eur(m.importe, 0)}, what «${m.n}» needs. It counts everything you own, including other goals.`), 6000);
   }, 1200);
 }
 // la cabecera del móvil: al bajar por Hoy, el patrimonio se queda arriba en pequeño
@@ -186,8 +193,9 @@ function marcarCifras(raiz) {
   for (const v of $$(SEL_CIFRA, raiz)) {
     if (v.dataset.cifra || v.closest('a, button')) continue;
     const et = etiquetaCifra(v); if (!et) continue;
-    v.dataset.cifra = et; v.tabIndex = 0; v.setAttribute('role', 'button'); v.setAttribute('aria-haspopup', 'dialog');
-    v.setAttribute('aria-label', L(`${et}: ${S.oculto ? 'oculta' : textoLimpio(v)}. Toca para que te la explique`, `${et}: ${S.oculto ? 'hidden' : textoLimpio(v)}. Tap for an explanation`));
+    // el nombre lo da el contenido (que cambia con cada precio); la ayuda va aparte, en un texto escondido
+    v.dataset.cifra = et; v.tabIndex = 0; v.setAttribute('role', 'button'); v.setAttribute('aria-haspopup', 'dialog'); v.setAttribute('aria-describedby', 'cifraAyuda');
+    if (!$('#cifraAyuda')) document.body.insertAdjacentHTML('beforeend', `<span id="cifraAyuda" hidden>${L('Toca para que la IA te explique esta cifra', 'Tap for the AI to explain this figure')}</span>`);
   }
 }
 // dónde está la cifra: la tarjeta (su título) y la pestaña o la pantalla
@@ -197,7 +205,7 @@ function dondeCifra(v) {
   const p = $('.pest-av [aria-current="page"]'), pest = S.vista === 'cartera' ? L('Hoy', 'Today') : textoLimpio(p) || '';
   return { tarjeta, pest };
 }
-function cerrarGloboCifra() { const g = $('#globoCifra'); if (g) { g.remove(); const o = $('[data-cifra].cifra-on'); if (o) { o.classList.remove('cifra-on'); o.focus({ preventScroll: true }); } } }
+function cerrarGloboCifra(enfocar = true) { const g = $('#globoCifra'); if (g) { g.remove(); const o = $('[data-cifra].cifra-on'); if (o) { o.classList.remove('cifra-on'); if (enfocar) o.focus({ preventScroll: true }); } } }
 function globoCifra(v) {
   cerrarGloboCifra();
   const et = v.dataset.cifra, val = S.oculto ? '' : textoLimpio(v), { tarjeta, pest } = dondeCifra(v);
@@ -225,7 +233,7 @@ document.addEventListener('click', (e) => {
   const g = $('#globoCifra');
   if (g) {
     if (e.target.closest('[data-gc="x"]')) { cerrarGloboCifra(); return; }
-    if (e.target.closest('.gc-ia')) { setTimeout(() => { const x = $('#globoCifra'); if (x) x.remove(); $$('.cifra-on').forEach((o) => o.classList.remove('cifra-on')); }, 0); return; }
+    if (e.target.closest('.gc-ia')) { S.origenIA = $('[data-cifra].cifra-on'); setTimeout(() => { const x = $('#globoCifra'); if (x) x.remove(); $$('.cifra-on').forEach((o) => o.classList.remove('cifra-on')); }, 0); return; }
     if (!g.contains(e.target) && !e.target.closest('[data-cifra]')) cerrarGloboCifra();
   }
   const v = e.target.closest && e.target.closest('[data-cifra]');
@@ -235,10 +243,13 @@ document.addEventListener('click', (e) => {
   if (v.classList.contains('cifra-on')) { cerrarGloboCifra(); return; }
   globoCifra(v);
 });
+// Escape cierra primero el globo (antes que la IA abierta al lado, que también escucha Escape)
+addEventListener('keydown', (e) => { if (e.key === 'Escape' && $('#globoCifra')) { e.stopPropagation(); cerrarGloboCifra(); } }, true);
+// con Tab fuera del globo, se cierra sin devolver el foco atrás
+document.addEventListener('focusout', (e) => { const g = $('#globoCifra'); if (g && g.contains(e.target) && e.relatedTarget && !g.contains(e.relatedTarget) && !e.relatedTarget.closest('[data-cifra]')) cerrarGloboCifra(false); });
 document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape' && $('#globoCifra')) { cerrarGloboCifra(); return; }
   const v = e.target.closest && e.target.closest('[data-cifra]');
   if (v && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); globoCifra(v); }
 });
-addEventListener('scroll', () => { if ($('#globoCifra')) cerrarGloboCifra(); }, { passive: true, capture: true });
-addEventListener('resize', () => { if ($('#globoCifra')) cerrarGloboCifra(); });
+addEventListener('scroll', () => { if ($('#globoCifra')) cerrarGloboCifra(false); }, { passive: true, capture: true });
+addEventListener('resize', () => { if ($('#globoCifra')) cerrarGloboCifra(false); });
