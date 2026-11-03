@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.8a', f: '2026-11-03', h: '21:00', t: 'La IA, sin clave de Google', arreglos: [
+  { v: '0.8a', f: '2026-11-03', h: '23:30', t: 'La IA, sin clave de Google', arreglos: [
     'Si tu cuenta tiene la IA con Claude, ya puedes preguntarle sin poner la clave de Google. La clave solo hace falta para el resumen de las noticias y para leer capturas al importar; si la pones, queda de reserva por si Claude no puede.',
     'Sin la clave de Google, si Claude no puede contestar la IA te dice por qué (el tope de preguntas de hoy, que tu cuenta todavía no lo tiene o que no está disponible) y, si se corta a mitad, lo deja marcado como incompleto.',
     { t: 'En los móviles estrechos, tu correo en Tú se partía en dos líneas («lucia@prueba» y «.com»). Ahora va en una sola y, si no cabe, termina en puntos suspensivos.', solo: 'dueno' },
