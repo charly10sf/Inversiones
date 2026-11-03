@@ -287,14 +287,14 @@ test('una petición vacía dice si el correo puede usar Claude sin gastar nada n
 });
 
 // 0.8: las reglas de uso las pone el Worker (no la app) y sin contador no se pregunta
-test('el Worker pone delante la nota de que GrowIA es una IA y no da consejos personalizados, y sin contador no pregunta', async () => {
+test('el Worker pone delante la nota de que la IA de Toisón es una IA y no da consejos personalizados, y sin contador no pregunta', async () => {
   await con(ok, async (vistas) => {
     // con un «system» de la app, o con texto suelto, o sin nada: la nota va siempre la primera y lo demás se conserva
     await pedir('uid-y1', { ...PEDIDO, system: [{ type: 'text', text: 'de la app', cache_control: { type: 'ephemeral' } }] });
     await pedir('uid-y2', { ...PEDIDO, system: 'suelto' });
     await pedir('uid-y3', PEDIDO);
     const [a, b, c] = vistas.map((v) => v.cuerpo.system);
-    for (const x of [a, b, c]) { expect(x[0].text).toContain('es una IA'); expect(x[0].text).toContain('No da asesoramiento personalizado'); }
+    for (const x of [a, b, c]) { expect(x[0].text).toMatch(/^La IA de Toisón es una IA/); expect(x[0].text).not.toContain('GrowIA'); expect(x[0].text).toContain('No da asesoramiento personalizado'); }
     expect(a[1]).toEqual({ type: 'text', text: 'de la app', cache_control: { type: 'ephemeral' } });
     expect(b[1].text).toBe('suelto');
     expect(c.length).toBe(1);

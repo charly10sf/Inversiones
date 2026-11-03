@@ -299,7 +299,7 @@ async function isinRuta(url, req, env, ctx, res, deFuera) {
   return res(d.r ? { ok: true, ...d.r } : { ok: false, error: 'no-esta' });
 }
 
-/* ---------- GrowIA con Claude (0.7s): el Worker guarda la clave de la API de Claude y reenvía las preguntas ----------
+/* ---------- La IA (antes GrowIA) con Claude (0.7s): el Worker guarda la clave de la API de Claude y reenvía las preguntas ----------
    La clave no puede ir en la web (es estática). La app manda aquí la misma petición que mandaría a la API de Mensajes
    de Claude, con el token de Firebase de quien pregunta; el Worker comprueba quién es, la limpia y la reenvía con la
    clave. No guarda ni apunta nada de lo que pasa (ni la cartera ni las respuestas): lo devuelve tal cual, también en
@@ -321,7 +321,8 @@ const CLAUDE_MODELOS = ['claude-haiku-5-5', 'claude-sonnet-5-5'];
 const CLAUDE_CAMPOS = ['model', 'max_tokens', 'system', 'messages', 'tools', 'tool_choice', 'thinking', 'output_config', 'stream', 'temperature'];
 const CLAUDE_MAX_SALIDA = 32000, CLAUDE_MAX_CUERPO = 600e3, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 30, CLAUDE_RONDAS_POR_DIA = 90;
 // las reglas de uso, puestas por el Worker y no por la app: quien llame a /claude con su propio «system» no se las salta
-const CLAUDE_NOTA = 'GrowIA es una IA (funciona con Claude, de Anthropic) y debe decirlo si se lo preguntan. No da asesoramiento personalizado de inversión ni de impuestos: no dice a nadie que compre, venda o mantenga un valor concreto, ni cuánto meter ni a qué precio. Explica, compara y calcula; las decisiones son de cada persona.';
+// 0.8: «GrowIA» pasa a «la IA de Toisón», como en la app (NOTA_CLAUDE de 55-asesor-contexto.js)
+const CLAUDE_NOTA = 'La IA de Toisón es una IA (funciona con Claude, de Anthropic) y debe decirlo si se lo preguntan. No da asesoramiento personalizado de inversión ni de impuestos: no dice a nadie que compre, venda o mantenga un valor concreto, ni cuánto meter ni a qué precio. Explica, compara y calcula; las decisiones son de cada persona.';
 const rafagas = new Map();
 const puedeClaude = (u, env) => !!u && u.verificado && !!u.email && lista(env.CLAUDE_EMAILS).includes(u.email);
 // un adjunto que no va dentro de la petición (una URL, un archivo ya subido) lo baja Anthropic: no lo dejamos pasar

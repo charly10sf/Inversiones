@@ -1,19 +1,190 @@
 {
  "versiones": [
   {
-   "v": "0.7v",
-   "f": "2026-11-02",
-   "h": "21:00",
-   "t": "Preparando Toisón por dentro",
+   "v": "0.8",
+   "f": "2026-11-03",
+   "h": "16:00",
+   "t": "GrowFolio ahora es Toisón",
    "commits": [
     {
-     "cuando": "2026-11-02 21:00",
+     "cuando": "2026-11-03 16:00",
+     "asunto": "0.8: Toisón sale a todos (paso 5c del rediseño: accesibilidad y salida)",
+     "detalle": [
+      "Accesibilidad revisada en Mármol, Marfil y Borgoña con axe-core (WCAG 2.1 A y AA) en todas las pantallas, la presentación, la cuenta y el tutorial",
+      "Marfil: el texto tenue salía a 4,4:1 sobre el fondo crema; ahora 6,2:1 (--tenue-mezcla)",
+      "Los botones pequeños (el ojo, la información de la gráfica, marcar como hecho, la IA, los enlaces…) responden en 48 × 48 px sin cambiar su dibujo",
+      "El saludo con tu nombre lleva el aro de foco al llegar con el teclado; las filas de Cartera se leen con lo que se ve; la palabra TOISÓN de la presentación, con su rol",
+      "El servidor de la IA dice «la IA de Toisón» en su nota de uso (revisión aparte)",
+      "Novedades de la 0.8 con su fecha de verdad; prueba nueva tests/accesibilidad.spec.js"
+     ]
+    },
+    {
+     "cuando": "2026-11-03 14:03",
+     "asunto": "0.8: presentación y tutorial nuevos (paso 5p del rediseño)",
+     "detalle": [
+      "Presentación «la película» (trozo src/js/trozos/presentacion.js, con su CSS dentro): portada por diseño (relieve de mármol, sello de Borgoña, símbolo sobre la proporción áurea en Marfil), ocho capítulos con escena que se toca, textos a tu medida (inv-nivel), polvo de oro, paralaje, final con crear o entrar. Solo baja la imagen del diseño en uso.",
+      "Tutorial por capítulos (TOUR en 44-tour.js, motor en 46-lo-nuevo.js): 16 pasos y el final, casi todos de tocar; lo que no pide el paso no hace nada; aro de oro que se dibuja, tarjeta de cristal, primeros pasos al final. La flechita de la tarjeta ya apunta (el @property --fx no se heredaba).",
+      "Guía «Nuevo» de la 0.8 encendida (seis pasos) y novedades de la 0.8 definitivas, con el dibujo del símbolo.",
+      "Inglés de los textos nuevos en en.json. Fuera el CSS y el JS de la presentación vieja."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 12:06",
+     "asunto": "0.8: limpieza del código y del peso (paso 5b del rediseño)",
+     "detalle": [
+      "CSS: fuera las 505 declaraciones de GrowFolio que tapaba el CSS de Toisón y las reglas de clases que ya no pinta",
+      "nadie; 0 colores sueltos fuera de los bloques de tema (antes 600). Los que se veían (calendario negro en Marfil y",
+      "Borgoña, la pastilla de GTA, el velo de las hojas…) pasan a los tokens; tokens nuevos --claro, --velo y los de",
+      "marcas ajenas (botones de Google y Apple, azul de iOS).",
+      "Fuera los nombres de GrowFolio de las variables (--bg, --accent, --text…): todo usa los de Toisón.",
+      "JS: fuera las ramas de GrowFolio (navToison, GRUPOS viejos, TOUR viejo, la entrada y la presentación con la wF,",
+      "GrowIA con logo, el Proxy de ICONOS), growfolio-nombre.svg, growia.svg y growia-nombre.svg. Las respuestas a",
+      "opiniones firman con el símbolo de Toisón.",
+      "Peso: 889 → 827 KB al abrir. La cursiva no se baja al abrir (el «VI» de GTA usa la recta inclinada) e Inter e",
+      "Ibarra sin las fracciones. Tope de rendimiento a 840 KB."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 11:11",
+     "asunto": "Android: un comentario del icono con «--» no compilaba (paso 5a)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-03 11:05",
+     "asunto": "0.8: GrowFolio fuera para todos (paso 5a del rediseño)",
+     "detalle": [
+      "Mármol por defecto; el diseño (Mármol, Marfil, Borgoña) lo elige cualquiera en Tú; sin botón de GrowFolio",
+      "Textos: GrowFolio → Toisón y GrowIA → «la IA» en el código y en en.json (el historial de novedades conserva los nombres)",
+      "Fuera el estreno de Toisón y la tarjeta «Muy pronto»; fuera Plus Jakarta Sans de Google",
+      "Iconos, favicon, manifest, título y service worker con el símbolo de Toisón",
+      "Android: Mármol si no llega diseño, icono de Toisón en borgoña, avisos, canales y widget con Toisón, sin Plus Jakarta Sans",
+      "GTA: Passion One solo para la imagen de compartir",
+      "VERSION 0.8 con un borrador de novedades; presupuesto de rendimiento a 900 KB hasta el paso 5b",
+      "Pruebas adaptadas (fuera las de «con GrowFolio, como siempre»)"
+     ]
+    },
+    {
+     "cuando": "2026-11-03 09:29",
+     "asunto": "0.7v: widget, avisos y barras de Android con el diseño de Toisón (paso 4b del rediseño)",
+     "detalle": [
+      "La web le dice a la app el diseño elegido (InversionesApp.tema, al abrir y al cambiarlo); la app lo guarda (Tema.java).",
+      "Widget (Lienzo/Widget): colores de Mármol, Marfil o Borgoña, letras Inter e Ibarra, «Patrimonio» como las",
+      "etiquetas de cada diseño, hilo de oro arriba, TOISÓN cuando aún no hay datos; fondo y rueda de refrescar a juego.",
+      "Avisos: el símbolo de Toisón como icono pequeño, el color del diseño y «la IA» / «Toisón» en los textos.",
+      "Barras del móvil y fondo de la web con el fondo del diseño (iconos oscuros con Marfil).",
+      "Con GrowFolio, todo como antes. Prueba nueva en tests/temas.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 08:03",
+     "asunto": "0.7v: el resto de pantallas con Toisón (paso 4 del rediseño)",
+     "detalle": [
+      "Tutorial con la barra de Toisón (TOUR_TS) y su símbolo; sin la guía «Nuevo» de la 0.7 con Toisón",
+      "Ajustes, entrar, crear la cartera, desbloquear y Primeros pasos con el símbolo y TOISÓN; sin «Muy pronto» con Toisón",
+      "La presentación monta el símbolo de Toisón y escribe TOISÓN; la entrada al abrir, nueva con Toisón",
+      "La cuenta atrás de GTA VI en premium: sin neón, con los tokens y la letra de la casa",
+      "Novedades con dibujos, toast, pestañas fijas con fondo, filete de Borgoña, iconos de plumilla en el Paso a paso",
+      "CNMV: «Vender…», «Comprar…», «una opción es…», «cada paso de tu plan» y sugerencias de la IA sin órdenes",
+      "Prueba nueva: tests/resto-toison.spec.js"
+     ]
+    },
+    {
+     "cuando": "2026-11-03 07:11",
+     "asunto": "0.7v: pantallas de Toisón (paso 3 del rediseño)",
+     "detalle": [
+      "La IA con Toisón se llama «la IA» (Carlos, 3 nov), sin el logo ni el nombre de GrowIA:",
+      "NOM_IA y AVATAR_IA (bocadillo de plumilla en un disco de metal) los pone montar(); los «GrowIA»",
+      "de los textos se cambian al pintarse (solo en español; se cambian de verdad en el paso 5).",
+      "Iconos de dentro de las pantallas a plumilla: 21 nuevos en ICONOS_PL (corte grueso) e ICONOS da",
+      "el de plumilla con Toisón (PAREJA_PL); con GrowFolio, los de siempre.",
+      "Hoy: «Patrimonio» con la etiqueta de las tarjetas, «Hoy» y «Ganado» en pastillas con flecha,",
+      "la variación del periodo junto a la gráfica; «Lo que viene» con el día en un recuadro de oro;",
+      "«Tu mes» en vez de «Lo que toca ahora».",
+      "Cartera: las pestañas de dentro (Tus posiciones / Plan y movimientos, La IA opina / Tus números,",
+      "Lo que pagas / Guía de la renta) con subrayado de oro y sin iconos; «Ya la tenías» en una línea;",
+      "las cajas de «aún no…» como tarjeta con filo de oro.",
+      "Ideas: Lo tuyo · Del radar · Siguiendo. Panel de la IA con el acabado de Toisón.",
+      "El pie de cada pestaña (avisar de un fallo, tutorial) se esconde con Toisón: está en Tú.",
+      "Perfil: «la IA te habla como a cualquiera» (antes «te aconseja»; regla CNMV).",
+      "Presupuesto de rendimiento a 830 KB mientras conviven GrowFolio y Toisón (Carlos, 3 nov).",
+      "Prueba nueva: tests/pantallas-toison.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 01:19",
+     "asunto": "0.7v: los iconos de plumilla, más ligeros (dentro del presupuesto de 800 KB)",
+     "detalle": [
+      "Los trazos de ICONOS_PL pasan a coordenadas relativas, con un decimal y simplificados a 0,12 en la rejilla de 24:",
+      "a la vista, iguales, y 2,4 KB menos comprimidos. «Pruebas» falló con 8c9b130 por 1 KB en rendimiento (820.256 bytes",
+      "de 819.200); en local, ahora 798 KB."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 01:11",
+     "asunto": "0.7v: iconos de plumilla y campos de Toisón (paso 2 del rediseño)",
+     "detalle": [
+      "Iconos de plumilla del Design System (líneas centrales de icons.py 1.2 escritas con la plumilla de iconpen.py)",
+      "en la barra de abajo, la IA de la cabecera (corte grueso), las filas de Tú y el selector de diseño; Tú, Lo que",
+      "podrías tener y Novedades, dibujados igual. Solo con un diseño de Toisón (ICONOS_PL en 10-pintado.js).",
+      "Campos con los tokens de los tres diseños en 00-temas.css: borde de 2 px, radio 12, 48 px, borde de oro con halo",
+      "al escribir, casillas y opciones de metal, la caja de la IA y la lista de los desplegables en el ordenador.",
+      "Repaso a 390: la fecha del saludo en una línea y sin doble raya bajo «Posiciones» en Marfil.",
+      "Prueba nueva: tests/plumilla-y-campos.spec.js. Colores sueltos sin cambios (CSS 703, JS 255)."
+     ]
+    },
+    {
+     "cuando": "2026-11-02 22:42",
+     "asunto": "0.7v: gráfica, filas, acabado de fondo y arreglos de la navegación de Toisón (paso 2)",
+     "detalle": [
+      "Gráfica de Hoy con barritas de cada día al pie, más aire abajo y la lectura con el dedo en",
+      "pastilla de metal; «En directo» junto a Patrimonio (la luz ya no está arriba). Lo ganado de cada",
+      "posición en pastilla teñida. Grano fino en los tres diseños y vetas en Mármol (capa fija detrás).",
+      "Los días de GTA en el oro del diseño. #plan lleva a Cartera con el plan."
+     ]
+    },
+    {
+     "cuando": "2026-11-02 22:12",
+     "asunto": "0.7v: la navegación de Toisón y los primeros componentes (paso 2 del rediseño)",
+     "detalle": [
+      "Con un diseño de Toisón, abajo Cartera · Mercados · Hoy (medallón) · Ideas · Tú y la IA arriba",
+      "solo con su logo; Hoy sin posiciones ni reparto (van a Cartera, con el total en pequeño y",
+      "Posiciones, Análisis y Hacienda); Ideas = Expertos; Tú con la cuenta, objetivos, Paso a paso,",
+      "diseño, ajustes, novedades y avisar de un fallo. Con GrowFolio, todo igual. Etiquetas de",
+      "sección, pastillas, logos, avisos, toast, hojas y saludo con el acabado de cada diseño."
+     ]
+    },
+    {
+     "cuando": "2026-11-02 21:26",
+     "asunto": "0.7v: acabado de Toisón en losetas, segmentos, mapa, cabecera y patrimonio",
+     "detalle": [
+      "Losetas con superficie lisa, borde de 2 px, radio 16 y sombra en capas; las que destacan con filo de oro; cajitas de dentro planas",
+      "Lo elegido (segmentos, pestañas, periodos, subpestañas de Análisis y modos del mapa) de metal, como en la maqueta",
+      "El mapa del mundo con los tokens: la escala de cada país sale de mezclar sube, baja u oro con la superficie (Marfil ya no sale negro)",
+      "Cabecera con aros finos; GTA VI sobria (VI en Ibarra cursiva de oro, sin neón) y el botón de GrowIA del color del diseño",
+      "Patrimonio en tarjeta con hilo de oro y luz detrás de la curva; la gráfica con el color de gráfica del diseño y el polvo de oro teñido de él; saludo en Ibarra con el nombre en oro",
+      "El nombre de GrowIA y de GrowFolio a una tinta donde el oro no se lee (Marfil y sobre metal)",
+      "Todo con [data-tema] delante: GrowFolio no cambia (colores sueltos: CSS 703, JS 255, igual que antes)"
+     ]
+    },
+    {
+     "cuando": "2026-11-02 20:59",
+     "asunto": "0.7v: la carcasa de Toisón (cabecera, barra de abajo, títulos y botones)",
+     "detalle": [
+      "Con un diseño de Toisón: símbolo y TOISÓN en la cabecera (sin la palabra si no cabe: cab-8 en encajarCabecera), cabecera de cristal del color del fondo, barra de abajo flotante con Inicio como medallón, títulos en Ibarra (cursiva en Borgoña) y botones planos con el principal de metal",
+      "Todo con [data-tema] delante: GrowFolio no cambia",
+      "tests/temas.spec.js comprueba el símbolo y que la cabecera cabe"
+     ]
+    },
+    {
+     "cuando": "2026-11-02 20:48",
      "asunto": "0.7v: tokens y sistema de temas de Toisón (paso 1 del rediseño)",
      "detalle": [
-      "Tres diseños de Toisón (Mármol, Marfil y Borgoña) con data-tema en <html>, puesto antes de pintar, y el color de la barra desde el token --fondo; los nombres de GrowFolio (--bg, --accent…) apuntan a los tokens nuevos",
-      "Letras Inter e Ibarra Real Nova (con cursiva) de la casa, solo con un diseño de Toisón",
-      "Selector en Ajustes, solo para el dueño; sin él, la app sigue como estaba",
-      "Prueba de colores sueltos con tope por archivo (tests/colores-sueltos.spec.js) y pruebas de los temas (tests/temas.spec.js)"
+      "src/css/00-temas.css: Mármol, Marfil y Borgoña con los tokens de la maqueta aprobada, comunes (letras, radios, espacios, derivados) y los nombres de GrowFolio (--bg, --accent, --tile…) apuntando a los tokens",
+      "data-tema en <html> puesto antes de pintar (script en index.html, localStorage inv-tema) y color de la barra desde --fondo (ponerTema en 01-base.js)",
+      "Inter e Ibarra Real Nova (normal y cursiva) de la casa en fonts/; solo se bajan con un diseño de Toisón",
+      "Selector en Ajustes solo para el dueño; si la cuenta no es del dueño, vuelve a GrowFolio. Sin diseño elegido, todo sigue igual",
+      "Prueba de colores sueltos con tope por archivo (tests/colores.js, colores-topes.json, colores-sueltos.spec.js) y tests/temas.spec.js",
+      "claude/versiones: la 0.8 pasa a ser el rediseño y lo que era la 0.8 entra en la 0.9"
      ]
     }
    ]

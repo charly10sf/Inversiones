@@ -12,6 +12,7 @@
     "rendimiento": "GF_RENDIMIENTO=1 playwright test tests/rendimiento.spec.js --project=movil --workers=1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.14.0",
     "@fontsource-variable/plus-jakarta-sans": "^5.2.6",
     "@playwright/test": "1.63.0",
     "acorn": "^8.19.0",

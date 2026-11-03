@@ -33,6 +33,7 @@
   --brillo: rgb(255 255 255 / .22); --hondo: rgb(70 48 22 / .22);
   --reparto-1: #8a6216; --reparto-2: #2f5d8c; --reparto-3: #7b6bae; --reparto-4: #3d8a8c; --reparto-5: #c29a6b; --reparto-6: #9a928a;
   --grano: .09; --resplandor: .28; --luz-graf: 10%; --polvo: .55;
+  --tenue-mezcla: 92%; /* 5c: con 78 %, el texto tenue salía a 4,4:1 sobre el fondo crema (AA pide 4,5); con 92 %, 6,2:1 (4,8:1 en la fila marcada) */
   --velo: #1e1a17;
   --claro: #f7f2ea;
   color-scheme: light;
@@ -79,7 +80,7 @@
    (Hasta el 5b aquí estaban también los nombres de GrowFolio, --bg, --accent, --text…, apuntando a estos; ya no los usa nadie.) */
 :root[data-tema] {
   --superficie-3: color-mix(in srgb, var(--superficie-2) 88%, var(--texto));
-  --tenue: color-mix(in srgb, var(--texto-2) 78%, var(--fondo));
+  --tenue: color-mix(in srgb, var(--texto-2) var(--tenue-mezcla, 78%), var(--fondo));
   --primario-claro: color-mix(in srgb, var(--primario) 65%, var(--texto));
   --sube-fondo: color-mix(in srgb, var(--sube) 13%, transparent);
   --baja-fondo: color-mix(in srgb, var(--baja) 13%, transparent);
@@ -702,3 +703,17 @@ img.tema-muestra { background: none; box-shadow: none; }
 @keyframes etsSimb { from { opacity: 0; transform: translateY(14px) scale(.92); } }
 @keyframes etsLetra { from { opacity: 0; transform: translateY(8px); } }
 @media (prefers-reduced-motion: reduce) { .entrada-ts * { animation: none !important; } }
+
+/* =====================================================================
+   Accesibilidad (0.8, paso 5c): área táctil de 48 px (--toque) sin cambiar el dibujo. Los botones pequeños llevan un
+   ::after invisible que crece hasta 48 × 48 alrededor de su centro (si ya miden más, no crece). Con :where() no pesa
+   nada: si una regla de base pone otra posición (p. ej. .tour-x, absoluto), manda esa. Las pestañas (.tabs) y la
+   navegación de cada grupo se quedan como están: su caja tiene overflow y recortaría el área (también el saludo con
+   el nombre, .hola-nom, y «Esta semana · Ver el mes», .ag-mes-b: se probó y el área se salía o quedaba recortada).
+   ===================================================================== */
+:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver) { position: relative; }
+:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver)::after {
+  content: ''; position: absolute; inset: min(0px, calc(50% - var(--toque, 48px) / 2)) min(0px, calc(50% - var(--toque, 48px) / 2));
+}
+/* el saludo con el nombre solo se subrayaba al llegar con el teclado: ahora lleva el aro de foco como el resto */
+[data-tema] .hola-nom:focus-visible { outline: 2px solid var(--primario); outline-offset: 2px; border-radius: 4px; }

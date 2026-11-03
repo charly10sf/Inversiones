@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.8', f: '2026-11-30', h: '12:00', t: 'GrowFolio ahora es Toisón', cosas: [  // fecha provisional: se pone la de verdad al publicar
+  { v: '0.8', f: '2026-11-03', h: '16:00', t: 'GrowFolio ahora es Toisón', cosas: [
     { d: 'toison', ir: { v: 'cartera', logo: true, dib: null }, t: 'GrowFolio ahora es Toisón', x: 'Nombre nuevo y cara nueva: el símbolo de la O áurea y la T, en la cabecera, el icono y la app de Android. Tu cartera, tu cuenta y todo lo que tenías siguen igual.', g: 'Tu cartera y tus datos siguen donde estaban. Cambian el nombre, el aspecto y dónde está cada cosa. Son seis pasos.' },
     { d: 'pestanas', ir: { v: 'cartera', sel: '.navbar, .nav', dib: null }, t: 'Cinco botones, Hoy en el centro', x: 'Cartera, Mercados, Hoy en el centro, Ideas y Tú. Hoy es lo de cada día: tu patrimonio con la gráfica, lo que más se ha movido, tu mes y lo que viene. Cartera tiene tus posiciones, el análisis y Hacienda; Ideas es lo que antes era Expertos; y Tú, tus metas, tu perfil, el calendario y los ajustes.', g: 'Inicio ahora es Hoy. Análisis y Hacienda están dentro de Cartera; Expertos ahora es Ideas; Objetivos, el Paso a paso y los ajustes, en Tú.' },
     { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor', dib: null }, t: 'GrowIA ahora es «la IA»', x: 'Es la misma, con otro nombre: la IA de Toisón. Está en el botón redondo de arriba, desde cualquier pantalla.', g: 'La misma, arriba en todas las pantallas.' },

@@ -458,7 +458,7 @@ function pantallaIntro(seguir) {
       <section class="pr-port" data-port aria-label="Toisón"><div class="pr-luz" aria-hidden="true"></div>${quieta ? '' : prPolvo(20, 5)}
         <div class="pr-filete" aria-hidden="true"><span>${esc(trad(`Versión ${baseVer(VERSION)}`))}</span><span>Inversiones · Renta · Mercados</span></div>
         <div class="pr-heroe">${prHeroe(tema)}</div>
-        <p class="pr-palabra" aria-label="Toisón" data-no-trad>${[...'TOISÓN'].map((c, i) => `<span style="--i:${i}" aria-hidden="true">${c}</span>`).join('')}</p>
+        <p class="pr-palabra" role="img" aria-label="Toisón" data-no-trad>${[...'TOISÓN'].map((c, i) => `<span style="--i:${i}" aria-hidden="true">${c}</span>`).join('')}</p>
         <div class="pr-orla" aria-hidden="true"><i></i></div>
         <h1 class="pr-h1 aparece" style="--d:2.1s"><span>Todas tus inversiones,</span> <em>en un solo sitio</em></h1>
         <p class="pr-ent aparece" style="--d:2.3s">Fondos, acciones, ETF, oro y cripto de cualquier bróker, con la renta hecha y una IA que conoce tu cartera.</p>
