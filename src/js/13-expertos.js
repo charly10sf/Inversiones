@@ -179,12 +179,12 @@ function htmlFrescura() {
     rg && `Radar: ${radarVals().length} empresas, fichas ${haceCuanto(rg)}${rp ? `, precios ${haceCuanto(rp)}` : ''}`,
     S.informe && S.informe.generado && `Prensa de tu cartera leída por la IA: ${haceCuanto(S.informe.generado)}`,
     S.escaneo && S.escaneo.leidas_24h && `Escaneo de prensa: ${S.escaneo.leidas_24h} empresas leídas en 24 h`,
-    ia && ia.propio ? `Análisis de ${esc(/^(La IA|GrowIA)$/.test(ia.autor) ? 'la IA' : ia.autor)}: ${cuando(ia.fecha)}` : AS.clave ? `${nombreIA()}: sin análisis propio todavía` : '',
+    ia && ia.propio ? `Análisis de ${esc(/^(La IA|GrowIA)$/.test(ia.autor) ? 'la IA' : ia.autor)}: ${cuando(ia.fecha)}` : iaLista() ? `${nombreIA()}: sin análisis propio todavía` : '',
   ].filter(Boolean);
   return `<div class="frescura" aria-label="Frescura de los datos">
     <details><summary><span class="vivo-dot${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? ' viejo' : ''}">${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? L(`Precios de ${haceCuanto(S.precios.generado)}`, `Prices from ${haceCuanto(S.precios.generado)}`) : L('Al día', 'Up to date')}${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? '' : `<span class="fr-hora"> · ${B('recalc')}</span>`}</span>${S.informe && S.informe.generado ? `<span>· ${L('prensa de', 'news from')} ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas" title="${L('De cuándo es cada dato', 'How fresh each figure is')}" aria-label="${L('De cuándo es cada dato', 'How fresh each figure is')}">${ICONOS.info}</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
-    ${AS.clave ? '' : '<button class="enlace acento" data-accion="asesor">La IA ya lee la prensa para todos; con tu clave gratis de Google revisará también tus cifras cada día</button>'}
+    ${iaLista() ? '' : '<button class="enlace acento" data-accion="asesor">La IA ya lee la prensa para todos; con tu clave gratis de Google revisará también tus cifras cada día</button>'}
     ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? `se ha acabado el cupo gratuito de Google por hoy; se renueva a las ${horaRenuevaIA()}` : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática la IA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
   </div>`;
 }

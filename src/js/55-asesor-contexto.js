@@ -471,10 +471,13 @@ async function conversar(o) {
       try { return await conversarClaude({ ...o, claudeModelo: mc }); }
       catch (e) {
         if (e && e.name === 'AbortError') throw e;
+        // 0.9: sin clave de Google no hay Gemini de reserva
+        if (!AS.clave) { const ms = pausaClaude(e); if (ms) pausarClaude((e && e.codigo) || 'fallo', ms); throw errorSinIA(e); }
         pasarAGemini(e, o.turno);
         if (o.alCambiar) o.alCambiar();
       }
     }
+    if (!AS.clave) throw errorSinIA(claudePausado() ? { codigo: claudePausado().motivo } : null);
     return await conversarGemini(o);
   } finally { cerrarTokensIA(o.turno, o.tipo || 'pregunta'); }
 }
@@ -980,7 +983,7 @@ function pausarClaude(motivo, ms) { try { LS.set(LS_CLAUDE_PAUSA, { hasta: Date.
 function modeloClaudeParaIA(tipo) {
   // el modo, el definitivo: mientras es provisional (dispositivo nuevo, sin haber leído tu cuenta) puede ser fundador sin saberlo
   const modo = LS.get('inv-acceso', null);
-  if (S.demo || !esPublico() || !modo || modo.provisional || modo.a !== 'publico' || !AS.clave || !FB.user || !FB.user.emailVerified || motorElegido() === 'gemini' || claudePausado()) return null;
+  if (S.demo || !esPublico() || !modo || modo.provisional || modo.a !== 'publico' || !FB.user || !FB.user.emailVerified || motorElegido() === 'gemini' || claudePausado()) return null;
   const m = motorElegido();
   return m === 'haiku' ? 'claude-haiku-5-5' : m === 'sonnet' ? 'claude-sonnet-5-5' : tipo === 'análisis' ? 'claude-haiku-5-5' : 'claude-sonnet-5-5';
 }
@@ -989,9 +992,13 @@ function modeloClaudeParaIA(tipo) {
    403 sin que su cartera haya salido del móvil, y quien sí está recibe un 400 («falta el modelo») que no gasta nada. El
    resultado se recuerda 6 horas. */
 const LS_CLAUDE_SONDEO = 'inv-claude-sondeo';
-async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
+function sondeoClaudeOk() {
   const uid = (FB.user && FB.user.uid) || null, c = LS.get(LS_CLAUDE_SONDEO, null);
-  let puede = !!(c && c.ok && c.hasta > Date.now() && c.uid === uid);
+  return !!(c && c.ok && c.hasta > Date.now() && c.uid === uid);
+}
+async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
+  const uid = (FB.user && FB.user.uid) || null;
+  let puede = sondeoClaudeOk();
   if (!puede) {
     const ctl = new AbortController(), tt = setTimeout(() => ctl.abort(), 10000), parar = () => ctl.abort();
     if (signal) { if (signal.aborted) ctl.abort(); else signal.addEventListener('abort', parar, { once: true }); }
@@ -1012,9 +1019,49 @@ async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
   if (!LS.get(LS_CLAUDE_OK, false)) {
     if (tipo !== 'pregunta') return false;
     if (confirm(L('La IA puede contestar con Claude, de Anthropic. Tus preguntas y lo que necesita de tu cartera pasarían por el servidor de Toisón (que no guarda nada) hasta Anthropic, que lo procesa fuera de la Unión Europea. Si prefieres que vaya solo a Google, con tu clave, pulsa Cancelar.\n\n¿Usar Claude?', "GrowIA can answer with Claude, from Anthropic. Your questions and what it needs from your portfolio would go through Toisón's server (which stores nothing) to Anthropic, which processes it outside the European Union. If you'd rather it only goes to Google, with your key, press Cancel.\n\nUse Claude?"))) LS.set(LS_CLAUDE_OK, true);
-    else { LS.set(LS_MOTOR, 'gemini'); return false; }
+    // sin clave de Google, «solo Gemini» dejaría la IA sin salida: se recuerda el no solo para esta vez
+    else { if (AS.clave) LS.set(LS_MOTOR, 'gemini'); else AS.claudeNo = true; return false; }
   }
   return true;
+}
+/* 0.9 · la IA sin clave de Google: con Claude, quien está en la lista puede usar la IA sin poner su clave (la de Google
+   queda de reserva para quien la tenga). claudeSinClave() lo dice sin preguntar a nadie (con el sondeo ya hecho);
+   sondearClaude() hace el sondeo vacío (sin mandar nada de la cartera) si toca y repinta lo que dependa de ello. */
+function claudeSinClave() { return !!modeloClaudeParaIA('pregunta') && sondeoClaudeOk(); }
+function iaLista() { return !!AS.clave || claudeSinClave(); }
+let SONDEO_EN_CURSO = null;
+function sondearClaude() {
+  if (AS.clave || !modeloClaudeParaIA('pregunta') || sondeoClaudeOk() || SONDEO_EN_CURSO) return SONDEO_EN_CURSO || Promise.resolve(sondeoClaudeOk());
+  const uid = (FB.user && FB.user.uid) || null;
+  SONDEO_EN_CURSO = (async () => {
+    const ctl = new AbortController(), tt = setTimeout(() => ctl.abort(), 10000);
+    try {
+      const token = await conTiempo(FB.user.getIdToken(), 8000);
+      const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
+      const j = await r.json().catch(() => null);
+      if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); return true; }
+      const ms = pausaClaude(errorClaude(r.status, j)) || 5 * 6e4; pausarClaude((j && j.error) || 'sondeo', ms);
+      return false;
+    } catch (e) { pausarClaude('sondeo', 5 * 6e4); return false; }
+    finally { clearTimeout(tt); SONDEO_EN_CURSO = null; }
+  })();
+  SONDEO_EN_CURSO.then((ok) => {
+    if (!ok) return;
+    try { if (AS.vista === 'clave' && !AS.clave) AS.vista = 'chat'; if (!$('.hoja-fondo')) pintar(); if ($('.asesor')) pintarAsesor(); } catch (e) {}
+  });
+  return SONDEO_EN_CURSO;
+}
+/* sin clave de Google no hay reserva: si Claude no puede, se dice claro en vez de pasar a Gemini */
+function errorSinIA(e) {
+  const c = e && (e.codigo || e.tipo);
+  const porque = AS.claudeNo ? L('Sin tu sí, la IA no puede contestar con Claude.', 'Without your OK, the AI cannot answer with Claude.')
+    : c === 'tope-diario' ? L('Has llegado al tope de preguntas de hoy.', 'You have reached today\'s question limit.')
+    : c === 'no-permitido' ? L('Tu cuenta todavía no tiene la IA con Claude.', 'Your account does not have the AI with Claude yet.')
+    : L('Claude no está disponible ahora.', 'Claude is not available right now.');
+  const x = new Error(`${porque} ${AS.claudeNo ? L('Si cambias de idea, vuelve a preguntar; o pon tu clave gratis de Google en Ajustes de la IA y contestará Gemini.', 'If you change your mind, ask again; or add your free Google key in the AI settings and Gemini will answer.') : L('Prueba en un rato, o pon tu clave gratis de Google en Ajustes de la IA para tener reserva.', 'Try again later, or add your free Google key in the AI settings as a backup.')}`);
+  x.sinIA = true; x.codigo = c || 'sin-ia';
+  if (e) { x.estado = e.estado; x.corte = e.corte; x.diario = e.diario; }
+  return x;
 }
 function errorClaude(estado, j) {
   const e0 = (j && j.error) || {};
@@ -1255,7 +1302,8 @@ function refrescarFoto(forzar) {
 async function preguntarAsesor(texto) {
   texto = String(texto || '').trim();
   if (!texto || AS.cargando) return;
-  if (!AS.clave) { AS.vista = 'clave'; pintarAsesor(); return; }
+  if (!iaLista()) { AS.vista = 'clave'; pintarAsesor(); return; }
+  AS.claudeNo = false;
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
   const adj = AS.adjunto; AS.adjunto = null; pintarAdjunto();
   const textoApi = adj ? `${texto}\n\n[Te mando un recorte de la pantalla de Toisón, de ${adj.donde}. ${adj.img ? 'Va en la imagen. ' : ''}El texto que se lee en esa zona es: «${adj.texto || 'sin texto'}». Respóndeme sobre lo que se ve ahí, con mis datos y tus herramientas si hace falta, y explica lo que haga falta para entenderlo.]` : texto;
@@ -1279,7 +1327,7 @@ async function preguntarAsesor(texto) {
     await conversar({ mensajes: [...AS.api, { role: 'user', content: contenido }], turno, sistema: [].concat(sistemaAsesor()).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []), alCambiar, signal: AS.ctrl.signal, pensar: 'medium' });
   } catch (e) {
     turno.error = e.name === 'AbortError' ? 'Parado.' : !e.corte && /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
-    avisarFalloIA(e, 'chat', turno.modelo);
+    if (!e.sinIA) avisarFalloIA(e, 'chat', turno.modelo);
   }
   clearInterval(tic);
   AS.cargando = false; AS.ctrl = null;

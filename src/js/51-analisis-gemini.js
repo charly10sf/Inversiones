@@ -119,7 +119,11 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   clearTimeout(IA.reintentoT); IA.reintento = 0;
   if (!solo) IA.reintentos = 0;
   await cargarAsesor();
-  if (!AS.clave) { abrirAsesor(); return; }
+  // 0.9: con Claude no hace falta la clave de Google, pero una revisión no puede pedir el sí del aviso de privacidad
+  if (!AS.clave && !(claudeSinClave() && LS.get(LS_CLAUDE_OK, false))) {
+    if (claudeSinClave()) toast(L('Antes de revisar tu cartera con Claude, hazle una pregunta a la IA: la primera vez te dice adónde van tus datos y te pide el sí.', 'Before reviewing your portfolio with Claude, ask the AI something: the first time it tells you where your data goes and asks for your OK.'), 6000);
+    abrirAsesor(); return;
+  }
   IA.generando = true; IA.error = null; IA.ultimoIntento = Date.now();
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [] };
   IA.turno = turno; refrescarProgresoIA();
@@ -165,7 +169,8 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     const alSalir = !pedida && e.name !== 'AbortError' && (e.corte || esCorteRed(e) || /conexión/.test(IA.error)) && fueraDesde(IA.ultimoIntento);
     if (alSalir) { IA.ultimoIntento = 0; IA.error = null; diarioIA('Revisión cortada al salir: se repite cuando vuelvas'); }
     // al dueño, los que no se van a reintentar solos (los que sí, cuando fallen del todo)
-    if (!alSalir && !((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3)) avisarFalloIA(e, 'revision', turno.modelo);
+    if (e.sinIA) { /* sin clave y Claude apartado: ya se dice en la tarjeta, no es un fallo de la app */ }
+    else if (!alSalir && !((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3)) avisarFalloIA(e, 'revision', turno.modelo);
     // saturado o «espera un momento»: lo vuelve a intentar sola a los 5, 15 y 30 minutos
     else if ((e.estado >= 500 || (e.estado === 429 && !e.diario) || /conexión/.test(IA.error)) && IA.reintentos < 3) {
       const min = [5, 15, 30][IA.reintentos++];
@@ -185,9 +190,9 @@ async function revisarAnalisisIA() {
   // 0.7l: con GrowIA contestando una pregunta, después (al acabar la vuelve a mirar): no se pisan en el móvil
   if (IA.generando || AS.cargando || !S.cartera || fueraDeVista() || !S.key || S.demo) return;
   await cargarAsesor();
-  if (!AS.clave) return;
   const cfg = cfgAsesor();
   if (cfg.auto === 'manual' || Date.now() - IA.ultimoIntento < 3600000) return;
+  if (!AS.clave) { await sondearClaude(); if (!(claudeSinClave() && LS.get(LS_CLAUDE_OK, false))) return; }
   const p = S.iaPropio, M = S.M || calcular();
   const edad = p ? Date.now() - new Date(p.fecha).getTime() : Infinity;
   const limite = cfg.auto === 'semanal' ? 7 * 864e5 : 20 * 36e5;

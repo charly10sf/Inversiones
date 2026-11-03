@@ -31,4 +31,4 @@ const TOUR = [
   { fin: true, v: 'cartera', empezar: true, antes: () => cerrarAsesor(), t: 'Ya conoces Toisón', get x() { return itemsEmpezar().some((y) => !y.ok) ? 'Quedan unos pasos para que la app trabaje con tus números. Te esperan en Hoy hasta que acabes.' : 'Tu cartera ya está lista. El tutorial se queda en Tú por si quieres repetirlo.'; } },
 ];
 /* Para empezar: lo mismo al final del tutorial y en Inicio mientras falte algo (a los nuevos, el primer mes) */
-const hayClaveIA = () => !!((AS.claves && AS.claves.google) || LS.get(LS_CLAVE.google) || (S.cartera && S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE.google]));
+const hayClaveIA = () => claudeSinClave() || !!((AS.claves && AS.claves.google) || LS.get(LS_CLAVE.google) || (S.cartera && S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE.google]));

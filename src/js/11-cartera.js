@@ -382,7 +382,7 @@ function htmlToca(M) {
     notas = (ia.puntuaciones || []).length ? `<div class="iac-notas">${ia.puntuaciones.slice(0, 5).map((x) => { const n = Math.max(0, Math.min(5, +x.nota || 0)); return `<span class="iac-nota" title="${esc(x.k)}: ${n} de 5"><small>${esc(/^riesgo$/i.test(x.k) ? 'Riesgo' : x.k)}</small><span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span></span>`; }).join('')}</div>` : '';
   } else if (!S.iaListo) {
     cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>Cargando lo que dice de tu cartera…</small></div></div>`;
-  } else if (AS.clave) {
+  } else if (iaLista()) {
     cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>${IA.generando ? 'Revisando tu cartera ahora' : 'Todavía no ha revisado tu cartera'}</small></div></div>
       ${IA.generando ? '' : `<button type="button" class="btn peq pri iac-boton" data-accion="ia-actualizar">${ICONOS.growia}Que la revise ahora</button>`}`;
   } else {

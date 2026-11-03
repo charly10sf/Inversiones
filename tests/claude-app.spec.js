@@ -334,3 +334,68 @@ test('en Ajustes de GrowIA, una vez que Claude ha contestado, se puede elegir qu
   await clic(page, '[data-as="ajustes"]');
   await expect(page.locator('#asesorFondo')).not.toContainText('Anthropic');
 });
+
+// 0.9: la IA sin clave de Google. Con Claude, quien está en la lista puede preguntar sin poner su clave; sin ella no hay
+// Gemini de reserva, así que si Claude no puede se dice claro. Quien no está en la lista sigue viendo dónde poner la clave.
+async function sinClave(page) {
+  await preparada(page);
+  await page.evaluate(() => { AS.claves = {}; LS.del(LS_CLAVE.google); if (S.cartera.asesor) delete S.cartera.asesor[CAMPO_CLAVE.google]; });
+}
+test('sin clave de Google, con Claude en la cuenta, la IA abre el chat y contesta Claude sin tocar Gemini', async ({ page, context }) => {
+  await sinClave(page);
+  const g = await gemini(context);
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Tu cartera sube un poco hoy.' }]) }));
+  await page.evaluate(() => abrirAsesor());
+  // el sondeo vacío dice que sí y el panel pasa de «pon tu clave» al chat
+  await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
+  expect(await page.evaluate(() => iaLista())).toBe(true);
+  await preguntar(page, '¿Cómo va hoy?');
+  await expect(page.locator('#asCuerpo')).toContainText('Tu cartera sube un poco hoy.', { timeout: 20_000 });
+  expect(g.n).toBe(0);
+  expect(w.peticiones.length).toBe(1);
+  expect(w.sondeos).toBe(1);
+});
+test('sin clave de Google, si Claude no puede (sin créditos) se dice claro y no se llama a Gemini', async ({ page, context }) => {
+  await sinClave(page);
+  const g = await gemini(context);
+  await worker(context, () => ({ json: { error: 'sin-creditos' }, estado: 402 }));
+  await page.evaluate(() => abrirAsesor());
+  await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
+  await preguntar(page, '¿Cómo va hoy?');
+  await expect(page.locator('#asCuerpo')).toContainText('Claude no está disponible ahora', { timeout: 20_000 });
+  await expect(page.locator('#asCuerpo')).toContainText('clave gratis de Google');
+  expect(g.n).toBe(0);
+});
+test('sin clave de Google y fuera de la lista de Claude, la IA sigue pidiendo la clave y no sale nada de la cartera', async ({ page, context }) => {
+  await sinClave(page);
+  const w = await worker(context, () => ({ sse: '' }), { puede: false });
+  await page.evaluate(() => abrirAsesor());
+  await page.waitForTimeout(1500);
+  expect(await page.evaluate(() => iaLista())).toBe(false);
+  await expect(page.locator('#asCuerpo')).toContainText('Clave de Google');
+  expect(w.peticiones.length).toBe(0);
+});
+test('sin clave de Google, decir que no al aviso no deja la IA sin salida: se explica y la siguiente vuelve a preguntar', async ({ page, context }) => {
+  page.on('dialog', (d) => d.dismiss());
+  await crearCuenta(page); await quitarCapas(page); await meterCartera(page);
+  await page.evaluate(() => { S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: FB.user.uid, t: Date.now() }); guardarCfgAsesor({ auto: 'manual' }); AS.claves = {}; LS.del(LS_CLAVE.google); });
+  const g = await gemini(context);
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'no debería llegar' }]) }));
+  await page.evaluate(() => abrirAsesor());
+  await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
+  await preguntar(page, '¿Cómo va hoy?');
+  await expect(page.locator('#asCuerpo')).toContainText('Sin tu sí', { timeout: 20_000 });
+  expect(await page.evaluate(() => LS.get(LS_MOTOR, null))).not.toBe('gemini');
+  expect(w.peticiones.length).toBe(0);
+  expect(g.n).toBe(0);
+});
+test('sin clave de Google, si el sondeo no llega al Worker se aparta unos minutos y no se repite en cada recarga', async ({ page, context }) => {
+  await sinClave(page);
+  let sondeos = 0;
+  await context.route(WORKER, (r) => { sondeos++; return r.abort(); });
+  await page.evaluate(() => sondearClaude());
+  await page.evaluate(() => sondearClaude());
+  await page.evaluate(() => sondearClaude());
+  expect(sondeos).toBe(1);
+  expect(await page.evaluate(() => !!claudePausado())).toBe(true);
+});

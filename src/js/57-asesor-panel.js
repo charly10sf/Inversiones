@@ -143,7 +143,8 @@ function pintarAsesor(alFinal) {
   $('#asSub', fondo).textContent = subtituloIA(cfg);
   const rapida = cfg.modelo === MODELO_RAPIDO;
   $('#asModo', fondo).innerHTML = `<span>Respuesta</span><div class="seg" role="group" aria-label="Tipo de respuesta"><button type="button" data-as="modo" data-m="normal" aria-pressed="${!rapida}">Normal</button><button type="button" data-as="modo" data-m="rapida" aria-pressed="${rapida}">Rápida</button></div><small>${rapida ? 'Contesta en segundos y gasta mucho menos cupo' : 'Piensa más a fondo'}</small>`;
-  const vista = !AS.clave && AS.vista !== 'ajustes' ? 'clave' : AS.vista;
+  // 0.9: con una conversación empezada (p. ej. Claude acaba de decir que no puede) se queda en el chat para que se lea
+  const vista = !iaLista() && AS.vista !== 'ajustes' && !AS.conv.length ? 'clave' : AS.vista;
   if (vista === 'clave') cuerpo.innerHTML = htmlClaveAsesor();
   else if (vista === 'ajustes') cuerpo.innerHTML = htmlAjustesAsesor();
   else if (!AS.conv.length) cuerpo.innerHTML = `<div class="as-vacio"><h3>¿Qué quieres saber?</h3><p>Tiene delante tu cartera de ahora mismo: lo que tienes y lo que te costó, tus aportaciones, lo que llevas de renta este año, los analistas, cientos de empresas de EEUU y Europa para buscar ideas y las noticias. Calcula ventas con FIFO e impuestos${cfg.web ? ' y busca en internet lo que le falte' : ''}.</p><div class="as-sug">${sugerencias(S.M || calcular()).map((q) => `<button data-as-q="${esc(q)}">${esc(q)}</button>`).join('')}<button type="button" class="as-sug-rec" data-as="recorte">${ICONOS.recorte}<span>Recorta un trozo de la pantalla y pregúntale por él</span></button></div></div>`;
@@ -193,10 +194,12 @@ async function abrirAsesor(pregunta, enviar) {
     };
   }
   await cargarAsesor();
-  if (AS.vista !== 'chat' && AS.clave) AS.vista = 'chat';
+  // 0.9: sin clave de Google, con Claude (si tu cuenta lo tiene) la IA también contesta
+  if (!AS.clave) sondearClaude();
+  if (AS.vista !== 'chat' && iaLista()) AS.vista = 'chat';
   pintarAsesor(true);
   const ta = $('#asTexto', fondo);
-  if (pregunta && enviar && AS.clave) preguntarAsesor(pregunta);
+  if (pregunta && enviar && iaLista()) preguntarAsesor(pregunta);
   else if (pregunta) { ta.value = pregunta; ta.dispatchEvent(new Event('input')); }
   if (window.innerWidth > 760 && !pie_oculto()) ta.focus();
   function pie_oculto() { return $('#asPie', fondo).hidden; }
