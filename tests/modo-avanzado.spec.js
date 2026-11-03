@@ -26,7 +26,7 @@ test('avanzado: trece pestañas encima de Hoy y las de datos se llenan con tu ca
   await expect(page.locator('[data-pest-av="resumen"]')).toHaveAttribute('aria-selected', 'true');
   await expect(page.locator('.car-patrimonio')).toBeVisible();
   await expect(page.locator('.que-es')).toHaveCount(0);
-  for (const [p, texto] of [['rentab', 'Por periodo'], ['riesgo', 'Medidas de riesgo'], ['hacienda', 'Renta de'], ['reparto', 'Por clase de activo']]) {
+  for (const [p, texto] of [['rentab', 'Por periodo'], ['riesgo', 'Medidas de riesgo'], ['hacienda', 'Renta de'], ['reparto', 'Por clase de activo'], ['div', 'Tus números'], ['costes', 'Lo que pagas']]) {
     await pest(page, p);
     await expect(page.locator('#panelAv')).toContainText(texto, { timeout: 15_000 });
     await expect(page.locator('#panelAv .pav-como').first()).toContainText('Cómo se calcula');
@@ -37,11 +37,11 @@ test('avanzado: trece pestañas encima de Hoy y las de datos se llenan con tu ca
   await expect(page.locator('#panelAv .pav-kpi').first().locator('b')).toHaveText(/\d/, { timeout: 15_000 });
   await expect(page.locator('#pavCaida svg')).toHaveCount(1, { timeout: 10_000 });
   // las que aún no tienen sus datos dicen qué llevarán y adónde ir mientras
-  await pest(page, 'div');
+  await pest(page, 'rebal');
   await expect(page.locator('#panelAv')).toContainText('se llena en las próximas versiones');
-  await expect(page.locator('#panelAv a.btn')).toHaveAttribute('href', '#analisis');
+  await expect(page.locator('#panelAv a.btn')).toHaveAttribute('href', '#futuro');
   // la pestaña se recuerda
-  expect(await page.evaluate(() => LS.get('inv-pest-av'))).toBe('div');
+  expect(await page.evaluate(() => LS.get('inv-pest-av'))).toBe('rebal');
   await pest(page, 'resumen');
   await expect(page.locator('.car-patrimonio')).toBeVisible();
 });

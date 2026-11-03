@@ -99,7 +99,7 @@ function pintarPanelAv() {
   const el = $('#panelAv'); if (!el) return;
   ponerCssAv();
   const p = el.dataset.p, M = S.M || calcular();
-  const f = { rentab: pavRentab, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto }[p];
+  const f = { rentab: pavRentab, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes }[p];
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
@@ -113,8 +113,8 @@ const PAV_LUEGO = {
   pos: [L('Todas tus posiciones en una tabla, con hasta 22 columnas a elegir (coste medio, peso frente a tu objetivo, TWR, TIR, dividendos, TER, PER, divisa…) y filtros por tipo y por bróker.', 'All your holdings in one table, with up to 22 columns to choose from and filters by type and broker.'), '#posiciones', L('Tus posiciones', 'Your holdings')],
   pnl: [L('Un calendario con lo que ganó o perdió tu cartera cada día de bolsa, la ganancia acumulada del mes, tu mejor y tu peor día y lo que más ha ganado y perdido.', 'A calendar with what your portfolio made or lost each trading day, the month so far, your best and worst day.'), '#cartera', L('La gráfica de Hoy', 'The Today chart')],
   grafico: [L('El gráfico de velas de cada posición con medias de 20, 50 y 200 días, volumen, RSI y MACD, y tus avisos de precio.', 'The candlestick chart of each holding with 20, 50 and 200-day averages, volume, RSI and MACD, and your price alerts.'), '#posiciones', L('La ficha de cada posición', 'Each holding\'s page')],
-  div: [L('Lo cobrado y lo previsto mes a mes, la rentabilidad por dividendo y sobre lo que pagaste, los próximos cobros y la retención en origen.', 'What you have collected and what is expected month by month, yield, yield on cost, upcoming payments and withholding.'), '#analisis', L('Tus números, en Análisis', 'Your numbers, in Analysis')],
-  costes: [L('La comisión de cada fondo y lo que se lleva al año y en 20 años, el más barato de su índice y lo que pagas en cada bróker.', 'Each fund\'s fee and what it takes per year and over 20 years, the cheapest of its index and what each broker charges.'), '#analisis', L('Tus números, en Análisis', 'Your numbers, in Analysis')],
+  divX: [L('Lo cobrado y lo previsto mes a mes, la rentabilidad por dividendo y sobre lo que pagaste, los próximos cobros y la retención en origen.', 'What you have collected and what is expected month by month, yield, yield on cost, upcoming payments and withholding.'), '#analisis', L('Tus números, en Análisis', 'Your numbers, in Analysis')],
+  costesX: [L('La comisión de cada fondo y lo que se lleva al año y en 20 años, el más barato de su índice y lo que pagas en cada bróker.', 'Each fund\'s fee and what it takes per year and over 20 years, the cheapest of its index and what each broker charges.'), '#analisis', L('Tus números, en Análisis', 'Your numbers, in Analysis')],
   mov: [L('Todas tus operaciones con filtros (compras, ventas, dividendos, aportaciones, comisiones) y el dinero que has metido mes a mes.', 'All your transactions with filters and the money you have put in month by month.'), '#posiciones', L('Tus posiciones', 'Your holdings')],
   rebal: [L('Tu reparto objetivo frente a lo que tienes, y el cálculo de cómo quedaría con tu próxima aportación programada. Lo decides tú.', 'Your target mix against what you hold, and how it would look after your next scheduled contribution. Your call.'), '#futuro', L('Tus objetivos', 'Your goals')],
   lab: [L('¿Y si…? (aportar más, jubilarte antes, cambiar de fondo) y la prueba con el pasado de tu reparto de hoy.', 'What if…? (invest more, retire earlier, switch funds) and a backtest of your current mix.'), '#futuro', L('Lo que podrías tener', 'What you could have')],
@@ -316,6 +316,51 @@ function pavReparto(M) {
     ], 2), L('Un fondo indexado ya va repartido por dentro; por encima del 10 % en una sola empresa, una mala noticia suya se nota en toda la cartera.', 'Above 10% in one holding, its bad news shows across the portfolio.')),
     xray ? pavT('c8', L('X-Ray: las empresas que tienes de verdad', 'X-Ray: the companies you really own'), xray, L('Suma las acciones que tienes sueltas y las que van dentro de tus fondos indexados (las 10 mayores de cada uno, con sus pesos de Yahoo Finance).', 'Adds your direct shares and those inside your index funds (top 10 of each).')) : '',
     sol ? pavT('c4', L('¿Se pisan tus fondos?', 'Do your funds overlap?'), sol.replace(/<h3[^>]*>.*?<\/h3>/, '')) : '',
+  ].join('');
+}
+
+/* ---------- Dividendos ---------- */
+function pavDiv(M) {
+  const D = dividendosMeses(M), hoy = hoyIso();
+  const con = M.filas.filter((f) => f.p && f.p.dividendo_pct);
+  const prox = con.filter((f) => f.p.ex_dividendo && f.p.ex_dividendo >= hoy).sort((a, b) => (a.p.ex_dividendo < b.p.ex_dividendo ? -1 : 1));
+  const rcm = fiscalAnio(new Date().getFullYear()).rcm;
+  const kp = pavKpis([
+    [L('Previsto los próximos 12 meses', 'Expected next 12 months'), eur(D.bruto, 0), '', L(`${eur(D.neto, 0)} netos`, `${eur(D.neto, 0)} net`)],
+    [L('Al año, con el precio de hoy', 'Per year, at today\'s price'), eur(M.dividendos, 0), '', L('brutos', 'gross')],
+    [L('Rentabilidad por dividendo', 'Dividend yield'), pct(M.total ? (M.dividendos / M.total) * 100 : 0, 2)],
+    [L('Sobre lo que pagaste', 'Yield on cost'), pct(M.invertido ? (M.dividendos / M.invertido) * 100 : 0, 2)],
+    [L('Cobrado este año (apuntado)', 'Collected this year (recorded)'), eur(rcm, 0), '', L('en Hacienda', 'in Taxes')],
+    [L('Posiciones que reparten', 'Holdings that pay'), `${con.length} de ${M.filas.length}`],
+  ], 2);
+  const d12 = htmlDividendos12(M);
+  const tabla = con.length ? pavTabla([L('Posición', 'Holding'), L('Dividendo', 'Yield'), L('Al año', 'Per year'), L('Próximo', 'Next ex-date')], con.sort((a, b) => b.valor * b.p.dividendo_pct - a.valor * a.p.dividendo_pct).map((f) => [`<b>${pavNom(f)}</b>`, pct(f.p.dividendo_pct, 1), eur((f.valor * f.p.dividendo_pct) / 100, 0), f.p.ex_dividendo && f.p.ex_dividendo >= hoy ? fechaConAnio(f.p.ex_dividendo) : '—'])) : `<p class="nota" style="margin:0">${L('Ninguna de tus posiciones reparte dividendo (los fondos de acumulación lo reinvierten dentro).', 'None of your holdings pays a dividend (accumulating funds reinvest it).')}</p>`;
+  return [
+    pavT('c4', L('Tus números', 'Your numbers'), kp, L('Dividendos brutos de los últimos 12 meses de cada posición sobre su precio de hoy. Lo cobrado sale de lo que pusiste en Hacienda.', 'Gross dividends of the last 12 months on today\'s price.')),
+    pavT('c8', L('Mes a mes, lo previsto', 'Month by month, expected'), d12 || `<p class="nota" style="margin:0">${L('Sin cobros previstos.', 'No expected payments.')}</p>`, L('Con las fechas de pago del año pasado y lo anunciado. Ni prometido ni seguro: lo decide cada empresa. Lo neto descuenta la retención española (19 %) y la del país de origen que no se recupera.', 'Based on last year\'s dates and what has been announced. Not guaranteed.')),
+    pavT('c12', L('Posición a posición', 'Holding by holding'), tabla + (prox.length ? `<p class="pav-como" style="margin-top:10px">${L(`El próximo: ${pavNom(prox[0])}, el ${fechaConAnio(prox[0].p.ex_dividendo)} (fecha ex-dividendo: hay que tenerla el día antes).`, `Next: ${pavNom(prox[0])}, on ${fechaConAnio(prox[0].p.ex_dividendo)}.`)}</p>` : '')),
+  ].join('');
+}
+
+/* ---------- Costes ---------- */
+function pavCostes(M) {
+  const conTer = M.filas.filter((f) => f.inst.ter != null);
+  const anual = sum(conTer, (f) => (f.valor * f.inst.ter) / 100), base = sum(conTer, (f) => f.valor);
+  let r = 7; try { r = cfgProy().bolsa; } catch (e) {}
+  // lo que se llevaría la comisión en 20 años si lo de hoy creciera a la rentabilidad media que usas en la proyección
+  const en20 = (v, ter) => { let x = v, c = 0; for (let i = 0; i < 20; i++) { const g = x * ter / 100; c += g; x = x * (1 + r / 100) - g; } return c; };
+  const total20 = sum(conTer, (f) => en20(f.valor, f.inst.ter));
+  const comis = sum((S.cartera.movimientos || []).filter((m) => String(m.fecha || '').startsWith(String(new Date().getFullYear()))), (m) => +m.gastos || +m.comision || 0);
+  const tabla = conTer.length ? pavTabla([L('Fondo', 'Fund'), 'TER', L('Al año', 'Per year'), L('En 20 años*', 'Over 20 years*')], [...conTer].sort((a, b) => b.valor * b.inst.ter - a.valor * a.inst.ter).map((f) => [`<b>${pavNom(f)}</b>`, pct(f.inst.ter, 2), eur((f.valor * f.inst.ter) / 100, 2), `≈ ${eur(en20(f.valor, f.inst.ter), 0)}`])) : `<p class="nota" style="margin:0">${L('No tienes fondos con comisión conocida.', 'No funds with a known fee.')}</p>`;
+  const sinTer = M.filas.filter((f) => f.inst.ter == null && f.inst.tipo !== 'Acción' && f.inst.clase !== 'Cripto');
+  return [
+    pavT('c4', L('Lo que pagas', 'What you pay'), pavKpis([
+      [L('Comisión media de tus fondos (TER)', 'Average fund fee (TER)'), pct(base ? (anual / base) * 100 : 0, 2)],
+      [L('Al año, en euros', 'Per year, in euros'), eur(anual, 0)],
+      [L('En 20 años', 'Over 20 years'), `≈ ${eur(total20, 0)}`, 'warn'],
+      comis ? [L('Comisiones de compra y venta este año', 'Trading fees this year'), eur(comis, 2), '', L('apuntadas', 'recorded')] : null,
+    ], 1), L(`La TER ya va descontada del precio del fondo: no te la cobran aparte. En 20 años, con lo de hoy creciendo un ${fmtNum(r, 1)} % al año (la media de tu proyección).`, `The TER is already taken from the fund price. Over 20 years, with today's value growing ${fmtNum(r, 1)}% a year.`)),
+    pavT('c8', L('Fondo a fondo', 'Fund by fund'), tabla + (sinTer.length ? `<p class="pav-como" style="margin-top:10px">${L(`Sin comisión conocida: ${sinTer.map(pavNom).join(', ')}.`, `Fee unknown: ${sinTer.map(pavNom).join(', ')}.`)}</p>` : ''), L('*Lo que se llevaría la comisión si lo de hoy siguiera ahí 20 años. Cambiar de fondo puede tener coste en Hacienda: el traspaso entre fondos no paga impuestos; entre ETF, sí. Lo decides tú.', '*What the fee would take if today\'s amount stayed 20 years. Your call.')),
   ].join('');
 }
 
