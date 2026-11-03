@@ -93,7 +93,8 @@ function estreno02(visto, despues) {
 }
 // de una versión a un arreglo suyo (0.4 → 0.4b): sin presentación ni guía, un aviso de lo arreglado
 function arreglosVistos(visto, despues) {
-  const ns = NOVEDADES.filter((n) => cmpVer(n.v, visto) > 0 && cmpVer(n.v, VERSION) <= 0);
+  // solo lo que es para ti (novVisibles): si no queda nada, no sale el mensaje
+  const ns = novVisibles().filter((n) => cmpVer(n.v, visto) > 0 && cmpVer(n.v, VERSION) <= 0);
   const a = ns.reduce((t, n) => t + (n.arreglos || []).length, 0), m = ns.reduce((t, n) => t + (n.cosas || []).length, 0);
   marcarNovVista(); LS.set('inv-version', VERSION); LS.set('inv-vnum', 2);
   const que = [a ? L(`${a} ${a === 1 ? 'arreglo' : 'arreglos'}`, `${a} ${a === 1 ? 'fix' : 'fixes'}`) : '', m ? L(`${m} ${m === 1 ? 'mejora' : 'mejoras'}`, `${m} ${m === 1 ? 'improvement' : 'improvements'}`) : ''].filter(Boolean).join(L(' y ', ' and '));
@@ -127,11 +128,12 @@ function avisoArreglos(ns, que, visto, intento = 0) {
 function mostrarNovedades(desde, alCerrar, lista = false) {
   if ((LS.get('inv-nov-vista') || {}).v !== VERSION) { marcarNovVista(); if (S.cartera) setTimeout(() => { if (S.vista === 'cartera' && !S.ficha) pintar(); }, 60); }
   LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); LS.set('inv-023b-arr', true); LS.set('inv-nov-030', true); LS.set('inv-nov-04', true);
-  let nuevas = NOVEDADES.filter((n) => (n.cosas || n.arreglos) && desde && cmpVer(n.v, desde) > 0);
-  if (!nuevas.length) nuevas = [NOVEDADES[0]];
+  const NV = novVisibles();   // sin lo que es solo para el dueño, si no lo eres
+  let nuevas = NV.filter((n) => (n.cosas || n.arreglos) && desde && cmpVer(n.v, desde) > 0);
+  if (!nuevas.length) nuevas = [NV[0]];
   // al estrenar versión, lo nuevo se cuenta bajando (como la presentación); desde Ajustes, la lista
   if (desde && !lista) return novedadesScroll(nuevas, desde, alCerrar);
-  const resto = NOVEDADES.filter((n) => !nuevas.includes(n));
+  const resto = NV.filter((n) => !nuevas.includes(n));
   const pasos = [], idx = new Map();
   for (const n of nuevas) for (const c of n.cosas || []) if (c.ir && !esParche(n.v)) { idx.set(c, pasos.length); pasos.push(...pasosDeCosa(c, n.v)); }
   const item = (c, i, ir) => `<li style="--i:${i}">${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${ir && idx.has(c) ? `<button type="button" class="enlace nov-ir" data-nov-ir="${idx.get(c)}">Enséñamelo</button>` : ''}</div></li>`;
@@ -319,8 +321,9 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
    detallada de cambios de cada una (cambios.json, que sale del historial del proyecto con scripts/cambios.py) */
 async function abrirRegistro(alCerrar) {
   let d = null;
-  try { const r = await fetch('cambios.json?v=' + VERSION, { cache: 'no-cache' }); if (r.ok) d = await r.json(); } catch (e) { console.warn(e); }
-  const det = new Map(((d && d.versiones) || []).map((x) => [x.v, x.commits || []]));
+  if (veDueno()) try { const r = await fetch('cambios.json?v=' + VERSION, { cache: 'no-cache' }); if (r.ok) d = await r.json(); } catch (e) { console.warn(e); }
+  // la lista detallada sale de los commits y lleva de todo (también lo que es solo para el dueño): solo la ve él
+  const det = new Map(veDueno() ? ((d && d.versiones) || []).map((x) => [x.v, x.commits || []]) : []), NV = novVisibles();
   const limpia = (t) => esc(String(t).replace(/^(GrowFolio|Bellota|Versión)\s+/i, ''));
   const art = (n) => {
     const cs = det.get(n.v) || [];
@@ -331,9 +334,9 @@ async function abrirRegistro(alCerrar) {
     </article>`;
   };
   const h = hoja('Registro de cambios', `<div class="registro">
-      <p class="nota">Todas las versiones de Toisón con el día y la hora en que salieron: primero lo que cambia contado en corto y después la lista detallada de lo que se hizo, tal como quedó en el historial del proyecto.</p>
-      <nav class="reg-indice" aria-label="Versiones">${NOVEDADES.map((n) => `<a href="#reg-${esc(n.v)}">${esc(n.v)}</a>`).join('')}</nav>
-      ${NOVEDADES.map(art).join('')}
+      <p class="nota">Todas las versiones de Toisón con el día y la hora en que salieron: ${det.size ? 'primero lo que cambia contado en corto y después la lista detallada de lo que se hizo, tal como quedó en el historial del proyecto.' : 'lo que cambia en cada una, contado en corto.'}</p>
+      <nav class="reg-indice" aria-label="Versiones">${NV.map((n) => `<a href="#reg-${esc(n.v)}">${esc(n.v)}</a>`).join('')}</nav>
+      ${NV.map(art).join('')}
       <div class="fila-btns"><button class="btn" data-cerrar>Cerrar</button></div>
     </div>`, alCerrar, true);
   for (const a of $$('.reg-indice a', h.el)) a.onclick = (e) => { e.preventDefault(); const el = $(a.getAttribute('href'), h.el); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); };

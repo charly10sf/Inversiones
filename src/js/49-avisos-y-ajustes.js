@@ -8,6 +8,8 @@ function bienvenida(intento = 0) {
   if (appEnCurso || (window.InversionesApp && !appRevisadaT) || document.querySelector('.hoja-fondo, .tour, #asesorFondo')) { if (intento < 40) setTimeout(() => bienvenida(intento + 1), intento ? 1500 : 800); return; }
   let visto = LS.get('inv-version', null);
   if (!LS.get('inv-vnum') && /^0\.[2-9]\.0$/.test(visto || '')) visto = '0.1.' + visto.split('.')[1];  // numeración de antes: 0.9.0 es la 0.1.9
+  // con versión nueva, antes de contarla se espera (unos segundos como mucho) a saber si eres el dueño: hay novedades solo para él
+  if (PERFIL_CUENTA && !CFG.dev && !S.accesoVisto && !veDueno() && visto && cmpVer(visto, VERSION) < 0 && intento < 8) { setTimeout(() => bienvenida(intento + 1), 1000); return; }
   const nuevo = S.recienCreada || (!(S.cartera.posiciones || []).length && !LS.get('inv-tour', null));
   S.recienCreada = false;
   const fin = () => { if (Date.now() - appRevisadaT > 600000) setTimeout(() => revisarApp(), 400); };

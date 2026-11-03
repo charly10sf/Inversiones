@@ -46,7 +46,8 @@ def versiones():
         fin = cabeceras[k + 1].start() if k + 1 < len(cabeceras) else len(bloque)
         cosas = [(limpio(a), limpio(b)) for a, b in re.findall(r"t: " + CADENA + r", x: " + CADENA, bloque[m.end():fin])]
         a = re.search(r"arreglos: \[(.*?)\]", bloque[m.end():fin], re.S)
-        arreglos = [limpio(x) for x in re.findall(CADENA, a.group(1))] if a else []
+        # un arreglo solo para el dueño va como { t: '…', solo: 'dueno' } (0.8a): se cuenta igual, con la marca
+        arreglos = [limpio(x) + (" (solo para el dueño)" if d else "") for x, d in re.findall(CADENA + r"(?:, solo: '(\w+)')?", a.group(1))] if a else []
         v, f, h, t = m.groups()
         out.append({"v": v, "f": f, "h": h or "", "t": limpio(t), "cosas": cosas, "arreglos": arreglos})
     return sorted(out, key=lambda x: orden(x["v"]))

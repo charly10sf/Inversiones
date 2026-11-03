@@ -48,12 +48,13 @@ async function comprobarAcceso() {
       catch (e) { if (!errPermiso(e)) return; }
     }
     // el dueño: puede leer todas las opiniones (las reglas de siempre)
-    try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); S.esDueno = true; S.noDueno = false; limpiarFallosIA(); }
-    catch (e) { if (errPermiso(e)) { S.noDueno = true; } else if (!puesto && !esFundadorPorAlta(alta)) return; }
+    try { await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.limit(1))), 10000); S.esDueno = true; S.noDueno = false; LS.set('inv-dueno', 1); limpiarFallosIA(); }
+    catch (e) { if (errPermiso(e)) { S.noDueno = true; LS.del('inv-dueno'); } else if (!puesto && !esFundadorPorAlta(alta)) return; }
     const a = puesto && (puesto.modo === 'fundador' || puesto.modo === 'estandar') ? (puesto.modo === 'fundador' ? 'privado' : 'publico')
       : S.esDueno || esFundadorPorAlta(alta) ? 'privado' : 'publico';
     fijarAcceso(a, u.uid, puesto);
   } catch (e) { console.warn('No se ha podido comprobar el modo', e); }
+  finally { S.accesoVisto = true; }   // bienvenida() espera a esto para saber qué novedades enseñar
 }
 /* Los fallos de GrowIA (fallos_ia) llevan «caduca» a 30 días. El TTL de Firestore pide facturación y el proyecto sigue
    en el plan gratis, así que los borra el dueño, que es a quien las reglas dejan: una vez al día, la primera vez que
