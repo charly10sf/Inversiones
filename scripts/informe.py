@@ -168,6 +168,92 @@ RESERVA = ["gemini-3.6-flash", "gemini-3.5-flash-lite"]  # si se acaba el cupo g
 LECTURA = ["gemini-3.5-flash-lite", "gemini-3.6-flash"]
 USO = []                    # 0.6d: los tokens de cada llamada de esta pasada (para saber lo que costaría la IA de pago)
 
+# 0.9: el radar puede ir con Claude (Haiku) si el repositorio tiene el secreto ANTHROPIC_RADAR_KEY (una clave de un
+# workspace aparte, «Toisón radar», con su propio límite de gasto). Sin ese secreto, todo sigue con Gemini como siempre.
+# Con los dos, primero Claude y, si falla, Gemini. Las respuestas de Claude se pasan a la forma de las de Gemini para
+# que el resto del script no note la diferencia; sus tokens van al mismo registro (USO) con el nombre del modelo.
+CLAUDE_API = os.environ.get("CLAUDE_API", "https://api.anthropic.com/v1/messages")
+CLAUDE_MODELO = os.environ.get("CLAUDE_RADAR_MODELO", "claude-haiku-5-5")
+CLAUDE_MAX_SALIDA = 32000
+SIN_GEMINI = "-"            # la «clave» de Gemini cuando solo hay Claude: así los pasos que miran si hay clave siguen
+CLAUDE_ERRORES = []         # lo que ha fallado con Claude en esta pasada
+CLAUDE_APAGADO = False      # tras un fallo de clave o de saldo, el resto de la pasada va sin Claude
+ULTIMO = [None]             # el último modelo que ha contestado
+
+
+def clave_claude():
+    return (os.environ.get("ANTHROPIC_RADAR_KEY") or "").strip()
+
+
+def peticion_claude(cuerpo, clave):
+    req = urllib.request.Request(CLAUDE_API, data=json.dumps(cuerpo).encode(), method="POST",
+                                 headers={"content-type": "application/json", "x-api-key": clave, "anthropic-version": "2023-06-01"})
+    with urllib.request.urlopen(req, timeout=240) as r:
+        return json.loads(r.read())
+
+
+def a_claude(cuerpo, modelo):
+    """El cuerpo de Gemini (systemInstruction, contents, generationConfig, tools) pasado al de la API de Claude."""
+    sistema = " ".join(p.get("text", "") for p in ((cuerpo.get("systemInstruction") or {}).get("parts") or []))
+    gc = cuerpo.get("generationConfig") or {}
+    if gc.get("responseMimeType") == "application/json":
+        sistema += "\n\nResponde solo con un JSON válido, sin texto antes ni después y sin bloques de código."
+    mensajes = []
+    for c in cuerpo.get("contents") or []:
+        texto = "".join(p.get("text", "") for p in (c.get("parts") or []))
+        if texto:
+            mensajes.append({"role": "assistant" if c.get("role") == "model" else "user", "content": texto})
+    out = {"model": modelo, "max_tokens": min(int(gc.get("maxOutputTokens") or 8192), CLAUDE_MAX_SALIDA), "messages": mensajes}
+    if sistema.strip():
+        out["system"] = sistema.strip()
+    if any("google_search" in t for t in (cuerpo.get("tools") or [])):
+        out["tools"] = [{"type": "web_search_20250305", "name": "web_search", "max_uses": 3}]
+    return out
+
+
+def de_claude(r):
+    """La respuesta de Claude con la forma de una de Gemini (texto, motivo de parada y tokens)."""
+    texto = "".join(b.get("text", "") for b in (r.get("content") or []) if b.get("type") == "text")
+    u = r.get("usage") or {}
+    motivo = {"end_turn": "STOP", "max_tokens": "MAX_TOKENS", "stop_sequence": "STOP"}.get(r.get("stop_reason"), r.get("stop_reason") or "STOP")
+    return {"candidates": [{"content": {"parts": [{"text": texto}]}, "finishReason": motivo}],
+            "usageMetadata": {"promptTokenCount": (u.get("input_tokens") or 0) + (u.get("cache_read_input_tokens") or 0) + (u.get("cache_creation_input_tokens") or 0),
+                              "cachedContentTokenCount": u.get("cache_read_input_tokens") or 0, "candidatesTokenCount": u.get("output_tokens") or 0},
+            "modelo": r.get("model")}
+
+
+def claude(cuerpo, que, ligera=False, hay_reserva=False):
+    """Una llamada a Claude. Reintenta si está saturado; si la clave no vale o no hay saldo, apaga Claude para el
+    resto de la pasada. Lanza RuntimeError si no sale (y entonces, si hay clave de Gemini, sigue Gemini)."""
+    global CLAUDE_APAGADO
+    clave, ultimo = clave_claude(), None
+    pedido = a_claude(cuerpo, CLAUDE_MODELO)
+    for intento in range(3):
+        try:
+            r = de_claude(peticion_claude(pedido, clave))
+            if not texto_de(r)[0].strip():
+                raise RuntimeError("respuesta vacía")
+            USADOS.add(CLAUDE_MODELO)
+            apuntar_uso(CLAUDE_MODELO, r, que)
+            ULTIMO[0] = CLAUDE_MODELO
+            return r
+        except urllib.error.HTTPError as e:
+            texto = e.read().decode("utf-8", "replace")
+            ultimo = f"claude {e.code}: {texto[:300]}"
+            if e.code in (401, 403) or (e.code == 400 and re.search(r"credit|billing|balance", texto, re.I)):
+                CLAUDE_APAGADO = True
+                break
+            if e.code in (429, 500, 502, 503, 529) and intento < 2:
+                time.sleep(15 * (intento + 1))
+                continue
+            break
+        except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
+            ultimo = f"claude: {e}"
+            if intento < 2:
+                time.sleep(10)
+                continue
+    raise RuntimeError(ultimo or "claude: sin respuesta")
+
 
 def apuntar_uso(modelo, resp, que):
     """Apunta los tokens de una respuesta de Gemini: entrada (y cuánta salió de la caché), salida y razonamiento."""
@@ -183,12 +269,24 @@ def gemini(cuerpo, clave, reserva=True, modelos=None):
     la lista entera (el primero y sus reservas)."""
     que = inspect.stack()[1].function
     que = {"leer_trozo": "leer_lote"}.get(que, que)  # una pasada de lectura, aunque se parta en trozos
+    # 0.9: con ANTHROPIC_RADAR_KEY, primero Claude; si falla, sigue con Gemini como siempre
+    if clave_claude() and not CLAUDE_APAGADO:
+        try:
+            return claude(cuerpo, que, ligera=modelos == LECTURA, hay_reserva=bool(clave))
+        except RuntimeError as e:
+            CLAUDE_ERRORES.append(f"{que}: {str(e)[:160]}")
+            if clave in ("", SIN_GEMINI):
+                raise
+            print(f"claude: {que} no ha salido ({str(e)[:120]}), sigo con Gemini")
+    if clave in ("", SIN_GEMINI):
+        raise RuntimeError("sin GEMINI_API_KEY")
     orden = list(modelos) if modelos else [MODELO] + ([m for m in RESERVA if m != MODELO] if reserva else [])
     for modelo in orden:
         try:
             r = gemini_modelo(cuerpo, clave, modelo)
             USADOS.add(modelo)
             apuntar_uso(modelo, r, que)
+            ULTIMO[0] = modelo
             return r
         except RuntimeError as e:
             txt = str(e)
@@ -199,6 +297,7 @@ def gemini(cuerpo, clave, reserva=True, modelos=None):
                     r = gemini_modelo({**cuerpo, "generationConfig": gc}, clave, modelo)
                     USADOS.add(modelo)
                     apuntar_uso(modelo, r, que)
+                    ULTIMO[0] = modelo
                     return r
                 except RuntimeError as e2:
                     txt = str(e2)
@@ -1103,6 +1202,8 @@ def guardar_fichas(fichas, dir_salida, validos):
 
 def main(ruta_inst, dir_anterior, dir_salida):
     clave = (os.environ.get("GEMINI_API_KEY") or "").strip()
+    if not clave and clave_claude():
+        clave = SIN_GEMINI  # solo con Claude
     instrumentos = leer(ruta_inst).get("instrumentos") or []
     radar = leer(f"{dir_salida}/radar.json")
     valores = radar.get("valores") or []
@@ -1152,7 +1253,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: falló la decisión de Gemini ({str(e)[:200]})")
     hace24 = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=24)
-    salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "intento_decision": intento if (decision or {}).get("generado", "") < (intento or "") else None, "gemini": {"ok": not FALLOS, "errores": (FALLOS or ERRORES)[-4:], "modelos": sorted(USADOS), "con_clave": bool(clave),
+    salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "intento_decision": intento if (decision or {}).get("generado", "") < (intento or "") else None,
+              "claude": {"activo": bool(clave_claude()), "apagado": CLAUDE_APAGADO, "errores": CLAUDE_ERRORES[-4:]}, "gemini": {"ok": not FALLOS, "errores": (FALLOS or ERRORES)[-4:], "modelos": sorted(USADOS), "con_clave": clave not in ("", SIN_GEMINI),
                                      "uso": [x for x in ((esc.get("gemini") or {}).get("uso") or []) if hace_menos_de(x.get("t") or "", 48)] + USO},
               "con_noticias": sum(1 for v in cache.values() if v.get("n")), "leidas_24h": sum(1 for v in lectura.values() if cuando(v.get("d")) and cuando(v["d"]) > hace24),
               "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores), "fuentes_pasada": DIAG}

@@ -131,6 +131,8 @@ jobs:
       - name: Escaneo de prensa e informe de Gemini
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          # 0.9: si existe, el radar va con Claude (Haiku) y Gemini queda de reserva
+          ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
           INFORME_FORZAR: ${{ inputs.informe && '1' || '' }}
         run: |
           python scripts/informe.py instrumentos.json anterior salida || echo "el informe no se pudo generar"
