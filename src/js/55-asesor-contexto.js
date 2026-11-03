@@ -472,7 +472,13 @@ async function conversar(o) {
       catch (e) {
         if (e && e.name === 'AbortError') throw e;
         // 0.9: sin clave de Google no hay Gemini de reserva
-        if (!AS.clave) { const ms = pausaClaude(e); if (ms) pausarClaude((e && e.codigo) || 'fallo', ms); throw errorSinIA(e); }
+        if (!AS.clave) {
+          const ms = pausaClaude(e); if (ms) pausarClaude((e && e.codigo) || 'fallo', ms);
+          // si se corta a mitad, lo que ya escribió se queda, pero marcado como incompleto (no como si hubiera terminado)
+          const aMedias = !!(o.turno && o.turno.partes.some((p) => p.tipo === 'texto' && p.texto && p.texto.trim()));
+          if (aMedias) o.turno.partes.push({ tipo: 'paso', corte: true, txt: L('Aquí se ha cortado: lo de arriba está a medias y le puede faltar lo importante.', 'It was cut off here: the text above is incomplete and may be missing what matters.') });
+          throw errorSinIA(e, aMedias);
+        }
         pasarAGemini(e, o.turno);
         if (o.alCambiar) o.alCambiar();
       }
@@ -1047,14 +1053,15 @@ function sondearClaude() {
   })();
   SONDEO_EN_CURSO.then((ok) => {
     if (!ok) return;
-    try { if (AS.vista === 'clave' && !AS.clave) AS.vista = 'chat'; if (!$('.hoja-fondo')) pintar(); if ($('.asesor')) pintarAsesor(); } catch (e) {}
+    try { if (AS.vista === 'clave' && !AS.clave && !AS.pedirClave) AS.vista = 'chat'; if (!$('.hoja-fondo')) pintar(); if ($('.asesor')) pintarAsesor(); } catch (e) {}
   });
   return SONDEO_EN_CURSO;
 }
 /* sin clave de Google no hay reserva: si Claude no puede, se dice claro en vez de pasar a Gemini */
-function errorSinIA(e) {
+function errorSinIA(e, aMedias) {
   const c = e && (e.codigo || e.tipo);
   const porque = AS.claudeNo ? L('Sin tu sí, la IA no puede contestar con Claude.', 'Without your OK, the AI cannot answer with Claude.')
+    : aMedias && c !== 'tope-diario' && c !== 'no-permitido' ? L('Claude se ha cortado a mitad de la respuesta.', 'Claude stopped halfway through the answer.')
     : c === 'tope-diario' ? L('Has llegado al tope de preguntas de hoy.', 'You have reached today\'s question limit.')
     : c === 'no-permitido' ? L('Tu cuenta todavía no tiene la IA con Claude.', 'Your account does not have the AI with Claude yet.')
     : L('Claude no está disponible ahora.', 'Claude is not available right now.');

@@ -70,11 +70,12 @@ function abrirNoticia(n) {
     <p class="not-src">${n.f ? logo(webMedio(n), n.f, 'not-logo') : ''}<span>${esc(n.f || '')}${n.d ? `${n.f ? ', ' : ''}${haceCuanto(n.d)}` : ''}</span></p>
     <h3 class="not-t" data-no-trad>${esc(n.t)}</h3>
     <div class="not-cuerpo" aria-live="polite">${clave ? `<p class="not-lee">${ICONOS.growia}${L('La IA está leyendo la noticia…', 'GrowIA is reading the article…')}</p><div class="not-esq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>`
+      : claudeSinClave() ? `<p class="nota" style="margin:0">${L('El resumen de las noticias lo hace todavía Gemini, de Google: con tu clave gratis de Google aquí te sale de qué va la noticia sin salir de Toisón. Para preguntar a la IA no te hace falta.', 'News summaries are still made by Gemini, from Google: with your free Google key you get what the article is about here, without leaving Toisón. You do not need it to ask the AI.')}</p>`
       : `<p class="nota" style="margin:0">${L('Con la IA activada (gratis, con tu clave de Google) aquí te sale de qué va la noticia sin salir de Toisón.', 'With GrowIA on (free, with your Google key) you get what the article is about here, without leaving Toisón.')}</p>`}</div>
-    <div class="fila-btns not-btns">${clave ? '' : `<button type="button" class="btn pri" data-not-ia>${ICONOS.growia}${L('Activar la IA', 'Turn on GrowIA')}</button>`}<a class="btn" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${L('Abrir la original', 'Open the original')}</a></div>
+    <div class="fila-btns not-btns">${clave ? '' : `<button type="button" class="btn pri" data-not-ia>${ICONOS.growia}${claudeSinClave() ? L('Poner la clave de Google', 'Add the Google key') : L('Activar la IA', 'Turn on GrowIA')}</button>`}<a class="btn" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${L('Abrir la original', 'Open the original')}</a></div>
   </div>`);
   h.el.classList.add('hoja-not');
-  const bIA = $('[data-not-ia]', h.el); if (bIA) bIA.onclick = () => { h.cerrar(true); abrirAsesor(); };
+  const bIA = $('[data-not-ia]', h.el); if (bIA) bIA.onclick = () => { h.cerrar(true); abrirClaveGoogle(); };
   if (!clave) return;
   const ctl = new AbortController(), cuerpo = $('.not-cuerpo', h.el);
   new MutationObserver((m, o) => { if (!document.body.contains(h.el)) { ctl.abort(); o.disconnect(); } }).observe(document.body, { childList: true });

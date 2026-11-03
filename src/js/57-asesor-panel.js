@@ -63,7 +63,7 @@ function htmlTurno(t, k) {
   if (t.rol === 'yo') return `<div class="as-yo">${t.mini || t.donde ? `<div class="as-yo-rec">${t.mini ? `<img src="${esc(t.mini)}" alt="Recorte de la pantalla">` : ''}<small>Recorte de ${esc(t.donde || 'la pantalla')}</small></div>` : ''}${esc(t.texto)}</div>`;
   const vivo = AS.cargando && k === AS.conv.length - 1;
   const ult = t.partes[t.partes.length - 1];
-  const partes = t.partes.map((p) => (p.tipo === 'texto' ? `<div class="as-md">${md(p.texto)}</div>` : `<div class="as-paso">${p.web ? ICONOS.mercados : ICONOS.calc}<span>${esc(p.txt)}</span></div>`)).join('');
+  const partes = t.partes.map((p) => (p.tipo === 'texto' ? `<div class="as-md">${md(p.texto)}</div>` : `<div class="as-paso${p.corte ? ' as-corte' : ''}">${p.web ? ICONOS.mercados : p.corte ? ICONOS.alerta : ICONOS.calc}<span>${esc(p.txt)}</span></div>`)).join('');
   const vistas = new Set();
   const fuentes = (t.citas.length ? t.citas : t.resultados.slice(0, 5)).filter((x) => !vistas.has(x.u) && vistas.add(x.u)).slice(0, 8);
   const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
@@ -95,6 +95,7 @@ function htmlClaveAsesor() {
   const cfg = cfgAsesor();
   return `<div class="as-config">
     <h3 data-no-trad>${conIA('Activa la IA, gratis', 'Turn on GrowIA, for free')}</h3>
+    ${claudeSinClave() ? `<p class="nota as-sin-clave">${L('Tu cuenta ya tiene la IA con Claude y contesta sin clave. La de Google hace falta para el resumen de las noticias y para leer capturas y extractos al importar, y queda de reserva si Claude no puede.', 'Your account already has the AI with Claude and it answers without a key. The Google one is needed for news summaries and to read screenshots and statements when importing, and it stays as a backup if Claude cannot answer.')}</p>` : ''}
     <p>La IA funciona con Gemini, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
     <ol class="as-pasos-clave">
       <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
@@ -105,7 +106,7 @@ function htmlClaveAsesor() {
     <label class="campo">Clave de Google<input type="password" id="asClave" placeholder="AQ.… o AIza…" autocomplete="off" spellcheck="false"></label>
     <label class="check"><input type="checkbox" id="asSync"> Guardarla también en tu cartera cifrada, para no tener que ponerla en el móvil</label>
     <div class="error" id="asErr"></div>
-    <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${AS.clave ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
+    <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${iaLista() ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
     <p class="nota" style="margin:0">El plan gratuito tiene un tope de preguntas por minuto y por día (los tuyos, en aistudio.google.com/rate-limit); si lo pasas, la IA espera o te avisa. No actives la facturación en ese proyecto o empezará a cobrarte. Desde España, por las condiciones de Google para la UE, lo que mandas con la clave gratuita no se usa para mejorar sus productos.</p>
     <div class="as-sin-clave">
       <b>Sin clave</b>
@@ -162,6 +163,13 @@ function pintarTurno(k) {
   const abajo = cuerpo.scrollHeight - cuerpo.scrollTop - cuerpo.clientHeight < 80;
   el.outerHTML = htmlTurno(AS.conv[k], k);
   if (abajo) cuerpo.scrollTop = cuerpo.scrollHeight;
+}
+/* 0.9: lo que todavía solo hace Gemini (el resumen de una noticia, leer capturas al importar) abre directamente la
+   pantalla de la clave de Google, también a quien ya usa la IA con Claude sin clave */
+async function abrirClaveGoogle() {
+  AS.pedirClave = true;
+  await abrirAsesor();
+  AS.vista = 'clave'; pintarAsesor();
 }
 async function abrirAsesor(pregunta, enviar) {
   if (!S.cartera) return;
@@ -246,6 +254,7 @@ function dictar() {
 function cerrarAsesor(desdeAtras) {
   if (dictado) { try { dictado.abort(); } catch (e) {} dictado = null; }
   const f = $('#asesorFondo'); if (!f) return;
+  AS.pedirClave = false;
   f.remove(); document.body.style.overflow = '';
   if (desdeAtras !== true && S.asesorAtras) S.asesorAtras();
   S.asesorAtras = null;
@@ -281,7 +290,7 @@ async function clicAsesor(e) {
   }
   else if (a === 'nueva') { if (AS.ctrl) AS.ctrl.abort(); AS.conv = []; AS.api = []; AS.foto = null; AS.vista = 'chat'; LS.del('inv-asesor-conv'); pintarAsesor(); }
   else if (a === 'ajustes') { AS.vista = AS.vista === 'ajustes' ? 'chat' : 'ajustes'; pintarAsesor(); }
-  else if (a === 'chat') { AS.vista = 'chat'; pintarAsesor(true); }
+  else if (a === 'chat') { AS.vista = 'chat'; AS.pedirClave = false; pintarAsesor(true); }
   else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }
   else if (a === 'copiar') copiarCartera();
   else if (a === 'copiar-diario') {
@@ -309,7 +318,7 @@ async function clicAsesor(e) {
       await probarClave(c);
       AS.clave = c; if (!S.demo) LS.set(LS_CLAVE[pv], await cifrarLocal(c));
       if ($('#asSync', fondo).checked) { S.cartera.asesor = { ...(S.cartera.asesor || {}), [CAMPO_CLAVE[pv]]: c }; await guardarCartera('Asesor: clave'); }
-      AS.vista = 'chat'; toast('Clave guardada: ya puedes preguntar'); pintarAsesor(); revisarAnalisisIA();
+      AS.vista = 'chat'; AS.pedirClave = false; toast('Clave guardada: ya puedes preguntar'); pintarAsesor(); revisarAnalisisIA();
     } catch (x) { err.textContent = /Failed to fetch|NetworkError|Load failed/i.test(x.message) ? `No se pudo conectar con ${PROV[pv].n}.` : x.message; t.disabled = false; t.textContent = 'Guardar y probar'; }
   } else if (a === 'guardar-ajustes') {
     const modelo = (fondo.querySelector('input[name="asModelo"]:checked') || {}).value;

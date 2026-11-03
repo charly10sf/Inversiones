@@ -182,7 +182,8 @@ function procesarOperaciones(ops, platGen) {
 const ventaYaApuntada = (id, v) => (S.cartera.movimientos || []).some((m) => m.tipo === 'venta' && m.instrumento === id && m.fecha === v.fecha && Math.abs(+m.uds - v.uds) < 1e-6);
 async function importarCapturas() {
   await cargarAsesor();
-  if (!AS.clave) { toast('Para leer las capturas hace falta activar la IA (gratis, con tu clave de Google): te abro dónde ponerla', 5000); abrirAsesor(); return; }
+  // 0.9: leer capturas y extractos lo sigue haciendo Gemini; quien usa la IA con Claude sin clave también necesita la de Google
+  if (!AS.clave) { toast(claudeSinClave() ? 'Leer capturas y extractos lo hace todavía Gemini, de Google: hace falta tu clave gratis (para preguntar a la IA no). Te abro dónde ponerla' : 'Para leer las capturas hace falta activar la IA (gratis, con tu clave de Google): te abro dónde ponerla', 6000); abrirClaveGoogle(); return; }
   const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
   let hecho = false, filas = [], efectivo = [], ventasImp = [], divsImp = [], resumenOps = null;
   const h = hoja('Importar de tu bróker o banco', `<div class="imp-cont">

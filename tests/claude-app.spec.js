@@ -399,3 +399,57 @@ test('sin clave de Google, si el sondeo no llega al Worker se aparta unos minuto
   expect(sondeos).toBe(1);
   expect(await page.evaluate(() => !!claudePausado())).toBe(true);
 });
+test('sin clave de Google, en modo fundador o con el modo provisional no se toca el Worker y se pide la clave', async ({ page, context }) => {
+  await sinClave(page);
+  const g = await gemini(context);
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Claude' }]) }));
+  await page.evaluate(() => { S.acceso = 'privado'; });
+  await page.evaluate(() => abrirAsesor());
+  await page.waitForTimeout(1200);
+  expect(await page.evaluate(() => iaLista())).toBe(false);
+  await expect(page.locator('#asCuerpo')).toContainText('Clave de Google');
+  await page.evaluate(() => { cerrarAsesor(); S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: null, t: Date.now(), provisional: true }); });
+  await page.evaluate(() => abrirAsesor());
+  await page.waitForTimeout(1200);
+  expect(await page.evaluate(() => iaLista())).toBe(false);
+  await expect(page.locator('#asCuerpo')).toContainText('Clave de Google');
+  expect(w.sondeos + w.peticiones.length).toBe(0);
+  expect(g.n).toBe(0);
+});
+test('sin clave de Google, si Claude se corta a mitad, lo escrito queda marcado como incompleto junto al error', async ({ page, context }) => {
+  await sinClave(page);
+  const g = await gemini(context);
+  // la primera ronda escribe algo y pide una herramienta; la segunda se corta (lo de la ronda que falla ya se quita solo)
+  await worker(context, (c, n) => (n === 1
+    ? { sse: stream([{ tipo: 'texto', texto: 'Empiezo a contestar y miro tus datos.' }, { tipo: 'herramienta', id: 'toolu_1', nombre: 'buscar_empresa', entrada: { consulta: 'Repsol' } }], 'tool_use', usoIni, 60) }
+    : { sse: stream([{ tipo: 'texto', texto: 'Sigo y' }], 'end_turn', usoIni, 5, { error: { type: 'overloaded_error', message: 'Overloaded' } }) }));
+  await page.evaluate(() => abrirAsesor());
+  await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
+  await preguntar(page, '¿Cómo va hoy?');
+  const cuerpo = page.locator('#asCuerpo');
+  await expect(cuerpo).toContainText('Claude se ha cortado a mitad', { timeout: 20_000 });
+  await expect(cuerpo).toContainText('Empiezo a contestar');
+  await expect(cuerpo).not.toContainText('Sigo y');
+  await expect(cuerpo.locator('.as-corte')).toContainText('está a medias');
+  expect(g.n).toBe(0);
+});
+test('sin clave de Google, con Claude, la noticia y las capturas de Importar llevan a la pantalla de la clave', async ({ page, context }) => {
+  await sinClave(page);
+  await gemini(context);
+  await worker(context, () => ({ sse: '' }));
+  await page.evaluate(() => sondearClaude());
+  expect(await page.evaluate(() => iaLista())).toBe(true);
+  await page.evaluate(() => abrirNoticia({ t: 'Repsol sube', f: 'Expansión', d: '', u: 'https://example.com/n', w: '' }));
+  const h = page.locator('.hoja-not');
+  await expect(h).toContainText('lo hace todavía Gemini');
+  await h.locator('[data-not-ia]').click();
+  await expect(page.locator('#asCuerpo')).toContainText('Tu cuenta ya tiene la IA con Claude', { timeout: 10_000 });
+  await expect(page.locator('#asClave')).toBeVisible();
+  // el sondeo ya dijo que sí: no se vuelve al chat por su cuenta
+  await page.waitForTimeout(800);
+  await expect(page.locator('#asClave')).toBeVisible();
+  await expect(page.locator('#asCuerpo [data-as="chat"]')).toBeVisible();
+  await page.evaluate(() => cerrarAsesor());
+  await page.evaluate(async () => { await cargarTrozo('importar'); await importarCapturas(); });
+  await expect(page.locator('#asClave')).toBeVisible({ timeout: 10_000 });
+});
