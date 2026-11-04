@@ -1,21 +1,47 @@
-# Backlog (impacto × esfuerzo)
+# Backlog (impacto × diferenciación × esfuerzo)
 
-Sacado de claude/roadmap.md el 30 oct 2026, sin cambios. Se revisa en la sesión de plan de cada versión.
+Rehecho el 4 nov 2026 con el roadmap (https://claude.ai/artifact/V5ZM52iyxEDzMKZXBKatHX) y la investigación (claude/roadmap-investigacion.md en el Proyecto; los informes enteros en claude/investigacion/). Se revisa en la sesión de plan de cada versión. Lo que ya tiene versión está en claude/versiones/; aquí va lo que no la tiene, lo que se dejó fuera y las reglas.
 
-Primero, en los huecos: importar de Portfolio Performance (0.8), cartera de ejemplo (0.8), informe para la renta (0.9), tarjeta de rendimiento para compartir (0.8), comparador de brókers (1.1), Letras del Tesoro y depósitos (1.1).
-Merecen versión: open banking para todos (1.2), planes de pensiones y EPSV (1.2), App Store (1.3), varias carteras (1.1, si se pide), carteras compartidas (2.0), qué vender primero (1.1).
-Cuando sobre tiempo: atajos de teclado, más temas de color, llave de solo lectura de Firebase para que Claude saque cuentas y uso con una Action. Inmuebles y patrimonio total: 2.0 o nunca.
-Del 0.6 (técnico): pasar a módulos ES poco a poco; partir el CSS por secciones; la letra servida desde GrowFolio y no desde Google Fonts (privacidad y velocidad, 0.8); radar y escaneo más ligeros (0.8, con el Worker); textos en inglés que faltan en el plan de venta y el Paso a paso (fundador).
-Visto en el barrido del 23 oct: en el ordenador, Inicio con GrowIA sin activar deja un hueco grande a la izquierda (su tarjeta es corta y al lado van el reparto y lo que viene). Candidata: 0.8, con el rediseño de Inicio.
-Visto el 29 oct: cuando GrowIA cambia de modelo a mitad de respuesta, empieza de cero y repite las herramientas (gasta peticiones y tiempo). Aprovechar lo ya hecho no es directo (las firmas de razonamiento de Gemini 3 van con cada modelo); mirarlo con la IA en el Worker (0.8/0.9). Lo mismo con un corte (0.7f): la petición se repite entera.
-Visto el 30 oct (0.7i): el resto de pestañas en un ordenador ancho (Análisis, Paso a paso, Mercados) no se han mirado a 2.048 px; seguramente tienen lo mismo que Expertos. Candidata: rediseño de diciembre («ordenador a dos columnas»), o una letra si Carlos lo pide antes.
-De la revisión aparte de la 0.7d (leves, sin hacer): el primer aviso del código se pierde si se sale de la app justo después de crear la cuenta (sale un aviso en vez del código; aceptable) y revisarKit deja de intentarlo a los 2,5 min si el tutorial sigue abierto (llamarlo al acabar el tutorial); las pruebas de entrada corta, de Escape en GrowIA, «GrowIA se baja al abrirla» (trozos) y tests/growia.spec.js fallan de vez en cuando con toda la tanda a la vez (pasan solas).
-Ideas de los amigos (23 oct):
-- Hecho en la 0.5b: que GrowIA gaste menos cupo de la clave de cada uno (búsqueda con Flash-Lite y antes las noticias que GrowFolio ya tiene).
-- Swing trading (de días a semanas), para fundadores y con un tope que pone cada uno (Carlos ya tiene el suyo para apuestas): lo que se mueve en el radar y, en cada operación, entrada, stop, objetivo y plazo, con la regla de los dos meses de Hacienda a la vista. Day trading, no: los precios van con retraso, GrowFolio no es una terminal de bróker y en estándar serían recomendaciones. Por qué: lo pide Josmi («bicheos» de días, no de meses). Candidata: 1.1, con los datos del Worker (0.8).
-- Noticias más útiles (en todas las listas: ficha, Expertos, Mercados, Fiscalidad): cada titular con su factor (negocio, sector, macro, político, social, mercado), si es bueno o malo para la acción y cuánto importa, lo importante arriba y sin repetidos. Sin fotos de la prensa (son de agencias y periódicos, cargarlas de fuera da tu IP a esas webs y pesan); como mucho el logo de la empresa o del medio, guardado en GrowFolio. Por qué: lo pidió Carlos el 23 oct. Entra en la 0.7 «GrowIA fiable» (sale de la misma lectura que las fichas).
-- Noticias enteras en la app sin pagar a Google: la Action saca el enlace real de cada noticia de Google Noticias (hoy GrowIA solo puede leer el titular; los de pago seguirán sin abrirse). Con eso, también la foto de vista previa de cada noticia (la de WhatsApp), servida desde GrowFolio para no dar la IP de nadie; antes de enseñarla en abierto, que la mire el abogado de la 0.9 (las fotos son de agencias y periódicos). Lo pidió Carlos el 25 oct. Por qué: desde la 0.7a, casi todas las noticias se resumen solo por el titular (25 oct). Candidata: 0.8, con el Worker.
-- GrowFolio como servidor MCP (que Claude u otra IA lea tu cartera con permiso). Por qué: lo preguntó Carlos el 23 oct. Candidata: después de la 1.0.
-- Contenido para las redes que se haga solo (la imagen del mapa de Mercados de cada día, el resumen de la semana) con una Action. Por qué: Carlos preguntó el 30 oct por automatizar las publicaciones (claude/redes.md). Candidata: cuando haya seguidores, con el Worker (0.8 en adelante).
-No: comunidad pública, operar desde la app, day trading.
-Regla: una idea nueva se apunta con su por qué y versión candidata; el backlog se revisa en la sesión de plan de cada versión.
+Puntuación: impacto para el usuario (1–5), diferenciación en España (1–5), esfuerzo en sesiones (S una, M dos o tres, L cuatro a seis, XL más), coste al mes, riesgo legal, de quién depende.
+
+## Sin versión fija, por orden de puntuación
+| Idea | Imp. | Dif. | Esf. | Coste | Legal | Depende | Candidata | De dónde sale |
+|---|---|---|---|---|---|---|---|---|
+| Edad de tu dinero invertido (antigüedad media ponderada) | 3 | 4 | S | 0 | — | — | 0.8.4 (Tu año) | YNAB |
+| Tendencias 90 días frente a 12 meses (ritmo de aportación, costes, diversificación) | 3 | 4 | M | 0 | bajo | — | 0.9.1 o 1.1 | Apple Fitness |
+| Pendientes con «posponer una semana» | 2 | 3 | M | 0 | bajo | — | 1.0.x | Linear |
+| Ctrl/Cmd+K en la web | 2 | 2 | S–M | 0 | — | — | 1.0.x si cabe | Linear |
+| Rentabilidad separada: no realizada, realizada, dividendos, efecto divisa | 3 | 3 | M | 0 | — | — | 1.1 | Simply Wall St, Sharesight |
+| Preguntas para tu asesor o tu banco (la IA prepara 5–8 sobre tu cartera) | 3 | 4 | S | 0,001 €/Pro | bajo | — | 1.1 | bloque 4 |
+| Laboratorio en lenguaje natural («¿y si aporto 200 € más?» → parámetros del simulador) | 3 | 3 | S | 0 | bajo | — | 1.1 | bloque 4 |
+| Dictar un movimiento («compré 3 Iberdrola a 12,40 el martes») | 2 | 3 | S | 0 | — | — | 1.1 | bloque 4 |
+| Entrevista de perfil con la IA (rellena Tú sin proponer productos) | 3 | 3 | M | 0,02 €/una vez | bajo | — | 1.2 | bloque 4 |
+| Solapamientos explicados por la IA (el X-Ray calcula) | 2 | 3 | S | 0 | — | — | 1.2 | bloque 4 |
+| Snowflake o gráfico-resumen de los seis factores de cada ficha | 3 | 2 | M | 0 | — | — | 1.2 | Simply Wall St |
+| Insignias de antigüedad de suscripción, «Miembro n.º X» | 2 | 2 | S | 0 | — | — | 1.2 | getquin, Arc |
+| Importar reenviando el correo de confirmación del bróker | 3 | 3 | L | 0 | RGPD | correo propio | 1.3 o después | Sharesight |
+| Acceso de un beneficiario tras inactividad («Life Beat») | 2 | 4 | M | 0 | medio | — | 2.0 | Kubera |
+| Terminal de análisis como producto aparte | 2 | 1 | XL | datos | — | licencia | no, salvo que se pida | Parqet Terminal |
+| Swing trading para fundadores con tope propio (lo pidió Josmi en oct) | 2 | 2 | L | 0 | alto en estándar | solo fundador | 1.3 si los amigos lo siguen pidiendo | amigos |
+| Noticias enteras sin pagar (enlace real de Google Noticias y foto servida desde Toisón) | 3 | 1 | M | 0 | derechos de prensa | abogado | 1.2 | Carlos, 25 oct |
+| Contenido para redes que se haga solo (mapa del día, resumen de la semana) | 2 | 2 | M | 0 | — | — | con La semana (1.0.1) | Carlos, 30 oct |
+| Titularidad por posición (gananciales, pareja, herencia) con la renta por persona | 3 | 5 | M | 0 | bajo | — | 1.1 | Rankia, bloque 2 |
+| Tendencias y hábitos que se recortaron del plan si falta tiempo: anillos y racha (0.9.1), picos explicados (0.8.7), páginas por bróker (1.0.1) | — | — | — | — | — | — | se recuperan en la siguiente intermedia | roadmap |
+| Toisón como servidor MCP de solo lectura | 3 | 4 | L | 0 | medio | cifrado | 1.4 | Parqet, Finary, Rotki |
+| Más diseños, atajos de teclado, módulos ES, CSS por secciones | 1 | 1 | M | 0 | — | — | cuando sobre tiempo | 0.6 |
+| Comunidad pública con rankings; operar desde la app; day trading; precios objetivo por IA; anuncios; plan de por vida; servicio humano de renta | — | — | — | — | alto | — | NO (ver el roadmap, «Lo que no se va a hacer») | ESMA, CNMV, MAR |
+
+## Visto y pendiente (técnico)
+- Del 0.6: pasar a módulos ES poco a poco; partir el CSS por secciones; radar y escaneo más ligeros.
+- Visto el 29 oct: cuando la IA cambia de modelo a mitad de respuesta, empieza de cero y repite las herramientas. Mirarlo al pasar la IA a Firebase Functions (0.9).
+- Visto el 30 oct (0.7i): el resto de pestañas en un ordenador ancho (Análisis, Mercados) no se han mirado a 2.048 px. Candidata: una letra.
+- De la revisión aparte de la 0.7d (leves): el primer aviso del código se pierde si se sale justo después de crear la cuenta; revisarKit deja de intentarlo a los 2,5 min con el tutorial abierto; pruebas de entrada corta, Escape en la IA y growia fallan a veces con toda la tanda a la vez.
+- Pendiente de la auditoría del 4 nov: aria-modal de la IA al cambiar el tamaño de la ventana; código muerto (pavHacienda, PAV_LUEGO).
+- TTL de fallos_ia: con Blaze (0.8.3), crear el TTL sobre «caduca» y quitar limpiarFallosIA.
+- Del revisor del roadmap (4 nov): la AI Act pide alfabetización documentada (art. 4): una página «cómo usa Toisón la IA» (0.9); seguro de responsabilidad civil: preguntar al asesor en febrero; registro de actividades de tratamiento (0.9, con el abogado).
+- Las ramas pruebas-rapidas, v0.7q–v0.7v, v0.9, v0.9-noche y v0.8.1 ya están en main: se pueden borrar.
+
+## Reglas
+- Una idea nueva se apunta aquí con su puntuación, su por qué y su versión candidata; el backlog entero se revisa en la sesión de plan de cada gorda, no antes.
+- Regla de diseño (ESMA 2023, Robinhood 2021): «celebra el plan, no la operación». Nada de confeti, «lo más comprado», avisos de precio con botón ni rankings de rentabilidad.
+- Lo que toque cuentas, cifrado, Hacienda, pagos o el prompt público de la IA lleva revisión aparte antes de publicarse.
