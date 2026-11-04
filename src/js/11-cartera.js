@@ -137,7 +137,7 @@ function htmlAvisoNovedades() {
   if (diasEntre(vista.d, hoyIso()) > 3) return '';
   return `<div class="nov-aviso" role="note"><span class="nov-aviso-ic" aria-hidden="true">${ICONOS.chispa}</span>
     <button type="button" class="nov-aviso-t" data-accion="novedades-detalle"><small data-no-trad>${L(`Novedades de la ${esc(n.v)}`, `What's new in ${esc(n.v)}`)}</small><b>${esc(n.t)}</b></button>
-    <span class="nov-aviso-b">${pasosGuia().length ? `<button type="button" class="btn peq pri" data-accion="novedades-guia">${L('Guíame', 'Show me')}</button>` : ''}<button type="button" class="btn peq" data-accion="novedades-detalle">${L('Ver en detalle', 'See details')}</button></span>
+    <span class="nov-aviso-b">${esGorda(n.v) && pasosGuia().length ? `<button type="button" class="btn peq pri" data-accion="novedades-guia">${L('Guíame', 'Show me')}</button>` : ''}<button type="button" class="btn peq" data-accion="novedades-detalle">${L('Ver en detalle', 'See details')}</button></span>
     <button type="button" class="ib nov-aviso-x" data-accion="novedades-ocultar" aria-label="${L('Quitar el aviso', 'Dismiss')}">${ICONOS.cerrar}</button></div>`;
 }
 function htmlBloqueCar(k, M) {

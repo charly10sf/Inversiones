@@ -103,7 +103,10 @@ export function partirNovedades(texto) {
   if (i < 0 || j < 0) throw new Error('No encuentro NOVEDADES en ' + ARCHIVO_NOV);
   const ini = i + 'const NOVEDADES = [\n'.length, cuerpo = texto.slice(ini, j + 1);
   const cortes = [...cuerpo.matchAll(/^ {2}\{ v: '([\d.]+[a-z]?)'/gm)];
-  const k = cortes.findIndex((m) => !/[a-z]$/.test(m[1]));   // la primera de número (sin letra)
+  // la primera gorda (sin letra y con dos números, o de antes de la 0.8.2, cuando toda versión sin letra lo era; regla de
+  // esGorda en 46-lo-nuevo.js): en la 0.9.1a se quedan la 0.9.1a, la 0.9.1, la 0.9a y la 0.9, que son las de la guía
+  const antesDeNiveles = (v) => { const [a, b, c] = v.split('.').map(Number); return a !== 0 ? false : b !== 8 ? b < 8 : (c || 0) < 2; };
+  const k = cortes.findIndex((m) => !/[a-z]$/.test(m[1]) && (/^\d+\.\d+$/.test(m[1]) || antesDeNiveles(m[1])));
   if (k < 0 || k + 1 >= cortes.length) return { nucleo: texto, resto: '' };
   const corte = cortes[k + 1].index;
   return { nucleo: texto.slice(0, ini) + cuerpo.slice(0, corte) + texto.slice(j + 1), resto: 'NOVEDADES.push(\n' + cuerpo.slice(corte) + ');\n' };

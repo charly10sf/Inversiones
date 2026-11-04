@@ -8,7 +8,32 @@
    en la que estás (en la 0.4b, la de la 0.4) y sale hasta que la haces o ves lo nuevo */
 const esParche = (v) => /[a-z]$/.test(String(v || ''));
 const baseVer = (v) => String(v || '').replace(/[a-z]+$/, '');
-const GUIA_ID = () => baseVer(VERSION);
+/* Tres niveles desde la 0.8.2 (regla de Carlos del 4 nov; claude/cerrar-version.md): gorda (dos números: 0.9, 1.0), con
+   presentación de lo nuevo bajando, guía y «Nuevo» en la barra; intermedia (tres números: 0.8.2, 0.9.1), con una hoja
+   corta al abrirla y sin guía ni «Nuevo»; y letra (0.9a, 0.9.1b), los arreglos de siempre. Antes de la 0.8.2 toda versión
+   sin letra contaba como de número (la 0.3.11 o la 0.8.1 tuvieron su guía), así que siguen siendo gordas. La guía es la
+   de la gorda en la que estás: en la 0.9.1b, la de la 0.9 */
+const NIVELES_DESDE = '0.8.2';
+const esGorda = (v) => !esParche(v) && (/^\d+\.\d+$/.test(String(v || '')) || cmpVer(v, NIVELES_DESDE) < 0);
+const esIntermedia = (v) => !esParche(v) && !esGorda(v);
+// la gorda de una versión: sus dos primeros números (0.9.1a → 0.9), salvo en la 0.8, donde la última gorda es la 0.8.1
+// (0.8.2 → 0.8.1): ahí se busca la última de antes en NOVEDADES
+function gordaDe(v) {
+  const b = baseVer(v), dos = b.replace(/^(\d+\.\d+).*$/, '$1');
+  if (esGorda(b) || cmpVer(dos, NIVELES_DESDE) >= 0) return esGorda(b) ? b : dos;
+  const g = NOVEDADES.find((n) => esGorda(n.v) && cmpVer(n.v, b) <= 0);
+  return g ? g.v : dos;
+}
+const GUIA_ID = () => gordaDe(VERSION);
+// qué se enseña al abrir una versión que no habías visto: sus arreglos (misma versión de número: de la 0.9 a la 0.9a), la
+// hoja corta (una intermedia sin haberte saltado ninguna gorda: de la 0.9 a la 0.9.1) o lo nuevo contado bajando (el resto)
+function caminoNovedades(visto, v = VERSION) {
+  if (!visto) return 'gorda';
+  if (cmpVer(visto, v) >= 0) return null;
+  if (baseVer(visto) === baseVer(v)) return 'letra';
+  if (esIntermedia(baseVer(v)) && gordaDe(visto) === gordaDe(v)) return 'corta';
+  return 'gorda';
+}
 /* Novedades para todos o solo para el dueño (0.8a; lo pidió Carlos el 3 nov): a los demás solo les sale lo que de verdad
    es nuevo para ellos. Una cosa con «solo: 'dueno'», o un arreglo escrito como { t: '…', solo: 'dueno' }, lo ve el dueño
    y nadie más. Una versión de letra que se queda sin nada para ti no sale (ni su mensaje corto ni en el historial).
@@ -23,10 +48,12 @@ function novVisibles() {
     return { ...n, cosas: cosas && cosas.length ? cosas : undefined, arreglos: arreglos && arreglos.length ? arreglos : undefined };
   }).filter((n) => !esParche(n.v) || n.cosas || n.arreglos);
 }
+// la versión de número en la que estás (la del aviso de Inicio) y la gorda de la que es la guía
 const novBase = () => { const ns = novVisibles(); return ns.find((n) => n.v === baseVer(VERSION)) || ns.find((n) => !esParche(n.v)) || ns[0]; };
+const novGorda = () => { const ns = novVisibles(); return ns.find((n) => n.v === GUIA_ID()) || ns.find((n) => esGorda(n.v)) || ns[0]; };
 // los pasos de la guía de una novedad: «ir» puede ser uno o varios (cada uno con su título y su texto si los trae)
 const pasosDeCosa = (c, v) => (Array.isArray(c.ir) ? c.ir : [c.ir]).map((ir) => ({ t: c.t, x: c.g || c.x, dib: c.d, ...ir, nuevo: v }));
-const pasosGuia = (ns = [novBase()]) => ns.filter((n) => !esParche(n.v)).flatMap((n) => (n.cosas || []).filter((c) => c.ir).flatMap((c) => pasosDeCosa(c, n.v)));
+const pasosGuia = (ns = [novGorda()]) => ns.filter((n) => n && esGorda(n.v)).flatMap((n) => (n.cosas || []).filter((c) => c.ir).flatMap((c) => pasosDeCosa(c, n.v)));
 // la versión cuyas novedades has visto: con un arreglo de la misma versión se queda el día en que la viste
 function marcarNovVista() {
   const pv = LS.get('inv-nov-vista') || {};
@@ -44,7 +71,7 @@ function guiaNuevo(alAcabar, pasos = pasosGuia()) {
 const GUIA_NUEVO = true;
 function grupoNuevo() {
   if (!GUIA_NUEVO) return null;
-  if (LS.get('inv-guia', '') === GUIA_ID() || baseVer((LS.get('inv-nov-vista') || {}).v) !== baseVer(VERSION)) return null;
+  if (LS.get('inv-guia', '') === GUIA_ID() || gordaDe((LS.get('inv-nov-vista') || {}).v) !== GUIA_ID()) return null;
   const ps = pasosGuia(), p = ps.find((x) => x.nav) || ps[0];
   return p ? grupoDe(p.v).k : null;
 }

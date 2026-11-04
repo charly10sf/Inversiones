@@ -25,8 +25,11 @@ function bienvenida(intento = 0) {
   // la 0.4d rehízo la presentación y la guía de la 0.4: quien ya iba por la 0.4 (0.4, 0.4a, 0.4b o 0.4c) las ve otra
   // vez, una sola, con la guía y el «Nuevo» de Mercados como si acabara de llegar
   if (visto && baseVer(visto) === '0.4' && !LS.get('inv-nov-04')) { LS.del('inv-guia'); LS.del('inv-guia-globo'); return mostrarNovedades('0.3.11e', despues); }
-  if (visto && cmpVer(visto, VERSION) < 0 && baseVer(visto) === baseVer(VERSION)) return arreglosVistos(visto, despues);
-  if (!visto || cmpVer(visto, VERSION) < 0) return mostrarNovedades(visto, despues);
+  // los arreglos en su tarjeta, la hoja corta de una intermedia (sin guía ni presentación) o lo nuevo contado bajando
+  const camino = caminoNovedades(visto);
+  if (camino === 'letra') return arreglosVistos(visto, despues);
+  if (camino === 'corta') return mostrarNovedades(visto, despues, 'corta');
+  if (camino === 'gorda') return mostrarNovedades(visto, despues);
   // la 0.2.3b estuvo unos minutos sin sus bugs corregidos: a quien la abrió entonces se le enseña otra vez, una sola
   if (visto === '0.2.3b' && !LS.get('inv-023b-arr')) return mostrarNovedades('0.2.3', despues);
   despues();

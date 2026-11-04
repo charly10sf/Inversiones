@@ -24,7 +24,7 @@ GrowFolio es la web y app de Android de Carlos para llevar inversiones (GitHub P
 
 ## Versiones
 
-Para cerrar una versión, lee claude/cerrar-version.md.
+Para cerrar una versión, lee claude/cerrar-version.md. Tres niveles desde la 0.8.2: gorda (dos números: 0.9, 1.0; lo nuevo bajando, guía y «Nuevo»), intermedia (tres: 0.8.2, 0.9.1; hoja corta, sin guía) y letra (arreglos). Lo decide `caminoNovedades` (46-lo-nuevo.js).
 
 ## Textos
 

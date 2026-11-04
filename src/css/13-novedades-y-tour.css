@@ -136,6 +136,12 @@
 .nov-ant-t b { font-size: 14.5px; font-weight: 600; }
 .nov-ant-t small { color: var(--tenue); font-size: 12.5px; }
 .nov-ant .nov-lista { padding: 4px 14px 16px; }
+/* las intermedias, dentro de su gorda (0.9.1 en la 0.9), y la hoja corta de una intermedia */
+.nov-hijas { display: grid; gap: 8px; padding: 0 14px 14px; }
+.nov-hijas .nov-ant { background: transparent; }
+.nov-corta .nov-lista li:not(:has(.dib)) > div { padding-left: 14px; border-left: 2px solid var(--oro-texto); }
+.nov-arr-pleg > summary { cursor: pointer; font-size: 14px; font-weight: 650; color: var(--texto-2); padding: 6px 0; }
+.nov-arr-pleg > ul { margin-top: 8px; }
 .tour-dib { display: flex; justify-content: center; margin: -2px 0 6px; }
 .tour-dib .dib { width: 120px; height: 80px; }
 .tour-nuevo { display: inline-block; margin-bottom: 6px; padding: 2px 9px; border-radius: 999px; background: var(--primario-fondo); color: var(--primario); font-size: 12px; font-weight: 700; }

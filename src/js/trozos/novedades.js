@@ -128,12 +128,16 @@ function avisoArreglos(ns, que, visto, intento = 0) {
 function mostrarNovedades(desde, alCerrar, lista = false) {
   if ((LS.get('inv-nov-vista') || {}).v !== VERSION) { marcarNovVista(); if (S.cartera) setTimeout(() => { if (S.vista === 'cartera' && !S.ficha) pintar(); }, 60); }
   LS.set('inv-version', VERSION); LS.set('inv-vnum', 2); LS.set('inv-023b-arr', true); LS.set('inv-nov-030', true); LS.set('inv-nov-04', true);
+  if (lista === 'corta') return hojaIntermedia(desde, alCerrar);
   const NV = novVisibles();   // sin lo que es solo para el dueño, si no lo eres
   let nuevas = NV.filter((n) => (n.cosas || n.arreglos) && desde && cmpVer(n.v, desde) > 0);
   if (!nuevas.length) nuevas = [NV[0]];
   // al estrenar versión, lo nuevo se cuenta bajando (como la presentación); desde Ajustes, la lista
   if (desde && !lista) return novedadesScroll(nuevas, desde, alCerrar);
-  const resto = NV.filter((n) => !nuevas.includes(n));
+  // en las anteriores, cada intermedia (y sus letras) cuelga de su gorda: la 0.9.1 y la 0.9.1a, dentro de la 0.9
+  const cuelga = (n) => cmpVer(n.v, NIVELES_DESDE) >= 0 && esIntermedia(baseVer(n.v));
+  const resto = NV.filter((n) => !nuevas.includes(n)), gordasResto = new Set(resto.filter((n) => esGorda(n.v)).map((n) => n.v));
+  const hijas = (g) => resto.filter((n) => cuelga(n) && gordaDe(n.v) === g.v);
   const pasos = [], idx = new Map();
   for (const n of nuevas) for (const c of n.cosas || []) if (c.ir && !esParche(n.v)) { idx.set(c, pasos.length); pasos.push(...pasosDeCosa(c, n.v)); }
   const item = (c, i, ir) => `<li style="--i:${i}">${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${ir && idx.has(c) ? `<button type="button" class="enlace nov-ir" data-nov-ir="${idx.get(c)}">Enséñamelo</button>` : ''}</div></li>`;
@@ -144,12 +148,13 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
     <h3>${esc(n.t)}</h3>
     <ul class="nov-lista">${(n.cosas || []).map((c, i) => item(c, i, true)).join('')}</ul>${arr(n)}
   </section>`;
-  const antes = (n) => `<details class="nov-ant"><summary><span class="nov-num peq">${esc(n.v)}</span><span class="nov-ant-t"><b>${esc(n.t)}</b><small>${fechaNov(n.f, n.h)}</small></span></summary>${n.cosas ? `<ul class="nov-lista">${n.cosas.map((c, i) => item(c, i, false)).join('')}</ul>` : ''}${arr(n)}</details>`;
+  const antes = (n) => `<details class="nov-ant"><summary><span class="nov-num peq">${esc(n.v)}</span><span class="nov-ant-t"><b>${esc(n.t)}</b><small>${fechaNov(n.f, n.h)}</small></span></summary>${n.cosas ? `<ul class="nov-lista">${n.cosas.map((c, i) => item(c, i, false)).join('')}</ul>` : ''}${arr(n)}${esGorda(n.v) && hijas(n).length ? `<div class="nov-hijas">${hijas(n).map(antes).join('')}</div>` : ''}</details>`;
+  const sueltas = resto.filter((n) => !(cuelga(n) && gordasResto.has(gordaDe(n.v))));
   // si llevabas tiempo sin entrar, salen todas las que te has perdido, enteras, de la más nueva a la más antigua
   const nBases = new Set(nuevas.map((n) => baseVer(n.v))).size;
   const perdidas = nBases > 1 ? `<p class="nov-perdidas">${dibujo('tour')}<span><b>Te has perdido ${nuevas.length} actualizaciones</b>Desde la ${esc(desde)}, que fue la última que viste. Aquí van todas, de la más nueva a la más antigua.</span></p>` : '';
   const h = hoja(nBases > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}<div class="nov-guia-fila">${pasos.length ? `<button type="button" class="btn pri nov-todo" data-nov-todo>${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}<button type="button" class="btn nov-scroll" data-nov-scroll>${L('Verlas con dibujos', 'See them with drawings')}</button></div>${nuevas.map(bloque).join('')}
-    ${resto.length ? `<section class="nov-antes" aria-labelledby="hNovAnt"><h3 id="hNovAnt">Versiones anteriores</h3>${resto.map(antes).join('')}</section>` : ''}
+    ${sueltas.length ? `<section class="nov-antes" aria-labelledby="hNovAnt"><h3 id="hNovAnt">Versiones anteriores</h3>${sueltas.map(antes).join('')}</section>` : ''}
     <button type="button" class="enlace nov-reg" data-nov-reg>Ver el registro completo de versiones</button>
     <div class="fila-btns"><button class="btn" data-tour-ya>Ver el tutorial</button><button class="btn" data-cerrar>Cerrar</button></div>
   </div>`, alCerrar);
@@ -160,6 +165,29 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   $('[data-tour-ya]', h.el).onclick = () => { h.cerrar(true); iniciarTour(0, alCerrar); };
   if (pasos.length) $('[data-nov-todo]', h.el).onclick = () => ir(0);
   for (const b of $$('[data-nov-ir]', h.el)) b.onclick = () => { h.cerrar(true); iniciarTour(0, () => mostrarNovedades(desde, alCerrar, true), [pasos[+b.dataset.novIr]], 'Volver a las novedades'); };
+}
+
+/* La hoja corta de una intermedia (0.8.2, 0.9.1…): lo nuevo desde la que tenías, en texto (con su dibujo solo si lo trae),
+   cada cosa con «Ir» si tiene sitio y los arreglos plegados al final. Sin guía, sin «Nuevo» en la barra y sin contarlo
+   bajando: eso es de las gordas. Si no queda nada para ti (todo era solo para el dueño), no sale */
+function hojaIntermedia(desde, alCerrar = () => {}, hasta = VERSION) {
+  const ns = novVisibles().filter((n) => cmpVer(n.v, desde) > 0 && cmpVer(n.v, hasta) <= 0);
+  const cab = ns.find((n) => n.v === baseVer(hasta)) || ns.find((n) => !esParche(n.v)) || ns[0];
+  const cosas = ns.flatMap((n) => (n.cosas || []).map((c) => ({ ...c, v: n.v }))), arreglos = ns.flatMap((n) => n.arreglos || []);
+  if (!cab || (!cosas.length && !arreglos.length)) return alCerrar();
+  const item = (c, i) => `<li style="--i:${i}">${c.d ? dibujo(c.d) : ''}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${c.ir ? `<button type="button" class="enlace nov-ir" data-corta-ir="${i}">${L('Ir', 'Go')}</button>` : ''}</div></li>`;
+  const n = arreglos.length;
+  const h = hoja(L(`Novedades de la ${baseVer(hasta)}`, `What's new in ${baseVer(hasta)}`), `<div class="novedades nov-corta">
+    <section class="nov-v"><div class="nov-cab"><span class="nov-num">${esc(hasta)}</span><small>${fechaNov(cab.f, cab.h)}</small></div>
+      <h3>${esc(cab.t)}</h3>
+      ${cosas.length ? `<ul class="nov-lista">${cosas.map(item).join('')}</ul>` : ''}
+      ${n ? `<details class="nov-arr nov-arr-pleg"${cosas.length ? '' : ' open'}><summary>${L(`${n} ${n === 1 ? 'arreglo' : 'arreglos'}`, `${n} ${n === 1 ? 'fix' : 'fixes'}`)}</summary><ul>${arreglos.map((a) => `<li>${ICONOS.ok}<span>${esc(a)}</span></li>`).join('')}</ul></details>` : ''}
+    </section>
+    <div class="fila-btns"><button type="button" class="btn" data-corta-todas>${L('Todas las novedades', 'All updates')}</button><button type="button" class="btn pri" data-cerrar>${L('Entendido', 'Got it')}</button></div>
+  </div>`, alCerrar);
+  h.el.classList.add('hoja-nov', 'hoja-corta');
+  $('[data-corta-todas]', h.el).onclick = () => { h.cerrar(true); mostrarNovedades(desde, alCerrar, true); };
+  for (const b of $$('[data-corta-ir]', h.el)) b.onclick = () => { const c = cosas[+b.dataset.cortaIr]; h.cerrar(true); iniciarTour(0, () => hojaIntermedia(desde, alCerrar, hasta), pasosDeCosa(c, c.v), L('Volver a las novedades', 'Back to the updates')); };
 }
 
 /* Las novedades contadas bajando, como la presentación: el número de versión se monta letra a letra y cada cosa
