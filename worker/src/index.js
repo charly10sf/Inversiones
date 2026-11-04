@@ -80,12 +80,20 @@ async function sesionTerminada(env, sesion) {
 }
 
 /* ---------- quién llama: el token de Firebase de su cuenta de GrowFolio ---------- */
-let jwks = null, jwksT = 0;
+let jwks = null, jwksT = 0, jwksRebajado = 0;
+// con un kid que no conocemos se vuelve a pedir la lista (Google la rota), pero como mucho una vez cada 30 s: un token
+// inventado no hace que el Worker baje las claves en cada petición, y un kid nuevo de verdad entra como mucho a los 30 s.
+// Una respuesta mala de Google no pisa las claves buenas (auditoría del 4 nov)
 async function claveFB(env, kid) {
   for (let intento = 0; intento < 2; intento++) {
-    if (!jwks || Date.now() - jwksT > 3600e3 || intento) {
-      const r = await fetch(env.FB_JWKS || FB_JWKS);
-      jwks = ((await r.json()) || {}).keys || []; jwksT = Date.now();
+    const vieja = !jwks || Date.now() - jwksT > 3600e3;
+    if (vieja || (intento && Date.now() - jwksRebajado > 30e3)) {
+      if (intento) jwksRebajado = Date.now();
+      try {
+        const r = await fetch(env.FB_JWKS || FB_JWKS), keys = r.ok ? ((await r.json()) || {}).keys : null;
+        if (Array.isArray(keys) && keys.length) { jwks = keys; jwksT = Date.now(); }
+      } catch (e) { /* se queda con las que había */ }
+      if (!jwks) jwks = [];
     }
     const k = jwks.find((x) => x.kid === kid);
     if (k) return k;
@@ -320,6 +328,10 @@ const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
 const CLAUDE_MODELOS = ['claude-haiku-5-5', 'claude-sonnet-5-5'];
 const CLAUDE_CAMPOS = ['model', 'max_tokens', 'system', 'messages', 'tools', 'tool_choice', 'thinking', 'output_config', 'stream', 'temperature'];
 const CLAUDE_MAX_SALIDA = 32000, CLAUDE_MAX_CUERPO = 600e3, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 30, CLAUDE_RONDAS_POR_DIA = 90;
+// 0.9 (auditoría del 4 nov): el tamaño en caracteres no frena el gasto (un PDF comprimido trae cientos de páginas). Tope de
+// tokens de entrada, contados gratis con /v1/messages/count_tokens solo cuando la petición es grande o lleva adjuntos, y
+// tope de adjuntos por petición
+const CLAUDE_MAX_ENTRADA = 120000, CLAUDE_MAX_PDF = 2, CLAUDE_MAX_IMAGENES = 12, CLAUDE_CONTAR_DESDE = 120e3, CLAUDE_RONDAS_POR_PREGUNTA = 16;
 // las reglas de uso, puestas por el Worker y no por la app: quien llame a /claude con su propio «system» no se las salta
 // 0.8: «GrowIA» pasa a «la IA de Toisón», como en la app (NOTA_CLAUDE de 55-asesor-contexto.js)
 const CLAUDE_NOTA = 'La IA de Toisón es una IA (funciona con Claude, de Anthropic) y debe decirlo si se lo preguntan. No da asesoramiento personalizado de inversión ni de impuestos: no dice a nadie que compre, venda o mantenga un valor concreto, ni cuánto meter ni a qué precio. Explica, compara y calcula; las decisiones son de cada persona.';
@@ -332,17 +344,28 @@ function adjuntoFuera(x) {
   if (x.source && typeof x.source === 'object' && !['base64', 'text'].includes(x.source.type)) return true;
   return adjuntoFuera(x.content);
 }
+// cuántos adjuntos de un tipo lleva la petición (en los mensajes, a cualquier profundidad)
+function contarBloques(x, tipo) {
+  if (Array.isArray(x)) return x.reduce((t, y) => t + contarBloques(y, tipo), 0);
+  if (!x || typeof x !== 'object') return 0;
+  return (x.type === tipo ? 1 : 0) + contarBloques(x.content, tipo);
+}
 // el contador de cada correo (día UTC): n, las preguntas que lleva hoy (peticiones «primera»), y r, todas las peticiones,
 // rondas de herramientas incluidas. Un Durable Object por correo, con su almacén propio.
 export class Cuotas {
   constructor(estado) { this.estado = estado; }
   async fetch(req) {
-    const { dia, tope, topeRondas, primera = true } = await req.json();
+    const { dia, tope, topeRondas, primera: primeraApp = true, pregunta = null, topePregunta = 16 } = await req.json();
     let c = (await this.estado.storage.get('c')) || { dia, n: 0, r: 0 };
     if (c.dia !== dia) c = { dia, n: 0, r: 0 };
-    c.r = c.r || 0;
-    if ((primera && c.n >= tope) || (topeRondas && c.r >= topeRondas)) return new Response(JSON.stringify({ ok: false, n: c.n, r: c.r }));
+    c.r = c.r || 0; c.ids = c.ids || {};
+    // con id de pregunta (0.9): un id nuevo gasta pregunta; uno conocido, no, pero con su tope de peticiones. Sin id, lo de
+    // antes: manda «ronda»
+    const conocida = pregunta && Object.prototype.hasOwnProperty.call(c.ids, pregunta);
+    const primera = pregunta ? !conocida : primeraApp;
+    if ((primera && c.n >= tope) || (topeRondas && c.r >= topeRondas) || (conocida && c.ids[pregunta] >= topePregunta)) return new Response(JSON.stringify({ ok: false, n: c.n, r: c.r }));
     if (primera) c.n += 1;
+    if (pregunta) c.ids[pregunta] = (c.ids[pregunta] || 0) + 1;
     c.r += 1;
     await this.estado.storage.put('c', c);
     return new Response(JSON.stringify({ ok: true, n: c.n, r: c.r }));
@@ -381,8 +404,28 @@ async function claude(req, env, cors, res) {
     cuerpo.tools = cuerpo.tools.map((h) => (/^web_search_/.test(String(h.type || '')) ? { ...h, max_uses: Math.min(Number(h.max_uses) || maxBusquedas, maxBusquedas) } : h));
   }
   if (adjuntoFuera(cuerpo.messages) || adjuntoFuera(cuerpo.system)) return res({ error: 'peticion', motivo: 'adjunto' }, 400);
+  const pdfs = contarBloques(cuerpo.messages, 'document'), imgs = contarBloques(cuerpo.messages, 'image');
+  if (pdfs > (Number(env.CLAUDE_MAX_PDF) || CLAUDE_MAX_PDF) || imgs > (Number(env.CLAUDE_MAX_IMAGENES) || CLAUDE_MAX_IMAGENES)) return res({ error: 'peticion', motivo: 'adjuntos' }, 400);
   if (cuerpo.system !== undefined && typeof cuerpo.system !== 'string' && !Array.isArray(cuerpo.system)) return res({ error: 'peticion', motivo: 'system' }, 400);
   cuerpo.system = [{ type: 'text', text: CLAUDE_NOTA }, ...(typeof cuerpo.system === 'string' ? (cuerpo.system ? [{ type: 'text', text: cuerpo.system }] : []) : cuerpo.system || [])];
+  const idPreg = typeof c.pregunta === 'string' && /^[a-z0-9]{8,64}$/i.test(c.pregunta) ? c.pregunta : null;
+  // los tokens de entrada, solo si es grande o lleva adjuntos (contar es gratis pero añade una vuelta). Si el conteo falla,
+  // se sigue: siguen valiendo el tope del día y el límite de gasto del workspace
+  // por bytes, no por caracteres: los tokens nunca pasan de los bytes, así que por debajo del umbral no hace falta contar
+  if (te.encode(texto).length > (Number(env.CLAUDE_CONTAR_DESDE) || CLAUDE_CONTAR_DESDE) || pdfs || imgs) {
+    let n = null;
+    try {
+      const { model, system, messages, tools, tool_choice, thinking } = cuerpo;
+      const rc = await fetch(`${env.CLAUDE_API || CLAUDE_API}/count_tokens`, { method: 'POST', signal: req.signal, headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' }, body: JSON.stringify({ model, system, messages, ...(tools ? { tools } : {}), ...(tool_choice ? { tool_choice } : {}), ...(thinking ? { thinking } : {}) }) });
+      const jc = rc.ok ? await rc.json() : null;
+      if (jc && typeof jc.input_tokens === 'number') n = jc.input_tokens;
+    } catch (e) { /* sin conteo */ }
+    // las rondas siguientes de una pregunta crecen con lo que ha buscado: el doble de margen para no cortar a mitad
+    const tope = (Number(env.CLAUDE_MAX_ENTRADA) || CLAUDE_MAX_ENTRADA) * (Number.isInteger(c.ronda) && c.ronda > 1 ? 2 : 1);
+    if (n != null && n > tope) return res({ error: 'grande', tokens: n }, 413);
+    // con un PDF, sin conteo no se pasa (es justo lo que puede salir caro); con texto o imágenes, sí
+    if (n == null && pdfs) return res({ error: 'cuenta' }, 503);
+  }
   // el tope del día, al final de las comprobaciones de la petición: lo que se rechaza arriba no gasta pregunta
   {
     // sin el contador no hay tope diario: no se pregunta (la app pasa a Gemini)
@@ -391,8 +434,10 @@ async function claude(req, env, cors, res) {
     try {
       const dia = new Date(ahora).toISOString().slice(0, 10);
       // «ronda»: 1 (o sin ponerla) es una pregunta nueva; 2 o más, otra ronda de herramientas de la misma pregunta
+      // 0.9: la app manda «pregunta», un id igual en todas las rondas y reintentos de una pregunta; el contador gasta una
+      // pregunta por id nuevo. Las apps de antes (sin id) siguen con «ronda», limitadas por el tope de peticiones
       const primera = !(Number.isInteger(c.ronda) && c.ronda > 1);
-      const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(u.email)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA, topeRondas: Number(env.CLAUDE_RONDAS_POR_DIA) || CLAUDE_RONDAS_POR_DIA, primera }) });
+      const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(u.email)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA, topeRondas: Number(env.CLAUDE_RONDAS_POR_DIA) || CLAUDE_RONDAS_POR_DIA, primera, pregunta: idPreg, topePregunta: Number(env.CLAUDE_RONDAS_POR_PREGUNTA) || CLAUDE_RONDAS_POR_PREGUNTA }) });
       q = await rc.json();
     } catch (e) { return res({ error: 'cuotas' }, 503); }
     if (!q || !q.ok) return res({ error: 'tope-diario' }, 429);

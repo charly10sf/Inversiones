@@ -1256,12 +1256,15 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
   turno.modelo = modelo;
   let ronda = 0, cortes = 0, pausas = 0, cambios = 0, vacias = 0, enviada = false;
   const avisoRed = (txt) => { turno.partes = turno.partes.filter((x) => !x.red); const p = { tipo: 'paso', red: true, txt }; turno.partes.push(p); alCambiar(); return p; };
+  // 0.9: un id por pregunta, el mismo en todas sus rondas y reintentos: el Worker cuenta una pregunta por id (antes se fiaba
+  // de «ronda», que se podía falsear y hacía que un reintento de la primera ronda no contara o contara dos veces)
+  const idPregunta = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36)).replace(/-/g, '').slice(0, 32);
   for (let vuelta = 0; vuelta < 14; vuelta++) {
     const pasosAntes = turno.partes.length, t0 = Date.now();
     const tools = herrs();
     let r;
     ronda++;
-    const cuerpo = { model: modelo, max_tokens: Math.min(CLAUDE_MAX_SALIDA, Math.max(maxTokens * 2, 12000)), system: sis, messages: conCacheClaude(msgs), ...(tools.length ? { tools } : {}), stream: true, output_config: { effort: esfuerzo }, ronda: enviada ? Math.max(ronda, 2) : ronda };
+    const cuerpo = { model: modelo, max_tokens: Math.min(CLAUDE_MAX_SALIDA, Math.max(maxTokens * 2, 12000)), system: sis, messages: conCacheClaude(msgs), ...(tools.length ? { tools } : {}), stream: true, output_config: { effort: esfuerzo }, ronda: enviada ? Math.max(ronda, 2) : ronda, pregunta: idPregunta };
     enviada = true;   // si hay que repetir la primera ronda, ya no cuenta como pregunta nueva en el Worker
     try { r = await llamarClaude(cuerpo, turno, signal, alCambiar, { ronda }); }
     catch (e) {

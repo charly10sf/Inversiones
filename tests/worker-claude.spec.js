@@ -270,6 +270,68 @@ test('las rondas de herramientas de una misma pregunta no gastan preguntas, pero
   });
 });
 
+test('0.9: con id de pregunta, una pregunta por id (rondas y reintentos no gastan más) y tope de peticiones por id', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: '2', CLAUDE_RONDAS_POR_DIA: '100', CLAUDE_RONDAS_POR_PREGUNTA: '4' };
+    const P = (pregunta, ronda = 1) => ({ ...PEDIDO, ronda, pregunta });
+    // la primera pregunta: su ronda 1, un reintento de la ronda 1 (la app manda ronda 2) y dos rondas más: una sola pregunta
+    for (const ronda of [1, 2, 2, 3]) expect((await pedir('uid-id', P('aaaaaaaaaaaa', ronda), env)).status).toBe(200);
+    // la quinta petición de ese id pasa de su tope
+    expect((await pedir('uid-id', P('aaaaaaaaaaaa', 4), env)).status).toBe(429);
+    // un id nuevo es otra pregunta aunque diga «ronda 2» (no se puede falsear)
+    expect((await pedir('uid-id', P('bbbbbbbbbbbb', 2), env)).status).toBe(200);
+    // y la tercera pregunta del día ya no entra
+    expect((await pedir('uid-id', P('cccccccccccc', 1), env)).status).toBe(429);
+    // un id con caracteres raros no vale como id: se trata como una app de antes
+    expect((await pedir('uid-id', { ...PEDIDO, ronda: 1, pregunta: '../x' }, env)).status).toBe(429);
+    expect(vistas.length).toBe(5);
+    for (const v of vistas) expect(v.cuerpo).not.toHaveProperty('pregunta');
+  });
+});
+
+test('0.9: tope de adjuntos y de tokens de entrada, contados antes de gastar pregunta', async () => {
+  const antes = globalThis.fetch, cuentas = [], vistas = [];
+  let tokens = 1000;
+  globalThis.fetch = async (url, op = {}) => {
+    url = String(url);
+    if (url === ENV.FB_JWKS) return new Response(JSON.stringify({ keys: [jwk] }));
+    if (url === ENV.CLAUDE_API + '/count_tokens') { cuentas.push(JSON.parse(op.body)); return new Response(JSON.stringify({ input_tokens: tokens })); }
+    if (url === ENV.CLAUDE_API) { vistas.push(JSON.parse(op.body)); return ok(); }
+    throw new Error('fuera de la prueba: ' + url);
+  };
+  try {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: '3' };
+    const pdf = { type: 'document', source: { type: 'base64', media_type: 'application/pdf', data: 'JVBERi0=' } };
+    // tres PDF en una petición: no
+    let r = await pedir('uid-t', { ...PEDIDO, messages: [{ role: 'user', content: [pdf, pdf, pdf, { type: 'text', text: 'lee' }] }] }, env);
+    expect(r.status).toBe(400);
+    expect(await r.json()).toMatchObject({ motivo: 'adjuntos' });
+    // un PDF con muchos tokens: se cuenta y se rechaza sin llegar a Claude ni gastar pregunta
+    tokens = 500000;
+    r = await pedir('uid-t', { ...PEDIDO, messages: [{ role: 'user', content: [pdf, { type: 'text', text: 'lee' }] }] }, env);
+    expect(r.status).toBe(413);
+    expect(cuentas.length).toBe(1);
+    expect(cuentas[0].model).toBe(PEDIDO.model);
+    // uno normal: se cuenta y pasa
+    tokens = 3000;
+    r = await pedir('uid-t', { ...PEDIDO, messages: [{ role: 'user', content: [pdf, { type: 'text', text: 'lee' }] }] }, env);
+    expect(r.status).toBe(200);
+    // si el conteo no contesta y hay un PDF, no se pasa (y no gasta pregunta)
+    tokens = null;
+    r = await pedir('uid-t', { ...PEDIDO, messages: [{ role: 'user', content: [pdf, { type: 'text', text: 'lee' }] }] }, env);
+    expect(r.status).toBe(503);
+    expect(await r.json()).toEqual({ error: 'cuenta' });
+    // una pregunta de texto corta no se cuenta (no hace falta la vuelta de más)
+    expect((await pedir('uid-t', PEDIDO, env)).status).toBe(200);
+    expect(cuentas.length).toBe(3);
+    expect(vistas.length).toBe(2);
+    for (const k of Object.keys(cuentas[0])) expect(['model', 'system', 'messages', 'tools', 'tool_choice', 'thinking']).toContain(k);
+    // las dos que se rechazaron no gastaron pregunta: queda una de tres
+    expect((await pedir('uid-t', PEDIDO, env)).status).toBe(200);
+    expect((await pedir('uid-t', PEDIDO, env)).status).toBe(429);
+  } finally { globalThis.fetch = antes; }
+});
+
 // 0.8: la app pregunta «¿puedo?» con una petición vacía antes de mandar nada de la cartera
 test('una petición vacía dice si el correo puede usar Claude sin gastar nada ni leer cartera', async () => {
   await con(ok, async (vistas) => {
