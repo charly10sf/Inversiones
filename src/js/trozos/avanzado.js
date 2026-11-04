@@ -289,6 +289,7 @@ function pavCorr(a, b) {
 // los precios de algo en las mismas fechas que la serie de tu cartera
 const pavEnFechas = (h, serie) => serie.map((x) => ({ d: x.d, v: precioEn(h, x.d, 'antes') })).filter((x) => x.v);
 function pavRiesgo(M) {
+  if (S.detAv) delete S.detAv.riesgo;   // sin precios sale antes: que no quede el cálculo de antes
   const s = serieCartera(M, 366);
   if (s.length < 30) return pavT('c12', L('Riesgo', 'Risk'), `<p class="nota" style="margin:0">${L('Faltan precios del último año para calcularlo.', 'Prices for the last year are missing.')}</p>`);
   const vol = volatilidadSerie(s), r1 = (s[s.length - 1].v / s[0].v - 1) * 100, rr = pavRetornos(s);
@@ -328,7 +329,7 @@ function pavRiesgo(M) {
     const volB = sb.length === s.length ? volatilidadSerie(sb) : null, r1B = sb.length === s.length ? (sb[sb.length - 1].v / sb[0].v - 1) * 100 : null;
     const nomC = cinco.map((f) => f.inst.corto || f.inst.nombre);
     const pares = []; for (let i = 0; i < cinco.length; i++) for (let j = i + 1; j < cinco.length; j++) { const c = rets[i] && rets[j] ? pavCorr(rets[i], rets[j]) : null; if (c != null) pares.push(`${nomC[i]} y ${nomC[j]}: ${fmtNum(c, 2)}`); }
-    S.detAv = Object.assign(S.detAv || {}, { riesgo: [
+    S.detAv = Object.assign(S.detAv && S.detAv.uid === uidActual() ? S.detAv : { uid: uidActual() }, { riesgo: [
       `Periodo: del ${s[0].d} al ${s[s.length - 1].d} (${dias} días, ${s.length} precios de cierre de la cartera recompuesta con las posiciones de hoy; el efectivo no entra porque no cae). Valor de la parte con precio: ${eur(enSerie, 0)} de un total de ${eur(M.total, 0)}.`,
       `Volatilidad anual: ${fmtNum(vol, 1)} % (desviación típica de los cambios entre cierres, pasada a un año). Escala de riesgo 1–7 que sale: ${cr || '—'}.`,
       `Rentabilidad del periodo: ${fmtNum(r1, 1)} %${dias < 330 ? ` (al año: ${fmtNum(r1a, 1)} %)` : ''}. Sharpe = rentabilidad anual / volatilidad = ${sharpe == null ? '—' : fmtNum(sharpe, 2)} (sin restar el tipo sin riesgo). Sortino = rentabilidad anual / volatilidad solo de las bajadas (${dDown == null ? '—' : fmtNum(dDown, 1) + ' %'}) = ${sortino == null ? '—' : fmtNum(sortino, 2)}.`,

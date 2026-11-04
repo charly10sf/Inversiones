@@ -319,7 +319,7 @@ async function clicAsesor(e) {
   else if (a === 'reintentar') {
     let k = AS.conv.length - 1; while (k >= 0 && AS.conv[k].rol !== 'yo') k--;
     if (k < 0) return;
-    const q = AS.conv[k].texto; if (AS.conv[k].adj) AS.adjunto = AS.conv[k].adj; AS.conv.splice(k); preguntarAsesor(q);
+    const q = AS.conv[k].texto; if (AS.conv[k].adj) AS.adjunto = AS.conv[k].adj; if (AS.conv[k].ctx) S.ctxIA = { ...AS.conv[k].ctx, q, t: Date.now() }; AS.conv.splice(k); preguntarAsesor(q);
   } else if (a === 'borrar-clave') {
     const pv = cfgAsesor().prov;
     AS.clave = null; LS.del(LS_CLAVE[pv]);

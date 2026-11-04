@@ -63,6 +63,10 @@ test('tocar una cifra la explica', async ({ page }, info) => {
   expect(ctx.calculo).toContain('VaR 95 %');
   expect(ctx.calculo).toContain('Volatilidad anual');
   expect(ctx.calculo).not.toMatch(/NaN|undefined/);
+  expect(ctx.q).toBe(q);   // solo vale para esa pregunta
+  // la marca del resumen de una noticia, aunque llegue tras un preámbulo o entre asteriscos
+  expect(await page.evaluate(() => partirMarcaNot('Voy a buscar.\n\n**[SOLO_TITULAR]** El medio cuenta que sube'))).toEqual({ marca: 'SOLO_TITULAR', texto: 'El medio cuenta que sube' });
+  expect(await page.evaluate(() => partirMarcaNot('Sin marca').marca)).toBe(null);
   await page.evaluate(() => { window.abrirAsesor = window.__abrir; });
 
   // con las cifras ocultas, la pregunta no lleva el valor

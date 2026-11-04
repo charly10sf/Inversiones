@@ -262,7 +262,8 @@ document.addEventListener('keydown', (e) => {
 function contextoIA(el) {
   const t = el && el.closest('.pav-t, .card, .car-bloque, section'); if (!t) return null;
   const c = t.cloneNode(true);
-  for (const x of c.querySelectorAll('.preg-ia, button, svg, script, style, [hidden]')) x.remove();
+  // fuera los titulares de noticias (texto de terceros: no viaja con voz del usuario)
+  for (const x of c.querySelectorAll('.preg-ia, button, svg, script, style, [hidden], .noticias, a.noti')) x.remove();
   // las celdas de las tablas, separadas; si no, el texto sale pegado
   for (const x of c.querySelectorAll('td, th')) x.append(' | ');
   for (const x of c.querySelectorAll('.pav-kpi > small, .kpi > small, .kpi > .k')) x.append(': ');
@@ -270,12 +271,14 @@ function contextoIA(el) {
   for (const x of c.querySelectorAll('tr, p, li, .pav-kpi, .kpi, h2, h3')) x.append('\n');
   const texto = (c.textContent || '').replace(/[ \t  ]+/g, ' ').replace(/\s*\n\s*/g, '\n').trim().slice(0, 3500);
   const { tarjeta, pest } = dondeCifra(el);
-  const k = S.vista === 'av' ? S.pestAv : '';
-  return { donde: [pest, tarjeta].filter(Boolean).join(' · '), texto, calculo: (k && S.detAv && S.detAv[k]) || '', t: Date.now() };
+  // la pestaña de verdad (tras recargar, S.pestAv aún no está: la da pestAv()); el cálculo, solo si es de esta cuenta
+  const k = S.vista === 'av' ? pestAv() : '', d = S.detAv && S.detAv.uid === uidActual() ? S.detAv[k] : '';
+  return { donde: [pest, tarjeta].filter(Boolean).join(' · '), texto, calculo: d || '', t: Date.now() };
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest && e.target.closest('.gc-ia, .preg-ia'); if (!b) return;
-  S.ctxIA = contextoIA(b.classList.contains('gc-ia') ? $('[data-cifra].cifra-on') : b);
+  const x = contextoIA(b.classList.contains('gc-ia') ? $('[data-cifra].cifra-on') : b);
+  S.ctxIA = x ? { ...x, q: String(b.dataset.q || '').trim() } : null;
 }, true);
 addEventListener('scroll', () => { if ($('#globoCifra')) cerrarGloboCifra(false); }, { passive: true, capture: true });
 addEventListener('resize', () => { if ($('#globoCifra')) cerrarGloboCifra(false); });
