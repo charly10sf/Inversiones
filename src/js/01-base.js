@@ -76,9 +76,16 @@ function colorBarraTema() {
   const f = getComputedStyle(document.documentElement).getPropertyValue('--fondo').trim();
   if (f) m.setAttribute('content', f);
 }
+/* 4 nov: el esquema de color, también en la <meta> (algunos navegadores de dentro de otras apps solo leen esa) para que el
+   modo oscuro del móvil no repinte los colores. Marfil es claro y no se deja oscurecer */
+function esquemaTema(t) {
+  const m = document.querySelector('meta[name="color-scheme"]');
+  if (m) m.setAttribute('content', t === 'marfil' ? 'only light' : 'dark');
+}
 function ponerTema(t) {
   t = TEMAS.includes(t) ? t : TEMA_BASE;
   document.documentElement.setAttribute('data-tema', t);
+  esquemaTema(t);
   try { localStorage.setItem('inv-tema', JSON.stringify(t)); } catch (e) {}
   colorBarraTema();
   acabadoTema();
