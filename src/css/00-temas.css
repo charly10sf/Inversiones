@@ -38,7 +38,7 @@
   --tenue-mezcla: 92%; /* 5c: con 78 %, el texto tenue salía a 4,4:1 sobre el fondo crema (AA pide 4,5); con 92 %, 6,2:1 (4,8:1 en la fila marcada) */
   --velo: #1e1a17;
   --claro: #f7f2ea;
-  color-scheme: light;
+  color-scheme: only light; /* «only»: que el modo oscuro del móvil no lo repinte */
 }
 
 /* ---------- Borgoña: fondo borgoña muy oscuro, oro ---------- */
@@ -59,6 +59,9 @@
 }
 
 /* ---------- Comunes a los tres: letras, medidas y derivados (sin un solo color) ---------- */
+/* 4 nov: Samsung Internet mira si la página responde a prefers-color-scheme para no meter su modo oscuro. Los colores no
+   cambian (el diseño lo elige la persona): solo le dice que la app ya trae los suyos */
+@media (prefers-color-scheme: dark) { :root { --sistema-oscuro: 1; } }
 :root[data-tema], [data-tema] {
   --marca: 'Ibarra Real Nova', Georgia, 'Times New Roman', serif;
   --ui: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;

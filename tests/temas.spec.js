@@ -24,6 +24,7 @@ async function leer(page) {
       tema: document.documentElement.getAttribute('data-tema'),
       fondo: cs.backgroundColor, letra: cs.fontFamily, viejos: ['--bg', '--text', '--accent', '--plane', '--c1'].map((v) => r.getPropertyValue(v).trim()).join(''),
       barra: document.querySelector('meta[name="theme-color"]').getAttribute('content'),
+      esquema: [document.querySelector('meta[name="color-scheme"]').getAttribute('content'), r.colorScheme],
       // se bajan de la casa (assets/), no de Google
       inter: (await document.fonts.load('16px Inter')).length > 0, ibarra: (await document.fonts.load('italic 16px "Ibarra Real Nova"')).length > 0,
     };
@@ -57,6 +58,8 @@ for (const t of Object.keys(FONDO)) {
       expect(x.tema).toBe(t);
       expect(x.fondo).toBe(rgb(FONDO[t]));
       expect(x.barra).toBe(FONDO[t]);
+      // 4 nov: el esquema de color dicho en la <meta> y en el CSS, para que el modo oscuro del móvil no repinte nada
+      expect(x.esquema).toEqual(t === 'marfil' ? ['only light', 'light only'] : ['dark', 'dark']);
       expect(x.letra.startsWith('Inter')).toBe(true);
       expect(x.inter).toBe(true);
       expect(x.ibarra).toBe(true);
@@ -91,6 +94,12 @@ test('el selector de diseño, en Tú para cualquiera, cambia el diseño al momen
   await page.locator('#vista [data-elige-tema="borgona"]').evaluate((b) => b.click());
   expect(await page.evaluate(() => [document.documentElement.getAttribute('data-tema'), localStorage.getItem('inv-tema'), document.querySelector('meta[name="theme-color"]').content])).toEqual(['borgona', '"borgona"', '#2a0e14']);
   await expect(page.locator('#vista [data-elige-tema="borgona"]')).toHaveAttribute('aria-pressed', 'true');
+  // 4 nov: la <meta name="color-scheme"> sigue al diseño (Marfil, claro y sin dejarse oscurecer)
+  const esquema = () => page.evaluate(() => document.querySelector('meta[name="color-scheme"]').content);
+  expect(await esquema()).toBe('dark');
+  await page.locator('#vista [data-elige-tema="marfil"]').evaluate((b) => b.click());
+  expect(await esquema()).toBe('only light');
+  await page.locator('#vista [data-elige-tema="borgona"]').evaluate((b) => b.click());
   // cada muestra lleva los colores de su diseño
   expect(await page.locator('.tema-muestra[data-tema="marfil"]').evaluate((i) => getComputedStyle(i).backgroundColor)).toBe(rgb(FONDO.marfil));
   // en Ajustes, el dueño ya no tiene selector aparte

@@ -13,9 +13,12 @@
 <link rel="apple-touch-icon" href="toison-180.png" vite-ignore>
 <meta name="application-name" content="Toisón">
 <meta name="theme-color" content="#151817">
+<!-- 4 nov: el esquema de color en la cabecera, para que el modo oscuro del móvil (Samsung Internet, los navegadores de
+     WhatsApp y X) no repinte la app. Marfil va con «only light»; lo cambian el script de abajo y ponerTema -->
+<meta name="color-scheme" content="dark">
 <!-- el diseño de Toisón elegido (Mármol si no hay ninguno), puesto antes de pintar. El color de la barra lo pone
      después ponerTema (01-base.js) desde los tokens -->
-<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='marfil'||g==='borgona')t=g;}catch(e){}document.documentElement.setAttribute('data-tema',t);</script>
+<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='marfil'||g==='borgona')t=g;}catch(e){}document.documentElement.setAttribute('data-tema',t);if(t==='marfil')document.querySelector('meta[name="color-scheme"]').setAttribute('content','only light');</script>
 <!-- las letras de Toisón, de la casa (sin Google Fonts) -->
 <style>
 @font-face{font-family:'Inter';src:url(fonts/inter.woff2) format('woff2');font-weight:100 900;font-display:swap}
