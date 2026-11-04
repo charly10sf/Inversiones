@@ -140,6 +140,9 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   const hijas = (g) => resto.filter((n) => cuelga(n) && gordaDe(n.v) === g.v);
   const pasos = [], idx = new Map();
   for (const n of nuevas) for (const c of n.cosas || []) if (c.ir && !esParche(n.v)) { idx.set(c, pasos.length); pasos.push(...pasosDeCosa(c, n.v)); }
+  // «Guíame por lo nuevo» es la guía de la gorda (al acabarla se da por hecha): sin los pasos de las intermedias, que
+  // siguen teniendo su «Enséñamelo» suelto
+  const guiaP = pasos.filter((p) => esGorda(p.nuevo));
   const item = (c, i, ir) => `<li style="--i:${i}">${dibujo(c.d)}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${ir && idx.has(c) ? `<button type="button" class="enlace nov-ir" data-nov-ir="${idx.get(c)}">Enséñamelo</button>` : ''}</div></li>`;
   // los bugs corregidos de cada versión (desde la 0.2.3b), debajo de sus novedades
   const arr = (n) => (n.arreglos && n.arreglos.length ? `<div class="nov-arr"><h4>Arreglos</h4><ul>${n.arreglos.map((a) => `<li>${ICONOS.ok}<span>${esc(a)}</span></li>`).join('')}</ul></div>` : '');
@@ -153,7 +156,7 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   // si llevabas tiempo sin entrar, salen todas las que te has perdido, enteras, de la más nueva a la más antigua
   const nBases = new Set(nuevas.map((n) => baseVer(n.v))).size;
   const perdidas = nBases > 1 ? `<p class="nov-perdidas">${dibujo('tour')}<span><b>Te has perdido ${nuevas.length} actualizaciones</b>Desde la ${esc(desde)}, que fue la última que viste. Aquí van todas, de la más nueva a la más antigua.</span></p>` : '';
-  const h = hoja(nBases > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}<div class="nov-guia-fila">${pasos.length ? `<button type="button" class="btn pri nov-todo" data-nov-todo>${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}<button type="button" class="btn nov-scroll" data-nov-scroll>${L('Verlas con dibujos', 'See them with drawings')}</button></div>${nuevas.map(bloque).join('')}
+  const h = hoja(nBases > 1 ? 'Lo que te has perdido' : '¿Qué se ha mejorado?', `<div class="novedades">${perdidas}<div class="nov-guia-fila">${guiaP.length ? `<button type="button" class="btn pri nov-todo" data-nov-todo>${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}<button type="button" class="btn nov-scroll" data-nov-scroll>${L('Verlas con dibujos', 'See them with drawings')}</button></div>${nuevas.map(bloque).join('')}
     ${sueltas.length ? `<section class="nov-antes" aria-labelledby="hNovAnt"><h3 id="hNovAnt">Versiones anteriores</h3>${sueltas.map(antes).join('')}</section>` : ''}
     <button type="button" class="enlace nov-reg" data-nov-reg>Ver el registro completo de versiones</button>
     <div class="fila-btns"><button class="btn" data-tour-ya>Ver el tutorial</button><button class="btn" data-cerrar>Cerrar</button></div>
@@ -161,9 +164,9 @@ function mostrarNovedades(desde, alCerrar, lista = false) {
   h.el.classList.add('hoja-nov');
   $('[data-nov-reg]', h.el).onclick = () => { h.cerrar(true); abrirRegistro(alCerrar); };
   $('[data-nov-scroll]', h.el).onclick = () => { h.cerrar(true); novedadesScroll(nuevas, desde, alCerrar); };
-  const ir = (k) => { h.cerrar(true); if (k === 0) guiaNuevo(alCerrar, pasos); else iniciarTour(k, alCerrar, pasos); };
+  const ir = (k) => { h.cerrar(true); if (k === 0) guiaNuevo(alCerrar, guiaP); else iniciarTour(k, alCerrar, pasos); };
   $('[data-tour-ya]', h.el).onclick = () => { h.cerrar(true); iniciarTour(0, alCerrar); };
-  if (pasos.length) $('[data-nov-todo]', h.el).onclick = () => ir(0);
+  if (guiaP.length) $('[data-nov-todo]', h.el).onclick = () => ir(0);
   for (const b of $$('[data-nov-ir]', h.el)) b.onclick = () => { h.cerrar(true); iniciarTour(0, () => mostrarNovedades(desde, alCerrar, true), [pasos[+b.dataset.novIr]], 'Volver a las novedades'); };
 }
 
@@ -257,7 +260,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
         <h1 class="ix-marca ixn-ver" data-no-trad aria-label="${esc(ver)}">${[...ver].map((l, k, a) => `<span aria-hidden="true" style="--k:${k};--d:${(k - (a.length - 1) / 2).toFixed(1)}">${esc(l)}</span>`).join('')}</h1>
         ${varias ? `<ol class="ixn-ruta" data-no-trad aria-label="${L('Las versiones que te has perdido', 'The versions you missed')}">${(() => { const vs = grupos.map((g) => g.base); const r = vs.length > 6 ? [vs[0], `+${vs.length - 5}`, ...vs.slice(-4)] : vs; return r.map((v, k) => `<li style="--k:${k}"${v === baseVer(ultima.v) ? ' class="hoy"' : v[0] === '+' ? ' class="mas"' : ''}>${esc(v)}</li>`).join(''); })()}</ol>` : ''}
         <div class="ix-lema"><h2>${varias ? L(`Todo lo nuevo desde la ${esc(desde)}, resumido`, `Everything since ${esc(desde)}, in short`) : esc(ultima.t)}</h2><p><span>${fechaNov(ultima.f, ultima.h)}</span> · <span data-no-trad>${cuenta}</span></p></div>
-        ${pasos.length ? `<button type="button" class="btn pri ixn-guia" data-nv="todo">${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}
+        ${pasos.some((p) => esGorda(p.nuevo)) ? `<button type="button" class="btn pri ixn-guia" data-nv="todo">${ICONOS.chispa}${L('Guíame por lo nuevo', 'Walk me through it')}</button>` : ''}
         <div class="ix-baja" aria-hidden="true"><span>${L('o ve bajando', 'or scroll down')}</span><svg viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg></div>
       </div></section>
       ${cuerpo}
@@ -270,7 +273,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
         <div class="ix-fin-logo">${logoEntero()}</div>
         <h2>Eso es todo</h2>
         <p>Si algo no va como esperas, dínoslo con el bichito de arriba.</p>
-        ${pasos.length ? `<button type="button" class="btn pri" data-nv="todo">${L('Guíame por lo nuevo, paso a paso', 'Walk me through it, step by step')}</button>` : ''}
+        ${pasos.some((p) => esGorda(p.nuevo)) ? `<button type="button" class="btn pri" data-nv="todo">${L('Guíame por lo nuevo, paso a paso', 'Walk me through it, step by step')}</button>` : ''}
         <button type="button" class="btn" data-nv="lista">${ICONOS.plan}${L('Ver las notas en detalle', 'See the full notes')}</button>
         <button type="button" class="btn" data-nv="fin">Seguir a mi cartera</button>
       </section>
@@ -336,7 +339,7 @@ function novedadesScroll(nuevas, desde, alCerrar = () => {}, volverA = null) {
     const ab = e.target.closest('[data-nv-abre]'); if (ab) { ab.classList.toggle('abierta'); return; }   // la lista corta, entera al tocarla
     const b = e.target.closest('[data-nv]'); if (!b) return;
     if (b.dataset.nv === 'fin') cerrar();
-    else if (b.dataset.nv === 'todo') { quitar(); guiaNuevo(alCerrar, pasos); }
+    else if (b.dataset.nv === 'todo') { quitar(); guiaNuevo(alCerrar, pasos.filter((p) => esGorda(p.nuevo))); }
     else if (b.dataset.nv === 'lista') { quitar(); mostrarNovedades(desde, alCerrar, true); }
     else if (b.dataset.nv === 'bugs') { b.closest('.ixn-arr').classList.remove('corta'); b.remove(); medidas = null; }
   });

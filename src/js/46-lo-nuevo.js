@@ -17,12 +17,11 @@ const NIVELES_DESDE = '0.8.2';
 const esGorda = (v) => !esParche(v) && (/^\d+\.\d+$/.test(String(v || '')) || cmpVer(v, NIVELES_DESDE) < 0);
 const esIntermedia = (v) => !esParche(v) && !esGorda(v);
 // la gorda de una versión: sus dos primeros números (0.9.1a → 0.9), salvo en la 0.8, donde la última gorda es la 0.8.1
-// (0.8.2 → 0.8.1): ahí se busca la última de antes en NOVEDADES
+// (0.8.2 → 0.8.1). Lo de antes de la 0.8.2 sin letra ya es gorda
 function gordaDe(v) {
   const b = baseVer(v), dos = b.replace(/^(\d+\.\d+).*$/, '$1');
-  if (esGorda(b) || cmpVer(dos, NIVELES_DESDE) >= 0) return esGorda(b) ? b : dos;
-  const g = NOVEDADES.find((n) => esGorda(n.v) && cmpVer(n.v, b) <= 0);
-  return g ? g.v : dos;
+  if (esGorda(b)) return b;
+  return dos === '0.8' ? '0.8.1' : dos;
 }
 const GUIA_ID = () => gordaDe(VERSION);
 // qué se enseña al abrir una versión que no habías visto: sus arreglos (misma versión de número: de la 0.9 a la 0.9a), la

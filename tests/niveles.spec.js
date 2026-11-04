@@ -4,6 +4,7 @@
 // La app va por la 0.8.1a, así que las intermedias se prueban con versiones inventadas metidas en NOVEDADES.
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
+import { partirNovedades } from '../build/growfolio-vite.js';
 
 const test = base.extend({
   errores: [async ({ context }, use) => {
@@ -24,6 +25,7 @@ test('qué es cada versión y qué se enseña al abrirla', async ({ page }) => {
     letras: ['0.8.1a', '0.9a', '0.9.1b'].map((v) => esGorda(v) || esIntermedia(v)),
     gordaDe: ['0.8.1a', '0.8.2', '0.8.3a', '0.9', '0.9a', '0.9.1', '0.9.1b', '1.1.3'].map(gordaDe),
     guia: GUIA_ID(),
+    raras: [esGorda(''), esGorda(null), esGorda('0.10'), esIntermedia('0.10.1'), gordaDe('0.10.2a'), caminoNovedades('', '0.9'), caminoNovedades('0.9', '0.9.2'), caminoNovedades('0.9.1', '0.10.1')],
     caminos: [[null, '0.8.2'], ['0.8.1a', '0.8.1a'], ['0.8.1', '0.8.1a'], ['0.8.1a', '0.8.2'], ['0.8a', '0.8.2'], ['0.8.2', '0.8.3'],
       ['0.8.6', '0.9'], ['0.8.6', '0.9.1'], ['0.9', '0.9.1'], ['0.9a', '0.9.1a'], ['0.9.1', '0.9.1a'], ['0.9.1', '0.9.2'], ['0.9.2', '1.0']]
       .map(([a, b]) => caminoNovedades(a, b)),
@@ -33,6 +35,7 @@ test('qué es cada versión y qué se enseña al abrirla', async ({ page }) => {
   expect(r.letras).toEqual([false, false, false]);
   expect(r.gordaDe).toEqual(['0.8.1', '0.8.1', '0.8.1', '0.9', '0.9', '0.9', '0.9', '1.1']);
   expect(r.guia).toBe('0.8.1');   // en la 0.8.1a, la guía sigue siendo la de la 0.8.1
+  expect(r.raras).toEqual([true, true, true, true, '0.10', 'gorda', 'corta', 'gorda']);
   expect(r.caminos).toEqual(['gorda', null, 'letra', 'corta', 'gorda', 'corta', 'gorda', 'gorda', 'corta', 'corta', 'letra', 'corta', 'gorda']);
 });
 
@@ -101,4 +104,42 @@ test('una intermedia: hoja corta con «Ir», sin guía, y en el historial cuelga
     .querySelector('.nov-hijas').textContent);
   expect(hijas).toContain('0.8.2');
   expect(hijas).toContain('La IA explica');
+});
+
+test('el build deja en el núcleo las novedades hasta la gorda (la misma regla que esGorda)', () => {
+  const mk = (vs) => 'const NOVEDADES = [\n' + vs.map((v) => `  { v: '${v}', t: 'x' },\n`).join('') + '];\n';
+  const nucleo = (vs) => [...partirNovedades(mk(vs)).nucleo.matchAll(/v: '([^']+)'/g)].map((m) => m[1]);
+  expect(nucleo(['0.8.1a', '0.8.1', '0.8a', '0.8'])).toEqual(['0.8.1a', '0.8.1']);
+  expect(nucleo(['0.8.3', '0.8.2a', '0.8.2', '0.8.1a', '0.8.1', '0.8'])).toEqual(['0.8.3', '0.8.2a', '0.8.2', '0.8.1a', '0.8.1']);
+  expect(nucleo(['0.9.1a', '0.9.1', '0.9a', '0.9', '0.8.6'])).toEqual(['0.9.1a', '0.9.1', '0.9a', '0.9']);
+  expect(nucleo(['1.1.3', '1.1', '1.0.2'])).toEqual(['1.1.3', '1.1']);
+});
+
+test('«Guíame por lo nuevo» es solo de las gordas; las intermedias guardan su «Enséñamelo»', async ({ page }) => {
+  test.setTimeout(90_000);
+  await page.goto('/');
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  const r = await page.evaluate(async () => {
+    await cargarTrozo('novedades');
+    const ir = NOVEDADES.find((n) => n.v === '0.8.1').cosas.find((c) => c.ir).ir;
+    NOVEDADES.unshift({ v: '0.8.2', t: 'Intermedia', f: '2026-11-15', cosas: [{ t: 'Con sitio', x: 'Se puede ir.', ir }] });
+    document.querySelectorAll('.hoja-fondo, .tour, .ixn, .aviso-arr').forEach((x) => x.remove());
+    // desde la 0.8.1a solo hay una intermedia nueva: «Enséñamelo» sí, la guía no
+    mostrarNovedades('0.8.1a', () => {}, true);
+    const h = document.querySelector('.hoja-nov');
+    const soloIntermedia = { guia: !!h.querySelector('[data-nov-todo]'), ensenar: h.querySelectorAll('[data-nov-ir]').length };
+    document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
+    // desde la 0.8a entran también la 0.8.1 (gorda, con su guía) y la 0.8.2
+    mostrarNovedades('0.8a', () => {}, true);
+    const h2 = document.querySelector('.hoja-nov');
+    const conGorda = { guia: !!h2.querySelector('[data-nov-todo]'), ensenar: h2.querySelectorAll('[data-nov-ir]').length };
+    document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
+    return { soloIntermedia, conGorda, pasosGorda: pasosGuia().length };
+  });
+  expect(r.soloIntermedia).toEqual({ guia: false, ensenar: 1 });
+  expect(r.conGorda.guia).toBe(true);
+  expect(r.conGorda.ensenar).toBeGreaterThan(1);
+  expect(r.pasosGorda).toBeGreaterThan(0);
 });
