@@ -361,11 +361,12 @@ export class Cuotas {
     c.r = c.r || 0; c.ids = c.ids || {};
     // con id de pregunta (0.9): un id nuevo gasta pregunta; uno conocido, no, pero con su tope de peticiones. Sin id, lo de
     // antes: manda «ronda»
-    const conocida = pregunta && Object.prototype.hasOwnProperty.call(c.ids, pregunta);
+    // las claves llevan delante «p»: un id como «constructor» no puede leer nada heredado de Object
+    const k = pregunta ? 'p' + pregunta : null, conocida = !!k && Object.prototype.hasOwnProperty.call(c.ids, k), previas = conocida ? Number(c.ids[k]) || 0 : 0;
     const primera = pregunta ? !conocida : primeraApp;
-    if ((primera && c.n >= tope) || (topeRondas && c.r >= topeRondas) || (conocida && c.ids[pregunta] >= topePregunta)) return new Response(JSON.stringify({ ok: false, n: c.n, r: c.r }));
+    if ((primera && c.n >= tope) || (topeRondas && c.r >= topeRondas) || (conocida && previas >= topePregunta)) return new Response(JSON.stringify({ ok: false, n: c.n, r: c.r }));
     if (primera) c.n += 1;
-    if (pregunta) c.ids[pregunta] = (c.ids[pregunta] || 0) + 1;
+    if (k) c.ids[k] = previas + 1;
     c.r += 1;
     await this.estado.storage.put('c', c);
     return new Response(JSON.stringify({ ok: true, n: c.n, r: c.r }));
@@ -418,10 +419,12 @@ async function claude(req, env, cors, res) {
       const { model, system, messages, tools, tool_choice, thinking } = cuerpo;
       const rc = await fetch(`${env.CLAUDE_API || CLAUDE_API}/count_tokens`, { method: 'POST', signal: req.signal, headers: { 'x-api-key': env.ANTHROPIC_API_KEY, 'anthropic-version': '2023-06-01', 'content-type': 'application/json' }, body: JSON.stringify({ model, system, messages, ...(tools ? { tools } : {}), ...(tool_choice ? { tool_choice } : {}), ...(thinking ? { thinking } : {}) }) });
       const jc = rc.ok ? await rc.json() : null;
-      if (jc && typeof jc.input_tokens === 'number') n = jc.input_tokens;
+      if (jc && Number.isFinite(jc.input_tokens) && jc.input_tokens >= 0) n = jc.input_tokens;
     } catch (e) { /* sin conteo */ }
     // las rondas siguientes de una pregunta crecen con lo que ha buscado: el doble de margen para no cortar a mitad
-    const tope = (Number(env.CLAUDE_MAX_ENTRADA) || CLAUDE_MAX_ENTRADA) * (Number.isInteger(c.ronda) && c.ronda > 1 ? 2 : 1);
+    // (solo si de verdad sigue a Claude: el último mensaje es suyo o lleva los resultados de sus herramientas)
+    const ult = cuerpo.messages[cuerpo.messages.length - 1] || {}, sigue = ult.role === 'assistant' || (Array.isArray(ult.content) && ult.content.some((b) => b && b.type === 'tool_result'));
+    const tope = (Number(env.CLAUDE_MAX_ENTRADA) || CLAUDE_MAX_ENTRADA) * (Number.isInteger(c.ronda) && c.ronda > 1 && sigue ? 2 : 1);
     if (n != null && n > tope) return res({ error: 'grande', tokens: n }, 413);
     // con un PDF, sin conteo no se pasa (es justo lo que puede salir caro); con texto o imágenes, sí
     if (n == null && pdfs) return res({ error: 'cuenta' }, 503);

@@ -1,6 +1,157 @@
 {
  "versiones": [
   {
+   "v": "0.8.1",
+   "f": "2026-11-04",
+   "h": "07:00",
+   "t": "Tu cartera por dentro, y la IA en toda la app",
+   "commits": [
+    {
+     "cuando": "2026-11-04 05:46",
+     "asunto": "0.9: topes de gasto de Claude en el Worker (sin publicar el Worker)",
+     "detalle": [
+      "Cada pregunta lleva un id (la app lo pone, el mismo en todas sus rondas y reintentos): el contador gasta una pregunta por id nuevo y cada id tiene su tope de peticiones (CLAUDE_RONDAS_POR_PREGUNTA, 16). Antes «ronda» se podía falsear y un reintento de la primera ronda no contaba. Las apps sin id siguen con «ronda» y el tope de peticiones.",
+      "Tope de adjuntos por petición (2 PDF, 12 imágenes) y tope de tokens de entrada (120.000; el doble en las rondas siguientes), contados con count_tokens cuando la petición pasa de 120 KB o lleva adjuntos, antes de gastar pregunta. Con un PDF, si el conteo no contesta, no pasa.",
+      "Las claves de Google: con un kid desconocido se vuelven a bajar como mucho cada 30 s, y una respuesta mala no pisa las buenas.",
+      "Revisado por un agente aparte; sus hallazgos, corregidos. Pruebas en tests/worker-claude.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-04 05:32",
+     "asunto": "0.9: áreas táctiles de 48 px en lo nuevo",
+     "detalle": [
+      "«Pregúntale», los enlaces de las tarjetas de Análisis, los chips de las pestañas y las flechas del calendario entran en la lista del área táctil de 48 px; las pestañas de Análisis y el interruptor del menú, a 44 px de alto.",
+      "La silueta de una pestaña que carga se anuncia (role=status)."
+     ]
+    },
+    {
+     "cuando": "2026-11-04 00:27",
+     "asunto": "0.9: arreglos de la auditoría (errores de funcionamiento)",
+     "detalle": [
+      "Efectivo: fila para añadirlo en Posiciones aunque no tengas ninguno.",
+      "Las pestañas ya no suben la página al repintar (centrarPest solo mueve su fila).",
+      "VaR y «tu peor caída otra vez» en euros con lo que tiene precios (sin el efectivo).",
+      "Lo tecleado en Tu reparto objetivo se guarda al momento; el globo de la cifra se cierra al cambiar de pantalla y no roba el foco al tocar fuera.",
+      "Laboratorio con 10 años (margen por los datos semanales); rentabilidad de menos de un año pasada a anual para Sharpe y Sortino, con su rótulo; medias móviles ponderadas por días; RSI plano = 50.",
+      "La cuenta del patrimonio se para si recorres la gráfica; «En máximos» se recalcula con el histórico y el total; GTA con el espacio fino; fechas con año en Movimientos; colores del mejor y peor día; sin fines de semana en Día a día si no hay cripto; dos escapes.",
+      "El objetivo y las metas cumplidas, privados de cada perfil del dispositivo."
+     ]
+    },
+    {
+     "cuando": "2026-11-04 00:15",
+     "asunto": "0.9: arreglos de la auditoría (privacidad, textos y accesibilidad)",
+     "detalle": [
+      "El sí a Claude va por cuenta y se borra al cerrar sesión; el sí a leer archivos al importar es aparte y ya no vale para mandar la cartera; el resumen de una noticia con Claude pide el mismo sí. Los textos dicen que Anthropic no lo usa para entrenar y lo borra pasado un plazo corto.",
+      "Las metas cumplidas se guardan como huella, sin nombre ni importe. Las fuentes del resumen de noticias pasan por urlSegura.",
+      "Textos: «Revisar mi cartera» sin pedir cambios; «Apuntar compra/venta»; los objetivos están en Tú; el RSI sin color de aviso; el aviso de meta solo da por cumplidas las de llegar a una cifra; Tu reparto objetivo no calcula la aportación hasta que pones tu objetivo.",
+      "Accesibilidad: el color de los calendarios y mapas de calor, como mucho al 30 % (contraste AA); cada día con su etiqueta y su signo; «Pregúntale» fuera del título; las cifras sin aria-label viejo; el globo se cierra con Escape antes que la IA, no roba el foco al desplazar ni al salir con Tab; el foco vuelve a lo que abrió la IA; las flechas recorren todas las pestañas y el foco se queda; al repintar una pestaña el foco vuelve a su mando; leyenda y nombres en las gráficas."
+     ]
+    },
+    {
+     "cuando": "2026-11-04 00:05",
+     "asunto": "0.9: el radar puede ir con Claude (si hay ANTHROPIC_RADAR_KEY)",
+     "detalle": [
+      "scripts/informe.py: con el secreto ANTHROPIC_RADAR_KEY, cada llamada del radar va primero a Claude (Haiku; se cambia con CLAUDE_RADAR_MODELO) y, si falla, a Gemini como siempre. Sin ese secreto, nada cambia.",
+      "Las peticiones de Gemini se pasan a la API de Claude (sistema, mensajes, JSON pedido en el sistema, la búsqueda de Google como la de Claude) y la respuesta vuelve con la forma de Gemini, así el resto no cambia. Los tokens van al mismo registro con el nombre del modelo.",
+      "Sin clave o sin saldo, Claude se apaga el resto de la pasada; saturado, reintenta dos veces. escaneo.json lleva «claude» con si está activo y sus errores.",
+      "precios.yml pasa el secreto al paso del radar.",
+      "Pruebas: tests/scripts/test_radar_claude.py (sin red)."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 23:51",
+     "asunto": "0.9: las cinco pestañas que faltaban y más acabado",
+     "detalle": [
+      "Análisis: Día a día (calendario del mes con lo que ganó o perdió la cartera cada día, mejor y peor día, mes a mes y lo que más se movió hoy), Movimientos (compras y ventas con filtro y lo metido cada mes), Gráfico técnico (precio con las medias de 50 y 200 días, RSI de 14, máximo y mínimo de un año, por posición y plazo), Tu reparto objetivo (se escribe el % de cada tipo, se guarda en el dispositivo, la diferencia en puntos y en euros y cómo quedaría una aportación repartida hacia el objetivo) y Laboratorio (¿y si…? con interés compuesto y lo de hoy con el pasado). Todo en el trozo «avanzado».",
+      "Acabado: la línea de 30 días en cada posición (sparkPos), el destello y el aviso al cumplir una meta (celebrarMetas), la pantalla entra desde el lado del botón tocado y el espacio fino delante de € y %.",
+      "Pruebas: tests/pestanas-nuevas.spec.js; modo-avanzado al día."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 23:49",
+     "asunto": "0.9 (a medias): acabado y las cinco pestañas que faltaban, sin probar todavía",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-03 23:38",
+     "asunto": "0.9: Ajustes, a la vista",
+     "detalle": [
+      "En el móvil, el botón de Ajustes vuelve a la cabecera, al lado de la IA (antes solo estaba dentro de Tú). Lo pidió Carlos el 3 nov.",
+      "En el ordenador, «Ajustes» abajo en el menú de la izquierda (la cabecera ahí casi nunca sale)."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 23:33",
+     "asunto": "0.9: «Explícame una cifra» al tocar un número",
+     "detalle": [
+      "Tocar el patrimonio, una cifra de Hoy o una de las pestañas de Análisis abre un globo con lo que es, dónde está y «Explícamela», que abre la IA con esa cifra, su tarjeta y su pestaña (marcarCifras, globoCifra en 43-modo.js; CSS en 22-modo-y-ordenador.css).",
+      "Con las cifras ocultas, la pregunta no lleva el valor. Teclado: Intro abre, Escape cierra. Se cierra al tocar fuera o al desplazar.",
+      "La pregunta pide explicarla sin decir qué hacer (CNMV y política de uso de Anthropic).",
+      "Prueba: tests/cifra.spec.js (móvil y ordenador)."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 23:29",
+     "asunto": "0.9: la prueba del tutorial, al día con Análisis",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-03 22:20",
+     "asunto": "0.9: Hoy y Análisis rehechos (propuesta A), la IA en toda la app y el acabado",
+     "detalle": [
+      "Cartera pasa a llamarse Análisis: sin el patrimonio arriba (ya está en Hoy) y con sus pestañas",
+      "(Posiciones, Rentabilidad, Riesgo, Reparto y X-Ray, Dividendos, Costes, Hacienda, La IA opina y",
+      "las que llegan); en básico, solo las de siempre. Vista nueva «av» para las del trozo.",
+      "Hoy: sin pestañas y con «Tu plan y tus movimientos» (aportaciones, compras y ventas y las",
+      "próximas); se añade una vez a quien ya tenía Hoy ordenado; #plan lleva ahí.",
+      "La IA: «Pregúntale» en la cabecera de cada tarjeta, seis funciones de un toque en su pantalla",
+      "y hasta 4 preguntas al usuario (antes 2 y 3 a la vista).",
+      "Acabado: la cifra del patrimonio cuenta al abrir, el patrimonio en pequeño arriba al bajar,",
+      "filas que responden al pulsar, filo de oro, «En máximos», siluetas mientras carga una pestaña",
+      "y vibraciones cortas (permiso VIBRATE en Android).",
+      "Presupuesto de rendimiento a 1000 KB (Carlos, 3 nov). Pruebas al día."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 21:48",
+     "asunto": "0.9: la noticia e Importar, con Claude si tu cuenta lo tiene",
+     "detalle": [
+      "claudeParaTodo() y claudeTexto() (55-asesor-contexto.js): una llamada suelta a Claude, sin",
+      "las herramientas de la app. Con Claude en la cuenta, va con Claude aunque haya clave de Google.",
+      "La noticia: Haiku con búsqueda (2) la encuentra y la resume; si no, solo el titular.",
+      "Importar: Sonnet lee capturas, PDF (como documento) y CSV; la primera vez pide el sí; imágenes",
+      "a 1.600 px para caber en los 600 KB del Worker.",
+      "La pantalla de la clave dice que con Claude no hace falta ninguna."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 21:37",
+     "asunto": "0.9 (sesión 2): las pestañas Dividendos y Costes, con datos de verdad",
+     "detalle": [
+      "Dividendos: previsto a 12 meses (bruto y neto), rentabilidad por dividendo y sobre lo pagado,",
+      "el mes a mes de la app, posición a posición y el próximo ex-dividendo.",
+      "Costes: TER media, lo que se lleva al año y en 20 años (con la rentabilidad de tu proyección),",
+      "fondo a fondo y los que no tienen comisión conocida."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 21:30",
+     "asunto": "0.9 (sesión 2, armazón): modo básico y avanzado, el menú del ordenador y la IA al lado",
+     "detalle": [
+      "Básico/Avanzado (Tú y el menú del ordenador; inv-modo; sin elegir, sale de inv-nivel).",
+      "Avanzado: 13 pestañas encima de Hoy (43-modo.js); el contenido, en el trozo trozos/avanzado.js",
+      "con su CSS. Con datos de verdad: Rentabilidad (TWR, TIR, mes a mes, contra el MSCI World),",
+      "Riesgo (volatilidad, Sharpe, Sortino, beta, VaR, caída, correlación), Hacienda (renta del año,",
+      "lotes FIFO, avisos del 720 y 721) y Reparto y X-Ray. Las demás dicen qué llevarán.",
+      "Básico: un «¿Qué es?» en cada bloque de Hoy.",
+      "Ordenador (desde 1.180 px): menú a la izquierda y la IA en una columna a la derecha al pulsarla.",
+      "El tutorial y las guías también señalan el menú del ordenador.",
+      "Pruebas: tests/modo-avanzado.spec.js; temas y humo, al día con el menú. 838 KB al abrir."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8a",
    "f": "2026-11-03",
    "h": "23:30",

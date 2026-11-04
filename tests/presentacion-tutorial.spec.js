@@ -81,12 +81,12 @@ conTema('marmol')('el tutorial: por capítulos, lo que se pide cuenta y lo demá
   await expect(page.locator('.tour-caja h3')).toHaveText('Ya conoces Toisón');
   await expect(page.locator('.tour-caja [data-emp="perfil"]')).toHaveText('Empezar por el primero');
   await page.evaluate(() => cerrarTour());
-  // la guía de lo nuevo de la 0.8: seis pasos, y «Nuevo» en Tú, donde se elige el diseño
-  expect(await page.evaluate(() => pasosGuia().map((p) => p.t))).toEqual(['GrowFolio ahora es Toisón', 'Cinco botones, Hoy en el centro', 'GrowIA ahora es «la IA»', 'Tu diseño, en Tú', 'Elige uno', 'Listo']);
-  expect(await page.evaluate(() => { LS.set('inv-nov-vista', { v: VERSION, d: hoyIso() }); LS.set('inv-guia', ''); return grupoNuevo(); })).toBe('tu');
+  // la guía de lo nuevo de la 0.8.1: siete pasos, y «Nuevo» en Análisis, donde están las pestañas
+  expect(await page.evaluate(() => pasosGuia().map((p) => p.t))).toEqual(['Análisis: tu cartera por dentro', 'Todo, en pestañas', 'Cómo la ves, en Tú', 'Toca una cifra y te la explica', 'La IA, en cada tarjeta', 'Hoy, más limpio', 'Ajustes, a la vista']);
+  expect(await page.evaluate(() => { LS.set('inv-nov-vista', { v: VERSION, d: hoyIso() }); LS.set('inv-guia', ''); return grupoNuevo(); })).toBe('posiciones');
   await page.evaluate(() => guiaNuevo());
-  await expect(page.locator('.tour-caja h3')).toHaveText('GrowFolio ahora es Toisón');
-  await expect(page.locator('.tour-k')).toHaveText('Lo nuevo de la 0.8');
+  await expect(page.locator('.tour-caja h3')).toHaveText('Análisis: tu cartera por dentro');
+  await expect(page.locator('.tour-k')).toHaveText('Lo nuevo de la 0.8.1');
   await page.evaluate(() => irPasoTour(2));
-  await expect(page.locator('.tour-caja h3')).toHaveText('GrowIA ahora es «la IA»');
+  await expect(page.locator('.tour-caja h3')).toHaveText('Cómo la ves, en Tú');
 });

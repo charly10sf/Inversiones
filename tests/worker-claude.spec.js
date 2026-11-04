@@ -282,9 +282,12 @@ test('0.9: con id de pregunta, una pregunta por id (rondas y reintentos no gasta
     expect((await pedir('uid-id', P('bbbbbbbbbbbb', 2), env)).status).toBe(200);
     // y la tercera pregunta del día ya no entra
     expect((await pedir('uid-id', P('cccccccccccc', 1), env)).status).toBe(429);
+    // un id que es un nombre de Object («constructor») no se salta su tope (en otro correo, con su día limpio)
+    for (let i = 0; i < 4; i++) expect((await pedir('uid-id2', P('constructor', i ? 2 : 1), env, { email: 'otra@prueba.com' })).status).toBe(200);
+    expect((await pedir('uid-id2', P('constructor', 2), env, { email: 'otra@prueba.com' })).status).toBe(429);
     // un id con caracteres raros no vale como id: se trata como una app de antes
     expect((await pedir('uid-id', { ...PEDIDO, ronda: 1, pregunta: '../x' }, env)).status).toBe(429);
-    expect(vistas.length).toBe(5);
+    expect(vistas.length).toBe(9);
     for (const v of vistas) expect(v.cuerpo).not.toHaveProperty('pregunta');
   });
 });

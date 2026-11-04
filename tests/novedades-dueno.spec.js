@@ -17,27 +17,25 @@ for (const dueno of [false, true]) {
   test.describe(dueno ? 'novedades: el dueño lo ve todo' : 'novedades: una cuenta normal no ve lo del dueño', () => {
     test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
 
-    test('de la 0.8 a la 0.8a: el mensaje corto, «¿Qué se ha mejorado?», la guía y el historial', async ({ page }) => {
+    test('de la 0.8a a la 0.8.1: las novedades, «¿Qué se ha mejorado?», la guía y el historial', async ({ page }) => {
       test.setTimeout(120_000);
       await page.goto('/');
       await crearCuenta(page);
       await quitarCapas(page);
       await meterCartera(page);
       await page.waitForFunction(() => LS.get('inv-version') === VERSION, null, { timeout: 30_000 });
-      expect(await page.evaluate(() => VERSION)).toBe('0.8a');
-      await page.evaluate(() => { LS.set('inv-version', '0.8'); LS.set('inv-vnum', 2); LS.set('inv-perfil-pedido', true); LS.set('inv-perfil-luego', { t: Date.now(), n: 1 }); LS.set('inv-resumen-off', true); });
+      expect(await page.evaluate(() => VERSION)).toBe('0.8.1');
+      // de la 0.8a a la 0.8.1: las novedades contadas bajando, con sus arreglos (los del dueño, solo para él)
+      await page.evaluate(() => { LS.set('inv-version', '0.8a'); LS.set('inv-vnum', 2); LS.set('inv-perfil-pedido', true); LS.set('inv-perfil-luego', { t: Date.now(), n: 1 }); LS.set('inv-resumen-off', true); });
       await page.reload();
       await page.locator('#entrada').click({ timeout: 20_000 }).catch(() => {});
-
-      // el mensaje corto de la 0.8a
-      // el mensaje espera a que no haya ninguna hoja encima (la pregunta de la IA y demás): se van quitando
-      const aviso = page.locator('.aviso-arr');
-      for (let i = 0; i < 40 && !(await aviso.count()); i++) { await quitarCapas(page); await page.waitForTimeout(1500); }
-      await expect(aviso).toBeVisible();
-      await expect(aviso).toContainText(dueno ? '3 arreglos' : '2 arreglos');
-      await expect(aviso).toContainText('sin poner la clave de Google');
-      if (dueno) await expect(aviso).toContainText('tu correo en Tú'); else await expect(aviso).not.toContainText('tu correo en Tú');
+      const ixn = page.locator('.ixn');
+      for (let i = 0; i < 40 && !(await ixn.count()); i++) { await page.evaluate(() => document.querySelectorAll('.hoja-fondo, .tour').forEach((x) => x.remove())); await page.waitForTimeout(1500); }
+      await expect(ixn).toBeVisible();
+      await expect(ixn.locator('.ixn-arr li')).toHaveCount(dueno ? 6 : 3);
+      if (dueno) await expect(ixn).toContainText('Topes de gasto'); else await expect(ixn).not.toContainText('Topes de gasto');
       expect(await page.evaluate(() => LS.get('inv-dueno', 0))).toBe(dueno ? 1 : 0);
+      await page.evaluate(() => document.querySelectorAll('.ixn, .intro').forEach((x) => x.remove()));
 
       // «¿Qué se ha mejorado?» en lista: los arreglos de la 0.8a
       await page.evaluate(() => { document.querySelectorAll('.aviso-arr').forEach((x) => x.remove()); mostrarNovedades('0.8', () => {}, true); });
@@ -48,7 +46,7 @@ for (const dueno of [false, true]) {
       await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove()));
 
       const r = await page.evaluate(async () => {
-        const n08a = NOVEDADES.find((n) => n.v === '0.8a'), n08 = NOVEDADES.find((n) => n.v === '0.8');
+        const n08a = NOVEDADES.find((n) => n.v === '0.8a'), n08 = NOVEDADES.find((n) => n.v === '0.8.1');
         // la guía «Nuevo»: una cosa de la 0.8 que fuera solo para el dueño
         const pasos = pasosGuia().length;
         n08.cosas[0].solo = 'dueno';
@@ -58,10 +56,6 @@ for (const dueno of [false, true]) {
         const antes = n08a.arreglos;
         n08a.arreglos = antes.map((a) => ({ t: typeof a === 'string' ? a : a.t, solo: 'dueno' }));
         const visible = novVisibles().some((n) => n.v === '0.8a');
-        arreglosVistos('0.8', () => {});
-        await new Promise((ok) => setTimeout(ok, 1800));
-        const avisa = !!document.querySelector('.aviso-arr');
-        document.querySelectorAll('.aviso-arr').forEach((x) => x.remove());
         mostrarNovedades('0.8', () => {}, true);
         const enLista = [...document.querySelectorAll('.hoja-nov .nov-num')].map((x) => x.textContent);
         document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
@@ -71,12 +65,11 @@ for (const dueno of [false, true]) {
         const detalle = reg.querySelectorAll('.reg-det').length;
         document.querySelectorAll('.hoja-fondo').forEach((x) => x.remove());
         n08a.arreglos = antes;
-        return { pasos, pasosSolo, visible, avisa, enLista, enRegistro, detalle };
+        return { pasos, pasosSolo, visible, enLista, enRegistro, detalle };
       });
       expect(r.pasos).toBeGreaterThan(0);
-      expect(r.pasosSolo).toBe(dueno ? r.pasos : r.pasos - 1);
+      expect(r.pasosSolo).toBe(dueno ? r.pasos : r.pasos - 2);   // la primera novedad de la 0.8.1 tiene dos pasos
       expect(r.visible).toBe(dueno);
-      expect(r.avisa).toBe(dueno);
       expect(r.enLista.includes('0.8a')).toBe(dueno);
       expect(r.enRegistro.includes('0.8a')).toBe(dueno);
       expect(r.enRegistro).toContain('0.8');
