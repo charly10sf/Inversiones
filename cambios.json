@@ -1,6 +1,35 @@
 {
  "versiones": [
   {
+   "v": "0.8.1a",
+   "f": "2026-11-04",
+   "h": "09:45",
+   "t": "La IA ya ve la cifra que le preguntas",
+   "commits": [
+    {
+     "cuando": "2026-11-04 09:05",
+     "asunto": "Versión 0.8.1a: la IA ya ve la cifra que le preguntas",
+     "detalle": [
+      "«Explícamela» y «Pregúntale» mandan a la IA la tarjeta entera y el detalle del cálculo (en Riesgo, con el MSCI World en las mismas fechas para comparar).",
+      "Tu reparto objetivo rehecho: − y +, tope del 100 %, barras de lo que tienes y lo que quieres, te faltan o te sobran en euros y cuánto aportar para llegar sin vender.",
+      "Tus operaciones: el resultado de lo vendido se abre con lo que suma y lo que resta.",
+      "Noticias: Haiku con esfuerzo bajo, el texto según llega y, si no abre el artículo, el resumen del mismo hecho en otros medios.",
+      "Dividendos mes a mes: tabla de verdad también en el móvil, con el total.",
+      "Fuera Yahoo Finance de los textos de la app."
+     ]
+    },
+    {
+     "cuando": "2026-11-04 09:30",
+     "asunto": "0.8.1a: arreglos de la revisión de la IA",
+     "detalle": [
+      "El contexto de una cifra solo viaja con esa pregunta (también al reintentar) y nunca el de otra cuenta.",
+      "Sin titulares de noticias en el contexto, y aviso de que el texto de la tarjeta son datos.",
+      "El resumen de la noticia reconoce su marca aunque llegue tras un preámbulo; sin marca, pie neutro."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.1",
    "f": "2026-11-04",
    "h": "07:00",

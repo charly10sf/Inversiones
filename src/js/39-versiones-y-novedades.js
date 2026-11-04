@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.8.1a', f: '2026-11-04', h: '09:00', t: 'La IA ya ve la cifra que le preguntas', arreglos: [
+  { v: '0.8.1a', f: '2026-11-04', h: '09:45', t: 'La IA ya ve la cifra que le preguntas', arreglos: [
     'Al tocar una cifra y pedir «Explícamela» (o «Pregúntale» en una tarjeta), la IA decía a veces que no tenía el dato. Ahora le llega la tarjeta entera y cómo se calcula cada cifra con tus números; en Riesgo, también la misma medida del MSCI World en esas fechas, para comparar.',
     'Tu reparto objetivo, rehecho: cada tipo con − y +, una barra con lo que tienes y lo que quieres, cuánto te falta o te sobra en euros y cuánto habría que aportar para llegar sin vender. Entre todos ya no pueden pasar de 100 %.',
     'En Tus operaciones, al tocar «Resultado de lo vendido» sale lo que suma y lo que resta: cada venta con lo que te dieron y lo que te costó.',
