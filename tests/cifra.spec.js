@@ -56,6 +56,13 @@ test('tocar una cifra la explica', async ({ page }, info) => {
   await expect(g).toHaveCount(0);
   const [qq, enviar] = await page.evaluate(() => window.__q);
   expect(qq).toBe(q); expect(enviar).toBe(true);
+  // con la pregunta viaja la tarjeta entera y el detalle del cálculo de la pestaña (4 nov: «no tengo el dato de origen»)
+  const ctx = await page.evaluate(() => S.ctxIA);
+  expect(ctx.texto).toContain(et);
+  expect(ctx.texto).toContain('Cómo se calcula');
+  expect(ctx.calculo).toContain('VaR 95 %');
+  expect(ctx.calculo).toContain('Volatilidad anual');
+  expect(ctx.calculo).not.toMatch(/NaN|undefined/);
   await page.evaluate(() => { window.abrirAsesor = window.__abrir; });
 
   // con las cifras ocultas, la pregunta no lleva el valor

@@ -547,7 +547,7 @@ function vistaAgenda(M) {
     </div><div class="ag2-der">
     ${pasado.html ? `<section class="ag2-sec ag2-ult"><h2>${L('Lo último', 'Latest')}</h2><div class="agp-lista">${pasado.html}</div>${pasado.mas ? `<button type="button" class="btn peq ag-mas-not" data-ag-pasado>${L('Ver más noticias', 'More news')}</button>` : ''}</section>` : ''}
     </div></div>
-    <p class="nota ag2-pie">${L('Resultados y dividendos: Yahoo Finance (las empresas a veces los mueven unos días). Fed, BCE y festivos: sus calendarios oficiales. Noticias: Google Noticias. Los importes son orientativos.', 'Earnings and dividends: Yahoo Finance (companies sometimes move them a few days). Fed, ECB and holidays: their official calendars. News: Google News. Amounts are approximate.')}</p>
+    <p class="nota ag2-pie">${L('Resultados y dividendos: las fechas anunciadas (las empresas a veces las mueven unos días). Fed, BCE y festivos: sus calendarios oficiales. Los importes son orientativos.', 'Earnings and dividends: the announced dates (companies sometimes move them a few days). Fed, ECB and holidays: their official calendars. Amounts are approximate.')}</p>
   </div>`;
 }
 /* el mes se puede pasar deslizando el dedo, como en el calendario del móvil */

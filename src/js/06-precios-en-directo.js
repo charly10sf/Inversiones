@@ -119,7 +119,7 @@ const LIVE = {
       const ref = P ? (P.cierre_anterior || P.precio) : r && r.pe;
       const roto = precio != null && ref > 0 && (precio / ref > 3 || precio / ref < 1 / 3);
       if (roto) console.warn('Precio descartado', d.id, d.price, d.currency, precio, ref);
-      else if (precio != null) S.live[id] = { precio, var: d.changePercent != null ? d.changePercent : null, t, fuente: 'Yahoo Finance' };
+      else if (precio != null) S.live[id] = { precio, var: d.changePercent != null ? d.changePercent : null, t, fuente: 'en directo' };
     }
     programarParche();
   },
@@ -218,5 +218,5 @@ function htmlBolsasPanel() {
   return `<div class="bp-cab"><b>Las bolsas ahora</b><small>en hora de España</small></div>
     <ul class="bp-l">${BOLSAS_MUNDO.map((b) => { const e = estadoBolsa(b); return `<li class="${e.on ? 'on' : ''}"><i class="bp-led" aria-hidden="true"></i><span class="bp-n">${esc(b.n)}${tuyas.has(b.k) ? '<em>tienes algo</em>' : ''}</span><span class="bp-t">${esc(e.txt)}</span></li>`; }).join('')}
       <li class="${LIVE.bitvavo === 'ok' ? 'on' : ''}"><i class="bp-led" aria-hidden="true"></i><span class="bp-n">Bitcoin y cripto</span><span class="bp-t">abiertas siempre${LIVE.bitvavo === 'ok' ? ', en directo' : ''}</span></li></ul>
-    <p class="bp-pie">${conectado ? 'Precios en directo de Yahoo Finance y Bitvavo mientras las bolsas están abiertas.' : `Ahora no llega el directo: los precios son de ${esc(hace || 'la última actualización')}.`}</p>`;
+    <p class="bp-pie">${conectado ? 'Precios en directo mientras las bolsas están abiertas.' : `Ahora no llega el directo: los precios son de ${esc(hace || 'la última actualización')}.`}</p>`;
 }

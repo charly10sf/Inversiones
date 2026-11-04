@@ -5,6 +5,14 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.8.1a', f: '2026-11-04', h: '09:00', t: 'La IA ya ve la cifra que le preguntas', arreglos: [
+    'Al tocar una cifra y pedir «Explícamela» (o «Pregúntale» en una tarjeta), la IA decía a veces que no tenía el dato. Ahora le llega la tarjeta entera y cómo se calcula cada cifra con tus números; en Riesgo, también la misma medida del MSCI World en esas fechas, para comparar.',
+    'Tu reparto objetivo, rehecho: cada tipo con − y +, una barra con lo que tienes y lo que quieres, cuánto te falta o te sobra en euros y cuánto habría que aportar para llegar sin vender. Entre todos ya no pueden pasar de 100 %.',
+    'En Tus operaciones, al tocar «Resultado de lo vendido» sale lo que suma y lo que resta: cada venta con lo que te dieron y lo que te costó.',
+    'El resumen de una noticia se ve según se escribe y tarda menos. Si la IA no puede abrir el artículo pero encuentra el mismo hecho en otros medios, lo resume con ellos y lo dice abajo.',
+    'Los dividendos mes a mes, en una tabla de verdad también en el móvil, con el total de los 12 meses.',
+    { t: 'Fuera las menciones a los proveedores de datos en los textos de la app (pie de Hoy, fichas, calendario).', solo: 'dueno' },
+  ] },
   { v: '0.8.1', f: '2026-11-04', h: '07:00', t: 'Tu cartera por dentro, y la IA en toda la app', cosas: [
     { d: 'pestanas', ir: [{ v: 'cartera', sel: '.navbar [data-ir="posiciones"], .nav [data-ir="posiciones"], .riel [data-ir="posiciones"]', toca: 'posiciones', prueba: 'Toca Análisis', dib: null }, { v: 'posiciones', sel: '.pest-av', nav: true, dib: null, t: 'Todo, en pestañas', x: 'Desliza para verlas todas. En básico, solo las de siempre.' }], t: 'Análisis: tu cartera por dentro', x: 'Lo que antes era Cartera se llama Análisis y va por pestañas: tus posiciones, la rentabilidad contra el MSCI World, el riesgo, el reparto y lo que hay dentro de tus fondos, los dividendos, lo que pagas en comisiones, Hacienda, lo que opina la IA, tus movimientos, tu cartera día a día, el gráfico de cada posición, tu reparto objetivo y un laboratorio para el «¿y si…?».', g: 'Todo el detalle de tu cartera, en pestañas.' },
     { d: 'ajustes', ir: [{ v: 'cartera', sel: '.navbar [data-ir="tu"], .nav [data-ir="tu"], .riel [data-ir="tu"]', toca: 'tu', prueba: 'Toca Tú', dib: null, t: 'Cómo la ves, en Tú', x: 'Básico o avanzado.' }], t: 'Modo básico y modo avanzado', x: 'En básico, lo justo y con un «¿Qué es?» en cada bloque. En avanzado, todas las pestañas. Se cambia en Tú, en «Cómo la ves».', g: 'Básico o avanzado, como prefieras.' },

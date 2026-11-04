@@ -15,7 +15,7 @@ function senalAnalistas(f) {
   const media = (1 * (vv.strongBuy || 0) + 2 * (vv.buy || 0) + 3 * (vv.hold || 0) + 4 * (vv.sell || 0) + 5 * (vv.strongSell || 0)) / v.n;
   const nivel = media <= 2.5 ? 'comprar' : media <= 3.5 ? 'mantener' : 'vender';
   const palabra = { comprar: L('comprar', 'buy'), mantener: L('mantener', 'hold'), vender: L('vender', 'sell') }[nivel];
-  motivos.push(L(`De ${v.n} analistas, ${v.compra} dicen comprar, ${v.mantener} mantener y ${v.venta} vender (Yahoo Finance).`, `Of ${v.n} analysts, ${v.compra} say buy, ${v.mantener} hold and ${v.venta} sell (Yahoo Finance).`));
+  motivos.push(L(`De ${v.n} analistas, ${v.compra} dicen comprar, ${v.mantener} mantener y ${v.venta} vender.`, `Of ${v.n} analysts, ${v.compra} say buy, ${v.mantener} hold and ${v.venta} sell.`));
   const antes = votosResumen(a.votos.hace3m);
   if (antes) { const dif = v.compra / v.n - antes.compra / antes.n; if (dif >= 0.08) motivos.push(L('Hay más analistas a favor que hace 3 meses.', 'More analysts in favour than 3 months ago.')); if (dif <= -0.08) motivos.push(L('Hay menos analistas a favor que hace 3 meses.', 'Fewer analysts in favour than 3 months ago.')); }
   const pot = a.objetivo && pr ? (a.objetivo / pr - 1) * 100 : null;

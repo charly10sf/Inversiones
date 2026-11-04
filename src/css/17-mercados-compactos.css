@@ -437,3 +437,7 @@ table.ideas tbody tr[data-consulta] { cursor: pointer; }
 .cons-ia.ev { background: color-mix(in srgb, var(--baja) 9%, transparent); border: 1px solid color-mix(in srgb, var(--baja) 26%, var(--sep)); }
 .cons-ia.ev svg { color: var(--baja); }
 .cons-ia.idea { background: color-mix(in srgb, var(--sube) 7%, transparent); border: 1px solid color-mix(in srgb, var(--sube) 25%, transparent); }
+/* el resumen de la noticia se ve según llega (4 nov) */
+.not-cursor { display: inline-block; width: 7px; height: 1em; margin-left: 3px; vertical-align: -2px; border-radius: 2px; background: var(--primario); animation: notCursor 1s steps(2, start) infinite; }
+@keyframes notCursor { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .not-cursor { animation: none; } }

@@ -171,7 +171,7 @@ function fichaExpertos(f) {
     ${htmlEsperaPos(f)}
     ${a ? `<section class="bloque"><h3>${(() => { const vv = a.votos && a.votos.ahora, nv = vv ? ['strongBuy', 'buy', 'hold', 'sell', 'strongSell'].reduce((t, k) => t + (+vv[k] || 0), 0) : 0; return `${nv || a.num || ''} analistas, consenso ${esc((consensoVotos(vv) || a.recomendacion || '—').toLowerCase())}`; })()}</h3>${htmlVotos(a.votos && a.votos.ahora)}
       ${v3 ? `<div style="margin-top:14px"><div class="k" style="font-size:13px;margin-bottom:6px">Hace 3 meses</div>${htmlVotos(v3, false)}</div>` : ''}</section>
-    <section class="bloque"><h3>Precio objetivo a 12 meses</h3>${htmlObjetivo(a, f.precio) || '<div class="vacio">Sin precio objetivo.</div>'}</section>` : '<div class="vacio">Yahoo Finance no tiene analistas para esta acción.</div>'}
+    <section class="bloque"><h3>Precio objetivo a 12 meses</h3>${htmlObjetivo(a, f.precio) || '<div class="vacio">Sin precio objetivo.</div>'}</section>` : '<div class="vacio">No hay analistas que sigan esta acción.</div>'}
     <div class="kv-2">
       <div class="bloque"><h3>Valoración</h3>${kv([
         fu.capitalizacion && ['Capitalización', capital(fu.capitalizacion)],
@@ -204,7 +204,7 @@ function fichaExpertos(f) {
     </dl></details>
     ${a && a.cambios && a.cambios.length ? `<section class="bloque"><h3>Cambios de recomendación</h3><ul class="noticias">${a.cambios.map((c) => `<li><span>${esc(c.firma)}: ${esc(c.accion || '')} ${c.de ? `de ${esc(c.de)} ` : ''}${c.a ? `a ${esc(c.a)}` : ''}${c.objetivo ? `, objetivo ${precioFmt(c.objetivo)}` : ''}</span><small>${fechaLarga(c.fecha)}</small></li>`).join('')}</ul></section>` : ''}
     <section class="bloque"><h3>Analistas en prensa</h3>${htmlNoticias(prensaA.length ? prensaA : prensa, false, 8)}</section>
-    <p class="nota">Datos de Yahoo Finance${p.lento ? `, consultados ${haceCuanto(p.lento)}` : p.radar ? `, del radar de Toisón${p.fecha ? ` (${fechaCorta(p.fecha)})` : ''}` : ''}.</p>`;
+    <p class="nota">Datos de mercado${p.lento ? `, consultados ${haceCuanto(p.lento)}` : p.radar ? `, del radar de Toisón${p.fecha ? ` (${fechaCorta(p.fecha)})` : ''}` : ''}.</p>`;
   }
   if (/^Fondo/.test(i.tipo || '')) {
     const fo = p.fondo || {};
@@ -274,7 +274,7 @@ function fichaDatos(f) {
     ])}</details>` : ''}</div>
     <div class="bloque"><h3>Identificación</h3>${kv([
       i.isin && ['ISIN', esc(i.isin)],
-      (p.simbolo || i.yahoo) && ['Símbolo en Yahoo', esc(p.simbolo || i.yahoo)],
+      (p.simbolo || i.yahoo) && ['Símbolo', esc(p.simbolo || i.yahoo)],
       i.tipo && !p.sector && ['Tipo', esc(i.tipo)],
       moneda && ['Cotiza en', esc(moneda === 'GBp' ? 'peniques de libra (100 = 1 £)' : moneda)],
       !p.fecha && ce.f && ['Último valor publicado', fechaLarga(ce.f)],

@@ -131,12 +131,12 @@ function descargar(nombre, texto) {
 
 function nuevoInstrumento(fin, ini = {}) {
   const h = hoja('Nuevo instrumento', `<form id="fInst" style="display:grid;gap:12px">
-    <p class="nota" style="margin:0">${PERFIL_CUENTA ? 'Se guarda en tu cartera. Si Toisón aún no la sigue, pide su precio: en la próxima actualización (unos 20 minutos con la bolsa abierta) tendrá precio diario, gráfica y cambio a euros.' : PERFIL_LOCAL ? 'Se guarda en tu cartera. Si no está en la lista común no tendrá precio diario: pon su valor en la posición, o pide a quien te pasó Toisón que lo añada.' : 'Se añade a <code>instrumentos.json</code> (público, sin cantidades). La Action buscará su precio en Yahoo Finance en un par de minutos.'}</p>
+    <p class="nota" style="margin:0">${PERFIL_CUENTA ? 'Se guarda en tu cartera. Si Toisón aún no la sigue, pide su precio: en la próxima actualización (unos 20 minutos con la bolsa abierta) tendrá precio diario, gráfica y cambio a euros.' : PERFIL_LOCAL ? 'Se guarda en tu cartera. Si no está en la lista común no tendrá precio diario: pon su valor en la posición, o pide a quien te pasó Toisón que lo añada.' : 'Se añade a <code>instrumentos.json</code> (público, sin cantidades). La Action buscará su precio en un par de minutos.'}</p>
     <div class="form-grid">
       <label class="campo">Nombre<input name="nombre" required></label>
       <label class="campo">Nombre corto<input name="corto" required maxlength="24"></label>
       <label class="campo">ISIN<input name="isin" maxlength="12" placeholder="ES0177542018" value="${esc(ini.isin || '')}"></label>
-      <label class="campo">Ticker de Yahoo<input name="yahoo" placeholder="IAG.MC" value="${esc(ini.yahoo || '')}"><small>Como sale en finance.yahoo.com: AGIO, IAG.MC, BATS.L… Opcional si pones el ISIN.</small></label>
+      <label class="campo">Ticker<input name="yahoo" placeholder="IAG.MC" value="${esc(ini.yahoo || '')}"><small>Con el sufijo de su bolsa: AGIO, IAG.MC, BATS.L… Opcional si pones el ISIN.</small></label>
       <label class="campo">Tipo<select name="tipo"><option>Acción</option><option>Fondo indexado</option><option>Fondo de renta fija</option><option>ETF</option><option>ETC</option><option>Cripto</option></select></label>
       <label class="campo">Clase<select name="clase"><option>Renta variable</option><option>Renta fija</option><option>Oro</option><option>Cripto</option><option>Monetario</option></select></label>
       <label class="campo">Región<select name="region"><option>Europa</option><option>EEUU</option><option>Emergentes</option><option>Japón y Pacífico</option><option>Global</option></select></label>
@@ -158,7 +158,7 @@ function nuevoInstrumento(fin, ini = {}) {
   $('#fInst', h.el).onsubmit = (ev) => {
     ev.preventDefault();
     const g = (n) => ev.target.querySelector(`[name="${n}"]`).value.trim();
-    if (!g('isin') && !g('yahoo')) { $('#errI', h.el).textContent = 'Pon el ISIN o el ticker de Yahoo.'; return; }
+    if (!g('isin') && !g('yahoo')) { $('#errI', h.el).textContent = 'Pon el ISIN o el ticker.'; return; }
     let id = (g('corto') || g('nombre')).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'inst';
     while (S.inst[id]) id += '-2';
     const inst = { id, nombre: g('nombre'), corto: g('corto'), tipo: g('tipo'), clase: g('clase'), region: { [g('region')]: 100 } };

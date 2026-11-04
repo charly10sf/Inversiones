@@ -24,7 +24,7 @@ for (const dueno of [false, true]) {
       await quitarCapas(page);
       await meterCartera(page);
       await page.waitForFunction(() => LS.get('inv-version') === VERSION, null, { timeout: 30_000 });
-      expect(await page.evaluate(() => VERSION)).toBe('0.8.1');
+      expect(await page.evaluate(() => VERSION)).toBe('0.8.1a');
       // de la 0.8a a la 0.8.1: las novedades contadas bajando, con sus arreglos (los del dueño, solo para él)
       await page.evaluate(() => { LS.set('inv-version', '0.8a'); LS.set('inv-vnum', 2); LS.set('inv-perfil-pedido', true); LS.set('inv-perfil-luego', { t: Date.now(), n: 1 }); LS.set('inv-resumen-off', true); });
       await page.reload();
@@ -32,7 +32,8 @@ for (const dueno of [false, true]) {
       const ixn = page.locator('.ixn');
       for (let i = 0; i < 40 && !(await ixn.count()); i++) { await page.evaluate(() => document.querySelectorAll('.hoja-fondo, .tour').forEach((x) => x.remove())); await page.waitForTimeout(1500); }
       await expect(ixn).toBeVisible();
-      await expect(ixn.locator('.ixn-arr li')).toHaveCount(dueno ? 6 : 3);
+      // los de la 0.8.1 (6 el dueño, 3 los demás) y los de la 0.8.1a (6 y 5)
+      await expect(ixn.locator('.ixn-arr li')).toHaveCount(dueno ? 12 : 8);
       if (dueno) await expect(ixn).toContainText('Topes de gasto'); else await expect(ixn).not.toContainText('Topes de gasto');
       expect(await page.evaluate(() => LS.get('inv-dueno', 0))).toBe(dueno ? 1 : 0);
       await page.evaluate(() => document.querySelectorAll('.ixn, .intro').forEach((x) => x.remove()));

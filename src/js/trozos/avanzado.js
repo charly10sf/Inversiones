@@ -86,6 +86,60 @@ const PAV_CSS = `
 .mov-pl { display: block; font-size: 11.5px; color: var(--tenue); }
 .mov-f { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .lab-campos { margin-top: 0; }
+/* el resultado de lo vendido, que se abre (4 nov) */
+.pav-kpi-btn { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-decoration: underline dotted color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 5px; }
+.pav-kpi-btn svg { width: 16px; height: 16px; opacity: .7; transition: transform .2s; }
+.pav-kpi-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+.pav-desg { display: grid; gap: 14px; margin: 16px 0 4px; padding: 14px 16px; border-radius: var(--r-m, 12px); background: var(--superficie-2); border: 1px solid var(--sep); }
+.desg-cab, .desg-tot { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; font-variant-numeric: tabular-nums; }
+.desg-cab { padding-bottom: 6px; font: 600 12px/1.3 var(--ui); letter-spacing: .02em; color: var(--texto-2); }
+.desg-cab b { font-size: 15px; }
+.pav-desg ul { list-style: none; margin: 0; padding: 0; }
+.pav-desg li { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; padding: 8px 0; border-top: 1px solid var(--sep); font-variant-numeric: tabular-nums; }
+.pav-desg li > span { min-width: 0; }
+.pav-desg li b { font-weight: 650; }
+.pav-desg li small { display: block; font-size: 12px; color: var(--tenue); }
+.pav-desg li > b { white-space: nowrap; }
+.desg-tot { padding-top: 10px; border-top: 1px solid var(--texto-2); font: 650 15px/1.2 var(--ui); }
+/* tu reparto objetivo, rehecho (4 nov) */
+.ro-vistazo { display: grid; gap: 10px; margin: 18px 0 6px; }
+.ro-vistazo small { display: block; margin-bottom: 5px; font: 500 12px/1.2 var(--ui); color: var(--tenue); }
+.ro-barra { display: flex; height: 14px; border-radius: 8px; overflow: hidden; background: var(--sep); gap: 2px; }
+.ro-barra i { display: block; height: 100%; min-width: 2px; }
+.ro-lista { margin-top: 10px; }
+.ro-fila { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(118px, auto); grid-template-areas: "n paso dif" "pista pista pista"; gap: 8px 14px; align-items: center; padding: 14px 0 12px; border-bottom: 1px solid var(--sep); }
+.ro-n { grid-area: n; min-width: 0; }
+.ro-n b { display: flex; align-items: center; gap: 8px; font-weight: 650; font-size: 14.5px; }
+.ro-n b i, .ro-dest i { flex: none; width: 10px; height: 10px; border-radius: 3px; }
+.ro-n small { display: block; margin: 2px 0 0 18px; font-size: 12.5px; color: var(--tenue); font-variant-numeric: tabular-nums; }
+.ro-paso { grid-area: paso; display: inline-flex; align-items: center; gap: 2px; padding: 3px; border-radius: 12px; border: 1px solid var(--borde); background: var(--fondo); }
+.ro-paso button { width: 40px; height: 40px; border: 0; border-radius: 9px; background: none; color: var(--texto); font: 500 20px/1 var(--ui); cursor: pointer; }
+.ro-paso button:hover:not(:disabled) { background: var(--superficie-2); }
+.ro-paso button:disabled { opacity: .3; cursor: default; }
+.ro-paso input { width: 52px; min-height: 40px; padding: 0; border: 0; background: none; color: var(--texto); text-align: right; font: 650 16px/1 var(--ui); font-variant-numeric: tabular-nums; -moz-appearance: textfield; }
+.ro-paso input::-webkit-inner-spin-button, .ro-paso input::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.ro-paso span { padding: 0 4px 0 2px; font-weight: 600; color: var(--texto-2); }
+.ro-paso input.ro-tope { animation: ro-tope .5s; }
+@keyframes ro-tope { 30% { color: var(--aviso); transform: translateX(-3px); } 60% { transform: translateX(3px); } }
+.ro-dif { grid-area: dif; text-align: right; font-size: 13.5px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.ro-dif small { display: block; font-size: 11.5px; font-weight: 500; color: var(--tenue); }
+.ro-ok { color: var(--sube); font-weight: 600; }
+.ro-pista { grid-area: pista; position: relative; height: 6px; border-radius: 6px; background: var(--sep); }
+.ro-pista i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 6px; opacity: .85; }
+.ro-pista b { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; border-radius: 2px; background: var(--texto); }
+.ro-total { display: grid; gap: 8px; margin: 16px 0 4px; }
+.ro-total .ro-pista { grid-area: auto; width: 100%; height: 8px; }
+.ro-total-t { display: flex; align-items: baseline; gap: 10px; font-size: 13.5px; font-variant-numeric: tabular-nums; }
+.ro-total-t b { font-size: 17px; font-weight: 650; }
+.ro-acc { margin-bottom: 0; }
+.ro-acc select { min-width: 140px; }
+.ro-dest { list-style: none; margin: 0; padding: 0; }
+.ro-dest li { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 2px 12px; padding: 10px 0; border-top: 1px solid var(--sep); font-variant-numeric: tabular-nums; }
+.ro-dest li:first-child { border-top: 0; }
+.ro-dest span { display: flex; align-items: center; gap: 8px; font-weight: 600; }
+.ro-dest b { font-weight: 650; text-align: right; }
+.ro-dest small { grid-column: 1 / -1; margin-left: 18px; font-size: 12.5px; color: var(--tenue); }
+@media (max-width: 560px) { .ro-fila { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "n paso" "dif dif" "pista pista"; } .ro-dif { text-align: left; display: flex; gap: 8px; align-items: baseline; } .ro-dif small { display: inline; } }
 `;
 const ponerCssAv = () => { if (!$('#pavCss')) { const s = document.createElement('style'); s.id = 'pavCss'; s.textContent = PAV_CSS; document.head.appendChild(s); } };
 
@@ -130,7 +184,7 @@ function pintarPanelAv() {
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
   // al repintar (un botón, un campo de la pestaña), el foco vuelve al mismo mando: el mismo atributo y el mismo puesto
-  const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-rebal-aport', 'data-lab'];
+  const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-mov-res', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-obj-mas', 'data-obj-menos', 'data-obj-acc', 'data-obj-add', 'data-rebal-aport', 'data-lab'];
   const at = ae && el.contains(ae) ? ATTR.find((x) => ae.hasAttribute(x)) : null, pos = at ? $$(`[${at}]`, el).indexOf(ae) : -1;
   el.innerHTML = html; el.removeAttribute('aria-busy'); ponerPreguntale(el); marcarCifras(el);
   if (at) { const n = $$(`[${at}]`, el)[pos]; if (n && !n.disabled) n.focus({ preventScroll: true }); else { const t = el.querySelector('.pav-et h2'); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } } }
@@ -268,6 +322,25 @@ function pavRiesgo(M) {
   const rets = cinco.map((f) => { const x = pavEnFechas(histDe(f.inst.id), s); return x.length === s.length ? pavRetornos(x) : null; });
   const matriz = cinco.length > 1 ? `<div class="pav-tabla"><table class="pav-matriz"><thead><tr><th></th>${cinco.map((f) => `<th title="${pavNom(f)}">${esc((f.inst.corto || f.inst.nombre).slice(0, 10))}</th>`).join('')}</tr></thead><tbody>${cinco.map((f, i) => `<tr><th style="text-align:left">${pavNom(f)}</th>${cinco.map((g, j) => { if (i === j) return '<td>—</td>'; const c = rets[i] && rets[j] ? pavCorr(rets[i], rets[j]) : null; return c == null ? '<td>·</td>' : `<td style="background: color-mix(in srgb, var(--grafica) ${Math.round(Math.max(0, c) * 55)}%, transparent)">${fmtNum(c, 2)}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div>` : '';
   const porPos = pavTabla([L('Posición', 'Holding'), L('Peso', 'Weight'), L('Riesgo', 'Risk'), L('Volatilidad', 'Volatility'), 'Beta'], M.filas.map((f) => [`<b>${pavNom(f)}</b>`, pct(f.peso, 1), f.p && f.p.riesgo ? `${f.p.riesgo} / 7` : '—', f.p && f.p.volatilidad != null ? pct(f.p.volatilidad, 1) : '—', f.p && f.p.fundamentales && f.p.fundamentales.beta != null ? fmtNum(f.p.fundamentales.beta, 2) : '—']));
+  // lo que la IA necesita para explicar estas cifras (Carlos, 4 nov: decía «no tengo el dato de origen»): cómo sale cada una,
+  // con qué números y el mismo cálculo hecho al MSCI World en las mismas fechas, para que pueda comparar
+  try {
+    const volB = sb.length === s.length ? volatilidadSerie(sb) : null, r1B = sb.length === s.length ? (sb[sb.length - 1].v / sb[0].v - 1) * 100 : null;
+    const nomC = cinco.map((f) => f.inst.corto || f.inst.nombre);
+    const pares = []; for (let i = 0; i < cinco.length; i++) for (let j = i + 1; j < cinco.length; j++) { const c = rets[i] && rets[j] ? pavCorr(rets[i], rets[j]) : null; if (c != null) pares.push(`${nomC[i]} y ${nomC[j]}: ${fmtNum(c, 2)}`); }
+    S.detAv = Object.assign(S.detAv || {}, { riesgo: [
+      `Periodo: del ${s[0].d} al ${s[s.length - 1].d} (${dias} días, ${s.length} precios de cierre de la cartera recompuesta con las posiciones de hoy; el efectivo no entra porque no cae). Valor de la parte con precio: ${eur(enSerie, 0)} de un total de ${eur(M.total, 0)}.`,
+      `Volatilidad anual: ${fmtNum(vol, 1)} % (desviación típica de los cambios entre cierres, pasada a un año). Escala de riesgo 1–7 que sale: ${cr || '—'}.`,
+      `Rentabilidad del periodo: ${fmtNum(r1, 1)} %${dias < 330 ? ` (al año: ${fmtNum(r1a, 1)} %)` : ''}. Sharpe = rentabilidad anual / volatilidad = ${sharpe == null ? '—' : fmtNum(sharpe, 2)} (sin restar el tipo sin riesgo). Sortino = rentabilidad anual / volatilidad solo de las bajadas (${dDown == null ? '—' : fmtNum(dDown, 1) + ' %'}) = ${sortino == null ? '—' : fmtNum(sortino, 2)}.`,
+      `Beta frente al MSCI World (su fondo indexado en euros, Fidelity MSCI World): covarianza de los cambios de la cartera con los del índice entre la varianza del índice, en las mismas fechas = ${beta == null ? '— (faltan precios del índice en esas fechas)' : fmtNum(beta, 2)}.`,
+      `VaR 95 % a un mes (paramétrico): 1,645 × volatilidad anual / √12 × valor con precio = 1,645 × ${fmtNum(vol, 1)} % / 3,46 × ${eur(enSerie, 0)} = ${var95 == null ? '—' : eur(var95, 0)} (${var95 == null ? '—' : fmtNum(var95 / enSerie * 100, 1)} % de esa parte). Supone que los cambios siguen una campana y que el futuro se mueve como el último año; no dice cuánto se pierde en el mes malo de cada 20.`,
+      volB != null ? `El MSCI World, en las mismas fechas: volatilidad ${fmtNum(volB, 1)} %, rentabilidad ${fmtNum(r1B, 1)} %, VaR 95 % a un mes ${fmtNum(1.645 * volB / Math.sqrt(12), 1)} % (beta 1 por definición). Sirve de referencia para «lo normal» de una cartera de bolsa mundial.` : '',
+      `Peor caída en el periodo: ${fmtNum(peor1, 1)} %.${c10 && c10.peor ? ` Peor caída con hasta 10 años de precios: ${fmtNum(c10.peor.pct, 1)} % (del ${c10.peor.desde} al ${c10.peor.hasta}${c10.peor.vuelve ? `, recuperada el ${c10.peor.vuelve}` : ', sin recuperar'}).` : ''}`,
+      `Mayor posición: ${top.inst.corto || top.inst.nombre}, ${fmtNum(top.peso, 1)} %. Las 5 mayores: ${fmtNum(top5, 1)} %.${esc20 != null ? ` Si la bolsa mundial cae un 20 %, con esa beta: ${eur(esc20, 0)} sobre ${eur(M.totalPos, 0)} en posiciones.` : ''}`,
+      pares.length ? `Correlaciones del último año (de −1 a 1) entre las ${cinco.length} mayores posiciones con precios: ${pares.join('; ')}.` : 'Correlaciones: no hay dos posiciones con precios suficientes en esas fechas.',
+      `Por posición (peso, riesgo 1–7, volatilidad, beta): ${M.filas.map((f) => `${f.inst.corto || f.inst.nombre} ${fmtNum(f.peso, 1)} %, ${f.p && f.p.riesgo ? f.p.riesgo : '—'}, ${f.p && f.p.volatilidad != null ? fmtNum(f.p.volatilidad, 1) + ' %' : '—'}, ${f.p && f.p.fundamentales && f.p.fundamentales.beta != null ? fmtNum(f.p.fundamentales.beta, 2) : '—'}`).join('; ')}.`,
+    ].filter(Boolean).join('\n') });
+  } catch (e) { console.warn(e); }
   const caidaTxt = c10 && c10.peor ? L(`La peor de los últimos años: <b class="down">${pctS(c10.peor.pct, 1)}</b>, del ${fechaConAnio(c10.peor.desde)} al ${fechaConAnio(c10.peor.hasta)}${c10.peor.vuelve ? `; volvió a su máximo el ${fechaConAnio(c10.peor.vuelve)}` : '; todavía no ha vuelto a su máximo'}.`, `The worst in recent years: <b class="down">${pctS(c10.peor.pct, 1)}</b>.`) : '';
   return [
     pavT('c12', L('Medidas de riesgo', 'Risk measures'), kp, L('Con tus posiciones de hoy y los precios del último año. <b>Volatilidad</b>: cuánto se mueve al año. <b>Sharpe</b> y <b>Sortino</b>: lo ganado por cada punto de riesgo (Sortino solo cuenta las bajadas; aquí sin restar el tipo sin riesgo). <b>Beta</b>: cuánto se mueve cuando se mueve el MSCI World (1 = igual). <b>VaR</b>: en 19 de cada 20 meses no perderías más que eso, suponiendo que se mueve como hasta ahora.', 'With today\'s holdings and last year\'s prices.')),
@@ -347,7 +420,7 @@ function pavReparto(M) {
       [L('Las 5 mayores', 'The 5 largest'), pct(top5, 1)],
       [L('Empresas contadas', 'Companies counted'), String(d.filas.length), '', L('con las 10 mayores de cada fondo', 'with the top 10 of each fund')],
     ], 2), L('Un fondo indexado ya va repartido por dentro; por encima del 10 % en una sola empresa, una mala noticia suya se nota en toda la cartera.', 'Above 10% in one holding, its bad news shows across the portfolio.')),
-    xray ? pavT('c8', L('X-Ray: las empresas que tienes de verdad', 'X-Ray: the companies you really own'), xray, L('Suma las acciones que tienes sueltas y las que van dentro de tus fondos indexados (las 10 mayores de cada uno, con sus pesos de Yahoo Finance).', 'Adds your direct shares and those inside your index funds (top 10 of each).')) : '',
+    xray ? pavT('c8', L('X-Ray: las empresas que tienes de verdad', 'X-Ray: the companies you really own'), xray, L('Suma las acciones que tienes sueltas y las que van dentro de tus fondos indexados (las 10 mayores de cada uno, con sus pesos publicados).', 'Adds your direct shares and those inside your index funds (top 10 of each).')) : '',
     sol ? pavT('c4', L('¿Se pisan tus fondos?', 'Do your funds overlap?'), sol.replace(/<h3[^>]*>.*?<\/h3>/, '')) : '',
   ].join('');
 }
@@ -477,7 +550,7 @@ function pavListaMov(M) {
     if (!m || !m.fecha) continue;
     const t = m.tipo === 'venta' ? 'venta' : m.tipo === 'compra' ? 'compra' : 'otro';
     if (t === 'compra') vistas.add(`${m.instrumento}|${m.fecha}`);
-    xs.push({ d: m.fecha, t, n: nombreInst(m.instrumento), u: +m.uds || null, imp: +m.importe || (m.precio && m.uds ? m.precio * m.uds : 0), res: t === 'venta' && m.resultado != null ? +m.resultado : null, pl: m.plataforma || '' });
+    xs.push({ d: m.fecha, t, n: nombreInst(m.instrumento), u: +m.uds || null, imp: +m.importe || (m.precio && m.uds ? m.precio * m.uds : 0), res: t === 'venta' && m.resultado != null ? +m.resultado : null, coste: t === 'venta' && m.coste_vendido != null ? +m.coste_vendido : null, pl: m.plataforma || '' });
   }
   // las compras que salen de tus posiciones (la primera, las aportaciones programadas, los lotes) y no están apuntadas
   for (const f of M.filas) {
@@ -489,17 +562,33 @@ function pavListaMov(M) {
   }
   return xs.sort((a, b) => (a.d < b.d ? 1 : a.d > b.d ? -1 : 0));
 }
+// el resultado de las ventas, por partes: las que dejaron ganancia y las que dejaron pérdida, cada una con su cuenta
+function pavDesgRes(xs, res) {
+  const gan = xs.filter((x) => x.res > 0).sort((a, b) => b.res - a.res), per = xs.filter((x) => x.res < 0).sort((a, b) => a.res - b.res), cero = xs.filter((x) => !x.res);
+  const una = (x) => `<li><span><b>${esc(x.n)}</b><small>${esc(fechaConAnio(x.d))}${x.coste != null ? ` · ${L(`vendido por ${eur(x.imp, 0)}, te costó ${eur(x.coste, 0)}`, `sold for ${eur(x.imp, 0)}, cost ${eur(x.coste, 0)}`)}` : ` · ${L(`vendido por ${eur(x.imp, 0)}`, `sold for ${eur(x.imp, 0)}`)}`}</small></span><b class="${cls(x.res)}">${eurS(x.res, 0)}</b></li>`;
+  const bloque = (tit, ys, cl) => ys.length ? `<div class="desg-b"><div class="desg-cab"><span>${tit}</span><b class="${cl}">${eurS(sum(ys, (x) => x.res), 0)}</b></div><ul>${ys.map(una).join('')}</ul></div>` : '';
+  return `<div class="pav-desg" id="movDesg">
+    ${bloque(L(`Lo que suma · ${gan.length} ${gan.length === 1 ? 'venta' : 'ventas'} con ganancia`, `What adds · ${gan.length} sale${gan.length === 1 ? '' : 's'} at a gain`), gan, 'up')}
+    ${bloque(L(`Lo que resta · ${per.length} ${per.length === 1 ? 'venta' : 'ventas'} con pérdida`, `What takes away · ${per.length} sale${per.length === 1 ? '' : 's'} at a loss`), per, 'down')}
+    ${cero.length ? `<p class="nota" style="margin:0">${L(`${cero.length} ${cero.length === 1 ? 'venta' : 'ventas'} sin ganancia ni pérdida.`, `${cero.length} sale${cero.length === 1 ? '' : 's'} with no gain or loss.`)}</p>` : ''}
+    <div class="desg-tot"><span>${L('Resultado', 'Result')}</span><b class="${cls(res)}">${eurS(res, 0)}</b></div>
+    <p class="pav-como" style="margin-top:4px">${L('Cada venta: lo que te dieron menos lo que te costaron esas participaciones (las primeras que compraste, como cuenta Hacienda). Las comisiones van dentro si las apuntaste.', 'Each sale: what you got minus what those units cost you (the first ones you bought, as the tax office counts it). Fees are included if you recorded them.')}</p>
+  </div>`;
+}
 function pavMov(M) {
   const todos = pavListaMov(M), fil = S.movFil || 'todo', xs = todos.filter((x) => fil === 'todo' || x.t === fil);
   const T = { compra: L('Compra', 'Buy'), venta: L('Venta', 'Sale'), otro: L('Otro', 'Other') };
   const comprado = sum(todos.filter((x) => x.t === 'compra'), (x) => x.imp), vendido = sum(todos.filter((x) => x.t === 'venta'), (x) => x.imp);
-  const res = sum(todos.filter((x) => x.res != null), (x) => x.res);
+  const conRes = todos.filter((x) => x.res != null), res = sum(conRes, (x) => x.res);
+  // al tocar el resultado, lo que suma y lo que resta (Carlos, 4 nov)
+  const abierto = !!S.movRes && conRes.length > 0;
+  const vRes = conRes.length ? `<button type="button" class="pav-kpi-btn" data-mov-res aria-expanded="${abierto}" aria-controls="movDesg" aria-label="${L(`Resultado de lo vendido, ${eurS(res, 0)}: ver lo que suma y lo que resta`, `Result of sales, ${eurS(res, 0)}: see what adds and what takes away`)}">${eurS(res, 0)}${SVG('<path d="M6 9l6 6 6-6"/>', 2.2)}</button>` : eurS(res, 0);
   const kpis = pavKpis([
     [L('Operaciones', 'Transactions'), fmtNum(todos.length, 0)],
     [L('Comprado', 'Bought'), eur(comprado, 0)],
     [L('Vendido', 'Sold'), eur(vendido, 0)],
-    [L('Resultado de lo vendido', 'Result of sales'), eurS(res, 0), cls(res)],
-  ], 4);
+    [L('Resultado de lo vendido', 'Result of sales'), vRes, cls(res)],
+  ], 4) + (abierto ? pavDesgRes(conRes, res) : '');
   const MAX = 150;
   const filas = xs.slice(0, MAX).map((x) => [`<span class="mov-f">${esc(fechaConAnio(x.d))}</span>`, `<b>${esc(x.n)}</b>${x.pl ? `<small class="mov-pl">${esc(x.pl)}</small>` : ''}`, `<span class="mov-t ${x.t}">${T[x.t]}</span>${x.aprox ? ` <small title="${L('Sin fecha exacta: la de la posición', 'No exact date: the holding\'s')}">≈</small>` : ''}`, x.u != null ? fmtNum(x.u, x.u < 10 ? 4 : 2) : '—', `${eur(x.imp, 2)}${x.res != null ? `<small class="${cls(x.res)}"> ${eurS(x.res, 0)}</small>` : ''}`]);
   const tabla = xs.length ? pavTabla([L('Fecha', 'Date'), L('Qué', 'What'), L('Tipo', 'Type'), L('Particip.', 'Units'), L('Importe', 'Amount')], filas, 'pav-mov') + (xs.length > MAX ? `<p class="nota">${L(`Y ${xs.length - MAX} más antiguas.`, `And ${xs.length - MAX} older ones.`)}</p>` : '') : `<p class="nota" style="margin:0">${L('No hay movimientos de este tipo.', 'No transactions of this type.')}</p>`;
@@ -569,34 +658,87 @@ function pavGrafico(M) {
   ].join('');
 }
 
-/* ---------- Tu reparto objetivo ---------- */
+/* ---------- Tu reparto objetivo ----------
+   Rehecho el 4 nov (Carlos: «he superado el 100 % y me deja» y «necesita un overhaul general»). Cada tipo con lo que tienes,
+   tu objetivo con − y + y su barra; el total no puede pasar de 100 (el campo se para en lo que queda por repartir);
+   dos barras para ver de un vistazo lo que tienes y lo que quieres; cuánto haría falta aportar para llegar sin vender; y
+   la aportación repartida hacia el objetivo, como cuenta, no como consejo. */
 const LS_OBJ = 'inv-reparto-obj';
+const CLASES_OBJ = ['Renta variable', 'Renta fija', 'Monetario', 'Oro', 'Materias primas', 'Cripto', 'Efectivo', 'Otros'];
+const r1d = (x) => Math.round(x * 10) / 10;
+// lo que tienes hoy en enteros que suman 100 (el resto mayor se lleva el punto que falta)
+function pavDesdeHoy(r) {
+  const xs = r.filas.filter((x) => x.pct > 0).map((x) => ({ k: x.k, b: Math.floor(x.pct), f: x.pct - Math.floor(x.pct) }));
+  let falta = 100 - sum(xs, (x) => x.b);
+  for (const x of [...xs].sort((a, b) => b.f - a.f)) { if (falta <= 0) break; x.b++; falta--; }
+  return Object.fromEntries(xs.map((x) => [x.k, x.b]));
+}
 function pavObjetivo(r) {
   const o = LS.get(LS_OBJ, null);
   if (o && typeof o === 'object') return o;
-  // sin objetivo puesto: lo que tienes hoy, redondeado a 5, para empezar desde ahí
-  return Object.fromEntries(r.filas.map((x) => [x.k, Math.round(x.pct / 5) * 5]));
+  return pavDesdeHoy(r);   // sin objetivo puesto: lo que tienes hoy, para empezar desde ahí
+}
+const pavColClase = (k) => { const i = CLASES_OBJ.indexOf(k); return i >= 0 && i < 6 ? PAV_COL[i] : i >= 6 ? 'var(--tenue)' : PAV_COL[5]; };
+// el máximo que puede tener un tipo sin que el total pase de 100
+const pavTopeObj = (o, k) => Math.max(0, r1d(100 - sum(Object.entries(o).filter(([x]) => x !== k), ([, v]) => +v || 0)));
+function pavPonerObj(k, v) {
+  const r = reparto(S.M || calcular(), 'clase', 'todo'), o = { ...pavObjetivo(r) };
+  const tope = pavTopeObj(o, k), n = r1d(Math.max(0, Math.min(tope, +v || 0)));
+  o[k] = n; LS.set(LS_OBJ, o);
+  return { n, tope, cortado: (+v || 0) > tope + 0.05 };
 }
 function pavRebal(M) {
-  const r = reparto(M, 'clase', 'todo'), obj = pavObjetivo(r), total = r.total || M.total;
-  const ks = [...new Set([...r.filas.map((x) => x.k), ...Object.keys(obj)])];
+  const r = reparto(M, 'clase', 'todo'), obj = pavObjetivo(r), total = r.total || M.total, puesto = !!LS.get(LS_OBJ, null);
+  const ord = (k) => { const i = CLASES_OBJ.indexOf(k); return i < 0 ? 99 : i; };
+  const ks = [...new Set([...r.filas.map((x) => x.k), ...Object.keys(obj)])].sort((a, b) => ord(a) - ord(b));
   const tienes = (k) => (r.filas.find((x) => x.k === k) || { pct: 0, v: 0 });
-  const sumObj = sum(ks, (k) => +obj[k] || 0), puesto = !!LS.get(LS_OBJ, null);
-  const aport = Math.max(0, +(S.rebalAport != null ? S.rebalAport : cfgProy().aport) || 0);
-  // la aportación repartida hacia el objetivo: primero a lo que más falta (en euros, con el total de después)
-  const tras = total + aport, falta = ks.map((k) => [k, Math.max(0, ((+obj[k] || 0) / 100) * tras - tienes(k).v)]), sf = sum(falta, ([, v]) => v);
-  const reparte = new Map(falta.map(([k, v]) => [k, sf > 0 ? (v / sf) * Math.min(aport, sf) : 0]));
-  const filas = ks.map((k) => {
-    const t = tienes(k), o = +obj[k] || 0, dif = t.pct - o, eu = (dif / 100) * total, desp = tras > 0 ? ((t.v + (reparte.get(k) || 0)) / tras) * 100 : 0;
-    return [`<b>${esc(trad(k))}</b>`, pct(t.pct, 1), `<input type="number" inputmode="decimal" min="0" max="100" step="1" value="${o}" data-obj-k="${esc(k)}" aria-label="${L(`Objetivo para ${esc(k)}, en %`, `Target for ${esc(k)}, in %`)}">`, `<span class="${Math.abs(dif) < 2 ? '' : dif > 0 ? 'up' : 'down'}">${masSi(dif, 1)}${fmtNum(dif, 1)} pp</span><small> ${eurS(eu, 0)}</small>`, aport > 0 && puesto ? `${eur(reparte.get(k) || 0, 0)}<small> → ${pct(desp, 1)}</small>` : '—'];
-  });
-  const aviso = Math.abs(sumObj - 100) > 0.5 ? `<p class="nota pav-warn">${L(`Tu objetivo suma ${fmtNum(sumObj, 0)} %: tiene que sumar 100.`, `Your target adds up to ${fmtNum(sumObj, 0)}%: it must add up to 100.`)}</p>` : '';
-  const campo = `<label class="pav-sel"><span>${L('Si aportaras', 'If you put in')}</span><input type="number" inputmode="decimal" min="0" step="50" value="${aport}" data-rebal-aport> €</label>`;
+  const sumObj = r1d(sum(ks, (k) => +obj[k] || 0)), queda = r1d(100 - sumObj), cuadra = Math.abs(queda) < 0.05;
   const desv = sum(ks, (k) => Math.abs(tienes(k).pct - (+obj[k] || 0))) / 2;
+  // lo que habría que aportar para llegar sin vender: el total con el que lo que más sobra baja a su objetivo
+  let sinVender = null, imposible = false;
+  if (cuadra && puesto) {
+    let T = total;
+    // lo que no llega al 1 % y tiene objetivo 0 no cuenta (unos euros de efectivo no obligan a vender)
+    for (const k of ks) { const v = tienes(k).v, o = +obj[k] || 0; if (o <= 0) { if (tienes(k).pct >= 1) imposible = true; } else T = Math.max(T, v / (o / 100)); }
+    sinVender = imposible ? null : Math.max(0, T - total);
+  }
+  const ap = cfgProy().aport, meses = sinVender && ap > 0 ? Math.ceil(sinVender / ap) : null;
+  const kp = pavKpis([
+    [L('Lejos de tu objetivo', 'Away from your target'), cuadra ? `${fmtNum(desv, 1)} pp` : '—', desv > 10 ? 'warn' : '', cuadra ? (desv < 2 ? L('casi en su sitio', 'almost there') : L('lo que tendrías que mover', 'what you would need to move')) : L('cuando tu objetivo sume 100', 'once your target adds up to 100')],
+    [L('Para llegar solo aportando', 'To get there only by adding'), !cuadra || !puesto ? '—' : imposible ? L('Vendiendo', 'Selling') : sinVender < 1 ? L('Ya estás', 'You are there') : euCorto(sinVender), '', !puesto ? L('cuando pongas tu objetivo', 'once you set your target') : !cuadra ? '' : imposible ? L('algo con objetivo 0 % solo baja si vendes', 'something at 0% only drops if you sell') : meses ? L(`unos ${meses} ${meses === 1 ? 'mes' : 'meses'} con tus ${eur(ap, 0)} al mes`, `about ${meses} month${meses === 1 ? '' : 's'} at ${eur(ap, 0)} a month`) : ''],
+  ], 2);
+  // de un vistazo: lo que tienes y lo que quieres, en dos barras
+  const barra = (pcts) => `<div class="ro-barra">${ks.filter((k) => pcts(k) > 0).map((k) => `<i style="width:${Math.min(100, pcts(k)).toFixed(2)}%;background:${pavColClase(k)}" title="${esc(trad(k))}: ${pct(pcts(k), 1)}"></i>`).join('')}</div>`;
+  const vistazo = `<div class="ro-vistazo"><div><small>${L('Tienes', 'You have')}</small>${barra((k) => tienes(k).pct)}</div><div><small>${L('Tu objetivo', 'Your target')}</small>${barra((k) => +obj[k] || 0)}</div></div>`;
+  const filas = ks.map((k) => {
+    const t = tienes(k), o = +obj[k] || 0, dif = t.pct - o, eu = (dif / 100) * total, tope = pavTopeObj(obj, k);
+    const txt = !cuadra ? '' : Math.abs(dif) < 0.5 ? `<span class="ro-ok">${L('En su sitio', 'On target')}</span>` : dif < 0 ? `<span>${L(`Te faltan ${eur(-eu, 0)}`, `${eur(-eu, 0)} short`)}</span><small>${fmtNum(dif, 1)} pp</small>` : `<span>${L(`Te sobran ${eur(eu, 0)}`, `${eur(eu, 0)} over`)}</span><small>+${fmtNum(dif, 1)} pp</small>`;
+    const n = esc(trad(k));
+    return `<div class="ro-fila">
+      <div class="ro-n"><b><i style="background:${pavColClase(k)}"></i>${n}</b><small>${L(`Tienes ${pct(t.pct, 1)}`, `You have ${pct(t.pct, 1)}`)}${t.v ? ` · ${eur(t.v, 0)}` : ''}</small></div>
+      <div class="ro-paso" role="group" aria-label="${L(`Objetivo de ${n}`, `Target for ${n}`)}"><button type="button" data-obj-menos="${esc(k)}" aria-label="${L(`Bajar ${n} un punto`, `Lower ${n} by one point`)}" ${o <= 0 ? 'disabled' : ''}>−</button><input type="number" inputmode="decimal" min="0" max="${tope}" step="0.5" value="${r1d(o)}" data-obj-k="${esc(k)}" aria-label="${L(`Objetivo para ${n}, en %`, `Target for ${n}, in %`)}"><span>%</span><button type="button" data-obj-mas="${esc(k)}" aria-label="${L(`Subir ${n} un punto`, `Raise ${n} by one point`)}" ${o >= tope ? 'disabled' : ''}>+</button></div>
+      <div class="ro-dif">${txt}</div>
+      <div class="ro-pista" aria-hidden="true"><i style="width:${Math.min(100, t.pct).toFixed(1)}%;background:${pavColClase(k)}"></i><b style="left:${Math.min(100, o).toFixed(1)}%"></b></div>
+    </div>`;
+  }).join('');
+  const faltan = CLASES_OBJ.filter((k) => !ks.includes(k));
+  const anadir = faltan.length ? `<label class="pav-sel ro-anadir"><span>${L('Añadir un tipo', 'Add a type')}</span><select data-obj-add><option value="">${L('Elegir…', 'Choose…')}</option>${faltan.map((k) => `<option value="${esc(k)}">${esc(trad(k))}</option>`).join('')}</select></label>` : '';
+  const estado = cuadra ? `<span class="ro-ok">${L('Repartido el 100 %', '100% allocated')}</span>` : queda > 0 ? `<span class="pav-warn">${L(`Te queda ${pct(queda, 1)} por repartir`, `${pct(queda, 1)} left to allocate`)}</span>` : `<span class="pav-warn">${L(`Te pasas en ${pct(-queda, 1)}: baja algún tipo`, `${pct(-queda, 1)} over: lower a type`)}</span>`;
+  const total100 = `<div class="ro-total" id="roTotal" aria-live="polite"><div class="ro-pista"><i style="width:${Math.min(100, sumObj).toFixed(1)}%;background:${cuadra ? 'var(--sube)' : 'var(--aviso)'}"></i></div><div class="ro-total-t"><b>${pct(sumObj, 1)}</b>${estado}</div></div>`;
+  const acciones = `<div class="pav-filtros ro-acc">${anadir}<button type="button" class="btn peq" data-obj-acc="hoy">${L('Empezar desde lo que tengo', 'Start from what I own')}</button>${puesto ? `<button type="button" class="btn peq" data-obj-acc="quitar">${L('Quitar mi objetivo', 'Remove my target')}</button>` : ''}</div>`;
+  // la aportación repartida hacia el objetivo: primero a lo que más falta (en euros, con el total de después)
+  const aport = Math.max(0, +(S.rebalAport != null ? S.rebalAport : ap) || 0), tras = total + aport;
+  const falta = ks.map((k) => [k, Math.max(0, ((+obj[k] || 0) / 100) * tras - tienes(k).v)]), sf = sum(falta, ([, v]) => v);
+  const reparte = new Map(falta.map(([k, v]) => [k, sf > 0 ? (v / sf) * Math.min(aport, sf) : 0]));
+  const sobra = Math.max(0, aport - sf);
+  const campo = `<label class="pav-sel"><span>${L('Si aportaras', 'If you put in')}</span><input type="number" inputmode="decimal" min="0" step="50" value="${aport}" data-rebal-aport> €</label>`;
+  const destino = !cuadra ? `<p class="nota" style="margin:0">${L('Cuando tu objetivo sume 100 %, aquí sale cómo quedaría.', 'Once your target adds up to 100%, this shows how it would look.')}</p>`
+    : !(aport > 0) ? `<p class="nota" style="margin:0">${L('Pon una cantidad para ver cómo quedaría.', 'Enter an amount to see how it would look.')}</p>`
+    : `<ul class="ro-dest">${ks.filter((k) => (reparte.get(k) || 0) >= 1).sort((a, b) => reparte.get(b) - reparte.get(a)).map((k) => { const desp = ((tienes(k).v + reparte.get(k)) / tras) * 100; return `<li><span><i style="background:${pavColClase(k)}"></i>${esc(trad(k))}</span><b>${eur(reparte.get(k), 0)}</b><small>${L(`quedaría en ${pct(desp, 1)} (objetivo ${pct(+obj[k] || 0, 1)})`, `would end at ${pct(desp, 1)} (target ${pct(+obj[k] || 0, 1)})`)}</small></li>`; }).join('')}</ul>${sobra >= 1 ? `<p class="nota">${L(`Con eso ya llegarías a tu objetivo y sobrarían ${eur(sobra, 0)}: repartidos como tu objetivo, no lo cambian.`, `That would reach your target with ${eur(sobra, 0)} to spare: split like your target, they don't change it.`)}</p>` : ''}`;
   return [
-    pavT('c12', L('Tu reparto objetivo', 'Your target mix'), pavKpis([[L('Lejos de tu objetivo', 'Away from your target'), `${fmtNum(desv, 1)} pp`, desv > 10 ? 'warn' : ''], [L('Objetivo', 'Target'), puesto ? L('Puesto por ti', 'Set by you') : L('Sin poner', 'Not set'), '', puesto ? '' : L('de momento, lo que tienes hoy', 'for now, what you own today')]], 2)
-      + `<div class="pav-filtros">${campo}</div>` + pavTabla([L('Tipo', 'Type'), L('Tienes', 'You have'), L('Objetivo %', 'Target %'), L('Diferencia', 'Difference'), L('Si la repartieras hacia tu objetivo', 'If you split it towards your target')], filas, 'pav-rebal') + aviso + (puesto ? '' : `<p class="nota">${L('Pon tu objetivo (el % de cada tipo) para ver cómo quedaría la aportación.', 'Set your target (the % of each type) to see how the contribution would look.')}</p>`),
-      L('Escribe el porcentaje que quieres de cada tipo (se guarda en este dispositivo). La última columna es un cálculo: cómo quedaría si esa aportación fuera a lo que más se queda por debajo de tu objetivo. Es una cuenta, no una recomendación: lo decides tú.', 'Type the percentage you want of each type (saved on this device). The last column is a calculation: how it would look if that contribution went to what is most below your target. It is a sum, not a recommendation: your call.')),
+    pavT('c12', L('Tu reparto objetivo', 'Your target mix'), kp + vistazo + `<div class="ro-lista">${filas}</div>` + total100 + acciones + (puesto ? '' : `<p class="nota" style="margin:8px 0 0">${L('De momento sale lo que tienes hoy. Cámbialo con − y + o escribiendo el número, y se guarda.', 'For now it shows what you own today. Change it with − and + or by typing, and it is saved.')}</p>`),
+      L('Escribe el porcentaje que quieres de cada tipo; se guarda en este dispositivo. Entre todos no pueden pasar de 100. «Te faltan» y «Te sobran» son la distancia en euros con tu patrimonio de hoy. «Para llegar solo aportando» es lo que tendrías que meter, sin vender nada, para que lo que más sobra baje a su objetivo.', 'Type the percentage you want of each type; it is saved on this device. Together they cannot go over 100. «Short» and «over» are the distance in euros with your net worth today. «To get there only by adding» is what you would need to put in, without selling, for the most overweight type to drop to its target.')),
+    pavT('c12', L('Tu próxima aportación', 'Your next contribution'), `<div class="pav-filtros" style="margin-top:0">${campo}</div>${destino}`, L('La aportación va primero a lo que más se queda por debajo de tu objetivo. Es una cuenta, no una recomendación: lo decides tú.', 'The contribution goes first to what is furthest below your target. It is a sum, not a recommendation: your call.')),
   ].join('');
 }
 
@@ -629,7 +771,15 @@ function pavLab(M) {
 
 // los botones y campos de estas pestañas
 document.addEventListener('click', (e) => {
-  const t = e.target.closest && e.target.closest('[data-pnl-mes], [data-mov-f], [data-graf-r]'); if (!t || !$('#panelAv')) return;
+  const t = e.target.closest && e.target.closest('[data-pnl-mes], [data-mov-f], [data-graf-r], [data-mov-res], [data-obj-mas], [data-obj-menos], [data-obj-acc]'); if (!t || !$('#panelAv')) return;
+  if (t.hasAttribute('data-mov-res')) S.movRes = !S.movRes;
+  if (t.dataset.objMas != null || t.dataset.objMenos != null) {
+    const k = t.dataset.objMas ?? t.dataset.objMenos, o = pavObjetivo(reparto(S.M || calcular(), 'clase', 'todo')), v = +o[k] || 0;
+    // con decimales, el primer toque redondea al entero
+    pavPonerObj(k, t.dataset.objMas != null ? Math.floor(v + 1) : Math.ceil(v - 1));
+  }
+  if (t.dataset.objAcc === 'hoy') { LS.set(LS_OBJ, pavDesdeHoy(reparto(S.M || calcular(), 'clase', 'todo'))); toast(L('Objetivo puesto con lo que tienes hoy. Cámbialo a tu gusto.', 'Target set to what you own today. Change it as you like.'), 3500); }
+  if (t.dataset.objAcc === 'quitar') { LS.del(LS_OBJ); toast(L('Objetivo quitado.', 'Target removed.'), 2500); }
   if (t.dataset.pnlMes != null) { if (!t.dataset.pnlMes) return; S.pnlMes = t.dataset.pnlMes; }
   if (t.dataset.movF) S.movFil = t.dataset.movF;
   if (t.dataset.grafR) S.grafRango = t.dataset.grafR;
@@ -642,14 +792,23 @@ document.addEventListener('change', (e) => {
   const t = e.target; if (!$('#panelAv') || !t.closest || !t.closest('#panelAv')) return;
   if (t.matches('[data-graf-pos]')) { S.grafPos = t.value; repintarAv(); }
   else if (t.matches('[data-obj-k]')) {
-    const o = { ...pavObjetivo(reparto(S.M || calcular(), 'clase', 'todo')) };
-    for (const x of $$('[data-obj-k]', $('#panelAv'))) o[x.dataset.objK] = Math.max(0, Math.min(100, +x.value || 0));
-    LS.set(LS_OBJ, o); repintarAv();
+    const x = pavPonerObj(t.dataset.objK, String(t.value).replace(',', '.'));
+    if (x.cortado) toast(L(`Entre todos no pueden pasar de 100 %: ${trad(t.dataset.objK)} se queda en ${pct(x.n, 1)}.`, `Together they can't go over 100%: ${trad(t.dataset.objK)} stays at ${pct(x.n, 1)}.`), 3500);
+    repintarAv();
+  } else if (t.matches('[data-obj-add]')) {
+    if (!t.value) return;
+    const o = { ...pavObjetivo(reparto(S.M || calcular(), 'clase', 'todo')), [t.value]: 0 }; LS.set(LS_OBJ, o); repintarAv();
   } else if (t.matches('[data-rebal-aport]')) { S.rebalAport = Math.max(0, +t.value || 0); repintarAv(); }
 });
 document.addEventListener('input', (e) => {
   const t = e.target; if (!t.matches) return;
-  if (t.matches('#panelAv [data-obj-k]')) { const o = { ...pavObjetivo(reparto(S.M || calcular(), 'clase', 'todo')), [t.dataset.objK]: Math.max(0, Math.min(100, +t.value || 0)) }; LS.set(LS_OBJ, o); return; }
+  // mientras escribes, el campo no deja pasar de lo que queda por repartir; el resto se repinta al salir del campo
+  if (t.matches('#panelAv [data-obj-k]')) {
+    if (t.value === '') return;
+    const x = pavPonerObj(t.dataset.objK, String(t.value).replace(',', '.'));
+    if (x.cortado) { t.value = String(x.n); t.classList.remove('ro-tope'); void t.offsetWidth; t.classList.add('ro-tope'); vibrar(20); }
+    return;
+  }
   if (t.matches('#panelAv [data-rebal-aport]')) { S.rebalAport = Math.max(0, +t.value || 0); return; }
   if (!t.matches('#panelAv [data-lab]')) return;
   S.lab = { ...(S.lab || {}), [t.dataset.lab]: t.value === '' ? undefined : +t.value };

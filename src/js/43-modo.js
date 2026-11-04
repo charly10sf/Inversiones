@@ -195,7 +195,7 @@ function etiquetaCifra(v) {
 function marcarCifras(raiz) {
   if (!raiz) return;
   for (const v of $$(SEL_CIFRA, raiz)) {
-    if (v.dataset.cifra || v.closest('a, button')) continue;
+    if (v.dataset.cifra || v.closest('a, button') || v.querySelector('a, button')) continue;
     const et = etiquetaCifra(v); if (!et) continue;
     // el nombre lo da el contenido (que cambia con cada precio); la ayuda va aparte, en un texto escondido
     v.dataset.cifra = et; v.tabIndex = 0; v.setAttribute('role', 'button'); v.setAttribute('aria-haspopup', 'dialog'); v.setAttribute('aria-describedby', 'cifraAyuda');
@@ -255,6 +255,28 @@ document.addEventListener('keydown', (e) => {
   const v = e.target.closest && e.target.closest('[data-cifra]');
   if (v && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); globoCifra(v); }
 });
+/* Lo que va con la pregunta (Carlos, 4 nov: la IA contestaba «no tengo el dato de origen» del VaR, la beta o las
+   correlaciones). Con «Explícamela» o «Pregúntale» viaja, sin que se vea en el chat, lo que pone la tarjeta entera (sus
+   cifras, su tabla y su «Cómo se calcula») y, si la pestaña lo tiene, el detalle del cálculo (S.detAv: con qué números
+   sale cada cifra y la misma medida en el MSCI World, para comparar). Lo recoge preguntarAsesor. */
+function contextoIA(el) {
+  const t = el && el.closest('.pav-t, .card, .car-bloque, section'); if (!t) return null;
+  const c = t.cloneNode(true);
+  for (const x of c.querySelectorAll('.preg-ia, button, svg, script, style, [hidden]')) x.remove();
+  // las celdas de las tablas, separadas; si no, el texto sale pegado
+  for (const x of c.querySelectorAll('td, th')) x.append(' | ');
+  for (const x of c.querySelectorAll('.pav-kpi > small, .kpi > small, .kpi > .k')) x.append(': ');
+  for (const x of c.querySelectorAll('.pav-kpi > b, .kpi > .v')) x.append(' ');
+  for (const x of c.querySelectorAll('tr, p, li, .pav-kpi, .kpi, h2, h3')) x.append('\n');
+  const texto = (c.textContent || '').replace(/[ \t  ]+/g, ' ').replace(/\s*\n\s*/g, '\n').trim().slice(0, 3500);
+  const { tarjeta, pest } = dondeCifra(el);
+  const k = S.vista === 'av' ? S.pestAv : '';
+  return { donde: [pest, tarjeta].filter(Boolean).join(' · '), texto, calculo: (k && S.detAv && S.detAv[k]) || '', t: Date.now() };
+}
+document.addEventListener('click', (e) => {
+  const b = e.target.closest && e.target.closest('.gc-ia, .preg-ia'); if (!b) return;
+  S.ctxIA = contextoIA(b.classList.contains('gc-ia') ? $('[data-cifra].cifra-on') : b);
+}, true);
 addEventListener('scroll', () => { if ($('#globoCifra')) cerrarGloboCifra(false); }, { passive: true, capture: true });
 addEventListener('resize', () => { if ($('#globoCifra')) cerrarGloboCifra(false); });
 addEventListener('hashchange', () => { if ($('#globoCifra')) cerrarGloboCifra(false); });

@@ -1072,9 +1072,11 @@ function sondearClaude() {
 /* 0.9 · todo con Claude: lo que no es el chat (el resumen de una noticia, leer capturas y extractos al importar) también va
    con Claude si tu cuenta lo tiene, aunque tengas la clave de Google. Una llamada suelta, sin las herramientas de la app */
 const claudeParaTodo = () => !!modeloClaudeParaIA('pregunta') && sondeoClaudeOk() && !claudePausado();
-async function claudeTexto({ partes, sistema = '', modelo = 'claude-haiku-5-5', web = false, maxBusquedas = 0, maxTokens = 4096, signal }) {
+// alParcial(texto, turno): lo que lleva escrito mientras llega (la noticia lo va enseñando)
+async function claudeTexto({ partes, sistema = '', modelo = 'claude-haiku-5-5', web = false, maxBusquedas = 0, maxTokens = 4096, signal, esfuerzo = 'medium', alParcial = null }) {
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
-  await conversarClaude({ mensajes: [{ role: 'user', content: partes }], turno, sistema, maxTokens, signal, web, maxBusquedas, claudeModelo: modelo, herramientas: false, tipo: 'suelta' });
+  const alCambiar = alParcial ? () => { try { alParcial(turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n'), turno); } catch (e) {} } : undefined;
+  await conversarClaude({ mensajes: [{ role: 'user', content: partes }], turno, sistema, maxTokens, signal, web, maxBusquedas, claudeModelo: modelo, herramientas: false, tipo: 'suelta', esfuerzo, alCambiar });
   return { texto: turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim(), citas: turno.citas.length ? turno.citas : turno.resultados };
 }
 function errorSinIA(e, aMedias) {
@@ -1240,7 +1242,7 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   // los bloques de texto vacíos no se pueden devolver a la API
   return { contenido: bloques.filter((b) => b && !(b.type === 'text' && !b.text)), stop, uso };
 }
-async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, claudeModelo, herramientas = true, maxBusquedas = 1, tipo = 'pregunta' }) {
+async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, claudeModelo, herramientas = true, maxBusquedas = 1, tipo = 'pregunta', esfuerzo: esfuerzo0 = 'medium' }) {
   const modelo = claudeModelo, cfg = cfgAsesor();
   // la búsqueda en internet es la de Claude, así que no depende de lo que incluya el plan de Google
   const usarWeb = web !== false && cfg.webPedida && maxBusquedas > 0;
@@ -1252,7 +1254,8 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
   const herrs = () => [...propias, ...(conWeb ? [{ type: 'web_search_20250305', name: 'web_search', max_uses: maxBusquedas }] : [])];
   // esfuerzo medio siempre: con «alto» y dos búsquedas, Haiku se gastó todo el espacio pensando y el JSON salió cortado (2 nov).
   // Si aun así se queda sin sitio en un análisis, se repite una vez con esfuerzo bajo y sin búsqueda (maxRepetido)
-  let esfuerzo = 'medium', maxRepetido = false;
+  // (el resumen de una noticia pide «low»: contesta antes, y para resumir no hace falta pensar más)
+  let esfuerzo = esfuerzo0, maxRepetido = false;
   turno.modelo = modelo;
   let ronda = 0, cortes = 0, pausas = 0, cambios = 0, vacias = 0, enviada = false;
   const avisoRed = (txt) => { turno.partes = turno.partes.filter((x) => !x.red); const p = { tipo: 'paso', red: true, txt }; turno.partes.push(p); alCambiar(); return p; };
@@ -1335,7 +1338,10 @@ async function preguntarAsesor(texto) {
   AS.claudeNo = false;
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
   const adj = AS.adjunto; AS.adjunto = null; pintarAdjunto();
-  const textoApi = adj ? `${texto}\n\n[Te mando un recorte de la pantalla de Toisón, de ${adj.donde}. ${adj.img ? 'Va en la imagen. ' : ''}El texto que se lee en esa zona es: «${adj.texto || 'sin texto'}». Respóndeme sobre lo que se ve ahí, con mis datos y tus herramientas si hace falta, y explica lo que haga falta para entenderlo.]` : texto;
+  // lo que viaja con «Explícamela» y «Pregúntale» (43-modo.js, contextoIA): la tarjeta entera y cómo se calcula
+  const ctx = S.ctxIA && Date.now() - S.ctxIA.t < 10 * 60e3 ? S.ctxIA : null; S.ctxIA = null;
+  const conCtx = ctx && ctx.texto ? `${texto}\n\n[Lo pregunto desde Toisón, ${ctx.donde || 'una tarjeta'}. Lo que se lee en esa tarjeta, con sus cifras (las celdas de las tablas van separadas por «|»):\n«${ctx.texto}»${ctx.calculo ? `\n\nCómo calcula Toisón las cifras de esta pestaña, con mis números:\n${ctx.calculo}` : ''}\n\nEsas cifras son las de mi cartera y salen de esos cálculos: úsalas, explica de dónde sale cada una con esos números y, para compararla con lo normal, usa la referencia que venga ahí (el MSCI World en las mismas fechas) o rangos generales conocidos diciendo que son orientativos. No digas que no tienes el dato si está aquí.]` : texto;
+  const textoApi = adj ? `${conCtx}\n\n[Te mando un recorte de la pantalla de Toisón, de ${adj.donde}. ${adj.img ? 'Va en la imagen. ' : ''}El texto que se lee en esa zona es: «${adj.texto || 'sin texto'}». Respóndeme sobre lo que se ve ahí, con mis datos y tus herramientas si hace falta, y explica lo que haga falta para entenderlo.]` : conCtx;
   const contenido = adj && adj.img ? [{ inlineData: { mimeType: 'image/jpeg', data: adj.img.split(',')[1] } }, { text: textoApi }] : textoApi;
   AS.conv.push({ rol: 'yo', texto, mini: adj && adj.mini, donde: adj && adj.donde, adj: adj || undefined }, turno);
   AS.cargando = true; AS.ctrl = new AbortController();

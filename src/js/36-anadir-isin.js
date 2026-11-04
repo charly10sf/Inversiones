@@ -119,7 +119,7 @@ function anadirPorIsin(inicial, alListo, sinEncontrar) {
   inp.oninput = () => { hallado = null; res.innerHTML = ''; err(''); boton.textContent = L('Buscarlo', 'Look it up'); boton.disabled = false; };
   const terminar = (cid) => { h.cerrar(true); alListo(cid); };
   const pedido = (isin) => {
-    res.innerHTML = `<div class="isin-no">${ICONOS.alerta}<div><b>${L('No lo encontramos ahora mismo', "We couldn't find it right now")}</b><p>${L('Puede que sea muy nuevo o que Yahoo aún no lo tenga. Si lo añades igualmente, queda pedido: Toisón lo vuelve a buscar en cada actualización del catálogo y, en cuanto aparezca, sale con su precio. Mientras, pon tú lo que vale en Editar.', "It may be very new or Yahoo may not have it yet. If you add it anyway, it stays requested: Toisón looks for it again on every catalog update and, as soon as it shows up, it gets its price. In the meantime, enter its value yourself in Edit.")}</p></div></div>`;
+    res.innerHTML = `<div class="isin-no">${ICONOS.alerta}<div><b>${L('No lo encontramos ahora mismo', "We couldn't find it right now")}</b><p>${L('Puede que sea muy nuevo o que aún no tengamos sus datos. Si lo añades igualmente, queda pedido: Toisón lo vuelve a buscar en cada actualización del catálogo y, en cuanto aparezca, sale con su precio. Mientras, pon tú lo que vale en Editar.', "It may be very new or we may not have its data yet. If you add it anyway, it stays requested: Toisón looks for it again on every catalog update and, as soon as it shows up, it gets its price. In the meantime, enter its value yourself in Edit.")}</p></div></div>`;
     boton.textContent = sinEncontrar ? L('Añadirlo igualmente', 'Add it anyway') : L('Dejarlo pedido', 'Request it');
     hallado = { pedido: isin };
   };
@@ -147,7 +147,7 @@ function anadirPorIsin(inicial, alListo, sinEncontrar) {
     const ya = Object.entries((S.cat && S.cat.v) || {}).find(([, x]) => String(x.isin || '').toUpperCase() === isin);
     if (ya) return terminar(ya[0]);
     buscando = true; boton.disabled = true; boton.textContent = L('Buscando…', 'Looking…');
-    res.innerHTML = `<div class="isin-busca"><span class="isin-giro" aria-hidden="true"></span>${L('Buscándolo en Yahoo Finance…', 'Looking it up on Yahoo Finance…')}</div>`;
+    res.innerHTML = `<div class="isin-busca"><span class="isin-giro" aria-hidden="true"></span>${L('Buscándolo…', 'Looking it up…')}</div>`;
     const d = await buscarIsinWorker(isin, false);
     buscando = false; boton.disabled = false;
     if (!d.ok) return pedido(isin);
