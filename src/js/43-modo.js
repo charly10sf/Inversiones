@@ -44,7 +44,7 @@ function htmlPestAna() {
   return `<nav class="pest-av" aria-label="${L('Qué ver', 'What to see')}">${lista.map((x) => `<a href="#${x.v}"${x.v === 'av' ? ` data-pest-av="${x.k}"` : ''} aria-current="${actual(x) ? 'page' : 'false'}">${x.n}</a>`).join('')}</nav>`;
 }
 // el sitio de una pestaña de «av»: lo llena pintarPanelAv (en el trozo) después de pintar
-const htmlPanelAv = () => `<div class="panel-av" id="panelAv" data-p="${pestAv()}" aria-busy="true"><div class="pav-esq" aria-label="${L('Preparando la pestaña…', 'Getting the tab ready…')}"><i></i><i></i><i></i><i></i></div></div>`;
+const htmlPanelAv = () => `<div class="panel-av" id="panelAv" data-p="${pestAv()}" aria-busy="true"><div class="pav-esq" role="status" aria-label="${L('Preparando la pestaña…', 'Getting the tab ready…')}"><i></i><i></i><i></i><i></i></div></div>`;
 function htmlSelectorModo(enRiel) {
   const m = modoApp();
   const bs = `<button type="button" data-modo="basico" aria-pressed="${m === 'basico'}">${L('Básico', 'Basic')}</button><button type="button" data-modo="avanzado" aria-pressed="${m === 'avanzado'}">${L('Avanzado', 'Advanced')}</button>`;
