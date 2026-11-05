@@ -121,3 +121,6 @@
 .as-conv:hover { border-color: var(--oro-texto); }
 .as-conv-borrar { flex: none; align-self: center; color: var(--texto-2); }
 .as-convs-todas { margin: 12px 0; }
+/* 0.8.2 · Normal / A fondo (y Normal / Rápida): 30 px de alto, con 48 de área para el dedo */
+.as-modo .seg button { position: relative; }
+.as-modo .seg button::after { content: ''; position: absolute; inset: -9px 0; }

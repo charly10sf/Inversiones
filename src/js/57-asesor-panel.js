@@ -202,7 +202,7 @@ function pintarAsesor(alFinal) {
   pintarAvisoIA(fondo);
   const rapida = cfg.modelo === MODELO_RAPIDO;
   // 0.8.2: con Claude, Normal (Haiku) o «A fondo» (Sonnet) para tus preguntas; con un modelo fijo elegido en Ajustes, nada
-  if (quienContestaIA() === 'claude') $('#asModo', fondo).innerHTML = motorElegido() !== 'auto' ? '' : `<span>${L('Respuesta', 'Answer')}</span><div class="seg" role="group" aria-label="${L('Tipo de respuesta', 'Answer type')}"><button type="button" data-as="fondo" data-m="normal" aria-pressed="${!AS.aFondo}">${L('Normal', 'Normal')}</button><button type="button" data-as="fondo" data-m="fondo" aria-pressed="${!!AS.aFondo}">${L('A fondo', 'In depth')}</button></div><small>${AS.aFondo ? L('Con Sonnet: piensa más y tarda algo más', 'With Sonnet: thinks more and takes a bit longer') : L('Con Haiku: rápida y al grano', 'With Haiku: quick and to the point')}</small>`;
+  if (quienContestaIA() === 'claude') $('#asModo', fondo).innerHTML = motorElegido() !== 'auto' ? '' : `<span>${L('Respuesta', 'Answer')}</span><div class="seg" role="group" aria-label="${L('Tipo de respuesta', 'Answer type')}" aria-describedby="asModoNota"><button type="button" data-as="fondo" data-m="normal" aria-pressed="${!AS.aFondo}">${L('Normal', 'Normal')}</button><button type="button" data-as="fondo" data-m="fondo" aria-pressed="${!!AS.aFondo}">${L('A fondo', 'In depth')}</button></div><small id="asModoNota">${AS.aFondo ? L('Con Sonnet: piensa más y tarda algo más', 'With Sonnet: thinks more and takes a bit longer') : L('Con Haiku: rápida y al grano', 'With Haiku: quick and to the point')}</small>`;
   else $('#asModo', fondo).innerHTML = `<span>Respuesta</span><div class="seg" role="group" aria-label="Tipo de respuesta"><button type="button" data-as="modo" data-m="normal" aria-pressed="${!rapida}">Normal</button><button type="button" data-as="modo" data-m="rapida" aria-pressed="${rapida}">Rápida</button></div><small>${rapida ? 'Contesta en segundos y gasta mucho menos cupo' : 'Piensa más a fondo'}</small>`;
   // 0.9: con una conversación empezada (p. ej. Claude acaba de decir que no puede) se queda en el chat para que se lea
   const vista = !iaLista() && AS.vista !== 'ajustes' && !AS.conv.length ? 'clave' : AS.vista;
@@ -350,7 +350,7 @@ async function clicAsesor(e) {
   }
   else if (a === 'convs') { AS.vista = 'convs'; await cargarConvs(); pintarAsesor(); }
   else if (a === 'abrir-conv') { if (abrirConv(t.dataset.id)) pintarAsesor(true); }
-  else if (a === 'borrar-conv') { await borrarConv(t.dataset.id); toast(L('Conversación borrada', 'Conversation deleted'), 3000); pintarAsesor(); }
+  else if (a === 'borrar-conv') { if (!confirm(L('¿Borrar esta conversación de este dispositivo?', 'Delete this conversation from this device?'))) return; await borrarConv(t.dataset.id); toast(L('Conversación borrada', 'Conversation deleted'), 3000); pintarAsesor(); }
   else if (a === 'borrar-convs') { if (!confirm(L('¿Borrar todas tus conversaciones con la IA de este dispositivo?', 'Delete all your conversations with the AI on this device?'))) return; await borrarConv(null); AS.vista = 'chat'; toast(L('Conversaciones borradas', 'Conversations deleted'), 3000); pintarAsesor(); }
   else if (a === 'fondo') { AS.aFondo = t.dataset.m === 'fondo'; pintarAsesor(); }
   else if (a === 'nueva') { if (AS.ctrl) AS.ctrl.abort(); await archivarConv(); AS.conv = []; AS.api = []; AS.foto = null; AS.convId = null; AS.aFondo = false; AS.vista = 'chat'; LS.del('inv-asesor-conv'); pintarAsesor(); }

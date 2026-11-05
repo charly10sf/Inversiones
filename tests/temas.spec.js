@@ -59,7 +59,8 @@ for (const t of Object.keys(FONDO)) {
       expect(x.fondo).toBe(rgb(FONDO[t]));
       expect(x.barra).toBe(FONDO[t]);
       // 4 nov: el esquema de color dicho en la <meta> y en el CSS, para que el modo oscuro del móvil no repinte nada
-      expect(x.esquema).toEqual(t === 'marfil' ? ['only light', 'light only'] : ['dark', 'dark']);
+      // 5 nov: Marfil, «light dark» (Samsung Internet no hacía caso de «only light»)
+      expect(x.esquema).toEqual(t === 'marfil' ? ['light dark', 'light dark'] : ['dark', 'dark']);
       expect(x.letra.startsWith('Inter')).toBe(true);
       expect(x.inter).toBe(true);
       expect(x.ibarra).toBe(true);
@@ -98,7 +99,7 @@ test('el selector de diseño, en Tú para cualquiera, cambia el diseño al momen
   const esquema = () => page.evaluate(() => document.querySelector('meta[name="color-scheme"]').content);
   expect(await esquema()).toBe('dark');
   await page.locator('#vista [data-elige-tema="marfil"]').evaluate((b) => b.click());
-  expect(await esquema()).toBe('only light');
+  expect(await esquema()).toBe('light dark');
   await page.locator('#vista [data-elige-tema="borgona"]').evaluate((b) => b.click());
   // cada muestra lleva los colores de su diseño
   expect(await page.locator('.tema-muestra[data-tema="marfil"]').evaluate((i) => getComputedStyle(i).backgroundColor)).toBe(rgb(FONDO.marfil));

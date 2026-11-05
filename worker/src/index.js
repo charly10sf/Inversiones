@@ -448,7 +448,8 @@ async function claude(req, env, cors, res) {
       q = await rc.json();
     } catch (e) { return res({ error: 'cuotas' }, 503); }
     if (!q || !q.ok) return res({ error: q && q.motivo === 'pregunta' ? 'tope-pregunta' : 'tope-diario' }, 429);
-    quedan = Math.max(0, (Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA) - (Number(q.n) || 0));
+    // cada pregunta gasta al menos una petición: no quedan más preguntas que peticiones (auditoría del 5 nov)
+    quedan = Math.max(0, Math.min((Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA) - (Number(q.n) || 0), (Number(env.CLAUDE_RONDAS_POR_DIA) || CLAUDE_RONDAS_POR_DIA) - (Number(q.r) || 0)));
   }
   let r;
   try {

@@ -271,6 +271,16 @@ test('las rondas de herramientas de una misma pregunta no gastan preguntas, pero
   });
 });
 
+// 0.8.2: las preguntas que quedan no pasan de las peticiones que quedan (cada pregunta gasta al menos una)
+test('X-Quedan cuenta también el tope de peticiones del día', async () => {
+  await con(ok, async () => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: '10', CLAUDE_RONDAS_POR_DIA: '3' };
+    const r = await pedir('uid-q', { ...PEDIDO, ronda: 1 }, env);
+    expect(r.status).toBe(200);
+    expect(r.headers.get('x-quedan')).toBe('2');
+  });
+});
+
 test('0.9: con id de pregunta, una pregunta por id (rondas y reintentos no gastan más) y tope de peticiones por id', async () => {
   await con(ok, async (vistas) => {
     const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: '2', CLAUDE_RONDAS_POR_DIA: '100', CLAUDE_RONDAS_POR_PREGUNTA: '4' };

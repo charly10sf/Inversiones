@@ -38,8 +38,10 @@
   --tenue-mezcla: 92%; /* 5c: con 78 %, el texto tenue salía a 4,4:1 sobre el fondo crema (AA pide 4,5); con 92 %, 6,2:1 (4,8:1 en la fila marcada) */
   --velo: #1e1a17;
   --claro: #f7f2ea;
-  color-scheme: only light; /* «only»: que el modo oscuro del móvil no lo repinte */
+  /* 5 nov: «light dark» en la raíz, para que Samsung Internet (que no hace caso de «only light») no lo repinte; lo de dentro, claro */
+  color-scheme: light dark;
 }
+[data-tema="marfil"] body { color-scheme: light; }
 
 /* ---------- Borgoña: fondo borgoña muy oscuro, oro ---------- */
 :root[data-tema="borgona"], [data-tema="borgona"] {
