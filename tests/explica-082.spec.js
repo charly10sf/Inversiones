@@ -95,3 +95,18 @@ test('en el estándar, ordenar las posiciones no dice «comprar» ni «vender»'
   expect(opciones).not.toMatch(/comprar primero|vender primero/);
   expect(opciones).toMatch(/más a favor primero/);
 });
+
+// 5 nov (captura de Carlos): en el móvil, las pestañas de pastilla que se quedan arriba al bajar (Ideas: Lo tuyo · Del radar ·
+// Siguiendo) tienen fondo de verdad, para que el texto de debajo no se monte
+test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debajo', async ({ page }) => {
+  await dentro(page);
+  for (const tema of ['marmol', 'marfil', 'borgona']) {
+    await page.evaluate((t) => { ponerTema(t); S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); }, tema);
+    const tabs = page.locator('.exp-tabs');
+    await expect(tabs).toBeAttached({ timeout: 15_000 });
+    const r = await tabs.evaluate((el) => ({ pos: getComputedStyle(el).position, fondo: getComputedStyle(el).backgroundColor }));
+    expect(r.pos).toBe('sticky');
+    // opaco: ni transparente ni con alfa
+    expect(r.fondo).not.toMatch(/transparent|rgba\(|\/ ?0?\.\d|, 0\)$/);
+  }
+});

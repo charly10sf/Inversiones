@@ -590,6 +590,9 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* las pestañas de texto que se quedan arriba al bajar (Hacienda, Análisis…) llevan el fondo debajo: si no, el texto
    de la pantalla se leía a través */
 [data-tema] .subvistas.dos-op { background: var(--fondo); }
+/* 5 nov (captura de Carlos en Ideas): las de pastilla (Lo tuyo · Del radar · Siguiendo, los plazos del Paso a paso) también
+   se quedan arriba en el móvil y eran casi transparentes: el texto de debajo se montaba. Mismo tono, pero opaco */
+[data-tema] :is(.subvistas, .plazos):not(.dos-op) { background: color-mix(in srgb, var(--texto) 3%, var(--fondo)); }
 /* Borgoña: el filete corto va bajo el título y no bajo toda la cabecera (cuando el botón baja de línea quedaba suelto) */
 [data-tema="borgona"] .sec-cab { padding-bottom: 0; }
 [data-tema="borgona"] .sec-cab::after { content: none; }
