@@ -176,6 +176,12 @@ USO = []                    # 0.6d: los tokens de cada llamada de esta pasada (p
 CLAUDE_API = os.environ.get("CLAUDE_API", "https://api.anthropic.com/v1/messages")
 CLAUDE_MODELO = os.environ.get("CLAUDE_RADAR_MODELO", "claude-haiku-5-5")
 CLAUDE_MAX_SALIDA = 32000
+# 5 nov, noche: las lecturas de prensa (no urgentes) van por la API por lotes de Anthropic, a mitad de precio. Medido con
+# 50 empresas: el lote tarda unos 2 minutos. Si no llega en CLAUDE_ESPERA_LOTE segundos, se cancela y se pide en directo.
+# CLAUDE_RADAR_LOTES=0 lo apaga.
+CLAUDE_LOTES = os.environ.get("CLAUDE_RADAR_LOTES", "1") != "0"
+CLAUDE_ESPERA_LOTE = int(os.environ.get("CLAUDE_RADAR_ESPERA", "420"))
+LOTES_APAGADOS = [False]   # tras un fallo del lote, el resto de la pasada va en directo
 SIN_GEMINI = "-"            # la «clave» de Gemini cuando solo hay Claude: así los pasos que miran si hay clave siguen
 CLAUDE_ERRORES = []         # lo que ha fallado con Claude en esta pasada
 CLAUDE_APAGADO = False      # tras un fallo de clave o de saldo, el resto de la pasada va sin Claude
@@ -191,6 +197,38 @@ def peticion_claude(cuerpo, clave):
                                  headers={"content-type": "application/json", "x-api-key": clave, "anthropic-version": "2023-06-01"})
     with urllib.request.urlopen(req, timeout=240) as r:
         return json.loads(r.read())
+
+
+def peticion_claude_get(ruta, clave, metodo="GET", cuerpo=None, texto=False):
+    req = urllib.request.Request(CLAUDE_API.rsplit("/v1/", 1)[0] + ruta, data=json.dumps(cuerpo).encode() if cuerpo is not None else None, method=metodo,
+                                 headers={"content-type": "application/json", "x-api-key": clave, "anthropic-version": "2023-06-01"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        crudo = r.read().decode("utf-8", "replace")
+    return crudo if texto else json.loads(crudo)
+
+
+def mensaje_por_lote(pedido, clave):
+    """Una petición por la API por lotes (mitad de precio): la crea, espera a que termine y devuelve el mensaje, con la
+    misma forma que el de la API normal. Lanza RuntimeError si no sale a tiempo (y cancela el lote)."""
+    b = peticion_claude_get("/v1/messages/batches", clave, "POST", {"requests": [{"custom_id": "radar", "params": pedido}]})
+    t0 = time.time()
+    while b.get("processing_status") != "ended":
+        if time.time() - t0 > CLAUDE_ESPERA_LOTE:
+            try:
+                peticion_claude_get(f"/v1/messages/batches/{b['id']}/cancel", clave, "POST", {})
+            except Exception:  # noqa: BLE001
+                pass
+            raise RuntimeError(f"lote sin terminar tras {CLAUDE_ESPERA_LOTE} s")
+        time.sleep(10)
+        b = peticion_claude_get(f"/v1/messages/batches/{b['id']}", clave)
+    if not b.get("results_url"):
+        raise RuntimeError("lote sin resultados")
+    crudo = peticion_claude_get(b["results_url"].replace("https://api.anthropic.com", ""), clave, texto=True)
+    linea = json.loads(crudo.splitlines()[0])
+    res = linea.get("result") or {}
+    if res.get("type") != "succeeded":
+        raise RuntimeError(f"lote {res.get('type')}: {str(res.get('error') or '')[:200]}")
+    return res["message"]
 
 
 def a_claude(cuerpo, modelo):
@@ -234,7 +272,21 @@ def claude(cuerpo, que, ligera=False, hay_reserva=False):
     pedido = a_claude(cuerpo, CLAUDE_MODELO)
     for intento in range(3):
         try:
-            bruto = peticion_claude(pedido, clave)
+            por_lote, bruto = False, None
+            if ligera and CLAUDE_LOTES and not LOTES_APAGADOS[0]:
+                try:
+                    bruto = mensaje_por_lote(pedido, clave)
+                    por_lote = True
+                except urllib.error.HTTPError as e:
+                    if e.code in (401, 403):
+                        raise
+                    LOTES_APAGADOS[0] = True
+                    print(f"claude: el lote no ha salido (HTTP {e.code}), sigo en directo")
+                except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as e:
+                    LOTES_APAGADOS[0] = True
+                    print(f"claude: el lote no ha salido ({str(e)[:120]}), sigo en directo")
+            if bruto is None:
+                bruto = peticion_claude(pedido, clave)
             r = de_claude(bruto)
             if not texto_de(r)[0].strip():
                 # 0.8.2: que el registro diga qué llegó (motivo de parada, tipos de bloque y tokens) y no solo «vacía»
@@ -244,6 +296,8 @@ def claude(cuerpo, que, ligera=False, hay_reserva=False):
                                    f"in={u.get('input_tokens')}, out={u.get('output_tokens')}")
             USADOS.add(CLAUDE_MODELO)
             apuntar_uso(CLAUDE_MODELO, r, que)
+            if por_lote:
+                USO[-1]["lote"] = True  # a mitad de precio
             ULTIMO[0] = CLAUDE_MODELO
             return r
         except urllib.error.HTTPError as e:
