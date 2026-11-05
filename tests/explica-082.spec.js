@@ -110,3 +110,51 @@ test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debaj
     expect(r.fondo).not.toMatch(/transparent|rgba\(|\/ ?0?\.\d|, 0\)$/);
   }
 });
+
+// 0.8.2 (rematar, 5 nov): los botones de abajo del panel de la IA (recortar, dictar, enviar) y la línea del aviso fijo de
+// arriba miden menos de 48 px; responden en 48 × 48 alrededor de su centro sin quitarle el toque a otro
+test('los botones del panel de la IA se tocan en 48 × 48', async ({ page }) => {
+  await dentro(page);
+  await page.evaluate(() => { AS.clave = 'AQ.prueba-de-growfolio'; abrirAsesor(); });
+  await expect(page.locator('.asesor .as-enviar')).toBeVisible({ timeout: 15_000 });
+  await page.waitForTimeout(800);
+  const fallos = await page.evaluate(() => {
+    const TOC = 'button, a[href], summary, input, select, textarea, label, [role="button"]', out = [];
+    for (const el of document.querySelectorAll('.asesor :is(.as-adj, .as-enviar, .as-aviso > summary, .as-cab .ib, .as-modo .seg button)')) {
+      const b = el.getBoundingClientRect(); if (!b.width || !b.height || b.top < 0 || b.bottom > innerHeight) continue;
+      const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
+      const c = document.elementFromPoint(cx, cy); if (!c || !el.contains(c)) continue;
+      for (const [x, y] of [[cx, cy - 22], [cx, cy + 22], [cx - 22, cy], [cx + 22, cy]]) {
+        if (x < 0 || y < 0 || x > innerWidth || y > innerHeight) continue;
+        const d = document.elementFromPoint(x, y)?.closest(TOC);
+        if (d !== el && !(d && !d.contains(el))) out.push(`${el.className || el.tagName} en ${Math.round(x - cx)},${Math.round(y - cy)}`);
+      }
+    }
+    return out;
+  });
+  expect(fallos).toEqual([]);
+});
+
+// 0.8.2 (rematar, 5 nov): la lista de conversaciones (hasta 20, unos 600 KB) ya no se cifra en cada respuesta: la abierta se
+// guarda al momento y pasa a la lista al salir de la app (o 20 s después); si la app se cierra antes, la pasa al cargar
+test('la lista de conversaciones no se cifra en cada respuesta y no se pierde nada', async ({ page }) => {
+  await dentro(page);
+  await page.evaluate(async () => {
+    window.__n = 0; const g = guardarConvs; window.guardarConvs = async () => { window.__n++; return g(); };
+    AS.conv = [{ rol: 'yo', texto: '¿Qué tal mi cartera?' }, { rol: 'ia', texto: 'Bien.' }]; AS.api = []; AS.convId = null;
+    await guardarConv(); await guardarConv(); await guardarConv();
+  });
+  expect(await page.evaluate(() => window.__n)).toBe(0);
+  expect(await page.evaluate(() => !!LS.get('inv-asesor-conv'))).toBe(true);
+  // al salir de la app pasa a la lista, una vez
+  await page.evaluate(() => { appFuera(true); appFuera(false); });
+  await page.waitForFunction(() => window.__n === 1);
+  expect(await page.evaluate(async () => (await cargarConvs()).length)).toBe(1);
+  // otra pregunta y la app se cierra antes de pasarla: al volver a cargar, la lista la tiene entera
+  await page.evaluate(async () => {
+    AS.conv.push({ rol: 'yo', texto: '¿Y los costes?' }, { rol: 'ia', texto: 'Bajos.' }); await guardarConv();
+    clearTimeout(ARCHIVO_T); ARCHIVO_T = null; AS.cargada = false; AS.convs = null; AS.conv = []; await cargarAsesor();
+  });
+  expect(await page.evaluate(() => AS.convs.length)).toBe(1);
+  expect(await page.evaluate(() => AS.convs[0].n)).toBe(2);
+});

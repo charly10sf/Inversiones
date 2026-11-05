@@ -725,9 +725,11 @@ img.tema-muestra { background: none; box-shadow: none; }
    nada: si una regla de base pone otra posición (p. ej. .tour-x, absoluto), manda esa. Las pestañas (.tabs) y la
    navegación de cada grupo se quedan como están: su caja tiene overflow y recortaría el área (también el saludo con
    el nombre, .hola-nom, y «Esta semana · Ver el mes», .ag-mes-b: se probó y el área se salía o quedaba recortada).
+   0.8.2: también los botones de abajo del panel de la IA (recortar, dictar, enviar: 38 px) y la línea del aviso fijo de
+   arriba (35 px de alto); lo comprueba tests/explica-082.spec.js.
    ===================================================================== */
-:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver, .preg-ia, .pav-et a, .panel-av .tabs button, .pnl-cab .ib) { position: relative; }
-:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver, .preg-ia, .pav-et a, .panel-av .tabs button, .pnl-cab .ib)::after {
+:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver, .preg-ia, .pav-et a, .panel-av .tabs button, .pnl-cab .ib, .as-adj, .as-enviar, .as-aviso > summary) { position: relative; }
+:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver, .preg-ia, .pav-et a, .panel-av .tabs button, .pnl-cab .ib, .as-adj, .as-enviar, .as-aviso > summary)::after {
   content: ''; position: absolute; inset: min(0px, calc(50% - var(--toque, 48px) / 2)) min(0px, calc(50% - var(--toque, 48px) / 2));
 }
 /* el saludo con el nombre solo se subrayaba al llegar con el teclado: ahora lleva el aro de foco como el resto */

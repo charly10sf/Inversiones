@@ -322,6 +322,7 @@ function cerrarAsesor(desdeAtras) {
   const f = $('#asesorFondo'); if (!f) return;
   AS.pedirClave = false;
   f.remove(); document.body.style.overflow = '';
+  archivarYa();   // 0.8.2: la conversación abierta pasa ya a la lista (ver archivarLuego)
   if (document.body.classList.contains('ia-lado')) { document.body.classList.remove('ia-lado'); for (const b of $$('.riel-ia')) b.setAttribute('aria-expanded', 'false'); }
   if (desdeAtras !== true && S.asesorAtras) S.asesorAtras();
   S.asesorAtras = null;
@@ -353,7 +354,7 @@ async function clicAsesor(e) {
   else if (a === 'borrar-conv') { if (!confirm(L('¿Borrar esta conversación de este dispositivo?', 'Delete this conversation from this device?'))) return; await borrarConv(t.dataset.id); toast(L('Conversación borrada', 'Conversation deleted'), 3000); pintarAsesor(); }
   else if (a === 'borrar-convs') { if (!confirm(L('¿Borrar todas tus conversaciones con la IA de este dispositivo?', 'Delete all your conversations with the AI on this device?'))) return; await borrarConv(null); AS.vista = 'chat'; toast(L('Conversaciones borradas', 'Conversations deleted'), 3000); pintarAsesor(); }
   else if (a === 'fondo') { AS.aFondo = t.dataset.m === 'fondo'; pintarAsesor(); }
-  else if (a === 'nueva') { if (AS.ctrl) AS.ctrl.abort(); await archivarConv(); AS.conv = []; AS.api = []; AS.foto = null; AS.convId = null; AS.aFondo = false; AS.vista = 'chat'; LS.del('inv-asesor-conv'); pintarAsesor(); }
+  else if (a === 'nueva') { if (AS.ctrl) AS.ctrl.abort(); await archivarYa(true); AS.conv = []; AS.api = []; AS.foto = null; AS.convId = null; AS.aFondo = false; AS.vista = 'chat'; LS.del('inv-asesor-conv'); pintarAsesor(); }
   else if (a === 'ajustes') { AS.vista = AS.vista === 'ajustes' ? 'chat' : 'ajustes'; pintarAsesor(); }
   else if (a === 'chat') { AS.vista = 'chat'; AS.pedirClave = false; pintarAsesor(true); }
   else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }

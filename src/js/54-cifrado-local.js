@@ -20,11 +20,16 @@ async function cargarAsesor() {
   const h = LS.get('inv-asesor-conv');
   if (h) { try { const o = await descifrarLocal(h); AS.conv = o.conv || []; AS.api = o.api || []; AS.gasto = o.gasto || 0; AS.convId = o.id || null; } catch (e) { LS.del('inv-asesor-conv'); } }
   await cargarConvs();
+  // si la app se cerró antes de pasar la conversación abierta a la lista (se pasa con retraso, ver archivarLuego), se pasa ahora
+  if (AS.conv.some((t) => t.rol === 'yo')) {
+    const c = (AS.convs || []).find((x) => x.id === AS.convId);
+    if (!c || c.n !== AS.conv.filter((t) => t.rol === 'yo').length) await archivarConv();
+  }
 }
 async function guardarConv() {
   if (!S.key || S.demo) return;
   try { if (AS.conv.some((t) => t.rol === 'yo')) AS.convId = AS.convId || nuevoIdConv(); LS.set('inv-asesor-conv', await cifrarLocal({ id: AS.convId || null, conv: AS.conv.slice(-60).map(({ adj, ...t }, k, v) => (t.mini && v.slice(k + 1).filter((y) => y.mini).length >= 4 ? { ...t, mini: undefined } : t)), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
-  await archivarConv();
+  archivarLuego();
 }
 function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, claves: { google: null }, cargada: false, gasto: 0, convs: null, convId: null, aFondo: false }); }
 
@@ -41,14 +46,17 @@ function cargarConvs() {
   // sin la clave de la cartera no se puede leer: no se guarda en caché una lista vacía (la siguiente escritura borraría las de antes)
   if (!S.key) return Promise.resolve([]);
   if (CONVS_P) return CONVS_P;
-  CONVS_P = (async () => {
+  // (sin nada guardado, la función de dentro acaba sin esperar a nada: si borrara CONVS_P dentro, lo haría antes de que
+  // se asigne y se quedaría para siempre una carga vieja; tras cerrar sesión, la lista se quedaba en null)
+  const p = (async () => {
     let l = [];
     const h = LS.get(LS_CONVS);
     if (h && S.key) { try { l = (await descifrarLocal(h)).lista || []; } catch (e) { LS.del(LS_CONVS); } }
-    AS.convs = AS.convs || l; CONVS_P = null;
+    AS.convs = AS.convs || l;
     return AS.convs;
   })();
-  return CONVS_P;
+  CONVS_P = p; p.finally(() => { if (CONVS_P === p) CONVS_P = null; });
+  return p;
 }
 // con tope de tamaño (unos 600 KB en texto): si no cabe, fuera las más viejas; la cartera manda sobre las conversaciones
 const MAX_CONVS_TXT = 600e3;
@@ -63,22 +71,36 @@ async function guardarConvs() {
 async function archivarConv() {
   if (!S.key || S.demo) return;
   const yo = AS.conv.find((t) => t.rol === 'yo'); if (!yo) return;
-  await cargarConvs();
+  // la foto se hace antes de esperar a nada: si mientras tanto abres otra o empiezas una nueva, se guarda la de ahora
   AS.convId = AS.convId || nuevoIdConv();
   const c = { id: AS.convId, t: Date.now(), titulo: String(yo.texto || '').slice(0, 90), n: AS.conv.filter((t) => t.rol === 'yo').length, conv: AS.conv.slice(-60).map(({ adj, mini, ...t }) => t), api: apiSinImagenes(AS.api.slice(-24)) };
-  AS.convs = [c, ...AS.convs.filter((x) => x.id !== c.id)].slice(0, MAX_CONVS);
+  await cargarConvs();
+  AS.convs = [c, ...(AS.convs || []).filter((x) => x.id !== c.id)].slice(0, MAX_CONVS);
   await guardarConvs();
 }
+/* 0.8.2: la lista entera (hasta 20 conversaciones, unos 600 KB) ya no se cifra en cada respuesta. La conversación abierta
+   se guarda al momento (guardarConv, poca cosa) y pasa a la lista 20 s después de la última respuesta, o antes si
+   cierras el panel, empiezas otra, abres otra o sales de la app. Si la app se cierra antes, la pasa cargarAsesor. */
+let ARCHIVO_T = null;
+function archivarLuego() { clearTimeout(ARCHIVO_T); ARCHIVO_T = setTimeout(() => { ARCHIVO_T = null; archivarConv(); }, 20e3); }
+function archivarYa(siempre = false) {
+  if (!ARCHIVO_T && !siempre) return Promise.resolve();
+  clearTimeout(ARCHIVO_T); ARCHIVO_T = null;
+  return archivarConv();
+}
+document.addEventListener('visibilitychange', () => { if (document.hidden) archivarYa(); });
+addEventListener('pagehide', () => { archivarYa(); });
 function abrirConv(id) {
   const c = (AS.convs || []).find((x) => x.id === id); if (!c) return false;
   if (AS.ctrl) AS.ctrl.abort();
+  archivarYa();
   AS.conv = c.conv.map((t) => ({ ...t })); AS.api = c.api.slice(); AS.convId = c.id; AS.foto = null; AS.aFondo = false; AS.vista = 'chat';
   guardarConv();
   return true;
 }
 async function borrarConv(id) {
   // si borras la que tienes abierta (o todas), se para y se vacía antes de nada (una respuesta que acabe ahora no la recupera)
-  if (!id || id === AS.convId) { if (AS.ctrl) AS.ctrl.abort(); AS.conv = []; AS.api = []; AS.foto = null; AS.convId = null; LS.del('inv-asesor-conv'); }
+  if (!id || id === AS.convId) { clearTimeout(ARCHIVO_T); ARCHIVO_T = null; if (AS.ctrl) AS.ctrl.abort(); AS.conv = []; AS.api = []; AS.foto = null; AS.convId = null; LS.del('inv-asesor-conv'); }
   await cargarConvs();
   AS.convs = id ? (AS.convs || []).filter((x) => x.id !== id) : [];
   await guardarConvs();

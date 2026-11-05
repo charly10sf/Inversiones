@@ -706,7 +706,7 @@ window.appFuera = (si) => {
   si = !!si;
   if (si === APP_FUERA) return;
   APP_FUERA = si;
-  if (si) ocultaT = Date.now();
+  if (si) { ocultaT = Date.now(); archivarYa(); }
   if (AS.cargando || (typeof IA !== 'undefined' && IA.generando)) diarioIA(si ? 'Sales de Toisón (la app la mantiene despierta)' : 'Vuelves a Toisón');
   if (!si) window.dispatchEvent(new Event('vuelta-app'));
 };
