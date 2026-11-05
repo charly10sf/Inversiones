@@ -535,9 +535,11 @@ const FRASES_CONSEJO_IA = [
   /\bpl[aá]nt[eé]ate (vender|comprar|mantener|traspasar|reducir|meter|recoger)\b/i,
   /\bconsidera (vender|comprar|traspasar|reducir|meter)\b/i,
   /\b(yo )?me plantear[ií]a (vender|comprar|mantener|traspasar|reducir)\b/i,
-  /\bno (vendas|compres|traspases|mantengas)\b/i,
+  // no «mientras no vendas, son latentes» ni «hasta que no vendas» (banco, tercera vuelta)
+  /(?<!\b(?:mientras|cuando|aunque|si|que)\s)\bno (vendas|compres|traspases|mantengas)\b/i,
   /\b(s[ií]|no), (vende|compra|mantén|traspasa)\b/i,
-  /\b(mete|pon)\s+(\d[\d.,]*\s*€|más\b|todo\b|la mitad\b|el resto\b)/i,
+  // al empezar la frase o tras dos puntos, no «tu aportación ya mete 600 € al mes» (banco, tercera vuelta)
+  /(^|[:;])\s*(?:(?:[-*•]|\d+[.)])\s*)?(mete|pon)\s+(\d[\d.,]*\s*€|más\b|todo\b|la mitad\b|el resto\b)/i,
   /\brecoge (beneficios|ganancias)\b/i,
   // las de la revisión aparte del prompt (5 nov)
   /\byo (no )?(elegir[ií]a|escoger[ií]a|tocar[ií]a|apostar[ií]a)\b|\bme quedar[ií]a con\b/i,
