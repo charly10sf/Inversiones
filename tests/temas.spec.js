@@ -59,7 +59,8 @@ for (const t of Object.keys(FONDO)) {
       expect(x.fondo).toBe(rgb(FONDO[t]));
       expect(x.barra).toBe(FONDO[t]);
       // 4 nov: el esquema de color dicho en la <meta> y en el CSS, para que el modo oscuro del móvil no repinte nada
-      expect(x.esquema).toEqual(t === 'marfil' ? ['only light', 'light only'] : ['dark', 'dark']);
+      // 5 nov: Marfil, «light dark» (Samsung Internet no hacía caso de «only light»)
+      expect(x.esquema).toEqual(t === 'marfil' ? ['light dark', 'light dark'] : ['dark', 'dark']);
       expect(x.letra.startsWith('Inter')).toBe(true);
       expect(x.inter).toBe(true);
       expect(x.ibarra).toBe(true);
@@ -98,7 +99,7 @@ test('el selector de diseño, en Tú para cualquiera, cambia el diseño al momen
   const esquema = () => page.evaluate(() => document.querySelector('meta[name="color-scheme"]').content);
   expect(await esquema()).toBe('dark');
   await page.locator('#vista [data-elige-tema="marfil"]').evaluate((b) => b.click());
-  expect(await esquema()).toBe('only light');
+  expect(await esquema()).toBe('light dark');
   await page.locator('#vista [data-elige-tema="borgona"]').evaluate((b) => b.click());
   // cada muestra lleva los colores de su diseño
   expect(await page.locator('.tema-muestra[data-tema="marfil"]').evaluate((i) => getComputedStyle(i).backgroundColor)).toBe(rgb(FONDO.marfil));
@@ -122,4 +123,23 @@ test.describe('la app de Android sabe el diseño', () => {
     await page.locator('#vista [data-elige-tema="marmol"]').evaluate((b) => b.click());
     expect((await page.evaluate(() => window.__temas)).slice(-2)).toEqual(['marfil', 'marmol']);
   });
+});
+
+// 0.8.1b (5 nov, captura de Carlos): en el móvil, las pestañas de pastilla que se quedan arriba al bajar (Ideas: Lo tuyo ·
+// Del radar · Siguiendo) tienen fondo de verdad en los tres diseños, para que el texto de debajo no se monte
+test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debajo', async ({ page }, info) => {
+  test.skip(info.project.name !== 'movil', 'en el móvil es donde se quedan arriba');
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((h) => h.remove()));
+  for (const tema of ['marmol', 'marfil', 'borgona']) {
+    await page.evaluate((t) => { ponerTema(t); S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); }, tema);
+    const tabs = page.locator('.exp-tabs');
+    await expect(tabs).toBeAttached({ timeout: 15_000 });
+    const r = await tabs.evaluate((el) => ({ pos: getComputedStyle(el).position, fondo: getComputedStyle(el).backgroundColor }));
+    expect(r.pos).toBe('sticky');
+    // opaco: ni transparente ni con alfa
+    expect(r.fondo).not.toMatch(/transparent|rgba\(|\/ ?0?\.\d|, 0\)$/);
+  }
 });

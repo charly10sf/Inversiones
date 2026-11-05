@@ -77,10 +77,12 @@ function colorBarraTema() {
   if (f) m.setAttribute('content', f);
 }
 /* 4 nov: el esquema de color, también en la <meta> (algunos navegadores de dentro de otras apps solo leen esa) para que el
-   modo oscuro del móvil no repinte los colores. Marfil es claro y no se deja oscurecer */
+   modo oscuro del móvil no repinte los colores. Marfil es claro. 5 nov: Samsung Internet no hace caso de «only light» y lo
+   repintaba igual (captura de Carlos); con «light dark» entiende que la app lleva su propio modo oscuro y no la toca, y
+   Marfil sigue claro porque sus colores son suyos (el CSS deja lo de dentro en claro) */
 function esquemaTema(t) {
   const m = document.querySelector('meta[name="color-scheme"]');
-  if (m) m.setAttribute('content', t === 'marfil' ? 'only light' : 'dark');
+  if (m) m.setAttribute('content', t === 'marfil' ? 'light dark' : 'dark');
 }
 function ponerTema(t) {
   t = TEMAS.includes(t) ? t : TEMA_BASE;
