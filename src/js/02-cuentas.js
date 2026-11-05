@@ -51,6 +51,8 @@ async function escribirCuenta(texto, baseRev, forzar) {
   const mios = S.intentos || (S.intentos = []);
   mios.push(texto); if (mios.length > 8) mios.shift();
   return FB.fs.runTransaction(FB.db, async (tx) => {
+    // 0.8.2: una subida que ya iba cuando empezó el borrado de la cuenta no la vuelve a crear
+    if (S.borrandoCuenta) throw Object.assign(new Error('borrando'), { code: 'borrando' });
     const s0 = await tx.get(ref), d = s0.exists() ? s0.data() : null, rev = revDe(d);
     if (d && d.enc && d.enc === texto) return rev;
     if (!forzar && d && d.enc && rev !== (baseRev || 0) && !mios.includes(d.enc)) { const e = new Error('conflicto'); e.conflicto = true; e.d = d; throw e; }
@@ -73,6 +75,7 @@ function fijarBase(rev, texto) { S.baseRev = rev || 0; S.baseTexto = texto || nu
 /* sube lo último del dispositivo; nunca dos a la vez (si cambias algo mientras, se sube después) */
 let subidaEnCurso = null;
 function subirPendiente() {
+  if (S.borrandoCuenta) return Promise.resolve();
   if (subidaEnCurso) { S.otraSubida = true; return subidaEnCurso; }
   subidaEnCurso = (async () => {
     try {

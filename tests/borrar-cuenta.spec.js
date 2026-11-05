@@ -1,6 +1,6 @@
 // 0.8.2 · Borrar la cuenta desde Ajustes (Google Play lo pide a toda app con cuentas): con la contraseña otra vez y
-// «BORRAR», se van la copia cifrada, la ficha de la cuenta, las opiniones, la cuenta y lo de este dispositivo, y queda el
-// aviso al dueño en bajas/{uid}. Sin la contraseña buena no se borra nada.
+// «BORRAR», se van la copia cifrada, la ficha de la cuenta, las opiniones, la cuenta y lo de este dispositivo, queda el
+// aviso al dueño en bajas/{uid} y una copia que llegue tarde ya no la vuelve a crear. Sin la contraseña buena, nada.
 import { test, expect } from '@playwright/test';
 import { preparar, crearCuenta } from './ayuda.js';
 
@@ -21,7 +21,8 @@ async function hastaBorrar(page) {
 }
 
 test('borrar la cuenta se lo lleva todo y deja el aviso al dueño', async ({ page, context }) => {
-  await preparar(context);
+  // con el correo confirmado: solo entonces deja el aviso (sin confirmar no hay modo que quitar)
+  await preparar(context, { ajustes: { 'stub-verificar': '1' } });
   await hastaBorrar(page);
   const uid = await page.evaluate(() => FB.user.uid);
   expect((await fs(page)).some((r) => r.startsWith('opiniones/'))).toBe(true);
@@ -36,19 +37,21 @@ test('borrar la cuenta se lo lleva todo y deja el aviso al dueño', async ({ pag
   await expect(page.locator('#bcErr')).toContainText('no son correctos');
   expect(await page.evaluate(() => window.__cuentasBorradas || 0)).toBe(0);
   expect((await fs(page)).includes('usuarios/' + uid)).toBe(true);
-  // con todo bien, se borra
+  // con todo bien, se borra y la app vuelve a empezar, con el aviso
+  const antes = await page.evaluate(() => Object.keys(localStorage).filter((k) => /^inv/.test(k) && /enc|pend|asesor|nombre|cuenta/.test(k)));
+  expect(antes.length).toBeGreaterThan(0);
   await page.fill('#fBorrar [name=p]', 'secreta1');
   await page.click('#bcBorrar');
-  await page.waitForSelector('#bcFin', { timeout: 20000 });
+  await page.waitForSelector('#fCorreo, .intro', { timeout: 20000 });
+  await expect(page.locator('.toast, #toast').first()).toContainText('se han borrado', { timeout: 5000 });
   const quedan = await fs(page);
   expect(quedan.filter((r) => r.startsWith('opiniones/') || r === 'cuentas/' + uid || r === 'usuarios/' + uid)).toEqual([]);
   expect(quedan).toContain('bajas/' + uid);
-  expect(await page.evaluate(() => window.__cuentasBorradas)).toBe(1);
-  expect(await page.evaluate(() => Object.keys(localStorage).filter((k) => k.startsWith('inv-')))).toEqual([]);
-  // y la cuenta ya no existe: con esa contraseña no se entra
   expect(await page.evaluate(() => JSON.parse(localStorage.getItem('stub-auth-cuentas') || '{}')['lucia@prueba.com'] || null)).toBeNull();
-  await page.click('#bcFin');
-  await page.waitForSelector('#fCorreo, .intro', { timeout: 20000 });
+  // lo de la cuenta en este dispositivo, fuera (también lo que va como invC-)
+  expect(await page.evaluate((a) => a.filter((k) => localStorage.getItem(k) != null), antes)).toEqual([]);
+  // y una copia que llegue tarde (otro dispositivo) ya no puede volver a crearla
+  expect(await page.evaluate(async (uid) => { localStorage.setItem('stub-auth-user', JSON.stringify({ uid, email: 'lucia@prueba.com' })); try { const m = await import('https://www.gstatic.com/firebasejs/' + FB_VER + '/firebase-firestore.js'); await m.setDoc(m.doc({}, 'usuarios', uid), { enc: 'tarde' }); return 'escrito'; } catch (e) { return e.code; } }, uid)).toBe('permission-denied');
   expect(context.__errores).toEqual([]);
 });
 
@@ -61,6 +64,8 @@ test('la hoja de borrar la cuenta, en inglés', async ({ page, context }) => {
   await page.fill('#fBorrar [name=c]', 'delete');
   await page.fill('#fBorrar [name=p]', 'secreta1');
   await page.click('#bcBorrar');
-  await page.waitForSelector('#bcFin', { timeout: 20000 });
-  await expect(page.locator('.caja-cuenta h1')).toHaveText('Account deleted');
+  await page.waitForSelector('#fCorreo, .intro', { timeout: 20000 });
+  await expect(page.locator('.toast, #toast').first()).toContainText('have been deleted', { timeout: 5000 });
+  // con el correo sin confirmar no deja aviso al dueño
+  expect((await fs(page)).filter((r) => r.startsWith('bajas/'))).toEqual([]);
 });

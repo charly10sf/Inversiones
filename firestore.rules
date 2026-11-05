@@ -9,7 +9,10 @@ service cloud.firestore {
     }
     // la cartera de cada cuenta: solo la lee y la escribe su dueño (va cifrada con la contraseña de su cartera)
     match /usuarios/{uid} {
-      allow read, write: if request.auth != null && request.auth.uid == uid;
+      allow read, delete: if request.auth != null && request.auth.uid == uid;
+      // 0.8.2: una cuenta que se ha dado de baja (bajas/{uid}) no vuelve a crear su copia desde otro dispositivo abierto
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && !exists(/databases/$(database)/documents/bajas/$(uid));
     }
     // opiniones y fallos: cualquiera con cuenta puede mandar una (a su nombre y con texto). Las lee el dueño (y cada uno las suyas),
     // desde Ajustes > Opiniones recibidas (y en la consola de Firebase). __DUENOS__ no se queda así: la Action «Reglas
@@ -37,9 +40,11 @@ service cloud.firestore {
       allow delete: if esDueno() || (request.auth != null && resource.data.uid == request.auth.uid);
     }
     // 0.8.2: al borrar la cuenta queda aquí el aviso, con el correo, para que el dueño quite a mano lo que va por
-    // correo y la cuenta no puede tocar (su modo y la lista de espera). Solo lo crea la propia cuenta, una vez.
+    // correo y la cuenta no puede tocar (su modo y la lista de espera). Solo lo escribe la propia cuenta, con el correo
+    // confirmado (si no, cualquiera podría dejar bajas con el correo de otro), y se puede repetir si el borrado se cortó.
     match /bajas/{uid} {
-      allow create: if request.auth != null && request.auth.uid == uid
+      allow create, update: if request.auth != null && request.auth.uid == uid
+        && request.auth.token.email_verified == true
         && request.resource.data.keys().hasOnly(['correo', 'cuando'])
         && request.resource.data.correo == request.auth.token.get('email', '').lower()
         && request.resource.data.cuando == request.time;
@@ -64,6 +69,7 @@ service cloud.firestore {
       allow get: if esDueno() || (request.auth != null && request.auth.uid == uid);
       allow list: if esDueno();
       allow create, update: if request.auth != null && request.auth.uid == uid
+        && !exists(/databases/$(database)/documents/bajas/$(uid))
         && request.resource.data.keys().hasOnly(['correo', 'alta'])
         && request.resource.data.correo == request.auth.token.email.lower()
         && request.resource.data.alta is string && request.resource.data.alta.size() <= 10;

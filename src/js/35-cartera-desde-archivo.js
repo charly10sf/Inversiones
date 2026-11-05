@@ -64,6 +64,7 @@ function sumarInstPropios() {
   }
 }
 async function guardarLocal(interactivo) {
+  if (S.borrandoCuenta) return false;  // 0.8.2: borrando la cuenta, ni una escritura más
   if (S.demo) return true;  // 0.6d: con la cartera de prueba no se guarda nada
   S.cartera.inst_propios = instPropios();
   S.cartera.actualizado = new Date().toISOString();

@@ -3,6 +3,7 @@ async function iniciar() {
   const demo = demoActiva();
   if (demo) LS_DEMO = new Map();
   cargarIdioma();
+  try { if (sessionStorage.getItem('toison-cuenta-borrada')) { sessionStorage.removeItem('toison-cuenta-borrada'); setTimeout(() => toast(trad('Tu cuenta y tu cartera se han borrado de Toisón y de este dispositivo.'), 7000), 900); } } catch (e) {}
   if (bancoALaApp()) return;
   // el enlace del estreno de Toisón (#toison, 0.7n) ya no abre nada: se quita de la dirección
   if (location.hash === '#toison') try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}

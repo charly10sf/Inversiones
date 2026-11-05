@@ -58,7 +58,12 @@ export function query(col, ...cond) { return { tipo: 'query', path: col.path, co
 
 export async function getDoc(ref) { if (!puedeLeer(ref.path)) throw sinPermiso(); return snap(ref.path); }
 // fallos_ia: se crean y no se reescriben (las reglas no dejan update)
-export async function setDoc(ref, data, o) { if (ref.path.startsWith('fallos_ia/') && crudo(ref.path)) throw sinPermiso(); poner(ref.path, data, o && o.merge); }
+export async function setDoc(ref, data, o) {
+  if (ref.path.startsWith('fallos_ia/') && crudo(ref.path)) throw sinPermiso();
+  // usuarios y cuentas: una cuenta dada de baja (bajas/{uid}) no vuelve a escribir (0.8.2)
+  if (/^(usuarios|cuentas)\//.test(ref.path) && crudo('bajas/' + ref.path.split('/')[1])) throw sinPermiso();
+  poner(ref.path, data, o && o.merge);
+}
 // fallos_ia: las reglas dejan borrar solo al dueño
 export async function deleteDoc(ref) {
   if (ref.path.startsWith('fallos_ia/') && !esDueno()) throw sinPermiso();

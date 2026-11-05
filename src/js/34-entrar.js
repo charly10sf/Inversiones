@@ -205,7 +205,7 @@ async function limpiarSesionLocal() {
    sesión recién abierta, así que se pide otra vez la contraseña (o Google). Se borran: el aviso al dueño (bajas/{uid},
    con el correo, para que quite a mano el modo y la lista de espera, que van por correo y no los puede tocar la
    cuenta), las opiniones, la ficha de la cuenta (cuentas), la copia cifrada (usuarios), la propia cuenta y todo lo
-   de Toisón en este dispositivo. Los avisos de fallos de la IA caducan solos a los 30 días. En toison.es/borrar-cuenta
+   de Toisón en este dispositivo. Los avisos de fallos de la IA se borran a los 30 días (limpiarFallosIA). En toison.es/borrar-cuenta
    se explica lo mismo para quien ya no tiene la app. */
 const proveedoresCuenta = () => ((FB.auth && FB.auth.currentUser && FB.auth.currentUser.providerData) || []).map((p) => p.providerId);
 async function reabrirSesion(pass) {
@@ -234,24 +234,37 @@ async function borrarCuentaEntera(pass) {
   const u = FB.auth.currentUser;
   if (!u) throw Object.assign(new Error('sin sesión'), { code: 'sin-sesion' });
   await reabrirSesion(pass);
-  // que nada vuelva a subir la cartera mientras se borra
-  S.borrandoCuenta = true; S.subidaParada = true; LS.del('inv-pend-cuenta');
+  // que nada vuelva a guardar ni a subir la cartera mientras se borra (y esperar a la subida que ya fuera)
+  const pend = LS.get('inv-pend-cuenta');
+  S.borrandoCuenta = true;
   if (S.vigilaCuenta) { try { S.vigilaCuenta(); } catch (e) {} S.vigilaCuenta = null; }
+  if (subidaEnCurso) try { await subidaEnCurso; } catch (e) {}
   const f = FB.fs, uid = u.uid, correo = String(u.email || '').toLowerCase();
-  // el aviso al dueño va primero: si algo falla después, sabe que hay una baja a medias
-  try { await conTiempo(f.setDoc(f.doc(FB.db, 'bajas', uid), { correo, cuando: f.serverTimestamp() }), 10000); } catch (e) { console.warn(e); }
-  const ops = await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.where('uid', '==', uid))), 10000);
-  for (const d of ops.docs) await conTiempo(f.deleteDoc(d.ref), 10000);
-  for (const c of ['cuentas', 'usuarios']) await conTiempo(f.deleteDoc(f.doc(FB.db, c, uid)), 10000);
-  await conTiempo(FB.au.deleteUser(u), 15000);
+  try {
+    const ops = await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.where('uid', '==', uid))), 10000);
+    for (const d of ops.docs) await conTiempo(f.deleteDoc(d.ref), 10000);
+    for (const c of ['cuentas', 'usuarios']) await conTiempo(f.deleteDoc(f.doc(FB.db, c, uid)), 10000);
+    // el aviso al dueño (el modo y la lista de espera van por correo y la cuenta no puede tocarlos). Sin el correo
+    // confirmado no hay modo ni hace falta: así nadie deja bajas con el correo de otro
+    if (u.emailVerified) await conTiempo(f.setDoc(f.doc(FB.db, 'bajas', uid), { correo, cuando: f.serverTimestamp() }), 10000);
+    await conTiempo(FB.au.deleteUser(u), 15000);
+  } catch (e) {
+    // a medias: la cuenta sigue viva, así que se vuelve a sincronizar como antes (lo de este dispositivo se vuelve a subir)
+    S.borrandoCuenta = false; S.subidaParada = false;
+    if (pend) LS.set('inv-pend-cuenta', pend);
+    try { vigilarCuenta(); subirPendiente(); } catch (x) {}
+    throw e;
+  }
   await limpiarSesionLocal();
-  try { for (const k of Object.keys(localStorage)) if (/^inv-/.test(k)) localStorage.removeItem(k); } catch (e) {}
+  // todo lo de Toisón (también lo que va como invC- e invL-), menos el idioma y el diseño, que no son de la cuenta
+  try { for (const k of Object.keys(localStorage)) if (/^inv/.test(k) && k !== 'inv-idioma' && k !== 'inv-tema') localStorage.removeItem(k); } catch (e) {}
+  try { await new Promise((ok) => { const r = indexedDB.deleteDatabase('inversiones'); r.onsuccess = r.onerror = r.onblocked = () => ok(); setTimeout(ok, 3000); }); } catch (e) {}
 }
 function hojaBorrarCuenta() {
   const conPass = proveedoresCuenta().includes('password') || (!proveedoresCuenta().length && FB.user && (FB.user.providerData || []).some((p) => p.providerId === 'password'));
   const h = hoja('Borrar la cuenta', `<form id="fBorrar" class="borrar-cuenta" novalidate>
     <p>Se borran tu cuenta, la copia cifrada de tu cartera, tus opiniones y todo lo que Toisón guarda en este dispositivo. No se puede deshacer.</p>
-    <p class="nota">Si quieres quedarte con la cartera, descarga antes una copia en Ajustes, Seguridad, «Copia de seguridad». El modo de tu cuenta y, si estabas apuntado, tu correo de la lista de espera se borran en 30 días como mucho. Los avisos de fallos de la IA se borran solos a los 30 días.</p>
+    <p class="nota">Si quieres quedarte con la cartera, descarga antes una copia en Ajustes, Seguridad, «Copia de seguridad». El modo de tu cuenta y, si estabas apuntado, tu correo de la lista de espera se borran en 30 días como mucho. Los avisos de fallos de la IA se borran a los 30 días.</p>
     ${conPass ? '<label class="campo">Tu contraseña de la cuenta<input type="password" name="p" autocomplete="current-password"></label>' : '<p class="nota">Para comprobar que eres tú, Google te pedirá que elijas tu cuenta otra vez.</p>'}
     <label class="campo">Escribe BORRAR para confirmar<input name="c" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10"></label>
     <div class="error" id="bcErr" role="alert"></div>
@@ -266,11 +279,10 @@ function hojaBorrarCuenta() {
     const b = $('#bcBorrar', h.el); b.disabled = true; b.textContent = trad('Borrando…');
     try {
       await borrarCuentaEntera(pass);
-      h.cerrar(true);
-      $('#app').innerHTML = `<div class="pantalla"><div class="caja caja-cuenta"><h1>${esc(trad('Cuenta borrada'))}</h1><p>${esc(trad('Tu cuenta y tu cartera se han borrado de Toisón y de este dispositivo.'))}</p><button class="btn primario" id="bcFin">${esc(trad('Volver al principio'))}</button></div></div>`;
-      $('#bcFin').onclick = () => location.reload();
+      try { sessionStorage.setItem('toison-cuenta-borrada', '1'); } catch (e) {}
+      location.replace(location.pathname + location.search);
     } catch (e) {
-      console.warn(e); S.borrandoCuenta = false; b.disabled = false; b.textContent = trad('Borrar la cuenta');
+      console.warn(e); b.disabled = false; b.textContent = trad('Borrar la cuenta');
       err(e && e.code === 'auth/user-mismatch' ? 'Esa no es la cuenta de Google con la que entraste. Elige la tuya.' : e && (e.code === 'tiempo' || e.message === 'tiempo') ? 'Sin respuesta: no se ha terminado de borrar. Comprueba la conexión y vuelve a probar.' : e && e.code === 'sin-metodo' ? 'No se puede comprobar que eres tú con esta forma de entrar. Escribe a hola@toison.es desde el correo de tu cuenta.' : errorFb(e));
     }
   };
