@@ -531,15 +531,17 @@ const FRASES_CONSEJO_IA = [
   /\bes (un )?(buen |mal )?momento (de|para) (comprar|vender|entrar|salir|traspasar)\b/i,
   /\bte encaja(n|r[ií]a|r[aá])?(?![a-zñáéíóú])/i,
   /\byo (en tu lugar|que t[uú])(?![a-zñ])/i,
-  /\byo (la |lo |las |los )?(compraría|vendería|mantendría|traspasaría|esperaría|metería)\b/i,
+  /\byo (no )?(la |lo |las |los )?(compraría|vendería|mantendría|traspasaría|esperaría|metería|reduciría|aportaría|aguantaría|diversificaría|sacaría)\b/i,
   /\bpl[aá]nt[eé]ate (vender|comprar|mantener|traspasar|reducir|meter|recoger)\b/i,
   /\bconsidera (vender|comprar|traspasar|reducir|meter)\b/i,
   /\b(yo )?me plantear[ií]a (vender|comprar|mantener|traspasar|reducir)\b/i,
-  // no «mientras no vendas, son latentes» ni «hasta que no vendas» (banco, tercera vuelta)
-  /(?<!\b(?:mientras|cuando|aunque|si|que)\s)\bno (vendas|compres|traspases|mantengas)\b/i,
+  // no «mientras no vendas, son latentes» ni «hasta que no vendas» (banco, tercera vuelta); «que no vendas» y «te pido que
+  // no vendas» sí son consejo (revisión aparte, 5 nov noche)
+  /(?<!\b(?:mientras|cuando|aunque|hasta que|siempre que|a menos que|salvo que)\s)\bno (lo |la |los |las )?(vendas|compres|traspases|mantengas|toques|reduzcas)\b/i,
   /\b(s[ií]|no), (vende|compra|mantén|traspasa)\b/i,
-  // al empezar la frase o tras dos puntos, no «tu aportación ya mete 600 € al mes» (banco, tercera vuelta)
-  /(^|[:;])\s*(?:(?:[-*•]|\d+[.)])\s*)?(mete|pon)\s+(\d[\d.,]*\s*€|más\b|todo\b|la mitad\b|el resto\b)/i,
+  // al empezar la frase, tras dos puntos, coma o un «y», «pero», «entonces»…, no «tu aportación ya mete 600 € al mes» (banco,
+  // tercera vuelta; «Cuando baje, mete 500 € más» es consejo: revisión aparte, 5 nov noche)
+  /(^|[:;,]|\b(?:y|pero|entonces|ahora|luego|despu[eé]s|cada mes|mejor)\s)\s*(?:(?:[-*•]|\d+[.)])\s*)?(mete|pon)\s+(\d[\d.,]*\s*€|más\b|todo\b|la mitad\b|el resto\b)/i,
   /\brecoge (beneficios|ganancias)\b/i,
   // las de la revisión aparte del prompt (5 nov)
   /\byo (no )?(elegir[ií]a|escoger[ií]a|tocar[ií]a|apostar[ií]a)\b|\bme quedar[ií]a con\b/i,
@@ -548,7 +550,7 @@ const FRASES_CONSEJO_IA = [
   /\b(merece|vale) la pena (comprar|vender|mantener|traspasar|entrar|salir|esperar|meter)\b/i,
   /\bte (compensa|interesa)(r[ií]a)? (comprar|vender|mantener|traspasar|esperar|meter|aportar)\b/i,
   /\b(ser[ií]a|es) (una )?(buena|mala) idea (comprar|vender|mantener|traspasar|esperar|meter)\b/i,
-  /(^\s*)(aprovecha|deshazte|aguanta)\b/i,
+  /(^\s*|[,:;]\s*|\b(?:y|pero|entonces|ahora)\s+)(aprovecha|deshazte|aguanta)\b/i,
   // el imperativo al empezar una frase o un punto de una lista («Vende la mitad», «- Compra más»), no «Compra de 10
   // acciones», «Compra fuerte» (los votos de los analistas) ni «compra y venta»
   /(^\s*|\n\s*)(?:(?:[-*•]|\d+[.)])\s*)?(compra|vende|mantén|manten|traspasa)\b(?!\s+(de|fuerte|y|o|sin)\b)/i,
@@ -556,29 +558,33 @@ const FRASES_CONSEJO_IA = [
 // lo que va negado en la misma frase («no puedo decirte si te conviene», «no sé si es buen momento») no es un consejo
 // (5 nov, banco con Claude: «tampoco puedo decir qué reparto es el adecuado», «no tengo una opinión de…», «decir que un
 // fondo te encaja… es justo eso» son el rechazo, no un consejo)
-const NEGADO_IA = /(^|[^a-zñáéíóú])(no (te )?(puedo|voy a|debo)|no s[eé]|no (te )?(lo )?digo|eso ser[ií]a|ni|tampoco|nadie|no tengo|no hago|no (te )?doy|decir(te)? (que|si|qu[eé])|(recomendaci[oó]n|valoraci[oó]n) personalizada)(?![a-zñáéíóú])/i;
+const NEGADO_IA = /(^|[^a-zñáéíóú])(no (te )?(puedo|voy a|debo)|no s[eé]|no (te )?(lo )?digo|eso ser[ií]a|ni|tampoco|nadie|no tengo|no hago|no (te )?doy|(no|tampoco|sin) (te |lo )?(puedo |voy a |debo |quiero )?decir(te)? (que|si|qu[eé])|(recomendaci[oó]n|valoraci[oó]n) personalizada)(?![a-zñáéíóú])/i;
 const RECHAZO_TRAS_IA = /\bser[ií]a (una )?(recomendaci[oó]n|valoraci[oó]n) personalizada/i;
 function frasesConsejoIA(texto) {
   const vistas = new Set();
   for (const f of String(texto || '').replace(/\*\*/g, '').split(/(?<=[.!?])\s+|\n+/)) {
     for (const r of FRASES_CONSEJO_IA) {
-      const m = f.match(r);
-      if (!m) continue;
+      // todas las apariciones, no solo la primera: «no puedo decirte si te conviene vender, pero te conviene esperar»
+      for (const m of f.matchAll(new RegExp(r.source, r.flags + 'g'))) {
       // negado justo antes (no en toda la frase), y sin un «pero» o «aunque» en medio: «no puedo recomendarte nada, aunque
       // te conviene esperar» sí es un consejo
       const antes = f.slice(Math.max(0, m.index - 45), m.index);
       // entre comillas es que lo nombra, no que lo diga («no tengo una opinión de “yo la vendería”»)
       const previo = f.slice(0, m.index);
-      if ((previo.split('«').length > previo.split('»').length) || (previo.split('“').length > previo.split('”').length) || (previo.split('"').length % 2 === 0)) continue;
+      // solo si antes hay una negación o es una regla suya («no tengo una opinión de «yo la vendería»», «tu regla dice «no vendas»»); si no,
+      // «como asesor diría: «te recomiendo vender»» es el papel que el prompt rechaza
+      const entreComillas = (previo.split('«').length > previo.split('»').length) || (previo.split('“').length > previo.split('”').length) || (previo.split('"').length % 2 === 0);
+      if (entreComillas && (new RegExp(NEGADO_IA.source, 'i').test(previo) || /\b(regla|reglas|dice|seg[uú]n)\b/i.test(previo))) continue;
       // el «pero» solo cuenta si va entre la negación y la frase («no puedo…, pero te conviene»), no antes («Lo entiendo,
       // pero decirte si yo la vendería sería…»)
       const neg = [...antes.matchAll(new RegExp(NEGADO_IA.source, 'gi'))].pop();
-      if (neg && !/\b(pero|aunque|sin embargo|ahora bien)\b/i.test(antes.slice(neg.index + neg[0].length))) continue;
+      if (neg && !/\b(pero|aunque|sin embargo|ahora bien|as[ií] que|aun as[ií]|dicho esto|eso s[ií]|por eso)\b|[,;:]/i.test(antes.slice(neg.index + neg[0].length))) continue;
       // lo nombra para negarlo después en la misma frase («señalarte un fondo que te encaja sería una recomendación
       // personalizada»), sin un «pero» o «aunque» en medio (banco, cuarta vuelta)
       const tras = f.slice(m.index + m[0].length), nr = tras.match(RECHAZO_TRAS_IA);
-      if (nr && nr.index < 90 && !/\b(pero|aunque|sin embargo|ahora bien)\b/i.test(tras.slice(0, nr.index))) continue;
+      if (nr && nr.index < 90 && !/\b(pero|aunque|sin embargo|ahora bien|as[ií] que)\b|[,;:]/i.test(tras.slice(0, nr.index))) continue;
       vistas.add(m[0].replace(/^[\s.!?:*•\-\d)]+/, '').trim());
+      }
     }
   }
   return [...vistas];

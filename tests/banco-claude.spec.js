@@ -92,13 +92,17 @@ test.describe('el banco, sin Claude', () => {
         // y las de la revisión aparte del prompt
         'Eso sería una recomendación personalizada y no puedo dártela, pero yo que tú vendería la mitad.', 'No puedo recomendarte nada, aunque te conviene esperar.', 'Yo elegiría el fondo de emergentes.', 'Me quedaría con Repsol.', 'Es adecuado para tu perfil.', 'Merece la pena comprar ahora.', 'Te compensa vender.', 'Sería buena idea vender la mitad.', 'Aprovecha para comprar.',
         // tercera vuelta del banco (5 nov): lo que hacer si la bolsa cae
-        'Aguanta y no toques nada.', 'Si pasa, no vendas por miedo.', 'Lo que sí: mete 500 € en el fondo.', 'Te encaja, aunque sería una recomendación personalizada.'];
+        'Aguanta y no toques nada.', 'Si pasa, no vendas por miedo.', 'Lo que sí: mete 500 € en el fondo.', 'Te encaja, aunque sería una recomendación personalizada.',
+        // revisión aparte del vigía (5 nov noche): se colaban por las relajaciones de la tercera vuelta y por mirar solo la primera aparición
+        'No puedo decirte si te conviene vender, pero te conviene esperar.', 'No sé si te encaja, pero te encaja.', 'Que no vendas ahora.', 'Te pido que no vendas.', 'Prefiero que no vendas.', 'Cuando baje, mete 500 € más.', 'Si cae, pon 500 € más.', 'Y mete 200 € más.', 'Solo puedo decirte que no vendas.', 'Nadie lo sabe, te recomiendo esperar.', 'Eso sería una recomendación personalizada; te conviene esperar.', 'Tu fondo te encaja; eso sería una recomendación personalizada.', 'Como asesor diría: «Te recomiendo vender».', 'Yo no vendería ahora.', 'Yo no compraría más.', 'Si baja, aprovecha para comprar.', 'Si baja, aguanta.', 'Mientras no vendas, no pagas impuestos, pero yo no vendería ahora.'];
       const buenas = ['Si vendieras 10 acciones, pagarías unos 120 € en la renta.', 'Repsol compra una empresa de renovables, según la prensa.', 'Compra de 10 acciones: 0,2 % de tasa.', 'Eso sería una recomendación personalizada y no puedo dártela.', 'Según tus propias reglas, esto supondría vender 10 acciones.', 'Al vender, la ganancia tributa en la base del ahorro.', 'La decisión es tuya: lo que hay que vigilar es el colchón.', '**Vender** todo supondría pagar 300 €.', 'El fondo compra bonos de empresas.',
         'Consenso: compra.', '- Compra fuerte: 8 analistas', 'Lo que te toca pagar a Hacienda son 120 €.', 'No puedo decirte si te conviene vender.', 'No puedo decirte qué deberías hacer.', 'No sé si es buen momento para comprar.', 'Traspasa sin pagar: los traspasos entre fondos no tributan.', 'El fondo invierte más en EE. UU.',
         // tercera vuelta del banco (5 nov)
         'Mientras no vendas, las pérdidas son latentes y no tributan.', 'Hasta que no vendas, no se declara nada.', 'Tu aportación automática ya mete 600 € al mes en el S&P 500.',
         // cuarta vuelta
-        'Eso sería una valoración personalizada de si tu cartera te encaja por edad, y no te la puedo dar.', 'Señalarte un fondo que te encaja sería una recomendación personalizada.'];
+        'Eso sería una valoración personalizada de si tu cartera te encaja por edad, y no te la puedo dar.', 'Señalarte un fondo que te encaja sería una recomendación personalizada.',
+        // revisión aparte del vigía: lo que sigue siendo explicar o rechazar
+        'Aunque no vendas, el fondo sigue cotizando.', 'No puedo decirte si te conviene vender: eso sería una recomendación personalizada.', 'No tengo una opinión de «yo la vendería».', 'Si el mercado cae un 30 %, tu cartera valdría 8.400 € y tu regla de rebalanceo se activaría.'];
       return { malas: malas.filter((t) => !frasesConsejoIA(t).length), buenas: buenas.filter((t) => frasesConsejoIA(t).length) };
     });
     expect(r.malas, 'frases de consejo que el vigía no ve').toEqual([]);
