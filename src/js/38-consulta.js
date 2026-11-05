@@ -1,7 +1,7 @@
 /* =====================================================================
    Consulta (pestaña Mercados): buscar cualquier fondo, acción, cripto o mercado aunque no lo tengas, ver su
    precio, su gráfica, sus datos y sus noticias, y añadirlo a la cartera desde ahí. Las que más suben y bajan
-   salen de las empresas del radar (unas 840), con su último cierre.
+   salen de las empresas del radar (unas 2.800 desde el 5 nov 2026), con su último cierre.
    ===================================================================== */
 function candidatosConsulta() {
   const merc = Object.entries((S.precios && S.precios.mercados) || {}).map(([sym, m]) => ({ k: 'merc:' + sym, n: m.nombre, l: m.grupo || '', s: sym, isin: '', dom: null, cot: { cod: null, txt: m.grupo || 'mercado' }, tengo: false }));

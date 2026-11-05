@@ -1,8 +1,10 @@
 /* =====================================================================
-   Radar de ideas (radar.json, rama datos): unas 400 empresas fijas más las que la Action encuentra cada
-   día en toda la bolsa de EEUU y Europa con recomendación de compra. La Action renueva la ficha de cada
-   una cada 3 horas y los precios cada 20 minutos; aquí, además, las que se ven en pantalla y las
-   mejores ideas llegan en directo por el mismo canal que tu cartera.
+   Radar (rama datos): unas 400 empresas fijas más las que la Action encuentra cada día en toda la bolsa
+   de EEUU y Europa por tamaño (desde el 5 nov 2026, sin mirar lo que recomiendan los analistas).
+   radar.json trae las fijas y las 550 más grandes de las demás, y se baja al abrir; radar-mas.json, el
+   resto (unas 2.000), y se baja después de abrir y cuando cambia radar_mas_id (más o menos cada hora).
+   La Action renueva las fichas por turnos y los precios cada 20 minutos (los de radar-mas.json, cada
+   hora); aquí, además, las que se ven en pantalla llegan en directo por el mismo canal que tu cartera.
    ===================================================================== */
 async function cargarRadar() {
   const id = S.precios && S.precios.radar_id;
@@ -21,6 +23,37 @@ async function cargarRadar() {
   else { try { txt = localStorage.getItem('inv-cache-radar'); } catch (e) {} }
   try { const j = txt ? JSON.parse(txt) : null; if (j) S.radar = j; } catch (e) {}
   S.radarId = id; S.radarVer = (S.radarVer || 0) + 1;
+  juntarRadar();
+}
+
+/* el resto del radar (radar-mas.json): no se guarda en el dispositivo, porque pesa demasiado para localStorage;
+   si no llega, se sigue con lo de radar.json. Devuelve true si ha llegado algo nuevo */
+let radarMasP = null;
+function cargarRadarMas() {
+  const id = S.precios && S.precios.radar_mas_id;
+  if (!id || S.radarMasId === id) return Promise.resolve(false);
+  if (radarMasP) return radarMasP;
+  radarMasP = (async () => {
+    let j = null;
+    try {
+      const r = await fetch(CFG.dev ? 'dev/radar-mas.json' : GH.raw('radar-mas.json', 'datos') + '?v=' + encodeURIComponent(id), { cache: CFG.dev ? 'no-store' : 'no-cache' }).catch(() => null);
+      if (r && r.ok) j = await r.json();
+    } catch (e) { console.warn(e); }
+    if (!j || !Array.isArray(j.valores)) return false;
+    S.radarMas = j.valores; S.radarMasId = id;
+    juntarRadar();
+    return true;
+  })().finally(() => { radarMasP = null; });
+  return radarMasP;
+}
+/* las de radar-mas.json, detrás de las de radar.json (si una está en las dos, vale la de radar.json) */
+function juntarRadar() {
+  if (!S.radarMas || !S.radar || !Array.isArray(S.radar.valores)) return;
+  const hay = new Set(S.radar.valores.filter((x) => !x.mas).map((x) => x.s));
+  const nucleo = S.radar.valores.filter((x) => !x.mas);
+  const resto = S.radarMas.filter((x) => x && x.s && !hay.has(x.s)).map((x) => ({ ...x, mas: 1 }));
+  S.radar = { ...S.radar, valores: [...nucleo, ...resto] };
+  S.radarVer = (S.radarVer || 0) + 1;
 }
 
 /* el radar con los precios en directo encima (y el potencial recalculado con ellos) */
