@@ -92,5 +92,16 @@ service cloud.firestore {
         && request.resource.data.isin is string && request.resource.data.isin.size() <= 12;
       allow update, delete: if false;
     }
+    // 0.8.2 (web, 4 nov): lista de espera de toison.es («Pedir acceso»). Cualquiera puede apuntar un correo sin cuenta
+    // (la web escribe por REST con la clave web); solo lo lee el dueño; nadie lo cambia ni lo borra desde fuera
+    match /acceso/{id} {
+      allow create: if request.resource.data.keys().hasOnly(['correo', 'cuando', 'idioma', 'desde'])
+        && request.resource.data.correo is string && request.resource.data.correo.size() <= 120
+        && request.resource.data.correo.matches('^[^@ ]+@[^@ ]+[.][^@ ]+$')
+        && request.resource.data.cuando is string && request.resource.data.cuando.size() <= 30
+        && request.resource.data.idioma in ['es', 'en'] && request.resource.data.desde == 'web';
+      allow read, list: if esDueno();
+      allow update, delete: if false;
+    }
   }
 }

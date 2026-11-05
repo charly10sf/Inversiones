@@ -1,6 +1,22 @@
 {
  "versiones": [
   {
+   "v": "0.8.1b",
+   "f": "2026-11-05",
+   "h": "07:30",
+   "t": "Los colores y las pestañas, en su sitio",
+   "commits": [
+    {
+     "cuando": "2026-11-05 07:00",
+     "asunto": "Versión 0.8.1b: los colores y las pestañas, en su sitio",
+     "detalle": [
+      "La app dice su esquema de color en la cabecera y en el CSS («dark» en Mármol y Borgoña, «light dark» en Marfil), para que el modo oscuro de los navegadores del móvil (Samsung Internet, WhatsApp, X) no la repinte.",
+      "Las pestañas de pastilla que se quedan arriba al bajar (Ideas, los plazos del Paso a paso) tienen fondo opaco en los tres diseños."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.1a",
    "f": "2026-11-04",
    "h": "09:45",

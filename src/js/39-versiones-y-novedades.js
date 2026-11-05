@@ -5,6 +5,10 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.8.1b', f: '2026-11-05', h: '07:30', t: 'Los colores y las pestañas, en su sitio', arreglos: [
+    'Con el móvil en modo oscuro, algunos navegadores (el de WhatsApp, el de X y Samsung Internet) cambiaban los colores de Toisón. Ya no.',
+    'En Ideas y en los plazos del Paso a paso, las pestañas de arriba ya no dejan ver el texto que pasa por debajo al bajar.',
+  ] },
   { v: '0.8.1a', f: '2026-11-04', h: '09:45', t: 'La IA ya ve la cifra que le preguntas', arreglos: [
     'Al tocar una cifra y pedir «Explícamela» (o «Pregúntale» en una tarjeta), la IA decía a veces que no tenía el dato. Ahora le llega la tarjeta entera y cómo se calcula cada cifra con tus números; en Riesgo, también la misma medida del MSCI World en esas fechas, para comparar.',
     'Tu reparto objetivo, rehecho: cada tipo con − y +, una barra con lo que tienes y lo que quieres, cuánto te falta o te sobra en euros y cuánto habría que aportar para llegar sin vender. Entre todos ya no pueden pasar de 100 %.',

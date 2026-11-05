@@ -124,3 +124,22 @@ test.describe('la app de Android sabe el diseño', () => {
     expect((await page.evaluate(() => window.__temas)).slice(-2)).toEqual(['marfil', 'marmol']);
   });
 });
+
+// 0.8.1b (5 nov, captura de Carlos): en el móvil, las pestañas de pastilla que se quedan arriba al bajar (Ideas: Lo tuyo ·
+// Del radar · Siguiendo) tienen fondo de verdad en los tres diseños, para que el texto de debajo no se monte
+test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debajo', async ({ page }, info) => {
+  test.skip(info.project.name !== 'movil', 'en el móvil es donde se quedan arriba');
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((h) => h.remove()));
+  for (const tema of ['marmol', 'marfil', 'borgona']) {
+    await page.evaluate((t) => { ponerTema(t); S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); }, tema);
+    const tabs = page.locator('.exp-tabs');
+    await expect(tabs).toBeAttached({ timeout: 15_000 });
+    const r = await tabs.evaluate((el) => ({ pos: getComputedStyle(el).position, fondo: getComputedStyle(el).backgroundColor }));
+    expect(r.pos).toBe('sticky');
+    // opaco: ni transparente ni con alfa
+    expect(r.fondo).not.toMatch(/transparent|rgba\(|\/ ?0?\.\d|, 0\)$/);
+  }
+});
