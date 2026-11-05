@@ -171,6 +171,19 @@ function htmlSubvistas() {
 }
 const esVista = (k) => VISTAS.some(([x]) => x === k) || VISTAS_APARTE.some(([x]) => x === k);
 
+/* 0.8.3 (revisión del diseño, 5 nov): en las filas que se deslizan de lado (pestañas de Análisis, Tú, modos del mapa…)
+   la palabra cortada en el borde parecía un fallo («stes», «D»). Ahora ese borde se difumina, y solo por el lado por el que
+   queda algo: data-desb lleva «i» (queda a la izquierda) y/o «d» (a la derecha); lo pinta 00-temas.css. */
+const SEL_DESBORDE = '.pest-av, .grupo-tabs, .mg-tabs, .mapa-modos, .mapa-vistas, .subvistas';
+function marcarDesborde(el) {
+  const izq = el.scrollLeft > 2, der = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
+  const v = [izq && 'i', der && 'd'].filter(Boolean).join(' ');
+  if ((el.getAttribute('data-desb') || '') !== v) { if (v) el.setAttribute('data-desb', v); else el.removeAttribute('data-desb'); }
+}
+function marcarDesbordes() { for (const el of document.querySelectorAll(SEL_DESBORDE)) marcarDesborde(el); }
+document.addEventListener('scroll', (e) => { const el = e.target; if (el && el.matches && el.matches(SEL_DESBORDE)) marcarDesborde(el); }, true);
+addEventListener('resize', () => requestAnimationFrame(marcarDesbordes));
+
 let toastT;
 function toast(msg, ms = 3200) {
   const t = $('#toast'); t.textContent = msg; t.hidden = false;
@@ -622,6 +635,7 @@ function pintar() {
   S.firmaPintada = firmaRecom(M);
   if (S.senalesSucias && !S.guardandoSenales) { S.senalesSucias = false; S.guardandoSenales = true; setTimeout(() => guardarCarteraCallada('Señales').catch(() => {}).finally(() => { S.guardandoSenales = false; }), 4000); }
   enviarWidget();
+  requestAnimationFrame(marcarDesbordes);
   const sv = simsRadarVivos().join();
   if (sv !== S.radarSubs) { S.radarSubs = sv; LIVE.resuscribir(); }
 }
