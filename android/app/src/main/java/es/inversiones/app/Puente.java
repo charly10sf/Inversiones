@@ -232,6 +232,7 @@ public class Puente {
     /** Baja el APK nuevo y abre el instalador; el progreso llega a la web por progresoApp(pct, estado) */
     @JavascriptInterface
     public void actualizar(String url) {
+        if (!BuildConfig.ACTUALIZA_SOLA) { act.progreso(-1, "la actualiza Google Play"); return; }
         if (!Actualizador.valida(url)) {
             act.progreso(-1, "dirección no válida");
             return;
@@ -242,6 +243,7 @@ public class Puente {
     /** Vuelve a abrir el instalador con lo ya descargado */
     @JavascriptInterface
     public void instalar() {
+        if (!BuildConfig.ACTUALIZA_SOLA) return;
         act.runOnUiThread(() -> act.instalar(Actualizador.archivo(ctx)));
     }
 

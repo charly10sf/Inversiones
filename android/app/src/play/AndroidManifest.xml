@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 0.8.3 · La versión de Google Play: sin los permisos de instalar ni actualizarse sola (Play los prohíbe para esto y la
+     actualiza él) y sin el aviso de «instalada» de la actualización sola, que solo existe en la versión de GitHub -->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" tools:node="remove" />
+    <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" tools:node="remove" />
+
+    <application>
+        <receiver android:name="es.inversiones.app.Instalado" tools:node="remove" />
+    </application>
+</manifest>

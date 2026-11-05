@@ -80,7 +80,7 @@ public class Versiones extends Worker {
     static void revisar(Context c) throws Exception {
         Datos.comprobarNombre(c);
         JSONObject a = leer(Datos.raw(c, "main", "app.json"));
-        Actualizador.autoActualizar(c, a);
+        if (BuildConfig.ACTUALIZA_SOLA) Actualizador.autoActualizar(c, a);
         if (!activados(c) || !Avisos.permitidos(c)) return;
         int hora = LocalTime.now().getHour();
         if (hora >= 22 || hora < 9) return;
@@ -96,7 +96,7 @@ public class Versiones extends Worker {
             return;
         }
         boolean web = !v.isEmpty() && comparar(v, vista) > 0 && comparar(v, avisada) > 0;
-        boolean apk = app > BuildConfig.VERSION_CODE && app > appAvisada;
+        boolean apk = BuildConfig.ACTUALIZA_SOLA && app > BuildConfig.VERSION_CODE && app > appAvisada;
         // 0.4: con frases enteras. «Toisón 0.8 ya está aquí» y, debajo, lo que trae. Si viene con app nueva y ya se
         // está instalando sola (autoActualizar acaba de mandarla a Android), no se dice nada de la app: si sale bien, no
         // hay nada que hacer, y si Android pide confirmación, Instalado lo apunta y en la siguiente vuelta llega el aviso

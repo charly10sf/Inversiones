@@ -69,15 +69,25 @@ jobs:
           VERSION_CODE: ${{ github.run_number }}
         run: |
           set -o pipefail
-          gradle assembleRelease --no-daemon --stacktrace 2>&1 | tee "$GITHUB_WORKSPACE/compilacion.log"
+          gradle assembleDirectaRelease bundlePlayRelease --no-daemon --stacktrace 2>&1 | tee "$GITHUB_WORKSPACE/compilacion.log"
 
       # solo desde main: en otras ramas se compila para probar, sin publicar
+      # 0.8.3: la versión de Google Play (paquete .aab, firmado con la clave de subida) se guarda en la ejecución para
+      # subirla a mano a Play Console; no se publica en ningún sitio. Solo con la firma buena: con la de prueba no vale
+      - name: Guardar la versión de Play
+        if: env.FIRMA == 'buena'
+        uses: actions/upload-artifact@v4
+        with:
+          name: toison-play-${{ github.run_number }}
+          path: android/app/build/outputs/bundle/playRelease/app-play-release.aab
+          retention-days: 30
+
       - name: Publicar la app
         if: env.FIRMA == 'buena' && github.ref == 'refs/heads/main'
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          cp android/app/build/outputs/apk/release/app-release.apk growfolio.apk
+          cp android/app/build/outputs/apk/directa/release/app-directa-release.apk growfolio.apk
           # inversiones.apk es la misma: la buscan las apps de antes de que el proyecto se llamara GrowFolio
           cp growfolio.apk inversiones.apk
           gh release view app >/dev/null 2>&1 || gh release create app --title "App de Android" --notes "GrowFolio como app, con widget para la pantalla de inicio. Descarga growfolio.apk e instálala."
@@ -114,7 +124,7 @@ jobs:
           cp "$GITHUB_WORKSPACE/compilacion.log" . 2>/dev/null || echo "sin registro" > compilacion.log
           tail -c 60000 compilacion.log > ultimo.log
           echo "run ${{ github.run_number }} firma ${FIRMA:-?} $(date -u +%FT%TZ)" > estado.txt
-          ls -la "$GITHUB_WORKSPACE/android/app/build/outputs/apk/release/" >> estado.txt 2>&1 || true
+          ls -la "$GITHUB_WORKSPACE/android/app/build/outputs/apk/directa/release/" "$GITHUB_WORKSPACE/android/app/build/outputs/bundle/playRelease/" >> estado.txt 2>&1 || true
           rm compilacion.log
           git init -q && git checkout -q -b android-registro
           git config user.name "github-actions[bot]"

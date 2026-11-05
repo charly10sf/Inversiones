@@ -60,7 +60,7 @@
 
         <provider
             android:name=".Archivos"
-            android:authorities="es.inversiones.app.archivos"
+            android:authorities="${applicationId}.archivos"
             android:exported="false"
             android:grantUriPermissions="true" />
 

@@ -6,10 +6,12 @@ import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.Settings;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.WindowInsets;
 import android.webkit.CookieManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -19,6 +21,7 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.FrameLayout;
 import android.widget.Toast;
+import android.window.OnBackInvokedDispatcher;
 
 import org.json.JSONObject;
 
@@ -46,6 +49,7 @@ public class Principal extends Activity {
     private boolean enBanco;      // dando permiso al banco dentro de la app
     private boolean traspaso;     // se le ha pasado el permiso a la app del banco
     private String agenteMovil;   // el user agent de siempre, para volver a él al acabar
+    private FrameLayout raiz;     // 0.8.3: el marco de la web cuando la app va de borde a borde (ver bordeABorde)
 
     @Override
     protected void onCreate(Bundle guardado) {
@@ -57,7 +61,23 @@ public class Principal extends Activity {
         // sin la barra de desplazamiento del navegador a la derecha: en la app se desliza con el dedo
         web.setVerticalScrollBarEnabled(false);
         web.setHorizontalScrollBarEnabled(false);
-        setContentView(web);
+        // 0.8.3: con targetSdk 35 o más (la versión de Play) Android 15+ pinta la app de borde a borde y ya no colorea
+        // las barras ni encoge la ventana con el teclado: la web va dentro de un marco que deja sitio a las barras, al
+        // recorte de la cámara y al teclado, y el marco lleva el color de las barras del tema (pintarTema)
+        if (bordeABorde()) {
+            web.setFitsSystemWindows(false);
+            raiz = new FrameLayout(this);
+            raiz.addView(web, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+            raiz.setOnApplyWindowInsetsListener((v, ins) -> {
+                android.graphics.Insets b = ins.getInsets(WindowInsets.Type.systemBars() | WindowInsets.Type.displayCutout() | WindowInsets.Type.ime());
+                v.setPadding(b.left, b.top, b.right, b.bottom);
+                return WindowInsets.CONSUMED;
+            });
+            raiz.setBackgroundColor(Tema.de(this).barra);
+            setContentView(raiz);
+        } else setContentView(web);
+        // 0.8.3: con el atrás nuevo de Android (targetSdk 36 en Android 16) ya no se llama a onBackPressed
+        if (Build.VERSION.SDK_INT >= 33) getOnBackInvokedDispatcher().registerOnBackInvokedCallback(OnBackInvokedDispatcher.PRIORITY_DEFAULT, this::atras);
 
         WebSettings s = web.getSettings();
         s.setJavaScriptEnabled(true);
@@ -326,6 +346,7 @@ public class Principal extends Activity {
     void pintarTema() {
         Tema t = Tema.de(this);
         t.pintarBarras(this);
+        if (raiz != null) raiz.setBackgroundColor(t.barra);
         if (web != null && !enBanco) web.setBackgroundColor(t.fondoWeb());
     }
 
@@ -394,6 +415,7 @@ public class Principal extends Activity {
 
     private void actualizarNativo() {
         boolean en = Datos.en(this);
+        if (!BuildConfig.ACTUALIZA_SOLA) return;   // 0.8.3: la de Google Play la actualiza Play
         Toast.makeText(this, en ? "Downloading the new version of the app…" : "Bajando la versión nueva de la app…", Toast.LENGTH_LONG).show();
         new Thread(() -> {
             JSONObject a = Versiones.app(this);
@@ -521,13 +543,29 @@ public class Principal extends Activity {
 
     @Override
     public void onBackPressed() {
+        if (!atrasDentro()) super.onBackPressed();
+    }
+
+    /** el atrás nuevo (Android 13 o más, cuando la app lo pide; en la de Play con Android 16, siempre) */
+    private void atras() {
+        if (!atrasDentro()) moveTaskToBack(true);
+    }
+
+    /** lo que hace atrás dentro de la app; false si no hay nada y toca salir */
+    private boolean atrasDentro() {
         if (video != null) salirVideo();
         else if (enBanco) {   // a medio permiso del banco, atrás vuelve a GrowFolio (nunca sale de la app)
             salirDelBanco();
             web.loadUrl(WEB + "#cartera");
         }
         else if (web.canGoBack()) web.goBack();
-        else super.onBackPressed();
+        else return false;
+        return true;
+    }
+
+    /** de borde a borde: Android 15 o más con targetSdk 35 o más (la versión de Play); la de GitHub sigue como estaba */
+    private boolean bordeABorde() {
+        return Build.VERSION.SDK_INT >= 35 && getApplicationInfo().targetSdkVersion >= 35;
     }
 
     @Override

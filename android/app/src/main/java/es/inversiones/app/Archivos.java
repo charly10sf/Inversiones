@@ -14,7 +14,7 @@ import java.io.FileNotFoundException;
 /** Le deja al instalador de Android leer el APK descargado con un permiso temporal y, desde la 0.7n, a la app con la que
  *  compartes leer la imagen que has hecho en GrowFolio («Mi cartera en GTA VI»). Nada más. */
 public class Archivos extends ContentProvider {
-    static final String AUTORIDAD = "es.inversiones.app.archivos";
+    static final String AUTORIDAD = BuildConfig.APPLICATION_ID + ".archivos";
     private static final String TIPO = "application/vnd.android.package-archive";
     static final String IMAGEN = "compartir.png";
 
