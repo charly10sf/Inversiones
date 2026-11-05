@@ -68,10 +68,11 @@ test('GrowIA lee las fichas y busca en internet una vez por pregunta como mucho'
   if (idea) expect(JSON.stringify(idea.valoracion_de_la_web || '')).not.toContain('puesto');
   // el cupo de hoy, a la vista, y el modelo de la respuesta
   expect(await page.evaluate(() => usoIAHoy()['gemini-3.8-flash'])).toBe(3);
-  // lo que se ve es GrowIA: ni el modelo de Google arriba ni debajo de cada respuesta
+  // arriba, sin el modelo; 0.8.2: el aviso fijo dice que es una IA y cuál, y el pie de cada respuesta, el modelo que la ha escrito
   await expect(page.locator('#asSub')).toHaveText('Con tu cartera y las noticias de hoy');
   await expect(page.locator('.as-modelo-de')).toHaveCount(0);
-  await expect(page.locator('#asesorFondo')).not.toContainText('Gemini');
+  await expect(page.locator('#asAviso summary')).toContainText('Hablas con una IA (Gemini, de Google)');
+  await expect(page.locator('#asCuerpo .as-pie-ia').last()).toContainText('(Gemini 3.8 Flash)');
   // arriba, el cupo solo cuando queda poco (el 3.8 y el 3.6 cuentan juntos: 40)
   await page.evaluate(() => { LS.set('inv-ia-uso', { d: diaGoogle(), m: { 'gemini-3.8-flash': 20, 'gemini-3.6-flash': 16 } }); pintarAsesor(); });
   await expect(page.locator('#asSub')).toHaveText('Te quedan 4 respuestas normales hoy');
@@ -106,9 +107,9 @@ test('si el modelo se agota a mitad, el siguiente puede buscar en internet (la b
   await expect(page.locator('#asCuerpo')).toContainText('según la búsqueda', { timeout: 30_000 });
   expect(busquedas).toBe(2);
   expect(modelos).toEqual(['gemini-3.8-flash', 'gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.6-flash']);
-  // del 3.8 al 3.6 sigue siendo la respuesta normal: sin aviso ni nombres de Google
+  // del 3.8 al 3.6 sigue siendo la respuesta normal: sin aviso; 0.8.2: el pie dice el modelo que ha contestado
   await expect(page.locator('#asCuerpo')).not.toContainText('sigo con');
-  await expect(page.locator('#asCuerpo')).not.toContainText('Gemini');
+  await expect(page.locator('#asCuerpo .as-pie-ia').last()).toContainText('(Gemini 3.6 Flash)');
   expect(await page.evaluate(() => AS.conv[AS.conv.length - 1].modelo)).toBe('gemini-3.6-flash');
 });
 

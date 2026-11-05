@@ -364,7 +364,9 @@ export class Cuotas {
     // las claves llevan delante «p»: un id como «constructor» no puede leer nada heredado de Object
     const k = pregunta ? 'p' + pregunta : null, conocida = !!k && Object.prototype.hasOwnProperty.call(c.ids, k), previas = conocida ? Number(c.ids[k]) || 0 : 0;
     const primera = pregunta ? !conocida : primeraApp;
-    if ((primera && c.n >= tope) || (topeRondas && c.r >= topeRondas) || (conocida && previas >= topePregunta)) return new Response(JSON.stringify({ ok: false, n: c.n, r: c.r }));
+    // 0.8.2: con el motivo, para que la app no diga «sin preguntas hasta mañana» cuando solo se ha agotado una pregunta
+    const motivo = primera && c.n >= tope ? 'dia' : topeRondas && c.r >= topeRondas ? 'rondas' : conocida && previas >= topePregunta ? 'pregunta' : null;
+    if (motivo) return new Response(JSON.stringify({ ok: false, n: c.n, r: c.r, motivo }));
     if (primera) c.n += 1;
     if (k) c.ids[k] = previas + 1;
     c.r += 1;
@@ -430,6 +432,8 @@ async function claude(req, env, cors, res) {
     if (n == null && pdfs) return res({ error: 'cuenta' }, 503);
   }
   // el tope del día, al final de las comprobaciones de la petición: lo que se rechaza arriba no gasta pregunta
+  // 0.8.2: las que le quedan hoy van en la respuesta (X-Quedan) para que la app lo diga
+  let quedan = null;
   {
     // sin el contador no hay tope diario: no se pregunta (la app pasa a Gemini)
     if (!env.CUOTAS) return res({ error: 'cuotas' }, 503);
@@ -443,7 +447,8 @@ async function claude(req, env, cors, res) {
       const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(u.email)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA, topeRondas: Number(env.CLAUDE_RONDAS_POR_DIA) || CLAUDE_RONDAS_POR_DIA, primera, pregunta: idPreg, topePregunta: Number(env.CLAUDE_RONDAS_POR_PREGUNTA) || CLAUDE_RONDAS_POR_PREGUNTA }) });
       q = await rc.json();
     } catch (e) { return res({ error: 'cuotas' }, 503); }
-    if (!q || !q.ok) return res({ error: 'tope-diario' }, 429);
+    if (!q || !q.ok) return res({ error: q && q.motivo === 'pregunta' ? 'tope-pregunta' : 'tope-diario' }, 429);
+    quedan = Math.max(0, (Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA) - (Number(q.n) || 0));
   }
   let r;
   try {
@@ -456,7 +461,7 @@ async function claude(req, env, cors, res) {
     return res({ error: 'sin-conexion', motivo: String((e && e.message) || e).slice(0, 120) }, 502);
   }
   if (r.ok) {
-    return new Response(r.body, { status: r.status, headers: { ...cors, 'Content-Type': r.headers.get('content-type') || 'application/json', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no' } });
+    return new Response(r.body, { status: r.status, headers: { ...cors, 'Content-Type': r.headers.get('content-type') || 'application/json', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no', ...(quedan != null ? { 'X-Quedan': String(quedan), 'Access-Control-Expose-Headers': 'X-Quedan' } : {}) } });
   }
   // un fallo de Claude: la app lo necesita claro para pasar a Gemini sin esperar
   const fallo = await r.json().catch(() => ({})), e = (fallo && fallo.error) || {}, msg = String(e.message || '');

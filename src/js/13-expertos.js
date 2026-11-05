@@ -71,9 +71,9 @@ function abrirNoticia(n) {
     <p class="not-src">${n.f ? logo(webMedio(n), n.f, 'not-logo') : ''}<span>${esc(n.f || '')}${n.d ? `${n.f ? ', ' : ''}${haceCuanto(n.d)}` : ''}</span></p>
     <h3 class="not-t" data-no-trad>${esc(n.t)}</h3>
     <div class="not-cuerpo" aria-live="polite">${clave ? `<p class="not-lee">${ICONOS.growia}${L('La IA está leyendo la noticia…', 'GrowIA is reading the article…')}</p><div class="not-esq" aria-hidden="true"><i></i><i></i><i></i><i></i></div>`
-      : claudeSinClave() ? `<p class="nota" style="margin:0">${L('El resumen de las noticias lo hace todavía Gemini, de Google: con tu clave gratis de Google aquí te sale de qué va la noticia sin salir de Toisón. Para preguntar a la IA no te hace falta.', 'News summaries are still made by Gemini, from Google: with your free Google key you get what the article is about here, without leaving Toisón. You do not need it to ask the AI.')}</p>`
+      : sondeoClaudeOk() ? `<p class="nota" style="margin:0">${L('Claude no puede resumirla ahora mismo: vuelve a probar en un rato. Mientras, puedes abrirla en su web.', "Claude can't summarise it right now: try again in a while. Meanwhile, you can open it on its site.")}</p>`
       : `<p class="nota" style="margin:0">${L('Con la IA activada (gratis, con tu clave de Google) aquí te sale de qué va la noticia sin salir de Toisón.', 'With GrowIA on (free, with your Google key) you get what the article is about here, without leaving Toisón.')}</p>`}</div>
-    <div class="fila-btns not-btns">${clave ? '' : `<button type="button" class="btn pri" data-not-ia>${ICONOS.growia}${claudeSinClave() ? L('Poner la clave de Google', 'Add the Google key') : L('Activar la IA', 'Turn on GrowIA')}</button>`}<a class="btn" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${L('Abrir la original', 'Open the original')}</a></div>
+    <div class="fila-btns not-btns">${clave || sondeoClaudeOk() ? '' : `<button type="button" class="btn pri" data-not-ia>${ICONOS.growia}${claudeSinClave() ? L('Poner la clave de Google', 'Add the Google key') : L('Activar la IA', 'Turn on GrowIA')}</button>`}<a class="btn" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer">${L('Abrir la original', 'Open the original')}</a></div>
   </div>`);
   h.el.classList.add('hoja-not');
   const bIA = $('[data-not-ia]', h.el); if (bIA) bIA.onclick = () => { h.cerrar(true); abrirClaveGoogle(); };
@@ -532,6 +532,52 @@ async function cargarEscaneo() {
   else { try { const c = localStorage.getItem('inv-cache-escaneo'); if (c && !S.escaneo) S.escaneo = JSON.parse(c); } catch (e) {} }
   S.escaneoId = id;
   if (IDIOMA === 'en') cargarTrEn();
+  cargarIntereses();
+}
+/* 0.8.2 · lo que pide el Reglamento Delegado 2016/958 a una «recomendación de inversión» (citado de memoria en la
+   investigación; lo confirma el abogado), en cada ficha de idea: quién la hace y cómo (Toisón, con IA), cuándo (fecha y
+   hora), que es igual para todos, qué es hecho y qué opinión, de dónde salen los datos y si el creador de Toisón tiene
+   posiciones en el valor (intereses.json, que rellena él; si no lo ha rellenado, se dice) */
+let INTERESES = null, INTERESES_P = null, INTERESES_FALLO = 0;
+function cargarIntereses() {
+  if (INTERESES || INTERESES_P) return INTERESES_P || Promise.resolve(INTERESES);
+  if (INTERESES_FALLO && Date.now() - INTERESES_FALLO < 60e3) return Promise.resolve(null);
+  INTERESES_P = fetch(`intereses.json?v=${encodeURIComponent(VERSION)}-${hoyIso()}`, { cache: 'no-cache' }).then((r) => (r.ok ? r.json() : null)).catch(() => null)
+    .then((j) => {
+      INTERESES_P = null;
+      // si no llega, no se da por «sin declarar»: se dice que no se ha podido comprobar y se reintenta al rato
+      if (!j || typeof j !== 'object') { INTERESES_FALLO = Date.now(); return null; }
+      INTERESES = j; INTERESES_FALLO = 0;
+      if (S.vista === 'expertos' && document.querySelector('.idea-aviso') && !document.querySelector('.hoja-fondo')) pintar();
+      return INTERESES;
+    });
+  return INTERESES_P;
+}
+function interesesIdea(x) {
+  const n = esc(nombreRadar(x)), I = INTERESES;
+  if (!I) { cargarIntereses(); return INTERESES_FALLO ? L('Intereses: no se ha podido comprobar ahora la declaración del creador de Toisón.', "Interests: Toisón's creator's declaration could not be checked right now.") : L('Intereses: comprobando la declaración del creador de Toisón…', "Interests: checking Toisón's creator's declaration…"); }
+  if (!I.actualizado) return L('Intereses: el creador de Toisón aún no ha declarado si tiene posiciones en las empresas del radar.', "Interests: Toisón's creator has not yet declared whether he holds positions in the radar's companies.");
+  const tiene = (I.valores || []).map((v) => String(v).toUpperCase()).includes(String(x.s || '').toUpperCase());
+  const f = fechaLarga(String(I.actualizado).slice(0, 10));
+  return tiene ? L(`Intereses: el creador de Toisón tiene posiciones en ${n} (declarado el ${f}).`, `Interests: Toisón's creator holds a position in ${n} (declared on ${f}).`)
+    : L(`Intereses: el creador de Toisón no tiene posiciones en ${n} (declarado el ${f}).`, `Interests: Toisón's creator holds no position in ${n} (declared on ${f}).`);
+}
+function avisoFichaIdea(x) {
+  const g = (x.gem && S.escaneo && S.escaneo.decision && S.escaneo.decision.generado) || (S.radar && S.radar.generado) || null;
+  const d = g ? new Date(g) : null, ok = d && !isNaN(d);
+  const cuando = ok ? L(`el ${fechaLarga(iso(d))} a las ${d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`, `on ${fechaLarga(iso(d))} at ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`) : '';
+  const tuya = !!(x.tuya && !x.web && !x.gem);
+  const corto = tuya ? L(`Idea de tu revisión de la IA${cuando ? `, ${cuando}` : ''}: la escribió un modelo de IA con tus datos, no un asesor.`, `Idea from your AI review${cuando ? `, ${cuando}` : ''}: written by an AI model with your data, not an adviser.`)
+    : esPublico() ? L(`Ficha de Toisón hecha con IA${cuando ? ` ${cuando}` : ''}, igual para todos: no es una recomendación personalizada.`, `Toisón card made with AI${cuando ? ` ${cuando}` : ''}, the same for everyone: not a personalised recommendation.`)
+    // en el fundador, la lista se filtra con su cartera (no repite lo que tiene, mira sus sectores): no es «igual para todos»
+    : L(`Ficha de Toisón hecha con IA${cuando ? ` ${cuando}` : ''}. Con el acceso de fundador, la lista la filtra un cálculo fijo con tu cartera: no la ha revisado ningún asesor.`, `Toisón card made with AI${cuando ? ` ${cuando}` : ''}. With founder access, a fixed calculation filters the list with your portfolio: no adviser has reviewed it.`);
+  const largo = [
+    tuya || !esPublico() ? '' : L('No tiene en cuenta tu situación, tus metas ni tu riesgo.', 'It does not take your situation, goals or risk into account.'),
+    L('Sale de fuentes públicas: los datos de mercado y de los analistas, de Yahoo Finance, y la prensa (en las fuentes de la ficha, si las hay).', 'It comes from public sources: market and analyst data from Yahoo Finance, and the press (in the card\'s sources, if any).'),
+    L('Hechos: las cifras, lo que dicen los analistas y lo que cuenta la prensa. Opinión (de la IA o del cálculo de Toisón): la tesis, qué la puede mover y las pegas. Las proyecciones, como el objetivo de los analistas o de la IA, son estimaciones con su plazo, no un resultado seguro.', 'Facts: the figures, what analysts say and what the press reports. Opinion (from the AI or Toisón\'s calculation): the thesis, what could move it and the drawbacks. Projections, such as the analysts\' or the AI\'s target, are estimates with their timeframe, not a certain result.'),
+    interesesIdea(x),
+  ].filter(Boolean).join(' ');
+  return `<details class="idea-aviso"><summary>${esc(corto)}</summary><p>${largo}</p></details>`;
 }
 /* lo que ha leído Gemini de la prensa de una empresa (el escaneo recorre todo el radar) */
 const lecturaDe = (sim) => (S.escaneo && S.escaneo.lectura && S.escaneo.lectura[sim]) || null;
@@ -793,7 +839,8 @@ function tarjetaIdea(x, ctx, compacta = false, puesto = 0) {
     ${htmlCifrasIdea(r, x.esp)}
     ${tesis ? `<p class="idea-tesis">${tesis}</p>` : ''}
     ${mas ? `<details class="mas"${innerWidth >= 1100 ? ' open' : ''}><summary>Qué la mueve, pegas, impuestos y señales</summary><div class="idea-mas">${mas}</div></details>` : ''}
-    <div class="idea-btns">${esPublico() ? `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Qué hace ${x.n} (${x.s}) y qué dicen los analistas? Contrástalo con las noticias de esta semana y dime qué pagaría de impuestos y comisiones si la comprara.`)}">${ICONOS.growia}${L('Pregúntale', 'Ask')}</button>` : `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.growia}¿Cuánto meto?</button>`}${r && r.s ? `<button class="btn peq" data-accion="operacion" data-tipo="compra" data-sim="${esc(r.s)}">${ICONOS.compra}Ya la he comprado</button>${botonSeguir(r.s, nombreRadar(x))}<button type="button" class="btn peq" data-consulta="${esc(r.s)}">${L('Ver la empresa', 'See the company')}</button>` : ''}</div>
+    ${avisoFichaIdea(x)}
+    <div class="idea-btns">${preguntasDelEstandar() ? `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Qué hace ${x.n} (${x.s}) y qué dicen los analistas? Contrástalo con las noticias de esta semana y dime qué pagaría de impuestos y comisiones si la comprara.`)}">${ICONOS.growia}${L('Pregúntale', 'Ask')}</button>` : `<button class="btn peq" data-accion="asesor" data-q="${esc(`¿Compro ${x.n} (${x.s})? Contrástalo con las noticias de esta semana y dime cuánto meter, desde dónde, en qué plazo espero ganarlo, lo que pago de impuestos y con qué regla de salida.`)}">${ICONOS.growia}¿Cuánto meto?</button>`}${r && r.s ? `<button class="btn peq" data-accion="operacion" data-tipo="compra" data-sim="${esc(r.s)}">${ICONOS.compra}Ya la he comprado</button>${botonSeguir(r.s, nombreRadar(x))}<button type="button" class="btn peq" data-consulta="${esc(r.s)}">${L('Ver la empresa', 'See the company')}</button>` : ''}</div>
   </article>`;
 }
 function htmlEvitar() {

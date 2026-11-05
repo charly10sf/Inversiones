@@ -30,9 +30,9 @@ conTema('marfil')('con Toisón: la IA sin nombre, iconos de plumilla, pastillas 
   await expect(page.locator('.pie-btns')).toBeHidden();
   if (await page.locator('.ag-card').count()) await expect(page.locator('.ag-card .ag-dia').first()).toBeVisible();
   expect(await visibleConGrowIA(page)).toEqual([]);
-  // Análisis: «La IA opina», sin la imagen del nombre de GrowIA
+  // Análisis: «La IA explica», sin la imagen del nombre de GrowIA
   await ir(page, 'analisis');
-  await expect(page.locator('#vista .subvistas button').first()).toHaveText('La IA opina');
+  await expect(page.locator('#vista .subvistas button').first()).toHaveText('La IA explica');
   await expect(page.locator('#vista img.gia-nom')).toHaveCount(0);
   expect(await visibleConGrowIA(page)).toEqual([]);
   // Ideas: las pestañas de dentro dicen de dónde sale cada idea

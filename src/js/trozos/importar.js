@@ -197,8 +197,11 @@ function procesarOperaciones(ops, platGen) {
 const ventaYaApuntada = (id, v) => (S.cartera.movimientos || []).some((m) => m.tipo === 'venta' && m.instrumento === id && m.fecha === v.fecha && Math.abs(+m.uds - v.uds) < 1e-6);
 async function importarCapturas() {
   await cargarAsesor();
-  // 0.9: leer capturas y extractos lo sigue haciendo Gemini; quien usa la IA con Claude sin clave también necesita la de Google
-  if (!AS.clave && !claudeParaTodo()) { toast(claudeSinClave() ? 'Leer capturas y extractos lo hace todavía Gemini, de Google: hace falta tu clave gratis (para preguntar a la IA no). Te abro dónde ponerla' : 'Para leer las capturas hace falta activar la IA (gratis, con tu clave de Google): te abro dónde ponerla', 6000); abrirClaveGoogle(); return; }
+  // 0.8.2: con Claude en la cuenta lee Claude; si el sondeo aún no se ha hecho, se hace antes de decidir
+  if (!AS.clave && !claudeParaTodo() && modeloClaudeParaIA('pregunta') && !sondeoClaudeOk()) await sondearClaude();
+  // con Claude en la cuenta pero apartado un rato, se dice así (sin mandarte a poner la clave de Google)
+  if (!AS.clave && !claudeParaTodo() && sondeoClaudeOk()) { toast(L('Claude no puede leer capturas ni extractos ahora mismo: vuelve a probar en un rato', "Claude can't read screenshots or statements right now: try again in a while"), 6000); return; }
+  if (!AS.clave && !claudeParaTodo()) { toast(L('Para leer las capturas hace falta activar la IA (gratis, con tu clave de Google): te abro dónde ponerla', 'Reading screenshots needs GrowIA turned on (free, with your Google key): opening where to add it'), 6000); abrirClaveGoogle(); return; }
   const instsAntes = new Set(S.instOrden), cambiadosAntes = S.instCambiados;
   let hecho = false, filas = [], efectivo = [], ventasImp = [], divsImp = [], resumenOps = null;
   const h = hoja('Importar de tu bróker o banco', `<div class="imp-cont">

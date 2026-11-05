@@ -132,3 +132,11 @@ img.bandera.ok { box-shadow: 0 0 0 1px color-mix(in srgb, var(--texto) 8%, trans
 .factores p { margin: 0; font-size: 14.5px; line-height: 1.5; color: var(--texto); }
 .factores small { color: var(--tenue); font-size: 12.5px; }
 .factores small a.enlace { color: var(--tenue); text-decoration: underline; text-underline-offset: 2px; }
+/* 0.8.2 · el aviso de cada ficha de idea (Reglamento Delegado 2016/958): una línea, y lo demás al tocarla */
+.idea-aviso { margin: 8px 0 0; font-size: 12px; line-height: 1.45; color: var(--tenue); }
+.idea-aviso summary { cursor: pointer; list-style: none; }
+.idea-aviso summary::-webkit-details-marker { display: none; }
+.idea-aviso summary::after { content: ' ›'; }
+.idea-aviso[open] summary::after { content: ''; }
+.idea-aviso p { margin: 4px 0 0; }
+.idea-aviso summary:focus-visible { outline: 2px solid var(--oro-texto); outline-offset: 2px; border-radius: 4px; }

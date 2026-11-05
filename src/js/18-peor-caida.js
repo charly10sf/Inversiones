@@ -54,8 +54,8 @@ function vistaAnalisis(M) {
   if (!ANALISIS_P.some(([k]) => k === S.califTab)) S.califTab = 'ia';
   const cuerpo = S.califTab === 'ia' ? htmlAnalisisIA(M) : htmlNumeros(M);
   return `
-  <div class="vista-cab"><h1>Análisis</h1><p>Lo que opina la IA de tu cartera, tus números (rentabilidad, riesgo, costes y qué hay por dentro) y si va hacia lo que quieres.</p></div>
-  <div class="subvistas dos-op" role="group" aria-label="Qué ver">${ANALISIS_P.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${k === 'ia' ? `<span data-no-trad>${conIA('La IA opina', "GrowIA's view")}</span>` : t}</button>`).join('')}</div>
+  <div class="vista-cab"><h1>Análisis</h1><p>Lo que explica la IA de tu cartera, tus números (rentabilidad, riesgo, costes y qué hay por dentro) y si va hacia lo que quieres.</p></div>
+  <div class="subvistas dos-op" role="group" aria-label="Qué ver">${ANALISIS_P.map(([k, t]) => `<button data-calif="${k}" aria-pressed="${S.califTab === k}">${k === 'ia' ? `<span data-no-trad>${conIA('La IA explica', 'GrowIA explains')}</span>` : t}</button>`).join('')}</div>
   ${cuerpo}
   <div class="ana-obj">${perfilVacio() ? '' : htmlComoVas(M)}${htmlObjetivosVs(M)}</div>
 `;

@@ -67,7 +67,7 @@ function htmlFicha(f) {
       <button class="btn compra" data-accion="operacion" data-tipo="compra" data-id="${esc(id)}">${ICONOS.compra}Comprar</button>
       <button class="btn venta" data-accion="operacion" data-tipo="venta" data-id="${esc(id)}">${ICONOS.venta}Vender</button>
       <button class="btn" data-accion="editar-pos" data-id="${esc(id)}">${ICONOS.lapiz}Editar</button>
-      <button class="btn" data-accion="asesor" data-q="${esc(esPublico() ? `¿Qué está pasando con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y lo que dicen los analistas.` : `¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.growia}Pregúntale</button>
+      <button class="btn" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué está pasando con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y lo que dicen los analistas.` : `¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.growia}Pregúntale</button>
     </div>
   </div>
   <div class="tabs ficha-tabs" role="group" aria-label="Apartados">${FTABS.map(([k, t]) => `<button data-ftab="${k}" aria-pressed="${S.ficha.tab === k}">${t}</button>`).join('')}</div>

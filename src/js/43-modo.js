@@ -38,7 +38,7 @@ function pestAv() {
 function htmlPestAna() {
   const p = pestAv(), av = modoApp() === 'avanzado';
   const t = (k, n, en, v) => ({ k, n: L(n, en), v });
-  const lista = [t('posiciones', 'Posiciones', 'Holdings', 'posiciones'), ...PEST_AV.slice(0, 5).map(([k, n, en]) => t(k, n, en, 'av')), t('fiscal', 'Hacienda', 'Taxes', 'fiscal'), t('analisis', 'La IA opina', 'AI review', 'analisis'), ...PEST_AV.slice(5).map(([k, n, en]) => t(k, n, en, 'av'))]
+  const lista = [t('posiciones', 'Posiciones', 'Holdings', 'posiciones'), ...PEST_AV.slice(0, 5).map(([k, n, en]) => t(k, n, en, 'av')), t('fiscal', 'Hacienda', 'Taxes', 'fiscal'), t('analisis', 'La IA explica', 'AI explains', 'analisis'), ...PEST_AV.slice(5).map(([k, n, en]) => t(k, n, en, 'av'))]
     .filter((x) => av || ['posiciones', 'reparto', 'fiscal', 'analisis'].includes(x.k));
   const actual = (x) => (x.v === 'av' ? S.vista === 'av' && p === x.k : S.vista === x.v);
   return `<nav class="pest-av" aria-label="${L('Qué ver', 'What to see')}">${lista.map((x) => `<a href="#${x.v}"${x.v === 'av' ? ` data-pest-av="${x.k}"` : ''} aria-current="${actual(x) ? 'page' : 'false'}">${x.n}</a>`).join('')}</nav>`;
@@ -101,7 +101,7 @@ function ponerPreguntale(raiz) {
 }
 // un toque corto en Android al cambiar de pestaña o marcar algo (se puede quitar: LS inv-vibrar = false)
 function vibrar(ms = 8) { try { if (LS.get('inv-vibrar', true) !== false && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} }
-// las flechas mueven entre pestañas (todas: Posiciones, Hacienda y La IA opina también) y el foco se queda en la nueva
+// las flechas mueven entre pestañas (todas: Posiciones, Hacienda y La IA explica también) y el foco se queda en la nueva
 document.addEventListener('keydown', (e) => {
   const t = e.target.closest && e.target.closest('.pest-av a');
   if (!t || !/^Arrow(Left|Right)$|^Home$|^End$/.test(e.key)) return;

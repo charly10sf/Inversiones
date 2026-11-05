@@ -222,7 +222,8 @@ function cuotasDeMentira() {
 test('tope de preguntas al día por correo, y si el contador falla no se pregunta', async () => {
   await con(ok, async (vistas) => {
     const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: '3' };
-    for (let i = 0; i < 3; i++) expect((await pedir('uid-l', PEDIDO, env)).status).toBe(200);
+    // 0.8.2: cada respuesta dice cuántas preguntas le quedan hoy, y la app puede leerlo (CORS)
+    for (let i = 0; i < 3; i++) { const x = await pedir('uid-l', PEDIDO, env); expect(x.status).toBe(200); expect(x.headers.get('x-quedan')).toBe(String(2 - i)); expect(x.headers.get('access-control-expose-headers')).toContain('X-Quedan'); }
     let r = await pedir('uid-l', PEDIDO, env);
     expect(r.status).toBe(429);
     expect(await r.json()).toEqual({ error: 'tope-diario' });
@@ -276,12 +277,16 @@ test('0.9: con id de pregunta, una pregunta por id (rondas y reintentos no gasta
     const P = (pregunta, ronda = 1) => ({ ...PEDIDO, ronda, pregunta });
     // la primera pregunta: su ronda 1, un reintento de la ronda 1 (la app manda ronda 2) y dos rondas más: una sola pregunta
     for (const ronda of [1, 2, 2, 3]) expect((await pedir('uid-id', P('aaaaaaaaaaaa', ronda), env)).status).toBe(200);
-    // la quinta petición de ese id pasa de su tope
-    expect((await pedir('uid-id', P('aaaaaaaaaaaa', 4), env)).status).toBe(429);
+    // la quinta petición de ese id pasa de su tope (0.8.2: con su propio motivo, no el del día)
+    const tp = await pedir('uid-id', P('aaaaaaaaaaaa', 4), env);
+    expect(tp.status).toBe(429);
+    expect(await tp.json()).toEqual({ error: 'tope-pregunta' });
     // un id nuevo es otra pregunta aunque diga «ronda 2» (no se puede falsear)
     expect((await pedir('uid-id', P('bbbbbbbbbbbb', 2), env)).status).toBe(200);
     // y la tercera pregunta del día ya no entra
-    expect((await pedir('uid-id', P('cccccccccccc', 1), env)).status).toBe(429);
+    const td = await pedir('uid-id', P('cccccccccccc', 1), env);
+    expect(td.status).toBe(429);
+    expect(await td.json()).toEqual({ error: 'tope-diario' });
     // un id que es un nombre de Object («constructor») no se salta su tope (en otro correo, con su día limpio)
     for (let i = 0; i < 4; i++) expect((await pedir('uid-id2', P('constructor', i ? 2 : 1), env, { email: 'otra@prueba.com' })).status).toBe(200);
     expect((await pedir('uid-id2', P('constructor', 2), env, { email: 'otra@prueba.com' })).status).toBe(429);

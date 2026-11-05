@@ -399,7 +399,7 @@ function abrirAjustes() {
     await IDB.del(IDB_CLAVE);
     guardarBloqueo(null); LS.del('inv-bloqueo-t');
     if (PERFIL_LOCAL) { LS.del('inv-local-enc'); LS.del('inv-perfil'); }
-    for (const k of ['inv-token', 'inv-cache-enc', 'inv-pend-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc', 'inv-cache-radar', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-ia-propio', 'inv-dev-ia-enc']) LS.del(k);
+    for (const k of ['inv-token', 'inv-cache-enc', 'inv-pend-enc', 'inv-cache-precios', 'inv-cache-inst', 'inv-dev-enc', 'inv-cache-radar', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-convs', 'inv-ia-propio', 'inv-dev-ia-enc']) LS.del(k);
     location.reload();
   };
 }

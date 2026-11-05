@@ -113,7 +113,7 @@ function htmlAnalisisIA(M) {
   const fuentes = (ia.fuentes || []).filter((x) => x && /^https?:\/\//.test(x.u || ''));
   const nM = (ia.mantener || []).length;
   return `<div class="ia">${prog}
-    <div class="ia-firma">${ICONOS.growia}<span>${esc(firma)}</span>${boton}</div>
+    <div class="ia-firma">${ICONOS.growia}<span>${esc(firma)}</span>${boton}<button class="btn peq" data-accion="copiar-ia" title="${L('Copia tu cartera en texto para pegarla en el asistente de IA que uses', 'Copy your portfolio as text to paste into the AI assistant you use')}">${ICONOS.copiar}${L('Copiar para tu IA', 'Copy for your AI')}</button></div>
     <div class="ia-cab">
       ${!ia.propio && dias > 14 ? `<div class="chip warn" style="justify-self:start">Tiene más de dos semanas: activa la IA para que se renueve solo</div>` : ''}
       <p class="ia-titular">${R(ia.titular)}</p>

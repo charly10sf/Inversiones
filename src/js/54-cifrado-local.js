@@ -18,13 +18,71 @@ async function cargarAsesor() {
     if (!AS.claves[prov] && enCartera) AS.claves[prov] = enCartera;
   }
   const h = LS.get('inv-asesor-conv');
-  if (h) { try { const o = await descifrarLocal(h); AS.conv = o.conv || []; AS.api = o.api || []; AS.gasto = o.gasto || 0; } catch (e) { LS.del('inv-asesor-conv'); } }
+  if (h) { try { const o = await descifrarLocal(h); AS.conv = o.conv || []; AS.api = o.api || []; AS.gasto = o.gasto || 0; AS.convId = o.id || null; } catch (e) { LS.del('inv-asesor-conv'); } }
+  await cargarConvs();
 }
 async function guardarConv() {
   if (!S.key || S.demo) return;
-  try { LS.set('inv-asesor-conv', await cifrarLocal({ conv: AS.conv.slice(-60).map(({ adj, ...t }, k, v) => (t.mini && v.slice(k + 1).filter((y) => y.mini).length >= 4 ? { ...t, mini: undefined } : t)), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
+  try { if (AS.conv.some((t) => t.rol === 'yo')) AS.convId = AS.convId || nuevoIdConv(); LS.set('inv-asesor-conv', await cifrarLocal({ id: AS.convId || null, conv: AS.conv.slice(-60).map(({ adj, ...t }, k, v) => (t.mini && v.slice(k + 1).filter((y) => y.mini).length >= 4 ? { ...t, mini: undefined } : t)), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
+  await archivarConv();
 }
-function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, claves: { google: null }, cargada: false, gasto: 0 }); }
+function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, claves: { google: null }, cargada: false, gasto: 0, convs: null, convId: null, aFondo: false }); }
+
+/* 0.8.2 · las conversaciones guardadas: hasta 20, cifradas con la clave de la cartera en este dispositivo (no salen de él),
+   sin los recortes de pantalla. La que tienes abierta se guarda en la lista según la usas; se abren, se siguen y se borran
+   desde el panel de la IA */
+const LS_CONVS = 'inv-asesor-convs', MAX_CONVS = 20;
+const nuevoIdConv = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+// los recortes (imágenes) no se guardan en la lista: ocupan mucho y se pueden volver a hacer
+const apiSinImagenes = (api) => api.map((m) => (Array.isArray(m.content) ? { ...m, content: m.content.filter((p) => !p.inlineData) } : m)).filter((m) => typeof m.content === 'string' || m.content.length);
+let CONVS_P = null;   // la carga en curso: dos llamadas a la vez esperan la misma (no se ve una lista vacía a medias)
+function cargarConvs() {
+  if (AS.convs) return Promise.resolve(AS.convs);
+  // sin la clave de la cartera no se puede leer: no se guarda en caché una lista vacía (la siguiente escritura borraría las de antes)
+  if (!S.key) return Promise.resolve([]);
+  if (CONVS_P) return CONVS_P;
+  CONVS_P = (async () => {
+    let l = [];
+    const h = LS.get(LS_CONVS);
+    if (h && S.key) { try { l = (await descifrarLocal(h)).lista || []; } catch (e) { LS.del(LS_CONVS); } }
+    AS.convs = AS.convs || l; CONVS_P = null;
+    return AS.convs;
+  })();
+  return CONVS_P;
+}
+// con tope de tamaño (unos 600 KB en texto): si no cabe, fuera las más viejas; la cartera manda sobre las conversaciones
+const MAX_CONVS_TXT = 600e3;
+async function guardarConvs() {
+  if (!S.key || S.demo) return;
+  try {
+    const l = (AS.convs || []).slice(0, MAX_CONVS);
+    while (l.length > 1 && JSON.stringify(l).length > MAX_CONVS_TXT) l.pop();
+    if (l.length) LS.set(LS_CONVS, await cifrarLocal({ lista: l })); else LS.del(LS_CONVS);
+  } catch (e) {}
+}
+async function archivarConv() {
+  if (!S.key || S.demo) return;
+  const yo = AS.conv.find((t) => t.rol === 'yo'); if (!yo) return;
+  await cargarConvs();
+  AS.convId = AS.convId || nuevoIdConv();
+  const c = { id: AS.convId, t: Date.now(), titulo: String(yo.texto || '').slice(0, 90), n: AS.conv.filter((t) => t.rol === 'yo').length, conv: AS.conv.slice(-60).map(({ adj, mini, ...t }) => t), api: apiSinImagenes(AS.api.slice(-24)) };
+  AS.convs = [c, ...AS.convs.filter((x) => x.id !== c.id)].slice(0, MAX_CONVS);
+  await guardarConvs();
+}
+function abrirConv(id) {
+  const c = (AS.convs || []).find((x) => x.id === id); if (!c) return false;
+  if (AS.ctrl) AS.ctrl.abort();
+  AS.conv = c.conv.map((t) => ({ ...t })); AS.api = c.api.slice(); AS.convId = c.id; AS.foto = null; AS.aFondo = false; AS.vista = 'chat';
+  guardarConv();
+  return true;
+}
+async function borrarConv(id) {
+  // si borras la que tienes abierta (o todas), se para y se vacía antes de nada (una respuesta que acabe ahora no la recupera)
+  if (!id || id === AS.convId) { if (AS.ctrl) AS.ctrl.abort(); AS.conv = []; AS.api = []; AS.foto = null; AS.convId = null; LS.del('inv-asesor-conv'); }
+  await cargarConvs();
+  AS.convs = id ? (AS.convs || []).filter((x) => x.id !== id) : [];
+  await guardarConvs();
+}
 
 /* guarda la cartera sin avisos ni descargas (para lo que hace la web sola, como el análisis diario) */
 async function guardarCarteraCallada(mensaje) {

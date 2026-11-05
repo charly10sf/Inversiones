@@ -48,8 +48,9 @@ async function guardarAnalisisPropio() {
   } catch (e) { console.warn('No se pudo subir el análisis', e); }
 }
 
-function pedidoAnalisis(ids, motivo, conWeb = true, sinHerramientas = false) {
-  if (esPublico()) return pedidoAnalisisPublico(ids, motivo, conWeb, sinHerramientas);
+function pedidoAnalisis(ids, motivo, conWeb = true, sinHerramientas = false, est = esPublico()) {
+  // 0.8.2 (opción B): con Claude, también el fundador recibe la revisión sin recomendaciones de compra o venta
+  if (est) return pedidoAnalisisPublico(ids, motivo, conWeb, sinHerramientas);
   return `Haz la revisión de hoy de mi cartera (${motivo}). Antes de escribir:
 0. Lee el informe de prensa de la IA que viene en los datos (noticias de cada posición, del mercado y de las ideas, ya contrastadas) y úsalo como base.
 1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones y a las mejores ideas del radar: resultados, cambios de recomendación, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta: no te fíes de un solo titular. Tienes tres búsquedas como mucho: antes, mira las fichas de la IA (lo que pesa en cada empresa, factor por factor) y busca solo lo que no esté ahí.' : 'No puedes buscar en internet: usa las fichas de la IA (lo que pesa en cada empresa, factor por factor), los temas de la semana y los titulares de los datos, y contrástalos con las cifras. Si algo importante no se puede confirmar, dilo.'}
@@ -86,7 +87,7 @@ function pedidoAnalisisPublico(ids, motivo, conWeb, sinHerramientas = false) {
   return `Haz la revisión de hoy de mi cartera (${motivo}). No me digas que compre, venda, mantenga ni traspase nada concreto, ni cuánto: explícame cómo está y qué ha pasado, con cifras. Antes de escribir:
 0. Lee el informe de prensa de la IA que viene en los datos (noticias de cada posición y del mercado, ya contrastadas) y úsalo como base.
 1. ${conWeb ? 'Busca en internet lo de los últimos días que afecte a mis posiciones: resultados, cambios de recomendación de los analistas, previsiones, regulación y lo que mueva los tipos o el petróleo. Usa varias fuentes y contrasta. Tienes tres búsquedas como mucho: antes, mira las fichas de la IA y busca solo lo que no esté ahí.' : `No puedes buscar en internet${sinHerramientas ? ' ni usar herramientas' : ''}: usa las fichas de la IA (lo que pesa en cada empresa, factor por factor), los temas de la semana y los titulares de los datos.`}
-2. Mira mis límites, mi perfil y mis metas (vienen en los datos) y di qué se sale de ellos y por cuánto, sin decirme qué valor comprar o vender para arreglarlo.
+2. Mira mis límites, mi perfil y mis metas (vienen en los datos) y di qué se sale de ellos y por cuánto, sin decirme qué valor comprar o vender para arreglarlo. En impuestos, cuenta lo que calcula Toisón (lo que pagaría, las pérdidas que tengo); no me digas qué declarar ni cuándo vender para pagar menos.
 3. Sé constante: en los datos viene tu revisión anterior. No cambies lo que dijiste salvo que haya algo nuevo e importante.
 4. Las cifras, sin adornos. Si nombras una meta, di a qué distancia está («79.658 € de 500.000 €, un 16 %»).
 5. Frases cortas; no repitas en una sección lo que ya está en otra.
@@ -145,13 +146,17 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     // herramientas ni búsquedas: con las fichas de GrowIA y los cálculos de venta que ya vienen en los datos. La que
     // pides tú puede buscar (tres veces como mucho) y calcular
     const auto = motivo !== 'la pides tú';
-    await conversar({ tipo: 'análisis', mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto) }], turno, sistema: [{ type: 'text', text: instruccionesAsesor() }, { type: 'text', text: contextoAsesor(M, 'completo') }], maxTokens: 12000, alCambiar, modelo: auto ? 'gemini-3.6-flash' : undefined, cadena: auto ? ['gemini-3.6-flash', MODELO_RAPIDO] : null, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
+    // 0.8.2: lo que se pide y con qué reglas, cuando ya se sabe quién contesta (con Claude, las del estándar)
+    const preparar = (est) => ({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto, est) }], sistema: [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: contextoAsesor(M, 'completo', est) }] });
+    await conversar({ tipo: 'análisis', turno, preparar, maxTokens: 12000, alCambiar, modelo: auto ? 'gemini-3.6-flash' : undefined, cadena: auto ? ['gemini-3.6-flash', MODELO_RAPIDO] : null, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
     const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');
     const json = extraerJSON(texto);
     if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');
     const vistas = new Set();
     json.fuentes = [...turno.citas, ...(Array.isArray(json.fuentes) ? json.fuentes : [])].filter((x) => x && /^https?:\/\//.test(x.u || '') && !vistas.has(x.u) && vistas.add(x.u)).slice(0, 20);
-    json.publico = esPublico();
+    // publico: hecha con las reglas del estándar; modo: el de la app cuando se hizo (para rehacerla si cambias de modo)
+    json.publico = turno.estandar != null ? !!turno.estandar : esPublico();
+    json.modo = esPublico() ? 'publico' : 'privado';
     // 0.7h: con el total que ha visto GrowIA, para cambiarlo por el de ahora al enseñarlo (totalAlDiaIA)
     S.iaPropio = { fecha: new Date().toISOString(), modelo: turno.modelo || AS.modeloVivo || cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo, total: M.total };
     AS.gasto += turno.coste || 0; guardarConv();
@@ -205,7 +210,8 @@ async function revisarAnalisisIA() {
   // los de antes de que GrowIA dijera a qué distancia está cada meta (0.3.0b) se rehacen una vez
   const metasViejo = p && String(p.fecha) < '2026-10-20T23:15';
   // 0.5: hecha en el otro modo (con o sin acceso completo): se rehace en el de ahora
-  const otroModo = p && p.json && !!p.json.publico !== esPublico();
+  // 0.8.2: el modo de la app, no las reglas (en el fundador, con Claude, sale con las del estándar y no hay que rehacerla)
+  const otroModo = p && p.json && (p.json.modo ? p.json.modo !== (esPublico() ? 'publico' : 'privado') : !!p.json.publico !== esPublico());
   if (otroModo && edad <= limite) return generarAnalisisIA(esPublico() ? 'ahora sin recomendaciones de compra o venta' : 'ahora con el acceso completo');
   if (edad > limite) generarAnalisisIA(p ? 'revisión diaria' : 'primera revisión');
   else if (reglas) generarAnalisisIA('han cambiado tus reglas');

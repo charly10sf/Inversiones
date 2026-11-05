@@ -108,7 +108,7 @@ function kitDelSobre(k, ...carteras) {
 }
 // lo que va cifrado con la clave de la cartera en este dispositivo (la clave de Gemini, la conversación del asesor, el
 // análisis propio): al cambiar de clave, se descifra con la vieja y se cifra con la nueva
-const LS_CIFRADAS = () => ['inv-ia-propio', 'inv-asesor-conv', 'inv-asesor-clave', ...Object.values(LS_CLAVE)];
+const LS_CIFRADAS = () => ['inv-ia-propio', 'inv-asesor-conv', 'inv-asesor-convs', 'inv-asesor-clave', ...Object.values(LS_CLAVE)];
 async function recifrarLocales(vieja, nueva) {
   for (const k of new Set(LS_CIFRADAS())) {
     const o = LS.get(k);

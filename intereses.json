@@ -1,0 +1,5 @@
+{
+  "nota": "0.8.2 · Las posiciones del creador de Toisón en empresas del radar, para el aviso de cada ficha de idea (Reglamento Delegado 2016/958). Lo rellena él a mano: «actualizado» con la fecha (AAAA-MM-DD) y «valores» con los tickers del radar en los que tiene posiciones (por ejemplo \"REP.MC\"). Mientras «actualizado» esté vacío, las fichas dicen que está sin declarar.",
+  "actualizado": null,
+  "valores": []
+}

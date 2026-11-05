@@ -573,12 +573,13 @@ function editarSobreMi() {
 }
 
 /* lo que lee la IA de tu perfil */
-function textoPerfil(M) {
+// est: con las reglas del estándar (0.8.2: también el fundador con Claude), sin «lo que le encaja» ni «tus consejos»
+function textoPerfil(M, est = false) {
   const e = estadoPerfil(M), p = e.p, L = [];
-  if (perfilVacio()) L.push('No ha rellenado su perfil todavía: si te falta algo que cambie tus consejos (edad, en qué anda, cuándo necesita el dinero, cuánto riesgo aguanta), pregúntaselo.');
+  if (perfilVacio()) L.push(est ? 'No ha rellenado su perfil todavía.' : 'No ha rellenado su perfil todavía: si te falta algo que cambie tus consejos (edad, en qué anda, cuándo necesita el dinero, cuánto riesgo aguanta), pregúntaselo.');
   const d = [p.edad && `${p.edad} años`, p.comunidad && `vive en ${nombreComunidad(p.comunidad)}${TRAMOS_FORAL[p.comunidad] ? ' (régimen foral: su escala del ahorro es ' + textoTramos(p.comunidad) + ')' : ''}`, situacionTxt(p.situacion, true), p.horizonte && `necesitará la mayor parte del dinero ${textoHorizonte(p.horizonte)}`, p.riesgo && `si la cartera cae un 30 %: ${RIESGO[p.riesgo][0].toLowerCase()} (${RIESGO[p.riesgo][2].toLowerCase()})`, EXPERIENCIA[p.experiencia] && `experiencia: ${EXPERIENCIA[p.experiencia].toLowerCase()}`, ESTILO[p.estilo] && `busca: ${ESTILO[p.estilo].toLowerCase()}`, DEUDAS[p.deudas] && `deudas: ${DEUDAS[p.deudas].toLowerCase()}`, p.ingresos_mes && `ingresos netos ${E0(+p.ingresos_mes)} al mes`, p.gastos_mes && `gastos ${E0(+p.gastos_mes)} al mes`].filter(Boolean);
   if (d.length) L.push(d.join('; ') + '.');
-  if (e.reco) L.push(`Bolsa que encaja con su perfil según Toisón: entre ${e.reco.min} y ${e.reco.max} %. Tiene un ${fmtNum(e.pctBolsa, 0)} %.`);
+  if (e.reco) L.push(est ? `Regla fija de Toisón con sus respuestas de riesgo, plazo y edad: entre ${e.reco.min} y ${e.reco.max} % en bolsa (tiene un ${fmtNum(e.pctBolsa, 0)} %). Es una cuenta general, no lo que le conviene: si sale, di cómo se calcula.` : `Bolsa que encaja con su perfil según Toisón: entre ${e.reco.min} y ${e.reco.max} %. Tiene un ${fmtNum(e.pctBolsa, 0)} %.`);
   L.push(`Sus límites: acciones sueltas ${fmtNum(+(S.cartera.limite_acciones ?? 20), 0)} % (lleva ${fmtNum(e.pctSueltas, 1)} %), cripto ${fmtNum(+p.limite_cripto, 0)} % (lleva ${fmtNum(e.pctCripto, 1)} %), una sola empresa ${fmtNum(+p.limite_empresa, 0)} %${e.mayor ? ` (la mayor, ${e.mayor.f.inst.corto}, ${fmtNum(e.mayor.pct, 1)} %)` : ''}.`);
   if (e.colchon) L.push(`Colchón que quiere: ${p.colchon_meses} meses de gastos, ${E0(e.colchon)}. Tiene ${E0(e.seguro)} entre efectivo, monetarios y renta fija.`);
   for (const m of e.metas) L.push(`- Meta "${m.n}": ${m.tipo === 'llegar' ? 'llegar a tener' : 'gastar'} ${E0(m.importe)}${m.anio ? ` en ${m.anio}` : ''}. Hoy tiene ${E0(M.total)}, un ${fmtNum(m.pct, 0)} % de la meta. ${textoMeta(m).replace(/<[^>]+>/g, '')}`);

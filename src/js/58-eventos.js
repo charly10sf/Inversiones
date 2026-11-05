@@ -80,6 +80,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'fiscal') editarFiscal();
     else if (a === 'asesor') { if (!d.q && t.classList.contains('riel-ia') && $('#asesorFondo')) cerrarAsesor(); else abrirAsesor(d.q || '', !!d.q); }
     else if (a === 'recorte') iniciarRecorte();
+    else if (a === 'copiar-ia') copiarCartera();   // 0.8.2: «Copiar para tu IA», en Posiciones y en Análisis
     else if (a === 'idioma') menuIdioma(t);
     else if (a === 'novedades-detalle') mostrarNovedades(null, () => {}, true);
     else if (a === 'novedades-guia') guiaNuevo();

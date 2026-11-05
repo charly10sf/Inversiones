@@ -28,7 +28,7 @@ const PUBLICOS = [
   'manifest.webmanifest', 'favicon.svg',
   'toison-16.png', 'toison-32.png', 'toison-180.png', 'toison-192.png', 'toison-512.png', 'toison-maskable-512.png',
   'toison-aviso.png', 'toison-marmol.webp', 'toison-sello.webp', 'apple-touch-icon.png', 'icon-192.png', 'icon-512.png', 'icon-maskable-512.png',
-  'instrumentos.json', 'mapa-mundo.json', 'mapa-detalle.json', 'cambios.json', 'version.json', 'app.json', 'en.json', 'lib',
+  'instrumentos.json', 'mapa-mundo.json', 'mapa-detalle.json', 'cambios.json', 'version.json', 'app.json', 'en.json', 'intereses.json', 'lib',
 ];
 
 export const version = () => (texto(join(RAIZ, 'src', 'js', 'version.js')).match(/const VERSION = '([^']+)'/) || [])[1] || '0';

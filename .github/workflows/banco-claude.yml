@@ -1,0 +1,72 @@
+# 0.8.2 · Banco de la IA con Claude: las 30 preguntas trampa (tests/banco/trampas.json) a la app de verdad (el build), con
+# la cartera de prueba y Claude de verdad, con las reglas del estándar. Solo a mano: cada vuelta gasta créditos de la API
+# (unas 30 preguntas; con Haiku, céntimos; con Sonnet, algo más). Necesita el secreto ANTHROPIC_BANCO_KEY (una clave de la
+# consola de Anthropic, mejor en un workspace aparte con su límite de gasto). El resultado queda como artefacto
+# («banco-claude-haiku» o «banco-claude-sonnet»), con cada respuesta y lo que ha fallado. La 0.8.2 sale cuando pasan las 30
+# con los dos modelos.
+name: Banco de la IA con Claude
+
+on:
+  workflow_dispatch:
+    inputs:
+      motor:
+        description: "Qué modelo de Claude contesta"
+        type: choice
+        options: [haiku, sonnet, los dos]
+        default: haiku
+
+permissions:
+  contents: read
+
+jobs:
+  preguntas:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      matrix:
+        motor: [haiku, sonnet]
+    steps:
+      - name: ¿Toca este modelo?
+        id: toca
+        env:
+          CLAVE: ${{ secrets.ANTHROPIC_BANCO_KEY }}
+        run: |
+          if [ "${{ inputs.motor }}" != "los dos" ] && [ "${{ inputs.motor }}" != "${{ matrix.motor }}" ]; then exit 0; fi
+          if [ -z "$CLAVE" ]; then echo "::error::Falta el secreto ANTHROPIC_BANCO_KEY"; exit 1; fi
+          echo "si=1" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/checkout@v4
+        if: steps.toca.outputs.si
+
+      - uses: actions/setup-node@v4
+        if: steps.toca.outputs.si
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Dependencias, datos y build
+        if: steps.toca.outputs.si
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          sh tests/traer-datos.sh
+          npm run build
+
+      - name: Preguntas trampa a la IA con Claude
+        if: steps.toca.outputs.si
+        timeout-minutes: 110
+        env:
+          GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY }}
+          GF_BANCO_MOTOR: ${{ matrix.motor }}
+        run: |
+          mkdir -p salida
+          GF_BANCO_SALIDA=$PWD/salida/banco-claude-${{ matrix.motor }}.json npx playwright test tests/banco-claude.spec.js --project=pc --reporter=list --retries=0
+
+      - uses: actions/upload-artifact@v4
+        if: always() && steps.toca.outputs.si
+        with:
+          name: banco-claude-${{ matrix.motor }}
+          path: salida/
+          if-no-files-found: ignore
+          retention-days: 30

@@ -46,7 +46,7 @@ test('avanzado: Análisis lleva todas las pestañas y las de datos se llenan con
   await pest(page, 'rebal');
   await expect(page.locator('#panelAv')).toContainText('Tu reparto objetivo', { timeout: 15_000 });
   expect(await page.evaluate(() => LS.get('inv-pest-av'))).toBe('rebal');
-  // Hacienda y La IA opina son las pantallas de siempre
+  // Hacienda y La IA explica son las pantallas de siempre
   await page.locator('.pest-av a[href="#fiscal"]').evaluate((a) => a.click());
   await expect(page.locator('.pest-av a[href="#fiscal"]')).toHaveAttribute('aria-current', 'page');
 });
@@ -66,7 +66,7 @@ test('básico: sin pestañas y con un «¿Qué es?» en cada bloque; se elige en
   expect(await page.evaluate(() => [...document.querySelectorAll('#vista .que-es')].every((p) => p.closest('section, .car-pos, .car-hero')))).toBe(true);
   // en básico, Análisis solo con las de siempre
   await page.evaluate(() => { location.hash = 'posiciones'; });
-  await expect(page.locator('.pest-av a')).toHaveText(['Posiciones', 'Reparto y X-Ray', 'Hacienda', 'La IA opina']);
+  await expect(page.locator('.pest-av a')).toHaveText(['Posiciones', 'Reparto y X-Ray', 'Hacienda', 'La IA explica']);
 });
 
 test('sin elegir: empezando sale básico y, si no, avanzado', async ({ page }, info) => {

@@ -61,7 +61,7 @@ async function worker(context, responder, { puede = true } = {}) {
     visto.peticiones.push({ cuerpo, auth: q.headers().authorization, bytes: texto.length });
     const res = responder(cuerpo, visto.peticiones.length);
     if (res.json) return json(res.json, res.estado || 200);
-    return r.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'text/event-stream' }, body: res.sse });
+    return r.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'text/event-stream', ...(res.cabeceras || {}) }, body: res.sse });
   });
   return visto;
 }
@@ -105,8 +105,8 @@ test('en modo estándar contesta Claude: manda lo que debe, pinta el directo, us
   expect(w.peticiones.length).toBe(2);
   const [r1, r2] = w.peticiones.map((p) => p.cuerpo);
   expect(w.peticiones[0].auth).toBe('Bearer stub-token-' + (await page.evaluate(() => FB.user.uid)));
-  // una pregunta va con Sonnet, con el razonamiento en medio, en directo y sin cosas que Claude 5.5 no admite
-  expect(r1).toMatchObject({ model: 'claude-sonnet-5-5', stream: true, output_config: { effort: 'medium' }, ronda: 1 });
+  // 0.8.2: una pregunta va con Haiku (Sonnet, con «A fondo»), con el razonamiento en medio, en directo y sin cosas que Claude 5.5 no admite
+  expect(r1).toMatchObject({ model: 'claude-haiku-5-5', stream: true, output_config: { effort: 'medium' }, ronda: 1 });
   expect(r2.ronda).toBe(2);
   for (const k of ['temperature', 'top_p', 'top_k', 'thinking']) expect(r1).not.toHaveProperty(k);
   expect(r1.max_tokens).toBeLessThanOrEqual(16000);
@@ -132,11 +132,11 @@ test('en modo estándar contesta Claude: manda lo que debe, pinta el directo, us
   expect(await page.evaluate(() => AS.conv.at(-1).citas.map((c) => c.u))).toEqual(['https://a.es/x', 'https://b.es/y']);
   // tokens: la entrada es todo lo que se leyó (con la caché) y la salida ya lleva lo que piensa; el registro lo dice
   const t = await page.evaluate(() => LS.get('inv-ia-tokens', []).at(-1));
-  expect(t.m['claude-sonnet-5-5']).toMatchObject({ e: 1200 + 30000 + 400 + 31000 + 900, c: 31000, w: 30900, s: 60 + 200, n: 2, b: 1 });
+  expect(t.m['claude-haiku-5-5']).toMatchObject({ e: 1200 + 30000 + 400 + 31000 + 900, c: 31000, w: 30900, s: 60 + 200, n: 2, b: 1 });
   const registro = await page.evaluate(() => textoDiarioIA());
-  expect(registro).toMatch(/Sonnet 5\.5.*ronda 2.*caché 31\.000/);
-  expect(registro).toMatch(/Tokens de la pregunta · Sonnet 5\.5: entrada .*\(caché 31\.000\).*· salida 260 \(2 rondas, 1 búsqueda\)/);
-  expect(registro).toMatch(/Contesta en \d+ s con Sonnet 5\.5/);
+  expect(registro).toMatch(/Haiku 5\.5.*ronda 2.*caché 31\.000/);
+  expect(registro).toMatch(/Tokens de la pregunta · Haiku 5\.5: entrada .*\(caché 31\.000\).*· salida 260 \(2 rondas, 1 búsqueda\)/);
+  expect(registro).toMatch(/Contesta en \d+ s con Haiku 5\.5/);
   // y lo que cuenta de pregunta para la historia (la siguiente se manda con lo contestado)
   expect(await page.evaluate(() => AS.api.at(-1).content)).toContain('Repsol ha subido este mes');
 });
@@ -248,19 +248,39 @@ test('con el Worker sin alcanzar (bloqueado o caído) contesta Gemini sin espera
   expect((await page.evaluate(() => claudePausado())).motivo).toBeTruthy();
 });
 
-test('en modo fundador, o con Claude apartado por el usuario, no se toca el Worker', async ({ page, context }) => {
+// 0.8.2 (opción B): el fundador también va con Claude, pero con las reglas del estándar; con Gemini, el asesor de siempre
+const fundador = (page) => page.evaluate(() => { S.acceso = 'privado'; LS.set('inv-acceso', { a: 'privado', uid: FB.user.uid, t: Date.now() }); });
+test('en modo fundador contesta Claude con las reglas del estándar; con «solo Gemini», el asesor de siempre y sin tocar el Worker', async ({ page, context }) => {
   await preparada(page);
+  await fundador(page);
   const g = await gemini(context);
-  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Claude' }]) }));
-  await page.evaluate(() => { S.acceso = 'privado'; });
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Según las reglas que escribiste, esto supondría vender 10 acciones.' }]) }));
   await preguntar(page);
-  await expect(page.locator('#asCuerpo')).toContainText('Contesta Gemini', { timeout: 20_000 });
-  expect(w.sondeos + w.peticiones.length).toBe(0);
-  // estándar, pero eligiendo «solo Gemini»
-  await page.evaluate(() => { S.acceso = 'publico'; LS.set('inv-ia-motor', 'gemini'); AS.cargando = false; });
+  await expect(page.locator('#asCuerpo')).toContainText('Según las reglas que escribiste', { timeout: 20_000 });
+  expect(g.n).toBe(0);
+  expect(w.peticiones.length).toBe(1);
+  const sis = w.peticiones[0].cuerpo.system.map((b) => b.text).join('\n');
+  // el prompt del estándar (sin recomendaciones) y la nota del Paso a paso del fundador; nada del asesor de siempre
+  expect(sis).toContain('Lo que no haces');
+  expect(sis).toContain('Su Paso a paso lo calcula Toisón con reglas fijas');
+  expect(sis).not.toContain('Primero la respuesta o la recomendación concreta');
+  expect(sis).not.toContain('Nada de avisos de que no eres asesor');
+  expect(sis).not.toContain('## Planes de venta que propone Toisón');
+  expect(sis).not.toContain('Las ideas de compra que mejor encajan');
+  expect(sis).not.toMatch(/^- (Comprar|Evitar) /m);
+  // la respuesta queda marcada como hecha con las reglas del estándar, y el pie lo dice con el modelo
+  expect(await page.evaluate(() => AS.conv.at(-1).estandar)).toBe(true);
+  await expect(page.locator('#asCuerpo .as-pie-ia').last()).toContainText('Claude Haiku 5.5');
+  await expect(page.locator('#asCuerpo .as-pie-ia').last()).toContainText('no es asesoramiento financiero');
+  // eligiendo «solo Gemini»: no se toca el Worker y vuelve el asesor del fundador
+  const antes = w.sondeos + w.peticiones.length;
+  await page.evaluate(() => { LS.set('inv-ia-motor', 'gemini'); AS.cargando = false; });
   await preguntar(page, '¿Y IAG?');
-  await expect.poll(() => g.n, { timeout: 20_000 }).toBe(2);
-  expect(w.sondeos + w.peticiones.length).toBe(0);
+  await expect.poll(() => g.n, { timeout: 20_000 }).toBe(1);
+  expect(w.sondeos + w.peticiones.length).toBe(antes);
+  expect(await page.evaluate(() => AS.conv.at(-1).estandar)).toBe(false);
+  await expect(page.locator('#asCuerpo .as-pie-ia').last()).toContainText('La decisión es tuya');
+  await expect(page.locator('#asAviso summary')).toContainText('Gemini, de Google');
 });
 
 test('sin aceptar el aviso de privacidad no se manda nada de la cartera: contesta Gemini y no vuelve a preguntar', async ({ page, context }) => {
@@ -314,7 +334,7 @@ test('en Ajustes de GrowIA, una vez que Claude ha contestado, se puede elegir qu
   // antes de usar Claude no hay nada de Claude
   await expect(page.locator('#asCuerpo')).toContainText('Ajustes de la IA');
   await expect(page.locator('#asMotor')).toHaveCount(0);
-  await expect(page.locator('#asesorFondo')).not.toContainText('Anthropic');
+  await expect(page.locator('#asCuerpo')).not.toContainText('Anthropic');
   await clic(page, '[data-as="chat"]');
   await page.evaluate(() => preguntarAsesor('¿Cómo voy?'));
   await expect(page.locator('#asCuerpo')).toContainText('Hecho.', { timeout: 20_000 });
@@ -399,21 +419,24 @@ test('sin clave de Google, si el sondeo no llega al Worker se aparta unos minuto
   expect(sondeos).toBe(1);
   expect(await page.evaluate(() => !!claudePausado())).toBe(true);
 });
-test('sin clave de Google, en modo fundador o con el modo provisional no se toca el Worker y se pide la clave', async ({ page, context }) => {
+test('sin clave de Google, en modo fundador contesta Claude (opción B); con el modo provisional no se toca el Worker y se pide la clave', async ({ page, context }) => {
   await sinClave(page);
   const g = await gemini(context);
   const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Claude' }]) }));
-  await page.evaluate(() => { S.acceso = 'privado'; });
+  await fundador(page);
+  await page.evaluate(() => abrirAsesor());
+  await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
+  expect(await page.evaluate(() => iaLista())).toBe(true);
+  expect(w.sondeos).toBe(1);
+  await page.evaluate(() => { cerrarAsesor(); LS.del('inv-claude-sondeo'); });
+  const s0 = w.sondeos;
+  await page.evaluate(() => { S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: null, t: Date.now(), provisional: true }); });
   await page.evaluate(() => abrirAsesor());
   await page.waitForTimeout(1200);
   expect(await page.evaluate(() => iaLista())).toBe(false);
   await expect(page.locator('#asCuerpo')).toContainText('Clave de Google');
-  await page.evaluate(() => { cerrarAsesor(); S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: null, t: Date.now(), provisional: true }); });
-  await page.evaluate(() => abrirAsesor());
-  await page.waitForTimeout(1200);
-  expect(await page.evaluate(() => iaLista())).toBe(false);
-  await expect(page.locator('#asCuerpo')).toContainText('Clave de Google');
-  expect(w.sondeos + w.peticiones.length).toBe(0);
+  expect(w.sondeos).toBe(s0);
+  expect(w.peticiones.length).toBe(0);
   expect(g.n).toBe(0);
 });
 test('sin clave de Google, si Claude se corta a mitad, lo escrito queda marcado como incompleto junto al error', async ({ page, context }) => {
@@ -456,4 +479,149 @@ test('con Claude en la cuenta, Importar lee con Claude (Sonnet) y una captura va
   const c = w.peticiones[0].cuerpo;
   expect(c.model).toBe('claude-sonnet-5-5');
   expect(c.messages[0].content[0].type).toBe('image');
+});
+
+// 0.8.2 · opción B en la revisión de la cartera: con Claude, el fundador recibe la del estándar (sin comprar ni vender),
+// queda marcada como hecha con esas reglas y no se rehace en bucle por «otro modo»
+test('en modo fundador, la revisión con Claude va con las reglas del estándar y no se rehace por el modo', async ({ page, context }) => {
+  await preparada(page);
+  await fundador(page);
+  await page.evaluate(() => LS.set('inv-claude-ok', true));
+  await gemini(context);
+  const ids = await page.evaluate(() => [...new Set((S.M || calcular()).filas.map((f) => f.inst.id))]);
+  const json = { titular: 'Tu cartera sigue en orden.', resumen: ['Sube un 1 %.'], posiciones: Object.fromEntries(ids.map((k) => [k, { texto: 'Sin cambios.' }])) };
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]) }));
+  await page.evaluate(() => generarAnalisisIA('la pides tú'));
+  await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
+  const c = w.peticiones[0].cuerpo;
+  expect(JSON.stringify(c.messages[0].content)).toContain('No me digas que compre, venda, mantenga ni traspase');
+  const sis = c.system.map((b) => b.text).join('\n');
+  expect(sis).toContain('Lo que no haces');
+  expect(sis).not.toContain('Las ideas de compra que mejor encajan');
+  expect(await page.evaluate(() => ({ p: S.iaPropio.json.publico, m: S.iaPropio.json.modo }))).toEqual({ p: true, m: 'privado' });
+  // sigue en el fundador: no hay «otro modo» y no se vuelve a pedir
+  const n = w.peticiones.length;
+  await page.evaluate(() => { IA.ultimoIntento = 0; guardarCfgAsesor({ auto: 'diario' }); return revisarAnalisisIA(); });
+  await page.waitForTimeout(800);
+  expect(w.peticiones.length).toBe(n);
+});
+
+// 0.8.2 · arriba del panel, siempre: que es una IA, cuál, que puede equivocarse y qué hace y qué no
+test('el aviso fijo del panel dice qué IA contesta y que no da recomendaciones personalizadas', async ({ page, context }) => {
+  await preparada(page);
+  await gemini(context);
+  await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Hecho.' }]) }));
+  // con «solo Gemini» elegido, en el estándar
+  await page.evaluate(() => LS.set('inv-ia-motor', 'gemini'));
+  await page.evaluate(() => abrirAsesor());
+  const aviso = page.locator('#asAviso');
+  await expect(aviso.locator('summary')).toContainText('Hablas con una IA (Gemini, de Google), no con una persona. Puede equivocarse.');
+  await expect(aviso).toHaveJSProperty('open', false);
+  await aviso.locator('summary').evaluate((el) => el.click());
+  await expect(aviso).toContainText('no da recomendaciones personalizadas de compra o venta');
+  await expect(aviso).toContainText('La decisión es tuya.');
+  // con Claude: al abrir el panel ya se sabe (el sondeo vacío) y el aviso lo dice antes de la primera pregunta
+  await page.evaluate(() => { cerrarAsesor(); LS.set('inv-ia-motor', 'auto'); });
+  await page.evaluate(() => abrirAsesor());
+  await expect(aviso.locator('summary')).toContainText('Claude, de Anthropic', { timeout: 15_000 });
+  await page.evaluate(() => preguntarAsesor('¿Cómo voy?'));
+  await expect(page.locator('#asCuerpo')).toContainText('Hecho.', { timeout: 20_000 });
+  await expect(aviso.locator('summary')).toContainText('Claude, de Anthropic');
+  await expect(page.locator('#asCuerpo .as-pie-ia')).toContainText('Respuesta generada por IA (Claude Haiku 5.5)');
+  // el aviso no se va con el scroll: está fuera de la zona que se mueve
+  expect(await page.evaluate(() => !!document.querySelector('#asAviso').closest('#asCuerpo'))).toBe(false);
+});
+
+// 0.8.2 · lo que entra en los datos con cada juego de reglas, en el fundador
+test('en el fundador, los datos con las reglas del estándar no llevan planes de venta, ideas de compra ni la señal de Toisón, y el historial del asesor de siempre no se manda', async ({ page }) => {
+  await preparada(page);
+  await fundador(page);
+  const r = await page.evaluate(() => { const M = S.M || calcular(); return { est: contextoAsesor(M, 'chat', true), fund: contextoAsesor(M, 'chat', false), iEst: instruccionesAsesor(true), iFund: instruccionesAsesor(false) }; });
+  expect(r.fund).toContain('## Planes de venta que propone Toisón ahora');
+  expect(r.est).not.toContain('## Planes de venta que propone Toisón');
+  expect(r.est).not.toContain('ajusta todos tus consejos');
+  expect(r.est).toContain('no para decirle qué le encaja');
+  if (r.fund.includes('## Su hoja de ruta en Toisón')) expect(r.est).toContain('## Lo que calcula su Paso a paso en Toisón');
+  // la señal de cada posición: la de los analistas, no la de Toisón (auditoría del 5 nov)
+  expect(r.est).not.toContain('Señal automática de Toisón');
+  // buscar_empresa, con las reglas del estándar, sin puesto entre las ideas
+  const b = await page.evaluate(() => { const x = mejoresIdeas(S.M || calcular())[0]; return x ? { est: JSON.stringify(ejecutarHerramienta('buscar_empresa', { consulta: x.s }, true)), fund: JSON.stringify(ejecutarHerramienta('buscar_empresa', { consulta: x.s }, false)) } : null; });
+  if (b) { expect(b.est).not.toContain('"puesto"'); expect(b.fund).toContain('"puesto"'); }
+  // el historial: con las reglas del estándar, lo que escribió el asesor de siempre (Gemini) no se manda
+  const h = await page.evaluate(() => historialPara([{ role: 'user', content: '¿Vendo Repsol?' }, { role: 'assistant', content: 'Vende 10 Repsol.', est: false }, { role: 'user', content: '¿Y IAG?' }, { role: 'assistant', content: 'IAG está así.', est: true }], true));
+  expect(JSON.stringify(h)).not.toContain('Vende 10 Repsol');
+  expect(h[1].content).toContain('No se repite');
+  expect(h[3].content).toBe('IAG está así.');
+  expect(h.some((m) => 'est' in m)).toBe(false);
+  expect(r.iEst).toContain('Lo que no haces');
+  expect(r.iEst).toContain('Su Paso a paso lo calcula Toisón con reglas fijas');
+  expect(r.iFund).toContain('Primero la respuesta o la recomendación concreta');
+});
+
+// 0.8.2 · Haiku por defecto; «A fondo» (Sonnet) para las preguntas que elijas, hasta la conversación nueva; y las preguntas
+// que te quedan hoy, a la vista (las dice el Worker en X-Quedan)
+test('con Claude, Normal es Haiku y «A fondo» es Sonnet; arriba, las preguntas que te quedan hoy', async ({ page, context }) => {
+  await preparada(page);
+  await gemini(context);
+  let quedan = 29;
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Hecho.' }]), cabeceras: { 'X-Quedan': String(quedan--), 'Access-Control-Expose-Headers': 'X-Quedan' } }));
+  await preguntar(page, '¿Cómo voy?');
+  await expect(page.locator('#asCuerpo')).toContainText('Hecho.', { timeout: 20_000 });
+  expect(w.peticiones[0].cuerpo.model).toBe('claude-haiku-5-5');
+  await expect(page.locator('#asSub')).toHaveText('29 preguntas más hoy');
+  // el botón de la respuesta: Normal (Haiku) o A fondo (Sonnet)
+  const fondoB = page.locator('#asModo [data-as="fondo"][data-m="fondo"]');
+  await expect(fondoB).toHaveAttribute('aria-pressed', 'false');
+  await fondoB.evaluate((el) => el.click());
+  await expect(fondoB).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#asModo')).toContainText('Sonnet');
+  await page.evaluate(() => preguntarAsesor('¿Y a fondo?'));
+  await expect.poll(() => w.peticiones.length, { timeout: 20_000 }).toBe(2);
+  expect(w.peticiones[1].cuerpo.model).toBe('claude-sonnet-5-5');
+  await expect(page.locator('#asSub')).toHaveText('28 preguntas más hoy');
+  // las revisiones siguen con Haiku aunque elijas «A fondo»
+  expect(await page.evaluate(() => modeloClaudeParaIA('análisis'))).toBe('claude-haiku-5-5');
+  // conversación nueva: vuelve a Normal
+  await clic(page, '[data-as="nueva"]');
+  await expect(page.locator('#asModo [data-as="fondo"][data-m="normal"]')).toHaveAttribute('aria-pressed', 'true');
+  expect(await page.evaluate(() => modeloClaudeParaIA('pregunta'))).toBe('claude-haiku-5-5');
+  // con el tope del día, lo dice
+  await page.evaluate(() => { apuntarQuedanClaude(0); pintarAsesor(); });
+  await expect(page.locator('#asSub')).toHaveText('Sin preguntas hasta mañana');
+  // con un modelo fijo elegido en Ajustes no hay botón
+  await page.evaluate(() => { LS.set('inv-ia-motor', 'haiku'); pintarAsesor(); });
+  await expect(page.locator('#asModo [data-as="fondo"]')).toHaveCount(0);
+});
+
+// 0.8.2 · tus conversaciones: se guardan cifradas en el dispositivo, se abren, se siguen y se borran
+test('las conversaciones se guardan cifradas, se abren desde el panel y se borran', async ({ page, context }) => {
+  await preparada(page);
+  await gemini(context);
+  await worker(context, (c) => ({ sse: stream([{ tipo: 'texto', texto: `Respuesta a ${JSON.stringify(c.messages.at(-1).content).includes('Repsol') ? 'Repsol' : 'IAG'}.` }]) }));
+  await preguntar(page, '¿Qué ha pasado con Repsol?');
+  await expect(page.locator('#asCuerpo')).toContainText('Respuesta a Repsol.', { timeout: 20_000 });
+  await clic(page, '[data-as="nueva"]');
+  const lista = page.locator('#asCuerpo .as-convs');
+  await expect(lista).toContainText('¿Qué ha pasado con Repsol?');
+  await page.evaluate(() => preguntarAsesor('¿Y con IAG?'));
+  await expect(page.locator('#asCuerpo')).toContainText('Respuesta a IAG.', { timeout: 20_000 });
+  await clic(page, '[data-as="nueva"]');
+  await expect(lista.locator('li')).toHaveCount(2);
+  await expect(lista.locator('li').first()).toContainText('¿Y con IAG?');
+  // cifradas: en el almacén no se lee nada de lo hablado
+  const crudo = await page.evaluate(() => localStorage.getItem(LS.k('inv-asesor-convs')));
+  expect(crudo).toContain('"ct"');
+  expect(crudo).not.toContain('Repsol');
+  // abrir la primera la trae entera y se puede seguir
+  await lista.locator('[data-as="abrir-conv"]').last().evaluate((el) => el.click());
+  await expect(page.locator('#asCuerpo')).toContainText('Respuesta a Repsol.');
+  expect(await page.evaluate(() => AS.api.length)).toBe(2);
+  // borrar una y luego todas
+  await clic(page, '[data-as="nueva"]');
+  await lista.locator('[data-as="borrar-conv"]').first().evaluate((el) => el.click());
+  await expect(lista.locator('li')).toHaveCount(1);
+  await page.evaluate(() => { AS.vista = 'convs'; pintarAsesor(); });
+  await clic(page, '[data-as="borrar-convs"]');
+  await expect(page.locator('#asCuerpo .as-convs')).toHaveCount(0);
+  expect(await page.evaluate(() => localStorage.getItem(LS.k('inv-asesor-convs')))).toBeNull();
 });

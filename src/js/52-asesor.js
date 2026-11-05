@@ -112,6 +112,14 @@ function cupoNormalTxt(u = usoIAHoy()) {
 /* debajo del nombre de GrowIA, solo lo que sirve: si contesta la rápida porque la normal se ha quedado sin cupo, o
    si a la normal le quedan 5 o menos hoy; si no, una frase fija */
 function subtituloIA(cfg = cfgAsesor()) {
+  // 0.8.2: con Claude, las preguntas que te quedan hoy (lo dice el Worker); el cupo de abajo es el de Gemini
+  if (quienContestaIA() === 'claude') {
+    const n = quedanClaude();
+    if (n === 0) return L('Sin preguntas hasta mañana', 'No more questions until tomorrow');
+    // corto, que en un móvil de 360 px el subtítulo no da para más
+    if (n != null) return n === 1 ? L('1 pregunta más hoy', '1 more question today') : L(`${n} preguntas más hoy`, `${n} more questions today`);
+    return L('Con tu cartera y las noticias de hoy', "With your portfolio and today's news");
+  }
   const vivo = modeloVivo(cfg);
   if (esRapida(vivo) && !esRapida(cfg.modelo)) return L('La respuesta normal ha gastado su cupo de hoy: contesta la rápida', "The normal answer has used up today's quota: the fast one replies");
   if (!esRapida(vivo)) {
