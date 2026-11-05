@@ -192,6 +192,12 @@ public class Puente {
         return BuildConfig.VERSION_CODE;
     }
 
+    /** 0.8.3: «play» en la versión de Google Play y «directa» en la de GitHub; la web no enseña GTA en la de Play (appDePlay) */
+    @JavascriptInterface
+    public String canal() {
+        return BuildConfig.FLAVOR;
+    }
+
     @JavascriptInterface
     public String nombreVersion() {
         return BuildConfig.VERSION_NAME;

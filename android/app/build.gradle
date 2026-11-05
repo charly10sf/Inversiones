@@ -23,8 +23,8 @@ android {
     // 0.8.3 · Dos versiones de la misma app. «directa»: la APK de GitHub de siempre (es.inversiones.app, se actualiza
     // sola, targetSdk 34). «play»: la de Google Play, que Play actualiza; Play pide targetSdk 36 a las apps nuevas desde
     // el 31 ago 2026. Su número de versión va con un millón delante: así nunca es menor que el de app.json y la web no le
-    // ofrece la APK. El paquete de Play no se puede cambiar una vez publicado: es.toison.app (POR CONFIRMAR con Carlos
-    // antes de la primera subida).
+    // ofrece la APK. El paquete de Play no se puede cambiar una vez publicado: es.toison.app (Carlos lo confirmó el
+    // 5 nov). La web sabe que es la de Play por Puente.canal() y no enseña GTA.
     flavorDimensions 'canal'
     productFlavors {
         directa {
