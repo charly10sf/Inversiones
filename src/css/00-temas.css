@@ -753,3 +753,31 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema]:is([data-tema="marfil"], [data-tema="borgona"]) :is(.hero-hola, .caja h1, .bq-caja h1) { font-weight: 400; }
 /* 0.8a: el correo de Tú no se parte en dos líneas en los móviles estrechos (a 360 px salía «lucia@prueba» y «.com»): una línea con puntos suspensivos */
 [data-tema] .tu-cab > div small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- 0.8.3 · revisión del diseño (5 nov) ---------- */
+/* filas que se deslizan de lado: el borde por el que queda algo se difumina (marcarDesbordes, 10-pintado.js) */
+[data-desb] { --desb-i: 0px; --desb-d: 0px; -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--desb-i), #000 calc(100% - var(--desb-d)), transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 var(--desb-i), #000 calc(100% - var(--desb-d)), transparent 100%); }
+[data-desb~="i"] { --desb-i: 26px; }
+[data-desb~="d"] { --desb-d: 34px; }
+/* las tablas que en el móvil se vuelven fichas (Por horizonte, lo que costaría cada paso…): la etiqueta encima y la cifra
+   entera debajo, nunca «232.00…» ni «1,05 millone…» */
+@media (max-width: 680px) {
+  [data-tema] table.resp td { white-space: normal; overflow: visible; text-overflow: clip; font-variant-numeric: tabular-nums; }
+  [data-tema] table.resp td[data-l]::before { display: block; margin: 0 0 1px; line-height: 1.3; }
+  [data-tema] table.resp td small { display: block; margin: 1px 0 0; }
+}
+/* Posiciones en 390 px: la cabecera (título, orden, apuntar, añadir, copiar y «Pregúntale») cabe sin salirse de la pantalla */
+@media (max-width: 400px) {
+  [data-tema] .pos-cab { gap: 6px; }
+  [data-tema] .pos-cab h2 { letter-spacing: .06em; }
+  [data-tema] .pos-cab .der { gap: 4px; }
+  [data-tema] .pos-cab .orden-chip { padding: 0 7px 0 6px; gap: 3px; }
+  [data-tema] .pos-cab .preg-ia { padding: 0 7px; }
+}
+/* Mercados: «12 % de tu cartera (Repsol y 1 más)» en dos líneas antes que cortado */
+[data-tema] .mf-tuyo { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+
+/* Hoy: «Primeros pasos» (o el aviso del perfil) y el saludo de debajo ya no se tocan en el móvil (quedaban a 2 px) */
+@media (max-width: 759px) { .car > .empezar, .car > .pf-recuerda { margin-bottom: -12px; } }
+/* Aportaciones periódicas en 360 px: «MyInvestor · el día 1 · próxima…» en dos líneas antes que cortado */
+[data-tema] .plan-l .pl-t small { white-space: normal; overflow: visible; text-overflow: clip; }
