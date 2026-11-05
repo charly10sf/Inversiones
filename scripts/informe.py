@@ -5,7 +5,8 @@ Uso: python scripts/informe.py instrumentos.json anterior/ salida/
 
 Lo llama la GitHub Action después de precios.py, en cada pasada (cada 20 minutos entre semana):
 1. Noticias de un lote de empresas del radar (las que más tiempo llevan sin mirar): Yahoo Finance con
-   su resumen y Google Noticias en español. Así se recorren las ~840 empresas varias veces al día.
+   su resumen y Google Noticias en español. Así se recorren las de radar.json (unas 950) un par de veces al
+   día; las de radar-mas.json (5 nov 2026, el radar ampliado), todavía no.
    Se guardan en noticias-cache.json.
 2. Gemini lee la prensa de unas 70 empresas con noticias nuevas y apunta, para cada una, qué ha
    pasado, si es bueno o malo, cuánto importa y si hay un catalizador (escaneo.json, "lectura").

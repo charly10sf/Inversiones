@@ -5,6 +5,10 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.8.1c', f: '2026-11-05', h: '15:30', t: 'El radar, con casi 3.000 empresas', arreglos: [
+    'El radar pasa de unas 950 a unas 2.800 empresas de España, Europa y EE. UU. Ahora entran todas las medianas y grandes por su tamaño, digan lo que digan los analistas. Las nuevas van apareciendo a lo largo de la tarde.',
+    { t: 'Al abrir se baja lo mismo que antes; el resto del radar llega unos segundos después y se renueva cada hora.', solo: 'dueno' },
+  ] },
   { v: '0.8.1b', f: '2026-11-05', h: '07:30', t: 'Los colores y las pestañas, en su sitio', arreglos: [
     'Con el móvil en modo oscuro, algunos navegadores (el de WhatsApp, el de X y Samsung Internet) cambiaban los colores de Toisón. Ya no.',
     'En Ideas y en los plazos del Paso a paso, las pestañas de arriba ya no dejan ver el texto que pasa por debajo al bajar.',

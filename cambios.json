@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.8.1c",
+   "f": "2026-11-05",
+   "h": "15:30",
+   "t": "El radar, con casi 3.000 empresas",
+   "commits": [
+    {
+     "cuando": "2026-11-05 15:30",
+     "asunto": "Versión 0.8.1c: el radar, con casi 3.000 empresas",
+     "detalle": [
+      "Las descubiertas entran por tamaño (EE. UU. desde 2.000 M€, Europa desde 500 M€, España desde 300 M€), sin mirar lo que recomiendan los analistas: unas 2.460 más las 397 fijas.",
+      "radar.json se queda con las fijas, las pedidas y las 550 más grandes (lo que baja la web al abrir, igual que antes); el resto va a radar-mas.json, que la web baja después de abrir y como mucho cada hora, sin guardarlo en el dispositivo.",
+      "Las fichas se renuevan por turnos (una de cada nueve por ejecución) y los precios de radar-mas.json, cada hora.",
+      "Pruebas: tests/scripts/test_radar_ampliado.py y tests/radar-mas.spec.js."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.1b",
    "f": "2026-11-05",
    "h": "07:30",
