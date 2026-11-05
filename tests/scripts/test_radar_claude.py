@@ -28,8 +28,10 @@ def leer_lote():  # el nombre de la función que llama es el «que» del registr
 
 class RadarClaude(unittest.TestCase):
     def setUp(self):
-        self.g, self.c, self.sleep = I.gemini_modelo, I.peticion_claude, I.time.sleep
+        self.g, self.c, self.sleep, self.get, self.lotes, self.espera = I.gemini_modelo, I.peticion_claude, I.time.sleep, I.peticion_claude_get, I.CLAUDE_LOTES, I.CLAUDE_ESPERA_LOTE
         I.time.sleep = lambda s: None
+        I.CLAUDE_LOTES = False  # lo de la API por lotes se prueba aparte (PorLotes)
+        I.LOTES_APAGADOS[0] = False
         self.pedidos = []
         I.gemini_modelo = lambda cuerpo, clave, modelo: (self.pedidos.append(("gemini", modelo)), GEM)[1]
         I.USO.clear(); I.CLAUDE_ERRORES.clear(); I.CLAUDE_APAGADO = False
@@ -37,6 +39,8 @@ class RadarClaude(unittest.TestCase):
 
     def tearDown(self):
         I.gemini_modelo, I.peticion_claude, I.time.sleep = self.g, self.c, self.sleep
+        I.peticion_claude_get, I.CLAUDE_LOTES, I.CLAUDE_ESPERA_LOTE = self.get, self.lotes, self.espera
+        I.LOTES_APAGADOS[0] = False
         I.USO.clear(); I.CLAUDE_ERRORES.clear(); I.CLAUDE_APAGADO = False
         os.environ.clear(); os.environ.update(self.env)
 
@@ -101,6 +105,72 @@ class RadarClaude(unittest.TestCase):
         with self.assertRaises(RuntimeError):
             leer_lote()
         self.assertEqual(self.pedidos, [])
+
+
+class PorLotes(unittest.TestCase):
+    """5 nov: las lecturas de prensa van por la API por lotes (mitad de precio) y, si no sale, en directo."""
+
+    def setUp(self):
+        RadarClaude.setUp(self)
+        I.CLAUDE_LOTES = True
+        os.environ["ANTHROPIC_RADAR_KEY"] = "k"; os.environ["GEMINI_API_KEY"] = "g"
+        self.llamadas = []
+
+    def tearDown(self):
+        RadarClaude.tearDown(self)
+
+    def lote_que_sale(self, tipo="succeeded", acaba_a_la_segunda=True):
+        estados = iter(["in_progress", "ended"] if acaba_a_la_segunda else ["ended"])
+
+        def get(ruta, clave, metodo="GET", cuerpo=None, texto=False):
+            self.llamadas.append((metodo, ruta))
+            if metodo == "POST" and ruta.endswith("/batches"):
+                self.assertEqual(cuerpo["requests"][0]["params"]["model"], "claude-haiku-5-5")
+                return {"id": "b1", "processing_status": "in_progress"}
+            if ruta.startswith("/v1/messages/batches/b1") and not ruta.endswith("results"):
+                return {"id": "b1", "processing_status": next(estados), "results_url": "https://api.anthropic.com/v1/messages/batches/b1/results"}
+            if ruta.endswith("/results"):
+                res = {"type": tipo, "message": CLA} if tipo == "succeeded" else {"type": tipo, "error": {"type": "overloaded_error"}}
+                return json.dumps({"custom_id": "radar", "result": res}) + "\n"
+            return {}
+        I.peticion_claude_get = get
+
+    def test_la_lectura_va_por_lote_y_se_apunta(self):
+        self.lote_que_sale()
+        I.peticion_claude = lambda *a: self.fail("no debe pedir en directo")
+        r = leer_lote()
+        self.assertEqual(json.loads(I.texto_de(r)[0])["de"], "claude")
+        self.assertTrue(I.USO[-1].get("lote"))
+        self.assertEqual(I.USO[-1]["out"], 300)
+        self.assertEqual(self.llamadas[0], ("POST", "/v1/messages/batches"))
+
+    def test_lo_urgente_no_va_por_lote(self):
+        self.lote_que_sale()
+        vistos = []
+        I.peticion_claude = lambda cuerpo, clave: (vistos.append(cuerpo), CLA)[1]
+        r = I.gemini(CUERPO, "g")  # sin modelos=LECTURA: no es una lectura de prensa
+        self.assertEqual(json.loads(I.texto_de(r)[0])["de"], "claude")
+        self.assertEqual(len(vistos), 1)
+        self.assertEqual(self.llamadas, [])
+        self.assertFalse(I.USO[-1].get("lote"))
+
+    def test_si_el_lote_no_termina_se_cancela_y_va_en_directo(self):
+        I.CLAUDE_ESPERA_LOTE = -1
+        self.lote_que_sale(acaba_a_la_segunda=False)
+        I.peticion_claude = lambda cuerpo, clave: CLA
+        r = leer_lote()
+        self.assertEqual(json.loads(I.texto_de(r)[0])["de"], "claude")
+        self.assertIn(("POST", "/v1/messages/batches/b1/cancel"), self.llamadas)
+        self.assertTrue(I.LOTES_APAGADOS[0])
+        self.assertFalse(I.USO[-1].get("lote"))
+
+    def test_si_el_lote_da_error_va_en_directo(self):
+        self.lote_que_sale(tipo="errored")
+        I.peticion_claude = lambda cuerpo, clave: CLA
+        r = leer_lote()
+        self.assertEqual(json.loads(I.texto_de(r)[0])["de"], "claude")
+        self.assertTrue(I.LOTES_APAGADOS[0])
+        self.assertFalse(I.USO[-1].get("lote"))
 
 
 if __name__ == "__main__":
