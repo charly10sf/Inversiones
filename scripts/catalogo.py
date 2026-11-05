@@ -323,6 +323,13 @@ def universo(prev, semilla):
     return {"listas": listas, "u": u}
 
 
+def yahoo_contesta():
+    try:
+        return bool(resolver({"isin": "IE00B4L5Y983"}).get("s"))
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def rellenar(u, excluir, minutos, pausa=0.25):
     """Busca el símbolo de los ISIN que aún no lo tienen, hasta «minutos». Si Yahoo deja de contestar (muchos
     fallos seguidos), para y no apunta esos fallos (no es que no estén: es que hoy no responde)."""
@@ -344,6 +351,11 @@ def rellenar(u, excluir, minutos, pausa=0.25):
             e["no"] = hoy_iso()
             seguidos.append(e)
             if len(seguidos) >= 40:
+                # los pendientes son sobre todo los que Yahoo no tiene: 40 seguidos puede ser normal. Se prueba uno que
+                # sí tiene (el iShares Core MSCI World); si tampoco sale, es que Yahoo no contesta
+                if yahoo_contesta():
+                    seguidos = []
+                    continue
                 for x in seguidos:
                     x.pop("no", None)
                 print("relleno: 40 fallos seguidos, Yahoo no contesta; se para hasta mañana")

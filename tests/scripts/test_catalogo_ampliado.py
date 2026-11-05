@@ -133,6 +133,21 @@ class Relleno(unittest.TestCase):
         self.assertNotIn("s", u["ES000000YA01"])
         self.assertNotIn("s", u["ES000000EX01"])
 
+    def test_muchos_que_no_estan_seguidos_no_paran_el_relleno(self):
+        # el 5 nov se paró a los 222 de 808: casi todos los pendientes son los que Yahoo no tiene
+        def falso(e):
+            if e["isin"] == "IE00B4L5Y983":
+                return {"s": "EUNL.DE", "m": "EUR", "yn": "iShares", "yt": "ETF"}
+            if e["isin"].endswith("99"):
+                return {"s": "X.DE", "m": "EUR", "yn": "X", "yt": "ETF"}
+            raise RuntimeError("Yahoo no da resultados")
+        C.resolver = falso
+        u = {f"IE{k:08d}00": {"isin": f"IE{k:08d}00", "o": "x", "n": "ETF"} for k in range(120)}
+        u["IE0000000099"] = {"isin": "IE0000000099", "o": "x", "n": "ETF"}
+        C.rellenar(u, set(), 5, pausa=0)
+        self.assertEqual(sum(1 for e in u.values() if e.get("no")), 120)
+        self.assertEqual(u["IE0000000099"]["s"], "X.DE")
+
     def test_si_yahoo_deja_de_contestar_se_para_sin_apuntar_fallos(self):
         llamadas = []
 
@@ -142,7 +157,7 @@ class Relleno(unittest.TestCase):
         C.resolver = falso
         u = {f"IE{k:010d}": {"isin": f"IE{k:010d}", "o": "x", "n": "ETF"} for k in range(100)}
         C.rellenar(u, set(), 5, pausa=0)
-        self.assertEqual(len(llamadas), 40)
+        self.assertEqual(len(llamadas), 41)   # 40 y la prueba con uno que sí está
         self.assertFalse(any("no" in e for e in u.values()))
 
 
