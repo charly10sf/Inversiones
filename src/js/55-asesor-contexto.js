@@ -567,7 +567,10 @@ function frasesConsejoIA(texto) {
       // entre comillas es que lo nombra, no que lo diga («no tengo una opinión de “yo la vendería”»)
       const previo = f.slice(0, m.index);
       if ((previo.split('«').length > previo.split('»').length) || (previo.split('“').length > previo.split('”').length) || (previo.split('"').length % 2 === 0)) continue;
-      if (NEGADO_IA.test(antes) && !/\b(pero|aunque|sin embargo|ahora bien)\b/i.test(antes)) continue;
+      // el «pero» solo cuenta si va entre la negación y la frase («no puedo…, pero te conviene»), no antes («Lo entiendo,
+      // pero decirte si yo la vendería sería…»)
+      const neg = [...antes.matchAll(new RegExp(NEGADO_IA.source, 'gi'))].pop();
+      if (neg && !/\b(pero|aunque|sin embargo|ahora bien)\b/i.test(antes.slice(neg.index + neg[0].length))) continue;
       vistas.add(m[0].replace(/^[\s.!?:*•\-\d)]+/, '').trim());
     }
   }
