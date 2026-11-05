@@ -556,7 +556,8 @@ const FRASES_CONSEJO_IA = [
 // lo que va negado en la misma frase («no puedo decirte si te conviene», «no sé si es buen momento») no es un consejo
 // (5 nov, banco con Claude: «tampoco puedo decir qué reparto es el adecuado», «no tengo una opinión de…», «decir que un
 // fondo te encaja… es justo eso» son el rechazo, no un consejo)
-const NEGADO_IA = /(^|[^a-zñáéíóú])(no (te )?(puedo|voy a|debo)|no s[eé]|no (te )?(lo )?digo|eso ser[ií]a|ni|tampoco|nadie|no tengo|no hago|no (te )?doy|decir(te)? (que|si|qu[eé]))(?![a-zñáéíóú])/i;
+const NEGADO_IA = /(^|[^a-zñáéíóú])(no (te )?(puedo|voy a|debo)|no s[eé]|no (te )?(lo )?digo|eso ser[ií]a|ni|tampoco|nadie|no tengo|no hago|no (te )?doy|decir(te)? (que|si|qu[eé])|(recomendaci[oó]n|valoraci[oó]n) personalizada)(?![a-zñáéíóú])/i;
+const RECHAZO_TRAS_IA = /\bser[ií]a (una )?(recomendaci[oó]n|valoraci[oó]n) personalizada/i;
 function frasesConsejoIA(texto) {
   const vistas = new Set();
   for (const f of String(texto || '').replace(/\*\*/g, '').split(/(?<=[.!?])\s+|\n+/)) {
@@ -573,6 +574,10 @@ function frasesConsejoIA(texto) {
       // pero decirte si yo la vendería sería…»)
       const neg = [...antes.matchAll(new RegExp(NEGADO_IA.source, 'gi'))].pop();
       if (neg && !/\b(pero|aunque|sin embargo|ahora bien)\b/i.test(antes.slice(neg.index + neg[0].length))) continue;
+      // lo nombra para negarlo después en la misma frase («señalarte un fondo que te encaja sería una recomendación
+      // personalizada»), sin un «pero» o «aunque» en medio (banco, cuarta vuelta)
+      const tras = f.slice(m.index + m[0].length), nr = tras.match(RECHAZO_TRAS_IA);
+      if (nr && nr.index < 90 && !/\b(pero|aunque|sin embargo|ahora bien)\b/i.test(tras.slice(0, nr.index))) continue;
       vistas.add(m[0].replace(/^[\s.!?:*•\-\d)]+/, '').trim());
     }
   }
