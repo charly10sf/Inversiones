@@ -26,7 +26,8 @@ const ADDER = {
   ],
 };
 const adderEUR = () => sum(ADDER.tareas, (t) => t[1]) * ADDER.semanaEUR;
-const gtaActivo = () => Date.now() < GTA.hasta.getTime();
+// 0.8.3 (Carlos, 5 nov): nada de GTA en la versión de Google Play (nombre y marca de otro en una app de finanzas)
+const gtaActivo = () => !appDePlay() && Date.now() < GTA.hasta.getTime();
 function gtaFalta() {
   const ms = GTA.salida - Date.now();
   return ms > 0 ? { d: Math.floor(ms / 864e5), h: Math.floor(ms / 36e5) % 24, m: Math.floor(ms / 6e4) % 60, s: Math.floor(ms / 1e3) % 60 } : null;

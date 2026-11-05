@@ -3,6 +3,8 @@
    Las apps hasta la compilación 7 no saben instalar solas: a esas se les abre la descarga en Chrome.
    ===================================================================== */
 const versionApp = () => { try { return window.InversionesApp.version(); } catch (e) { return 0; } };
+// 0.8.3: la versión de Google Play de la app de Android dice su canal («play»); la de GitHub y las de antes, nada
+const appDePlay = () => { try { return window.InversionesApp.canal() === 'play'; } catch (e) { return false; } };
 const nombreApp = () => { try { const n = window.InversionesApp.nombreVersion(); if (n) return `${L('versión', 'version')} ${n}`; } catch (e) {} return L('versión anterior a la 0.1.10', 'version older than 0.1.10'); };
 const nombreUlt = (ult) => (ult && ult.nombre ? `${L('versión', 'version')} ${ult.nombre}` : L('versión nueva', 'new version'));
 async function ultimaApp() {

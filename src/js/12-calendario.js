@@ -306,10 +306,12 @@ function agendaLista(M, dias = 120) {
         `What you sell up to 31 December goes into your ${y} tax return, filed in spring ${y + 1}. Losses are subtracted from gains: if you've made gains selling this year and have something at a loss, selling it before year end lowers what you pay. Careful: if you buy the same thing back within the next two months, that loss doesn't count yet.${M.realizado ? ` This year your sales come to ${eurS(M.realizado, 0)}.` : ''}${sumP >= 1 ? ` You have ${eur(sumP, 0)} in unrealised losses (${nPerd}).` : ''}`),
       acc: `<a class="btn peq" href="#fiscal">${L('Ir a Hacienda', 'Go to Taxes')}</a>` });
   }
-  // GTA VI
+  // GTA VI (0.8.3: no en la versión de Google Play)
+  if (gtaActivo()) {
   const ttwo = [...porInst.values()].some((g) => /^TTWO$/i.test(g.inst.yahoo || ''));
   add({ id: 'gta6', d: '2026-11-19', tipo: 'otro', t: L('Sale GTA VI', 'GTA VI comes out'), s: ttwo ? L('Take-Two, que tienes, se juega mucho ese día', 'Take-Two, which you own, has a lot riding on it') : L('En PS5 y Xbox Series X y S', 'On PS5 and Xbox Series X|S'),
     det: L(`Sale GTA VI en PS5 y Xbox Series X y S.${ttwo ? ' Es el juego del que más depende Take-Two: esos días su precio puede moverse bastante.' : ''}`, `GTA VI comes out on PS5 and Xbox Series X|S.${ttwo ? " It's the game Take-Two depends on most: its price may move a lot around then." : ''}`), acc: `<button type="button" class="btn peq" data-gta>${L('Abrir la cuenta atrás', 'Open the countdown')}</button>` });
+  }
   // tus aportaciones, juntas si caen el mismo día
   const porDia = new Map();
   for (const a of S.cartera.aportaciones || []) {

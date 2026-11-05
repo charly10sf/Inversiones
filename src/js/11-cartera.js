@@ -213,7 +213,7 @@ function htmlBloqueCar(k, M) {
   return '';
 }
 // 0.8: con Toisón, Hoy no lleva tus posiciones ni el reparto (van en Cartera)
-const fueraDeHoy = (k) => EN_CARTERA_TS.has(k);
+const fueraDeHoy = (k) => EN_CARTERA_TS.has(k) || (k === 'gta' && !gtaActivo());
 /* Cartera de Toisón, subpestaña Posiciones: lo que tienes (con el plan y los movimientos) y el reparto. El total va
    encima, en htmlSubvistas */
 function vistaPosiciones(M) {

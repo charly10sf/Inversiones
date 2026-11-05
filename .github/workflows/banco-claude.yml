@@ -1,7 +1,8 @@
 # 0.8.2 · Banco de la IA con Claude: las 30 preguntas trampa (tests/banco/trampas.json) a la app de verdad (el build), con
 # la cartera de prueba y Claude de verdad, con las reglas del estándar. Solo a mano: cada vuelta gasta créditos de la API
-# (unas 30 preguntas; con Haiku, céntimos; con Sonnet, algo más). Necesita el secreto ANTHROPIC_BANCO_KEY (una clave de la
-# consola de Anthropic, mejor en un workspace aparte con su límite de gasto). El resultado queda como artefacto
+# (unas 30 preguntas; con Haiku, céntimos; con Sonnet, algo más). Usa el secreto ANTHROPIC_BANCO_KEY si existe (una clave en
+# un workspace aparte con su límite de gasto) y, si no, la clave de la app, ANTHROPIC_API_KEY (Carlos lo eligió el 5 nov:
+# así no tiene que crear otra; gasta de los mismos créditos, unos 3,5 $ por vuelta con los dos modelos). El resultado queda como artefacto
 # («banco-claude-haiku» o «banco-claude-sonnet»), con cada respuesta y lo que ha fallado. La 0.8.2 sale cuando pasan las 30
 # con los dos modelos.
 name: Banco de la IA con Claude
@@ -30,10 +31,10 @@ jobs:
       - name: ¿Toca este modelo?
         id: toca
         env:
-          CLAVE: ${{ secrets.ANTHROPIC_BANCO_KEY }}
+          CLAVE: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
         run: |
           if [ "${{ inputs.motor }}" != "los dos" ] && [ "${{ inputs.motor }}" != "${{ matrix.motor }}" ]; then exit 0; fi
-          if [ -z "$CLAVE" ]; then echo "::error::Falta el secreto ANTHROPIC_BANCO_KEY"; exit 1; fi
+          if [ -z "$CLAVE" ]; then echo "::error::Falta el secreto ANTHROPIC_BANCO_KEY (o ANTHROPIC_API_KEY)"; exit 1; fi
           echo "si=1" >> "$GITHUB_OUTPUT"
 
       - uses: actions/checkout@v4
@@ -57,7 +58,7 @@ jobs:
         if: steps.toca.outputs.si
         timeout-minutes: 110
         env:
-          GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY }}
+          GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
           GF_BANCO_MOTOR: ${{ matrix.motor }}
         run: |
           mkdir -p salida
