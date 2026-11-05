@@ -611,7 +611,7 @@ function pintar() {
   }
   const mb = $('#mercBusca');
   if (mb) {
-    const inp = buscador(mb, null, { alCandidato: abrirConsulta, lista: candidatosConsulta(), placeholder: 'Apple, SP500, oro, bitcoin o un ISIN' });
+    const inp = buscador(mb, null, { alCandidato: abrirConsulta, lista: candidatosConsulta, placeholder: 'Apple, SP500, oro, bitcoin o un ISIN' });
     if (S.mercQ) { inp.value = S.mercQ.v; if (S.mercQ.foco) { inp.focus(); inp.dispatchEvent(new Event('input')); } }
     inp.addEventListener('input', () => { S.mercQ = { v: inp.value, foco: true }; });
     inp.addEventListener('blur', () => { if (S.mercQ) S.mercQ.foco = false; });

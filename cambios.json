@@ -1,6 +1,25 @@
 {
  "versiones": [
   {
+   "v": "0.8.1d",
+   "f": "2026-11-05",
+   "h": "18:30",
+   "t": "Unos 6.000 fondos y ETF",
+   "commits": [
+    {
+     "cuando": "2026-11-05 18:30",
+     "asunto": "Versión 0.8.1d: unos 6.000 fondos y ETF",
+     "detalle": [
+      "El catálogo se amplía con las dos listas oficiales: los ETF, ETC y ETN que cotizan en Xetra (el CSV de Deutsche Börse) y las clases de los fondos españoles registrados en la CNMV (su fichero mensual). Entran los que Yahoo sabe poner precio.",
+      "catalogo-precios.json (lo que baja la web al abrir) sigue con catalogo.json y lo pedido; el resto va a catalogo-mas.json, que la web baja solo al buscar o al añadir con su ISIN, sin guardarlo en el dispositivo. Lo que se añade de ahí se guarda en el dispositivo y se pide, para que al día siguiente pase al catálogo de todos con su histórico de 10 años.",
+      "El símbolo de Yahoo de cada ISIN se busca una vez y se guarda (catalogo-ampliado.json, rama catalogo); si no lo encuentra, no se vuelve a probar en una semana. El primer relleno viene en catalogo-semilla.json. El precio de todos, cada día en tandas de 200, y su año en cierres semanales para la gráfica de la consulta.",
+      "El nombre que da Yahoo a cada fondo español se compara con el de la CNMV: si no cuadra (un año distinto, otro fondo), no se publica.",
+      "Pruebas: tests/scripts/test_catalogo_ampliado.py (con un CSV y un XML pequeños de muestra) y tests/catalogo-mas.spec.js."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.1c",
    "f": "2026-11-05",
    "h": "15:30",

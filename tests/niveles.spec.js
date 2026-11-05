@@ -1,7 +1,7 @@
 // Tres niveles de versión desde la 0.8.2 (regla de Carlos del 4 nov; claude/cerrar-version.md): gorda (0.9, 1.0) con lo
 // nuevo contado bajando, guía y «Nuevo» en la barra; intermedia (0.8.2, 0.9.1) con una hoja corta y sin guía; letra
 // (0.9a, 0.9.1b) con la tarjeta de arreglos. Antes de la 0.8.2 toda versión sin letra era de número: siguen siendo gordas.
-// La app va por la 0.8.1c, así que las intermedias se prueban con versiones inventadas metidas en NOVEDADES.
+// La app va por la 0.8.1d, así que las intermedias se prueban con versiones inventadas metidas en NOVEDADES.
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 import { partirNovedades } from '../build/growfolio-vite.js';
@@ -62,9 +62,9 @@ test('una intermedia: hoja corta con «Ir», sin guía, y en el historial cuelga
   // sin guía ni «Nuevo»: las intermedias no tienen pasos aunque sus cosas tengan sitio
   expect(await page.evaluate(() => pasosGuia([NOVEDADES.find((n) => n.v === '0.8.2')]).length)).toBe(0);
 
-  // de la 0.8.1c a la 0.8.2a: la hoja corta con lo de la 0.8.2 y sus arreglos plegados, sin lo del dueño (desde la
-  // 0.8.1b saldría también el arreglo para todos de la 0.8.1c)
-  await page.evaluate(() => hojaIntermedia('0.8.1c', () => { window.__cerrada = true; }, '0.8.2a'));
+  // de la 0.8.1d a la 0.8.2a: la hoja corta con lo de la 0.8.2 y sus arreglos plegados, sin lo del dueño (desde la
+  // 0.8.1c saldría también el arreglo para todos de la 0.8.1d)
+  await page.evaluate(() => hojaIntermedia('0.8.1d', () => { window.__cerrada = true; }, '0.8.2a'));
   const h = page.locator('.hoja-corta');
   await expect(h).toBeVisible();
   await expect(h.locator('.nov-lista li')).toHaveCount(2);

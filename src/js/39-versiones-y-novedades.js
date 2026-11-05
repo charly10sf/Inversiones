@@ -5,6 +5,10 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.8.1d', f: '2026-11-05', h: '18:30', t: 'Unos 6.000 fondos y ETF', arreglos: [
+    'Al buscar un fondo o un ETF salen unos 6.000 en vez de 360: todos los ETF y ETC que cotizan en la bolsa alemana (Xetra), que son casi todos los que venden los brókers en España, y los fondos españoles registrados en la CNMV, cada clase con su ISIN y su precio de cada día.',
+    { t: 'Los nuevos van en un archivo aparte que se baja al buscar, no al abrir. Lo que añades de ahí pasa al día siguiente al catálogo de todos, con sus 10 años de histórico.', solo: 'dueno' },
+  ] },
   { v: '0.8.1c', f: '2026-11-05', h: '15:30', t: 'El radar, con casi 3.000 empresas', arreglos: [
     'El radar pasa de unas 950 a unas 2.800 empresas de España, Europa y EE. UU. Ahora entran todas las medianas y grandes por su tamaño, digan lo que digan los analistas. Las nuevas van apareciendo a lo largo de la tarde.',
     { t: 'Al abrir se baja lo mismo que antes; el resto del radar llega unos segundos después y se renueva cada hora.', solo: 'dueno' },
