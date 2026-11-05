@@ -231,9 +231,14 @@ def claude(cuerpo, que, ligera=False, hay_reserva=False):
     pedido = a_claude(cuerpo, CLAUDE_MODELO)
     for intento in range(3):
         try:
-            r = de_claude(peticion_claude(pedido, clave))
+            bruto = peticion_claude(pedido, clave)
+            r = de_claude(bruto)
             if not texto_de(r)[0].strip():
-                raise RuntimeError("respuesta vacía")
+                # 0.8.2: que el registro diga qué llegó (motivo de parada, tipos de bloque y tokens) y no solo «vacía»
+                tipos = ",".join(str(b.get("type")) for b in (bruto.get("content") or [])) or "ninguno"
+                u = bruto.get("usage") or {}
+                raise RuntimeError(f"respuesta vacía de {bruto.get('model')}: stop_reason={bruto.get('stop_reason')}, bloques={tipos}, "
+                                   f"in={u.get('input_tokens')}, out={u.get('output_tokens')}")
             USADOS.add(CLAUDE_MODELO)
             apuntar_uso(CLAUDE_MODELO, r, que)
             ULTIMO[0] = CLAUDE_MODELO
