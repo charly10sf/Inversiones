@@ -248,6 +248,7 @@ const nombreUsuario = () => String((S.cartera && S.cartera.perfil && S.cartera.p
 const ERR_FB = {
   'auth/invalid-credential': 'El correo o la contraseña no son correctos.', 'auth/wrong-password': 'El correo o la contraseña no son correctos.', 'auth/user-not-found': 'No hay ninguna cuenta con ese correo: créala con «Crear cuenta».',
   'auth/email-already-in-use': 'Ya hay una cuenta con ese correo: entra con «Entrar».', 'auth/weak-password': 'La contraseña tiene que tener al menos 6 caracteres.', 'auth/invalid-email': 'Ese correo no parece válido.',
+  'auth/requires-recent-login': 'Por seguridad, vuelve a entrar en tu cuenta y prueba otra vez.', 'auth/user-mismatch': 'Esa no es la cuenta con la que entraste.',
   'auth/too-many-requests': 'Demasiados intentos seguidos. Espera unos minutos y vuelve a probar.', 'auth/network-request-failed': 'Sin conexión: comprueba internet y vuelve a probar.',
   'auth/popup-closed-by-user': 'Has cerrado la ventana de Google antes de terminar.', 'auth/cancelled-popup-request': 'Has cerrado la ventana de Google antes de terminar.',
   'auth/unauthorized-domain': 'Este dominio no está autorizado en Firebase (Authentication, Configuración, Dominios autorizados).', 'auth/operation-not-allowed': 'Ese modo de entrar no está activado en Firebase.',

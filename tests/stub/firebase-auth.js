@@ -73,6 +73,17 @@ export async function updateProfile(u, p) {
   if (d) { Object.assign(d, p); guardar(K, d); if (c[d.email]) { Object.assign(c[d.email].u, p); guardar(A, c); } }
   if (u) Object.assign(u, p);
 }
+export class EmailAuthProvider { static credential(email, pass) { return { providerId: 'password', email, pass }; } }
+// volver a entrar antes de borrar la cuenta: con correo, la contraseña tiene que ser la buena
+export async function reauthenticateWithCredential(u, cred) {
+  if (cred.providerId === 'password') { const c = leer(A, {})[String(u.email || '').toLowerCase()]; if (!c || c.pass !== cred.pass) throw err('auth/invalid-credential'); }
+  window.__reautenticado = (window.__reautenticado || 0) + 1; return { user: u };
+}
+export async function reauthenticateWithPopup(u) { window.__reautenticado = (window.__reautenticado || 0) + 1; return { user: u }; }
+export async function deleteUser(u) {
+  const c = leer(A, {}); delete c[String(u.email || '').toLowerCase()]; guardar(A, c);
+  localStorage.removeItem(K); auth.currentUser = null; window.__cuentasBorradas = (window.__cuentasBorradas || 0) + 1; avisar();
+}
 export async function signOut() { localStorage.removeItem(K); auth.currentUser = null; avisar(); }
 // para la prueba: confirmar el correo de una cuenta como si hubiera tocado el enlace
 window.__stubConfirmar = (email) => { const c = leer(A, {}); if (c[email]) { c[email].u.emailVerified = true; guardar(A, c); const d = leer(K, null); if (d && d.email === email) { d.emailVerified = true; guardar(K, d); } } };

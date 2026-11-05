@@ -189,13 +189,91 @@ async function cerrarSesion() {
     if (LS.get('inv-pend-cuenta') && !confirm(trad('Hay cambios de este dispositivo que aún no han llegado a tu cuenta (falta conexión). Si cierras la sesión ahora, se pierden. ¿Cerrarla igualmente?'))) return;
   }
   try { await fbCargar(); await FB.au.signOut(FB.auth); } catch (e) { console.warn(e); }
+  await limpiarSesionLocal();
+  location.reload();
+}
+/* lo que se borra de este dispositivo al cerrar la sesión (y, con todo lo demás, al borrar la cuenta) */
+async function limpiarSesionLocal() {
   try { await IDB.del(IDB_CLAVE); await IDB.del('clave-local'); await IDB.del('clave'); } catch (e) {}
   for (const k of ['inv-cuenta-enc', 'inv-pend-cuenta', 'inv-cuenta-descartada', 'inv-bloqueo', 'inv-bloqueo-t', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-convs', 'inv-ia-propio', 'inv-asesor-cfg2', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-token', 'inv-gkey-modo', 'inv-ia-agotados', 'inv-ia-diario', 'inv-banco-t', 'inv-banco-intento', 'inv-banco-sin-psu', 'inv-claude-ok', 'inv-claude-ok-imp', 'inv-ia-motor', 'inv-metas-hechas']) LS.del(k);
   try { localStorage.removeItem('inv-token'); } catch (e) {}
   LS.del('inv-nombre');
   // el widget de Android no puede seguir enseñando la cartera de quien se ha ido
   try { if (window.InversionesApp && window.InversionesApp.borrarWidget) window.InversionesApp.borrarWidget(); } catch (e) {}
-  location.reload();
+}
+/* Borrar la cuenta (0.8.2; Google Play lo exige a toda app con cuentas). Firebase solo deja borrar una cuenta con la
+   sesión recién abierta, así que se pide otra vez la contraseña (o Google). Se borran: el aviso al dueño (bajas/{uid},
+   con el correo, para que quite a mano el modo y la lista de espera, que van por correo y no los puede tocar la
+   cuenta), las opiniones, la ficha de la cuenta (cuentas), la copia cifrada (usuarios), la propia cuenta y todo lo
+   de Toisón en este dispositivo. Los avisos de fallos de la IA caducan solos a los 30 días. En toison.es/borrar-cuenta
+   se explica lo mismo para quien ya no tiene la app. */
+const proveedoresCuenta = () => ((FB.auth && FB.auth.currentUser && FB.auth.currentUser.providerData) || []).map((p) => p.providerId);
+async function reabrirSesion(pass) {
+  const u = FB.auth.currentUser, pr = proveedoresCuenta();
+  if (pr.includes('password')) return FB.au.reauthenticateWithCredential(u, FB.au.EmailAuthProvider.credential(u.email, pass));
+  if (pr.includes('google.com')) {
+    const nativo = !!window.InversionesApp && !!FB_GOOGLE_WEB && (() => { try { return !!window.InversionesApp.googleDisponible(); } catch (e) { return false; } })();
+    if (nativo) {
+      const tok = await new Promise((ok, mal) => {
+        const t = setTimeout(() => mal(Object.assign(new Error('tiempo'), { code: 'tiempo' })), 45000);
+        window.pasoGoogle = () => {};
+        window.resultadoGoogle = (si, x) => { clearTimeout(t); if (si) ok(x); else mal(Object.assign(new Error(x || 'google'), { code: /CANCEL/i.test(x || '') ? 'auth/popup-closed-by-user' : 'google' })); };
+        const clasico = (() => { try { return !!window.InversionesApp.googleClasico(); } catch (e) { return false; } })();
+        try { if (clasico) window.InversionesApp.entrarGoogleClasico(FB_GOOGLE_WEB); else window.InversionesApp.entrarGoogle(FB_GOOGLE_WEB); } catch (e) { clearTimeout(t); mal(e); }
+      });
+      return FB.au.reauthenticateWithCredential(u, FB.au.GoogleAuthProvider.credential(tok));
+    }
+    const g = new FB.au.GoogleAuthProvider(); g.setCustomParameters({ prompt: 'select_account', login_hint: u.email || '' });
+    return FB.au.reauthenticateWithPopup(u, g);
+  }
+  if (pr.includes('apple.com')) return FB.au.reauthenticateWithPopup(u, new FB.au.OAuthProvider('apple.com'));
+  throw Object.assign(new Error('sin método'), { code: 'sin-metodo' });
+}
+async function borrarCuentaEntera(pass) {
+  await conTiempo(fbCargar(), 20000);
+  const u = FB.auth.currentUser;
+  if (!u) throw Object.assign(new Error('sin sesión'), { code: 'sin-sesion' });
+  await reabrirSesion(pass);
+  // que nada vuelva a subir la cartera mientras se borra
+  S.borrandoCuenta = true; S.subidaParada = true; LS.del('inv-pend-cuenta');
+  if (S.vigilaCuenta) { try { S.vigilaCuenta(); } catch (e) {} S.vigilaCuenta = null; }
+  const f = FB.fs, uid = u.uid, correo = String(u.email || '').toLowerCase();
+  // el aviso al dueño va primero: si algo falla después, sabe que hay una baja a medias
+  try { await conTiempo(f.setDoc(f.doc(FB.db, 'bajas', uid), { correo, cuando: f.serverTimestamp() }), 10000); } catch (e) { console.warn(e); }
+  const ops = await conTiempo(f.getDocs(f.query(f.collection(FB.db, 'opiniones'), f.where('uid', '==', uid))), 10000);
+  for (const d of ops.docs) await conTiempo(f.deleteDoc(d.ref), 10000);
+  for (const c of ['cuentas', 'usuarios']) await conTiempo(f.deleteDoc(f.doc(FB.db, c, uid)), 10000);
+  await conTiempo(FB.au.deleteUser(u), 15000);
+  await limpiarSesionLocal();
+  try { for (const k of Object.keys(localStorage)) if (/^inv-/.test(k)) localStorage.removeItem(k); } catch (e) {}
+}
+function hojaBorrarCuenta() {
+  const conPass = proveedoresCuenta().includes('password') || (!proveedoresCuenta().length && FB.user && (FB.user.providerData || []).some((p) => p.providerId === 'password'));
+  const h = hoja('Borrar la cuenta', `<form id="fBorrar" class="borrar-cuenta" novalidate>
+    <p>Se borran tu cuenta, la copia cifrada de tu cartera, tus opiniones y todo lo que Toisón guarda en este dispositivo. No se puede deshacer.</p>
+    <p class="nota">Si quieres quedarte con la cartera, descarga antes una copia en Ajustes, Seguridad, «Copia de seguridad». El modo de tu cuenta y, si estabas apuntado, tu correo de la lista de espera se borran en 30 días como mucho. Los avisos de fallos de la IA se borran solos a los 30 días.</p>
+    ${conPass ? '<label class="campo">Tu contraseña de la cuenta<input type="password" name="p" autocomplete="current-password"></label>' : '<p class="nota">Para comprobar que eres tú, Google te pedirá que elijas tu cuenta otra vez.</p>'}
+    <label class="campo">Escribe BORRAR para confirmar<input name="c" autocomplete="off" autocapitalize="characters" spellcheck="false" maxlength="10"></label>
+    <div class="error" id="bcErr" role="alert"></div>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn peligro" id="bcBorrar">Borrar la cuenta</button></div>
+  </form>`);
+  const fo = $('#fBorrar', h.el), err = (m) => { $('#bcErr', h.el).textContent = m ? trad(m) : ''; };
+  fo.onsubmit = async (ev) => {
+    ev.preventDefault(); err('');
+    const pass = conPass ? fo.p.value : '', c = normTxt(fo.c.value);
+    if (c !== 'borrar' && c !== 'delete') return err('Escribe BORRAR para confirmar.');
+    if (conPass && !pass) return err('Escribe tu contraseña.');
+    const b = $('#bcBorrar', h.el); b.disabled = true; b.textContent = trad('Borrando…');
+    try {
+      await borrarCuentaEntera(pass);
+      h.cerrar(true);
+      $('#app').innerHTML = `<div class="pantalla"><div class="caja caja-cuenta"><h1>${esc(trad('Cuenta borrada'))}</h1><p>${esc(trad('Tu cuenta y tu cartera se han borrado de Toisón y de este dispositivo.'))}</p><button class="btn primario" id="bcFin">${esc(trad('Volver al principio'))}</button></div></div>`;
+      $('#bcFin').onclick = () => location.reload();
+    } catch (e) {
+      console.warn(e); S.borrandoCuenta = false; b.disabled = false; b.textContent = trad('Borrar la cuenta');
+      err(e && e.code === 'auth/user-mismatch' ? 'Esa no es la cuenta de Google con la que entraste. Elige la tuya.' : e && (e.code === 'tiempo' || e.message === 'tiempo') ? 'Sin respuesta: no se ha terminado de borrar. Comprueba la conexión y vuelve a probar.' : e && e.code === 'sin-metodo' ? 'No se puede comprobar que eres tú con esta forma de entrar. Escribe a hola@toison.es desde el correo de tu cuenta.' : errorFb(e));
+    }
+  };
 }
 /* con la cartera abierta: si cambia en otro dispositivo, se actualiza aquí sola */
 function vigilarCuenta() {

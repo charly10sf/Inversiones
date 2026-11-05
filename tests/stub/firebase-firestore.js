@@ -34,7 +34,7 @@ function puedeLeer(ruta) {
   if (col === 'usuarios') return id === u.uid;
   if (col === 'modos') return esDueno() || (id === String(u.email || '').toLowerCase() && (u.emailVerified || u.proveedor !== 'password'));
   if (col === 'cuentas' || col === 'opiniones') return esDueno() || (crudo(ruta) || {}).uid === u.uid;
-  if (col === 'fallos_ia') return esDueno();
+  if (col === 'fallos_ia' || col === 'bajas') return esDueno();
   return true;
 }
 function snap(ruta) {
@@ -62,6 +62,9 @@ export async function setDoc(ref, data, o) { if (ref.path.startsWith('fallos_ia/
 // fallos_ia: las reglas dejan borrar solo al dueño
 export async function deleteDoc(ref) {
   if (ref.path.startsWith('fallos_ia/') && !esDueno()) throw sinPermiso();
+  // opiniones: el dueño o quien la mandó (0.8.2, al borrar la cuenta); bajas: solo el dueño
+  if (ref.path.startsWith('opiniones/') && !esDueno() && (crudo(ref.path) || {}).uid !== (yo() || {}).uid) throw sinPermiso();
+  if (ref.path.startsWith('bajas/') && !esDueno()) throw sinPermiso();
   localStorage.removeItem(P + ref.path); escribe(); avisarCambio(ref.path);
 }
 export async function updateDoc(ref, data) { if (!crudo(ref.path)) { const e = new Error('No document to update'); e.code = 'not-found'; throw e; } poner(ref.path, data, true); }

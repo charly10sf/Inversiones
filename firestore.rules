@@ -33,7 +33,18 @@ service cloud.firestore {
         || (request.auth != null && resource.data.uid == request.auth.uid
           && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['vista'])
           && request.resource.data.vista == true);
-      allow delete: if false;
+      // 0.8.2: quien borra su cuenta borra también sus opiniones
+      allow delete: if esDueno() || (request.auth != null && resource.data.uid == request.auth.uid);
+    }
+    // 0.8.2: al borrar la cuenta queda aquí el aviso, con el correo, para que el dueño quite a mano lo que va por
+    // correo y la cuenta no puede tocar (su modo y la lista de espera). Solo lo crea la propia cuenta, una vez.
+    match /bajas/{uid} {
+      allow create: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.keys().hasOnly(['correo', 'cuando'])
+        && request.resource.data.correo == request.auth.token.get('email', '').lower()
+        && request.resource.data.cuando == request.time;
+      allow read, list, delete: if esDueno();
+      allow update: if false;
     }
     // 0.5: modo fundador o estándar de cada cuenta, por su correo en minúsculas. Lo pone, lo lista y lo quita solo el
     // dueño (con una nota corta opcional para esa persona); cada cuenta solo puede leer el suyo, con el correo confirmado
