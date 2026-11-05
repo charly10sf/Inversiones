@@ -205,6 +205,9 @@ def a_claude(cuerpo, modelo):
         if texto:
             mensajes.append({"role": "assistant" if c.get("role") == "model" else "user", "content": texto})
     out = {"model": modelo, "max_tokens": min(int(gc.get("maxOutputTokens") or 8192), CLAUDE_MAX_SALIDA), "messages": mensajes}
+    # Haiku 5.5 piensa por defecto y se gastaba los 32000 tokens de salida en pensar (stop_reason=max_tokens, solo un bloque
+    # «thinking», 5 nov 22:09). La lectura de noticias no lo necesita: sin pensar, sale el JSON y cuesta mucho menos.
+    out["thinking"] = {"type": "disabled"}
     if sistema.strip():
         out["system"] = sistema.strip()
     if any("google_search" in t for t in (cuerpo.get("tools") or [])):
