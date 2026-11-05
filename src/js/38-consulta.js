@@ -13,7 +13,8 @@ function candidatoDeSim(sim) {
 }
 const nombreRadar = (x) => nombreCorto(/^[A-Z0-9 .,&'-]+$/.test(x.n) ? x.n.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : x.n);
 function htmlBuscaMercados() {
-  const n = candidatosBusqueda().length;
+  // el catálogo ampliado se baja al buscar: hasta entonces, se cuenta con lo que dice catalogo-precios.json
+  const n = candidatosBusqueda().length + (S.catMas ? 0 : (S.cat && S.cat.mas && S.cat.mas.n) || 0);
   return `<section class="merc-busca" aria-labelledby="hBusca"><h2 id="hBusca">Busca un fondo, una acción o una cripto</h2><div id="mercBusca"></div><p class="merc-busca-t">Unos ${fmtNum(Math.floor(n / 50) * 50, 0)} entre fondos, cripto, empresas y mercados: su precio, su gráfica, sus noticias y añadirlo a tu cartera.</p></section>`;
 }
 function htmlMovidas(abierto = true) {
@@ -69,7 +70,7 @@ function abrirConsulta(c) {
   if (pos) { abrirFicha(pos.id); return; }
   const inst = idI ? S.inst[idI] : null;
   const cid = c.k.startsWith('cat:') ? c.k.slice(4) : (inst && inst.cat) || null;
-  const ca = cid ? S.cat && S.cat.v && S.cat.v[cid] : inst ? catDe(inst) : null;
+  const ca = cid ? catEntrada(cid) : inst ? catDe(inst) : null;
   const sim = c.k.startsWith('radar:') ? c.k.slice(6) : c.s || (inst && inst.yahoo) || '';
   const x = sim ? radarPorSim(sim) : null;
   const pi = idI && S.precios && S.precios.instrumentos && S.precios.instrumentos[idI];
