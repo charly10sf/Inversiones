@@ -37,8 +37,8 @@ function md(src) {
 
 /* ---------- 0.8.2 · quién contesta ----------
    Ni arriba del panel ni debajo de cada respuesta hay aviso de qué IA contesta (6 nov, Carlos: «ya se sobreentiende, no
-   quiero que diga qué IA es ni nada»); el modelo de cada respuesta se guarda igual en t.modelo. Con Claude (estándar, y el fundador desde la opción B) van las reglas del estándar:
-   no da recomendaciones personalizadas. El fundador con Gemini sigue con el asesor de siempre. */
+   quiero que diga qué IA es ni nada»); el modelo de cada respuesta se guarda igual en t.modelo. Con Claude (estándar, y el
+   fundador desde la opción B) van las reglas del estándar: no da recomendaciones personalizadas. 0.8.2b: solo Claude. */
 const nombreModLargo = (m) => (MODELOS[m] || MODELOS_CLAUDE[m] || {}).n || m || '';
 
 /* ---------- 0.8.2 · tus conversaciones guardadas ---------- */
@@ -103,15 +103,7 @@ function htmlTurno(t, k) {
     ${vivo && !(ult && ult.tipo === 'texto' && ult.texto) ? `<div class="as-pensando" aria-label="Pensando"><i></i><i></i><i></i><small class="as-seg">${t.t && Date.now() - t.t >= 3000 ? `${Math.round((Date.now() - t.t) / 1000)} s` : ''}</small></div>` : ''}
     ${t.error ? `<div class="as-error">${esc(t.error)} <button class="enlace" data-as="reintentar">Volver a preguntar</button></div>` : ''}
     ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.filter((x) => urlSegura(x.u)).map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(x.d || dom(x.u))}</a>`).join('')}</div>` : ''}
-    ${!vivo && esRapida(t.modelo) && !esRapida(cfgAsesor().modelo) && !t.error ? `<small class="as-modelo-de">${L('Contestada con la respuesta rápida: la normal había gastado su cupo de hoy.', 'Answered with the fast answer: the normal one had used up today\'s quota.')}</small>` : ''}
   </div>`;
-}
-/* 0.7: el rincón de los detalles (Ajustes de GrowIA): con qué modelos de Google funciona, lo gastado hoy desde este
-   dispositivo y lo que se apunta de los fallos */
-function htmlCupoIA() {
-  const u = usoIAHoy(), h = horaRenuevaIA();
-  const rapida = `${u[MODELO_RAPIDO] || 0} ${L('hoy', 'today')}${agotadosIA().includes(MODELO_RAPIDO) ? ` (${L('agotada', 'used up')})` : ''}`;
-  return `${L('La IA funciona con Gemini, de Google. La respuesta normal es Gemini 3.8 Flash y, cuando se le acaba el cupo del día, 3.6 Flash; la rápida, 3.5 Flash-Lite.', 'GrowIA runs on Gemini, by Google. The normal answer is Gemini 3.8 Flash and, once its daily quota runs out, 3.6 Flash; the fast one, 3.5 Flash-Lite.')}<br>${L('Hoy, desde este dispositivo', 'Today, from this device')}: ${L('normal', 'normal')} ${cupoNormalTxt(u)} · ${L('rápida', 'fast')} ${rapida}. ${L(`Se renueva a medianoche de California (a las ${h} aquí). Si usas la clave en otro sitio, también gasta.`, `It resets at midnight California time (${h} here). Using the key elsewhere also counts.`)}<br>${L('Si la IA falla y no se arregla sola, Toisón apunta con tu cuenta el tipo de fallo, el modelo y la versión, sin tu pregunta ni tu cartera, para arreglarlo. Se borra a los 30 días.', "If GrowIA fails and doesn't recover, Toisón logs the type of failure, the model and the version with your account, without your question or portfolio, so it can be fixed. It's deleted after 30 days.")}`;
 }
 /* 0.7l: el registro de GrowIA (lo que ha hecho, sin preguntas ni respuestas) y, en la app de Android, si tiene la
    batería restringida, que es lo que hace que se corte al salir */
@@ -123,27 +115,22 @@ function htmlDiarioIA() {
     <div class="as-diario"><b>${L('Lo último de la IA', "GrowIA's latest activity")}</b><small>${L('Qué ha hecho cada respuesta, sin tus preguntas ni tus cifras. Si algo falla, cópialo y pásaselo a quien te dio Toisón.', "What each answer did, without your questions or figures. If something fails, copy it and send it to whoever gave you Toisón.")}</small>
     ${d.length ? `<ol>${d.map((x) => `<li><time>${h(x.t)}</time>${x.app ? '<i>app</i>' : ''}${esc(x.x)}</li>`).join('')}</ol><button class="btn peq" data-as="copiar-diario">${ICONOS.copiar}${L('Copiar', 'Copy')}</button>` : `<p class="nota">${L('Aún no hay nada.', 'Nothing yet.')}</p>`}</div>`;
 }
-function htmlClaveAsesor() {
-  const cfg = cfgAsesor();
-  return `<div class="as-config">
-    <h3 data-no-trad>${conIA('Activa la IA, gratis', 'Turn on GrowIA, for free')}</h3>
-    ${claudeSinClave() ? `<p class="nota as-sin-clave">${L('Tu cuenta ya tiene la IA con Claude: no te hace falta ninguna clave. Toda la IA de Toisón (preguntas, revisiones, noticias e importar) va con Claude; la de Google solo quedaría de reserva si Claude no puede.', 'Your account already has the AI with Claude: you do not need any key. All of Toisón\'s AI (questions, reviews, news and importing) runs on Claude; the Google one would only be a backup if Claude cannot answer.')}</p>` : ''}
-    <p>La IA funciona con Gemini, la IA de Google, con una clave gratuita de Google AI Studio. No hace falta tarjeta.</p>
-    <ol class="as-pasos-clave">
-      <li>Entra en <a href="https://aistudio.google.com/apikey" target="_blank" rel="noopener noreferrer">aistudio.google.com/apikey</a> con tu cuenta de Google.</li>
-      <li>Pulsa «Create API key» y copia la clave entera: empieza por <code>AQ.</code> (o por <code>AIza</code> si es de las antiguas).</li>
-      <li>Pégala aquí. Se guarda cifrada con la clave de tu cartera y solo viaja de tu navegador a Google.</li>
-    </ol>
-    <p class="nota">Tus preguntas y lo que necesita de tu cartera van de tu navegador a Google, cifrados en el camino; no pasan por Toisón.</p>
-    <label class="campo">Clave de Google<input type="password" id="asClave" placeholder="AQ.… o AIza…" autocomplete="off" spellcheck="false"></label>
-    <label class="check"><input type="checkbox" id="asSync"> Guardarla también en tu cartera cifrada, para no tener que ponerla en el móvil</label>
-    <div class="error" id="asErr"></div>
-    <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-clave">Guardar y probar</button>${iaLista() ? '<button class="btn" data-as="chat">Volver</button>' : ''}</div>
-    <p class="nota" style="margin:0">El plan gratuito tiene un tope de preguntas por minuto y por día (los tuyos, en aistudio.google.com/rate-limit); si lo pasas, la IA espera o te avisa. No actives la facturación en ese proyecto o empezará a cobrarte. Desde España, por las condiciones de Google para la UE, lo que mandas con la clave gratuita no se usa para mejorar sus productos.</p>
+/* 0.8.2b: cuando la IA no puede contestar (sin cuenta, con el correo sin confirmar, sin tu sí o con Claude apartado un rato),
+   lo dice y qué hacer. Ya no hay clave que poner */
+function htmlSinIA() {
+  const p = claudePausado(), sinVerificar = FB.user && !FB.user.emailVerified, esperando = !p && !sinVerificar && !!SONDEO_EN_CURSO;
+  const txt = !FB.user ? L('La IA contesta con tu cuenta de Toisón: entra en tu cuenta para usarla.', 'The AI answers with your Toisón account: sign in to use it.')
+    : S.demo ? L('En la demo la IA no contesta: crea tu cuenta para preguntarle por tu cartera.', 'The AI does not answer in the demo: create your account to ask it about your portfolio.')
+    : esperando ? L('Conectando con la IA…', 'Connecting to the AI…')
+    : errorSinIA(motivoSinClaude()).message;
+  return `<div class="as-config as-sin-ia">
+    <h3 data-no-trad>${conIA('La IA', 'GrowIA')}</h3>
+    <p>${esc(txt)}</p>
+    ${esperando || !FB.user || S.demo ? '' : `<div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="reprobar">${L('Volver a probar', 'Try again')}</button></div>`}
     <div class="as-sin-clave">
-      <b>Sin clave</b>
-      <p>Copia tu cartera de ahora mismo junto con tu pregunta y pégala en el chat de IA que uses. No hace los cálculos de Toisón en directo, pero tiene todos tus datos.</p>
-      <button class="btn" data-as="copiar">${ICONOS.copiar}Copiar mi cartera para otra IA</button>
+      <b>${L('Mientras tanto', 'Meanwhile')}</b>
+      <p>${L('Copia tu cartera de ahora mismo junto con tu pregunta y pégala en el chat de IA que uses. No hace los cálculos de Toisón en directo, pero tiene todos tus datos.', "Copy your current portfolio together with your question and paste it into the AI chat you use. It doesn't run Toisón's live calculations, but it has all your data.")}</p>
+      <button class="btn" data-as="copiar">${ICONOS.copiar}${L('Copiar mi cartera para otra IA', 'Copy my portfolio for another AI')}</button>
     </div>
   </div>`;
 }
@@ -152,18 +139,14 @@ function htmlAjustesAsesor() {
   const yo = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
   return `<div class="as-config">
     <h3>Ajustes de la IA</h3>
-    <fieldset class="as-modelos"><legend>Respuesta</legend>${[[MODELO_DEF, 'Normal', 'Piensa a fondo. Si se le acaba el cupo gratis del día, sigue sola con la de reserva y, después, con la rápida.'], [MODELO_RAPIDO, 'Rápida', 'Contesta en segundos y tiene mucho más cupo, pero piensa menos.']].map(([k, n, t]) => `<label class="as-modelo"><input type="radio" name="asModelo" value="${k}"${(k === MODELO_RAPIDO) === esRapida(cfg.modelo) ? ' checked' : ''}><span><b>${n}</b><small>${t}</small></span></label>`).join('')}</fieldset>
-    <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> Puede buscar en internet con Google</label>
-    ${cfg.webFalla ? '<p class="nota" style="margin:-6px 0 0">Tu plan de Google no incluye la búsqueda en internet: de momento la IA contrasta con los titulares que baja Toisón. Lo vuelve a intentar dentro de unos días.</p>' : ''}
-    ${claudeOk() ? `<label class="campo">${L('Quién contesta', 'Who answers')}<select id="asMotor">${[['auto', L('Claude: Haiku, y Sonnet cuando eliges «A fondo» (recomendado)', 'Claude: Haiku, and Sonnet when you choose "In depth" (recommended)')], ['sonnet', L('Claude Sonnet para todo', 'Claude Sonnet for everything')], ['haiku', L('Claude Haiku para todo', 'Claude Haiku for everything')], ['gemini', L('Solo Gemini, con tu clave de Google', 'Gemini only, with your Google key')]].map(([k, t]) => `<option value="${k}"${motorElegido() === k ? ' selected' : ''}>${t}</option>`).join('')}</select><small>${L('Sonnet piensa más y cuesta más; Haiku es más rápido y barato. Si Claude falla, contesta Gemini.', 'Sonnet thinks more and costs more; Haiku is faster and cheaper. If Claude fails, Gemini answers.')}${esPublico() ? '' : ` ${L('Con el acceso de fundador, Claude va con las reglas del estándar: explica, calcula y te dice lo que implican tus reglas, sin decirte qué comprar o vender. Con Gemini, la IA de siempre.', 'With founder access, Claude follows the standard rules: it explains, calculates and tells you what your rules imply, without telling you what to buy or sell. With Gemini, the usual AI.')}`}</small></label>` : ''}
+    <label class="check"><input type="checkbox" id="asWeb"${cfg.webPedida ? ' checked' : ''}> ${L('Puede buscar en internet', 'It can search the internet')}</label>
+    <label class="campo">${L('Quién contesta', 'Who answers')}<select id="asMotor">${[['auto', L('Claude: Haiku, y Sonnet cuando eliges «A fondo» (recomendado)', 'Claude: Haiku, and Sonnet when you choose "In depth" (recommended)')], ['sonnet', L('Claude Sonnet para todo', 'Claude Sonnet for everything')], ['haiku', L('Claude Haiku para todo', 'Claude Haiku for everything')]].map(([k, t]) => `<option value="${k}"${motorElegido() === k ? ' selected' : ''}>${t}</option>`).join('')}</select><small>${L('Sonnet piensa más y cuesta más; Haiku es más rápido y barato. Si Sonnet no puede, contesta Haiku.', "Sonnet thinks more and costs more; Haiku is faster and cheaper. If Sonnet can't answer, Haiku does.")}${esPublico() ? '' : ` ${L('Con el acceso de fundador, Claude va con las reglas del estándar: explica, calcula y te dice lo que implican tus reglas, sin decirte qué comprar o vender.', 'With founder access, Claude follows the standard rules: it explains, calculates and tells you what your rules imply, without telling you what to buy or sell.')}`}</small></label>
     <label class="campo">Análisis automático de tu cartera<select id="asAuto"><option value="diario"${cfg.auto === 'diario' ? ' selected' : ''}>Cada día y cuando cambie una señal</option><option value="semanal"${cfg.auto === 'semanal' ? ' selected' : ''}>Cada semana</option><option value="manual"${cfg.auto === 'manual' ? ' selected' : ''}>Solo cuando yo lo pida</option></select><small>Lo escribe la IA con tus cifras y las noticias del día, en Análisis, Expertos y Paso a paso. Gratis.</small></label>
     <label class="campo">Lo que quieres que sepa de ti<textarea id="asYo" rows="6" placeholder="Por ejemplo: tu edad, para qué inviertes, si piensas comprar casa y cuándo, cuánto riesgo aguantas, tus reglas para las acciones sueltas…">${esc(yo)}</textarea><small>Va dentro de tu cartera cifrada y lo lee al empezar cada conversación.</small></label>
     <div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="guardar-ajustes">Guardar</button><button class="btn" data-as="chat">Volver</button></div>
-    <div class="seccion-ed"><h3>Clave de Google</h3>
-      <p class="nota" style="margin:0 0 8px">${claudeOk() && motorElegido() !== 'gemini' ? L('Con Claude, tus preguntas y lo que necesita de tu cartera pasan por el servidor de Toisón (que no guarda nada) hasta Anthropic, la empresa de Claude, que lo procesa fuera de la Unión Europea. Si Claude no puede contestar, va a Google con tu clave, directo desde tu navegador.', "With Claude, your questions and what it needs from your portfolio go through Toisón's server (which stores nothing) to Anthropic, the company behind Claude, which processes it outside the European Union. If Claude can't answer, it goes to Google with your key, straight from your browser.") : 'Tus preguntas y lo que necesita de tu cartera van de tu navegador a Google, cifrados en el camino; no pasan por Toisón.'}</p>
-      <p class="nota" style="margin:0">${AS.clave ? `Guardada${S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[cfg.prov]] ? ', también en tu cartera cifrada' : ' en este dispositivo'}, termina en …${esc(AS.clave.slice(-4))}.` : 'Sin clave.'}</p>
-      ${AS.clave ? `<details class="as-detalle"><summary>${L('Detalles técnicos', 'Technical details')}</summary><p class="nota as-cupo">${htmlCupoIA()}</p>${htmlDiarioIA()}</details>` : `<details class="as-detalle"><summary>${L('Detalles técnicos', 'Technical details')}</summary>${htmlDiarioIA()}</details>`}
-      <div class="fila-btns" style="justify-content:flex-start"><button class="btn peq" data-as="cambiar-clave">${AS.clave ? 'Cambiar clave' : 'Poner clave'}</button>${AS.clave ? '<button class="btn peq peligro" data-as="borrar-clave">Borrar clave</button>' : ''}</div>
+    <div class="seccion-ed"><h3>${L('Adónde van tus datos', 'Where your data goes')}</h3>
+      <p class="nota" style="margin:0 0 8px">${L('Tus preguntas y lo que necesita de tu cartera pasan por el servidor de Toisón (que no guarda nada) hasta Anthropic, la empresa de Claude, que lo procesa fuera de la Unión Europea.', "Your questions and what it needs from your portfolio go through Toisón's server (which stores nothing) to Anthropic, the company behind Claude, which processes it outside the European Union.")} ${L('Si la IA falla y no se arregla sola, Toisón apunta con tu cuenta el tipo de fallo y la versión, sin tu pregunta ni tu cartera, para arreglarlo. Se borra a los 30 días.', "If the AI fails and doesn't recover, Toisón logs the type of failure and the version with your account, without your question or portfolio, so it can be fixed. It's deleted after 30 days.")}</p>
+      <details class="as-detalle"><summary>${L('Detalles técnicos', 'Technical details')}</summary>${htmlDiarioIA()}</details>
     </div>
   </div>`;
 }
@@ -171,16 +154,12 @@ function pintarAsesor(alFinal) {
   const fondo = $('#asesorFondo'); if (!fondo) return;
   const cfg = cfgAsesor();
   const cuerpo = $('#asCuerpo', fondo), pie = $('#asPie', fondo);
-  const vivo = modeloVivo(cfg);
-  // 0.7: lo que ve la persona es GrowIA; los modelos de Google y su cupo, en Ajustes de GrowIA (Detalles técnicos)
-  $('#asSub', fondo).textContent = subtituloIA(cfg);
-  const rapida = cfg.modelo === MODELO_RAPIDO;
-  // 0.8.2: con Claude, Normal (Haiku) o «A fondo» (Sonnet) para tus preguntas; con un modelo fijo elegido en Ajustes, nada
-  if (quienContestaIA() === 'claude') $('#asModo', fondo).innerHTML = motorElegido() !== 'auto' ? '' : `<span>${L('Respuesta', 'Answer')}</span><div class="seg" role="group" aria-label="${L('Tipo de respuesta', 'Answer type')}" aria-describedby="asModoNota"><button type="button" data-as="fondo" data-m="normal" aria-pressed="${!AS.aFondo}">${L('Normal', 'Normal')}</button><button type="button" data-as="fondo" data-m="fondo" aria-pressed="${!!AS.aFondo}">${L('A fondo', 'In depth')}</button></div><small id="asModoNota">${AS.aFondo ? L('Con Sonnet: piensa más y tarda algo más', 'With Sonnet: thinks more and takes a bit longer') : L('Con Haiku: rápida y al grano', 'With Haiku: quick and to the point')}</small>`;
-  else $('#asModo', fondo).innerHTML = `<span>Respuesta</span><div class="seg" role="group" aria-label="Tipo de respuesta"><button type="button" data-as="modo" data-m="normal" aria-pressed="${!rapida}">Normal</button><button type="button" data-as="modo" data-m="rapida" aria-pressed="${rapida}">Rápida</button></div><small>${rapida ? 'Contesta en segundos y gasta mucho menos cupo' : 'Piensa más a fondo'}</small>`;
+  $('#asSub', fondo).textContent = subtituloIA();
+  // 0.8.2: Normal (Haiku) o «A fondo» (Sonnet) para tus preguntas; con un modelo fijo elegido en Ajustes, nada
+  $('#asModo', fondo).innerHTML = motorElegido() !== 'auto' ? '' : `<span>${L('Respuesta', 'Answer')}</span><div class="seg" role="group" aria-label="${L('Tipo de respuesta', 'Answer type')}" aria-describedby="asModoNota"><button type="button" data-as="fondo" data-m="normal" aria-pressed="${!AS.aFondo}">${L('Normal', 'Normal')}</button><button type="button" data-as="fondo" data-m="fondo" aria-pressed="${!!AS.aFondo}">${L('A fondo', 'In depth')}</button></div><small id="asModoNota">${AS.aFondo ? L('Con Sonnet: piensa más y tarda algo más', 'With Sonnet: thinks more and takes a bit longer') : L('Con Haiku: rápida y al grano', 'With Haiku: quick and to the point')}</small>`;
   // 0.9: con una conversación empezada (p. ej. Claude acaba de decir que no puede) se queda en el chat para que se lea
-  const vista = !iaLista() && AS.vista !== 'ajustes' && !AS.conv.length ? 'clave' : AS.vista;
-  if (vista === 'clave') cuerpo.innerHTML = htmlClaveAsesor();
+  const vista = !iaLista() && AS.vista !== 'ajustes' && !AS.conv.length ? 'sin-ia' : AS.vista;
+  if (vista === 'sin-ia') cuerpo.innerHTML = htmlSinIA();
   else if (vista === 'ajustes') cuerpo.innerHTML = htmlAjustesAsesor();
   else if (vista === 'convs') cuerpo.innerHTML = htmlConvs();
   else if (!AS.conv.length) cuerpo.innerHTML = `<div class="as-vacio"><h3>¿Qué quieres saber?</h3>${htmlConvsRecientes()}${htmlFuncionesIA()}<p>Tiene delante tu cartera de ahora mismo: lo que tienes y lo que te costó, tus aportaciones, lo que llevas de renta este año, los analistas, cientos de empresas de EEUU y Europa para buscar ideas y las noticias. Calcula ventas con FIFO e impuestos${cfg.web ? ' y busca en internet lo que le falte' : ''}.</p><div class="as-sug">${sugerencias(S.M || calcular()).map((q) => `<button data-as-q="${esc(q)}">${esc(q)}</button>`).join('')}<button type="button" class="as-sug-rec" data-as="recorte">${ICONOS.recorte}<span>Recorta un trozo de la pantalla y pregúntale por él</span></button></div></div>`;
@@ -200,13 +179,9 @@ function pintarTurno(k) {
   el.outerHTML = htmlTurno(AS.conv[k], k);
   if (abajo) cuerpo.scrollTop = cuerpo.scrollHeight;
 }
-/* 0.9: lo que todavía solo hace Gemini (el resumen de una noticia, leer capturas al importar) abre directamente la
-   pantalla de la clave de Google, también a quien ya usa la IA con Claude sin clave */
-async function abrirClaveGoogle() {
-  AS.pedirClave = true;
-  await abrirAsesor();
-  AS.vista = 'clave'; pintarAsesor();
-}
+/* lo que antes abría la pantalla de la clave de Google (el resumen de una noticia, leer capturas al importar): 0.8.2b, abre
+   la IA, que dice si puede contestar */
+async function abrirClaveGoogle() { await abrirAsesor(); }
 async function abrirAsesor(pregunta, enviar) {
   if (!S.cartera) return;
   if (S.ficha) cerrarFicha();
@@ -240,13 +215,13 @@ async function abrirAsesor(pregunta, enviar) {
     };
   }
   await cargarAsesor();
-  // 0.9: sin clave de Google, con Claude (si tu cuenta lo tiene) la IA también contesta. 0.8.2: también con clave, para que
-  // el aviso de arriba diga desde el principio quién va a contestar (la petición vacía no gasta ni manda nada de la cartera)
+  // ¿puede contestar? La petición vacía no gasta ni manda nada de la cartera; el panel dice «Conectando…» mientras tanto
   sondearClaude();
   if (AS.vista !== 'chat' && iaLista()) AS.vista = 'chat';
   pintarAsesor(true);
   const ta = $('#asTexto', fondo);
-  if (pregunta && enviar && iaLista()) preguntarAsesor(pregunta);
+  // 0.8.2b: si el sondeo aún no ha contestado, la pregunta espera a él (preguntarAsesor)
+  if (pregunta && enviar && (iaLista() || modeloClaudeParaIA('pregunta'))) preguntarAsesor(pregunta);
   else if (pregunta) { ta.value = pregunta; ta.dispatchEvent(new Event('input')); }
   if (window.innerWidth > 760 && !pie_oculto()) ta.focus();
   function pie_oculto() { return $('#asPie', fondo).hidden; }
@@ -293,7 +268,6 @@ function dictar() {
 function cerrarAsesor(desdeAtras) {
   if (dictado) { try { dictado.abort(); } catch (e) {} dictado = null; }
   const f = $('#asesorFondo'); if (!f) return;
-  AS.pedirClave = false;
   f.remove(); document.body.style.overflow = '';
   archivarYa();   // 0.8.2: la conversación abierta pasa ya a la lista (ver archivarLuego)
   if (document.body.classList.contains('ia-lado')) { document.body.classList.remove('ia-lado'); for (const b of $$('.riel-ia')) b.setAttribute('aria-expanded', 'false'); }
@@ -303,25 +277,11 @@ function cerrarAsesor(desdeAtras) {
   const o = S.origenIA; S.origenIA = null;
   const b = o && document.body.contains(o) ? o : iaAlLado() ? $('.riel-ia') : $('#bAsesor'); if (b) b.focus({ preventScroll: true });
 }
-async function probarClave(clave) {
-  const cfg = cfgAsesor();
-  const r = await fetchGoogle(`${GEMINI}/models/${cfg.modelo}`, {}, clave);
-  if (r.ok) return;
-  let j = null; try { j = await r.json(); } catch (e) {}
-  if (r.status === 404) { const m = await mejorFlash(clave); if (m) { guardarCfgAsesor({ modelo: m }); return; } }
-  throw errorGoogle(r.status, j);
-}
 async function clicAsesor(e) {
   const t = e.target.closest('[data-as],[data-as-q]'); if (!t) return;
   if (t.dataset.asQ) return preguntarAsesor(t.dataset.asQ);
   const a = t.dataset.as, fondo = $('#asesorFondo');
   if (a === 'cerrar') cerrarAsesor();
-  else if (a === 'modo') {
-    const cfg = cfgAsesor(), c = LS.get('inv-asesor-cfg2', {});
-    if (t.dataset.m === 'rapida' && cfg.modelo !== MODELO_RAPIDO) guardarCfgAsesor({ modelo: MODELO_RAPIDO, normal: cfg.modelo });
-    else if (t.dataset.m === 'normal' && cfg.modelo === MODELO_RAPIDO) guardarCfgAsesor({ modelo: c.normal && c.normal !== MODELO_RAPIDO && MODELOS[c.normal] ? c.normal : MODELO_DEF });
-    pintarAsesor();
-  }
   else if (a === 'convs') { AS.vista = 'convs'; await cargarConvs(); pintarAsesor(); }
   else if (a === 'abrir-conv') { if (abrirConv(t.dataset.id)) pintarAsesor(true); }
   else if (a === 'borrar-conv') { if (!confirm(L('¿Borrar esta conversación de este dispositivo?', 'Delete this conversation from this device?'))) return; await borrarConv(t.dataset.id); toast(L('Conversación borrada', 'Conversation deleted'), 3000); pintarAsesor(); }
@@ -329,8 +289,9 @@ async function clicAsesor(e) {
   else if (a === 'fondo') { AS.aFondo = t.dataset.m === 'fondo'; pintarAsesor(); }
   else if (a === 'nueva') { if (AS.ctrl) AS.ctrl.abort(); await archivarYa(true); AS.conv = []; AS.api = []; AS.foto = null; AS.convId = null; AS.aFondo = false; AS.vista = 'chat'; LS.del('inv-asesor-conv'); pintarAsesor(); }
   else if (a === 'ajustes') { AS.vista = AS.vista === 'ajustes' ? 'chat' : 'ajustes'; pintarAsesor(); }
-  else if (a === 'chat') { AS.vista = 'chat'; AS.pedirClave = false; pintarAsesor(true); }
-  else if (a === 'cambiar-clave') { AS.vista = 'clave'; pintarAsesor(); $('#asCuerpo').innerHTML = htmlClaveAsesor(); }
+  else if (a === 'chat') { AS.vista = 'chat'; pintarAsesor(true); }
+  // 0.8.2b: volver a probar si la IA puede contestar (quita la pausa de Claude y repite el sondeo)
+  else if (a === 'reprobar') { LS.del(LS_CLAUDE_PAUSA); LS.del(LS_CLAUDE_SONDEO); AS.claudeNo = false; const p = sondearClaude(); pintarAsesor(); await p; pintarAsesor(true); }
   else if (a === 'copiar') copiarCartera();
   else if (a === 'copiar-diario') {
     const txt = `Toisón ${VERSION}${deApp('version') ? ` · app ${deApp('version')}` : ''} · ${navigator.userAgent.replace(/^.*?\(([^)]*)\).*$/, '$1')}\n${textoDiarioIA()}`;
@@ -344,25 +305,9 @@ async function clicAsesor(e) {
     let k = AS.conv.length - 1; while (k >= 0 && AS.conv[k].rol !== 'yo') k--;
     if (k < 0) return;
     const q = AS.conv[k].texto; if (AS.conv[k].adj) AS.adjunto = AS.conv[k].adj; if (AS.conv[k].ctx) S.ctxIA = { ...AS.conv[k].ctx, q, t: Date.now() }; AS.conv.splice(k); preguntarAsesor(q);
-  } else if (a === 'borrar-clave') {
-    const pv = cfgAsesor().prov;
-    AS.clave = null; LS.del(LS_CLAVE[pv]);
-    if (S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[pv]]) { delete S.cartera.asesor[CAMPO_CLAVE[pv]]; await guardarCartera('Asesor: borrar clave'); }
-    AS.vista = 'clave'; pintarAsesor();
-  } else if (a === 'guardar-clave') {
-    const c = $('#asClave', fondo).value.trim(), err = $('#asErr', fondo), pv = cfgAsesor().prov;
-    if (pv === 'google' && !/^[\w.-]{30,}$/.test(c)) { err.textContent = 'Eso no parece una clave de Google AI Studio: son una sola línea larga, sin espacios, que empieza por «AQ.» o por «AIza».'; return; }
-    t.disabled = true; t.textContent = 'Probando…'; err.textContent = '';
-    try {
-      await probarClave(c);
-      AS.clave = c; if (!S.demo) LS.set(LS_CLAVE[pv], await cifrarLocal(c));
-      if ($('#asSync', fondo).checked) { S.cartera.asesor = { ...(S.cartera.asesor || {}), [CAMPO_CLAVE[pv]]: c }; await guardarCartera('Asesor: clave'); }
-      AS.vista = 'chat'; AS.pedirClave = false; toast('Clave guardada: ya puedes preguntar'); pintarAsesor(); revisarAnalisisIA();
-    } catch (x) { err.textContent = /Failed to fetch|NetworkError|Load failed/i.test(x.message) ? `No se pudo conectar con ${PROV[pv].n}.` : x.message; t.disabled = false; t.textContent = 'Guardar y probar'; }
   } else if (a === 'guardar-ajustes') {
-    const modelo = (fondo.querySelector('input[name="asModelo"]:checked') || {}).value;
     const web = $('#asWeb', fondo).checked, antesWeb = cfgAsesor().webPedida;
-    guardarCfgAsesor({ modelo, web, auto: $('#asAuto', fondo).value, ...(web && !antesWeb ? { web_falla: null } : {}) });
+    guardarCfgAsesor({ web, auto: $('#asAuto', fondo).value, ...(web && !antesWeb ? { web_falla: null } : {}) });
     if ($('#asMotor', fondo)) { LS.set(LS_MOTOR, $('#asMotor', fondo).value); LS.del(LS_CLAUDE_PAUSA); }
     const yo = $('#asYo', fondo).value.trim(), antes = (S.cartera.asesor && S.cartera.asesor.sobre_mi) || '';
     if (yo !== antes) { S.cartera.asesor = { ...(S.cartera.asesor || {}), sobre_mi: yo }; await guardarCartera('Asesor: sobre ti'); AS.foto = null; }

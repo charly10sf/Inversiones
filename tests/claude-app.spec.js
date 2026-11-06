@@ -1,7 +1,8 @@
-// 0.8: GrowIA con Claude. La app habla con la ruta /claude del Worker (aquí, de imitación) y, si Claude no puede, sigue con
-// Gemini y la clave del usuario. Se comprueba: qué se manda (modelo, herramientas, búsqueda en internet, caché, ronda), que
-// la respuesta en directo y las herramientas se pintan, los tokens en el registro, y cada camino a Gemini (sin permiso,
-// sin créditos, error a mitad de la respuesta, Worker caído) y que ni la cartera ni nada sale si no puede usarse Claude.
+// 0.8: la IA con Claude. La app habla con la ruta /claude del Worker (aquí, de imitación). Desde la 0.8.2b es el único motor:
+// sin Gemini de reserva, si Sonnet falla contesta Haiku y, si no, se dice claro. Se comprueba: qué se manda (modelo,
+// herramientas, búsqueda en internet, caché, ronda), que la respuesta en directo y las herramientas se pintan, los tokens en
+// el registro, cada fallo (sin créditos, error a mitad de la respuesta, Worker caído, topes) y que ni la cartera ni nada sale
+// si no puede usarse Claude. Gemini se sigue vigilando (gemini()) para comprobar que nunca se llama.
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 
@@ -81,7 +82,7 @@ async function preparada(page, { acepta = true } = {}) {
   await quitarCapas(page);
   await meterCartera(page);
   // el modo, ya definitivo (como cuando se ha leído de la cuenta)
-  await page.evaluate(() => { S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: FB.user.uid, t: Date.now() }); guardarCfgAsesor({ auto: 'manual' }); AS.clave = 'AQ.prueba-de-growfolio'; });
+  await page.evaluate(() => { S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: FB.user.uid, t: Date.now() }); guardarCfgAsesor({ auto: 'manual' }); });
 }
 const preguntar = (page, q = '¿Qué ha pasado con Repsol este mes?') => page.evaluate((x) => abrirAsesor(x, true), q);
 
@@ -188,69 +189,102 @@ test('un análisis que se queda sin espacio (max_tokens) se repite con esfuerzo 
   expect(await page.evaluate(() => LS.get('inv-ia-tokens', []).at(-1).m['claude-haiku-5-5'].n)).toBe(2);
 });
 
-test('si Claude no tiene créditos pasa a Gemini, se aparta y la pregunta siguiente va directa a Gemini', async ({ page, context }) => {
+test('si Claude no tiene créditos se dice claro, se aparta y la pregunta siguiente lo dice sin tocar el Worker', async ({ page, context }) => {
   await preparada(page);
   const g = await gemini(context);
   const w = await worker(context, () => ({ json: { error: 'sin-creditos' }, estado: 402 }));
   await preguntar(page);
   const cuerpo = page.locator('#asCuerpo');
-  await expect(cuerpo).toContainText('Contesta Gemini', { timeout: 20_000 });
-  await expect(cuerpo).toContainText('Claude no está disponible ahora');
+  await expect(cuerpo).toContainText('La IA no está disponible ahora mismo', { timeout: 20_000 });
+  await expect(cuerpo.locator('[data-as="reintentar"]')).toHaveCount(1);
+  await expect(cuerpo).not.toContainText('Google');
   expect(w.peticiones.length).toBe(1);
-  expect(g.n).toBe(1);
   expect(await page.evaluate(() => claudePausado().motivo)).toBe('sin-creditos');
-  expect(await page.evaluate(() => textoDiarioIA())).toMatch(/Claude no ha podido \(sin-creditos\).*se aparta 3 h: sigue Gemini/);
+  expect(await page.evaluate(() => textoDiarioIA())).toMatch(/Claude no ha podido \(sin-creditos\), se aparta 3 h/);
   // la siguiente no toca el Worker (ni el sondeo)
   await page.evaluate(() => { AS.cargando = false; });
-  await preguntar(page, '¿Y qué pasa con IAG?');
-  await expect.poll(() => g.n, { timeout: 20_000 }).toBe(2);
+  await page.evaluate(() => preguntarAsesor('¿Y qué pasa con IAG?'));
+  await expect(cuerpo.locator('.as-error')).toHaveCount(2, { timeout: 20_000 });
   expect(w.peticiones.length).toBe(1);
   expect(w.sondeos).toBe(1);
+  expect(g.n).toBe(0);
 });
 
-test('quien no está en la lista de Claude no manda nada de su cartera: el sondeo dice que no y contesta Gemini', async ({ page, context }) => {
+// 0.8.2b: sin Gemini de reserva, si falla Sonnet («A fondo») contesta Haiku; lo escrito por Sonnet no queda
+test('un error de Sonnet en mitad de la respuesta (saturado) pasa a Haiku y lo escrito no queda', async ({ page, context }) => {
   await preparada(page);
   const g = await gemini(context);
-  const w = await worker(context, () => ({ json: { error: 'no debería llegar' }, estado: 500 }), { puede: false });
-  await preguntar(page);
-  await expect(page.locator('#asCuerpo')).toContainText('Contesta Gemini', { timeout: 20_000 });
-  expect(w.sondeos).toBe(1);
-  expect(w.peticiones.length, 'nada de la cartera llegó al Worker').toBe(0);
-  expect(await page.evaluate(() => claudePausado().motivo)).toBe('no-permitido');
-  // sin Claude no se enseña lo de Claude en los ajustes
-  expect(await page.evaluate(() => LS.get('inv-claude-ok', false))).toBe(false);
-});
-
-test('un error en mitad de la respuesta (saturado) pasa a Gemini y lo escrito por Claude no queda', async ({ page, context }) => {
-  await preparada(page);
-  const g = await gemini(context);
-  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Empiezo a contestar y' }], 'end_turn', usoIni, 5, { error: { type: 'overloaded_error', message: 'Overloaded' } }) }));
+  const w = await worker(context, (c) => (c.model === 'claude-sonnet-5-5'
+    ? { sse: stream([{ tipo: 'texto', texto: 'Empiezo a contestar y' }], 'end_turn', usoIni, 5, { error: { type: 'overloaded_error', message: 'Overloaded' } }) }
+    : { sse: stream([{ tipo: 'texto', texto: 'Contesta Haiku: tu cartera sigue su curso.' }]) }));
+  await page.evaluate(() => { AS.aFondo = true; });
   await preguntar(page);
   const cuerpo = page.locator('#asCuerpo');
-  await expect(cuerpo).toContainText('Contesta Gemini', { timeout: 20_000 });
+  await expect(cuerpo).toContainText('Contesta Haiku', { timeout: 20_000 });
+  await expect(cuerpo).toContainText('contesta la normal');
   await expect(cuerpo).not.toContainText('Empiezo a contestar');
-  expect(w.peticiones.length).toBe(1);
-  expect(g.n).toBe(1);
-  // un saturado puntual no aparta a Claude: la pregunta siguiente lo vuelve a probar
+  expect(w.peticiones.map((p) => p.cuerpo.model)).toEqual(['claude-sonnet-5-5', 'claude-haiku-5-5']);
+  expect(g.n).toBe(0);
+  // un saturado puntual no aparta a Claude
   expect(await page.evaluate(() => claudePausado())).toBeNull();
-  expect(await page.evaluate(() => textoDiarioIA())).toMatch(/Claude no ha podido \(overloaded_error: Overloaded\): sigue Gemini/);
+  expect(await page.evaluate(() => textoDiarioIA())).toMatch(/Sonnet 5\.5 no ha podido \(overloaded_error\): sigue Haiku/);
 });
 
-test('con el Worker sin alcanzar (bloqueado o caído) contesta Gemini sin esperar y se aparta unos minutos', async ({ page, context }) => {
+test('sin «A fondo» hoy (nivel reducido) contesta Haiku, se apaga «A fondo» y la siguiente va directa con Haiku', async ({ page, context }) => {
+  await preparada(page);
+  const w = await worker(context, (c) => (c.model === 'claude-sonnet-5-5'
+    ? { json: { error: 'tope-fondo' }, estado: 429 }
+    : { sse: stream([{ tipo: 'texto', texto: 'Contesta Haiku.' }]), cabeceras: { 'X-Quedan': '9', 'X-Nivel': 'reducido', 'Access-Control-Expose-Headers': 'X-Quedan, X-Quedan-Fondo, X-Nivel' } }));
+  await page.evaluate(() => { AS.aFondo = true; });
+  await preguntar(page);
+  await expect(page.locator('#asCuerpo')).toContainText('Contesta Haiku.', { timeout: 20_000 });
+  await expect(page.locator('#asCuerpo')).toContainText('ya no te quedan respuestas «A fondo»');
+  expect(await page.evaluate(() => [AS.aFondo, quedanFondoClaude(), quedanClaude(), claudePausado()])).toEqual([false, 0, 9, null]);
+  // eligiendo otra vez «A fondo» hoy: Haiku sin pasar por Sonnet, y arriba se dice
+  await page.evaluate(() => { AS.aFondo = true; AS.cargando = false; pintarAsesor(); });
+  await expect(page.locator('#asSub')).toHaveText('Sin «A fondo» hasta mañana');
+  await page.evaluate(() => preguntarAsesor('¿Y otra?'));
+  await expect.poll(() => w.peticiones.length, { timeout: 20_000 }).toBe(3);
+  expect(w.peticiones.map((p) => p.cuerpo.model)).toEqual(['claude-sonnet-5-5', 'claude-haiku-5-5', 'claude-haiku-5-5']);
+});
+
+test('con el tope del día o el techo de todos, la IA dice que vuelva mañana y no lo intenta hasta entonces', async ({ page, context }) => {
+  await preparada(page);
+  let error = 'techo';
+  const w = await worker(context, () => ({ json: { error }, estado: 429 }));
+  await page.evaluate(() => { AS.aFondo = true; });
+  await preguntar(page);
+  const cuerpo = page.locator('#asCuerpo');
+  await expect(cuerpo).toContainText('Hoy la IA ha llegado a su tope de uso. Vuelve mañana', { timeout: 20_000 });
+  // el techo no es de Sonnet: no se prueba con Haiku
+  expect(w.peticiones.length).toBe(1);
+  expect(await page.evaluate(() => claudePausado().motivo)).toBe('techo');
+  // el tope de cada uno
+  await page.evaluate(() => { LS.del(LS_CLAUDE_PAUSA); AS.cargando = false; AS.aFondo = false; });
+  error = 'tope-diario';
+  await page.evaluate(() => preguntarAsesor('¿Y hoy?'));
+  await expect(cuerpo).toContainText('Has llegado al tope de preguntas de hoy. Vuelve mañana', { timeout: 20_000 });
+  await expect(page.locator('#asSub')).toHaveText('Sin preguntas hasta mañana');
+  expect(w.peticiones.length).toBe(2);
+});
+
+test('con el Worker sin alcanzar (bloqueado o caído) se dice claro sin esperar y se aparta unos minutos', async ({ page, context }) => {
   await preparada(page);
   const g = await gemini(context);
   await context.route(WORKER, (r) => r.abort('failed'));
   const t0 = Date.now();
-  await preguntar(page);
-  await expect(page.locator('#asCuerpo')).toContainText('Contesta Gemini', { timeout: 20_000 });
+  await page.evaluate(() => abrirAsesor());
+  await expect(page.locator('#asCuerpo')).toContainText('La IA no está disponible ahora mismo', { timeout: 20_000 });
   expect(Date.now() - t0, 'sin esperas largas').toBeLessThan(15_000);
-  expect(g.n).toBe(1);
+  await expect(page.locator('[data-as="reprobar"]')).toHaveCount(1);
+  await expect(page.locator('#asCuerpo')).toContainText('Copiar mi cartera para otra IA');
+  expect(g.n).toBe(0);
   expect((await page.evaluate(() => claudePausado())).motivo).toBeTruthy();
 });
 
 // 0.8.2 (opción B): el fundador también va con Claude, pero con las reglas del estándar; con Gemini, el asesor de siempre
 const fundador = (page) => page.evaluate(() => { S.acceso = 'privado'; LS.set('inv-acceso', { a: 'privado', uid: FB.user.uid, t: Date.now() }); });
-test('en modo fundador contesta Claude con las reglas del estándar; con «solo Gemini», el asesor de siempre y sin tocar el Worker', async ({ page, context }) => {
+test('en modo fundador contesta Claude con las reglas del estándar', async ({ page, context }) => {
   await preparada(page);
   await fundador(page);
   const g = await gemini(context);
@@ -272,40 +306,20 @@ test('en modo fundador contesta Claude con las reglas del estándar; con «solo 
   expect(await page.evaluate(() => AS.conv.at(-1).estandar)).toBe(true);
   expect(await page.evaluate(() => AS.conv.at(-1).modelo)).toBe('claude-haiku-5-5');
   await expect(page.locator('#asCuerpo .as-pie-ia')).toHaveCount(0);
-  // eligiendo «solo Gemini»: no se toca el Worker y vuelve el asesor del fundador
-  const antes = w.sondeos + w.peticiones.length;
+  // 0.8.2b: quien tuviera elegido «solo Gemini» pasa a Claude
   await page.evaluate(() => { LS.set('inv-ia-motor', 'gemini'); AS.cargando = false; });
-  await preguntar(page, '¿Y IAG?');
-  await expect.poll(() => g.n, { timeout: 20_000 }).toBe(1);
-  expect(w.sondeos + w.peticiones.length).toBe(antes);
-  expect(await page.evaluate(() => AS.conv.at(-1).estandar)).toBe(false);
-  await expect(page.locator('#asCuerpo .as-pie-ia')).toHaveCount(0);
+  expect(await page.evaluate(() => [motorElegido(), modeloClaudeParaIA('pregunta')])).toEqual(['auto', 'claude-haiku-5-5']);
 });
 
-test('sin aceptar el aviso de privacidad no se manda nada de la cartera: contesta Gemini y no vuelve a preguntar', async ({ page, context }) => {
-  await preparada(page, { acepta: false });
-  const g = await gemini(context);
-  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Claude' }]) }));
-  await preguntar(page);
-  await expect(page.locator('#asCuerpo')).toContainText('Contesta Gemini', { timeout: 20_000 });
-  expect(page.dialogos.length).toBe(1);
-  expect(w.peticiones.length).toBe(0);
-  expect(await page.evaluate(() => [motorElegido(), LS.get('inv-claude-ok', false)])).toEqual(['gemini', false]);
-  await page.evaluate(() => { AS.cargando = false; });
-  await preguntar(page, '¿Y IAG?');
-  await expect.poll(() => g.n, { timeout: 20_000 }).toBe(2);
-  expect(page.dialogos.length, 'no se vuelve a preguntar').toBe(1);
-});
-
-test('con el modo todavía provisional (dispositivo sin leer la cuenta) no se usa Claude', async ({ page, context }) => {
+test('con el modo todavía provisional (dispositivo sin leer la cuenta) no se usa Claude ni sale nada', async ({ page, context }) => {
   await preparada(page);
   const g = await gemini(context);
   const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Claude' }]) }));
   await page.evaluate(() => LS.set('inv-acceso', { a: 'publico', uid: null, t: Date.now(), provisional: true }));
-  await preguntar(page);
-  await expect(page.locator('#asCuerpo')).toContainText('Contesta Gemini', { timeout: 20_000 });
+  await page.evaluate(() => abrirAsesor());
+  await expect(page.locator('#asCuerpo')).toContainText('La IA no está disponible ahora mismo', { timeout: 20_000 });
   expect(w.sondeos + w.peticiones.length).toBe(0);
-  expect(g.n).toBe(1);
+  expect(g.n).toBe(0);
 });
 
 test('con la búsqueda en internet las citas parten el texto en bloques seguidos: se pinta y se guarda como un solo texto', async ({ page, context }) => {
@@ -324,41 +338,35 @@ test('con la búsqueda en internet las citas parten el texto en bloques seguidos
 
 // el clic va por JavaScript: a veces sale encima una hoja de guía (primeros pasos) que se come los clics y no es lo que se prueba aquí
 const clic = (page, selector) => page.locator(selector).evaluate((el) => el.click());
-test('en Ajustes de GrowIA, una vez que Claude ha contestado, se puede elegir quién contesta y se dice adónde van los datos', async ({ page, context }) => {
+test('en Ajustes de la IA se puede elegir quién contesta (sin Gemini) y se dice adónde van los datos', async ({ page, context }) => {
   await preparada(page);
-  await gemini(context);
+  const g = await gemini(context);
   await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Hecho.' }]) }));
   await page.evaluate(() => abrirAsesor());
+  await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
   await clic(page, '[data-as="ajustes"]');
-  // antes de usar Claude no hay nada de Claude
   await expect(page.locator('#asCuerpo')).toContainText('Ajustes de la IA');
-  await expect(page.locator('#asMotor')).toHaveCount(0);
-  await expect(page.locator('#asCuerpo')).not.toContainText('Anthropic');
-  await clic(page, '[data-as="chat"]');
-  await page.evaluate(() => preguntarAsesor('¿Cómo voy?'));
-  await expect(page.locator('#asCuerpo')).toContainText('Hecho.', { timeout: 20_000 });
-  await clic(page, '[data-as="ajustes"]');
   const motor = page.locator('#asMotor');
   await expect(motor).toHaveCount(1);
+  await expect(motor.locator('option')).toHaveCount(3);
+  await expect(motor.locator('option[value="gemini"]')).toHaveCount(0);
   await expect(page.locator('#asesorFondo')).toContainText('Anthropic');
   await expect(page.locator('#asesorFondo')).toContainText('fuera de la Unión Europea');
+  // nada de la clave de Google
+  await expect(page.locator('#asesorFondo')).not.toContainText('Clave de Google');
+  await expect(page.locator('#asClave')).toHaveCount(0);
   await motor.selectOption('haiku');
   await clic(page, '[data-as="guardar-ajustes"]');
   expect(await page.evaluate(() => LS.get('inv-ia-motor'))).toBe('haiku');
   expect(await page.evaluate(() => modeloClaudeParaIA('pregunta'))).toBe('claude-haiku-5-5');
-  await clic(page, '[data-as="ajustes"]');
-  await page.locator('#asMotor').selectOption('gemini');
-  await clic(page, '[data-as="guardar-ajustes"]');
-  expect(await page.evaluate(() => modeloClaudeParaIA('pregunta'))).toBeNull();
-  await clic(page, '[data-as="ajustes"]');
-  await expect(page.locator('#asesorFondo')).not.toContainText('Anthropic');
+  await page.evaluate(() => preguntarAsesor('¿Cómo voy?'));
+  await expect(page.locator('#asCuerpo')).toContainText('Hecho.', { timeout: 20_000 });
+  expect(g.n).toBe(0);
 });
 
-// 0.9: la IA sin clave de Google. Con Claude, quien está en la lista puede preguntar sin poner su clave; sin ella no hay
-// Gemini de reserva, así que si Claude no puede se dice claro. Quien no está en la lista sigue viendo dónde poner la clave.
+// 0.8.2b: nadie pone clave de Google. Si Claude no puede, se dice claro y qué hacer
 async function sinClave(page) {
   await preparada(page);
-  await page.evaluate(() => { AS.claves = {}; LS.del(LS_CLAVE.google); if (S.cartera.asesor) delete S.cartera.asesor[CAMPO_CLAVE.google]; });
 }
 test('sin clave de Google, con Claude en la cuenta, la IA abre el chat y contesta Claude sin tocar Gemini', async ({ page, context }) => {
   await sinClave(page);
@@ -381,17 +389,17 @@ test('sin clave de Google, si Claude no puede (sin créditos) se dice claro y no
   await page.evaluate(() => abrirAsesor());
   await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
   await preguntar(page, '¿Cómo va hoy?');
-  await expect(page.locator('#asCuerpo')).toContainText('Claude no está disponible ahora', { timeout: 20_000 });
-  await expect(page.locator('#asCuerpo')).toContainText('clave gratis de Google');
+  await expect(page.locator('#asCuerpo')).toContainText('La IA no está disponible ahora mismo', { timeout: 20_000 });
+  await expect(page.locator('#asCuerpo')).not.toContainText('clave');
   expect(g.n).toBe(0);
 });
-test('sin clave de Google y fuera de la lista de Claude, la IA sigue pidiendo la clave y no sale nada de la cartera', async ({ page, context }) => {
+test('si el Worker no deja (correo sin confirmar), la IA lo dice y no sale nada de la cartera', async ({ page, context }) => {
   await sinClave(page);
   const w = await worker(context, () => ({ sse: '' }), { puede: false });
   await page.evaluate(() => abrirAsesor());
-  await page.waitForTimeout(1500);
+  await expect(page.locator('#asCuerpo')).toContainText('confirma tu correo', { timeout: 15_000 });
   expect(await page.evaluate(() => iaLista())).toBe(false);
-  await expect(page.locator('#asCuerpo')).toContainText('Clave de Google');
+  await expect(page.locator('#asCuerpo')).not.toContainText('Clave de Google');
   expect(w.peticiones.length).toBe(0);
 });
 test('sin clave de Google, decir que no al aviso no deja la IA sin salida: se explica y la siguiente vuelve a preguntar', async ({ page, context }) => {
@@ -418,7 +426,7 @@ test('sin clave de Google, si el sondeo no llega al Worker se aparta unos minuto
   expect(sondeos).toBe(1);
   expect(await page.evaluate(() => !!claudePausado())).toBe(true);
 });
-test('sin clave de Google, en modo fundador contesta Claude (opción B); con el modo provisional no se toca el Worker y se pide la clave', async ({ page, context }) => {
+test('en modo fundador contesta Claude (opción B); con el modo provisional no se toca el Worker', async ({ page, context }) => {
   await sinClave(page);
   const g = await gemini(context);
   const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Claude' }]) }));
@@ -433,7 +441,7 @@ test('sin clave de Google, en modo fundador contesta Claude (opción B); con el 
   await page.evaluate(() => abrirAsesor());
   await page.waitForTimeout(1200);
   expect(await page.evaluate(() => iaLista())).toBe(false);
-  await expect(page.locator('#asCuerpo')).toContainText('Clave de Google');
+  await expect(page.locator('#asCuerpo')).toContainText('no está disponible');
   expect(w.sondeos).toBe(s0);
   expect(w.peticiones.length).toBe(0);
   expect(g.n).toBe(0);
@@ -449,7 +457,7 @@ test('sin clave de Google, si Claude se corta a mitad, lo escrito queda marcado 
   await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
   await preguntar(page, '¿Cómo va hoy?');
   const cuerpo = page.locator('#asCuerpo');
-  await expect(cuerpo).toContainText('Claude se ha cortado a mitad', { timeout: 20_000 });
+  await expect(cuerpo).toContainText('La respuesta se ha cortado a mitad', { timeout: 20_000 });
   await expect(cuerpo).toContainText('Empiezo a contestar');
   await expect(cuerpo).not.toContainText('Sigo y');
   await expect(cuerpo.locator('.as-corte')).toContainText('está a medias');
@@ -510,14 +518,10 @@ test('el panel no lleva aviso fijo ni línea de IA debajo de las respuestas', as
   await preparada(page);
   await gemini(context);
   await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Hecho.' }]) }));
-  // con «solo Gemini» elegido, en el estándar
-  await page.evaluate(() => LS.set('inv-ia-motor', 'gemini'));
+  // la respuesta guarda su modelo pero no lo dice
   await page.evaluate(() => abrirAsesor());
-  await expect(page.locator('#asCuerpo')).toBeVisible();
+  await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
   await expect(page.locator('#asAviso')).toHaveCount(0);
-  // con Claude: la respuesta guarda su modelo pero no lo dice
-  await page.evaluate(() => { cerrarAsesor(); LS.set('inv-ia-motor', 'auto'); });
-  await page.evaluate(() => abrirAsesor());
   await page.evaluate(() => preguntarAsesor('¿Cómo voy?'));
   await expect(page.locator('#asCuerpo')).toContainText('Hecho.', { timeout: 20_000 });
   expect(await page.evaluate(() => AS.conv.at(-1).modelo)).toBe('claude-haiku-5-5');

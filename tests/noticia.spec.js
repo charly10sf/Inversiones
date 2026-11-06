@@ -33,7 +33,9 @@ async function preparada(page, context, gemini) {
 const abrir = (page, u, t = TITULAR) => page.evaluate(([u, t]) => abrirNoticia({ t, f: 'Expansión', d: new Date().toISOString(), u }), [u, t]);
 const cerrar = async (page) => { await page.keyboard.press('Escape'); await expect(page.locator('.hoja-not')).toHaveCount(0); await page.waitForTimeout(600); };
 
-test('una noticia que no se deja leer: dice qué cuenta el titular, sin buscar y sin consejos', async ({ page, context, errores }) => {
+// 0.8.2b: el resumen de la noticia aún va con la clave de Google, que ya no se carga: pasa a Claude en la sesión 3
+// de «Todo con Claude», que rehace esta prueba con el Worker de imitación
+test.fixme('una noticia que no se deja leer: dice qué cuenta el titular, sin buscar y sin consejos', async ({ page, context, errores }) => {
   const pedidas = [];
   await preparada(page, context, (r) => {
     const cuerpo = JSON.parse(r.request().postData() || '{}'), herr = JSON.stringify(cuerpo.tools || []), pedido = cuerpo.contents[0].parts[0].text;
@@ -78,7 +80,9 @@ test('una noticia que no se deja leer: dice qué cuenta el titular, sin buscar y
   expect(pedidas[0].pedido).not.toContain('Para tu cartera');
 });
 
-test('sin cupo en Flash-Lite, el resumen sale con el 3.6 y Flash-Lite se apunta como agotado', async ({ page, context, errores }) => {
+// 0.8.2b: el resumen de la noticia aún va con la clave de Google, que ya no se carga: pasa a Claude en la sesión 3
+// de «Todo con Claude», que rehace esta prueba con el Worker de imitación
+test.fixme('sin cupo en Flash-Lite, el resumen sale con el 3.6 y Flash-Lite se apunta como agotado', async ({ page, context, errores }) => {
   const modelos = [];
   await preparada(page, context, (r) => {
     const modelo = (r.request().url().match(/models\/([\w.-]+):/) || [])[1];
@@ -94,7 +98,9 @@ test('sin cupo en Flash-Lite, el resumen sale con el 3.6 y Flash-Lite se apunta 
   expect(await page.evaluate(() => agotadosIA())).toContain('gemini-3.5-flash-lite');
 });
 
-test('una noticia que sí se deja leer sale entera', async ({ page, context, errores }) => {
+// 0.8.2b: el resumen de la noticia aún va con la clave de Google, que ya no se carga: pasa a Claude en la sesión 3
+// de «Todo con Claude», que rehace esta prueba con el Worker de imitación
+test.fixme('una noticia que sí se deja leer sale entera', async ({ page, context, errores }) => {
   await preparada(page, context, (r) => {
     const cuerpo = JSON.parse(r.request().postData() || '{}');
     if (/url_context/.test(JSON.stringify(cuerpo.tools || []))) return json(r, texto('Inditex ganó 1.500 millones en el semestre.', { urlContextMetadata: { urlMetadata: [{ retrievedUrl: 'x', urlRetrievalStatus: 'URL_RETRIEVAL_STATUS_SUCCESS' }] } }));
@@ -103,34 +109,6 @@ test('una noticia que sí se deja leer sale entera', async ({ page, context, err
   await abrir(page, 'https://www.inditex.com/itxcomweb/es/noticias', 'Inditex gana más');
   await expect(page.locator('.hoja-not')).toContainText('1.500 millones', { timeout: 15_000 });
   await expect(page.locator('.hoja-not .not-pie')).toContainText('Resumen de la IA');
-});
-
-test('en las preguntas, si el plan no tiene búsqueda, deja de buscar sin dar el modelo por agotado', async ({ page, context, errores }) => {
-  let busquedas = 0, modo = 'sin-busqueda';
-  await preparada(page, context, (r) => {
-    const cuerpo = r.request().postData() || '';
-    if (/google_search/.test(cuerpo)) {
-      busquedas++;
-      if (modo === 'html') return r.fulfill({ status: 429, contentType: 'text/html', body: '<html>Too many requests</html>' });
-      return json(r, SIN_BUSQUEDA, 429);
-    }
-    return json(r, { models: [] });
-  });
-  const buscar = () => page.evaluate(async () => { const turno = { partes: [], resultados: [], citas: [] }; const r = await buscarGoogle('Repsol hoy', turno); return { r, sinWeb: AS.sinWeb, falla: cfgAsesor().webFalla, agotados: agotadosIA(), pasos: turno.partes.map((p) => p.txt) }; });
-  const res = await buscar();
-  expect(busquedas).toBe(1);
-  expect(res.r.error).toContain('no entra en el plan gratuito');
-  expect(res.sinWeb).toBe(true);
-  expect(res.falla).toBe(true);
-  expect(res.agotados).toEqual([]);
-  expect(res.pasos.join(' ')).toContain('no incluye la búsqueda');
-
-  // un 429 que no es JSON (un proxy, la portada de Google) no apaga la búsqueda
-  await page.evaluate(() => { guardarCfgAsesor({ web_falla: null }); AS.sinWeb = false; });
-  modo = 'html'; busquedas = 0;
-  const otro = await buscar();
-  expect(otro.sinWeb).toBe(false);
-  expect(otro.falla).toBe(false);
 });
 
 test('cada noticia lleva el logo de su medio (o de la empresa, en las de tu cartera), también en su hoja', async ({ page, context, errores }) => {

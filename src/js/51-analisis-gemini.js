@@ -120,8 +120,10 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   clearTimeout(IA.reintentoT); IA.reintento = 0;
   if (!solo) IA.reintentos = 0;
   await cargarAsesor();
-  // 0.9: con Claude no hace falta la clave de Google, pero una revisión no puede pedir el sí del aviso de privacidad
-  if (!AS.clave && !(claudeSinClave() && claudeOk())) {
+  // 0.9: con Claude no hace falta la clave de Google, pero una revisión no puede pedir el sí del aviso de privacidad.
+  // 0.8.2b: sin clave, si el sondeo aún no se ha hecho, se hace ahora (no manda nada de la cartera)
+  if (!claudeSinClave() && modeloClaudeParaIA('análisis')) await sondearClaude();
+  if (!(claudeSinClave() && claudeOk())) {
     if (claudeSinClave()) toast(L('Antes de revisar tu cartera con Claude, hazle una pregunta a la IA: la primera vez te dice adónde van tus datos y te pide el sí.', 'Before reviewing your portfolio with Claude, ask the AI something: the first time it tells you where your data goes and asks for your OK.'), 6000);
     abrirAsesor(); return;
   }

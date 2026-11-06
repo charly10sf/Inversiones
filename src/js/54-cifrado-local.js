@@ -11,12 +11,8 @@ async function descifrarLocal(o) {
 async function cargarAsesor() {
   if (AS.cargada || !S.key) return;
   AS.cargada = true;
-  for (const prov of ['google']) {
-    const c = LS.get(LS_CLAVE[prov]);
-    if (c) { try { AS.claves[prov] = await descifrarLocal(c); } catch (e) { LS.del(LS_CLAVE[prov]); } }
-    const enCartera = S.cartera && S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[prov]];
-    if (!AS.claves[prov] && enCartera) AS.claves[prov] = enCartera;
-  }
+  // 0.8.2b: la clave de Google ya no se usa (la IA va con Claude): no se carga. La que hubiera guardada se borra en la
+  // limpieza de la sesión 5 de «Todo con Claude»
   const h = LS.get('inv-asesor-conv');
   if (h) { try { const o = await descifrarLocal(h); AS.conv = o.conv || []; AS.api = o.api || []; AS.gasto = o.gasto || 0; AS.convId = o.id || null; } catch (e) { LS.del('inv-asesor-conv'); } }
   await cargarConvs();

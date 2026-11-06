@@ -49,21 +49,21 @@ test('en estándar, Hacienda no habla de lo que recomienda GrowFolio; en fundado
   await expect(vista).toContainText('Más abajo, lo que supondría en la renta');
 });
 
-// Carlos, 30 oct: la letra pequeña de Google debajo de la caja de GrowIA le quitaba seriedad. Lo de adónde van los datos
-// sigue donde se pone la clave
-test('GrowIA, sin la letra pequeña de Google debajo de la caja; la explicación sigue al poner la clave', async ({ page, errores }) => {
+// Carlos, 30 oct: la letra pequeña debajo de la caja de la IA le quitaba seriedad. Lo de adónde van los datos va en Ajustes
+// de la IA (0.8.2b: a Anthropic, por el servidor de Toisón; ya no hay clave de Google)
+test('la IA, sin letra pequeña debajo de la caja; adónde van los datos, en Ajustes de la IA', async ({ page, errores }) => {
   await crearCuenta(page);
   await quitarCapas(page);
-  await page.evaluate(() => { guardarCfgAsesor({ auto: 'manual' }); AS.clave = 'AQ.prueba-de-growfolio'; abrirAsesor(''); });
+  // aquí no hay Worker de imitación: la IA se da por lista (lo que se mira es el pie y los ajustes)
+  await page.evaluate(() => { guardarCfgAsesor({ auto: 'manual' }); window.iaLista = () => true; abrirAsesor(''); });
   await expect(page.locator('#asTexto')).toBeVisible();
   await expect(page.locator('#asNota')).toHaveCount(0);
   await expect(page.locator('#asPie')).not.toContainText('cifrados en el camino');
-  await page.evaluate(() => { cerrarAsesor(); AS.clave = null; abrirAsesor(''); });
-  await expect(page.locator('#asCuerpo')).toContainText('no pasan por Toisón');
-  // y con la clave ya puesta, en Ajustes de GrowIA
-  await page.evaluate(() => { cerrarAsesor(); AS.clave = 'AQ.prueba-de-growfolio'; AS.vista = 'ajustes'; abrirAsesor(''); });
+  await expect(page.locator('#asPie')).not.toContainText('Anthropic');
   await page.evaluate(() => { AS.vista = 'ajustes'; pintarAsesor(); });
-  await expect(page.locator('#asCuerpo')).toContainText('no pasan por Toisón');
+  await expect(page.locator('#asCuerpo')).toContainText('que no guarda nada');
+  await expect(page.locator('#asCuerpo')).toContainText('Anthropic');
+  await expect(page.locator('#asCuerpo')).not.toContainText('Google');
 });
 
 // 0.7j: desde el 30 oct, la lectura de la prensa de la Action decía «lo que es muy bueno para la acción» (Repsol, SK hynix)

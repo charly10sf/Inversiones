@@ -1,12 +1,11 @@
 /* =====================================================================
-   Asesor: Gemini dentro de la web
-   Habla con la API de Gemini (Google AI Studio) directamente desde tu navegador y con tu propia clave:
-   no pasa por GitHub ni por ningún servidor intermedio. La clave se guarda cifrada con la misma clave
-   que tu cartera. Al empezar cada conversación recibe una foto de tu cartera y usa herramientas que
-   calculan con el motor de la web: ventas con FIFO e IRPF, compras con su tasa, empresas del radar,
-   proyecciones e histórico.
+   La IA de Toisón (antes el asesor con Gemini)
+   Desde la 0.8.2b contesta Claude, de Anthropic, por el Worker de Toisón (55-asesor-contexto.js): nadie pone
+   clave. Al empezar cada conversación recibe una foto de tu cartera y usa herramientas que calculan con el motor
+   de la web: ventas con FIFO e IRPF, compras con su tasa, empresas del radar, proyecciones e histórico.
+   Lo de Gemini que queda aquí (modelos, cupos) es de lo que todavía no ha pasado a Claude (el resumen de una
+   noticia e importar capturas): se va en la sesión 3 de «Todo con Claude».
    ===================================================================== */
-/* La IA de la web es Gemini, de Google, con una clave gratuita de Google AI Studio. */
 const MODELOS = {
   'gemini-3.8-flash': { n: 'Gemini 3.8 Flash', corto: '3.8 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'El más listo de los gratuitos: piensa a fondo, pero su cupo diario es el que antes se acaba.' },
   'gemini-3.6-flash': { n: 'Gemini 3.6 Flash', corto: '3.6 Flash', prov: 'google', gratis: true, pensar: 'high', txt: 'Casi igual de bueno y con su propio cupo. Si el 3.8 se agota, Toisón salta a este solo.' },
@@ -18,9 +17,6 @@ const MODELO_DEF = 'gemini-3.8-flash', MODELO_RAPIDO = 'gemini-3.5-flash-lite';
 const CADENA_IA = ['gemini-3.8-flash', 'gemini-3.6-flash', 'gemini-3.5-flash-lite'];
 const diaGoogle = () => new Date().toLocaleDateString('en-CA', { timeZone: 'America/Los_Angeles' });
 const agotadosIA = () => { const a = LS.get('inv-ia-agotados', {}), d = diaGoogle(); return Object.keys(a).filter((k) => a[k] === d); };
-/* 0.7: cuántas peticiones lleva hoy cada modelo desde este dispositivo. El cupo es de la clave (si la usas en otro
-   sitio, también gasta): es una cuenta aproximada, para que se vea cuánto queda */
-const CUPO_DIA = { 'gemini-3.8-flash': 20, 'gemini-3.6-flash': 20 };
 function contarPeticion(url) {
   const m = /\/models\/([^:/?]+):(?:streamGenerateContent|generateContent)/.exec(String(url || ''));
   if (!m) return;
@@ -101,35 +97,17 @@ function horaRenuevaIA() {
     return new Date(ahora.getTime() + 864e5 - pasado).toLocaleTimeString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { hour: 'numeric', minute: '2-digit' });
   } catch (e) { return '9:00'; }
 }
-/* 0.7: lo que ve la persona es GrowIA, normal o rápida; los modelos de Google, en Ajustes de GrowIA (y en la
-   privacidad). La normal es el 3.8 y, cuando se le acaba el cupo, el 3.6: los dos piensan a fondo, así que su cupo
-   se cuenta junto (20 + 20) */
 const esRapida = (m) => m === MODELO_RAPIDO;
-function cupoNormalTxt(u = usoIAHoy()) {
-  const ks = Object.keys(CUPO_DIA), n = ks.reduce((a, k) => a + (u[k] || 0), 0), tot = ks.reduce((a, k) => a + CUPO_DIA[k], 0);
-  return n > tot && !ks.every((k) => agotadosIA().includes(k)) ? L(`${n} hoy`, `${n} today`) : L(`${Math.min(n, tot)} de ${tot} hoy`, `${Math.min(n, tot)} of ${tot} today`);
-}
-/* debajo del nombre de GrowIA, solo lo que sirve: si contesta la rápida porque la normal se ha quedado sin cupo, o
-   si a la normal le quedan 5 o menos hoy; si no, una frase fija */
-function subtituloIA(cfg = cfgAsesor()) {
-  // 0.8.2: con Claude, las preguntas que te quedan hoy (lo dice el Worker); el cupo de abajo es el de Gemini
-  if (quienContestaIA() === 'claude') {
-    const n = quedanClaude();
-    if (n === 0) return L('Sin preguntas hasta mañana', 'No more questions until tomorrow');
-    // corto, que en un móvil de 360 px el subtítulo no da para más
-    if (n != null) return n === 1 ? L('1 pregunta más hoy', '1 more question today') : L(`${n} preguntas más hoy`, `${n} more questions today`);
-    return L('Con tu cartera y las noticias de hoy', "With your portfolio and today's news");
-  }
-  const vivo = modeloVivo(cfg);
-  if (esRapida(vivo) && !esRapida(cfg.modelo)) return L('La respuesta normal ha gastado su cupo de hoy: contesta la rápida', "The normal answer has used up today's quota: the fast one replies");
-  if (!esRapida(vivo)) {
-    const u = usoIAHoy(), ks = Object.keys(CUPO_DIA), n = ks.reduce((a, k) => a + (u[k] || 0), 0), tot = ks.reduce((a, k) => a + CUPO_DIA[k], 0);
-    const quedan = tot - n;
-    if (quedan >= 0 && quedan <= 5) return quedan === 1 ? L('Te queda 1 respuesta normal hoy', 'You have 1 normal answer left today') : L(`Te quedan ${quedan} respuestas normales hoy`, `You have ${quedan} normal answers left today`);
-  }
+/* debajo del nombre de la IA, solo lo que sirve: cuántas preguntas te quedan hoy (lo dice el Worker) y, con «A fondo»
+   elegido en el nivel reducido, cuántas «A fondo»; si no, una frase fija. Corto: en un móvil de 360 px no da para más */
+function subtituloIA() {
+  const n = quedanClaude(), f = quedanFondoClaude();
+  if (n === 0) return L('Sin preguntas hasta mañana', 'No more questions until tomorrow');
+  if (AS.aFondo && f === 0) return L('Sin «A fondo» hasta mañana', 'No "In depth" until tomorrow');
+  if (AS.aFondo && f != null) return f === 1 ? L('1 «A fondo» más hoy', '1 more "In depth" today') : L(`${f} «A fondo» más hoy`, `${f} more "In depth" today`);
+  if (n != null) return n === 1 ? L('1 pregunta más hoy', '1 more question today') : L(`${n} preguntas más hoy`, `${n} more questions today`);
   return L('Con tu cartera y las noticias de hoy', "With your portfolio and today's news");
 }
-function usoIAHoy() { const u = LS.get('inv-ia-uso', {}); return u && u.d === diaGoogle() ? u.m || {} : {}; }
 const marcarAgotado = (m) => { const d = diaGoogle(), a = Object.fromEntries(Object.entries(LS.get('inv-ia-agotados', {})).filter(([, v]) => v === d)); a[m] = d; LS.set('inv-ia-agotados', a); };
 // la elegida y, detrás, las demás: primero las más baratas que ella y luego las más caras
 function ordenIA(elegido) {
@@ -139,7 +117,8 @@ function ordenIA(elegido) {
 const modeloVivo = (cfg = cfgAsesor()) => { const fuera = agotadosIA(); return ordenIA(cfg.modelo).find((m) => !fuera.includes(m)) || cfg.modelo; };
 const PROV = { google: { n: 'Google', ia: 'Gemini' } };
 const AS = { conv: [], api: [], foto: null, fotoT: 0, claves: { google: null }, cargando: false, ctrl: null, vista: 'chat', cargada: false, sinWeb: false, gasto: 0 };
-Object.defineProperty(AS, 'clave', { get() { return AS.claves[cfgAsesor().prov]; }, set(v) { AS.claves[cfgAsesor().prov] = v; } });
+// 0.8.2b: nadie pone clave de Google: AS.clave está siempre vacía (lo que aún la mira pasa por el camino de Claude)
+Object.defineProperty(AS, 'clave', { get() { return null; }, set(v) {} });
 function cfgAsesor() {
   const c = LS.get('inv-asesor-cfg2', {});
   if (c.modelo && !MODELOS[c.modelo] && /^gemini-[\w.-]+$/.test(c.modelo)) MODELOS[c.modelo] = { n: c.modelo.replace(/^gemini-/, 'Gemini ').replace(/-/g, ' '), prov: 'google', gratis: true, txt: 'El Flash más nuevo que tiene tu clave.' };

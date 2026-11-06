@@ -68,12 +68,9 @@ test('las fichas de idea dicen quién las hace y cuándo, que son iguales para t
 test('con Claude, también en el fundador, las preguntas que propone la app son las del estándar', async ({ page }) => {
   await dentro(page);
   await page.waitForFunction(() => radarVals().length, null, { timeout: 45_000 });
-  // fundador con Gemini: las de siempre
+  // 0.8.2b: solo contesta Claude, así que en el fundador también son las del estándar (y la clave de Google ya no cuenta)
   await page.evaluate(() => { S.acceso = 'privado'; AS.clave = 'AQ.prueba-de-growfolio'; LS.del('inv-claude-sondeo'); });
-  expect(await page.evaluate(() => preguntasDelEstandar())).toBe(false);
-  // fundador sin clave de Google (solo puede contestar Claude): las del estándar
-  await page.evaluate(() => { AS.clave = null; });
-  expect(await page.evaluate(() => preguntasDelEstandar())).toBe(true);
+  expect(await page.evaluate(() => [AS.clave, preguntasDelEstandar()])).toEqual([null, true]);
   await page.evaluate(() => { S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); });
   const b = page.locator('.ideas-top3 .idea [data-accion="asesor"]').first();
   await expect(b).toBeAttached({ timeout: 30_000 });
@@ -115,7 +112,8 @@ test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debaj
 // arriba miden menos de 48 px; responden en 48 × 48 alrededor de su centro sin quitarle el toque a otro
 test('los botones del panel de la IA se tocan en 48 × 48', async ({ page }) => {
   await dentro(page);
-  await page.evaluate(() => { AS.clave = 'AQ.prueba-de-growfolio'; abrirAsesor(); });
+  // 0.8.2b: sin clave de Google; aquí no hay Worker de imitación, así que la IA se da por lista (lo que se mide es el pie)
+  await page.evaluate(() => { window.iaLista = () => true; abrirAsesor(); });
   await expect(page.locator('.asesor .as-enviar')).toBeVisible({ timeout: 15_000 });
   await page.waitForTimeout(800);
   const fallos = await page.evaluate(() => {

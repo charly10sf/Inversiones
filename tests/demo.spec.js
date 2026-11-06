@@ -20,8 +20,8 @@ test('la cartera de prueba: aparte de la tuya, sin guardar nada y con contraseñ
   await crearCuenta(page);
   await meterCartera(page);
   await quitarCapas(page);
-  // con GrowIA activada (su clave, cifrada con la de la cartera)
-  await page.evaluate(async (c) => { await cargarAsesor(); AS.clave = c; LS.set(LS_CLAVE.google, await cifrarLocal(c)); }, CLAVE);
+  // 0.8.2b: la IA ya no lleva clave de Google; aunque quede una guardada de antes, no se usa (ni en la prueba)
+  await page.evaluate(async (c) => { await cargarAsesor(); LS.set(LS_CLAVE.google, await cifrarLocal(c)); }, CLAVE);
   await page.waitForTimeout(1500);
   const tuyas = await page.evaluate(() => S.cartera.posiciones.map((p) => p.instrumento).sort());
   expect(tuyas).toContain('repsol');
@@ -53,7 +53,7 @@ test('la cartera de prueba: aparte de la tuya, sin guardar nada y con contraseñ
   expect(demo.total).toBeGreaterThan(15000);
   expect(demo.total).toBeLessThan(25000);
   expect(demo.nombre).toBe('Marta');
-  expect(demo.clave).toBe(CLAVE);
+  expect(demo.clave).toBeNull();
   expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(viewport.width + 1);
 
   // lo que se haga no se guarda: ni la cartera ni lo del dispositivo (ocultar cifras, la conversación de GrowIA…)

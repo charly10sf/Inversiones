@@ -484,36 +484,61 @@ function pasoTxt(nombre, q = {}) {
 
 /* Una vuelta completa: la IA responde, pide herramientas, se las damos y sigue hasta terminar */
 // 0.7r: al acabar la pregunta (también si falla o la paras) se cierra la cuenta de tokens
-// 0.8: en modo estándar y con el servidor de GrowFolio a mano, contesta Claude; si no puede, Gemini con la clave del usuario
-// 0.8.2 (opción B): o.preparar(est) monta las instrucciones y los datos (y, si hace falta, los mensajes) cuando ya se sabe
-// quién contesta: con Claude, siempre con las reglas del estándar, también en el fundador. Si Claude falla a mitad y sigue
-// Gemini, sigue con las mismas reglas (lo más prudente)
+// 0.8.2b: contesta Claude, el único motor; si no puede, se dice claro (sin Gemini de reserva)
+// 0.8.2 (opción B): o.preparar(est) monta las instrucciones y los datos (y, si hace falta, los mensajes): con Claude, siempre
+// con las reglas del estándar, también en el fundador
 async function conversar(o) {
   try {
-    const mc = modeloClaudeParaIA(o.tipo || 'pregunta');
-    const conClaude = !!(mc && await claudeAlcanzable(o.tipo || 'pregunta', o.signal));
-    const est = esPublico() || conClaude;
-    if (o.turno) o.turno.estandar = est;
-    if (typeof o.preparar === 'function') Object.assign(o, o.preparar(est));
-    if (conClaude) {
-      try { return await conversarClaude({ ...o, claudeModelo: mc }); }
-      catch (e) {
-        if (e && e.name === 'AbortError') throw e;
-        // 0.9: sin clave de Google no hay Gemini de reserva
-        if (!AS.clave) {
-          const ms = pausaClaude(e); if (ms) pausarClaude((e && e.codigo) || 'fallo', ms);
-          // si se corta a mitad, lo que ya escribió se queda, pero marcado como incompleto (no como si hubiera terminado)
-          const aMedias = !!(o.turno && o.turno.partes.some((p) => p.tipo === 'texto' && p.texto && p.texto.trim()));
-          if (aMedias) o.turno.partes.push({ tipo: 'paso', corte: true, txt: L('Aquí se ha cortado: lo de arriba está a medias y le puede faltar lo importante.', 'It was cut off here: the text above is incomplete and may be missing what matters.') });
-          throw errorSinIA(e, aMedias);
-        }
-        pasarAGemini(e, o.turno);
+    const tipo = o.tipo || 'pregunta', mc = modeloClaudeParaIA(tipo);
+    const conClaude = !!(mc && await claudeAlcanzable(tipo, o.signal));
+    // 0.8.2b: solo Claude, y con Claude van siempre las reglas del estándar (también en el fundador; opción B de la 0.8.2)
+    if (o.turno) o.turno.estandar = true;
+    if (typeof o.preparar === 'function') Object.assign(o, o.preparar(true));
+    if (!conClaude) throw errorSinIA(motivoSinClaude());
+    try { return await conversarClaude({ ...o, claudeModelo: mc }); }
+    catch (e) {
+      if (e && e.name === 'AbortError') throw e;
+      // sin Gemini de reserva: si falla Sonnet (o se han acabado las «A fondo» de hoy), contesta Haiku
+      if (mc !== HAIKU_IA && o.turno && !aMediasIA(o.turno) && haikuDeReserva(e)) {
+        if (e.codigo === 'tope-fondo') { AS.aFondo = false; apuntarQuedanClaude(null, 0); }
+        diarioIA(`${nombreMod(mc)} no ha podido (${String(e.codigo || e.tipo || e.estado || 'error')}): sigue Haiku`);
+        o.turno.partes.length = 0; o.turno.citas.length = 0; o.turno.resultados.length = 0;
+        o.turno.partes.push({ tipo: 'paso', txt: e.codigo === 'tope-fondo' ? L('Hoy ya no te quedan respuestas «A fondo»: contesta la normal', 'No "In depth" answers left today: the normal one answers') : L('La respuesta «A fondo» no está disponible ahora: contesta la normal', 'The "In depth" answer is not available right now: the normal one answers') });
         if (o.alCambiar) o.alCambiar();
+        try { return await conversarClaude({ ...o, claudeModelo: HAIKU_IA }); }
+        catch (e2) { if (e2 && e2.name === 'AbortError') throw e2; throw falloSinReserva(e2, o.turno); }
       }
+      throw falloSinReserva(e, o.turno);
     }
-    if (!AS.clave) throw errorSinIA(claudePausado() ? { codigo: claudePausado().motivo } : null);
-    return await conversarGemini(o);
   } finally { vigiaConsejoIA(o.turno); cerrarTokensIA(o.turno, o.tipo || 'pregunta'); }
+}
+const HAIKU_IA = 'claude-haiku-5-5';
+const aMediasIA = (turno) => !!(turno && turno.partes.some((p) => p.tipo === 'texto' && p.texto && p.texto.trim()));
+// lo que se arregla contestando con Haiku: Sonnet sin «A fondo» hoy, saturado, caído o que no empieza a tiempo. Lo que es de
+// la cuenta o de todos (tope del día, techo, créditos, sesión) no: Haiku fallaría igual
+function haikuDeReserva(e) {
+  if (!e) return false;
+  if (e.codigo === 'tope-fondo') return true;
+  if (['tope-diario', 'techo', 'tope-pregunta', 'sin-creditos', 'clave', 'sin-clave', 'no-permitido', 'sin-sesion', 'cuotas', 'demasiadas'].includes(e.codigo)) return false;
+  return e.tipo === 'tiempo' || (Number(e.estado) >= 500) || e.estado === 429;
+}
+// un fallo sin reserva: Claude se aparta un rato si va a repetirse y se dice claro; si se corta a mitad, lo que ya escribió se
+// queda, marcado como incompleto
+function falloSinReserva(e, turno) {
+  apartarClaude(e);
+  const aMedias = aMediasIA(turno);
+  if (aMedias) turno.partes.push({ tipo: 'paso', corte: true, txt: L('Aquí se ha cortado: lo de arriba está a medias y le puede faltar lo importante.', 'It was cut off here: the text above is incomplete and may be missing what matters.') });
+  const x = errorSinIA(e, aMedias);
+  // para el dueño se apunta lo que es un fallo de verdad, no lo previsto (los topes, el techo, el correo sin confirmar, tu no)
+  x.avisar = !AS.claudeNo && !['tope-diario', 'techo', 'tope-pregunta', 'tope-fondo', 'no-permitido'].includes(x.codigo);
+  return x;
+}
+// por qué no se ha podido ni empezar con Claude (para decirlo claro)
+function motivoSinClaude() {
+  const p = claudePausado();
+  if (p) return { codigo: p.motivo };
+  if (FB.user && !FB.user.emailVerified) return { codigo: 'no-permitido' };
+  return null;
 }
 /* 0.8.2 · las frases de consejo que no pueden salir con las reglas del estándar: las mismas que mira el banco de preguntas
    trampa (tests/banco/trampas.json). Es un vigía: no toca la respuesta; si salen, lo apunta en el registro de la IA (solo
@@ -597,7 +622,9 @@ function vigiaConsejoIA(turno) {
   try { diarioIA(`Ojo: con las reglas del estándar, la respuesta dice «${f.slice(0, 3).join('», «')}»`); } catch (e) {}
 }
 
-/* ---------- Gemini (API de Google AI Studio): mismas herramientas, mismo formato de turnos ---------- */
+/* ---------- Gemini (API de Google AI Studio) ----------
+   0.8.2b: el chat ya no lo usa. Queda lo que aún llama a Google con la clave de cada uno (el resumen de una noticia e importar
+   capturas, que pasan a Claude en la sesión 3 de «Todo con Claude») y los tiempos y avisos de red, que usa Claude */
 const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
 let MODO_CLAVE_G = LS.get('inv-gkey-modo', 'cabecera');
 async function fetchGoogle(url, opts = {}, clave = AS.clave) {
@@ -615,15 +642,6 @@ async function fetchGoogle(url, opts = {}, clave = AS.clave) {
   return r;
 }
 const dormir = (ms, signal) => new Promise((res, rej) => { if (signal && signal.aborted) return rej(new DOMException('Parado', 'AbortError')); const t = setTimeout(res, ms); if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('Parado', 'AbortError')); }, { once: true }); });
-function esquemaGemini(x) {
-  if (Array.isArray(x)) return x.map(esquemaGemini);
-  if (!x || typeof x !== 'object') return x;
-  const o = {};
-  for (const [k, v] of Object.entries(x)) o[k] = k === 'type' && typeof v === 'string' ? v.toUpperCase() : k === 'properties' ? Object.fromEntries(Object.entries(v).map(([kk, vv]) => [kk, esquemaGemini(vv)])) : esquemaGemini(v);
-  return o;
-}
-const BUSCAR_GEMINI = { name: 'buscar_en_internet', description: 'Busca en internet con Google noticias y datos recientes y devuelve un resumen con sus fuentes. Antes de usarla, mira lo que ya tienes: los datos de abajo y buscar_empresa (los titulares de los últimos días y lo que la IA ya ha leído de su prensa). Úsala solo para lo que no esté ahí o sea de hoy, con al menos dos fuentes. Cada búsqueda gasta del cupo diario de la clave del usuario.', parameters: { type: 'OBJECT', properties: { consulta: { type: 'STRING', description: 'qué buscar: concreto, con el nombre de la empresa y el tema' } }, required: ['consulta'] } };
-const herramientasGemini = (web) => [{ functionDeclarations: [...HERRAMIENTAS.map((h) => ({ name: h.name, description: h.description, parameters: esquemaGemini(h.input_schema) })), ...(web ? [BUSCAR_GEMINI] : [])] }];
 function errorGoogle(estado, j) {
   const e0 = (j && j.error) || {}, m = e0.message || '', det = JSON.stringify(e0.details || '');
   let e;
@@ -661,8 +679,6 @@ const RED_IA = { espera: 120000, hilo: 60000, cambio: 8000, esperas: [2, 4, 8, 1
    - el que ha ido lento queda apartado 30 min (lento): las preguntas siguientes empiezan con el otro;
    - cada modelo apunta cuánto tarda en dar el primer dato (las últimas 20), y se ve arriba del registro */
 const LS_LENTO = 'inv-ia-lento', LS_TIEMPOS = 'inv-ia-tiempos';
-const lentoIA = (m) => { const l = LS.get(LS_LENTO, {}) || {}; return !!(l[m] && l[m] > Date.now()); };
-const marcarLento = (m) => { const l = LS.get(LS_LENTO, {}) || {}, a = Date.now(); LS.set(LS_LENTO, Object.fromEntries([...Object.entries(l).filter(([, v]) => v > a), [m, a + RED_IA.lento]])); };
 // seg: segundos hasta el primer dato; con corte, los que se esperaron sin que llegara nada
 function apuntarTiempoIA(m, seg, corte = false) {
   try { const t = LS.get(LS_TIEMPOS, {}) || {}, v = Array.isArray(t[m]) ? t[m] : []; v.push(corte ? -Math.round(seg) : Math.round(seg * 10) / 10); t[m] = v.slice(-20); LS.set(LS_TIEMPOS, t); } catch (e) {}
@@ -765,320 +781,18 @@ window.redCambiada = (tipo, t = Date.now()) => {
   if (antes.length) diarioIA('Se pierde la red con la IA pidiendo');
   for (const v of antes) v.f();
 };
-async function llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, info = {}) {
-  const ctl = new AbortController(), t0 = Date.now(), espera = info.espera || RED_IA.espera;
-  let motivo = null, cambioRed = false, primero = 0, primerTexto = 0, reloj = 0, bytes = 0;
-  // vigila: si en ms no llega nada, se corta (y cuenta como corte de conexión, que se repite)
-  const vigilar = (ms) => { clearTimeout(reloj); reloj = setTimeout(() => { motivo = cambioRed ? 'cambio' : primero ? 'hilo' : 'tiempo'; ctl.abort(); }, ms); };
-  const parar = () => ctl.abort();
-  const viva = { t0, f: () => { cambioRed = true; vigilar(RED_IA.cambio); } };
-  if (signal) { if (signal.aborted) ctl.abort(); else signal.addEventListener('abort', parar, { once: true }); }
-  VIVAS_IA.add(viva);
-  vigilar(espera);
-  const seg = () => Math.round((Date.now() - t0) / 1000);
-  let r, fin = null, uso = {}, bloqueo = null, texto = null, vista = null;
-  const partes = [];
-  try {
-    r = await fetchGoogle(`${GEMINI}/models/${modelo}:streamGenerateContent?alt=sse`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify(cuerpo) }, clave);
-    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} throw errorGoogle(r.status, j); }
-    // ya ha contestado: si había cambiado la red, la conexión ha aguantado (los 120 s siguen contando desde el principio)
-    if (cambioRed) { cambioRed = false; vigilar(Math.max(RED_IA.cambio, espera - (Date.now() - t0))); }
-    const lector = r.body.getReader(), dec = new TextDecoder();
-    let buf = '';
-    const procesar = (ch) => {
-      if (ch.error) throw errorGoogle(ch.error.code || 500, ch);
-      if (ch.usageMetadata) uso = ch.usageMetadata;
-      if (ch.promptFeedback && ch.promptFeedback.blockReason) bloqueo = ch.promptFeedback.blockReason;
-      const c = (ch.candidates || [])[0];
-      if (!c) return;
-      if (c.finishReason) fin = c.finishReason;
-      for (const pt of (c.content && c.content.parts) || []) {
-        if (pt.thought) { if (pt.thoughtSignature) partes.push({ ...pt }); continue; }
-        if (!primerTexto) primerTexto = Date.now();
-        if (pt.functionCall) {
-          partes.push(JSON.parse(JSON.stringify(pt))); texto = null;
-          const fc = pt.functionCall;
-          turno.partes.push({ tipo: 'paso', web: fc.name === 'buscar_en_internet', txt: pasoTxt(fc.name, fc.args || {}) });
-        } else if (typeof pt.text === 'string') {
-          if (!texto) { texto = { text: '' }; partes.push(texto); vista = { tipo: 'texto', texto: '' }; turno.partes.push(vista); }
-          texto.text += pt.text; vista.texto = texto.text;
-          if (pt.thoughtSignature) texto.thoughtSignature = pt.thoughtSignature;
-        } else partes.push(JSON.parse(JSON.stringify(pt)));
-      }
-      alCambiar();
-    };
-    for (;;) {
-      const { done, value } = await lector.read();
-      if (done) break;
-      bytes += value ? value.length : 0;
-      if (!primero) primero = Date.now();
-      // llega algo: si había cambiado la red, la conexión ha aguantado
-      cambioRed = false; vigilar(RED_IA.hilo);
-      buf += dec.decode(value, { stream: true }).replace(/\r/g, '');
-      let i;
-      while ((i = buf.indexOf('\n\n')) >= 0) {
-        const trozo = buf.slice(0, i); buf = buf.slice(i + 2);
-        const datos = trozo.split('\n').filter((l) => l.startsWith('data:')).map((l) => l.slice(5).trim()).join('');
-        if (!datos) continue;
-        let ch; try { ch = JSON.parse(datos); } catch (e) { continue; }
-        procesar(ch);
-      }
-    }
-    if (buf.trim().startsWith('data:')) { try { procesar(JSON.parse(buf.trim().slice(5))); } catch (e) {} }
-  } catch (e) {
-    // lo ha cortado la vigilancia (no tú): es un corte de conexión, con su tipo
-    if (motivo) {
-      if (motivo === 'tiempo') apuntarTiempoIA(modelo, (Date.now() - t0) / 1000, true);
-      const t = new Error(motivo === 'tiempo' ? `Google no ha empezado a contestar en ${Math.round(espera / 1000)} s` : motivo === 'cambio' ? 'Ha cambiado la red y por la vieja ya no llega nada' : `La respuesta se ha quedado parada ${RED_IA.hilo / 1000} s`);
-      t.corte = true; t.tipo = motivo === 'tiempo' ? 'tiempo' : motivo === 'cambio' ? 'cambio' : 'red'; t.seg = seg(); t.datos = !!primero; t.lento = motivo === 'tiempo' && espera < RED_IA.espera;
-      throw t;
-    }
-    if (e && e.name !== 'AbortError' && esCorteRed(e)) { e.tipo = e.tipo || 'red'; e.seg = seg(); e.datos = !!primero; }
-    throw e;
-  } finally { clearTimeout(reloj); VIVAS_IA.delete(viva); if (signal) signal.removeEventListener('abort', parar); }
-  turno.partes = turno.partes.filter((p) => p.tipo !== 'texto' || p.texto);
-  const ms = (x) => `${Math.round(x / 100) / 10} s`;
-  if (primero) apuntarTiempoIA(modelo, (primero - t0) / 1000);
-  diarioIA(`${(MODELOS[modelo] || {}).corto || modelo} · ronda ${info.ronda || 1}: primer dato a los ${primero ? ms(primero - t0) : '—'}${primerTexto && primerTexto - primero > 1000 ? ` (texto a los ${ms(primerTexto - t0)})` : ''}, acaba a los ${ms(Date.now() - t0)}${uso.thoughtsTokenCount ? ` · razona ${fmtNum(uso.thoughtsTokenCount, 0)}` : ''}${fin && fin !== 'STOP' ? ` · ${fin}` : ''}`);
-  return { contenido: partes.filter((p) => !(typeof p.text === 'string' && !p.text && !p.thoughtSignature)), fin, uso, bloqueo };
-}
-/* búsqueda con Google: una llamada aparte con la herramienta de búsqueda de Gemini */
-/* 0.5b: cada búsqueda es una petición más a Google con la clave del usuario. Va con Flash-Lite, el modelo con más cupo gratis,
-   y no con el de la conversación (el 3.8 Flash tiene muy poco cupo diario y las búsquedas lo agotaban). Si Flash-Lite no puede
-   (sin cupo hoy o sin búsqueda en ese modelo), con el de la conversación, como antes. */
-/* 0.7l: la búsqueda en internet también se vigila (60 s como mucho, y 8 s si se pierde la red): antes, con la conexión
-   muerta, se quedaba colgada toda la respuesta */
-async function buscarGoogle(consulta, turno, signal) {
-  if (!consulta) return { error: 'Falta qué buscar.' };
-  const ctl = new AbortController(); let tarde = false, reloj = 0;
-  const cortar = (ms) => { clearTimeout(reloj); reloj = setTimeout(() => { tarde = true; ctl.abort(); }, ms); };
-  const parar = () => ctl.abort();
-  if (signal) { if (signal.aborted) throw new DOMException('Parado', 'AbortError'); signal.addEventListener('abort', parar, { once: true }); }
-  const viva = { t0: Date.now(), f: () => cortar(RED_IA.cambio) };
-  VIVAS_IA.add(viva); cortar(RED_IA.busqueda);
-  try { return await buscarGoogleYa(consulta, turno, ctl.signal); }
-  catch (e) {
-    if (signal && signal.aborted) throw e;
-    if (tarde) { diarioIA('La búsqueda en internet no contesta a tiempo'); return { error: 'La búsqueda en internet no ha contestado a tiempo. Contesta con las fichas y los titulares que tienes y di qué no has podido comprobar.' }; }
-    throw e;
-  } finally { clearTimeout(reloj); VIVAS_IA.delete(viva); if (signal) signal.removeEventListener('abort', parar); }
-}
-async function buscarGoogleYa(consulta, turno, signal) {
-  const vivo = AS.modeloVivo || modeloVivo(), fuera = agotadosIA();
-  const modelos = [MODELO_RAPIDO, vivo].filter((m, k, v) => MODELOS[m] && v.indexOf(m) === k && (m === vivo || !fuera.includes(m)));
-  let r, modelo;
-  for (let k = 0; k < modelos.length; k++) {
-    modelo = modelos[k];
-    try {
-      r = await fetchGoogle(`${GEMINI}/models/${modelo}:generateContent`, { method: 'POST', signal, headers: { 'content-type': 'application/json' }, body: JSON.stringify({ contents: [{ role: 'user', parts: [{ text: `Busca en internet y resume en español de España, con fechas y cifras, lo más reciente sobre: ${consulta}. Usa varias fuentes y di si coinciden o no.` }] }], tools: [{ google_search: {} }] }) });
-    } catch (e) { if (e.name === 'AbortError') throw e; return { error: 'No se pudo conectar para buscar.' }; }
-    if (r.ok) break;
-    // no ha podido el de más cupo: se apunta si es que se le ha acabado y se prueba con el de la conversación. Si es
-    // que el plan no tiene búsqueda (429 sin detalle del cupo), no: con el otro modelo pasaría lo mismo
-    let j0 = null; try { j0 = await r.json(); } catch (e) {}
-    const e0 = errorGoogle(r.status, j0); r.err = e0;
-    if (e0.sinDetalle || k === modelos.length - 1) break;
-    if (e0.diario) marcarAgotado(modelo);
-  }
-  if (!r.ok) {
-    const e = r.err || errorGoogle(r.status, null);
-    if (e.diario && !e.sinDetalle) marcarAgotado(modelo);
-    // sin búsqueda en el plan: se vuelve a probar en un día (web_falla dura 7; por si fuera un 429 de saturación)
-    if (e.sinDetalle || (r.status !== 429 && r.status < 500)) { guardarCfgAsesor({ web_falla: e.sinDetalle ? Date.now() - 6 * 864e5 : Date.now() }); AS.sinWeb = true; turno.partes.push({ tipo: 'paso', web: true, txt: 'Tu plan de Google no incluye la búsqueda en internet: sigo con los titulares de Toisón' }); }
-    if (e.sinDetalle) return { error: 'La búsqueda en internet no entra en el plan gratuito de Google. Contesta con las fichas y los titulares que tienes en los datos.' };
-    return { error: `No se pudo buscar en internet (${e.message}). Contrasta con los titulares que tienes en los datos.` };
-  }
-  const j = await r.json(), c = (j.candidates || [])[0] || {};
-  sumarTokensIA(turno, modelo, j.usageMetadata, true);
-  const texto = ((c.content && c.content.parts) || []).map((x) => x.text || '').join('').trim();
-  const fuentes = ((c.groundingMetadata && c.groundingMetadata.groundingChunks) || []).map((g) => g.web).filter((w) => w && w.uri).map((w) => ({ t: w.title || w.uri, u: w.uri, d: w.title }));
-  turno.resultados.push(...fuentes); turno.citas.push(...fuentes);
-  return { resumen: texto || 'Sin resultados.', fuentes: fuentes.map((f) => f.t).slice(0, 10) };
-}
-async function mejorFlash(clave) {
-  try {
-    const r = await fetchGoogle(`${GEMINI}/models?pageSize=200`, {}, clave);
-    if (!r.ok) return null;
-    const j = await r.json();
-    const v = (j.models || []).filter((m) => (m.supportedGenerationMethods || []).includes('generateContent')).map((m) => m.name.replace(/^models\//, '')).filter((n) => /^gemini-[\d.]+-flash$/.test(n));
-    v.sort((a, b) => parseFloat(b.split('-')[1]) - parseFloat(a.split('-')[1]));
-    return v[0] || null;
-  } catch (e) { return null; }
-}
-/* cadena: los modelos que puede usar, en orden (la revisión automática, solo el 3.6 y Flash-Lite: el cupo del 3.8 queda
-   para las preguntas); maxBusquedas: búsquedas en internet que salen bien como mucho (0.7: una por pregunta) */
-async function conversarGemini({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, modelo: pedido, herramientas = true, cadena = null, maxBusquedas = 1, pensar = null }) {
-  let cfg = cfgAsesor();
-  if (pedido && MODELOS[pedido]) cfg = { ...cfg, modelo: pedido };
-  const clave = AS.clave;
-  const contents = mensajes.map((m) => ({ role: m.role === 'assistant' ? 'model' : 'user', parts: typeof m.content === 'string' ? [{ text: m.content }] : m.content }));
-  // 0.7p: cada tanda de herramientas es otra petición a Google (y otra espera): mejor todas a la vez
-  const sysTexto = (Array.isArray(sistema) ? sistema.map((b) => b.text) : [String(sistema || '')]).join('\n\n') + (herramientas ? '\n\nHerramientas: cada vez que las usas es una vuelta más a Google y la respuesta tarda más. Piensa primero todo lo que vas a necesitar y pide todas las herramientas a la vez, en la misma tanda; no pidas una, esperes y luego otra, salvo que la segunda dependa de lo que devuelva la primera. Si lo que tienes en los datos basta, contesta sin herramientas.' : '');
-  const usarWeb = web !== false && cfg.web && !AS.sinWeb;
-  // nivel: el razonamiento pedido (0.7d: 'medium' en las preguntas); si un modelo no lo acepta, el suyo; y si tampoco, sin él
-  let reintentos = 0, conPensar = true, cambiado = false, nivel = pensar;
-  const orden = () => (cadena ? cadena.filter((m) => MODELOS[m]) : ordenIA(cfg.modelo));
-  let modelo = cadena ? orden().find((m) => !agotadosIA().includes(m)) : modeloVivo(cfg);
-  // 0.7p: el de la respuesta normal que va justo detrás (del 3.8, el 3.6); la rápida no cuenta
-  // (solo el que va justo detrás: quien eligió el 3.6 tiene detrás la rápida y no gasta el cupo del 3.8 por esto)
-  const normalDetras = (m, probados = new Set()) => { const o = orden(), x = o.slice(o.indexOf(m) + 1).find((y) => !probados.has(y) && !agotadosIA().includes(y)); return x && !esRapida(x) ? x : null; };
-  // si el que toca ha ido lento hace poco, se empieza con el de detrás (el lento queda de reserva)
-  if (modelo && !esRapida(modelo) && lentoIA(modelo)) { const d = normalDetras(modelo); if (d && !lentoIA(d)) { diarioIA(`Empieza con ${(MODELOS[d] || {}).corto || d}: ${(MODELOS[modelo] || {}).corto || modelo} iba lento`); modelo = d; } }
-  if (!modelo) { turno.modelo = orden()[0]; const e = new Error(`Hoy ya no queda cupo en tu clave para la revisión automática: se hará cuando se renueve, a las ${horaRenuevaIA()}.`); e.estado = 429; e.diario = true; e.previsto = true; throw e; }
-  const inicio = contents.length, probados = new Set([modelo]);
-  AS.modeloVivo = modelo; turno.modelo = modelo;
-  // del 3.8 al 3.6 sigue siendo la respuesta normal: solo se avisa si contesta la rápida
-  if (!cadena && esRapida(modelo) && !esRapida(cfg.modelo)) turno.partes.push({ tipo: 'paso', txt: 'La respuesta normal ya ha gastado su cupo de hoy: contesta la rápida' });
-  // si el modelo se agota a mitad, se empieza la respuesta de nuevo con el siguiente
-  const saltar = (porque, vale = () => true) => {
-    const fuera = agotadosIA(), otro = orden().find((x) => !probados.has(x) && !fuera.includes(x) && vale(x));
-    if (!otro) return false;
-    turno.partes = turno.partes.filter((x) => x.tipo === 'paso');
-    // del 3.8 al 3.6 sigue siendo la respuesta normal: sin aviso; a la rápida, sí
-    if (esRapida(otro) && !esRapida(modelo)) turno.partes.push({ tipo: 'paso', txt: `La respuesta normal ${porque.replace('saturado', 'saturada')}: sigo con la rápida` });
-    modelo = otro; probados.add(otro); AS.modeloVivo = otro; turno.modelo = otro; contents.length = inicio; reintentos = 0; conPensar = true; nivel = pensar;
-    // empieza de cero: lo que buscó el anterior no lo ha leído este
-    busquedas = 0; intentos = 0; turno.citas.length = 0; turno.resultados.length = 0;
-    alCambiar(); return true;
-  };
-  // 0.7l: cortes, los cortes de red seguidos (vuelve a 0 con cada petición que llega bien); pausas, las veces que espera
-  // a que vuelvas; lentos, las veces seguidas que Google no ha contestado; cambios, las repeticiones por un cambio de red
-  let cortes = 0, busquedas = 0, intentos = 0, pausas = 0, lentos = 0, cambios = 0, ronda = 0;
-  const corto = () => (MODELOS[modelo] || {}).corto || modelo;
-  // el aviso del corte, en una sola línea que se va cambiando (antes, una por intento); hecho: lo que dice si sale bien
-  const avisoRed = (txt, hecho = null) => { turno.partes = turno.partes.filter((x) => !x.red); const p = { tipo: 'paso', red: true, txt, hecho }; turno.partes.push(p); alCambiar(); return p; };
-  // espera a que vuelvas a GrowFolio (y a que haya red); en la app de Android, sin el servicio mientras tanto
-  const pausaHastaVolver = async (sinRed) => {
-    pausas++;
-    const p = avisoRed(sinRed ? L('Sin conexión: sigo en cuanto vuelva', "No connection: I'll carry on as soon as it's back") : L('Se ha cortado al salir de Toisón: sigo en cuanto vuelvas', "It dropped when you left Toisón: I'll carry on when you're back"));
-    diarioIA(`Espera a que vuelvas${sinRed ? ' y haya red' : ''}`);
-    if (fueraDeVista()) appGrowiaTermina(L('La IA se ha quedado a medias', 'GrowIA stopped halfway'), L('Se cortó la conexión al salir. Abre Toisón y seguirá sola.', 'The connection dropped when you left. Open Toisón and it will carry on.'), true);
-    await esperarVuelta(signal);
-    p.txt = sinRed ? L('Se cortó la conexión: he seguido al volver', 'The connection dropped: I carried on when it came back') : L('Se cortó mientras estabas fuera: he seguido al volver', 'It dropped while you were away: I carried on when you came back');
-    appGrowiaEmpieza(false); alCambiar(); cortes = 0;
-    await dormir(300, signal);
-  };
-  for (let vuelta = 0; vuelta < 14; vuelta++) {
-    const m = MODELOS[modelo] || {};
-    const pasosAntes = turno.partes.length, t0 = Date.now();
-    const cuerpo = {
-      systemInstruction: { parts: [{ text: sysTexto }] }, contents, ...(herramientas ? { tools: herramientasGemini(usarWeb) } : {}),
-      generationConfig: { maxOutputTokens: Math.max(maxTokens * 2, 16384), ...(conPensar && m.pensar ? { thinkingConfig: { thinkingLevel: nivel || m.pensar, includeThoughts: true } } : {}) },
-    };
-    let r;
-    ronda++;
-    // 0.7p: con otro de la respuesta normal detrás, 40 s para empezar; si no, los 120 de siempre
-    const detrasNormal = normalDetras(modelo, probados);
-    try { r = await llamarGemini(clave, modelo, cuerpo, turno, signal, alCambiar, { ronda, espera: detrasNormal ? RED_IA.primero : RED_IA.espera }); }
-    catch (e) {
-      if (e.name === 'AbortError') throw e;
-      // fuera lo que hubiera empezado a escribir (también si Google corta a mitad con un error)
-      if (turno.partes.length > pasosAntes) turno.partes.length = pasosAntes;
-      if (esCorteRed(e)) {
-        // vivo: la app de Android con su servicio en marcha de verdad (las de antes no lo dicen: se dan por vivas)
-        const tipo = e.tipo || 'red', vivo = appSigueEnFondo() && deApp('growiaViva') !== false, sinRed = navigator.onLine === false;
-        diarioIA(`${corto()} · ronda ${ronda}: corte (${{ tiempo: 'Google no contesta', cambio: 'cambio de red', red: 'conexión' }[tipo] || tipo}) a los ${e.seg != null ? e.seg : '?'} s${e.datos ? ' con la respuesta llegando' : ''}${fueraDeVista() ? ` · Toisón fuera${APP_FUERA ? ' (despierta)' : ''}` : ''}${vivo ? ` · servicio ${deApp('growiaViva') ? 'sí' : 'no'}` : ''}${deApp('bateriaRestringida') ? ' · batería restringida' : ''}${redIA()} · ${String(e.message || '').slice(0, 60)}`);
-        // 1) ha cambiado la red: se repite al momento por la nueva (3 veces como mucho en una respuesta)
-        if (tipo === 'cambio' && cambios < 3) { cambios++; avisoRed(L('Ha cambiado tu conexión: lo repito', 'Your connection changed: repeating it'), L('Cambió tu conexión: lo he repetido', 'Your connection changed: I repeated it')); await dormir(500, signal); vuelta--; continue; }
-        // 2) Google no contesta (y hay red): una vez más con el mismo y luego el siguiente de su orden
-        // (si GrowFolio ha estado fuera sin el servicio, el reloj se ha congelado: no es que Google tarde)
-        if (tipo === 'tiempo' && !sinRed && !(!vivo && fueraDesde(t0))) {
-          // 0.7p: no ha empezado en 40 s y hay otro de la respuesta normal: a ese, sin repetir, y este, apartado un rato
-          if (e.lento) { const antes = corto(); marcarLento(modelo); if (saltar('va lenta', (x) => x === detrasNormal)) { lentos = 0; cortes = 0; diarioIA(`${antes} no empieza: pasa a ${corto()}`); vuelta--; continue; } }
-          if (lentos < 1) { lentos++; avisoRed(L('Google está tardando mucho en contestar: lo intento otra vez', 'Google is taking too long to answer: trying again'), L('Google tardaba mucho: lo he repetido', 'Google was taking too long: I repeated it')); vuelta--; continue; }
-          if (saltar('no contesta')) { lentos = 0; cortes = 0; diarioIA(`Pasa a ${corto()}`); vuelta--; continue; }
-          // ya no queda otro: no tiene sentido seguir esperando 2 minutos cada vez
-          const t = new Error(L('Google no contesta ahora mismo: lo he intentado con todos los modelos. Prueba en un rato.', "Google isn't answering right now: I tried every model. Try again in a while.")); t.estado = 503; throw t;
-        }
-        // 3) en el navegador, con GrowFolio fuera de la vista (o lo ha estado): el móvil corta la página. A esperar a
-        // que vuelvas, sin contarlo como fallo (0.7f)
-        if (!vivo && fueraDesde(t0) && pausas < 8) { await pausaHastaVolver(sinRed); vuelta--; continue; }
-        // 4) sin conexión: espera a que vuelva (con GrowFolio fuera, 2 minutos como mucho; luego, a que vuelvas tú)
-        if (sinRed && pausas < 8) {
-          const p = avisoRed(L('Sin conexión: sigo en cuanto vuelva', "No connection: I'll carry on as soon as it's back"));
-          diarioIA('Espera a que vuelva la red');
-          const hay = await esperarVuelta(signal, { soloRed: true, max: fueraDeVista() ? RED_IA.sinRed : 0 });
-          if (!hay) await pausaHastaVolver(true);
-          else { pausas++; if (navigator.onLine !== false) { p.txt = L('Se cortó la conexión: he seguido al volver', 'The connection dropped: I carried on when it came back'); alCambiar(); } }
-          vuelta--; continue;
-        }
-        // 5) con red: otra vez con el mismo modelo, esperando cada vez más (2, 4, 8, 15 y 30 s)
-        if (cortes < RED_IA.esperas.length) {
-          const seg = RED_IA.esperas[cortes++];
-          avisoRed(cortes > 1 ? L(`Se ha cortado la conexión con Google: lo intento otra vez (${cortes}.ª)`, `The connection to Google dropped: trying again (${cortes})`) : L('Se ha cortado la conexión con Google: lo intento otra vez', 'The connection to Google dropped: trying again'), L('Se cortó la conexión con Google: lo he repetido', 'The connection to Google dropped: I repeated it'));
-          await dormir(seg * 1000, signal); vuelta--; continue;
-        }
-        // 6) nada: con GrowFolio fuera, a esperar a que vuelvas; a la vista, se acaba aquí
-        if (fueraDeVista() && pausas < 8) { await pausaHastaVolver(false); vuelta--; continue; }
-        const t = new Error(L(`No consigo hablar con Google: la conexión se ha cortado ${cortes + 1} veces seguidas (${e.message}). Mira tu conexión y vuelve a preguntar.`, `I can't reach Google: the connection dropped ${cortes + 1} times in a row (${e.message}). Check your connection and ask again.`)); t.corte = true; throw t;
-      }
-      diarioIA(`${corto()} · ronda ${ronda}: error ${e.estado || ''}${e.diario ? ' (cupo del día)' : e.estado === 429 ? ' (espera)' : ''} · ${String(e.msg || e.message || '').slice(0, 80)}`);
-      if (e.estado === 400 && conPensar && /thinking/i.test(e.msg || '')) { if (nivel && nivel !== m.pensar) nivel = null; else conPensar = false; vuelta--; continue; }
-      if (e.estado === 404 && (pedido || modelo !== cfg.modelo) && saltar('no está disponible con tu clave')) { vuelta--; continue; }
-      if (e.estado === 404 && !pedido && !cambiado && modelo === cfg.modelo) { const nuevo = await mejorFlash(clave); if (nuevo && nuevo !== cfg.modelo) { guardarCfgAsesor({ modelo: nuevo }); cfg = cfgAsesor(); modelo = nuevo; AS.modeloVivo = nuevo; turno.modelo = nuevo; probados.add(nuevo); cambiado = true; vuelta--; continue; } }
-      if (e.estado === 429 && e.diario) { marcarAgotado(modelo); if (saltar('ha gastado su cupo de hoy')) { vuelta--; continue; } }
-      if (e.estado === 429 && reintentos >= 3 && saltar('sigue pidiendo esperar')) { vuelta--; continue; }
-      if (e.estado === 429 && reintentos < 3 && !(e.espera > 60)) { reintentos++; const seg = Math.ceil(e.espera || 15 * reintentos); turno.partes.push({ tipo: 'paso', txt: `Google pide esperar ${seg} s (límite gratuito por minuto)` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
-      // 0.7d: el 3.8 saturado pasa al 3.6 (que sigue siendo la respuesta normal) sin esperar; solo se espera y se reintenta
-      // cuando no queda otro de la respuesta normal
-      // (solo al que va justo detrás en su orden: quien eligió el 3.6 no gasta el cupo del 3.8 por esto)
-      const detras = orden().slice(orden().indexOf(modelo) + 1).find((x) => !probados.has(x) && !agotadosIA().includes(x));
-      if (e.estado >= 500 && detras && !esRapida(modelo) && !esRapida(detras) && saltar('está saturado', (x) => x === detras)) { vuelta--; continue; }
-      if (e.estado >= 500 && reintentos < 2) { reintentos++; const seg = 4 * reintentos; turno.partes.push({ tipo: 'paso', txt: `Google está saturado: lo intento otra vez en ${seg} s` }); alCambiar(); await dormir(seg * 1000, signal); vuelta--; continue; }
-      if (e.estado >= 500 && saltar('está saturado')) { vuelta--; continue; }
-      if (e.estado === 429 && e.diario) e.message = `Tu clave gratis de Google ha gastado hoy el cupo de sus modelos. Se renueva a las ${horaRenuevaIA()}. Es el cupo de tu clave, no de Toisón: cada uno usa la suya.`;
-      throw e;
-    }
-    // ha llegado bien: los cortes seguidos vuelven a 0 y el aviso del corte pasa a «lo he repetido»
-    cortes = 0; lentos = 0;
-    for (const x of turno.partes) if (x.red && x.hecho) { x.txt = x.hecho; x.hecho = null; }
-    const pm = MODELOS[modelo] || {};
-    sumarTokensIA(turno, modelo, r.uso);
-    if (pm.in) turno.coste = (turno.coste || 0) + ((r.uso.promptTokenCount || 0) * pm.in + ((r.uso.candidatesTokenCount || 0) + (r.uso.thoughtsTokenCount || 0)) * pm.out) / 1e6;
-    if (r.bloqueo) throw new Error('Google ha bloqueado la pregunta por sus filtros. Prueba a decirlo de otra forma.');
-    if (!r.contenido.length) {
-      if (reintentos < 2) { reintentos++; vuelta--; continue; }
-      throw new Error('Google no ha devuelto respuesta. Vuelve a preguntar.');
-    }
-    contents.push({ role: 'model', parts: r.contenido });
-    const llamadas = r.contenido.filter((p) => p.functionCall);
-    if (llamadas.length) {
-      const respuestas = [];
-      for (const pt of llamadas) {
-        const fc = pt.functionCall;
-        // 0.7: una búsqueda en internet por pregunta como mucho (cada una gasta del cupo de su clave); para lo demás,
-        // las fichas de GrowIA y los titulares que ya tiene. Solo cuentan las que salen bien, con un intento de más
-        let out;
-        if (fc.name !== 'buscar_en_internet') out = ejecutarHerramienta(fc.name, fc.args || {}, turno.estandar != null ? turno.estandar : esPublico());
-        else if (busquedas >= maxBusquedas || intentos > maxBusquedas) out = { error: `Ya has buscado en internet ${maxBusquedas === 1 ? 'una vez' : `${maxBusquedas} veces`} en esta pregunta: contesta con lo que tienes (la búsqueda, las fichas de la IA y los titulares de los datos) y di qué no has podido comprobar.` };
-        else if (!String((fc.args && fc.args.consulta) || '').trim()) out = { error: 'Falta qué buscar.' };
-        else { intentos++; out = await buscarGoogle(fc.args.consulta, turno, signal); if (out && !out.error) busquedas++; }
-        respuestas.push({ functionResponse: { name: fc.name, ...(fc.id ? { id: fc.id } : {}), response: out && typeof out === 'object' && !Array.isArray(out) ? out : { resultado: out } } });
-      }
-      contents.push({ role: 'user', parts: respuestas });
-      alCambiar();
-      continue;
-    }
-    turno.modelo = modelo;
-    if (r.fin === 'MAX_TOKENS') turno.partes.push({ tipo: 'paso', txt: 'La respuesta se ha cortado por larga. Pídele que siga.' });
-    else if (/SAFETY|RECITATION|PROHIBITED|BLOCKLIST/.test(r.fin || '')) turno.partes.push({ tipo: 'paso', txt: 'Google ha cortado la respuesta por sus filtros.' });
-    break;
-  }
-  return contents;
-}
-/* ---------- Claude (0.8): el motor de GrowIA en modo estándar ----------
-   La app habla con la ruta /claude del Worker de GrowFolio (que guarda la clave de la API de Claude, comprueba tu sesión
-   y la lista de correos que pueden usarla, y reenvía la petición tal cual, en directo). Mismo contrato que conversarGemini:
-   los mismos mensajes, las mismas herramientas de la cartera (HERRAMIENTAS ya vienen en el formato de Claude), los pasos y
-   el texto que se van pintando en el turno. La búsqueda en internet es la de Claude (web_search): la hace Anthropic.
+/* ---------- Claude: el motor de la IA (desde la 0.8.2b, el único) ----------
+   La app habla con la ruta /claude del Worker (que guarda la clave de la API de Claude, comprueba tu sesión y tu nivel y
+   reenvía la petición tal cual, en directo). Las herramientas de la cartera (HERRAMIENTAS) van en el formato de Claude; los
+   pasos y el texto se van pintando en el turno. La búsqueda en internet es la de Claude (web_search): la hace Anthropic.
    - Siempre con las reglas del estándar: Claude no recomienda comprar ni vender, que es lo que se declaró en la Console de
-     Anthropic. Desde la 0.8.2 (opción B) también en el modo fundador; el fundador con Gemini sigue con el asesor de siempre.
-   - Solo si tienes tu clave de Google: es la reserva. Cualquier fallo de Claude (sin permiso, sin créditos, tope del día, el
-     Worker caído o bloqueado, un 5xx, un error a mitad de la respuesta) pasa a Gemini sin que tengas que hacer nada.
-   - Si un fallo va a repetirse (sin permiso, sin créditos, sin conexión con el Worker…), Claude se aparta un rato
-     (LS_CLAUDE_PAUSA) y las preguntas siguientes van directas a Gemini, sin esperar a que falle cada vez.
-   - Qué modelo: las revisiones automáticas, Haiku (cuesta unas 20 veces menos); las preguntas, Sonnet. Se puede elegir
-     (LS_MOTOR) en Ajustes de GrowIA una vez que Claude ha contestado alguna vez en este dispositivo (LS_CLAUDE_OK). */
+     Anthropic. También en el modo fundador (opción B de la 0.8.2).
+   - 0.8.2b, todo con Claude: cualquiera con el correo verificado; los de CLAUDE_EMAILS con el tope alto y el resto con el
+     reducido (lo decide el Worker). Sin Gemini de reserva: si falla Sonnet, contesta Haiku; si no, se dice claro y se puede
+     volver a preguntar.
+   - Si un fallo va a repetirse (sin créditos, sin conexión con el Worker, el tope del día…), Claude se aparta un rato
+     (LS_CLAUDE_PAUSA) y las preguntas siguientes lo dicen sin esperar a que falle cada vez.
+   - Qué modelo: Haiku por defecto; Sonnet cuando eliges «A fondo» o «Claude Sonnet para todo» en Ajustes de la IA. */
 const MODELOS_CLAUDE = {
   'claude-haiku-5-5': { n: 'Claude Haiku 5.5', corto: 'Haiku 5.5', prov: 'claude', in: 0.10, out: 0.50, lec: 0.01, esc: 0.125 },
   'claude-sonnet-5-5': { n: 'Claude Sonnet 5.5', corto: 'Sonnet 5.5', prov: 'claude', in: 2, out: 10, lec: 0.10, esc: 2.5 },
@@ -1094,13 +808,14 @@ function siDe(k) { const v = LS.get(k, false), uid = uidActual(); if (v === true
 const claudeOk = () => siDe(LS_CLAUDE_OK);
 const marcarClaudeOk = () => LS.set(LS_CLAUDE_OK, uidActual() || true);
 // 0.8.2 (revisión aparte del prompt): lo que se manda, dicho entero; y sin clave de Google, Cancelar deja la IA sin contestar
-const TXT_SI_CLAUDE = () => L('La IA puede contestar con Claude, de Anthropic. Tus preguntas, una foto de tu cartera con sus cifras, tu perfil (edad, ingresos, gastos y metas, si los has puesto), lo que cuentas de ti, las revisiones automáticas y los resúmenes de noticias pasarían por el servidor de Toisón, que no guarda tus preguntas ni tu cartera, hasta Anthropic, que lo procesa fuera de la Unión Europea, no lo usa para entrenar y lo borra pasado un plazo corto según su política.', "The AI can answer with Claude, from Anthropic. Your questions, a snapshot of your portfolio with its figures, your profile (age, income, expenses and goals, if you've added them), what you tell it about yourself, automatic reviews and news summaries would go through Toisón's server, which does not store your questions or your portfolio, to Anthropic, which processes it outside the European Union, does not train on it and deletes it after a short period under its policy.")
-  + (AS.clave ? L(' Si prefieres que vaya solo a Google, con tu clave, pulsa Cancelar.', " If you'd rather it only goes to Google, with your key, press Cancel.") : L(' Si pulsas Cancelar, la IA no podrá contestar hasta que pongas tu clave de Google.', ' If you press Cancel, the AI cannot answer until you add your Google key.'))
-  + (esPublico() ? '' : L('\n\nCon el acceso de fundador: con Claude, la IA va con las reglas del estándar (explica y calcula, sin decirte qué comprar o vender). Si prefieres el asesor de siempre con Gemini y tu clave, pulsa Cancelar.', "\n\nWith founder access: with Claude, the AI follows the standard rules (it explains and calculates, without telling you what to buy or sell). If you'd rather have the usual adviser with Gemini and your key, press Cancel."))
+const TXT_SI_CLAUDE = () => L('La IA contesta con Claude, de Anthropic. Tus preguntas, una foto de tu cartera con sus cifras, tu perfil (edad, ingresos, gastos y metas, si los has puesto), lo que cuentas de ti, las revisiones automáticas y los resúmenes de noticias pasarían por el servidor de Toisón, que no guarda tus preguntas ni tu cartera, hasta Anthropic, que lo procesa fuera de la Unión Europea, no lo usa para entrenar y lo borra pasado un plazo corto según su política.', "The AI answers with Claude, from Anthropic. Your questions, a snapshot of your portfolio with its figures, your profile (age, income, expenses and goals, if you've added them), what you tell it about yourself, automatic reviews and news summaries would go through Toisón's server, which does not store your questions or your portfolio, to Anthropic, which processes it outside the European Union, does not train on it and deletes it after a short period under its policy.")
+  + L(' Si pulsas Cancelar, la IA no podrá contestar.', ' If you press Cancel, the AI cannot answer.')
+  + (esPublico() ? '' : L('\n\nCon el acceso de fundador, la IA va con las reglas del estándar: explica y calcula, sin decirte qué comprar o vender.', '\n\nWith founder access, the AI follows the standard rules: it explains and calculates, without telling you what to buy or sell.'))
   + L('\n\n¿Usar Claude?', '\n\nUse Claude?');
 // para lo suelto (el resumen de una noticia): el mismo sí, pedido al momento si aún no lo has dado
 function pedirSiClaude() { if (claudeOk()) return true; if (AS.claudeNo) return false; if (confirm(TXT_SI_CLAUDE())) { marcarClaudeOk(); return true; } AS.claudeNo = true; return false; }
-const motorElegido = () => { const m = LS.get(LS_MOTOR, 'auto'); return ['auto', 'haiku', 'sonnet', 'gemini'].includes(m) ? m : 'auto'; };
+// 0.8.2b: sin «Solo Gemini» (quien lo tuviera elegido pasa a la opción recomendada)
+const motorElegido = () => { const m = LS.get(LS_MOTOR, 'auto'); return ['auto', 'haiku', 'sonnet'].includes(m) ? m : 'auto'; };
 // tiempos de Claude: el primer dato (message_start llega enseguida; lo que tarda es el Worker o la red), y sin nada nuevo
 const CLAUDE_MAX_SALIDA = 32000;   // el mismo tope que el Worker (worker/src/index.js)
 const RED_CLAUDE = { primero: 30000, hilo: 60000, esperas: [2, 5] };
@@ -1109,28 +824,38 @@ function claudePausado() {
   return p && p.hasta > Date.now() && (!p.uid || !FB.user || p.uid === FB.user.uid) ? p : null;
 }
 function pausarClaude(motivo, ms) { try { LS.set(LS_CLAUDE_PAUSA, { hasta: Date.now() + ms, motivo, uid: (FB.user && FB.user.uid) || null }); } catch (e) {} }
-/* 0.8.2 · quién contestará la próxima pregunta, para decirlo (el aviso fijo del panel, el subtítulo), sin preguntar a nadie:
-   Claude si ya se sabe que contesta, o si no hay clave de Google (entonces es el único). Con Claude van las reglas del
-   estándar, también en el fundador; lo que se manda de verdad lo decide conversar() cuando ya sabe quién contesta */
-function quienContestaIA() { return claudeParaTodo() || !AS.clave ? 'claude' : 'gemini'; }
-// las preguntas que propone la app (sugerencias, «Pregúntale» de una idea o de una posición): las del estándar también en el
-// fundador cuando contesta Claude, que no da recomendaciones («¿Compro…? ¿cuánto meto?» no le tocaría)
-function preguntasDelEstandar() { return esPublico() || quienContestaIA() === 'claude'; }
-/* qué modelo de Claude toca para esta tarea (pregunta o análisis), o null si va con Gemini */
+/* 0.8.2b: contesta siempre Claude. Se quedan para lo que aún pregunta (el subtítulo, el «A fondo») */
+const quienContestaIA = () => 'claude';
+// las preguntas que propone la app (sugerencias, «Pregúntale» de una idea o de una posición): las del estándar, también en el
+// fundador, porque Claude no da recomendaciones («¿Compro…? ¿cuánto meto?» no le tocaría)
+const preguntasDelEstandar = () => true;
+/* qué modelo de Claude toca para esta tarea (pregunta o análisis), o null si la IA no puede contestar (la demo, el modo aún
+   sin leer, sin cuenta o con el correo sin confirmar, o Claude apartado un rato) */
 function modeloClaudeParaIA(tipo) {
   // el modo, el definitivo: mientras es provisional (dispositivo nuevo, sin haber leído tu cuenta) puede ser fundador sin saberlo
   const modo = LS.get('inv-acceso', null);
   // 0.8.2 (opción B): también en el fundador, y entonces con las reglas del estándar (ver conversar)
-  if (S.demo || !modo || modo.provisional || !FB.user || !FB.user.emailVerified || motorElegido() === 'gemini' || claudePausado()) return null;
+  if (S.demo || !modo || modo.provisional || !FB.user || !FB.user.emailVerified || claudePausado()) return null;
   const m = motorElegido();
-  // 0.8.2: Haiku por defecto (rápido y barato); Sonnet si eliges «A fondo» para tus preguntas o «Claude Sonnet para todo»
-  return m === 'haiku' ? 'claude-haiku-5-5' : m === 'sonnet' ? 'claude-sonnet-5-5' : tipo === 'pregunta' && AS.aFondo ? 'claude-sonnet-5-5' : 'claude-haiku-5-5';
+  // 0.8.2: Haiku por defecto (rápido y barato); Sonnet si eliges «A fondo» para tus preguntas o «Claude Sonnet para todo».
+  // 0.8.2b: si hoy ya no te quedan «A fondo» (nivel reducido), Haiku sin intentarlo
+  const sonnet = m === 'sonnet' || (m !== 'haiku' && tipo === 'pregunta' && AS.aFondo);
+  return sonnet && quedanFondoClaude() !== 0 ? 'claude-sonnet-5-5' : 'claude-haiku-5-5';
 }
 /* 0.8.2 · cuántas preguntas a Claude te quedan hoy: lo dice el Worker en cada respuesta (X-Quedan; su día es el de UTC) */
 const LS_CLAUDE_QUEDAN = 'inv-claude-quedan';
 const diaClaude = () => new Date().toISOString().slice(0, 10);
-function apuntarQuedanClaude(n) { if (Number.isFinite(n) && n >= 0) LS.set(LS_CLAUDE_QUEDAN, { d: diaClaude(), n: Math.floor(n), uid: uidActual() }); }
-function quedanClaude() { const q = LS.get(LS_CLAUDE_QUEDAN, null); return q && q.d === diaClaude() && q.uid === uidActual() && Number.isFinite(q.n) ? q.n : null; }
+// 0.8.2b: también las «A fondo» que quedan (f; solo las dice el Worker en el nivel reducido) y el nivel. null deja lo que había
+function apuntarQuedanClaude(n, f, nivel) {
+  const q0 = LS.get(LS_CLAUDE_QUEDAN, null), q = q0 && q0.d === diaClaude() && q0.uid === uidActual() ? { ...q0 } : { d: diaClaude(), uid: uidActual() };
+  if (Number.isFinite(n) && n >= 0) q.n = Math.floor(n);
+  if (Number.isFinite(f) && f >= 0) q.f = Math.floor(f); else if (nivel === 'alto') delete q.f;
+  if (nivel) q.nivel = nivel;
+  LS.set(LS_CLAUDE_QUEDAN, q);
+}
+function datoQuedan(k) { const q = LS.get(LS_CLAUDE_QUEDAN, null); return q && q.d === diaClaude() && q.uid === uidActual() && Number.isFinite(q[k]) ? q[k] : null; }
+const quedanClaude = () => datoQuedan('n');
+const quedanFondoClaude = () => datoQuedan('f');
 /* antes de mandar nada de la cartera: ¿puede este correo usar Claude y llega el Worker? Se pregunta con una petición vacía:
    el Worker comprueba la sesión y la lista de correos antes de leer el cuerpo, así que quien no está en la lista recibe un
    403 sin que su cartera haya salido del móvil, y quien sí está recibe un 400 («falta el modelo») que no gasta nada. El
@@ -1153,10 +878,10 @@ async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
       const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); puede = true; }
-      else pasarAGemini(errorClaude(r.status, j), null);
+      else apartarClaude(errorClaude(r.status, j));
     } catch (e) {
       if (signal && signal.aborted) throw new DOMException('Parado', 'AbortError');
-      pasarAGemini(Object.assign(e, { corte: true }), null);
+      apartarClaude(Object.assign(e, { corte: true }));
     } finally { clearTimeout(tt); if (signal) signal.removeEventListener('abort', parar); }
   }
   if (!puede) return false;
@@ -1164,17 +889,17 @@ async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
   // revisión automática no puede preguntar: espera a que contestes a la primera pregunta
   if (!claudeOk()) {
     if (tipo !== 'pregunta') return false;
-    if (confirm(TXT_SI_CLAUDE())) marcarClaudeOk();
-    // sin clave de Google, «solo Gemini» dejaría la IA sin salida: se recuerda el no solo para esta vez
-    else { if (AS.clave) LS.set(LS_MOTOR, 'gemini'); else AS.claudeNo = true; return false; }
+    if (confirm(TXT_SI_CLAUDE())) { marcarClaudeOk(); AS.claudeNo = false; }
+    // el no se recuerda solo mientras la app sigue abierta: la próxima vez se vuelve a preguntar
+    else { AS.claudeNo = true; return false; }
   }
   return true;
 }
-/* 0.9 · la IA sin clave de Google: con Claude, quien está en la lista puede usar la IA sin poner su clave (la de Google
-   queda de reserva para quien la tenga). claudeSinClave() lo dice sin preguntar a nadie (con el sondeo ya hecho);
-   sondearClaude() hace el sondeo vacío (sin mandar nada de la cartera) si toca y repinta lo que dependa de ello. */
+/* la IA con Claude: claudeSinClave() dice sin preguntar a nadie (con el sondeo ya hecho) si puede contestar; sondearClaude()
+   hace el sondeo vacío (sin mandar nada de la cartera) si toca y repinta lo que dependa de ello. 0.8.2b: sin clave de
+   Google, iaLista() es eso mismo */
 function claudeSinClave() { return !!modeloClaudeParaIA('pregunta') && sondeoClaudeOk(); }
-function iaLista() { return !!AS.clave || claudeSinClave(); }
+function iaLista() { return claudeSinClave(); }
 let SONDEO_EN_CURSO = null;
 function sondearClaude() {
   if (!modeloClaudeParaIA('pregunta') || sondeoClaudeOk() || SONDEO_EN_CURSO) return SONDEO_EN_CURSO || Promise.resolve(sondeoClaudeOk());
@@ -1193,11 +918,12 @@ function sondearClaude() {
   })();
   SONDEO_EN_CURSO.then((ok) => {
     if (!ok) return;
-    try { if (AS.vista === 'clave' && !AS.clave && !AS.pedirClave) AS.vista = 'chat'; if (!$('.hoja-fondo')) pintar(); if ($('.asesor')) pintarAsesor(); } catch (e) {}
+    try { if (AS.vista === 'sin-ia') AS.vista = 'chat'; if (!$('.hoja-fondo')) pintar(); if ($('.asesor')) pintarAsesor(); } catch (e) {}
   });
+  // si no puede, el panel lo dice (en vez de quedarse esperando)
+  SONDEO_EN_CURSO.then((ok) => { if (!ok) try { if ($('.asesor')) pintarAsesor(); } catch (e) {} });
   return SONDEO_EN_CURSO;
 }
-/* sin clave de Google no hay reserva: si Claude no puede, se dice claro en vez de pasar a Gemini */
 /* 0.9 · todo con Claude: lo que no es el chat (el resumen de una noticia, leer capturas y extractos al importar) también va
    con Claude si tu cuenta lo tiene, aunque tengas la clave de Google. Una llamada suelta, sin las herramientas de la app */
 const claudeParaTodo = () => !!modeloClaudeParaIA('pregunta') && sondeoClaudeOk() && !claudePausado();
@@ -1208,15 +934,22 @@ async function claudeTexto({ partes, sistema = '', modelo = 'claude-haiku-5-5', 
   await conversarClaude({ mensajes: [{ role: 'user', content: partes }], turno, sistema, maxTokens, signal, web, maxBusquedas, claudeModelo: modelo, herramientas: false, tipo: 'suelta', esfuerzo, alCambiar });
   return { texto: turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim(), citas: turno.citas.length ? turno.citas : turno.resultados };
 }
+// 0.8.2b: el día del Worker es el de UTC: a qué hora de aquí vuelven las preguntas (la 1:00 en invierno en España)
+function horaVuelveClaude() {
+  try { const a = new Date(); return new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate() + 1)).toLocaleTimeString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { hour: 'numeric', minute: '2-digit' }); } catch (e) { return '1:00'; }
+}
+/* sin Gemini de reserva: si Claude no puede, se dice claro por qué y qué hacer (en la respuesta va «Volver a preguntar») */
 function errorSinIA(e, aMedias) {
-  const c = e && (e.codigo || e.tipo);
-  const porque = AS.claudeNo ? L('Sin tu sí, la IA no puede contestar con Claude.', 'Without your OK, the AI cannot answer with Claude.')
-    : aMedias && c !== 'tope-diario' && c !== 'no-permitido' ? L('Claude se ha cortado a mitad de la respuesta.', 'Claude stopped halfway through the answer.')
-    : c === 'tope-diario' ? L('Has llegado al tope de preguntas de hoy.', 'You have reached today\'s question limit.')
+  const c = e && (e.codigo || e.tipo), h = horaVuelveClaude();
+  const txt = AS.claudeNo ? L('Sin tu sí, la IA no puede contestar: lo que le preguntas lo contesta Claude, de Anthropic. Si cambias de idea, vuelve a preguntar.', 'Without your OK, the AI cannot answer: your questions are answered by Claude, from Anthropic. If you change your mind, ask again.')
+    : aMedias && c !== 'tope-diario' && c !== 'techo' ? L('La respuesta se ha cortado a mitad. Vuelve a preguntar en un momento.', 'The answer stopped halfway. Ask again in a moment.')
+    : c === 'tope-diario' ? L(`Has llegado al tope de preguntas de hoy. Vuelve mañana: a partir de las ${h} puedes preguntar otra vez.`, `You have reached today's question limit. Come back tomorrow: from ${h} you can ask again.`)
+    : c === 'techo' ? L(`Hoy la IA ha llegado a su tope de uso. Vuelve mañana: a partir de las ${h} contesta otra vez.`, `The AI has reached its usage limit for today. Come back tomorrow: from ${h} it answers again.`)
     : c === 'tope-pregunta' ? L('Esta pregunta ha necesitado demasiados pasos: prueba a hacerla más corta o en dos.', 'This question needed too many steps: try asking it shorter or in two parts.')
-    : c === 'no-permitido' ? L('Tu cuenta todavía no tiene la IA con Claude.', 'Your account does not have the AI with Claude yet.')
-    : L('Claude no está disponible ahora.', 'Claude is not available right now.');
-  const x = new Error(`${porque} ${AS.claudeNo ? L('Si cambias de idea, vuelve a preguntar; o pon tu clave gratis de Google en Ajustes de la IA y contestará Gemini.', 'If you change your mind, ask again; or add your free Google key in the AI settings and Gemini will answer.') : L('Prueba en un rato, o pon tu clave gratis de Google en Ajustes de la IA para tener reserva.', 'Try again later, or add your free Google key in the AI settings as a backup.')}`);
+    : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace que te llegó al crear la cuenta y vuelve a entrar.', 'To use the AI, confirm your email with the link you got when you created the account, then sign in again.')
+    : c === 'sin-creditos' ? L('La IA no está disponible ahora mismo. Vuelve a probar dentro de unas horas.', 'The AI is not available right now. Try again in a few hours.')
+    : L('La IA no está disponible ahora mismo. Vuelve a preguntar en un rato.', 'The AI is not available right now. Ask again in a while.');
+  const x = new Error(txt);
   x.sinIA = true; x.codigo = c || 'sin-ia';
   if (e) { x.estado = e.estado; x.corte = e.corte; x.diario = e.diario; }
   return x;
@@ -1234,9 +967,11 @@ const ESTADO_ERROR_CLAUDE = { overloaded_error: 529, api_error: 500, rate_limit_
 // cuánto se aparta Claude después de un fallo que se va a repetir (0: se vuelve a probar en la pregunta siguiente)
 function pausaClaude(e) {
   const c = e && e.codigo;
-  if (c === 'no-permitido') return 6 * 36e5;
+  if (c === 'no-permitido') return 10 * 6e4;
   if (c === 'sin-creditos') return 3 * 36e5;
-  if (c === 'tope-diario') { const a = new Date(); return Math.max(36e5, Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate() + 1) - a.getTime()); }
+  // el tope del día de cada uno y el techo de todos: hasta la medianoche de UTC, cuando el Worker empieza el día
+  if (c === 'tope-diario' || c === 'techo') { const a = new Date(); return Math.max(6e4, Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate() + 1) - a.getTime()); }
+  if (c === 'tope-fondo' || c === 'tope-pregunta') return 0;
   if (c === 'clave' || c === 'sin-clave') return 36e5;
   if (c === 'sin-sesion' || c === 'cuotas') return 10 * 6e4;
   if (c === 'demasiadas') return 6e4;
@@ -1244,11 +979,11 @@ function pausaClaude(e) {
   if (e && (e.corte || esCorteRed(e))) return 5 * 6e4;
   return 0;
 }
-function pasarAGemini(e, turno) {
+// un fallo de Claude que se va a repetir: se aparta un rato (lo dice el registro de la IA)
+function apartarClaude(e) {
   const ms = pausaClaude(e);
   if (ms) pausarClaude((e && e.codigo) || (e && e.tipo) || 'fallo', ms);
-  diarioIA(`Claude no ha podido (${String((e && (e.codigo || e.tipo || e.estado)) || 'error')}${e && e.msg ? `: ${String(e.msg).slice(0, 60)}` : ''})${ms ? `, se aparta ${ms >= 36e5 ? `${Math.round(ms / 36e5)} h` : `${Math.round(ms / 6e4)} min`}` : ''}: sigue Gemini`);
-  if (turno) { turno.partes.length = 0; turno.citas.length = 0; turno.resultados.length = 0; turno.partes.push({ tipo: 'paso', txt: L('Claude no está disponible ahora: contesta Gemini', 'Claude is not available right now: Gemini answers') }); }
+  diarioIA(`Claude no ha podido (${String((e && (e.codigo || e.tipo || e.estado)) || 'error')}${e && e.msg ? `: ${String(e.msg).slice(0, 60)}` : ''})${ms ? `, se aparta ${ms >= 36e5 ? `${Math.round(ms / 36e5)} h` : `${Math.round(ms / 6e4)} min`}` : ''}`);
 }
 function sumarTokensClaude(turno, modelo, uso) {
   if (!turno || !uso) return;
@@ -1339,8 +1074,8 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   try {
     const token = await conTiempo(FB.user.getIdToken(), 8000);
     const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) });
-    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); throw errorClaude(r.status, j); }
-    { const qd = r.headers.get('x-quedan'); if (qd != null && qd !== '') apuntarQuedanClaude(Number(qd)); }
+    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); throw errorClaude(r.status, j); }
+    { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel')); }
     const lector = r.body.getReader(), dec = new TextDecoder();
     let buf = '';
     for (;;) {
@@ -1420,7 +1155,7 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
       }
       // si lo que no acepta Claude es la búsqueda en internet, se repite sin ella (y se avisa en el registro)
       if (e.claude && e.estado === 400 && conWeb && /web.?search/i.test(`${e.msg} ${e.codigo}`)) { conWeb = false; diarioIA(`Claude no acepta la búsqueda en internet (${String(e.msg).slice(0, 80)}): sigue sin ella`); vuelta--; continue; }
-      // lo demás (sin permiso, sin créditos, tope del día, 5xx, no empieza a tiempo…): lo decide conversar (pasa a Gemini)
+      // lo demás (sin permiso, sin créditos, tope del día, 5xx, no empieza a tiempo…): lo decide conversar
       throw e;
     }
     cortes = 0; turno.partes = turno.partes.filter((x) => !x.red);
@@ -1496,7 +1231,11 @@ async function preguntarAsesor(texto) {
   // para esa misma pregunta (si la cambias o se queda sin enviar, no se pega a la siguiente)
   const ctx0 = S.ctxIA; S.ctxIA = null;
   if (!texto || AS.cargando) return;
-  if (!iaLista()) { AS.vista = 'clave'; pintarAsesor(); return; }
+  // 0.8.2b: si el sondeo aún no ha contestado (el panel se acaba de abrir), se espera a él
+  if (!iaLista() && modeloClaudeParaIA('pregunta')) await sondearClaude();
+  // sin cuenta o en la demo, la pantalla que lo explica; si no, la pregunta sigue y la respuesta dice por qué no puede
+  // contestar (Claude apartado un rato, el correo sin confirmar…), con «Volver a preguntar»
+  if (!iaLista() && (!FB.user || S.demo)) { AS.vista = 'sin-ia'; pintarAsesor(); return; }
   AS.claudeNo = false;
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
   const adj = AS.adjunto; AS.adjunto = null; pintarAdjunto();
@@ -1509,7 +1248,7 @@ async function preguntarAsesor(texto) {
   const conv0 = AS.conv;   // 0.8.2: si mientras contesta abres otra conversación, la borras o empiezas una nueva, esto no se mezcla
   appGrowiaEmpieza();
   pintarAsesor(true);
-  diarioIA(`Pregunta · ${nombreMod(modeloClaudeParaIA('pregunta') || modeloVivo())}${redIA()}`);
+  diarioIA(`Pregunta · ${nombreMod(modeloClaudeParaIA('pregunta') || 'claude')}${redIA()}`);
   // 0.7l: mientras piensa (y aún no ha escrito nada), los segundos que lleva, para que se vea que sigue trabajando
   const tic = setInterval(() => { const el = document.querySelector('.as-ia.vivo .as-seg'); if (el) { const s = Math.round((Date.now() - turno.t) / 1000); el.textContent = s >= 3 ? `${s} s` : ''; } }, 1000);
   let marco = 0;
@@ -1525,8 +1264,8 @@ async function preguntarAsesor(texto) {
     const preparar = (est) => { refrescarFoto(nueva, est); return { mensajes: [...historialPara(AS.api, est), { role: 'user', content: contenido }], sistema: [].concat(sistemaAsesor(est)).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []) }; };
     await conversar({ turno, preparar, alCambiar, signal: AS.ctrl.signal, pensar: 'medium' });
   } catch (e) {
-    turno.error = e.name === 'AbortError' ? 'Parado.' : !e.corte && /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? `No hay conexión con ${PROV[cfgAsesor().prov].n}. Mira tu conexión y vuelve a probar.` : e.message;
-    if (!e.sinIA) avisarFalloIA(e, 'chat', turno.modelo);
+    turno.error = e.name === 'AbortError' ? 'Parado.' : !e.corte && /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? L('No hay conexión. Mira tu conexión y vuelve a probar.', 'No connection. Check your connection and try again.') : e.message;
+    if (!e.sinIA || e.avisar) avisarFalloIA(e, 'chat', turno.modelo);
   }
   clearInterval(tic);
   AS.cargando = false; AS.ctrl = null;

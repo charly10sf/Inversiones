@@ -18,6 +18,33 @@ export const test = base.extend({
 
 const ancho = (page) => page.evaluate(() => document.documentElement.scrollWidth);
 
+// 0.8.2b: la IA solo va con Claude, por el Worker. Uno de imitación: el sondeo («{}») dice que sí y cada pregunta la contesta
+// `responder(cuerpo)` con el texto que devuelve (o null para cortar la conexión)
+const WORKER_CLAUDE = 'https://growfolio.growfolio-web-app.workers.dev/claude';
+const CORS_W = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS' };
+const evC = (tipo, datos) => `event: ${tipo}\ndata: ${JSON.stringify({ type: tipo, ...datos })}\n\n`;
+function sseClaude(bloques, stop = 'end_turn') {
+  let s = evC('message_start', { message: { id: 'm', usage: { input_tokens: 100, output_tokens: 1 } } });
+  bloques.forEach((b, i) => {
+    if (b.texto != null) { s += evC('content_block_start', { index: i, content_block: { type: 'text', text: '' } }) + evC('content_block_delta', { index: i, delta: { type: 'text_delta', text: b.texto } }); }
+    else { s += evC('content_block_start', { index: i, content_block: { type: 'tool_use', id: b.id, name: b.nombre, input: {} } }) + evC('content_block_delta', { index: i, delta: { type: 'input_json_delta', partial_json: JSON.stringify(b.entrada) } }); }
+    s += evC('content_block_stop', { index: i });
+  });
+  return s + evC('message_delta', { delta: { stop_reason: stop }, usage: { output_tokens: 20 } }) + evC('message_stop', {});
+}
+async function workerClaude(context, responder) {
+  await context.route(WORKER_CLAUDE, (r) => {
+    const q = r.request();
+    if (q.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS_W });
+    if ((q.postData() || '') === '{}') return r.fulfill({ status: 400, headers: { ...CORS_W, 'content-type': 'application/json' }, body: JSON.stringify({ error: 'peticion' }) });
+    const sse = responder(JSON.parse(q.postData()));
+    if (sse == null) return r.abort('failed');
+    return r.fulfill({ status: 200, headers: { ...CORS_W, 'content-type': 'text/event-stream' }, body: sse });
+  });
+}
+// con la cuenta ya leída (el modo definitivo) y el sí a Claude dado
+const conClaude = (page) => page.evaluate(() => { S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: FB.user.uid, t: Date.now() }); LS.set(LS_CLAUDE_OK, true); LS.set(LS_CLAUDE_IMP, true); guardarCfgAsesor({ auto: 'manual' }); });
+
 async function recorrerVistas(page, vp) {
   for (const v of VISTAS) {
     await page.evaluate((v) => { location.hash = v; }, v);
@@ -212,20 +239,19 @@ test.describe('seguridad de la cartera', () => {
 
 test.describe('importar', () => {
   test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'solo en el móvil'));
+  test.use({ ajustes: { 'stub-verificar': '1' } });
 
   test('una captura del bróker se lee y se guarda', async ({ pagina: page, context }) => {
-    // GrowIA (Gemini) de imitación: contesta lo que leería en una captura de Trade Republic
-    await context.route('https://generativelanguage.googleapis.com/**', (r) => {
-      const leido = { plataforma: 'Trade Republic', posiciones: [
-        { nombre: 'Repsol', isin: 'ES0173516115', ticker: 'REP', tipo: 'Acción', cantidad: 100, precio_medio: 12.5, invertido: 1250, valor: 2900 },
-        { nombre: 'iShares Core MSCI World UCITS ETF', isin: 'IE00B4L5Y983', tipo: 'ETF', cantidad: 10, precio_medio: 90, invertido: 900, valor: 1100 },
-      ], operaciones: [], efectivo: [{ plataforma: 'Trade Republic', importe: 150 }] };
-      if (/models\?|\/models$/.test(r.request().url())) return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ models: [] }) });
-      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(leido) }] }, finishReason: 'STOP' }], usageMetadata: {} }) });
-    });
+    // 0.8.2b: la lee Claude por el Worker (de imitación): contesta lo que leería en una captura de Trade Republic
+    const leido = { plataforma: 'Trade Republic', posiciones: [
+      { nombre: 'Repsol', isin: 'ES0173516115', ticker: 'REP', tipo: 'Acción', cantidad: 100, precio_medio: 12.5, invertido: 1250, valor: 2900 },
+      { nombre: 'iShares Core MSCI World UCITS ETF', isin: 'IE00B4L5Y983', tipo: 'ETF', cantidad: 10, precio_medio: 90, invertido: 900, valor: 1100 },
+    ], operaciones: [], efectivo: [{ plataforma: 'Trade Republic', importe: 150 }] };
+    await workerClaude(context, () => sseClaude([{ texto: JSON.stringify(leido) }]));
+    page.on('dialog', (d) => d.accept());
     await crearCuenta(page);
     await quitarCapas(page);
-    await page.evaluate(() => { AS.clave = 'AQ.prueba-de-growfolio'; });
+    await conClaude(page);
     await page.evaluate(() => importarCapturas());
     await page.setInputFiles('#impArch', { name: 'captura.png', mimeType: 'image/png', buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==', 'base64') });
     await expect(page.locator('#impGuardar')).toBeVisible({ timeout: 30_000 });
@@ -413,53 +439,6 @@ test.describe('GrowIA te pregunta', () => {
   });
 });
 
-test.describe('GrowIA busca en internet', () => {
-  test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
-
-  test('busca con Flash-Lite y, si se le acaba el cupo, con el modelo de la conversación', async ({ pagina: page, context }) => {
-    // Gemini de imitación: la conversación pide buscar y luego contesta; la búsqueda apunta con qué modelo se hizo
-    const busquedas = [];
-    let liteSinCupo = false;
-    const sse = (parts) => `data: ${JSON.stringify({ candidates: [{ content: { role: 'model', parts }, finishReason: 'STOP' }], usageMetadata: {} })}\r\n\r\n`;
-    await context.route('https://generativelanguage.googleapis.com/**', (r) => {
-      const url = r.request().url(), cuerpo = r.request().postData() || '', modelo = (url.match(/models\/([\w.-]+):/) || [])[1];
-      if (/:streamGenerateContent/.test(url)) {
-        const parts = /"functionResponse"/.test(cuerpo) ? [{ text: 'Repsol baja un 3 % por el petróleo.' }] : [{ functionCall: { name: 'buscar_en_internet', args: { consulta: 'Repsol hoy' } } }];
-        return r.fulfill({ status: 200, contentType: 'text/event-stream', body: sse(parts) });
-      }
-      if (/:generateContent/.test(url) && /Busca en internet/.test(cuerpo)) {
-        busquedas.push(modelo);
-        if (liteSinCupo && /flash-lite/.test(modelo)) return r.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify({ error: { code: 429, status: 'RESOURCE_EXHAUSTED', message: 'Quota exceeded for metric: generate_content_free_tier_requests, limit: 20 (GenerateRequestsPerDayPerProjectPerModel-FreeTier)' } }) });
-        return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Repsol cae un 3 % hoy.' }] }, groundingMetadata: { groundingChunks: [{ web: { uri: 'https://ejemplo.es/repsol', title: 'ejemplo.es' } }] } }] }) });
-      }
-      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ models: [], candidates: [{ content: { parts: [{ text: '{}' }] } }] }) });
-    });
-    await crearCuenta(page);
-    await quitarCapas(page);
-    await meterCartera(page);
-    // la revisión diaria, a mano: si no, empezaría sola con la clave puesta y también buscaría
-    await page.evaluate(() => { guardarCfgAsesor({ auto: 'manual' }); AS.clave = 'AQ.prueba-de-growfolio'; LS.del('inv-ia-agotados'); });
-    let respuestas = 0;
-    const preguntar = async (q) => {
-      await page.evaluate(() => { if (typeof cerrarAsesor === 'function') cerrarAsesor(); });
-      await page.evaluate((x) => abrirAsesor(x, true), q);
-      respuestas++;
-      await expect.poll(async () => (await page.locator('#asCuerpo').innerText()).split('Repsol baja un 3 %').length - 1, { timeout: 30_000 }).toBe(respuestas);
-    };
-    await preguntar('¿Qué ha pasado hoy con Repsol?');
-    expect(busquedas).toEqual(['gemini-3.5-flash-lite']);
-
-    // sin cupo hoy en Flash-Lite: busca con el de la conversación y se apunta, para no volver a probar con él hoy
-    liteSinCupo = true; busquedas.length = 0;
-    await preguntar('¿Y mañana?');
-    expect(busquedas).toEqual(['gemini-3.5-flash-lite', 'gemini-3.8-flash']);
-    expect(await page.evaluate(() => agotadosIA())).toContain('gemini-3.5-flash-lite');
-    busquedas.length = 0;
-    await preguntar('¿Y la semana que viene?');
-    expect(busquedas).toEqual(['gemini-3.8-flash']);
-  });
-});
-
 test.describe('la entrada', () => {
   test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
 
@@ -481,32 +460,29 @@ test.describe('la entrada', () => {
   });
 });
 
-test.describe('GrowIA y los cortes de conexión', () => {
+test.describe('la IA y los cortes de conexión', () => {
   test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'en el móvil'));
+  test.use({ ajustes: { 'stub-verificar': '1' } });
 
   test('si la petición se corta a mitad de la conversación, la repite y contesta', async ({ pagina: page, context }) => {
-    // Gemini de imitación: pide una herramienta; la petición con su resultado se corta una vez (como le pasó a Carlos
-    // con NWG.L el 23 oct) y a la segunda contesta
+    // Claude pide una herramienta; la petición con su resultado se corta una vez (como le pasó a Carlos con NWG.L el 23 oct)
+    // y a la segunda contesta
     let cortes = 0;
-    const sse = (parts) => `data: ${JSON.stringify({ candidates: [{ content: { role: 'model', parts }, finishReason: 'STOP' }], usageMetadata: {} })}\r\n\r\n`;
-    await context.route('https://generativelanguage.googleapis.com/**', (r) => {
-      const url = r.request().url(), cuerpo = r.request().postData() || '';
-      if (/:streamGenerateContent/.test(url)) {
-        if (!/"functionResponse"/.test(cuerpo)) return r.fulfill({ status: 200, contentType: 'text/event-stream', body: sse([{ functionCall: { name: 'buscar_empresa', args: { consulta: 'NWG.L' } } }]) });
-        if (cortes++ === 0) return r.abort('failed');
-        return r.fulfill({ status: 200, contentType: 'text/event-stream', body: sse([{ text: 'NatWest cotiza a 625 peniques.' }]) });
-      }
-      return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ models: [] }) });
+    await workerClaude(context, (c) => {
+      const conResultado = JSON.stringify(c.messages).includes('tool_result');
+      if (!conResultado) return sseClaude([{ id: 'toolu_1', nombre: 'buscar_empresa', entrada: { consulta: 'NWG.L' } }], 'tool_use');
+      if (cortes++ === 0) return null;
+      return sseClaude([{ texto: 'NatWest cotiza a 625 peniques.' }]);
     });
+    page.on('dialog', (d) => d.accept());
     await crearCuenta(page);
     await quitarCapas(page);
     await meterCartera(page);
-    await page.evaluate(() => { guardarCfgAsesor({ auto: 'manual' }); AS.clave = 'AQ.prueba-de-growfolio'; });
-    await page.evaluate(() => abrirAsesor('¿Compro NatWest Group plc (NWG.L)?', true));
+    await conClaude(page);
+    await page.evaluate(() => abrirAsesor('¿Qué hace NatWest Group plc (NWG.L)?', true));
     await expect(page.locator('#asCuerpo')).toContainText('NatWest cotiza a 625 peniques', { timeout: 30_000 });
-    // 0.7l: un solo aviso del corte, que al salir bien dice lo que pasó
-    await expect(page.locator('#asCuerpo')).toContainText('Se cortó la conexión con Google: lo he repetido');
     await expect(page.locator('#asCuerpo')).not.toContainText('No hay conexión');
+    await expect(page.locator('#asCuerpo .as-error')).toHaveCount(0);
     expect(cortes).toBe(2);
   });
 });

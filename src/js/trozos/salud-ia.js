@@ -39,7 +39,7 @@ function htmlCupoAction() {
   for (const x of uso) if (x.t && dia(x.t) === hoy) m[x.m] = (m[x.m] || 0) + 1;
   const pensar = uso.filter((x) => /3\.8/.test(x.m) && x.pensar).map((x) => x.pensar);
   return `<section><h3>${L('Lo que ha gastado hoy la Action', 'What the Action has used today')}</h3>
-    <p>${Object.keys(MODELOS).map((k) => `${esc(MODELOS[k].corto || MODELOS[k].n)}: <b>${m[k] || 0}</b>${CUPO_DIA[k] ? ` ${L('de', 'of')} ${CUPO_DIA[k]}` : ''}`).join(' · ')}</p>
+    <p>${Object.keys(MODELOS).map((k) => `${esc(MODELOS[k].corto || MODELOS[k].n)}: <b>${m[k] || 0}</b>`).join(' · ')}</p>
     <p class="nota">${pensar.length ? L(`El 3.8 ha razonado de media ${fmtNum(pensar.reduce((a, b) => a + b, 0) / pensar.length, 0)} tokens por llamada (${pensar.length} llamadas en 48 h).`, `The 3.8 reasoned ${fmtNum(pensar.reduce((a, b) => a + b, 0) / pensar.length, 0)} tokens per call on average (${pensar.length} calls in 48 h).`) : L('Aún no hay llamadas del 3.8 apuntadas en 48 h.', 'No 3.8 calls logged in 48 h yet.')} ${L('Es su propio proyecto de Google: no gasta el cupo de tu la IA.', "It's its own Google project: it doesn't use your GrowIA quota.")}</p></section>`;
 }
 function htmlFallosIA(fs) {

@@ -169,9 +169,9 @@ async function bienvenidaCuenta() {
       S.enc = { texto: local.texto, sha: null };
       S.cartera = c; S.key = key; S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;
       await IDB.set(IDB_CLAVE, { salt: f.salt, key });
-      // lo de antes ya vive en la cuenta: fuera del dispositivo, para que no se le ofrezca a nadie más; la clave
-      // de Gemini y la conversación del asesor pasan a la cuenta
-      for (const k of ['asesor-clave', 'asesor-clave-g', 'asesor-conv', 'ia-propio']) { const v = localStorage.getItem((local.clave === 'clave' ? 'inv-' : 'invL-') + k); if (v != null && localStorage.getItem('invC-' + k) == null) localStorage.setItem('invC-' + k, v); }
+      // lo de antes ya vive en la cuenta: fuera del dispositivo, para que no se le ofrezca a nadie más; la conversación
+      // del asesor pasa a la cuenta (0.8.2b: la clave de Gemini ya no, que no se usa)
+      for (const k of ['asesor-conv', 'ia-propio']) { const v = localStorage.getItem((local.clave === 'clave' ? 'inv-' : 'invL-') + k); if (v != null && localStorage.getItem('invC-' + k) == null) localStorage.setItem('invC-' + k, v); }
       for (const k of ['inv-local-enc', 'inv-cache-enc', 'inv-pend-enc', 'invL-pend-enc', 'invL-cache-enc']) localStorage.removeItem(k);
       try { await IDB.del('clave-local'); await IDB.del('clave'); } catch (e) {}
       if (nom) { S.cartera.perfil = { ...(S.cartera.perfil || {}), nombre: nom }; }
