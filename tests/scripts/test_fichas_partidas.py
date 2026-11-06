@@ -45,6 +45,7 @@ class Partir(unittest.TestCase):
         self.assertEqual(set(principal["e"]), {"SAN.MC", "AAPL"})
         self.assertEqual(set(resto["e"]), {"NRG", "WDC"})
         self.assertEqual(principal["mas"], 2)
+        self.assertEqual(principal["mas_s"], ["NRG", "WDC"])
         # los temas y «sin» van solo en el principal
         self.assertEqual(len(principal["temas"]), 1)
         self.assertIn("sin", principal)
@@ -52,6 +53,7 @@ class Partir(unittest.TestCase):
         junto = F.juntar(principal, resto)
         self.assertEqual(set(junto["e"]), {"SAN.MC", "AAPL", "NRG", "WDC"})
         self.assertNotIn("mas", junto)
+        self.assertNotIn("mas_s", junto)
         self.assertEqual(junto["temas"], todas()["temas"])
 
     def test_juntar_un_archivo_viejo_o_nada(self):
@@ -74,6 +76,25 @@ class Partir(unittest.TestCase):
             self.assertEqual(resto["generado"], principal["generado"])
             # la siguiente pasada lo vuelve a juntar sin perder ninguna
             self.assertEqual(len(F.juntar(principal, resto)["e"]), 4)
+
+    def test_si_falta_el_resto_de_antes_no_se_guardan(self):
+        """Revisión aparte: con «mas» en el fichas.json anterior y sin fichas-mas.json, guardar perdería el resto."""
+        with tempfile.TemporaryDirectory() as ant, tempfile.TemporaryDirectory() as sal:
+            principal, _ = F.partir(todas(), {"SAN.MC", "AAPL"})
+            Path(ant, "fichas.json").write_text(json.dumps(principal), encoding="utf-8")
+            Path(ant, "fichas-mas.json").write_text("", encoding="utf-8")   # como lo deja «git show … > archivo || true»
+            Path(sal, "radar.json").write_text(json.dumps({"valores": [{"s": "SAN.MC"}, {"s": "AAPL"}]}), encoding="utf-8")
+            inst = Path(ant, "instrumentos.json"); inst.write_text(json.dumps({"instrumentos": []}), encoding="utf-8")
+            viejos = (I.actualizar_noticias, I.noticias_de_carteras, I.informe_cartera)
+            I.actualizar_noticias = lambda *a, **k: None
+            I.noticias_de_carteras = lambda *a, **k: None
+            I.informe_cartera = lambda *a, **k: None
+            try:
+                I.main(str(inst), ant, sal)
+            finally:
+                I.actualizar_noticias, I.noticias_de_carteras, I.informe_cartera = viejos
+            self.assertFalse(Path(sal, "fichas.json").exists())
+            self.assertFalse(Path(sal, "fichas-mas.json").exists())
 
     def test_sin_nucleo_todo_en_uno(self):
         with tempfile.TemporaryDirectory() as d:

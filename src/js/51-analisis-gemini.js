@@ -136,7 +136,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   let marco = 0;
   const alCambiar = () => { if (!marco) marco = setTimeout(() => { marco = 0; refrescarProgresoIA(); }, 400); };
   try {
-    await conTiempo(cargarFichas(), 3000).catch(() => null);
+    await fichasParaCartera(3000);   // 0.8.3: con el resto si alguna acción tuya está ahí
     refrescarFoto(true);
     const M = S.M || calcular();
     const ids = [...new Set(M.filas.map((f) => f.inst.id))];

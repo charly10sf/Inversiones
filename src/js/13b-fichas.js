@@ -50,7 +50,24 @@ async function cargarFichas() {
 /* 0.8.3: fichas.json trae los temas y las empresas del núcleo (las de radar.json y las de las carteras: ~900); las otras
    ~1.900 del radar van en fichas-mas.json (su número, en fichas.mas), que se baja solo al abrir una de ellas o al
    preguntar a la IA. Así abrir Expertos o una empresa grande no espera a 1,8 MB */
-const fichasMasPendiente = (sim) => !!(S.fichas && S.fichas.mas && !S.fichasMasOk && sim && !(S.fichas.e || {})[sim]);
+function fichasMasPendiente(sim) {
+  if (!S.fichas || !S.fichas.mas || S.fichasMasOk || !sim || (S.fichas.e || {})[sim]) return false;
+  // con la lista de las que van aparte (mas_s), solo si es una de ellas; sin ella, cualquiera que no esté en el núcleo
+  if (!Array.isArray(S.fichas.mas_s)) return true;
+  if (!S.fichasMasSet || S.fichasMasSet.f !== S.fichas) { S.fichasMasSet = new Set(S.fichas.mas_s); S.fichasMasSet.f = S.fichas; }
+  return S.fichasMasSet.has(sim);
+}
+// la versión de las fichas que se ha usado (para rehacer la foto de la IA cuando llega el resto)
+const versionFichas = () => (S.fichasId || '') + (S.fichasMasOk ? '+mas' : '');
+/* antes de la foto de la IA o del análisis: las fichas y, si alguna acción de tu cartera está en el resto, también el
+   resto (como mucho ms entre las dos; con mala cobertura, se sigue sin ellas) */
+async function fichasParaCartera(ms = 3000) {
+  const t0 = Date.now();
+  if (!S.fichas || S.fichasId !== ((S.precios && S.precios.fichas_id) || '')) await conTiempo(cargarFichas(), ms).catch(() => null);
+  const M = S.M || (S.cartera ? calcular() : null);
+  const falta = M && M.filas.some((f) => fichasMasPendiente((f.p && f.p.simbolo) || f.inst.yahoo));
+  if (falta) await conTiempo(cargarFichasMas(), Math.max(500, ms - (Date.now() - t0))).catch(() => null);
+}
 async function cargarFichasMas() {
   await cargarFichas();
   if (!S.fichas || !S.fichas.mas || S.fichasMasOk) return S.fichas;
@@ -60,8 +77,8 @@ async function cargarFichasMas() {
     try {
       const r = await fetch(CFG.dev ? 'dev/fichas-mas.json' : GH.raw('fichas-mas.json', 'datos') + '?v=' + encodeURIComponent(id || 'sin'), { cache: CFG.dev ? 'no-store' : 'no-cache' }).catch(() => null);
       const m = r && r.ok ? await r.json() : null;
-      // si entretanto llegaron unas fichas nuevas, estas ya no valen
-      if (m && S.fichas && S.fichasId === id) {
+      // si entretanto llegaron unas fichas nuevas, o el resto es de otra pasada, no valen
+      if (m && S.fichas && S.fichasId === id && (!S.fichas.generado || m.generado === S.fichas.generado)) {
         const e = S.fichas.e || (S.fichas.e = {});
         for (const [k, v] of Object.entries(m.e || {})) if (!e[k]) e[k] = v;
         S.fichasMasOk = true;
