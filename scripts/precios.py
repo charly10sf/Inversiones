@@ -73,7 +73,7 @@ RECOMENDACION = {
 
 ACCION_ANALISTA = {"up": "Sube", "down": "Baja", "init": "Empieza", "main": "Mantiene", "reit": "Reitera"}
 
-# (símbolo, nombre, grupo). Los grupos ordenan la pestaña Mercados y lo que lee Gemini por regiones.
+# (símbolo, nombre, grupo). Los grupos ordenan la pestaña Mercados y lo que lee la IA por regiones.
 MERCADOS = [
     ("^IBEX", "Ibex 35", "Europa"), ("^STOXX50E", "Euro Stoxx 50", "Europa"), ("^GDAXI", "DAX", "Europa"),
     ("^FCHI", "CAC 40", "Europa"), ("^FTSE", "FTSE 100", "Europa"),

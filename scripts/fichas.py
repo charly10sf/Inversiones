@@ -102,7 +102,7 @@ def nuevas():
 
 
 def aplicar_lectura(fichas, s, r, fuentes, ahora, nombre=None):
-    """Mete en la ficha de `s` lo que ha leído Gemini: los factores que traen noticia (los demás se quedan como
+    """Mete en la ficha de `s` lo que ha leído la IA: los factores que traen noticia (los demás se quedan como
     estaban) y la marca de cada titular. `r` es la entrada de la empresa en la respuesta; `fuentes`, la lista
     numerada del lote."""
     e = fichas.setdefault("e", {}).setdefault(s, {"fa": {}, "tit": {}})
@@ -175,7 +175,7 @@ def podar(fichas, validos, ahora_dt=None):
         if not x["fa"] and not x["tit"]:
             del e[s]
     fichas["temas"] = [t for t in fichas.get("temas") or [] if (_fecha(t.get("d")) or ahora_dt) >= lim_tema]
-    # las apartadas porque Gemini no las leía (informe.leer_lote), solo mientras sigan en el radar o en las carteras
+    # las apartadas porque la IA no las leía (informe.leer_lote), solo mientras sigan en el radar o en las carteras
     if "sin" in fichas:
         fichas["sin"] = {k: v for k, v in (fichas.get("sin") or {}).items() if validos is None or k in validos}
     return fichas
