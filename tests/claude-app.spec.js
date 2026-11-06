@@ -268,10 +268,10 @@ test('en modo fundador contesta Claude con las reglas del estándar; con «solo 
   expect(sis).not.toContain('## Planes de venta que propone Toisón');
   expect(sis).not.toContain('Las ideas de compra que mejor encajan');
   expect(sis).not.toMatch(/^- (Comprar|Evitar) /m);
-  // la respuesta queda marcada como hecha con las reglas del estándar, y el pie lo dice con el modelo
+  // la respuesta queda marcada como hecha con las reglas del estándar y con su modelo, sin ningún aviso debajo
   expect(await page.evaluate(() => AS.conv.at(-1).estandar)).toBe(true);
-  await expect(page.locator('#asCuerpo .as-pie-ia').last()).toContainText('Claude Haiku 5.5');
-  await expect(page.locator('#asCuerpo .as-pie-ia').last()).toContainText('no es asesoramiento financiero');
+  expect(await page.evaluate(() => AS.conv.at(-1).modelo)).toBe('claude-haiku-5-5');
+  await expect(page.locator('#asCuerpo .as-pie-ia')).toHaveCount(0);
   // eligiendo «solo Gemini»: no se toca el Worker y vuelve el asesor del fundador
   const antes = w.sondeos + w.peticiones.length;
   await page.evaluate(() => { LS.set('inv-ia-motor', 'gemini'); AS.cargando = false; });
@@ -279,7 +279,7 @@ test('en modo fundador contesta Claude con las reglas del estándar; con «solo 
   await expect.poll(() => g.n, { timeout: 20_000 }).toBe(1);
   expect(w.sondeos + w.peticiones.length).toBe(antes);
   expect(await page.evaluate(() => AS.conv.at(-1).estandar)).toBe(false);
-  await expect(page.locator('#asCuerpo .as-pie-ia').last()).toContainText('La decisión es tuya');
+  await expect(page.locator('#asCuerpo .as-pie-ia')).toHaveCount(0);
 });
 
 test('sin aceptar el aviso de privacidad no se manda nada de la cartera: contesta Gemini y no vuelve a preguntar', async ({ page, context }) => {
@@ -506,7 +506,7 @@ test('en modo fundador, la revisión con Claude va con las reglas del estándar 
 });
 
 // 0.8.2 · arriba del panel, siempre: que es una IA, cuál, que puede equivocarse y qué hace y qué no
-test('el panel no lleva aviso fijo y cada respuesta dice el modelo que la ha escrito', async ({ page, context }) => {
+test('el panel no lleva aviso fijo ni línea de IA debajo de las respuestas', async ({ page, context }) => {
   await preparada(page);
   await gemini(context);
   await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Hecho.' }]) }));
@@ -515,12 +515,13 @@ test('el panel no lleva aviso fijo y cada respuesta dice el modelo que la ha esc
   await page.evaluate(() => abrirAsesor());
   await expect(page.locator('#asCuerpo')).toBeVisible();
   await expect(page.locator('#asAviso')).toHaveCount(0);
-  // con Claude: el pie de la respuesta nombra el modelo
+  // con Claude: la respuesta guarda su modelo pero no lo dice
   await page.evaluate(() => { cerrarAsesor(); LS.set('inv-ia-motor', 'auto'); });
   await page.evaluate(() => abrirAsesor());
   await page.evaluate(() => preguntarAsesor('¿Cómo voy?'));
   await expect(page.locator('#asCuerpo')).toContainText('Hecho.', { timeout: 20_000 });
-  await expect(page.locator('#asCuerpo .as-pie-ia')).toContainText('Respuesta generada por IA (Claude Haiku 5.5)');
+  expect(await page.evaluate(() => AS.conv.at(-1).modelo)).toBe('claude-haiku-5-5');
+  await expect(page.locator('#asCuerpo .as-pie-ia')).toHaveCount(0);
   await expect(page.locator('#asAviso')).toHaveCount(0);
 });
 

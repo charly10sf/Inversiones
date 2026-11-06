@@ -6,10 +6,11 @@
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
   { v: '0.8.2a', f: '2026-11-06', h: '11:00', t: 'Menos avisos en la IA', arreglos: [
-    'El panel de la IA ya no lleva el aviso fijo de arriba. Debajo de cada respuesta sigue poniendo el modelo que la ha escrito.',
+    'El panel de la IA ya no dice qué IA contesta, ni arriba ni debajo de cada respuesta.',
+    'En «Del radar», los logos de las empresas se ven más grandes.',
   ] },
   { v: '0.8.2', f: '2026-11-06', h: '10:30', t: 'La IA explica', cosas: [
-    { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor, .riel-ia', dib: null }, t: 'La IA explica', x: 'La IA te explica tu cartera y hace las cuentas con tus cifras, pero no te dice qué comprar ni qué vender: la decisión es tuya. Debajo de cada respuesta pone el modelo que la ha escrito.' },
+    { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor, .riel-ia', dib: null }, t: 'La IA explica', x: 'La IA te explica tu cartera y hace las cuentas con tus cifras, pero no te dice qué comprar ni qué vender: la decisión es tuya.' },
     { d: 'pregunta', t: 'Normal o «A fondo»', x: 'Con Claude, la respuesta normal es la rápida. Si quieres que piense más, pulsa «A fondo» antes de preguntar. Arriba ves cuántas preguntas te quedan hoy.' },
     { d: 'calendario', t: 'Tus conversaciones, guardadas', x: 'Las 20 últimas conversaciones con la IA se guardan cifradas en tu móvil. Al empezar una nueva, las tienes arriba para volver a abrirlas o borrarlas.' },
     { d: 'pulido', ir: { v: 'posiciones', sel: '[data-accion="copiar-ia"]', dib: null }, t: 'Copiar para tu IA', x: 'En Posiciones y en Análisis puedes copiar tu cartera en texto para pegarla en ChatGPT, Gemini o Claude. Lo que te conteste es cosa de ese asistente.' },

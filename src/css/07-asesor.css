@@ -98,8 +98,6 @@
 .as-func svg { width: 20px; height: 20px; color: var(--oro-texto); margin-bottom: 5px; }
 .as-func b { font-size: 13.5px; font-weight: 650; }
 .as-func small { font-size: 11.5px; line-height: 1.35; color: var(--tenue); }
-/* 0.8.2 · la línea de debajo de cada respuesta */
-.as-pie-ia { display: block; margin-top: 8px; color: var(--tenue); font-size: 11.5px; line-height: 1.4; }
 /* 0.8.2 · tus conversaciones guardadas */
 .as-convs { margin: 0 0 14px; text-align: left; }
 .as-convs h4 { margin: 0 0 6px; font-size: 13px; font-weight: 600; color: var(--texto-2); }

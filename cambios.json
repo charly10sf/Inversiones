@@ -8,10 +8,21 @@
    "commits": [
     {
      "cuando": "2026-11-06 11:00",
-     "asunto": "Versión 0.8.2a: menos avisos en la IA",
+     "asunto": "Versión 0.8.2a: menos avisos en la IA y logos más grandes en el radar",
      "detalle": [
-      "Fuera el aviso fijo de arriba del panel de la IA (qué IA contesta y que no da recomendaciones); debajo de cada respuesta sigue la línea con el modelo que la ha escrito.",
-      "Sin el aviso, el panel vuelve a la rejilla de tres filas y se quitan sus estilos y los tests de ese aviso."
+      "El panel de la IA ya no dice qué IA contesta: fuera el aviso fijo de arriba y la línea de debajo de cada respuesta (el modelo de cada respuesta se sigue guardando).",
+      "En «Del radar», los logos pasan de 24 a 36 px y sin el relleno que se comía casi todo el dibujo.",
+      "Sin el aviso, el panel vuelve a la rejilla de tres filas; se quitan estilos y se ajustan los tests."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 10:58",
+     "asunto": "Versión 0.8.2a: fuera el aviso fijo de arriba del panel de la IA",
+     "detalle": [
+      "Carlos (6 nov): «ya se sobreentiende, no quiero que aparezca nada de eso». Se quitan el aviso,",
+      "sus funciones y estilos, y la fila extra de la rejilla del panel; debajo de cada respuesta",
+      "sigue la línea con el modelo. El texto de novedades de la 0.8.2 ya no lo menciona. VERSION a",
+      "0.8.2a con su arreglo, en.json y cambios.json; tests del aviso y de versiones ajustados."
      ]
     }
    ]
