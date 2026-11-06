@@ -410,6 +410,11 @@ test('/salud dice si Claude está listo, sin enseñar la clave', async () => {
 // 0.8.2b: el nivel reducido. Menos preguntas, pocas «A fondo» y un techo de gasto al día para todos juntos
 const SONNET = { ...PEDIDO, model: 'claude-sonnet-5-5' }, HAIKU = { ...PEDIDO, model: 'claude-haiku-5-5' };
 const RED = { email: 'nuevo@prueba.com' };
+// 0.8.2d (sesión 4): una tarea bien hecha de cada tipo, como la manda la app: la noticia con Haiku y la búsqueda; importar,
+// con un archivo (aquí, uno pasado a texto, que no hace contar tokens); la revisión, como una pregunta
+const ARCHIVO = [{ type: 'text', text: 'Archivo «movimientos.csv»:\nfecha;nombre;importe' }, { type: 'text', text: 'Devuelve solo el JSON.' }];
+const BUSCAR = { type: 'web_search_20250305', name: 'web_search', max_uses: 2 };
+const tareaDe = (id, tipo = 'noticia', m = HAIKU) => ({ ...m, pregunta: id, ronda: 1, tarea: tipo, ...(tipo === 'importar' ? { messages: [{ role: 'user', content: ARCHIVO }] } : tipo === 'noticia' ? { tools: [BUSCAR] } : {}) });
 // una respuesta con lo que cobra Anthropic: `uso` en el JSON o, en directo, en message_start y message_delta
 const conUso = (uso, enDirecto = false) => () => enDirecto
   ? new Response([
@@ -584,10 +589,11 @@ test('0.8.2b: en el reducido, menos salida y búsquedas, una sola búsqueda, sin
 test('0.8.2d: las tareas (revisión, noticia, importar) tienen su contador y no gastan preguntas', async () => {
   await con(ok, async () => {
     const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: undefined, CLAUDE_RONDAS_POR_DIA: undefined };
-    const T = (id, tarea = 'noticia', m = HAIKU) => ({ ...m, pregunta: id, ronda: 1, tarea });
-    // nivel reducido: 10 tareas al día; ninguna gasta de las 5 preguntas
+    const T = tareaDe;
+    // nivel reducido: 10 tareas al día; ninguna gasta de las 5 preguntas (dos revisiones: más no caben en el día)
+    const tipos = ['revision', 'noticia', 'importar', 'noticia', 'importar', 'revision', 'noticia', 'importar', 'noticia', 'importar'];
     for (let i = 0; i < 10; i++) {
-      const r = await pedir('uid-t', T(`tarea${i}aaaa`, ['revision', 'noticia', 'importar'][i % 3]), env, RED);
+      const r = await pedir('uid-t', T(`tarea${i}aaaa`, tipos[i]), env, RED);
       expect(r.status).toBe(200);
       expect(r.headers.get('x-quedan-tareas')).toBe(String(9 - i));
       expect(r.headers.get('x-quedan')).toBe('5');
@@ -619,7 +625,7 @@ test('0.8.2d: las tareas (revisión, noticia, importar) tienen su contador y no 
     r = await pedir('uid-t4', T('gastoTaaaa', 'revision'), { ...env, CLAUDE_GASTO_REDUCIDO: '0.0001' }, { email: 'gasto-t@prueba.com' });
     expect(await r.json()).toEqual({ error: 'tope-tareas' });
     // nivel alto: 40 tareas
-    for (let i = 0; i < 3; i++) { const x = await pedir('uid-ta', T(`alto${i}taaaa`, 'revision'), env); expect(x.headers.get('x-quedan-tareas')).toBe(String(39 - i)); expect(x.headers.get('x-quedan')).toBe('20'); }
+    for (let i = 0; i < 3; i++) { const x = await pedir('uid-ta', T(`alto${i}taaaa`, i ? 'noticia' : 'revision'), env); expect(x.headers.get('x-quedan-tareas')).toBe(String(39 - i)); expect(x.headers.get('x-quedan')).toBe('20'); }
   });
 });
 
@@ -629,5 +635,86 @@ test('0.8.2d: las tareas cuentan en el techo de gasto del reducido como las preg
     const r = await pedir('uid-tt', { ...HAIKU, pregunta: 'techoTaaaa', ronda: 1, tarea: 'revision' }, env, { email: 'tt@prueba.com' });
     expect(r.status).toBe(429);
     expect(await r.json()).toEqual({ error: 'techo' });
+  });
+});
+
+// 0.8.2d (sesión 4): «tarea» no es una puerta para preguntar sin gastar preguntas. Cada tarea tiene que ser lo que dice ser
+test('0.8.2d: la noticia va con Haiku, sin herramientas de la app, en un solo mensaje y con la salida corta', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira() };
+    let n = 0;
+    const mal = async (cuerpo, motivo) => { const r = await pedir('uid-tn', { ...cuerpo, pregunta: `noticiaMal${++n}x`, ronda: 1, tarea: 'noticia' }, env, RED); expect(r.status).toBe(400); expect(await r.json()).toEqual({ error: 'peticion', motivo }); };
+    await mal({ ...SONNET, tools: [BUSCAR] }, 'modelo');
+    await mal({ ...HAIKU, tools: [BUSCAR, { name: 'cartera', description: 'd', input_schema: { type: 'object' } }] }, 'tools');
+    await mal({ ...HAIKU, tool_choice: { type: 'auto' } }, 'tools');
+    // una conversación (pregunta, respuesta y otra pregunta) no es un resumen
+    await mal({ ...HAIKU, messages: [{ role: 'user', content: 'hola' }, { role: 'assistant', content: 'hola' }, { role: 'user', content: '¿y Repsol?' }] }, 'mensajes');
+    await mal({ ...HAIKU, messages: [{ role: 'assistant', content: 'hola' }] }, 'mensajes');
+    // ni los resultados de una herramienta de la app
+    await mal({ ...HAIKU, messages: [{ role: 'user', content: [{ type: 'tool_result', tool_use_id: 't1', content: '{}' }] }] }, 'tools');
+    await mal({ ...HAIKU, messages: [{ role: 'user', content: 'hola' }, { role: 'assistant', content: [{ type: 'tool_use', id: 't1', name: 'cartera', input: {} }] }] }, 'tools');
+    // ni capturas
+    await mal({ ...HAIKU, messages: [{ role: 'user', content: [{ type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'iVBORw0KGgo=' } }, { type: 'text', text: 'resume' }] }] }, 'adjuntos');
+    expect(vistas.length).toBe(0);
+    // la buena pasa con la salida recortada y 2 búsquedas como mucho
+    let r = await pedir('uid-tn', { ...HAIKU, max_tokens: 12000, tools: [{ ...BUSCAR, max_uses: 5 }], pregunta: 'noticiaBien1', ronda: 1, tarea: 'noticia' }, env);
+    expect(r.status).toBe(200);
+    expect(vistas[0].cuerpo.max_tokens).toBe(4096);
+    expect(vistas[0].cuerpo.tools).toEqual([{ ...BUSCAR, max_uses: 2 }]);
+    expect(vistas[0].cuerpo.tarea).toBeUndefined();
+    // y si la búsqueda se alarga (pause_turn), la app devuelve lo que llevaba Claude para que siga: eso sí vale
+    r = await pedir('uid-tn', { ...HAIKU, tools: [BUSCAR], pregunta: 'noticiaBien1', ronda: 2, tarea: 'noticia', messages: [{ role: 'user', content: 'resume' }, { role: 'assistant', content: [{ type: 'server_tool_use', id: 's1', name: 'web_search', input: { query: 'repsol' } }, { type: 'web_search_tool_result', tool_use_id: 's1', content: [] }] }] }, env);
+    expect(r.status).toBe(200);
+    // sin búsqueda también vale
+    expect((await pedir('uid-tn', { ...HAIKU, pregunta: 'noticiaBien2', ronda: 1, tarea: 'noticia' }, env, RED)).status).toBe(200);
+  });
+});
+
+test('0.8.2d: importar lleva al menos una captura, un PDF o un archivo, y sin herramientas', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira() };
+    let r = await pedir('uid-ti', { ...SONNET, pregunta: 'importarMal1', ronda: 1, tarea: 'importar' }, env, RED);
+    expect(r.status).toBe(400);
+    expect(await r.json()).toEqual({ error: 'peticion', motivo: 'adjuntos' });
+    // un texto que solo dice «Archivo» en medio no es un archivo
+    r = await pedir('uid-ti', { ...HAIKU, messages: [{ role: 'user', content: [{ type: 'text', text: 'Mi pregunta: ¿vendo? Archivo «x»' }] }], pregunta: 'importarMal2', ronda: 1, tarea: 'importar' }, env, RED);
+    expect(await r.json()).toEqual({ error: 'peticion', motivo: 'adjuntos' });
+    r = await pedir('uid-ti', { ...tareaDe('importarMal3', 'importar'), tools: [BUSCAR] }, env, RED);
+    expect(await r.json()).toEqual({ error: 'peticion', motivo: 'tools' });
+    r = await pedir('uid-ti', { ...tareaDe('importarMal4', 'importar'), messages: [{ role: 'user', content: ARCHIVO }, { role: 'assistant', content: '{}' }, { role: 'user', content: 'y ahora dime qué compro' }] }, env, RED);
+    expect(await r.json()).toEqual({ error: 'peticion', motivo: 'mensajes' });
+    expect(vistas.length).toBe(0);
+    // un archivo pasado a texto, una captura o un PDF, sí
+    expect((await pedir('uid-ti', tareaDe('importarBien1', 'importar', SONNET), env, RED)).status).toBe(200);
+    const img = { type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'iVBORw0KGgo=' } };
+    expect((await pedir('uid-ti', { ...HAIKU, messages: [{ role: 'user', content: [img, { type: 'text', text: 'Devuelve solo el JSON.' }] }], pregunta: 'importarBien2', ronda: 1, tarea: 'importar' }, env)).status).toBe(200);
+    expect(vistas.length).toBe(2);
+  });
+});
+
+test('0.8.2d: la revisión de la cartera, 2 al día por correo en los dos niveles; las demás tareas siguen', async () => {
+  await con(ok, async () => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: undefined, CLAUDE_RONDAS_POR_DIA: undefined };
+    const herr = { tools: [{ name: 'cartera', description: 'd', input_schema: { type: 'object' } }, BUSCAR] };
+    for (const [uid, extra] of [['uid-rv1', RED], ['uid-rv2', {}]]) {
+      let r = await pedir(uid, { ...tareaDe(`${uid.slice(4)}revisionA`, 'revision'), ...herr }, env, extra);
+      expect(r.status).toBe(200);
+      expect(r.headers.get('x-quedan-revisiones')).toBe('1');
+      expect(r.headers.get('access-control-expose-headers')).toContain('X-Quedan-Revisiones');
+      r = await pedir(uid, tareaDe(`${uid.slice(4)}revisionB`, 'revision'), env, extra);
+      expect(r.headers.get('x-quedan-revisiones')).toBe('0');
+      r = await pedir(uid, tareaDe(`${uid.slice(4)}revisionC`, 'revision'), env, extra);
+      expect(r.status).toBe(429);
+      expect(await r.json()).toEqual({ error: 'tope-revision' });
+      // otra ronda de una revisión ya empezada sigue (sus herramientas), y las noticias e importar también
+      r = await pedir(uid, { ...tareaDe(`${uid.slice(4)}revisionA`, 'revision'), ...herr, ronda: 2 }, env, extra);
+      expect(r.status).toBe(200);
+      expect((await pedir(uid, tareaDe(`${uid.slice(4)}noticiaZ`, 'noticia'), env, extra)).status).toBe(200);
+      // la revisión rechazada no gastó tarea: quedan todas menos las dos revisiones que entraron
+      expect(r.headers.get('x-quedan-tareas')).toBe(String((extra.email ? 10 : 40) - 2));
+    }
+    // una pregunta del chat no lleva X-Quedan-Revisiones
+    const r = await pedir('uid-rv1', { ...HAIKU, pregunta: 'chatNormal1', ronda: 1 }, env, RED);
+    expect(r.headers.get('x-quedan-revisiones')).toBeNull();
   });
 });
