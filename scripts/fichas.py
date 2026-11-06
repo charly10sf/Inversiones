@@ -5,7 +5,7 @@ La Action las rellena al leer la prensa con Flash-Lite (informe.py) y las guarda
   {"v": 1, "generado": "...",
    "e": {"<ticker>": {"n": "nombre", "d": "última lectura",
                       "fa": {"<factor>": {"s": "+|-|=|±", "p": 1-3, "plazo": "corto|medio|largo", "txt": "...", "d": "...",
-                                          "fuentes": [{"t", "u", "f", "d"}]}},
+                                          "fuentes": [{"u", "f"}]}},  (desde la 0.8.3; antes también "t" y "d")
                       "tit": {"<clave del titular>": ["factor", "signo", peso, "AAAA-MM-DD"]}}},
    "temas": [{"k": "...", "fa": "macro|politico|social", "txt": "...", "plazo": "...", "d": "...", "fuentes": [...],
               "afecta": [{"pais": "...", "zona": "...", "sector": "...", "industria": "...", "s": "+", "p": 2}]}]}
@@ -13,7 +13,7 @@ La app junta en cada ficha lo de la empresa y los temas de su país y su sector,
 de noticias con la clave del titular (la misma cuenta en src/js: claveTitular).
 
 0.8.3: se guardan en dos archivos (partir y juntar). fichas.json lleva los temas, «sin» y las empresas del núcleo
-(radar.json y las carteras: ~900) y en «mas» cuántas van aparte; fichas-mas.json, {"v", "generado", "e"} con el resto,
+(radar.json y las carteras: ~900), en «mas» cuántas van aparte y en «mas_s» cuáles; fichas-mas.json, {"v", "generado", "e"} con el resto,
 que la web solo baja al abrir una de ellas (con las 2.810 empresas, 1,76 MB con gzip si fuera uno solo)."""
 import datetime as dt
 import re
@@ -189,6 +189,8 @@ def partir(fichas, nucleo):
     principal["e"] = {s: x for s, x in e.items() if s in nucleo}
     resto = {"v": fichas.get("v", 1), "generado": fichas.get("generado"), "e": {s: x for s, x in e.items() if s not in nucleo}}
     principal["mas"] = len(resto["e"])
+    # la lista de las que van aparte: así la web solo baja el resto cuando se abre una de ellas (no una del núcleo sin ficha)
+    principal["mas_s"] = sorted(resto["e"])
     return principal, resto
 
 
@@ -200,4 +202,5 @@ def juntar(principal, resto):
         e.setdefault(s, x)
     fichas["e"] = e
     fichas.pop("mas", None)
+    fichas.pop("mas_s", None)
     return fichas

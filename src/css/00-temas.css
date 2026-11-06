@@ -759,7 +759,7 @@ img.tema-muestra { background: none; box-shadow: none; }
 
 /* ---------- 0.8.3 · revisión del diseño (5 nov) ---------- */
 /* filas que se deslizan de lado: el borde por el que queda algo se difumina (marcarDesbordes, 10-pintado.js) */
-[data-desb] { --desb-i: 0px; --desb-d: 0px; -webkit-mask-image: linear-gradient(to right, transparent 0, #000 var(--desb-i), #000 calc(100% - var(--desb-d)), transparent 100%); mask-image: linear-gradient(to right, transparent 0, #000 var(--desb-i), #000 calc(100% - var(--desb-d)), transparent 100%); }
+[data-desb] { --desb-i: 0px; --desb-d: 0px; -webkit-mask-image: linear-gradient(to right, transparent 0, currentColor var(--desb-i), currentColor calc(100% - var(--desb-d)), transparent 100%); mask-image: linear-gradient(to right, transparent 0, currentColor var(--desb-i), currentColor calc(100% - var(--desb-d)), transparent 100%); }
 [data-desb~="i"] { --desb-i: 26px; }
 [data-desb~="d"] { --desb-d: 34px; }
 /* las tablas que en el móvil se vuelven fichas (Por horizonte, lo que costaría cada paso…): la etiqueta encima y la cifra
