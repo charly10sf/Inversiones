@@ -1,6 +1,161 @@
 {
  "versiones": [
   {
+   "v": "0.8.2",
+   "f": "2026-11-06",
+   "h": "10:30",
+   "t": "La IA explica",
+   "commits": [
+    {
+     "cuando": "2026-11-06 10:30",
+     "asunto": "Versión 0.8.2: la IA explica, con reglas claras y el radar entero",
+     "detalle": [
+      "La IA explica en vez de opinar: aviso fijo arriba del chat y pie con el modelo en cada respuesta; Claude también en el fundador con las reglas del estándar; prompt con verbos prohibidos y un vigía que lo apunta en el registro si se escapa alguno.",
+      "Haiku por defecto y «A fondo» con Sonnet; las preguntas que quedan salen del Worker (X-Quedan).",
+      "Conversaciones guardadas (las 20 últimas, cifradas con la cartera) y «Copiar para tu IA» en Posiciones y Análisis.",
+      "Borrar la cuenta desde Ajustes (pide la contraseña o Google otra vez) y reglas de Firestore para las bajas.",
+      "Fichas del radar con fecha, autoría con IA, hechos separados de opiniones y fuentes.",
+      "El radar, entero y por tamaño: caché de señales, lista de 50 en 50, orden por tamaño y sin orden por «Puede subir» ni «Te quedas»; ordenar y cambiar de zona repintan solo la tabla."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 09:49",
+     "asunto": "Radar: las 2.864 por páginas, orden por tamaño y señales solo de las filas que se pintan",
+     "detalle": [
+      "«Todo el radar» sale de 20 en 20 y luego de 50 en 50 («Ver 50 más», con la cuenta a la vista); cambiar de zona, filtro u orden",
+      "repinta solo la tabla (antes, la vista entera con 2.800 filas: 16 s en un móvil medio)",
+      "Orden por tamaño por defecto (ORDEN_RADAR.cap); también por nombre, dividendo, PER y 1 año; ya no por «Puede subir», «Te quedas»",
+      "ni «Señales» (CNMV). En el móvil, con una pastilla de orden (esas columnas no caben)",
+      "contraste() guarda su resultado por empresa y versión del radar; lo que te quedas, por tabla (cache de señales)",
+      "Nueva columna Tamaño; «Todo el radar» en su propia sección, ya no bajo «Las mejores ahora»",
+      "Pruebas: tests/radar-lista.spec.js y un tiempo del radar con 2.800 empresas en rendimiento.spec.js"
+     ]
+    },
+    {
+     "cuando": "2026-11-06 09:15",
+     "asunto": "Trae lo de main (informe del radar con las 2.864 y aviso de precio de compra) a la 0.8.2",
+     "detalle": [
+      "# Conflicts:",
+      "#\tscripts/informe.py"
+     ]
+    },
+    {
+     "cuando": "2026-11-06 06:31",
+     "asunto": "Toisón: el aviso de precio de compra y la gráfica de 1S ya no se fían de la barra semanal en curso del radar",
+     "detalle": [
+      "La última barra semanal de Yahoo lleva fecha del lunes pero el último precio. Western Digital (2 nov 2026): el aviso",
+      "decía que 332,33 € no cuadraba con 238,53 € y la gráfica enseñaba +4 % en una semana de -29 %.",
+      "puntosRadarHist quita la barra de la semana en curso (la pone el precio de hoy).",
+      "rangoPrecioEn: con cierres semanales, el aviso compara con el rango de los cierres que rodean el día.",
+      "Prueba nueva: tests/precio-compra-semanal.spec.js"
+     ]
+    },
+    {
+     "cuando": "2026-11-06 06:13",
+     "asunto": "Radar: la IA lee las 2.864 empresas, varias peticiones de 50 por lote",
+     "detalle": [
+      "informe.py baja la prensa de radar-mas.json (160 empresas de Yahoo y 40 de",
+      "Google por pasada, las que más tiempo llevan sin mirar) y la IA lee hasta 400",
+      "empresas por pasada: ocho peticiones de 50 dentro de un solo lote de la API por",
+      "lotes (mitad de precio). Cada petición lleva como mucho 50 empresas (Haiku cobra",
+      "más con más de 100.000 tokens de entrada en una sola petición). Lo que no sale",
+      "se parte en dos y va en otro lote; las leídas hace más tiempo van primero (antes,",
+      "las de mejores números). La decisión, el informe y los temas siguen con",
+      "radar.json. Tiempo de la pasada acotado (INFORME_PRESUPUESTO, 11 min). Sin clave",
+      "de Claude o con los lotes apagados, todo como antes (50 por pasada)."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 23:52",
+     "asunto": "Radar: las lecturas de prensa con Claude van por la API por lotes (mitad de precio)",
+     "detalle": [
+      "Medido con 50 empresas el 5 nov: el lote tarda unos 2 minutos y cuesta la mitad. Si no termina en 7 minutos se cancela y se pide en directo."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 23:52",
+     "asunto": "Radar: las lecturas de prensa con Claude van por la API por lotes (mitad de precio)",
+     "detalle": [
+      "Medido con 50 empresas el 5 nov: el lote tarda unos 2 minutos y cuesta la mitad. Si no termina en 7 minutos se cancela y se pide en directo."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 23:10",
+     "asunto": "Radar: Claude sin pensar (Haiku gastaba toda la salida en pensar y devolvía vacío)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-05 23:00",
+     "asunto": "Radar: el registro dice por qué Claude devuelve una respuesta vacía",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-05 23:10",
+     "asunto": "Radar: Claude sin pensar (Haiku gastaba toda la salida en pensar y devolvía vacío)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-05 23:00",
+     "asunto": "Radar: el registro dice por qué Claude devuelve una respuesta vacía",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-05 22:27",
+     "asunto": "Vigía de la IA: arreglos de la revisión aparte del prompt (5 nov noche)",
+     "detalle": [
+      "El revisor (que solo veía el código) encontró colados en las relajaciones de la",
+      "tercera vuelta y en cómo se miraban las apariciones: «Que no vendas ahora»,",
+      "«Cuando baje, mete 500 € más», «No puedo decirte si te conviene vender, pero te",
+      "conviene esperar», «Yo no vendería», «Si baja, aguanta», consejo entre comillas",
+      "con papel de asesor, rechazo con consejo antes. Ahora se miran todas las",
+      "apariciones, la negación solo vale hasta la coma, y las comillas solo eximen",
+      "tras una negación o una regla suya. Frases nuevas en tests/banco-claude.spec.js.",
+      "No se toca el texto del prompt público: sus hallazgos (P1 a P5) los decide Carlos."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 22:16",
+     "asunto": "Trae la 0.8.1d (el catálogo ampliado) a la 0.8.2",
+     "detalle": [
+      "Merge de main (1a03754) en v0.8.2. Único conflicto: en.json (las dos ramas",
+      "añadieron frases; se unen, 4.777 en total). niveles.spec: la hoja corta de",
+      "la intermedia parte ahora de la 0.8.1d, que es la versión publicada."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 08:38",
+     "asunto": "0.8.2: rematada (área de 48 px en el panel de la IA, la lista de conversaciones con retraso, documentos sin abogado)",
+     "detalle": [
+      "Botones de abajo del panel de la IA (recortar, dictar, enviar) y el aviso fijo de arriba: área táctil de 48 px.",
+      "La lista de conversaciones (hasta 20, ~600 KB) ya no se cifra en cada respuesta: la abierta se guarda al momento",
+      "y pasa a la lista 20 s después, al cerrar el panel, al empezar o abrir otra o al salir de la app; si la app se",
+      "cierra antes, la pasa cargarAsesor.",
+      "cargarConvs ya no deja una carga vieja: tras cerrar sesión la lista se quedaba en null y archivar fallaba.",
+      "claude/versiones sin el abogado (Carlos, 4 nov); sesiones del 4 y 5 nov pasadas a claude/historial.md.",
+      "Pruebas nuevas en tests/explica-082.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 08:27",
+     "asunto": "0.8.2: trae la 0.8.1b publicada (main) a esta versión",
+     "detalle": [
+      "Choque solo en en.json (unión de las dos). Fuera de las novedades",
+      "preparadas los dos arreglos que ya salieron en la 0.8.1b."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 06:23",
+     "asunto": "0.8.2: detalles de las auditorías, novedades preparadas y Marfil sin repintar en Samsung",
+     "detalle": [
+      "Las preguntas que quedan no pasan de las peticiones que quedan (X-Quedan)",
+      "Normal y A fondo con 48 px para el dedo y su nota enlazada; confirmar antes de borrar una conversación",
+      "Novedades de la 0.8.2 preparadas en claude/versiones/0.8.md (se meten al cerrar la versión)",
+      "Marfil: color-scheme «light dark» en vez de «only light», que Samsung Internet no respeta"
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.1d",
    "f": "2026-11-05",
    "h": "18:30",
