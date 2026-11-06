@@ -123,7 +123,7 @@ function abrirConsulta(c) {
     // las empresas del radar que no tienes: su año en cierres semanales (radar-hist.json, una vez al día)
     if (!serie && sim) {
       const rh = await radarHist(), e = rh && rh.s && rh.s[sim];
-      if (e && e.d && e.v) { const d0 = deIso(e.d), paso = rh.paso || 7; serie = e.v.map((v, k) => { const x2 = new Date(d0); x2.setDate(d0.getDate() + k * paso); return [iso(x2), v]; }); }
+      if (e && e.d && e.v) { serie = puntosRadarHist(e, rh); if (x && x.p > 0) serie.push([hoyIso(), +x.p]); }
     }
     const g = serie ? graficaConsulta(serie, mon) : '';
     gr.innerHTML = g || (x ? rangoConsulta(x) : '');
