@@ -82,7 +82,8 @@ def pedido_tanda(lista):
             "y personas, y lo que vaya entre llaves {así} sin tocar; no añadas ni quites información. Devuelve solo JSON: "
             '{"t": [las traducciones, en el mismo orden y el mismo número que la entrada]}.\n\nTextos:\n'
             + json.dumps(lista, ensure_ascii=False))
-    return {**I.pedido("", pide, 16000, json_=True), "temperature": 0.2}
+    # sin «temperature» (6 nov, ensayo: con ella, ninguna tanda del lote salía bien; la lectura de prensa no la lleva)
+    return I.pedido("", pide, 16000, json_=True)
 
 
 def leer_tanda(lista, msg):

@@ -79,6 +79,23 @@ class Pedido(Base):
         self.assertAlmostEqual(I.coste("claude-haiku-5-5", 1000, 0, busquedas=2), 0.0201)
 
 
+class LoteConFallos(Base):
+    def test_el_registro_dice_por_que_no_sale_una_peticion_del_lote(self):
+        def get(ruta, clave, metodo="GET", cuerpo=None, texto=False):
+            if metodo == "POST":
+                return {"id": "b1", "processing_status": "ended", "results_url": "https://api.anthropic.com/v1/messages/batches/b1/results"}
+            return json.dumps({"custom_id": "a", "result": {"type": "errored", "error": {"type": "error", "error": {"type": "invalid_request_error", "message": "temperature no vale"}}}}) + "\n"
+        I.peticion_claude_get = get
+        salida = io.StringIO()
+        viejo, sys.stdout = sys.stdout, salida
+        try:
+            r = I.mensajes_por_lote({"a": {"model": "m"}}, "k")
+        finally:
+            sys.stdout = viejo
+        self.assertIsNone(r["a"])
+        self.assertIn("1 de 1 peticiones del lote no han salido (errored: invalid_request_error temperature no vale)", salida.getvalue())
+
+
 class Llamada(Base):
     def test_en_directo_y_se_apunta_con_su_coste(self):
         vistos = []
@@ -207,7 +224,7 @@ class Informe(Base):
         self.assertEqual((inf["resumen"], inf["modelo"], inf["busqueda"]), ("Todo en orden.", "claude-haiku-5-5", False))
         self.assertEqual(inf["posiciones"]["x"]["fuentes"][0]["u"], "https://ejemplo.es/1")
         self.assertNotIn("tools", vistos[0])
-        self.assertEqual(vistos[0]["output_config"], {"effort": "medium"})
+        self.assertEqual(vistos[0]["output_config"], {"effort": "low"})
         self.assertEqual(I.USO[-1]["que"], "informe_cartera")
 
     def test_con_busqueda_las_webs_van_de_fuentes(self):

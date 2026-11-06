@@ -230,7 +230,7 @@ def mensajes_por_lote(pedidos, clave, tope=None):
     if b.get("processing_status") != "ended" or not b.get("results_url"):
         raise RuntimeError(f"lote sin terminar tras {round(time.time() - t0)} s" if b.get("processing_status") != "ended" else "lote sin resultados")
     crudo = peticion_claude_get(b["results_url"].replace("https://api.anthropic.com", ""), clave, texto=True)
-    salida = {k: None for k in pedidos}
+    salida, malas = {k: None for k in pedidos}, collections.Counter()
     for linea in crudo.splitlines():
         try:
             o = json.loads(linea)
@@ -239,6 +239,13 @@ def mensajes_por_lote(pedidos, clave, tope=None):
         res = o.get("result") or {}
         if res.get("type") == "succeeded" and o.get("custom_id") in salida:
             salida[o["custom_id"]] = res.get("message")
+        else:
+            # 6 nov: que el registro diga por qué no sale una petición del lote (antes, nada)
+            e = res.get("error") or {}
+            e = e.get("error") if isinstance(e.get("error"), dict) else e
+            malas[f"{res.get('type')}: {str(e.get('type') or '')} {str(e.get('message') or '')[:140]}".strip()] += 1
+    for motivo, n in malas.most_common(3):
+        print(f"claude: {n} de {len(pedidos)} peticiones del lote no han salido ({motivo})")
     return salida
 
 
@@ -267,8 +274,8 @@ def mensaje_por_lote(cuerpo, clave, tope=None):
 
 
 def pedido(sistema, texto, salida=8192, json_=False, pensar=False, buscar=0):
-    """El cuerpo de una petición a Claude. json_: que conteste solo con un JSON. pensar: el informe y la decisión, con
-    esfuerzo medio; si no, sin pensar (Haiku 5.5 piensa por defecto y en la lectura de prensa se gastaba los 32.000 tokens
+    """El cuerpo de una petición a Claude. json_: que conteste solo con un JSON. pensar: el informe («low») y la decisión
+    (True, esfuerzo medio); si no, sin pensar (Haiku 5.5 piensa por defecto y en la lectura de prensa se gastaba los 32.000 tokens
     de salida pensando: stop_reason=max_tokens con un solo bloque «thinking», 5 nov 22:09). buscar: usos de la búsqueda."""
     if json_:
         sistema += "\n\nResponde solo con un JSON válido, sin texto antes ni después y sin bloques de código."
@@ -276,7 +283,7 @@ def pedido(sistema, texto, salida=8192, json_=False, pensar=False, buscar=0):
     if sistema.strip():
         p["system"] = sistema.strip()
     if pensar:
-        p["output_config"] = {"effort": "medium"}
+        p["output_config"] = {"effort": pensar if isinstance(pensar, str) else "medium"}
     else:
         p["thinking"] = {"type": "disabled"}
     if buscar:
@@ -559,8 +566,10 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida):
     texto, fuentes = material(instrumentos, precios, radar)
     print(f"informe: {len(fuentes)} noticias, {len(texto)} caracteres")
     hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    # 0.8.2d: Haiku pensando (esfuerzo medio) y por lote; con INFORME_BUSQUEDA=1, con 3 búsquedas en internet como mucho
-    p = pedido(INSTRUCCIONES, f"Hoy es {hoy}.\n\n{texto}", 32768, pensar=True, buscar=3 if BUSQUEDA else 0)
+    # 0.8.2d: Haiku pensando y por lote; con INFORME_BUSQUEDA=1, con 3 búsquedas en internet como mucho. Esfuerzo bajo: en el
+    # ensayo del 6 nov, con el medio escribió 25.600 de los 32.768 tokens de salida (sin pensar eran unos 5.000) y se podía
+    # quedar cortado
+    p = pedido(INSTRUCCIONES, f"Hoy es {hoy}.\n\n{texto}", 32768, pensar="low", buscar=3 if BUSQUEDA else 0)
     try:
         resp = ia(p, "informe_cartera")
         modelo_usado = resp.get("model") or CLAUDE_MODELO
