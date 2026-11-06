@@ -1519,6 +1519,8 @@ async function preguntarAsesor(texto) {
     // 0.7: las fichas de GrowIA van en la foto: si no están, se bajan antes (3 s como mucho: con mala cobertura,
     // contesta sin ellas) y si llegan nuevas, la foto se rehace
     if (!S.fichas || S.fichasId !== ((S.precios && S.precios.fichas_id) || '')) await conTiempo(cargarFichas(), 3000).catch(() => null);
+    // 0.8.3: las del resto del radar (fichas-mas.json), por detrás: para cuando la IA busque una empresa que no es del núcleo
+    cargarFichasMas().catch(() => null);
     const nueva = !AS.api.length || AS.fotoFichas !== S.fichasId;
     // 0.7d: en las preguntas, la respuesta normal razona en medio (el análisis de la cartera, en alto): contesta antes
     // 0.8.2: la foto y las instrucciones, cuando ya se sabe quién contesta (con Claude, las reglas del estándar)

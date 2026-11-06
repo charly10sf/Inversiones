@@ -914,8 +914,27 @@ function senalesRadar(m, x) {
   return s;
 }
 /* las que pasan los filtros, ya ordenadas (sin pintar nada; solo «bien contrastadas» necesita sus señales) */
+/* 0.8.3: filtros de país (la sede), sector y tamaño (capitalización en euros: grandes desde 10.000 millones, medianas de
+   2.000 a 10.000 y pequeñas por debajo). Las opciones salen de la zona y del filtro de analistas que haya, con cuántas hay */
+const TAMANOS_RADAR = { g: ['Grandes', 'Large', 1e10, Infinity], m: ['Medianas', 'Mid-size', 2e9, 1e10], p: ['Pequeñas', 'Small', 0, 2e9] };
+const paisRadar = (x) => (x && x.pais) || '';
+const nombrePaisRadar = (p) => PAISES[PAIS_DE_NOMBRE[p]] || p;
+const enTamano = (x, t) => { const r = TAMANOS_RADAR[t]; return !r || (x.cap != null && x.cap >= r[2] && x.cap < r[3]); };
+const baseRadar = () => radarVals().filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null);
+function opcionesRadar(base) {
+  const cuenta = (f) => { const c = new Map(); for (const x of base) { const k = f(x); if (k) c.set(k, (c.get(k) || 0) + 1); } return c; };
+  const orden = (c, nom) => [...c].sort((a, b) => b[1] - a[1] || colador.compare(nom(a[0]), nom(b[0])));
+  return {
+    pais: orden(cuenta(paisRadar), nombrePaisRadar),
+    sector: orden(cuenta((x) => x.sector), (k) => k),
+    tam: Object.keys(TAMANOS_RADAR).map((k) => [k, base.filter((x) => enTamano(x, k)).length]),
+  };
+}
 function listaRadar() {
-  let v = radarVals().filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null);
+  let v = baseRadar();
+  if (S.radarPais) v = v.filter((x) => paisRadar(x) === S.radarPais);
+  if (S.radarSector) v = v.filter((x) => x.sector === S.radarSector);
+  if (S.radarTam) v = v.filter((x) => enTamano(x, S.radarTam));
   if (S.radarSolidas) v = v.filter((x) => { const c = contraste(x); return c.favor >= 4 && c.contra <= 1; });
   const [, clave, az] = ORDEN_RADAR[ordenRadarAct()];
   const k = new Map(v.map((x) => [x, clave(x)]));
@@ -930,9 +949,20 @@ function filaRadar(x, tuyas, m) {
 }
 function pieRadar(v, n) {
   const resto = v.length - n;
-  const filtro = [S.radarMin && L('con 5 analistas o más', 'with 5 analysts or more'), S.radarZona !== 'Todas' && esc(S.radarZona), S.radarSolidas && L('bien contrastadas', 'well backed')].filter(Boolean).join(', ');
+  const tam = TAMANOS_RADAR[S.radarTam];
+  const filtro = [S.radarMin && L('con 5 analistas o más', 'with 5 analysts or more'), S.radarZona !== 'Todas' && esc(S.radarZona), S.radarPais && esc(nombrePaisRadar(S.radarPais)), S.radarSector && esc(S.radarSector), tam && L(tam[0].toLowerCase(), tam[1].toLowerCase()), S.radarSolidas && L('bien contrastadas', 'well backed')].filter(Boolean).join(', ');
   const cuenta = v.length ? L(`Ves ${fmtNum(n, 0)} de ${fmtNum(v.length, 0)}${filtro ? ` (${filtro})` : ''}.`, `Showing ${fmtNum(n, 0)} of ${fmtNum(v.length, 0)}${filtro ? ` (${filtro})` : ''}.`) : L('Ninguna empresa cumple esos filtros.', 'No company matches those filters.');
   return `<p class="k radar-cuenta" role="status">${cuenta}</p>${resto > 0 ? `<button class="mas-filas" data-radar-mas>${L(`Ver ${fmtNum(Math.min(RADAR_PAG, resto), 0)} más`, `Show ${fmtNum(Math.min(RADAR_PAG, resto), 0)} more`)}</button>` : ''}`;
+}
+// cada filtro, una pastilla con un select invisible encima (como el orden); con algo elegido se ve lo elegido y se resalta
+function htmlFiltrosRadar(orden = '') {
+  const o = opcionesRadar(baseRadar());
+  // en la pastilla, lo elegido en corto («Grandes»); en la lista, con su umbral y cuántas hay
+  const chip = (k, titulo, todos, ops, act, nom, corto = nom) => {
+    const elegido = ops.find(([v]) => v === act);
+    return `<label class="filtro-chip${elegido ? ' on' : ''}"><span>${elegido ? esc(corto(act)) : titulo}</span><select data-radar-filtro="${k}" aria-label="${titulo}"><option value="">${todos}</option>${ops.map(([v, n]) => `<option value="${esc(v)}"${v === act ? ' selected' : ''}>${esc(nom(v))} (${fmtNum(n, 0)})</option>`).join('')}</select></label>`;
+  };
+  return `<div class="filtros-radar" role="group" aria-label="${L('Orden y filtros', 'Sort and filters')}">${orden}${chip('pais', L('País', 'Country'), L('Todos los países', 'All countries'), o.pais, S.radarPais, nombrePaisRadar)}${chip('sector', L('Sector', 'Sector'), L('Todos los sectores', 'All sectors'), o.sector, S.radarSector, (k) => k)}${chip('tam', L('Tamaño', 'Size'), L('Todos los tamaños', 'All sizes'), o.tam, S.radarTam, (k) => L(TAMANOS_RADAR[k][0], TAMANOS_RADAR[k][1]) + (k === 'g' ? L(', más de 10.000 M €', ', over €10bn') : k === 'm' ? L(', 2.000 a 10.000 M €', ', €2bn to €10bn') : L(', menos de 2.000 M €', ', under €2bn')), (k) => L(TAMANOS_RADAR[k][0], TAMANOS_RADAR[k][1]))}</div>`;
 }
 function htmlTablaRadar(M) {
   const v = listaRadar(), m = cacheSenales(), tuyas = simbolosTuyos(M);
@@ -942,7 +972,7 @@ function htmlTablaRadar(M) {
   const ord = ordenRadarAct();
   const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${ord === k}">${t}${ord === k ? (ORDEN_RADAR[k][2] ? ' ↑' : ' ↓') : ''}</button></th>`;
   return `<div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
-      <label class="orden-chip" title="${L('Ordenar', 'Sort')}">${ICONOS.orden}<span>${tituloOrdenRadar(ord)}</span><select data-radar-orden-sel aria-label="${L('Ordenar el radar', 'Sort the radar')}">${Object.keys(ORDEN_RADAR).map((k) => `<option value="${k}"${ord === k ? ' selected' : ''}>${opcionOrdenRadar(k)}</option>`).join('')}</select></label>
+      ${htmlFiltrosRadar(`<label class="orden-chip" title="${L('Ordenar', 'Sort')}">${ICONOS.orden}<span>${tituloOrdenRadar(ord)}</span><select data-radar-orden-sel aria-label="${L('Ordenar el radar', 'Sort the radar')}">${Object.keys(ORDEN_RADAR).map((k) => `<option value="${k}"${ord === k ? ' selected' : ''}>${opcionOrdenRadar(k)}</option>`).join('')}</select></label>`)}
       <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
       <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
     <div class="tabla-w"><table class="ideas resp"><thead><tr>${th('n', 'Empresa', '')}<th class="r">Precio</th><th>Consenso</th><th class="r">Puede subir</th><th class="r">Te quedas</th><th>Señales</th><th>Prensa</th>${th('cap', 'Tamaño')}${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody id="radarCuerpo">${v.slice(0, n).map((x) => filaRadar(x, tuyas, m)).join('')}</tbody></table></div>
@@ -961,14 +991,16 @@ function repintarTablaRadar(mas) {
     const nuevas = v.slice(desde, hasta), m = cacheSenales(), tuyas = simbolosTuyos(S.M);
     for (const x of nuevas) bindsRadar(S.binds, x);
     cuerpo.insertAdjacentHTML('beforeend', sinCortes(nuevas.map((x) => filaRadar(x, tuyas, m)).join('')));
+    etiquetarTablas(caja);   // 0.8.3: sin esto, en el móvil las filas nuevas salían sin «Precio», «Puede subir»…
     $('#radarPie').innerHTML = pieRadar(v, hasta);
     const nueva = cuerpo.rows[desde] && cuerpo.rows[desde].querySelector('.radar-n');
     if (nueva) nueva.focus({ preventScroll: true });
     return;
   }
   const a = document.activeElement;
-  const foco = a && caja.contains(a) ? (a.hasAttribute('data-zona') ? `[data-zona="${a.dataset.zona}"]` : a.hasAttribute('data-orden') ? `[data-orden="${a.dataset.orden}"]` : a.matches('[data-radar-min], [data-radar-solidas], [data-radar-orden-sel]') ? `[${['data-radar-min', 'data-radar-solidas', 'data-radar-orden-sel'].find((k) => a.hasAttribute(k))}]` : null) : null;
+  const foco = a && caja.contains(a) ? (a.hasAttribute('data-zona') ? `[data-zona="${a.dataset.zona}"]` : a.hasAttribute('data-orden') ? `[data-orden="${a.dataset.orden}"]` : a.hasAttribute('data-radar-filtro') ? `[data-radar-filtro="${a.dataset.radarFiltro}"]` : a.matches('[data-radar-min], [data-radar-solidas], [data-radar-orden-sel]') ? `[${['data-radar-min', 'data-radar-solidas', 'data-radar-orden-sel'].find((k) => a.hasAttribute(k))}]` : null) : null;
   caja.innerHTML = sinCortes(htmlTablaRadar(S.M));
+  etiquetarTablas(caja);
   S.binds = binds(S.M);
   rellenarBinds(caja);
   marcarDeslizables(caja);

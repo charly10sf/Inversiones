@@ -5,7 +5,7 @@ const S = {
   oculto: LS.get('inv-oculto', false), dim: LS.get('inv-dim', 'clase'), base: LS.get('inv-base', 'todo'),
   rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif3', 'ia'), expTab: LS.get('inv-exp', 'posiciones'), carTab: LS.get('inv-car', 'pos'), futTab: LS.get('inv-futtab', 'perfil'), fisTab: LS.get('inv-fistab', 'tu'), numAbierto: null, rutaPlazo: LS.get('inv-ruta-plazo', 'mes'), fichaRango: LS.get('inv-frango', '1A'),
   comparar: LS.get('inv-comparar', false), radarZona: LS.get('inv-zona', 'Todas'), radarOrden: LS.get('inv-orden2', 'cap'),
-  radarMin: LS.get('inv-radar-min', true), radarN: 0, vista: 'cartera', ficha: null,
+  radarMin: LS.get('inv-radar-min', true), radarPais: LS.get('inv-radar-pais', ''), radarSector: LS.get('inv-radar-sector', ''), radarTam: LS.get('inv-radar-tam', ''), radarN: 0, vista: 'cartera', ficha: null,
   ordenPos: LS.get('inv-orden-pos', { k: 'valor', dir: 'desc' }), bench: LS.get('inv-bench', 'fidelity-world'), proy: LS.get('inv-proy', {}), horizonte: LS.get('inv-horizonte', 20), proyCache: null,
   hist: null, histId: null, live: {}, liveM: {}, fxVivo: {}, binds: {}, M: null, ultimaCarga: 0,
   radar: null, radarId: null, radarVer: 0, liveR: {}, liveRVer: 0, radarVisibles: [], ideasTop: [], radarSolidas: LS.get('inv-radar-solidas', false),

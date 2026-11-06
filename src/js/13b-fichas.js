@@ -41,19 +41,48 @@ async function cargarFichas() {
       const r = await fetch(CFG.dev ? 'dev/fichas.json' : GH.raw('fichas.json', 'datos') + '?v=' + encodeURIComponent(id || 'sin'), { cache: CFG.dev ? 'no-store' : 'no-cache' }).catch(() => null);
       if (r && r.ok) txt = await r.text();
     } catch (e) { console.warn(e); }
-    if (txt) { try { S.fichas = JSON.parse(txt); S.fichasId = id; indexarFichas(); if (IDIOMA === 'en') { if (S.trEn) aplicarTrEn(); else cargarTrEn(); } } catch (e) { console.warn(e); } }
+    if (txt) { try { S.fichas = JSON.parse(txt); S.fichasId = id; S.fichasMasOk = false; S.fichasMasPedidas = 0; indexarFichas(); if (IDIOMA === 'en') { if (S.trEn) aplicarTrEn(); else cargarTrEn(); } } catch (e) { console.warn(e); } }
     S.fichasCargando = null;
     return S.fichas;
   })();
   return S.fichasCargando;
 }
+/* 0.8.3: fichas.json trae los temas y las empresas del núcleo (las de radar.json y las de las carteras: ~900); las otras
+   ~1.900 del radar van en fichas-mas.json (su número, en fichas.mas), que se baja solo al abrir una de ellas o al
+   preguntar a la IA. Así abrir Expertos o una empresa grande no espera a 1,8 MB */
+const fichasMasPendiente = (sim) => !!(S.fichas && S.fichas.mas && !S.fichasMasOk && sim && !(S.fichas.e || {})[sim]);
+async function cargarFichasMas() {
+  await cargarFichas();
+  if (!S.fichas || !S.fichas.mas || S.fichasMasOk) return S.fichas;
+  if (S.fichasMasCargando) return S.fichasMasCargando;
+  const id = S.fichasId;
+  S.fichasMasCargando = (async () => {
+    try {
+      const r = await fetch(CFG.dev ? 'dev/fichas-mas.json' : GH.raw('fichas-mas.json', 'datos') + '?v=' + encodeURIComponent(id || 'sin'), { cache: CFG.dev ? 'no-store' : 'no-cache' }).catch(() => null);
+      const m = r && r.ok ? await r.json() : null;
+      // si entretanto llegaron unas fichas nuevas, estas ya no valen
+      if (m && S.fichas && S.fichasId === id) {
+        const e = S.fichas.e || (S.fichas.e = {});
+        for (const [k, v] of Object.entries(m.e || {})) if (!e[k]) e[k] = v;
+        S.fichasMasOk = true;
+        indexarFichas();
+        if (IDIOMA === 'en' && S.trEn) aplicarTrEn();
+      }
+    } catch (e) { console.warn(e); }
+    S.fichasMasCargando = null;
+    return S.fichas;
+  })();
+  return S.fichasMasCargando;
+}
 /* desde una lista de noticias o una ficha sin las fichas bajadas: se bajan y se vuelve a pintar lo que se ve. Tres
    intentos como mucho; si vuelve la red, otros tres */
-window.addEventListener('online', () => { S.fichasPedidas = 0; });
-function fichasLuego() {
-  if ((S.fichas && S.fichasId === ((S.precios && S.precios.fichas_id) || '')) || S.fichasCargando || S.fichasPedidas > 2) return;
-  S.fichasPedidas = (S.fichasPedidas || 0) + 1;
-  cargarFichas().then((f) => {
+window.addEventListener('online', () => { S.fichasPedidas = 0; S.fichasMasPedidas = 0; });
+function fichasLuego(sim) {
+  const masOk = !fichasMasPendiente(sim);
+  if (masOk && ((S.fichas && S.fichasId === ((S.precios && S.precios.fichas_id) || '')) || S.fichasCargando || S.fichasPedidas > 2)) return;
+  if (!masOk && (S.fichasMasCargando || S.fichasMasPedidas > 2)) return;
+  if (masOk) S.fichasPedidas = (S.fichasPedidas || 0) + 1; else S.fichasMasPedidas = (S.fichasMasPedidas || 0) + 1;
+  (masOk ? cargarFichas() : cargarFichasMas()).then((f) => {
     if (!f || !S.cartera) return;
     // lo que espera en una hoja (la consulta de una empresa): se rellena en su sitio
     document.querySelectorAll('[data-ficha-sim]').forEach((el) => { el.outerHTML = htmlFichaFactores(el.dataset.fichaSim) || ''; });
@@ -136,7 +165,7 @@ function ordenarNoticias(lista) {
 /* «Lo que pesa ahora», arriba de las noticias de una empresa */
 function htmlFichaFactores(sim) {
   if (!sim) return '';
-  if (!S.fichas) { fichasLuego(); return `<div class="ficha-ia-sitio" data-ficha-sim="${esc(sim)}"></div>`; }
+  if (!S.fichas || fichasMasPendiente(sim)) { fichasLuego(sim); return `<div class="ficha-ia-sitio" data-ficha-sim="${esc(sim)}"></div>`; }
   const F = fichaDe(sim);
   if (!F) return '';
   const fuentes = (fs) => { const v = [], vistos = new Set(); for (const f of fs || []) { const k = f.f || L('fuente', 'source'); if (urlSegura(f.u) && !vistos.has(k)) { vistos.add(k); v.push(`<a href="${esc(urlSegura(f.u))}" target="_blank" rel="noopener noreferrer" class="enlace">${esc(k)}</a>`); } } return v.length ? ' · ' + v.slice(0, 2).join(', ') : ''; };

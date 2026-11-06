@@ -161,6 +161,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
         # 0.7: las fichas de GrowIA (lo que pesa en cada empresa y los temas): las de las carteras y los temas, como las
         # ideas; las del resto del radar, como sus lecturas
         fichas = leer(f"{dir_salida}/fichas.json") or {}
+        # 0.8.3: el resto del radar, en fichas-mas.json
+        fichas = {**fichas, "e": {**((leer(f"{dir_salida}/fichas-mas.json") or {}).get("e") or {}), **(fichas.get("e") or {})}}
         for t_ in fichas.get("temas") or []:
             textos(t_.get("txt"), hace_falta, 1)
         for sim, x in (fichas.get("e") or {}).items():
