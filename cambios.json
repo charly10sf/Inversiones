@@ -1,6 +1,40 @@
 {
  "versiones": [
   {
+   "v": "0.8.2d",
+   "f": "2026-11-06",
+   "h": "21:30",
+   "t": "Todo con Claude",
+   "commits": [
+    {
+     "cuando": "2026-11-06 21:30",
+     "asunto": "0.8.2d · todo con Claude, sesión 5: fuera el código de Gemini de la app y cierre de la versión",
+     "detalle": [
+      "Fuera los modelos de Gemini, los cupos diarios de Google (diaGoogle, ordenIA, agotadosIA, CADENA_IA, MODELO_RAPIDO), los tiempos y tokens de Gemini del registro y la clave de Google de cada uno: se borra del dispositivo al abrir la IA, en cualquier perfil.",
+      "«Cómo va la IA» (dueño): lo que gasta la Action, con las llamadas a Claude de 24 h; sin cupos de Google ni la muestra de los domingos. El aviso de la frescura va con escaneo.claude, sin GEMINI_API_KEY, y el porqué solo lo ve el dueño.",
+      "En la foto que recibe la IA, prensa_leida_por_gemini pasa a prensa_leida_por_la_ia; el historial omitido del fundador ya no nombra a Gemini.",
+      "VERSION 0.8.2d con 4 arreglos para todos y 3 del dueño, en.json y cambios.json; prueba nueva tests/sin-gemini.spec.js; novedades-dueno y niveles ajustadas."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 20:50",
+     "asunto": "0.8.2d · todo con Claude, sesión 3: revisión, noticia e importar con Claude como «tarea»",
+     "detalle": [
+      "La revisión de la cartera, el resumen de una noticia e importar capturas y PDF, solo con Claude por el Worker y con su propio contador de tareas: no gastan las preguntas del día.",
+      "En la cartera de prueba la IA contesta con la cuenta de quien la abre."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 18:20",
+     "asunto": "0.8.2b · todo con Claude, sesión 2: dos niveles en el Worker y la IA solo con Claude",
+     "detalle": [
+      "Cualquiera con el correo verificado usa Claude: tope alto para CLAUDE_EMAILS y reducido para el resto, con techo de dinero diario conjunto.",
+      "Chat, asesor y Ajustes de la IA solo con Claude: sin clave de Google ni Gemini de reserva; si falla Sonnet, contesta Haiku."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.2c",
    "f": "2026-11-06",
    "h": "19:30",

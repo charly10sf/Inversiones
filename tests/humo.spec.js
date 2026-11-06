@@ -413,7 +413,7 @@ test.describe('GrowIA te pregunta', () => {
         { q: '¿Te plantearías realizar algún ajuste en tu criptomoneda para ajustarla al límite del 5 %?', opciones: ['Sí, rebalancear pronto', 'No, dejarlo como está'] },
         { q: '¿Cuándo vas a necesitar el dinero de tu meta de la casa?', opciones: ['En 2 años', 'En 5 años'] },
         { q: '¿Cuándo necesitarás el dinero para la meta de la casa?', opciones: ['Pronto'] },
-      ] }, fecha: hoyIso(), modelo: MODELO_RAPIDO };
+      ] }, fecha: hoyIso(), modelo: 'claude-haiku-5-5' };
       return preguntasIA().map((x) => x.q);
     });
     expect(qs).toEqual(['¿Cuándo vas a necesitar el dinero de tu meta de la casa?']);

@@ -180,8 +180,19 @@ function htmlFrescura() {
     <details><summary><span class="vivo-dot${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? ' viejo' : ''}">${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? L(`Precios de ${haceCuanto(S.precios.generado)}`, `Prices from ${haceCuanto(S.precios.generado)}`) : L('Al día', 'Up to date')}${S.precios && S.precios.generado && Date.now() - new Date(S.precios.generado) > 3 * 3600e3 ? '' : `<span class="fr-hora"> · ${B('recalc')}</span>`}</span>${S.informe && S.informe.generado ? `<span>· ${L('prensa de', 'news from')} ${haceCuanto(S.informe.generado)}</span>` : ''}<span class="fr-mas" title="${L('De cuándo es cada dato', 'How fresh each figure is')}" aria-label="${L('De cuándo es cada dato', 'How fresh each figure is')}">${ICONOS.info}</span></summary>
       <ul>${datos.map((x) => `<li>${x}</li>`).join('')}<li>Señales, planes e ideas: se recalculan con cada precio en directo</li></ul></details>
     ${iaLista() || sinTareaIA() === 'tareas' ? '' : `<button class="enlace acento" data-accion="asesor">${L('La IA ya lee la prensa para todos; con tu cuenta revisa también tus cifras cada día', 'The AI already reads the news for everyone; with your account it also reviews your figures every day')}</button>`}
-    ${(() => { const g = S.escaneo && S.escaneo.gemini; if (!g || g.ok) return ''; const e = (g.errores || []).join(' '); const por = !g.con_clave ? 'falta el secreto GEMINI_API_KEY en GitHub' : /429/.test(e) ? `se ha acabado el cupo gratuito de Google por hoy; se renueva a las ${horaRenuevaIA()}` : /40[13]/.test(e) ? 'Google no acepta la clave del secreto GEMINI_API_KEY' : 'Google no ha respondido bien'; return `<span class="fr-aviso">${ICONOS.alerta}En la última pasada automática la IA no ha podido leer la prensa: ${esc(por)}. Se queda lo último que leyó.</span>`; })()}
+    ${avisoPrensaIA()}
   </div>`;
+}
+
+/* 0.8.2d: si en la última pasada de la Action la IA (Claude, con la clave del radar) no ha podido leer la prensa, se dice
+   y se queda lo último que leyó. El porqué, solo al dueño (es cosa de los secretos de GitHub o del saldo de Anthropic).
+   Lee escaneo.claude (activo: hay clave; apagado: falló la clave o el saldo; ok, si lo escribe la Action) */
+function avisoPrensaIA() {
+  const c = S.escaneo && S.escaneo.claude;
+  if (!c || typeof c !== 'object' || (c.ok !== false && c.activo !== false && !c.apagado)) return '';
+  const e = (Array.isArray(c.errores) ? c.errores : []).join(' ');
+  const por = !veDueno() ? '' : c.activo === false ? L(' Falta el secreto ANTHROPIC_RADAR_KEY en GitHub.', ' The ANTHROPIC_RADAR_KEY secret is missing in GitHub.') : /40[13]|credit|saldo|billing/i.test(e) ? L(' Anthropic no acepta la clave del radar o se ha quedado sin saldo.', " Anthropic doesn't accept the radar key or it has run out of credit.") : L(' Claude no ha respondido bien.', " Claude didn't answer properly.");
+  return `<span class="fr-aviso">${ICONOS.alerta}${L('En la última pasada automática la IA no ha podido leer la prensa. Se queda lo último que leyó.', "In the last automatic run the AI couldn't read the news. The last reading stays.")}${esc(por)}</span>`;
 }
 
 function datosExperto(f) {
@@ -302,9 +313,9 @@ function vistaExpertos(M) {
 function puntuarIdea(x, ctx) {
   const motivos = [], pegas = [];
   let p = 0;
-  // el recorrido cuenta con su plazo: si Gemini ha estimado cuánto y en cuánto tiempo, se promedia con
+  // el recorrido cuenta con su plazo: si la IA ha estimado cuánto y en cuánto tiempo, se promedia con
   // lo de los analistas (a 12 meses) pasado a "al año"
-  const g = plazoGemini(x.s);
+  const g = plazoIA(x.s);
   const potG = g ? anualizar(g.subida_pct, Math.max(g.meses, 3)) : null;
   const pot = Math.max(-50, Math.min(potG != null ? (x.pot + potG) / 2 : x.pot, 50));
   p += 1.2 * (pot / 50);
@@ -416,7 +427,7 @@ const ordenRadarAct = () => (ORDEN_RADAR[S.radarOrden] ? S.radarOrden : 'cap');
 // Londres cotiza en peniques (GBp): se enseña en libras, que se entiende mejor
 const precioR = (p, m) => { const v = m === 'GBp' ? p / 100 : p; return `${fmtNum(v, v >= 1000 ? 0 : 2)} ${monedaR(m)}`; };
 const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? '£' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
-/* ---------- 0.4: lo que escribe Gemini en la Action, en inglés ----------
+/* ---------- 0.4: lo que escribe la IA en la Action, en inglés ----------
    El informe, las ideas, las lecturas de prensa y los titulares en español los traduce la propia Action una vez
    (scripts/traducir.py → traduccion-en.json, rama datos). Con la app en inglés se cambian en los datos al cargarlos;
    lo que aún no esté traducido se queda en español hasta la siguiente pasada. La clave es la misma que en Python. */
@@ -457,7 +468,7 @@ function aplicarTrEn() {
   return n;
 }
 
-/* ---------- informe de prensa de Gemini (informe.json, rama datos) ----------
+/* ---------- informe de prensa de la IA (informe.json, rama datos) ----------
    Lo escribe la Action cada 2 horas con las noticias de tus posiciones, del mercado y de las mejores
    ideas del radar, aunque la web esté cerrada. Sin cantidades: tus cifras las pone la web. */
 async function cargarInforme() {
@@ -538,7 +549,7 @@ function avisoFichaIdea(x) {
   ].filter(Boolean).join(' ');
   return `<details class="idea-aviso"><summary>${esc(corto)}</summary><p>${largo}</p></details>`;
 }
-/* lo que ha leído Gemini de la prensa de una empresa (el escaneo recorre todo el radar) */
+/* lo que ha leído la IA de la prensa de una empresa (el escaneo recorre todo el radar) */
 const lecturaDe = (sim) => (S.escaneo && S.escaneo.lectura && S.escaneo.lectura[sim]) || null;
 const informeDe = (id) => (S.informe && S.informe.posiciones && S.informe.posiciones[id]) || null;
 const informeIdea = (sim) => { const v = S.informe && S.informe.ideas && S.informe.ideas[sim]; if (v) return v; const l = lecturaDe(sim); return l && l.txt ? { novedades: l.txt, impacto: l.imp, fuentes: l.fuentes, vigilar: l.cat } : null; };
@@ -650,8 +661,8 @@ const prensaNeutra = (t) => String(t).replace(RE_ACCION_IA, (m, adv, adj) => {
 const limpiaIA = (t) => fechaIA(sinRumbo(prensaNeutra(String(t || '').replace(/\s*\[\d+(?:\s*[,–-]\s*\d+)*\]/g, ''))));
 const escIA = (t) => esc(limpiaIA(t));
 const noticiasIdea = (sim) => ((S.precios && S.precios.noticias_ideas) || {})[sim] || [];
-/* ---------- las mejores ideas: la web, Gemini y tu análisis, juntas ----------
-   Cada fuente elige por su lado: la web, las tres mejor contrastadas del radar; Gemini, las que
+/* ---------- las mejores ideas: la web, la IA de la Action y tu análisis, juntas ----------
+   Cada fuente elige por su lado: la web, las tres mejor contrastadas del radar; la IA de la Action, las que
    elige tras leer la prensa de todo el radar; y el análisis de la IA, las que propone para tu cartera.
    Si dos o tres coinciden en la misma empresa, sale una sola tarjeta y va primero. */
 function ideasJuntas(M, ia, n = 9) {
@@ -678,15 +689,15 @@ function ideasJuntas(M, ia, n = 9) {
   return [...mapa.values()].map((x) => { const y = { ...x, votos: (x.web ? 1 : 0) + (x.gem ? 1 : 0) + (x.tuya ? 1 : 0) }; y.esp = esperadaIdea(y); return y; })
     .sort((a, b) => b.votos - a.votos || clave(b) - clave(a));
 }
-/* lo que puede dar cada idea y en cuánto tiempo: el objetivo de los analistas es a 12 meses; si Gemini
+/* lo que puede dar cada idea y en cuánto tiempo: el objetivo de los analistas es a 12 meses; si la IA
    (o tu análisis) ha estimado su propio plazo por un catalizador, manda el suyo */
-/* el plazo de cada idea: el que estima Gemini por su catalizador (en su escaneo o en tu análisis) o, si no hay,
+/* el plazo de cada idea: el que estima la IA por su catalizador (en su escaneo o en tu análisis) o, si no hay,
    los 12 meses del objetivo de los analistas */
-const plazoGemini = (sim) => { const p = S.escaneo && S.escaneo.decision && S.escaneo.decision.plazos; return (p && p[sim]) || null; };
+const plazoIA = (sim) => { const p = S.escaneo && S.escaneo.decision && S.escaneo.decision.plazos; return (p && p[sim]) || null; };
 function esperadaRadar(r, extra) {
   if (!r || r.pot == null) return null;
   const ana = rentaEsperada(r, r.pot, 12, 'analistas');
-  const g = extra && extra.subida_pct != null && +extra.plazo_meses > 0 ? { meses: +extra.plazo_meses, subida_pct: +extra.subida_pct, por: extra.catalizador || '', fuente: extra.fuente } : plazoGemini(r.s) ? { ...plazoGemini(r.s), fuente: 'La IA' } : null;
+  const g = extra && extra.subida_pct != null && +extra.plazo_meses > 0 ? { meses: +extra.plazo_meses, subida_pct: +extra.subida_pct, por: extra.catalizador || '', fuente: extra.fuente } : plazoIA(r.s) ? { ...plazoIA(r.s), fuente: 'La IA' } : null;
   const ia = g ? { ...rentaEsperada(r, g.subida_pct, g.meses, g.fuente || 'la IA'), por: g.por } : null;
   return { ana, ia, prin: ia || ana };
 }
@@ -711,7 +722,7 @@ function esperadaPos(f) {
   if (ana) Object.assign(ana, { obj: a.objetivo, n: a.num || null });
   const sim = p.simbolo || i.yahoo, d = S.escaneo && S.escaneo.decision;
   const gi = sim && d && (d.ideas || []).find((x) => x && x.s === sim && x.subida_pct != null && +x.plazo_meses > 0);
-  const g = gi ? { subida_pct: +gi.subida_pct, meses: +gi.plazo_meses, por: gi.catalizador || '' } : sim ? plazoGemini(sim) : null;
+  const g = gi ? { subida_pct: +gi.subida_pct, meses: +gi.plazo_meses, por: gi.catalizador || '' } : sim ? plazoIA(sim) : null;
   const ia = g && g.subida_pct != null && +g.meses > 0 ? rentaPos(f, +g.subida_pct, +g.meses, 'la IA') : null;
   if (ia) Object.assign(ia, { obj: f.precio * (1 + ia.subida / 100), por: g.por || '' });
   return ana || ia ? { ana, ia, prin: ia || ana } : null;

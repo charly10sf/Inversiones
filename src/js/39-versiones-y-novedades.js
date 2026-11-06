@@ -5,6 +5,15 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.8.2d', f: '2026-11-06', h: '21:30', t: 'Todo con Claude', arreglos: [
+    'La IA va entera con Claude y ya no hace falta poner ninguna clave de Google: basta con tu cuenta y el correo confirmado.',
+    'Tus preguntas del día son para el chat: la revisión de tu cartera, el resumen de una noticia y leer capturas o PDF al importar van aparte y no las gastan.',
+    'En la cartera de prueba la IA también contesta, con tus preguntas del día.',
+    'Si la IA no puede contestar, te dice por qué y puedes volver a preguntar con un toque. Debajo de su nombre ves cuántas preguntas te quedan hoy.',
+    { t: 'Dos niveles en el servidor: 20 preguntas al día para la lista de CLAUDE_EMAILS; el resto, 5 preguntas y 3 «A fondo», con 0,5 US$ por correo y un techo de 4 US$ al día entre todos. Si falla Sonnet, contesta Haiku.', solo: 'dueno' },
+    { t: 'Las tareas (revisiones, noticias e importar) llevan su propio tope: 40 al día para la lista y 10 para el resto; en el nivel reducido, la revisión automática va una vez al día como mucho.', solo: 'dueno' },
+    { t: 'Fuera lo que quedaba de Gemini: sus modelos, los cupos de Google y la clave que guardaba cada uno, que se borra del dispositivo al abrir la IA. «Cómo va la IA» cuenta lo que gasta la Action con Claude.', solo: 'dueno' },
+  ] },
   { v: '0.8.2c', f: '2026-11-06', h: '19:30', t: 'El Mármol nuevo y el radar con filtros', arreglos: [
     'Mármol estrena negro puro, el oro del logo de Toisón y unas vetas grises muy suaves de fondo; las tablas van sobre fondo liso para que se lean igual.',
     'En Ideas, «Del radar» tiene filtros de país, sector y tamaño, y en el móvil cada empresa ocupa menos alto.',

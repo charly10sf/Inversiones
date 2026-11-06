@@ -169,7 +169,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     json.publico = turno.estandar != null ? !!turno.estandar : esPublico();
     json.modo = esPublico() ? 'publico' : 'privado';
     // 0.7h: con el total que ha visto GrowIA, para cambiarlo por el de ahora al enseñarlo (totalAlDiaIA)
-    S.iaPropio = { fecha: new Date().toISOString(), modelo: turno.modelo || AS.modeloVivo || cfgAsesor().modelo, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo, total: M.total };
+    S.iaPropio = { fecha: new Date().toISOString(), modelo: turno.modelo || HAIKU_IA, json, firma: firmaSenales(S.M || calcular()), busquedas: turno.partes.filter((p) => p.web).length, coste: turno.coste, motivo, total: M.total };
     AS.gasto += turno.coste || 0; guardarConv();
     await guardarAnalisisPropio();
     toast(`${nombreIA()} ha actualizado el análisis de tu cartera`);

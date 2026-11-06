@@ -68,7 +68,9 @@ testDueno('Cómo va la IA: el banco de preguntas y los fallos, para el dueño', 
   const hoja = page.locator('.salud-ia');
   await expect(hoja).toContainText('38 de 40', { timeout: 15_000 });
   await expect(hoja).toContainText('e-vendo-repsol');
-  await expect(hoja).toContainText('Lo que ha gastado hoy la Action');
+  // 0.8.2d: lo que gasta la Action, solo con Claude (nada de cupos de Google ni de la muestra de los domingos)
+  await expect(hoja).toContainText('Lo que ha gastado la Action en 24 h');
+  await expect(hoja).not.toContainText(/Google|Gemini|3\.8|domingos/);
 });
 
 // 0.7k: el TTL de Firestore pide facturación y el proyecto sigue en el plan gratis: los fallos caducados los borra el

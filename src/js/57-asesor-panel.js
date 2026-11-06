@@ -39,7 +39,7 @@ function md(src) {
    Ni arriba del panel ni debajo de cada respuesta hay aviso de qué IA contesta (6 nov, Carlos: «ya se sobreentiende, no
    quiero que diga qué IA es ni nada»); el modelo de cada respuesta se guarda igual en t.modelo. Con Claude (estándar, y el
    fundador desde la opción B) van las reglas del estándar: no da recomendaciones personalizadas. 0.8.2b: solo Claude. */
-const nombreModLargo = (m) => (MODELOS[m] || MODELOS_CLAUDE[m] || {}).n || m || '';
+const nombreModLargo = (m) => (MODELOS_CLAUDE[m] || {}).n || m || '';
 
 /* ---------- 0.8.2 · tus conversaciones guardadas ---------- */
 const cuandoConv = (t) => { try { return haceCuanto(new Date(t).toISOString()); } catch (e) { return ''; } };

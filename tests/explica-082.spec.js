@@ -68,9 +68,9 @@ test('las fichas de idea dicen quién las hace y cuándo, que son iguales para t
 test('con Claude, también en el fundador, las preguntas que propone la app son las del estándar', async ({ page }) => {
   await dentro(page);
   await page.waitForFunction(() => radarVals().length, null, { timeout: 45_000 });
-  // 0.8.2b: solo contesta Claude, así que en el fundador también son las del estándar (y la clave de Google ya no cuenta)
-  await page.evaluate(() => { S.acceso = 'privado'; AS.clave = 'AQ.prueba-de-growfolio'; LS.del('inv-claude-sondeo'); });
-  expect(await page.evaluate(() => [AS.clave, preguntasDelEstandar()])).toEqual([null, true]);
+  // 0.8.2b: solo contesta Claude, así que en el fundador también son las del estándar
+  await page.evaluate(() => { S.acceso = 'privado'; LS.del('inv-claude-sondeo'); });
+  expect(await page.evaluate(() => preguntasDelEstandar())).toBe(true);
   await page.evaluate(() => { S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); });
   const b = page.locator('.ideas-top3 .idea [data-accion="asesor"]').first();
   await expect(b).toBeAttached({ timeout: 30_000 });

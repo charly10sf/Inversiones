@@ -409,7 +409,7 @@ test('si el Worker no deja (correo sin confirmar), la IA lo dice y no sale nada 
 test('sin clave de Google, decir que no al aviso no deja la IA sin salida: se explica y la siguiente vuelve a preguntar', async ({ page, context }) => {
   page.on('dialog', (d) => d.dismiss());
   await crearCuenta(page); await quitarCapas(page); await meterCartera(page);
-  await page.evaluate(() => { S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: FB.user.uid, t: Date.now() }); guardarCfgAsesor({ auto: 'manual' }); AS.claves = {}; LS.del(LS_CLAVE.google); });
+  await page.evaluate(() => { S.acceso = 'publico'; LS.set('inv-acceso', { a: 'publico', uid: FB.user.uid, t: Date.now() }); guardarCfgAsesor({ auto: 'manual' }); });
   const g = await gemini(context);
   const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'no debería llegar' }]) }));
   await page.evaluate(() => abrirAsesor());

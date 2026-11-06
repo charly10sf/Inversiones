@@ -397,9 +397,9 @@ function hBuscarEmpresa(q, est = esPublico()) {
     ya_tiene_dentro_de_sus_fondos_eur: R2(dentroDeFondos(M)(x.n), 0),
     // en estándar, sin puesto: ordenar de mejor a peor es justo lo que no puede hacer (revisión aparte de la 0.7)
     valoracion_de_la_web: k >= 0 ? (est ? { entre_las_ideas_del_radar: esPublico() ? 'sí, iguales para todos (no es una recomendación para él)' : 'sí, entre las que filtra Toisón para su cartera con un cálculo fijo (no es una recomendación tuya)', motivos: motivosSinIA(ideas[k].motivos), pegas: ideas[k].pegas } : { puesto: k + 1, de: ideas.length, motivos: ideas[k].motivos, pegas: ideas[k].pegas }) : 'No pasa el filtro de ideas de Toisón (potencial de al menos un 10 %, 8 analistas o más, consenso de compra, 3 señales a favor y no haber caído más de un 35 % en un año).',
-    ficha_growia: fichaGrowIA(x.s, 4) || 'sin ficha todavía: lo leído de su prensa viene en prensa_leida_por_gemini',
+    ficha_growia: fichaGrowIA(x.s, 4) || 'sin ficha todavía: lo leído de su prensa viene en prensa_leida_por_la_ia',
     titulares_recientes: ordenarNoticias(noticiasIdea(x.s)).slice(0, 5).map(({ n, m }) => titularGrowIA(n, m)),
-    prensa_leida_por_gemini: lecturaDe(x.s) ? { impacto: lecturaDe(x.s).imp, relevancia: lecturaDe(x.s).rel, resumen: lecturaDe(x.s).txt, catalizador: lecturaDe(x.s).cat, fecha: lecturaDe(x.s).d } : 'sin leer todavía',
+    prensa_leida_por_la_ia: lecturaDe(x.s) ? { impacto: lecturaDe(x.s).imp, relevancia: lecturaDe(x.s).rel, resumen: lecturaDe(x.s).txt, catalizador: lecturaDe(x.s).cat, fecha: lecturaDe(x.s).d } : 'sin leer todavía',
     datos_de: x.f || (S.radar && S.radar.generado),
   };
 }
@@ -631,48 +631,13 @@ function vigiaConsejoIA(turno) {
    (fetchGoogle, errorGoogle). Desde la 0.8.2d todo va con Claude por el Worker: queda solo lo de los tiempos y avisos de
    red, que usa Claude */
 const dormir = (ms, signal) => new Promise((res, rej) => { if (signal && signal.aborted) return rej(new DOMException('Parado', 'AbortError')); const t = setTimeout(res, ms); if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('Parado', 'AbortError')); }, { once: true }); });
-/* 0.7l: cuánto se espera a Google y qué se hace con cada corte (lo de antes, desde la 0.6c, solo vigilaba los primeros
-   90 s: una vez que Google empezaba a contestar no había límite y, si la conexión se moría a mitad, GrowIA se quedaba
-   pensando para siempre). Ahora se vigila cada dato que llega: antes del primero (la respuesta normal razona antes de
-   escribir) se esperan 120 s; con la respuesta ya llegando, 60 s sin un dato nuevo; y si cambia la red (de wifi a
-   datos), 8 s. Un corte de red se repite con el mismo modelo, esperando cada vez más (2, 4, 8, 15 y 30 s: con mala
-   cobertura, 4,5 s eran poco); solo cuando Google no contesta se prueba con otro. Se puede cambiar en las pruebas */
-const RED_IA = { espera: 120000, hilo: 60000, cambio: 8000, esperas: [2, 4, 8, 15, 30], sinRed: 120000, busqueda: 60000, primero: 40000, lento: 1800000 };
-/* 0.7p: GrowIA lenta. El 1 nov el 3.8 Flash gratis tardaba 60-100 s en dar el primer dato en cada ronda (en cola en
-   Google: razonaba 186 en 92 s, cuando el 3.6 razona 6.924 en 33 s) y una pregunta con 5 rondas llegó a 421 s. Ahora:
-   - el razonamiento llega mientras se hace (includeThoughts), así que el primer dato dice cuándo empieza Google a
-     trabajar, no cuándo acaba de pensar;
-   - si hay otro de la respuesta normal detrás (del 3.8, el 3.6), se le dan 40 s (primero) en vez de 120 y, si no
-     empieza, se pasa a ese sin repetir;
-   - el que ha ido lento queda apartado 30 min (lento): las preguntas siguientes empiezan con el otro;
-   - cada modelo apunta cuánto tarda en dar el primer dato (las últimas 20), y se ve arriba del registro */
-const LS_LENTO = 'inv-ia-lento', LS_TIEMPOS = 'inv-ia-tiempos';
-// seg: segundos hasta el primer dato; con corte, los que se esperaron sin que llegara nada
-function apuntarTiempoIA(m, seg, corte = false) {
-  try { const t = LS.get(LS_TIEMPOS, {}) || {}, v = Array.isArray(t[m]) ? t[m] : []; v.push(corte ? -Math.round(seg) : Math.round(seg * 10) / 10); t[m] = v.slice(-20); LS.set(LS_TIEMPOS, t); } catch (e) {}
-}
-function resumenTiemposIA() {
-  const t = LS.get(LS_TIEMPOS, {}) || {};
-  return Object.keys(t).filter((m) => Array.isArray(t[m]) && t[m].length).map((m) => {
-    const v = t[m], ok = v.filter((x) => x >= 0).sort((a, b) => a - b), cortes = v.length - ok.length;
-    const med = ok.length ? ok[Math.floor((ok.length - 1) / 2)] : null;
-    return `${(MODELOS[m] || {}).corto || m}: primer dato, mediana ${med == null ? '—' : `${fmtNum(med, 1)} s`} (${ok.length} ${ok.length === 1 ? 'ronda' : 'rondas'}${cortes ? `, ${cortes} sin empezar a tiempo` : ''})`;
-  }).join('\n');
-}
-/* 0.7r: tokens por pregunta y por modelo, para calcular lo que costaría con la API de Claude (créditos del plan Max).
-   Cada ronda que Google contesta suma al turno, por modelo: entrada (el prompt, con lo que la búsqueda de Google lee), salida
-   (lo que escribe, sin el razonamiento) y razonamiento. También suman las búsquedas en internet, que son otra petición.
-   Al acabar la pregunta (conversar) se apunta una línea en el registro y se guarda (LS inv-ia-tokens, las últimas 30). Las
-   rondas cortadas antes de acabar no traen la cuenta de Google y no suman */
+/* 0.7l: si la app dice que se ha perdido la red por la que iba una petición (de wifi a datos), se le dan 8 s para seguir
+   recibiendo; si no llega nada, se corta y se repite por la red nueva (los demás tiempos de Claude, en RED_CLAUDE) */
+const RED_IA = { cambio: 8000 };
+/* 0.7r: tokens por pregunta y por modelo. Cada ronda que Claude contesta suma al turno, por modelo: entrada (con lo que
+   se leyó de la caché) y salida, y las búsquedas en internet. Al acabar la pregunta (conversar) se apunta una línea en el
+   registro y se guarda (LS inv-ia-tokens, las últimas 30). Las rondas cortadas antes de acabar no traen la cuenta y no suman */
 const LS_TOKENS = 'inv-ia-tokens';
-function sumarTokensIA(turno, modelo, uso, busqueda = false) {
-  if (!turno || !uso) return;
-  const t = turno.tokens = turno.tokens || {}, x = t[modelo] = t[modelo] || { e: 0, s: 0, r: 0, n: 0, b: 0 };
-  x.e += (uso.promptTokenCount || 0) + (uso.toolUsePromptTokenCount || 0);
-  x.s += uso.candidatesTokenCount || 0;
-  x.r += uso.thoughtsTokenCount || 0;
-  if (busqueda) x.b++; else x.n++;
-}
 function cerrarTokensIA(turno, tipo = 'pregunta') {
   const t = turno && turno.tokens;
   if (!t) return;
@@ -698,7 +663,7 @@ function resumenTokensIA() {
 }
 const esCorteRed = (e) => e && e.name !== 'AbortError' && (e.corte || /Failed to fetch|NetworkError|network error|Load failed|ERR_/i.test(e.message || ''));
 /* 0.7f: GrowIA en segundo plano. Al salir de GrowFolio (otra app, la pantalla apagada), el móvil corta al poco las
-   conexiones de la página. Ese corte no es un fallo de Google: no cuenta para los intentos ni hace pasar a la
+   conexiones de la página. Ese corte no es un fallo de la IA: no cuenta para los intentos ni hace pasar a la
    rápida. GrowIA espera a que vuelvas (y a que haya conexión) y repite esa petición. En la app de Android, que se queda
    viva mientras contesta, lo vuelve a intentar sin esperarte */
 let ocultaT = document.hidden ? Date.now() : 0;
@@ -737,7 +702,7 @@ function esperarVuelta(signal, { soloRed = false, max = 0 } = {}) {
     t2 = setInterval(() => { if (!fueraDeVista() && Date.now() - desde > 20000) { quitar(); ok(true); } }, 5000);
   });
 }
-/* las peticiones a Google en marcha ({t0, f}). Si la app dice que se ha perdido la red por la que iban (redCambiada
+/* las peticiones a la IA en marcha ({t0, f}). Si la app dice que se ha perdido la red por la que iban (redCambiada
    'perdida', con la hora), cada una de las que empezaron antes se da 8 s para seguir recibiendo; si no llega nada, se
    corta y se repite por la red nueva. Las que empezaron después ya van por la nueva. Al pasar de datos a wifi la red
    vieja no se pierde (Android la mantiene un rato): no se toca nada */
@@ -765,7 +730,7 @@ const MODELOS_CLAUDE = {
   'claude-haiku-5-5': { n: 'Claude Haiku 5.5', corto: 'Haiku 5.5', prov: 'claude', in: 0.10, out: 0.50, lec: 0.01, esc: 0.125 },
   'claude-sonnet-5-5': { n: 'Claude Sonnet 5.5', corto: 'Sonnet 5.5', prov: 'claude', in: 2, out: 10, lec: 0.10, esc: 2.5 },
 };
-const nombreMod = (m) => (MODELOS[m] || MODELOS_CLAUDE[m] || {}).corto || m;
+const nombreMod = (m) => (MODELOS_CLAUDE[m] || {}).corto || m;
 const LS_MOTOR = 'inv-ia-motor', LS_CLAUDE_PAUSA = 'inv-claude-pausa', LS_CLAUDE_OK = 'inv-claude-ok';
 /* 0.9 (auditoría de la noche del 3 nov): el sí a Claude va por cuenta (se guarda el uid; el «true» de antes pasa a ser de
    la cuenta que esté dentro) y se borra al cerrar la sesión. El sí a leer archivos al importar es otro (LS_CLAUDE_IMP):
@@ -775,7 +740,7 @@ const uidActual = () => (FB.user && FB.user.uid) || '';
 function siDe(k) { const v = LS.get(k, false), uid = uidActual(); if (v === true && uid) { LS.set(k, uid); return true; } return !!v && v === uid; }
 const claudeOk = () => siDe(LS_CLAUDE_OK);
 const marcarClaudeOk = () => LS.set(LS_CLAUDE_OK, uidActual() || true);
-// 0.8.2 (revisión aparte del prompt): lo que se manda, dicho entero; y sin clave de Google, Cancelar deja la IA sin contestar
+// 0.8.2 (revisión aparte del prompt): lo que se manda, dicho entero; si pulsas Cancelar, la IA no contesta
 const TXT_SI_CLAUDE = () => L('La IA contesta con Claude, de Anthropic. Tus preguntas, una foto de tu cartera con sus cifras, tu perfil (edad, ingresos, gastos y metas, si los has puesto), lo que cuentas de ti, las revisiones automáticas y los resúmenes de noticias pasarían por el servidor de Toisón, que no guarda tus preguntas ni tu cartera, hasta Anthropic, que lo procesa fuera de la Unión Europea, no lo usa para entrenar y lo borra pasado un plazo corto según su política.', "The AI answers with Claude, from Anthropic. Your questions, a snapshot of your portfolio with its figures, your profile (age, income, expenses and goals, if you've added them), what you tell it about yourself, automatic reviews and news summaries would go through Toisón's server, which does not store your questions or your portfolio, to Anthropic, which processes it outside the European Union, does not train on it and deletes it after a short period under its policy.")
   + L(' Si pulsas Cancelar, la IA no podrá contestar.', ' If you press Cancel, the AI cannot answer.')
   + (esPublico() ? '' : L('\n\nCon el acceso de fundador, la IA va con las reglas del estándar: explica y calcula, sin decirte qué comprar o vender.', '\n\nWith founder access, the AI follows the standard rules: it explains and calculates, without telling you what to buy or sell.'))
@@ -1232,7 +1197,7 @@ async function copiarCartera() {
 /* 0.8.2 · el historial que se manda: con las reglas del estándar, las respuestas que escribió el asesor de siempre (Gemini en
    el fundador; las de antes de la 0.8.2 en el fundador no dicen nada y se toman por suyas) no se mandan: no las tiene que
    continuar ni defender */
-const RESP_OMITIDA = '[Aquí iba una respuesta del asesor de siempre de Toisón (con Gemini y el acceso de fundador). No se repite: con estas reglas, explica y calcula sin decir qué comprar, vender o mantener.]';
+const RESP_OMITIDA = '[Aquí iba una respuesta del asesor de siempre de Toisón (con el acceso de fundador). No se repite: con estas reglas, explica y calcula sin decir qué comprar, vender o mantener.]';
 function historialPara(api, est) {
   if (!est || esPublico()) return api.map(({ est: e, ...m }) => m);
   return api.map(({ est: e, ...m }) => (m.role === 'assistant' && e !== true ? { ...m, content: RESP_OMITIDA } : m));

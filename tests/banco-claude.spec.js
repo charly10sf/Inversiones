@@ -154,7 +154,6 @@ test.describe('el banco, con Claude de verdad', () => {
     await meterCartera(page);
     await page.evaluate(async (motor) => {
       guardarCfgAsesor({ auto: 'manual' });
-      AS.clave = ''; AS.claves = {};
       LS.set('inv-ia-motor', motor); LS.set('inv-claude-ok', FB.user.uid); LS.del('inv-claude-pausa');
       // el Worker de aquí devuelve la respuesta entera al final (no en directo): más margen para el primer dato
       RED_CLAUDE.primero = 170000; RED_CLAUDE.hilo = 170000;
