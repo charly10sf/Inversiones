@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
- { v: '0.8.2', f: '2026-11-06', h: '10:30', t: 'La IA explica', cosas: [
+  { v: '0.8.2', f: '2026-11-06', h: '10:30', t: 'La IA explica', cosas: [
     { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor, .riel-ia', dib: null }, t: 'La IA explica', x: 'La IA te explica tu cartera y hace las cuentas con tus cifras, pero no te dice qué comprar ni qué vender: la decisión es tuya. Arriba del chat pone siempre que hablas con una IA y cuál, y debajo de cada respuesta, el modelo que la ha escrito.' },
     { d: 'pregunta', t: 'Normal o «A fondo»', x: 'Con Claude, la respuesta normal es la rápida. Si quieres que piense más, pulsa «A fondo» antes de preguntar. Arriba ves cuántas preguntas te quedan hoy.' },
     { d: 'calendario', t: 'Tus conversaciones, guardadas', x: 'Las 20 últimas conversaciones con la IA se guardan cifradas en tu móvil. Al empezar una nueva, las tienes arriba para volver a abrirlas o borrarlas.' },
