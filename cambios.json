@@ -1,6 +1,22 @@
 {
  "versiones": [
   {
+   "v": "0.8.2a",
+   "f": "2026-11-06",
+   "h": "11:00",
+   "t": "Menos avisos en la IA",
+   "commits": [
+    {
+     "cuando": "2026-11-06 11:00",
+     "asunto": "Versión 0.8.2a: menos avisos en la IA",
+     "detalle": [
+      "Fuera el aviso fijo de arriba del panel de la IA (qué IA contesta y que no da recomendaciones); debajo de cada respuesta sigue la línea con el modelo que la ha escrito.",
+      "Sin el aviso, el panel vuelve a la rejilla de tres filas y se quitan sus estilos y los tests de ese aviso."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.2",
    "f": "2026-11-06",
    "h": "10:30",

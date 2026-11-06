@@ -35,28 +35,10 @@ function md(src) {
   return html;
 }
 
-/* ---------- 0.8.2 · quién contesta, dicho siempre ----------
-   Arriba del panel, fijo: que es una IA (y cuál), que puede equivocarse y qué hace y qué no. Debajo de cada respuesta, una
-   línea con el modelo que la ha escrito. Con Claude (estándar, y el fundador desde la opción B) van las reglas del estándar:
-   no da recomendaciones personalizadas. El fundador con Gemini sigue con el asesor de siempre, y el aviso lo dice */
-const PROV_IA = () => ({ claude: L('Claude, de Anthropic', 'Claude, by Anthropic'), gemini: L('Gemini, de Google', 'Gemini, by Google') });
-function textosAvisoIA(quien = quienContestaIA()) {
-  const est = esPublico() || quien === 'claude';
-  return {
-    est,
-    corto: L(`Hablas con una IA (${PROV_IA()[quien]}), no con una persona. Puede equivocarse.`, `You are talking to an AI (${PROV_IA()[quien]}), not a person. It can make mistakes.`),
-    largo: est
-      ? L('Toisón no es una empresa de servicios de inversión y esta IA no da recomendaciones personalizadas de compra o venta ni consejos fiscales personales: explica, calcula con los datos de tu cartera y te enseña lo que supondrían tus propias reglas. La decisión es tuya.', 'Toisón is not an investment firm and this AI does not give personalised buy or sell recommendations or personal tax advice: it explains, calculates with your portfolio data and shows you what your own rules would mean. The decision is yours.')
-      : L('Con el acceso de fundador y Gemini, la IA da su opinión sobre tu cartera con tus datos y tus reglas. Es lo que dice un modelo de IA, no un asesor: comprueba las cifras. La decisión es tuya.', 'With founder access and Gemini, the AI gives its view on your portfolio using your data and your rules. It is what an AI model says, not an adviser: check the figures. The decision is yours.'),
-  };
-}
-function pintarAvisoIA(fondo) {
-  const el = $('#asAviso', fondo); if (!el) return;
-  const a = textosAvisoIA(), clave = `${a.corto}|${a.largo}`;
-  if (el.dataset.k === clave) return;   // sin repintar: no se cierra si lo tienes abierto
-  el.dataset.k = clave;
-  el.innerHTML = `<summary><span>${esc(a.corto)}</span><b class="as-aviso-mas">${L('Más', 'More')}</b><b class="as-aviso-menos">${L('Menos', 'Less')}</b></summary><p>${esc(a.largo)}</p>`;
-}
+/* ---------- 0.8.2 · quién contesta ----------
+   Debajo de cada respuesta, una línea con el modelo que la ha escrito (pieRespuestaIA). Arriba del panel no hay aviso fijo
+   (6 nov, Carlos: «ya se sobreentiende»). Con Claude (estándar, y el fundador desde la opción B) van las reglas del estándar:
+   no da recomendaciones personalizadas. El fundador con Gemini sigue con el asesor de siempre. */
 const nombreModLargo = (m) => (MODELOS[m] || MODELOS_CLAUDE[m] || {}).n || m || '';
 function pieRespuestaIA(t) {
   const est = t.estandar != null ? t.estandar : esPublico(), mod = nombreModLargo(t.modelo);
@@ -199,7 +181,6 @@ function pintarAsesor(alFinal) {
   const vivo = modeloVivo(cfg);
   // 0.7: lo que ve la persona es GrowIA; los modelos de Google y su cupo, en Ajustes de GrowIA (Detalles técnicos)
   $('#asSub', fondo).textContent = subtituloIA(cfg);
-  pintarAvisoIA(fondo);
   const rapida = cfg.modelo === MODELO_RAPIDO;
   // 0.8.2: con Claude, Normal (Haiku) o «A fondo» (Sonnet) para tus preguntas; con un modelo fijo elegido en Ajustes, nada
   if (quienContestaIA() === 'claude') $('#asModo', fondo).innerHTML = motorElegido() !== 'auto' ? '' : `<span>${L('Respuesta', 'Answer')}</span><div class="seg" role="group" aria-label="${L('Tipo de respuesta', 'Answer type')}" aria-describedby="asModoNota"><button type="button" data-as="fondo" data-m="normal" aria-pressed="${!AS.aFondo}">${L('Normal', 'Normal')}</button><button type="button" data-as="fondo" data-m="fondo" aria-pressed="${!!AS.aFondo}">${L('A fondo', 'In depth')}</button></div><small id="asModoNota">${AS.aFondo ? L('Con Sonnet: piensa más y tarda algo más', 'With Sonnet: thinks more and takes a bit longer') : L('Con Haiku: rápida y al grano', 'With Haiku: quick and to the point')}</small>`;
@@ -245,7 +226,6 @@ async function abrirAsesor(pregunta, enviar) {
         <button class="ib" data-as="ajustes" title="Ajustes de la IA" aria-label="Ajustes de la IA">${ICONOS.ajustes}</button>
         <button class="ib ib-bicho" data-accion="opinion" title="Avisar de un fallo o mandar una idea" aria-label="Avisar de un fallo">${ICONOS.bicho}</button>
         <button class="ib" data-as="cerrar" aria-label="Cerrar">${ICONOS.cerrar}</button></header>
-      <details class="as-aviso" id="asAviso"></details>
       <div class="as-cuerpo" id="asCuerpo" aria-live="polite"></div>
       <footer class="as-pie" id="asPie"><div class="as-modo" id="asModo"></div><div id="asAdjunto"></div><form class="as-form" id="asForm"><button type="button" class="as-adj" data-as="recorte" title="Recorta un trozo de la pantalla para preguntar por él" aria-label="Recortar la pantalla">${ICONOS.recorte}</button><textarea id="asTexto" rows="1" placeholder="Pregunta lo que quieras de tu cartera" aria-label="Tu pregunta"></textarea>${dictadoPosible() ? `<button type="button" class="as-adj as-voz" data-as="voz" title="Dictar la pregunta" aria-label="Dictar la pregunta" aria-pressed="false">${ICONOS.micro}</button>` : ''}<button class="as-enviar" id="asEnviar" type="submit" aria-label="Enviar">${ICONOS.enviar}</button></form></footer>
     </section>`;

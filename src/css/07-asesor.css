@@ -98,17 +98,7 @@
 .as-func svg { width: 20px; height: 20px; color: var(--oro-texto); margin-bottom: 5px; }
 .as-func b { font-size: 13.5px; font-weight: 650; }
 .as-func small { font-size: 11.5px; line-height: 1.35; color: var(--tenue); }
-/* 0.8.2 · el aviso fijo de arriba (qué IA contesta y qué hace) y la línea de debajo de cada respuesta */
-.asesor { grid-template-rows: auto auto minmax(0, 1fr) auto; }
-.as-aviso { margin: 0; padding: 7px 20px 8px; border-bottom: 1px solid var(--hilo, var(--borde)); font-size: 12.5px; line-height: 1.4; color: var(--texto-2, var(--tenue)); background: var(--superficie, transparent); }
-.as-aviso summary { display: flex; gap: 10px; align-items: baseline; cursor: pointer; list-style: none; }
-.as-aviso summary::-webkit-details-marker { display: none; }
-.as-aviso summary span { flex: 1; min-width: 0; }
-.as-aviso summary b { flex: none; font-weight: 600; color: var(--oro-texto); text-decoration: underline; text-underline-offset: 2px; }
-.as-aviso-menos, .as-aviso[open] .as-aviso-mas { display: none; }
-.as-aviso[open] .as-aviso-menos { display: inline; }
-.as-aviso p { margin: 6px 0 0; }
-.as-aviso summary:focus-visible { outline: 2px solid var(--oro-texto); outline-offset: 2px; border-radius: 4px; }
+/* 0.8.2 · la línea de debajo de cada respuesta */
 .as-pie-ia { display: block; margin-top: 8px; color: var(--tenue); font-size: 11.5px; line-height: 1.4; }
 /* 0.8.2 · tus conversaciones guardadas */
 .as-convs { margin: 0 0 14px; text-align: left; }

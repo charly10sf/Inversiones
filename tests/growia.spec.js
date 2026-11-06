@@ -68,10 +68,10 @@ test('GrowIA lee las fichas y busca en internet una vez por pregunta como mucho'
   if (idea) expect(JSON.stringify(idea.valoracion_de_la_web || '')).not.toContain('puesto');
   // el cupo de hoy, a la vista, y el modelo de la respuesta
   expect(await page.evaluate(() => usoIAHoy()['gemini-3.8-flash'])).toBe(3);
-  // arriba, sin el modelo; 0.8.2: el aviso fijo dice que es una IA y cuál, y el pie de cada respuesta, el modelo que la ha escrito
+  // arriba, sin el modelo; 0.8.2: el pie de cada respuesta dice el modelo que la ha escrito (sin aviso fijo arriba)
   await expect(page.locator('#asSub')).toHaveText('Con tu cartera y las noticias de hoy');
   await expect(page.locator('.as-modelo-de')).toHaveCount(0);
-  await expect(page.locator('#asAviso summary')).toContainText('Hablas con una IA (Gemini, de Google)');
+  await expect(page.locator('#asAviso')).toHaveCount(0);
   await expect(page.locator('#asCuerpo .as-pie-ia').last()).toContainText('(Gemini 3.8 Flash)');
   // arriba, el cupo solo cuando queda poco (el 3.8 y el 3.6 cuentan juntos: 40)
   await page.evaluate(() => { LS.set('inv-ia-uso', { d: diaGoogle(), m: { 'gemini-3.8-flash': 20, 'gemini-3.6-flash': 16 } }); pintarAsesor(); });

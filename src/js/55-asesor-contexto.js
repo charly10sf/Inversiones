@@ -1507,7 +1507,6 @@ async function preguntarAsesor(texto) {
   AS.conv.push({ rol: 'yo', texto, mini: adj && adj.mini, donde: adj && adj.donde, adj: adj || undefined, ctx: ctx || undefined }, turno);
   AS.cargando = true; AS.ctrl = new AbortController();
   const conv0 = AS.conv;   // 0.8.2: si mientras contesta abres otra conversación, la borras o empiezas una nueva, esto no se mezcla
-  { const av = document.getElementById('asAviso'); if (av) av.open = false; }   // 0.8.2: el aviso abierto se cierra al preguntar
   appGrowiaEmpieza();
   pintarAsesor(true);
   diarioIA(`Pregunta · ${nombreMod(modeloClaudeParaIA('pregunta') || modeloVivo())}${redIA()}`);
