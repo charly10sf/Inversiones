@@ -12,7 +12,7 @@
 <link rel="icon" href="favicon.svg" type="image/svg+xml" vite-ignore>
 <link rel="apple-touch-icon" href="toison-180.png" vite-ignore>
 <meta name="application-name" content="Toisón">
-<meta name="theme-color" content="#151817">
+<meta name="theme-color" content="#000000">
 <!-- 4 nov: el esquema de color en la cabecera, para que el modo oscuro del móvil (Samsung Internet, los navegadores de
      WhatsApp y X) no repinte la app. Marfil va con «light dark» (5 nov: Samsung Internet no hacía caso de «only light»); lo cambian el script de abajo y ponerTema -->
 <meta name="color-scheme" content="dark">
@@ -27,6 +27,9 @@
 /* 0.8 (5b): el «VI» de la pastilla de GTA de la cabecera usa la recta inclinada por el navegador (en dos mayúsculas
    no se distingue de la cursiva): así la cursiva, 29 KB, no se baja al abrir en Mármol y Marfil. Mismo archivo que la recta */
 @font-face{font-family:'Ibarra VI';src:url(fonts/ibarra.woff2) format('woff2');font-weight:400 700;font-display:swap}
+/* 0.8.3: la textura del Mármol G (el resto de la capa, en 00-temas.css); la ancha, solo desde 900 px */
+[data-tema="marmol"] #acabadoTema{background-image:url(marmol-g.webp)}
+@media (min-width:900px){[data-tema="marmol"] #acabadoTema{background-image:url(marmol-g-pc.webp)}}
 </style>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
