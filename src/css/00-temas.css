@@ -261,8 +261,11 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .hero-hola { font: 400 22px/1.25 var(--marca); color: var(--texto); letter-spacing: -.005em; }
 [data-tema] .hola-nom { font-weight: 500; color: var(--oro-texto); }
 [data-tema="borgona"] .hero-hola { font-style: italic; }
-[data-tema] .hero-num { font-weight: 500; letter-spacing: -.04em; }
-[data-tema] .hero-num span.dec { font-weight: 500; color: var(--texto-2); }
+/* 0.8.3 (Carlos, 6 nov): la cifra del patrimonio, con la letra de los títulos de cada estilo (Inter en Mármol, Ibarra en
+   Marfil y en cursiva en Borgoña) y en negrita */
+[data-tema] .hero-num { font-family: var(--titulo); font-style: var(--titulo-estilo); font-weight: 700; letter-spacing: -.04em; }
+[data-tema="marfil"] .hero-num, [data-tema="borgona"] .hero-num { letter-spacing: -.01em; }
+[data-tema] .hero-num span.dec { font-weight: 600; color: var(--texto-2); }
 [data-tema] .hero-panel {
   margin: 0; border: 2px solid var(--borde); border-radius: var(--r-l); overflow: hidden; box-shadow: var(--sombra-t);
   background: radial-gradient(90% 70% at 85% 62%, color-mix(in srgb, var(--grafica) var(--luz-graf), transparent), transparent 70%),

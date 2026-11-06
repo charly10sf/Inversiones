@@ -218,7 +218,7 @@ function grafHero(cont, series, opt = {}) {
   } else for (let k = 0; k <= sitio; k++) { const tt = t0 + (k / sitio) * (t1 - t0); ejes.push([xt(tt), etq(new Date(tt))]); }
   let g = `<defs>
     <linearGradient id="${id}a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.46"/><stop offset="0.55" style="stop-color:${color};stop-opacity:0.12"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
-    <linearGradient id="${id}t" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${W}" y2="0"><stop offset="0" style="stop-color:${color};stop-opacity:0.5"/><stop offset="0.7" style="stop-color:${color};stop-opacity:1"/><stop offset="1" style="stop-color:#F8DC9C;stop-opacity:1"/></linearGradient>
+    <linearGradient id="${id}t" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="${W}" y2="0"><stop offset="0" style="stop-color:${color};stop-opacity:0.5"/><stop offset="0.7" style="stop-color:${color};stop-opacity:1"/><stop offset="1" style="stop-color:${color};stop-opacity:1"/></linearGradient>
     <linearGradient id="${id}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:${color};stop-opacity:0.55"/><stop offset="1" style="stop-color:${color};stop-opacity:0"/></linearGradient>
     <linearGradient id="${id}mg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity="0.9"/><stop offset="0.7" stop-color="#fff" stop-opacity="0.2"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
     <mask id="${id}m"><path d="${area}" fill="url(#${id}mg)"/></mask>

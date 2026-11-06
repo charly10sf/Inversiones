@@ -33,7 +33,7 @@ document.addEventListener('click', (e) => {
   else if (d.fis) { S.fisTab = d.fis; LS.set('inv-fistab', S.fisTab); pintar(); irArriba('#fisTabs'); }
   else if (d.fut) { S.futTab = d.fut; LS.set('inv-futtab', S.futTab); pintar(); irArriba('#futTabs'); }
   else if ('resp' in d) { const q = t.closest('[data-preg]'); if (q) responderIA(q.dataset.q ? { q: q.dataset.q } : +q.dataset.preg, d.resp); }
-  else if (d.zona) { S.radarZona = d.zona; S.radarN = 0; LS.set('inv-zona', S.radarZona); repintarTablaRadar(); }
+  else if (d.zona) { S.radarZona = d.zona; S.radarN = 0; LS.set('inv-zona', S.radarZona); if (S.radarPais && !baseRadar().some((x) => paisRadar(x) === S.radarPais)) { S.radarPais = ''; LS.set('inv-radar-pais', ''); } repintarTablaRadar(); }
   else if (d.orden) { S.radarOrden = d.orden; S.radarN = 0; LS.set('inv-orden2', S.radarOrden); repintarTablaRadar(); }
   else if ('radarMas' in d) repintarTablaRadar(true);
   else if (d.pos) abrirFicha(d.pos);
@@ -106,6 +106,7 @@ document.addEventListener('change', (e) => {
   else if (t.matches('[data-orden-pos-sel]')) { const [k, dir] = t.value.split('|'); S.ordenPos = { k, dir }; LS.set('inv-orden-pos', S.ordenPos); pintar(); }
   else if (t.matches('[data-radar-min]')) { S.radarMin = t.checked; S.radarN = 0; LS.set('inv-radar-min', S.radarMin); repintarTablaRadar(); }
   else if (t.matches('[data-radar-solidas]')) { S.radarSolidas = t.checked; S.radarN = 0; LS.set('inv-radar-solidas', S.radarSolidas); repintarTablaRadar(); }
+  else if (t.matches('[data-radar-filtro]')) { const k = t.dataset.radarFiltro, campo = { pais: 'radarPais', sector: 'radarSector', tam: 'radarTam' }[k]; if (campo) { S[campo] = t.value; S.radarN = 0; LS.set('inv-radar-' + k, t.value); repintarTablaRadar(); } }
   else if (t.matches('[data-radar-orden-sel]')) { S.radarOrden = t.value; S.radarN = 0; LS.set('inv-orden2', S.radarOrden); repintarTablaRadar(); }
   else if (t.matches('[data-proy]')) {
     const k = t.dataset.proy, c = { ...(S.proy || {}) };
