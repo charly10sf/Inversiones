@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 0.8: los de Mármol, el diseño de Toisón por defecto (Tema.java pinta luego las barras con el elegido) -->
-    <color name="fondo">#FF151817</color>
-    <color name="linea">#FF353A38</color>
+    <!-- los de Mármol, el diseño de Toisón por defecto (Tema.java pinta luego las barras con el elegido); 0.8.2c, Mármol G: negro -->
+    <color name="fondo">#FF000000</color>
+    <color name="linea">#FF313131</color>
     <color name="acento">#FFE3B45F</color>
 
     <style name="Tema" parent="@android:style/Theme.DeviceDefault.NoActionBar">

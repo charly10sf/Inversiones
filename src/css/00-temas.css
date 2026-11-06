@@ -630,6 +630,11 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* 5 nov (captura de Carlos en Ideas): las de pastilla (Lo tuyo · Del radar · Siguiendo, los plazos del Paso a paso) también
    se quedan arriba en el móvil y eran casi transparentes: el texto de debajo se montaba. Mismo tono, pero opaco */
 [data-tema] :is(.subvistas, .plazos):not(.dos-op) { background: color-mix(in srgb, var(--texto) 3%, var(--fondo)); }
+/* 0.8.2c, Mármol G: sobre las vetas, el negro macizo de esas pestañas de texto se veía como un recorte de esquinas vivas.
+   En Mármol van en losa (opaca igual, para cuando se quedan arriba), con el subrayado de oro dentro */
+[data-tema="marmol"] .subvistas.dos-op { background: var(--superficie); border-bottom: 0; border-radius: var(--r-m);
+  box-shadow: inset 0 0 0 1px var(--borde), inset 0 1px 0 var(--filo-luz); }
+[data-tema="marmol"] .subvistas.dos-op button[aria-pressed="true"]::after { bottom: 0; }
 /* Borgoña: el filete corto va bajo el título y no bajo toda la cabecera (cuando el botón baja de línea quedaba suelto) */
 [data-tema="borgona"] .sec-cab { padding-bottom: 0; }
 [data-tema="borgona"] .sec-cab::after { content: none; }
