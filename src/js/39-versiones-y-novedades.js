@@ -5,6 +5,15 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.8.2c', f: '2026-11-06', h: '19:30', t: 'El Mármol nuevo y el radar con filtros', arreglos: [
+    'Mármol estrena negro puro, el oro del logo de Toisón y unas vetas grises muy suaves de fondo; las tablas van sobre fondo liso para que se lean igual.',
+    'En Ideas, «Del radar» tiene filtros de país, sector y tamaño, y en el móvil cada empresa ocupa menos alto.',
+    'Las fichas del radar se bajan en dos partes: abrir Ideas pesa la mitad que antes.',
+    'La cifra de tu patrimonio va con la letra de cada estilo, y la línea de la gráfica, de un solo color.',
+    'En el móvil ya no se sale nada por la derecha ni se cortan cifras en las tablas, en Mercados ni en las aportaciones; y «S&P 500» se ve entero en Hoy.',
+    'En el móvil, las etiquetas de las empresas del radar ya no se pierden al filtrar ni al pulsar «Ver 50 más».',
+    { t: 'Las filas de pestañas que se deslizan se difuminan por el lado que sigue, y Primeros pasos ya no se toca con el saludo.', solo: 'dueno' },
+  ] },
   { v: '0.8.2a', f: '2026-11-06', h: '11:00', t: 'Menos avisos en la IA', arreglos: [
     'El panel de la IA ya no dice qué IA contesta, ni arriba ni debajo de cada respuesta.',
     'En «Del radar», los logos de las empresas se ven más grandes.',
