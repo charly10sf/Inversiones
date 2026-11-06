@@ -169,12 +169,29 @@ test('Mármol G: textura de mármol en el fondo y tablas opacas; los otros dise�
   await page.evaluate(() => { S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); });
   const tabla = page.locator('.tabla-w').first();
   await expect(tabla).toBeAttached({ timeout: 15_000 });
-  const t = await tabla.evaluate((el) => ({ fondo: getComputedStyle(el).backgroundColor, losa: getComputedStyle(document.documentElement).getPropertyValue('--superficie').trim() }));
-  expect(t.fondo).toBe(rgb(t.losa));
+  // (revisión aparte) con toHaveCSS, que vuelve a mirar si pintar() cambia la tabla por otra a mitad
+  const losa = rgb(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--superficie').trim()));
+  await expect(tabla).toHaveCSS('background-color', losa);
+  // una tabla suelta es losa y su columna pegajosa se pega al borde de la losa (sin franja por la que asomen cifras);
+  // una dentro de una tarjeta no hace loseta sobre loseta
+  await page.evaluate(() => {
+    const d = document.createElement('div'); d.id = 'prueba-losas';
+    d.innerHTML = '<div class="tabla-w" id="pl-suelta"><table><tr><td>a</td><td>b</td></tr></table></div>'
+      + '<div class="num-sec"><div class="tabla-w" id="pl-dentro"><table><tr><td>a</td><td>b</td></tr></table></div></div>';
+    document.getElementById('app').append(d);
+  });
+  await expect(page.locator('#pl-suelta')).toHaveCSS('background-color', losa);
+  await expect(page.locator('#pl-suelta td').first()).toHaveCSS('left', '-14px');
+  await expect(page.locator('#pl-dentro')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(page.locator('#pl-dentro')).toHaveCSS('box-shadow', 'none');
+  await expect(page.locator('#pl-dentro td').first()).toHaveCSS('left', '0px');
   for (const tema of ['marfil', 'borgona']) {
     await page.evaluate((tt) => ponerTema(tt), tema);
     x = await fondoCapa();
     expect(x.img).not.toContain('marmol-g');
     expect(x.svg).toBe(false);
+    // nada del Mármol se cuela: ni losa en las tablas ni halo en las cabeceras
+    await expect(page.locator('#pl-suelta')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(page.locator('#pl-suelta')).toHaveCSS('box-shadow', 'none');
   }
 });
