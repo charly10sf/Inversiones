@@ -5,6 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.8.2e', f: '2026-11-06', h: '23:50', t: 'Las bajadas, en rojo', arreglos: [
+    'Lo que baja sale en rojo de verdad y no en coral: la cifra de hoy, las losetas de «Lo que más ha movido hoy», el mapa de la cartera y los botones de vender. En Android, también en el widget y en los avisos.',
+  ] },
   { v: '0.8.2d', f: '2026-11-06', h: '21:30', t: 'Todo con Claude', arreglos: [
     'La IA va entera con Claude y ya no hace falta poner ninguna clave de Google: basta con tu cuenta y el correo confirmado.',
     'Tus preguntas del día son para el chat: la revisión de tu cartera, el resumen de una noticia y leer capturas o PDF al importar van aparte y no las gastan.',
