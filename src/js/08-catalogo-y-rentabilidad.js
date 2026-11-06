@@ -119,6 +119,22 @@ function precioEn(hist, fecha, modo) {
   return null;
 }
 
+/* Rango de precios posibles ese día. Con cierres diarios es el cierre de siempre (lo = hi = real). Con cierres semanales
+   (los del radar, para lo que añades tú), el día puede estar en cualquier punto entre los cierres que lo rodean: en una
+   acción que se mueve un 40 % en una semana (Western Digital, 2 nov 2026), el cierre de la semana no vale para decir
+   que lo que pagaste está mal. */
+function rangoPrecioEn(hist, fecha) {
+  if (!hist || !hist.length) return null;
+  let i = -1;
+  for (let n = 0; n < hist.length; n++) { if (hist[n][0] <= fecha) i = n; else break; }
+  if (i < 0) return null;
+  const real = hist[i][1], ant = hist[i - 1], sig = hist[i + 1];
+  const hueco = Math.max(ant ? diasEntre(ant[0], hist[i][0]) : 0, sig ? diasEntre(hist[i][0], sig[0]) : 0);
+  if (hueco <= 5) return { real, lo: real, hi: real, grueso: false };
+  const vs = [ant, hist[i], sig].filter(Boolean).map((x) => x[1]);
+  return { real, lo: Math.min(...vs), hi: Math.max(...vs), grueso: true };
+}
+
 function fechasAportacion(a, despuesDe, hasta) {
   const out = [];
   const desde = a.desde && a.desde > despuesDe ? a.desde : despuesDe;

@@ -602,10 +602,10 @@ function precioCompraRaro(f) {
   for (const l of lotes) {
     const fecha = l.mezcla ? f.pos.desde : l.f;
     if (!fecha || !(l.u > 0) || !(l.c > 0)) continue;
-    const pagado = l.c / l.u, real = precioEn(f.hist, fecha, 'antes');
-    if (!real) continue;
-    const r = pagado / real;
-    if (r > 0.8 && r < 1.25) continue;
+    const pagado = l.c / l.u, rg = rangoPrecioEn(f.hist, fecha);
+    if (!rg || !rg.real) continue;
+    const real = rg.real;
+    if (pagado >= rg.lo * 0.8 && pagado <= rg.hi * 1.25) continue;
     const cerca = (v) => v.filter((x) => x.p && Math.abs(pagado / x.p - 1) < 0.04).sort((a, b) => Math.abs(pagado / a.p - 1) - Math.abs(pagado / b.p - 1))[0] || null;
     let otro = cerca(S.instOrden.filter((id) => id !== f.inst.id && S.inst[id].clase === f.inst.clase).map((id) => { const h = histDe(id); return { id, p: h ? precioEn(h, fecha, 'antes') : null }; }));
     // si no está en tu lista, en el catálogo común: los del mismo tipo y la misma zona
