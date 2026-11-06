@@ -49,9 +49,10 @@ def capa(img, sem, ang, freq, turb, finura, color, fuerza, temblor):
 
 # (semilla, ángulo, frecuencia, turbulencia, finura, color, fuerza, temblor)
 # 6 nov, tarde: Carlos vio las vetas de la maqueta G (blancas, finas, con resplandor y temblor) «como rayos, nada serio».
-# Estas son grises, largas y suaves, sin resplandor: mármol negro pulido
+# Estas son grises, largas y suaves, sin resplandor: mármol negro pulido. 6 nov, 19:00: la veta ancha (la primera)
+# más fina y más floja, que en el ordenador parecía una cinta de seda o humo más que mármol (Carlos: con vetas)
 CAPAS = [
-    (1, 58, 1.1, 1.1, 10, (120, 118, 114), .55, .03),
+    (1, 58, 1.1, 1.1, 32, (120, 118, 114), .42, .03),
     (2, 50, 2.4, 1.3, 40, (150, 148, 144), .45, .03),
     (6, 70, 3.4, 1.2, 120, (170, 168, 164), .30, .02),
 ]
