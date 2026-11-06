@@ -43,25 +43,32 @@ const pedir = (uid, cuerpo, env = ENV, extra = {}) => worker.fetch(new Request('
 }), env, { waitUntil() {} });
 const ok = () => new Response(JSON.stringify({ id: 'msg_1', content: [{ type: 'text', text: 'hola' }], usage: { input_tokens: 10, output_tokens: 2 } }), { headers: { 'content-type': 'application/json' } });
 
-test('solo pregunta quien tiene sesión, correo verificado y está en la lista', async () => {
+// 0.8.2b: cualquiera con el correo verificado; la lista (CLAUDE_EMAILS) es la del tope alto
+test('pregunta quien tiene sesión y el correo verificado; la lista decide el nivel', async () => {
   await con(ok, async (vistas) => {
     // sin sesión
     let r = await worker.fetch(new Request('https://w.prueba/claude', { method: 'POST', body: JSON.stringify(PEDIDO) }), ENV, { waitUntil() {} });
     expect(r.status).toBe(401);
-    // con sesión pero fuera de la lista, o con el correo sin verificar
-    r = await pedir('uid-a', PEDIDO, ENV, { email: 'otro@prueba.com' });
-    expect(r.status).toBe(403);
+    // con el correo sin verificar, no
     r = await pedir('uid-b', PEDIDO, ENV, { verificado: false });
     expect(r.status).toBe(403);
+    expect(await r.json()).toEqual({ error: 'no-permitido', motivo: 'verificar' });
     // sin la clave de Claude puesta en el Worker
     r = await pedir('uid-c', PEDIDO, { ...ENV, ANTHROPIC_API_KEY: '' });
     expect(r.status).toBe(503);
     // nada de eso llegó a Claude
     expect(vistas.length).toBe(0);
-    // la lista vale en mayúsculas y con varios correos
+    // la lista vale en mayúsculas y con varios correos: tope alto
     r = await pedir('uid-d', PEDIDO, { ...ENV, CLAUDE_EMAILS: 'x@y.com, Amigo@Prueba.com' });
     expect(r.status).toBe(200);
-    expect(vistas.length).toBe(1);
+    expect(r.headers.get('x-nivel')).toBe('alto');
+    expect(r.headers.get('x-quedan-fondo')).toBeNull();
+    // fuera de la lista también pregunta, con el tope reducido
+    r = await pedir('uid-a', PEDIDO, ENV, { email: 'otro@prueba.com' });
+    expect(r.status).toBe(200);
+    expect(r.headers.get('x-nivel')).toBe('reducido');
+    expect(r.headers.get('access-control-expose-headers')).toContain('X-Nivel');
+    expect(vistas.length).toBe(2);
   });
 });
 
@@ -212,8 +219,11 @@ function cuotasDeMentira() {
     idFromName: (nombre) => nombre,
     get: (id) => ({
       fetch: (url, op) => {
-        if (!objetos.has(id)) { const m = new Map(); objetos.set(id, new Cuotas({ storage: { get: async (k) => m.get(k), put: async (k, v) => { m.set(k, v); } } })); }
-        return objetos.get(id).fetch(new Request(url, op));
+        if (!objetos.has(id)) { const m = new Map(); objetos.set(id, { o: new Cuotas({ storage: { get: async (k) => m.get(k), put: async (k, v) => { m.set(k, v); } } }), cola: Promise.resolve() }); }
+        // de una en una, como Cloudflare (sus «input gates» no dejan entrar otra petición mientras una lee o escribe)
+        const x = objetos.get(id), r = x.cola.then(() => x.o.fetch(new Request(url, op)));
+        x.cola = r.catch(() => {});
+        return r;
       },
     }),
   };
@@ -357,8 +367,10 @@ test('una petición vacía dice si el correo puede usar Claude sin gastar nada n
     let r = await pedir('uid-s', '{}', env);
     expect(r.status).toBe(400);
     expect(await r.json()).toMatchObject({ error: 'peticion' });
-    // quien no está en la lista recibe un 403 antes de leer el cuerpo
+    // 0.8.2b: quien no está en la lista también puede (nivel reducido); sin el correo verificado, un 403 antes de leer el cuerpo
     r = await pedir('uid-s2', '{}', env, { email: 'otro@prueba.com' });
+    expect(r.status).toBe(400);
+    r = await pedir('uid-s3', '{}', env, { email: 'otro@prueba.com', verificado: false });
     expect(r.status).toBe(403);
     // ni lo uno ni lo otro ha gastado la pregunta del día ni ha llegado a Claude
     expect((await pedir('uid-s', PEDIDO, env)).status).toBe(200);
@@ -393,4 +405,108 @@ test('/salud dice si Claude está listo, sin enseñar la clave', async () => {
   expect(JSON.parse(await salud({ ...ENV, CUOTAS: cuotasDeMentira() }))).toMatchObject({ claude: true, cuotas: true });
   expect(JSON.parse(await salud({})).claude).toBe(false);
   expect(await salud(ENV)).not.toContain('sk-ant');
+});
+
+// 0.8.2b: el nivel reducido. Menos preguntas, pocas «A fondo» y un techo de gasto al día para todos juntos
+const SONNET = { ...PEDIDO, model: 'claude-sonnet-5-5' }, HAIKU = { ...PEDIDO, model: 'claude-haiku-5-5' };
+const RED = { email: 'nuevo@prueba.com' };
+// una respuesta con lo que cobra Anthropic: `uso` en el JSON o, en directo, en message_start y message_delta
+const conUso = (uso, enDirecto = false) => () => enDirecto
+  ? new Response([
+    `event: message_start\ndata: ${JSON.stringify({ type: 'message_start', message: { id: 'm', usage: { input_tokens: uso.input_tokens, cache_read_input_tokens: uso.cache_read_input_tokens || 0, output_tokens: 1 } } })}\n\n`,
+    `event: message_delta\ndata: ${JSON.stringify({ type: 'message_delta', delta: { stop_reason: 'end_turn' }, usage: { output_tokens: uso.output_tokens, ...(uso.server_tool_use ? { server_tool_use: uso.server_tool_use } : {}) } })}\n\n`,
+    'event: message_stop\ndata: {"type":"message_stop"}\n\n'].join(''), { headers: { 'content-type': 'text/event-stream' } })
+  : new Response(JSON.stringify({ id: 'm', content: [{ type: 'text', text: 'hola' }], usage: uso }), { headers: { 'content-type': 'application/json' } });
+// pide y espera a lo que el Worker deja para después (cerrar el techo con lo gastado)
+async function pedirYCerrar(uid, cuerpo, env, extra) {
+  const espera = [];
+  const r = await worker.fetch(new Request('https://w.prueba/claude', { method: 'POST', body: JSON.stringify(cuerpo), headers: { Authorization: `Bearer ${token(uid, extra.email, extra.verificado)}`, 'Content-Type': 'application/json', Origin: 'https://charly10sf.github.io' } }), env, { waitUntil: (p) => espera.push(p) });
+  await r.text();
+  await Promise.all(espera);
+  return r;
+}
+const gastado = async (env) => (await env.CUOTAS.get(env.CUOTAS.idFromName(' techo-reducido')).fetch('https://x/', { method: 'POST', body: JSON.stringify({ op: 'ver', dia: new Date().toISOString().slice(0, 10) }) }).then((r) => r.json()));
+
+test('0.8.2b: el nivel reducido tiene 15 preguntas y 3 «A fondo» al día; el alto, sin tope de «A fondo»', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: undefined, CLAUDE_RONDAS_POR_DIA: undefined };
+    const P = (m, id) => ({ ...m, pregunta: id, ronda: 1 });
+    // tres «A fondo»: la cuarta no (con su motivo, para que la app conteste con Haiku)
+    for (let i = 0; i < 3; i++) { const r = await pedir('uid-f', P(SONNET, `fondo${i}aaaa`), env, RED); expect(r.status).toBe(200); expect(r.headers.get('x-quedan-fondo')).toBe(String(2 - i)); }
+    let r = await pedir('uid-f', P(SONNET, 'fondo3aaaa'), env, RED);
+    expect(r.status).toBe(429);
+    expect(await r.json()).toEqual({ error: 'tope-fondo' });
+    // la misma pregunta con Haiku sí entra (la rechazada no gastó pregunta)
+    r = await pedir('uid-f', P(HAIKU, 'fondo3aaaa'), env, RED);
+    expect(r.status).toBe(200);
+    expect(r.headers.get('x-quedan')).toBe('11');
+    // las rondas de una «A fondo» no gastan más «A fondo», pero empezar con Haiku y seguir con Sonnet sí gasta (y aquí ya no quedan)
+    r = await pedir('uid-f', { ...SONNET, pregunta: 'fondo0aaaa', ronda: 2 }, env, RED);
+    expect(r.status).toBe(200);
+    r = await pedir('uid-f', { ...SONNET, pregunta: 'fondo3aaaa', ronda: 2 }, env, RED);
+    expect(await r.json()).toEqual({ error: 'tope-fondo' });
+    // sin id, cada petición con Sonnet gasta «A fondo»
+    r = await pedir('uid-f', SONNET, env, RED);
+    expect(r.status).toBe(429);
+    // hasta 15 preguntas en total
+    for (let i = 5; i < 16; i++) expect((await pedir('uid-f', P(HAIKU, `haiku${i}aaaa`), env, RED)).status).toBe(i < 16 ? 200 : 429);
+    r = await pedir('uid-f', P(HAIKU, 'haiku99aaaa'), env, RED);
+    expect(await r.json()).toEqual({ error: 'tope-diario' });
+    // el nivel alto: Sonnet sin tope propio (solo el del día) y sin X-Quedan-Fondo
+    for (let i = 0; i < 5; i++) { const x = await pedir('uid-g', P(SONNET, `alto${i}aaaaa`), env); expect(x.status).toBe(200); expect(x.headers.get('x-quedan-fondo')).toBeNull(); expect(x.headers.get('x-quedan')).toBe(String(29 - i)); }
+    expect(vistas.length).toBe(3 + 1 + 1 + 11 + 5);
+  });
+});
+
+test('0.8.2b: el techo de gasto del nivel reducido cuenta lo que cobra Anthropic y para a todos los del nivel', async () => {
+  const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_TECHO_REDUCIDO: '0.5', CLAUDE_POR_DIA_REDUCIDO: '1000', CLAUDE_RONDAS_REDUCIDO: '1000' };
+  // una pregunta de Sonnet con 20.000 de entrada, 5.000 de caché leída, 4.000 de salida y 2 búsquedas: 0,04 + 0,0005 + 0,04 + 0,02 = 0,1005 $
+  const uso = { input_tokens: 20000, cache_read_input_tokens: 5000, output_tokens: 4000, server_tool_use: { web_search_requests: 2 } };
+  await con(conUso(uso, true), async (vistas) => {
+    const r = await pedirYCerrar('uid-h', { ...SONNET, stream: true, pregunta: 'techo1aaaa' }, env, RED);
+    expect(r.status).toBe(200);
+    let t = await gastado(env);
+    expect(t.g).toBeCloseTo(0.1005, 6);
+    expect(t.p).toBe(0);
+    // otros cuatro del nivel reducido, cada uno con su correo: el techo es de todos juntos
+    for (let i = 0; i < 4; i++) await pedirYCerrar(`uid-h${i}`, { ...HAIKU, stream: true, pregunta: `techo2${i}aaaa` }, env, { email: `n${i}@prueba.com` }).then((x) => expect(x.status).toBe(200));
+    t = await gastado(env);
+    expect(t.g).toBeGreaterThan(0.1005);
+    // Haiku: 20.000 × 0,10 + 5.000 × 0,01 + 4.000 × 0,50 = 0,00405 $ + 0,02 de búsquedas
+    expect(t.g).toBeCloseTo(0.1005 + 4 * 0.02405, 6);
+  });
+  await con(conUso({ input_tokens: 2000000, output_tokens: 1 }), async (vistas) => {
+    // una que se pasa (Haiku con más de 100.000 de entrada cobra más: 1 $): la siguiente ya no entra, para nadie del nivel
+    expect((await pedirYCerrar('uid-i', { ...HAIKU, pregunta: 'grande1aaaa' }, env, RED)).status).toBe(200);
+    const r = await pedir('uid-j', { ...HAIKU, pregunta: 'grande2aaaa' }, env, { email: 'otro2@prueba.com' });
+    expect(r.status).toBe(429);
+    expect(await r.json()).toEqual({ error: 'techo' });
+    // los del nivel alto siguen
+    expect((await pedir('uid-k', { ...HAIKU, pregunta: 'alto1aaaaa' }, env)).status).toBe(200);
+    expect(vistas.length).toBe(2);
+  });
+});
+
+test('0.8.2b: lo apartado del techo vuelve si la pregunta no llega a Claude o Claude falla', async () => {
+  const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_TECHO_REDUCIDO: '0.2', CLAUDE_FONDO_REDUCIDO: '0' };
+  await con(() => new Response(JSON.stringify({ error: { type: 'overloaded_error', message: 'Overloaded' } }), { status: 529 }), async () => {
+    // Claude falla: no queda nada apartado ni gastado
+    expect((await pedirYCerrar('uid-l', { ...HAIKU, pregunta: 'falla1aaaa' }, env, RED)).status).toBe(502);
+    // la «A fondo» rechazada por su tope (0 hoy): tampoco
+    expect((await pedirYCerrar('uid-l', { ...SONNET, pregunta: 'falla2aaaa' }, env, RED)).status).toBe(429);
+    expect(await gastado(env)).toMatchObject({ g: 0, p: 0 });
+  });
+  // varias a la vez: lo apartado (0,15 $ por Sonnet) frena antes de saber lo que cuestan
+  const env2 = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_TECHO_REDUCIDO: '0.2' };
+  await con(async () => { await new Promise((r) => setTimeout(r, 300)); return ok(); }, async () => {
+    const [a, b] = await Promise.all([pedir('uid-m1', { ...SONNET, pregunta: 'junta1aaaa' }, env2, { email: 'j1@prueba.com' }), pedir('uid-m2', { ...SONNET, pregunta: 'junta2aaaa' }, env2, { email: 'j2@prueba.com' })]);
+    expect([a.status, b.status].sort()).toEqual([200, 429]);
+  });
+  // el contador del techo roto: no se pregunta
+  const roto = { idFromName: (n) => n, get: (n) => ({ fetch: async () => { throw new Error('caído'); } }) };
+  await con(ok, async (vistas) => {
+    const r = await pedir('uid-n2', HAIKU, { ...ENV, CUOTAS: roto }, RED);
+    expect(r.status).toBe(503);
+    expect(vistas.length).toBe(0);
+  });
 });

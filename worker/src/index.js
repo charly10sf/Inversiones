@@ -312,15 +312,16 @@ async function isinRuta(url, req, env, ctx, res, deFuera) {
    de Claude, con el token de Firebase de quien pregunta; el Worker comprueba quién es, la limpia y la reenvía con la
    clave. No guarda ni apunta nada de lo que pasa (ni la cartera ni las respuestas): lo devuelve tal cual, también en
    directo (stream). Lo que decide el Worker, no la app, para que nadie gaste de más:
-   - solo quien esté en CLAUDE_EMAILS (con el correo verificado);
+   - 0.8.2b (todo con Claude): cualquiera con el correo verificado, en dos niveles. Los de CLAUDE_EMAILS (Carlos y los amigos
+     del principio) tienen el tope alto; el resto, el reducido (menos preguntas, pocas «A fondo» con Sonnet y, entre todos
+     ellos, un techo de gasto al día: CLAUDE_TECHO_REDUCIDO dólares, contados con lo que de verdad cobra Anthropic);
    - solo los modelos de CLAUDE_MODELOS, un máximo de salida y un máximo de búsquedas en internet por pregunta;
    - como mucho CLAUDE_POR_DIA preguntas al día por correo y CLAUDE_RONDAS_POR_DIA peticiones en total (una pregunta de
-     GrowIA son varias peticiones: una por cada ronda de herramientas; la app dice en «ronda» cuál es, y solo la primera
-     cuenta como pregunta; el tope de peticiones es el que impide que alguien se salte el de preguntas diciendo siempre
-     «ronda 2»). El contador vive en un Durable Object, el mismo para todas las instancias del Worker; si falla, no se
-     pregunta: mejor Gemini que gasto sin freno) y CLAUDE_POR_MINUTO por minuto
-     (este se cuenta por instancia del Worker: solo frena rachas; el tope de verdad es el límite de gasto del workspace en
-     la Console de Anthropic);
+     la IA son varias peticiones: una por cada ronda de herramientas; la app manda un id por pregunta y solo el primero
+     cuenta como pregunta; el tope de peticiones es el que impide que alguien se salte el de preguntas). El contador vive
+     en un Durable Object, el mismo para todas las instancias del Worker; si falla, no se pregunta) y CLAUDE_POR_MINUTO
+     por minuto (este se cuenta por instancia del Worker: solo frena rachas; el tope de verdad es el límite de gasto del
+     workspace en la Console de Anthropic);
    - solo pasan los campos de la API que la app usa; el resto se quita, y solo valen las herramientas propias de la app y
      la búsqueda en internet (nada de web_fetch ni de ejecutar código) y los adjuntos en base64 (no por URL: los bajaría
      Anthropic y no contarían en el tamaño). */
@@ -328,6 +329,19 @@ const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
 const CLAUDE_MODELOS = ['claude-haiku-5-5', 'claude-sonnet-5-5'];
 const CLAUDE_CAMPOS = ['model', 'max_tokens', 'system', 'messages', 'tools', 'tool_choice', 'thinking', 'output_config', 'stream', 'temperature'];
 const CLAUDE_MAX_SALIDA = 32000, CLAUDE_MAX_CUERPO = 600e3, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 30, CLAUDE_RONDAS_POR_DIA = 90;
+// 0.8.2b: el nivel reducido (todo el que no está en CLAUDE_EMAILS). Cifras propuestas el 6 nov; Carlos dijo «reducido» sin
+// número: se cambian aquí o con la variable del mismo nombre en el Worker
+const CLAUDE_POR_DIA_REDUCIDO = 15, CLAUDE_RONDAS_REDUCIDO = 45, CLAUDE_FONDO_REDUCIDO = 3, CLAUDE_TECHO_REDUCIDO = 5;
+const MODELO_FONDO = 'claude-sonnet-5-5';
+// el precio de Anthropic por millón de tokens (entrada, salida, leer caché, escribir caché), el mismo que usa la app
+// (MODELOS_CLAUDE en 55-asesor-contexto.js); Haiku cobra más cuando una petición pasa de 100.000 tokens de entrada.
+// La búsqueda en internet, 1 céntimo cada una
+const PRECIOS_CLAUDE = { 'claude-haiku-5-5': [0.10, 0.50, 0.01, 0.125], 'claude-sonnet-5-5': [2, 10, 0.10, 2.5] }, PRECIO_HAIKU_GRANDE = [0.5, 2.5, 0.05, 0.625];
+// lo que se aparta del techo mientras la respuesta llega (al acabar se cambia por lo que ha costado de verdad): así muchas
+// preguntas a la vez no pasan del techo por no saber aún lo que cuestan
+const RESERVA_CLAUDE = { 'claude-haiku-5-5': 0.02, 'claude-sonnet-5-5': 0.15 };
+// el nombre del contador del techo: con un espacio delante no puede ser un correo
+const NOMBRE_TECHO = ' techo-reducido';
 // 0.9 (auditoría del 4 nov): el tamaño en caracteres no frena el gasto (un PDF comprimido trae cientos de páginas). Tope de
 // tokens de entrada, contados gratis con /v1/messages/count_tokens solo cuando la petición es grande o lleva adjuntos, y
 // tope de adjuntos por petición
@@ -336,7 +350,52 @@ const CLAUDE_MAX_ENTRADA = 120000, CLAUDE_MAX_PDF = 2, CLAUDE_MAX_IMAGENES = 12,
 // 0.8: «GrowIA» pasa a «la IA de Toisón», como en la app (NOTA_CLAUDE de 55-asesor-contexto.js)
 const CLAUDE_NOTA = 'La IA de Toisón es una IA (funciona con Claude, de Anthropic) y debe decirlo si se lo preguntan. No da asesoramiento personalizado de inversión ni de impuestos: no dice a nadie que compre, venda o mantenga un valor concreto, ni cuánto meter ni a qué precio. Explica, compara y calcula; las decisiones son de cada persona.';
 const rafagas = new Map();
-const puedeClaude = (u, env) => !!u && u.verificado && !!u.email && lista(env.CLAUDE_EMAILS).includes(u.email);
+const puedeClaude = (u) => !!u && u.verificado && !!u.email;
+// 0.8.2b: el tope alto, para los de CLAUDE_EMAILS; el resto, el reducido
+const nivelClaude = (u, env) => (lista(env.CLAUDE_EMAILS).includes(u.email) ? 'alto' : 'reducido');
+const numEnv = (v, d) => { const n = Number(v); return v !== undefined && v !== '' && Number.isFinite(n) && n >= 0 ? n : d; };
+function topesClaude(nivel, env) {
+  if (nivel === 'alto') return { dia: numEnv(env.CLAUDE_POR_DIA, CLAUDE_POR_DIA), rondas: numEnv(env.CLAUDE_RONDAS_POR_DIA, CLAUDE_RONDAS_POR_DIA), fondo: null, techo: null };
+  return { dia: numEnv(env.CLAUDE_POR_DIA_REDUCIDO, CLAUDE_POR_DIA_REDUCIDO), rondas: numEnv(env.CLAUDE_RONDAS_REDUCIDO, CLAUDE_RONDAS_REDUCIDO), fondo: numEnv(env.CLAUDE_FONDO_REDUCIDO, CLAUDE_FONDO_REDUCIDO), techo: numEnv(env.CLAUDE_TECHO_REDUCIDO, CLAUDE_TECHO_REDUCIDO) };
+}
+// lo que ha costado una petición, en dólares, con su «usage»
+function costeUso(modelo, uso) {
+  const p = PRECIOS_CLAUDE[modelo]; if (!p || !uso) return 0;
+  const n = (x) => (Number.isFinite(Number(x)) && Number(x) > 0 ? Number(x) : 0);
+  const ent = n(uso.input_tokens), cr = n(uso.cache_read_input_tokens), cw = n(uso.cache_creation_input_tokens), sal = n(uso.output_tokens);
+  const [pi, po, pl, pe] = modelo === 'claude-haiku-5-5' && ent + cr + cw > 1e5 ? PRECIO_HAIKU_GRANDE : p;
+  return (ent * pi + sal * po + cr * pl + cw * pe) / 1e6 + n(uso.server_tool_use && uso.server_tool_use.web_search_requests) * 0.01;
+}
+// el «usage» de una respuesta: en directo, el de message_start más el de los message_delta; si no, el del JSON. Si se corta
+// a mitad, lo que haya llegado
+async function leerUso(cuerpo, enDirecto) {
+  let uso = {};
+  try {
+    if (!enDirecto) { const j = JSON.parse(await new Response(cuerpo).text()); return (j && j.usage) || {}; }
+    const lector = cuerpo.getReader(), dec = new TextDecoder();
+    let buf = '';
+    const linea = (l) => {
+      if (!l.startsWith('data:')) return;
+      let ev; try { ev = JSON.parse(l.slice(5).trim()); } catch (e) { return; }
+      if (ev && ev.type === 'message_start' && ev.message && ev.message.usage) uso = { ...uso, ...ev.message.usage };
+      else if (ev && ev.type === 'message_delta' && ev.usage) uso = { ...uso, ...ev.usage };
+    };
+    for (;;) {
+      const { done, value } = await lector.read();
+      if (done) break;
+      buf += dec.decode(value, { stream: true });
+      let k;
+      while ((k = buf.indexOf('\n')) >= 0) { linea(buf.slice(0, k).replace(/\r$/, '')); buf = buf.slice(k + 1); }
+    }
+    linea(buf);
+  } catch (e) { /* cortada: lo que haya */ }
+  return uso;
+}
+// el contador del techo del nivel reducido (un solo Durable Object para todos)
+async function techo(env, op, datos) {
+  const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(NOMBRE_TECHO)).fetch('https://cuotas.interno/techo', { method: 'POST', body: JSON.stringify({ op, ...datos }) });
+  return rc.json();
+}
 // un adjunto que no va dentro de la petición (una URL, un archivo ya subido) lo baja Anthropic: no lo dejamos pasar
 function adjuntoFuera(x) {
   if (Array.isArray(x)) return x.some(adjuntoFuera);
@@ -350,37 +409,63 @@ function contarBloques(x, tipo) {
   if (!x || typeof x !== 'object') return 0;
   return (x.type === tipo ? 1 : 0) + contarBloques(x.content, tipo);
 }
-// el contador de cada correo (día UTC): n, las preguntas que lleva hoy (peticiones «primera»), y r, todas las peticiones,
-// rondas de herramientas incluidas. Un Durable Object por correo, con su almacén propio.
+// el contador de cada correo (día UTC): n, las preguntas que lleva hoy (peticiones «primera»), r, todas las peticiones,
+// rondas de herramientas incluidas, y f, las preguntas «A fondo» (Sonnet; solo cuentan en el nivel reducido). Un Durable
+// Object por correo, con su almacén propio. 0.8.2b: el mismo tipo de objeto lleva, con otro nombre, el techo de gasto del
+// día del nivel reducido (op «techo»)
 export class Cuotas {
   constructor(estado) { this.estado = estado; }
   async fetch(req) {
-    const { dia, tope, topeRondas, primera: primeraApp = true, pregunta = null, topePregunta = 16 } = await req.json();
+    const datos = await req.json();
+    if (datos.op) return new Response(JSON.stringify(await this.techo(datos)));
+    const { dia, tope, topeRondas, primera: primeraApp = true, pregunta = null, topePregunta = 16, fondo = false, topeFondo = null } = datos;
     let c = (await this.estado.storage.get('c')) || { dia, n: 0, r: 0 };
     if (c.dia !== dia) c = { dia, n: 0, r: 0 };
-    c.r = c.r || 0; c.ids = c.ids || {};
+    c.r = c.r || 0; c.f = c.f || 0; c.ids = c.ids || {}; c.fi = c.fi || {};
     // con id de pregunta (0.9): un id nuevo gasta pregunta; uno conocido, no, pero con su tope de peticiones. Sin id, lo de
     // antes: manda «ronda»
     // las claves llevan delante «p»: un id como «constructor» no puede leer nada heredado de Object
     const k = pregunta ? 'p' + pregunta : null, conocida = !!k && Object.prototype.hasOwnProperty.call(c.ids, k), previas = conocida ? Number(c.ids[k]) || 0 : 0;
     const primera = pregunta ? !conocida : primeraApp;
+    // 0.8.2b: una pregunta «A fondo» gasta una de las suyas la primera vez que su id va con Sonnet (sin id, cada petición:
+    // así no se puede empezar con Haiku y seguir con Sonnet sin gastarla)
+    const usaFondo = !!fondo && topeFondo != null && (k ? !Object.prototype.hasOwnProperty.call(c.fi, k) : true);
     // 0.8.2: con el motivo, para que la app no diga «sin preguntas hasta mañana» cuando solo se ha agotado una pregunta
-    const motivo = primera && c.n >= tope ? 'dia' : topeRondas && c.r >= topeRondas ? 'rondas' : conocida && previas >= topePregunta ? 'pregunta' : null;
-    if (motivo) return new Response(JSON.stringify({ ok: false, n: c.n, r: c.r, motivo }));
+    const motivo = primera && c.n >= tope ? 'dia' : topeRondas && c.r >= topeRondas ? 'rondas' : conocida && previas >= topePregunta ? 'pregunta' : usaFondo && c.f >= topeFondo ? 'fondo' : null;
+    if (motivo) return new Response(JSON.stringify({ ok: false, n: c.n, r: c.r, f: c.f, motivo }));
     if (primera) c.n += 1;
     if (k) c.ids[k] = previas + 1;
+    if (usaFondo) { c.f += 1; if (k) c.fi[k] = 1; }
     c.r += 1;
     await this.estado.storage.put('c', c);
-    return new Response(JSON.stringify({ ok: true, n: c.n, r: c.r }));
+    return new Response(JSON.stringify({ ok: true, n: c.n, r: c.r, f: c.f }));
+  }
+  // el techo: g, lo gastado hoy (lo que han costado de verdad las respuestas acabadas), y p, lo apartado para las que
+  // aún llegan. «reservar» aparta (si cabe); «cerrar» cambia lo apartado por lo que ha costado (0 si no llegó a Claude)
+  async techo({ op, dia, techo: tope = 0, reserva = 0, coste = 0 }) {
+    let t = (await this.estado.storage.get('t')) || { dia, g: 0, p: 0 };
+    if (t.dia !== dia) t = { dia, g: 0, p: 0 };
+    const r6 = (x) => Math.round(x * 1e6) / 1e6, num = (x) => (Number.isFinite(Number(x)) && Number(x) > 0 ? Number(x) : 0);
+    if (op === 'reservar') {
+      if (t.g + t.p + num(reserva) > tope) return { ok: false, g: t.g, p: t.p };
+      t.p = r6(t.p + num(reserva));
+    } else if (op === 'cerrar') {
+      t.p = r6(Math.max(0, t.p - num(reserva)));
+      t.g = r6(t.g + num(coste));
+    }
+    if (op === 'reservar' || op === 'cerrar') await this.estado.storage.put('t', t);
+    return { ok: true, g: t.g, p: t.p };
   }
 }
 
-async function claude(req, env, cors, res) {
+async function claude(req, env, cors, res, ctx) {
   if (req.method !== 'POST') return res({ error: 'metodo' }, 405);
   if (!env.ANTHROPIC_API_KEY) return res({ error: 'sin-clave' }, 503);
   const u = await quienEs(req, env);
   if (!u) return res({ error: 'sin-sesion' }, 401);
-  if (!puedeClaude(u, env)) return res({ error: 'no-permitido' }, 403);
+  // 0.8.2b: cualquiera con el correo verificado; sin verificar, no (cualquiera podría abrir cuentas con correos inventados)
+  if (!puedeClaude(u)) return res({ error: 'no-permitido', motivo: 'verificar' }, 403);
+  const nivel = nivelClaude(u, env), topes = topesClaude(nivel, env);
   // los límites se cuentan por correo, no por uid: una misma persona podría tener varias cuentas con el mismo correo
   const ahora = Date.now(), tope = Number(env.CLAUDE_POR_MINUTO) || CLAUDE_POR_MINUTO;
   const recientes = (rafagas.get(u.email) || []).filter((t) => ahora - t < 60e3);
@@ -432,25 +517,37 @@ async function claude(req, env, cors, res) {
     if (n == null && pdfs) return res({ error: 'cuenta' }, 503);
   }
   // el tope del día, al final de las comprobaciones de la petición: lo que se rechaza arriba no gasta pregunta
-  // 0.8.2: las que le quedan hoy van en la respuesta (X-Quedan) para que la app lo diga
-  let quedan = null;
+  // 0.8.2: las que le quedan hoy van en la respuesta (X-Quedan) para que la app lo diga; 0.8.2b, también las «A fondo»
+  // que le quedan (X-Quedan-Fondo, solo en el nivel reducido) y el nivel (X-Nivel)
+  let quedan = null, quedanFondo = null, reserva = 0;
+  const dia = new Date(ahora).toISOString().slice(0, 10), modelo = String(cuerpo.model).toLowerCase();
   {
-    // sin el contador no hay tope diario: no se pregunta (la app pasa a Gemini)
+    // sin el contador no hay tope diario: no se pregunta
     if (!env.CUOTAS) return res({ error: 'cuotas' }, 503);
+    // 0.8.2b: el techo del nivel reducido, antes del contador de cada uno (si no cabe, no gasta pregunta)
+    if (topes.techo != null) {
+      reserva = RESERVA_CLAUDE[modelo] || 0.15;
+      let t;
+      try { t = await techo(env, 'reservar', { dia, techo: topes.techo, reserva }); } catch (e) { return res({ error: 'cuotas' }, 503); }
+      if (!t || !t.ok) return res({ error: 'techo' }, 429);
+    }
+    const soltar = () => (reserva ? techo(env, 'cerrar', { dia, reserva, coste: 0 }).catch(() => {}) : null);
     let q;
     try {
-      const dia = new Date(ahora).toISOString().slice(0, 10);
       // «ronda»: 1 (o sin ponerla) es una pregunta nueva; 2 o más, otra ronda de herramientas de la misma pregunta
       // 0.9: la app manda «pregunta», un id igual en todas las rondas y reintentos de una pregunta; el contador gasta una
       // pregunta por id nuevo. Las apps de antes (sin id) siguen con «ronda», limitadas por el tope de peticiones
       const primera = !(Number.isInteger(c.ronda) && c.ronda > 1);
-      const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(u.email)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA, topeRondas: Number(env.CLAUDE_RONDAS_POR_DIA) || CLAUDE_RONDAS_POR_DIA, primera, pregunta: idPreg, topePregunta: Number(env.CLAUDE_RONDAS_POR_PREGUNTA) || CLAUDE_RONDAS_POR_PREGUNTA }) });
+      const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(u.email)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: topes.dia, topeRondas: topes.rondas, primera, pregunta: idPreg, topePregunta: Number(env.CLAUDE_RONDAS_POR_PREGUNTA) || CLAUDE_RONDAS_POR_PREGUNTA, fondo: modelo === MODELO_FONDO, topeFondo: topes.fondo }) });
       q = await rc.json();
-    } catch (e) { return res({ error: 'cuotas' }, 503); }
-    if (!q || !q.ok) return res({ error: q && q.motivo === 'pregunta' ? 'tope-pregunta' : 'tope-diario' }, 429);
+    } catch (e) { await soltar(); return res({ error: 'cuotas' }, 503); }
+    if (!q || !q.ok) { await soltar(); return res({ error: q && q.motivo === 'pregunta' ? 'tope-pregunta' : q && q.motivo === 'fondo' ? 'tope-fondo' : 'tope-diario' }, 429); }
     // cada pregunta gasta al menos una petición: no quedan más preguntas que peticiones (auditoría del 5 nov)
-    quedan = Math.max(0, Math.min((Number(env.CLAUDE_POR_DIA) || CLAUDE_POR_DIA) - (Number(q.n) || 0), (Number(env.CLAUDE_RONDAS_POR_DIA) || CLAUDE_RONDAS_POR_DIA) - (Number(q.r) || 0)));
+    quedan = Math.max(0, Math.min(topes.dia - (Number(q.n) || 0), topes.rondas - (Number(q.r) || 0)));
+    if (topes.fondo != null) quedanFondo = Math.max(0, Math.min(topes.fondo - (Number(q.f) || 0), quedan));
   }
+  // al acabar, lo apartado del techo se cambia por lo que ha costado de verdad (sin esperar: la respuesta ya ha salido)
+  const cerrarTecho = (coste) => { if (!reserva) return; const p = techo(env, 'cerrar', { dia, reserva, coste }).catch(() => {}); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; };
   let r;
   try {
     r = await fetch(env.CLAUDE_API || CLAUDE_API, {
@@ -459,14 +556,26 @@ async function claude(req, env, cors, res) {
       body: JSON.stringify(cuerpo),
     });
   } catch (e) {
+    cerrarTecho(0);
     return res({ error: 'sin-conexion', motivo: String((e && e.message) || e).slice(0, 120) }, 502);
   }
   if (r.ok) {
-    return new Response(r.body, { status: r.status, headers: { ...cors, 'Content-Type': r.headers.get('content-type') || 'application/json', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no', ...(quedan != null ? { 'X-Quedan': String(quedan), 'Access-Control-Expose-Headers': 'X-Quedan' } : {}) } });
+    let cuerpoApp = r.body;
+    // en el nivel reducido, una copia de la respuesta se lee aquí para saber cuánto ha costado
+    if (reserva && r.body) {
+      const [a, b] = r.body.tee(), enDirecto = /event-stream/i.test(r.headers.get('content-type') || '') || cuerpo.stream === true;
+      cuerpoApp = a;
+      const p = leerUso(b, enDirecto).then((uso) => cerrarTecho(costeUso(modelo, uso)));
+      if (ctx && ctx.waitUntil) ctx.waitUntil(p);
+    } else cerrarTecho(0);
+    const extra = { 'X-Nivel': nivel, ...(quedan != null ? { 'X-Quedan': String(quedan) } : {}), ...(quedanFondo != null ? { 'X-Quedan-Fondo': String(quedanFondo) } : {}) };
+    return new Response(cuerpoApp, { status: r.status, headers: { ...cors, 'Content-Type': r.headers.get('content-type') || 'application/json', 'Cache-Control': 'no-store', 'X-Accel-Buffering': 'no', ...extra, 'Access-Control-Expose-Headers': Object.keys(extra).join(', ') } });
   }
-  // un fallo de Claude: la app lo necesita claro para pasar a Gemini sin esperar
+  // lo que no ha llegado a contestar Claude no gasta del techo
+  cerrarTecho(0);
+  // un fallo de Claude: la app lo necesita claro para decirlo (y, si era Sonnet, probar con Haiku)
   const fallo = await r.json().catch(() => ({})), e = (fallo && fallo.error) || {}, msg = String(e.message || '');
-  // sin saldo, o tope de gasto del workspace alcanzado (según el caso llega como 400 o como 429): hasta que se renueve, Gemini
+  // sin saldo, o tope de gasto del workspace alcanzado (según el caso llega como 400 o como 429): hasta que se renueve, nada
   if ((r.status === 400 || r.status === 429) && /credit balance|usage limits?|spend(ing)? limit/i.test(msg)) return res({ error: 'sin-creditos' }, 402);
   if (r.status === 401 || r.status === 403) return res({ error: 'clave', estado: r.status }, 502);
   return res({ error: 'claude', estado: r.status, tipo: String(e.type || ''), motivo: msg.slice(0, 200) }, r.status >= 500 ? 502 : r.status);
@@ -486,7 +595,7 @@ export default {
     try {
       if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true, claude: !!env.ANTHROPIC_API_KEY, cuotas: !!env.CUOTAS });
       if (url.pathname.startsWith('/banco/')) return await banco(url.pathname.slice(7), url, req, env, res);
-      if (url.pathname === '/claude') return await claude(req, env, cors, res);
+      if (url.pathname === '/claude') return await claude(req, env, cors, res, ctx);
       // desde la web (o la app, que la carga) no hace falta sesión para buscar; desde otro sitio, sí
       if (url.pathname === '/isin') return await isinRuta(url, req, env, ctx, res, !origenes.includes(origen));
       return res({ error: 'no-existe' }, 404);
