@@ -1,9 +1,10 @@
 /* =====================================================================
    0.7 · Cómo va la IA, para el dueño (Ajustes)
-   El último banco de preguntas (banco.json, que escribe la Action del banco en la rama datos); lo que ha gastado la
-   Action en 24 h (escaneo.json, campo uso de claude, ia o gemini: las llamadas a Claude del radar, con sus tokens); y los fallos de la IA que no se
-   arreglaron solos (Firestore fallos_ia, sin preguntas ni carteras).
-   0.8.2d: sin Gemini (sus cupos de Google, la muestra de los domingos con el 3.6 y lo que razonaba el 3.8).
+   El banco de preguntas (banco.json, los martes con Haiku, y banco-muestra.json, la muestra de los viernes con Sonnet,
+   que escribe la Action del banco en la rama datos); lo que ha gastado la Action en 24 h (escaneo.json → ia.uso y
+   ia.coste_24h; con un escaneo de antes, claude.uso o gemini.uso); y los fallos de la IA que no se arreglaron solos
+   (Firestore fallos_ia, sin preguntas ni carteras).
+   0.8.2d: sin Gemini (sus cupos de Google y lo que razonaba el 3.8); un banco de Gemini que quede, no se enseña.
    ===================================================================== */
 // «red» y «cupo» son del lado de quien pregunta (su conexión, su tope del día), no de la IA: se cuentan, pero aparte.
 // Los tipos son los de siempre (las reglas de Firestore solo aceptan esos); «google» es hoy el servidor de la IA
@@ -27,6 +28,8 @@ async function leerFallosIA() {
   } catch (e) { return { error: e.message }; }
 }
 function htmlBancoIA(b, titulo) {
+  // 0.8.2d: uno de Gemini que quede en la rama datos (de antes de que el banco pasara a Claude) ya no se enseña
+  if (b && !/^claude-/.test(String(b.modelo || ''))) return `<section><h3>${titulo}</h3><p class="nota">${L('El último guardado es de antes de Claude: el siguiente sale con la próxima pasada del banco.', 'The last one saved is from before Claude: the next one comes with the next bank run.')}</p></section>`;
   if (!b) return `<section><h3>${titulo}</h3><p class="nota">${L('Todavía no hay resultados del banco.', 'No question bank results yet.')}</p></section>`;
   const mal = (Array.isArray(b.preguntas) ? b.preguntas : []).filter((x) => x && !x.ok);
   const N = (v) => Number(v) || 0;
@@ -36,18 +39,21 @@ function htmlBancoIA(b, titulo) {
 }
 // las llamadas a Claude de la Action en las últimas 24 h, por modelo: cuántas, cuántas por lotes y los tokens
 function htmlGastoAction() {
-  const e = S.escaneo || {}, uso = [e.claude, e.ia, e.gemini].flatMap((x) => (x && Array.isArray(x.uso) ? x.uso : []));
-  const hace24 = Date.now() - 864e5, m = {}, vistas = new Set();
+  const e = S.escaneo || {}, de = (x) => (x && Array.isArray(x.uso) ? x.uso.filter((y) => y && typeof y === 'object') : []);
+  // la misma llamada puede venir en dos campos mientras la Action cambia de formato: la de gemini.uso que ya esté en
+  // claude.uso o ia.uso no cuenta otra vez (dentro de un mismo campo, todas: las de un lote pueden ser iguales)
+  const id = (x) => `${x.t}|${x.m}|${x.que}|${x.in}|${x.out}`, nuevos = [...de(e.claude), ...de(e.ia)], ya = new Set(nuevos.map(id));
+  const uso = [...nuevos, ...de(e.gemini).filter((x) => !ya.has(id(x)))];
+  const hace24 = Date.now() - 864e5, m = {};
   for (const x of uso) {
-    // la misma llamada puede venir en dos campos mientras la Action cambia de formato: cuenta una vez
-    const id = x && `${x.t}|${x.m}|${x.que}|${x.in}|${x.out}`;
-    if (!x || vistas.has(id) || !vistas.add(id) || !/^claude-/.test(String(x.m || '')) || !(new Date(x.t).getTime() > hace24)) continue;
+    if (!/^claude-/.test(String(x.m || '')) || !(new Date(x.t).getTime() > hace24)) continue;
     const y = m[x.m] = m[x.m] || { n: 0, lote: 0, e: 0, s: 0 };
     y.n++; if (x.lote) y.lote++; y.e += +x.in || 0; y.s += +x.out || 0;
   }
-  const ms = Object.keys(m);
+  const ms = Object.keys(m), coste = e.ia && typeof e.ia.coste_24h === 'number' && isFinite(e.ia.coste_24h) ? e.ia.coste_24h : null;
   return `<section><h3>${L('Lo que ha gastado la Action en 24 h', 'What the Action has used in 24 h')}</h3>
     <p>${ms.length ? ms.map((k) => `${esc(nombreModSalud(k, true))}: <b>${m[k].n}</b> ${m[k].n === 1 ? L('llamada', 'call') : L('llamadas', 'calls')}${m[k].lote ? ` (${m[k].lote} ${L('por lotes', 'batched')})` : ''} · ${L('entrada', 'input')} ${fmtNum(m[k].e, 0)} · ${L('salida', 'output')} ${fmtNum(m[k].s, 0)}`).join('<br>') : L('Ninguna llamada a Claude apuntada en 24 h.', 'No Claude calls logged in 24 h.')}</p>
+    ${coste != null ? `<p>${L('Coste en 24 h', 'Cost in 24 h')}: <b>${fmtNum(coste, 2)} US$</b></p>` : ''}
     <p class="nota">${L('Es la clave del radar (su propio espacio en Anthropic): no gasta de los topes de la app.', "It's the radar key (its own Anthropic workspace): it doesn't use the app's limits.")}</p></section>`;
 }
 function htmlFallosIA(fs) {
@@ -64,8 +70,8 @@ async function verSaludIA() {
   const h = hoja(L('Cómo va la IA', 'How GrowIA is doing'), `<div class="salud-ia"><p class="nota">${L('Cargando…', 'Loading…')}</p></div>`);
   const cont = $('.salud-ia', h.el);
   try {
-    const [banco, fallos] = await Promise.all([leerDatosRama('banco.json'), leerFallosIA(), cargarEscaneo().catch(() => null)]);
-    if (cont) cont.innerHTML = `${htmlBancoIA(banco, L('El último banco de preguntas', 'The latest question bank'))}${htmlGastoAction()}${htmlFallosIA(fallos)}`;
+    const [banco, muestra, fallos] = await Promise.all([leerDatosRama('banco.json'), leerDatosRama('banco-muestra.json'), leerFallosIA(), cargarEscaneo().catch(() => null)]);
+    if (cont) cont.innerHTML = `${htmlBancoIA(banco, L('Banco de preguntas de los martes, con Haiku', 'Tuesday question bank, with Haiku'))}${htmlBancoIA(muestra, L('Muestra de los viernes, con Sonnet', 'Friday sample, with Sonnet'))}${htmlGastoAction()}${htmlFallosIA(fallos)}`;
   } catch (e) {
     console.warn(e);
     if (cont) cont.innerHTML = `<p class="nota">${L('No se ha podido cargar ahora. Vuelve a abrirla en un momento.', "Couldn't load it now. Open it again in a moment.")}</p>`;

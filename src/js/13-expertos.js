@@ -184,14 +184,17 @@ function htmlFrescura() {
   </div>`;
 }
 
-/* 0.8.2d: si en la última pasada de la Action la IA (Claude, con la clave del radar) no ha podido leer la prensa, se dice
-   y se queda lo último que leyó. El porqué, solo al dueño (es cosa de los secretos de GitHub o del saldo de Anthropic).
-   Lee escaneo.claude (activo: hay clave; apagado: falló la clave o el saldo; ok, si lo escribe la Action) */
+/* 0.8.2d: si en la última pasada de la Action la IA no ha podido leer la prensa, se dice y se queda lo último que leyó. El
+   porqué, solo al dueño (es cosa de los secretos de GitHub o del saldo de Anthropic). Lee escaneo.ia (desde la sesión 4;
+   antes, escaneo.claude): activo, hay clave; apagado, falló la clave o el saldo y el resto de la pasada fue sin IA. Un
+   fallo suelto (ok: false sin apagado) no se avisa: lo demás sí se leyó. Con un escaneo de antes, si leyó Gemini (la
+   reserva de entonces), tampoco */
 function avisoPrensaIA() {
-  const c = S.escaneo && S.escaneo.claude;
-  if (!c || typeof c !== 'object' || (c.ok !== false && c.activo !== false && !c.apagado)) return '';
-  const e = (Array.isArray(c.errores) ? c.errores : []).join(' ');
-  const por = !veDueno() ? '' : c.activo === false ? L(' Falta el secreto ANTHROPIC_RADAR_KEY en GitHub.', ' The ANTHROPIC_RADAR_KEY secret is missing in GitHub.') : /40[13]|credit|saldo|billing/i.test(e) ? L(' Anthropic no acepta la clave del radar o se ha quedado sin saldo.', " Anthropic doesn't accept the radar key or it has run out of credit.") : L(' Claude no ha respondido bien.', " Claude didn't answer properly.");
+  const e = S.escaneo, c = e && (e.ia || e.claude), g = e && e.gemini;
+  if (!c || typeof c !== 'object' || (c.activo !== false && !c.apagado)) return '';
+  if (g && typeof g === 'object' && g.con_clave && g.ok !== false) return '';
+  const err = (Array.isArray(c.errores) ? c.errores : []).join(' ');
+  const por = !veDueno() ? '' : c.activo === false ? L(' Falta el secreto ANTHROPIC_RADAR_KEY en GitHub.', ' The ANTHROPIC_RADAR_KEY secret is missing in GitHub.') : /40[13]|credit|saldo|billing/i.test(err) ? L(' Anthropic no acepta la clave del radar o se ha quedado sin saldo.', " Anthropic doesn't accept the radar key or it has run out of credit.") : L(' Claude no ha respondido bien.', " Claude didn't answer properly.");
   return `<span class="fr-aviso">${ICONOS.alerta}${L('En la última pasada automática la IA no ha podido leer la prensa. Se queda lo último que leyó.', "In the last automatic run the AI couldn't read the news. The last reading stays.")}${esc(por)}</span>`;
 }
 

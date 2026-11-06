@@ -70,6 +70,7 @@ testDueno('Cómo va la IA: el banco de preguntas y los fallos, para el dueño', 
   await expect(hoja).toContainText('e-vendo-repsol');
   // 0.8.2d: lo que gasta la Action, solo con Claude (nada de cupos de Google ni de la muestra de los domingos)
   await expect(hoja).toContainText('Lo que ha gastado la Action en 24 h');
+  await expect(hoja).toContainText('Muestra de los viernes, con Sonnet');
   await expect(hoja).not.toContainText(/Google|Gemini|3\.8|domingos/);
 });
 
