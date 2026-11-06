@@ -496,8 +496,9 @@ test('0.8.2b: lo apartado del techo vuelve si la pregunta no llega a Claude o Cl
     expect((await pedirYCerrar('uid-l', { ...SONNET, pregunta: 'falla2aaaa' }, env, RED)).status).toBe(429);
     expect(await gastado(env)).toMatchObject({ g: 0, p: 0 });
   });
-  // varias a la vez: lo apartado (0,15 $ por Sonnet) frena antes de saber lo que cuestan
-  const env2 = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_TECHO_REDUCIDO: '0.2' };
+  // varias a la vez: lo apartado (lo más que puede costar cada una) frena antes de saber lo que cuestan
+  // (con esta petición corta, lo más que puede costar una de Sonnet es ~0,041 $: casi todo, los 4.096 de salida)
+  const env2 = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_TECHO_REDUCIDO: '0.07' };
   await con(async () => { await new Promise((r) => setTimeout(r, 300)); return ok(); }, async () => {
     const [a, b] = await Promise.all([pedir('uid-m1', { ...SONNET, pregunta: 'junta1aaaa' }, env2, { email: 'j1@prueba.com' }), pedir('uid-m2', { ...SONNET, pregunta: 'junta2aaaa' }, env2, { email: 'j2@prueba.com' })]);
     expect([a.status, b.status].sort()).toEqual([200, 429]);
@@ -508,5 +509,72 @@ test('0.8.2b: lo apartado del techo vuelve si la pregunta no llega a Claude o Cl
     const r = await pedir('uid-n2', HAIKU, { ...ENV, CUOTAS: roto }, RED);
     expect(r.status).toBe(503);
     expect(vistas.length).toBe(0);
+  });
+});
+
+// revisión aparte del 6 nov
+test('0.8.2b: una respuesta cortada se queda con lo apartado (lo más que podía costar), y uno solo no se lleva el techo', async () => {
+  const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_TECHO_REDUCIDO: '5', CLAUDE_GASTO_REDUCIDO: '0.1' };
+  // en directo, sin message_stop: no se sabe lo que ha cobrado Anthropic
+  const cortada = () => new Response(`event: message_start\ndata: ${JSON.stringify({ type: 'message_start', message: { id: 'm', usage: { input_tokens: 5, output_tokens: 1 } } })}\n\n`, { headers: { 'content-type': 'text/event-stream' } });
+  await con(cortada, async () => {
+    const r = await pedirYCerrar('uid-o', { ...HAIKU, stream: true, pregunta: 'corta1aaaa' }, env, RED);
+    expect(r.status).toBe(200);
+    const t = await gastado(env);
+    // lo apartado: la entrada (en bytes, como mucho) a precio de escribir caché y los 4.096 de salida de Haiku
+    expect(t.g).toBeGreaterThan(4096 * 0.5 / 1e6);
+    expect(t.p).toBe(0);
+  });
+  // el tope de gasto del correo (0,1 $ aquí): una «A fondo» que ya no cabe se dice como «sin A fondo» (la app sigue con Haiku)
+  await con(conUso({ input_tokens: 1000, output_tokens: 9000 }), async () => {
+    expect((await pedirYCerrar('uid-p', { ...SONNET, pregunta: 'gasto1aaaa' }, env, { email: 'gasta@prueba.com' })).status).toBe(200);
+    const r = await pedir('uid-p', { ...SONNET, pregunta: 'gasto2aaaa' }, env, { email: 'gasta@prueba.com' });
+    expect(await r.json()).toEqual({ error: 'tope-fondo' });
+    // con Haiku aún cabe
+    expect((await pedirYCerrar('uid-p', { ...HAIKU, pregunta: 'gasto3aaaa' }, env, { email: 'gasta@prueba.com' })).status).toBe(200);
+    // y otro del nivel reducido sigue teniendo lo suyo
+    expect((await pedir('uid-q2', { ...SONNET, pregunta: 'gasto4aaaa' }, env, { email: 'otra-persona@prueba.com' })).status).toBe(200);
+  });
+});
+
+test('0.8.2b: los alias del mismo buzón cuentan juntos y el cierre de ayer no borra lo de hoy', async () => {
+  await con(ok, async () => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA_REDUCIDO: '2' };
+    expect((await pedir('uid-r1', { ...HAIKU, pregunta: 'alias1aaaa' }, env, { email: 'nombre@gmail.com' })).status).toBe(200);
+    expect((await pedir('uid-r2', { ...HAIKU, pregunta: 'alias2aaaa' }, env, { email: 'nom.bre+toison@gmail.com' })).status).toBe(200);
+    const r = await pedir('uid-r3', { ...HAIKU, pregunta: 'alias3aaaa' }, env, { email: 'Nombre+2@googlemail.com' });
+    expect(await r.json()).toEqual({ error: 'tope-diario' });
+    // en otros dominios los puntos sí cuentan (son buzones distintos)
+    expect((await pedir('uid-r4', { ...HAIKU, pregunta: 'alias4aaaa' }, env, { email: 'nom.bre@prueba.com' })).status).toBe(200);
+  });
+  // el techo: un cierre con el día de ayer no toca el de hoy
+  const o = new Cuotas({ storage: (() => { const m = new Map(); return { get: async (k) => m.get(k), put: async (k, v) => { m.set(k, v); } }; })() });
+  const op = (x) => o.fetch(new Request('https://x/', { method: 'POST', body: JSON.stringify(x) })).then((r) => r.json());
+  await op({ op: 'reservar', dia: '2026-11-07', techo: 5, reserva: 1 });
+  await op({ op: 'cerrar', dia: '2026-11-07', reserva: 1, coste: 4.8 });
+  expect(await op({ op: 'cerrar', dia: '2026-11-06', reserva: 0.3, coste: 0.2 })).toMatchObject({ g: 4.8 });
+  expect(await op({ op: 'reservar', dia: '2026-11-07', techo: 5, reserva: 0.3 })).toMatchObject({ ok: false, g: 4.8 });
+  // y el día siguiente empieza de cero
+  expect(await op({ op: 'reservar', dia: '2026-11-08', techo: 5, reserva: 0.3 })).toMatchObject({ ok: true, g: 0 });
+});
+
+test('0.8.2b: en el reducido, menos salida y búsquedas, una sola búsqueda, sin caché de una hora y solo modelos con precio', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_MODELOS: 'claude-haiku-5-5, claude-sonnet-5-5, claude-otro-1' };
+    const busq = (n) => ({ type: 'web_search_20250305', name: 'web_search', max_uses: n });
+    const pedido = { ...HAIKU, max_tokens: 30000, pregunta: 'recorte1aaa', tools: [busq(5)], system: [{ type: 'text', text: 'x', cache_control: { type: 'ephemeral', ttl: '1h' } }] };
+    expect((await pedir('uid-s1', pedido, env, RED)).status).toBe(200);
+    const v = vistas.at(-1).cuerpo;
+    expect(v.max_tokens).toBe(16000);
+    expect(v.tools[0].max_uses).toBe(3);
+    expect(v.system[1].cache_control).toEqual({ type: 'ephemeral' });
+    // el nivel alto: la salida que pida (hasta el tope de siempre) y sus 5 búsquedas
+    expect((await pedir('uid-s2', { ...pedido, pregunta: 'recorte2aaa' }, env)).status).toBe(200);
+    expect([vistas.at(-1).cuerpo.max_tokens, vistas.at(-1).cuerpo.tools[0].max_uses]).toEqual([30000, 5]);
+    // dos búsquedas en una petición, para nadie
+    expect((await pedir('uid-s3', { ...pedido, pregunta: 'recorte3aaa', tools: [busq(1), busq(1)] }, env)).status).toBe(400);
+    // un modelo sin precio: el reducido no (el techo no sabría contarlo); el alto, sí
+    expect((await pedir('uid-s4', { ...pedido, model: 'claude-otro-1', pregunta: 'recorte4aaa' }, env, RED)).status).toBe(400);
+    expect((await pedir('uid-s5', { ...pedido, model: 'claude-otro-1', pregunta: 'recorte5aaa' }, env)).status).toBe(200);
   });
 });

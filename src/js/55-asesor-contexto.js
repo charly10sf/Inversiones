@@ -495,7 +495,9 @@ async function conversar(o) {
     if (o.turno) o.turno.estandar = true;
     if (typeof o.preparar === 'function') Object.assign(o, o.preparar(true));
     if (!conClaude) throw errorSinIA(motivoSinClaude());
-    try { return await conversarClaude({ ...o, claudeModelo: mc }); }
+    // el mismo id de pregunta también si contesta Haiku: para el Worker sigue siendo una sola pregunta
+    const idPregunta = nuevoIdPregunta();
+    try { return await conversarClaude({ ...o, claudeModelo: mc, idPregunta }); }
     catch (e) {
       if (e && e.name === 'AbortError') throw e;
       // sin Gemini de reserva: si falla Sonnet (o se han acabado las «A fondo» de hoy), contesta Haiku
@@ -505,7 +507,7 @@ async function conversar(o) {
         o.turno.partes.length = 0; o.turno.citas.length = 0; o.turno.resultados.length = 0;
         o.turno.partes.push({ tipo: 'paso', txt: e.codigo === 'tope-fondo' ? L('Hoy ya no te quedan respuestas «A fondo»: contesta la normal', 'No "In depth" answers left today: the normal one answers') : L('La respuesta «A fondo» no está disponible ahora: contesta la normal', 'The "In depth" answer is not available right now: the normal one answers') });
         if (o.alCambiar) o.alCambiar();
-        try { return await conversarClaude({ ...o, claudeModelo: HAIKU_IA }); }
+        try { return await conversarClaude({ ...o, claudeModelo: HAIKU_IA, idPregunta }); }
         catch (e2) { if (e2 && e2.name === 'AbortError') throw e2; throw falloSinReserva(e2, o.turno); }
       }
       throw falloSinReserva(e, o.turno);
@@ -513,6 +515,7 @@ async function conversar(o) {
   } finally { vigiaConsejoIA(o.turno); cerrarTokensIA(o.turno, o.tipo || 'pregunta'); }
 }
 const HAIKU_IA = 'claude-haiku-5-5';
+const nuevoIdPregunta = () => (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36)).replace(/-/g, '').slice(0, 32);
 const aMediasIA = (turno) => !!(turno && turno.partes.some((p) => p.tipo === 'texto' && p.texto && p.texto.trim()));
 // lo que se arregla contestando con Haiku: Sonnet sin «A fondo» hoy, saturado, caído o que no empieza a tiempo. Lo que es de
 // la cuenta o de todos (tope del día, techo, créditos, sesión) no: Haiku fallaría igual
@@ -934,17 +937,22 @@ async function claudeTexto({ partes, sistema = '', modelo = 'claude-haiku-5-5', 
   await conversarClaude({ mensajes: [{ role: 'user', content: partes }], turno, sistema, maxTokens, signal, web, maxBusquedas, claudeModelo: modelo, herramientas: false, tipo: 'suelta', esfuerzo, alCambiar });
   return { texto: turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim(), citas: turno.citas.length ? turno.citas : turno.resultados };
 }
-// 0.8.2b: el día del Worker es el de UTC: a qué hora de aquí vuelven las preguntas (la 1:00 en invierno en España)
-function horaVuelveClaude() {
-  try { const a = new Date(); return new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate() + 1)).toLocaleTimeString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { hour: 'numeric', minute: '2-digit' }); } catch (e) { return '1:00'; }
+// 0.8.2b: el día del Worker es el de UTC: cuándo vuelven las preguntas, dicho de aquí («mañana a partir de la 1:00»; entre
+// las 0:00 y la 1:00 de invierno, «hoy a partir de la 1:00»)
+function cuandoVuelveClaude() {
+  try {
+    const a = new Date(), v = new Date(Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate() + 1));
+    const h = v.toLocaleTimeString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { hour: 'numeric', minute: '2-digit' }), hoy = v.toDateString() === a.toDateString();
+    return L(`${hoy ? 'hoy' : 'mañana'} a partir de ${/^1:/.test(h) ? 'la' : 'las'} ${h}`, `${hoy ? 'today' : 'tomorrow'} from ${h}`);
+  } catch (e) { return L('mañana', 'tomorrow'); }
 }
 /* sin Gemini de reserva: si Claude no puede, se dice claro por qué y qué hacer (en la respuesta va «Volver a preguntar») */
 function errorSinIA(e, aMedias) {
-  const c = e && (e.codigo || e.tipo), h = horaVuelveClaude();
+  const c = e && (e.codigo || e.tipo), h = cuandoVuelveClaude();
   const txt = AS.claudeNo ? L('Sin tu sí, la IA no puede contestar: lo que le preguntas lo contesta Claude, de Anthropic. Si cambias de idea, vuelve a preguntar.', 'Without your OK, the AI cannot answer: your questions are answered by Claude, from Anthropic. If you change your mind, ask again.')
     : aMedias && c !== 'tope-diario' && c !== 'techo' ? L('La respuesta se ha cortado a mitad. Vuelve a preguntar en un momento.', 'The answer stopped halfway. Ask again in a moment.')
-    : c === 'tope-diario' ? L(`Has llegado al tope de preguntas de hoy. Vuelve mañana: a partir de las ${h} puedes preguntar otra vez.`, `You have reached today's question limit. Come back tomorrow: from ${h} you can ask again.`)
-    : c === 'techo' ? L(`Hoy la IA ha llegado a su tope de uso. Vuelve mañana: a partir de las ${h} contesta otra vez.`, `The AI has reached its usage limit for today. Come back tomorrow: from ${h} it answers again.`)
+    : c === 'tope-diario' ? L(`Has llegado al tope de hoy. Puedes volver a preguntar ${h}.`, `You have reached today's limit. You can ask again ${h}.`)
+    : c === 'techo' ? L(`Hoy la IA ha llegado a su tope de uso. Vuelve a probar en un rato o ${h}.`, `The AI has reached its usage limit for today. Try again in a while or ${h}.`)
     : c === 'tope-pregunta' ? L('Esta pregunta ha necesitado demasiados pasos: prueba a hacerla más corta o en dos.', 'This question needed too many steps: try asking it shorter or in two parts.')
     : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace que te llegó al crear la cuenta y vuelve a entrar.', 'To use the AI, confirm your email with the link you got when you created the account, then sign in again.')
     : c === 'sin-creditos' ? L('La IA no está disponible ahora mismo. Vuelve a probar dentro de unas horas.', 'The AI is not available right now. Try again in a few hours.')
@@ -970,7 +978,9 @@ function pausaClaude(e) {
   if (c === 'no-permitido') return 10 * 6e4;
   if (c === 'sin-creditos') return 3 * 36e5;
   // el tope del día de cada uno y el techo de todos: hasta la medianoche de UTC, cuando el Worker empieza el día
-  if (c === 'tope-diario' || c === 'techo') { const a = new Date(); return Math.max(6e4, Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate() + 1) - a.getTime()); }
+  if (c === 'tope-diario') { const a = new Date(); return Math.max(6e4, Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate() + 1) - a.getTime()); }
+  // el techo de todos se puede abrir un poco cuando acaban las respuestas que estaban en camino: se vuelve a probar en media hora
+  if (c === 'techo') return 30 * 6e4;
   if (c === 'tope-fondo' || c === 'tope-pregunta') return 0;
   if (c === 'clave' || c === 'sin-clave') return 36e5;
   if (c === 'sin-sesion' || c === 'cuotas') return 10 * 6e4;
@@ -1109,7 +1119,7 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   // los bloques de texto vacíos no se pueden devolver a la API
   return { contenido: bloques.filter((b) => b && !(b.type === 'text' && !b.text)), stop, uso };
 }
-async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, claudeModelo, herramientas = true, maxBusquedas = 1, tipo = 'pregunta', esfuerzo: esfuerzo0 = 'medium' }) {
+async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, claudeModelo, herramientas = true, maxBusquedas = 1, tipo = 'pregunta', esfuerzo: esfuerzo0 = 'medium', idPregunta: id0 = null }) {
   const modelo = claudeModelo, cfg = cfgAsesor();
   // la búsqueda en internet es la de Claude, así que no depende de lo que incluya el plan de Google
   const usarWeb = web !== false && cfg.webPedida && maxBusquedas > 0;
@@ -1128,7 +1138,7 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
   const avisoRed = (txt) => { turno.partes = turno.partes.filter((x) => !x.red); const p = { tipo: 'paso', red: true, txt }; turno.partes.push(p); alCambiar(); return p; };
   // 0.9: un id por pregunta, el mismo en todas sus rondas y reintentos: el Worker cuenta una pregunta por id (antes se fiaba
   // de «ronda», que se podía falsear y hacía que un reintento de la primera ronda no contara o contara dos veces)
-  const idPregunta = (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36)).replace(/-/g, '').slice(0, 32);
+  const idPregunta = id0 || nuevoIdPregunta();
   for (let vuelta = 0; vuelta < 14; vuelta++) {
     const pasosAntes = turno.partes.length, t0 = Date.now();
     const tools = herrs();

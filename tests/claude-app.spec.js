@@ -224,6 +224,8 @@ test('un error de Sonnet en mitad de la respuesta (saturado) pasa a Haiku y lo e
   await expect(cuerpo).toContainText('contesta la normal');
   await expect(cuerpo).not.toContainText('Empiezo a contestar');
   expect(w.peticiones.map((p) => p.cuerpo.model)).toEqual(['claude-sonnet-5-5', 'claude-haiku-5-5']);
+  // la misma pregunta para el Worker (no gasta otra)
+  expect(w.peticiones[1].cuerpo.pregunta).toBe(w.peticiones[0].cuerpo.pregunta);
   expect(g.n).toBe(0);
   // un saturado puntual no aparta a Claude
   expect(await page.evaluate(() => claudePausado())).toBeNull();
@@ -255,7 +257,9 @@ test('con el tope del día o el techo de todos, la IA dice que vuelva mañana y 
   await page.evaluate(() => { AS.aFondo = true; });
   await preguntar(page);
   const cuerpo = page.locator('#asCuerpo');
-  await expect(cuerpo).toContainText('Hoy la IA ha llegado a su tope de uso. Vuelve mañana', { timeout: 20_000 });
+  await expect(cuerpo).toContainText('Hoy la IA ha llegado a su tope de uso. Vuelve a probar en un rato o', { timeout: 20_000 });
+  // en España, en invierno, el día del Worker (UTC) empieza a la 1:00
+  expect(await page.evaluate(() => cuandoVuelveClaude())).toMatch(/^(hoy|mañana) a partir de la 1:00$/);
   // el techo no es de Sonnet: no se prueba con Haiku
   expect(w.peticiones.length).toBe(1);
   expect(await page.evaluate(() => claudePausado().motivo)).toBe('techo');
@@ -263,7 +267,7 @@ test('con el tope del día o el techo de todos, la IA dice que vuelva mañana y 
   await page.evaluate(() => { LS.del(LS_CLAUDE_PAUSA); AS.cargando = false; AS.aFondo = false; });
   error = 'tope-diario';
   await page.evaluate(() => preguntarAsesor('¿Y hoy?'));
-  await expect(cuerpo).toContainText('Has llegado al tope de preguntas de hoy. Vuelve mañana', { timeout: 20_000 });
+  await expect(cuerpo).toContainText('Has llegado al tope de hoy. Puedes volver a preguntar', { timeout: 20_000 });
   await expect(page.locator('#asSub')).toHaveText('Sin preguntas hasta mañana');
   expect(w.peticiones.length).toBe(2);
 });

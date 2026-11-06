@@ -332,14 +332,44 @@ const CLAUDE_MAX_SALIDA = 32000, CLAUDE_MAX_CUERPO = 600e3, CLAUDE_MAX_BUSQUEDAS
 // 0.8.2b: el nivel reducido (todo el que no está en CLAUDE_EMAILS). Cifras propuestas el 6 nov; Carlos dijo «reducido» sin
 // número: se cambian aquí o con la variable del mismo nombre en el Worker
 const CLAUDE_POR_DIA_REDUCIDO = 15, CLAUDE_RONDAS_REDUCIDO = 45, CLAUDE_FONDO_REDUCIDO = 3, CLAUDE_TECHO_REDUCIDO = 5;
+// revisión aparte del 6 nov: en el nivel reducido, además, un tope de gasto por correo y día (así uno solo no se lleva el
+// techo de todos), menos salida y menos búsquedas por petición (para que el peor caso de cada una sea pequeño), y sin el
+// doble de entrada en las rondas siguientes
+const CLAUDE_GASTO_REDUCIDO = 0.5, CLAUDE_SALIDA_REDUCIDO = 16000, CLAUDE_BUSQUEDAS_REDUCIDO = 3;
 const MODELO_FONDO = 'claude-sonnet-5-5';
 // el precio de Anthropic por millón de tokens (entrada, salida, leer caché, escribir caché), el mismo que usa la app
 // (MODELOS_CLAUDE en 55-asesor-contexto.js); Haiku cobra más cuando una petición pasa de 100.000 tokens de entrada.
 // La búsqueda en internet, 1 céntimo cada una
 const PRECIOS_CLAUDE = { 'claude-haiku-5-5': [0.10, 0.50, 0.01, 0.125], 'claude-sonnet-5-5': [2, 10, 0.10, 2.5] }, PRECIO_HAIKU_GRANDE = [0.5, 2.5, 0.05, 0.625];
-// lo que se aparta del techo mientras la respuesta llega (al acabar se cambia por lo que ha costado de verdad): así muchas
-// preguntas a la vez no pasan del techo por no saber aún lo que cuestan
-const RESERVA_CLAUDE = { 'claude-haiku-5-5': 0.02, 'claude-sonnet-5-5': 0.15 };
+// lo que se aparta del techo mientras la respuesta llega: lo MÁS que puede costar esa petición (toda la entrada al precio de
+// escribir caché, toda la salida permitida y cada búsqueda con lo que trae, unos 8.000 tokens). Al acabar se cambia por lo
+// que ha costado de verdad; si no se sabe (la respuesta se cortó), se queda lo apartado. Así, por muchas que vayan a la vez,
+// el techo no se pasa
+const TOKENS_POR_BUSQUEDA = 8000;
+function reservaMax(modelo, entrada, salida, busquedas) {
+  const p = PRECIOS_CLAUDE[modelo]; if (!p) return Infinity;
+  const ent = entrada + busquedas * TOKENS_POR_BUSQUEDA;
+  const [pi, po, , pe] = modelo === 'claude-haiku-5-5' && ent > 1e5 ? PRECIO_HAIKU_GRANDE : p;
+  return Math.ceil(((ent * Math.max(pi, pe) + salida * po) / 1e6 + busquedas * 0.01) * 1e6) / 1e6;
+}
+// el correo con el que se cuentan los topes: sin la «+etiqueta» y, en Gmail, sin puntos (nombre+1@gmail.com y
+// n.ombre@gmail.com son el mismo buzón: no valen para tener más preguntas)
+function claveCorreo(email) {
+  const e = String(email || '').toLowerCase(), i = e.lastIndexOf('@');
+  if (i < 1) return e;
+  let local = e.slice(0, i).split('+')[0], dom = e.slice(i + 1);
+  if (dom === 'googlemail.com') dom = 'gmail.com';
+  if (dom === 'gmail.com') local = local.replace(/\./g, '');
+  return `${local || e.slice(0, i)}@${dom}`;
+}
+// el caché de una hora cobra el doble: aquí solo vale el de cinco minutos (el de la app)
+function sinTtl(x) {
+  if (Array.isArray(x)) return x.map(sinTtl);
+  if (!x || typeof x !== 'object') return x;
+  const o = {};
+  for (const [k, v] of Object.entries(x)) o[k] = k === 'cache_control' && v && typeof v === 'object' ? { type: 'ephemeral' } : sinTtl(v);
+  return o;
+}
 // el nombre del contador del techo: con un espacio delante no puede ser un correo
 const NOMBRE_TECHO = ' techo-reducido';
 // 0.9 (auditoría del 4 nov): el tamaño en caracteres no frena el gasto (un PDF comprimido trae cientos de páginas). Tope de
@@ -369,9 +399,9 @@ function costeUso(modelo, uso) {
 // el «usage» de una respuesta: en directo, el de message_start más el de los message_delta; si no, el del JSON. Si se corta
 // a mitad, lo que haya llegado
 async function leerUso(cuerpo, enDirecto) {
-  let uso = {};
+  let uso = {}, completo = false;
   try {
-    if (!enDirecto) { const j = JSON.parse(await new Response(cuerpo).text()); return (j && j.usage) || {}; }
+    if (!enDirecto) { const j = JSON.parse(await new Response(cuerpo).text()); return { uso: (j && j.usage) || {}, completo: !!(j && j.usage) }; }
     const lector = cuerpo.getReader(), dec = new TextDecoder();
     let buf = '';
     const linea = (l) => {
@@ -379,6 +409,7 @@ async function leerUso(cuerpo, enDirecto) {
       let ev; try { ev = JSON.parse(l.slice(5).trim()); } catch (e) { return; }
       if (ev && ev.type === 'message_start' && ev.message && ev.message.usage) uso = { ...uso, ...ev.message.usage };
       else if (ev && ev.type === 'message_delta' && ev.usage) uso = { ...uso, ...ev.usage };
+      else if (ev && ev.type === 'message_stop') completo = true;
     };
     for (;;) {
       const { done, value } = await lector.read();
@@ -389,11 +420,11 @@ async function leerUso(cuerpo, enDirecto) {
     }
     linea(buf);
   } catch (e) { /* cortada: lo que haya */ }
-  return uso;
+  return { uso, completo };
 }
-// el contador del techo del nivel reducido (un solo Durable Object para todos)
-async function techo(env, op, datos) {
-  const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(NOMBRE_TECHO)).fetch('https://cuotas.interno/techo', { method: 'POST', body: JSON.stringify({ op, ...datos }) });
+// un contador de gasto: el techo del nivel reducido (un solo Durable Object para todos) o el de un correo (en su objeto)
+async function techo(env, op, datos, nombre = NOMBRE_TECHO) {
+  const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(nombre)).fetch('https://cuotas.interno/techo', { method: 'POST', body: JSON.stringify({ op, ...datos }) });
   return rc.json();
 }
 // un adjunto que no va dentro de la petición (una URL, un archivo ya subido) lo baja Anthropic: no lo dejamos pasar
@@ -444,7 +475,9 @@ export class Cuotas {
   // aún llegan. «reservar» aparta (si cabe); «cerrar» cambia lo apartado por lo que ha costado (0 si no llegó a Claude)
   async techo({ op, dia, techo: tope = 0, reserva = 0, coste = 0 }) {
     let t = (await this.estado.storage.get('t')) || { dia, g: 0, p: 0 };
-    if (t.dia !== dia) t = { dia, g: 0, p: 0 };
+    // el cierre de una petición de ayer (acabó pasada la medianoche) no toca el día de hoy; solo un día más nuevo empieza de cero
+    if (op === 'cerrar' && t.dia !== dia) return { ok: true, g: t.g, p: t.p };
+    if (t.dia < dia) t = { dia, g: 0, p: 0 };
     const r6 = (x) => Math.round(x * 1e6) / 1e6, num = (x) => (Number.isFinite(Number(x)) && Number(x) > 0 ? Number(x) : 0);
     if (op === 'reservar') {
       if (t.g + t.p + num(reserva) > tope) return { ok: false, g: t.g, p: t.p };
@@ -465,14 +498,16 @@ async function claude(req, env, cors, res, ctx) {
   if (!u) return res({ error: 'sin-sesion' }, 401);
   // 0.8.2b: cualquiera con el correo verificado; sin verificar, no (cualquiera podría abrir cuentas con correos inventados)
   if (!puedeClaude(u)) return res({ error: 'no-permitido', motivo: 'verificar' }, 403);
-  const nivel = nivelClaude(u, env), topes = topesClaude(nivel, env);
-  // los límites se cuentan por correo, no por uid: una misma persona podría tener varias cuentas con el mismo correo
+  const nivel = nivelClaude(u, env), topes = topesClaude(nivel, env), reducido = nivel === 'reducido';
+  // los límites se cuentan por correo, no por uid: una misma persona podría tener varias cuentas con el mismo correo (0.8.2b:
+  // y con el correo sin «+etiqueta» ni puntos de Gmail)
+  const correo = claveCorreo(u.email);
   const ahora = Date.now(), tope = Number(env.CLAUDE_POR_MINUTO) || CLAUDE_POR_MINUTO;
-  const recientes = (rafagas.get(u.email) || []).filter((t) => ahora - t < 60e3);
+  const recientes = (rafagas.get(correo) || []).filter((t) => ahora - t < 60e3);
   if (recientes.length >= tope) return res({ error: 'demasiadas' }, 429);
   recientes.push(ahora);
   if (rafagas.size > 500) for (const [k, v] of rafagas) if (!v.some((t) => ahora - t < 60e3)) rafagas.delete(k);
-  rafagas.set(u.email, recientes);
+  rafagas.set(correo, recientes);
   const texto = await req.text();
   if (texto.length > CLAUDE_MAX_CUERPO) return res({ error: 'grande' }, 413);
   let c;
@@ -480,16 +515,23 @@ async function claude(req, env, cors, res, ctx) {
   if (!c || typeof c !== 'object' || Array.isArray(c)) return res({ error: 'json' }, 400);
   const modelos = lista(env.CLAUDE_MODELOS).length ? lista(env.CLAUDE_MODELOS) : CLAUDE_MODELOS;
   if (!modelos.includes(String(c.model || '').toLowerCase())) return res({ error: 'peticion', motivo: 'modelo' }, 400);
+  // 0.8.2b: en el nivel reducido, solo los modelos con precio conocido (sin él, el techo no sabría contarlos)
+  if (reducido && !PRECIOS_CLAUDE[String(c.model).toLowerCase()]) return res({ error: 'peticion', motivo: 'modelo' }, 400);
   const maxSalida = Number(env.CLAUDE_MAX_SALIDA) || CLAUDE_MAX_SALIDA;
   if (!Number.isInteger(c.max_tokens) || c.max_tokens < 1 || c.max_tokens > maxSalida) return res({ error: 'peticion', motivo: 'max_tokens' }, 400);
   if (!Array.isArray(c.messages) || !c.messages.length) return res({ error: 'peticion', motivo: 'messages' }, 400);
   const cuerpo = {};
-  for (const k of CLAUDE_CAMPOS) if (c[k] !== undefined) cuerpo[k] = c[k];
-  const maxBusquedas = Number(env.CLAUDE_MAX_BUSQUEDAS) || CLAUDE_MAX_BUSQUEDAS;
+  for (const k of CLAUDE_CAMPOS) if (c[k] !== undefined) cuerpo[k] = sinTtl(c[k]);
+  // en el reducido, la salida se recorta (no se rechaza: la app pide de más por si acaso)
+  if (reducido) cuerpo.max_tokens = Math.min(cuerpo.max_tokens, numEnv(env.CLAUDE_SALIDA_REDUCIDO, CLAUDE_SALIDA_REDUCIDO));
+  const maxBusquedas = reducido ? Math.min(Number(env.CLAUDE_MAX_BUSQUEDAS) || CLAUDE_MAX_BUSQUEDAS, numEnv(env.CLAUDE_BUSQUEDAS_REDUCIDO, CLAUDE_BUSQUEDAS_REDUCIDO)) : Number(env.CLAUDE_MAX_BUSQUEDAS) || CLAUDE_MAX_BUSQUEDAS;
+  let busquedas = 0;
   if (cuerpo.tools !== undefined) {
-    // solo herramientas propias de la app (sin type, o «custom») y la búsqueda en internet, con su tope de usos
+    // solo herramientas propias de la app (sin type, o «custom») y una búsqueda en internet, con su tope de usos
     if (!Array.isArray(cuerpo.tools) || cuerpo.tools.some((h) => !h || typeof h !== 'object' || (h.type && h.type !== 'custom' && !/^web_search_/.test(String(h.type))))) return res({ error: 'peticion', motivo: 'tools' }, 400);
-    cuerpo.tools = cuerpo.tools.map((h) => (/^web_search_/.test(String(h.type || '')) ? { ...h, max_uses: Math.min(Number(h.max_uses) || maxBusquedas, maxBusquedas) } : h));
+    if (cuerpo.tools.filter((h) => /^web_search_/.test(String(h.type || ''))).length > 1) return res({ error: 'peticion', motivo: 'tools' }, 400);
+    cuerpo.tools = cuerpo.tools.map((h) => (/^web_search_/.test(String(h.type || '')) ? { ...h, max_uses: Math.max(1, Math.min(Number(h.max_uses) || maxBusquedas, maxBusquedas)) } : h));
+    busquedas = cuerpo.tools.reduce((t, h) => t + (/^web_search_/.test(String(h.type || '')) ? h.max_uses : 0), 0);
   }
   if (adjuntoFuera(cuerpo.messages) || adjuntoFuera(cuerpo.system)) return res({ error: 'peticion', motivo: 'adjunto' }, 400);
   const pdfs = contarBloques(cuerpo.messages, 'document'), imgs = contarBloques(cuerpo.messages, 'image');
@@ -500,7 +542,9 @@ async function claude(req, env, cors, res, ctx) {
   // los tokens de entrada, solo si es grande o lleva adjuntos (contar es gratis pero añade una vuelta). Si el conteo falla,
   // se sigue: siguen valiendo el tope del día y el límite de gasto del workspace
   // por bytes, no por caracteres: los tokens nunca pasan de los bytes, así que por debajo del umbral no hace falta contar
-  if (te.encode(texto).length > (Number(env.CLAUDE_CONTAR_DESDE) || CLAUDE_CONTAR_DESDE) || pdfs || imgs) {
+  const bytes = te.encode(texto).length;
+  let entrada = bytes;
+  if (bytes > (Number(env.CLAUDE_CONTAR_DESDE) || CLAUDE_CONTAR_DESDE) || pdfs || imgs) {
     let n = null;
     try {
       const { model, system, messages, tools, tool_choice, thinking } = cuerpo;
@@ -511,43 +555,52 @@ async function claude(req, env, cors, res, ctx) {
     // las rondas siguientes de una pregunta crecen con lo que ha buscado: el doble de margen para no cortar a mitad
     // (solo si de verdad sigue a Claude: el último mensaje es suyo o lleva los resultados de sus herramientas)
     const ult = cuerpo.messages[cuerpo.messages.length - 1] || {}, sigue = ult.role === 'assistant' || (Array.isArray(ult.content) && ult.content.some((b) => b && b.type === 'tool_result'));
-    const tope = (Number(env.CLAUDE_MAX_ENTRADA) || CLAUDE_MAX_ENTRADA) * (Number.isInteger(c.ronda) && c.ronda > 1 && sigue ? 2 : 1);
+    // 0.8.2b: en el reducido, sin el doble
+    const tope = (Number(env.CLAUDE_MAX_ENTRADA) || CLAUDE_MAX_ENTRADA) * (!reducido && Number.isInteger(c.ronda) && c.ronda > 1 && sigue ? 2 : 1);
     if (n != null && n > tope) return res({ error: 'grande', tokens: n }, 413);
-    // con un PDF, sin conteo no se pasa (es justo lo que puede salir caro); con texto o imágenes, sí
-    if (n == null && pdfs) return res({ error: 'cuenta' }, 503);
+    // con un PDF, sin conteo no se pasa (es justo lo que puede salir caro); con texto o imágenes, sí. 0.8.2b: en el reducido,
+    // sin conteo no se pasa nunca
+    if (n == null && (pdfs || reducido)) return res({ error: 'cuenta' }, 503);
+    if (n != null) entrada = n;
   }
   // el tope del día, al final de las comprobaciones de la petición: lo que se rechaza arriba no gasta pregunta
   // 0.8.2: las que le quedan hoy van en la respuesta (X-Quedan) para que la app lo diga; 0.8.2b, también las «A fondo»
   // que le quedan (X-Quedan-Fondo, solo en el nivel reducido) y el nivel (X-Nivel)
-  let quedan = null, quedanFondo = null, reserva = 0;
+  // al acabar, lo apartado se cambia por lo que ha costado de verdad (sin esperar: la respuesta ya ha salido)
+  let quedan = null, quedanFondo = null, reserva = 0, cerrarTecho = () => null;
   const dia = new Date(ahora).toISOString().slice(0, 10), modelo = String(cuerpo.model).toLowerCase();
   {
     // sin el contador no hay tope diario: no se pregunta
     if (!env.CUOTAS) return res({ error: 'cuotas' }, 503);
-    // 0.8.2b: el techo del nivel reducido, antes del contador de cada uno (si no cabe, no gasta pregunta)
+    // 0.8.2b: en el reducido, antes del contador de preguntas (si no cabe, no gasta pregunta), se aparta lo más que puede
+    // costar la petición en el tope de gasto de su correo y en el techo de todos. Si lo que no cabe es una «A fondo» en el
+    // tope de su correo, se dice como «sin A fondo» (la app la repite con Haiku, que cuesta mucho menos)
+    const apartados = [];
+    const soltar = () => Promise.all(apartados.map((x) => techo(env, 'cerrar', { dia, reserva, coste: 0 }, x).catch(() => {})));
     if (topes.techo != null) {
-      reserva = RESERVA_CLAUDE[modelo] || 0.15;
-      let t;
-      try { t = await techo(env, 'reservar', { dia, techo: topes.techo, reserva }); } catch (e) { return res({ error: 'cuotas' }, 503); }
-      if (!t || !t.ok) return res({ error: 'techo' }, 429);
+      reserva = reservaMax(modelo, entrada, cuerpo.max_tokens, busquedas);
+      for (const [nombre, tp, err] of [[correo, numEnv(env.CLAUDE_GASTO_REDUCIDO, CLAUDE_GASTO_REDUCIDO), modelo === MODELO_FONDO ? 'tope-fondo' : 'tope-diario'], [NOMBRE_TECHO, topes.techo, 'techo']]) {
+        let t;
+        try { t = await techo(env, 'reservar', { dia, techo: tp, reserva }, nombre); } catch (e) { await soltar(); return res({ error: 'cuotas' }, 503); }
+        if (!t || !t.ok) { await soltar(); return res({ error: err }, 429); }
+        apartados.push(nombre);
+      }
     }
-    const soltar = () => (reserva ? techo(env, 'cerrar', { dia, reserva, coste: 0 }).catch(() => {}) : null);
     let q;
     try {
       // «ronda»: 1 (o sin ponerla) es una pregunta nueva; 2 o más, otra ronda de herramientas de la misma pregunta
       // 0.9: la app manda «pregunta», un id igual en todas las rondas y reintentos de una pregunta; el contador gasta una
       // pregunta por id nuevo. Las apps de antes (sin id) siguen con «ronda», limitadas por el tope de peticiones
       const primera = !(Number.isInteger(c.ronda) && c.ronda > 1);
-      const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(u.email)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: topes.dia, topeRondas: topes.rondas, primera, pregunta: idPreg, topePregunta: Number(env.CLAUDE_RONDAS_POR_PREGUNTA) || CLAUDE_RONDAS_POR_PREGUNTA, fondo: modelo === MODELO_FONDO, topeFondo: topes.fondo }) });
+      const rc = await env.CUOTAS.get(env.CUOTAS.idFromName(correo)).fetch('https://cuotas.interno/', { method: 'POST', body: JSON.stringify({ dia, tope: topes.dia, topeRondas: topes.rondas, primera, pregunta: idPreg, topePregunta: Number(env.CLAUDE_RONDAS_POR_PREGUNTA) || CLAUDE_RONDAS_POR_PREGUNTA, fondo: modelo === MODELO_FONDO, topeFondo: topes.fondo }) });
       q = await rc.json();
     } catch (e) { await soltar(); return res({ error: 'cuotas' }, 503); }
     if (!q || !q.ok) { await soltar(); return res({ error: q && q.motivo === 'pregunta' ? 'tope-pregunta' : q && q.motivo === 'fondo' ? 'tope-fondo' : 'tope-diario' }, 429); }
     // cada pregunta gasta al menos una petición: no quedan más preguntas que peticiones (auditoría del 5 nov)
     quedan = Math.max(0, Math.min(topes.dia - (Number(q.n) || 0), topes.rondas - (Number(q.r) || 0)));
     if (topes.fondo != null) quedanFondo = Math.max(0, Math.min(topes.fondo - (Number(q.f) || 0), quedan));
+    cerrarTecho = (coste) => { const p = Promise.all(apartados.map((x) => techo(env, 'cerrar', { dia, reserva, coste }, x).catch(() => {}))); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; };
   }
-  // al acabar, lo apartado del techo se cambia por lo que ha costado de verdad (sin esperar: la respuesta ya ha salido)
-  const cerrarTecho = (coste) => { if (!reserva) return; const p = techo(env, 'cerrar', { dia, reserva, coste }).catch(() => {}); if (ctx && ctx.waitUntil) ctx.waitUntil(p); return p; };
   let r;
   try {
     r = await fetch(env.CLAUDE_API || CLAUDE_API, {
@@ -565,7 +618,8 @@ async function claude(req, env, cors, res, ctx) {
     if (reserva && r.body) {
       const [a, b] = r.body.tee(), enDirecto = /event-stream/i.test(r.headers.get('content-type') || '') || cuerpo.stream === true;
       cuerpoApp = a;
-      const p = leerUso(b, enDirecto).then((uso) => cerrarTecho(costeUso(modelo, uso)));
+      // si no se ha visto el final (se cortó, o la app la paró), no se sabe lo que ha cobrado Anthropic: se queda lo apartado
+      const p = leerUso(b, enDirecto).then(({ uso, completo }) => cerrarTecho(completo ? costeUso(modelo, uso) : reserva));
       if (ctx && ctx.waitUntil) ctx.waitUntil(p);
     } else cerrarTecho(0);
     const extra = { 'X-Nivel': nivel, ...(quedan != null ? { 'X-Quedan': String(quedan) } : {}), ...(quedanFondo != null ? { 'X-Quedan-Fondo': String(quedanFondo) } : {}) };
