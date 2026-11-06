@@ -8,6 +8,7 @@
 // por qué no hay revisión (sin cuenta, correo sin confirmar, sin tareas hoy o conectando)
 function txtSinRevisionIA() {
   const sin = sinTareaIA();
+  if (!sin && quedanRevisionesClaude() === 0) return errorSinIA({ codigo: 'tope-revision' }).message;
   if (sin) return txtSinTareaIA(sin, ['le pondrá nota a tu cartera punto por punto, con qué mejoraría, qué mantendría y qué riesgos vigilar', 'scores your portfolio point by point, with what it would improve, keep and watch'], ['revisarla', 'review it']);
   return claudeOk() ? L('Le pondrá nota punto por punto, con qué mejoraría, qué mantendría y qué riesgos vigilar. Abre la IA y en unos segundos estará lista.', 'It will score it point by point, with what it would improve, keep and watch. Open the AI and it will be ready in a few seconds.')
     : L('Le pondrá nota punto por punto, con qué mejoraría, qué mantendría y qué riesgos vigilar. Ábrela y hazle una primera pregunta: la primera vez te dice adónde van tus datos.', 'It will score it point by point, with what it would improve, keep and watch. Open it and ask it something: the first time it tells you where your data goes.');
@@ -135,6 +136,8 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     if (pedida) { if (sin === 'tareas') toast(txtSinRevisionIA(), 6000); else abrirAsesor(); }
     return;
   }
+  // 0.8.2d: las 2 revisiones del día (del Worker) ya hechas: ni se intenta
+  if (quedanRevisionesClaude() === 0) { if (pedida) toast(txtSinRevisionIA(), 6000); return; }
   // el sí del aviso de privacidad: la que pides tú lo pide aquí; la automática no puede preguntar y espera a que lo des
   if (pedida) AS.claudeNo = false;   // la pides tú: si antes dijiste que no, se vuelve a preguntar
   if (!claudeOk() && !(pedida && pedirSiClaude())) { if (pedida) toast(errorSinIA(null).message, 6000); return; }
@@ -181,7 +184,9 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? L('No hay conexión con la IA.', 'No connection to the AI.') : e.message;
     // 0.8.2d: lo que se arregla solo en unos minutos (saturada, caída, la red): se reintenta; los topes del día, tu no y el
     // correo sin confirmar, no
-    const deCuenta = AS.claudeNo || ['tope-diario', 'techo', 'tope-tareas', 'tope-pregunta', 'tope-fondo', 'no-permitido', 'sin-creditos'].includes(e.codigo);
+    const deCuenta = AS.claudeNo || ['tope-diario', 'techo', 'tope-tareas', 'tope-revision', 'tope-pregunta', 'tope-fondo', 'no-permitido', 'sin-creditos'].includes(e.codigo);
+    // la automática que llega al tope de revisiones no dice nada (la que pides tú, sí)
+    if (!pedida && e.codigo === 'tope-revision') IA.error = null;
     const pasajero = !deCuenta && (e.estado >= 500 || e.estado === 429 || e.corte || /conexión/.test(IA.error));
     // 0.7p: la automática que se corta porque has salido de GrowFolio (o se ha ido la red) no cuenta como intento: se
     // vuelve a hacer cuando vuelvas (antes quedaba «hecha» una hora y, si el reintento se congelaba con la página
@@ -190,7 +195,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     if (alSalir) { IA.ultimoIntento = 0; IA.error = null; diarioIA('Revisión cortada al salir: se repite cuando vuelvas'); }
     // saturada, caída o sin red: lo vuelve a intentar sola a los 5, 15 y 30 minutos
     if (alSalir || e.name === 'AbortError') { /* nada que avisar */ }
-    else if (pasajero && IA.reintentos < 3) {
+    else if (pasajero && IA.reintentos < 3 && (pedida || revisionAutoCabe(franjaRevision()))) {
       const min = [5, 15, 30][IA.reintentos++];
       IA.reintento = Date.now() + min * 60000;
       IA.reintentoT = setTimeout(() => { if (S.cartera && !IA.generando) generarAnalisisIA(motivo, true); }, min * 60000);
@@ -204,50 +209,61 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   appGrowiaTermina(fin, fin && L('Toca para verla.', 'Tap to see it.'));
   if (['analisis', 'expertos', 'cartera'].includes(S.vista) && !$('.hoja-fondo')) pintar(); else refrescarProgresoIA();
 }
-/* 0.8.2d (revisión aparte): los intentos de la revisión automática de hoy (día del Worker, UTC), guardados en el dispositivo:
-   recargar o volver a la app no los pone a cero. En el nivel reducido, 2 al día como mucho (también los que se cortan), y
-   solo si quedan al menos 3 tareas (para dejar sitio a noticias e importar) */
-const LS_IA_AUTO = 'inv-ia-auto';
-function intentosAutoIA() { const x = LS.get(LS_IA_AUTO, null); return x && x.d === diaClaude() && x.uid === uidActual() ? x.n || 0 : 0; }
-function apuntarIntentoAutoIA() { LS.set(LS_IA_AUTO, { d: diaClaude(), uid: uidActual(), n: intentosAutoIA() + 1 }); }
-function autoIAPermitida() {
-  if (nivelClaudeApp() === 'alto') return true;
-  const t = quedanTareasClaude();
-  return intentosAutoIA() < 2 && (t == null || t >= 3);
+/* 0.8.2d · las 2 revisiones automáticas del día, a horas decentes (Carlos, 6 nov): desde las 5:00 y desde las 16:30 de Madrid
+   (antes de ir a trabajar, con el cierre de Wall Street, Asia y las noticias de la noche; y una hora después de abrir Wall
+   Street, con Europa aún abierta). Sábados y domingos, solo la de las 5:00. Cada una se hace la primera vez que abres la app
+   desde esa hora y hasta la siguiente; antes de las 5:00, ninguna. Igual para todos los niveles: el Worker deja 2 revisiones
+   al día por correo (X-Quedan-Revisiones) y una que pides tú gasta una de las dos. IA.ahora, solo para las pruebas */
+const HORAS_REVISION = [5 * 60, 16 * 60 + 30];
+function franjaRevision(ahora = IA.ahora || Date.now()) {
+  let p;
+  try { p = Object.fromEntries(new Intl.DateTimeFormat('en-GB', { timeZone: 'Europe/Madrid', year: 'numeric', month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', second: '2-digit', weekday: 'short', hourCycle: 'h23' }).formatToParts(new Date(ahora)).map((x) => [x.type, x.value])); } catch (e) { return null; }
+  const min = Number(p.hour) * 60 + Number(p.minute), horas = p.weekday === 'Sat' || p.weekday === 'Sun' ? HORAS_REVISION.slice(0, 1) : HORAS_REVISION;
+  let i = -1; horas.forEach((h, k) => { if (min >= h) i = k; });
+  if (i < 0) return null;
+  // reserva: detrás viene otra hoy (la de la mañana entre semana deja sitio a la de la tarde)
+  return { clave: `${p.year}-${p.month}-${p.day}-${i}`, desde: ahora - ((min - horas[i]) * 60 + Number(p.second)) * 1000, tarde: i === 1, reserva: i < horas.length - 1 };
 }
-/* ¿toca revisar? cada día (o semana) y, si es diario, también cuando cambia alguna señal */
+// ¿cabe una automática? Sin saber cuántas quedan (aún no se ha hecho ninguna hoy), sí; por la mañana, solo si queda también la de la tarde
+function revisionAutoCabe(f) { const q = quedanRevisionesClaude(); return !!f && (q == null || q >= (f.reserva ? 2 : 1)); }
+/* los intentos de la automática en cada franja, guardados en el dispositivo: recargar o volver a la app no los pone a cero.
+   Dos como mucho (la que se corta al salir de la app se repite una vez). En el nivel reducido, además, solo si quedan al
+   menos 3 tareas (para dejar sitio a noticias e importar) */
+const LS_IA_AUTO = 'inv-ia-auto';
+function intentosAutoIA(f = franjaRevision()) { const x = LS.get(LS_IA_AUTO, null); return f && x && x.f === f.clave && x.uid === uidActual() ? x.n || 0 : 0; }
+function apuntarIntentoAutoIA() { const f = franjaRevision(); if (f) LS.set(LS_IA_AUTO, { f: f.clave, uid: uidActual(), n: intentosAutoIA(f) + 1 }); }
+function autoIAPermitida(f = franjaRevision()) {
+  if (!revisionAutoCabe(f) || intentosAutoIA(f) >= 2) return false;
+  const t = quedanTareasClaude();
+  return nivelClaudeApp() === 'alto' || t == null || t >= 3;
+}
+/* ¿toca revisar? Una vez en cada franja (o cada semana), si no hay ya una revisión desde esa hora, tuya o automática */
 async function revisarAnalisisIA() {
   // 0.7l: con GrowIA contestando una pregunta, después (al acabar la vuelve a mirar): no se pisan en el móvil
   if (IA.generando || AS.cargando || !S.cartera || fueraDeVista() || !S.key || S.demo) return;
   await cargarAsesor();
   const cfg = cfgAsesor();
   if (cfg.auto === 'manual' || Date.now() - IA.ultimoIntento < 3600000) return;
+  const f = franjaRevision(), p = S.iaPropio;
+  if (!f || (p && new Date(p.fecha).getTime() >= f.desde)) return;
+  const edad = p ? (IA.ahora || Date.now()) - new Date(p.fecha).getTime() : Infinity;
+  if (cfg.auto === 'semanal' && edad < 6.5 * 864e5) return;
   await sondearClaude();
-  if (!(claudeSinClave() && claudeOk()) || sinTareaIA() || !autoIAPermitida()) return;
-  const p = S.iaPropio, M = S.M || calcular();
-  // 0.8.2d: en el nivel reducido (o sin saberlo aún), la automática una vez al día como mucho: sin rehacerla cada vez que
-  // cambia una señal o llegan noticias (cada una es una tarea y gasta de su tope de dinero del día)
-  const alto = nivelClaudeApp() === 'alto';
-  const edad = p ? Date.now() - new Date(p.fecha).getTime() : Infinity;
-  const limite = cfg.auto === 'semanal' ? 7 * 864e5 : 20 * 36e5;
-  const cambio = alto && cfg.auto === 'diario' && p && p.firma !== firmaSenales(M) && edad > 3 * 36e5;
-  // trabaja sola: si hay un informe de prensa más nuevo que su última revisión, la rehace (cada 3 horas como mucho)
-  const prensa = alto && cfg.auto === 'diario' && p && S.informe && S.informe.generado > p.fecha && edad > 3 * 36e5;
-  // si has cambiado tus reglas después de su última revisión, la rehace con las nuevas
+  if (!(claudeSinClave() && claudeOk()) || sinTareaIA() || !autoIAPermitida(f)) return;
+  // el motivo, para la IA: lo más importante que ha cambiado desde la anterior; si nada, la revisión de esa franja
+  const M = S.M || calcular();
   const reglas = p && S.ia && S.ia.reglas_fecha && String(S.ia.reglas_fecha) > String(p.fecha);
   const perfilNuevo = p && S.cartera.perfil && S.cartera.perfil.actualizado && String(S.cartera.perfil.actualizado) > String(p.fecha);
-  // los de antes de que GrowIA dijera a qué distancia está cada meta (0.3.0b) se rehacen una vez
-  const metasViejo = p && String(p.fecha) < '2026-10-20T23:15';
-  // 0.5: hecha en el otro modo (con o sin acceso completo): se rehace en el de ahora
-  // 0.8.2: el modo de la app, no las reglas (en el fundador, con Claude, sale con las del estándar y no hay que rehacerla)
+  // 0.5 y 0.8.2: hecha en el otro modo de la app (con o sin acceso completo)
   const otroModo = p && p.json && (p.json.modo ? p.json.modo !== (esPublico() ? 'publico' : 'privado') : !!p.json.publico !== esPublico());
-  if (otroModo && edad <= limite) return generarAnalisisIA(esPublico() ? 'ahora sin recomendaciones de compra o venta' : 'ahora con el acceso completo');
-  if (edad > limite) generarAnalisisIA(p ? 'revisión diaria' : 'primera revisión');
-  else if (reglas) generarAnalisisIA('han cambiado tus reglas');
-  else if (perfilNuevo) generarAnalisisIA('has cambiado tu perfil o le has contestado');
-  else if (metasViejo) generarAnalisisIA('ahora dice a qué distancia está cada meta');
-  else if (cambio) generarAnalisisIA('ha cambiado la señal de alguna posición');
-  else if (prensa) generarAnalisisIA('hay noticias nuevas en el informe de prensa');
+  const motivo = !p ? 'primera revisión'
+    : otroModo ? (esPublico() ? 'ahora sin recomendaciones de compra o venta' : 'ahora con el acceso completo')
+    : reglas ? 'han cambiado tus reglas'
+    : perfilNuevo ? 'has cambiado tu perfil o le has contestado'
+    : p.firma !== firmaSenales(M) ? 'ha cambiado la señal de alguna posición'
+    : S.informe && S.informe.generado > p.fecha ? 'hay noticias nuevas en el informe de prensa'
+    : cfg.auto === 'semanal' ? 'revisión semanal' : f.tarde ? 'revisión de la tarde' : 'revisión de la mañana';
+  generarAnalisisIA(motivo);
 }
 function htmlProgresoIA() {
   if (IA.generando) {

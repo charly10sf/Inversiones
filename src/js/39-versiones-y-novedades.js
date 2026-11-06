@@ -11,7 +11,8 @@ const NOVEDADES = [
     'En la cartera de prueba la IA también contesta, con tus preguntas del día.',
     'Si la IA no puede contestar, te dice por qué y puedes volver a preguntar con un toque. Debajo de su nombre ves cuántas preguntas te quedan hoy.',
     { t: 'Dos niveles en el servidor: 20 preguntas al día para la lista de CLAUDE_EMAILS; el resto, 5 preguntas y 3 «A fondo», con 0,5 US$ por correo y un techo de 4 US$ al día entre todos. Si falla Sonnet, contesta Haiku.', solo: 'dueno' },
-    { t: 'Las tareas (revisiones, noticias e importar) llevan su propio tope: 40 al día para la lista y 10 para el resto; en el nivel reducido, la revisión automática no se rehace por señales ni noticias y lo intenta dos veces al día como mucho.', solo: 'dueno' },
+    { t: 'Las tareas (revisiones, noticias e importar) llevan su propio tope: 40 al día para la lista y 10 para el resto.', solo: 'dueno' },
+    { t: 'La IA del servidor (prensa, informe, ideas y traducción) va solo con Claude, por lotes. La revisión de la cartera, 2 al día para todos: la automática, desde las 5:00 y desde las 16:30 (el fin de semana, solo la primera), y la que pides gasta una de las dos.', solo: 'dueno' },
     { t: 'Fuera lo que quedaba de Gemini: sus modelos, los cupos de Google y la clave que guardaba cada uno, que se borra del dispositivo al abrir la IA. «Cómo va la IA» cuenta lo que gasta la Action con Claude.', solo: 'dueno' },
   ] },
   { v: '0.8.2c', f: '2026-11-06', h: '19:30', t: 'El Mármol nuevo y el radar con filtros', arreglos: [

@@ -127,6 +127,7 @@ test('la revisión automática no empieza mientras la IA contesta una pregunta',
   const r = await page.evaluate(async () => {
     LS.set(LS_CLAUDE_OK, true); guardarCfgAsesor({ auto: 'diario' }); S.iaPropio = null;
     const pedidas = []; window.generarAnalisisIA = (m) => pedidas.push(m);
+    IA.ahora = Date.parse('2026-11-06T10:00:00+01:00');   // 0.8.2d: dentro de la franja de la mañana
     IA.ultimoIntento = 0; AS.cargando = true; await revisarAnalisisIA();
     const durante = pedidas.length;
     IA.ultimoIntento = 0; AS.cargando = false; await revisarAnalisisIA();

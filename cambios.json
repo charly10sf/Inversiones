@@ -7,6 +7,15 @@
    "t": "Todo con Claude",
    "commits": [
     {
+     "cuando": "2026-11-06 22:40",
+     "asunto": "0.8.2d · la app entiende el tope de 2 revisiones al día y las automáticas salen desde las 5:00 y las 16:30",
+     "detalle": [
+      "El 429 «tope-revision» del Worker: no se reintenta, no aparta a Claude, no avisa al dueño y la automática no enseña error; la que pides tú dice cuándo vuelven. La app lee X-Quedan-Revisiones y, sin revisiones hoy, ni lo intenta.",
+      "Las 2 revisiones automáticas, para todos los niveles: desde las 5:00 y desde las 16:30 de Madrid, la primera vez que abres la app (sábados y domingos, solo la de las 5:00); por la mañana, solo si queda también la de la tarde. Ya no se rehace cada 3 horas por señales o noticias.",
+      "Ajustes de la IA dice las horas; novedades del dueño con la línea de la IA del servidor; pruebas nuevas en tests/claude-app.spec.js (las franjas y el tope de revisiones)."
+     ]
+    },
+    {
      "cuando": "2026-11-06 21:30",
      "asunto": "0.8.2d · todo con Claude, sesión 5: fuera el código de Gemini de la app y cierre de la versión",
      "detalle": [

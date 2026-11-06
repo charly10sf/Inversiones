@@ -523,7 +523,7 @@ const aMediasIA = (turno) => !!(turno && turno.partes.some((p) => p.tipo === 'te
 function haikuDeReserva(e) {
   if (!e) return false;
   if (e.codigo === 'tope-fondo') return true;
-  if (['tope-diario', 'techo', 'tope-pregunta', 'tope-tareas', 'sin-creditos', 'clave', 'sin-clave', 'no-permitido', 'sin-sesion', 'cuotas', 'demasiadas'].includes(e.codigo)) return false;
+  if (['tope-diario', 'techo', 'tope-pregunta', 'tope-tareas', 'tope-revision', 'sin-creditos', 'clave', 'sin-clave', 'no-permitido', 'sin-sesion', 'cuotas', 'demasiadas'].includes(e.codigo)) return false;
   return e.tipo === 'tiempo' || (Number(e.estado) >= 500) || e.estado === 429;
 }
 // un fallo sin reserva: Claude se aparta un rato si va a repetirse y se dice claro; si se corta a mitad, lo que ya escribió se
@@ -534,7 +534,7 @@ function falloSinReserva(e, turno) {
   if (aMedias) turno.partes.push({ tipo: 'paso', corte: true, txt: L('Aquí se ha cortado: lo de arriba está a medias y le puede faltar lo importante.', 'It was cut off here: the text above is incomplete and may be missing what matters.') });
   const x = errorSinIA(e, aMedias);
   // para el dueño se apunta lo que es un fallo de verdad, no lo previsto (los topes, el techo, el correo sin confirmar, tu no)
-  x.avisar = !AS.claudeNo && !['tope-diario', 'techo', 'tope-pregunta', 'tope-fondo', 'tope-tareas', 'no-permitido'].includes(x.codigo);
+  x.avisar = !AS.claudeNo && !['tope-diario', 'techo', 'tope-pregunta', 'tope-fondo', 'tope-tareas', 'tope-revision', 'no-permitido'].includes(x.codigo);
   return x;
 }
 // por qué no se ha podido ni empezar con Claude (para decirlo claro)
@@ -780,11 +780,13 @@ function modeloClaudeParaIA(tipo) {
 const LS_CLAUDE_QUEDAN = 'inv-claude-quedan';
 const diaClaude = () => new Date().toISOString().slice(0, 10);
 // 0.8.2b: también las «A fondo» que quedan (f; solo las dice el Worker en el nivel reducido) y el nivel. null deja lo que había
-// 0.8.2d: y las tareas que quedan (t: revisiones, resúmenes de noticias e importar, con su propio contador en el Worker)
-function apuntarQuedanClaude(n, f, nivel, t) {
+// 0.8.2d: y las tareas que quedan (t: revisiones, resúmenes de noticias e importar, con su propio contador en el Worker) y
+// las revisiones de la cartera (rv: 2 al día por correo; X-Quedan-Revisiones, solo en las respuestas a una revisión)
+function apuntarQuedanClaude(n, f, nivel, t, rv) {
   const q0 = LS.get(LS_CLAUDE_QUEDAN, null), q = q0 && q0.d === diaClaude() && q0.uid === uidActual() ? { ...q0 } : { d: diaClaude(), uid: uidActual(), ...(q0 && q0.uid === uidActual() && q0.nivel ? { nivel: q0.nivel } : {}) };
   if (Number.isFinite(n) && n >= 0) q.n = Math.floor(n);
   if (Number.isFinite(t) && t >= 0) q.t = Math.floor(t);
+  if (Number.isFinite(rv) && rv >= 0) q.rv = Math.floor(rv);
   if (Number.isFinite(f) && f >= 0) q.f = Math.floor(f); else if (nivel === 'alto') delete q.f;
   if (nivel) q.nivel = nivel;
   LS.set(LS_CLAUDE_QUEDAN, q);
@@ -793,6 +795,7 @@ function datoQuedan(k) { const q = LS.get(LS_CLAUDE_QUEDAN, null); return q && q
 const quedanClaude = () => datoQuedan('n');
 const quedanFondoClaude = () => datoQuedan('f');
 const quedanTareasClaude = () => datoQuedan('t');
+const quedanRevisionesClaude = () => datoQuedan('rv');
 // el nivel de tu cuenta (lo dice el Worker en cada respuesta; se recuerda de un día para otro). Sin saberlo, null
 const nivelClaudeApp = () => { const q = LS.get(LS_CLAUDE_QUEDAN, null); return q && q.uid === uidActual() && (q.nivel === 'alto' || q.nivel === 'reducido') ? q.nivel : null; };
 /* antes de mandar nada de la cartera: ¿puede este correo usar Claude y llega el Worker? Se pregunta con una petición vacía:
@@ -917,11 +920,12 @@ function cuandoVuelveClaude() {
 /* sin Gemini de reserva: si Claude no puede, se dice claro por qué y qué hacer (en la respuesta va «Volver a preguntar») */
 function errorSinIA(e, aMedias) {
   const c = e && (e.codigo || e.tipo), h = cuandoVuelveClaude();
-  const txt = AS.claudeNo && !['tope-tareas', 'tope-diario', 'techo', 'no-permitido'].includes(c) ? L('Sin tu sí, la IA no puede contestar: lo que le preguntas lo contesta Claude, de Anthropic. Si cambias de idea, vuelve a preguntar.', 'Without your OK, the AI cannot answer: your questions are answered by Claude, from Anthropic. If you change your mind, ask again.')
+  const txt = AS.claudeNo && !['tope-tareas', 'tope-revision', 'tope-diario', 'techo', 'no-permitido'].includes(c) ? L('Sin tu sí, la IA no puede contestar: lo que le preguntas lo contesta Claude, de Anthropic. Si cambias de idea, vuelve a preguntar.', 'Without your OK, the AI cannot answer: your questions are answered by Claude, from Anthropic. If you change your mind, ask again.')
     : aMedias && c !== 'tope-diario' && c !== 'techo' ? L('La respuesta se ha cortado a mitad. Vuelve a preguntar en un momento.', 'The answer stopped halfway. Ask again in a moment.')
     : c === 'tope-diario' ? L(`Has llegado al tope de hoy. Puedes volver a preguntar ${h}.`, `You have reached today's limit. You can ask again ${h}.`)
     : c === 'techo' ? L(`Hoy la IA ha llegado a su tope de uso. Vuelve a probar en un rato o ${h}.`, `The AI has reached its usage limit for today. Try again in a while or ${h}.`)
     : c === 'tope-tareas' ? L(`Hoy ya no quedan revisiones, resúmenes de noticias ni lecturas de capturas: vuelven ${h}. Tus preguntas a la IA siguen igual.`, `No reviews, article summaries or screenshot readings left today: they come back ${h}. Your questions to the AI are not affected.`)
+    : c === 'tope-revision' ? L(`Hoy ya se han hecho las 2 revisiones de tu cartera: vuelven ${h}. Lo demás de la IA sigue igual.`, `Your portfolio has already been reviewed twice today: reviews come back ${h}. Everything else in the AI is not affected.`)
     : c === 'tope-pregunta' ? L('Esta pregunta ha necesitado demasiados pasos: prueba a hacerla más corta o en dos.', 'This question needed too many steps: try asking it shorter or in two parts.')
     : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace que te llegó al crear la cuenta y vuelve a entrar.', 'To use the AI, confirm your email with the link you got when you created the account, then sign in again.')
     : c === 'sin-creditos' ? L('La IA no está disponible ahora mismo. Vuelve a probar dentro de unas horas.', 'The AI is not available right now. Try again in a few hours.')
@@ -951,7 +955,7 @@ function pausaClaude(e) {
   // el techo de todos se puede abrir un poco cuando acaban las respuestas que estaban en camino: se vuelve a probar en media hora
   if (c === 'techo') return 30 * 6e4;
   // 0.8.2d: sin tareas hoy no se aparta Claude: las preguntas siguen
-  if (c === 'tope-fondo' || c === 'tope-pregunta' || c === 'tope-tareas') return 0;
+  if (c === 'tope-fondo' || c === 'tope-pregunta' || c === 'tope-tareas' || c === 'tope-revision') return 0;
   if (c === 'clave' || c === 'sin-clave') return 36e5;
   if (c === 'sin-sesion' || c === 'cuotas') return 10 * 6e4;
   if (c === 'demasiadas') return 6e4;
@@ -1054,8 +1058,8 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   try {
     const token = await conTiempo(FB.user.getIdToken(), 8000);
     const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) });
-    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); if (j && j.error === 'tope-tareas') apuntarQuedanClaude(null, null, null, 0); throw errorClaude(r.status, j); }
-    { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel'), h('x-quedan-tareas')); }
+    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); if (j && j.error === 'tope-tareas') apuntarQuedanClaude(null, null, null, 0); if (j && j.error === 'tope-revision') apuntarQuedanClaude(null, null, null, null, 0); throw errorClaude(r.status, j); }
+    { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel'), h('x-quedan-tareas'), h('x-quedan-revisiones')); }
     const lector = r.body.getReader(), dec = new TextDecoder();
     let buf = '';
     for (;;) {

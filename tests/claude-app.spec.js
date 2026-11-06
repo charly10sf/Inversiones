@@ -627,39 +627,84 @@ test('las conversaciones se guardan cifradas, se abren desde el panel y se borra
   expect(await page.evaluate(() => localStorage.getItem(LS.k('inv-asesor-convs')))).toBeNull();
 });
 
-// 0.8.2d · la revisión de la cartera e importar van como «tarea» (su propio contador en el Worker, no gastan preguntas); en el
-// nivel reducido la revisión automática no se rehace a cada cambio de señal o noticia; y en la cartera de prueba contesta
-// Claude con tu cuenta, sobre la cartera inventada
-test('la revisión va como tarea; en el nivel reducido la automática no se rehace por señales ni noticias; sin tareas, no reintenta', async ({ page }) => {
+// 0.8.2d · la revisión de la cartera e importar van como «tarea» (su propio contador en el Worker, no gastan preguntas); la
+// automática, en sus dos franjas (desde las 5:00 y las 16:30 de Madrid), igual en los dos niveles, sin rehacerse por señales
+// ni noticias; por la mañana, solo si queda también la de la tarde. IA.ahora fija la hora de la app
+const MADRID = (h) => Date.parse(`2026-11-06T${h}:00+01:00`);   // viernes 6 nov, hora de invierno
+test('la revisión va como tarea; la automática sale en su franja, igual en los dos niveles; sin tareas, no reintenta', async ({ page }) => {
   await preparada(page);
   await page.evaluate(() => LS.set('inv-claude-ok', true));
   const ids = await page.evaluate(() => [...new Set((S.M || calcular()).filas.map((f) => f.inst.id))]);
   const json = { titular: 'Tu cartera sigue en orden.', resumen: ['Sube un 1 %.'], posiciones: Object.fromEntries(ids.map((k) => [k, { texto: 'Sin cambios.' }])) };
-  let tope = false;
-  const w = await worker(page.context(), () => (tope ? { json: { error: 'tope-tareas' }, estado: 429 } : { sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]), cabeceras: { 'X-Nivel': 'reducido', 'X-Quedan': '5', 'X-Quedan-Tareas': '9', 'Access-Control-Expose-Headers': 'X-Nivel, X-Quedan, X-Quedan-Tareas' } }));
+  let tope = false, rv = 1;
+  const w = await worker(page.context(), () => (tope ? { json: { error: 'tope-tareas' }, estado: 429 } : { sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]), cabeceras: { 'X-Nivel': 'reducido', 'X-Quedan': '5', 'X-Quedan-Tareas': '9', 'X-Quedan-Revisiones': String(rv--), 'Access-Control-Expose-Headers': 'X-Nivel, X-Quedan, X-Quedan-Tareas, X-Quedan-Revisiones' } }));
   await page.evaluate(() => generarAnalisisIA('la pides tú'));
   await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
   expect(w.peticiones[0].cuerpo.tarea).toBe('revision');
-  expect(await page.evaluate(() => [nivelClaudeApp(), quedanTareasClaude(), quedanClaude()])).toEqual(['reducido', 9, 5]);
-  // hecha hace 4 horas y con una señal cambiada: en el reducido, no se rehace (una vez al día como mucho)
-  const vieja = () => page.evaluate(() => { S.iaPropio.fecha = new Date(Date.now() - 4 * 36e5).toISOString(); S.iaPropio.firma = 'otra'; IA.ultimoIntento = 0; guardarCfgAsesor({ auto: 'diario' }); return revisarAnalisisIA(); });
-  await vieja();
+  expect(await page.evaluate(() => [nivelClaudeApp(), quedanTareasClaude(), quedanClaude(), quedanRevisionesClaude()])).toEqual(['reducido', 9, 5, 1]);
+  const auto = (ahora, fecha) => page.evaluate(([a, f]) => { IA.ahora = a; S.iaPropio.fecha = new Date(f).toISOString(); S.iaPropio.firma = 'otra'; IA.ultimoIntento = 0; guardarCfgAsesor({ auto: 'diario' }); return revisarAnalisisIA(); }, [ahora, fecha]);
+  // a las 10:00, con una revisión de las 6:00 y la señal cambiada: ya está la de la mañana, no se rehace (tampoco en el alto)
+  await auto(MADRID('10:00'), MADRID('06:00'));
+  await page.evaluate(() => { const q = LS.get('inv-claude-quedan'); LS.set('inv-claude-quedan', { ...q, nivel: 'alto' }); });
+  await auto(MADRID('10:00'), MADRID('06:00'));
+  // a las 4:30, ninguna; a las 10:00 con la anterior de ayer pero una sola revisión hoy: se guarda para la tarde
+  await auto(MADRID('04:30'), MADRID('04:30') - 30 * 36e5);
+  await auto(MADRID('10:00'), MADRID('10:00') - 30 * 36e5);
   await page.waitForTimeout(800);
   expect(w.peticiones.length).toBe(1);
-  // en el nivel alto, sí
-  await page.evaluate(() => { const q = LS.get('inv-claude-quedan'); LS.set('inv-claude-quedan', { ...q, nivel: 'alto' }); });
-  await vieja();
+  // a las 17:00, la de la tarde
+  await auto(MADRID('17:00'), MADRID('06:00'));
   await expect.poll(() => w.peticiones.length, { timeout: 15_000 }).toBe(2);
   await expect.poll(() => page.evaluate(() => IA.generando), { timeout: 15_000 }).toBe(false);
+  expect(await page.evaluate(() => quedanRevisionesClaude())).toBe(0);
   // sin tareas hoy: lo dice y no se reintenta sola
   tope = true;
+  await page.evaluate(() => LS.set('inv-claude-quedan', { ...LS.get('inv-claude-quedan'), rv: 1 }));
   await page.evaluate(() => generarAnalisisIA('la pides tú'));
   expect(await page.evaluate(() => [IA.error, IA.reintento, quedanTareasClaude(), claudePausado()])).toEqual([expect.stringContaining('Hoy ya no quedan revisiones'), 0, 0, null]);
   // y la automática ya ni lo intenta
   const n = w.peticiones.length;
-  await page.evaluate(() => { IA.ultimoIntento = 0; S.iaPropio.fecha = new Date(Date.now() - 30 * 36e5).toISOString(); return revisarAnalisisIA(); });
+  await auto(MADRID('17:30'), MADRID('17:30') - 30 * 36e5);
   await page.waitForTimeout(500);
   expect(w.peticiones.length).toBe(n);
+});
+
+test('las franjas de la revisión automática: desde las 5:00 y las 16:30 de Madrid; el fin de semana, solo la primera', async ({ page }) => {
+  await preparada(page);
+  const f = await page.evaluate(() => {
+    const x = (s) => { const r = franjaRevision(Date.parse(s)); return r && [r.clave, r.tarde, r.reserva, new Date(r.desde).toISOString()]; };
+    return {
+      antes: x('2026-11-06T04:59:00+01:00'), manana: x('2026-11-06T05:00:00+01:00'), mediodia: x('2026-11-06T16:29:30+01:00'),
+      tarde: x('2026-11-06T16:30:00+01:00'), noche: x('2026-11-06T23:50:00+01:00'), sabado: x('2026-11-07T18:00:00+01:00'),
+      domingoPronto: x('2026-11-08T03:00:00+01:00'), verano: x('2026-07-06T05:30:00+02:00'),
+    };
+  });
+  expect(f.antes).toBeNull();
+  expect(f.manana).toEqual(['2026-11-06-0', false, true, '2026-11-06T04:00:00.000Z']);
+  expect(f.mediodia).toEqual(['2026-11-06-0', false, true, '2026-11-06T04:00:00.000Z']);
+  expect(f.tarde).toEqual(['2026-11-06-1', true, false, '2026-11-06T15:30:00.000Z']);
+  expect(f.noche).toEqual(['2026-11-06-1', true, false, '2026-11-06T15:30:00.000Z']);
+  expect(f.sabado).toEqual(['2026-11-07-0', false, false, '2026-11-07T04:00:00.000Z']);
+  expect(f.domingoPronto).toBeNull();
+  expect(f.verano).toEqual(['2026-07-06-0', false, true, '2026-07-06T03:00:00.000Z']);
+});
+
+test('con las 2 revisiones del día hechas (429 «tope-revision»): lo dice, no reintenta ni aparta a Claude, y la automática calla', async ({ page }) => {
+  await preparada(page);
+  await page.evaluate(() => LS.set('inv-claude-ok', true));
+  const w = await worker(page.context(), () => ({ json: { error: 'tope-revision' }, estado: 429 }));
+  await page.evaluate(() => generarAnalisisIA('la pides tú'));
+  expect(await page.evaluate(() => [IA.error, IA.reintento, quedanRevisionesClaude(), claudePausado(), modeloClaudeParaIA('pregunta')])).toEqual([expect.stringContaining('las 2 revisiones de tu cartera'), 0, 0, null, expect.stringContaining('claude-')]);
+  expect(w.peticiones.length).toBe(1);
+  // ya sabe que no quedan: ni la automática ni otra pedida llegan al Worker
+  await page.evaluate(() => { IA.ahora = Date.parse('2026-11-06T17:00:00+01:00'); IA.ultimoIntento = 0; S.iaPropio = null; guardarCfgAsesor({ auto: 'diario' }); return revisarAnalisisIA(); });
+  await page.evaluate(() => generarAnalisisIA('la pides tú'));
+  await page.waitForTimeout(500);
+  expect(w.peticiones.length).toBe(1);
+  // una automática que se encuentra el tope (sin saberlo antes): sin error a la vista
+  await page.evaluate(() => { LS.set('inv-claude-quedan', { ...LS.get('inv-claude-quedan'), rv: null }); IA.ultimoIntento = 0; return generarAnalisisIA('revisión de la tarde'); });
+  expect(w.peticiones.length).toBe(2);
+  expect(await page.evaluate(() => [IA.error, IA.reintento, quedanRevisionesClaude()])).toEqual([null, 0, 0]);
 });
 
 test('importar varias capturas es una sola tarea (el mismo id); sin «A fondo» hoy lee Haiku', async ({ page, context }) => {
