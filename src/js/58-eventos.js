@@ -2,7 +2,7 @@
    Eventos: un solo oyente para toda la página (las vistas se vuelven a pintar a menudo)
    ===================================================================== */
 document.addEventListener('click', (e) => {
-  const t = e.target.closest('[data-bench],[data-car],[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-todo],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta],[data-exp],[data-plazo],[data-fut],[data-resp],[data-fis]');
+  const t = e.target.closest('[data-bench],[data-car],[data-rango],[data-frango],[data-dim],[data-base],[data-calif],[data-pos],[data-accion],[data-zona],[data-orden],[data-radar-mas],[data-ftab],[data-horizonte],[data-proy-reset],[data-orden-pos],[data-ruta],[data-exp],[data-plazo],[data-fut],[data-resp],[data-fis]');
   if (!t || !S.cartera) return;
   const d = t.dataset;
   if (d.rango) {
@@ -33,9 +33,9 @@ document.addEventListener('click', (e) => {
   else if (d.fis) { S.fisTab = d.fis; LS.set('inv-fistab', S.fisTab); pintar(); irArriba('#fisTabs'); }
   else if (d.fut) { S.futTab = d.fut; LS.set('inv-futtab', S.futTab); pintar(); irArriba('#futTabs'); }
   else if ('resp' in d) { const q = t.closest('[data-preg]'); if (q) responderIA(q.dataset.q ? { q: q.dataset.q } : +q.dataset.preg, d.resp); }
-  else if (d.zona) { S.radarZona = d.zona; S.radarTodo = false; LS.set('inv-zona', S.radarZona); pintar(); }
-  else if (d.orden) { S.radarOrden = d.orden; LS.set('inv-orden2', S.radarOrden); pintar(); }
-  else if ('radarTodo' in d) { S.radarTodo = !S.radarTodo; pintar(); }
+  else if (d.zona) { S.radarZona = d.zona; S.radarN = 0; LS.set('inv-zona', S.radarZona); repintarTablaRadar(); }
+  else if (d.orden) { S.radarOrden = d.orden; S.radarN = 0; LS.set('inv-orden2', S.radarOrden); repintarTablaRadar(); }
+  else if ('radarMas' in d) repintarTablaRadar(true);
   else if (d.pos) abrirFicha(d.pos);
   else if (d.accion) {
     const a = d.accion;
@@ -104,8 +104,9 @@ document.addEventListener('change', (e) => {
   if (t.matches('[data-comparar]')) { S.comparar = t.checked; LS.set('inv-comparar', S.comparar); pintar(); }
   else if (t.id === 'hpBench') { S.bench = benchDe(t.value).id; LS.set('inv-bench', S.bench); pintar(); }
   else if (t.matches('[data-orden-pos-sel]')) { const [k, dir] = t.value.split('|'); S.ordenPos = { k, dir }; LS.set('inv-orden-pos', S.ordenPos); pintar(); }
-  else if (t.matches('[data-radar-min]')) { S.radarMin = t.checked; LS.set('inv-radar-min', S.radarMin); pintar(); }
-  else if (t.matches('[data-radar-solidas]')) { S.radarSolidas = t.checked; LS.set('inv-radar-solidas', S.radarSolidas); pintar(); }
+  else if (t.matches('[data-radar-min]')) { S.radarMin = t.checked; S.radarN = 0; LS.set('inv-radar-min', S.radarMin); repintarTablaRadar(); }
+  else if (t.matches('[data-radar-solidas]')) { S.radarSolidas = t.checked; S.radarN = 0; LS.set('inv-radar-solidas', S.radarSolidas); repintarTablaRadar(); }
+  else if (t.matches('[data-radar-orden-sel]')) { S.radarOrden = t.value; S.radarN = 0; LS.set('inv-orden2', S.radarOrden); repintarTablaRadar(); }
   else if (t.matches('[data-proy]')) {
     const k = t.dataset.proy, c = { ...(S.proy || {}) };
     if (k === 'real') c.real = t.checked;

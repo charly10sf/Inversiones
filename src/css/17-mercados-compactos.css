@@ -429,6 +429,7 @@ select option, select optgroup { background-color: var(--superficie-2); color: v
 .evita .ev-n { display: block; max-width: 100%; padding: 0; border: 0; background: none; color: inherit; font: inherit; font-weight: 650; font-size: 15px; text-align: left; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
 .radar-n { padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: left; cursor: pointer; }
 table.ideas tbody tr[data-consulta] { cursor: pointer; }
+.radar-cuenta { margin: 12px 0 0; font-size: 13px; color: var(--texto-2); }
 @media (hover: hover) { table.ideas tbody tr[data-consulta]:hover td { background: color-mix(in srgb, var(--oro-texto) 3%, transparent); } .radar-n:hover b, .evita .ev-n:hover { color: var(--primario); } }
 /* en la hoja de la empresa: si GrowIA la evitaría o la tiene entre sus ideas, y por qué */
 .cons-ia { display: flex; gap: 9px; align-items: flex-start; margin: 0; padding: 10px 12px; border-radius: 12px; font-size: 13.5px; line-height: 1.5; color: var(--texto-2); }

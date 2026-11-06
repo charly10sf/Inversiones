@@ -104,7 +104,17 @@ function perSectorMediano() {
   S.perSectorCache = { ver: S.radarVer, m };
   return m;
 }
+/* El resultado se guarda por empresa y por versión del radar: lo piden la tabla, las ideas y las fichas, y recalcularlo
+   para 2.800 empresas en cada pintado costaba segundos en el móvil. Si llega otro radar (o su resto), se rehace. */
+const contrasteMemo = new WeakMap();
 function contraste(x) {
+  const c = contrasteMemo.get(x);
+  if (c && c.ver === S.radarVer) return c.r;
+  const r = contrasteCalc(x);
+  contrasteMemo.set(x, { ver: S.radarVer, r });
+  return r;
+}
+function contrasteCalc(x) {
   const checks = [];
   const add = (k, ok, txt) => checks.push({ k, ok, txt });
   // 1. consenso de los analistas

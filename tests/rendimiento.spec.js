@@ -65,3 +65,54 @@ test('abrir con la cuenta: bytes por la red y tiempo hasta estar lista', async (
     expect(listo, `lista en menos de ${PRESUPUESTO.listoMs} ms`).toBeLessThan(PRESUPUESTO.listoMs);
   }
 });
+
+// 0.8.2 (6 nov): el radar con todas las empresas (las 2.864) en un móvil medio. Antes de esto, abrir «Del radar» con 10 filas
+// tardaba 604 ms y «Ver las 2.379» 11,5 s (ordenar, 13,5 s; la página medía 422.000 px). Ahora: sale por páginas, ordenar o
+// cambiar de zona repinta solo la tabla y las señales se calculan solo para lo que se pinta. Se mide con la CPU 4 veces más
+// lenta; cada paso en una sola tarea (sin esperas) con el diseño forzado dentro, y los topes llevan margen
+const RADAR = { delRadarMs: 1500, tablaMs: 400, paginaMs: 300, nodos: 14000 };
+test('el radar con 2.800 empresas: «Del radar», ordenar, cambiar de zona y «Ver 50 más»', async ({ page, context }, info) => {
+  await preparar(context, {});
+  await crearCuenta(page);
+  await quitarCapas(page);
+  await meterCartera(page);
+  await page.waitForFunction(() => S.radar && S.radar.valores && S.radar.valores.length > 2000, null, { timeout: 60_000 });
+  await page.waitForFunction(() => S.escaneo, null, { timeout: 20_000 }).catch(() => {});
+  await page.waitForTimeout(1500);
+  const cdp = await context.newCDPSession(page);
+  await cdp.send('Emulation.setCPUThrottlingRate', { rate: MOVIL.cpu });
+  await page.evaluate(() => {
+    document.querySelectorAll('.hoja-fondo').forEach((h) => h.remove());
+    S.acceso = 'privado'; S.expTab = 'ideas'; S.radarN = 0; S.radarZona = 'Todas'; S.radarOrden = 'cap'; S.radarMin = true; S.radarSolidas = false;
+    location.hash = '#expertos'; pintar();
+  });
+  await page.waitForSelector('#radarCuerpo tr[data-consulta]');
+  await page.waitForTimeout(1500);
+  const m = await page.evaluate(() => {
+    const medir = (f) => { const t0 = performance.now(); f(); document.body.offsetHeight; return Math.round(performance.now() - t0); };
+    const r = { empresas: radarVals().length };
+    // la primera vez: con las cachés vacías, como cuando llega un radar nuevo; la segunda, con ellas llenas
+    r.delRadarPrimera = medir(() => { S.radarVer++; pintar(); });
+    r.delRadar = medir(() => pintar());
+    const clic = (sel) => document.querySelector(sel).click();
+    r.ordenarNombre = medir(() => clic('thead [data-orden="n"]'));
+    r.zona = medir(() => clic('[data-zona="EEUU"]'));
+    r.zonaTodas = medir(() => clic('[data-zona="Todas"]'));
+    r.paginas = [];
+    for (let i = 0; i < 5; i++) r.paginas.push(medir(() => clic('[data-radar-mas]')));
+    r.filas = document.querySelectorAll('#radarCuerpo tr').length;
+    r.nodos = document.querySelectorAll('#vista *').length;
+    r.alto = document.documentElement.scrollHeight;
+    r.solidas = medir(() => { document.querySelector('[data-radar-solidas]').click(); });
+    return r;
+  });
+  const informe = `El radar con ${m.empresas} empresas (móvil medio, CPU 4×)\n  «Del radar»: primera vez ${m.delRadarPrimera} ms, repintada ${m.delRadar} ms\n  ordenar por nombre: ${m.ordenarNombre} ms · cambiar de zona: ${m.zona} ms (y vuelta a Todas: ${m.zonaTodas} ms) · «Solo bien contrastadas»: ${m.solidas} ms\n  «Ver 50 más» (5 veces): ${m.paginas.join(', ')} ms\n  tras 5 páginas: ${m.filas} filas, ${m.nodos} nodos, página de ${m.alto} px`;
+  console.log(informe);
+  await info.attach('radar', { body: informe, contentType: 'text/plain' });
+  expect(m.delRadarPrimera, 'abrir «Del radar» la primera vez').toBeLessThan(RADAR.delRadarMs);
+  expect(m.delRadar, 'repintar «Del radar»').toBeLessThan(RADAR.delRadarMs);
+  expect(m.zona, 'cambiar de zona').toBeLessThan(RADAR.tablaMs);
+  expect(m.solidas, '«Solo bien contrastadas»').toBeLessThan(RADAR.tablaMs * 2);
+  for (const p of m.paginas) expect(p, '«Ver 50 más»').toBeLessThan(RADAR.paginaMs);
+  expect(m.nodos, 'nodos de la vista con 270 filas').toBeLessThan(RADAR.nodos);
+});
