@@ -489,7 +489,8 @@ function pasoTxt(nombre, q = {}) {
 // con las reglas del estándar, también en el fundador
 async function conversar(o) {
   try {
-    const tipo = o.tipo || 'pregunta', mc = modeloClaudeParaIA(tipo);
+    // 0.8.2d (revisión aparte): o.soloHaiku (la revisión automática) va siempre con Haiku, aunque hayas elegido Sonnet
+    const tipo = o.tipo || 'pregunta', mc0 = modeloClaudeParaIA(tipo), mc = mc0 && o.soloHaiku ? HAIKU_IA : mc0;
     const conClaude = !!(mc && await claudeAlcanzable(tipo, o.signal));
     // 0.8.2b: solo Claude, y con Claude van siempre las reglas del estándar (también en el fundador; opción B de la 0.8.2)
     if (o.turno) o.turno.estandar = true;
@@ -522,7 +523,7 @@ const aMediasIA = (turno) => !!(turno && turno.partes.some((p) => p.tipo === 'te
 function haikuDeReserva(e) {
   if (!e) return false;
   if (e.codigo === 'tope-fondo') return true;
-  if (['tope-diario', 'techo', 'tope-pregunta', 'sin-creditos', 'clave', 'sin-clave', 'no-permitido', 'sin-sesion', 'cuotas', 'demasiadas'].includes(e.codigo)) return false;
+  if (['tope-diario', 'techo', 'tope-pregunta', 'tope-tareas', 'sin-creditos', 'clave', 'sin-clave', 'no-permitido', 'sin-sesion', 'cuotas', 'demasiadas'].includes(e.codigo)) return false;
   return e.tipo === 'tiempo' || (Number(e.estado) >= 500) || e.estado === 429;
 }
 // un fallo sin reserva: Claude se aparta un rato si va a repetirse y se dice claro; si se corta a mitad, lo que ya escribió se
@@ -533,7 +534,7 @@ function falloSinReserva(e, turno) {
   if (aMedias) turno.partes.push({ tipo: 'paso', corte: true, txt: L('Aquí se ha cortado: lo de arriba está a medias y le puede faltar lo importante.', 'It was cut off here: the text above is incomplete and may be missing what matters.') });
   const x = errorSinIA(e, aMedias);
   // para el dueño se apunta lo que es un fallo de verdad, no lo previsto (los topes, el techo, el correo sin confirmar, tu no)
-  x.avisar = !AS.claudeNo && !['tope-diario', 'techo', 'tope-pregunta', 'tope-fondo', 'no-permitido'].includes(x.codigo);
+  x.avisar = !AS.claudeNo && !['tope-diario', 'techo', 'tope-pregunta', 'tope-fondo', 'tope-tareas', 'no-permitido'].includes(x.codigo);
   return x;
 }
 // por qué no se ha podido ni empezar con Claude (para decirlo claro)
@@ -625,47 +626,11 @@ function vigiaConsejoIA(turno) {
   try { diarioIA(`Ojo: con las reglas del estándar, la respuesta dice «${f.slice(0, 3).join('», «')}»`); } catch (e) {}
 }
 
-/* ---------- Gemini (API de Google AI Studio) ----------
-   0.8.2b: el chat ya no lo usa. Queda lo que aún llama a Google con la clave de cada uno (el resumen de una noticia e importar
-   capturas, que pasan a Claude en la sesión 3 de «Todo con Claude») y los tiempos y avisos de red, que usa Claude */
-const GEMINI = 'https://generativelanguage.googleapis.com/v1beta';
-let MODO_CLAVE_G = LS.get('inv-gkey-modo', 'cabecera');
-async function fetchGoogle(url, opts = {}, clave = AS.clave) {
-  const hacer = (modo) => fetch(modo === 'query' ? `${url}${url.includes('?') ? '&' : '?'}key=${encodeURIComponent(clave)}` : url, { ...opts, headers: { ...(opts.headers || {}), ...(modo === 'cabecera' ? { 'x-goog-api-key': clave } : {}) } });
-  const r = await hacer(MODO_CLAVE_G);
-  if (r.ok) contarPeticion(url);
-  if ([400, 401, 403].includes(r.status)) {
-    const otro = MODO_CLAVE_G === 'cabecera' ? 'query' : 'cabecera';
-    let txt = ''; try { txt = await r.clone().text(); } catch (e) {}
-    if (/API key|API_KEY|ACCESS_TOKEN_TYPE|UNAUTHENTICATED|credential/i.test(txt)) {
-      const r2 = await hacer(otro);
-      if (r2.ok || ![400, 401, 403].includes(r2.status)) { MODO_CLAVE_G = otro; LS.set('inv-gkey-modo', otro); if (r2.ok) contarPeticion(url); return r2; }
-    }
-  }
-  return r;
-}
+/* ---------- Gemini, fuera (0.8.2d) ----------
+   Hasta la 0.8.2a, el chat, el resumen de una noticia e importar capturas llamaban a Google con la clave de cada uno
+   (fetchGoogle, errorGoogle). Desde la 0.8.2d todo va con Claude por el Worker: queda solo lo de los tiempos y avisos de
+   red, que usa Claude */
 const dormir = (ms, signal) => new Promise((res, rej) => { if (signal && signal.aborted) return rej(new DOMException('Parado', 'AbortError')); const t = setTimeout(res, ms); if (signal) signal.addEventListener('abort', () => { clearTimeout(t); rej(new DOMException('Parado', 'AbortError')); }, { once: true }); });
-function errorGoogle(estado, j) {
-  const e0 = (j && j.error) || {}, m = e0.message || '', det = JSON.stringify(e0.details || '');
-  let e;
-  if (/API key not valid|API_KEY_INVALID/i.test(m + det)) e = new Error('Google dice que la clave no es válida. Cópiala otra vez entera desde aistudio.google.com/apikey (sin espacios al principio ni al final).');
-  else if (estado === 401 || /ACCESS_TOKEN_TYPE_UNSUPPORTED|UNAUTHENTICATED/i.test(m + det)) e = new Error('Google no acepta esta clave desde Toisón. Crea otra en aistudio.google.com/apikey y vuelve a probar; si sigue igual, avísanos con el bichito de arriba.');
-  else if (estado === 403) e = new Error('Tu clave de Google no tiene permiso para esta respuesta. Elige la normal en Ajustes de la IA, que es gratis.');
-  else if (estado === 404) e = new Error('Tu clave de Google no tiene esta respuesta: elige la otra en Ajustes de la IA.');
-  else if (estado === 429) e = new Error(/free.?tier|limit: 0/i.test(m) && /pro|argon/i.test(m) ? 'Esta respuesta no entra en el plan gratuito de Google: elige la normal en Ajustes de la IA.' : `Has llegado al límite gratuito de tu clave de Google. Si es el de por minuto, en un momento vuelve a funcionar; si es el diario, a las ${horaRenuevaIA()}. Es el de tu clave: cada uno usa la suya.`);
-  else if (estado >= 500) e = new Error('Google está saturado ahora mismo. Prueba en un momento.');
-  else e = new Error(m || `Error ${estado} de Google`);
-  e.estado = estado; e.msg = m;
-  const ri = (e0.details || []).find((d) => /RetryInfo/.test(d['@type'] || ''));
-  if (ri && ri.retryDelay) e.espera = parseFloat(ri.retryDelay);
-  // el cupo de por día (no el de por minuto): no merece la pena esperar
-  e.diario = estado === 429 && (/PerDay|per.?day|daily/i.test(m + det) || e.espera > 60);
-  // 0.7a: la búsqueda en Google con el plan gratis da siempre un 429 RESOURCE_EXHAUSTED sin el detalle del cupo
-  // (comprobado el 25 oct). El cupo de verdad dice qué métrica y trae su detalle; un 429 que no es JSON, no cuenta
-  e.sinDetalle = estado === 429 && e0.status === 'RESOURCE_EXHAUSTED' && !/Quota exceeded for metric|limit:/i.test(m)
-    && !(e0.details || []).some((d) => /QuotaFailure|RetryInfo/.test(d['@type'] || ''));
-  return e;
-}
 /* 0.7l: cuánto se espera a Google y qué se hace con cada corte (lo de antes, desde la 0.6c, solo vigilaba los primeros
    90 s: una vez que Google empezaba a contestar no había límite y, si la conexión se moría a mitad, GrowIA se quedaba
    pensando para siempre). Ahora se vigila cada dato que llega: antes del primero (la respuesta normal razona antes de
@@ -832,13 +797,14 @@ const quienContestaIA = () => 'claude';
 // las preguntas que propone la app (sugerencias, «Pregúntale» de una idea o de una posición): las del estándar, también en el
 // fundador, porque Claude no da recomendaciones («¿Compro…? ¿cuánto meto?» no le tocaría)
 const preguntasDelEstandar = () => true;
-/* qué modelo de Claude toca para esta tarea (pregunta o análisis), o null si la IA no puede contestar (la demo, el modo aún
-   sin leer, sin cuenta o con el correo sin confirmar, o Claude apartado un rato) */
+/* qué modelo de Claude toca para esta tarea (pregunta o análisis), o null si la IA no puede contestar (el modo aún sin leer,
+   sin cuenta o con el correo sin confirmar, o Claude apartado un rato). 0.8.2d: también en la cartera de prueba (Carlos,
+   6 nov: «sí, con mis preguntas»): contesta con la cuenta de quien la abrió y sobre la cartera inventada */
 function modeloClaudeParaIA(tipo) {
   // el modo, el definitivo: mientras es provisional (dispositivo nuevo, sin haber leído tu cuenta) puede ser fundador sin saberlo
   const modo = LS.get('inv-acceso', null);
   // 0.8.2 (opción B): también en el fundador, y entonces con las reglas del estándar (ver conversar)
-  if (S.demo || !modo || modo.provisional || !FB.user || !FB.user.emailVerified || claudePausado()) return null;
+  if (!modo || modo.provisional || !FB.user || !FB.user.emailVerified || claudePausado()) return null;
   const m = motorElegido();
   // 0.8.2: Haiku por defecto (rápido y barato); Sonnet si eliges «A fondo» para tus preguntas o «Claude Sonnet para todo».
   // 0.8.2b: si hoy ya no te quedan «A fondo» (nivel reducido), Haiku sin intentarlo
@@ -849,9 +815,11 @@ function modeloClaudeParaIA(tipo) {
 const LS_CLAUDE_QUEDAN = 'inv-claude-quedan';
 const diaClaude = () => new Date().toISOString().slice(0, 10);
 // 0.8.2b: también las «A fondo» que quedan (f; solo las dice el Worker en el nivel reducido) y el nivel. null deja lo que había
-function apuntarQuedanClaude(n, f, nivel) {
-  const q0 = LS.get(LS_CLAUDE_QUEDAN, null), q = q0 && q0.d === diaClaude() && q0.uid === uidActual() ? { ...q0 } : { d: diaClaude(), uid: uidActual() };
+// 0.8.2d: y las tareas que quedan (t: revisiones, resúmenes de noticias e importar, con su propio contador en el Worker)
+function apuntarQuedanClaude(n, f, nivel, t) {
+  const q0 = LS.get(LS_CLAUDE_QUEDAN, null), q = q0 && q0.d === diaClaude() && q0.uid === uidActual() ? { ...q0 } : { d: diaClaude(), uid: uidActual(), ...(q0 && q0.uid === uidActual() && q0.nivel ? { nivel: q0.nivel } : {}) };
   if (Number.isFinite(n) && n >= 0) q.n = Math.floor(n);
+  if (Number.isFinite(t) && t >= 0) q.t = Math.floor(t);
   if (Number.isFinite(f) && f >= 0) q.f = Math.floor(f); else if (nivel === 'alto') delete q.f;
   if (nivel) q.nivel = nivel;
   LS.set(LS_CLAUDE_QUEDAN, q);
@@ -859,6 +827,9 @@ function apuntarQuedanClaude(n, f, nivel) {
 function datoQuedan(k) { const q = LS.get(LS_CLAUDE_QUEDAN, null); return q && q.d === diaClaude() && q.uid === uidActual() && Number.isFinite(q[k]) ? q[k] : null; }
 const quedanClaude = () => datoQuedan('n');
 const quedanFondoClaude = () => datoQuedan('f');
+const quedanTareasClaude = () => datoQuedan('t');
+// el nivel de tu cuenta (lo dice el Worker en cada respuesta; se recuerda de un día para otro). Sin saberlo, null
+const nivelClaudeApp = () => { const q = LS.get(LS_CLAUDE_QUEDAN, null); return q && q.uid === uidActual() && (q.nivel === 'alto' || q.nivel === 'reducido') ? q.nivel : null; };
 /* antes de mandar nada de la cartera: ¿puede este correo usar Claude y llega el Worker? Se pregunta con una petición vacía:
    el Worker comprueba la sesión y la lista de correos antes de leer el cuerpo, así que quien no está en la lista recibe un
    403 sin que su cartera haya salido del móvil, y quien sí está recibe un 400 («falta el modelo») que no gasta nada. El
@@ -931,11 +902,43 @@ function sondearClaude() {
    con Claude si tu cuenta lo tiene, aunque tengas la clave de Google. Una llamada suelta, sin las herramientas de la app */
 const claudeParaTodo = () => !!modeloClaudeParaIA('pregunta') && sondeoClaudeOk() && !claudePausado();
 // alParcial(texto, turno): lo que lleva escrito mientras llega (la noticia lo va enseñando)
-async function claudeTexto({ partes, sistema = '', modelo = 'claude-haiku-5-5', web = false, maxBusquedas = 0, maxTokens = 4096, signal, esfuerzo = 'medium', alParcial = null }) {
+// 0.8.2d: tarea, la del Worker (noticia, importar: no gasta preguntas); idPregunta, el mismo para varias lecturas que son una
+// sola tarea (las capturas de una importación). Si Sonnet no puede (sin «A fondo» hoy, saturado), lo hace Haiku con el mismo
+// id; y los fallos salen ya dichos claro (errorSinIA, con su código)
+async function claudeTexto({ partes, sistema = '', modelo = 'claude-haiku-5-5', web = false, maxBusquedas = 0, maxTokens = 4096, signal, esfuerzo = 'medium', alParcial = null, tarea = null, idPregunta = null }) {
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
   const alCambiar = alParcial ? () => { try { alParcial(turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n'), turno); } catch (e) {} } : undefined;
-  await conversarClaude({ mensajes: [{ role: 'user', content: partes }], turno, sistema, maxTokens, signal, web, maxBusquedas, claudeModelo: modelo, herramientas: false, tipo: 'suelta', esfuerzo, alCambiar });
+  const id = idPregunta || nuevoIdPregunta();
+  // si hoy ya no te quedan «A fondo», directamente Haiku (sin gastar una petición en que el Worker diga que no)
+  if (modelo !== HAIKU_IA && quedanFondoClaude() === 0) modelo = HAIKU_IA;
+  const una = (m) => conversarClaude({ mensajes: [{ role: 'user', content: partes }], turno, sistema, maxTokens, signal, web, maxBusquedas, claudeModelo: m, herramientas: false, tipo: 'suelta', esfuerzo, alCambiar, tarea, idPregunta: id });
+  try {
+    try { await una(modelo); }
+    catch (e) {
+      if ((e && e.name === 'AbortError') || modelo === HAIKU_IA || aMediasIA(turno) || !haikuDeReserva(e)) throw e;
+      if (e.codigo === 'tope-fondo') apuntarQuedanClaude(null, 0);
+      diarioIA(`${nombreMod(modelo)} no ha podido (${String(e.codigo || e.tipo || e.estado || 'error')}): sigue Haiku`);
+      turno.partes.length = 0; turno.citas.length = 0; turno.resultados.length = 0;
+      await una(HAIKU_IA);
+    }
+  } catch (e) { if (e && e.name === 'AbortError') throw e; throw falloSinReserva(e, turno); }
   return { texto: turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n\n').trim(), citas: turno.citas.length ? turno.citas : turno.resultados };
+}
+/* 0.8.2d · por qué la IA no puede hacer ahora una tarea (resumir una noticia, leer capturas, revisar la cartera): 'cuenta'
+   (sin entrar), 'verificar' (correo sin confirmar), 'tareas' (hoy ya no quedan), 'apartada' (Claude apartado un rato o el
+   modo aún sin leer); '' si puede. Lo que dice cada una, txtSinTareaIA */
+function sinTareaIA() {
+  if (!FB.user) return 'cuenta';
+  if (!FB.user.emailVerified) return 'verificar';
+  if (quedanTareasClaude() === 0) return 'tareas';
+  return modeloClaudeParaIA('pregunta') ? '' : 'apartada';
+}
+// que: lo que haría, en español y en inglés ([«te cuenta aquí de qué va la noticia», «tells you here…»]); hacer: el verbo
+// para «no puede … ahora» ([«resumirla», «summarise it»])
+function txtSinTareaIA(c, que, hacer) {
+  if (c === 'cuenta') return L(`Con tu cuenta, la IA ${que[0]}.`, `With your account, the AI ${que[1]}.`);
+  if (c === 'verificar' || c === 'tareas') return errorSinIA({ codigo: c === 'verificar' ? 'no-permitido' : 'tope-tareas' }).message;
+  return L(`La IA no puede ${hacer[0]} ahora mismo: vuelve a probar en un rato.`, `The AI can't ${hacer[1]} right now: try again in a while.`);
 }
 // 0.8.2b: el día del Worker es el de UTC: cuándo vuelven las preguntas, dicho de aquí («mañana a partir de la 1:00»; entre
 // las 0:00 y la 1:00 de invierno, «hoy a partir de la 1:00»)
@@ -949,10 +952,11 @@ function cuandoVuelveClaude() {
 /* sin Gemini de reserva: si Claude no puede, se dice claro por qué y qué hacer (en la respuesta va «Volver a preguntar») */
 function errorSinIA(e, aMedias) {
   const c = e && (e.codigo || e.tipo), h = cuandoVuelveClaude();
-  const txt = AS.claudeNo ? L('Sin tu sí, la IA no puede contestar: lo que le preguntas lo contesta Claude, de Anthropic. Si cambias de idea, vuelve a preguntar.', 'Without your OK, the AI cannot answer: your questions are answered by Claude, from Anthropic. If you change your mind, ask again.')
+  const txt = AS.claudeNo && !['tope-tareas', 'tope-diario', 'techo', 'no-permitido'].includes(c) ? L('Sin tu sí, la IA no puede contestar: lo que le preguntas lo contesta Claude, de Anthropic. Si cambias de idea, vuelve a preguntar.', 'Without your OK, the AI cannot answer: your questions are answered by Claude, from Anthropic. If you change your mind, ask again.')
     : aMedias && c !== 'tope-diario' && c !== 'techo' ? L('La respuesta se ha cortado a mitad. Vuelve a preguntar en un momento.', 'The answer stopped halfway. Ask again in a moment.')
     : c === 'tope-diario' ? L(`Has llegado al tope de hoy. Puedes volver a preguntar ${h}.`, `You have reached today's limit. You can ask again ${h}.`)
     : c === 'techo' ? L(`Hoy la IA ha llegado a su tope de uso. Vuelve a probar en un rato o ${h}.`, `The AI has reached its usage limit for today. Try again in a while or ${h}.`)
+    : c === 'tope-tareas' ? L(`Hoy ya no quedan revisiones, resúmenes de noticias ni lecturas de capturas: vuelven ${h}. Tus preguntas a la IA siguen igual.`, `No reviews, article summaries or screenshot readings left today: they come back ${h}. Your questions to the AI are not affected.`)
     : c === 'tope-pregunta' ? L('Esta pregunta ha necesitado demasiados pasos: prueba a hacerla más corta o en dos.', 'This question needed too many steps: try asking it shorter or in two parts.')
     : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace que te llegó al crear la cuenta y vuelve a entrar.', 'To use the AI, confirm your email with the link you got when you created the account, then sign in again.')
     : c === 'sin-creditos' ? L('La IA no está disponible ahora mismo. Vuelve a probar dentro de unas horas.', 'The AI is not available right now. Try again in a few hours.')
@@ -981,7 +985,8 @@ function pausaClaude(e) {
   if (c === 'tope-diario') { const a = new Date(); return Math.max(6e4, Date.UTC(a.getUTCFullYear(), a.getUTCMonth(), a.getUTCDate() + 1) - a.getTime()); }
   // el techo de todos se puede abrir un poco cuando acaban las respuestas que estaban en camino: se vuelve a probar en media hora
   if (c === 'techo') return 30 * 6e4;
-  if (c === 'tope-fondo' || c === 'tope-pregunta') return 0;
+  // 0.8.2d: sin tareas hoy no se aparta Claude: las preguntas siguen
+  if (c === 'tope-fondo' || c === 'tope-pregunta' || c === 'tope-tareas') return 0;
   if (c === 'clave' || c === 'sin-clave') return 36e5;
   if (c === 'sin-sesion' || c === 'cuotas') return 10 * 6e4;
   if (c === 'demasiadas') return 6e4;
@@ -1084,8 +1089,8 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   try {
     const token = await conTiempo(FB.user.getIdToken(), 8000);
     const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) });
-    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); throw errorClaude(r.status, j); }
-    { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel')); }
+    if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); if (j && j.error === 'tope-tareas') apuntarQuedanClaude(null, null, null, 0); throw errorClaude(r.status, j); }
+    { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel'), h('x-quedan-tareas')); }
     const lector = r.body.getReader(), dec = new TextDecoder();
     let buf = '';
     for (;;) {
@@ -1119,8 +1124,11 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   // los bloques de texto vacíos no se pueden devolver a la API
   return { contenido: bloques.filter((b) => b && !(b.type === 'text' && !b.text)), stop, uso };
 }
-async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, claudeModelo, herramientas = true, maxBusquedas = 1, tipo = 'pregunta', esfuerzo: esfuerzo0 = 'medium', idPregunta: id0 = null }) {
+async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, claudeModelo, herramientas = true, maxBusquedas = 1, tipo = 'pregunta', esfuerzo: esfuerzo0 = 'medium', idPregunta: id0 = null, tarea = null }) {
   const modelo = claudeModelo, cfg = cfgAsesor();
+  // 0.8.2d: lo que no es una pregunta del chat va como «tarea» (revisión, noticia, importar): en el Worker tiene su propio
+  // contador y no gasta las preguntas del día
+  const tareaW = ['revision', 'noticia', 'importar'].includes(tarea) ? tarea : tipo === 'análisis' ? 'revision' : null;
   // la búsqueda en internet es la de Claude, así que no depende de lo que incluya el plan de Google
   const usarWeb = web !== false && cfg.webPedida && maxBusquedas > 0;
   const sis = [{ type: 'text', text: NOTA_CLAUDE + (herramientas ? `\n${NOTA_CLAUDE_HERRAMIENTAS}` : '') }, ...(Array.isArray(sistema) ? sistema : [{ text: String(sistema || '') }]).map((b) => ({ type: 'text', text: String((b && b.text) || '') })).filter((b) => b.text)];
@@ -1144,7 +1152,7 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
     const tools = herrs();
     let r;
     ronda++;
-    const cuerpo = { model: modelo, max_tokens: Math.min(CLAUDE_MAX_SALIDA, Math.max(maxTokens * 2, 12000)), system: sis, messages: conCacheClaude(msgs), ...(tools.length ? { tools } : {}), stream: true, output_config: { effort: esfuerzo }, ronda: enviada ? Math.max(ronda, 2) : ronda, pregunta: idPregunta };
+    const cuerpo = { model: modelo, max_tokens: Math.min(CLAUDE_MAX_SALIDA, Math.max(maxTokens * 2, 12000)), system: sis, messages: conCacheClaude(msgs), ...(tools.length ? { tools } : {}), stream: true, output_config: { effort: esfuerzo }, ronda: enviada ? Math.max(ronda, 2) : ronda, pregunta: idPregunta, ...(tareaW ? { tarea: tareaW } : {}) };
     enviada = true;   // si hay que repetir la primera ronda, ya no cuenta como pregunta nueva en el Worker
     try { r = await llamarClaude(cuerpo, turno, signal, alCambiar, { ronda }); }
     catch (e) {
@@ -1243,9 +1251,10 @@ async function preguntarAsesor(texto) {
   if (!texto || AS.cargando) return;
   // 0.8.2b: si el sondeo aún no ha contestado (el panel se acaba de abrir), se espera a él
   if (!iaLista() && modeloClaudeParaIA('pregunta')) await sondearClaude();
-  // sin cuenta o en la demo, la pantalla que lo explica; si no, la pregunta sigue y la respuesta dice por qué no puede
-  // contestar (Claude apartado un rato, el correo sin confirmar…), con «Volver a preguntar»
-  if (!iaLista() && (!FB.user || S.demo)) { AS.vista = 'sin-ia'; pintarAsesor(); return; }
+  // sin cuenta, la pantalla que lo explica; si no, la pregunta sigue y la respuesta dice por qué no puede contestar (Claude
+  // apartado un rato, el correo sin confirmar…), con «Volver a preguntar». 0.8.2d: en la demo contesta con la cuenta de quien
+  // la abrió (si su cuenta aún no se ha cargado, la pantalla lo dice)
+  if (!iaLista() && !FB.user) { AS.vista = 'sin-ia'; pintarAsesor(); return; }
   AS.claudeNo = false;
   const turno = { rol: 'ia', partes: [], citas: [], resultados: [], t: Date.now() };
   const adj = AS.adjunto; AS.adjunto = null; pintarAdjunto();

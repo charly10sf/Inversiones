@@ -1,5 +1,5 @@
 // 0.6d · La cartera de prueba (Ajustes): GrowFolio se vuelve a abrir sin abrir tu cartera y con una inventada; nada de
-// lo que se hace se guarda (ni la cartera ni lo del dispositivo); GrowIA, con tu clave; Ajustes, solo para salir; y al
+// lo que se hace se guarda (ni la cartera ni lo del dispositivo); la IA, con Claude y tu cuenta (0.8.2d); Ajustes, solo para salir; y al
 // salir pide la contraseña (o el PIN) antes de enseñar la tuya.
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';

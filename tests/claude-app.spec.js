@@ -626,3 +626,80 @@ test('las conversaciones se guardan cifradas, se abren desde el panel y se borra
   await expect(page.locator('#asCuerpo .as-convs')).toHaveCount(0);
   expect(await page.evaluate(() => localStorage.getItem(LS.k('inv-asesor-convs')))).toBeNull();
 });
+
+// 0.8.2d · la revisión de la cartera e importar van como «tarea» (su propio contador en el Worker, no gastan preguntas); en el
+// nivel reducido la revisión automática no se rehace a cada cambio de señal o noticia; y en la cartera de prueba contesta
+// Claude con tu cuenta, sobre la cartera inventada
+test('la revisión va como tarea; en el nivel reducido la automática no se rehace por señales ni noticias; sin tareas, no reintenta', async ({ page }) => {
+  await preparada(page);
+  await page.evaluate(() => LS.set('inv-claude-ok', true));
+  const ids = await page.evaluate(() => [...new Set((S.M || calcular()).filas.map((f) => f.inst.id))]);
+  const json = { titular: 'Tu cartera sigue en orden.', resumen: ['Sube un 1 %.'], posiciones: Object.fromEntries(ids.map((k) => [k, { texto: 'Sin cambios.' }])) };
+  let tope = false;
+  const w = await worker(page.context(), () => (tope ? { json: { error: 'tope-tareas' }, estado: 429 } : { sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]), cabeceras: { 'X-Nivel': 'reducido', 'X-Quedan': '5', 'X-Quedan-Tareas': '9', 'Access-Control-Expose-Headers': 'X-Nivel, X-Quedan, X-Quedan-Tareas' } }));
+  await page.evaluate(() => generarAnalisisIA('la pides tú'));
+  await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
+  expect(w.peticiones[0].cuerpo.tarea).toBe('revision');
+  expect(await page.evaluate(() => [nivelClaudeApp(), quedanTareasClaude(), quedanClaude()])).toEqual(['reducido', 9, 5]);
+  // hecha hace 4 horas y con una señal cambiada: en el reducido, no se rehace (una vez al día como mucho)
+  const vieja = () => page.evaluate(() => { S.iaPropio.fecha = new Date(Date.now() - 4 * 36e5).toISOString(); S.iaPropio.firma = 'otra'; IA.ultimoIntento = 0; guardarCfgAsesor({ auto: 'diario' }); return revisarAnalisisIA(); });
+  await vieja();
+  await page.waitForTimeout(800);
+  expect(w.peticiones.length).toBe(1);
+  // en el nivel alto, sí
+  await page.evaluate(() => { const q = LS.get('inv-claude-quedan'); LS.set('inv-claude-quedan', { ...q, nivel: 'alto' }); });
+  await vieja();
+  await expect.poll(() => w.peticiones.length, { timeout: 15_000 }).toBe(2);
+  await expect.poll(() => page.evaluate(() => IA.generando), { timeout: 15_000 }).toBe(false);
+  // sin tareas hoy: lo dice y no se reintenta sola
+  tope = true;
+  await page.evaluate(() => generarAnalisisIA('la pides tú'));
+  expect(await page.evaluate(() => [IA.error, IA.reintento, quedanTareasClaude(), claudePausado()])).toEqual([expect.stringContaining('Hoy ya no quedan revisiones'), 0, 0, null]);
+  // y la automática ya ni lo intenta
+  const n = w.peticiones.length;
+  await page.evaluate(() => { IA.ultimoIntento = 0; S.iaPropio.fecha = new Date(Date.now() - 30 * 36e5).toISOString(); return revisarAnalisisIA(); });
+  await page.waitForTimeout(500);
+  expect(w.peticiones.length).toBe(n);
+});
+
+test('importar varias capturas es una sola tarea (el mismo id); sin «A fondo» hoy lee Haiku', async ({ page, context }) => {
+  await preparada(page);
+  const w = await worker(context, (c) => (c.model === 'claude-sonnet-5-5' && c.pregunta && w.peticiones.length > 1 ? { json: { error: 'tope-fondo' }, estado: 429 } : { sse: stream([{ tipo: 'texto', texto: '{"plataforma":"MyInvestor","posiciones":[{"nombre":"Fondo X","cantidad":3}],"operaciones":[]}' }]) }));
+  await page.evaluate(() => sondearClaude());
+  const o = await page.evaluate(async () => {
+    await cargarTrozo('importar'); LS.set(LS_CLAUDE_IMP, FB.user.uid);
+    const a = { mime: 'image/jpeg', data: 'AAAA', nombre: 'a.jpg' };
+    return leerCapturas([a, { ...a, nombre: 'b.jpg' }], () => {});
+  });
+  expect(o.posiciones[0].nombre).toBe('Fondo X');
+  const p = w.peticiones.map((x) => x.cuerpo);
+  // la primera con Sonnet; la segunda, Sonnet sin «A fondo» y luego Haiku; todas con el mismo id y como tarea «importar»
+  expect(p.map((c) => c.model)).toEqual(['claude-sonnet-5-5', 'claude-sonnet-5-5', 'claude-haiku-5-5']);
+  expect(new Set(p.map((c) => c.pregunta)).size).toBe(1);
+  expect(p.every((c) => c.tarea === 'importar')).toBe(true);
+});
+
+test('en la cartera de prueba contesta Claude con tu cuenta y sobre la cartera inventada', async ({ page, context }) => {
+  await preparada(page);
+  await page.evaluate(() => LS.set('inv-claude-ok', FB.user.uid));
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Tu cartera de prueba va bien.' }]) }));
+  await page.evaluate(() => sondearClaude());
+  await page.evaluate(() => { entrarDemo(); });
+  await expect(page.locator('#pAct')).toBeVisible({ timeout: 10_000 });
+  await page.fill('#pAct', 'cartera-123');
+  await page.locator('#fPAct button[type=submit]').click();
+  await expect(page.locator('#demoBanda')).toBeVisible({ timeout: 30_000 });
+  await expect.poll(() => page.evaluate(() => !!FB.user && iaLista()), { timeout: 15_000 }).toBe(true);
+  await page.evaluate(() => abrirAsesor('¿Cómo va?', true));
+  await expect(page.locator('#asCuerpo')).toContainText('Tu cartera de prueba va bien', { timeout: 20_000 });
+  const c = w.peticiones.at(-1);
+  expect(c.auth).toMatch(/^Bearer /);
+  const datos = c.cuerpo.system.map((b) => b.text).join('\n');
+  // la inventada (Inditex, ASML…), no la tuya (Repsol, IAG) ni tu nombre
+  expect(datos).toContain('(id "demo1")');
+  expect(datos).toContain('ASML');
+  expect(datos).not.toContain('(id "repsol")');
+  expect(datos).not.toContain('Lucía');
+  // y nada se guarda: ni la conversación ni lo de la IA en el dispositivo
+  expect(await page.evaluate(() => localStorage.getItem('inv-asesor-conv'))).toBeNull();
+});

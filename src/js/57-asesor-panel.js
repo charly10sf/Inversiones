@@ -120,13 +120,12 @@ function htmlDiarioIA() {
 function htmlSinIA() {
   const p = claudePausado(), sinVerificar = FB.user && !FB.user.emailVerified, esperando = !p && !sinVerificar && !!SONDEO_EN_CURSO;
   const txt = !FB.user ? L('La IA contesta con tu cuenta de Toisón: entra en tu cuenta para usarla.', 'The AI answers with your Toisón account: sign in to use it.')
-    : S.demo ? L('En la demo la IA no contesta: crea tu cuenta para preguntarle por tu cartera.', 'The AI does not answer in the demo: create your account to ask it about your portfolio.')
     : esperando ? L('Conectando con la IA…', 'Connecting to the AI…')
     : errorSinIA(motivoSinClaude()).message;
   return `<div class="as-config as-sin-ia">
     <h3 data-no-trad>${conIA('La IA', 'GrowIA')}</h3>
     <p>${esc(txt)}</p>
-    ${esperando || !FB.user || S.demo ? '' : `<div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="reprobar">${L('Volver a probar', 'Try again')}</button></div>`}
+    ${esperando || !FB.user ? '' : `<div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="reprobar">${L('Volver a probar', 'Try again')}</button></div>`}
     <div class="as-sin-clave">
       <b>${L('Mientras tanto', 'Meanwhile')}</b>
       <p>${L('Copia tu cartera de ahora mismo junto con tu pregunta y pégala en el chat de IA que uses. No hace los cálculos de Toisón en directo, pero tiene todos tus datos.', "Copy your current portfolio together with your question and paste it into the AI chat you use. It doesn't run Toisón's live calculations, but it has all your data.")}</p>
@@ -179,9 +178,6 @@ function pintarTurno(k) {
   el.outerHTML = htmlTurno(AS.conv[k], k);
   if (abajo) cuerpo.scrollTop = cuerpo.scrollHeight;
 }
-/* lo que antes abría la pantalla de la clave de Google (el resumen de una noticia, leer capturas al importar): 0.8.2b, abre
-   la IA, que dice si puede contestar */
-async function abrirClaveGoogle() { await abrirAsesor(); }
 async function abrirAsesor(pregunta, enviar) {
   if (!S.cartera) return;
   if (S.ficha) cerrarFicha();

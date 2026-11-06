@@ -578,3 +578,56 @@ test('0.8.2b: en el reducido, menos salida y búsquedas, una sola búsqueda, sin
     expect((await pedir('uid-s5', { ...pedido, model: 'claude-otro-1', pregunta: 'recorte5aaa' }, env)).status).toBe(200);
   });
 });
+
+// 0.8.2d: la revisión de la cartera, el resumen de una noticia e importar van con «tarea»: su propio contador, que no se come
+// las preguntas del chat; el dinero, en los mismos topes
+test('0.8.2d: las tareas (revisión, noticia, importar) tienen su contador y no gastan preguntas', async () => {
+  await con(ok, async () => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: undefined, CLAUDE_RONDAS_POR_DIA: undefined };
+    const T = (id, tarea = 'noticia', m = HAIKU) => ({ ...m, pregunta: id, ronda: 1, tarea });
+    // nivel reducido: 10 tareas al día; ninguna gasta de las 5 preguntas
+    for (let i = 0; i < 10; i++) {
+      const r = await pedir('uid-t', T(`tarea${i}aaaa`, ['revision', 'noticia', 'importar'][i % 3]), env, RED);
+      expect(r.status).toBe(200);
+      expect(r.headers.get('x-quedan-tareas')).toBe(String(9 - i));
+      expect(r.headers.get('x-quedan')).toBe('5');
+    }
+    let r = await pedir('uid-t', T('tarea99aaaa'), env, RED);
+    expect(r.status).toBe(429);
+    expect(await r.json()).toEqual({ error: 'tope-tareas' });
+    // otra ronda de una tarea ya empezada sí entra (su id ya contó)
+    expect((await pedir('uid-t', { ...T('tarea0aaaa'), ronda: 2 }, env, RED)).status).toBe(200);
+    // las preguntas siguen enteras, y una pregunta no lleva X-Quedan-Tareas
+    r = await pedir('uid-t', { ...HAIKU, pregunta: 'preg1aaaa', ronda: 1 }, env, RED);
+    expect(r.status).toBe(200);
+    expect(r.headers.get('x-quedan')).toBe('4');
+    expect(r.headers.get('x-quedan-tareas')).toBeNull();
+    // un valor de tarea que no es de la lista cuenta como pregunta
+    r = await pedir('uid-t', { ...HAIKU, pregunta: 'preg2aaaa', ronda: 1, tarea: 'chat' }, env, RED);
+    expect(r.headers.get('x-quedan')).toBe('3');
+    // el mismo id como tarea y como pregunta no se cruza: la pregunta gasta la suya
+    r = await pedir('uid-t', { ...HAIKU, pregunta: 'tarea1aaaa', ronda: 1 }, env, RED);
+    expect(r.headers.get('x-quedan')).toBe('2');
+    // una tarea con Sonnet en el reducido gasta «A fondo», como una pregunta
+    r = await pedir('uid-t2', T('fondoTaaaa', 'importar', SONNET), env, { email: 'fondo-t@prueba.com' });
+    expect(r.status).toBe(200);
+    expect(r.headers.get('x-quedan-fondo')).toBe('2');
+    // una tarea sin id no vale (no se sabría cuándo empieza otra)
+    r = await pedir('uid-t3', { ...HAIKU, ronda: 2, tarea: 'noticia' }, env, { email: 'sinid@prueba.com' });
+    expect(r.status).toBe(400);
+    // una tarea que no cabe en el tope de gasto de su correo: «sin tareas», no «sin preguntas»
+    r = await pedir('uid-t4', T('gastoTaaaa', 'revision'), { ...env, CLAUDE_GASTO_REDUCIDO: '0.0001' }, { email: 'gasto-t@prueba.com' });
+    expect(await r.json()).toEqual({ error: 'tope-tareas' });
+    // nivel alto: 40 tareas
+    for (let i = 0; i < 3; i++) { const x = await pedir('uid-ta', T(`alto${i}taaaa`, 'revision'), env); expect(x.headers.get('x-quedan-tareas')).toBe(String(39 - i)); expect(x.headers.get('x-quedan')).toBe('20'); }
+  });
+});
+
+test('0.8.2d: las tareas cuentan en el techo de gasto del reducido como las preguntas', async () => {
+  await con(conUso({ input_tokens: 1000, output_tokens: 1000 }), async () => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_TECHO_REDUCIDO: '0.0001' };
+    const r = await pedir('uid-tt', { ...HAIKU, pregunta: 'techoTaaaa', ronda: 1, tarea: 'revision' }, env, { email: 'tt@prueba.com' });
+    expect(r.status).toBe(429);
+    expect(await r.json()).toEqual({ error: 'techo' });
+  });
+});

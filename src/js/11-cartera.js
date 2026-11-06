@@ -391,9 +391,11 @@ function htmlToca(M) {
     cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>${IA.generando ? 'Revisando tu cartera ahora' : 'Todavía no ha revisado tu cartera'}</small></div></div>
       ${IA.generando ? '' : `<button type="button" class="btn peq pri iac-boton" data-accion="ia-actualizar">${ICONOS.growia}Que la revise ahora</button>`}`;
   } else {
-    cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>Aún sin activar en este dispositivo</small></div></div>
-      <p class="iac-tit iac-act">${esPublico() ? L('Analiza tu cartera cada día, te explica lo que pasa y contesta lo que le preguntes. Es gratis con una clave de Google.', 'It analyses your portfolio every day, explains what is going on and answers your questions. Free with a Google key.') : 'Analiza tu cartera cada día, te dice qué hacer y contesta lo que le preguntes. Es gratis con una clave de Google.'}</p>
-      <button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.growia}Activar la IA</button>`;
+    // 0.8.2d: sin clave de Google que poner: o falta la cuenta (o confirmar el correo), o aún no ha hablado con el Worker
+    const sin = sinTareaIA();
+    cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>${sin === 'cuenta' ? L('Necesita tu cuenta', 'Needs your account') : sin === 'verificar' ? L('Falta confirmar tu correo', 'Your email is not confirmed yet') : sin === 'tareas' ? L('Sin revisiones hasta mañana', 'No reviews until tomorrow') : L('Todavía no ha revisado tu cartera', "It hasn't reviewed your portfolio yet")}</small></div></div>
+      <p class="iac-tit iac-act">${sin === 'tareas' ? esc(txtSinTareaIA(sin)) : L('Analiza tu cartera cada día, te explica lo que pasa y contesta lo que le preguntes.', 'It analyses your portfolio every day, explains what is going on and answers your questions.')}</p>
+      ${sin === 'tareas' ? '' : `<button type="button" class="btn peq pri iac-boton" data-accion="asesor">${ICONOS.growia}${L('Abrir la IA', 'Open the AI')}</button>`}`;
   }
   const lista = v.length ? `<div class="iac-sub"><h3>${L('Tu mes', 'Your month')}</h3><button class="enlace acento" data-calif="ruta">${pend.length > v.length ? `Ver los ${pend.length}` : 'Ver el paso a paso'}</button></div>
     <ul>${v.map((x) => `<li class="${x.urgente && !x.hecho ? 'urgente' : ''}${x.hecho ? ' hecho' : ''}">${checkRuta(x, '')}<span class="iac-paso"><span class="toca-c">${esc(x.hecho ? 'Hecho hoy' : x.cuando || (x.fuente === 'ia' ? 'según la IA' : ''))}</span><b>${x.t.replace(/ €/g, ' €')}</b></span></li>`).join('')}</ul>` : '';

@@ -1,5 +1,5 @@
 /* =====================================================================
-   Análisis IA: el que escribe GrowIA (Gemini) con tu clave, cifrado. Ya no hay uno público de partida.
+   Análisis IA: el que escribe la IA (desde la 0.8.2d, solo Claude, por el Worker), cifrado. Ya no hay uno público de partida.
    Los datos personales van como {marcas} y se rellenan aquí con tu cartera descifrada.
    ===================================================================== */
 async function cargarIA() {
@@ -92,7 +92,7 @@ function htmlAnalisisIA(M) {
   const prog = `<div id="iaProgreso">${htmlProgresoIA()}</div>${htmlPreguntasIA(true)}`;
   // 0.3.9: sin análisis, una caja que dice qué hará GrowIA y el paso que falta (antes, una línea suelta y un botón que se salía en el móvil)
   if (!ia) return prog + (!S.iaCargado ? '<div class="vacio">Cargando el análisis…</div>'
-    : `<section class="ov-vacio ia-vacio"><div><h2 data-no-trad>${conIA(M.filas.length ? 'La IA aún no ha revisado tu cartera' : 'La IA revisará tu cartera', M.filas.length ? "GrowIA hasn't reviewed your portfolio yet" : 'GrowIA will review your portfolio')}</h2><p>${!M.filas.length ? L('Cuando metas lo que tienes, le pondrá nota punto por punto y te dirá qué mejoraría, qué mantendría y qué riesgos vigilar.', 'Once you add what you own, it scores it point by point and tells you what it would improve, keep and watch.') : iaLista() ? L('Le pone nota punto por punto y te dice qué mejoraría, qué mantendría y qué riesgos vigilar. Tarda uno o dos minutos.', 'It scores it point by point and tells you what it would improve, keep and watch. It takes a minute or two.') : L('Actívala gratis con tu clave de Google y le pondrá nota punto por punto, con qué mejoraría, qué mantendría y qué riesgos vigilar.', 'Turn it on for free with your Google key and it will score it point by point, with what it would improve, keep and watch.')}</p></div>${!M.filas.length ? `<button class="btn pri" data-accion="nueva-pos">${ICONOS.mas}${L('Meter lo que tengo', 'Add what I own')}</button>` : iaLista() ? `<button class="btn pri" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? L('Escribiéndolo…', 'Writing it…') : L('Que lo escriba ahora', 'Write it now')}</button>` : `<button class="btn pri" data-accion="asesor">${ICONOS.growia}${L('Activar la IA, gratis', 'Turn on GrowIA, free')}</button>`}</section>`);
+    : `<section class="ov-vacio ia-vacio"><div><h2 data-no-trad>${conIA(M.filas.length ? 'La IA aún no ha revisado tu cartera' : 'La IA revisará tu cartera', M.filas.length ? "GrowIA hasn't reviewed your portfolio yet" : 'GrowIA will review your portfolio')}</h2><p>${!M.filas.length ? L('Cuando metas lo que tienes, le pondrá nota punto por punto y te dirá qué mejoraría, qué mantendría y qué riesgos vigilar.', 'Once you add what you own, it scores it point by point and tells you what it would improve, keep and watch.') : iaLista() ? L('Le pone nota punto por punto y te dice qué mejoraría, qué mantendría y qué riesgos vigilar. Tarda uno o dos minutos.', 'It scores it point by point and tells you what it would improve, keep and watch. It takes a minute or two.') : txtSinRevisionIA()}</p></div>${!M.filas.length ? `<button class="btn pri" data-accion="nueva-pos">${ICONOS.mas}${L('Meter lo que tengo', 'Add what I own')}</button>` : iaLista() ? `<button class="btn pri" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? L('Escribiéndolo…', 'Writing it…') : L('Que lo escriba ahora', 'Write it now')}</button>` : sinTareaIA() === 'tareas' ? '' : `<button class="btn pri" data-accion="asesor">${ICONOS.growia}${L('Abrir la IA', 'Open the AI')}</button>`}</section>`);
   const v = valoresIA(M);
   const R = (t) => rellenarIA(t || '', v);
   const f = String(ia.fecha || '');
@@ -102,10 +102,10 @@ function htmlAnalisisIA(M) {
   const cuando = f.length > 10 ? (dias === 0 ? `hoy a las ${hora}` : dias === 1 ? `ayer a las ${hora}` : `el ${fechaLarga(iso(d))}`) : `el ${fechaLarga(f)}${dias > 0 ? `, hace ${dias} ${dias === 1 ? 'día' : 'días'}` : ''}`;
   const firma = ia.propio
     ? `Escrito por ${esc(ia.autor)} ${cuando}${ia.busquedas ? `, con ${ia.busquedas} ${ia.busquedas === 1 ? 'búsqueda' : 'búsquedas'} en internet` : ''} y tus cifras de ese momento${esRapida(ia.modelo) ? ' (con la respuesta rápida)' : ''}.`
-    : `Análisis de partida ${cuando}, sin tus cifras al céntimo. ${iaLista() ? 'La IA escribe el suyo con tus datos: si no aparece en un par de minutos, pulsa Actualizar ahora.' : 'Activa la IA (gratis) para que lo rehaga con tus datos cada día.'}`;
+    : `Análisis de partida ${cuando}, sin tus cifras al céntimo. ${iaLista() ? 'La IA escribe el suyo con tus datos: si no aparece en un par de minutos, pulsa Actualizar ahora.' : esc(txtSinRevisionIA())}`;
   const boton = iaLista()
     ? `<button class="btn peq" data-accion="ia-actualizar"${IA.generando ? ' disabled' : ''}>${ICONOS.nueva}${IA.generando ? 'Actualizando…' : 'Actualizar ahora'}</button>`
-    : `<button class="btn peq" data-accion="asesor">${ICONOS.growia}Activar la IA, gratis</button>`;
+    : sinTareaIA() === 'tareas' ? '' : `<button class="btn peq" data-accion="asesor">${ICONOS.growia}${L('Abrir la IA', 'Open the AI')}</button>`;
   const ids = [...new Set(M.filas.map((x) => x.inst.id))];
   const puntos = (n) => `<span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span>`;
   const reglas = (S.ia && S.ia.reglas) || [];
@@ -134,7 +134,7 @@ function htmlAnalisisIA(M) {
       <ul class="lista">${reglas.map((r) => `<li class="info">${ICONOS.info}<div><span>${esc(r)}</span></div></li>`).join('')}</ul></details>` : ''}
     <p class="nota ia-donde">Lo que opina de cada posición está en Expertos, Tus posiciones; sus fechas, en el Calendario (el icono de arriba en Inicio); y sus pasos, en el Paso a paso.</p>
     ${fuentes.length ? `<details class="plegable"><summary><h2>Fuentes</h2><span class="k">${fuentes.length} noticias que ha leído para contrastar</span></summary><div class="as-fuentes">${fuentes.map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t || '')}">${esc(x.t ? x.t.slice(0, 60) : dom(x.u))}</a>`).join('')}</div></details>` : ''}
-    <p class="nota ia-pie">${ia.propio ? `Lo escribe ${esc(ia.autor)} desde tu navegador con tu clave: lee tu cartera cifrada, usa las cuentas de Toisón y contrasta con las noticias. Se guarda cifrado con tu contraseña.` : 'Es el análisis de partida, sin cantidades: las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. La IA lo sustituye por el suyo en cuanto hace su primera revisión.'}</p>
+    <p class="nota ia-pie">${ia.propio ? L('Lo escribe la IA con Claude, de Anthropic, a partir de tu cartera, las cuentas de Toisón y las noticias. Se guarda cifrado con tu contraseña.', "Written by the AI with Claude, from Anthropic, using your portfolio, Toisón's calculations and the news. It is stored encrypted with your password.") : 'Es el análisis de partida, sin cantidades: las cifras resaltadas salen de tu cartera y se recalculan solas con cada precio. La IA lo sustituye por el suyo en cuanto hace su primera revisión.'}</p>
   </div>`;
 }
 
