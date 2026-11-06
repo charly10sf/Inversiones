@@ -8,17 +8,18 @@
    como las del selector de Ajustes, lleva los colores de su diseño).
    ===================================================================== */
 
-/* ---------- Mármol (0.8.3, «Mármol G»): negro AMOLED con vetas blancas marcadas y oro más vivo. Lo eligió Carlos el
-   6 nov entre ocho propuestas: «como mármol de verdad», sin vetas de oro y con más contraste entre negro y oro.
+/* ---------- Mármol (0.8.3, «Mármol G»): negro AMOLED con vetas grises suaves y el oro del logo de Toisón (#e3b45f).
+   Lo eligió Carlos el 6 nov: «como mármol de verdad», sin vetas de oro; esa tarde, las vetas más calmadas («parecían
+   rayos») y el oro vivo de la maqueta (#ffc640) cambiado por el del logo, para que la app cuadre con el icono.
    La textura (marmol-g.webp) la hace scripts/textura_marmol.py ---------- */
 :root[data-tema="marmol"], [data-tema="marmol"] {
   --fondo: #000000; --fondo-2: #000000; --superficie: #111111; --superficie-2: #1c1c1c; --borde: #313131;
-  --texto: #f8f6f2; --texto-2: #d2cdc5; --oro-texto: #ffc640; --grafica: #ffc640;
+  --texto: #f8f6f2; --texto-2: #d2cdc5; --oro-texto: #e3b45f; --grafica: #e3b45f;
   --sube: #55e8a0; --baja: #ff8f6e; --aviso: #ffb45e;
-  --primario: #ffc640; --sobre-primario: #140d00; --sim-o: #f8f6f2; --sim-t: #ffc640;
-  --metal: linear-gradient(180deg, #fff8d8 0%, #ffda6a 30%, #f4b52c 58%, #b67814 100%);
+  --primario: #e3b45f; --sobre-primario: #140d00; --sim-o: #f8f6f2; --sim-t: #e3b45f;
+  --metal: linear-gradient(180deg, #f7dfa8 0%, #e3b45f 52%, #b5863a 100%); /* el oro del logo (Carlos, 6 nov) */
   --brillo: rgb(255 250 230 / .7); --hondo: rgb(0 0 0 / .8);
-  --reparto-1: #ffc640; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
+  --reparto-1: #e3b45f; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
   --grano: .03; --resplandor: 1; --luz-graf: 16%; --polvo: 1;
   --titulo: var(--ui); --titulo-peso: 500; --titulo-estilo: normal; --titulo-espacio: -.02em; /* títulos modernos, en Inter */
   --velo: #000000;
