@@ -14,7 +14,7 @@ function matiz(h) {
   return Math.round(((m * 60) + 360) % 360);
 }
 const JAVA = readFileSync(new URL('../android/app/src/main/java/es/inversiones/app/Tema.java', import.meta.url), 'utf8');
-const EN_JAVA = { marmol: 'FFFF5F5A', marfil: 'FFA61E1E', borgona: 'FFFF7B78' };
+const EN_JAVA = { marmol: 'FFFF6B62', marfil: 'FFA42018', borgona: 'FFFF7B78' };
 
 for (const tema of ['marmol', 'marfil', 'borgona']) {
   test(`la bajada es roja en ${tema}`, async ({ context, page }) => {
