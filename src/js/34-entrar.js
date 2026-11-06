@@ -169,9 +169,9 @@ async function bienvenidaCuenta() {
       S.enc = { texto: local.texto, sha: null };
       S.cartera = c; S.key = key; S.salt = b64.dec(f.salt); S.iter = f.iter || 600000;
       await IDB.set(IDB_CLAVE, { salt: f.salt, key });
-      // lo de antes ya vive en la cuenta: fuera del dispositivo, para que no se le ofrezca a nadie más; la clave
-      // de Gemini y la conversación del asesor pasan a la cuenta
-      for (const k of ['asesor-clave', 'asesor-clave-g', 'asesor-conv', 'ia-propio']) { const v = localStorage.getItem((local.clave === 'clave' ? 'inv-' : 'invL-') + k); if (v != null && localStorage.getItem('invC-' + k) == null) localStorage.setItem('invC-' + k, v); }
+      // lo de antes ya vive en la cuenta: fuera del dispositivo, para que no se le ofrezca a nadie más; la conversación
+      // del asesor pasa a la cuenta
+      for (const k of ['asesor-conv', 'ia-propio']) { const v = localStorage.getItem((local.clave === 'clave' ? 'inv-' : 'invL-') + k); if (v != null && localStorage.getItem('invC-' + k) == null) localStorage.setItem('invC-' + k, v); }
       for (const k of ['inv-local-enc', 'inv-cache-enc', 'inv-pend-enc', 'invL-pend-enc', 'invL-cache-enc']) localStorage.removeItem(k);
       try { await IDB.del('clave-local'); await IDB.del('clave'); } catch (e) {}
       if (nom) { S.cartera.perfil = { ...(S.cartera.perfil || {}), nombre: nom }; }
@@ -357,7 +357,7 @@ async function aplicarRemoto(enc, rev) {
     if (S.vigilaCuenta) { try { S.vigilaCuenta(); } catch (e3) {} S.vigilaCuenta = null; }
     S.enc = { texto: enc, sha: null }; fijarBase(rev, enc); cacheCuenta.set(enc); LS.del('inv-pend-cuenta');
     // la clave de ahora se queda en memoria hasta que escribas la nueva: con ella se pasa a la nueva lo cifrado en este
-    // dispositivo (la clave de Gemini, la conversación del asesor)
+    // dispositivo (las conversaciones de la IA y el análisis propio)
     if (S.key) { S.keyVieja = S.key; try { await IDB.set('clave-vieja', { key: S.key }); } catch (e8) {} }
     S.cartera = null; S.key = null; S.puente = null; try { await IDB.del(IDB_CLAVE); } catch (e4) {}
     return pantallaDesbloqueo('', 'La contraseña de tu cartera ha cambiado en otro dispositivo. Escribe la nueva para seguir.');

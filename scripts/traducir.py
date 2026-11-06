@@ -1,34 +1,38 @@
 #!/usr/bin/env python3
-"""0.4: lo que escribe Gemini en la Action, también en inglés.
+"""0.4: lo que escribe la IA en la Action, también en inglés.
 
 Uso: python scripts/traducir.py instrumentos.json anterior/ salida/
 
 Lo llama la Action después de informe.py. Junta los textos en español del informe de prensa (informe.json), de la
 decisión de ideas y de las lecturas de prensa de cada empresa (escaneo.json), de las fichas (fichas.json) y los titulares de lo que sigue
-GrowFolio (precios.json); los que aún no tiene traducidos se los pasa a Gemini (el modelo más barato, Flash-Lite)
-por tandas, y lo guarda todo en traduccion-en.json: {clave del texto en español: el texto en inglés}. Cada texto se
+GrowFolio (precios.json); los que aún no tiene traducidos se los pasa a Claude (Haiku, por la API por lotes, a mitad de
+precio) por tandas, y lo guarda todo en traduccion-en.json: {clave del texto en español: el texto en inglés}. Cada texto se
 traduce una sola vez; lo que deja de usarse se borra a los tres días. La web en inglés cambia los textos al cargarlos.
 
 La clave es FNV-1a de 32 bits sobre las unidades UTF-16 del texto más su largo, igual que claveTr() en la web.
+
+0.8.2d (6 nov 2026, «todo con Claude»): antes, Gemini Flash-Lite con GEMINI_API_KEY. Ahora Claude con la clave del radar
+(ANTHROPIC_RADAR_KEY, workspace «Toisón radar»): todas las tandas de una pasada van en UN lote; si el lote no sale a tiempo,
+las que falten se piden en directo. Medido el 4-6 nov: unas 115 tandas al día de ~1.800 tokens de entrada y ~1.500 de
+salida, unos 0,05 US$ al día por lotes.
 """
 import datetime as dt
 import json
-import os
 import re
 import sys
 import time
 
-import informe as I  # noqa: E402  (las llamadas a Gemini, con sus reintentos y su clave en cabecera o en la dirección)
+import informe as I  # noqa: E402  (las llamadas a Claude, con sus reintentos, sus lotes y el registro de lo que cuestan)
 
-MODELO_TRAD = os.environ.get("GEMINI_TRAD", "gemini-3.5-flash-lite")
+MODELO_TRAD = I.CLAUDE_MODELO
 LOTE = 60          # textos por llamada
 MAX_LLAMADAS = 8   # llamadas por pasada, como mucho (contando las tandas partidas): lo que falte, en la siguiente
 TIEMPO_MAX = 300   # segundos para traducir en cada pasada, para no comerse los 20 minutos de la Action
 DIAS_GUARDA = 3    # lo que deja de usarse se queda este tiempo por si vuelve
-DIAS_FALLO = 2     # un texto que Gemini no consigue traducir solo no se vuelve a pedir hasta pasados estos días
+DIAS_FALLO = 2     # un texto que la IA no consigue traducir solo no se vuelve a pedir hasta pasados estos días
 # claves que no son texto para leer (enlaces, fechas, símbolos, nombres, etiquetas) o subárboles que no se pintan
 SALTA = {"u", "f", "d", "h", "s", "id", "n", "modelo", "generado", "impacto", "imp", "urgencia", "confianza", "zona", "dato",
-         "fuentes", "noticias", "fuentes_pasada", "gemini", "empresas", "con_noticias", "leidas_24h", "v", "rel", "web"}
+         "fuentes", "noticias", "fuentes_pasada", "gemini", "ia", "claude", "empresas", "con_noticias", "leidas_24h", "v", "rel", "web"}
 ES = re.compile(r"\b(de|del|la|las|los|el|que|para|con|por|una?|está|son|hay|se|su|sus|más|años?|hoy|tras|sin|muy)\b|[áéíóúñ¿¡]", re.I)
 
 
@@ -68,28 +72,24 @@ def leer(ruta):
 
 
 class Parar(Exception):
-    """Gemini no responde (red, cupo, clave): no tiene sentido seguir pidiendo en esta pasada."""
+    """La IA no responde (red, saldo, clave): no tiene sentido seguir pidiendo en esta pasada."""
 
 
-def traducir(lista, clave_api):
-    """Una tanda: [es] -> [en] en el mismo orden, o None si la respuesta no cuadra. Lanza Parar si Gemini no responde."""
+def pedido_tanda(lista):
     pide = ("Traduce al inglés cada texto de la lista. Son notas sobre bolsa y empresas que lee un inversor particular "
             "en una app de finanzas personales: inglés natural, sencillo y directo. Reglas: deja las cifras exactamente "
             "como vienen (con su formato español: 1.234,5 €; 5,1 %), los nombres de empresas, índices, tickers, medios "
             "y personas, y lo que vaya entre llaves {así} sin tocar; no añadas ni quites información. Devuelve solo JSON: "
             '{"t": [las traducciones, en el mismo orden y el mismo número que la entrada]}.\n\nTextos:\n'
             + json.dumps(lista, ensure_ascii=False))
-    cuerpo = {"contents": [{"role": "user", "parts": [{"text": pide}]}],
-              "generationConfig": {"temperature": 0.2, "responseMimeType": "application/json", "maxOutputTokens": 16000}}
-    # solo el modelo barato: el principal tiene su propio cupo gratis y lo necesita informe.py
+    # sin «temperature» (6 nov, ensayo: con ella, ninguna tanda del lote salía bien; la lectura de prensa no la lleva)
+    return I.pedido("", pide, 16000, json_=True)
+
+
+def leer_tanda(lista, msg):
+    """[en] en el mismo orden que `lista`, o None si la respuesta no cuadra."""
     try:
-        r = I.gemini_modelo(cuerpo, clave_api, MODELO_TRAD)
-        I.apuntar_uso(MODELO_TRAD, r, "traducir")
-    except Exception as e:  # noqa: BLE001  (HTTP, red, tiempo de espera, JSON roto…)
-        raise Parar(f"{MODELO_TRAD} no responde ({str(e)[:120]})") from e
-    try:
-        txt, _ = I.texto_de(r)
-        o = I.extraer_json(txt)
+        o = I.extraer_json(I.texto_de(msg)[0])
     except Exception:  # noqa: BLE001
         o = None
     t = o.get("t") if isinstance(o, dict) else None
@@ -99,19 +99,43 @@ def traducir(lista, clave_api):
     return None
 
 
-def traducir_todo(falta, clave_api, llamar=traducir):
+def traducir(lista, clave_api=None):
+    """Una tanda en directo: [es] -> [en] en el mismo orden, o None si la respuesta no cuadra. Lanza Parar si la IA no
+    responde."""
+    try:
+        msg = I.ia(pedido_tanda(lista), "traducir", lote=False)
+    except Exception as e:  # noqa: BLE001  (HTTP, red, tiempo de espera, JSON roto…)
+        raise Parar(f"{MODELO_TRAD} no responde ({str(e)[:120]})") from e
+    return leer_tanda(lista, msg)
+
+
+def traducir_lote(tandas, clave_api=None):
+    """Varias tandas en UN lote (mitad de precio): [[es]] -> [[en] o None]. Lanza Parar si el lote no sale."""
+    pedidos = {f"t{k}": pedido_tanda(x) for k, x in enumerate(tandas)}
+    try:
+        mensajes = I.mensajes_por_lote(pedidos, I.clave_claude(), max(20, TIEMPO_MAX - 30))
+    except Exception as e:  # noqa: BLE001
+        raise Parar(f"el lote no ha salido ({str(e)[:120]})") from e
+    out = []
+    for k, x in enumerate(tandas):
+        msg = mensajes.get(f"t{k}")
+        if msg and I.texto_de(msg)[0].strip():
+            I.apuntar_uso(msg, "traducir", lote=True)
+            out.append(leer_tanda(x, msg))
+        else:
+            out.append(None)
+    return out
+
+
+def traducir_todo(falta, clave_api=None, llamar=traducir, lote=None):
     """Las tandas que quepan en la pasada. Si una no cuadra, se parte en dos y las mitades van al final de la cola: un
-    texto raro no bloquea a los demás. Devuelve ({es: en}, [en tandas que fallaron], [sueltos que no salen])."""
+    texto raro no bloquea a los demás. Con `lote` (traducir_lote, si hay lotes), cada vuelta manda todas las tandas que
+    quepan en un solo lote; si el lote no sale, lo que quede va en directo con `llamar`. Devuelve ({es: en}, [en tandas que
+    fallaron], [sueltos que no salen])."""
     hecho, dudosos, solos, cola = {}, set(), [], [falta[k:k + LOTE] for k in range(0, len(falta), LOTE)]
     llamadas, inicio = 0, time.monotonic()
-    while cola and llamadas < MAX_LLAMADAS and time.monotonic() - inicio < TIEMPO_MAX:
-        tanda = cola.pop(0)
-        llamadas += 1
-        try:
-            en = llamar(tanda, clave_api)
-        except Parar as e:
-            print(f"traducción: {e}; lo que falta, en la siguiente pasada")
-            break
+
+    def apuntar(tanda, en):
         if en:
             hecho.update(zip(tanda, en))
         elif len(tanda) == 1:
@@ -119,15 +143,38 @@ def traducir_todo(falta, clave_api, llamar=traducir):
         else:
             dudosos.update(tanda)
             m = len(tanda) // 2
-            cola += [tanda[:m], tanda[m:]]
+            cola.extend([tanda[:m], tanda[m:]])
+
+    while cola and llamadas < MAX_LLAMADAS and time.monotonic() - inicio < TIEMPO_MAX:
+        if lote is not None:
+            vuelta = [cola.pop(0) for _ in range(min(len(cola), MAX_LLAMADAS - llamadas))]
+            llamadas += len(vuelta)
+            try:
+                res = lote(vuelta, clave_api)
+            except Parar as e:
+                print(f"traducción: {e}; sigo en directo")
+                lote, llamadas = None, llamadas - len(vuelta)
+                cola[:0] = vuelta
+                continue
+            for tanda, en in zip(vuelta, res):
+                apuntar(tanda, en)
+            continue
+        tanda = cola.pop(0)
+        llamadas += 1
+        try:
+            en = llamar(tanda, clave_api)
+        except Parar as e:
+            print(f"traducción: {e}; lo que falta, en la siguiente pasada")
+            break
+        apuntar(tanda, en)
     return hecho, [x for x in dudosos if x not in hecho and x not in solos], solos
 
 
 def main(ruta_inst, dir_anterior, dir_salida):
-    clave_api = os.environ.get("GEMINI_API_KEY", "").strip()
+    clave_api = I.clave_claude()
     previo = leer(f"{dir_anterior}/traduccion-en.json") or {}
     t, usado = dict(previo.get("t") or {}), dict(previo.get("u") or {})
-    # x: textos de tandas que fallaron (van al final de la cola la próxima vez); n: sueltos que Gemini no consigue
+    # x: textos de tandas que fallaron (van al final de la cola la próxima vez); n: sueltos que la IA no consigue
     # traducir, que no se vuelven a pedir hasta pasados unos días
     dudoso, nopedir = dict(previo.get("x") or {}), dict(previo.get("n") or {})
     hoy = dt.date.today().isoformat()
@@ -187,7 +234,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
         print(f"traducción: {len(hace_falta)} textos en español, {len(falta)} sin traducir")
         hechos = 0
         if clave_api and falta:
-            nuevo, dudosos, solos = traducir_todo(falta, clave_api)
+            nuevo, dudosos, solos = traducir_todo(falta, clave_api, lote=traducir_lote if I.CLAUDE_LOTES else None)
             for es, x in nuevo.items():
                 t[clave(es)] = x
                 dudoso.pop(clave(es), None)

@@ -3,8 +3,9 @@
 #   CLOUDFLARE_API_TOKEN y CLOUDFLARE_ACCOUNT_ID  para publicar
 #   EB_CLAVE (el .pem de Enable Banking), EB_APP (su Application ID) y BANCO_EMAILS (quién puede usar el banco)
 #   PRECIOS_TOKEN (token de grano fino de este repositorio con Actions en escritura: el Worker lanza con él los precios)
-#   ANTHROPIC_API_KEY (la clave de la API de Claude, de un workspace con límite de gasto) y CLAUDE_EMAILS (los correos que
-#   pueden preguntar a GrowIA con Claude, separados por comas): mientras no estén puestas, GrowIA sigue con Gemini.
+#   ANTHROPIC_API_KEY (la clave de la API de Claude, de un workspace con límite de gasto) y CLAUDE_EMAILS (los correos del
+#   tope alto, separados por comas; desde la 0.8.2d contesta cualquiera con el correo verificado, y el resto con el tope
+#   reducido). Sin la clave, la IA de la app no contesta (desde la 0.8.2d no hay Gemini de reserva).
 #   OJO: quitarlas de GitHub NO las borra del Worker (esta Action solo pone las que tienen valor). Para cortar Claude de
 #   golpe: revocar la clave en la Console de Anthropic, o «npx wrangler secret delete ANTHROPIC_API_KEY» dentro de worker/.
 # Ninguno se escribe en el repositorio ni sale en el registro. Lo que pase sale como aviso en la ejecución.

@@ -1,7 +1,7 @@
 /* =====================================================================
-   Importar la cartera desde capturas o PDF del bróker: Gemini lee lo que se ve (nombre, ISIN, cuántas,
+   Importar la cartera desde capturas o PDF del bróker: la IA lee lo que se ve (nombre, ISIN, cuántas,
    precio medio, valor), la web lo empareja con su lista o con el radar y tú lo revisas antes de guardar.
-   Las imágenes van de tu navegador a Google con tu clave; no se guardan en ningún sitio.
+   Las imágenes, los PDF y los extractos van por el servidor de Toisón hasta Claude (Anthropic); no se guardan en ningún sitio.
    ===================================================================== */
 const CRIPTOS = { bitcoin: 'BTC', btc: 'BTC', ethereum: 'ETH', ether: 'ETH', eth: 'ETH', solana: 'SOL', sol: 'SOL', cardano: 'ADA', ada: 'ADA', xrp: 'XRP', ripple: 'XRP', dogecoin: 'DOGE', doge: 'DOGE', polkadot: 'DOT', litecoin: 'LTC', chainlink: 'LINK', avalanche: 'AVAX', polygon: 'POL', bnb: 'BNB', tron: 'TRX', pepe: 'PEPE', shiba: 'SHIB', usdc: 'USDC', tether: 'USDT' };
 function instCripto(nombre, ticker) {

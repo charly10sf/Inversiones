@@ -14,6 +14,10 @@ on:
         description: "Rehacer el informe aunque tenga menos de 2 horas"
         type: boolean
         default: false
+      ensayo:
+        description: "Ensayo: hace la pasada entera (con Claude de verdad, el informe y la decisión aunque no toquen) pero NO publica en la rama datos; dice lo que ha costado"
+        type: boolean
+        default: false
   push:
     branches: [main]
     paths:
@@ -24,8 +28,9 @@ on:
 permissions:
   contents: write
 
+# un ensayo no publica: va en su propio grupo (si no, una pasada programada lo sustituiría mientras espera)
 concurrency:
-  group: precios
+  group: precios${{ inputs.ensayo && '-ensayo' || '' }}
   cancel-in-progress: false
 
 jobs:
@@ -127,26 +132,26 @@ jobs:
           print("avisos.json:", len(r), "del radar,", len(c), "fondos")
           PY
 
-      # Noticias de un lote de empresas en cada pasada; Gemini las lee, y cada 2 horas escribe el
-      # informe de tu cartera y elige ideas entre todo el radar. Necesita el secreto GEMINI_API_KEY;
-      # si falla, se queda lo anterior.
-      - name: Escaneo de prensa e informe de Gemini
+      # Noticias de un lote de empresas en cada pasada; la IA (Claude Haiku, por la API por lotes) las lee, y cada 2 horas
+      # escribe el informe de tu cartera y una vez al día elige ideas entre todo el radar. 0.8.2d: solo Claude, con la
+      # clave del workspace «Toisón radar» (secreto ANTHROPIC_RADAR_KEY, con su límite de gasto); si falla, se queda lo
+      # anterior.
+      - name: Escaneo de prensa e informe de la IA
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          # 0.9: si existe, el radar va con Claude (Haiku) y Gemini queda de reserva
           ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
-          INFORME_FORZAR: ${{ inputs.informe && '1' || '' }}
+          INFORME_FORZAR: ${{ (inputs.informe || inputs.ensayo) && '1' || '' }}
+          INFORME_DECIDIR: ${{ inputs.ensayo && '1' || '' }}
         run: |
           python scripts/informe.py instrumentos.json anterior salida || echo "el informe no se pudo generar"
 
-      # 0.4: lo que escribe Gemini y los titulares en español, también en inglés (para la app en inglés). Cada
-      # texto se traduce una vez, con el modelo más barato; lo que falte, en la siguiente pasada.
+      # 0.4: lo que escribe la IA y los titulares en español, también en inglés (para la app en inglés). Cada
+      # texto se traduce una vez, con Claude Haiku por la API por lotes; lo que falte, en la siguiente pasada.
       # con su propio límite de tiempo y sin poder tumbar la pasada: los precios se publican igual
       - name: Traducir al inglés
         timeout-minutes: 8
         continue-on-error: true
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
         run: |
           python scripts/traducir.py instrumentos.json anterior salida || echo "sin traducción esta vez"
 
@@ -165,7 +170,14 @@ jobs:
         run: |
           for f in banco.json banco-muestra.json; do [ -s anterior/$f ] && cp anterior/$f salida/ || true; done
 
+      # 0.8.2d: el ensayo dice lo que ha costado cada cosa con Claude (de escaneo.json → ia.uso y traduccion-en.json → uso)
+      # y no publica nada
+      - name: Lo que ha costado la IA en esta pasada
+        if: always()
+        run: python scripts/coste_ia.py salida "$(date -u -d '-30 min' +%Y-%m-%dT%H:%M)"
+
       - name: Publicar en la rama datos
+        if: ${{ !inputs.ensayo }}
         working-directory: salida
         run: |
           git init -q

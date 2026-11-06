@@ -1,7 +1,7 @@
 /* =====================================================================
    Recorte de pantalla: marcas un trozo de la web y se lo preguntas a la IA.
    Se manda la imagen del trozo (html2canvas, en lib/, se carga solo al usarlo) y el texto que se lee
-   en esa zona, para que Gemini lo entienda aunque la imagen no se pueda sacar.
+   en esa zona, para que la IA lo entienda aunque la imagen no se pueda sacar.
    ===================================================================== */
 function cargarScript(src) {
   return new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = () => rej(new Error('No se pudo cargar ' + src)); document.head.appendChild(s); });

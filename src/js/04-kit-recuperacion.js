@@ -106,9 +106,9 @@ function kitDelSobre(k, ...carteras) {
   const ok = carteras.map((c) => c && c.kit).filter((x) => x && x.codigo && k && k.rec && x.salt === k.rec.salt);
   return ok.find((x) => x.guardado) || ok[0] || null;
 }
-// lo que va cifrado con la clave de la cartera en este dispositivo (la clave de Gemini, la conversación del asesor, el
-// análisis propio): al cambiar de clave, se descifra con la vieja y se cifra con la nueva
-const LS_CIFRADAS = () => ['inv-ia-propio', 'inv-asesor-conv', 'inv-asesor-convs', 'inv-asesor-clave', ...Object.values(LS_CLAVE)];
+// lo que va cifrado con la clave de la cartera en este dispositivo (las conversaciones de la IA y el análisis propio): al
+// cambiar de clave, se descifra con la vieja y se cifra con la nueva (la clave de Google de antes ya no: se borra al abrir la IA)
+const LS_CIFRADAS = () => ['inv-ia-propio', 'inv-asesor-conv', 'inv-asesor-convs'];
 async function recifrarLocales(vieja, nueva) {
   for (const k of new Set(LS_CIFRADAS())) {
     const o = LS.get(k);

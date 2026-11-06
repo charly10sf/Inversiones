@@ -47,7 +47,7 @@ test('una intermedia: hoja corta con «Ir», sin guía, y en el historial cuelga
   await meterCartera(page);
   await page.evaluate(async () => {
     await cargarTrozo('novedades');
-    for (const x of ['0.8.2', '0.8.2a', '0.8.2c']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
+    for (const x of ['0.8.2', '0.8.2a', '0.8.2c', '0.8.2d']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
     const ir = NOVEDADES.find((n) => n.v === '0.8.1').cosas.find((c) => c.ir).ir;
     NOVEDADES.unshift(
       { v: '0.8.3', t: 'Otra intermedia', f: '2026-11-29', cosas: [{ t: 'Cosa de la 0.8.3', x: 'Texto.' }] },
@@ -125,7 +125,7 @@ test('«Guíame por lo nuevo» es solo de las gordas; las intermedias guardan su
   await meterCartera(page);
   const r = await page.evaluate(async () => {
     await cargarTrozo('novedades');
-    for (const x of ['0.8.2', '0.8.2a', '0.8.2c']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
+    for (const x of ['0.8.2', '0.8.2a', '0.8.2c', '0.8.2d']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
     const ir = NOVEDADES.find((n) => n.v === '0.8.1').cosas.find((c) => c.ir).ir;
     NOVEDADES.unshift({ v: '0.8.2', t: 'Intermedia', f: '2026-11-15', cosas: [{ t: 'Con sitio', x: 'Se puede ir.', ir }] });
     document.querySelectorAll('.hoja-fondo, .tour, .ixn, .aviso-arr').forEach((x) => x.remove());

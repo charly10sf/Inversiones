@@ -39,7 +39,7 @@ def empresas(n):
 
 class LotesVarios(unittest.TestCase):
     def setUp(self):
-        self.guardado = (I.peticion_claude_get, I.peticion_claude, I.gemini_modelo, I.time.sleep, I.CLAUDE_LOTES, I.LOTE_LECTURA_LOTES, I.TANDA_MAX_CARACTERES)
+        self.guardado = (I.peticion_claude_get, I.peticion_claude, I.time.sleep, I.CLAUDE_LOTES, I.LOTE_LECTURA_LOTES, I.TANDA_MAX_CARACTERES)
         self.env = dict(os.environ)
         I.time.sleep = lambda s: None
         I.CLAUDE_LOTES = True
@@ -47,13 +47,12 @@ class LotesVarios(unittest.TestCase):
         I.CLAUDE_APAGADO = False
         I.USO.clear(); I.CLAUDE_ERRORES.clear()
         os.environ["ANTHROPIC_RADAR_KEY"] = "k"
-        os.environ.pop("GEMINI_API_KEY", None)
         self.lotes = []      # cada lote: la lista de peticiones (id, símbolos)
         self.fallan = set()  # símbolos que el lote no devuelve la primera vez
         self.directas = []
 
     def tearDown(self):
-        (I.peticion_claude_get, I.peticion_claude, I.gemini_modelo, I.time.sleep, I.CLAUDE_LOTES, I.LOTE_LECTURA_LOTES, I.TANDA_MAX_CARACTERES) = self.guardado
+        (I.peticion_claude_get, I.peticion_claude, I.time.sleep, I.CLAUDE_LOTES, I.LOTE_LECTURA_LOTES, I.TANDA_MAX_CARACTERES) = self.guardado
         I.LOTES_APAGADOS[0] = False
         I.CLAUDE_APAGADO = False
         I.USO.clear(); I.CLAUDE_ERRORES.clear()
@@ -90,7 +89,7 @@ class LotesVarios(unittest.TestCase):
         self.lote_imitado()
         valores, cache = empresas(120)
         lectura = {}
-        n = I.leer_lote(lectura, cache, valores, {}, I.SIN_GEMINI)
+        n = I.leer_lote(lectura, cache, valores, {})
         self.assertEqual(n, 120)
         self.assertEqual(len(lectura), 120)
         self.assertEqual(len(self.lotes), 1)
@@ -104,7 +103,7 @@ class LotesVarios(unittest.TestCase):
         self.fallan = {"E5", "E70"}
         valores, cache = empresas(120)
         lectura = {}
-        n = I.leer_lote(lectura, cache, valores, {}, I.SIN_GEMINI)
+        n = I.leer_lote(lectura, cache, valores, {})
         self.assertEqual(n, 120)
         self.assertEqual(len(self.lotes), 2)
         repaso = sorted(s for _, ss in self.lotes[1] for s in ss)
@@ -120,7 +119,7 @@ class LotesVarios(unittest.TestCase):
         self.lote_imitado(devolver)
         valores, cache = empresas(120)
         lectura = {}
-        n = I.leer_lote(lectura, cache, valores, {}, I.SIN_GEMINI)
+        n = I.leer_lote(lectura, cache, valores, {})
         self.assertEqual(n, 120)
         self.assertEqual([len(s) for _, s in self.lotes[1]], [25, 25])
 
@@ -134,7 +133,7 @@ class LotesVarios(unittest.TestCase):
             "E4": {"d": "2026-11-03T10:00:00+00:00", "h": "viejo"},
             "E6": {"d": "2026-11-02T10:00:00+00:00", "h": "viejo"},
         }
-        I.leer_lote(lectura, cache, valores, {}, I.SIN_GEMINI, None, tuyas={"E7"})
+        I.leer_lote(lectura, cache, valores, {}, None, tuyas={"E7"})
         leidas = [s for _, ss in self.lotes[0] for s in ss]
         # E7 (de una cartera), luego las que nunca se han leído (E1, E2, E5) y las demás quedan para otra pasada
         self.assertEqual(sorted(leidas), ["E1", "E2", "E5", "E7"])
@@ -142,7 +141,7 @@ class LotesVarios(unittest.TestCase):
         # la pasada siguiente sigue con las leídas hace más tiempo: E3, E6, E4, E0 (E0 ya tiene lectura nueva si no se tocó)
         I.LOTE_LECTURA_LOTES = 3
         self.lotes.clear()
-        I.leer_lote(lectura, cache, valores, {}, I.SIN_GEMINI, None, tuyas=set())
+        I.leer_lote(lectura, cache, valores, {}, None, tuyas=set())
         leidas = [s for _, ss in self.lotes[0] for s in ss]
         self.assertEqual(leidas, ["E3", "E6", "E4"])
 
@@ -151,7 +150,7 @@ class LotesVarios(unittest.TestCase):
         I.TANDA_MAX_CARACTERES = 800
         valores, cache = empresas(10)
         lectura = {}
-        n = I.leer_lote(lectura, cache, valores, {}, I.SIN_GEMINI)
+        n = I.leer_lote(lectura, cache, valores, {})
         self.assertEqual(n, 10)
         self.assertGreater(len(self.lotes[0]), 1)
         self.assertEqual(sum(len(s) for _, s in self.lotes[0]), 10)
@@ -161,44 +160,30 @@ class LotesVarios(unittest.TestCase):
         I.peticion_claude = lambda cuerpo, clave: (self.directas.append(simbolos_de(cuerpo["messages"][0]["content"])), mensaje(simbolos_de(cuerpo["messages"][0]["content"])))[1]
         valores, cache = empresas(120)
         lectura = {}
-        n = I.leer_lote(lectura, cache, valores, {}, I.SIN_GEMINI)
+        n = I.leer_lote(lectura, cache, valores, {})
         self.assertEqual(n, 50)
         self.assertTrue(I.LOTES_APAGADOS[0])
         self.assertEqual(len(self.directas), 1)
         self.assertEqual(len(self.directas[0]), 50)
 
-    def test_sin_clave_de_claude_se_lee_una_tanda_de_50_como_siempre(self):
+    def test_sin_clave_de_claude_no_se_lee_nada(self):
+        # 0.8.2d: sin Gemini de reserva; sin la clave del radar, main() ni siquiera llama a leer_lote, y si se le llama no lee
         os.environ.pop("ANTHROPIC_RADAR_KEY", None)
         I.peticion_claude_get = lambda *a, **k: self.fail("no debe usar la API por lotes")
-        peticiones = []
-
-        def gemini(cuerpo, clave, modelo):
-            simbolos = simbolos_de(cuerpo["contents"][0]["parts"][0]["text"])
-            peticiones.append(simbolos)
-            return {"candidates": [{"content": {"parts": [{"text": lectura_de(simbolos)}]}}], "usageMetadata": {"promptTokenCount": 1, "candidatesTokenCount": 1}}
-        I.gemini_modelo = gemini
+        I.peticion_claude = lambda *a, **k: self.fail("no debe llamar a Claude")
         valores, cache = empresas(120)
-        lectura = {}
-        n = I.leer_lote(lectura, cache, valores, {}, "clave-de-gemini")
-        self.assertEqual(n, 50)
-        self.assertEqual(len(peticiones), 1)
+        with self.assertRaises(RuntimeError):
+            I.leer_lote({}, cache, valores, {})
 
-    def test_con_la_clave_mala_se_apaga_claude_y_sigue_gemini(self):
+    def test_con_la_clave_mala_se_apaga_claude_y_no_se_lee_nada(self):
         def get(ruta, clave, metodo="GET", cuerpo=None, texto=False):
             raise urllib.error.HTTPError(I.CLAUDE_API, 401, "no", {}, None)
         I.peticion_claude_get = get
-        peticiones = []
-
-        def gemini(cuerpo, clave, modelo):
-            simbolos = simbolos_de(cuerpo["contents"][0]["parts"][0]["text"])
-            peticiones.append(simbolos)
-            return {"candidates": [{"content": {"parts": [{"text": lectura_de(simbolos)}]}}], "usageMetadata": {"promptTokenCount": 1, "candidatesTokenCount": 1}}
-        I.gemini_modelo = gemini
+        I.peticion_claude = lambda *a, **k: self.fail("con la clave mala, nada en directo")
         valores, cache = empresas(60)
-        n = I.leer_lote({}, cache, valores, {}, "clave-de-gemini")
-        self.assertEqual(n, 50)
+        with self.assertRaises(RuntimeError):
+            I.leer_lote({}, cache, valores, {})
         self.assertTrue(I.CLAUDE_APAGADO)
-        self.assertEqual(len(peticiones), 1)
 
 
 class VariasPeticiones(unittest.TestCase):

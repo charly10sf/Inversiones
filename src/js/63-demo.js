@@ -4,8 +4,9 @@
    se descifra: ni está en memoria) y con una inventada, de fondos, acciones del radar y cripto a precios de hoy.
    - Lo que se escribe en el dispositivo durante la prueba se queda en memoria (LS_DEMO, 01-base.js) y se tira al
      salir; y nada se cifra ni se sube (cifrarCon y los guardados se niegan con S.demo).
-   - GrowIA contesta con tu clave de Google: al entrar se cifra con una clave de un solo uso que vive en esta pestaña
-     (sessionStorage) y se borra al salir.
+   - La IA contesta con Claude y con tu cuenta (0.8.2d; Carlos, 6 nov: «sí, con mis preguntas»): cuenta como pregunta tuya
+     del día, y lo que ve es la cartera inventada, nunca la tuya (ni tu perfil ni lo que le has contado). Antes iba con tu
+     clave de Google, que pasaba cifrada a la pestaña.
    - Al salir (o si se cierra y se vuelve a abrir), con PIN se pide el PIN; sin PIN, la contraseña (y antes de entrar
      se comprueba que la sabes). Recargar, cambiar de idioma o actualizar no sacan de la prueba: siguen en ella.
    - De lo tuyo del dispositivo solo se lee lo que no dice nada de ti (LS_DEMO_LEE): ni tu nombre ni tu PIN.
@@ -48,7 +49,7 @@ function carteraDemo() {
     inicio: { v03: true, v07: true, bloques: ['patrimonio', 'mapa', 'posiciones', 'ia', 'reparto', 'agenda'] },
   };
 }
-/* desde tu sesión: lo tuyo pendiente se guarda, la clave de Google pasa cifrada a esta pestaña, se marca que al volver
+/* desde tu sesión: lo tuyo pendiente se guarda, se marca que al volver
    hay que pedir el PIN (o la contraseña) y se vuelve a abrir GrowFolio en la prueba */
 async function entrarDemo() {
   if (S.demo || demoActiva()) return;
@@ -61,18 +62,8 @@ async function entrarDemo() {
   // lo tuyo que esté a medio guardar, ahora (si no hay nada, no se toca)
   if (S.senalesSucias || ceGuardarT || S.guardandoSenales) { clearTimeout(ceGuardarT); ceGuardarT = 0; S.senalesSucias = false; try { await conTiempo(guardarCarteraCallada('Antes de la cartera de prueba'), 8000); } catch (e) {} }
   if (PERFIL_CUENTA && LS.get('inv-pend-cuenta')) { try { await conTiempo(sincronizarCuenta(), 8000); } catch (e) {} }
-  let g = null;
-  try {
-    await cargarAsesor();
-    if (AS.clave) {
-      const k = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']);
-      const iv = crypto.getRandomValues(new Uint8Array(12));
-      const ct = new Uint8Array(await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, k, TE.encode(AS.clave)));
-      localStorage.setItem('inv-demo-g', JSON.stringify({ iv: b64.enc(iv), ct: b64.enc(ct), t: Date.now() }));
-      g = b64.enc(new Uint8Array(await crypto.subtle.exportKey('raw', k)));
-    }
-  } catch (e) { g = null; }
-  try { sessionStorage.setItem('inv-demo', JSON.stringify({ g, t: Date.now() })); } catch (e) { toast(L('Este navegador no deja abrir la cartera de prueba.', "This browser can't open the demo portfolio.")); return; }
+  try { localStorage.removeItem('inv-demo-g'); } catch (e) {}
+  try { sessionStorage.setItem('inv-demo', JSON.stringify({ t: Date.now() })); } catch (e) { toast(L('Este navegador no deja abrir la cartera de prueba.', "This browser can't open the demo portfolio.")); return; }
   // las demás pestañas abiertas con tu cartera la cierran (ver abajo), y con PIN se pedirá aunque desbloquearas hace poco
   LS.set('inv-demo-salida', true);
   if (pin) LS.del('inv-bloqueo-t');
@@ -89,16 +80,9 @@ async function arrancarDemo() {
   // los precios del radar o del catálogo pueden tardar un poco: se espera hasta 6 s
   for (let i = 0; i < 6 && c.posiciones.length < 5; i++) { await dormir(1000); c = carteraDemo(); }
   S.cartera = c;
-  // GrowIA: con tu clave de Google, si la tenías
-  try {
-    const d = JSON.parse(sessionStorage.getItem('inv-demo') || '{}'), x = JSON.parse(localStorage.getItem('inv-demo-g') || 'null');
-    // la clave de Google vale 24 horas en la prueba; después, sin GrowIA hasta que salgas y vuelvas a entrar
-    if (d.g && x && Date.now() - (x.t || d.t || 0) < 864e5) {
-      const k = await crypto.subtle.importKey('raw', b64.dec(d.g), 'AES-GCM', false, ['decrypt']);
-      AS.claves.google = TD.decode(await crypto.subtle.decrypt({ name: 'AES-GCM', iv: b64.dec(x.iv) }, k, b64.dec(x.ct)));
-    }
-  } catch (e) { console.warn('La IA en la prueba', e); }
+  // la IA: con tu cuenta (Firebase sigue con tu sesión; aquí solo se carga para el token del Worker, sin leer tu cartera)
   AS.cargada = true;
+  if (PERFIL_CUENTA) fbCargar().then(async () => { try { await sondearClaude(); if (AS.vista === 'sin-ia' && iaLista()) AS.vista = 'chat'; if ($('.asesor')) pintarAsesor(); } catch (e) {} }).catch(() => {});
   S.vista = 'cartera';
   setTimeout(() => cargarHistCatalogo().then((n) => { if (n) pintar(); }), 50);
   montar();
@@ -111,7 +95,7 @@ async function arrancarDemo() {
 }
 function salirDemo() {
   try {
-    sessionStorage.removeItem('inv-demo'); localStorage.removeItem('inv-demo-g');
+    sessionStorage.removeItem('inv-demo'); localStorage.removeItem('inv-demo-g');   // inv-demo-g: la clave de Google de antes
     // aunque otra pestaña haya vuelto a la suya mientras: al salir, siempre el PIN (o la contraseña)
     localStorage.setItem('inv-demo-salida', 'true'); localStorage.removeItem(LS.k('inv-bloqueo-t'));
   } catch (e) {}

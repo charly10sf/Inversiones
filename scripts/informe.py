@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""La IA que trabaja aunque la web esté cerrada: escaneo de prensa de toda la bolsa e informe de Gemini.
+"""La IA que trabaja aunque la web esté cerrada: escaneo de prensa de toda la bolsa e informe de la IA (Claude).
 
 Uso: python scripts/informe.py instrumentos.json anterior/ salida/
 
@@ -8,21 +8,23 @@ Lo llama la GitHub Action después de precios.py, en cada pasada (cada 20 minuto
    su resumen y Google Noticias en español. Desde el 6 nov 2026 son las de todo el radar (radar.json y
    radar-mas.json, unas 2.860), las que más tiempo llevan sin mirar primero.
    Se guardan en noticias-cache.json.
-2. Claude (o Gemini) lee la prensa de hasta 400 empresas con noticias nuevas (las leídas hace más tiempo, primero;
+2. Claude lee la prensa de hasta 400 empresas con noticias nuevas (las leídas hace más tiempo, primero;
    por la API por lotes, a mitad de precio) y apunta, para cada una, qué ha
    pasado, si es bueno o malo, cuánto importa y si hay un catalizador (escaneo.json, "lectura").
 3. Cada 2 horas, el informe de tu cartera y del mercado (informe.json): qué ha pasado, si es bueno o
    malo, qué fuentes coinciden y qué vigilar.
-4. Una vez al día, la decisión: entre todas las empresas con buenos números y buena prensa, Gemini elige
+4. Una vez al día, la decisión: entre todas las empresas con buenos números y buena prensa, la IA elige
    las que merecen dinero nuevo y las que conviene evitar (escaneo.json, "decision"). Con constancia: ve lo
    que dijo la vez anterior, las ideas siguen salvo que llegue una noticia que cambie la tesis o se rompan
    sus números, entran como mucho dos nuevas al día y lo que estas semanas se ha recomendado no pasa a
-   "evitar" sin una noticia así. Entre una decisión y la siguiente solo se revisa eso, sin preguntar a Gemini.
+   "evitar" sin una noticia así. Entre una decisión y la siguiente solo se revisa eso, sin preguntar a la IA.
    Cada cambio queda apuntado con su motivo ("cambios").
-Todo es público y sin cantidades: la cartera cifrada no se toca. Si la clave permite la búsqueda de
-Google, el informe además busca en internet.
+Todo es público y sin cantidades: la cartera cifrada no se toca. Con INFORME_BUSQUEDA=1, el informe además busca
+en internet (la búsqueda de Claude, 1 céntimo cada una).
 
-Necesita el secreto GEMINI_API_KEY en el repositorio. Sin él, solo se actualizan las noticias.
+0.8.2d (6 nov 2026, «todo con Claude»): todo va con Claude (Haiku 5.5) y la clave del workspace «Toisón radar» (secreto
+ANTHROPIC_RADAR_KEY, con su propio límite de gasto), sin Gemini y sin reserva; lo que no corre prisa, por la API por
+lotes (mitad de precio). Sin la clave, solo se actualizan las noticias; si Claude no sale, se queda lo anterior.
 """
 import collections
 import concurrent.futures as cf
@@ -43,12 +45,7 @@ import yfinance as yf
 import precios as P  # noqa: E402  (noticias de Google, contraste de las ideas)
 import fichas as F  # noqa: E402  (0.7: fichas por empresa con seis factores)
 
-MODELO = os.environ.get("GEMINI_MODELO", "gemini-3.8-flash")
-GEMINI = "https://generativelanguage.googleapis.com/v1beta"
 HORAS_INFORME = 2          # como mucho uno cada 2 horas
-HORAS_INFORME_LITE = 6     # con un informe de menos de 6 horas, si el 3.8 y el 3.6 no responden se queda ese (no
-                           # se publica uno hecho con Flash-Lite, más flojo); uno de Flash-Lite se rehace en la
-                           # siguiente pasada en que el 3.8 o el 3.6 contesten
 MAX_IDEAS = 0               # las ideas ya no van en el informe: salen del escaneo
 # 6 nov 2026: el radar son 2.864 empresas (radar.json + radar-mas.json) y se leen todas. Se baja la prensa de más empresas
 # por pasada (la vuelta entera de Yahoo, unas 18 pasadas) y la IA lee unas 400 por pasada, en 8 peticiones de 50 dentro de un
@@ -71,10 +68,8 @@ DIAS_NOTICIA = 21
 CANDIDATAS = 40             # empresas entre las que decide
 DECISION_V = 6              # sube si cambia lo que devuelve la decisión: así se rehace en la siguiente pasada
 HORAS_DECISION = 20         # la decisión se rehace una vez al día; entre medias solo se mira si hay una noticia gorda
-HORAS_DECISION_LITE = 48    # 0.7d: ideas con Flash-Lite solo si las que hay tienen más de 2 días (o no hay ninguna)
-# 0.7d: en el plan gratis la búsqueda en Google da 429 siempre (comprobado el 25 oct): el informe ya no la intenta en cada
-# pasada. Con la clave de pago, GEMINI_BUSQUEDA=1 en el workflow
-BUSQUEDA = os.environ.get("GEMINI_BUSQUEDA") == "1"
+# el informe sin búsqueda en internet salvo con INFORME_BUSQUEDA=1 (cada búsqueda, 1 céntimo y unos 8.000 tokens más)
+BUSQUEDA = os.environ.get("INFORME_BUSQUEDA") == "1"
 DIAS_MEMORIA = 14           # lo recomendado en estos días no pasa a "evitar" sin una noticia que cambie la tesis
 NUEVAS_POR_DIA = 2          # ideas nuevas por decisión, como mucho (más si otras salen por una noticia gorda)
 DIAS_IDEA = 28              # pasado este tiempo, una idea puede dejar sitio a otra mejor sin noticia de por medio
@@ -159,49 +154,37 @@ def noticias_yahoo(simbolo, n=NOTICIAS_POR_ACTIVO):
     return out
 
 
-def peticion(ruta, cuerpo, clave, modo):
-    url = f"{GEMINI}/{ruta}" + (f"?key={urllib.parse.quote(clave)}" if modo == "query" else "")
-    cab = {"content-type": "application/json"}
-    if modo == "cabecera":
-        cab["x-goog-api-key"] = clave
-    req = urllib.request.Request(url, data=json.dumps(cuerpo).encode(), headers=cab, method="POST")
-    with urllib.request.urlopen(req, timeout=240) as r:
-        return json.loads(r.read())
+# ---------------------------------------------------------------- la IA: Claude, por la API por lotes si se puede
 
-
-MODO = "cabecera"
-
-
-ERRORES = []                # lo que ha fallado con Gemini en esta pasada (va a escaneo.json para verlo en la web)
-FALLOS = []                 # las llamadas que no salieron ni con los modelos de reserva
+USO = []                    # los tokens y lo que ha costado cada llamada de esta pasada (van a escaneo.json, «ia.uso»)
 USADOS = set()              # los modelos que han respondido
-RESERVA = ["gemini-3.6-flash", "gemini-3.5-flash-lite"]  # si se acaba el cupo gratuito del modelo principal
-# La lectura de prensa va con Flash-Lite (el de más cupo gratis y el más barato): así el 3.8, con 20 peticiones al
-# día en el plan gratis, queda para el informe y las ideas. Si a Flash-Lite se le acaba el cupo, el 3.6; nunca el 3.8.
-LECTURA = ["gemini-3.5-flash-lite", "gemini-3.6-flash"]
-USO = []                    # 0.6d: los tokens de cada llamada de esta pasada (para saber lo que costaría la IA de pago)
-
-# 0.9: el radar puede ir con Claude (Haiku) si el repositorio tiene el secreto ANTHROPIC_RADAR_KEY (una clave de un
-# workspace aparte, «Toisón radar», con su propio límite de gasto). Sin ese secreto, todo sigue con Gemini como siempre.
-# Con los dos, primero Claude y, si falla, Gemini. Las respuestas de Claude se pasan a la forma de las de Gemini para
-# que el resto del script no note la diferencia; sus tokens van al mismo registro (USO) con el nombre del modelo.
 CLAUDE_API = os.environ.get("CLAUDE_API", "https://api.anthropic.com/v1/messages")
 CLAUDE_MODELO = os.environ.get("CLAUDE_RADAR_MODELO", "claude-haiku-5-5")
 CLAUDE_MAX_SALIDA = 32000
-# 5 nov, noche: las lecturas de prensa (no urgentes) van por la API por lotes de Anthropic, a mitad de precio. Medido con
-# 50 empresas: el lote tarda unos 2 minutos. Si no llega en CLAUDE_ESPERA_LOTE segundos, se cancela y se pide en directo.
-# CLAUDE_RADAR_LOTES=0 lo apaga.
+# La API por lotes de Anthropic cobra la mitad. Medido con 50 empresas: el lote tarda unos 2 minutos. La lectura de prensa
+# espera CLAUDE_RADAR_ESPERA segundos; el informe, la decisión y los temas (una petición sola), CLAUDE_RADAR_ESPERA_SUELTA.
+# Si no llega a tiempo, se cancela y se pide en directo. CLAUDE_RADAR_LOTES=0 lo apaga.
 CLAUDE_LOTES = os.environ.get("CLAUDE_RADAR_LOTES", "1") != "0"
 CLAUDE_ESPERA_LOTE = int(os.environ.get("CLAUDE_RADAR_ESPERA", "420"))
+CLAUDE_ESPERA_SUELTA = int(os.environ.get("CLAUDE_RADAR_ESPERA_SUELTA", "240"))
 LOTES_APAGADOS = [False]   # tras un fallo del lote, el resto de la pasada va en directo
-SIN_GEMINI = "-"            # la «clave» de Gemini cuando solo hay Claude: así los pasos que miran si hay clave siguen
-CLAUDE_ERRORES = []         # lo que ha fallado con Claude en esta pasada
+CLAUDE_ERRORES = []         # lo que ha fallado con Claude en esta pasada (va a escaneo.json para verlo en la web)
 CLAUDE_APAGADO = False      # tras un fallo de clave o de saldo, el resto de la pasada va sin Claude
-ULTIMO = [None]             # el último modelo que ha contestado
+# precio por millón de tokens (entrada, salida). Haiku cobra más cuando UNA petición pasa de 100.000 de entrada; por lotes,
+# la mitad. Los mismos que usa la app (MODELOS_CLAUDE) y el Worker (PRECIOS_CLAUDE)
+PRECIOS = {"claude-haiku-5-5": (0.10, 0.50), "claude-sonnet-5-5": (2.0, 10.0)}
+PRECIO_HAIKU_GRANDE = (0.50, 2.50)
 
 
 def clave_claude():
     return (os.environ.get("ANTHROPIC_RADAR_KEY") or "").strip()
+
+
+def coste(modelo, entrada, salida, lote=False, busquedas=0):
+    """Lo que cuesta una llamada en dólares (la caché no se usa aquí: todo va al precio de entrada)."""
+    pi, po = PRECIO_HAIKU_GRANDE if modelo == "claude-haiku-5-5" and entrada > 1e5 else PRECIOS.get(modelo, PRECIOS["claude-haiku-5-5"])
+    c = (entrada * pi + salida * po) / 1e6
+    return round((c / 2 if lote else c) + busquedas * 0.01, 6)
 
 
 def peticion_claude(cuerpo, clave):
@@ -219,17 +202,17 @@ def peticion_claude_get(ruta, clave, metodo="GET", cuerpo=None, texto=False):
     return crudo if texto else json.loads(crudo)
 
 
-def espera_lote():
-    """Lo que se espera a un lote: CLAUDE_ESPERA_LOTE, pero sin pasar del tiempo que le queda a la pasada (mínimo 20 s)."""
-    return min(CLAUDE_ESPERA_LOTE, max(20, PRESUPUESTO - (time.time() - INICIO)))
+def espera_lote(tope=None):
+    """Lo que se espera a un lote: `tope` (o CLAUDE_ESPERA_LOTE), sin pasar del tiempo que le queda a la pasada (mínimo 20 s)."""
+    return min(CLAUDE_ESPERA_LOTE if tope is None else tope, max(20, PRESUPUESTO - (time.time() - INICIO)))
 
 
-def mensajes_por_lote(pedidos, clave):
+def mensajes_por_lote(pedidos, clave, tope=None):
     """Varias peticiones en UN lote de la API por lotes (mitad de precio): {id: cuerpo} -> {id: mensaje o None}. Cada
     petición va aparte (su límite de 100.000 tokens de entrada es por petición). Si no termina a tiempo, se cancela y se
     aprovecha lo que ya haya salido. Lanza RuntimeError si el lote no sale o no deja resultados."""
     b = peticion_claude_get("/v1/messages/batches", clave, "POST", {"requests": [{"custom_id": k, "params": p} for k, p in pedidos.items()]})
-    t0, espera = time.time(), espera_lote()
+    t0, espera = time.time(), espera_lote(tope)
     while b.get("processing_status") != "ended":
         if time.time() - t0 > espera:
             try:
@@ -247,7 +230,7 @@ def mensajes_por_lote(pedidos, clave):
     if b.get("processing_status") != "ended" or not b.get("results_url"):
         raise RuntimeError(f"lote sin terminar tras {round(time.time() - t0)} s" if b.get("processing_status") != "ended" else "lote sin resultados")
     crudo = peticion_claude_get(b["results_url"].replace("https://api.anthropic.com", ""), clave, texto=True)
-    salida = {k: None for k in pedidos}
+    salida, malas = {k: None for k in pedidos}, collections.Counter()
     for linea in crudo.splitlines():
         try:
             o = json.loads(linea)
@@ -256,14 +239,21 @@ def mensajes_por_lote(pedidos, clave):
         res = o.get("result") or {}
         if res.get("type") == "succeeded" and o.get("custom_id") in salida:
             salida[o["custom_id"]] = res.get("message")
+        else:
+            # 6 nov: que el registro diga por qué no sale una petición del lote (antes, nada)
+            e = res.get("error") or {}
+            e = e.get("error") if isinstance(e.get("error"), dict) else e
+            malas[f"{res.get('type')}: {str(e.get('type') or '')} {str(e.get('message') or '')[:140]}".strip()] += 1
+    for motivo, n in malas.most_common(3):
+        print(f"claude: {n} de {len(pedidos)} peticiones del lote no han salido ({motivo})")
     return salida
 
 
-def mensaje_por_lote(pedido, clave):
-    """Una petición por la API por lotes (mitad de precio): la crea, espera a que termine y devuelve el mensaje, con la
-    misma forma que el de la API normal. Lanza RuntimeError si no sale a tiempo (y cancela el lote)."""
-    b = peticion_claude_get("/v1/messages/batches", clave, "POST", {"requests": [{"custom_id": "radar", "params": pedido}]})
-    t0, espera = time.time(), espera_lote()
+def mensaje_por_lote(cuerpo, clave, tope=None):
+    """Una petición por la API por lotes: la crea, espera a que termine y devuelve el mensaje, con la misma forma que el
+    de la API normal. Lanza RuntimeError si no sale a tiempo (y cancela el lote) o si sale con error."""
+    b = peticion_claude_get("/v1/messages/batches", clave, "POST", {"requests": [{"custom_id": "radar", "params": cuerpo}]})
+    t0, espera = time.time(), espera_lote(tope)
     while b.get("processing_status") != "ended":
         if time.time() - t0 > espera:
             try:
@@ -283,51 +273,60 @@ def mensaje_por_lote(pedido, clave):
     return res["message"]
 
 
-def a_claude(cuerpo, modelo):
-    """El cuerpo de Gemini (systemInstruction, contents, generationConfig, tools) pasado al de la API de Claude."""
-    sistema = " ".join(p.get("text", "") for p in ((cuerpo.get("systemInstruction") or {}).get("parts") or []))
-    gc = cuerpo.get("generationConfig") or {}
-    if gc.get("responseMimeType") == "application/json":
+def pedido(sistema, texto, salida=8192, json_=False, pensar=False, buscar=0):
+    """El cuerpo de una petición a Claude. json_: que conteste solo con un JSON. pensar: el informe («low») y la decisión
+    (True, esfuerzo medio); si no, sin pensar (Haiku 5.5 piensa por defecto y en la lectura de prensa se gastaba los 32.000 tokens
+    de salida pensando: stop_reason=max_tokens con un solo bloque «thinking», 5 nov 22:09). buscar: usos de la búsqueda."""
+    if json_:
         sistema += "\n\nResponde solo con un JSON válido, sin texto antes ni después y sin bloques de código."
-    mensajes = []
-    for c in cuerpo.get("contents") or []:
-        texto = "".join(p.get("text", "") for p in (c.get("parts") or []))
-        if texto:
-            mensajes.append({"role": "assistant" if c.get("role") == "model" else "user", "content": texto})
-    out = {"model": modelo, "max_tokens": min(int(gc.get("maxOutputTokens") or 8192), CLAUDE_MAX_SALIDA), "messages": mensajes}
-    # Haiku 5.5 piensa por defecto y se gastaba los 32000 tokens de salida en pensar (stop_reason=max_tokens, solo un bloque
-    # «thinking», 5 nov 22:09). La lectura de noticias no lo necesita: sin pensar, sale el JSON y cuesta mucho menos.
-    out["thinking"] = {"type": "disabled"}
+    p = {"model": CLAUDE_MODELO, "max_tokens": min(int(salida), CLAUDE_MAX_SALIDA), "messages": [{"role": "user", "content": texto}]}
     if sistema.strip():
-        out["system"] = sistema.strip()
-    if any("google_search" in t for t in (cuerpo.get("tools") or [])):
-        out["tools"] = [{"type": "web_search_20250305", "name": "web_search", "max_uses": 3}]
-    return out
+        p["system"] = sistema.strip()
+    if pensar:
+        p["output_config"] = {"effort": pensar if isinstance(pensar, str) else "medium"}
+    else:
+        p["thinking"] = {"type": "disabled"}
+    if buscar:
+        p["tools"] = [{"type": "web_search_20250305", "name": "web_search", "max_uses": int(buscar)}]
+    return p
 
 
-def de_claude(r):
-    """La respuesta de Claude con la forma de una de Gemini (texto, motivo de parada y tokens)."""
-    texto = "".join(b.get("text", "") for b in (r.get("content") or []) if b.get("type") == "text")
-    u = r.get("usage") or {}
-    motivo = {"end_turn": "STOP", "max_tokens": "MAX_TOKENS", "stop_sequence": "STOP"}.get(r.get("stop_reason"), r.get("stop_reason") or "STOP")
-    return {"candidates": [{"content": {"parts": [{"text": texto}]}, "finishReason": motivo}],
-            "usageMetadata": {"promptTokenCount": (u.get("input_tokens") or 0) + (u.get("cache_read_input_tokens") or 0) + (u.get("cache_creation_input_tokens") or 0),
-                              "cachedContentTokenCount": u.get("cache_read_input_tokens") or 0, "candidatesTokenCount": u.get("output_tokens") or 0},
-            "modelo": r.get("model")}
+def texto_del_pedido(p):
+    """El texto que se manda (para medirlo o partirlo)."""
+    c = (p.get("messages") or [{}])[0].get("content")
+    return c if isinstance(c, str) else "".join(b.get("text", "") for b in c or [] if isinstance(b, dict))
 
 
-def claude(cuerpo, que, ligera=False, hay_reserva=False):
-    """Una llamada a Claude. Reintenta si está saturado; si la clave no vale o no hay saldo, apaga Claude para el
-    resto de la pasada. Lanza RuntimeError si no sale (y entonces, si hay clave de Gemini, sigue Gemini)."""
+def apuntar_uso(msg, que, lote=False):
+    """Apunta los tokens de una respuesta de Claude y lo que ha costado (US$, con el precio de lotes si fue por lote)."""
+    u = (msg or {}).get("usage") or {}
+    modelo = (msg or {}).get("model") or CLAUDE_MODELO
+    entrada = (u.get("input_tokens") or 0) + (u.get("cache_read_input_tokens") or 0) + (u.get("cache_creation_input_tokens") or 0)
+    salida, busq = u.get("output_tokens") or 0, ((u.get("server_tool_use") or {}).get("web_search_requests") or 0)
+    USADOS.add(modelo)
+    USO.append({"t": ahora(), "m": modelo, "que": que, "in": entrada, "cache": u.get("cache_read_input_tokens") or 0, "out": salida,
+                "busq": busq, "lote": bool(lote), "coste": coste(modelo, entrada, salida, lote, busq)})
+
+
+def ia(p, que=None, lote=True, tope=None):
+    """Una llamada a Claude con el cuerpo `p` (de pedido()): por la API por lotes si se puede (si no sale a tiempo, en
+    directo) o en directo. Reintenta si está saturado; si la clave no vale o no hay saldo, apaga Claude para el resto de la
+    pasada. Si pensando se queda sin sitio, una vez más sin pensar. Devuelve el mensaje de Claude; lanza RuntimeError si no
+    sale (y el que llama se queda con lo de la pasada anterior)."""
     global CLAUDE_APAGADO
-    clave, ultimo = clave_claude(), None
-    pedido = a_claude(cuerpo, CLAUDE_MODELO)
-    for intento in range(3):
+    que = que or {"leer_trozo": "leer_lote"}.get(inspect.stack()[1].function, inspect.stack()[1].function)
+    clave = clave_claude()
+    if not clave:
+        raise RuntimeError("sin ANTHROPIC_RADAR_KEY")
+    if CLAUDE_APAGADO:
+        raise RuntimeError("Claude apagado en esta pasada (clave o saldo)")
+    ultimo, intento = None, 0
+    while intento < 3:
         try:
-            por_lote, bruto = False, None
-            if ligera and CLAUDE_LOTES and not LOTES_APAGADOS[0]:
+            por_lote, msg = False, None
+            if lote and CLAUDE_LOTES and not LOTES_APAGADOS[0]:
                 try:
-                    bruto = mensaje_por_lote(pedido, clave)
+                    msg = mensaje_por_lote(p, clave, CLAUDE_ESPERA_SUELTA if tope is None else tope)
                     por_lote = True
                 except urllib.error.HTTPError as e:
                     if e.code in (401, 403):
@@ -337,129 +336,58 @@ def claude(cuerpo, que, ligera=False, hay_reserva=False):
                 except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as e:
                     LOTES_APAGADOS[0] = True
                     print(f"claude: el lote no ha salido ({str(e)[:120]}), sigo en directo")
-            if bruto is None:
-                bruto = peticion_claude(pedido, clave)
-            r = de_claude(bruto)
-            if not texto_de(r)[0].strip():
+            if msg is None:
+                msg = peticion_claude(p, clave)
+            if not texto_de(msg)[0].strip():
+                if "output_config" in p and msg.get("stop_reason") == "max_tokens":
+                    print(f"claude: {que} se ha quedado sin sitio pensando; otra vez sin pensar")
+                    p = {**{k: v for k, v in p.items() if k != "output_config"}, "thinking": {"type": "disabled"}}
+                    intento += 1
+                    continue
                 # 0.8.2: que el registro diga qué llegó (motivo de parada, tipos de bloque y tokens) y no solo «vacía»
-                tipos = ",".join(str(b.get("type")) for b in (bruto.get("content") or [])) or "ninguno"
-                u = bruto.get("usage") or {}
-                raise RuntimeError(f"respuesta vacía de {bruto.get('model')}: stop_reason={bruto.get('stop_reason')}, bloques={tipos}, "
-                                   f"in={u.get('input_tokens')}, out={u.get('output_tokens')}")
-            USADOS.add(CLAUDE_MODELO)
-            apuntar_uso(CLAUDE_MODELO, r, que)
-            if por_lote:
-                USO[-1]["lote"] = True  # a mitad de precio
-            ULTIMO[0] = CLAUDE_MODELO
-            return r
+                tipos = ",".join(str(b.get("type")) for b in (msg.get("content") or [])) or "ninguno"
+                u = msg.get("usage") or {}
+                ultimo = (f"respuesta vacía de {msg.get('model')}: stop_reason={msg.get('stop_reason')}, bloques={tipos}, "
+                          f"in={u.get('input_tokens')}, out={u.get('output_tokens')}")
+                break
+            apuntar_uso(msg, que, por_lote)
+            return msg
         except urllib.error.HTTPError as e:
             texto = e.read().decode("utf-8", "replace")
             ultimo = f"claude {e.code}: {texto[:300]}"
-            if e.code in (401, 403) or (e.code == 400 and re.search(r"credit|billing|balance", texto, re.I)):
+            if e.code in (401, 403) or (e.code in (400, 429) and re.search(r"credit|billing|balance|usage limit|spend", texto, re.I)):
                 CLAUDE_APAGADO = True
                 break
             if e.code in (429, 500, 502, 503, 529) and intento < 2:
                 time.sleep(15 * (intento + 1))
+                intento += 1
                 continue
             break
         except (urllib.error.URLError, TimeoutError, json.JSONDecodeError) as e:
             ultimo = f"claude: {e}"
             if intento < 2:
                 time.sleep(10)
+                intento += 1
                 continue
+            break
+    CLAUDE_ERRORES.append(f"{que}: {str(ultimo or 'sin respuesta')[:160]}")
     raise RuntimeError(ultimo or "claude: sin respuesta")
 
 
-def apuntar_uso(modelo, resp, que):
-    """Apunta los tokens de una respuesta de Gemini: entrada (y cuánta salió de la caché), salida y razonamiento."""
-    u = (resp or {}).get("usageMetadata") or {}
-    USO.append({"t": ahora(), "m": modelo, "que": que, "in": u.get("promptTokenCount") or 0, "cache": u.get("cachedContentTokenCount") or 0,
-                "out": u.get("candidatesTokenCount") or 0, "pensar": u.get("thoughtsTokenCount") or 0, "herr": u.get("toolUsePromptTokenCount") or 0,
-                "busq": bool(((resp or {}).get("candidates") or [{}])[0].get("groundingMetadata"))})
+def texto_de(msg):
+    """El texto de una respuesta de Claude (sin lo que ha pensado ni las búsquedas) y la respuesta entera."""
+    return "".join(b.get("text", "") for b in ((msg or {}).get("content") or []) if isinstance(b, dict) and b.get("type") == "text"), msg
 
 
-def gemini(cuerpo, clave, reserva=True, modelos=None):
-    """Llama a Gemini; si se acaba el cupo del modelo (429), prueba con los de reserva, que tienen su
-    propio cupo gratuito. Si un modelo no acepta el nivel de razonamiento, lo quita. `modelos` cambia
-    la lista entera (el primero y sus reservas)."""
-    que = inspect.stack()[1].function
-    que = {"leer_trozo": "leer_lote"}.get(que, que)  # una pasada de lectura, aunque se parta en trozos
-    # 0.9: con ANTHROPIC_RADAR_KEY, primero Claude; si falla, sigue con Gemini como siempre
-    if clave_claude() and not CLAUDE_APAGADO:
-        try:
-            return claude(cuerpo, que, ligera=modelos == LECTURA, hay_reserva=bool(clave))
-        except RuntimeError as e:
-            CLAUDE_ERRORES.append(f"{que}: {str(e)[:160]}")
-            if clave in ("", SIN_GEMINI):
-                raise
-            print(f"claude: {que} no ha salido ({str(e)[:120]}), sigo con Gemini")
-    if clave in ("", SIN_GEMINI):
-        raise RuntimeError("sin GEMINI_API_KEY")
-    orden = list(modelos) if modelos else [MODELO] + ([m for m in RESERVA if m != MODELO] if reserva else [])
-    for modelo in orden:
-        try:
-            r = gemini_modelo(cuerpo, clave, modelo)
-            USADOS.add(modelo)
-            apuntar_uso(modelo, r, que)
-            ULTIMO[0] = modelo
-            return r
-        except RuntimeError as e:
-            txt = str(e)
-            if txt.startswith("400") and re.search(r"thinking", txt, re.I):
-                gc = dict(cuerpo.get("generationConfig") or {})
-                gc.pop("thinkingConfig", None)
-                try:
-                    r = gemini_modelo({**cuerpo, "generationConfig": gc}, clave, modelo)
-                    USADOS.add(modelo)
-                    apuntar_uso(modelo, r, que)
-                    ULTIMO[0] = modelo
-                    return r
-                except RuntimeError as e2:
-                    txt = str(e2)
-            ERRORES.append(f"{modelo}: {txt[:160]}")
-            if not (txt.startswith("429") or txt.startswith("404") or txt.startswith("5")):
-                if reserva:
-                    FALLOS.append(txt[:160])
-                raise
-            print(f"gemini: {modelo} no responde ({txt[:80]}), pruebo otro")
-    if reserva:
-        FALLOS.append(ERRORES[-1] if ERRORES else "sin respuesta")
-    raise RuntimeError(ERRORES[-1] if ERRORES else "sin respuesta")
-
-
-def gemini_modelo(cuerpo, clave, modelo):
-    """Prueba la clave en la cabecera y, si Google no la acepta así, en la dirección (las claves nuevas
-    de AI Studio empiezan por AQ.). Reintenta si Google pide esperar."""
-    global MODO
-    ruta = f"models/{modelo}:generateContent"
-    ultimo = None
-    for k, modo in enumerate([MODO, "query" if MODO == "cabecera" else "cabecera"]):
-        for intento in range(3):
-            try:
-                r = peticion(ruta, cuerpo, clave, modo)
-                MODO = modo
-                return r
-            except urllib.error.HTTPError as e:
-                texto = e.read().decode("utf-8", "replace")
-                ultimo = f"{e.code}: {texto[:300]}"
-                if k == 0 and e.code in (400, 401, 403) and re.search(r"API key|API_KEY|ACCESS_TOKEN_TYPE|UNAUTHENTICATED|credential", texto, re.I):
-                    MODO = "query" if modo == "cabecera" else "cabecera"
-                    break  # prueba el otro modo
-                sin_cupo = e.code == 429 and re.search(r"limit:\s*0\b|free.?tier.*not|not available", texto, re.I)
-                if (e.code == 429 and not sin_cupo or e.code >= 500) and intento < 2:
-                    espera = 20 * (intento + 1)
-                    m = re.search(r'"retryDelay":\s*"(\d+)', texto)
-                    if m:
-                        espera = min(90, int(m.group(1)) + 2)
-                    time.sleep(espera)
-                    continue
-                raise RuntimeError(ultimo) from e
-    raise RuntimeError(ultimo or "sin respuesta")
-
-
-def texto_de(resp):
-    c = (resp.get("candidates") or [{}])[0]
-    return "".join(p.get("text", "") for p in ((c.get("content") or {}).get("parts") or []) if not p.get("thought")), c
+def webs_de(msg):
+    """Las páginas que ha encontrado la búsqueda en internet de Claude, como fuentes del informe."""
+    out = []
+    for b in (msg or {}).get("content") or []:
+        if isinstance(b, dict) and b.get("type") == "web_search_tool_result" and isinstance(b.get("content"), list):
+            for w in b["content"]:
+                if isinstance(w, dict) and w.get("url") and all(x["u"] != w["url"] for x in out):
+                    out.append({"t": w.get("title") or w["url"], "u": w["url"], "f": w.get("title")})
+    return out
 
 
 def extraer_json(texto):
@@ -495,7 +423,7 @@ def extraer_por_clave(texto, claves):
 
 
 def material(instrumentos, precios, radar):
-    """Todo lo que lee Gemini, con cada noticia numerada para que pueda citarla."""
+    """Todo lo que lee la IA, con cada noticia numerada para que pueda citarla."""
     fuentes, bloques = [], []
 
     def citar(lista):
@@ -612,7 +540,7 @@ def marcar(dir_salida, clave_id, valor):
             json.dump(p, f, ensure_ascii=False, separators=(",", ":"))
 
 
-def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
+def informe_cartera(ruta_inst, dir_anterior, dir_salida):
     """Devuelve True si ha escrito un informe nuevo."""
     previo = leer(f"{dir_anterior}/informe.json")
     destino = f"{dir_salida}/informe.json"
@@ -628,56 +556,31 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
             marcar_inf(previo.get("generado"))
         return False
 
-    if not clave:
-        return conservar("sin GEMINI_API_KEY, se deja el anterior")
-    previo_lite = "flash-lite" in str(previo.get("modelo") or "")
-    if previo.get("generado") and not previo_lite and hace_menos_de(previo["generado"], HORAS_INFORME) and not os.environ.get("INFORME_FORZAR"):
+    if not clave_claude():
+        return conservar("sin ANTHROPIC_RADAR_KEY, se deja el anterior")
+    if previo.get("generado") and hace_menos_de(previo["generado"], HORAS_INFORME) and not os.environ.get("INFORME_FORZAR"):
         return conservar("el último tiene menos de 2 horas")
-    # sin Flash-Lite mientras el que hay sea reciente: mejor uno de hace unas horas que uno nuevo más flojo
-    buenos = [m for m in [MODELO] + RESERVA if "flash-lite" not in m]
-    vale_lite = not previo.get("generado") or not hace_menos_de(previo["generado"], HORAS_INFORME_LITE)
     instrumentos = leer(ruta_inst).get("instrumentos") or []
     precios = leer(f"{dir_salida}/precios.json")
     radar = leer(f"{dir_salida}/radar.json")
     texto, fuentes = material(instrumentos, precios, radar)
     print(f"informe: {len(fuentes)} noticias, {len(texto)} caracteres")
     hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
-    pedido = f"Hoy es {hoy}.\n\n{texto}"
-    base = {"systemInstruction": {"parts": [{"text": INSTRUCCIONES}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
-            "generationConfig": {"maxOutputTokens": 32768, "thinkingConfig": {"thinkingLevel": "high"}}}
-    busqueda, web = True, []
-    intentos = []  # por qué no salió con el modelo principal (se guarda en informe.json para verlo sin los registros)
+    # 0.8.2d: Haiku pensando y por lote; con INFORME_BUSQUEDA=1, con 3 búsquedas en internet como mucho. Esfuerzo bajo: en el
+    # ensayo del 6 nov, con el medio escribió 25.600 de los 32.768 tokens de salida (sin pensar eran unos 5.000) y se podía
+    # quedar cortado
+    p = pedido(INSTRUCCIONES, f"Hoy es {hoy}.\n\n{texto}", 32768, pensar="low", buscar=3 if BUSQUEDA else 0)
     try:
-        n_err = len(ERRORES)
-        try:
-            if not BUSQUEDA:
-                raise RuntimeError("sin búsqueda en Google (plan gratis)")
-            resp = gemini({**base, "tools": [{"google_search": {}}]}, clave, reserva=False)
-        except RuntimeError as e:
-            intentos += [f"con búsqueda: {x}" for x in ERRORES[n_err:]]
-            del ERRORES[n_err:]  # sin búsqueda en el plan gratuito: es lo esperado, no un fallo
-            print(f"informe: sin búsqueda de Google ({str(e)[:160]})")
-            busqueda = False
-            n_err = len(ERRORES)
-            try:
-                # si el 3.8 y el 3.6 no contestan, salta al except de abajo y se queda el anterior (sin marcarlo como
-                # fallo: es lo esperado, y se reintenta en la siguiente pasada)
-                resp = gemini(base, clave) if vale_lite else gemini(base, clave, reserva=False, modelos=buenos)
-            finally:
-                intentos += ERRORES[n_err:]
-        modelo_usado = USO[-1]["m"] if USO else MODELO
-        texto_r, cand = texto_de(resp)
-        for g in ((cand.get("groundingMetadata") or {}).get("groundingChunks") or []):
-            w = g.get("web") or {}
-            if w.get("uri"):
-                web.append({"t": w.get("title") or w["uri"], "u": w["uri"], "f": w.get("title")})
-        if not web:
-            busqueda = False
+        resp = ia(p, "informe_cartera")
+        modelo_usado = resp.get("model") or CLAUDE_MODELO
+        texto_r, _ = texto_de(resp)
+        web = webs_de(resp)
+        busqueda = bool(web)
         inf = extraer_json(texto_r)
         if not inf or not isinstance(inf.get("posiciones"), dict):
-            return conservar("la respuesta de Gemini no trae un informe válido")
+            return conservar("la respuesta de la IA no trae un informe válido")
     except Exception as e:  # noqa: BLE001
-        return conservar(f"falló Gemini: {e}")
+        return conservar(f"falló la IA: {str(e)[:200]}")
     # cada número de fuente pasa a su titular y enlace
     def fuentes_de(nums):
         out = []
@@ -696,12 +599,11 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida, clave):
     for v in inf.get("mercado") or []:
         if isinstance(v, dict):
             v["fuentes"] = fuentes_de(v.get("fuentes"))
-    inf.update({"generado": ahora(), "modelo": modelo_usado, "noticias_leidas": len(fuentes), "busqueda_google": busqueda, "web": web[:15],
-                "intentos": [str(x)[:240] for x in intentos][-6:]})
+    inf.update({"generado": ahora(), "modelo": modelo_usado, "noticias_leidas": len(fuentes), "busqueda": busqueda, "web": web[:15]})
     with open(destino, "w", encoding="utf-8") as f:
         json.dump(inf, f, ensure_ascii=False, separators=(",", ":"))
     marcar_inf(inf["generado"])
-    print(f"informe: listo ({len(inf.get('posiciones') or {})} posiciones, búsqueda de Google: {busqueda})")
+    print(f"informe: listo ({len(inf.get('posiciones') or {})} posiciones, búsqueda en internet: {busqueda})")
     return True
 
 
@@ -800,7 +702,7 @@ Responde con un objeto JSON:
 solo los factores que tengan noticias de peso 1 o más."""
 
 
-def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
+def leer_lote(lectura, cache, valores, medianas, fichas=None, tuyas=()):
     """La IA lee la prensa de las empresas con noticias que todavía no ha leído. Primero las de las carteras, luego las
     que nunca se han leído y luego las leídas hace más tiempo (6 nov 2026: antes iban las de mejores números, pero el
     radar ya no se elige por lo que dicen los analistas). 0.7: de paso clasifica cada titular y rellena las fichas.
@@ -841,9 +743,7 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
                 lineas.append(f"[{len(fuentes)}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}" + (f" — {n['r'][:300]}" if n.get("r") else ""))
             bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n" + "\n".join(lineas))
         hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
-        cuerpo = {"systemInstruction": {"parts": [{"text": LEER}]}, "contents": [{"role": "user", "parts": [{"text": f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques)}]}],
-                  "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
-        return cuerpo, fuentes
+        return pedido(LEER, f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques), 32768, json_=True), fuentes
 
     def aplicar(trozo, texto, fuentes):
         """Apunta lo que ha contestado la IA de estas empresas y devuelve (cuántas, las que no han venido)."""
@@ -878,7 +778,7 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
     def leer_trozo(trozo):
         """Una llamada con estas empresas; apunta lo leído y devuelve las que no han venido."""
         cuerpo, fuentes = construir(trozo)
-        texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
+        texto, _ = texto_de(ia(cuerpo, "leer_lote", lote=False))
         return aplicar(trozo, texto, fuentes)
 
     def en_peticiones(trozo):
@@ -888,7 +788,7 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
         for i in range(0, len(trozo), LOTE_LECTURA):
             parte = trozo[i:i + LOTE_LECTURA]
             cuerpo, fuentes = construir(parte)
-            if len(cuerpo["contents"][0]["parts"][0]["text"]) > TANDA_MAX_CARACTERES and len(parte) > 1:
+            if len(texto_del_pedido(cuerpo)) > TANDA_MAX_CARACTERES and len(parte) > 1:
                 m = len(parte) // 2
                 out += en_peticiones(parte[:m]) + en_peticiones(parte[m:])
             else:
@@ -901,24 +801,20 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
         peticiones = []
         for i in range(0, len(trozo), tamano):
             peticiones += en_peticiones(trozo[i:i + tamano])
-        pedidos = {f"t{k}": a_claude(c, CLAUDE_MODELO) for k, (_, c, _) in enumerate(peticiones)}
+        pedidos = {f"t{k}": c for k, (_, c, _) in enumerate(peticiones)}
         print(f"escaneo: lote con {len(pedidos)} peticiones ({len(trozo)} empresas)")
         mensajes = mensajes_por_lote(pedidos, clave_claude())
         n, faltan = 0, []
         for k, (parte, _, fuentes) in enumerate(peticiones):
             msg = mensajes.get(f"t{k}")
-            r = de_claude(msg) if msg else None
-            if r is None or not texto_de(r)[0].strip():
+            if msg is None or not texto_de(msg)[0].strip():
                 if msg:
                     u = msg.get("usage") or {}
                     print(f"escaneo: respuesta vacía de {msg.get('model')}: stop_reason={msg.get('stop_reason')}, in={u.get('input_tokens')}, out={u.get('output_tokens')}")
                 faltan += parte
                 continue
-            USADOS.add(CLAUDE_MODELO)
-            apuntar_uso(CLAUDE_MODELO, r, "leer_lote")
-            USO[-1]["lote"] = True  # a mitad de precio
-            ULTIMO[0] = CLAUDE_MODELO
-            m, f2 = aplicar(parte, texto_de(r)[0], fuentes)
+            apuntar_uso(msg, "leer_lote", lote=True)
+            m, f2 = aplicar(parte, texto_de(msg)[0], fuentes)
             n += m
             faltan += f2
         return n, faltan
@@ -932,7 +828,7 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
             n, faltan = ronda_por_lote(lote, tamano)
         except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as e:
             if isinstance(e, urllib.error.HTTPError) and e.code in (401, 403):
-                CLAUDE_APAGADO = True  # la clave no vale: el resto de la pasada va con Gemini
+                CLAUDE_APAGADO = True  # la clave no vale: el resto de la pasada, sin IA
                 CLAUDE_ERRORES.append(f"leer_lote: lote {e.code}")
             LOTES_APAGADOS[0] = True
             print(f"claude: el lote no ha salido ({str(e)[:120]}), sigo en directo con una tanda")
@@ -1059,9 +955,9 @@ def apuntar(hist, s, k, hoy_s, inicio=None):
 
 
 def asentar(previa, ideas, evitar, cambios_g, porval, lectura, radar_top):
-    """Constancia sobre lo que propone Gemini (por si no hace caso del encargo):
+    """Constancia sobre lo que propone la IA (por si no hace caso del encargo):
     - las ideas de la vez anterior siguen, salvo noticia gorda, números rotos o que lleven casi un mes y
-      Gemini explique por qué deja de proponerla;
+      la IA explique por qué deja de proponerla;
     - entran como mucho NUEVAS_POR_DIA nuevas (o tantas como hayan salido por una noticia gorda);
     - lo que estas semanas ha estado en "evitar" no pasa a idea sin una noticia buena gorda;
     - lo que estas semanas se ha propuesto (aquí o entre las mejores de la web) no pasa a "evitar" sin una
@@ -1141,7 +1037,7 @@ def asentar(previa, ideas, evitar, cambios_g, porval, lectura, radar_top):
 
 
 def revisar(decision, lectura, valores):
-    """Entre una decisión y la siguiente (cada pasada de 20 minutos): sin preguntar a Gemini, una idea solo sale
+    """Entre una decisión y la siguiente (cada pasada de 20 minutos): sin preguntar a la IA, una idea solo sale
     si llega una noticia que cambia la tesis o se rompen sus números. Lo demás se queda como estaba."""
     if not decision or not decision.get("ideas"):
         return decision
@@ -1164,7 +1060,7 @@ def revisar(decision, lectura, valores):
 
 
 def contexto_zonas(precios):
-    """Una línea por zona con cómo van sus índices (hoy, mes y año), para que Gemini pese la geografía."""
+    """Una línea por zona con cómo van sus índices (hoy, mes y año), para que la IA pese la geografía."""
     grupos = {}
     for v in (precios.get("mercados") or {}).values():
         r = v.get("rent") or {}
@@ -1172,7 +1068,7 @@ def contexto_zonas(precios):
     return "\n".join(f"- {g}: " + "; ".join(xs) for g, xs in grupos.items())
 
 
-def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previa=None):
+def decidir(lectura, cache, valores, medianas, tuyas, precios=None, previa=None):
     limite = dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=7)
     buenas, malas = [], []
     for x in valores:
@@ -1191,7 +1087,7 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previ
     malas.sort(key=lambda t: -t[0])
     cands = [x for _, x in buenas[:CANDIDATAS]] + [x for _, x in malas[:10]]
     # las que más le gustan a la web (con su misma puntuación aproximada: recorrido, consenso, analistas,
-    # PER y contraste), aunque no tengan prensa reciente: Gemini les pone plazo para que la web no compare
+    # PER y contraste), aunque no tengan prensa reciente: la IA les pone plazo para que la web no compare
     # su "al año" solo con el objetivo de los analistas
     web = []
     for x in valores:
@@ -1206,7 +1102,7 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previ
     web.sort(key=lambda t: -t[0])
     radar_top = [x["s"] for _, x in web[:9]]
     porval = {x["s"]: x for x in valores}
-    # las ideas de la vez anterior entran siempre en la lista, para que Gemini pueda mantenerlas
+    # las ideas de la vez anterior entran siempre en la lista, para que la IA pueda mantenerlas
     de_antes = [porval[i["s"]] for i in ((previa or {}).get("ideas") or []) if isinstance(i, dict) and i.get("s") in porval and i["s"] not in tuyas]
     vistos, orden = set(), []
     for x in de_antes + [x for _, x in web[:20]] + cands:  # luego las de la web: son las que más importa que tengan plazo
@@ -1234,20 +1130,15 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previ
         le = "\n".join(f"- {e.get('s')} ({e.get('n')}): {e.get('motivo') or ''}" for e in previa.get("evitar") or [])
         memoria = (f"\n\n## Lo que dijiste la vez anterior ({str(previa.get('generado'))[:16].replace('T', ' ')} UTC)\nIdeas:\n{li or '- ninguna'}\nA evitar:\n{le or '- ninguna'}"
                    f"\nLas que la web lleva entre sus mejores estos días: {', '.join(radar_top) or 'ninguna'}.")
-    pedido = f"Hoy es {hoy}.\n\n" + (f"## Cómo van los mercados por zonas\n{zonas}\n\n" if zonas else "") + "\n\n".join(bloques) + memoria + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
-    cuerpo = {"systemInstruction": {"parts": [{"text": DECIDIR}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
-              "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "high"}}}
-    # 0.7d: las ideas, con el 3.8 o el 3.6. Si no contesta ninguno (saturados o sin cupo), se quedan las de la vez anterior
-    # y se reintenta en otra pasada; Flash-Lite solo si no hay ideas de menos de 2 días (el 28 oct salieron con él y se
-    # quedaron todo el día). Con reserva=False no sale como fallo en la web: es lo esperado
-    previa_ok = previa and previa.get("v") == DECISION_V and previa.get("ideas")
-    vale_lite = not previa_ok or not hace_menos_de(previa.get("generado") or "", HORAS_DECISION_LITE)
-    buenos = [m for m in [MODELO] + RESERVA if "flash-lite" not in m]
-    texto, _ = texto_de(gemini(cuerpo, clave) if vale_lite else gemini(cuerpo, clave, reserva=False, modelos=buenos))
-    modelo_usado = USO[-1]["m"] if USO else MODELO  # el que ha decidido (la lectura de esta pasada va con otro)
+    texto_pedido = f"Hoy es {hoy}.\n\n" + (f"## Cómo van los mercados por zonas\n{zonas}\n\n" if zonas else "") + "\n\n".join(bloques) + memoria + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
+    # 0.8.2d: Haiku pensando (esfuerzo medio) y por lote. Si no sale, se quedan las ideas de la vez anterior y se reintenta
+    # en otra pasada (a las 2 horas)
+    msg = ia(pedido(DECIDIR, texto_pedido, 32768, json_=True, pensar=True), "decidir")
+    texto, _ = texto_de(msg)
+    modelo_usado = msg.get("model") or CLAUDE_MODELO
     d = extraer_json(texto)
     if not d:
-        ERRORES.append(f"decisión: la respuesta no traía JSON ({len(texto)} caracteres)")
+        CLAUDE_ERRORES.append(f"decidir: la respuesta no traía JSON ({len(texto)} caracteres)")
         return None
     porsim = {x["s"]: x for x in cands}
 
@@ -1280,7 +1171,7 @@ def decidir(lectura, cache, valores, medianas, tuyas, clave, precios=None, previ
             plazos[i["s"]] = {"meses": m, "subida_pct": sub, "por": str(i.get("por") or "")[:120]}
     cambios_g = [{**c, "fuentes": fs_de(c.get("fuentes"))} for c in (d.get("cambios") or []) if isinstance(c, dict) and c.get("s")]
     ideas, evitar, cambios, hist = asentar(previa, ideas, evitar, cambios_g, porval, lectura, radar_top)
-    # las que siguen de antes conservan su plazo si Gemini no lo ha repetido
+    # las que siguen de antes conservan su plazo si la IA no lo ha repetido
     for s, v in ((previa or {}).get("plazos") or {}).items():
         if s not in plazos and any(i["s"] == s for i in ideas):
             plazos[s] = v
@@ -1345,11 +1236,11 @@ Responde con un objeto JSON: {{"temas": [{{"k": "...", "fa": "...", "txt": "..."
 "afecta": [{{"zona": "...", "pais": "...", "sector": "...", "industria": "...", "s": "...", "p": 2}}]}}]}}"""
 
 
-def leer_temas(fichas, clave, precios, valores=()):
-    """0.7: cada 3 horas, Flash-Lite lee los titulares por tema y por sector (y los del mercado) y dice a qué
+def leer_temas(fichas, precios, valores=()):
+    """0.7: cada 3 horas, la IA lee los titulares por tema y por sector (y los del mercado) y dice a qué
     zonas, países y sectores toca cada tema. Van a fichas.json → temas; la app los junta con la ficha de cada
     empresa por su país, su zona y su sector."""
-    if not clave or hace_menos_de(fichas.get("temas_d") or "", HORAS_TEMAS):
+    if not clave_claude() or hace_menos_de(fichas.get("temas_d") or "", HORAS_TEMAS):
         return 0
     fuentes, vistos = [], set()
 
@@ -1373,15 +1264,14 @@ def leer_temas(fichas, clave, precios, valores=()):
         return 0
     lineas = [f"[{i}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}" for i, n in enumerate(fuentes, 1)]
     antes = [f"- {t['k']}: {t['txt']}" for t in fichas.get("temas") or []][:20]
-    pedido = "Titulares:\n" + "\n".join(lineas) + ("\n\nTemas de la vez anterior:\n" + "\n".join(antes) if antes else "")
+    texto_pedido = "Titulares:\n" + "\n".join(lineas) + ("\n\nTemas de la vez anterior:\n" + "\n".join(antes) if antes else "")
     industrias = [k for k, _ in collections.Counter(x.get("ind") for x in valores if x.get("ind")).most_common(70)]
-    cuerpo = {"systemInstruction": {"parts": [{"text": LEER_TEMAS.format(sectores=", ".join(SECTORES), industrias=", ".join(industrias) or "Airlines, Banks - Regional")}]}, "contents": [{"role": "user", "parts": [{"text": pedido}]}],
-              "generationConfig": {"maxOutputTokens": 16384, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
-    texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
+    sistema = LEER_TEMAS.format(sectores=", ".join(SECTORES), industrias=", ".join(industrias) or "Airlines, Banks - Regional")
+    texto, _ = texto_de(ia(pedido(sistema, texto_pedido, 16384, json_=True), "leer_temas"))
     res = extraer_json(texto) or {}
     temas = res.get("temas") if isinstance(res, dict) else None
     if not isinstance(temas, list):
-        ERRORES.append(f"temas: la respuesta no traía la lista ({len(texto)} caracteres)")
+        CLAUDE_ERRORES.append(f"leer_temas: la respuesta no traía la lista ({len(texto)} caracteres)")
         return 0
     F.aplicar_temas(fichas, temas, fuentes, ahora())
     fichas["temas_d"] = ahora()
@@ -1404,10 +1294,27 @@ def guardar_fichas(fichas, dir_salida, validos, nucleo=None):
     print(f"fichas: {len(fichas['e'])} empresas ({len(principal['e'])} en fichas.json), {sum(len(x['fa']) for x in fichas['e'].values())} factores, {len(fichas.get('temas') or [])} temas")
 
 
+def uso_anterior(esc):
+    """Lo apuntado en las pasadas de las últimas 48 horas. 0.8.2d: va en escaneo.json → ia.uso (antes, gemini.uso, con
+    las de Gemini y las de Claude juntas: de esas solo siguen las de Claude, con lo que costaron)."""
+    viejo = ((esc.get("ia") or {}).get("uso")) if isinstance(esc.get("ia"), dict) else None
+    if viejo is None:
+        viejo = [{**x, "lote": bool(x.get("lote")), "coste": coste(x.get("m"), x.get("in") or 0, x.get("out") or 0, bool(x.get("lote")))}
+                 for x in ((esc.get("gemini") or {}).get("uso") or []) if str(x.get("m") or "").startswith("claude")]
+    return [x for x in viejo if isinstance(x, dict) and hace_menos_de(x.get("t") or "", 48)]
+
+
+def estado_ia(esc, hay_ia):
+    """escaneo.json → ia: si hay clave (activo), si ha ido bien esta pasada (ok), si se ha apagado por la clave o el saldo,
+    los últimos fallos, los modelos que han contestado, cada llamada de las últimas 48 horas (uso: t, m, que, in, cache,
+    out, busq, lote, coste en US$) y lo que han costado las de las últimas 24 horas (coste_24h, US$)."""
+    uso = uso_anterior(esc) + USO
+    return {"activo": hay_ia, "ok": hay_ia and not CLAUDE_ERRORES and not CLAUDE_APAGADO, "apagado": CLAUDE_APAGADO, "errores": CLAUDE_ERRORES[-4:],
+            "modelos": sorted(USADOS), "uso": uso, "coste_24h": round(sum(x.get("coste") or 0 for x in uso if hace_menos_de(x.get("t") or "", 24)), 4)}
+
+
 def main(ruta_inst, dir_anterior, dir_salida):
-    clave = (os.environ.get("GEMINI_API_KEY") or "").strip()
-    if not clave and clave_claude():
-        clave = SIN_GEMINI  # solo con Claude
+    hay_ia = bool(clave_claude())
     instrumentos = leer(ruta_inst).get("instrumentos") or []
     radar = leer(f"{dir_salida}/radar.json")
     valores = radar.get("valores") or []
@@ -1439,39 +1346,38 @@ def main(ruta_inst, dir_anterior, dir_salida):
             noticias_de_carteras(cache, instrumentos, todas, leer(f"{dir_salida}/precios.json"))
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: fallaron las noticias de las carteras ({e})")
-        if clave:
+        if hay_ia:
             try:
-                leer_lote(lectura, cache, todas, medianas, clave, fichas, tuyas)
+                leer_lote(lectura, cache, todas, medianas, fichas, tuyas)
             except Exception as e:  # noqa: BLE001
-                print(f"escaneo: falló la lectura de Gemini ({str(e)[:200]})")
+                print(f"escaneo: falló la lectura de la IA ({str(e)[:200]})")
             try:
-                leer_temas(fichas, clave, leer(f"{dir_salida}/precios.json"), valores)
+                leer_temas(fichas, leer(f"{dir_salida}/precios.json"), valores)
             except Exception as e:  # noqa: BLE001
-                print(f"temas: falló la lectura de Gemini ({str(e)[:200]})")
-    nuevo = informe_cartera(ruta_inst, dir_anterior, dir_salida, clave)
+                print(f"temas: falló la lectura de la IA ({str(e)[:200]})")
+    informe_cartera(ruta_inst, dir_anterior, dir_salida)
     # una decisión nueva al día (o si cambia su formato); entre medias, solo se revisa si hay una noticia gorda
     viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_DECISION)
     if not viejo and valores:
         decision = revisar(decision, lectura, valores)
-    # 0.7d: unas ideas hechas con Flash-Lite (revisadas como las demás) se intentan mejorar con el 3.8 o el 3.6, cada 2 horas
-    viejo = viejo or "flash-lite" in str((decision or {}).get("modelo") or "")
-    # si la última vez falló (cuota de Gemini agotada, por ejemplo), no se reintenta hasta pasadas 2 horas
+    # si la última vez falló (Claude saturado o sin saldo, por ejemplo), no se reintenta hasta pasadas 2 horas
     intento = esc.get("intento_decision")
     if viejo and intento and hace_menos_de(intento, 2):
         viejo = False
-    if clave and valores and viejo:
+    # 0.8.2d: el ensayo de la Action (sin publicar) decide aunque no toque, para medir lo que cuesta
+    viejo = viejo or bool(os.environ.get("INFORME_DECIDIR"))
+    if hay_ia and valores and viejo:
         intento = ahora()
         try:
-            d = decidir(lectura, cache, valores, medianas, tuyas, clave, leer(f"{dir_salida}/precios.json"), previa=decision)
+            d = decidir(lectura, cache, valores, medianas, tuyas, leer(f"{dir_salida}/precios.json"), previa=decision)
             if d:
                 decision = d
                 print(f"escaneo: decisión con {d['candidatas']} candidatas, {len(d['ideas'])} ideas y {len(d['evitar'])} a evitar")
         except Exception as e:  # noqa: BLE001
-            print(f"escaneo: falló la decisión de Gemini ({str(e)[:200]})")
+            print(f"escaneo: falló la decisión de la IA ({str(e)[:200]})")
     hace24 = dt.datetime.now(dt.timezone.utc) - dt.timedelta(hours=24)
     salida = {"generado": ahora(), "lectura": lectura, "decision": decision, "intento_decision": intento if (decision or {}).get("generado", "") < (intento or "") else None,
-              "claude": {"activo": bool(clave_claude()), "apagado": CLAUDE_APAGADO, "errores": CLAUDE_ERRORES[-4:]}, "gemini": {"ok": not FALLOS, "errores": (FALLOS or ERRORES)[-4:], "modelos": sorted(USADOS), "con_clave": clave not in ("", SIN_GEMINI),
-                                     "uso": [x for x in ((esc.get("gemini") or {}).get("uso") or []) if hace_menos_de(x.get("t") or "", 48)] + USO},
+              "ia": estado_ia(esc, hay_ia),
               "con_noticias": sum(1 for v in cache.values() if v.get("n")), "leidas_24h": sum(1 for v in lectura.values() if cuando(v.get("d")) and cuando(v["d"]) > hace24),
               "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(todas), "empresas_nucleo": len(valores), "fuentes_pasada": DIAG}
     with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:

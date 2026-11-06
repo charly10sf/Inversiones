@@ -1,18 +1,21 @@
-# 0.7 · Banco de preguntas de GrowIA: cada noche, unas 42 preguntas reales a GrowIA con la app de verdad (el build),
-# la cartera de prueba y Gemini de verdad (la clave de la Action, con Flash-Lite); los domingos, una muestra de 10 con
-# el 3.6 Flash (casi igual que el 3.8 y con su propio cupo, que la Action apenas usa). El resultado va a la rama datos
-# (banco.json y banco-muestra.json) y el dueño lo ve en Ajustes. Se puede lanzar a mano sobre otra rama (por ejemplo,
-# la de la versión que se está haciendo) para probarla antes de publicarla.
-name: Banco de GrowIA
+# 0.7 · Banco de preguntas de la IA: unas 42 preguntas reales a la IA con la app de verdad (el build), la cartera de prueba
+# y la IA de verdad. El resultado va a la rama datos (banco.json y banco-muestra.json) y el dueño lo ve en Ajustes → Cómo
+# va la IA. Se puede lanzar a mano sobre otra rama (por ejemplo, la de la versión que se está haciendo) para probarla
+# antes de publicarla.
+# 0.8.2d (6 nov 2026, «todo con Claude»; Carlos eligió el calendario): antes, cada noche con Gemini y la clave gratis de la
+# Action. Ahora con Claude, que gasta créditos: los MARTES por la noche las 42 con Haiku (~0,25 US$) y los VIERNES por la
+# noche la muestra de 10 con Sonnet (~0,40 US$); unos 2,80 US$ al mes. Con el secreto ANTHROPIC_BANCO_KEY si existe (una
+# clave en un workspace aparte, con su límite) y, si no, la clave de la app (ANTHROPIC_API_KEY, de sus créditos).
+name: Banco de la IA
 
 on:
   schedule:
-    - cron: "37 2 * * *"      # cada noche, Flash-Lite
-    - cron: "37 3 * * 0"      # los domingos, la muestra con el 3.6
+    - cron: "37 21 * * 2"     # martes, 22:37 en Madrid (21:37 UTC en invierno): las 42 con Haiku
+    - cron: "37 21 * * 5"     # viernes, a la misma hora: la muestra de 10 con Sonnet
   workflow_dispatch:
     inputs:
       muestra:
-        description: "Solo la muestra de 10 con el 3.6 (si no, todas con Flash-Lite)"
+        description: "Solo la muestra de 10 con Sonnet (si no, las 42 con Haiku)"
         type: boolean
         default: false
 
@@ -49,15 +52,16 @@ jobs:
           sh tests/traer-datos.sh
           npm run build
 
-      - name: Preguntas a GrowIA
+      - name: Preguntas a la IA
         if: steps.hay.outputs.si
         timeout-minutes: 98   # el banco guarda lo hecho tras cada pregunta: si se corta, se publica lo que haya
         env:
-          GF_BANCO_CLAVE: ${{ secrets.GEMINI_API_KEY }}
-          GF_BANCO_MUESTRA: ${{ ((github.event_name == 'schedule' && github.event.schedule == '37 3 * * 0') || inputs.muestra) && '1' || '0' }}
+          GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
+          GF_BANCO_MUESTRA: ${{ ((github.event_name == 'schedule' && github.event.schedule == '37 21 * * 5') || inputs.muestra) && '1' || '0' }}
         run: |
           mkdir -p salida
-          if [ "$GF_BANCO_MUESTRA" = "1" ]; then export GF_BANCO_MODELO=gemini-3.6-flash GF_BANCO_SALIDA=$PWD/salida/banco-muestra.json; else export GF_BANCO_MODELO=gemini-3.5-flash-lite GF_BANCO_SALIDA=$PWD/salida/banco.json; fi
+          if [ -z "$GF_BANCO_ANTHROPIC" ]; then echo "::error::Falta el secreto ANTHROPIC_BANCO_KEY (o ANTHROPIC_API_KEY)"; exit 1; fi
+          if [ "$GF_BANCO_MUESTRA" = "1" ]; then export GF_BANCO_MOTOR=sonnet GF_BANCO_SALIDA=$PWD/salida/banco-muestra.json; else export GF_BANCO_MOTOR=haiku GF_BANCO_SALIDA=$PWD/salida/banco.json; fi
           npx playwright test tests/banco.spec.js --project=pc --reporter=list || echo "el banco no ha terminado bien"
           ls -la salida || true
 
@@ -94,6 +98,6 @@ jobs:
           for i in 1 2 3; do
             git fetch -q --depth=1 origin datos && git worktree add -q -f /tmp/datos origin/datos || exit 1
             cp salida/*.json /tmp/datos/
-            (cd /tmp/datos && git add -A && git commit -q -m "Banco de GrowIA $(date -u +%Y-%m-%dT%H:%MZ)" && git push -q origin HEAD:datos) && break
+            (cd /tmp/datos && git add -A && git commit -q -m "Banco de la IA $(date -u +%Y-%m-%dT%H:%MZ)" && git push -q origin HEAD:datos) && break
             git worktree remove -f /tmp/datos; sleep 20
           done

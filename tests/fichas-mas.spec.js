@@ -2,7 +2,7 @@
 // carteras); fichas-mas.json, las otras ~1.900 del radar, y solo se baja al abrir una de ellas. Aquí se parten las
 // fichas de verdad (tests/.datos) como lo haría scripts/fichas.py.
 import { test as base, expect } from '@playwright/test';
-import { readFileSync } from 'fs';
+import { readFileSync, existsSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
@@ -19,7 +19,10 @@ const test = base.extend({
 });
 
 test('fichas-mas.json se baja solo al abrir una empresa de fuera del núcleo', async ({ page, context }) => {
-  const todas = leer('fichas.json');
+  // 0.8.2c: la Action ya guarda fichas.json partido (el núcleo y fichas-mas.json): aquí se juntan y se vuelven a partir
+  const f0 = leer('fichas.json'), mas0 = existsSync(join(DATOS, 'fichas-mas.json')) ? leer('fichas-mas.json') : { e: {} };
+  const { mas: _m, mas_s: _ms, ...cab } = f0;
+  const todas = { ...cab, e: { ...(f0.e || {}), ...(mas0.e || {}) } };
   const nucleo = new Set(leer('radar.json').valores.map((x) => x.s));
   const e = todas.e || {};
   const principal = { ...todas, e: Object.fromEntries(Object.entries(e).filter(([s]) => nucleo.has(s))) };

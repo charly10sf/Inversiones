@@ -1,6 +1,6 @@
 /* =====================================================================
    0.7 · Las fichas de GrowIA: lo que pesa ahora en cada empresa, factor por factor
-   La Action (scripts/informe.py y scripts/fichas.py) lee la prensa con Gemini Flash-Lite y deja en fichas.json, en
+   La Action (scripts/informe.py y scripts/fichas.py) lee la prensa con la IA y deja en fichas.json, en
    la rama datos, una ficha por empresa con seis factores (negocio, sector, economía, política y leyes, sociedad y
    mercado) y la marca de cada titular: de qué factor es, si es bueno o malo para la acción y cuánto importa. Además,
    los temas que tocan a muchas empresas a la vez (aranceles, tipos, huelgas…), con a qué zonas, países y sectores.
@@ -123,7 +123,7 @@ function indexarFichas() {
 const marcaTitular = (n) => (S.fichasTit && n && n.t ? S.fichasTit.get(claveTitular(n.t0 || n.t)) || null : null);
 
 /* los temas que tocan a una empresa del radar: por su sector y por su sitio (su país o su zona; España también es
-   Europa) y, si el tema lo dice, por su industria (aerolíneas, defensa…). Gemini a veces pone el país y la zona a
+   Europa) y, si el tema lo dice, por su industria (aerolíneas, defensa…). La IA a veces pone el país y la zona a
    la vez: basta con que case uno. De cada tema, lo que más se le ajusta: el país antes que la zona, la zona exacta antes que «Europa», y si empatan, lo que más pesa */
 function temasDe(x) {
   if (!x || !S.fichas) return [];

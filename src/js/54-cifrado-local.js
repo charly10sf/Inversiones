@@ -11,12 +11,8 @@ async function descifrarLocal(o) {
 async function cargarAsesor() {
   if (AS.cargada || !S.key) return;
   AS.cargada = true;
-  for (const prov of ['google']) {
-    const c = LS.get(LS_CLAVE[prov]);
-    if (c) { try { AS.claves[prov] = await descifrarLocal(c); } catch (e) { LS.del(LS_CLAVE[prov]); } }
-    const enCartera = S.cartera && S.cartera.asesor && S.cartera.asesor[CAMPO_CLAVE[prov]];
-    if (!AS.claves[prov] && enCartera) AS.claves[prov] = enCartera;
-  }
+  // 0.8.2d: la clave de Google ya no se usa (la IA va con Claude): la que hubiera guardada se borra, con los cupos de Gemini
+  borrarGeminiViejo();
   const h = LS.get('inv-asesor-conv');
   if (h) { try { const o = await descifrarLocal(h); AS.conv = o.conv || []; AS.api = o.api || []; AS.gasto = o.gasto || 0; AS.convId = o.id || null; } catch (e) { LS.del('inv-asesor-conv'); } }
   await cargarConvs();
@@ -31,7 +27,7 @@ async function guardarConv() {
   try { if (AS.conv.some((t) => t.rol === 'yo')) AS.convId = AS.convId || nuevoIdConv(); LS.set('inv-asesor-conv', await cifrarLocal({ id: AS.convId || null, conv: AS.conv.slice(-60).map(({ adj, ...t }, k, v) => (t.mini && v.slice(k + 1).filter((y) => y.mini).length >= 4 ? { ...t, mini: undefined } : t)), api: AS.api.slice(-24), gasto: AS.gasto })); } catch (e) {}
   archivarLuego();
 }
-function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, claves: { google: null }, cargada: false, gasto: 0, convs: null, convId: null, aFondo: false }); }
+function olvidarAsesor() { Object.assign(AS, { conv: [], api: [], foto: null, cargada: false, gasto: 0, convs: null, convId: null, aFondo: false }); }
 
 /* 0.8.2 · las conversaciones guardadas: hasta 20, cifradas con la clave de la cartera en este dispositivo (no salen de él),
    sin los recortes de pantalla. La que tienes abierta se guarda en la lista según la usas; se abren, se siguen y se borran

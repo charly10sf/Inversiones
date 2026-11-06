@@ -1,10 +1,11 @@
 """0.7: fichas por empresa con seis factores. La lectura de prensa de la Action clasifica cada titular y rellena
-la ficha de cada empresa; lo viejo se va solo. Sin Gemini.
+la ficha de cada empresa; lo viejo se va solo. Sin red: la IA se imita.
 
 Uso: python3 -m unittest discover -s tests/scripts
 """
 import datetime as dt
 import json
+import os
 import re
 import sys
 import tempfile
@@ -91,22 +92,43 @@ class Fichas(unittest.TestCase):
         self.assertEqual(t["afecta"][1]["industria"], "Steel")
 
 
-class LecturaConFichas(unittest.TestCase):
+def msg(texto):
+    """Una respuesta de Claude con este texto (0.8.2d: la IA de la Action es Claude)."""
+    return {"model": "claude-haiku-5-5", "content": [{"type": "text", "text": texto}], "stop_reason": "end_turn", "usage": {"input_tokens": 10, "output_tokens": 5}}
+
+
+def pide(cuerpo):
+    return cuerpo["messages"][0]["content"]
+
+
+class ConClaude(unittest.TestCase):
+    """Claude de imitación, en directo (lo de los lotes se prueba en test_ia_claude.py y test_radar_lotes_varios.py)."""
+
     def setUp(self):
-        self.original = I.gemini_modelo
-        I.USO.clear()
+        self.original = (I.peticion_claude, I.CLAUDE_LOTES, I.time.sleep, os.environ.get("ANTHROPIC_RADAR_KEY"))
+        os.environ["ANTHROPIC_RADAR_KEY"] = "k"
+        I.CLAUDE_LOTES = False
+        I.time.sleep = lambda x: None
+        I.USO.clear(); I.CLAUDE_ERRORES.clear(); I.CLAUDE_APAGADO = False
 
     def tearDown(self):
-        I.gemini_modelo = self.original
-        I.USO.clear()
+        I.peticion_claude, I.CLAUDE_LOTES, I.time.sleep, clave = self.original
+        if clave is None:
+            os.environ.pop("ANTHROPIC_RADAR_KEY", None)
+        else:
+            os.environ["ANTHROPIC_RADAR_KEY"] = clave
+        I.USO.clear(); I.CLAUDE_ERRORES.clear(); I.CLAUDE_APAGADO = False
+
+
+class LecturaConFichas(ConClaude):
 
     def test_leer_lote_rellena_las_fichas_y_la_lectura_de_siempre(self):
         respuesta = {"SAN.MC": dict(LEIDO, tit={"1": ["negocio", "+", 2]}, fa={"negocio": LEIDO["fa"]["negocio"]})}
-        I.gemini_modelo = lambda cuerpo, clave, modelo: {"candidates": [{"content": {"parts": [{"text": json.dumps(respuesta)}]}}], "usageMetadata": {}}
+        I.peticion_claude = lambda cuerpo, clave: msg(json.dumps(respuesta))
         cache = {"SAN.MC": {"n": FUENTES[:1]}}
         valores = [{"s": "SAN.MC", "n": "Banco Santander", "p": 8.1, "m": "EUR", "pot": 12, "sector": "Financiero"}]
         lectura, fichas = {}, F.nuevas()
-        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas, {"SAN.MC"}), 1)
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, fichas, {"SAN.MC"}), 1)
         self.assertEqual((lectura["SAN.MC"]["imp"], lectura["SAN.MC"]["rel"]), ("positivo", 2))
         self.assertEqual(fichas["e"]["SAN.MC"]["fa"]["negocio"]["txt"], "Beneficio un 12 % mayor.")
         self.assertIn(F.clave_titulo(FUENTES[0]["t"]), fichas["e"]["SAN.MC"]["tit"])
@@ -116,10 +138,10 @@ class LecturaConFichas(unittest.TestCase):
         # las fichas (aunque no saliera ninguna), no
         respuesta = {"SAN.MC": dict(LEIDO, tit={"1": ["negocio", "+", 2]}, fa={"negocio": LEIDO["fa"]["negocio"]})}
         pedidas = []
-        def gemini(cuerpo, clave, modelo):
-            pedidas.append(cuerpo["contents"][0]["parts"][0]["text"])
-            return {"candidates": [{"content": {"parts": [{"text": json.dumps(respuesta)}]}}], "usageMetadata": {}}
-        I.gemini_modelo = gemini
+        def claude(cuerpo, clave):
+            pedidas.append(pide(cuerpo))
+            return msg(json.dumps(respuesta))
+        I.peticion_claude = claude
         cache = {"SAN.MC": {"n": FUENTES[:1]}, "BBVA.MC": {"n": FUENTES[1:2]}, "REP.MC": {"n": FUENTES[2:3]}}
         valores = [{"s": s, "n": s, "p": 8.1, "m": "EUR", "pot": 12, "sector": "Financiero"} for s in cache]
         fichas = F.nuevas()
@@ -127,43 +149,43 @@ class LecturaConFichas(unittest.TestCase):
         lectura = {"SAN.MC": {"d": "2026-10-22T10:00:00+00:00", "h": I.huella(cache["SAN.MC"]["n"])},
                    "BBVA.MC": {"d": "2026-10-22T10:00:00+00:00", "h": I.huella(cache["BBVA.MC"]["n"])},
                    "REP.MC": {"d": "2026-10-24T08:00:00+00:00", "h": I.huella(cache["REP.MC"]["n"])}}
-        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 1)
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, fichas), 1)
         self.assertEqual(len(pedidas), 1)
         self.assertIn("## SAN.MC", pedidas[0])
         self.assertNotIn("## BBVA.MC", pedidas[0])
         self.assertNotIn("## REP.MC", pedidas[0])
         self.assertIn("SAN.MC", fichas["e"])
         # y la pasada siguiente, ya nada que leer
-        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 0)
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, fichas), 0)
 
     def test_un_json_roto_no_tira_toda_la_pasada(self):
         # una comilla sin escapar en una empresa: las demás se leen igual
         bien = json.dumps(dict(LEIDO, tit={"1": ["negocio", "+", 2]}, fa={"negocio": LEIDO["fa"]["negocio"]}))
         texto = '{"SAN.MC": ' + bien + ', "BBVA.MC": {"imp": "positivo", "txt": "Dice "hola" sin escapar"}, "REP.MC": ' + bien + '}'
-        I.gemini_modelo = lambda cuerpo, clave, modelo: {"candidates": [{"content": {"parts": [{"text": texto}]}}], "usageMetadata": {}}
+        I.peticion_claude = lambda cuerpo, clave: msg(texto)
         cache = {"SAN.MC": {"n": FUENTES[:1]}, "BBVA.MC": {"n": FUENTES[1:2]}, "REP.MC": {"n": FUENTES[2:3]}}
         valores = [{"s": s, "n": s, "p": 8.1, "m": "EUR", "pot": 12, "sector": "Financiero"} for s in cache]
         lectura, fichas = {}, F.nuevas()
-        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 2)
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, fichas), 2)
         self.assertEqual(sorted(lectura), ["REP.MC", "SAN.MC"])
         self.assertEqual(sorted(fichas["e"]), ["REP.MC", "SAN.MC"])
 
     def test_un_lote_atascado_se_parte_y_lo_que_no_sale_se_aparta(self):
-        # Gemini no devuelve nada si en el lote va TOX.MC: se parte hasta un grupo pequeño, lo demás se lee y el grupo
+        # la IA no devuelve nada si en el lote va TOX.MC: se parte hasta un grupo pequeño, lo demás se lee y el grupo
         # de TOX.MC se aparta hasta que tenga noticias nuevas
         llamadas = []
-        def gemini(cuerpo, clave, modelo):
-            texto = cuerpo["contents"][0]["parts"][0]["text"]
+        def claude(cuerpo, clave):
+            texto = pide(cuerpo)
             syms = re.findall(r"^## (\S+)", texto, flags=re.M)
             llamadas.append(syms)
             res = {} if "TOX.MC" in syms else {s: dict(LEIDO, tit={"1": ["negocio", "+", 2]}, fa={"negocio": LEIDO["fa"]["negocio"]}) for s in syms}
-            return {"candidates": [{"content": {"parts": [{"text": json.dumps(res)}]}}], "usageMetadata": {}}
-        I.gemini_modelo = gemini
+            return msg(json.dumps(res))
+        I.peticion_claude = claude
         syms = [f"E{i:02d}.MC" for i in range(15)] + ["TOX.MC"] + [f"E{i:02d}.MC" for i in range(15, 30)]
         cache = {s: {"n": [dict(FUENTES[0], t=f"{s} gana más")]} for s in syms}
         valores = [{"s": s, "n": s, "p": 8.1, "m": "EUR", "pot": 12, "sector": "Financiero"} for s in syms]
         lectura, fichas = {}, F.nuevas()
-        n = I.leer_lote(lectura, cache, valores, {}, "clave", fichas)
+        n = I.leer_lote(lectura, cache, valores, {}, fichas)
         self.assertGreaterEqual(n, len(syms) - 2 * I.LOTE_MIN_PARTIR)
         self.assertNotIn("TOX.MC", lectura)
         self.assertIn("TOX.MC", fichas["sin"])
@@ -171,22 +193,22 @@ class LecturaConFichas(unittest.TestCase):
         self.assertLessEqual(len(llamadas), 9)
         # la siguiente pasada no las vuelve a pedir; con noticias nuevas, sí
         llamadas.clear()
-        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 0)
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, fichas), 0)
         self.assertEqual(llamadas, [])
         cache["E03.MC" if "E03.MC" in fichas["sin"] else next(iter(fichas["sin"]))]["n"].append(dict(FUENTES[1]))
-        I.leer_lote(lectura, cache, valores, {}, "clave", fichas)
+        I.leer_lote(lectura, cache, valores, {}, fichas)
         self.assertEqual(len(llamadas), 1)
         # y al podar, solo las que siguen en el radar
         F.podar(fichas, {"TOX.MC"})
         self.assertEqual(list(fichas["sin"]), ["TOX.MC"])
 
-    def test_si_gemini_no_lee_nada_no_se_aparta_nada(self):
-        I.gemini_modelo = lambda cuerpo, clave, modelo: {"candidates": [{"content": {"parts": [{"text": "{}"}]}}], "usageMetadata": {}}
+    def test_si_la_ia_no_lee_nada_no_se_aparta_nada(self):
+        I.peticion_claude = lambda cuerpo, clave: msg("{}")
         syms = [f"E{i:02d}.MC" for i in range(20)]
         cache = {s: {"n": [dict(FUENTES[0], t=f"{s} gana más")]} for s in syms}
         valores = [{"s": s, "n": s, "p": 8.1, "m": "EUR", "pot": 12, "sector": "Financiero"} for s in syms]
         lectura, fichas = {}, F.nuevas()
-        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, "clave", fichas), 0)
+        self.assertEqual(I.leer_lote(lectura, cache, valores, {}, fichas), 0)
         self.assertEqual(fichas.get("sin") or {}, {})
 
     def test_las_noticias_de_las_carteras_entran_en_la_lectura(self):
@@ -212,38 +234,39 @@ class LecturaConFichas(unittest.TestCase):
         self.assertEqual(marca, leidas["generado"])  # la app sabe por precios.json cuándo volver a bajarlas
 
 
-if __name__ == "__main__":
-    unittest.main()
-
-
-class Temas(unittest.TestCase):
+class Temas(ConClaude):
     def setUp(self):
-        self.gm, self.nt, self.dormir = I.gemini_modelo, I.P.noticias, I.time.sleep
-        I.time.sleep = lambda x: None
+        super().setUp()
+        self.nt = I.P.noticias
         self.pedidos = []
-        I.USO.clear()
 
     def tearDown(self):
-        I.gemini_modelo, I.P.noticias, I.time.sleep = self.gm, self.nt, self.dormir
-        I.USO.clear()
+        I.P.noticias = self.nt
+        super().tearDown()
 
-    def test_leer_temas_cada_3_horas_con_flash_lite(self):
+    def test_leer_temas_cada_3_horas_con_haiku_sin_pensar(self):
         I.P.noticias = lambda q, n=6, debe=None, cuando="30d": [{"t": f"{q}, titular {i}", "u": f"https://ejemplo.es/{i}", "f": "EFE", "d": "2026-10-23T08:00:00+00:00"} for i in range(n)]
         temas = {"temas": [{"k": "aranceles acero", "fa": "politico", "txt": "Suben los aranceles al acero.", "plazo": "medio", "fuentes": [1],
                             "afecta": [{"zona": "Europa", "sector": "Materiales", "s": "-", "p": 2}]}]}
 
-        def gemini_de_prueba(cuerpo, clave, modelo):
-            self.pedidos.append(modelo)
-            return {"candidates": [{"content": {"parts": [{"text": json.dumps(temas)}]}}], "usageMetadata": {}}
-        I.gemini_modelo = gemini_de_prueba
+        def claude(cuerpo, clave):
+            self.pedidos.append((cuerpo["model"], cuerpo.get("thinking")))
+            return msg(json.dumps(temas))
+        I.peticion_claude = claude
         fichas = F.nuevas()
         precios = {"noticias": {"mercado": [{"t": "El BCE mantiene los tipos", "f": "EFE", "d": "2026-10-23T07:00:00+00:00", "u": "https://ejemplo.es/m"}]}}
-        self.assertEqual(I.leer_temas(fichas, "clave", precios), 1)
-        self.assertEqual(self.pedidos, ["gemini-3.5-flash-lite"])
+        self.assertEqual(I.leer_temas(fichas, precios), 1)
+        self.assertEqual(self.pedidos, [("claude-haiku-5-5", {"type": "disabled"})])
         self.assertEqual(fichas["temas"][0]["afecta"][0]["sector"], "Materiales")
         self.assertEqual(fichas["temas"][0]["fuentes"][0]["u"], "https://ejemplo.es/m")  # las del mercado van primero
-        self.assertEqual(I.leer_temas(fichas, "clave", precios), 0)  # hasta dentro de 3 horas, nada
+        self.assertEqual(I.leer_temas(fichas, precios), 0)  # hasta dentro de 3 horas, nada
         self.assertEqual(len(self.pedidos), 1)
 
     def test_sin_clave_no_hace_nada(self):
-        self.assertEqual(I.leer_temas(F.nuevas(), "", {}), 0)
+        os.environ.pop("ANTHROPIC_RADAR_KEY", None)
+        I.peticion_claude = lambda *a: self.fail("sin clave no se llama a la IA")
+        self.assertEqual(I.leer_temas(F.nuevas(), {}), 0)
+
+
+if __name__ == "__main__":
+    unittest.main()
