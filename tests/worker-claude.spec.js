@@ -427,7 +427,7 @@ async function pedirYCerrar(uid, cuerpo, env, extra) {
 }
 const gastado = async (env) => (await env.CUOTAS.get(env.CUOTAS.idFromName(' techo-reducido')).fetch('https://x/', { method: 'POST', body: JSON.stringify({ op: 'ver', dia: new Date().toISOString().slice(0, 10) }) }).then((r) => r.json()));
 
-test('0.8.2b: el nivel reducido tiene 15 preguntas y 3 «A fondo» al día; el alto, sin tope de «A fondo»', async () => {
+test('0.8.2b: el nivel reducido tiene 5 preguntas y 3 «A fondo» al día; el alto, 20 y sin tope de «A fondo»', async () => {
   await con(ok, async (vistas) => {
     const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: undefined, CLAUDE_RONDAS_POR_DIA: undefined };
     const P = (m, id) => ({ ...m, pregunta: id, ronda: 1 });
@@ -439,7 +439,7 @@ test('0.8.2b: el nivel reducido tiene 15 preguntas y 3 «A fondo» al día; el a
     // la misma pregunta con Haiku sí entra (la rechazada no gastó pregunta)
     r = await pedir('uid-f', P(HAIKU, 'fondo3aaaa'), env, RED);
     expect(r.status).toBe(200);
-    expect(r.headers.get('x-quedan')).toBe('11');
+    expect(r.headers.get('x-quedan')).toBe('1');
     // las rondas de una «A fondo» no gastan más «A fondo», pero empezar con Haiku y seguir con Sonnet sí gasta (y aquí ya no quedan)
     r = await pedir('uid-f', { ...SONNET, pregunta: 'fondo0aaaa', ronda: 2 }, env, RED);
     expect(r.status).toBe(200);
@@ -448,13 +448,13 @@ test('0.8.2b: el nivel reducido tiene 15 preguntas y 3 «A fondo» al día; el a
     // sin id, cada petición con Sonnet gasta «A fondo»
     r = await pedir('uid-f', SONNET, env, RED);
     expect(r.status).toBe(429);
-    // hasta 15 preguntas en total
-    for (let i = 5; i < 16; i++) expect((await pedir('uid-f', P(HAIKU, `haiku${i}aaaa`), env, RED)).status).toBe(i < 16 ? 200 : 429);
+    // hasta 5 preguntas en total
+    expect((await pedir('uid-f', P(HAIKU, 'haiku5aaaa'), env, RED)).status).toBe(200);
     r = await pedir('uid-f', P(HAIKU, 'haiku99aaaa'), env, RED);
     expect(await r.json()).toEqual({ error: 'tope-diario' });
     // el nivel alto: Sonnet sin tope propio (solo el del día) y sin X-Quedan-Fondo
-    for (let i = 0; i < 5; i++) { const x = await pedir('uid-g', P(SONNET, `alto${i}aaaaa`), env); expect(x.status).toBe(200); expect(x.headers.get('x-quedan-fondo')).toBeNull(); expect(x.headers.get('x-quedan')).toBe(String(29 - i)); }
-    expect(vistas.length).toBe(3 + 1 + 1 + 11 + 5);
+    for (let i = 0; i < 5; i++) { const x = await pedir('uid-g', P(SONNET, `alto${i}aaaaa`), env); expect(x.status).toBe(200); expect(x.headers.get('x-quedan-fondo')).toBeNull(); expect(x.headers.get('x-quedan')).toBe(String(19 - i)); }
+    expect(vistas.length).toBe(3 + 1 + 1 + 1 + 5);
   });
 });
 

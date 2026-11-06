@@ -328,10 +328,11 @@ async function isinRuta(url, req, env, ctx, res, deFuera) {
 const CLAUDE_API = 'https://api.anthropic.com/v1/messages';
 const CLAUDE_MODELOS = ['claude-haiku-5-5', 'claude-sonnet-5-5'];
 const CLAUDE_CAMPOS = ['model', 'max_tokens', 'system', 'messages', 'tools', 'tool_choice', 'thinking', 'output_config', 'stream', 'temperature'];
-const CLAUDE_MAX_SALIDA = 32000, CLAUDE_MAX_CUERPO = 600e3, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 30, CLAUDE_RONDAS_POR_DIA = 90;
-// 0.8.2b: el nivel reducido (todo el que no está en CLAUDE_EMAILS). Cifras propuestas el 6 nov; Carlos dijo «reducido» sin
-// número: se cambian aquí o con la variable del mismo nombre en el Worker
-const CLAUDE_POR_DIA_REDUCIDO = 15, CLAUDE_RONDAS_REDUCIDO = 45, CLAUDE_FONDO_REDUCIDO = 3, CLAUDE_TECHO_REDUCIDO = 5;
+const CLAUDE_MAX_SALIDA = 32000, CLAUDE_MAX_CUERPO = 600e3, CLAUDE_MAX_BUSQUEDAS = 5, CLAUDE_POR_MINUTO = 10, CLAUDE_POR_DIA = 20, CLAUDE_RONDAS_POR_DIA = 60;
+// 0.8.2b: el nivel reducido (todo el que no está en CLAUDE_EMAILS). Cifras de Carlos (6 nov, 18:15): 5 preguntas al día para
+// el resto, 20 para el nivel alto (arriba) y 4 US$ al día de techo para todo el reducido. Se cambian aquí o con la variable
+// del mismo nombre en el Worker
+const CLAUDE_POR_DIA_REDUCIDO = 5, CLAUDE_RONDAS_REDUCIDO = 15, CLAUDE_FONDO_REDUCIDO = 3, CLAUDE_TECHO_REDUCIDO = 4;
 // revisión aparte del 6 nov: en el nivel reducido, además, un tope de gasto por correo y día (así uno solo no se lleva el
 // techo de todos), menos salida y menos búsquedas por petición (para que el peor caso de cada una sea pequeño), y sin el
 // doble de entrada en las rondas siguientes
