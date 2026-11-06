@@ -47,14 +47,14 @@ final class Tema {
     // Mármol G (0.8.2c, 6 nov): negro AMOLED. Superficie #111111 → fondo #000000, borde #313131, textos #f8f6f2 y #d2cdc5,
     // apagado = texto 2 al 78 % sobre el negro (#a4a09a), el oro del logo y sube/baja de la web; barras en negro puro
     private static final Tema MARMOL = new Tema("marmol", false, 0xFF111111, 0xFF000000, 0xFF313131, 0xFFF8F6F2,
-            0xFFD2CDC5, 0xFFA4A09A, 0xFFE3B45F, 0xFFF7DFA8, 0xFFE3B45F, 0xFF55E8A0, 0xFFFF8F6E, 0xFFE3B45F, 0xFF000000);
+            0xFFD2CDC5, 0xFFA4A09A, 0xFFE3B45F, 0xFFF7DFA8, 0xFFE3B45F, 0xFF55E8A0, 0xFFFF5F5A, 0xFFE3B45F, 0xFF000000);
     // Marfil (crema): la curva en el oro de la gráfica (#8a6216) y los textos de oro en el oscuro (#684910), que se leen
     // sobre crema; el aviso en el borgoña del primario
     private static final Tema MARFIL = new Tema("marfil", true, 0xFFF9F1E4, 0xFFEBDFCA, 0xFFD8C8AF, 0xFF1E1A17,
-            0xFF4D4640, 0xFF716961, 0xFF8A6216, 0xFF684910, 0xFF684910, 0xFF08573A, 0xFF982D0E, 0xFF4E101D, 0xFFF2E7D5);
+            0xFF4D4640, 0xFF716961, 0xFF8A6216, 0xFF684910, 0xFF684910, 0xFF08573A, 0xFFA61E1E, 0xFF4E101D, 0xFFF2E7D5);
     // Borgoña (fondo oscuro): fondo #2a0e14 → #1f0a0f; el borde, oro al 26 % sobre la tarjeta #3c0b16
     private static final Tema BORGONA = new Tema("borgona", false, 0xFF3C0B16, 0xFF1F0A0F, 0xFF673729, 0xFFF6EAD5,
-            0xFFEAD9C2, 0xFFC0AC9C, 0xFFE3B45F, 0xFFF7DFA8, 0xFFE3B45F, 0xFF6EEAA8, 0xFFFF9478, 0xFFE3B45F, 0xFF2A0E14);
+            0xFFEAD9C2, 0xFFC0AC9C, 0xFFE3B45F, 0xFFF7DFA8, 0xFFE3B45F, 0xFF6EEAA8, 0xFFFF7B78, 0xFFE3B45F, 0xFF2A0E14);
 
     static String limpio(String t) {
         if (t != null) for (String x : TEMAS) if (x.equals(t)) return x;

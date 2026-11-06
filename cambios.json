@@ -1,6 +1,23 @@
 {
  "versiones": [
   {
+   "v": "0.8.2e",
+   "f": "2026-11-06",
+   "h": "23:50",
+   "t": "Las bajadas, en rojo",
+   "commits": [
+    {
+     "cuando": "2026-11-06 23:50",
+     "asunto": "0.8.2e · el rojo de las bajadas",
+     "detalle": [
+      "--baja pasa de coral (13–14° de matiz) a rojo (0–2°): Mármol #ff5f5a (antes #ff8f6e), Marfil #a61e1e (antes #982d0e) y Borgoña #ff7b78 (antes #ff9478). Sale de él --baja-fondo, el mapa (mp-d1 a d4), las losetas, los botones de vender y el día a día. Contraste mínimo 4,5 sobre el fondo, la tarjeta y la losa en los tres; lejos del aviso y del oro.",
+      "Tema.java con los mismos tres valores, para el widget, los avisos y las barras de Android.",
+      "Prueba nueva: tests/baja-roja.spec.js (matiz, contraste y que Tema.java coincide con el CSS)."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.2d",
    "f": "2026-11-06",
    "h": "21:30",

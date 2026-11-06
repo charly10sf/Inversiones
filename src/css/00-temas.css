@@ -15,7 +15,7 @@
 :root[data-tema="marmol"], [data-tema="marmol"] {
   --fondo: #000000; --fondo-2: #000000; --superficie: #111111; --superficie-2: #1c1c1c; --borde: #313131;
   --texto: #f8f6f2; --texto-2: #d2cdc5; --oro-texto: #e3b45f; --grafica: #e3b45f;
-  --sube: #55e8a0; --baja: #ff8f6e; --aviso: #ffb45e;
+  --sube: #55e8a0; --baja: #ff5f5a; --aviso: #ffb45e;
   --primario: #e3b45f; --sobre-primario: #140d00; --sim-o: #f8f6f2; --sim-t: #e3b45f;
   --metal: linear-gradient(180deg, #f7dfa8 0%, #e3b45f 52%, #b5863a 100%); /* el oro del logo (Carlos, 6 nov) */
   --brillo: rgb(255 250 230 / .7); --hondo: rgb(0 0 0 / .8);
@@ -34,7 +34,7 @@
 :root[data-tema="marfil"], [data-tema="marfil"] {
   --fondo: #f2e7d5; --fondo-2: #ebdfca; --superficie: #f9f1e4; --superficie-2: #eadcc5; --borde: #d8c8af;
   --texto: #1e1a17; --texto-2: #4d4640; --oro-texto: #684910; --grafica: #8a6216;
-  --sube: #08573a; --baja: #982d0e; --aviso: #8a4b0c;
+  --sube: #08573a; --baja: #a61e1e; --aviso: #8a4b0c;
   --primario: #4e101d; --sobre-primario: #f6ead5; --sim-o: #4e101d; --sim-t: #8a6216;
   --metal: linear-gradient(180deg, #6e2333 0%, #4e101d 55%, #3a0a15 100%);
   --brillo: rgb(255 255 255 / .22); --hondo: rgb(70 48 22 / .22);
@@ -54,7 +54,7 @@
   --fondo: #2a0e14; --fondo-2: #1f0a0f; --superficie: #3c0b16; --superficie-2: #4e101d;
   --borde: color-mix(in srgb, #e3b45f 26%, #3c0b16);
   --texto: #f6ead5; --texto-2: #ead9c2; --oro-texto: #e3b45f; --grafica: #e3b45f;
-  --sube: #6eeaa8; --baja: #ff9478; --aviso: #ffb877;
+  --sube: #6eeaa8; --baja: #ff7b78; --aviso: #ffb877;
   --primario: #e3b45f; --sobre-primario: #3c0b16; --sim-o: #f6ead5; --sim-t: #e3b45f;
   --metal: linear-gradient(180deg, #f7dfa8 0%, #e3b45f 52%, #b5863a 100%);
   --brillo: rgb(255 255 255 / .38); --hondo: rgb(10 2 4 / .6);
