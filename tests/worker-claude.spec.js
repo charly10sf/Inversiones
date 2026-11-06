@@ -602,7 +602,7 @@ test('0.8.2d: las tareas (revisión, noticia, importar) tienen su contador y no 
     expect(r.status).toBe(429);
     expect(await r.json()).toEqual({ error: 'tope-tareas' });
     // otra ronda de una tarea ya empezada sí entra (su id ya contó)
-    expect((await pedir('uid-t', { ...T('tarea0aaaa'), ronda: 2 }, env, RED)).status).toBe(200);
+    expect((await pedir('uid-t', { ...T('tarea0aaaa', 'revision'), ronda: 2 }, env, RED)).status).toBe(200);
     // las preguntas siguen enteras, y una pregunta no lleva X-Quedan-Tareas
     r = await pedir('uid-t', { ...HAIKU, pregunta: 'preg1aaaa', ronda: 1 }, env, RED);
     expect(r.status).toBe(200);
@@ -663,7 +663,7 @@ test('0.8.2d: la noticia va con Haiku, sin herramientas de la app, en un solo me
     expect(vistas[0].cuerpo.tools).toEqual([{ ...BUSCAR, max_uses: 2 }]);
     expect(vistas[0].cuerpo.tarea).toBeUndefined();
     // y si la búsqueda se alarga (pause_turn), la app devuelve lo que llevaba Claude para que siga: eso sí vale
-    r = await pedir('uid-tn', { ...HAIKU, tools: [BUSCAR], pregunta: 'noticiaBien1', ronda: 2, tarea: 'noticia', messages: [{ role: 'user', content: 'resume' }, { role: 'assistant', content: [{ type: 'server_tool_use', id: 's1', name: 'web_search', input: { query: 'repsol' } }, { type: 'web_search_tool_result', tool_use_id: 's1', content: [] }] }] }, env);
+    r = await pedir('uid-tn', { ...HAIKU, tools: [BUSCAR], pregunta: 'noticiaBien1', ronda: 2, tarea: 'noticia', messages: [PEDIDO.messages[0], { role: 'assistant', content: [{ type: 'server_tool_use', id: 's1', name: 'web_search', input: { query: 'repsol' } }, { type: 'web_search_tool_result', tool_use_id: 's1', content: [] }] }] }, env);
     expect(r.status).toBe(200);
     // sin búsqueda también vale
     expect((await pedir('uid-tn', { ...HAIKU, pregunta: 'noticiaBien2', ronda: 1, tarea: 'noticia' }, env, RED)).status).toBe(200);
@@ -709,12 +709,84 @@ test('0.8.2d: la revisión de la cartera, 2 al día por correo en los dos nivele
       // otra ronda de una revisión ya empezada sigue (sus herramientas), y las noticias e importar también
       r = await pedir(uid, { ...tareaDe(`${uid.slice(4)}revisionA`, 'revision'), ...herr, ronda: 2 }, env, extra);
       expect(r.status).toBe(200);
-      expect((await pedir(uid, tareaDe(`${uid.slice(4)}noticiaZ`, 'noticia'), env, extra)).status).toBe(200);
       // la revisión rechazada no gastó tarea: quedan todas menos las dos revisiones que entraron
       expect(r.headers.get('x-quedan-tareas')).toBe(String((extra.email ? 10 : 40) - 2));
+      r = await pedir(uid, tareaDe(`${uid.slice(4)}noticiaZ`, 'noticia'), env, extra);
+      expect(r.status).toBe(200);
+      expect(r.headers.get('x-quedan-tareas')).toBe(String((extra.email ? 10 : 40) - 3));
     }
     // una pregunta del chat no lleva X-Quedan-Revisiones
     const r = await pedir('uid-rv1', { ...HAIKU, pregunta: 'chatNormal1', ronda: 1 }, env, RED);
     expect(r.headers.get('x-quedan-revisiones')).toBeNull();
+  });
+});
+
+// revisión aparte de la sesión 4
+test('0.8.2d: el mismo id no vale para dos tareas, y las rondas siguen la primera petición', async () => {
+  await con(ok, async (vistas) => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira(), CLAUDE_POR_DIA: undefined, CLAUDE_RONDAS_POR_DIA: undefined };
+    for (const [uid, extra] of [['uid-mi1', RED], ['uid-mi2', {}]]) {
+      // gasta las 2 revisiones del día
+      for (const x of ['A', 'B']) expect((await pedir(uid, tareaDe(`mismo${x}revision`, 'revision'), env, extra)).status).toBe(200);
+      // una noticia y luego, con su mismo id, una «revisión» por la ronda 2: es una revisión nueva, y no cabe
+      expect((await pedir(uid, tareaDe('mismoId1234', 'noticia'), env, extra)).status).toBe(200);
+      let r = await pedir(uid, { ...tareaDe('mismoId1234', 'revision', SONNET), ronda: 2, tools: [{ name: 'cartera', description: 'd', input_schema: { type: 'object' } }] }, env, extra);
+      expect(r.status).toBe(429);
+      expect(await r.json()).toEqual({ error: 'tope-revision' });
+      // lo mismo con importar
+      expect((await pedir(uid, tareaDe('mismoId5678', 'importar'), env, extra)).status).toBe(200);
+      r = await pedir(uid, { ...tareaDe('mismoId5678', 'revision'), ronda: 2 }, env, extra);
+      expect(await r.json()).toEqual({ error: 'tope-revision' });
+      // la ronda 2 de una revisión con otra pregunta: no
+      r = await pedir(uid, { ...tareaDe('mismoArevision', 'revision'), ronda: 2, messages: [{ role: 'user', content: '¿qué compro con 5000 €?' }] }, env, extra);
+      expect(r.status).toBe(400);
+      expect(await r.json()).toEqual({ error: 'peticion', motivo: 'tarea' });
+      // con la misma primera petición (y las marcas de caché movidas, como hace la app), sí
+      r = await pedir(uid, { ...tareaDe('mismoArevision', 'revision'), ronda: 2, messages: [{ role: 'user', content: [{ type: 'text', text: 'hola', cache_control: { type: 'ephemeral' } }] }] }, env, extra);
+      expect(r.status).toBe(400); // otro contenido (texto en bloque en vez de cadena): no es la misma petición
+      r = await pedir(uid, { ...tareaDe('mismoArevision', 'revision'), ronda: 2, messages: [PEDIDO.messages[0], { role: 'assistant', content: [{ type: 'text', text: 'voy' }] }, { role: 'user', content: [{ type: 'text', text: 'sigue', cache_control: { type: 'ephemeral' } }] }] }, env, extra);
+      expect(r.status).toBe(200);
+      // la noticia, con otra pregunta en su ronda 2: no; y 6 peticiones por id como mucho
+      r = await pedir(uid, { ...tareaDe('mismoId1234', 'noticia'), ronda: 2, messages: [{ role: 'user', content: 'otra cosa' }] }, env, extra);
+      expect(await r.json()).toEqual({ error: 'peticion', motivo: 'tarea' });
+      for (let i = 0; i < 5; i++) expect((await pedir(uid, { ...tareaDe('mismoId1234', 'noticia'), ronda: 2 }, env, extra)).status).toBe(200);
+      r = await pedir(uid, { ...tareaDe('mismoId1234', 'noticia'), ronda: 2 }, env, extra);
+      expect(await r.json()).toEqual({ error: 'tope-pregunta' });
+    }
+    // el modelo va a Claude como se ha comprobado (en minúsculas)
+    await pedir('uid-mi3', tareaDe('mayusculas1', 'noticia', { ...HAIKU, model: 'CLAUDE-HAIKU-5-5' }), env, RED);
+    expect(vistas[vistas.length - 1].cuerpo.model).toBe('claude-haiku-5-5');
+  });
+});
+
+test('0.8.2d: importar con la salida de la app en los dos niveles; en el alto, las tareas con tope de gasto por correo', async () => {
+  await con(conUso({ input_tokens: 1000, output_tokens: 1000 }), async (vistas) => {
+    const env = { ...ENV, CUOTAS: cuotasDeMentira() };
+    let r = await pedir('uid-ga', { ...tareaDe('salidaImp1', 'importar', SONNET), max_tokens: 32000 }, env);
+    expect(r.status).toBe(200);
+    expect(vistas[0].cuerpo.max_tokens).toBe(16000);
+    // en el alto, una tarea que no cabe en los 2 US$ de su correo: «sin tareas»; las preguntas del chat siguen sin ese tope
+    const caro = { ...env, CLAUDE_GASTO_TAREAS_ALTO: '0.01' };
+    r = await pedir('uid-ga2', tareaDe('caroImp001', 'importar', SONNET), caro, { email: 'otra@prueba.com' });
+    expect(r.status).toBe(429);
+    expect(await r.json()).toEqual({ error: 'tope-tareas' });
+    expect((await pedir('uid-ga2', { ...SONNET, pregunta: 'chatAlto001', ronda: 1 }, caro, { email: 'otra@prueba.com' })).status).toBe(200);
+    // en el reducido, una tarea con Sonnet que no cabe en el gasto de su correo: «sin A fondo» (la app la repite con Haiku)
+    r = await pedir('uid-ga3', tareaDe('caroImp002', 'importar', SONNET), { ...env, CLAUDE_GASTO_REDUCIDO: '0.01' }, { email: 'reducido-g@prueba.com' });
+    expect(await r.json()).toEqual({ error: 'tope-fondo' });
+    expect((await pedir('uid-ga3', tareaDe('caroImp003', 'importar'), { ...env, CLAUDE_GASTO_REDUCIDO: '0.01' }, { email: 'reducido-g@prueba.com' })).status).toBe(200);
+  });
+});
+
+test('0.8.2d: una tarea rechazada por no ser lo que dice no deja nada apartado del techo', async () => {
+  await con(ok, async () => {
+    const cuotas = cuotasDeMentira(), env = { ...ENV, CUOTAS: cuotas };
+    const r = await pedir('uid-ap', { ...HAIKU, pregunta: 'apartado001', ronda: 1, tarea: 'importar' }, env, { email: 'apartado@prueba.com' });
+    expect(r.status).toBe(400);
+    const dia = new Date().toISOString().slice(0, 10);
+    for (const nombre of ['apartado@prueba.com', ' techo-reducido']) {
+      const t = await (await cuotas.get(nombre).fetch('https://cuotas.interno/techo', { method: 'POST', body: JSON.stringify({ op: 'ver', dia }) })).json();
+      expect(t.p || 0).toBe(0);
+    }
   });
 });
