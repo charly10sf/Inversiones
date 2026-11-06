@@ -8,19 +8,25 @@
    como las del selector de Ajustes, lleva los colores de su diseño).
    ===================================================================== */
 
-/* ---------- Mármol: negro verdoso con vetas, oro ---------- */
+/* ---------- Mármol (0.8.3, «Mármol G»): negro AMOLED con vetas grises suaves y el oro del logo de Toisón (#e3b45f).
+   Lo eligió Carlos el 6 nov: «como mármol de verdad», sin vetas de oro; esa tarde, las vetas más calmadas («parecían
+   rayos») y el oro vivo de la maqueta (#ffc640) cambiado por el del logo, para que la app cuadre con el icono.
+   La textura (marmol-g.webp) la hace scripts/textura_marmol.py ---------- */
 :root[data-tema="marmol"], [data-tema="marmol"] {
-  --fondo: #151817; --fondo-2: #101312; --superficie: #1c1f1e; --superficie-2: #272b29; --borde: #353a38;
-  --texto: #f2ede6; --texto-2: #c8bfb7; --oro-texto: #e3b45f; --grafica: #e3b45f;
-  --sube: #4fdc96; --baja: #ff8466; --aviso: #f2a65a;
-  --primario: #e3b45f; --sobre-primario: #2a0e14; --sim-o: #f6ead5; --sim-t: #e3b45f;
-  --metal: linear-gradient(180deg, #f7dfa8 0%, #e3b45f 52%, #b5863a 100%);
-  --brillo: rgb(255 255 255 / .38); --hondo: rgb(0 0 0 / .55);
+  --fondo: #000000; --fondo-2: #000000; --superficie: #111111; --superficie-2: #1c1c1c; --borde: #313131;
+  --texto: #f8f6f2; --texto-2: #d2cdc5; --oro-texto: #e3b45f; --grafica: #e3b45f;
+  --sube: #55e8a0; --baja: #ff8f6e; --aviso: #ffb45e;
+  --primario: #e3b45f; --sobre-primario: #140d00; --sim-o: #f8f6f2; --sim-t: #e3b45f;
+  --metal: linear-gradient(180deg, #f7dfa8 0%, #e3b45f 52%, #b5863a 100%); /* el oro del logo (Carlos, 6 nov) */
+  --brillo: rgb(255 250 230 / .7); --hondo: rgb(0 0 0 / .8);
   --reparto-1: #e3b45f; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
-  --grano: .06; --resplandor: .6; --luz-graf: 16%; --polvo: .9;
+  --grano: .03; --resplandor: 1; --luz-graf: 16%; --polvo: 1;
   --titulo: var(--ui); --titulo-peso: 500; --titulo-estilo: normal; --titulo-espacio: -.02em; /* títulos modernos, en Inter */
-  --velo: #050706;
+  --velo: #000000;
   --claro: #f7f2ea;
+  --losa: rgb(0 0 0 / .8); /* la sombra de las tarjetas, más honda sobre el negro */
+  --filo-luz: rgb(255 255 255 / .07); /* el filo de luz de arriba de las tarjetas, como piedra pulida */
+  --piedra-luz-1: rgb(255 255 255 / .03); --piedra-luz-2: rgb(255 255 255 / .045); --piedra-luz-3: rgb(255 255 255 / .07); --piedra-luz-4: rgb(255 255 255 / .085); /* el brillo de la piedra (#acabadoTema::after) */
   color-scheme: dark;
 }
 
@@ -261,8 +267,11 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .hero-hola { font: 400 22px/1.25 var(--marca); color: var(--texto); letter-spacing: -.005em; }
 [data-tema] .hola-nom { font-weight: 500; color: var(--oro-texto); }
 [data-tema="borgona"] .hero-hola { font-style: italic; }
-[data-tema] .hero-num { font-weight: 500; letter-spacing: -.04em; }
-[data-tema] .hero-num span.dec { font-weight: 500; color: var(--texto-2); }
+/* 0.8.3 (Carlos, 6 nov): la cifra del patrimonio, con la letra de los títulos de cada estilo (Inter en Mármol, Ibarra en
+   Marfil y en cursiva en Borgoña) y en negrita */
+[data-tema] .hero-num { font-family: var(--titulo); font-style: var(--titulo-estilo); font-weight: 700; letter-spacing: -.04em; }
+[data-tema="marfil"] .hero-num, [data-tema="borgona"] .hero-num { letter-spacing: -.01em; }
+[data-tema] .hero-num span.dec { font-weight: 600; color: var(--texto-2); }
 [data-tema] .hero-panel {
   margin: 0; border: 2px solid var(--borde); border-radius: var(--r-l); overflow: hidden; box-shadow: var(--sombra-t);
   background: radial-gradient(90% 70% at 85% 62%, color-mix(in srgb, var(--grafica) var(--luz-graf), transparent), transparent 70%),
@@ -345,10 +354,31 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="borgona"] .sec-cab h2 { font: italic 500 20px/22px var(--marca); letter-spacing: .01em; text-transform: none; color: var(--oro-texto); }
 
 /* acabado de las tarjetas por diseño (la de patrimonio ya lleva el suyo) */
+/* 0.8.3, Mármol G: losas de piedra pulida, con un filo de luz blanca arriba (antes dorada) y la sombra honda del negro */
 [data-tema="marmol"] :is(.tarjeta, .idea, .informe, .fx2, .num-sec, .merc2, .pf-card, .mfilas, .aj-caja, .toca, .opr, .ag-prox, .tu-cab) {
-  background-image: radial-gradient(420px 160px at 20% -60px, color-mix(in srgb, var(--oro-texto) 10%, transparent), transparent 72%);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, var(--oro-texto) 16%, transparent), var(--sombra-t);
+  background-image: radial-gradient(420px 160px at 20% -60px, color-mix(in srgb, var(--oro-texto) 8%, transparent), transparent 72%);
+  box-shadow: inset 0 1px 0 var(--filo-luz), 0 18px 40px -24px var(--losa);
 }
+/* 0.8.3, Mármol G (Carlos, 6 nov, «opción 1»): las vetas marcadas solo se ven en los huecos y en el fondo de la página,
+   nunca detrás de nombres o cifras. Todo bloque con texto va opaco: las tablas (la del radar no tenía fondo) pasan a
+   losa, y la primera columna pegajosa del móvil lleva el color de la losa en vez del del fondo */
+[data-tema="marmol"] .tabla-w { background: var(--superficie); border-radius: 18px; padding: 4px 14px;
+  box-shadow: inset 0 0 0 1px var(--borde), inset 0 1px 0 var(--filo-luz), 0 18px 40px -24px var(--losa); }
+/* (revisión aparte, 6 nov) la columna pegajosa se pega al borde del relleno: con left: -14px se pega al de la losa y por
+   esa franja ya no asoman las cifras de detrás al desplazar */
+[data-tema="marmol"] .tabla-w > table:not(.resp) :is(th, td):first-child { background: var(--superficie); left: -14px; }
+/* y una tabla que ya va dentro de una tarjeta no se vuelve otra losa (ni doble borde ni 28 px menos de ancho) */
+[data-tema="marmol"] :is(.tarjeta, .num-sec, .num-cuerpo, .sec-det) .tabla-w { background: none; box-shadow: none; padding: 0; border-radius: 0; }
+[data-tema="marmol"] :is(.tarjeta, .num-sec, .num-cuerpo, .sec-det) .tabla-w > table:not(.resp) :is(th, td):first-child { left: 0; }
+/* con :where(), sin subir la especificidad: los tintes propios (el verde de .cons-ia.idea) siguen mandando */
+[data-tema="marmol"] :where(.hero-panel, .idea, .evita, .fx3-lista > *, .num-sec, .tabs-fila .tabs) { background-color: var(--superficie); }
+[data-tema="marmol"] :where(.tabs-fila .tabs) { border-radius: var(--r-s); }
+/* y lo que va suelto sobre el mármol (títulos, entradillas, cabeceras de sección, el saludo, los filtros del radar y el pie)
+   lleva un halo del negro del fondo: no se ve sobre el negro y, si pasa una veta por detrás, la apaga alrededor de cada
+   letra. Solo en esos textos: en las tablas largas, tanta sombra costaría al desplazarse en el móvil */
+[data-tema="marmol"] :is(.vista-cab, .ts-grupo, .sec-cab, .hero-top, .check-mini, .pie) {
+  text-shadow: 0 0 1px var(--fondo), 0 0 3px var(--fondo), 0 0 6px var(--fondo), 0 0 10px var(--fondo), 0 0 16px var(--fondo), 0 0 24px var(--fondo); }
+[data-tema="marmol"] :is(.vista-cab, .ts-grupo, .sec-cab, .hero-top, .check-mini, .pie) :is(button, .btn, a[class*="btn"], [role="tab"], nav) { text-shadow: none; }
 [data-tema="borgona"] :is(.tarjeta, .idea, .informe, .fx2, .num-sec, .merc2, .pf-card, .mfilas, .aj-caja, .toca, .opr, .tu-cab) {
   background-image: radial-gradient(420px 160px at 80% -60px, color-mix(in srgb, var(--oro-texto) 7%, transparent), transparent 72%);
 }
@@ -413,17 +443,20 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* los días que faltan para GTA VI, del oro del diseño (el naranja de neón no se leía sobre el crema de Marfil) */
 [data-tema] .gta-top-d { color: var(--oro-texto); text-shadow: none; font: 650 13px/1 var(--ui); }
 
-/* el acabado de fondo (acabadoTema en 01-base.js): una capa fija detrás de la app con el grano y, en Mármol, las vetas.
+/* el acabado de fondo (acabadoTema en 01-base.js): una capa fija detrás de la app con el grano y, en Mármol, la textura con las vetas.
    #app va encima en su propia capa para que la de fondo no tape nada */
 #acabadoTema { display: none; }
 [data-tema] #acabadoTema { display: block; position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
 [data-tema] #app { position: relative; z-index: 1; }
 [data-tema] #acabadoTema .grano { position: absolute; inset: 0; opacity: var(--grano); background-size: 96px 96px; }
-[data-tema] #acabadoTema svg { position: absolute; inset: 0; width: 100%; height: 100%; }
-[data-tema] #acabadoTema path { fill: none; stroke-linecap: round; vector-effect: non-scaling-stroke; }
-[data-tema] #acabadoTema .vb { stroke: var(--texto); opacity: .07; stroke-width: 1.1; }
-[data-tema] #acabadoTema .vf { stroke: var(--texto); opacity: .045; stroke-width: .7; }
-[data-tema] #acabadoTema .vo { stroke: var(--oro-texto); opacity: .22; stroke-width: .9; }
+/* 0.8.3, Mármol G: en vez de las vetas dibujadas, una textura de mármol negro de verdad (scripts/textura_marmol.py). La
+   imagen la pone el <style> de index.html (desde ahí la dirección relativa sirve igual en el build, con el CSS en
+   assets/, que en npm run dev); la del ordenador solo se baja con pantalla ancha. Aquí, el fondo y el brillo de la
+   piedra pulida encima */
+[data-tema="marmol"] #acabadoTema { background-color: var(--fondo); background-position: center top; background-size: cover; background-repeat: no-repeat; }
+[data-tema="marmol"] #acabadoTema::after { content: ''; position: absolute; inset: 0;
+  background: linear-gradient(118deg, transparent 28%, var(--piedra-luz-2) 40%, var(--piedra-luz-4) 46%, var(--piedra-luz-1) 52%, transparent 64%),
+    radial-gradient(120% 60% at 30% -10%, var(--piedra-luz-3), transparent 60%); }
 
 /* ---------- Iconos de plumilla (ICONOS_PL en 10-pintado.js): contornos rellenos, nunca con trazo ---------- */
 [data-tema] svg.ic-pl, [data-tema] svg.ic-pl path { fill: currentColor; stroke: none; }
@@ -597,6 +630,11 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* 5 nov (captura de Carlos en Ideas): las de pastilla (Lo tuyo · Del radar · Siguiendo, los plazos del Paso a paso) también
    se quedan arriba en el móvil y eran casi transparentes: el texto de debajo se montaba. Mismo tono, pero opaco */
 [data-tema] :is(.subvistas, .plazos):not(.dos-op) { background: color-mix(in srgb, var(--texto) 3%, var(--fondo)); }
+/* 0.8.2c, Mármol G: sobre las vetas, el negro macizo de esas pestañas de texto se veía como un recorte de esquinas vivas.
+   En Mármol van en losa (opaca igual, para cuando se quedan arriba), con el subrayado de oro dentro */
+[data-tema="marmol"] .subvistas.dos-op { background: var(--superficie); border-bottom: 0; border-radius: var(--r-m);
+  box-shadow: inset 0 0 0 1px var(--borde), inset 0 1px 0 var(--filo-luz); }
+[data-tema="marmol"] .subvistas.dos-op button[aria-pressed="true"]::after { bottom: 0; }
 /* Borgoña: el filete corto va bajo el título y no bajo toda la cabecera (cuando el botón baja de línea quedaba suelto) */
 [data-tema="borgona"] .sec-cab { padding-bottom: 0; }
 [data-tema="borgona"] .sec-cab::after { content: none; }
@@ -753,3 +791,31 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema]:is([data-tema="marfil"], [data-tema="borgona"]) :is(.hero-hola, .caja h1, .bq-caja h1) { font-weight: 400; }
 /* 0.8a: el correo de Tú no se parte en dos líneas en los móviles estrechos (a 360 px salía «lucia@prueba» y «.com»): una línea con puntos suspensivos */
 [data-tema] .tu-cab > div small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* ---------- 0.8.3 · revisión del diseño (5 nov) ---------- */
+/* filas que se deslizan de lado: el borde por el que queda algo se difumina (marcarDesbordes, 10-pintado.js) */
+[data-desb] { --desb-i: 0px; --desb-d: 0px; -webkit-mask-image: linear-gradient(to right, transparent 0, currentColor var(--desb-i), currentColor calc(100% - var(--desb-d)), transparent 100%); mask-image: linear-gradient(to right, transparent 0, currentColor var(--desb-i), currentColor calc(100% - var(--desb-d)), transparent 100%); }
+[data-desb~="i"] { --desb-i: 26px; }
+[data-desb~="d"] { --desb-d: 34px; }
+/* las tablas que en el móvil se vuelven fichas (Por horizonte, lo que costaría cada paso…): la etiqueta encima y la cifra
+   entera debajo, nunca «232.00…» ni «1,05 millone…» */
+@media (max-width: 680px) {
+  [data-tema] table.resp td { white-space: normal; overflow: visible; text-overflow: clip; font-variant-numeric: tabular-nums; }
+  [data-tema] table.resp td[data-l]::before { display: block; margin: 0 0 1px; line-height: 1.3; }
+  [data-tema] table.resp td small { display: block; margin: 1px 0 0; }
+}
+/* Posiciones en 390 px: la cabecera (título, orden, apuntar, añadir, copiar y «Pregúntale») cabe sin salirse de la pantalla */
+@media (max-width: 400px) {
+  [data-tema] .pos-cab { gap: 6px; }
+  [data-tema] .pos-cab h2 { letter-spacing: .06em; }
+  [data-tema] .pos-cab .der { gap: 4px; }
+  [data-tema] .pos-cab .orden-chip { padding: 0 7px 0 6px; gap: 3px; }
+  [data-tema] .pos-cab .preg-ia { padding: 0 7px; }
+}
+/* Mercados: «12 % de tu cartera (Repsol y 1 más)» en dos líneas antes que cortado */
+[data-tema] .mf-tuyo { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; }
+
+/* Hoy: «Primeros pasos» (o el aviso del perfil) y el saludo de debajo ya no se tocan en el móvil (quedaban a 2 px) */
+@media (max-width: 759px) { .car > .empezar, .car > .pf-recuerda { margin-bottom: -12px; } }
+/* Aportaciones periódicas en 360 px: «MyInvestor · el día 1 · próxima…» en dos líneas antes que cortado */
+[data-tema] .plan-l .pl-t small { white-space: normal; overflow: visible; text-overflow: clip; }

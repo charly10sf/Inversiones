@@ -1389,13 +1389,19 @@ def leer_temas(fichas, clave, precios, valores=()):
     return len(temas)
 
 
-def guardar_fichas(fichas, dir_salida, validos):
+def guardar_fichas(fichas, dir_salida, validos, nucleo=None):
+    """0.8.3: en dos archivos (fichas.partir): fichas.json con los temas y el núcleo (radar.json y las carteras) y
+    fichas-mas.json con el resto. Sin núcleo (sin radar esta vez), todo en fichas.json, como antes."""
     F.podar(fichas, validos)
     fichas["generado"] = ahora()
+    principal, resto = F.partir(fichas, nucleo) if nucleo else (fichas, None)
     with open(f"{dir_salida}/fichas.json", "w", encoding="utf-8") as f:
-        json.dump(fichas, f, ensure_ascii=False, separators=(",", ":"))
+        json.dump(principal, f, ensure_ascii=False, separators=(",", ":"))
+    if resto is not None:
+        with open(f"{dir_salida}/fichas-mas.json", "w", encoding="utf-8") as f:
+            json.dump(resto, f, ensure_ascii=False, separators=(",", ":"))
     marcar(dir_salida, "fichas_id", fichas["generado"])
-    print(f"fichas: {len(fichas['e'])} empresas, {sum(len(x['fa']) for x in fichas['e'].values())} factores, {len(fichas.get('temas') or [])} temas")
+    print(f"fichas: {len(fichas['e'])} empresas ({len(principal['e'])} en fichas.json), {sum(len(x['fa']) for x in fichas['e'].values())} factores, {len(fichas.get('temas') or [])} temas")
 
 
 def main(ruta_inst, dir_anterior, dir_salida):
@@ -1417,7 +1423,13 @@ def main(ruta_inst, dir_anterior, dir_salida):
     decision = esc.get("decision")
     medianas = P.per_sector_mediano(valores)
     tuyas = {(i.get("yahoo") or "") for i in instrumentos}
-    fichas = leer(f"{dir_anterior}/fichas.json") or F.nuevas()
+    ant_fichas, ant_mas = leer(f"{dir_anterior}/fichas.json"), leer(f"{dir_anterior}/fichas-mas.json")
+    # 0.8.3 (revisión aparte): si la pasada anterior dice que hay resto (mas > 0) y fichas-mas.json no está, esta vez no
+    # se guardan las fichas: se quedan los dos archivos de antes (precios.yml los copia) en vez de perder ~1.700
+    fichas_sin_resto = bool((ant_fichas or {}).get("mas")) and not (ant_mas or {}).get("e")
+    if fichas_sin_resto:
+        print("fichas: falta fichas-mas.json de la pasada anterior; esta vez no se guardan (se quedan las de antes)")
+    fichas = F.juntar(ant_fichas, ant_mas)
     if valores:
         try:
             actualizar_noticias(cache, todas)
@@ -1464,7 +1476,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
               "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(todas), "empresas_nucleo": len(valores), "fuentes_pasada": DIAG}
     with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, separators=(",", ":"))
-    guardar_fichas(fichas, dir_salida, en_radar if valores else None)
+    if not fichas_sin_resto:
+        guardar_fichas(fichas, dir_salida, en_radar if valores else None, ({x["s"] for x in valores} | tuyas) - {""} if valores else None)
     with open(f"{dir_salida}/escaneo.json", "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
     marcar(dir_salida, "escaneo_id", salida["generado"])

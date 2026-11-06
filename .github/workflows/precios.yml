@@ -58,6 +58,7 @@ jobs:
             git show origin/datos:noticias-cache.json > anterior/noticias-cache.json || true
             git show origin/datos:traduccion-en.json > anterior/traduccion-en.json || true
             git show origin/datos:fichas.json > anterior/fichas.json || true
+            git show origin/datos:fichas-mas.json > anterior/fichas-mas.json || true
             git show origin/datos:banco.json > anterior/banco.json || true
             git show origin/datos:banco-muestra.json > anterior/banco-muestra.json || true
           fi
@@ -157,6 +158,7 @@ jobs:
       - name: Guardar las fichas anteriores si no hay nuevas
         run: |
           [ -f salida/fichas.json ] || cp anterior/fichas.json salida/ 2>/dev/null || true
+          [ -f salida/fichas-mas.json ] || cp anterior/fichas-mas.json salida/ 2>/dev/null || true
 
       # 0.7: lo que escribe la Action «Banco de GrowIA» (por la noche) se queda en la rama datos
       - name: Guardar el banco de GrowIA

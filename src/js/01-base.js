@@ -104,7 +104,7 @@ function temaApp() {
 colorBarraTema();
 temaApp();
 /* el acabado de fondo de los diseños de Toisón (maqueta aprobada): un grano fino del color del texto (en Marfil, como
-   de papel; cuánto se ve lo dice el token --grano) y, solo en Mármol, vetas finas con alguna de oro. Una capa fija
+   de papel; cuánto se ve lo dice el token --grano) y, solo en Mármol, la textura de mármol negro del CSS. Una capa fija
    detrás de todo, que no se toca ni se anima */
 function acabadoTema() {
   if (!document.body) { document.addEventListener('DOMContentLoaded', acabadoTema, { once: true }); return; }
@@ -125,14 +125,8 @@ function acabadoTema() {
       x.putImageData(im, 0, 0); grano = c.toDataURL('image/png');
     }
   } catch (e) {}
-  // las vetas, siempre las mismas (semilla fija): cada una cruza la pantalla de lado a lado con curvas suaves
-  let vetas = '';
-  if (t === 'marmol') {
-    let sem = 1430; const r = () => (sem = (sem * 16807) % 2147483647) / 2147483647;
-    const linea = (cls) => { let y0 = r() * 900, d = `M-20 ${y0.toFixed(0)}`; for (let x = 0; x < 420; x += 105) { const y1 = y0 + (r() - 0.45) * 260; d += `C${(x + 35).toFixed(0)} ${(y0 + (r() - 0.5) * 120).toFixed(0)} ${(x + 70).toFixed(0)} ${(y1 + (r() - 0.5) * 120).toFixed(0)} ${x + 105} ${y1.toFixed(0)}`; y0 = y1; } return `<path class="${cls}" d="${d}"/>`; };
-    vetas = `<svg viewBox="0 0 400 900" preserveAspectRatio="xMidYMid slice">${['vb', 'vb', 'vb', 'vf', 'vf', 'vf', 'vf', 'vo', 'vo'].map(linea).join('')}</svg>`;
-  }
-  capa.innerHTML = `${grano ? `<i class="grano" style="background-image:url(${grano})"></i>` : ''}${vetas}`;
+  // 0.8.3: las vetas de Mármol ya no se dibujan aquí: son una textura (marmol-g.webp) que pone el CSS en esta misma capa
+  capa.innerHTML = grano ? `<i class="grano" style="background-image:url(${grano})"></i>` : '';
 }
 acabadoTema();
 function cambiarPerfil(modo) {

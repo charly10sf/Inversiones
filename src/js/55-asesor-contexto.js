@@ -1232,7 +1232,7 @@ function historialPara(api, est) {
 const sistemaAsesor = (est = esPublico()) => [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: AS.foto }];
 // la foto se rehace también si cambian las reglas con las que va la IA (0.8.2: el fundador con Claude o con Gemini)
 function refrescarFoto(forzar, est = esPublico()) {
-  if (forzar || !AS.foto || AS.fotoEst !== !!est || Date.now() - AS.fotoT > 10 * 60000) { S.M = S.M || calcular(); AS.foto = contextoAsesor(S.M, 'chat', est); AS.fotoT = Date.now(); AS.fotoFichas = S.fichasId; AS.fotoEst = !!est; }
+  if (forzar || !AS.foto || AS.fotoEst !== !!est || Date.now() - AS.fotoT > 10 * 60000) { S.M = S.M || calcular(); AS.foto = contextoAsesor(S.M, 'chat', est); AS.fotoT = Date.now(); AS.fotoFichas = versionFichas(); AS.fotoEst = !!est; }
 }
 
 async function preguntarAsesor(texto) {
@@ -1267,8 +1267,11 @@ async function preguntarAsesor(texto) {
   try {
     // 0.7: las fichas de GrowIA van en la foto: si no están, se bajan antes (3 s como mucho: con mala cobertura,
     // contesta sin ellas) y si llegan nuevas, la foto se rehace
-    if (!S.fichas || S.fichasId !== ((S.precios && S.precios.fichas_id) || '')) await conTiempo(cargarFichas(), 3000).catch(() => null);
-    const nueva = !AS.api.length || AS.fotoFichas !== S.fichasId;
+    // 0.8.3: con el resto (fichas-mas.json) si alguna acción tuya está ahí; si no, el resto se baja por detrás, para
+    // cuando la IA busque una empresa que no es del núcleo
+    await fichasParaCartera(3000);
+    cargarFichasMas().catch(() => null);
+    const nueva = !AS.api.length || AS.fotoFichas !== versionFichas();
     // 0.7d: en las preguntas, la respuesta normal razona en medio (el análisis de la cartera, en alto): contesta antes
     // 0.8.2: la foto y las instrucciones, cuando ya se sabe quién contesta (con Claude, las reglas del estándar)
     const preparar = (est) => { refrescarFoto(nueva, est); return { mensajes: [...historialPara(AS.api, est), { role: 'user', content: contenido }], sistema: [].concat(sistemaAsesor(est)).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []) }; };

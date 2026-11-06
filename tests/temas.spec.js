@@ -13,7 +13,7 @@ const test = base.extend({
   }, { auto: true }],
 });
 
-const FONDO = { marmol: '#151817', marfil: '#f2e7d5', borgona: '#2a0e14' };
+const FONDO = { marmol: '#000000', marfil: '#f2e7d5', borgona: '#2a0e14' };
 const rgb = (h) => `rgb(${[1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(', ')})`;
 
 async function leer(page) {
@@ -141,5 +141,57 @@ test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debaj
     expect(r.pos).toBe('sticky');
     // opaco: ni transparente ni con alfa
     expect(r.fondo).not.toMatch(/transparent|rgba\(|\/ ?0?\.\d|, 0\)$/);
+  }
+});
+
+// 0.8.3, Mármol G (Carlos, 6 nov): negro AMOLED con la textura de mármol de verdad, sin las vetas dibujadas de antes, y
+// las tablas en losa opaca para que las vetas nunca pasen por detrás de nombres o cifras («opción 1»)
+test('Mármol G: textura de mármol en el fondo y tablas opacas; los otros diseños, sin textura', async ({ page }, info) => {
+  await crearCuenta(page); await quitarCapas(page); await meterCartera(page);
+  await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((h) => h.remove()));
+  const fondoCapa = () => page.evaluate(() => {
+    const c = document.getElementById('acabadoTema');
+    return { img: getComputedStyle(c).backgroundImage, svg: !!c.querySelector('svg') };
+  });
+  await page.evaluate(() => ponerTema('marmol'));
+  let x = await fondoCapa();
+  expect(x.svg).toBe(false);
+  // en el móvil, la textura alta; en el ordenador, la ancha (la otra no se baja)
+  // (el build le pone huella: assets/marmol-g-pc-XXXX.webp)
+  if (info.project.name === 'pc') expect(x.img).toContain('marmol-g-pc');
+  else { expect(x.img).toContain('marmol-g'); expect(x.img).not.toContain('marmol-g-pc'); }
+  // la dirección que de verdad pide la página (con el CSS en assets/, una relativa mal puesta daría 404)
+  const url = /url\("?([^")]+)"?\)/.exec(x.img)[1];
+  const r = await page.request.get(url);
+  expect(r.ok(), url).toBe(true);
+  expect((await r.body()).length).toBeLessThan(25_000);
+  // una tabla del radar: con fondo macizo, el de la losa
+  await page.evaluate(() => { S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); });
+  const tabla = page.locator('.tabla-w').first();
+  await expect(tabla).toBeAttached({ timeout: 15_000 });
+  // (revisión aparte) con toHaveCSS, que vuelve a mirar si pintar() cambia la tabla por otra a mitad
+  const losa = rgb(await page.evaluate(() => getComputedStyle(document.documentElement).getPropertyValue('--superficie').trim()));
+  await expect(tabla).toHaveCSS('background-color', losa);
+  // una tabla suelta es losa y su columna pegajosa se pega al borde de la losa (sin franja por la que asomen cifras);
+  // una dentro de una tarjeta no hace loseta sobre loseta
+  await page.evaluate(() => {
+    const d = document.createElement('div'); d.id = 'prueba-losas';
+    d.innerHTML = '<div class="tabla-w" id="pl-suelta"><table><tr><td>a</td><td>b</td></tr></table></div>'
+      + '<div class="num-sec"><div class="tabla-w" id="pl-dentro"><table><tr><td>a</td><td>b</td></tr></table></div></div>';
+    document.getElementById('app').append(d);
+  });
+  await expect(page.locator('#pl-suelta')).toHaveCSS('background-color', losa);
+  await expect(page.locator('#pl-suelta td').first()).toHaveCSS('left', '-14px');
+  await expect(page.locator('#pl-dentro')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+  await expect(page.locator('#pl-dentro')).toHaveCSS('box-shadow', 'none');
+  await expect(page.locator('#pl-dentro td').first()).toHaveCSS('left', '0px');
+  for (const tema of ['marfil', 'borgona']) {
+    await page.evaluate((tt) => ponerTema(tt), tema);
+    x = await fondoCapa();
+    expect(x.img).not.toContain('marmol-g');
+    expect(x.svg).toBe(false);
+    // nada del Mármol se cuela: ni losa en las tablas ni halo en las cabeceras
+    await expect(page.locator('#pl-suelta')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
+    await expect(page.locator('#pl-suelta')).toHaveCSS('box-shadow', 'none');
   }
 });

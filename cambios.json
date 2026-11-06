@@ -1,6 +1,85 @@
 {
  "versiones": [
   {
+   "v": "0.8.2c",
+   "f": "2026-11-06",
+   "h": "19:30",
+   "t": "El Mármol nuevo y el radar con filtros",
+   "commits": [
+    {
+     "cuando": "2026-11-06 19:30",
+     "asunto": "Versión 0.8.2c: el Mármol nuevo y el radar con filtros",
+     "detalle": [
+      "Sale desde main con lo de la rama v0.8.3 que ya estaba listo: el radar (filtros de país, sector y tamaño, fila más baja en el móvil, fichas partidas en dos archivos, patrimonio con la letra de cada estilo) y el Mármol G en la app (negro #000, oro del logo #e3b45f, vetas grises suaves, tablas opacas, halo en los textos sueltos), más la revisión del diseño en el móvil.",
+      "Sin la variante Play de la app de Android (se queda en v0.8.3 para la prueba cerrada).",
+      "Vetas más finas: la ancha parecía humo en el ordenador (Carlos eligió con vetas).",
+      "VERSION 0.8.2c con 6 arreglos para todos y 1 del dueño, en.json y cambios.json; pruebas de novedades y niveles ajustadas."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 18:37",
+     "asunto": "0.8.2c: vetas del Mármol más finas (la ancha parecía humo en el ordenador)",
+     "detalle": [
+      "Carlos eligió el Mármol con vetas. La primera capa de scripts/textura_marmol.py pasa de finura 10 y fuerza .55 a 32 y .42: deja de verse como una cinta ancha de seda y queda como una veta. marmol-g.webp 8,5 KB y marmol-g-pc.webp 9,4 KB."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 16:04",
+     "asunto": "0.8.3: el Mármol con el oro del logo de Toisón (#e3b45f)",
+     "detalle": [
+      "Carlos (6 nov): el oro vivo de la maqueta (#ffc640) no era el del logo; ahora la app cuadra con el icono, el favicon y el Design System. Contraste del oro: 10,7:1 sobre el fondo y 9,6:1 sobre las tarjetas."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 15:30",
+     "asunto": "0.8.3: vetas del Mármol más calmadas (Carlos: «parecen rayos»)",
+     "detalle": [
+      "Grises, largas y suaves, sin resplandor ni temblor fino; el fondo, negro con nubes muy tenues. Las dos texturas pasan de 17 y 16 KB a 9 y 10 KB."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 15:17",
+     "asunto": "0.8.3: Mármol G en la app (negro AMOLED, vetas blancas marcadas, oro más vivo)",
+     "detalle": [
+      "Tokens nuevos del bloque de Mármol (fondo #000, superficie #111, oro #ffc640, metal más brillante); theme-color y manifest a #000.",
+      "La textura de mármol (scripts/textura_marmol.py: marmol-g.webp para el móvil, marmol-g-pc.webp desde 900 px) en vez de las vetas en SVG de acabadoTema, con el brillo de piedra pulida encima. La imagen va en el <style> de index.html para que la dirección relativa valga en el build y en dev.",
+      "Opción 1 de Carlos: tablas y bloques con texto opacos (la tabla del radar pasa a losa) y un halo del negro del fondo en los textos sueltos sobre el mármol, sin tocar botones ni pestañas.",
+      "Losas con filo de luz blanca y sombra honda.",
+      "Prueba nueva en tests/temas.spec.js. Red al abrir: 887 KB (antes 869)."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 13:19",
+     "asunto": "0.8.3: arreglos de la revisión aparte del radar y las fichas; «S&P 500» ya no sale cortado en Hoy",
+     "detalle": [
+      "Fichas: si la pasada anterior dice que hay resto y falta fichas-mas.json, esa vez no se guardan (antes se perdían",
+      "~1.700); fichas.json lleva la lista de las del resto (mas_s) y la web solo baja el resto al abrir una de ellas; el",
+      "resto se exige de la misma pasada; la IA y el análisis esperan al resto si alguna acción de la cartera está ahí, y",
+      "la foto de la IA se rehace cuando llega.",
+      "Radar: un filtro elegido que ya no sale con la zona se sigue viendo (con 0) para poder quitarlo; tamaño leído de",
+      "localStorage solo si es g, m o p; países en inglés con la web en inglés; «Ver 50 más» etiqueta solo las filas nuevas.",
+      "Hoy, en el móvil: el porcentaje debajo de los euros en «Lo que más ha movido hoy» (diseno-083 fallaba con S&P 500).",
+      "La máscara de difuminado usa currentColor en vez de #000 (colores-sueltos fallaba en esta rama)."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 12:29",
+     "asunto": "0.8.3: radar con filtros de país, sector y tamaño, fila más baja en el móvil y fichas partidas; patrimonio con la letra de cada estilo",
+     "detalle": [
+      "Radar: filtros de país (sede), sector y tamaño (grandes desde 10.000 M €, medianas de 2.000 a 10.000, pequeñas por",
+      "debajo), en pastillas con un select encima y con cuántas hay; se guardan. En el móvil el orden y los filtros van en",
+      "una fila que se desliza y la fila de cada empresa baja de ~162 a ~111 px.",
+      "Arreglo: al repintar solo la tabla (zona, filtro, orden o «Ver 50 más») las celdas del móvil perdían sus etiquetas.",
+      "Fichas: fichas.json con los temas y el núcleo (radar.json y carteras) y fichas-mas.json con el resto, que la web",
+      "baja solo al abrir una empresa de fuera o al preguntar a la IA. Las fuentes de los factores de cada empresa, sin",
+      "título ni fecha (la web no los usa). Con los datos de hoy: 957 KB con gzip → 451 + 227.",
+      "Patrimonio: la cifra con la letra de títulos de cada estilo, en negrita; la línea de la gráfica acaba en su color",
+      "(antes, en un dorado claro fijo)."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.2a",
    "f": "2026-11-06",
    "h": "11:00",
