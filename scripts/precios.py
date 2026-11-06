@@ -6,10 +6,13 @@ Uso: python scripts/precios.py instrumentos.json anterior/ salida/
 Escribe tres archivos en salida/:
 - precios.json: lo que cambia durante el día (precios, analistas, noticias y mercados). Pesa poco
   porque la web lo vuelve a leer cada 2 minutos.
-- radar.json: las empresas en las que buscar ideas, con analistas, valoración y tendencia. Son unas
-  400 fijas (Ibex, continuo, grandes de Europa y EEUU) más las que el buscador de Yahoo encuentra
-  cada día en toda la bolsa de EEUU y Europa con recomendación de compra. La ficha se renueva cada
-  3 horas y los precios en cada ejecución.
+- radar.json: las empresas del radar, con analistas, valoración y tendencia. Son unas 400 fijas
+  (Ibex, continuo, grandes de Europa y EEUU) más las más grandes de las que el buscador de Yahoo
+  encuentra cada día en toda la bolsa de EEUU y Europa por tamaño (NUCLEO_DESCUBIERTAS). Es lo que
+  baja la web al abrir. Los precios, en cada ejecución.
+- radar-mas.json (5 nov 2026): el resto de las descubiertas, con la misma ficha. La web lo baja
+  después de abrir y como mucho cada hora; sus precios, más o menos cada hora.
+  Las fichas de las dos se renuevan por turnos: en cada ejecución, las que no tienen y las más viejas.
 - historico.json: los cierres de cada instrumento (10 años) y de cada mercado (1 año). La web lo lee
   al abrirse y cuando cambia el día.
 anterior/ tiene los archivos de la ejecución anterior (si existen).
@@ -228,32 +231,39 @@ HORAS_RADAR = 3   # analistas y cuentas del radar: cada 3 horas; los precios, en
 HILOS_RADAR = 6
 
 # Además de la lista fija, una vez al día se recorre toda la bolsa de EEUU y de Europa con el buscador
-# de Yahoo Finance: entran las empresas medianas y grandes que los analistas recomiendan comprar y que
-# no estaban ya. Así ninguna idea buena se queda fuera por no estar en la lista.
+# de Yahoo Finance. Desde el 5 nov 2026 (Carlos) entran por TAMAÑO, sin mirar lo que recomiendan los
+# analistas: todas las medianas y grandes que pasan de la capitalización mínima de su región. Xetra,
+# Viena, Londres y Zúrich cotizan también muchas empresas extranjeras (Apple en Fráncfort o en Viena):
+# esas cotizaciones no las sigue ningún analista, así que fuera de España solo cuenta la que tiene
+# nota, que es la principal (lo que diga la nota da igual). En España, todas menos las de Latibex
+# (empresas latinoamericanas en euros, empiezan por X). La misma empresa en su bolsa y como ADR en
+# EEUU: se queda la de Europa.
 # región de Yahoo: (zona de la web, sufijo y código de su bolsa principal, capitalización mínima en
-# euros, páginas de 250). Xetra, Londres y Zúrich también cotizan muchas empresas extranjeras grandes,
-# así que allí hay que bajar más páginas para llegar a las medianas de casa.
+# euros, páginas de 250 como mucho; se para antes si la página ya baja del mínimo)
 DESCUBRIR = {
-    "us": ("EEUU", "", None, 4e9, 5),
+    "us": ("EEUU", "", None, 2e9, 20),
     "es": ("España", ".MC", "MCE", 3e8, 1),
-    "gb": ("Europa", ".L", "LSE", 2e9, 4),
-    "de": ("Europa", ".DE", "GER", 1.5e9, 7),
-    "fr": ("Europa", ".PA", "PAR", 1.5e9, 2),
-    "it": ("Europa", ".MI", "MIL", 1.5e9, 2),
-    "nl": ("Europa", ".AS", "AMS", 1.5e9, 1),
-    "be": ("Europa", ".BR", "BRU", 1.5e9, 1),
-    "ch": ("Europa", ".SW", "EBS", 2e9, 3),
-    "se": ("Europa", ".ST", "STO", 2e9, 2),
-    "dk": ("Europa", ".CO", "CPH", 2e9, 1),
-    "no": ("Europa", ".OL", "OSL", 2e9, 1),
-    "fi": ("Europa", ".HE", "HEL", 1.5e9, 1),
-    "pt": ("Europa", ".LS", "LIS", 1e9, 1),
-    "at": ("Europa", ".VI", "VIE", 1.5e9, 1),
-    "ie": ("Europa", ".IR", "ISE", 1.5e9, 1),
+    "gb": ("Europa", ".L", "LSE", 5e8, 5),
+    "de": ("Europa", ".DE", "GER", 5e8, 6),
+    "fr": ("Europa", ".PA", "PAR", 5e8, 2),
+    "it": ("Europa", ".MI", "MIL", 5e8, 2),
+    "nl": ("Europa", ".AS", "AMS", 5e8, 1),
+    "be": ("Europa", ".BR", "BRU", 5e8, 1),
+    "ch": ("Europa", ".SW", "EBS", 5e8, 2),
+    "se": ("Europa", ".ST", "STO", 5e8, 3),
+    "dk": ("Europa", ".CO", "CPH", 5e8, 1),
+    "no": ("Europa", ".OL", "OSL", 5e8, 1),
+    "fi": ("Europa", ".HE", "HEL", 5e8, 1),
+    "pt": ("Europa", ".LS", "LIS", 5e8, 1),
+    "at": ("Europa", ".VI", "VIE", 5e8, 6),
+    "ie": ("Europa", ".IR", "ISE", 5e8, 1),
 }
-NOTA_MAX_DESCUBRIR = 2.3   # nota media de los analistas (1 compra fuerte, 5 venta fuerte)
-MAX_DESCUBIERTAS = 550
+MAX_DESCUBIERTAS = 2600      # tope de seguridad (de mayor a menor); el 5 nov salían unas 2.400
+NUCLEO_DESCUBIERTAS = 550    # las más grandes van en radar.json (lo que baja la web al abrir); el resto, en radar-mas.json
 HORAS_DESCUBRIR = 20
+RADAR_PASADAS = 9            # cada ficha se renueva una vez cada 9 ejecuciones (unas 3 horas entre semana)
+RADAR_MIN_PASADA = 150       # y como mínimo tantas fichas por ejecución
+MINUTOS_PRECIOS_MAS = 55     # los precios de radar-mas.json, más o menos cada hora
 BOLSAS_US = {"NMS", "NYQ", "NGM", "NCM", "ASE", "BTS", "PCX"}
 
 
@@ -1108,11 +1118,17 @@ def nota_analistas(texto):
         return None
 
 
+def clave_empresa(nombre):
+    """El nombre sin forma jurídica ni signos, para ver si dos símbolos son la misma empresa."""
+    return " ".join(re.sub(r"\b(inc|corp|corporation|plc|sa|s a|nv|n v|ag|se|ltd|co|company|holdings?|group|the|spa|s p a|asa|ab|oyj|publ|class [a-z])\b", "", re.sub(r"[^a-z0-9 ]+", " ", (nombre or "").lower())).split())
+
+
 def descubrir(fx, fijas):
     """Recorre la bolsa de EEUU y Europa con el buscador de Yahoo y devuelve [(símbolo, zona)] de las
-    empresas con recomendación de compra que no están en la lista fija, más un diagnóstico."""
+    empresas medianas y grandes que no están en la lista fija, de mayor a menor, más un diagnóstico.
+    Por tamaño: lo que recomienden los analistas no cuenta (ver DESCUBRIR)."""
     from yfinance import EquityQuery
-    diag = {"version": 2, "fecha": ahora(), "por_region": {}, "errores": [], "muestras": {}}
+    diag = {"version": 3, "fecha": ahora(), "por_region": {}, "errores": [], "muestras": {}}
     vistos, candidatos = set(fijas), []
     for reg, (zona, sufijo, bolsa, minimo, paginas) in DESCUBRIR.items():
         n_reg = 0
@@ -1121,6 +1137,8 @@ def descubrir(fx, fijas):
                 filtros = [EquityQuery("eq", ["region", reg]), EquityQuery("gt", ["intradaymarketcap", 3e8])]
                 if bolsa:
                     filtros.append(EquityQuery("eq", ["exchange", bolsa]))
+                else:
+                    filtros.append(EquityQuery("is-in", ["exchange", *sorted(BOLSAS_US)]))
                 q = EquityQuery("and", filtros)
                 r = yf.screen(q, offset=pagina * 250, size=250, sortField="intradaymarketcap", sortAsc=False)
                 quotes = (r or {}).get("quotes") or []
@@ -1129,8 +1147,12 @@ def descubrir(fx, fijas):
                 break
             if pagina == 0:
                 diag["muestras"][reg] = [f'{x.get("symbol")}|{x.get("exchange")}|{x.get("averageAnalystRating")}' for x in quotes[:4]] + [f"total {len(quotes)}"]
+            ultimo = None
             for x in quotes:
                 sim = x.get("symbol") or ""
+                cap_eur = (x.get("marketCap") or 0) * (cambio_hoy(normaliza_moneda(x.get("currency") or "EUR")[0], fx) or 1.0)
+                if cap_eur > 0:
+                    ultimo = cap_eur
                 if sim in vistos or x.get("quoteType", "EQUITY") != "EQUITY":
                     continue
                 if reg == "us":
@@ -1138,22 +1160,31 @@ def descubrir(fx, fijas):
                         continue
                 elif not sim.endswith(sufijo):
                     continue
-                nota = nota_analistas(x.get("averageAnalystRating"))
-                if nota is None or nota > NOTA_MAX_DESCUBRIR:
-                    continue
-                cap_eur = (x.get("marketCap") or 0) * (cambio_hoy(normaliza_moneda(x.get("currency") or "EUR")[0], fx) or 1.0)
+                if reg == "es":
+                    if sim.startswith("X"):
+                        continue  # Latibex
+                elif nota_analistas(x.get("averageAnalystRating")) is None:
+                    continue  # una cotización de fuera (Apple en Fráncfort): no la sigue nadie
                 if cap_eur < minimo:
                     continue
                 vistos.add(sim)
-                candidatos.append((nota, -cap_eur, sim, zona))
+                candidatos.append((-cap_eur, zona == "EEUU", sim, zona, clave_empresa(x.get("longName") or x.get("shortName"))))
                 n_reg += 1
-            if len(quotes) < 250:
+            if len(quotes) < 250 or (ultimo is not None and ultimo < minimo):
                 break
             time.sleep(0.4)
         diag["por_region"][reg] = n_reg
-    candidatos.sort()
-    elegidas = [(sim, zona) for _, _, sim, zona in candidatos[:MAX_DESCUBIERTAS]]
-    diag["candidatas"] = len(candidatos)
+    # la misma empresa en su bolsa y como ADR en EEUU: se queda la de Europa (las de EEUU van después)
+    unicas, nombres = [], set()
+    for c in sorted(candidatos, key=lambda c: (c[1], c[0])):
+        if c[4] and c[4] in nombres:
+            continue
+        nombres.add(c[4])
+        unicas.append(c)
+    diag["repetidas"] = len(candidatos) - len(unicas)
+    unicas.sort()
+    elegidas = [(sim, zona) for _, _, sim, zona, _ in unicas[:MAX_DESCUBIERTAS]]
+    diag["candidatas"] = len(unicas)
     diag["elegidas"] = len(elegidas)
     return elegidas, diag
 
@@ -1297,13 +1328,26 @@ def zona_pedida(sim):
     return "España" if sim.endswith(".MC") else "EEUU" if "." not in sim else "Europa"
 
 
-def radar(fx, previo, extra=()):
-    """Renueva la ficha de cada empresa (en paralelo). Si una falla, se queda la de la vez anterior."""
+def elegir_renovar(tareas, antes, todas=False):
+    """Las fichas que se renuevan en esta ejecución: primero las que no tienen ficha y después las más
+    viejas (de más de una hora), hasta max(RADAR_MIN_PASADA, una de cada RADAR_PASADAS)."""
+    if todas:
+        return list(tareas)
+    tope = max(RADAR_MIN_PASADA, math.ceil(len(tareas) / RADAR_PASADAS))
+    sin = [t for t in tareas if t[0] not in antes]
+    viejas = sorted((t for t in tareas if t[0] in antes and not hace_menos_de(antes[t[0]].get("f") or "", 1)), key=lambda t: antes[t[0]].get("f") or "")
+    return (sin + viejas)[:tope]
+
+
+def radar(fx, previo, extra=(), todas=False):
+    """Renueva por turnos la ficha de cada empresa (en paralelo; ver elegir_renovar). Las demás, y las
+    que fallan, se quedan con la de la vez anterior."""
     import concurrent.futures as cf
     antes = {x["s"]: x for x in (previo or [])}
     tareas = [(sim, zona) for zona, simbolos in RADAR.items() for sim in simbolos]
     fijas = {sim for sim, _ in tareas}
     tareas += [(sim, zona) for sim, zona in extra if sim not in fijas]
+    renovar = elegir_renovar(tareas, antes, todas)
     nuevos, fallos = {}, []
 
     def una(sim, zona):
@@ -1318,7 +1362,7 @@ def radar(fx, previo, extra=()):
         return None
 
     with cf.ThreadPoolExecutor(max_workers=HILOS_RADAR) as ex:
-        futuros = {ex.submit(una, sim, zona): sim for sim, zona in tareas}
+        futuros = {ex.submit(una, sim, zona): sim for sim, zona in renovar}
         for fu in cf.as_completed(futuros):
             sim = futuros[fu]
             try:
@@ -1331,12 +1375,11 @@ def radar(fx, previo, extra=()):
                 fallos.append(sim)
                 print(f"radar {sim}: {e}")
     out, nombres = [], {}
-    clave = lambda x: re.sub(r"\b(inc|corp|corporation|plc|sa|s a|nv|n v|ag|se|ltd|co|company|holdings?|group|the|spa|s p a|asa|ab|oyj)\b", "", re.sub(r"[^a-z0-9 ]+", " ", (x.get("n") or "").lower())).split()  # noqa: E731
     for sim, _ in tareas:
         x = nuevos.get(sim) or antes.get(sim)
         if not x:
             continue
-        k = " ".join(clave(x))
+        k = clave_empresa(x.get("n"))
         if sim not in fijas and k and k in nombres:
             # la misma empresa en otra bolsa: se queda la de la lista fija o la que siguen más analistas
             i = nombres[k]
@@ -1345,8 +1388,9 @@ def radar(fx, previo, extra=()):
             continue
         nombres[k] = len(out)
         out.append(x)
+    print(f"radar: {len(nuevos)} fichas renovadas de {len(renovar)} ({len(tareas)} en total)")
     if fallos:
-        print(f"radar: {len(fallos)} sin datos nuevos: {' '.join(sorted(fallos))}")
+        print(f"radar: {len(fallos)} sin datos nuevos: {' '.join(sorted(fallos)[:60])}")
     return out
 
 
@@ -1355,8 +1399,9 @@ def radar_precios(valores, fx):
     potencial hasta el precio objetivo se recalcule en cada ejecución (cada 20 minutos)."""
     sims = [x["s"] for x in valores]
     nuevos = {}
-    for i in range(0, len(sims), 100):
-        trozo = sims[i:i + 100]
+    # de 250 en 250 (5 nov 2026: 2.206 empresas en 94 s, frente a 135 s de 100 en 100)
+    for i in range(0, len(sims), 250):
+        trozo = sims[i:i + 250]
         try:
             df = yf.download(trozo, period="5d", interval="1d", progress=False, auto_adjust=False, threads=True, group_by="column")
             cierre = df["Close"]
@@ -1612,14 +1657,18 @@ def main(ruta_inst, dir_anterior, dir_salida):
         salida["noticias_region_generado"] = ahora()
         print("noticias por comunidad:", {k: len(v) for k, v in reg.items()})
 
-    # Radar de ideas: la ficha de cada empresa cada HORAS_RADAR horas y los precios en cada ejecución.
-    # Va en radar.json (pesa bastante) y la web solo lo vuelve a leer cuando cambia radar_id.
+    # Radar (5 nov 2026): radar.json con las fijas, las pedidas y las NUCLEO_DESCUBIERTAS más grandes de
+    # las descubiertas (lo que baja la web al abrir; la vuelve a leer cuando cambia radar_id) y
+    # radar-mas.json con el resto (la web lo baja después de abrir, cuando cambia radar_mas_id). Las
+    # fichas de las dos se renuevan por turnos (elegir_renovar); los precios del núcleo, en cada
+    # ejecución, y los del resto, cada MINUTOS_PRECIOS_MAS.
     prev_radar = leer_json(f"{dir_anterior}/radar.json") or anterior.get("radar") or {}
-    previos = prev_radar.get("valores") or []
+    prev_mas = leer_json(f"{dir_anterior}/radar-mas.json") or {}
+    previos = (prev_radar.get("valores") or []) + (prev_mas.get("valores") or [])
     # las descubiertas en toda la bolsa: una vez al día; mientras, las de la vez anterior
     extra = [tuple(x) for x in (prev_radar.get("descubiertas") or [])]
     diag = prev_radar.get("descubrir")
-    nuevo_descubrir = not extra or (diag or {}).get("version") != 2 or not hace_menos_de((diag or {}).get("fecha") or "", HORAS_DESCUBRIR)
+    nuevo_descubrir = not extra or (diag or {}).get("version") != 3 or not hace_menos_de((diag or {}).get("fecha") or "", HORAS_DESCUBRIR)
     if nuevo_descubrir:
         try:
             fijas = {sim for simbolos in RADAR.values() for sim in simbolos}
@@ -1640,35 +1689,28 @@ def main(ruta_inst, dir_anterior, dir_salida):
     except Exception as e:  # noqa: BLE001
         traceback.print_exc()
         pedidas = []
-    # sin las fechas de resultados y dividendos (radar de antes de la 0.2), se renueva ya en vez de esperar 3 horas
-    con_fechas = any(("rd" in x or "xd" in x) for x in previos[:300])
-    completo = previos and "v0" in "".join(json.dumps(x) for x in previos[:20]) and con_fechas and hace_menos_de(prev_radar.get("generado") or "", HORAS_RADAR) and not nuevo_descubrir
-    radar_sal = dict(prev_radar) if completo else None
-    if not completo:
-        try:
-            valores = radar(fx, previos, list(extra) + [(s, zona_pedida(s)) for s in pedidas])
-            radar_sal = {"fecha": hoy, "generado": ahora(), "valores": valores} if valores else (prev_radar or None)
-            print(f"radar: {len(valores)} empresas renovadas")
-        except Exception as e:  # noqa: BLE001
-            traceback.print_exc()
-            errores.append(f"radar: {e}")
-            radar_sal = prev_radar or None
+    radar_sal = None
+    try:
+        valores = radar(fx, previos, list(extra) + [(s, zona_pedida(s)) for s in pedidas], todas=not previos)
+        radar_sal = {"fecha": hoy, "generado": ahora(), "valores": valores} if valores else None
+        print(f"radar: {len(valores)} empresas")
+    except Exception as e:  # noqa: BLE001
+        traceback.print_exc()
+        errores.append(f"radar: {e}")
+    if not radar_sal and previos:
+        radar_sal = {"fecha": prev_radar.get("fecha"), "generado": prev_radar.get("generado"), "valores": previos}
     if radar_sal and radar_sal.get("valores"):
-        # las pedidas nuevas, si no tocaba renovar el radar entero: solo sus fichas
-        hay = {x["s"] for x in radar_sal["valores"]}
-        for s in [s for s in pedidas if s not in hay][:40]:
-            try:
-                x = radar_ficha(s, zona_pedida(s), fx)
-                if x:
-                    radar_sal["valores"].append(x)
-            except Exception as e:  # noqa: BLE001
-                print("pedida sin ficha:", s, e)
         pd = set(pedidas)
         for x in radar_sal["valores"]:
             if x.get("s") in pd:
                 x["pd"] = 1
             else:
                 x.pop("pd", None)
+        # el núcleo (radar.json) y el resto (radar-mas.json); las descubiertas van de mayor a menor
+        nucleo = {sim for simbolos in RADAR.values() for sim in simbolos} | pd | {s for s, _ in extra[:NUCLEO_DESCUBIERTAS]}
+        todos = radar_sal["valores"]
+        radar_sal["valores"] = [x for x in todos if x.get("s") in nucleo]
+        mas = [x for x in todos if x.get("s") not in nucleo]
         radar_sal["pedidas"] = pedidas
         try:
             n = radar_precios(radar_sal["valores"], fx)
@@ -1680,15 +1722,30 @@ def main(ruta_inst, dir_anterior, dir_salida):
         radar_sal["descubiertas"] = [list(x) for x in extra]
         radar_sal["descubrir"] = diag
         radar_sal["universo"] = sum(len(v) for v in RADAR.values()) + len(extra)
+        radar_sal["mas"] = len(mas)
         with open(f"{dir_salida}/radar.json", "w", encoding="utf-8") as f:
             json.dump(radar_sal, f, ensure_ascii=False, separators=(",", ":"))
         salida["radar_id"] = (radar_sal.get("generado") or "") + "|" + (radar_sal.get("precios") or "")
+        if mas:
+            precios_mas = prev_mas.get("precios") or ""
+            if not hace_menos_de(precios_mas, MINUTOS_PRECIOS_MAS / 60):
+                try:
+                    n = radar_precios(mas, fx)
+                    precios_mas = ahora()
+                    print(f"radar-mas: precios de {n} empresas")
+                except Exception as e:  # noqa: BLE001
+                    traceback.print_exc()
+                    errores.append(f"radar-mas precios: {e}")
+            with open(f"{dir_salida}/radar-mas.json", "w", encoding="utf-8") as f:
+                json.dump({"fecha": hoy, "generado": radar_sal.get("generado"), "precios": precios_mas, "valores": mas}, f, ensure_ascii=False, separators=(",", ":"))
+            # cambia con los precios (cada hora), no en cada ejecución: así la web no lo vuelve a bajar cada 20 minutos
+            salida["radar_mas_id"] = precios_mas or (radar_sal.get("generado") or "")
         # el histórico de un año de cada empresa del radar (para la gráfica de su ficha): una vez al día
         prev_rh = leer_json(f"{dir_anterior}/radar-hist.json")
         rh = prev_rh if prev_rh and hace_menos_de(prev_rh.get("generado") or "", 20) else None
         if not rh:
             try:
-                rh = radar_historico(radar_sal["valores"]) or prev_rh
+                rh = radar_historico(todos) or prev_rh
                 if rh and rh is not prev_rh:
                     print(f"radar: histórico de {len(rh.get('s') or {})} empresas")
             except Exception as e:  # noqa: BLE001
@@ -1701,6 +1758,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
             salida["radar_hist_id"] = rh.get("generado")
         salida["radar_generado"] = radar_sal.get("generado")
         salida["radar_n"] = len(radar_sal["valores"])
+        salida["radar_mas_n"] = len(mas)
 
     # Titulares de las mejores ideas del radar (como mucho cada 2 horas), para contrastar con la prensa
     # lo que dicen los números. Las elige como la web: muchos analistas, consenso de compra y recorrido.

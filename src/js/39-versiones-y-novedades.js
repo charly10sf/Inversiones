@@ -5,6 +5,33 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
+  { v: '0.8.2a', f: '2026-11-06', h: '11:00', t: 'Menos avisos en la IA', arreglos: [
+    'El panel de la IA ya no dice qué IA contesta, ni arriba ni debajo de cada respuesta.',
+    'En «Del radar», los logos de las empresas se ven más grandes.',
+  ] },
+  { v: '0.8.2', f: '2026-11-06', h: '10:30', t: 'La IA explica', cosas: [
+    { d: 'pregunta', ir: { v: 'cartera', sel: '#bAsesor, .riel-ia', dib: null }, t: 'La IA explica', x: 'La IA te explica tu cartera y hace las cuentas con tus cifras, pero no te dice qué comprar ni qué vender: la decisión es tuya.' },
+    { d: 'pregunta', t: 'Normal o «A fondo»', x: 'Con Claude, la respuesta normal es la rápida. Si quieres que piense más, pulsa «A fondo» antes de preguntar. Arriba ves cuántas preguntas te quedan hoy.' },
+    { d: 'calendario', t: 'Tus conversaciones, guardadas', x: 'Las 20 últimas conversaciones con la IA se guardan cifradas en tu móvil. Al empezar una nueva, las tienes arriba para volver a abrirlas o borrarlas.' },
+    { d: 'pulido', ir: { v: 'posiciones', sel: '[data-accion="copiar-ia"]', dib: null }, t: 'Copiar para tu IA', x: 'En Posiciones y en Análisis puedes copiar tu cartera en texto para pegarla en ChatGPT, Gemini o Claude. Lo que te conteste es cosa de ese asistente.' },
+    { d: 'pulido', t: 'Borrar tu cuenta', x: 'En Ajustes, Tu cuenta, puedes borrar la cuenta con todo lo que guarda. Te pide otra vez la contraseña o Google, para comprobar que eres tú.' },
+    { d: 'cifras', t: 'Las fichas del radar dicen de dónde salen', x: 'Cada ficha de Expertos dice cuándo se hizo, que la hizo Toisón con IA y que es igual para todos, y qué es dato y qué es opinión.' },
+    { d: 'cifras', t: 'El radar, entero y por tamaño', x: 'Expertos enseña ahora el radar entero, unas 2.800 empresas, ordenadas por tamaño y de 50 en 50, sin que la pantalla se quede pensando. Puedes ordenar por nombre, dividendo, PER futuro o rentabilidad a un año, y cambiar de zona al momento.' },
+    { d: 'pregunta', t: 'El fundador, con Claude', x: 'Con Claude, el acceso de fundador va con las reglas del estándar: te explica tu Paso a paso y lo que calcula la app, sin recomendar. Con Gemini, la IA de siempre.', solo: 'dueno' },
+  ], arreglos: [
+    'Si Claude no puede resumir una noticia o leer una captura durante un rato, ahora lo dice, en vez de pedirte la clave de Google.',
+    'Ordenar las posiciones por la opinión de los analistas dice ahora «más a favor» o «más en contra» primero.',
+    { t: 'Las versiones intermedias (como esta) salen con una hoja corta y sin guía; las gordas, como siempre.', solo: 'dueno' },
+    { t: 'El registro de la IA («Detalles técnicos», en sus ajustes) también sale si solo usas Claude.', solo: 'dueno' },
+  ] },
+  { v: '0.8.1d', f: '2026-11-05', h: '18:30', t: 'Unos 6.000 fondos y ETF', arreglos: [
+    'Al buscar un fondo o un ETF salen unos 6.000 en vez de 360: todos los ETF y ETC que cotizan en la bolsa alemana (Xetra), que son casi todos los que venden los brókers en España, y los fondos españoles registrados en la CNMV, cada clase con su ISIN y su precio de cada día.',
+    { t: 'Los nuevos van en un archivo aparte que se baja al buscar, no al abrir. Lo que añades de ahí pasa al día siguiente al catálogo de todos, con sus 10 años de histórico.', solo: 'dueno' },
+  ] },
+  { v: '0.8.1c', f: '2026-11-05', h: '15:30', t: 'El radar, con casi 3.000 empresas', arreglos: [
+    'El radar pasa de unas 950 a unas 2.800 empresas de España, Europa y EE. UU. Ahora entran todas las medianas y grandes por su tamaño, digan lo que digan los analistas. Las nuevas van apareciendo a lo largo de la tarde.',
+    { t: 'Al abrir se baja lo mismo que antes; el resto del radar llega unos segundos después y se renueva cada hora.', solo: 'dueno' },
+  ] },
   { v: '0.8.1b', f: '2026-11-05', h: '07:30', t: 'Los colores y las pestañas, en su sitio', arreglos: [
     'Con el móvil en modo oscuro, algunos navegadores (el de WhatsApp, el de X y Samsung Internet) cambiaban los colores de Toisón. Ya no.',
     'En Ideas y en los plazos del Paso a paso, las pestañas de arriba ya no dejan ver el texto que pasa por debajo al bajar.',

@@ -367,6 +367,10 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .logo-a { border-radius: 50%; background: color-mix(in srgb, var(--oro-texto) 8%, var(--superficie)); box-shadow: inset 0 0 0 1px var(--hilo); }
 [data-tema] .logo-a > span { font: 600 13px/1 var(--marca); letter-spacing: .04em; color: var(--texto); }
 [data-tema] .logo-a img { inset: 2px; width: calc(100% - 4px); height: calc(100% - 4px); padding: 5px; box-sizing: border-box; border-radius: 50%; }
+/* los logos pequeños (el radar): sin el relleno de 5 px que se los comía, y la caja de 36 px en vez de 24 */
+[data-tema] .logo-a.peq img { inset: 1px; width: calc(100% - 2px); height: calc(100% - 2px); padding: 3px; }
+[data-tema] .idea-cab .logo-a.peq { width: 36px; height: 36px; }
+[data-tema] .idea-cab .logo-a.peq > span { font-size: 12px; }
 
 /* avisos de arriba (perfil a medias, código de recuperación, novedades): filo de oro y el icono en su aro */
 [data-tema] :is(.pf-recuerda, .nov-aviso) { background: color-mix(in srgb, var(--oro-texto) 7%, var(--superficie)); border: 2px solid var(--hilo); border-radius: var(--r-l); box-shadow: var(--sombra-t); }
@@ -728,8 +732,8 @@ img.tema-muestra { background: none; box-shadow: none; }
    0.8.2: también los botones de abajo del panel de la IA (recortar, dictar, enviar: 38 px) y la línea del aviso fijo de
    arriba (35 px de alto); lo comprueba tests/explica-082.spec.js.
    ===================================================================== */
-:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver, .preg-ia, .pav-et a, .panel-av .tabs button, .pnl-cab .ib, .as-adj, .as-enviar, .as-aviso > summary) { position: relative; }
-:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver, .preg-ia, .pav-et a, .panel-av .tabs button, .pnl-cab .ib, .as-adj, .as-enviar, .as-aviso > summary)::after {
+:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver, .preg-ia, .pav-et a, .panel-av .tabs button, .pnl-cab .ib, .as-adj, .as-enviar) { position: relative; }
+:where(.hero-ojo, .hv-info, .t-check, .ib:not(.ib-fallo), .as-boton, .enlace, .rh-mas, .hp-cmp, .t-hecho, .btn.peq, .mv-c, .vista-volver, .preg-ia, .pav-et a, .panel-av .tabs button, .pnl-cab .ib, .as-adj, .as-enviar)::after {
   content: ''; position: absolute; inset: min(0px, calc(50% - var(--toque, 48px) / 2)) min(0px, calc(50% - var(--toque, 48px) / 2));
 }
 /* el saludo con el nombre solo se subrayaba al llegar con el teclado: ahora lleva el aro de foco como el resto */

@@ -9,7 +9,7 @@ async function recargarPrecios() {
   try { await cargarPrecios(); } catch (e) { return; }
   if (!S.cartera) return;
   if (S.precios.generado !== antes) {
-    await Promise.all([cargarHistorico(), cargarIntradia(), cargarIA(), cargarRadar(), cargarInforme()]);
+    await Promise.all([cargarHistorico(), cargarIntradia(), cargarIA(), cargarRadar().then(cargarRadarMas), cargarInforme()]);
     pintar(); LIVE.resuscribir(); escaneoLuego(1500);
   } else programarParche();
   revisarAnalisisIA();
@@ -26,6 +26,8 @@ function arrancar() {
   montar();
   pintar();
   LIVE.iniciar();
+  // el resto del radar (radar-mas.json), después de abrir: no cuenta en lo que tarda en estar lista
+  setTimeout(() => cargarRadarMas().then((n) => { if (n && S.vista === 'expertos') pintar(); }), 4000);
   cargarIA().then(() => { if (S.vista === 'analisis') pintar(); refrescarToca(); });
   // el análisis y la clave llegan un poco después de pintar: hasta entonces, la tarjeta de GrowIA de Cartera
   // dice «cargando» (antes decía «aún sin activar» aunque la tuvieras activada) y luego se rehace sola

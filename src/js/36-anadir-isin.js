@@ -146,6 +146,11 @@ function anadirPorIsin(inicial, alListo, sinEncontrar) {
     // si ya está en el catálogo (o lo añadiste antes), directo
     const ya = Object.entries((S.cat && S.cat.v) || {}).find(([, x]) => String(x.isin || '').toUpperCase() === isin);
     if (ya) return terminar(ya[0]);
+    // o en el catálogo ampliado (se baja ahora si no estaba): sin preguntar a Yahoo
+    buscando = true; boton.disabled = true;
+    await cargarCatalogoMas();
+    buscando = false; boton.disabled = false;
+    if (S.catMas && S.catMas[`c-${isin.toLowerCase()}`]) return terminar(`c-${isin.toLowerCase()}`);
     buscando = true; boton.disabled = true; boton.textContent = L('Buscando…', 'Looking…');
     res.innerHTML = `<div class="isin-busca"><span class="isin-giro" aria-hidden="true"></span>${L('Buscándolo…', 'Looking it up…')}</div>`;
     const d = await buscarIsinWorker(isin, false);

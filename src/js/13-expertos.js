@@ -339,7 +339,7 @@ function vistaExpertos(M) {
   } else if (S.expTab === 'siguiendo') {
     cuerpo = htmlSiguiendo(M);
   } else {
-    cuerpo = `<section aria-labelledby="hIdeas" class="bloque-sec">${htmlIdeas(M, ia)}</section>`;
+    cuerpo = htmlIdeas(M, ia);
   }
   const marca = { posiciones: planes.length, siguiendo: siguiendo().length };
   return `
@@ -453,7 +453,17 @@ function mejoresIdeas0(M, excluir = {}) {
   return out;
 }
 
-const ORDEN_RADAR = { pot: ['Puede subir', (x) => x.pot ?? -999], neto: ['Te quedas', (x) => x._neto ?? -999], ctr: ['Señales', (x) => x._ctr.favor - x._ctr.contra * 0.9 + (x.pot || 0) / 1000], rm: ['Consenso', (x) => -(x.rm ?? 9)], div: ['Dividendo', (x) => x.div ?? -1], perf: ['PER', (x) => -(x.perf > 0 ? x.perf : 999)], c1a: ['1 año', (x) => x.c1a ?? -999] };
+/* Orden de «Todo el radar». Por defecto, por tamaño (capitalización): no recomienda nada. También se ordena por nombre,
+   dividendo, PER y rentabilidad a 1 año. Por «Puede subir», «Te quedas» o «Señales» no: sería una lista de lo que
+   comprar, y la CNMV avisa de la recomendación implícita. [título, clave de mayor a menor, true si es de la A a la Z] */
+const ORDEN_RADAR = {
+  cap: ['Tamaño', (x) => x.cap ?? -1],
+  n: ['Empresa', (x) => nombreRadar(x), true],
+  div: ['Dividendo', (x) => x.div ?? -1],
+  perf: ['PER futuro', (x) => -(x.perf > 0 ? x.perf : 999)],
+  c1a: ['1 año', (x) => x.c1a ?? -999],
+};
+const ordenRadarAct = () => (ORDEN_RADAR[S.radarOrden] ? S.radarOrden : 'cap');
 // Londres cotiza en peniques (GBp): se enseña en libras, que se entiende mejor
 const precioR = (p, m) => { const v = m === 'GBp' ? p / 100 : p; return `${fmtNum(v, v >= 1000 ? 0 : 2)} ${monedaR(m)}`; };
 const monedaR = (m) => (m === 'EUR' ? '€' : m === 'USD' ? '$' : m === 'GBp' ? '£' : m === 'CHF' ? 'CHF' : m === 'DKK' ? 'DKK' : m === 'SEK' ? 'SEK' : m === 'NOK' ? 'NOK' : esc(m || ''));
@@ -877,42 +887,111 @@ function htmlCambiosIdeas() {
     <p class="nota">${L('Las ideas solo cambian de un día para otro si llega una noticia que cambia la tesis o se rompen sus números. Cada cambio, con su motivo:', 'Ideas only change from one day to the next if news changes the thesis or the numbers break. Each change, with its reason:')}</p>
     <ul>${cs.map((c) => { const r = buscarRadar(c.s); return `<li class="${c.ahora === 'idea' ? 'entra' : 'sale'}"><b>${esc((r && r.n) || c.n || c.s)}</b> <span class="cm-que">${que(c)} · ${fechaCorta(c.d)}</span>${c.motivo ? `<p>${escIA(c.motivo)}</p>` : ''}${enlacesFuentes(c.fuentes, 2)}</li>`; }).join('')}</ul></section>`;
 }
+/* ---------- «Todo el radar»: se pinta por páginas y se repinta sola, sin tocar el resto de la vista ----------
+   Con las 2.800 empresas, pintarlas todas eran 100.000 nodos y 16 s en un móvil. Ahora salen RADAR_INI y, con «Ver 50 más»,
+   de 50 en 50; y cambiar de zona, filtro u orden rehace solo esta tabla. */
+const RADAR_INI = 20, RADAR_PAG = 50;
+const colador = new Intl.Collator('es', { sensitivity: 'base' });
+const simbolosTuyos = (M) => new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
+const tituloOrdenRadar = (k) => ({ cap: L('Tamaño', 'Size'), n: L('Empresa', 'Company'), div: L('Dividendo', 'Dividend'), perf: L('PER futuro', 'Forward P/E'), c1a: L('1 año', '1 year') })[k];
+const opcionOrdenRadar = (k) => ({ cap: L('Tamaño, de mayor a menor', 'Size, largest first'), n: L('Empresa, de la A a la Z', 'Company, A to Z'), div: L('Dividendo, mayor primero', 'Dividend, highest first'), perf: L('PER futuro, menor primero', 'Forward P/E, lowest first'), c1a: L('1 año, mayor primero', '1 year, highest first') })[k];
+/* Las señales (siete comprobaciones) y lo que te quedas de cada empresa se calculan al pintar su fila, nunca las 2.800 de
+   golpe, y se guardan hasta que cambia algo de lo que dependen: el radar, un precio en directo, lo que piensa la IA o tu tramo. */
+function cacheSenales() {
+  const llave = `${S.radarVer}|${S.liveRVer}|${tramoAhorro()}`;
+  const c = S.senalesCache;
+  if (c && c.llave === llave && c.esc === S.escaneo) return c.m;
+  S.senalesCache = { llave, esc: S.escaneo, m: new Map() };
+  return S.senalesCache.m;
+}
+function senalesRadar(m, x) {
+  let s = m.get(x.s);
+  if (!s) {
+    const e = esperadaRadar(x);
+    s = { ctr: contraste(x), neto: e ? e.prin.netoP : null, meses: e ? e.prin.meses : null };
+    m.set(x.s, s);
+  }
+  return s;
+}
+/* las que pasan los filtros, ya ordenadas (sin pintar nada; solo «bien contrastadas» necesita sus señales) */
+function listaRadar() {
+  let v = radarVals().filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null);
+  if (S.radarSolidas) v = v.filter((x) => { const c = contraste(x); return c.favor >= 4 && c.contra <= 1; });
+  const [, clave, az] = ORDEN_RADAR[ordenRadarAct()];
+  const k = new Map(v.map((x) => [x, clave(x)]));
+  return v.sort((a, b) => (az ? colador.compare(k.get(a), k.get(b)) : k.get(b) - k.get(a)) || (b.cap ?? -1) - (a.cap ?? -1) || (a.s < b.s ? -1 : 1));
+}
+function filaRadar(x, tuyas, m) {
+  const s = senalesRadar(m, x);
+  return `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}" data-consulta="${esc(x.s)}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<button type="button" class="radar-n" data-consulta="${esc(x.s)}"><b style="font-weight:600">${esc(nombreRadar(x))}</b></button></div><small>${lineaOrigen(x)}</small></td>
+      <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
+      <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
+      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(s.neto)}" title="Lo que te quedaría si se cumple lo esperado (en el plazo de la IA o en los 12 meses de los analistas), con su dividendo y ya restados la tasa de compra, la retención que no se recupera y tus impuestos">${s.neto == null ? '—' : pctS(s.neto, 0)}${s.meses ? `<small>en ${plazoTxt(s.meses)}</small>` : ''}</td><td>${htmlContraste(s.ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r" style="white-space:nowrap">${capital(x.cap)}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`;
+}
+function pieRadar(v, n) {
+  const resto = v.length - n;
+  const filtro = [S.radarMin && L('con 5 analistas o más', 'with 5 analysts or more'), S.radarZona !== 'Todas' && esc(S.radarZona), S.radarSolidas && L('bien contrastadas', 'well backed')].filter(Boolean).join(', ');
+  const cuenta = v.length ? L(`Ves ${fmtNum(n, 0)} de ${fmtNum(v.length, 0)}${filtro ? ` (${filtro})` : ''}.`, `Showing ${fmtNum(n, 0)} of ${fmtNum(v.length, 0)}${filtro ? ` (${filtro})` : ''}.`) : L('Ninguna empresa cumple esos filtros.', 'No company matches those filters.');
+  return `<p class="k radar-cuenta" role="status">${cuenta}</p>${resto > 0 ? `<button class="mas-filas" data-radar-mas>${L(`Ver ${fmtNum(Math.min(RADAR_PAG, resto), 0)} más`, `Show ${fmtNum(Math.min(RADAR_PAG, resto), 0)} more`)}</button>` : ''}`;
+}
+function htmlTablaRadar(M) {
+  const v = listaRadar(), m = cacheSenales(), tuyas = simbolosTuyos(M);
+  const n = Math.min(v.length, S.radarN || RADAR_INI);
+  S.radarLista = v; S.radarN = n;
+  S.radarVisibles = [...new Set([...v.slice(0, n).map((x) => x.s), ...(S.radarJuntas || [])])];
+  const ord = ordenRadarAct();
+  const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${ord === k}">${t}${ord === k ? (ORDEN_RADAR[k][2] ? ' ↑' : ' ↓') : ''}</button></th>`;
+  return `<div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
+      <label class="orden-chip" title="${L('Ordenar', 'Sort')}">${ICONOS.orden}<span>${tituloOrdenRadar(ord)}</span><select data-radar-orden-sel aria-label="${L('Ordenar el radar', 'Sort the radar')}">${Object.keys(ORDEN_RADAR).map((k) => `<option value="${k}"${ord === k ? ' selected' : ''}>${opcionOrdenRadar(k)}</option>`).join('')}</select></label>
+      <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
+      <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
+    <div class="tabla-w"><table class="ideas resp"><thead><tr>${th('n', 'Empresa', '')}<th class="r">Precio</th><th>Consenso</th><th class="r">Puede subir</th><th class="r">Te quedas</th><th>Señales</th><th>Prensa</th>${th('cap', 'Tamaño')}${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody id="radarCuerpo">${v.slice(0, n).map((x) => filaRadar(x, tuyas, m)).join('')}</tbody></table></div>
+    <div id="radarPie">${pieRadar(v, n)}</div>`;
+}
+/* lo que cambia al tocar una zona, un filtro o el orden (o «Ver 50 más»): solo la tabla, no la vista entera */
+function repintarTablaRadar(mas) {
+  const caja = $('#radarTabla');
+  if (!caja || !S.M || !S.cartera) { pintar(); return; }
+  if (mas) {
+    const v = S.radarLista || [], desde = Math.min(S.radarN || 0, v.length), hasta = Math.min(v.length, desde + RADAR_PAG), cuerpo = $('#radarCuerpo');
+    if (!cuerpo || hasta <= desde) return;
+    S.radarN = hasta;
+    S.radarVisibles = [...new Set([...v.slice(0, hasta).map((x) => x.s), ...(S.radarJuntas || [])])];
+    // los precios de las filas nuevas, antes de pintarlas (B() los lee de S.binds); los de las de antes no se tocan
+    const nuevas = v.slice(desde, hasta), m = cacheSenales(), tuyas = simbolosTuyos(S.M);
+    for (const x of nuevas) bindsRadar(S.binds, x);
+    cuerpo.insertAdjacentHTML('beforeend', sinCortes(nuevas.map((x) => filaRadar(x, tuyas, m)).join('')));
+    $('#radarPie').innerHTML = pieRadar(v, hasta);
+    const nueva = cuerpo.rows[desde] && cuerpo.rows[desde].querySelector('.radar-n');
+    if (nueva) nueva.focus({ preventScroll: true });
+    return;
+  }
+  const a = document.activeElement;
+  const foco = a && caja.contains(a) ? (a.hasAttribute('data-zona') ? `[data-zona="${a.dataset.zona}"]` : a.hasAttribute('data-orden') ? `[data-orden="${a.dataset.orden}"]` : a.matches('[data-radar-min], [data-radar-solidas], [data-radar-orden-sel]') ? `[${['data-radar-min', 'data-radar-solidas', 'data-radar-orden-sel'].find((k) => a.hasAttribute(k))}]` : null) : null;
+  caja.innerHTML = sinCortes(htmlTablaRadar(S.M));
+  S.binds = binds(S.M);
+  rellenarBinds(caja);
+  marcarDeslizables(caja);
+  const f = foco && caja.querySelector(foco);
+  if (f) f.focus({ preventScroll: true });
+}
 function htmlIdeas(M, ia) {
   const todas = radarVals();
-  if (!todas.length) return '<div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2></div><div class="vacio">La lista de ideas llega con la próxima actualización de datos.</div>';
-  const tuyas = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo));
+  if (!todas.length) return '<section aria-labelledby="hIdeas" class="bloque-sec"><div class="sec-cab"><h2 id="hIdeas">Ideas para comprar</h2></div><div class="vacio">La lista de ideas llega con la próxima actualización de datos.</div></section>';
   const juntas = ideasJuntas(M, ia, 9).slice(0, 9);
-  const movil = innerWidth <= 680;
   const ctx = ctxIdeas(M);
   const d = S.escaneo && S.escaneo.decision;
-  let v = todas.filter((x) => (S.radarZona === 'Todas' || x.z === S.radarZona) && (!S.radarMin || (x.na || 0) >= 5) && x.pot != null).map((x) => { const e = esperadaRadar(x); return { ...x, _ctr: contraste(x), _neto: e ? e.prin.netoP : null, _meses: e ? e.prin.meses : null }; });
-  if (S.radarSolidas) v = v.filter((x) => x._ctr.favor >= 4 && x._ctr.contra <= 1);
-  const [, clave] = ORDEN_RADAR[S.radarOrden] || ORDEN_RADAR.pot;
-  v = v.sort((a, b) => clave(b) - clave(a));
-  const total = v.length;
-  const corte = movil ? 10 : 20;
-  if (!S.radarTodo) v = v.slice(0, corte);
-  S.radarVisibles = [...new Set([...v.map((x) => x.s), ...juntas.filter((x) => x.r).map((x) => x.r.s)])];
-  const th = (k, t, c = 'r') => `<th class="${c}"><button data-orden="${k}" aria-pressed="${S.radarOrden === k}">${t}${S.radarOrden === k ? ' ↓' : ''}</button></th>`;
+  S.radarJuntas = juntas.filter((x) => x.r).map((x) => x.r.s);
   const lecturas = Object.keys((S.escaneo && S.escaneo.lectura) || {}).length;
-  return `<div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">${esPublico() ? L('las que eligen el radar y la IA, iguales para todos', 'picked by the radar and GrowIA, the same for everyone') : 'las que eligen el radar, la IA y tu análisis'}</span></div>
+  return `<section aria-labelledby="hIdeas" class="bloque-sec"><div class="sec-cab"><h2 id="hIdeas">Las mejores ahora</h2><span class="k">${esPublico() ? L('las que eligen el radar y la IA, iguales para todos', 'picked by the radar and GrowIA, the same for everyone') : 'las que eligen el radar, la IA y tu análisis'}</span></div>
     ${d && d.comentario ? `<p class="idea-panorama">${NOM_IA} ${haceCuanto(d.generado)}${L(`, tras leer la prensa de ${lecturas} empresas: `, `, after reading the press on ${lecturas} companies: `)}${escIA(d.comentario)}</p>` : ''}
     ${juntas.length ? `<div class="ideas-top3">${juntas.map((x, i) => tarjetaIdea(x, ctx, true, i + 1)).join('')}</div>` : `<div class="vacio">${L('Ahora mismo ninguna pasa los filtros: mejor esperar.', 'None passes the filters right now: better to wait.')}</div>`}
     <p class="nota">Cómo se eligen: Toisón se queda con las mejor respaldadas (los analistas dicen comprar, aún tienen margen para subir, al menos 3 de las 7 señales a favor y no repiten lo que ya llevan tus fondos). La IA lee sus noticias y elige las suyas una vez al día. Primero salen las que eligen los dos. Lo que ya se ha propuesto se mantiene salvo que llegue una noticia que cambie la tesis o se rompan sus números, y nada sale a la vez como idea y como «evitar». En las barras, verde es a favor, rojo en contra y gris neutral.</p>
     ${htmlEvitar()}
-    ${htmlCambiosIdeas()}
-    <div class="sec-cab" style="margin-top:44px"><h2>Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
-    <div class="tabs-fila"><div class="tabs" role="group" aria-label="Zona">${ZONAS.map((z) => `<button data-zona="${z}" aria-pressed="${S.radarZona === z}">${z}</button>`).join('')}</div>
-      <label class="check-mini"><input type="checkbox" data-radar-min ${S.radarMin ? 'checked' : ''}> Con 5 analistas o más</label>
-      <label class="check-mini"><input type="checkbox" data-radar-solidas ${S.radarSolidas ? 'checked' : ''}> Solo bien contrastadas (4 señales a favor o más)</label></div>
-    <div class="tabla-w"><table class="ideas resp"><thead><tr><th>Empresa</th><th class="r">Precio</th><th>Consenso</th>${th('pot', 'Puede subir')}${th('neto', 'Te quedas')}${th('ctr', 'Señales', '')}<th>Prensa</th>${th('perf', 'PER futuro')}${th('div', 'Dividendo')}${th('c1a', '1 año')}</tr></thead><tbody>
-    ${v.map((x) => `<tr class="${tuyas.has(x.s) ? 'tuya' : ''}" data-consulta="${esc(x.s)}"><td><div class="idea-cab">${logo(x.w, x.n, 'peq')}<button type="button" class="radar-n" data-consulta="${esc(x.s)}"><b style="font-weight:600">${esc(nombreRadar(x))}</b></button></div><small>${lineaOrigen(x)}</small></td>
-      <td class="r">${B('rp:' + x.s)}${B('rv:' + x.s, 'sub')}</td>
-      <td>${esc(CONSENSO[x.r] || '—')}<small>${x.na ? x.na + ' analistas' : ''}</small></td>
-      <td class="r">${B('ro:' + x.s)}</td><td class="r ${cls(x._neto)}" title="Lo que te quedaría si se cumple lo esperado (en el plazo de la IA o en los 12 meses de los analistas), con su dividendo y ya restados la tasa de compra, la retención que no se recupera y tus impuestos">${x._neto == null ? '—' : pctS(x._neto, 0)}${x._meses ? `<small>en ${plazoTxt(x._meses)}</small>` : ''}</td><td>${htmlContraste(x._ctr, true)}</td><td>${(() => { const l = lecturaDe(x.s); return l && l.txt ? `<span title="${esc(l.txt)}">${chipImpacto(l.imp)}</span>${l.rel >= 2 ? '<small>importante</small>' : ''}` : '<span class="k">—</span>'; })()}</td><td class="r">${x.perf > 0 ? fmtNum(x.perf, 1) : '—'}</td><td class="r">${x.div ? pct(x.div, 1) : '—'}</td><td class="r ${cls(x.c1a)}">${pctS(x.c1a, 0)}</td></tr>`).join('')}
-    </tbody></table></div>
-    ${total > corte ? `<button class="mas-filas" data-radar-todo>${S.radarTodo ? `Ver solo las ${corte} primeras` : `Ver las ${total}${S.radarMin ? ' con 5 analistas o más' : S.radarZona !== 'Todas' ? ` de ${esc(S.radarZona)}` : ''}`}</button>` : ''}
-    <p class="nota">Puede subir: cuánto le queda para llegar al precio que esperan los analistas dentro de 12 meses. Te quedas: lo que ganarías si se cumple lo esperado, con el dividendo y ya restados la tasa de compra y los impuestos; si la IA tiene su propio objetivo y plazo para esa empresa (sale «en 2 meses», por ejemplo), es el suyo, y si no, el de los analistas a 12 meses. Prensa: lo que ha leído la IA en sus noticias. Señales: siete pruebas (analistas, si mejoran su opinión, beneficios, precio frente a su sector, tendencia y solidez del negocio).</p>`;
+    ${htmlCambiosIdeas()}</section>
+    <section aria-labelledby="hRadar" class="bloque-sec"><div class="sec-cab" style="margin-top:44px"><h2 id="hRadar">Todo el radar</h2><span class="k">${todas.length} empresas de España, Europa y EEUU, cada una con siete señales</span></div>
+    <div id="radarTabla">${htmlTablaRadar(M)}</div>
+    <p class="nota">Puede subir: cuánto le queda para llegar al precio que esperan los analistas dentro de 12 meses. Te quedas: lo que ganarías si se cumple lo esperado, con el dividendo y ya restados la tasa de compra y los impuestos; si la IA tiene su propio objetivo y plazo para esa empresa (sale «en 2 meses», por ejemplo), es el suyo, y si no, el de los analistas a 12 meses. Prensa: lo que ha leído la IA en sus noticias. Señales: siete pruebas (analistas, si mejoran su opinión, beneficios, precio frente a su sector, tendencia y solidez del negocio).</p></section>`;
 }
 
 /* ---------- repintar solo cuando cambia una recomendación ---------- */

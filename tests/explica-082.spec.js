@@ -120,7 +120,7 @@ test('los botones del panel de la IA se tocan en 48 × 48', async ({ page }) => 
   await page.waitForTimeout(800);
   const fallos = await page.evaluate(() => {
     const TOC = 'button, a[href], summary, input, select, textarea, label, [role="button"]', out = [];
-    for (const el of document.querySelectorAll('.asesor :is(.as-adj, .as-enviar, .as-aviso > summary, .as-cab .ib, .as-modo .seg button)')) {
+    for (const el of document.querySelectorAll('.asesor :is(.as-adj, .as-enviar, .as-cab .ib, .as-modo .seg button)')) {
       const b = el.getBoundingClientRect(); if (!b.width || !b.height || b.top < 0 || b.bottom > innerHeight) continue;
       const cx = b.left + b.width / 2, cy = b.top + b.height / 2;
       const c = document.elementFromPoint(cx, cy); if (!c || !el.contains(c)) continue;

@@ -257,10 +257,7 @@ function binds(M) {
   b.movers = { txt: tm, html: mueven.length ? `<p class="mv-t">${L('Lo que más ha movido hoy tu cartera', 'What moved your portfolio most today')}</p><div class="mv-l" style="--n:${mueven.length}">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-n">${logo(f.inst.dominio || null, f.inst.corto || f.inst.nombre, 'mv-logo')}<span class="mv-nn">${esc(f.inst.corto)}</span></span><span class="mv-v">${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></span></button>`).join('')}</div>` : '' };
   const vis = new Set([...(S.radarVisibles || []), ...(S.ideasTop || [])]);
   if (vis.size) for (const x of radarVals()) {
-    if (!vis.has(x.s)) continue;
-    b['rp:' + x.s] = { txt: precioR(x.p, x.m), n: x.p };
-    b['rv:' + x.s] = { txt: pctS(x.v), n: x.v, cls: cls(x.v) };
-    b['ro:' + x.s] = { txt: pctS(x.pot, 1), n: x.pot, cls: cls(x.pot) };
+    if (vis.has(x.s)) bindsRadar(b, x);
   }
   for (const sym of Object.keys((S.precios && S.precios.mercados) || {})) {
     const d = datoMerc(sym);
@@ -272,6 +269,12 @@ function binds(M) {
     else b['mv:' + sym] = { txt: pctS(d.var), n: d.var, cls: ci(d.var) };
   }
   return b;
+}
+/* el precio, lo que ha subido hoy y «puede subir» de una empresa del radar (la tabla de Ideas los enseña con B()) */
+function bindsRadar(b, x) {
+  b['rp:' + x.s] = { txt: precioR(x.p, x.m), n: x.p };
+  b['rv:' + x.s] = { txt: pctS(x.v), n: x.v, cls: cls(x.v) };
+  b['ro:' + x.s] = { txt: pctS(x.pot, 1), n: x.pot, cls: cls(x.pot) };
 }
 function B(k, extra = '') {
   const b = (S.binds && S.binds[k]) || { txt: '—' };
@@ -624,7 +627,7 @@ function pintar() {
   }
   const mb = $('#mercBusca');
   if (mb) {
-    const inp = buscador(mb, null, { alCandidato: abrirConsulta, lista: candidatosConsulta(), placeholder: 'Apple, SP500, oro, bitcoin o un ISIN' });
+    const inp = buscador(mb, null, { alCandidato: abrirConsulta, lista: candidatosConsulta, placeholder: 'Apple, SP500, oro, bitcoin o un ISIN' });
     if (S.mercQ) { inp.value = S.mercQ.v; if (S.mercQ.foco) { inp.focus(); inp.dispatchEvent(new Event('input')); } }
     inp.addEventListener('input', () => { S.mercQ = { v: inp.value, foco: true }; });
     inp.addEventListener('blur', () => { if (S.mercQ) S.mercQ.foco = false; });

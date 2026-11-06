@@ -1,7 +1,7 @@
 // Tres niveles de versión desde la 0.8.2 (regla de Carlos del 4 nov; claude/cerrar-version.md): gorda (0.9, 1.0) con lo
 // nuevo contado bajando, guía y «Nuevo» en la barra; intermedia (0.8.2, 0.9.1) con una hoja corta y sin guía; letra
 // (0.9a, 0.9.1b) con la tarjeta de arreglos. Antes de la 0.8.2 toda versión sin letra era de número: siguen siendo gordas.
-// La app va por la 0.8.1b, así que las intermedias se prueban con versiones inventadas metidas en NOVEDADES.
+// La app va por la 0.8.1d, así que las intermedias se prueban con versiones inventadas metidas en NOVEDADES.
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 import { partirNovedades } from '../build/growfolio-vite.js';
@@ -47,6 +47,7 @@ test('una intermedia: hoja corta con «Ir», sin guía, y en el historial cuelga
   await meterCartera(page);
   await page.evaluate(async () => {
     await cargarTrozo('novedades');
+    for (const x of ['0.8.2', '0.8.2a']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
     const ir = NOVEDADES.find((n) => n.v === '0.8.1').cosas.find((c) => c.ir).ir;
     NOVEDADES.unshift(
       { v: '0.8.3', t: 'Otra intermedia', f: '2026-11-29', cosas: [{ t: 'Cosa de la 0.8.3', x: 'Texto.' }] },
@@ -62,9 +63,9 @@ test('una intermedia: hoja corta con «Ir», sin guía, y en el historial cuelga
   // sin guía ni «Nuevo»: las intermedias no tienen pasos aunque sus cosas tengan sitio
   expect(await page.evaluate(() => pasosGuia([NOVEDADES.find((n) => n.v === '0.8.2')]).length)).toBe(0);
 
-  // de la 0.8.1b a la 0.8.2a: la hoja corta con lo de la 0.8.2 y sus arreglos plegados, sin lo del dueño (desde la
-  // 0.8.1a saldrían también los dos arreglos de la 0.8.1b)
-  await page.evaluate(() => hojaIntermedia('0.8.1b', () => { window.__cerrada = true; }, '0.8.2a'));
+  // de la 0.8.1d a la 0.8.2a: la hoja corta con lo de la 0.8.2 y sus arreglos plegados, sin lo del dueño (desde la
+  // 0.8.1c saldría también el arreglo para todos de la 0.8.1d)
+  await page.evaluate(() => hojaIntermedia('0.8.1d', () => { window.__cerrada = true; }, '0.8.2a'));
   const h = page.locator('.hoja-corta');
   await expect(h).toBeVisible();
   await expect(h.locator('.nov-lista li')).toHaveCount(2);
@@ -124,6 +125,7 @@ test('«Guíame por lo nuevo» es solo de las gordas; las intermedias guardan su
   await meterCartera(page);
   const r = await page.evaluate(async () => {
     await cargarTrozo('novedades');
+    for (const x of ['0.8.2', '0.8.2a']) { const i = NOVEDADES.findIndex((e) => e.v === x); if (i >= 0) NOVEDADES.splice(i, 1); }
     const ir = NOVEDADES.find((n) => n.v === '0.8.1').cosas.find((c) => c.ir).ir;
     NOVEDADES.unshift({ v: '0.8.2', t: 'Intermedia', f: '2026-11-15', cosas: [{ t: 'Con sitio', x: 'Se puede ir.', ir }] });
     document.querySelectorAll('.hoja-fondo, .tour, .ixn, .aviso-arr').forEach((x) => x.remove());

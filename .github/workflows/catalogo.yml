@@ -2,15 +2,26 @@ name: Catálogo
 
 # Una vez al día: precio e histórico de los fondos, ETF, oro y cripto de catalogo.json, para que
 # cualquiera que use la web encuentre su fondo exacto. Se publica en la rama "catalogo".
+# Desde el 5 nov 2026, la de cada día (completo) hace también el catálogo ampliado con las listas de Xetra y la
+# CNMV (catalogo-mas.json). Cuando la lanza la web al pedir un ISIN (o un cambio en main), va en «rapido»: solo
+# catalogo.json y lo pedido, y lo ampliado se queda como estaba esa mañana.
 on:
   schedule:
     - cron: "23 4 * * *"
   workflow_dispatch:
+    inputs:
+      modo:
+        description: "completo (el de cada día, con el catálogo ampliado) o rapido (solo catalogo.json y lo pedido)"
+        default: rapido
+      relleno:
+        description: "Minutos para buscar los símbolos nuevos del catálogo ampliado (solo en completo)"
+        default: "20"
   push:
     branches: [main]
     paths:
       - "catalogo.json"
       - "scripts/catalogo.py"
+      - "scripts/catalogo_listas.py"
       - ".github/workflows/catalogo.yml"
 
 permissions:
@@ -23,7 +34,7 @@ concurrency:
 jobs:
   catalogo:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 100
     steps:
       - uses: actions/checkout@v4
 
@@ -45,6 +56,9 @@ jobs:
           fi
 
       - name: Precios del catálogo
+        env:
+          CATALOGO_MODO: ${{ github.event_name == 'schedule' && 'completo' || inputs.modo || 'rapido' }}
+          CATALOGO_RELLENO_MIN: ${{ inputs.relleno || '20' }}
         run: python scripts/catalogo.py catalogo.json anterior salida
 
       - name: Publicar en la rama catalogo

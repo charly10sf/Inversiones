@@ -1,6 +1,7 @@
 /* =====================================================================
-   Catálogo común (rama "catalogo", una vez al día): unos cien fondos, ETF, oro y cripto con su ISIN,
+   Catálogo común (rama "catalogo", una vez al día): unos 360 fondos, ETF, oro y cripto con su ISIN,
    precio e histórico, para que cualquiera encuentre su fondo exacto aunque no esté en instrumentos.json.
+   Desde la 0.8.1d, con el catálogo ampliado (catalogo-mas.json, más abajo).
    ===================================================================== */
 async function cargarCatalogo() {
   let txt = null;
@@ -11,6 +12,52 @@ async function cargarCatalogo() {
   if (txt) { try { localStorage.setItem('inv-cache-cat', txt); } catch (e) {} } else { try { txt = localStorage.getItem('inv-cache-cat'); } catch (e) {} }
   try { S.cat = txt ? JSON.parse(txt) : null; } catch (e) { S.cat = null; }
   catLocalMezclar();
+}
+/* 0.8.1d: el catálogo ampliado (catalogo-mas.json): los ETF de Xetra y los fondos españoles de la CNMV que no están
+   en catalogo-precios.json, unos 5.300. Pesa demasiado para bajarlo al abrir: se baja al buscar o al añadir un fondo,
+   y no se guarda en el dispositivo (como radar-mas.json). Con el mismo id no se vuelve a bajar. Devuelve true si ha
+   llegado algo nuevo */
+let catMasP = null;
+function cargarCatalogoMas() {
+  const id = S.cat && S.cat.mas && S.cat.mas.id;
+  if (!id || S.catMasId === id) return Promise.resolve(false);
+  if (catMasP) return catMasP;
+  catMasP = (async () => {
+    let j = null;
+    try {
+      const r = await fetch(CFG.dev ? 'dev/catalogo-mas.json' : GH.raw('catalogo-mas.json', 'catalogo') + '?v=' + encodeURIComponent(id), { cache: CFG.dev ? 'no-store' : 'no-cache' }).catch(() => null);
+      if (r && r.ok) j = await r.json();
+    } catch (e) { console.warn(e); }
+    if (!j || !Array.isArray(j.v) || !Array.isArray(j.cols)) return false;
+    const m = {};
+    for (const f of j.v) {
+      if (!Array.isArray(f) || !f[0]) continue;
+      const x = { mas: 1 };
+      j.cols.forEach((k, i) => { if (f[i] != null) x[k] = f[i]; });
+      x.isin = String(x.isin).toUpperCase(); x.pais = x.isin.slice(0, 2); if (!x.r) x.r = { Global: 100 }; if (!x.c) x.c = x.n;
+      m['c-' + x.isin.toLowerCase()] = x;
+    }
+    S.catMas = m; S.catMasId = id; S.catMasVer = (S.catMasVer || 0) + 1;
+    // lo que añadiste de aquí (va en el dispositivo hasta que pasa a catalogo-precios.json), con el precio de hoy
+    for (const [cid, x] of Object.entries((S.cat && S.cat.v) || {})) {
+      const n = m[cid];
+      if (x.local && n && n.f && (!x.f || n.f > x.f)) { const nx = { ...x, p: n.p, pa: n.pa, f: n.f, r1a: n.r1a }; S.cat.v[cid] = nx; catLocalGuardar(cid, nx); }
+    }
+    return true;
+  })().finally(() => { catMasP = null; });
+  return catMasP;
+}
+// la ficha de un id del catálogo, del de todos o del ampliado
+const catEntrada = (cid) => (cid && ((S.cat && S.cat.v && S.cat.v[cid]) || (S.catMas && S.catMas[cid]))) || null;
+/* al añadir algo del catálogo ampliado: se guarda en el dispositivo (para tener su precio al abrir sin bajar todo
+   catalogo-mas.json) y se pide, para que al día siguiente pase a catalogo-precios.json con su histórico de 10 años */
+function adoptarMas(cid) {
+  const m = S.catMas && S.catMas[cid]; if (!m) return null;
+  const x = { ...m, local: 1 };
+  S.cat = S.cat || { v: {} }; S.cat.v = S.cat.v || {}; S.cat.v[cid] = x;
+  catLocalGuardar(cid, x);
+  if (x.isin) pedirComun(x.isin, '', x.isin);
+  return x;
 }
 /* lo que se añadió del catálogo se queda con la clase que trae hoy (0.3.5: la plata dejó de ser «renta variable» y
    las mineras de oro, «oro»). Se mira en cada cálculo: son pocas y así vale también para lo que llega con tu cartera */
@@ -35,7 +82,7 @@ function catDe(inst) {
 }
 /* da de alta (o devuelve) el instrumento de una ficha del catálogo */
 function instDeCatalogo(cid) {
-  const x = S.cat && S.cat.v && S.cat.v[cid]; if (!x) return null;
+  const x = (S.cat && S.cat.v && S.cat.v[cid]) || adoptarMas(cid); if (!x) return null;
   const ya = S.instOrden.find((id) => S.inst[id].cat === cid || (x.isin && String(S.inst[id].isin || '').toUpperCase() === String(x.isin).toUpperCase()) || (x.s && String(S.inst[id].yahoo || '').toUpperCase() === String(x.s).toUpperCase()));
   if (ya) return ya;
   const i = { id: cid, nombre: x.n, corto: x.c || x.n, tipo: x.t, clase: x.cl, region: x.r || { Global: 100 }, cat: cid };
@@ -70,6 +117,22 @@ function precioEn(hist, fecha, modo) {
   }
   for (const [d, p] of hist) if (d > fecha) return p;
   return null;
+}
+
+/* Rango de precios posibles ese día. Con cierres diarios es el cierre de siempre (lo = hi = real). Con cierres semanales
+   (los del radar, para lo que añades tú), el día puede estar en cualquier punto entre los cierres que lo rodean: en una
+   acción que se mueve un 40 % en una semana (Western Digital, 2 nov 2026), el cierre de la semana no vale para decir
+   que lo que pagaste está mal. */
+function rangoPrecioEn(hist, fecha) {
+  if (!hist || !hist.length) return null;
+  let i = -1;
+  for (let n = 0; n < hist.length; n++) { if (hist[n][0] <= fecha) i = n; else break; }
+  if (i < 0) return null;
+  const real = hist[i][1], ant = hist[i - 1], sig = hist[i + 1];
+  const hueco = Math.max(ant ? diasEntre(ant[0], hist[i][0]) : 0, sig ? diasEntre(hist[i][0], sig[0]) : 0);
+  if (hueco <= 5) return { real, lo: real, hi: real, grueso: false };
+  const vs = [ant, hist[i], sig].filter(Boolean).map((x) => x[1]);
+  return { real, lo: Math.min(...vs), hi: Math.max(...vs), grueso: true };
 }
 
 function fechasAportacion(a, despuesDe, hasta) {

@@ -1,10 +1,10 @@
-# 0.8.2 · Banco de la IA con Claude: las 30 preguntas trampa (tests/banco/trampas.json) a la app de verdad (el build), con
+# 0.8.2 · Banco de la IA con Claude: las 34 preguntas trampa (tests/banco/trampas.json) a la app de verdad (el build), con
 # la cartera de prueba y Claude de verdad, con las reglas del estándar. Solo a mano: cada vuelta gasta créditos de la API
 # (unas 30 preguntas; con Haiku, céntimos; con Sonnet, algo más). Usa el secreto ANTHROPIC_BANCO_KEY si existe (una clave en
 # un workspace aparte con su límite de gasto) y, si no, la clave de la app, ANTHROPIC_API_KEY (Carlos lo eligió el 5 nov:
 # así no tiene que crear otra; gasta de los mismos créditos, unos 3,5 $ por vuelta con los dos modelos). El resultado queda como artefacto
-# («banco-claude-haiku» o «banco-claude-sonnet»), con cada respuesta y lo que ha fallado. La 0.8.2 sale cuando pasan las 30
-# con los dos modelos.
+# («banco-claude-haiku» o «banco-claude-sonnet»), con cada respuesta entera y lo que ha fallado. La 0.8.2 sale cuando pasan
+# las 34 con los dos modelos. «solo» (ids separados por comas) pasa solo esas, para comprobar un arreglo gastando menos.
 name: Banco de la IA con Claude
 
 on:
@@ -15,6 +15,10 @@ on:
         type: choice
         options: [haiku, sonnet, los dos]
         default: haiku
+      solo:
+        description: "Solo estas preguntas (ids separados por comas; vacío = las 34)"
+        type: string
+        default: ""
 
 permissions:
   contents: read
@@ -60,6 +64,7 @@ jobs:
         env:
           GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
           GF_BANCO_MOTOR: ${{ matrix.motor }}
+          GF_BANCO_SOLO: ${{ inputs.solo }}
         run: |
           mkdir -p salida
           GF_BANCO_SALIDA=$PWD/salida/banco-claude-${{ matrix.motor }}.json npx playwright test tests/banco-claude.spec.js --project=pc --reporter=list --retries=0

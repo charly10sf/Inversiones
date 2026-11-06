@@ -5,9 +5,11 @@ Uso: python scripts/informe.py instrumentos.json anterior/ salida/
 
 Lo llama la GitHub Action después de precios.py, en cada pasada (cada 20 minutos entre semana):
 1. Noticias de un lote de empresas del radar (las que más tiempo llevan sin mirar): Yahoo Finance con
-   su resumen y Google Noticias en español. Así se recorren las ~840 empresas varias veces al día.
+   su resumen y Google Noticias en español. Desde el 6 nov 2026 son las de todo el radar (radar.json y
+   radar-mas.json, unas 2.860), las que más tiempo llevan sin mirar primero.
    Se guardan en noticias-cache.json.
-2. Gemini lee la prensa de unas 70 empresas con noticias nuevas y apunta, para cada una, qué ha
+2. Claude (o Gemini) lee la prensa de hasta 400 empresas con noticias nuevas (las leídas hace más tiempo, primero;
+   por la API por lotes, a mitad de precio) y apunta, para cada una, qué ha
    pasado, si es bueno o malo, cuánto importa y si hay un catalizador (escaneo.json, "lectura").
 3. Cada 2 horas, el informe de tu cartera y del mercado (informe.json): qué ha pasado, si es bueno o
    malo, qué fuentes coinciden y qué vigilar.
@@ -48,10 +50,21 @@ HORAS_INFORME_LITE = 6     # con un informe de menos de 6 horas, si el 3.8 y el 
                            # se publica uno hecho con Flash-Lite, más flojo); uno de Flash-Lite se rehace en la
                            # siguiente pasada en que el 3.8 o el 3.6 contesten
 MAX_IDEAS = 0               # las ideas ya no van en el informe: salen del escaneo
-LOTE_YAHOO = 45             # empresas por pasada con noticias de Yahoo Finance
-LOTE_GOOGLE = 20            # y con Google Noticias en español
-LOTE_LECTURA = 50           # empresas que lee Gemini en cada pasada (0.7: 50, porque ahora clasifica cada titular)
+# 6 nov 2026: el radar son 2.864 empresas (radar.json + radar-mas.json) y se leen todas. Se baja la prensa de más empresas
+# por pasada (la vuelta entera de Yahoo, unas 18 pasadas) y la IA lee unas 400 por pasada, en 8 peticiones de 50 dentro de un
+# mismo lote de la API por lotes de Anthropic. OJO: cada petición lleva como mucho una tanda de 50 (unos 46.000 tokens de
+# entrada): Haiku cobra el triple y más por encima de 100.000 de entrada en una sola petición.
+LOTE_YAHOO = int(os.environ.get("INFORME_LOTE_YAHOO", "160"))    # empresas por pasada con noticias de Yahoo Finance
+LOTE_GOOGLE = int(os.environ.get("INFORME_LOTE_GOOGLE", "40"))   # y con Google Noticias en español
+HILOS_YAHOO = 6
+LOTE_LECTURA = 50           # empresas por petición (0.7: 50, porque ahora clasifica cada titular); sin lotes, las que lee cada pasada
+LOTE_LECTURA_LOTES = int(os.environ.get("INFORME_LECTURAS_POR_PASADA", "400"))  # empresas por pasada cuando van por la API por lotes
+TANDA_MAX_CARACTERES = 260000  # una petición no pasa de esto (unos 75.000 tokens): si pasa, se parte antes de mandarla
+RONDAS_LOTE = 4             # lo que no sale se parte en dos y va en otro lote, hasta 3 veces después de la primera
 LOTE_MIN_PARTIR = 3         # si se atasca, se parte el lote hasta grupos de este tamaño
+# la Action tiene 20 minutos en total (precios, esto, traducción, publicar): esto no pasa de unos 11 desde que empieza
+PRESUPUESTO = int(os.environ.get("INFORME_PRESUPUESTO", "660"))
+INICIO = time.time()
 INICIO_FICHAS = "2026-10-23T16:20"  # desde aquí, cada lectura rellena la ficha de la empresa (0.7)
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
@@ -175,6 +188,12 @@ USO = []                    # 0.6d: los tokens de cada llamada de esta pasada (p
 CLAUDE_API = os.environ.get("CLAUDE_API", "https://api.anthropic.com/v1/messages")
 CLAUDE_MODELO = os.environ.get("CLAUDE_RADAR_MODELO", "claude-haiku-5-5")
 CLAUDE_MAX_SALIDA = 32000
+# 5 nov, noche: las lecturas de prensa (no urgentes) van por la API por lotes de Anthropic, a mitad de precio. Medido con
+# 50 empresas: el lote tarda unos 2 minutos. Si no llega en CLAUDE_ESPERA_LOTE segundos, se cancela y se pide en directo.
+# CLAUDE_RADAR_LOTES=0 lo apaga.
+CLAUDE_LOTES = os.environ.get("CLAUDE_RADAR_LOTES", "1") != "0"
+CLAUDE_ESPERA_LOTE = int(os.environ.get("CLAUDE_RADAR_ESPERA", "420"))
+LOTES_APAGADOS = [False]   # tras un fallo del lote, el resto de la pasada va en directo
 SIN_GEMINI = "-"            # la «clave» de Gemini cuando solo hay Claude: así los pasos que miran si hay clave siguen
 CLAUDE_ERRORES = []         # lo que ha fallado con Claude en esta pasada
 CLAUDE_APAGADO = False      # tras un fallo de clave o de saldo, el resto de la pasada va sin Claude
@@ -192,6 +211,78 @@ def peticion_claude(cuerpo, clave):
         return json.loads(r.read())
 
 
+def peticion_claude_get(ruta, clave, metodo="GET", cuerpo=None, texto=False):
+    req = urllib.request.Request(CLAUDE_API.rsplit("/v1/", 1)[0] + ruta, data=json.dumps(cuerpo).encode() if cuerpo is not None else None, method=metodo,
+                                 headers={"content-type": "application/json", "x-api-key": clave, "anthropic-version": "2023-06-01"})
+    with urllib.request.urlopen(req, timeout=120) as r:
+        crudo = r.read().decode("utf-8", "replace")
+    return crudo if texto else json.loads(crudo)
+
+
+def espera_lote():
+    """Lo que se espera a un lote: CLAUDE_ESPERA_LOTE, pero sin pasar del tiempo que le queda a la pasada (mínimo 20 s)."""
+    return min(CLAUDE_ESPERA_LOTE, max(20, PRESUPUESTO - (time.time() - INICIO)))
+
+
+def mensajes_por_lote(pedidos, clave):
+    """Varias peticiones en UN lote de la API por lotes (mitad de precio): {id: cuerpo} -> {id: mensaje o None}. Cada
+    petición va aparte (su límite de 100.000 tokens de entrada es por petición). Si no termina a tiempo, se cancela y se
+    aprovecha lo que ya haya salido. Lanza RuntimeError si el lote no sale o no deja resultados."""
+    b = peticion_claude_get("/v1/messages/batches", clave, "POST", {"requests": [{"custom_id": k, "params": p} for k, p in pedidos.items()]})
+    t0, espera = time.time(), espera_lote()
+    while b.get("processing_status") != "ended":
+        if time.time() - t0 > espera:
+            try:
+                peticion_claude_get(f"/v1/messages/batches/{b['id']}/cancel", clave, "POST", {})
+                for _ in range(6):  # unos segundos para que termine de cancelarse y se pueda leer lo hecho
+                    time.sleep(5)
+                    b = peticion_claude_get(f"/v1/messages/batches/{b['id']}", clave)
+                    if b.get("processing_status") == "ended":
+                        break
+            except Exception:  # noqa: BLE001
+                pass
+            break
+        time.sleep(10)
+        b = peticion_claude_get(f"/v1/messages/batches/{b['id']}", clave)
+    if b.get("processing_status") != "ended" or not b.get("results_url"):
+        raise RuntimeError(f"lote sin terminar tras {round(time.time() - t0)} s" if b.get("processing_status") != "ended" else "lote sin resultados")
+    crudo = peticion_claude_get(b["results_url"].replace("https://api.anthropic.com", ""), clave, texto=True)
+    salida = {k: None for k in pedidos}
+    for linea in crudo.splitlines():
+        try:
+            o = json.loads(linea)
+        except json.JSONDecodeError:
+            continue
+        res = o.get("result") or {}
+        if res.get("type") == "succeeded" and o.get("custom_id") in salida:
+            salida[o["custom_id"]] = res.get("message")
+    return salida
+
+
+def mensaje_por_lote(pedido, clave):
+    """Una petición por la API por lotes (mitad de precio): la crea, espera a que termine y devuelve el mensaje, con la
+    misma forma que el de la API normal. Lanza RuntimeError si no sale a tiempo (y cancela el lote)."""
+    b = peticion_claude_get("/v1/messages/batches", clave, "POST", {"requests": [{"custom_id": "radar", "params": pedido}]})
+    t0, espera = time.time(), espera_lote()
+    while b.get("processing_status") != "ended":
+        if time.time() - t0 > espera:
+            try:
+                peticion_claude_get(f"/v1/messages/batches/{b['id']}/cancel", clave, "POST", {})
+            except Exception:  # noqa: BLE001
+                pass
+            raise RuntimeError(f"lote sin terminar tras {round(espera)} s")
+        time.sleep(10)
+        b = peticion_claude_get(f"/v1/messages/batches/{b['id']}", clave)
+    if not b.get("results_url"):
+        raise RuntimeError("lote sin resultados")
+    crudo = peticion_claude_get(b["results_url"].replace("https://api.anthropic.com", ""), clave, texto=True)
+    linea = json.loads(crudo.splitlines()[0])
+    res = linea.get("result") or {}
+    if res.get("type") != "succeeded":
+        raise RuntimeError(f"lote {res.get('type')}: {str(res.get('error') or '')[:200]}")
+    return res["message"]
+
+
 def a_claude(cuerpo, modelo):
     """El cuerpo de Gemini (systemInstruction, contents, generationConfig, tools) pasado al de la API de Claude."""
     sistema = " ".join(p.get("text", "") for p in ((cuerpo.get("systemInstruction") or {}).get("parts") or []))
@@ -204,6 +295,9 @@ def a_claude(cuerpo, modelo):
         if texto:
             mensajes.append({"role": "assistant" if c.get("role") == "model" else "user", "content": texto})
     out = {"model": modelo, "max_tokens": min(int(gc.get("maxOutputTokens") or 8192), CLAUDE_MAX_SALIDA), "messages": mensajes}
+    # Haiku 5.5 piensa por defecto y se gastaba los 32000 tokens de salida en pensar (stop_reason=max_tokens, solo un bloque
+    # «thinking», 5 nov 22:09). La lectura de noticias no lo necesita: sin pensar, sale el JSON y cuesta mucho menos.
+    out["thinking"] = {"type": "disabled"}
     if sistema.strip():
         out["system"] = sistema.strip()
     if any("google_search" in t for t in (cuerpo.get("tools") or [])):
@@ -230,11 +324,32 @@ def claude(cuerpo, que, ligera=False, hay_reserva=False):
     pedido = a_claude(cuerpo, CLAUDE_MODELO)
     for intento in range(3):
         try:
-            r = de_claude(peticion_claude(pedido, clave))
+            por_lote, bruto = False, None
+            if ligera and CLAUDE_LOTES and not LOTES_APAGADOS[0]:
+                try:
+                    bruto = mensaje_por_lote(pedido, clave)
+                    por_lote = True
+                except urllib.error.HTTPError as e:
+                    if e.code in (401, 403):
+                        raise
+                    LOTES_APAGADOS[0] = True
+                    print(f"claude: el lote no ha salido (HTTP {e.code}), sigo en directo")
+                except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as e:
+                    LOTES_APAGADOS[0] = True
+                    print(f"claude: el lote no ha salido ({str(e)[:120]}), sigo en directo")
+            if bruto is None:
+                bruto = peticion_claude(pedido, clave)
+            r = de_claude(bruto)
             if not texto_de(r)[0].strip():
-                raise RuntimeError("respuesta vacía")
+                # 0.8.2: que el registro diga qué llegó (motivo de parada, tipos de bloque y tokens) y no solo «vacía»
+                tipos = ",".join(str(b.get("type")) for b in (bruto.get("content") or [])) or "ninguno"
+                u = bruto.get("usage") or {}
+                raise RuntimeError(f"respuesta vacía de {bruto.get('model')}: stop_reason={bruto.get('stop_reason')}, bloques={tipos}, "
+                                   f"in={u.get('input_tokens')}, out={u.get('output_tokens')}")
             USADOS.add(CLAUDE_MODELO)
             apuntar_uso(CLAUDE_MODELO, r, que)
+            if por_lote:
+                USO[-1]["lote"] = True  # a mitad de precio
             ULTIMO[0] = CLAUDE_MODELO
             return r
         except urllib.error.HTTPError as e:
@@ -628,7 +743,7 @@ def mezclar(cache, sim, nuevas, campo):
 def actualizar_noticias(cache, valores):
     """Noticias de las empresas que más tiempo llevan sin mirar (las nuevas, primero)."""
     lote = sorted(valores, key=lambda x: (cache.get(x["s"]) or {}).get("fy") or "")[:LOTE_YAHOO]
-    with cf.ThreadPoolExecutor(max_workers=4) as ex:
+    with cf.ThreadPoolExecutor(max_workers=HILOS_YAHOO) as ex:
         for x, ns in ex.map(lambda x: (x, noticias_yahoo(x["s"], 6)), lote):
             mezclar(cache, x["s"], ns, "fy")
     lote_g = sorted(valores, key=lambda x: (x.get("z") != "España", (cache.get(x["s"]) or {}).get("fg") or ""))[:LOTE_GOOGLE]
@@ -686,8 +801,12 @@ solo los factores que tengan noticias de peso 1 o más."""
 
 
 def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
-    """Gemini lee la prensa de las empresas con noticias que todavía no ha leído (las de las carteras y las de
-    mejores números, primero). 0.7: de paso clasifica cada titular por factor y rellena las fichas."""
+    """La IA lee la prensa de las empresas con noticias que todavía no ha leído. Primero las de las carteras, luego las
+    que nunca se han leído y luego las leídas hace más tiempo (6 nov 2026: antes iban las de mejores números, pero el
+    radar ya no se elige por lo que dicen los analistas). 0.7: de paso clasifica cada titular y rellena las fichas.
+    Con Claude y la API por lotes se leen hasta LOTE_LECTURA_LOTES empresas por pasada (peticiones de 50 dentro de un
+    mismo lote); si no, LOTE_LECTURA como siempre."""
+    global CLAUDE_APAGADO
     pend = []
     for x in valores:
         e = cache.get(x["s"]) or {}
@@ -702,18 +821,18 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
             continue
         if fichas is not None and (fichas.get("sin") or {}).get(x["s"]) == h:
             continue
-        fav, con = P.contraste_idea(x, medianas)
-        pend.append((fav - 0.9 * con + min(x.get("pot") or 0, 50) / 50 + (20 if x["s"] in tuyas else 0), x, h))
-    pend.sort(key=lambda t: -t[0])
-    lote = pend[:LOTE_LECTURA]
+        pend.append(((0 if x["s"] in tuyas else 1, 1 if antes.get("d") else 0, antes.get("d") or ""), x, h))
+    pend.sort(key=lambda t: t[0])
+    por_lote = bool(clave_claude()) and CLAUDE_LOTES and not LOTES_APAGADOS[0] and not CLAUDE_APAGADO
+    lote = pend[:LOTE_LECTURA_LOTES if por_lote else LOTE_LECTURA]
     if not lote:
         print("escaneo: nada nuevo que leer")
         return 0
     sin = fichas.setdefault("sin", {}) if fichas is not None else {}
     t0 = time.time()
 
-    def leer_trozo(trozo):
-        """Una llamada a Flash-Lite con estas empresas; apunta lo leído y devuelve las que no han venido."""
+    def construir(trozo):
+        """El cuerpo de la petición de estas empresas y la lista numerada de sus noticias."""
         fuentes, bloques = [], []
         for _, x, _ in trozo:
             lineas = []
@@ -724,7 +843,10 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
         hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
         cuerpo = {"systemInstruction": {"parts": [{"text": LEER}]}, "contents": [{"role": "user", "parts": [{"text": f"Hoy es {hoy}.\n\n" + "\n\n".join(bloques)}]}],
                   "generationConfig": {"maxOutputTokens": 32768, "responseMimeType": "application/json", "thinkingConfig": {"thinkingLevel": "low"}}}
-        texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
+        return cuerpo, fuentes
+
+    def aplicar(trozo, texto, fuentes):
+        """Apunta lo que ha contestado la IA de estas empresas y devuelve (cuántas, las que no han venido)."""
         res = extraer_json(texto)
         if res is None:
             res = extraer_por_clave(texto, [x["s"] for _, x, _ in trozo])
@@ -753,27 +875,103 @@ def leer_lote(lectura, cache, valores, medianas, clave, fichas=None, tuyas=()):
             n += 1
         return n, [t for t in trozo if not isinstance(res.get(t[1]["s"]), dict)]
 
-    # Si Gemini se atasca con algo del lote (el 24 oct, 377 tokens para 50 empresas, dos pasadas seguidas con el
-    # mismo lote), se parte en dos lo que no ha venido, hasta grupos de 3 o 4. Lo que tampoco sale así se aparta
-    # (fichas.json → sin, con la huella de sus noticias) hasta que tenga noticias nuevas: si no, frenaría siempre.
-    n, faltan = leer_trozo(lote)
-    nivel = 0
-    while faltan and len(faltan) > LOTE_MIN_PARTIR and nivel < 4 and time.time() - t0 < 180 and (n or nivel == 0):
-        mitad = (len(faltan) + 1) // 2
-        nivel += 1
-        print(f"escaneo: {len(faltan)} empresas sin leer; otra vez en dos mitades")
-        quedan = []
-        for parte in (faltan[:mitad], faltan[mitad:]):
-            m, f2 = leer_trozo(parte)
+    def leer_trozo(trozo):
+        """Una llamada con estas empresas; apunta lo leído y devuelve las que no han venido."""
+        cuerpo, fuentes = construir(trozo)
+        texto, _ = texto_de(gemini(cuerpo, clave, modelos=LECTURA))
+        return aplicar(trozo, texto, fuentes)
+
+    def en_peticiones(trozo):
+        """Las peticiones de un trozo: una de 50 empresas (LOTE_LECTURA) y, si se pasara de tamaño, más pequeñas.
+        Cada petición es [(trozo, cuerpo, fuentes)]: la de Haiku cobra mucho más con más de 100.000 de entrada."""
+        out = []
+        for i in range(0, len(trozo), LOTE_LECTURA):
+            parte = trozo[i:i + LOTE_LECTURA]
+            cuerpo, fuentes = construir(parte)
+            if len(cuerpo["contents"][0]["parts"][0]["text"]) > TANDA_MAX_CARACTERES and len(parte) > 1:
+                m = len(parte) // 2
+                out += en_peticiones(parte[:m]) + en_peticiones(parte[m:])
+            else:
+                out.append((parte, cuerpo, fuentes))
+        return out
+
+    def ronda_por_lote(trozo, tamano):
+        """Un lote con todas las peticiones de estas empresas (en trozos de `tamano`). Devuelve (cuántas leídas, las que
+        no han venido). Lanza lo que lance el lote si no sale."""
+        peticiones = []
+        for i in range(0, len(trozo), tamano):
+            peticiones += en_peticiones(trozo[i:i + tamano])
+        pedidos = {f"t{k}": a_claude(c, CLAUDE_MODELO) for k, (_, c, _) in enumerate(peticiones)}
+        print(f"escaneo: lote con {len(pedidos)} peticiones ({len(trozo)} empresas)")
+        mensajes = mensajes_por_lote(pedidos, clave_claude())
+        n, faltan = 0, []
+        for k, (parte, _, fuentes) in enumerate(peticiones):
+            msg = mensajes.get(f"t{k}")
+            r = de_claude(msg) if msg else None
+            if r is None or not texto_de(r)[0].strip():
+                if msg:
+                    u = msg.get("usage") or {}
+                    print(f"escaneo: respuesta vacía de {msg.get('model')}: stop_reason={msg.get('stop_reason')}, in={u.get('input_tokens')}, out={u.get('output_tokens')}")
+                faltan += parte
+                continue
+            USADOS.add(CLAUDE_MODELO)
+            apuntar_uso(CLAUDE_MODELO, r, "leer_lote")
+            USO[-1]["lote"] = True  # a mitad de precio
+            ULTIMO[0] = CLAUDE_MODELO
+            m, f2 = aplicar(parte, texto_de(r)[0], fuentes)
             n += m
-            quedan += f2
-        faltan = quedan
-    # solo si se ha llegado a un grupo pequeño (si se ha parado por tiempo, se sigue en la siguiente pasada)
+            faltan += f2
+        return n, faltan
+
+    nivel = 0
+    if por_lote:
+        # Una ronda con todas las peticiones en un lote. Lo que no sale (Haiku falla al azar en un 10-15 % de las tandas) se
+        # parte a la mitad y va en otro lote, hasta grupos de LOTE_MIN_PARTIR o hasta que se acabe el tiempo de la pasada.
+        tamano = LOTE_LECTURA
+        try:
+            n, faltan = ronda_por_lote(lote, tamano)
+        except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as e:
+            if isinstance(e, urllib.error.HTTPError) and e.code in (401, 403):
+                CLAUDE_APAGADO = True  # la clave no vale: el resto de la pasada va con Gemini
+                CLAUDE_ERRORES.append(f"leer_lote: lote {e.code}")
+            LOTES_APAGADOS[0] = True
+            print(f"claude: el lote no ha salido ({str(e)[:120]}), sigo en directo con una tanda")
+            por_lote = False
+        else:
+            while faltan and nivel < RONDAS_LOTE - 1 and tamano > LOTE_MIN_PARTIR and n and time.time() - INICIO < PRESUPUESTO * 0.55:
+                nivel += 1
+                tamano = max(LOTE_MIN_PARTIR, tamano // 2)
+                print(f"escaneo: {len(faltan)} empresas sin leer; otro lote en grupos de {tamano}")
+                try:
+                    m, faltan = ronda_por_lote(faltan, tamano)
+                except (RuntimeError, urllib.error.URLError, TimeoutError, json.JSONDecodeError, KeyError) as e:
+                    print(f"claude: el lote de repaso no ha salido ({str(e)[:120]}); lo que falta, en la siguiente pasada")
+                    break
+                n += m
+    if not por_lote:
+        # sin lotes: como siempre, una tanda en directo
+        lote = lote[:LOTE_LECTURA]
+        n, faltan = leer_trozo(lote)
+        # Si la IA se atasca con algo del lote (el 24 oct, 377 tokens para 50 empresas, dos pasadas seguidas con el
+        # mismo lote), se parte en dos lo que no ha venido, hasta grupos de 3 o 4.
+        while faltan and len(faltan) > LOTE_MIN_PARTIR and nivel < 4 and time.time() - t0 < 180 and (n or nivel == 0):
+            mitad = (len(faltan) + 1) // 2
+            nivel += 1
+            print(f"escaneo: {len(faltan)} empresas sin leer; otra vez en dos mitades")
+            quedan = []
+            for parte in (faltan[:mitad], faltan[mitad:]):
+                m, f2 = leer_trozo(parte)
+                n += m
+                quedan += f2
+            faltan = quedan
+    # Lo que tampoco sale así se aparta (fichas.json → sin, con la huella de sus noticias) hasta que tenga noticias
+    # nuevas: si no, frenaría siempre. Solo si se ha llegado a un grupo pequeño (si se ha parado por tiempo, se sigue
+    # en la siguiente pasada)
     if faltan and n and nivel and len(faltan) <= 2 * LOTE_MIN_PARTIR:
         for _, x, h in faltan:
             sin[x["s"]] = h
         print(f"escaneo: {len(faltan)} empresas apartadas hasta que tengan noticias nuevas: {', '.join(x['s'] for _, x, _ in faltan)}")
-    print(f"escaneo: Gemini ha leído la prensa de {n} empresas")
+    print(f"escaneo: la IA ha leído la prensa de {n} empresas de {len(pend)} pendientes")
     return n
 
 
@@ -1207,25 +1405,31 @@ def main(ruta_inst, dir_anterior, dir_salida):
     instrumentos = leer(ruta_inst).get("instrumentos") or []
     radar = leer(f"{dir_salida}/radar.json")
     valores = radar.get("valores") or []
+    # 6 nov 2026: la prensa y la lectura de la IA son de todo el radar (radar.json y radar-mas.json); la decisión, el
+    # informe y los temas siguen con las de radar.json
+    # (si esta vez no está, el de la pasada anterior: si no, se podarían las lecturas y las fichas de casi 2.000 empresas)
+    mas = ((leer(f"{dir_salida}/radar-mas.json") or leer(f"{dir_anterior}/radar-mas.json") or {}).get("valores") or []) if valores else []
+    todas = valores + [x for x in mas if x.get("s")]
     cache = leer(f"{dir_anterior}/noticias-cache.json") or {}
     esc = leer(f"{dir_anterior}/escaneo.json") or {}
-    lectura = {k: v for k, v in (esc.get("lectura") or {}).items() if any(x["s"] == k for x in valores)} if valores else (esc.get("lectura") or {})
+    en_radar = {x["s"] for x in todas}
+    lectura = {k: v for k, v in (esc.get("lectura") or {}).items() if k in en_radar} if valores else (esc.get("lectura") or {})
     decision = esc.get("decision")
     medianas = P.per_sector_mediano(valores)
     tuyas = {(i.get("yahoo") or "") for i in instrumentos}
     fichas = leer(f"{dir_anterior}/fichas.json") or F.nuevas()
     if valores:
         try:
-            actualizar_noticias(cache, valores)
+            actualizar_noticias(cache, todas)
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: fallaron las noticias ({e})")
         try:
-            noticias_de_carteras(cache, instrumentos, valores, leer(f"{dir_salida}/precios.json"))
+            noticias_de_carteras(cache, instrumentos, todas, leer(f"{dir_salida}/precios.json"))
         except Exception as e:  # noqa: BLE001
             print(f"escaneo: fallaron las noticias de las carteras ({e})")
         if clave:
             try:
-                leer_lote(lectura, cache, valores, medianas, clave, fichas, tuyas)
+                leer_lote(lectura, cache, todas, medianas, clave, fichas, tuyas)
             except Exception as e:  # noqa: BLE001
                 print(f"escaneo: falló la lectura de Gemini ({str(e)[:200]})")
             try:
@@ -1257,10 +1461,10 @@ def main(ruta_inst, dir_anterior, dir_salida):
               "claude": {"activo": bool(clave_claude()), "apagado": CLAUDE_APAGADO, "errores": CLAUDE_ERRORES[-4:]}, "gemini": {"ok": not FALLOS, "errores": (FALLOS or ERRORES)[-4:], "modelos": sorted(USADOS), "con_clave": clave not in ("", SIN_GEMINI),
                                      "uso": [x for x in ((esc.get("gemini") or {}).get("uso") or []) if hace_menos_de(x.get("t") or "", 48)] + USO},
               "con_noticias": sum(1 for v in cache.values() if v.get("n")), "leidas_24h": sum(1 for v in lectura.values() if cuando(v.get("d")) and cuando(v["d"]) > hace24),
-              "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(valores), "fuentes_pasada": DIAG}
+              "noticias": sum(len(v.get("n") or []) for v in cache.values()), "empresas": len(todas), "empresas_nucleo": len(valores), "fuentes_pasada": DIAG}
     with open(f"{dir_salida}/noticias-cache.json", "w", encoding="utf-8") as f:
         json.dump(cache, f, ensure_ascii=False, separators=(",", ":"))
-    guardar_fichas(fichas, dir_salida, {x["s"] for x in valores} if valores else None)
+    guardar_fichas(fichas, dir_salida, en_radar if valores else None)
     with open(f"{dir_salida}/escaneo.json", "w", encoding="utf-8") as f:
         json.dump(salida, f, ensure_ascii=False, separators=(",", ":"))
     marcar(dir_salida, "escaneo_id", salida["generado"])

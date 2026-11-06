@@ -7,6 +7,15 @@ const histDe = (id) => (S.hist && S.hist.instrumentos && S.hist.instrumentos[id]
    está en el radar, su ficha sale de ahí (analistas, valoración, negocio, tendencia, próximos resultados) y su año,
    de los cierres semanales del radar (radar-hist.json), pasados a euros. Así no sale con todo vacío. */
 const BANDAS_RIESGO = [0.5, 2, 5, 10, 15, 25];
+/* Los cierres semanales de Yahoo (radar-hist.json): la última barra es la semana en curso, con fecha del lunes pero con el
+   último precio. Western Digital, 6 nov 2026: el «2 nov» era el cierre del jueves (238,53 €) cuando el lunes valía unos
+   335 €, y la gráfica de 1S enseñaba +4 % en una semana en que bajó casi un 29 %. Esa barra se quita (la pone el precio de hoy). */
+function puntosRadarHist(e, rh) {
+  const d0 = deIso(e.d), paso = rh.paso || 7, gen = String(rh.generado || '').slice(0, 10) || hoyIso();
+  const pts = e.v.map((v, n) => { const x = new Date(d0); x.setDate(d0.getDate() + n * paso); return [iso(x), v]; });
+  if (pts.length && diasEntre(pts[pts.length - 1][0], gen) < paso) pts.pop();
+  return pts;
+}
 let histRadarPedido = false;
 function pedirHistRadar() {
   if (histRadarPedido || typeof radarHist !== 'function') return;
@@ -21,8 +30,8 @@ function pedirHistRadar() {
       if (!i || !i.yahoo || (S.precios && S.precios.instrumentos && S.precios.instrumentos[id])) continue;
       const e = rh.s[i.yahoo] || rh.s[String(i.yahoo).toUpperCase()], r = radarPorSim(i.yahoo);
       if (!e || !e.d || !Array.isArray(e.v) || !r || !(r.p > 0) || !(r.pe > 0)) continue;
-      const k = r.pe / r.p, d0 = deIso(e.d), paso = rh.paso || 7;
-      const serie = e.v.map((v, n) => { const x = new Date(d0); x.setDate(d0.getDate() + n * paso); return [iso(x), +(v * k).toFixed(4)]; }).filter((x) => x[1] > 0 && x[0] <= hoy);
+      const k = r.pe / r.p;
+      const serie = puntosRadarHist(e, rh).map(([f, v]) => [f, +(v * k).toFixed(4)]).filter((x) => x[1] > 0 && x[0] <= hoy);
       if (serie.length && serie[serie.length - 1][0] < hoy) serie.push([hoy, +r.pe.toFixed(4)]);
       if (serie.length >= 4) { S.histRadar[id] = serie; hay = true; }
     }

@@ -1,4 +1,4 @@
-/* ---------- buscador: lo que tienes, tu lista y las ~800 empresas del radar ---------- */
+/* ---------- buscador: lo que tienes, tu lista, el catálogo (con el ampliado, al buscar) y las empresas del radar ---------- */
 function precioInst(id) {
   const v = S.live[id], p = S.precios && S.precios.instrumentos && S.precios.instrumentos[id];
   if (v) return v.precio; if (p && p.precio) return p.precio;
@@ -11,10 +11,12 @@ function candidatosBusqueda() {
   for (const id of S.instOrden) { const i = S.inst[id]; out.push({ k: 'inst:' + id, n: i.corto || i.nombre, l: i.nombre || '', s: i.yahoo || '', isin: i.isin || '', a: aliasDe(i.yahoo), dom: i.dominio, cot: cotiza(i), tengo: tengo.has(id), pr: () => precioInst(id) }); }
   const vistos = new Set(S.instOrden.map((id) => String(S.inst[id].yahoo || '').toUpperCase()).filter(Boolean));
   const isins = new Set(S.instOrden.map((id) => String(S.inst[id].isin || '').toUpperCase()).filter(Boolean));
-  for (const [cid, x] of Object.entries((S.cat && S.cat.v) || {})) {
+  // el catálogo de todos y, si ya se ha bajado (al buscar), el ampliado detrás
+  for (const [cid, x] of [...Object.entries((S.cat && S.cat.v) || {}), ...Object.entries(S.catMas || {}).filter(([cid]) => !(S.cat && S.cat.v && S.cat.v[cid]))]) {
     if ((x.isin && isins.has(String(x.isin).toUpperCase())) || (x.s && vistos.has(String(x.s).toUpperCase()))) continue;
     out.push({ k: 'cat:' + cid, n: x.c || x.n, l: x.n, s: x.s || '', isin: x.isin || '', a: [...(x.a || []), ...aliasDe(x.s)], dom: x.dom, cot: x.cl === 'Cripto' ? { cod: null, txt: 'cripto, 24 h' } : { cod: x.pais, txt: /^Fondo/.test(x.t || '') ? `fondo${x.pais ? ' de ' + (PAISES[x.pais] || x.pais) : ''}` : x.t || '' }, pr: () => x.p });
     if (x.s) vistos.add(String(x.s).toUpperCase());
+    if (x.isin) isins.add(String(x.isin).toUpperCase());
   }
   for (const x of [...radarVals(), ...((S.radar && S.radar.valores) || []).filter((y) => y.pd)]) if (x.s && !vistos.has(x.s.toUpperCase())) { const o = origenRadar(x); out.push({ k: 'radar:' + x.s, n: x.n, l: x.n, s: x.s, isin: '', a: aliasDe(x.s), dom: x.w, cot: { cod: o.bolsa || o.sede, txt: o.ciudad ? 'bolsa de ' + o.ciudad : x.z || '' }, pr: () => x.pe }); }
   return out;
@@ -61,7 +63,15 @@ const idDeCandidato = (c) => (c.k.startsWith('inst:') ? c.k.slice(5) : c.k.start
 function buscador(cont, alElegir, opt = {}) {
   cont.innerHTML = `<div class="busca"><span class="busca-ico" aria-hidden="true">${SVG('<circle cx="11" cy="11" r="6.5"/><path d="M16 16l4.5 4.5"/>', 2)}</span><input type="search" autocomplete="off" spellcheck="false" enterkeyhint="search" placeholder="${esc(opt.placeholder || 'Busca por nombre, ticker o ISIN')}" aria-label="Buscar"><ul class="busca-res" role="listbox" hidden></ul></div>`;
   const inp = cont.querySelector('input'), ul = cont.querySelector('ul');
-  const lista = (opt.lista || candidatosBusqueda()).filter((c) => !opt.soloTengo || c.tengo);
+  // opt.lista puede ser una función (Mercados), para rehacerla cuando llega el catálogo ampliado
+  const hacerLista = () => (typeof opt.lista === 'function' ? opt.lista() : opt.lista || candidatosBusqueda()).filter((c) => !opt.soloTengo || c.tengo);
+  let lista = hacerLista(), verLista = S.catMasVer;
+  const conMas = () => {
+    if (opt.soloTengo || (opt.lista && typeof opt.lista !== 'function')) return;
+    const rehacer = () => { if (S.catMasVer === verLista) return false; verLista = S.catMasVer; lista = hacerLista(); return true; };
+    rehacer();
+    cargarCatalogoMas().then(() => { if (inp.isConnected && rehacer() && document.activeElement === inp) buscar(); });
+  };
   let res = [], sel = 0;
   const fila = (c, i) => { const pr = c.pr && c.pr(); return `<li role="option" data-i="${i}" aria-selected="${i === sel}">${logo(c.dom, c.n)}<span class="busca-t"><b>${esc(c.n)}</b>${c.l && normTxt(c.l) !== normTxt(c.n) ? `<small class="busca-l">${esc(c.l)}</small>` : ''}<small>${bandera(c.cot.cod)}${esc(c.cot.txt || '')}${c.isin ? ` · ${esc(c.isin)}` : c.s ? ` · ${esc(c.s)}` : ''}</small></span><span class="busca-p">${pr ? precioFmt(pr) : ''}${c.tengo ? '<small>la tienes</small>' : ''}</span></li>`; };
   const pintarRes = () => {
@@ -95,7 +105,7 @@ function buscador(cont, alElegir, opt = {}) {
     ul.hidden = true; if (id) alElegir(id);
   };
   let t0; inp.addEventListener('input', () => { clearTimeout(t0); t0 = setTimeout(buscar, 90); });
-  inp.addEventListener('focus', buscar);
+  inp.addEventListener('focus', () => { conMas(); buscar(); });
   inp.addEventListener('blur', () => setTimeout(() => { ul.hidden = true; }, 180));
   inp.addEventListener('keydown', (e) => {
     const n = ul.querySelectorAll('li[role=option]').length;

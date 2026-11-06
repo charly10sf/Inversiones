@@ -353,9 +353,9 @@ const PR_CAPS = [
       pon(2);
       $$('[data-m]', el).forEach((b) => { b.onclick = () => { $$('[data-m]', el).forEach((c) => c.setAttribute('aria-pressed', String(c === b))); pon(+b.dataset.m); }; });
     } },
-  { rom: 'IV', k: 'Ideas', t: 'Unas 840 empresas,', em: 'con tus límites delante',
+  { rom: 'IV', k: 'Ideas', t: 'Unas 2.800 empresas,', em: 'con tus límites delante',
     nov: 'La opinión de los analistas y las ideas del radar, las mismas para todos. Toisón te enseña qué cambiaría en tu cartera; lo que hagas lo decides tú.',
-    exp: 'Consenso de analistas, precio objetivo y factores de unas 840 empresas de España, Europa y EE. UU., con el impacto de cada idea en tu reparto y en los límites de tu perfil.',
+    exp: 'Consenso de analistas, precio objetivo y factores de unas 2.800 empresas de España, Europa y EE. UU., con el impacto de cada idea en tu reparto y en los límites de tu perfil.',
     esc: () => `<svg class="pr-radar" viewBox="0 0 200 200" aria-hidden="true"><defs><linearGradient id="prb${++prUid}" x1="0" x2="1"><stop offset="0" stop-color="var(--oro-texto)" stop-opacity="0"/><stop offset="1" stop-color="var(--oro-texto)" stop-opacity=".35"/></linearGradient></defs>
       <circle class="r" cx="100" cy="100" r="96"/><circle class="r" cx="100" cy="100" r="64"/><circle class="r" cx="100" cy="100" r="32"/>
       <g class="barre"><path d="M100 100L196 100A96 96 0 0 0 167.9 32.1Z" fill="url(#prb${prUid})"/></g>
