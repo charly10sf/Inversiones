@@ -60,16 +60,17 @@ async function casaNuevaLista() {
 
 /* ---- en la dirección nueva, al abrir con #mudanza: recoger. Devuelve true si se encarga ella del arranque ---- */
 function recibirMudanza() {
-  if (!/^#mudanza\b/.test(location.hash) || enCasaVieja()) return false;
+  if (enCasaVieja()) return false;
   const limpia = () => { try { history.replaceState(null, '', location.pathname + location.search); } catch (e) {} };
   const seguir = () => { limpia(); location.replace(location.pathname + location.search); };
-  // la app de Android ya trae los datos
+  // la app de Android ya trae los datos (también si se cerró antes de recogerlos: se miran en cada arranque hasta que llegan)
   try {
     if (window.InversionesApp && typeof InversionesApp.mudanzaDatos === 'function') {
       const j = InversionesApp.mudanzaDatos();
       if (j) { guardarMudanza(JSON.parse(j)); try { InversionesApp.mudanzaHecha(); } catch (e) {} seguir(); return true; }
     }
   } catch (e) { console.warn('mudanza (app)', e); }
+  if (!/^#mudanza\b/.test(location.hash)) return false;
   const viejo = window.opener;
   if (!viejo) { limpia(); return false; }
   $('#app').innerHTML = `<div class="pantalla"><div class="caja mudanza-caja" role="status" aria-live="polite"><div class="mudanza-simb">${simboloTs()}</div><h1>${L('Trayendo tus datos', 'Bringing your data over')}</h1><p data-mud>${L('Toisón se muda a toison.es. Estamos pasando lo de este dispositivo desde la dirección de antes; tarda un momento.', 'Toisón is moving to toison.es. We are bringing this device’s data over from the old address; it takes a moment.')}</p></div></div>`;
