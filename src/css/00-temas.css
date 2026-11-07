@@ -810,7 +810,8 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="marfil"] p.hero-hola { font-style: italic; }
 [data-tema="marfil"] p.hero-hola .hola-fecha { font-style: normal; }
 [data-tema="marfil"] .hola-nom { color: var(--primario); }
-/* pestañas y segmentos: sin carril; lo elegido en vino con el subrayado de oro (las de dos, a todo el ancho) */
+/* pestañas y segmentos: sin carril; lo elegido en vino, con un fondo vino muy suave y la raya de oro de 3 px (H2, Carlos, 7 nov:
+   la raya sola se veía poco en el móvil); las de dos, con su raya a todo el ancho */
 [data-tema="marfil"] :is(.subvistas, .plazos, .tabs, .hero-rangos, .op-modo, .as-modo, .cuenta-modo, .modo-op, .mapa-modos, .mapa-vistas, .pest-av) {
   background: none; border: 0; border-bottom: 1px solid var(--borde); border-radius: 0; box-shadow: none; }
 [data-tema="marfil"] .pest-av { padding: 0; }
@@ -818,7 +819,7 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="marfil"] :is(.subvistas, .plazos) { background: var(--fondo); }
 [data-tema="marfil"] :is(.subvistas:not(.dos-op), .plazos, .tabs, .as-modo, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas) button[aria-pressed="true"],
 [data-tema="marfil"] .pest-av a[aria-current="page"], [data-tema="marfil"] .mg-tabs button[aria-selected="true"] {
-  background: none; color: var(--primario); font-weight: 700; border-color: transparent; border-radius: 0; box-shadow: inset 0 -2px 0 var(--oro-hilo); }
+  background: color-mix(in srgb, var(--primario) 8%, transparent); color: var(--primario); font-weight: 700; border-color: transparent; border-radius: 10px 10px 0 0; box-shadow: inset 0 -3px 0 var(--oro-hilo); }
 [data-tema="marfil"] .mg-tabs button { border-radius: 0; border-color: transparent; }
 [data-tema="marfil"] .subvistas.dos-op button[aria-pressed="true"] { color: var(--primario); }
 [data-tema="marfil"] .subvistas.dos-op button[aria-pressed="true"]::after { left: 0; right: 0; background: var(--oro-hilo); }

@@ -210,11 +210,11 @@ test.describe('quien tenía Borgoña', () => {
   });
 });
 
-// 7 nov (0.8.3b, Carlos): el Marfil nuevo. Crema en capas, el menú en vino con el oro del logo, las pestañas subrayadas
+// 7 nov (0.8.3b, Carlos): el Marfil nuevo. Crema en capas, el menú en vino con el oro del logo, las pestañas con fondo vino suave y raya
 // de oro, los títulos de sección en vino con su hilo de oro y el sello de la cabecera como el icono
 test.describe('Marfil (7 nov)', () => {
   test.use({ ajustes: { 'inv-tema': JSON.stringify('marfil') } });
-  test('menú en vino, pestañas subrayadas y títulos con hilo de oro', async ({ page }, info) => {
+  test('menú en vino, pestañas con fondo suave y raya de oro y títulos con hilo de oro', async ({ page }, info) => {
     test.skip(info.project.name === 'movil-pequeno', 'basta con el móvil y el ordenador');
     await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
     const tok = await page.evaluate(() => { const r = getComputedStyle(document.documentElement); return ['--fondo', '--superficie', '--menu-fondo', '--oro-hilo', '--primario', '--oro-logo'].map((n) => r.getPropertyValue(n).trim()); });
@@ -232,8 +232,10 @@ test.describe('Marfil (7 nov)', () => {
     const elegida = page.locator('.pest-av a[aria-current="page"]');
     await expect(elegida).toBeVisible({ timeout: 15_000 });
     await expect(elegida).toHaveCSS('color', 'rgb(78, 16, 29)');
-    await expect(elegida).toHaveCSS('box-shadow', 'rgb(201, 154, 69) 0px -2px 0px 0px inset');
+    await expect(elegida).toHaveCSS('box-shadow', 'rgb(201, 154, 69) 0px -3px 0px 0px inset');
     await expect(elegida).toHaveCSS('background-image', 'none');
+    // con un fondo vino muy suave detrás (se ve también en el móvil), no la pastilla rellena
+    expect(await elegida.evaluate((e) => getComputedStyle(e).backgroundColor)).not.toMatch(/^rgba?\(0, 0, 0, 0\)$|^transparent$/);
     // un título de sección: en vino, con el hilo de oro debajo
     await page.evaluate(() => { location.hash = 'cartera'; });
     const cab = page.locator('#vista .sec-cab').first();
