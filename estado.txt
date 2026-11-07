@@ -1,0 +1,14 @@
+run 76 firma buena 2026-11-07T13:32:45Z
+/home/runner/work/Inversiones/Inversiones/android/app/build/outputs/apk/directa/release/:
+total 2876
+drwxr-xr-x 3 runner runner    4096 Nov  7 13:32 .
+drwxr-xr-x 3 runner runner    4096 Nov  7 13:32 ..
+-rw-r--r-- 1 runner runner 2927920 Nov  7 13:32 app-directa-release.apk
+drwxr-xr-x 4 runner runner    4096 Nov  7 13:32 baselineProfiles
+-rw-r--r-- 1 runner runner     740 Nov  7 13:32 output-metadata.json
+
+/home/runner/work/Inversiones/Inversiones/android/app/build/outputs/bundle/playRelease/:
+total 2776
+drwxr-xr-x 2 runner runner    4096 Nov  7 13:32 .
+drwxr-xr-x 3 runner runner    4096 Nov  7 13:32 ..
+-rw-r--r-- 1 runner runner 2833051 Nov  7 13:32 app-play-release.aab
