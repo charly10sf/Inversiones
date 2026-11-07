@@ -99,13 +99,14 @@ function pedidoAnalisisPublico(ids, motivo, conWeb, sinHerramientas = false) {
 3. Sé constante: en los datos viene tu revisión anterior. No cambies lo que dijiste salvo que haya algo nuevo e importante.
 4. Las cifras, sin adornos. Si nombras una meta, di a qué distancia está («79.658 € de 500.000 €, un 16 %»).
 5. Frases cortas; no repitas en una sección lo que ya está en otra.
+6. Es una revisión, no un consejo: en ningún campo digas «te conviene», «deberías», «te recomiendo», «tendrías que», «lo ideal sería», «plantéate», «es buen momento», «te encaja», «no vendas», «aguanta» ni «aprovecha». Cuenta lo que pasa y lo que supone: «esto supondría…», «según tus límites…», «lo que hay que vigilar es…», «si decidieras…».
 
 Responde solo con un bloque \`\`\`json, sin texto fuera, con este formato:
 {
   "titular": "una frase con cómo está hoy la cartera y lo más importante que ha pasado",
   "resumen": ["dos o tres párrafos cortos con cifras"],
   "puntuaciones": [{"k": "Diversificación", "nota": 4, "txt": "una o dos frases"}, {"k": "Costes", ...}, {"k": "Riesgo", ...}, {"k": "Disciplina", ...}, {"k": "Impuestos", ...}],
-  "mejorar": [{"titulo": "...", "texto": "qué se sale de mis límites o metas, o de lo habitual (costes, reparto, colchón, impuestos), y por qué importa; sin decir qué valor comprar o vender", "impacto": "qué supone, con cifras", "cuando": "fecha o condición, si la hay"}],
+  "mejorar": [{"titulo": "...", "texto": "qué se sale de mis límites o metas, o de lo habitual (costes, reparto, colchón, impuestos), y por qué importa; sin decir qué valor comprar o vender ni qué me conviene hacer", "impacto": "qué supone, con cifras", "cuando": "fecha o condición, si la hay"}],
   "mantener": [{"titulo": "...", "texto": "lo que está en orden"}],
   "riesgos": [{"titulo": "...", "texto": "..."}],
   "calendario": [{"d": "AAAA-MM-DD", "t": "qué pasa ese día y por qué me importa"}],
@@ -161,7 +162,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     // de venta que ya vienen en los datos. La que pides tú puede buscar (tres veces como mucho) y calcular
     const auto = motivo !== 'la pides tú';
     // 0.8.2: lo que se pide y con qué reglas, cuando ya se sabe quién contesta (con Claude, las del estándar)
-    const preparar = (est) => ({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto, est) }], sistema: [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: contextoAsesor(M, 'completo', est) }] });
+    const preparar = (est) => ({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto, est) }], sistema: [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: contextoAsesor(M, 'revision', est) }] });
     await conversar({ tipo: 'análisis', tarea: 'revision', soloHaiku: auto, turno, preparar, maxTokens: 12000, alCambiar, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
     const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');
     const json = extraerJSON(texto);

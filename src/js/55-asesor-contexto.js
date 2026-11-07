@@ -65,7 +65,13 @@ function fichaTexto(f, corto = false, est = esPublico()) {
 // 0.8.2: est = la IA va con las reglas del estándar (siempre en el estándar y, desde la opción B, cuando contesta Claude
 // también en el fundador). El modo de la app no cambia: el fundador sigue viendo su Paso a paso, calculado por el código
 function contextoAsesor(M, modo = 'chat', est = esPublico()) {
-  const chat = modo === 'chat';
+  // 0.8.3 · «revision»: lo de «completo» sin lo que solo sirve para elegir empresas nuevas (las ideas del radar, la tabla de
+  // las 120 mejor contrastadas, lo que eligió la lectura de prensa y la prensa de empresas que no tiene). La revisión con
+  // las reglas del estándar no propone compras: eso era más de la mitad de los datos (7 nov: 54.000 de 95.000 caracteres
+  // con la cartera de prueba) y la empujaba hacia el tramo caro de Haiku (más de 100.000 tokens por petición)
+  const rev = modo === 'revision';
+  if (rev && !est) modo = 'completo';
+  const chat = modo === 'chat', sinIdeas = rev && est;
   const oc0 = S.oculto; S.oculto = false;
   try {
     const ahora = new Date(), anio = ahora.getFullYear();
@@ -127,14 +133,14 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     if (!pub) L.push('', '## Planes de venta que propone Toisón ahora');
     if (!pub && !planes.length) L.push('Ninguno: ninguna posición pide vender.');
     for (const pl of planes) L.push(`- ${pl.f.inst.corto} (${pl.f.senal.txt.toLowerCase()}): vender ${fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 4)} por unos ${E0(pl.importe)} y quedarse ${fmtNum(pl.queda, pl.accion && esEntero(pl.queda) ? 0 : 4)}. Ganancia que se declara ${eurP(pl.ganancia, 0)}, impuesto ${E0(pl.impuesto)}. Cuándo: ${pl.cuando.join(' ')} Destino: ${pl.aColchon > 0.5 ? `${E0(pl.aColchon)} a su colchón (le falta), ` : ''}${pl.aIdea > 0 && pl.ideas[0] ? `${E0(pl.aIdea)} a ${pl.ideas[0].n} y ` : ''}${E0(pl.aNucleo)} ${nucleo(S.M || calcular()).a}; ${E0(pl.impuesto)} apartados para Hacienda.`);
-    const ideas = mejoresIdeas(M).slice(0, chat ? 5 : 8);
+    const ideas = sinIdeas ? [] : mejoresIdeas(M).slice(0, chat ? 5 : 8);
     if (ideas.length) {
       L.push('', fund ? '## Ideas del radar que filtra Toisón para su cartera con un cálculo fijo (no son una recomendación tuya)' : pub ? '## Ideas del radar de Toisón, iguales para todos (no son una recomendación para él)' : '## Las ideas de compra que mejor encajan con su cartera según Toisón');
       for (const x of ideas) L.push(`- ${x.n} (${x.s}, ${x.z}${x.sector ? ', ' + x.sector : ''}): ${!chat && noticiasIdea(x.s).length ? `[titulares: ${noticiasIdea(x.s).slice(0, 3).map((n) => `${n.d ? n.d.slice(0, 10) + ' ' : ''}${n.t} (${n.f || ''})`).join(' / ')}] ` : ''}${(pub ? motivosSinIA(x.motivos) : x.motivos).join(', ')}${x.pegas.length ? `. Pegas: ${x.pegas.join('; ')}` : ''}. Contraste: ${x.ctr.favor} de ${x.ctr.total} señales a favor (${x.ctr.checks.filter((c) => c.ok).map((c) => c.k.toLowerCase()).join(', ')})${x.ctr.contra ? `, ${x.ctr.contra} en contra (${x.ctr.checks.filter((c) => c.ok === -1).map((c) => c.k.toLowerCase()).join(', ')})` : ''}.`);
     }
     // del radar entran las mejor contrastadas (20 en el chat, 120 en el análisis); el resto, con las herramientas radar y buscar_empresa
     const todasR = radarVals();
-    const rad = todasR.filter((x) => x.pot != null && (x.na || 0) >= 5).map((x) => ({ x, c: contraste(x) })).sort((a, b) => (b.c.favor - b.c.contra) - (a.c.favor - a.c.contra) || (b.x.pot || 0) - (a.x.pot || 0)).slice(0, chat ? 10 : 120).map((o) => o.x);
+    const rad = sinIdeas ? [] : todasR.filter((x) => x.pot != null && (x.na || 0) >= 5).map((x) => ({ x, c: contraste(x) })).sort((a, b) => (b.c.favor - b.c.contra) - (a.c.favor - a.c.contra) || (b.x.pot || 0) - (a.x.pot || 0)).slice(0, chat ? 10 : 120).map((o) => o.x);
     if (rad.length) {
       L.push('', `## Radar de Toisón: las ${rad.length} mejor contrastadas de ${todasR.length} empresas; ${chat ? 'para buscar entre todas (por sector, zona, dividendo, potencial o prensa) usa la herramienta radar, y para los datos completos de una, buscar_empresa' : 'del resto, pide los datos con buscar_empresa'} (nombre | ticker | zona | sector | precio | potencial hasta el objetivo medio | rango de objetivos | consenso y nº de analistas | PER futuro | crecimiento esperado del beneficio | dividendo | 1 año | sobre la media de 200 sesiones)`);
       for (const x of rad) L.push([x.n, x.s, x.z, x.sector || '', `${fmtNum(x.p, 2)} ${x.m}`, P1(x.pot), x.tb && x.ta ? `${fmtNum(x.tb, 2)}-${fmtNum(x.ta, 2)}` : '—', `${CONSENSO[x.r] || '—'} ${x.na || 0}`, x.perf > 0 ? fmtNum(x.perf, 1) : '—', P1(x.epsg ?? x.eg), x.div ? fmtNum(x.div, 1) + ' %' : '—', P1(x.c1a), x.m200 && x.p ? P1((x.p / x.m200 - 1) * 100) : '—'].join(' | '));
@@ -171,11 +177,11 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
       for (const x of inf.macro || []) L.push(`- Macro: ${x.t}: ${x.dato}. ${x.lectura || ''}`);
       const suyas = new Set(M.filas.map((f) => f.inst.id));
       for (const [id, x] of Object.entries(inf.posiciones || {})) if (suyas.has(id)) L.push(`- ${nombreInst(id)} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Vigilar: ${x.vigilar || '—'}.${chat ? '' : ` Fuentes: ${(x.fuentes || []).map((f) => f.f || '').filter(Boolean).join(', ') || '—'}`}`);
-      if (!chat) for (const [s0, x] of Object.entries(inf.ideas || {})) L.push(`- Idea ${s0} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Riesgo: ${x.riesgo || '—'}.`);
+      if (!chat && !sinIdeas) for (const [s0, x] of Object.entries(inf.ideas || {})) L.push(`- Idea ${s0} (${x.impacto}): ${x.novedades || ''} Contraste: ${x.contraste || '—'}. Riesgo: ${x.riesgo || '—'}.`);
       for (const a of inf.alertas || []) L.push(`- Alerta (${a.urgencia}): ${a.t}`);
     }
     const esc0 = S.escaneo;
-    if (esc0 && esc0.decision) {
+    if (esc0 && esc0.decision && !sinIdeas) {
       const d = esc0.decision;
       L.push('', `## ${pub ? 'Lo que ha elegido la lectura automática de prensa de Toisón (otro modelo de IA, no tú)' : 'Lo que ha elegido la IA'} tras escanear la prensa de ${Object.keys(esc0.lectura || {}).length} empresas (${haceCuanto(d.generado)}${pub ? '; igual para todos, no una recomendación para él' : ''})`, d.comentario || '');
       for (const i of d.ideas || []) L.push(`- ${pub ? 'Idea' : 'Comprar'} ${i.n || ''} (${i.s}), confianza ${i.confianza}: ${i.tesis || ''} Catalizador: ${i.catalizador || '—'}. Riesgo: ${i.riesgo || '—'}.${chat ? '' : ` Contraste: ${i.contraste || '—'}.`}`);
@@ -183,7 +189,9 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     }
     if (esc0 && esc0.lectura) {
       const hace7 = Date.now() - 7 * 864e5;
-      const imp = Object.entries(esc0.lectura).filter(([, l]) => l.rel >= 2 && new Date(l.d).getTime() > hace7).sort((a, b) => b[1].rel - a[1].rel).slice(0, chat ? 6 : 80);
+      // en la revisión, solo la de sus propias empresas
+      const suyasS = new Set(M.filas.map((f) => (f.p && f.p.simbolo) || f.inst.yahoo).filter(Boolean));
+      const imp = Object.entries(esc0.lectura).filter(([s0, l]) => l.rel >= 2 && new Date(l.d).getTime() > hace7 && (!sinIdeas || suyasS.has(s0))).sort((a, b) => b[1].rel - a[1].rel).slice(0, chat ? 6 : 80);
       const corta = (t) => (chat && String(t || '').length > 240 ? String(t).slice(0, 237).replace(/\s+\S*$/, '') + '…' : t || '');
       if (imp.length) L.push('', `## Prensa importante de la última semana en el radar (escaneo de la IA)${chat ? ': las 6 noticias más relevantes; la de cualquier otra empresa, con buscar_empresa o radar' : ''}`, ...imp.map(([s0, l]) => `- ${s0} (${l.imp}, relevancia ${l.rel}): ${corta(l.txt)}${l.cat && !chat ? ` Catalizador: ${l.cat}.` : ''}`));
     }

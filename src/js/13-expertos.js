@@ -313,8 +313,15 @@ function vistaExpertos(M) {
 }
 
 /* ---------- ideas para comprar ---------- */
-function puntuarIdea(x, ctx) {
-  const motivos = [], pegas = [];
+/* 0.8.3: lo que no depende de la cartera (recorrido, analistas, PER, contraste, tasas, retenciones) se calcula una vez por
+   empresa y versión del radar, del escaneo y del idioma (puntuarBase); con cada cálculo de la cartera (M) solo se suma lo
+   que mira tu cartera (sector, lo que ya llevan tus fondos, la misma apuesta que otra que tienes). El resultado es el mismo
+   que antes, con los motivos y las pegas en el mismo orden */
+const ideaBaseMemo = new WeakMap();
+function puntuarBase(x) {
+  const c = ideaBaseMemo.get(x), lang = typeof IDIOMA !== 'undefined' ? IDIOMA : 'es';
+  if (c && c.ver === S.radarVer && c.esc === S.escaneo && c.lang === lang) return c.r;
+  const motivos = [], pegasA = [], pegasB = [];
   let p = 0;
   // el recorrido cuenta con su plazo: si la IA ha estimado cuánto y en cuánto tiempo, se promedia con
   // lo de los analistas (a 12 meses) pasado a "al año"
@@ -331,16 +338,29 @@ function puntuarIdea(x, ctx) {
   if (x.perf > 0 && x.perf < 10) { p += 0.4; motivos.push(L(`barata: PER futuro de ${fmtNum(x.perf, 1)}`, `cheap: forward P/E of ${fmtNum(x.perf, 1)}`)); }
   else if (x.perf > 0 && x.perf < 15) { p += 0.3; motivos.push(L(`PER futuro de ${fmtNum(x.perf, 1)}`, `forward P/E of ${fmtNum(x.perf, 1)}`)); }
   else if (x.perf > 0 && x.perf < 22) p += 0.1;
-  else if (x.perf >= 30) { p -= 0.3; pegas.push(L(`cara: PER futuro de ${fmtNum(x.perf, 0)}`, `expensive: forward P/E of ${fmtNum(x.perf, 0)}`)); }
+  else if (x.perf >= 30) { p -= 0.3; pegasA.push(L(`cara: PER futuro de ${fmtNum(x.perf, 0)}`, `expensive: forward P/E of ${fmtNum(x.perf, 0)}`)); }
   if (x.c1a != null) {
-    if (x.c1a < -15) { p -= 0.3; pegas.push(L(`ha caído un ${fmtNum(-x.c1a, 0)} % en un año: el mercado duda de algo`, `down ${fmtNum(-x.c1a, 0)} % in a year: the market doubts something`)); }
-    else if (x.c1a > 90) { p -= 0.15; pegas.push(L(`ya ha subido un ${fmtNum(x.c1a, 0)} % en un año`, `already up ${fmtNum(x.c1a, 0)} % in a year`)); }
+    if (x.c1a < -15) { p -= 0.3; pegasA.push(L(`ha caído un ${fmtNum(-x.c1a, 0)} % en un año: el mercado duda de algo`, `down ${fmtNum(-x.c1a, 0)} % in a year: the market doubts something`)); }
+    else if (x.c1a > 90) { p -= 0.15; pegasA.push(L(`ya ha subido un ${fmtNum(x.c1a, 0)} % en un año`, `already up ${fmtNum(x.c1a, 0)} % in a year`)); }
   }
   if (x.div >= 2) { p += 0.1; motivos.push(L(`dividendo del ${fmtNum(x.div, 1)} %`, `${fmtNum(x.div, 1)} % dividend`)); }
   const ctr = contraste(x);
   p += 0.22 * ctr.favor - 0.3 * ctr.contra;
   motivos.push(L(`contrastada: ${ctr.favor} de ${ctr.total} señales a favor`, `checked: ${ctr.favor} of ${ctr.total} signals in favour`));
-  for (const c of ctr.checks) if (c.ok === -1) pegas.push(`${c.k.toLowerCase()} en contra: ${c.txt}`);
+  for (const c of ctr.checks) if (c.ok === -1) pegasA.push(`${c.k.toLowerCase()} en contra: ${c.txt}`);
+  if (x.z === 'EEUU') pegasB.push(L('cotiza en dólares: el cambio euro/dólar también cuenta', 'priced in dollars: the euro/dollar rate also counts'));
+  const tc = tasaRadar(x);
+  if (tc) pegasB.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
+  const fis = fiscalidadSede(origenRadar(x).sede);
+  if (x.div >= 1.5 && fis.pierde > 0) { p -= 0.05 * (x.div * fis.pierde) / 10; pegasB.push(`sus dividendos pierden un ${fmtNum(fis.pierde, 1)} % por la retención de ${PAISES[origenRadar(x).sede]}`); }
+  const r = { p, motivos, pegasA, pegasB, ctr };
+  ideaBaseMemo.set(x, { ver: S.radarVer, esc: S.escaneo, lang, r });
+  return r;
+}
+function puntuarIdea(x, ctx) {
+  const b = puntuarBase(x);
+  const motivos = b.motivos.slice(), pegas = b.pegasA.slice();
+  let p = b.p;
   const pesoSector = x.sector ? ctx.sectores[x.sector] || 0 : 0;
   const sectorT = x.sector ? trad(x.sector).toLowerCase() : '';
   if (pesoSector > 20) { p -= 0.3; pegas.push(L(`ya tienes un ${fmtNum(pesoSector, 0)} % en ${sectorT} a través de tus fondos`, `you already have ${fmtNum(pesoSector, 0)} % in ${sectorT} through your funds`)); }
@@ -349,12 +369,8 @@ function puntuarIdea(x, ctx) {
   if (dentro > 0.01 * ctx.total) { p -= 0.35; pegas.push(L(`ya tienes ${eur(dentro, 0)} en ella dentro de tus fondos`, `you already hold ${eur(dentro, 0)} of it inside your funds`)); }
   const gemelas = x.ind && ctx.industrias && ctx.industrias[x.ind];
   if (gemelas) { p -= 0.6; pegas.push(L(`es la misma apuesta que ${gemelas.join(' y ')}, que ya tienes: dependen de lo mismo y subirían y caerían a la vez`, `it's the same bet as ${gemelas.join(' and ')}, which you already own: they depend on the same thing and would rise and fall together`)); }
-  if (x.z === 'EEUU') pegas.push(L('cotiza en dólares: el cambio euro/dólar también cuenta', 'priced in dollars: the euro/dollar rate also counts'));
-  const tc = tasaRadar(x);
-  if (tc) pegas.push(`al comprar pagas un ${fmtNum(tc.tipo * 100, 1)} % de ${tc.nombre}`);
-  const fis = fiscalidadSede(origenRadar(x).sede);
-  if (x.div >= 1.5 && fis.pierde > 0) { p -= 0.05 * (x.div * fis.pierde) / 10; pegas.push(`sus dividendos pierden un ${fmtNum(fis.pierde, 1)} % por la retención de ${PAISES[origenRadar(x).sede]}`); }
-  return { ...x, puntos: p, motivos, pegas, ctr };
+  pegas.push(...b.pegasB);
+  return { ...x, puntos: p, motivos, pegas, ctr: b.ctr };
 }
 function ctxIdeas(M) {
   // 0.5, modo público: las ideas del radar, iguales para todos (sin mirar tu cartera)
@@ -387,8 +403,9 @@ function apuntarIdeas(syms) {
   for (const k of Object.keys(m)) if (diasEntre(m[k].u, hoy) > 30) delete m[k];
   try { localStorage.setItem(MEM_IDEAS, JSON.stringify(m)); } catch (e) {}
 }
-function propuestaReciente(s) {
-  const hoy = hoyIso(), m = esPublico() ? null : memoriaIdeas()[s];
+// mem: la memoria ya leída (mejoresIdeas0 la lee una vez, no una por empresa)
+function propuestaReciente(s, mem) {
+  const hoy = hoyIso(), m = esPublico() ? null : (mem || memoriaIdeas())[s];
   if (m && diasEntre(m.u, hoy) <= 7) return true;
   const h = S.escaneo && S.escaneo.decision && S.escaneo.decision.hist && S.escaneo.decision.hist[s];
   return !!h && ['idea', 'radar'].some((k) => h[k] && diasEntre(h[k][1], hoy) <= 7);
@@ -403,13 +420,17 @@ function mejoresIdeas0(M, excluir = {}) {
   // las que también elige GrowIA tras leer su prensa van por delante: así el Paso a paso y las ideas apuntan a lo mismo
   const deGrowIA = new Set(((S.escaneo && S.escaneo.decision && S.escaneo.decision.ideas) || []).map((v) => v.s));
   // las que ya se propusieron tienen un margen: un 9 % de recorrido en vez de 10 o un consenso de 2,5 en vez de 2,4 no las saca
+  const mem = memoriaIdeas(), reciente = new Map();
+  const yaPropuesta = (s) => { if (!reciente.has(s)) reciente.set(s, propuestaReciente(s, mem)); return reciente.get(s); };
   const pasa = (x) => {
-    const ya = propuestaReciente(x.s);
+    const ya = yaPropuesta(x.s);
     return x.pot != null && x.pot >= (ya ? 5 : 10) && (x.na || 0) >= (ya ? 6 : 8) && (x.rm ?? 9) <= (ya ? 2.6 : 2.4) && ['buy', 'strong_buy'].includes(x.r) && !(x.c1a < (ya ? -45 : -35));
   };
   const out = r
-    .filter((x) => !tuyas.has(x.s) && !evita.has(x.s) && pasa(x) && (!excluir.sector || x.sector !== excluir.sector))
-    .map((x) => { const y = puntuarIdea(x, ctx); if (propuestaReciente(x.s)) { y.puntos += 0.8; y.sigue = true; } if (deGrowIA.has(x.s)) y.puntos += 0.6; return y; })
+    // 0.8.3: el contraste va antes de puntuar (está en caché y es lo que más descarta): de las ~1.700 que pasan los números,
+    // solo se puntúan las que luego pueden quedar (el mismo filtro de abajo, con el margen de las ya propuestas)
+    .filter((x) => { if (tuyas.has(x.s) || evita.has(x.s) || !pasa(x) || (excluir.sector && x.sector === excluir.sector)) return false; const c = contraste(x); return c.favor >= 2 && c.contra <= 3; })
+    .map((x) => { const y = puntuarIdea(x, ctx); if (yaPropuesta(x.s)) { y.puntos += 0.8; y.sigue = true; } if (deGrowIA.has(x.s)) y.puntos += 0.6; return y; })
     .filter((x) => (x.sigue ? x.ctr.favor >= 2 && x.ctr.contra <= 3 : x.ctr.favor >= 3 && x.ctr.contra <= 2))
     .sort((a, b) => b.puntos - a.puntos);
   if (!excluir.sector) { S.ideasTop = out.slice(0, 12).map((x) => x.s); apuntarIdeas(out.slice(0, 3).map((x) => x.s)); }
