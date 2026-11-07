@@ -38,7 +38,7 @@
   --fondo: #ede1cc; --fondo-2: #e5d7bf; --superficie: #fdf9f2; --superficie-2: #eee3d0; --borde: #dccbb0;
   --texto: #1c1915; --texto-2: #4a443d; --oro-texto: #7a5716; --grafica: #a87a2a;
   --sube: #08573a; --baja: #a42018; --aviso: #8a4b0c;
-  --primario: #4e101d; --sobre-primario: #f8efe0; --sim-o: #1c1915; --sim-t: #a87a2a;
+  --primario: #4e101d; --sobre-primario: #f8efe0; --sim-o: #4e101d; --sim-t: #a87a2a;
   --metal: linear-gradient(180deg, #5a1626 0%, #4e101d 100%); /* el vino, casi plano */
   --brillo: rgb(255 255 255 / .1); --hondo: rgb(60 40 20 / .14);
   --reparto-1: #a87a2a; --reparto-2: #2f5d8c; --reparto-3: #7b6bae; --reparto-4: #3d8a8c; --reparto-5: #c29a6b; --reparto-6: #9a928a;
