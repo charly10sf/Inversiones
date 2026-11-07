@@ -127,7 +127,8 @@ test('límite de caída: sin límite no avisa; con límite menor que la caída s
     const fila = comparaObjetivos(mundo).filas.find((x) => x.k === 'caida');
     S.acceso = 'publico';
     const filaPub = comparaObjetivos(mundo).filas.find((x) => x.k === 'caida');
-    const form = htmlLimites(20, 5, 10, 10, 12);
+    S.tuLim = null; S.cartera.perfil.limite_caida = 12;
+    const form = panelLimites(mundo);
     return { ahora: +c.ahora.toFixed(1), pico: +c.pico.toFixed(3), sin, vacio, cero, alto, bajo: bajo.map((x) => ({ a: +x.actual.toFixed(1), l: x.limite, t: x.titulo, c: x.cuerpo })), fila: fila && { estado: fila.estado, txt: fila.txt }, filaPub: filaPub && filaPub.txt, form };
   }, mundoConCaida.toString());
   expect(r.ahora).toBe(20);
@@ -139,8 +140,9 @@ test('límite de caída: sin límite no avisa; con límite menor que la caída s
   expect(r.bajo[0].t + r.bajo[0].c).not.toMatch(ORDENES_CAIDA);
   expect(r.fila.estado).toBe('fuera');
   expect(r.fila.txt + r.filaPub).not.toMatch(ORDENES_CAIDA);
-  expect(r.form).toContain('name="caida"');
-  expect(r.form).toContain('value="12"');
+  // 0.8.3: el límite se cambia en la pantalla Límites de Tú, con − y +
+  expect(r.form).toContain('data-tulim="caida:-1"');
+  expect(r.form).toContain('12 %');
 });
 
 test('límite de caída: las reglas para la app llevan el límite y el máximo, y el aviso del navegador sale una sola vez', async ({ context, page }) => {
@@ -179,30 +181,20 @@ test('límite de caída: las reglas para la app llevan el límite y el máximo, 
   expect(r.json).not.toMatch(/"valor"|"total"|"importe"/);
 });
 
-test('límite de caída: el campo de Tú se guarda, se puede vaciar y no admite valores absurdos', async ({ context, page }) => {
+test('límite de caída: en Límites va de 1 a 90 % y se puede quitar (la pantalla, en tests/pestana-tu.spec.js)', async ({ context, page }) => {
   await preparar(context);
   await page.goto('/');
-  await page.waitForFunction(() => typeof editarPerfil === 'function');
+  await page.waitForFunction(() => typeof moverLimite === 'function');
   await quitarCapas(page);
-  await page.evaluate(() => { S.cartera = S.cartera || {}; S.cartera.perfil = { ...(S.cartera.perfil || {}), edad: 30 }; editarPerfil(); });
-  const campo = page.locator('#fPerfil input[name="caida"]');
-  await expect(campo).toBeVisible();
-  await expect(campo).toHaveValue('');
-  // un valor fuera de rango no se guarda
-  await campo.fill('150');
-  await page.locator('#fPerfil').evaluate((f) => f.requestSubmit());
-  await expect(page.locator('#errPerfil')).toContainText('La caída va de 1 a 90');
-  expect(await page.evaluate(() => (S.cartera.perfil || {}).limite_caida ?? null)).toBeNull();
-  // uno bueno se guarda
-  await campo.fill('18');
-  await page.locator('#fPerfil').evaluate((f) => f.requestSubmit());
-  await page.waitForFunction(() => (S.cartera.perfil || {}).limite_caida === 18);
-  // y se vacía para quitar el límite
-  await quitarCapas(page);
-  await page.evaluate(() => editarPerfil());
-  const c2 = page.locator('#fPerfil input[name="caida"]');
-  await expect(c2).toHaveValue('18');
-  await c2.fill('');
-  await page.locator('#fPerfil').evaluate((f) => f.requestSubmit());
-  await page.waitForFunction(() => (S.cartera.perfil || {}).limite_caida === null);
+  const r = await page.evaluate(() => {
+    S.cartera = S.cartera || {}; S.cartera.perfil = { ...(S.cartera.perfil || {}), limite_caida: 90 }; S.tuLim = null;
+    moverLimite('caida', 1); const alto = (S.tuLim || limitesGuardados()).caida;
+    S.cartera.perfil.limite_caida = 1; S.tuLim = null;
+    moverLimite('caida', -1); const bajo = (S.tuLim || limitesGuardados()).caida;
+    moverLimite('caida', 'quitar'); const fuera = S.tuLim.caida;
+    // un valor guardado absurdo (de antes) no cuenta como límite
+    S.cartera.perfil.limite_caida = 150; const absurdo = limiteCaida();
+    return { alto, bajo, fuera, absurdo };
+  });
+  expect(r).toEqual({ alto: 90, bajo: 1, fuera: null, absurdo: null });
 });

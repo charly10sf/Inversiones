@@ -218,7 +218,7 @@ function mismaPregunta(a, b) {
 const preguntaVista = (x, vistas = LS.get('inv-preg-vistas', [])) => vistas.some((v) => mismaPregunta(v, x.q));
 function htmlPreguntasIA(compacto) {
   const qs = preguntasIA(); if (!qs.length) return '';
-  if (compacto) return `<a class="ia-pregunta-aviso" href="#objetivos">${ICONOS.growia}<span><b>La IA quiere saber ${qs.length === 1 ? 'una cosa' : `${qs.length} cosas`} de ti</b> para afinar sus consejos</span><span class="k">Contestar</span></a>`;
+  if (compacto) return `<a class="ia-pregunta-aviso" href="#tu-ia">${ICONOS.growia}<span><b>La IA quiere saber ${qs.length === 1 ? 'una cosa' : `${qs.length} cosas`} de ti</b> para afinar sus consejos</span><span class="k">Contestar</span></a>`;
   return `<section class="pf-preguntas" aria-labelledby="hPreg"><div class="sec-cab"><h2 id="hPreg" data-no-trad>${conIA('La IA quiere saber', 'GrowIA wants to know')}</h2><span class="k">con tu respuesta rehace sus consejos</span></div>
     ${qs.map((x, i) => `<div class="pf-preg" data-preg="${i}" data-q="${esc(x.q)}"><b>${esc(x.q)}</b>${x.por_que ? `<p class="k">${esc(x.por_que)}</p>` : ''}
       <div class="pf-opc">${(x.opciones || []).slice(0, 5).map((o) => `<button type="button" class="chip-btn" data-resp="${esc(o)}">${esc(o)}</button>`).join('')}</div>
@@ -258,91 +258,6 @@ async function responderIA(i, a) {
   toast('Apuntado. La IA lo tendrá en cuenta en su próxima revisión.', 4000);
 }
 
-/* ---------- tus límites como un reparto: acciones sueltas, cripto y oro no pueden sumar más del 100 % ----------
-   Al subir una, las otras bajan (la más grande primero). Lo que queda es para fondos y lo demás. El máximo en una
-   sola empresa va dentro de las acciones sueltas: nunca puede ser mayor. */
-const REPARTO = [['lim', 'Acciones sueltas', 'empresas compradas una a una, fuera de fondos', 100], ['cripto', 'Cripto', '', 50], ['oro', 'Oro y materias primas', '', 50]];
-function htmlLimites(acc, cri, oro, emp, caida) {
-  const v = { lim: acc, cripto: cri, oro };
-  const desl = (n, t, sub, max, val, cl) => `<label class="rp-desl ${cl}"><span class="rp-t"><span>${t}</span><b><output data-o="${n}">${fmtNum(val, 0)}</output> %</b></span><input type="range" name="${n}" min="0" max="${max}" step="1" value="${val}">${sub ? `<small class="k">${sub}</small>` : ''}</label>`;
-  return `<div class="reparto" id="reparto">
-      <p class="nota">Lo máximo que quieres tener en cada cosa. Si al subir uno el total pasa del 100 %, los demás bajan solos.</p>
-      <div class="rp-barra" aria-hidden="true"><i class="rb-lim"><i class="rb-emp"></i></i><i class="rb-cripto"></i><i class="rb-oro"></i><i class="rb-resto"></i></div>
-      ${REPARTO.map(([n, t, sub, max]) => desl(n, t, sub, max, Math.min(max, v[n]), 'rp-' + n)).join('')}
-      <p class="rp-queda"><span>Fondos y lo demás</span><b><output data-o="resto"></output> %</b></p>
-      ${desl('empresa', 'Una sola empresa', 'dentro de las acciones sueltas: nunca más que ellas', Math.max(acc, 1), Math.min(emp, acc), 'rp-empresa')}
-      <label class="campo">${L('Caída desde máximos que no quieres pasar (%)', 'Drop from the high you don’t want to go past (%)')}<input name="caida" inputmode="decimal" value="${caida != null ? fmtNum(caida, 0) : ''}" placeholder="${L('Vacío: sin límite', 'Empty: no limit')}"><small class="k">${L('Frente al máximo de los últimos 12 meses de lo que tienes invertido. Solo te avisamos del hecho.', 'Against the 12-month high of what you hold invested. We only tell you the fact.')}</small></label>
-    </div>`;
-}
-function enlazarReparto(rp) {
-  if (!rp) return;
-  const R = (n) => rp.querySelector(`[name="${n}"]`), grupo = REPARTO.map(([n]) => n);
-  const pintarRp = () => {
-    const val = (n) => +R(n).value, a = val('lim'), resto = Math.max(0, 100 - grupo.reduce((t, n) => t + val(n), 0));
-    for (const o of rp.querySelectorAll('output[data-o]')) o.textContent = fmtNum(o.dataset.o === 'resto' ? resto : val(o.dataset.o), 0);
-    for (const n of grupo) rp.querySelector('.rp-barra > .rb-' + n).style.width = val(n) + '%';
-    rp.querySelector('.rp-barra .rb-resto').style.width = resto + '%';
-    rp.querySelector('.rb-emp').style.width = (a ? Math.min(100, (val('empresa') / a) * 100) : 0) + '%';
-    for (const n of [...grupo, 'empresa']) { const el = R(n); el.style.setProperty('--v', ((el.value - el.min) / ((el.max - el.min) || 1)) * 100 + '%'); }
-  };
-  const ajusta = (movido) => {
-    let sobra = grupo.reduce((t, n) => t + +R(n).value, 0) - 100;
-    if (sobra > 0) for (const n of grupo.filter((x) => x !== movido).sort((x, y) => R(y).value - R(x).value)) {
-      const q = Math.min(+R(n).value, sobra); R(n).value = +R(n).value - q; sobra -= q; if (sobra <= 0) break;
-    }
-    const a = +R('lim').value, e = R('empresa');
-    e.max = Math.max(a, 1); if (+e.value > a) e.value = a;
-    pintarRp();
-  };
-  for (const n of [...grupo, 'empresa']) R(n).addEventListener('input', () => ajusta(n));
-  pintarRp();
-}
-function barraLimite(t, actual, limite, sub) {
-  const pasa = actual > limite + MARGEN_LIM;
-  return `<div class="pf-lim${pasa ? ' pasa' : ''}"><div class="pf-lim-t"><span>${t}</span><b>${fmtNum(actual, 1)} %<small> de ${fmtNum(limite, 0)} %</small></b></div>
-    <div class="pf-barra"><i style="width:${Math.min(100, (actual / Math.max(limite, 0.1)) * 100).toFixed(0)}%"></i></div>${sub ? `<small class="k">${sub}</small>` : ''}</div>`;
-}
-function htmlPerfil(M) {
-  const e = estadoPerfil(M), p = e.p, vacio = perfilVacio();
-  const fila = (t, v) => `<div><dt>${t}</dt><dd>${v || '<span class="k">sin decir</span>'}</dd></div>`;
-  const metas = e.metas;
-  const lectura = (() => {
-    if (!e.reco) return '';
-    // por la misma banda que «Tus objetivos frente a tu cartera» (antes, ±15 puntos sobre el centro: se contradecían)
-    const dif = e.pctBolsa > e.reco.max ? e.pctBolsa - e.reco.max : e.pctBolsa < e.reco.min ? e.pctBolsa - e.reco.min : 0;
-    const quien = (IDIOMA === 'en' ? [p.edad ? `${p.edad} years old` : '', p.horizonte ? `money needed ${trad(textoHorizonte(p.horizonte))}` : '', p.riesgo ? trad(RIESGO[p.riesgo][2]).toLowerCase() : ''] : [p.edad ? `${p.edad} años` : '', p.horizonte ? `el dinero ${textoHorizonte(p.horizonte)}` : '', p.riesgo ? RIESGO[p.riesgo][2].toLowerCase() : '']).filter(Boolean).join(', ');
-    return `<div class="pf-lectura${dif > 10 || dif < -15 ? ' aviso' : ''}">
-      <div class="pf-medidor" role="img" aria-label="${L(`En bolsa: ${fmtNum(e.pctBolsa, 0)} %. Para tu perfil: entre ${e.reco.min} y ${e.reco.max} %`, `In stocks: ${fmtNum(e.pctBolsa, 0)} %. For your profile: between ${e.reco.min} and ${e.reco.max} %`)}"><span class="pf-rango" style="left:${e.reco.min}%;width:${e.reco.max - e.reco.min}%"></span><span class="pf-tu" style="left:${Math.min(100, e.pctBolsa).toFixed(1)}%"></span></div>
-      <div class="pf-medidor-ej"><span>0 %</span><span>${L('100 % en bolsa', '100 % in stocks')}</span></div>
-      <p>${L(`<b>Para tu perfil${quien ? ` (${esc(quien)})` : ''}, lo normal es tener entre un ${e.reco.min} y un ${e.reco.max} % en bolsa.</b> Tú tienes un ${fmtNum(e.pctBolsa, 0)} %.`, `<b>For your profile${quien ? ` (${esc(quien)})` : ''}, the usual is between ${e.reco.min} and ${e.reco.max} % in stocks.</b> You have ${fmtNum(e.pctBolsa, 0)} %.`)} <span>${dif > 0 ? 'Arriesgas más de lo que encaja contigo: en una caída fuerte lo notarías mucho. Lo que aportes, mejor a renta fija o monetario hasta acercarte.' : dif < 0 ? 'Vas más conservador de lo que te permite tu perfil: a largo plazo, más bolsa suele dar bastante más.' : 'Encaja.'}</span></p>
-    </div>`;
-  })();
-  return `
-    ${htmlPreguntasIA()}
-    ${vacio ? `<section class="pf-empieza">${dibujo('perfil')}<div><h2>Cuéntale a Toisón quién eres</h2><p>Tu edad, a qué te dedicas, cuándo vas a necesitar el dinero y cuánto riesgo aguantas. Es un minuto y con eso la IA, las ideas y el Paso a paso te aconsejan a tu medida: no se invierte igual a los 24 que a los 60.</p><button class="btn pri" data-accion="perfil-guiado">Empezar</button></div></section>` : perfilIncompleto() ? `<section class="pf-empieza pf-medias"><div><h2>Tu perfil está a medias</h2><p>${L(`Te faltan ${[!perfil().edad && 'tu edad', !perfil().horizonte && 'cuándo necesitarás el dinero', !perfil().riesgo && 'cuánto riesgo aguantas'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' y $1')}. Sin eso, la IA te aconseja casi a ciegas.`, `Still missing: ${[!perfil().edad && 'your age', !perfil().horizonte && 'when you will need the money', !perfil().riesgo && 'how much risk you can take'].filter(Boolean).join(', ').replace(/, ([^,]*)$/, ' and $1')}. Without it, GrowIA is advising you almost blind.`)}</p><button class="btn pri" data-accion="perfil-guiado">Terminarlo</button></div></section>` : ''}
-    <div class="pf-grid">
-      ${vacio ? '' : `<section class="pf-card" aria-labelledby="hTu"><header><h2 id="hTu">Tú</h2><button class="enlace" data-accion="perfil">Editar</button></header>
-        <dl class="pf-dl">${fila('Edad', p.edad ? `${p.edad} años` : '')}${fila('Vives en', nombreComunidad(p.comunidad))}${fila('Ahora mismo', situacionTxt(p.situacion))}${fila('Necesitarás la mayor parte', p.horizonte ? textoHorizonte(p.horizonte) : '')}${fila('Si cayera un 30 %', p.riesgo ? `${RIESGO[p.riesgo][0]} ${RIESGO[p.riesgo][1]}` : '')}${fila('Experiencia', EXPERIENCIA[p.experiencia])}${fila('Buscas', ESTILO[p.estilo])}${fila('Deudas', DEUDAS[p.deudas])}</dl>
-        ${lectura}
-      </section>`}
-      <section class="pf-card" aria-labelledby="hLim"><header><h2 id="hLim">Tus límites</h2><button class="enlace" data-accion="perfil">Editar</button></header>
-        ${barraLimite('Acciones sueltas', e.pctSueltas, +(S.cartera.limite_acciones ?? 20), 'empresas compradas una a una, fuera de fondos')}
-        ${barraLimite('Cripto', e.pctCripto, limiteDe('cripto'))}
-        ${e.pctOro > 0 ? barraLimite('Oro y materias primas', e.pctOro, limiteDe('oro')) : ''}
-        ${e.mayor ? barraLimite(`Una sola empresa: ${esc(e.mayor.f.inst.corto)}`, e.mayor.pct, limiteDe('empresa'), 'la que más pesa de las que tienes sueltas') : ''}
-        ${limiteCaida() != null && caidaActual(M) ? barraLimite('Caída desde máximos', caidaActual(M).ahora, limiteCaida(), 'frente al máximo de los últimos 12 meses') : ''}
-        ${e.colchon ? `<div class="pf-lim${e.seguro < e.colchon * 0.9 ? ' pasa' : ''}"><div class="pf-lim-t"><span>Colchón para imprevistos</span><b>${eur(e.seguro, 0)}<small> de ${eur(e.colchon, 0)}</small></b></div><div class="pf-barra ok"><i style="width:${Math.min(100, (e.seguro / e.colchon) * 100).toFixed(0)}%"></i></div><small class="k">${p.colchon_meses || 6} meses de tus gastos, en efectivo, monetarios y renta fija</small></div>` : '<p class="k">Pon tus gastos al mes en Editar y Toisón te calcula el colchón que deberías tener aparte.</p>'}
-      </section>
-      <section class="pf-card pf-metas" aria-labelledby="hMet"><header><h2 id="hMet">Tus metas</h2>${metas.length ? `<button class="btn peq" data-accion="meta">${ICONOS.mas}Añadir</button>` : ''}</header>
-        ${metas.length ? `<ul class="metas">${metas.map((m) => `<li class="${m.ok === false ? 'falta' : 'ok'}"><div class="meta-cab"><b>${esc(m.n)}</b><span class="k">${eur(m.importe, 0)}${m.anio ? ` en ${m.anio}` : ''}</span><button class="ib" data-accion="meta" data-id="${esc(m.id)}" aria-label="Editar la meta">${ICONOS.lapiz}</button></div><div class="pf-barra ok"><i style="width:${m.pct.toFixed(0)}%"></i></div><p>${textoMeta(m)}</p></li>`).join('')}</ul>` : '<p class="k">Algo con cifra y fecha: la entrada de un piso, un coche, la boda, llegar a 100.000 €, dejar de trabajar a los 55… Toisón calcula si llegas con lo que aportas y cuánto te falta.</p><button class="btn peq" data-accion="meta">' + ICONOS.mas + 'Añadir tu primera meta</button>'}
-      </section>
-      <section class="pf-card" aria-labelledby="hPIA"><header><h2 id="hPIA">Lo que la IA debe saber</h2><button class="enlace" data-accion="perfil-ia">Editar</button></header>
-        <p class="pf-yo">${S.cartera.asesor && S.cartera.asesor.sobre_mi ? esc(S.cartera.asesor.sobre_mi) : '<span class="k">Tus planes, tus reglas, lo que no quieres comprar nunca, si vas a cambiar de trabajo… Lo que quieras que tenga en cuenta.</span>'}</p>
-        ${(p.respuestas || []).length ? `<details class="mas"><summary>Lo que le has contestado (${p.respuestas.length})</summary><ul class="pf-resp">${p.respuestas.slice().reverse().map((r) => `<li><span class="k">${esc(r.q)}</span><b>${esc(r.a)}</b></li>`).join('')}</ul></details>` : ''}
-      </section>
-    </div>`;
-}
-
 function preguntarInicio(luego = () => {}) {
   const hoy = hoyIso().slice(0, 7), prim = (() => { const v = inicioCartera(); return v ? v.slice(0, 7) : ''; })();
   const h = hoja(L('¿Desde cuándo inviertes?', 'Since when have you been investing?'), `<form id="fIni" class="pf-form" novalidate>
@@ -363,51 +278,6 @@ function preguntarInicio(luego = () => {}) {
     const v = $('#fIni', h.el).ini.value;
     if (!/^\d{4}-\d{2}$/.test(v) || v > hoy) { $('#errIni', h.el).textContent = L('Pon el mes y el año en que empezaste.', 'Enter the month and year you started.'); return; }
     guardar(v);
-  };
-}
-function editarPerfil() {
-  const p = perfil();
-  const radios = (nombre, obj, actual, fmt = (k, v) => esc(v)) => Object.entries(obj).map(([k, v]) => `<label class="opc"><input type="radio" name="${nombre}" value="${k}"${actual === k ? ' checked' : ''}><span>${fmt(k, v)}</span></label>`).join('');
-  const h = hoja('Tu perfil de inversor', `<form id="fPerfil" class="pf-form" novalidate>
-    <p class="nota" style="margin:0">Va dentro de tu cartera cifrada. Con esto la IA, el Paso a paso y las ideas se ajustan a ti.</p>
-    <div class="form-grid">
-      <label class="campo">Tu nombre<input name="nombre" maxlength="40" autocomplete="given-name" value="${val(p.nombre || LS.get('inv-nombre', '') || '')}" placeholder="Para saludarte al entrar"></label>
-      <label class="campo">Edad<input name="edad" inputmode="numeric" value="${val(p.edad)}" placeholder="24"></label>
-      <label class="campo">Dónde vives<select name="comunidad">${opcionesComunidad(p.comunidad)}</select><small>Para tus impuestos (País Vasco y Navarra tienen su propia escala) y las noticias de tu comunidad.</small></label>
-      <label class="campo">¿Cuándo necesitarás la mayor parte del dinero?<select name="horizonte"><option value="">Elige</option>${HORIZONTES_P.map(([k, t]) => `<option value="${k}"${+p.horizonte === k ? ' selected' : ''}>${t}</option>`).join('')}</select></label>
-    </div>
-    <fieldset class="opciones"><legend>A qué te dedicas <span class="k">(puedes marcar varias)</span></legend><div class="opc-fila">${(() => { const sel = new Set(String(p.situacion || '').split(',')); return Object.entries(SITUACION_YO).map(([k, v]) => `<label class="opc"><input type="checkbox" name="situacion" value="${k}"${sel.has(k) ? ' checked' : ''}><span>${esc(v)}</span></label>`).join(''); })()}</div></fieldset>
-    <fieldset class="opciones"><legend>Si tu cartera cayera un 30 % en unos meses, ¿qué harías?</legend><div class="opc-fila">${radios('riesgo', RIESGO, p.riesgo, (k, v) => `<b>${v[0]}</b><small>${v[1]}</small>`)}</div></fieldset>
-    <fieldset class="opciones"><legend>¿Cuánto llevas invirtiendo?</legend><div class="opc-fila">${radios('experiencia', EXPERIENCIA, p.experiencia)}</div></fieldset>
-    <label class="campo">Empecé a invertir en<input type="month" name="ini" max="${hoyIso().slice(0, 7)}" value="${/^\d{4}-\d{2}/.test(p.inicio_inversion || '') ? esc(String(p.inicio_inversion).slice(0, 7)) : ''}"><small>Más o menos. «Inicio» en la gráfica cuenta desde aquí.</small></label>
-    <fieldset class="opciones"><legend>Qué buscas</legend><div class="opc-fila">${radios('estilo', ESTILO, p.estilo)}</div></fieldset>
-    <fieldset class="opciones"><legend>Deudas que estés pagando</legend><div class="opc-fila">${radios('deudas', DEUDAS, p.deudas)}</div></fieldset>
-    <div class="form-grid">
-      <label class="campo">Gastos al mes (€)<input name="gastos" inputmode="decimal" value="${val(p.gastos_mes)}" placeholder="1.200"><small>De media. Sirve para calcular tu colchón.</small></label>
-      <label class="campo">Colchón<select name="colchon">${[3, 6, 9, 12].map((n) => `<option value="${n}"${+p.colchon_meses === n ? ' selected' : ''}>${n} meses de gastos</option>`).join('')}</select><small>Con trabajo fijo bastan 3-6; si no, mejor 9-12.</small></label>
-      <label class="campo">Ingresos netos al mes (€)<input name="ingresos" inputmode="decimal" value="${val(p.ingresos_mes)}" placeholder="Opcional"><small>Para saber cuánto podrías aportar.</small></label>
-    </div>
-    <h3 class="pf-sub">Tus límites</h3>
-    ${htmlLimites(+(S.cartera.limite_acciones ?? 20), limiteDe('cripto'), limiteDe('oro'), limiteDe('empresa'), limiteCaida())}
-    <div class="error" id="errPerfil"></div>
-    <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div>
-  </form>`, null, true);
-  enlazarReparto($('#reparto', h.el));
-  $('#fPerfil', h.el).onsubmit = async (ev) => {
-    ev.preventDefault();
-    const f = ev.target, n = (x) => { const v = numero(x); return v == null || isNaN(v) ? null : v; }, r = (k) => (f.querySelector(`[name=${k}]:checked`) || {}).value || null;
-    const edad = n(f.edad.value), lim = n(f.lim.value), cri = n(f.cripto.value), emp = n(f.empresa.value), cai = n(f.caida.value);
-    if (edad != null && (edad < 14 || edad > 100)) { $('#errPerfil', h.el).textContent = 'Revisa la edad.'; return; }
-    if ([lim, cri, emp].some((x) => x != null && (x < 0 || x > 100))) { $('#errPerfil', h.el).textContent = 'Los límites van de 0 a 100 %.'; return; }
-    if (cai != null && (cai < 1 || cai > 90)) { $('#errPerfil', h.el).textContent = 'La caída va de 1 a 90 %, o vacía si no quieres límite.'; return; }
-    const antes = S.cartera.perfil || {};
-    const nombre = (f.nombre.value || '').trim().slice(0, 40) || null;
-    if (!S.demo) { if (nombre) LS.set('inv-nombre', nombre); else LS.del('inv-nombre'); }
-    S.cartera.perfil = { ...antes, inicio_inversion: f.ini.value || (antes.inicio_inversion === 'auto' ? 'auto' : null), nombre, edad, comunidad: f.comunidad.value || null, horizonte: n(f.horizonte.value), situacion: [...f.querySelectorAll('[name=situacion]:checked')].map((x) => x.value).join(',') || null, riesgo: r('riesgo'), experiencia: r('experiencia'), estilo: r('estilo'), deudas: r('deudas'), gastos_mes: n(f.gastos.value), colchon_meses: n(f.colchon.value) || 6, ingresos_mes: n(f.ingresos.value), limite_cripto: cri ?? 5, limite_empresa: emp ?? 10, limite_oro: n(f.oro.value) ?? 10, limite_caida: cai, actualizado: new Date().toISOString() };
-    if (lim != null) S.cartera.limite_acciones = lim;
-    AS.foto = null;
-    await guardarYPintar('Perfil de inversor', h);
-    toast('Guardado. La IA rehará sus consejos con tu perfil.', 4000);
   };
 }
 /* El perfil guiado: una pregunta por pantalla, con botones grandes, en vez del formulario largo. Sale solo al entrar
@@ -634,22 +504,16 @@ function pasosPerfil(M, add) {
   if (perfilVacio()) add('mes', { id: 'perfil:0', cuando: 'un minuto', t: 'Cuéntale a Toisón tu edad, tus metas y cuánto riesgo aguantas', pq: 'Con eso estos pasos, las ideas y la IA se ajustan a ti: no se invierte igual a los 24 que a los 60.', acc: '<button class="enlace" data-accion="perfil-guiado">Rellenar tu perfil</button>' });
   if (p.deudas === 'consumo') add('mes', { id: `deuda:${mes}`, cuando: 'antes que nada', t: 'Liquida los préstamos o tarjetas antes de invertir más', pq: 'Suelen costar un 7-25 % al año: devolverlos es una rentabilidad segura que la bolsa no te garantiza.', como: 'Lo que ibas a aportar este mes, a amortizar el préstamo más caro. Las aportaciones automáticas, en pausa hasta acabar.' });
   const cubreVentas = sum(M.filas.map((f) => planVenta(f, M)).filter(Boolean), (pl) => pl.aColchon || 0);
-  if (e.colchon && e.seguro < e.colchon * 0.9 && e.colchon - e.seguro - cubreVentas > 50) add('mes', { id: `colchonf:${mes}`, cuando: 'antes de meter más en bolsa', t: `Completa tu colchón: te faltan ${eur(e.colchon - e.seguro - cubreVentas, 0)}${cubreVentas > 0.5 ? ` más, aparte de lo de las ventas` : ''}`, pq: `Son ${p.colchon_meses} meses de tus gastos (${eur(e.colchon, 0)}). Ahora tienes ${eur(e.seguro, 0)} entre efectivo, monetarios y renta fija.`, como: 'Ve apartando cada mes en el efectivo remunerado de tu bróker o en un fondo monetario hasta llegar. Es el dinero de los imprevistos: así nunca tienes que vender en una caída.', imp: 'Los intereses del efectivo remunerado tributan como los dividendos, en la base del ahorro (desde el 19 %). Un fondo monetario no reparte: solo pagas por lo ganado cuando lo vendes.', acc: '<a class="enlace" href="#objetivos">Ver tu perfil</a>' });
+  if (e.colchon && e.seguro < e.colchon * 0.9 && e.colchon - e.seguro - cubreVentas > 50) add('mes', { id: `colchonf:${mes}`, cuando: 'antes de meter más en bolsa', t: `Completa tu colchón: te faltan ${eur(e.colchon - e.seguro - cubreVentas, 0)}${cubreVentas > 0.5 ? ` más, aparte de lo de las ventas` : ''}`, pq: `Son ${p.colchon_meses} meses de tus gastos (${eur(e.colchon, 0)}). Ahora tienes ${eur(e.seguro, 0)} entre efectivo, monetarios y renta fija.`, como: 'Ve apartando cada mes en el efectivo remunerado de tu bróker o en un fondo monetario hasta llegar. Es el dinero de los imprevistos: así nunca tienes que vender en una caída.', imp: 'Los intereses del efectivo remunerado tributan como los dividendos, en la base del ahorro (desde el 19 %). Un fondo monetario no reparte: solo pagas por lo ganado cuando lo vendes.', acc: '<a class="enlace" href="#tu-colchon">Ver tu perfil</a>' });
   const limC = limiteDe('cripto');
   if (e.pctCripto > limC + 1 && e.total && !M.filas.some((f) => f.inst.clase === 'Cripto' && planVenta(f, M))) { const exceso = e.cripto - (limC / 100) * e.total; add('mes', { id: `limcripto:${mes}`, cuando: 'sin prisa', t: `La cripto pasa de tu límite: ${fmtNum(e.pctCripto, 1)} % de un ${fmtNum(limC, 0)} %`, pq: `Para volver a tu ${fmtNum(limC, 0)} % tendrías que pasar unos ${eur(exceso, 0)} a otra cosa, o dejar de comprar cripto hasta que tus aportaciones la diluyan.`, como: 'Vende esa parte en Bitvavo, pásala a tu banco y de ahí a tu fondo indexado.', imp: 'Si vendes con ganancia, tributa como cualquier venta (19-23 %). Cambiarla por otra cripto también cuenta como venta.' }); }
-  if (e.reco && e.pctBolsa - e.reco.pct > 15) add('anio', { id: `perfilbolsa:${mes}`, cuando: 'poco a poco', t: `Tu cartera arriesga más de lo que encaja contigo: ${fmtNum(e.pctBolsa, 0)} % en bolsa`, pq: `Para tu edad, tu plazo y lo que dices aguantar, lo normal es un ${e.reco.min}-${e.reco.max} %.`, como: 'Sin vender nada: manda las próximas aportaciones a un fondo de renta fija o monetario hasta acercarte.', imp: 'Así no pagas nada: no vendes, solo cambias adónde va lo nuevo. Entre fondos, cambia con traspasos.', acc: '<a class="enlace" href="#objetivos">Ver tu perfil</a>' });
+  if (e.reco && e.pctBolsa - e.reco.pct > 15) add('anio', { id: `perfilbolsa:${mes}`, cuando: 'poco a poco', t: `Tu cartera arriesga más de lo que encaja contigo: ${fmtNum(e.pctBolsa, 0)} % en bolsa`, pq: `Para tu edad, tu plazo y lo que dices aguantar, lo normal es un ${e.reco.min}-${e.reco.max} %.`, como: 'Sin vender nada: manda las próximas aportaciones a un fondo de renta fija o monetario hasta acercarte.', imp: 'Así no pagas nada: no vendes, solo cambias adónde va lo nuevo. Entre fondos, cambia con traspasos.', acc: '<a class="enlace" href="#tu-colchon">Ver tu perfil</a>' });
   for (const m of e.metas) {
     if (m.tipo !== 'llegar' && m.meses && m.meses <= 36) add(m.meses <= 6 ? 'mes' : 'seis', { id: `metaseg:${m.id}`, cuando: `para ${m.anio}`, t: `Pon a salvo el dinero de «${esc(m.n)}»`, pq: `La necesitas en ${cuando(m.meses)}: si la bolsa cae justo antes, no da tiempo a que se recupere.`, como: `Ve pasando ${eur(m.importe, 0)} a un monetario o a renta fija corta, poco a poco, antes de ${m.anio}.`, imp: 'De un fondo a otro, con traspaso: no pagas nada hasta que saques el dinero. Si vendes acciones o ETF, la ganancia tributa al vender.' });
-    else if (m.falta > 0) add('anio', { id: `metafalta:${m.id}:${mes}`, cuando: m.anio ? `para ${m.anio}` : '', t: `Para «${esc(m.n)}» te faltarían unos ${eur(m.falta, 0)}`, pq: `Lo probable es tener ${euCorto(m.prob)} en ${m.anio} y necesitas ${eur(m.importe, 0)}.`, como: `Súbele unos ${eur(Math.ceil(m.extraMes / 10) * 10, 0)} al mes a la aportación, o retrasa la meta un par de años.`, acc: '<a class="enlace" href="#objetivos">Ver tus metas</a>' });
+    else if (m.falta > 0) add('anio', { id: `metafalta:${m.id}:${mes}`, cuando: m.anio ? `para ${m.anio}` : '', t: `Para «${esc(m.n)}» te faltarían unos ${eur(m.falta, 0)}`, pq: `Lo probable es tener ${euCorto(m.prob)} en ${m.anio} y necesitas ${eur(m.importe, 0)}.`, como: `Súbele unos ${eur(Math.ceil(m.extraMes / 10) * 10, 0)} al mes a la aportación, o retrasa la meta un par de años.`, acc: '<a class="enlace" href="#tu-metas">Ver tus metas</a>' });
   }
 }
 
-function vistaFuturo(M) {
-  const t = S.futTab === 'proy' ? 'proy' : 'perfil';
-  return `<div class="vista-cab"><h1>Objetivos</h1><p>Quién eres como inversor, para qué inviertes y cuánto podrías tener. La IA, las ideas y el Paso a paso se ajustan a esto.</p></div>
-  <div class="subvistas dos-op" id="futTabs" role="group" aria-label="Qué ver"><button data-fut="perfil" aria-pressed="${t === 'perfil'}">${ICONOS.perfil}Tú y tus metas${preguntasIA().length ? `<span class="cuenta">${preguntasIA().length}</span>` : ''}</button><button data-fut="proy" aria-pressed="${t === 'proy'}">${ICONOS.proy}Proyección</button></div>
-  ${t === 'perfil' ? htmlPerfil(M) : htmlProyeccion(M)}`;
-}
 function htmlProyeccion(M) {
   const pr = proyeccion(M, cfgProy());
   const c = pr.cfg;
@@ -686,7 +550,7 @@ function htmlProyeccion(M) {
   <div class="dos" style="margin-top:48px">
     <section aria-labelledby="hHor">
       <div class="sec-cab"><h2 id="hHor">Por horizonte</h2><span class="k">${c.real ? 'en euros de hoy' : 'en euros de cada año'}</span></div>
-      <div class="tabla-w"><table class="resp"><thead><tr><th>Dentro de</th><th class="r">Habrás puesto</th><th class="r">Si va mal</th><th class="r">Lo probable</th><th class="r">Si va bien</th></tr></thead><tbody>
+      <div class="tabla-w" tabindex="0" role="region" aria-label="${L('Por horizonte', 'By horizon')}"><table class="resp"><thead><tr><th>Dentro de</th><th class="r">Habrás puesto</th><th class="r">Si va mal</th><th class="r">Lo probable</th><th class="r">Si va bien</th></tr></thead><tbody>
         ${HORIZONTES.map((h) => { const k = h * 12; return `<tr class="${h === H ? 'activa' : ''}"><td><b style="font-weight:600">${h} años</b><small>${anioDe(pr.fechas[k])}</small></td><td class="r">${euCorto(pr.aportado[k])}</td><td class="r down">${euCorto(pr.p10[k])}</td><td class="r acento">${euCorto(pr.p50[k])}</td><td class="r up">${euCorto(pr.p90[k])}</td></tr>`; }).join('')}
       </tbody></table></div>
     </section>
@@ -697,7 +561,7 @@ function htmlProyeccion(M) {
   </div>
   <section style="margin-top:48px" aria-labelledby="hSup"><details class="sec-det"${innerWidth > 680 ? ' open' : ''}>
     <summary class="sec-cab"><h2 id="hSup">Con qué se calcula</h2><span class="k">tu cartera hoy: ${fmtNum(pr.mu, 1)} % al año esperado; se movería un ${fmtNum(pr.sd, 0)} % a largo plazo</span></summary>
-    <div class="tabla-w"><table class="resp"><thead><tr><th>Tipo de activo</th><th class="r">Tienes</th><th class="r">Va de tus aportaciones</th><th class="r">Rentabilidad esperada</th><th class="r">Volatilidad</th></tr></thead><tbody>
+    <div class="tabla-w" tabindex="0" role="region" aria-label="${L('Por tipo de activo', 'By asset type')}"><table class="resp"><thead><tr><th>Tipo de activo</th><th class="r">Tienes</th><th class="r">Va de tus aportaciones</th><th class="r">Rentabilidad esperada</th><th class="r">Volatilidad</th></tr></thead><tbody>
       ${Object.entries(pr.sup).filter(([k]) => pr.ahora[k] > 0 || pr.destino[k] > 0).map(([k, s]) => `<tr><td><b style="font-weight:600">${esc(s.n)}</b></td><td class="r">${pct((pr.ahora[k] / totAhora) * 100, 1)}</td><td class="r">${pct(pr.destino[k] * 100, 0)}</td><td class="r">${pct(s.mu, 1)}</td><td class="r">${pct(s.sd, 0)}</td></tr>`).join('')}
     </tbody></table></div>
     <p class="nota">Rentabilidades y volatilidades a largo plazo en euros, antes de impuestos y después de los gastos de los fondos. Son supuestos razonables, no promesas: la bolsa mundial ha dado de media en torno a un 7 % al año durante décadas, pero con años de −30 %. Como lo que aportas va casi todo a fondos de bolsa, dentro de 10 años la cartera rendiría de media un ${fmtNum(pr.mu10, 1)} % al año con una volatilidad del ${fmtNum(pr.sd10, 0)} %. Las acciones sueltas y Bitcoin tienen la misma rentabilidad esperada que la bolsa o poco más, pero mucho más riesgo: por eso ensanchan el abanico. Cada escenario sigue un camino mes a mes con caídas y subidas al azar, siempre con el mismo sorteo para que los números no cambien al recargar.</p>

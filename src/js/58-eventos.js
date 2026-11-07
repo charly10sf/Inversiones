@@ -31,7 +31,7 @@ document.addEventListener('click', (e) => {
   }
   else if (d.car) { S.carTab = d.car; LS.set('inv-car', S.carTab); pintar(); irArriba('#carTabs'); }
   else if (d.fis) { S.fisTab = d.fis; LS.set('inv-fistab', S.fisTab); pintar(); irArriba('#fisTabs'); }
-  else if (d.fut) { S.futTab = d.fut; LS.set('inv-futtab', S.futTab); pintar(); irArriba('#futTabs'); }
+  else if (d.fut) location.hash = d.fut === 'proy' ? 'proyeccion' : 'objetivos';
   else if ('resp' in d) { const q = t.closest('[data-preg]'); if (q) responderIA(q.dataset.q ? { q: q.dataset.q } : +q.dataset.preg, d.resp); }
   else if (d.zona) { S.radarZona = d.zona; S.radarN = 0; LS.set('inv-zona', S.radarZona); if (S.radarPais && !baseRadar().some((x) => paisRadar(x) === S.radarPais)) { S.radarPais = ''; LS.set('inv-radar-pais', ''); } repintarTablaRadar(); }
   else if (d.orden) { S.radarOrden = d.orden; S.radarN = 0; LS.set('inv-orden2', S.radarOrden); repintarTablaRadar(); }
@@ -74,7 +74,7 @@ document.addEventListener('click', (e) => {
     else if (a === 'perfil-guiado') perfilGuiado();
     else if (a === 'ccaa-cambiar') cambiarComunidad();
     else if (a === 'perfil-aviso-no') { LS.set('inv-perfil-aviso', Date.now()); pintar(); }
-    else if (a === 'limites' || a === 'perfil') editarPerfil();
+    else if (a === 'limites' || a === 'perfil') location.hash = a === 'limites' ? '#tu-limites' : '#tu-perfil';
     else if (a === 'perfil-ia') editarSobreMi();
     else if (a === 'meta') editarMeta(d.id || null);
     else if (a === 'fiscal') editarFiscal();
@@ -130,8 +130,12 @@ function vistaDeHash() {
   if (v === 'plan') { S.irPlan = true; return 'cartera'; }
   if (v === 'impuestos') { S.fisTab = 'tu'; return 'fiscal'; }
   if (v === 'renta') { S.fisTab = 'renta'; return 'fiscal'; }
-  if (v === 'objetivos') { S.futTab = 'perfil'; return 'futuro'; }
-  if (v === 'proyeccion') { S.futTab = 'proy'; return 'futuro'; }
+  // 0.8.3: la pestaña Tú, con un apartado abierto (el borrador de los límites se pierde al salir de su pantalla)
+  if (v !== 'tu-limites' && v !== 'objetivos') S.tuLim = null;
+  S.tuForm = null;
+  if (v === 'objetivos' || v === 'futuro') { S.tuAp = null; return 'futuro'; }
+  if (v === 'proyeccion') { S.tuAp = 'proy'; return 'futuro'; }
+  const tu = /^tu-(limites|colchon|metas|perfil|ia)$/.exec(v); if (tu) { S.tuAp = tu[1]; return 'futuro'; }
   const w = vistaSegunNav(v);
   return esVista(w) ? w : null;
 }
@@ -140,7 +144,7 @@ window.addEventListener('hashchange', () => {
   S.navego = true;
   if (S.ficha) cerrarFicha(true);
   if (S.carEdit && v !== 'cartera') cerrarCarEdit(true);
-  if (v !== S.vista || /^(renta|impuestos|objetivos|proyeccion|plan)$/.test(location.hash.slice(1))) {
+  if (v !== S.vista || /^(renta|impuestos|objetivos|proyeccion|plan|futuro|tu-[a-z]+)$/.test(location.hash.slice(1))) {
     const k = history.state && history.state.k, y = k ? SCROLLS[k] : null;
     // 0.9 · acabado: la pantalla entra desde el lado del botón que has tocado (a la derecha en la barra, desde la derecha)
     const ks = GRUPOS.map((g) => g.k), ia = ks.indexOf(grupoDe(S.vista).k), ib = ks.indexOf(grupoDe(v).k);

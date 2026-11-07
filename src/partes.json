@@ -22,7 +22,8 @@
     "19-idiomas-y-bloqueo.css",
     "20-acabado.css",
     "21-como-el-icono.css",
-    "22-modo-y-ordenador.css"
+    "22-modo-y-ordenador.css",
+    "23-tu.css"
   ],
   "js": [
     "01-base.js",
@@ -54,6 +55,7 @@
     "25-analisis-ia.js",
     "26-futuro.js",
     "27-objetivos.js",
+    "27b-tu.js",
     "28-ficha.js",
     "29-hojas.js",
     "30-importar.js",

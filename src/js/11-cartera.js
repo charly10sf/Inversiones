@@ -200,7 +200,7 @@ function htmlBloqueCar(k, M) {
     }
     if (k === 'metas') {
       const metas = estadoPerfil(M).metas || [];
-      return `<section aria-labelledby="hMetC"><div class="sec-cab"><h2 id="hMetC">Tus metas</h2><div class="der"><a class="enlace acento" href="#objetivos">${metas.length ? 'Verlas' : 'Añadir una'}</a></div></div>
+      return `<section aria-labelledby="hMetC"><div class="sec-cab"><h2 id="hMetC">Tus metas</h2><div class="der"><a class="enlace acento" href="#tu-metas">${metas.length ? 'Verlas' : 'Añadir una'}</a></div></div>
         ${metas.length ? `<ul class="metas car-metas">${metas.slice(0, 4).map((m) => `<li class="${m.ok === false ? 'falta' : 'ok'}"><div class="meta-cab"><b>${esc(m.n)}</b><span class="k">${eur(m.importe, 0)}${m.anio ? ` en ${m.anio}` : ''}</span></div><div class="pf-barra ok"><i style="width:${(+m.pct || 0).toFixed(0)}%"></i></div></li>`).join('')}</ul>` : '<p class="k">Algo con cifra y fecha: la entrada de un piso, un coche, llegar a 100.000 €… Toisón calcula si llegas.</p>'}</section>`;
     }
     if (k === 'renta') {

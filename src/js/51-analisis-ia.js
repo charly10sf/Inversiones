@@ -240,7 +240,7 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     if (pedida) fin = L('La IA ha revisado tu cartera', 'GrowIA has reviewed your portfolio');
     IA.reintentos = 0;
     // si trae una pregunta nueva: a la vista (y aviso al móvil si lo tienes activado y no estás mirando)
-    if (preguntaNueva()) { if (fueraDeVista()) avisoSistema('pregunta', 'La IA te pregunta', preguntaNueva().x.q, '#objetivos', 'preg:' + clavePreg(preguntaNueva().x)); else setTimeout(() => mostrarPreguntaIA(), 1200); }
+    if (preguntaNueva()) { if (fueraDeVista()) avisoSistema('pregunta', 'La IA te pregunta', preguntaNueva().x.q, '#tu-ia', 'preg:' + clavePreg(preguntaNueva().x)); else setTimeout(() => mostrarPreguntaIA(), 1200); }
   } catch (e) {
     IA.error = /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? L('No hay conexión con la IA.', 'No connection to the AI.') : e.message;
     // 0.8.2d: lo que se arregla solo en unos minutos (saturada, caída, la red): se reintenta; los topes del día, tu no y el

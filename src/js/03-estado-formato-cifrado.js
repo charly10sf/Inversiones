@@ -3,7 +3,7 @@ const S = {
   inst: {}, instOrden: [], ref: null, instCambiados: false, instSha: null,
   precios: null, cartera: null, enc: null, key: null, salt: null, iter: 600000,
   oculto: LS.get('inv-oculto', false), dim: LS.get('inv-dim', 'clase'), base: LS.get('inv-base', 'todo'),
-  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif3', 'ia'), expTab: LS.get('inv-exp', 'posiciones'), carTab: LS.get('inv-car', 'pos'), futTab: LS.get('inv-futtab', 'perfil'), fisTab: LS.get('inv-fistab', 'tu'), numAbierto: null, rutaPlazo: LS.get('inv-ruta-plazo', 'mes'), fichaRango: LS.get('inv-frango', '1A'),
+  rango: LS.get('inv-rango', '1A'), califTab: LS.get('inv-calif3', 'ia'), expTab: LS.get('inv-exp', 'posiciones'), carTab: LS.get('inv-car', 'pos'), fisTab: LS.get('inv-fistab', 'tu'), numAbierto: null, rutaPlazo: LS.get('inv-ruta-plazo', 'mes'), fichaRango: LS.get('inv-frango', '1A'),
   comparar: LS.get('inv-comparar', false), radarZona: LS.get('inv-zona', 'Todas'), radarOrden: LS.get('inv-orden2', 'cap'),
   radarMin: LS.get('inv-radar-min', true), radarPais: String(LS.get('inv-radar-pais', '') || ''), radarSector: String(LS.get('inv-radar-sector', '') || ''), radarTam: ['g', 'm', 'p'].includes(LS.get('inv-radar-tam', '')) ? LS.get('inv-radar-tam', '') : '', radarN: 0, vista: 'cartera', ficha: null,
   ordenPos: LS.get('inv-orden-pos', { k: 'valor', dir: 'desc' }), bench: LS.get('inv-bench', 'fidelity-world'), proy: LS.get('inv-proy', {}), horizonte: LS.get('inv-horizonte', 20), proyCache: null,

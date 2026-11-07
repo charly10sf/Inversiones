@@ -166,7 +166,7 @@ function htmlSubvistas() {
   // en Cartera, tu total en pequeño encima (la gráfica está en Hoy) y el título de la pestaña
   // 0.9: sin el patrimonio arriba (ya está en Hoy) y con las pestañas del detalle
   if (g.k === 'posiciones') return `<div class="ts-grupo"><h1 class="ts-tit">${L('Análisis', 'Analysis')}</h1><p class="ts-sub">${L('Todo el detalle de tu cartera, por dentro.', 'All the detail of your portfolio, inside out.')}</p>${htmlPestAna()}</div>`;
-  if (g.k === 'tu') return `<div class="ts-grupo"><h1 class="ts-tit">${L('Tú', 'You')}</h1>${nav}</div>`;
+  if (g.k === 'tu') return `<div class="ts-grupo${S.vista === 'futuro' && S.tuAp ? ' tu-sub' : ''}"><h1 class="ts-tit">${L('Tú', 'You')}</h1>${nav}</div>`;
   return nav;
 }
 const esVista = (k) => VISTAS.some(([x]) => x === k) || VISTAS_APARTE.some(([x]) => x === k);
@@ -494,7 +494,7 @@ function revisarAvisos(M) {
   }
   // 0.8.2f: tus límites (acciones sueltas, cripto, oro, una empresa). Lo calcula el código con lo que escribiste en Tú:
   // el aviso dice el hecho, sin decirte qué hacer. Una vez por límite cada pocos días mientras siga pasado
-  if (c.lim) for (const x of limitesPasados(M)) avisoSistema('lim', x.titulo || L(`${x.t} pasa de tu límite`, `${x.t} is over your limit`), x.cuerpo || L(`Pesa un ${fmtNum(x.actual, 1)} % de tu cartera y tu límite es ${fmtNum(x.limite, 0)} %.`, `It's ${fmtNum(x.actual, 1)} % of your portfolio and your limit is ${fmtNum(x.limite, 0)} %.`), '#objetivos', `lim:${x.k}:${x.id || ''}`);
+  if (c.lim) for (const x of limitesPasados(M)) avisoSistema('lim', x.titulo || L(`${x.t} pasa de tu límite`, `${x.t} is over your limit`), x.cuerpo || L(`Pesa un ${fmtNum(x.actual, 1)} % de tu cartera y tu límite es ${fmtNum(x.limite, 0)} %.`, `It's ${fmtNum(x.actual, 1)} % of your portfolio and your limit is ${fmtNum(x.limite, 0)} %.`), '#tu-limites', `lim:${x.k}:${x.id || ''}`);
   if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', L(`Mañana: ${e.t}`, `Tomorrow: ${e.t}`), e.s, '#agenda', 'ev:' + e.k);
   if (c.seg) for (const it of siguiendo()) {
     const pr = precioSeguido(it), p = pr && pr.eur;
@@ -631,6 +631,7 @@ function pintar() {
   ponerPreguntale($('#vista')); marcarCifras($('#vista')); pulirHoy(M); if (grupoDe(S.vista).k === 'posiciones') centrarPest();
   if (S.irPlan && S.vista === 'cartera') { S.irPlan = false; setTimeout(() => { const p = $('.car-plan'); if (p) p.scrollIntoView({ block: 'start' }); }, 60); }
   if (S.vista === 'tu') activarSelectorTema($('#vista'));
+  if (S.vista === 'futuro' && S.tuForm) restaurarFormTu();
   // desde «Lo que viene» de Cartera: al llegar al calendario, la fecha que tocaste, abierta y resaltada
   if (S.vista === 'agenda' && S.agIr) {
     const id = S.agIr; S.agIr = null;
