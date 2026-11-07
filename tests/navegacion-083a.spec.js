@@ -15,13 +15,15 @@ const test = base.extend({
 });
 const ir = async (page, h) => { await page.evaluate((x) => { location.hash = x; }, h); await page.waitForTimeout(400); };
 const lista = async (page) => { await crearCuenta(page); await meterCartera(page); await quitarCapas(page); await ir(page, 'cartera'); await quitarCapas(page); };
+// con la máquina cargada, una hoja de la guía puede salir encima a mitad: se quita antes de tocar y se toca con un clic de la página
+const tocar = async (page, sel) => { await quitarCapas(page); await page.locator(sel).first().evaluate((e) => e.click()); };
 const barra = (page) => page.evaluate(() => [...document.querySelectorAll('.navbar a')].map((a) => `${a.innerText.trim()}${a.getAttribute('aria-current') === 'page' ? '*' : ''}`).join(','));
 
 test('móvil: Más en el sitio de Tú abre la hoja con el buscador, Lo tuyo, los fijados y los grupos', async ({ page }, info) => {
   test.skip(info.project.name === 'pc', 'en el ordenador va la K2');
   await lista(page);
   expect(await barra(page)).toBe('Análisis,Mercados,Hoy*,Ideas,Más');
-  await page.locator('.navbar [data-mas]').click();
+  await tocar(page, '.navbar [data-mas]');
   const h = page.locator('.hoja-mas');
   await expect(h).toBeVisible();
   // no se ha ido a Tú: la hoja se abre encima de Hoy
@@ -39,21 +41,21 @@ test('móvil: Más en el sitio de Tú abre la hoja con el buscador, Lo tuyo, los
   await expect(page.locator('.pest-av a[aria-current="page"]')).toHaveText('Ingresos y costes');
   await expect(page.locator('.apartados a')).toHaveText(['Dividendos', 'Costes']);
   // «Atrás» vuelve a donde estabas
-  await page.goBack(); await page.waitForTimeout(400);
-  expect(await page.evaluate(() => S.vista)).toBe('cartera');
+  await page.goBack();
+  await expect.poll(() => page.evaluate(() => S.vista)).toBe('cartera');
 });
 
 test('móvil: los fijados salen en Más y en Hoy; Tú y Herramientas vuelven a Más', async ({ page }, info) => {
   test.skip(info.project.name !== 'movil', 'una vez basta');
   await lista(page);
   await expect(page.locator('#vista .fijados-hoy')).toHaveCount(0);
-  await page.locator('.navbar [data-mas]').click();
+  await tocar(page, '.navbar [data-mas]');
   await page.locator('.hoja-mas [data-fijar="riesgo"]').click();
   await expect(page.locator('.hoja-mas [data-fijar="riesgo"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('.hoja-mas .mas-fij .chip-fij')).toHaveText('Riesgo');
   await page.keyboard.press('Escape');
   await expect(page.locator('#vista .fijados-hoy .chip-fij')).toHaveText('Riesgo');
-  await page.locator('#vista .fijados-hoy .chip-fij').click();
+  await tocar(page, '#vista .fijados-hoy .chip-fij');
   await expect.poll(() => page.evaluate(() => [S.vista, pestAv()].join())).toBe('av,riesgo');
   expect(await page.evaluate(() => LS.get('inv-fijados'))).toEqual(['riesgo']);
   // en Tú y en Herramientas, la barra marca Más y arriba está «‹ Más»
@@ -63,7 +65,7 @@ test('móvil: los fijados salen en Más y en Hoy; Tú y Herramientas vuelven a M
   expect(await barra(page)).toBe('Análisis,Mercados,Hoy,Ideas,Más*');
   await expect(page.locator('#vista .ts-tit')).toHaveText('Herramientas');
   await expect(page.locator('#vista .apartados a')).toHaveText(['Gráfico técnico', 'Laboratorio']);
-  await page.locator('#vista .volver-mas').click();
+  await tocar(page, '#vista .volver-mas');
   await expect(page.locator('.hoja-mas')).toBeVisible();
 });
 
@@ -71,7 +73,7 @@ test('básico: lo del avanzado no sale en la rejilla y el buscador dice «está 
   test.skip(info.project.name !== 'movil', 'una vez basta');
   await lista(page);
   await page.evaluate(() => ponerModo('basico'));
-  await page.locator('.navbar [data-mas]').click();
+  await tocar(page, '.navbar [data-mas]');
   await expect(page.locator('.hoja-mas .mas-rejilla a', { hasText: 'Laboratorio' })).toHaveCount(0);
   await expect(page.locator('.hoja-mas .mas-g', { hasText: 'Herramientas' })).toHaveCount(0);
   await page.locator('.hoja-mas .busca-fun').fill('labor');
@@ -88,10 +90,10 @@ test('ordenador: diez secciones a la izquierda y las páginas de la abierta al l
   const b1 = await page.locator('.k2-iconos').boundingBox(), b2 = await page.locator('.k2-col').boundingBox();
   expect(Math.round(b1.width)).toBe(64); expect(Math.round(b2.width)).toBe(252);
   // Rendimiento: sus páginas, y al tocar una se marca y se abre
-  await page.locator('.k2-iconos [data-sec="rendimiento"]').click();
+  await tocar(page, '.k2-iconos [data-sec="rendimiento"]');
   await expect(page.locator('.k2-tit')).toHaveText('Rendimiento');
   await expect(page.locator('.k2-lista a')).toHaveText(['Rentabilidad', 'Dividendos', 'Costes', 'La IA explica']);
-  await page.locator('.k2-lista a', { hasText: 'Costes' }).click();
+  await quitarCapas(page); await page.locator('.k2-lista a', { hasText: 'Costes' }).evaluate((e) => e.click());
   await expect(page.locator('.k2-lista a[aria-current="page"]')).toHaveText('Costes');
   await expect(page.locator('.k2-iconos [data-sec="rendimiento"]')).toHaveAttribute('aria-current', 'page');
   await expect(page.locator('#panelAv')).toContainText('Lo que pagas', { timeout: 15_000 });
@@ -105,7 +107,7 @@ test('ordenador: diez secciones a la izquierda y las páginas de la abierta al l
   await expect(page.locator('.k2-iconos [data-sec="tuplan"]')).toHaveAttribute('aria-current', 'page');
   // en básico, Herramientas avisa de que está en el avanzado
   await page.evaluate(() => ponerModo('basico'));
-  await page.locator('.k2-iconos [data-sec="herramientas"]').click();
+  await tocar(page, '.k2-iconos [data-sec="herramientas"]');
   await expect(page.locator('.k2-pags')).toContainText('Está en el modo avanzado');
 });
 
@@ -113,7 +115,7 @@ test('ordenador: la IA se agranda a toda la barra y las páginas suben a pestañ
   test.skip(info.project.name !== 'pc', 'solo en el ordenador');
   await lista(page);
   await ir(page, 'posiciones');
-  await page.locator('.riel-ia').click();
+  await tocar(page, '.riel-ia');
   await expect(page.locator('#asesorFondo .asesor')).toBeVisible({ timeout: 10_000 });
   // la IA, abajo: empieza donde estaba su hueco de la segunda barra
   const hueco = await page.locator('#k2Ia').boundingBox(), ia = await page.locator('#asesorFondo').boundingBox();
@@ -126,7 +128,7 @@ test('ordenador: la IA se agranda a toda la barra y las páginas suben a pestañ
   const g = await page.locator('#asesorFondo').boundingBox();
   expect(Math.round(g.width)).toBe(440); expect(Math.round(g.y)).toBe(0);
   await expect(page.locator('#vista .k2-pest a')).toHaveText(['Posiciones', 'Movimientos', 'Día a día']);
-  expect((await page.locator('#vista').boundingBox()).x).toBeGreaterThanOrEqual(504);
+  await expect.poll(async () => (await page.locator('#vista').boundingBox()).x).toBeGreaterThanOrEqual(504);
   // al cerrarla, todo vuelve
   await page.locator('[data-as="cerrar"]').click();
   expect(await page.evaluate(() => document.body.classList.contains('ia-grande'))).toBe(false);
@@ -145,18 +147,18 @@ test('ordenador: Ctrl K abre el buscador; arriba, fijados, Escritorios, avisos y
   await page.locator('.hoja-busca .busca-fun').press('Enter');
   await expect.poll(() => page.evaluate(() => location.hash)).toBe('#av-riesgo');
   // la estrella: tus fijados y lo reciente
-  await page.locator('.k2-top [data-accion="fijados"]').click();
+  await tocar(page, '.k2-top [data-accion="fijados"]');
   await expect(page.locator('.hoja-fij .mas-fij').first()).toContainText('Riesgo');
   await page.keyboard.press('Escape');
   // Escritorios es de Toisón Dorado (aún no está)
   await expect(page.locator('.k2-escr .et-dorado')).toHaveText('Dorado');
-  await page.locator('.k2-escr').click();
+  await tocar(page, '.k2-escr');
   await expect(page.locator('.hoja-escr')).toContainText('Toisón Dorado');
   await page.keyboard.press('Escape');
   // los avisos abren Ajustes por los avisos; la cuenta lleva a Tú
-  await page.locator('.k2-top [data-accion="avisos"]').click();
+  await tocar(page, '.k2-top [data-accion="avisos"]');
   await expect(page.locator('.hoja-fondo [data-av="on"]')).toBeAttached();
   await page.keyboard.press('Escape');
-  await page.locator('.k2-cuenta').click();
+  await tocar(page, '.k2-cuenta');
   await expect.poll(() => page.evaluate(() => S.vista)).toBe('tu');
 });

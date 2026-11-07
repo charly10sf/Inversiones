@@ -90,7 +90,7 @@ test('en el ordenador: la K2 con la IA abajo en la segunda barra, sin tapar la p
   await expect(page.locator('.riel [data-sec="hoy"]')).toHaveAttribute('aria-current', 'page');
   const caja = await page.locator('#vista').boundingBox();
   expect(caja.x).toBeGreaterThanOrEqual(316);
-  await page.locator('.riel-ia').click();
+  await quitarCapas(page); await page.locator('.riel-ia').evaluate((b) => b.click());
   await expect(page.locator('#asesorFondo .asesor')).toBeVisible({ timeout: 10_000 });
   expect(await page.evaluate(() => [document.body.classList.contains('ia-lado'), document.body.style.overflow])).toEqual([true, '']);
   // la IA queda dentro de la segunda barra (64–316 px) y la página, a la derecha, entera
