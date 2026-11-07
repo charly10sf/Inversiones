@@ -1,0 +1,81 @@
+name: Aciertos del radar
+
+# USO INTERNO. Mide cuánto acierta el radar (las ideas de la IA, las que dice evitar y las que la web lleva entre sus mejores)
+# frente al índice, a los 30, 90, 180 y 365 días de cada entrada (scripts/aciertos.py). No se enseña en la app ni se publica:
+# publicar resultados pasados de ideas es publicidad regulada y va primero al abogado de la 0.9. El resultado se guarda en la
+# rama «aciertos» (aciertos.json; la rama es legible porque el repositorio es público, pero nada de la app la usa).
+# De lunes a viernes, a las 22:41 UTC (con los cierres de EEUU ya en «datos»). Solo corre desde main: las ramas de trabajo
+# no escriben en «aciertos»; para probarlo en una rama, «ensayo» hace la pasada y no sube nada.
+on:
+  schedule:
+    - cron: "41 22 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      ensayo:
+        description: "Ensayo: hace la pasada y la enseña en el registro, pero NO sube nada a la rama aciertos"
+        type: boolean
+        default: false
+  push:
+    branches: [main]
+    paths:
+      - "scripts/aciertos.py"
+      - ".github/workflows/aciertos.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aciertos
+  cancel-in-progress: false
+
+jobs:
+  aciertos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      # sin dejar el token guardado: solo lo usa el paso de subir el resultado
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Traer lo de hoy de la rama datos y lo anterior de la rama aciertos
+        run: |
+          mkdir -p datos anterior salida
+          git fetch -q --depth=1 origin datos
+          for f in escaneo.json radar.json radar-mas.json historico.json; do git show origin/datos:$f > datos/$f; done
+          if git fetch -q --depth=1 origin aciertos 2>/dev/null; then git show origin/aciertos:aciertos.json > anterior/aciertos.json || true; fi
+
+      - name: Medir
+        run: python scripts/aciertos.py datos anterior/aciertos.json salida/aciertos.json
+
+      - name: Enseñar el resumen
+        if: always()
+        run: |
+          [ -f salida/aciertos.json ] || exit 0
+          python - <<'PY'
+          import json
+          d = json.load(open("salida/aciertos.json", encoding="utf-8"))
+          print("entradas:", len(d["entradas"]), "última pasada:", d["ultima"])
+          print(json.dumps(d["resumen"], ensure_ascii=False, indent=1))
+          PY
+
+      - name: Subir el resultado a la rama aciertos
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.ensayo }}
+        env:
+          TOKEN: ${{ github.token }}
+        run: |
+          [ -f salida/aciertos.json ] || exit 0
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          cp salida/aciertos.json /tmp/aciertos.json
+          if git fetch -q --depth=1 origin aciertos; then git checkout -q -B aciertos FETCH_HEAD
+          else git checkout -q --orphan aciertos && git rm -rqf . >/dev/null; fi
+          cp /tmp/aciertos.json aciertos.json
+          git add aciertos.json
+          git diff --cached --quiet && exit 0
+          git commit -qm "Aciertos del radar: $(date -u +%Y-%m-%d) [skip ci]"
+          git push -q origin HEAD:refs/heads/aciertos
