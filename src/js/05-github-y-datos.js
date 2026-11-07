@@ -106,10 +106,12 @@ async function cargarDeCuenta() {
   const c = cacheCuenta.get();
   S.cuentaLeida = false; S.cuentaSinRed = false;
   const deCopia = () => { S.cuentaSinRed = true; if (c && (!FB.user || c.uid === FB.user.uid)) { fijarBase(c.baseRev, c.base || c.texto); return { texto: c.texto, sha: null }; } return null; };
-  try { await fbCargar(); } catch (e) { console.warn('Sin Firebase', e); return deCopia(); }
+  try { await fbCargar(); } catch (e) { console.warn('Sin Firebase', e); marcaArr('firebase', 'sin Firebase'); return deCopia(); }
+  marcaArr('firebase');
   if (!FB.user) return null;
   let d;
-  try { d = await conTiempo(leerCuenta(), 12000); } catch (e) { console.warn('No se pudo leer la cuenta', e); return deCopia(); }
+  try { d = await conTiempo(leerCuenta(), 12000); } catch (e) { console.warn('No se pudo leer la cuenta', e); marcaArr('cuenta', 'sin leer, copia'); return deCopia(); }
+  marcaArr('cuenta');
   S.cuentaLeida = true;
   if (d && d.ia) S.iaCuenta = d.ia;
   const pend = LS.get('inv-pend-cuenta') && c && c.uid === FB.user.uid;

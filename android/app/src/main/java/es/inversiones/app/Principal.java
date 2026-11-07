@@ -49,6 +49,7 @@ public class Principal extends Activity {
 
     @Override
     protected void onCreate(Bundle guardado) {
+        Arranque.crear();
         super.onCreate(guardado);
         WEB = Datos.web(this);
         web = new Web(this);
@@ -76,6 +77,7 @@ public class Principal extends Activity {
         web.setWebViewClient(new WebViewClient() {
             @Override
             public void onPageFinished(WebView v, String url) {
+                Arranque.termina();
                 cargada = true;
                 guardarToken();
                 if (actualizarAlCargar) {
@@ -86,6 +88,7 @@ public class Principal extends Activity {
 
             @Override
             public void onPageStarted(WebView v, String url, android.graphics.Bitmap icono) {
+                Arranque.empieza();
                 // de vuelta en GrowFolio (también con «atrás» a medio permiso): otra vez como móvil
                 if (enBanco && url != null && esDeLaWeb(Uri.parse(url))) salirDelBanco();
             }
@@ -157,6 +160,7 @@ public class Principal extends Activity {
 
         tokenPendiente = token(getIntent());
         actualizarAlCargar = getIntent() != null && getIntent().getBooleanExtra("actualizarApp", false);
+        Arranque.cargar();
         if (guardado != null) web.restoreState(guardado);
         else web.loadUrl(direccion(getIntent()));
         // si la web ya se llama GrowFolio, la app se cambia a ella (los datos del móvil son los mismos: mismo sitio)

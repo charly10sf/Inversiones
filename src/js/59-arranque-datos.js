@@ -25,6 +25,8 @@ function arrancar() {
   if (!esVista(S.vista)) S.vista = 'cartera';
   montar();
   pintar();
+  // 0.8.3: Inicio ya está pintado (el cuadro siguiente): la línea del arranque al registro (62-arranque.js)
+  if (!marcaArr.hecho) { marcaArr('inicio'); requestAnimationFrame(() => setTimeout(() => apuntarArranque('inicio'), 0)); }
   LIVE.iniciar();
   // el resto del radar (radar-mas.json), después de abrir: no cuenta en lo que tarda en estar lista
   setTimeout(() => cargarRadarMas().then((n) => { if (n && S.vista === 'expertos') pintar(); }), 4000);
