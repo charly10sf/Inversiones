@@ -97,12 +97,13 @@ function pintar(clase, titulo, cuerpo, botones = btnsAbrir(), seguir = false) {
 }
 
 // lo que dice cada fallo de Firebase
-const pedirOtro = () => ({
+const de = (t, k) => (Object.prototype.hasOwnProperty.call(t, k) ? t[k] : null);
+const pedirOtro = () => (de({
   verifyEmail: L('Pide otro desde Toisón: Ajustes, «Confirma tu correo», o el botón del panel de la IA. Abre siempre el del último correo.', 'Ask for another one in Toisón: Settings, "Confirm your email", or the button in the AI panel. Always open the link in the latest email.'),
   verifyAndChangeEmail: L('Vuelve a cambiar el correo desde Toisón y abre el enlace del último correo.', 'Change the email again in Toisón and open the link in the latest email.'),
   resetPassword: L('Pide otro desde la pantalla de entrar de Toisón: «¿Has olvidado la contraseña?». Abre siempre el del último correo.', 'Ask for another one on the Toisón sign-in screen: "Forgot your password?". Always open the link in the latest email.'),
   recoverEmail: L('Si alguien ha cambiado el correo de tu cuenta sin permiso, escríbenos a hola@toison.es.', 'If someone changed your account email without permission, write to hola@toison.es.'),
-}[modo] || '');
+}, modo) || '');
 function fallo(e) {
   const c = String((e && e.code) || '');
   if (c === 'auth/expired-action-code' || c === 'auth/invalid-action-code') return pintar('estado-mal', L('Este enlace ya no vale', 'This link no longer works'), `<p>${L('Ha caducado o ya se ha usado. Cada correo nuevo deja sin valor los anteriores.', 'It has expired or has already been used. Each new email makes the earlier ones stop working.')}</p><p>${pedirOtro()}</p>`);
@@ -116,7 +117,9 @@ let au, auth;
 async function cargarFirebase() {
   const b = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
   const [a, m] = await Promise.all([import(b + 'firebase-app.js'), import(b + 'firebase-auth.js')]);
-  au = m; auth = m.getAuth(a.initializeApp(FB_CFG, 'cuenta'));
+  // sin guardar la sesión ni cargar lo de las ventanas de Google: solo hacen falta los códigos de acción
+  const app = a.initializeApp(FB_CFG, 'cuenta');
+  au = m; auth = m.initializeAuth && m.inMemoryPersistence ? m.initializeAuth(app, { persistence: m.inMemoryPersistence }) : m.getAuth(app);
   try { auth.languageCode = idioma; } catch (e) {}
 }
 
@@ -172,7 +175,7 @@ async function nuevaClave() {
 }
 
 (async () => {
-  const hacer = { verifyEmail: () => verificar(false), verifyAndChangeEmail: () => verificar(true), recoverEmail: recuperar, resetPassword: nuevaClave }[modo];
+  const hacer = de({ verifyEmail: () => verificar(false), verifyAndChangeEmail: () => verificar(true), recoverEmail: recuperar, resetPassword: nuevaClave }, modo);
   if (!hacer || !codigo) return pintar('estado-mal', L('Enlace incompleto', 'Incomplete link'), `<p>${L('A este enlace le falta una parte. Ábrelo otra vez desde el correo, entero, o pide otro desde Toisón.', 'This link is missing a part. Open it again from the email, in full, or ask for another one in Toisón.')}</p>`);
   try { await cargarFirebase(); } catch (e) { return fallo({ code: 'auth/network-request-failed' }); }
   try { await hacer(); } catch (e) { console.warn(e); fallo(e); }

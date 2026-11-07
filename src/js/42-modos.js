@@ -40,31 +40,51 @@ async function mandarCorreoConfirmacion() {
 }
 const txtCorreoMandado = (correo) => L(`Te he mandado un correo a ${correo}. Abre el enlace del último que te llegue (los de antes ya no valen; si no lo ves, mira en spam) y vuelve a Toisón.`, `I've sent an email to ${correo}. Open the link in the latest one you get (earlier ones no longer work; if you can't see it, check spam) and come back to Toisón.`);
 async function pedirCorreoConfirmacion() {
+  // cada correo nuevo anula los anteriores: uno por minuto como mucho, así no se pisan
+  const v = LS.get(LS_VERIF, null);
+  if (v && FB.user && v.uid === FB.user.uid && Date.now() - v.t < 60000) { toast(L('Te lo acabo de mandar. Espera un minuto antes de pedir otro y mira también en spam.', 'I just sent it. Wait a minute before asking for another and check spam too.'), 6000); return false; }
   try { await mandarCorreoConfirmacion(); toast(txtCorreoMandado(FB.user.email), 9000); return true; }
   catch (e) {
     toast(e && e.code === 'auth/too-many-requests' ? L('Ya te he mandado varios hace poco. Espera unos minutos y mira también en spam.', "I've sent several recently. Wait a few minutes and check spam too.") : L('No se ha podido mandar ahora. Prueba en un rato.', "Couldn't send it now. Try again later."), 6000);
     return false;
   }
 }
+// con correo y contraseña (las de Google y Apple nacen confirmadas)
+const deCorreo = (u) => !!(u && (u.providerData || []).some((x) => x.providerId === 'password'));
+// ¿el token dice ya que el correo está confirmado? El Worker y las reglas miran ese claim (email_verified), no el usuario.
+// Ojo (revisión aparte del 7 nov): al arrancar, Firebase recarga el usuario (emailVerified sale true) pero no renueva el
+// token hasta que caduca (hasta 1 h): hay que pedir uno nuevo
+async function tokenConfirmado(u) { try { const r = await conTiempo(u.getIdTokenResult(), 8000); return !!(r && r.claims && r.claims.email_verified === true); } catch (e) { return false; } }
+// el token para el Worker: si el correo ya está confirmado y el token aún no lo sabe, uno nuevo
+async function tokenCuenta() {
+  const u = FB.user;
+  if (u && u.emailVerified && deCorreo(u) && !(await tokenConfirmado(u))) { try { return await conTiempo(u.getIdToken(true), 8000); } catch (e) {} }
+  return u.getIdToken();
+}
 // si ya lo has confirmado (en el navegador, en otra pestaña o en el correo del móvil), la sesión aún no lo sabe: se recarga el
-// usuario y, si está confirmado, se pide un token nuevo (el Worker y las reglas miran email_verified del token). Sin esperar a
-// volver a entrar: al volver a primer plano, al volver a la app de Android y al abrir el panel de la IA
-let VERIF_MIRADO = 0, VERIF_EN_CURSO = null;
-function mirarCorreoConfirmado(forzar) {
-  if (CFG.dev || !correoSinConfirmar()) return Promise.resolve(false);
+// usuario y, si está confirmado, se pide un token nuevo. Sin esperar a volver a entrar: al arrancar (comprobarAcceso), al volver
+// a primer plano, al volver a la app de Android y al abrir el panel de la IA. Devuelve true si acaba de quedar confirmado.
+// desdeAcceso: lo llama comprobarAcceso, que ya sigue él (no se vuelve a llamar)
+let VERIF_MIRADO = 0, VERIF_EN_CURSO = null, VERIF_LISTO = '';
+function mirarCorreoConfirmado(forzar, desdeAcceso) {
+  const u = FB.user;
+  if (CFG.dev || !deCorreo(u) || VERIF_LISTO === u.uid) return Promise.resolve(false);
   if (VERIF_EN_CURSO) return VERIF_EN_CURSO;
   if (!forzar && Date.now() - VERIF_MIRADO < 15000) return Promise.resolve(false);
   VERIF_MIRADO = Date.now();
-  const u = FB.user;
   VERIF_EN_CURSO = (async () => {
-    try { await conTiempo(u.reload(), 8000); } catch (e) { return false; }
+    if (!u.emailVerified) { try { await conTiempo(u.reload(), 8000); } catch (e) { return false; } }
     if (!u.emailVerified || u !== FB.user) return false;
-    try { await conTiempo(u.getIdToken(true), 8000); } catch (e) {}
-    // la pausa de Claude por el correo sin confirmar ya no toca
-    try { const p = LS.get(LS_CLAUDE_PAUSA, null); if (p && p.motivo === 'no-permitido') LS.del(LS_CLAUDE_PAUSA); } catch (e) {}
-    LS.del(LS_VERIF);
+    const quitarPausa = () => { try { const p = LS.get(LS_CLAUDE_PAUSA, null); if (p && p.motivo === 'no-permitido') LS.del(LS_CLAUDE_PAUSA); } catch (e) {} };
+    // confirmado de antes y con el token al día: nada que avisar
+    if (await tokenConfirmado(u)) { if (u === FB.user) { VERIF_LISTO = u.uid; quitarPausa(); } return false; }
+    // si no se puede renovar ahora (red), se vuelve a mirar en la próxima ocasión, sin avisar de nada
+    try { await conTiempo(u.getIdToken(true), 8000); } catch (e) { VERIF_MIRADO = 0; return false; }
+    if (u !== FB.user || !(await tokenConfirmado(u))) { VERIF_MIRADO = 0; return false; }
+    VERIF_LISTO = u.uid;
+    quitarPausa(); LS.del(LS_VERIF);
     toast(L('Correo confirmado: ya puedes usar la IA.', 'Email confirmed: you can now use the AI.'), 5000);
-    try { comprobarAcceso(); } catch (e) {}
+    if (!desdeAcceso) try { comprobarAcceso(); } catch (e) {}
     try { if ($('#asesorFondo')) { if (AS.vista === 'sin-ia') AS.vista = 'chat'; pintarAsesor(); sondearClaude(); } } catch (e) {}
     return true;
   })().finally(() => { VERIF_EN_CURSO = null; });
@@ -83,7 +103,8 @@ async function comprobarAcceso() {
   try {
     await fbCargar(); const u = FB.user; if (!u) return;
     // si lo acaba de confirmar, la sesión aún no lo sabe: se refresca (solo con correo y contraseña sin confirmar)
-    if (correoSinConfirmar()) { try { await conTiempo(u.reload(), 8000); if (u.emailVerified) await conTiempo(u.getIdToken(true), 8000); } catch (e) {} }
+    // 0.8.3: también si ya está confirmado pero el token aún no lo sabe (revisión aparte: al arrancar pasaba)
+    await mirarCorreoConfirmado(true, true);
     const f = FB.fs, correo = String(u.email || '').trim().toLowerCase(), alta = altaDe(u);
     apuntarCuenta(u, correo, alta);
     // lo que haya puesto el dueño para esta cuenta manda

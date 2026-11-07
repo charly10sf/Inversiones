@@ -109,7 +109,7 @@ function pantallaCuenta(errorTxt = '') {
         if (nom) { LS.set('inv-nombre', nom); try { await FB.au.updateProfile(r.user, { displayName: nom }); } catch (e) {} }
         // 0.8.3: el correo de confirmación sale ya (antes solo con el botón de Ajustes); si falla, la bienvenida lo dice
         FB.user = FB.auth.currentUser;
-        if (correoSinConfirmar()) try { await mandarCorreoConfirmacion(); S.correoMandado = 'si'; } catch (e) { console.warn(e); S.correoMandado = 'no'; }
+        if (correoSinConfirmar()) try { await mandarCorreoConfirmacion(); S.correoMandado = { uid: FB.user.uid, ok: true }; } catch (e) { console.warn(e); S.correoMandado = { uid: FB.user.uid, ok: false }; }
       } else await FB.au.signInWithEmailAndPassword(FB.auth, email, pass);
       FB.user = FB.auth.currentUser; await dentro();
     } catch (e) { console.warn(e); b.disabled = false; b.textContent = modo === 'crear' ? 'Crear cuenta' : 'Entrar'; err(errorFb(e)); }
@@ -124,8 +124,10 @@ function pantallaCuenta(errorTxt = '') {
 /* 0.8.3 · en la bienvenida de una cuenta de correo: que le hemos mandado el correo para confirmarlo y para qué hace falta */
 function htmlAvisoConfirmar() {
   if (!correoSinConfirmar()) return '';
-  const c = esc(FB.user.email || '');
-  return S.correoMandado === 'no'
+  const c = esc(FB.user.email || ''), m = S.correoMandado && S.correoMandado.uid === FB.user.uid ? S.correoMandado : null;
+  // al entrar (no al crear) con una cuenta aún sin cartera, no se ha mandado nada ahora
+  if (!m) return `<p class="nota aviso-confirmar" role="status">${L(`Tu correo ${c} está sin confirmar: hace falta para usar la IA. Te puedo mandar el enlace desde Ajustes o desde el panel de la IA.`, `Your email ${c} isn't confirmed yet: you need it to use the AI. I can send you the link from Settings or the AI panel.`)}</p>`;
+  return !m.ok
     ? `<p class="nota aviso-confirmar" role="status">${L(`No he podido mandarte ahora el correo para confirmar ${c}. Lo puedes pedir luego desde Ajustes o desde el panel de la IA: hace falta para usar la IA.`, `I couldn't send the email to confirm ${c} right now. You can ask for it later in Settings or in the AI panel: you need it to use the AI.`)}</p>`
     : `<p class="nota aviso-confirmar" role="status">${L(`Te he mandado un correo a <b>${c}</b> para confirmarlo. Abre el enlace cuando puedas: hace falta para usar la IA. Si no lo ves, mira en spam.`, `I've sent an email to <b>${c}</b> to confirm it. Open the link when you can: you need it to use the AI. If you can't see it, check spam.`)}</p>`;
 }

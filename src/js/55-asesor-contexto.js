@@ -828,7 +828,7 @@ async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
     const ctl = new AbortController(), tt = setTimeout(() => ctl.abort(), 10000), parar = () => ctl.abort();
     if (signal) { if (signal.aborted) ctl.abort(); else signal.addEventListener('abort', parar, { once: true }); }
     try {
-      const token = await conTiempo(FB.user.getIdToken(), 8000);
+      const token = await conTiempo(tokenCuenta(), 9000);
       const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); puede = true; }
@@ -861,7 +861,7 @@ function sondearClaude() {
   SONDEO_EN_CURSO = (async () => {
     const ctl = new AbortController(), tt = setTimeout(() => ctl.abort(), 10000);
     try {
-      const token = await conTiempo(FB.user.getIdToken(), 8000);
+      const token = await conTiempo(tokenCuenta(), 9000);
       const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); return true; }
@@ -939,7 +939,7 @@ function errorSinIA(e, aMedias) {
     : c === 'tope-tareas' ? L(`Hoy ya no quedan revisiones, resúmenes de noticias ni lecturas de capturas: vuelven ${h}. Tus preguntas a la IA siguen igual.`, `No reviews, article summaries or screenshot readings left today: they come back ${h}. Your questions to the AI are not affected.`)
     : c === 'tope-revision' ? L(`Hoy ya se han hecho las 2 revisiones de tu cartera: vuelven ${h}. Lo demás de la IA sigue igual.`, `Your portfolio has already been reviewed twice today: reviews come back ${h}. Everything else in the AI is not affected.`)
     : c === 'tope-pregunta' ? L('Esta pregunta ha necesitado demasiados pasos: prueba a hacerla más corta o en dos.', 'This question needed too many steps: try asking it shorter or in two parts.')
-    : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace que te mandé al crear la cuenta. Cuando lo abras, vuelve aquí: Toisón lo notará solo.', 'To use the AI, confirm your email with the link I sent you when you created the account. Once you open it, come back here: Toisón will notice by itself.')
+    : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace del último correo de confirmación que te llegó. Cuando lo abras, vuelve aquí: Toisón lo notará solo.', 'To use the AI, confirm your email with the link in the latest confirmation email you got. Once you open it, come back here: Toisón will notice by itself.')
     : c === 'sin-creditos' ? L('La IA no está disponible ahora mismo. Vuelve a probar dentro de unas horas.', 'The AI is not available right now. Try again in a few hours.')
     : L('La IA no está disponible ahora mismo. Vuelve a preguntar en un rato.', 'The AI is not available right now. Ask again in a while.');
   const x = new Error(txt);
@@ -1072,7 +1072,7 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
     alCambiar();
   };
   try {
-    const token = await conTiempo(FB.user.getIdToken(), 8000);
+    const token = await conTiempo(tokenCuenta(), 9000);
     const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) });
     if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); if (j && j.error === 'tope-tareas') apuntarQuedanClaude(null, null, null, 0); if (j && j.error === 'tope-revision') apuntarQuedanClaude(null, null, null, null, 0); throw errorClaude(r.status, j); }
     { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel'), h('x-quedan-tareas'), h('x-quedan-revisiones')); }

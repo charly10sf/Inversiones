@@ -53,6 +53,11 @@ test('el panel de la IA deja mandarlo otra vez y, al confirmarlo, la app lo nota
   await expect(panel).toContainText('confirma tu correo');
   await expect(panel.locator('.as-reenviar')).toContainText(CORREO);
   await expect(panel.locator('.as-reenviar')).toContainText('último');
+  // recién mandado (al crear la cuenta): espera un minuto antes de otro
+  await panel.locator('[data-as="reenviar-correo"]').click();
+  await expect(page.locator('#toast')).toContainText('Espera un minuto');
+  expect(await mandados(page)).toBe(1);
+  await page.evaluate(() => { const v = LS.get(LS_VERIF); v.t -= 61000; LS.set(LS_VERIF, v); });
   await panel.locator('[data-as="reenviar-correo"]').click();
   await expect.poll(() => mandados(page)).toBe(2);
   await expect(page.locator('#toast')).toContainText('los de antes ya no valen');
@@ -66,9 +71,61 @@ test('el panel de la IA deja mandarlo otra vez y, al confirmarlo, la app lo nota
   await page.evaluate((c) => { window.__stubConfirmar(c); VERIF_MIRADO = 0; document.dispatchEvent(new Event('visibilitychange')); }, CORREO);
   await expect(page.locator('#toast')).toContainText('Correo confirmado');
   expect(await page.evaluate(() => FB.user.emailVerified)).toBe(true);
+  // y con un token nuevo, que es lo que mira el Worker
+  expect(await page.evaluate(async () => (await FB.user.getIdTokenResult()).claims.email_verified)).toBe(true);
   await expect(page.locator('#asesorFondo [data-as="reenviar-correo"]')).toHaveCount(0);
   // y en Ajustes ya no sale «Confirma tu correo»
   await page.evaluate(() => { cerrarAsesor(); abrirAjustes(); });
   await expect(page.locator('#aVerif')).toHaveCount(0);
   expect(errores).toEqual([]);
+});
+
+// revisión aparte: al volver a abrir la app desde cero (p. ej. «Abrir Toisón» en cuenta.html), Firebase trae el usuario ya
+// recargado (emailVerified) pero el token viejo (email_verified falso) y el Worker decía que no hasta 1 h
+test('confirmado y vuelta a abrir la app: pide un token nuevo y la IA contesta', async ({ page, context }) => {
+  const errores = await preparar(context);
+  await crearSinConfirmar(page);
+  await page.click('#bSeguir');
+  await page.waitForSelector('#fCrear', { timeout: 15000 });
+  await page.fill('#p1', 'cartera-123');
+  await page.fill('#p2', 'cartera-123');
+  await page.click('#bCrear');
+  await page.waitForSelector('.hero-num', { timeout: 30000 });
+  // el Worker de imitación: con el token sin confirmar, no-permitido (como el de verdad); con el bueno, contesta al sondeo
+  const tokens = [];
+  await page.route('https://growfolio.growfolio-web-app.workers.dev/claude', (r) => {
+    const a = r.request().headers().authorization || ''; tokens.push(a);
+    return /sin-confirmar/.test(a) ? r.fulfill({ status: 403, contentType: 'application/json', body: JSON.stringify({ error: 'no-permitido', motivo: 'verificar' }) })
+      : r.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'peticion' }) });
+  });
+  await page.evaluate((c) => { window.__stubConfirmar(c); LS.set('inv-claude-ok', FB.user.uid); }, CORREO);
+  await page.reload();
+  await expect(page.locator('.hero-num')).toBeVisible({ timeout: 30_000 });
+  await expect(page.locator('#toast')).toContainText('Correo confirmado');
+  expect(await page.evaluate(async () => (await FB.user.getIdTokenResult()).claims.email_verified)).toBe(true);
+  await quitarCapas(page);
+  await page.evaluate(() => abrirAsesor());
+  await expect(page.locator('#asesorFondo .as-vacio')).toBeVisible();
+  await expect(page.locator('#asesorFondo')).not.toContainText('confirma tu correo');
+  expect(tokens.length).toBeGreaterThan(0);
+  expect(tokens.every((t) => !/sin-confirmar/.test(t))).toBe(true);
+  expect(errores).toEqual([]);
+});
+
+test('al entrar con una cuenta sin cartera y sin confirmar, la bienvenida no dice que lo acaba de mandar', async ({ page, context }) => {
+  await preparar(context);
+  await crearSinConfirmar(page);
+  // sale de la sesión sin crear la cartera y vuelve a entrar
+  await page.evaluate(async () => { S.correoMandado = null; await FB.au.signOut(FB.auth); });
+  await page.reload();
+  await page.waitForSelector('#fCorreo, .intro', { timeout: 20000 });
+  if (await page.$('.intro')) await page.click('.intro-saltar');
+  if (await page.$('.cuenta-modo [data-m="entrar"][aria-pressed="false"]')) await page.click('.cuenta-modo [data-m="entrar"]');
+  await page.fill('#cEmail', CORREO);
+  await page.fill('#cPass', 'secreta1');
+  await page.click('#bCorreo');
+  await page.waitForSelector('#fBien', { timeout: 20000 });
+  await expect(page.locator('#fBien .aviso-confirmar')).toContainText('está sin confirmar');
+  await expect(page.locator('#fBien .aviso-confirmar')).not.toContainText('Te he mandado');
+  expect(await mandados(page)).toBe(0);
 });

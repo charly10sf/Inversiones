@@ -8,6 +8,7 @@ const leer = (k, d) => { try { const v = localStorage.getItem(k); return v == nu
 const guardar = (k, v) => localStorage.setItem(k, JSON.stringify(v));
 const err = (code) => { const e = new Error('Firebase: Error (' + code + ').'); e.code = code; return e; };
 
+const claimDe = (d) => (d.claim === undefined ? !!d.emailVerified : !!d.claim);
 function usuario(d) {
   if (!d) return null;
   return {
@@ -15,19 +16,28 @@ function usuario(d) {
     providerData: [{ providerId: d.proveedor || 'password', email: d.email }],
     metadata: { creationTime: new Date(d.alta || Date.now()).toUTCString(), lastSignInTime: new Date().toUTCString() },
     async reload() { const c = leer(A, {})[d.email]; if (c) { this.emailVerified = !!c.u.emailVerified; this.displayName = c.u.displayName || null; } },
-    async getIdToken() { return 'stub-token-' + d.uid; },
+    // 0.8.3: el token va aparte del usuario, como en Firebase: email_verified se queda como estaba al entrar hasta pedir
+    // uno nuevo (getIdToken(true)). Al abrir la página, el usuario sale ya recargado (emailVerified al día) y el token no
+    async getIdToken(nuevo) {
+      if (nuevo) { d.claim = this.emailVerified; const k = leer(K, null); if (k && k.uid === d.uid) { k.claim = d.claim; guardar(K, k); } }
+      return 'stub-token-' + d.uid + (claimDe(d) ? '' : '-sin-confirmar');
+    },
+    async getIdTokenResult() { return { token: await this.getIdToken(), claims: { email_verified: claimDe(d) } }; },
   };
 }
 const auth = { languageCode: 'es', currentUser: usuario(leer(K, null)) };
 const subs = new Set();
 const avisar = () => { for (const f of subs) setTimeout(() => f(auth.currentUser), 0); };
 function entrar(d) {
+  d = { ...d, claim: !!d.emailVerified };
   guardar(K, d); auth.currentUser = usuario(d); avisar();
   return { user: auth.currentUser };
 }
 function alta() { const a = localStorage.getItem('stub-alta'); return a ? Date.parse(a) : Date.now(); }
 
 export function getAuth() { return auth; }
+export function initializeAuth() { return auth; }
+export const inMemoryPersistence = { type: 'NONE' };
 export function onAuthStateChanged(a, cb) { subs.add(cb); setTimeout(() => cb(auth.currentUser), 20); return () => subs.delete(cb); }
 export class GoogleAuthProvider {
   setCustomParameters() { return this; }

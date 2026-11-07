@@ -88,3 +88,18 @@ test('en el navegador de Android, «Abrir Toisón» abre la app y si no la hay, 
   expect(decodeURIComponent(href.split('browser_fallback_url=')[1].split(';')[0])).toBe(BASE);
   await expect(page.locator('main a.btn:not(.pri)')).toHaveText('Seguir en la web');
 });
+
+test('cambiar el correo, nombres raros en mode y sin conexión el código se queda para recargar', async ({ page, context }) => {
+  await preparar(context, { ajustes: { 'stub-oob': { cc: { mode: 'verifyAndChangeEmail', email: 'nuevo@prueba.com' } } } });
+  await abrir(page, '?mode=verifyAndChangeEmail&oobCode=cc&lang=es');
+  await expect(page.locator('h1')).toHaveText('Correo cambiado');
+  for (const m of ['constructor', 'hasOwnProperty', '__proto__']) {
+    await abrir(page, `?mode=${m}&oobCode=x&lang=es`);
+    await expect(page.locator('h1')).toHaveText('Enlace incompleto');
+  }
+  // sin poder cargar Firebase: dice que no hay conexión y el código sigue en la dirección para «Volver a probar»
+  await page.route('https://www.gstatic.com/firebasejs/**', (r) => r.abort());
+  await abrir(page, '?mode=verifyEmail&oobCode=zz&lang=es');
+  await expect(page.locator('h1')).toHaveText('Sin conexión');
+  expect(page.url()).toContain('oobCode=zz');
+});
