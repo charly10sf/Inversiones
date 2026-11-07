@@ -89,6 +89,19 @@ function evaluarMetas(M) {
     return m;
   });
 }
+/* 0.8.2f: los límites que el usuario escribió en Tú y que su cartera pasa de verdad (por encima del margen).
+   Solo hechos: nombre, lo que pesa y su límite. Los usan los avisos; nadie decide nada por él */
+function limitesPasados(M) {
+  const out = [];
+  if (!M || !M.total) return out;
+  const e = estadoPerfil(M), pasa = (a, l) => a > l + MARGEN_LIM;
+  const sue = +(S.cartera.limite_acciones ?? 20);
+  if (pasa(e.pctSueltas, sue)) out.push({ k: 'sueltas', t: L('Acciones sueltas', 'Single stocks'), actual: e.pctSueltas, limite: sue });
+  if (e.pctCripto > 0 && pasa(e.pctCripto, limiteDe('cripto'))) out.push({ k: 'cripto', t: 'Cripto', actual: e.pctCripto, limite: limiteDe('cripto') });
+  if (e.pctOro > 0 && pasa(e.pctOro, limiteDe('oro'))) out.push({ k: 'oro', t: L('Oro y materias primas', 'Gold and commodities'), actual: e.pctOro, limite: limiteDe('oro') });
+  if (e.mayor && pasa(e.mayor.pct, limiteDe('empresa'))) out.push({ k: 'empresa', id: e.mayor.f.inst.id, t: e.mayor.f.inst.corto || e.mayor.f.inst.nombre, actual: e.mayor.pct, limite: limiteDe('empresa') });
+  return out;
+}
 /* 0.3: tus objetivos frente a lo que tienes de verdad. Cada fila dice si encaja (bien), si roza tu límite (ojo) o si
    se sale (fuera), con la cifra de cada lado y qué hacer. La usan Análisis y el Paso a paso */
 function comparaObjetivos(M) {

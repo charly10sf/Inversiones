@@ -381,7 +381,7 @@ function montar() {
    - en el navegador (y en el iPhone con GrowFolio en la pantalla de inicio), mientras GrowFolio esté abierto en
      segundo plano: la misma revisión, cada vez que llegan precios.
    Nunca de noche (de 22:00 a 8:00) y cada cosa una vez. */
-const AVISOS_DEF = { on: false, stop: true, mov: true, fechas: true, preg: true, seg: true };
+const AVISOS_DEF = { on: false, stop: true, mov: true, fechas: true, preg: true, seg: true, lim: true };
 const avisosCfg = () => ({ ...AVISOS_DEF, ...LS.get('inv-avisos', {}) });
 const appAvisos = () => { const a = window.InversionesApp; return a && typeof a.avisos === 'function' ? a : null; };
 function htmlAjAvisos() {
@@ -394,7 +394,7 @@ function htmlAjAvisos() {
   return `<h3>${ICONOS.campana}Avisos</h3>
     <label class="av-op av-on"><input type="checkbox" data-av="on"${c.on ? ' checked' : ''}${app && !nativo ? ' disabled' : ''}><span><b>Avisarme de lo importante</b><small>${donde}</small></span></label>
     ${c.on && !permiso ? `<p class="nota av-falta">${ICONOS.alerta}Falta el permiso de notificaciones: ${nativo ? 'acéptalo en el aviso del móvil o en Ajustes de Android > Aplicaciones > Toisón > Notificaciones.' : 'acéptalo en el navegador (el candado de la barra de direcciones).'}</p>` : ''}
-    <div class="av-ops">${fila('stop', 'Cuando algo baja de tu precio de salida o se acerca a menos de un 3 %')}${fila('mov', 'Cuando una de tus posiciones sube o baja más de un 5 % en el día')}${fila('fechas', 'El día antes de los resultados y los dividendos de lo tuyo')}${fila('preg', 'Cuando la IA te pregunta algo')}${fila('seg', 'Cuando una empresa que sigues llega al precio que le pusiste')}</div>
+    <div class="av-ops">${fila('stop', 'Cuando algo baja de tu precio de salida o se acerca a menos de un 3 %')}${fila('mov', 'Cuando una de tus posiciones sube o baja más de un 5 % en el día')}${fila('fechas', 'El día antes de los resultados y los dividendos de lo tuyo')}${fila('preg', 'Cuando la IA te pregunta algo')}${fila('seg', 'Cuando una empresa que sigues llega al precio que le pusiste')}${fila('lim', 'Cuando tu cartera pasa uno de los límites que pusiste en Tú')}</div>
     ${c.on ? '<button type="button" class="btn peq" data-av-prueba>Mandar un aviso de prueba</button>' : ''}${htmlAvisoVersiones(permiso)}`;
 }
 // el aviso de las versiones nuevas: en la app de Android, aunque no la tengas abierta (mira cada 3 horas si hay versión)
@@ -484,6 +484,9 @@ function revisarAvisos(M) {
     }
     if (c.mov && f.varDia != null && Math.abs(f.varDia) >= 5) avisoSistema('mov', L(`${n} ${f.varDia > 0 ? 'sube' : 'baja'} un ${fmtNum(Math.abs(f.varDia), 1)} % hoy`, `${n} is ${f.varDia > 0 ? 'up' : 'down'} ${fmtNum(Math.abs(f.varDia), 1)} % today`), L('Abre Toisón para ver qué ha pasado y qué dice la IA.', 'Open Toisón to see what happened and what GrowIA says.'), '#cartera', `mov:${f.inst.id}:${hoy}`);
   }
+  // 0.8.2f: tus límites (acciones sueltas, cripto, oro, una empresa). Lo calcula el código con lo que escribiste en Tú:
+  // el aviso dice el hecho, sin decirte qué hacer. Una vez por límite cada pocos días mientras siga pasado
+  if (c.lim) for (const x of limitesPasados(M)) avisoSistema('lim', L(`${x.t} pasa de tu límite`, `${x.t} is over your limit`), L(`Pesa un ${fmtNum(x.actual, 1)} % de tu cartera y tu límite es ${fmtNum(x.limite, 0)} %.`, `It's ${fmtNum(x.actual, 1)} % of your portfolio and your limit is ${fmtNum(x.limite, 0)} %.`), '#objetivos', `lim:${x.k}:${x.id || ''}`);
   if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', L(`Mañana: ${e.t}`, `Tomorrow: ${e.t}`), e.s, '#agenda', 'ev:' + e.k);
   if (c.seg) for (const it of siguiendo()) {
     const pr = precioSeguido(it), p = pr && pr.eur;
