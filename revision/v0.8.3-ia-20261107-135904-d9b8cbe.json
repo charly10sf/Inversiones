@@ -1,0 +1,270 @@
+{
+ "v": 1,
+ "generado": "2026-11-07T13:59:03.998Z",
+ "variantes": [
+  "app"
+ ],
+ "vueltas": [
+  {
+   "variante": "app",
+   "ok": true,
+   "error": null,
+   "segundos": 60,
+   "coste": 0.0104,
+   "entrada": 25824,
+   "salida": 14358,
+   "repetida": false,
+   "llamadas": [
+    {
+     "estado": 200,
+     "segundos": 59.7,
+     "max_tokens": 24000,
+     "esfuerzo": "low",
+     "pensar_api": null,
+     "bytes_peticion": 53396,
+     "uso": {
+      "input_tokens": 4,
+      "cache_creation_input_tokens": 25820,
+      "cache_read_input_tokens": 0,
+      "cache_creation": {
+       "ephemeral_5m_input_tokens": 25820,
+       "ephemeral_1h_input_tokens": 0
+      },
+      "output_tokens": 14358,
+      "service_tier": "standard",
+      "inference_geo": "global",
+      "speed": "standard",
+      "output_tokens_details": {
+       "thinking_tokens": 9264
+      }
+     },
+     "stop": "end_turn",
+     "pensar": 0,
+     "texto": 10237,
+     "coste": 0.0104069
+    }
+   ],
+   "consejo": [],
+   "diario": [
+    "Haiku 5.5, por análisis: entrada 25.824 (caché 0) · salida 14.358 (mediana de 1 análisis, 1 ronda)",
+    "7/11, 14:58:01 Revisión de la cartera (automática)",
+    "7/11, 14:59:01 Haiku 5.5 · ronda 1: primer dato a los 59.7 s, acaba a los 59.7 s · entrada 25.824 (caché 0) · salida 14.358",
+    "7/11, 14:59:01 Tokens del análisis · Haiku 5.5: entrada 25.824 (caché 0) · salida 14.358 (1 ronda) · ~0,010 US$",
+    "7/11, 14:59:01 Revisión hecha en 60 s"
+   ],
+   "modelo": null,
+   "texto_largo": 0,
+   "json": {
+    "titular": "La cartera vale 87.337,74 € con +6.856,94 € de ganancia latente (+8,5 %), pero cae 1.465,90 € hoy (−1,7 %) por la venta de tecnológicas en EEUU, y el dato del S&P 500 hay que revisarlo.",
+    "resumen": [
+     "Patrimonio **87.337,74 €** frente a un coste de 80.240 €. Hoy −1.465,90 € (−1,7 %). El mayor peso de la caída viene del fondo S&P 500: Toisón lo marca en −4,3 % (unos −1.200 €), pero el índice que sigue sube +0,3 %. Antes de usar esa cifra, conviene confirmar el precio.",
+     "Según la lectura automática de prensa de Toisón, el Nasdaq 100 cae un 13,4 % en el mes por el temor a un frenazo de la inversión en IA y chips. El VIX está en 25,64 (+70 % en el mes). Europa resiste mejor: el Ibex sube 3,84 % en la semana y el DAX cae 1,9 % hoy. El Brent está en 97,76 $ (+60,7 % en el año).",
+     "Por posición, Repsol lleva +135,6 % latente y BAT +36,1 %. El oro sigue +73,5 % sobre coste, aunque su tendencia es bajista. Bitcoin lleva −18,5 % y el S&P 500 fondo −23,4 % (−8.181 €), pese a +11,1 % en el último año."
+    ],
+    "puntuaciones": [
+     {
+      "k": "Diversificación",
+      "nota": 6,
+      "txt": "Reparto en tres regiones y varios sectores. Pero la renta variable pesa 83,4 % y tecnología 21,2 %."
+     },
+     {
+      "k": "Costes",
+      "nota": 7,
+      "txt": "TER medio 0,15 %, 101 € al año en gastos de fondos. Bitvavo cobra alrededor del 0,25 % por operación."
+     },
+     {
+      "k": "Riesgo",
+      "nota": 4,
+      "txt": "El 29,6 % está en nivel 7 de 7 y solo hay 240,80 € en efectivo (0,3 %)."
+     },
+     {
+      "k": "Disciplina",
+      "nota": 7,
+      "txt": "Aportación automática de 600 € al mes y límites definidos. Falta rellenar el perfil."
+     },
+     {
+      "k": "Impuestos",
+      "nota": 5,
+      "txt": "Ventas y dividendos fuera de Toisón sin apuntar. El impuesto de 2026 calculado es 0 €, así que puede no reflejar la realidad."
+     }
+    ],
+    "mejorar": [
+     {
+      "titulo": "Efectivo casi nulo",
+      "texto": "Solo hay 240,80 € en efectivo (0,3 %). Cualquier gasto imprevisto tendría que salir de las posiciones.",
+      "impacto": "Un gasto de 1.000 € obligaría a vender unos 1.000 € de posiciones, con sus impuestos si hay ganancias.",
+      "cuando": "Sin fecha; depende de tus necesidades."
+     },
+     {
+      "titulo": "Perfil y metas sin rellenar",
+      "texto": "No hay perfil ni metas. Sin ellos no puedo comparar el riesgo de la cartera con tus objetivos.",
+      "impacto": "El 29,6 % de la cartera está en nivel 7 de riesgo (muy alto), y no hay referencia para juzgarlo.",
+      "cuando": "Cuando lo rellenes en la app."
+     },
+     {
+      "titulo": "Dato del S&P 500 por revisar",
+      "texto": "El fondo marca −4,3 % hoy y el índice que sigue +0,3 %. La diferencia no tiene explicación en las noticias.",
+      "impacto": "Hay unos 1.200 € de diferencia en la variación del día.",
+      "cuando": "Hoy, antes de usar la cifra."
+     },
+     {
+      "titulo": "Márgenes de sus límites",
+      "texto": "Repsol pesa 7,8 % (límite 10 %) y la cripto 4,5 % (límite 5 %). Las acciones sueltas están en 17,3 % (límite 20 %).",
+      "impacto": "Quedan 1.898 € hasta el 10 % en Repsol, 397 € hasta el 5 % en cripto y 2.341 € hasta el 20 % en acciones sueltas. Las acciones sueltas suman 15.126 €.",
+      "cuando": "Se mueve con cada cambio de precio."
+     },
+     {
+      "titulo": "Impuestos sin datos completos",
+      "texto": "Toisón no tiene ventas ni dividendos apuntados de 2026. Si vendieras hoy cada posición, las ganancias pagarían unos 3.084 € en impuestos; las pérdidas latentes suman 9.303 €. Con la aportación automática de 600 € al mes en el S&P 500, la regla de recompra afecta a cualquier venta con pérdida de ese fondo: el plazo es de un año antes o después.",
+      "impacto": "El impuesto de 2026 pasa de 0 € a la cifra real cuando se apunten los datos.",
+      "cuando": "Antes de la declaración (abril a junio de 2027)."
+     },
+     {
+      "titulo": "Peso de tecnología",
+      "texto": "Tecnología es el sector más grande: 21,2 % de la renta variable. Además, el S&P 500 es 30,7 % del total.",
+      "impacto": "Con el Nasdaq 100 en −13,4 % en el mes, esa exposición pesa en el resultado diario.",
+      "cuando": "Lo que hay que vigilar es el Nasdaq y los resultados de las tecnológicas."
+     }
+    ],
+    "mantener": [
+     {
+      "titulo": "Aportación constante",
+      "texto": "600 € al mes al S&P 500, automática el día 1."
+     },
+     {
+      "titulo": "Límites cumplidos",
+      "texto": "Ninguno superado: acciones sueltas 17,3 % (límite 20 %), cripto 4,5 % (5 %) y la mayor empresa, Repsol, 7,8 % (10 %)."
+     },
+     {
+      "titulo": "Costes bajos",
+      "texto": "TER medio 0,15 %. Gastos de fondos de 101 € al año."
+     },
+     {
+      "titulo": "Reparto por región",
+      "texto": "Europa 53,2 %, EEUU 36,8 % y emergentes 10 %."
+     },
+     {
+      "titulo": "Parte de bajo riesgo",
+      "texto": "Renta fija corto plazo 4,1 %, con riesgo 2 de 7 y volatilidad del 2 %."
+     }
+    ],
+    "riesgos": [
+     {
+      "titulo": "Tecnológicas e IA",
+      "texto": "El Nasdaq 100 cae 13,4 % en el mes y el VIX sube a 25,64. Pesa en el S&P 500 (30,7 %) y en Apple, NVIDIA y Microsoft."
+     },
+     {
+      "titulo": "Petróleo y aerolíneas",
+      "texto": "El Brent sube 60,7 % en el año. Encarece el combustible: IAG cayó el beneficio 16,2 % hasta septiembre. Según la lectura de prensa, favorece a Repsol (7,8 %)."
+     },
+     {
+      "titulo": "Bitcoin",
+      "texto": "Por debajo de 75.000 $, en mínimo de tres meses. Lleva −18,5 % latente."
+     },
+     {
+      "titulo": "Inflación y tipos",
+      "texto": "Inflación de la eurozona 4 % y de España 4,9 %. El bono de EEUU a 10 años rinde 4,86 %, lo que compite con la bolsa."
+     },
+     {
+      "titulo": "Emergentes",
+      "texto": "Brasil cae 17,5 % en el mes tras las elecciones. Emergentes son 8,3 % de la cartera y su fondo −11 % en el mes."
+     }
+    ],
+    "calendario": [
+     {
+      "d": "2026-12-01",
+      "t": "Aportación automática de 600 € al S&P 500 en MyInvestor."
+     },
+     {
+      "d": "2026-12-07",
+      "t": "Pago del dividendo de IAG, 0,053 € por acción (unos 35 € brutos con 652,53 acciones)."
+     },
+     {
+      "d": "2026-12-24",
+      "t": "Ex-dividendo de BAT: Toisón estima 52 € brutos."
+     },
+     {
+      "d": "2027-01-12",
+      "t": "Ex-dividendo de Repsol: Toisón estima 93 € brutos."
+     }
+    ],
+    "posiciones": {
+     "ishares-us": {
+      "texto": "Vale **26.819,04 €** (30,7 %) a **12,02 €**, −4,3 % hoy según Toisón y −5,7 % en el mes. Latente −8.181 € (−23,4 %) con precio medio de 15,69 €. La lectura automática de prensa la ata a la venta de tecnológicas, pero el índice que sigue sube +0,3 % hoy.",
+      "vigilar": "El precio del fondo en la próxima sesión; media de 200 sesiones en 11,61 € (el precio está 3,5 % por encima).",
+      "confianza": "baja"
+     },
+     "amundi-europe": {
+      "texto": "Vale **23.625,00 €** (27,1 %), plano hoy (0 %), +4,2 % en el mes y +13,8 % en el año. Latente +6.725 € (+39,8 %). Sigue a las bolsas europeas, que caen tras la venta tecnológica de EEUU.",
+      "vigilar": "Máximo de 52 semanas en **395,40 €** (está 0,4 % por debajo); DAX y Euro Stoxx 50 al cierre.",
+      "confianza": "media"
+     },
+     "vanguard-em": {
+      "texto": "Vale **7.257,47 €** (8,3 %), −0,9 % hoy y −11,0 % en el mes. Latente +1.157 € (+19,0 %). Brasil cae 17,5 % en el mes tras la victoria de Lula; India sube 2 % hoy.",
+      "vigilar": "Precio frente a su media de 200 sesiones (296,34 €); evolución de Brasil y China.",
+      "confianza": "media"
+     },
+     "repsol": {
+      "texto": "Cotiza a **29,90 €** (−1,0 % hoy), con 6.835,44 € (7,8 %) y latente +135,6 %. La lectura de prensa es positiva: resultados del tercer trimestre por encima de lo esperado y recompra de 950 millones. Analistas: consenso comprar, objetivo medio **30,85 €** (+3,2 %).",
+      "vigilar": "Precio del Brent; ex-dividendo el 12-01-2027 (93 € estimados).",
+      "confianza": "media"
+     },
+     "phau": {
+      "texto": "Vale **6.750,96 €** (7,7 %), −0,5 % hoy y −1,0 % en el año. Latente +2.861 € (+73,5 %). La tendencia es bajista: −6,1 % bajo su media de 200 sesiones. Según la lectura de prensa, pesa el dólar fuerte y los tipos altos.",
+      "vigilar": "Soporte de 321,79 € (mínimo de 52 semanas) y media de 200 sesiones en 359,41 €.",
+      "confianza": "media"
+     },
+     "bat": {
+      "texto": "Cotiza a **54,71 €** (−3,3 % hoy) y vale 4.902,95 € (5,6 %). Latente +1.301 € (+36,1 %). Goldman Sachs la mejora a comprar y la FDA autoriza 24 bolsas de nicotina. La caída de hoy no tiene explicación en las noticias. Analistas: objetivo medio **62,11 €** (+13,5 %).",
+      "vigilar": "Ex-dividendo el 24-12-2026 (52 € estimados); media de 50 sesiones en 50,25 €.",
+      "confianza": "media"
+     },
+     "btc": {
+      "texto": "Vale **3.970,33 €** (4,5 %), +0,7 % hoy y −6,5 % en el mes. Latente −900 € (−18,5 %) con precio medio de 83.533 €. Ha caído por debajo de 75.000 $ y no tiene analistas que la sigan.",
+      "vigilar": "El nivel de 75.000 $ y el límite de cripto del 5 % (hoy 4,5 %, 397 € de margen).",
+      "confianza": "media"
+     },
+     "nb-short": {
+      "texto": "Vale **3.547,80 €** (4,1 %), +0,1 % hoy y +0,2 % en el año. Latente −222 € (−5,9 %). Riesgo 2 de 7, volatilidad 2 %. Su precio sigue la subida de tipos de la zona euro.",
+      "vigilar": "Inflación de la eurozona (4 %) y decisiones del BCE; media de 200 sesiones en 118,70 €.",
+      "confianza": "alta"
+     },
+     "iag": {
+      "texto": "Vale **3.387,94 €** (3,9 %), +1,1 % hoy y +9,3 % en el año. Latente +181 € (+5,6 %). Beneficio de nueve meses −16,2 % por el combustible, pero dividendo +10 %. Barclays mejora cinco aerolíneas por la bajada del combustible. Analistas: objetivo medio **6,00 €** (+15,5 %).",
+      "vigilar": "Precio del petróleo; pago de 0,053 € por acción el 07-12-2026.",
+      "confianza": "media"
+     }
+    },
+    "preguntas": [
+     {
+      "q": "¿Tienes una meta de patrimonio y en cuántos años?",
+      "por_que": "Así puedo decirte a qué distancia estás de ella en cada revisión. Ahora no hay meta en tu perfil.",
+      "opciones": [
+       "Sí, la pongo",
+       "Todavía no"
+      ]
+     },
+     {
+      "q": "¿Desde qué fecha tienes cada posición?",
+      "por_que": "Sin fecha no puedo calcular la rentabilidad real de la cartera.",
+      "opciones": [
+       "Toda desde el inicio de Toisón",
+       "Varía, la indico"
+      ]
+     },
+     {
+      "q": "¿Has vendido o cobrado dividendos fuera de Toisón este año?",
+      "por_que": "Cambiaría el impuesto de 2026, que ahora sale 0 €.",
+      "opciones": [
+       "Sí",
+       "No"
+      ]
+     }
+    ],
+    "fuentes": [],
+    "publico": true,
+    "modo": "publico"
+   }
+  }
+ ]
+}
