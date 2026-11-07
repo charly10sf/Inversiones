@@ -1,0 +1,29 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+<!-- Fuente de las imágenes de los correos (worker/correo/img). Se abre con Playwright a 2x, con ibarra.woff2 (fonts/) copiada al lado, y se recorta: la cabecera (#h, ?l=es|en) en hero-es/en.jpg y los iconos (#i-…) en i-*.png. Luego: node worker/correo/empaquetar.mjs -->
+@font-face{font-family:Ib;src:url(ibarra.woff2)}
+@font-face{font-family:In;src:url(/usr/share/fonts/opentype/inter/Inter-Medium.otf)}
+body{margin:0;background:#888}
+.h{width:576px;height:236px;position:relative;overflow:hidden;background:radial-gradient(90% 120% at 50% 0%,#1e1e1e 0%,#0a0a0a 55%,#000 100%)}
+svg{position:absolute;inset:0}
+</style></head><body>
+<div class="h" id="h"><svg width="576" height="236" viewBox="0 0 576 236">
+<defs>
+<linearGradient id="m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7dfa8"/><stop offset=".52" stop-color="#e3b45f"/><stop offset="1" stop-color="#b5863a"/></linearGradient>
+<linearGradient id="o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbf3e6"/><stop offset="1" stop-color="#e2d2bb"/></linearGradient>
+<linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbf3e6"/><stop offset="1" stop-color="#d9c4a3"/></linearGradient>
+<linearGradient id="a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#e3b45f" stop-opacity=".22"/><stop offset="1" stop-color="#e3b45f" stop-opacity="0"/></linearGradient>
+<linearGradient id="l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b5863a" stop-opacity="0"/><stop offset=".12" stop-color="#b5863a"/><stop offset=".6" stop-color="#e3b45f"/><stop offset=".88" stop-color="#f7dfa8"/><stop offset="1" stop-color="#f7dfa8" stop-opacity="0"/></linearGradient>
+<radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000" stop-opacity=".85"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+</defs>
+<g stroke="#fff" stroke-opacity=".045"><path d="M0 186H576M0 214H576"/></g>
+<path id="curva" d="M0 218 C34 216 56 206 86 208 S134 218 166 210 S214 192 248 196 S300 206 334 196 S384 176 414 182 S462 190 492 172 S548 146 576 140" fill="none"/>
+<path d="M0 218 C34 216 56 206 86 208 S134 218 166 210 S214 192 248 196 S300 206 334 196 S384 176 414 182 S462 190 492 172 S548 146 576 140 L576 236 L0 236Z" fill="url(#a)"/>
+<use href="#curva" stroke="url(#l)" stroke-width="2.4" stroke-linecap="round"/>
+<ellipse cx="288" cy="96" rx="200" ry="70" fill="url(#halo)"/>
+<g transform="translate(288 62) scale(.34)"><path d="M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z" fill="url(#o)"/><path d="M-61.15 -76L61.15 -76L61.15 -66.7L16.25 -66.7L9.05 -57L12.25 60L20.5 60L20.5 67.2L-20.5 67.2L-20.5 60L-12.25 60L-9.05 -57L-16.25 -66.7L-61.15 -66.7ZM-6.45 -40.5L-6.45 38.5L-4.55 38.5L-4.55 -40.5ZM-0.95 -40.5L-0.95 38.5L0.95 38.5L0.95 -40.5ZM4.55 -40.5L4.55 38.5L6.45 38.5L6.45 -40.5Z" fill="url(#m)"/></g>
+<text x="292" y="124" text-anchor="middle" font-family="Ib" font-size="28" letter-spacing="9" fill="url(#w)">TOISÓN</text>
+<text id="lema" x="288" y="148" text-anchor="middle" font-family="In" font-size="11.5" letter-spacing="2.2" fill="#b9ab94">TUS INVERSIONES EN UN SOLO SITIO</text>
+
+</svg></div>
+<script>const q=new URLSearchParams(location.search);if(q.get('l')==='en')document.getElementById('lema').textContent='ALL YOUR INVESTMENTS IN ONE PLACE';</script>
+</body></html>

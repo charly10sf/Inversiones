@@ -10,6 +10,7 @@
    - Secretos (los pone la GitHub Action, nunca están en el repositorio): EB_CLAVE (la clave .pem de la aplicación de
      Enable Banking), EB_APP (su Application ID), BANCO_EMAILS (quién puede usarlo) y ESTADO (para firmar la vuelta). */
 
+import { correoRuta } from './correo.js';
 const EB_API = 'https://api.enablebanking.com';
 const FB_PROYECTO = 'growfolio-a79a9';
 const FB_JWKS = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
@@ -499,6 +500,7 @@ export class Cuotas {
   constructor(estado) { this.estado = estado; }
   async fetch(req) {
     const datos = await req.json();
+    if (datos.op === 'limite' || datos.op === 'una' || datos.op === 'desmarcar') return new Response(JSON.stringify(await this.correo(datos)));
     if (datos.op) return new Response(JSON.stringify(await this.techo(datos)));
     const { dia, tope, topeRondas, primera: primeraApp = true, pregunta = null, topePregunta = 16, fondo = false, topeFondo = null, tarea = false, topeTareas = 0, topeRondasTareas = 0, revision = false, topeRevisiones = 0, letra = '', huella = null } = datos;
     let c = (await this.estado.storage.get('c')) || { dia, n: 0, r: 0 };
@@ -531,6 +533,24 @@ export class Cuotas {
     if (tarea) c.rt += 1; else c.r += 1;
     await this.estado.storage.put('c', c);
     return new Response(JSON.stringify({ ok: true, n: c.n, r: c.r, f: c.f, t: c.t, rt: c.rt, rv: c.rv }));
+  }
+  // 0.8.3 · los topes de los correos (src/correo.js). «limite»: cabe si en cada ventana [ms, cuántos] hay menos de «cuántos»
+  // envíos; si cabe, lo apunta. «una»: la primera vez sí y luego no (la bienvenida); «desmarcar» la deja otra vez libre
+  async correo({ op, ventanas = [], ahora = Date.now() }) {
+    if (op === 'una') { if (await this.estado.storage.get('u')) return { ok: false }; await this.estado.storage.put('u', 1); return { ok: true }; }
+    if (op === 'desmarcar') { await this.estado.storage.delete('u'); return { ok: true }; }
+    const vs = (Array.isArray(ventanas) ? ventanas : []).map(([ms, n]) => [Number(ms) || 0, Number(n) || 0]).filter(([ms, n]) => ms > 0 && n > 0);
+    const largo = Math.max(0, ...vs.map(([ms]) => ms));
+    let l = ((await this.estado.storage.get('l')) || []).filter((t) => ahora - t < largo);
+    let espera = 0;
+    for (const [ms, n] of vs) {
+      const dentro = l.filter((t) => ahora - t < ms);
+      if (dentro.length >= n) espera = Math.max(espera, Math.ceil((dentro[dentro.length - n] + ms - ahora) / 1000));
+    }
+    if (espera > 0) { await this.estado.storage.put('l', l); return { ok: false, espera }; }
+    l.push(ahora); if (l.length > 200) l = l.slice(-200);
+    await this.estado.storage.put('l', l);
+    return { ok: true };
   }
   // el techo: g, lo gastado hoy (lo que han costado de verdad las respuestas acabadas), y p, lo apartado para las que
   // aún llegan. «reservar» aparta (si cabe); «cerrar» cambia lo apartado por lo que ha costado (0 si no llegó a Claude)
@@ -741,9 +761,10 @@ export default {
     const res = (cuerpo, status = 200) => new Response(JSON.stringify(cuerpo), { status, headers: { ...cors, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
     try {
-      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true, claude: !!env.ANTHROPIC_API_KEY, cuotas: !!env.CUOTAS });
+      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true, claude: !!env.ANTHROPIC_API_KEY, cuotas: !!env.CUOTAS, correo: !!(env.RESEND_API_KEY && env.FIREBASE_CORREO) });
       if (url.pathname.startsWith('/banco/')) return await banco(url.pathname.slice(7), url, req, env, res);
       if (url.pathname === '/claude') return await claude(req, env, cors, res, ctx);
+      if (url.pathname === '/correo' || url.pathname.startsWith('/correo/')) return await correoRuta(req, env, ctx, res, { quienEs, claveCorreo, origenes });
       // desde la web (o la app, que la carga) no hace falta sesión para buscar; desde otro sitio, sí
       if (url.pathname === '/isin') return await isinRuta(url, req, env, ctx, res, !origenes.includes(origen));
       return res({ error: 'no-existe' }, 404);

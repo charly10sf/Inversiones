@@ -16,6 +16,13 @@ on:
     branches: [main, v0.2.3]
     paths: ['worker/**', '.github/workflows/worker.yml']
   workflow_dispatch:
+    inputs:
+      prueba:
+        description: '«correos»: publica el Worker de pruebas growfolio-correos (solo con lo de los correos) y manda los tres a la cuenta de prueba'
+        required: false
+        default: 'no'
+        type: choice
+        options: ['no', 'correos']
 
 permissions:
   contents: read
@@ -45,7 +52,7 @@ jobs:
             echo "ok=si" >> "$GITHUB_OUTPUT"
           fi
       - name: Publicar
-        if: steps.cf.outputs.ok == 'si'
+        if: steps.cf.outputs.ok == 'si' && inputs.prueba != 'correos'
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -59,7 +66,7 @@ jobs:
           url=$(grep -oE 'https://[a-z0-9.-]+\.workers\.dev' salida.txt | head -1)
           echo "::notice::Worker publicado en ${url:-(sin dirección workers.dev: actívala en Cloudflare > Workers)}"
       - name: Secretos del Worker
-        if: steps.cf.outputs.ok == 'si'
+        if: steps.cf.outputs.ok == 'si' && inputs.prueba != 'correos'
         working-directory: worker
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
@@ -70,6 +77,8 @@ jobs:
           PRECIOS_TOKEN: ${{ secrets.PRECIOS_TOKEN }}
           ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
           CLAUDE_EMAILS: ${{ secrets.CLAUDE_EMAILS }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FIREBASE_CORREO: ${{ secrets.FIREBASE_CORREO }}
         run: |
           poner() {
             if [ -n "$2" ]; then
@@ -84,5 +93,39 @@ jobs:
           poner PRECIOS_TOKEN "$PRECIOS_TOKEN" "la actualización de precios cada 20 minutos"
           poner ANTHROPIC_API_KEY "$ANTHROPIC_API_KEY" "GrowIA con Claude"
           poner CLAUDE_EMAILS "$CLAUDE_EMAILS" "GrowIA con Claude"
+          # 0.8.3: los correos propios (sin ellos, la app manda los de Firebase de siempre)
+          poner RESEND_API_KEY "$RESEND_API_KEY" "los correos propios desde noreply@toison.es"
+          poner FIREBASE_CORREO "$FIREBASE_CORREO" "los correos propios desde noreply@toison.es"
           # la clave para firmar la vuelta del banco: se crea una vez y se queda
           if ! npx --yes wrangler@4 secret list 2>/dev/null | grep -q '"ESTADO"'; then poner ESTADO "$(openssl rand -hex 32)"; fi
+
+      # 0.8.3: el Worker de pruebas de los correos (growfolio-correos), desde cualquier rama y sin tocar el de verdad. Solo lleva
+      # la clave de Resend, la cuenta de servicio y un token de pruebas que nadie ve; manda los tres correos a la cuenta de prueba
+      - name: Worker de pruebas de los correos
+        if: steps.cf.outputs.ok == 'si' && inputs.prueba == 'correos'
+        working-directory: worker
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          FIREBASE_CORREO: ${{ secrets.FIREBASE_CORREO }}
+        run: |
+          set -o pipefail
+          if [ -z "$RESEND_API_KEY" ] || [ -z "$FIREBASE_CORREO" ]; then echo "::error::Faltan RESEND_API_KEY o FIREBASE_CORREO en los secretos de GitHub"; exit 1; fi
+          N=growfolio-correos
+          npx --yes wrangler@4 deploy --name "$N" 2>&1 | tee salida.txt
+          url=$(grep -oE "https://$N\.[a-z0-9.-]+\.workers\.dev" salida.txt | head -1)
+          if [ -z "$url" ]; then echo "::error::No sale la dirección del Worker de pruebas"; exit 1; fi
+          T=$(openssl rand -hex 24)
+          printf '%s' "$RESEND_API_KEY" | npx --yes wrangler@4 secret put RESEND_API_KEY --name "$N" > /dev/null
+          printf '%s' "$FIREBASE_CORREO" | npx --yes wrangler@4 secret put FIREBASE_CORREO --name "$N" > /dev/null
+          printf '%s' "$T" | npx --yes wrangler@4 secret put PRUEBA_TOKEN --name "$N" > /dev/null
+          sleep 15
+          echo "::notice::Worker de pruebas: $url ($(curl -s "$url/salud"))"
+          for tipo in confirmar clave bienvenida; do
+            r=$(curl -s -X POST "$url/correo/prueba" -H "X-Prueba: $T" -H 'Content-Type: application/json' -H 'Origin: https://toison.es' -d "{\"tipo\":\"$tipo\",\"lang\":\"es\",\"base\":\"https://charly10sf.github.io/Inversiones/\"}")
+            echo "::notice::$tipo: $r"
+            sleep 2
+          done
+          # el token de pruebas se cambia al acabar: el de esta vuelta ya no vale para nada
+          openssl rand -hex 24 | npx --yes wrangler@4 secret put PRUEBA_TOKEN --name "$N" > /dev/null

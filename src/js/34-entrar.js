@@ -117,7 +117,7 @@ function pantallaCuenta(errorTxt = '') {
   $('#bOlvido').onclick = async () => {
     const email = $('#cEmail').value.trim();
     if (!email) { err('Escribe arriba tu correo y vuelve a pulsar aquí.'); $('#cEmail').focus(); return; }
-    try { await fbCargar(); await FB.au.sendPasswordResetEmail(FB.auth, email); err(''); toast(L(`Te he mandado un correo a ${email} para poner una contraseña nueva a tu cuenta. La de tu cartera no cambia.`, `I've sent an email to ${email} to set a new account password. Your portfolio password doesn't change.`), 7000); }
+    try { await mandarCorreoClave(email); err(''); toast(L(`Si hay una cuenta con ${email}, te he mandado un correo de Toisón para poner una contraseña nueva a tu cuenta. La de tu cartera no cambia. Si no lo ves, mira en spam.`, `If there's an account for ${email}, I've sent a Toisón email to set a new account password. Your portfolio password doesn't change. If you can't see it, check spam.`), 7000); }
     catch (e) { err(errorFb(e)); }
   };
 }

@@ -129,6 +129,19 @@ async function verificar(cambio) {
     `<p>${cambio ? L('Tu cuenta ya usa el correo nuevo para entrar.', 'Your account now uses the new email to sign in.') : L('Ya puedes usar la IA de Toisón. Si tenías la app abierta, al volver a ella lo nota sola.', 'You can now use the Toisón AI. If you had the app open, it will notice by itself when you go back.')}</p>`);
 }
 
+// 0.8.3: el correo de contraseña nueva sale del Worker (el de Toisón, desde noreply@toison.es); si no puede, el de Firebase
+const WORKER_CORREO = 'https://growfolio.growfolio-web-app.workers.dev/correo';
+async function correoClave(correo) {
+  try {
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
+    const r = await fetch(WORKER_CORREO, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo: 'clave', correo, lang: idioma === 'en' ? 'en' : 'es', base: new URL('./', location.href).href }) }).finally(() => clearTimeout(t));
+    const j = await r.json().catch(() => null);
+    if (j && j.ok) return;
+    if (j && j.motivo === 'espera') throw Object.assign(new Error('espera'), { code: 'auth/too-many-requests' });
+  } catch (e) { if (e && e.code) throw e; }
+  await au.sendPasswordResetEmail(auth, correo);
+}
+
 async function recuperar() {
   const info = await au.checkActionCode(auth, codigo);
   const correo = (info && info.data && info.data.email) || '';
@@ -138,7 +151,7 @@ async function recuperar() {
     `<div class="btns"><button class="btn pri" id="bClave">${L('Mandarme un correo para cambiar la contraseña', 'Send me an email to change the password')}</button><a class="btn" href="${esc(urlApp)}">${L('Abrir Toisón', 'Open Toisón')}</a></div>`);
   document.getElementById('bClave').onclick = async (ev) => {
     const b = ev.currentTarget; b.disabled = true;
-    try { await au.sendPasswordResetEmail(auth, correo); b.textContent = L(`Te lo he mandado a ${correo}`, `Sent to ${correo}`); }
+    try { await correoClave(correo); b.textContent = L(`Te lo he mandado a ${correo}`, `Sent to ${correo}`); }
     catch (e) { b.disabled = false; b.textContent = L('No se ha podido. Prueba en un rato', "Couldn't send it. Try again later"); }
   };
 }

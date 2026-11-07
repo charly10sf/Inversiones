@@ -32,13 +32,49 @@ const correoSinConfirmar = () => !!(FB.user && !FB.user.emailVerified && (FB.use
    volver a pedir desde Ajustes y desde el panel de la IA. Cada correo nuevo deja sin valor los enlaces de los anteriores.
    Al volver a Toisón con el enlace ya abierto, la app lo nota sola (mirarCorreoConfirmado) */
 const LS_VERIF = 'inv-verif-mandado';
+/* 0.8.3 · los correos propios: salen del Worker (Resend, desde noreply@toison.es, con el diseño de Toisón y el enlace a
+   cuenta.html). Si el Worker no puede (sin configurar, caído, el día lleno, sin red), la app manda el de Firebase de siempre:
+   nadie se queda sin correo. «espera» (topes del Worker) no cae a Firebase: así los topes valen */
+const baseApp = () => { try { return new URL('./', location.href).href; } catch (e) { return ''; } };
+async function correoToison(tipo, extra) {
+  try {
+    const h = { 'Content-Type': 'application/json' };
+    if (tipo !== 'clave') h.Authorization = 'Bearer ' + (await tokenCuenta());
+    const r = await conTiempo(fetch(WORKER + '/correo', { method: 'POST', headers: h, body: JSON.stringify({ tipo, lang: IDIOMA === 'en' ? 'en' : 'es', base: baseApp(), ...(extra || {}) }) }), 12000);
+    const j = await r.json().catch(() => null);
+    return j && typeof j === 'object' ? j : { ok: false, motivo: 'fallo' };
+  } catch (e) { return { ok: false, motivo: 'red' }; }
+}
+const errorEspera = () => { const e = new Error('espera'); e.code = 'auth/too-many-requests'; return e; };
 async function mandarCorreoConfirmacion() {
   await fbCargar(); if (!FB.user) throw new Error('sin sesión');
-  try { FB.auth.languageCode = IDIOMA === 'en' ? 'en' : 'es'; } catch (e) {}
-  await conTiempo(FB.au.sendEmailVerification(FB.user), 10000);
+  const w = CFG.dev ? { ok: false } : await correoToison('confirmar');
+  if (w.motivo === 'espera') throw errorEspera();
+  if (!w.ok && w.motivo !== 'ya') {
+    try { FB.auth.languageCode = IDIOMA === 'en' ? 'en' : 'es'; } catch (e) {}
+    await conTiempo(FB.au.sendEmailVerification(FB.user), 10000);
+  }
   LS.set(LS_VERIF, { t: Date.now(), uid: FB.user.uid });
 }
-const txtCorreoMandado = (correo) => L(`Te he mandado un correo a ${correo}. Abre el enlace del último que te llegue (los de antes ya no valen; si no lo ves, mira en spam) y vuelve a Toisón.`, `I've sent an email to ${correo}. Open the link in the latest one you get (earlier ones no longer work; if you can't see it, check spam) and come back to Toisón.`);
+// la contraseña olvidada (sin sesión): true si salió (del Worker o de Firebase). Los errores de Firebase siguen tal cual
+async function mandarCorreoClave(email) {
+  const w = CFG.dev ? { ok: false } : await correoToison('clave', { correo: email });
+  if (w.ok) return true;
+  if (w.motivo === 'espera') throw errorEspera();
+  await fbCargar();
+  try { FB.auth.languageCode = IDIOMA === 'en' ? 'en' : 'es'; } catch (e) {}
+  await FB.au.sendPasswordResetEmail(FB.auth, email);
+  return true;
+}
+// la bienvenida, una vez por cuenta, al notar que el correo acaba de quedar confirmado (el Worker tampoco la repite)
+const LS_BIENVENIDA = 'inv-bienvenida-correo';
+function mandarBienvenida(u) {
+  if (CFG.dev || !u) return;
+  const hechas = LS.get(LS_BIENVENIDA, []) || [];
+  if (hechas.includes(u.uid)) return;
+  correoToison('bienvenida').then((w) => { if (w.ok || w.motivo === 'ya') LS.set(LS_BIENVENIDA, hechas.concat(u.uid).slice(-5)); });
+}
+const txtCorreoMandado = (correo) => L(`Te he mandado un correo de Toisón a ${correo}. Abre el enlace del último que te llegue (los de antes ya no valen; si no lo ves, mira en spam) y vuelve a Toisón.`, `I've sent a Toisón email to ${correo}. Open the link in the latest one you get (earlier ones no longer work; if you can't see it, check spam) and come back to Toisón.`);
 async function pedirCorreoConfirmacion() {
   // cada correo nuevo anula los anteriores: uno por minuto como mucho, así no se pisan
   const v = LS.get(LS_VERIF, null);
@@ -84,6 +120,7 @@ function mirarCorreoConfirmado(forzar, desdeAcceso) {
     VERIF_LISTO = u.uid;
     quitarPausa(); LS.del(LS_VERIF);
     toast(L('Correo confirmado: ya puedes usar la IA.', 'Email confirmed: you can now use the AI.'), 5000);
+    mandarBienvenida(u);
     if (!desdeAcceso) try { comprobarAcceso(); } catch (e) {}
     try { if ($('#asesorFondo')) { if (AS.vista === 'sin-ia') AS.vista = 'chat'; pintarAsesor(); sondearClaude(); } } catch (e) {}
     return true;
