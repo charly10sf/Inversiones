@@ -101,7 +101,7 @@ function htmlTurno(t, k) {
   const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
   return `<div class="as-ia${vivo ? ' vivo' : ''}" id="asT${k}">${partes}
     ${vivo && !(ult && ult.tipo === 'texto' && ult.texto) ? `<div class="as-pensando" aria-label="Pensando"><i></i><i></i><i></i><small class="as-seg">${t.t && Date.now() - t.t >= 3000 ? `${Math.round((Date.now() - t.t) / 1000)} s` : ''}</small></div>` : ''}
-    ${t.error ? `<div class="as-error">${esc(t.error)} <button class="enlace" data-as="reintentar">Volver a preguntar</button></div>` : ''}
+    ${t.error ? `<div class="as-error">${esc(t.error)} <button class="enlace" data-as="reintentar">Volver a preguntar</button>${t.codigo === 'no-permitido' && correoSinConfirmar() ? ` · <button class="enlace" data-as="reenviar-correo">${L('Mandar el correo otra vez', 'Send the email again')}</button>` : ''}</div>` : ''}
     ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.filter((x) => urlSegura(x.u)).map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(x.d || dom(x.u))}</a>`).join('')}</div>` : ''}
   </div>`;
 }
@@ -115,17 +115,27 @@ function htmlDiarioIA() {
     <div class="as-diario"><b>${L('Lo último de la IA', "GrowIA's latest activity")}</b><small>${L('Qué ha hecho cada respuesta, sin tus preguntas ni tus cifras. Si algo falla, cópialo y pásaselo a quien te dio Toisón.', "What each answer did, without your questions or figures. If something fails, copy it and send it to whoever gave you Toisón.")}</small>
     ${d.length ? `<ol>${d.map((x) => `<li><time>${h(x.t)}</time>${x.app ? '<i>app</i>' : ''}${esc(x.x)}</li>`).join('')}</ol><button class="btn peq" data-as="copiar-diario">${ICONOS.copiar}${L('Copiar', 'Copy')}</button>` : `<p class="nota">${L('Aún no hay nada.', 'Nothing yet.')}</p>`}</div>`;
 }
+// 0.8.3: a quién se mandó y que solo vale el enlace del último correo
+function htmlReenviarCorreo() {
+  const v = LS.get(LS_VERIF, null), cuando = v && v.uid === FB.user.uid && v.t ? new Date(v.t) : null;
+  const h = cuando ? cuando.toLocaleTimeString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { hour: 'numeric', minute: '2-digit' }) : '';
+  const hoy = cuando && cuando.toDateString() === new Date().toDateString();
+  return `<p class="nota as-reenviar">${cuando ? L(`El último te lo mandé ${hoy ? `hoy a las ${h}` : `el ${cuando.toLocaleDateString('es-ES')}`} a ${esc(FB.user.email)}.`, `I sent the latest one ${hoy ? `today at ${h}` : `on ${cuando.toLocaleDateString('en-GB')}`} to ${esc(FB.user.email)}.`) : L(`Va a ${esc(FB.user.email)}.`, `It goes to ${esc(FB.user.email)}.`)} ${L('Abre el enlace del último correo que te llegue: al mandar uno nuevo, los de antes dejan de valer. Si no lo ves, mira en spam.', 'Open the link in the latest email you get: when a new one is sent, earlier ones stop working. If you can\'t see it, check spam.')}</p>`;
+}
 /* 0.8.2b: cuando la IA no puede contestar (sin cuenta, con el correo sin confirmar, sin tu sí o con Claude apartado un rato),
    lo dice y qué hacer. Ya no hay clave que poner */
 function htmlSinIA() {
   const p = claudePausado(), sinVerificar = FB.user && !FB.user.emailVerified, esperando = !p && !sinVerificar && !!SONDEO_EN_CURSO;
+  // 0.8.3: con el correo sin confirmar, el botón para que te lo mande otra vez y «Ya lo he confirmado» (lo mira al momento)
+  const confirmar = correoSinConfirmar() && (!p || p.motivo === 'no-permitido');
   const txt = !FB.user ? L('La IA contesta con tu cuenta de Toisón: entra en tu cuenta para usarla.', 'The AI answers with your Toisón account: sign in to use it.')
     : esperando ? L('Conectando con la IA…', 'Connecting to the AI…')
-    : errorSinIA(motivoSinClaude()).message;
+    : errorSinIA(confirmar ? { codigo: 'no-permitido' } : motivoSinClaude()).message;
   return `<div class="as-config as-sin-ia">
     <h3 data-no-trad>${conIA('La IA', 'GrowIA')}</h3>
     <p>${esc(txt)}</p>
-    ${esperando || !FB.user ? '' : `<div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="reprobar">${L('Volver a probar', 'Try again')}</button></div>`}
+    ${confirmar ? `${htmlReenviarCorreo()}<div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="reenviar-correo">${L('Mandar el correo otra vez', 'Send the email again')}</button><button class="btn" data-as="reprobar">${L('Ya lo he confirmado', "I've confirmed it")}</button></div>`
+    : esperando || !FB.user ? '' : `<div class="fila-btns" style="justify-content:flex-start"><button class="btn pri" data-as="reprobar">${L('Volver a probar', 'Try again')}</button></div>`}
     <div class="as-sin-clave">
       <b>${L('Mientras tanto', 'Meanwhile')}</b>
       <p>${L('Copia tu cartera de ahora mismo junto con tu pregunta y pégala en el chat de IA que uses. No hace los cálculos de Toisón en directo, pero tiene todos tus datos.', "Copy your current portfolio together with your question and paste it into the AI chat you use. It doesn't run Toisón's live calculations, but it has all your data.")}</p>
@@ -180,6 +190,8 @@ function pintarTurno(k) {
 }
 async function abrirAsesor(pregunta, enviar) {
   if (!S.cartera) return;
+  // 0.8.3: si tenías el correo sin confirmar y ya lo has hecho, que lo note al abrir (repinta el panel si cambia)
+  mirarCorreoConfirmado(true);
   if (S.ficha) cerrarFicha();
   let fondo = $('#asesorFondo');
   if (!fondo) {
@@ -287,7 +299,16 @@ async function clicAsesor(e) {
   else if (a === 'ajustes') { AS.vista = AS.vista === 'ajustes' ? 'chat' : 'ajustes'; pintarAsesor(); }
   else if (a === 'chat') { AS.vista = 'chat'; pintarAsesor(true); }
   // 0.8.2b: volver a probar si la IA puede contestar (quita la pausa de Claude y repite el sondeo)
-  else if (a === 'reprobar') { LS.del(LS_CLAUDE_PAUSA); LS.del(LS_CLAUDE_SONDEO); AS.claudeNo = false; const p = sondearClaude(); pintarAsesor(); await p; pintarAsesor(true); }
+  else if (a === 'reprobar') {
+    // 0.8.3: con el correo sin confirmar, primero se mira si ya lo has confirmado
+    if (correoSinConfirmar()) {
+      t.disabled = true;
+      const ok = await mirarCorreoConfirmado(true);
+      if (!ok) { t.disabled = false; return void toast(L('Todavía no consta confirmado. Abre el enlace del último correo y vuelve a pulsar.', "It doesn't show as confirmed yet. Open the link in the latest email and tap again."), 6000); }
+    }
+    LS.del(LS_CLAUDE_PAUSA); LS.del(LS_CLAUDE_SONDEO); AS.claudeNo = false; const p = sondearClaude(); pintarAsesor(); await p; pintarAsesor(true);
+  }
+  else if (a === 'reenviar-correo') { t.disabled = true; const ok = await pedirCorreoConfirmacion(); if ($('#asesorFondo')) pintarAsesor(); if (!ok) t.disabled = false; }
   else if (a === 'copiar') copiarCartera();
   else if (a === 'copiar-diario') {
     const txt = `Toisón ${VERSION}${deApp('version') ? ` · app ${deApp('version')}` : ''} · ${navigator.userAgent.replace(/^.*?\(([^)]*)\).*$/, '$1')}\n${textoDiarioIA()}`;
@@ -298,6 +319,7 @@ async function clicAsesor(e) {
   else if (a === 'voz') dictar();
   else if (a === 'quitar-adjunto') { AS.adjunto = null; pintarAdjunto(); }
   else if (a === 'reintentar') {
+    if (correoSinConfirmar()) await mirarCorreoConfirmado(true);
     let k = AS.conv.length - 1; while (k >= 0 && AS.conv[k].rol !== 'yo') k--;
     if (k < 0) return;
     const q = AS.conv[k].texto; if (AS.conv[k].adj) AS.adjunto = AS.conv[k].adj; if (AS.conv[k].ctx) S.ctxIA = { ...AS.conv[k].ctx, q, t: Date.now() }; AS.conv.splice(k); preguntarAsesor(q);

@@ -107,6 +107,9 @@ function pantallaCuenta(errorTxt = '') {
         const r = await FB.au.createUserWithEmailAndPassword(FB.auth, email, pass);
         const nom = $('#cNombre').value.trim();
         if (nom) { LS.set('inv-nombre', nom); try { await FB.au.updateProfile(r.user, { displayName: nom }); } catch (e) {} }
+        // 0.8.3: el correo de confirmación sale ya (antes solo con el botón de Ajustes); si falla, la bienvenida lo dice
+        FB.user = FB.auth.currentUser;
+        if (correoSinConfirmar()) try { await mandarCorreoConfirmacion(); S.correoMandado = 'si'; } catch (e) { console.warn(e); S.correoMandado = 'no'; }
       } else await FB.au.signInWithEmailAndPassword(FB.auth, email, pass);
       FB.user = FB.auth.currentUser; await dentro();
     } catch (e) { console.warn(e); b.disabled = false; b.textContent = modo === 'crear' ? 'Crear cuenta' : 'Entrar'; err(errorFb(e)); }
@@ -117,6 +120,14 @@ function pantallaCuenta(errorTxt = '') {
     try { await fbCargar(); await FB.au.sendPasswordResetEmail(FB.auth, email); err(''); toast(L(`Te he mandado un correo a ${email} para poner una contraseña nueva a tu cuenta. La de tu cartera no cambia.`, `I've sent an email to ${email} to set a new account password. Your portfolio password doesn't change.`), 7000); }
     catch (e) { err(errorFb(e)); }
   };
+}
+/* 0.8.3 · en la bienvenida de una cuenta de correo: que le hemos mandado el correo para confirmarlo y para qué hace falta */
+function htmlAvisoConfirmar() {
+  if (!correoSinConfirmar()) return '';
+  const c = esc(FB.user.email || '');
+  return S.correoMandado === 'no'
+    ? `<p class="nota aviso-confirmar" role="status">${L(`No he podido mandarte ahora el correo para confirmar ${c}. Lo puedes pedir luego desde Ajustes o desde el panel de la IA: hace falta para usar la IA.`, `I couldn't send the email to confirm ${c} right now. You can ask for it later in Settings or in the AI panel: you need it to use the AI.`)}</p>`
+    : `<p class="nota aviso-confirmar" role="status">${L(`Te he mandado un correo a <b>${c}</b> para confirmarlo. Abre el enlace cuando puedas: hace falta para usar la IA. Si no lo ves, mira en spam.`, `I've sent an email to <b>${c}</b> to confirm it. Open the link when you can: you need it to use the AI. If you can't see it, check spam.`)}</p>`;
 }
 /* la primera vez con una cuenta nueva: cómo te llamas y, si ya tenías una cartera en este dispositivo, subirla */
 async function bienvenidaCuenta() {
@@ -131,6 +142,7 @@ async function bienvenidaCuenta() {
     ${logoEntrada()}
     <h1>${sugerido ? `¡Hola, ${esc(sugerido)}!` : '¡Hola!'}</h1>
     <p>Tu cuenta está lista${FB.user && FB.user.email ? ` (${esc(FB.user.email)})` : ''}. Antes de empezar, dos cosas.</p>
+    ${htmlAvisoConfirmar()}
     <label class="campo">¿Cómo quieres que te llame?<input id="bNombre" maxlength="40" autocomplete="given-name" value="${esc(sugerido)}" placeholder="Tu nombre"><small>Para saludarte al entrar. Lo puedes cambiar en tu perfil.</small></label>
     ${local ? `<fieldset class="opciones"><legend>Ya tienes una cartera en este dispositivo</legend><div class="opc-fila">
         <label class="opc"><input type="radio" name="que" value="subir" checked><span><b>Subirla a mi cuenta</b><small>${esc(local.de)}, con la contraseña que ya tiene</small></span></label>

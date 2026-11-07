@@ -28,6 +28,51 @@ const nombreModo = (a) => (a === 'publico' ? L('modo estándar', 'standard mode'
 const errPermiso = (e) => /permission/i.test(String((e && e.code) || e));
 // con correo y contraseña, el correo hay que confirmarlo (las reglas solo dejan leer tu modo con el correo confirmado)
 const correoSinConfirmar = () => !!(FB.user && !FB.user.emailVerified && (FB.user.providerData || []).some((x) => x.providerId === 'password'));
+/* 0.8.3 · el correo de confirmación: se manda solo al crear la cuenta con correo y contraseña (34-entrar.js) y se puede
+   volver a pedir desde Ajustes y desde el panel de la IA. Cada correo nuevo deja sin valor los enlaces de los anteriores.
+   Al volver a Toisón con el enlace ya abierto, la app lo nota sola (mirarCorreoConfirmado) */
+const LS_VERIF = 'inv-verif-mandado';
+async function mandarCorreoConfirmacion() {
+  await fbCargar(); if (!FB.user) throw new Error('sin sesión');
+  try { FB.auth.languageCode = IDIOMA === 'en' ? 'en' : 'es'; } catch (e) {}
+  await conTiempo(FB.au.sendEmailVerification(FB.user), 10000);
+  LS.set(LS_VERIF, { t: Date.now(), uid: FB.user.uid });
+}
+const txtCorreoMandado = (correo) => L(`Te he mandado un correo a ${correo}. Abre el enlace del último que te llegue (los de antes ya no valen; si no lo ves, mira en spam) y vuelve a Toisón.`, `I've sent an email to ${correo}. Open the link in the latest one you get (earlier ones no longer work; if you can't see it, check spam) and come back to Toisón.`);
+async function pedirCorreoConfirmacion() {
+  try { await mandarCorreoConfirmacion(); toast(txtCorreoMandado(FB.user.email), 9000); return true; }
+  catch (e) {
+    toast(e && e.code === 'auth/too-many-requests' ? L('Ya te he mandado varios hace poco. Espera unos minutos y mira también en spam.', "I've sent several recently. Wait a few minutes and check spam too.") : L('No se ha podido mandar ahora. Prueba en un rato.', "Couldn't send it now. Try again later."), 6000);
+    return false;
+  }
+}
+// si ya lo has confirmado (en el navegador, en otra pestaña o en el correo del móvil), la sesión aún no lo sabe: se recarga el
+// usuario y, si está confirmado, se pide un token nuevo (el Worker y las reglas miran email_verified del token). Sin esperar a
+// volver a entrar: al volver a primer plano, al volver a la app de Android y al abrir el panel de la IA
+let VERIF_MIRADO = 0, VERIF_EN_CURSO = null;
+function mirarCorreoConfirmado(forzar) {
+  if (CFG.dev || !correoSinConfirmar()) return Promise.resolve(false);
+  if (VERIF_EN_CURSO) return VERIF_EN_CURSO;
+  if (!forzar && Date.now() - VERIF_MIRADO < 15000) return Promise.resolve(false);
+  VERIF_MIRADO = Date.now();
+  const u = FB.user;
+  VERIF_EN_CURSO = (async () => {
+    try { await conTiempo(u.reload(), 8000); } catch (e) { return false; }
+    if (!u.emailVerified || u !== FB.user) return false;
+    try { await conTiempo(u.getIdToken(true), 8000); } catch (e) {}
+    // la pausa de Claude por el correo sin confirmar ya no toca
+    try { const p = LS.get(LS_CLAUDE_PAUSA, null); if (p && p.motivo === 'no-permitido') LS.del(LS_CLAUDE_PAUSA); } catch (e) {}
+    LS.del(LS_VERIF);
+    toast(L('Correo confirmado: ya puedes usar la IA.', 'Email confirmed: you can now use the AI.'), 5000);
+    try { comprobarAcceso(); } catch (e) {}
+    try { if ($('#asesorFondo')) { if (AS.vista === 'sin-ia') AS.vista = 'chat'; pintarAsesor(); sondearClaude(); } } catch (e) {}
+    return true;
+  })().finally(() => { VERIF_EN_CURSO = null; });
+  return VERIF_EN_CURSO;
+}
+document.addEventListener('visibilitychange', () => { if (!document.hidden) mirarCorreoConfirmado(); });
+window.addEventListener('focus', () => mirarCorreoConfirmado());
+window.addEventListener('vuelta-app', () => mirarCorreoConfirmado());
 /* Fundadores: las cuentas creadas antes del día que salió la 0.5 (los amigos que ya usaban GrowFolio). La fecha de alta
    la pone Firebase. Las que se creen después empiezan en estándar; el dueño las pasa a fundador en Ajustes */
 const ALTA_FUNDADORES = '2026-10-23';
@@ -109,11 +154,8 @@ async function filaAcceso(h) {
     $('#aPriv', h.el).onclick = () => { h.cerrar(true); verModos(); };
     $('#aSaludIA', h.el).onclick = () => { h.cerrar(true); verSaludIA(); };
   } else if (correoSinConfirmar()) {
-    w.innerHTML = `<button class="aj-fila" id="aVerif">${ICONOS.alerta}<span><b>${L('Confirma tu correo', 'Confirm your email')}</b><small>${L('Te mandamos un enlace a tu correo. Hace falta, por ejemplo, para el modo fundador si te lo han dado.', 'We send a link to your email. It is needed, for example, for founder mode if you have been given it.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
-    $('#aVerif', h.el).onclick = async () => {
-      try { await fbCargar(); await FB.au.sendEmailVerification(FB.user); toast(L(`Te he mandado un correo a ${FB.user.email}. Cuando lo confirmes, vuelve a abrir Toisón.`, `I've sent an email to ${FB.user.email}. Once you confirm it, open Toisón again.`), 7000); }
-      catch (e) { toast(L('No se ha podido mandar ahora. Prueba en un rato.', "Couldn't send it now. Try again later."), 5000); }
-    };
+    w.innerHTML = `<button class="aj-fila" id="aVerif">${ICONOS.alerta}<span><b>${L('Confirma tu correo', 'Confirm your email')}</b><small>${L('Hace falta para usar la IA y para el modo fundador. Pulsa y te mando el enlace otra vez.', 'You need it to use the AI and for founder mode. Tap and I\'ll send the link again.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
+    $('#aVerif', h.el).onclick = () => pedirCorreoConfirmacion();
   } else {
     w.innerHTML = `<div class="aj-fila aj-info">${ICONOS.candado}<span><b>${L('Tu modo', 'Your mode')}: ${esc(nombreModo(S.acceso))}</b><small>${esPublico() ? L('Sin recomendaciones personalizadas: «Tu plan» en lugar del Paso a paso.', 'No personalised recommendations: Your plan instead of Steps.') : L('Toisón entero, con el Paso a paso.', 'All of Toisón, with Steps.')}</small></span></div>`;
   }
