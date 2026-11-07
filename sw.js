@@ -45,6 +45,8 @@ self.addEventListener('fetch', function (e) {
   var url = new URL(req.url);
   var propia = url.origin === location.origin;
   if (propia && DATOS.test(url.pathname)) return;
+  // 0.8.3: la página de los enlaces de los correos va siempre a la red y no se guarda (sería la página de la app)
+  if (propia && /\/cuenta\.html$/.test(url.pathname)) return;
   var cacheable = propia || /^(fonts\.googleapis\.com|fonts\.gstatic\.com|cdn\.jsdelivr\.net)$/.test(url.hostname);
   if (!cacheable) return;
   var pagina = req.mode === 'navigate' || (propia && /\/(index\.html)?$/.test(url.pathname));

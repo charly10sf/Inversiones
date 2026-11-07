@@ -220,6 +220,14 @@ export default function growfolio() {
         cpSync(de, join(dist, p), { recursive: true });
       }
       const assets = readdirSync(join(dist, 'assets')).map((a) => `assets/${a}`);
+      // 0.8.3: la página de los enlaces de los correos (cuenta.html), aparte de la app; sus letras, las mismas de la app (con huella)
+      let cuenta = texto(join(RAIZ, 'cuenta.html'));
+      for (const [f, re] of [['fonts/inter.woff2', /^inter-[\w-]+\.woff2$/], ['fonts/ibarra.woff2', /^ibarra-(?!italic)[\w-]+\.woff2$/]]) {
+        const a = readdirSync(join(dist, 'assets')).find((x) => re.test(x));
+        if (!a) throw new Error(`cuenta.html: no encuentro ${f} en assets/`);
+        cuenta = cuenta.replace(`url(${f})`, `url(assets/${a})`);
+      }
+      writeFileSync(join(dist, 'cuenta.html'), cuenta);
       const ingles = existsSync(join(dist, 'en')) ? readdirSync(join(dist, 'en')).map((a) => `en/${a}`) : [];
       const todo = [...assets, ...ingles].map((a) => readFileSync(join(dist, a), 'utf8')).join('') + readFileSync(join(dist, 'index.html'), 'utf8');
       let sw = texto(join(RAIZ, 'sw.js'));

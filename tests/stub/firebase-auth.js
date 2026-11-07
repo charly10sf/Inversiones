@@ -85,5 +85,25 @@ export async function deleteUser(u) {
   localStorage.removeItem(K); auth.currentUser = null; window.__cuentasBorradas = (window.__cuentasBorradas || 0) + 1; avisar();
 }
 export async function signOut() { localStorage.removeItem(K); auth.currentUser = null; avisar(); }
+// 0.8.3 · los enlaces de los correos (cuenta.html): la prueba pone los códigos en «stub-oob» antes de abrir la página,
+// {código: {mode, email, previo?, caducado?}}. Al usarlo, desaparece (como en Firebase, sirven una vez)
+const oob = (code) => { const o = leer('stub-oob', {}); const x = o[code]; if (!x) throw err('auth/invalid-action-code'); if (x.caducado) throw err('auth/expired-action-code'); return x; };
+const gastar = (code) => { const o = leer('stub-oob', {}); delete o[code]; guardar('stub-oob', o); };
+const operacion = { verifyEmail: 'VERIFY_EMAIL', resetPassword: 'PASSWORD_RESET', recoverEmail: 'RECOVER_EMAIL', verifyAndChangeEmail: 'VERIFY_AND_CHANGE_EMAIL' };
+export async function checkActionCode(a, code) { const x = oob(code); return { operation: operacion[x.mode], data: { email: x.email, previousEmail: x.previo || null } }; }
+export async function applyActionCode(a, code) {
+  const x = oob(code); gastar(code);
+  const c = leer(A, {});
+  if (x.mode === 'verifyEmail' && c[x.email]) { c[x.email].u.emailVerified = true; guardar(A, c); }
+  window.__codigosUsados = (window.__codigosUsados || []).concat(code);
+}
+export async function verifyPasswordResetCode(a, code) { const x = oob(code); if (x.mode !== 'resetPassword') throw err('auth/invalid-action-code'); return x.email; }
+export async function confirmPasswordReset(a, code, pass) {
+  const x = oob(code);
+  if (String(pass || '').length < 6) throw err('auth/weak-password');
+  gastar(code);
+  const c = leer(A, {}); if (c[x.email]) { c[x.email].pass = pass; guardar(A, c); }
+  window.__clavesNuevas = (window.__clavesNuevas || []).concat(x.email);
+}
 // para la prueba: confirmar el correo de una cuenta como si hubiera tocado el enlace
 window.__stubConfirmar = (email) => { const c = leer(A, {}); if (c[email]) { c[email].u.emailVerified = true; guardar(A, c); const d = leer(K, null); if (d && d.email === email) { d.emailVerified = true; guardar(K, d); } } };

@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<!-- 0.8.3 · la página de los enlaces de los correos de la cuenta (confirmar el correo, poner una contraseña nueva,
+     deshacer un cambio de correo), en lugar de la de Firebase. Va aparte de la app: no pesa nada al abrir Toisón, el
+     service worker no la toca (sw.js) y funciona igual en charly10sf.github.io/Inversiones/ y en toison.es/app/.
+     Se activa cuando su dirección se pone en Firebase → Authentication → Plantillas → «Personalizar URL de acción».
+     El código del enlace (oobCode) no sale de aquí: sin Referer y se quita de la dirección en cuanto se lee. -->
+<title>Toisón · Tu cuenta</title>
+<meta name="robots" content="noindex, nofollow">
+<meta name="referrer" content="no-referrer">
+<link rel="icon" href="toison-32.png" type="image/png" sizes="32x32">
+<link rel="icon" href="favicon.svg" type="image/svg+xml">
+<meta name="color-scheme" content="dark">
+<meta name="theme-color" content="#000000">
+<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='marfil'||g==='borgona')t='marfil';}catch(e){}document.documentElement.setAttribute('data-tema',t);if(t==='marfil'){document.querySelector('meta[name=color-scheme]').content='light dark';document.querySelector('meta[name=theme-color]').content='#ede1cc';}</script>
+<style>
+@font-face{font-family:'Inter';src:url(fonts/inter.woff2) format('woff2');font-weight:100 900;font-display:swap}
+@font-face{font-family:'Ibarra Real Nova';src:url(fonts/ibarra.woff2) format('woff2');font-weight:400 700;font-display:swap}
+/* los colores de Mármol y Marfil, los de src/css/00-temas.css */
+[data-tema="marmol"]{--fondo:#000;--superficie:#111;--superficie-2:#1c1c1c;--borde:#313131;--texto:#f8f6f2;--texto-2:#d2cdc5;--oro:#e3b45f;--primario:#e3b45f;--sobre-primario:#140d00;--sim-o:#f8f6f2;--sim-t:#e3b45f;--malo:#ff8a7a;--bueno:#7fd39a}
+[data-tema="marfil"]{--fondo:#ede1cc;--superficie:#fdf9f2;--superficie-2:#eee3d0;--borde:#dccbb0;--texto:#1c1915;--texto-2:#4a443d;--oro:#7a5716;--primario:#4e101d;--sobre-primario:#f8efe0;--sim-o:#4e101d;--sim-t:#a87a2a;--malo:#9d2a1c;--bueno:#2f6b3f}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+h1:focus{outline:none}
+html,body{margin:0;min-height:100%}
+body{background:radial-gradient(90% 60% at 50% -10%,color-mix(in srgb,var(--oro) 12%,transparent),transparent 70%),var(--fondo);color:var(--texto);font:400 15.5px/1.55 Inter,system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;-webkit-font-smoothing:antialiased;display:grid;place-items:center;min-height:100vh;min-height:100dvh;padding:24px 18px calc(24px + env(safe-area-inset-bottom))}
+main{width:100%;max-width:420px;background:var(--superficie);border-radius:22px;padding:30px 24px 26px;box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 34%,transparent),0 18px 50px rgba(0,0,0,.28);text-align:center}
+.logo{display:grid;place-items:center;width:64px;height:64px;margin:0 auto 18px;border-radius:16px;background:var(--superficie-2);box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--oro) 40%,transparent)}
+.logo svg{width:40px;height:auto}.logo .s-o{fill:var(--sim-o)}.logo .s-t{fill:var(--sim-t)}
+.marca{font:500 12px/1 Inter,system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--oro);margin:0 0 6px}
+h1{font:400 30px/1.15 'Ibarra Real Nova',Georgia,'Times New Roman',serif;margin:0 0 10px;letter-spacing:.005em}
+p{margin:0 0 14px;color:var(--texto-2)}
+p b{color:var(--texto);font-weight:600;word-break:break-word}
+.estado-ok h1{color:var(--texto)}.estado-mal h1{color:var(--malo)}
+form{text-align:left;margin-top:6px}
+label{display:block;font-size:13.5px;font-weight:600;color:var(--texto);margin:0 0 12px}
+input{display:block;width:100%;margin-top:6px;padding:12px 14px;font:inherit;color:var(--texto);background:var(--fondo);border:1px solid var(--borde);border-radius:12px;outline:none}
+input:focus{border-color:var(--oro);box-shadow:0 0 0 3px color-mix(in srgb,var(--oro) 22%,transparent)}
+small{display:block;font-weight:400;color:var(--texto-2);font-size:12.5px;margin-top:5px}
+.err{color:var(--malo);font-size:13.5px;min-height:1.2em;margin:4px 0 10px;text-align:left}
+.btns{display:grid;gap:10px;margin-top:18px}
+.btn{display:block;width:100%;padding:13px 16px;border-radius:999px;border:1px solid var(--borde);background:transparent;color:var(--texto);font:600 15px/1.2 Inter,system-ui,sans-serif;text-decoration:none;cursor:pointer;text-align:center}
+.btn.pri{background:var(--primario);color:var(--sobre-primario);border-color:transparent}
+.btn:disabled{opacity:.6;cursor:default}
+.btn:focus-visible,a:focus-visible{outline:2px solid var(--oro);outline-offset:3px}
+.pie{margin:18px 0 0;font-size:12.5px;color:var(--texto-2)}
+.pie a{color:var(--oro)}
+.cargando{display:inline-flex;gap:6px;margin:10px 0 4px}.cargando i{width:7px;height:7px;border-radius:50%;background:var(--oro);opacity:.35;animation:p 1.1s infinite}.cargando i:nth-child(2){animation-delay:.18s}.cargando i:nth-child(3){animation-delay:.36s}
+@keyframes p{40%{opacity:1}}
+@media (prefers-reduced-motion:reduce){.cargando i{animation:none;opacity:.8}}
+</style>
+</head>
+<body>
+<main id="caja" aria-live="polite">
+  <span class="logo" role="img" aria-label="Toisón"><svg viewBox="-82 -78 164 147" aria-hidden="true"><path class="s-o" d="M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z"/><path class="s-t" d="M-61.15 -76L61.15 -76L61.15 -66.7L16.25 -66.7L9.05 -57L12.25 60L20.5 60L20.5 67.2L-20.5 67.2L-20.5 60L-12.25 60L-9.05 -57L-16.25 -66.7L-61.15 -66.7ZM-6.45 -40.5L-6.45 38.5L-4.55 38.5L-4.55 -40.5ZM-0.95 -40.5L-0.95 38.5L0.95 38.5L0.95 -40.5ZM4.55 -40.5L4.55 38.5L6.45 38.5L6.45 -40.5Z"/></svg></span>
+  <p class="marca">Toisón</p>
+  <h1 id="tit">Un momento…</h1>
+  <div class="cargando" aria-hidden="true"><i></i><i></i><i></i></div>
+</main>
+<noscript><p style="text-align:center">Esta página necesita JavaScript.</p></noscript>
+<script type="module">
+// la configuración pública de Firebase, la misma que src/js/02-cuentas.js (tests/cuenta-pagina.spec.js mira que no se separen)
+const FB_CFG = {"apiKey": "AIzaSyAECqndaNt3kRC6HBLnWehTmvEWVpuIJbM", "authDomain": "growfolio-a79a9.firebaseapp.com", "projectId": "growfolio-a79a9", "storageBucket": "growfolio-a79a9.firebasestorage.app", "messagingSenderId": "316596282728", "appId": "1:316596282728:web:7c79fcf3dfb4e2b29b62dd"};
+const FB_VER = '10.12.2';
+const MIN_CLAVE = 6;   // el mínimo de Firebase para la contraseña de la cuenta
+
+const q = new URLSearchParams(location.search);
+const modo = q.get('mode') || '', codigo = q.get('oobCode') || '';
+let idioma = (q.get('lang') || '').slice(0, 2).toLowerCase();
+if (idioma !== 'es' && idioma !== 'en') { try { idioma = JSON.parse(localStorage.getItem('inv-idioma')) === 'en' ? 'en' : ''; } catch (e) { idioma = ''; } }
+if (!idioma) idioma = /^en\b/i.test(navigator.language || '') ? 'en' : 'es';
+document.documentElement.lang = idioma;
+const L = (es, en) => (idioma === 'en' ? en : es);
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+// el código se quita de la dirección (y del historial) cuando ya no sirve volver a cargar: al acabar, bien o mal. Mientras
+// sirve (el formulario de la contraseña, sin conexión), se queda para poder recargar
+const quitarCodigo = () => { try { history.replaceState(null, '', location.pathname); } catch (e) {} };
+
+// «Abrir Toisón»: la app de la misma dirección (./). En Android, con el navegador, la app instalada (el enlace
+// inversiones://token que ya abre Principal; sin token no hace nada más) y, si no la hay, la web
+const WEB = new URL('./', location.href).href;
+const enAndroid = /Android/i.test(navigator.userAgent) && !window.InversionesApp;
+const urlApp = enAndroid ? `intent://token#Intent;scheme=inversiones;S.browser_fallback_url=${encodeURIComponent(WEB)};end` : WEB;
+const btnsAbrir = () => `<div class="btns"><a class="btn pri" id="bAbrir" href="${esc(urlApp)}">${L('Abrir Toisón', 'Open Toisón')}</a>${enAndroid ? `<a class="btn" href="${esc(WEB)}">${L('Seguir en la web', 'Continue on the web')}</a>` : ''}</div>`;
+const pie = `<p class="pie">${L('¿Dudas? Escríbenos a', 'Questions? Write to')} <a href="mailto:hola@toison.es">hola@toison.es</a></p>`;
+const logo = document.querySelector('.logo').outerHTML + '<p class="marca">Toisón</p>';
+const caja = document.getElementById('caja');
+function pintar(clase, titulo, cuerpo, botones = btnsAbrir(), seguir = false) {
+  if (clase && !seguir) quitarCodigo();
+  caja.className = clase || '';
+  caja.innerHTML = `${logo}<h1 id="tit">${titulo}</h1>${cuerpo}${botones}${pie}`;
+  document.title = `Toisón · ${titulo.replace(/<[^>]+>/g, '')}`;
+  const h = document.getElementById('tit'); h.tabIndex = -1; try { h.focus({ preventScroll: true }); } catch (e) {}
+}
+
+// lo que dice cada fallo de Firebase
+const pedirOtro = () => ({
+  verifyEmail: L('Pide otro desde Toisón: Ajustes, «Confirma tu correo», o el botón del panel de la IA. Abre siempre el del último correo.', 'Ask for another one in Toisón: Settings, "Confirm your email", or the button in the AI panel. Always open the link in the latest email.'),
+  verifyAndChangeEmail: L('Vuelve a cambiar el correo desde Toisón y abre el enlace del último correo.', 'Change the email again in Toisón and open the link in the latest email.'),
+  resetPassword: L('Pide otro desde la pantalla de entrar de Toisón: «¿Has olvidado la contraseña?». Abre siempre el del último correo.', 'Ask for another one on the Toisón sign-in screen: "Forgot your password?". Always open the link in the latest email.'),
+  recoverEmail: L('Si alguien ha cambiado el correo de tu cuenta sin permiso, escríbenos a hola@toison.es.', 'If someone changed your account email without permission, write to hola@toison.es.'),
+}[modo] || '');
+function fallo(e) {
+  const c = String((e && e.code) || '');
+  if (c === 'auth/expired-action-code' || c === 'auth/invalid-action-code') return pintar('estado-mal', L('Este enlace ya no vale', 'This link no longer works'), `<p>${L('Ha caducado o ya se ha usado. Cada correo nuevo deja sin valor los anteriores.', 'It has expired or has already been used. Each new email makes the earlier ones stop working.')}</p><p>${pedirOtro()}</p>`);
+  if (c === 'auth/user-disabled' || c === 'auth/user-not-found') return pintar('estado-mal', L('No encuentro tu cuenta', "I can't find your account"), `<p>${L('La cuenta de este enlace está desactivada o se ha borrado. Si no es lo que esperabas, escríbenos.', 'The account for this link is disabled or has been deleted. If that is not what you expected, write to us.')}</p>`);
+  if (c === 'auth/network-request-failed') return pintar('estado-mal', L('Sin conexión', 'No connection'), `<p>${L('No he podido hablar con el servidor. Mira tu conexión y vuelve a probar.', "I couldn't reach the server. Check your connection and try again.")}</p>`, `<div class="btns"><button class="btn pri" onclick="location.reload()">${L('Volver a probar', 'Try again')}</button></div>`, true);
+  if (c === 'auth/too-many-requests') return pintar('estado-mal', L('Demasiados intentos', 'Too many attempts'), `<p>${L('Espera unos minutos y vuelve a abrir el enlace.', 'Wait a few minutes and open the link again.')}</p>`);
+  return pintar('estado-mal', L('Algo ha fallado', 'Something went wrong'), `<p>${L('No se ha podido completar. Vuelve a abrir el enlace en un rato o pide otro correo.', "It couldn't be completed. Open the link again in a while or ask for another email.")}</p><p>${pedirOtro()}</p>`);
+}
+
+let au, auth;
+async function cargarFirebase() {
+  const b = `https://www.gstatic.com/firebasejs/${FB_VER}/`;
+  const [a, m] = await Promise.all([import(b + 'firebase-app.js'), import(b + 'firebase-auth.js')]);
+  au = m; auth = m.getAuth(a.initializeApp(FB_CFG, 'cuenta'));
+  try { auth.languageCode = idioma; } catch (e) {}
+}
+
+async function verificar(cambio) {
+  await au.applyActionCode(auth, codigo);
+  pintar('estado-ok', cambio ? L('Correo cambiado', 'Email changed') : L('Correo confirmado', 'Email confirmed'),
+    `<p>${cambio ? L('Tu cuenta ya usa el correo nuevo para entrar.', 'Your account now uses the new email to sign in.') : L('Ya puedes usar la IA de Toisón. Si tenías la app abierta, al volver a ella lo nota sola.', 'You can now use the Toisón AI. If you had the app open, it will notice by itself when you go back.')}</p>`);
+}
+
+async function recuperar() {
+  const info = await au.checkActionCode(auth, codigo);
+  const correo = (info && info.data && info.data.email) || '';
+  await au.applyActionCode(auth, codigo);
+  pintar('estado-ok', L('Correo recuperado', 'Email restored'),
+    `<p>${L(`Tu cuenta vuelve a entrar con <b>${esc(correo)}</b>.`, `Your account signs in with <b>${esc(correo)}</b> again.`)}</p><p>${L('Si no fuiste tú quien lo cambió, pon también una contraseña nueva.', "If you didn't change it yourself, set a new password too.")}</p>`,
+    `<div class="btns"><button class="btn pri" id="bClave">${L('Mandarme un correo para cambiar la contraseña', 'Send me an email to change the password')}</button><a class="btn" href="${esc(urlApp)}">${L('Abrir Toisón', 'Open Toisón')}</a></div>`);
+  document.getElementById('bClave').onclick = async (ev) => {
+    const b = ev.currentTarget; b.disabled = true;
+    try { await au.sendPasswordResetEmail(auth, correo); b.textContent = L(`Te lo he mandado a ${correo}`, `Sent to ${correo}`); }
+    catch (e) { b.disabled = false; b.textContent = L('No se ha podido. Prueba en un rato', "Couldn't send it. Try again later"); }
+  };
+}
+
+async function nuevaClave() {
+  const correo = await au.verifyPasswordResetCode(auth, codigo);
+  pintar('', L('Contraseña nueva', 'New password'),
+    `<p>${L(`Para entrar en Toisón con <b>${esc(correo)}</b>. La contraseña de tu cartera no cambia: sigue siendo la misma.`, `To sign in to Toisón with <b>${esc(correo)}</b>. Your portfolio password doesn't change: it stays the same.`)}</p>
+    <form id="fClave" novalidate>
+      <input type="email" autocomplete="username" value="${esc(correo)}" hidden readonly>
+      <label>${L('Contraseña nueva', 'New password')}<input id="c1" type="password" autocomplete="new-password" minlength="${MIN_CLAVE}" required><small>${L(`Al menos ${MIN_CLAVE} caracteres.`, `At least ${MIN_CLAVE} characters.`)}</small></label>
+      <label>${L('Repítela', 'Repeat it')}<input id="c2" type="password" autocomplete="new-password" minlength="${MIN_CLAVE}" required></label>
+      <p class="err" id="err" role="alert"></p>
+      <div class="btns" style="margin-top:6px"><button class="btn pri" id="bGuardar" type="submit">${L('Guardar la contraseña', 'Save the password')}</button></div>
+    </form>`, '');
+  const f = document.getElementById('fClave'), err = (t) => { document.getElementById('err').textContent = t || ''; };
+  document.getElementById('c1').focus();
+  f.onsubmit = async (ev) => {
+    ev.preventDefault();
+    const p1 = document.getElementById('c1').value, p2 = document.getElementById('c2').value, b = document.getElementById('bGuardar');
+    if (p1.length < MIN_CLAVE) return err(L(`La contraseña tiene que tener al menos ${MIN_CLAVE} caracteres.`, `The password must be at least ${MIN_CLAVE} characters.`));
+    if (p1 !== p2) return err(L('Las dos contraseñas no son iguales.', "The two passwords don't match."));
+    err(''); b.disabled = true; b.textContent = L('Guardando…', 'Saving…');
+    try {
+      await au.confirmPasswordReset(auth, codigo, p1);
+      pintar('estado-ok', L('Contraseña cambiada', 'Password changed'), `<p>${L(`Ya puedes entrar en Toisón con <b>${esc(correo)}</b> y la contraseña nueva. La de tu cartera sigue igual.`, `You can now sign in to Toisón with <b>${esc(correo)}</b> and the new password. Your portfolio password stays the same.`)}</p>`);
+    } catch (e) {
+      const c = String((e && e.code) || '');
+      if (c === 'auth/weak-password' || c === 'auth/password-does-not-meet-requirements') { b.disabled = false; b.textContent = L('Guardar la contraseña', 'Save the password'); return err(L('Esa contraseña es demasiado débil: prueba con una más larga.', 'That password is too weak: try a longer one.')); }
+      if (c === 'auth/network-request-failed') { b.disabled = false; b.textContent = L('Guardar la contraseña', 'Save the password'); return err(L('Sin conexión: vuelve a probar.', 'No connection: try again.')); }
+      fallo(e);
+    }
+  };
+}
+
+(async () => {
+  const hacer = { verifyEmail: () => verificar(false), verifyAndChangeEmail: () => verificar(true), recoverEmail: recuperar, resetPassword: nuevaClave }[modo];
+  if (!hacer || !codigo) return pintar('estado-mal', L('Enlace incompleto', 'Incomplete link'), `<p>${L('A este enlace le falta una parte. Ábrelo otra vez desde el correo, entero, o pide otro desde Toisón.', 'This link is missing a part. Open it again from the email, in full, or ask for another one in Toisón.')}</p>`);
+  try { await cargarFirebase(); } catch (e) { return fallo({ code: 'auth/network-request-failed' }); }
+  try { await hacer(); } catch (e) { console.warn(e); fallo(e); }
+})();
+</script>
+</body>
+</html>
