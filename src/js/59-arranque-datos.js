@@ -26,6 +26,8 @@ function arrancar() {
   montar();
   pintar();
   LIVE.iniciar();
+  // 0.8.3: el índice de los logos propios (logos/ de la rama «logos»); no cuenta en lo que tarda en abrir
+  setTimeout(cargarLogos, 2500);
   // el resto del radar (radar-mas.json), después de abrir: no cuenta en lo que tarda en estar lista
   setTimeout(() => cargarRadarMas().then((n) => { if (n && S.vista === 'expertos') pintar(); }), 4000);
   cargarIA().then(() => { if (S.vista === 'analisis') pintar(); refrescarToca(); });

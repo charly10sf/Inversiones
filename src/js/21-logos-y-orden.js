@@ -19,10 +19,48 @@ const lineaOrigenCorta = (x) => { const o = origenRadar(x); return `${bandera(o.
 const lineaOrigen = (x) => { const o = origenRadar(x); return `${bandera(o.bolsa || o.sede)} ${esc(x.sector || '')}${x.sector ? ', ' : ''}${o.ciudad ? `bolsa de ${esc(o.ciudad)}` : esc(x.z || '')}${o.distinta ? `, sede en ${esc(o.sedeNombre)}` : ''}`; };
 const FORMA_JUR = /,?\s+(inc|corp|corporation|co|plc|s\.?a|n\.?v|ag|se|sa|spa|s\.p\.a|ltd|limited|holdings?|group|international|company|aktiengesellschaft|the)\.?(?=\s|,|$)/gi;
 const iniciales = (t) => { const b = String(t || '?').replace(/\(.*?\)/g, '').trim(), c = b.replace(FORMA_JUR, ' ').replace(/\s+/g, ' ').trim() || b; return c.split(/\s+/).slice(0, 2).map((w) => w[0]).join('').toUpperCase(); };
+/* 0.8.3: logos desde Toisón. La Action «Logos» busca el icono más grande de la web de cada empresa y lo publica en la rama
+   «logos» (logos/<dominio>.webp, 128 px); logos.json dice cuáles hay. Con el índice a mano (guardado de la vez anterior)
+   la app pide el logo ahí y a Google ya no le dice qué empresas miras; los dominios que no están (un instrumento propio,
+   la web de un medio) siguen con el servicio de iconos de Google, y si tampoco hay, las iniciales. */
+const LS_LOGOS = 'inv-logos';
+const dominioLogo = (d) => String(d || '').trim().toLowerCase().replace(/^https?:\/\//, '').split('/')[0].replace(/^www\./, '');
+const leerLogos = (j) => (j && Array.isArray(j.d) ? new Set(j.d.filter((x) => typeof x === 'string')) : null);
+let LOGOS = leerLogos(LS.get(LS_LOGOS, null));
+const urlLogoPropio = (d) => GH.raw(`logos/${encodeURIComponent(d)}.webp`, 'logos');
+function imgLogo(dominio) {
+  const d = dominioLogo(dominio);
+  const propio = !!(LOGOS && LOGOS.has(d));
+  const src = propio ? urlLogoPropio(d) : `https://www.google.com/s2/favicons?domain=${encodeURIComponent(dominio)}&sz=64`;
+  return `<img src="${src}" alt="" loading="lazy" referrerpolicy="no-referrer"${propio ? ' data-propio="1"' : ''} onload="if (this.naturalWidth < 24) this.remove(); else this.classList.add('ok')" onerror="this.remove()">`;
+}
 function logo(dominio, nombre, clase = '') {
   const ini = esc(iniciales(nombre));
   if (!dominio) return `<span class="logo-a ${clase}" aria-hidden="true"><span>${ini}</span></span>`;
-  return `<span class="logo-a ${clase}" aria-hidden="true"><span>${ini}</span><img src="https://www.google.com/s2/favicons?domain=${encodeURIComponent(dominio)}&sz=64" alt="" loading="lazy" referrerpolicy="no-referrer" onload="if (this.naturalWidth < 24) this.remove(); else this.classList.add('ok')" onerror="this.remove()"></span>`;
+  return `<span class="logo-a ${clase}" aria-hidden="true" data-d="${esc(dominioLogo(dominio))}"><span>${ini}</span>${imgLogo(dominio)}</span>`;
+}
+/* los logos que ya estaban pintados con el de Google (la primera vez, antes de tener el índice) pasan al propio */
+function mejorarLogos(raiz = document) {
+  if (!LOGOS) return;
+  raiz.querySelectorAll('.logo-a[data-d]').forEach((el) => {
+    const d = el.dataset.d, im = el.querySelector('img');
+    if (!LOGOS.has(d) || (im && im.dataset.propio)) return;
+    if (im) im.remove();
+    el.insertAdjacentHTML('beforeend', imgLogo(d));
+  });
+}
+async function cargarLogos() {
+  if (CFG.dev) return;
+  try {
+    const r = await fetch(GH.raw('logos.json', 'logos') + '?v=' + Math.floor(Date.now() / 21600000), { cache: 'no-cache' });
+    if (!r.ok) return;
+    const j = await r.json(), nuevo = leerLogos(j);
+    if (!nuevo || !nuevo.size) return;
+    const igual = LOGOS && LOGOS.size === nuevo.size;
+    LOGOS = nuevo;
+    LS.set(LS_LOGOS, { g: j.g || '', d: [...nuevo] });
+    if (!igual) mejorarLogos();
+  } catch (e) { /* sin red o sin rama aún: se queda como estaba */ }
 }
 function bandera(cod) {
   if (!cod) return '<span class="bandera global" aria-hidden="true"></span>';

@@ -1,0 +1,78 @@
+name: Logos
+
+# Los logos de las empresas y gestoras, servidos desde Toisón (0.8.3): para cada dominio del radar, del catálogo
+# ampliado y de instrumentos.json busca el icono más grande de la web de la empresa (apple-touch-icon, manifiesto,
+# favicon), lo deja en 128 px (webp) y lo publica en la rama «logos» (logos/<dominio>.webp y logos.json).
+# Va por tandas (scripts/logos.py): cada día mira los dominios nuevos, los que no tenían logo hace 14 días y los
+# logos de hace 90; si no hay nada que mirar, no publica. Para un dominio que falla: logos-manual.json en la raíz.
+on:
+  schedule:
+    - cron: "41 3 * * *"
+  workflow_dispatch:
+    inputs:
+      minutos:
+        description: "Minutos máximos de la pasada"
+        default: "40"
+  push:
+    branches: [main, v0.8.3]
+    paths:
+      - "scripts/logos.py"
+      - "logos-manual.json"
+      - ".github/workflows/logos.yml"
+
+permissions:
+  contents: write
+
+concurrency:
+  group: logos
+  cancel-in-progress: false
+
+jobs:
+  logos:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+          cache: pip
+          cache-dependency-path: scripts/requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r scripts/requirements.txt
+
+      - name: Recuperar los datos y los logos anteriores
+        run: |
+          mkdir -p anterior
+          if git fetch --depth=1 origin datos 2>/dev/null; then
+            git show origin/datos:radar.json > anterior/radar.json || true
+            git show origin/datos:radar-mas.json > anterior/radar-mas.json || true
+          fi
+          if git fetch --depth=1 origin catalogo 2>/dev/null; then
+            git show origin/catalogo:catalogo-mas.json > anterior/catalogo-mas.json || true
+          fi
+          if git fetch --depth=1 origin logos 2>/dev/null; then
+            git --work-tree=anterior checkout origin/logos -- . 2>/dev/null || true
+            git reset -q
+          fi
+          ls anterior | head -20
+
+      - name: Buscar los logos
+        id: logos
+        env:
+          LOGOS_MINUTOS: ${{ inputs.minutos || '40' }}
+        run: python scripts/logos.py instrumentos.json anterior salida
+
+      - name: Publicar en la rama logos
+        if: steps.logos.outputs.cambio == '1'
+        working-directory: salida
+        run: |
+          git init -q
+          git checkout -q -b logos
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -q -m "Logos $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push -q -f "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" logos
