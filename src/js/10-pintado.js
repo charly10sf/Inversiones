@@ -474,6 +474,9 @@ function reglasAvisos(M) {
   // 0.3.11: las empresas que sigues, con sus precios de aviso (en euros, los del radar)
   const seguir = siguiendo().filter((x) => x.baja || x.sube).map((x) => ({ sym: x.s, n: x.n, baja: +x.baja || 0, sube: +x.sube || 0 }));
   const limites = { sue: +(S.cartera.limite_acciones ?? 20), cri: limiteDe('cripto'), oro: limiteDe('oro'), emp: limiteDe('empresa') };
+  // la caída desde máximos: la app no tiene la historia, así que lleva el límite y cuánto más valía el máximo que hoy (pk, en tanto por uno)
+  const lc = limiteCaida(), ca = lc != null ? caidaActual(M) : null;
+  if (ca) limites.cai = { l: lc, pk: +ca.pico.toFixed(5) };
   return { reglas: unicas, eventos, preg, seguir, limites };
 }
 // en el navegador: al llegar precios y con GrowFolio en segundo plano (si lo estás mirando, ya lo ves en Cartera)
@@ -491,7 +494,7 @@ function revisarAvisos(M) {
   }
   // 0.8.2f: tus límites (acciones sueltas, cripto, oro, una empresa). Lo calcula el código con lo que escribiste en Tú:
   // el aviso dice el hecho, sin decirte qué hacer. Una vez por límite cada pocos días mientras siga pasado
-  if (c.lim) for (const x of limitesPasados(M)) avisoSistema('lim', L(`${x.t} pasa de tu límite`, `${x.t} is over your limit`), L(`Pesa un ${fmtNum(x.actual, 1)} % de tu cartera y tu límite es ${fmtNum(x.limite, 0)} %.`, `It's ${fmtNum(x.actual, 1)} % of your portfolio and your limit is ${fmtNum(x.limite, 0)} %.`), '#objetivos', `lim:${x.k}:${x.id || ''}`);
+  if (c.lim) for (const x of limitesPasados(M)) avisoSistema('lim', x.titulo || L(`${x.t} pasa de tu límite`, `${x.t} is over your limit`), x.cuerpo || L(`Pesa un ${fmtNum(x.actual, 1)} % de tu cartera y tu límite es ${fmtNum(x.limite, 0)} %.`, `It's ${fmtNum(x.actual, 1)} % of your portfolio and your limit is ${fmtNum(x.limite, 0)} %.`), '#objetivos', `lim:${x.k}:${x.id || ''}`);
   if (c.fechas && h >= 18) for (const e of reglasAvisos(M).eventos) if (e.d === manana) avisoSistema('fechas', L(`Mañana: ${e.t}`, `Tomorrow: ${e.t}`), e.s, '#agenda', 'ev:' + e.k);
   if (c.seg) for (const it of siguiendo()) {
     const pr = precioSeguido(it), p = pr && pr.eur;

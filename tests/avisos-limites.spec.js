@@ -97,3 +97,112 @@ test('revisarAvisos manda la notificación del límite una sola vez', async ({ c
   expect(r.primera[0].b + r.primera[0].t).not.toMatch(/vende|reduce|deberías|compra/i);
   expect(r.total).toBe(1);
 });
+
+// el límite de caída desde máximos: lo escribe el usuario en Tú (vacío = sin límite) y se mide frente al máximo de 12 meses
+// de lo que tiene invertido; el aviso dice el hecho, sin órdenes
+const ORDENES_CAIDA = /vende|reduce|deberías|compra|añad|sell |should |buy /i;
+const mundoConCaida = () => {
+  // 60 días: sube de 80 a 100 en 30 días y baja a 80 en otros 30 (máximo 100, hoy 80: -20 %)
+  const hist = [];
+  for (let i = 59; i >= 0; i--) {
+    const d = iso(new Date(Date.now() - i * 864e5)), k = 59 - i, p = k <= 30 ? 80 + (20 * k) / 30 : 100 - (20 * (k - 30)) / 29;
+    hist.push([d, +p.toFixed(4)]);
+  }
+  return { total: 1000, liquidez: 0, filas: [{ inst: { id: 'MUNDO', corto: 'MUNDO', nombre: 'MUNDO', tipo: 'Fondo', clase: 'Renta variable' }, pos: { stop: 0 }, uds: 12.5, precio: 80, varDia: 0, valor: 1000, peso: 0, hist }] };
+};
+
+test('límite de caída: sin límite no avisa; con límite menor que la caída sí, con el hecho y sin órdenes', async ({ context, page }) => {
+  await preparar(context);
+  await page.goto('/');
+  await page.waitForFunction(() => typeof caidaActual === 'function');
+  await quitarCapas(page);
+  const r = await page.evaluate((src) => {
+    const mundo = new Function('iso', `return (${src})()`)(iso);
+    S.cartera = S.cartera || {};
+    S.cartera.limite_acciones = 20;
+    const con = (v) => { S.cartera.perfil = { ...(S.cartera.perfil || {}), limite_caida: v, limite_cripto: 5, limite_empresa: 10, limite_oro: 10 }; return limitesPasados(mundo).filter((x) => x.k === 'caida'); };
+    const c = caidaActual(mundo);
+    const sin = con(null), vacio = con(''), cero = con(0), alto = con(25), bajo = con(15);
+    S.cartera.perfil.limite_caida = 15;
+    const fila = comparaObjetivos(mundo).filas.find((x) => x.k === 'caida');
+    S.acceso = 'publico';
+    const filaPub = comparaObjetivos(mundo).filas.find((x) => x.k === 'caida');
+    const form = htmlLimites(20, 5, 10, 10, 12);
+    return { ahora: +c.ahora.toFixed(1), pico: +c.pico.toFixed(3), sin, vacio, cero, alto, bajo: bajo.map((x) => ({ a: +x.actual.toFixed(1), l: x.limite, t: x.titulo, c: x.cuerpo })), fila: fila && { estado: fila.estado, txt: fila.txt }, filaPub: filaPub && filaPub.txt, form };
+  }, mundoConCaida.toString());
+  expect(r.ahora).toBe(20);
+  expect(r.pico).toBe(1.25);
+  expect(r.sin).toEqual([]); expect(r.vacio).toEqual([]); expect(r.cero).toEqual([]); expect(r.alto).toEqual([]);
+  expect(r.bajo.length).toBe(1);
+  expect(r.bajo[0].a).toBe(20); expect(r.bajo[0].l).toBe(15);
+  expect(r.bajo[0].c).toMatch(/20,0 % por debajo de su máximo de los últimos 12 meses y tu límite es 15 %/);
+  expect(r.bajo[0].t + r.bajo[0].c).not.toMatch(ORDENES_CAIDA);
+  expect(r.fila.estado).toBe('fuera');
+  expect(r.fila.txt + r.filaPub).not.toMatch(ORDENES_CAIDA);
+  expect(r.form).toContain('name="caida"');
+  expect(r.form).toContain('value="12"');
+});
+
+test('límite de caída: las reglas para la app llevan el límite y el máximo, y el aviso del navegador sale una sola vez', async ({ context, page }) => {
+  await preparar(context);
+  await page.clock.setFixedTime(new Date('2026-11-07T12:00:00'));
+  await page.addInitScript(() => {
+    window.__noti = [];
+    Object.defineProperty(document, 'hidden', { get: () => true, configurable: true });
+    class N { constructor(t, o) { window.__noti.push({ t, b: o && o.body }); } static get permission() { return 'granted'; } close() {} }
+    window.Notification = N;
+    Object.defineProperty(navigator.serviceWorker, 'getRegistration', { value: async () => undefined, configurable: true });
+  });
+  await page.goto('/');
+  await page.waitForFunction(() => typeof reglasAvisos === 'function' && typeof caidaActual === 'function');
+  await quitarCapas(page);
+  const r = await page.evaluate(async (src) => {
+    // con el reloj fijo las fechas relativas a «hoy» siguen siendo coherentes porque Date.now() también está fijo
+    const mundo = new Function('iso', `return (${src})()`)(iso);
+    S.demo = false;
+    S.cartera = S.cartera || {};
+    S.cartera.limite_acciones = 20;
+    S.cartera.perfil = { ...(S.cartera.perfil || {}), limite_caida: 15, limite_cripto: 5, limite_empresa: 10, limite_oro: 10 };
+    LS.set('inv-avisos', { on: true }); LS.del('inv-avisos-hechos');
+    const x = reglasAvisos(mundo);
+    revisarAvisos(mundo); await new Promise((r) => setTimeout(r, 100));
+    const primera = window.__noti.slice();
+    revisarAvisos(mundo); await new Promise((r) => setTimeout(r, 100));
+    return { cai: x.limites.cai, json: JSON.stringify(x), primera, total: window.__noti.length };
+  }, mundoConCaida.toString());
+  expect(r.cai).toEqual({ l: 15, pk: 1.25 });
+  expect(r.primera.length).toBe(1);
+  expect(r.primera[0].t).toContain('pasa de la caída que te pusiste');
+  expect(r.primera[0].b).toMatch(/20,0 % por debajo de su máximo de los últimos 12 meses y tu límite es 15 %/);
+  expect(r.primera[0].t + r.primera[0].b).not.toMatch(ORDENES_CAIDA);
+  expect(r.total).toBe(1);
+  expect(r.json).not.toMatch(/"valor"|"total"|"importe"/);
+});
+
+test('límite de caída: el campo de Tú se guarda, se puede vaciar y no admite valores absurdos', async ({ context, page }) => {
+  await preparar(context);
+  await page.goto('/');
+  await page.waitForFunction(() => typeof editarPerfil === 'function');
+  await quitarCapas(page);
+  await page.evaluate(() => { S.cartera = S.cartera || {}; S.cartera.perfil = { ...(S.cartera.perfil || {}), edad: 30 }; editarPerfil(); });
+  const campo = page.locator('#fPerfil input[name="caida"]');
+  await expect(campo).toBeVisible();
+  await expect(campo).toHaveValue('');
+  // un valor fuera de rango no se guarda
+  await campo.fill('150');
+  await page.locator('#fPerfil').evaluate((f) => f.requestSubmit());
+  await expect(page.locator('#errPerfil')).toContainText('La caída va de 1 a 90');
+  expect(await page.evaluate(() => (S.cartera.perfil || {}).limite_caida ?? null)).toBeNull();
+  // uno bueno se guarda
+  await campo.fill('18');
+  await page.locator('#fPerfil').evaluate((f) => f.requestSubmit());
+  await page.waitForFunction(() => (S.cartera.perfil || {}).limite_caida === 18);
+  // y se vacía para quitar el límite
+  await quitarCapas(page);
+  await page.evaluate(() => editarPerfil());
+  const c2 = page.locator('#fPerfil input[name="caida"]');
+  await expect(c2).toHaveValue('18');
+  await c2.fill('');
+  await page.locator('#fPerfil').evaluate((f) => f.requestSubmit());
+  await page.waitForFunction(() => (S.cartera.perfil || {}).limite_caida === null);
+});

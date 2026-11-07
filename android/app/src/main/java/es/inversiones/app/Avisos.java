@@ -173,6 +173,17 @@ public class Avisos extends Worker {
             limite(c, hechos, en, "oro", "", en ? "Gold and commodities" : "Oro y materias primas", oroW / tot * 100, lm.optDouble("oro", 10));
             limite(c, hechos, en, "empresa", mayorId, mayorN, mayorW / tot * 100, lm.optDouble("emp", 10));
         }
+        // la caída desde máximos: la web manda el límite (l) y cuánto más valía el máximo de 12 meses que al armar las reglas (pk, tanto por uno);
+        // aquí se mide lo invertido con los precios de ahora frente a ese máximo (si ya lo pasó, no hay caída)
+        JSONObject cai = lm == null ? null : lm.optJSONObject("cai");
+        if (av.optBoolean("lim", true) && cai != null && pesoViejo > 0 && sumaW > 0) {
+            double pk = cai.optDouble("pk", 1), l = cai.optDouble("l", Double.NaN), caida = pk > 0 ? Math.max(0, (1 - (sumaW / pesoViejo) / pk) * 100) : 0;
+            if (!Double.isNaN(l) && l >= 1 && caida > l + 0.5) {
+                avisar(c, hechos, "lim:caida:", en ? "Your portfolio is past the drop you set" : "Tu cartera pasa de la caída que te pusiste",
+                        en ? "It's " + num(caida) + " % below its 12-month high and your limit is " + Math.round(l) + " %."
+                                : "Está un " + num(caida) + " % por debajo de su máximo de los últimos 12 meses y tu límite es " + Math.round(l) + " %.", "objetivos");
+            }
+        }
 
         // las que sigues: una vez cuando bajan del precio que pusiste o suben del otro (precios del radar, en euros)
         for (int k = 0; av.optBoolean("seg", true) && seguir != null && k < seguir.length(); k++) {

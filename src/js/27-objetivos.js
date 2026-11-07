@@ -4,7 +4,7 @@
    ajustan la IA, el Paso a paso y la lectura de tu cartera: no se invierte igual a los 24 que a los 60.
    La IA, además, pregunta lo que le falte para afinar sus consejos.
    ===================================================================== */
-const PERFIL_DEF = { nombre: null, edad: null, situacion: null, ingresos_mes: null, gastos_mes: null, colchon_meses: 6, horizonte: null, riesgo: null, experiencia: null, estilo: null, deudas: null, limite_cripto: 5, limite_empresa: 10, limite_oro: 10 };
+const PERFIL_DEF = { nombre: null, edad: null, situacion: null, ingresos_mes: null, gastos_mes: null, colchon_meses: 6, horizonte: null, riesgo: null, experiencia: null, estilo: null, deudas: null, limite_cripto: 5, limite_empresa: 10, limite_oro: 10, limite_caida: null };
 const perfil = () => ({ ...PERFIL_DEF, ...((S.cartera && S.cartera.perfil) || {}) });
 const perfilVacio = () => { const p = (S.cartera && S.cartera.perfil) || {}; return !p.edad && !p.horizonte && !p.riesgo; };
 // en el perfil se marca en primera persona; SITUACION es como se le cuenta a GrowIA
@@ -91,6 +91,20 @@ function evaluarMetas(M) {
 }
 /* 0.8.2f: los límites que el usuario escribió en Tú y que su cartera pasa de verdad (por encima del margen).
    Solo hechos: nombre, lo que pesa y su límite. Los usan los avisos; nadie decide nada por él */
+// 0.8.2f: el límite de caída lo escribe el usuario (vacío = sin límite). Se mide frente al máximo de los últimos 12 meses
+// de lo que tiene invertido hoy (la serie de siempre de la gráfica), sin contar el efectivo
+const limiteCaida = () => {
+  const v = S.cartera && S.cartera.perfil && S.cartera.perfil.limite_caida;
+  return v != null && v !== '' && isFinite(+v) && +v >= 1 && +v <= 90 ? +v : null;
+};
+function caidaActual(M) {
+  if (!M || !M.filas) return null;
+  const se = serieCartera(M, 366);
+  if (se.length < 30) return null;
+  const pico = Math.max(...se.map((x) => x.v)), ult = se[se.length - 1].v;
+  if (!(pico > 0) || !(ult > 0)) return null;
+  return { ahora: Math.max(0, (1 - ult / pico) * 100), pico: pico / ult };
+}
 function limitesPasados(M) {
   const out = [];
   if (!M || !M.total) return out;
@@ -100,6 +114,13 @@ function limitesPasados(M) {
   if (e.pctCripto > 0 && pasa(e.pctCripto, limiteDe('cripto'))) out.push({ k: 'cripto', t: 'Cripto', actual: e.pctCripto, limite: limiteDe('cripto') });
   if (e.pctOro > 0 && pasa(e.pctOro, limiteDe('oro'))) out.push({ k: 'oro', t: L('Oro y materias primas', 'Gold and commodities'), actual: e.pctOro, limite: limiteDe('oro') });
   if (e.mayor && pasa(e.mayor.pct, limiteDe('empresa'))) out.push({ k: 'empresa', id: e.mayor.f.inst.id, t: e.mayor.f.inst.corto || e.mayor.f.inst.nombre, actual: e.mayor.pct, limite: limiteDe('empresa') });
+  const lc = limiteCaida();
+  if (lc != null) {
+    const c = caidaActual(M);
+    if (c && pasa(c.ahora, lc)) out.push({ k: 'caida', t: L('Caída desde máximos', 'Drop from the high'), actual: c.ahora, limite: lc,
+      titulo: L('Tu cartera pasa de la caída que te pusiste', 'Your portfolio is past the drop you set'),
+      cuerpo: L(`Está un ${fmtNum(c.ahora, 1)} % por debajo de su máximo de los últimos 12 meses y tu límite es ${fmtNum(lc, 0)} %.`, `It's ${fmtNum(c.ahora, 1)} % below its 12-month high and your limit is ${fmtNum(lc, 0)} %.`) });
+  }
   return out;
 }
 /* 0.3: tus objetivos frente a lo que tienes de verdad. Cada fila dice si encaja (bien), si roza tu límite (ojo) o si
@@ -120,11 +141,13 @@ function comparaObjetivos(M) {
         : O(L('Por debajo de lo que encaja contigo: con tu plazo, más en bolsa te haría crecer más.', 'Below what fits you: with your horizon, more in stocks would grow more.'), L('Por debajo de lo que encaja con tu edad, tu plazo y lo que dices aguantar.', 'Below what fits your age, horizon and tolerance.')) });
   }
   // por encima del límite, aunque sea poco, ya no es «rozando»: es «te pasas un poco» (5,3 % con un máximo del 5 %)
-  const lim = (k, t, actual, limite, txts) => { const estado = actual > limite + MARGEN_LIM ? 'fuera' : actual > limite * 0.85 ? 'ojo' : 'bien'; const poco = estado === 'ojo' && actual > limite + 0.05; fila({ k, t, estado, v: `${fmtNum(actual, 1)} %`, m: L(`tu máximo ${fmtNum(limite, 0)} %`, `your max ${fmtNum(limite, 0)} %`), barra: { v: actual, b: limite, max: Math.max(limite * 1.6, actual * 1.1) }, txt: poco ? O(L('Te pasas un poco: no añadas y deja que tus aportaciones lo diluyan.', 'Slightly over: don’t add and let your contributions dilute it.'), L('Te pasas un poco de tu límite.', 'Slightly over your limit.')) : txts[estado] }); };
+  const lim = (k, t, actual, limite, txts) => { const estado = actual > limite + MARGEN_LIM ? 'fuera' : actual > limite * 0.85 ? 'ojo' : 'bien'; const poco = !txts.sinPoco && estado === 'ojo' && actual > limite + 0.05; fila({ k, t, estado, v: `${fmtNum(actual, 1)} %`, m: L(`tu máximo ${fmtNum(limite, 0)} %`, `your max ${fmtNum(limite, 0)} %`), barra: { v: actual, b: limite, max: Math.max(limite * 1.6, actual * 1.1) }, txt: poco ? O(L('Te pasas un poco: no añadas y deja que tus aportaciones lo diluyan.', 'Slightly over: don’t add and let your contributions dilute it.'), L('Te pasas un poco de tu límite.', 'Slightly over your limit.')) : txts[estado] }); };
   lim('sueltas', L('Acciones sueltas', 'Single stocks'), e.pctSueltas, +(S.cartera.limite_acciones ?? 20), { bien: L('Dentro de tu límite.', 'Within your limit.'), ojo: O(L('Cerca de tu límite: lo nuevo, mejor a tus fondos.', 'Close to your limit: new money, better to your funds.'), L('Cerca de tu límite.', 'Close to your limit.')), fuera: O(L('Te pasas de tu límite: no añadas y, si quieres volver a él, vende una parte.', 'Over your limit: don’t add, and sell a part to get back.'), L('Te pasas de tu límite.', 'Over your limit.')) });
   if (e.pctCripto > 0) lim('cripto', 'Cripto', e.pctCripto, limiteDe('cripto'), { bien: L('Dentro de tu límite.', 'Within your limit.'), ojo: O(L('Rozando tu límite: con lo que se mueve, no añadas más.', 'Close to your limit: given how it swings, don’t add.'), L('Rozando tu límite.', 'Close to your limit.')), fuera: L('Por encima de tu límite: un mal mes en cripto se notaría en todo.', 'Over your limit: a bad crypto month would show everywhere.') });
   if (e.pctOro > 0) lim('oro', L('Oro y materias primas', 'Gold and commodities'), e.pctOro, limiteDe('oro'), { bien: L('Dentro de tu límite.', 'Within your limit.'), ojo: O(L('Cerca de tu límite: no añadas más.', 'Close to your limit: don’t add.'), L('Cerca de tu límite.', 'Close to your limit.')), fuera: L('Por encima de tu límite: es un seguro, no el motor de la cartera.', 'Over your limit: it’s insurance, not the engine of the portfolio.') });
   if (e.mayor) lim('empresa', L(`Una sola empresa: ${e.mayor.f.inst.corto}`, `One company: ${e.mayor.f.inst.corto}`), e.mayor.pct, limiteDe('empresa'), { bien: L('Ninguna empresa pesa demasiado.', 'No company weighs too much.'), ojo: O(L('Cerca de tu máximo por empresa: no le metas más.', 'Close to your per-company max: don’t add.'), L('Cerca de tu máximo por empresa.', 'Close to your per-company max.')), fuera: L('Pesa más de lo que te pusiste por empresa: un tropiezo suyo te dolería mucho.', 'Above your per-company max: a stumble would hurt a lot.') });
+  const lcaida = limiteCaida(), cd = lcaida != null ? caidaActual(M) : null;
+  if (cd) lim('caida', L('Caída desde máximos', 'Drop from the high'), cd.ahora, lcaida, { sinPoco: true, bien: L('Dentro de tu límite.', 'Within your limit.'), ojo: L('Cerca de tu límite.', 'Close to your limit.'), fuera: L('Pasada la caída que te pusiste, frente a su máximo de 12 meses.', 'Past the drop you set, against its 12-month high.') });
   if (e.colchon) { const c = e.seguro / e.colchon; fila({ k: 'colchon', t: L('Colchón para imprevistos', 'Emergency cushion'), estado: c >= 0.9 ? 'bien' : c >= 0.5 ? 'ojo' : 'fuera', v: eur(e.seguro, 0), m: L(`quieres ${eur(e.colchon, 0)}`, `you want ${eur(e.colchon, 0)}`), barra: { v: Math.min(100, c * 100), b: 100, max: 100, din: true }, txt: c >= 0.9 ? L('Lo tienes: un susto no te obliga a vender en mal momento.', 'You have it: a surprise won’t force you to sell at a bad time.') : O(L(`Te faltan ${eur(e.colchon - e.seguro, 0)}: complétalo antes de meter más en bolsa.`, `${eur(e.colchon - e.seguro, 0)} to go: before adding more to stocks.`), L(`Te faltan ${eur(e.colchon - e.seguro, 0)} para el colchón que te pusiste.`, `${eur(e.colchon - e.seguro, 0)} short of the cushion you set.`)) }); }
   for (const m of e.metas) {
     const estado = !m.anio ? (m.ok ? 'bien' : 'fuera') : m.seguro ? 'bien' : m.ok ? (m.tipo !== 'llegar' && m.meses <= 36 ? 'ojo' : 'bien') : m.falta > m.importe * 0.2 ? 'fuera' : 'ojo';
@@ -239,7 +262,7 @@ async function responderIA(i, a) {
    Al subir una, las otras bajan (la más grande primero). Lo que queda es para fondos y lo demás. El máximo en una
    sola empresa va dentro de las acciones sueltas: nunca puede ser mayor. */
 const REPARTO = [['lim', 'Acciones sueltas', 'empresas compradas una a una, fuera de fondos', 100], ['cripto', 'Cripto', '', 50], ['oro', 'Oro y materias primas', '', 50]];
-function htmlLimites(acc, cri, oro, emp) {
+function htmlLimites(acc, cri, oro, emp, caida) {
   const v = { lim: acc, cripto: cri, oro };
   const desl = (n, t, sub, max, val, cl) => `<label class="rp-desl ${cl}"><span class="rp-t"><span>${t}</span><b><output data-o="${n}">${fmtNum(val, 0)}</output> %</b></span><input type="range" name="${n}" min="0" max="${max}" step="1" value="${val}">${sub ? `<small class="k">${sub}</small>` : ''}</label>`;
   return `<div class="reparto" id="reparto">
@@ -248,6 +271,7 @@ function htmlLimites(acc, cri, oro, emp) {
       ${REPARTO.map(([n, t, sub, max]) => desl(n, t, sub, max, Math.min(max, v[n]), 'rp-' + n)).join('')}
       <p class="rp-queda"><span>Fondos y lo demás</span><b><output data-o="resto"></output> %</b></p>
       ${desl('empresa', 'Una sola empresa', 'dentro de las acciones sueltas: nunca más que ellas', Math.max(acc, 1), Math.min(emp, acc), 'rp-empresa')}
+      <label class="campo">${L('Caída desde máximos que no quieres pasar (%)', 'Drop from the high you don’t want to go past (%)')}<input name="caida" inputmode="decimal" value="${caida != null ? fmtNum(caida, 0) : ''}" placeholder="${L('Vacío: sin límite', 'Empty: no limit')}"><small class="k">${L('Frente al máximo de los últimos 12 meses de lo que tienes invertido. Solo te avisamos del hecho.', 'Against the 12-month high of what you hold invested. We only tell you the fact.')}</small></label>
     </div>`;
 }
 function enlazarReparto(rp) {
@@ -306,6 +330,7 @@ function htmlPerfil(M) {
         ${barraLimite('Cripto', e.pctCripto, limiteDe('cripto'))}
         ${e.pctOro > 0 ? barraLimite('Oro y materias primas', e.pctOro, limiteDe('oro')) : ''}
         ${e.mayor ? barraLimite(`Una sola empresa: ${esc(e.mayor.f.inst.corto)}`, e.mayor.pct, limiteDe('empresa'), 'la que más pesa de las que tienes sueltas') : ''}
+        ${limiteCaida() != null && caidaActual(M) ? barraLimite('Caída desde máximos', caidaActual(M).ahora, limiteCaida(), 'frente al máximo de los últimos 12 meses') : ''}
         ${e.colchon ? `<div class="pf-lim${e.seguro < e.colchon * 0.9 ? ' pasa' : ''}"><div class="pf-lim-t"><span>Colchón para imprevistos</span><b>${eur(e.seguro, 0)}<small> de ${eur(e.colchon, 0)}</small></b></div><div class="pf-barra ok"><i style="width:${Math.min(100, (e.seguro / e.colchon) * 100).toFixed(0)}%"></i></div><small class="k">${p.colchon_meses || 6} meses de tus gastos, en efectivo, monetarios y renta fija</small></div>` : '<p class="k">Pon tus gastos al mes en Editar y Toisón te calcula el colchón que deberías tener aparte.</p>'}
       </section>
       <section class="pf-card pf-metas" aria-labelledby="hMet"><header><h2 id="hMet">Tus metas</h2>${metas.length ? `<button class="btn peq" data-accion="meta">${ICONOS.mas}Añadir</button>` : ''}</header>
@@ -363,7 +388,7 @@ function editarPerfil() {
       <label class="campo">Ingresos netos al mes (€)<input name="ingresos" inputmode="decimal" value="${val(p.ingresos_mes)}" placeholder="Opcional"><small>Para saber cuánto podrías aportar.</small></label>
     </div>
     <h3 class="pf-sub">Tus límites</h3>
-    ${htmlLimites(+(S.cartera.limite_acciones ?? 20), limiteDe('cripto'), limiteDe('oro'), limiteDe('empresa'))}
+    ${htmlLimites(+(S.cartera.limite_acciones ?? 20), limiteDe('cripto'), limiteDe('oro'), limiteDe('empresa'), limiteCaida())}
     <div class="error" id="errPerfil"></div>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div>
   </form>`, null, true);
@@ -371,13 +396,14 @@ function editarPerfil() {
   $('#fPerfil', h.el).onsubmit = async (ev) => {
     ev.preventDefault();
     const f = ev.target, n = (x) => { const v = numero(x); return v == null || isNaN(v) ? null : v; }, r = (k) => (f.querySelector(`[name=${k}]:checked`) || {}).value || null;
-    const edad = n(f.edad.value), lim = n(f.lim.value), cri = n(f.cripto.value), emp = n(f.empresa.value);
+    const edad = n(f.edad.value), lim = n(f.lim.value), cri = n(f.cripto.value), emp = n(f.empresa.value), cai = n(f.caida.value);
     if (edad != null && (edad < 14 || edad > 100)) { $('#errPerfil', h.el).textContent = 'Revisa la edad.'; return; }
     if ([lim, cri, emp].some((x) => x != null && (x < 0 || x > 100))) { $('#errPerfil', h.el).textContent = 'Los límites van de 0 a 100 %.'; return; }
+    if (cai != null && (cai < 1 || cai > 90)) { $('#errPerfil', h.el).textContent = 'La caída va de 1 a 90 %, o vacía si no quieres límite.'; return; }
     const antes = S.cartera.perfil || {};
     const nombre = (f.nombre.value || '').trim().slice(0, 40) || null;
     if (!S.demo) { if (nombre) LS.set('inv-nombre', nombre); else LS.del('inv-nombre'); }
-    S.cartera.perfil = { ...antes, inicio_inversion: f.ini.value || (antes.inicio_inversion === 'auto' ? 'auto' : null), nombre, edad, comunidad: f.comunidad.value || null, horizonte: n(f.horizonte.value), situacion: [...f.querySelectorAll('[name=situacion]:checked')].map((x) => x.value).join(',') || null, riesgo: r('riesgo'), experiencia: r('experiencia'), estilo: r('estilo'), deudas: r('deudas'), gastos_mes: n(f.gastos.value), colchon_meses: n(f.colchon.value) || 6, ingresos_mes: n(f.ingresos.value), limite_cripto: cri ?? 5, limite_empresa: emp ?? 10, limite_oro: n(f.oro.value) ?? 10, actualizado: new Date().toISOString() };
+    S.cartera.perfil = { ...antes, inicio_inversion: f.ini.value || (antes.inicio_inversion === 'auto' ? 'auto' : null), nombre, edad, comunidad: f.comunidad.value || null, horizonte: n(f.horizonte.value), situacion: [...f.querySelectorAll('[name=situacion]:checked')].map((x) => x.value).join(',') || null, riesgo: r('riesgo'), experiencia: r('experiencia'), estilo: r('estilo'), deudas: r('deudas'), gastos_mes: n(f.gastos.value), colchon_meses: n(f.colchon.value) || 6, ingresos_mes: n(f.ingresos.value), limite_cripto: cri ?? 5, limite_empresa: emp ?? 10, limite_oro: n(f.oro.value) ?? 10, limite_caida: cai, actualizado: new Date().toISOString() };
     if (lim != null) S.cartera.limite_acciones = lim;
     AS.foto = null;
     await guardarYPintar('Perfil de inversor', h);
@@ -595,7 +621,7 @@ function textoPerfil(M, est = false) {
   const d = [p.edad && `${p.edad} años`, p.comunidad && `vive en ${nombreComunidad(p.comunidad)}${TRAMOS_FORAL[p.comunidad] ? ' (régimen foral: su escala del ahorro es ' + textoTramos(p.comunidad) + ')' : ''}`, situacionTxt(p.situacion, true), p.horizonte && `necesitará la mayor parte del dinero ${textoHorizonte(p.horizonte)}`, p.riesgo && `si la cartera cae un 30 %: ${RIESGO[p.riesgo][0].toLowerCase()} (${RIESGO[p.riesgo][2].toLowerCase()})`, EXPERIENCIA[p.experiencia] && `experiencia: ${EXPERIENCIA[p.experiencia].toLowerCase()}`, ESTILO[p.estilo] && `busca: ${ESTILO[p.estilo].toLowerCase()}`, DEUDAS[p.deudas] && `deudas: ${DEUDAS[p.deudas].toLowerCase()}`, p.ingresos_mes && `ingresos netos ${E0(+p.ingresos_mes)} al mes`, p.gastos_mes && `gastos ${E0(+p.gastos_mes)} al mes`].filter(Boolean);
   if (d.length) L.push(d.join('; ') + '.');
   if (e.reco) L.push(est ? `Regla fija de Toisón con sus respuestas de riesgo, plazo y edad: entre ${e.reco.min} y ${e.reco.max} % en bolsa (tiene un ${fmtNum(e.pctBolsa, 0)} %). Es una cuenta general, no lo que le conviene: si sale, di cómo se calcula.` : `Bolsa que encaja con su perfil según Toisón: entre ${e.reco.min} y ${e.reco.max} %. Tiene un ${fmtNum(e.pctBolsa, 0)} %.`);
-  L.push(`Sus límites: acciones sueltas ${fmtNum(+(S.cartera.limite_acciones ?? 20), 0)} % (lleva ${fmtNum(e.pctSueltas, 1)} %), cripto ${fmtNum(+p.limite_cripto, 0)} % (lleva ${fmtNum(e.pctCripto, 1)} %), una sola empresa ${fmtNum(+p.limite_empresa, 0)} %${e.mayor ? ` (la mayor, ${e.mayor.f.inst.corto}, ${fmtNum(e.mayor.pct, 1)} %)` : ''}.`);
+  L.push(`Sus límites: acciones sueltas ${fmtNum(+(S.cartera.limite_acciones ?? 20), 0)} % (lleva ${fmtNum(e.pctSueltas, 1)} %), cripto ${fmtNum(+p.limite_cripto, 0)} % (lleva ${fmtNum(e.pctCripto, 1)} %), una sola empresa ${fmtNum(+p.limite_empresa, 0)} %${e.mayor ? ` (la mayor, ${e.mayor.f.inst.corto}, ${fmtNum(e.mayor.pct, 1)} %)` : ''}${limiteCaida() != null ? `; caída desde máximos que no quiere pasar ${fmtNum(limiteCaida(), 0)} %${caidaActual(M) ? ` (está un ${fmtNum(caidaActual(M).ahora, 1)} % por debajo del máximo de 12 meses)` : ''}` : ''}.`);
   if (e.colchon) L.push(`Colchón que quiere: ${p.colchon_meses} meses de gastos, ${E0(e.colchon)}. Tiene ${E0(e.seguro)} entre efectivo, monetarios y renta fija.`);
   for (const m of e.metas) L.push(`- Meta "${m.n}": ${m.tipo === 'llegar' ? 'llegar a tener' : 'gastar'} ${E0(m.importe)}${m.anio ? ` en ${m.anio}` : ''}. Hoy tiene ${E0(M.total)}, un ${fmtNum(m.pct, 0)} % de la meta. ${textoMeta(m).replace(/<[^>]+>/g, '')}`);
   for (const r of respuestasVivas()) L.push(`- Le preguntaste "${r.q}" y contestó: "${r.a}" (${r.f}).`);
