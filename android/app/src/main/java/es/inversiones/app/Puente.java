@@ -186,6 +186,12 @@ public class Puente {
         return Diario.json();
     }
 
+    /** 0.8.3: las horas del arranque de la app (proceso, onCreate, la página pedida, empezada y acabada), para el registro */
+    @JavascriptInterface
+    public String arranqueApp() {
+        return Arranque.json();
+    }
+
     /** 0.7l: la red de ahora («wifi», «datos», «sin red»…), para el registro de GrowIA */
     @JavascriptInterface
     public String red() {

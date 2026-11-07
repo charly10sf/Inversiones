@@ -25,6 +25,8 @@ function arrancar() {
   if (!esVista(S.vista)) S.vista = 'cartera';
   montar();
   pintar();
+  // 0.8.3: Inicio ya está pintado (el cuadro siguiente): la línea del arranque al registro (62-arranque.js)
+  if (!marcaArr.hecho) { marcaArr('inicio'); requestAnimationFrame(() => setTimeout(() => apuntarArranque('inicio'), 0)); }
   LIVE.iniciar();
   // 0.8.3: el índice de los logos propios (logos/ de la rama «logos»); no cuenta en lo que tarda en abrir
   setTimeout(cargarLogos, 2500);

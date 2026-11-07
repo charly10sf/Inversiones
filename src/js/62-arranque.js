@@ -1,4 +1,48 @@
+/* 0.8.3: cuánto tarda en abrir, por partes (Carlos, 6 nov: la app cerrada del todo tardaba unos 10 s). Al pintar Inicio
+   se apunta una línea en el registro de Ajustes de GrowIA, con la hora de cada paso desde que empezó (en la app, desde que
+   arrancó el proceso; en el navegador, desde que se pidió la página) y lo que más tardó de la red. Los últimos 10, también
+   en inv-arranques. Solo tiempos y nombres de archivo: nada de la cartera. Funciones y no const: 05 y 02 las llaman antes */
+function marcaArr(k, nota) {
+  const m = marcaArr.t || (marcaArr.t = {});
+  if (!(k in m)) m[k] = { t: performance.now(), nota };
+}
+function apuntarArranque(fin) {
+  const m = marcaArr.t || {};
+  // solo cuando entra sola (con la clave recordada): si escribes la contraseña, lo que tardas tú no es del arranque
+  if (marcaArr.hecho || !m.js || !m.clave) return;
+  marcaArr.hecho = true;
+  try {
+    let app = null; try { app = JSON.parse(deApp('arranqueApp') || 'null'); } catch (e) {}
+    // en la app, todo desde que arrancó el proceso (si es de esta vez: en frío); si no, desde que se pidió la página
+    const frio = !!(app && app.proceso && app.crear && app.crear - app.proceso < 15000 && app.crear <= performance.timeOrigin + 1000);
+    const base = frio ? app.proceso : app && app.crear && app.crear <= performance.timeOrigin + 1000 ? app.crear : performance.timeOrigin;
+    const des = performance.timeOrigin - base, s = (ms) => (Math.max(0, ms) / 1000).toFixed(1).replace('.', ',');
+    const partes = [];
+    if (app && app.crear) {
+      if (frio) partes.push(`Android ${s(app.crear - base)}`);
+      if (app.cargar) partes.push(`WebView ${s(app.cargar - base)}`);
+    }
+    const nav = performance.getEntriesByType && performance.getEntriesByType('navigation')[0];
+    if (nav) partes.push(`página ${s(des + nav.responseStart)}${nav.responseStart - (nav.workerStart || nav.fetchStart) > 2800 ? ' (copia tras 3 s)' : ''}`);
+    const nombres = { js: 'JS', inst: 'instrumentos', precios: 'precios', datos: 'histórico y radar', firebase: 'Firebase', cuenta: 'cuenta', ia: 'IA', listo: 'todo cargado', entrada: 'logo', clave: 'clave', pin: 'PIN', inicio: 'Inicio' };
+    const orden = Object.keys(m).sort((a, b) => m[a].t - m[b].t);
+    for (const k of orden) partes.push(`${nombres[k] || k} ${s(des + m[k].t)}${m[k].nota ? ` (${m[k].nota})` : ''}`);
+    // lo que más tardó de la red hasta pintar Inicio (los tres más largos)
+    const lentos = (performance.getEntriesByType ? performance.getEntriesByType('resource') : [])
+      .filter((r) => r.startTime < m[fin].t).sort((a, b) => b.duration - a.duration).slice(0, 3)
+      .map((r) => { let n = r.name; try { const u = new URL(r.name); n = u.hostname.split('.').slice(-2, -1)[0] + ':' + (u.pathname.split('/').pop() || u.pathname); } catch (e) {} return `${n} ${s(r.duration)}`; });
+    const pin = m.pin && m.inicio ? m.inicio.t - m.pin.t : 0;
+    const total = des + m[fin].t - pin;
+    const linea = `Arranque ${s(total)} s${frio ? ' en frío' : app ? ' (app ya abierta)' : ''}${pin ? ` sin contar ${s(pin)} s del PIN` : ''} · ${partes.join(' · ')}${lentos.length ? ' · lo más lento: ' + lentos.join(', ') : ''}${redIA()}`;
+    // el registro guarda 200 letras por línea: se parte por los «·»
+    let trozo = '';
+    for (const p of linea.split(' · ')) { if (trozo && (trozo + ' · ' + p).length > 195) { diarioIA(trozo); trozo = '… ' + p; } else trozo = trozo ? trozo + ' · ' + p : p; }
+    if (trozo) diarioIA(trozo);
+    const v = LS.get('inv-arranques', []); (Array.isArray(v) ? v : []).push({ t: Date.now(), x: linea }); LS.set('inv-arranques', (Array.isArray(v) ? v : []).slice(-10));
+  } catch (e) { console.warn('arranque', e); }
+}
 async function iniciar() {
+  marcaArr('js');
   // 0.6d: en la cartera de prueba, lo que se escriba en el dispositivo se queda en memoria desde el primer momento
   const demo = demoActiva();
   if (demo) LS_DEMO = new Map();
@@ -19,10 +63,11 @@ async function iniciar() {
   $('#app').innerHTML = '';
   const t0 = mostrarEntrada();
   try {
-    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos(), cargarPrecios().then(() => Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), escaneoDeCache(), cargarCatalogo()]).then(() => escaneoLuego())), demo ? null : cargarCifrada(), demo ? null : leerAnalisisRemoto()]);
+    const [, , enc, iaRem] = await Promise.all([cargarInstrumentos().then(() => marcaArr('inst')), cargarPrecios().then(() => { marcaArr('precios'); return Promise.all([cargarHistorico(), cargarIntradia(), cargarRadar(), cargarInforme(), escaneoDeCache(), cargarCatalogo()]); }).then(() => { marcaArr('datos'); return escaneoLuego(); }), demo ? null : cargarCifrada(), demo ? null : leerAnalisisRemoto().then((x) => { marcaArr('ia'); return x; })]);
     S.enc = enc; S.iaRemoto = iaRem || S.iaCuenta || null;
     // 0.6: cuándo está todo lo de arrancar (lo mide la prueba de rendimiento)
     try { performance.mark('gf-listo'); } catch (e) {}
+    marcaArr('listo');
   } catch (e) {
     console.error(e);
     quitarEntrada();
@@ -30,6 +75,7 @@ async function iniciar() {
     return;
   }
   await esperarEntrada(t0);
+  marcaArr('entrada');
   // en la prueba, ni se lee ni se abre tu cartera: la inventada y adentro
   if (demo) { await arrancarDemo(); quitarEntrada(); return; }
   await entrar();
@@ -80,8 +126,9 @@ async function entrar() {
     if (r) {
       r.cartera = await descifrar(S.enc.texto, r.key);
       if (r.adoptada) { await recifrarLocales(r.kek, r.key); fijarSesion(r); await recordarClave(); } else fijarSesion(r);
+      marcaArr('clave');
       // con PIN o huella puestos, una vez cada 72 h los pide antes de enseñar nada
-      const seguir = () => (necesitaBloqueo() ? pantallaBloqueo(arrancar, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); }) : arrancar());
+      const seguir = () => (necesitaBloqueo() ? (marcaArr('pin'), pantallaBloqueo(arrancar, () => { S.cartera = null; S.key = null; pantallaDesbloqueo(); })) : arrancar());
       // también a quien ya entra solo: la presentación, una vez en cada dispositivo
       if (intro) return void pantallaIntro(seguir); return seguir();
     }
