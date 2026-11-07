@@ -7,15 +7,14 @@
    pesar al abrir la app. Las dos imágenes en relieve, igual: solo la del diseño en el que estás, y solo al salir.
    Lo que se anima sin parar (el polvo de oro, el radar, el mármol que respira, el brillo del botón) solo cambia
    transform y opacity. Con «reducir movimiento», todo quieto y a la vista.
+   Mármol G (0.8.3): detrás, la misma piedra que la app (la de #acabadoTema, fija); la portada (toison-marmol.webp) es el
+   relieve y la palabra sin fondo, sin máscara, y sin las vetas en SVG de antes. La hace scripts/marca_marmol_g.py.
    ===================================================================== */
 const PR_CSS = `
 .intro.pres{display:block;padding:0;container-type:size;--facil:cubic-bezier(.2,.7,.2,1);background:var(--fondo);color:var(--texto)}
 [data-tema] .intro.pres{background:var(--fondo)}
 .pres .pr-grano{position:absolute;inset:0;pointer-events:none;opacity:var(--grano);z-index:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .5 0 0 0 0 .5 0 0 0 0 .5 0 0 0 1 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");mix-blend-mode:overlay}
-.pres .pr-vetas{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:0;display:none}
-.pres .pr-vetas path{fill:none;stroke:var(--texto);stroke-width:.6;opacity:.07}
-.pres .pr-vetas path.oro{stroke:var(--oro-texto);opacity:.16}
-[data-tema="marmol"] .pres .pr-vetas{display:block}
+[data-tema="marmol"] .intro.pres{background:var(--fondo) var(--pr-piedra,none) center top/cover no-repeat}
 .pres .pr-sc{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;scrollbar-width:none;outline:none;z-index:1}
 .pres .pr-sc::-webkit-scrollbar{display:none}
 .pres .pr-barra{position:absolute;left:0;right:0;top:0;height:2px;background:var(--metal);transform-origin:left;transform:scaleX(0);z-index:6;pointer-events:none}
@@ -118,6 +117,7 @@ const PR_CSS = `
 .pres .pr-palabra span{display:inline-block;opacity:0;transform:translateY(.4em);transition:opacity .7s var(--facil),transform .8s var(--facil);transition-delay:calc(1.4s + var(--i)*90ms)}
 .pres .vivo .pr-palabra span{opacity:1;transform:none}
 [data-tema="marmol"] .pres .pr-palabra{display:none}
+[data-tema="marmol"] .pres .pr-relieve{-webkit-mask-image:none;mask-image:none}
 .pres .pr-filete{display:none}
 [data-tema="marfil"] .pres .pr-filete{display:flex;justify-content:space-between;gap:10px;width:100%;white-space:nowrap;font:500 11px/1.2 var(--marca);font-variant:small-caps;letter-spacing:.08em;color:var(--texto-2);border-top:2px solid var(--texto);border-bottom:1px solid var(--texto);padding:6px 0;margin-bottom:26px}
 .pres .pr-orla{display:none}
@@ -431,7 +431,6 @@ function prPreguntar(el, k, quieta) {
 }
 // el título palabra a palabra (ya traducido) con lo último en cursiva de oro
 const prPartir = (t, em) => { let i = 0; const w = (s) => trad(s).split(' ').filter(Boolean).map((p) => `<span class="w" style="--i:${i++}">${esc(p)}</span>`).join(' '); return `${w(t)}${em ? ` <em>${w(em)}</em>` : ''}`; };
-const PR_VETAS = '<svg class="pr-vetas" viewBox="0 0 390 800" preserveAspectRatio="none" aria-hidden="true"><path d="M-20 120C80 160 120 60 230 110S360 220 420 180"/><path class="oro" d="M-10 420C60 380 140 470 210 430S330 330 410 380"/><path d="M-30 640C70 600 160 700 260 650S380 560 430 620"/><path d="M60 -10C90 120 40 200 120 300S90 520 160 820"/></svg>';
 const prVec = (vb, tr) => `<svg class="pr-vec" viewBox="${vb}" aria-hidden="true"><g transform="${tr}"><path class="vo" pathLength="2" d="${TS_O_D}"/><path class="vt" pathLength="2" d="${PR_T_WEB()}"/></g></svg>`;
 const prPolvo = (n = 18, semilla = 3) => { let s = semilla; const r = () => (s = (s * 9301 + 49297) % 233280) / 233280; return `<div class="pr-polvo" aria-hidden="true">${Array.from({ length: n }, () => `<i style="left:${(r() * 100).toFixed(1)}%;--t:${(1.5 + r() * 2.5).toFixed(1)}px;--o:${(0.25 + r() * 0.55).toFixed(2)};--dur:${(9 + r() * 10).toFixed(1)}s;--del:${(-r() * 18).toFixed(1)}s;--dx:${((r() - 0.5) * 60).toFixed(0)}px"></i>`).join('')}</div>`; };
 // la portada, distinta en cada diseño: solo se pinta (y se baja su imagen) la del diseño en el que estás
@@ -451,7 +450,7 @@ function pantallaIntro(seguir) {
       <div><p class="pr-k"><span class="rom" data-no-trad>${c.rom}</span>${esc(c.k)}</p><h2 class="pr-h" data-no-trad aria-label="${esc(trad(`${c.t} ${c.em}`))}"><span aria-hidden="true">${prPartir(c.t, c.em)}</span></h2><p class="pr-x"><span class="nov">${esc(c.nov)}</span><span class="exp">${esc(c.exp)}</span></p></div>
       <div class="pr-esc"><div class="pr-flota" aria-hidden="true"><span>${esc(PR_FLOTAS[i][0])}</span><b>${esc(PR_FLOTAS[i][1])}</b></div>${c.esc()}</div></section>`).join('');
   $('#app').innerHTML = `<div class="intro pres${quieta ? ' quieta' : ''}${experto ? ' experto' : ''}" role="region" aria-label="${esc(trad('Presentación de Toisón'))}">
-    <div class="pr-grano" aria-hidden="true"></div>${PR_VETAS}<div class="pr-barra" aria-hidden="true"></div>
+    <div class="pr-grano" aria-hidden="true"></div><div class="pr-barra" aria-hidden="true"></div>
     <div class="pr-cab"><span class="pr-m">${prSimb()}<b data-no-trad>TOISÓN</b><span class="pr-rh" data-no-trad></span></span>${selectorIdioma('mini')}<button class="intro-saltar" type="button" data-in="fin">Saltar</button></div>
     <nav class="pr-ix" aria-label="${esc(trad('Capítulos'))}">${['Portada', ...PR_CAPS.map((c) => c.k), 'Empezar'].map((n, i) => `<button type="button" data-ir="${i}" title="${esc(trad(n))}" aria-label="${esc(trad(n))}"><i></i></button>`).join('')}</nav>
     <div class="pr-sc" tabindex="-1">
@@ -475,6 +474,9 @@ function pantallaIntro(seguir) {
     </div>
   </div>`;
   const raiz = $('.intro.pres'), sc = $('.pr-sc', raiz), barra = $('.pr-barra', raiz), rh = $('.pr-rh', raiz);
+  // Mármol: la piedra de la app detrás (la dirección con huella que puso el build en #acabadoTema; la de la raíz no existe en dist)
+  const piedra = $('#acabadoTema') && getComputedStyle($('#acabadoTema')).backgroundImage;
+  if (piedra && piedra !== 'none') raiz.style.setProperty('--pr-piedra', piedra);
   const secs = [$('[data-port]', raiz), ...$$('.pr-sec', raiz)], hechos = new Set(), puntos = $$('.pr-ix button', raiz);
   requestAnimationFrame(() => requestAnimationFrame(() => secs[0].classList.add('vivo')));
   const marcar = (s) => {

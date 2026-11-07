@@ -90,3 +90,24 @@ conTema('marmol')('el tutorial: por capítulos, lo que se pide cuenta y lo demá
   await page.evaluate(() => irPasoTour(2));
   await expect(page.locator('.tour-caja h3')).toHaveText('Cómo la ves, en Tú');
 });
+
+// 0.8.3 · El Mármol G en la presentación y en los iconos: detrás, la piedra de la app (la imagen con huella del build,
+// la misma de #acabadoTema), la portada sin fondo ni máscara, sin las vetas en SVG; y el icono sobre negro, no sobre borgoña
+conTema('marmol')('Mármol G: la presentación sobre la piedra de la app y los iconos sobre negro', async ({ page }, info) => {
+  base.skip(info.project.name === 'movil-pequeno', 'basta con el móvil y el ordenador');
+  const imgs = [];
+  page.on('request', (r) => { if (/toison-(marmol|sello)\.webp/.test(r.url())) imgs.push(r.url().split('/').pop()); });
+  await page.goto('/#cuenta');
+  await page.waitForSelector('.intro.pres');
+  await expect(page.locator('.pr-heroe .pr-relieve img')).toHaveAttribute('src', 'toison-marmol.webp');
+  await expect(page.locator('.pr-vetas')).toHaveCount(0);
+  const fondo = await page.evaluate(() => ({ pres: getComputedStyle(document.querySelector('.intro.pres')).backgroundImage, app: getComputedStyle(document.querySelector('#acabadoTema')).backgroundImage, mascara: getComputedStyle(document.querySelector('.pr-relieve')).maskImage }));
+  expect(fondo.pres).toMatch(info.project.name === 'pc' ? /marmol-g-pc-[^/]*\.webp/ : /marmol-g-[^p][^/]*\.webp/);
+  expect(fondo.pres).toBe(fondo.app);
+  expect(fondo.mascara).toBe('none');
+  await page.waitForTimeout(500);
+  expect(imgs).toEqual(['toison-marmol.webp']);
+  const svg = await (await page.request.get('/favicon.svg')).text();
+  expect(svg).not.toMatch(/#5e1626|#4e101d|#3a0a15/i);
+  expect(svg).toMatch(/#e3b45f/i);
+});

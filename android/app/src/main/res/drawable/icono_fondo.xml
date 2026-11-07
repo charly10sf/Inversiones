@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 0.8: el fondo del icono, el borgoña de marca #4e101d (como toison-icono.webp de la raíz del repo), con una luz muy
-     suave en el centro y algo más oscuro en los bordes para que no quede plano -->
+<!-- 0.8.3: el fondo del icono, el negro del Mármol G (antes, en la 0.8, el borgoña de marca #4e101d), con una luz muy
+     suave arriba, como el brillo de la piedra de la app, para que no quede plano. Igual que favicon.svg -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android" xmlns:aapt="http://schemas.android.com/aapt"
     android:width="108dp" android:height="108dp" android:viewportWidth="108" android:viewportHeight="108">
-    <path android:pathData="M0,0h108v108h-108z" android:fillColor="#FF4E101D" />
+    <path android:pathData="M0,0h108v108h-108z" android:fillColor="#FF000000" />
     <path android:pathData="M0,0h108v108h-108z">
         <aapt:attr name="android:fillColor">
-            <gradient android:type="radial" android:centerX="54" android:centerY="50" android:gradientRadius="76">
-                <item android:offset="0" android:color="#14F6EAD5"/>
-                <item android:offset="0.55" android:color="#00F6EAD5"/>
-                <item android:offset="1" android:color="#40000000"/>
+            <gradient android:type="radial" android:centerX="54" android:centerY="40" android:gradientRadius="80">
+                <item android:offset="0" android:color="#16FFFFFF"/>
+                <item android:offset="0.6" android:color="#00FFFFFF"/>
+                <item android:offset="1" android:color="#00FFFFFF"/>
             </gradient>
         </aapt:attr>
     </path>
