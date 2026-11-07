@@ -5,7 +5,7 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 const NOVEDADES = [
-  { v: '0.8.3', f: '2026-11-29', h: '12:00', t: 'Toisón, en su casa', cosas: [
+  { v: '0.8.3', f: '2026-11-07', h: '20:30', t: 'Toisón, en su casa', cosas: [
     { d: 'pulido', t: 'Marfil, más cuidado', x: 'Marfil estrena crema en capas, con el menú lateral y la barra de abajo en vino, los detalles en el oro del logo y una raya de oro bajo la pestaña elegida. Borgoña se retira: quien la tenía pasa a Marfil.' },
     { d: 'app', t: 'Toisón se muda a toison.es/app', x: 'Cuando llegue el momento, la app te lo dice y te lleva tus datos a la dirección nueva con un toque. No pierdes nada.' },
     { d: 'logo', t: 'Los logos, desde Toisón', x: 'Los logos de las empresas y los fondos se guardan ahora en Toisón en vez de pedirse a Google. La mayoría ya sale así; el resto, como hasta ahora.' },
