@@ -15,15 +15,16 @@ svg{position:absolute;inset:0}
 <linearGradient id="l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b5863a" stop-opacity="0"/><stop offset=".12" stop-color="#b5863a"/><stop offset=".6" stop-color="#e3b45f"/><stop offset=".88" stop-color="#f7dfa8"/><stop offset="1" stop-color="#f7dfa8" stop-opacity="0"/></linearGradient>
 <radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000" stop-opacity=".85"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
 </defs>
-<g stroke="#fff" stroke-opacity=".045"><path d="M0 122H576M0 140H576"/></g>
-<path id="curva" d="M0 140 C34 139 56 133 86 134 S134 140 166 136 S214 125 248 127 S300 132 334 127 S384 116 414 119 S462 123 492 113 S548 98 576 94" fill="none"/>
-<path d="M0 140 C34 139 56 133 86 134 S134 140 166 136 S214 125 248 127 S300 132 334 127 S384 116 414 119 S462 123 492 113 S548 98 576 94 L576 148 L0 148Z" fill="url(#a)"/>
-<use href="#curva" stroke="url(#l)" stroke-width="2.4" stroke-linecap="round"/>
+<g stroke="#fff" stroke-opacity=".05"><path d="M0 104H576M0 122H576M0 140H576"/><path d="M96 98V148M192 98V148M288 98V148M384 98V148M480 98V148" stroke-dasharray="2 4"/></g>
+<path id="curva" d="M0.0 139 L19.9 136 L39.7 137 L59.6 132 L79.4 133 L99.3 128 L119.2 131 L139.0 129 L158.9 124 L178.8 126 L198.6 127 L218.5 120 L238.3 122 L258.2 117 L278.1 121 L297.9 118 L317.8 113 L337.7 115 L357.5 116 L377.4 110 L397.2 108 L417.1 111 L437.0 104 L456.8 106 L476.7 101 L496.6 103 L516.4 98 L536.3 100 L556.1 93 L576.0 90" fill="none"/>
+<path d="M0.0 139 L19.9 136 L39.7 137 L59.6 132 L79.4 133 L99.3 128 L119.2 131 L139.0 129 L158.9 124 L178.8 126 L198.6 127 L218.5 120 L238.3 122 L258.2 117 L278.1 121 L297.9 118 L317.8 113 L337.7 115 L357.5 116 L377.4 110 L397.2 108 L417.1 111 L437.0 104 L456.8 106 L476.7 101 L496.6 103 L516.4 98 L536.3 100 L556.1 93 L576.0 90 L576 148 L0 148Z" fill="url(#a)"/>
+<use href="#curva" stroke="url(#l)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
 <ellipse cx="288" cy="60" rx="170" ry="48" fill="url(#halo)"/>
 <g transform="translate(288 36) scale(.23)"><path d="M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z" fill="url(#o)"/><path d="M-61.15 -76L61.15 -76L61.15 -66.7L16.25 -66.7L9.05 -57L12.25 60L20.5 60L20.5 67.2L-20.5 67.2L-20.5 60L-12.25 60L-9.05 -57L-16.25 -66.7L-61.15 -66.7ZM-6.45 -40.5L-6.45 38.5L-4.55 38.5L-4.55 -40.5ZM-0.95 -40.5L-0.95 38.5L0.95 38.5L0.95 -40.5ZM4.55 -40.5L4.55 38.5L6.45 38.5L6.45 -40.5Z" fill="url(#m)"/></g>
 <text x="291" y="78" text-anchor="middle" font-family="Ib" font-size="20" letter-spacing="7" fill="url(#w)">TOISÓN</text>
 <text id="lema" x="288" y="96" text-anchor="middle" font-family="In" font-size="9.5" letter-spacing="1.8" fill="#b9ab94">TUS INVERSIONES EN UN SOLO SITIO</text>
 
+<circle cx="556.1" cy="93" r="2.6" fill="#f7dfa8"/><circle cx="556.1" cy="93" r="6" fill="#e3b45f" fill-opacity=".22"/>
 </svg></div>
 <script>const q=new URLSearchParams(location.search);if(q.get('l')==='en')document.getElementById('lema').textContent='ALL YOUR INVESTMENTS IN ONE PLACE';</script>
 </body></html>
