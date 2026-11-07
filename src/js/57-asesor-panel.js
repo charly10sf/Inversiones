@@ -304,7 +304,8 @@ async function clicAsesor(e) {
     if (correoSinConfirmar()) {
       t.disabled = true;
       const ok = await mirarCorreoConfirmado(true);
-      if (!ok) { t.disabled = false; return void toast(L('Todavía no consta confirmado. Abre el enlace del último correo y vuelve a pulsar.', "It doesn't show as confirmed yet. Open the link in the latest email and tap again."), 6000); }
+      if (!ok && !(FB.user && FB.user.emailVerified)) { t.disabled = false; return void toast(L('Todavía no consta confirmado. Abre el enlace del último correo y vuelve a pulsar.', "It doesn't show as confirmed yet. Open the link in the latest email and tap again."), 6000); }
+      if (!ok) { t.disabled = false; return void toast(L('Tu correo está confirmado, pero no he podido conectar. Vuelve a probar en un momento.', "Your email is confirmed, but I couldn't connect. Try again in a moment."), 6000); }
     }
     LS.del(LS_CLAUDE_PAUSA); LS.del(LS_CLAUDE_SONDEO); AS.claudeNo = false; const p = sondearClaude(); pintarAsesor(); await p; pintarAsesor(true);
   }

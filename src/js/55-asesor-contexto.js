@@ -825,10 +825,12 @@ async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
   // 0.8.2: si el panel ya está preguntando (sondearClaude, al abrirlo), se espera a esa respuesta en vez de repetirla
   if (!puede && SONDEO_EN_CURSO) { await SONDEO_EN_CURSO; puede = sondeoClaudeOk(); if (!puede) return false; }
   if (!puede) {
-    const ctl = new AbortController(), tt = setTimeout(() => ctl.abort(), 10000), parar = () => ctl.abort();
+    const ctl = new AbortController(), parar = () => ctl.abort(); let tt = setTimeout(() => ctl.abort(), 10000);
     if (signal) { if (signal.aborted) ctl.abort(); else signal.addEventListener('abort', parar, { once: true }); }
     try {
       const token = await conTiempo(tokenCuenta(), 9000);
+      // los 10 s, para el Worker: renovar el token (0.8.3) no se los come
+      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), 10000);
       const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); puede = true; }
@@ -859,9 +861,11 @@ function sondearClaude() {
   if (!modeloClaudeParaIA('pregunta') || sondeoClaudeOk() || SONDEO_EN_CURSO) return SONDEO_EN_CURSO || Promise.resolve(sondeoClaudeOk());
   const uid = (FB.user && FB.user.uid) || null;
   SONDEO_EN_CURSO = (async () => {
-    const ctl = new AbortController(), tt = setTimeout(() => ctl.abort(), 10000);
+    const ctl = new AbortController(); let tt = setTimeout(() => ctl.abort(), 10000);
     try {
       const token = await conTiempo(tokenCuenta(), 9000);
+      // los 10 s, para el Worker: renovar el token (0.8.3) no se los come
+      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), 10000);
       const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); return true; }
