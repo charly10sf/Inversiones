@@ -123,7 +123,7 @@ jobs:
           sleep 15
           echo "::notice::Worker de pruebas: $url ($(curl -s "$url/salud"))"
           for tipo in confirmar clave bienvenida; do
-            r=$(curl -s -X POST "$url/correo/prueba" -H "X-Prueba: $T" -H 'Content-Type: application/json' -H 'Origin: https://toison.es' -d "{\"tipo\":\"$tipo\",\"lang\":\"es\",\"base\":\"https://charly10sf.github.io/Inversiones/\"}")
+            r=$(curl -s -X POST "$url/correo/prueba" -H "X-Prueba: $T" -H 'Content-Type: application/json' -H 'Origin: https://toison.es' -d "{\"tipo\":\"$tipo\",\"lang\":\"es\"}")
             echo "::notice::$tipo: $r"
             sleep 2
           done

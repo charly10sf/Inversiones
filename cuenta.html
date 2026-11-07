@@ -134,7 +134,7 @@ const WORKER_CORREO = 'https://growfolio.growfolio-web-app.workers.dev/correo';
 async function correoClave(correo) {
   try {
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
-    const r = await fetch(WORKER_CORREO, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo: 'clave', correo, lang: idioma === 'en' ? 'en' : 'es', base: new URL('./', location.href).href }) }).finally(() => clearTimeout(t));
+    const r = await fetch(WORKER_CORREO, { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ tipo: 'clave', correo, lang: idioma === 'en' ? 'en' : 'es' }) }).finally(() => clearTimeout(t));
     const j = await r.json().catch(() => null);
     if (j && j.ok) return;
     if (j && j.motivo === 'espera') throw Object.assign(new Error('espera'), { code: 'auth/too-many-requests' });

@@ -35,14 +35,13 @@ const LS_VERIF = 'inv-verif-mandado';
 /* 0.8.3 · los correos propios: salen del Worker (Resend, desde noreply@toison.es, con el diseño de Toisón y el enlace a
    cuenta.html). Si el Worker no puede (sin configurar, caído, el día lleno, sin red), la app manda el de Firebase de siempre:
    nadie se queda sin correo. «espera» (topes del Worker) no cae a Firebase: así los topes valen */
-const baseApp = () => { try { return new URL('./', location.href).href; } catch (e) { return ''; } };
 async function correoToison(tipo, extra) {
   try {
     const h = { 'Content-Type': 'application/json' };
     if (tipo !== 'clave') h.Authorization = 'Bearer ' + (await tokenCuenta());
     // pasados 12 s se corta de verdad (si no, podrían salir los dos correos: el del Worker, tarde, y el de Firebase)
     const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
-    const r = await fetch(WORKER + '/correo', { method: 'POST', headers: h, signal: ctl.signal, body: JSON.stringify({ tipo, lang: IDIOMA === 'en' ? 'en' : 'es', base: baseApp(), ...(extra || {}) }) }).finally(() => clearTimeout(t));
+    const r = await fetch(WORKER + '/correo', { method: 'POST', headers: h, signal: ctl.signal, body: JSON.stringify({ tipo, lang: IDIOMA === 'en' ? 'en' : 'es', ...(extra || {}) }) }).finally(() => clearTimeout(t));
     const j = await r.json().catch(() => null);
     return j && typeof j === 'object' ? j : { ok: false, motivo: 'fallo' };
   } catch (e) { return { ok: false, motivo: 'red' }; }

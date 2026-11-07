@@ -35,14 +35,13 @@ async function crearSinConfirmar(page) {
   await page.waitForSelector('#fBien', { timeout: 20000 });
 }
 
-test('al crear la cuenta, el correo de confirmación sale del Worker (con sesión, idioma y la dirección de la app)', async ({ page, context }) => {
+test('al crear la cuenta, el correo de confirmación sale del Worker (con sesión e idioma)', async ({ page, context }) => {
   const errores = await preparar(context);
   const vistos = await workerDeMentira(page, () => [200, { ok: true }]);
   await crearSinConfirmar(page);
   expect(vistos.length).toBe(1);
   expect(vistos[0].tipo).toBe('confirmar');
   expect(vistos[0].lang).toBe('es');
-  expect(vistos[0].base).toBe(BASE);
   expect(vistos[0].auth).toMatch(/^Bearer .+/);
   expect(await confirmacionesFb(page)).toBe(0);
   await expect(page.locator('#fBien .aviso-confirmar')).toContainText(CORREO);

@@ -7,7 +7,8 @@
                   y la app manda el de Firebase. La respuesta es la misma exista o no la cuenta y llega antes de preguntar a
                   Firebase (el enlace y el envío van aparte), para que tampoco lo diga el tiempo.
    Los enlaces los da Firebase (accounts:sendOobCode con returnOobLink, firmado con la cuenta de servicio del proyecto) y
-   aquí se monta el nuestro: <app>/cuenta.html?mode=…&oobCode=…&lang=… (no depende de «Personalizar URL de acción»).
+   aquí se monta el nuestro: https://toison.es/app/cuenta.html?mode=…&oobCode=…&lang=… (no depende de «Personalizar URL de
+   acción»).
    Si falta algo (clave de Resend, cuenta de servicio) o el día se ha llenado, contesta un motivo y la app manda el correo
    de Firebase de siempre: nadie se queda sin correo.
    GET /correo/img/<nombre> — las imágenes de los correos (en src/correo-imagenes.js).
@@ -21,9 +22,9 @@ const json64 = (o) => b64u(te.encode(JSON.stringify(o)));
 
 export const DE = 'Toisón <noreply@toison.es>';
 export const RESPONDER = 'hola@toison.es';
-// dónde vive la app (la página de los enlaces, cuenta.html, está en la misma carpeta). La primera, si no se sabe otra
-export const BASES_APP = ['https://charly10sf.github.io/Inversiones/', 'https://toison.es/app/'];
-const BASE_DE_ORIGEN = { 'https://charly10sf.github.io': BASES_APP[0], 'https://toison.es': BASES_APP[1] };
+// los enlaces de los correos van siempre a toison.es (Carlos, 7 nov: nada de charly10sf.github.io a la vista). Hasta la
+// mudanza, toison.es/app/cuenta.html (toison-web) lleva a la de github.io con el mismo código; luego es la de verdad
+export const BASE_APP = 'https://toison.es/app/';
 const MODO = { confirmar: 'verifyEmail', clave: 'resetPassword' };
 const PEDIDO_FB = { confirmar: 'VERIFY_EMAIL', clave: 'PASSWORD_RESET' };
 // los topes ([ventana en ms, cuántos]); el del día entero cuida el plan gratis de Resend (100 al día)
@@ -87,11 +88,6 @@ async function oob(env, sa, tipo, correo, conLink = true) {
   return codigo;
 }
 
-function baseApp(cuerpoBase, origen) {
-  const b = typeof cuerpoBase === 'string' ? cuerpoBase : '';
-  if (BASES_APP.includes(b)) return b;
-  return BASE_DE_ORIGEN[origen] || BASES_APP[0];
-}
 export function enlaceCuenta(base, tipo, codigo, lang) {
   return `${base}cuenta.html?mode=${MODO[tipo]}&oobCode=${encodeURIComponent(codigo)}&lang=${lang}`;
 }
@@ -140,7 +136,7 @@ export async function correoRuta(req, env, ctx, res, { quienEs, claveCorreo, ori
   if (!['confirmar', 'clave', 'bienvenida'].includes(tipo)) return res({ ok: false, motivo: 'pedido' }, 400);
   const sa = cuentaServicio(env);
   if (!env.RESEND_API_KEY || !sa || !env.CUOTAS) return res({ ok: false, motivo: 'sin-config' }, 503);
-  const base = baseApp(d.base, origen);
+  const base = BASE_APP;
 
   // ---- el Worker de pruebas: los tres correos, solo a las direcciones de prueba
   if (prueba) {

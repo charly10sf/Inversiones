@@ -112,17 +112,15 @@ test('confirmar: solo con sesión, para esa cuenta sin confirmar, uno por minuto
   });
 });
 
-test('en inglés y con la app de github.io', async () => {
+test('en inglés, y los enlaces siempre a toison.es (aunque la app pida otra dirección)', async () => {
   await con(async (v) => {
-    const r = await pedir(nuevoEnv(), { tipo: 'confirmar', lang: 'en', base: 'https://charly10sf.github.io/Inversiones/' }, { uid: 'u3', email: 'beto@prueba.com', verificado: false, origen: 'https://toison.es' });
+    const r = await pedir(nuevoEnv(), { tipo: 'confirmar', lang: 'en', base: 'https://charly10sf.github.io/Inversiones/' }, { uid: 'u3', email: 'beto@prueba.com', verificado: false });
     expect(r.j.ok).toBe(true);
     expect(v.resend[0].c.subject).toBe('Confirm your Toisón email');
     expect(v.resend[0].c.html).toContain('/correo/img/hero-en.jpg?v=1');
-    expect(v.resend[0].c.text).toContain('https://charly10sf.github.io/Inversiones/cuenta.html?mode=verifyEmail&oobCode=COD-VERIFY_EMAIL-1&lang=en');
-    // una base que no es nuestra no se usa
-    await pedir(nuevoEnv(), { tipo: 'confirmar', base: 'https://malo.example/' }, { uid: 'u4', email: 'beto@prueba.com', verificado: false, origen: 'https://toison.es' });
-    expect(v.resend[1].c.text).toContain('https://toison.es/app/cuenta.html?');
-    expect(v.resend[1].c.html).not.toContain('malo.example');
+    expect(v.resend[0].c.text).toContain('https://toison.es/app/cuenta.html?mode=verifyEmail&oobCode=COD-VERIFY_EMAIL-1&lang=en');
+    expect(v.resend[0].c.html).not.toContain('github.io');
+    expect(v.resend[0].c.text).not.toContain('github.io');
   });
 });
 
