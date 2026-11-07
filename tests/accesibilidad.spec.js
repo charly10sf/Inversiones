@@ -56,7 +56,7 @@ function tactil() {
   return fallos;
 }
 
-for (const tema of ['marmol', 'marfil', 'borgona']) {
+for (const tema of ['marmol', 'marfil']) {
   conTema(tema)(`${tema}: contraste, ARIA, foco y 48 px en las pantallas`, async ({ page }, info) => {
     base.skip(info.project.name !== 'movil' && tema !== 'marmol', 'en 360 y en el ordenador, con un diseño basta');
     base.setTimeout(180_000);
@@ -98,7 +98,7 @@ conTema('marfil')('con el teclado: el foco se ve siempre', async ({ page }, info
   expect([...new Set(sinAro)]).toEqual([]);
 });
 
-for (const tema of ['marmol', 'marfil', 'borgona']) {
+for (const tema of ['marmol', 'marfil']) {
   conTema(tema)(`${tema}: la presentación, la cuenta y el tutorial`, async ({ page }, info) => {
     base.skip(info.project.name !== 'movil', 'una vez basta');
     await page.goto('/#cuenta');

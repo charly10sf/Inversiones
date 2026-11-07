@@ -200,11 +200,9 @@
 .tour-k .rom { font: 500 15px/1 var(--marca); letter-spacing: .06em; }
 .tour-k::after { content: ''; width: 22px; height: 1px; background: var(--hilo); }
 [data-tema="marfil"] .tour-k { font: 600 13px/1 var(--marca); font-variant: small-caps; text-transform: lowercase; letter-spacing: .1em; color: var(--texto); }
-[data-tema="marfil"] .tour-k::after { background: var(--texto); }
-[data-tema="borgona"] .tour-k { font: italic 500 15px/1 var(--marca); text-transform: none; letter-spacing: 0; }
+[data-tema="marfil"] .tour-k::after { background: var(--oro-hilo); }
 [data-tema] .tour-kk .tour-n { margin: 0; font: 500 13px/1 var(--marca); letter-spacing: .06em; color: var(--texto-2); }
 [data-tema] .tour-caja h3 { margin: 4px 0 6px; font: 500 22px/1.15 var(--marca); letter-spacing: 0; color: var(--texto); }
-[data-tema="borgona"] .tour-caja h3 { font-style: italic; }
 [data-tema] .tour-caja p { font-size: 14.5px; }
 [data-tema] .tour-logo.simb-ts { width: 52px; margin: 6px 0 8px; }
 .tour-prueba { display: flex; align-items: center; gap: 8px; margin-top: 10px; padding: 9px 12px; border-radius: var(--r-m); background: color-mix(in srgb, var(--oro-texto) 10%, transparent); font: 600 13px/1.3 var(--ui); color: var(--oro-texto); transition: background 0.3s, color 0.3s; }

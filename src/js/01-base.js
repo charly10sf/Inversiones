@@ -71,7 +71,9 @@ const LS = {
    «inv-tema» (fuera de LS: lo lee también el script de index.html antes de pintar). Sin elegir, Mármol (Carlos, 3 nov:
    en la 0.8 GrowFolio desaparece y cualquiera elige el suyo en Tú). El color de la barra del navegador sale del token
    --fondo del diseño, no de un color escrito aquí */
-const TEMAS = ['marmol', 'marfil', 'borgona'];
+const TEMAS = ['marmol', 'marfil'];
+/* 7 nov (0.8.3b): Borgoña se quitó; quien lo tenía elegido pasa a Marfil, que se quedó con su vino y su oro */
+const TEMA_VIEJO = { borgona: 'marfil' };
 const TEMA_BASE = 'marmol';
 const temaActual = () => { const t = document.documentElement.getAttribute('data-tema'); return TEMAS.includes(t) ? t : TEMA_BASE; };
 function colorBarraTema() {
@@ -88,6 +90,7 @@ function esquemaTema(t) {
   if (m) m.setAttribute('content', t === 'marfil' ? 'light dark' : 'dark');
 }
 function ponerTema(t) {
+  t = TEMA_VIEJO[t] || t;
   t = TEMAS.includes(t) ? t : TEMA_BASE;
   document.documentElement.setAttribute('data-tema', t);
   esquemaTema(t);

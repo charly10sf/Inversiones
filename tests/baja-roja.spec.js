@@ -1,4 +1,4 @@
-// 0.8.2e: las bajadas son rojas de verdad (Carlos, 6 nov: «demasiado naranja»). En los tres diseños, --baja tiene un tono
+// 0.8.2e: las bajadas son rojas de verdad (Carlos, 6 nov: «demasiado naranja»). En cada diseño, --baja tiene un tono
 // de rojo (menos de 8° de matiz; el coral de antes estaba en 13–14°) y se lee (AA, 4,5) sobre el fondo, la tarjeta y la
 // losa; no se confunde con el aviso ni con el oro; y la app de Android (Tema.java) usa el mismo color que la web.
 import { test, expect } from '@playwright/test';
@@ -14,9 +14,9 @@ function matiz(h) {
   return Math.round(((m * 60) + 360) % 360);
 }
 const JAVA = readFileSync(new URL('../android/app/src/main/java/es/inversiones/app/Tema.java', import.meta.url), 'utf8');
-const EN_JAVA = { marmol: 'FFFF6B62', marfil: 'FFA42018', borgona: 'FFFF7B78' };
+const EN_JAVA = { marmol: 'FFFF6B62', marfil: 'FFA42018' }; // (Borgoña se quitó el 7 nov)
 
-for (const tema of ['marmol', 'marfil', 'borgona']) {
+for (const tema of ['marmol', 'marfil']) {
   test(`la bajada es roja en ${tema}`, async ({ context, page }) => {
     await preparar(context, { ajustes: { 'inv-tema': tema } });
     await page.goto('/');

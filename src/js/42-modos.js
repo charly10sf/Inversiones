@@ -118,14 +118,14 @@ async function filaAcceso(h) {
     w.innerHTML = `<div class="aj-fila aj-info">${ICONOS.candado}<span><b>${L('Tu modo', 'Your mode')}: ${esc(nombreModo(S.acceso))}</b><small>${esPublico() ? L('Sin recomendaciones personalizadas: «Tu plan» en lugar del Paso a paso.', 'No personalised recommendations: Your plan instead of Steps.') : L('Toisón entero, con el Paso a paso.', 'All of Toisón, with Steps.')}</small></span></div>`;
   }
 }
-/* 0.8: el diseño lo elige cualquiera en Tú (Mármol, Marfil o Borgoña; sin elegir, Mármol) y se guarda en el dispositivo.
+/* 0.8: el diseño lo elige cualquiera en Tú (Mármol o Marfil; sin elegir, Mármol; Borgoña se quitó el 7 nov) y se guarda en el dispositivo.
    Cada muestra lleva data-tema, así enseña los colores de su diseño (src/css/00-temas.css) */
 function htmlSelectorTema() {
-  const t = temaActual(), nom = { marmol: 'Mármol', marfil: 'Marfil', borgona: 'Borgoña' };
+  const t = temaActual(), nom = { marmol: 'Mármol', marfil: 'Marfil' };
   const b = (k, n) => `<button type="button" data-elige-tema="${k}" aria-pressed="${t === k}"><i class="tema-muestra" data-tema="${k}" aria-hidden="true"></i><span>${n}</span></button>`;
   return `<div class="seccion-ed aj-idioma"><h3>${ICONOS_PL.ver}${L('Diseño', 'Design')}</h3>
     <div class="idiomas temas" role="group" aria-label="${esc(L('Diseño', 'Design'))}" data-no-trad>${TEMAS.map((k) => b(k, nom[k])).join('')}</div>
-    <small>${L('Mármol, oscuro y con vetas; Marfil, claro, en crema; Borgoña, rojo oscuro. Se guarda en este dispositivo.', 'Marble, dark and veined; Ivory, light cream; Burgundy, dark red. Saved on this device.')}</small></div>`;
+    <small>${L('Mármol, negro y con vetas; Marfil, en crema con el menú en vino. Se guarda en este dispositivo.', 'Marble, dark and veined; Ivory, cream with a burgundy menu. Saved on this device.')}</small></div>`;
 }
 function activarSelectorTema(el) {
   for (const b of $$('[data-elige-tema]', el)) b.onclick = () => {

@@ -20,7 +20,7 @@ const conTema = (tema) => base.extend({
 });
 const ir = async (page, h) => { await page.evaluate((x) => { location.hash = x; }, h); await page.waitForTimeout(500); };
 
-conTema('borgona')('con Toisón: tutorial, Ajustes, entrada, presentación y GTA con la marca nueva', async ({ page }, info) => {
+conTema('marfil')('con Toisón: tutorial, Ajustes, entrada, presentación y GTA con la marca nueva', async ({ page }, info) => {
   base.skip(info.project.name !== 'movil', 'una vez basta');
   // la entrada: el símbolo en su disco
   await page.goto('/#cuenta');

@@ -14,16 +14,16 @@ const conTema = (tema) => base.extend({
   }, { auto: true }],
 });
 
-conTema('borgona')('la presentación: ocho capítulos, a tu medida, con la imagen de tu diseño y el final a crear la cuenta', async ({ page }, info) => {
+conTema('marmol')('la presentación: ocho capítulos, a tu medida, con la imagen de tu diseño y el final a crear la cuenta', async ({ page }, info) => {
   base.skip(info.project.name === 'movil-pequeno', 'basta con el móvil y el ordenador');
   const imgs = [];
-  page.on('request', (r) => { if (/toison-(marmol|sello)\.webp/.test(r.url())) imgs.push(r.url().split('/').pop()); });
+  page.on('request', (r) => { if (/toison-marmol\.webp/.test(r.url())) imgs.push(r.url().split('/').pop()); });
   await page.goto('/#cuenta');
   await page.waitForSelector('.intro.pres');
   await expect(page.locator('.pr-sec[data-c]')).toHaveCount(8);
-  await expect(page.locator('.pr-heroe .pr-medalla img')).toHaveAttribute('src', 'toison-sello.webp');
+  await expect(page.locator('.pr-heroe .pr-relieve img')).toHaveAttribute('src', 'toison-marmol.webp');
   await page.waitForTimeout(500);
-  expect(imgs).toEqual(['toison-sello.webp']);
+  expect(imgs).toEqual(['toison-marmol.webp']);
   // a tu medida: «Llevo años invirtiendo» cambia el texto de cada capítulo y se recuerda
   const x = page.locator('.pr-sec[data-c="5"] .pr-x');
   await expect(x.locator('.nov')).toBeVisible();
@@ -96,7 +96,7 @@ conTema('marmol')('el tutorial: por capítulos, lo que se pide cuenta y lo demá
 conTema('marmol')('Mármol G: la presentación sobre la piedra de la app y los iconos sobre negro', async ({ page }, info) => {
   base.skip(info.project.name === 'movil-pequeno', 'basta con el móvil y el ordenador');
   const imgs = [];
-  page.on('request', (r) => { if (/toison-(marmol|sello)\.webp/.test(r.url())) imgs.push(r.url().split('/').pop()); });
+  page.on('request', (r) => { if (/toison-marmol\.webp/.test(r.url())) imgs.push(r.url().split('/').pop()); });
   await page.goto('/#cuenta');
   await page.waitForSelector('.intro.pres');
   await expect(page.locator('.pr-heroe .pr-relieve img')).toHaveAttribute('src', 'toison-marmol.webp');

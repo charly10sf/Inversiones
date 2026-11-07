@@ -133,7 +133,7 @@ public class Puente {
         Datos.prefs(ctx).edit().putString("idioma", "en".equals(i) ? "en" : "es").apply();
     }
 
-    /** 0.8: el diseño elegido en la web («marmol», «marfil», «borgona»; vacío o desconocido = Mármol). Lo manda al abrir y al
+    /** 0.8: el diseño elegido en la web («marmol» o «marfil»; vacío o desconocido = Mármol; «borgona», el de antes, = Marfil). Lo manda al abrir y al
      *  cambiarlo; la app pinta las barras del móvil con su fondo y, si ha cambiado, repinta el widget */
     @JavascriptInterface
     public void tema(String t) {

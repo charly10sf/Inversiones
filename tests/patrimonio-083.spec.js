@@ -15,7 +15,7 @@ test('la cifra del patrimonio, con la letra de cada estilo y en negrita; la lín
   await crearCuenta(page);
   await quitarCapas(page);
   await meterCartera(page);
-  const esperado = { marmol: [/^Inter/, 'normal'], marfil: [/^"?Ibarra Real Nova/, 'normal'], borgona: [/^"?Ibarra Real Nova/, 'italic'] };
+  const esperado = { marmol: [/^Inter/, 'normal'], marfil: [/^"?Ibarra Real Nova/, 'normal'] };
   for (const [t, [familia, estilo]] of Object.entries(esperado)) {
     await page.evaluate((t) => { document.querySelectorAll('.hoja-fondo').forEach((h) => h.remove()); ponerTema(t); pintar(); }, t);
     await page.waitForSelector('#heroNum');

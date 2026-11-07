@@ -55,7 +55,7 @@ test('los campos, con los tokens de cada diseño', async ({ page }, info) => {
   test.skip(info.project.name !== 'movil', 'una vez basta');
   await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
   await ir(page, 'cartera');
-  for (const t of ['marmol', 'marfil', 'borgona']) {
+  for (const t of ['marmol', 'marfil']) {
     await page.evaluate((x) => ponerTema(x), t);
     await formulario(page);
     const e = await estilos(page);

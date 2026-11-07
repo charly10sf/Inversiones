@@ -1,6 +1,6 @@
 /* =====================================================================
    Presentación de Toisón (0.8, paso 5p): «la película». Se cuenta bajando, como toison.es: una portada distinta en cada
-   diseño (el relieve de mármol en Mármol, el sello en Borgoña, el símbolo sobre la proporción áurea en Marfil), ocho
+   diseño (el relieve de mármol en Mármol, el símbolo sobre la proporción áurea en Marfil), ocho
    capítulos con algo que tocar en cada uno y un final para empezar. Los textos cambian con «Estoy empezando / Llevo
    años invirtiendo». La maqueta aprobada (3 nov) es https://claude.ai/artifact/THN75znmPR44S1A94LYbev.
    Va en un trozo (src/partes.json): se baja solo la primera vez en cada dispositivo, y su CSS va aquí dentro para no
@@ -29,7 +29,6 @@ const PR_CSS = `
 .pres .pr-rh{font:500 13px/1 var(--marca);letter-spacing:.04em;color:var(--oro-texto);margin-left:4px}
 .pres .pr-rh:empty{display:none}
 .pres .pr-rh::before{content:'·';color:var(--texto-2);margin-right:6px}
-[data-tema="borgona"] .pres .pr-rh{font-style:italic}
 .pres .intro-saltar{min-height:40px;padding:0 14px;border-radius:var(--r-p);background:color-mix(in srgb,var(--superficie) 80%,transparent);box-shadow:inset 0 0 0 1px var(--sep);font:500 13px/1 var(--ui);color:var(--texto-2)}
 .pres .pr-ix{position:absolute;right:6px;top:50%;transform:translateY(-50%);z-index:5;display:flex;flex-direction:column;gap:2px;opacity:0;transition:opacity .5s}
 .pres.bajado .pr-ix{opacity:1}
@@ -39,14 +38,12 @@ const PR_CSS = `
 .pres .simb-ts .s-o{fill:var(--sim-o)}.pres .simb-ts .s-t{fill:var(--sim-t)}
 .pres .num{font-variant-numeric:tabular-nums}
 .pres .pr-tarj{position:relative;background:var(--superficie);border-radius:var(--r-l);box-shadow:inset 0 0 0 2px var(--borde),var(--sombra-t);padding:14px 16px;overflow:hidden;text-align:left}
-[data-tema="marmol"] .pres .pr-tarj,[data-tema="borgona"] .pres .pr-tarj{background:radial-gradient(420px 160px at 20% -60px,color-mix(in srgb,var(--oro-texto) 9%,transparent),transparent 72%),var(--superficie)}
+[data-tema="marmol"] .pres .pr-tarj{background:radial-gradient(420px 160px at 20% -60px,color-mix(in srgb,var(--oro-texto) 9%,transparent),transparent 72%),var(--superficie)}
 .pres .pr-tarj::after{content:'';position:absolute;inset:0;border-radius:inherit;pointer-events:none;background:linear-gradient(105deg,transparent 30%,color-mix(in srgb,var(--oro-texto) 16%,transparent) 48%,transparent 66%);transform:translateX(-130%)}
 .pres .vivo .pr-tarj::after{animation:pr-destello 1.5s var(--facil) 1.3s forwards}
 @keyframes pr-destello{to{transform:translateX(120%)}}
 .pres .pr-eti{display:block;font:600 10.5px/1.2 var(--ui);letter-spacing:.14em;text-transform:uppercase;color:var(--texto-2);margin-bottom:8px}
 [data-tema="marfil"] .pres .pr-eti{font:600 13px/1.2 var(--marca);font-variant:small-caps;text-transform:lowercase;letter-spacing:.08em;color:var(--texto);padding-bottom:5px;border-bottom:1px solid var(--texto);display:inline-block}
-[data-tema="borgona"] .pres .pr-eti{font:italic 500 15px/1.2 var(--marca);letter-spacing:0;text-transform:none;color:var(--oro-texto)}
-[data-tema="borgona"] .pres .pr-eti::after{content:'';display:block;width:22px;height:1px;background:var(--oro-texto);margin-top:5px}
 .pres .pr-pas{display:inline-flex;align-items:center;gap:4px;padding:4px 9px;border-radius:var(--r-p);font:600 12px/1.2 var(--ui)}
 .pres .pr-pas.sube{background:var(--sube-fondo);color:var(--sube)}
 .pres .pr-pas.baja{background:var(--baja-fondo);color:var(--baja)}
@@ -60,11 +57,9 @@ const PR_CSS = `
 .pres .vivo .pr-k::after{transform:none}
 [data-tema="marfil"] .pres .pr-k{font:600 13px/1 var(--marca);font-variant:small-caps;text-transform:lowercase;letter-spacing:.1em;color:var(--texto)}
 [data-tema="marfil"] .pres .pr-k::after{background:var(--texto)}
-[data-tema="borgona"] .pres .pr-k{font:italic 500 16px/1 var(--marca);text-transform:none;letter-spacing:0}
 .pres .pr-h{font:500 clamp(30px,9.4cqw,44px)/1.08 var(--marca);margin:0 0 12px;letter-spacing:-.005em;color:var(--texto)}
 .pres .pr-h em{color:var(--oro-texto);font-style:italic}
 [data-tema="marfil"] .pres .pr-h em{font-style:normal}
-[data-tema="borgona"] .pres .pr-h{font-style:italic}
 .pres .pr-h .w{display:inline-block;opacity:0;transform:translateY(.5em);transition:opacity .6s var(--facil),transform .7s var(--facil);transition-delay:calc(var(--i)*60ms + 120ms)}
 .pres .vivo .pr-h .w{opacity:1;transform:none}
 .pres .pr-x{margin:0;color:var(--texto-2);font-size:15px;line-height:1.55}
@@ -90,8 +85,8 @@ const PR_CSS = `
 .pres .pr-relieve{position:relative;width:min(150cqw,760px);margin:-10px calc((100% - min(150cqw,760px))/2) 0;aspect-ratio:1120/640;-webkit-mask-image:radial-gradient(closest-side,var(--fondo) 52%,color-mix(in srgb,var(--fondo) 60%,transparent) 72%,transparent 98%);mask-image:radial-gradient(closest-side,var(--fondo) 52%,color-mix(in srgb,var(--fondo) 60%,transparent) 72%,transparent 98%)}
 .pres .pr-lento{position:absolute;inset:0;animation:pr-respira 18s ease-in-out infinite alternate}
 @keyframes pr-respira{to{transform:scale(1.05)}}
-.pres .pr-relieve img,.pres .pr-medalla img{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 1.1s ease 1.5s}
-.pres .vivo .pr-relieve img,.pres .vivo .pr-medalla img{opacity:1}
+.pres .pr-relieve img{position:absolute;inset:0;width:100%;height:100%;opacity:0;transition:opacity 1.1s ease 1.5s}
+.pres .vivo .pr-relieve img{opacity:1}
 .pres .pr-vec{position:absolute;inset:0;width:100%;height:100%;transition:opacity .7s ease 2.3s}
 .pres .vivo .pr-vec{opacity:0}
 .pres .pr-vec path{fill:none;stroke:var(--oro-texto);stroke-width:1.1;stroke-linejoin:round;stroke-dasharray:2;stroke-dashoffset:2;transition:stroke-dashoffset 1.3s cubic-bezier(.6,0,.2,1) .15s}
@@ -108,11 +103,6 @@ const PR_CSS = `
 .pres .pr-aurea .l{fill:none;stroke:var(--grafica);stroke-width:.45;opacity:.55;stroke-dasharray:1;stroke-dashoffset:1;transition:stroke-dashoffset 2.2s ease .5s}
 .pres .pr-aurea .o{fill:none;stroke:var(--primario);stroke-width:.5;opacity:.3;stroke-dasharray:2;stroke-dashoffset:2;transition:stroke-dashoffset 2.4s ease .7s}
 .pres .vivo .pr-aurea .l,.pres .vivo .pr-aurea .o{stroke-dashoffset:0}
-.pres .pr-h-borgona{position:relative;width:min(54cqw,220px);aspect-ratio:1}
-.pres .pr-medalla{position:absolute;inset:0;border-radius:50%;overflow:hidden;box-shadow:0 0 0 1px var(--hilo),0 30px 60px -20px var(--hondo),inset 0 0 50px var(--hondo)}
-.pres .pr-medalla::after{content:'';position:absolute;inset:0;border-radius:50%;background:linear-gradient(115deg,transparent 35%,color-mix(in srgb,var(--sim-o) 24%,transparent) 50%,transparent 65%);transform:translateX(-120%)}
-.pres .vivo .pr-medalla::after{animation:pr-destello 1.6s var(--facil) 2.6s forwards}
-.pres .pr-aro-m{position:absolute;inset:-9px;border-radius:50%;box-shadow:inset 0 0 0 1px var(--hilo)}
 .pres .pr-palabra{display:flex;gap:.12em;justify-content:center;margin:18px 0 6px;padding-left:.12em;font:500 clamp(30px,10cqw,48px)/1 var(--marca);letter-spacing:.12em;position:relative;z-index:1}
 .pres .pr-palabra span{display:inline-block;opacity:0;transform:translateY(.4em);transition:opacity .7s var(--facil),transform .8s var(--facil);transition-delay:calc(1.4s + var(--i)*90ms)}
 .pres .vivo .pr-palabra span{opacity:1;transform:none}
@@ -120,13 +110,8 @@ const PR_CSS = `
 [data-tema="marmol"] .pres .pr-relieve{-webkit-mask-image:none;mask-image:none}
 .pres .pr-filete{display:none}
 [data-tema="marfil"] .pres .pr-filete{display:flex;justify-content:space-between;gap:10px;width:100%;white-space:nowrap;font:500 11px/1.2 var(--marca);font-variant:small-caps;letter-spacing:.08em;color:var(--texto-2);border-top:2px solid var(--texto);border-bottom:1px solid var(--texto);padding:6px 0;margin-bottom:26px}
-.pres .pr-orla{display:none}
-[data-tema="borgona"] .pres .pr-orla{display:flex;align-items:center;gap:10px;width:60%;margin:4px 0 8px;color:var(--oro-texto)}
-[data-tema="borgona"] .pres .pr-orla::before,[data-tema="borgona"] .pres .pr-orla::after{content:'';flex:1;height:1px;background:var(--hilo)}
-[data-tema="borgona"] .pres .pr-orla i{width:6px;height:6px;transform:rotate(45deg);background:var(--oro-texto)}
 .pres .pr-h1{font:500 clamp(26px,8cqw,38px)/1.12 var(--marca);margin:14px 0 10px;color:var(--texto)}
 .pres .pr-h1 em{color:var(--oro-texto)}
-[data-tema="borgona"] .pres .pr-h1{font-style:italic}
 [data-tema="marfil"] .pres .pr-h1 em{font-style:normal}
 .pres .pr-ent{margin:0 auto;max-width:31ch;color:var(--texto-2)}
 .pres .pr-perfil-l{margin:22px 0 8px;font-size:12.5px;color:var(--texto-2)}
@@ -253,7 +238,7 @@ const PR_CSS = `
 .pres .pr-etiqs{display:flex;gap:6px;justify-content:center;flex-wrap:wrap;margin-top:8px}
 .pres.quieta *,.pres.quieta *::before,.pres.quieta *::after{animation:none!important;transition:none!important}
 .pres.quieta .pr-polvo,.pres.quieta .pr-vec{display:none}
-.pres.quieta :is(.pr-h .w,.aparece,.pr-palabra span,.pr-fila,.pr-esc,.pr-relieve img,.pr-medalla img,.pr-flota){opacity:1!important;transform:none!important}
+.pres.quieta :is(.pr-h .w,.aparece,.pr-palabra span,.pr-fila,.pr-esc,.pr-relieve img,.pr-flota){opacity:1!important;transform:none!important}
 .pres.quieta .pr-chip{opacity:0!important}
 .pres.quieta .pr-junto{opacity:1!important}
 .pres.quieta .pr-emb path,.pres.quieta .pr-graf .linea,.pres.quieta .pr-aurea .l,.pres.quieta .pr-aurea .o{stroke-dashoffset:0!important}
@@ -436,7 +421,6 @@ const prPolvo = (n = 18, semilla = 3) => { let s = semilla; const r = () => (s =
 // la portada, distinta en cada diseño: solo se pinta (y se baja su imagen) la del diseño en el que estás
 function prHeroe(tema) {
   if (tema === 'marfil') return `<div class="pr-h-marfil"><svg class="pr-aurea" viewBox="0 0 200 150" aria-hidden="true"><g transform="translate(100 70)"><path class="o" pathLength="2" d="${TS_O_D}"/></g><rect class="l" x="19.1" y="20" width="161.8" height="100" pathLength="1"/><path class="l" d="M119.1 20V120M119.1 81.8H180.9M142.7 81.8V120M119.1 96.4H142.7M133.7 81.8V96.4" pathLength="1"/><path class="l" d="M19.1 120A100 100 0 0 1 119.1 20A61.8 61.8 0 0 1 180.9 81.8A38.2 38.2 0 0 1 142.7 120A23.6 23.6 0 0 1 119.1 96.4A14.6 14.6 0 0 1 133.7 81.8" pathLength="1"/></svg><div class="pr-emb">${prSimb()}</div></div>`;
-  if (tema === 'borgona') return `<div class="pr-h-borgona"><span class="pr-aro-m"></span><div class="pr-medalla"><img src="toison-sello.webp" alt="" decoding="async">${prVec('0 0 420 420', 'translate(210 235) scale(2.08)')}</div></div>`;
   return `<div class="pr-relieve"><div class="pr-lento"><img src="toison-marmol.webp" alt="${esc(trad('Toisón: una T dorada en forma de columna que atraviesa una O de mármol claro'))}" decoding="async">${prVec('0 0 1120 640', 'translate(558 249) scale(2.08)')}</div></div>`;
 }
 
@@ -458,7 +442,6 @@ function pantallaIntro(seguir) {
         <div class="pr-filete" aria-hidden="true"><span>${esc(trad(`Versión ${baseVer(VERSION)}`))}</span><span>Inversiones · Renta · Mercados</span></div>
         <div class="pr-heroe">${prHeroe(tema)}</div>
         <p class="pr-palabra" role="img" aria-label="Toisón" data-no-trad>${[...'TOISÓN'].map((c, i) => `<span style="--i:${i}" aria-hidden="true">${c}</span>`).join('')}</p>
-        <div class="pr-orla" aria-hidden="true"><i></i></div>
         <h1 class="pr-h1 aparece" style="--d:2.1s"><span>Todas tus inversiones,</span> <em>en un solo sitio</em></h1>
         <p class="pr-ent aparece" style="--d:2.3s">Fondos, acciones, ETF, oro y cripto de cualquier bróker, con la renta hecha y una IA que conoce tu cartera.</p>
         <p class="pr-perfil-l aparece" style="--d:2.5s">Te lo cuento a tu medida:</p>

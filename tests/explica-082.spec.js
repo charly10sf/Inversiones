@@ -97,7 +97,7 @@ test('en el estándar, ordenar las posiciones no dice «comprar» ni «vender»'
 // Siguiendo) tienen fondo de verdad, para que el texto de debajo no se monte
 test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debajo', async ({ page }) => {
   await dentro(page);
-  for (const tema of ['marmol', 'marfil', 'borgona']) {
+  for (const tema of ['marmol', 'marfil']) {
     await page.evaluate((t) => { ponerTema(t); S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); }, tema);
     const tabs = page.locator('.exp-tabs');
     await expect(tabs).toBeAttached({ timeout: 15_000 });

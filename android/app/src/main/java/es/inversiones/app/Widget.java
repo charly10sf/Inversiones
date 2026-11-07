@@ -136,8 +136,7 @@ public class Widget extends AppWidgetProvider {
     /** 0.8: lo que el widget no dibuja en la imagen (el fondo de debajo y la rueda de refrescar) con los colores del
      *  diseño elegido */
     private static void colores(RemoteViews v, Tema tm) {
-        int fondo = "marfil".equals(tm.id) ? R.drawable.fondo_widget_marfil
-                : "borgona".equals(tm.id) ? R.drawable.fondo_widget_borgona : R.drawable.fondo_widget_marmol;
+        int fondo = "marfil".equals(tm.id) ? R.drawable.fondo_widget_marfil : R.drawable.fondo_widget_marmol;
         v.setInt(android.R.id.background, "setBackgroundResource", fondo);
         v.setInt(R.id.refresco_ico, "setColorFilter", tm.apagado);
         if (Build.VERSION.SDK_INT >= 31)

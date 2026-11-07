@@ -13,7 +13,7 @@ const test = base.extend({
   }, { auto: true }],
 });
 
-const FONDO = { marmol: '#000000', marfil: '#f2e7d5', borgona: '#2a0e14' };
+const FONDO = { marmol: '#000000', marfil: '#ede1cc' }; // Borgoña se quitó el 7 nov
 const rgb = (h) => `rgb(${[1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16)).join(', ')})`;
 
 async function leer(page) {
@@ -88,19 +88,19 @@ test('el selector de diseño, en Tú para cualquiera, cambia el diseño al momen
   test.skip(info.project.name !== 'movil', 'una vez basta');
   await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
   await page.evaluate(() => { S.esDueno = false; location.hash = 'tu'; pintar(); });
-  // tres botones (ni rastro del de GrowFolio), con Mármol marcado
-  await expect(page.locator('#vista [data-elige-tema]')).toHaveCount(3);
+  // dos botones (ni rastro del de GrowFolio ni de Borgoña), con Mármol marcado
+  await expect(page.locator('#vista [data-elige-tema]')).toHaveCount(2);
   await expect(page.locator('#vista [data-elige-tema=""]')).toHaveCount(0);
   await expect(page.locator('#vista [data-elige-tema="marmol"]')).toHaveAttribute('aria-pressed', 'true');
-  await page.locator('#vista [data-elige-tema="borgona"]').evaluate((b) => b.click());
-  expect(await page.evaluate(() => [document.documentElement.getAttribute('data-tema'), localStorage.getItem('inv-tema'), document.querySelector('meta[name="theme-color"]').content])).toEqual(['borgona', '"borgona"', '#2a0e14']);
-  await expect(page.locator('#vista [data-elige-tema="borgona"]')).toHaveAttribute('aria-pressed', 'true');
   // 4 nov: la <meta name="color-scheme"> sigue al diseño (Marfil, claro y sin dejarse oscurecer)
   const esquema = () => page.evaluate(() => document.querySelector('meta[name="color-scheme"]').content);
   expect(await esquema()).toBe('dark');
   await page.locator('#vista [data-elige-tema="marfil"]').evaluate((b) => b.click());
+  expect(await page.evaluate(() => [document.documentElement.getAttribute('data-tema'), localStorage.getItem('inv-tema'), document.querySelector('meta[name="theme-color"]').content])).toEqual(['marfil', '"marfil"', '#ede1cc']);
+  await expect(page.locator('#vista [data-elige-tema="marfil"]')).toHaveAttribute('aria-pressed', 'true');
   expect(await esquema()).toBe('light dark');
-  await page.locator('#vista [data-elige-tema="borgona"]').evaluate((b) => b.click());
+  await page.locator('#vista [data-elige-tema="marmol"]').evaluate((b) => b.click());
+  expect(await esquema()).toBe('dark');
   // cada muestra lleva los colores de su diseño
   expect(await page.locator('.tema-muestra[data-tema="marfil"]').evaluate((i) => getComputedStyle(i).backgroundColor)).toBe(rgb(FONDO.marfil));
   // en Ajustes, el dueño ya no tiene selector aparte
@@ -126,14 +126,14 @@ test.describe('la app de Android sabe el diseño', () => {
 });
 
 // 0.8.1b (5 nov, captura de Carlos): en el móvil, las pestañas de pastilla que se quedan arriba al bajar (Ideas: Lo tuyo ·
-// Del radar · Siguiendo) tienen fondo de verdad en los tres diseños, para que el texto de debajo no se monte
+// Del radar · Siguiendo) tienen fondo de verdad en cada diseño, para que el texto de debajo no se monte
 test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debajo', async ({ page }, info) => {
   test.skip(info.project.name !== 'movil', 'en el móvil es donde se quedan arriba');
   await crearCuenta(page);
   await quitarCapas(page);
   await meterCartera(page);
   await page.evaluate(() => document.querySelectorAll('.hoja-fondo').forEach((h) => h.remove()));
-  for (const tema of ['marmol', 'marfil', 'borgona']) {
+  for (const tema of ['marmol', 'marfil']) {
     await page.evaluate((t) => { ponerTema(t); S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); }, tema);
     const tabs = page.locator('.exp-tabs');
     await expect(tabs).toBeAttached({ timeout: 15_000 });
@@ -185,7 +185,7 @@ test('Mármol G: textura de mármol en el fondo y tablas opacas; los otros dise�
   await expect(page.locator('#pl-dentro')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
   await expect(page.locator('#pl-dentro')).toHaveCSS('box-shadow', 'none');
   await expect(page.locator('#pl-dentro td').first()).toHaveCSS('left', '0px');
-  for (const tema of ['marfil', 'borgona']) {
+  for (const tema of ['marfil']) {
     await page.evaluate((tt) => ponerTema(tt), tema);
     x = await fondoCapa();
     expect(x.img).not.toContain('marmol-g');
@@ -194,4 +194,51 @@ test('Mármol G: textura de mármol en el fondo y tablas opacas; los otros dise�
     await expect(page.locator('#pl-suelta')).toHaveCSS('background-color', 'rgba(0, 0, 0, 0)');
     await expect(page.locator('#pl-suelta')).toHaveCSS('box-shadow', 'none');
   }
+});
+
+// 7 nov (0.8.3b): Borgoña se quitó. Quien lo tenía guardado abre en Marfil (antes de pintar, desde el script de
+// index.html) y se le guarda Marfil; ponerTema('borgona') también acaba en Marfil
+test.describe('quien tenía Borgoña', () => {
+  test.use({ ajustes: { 'inv-tema': JSON.stringify('borgona') } });
+  test('pasa a Marfil', async ({ page }, info) => {
+    test.skip(info.project.name !== 'movil', 'una vez basta');
+    await page.addInitScript(() => document.addEventListener('DOMContentLoaded', () => { window.__temaAlEmpezar = document.documentElement.getAttribute('data-tema'); }));
+    await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
+    expect(await page.evaluate(() => window.__temaAlEmpezar)).toBe('marfil');
+    expect(await page.evaluate(() => [document.documentElement.getAttribute('data-tema'), localStorage.getItem('inv-tema')])).toEqual(['marfil', '"marfil"']);
+    expect(await page.evaluate(() => { ponerTema('borgona'); return [document.documentElement.getAttribute('data-tema'), TEMAS.join()]; })).toEqual(['marfil', 'marmol,marfil']);
+  });
+});
+
+// 7 nov (0.8.3b, Carlos): el Marfil nuevo. Crema en capas, el menú en vino con el oro del logo, las pestañas subrayadas
+// de oro, los títulos de sección en vino con su hilo de oro y el sello de la cabecera como el icono
+test.describe('Marfil (7 nov)', () => {
+  test.use({ ajustes: { 'inv-tema': JSON.stringify('marfil') } });
+  test('menú en vino, pestañas subrayadas y títulos con hilo de oro', async ({ page }, info) => {
+    test.skip(info.project.name === 'movil-pequeno', 'basta con el móvil y el ordenador');
+    await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
+    const tok = await page.evaluate(() => { const r = getComputedStyle(document.documentElement); return ['--fondo', '--superficie', '--menu-fondo', '--oro-hilo', '--primario', '--oro-logo'].map((n) => r.getPropertyValue(n).trim()); });
+    expect(tok).toEqual(['#ede1cc', '#fdf9f2', '#3c0b16', '#c99a45', '#4e101d', '#e3b45f']);
+    // el menú: lateral en el ordenador, barra de abajo en el móvil, los dos en vino
+    const menu = info.project.name === 'pc' ? '.riel' : '.navbar';
+    const fm = await page.locator(menu).evaluate((e) => getComputedStyle(e).backgroundColor);
+    // (la barra del móvil es vino al 94 %: Chrome la da como color(srgb …); se pasa a 0–255)
+    const n = (fm.match(/[\d.]+/g) || []).map(Number).slice(0, 3);
+    expect((fm.startsWith('color(') ? n.map((v) => Math.round(v * 255)) : n), fm).toEqual([60, 11, 22]);
+    // el sello de la cabecera: disco negro
+    await expect(page.locator('.top .marca-ts i').first()).toHaveCSS('background-color', 'rgb(0, 0, 0)');
+    // las pestañas de Análisis: sin carril, la elegida en vino y subrayada de oro
+    await page.evaluate(() => { location.hash = 'analisis'; });
+    const elegida = page.locator('.pest-av a[aria-current="page"]');
+    await expect(elegida).toBeVisible({ timeout: 15_000 });
+    await expect(elegida).toHaveCSS('color', 'rgb(78, 16, 29)');
+    await expect(elegida).toHaveCSS('box-shadow', 'rgb(201, 154, 69) 0px -2px 0px 0px inset');
+    await expect(elegida).toHaveCSS('background-image', 'none');
+    // un título de sección: en vino, con el hilo de oro debajo
+    await page.evaluate(() => { location.hash = 'cartera'; });
+    const cab = page.locator('#vista .sec-cab').first();
+    await expect(cab).toBeAttached({ timeout: 15_000 });
+    await expect(cab.locator('h2').first()).toHaveCSS('color', 'rgb(78, 16, 29)');
+    expect(await cab.evaluate((e) => getComputedStyle(e, '::after').backgroundColor)).toBe('rgb(201, 154, 69)');
+  });
 });

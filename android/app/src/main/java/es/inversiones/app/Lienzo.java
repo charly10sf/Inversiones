@@ -37,7 +37,7 @@ import java.util.Random;
  * total y la curva grande) y tres o más (además lo que toca y, en pastillas, lo que más ha movido hoy la cartera).
  */
 final class Lienzo {
-    /** 0.8: los colores salen del diseño elegido en la web (Tema): Mármol, Marfil o Borgoña */
+    /** 0.8: los colores salen del diseño elegido en la web (Tema): Mármol o Marfil */
     private final Tema t;
     private final int LINEA, TEXTO, TEXTO2, APAGADO, ACENTO, ACENTO_LUZ, ORO_TEXTO, SUBE, BAJA, FONDO_A, FONDO_B;
     /** la cifra grande: Inter 500 como la maqueta de Toisón */
@@ -530,8 +530,8 @@ final class Lienzo {
 
     /**
      * «Patrimonio» arriba a la izquierda, como las etiquetas de las tarjetas de cada diseño:
-     * Mármol, Inter en mayúsculas espaciadas; Marfil, Ibarra con una raya de tinta debajo; Borgoña, Ibarra cursiva en
-     * oro. Devuelve el ancho (en dp); con «dibujar» falso solo mide
+     * Mármol, Inter en mayúsculas espaciadas; Marfil (7 nov), Ibarra en vino sobre un filete crema con un hilo de oro,
+     * como los títulos de sección de la web. Devuelve el ancho (en dp); con «dibujar» falso solo mide
      */
     private float etiqueta(float x, float yBase, String txt, boolean dibujar) {
         switch (t.id) {
@@ -541,19 +541,17 @@ final class Lienzo {
                 if (dibujar) texto(x, yBase, m, 10.5f, 600, APAGADO, false, 0.14f);
                 return w;
             }
-            case "marfil":
-            case "borgona": {
-                boolean cur = t.id.equals("borgona");
-                float sp = cur ? 15 : 14;
-                estilo(sp, 600, cur ? ORO_TEXTO : TEXTO, Paint.Align.LEFT);
-                p.setTypeface(ibarra(cur ? 500 : 600, cur));
+            case "marfil": {
+                estilo(14, 600, t.aviso, Paint.Align.LEFT);   // el vino del primario
+                p.setTypeface(ibarra(600, false));
                 float w = p.measureText(txt) / s;
                 if (dibujar) {
                     c.drawText(txt, dp(x), dp(yBase), p);
-                    // la raya fina de Marfil (de tinta) y el filete corto de Borgoña (de oro)
-                    p.setColor(cur ? alfa(ORO_TEXTO, 0x99) : alfa(TEXTO, 0x8C));
-                    float largo = cur ? Math.min(w, 18) : w;
-                    c.drawRect(dp(x), dp(yBase + 4), dp(x + largo), dp(yBase + 4) + Math.max(1, dp(cur ? 1.2f : 0.9f)), p);
+                    float y = dp(yBase + 4), g = Math.max(1, dp(0.9f));
+                    p.setColor(LINEA);
+                    c.drawRect(dp(x), y, dp(x + w), y + g, p);
+                    p.setColor(ACENTO);   // el hilo de oro, de 18 dp (40 px en la web, a otra escala)
+                    c.drawRect(dp(x), y - g * 0.5f, dp(x + Math.min(w, 18)), y + g * 1.6f, p);
                 }
                 return w;
             }

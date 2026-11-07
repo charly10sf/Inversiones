@@ -18,7 +18,7 @@
 <meta name="color-scheme" content="dark">
 <!-- el diseño de Toisón elegido (Mármol si no hay ninguno), puesto antes de pintar. El color de la barra lo pone
      después ponerTema (01-base.js) desde los tokens -->
-<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='marfil'||g==='borgona')t=g;}catch(e){}document.documentElement.setAttribute('data-tema',t);if(t==='marfil')document.querySelector('meta[name="color-scheme"]').setAttribute('content','light dark');</script>
+<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='borgona'){g='marfil';localStorage.setItem('inv-tema','"marfil"');}if(g==='marfil')t=g;}catch(e){}document.documentElement.setAttribute('data-tema',t);if(t==='marfil')document.querySelector('meta[name="color-scheme"]').setAttribute('content','light dark');</script>
 <!-- las letras de Toisón, de la casa (sin Google Fonts) -->
 <style>
 @font-face{font-family:'Inter';src:url(fonts/inter.woff2) format('woff2');font-weight:100 900;font-display:swap}

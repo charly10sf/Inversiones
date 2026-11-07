@@ -24,8 +24,7 @@ const PAV_CSS = `
 }
 .pav-t { position: relative; min-width: 0; padding: 18px 18px 16px; border-radius: var(--r-l); background: var(--superficie); border: 1px solid var(--borde); }
 .pav-et { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 12px; font: 600 11px/14px var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
-[data-tema="marfil"] .pav-et { font: 600 13px/16px var(--marca); color: var(--texto); border-bottom: 1px solid var(--texto); padding-bottom: 7px; }
-[data-tema="borgona"] .pav-et { font: italic 500 18px/20px var(--marca); letter-spacing: .01em; text-transform: none; color: var(--oro-texto); }
+[data-tema="marfil"] .pav-et { font: 600 13px/16px var(--marca); color: var(--primario); border-bottom: 1px solid var(--borde); padding-bottom: 8px; background: linear-gradient(var(--oro-hilo), var(--oro-hilo)) left bottom / 40px 2px no-repeat; }
 .pav-et h2 { margin: 0; font: inherit; letter-spacing: inherit; text-transform: inherit; color: inherit; }
 .pav-et a, .pav-et button { font: 600 12.5px/1 var(--ui); letter-spacing: 0; text-transform: none; font-style: normal; color: var(--oro-texto); text-decoration: none; background: none; border: 0; padding: 0; cursor: pointer; }
 .pav-como { margin: 12px 0 0; font-size: 12px; line-height: 1.45; color: var(--tenue); }

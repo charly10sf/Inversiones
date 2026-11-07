@@ -1,7 +1,8 @@
 /* =====================================================================
-   Los tres diseños de Toisón (0.7v, paso 1 del rediseño a la 0.8).
-   Se eligen con data-tema en <html> (marmol | marfil | borgona); siempre hay uno (Mármol si no se ha elegido: el script
-   de index.html). Desde la 0.8 los elige cualquiera en Tú.
+   Los diseños de Toisón (0.7v, paso 1 del rediseño a la 0.8).
+   Se eligen con data-tema en <html> (marmol | marfil); siempre hay uno (Mármol si no se ha elegido: el script de
+   index.html). Desde la 0.8 los elige cualquiera en Tú. El 7 nov se quitó Borgoña (el fondo rojo todo el rato no
+   pegaba en una app de inversiones): quien lo tenía pasa a Marfil, que se queda con su vino y su oro.
    Los colores de cada diseño están SOLO aquí, en sus bloques. El resto del CSS usa los tokens; la prueba
    tests/colores-sueltos.spec.js cuenta los colores escritos a mano fuera de estos bloques y no deja que suban.
    Los selectores son :root[data-tema=…] (ganan a los :root de después) y [data-tema=…] (así una muestra suelta,
@@ -30,43 +31,39 @@
   color-scheme: dark;
 }
 
-/* ---------- Marfil: crema (no blanco), tinta y borgoña ---------- */
+/* ---------- Marfil (0.8.3b, 7 nov): crema en capas (el fondo más hondo, las tarjetas casi blancas), tinta, el vino que
+   era de Borgoña en el menú y los botones y el oro del logo. Elegido por Carlos de una tanda de variantes: sin grano
+   visible, ni doble filete, ni brillos; las pestañas, subrayadas de oro ---------- */
 :root[data-tema="marfil"], [data-tema="marfil"] {
-  --fondo: #f2e7d5; --fondo-2: #ebdfca; --superficie: #f9f1e4; --superficie-2: #eadcc5; --borde: #d8c8af;
-  --texto: #1e1a17; --texto-2: #4d4640; --oro-texto: #684910; --grafica: #8a6216;
+  --fondo: #ede1cc; --fondo-2: #e5d7bf; --superficie: #fdf9f2; --superficie-2: #eee3d0; --borde: #dccbb0;
+  --texto: #1c1915; --texto-2: #4a443d; --oro-texto: #7a5716; --grafica: #a87a2a;
   --sube: #08573a; --baja: #a42018; --aviso: #8a4b0c;
-  --primario: #4e101d; --sobre-primario: #f6ead5; --sim-o: #4e101d; --sim-t: #8a6216;
-  --metal: linear-gradient(180deg, #6e2333 0%, #4e101d 55%, #3a0a15 100%);
-  --brillo: rgb(255 255 255 / .22); --hondo: rgb(70 48 22 / .22);
-  --reparto-1: #8a6216; --reparto-2: #2f5d8c; --reparto-3: #7b6bae; --reparto-4: #3d8a8c; --reparto-5: #c29a6b; --reparto-6: #9a928a;
-  --grano: .09; --resplandor: .28; --luz-graf: 10%; --polvo: .55;
+  --primario: #4e101d; --sobre-primario: #f8efe0; --sim-o: #1c1915; --sim-t: #a87a2a;
+  --metal: linear-gradient(180deg, #5a1626 0%, #4e101d 100%); /* el vino, casi plano */
+  --brillo: rgb(255 255 255 / .1); --hondo: rgb(60 40 20 / .14);
+  --reparto-1: #a87a2a; --reparto-2: #2f5d8c; --reparto-3: #7b6bae; --reparto-4: #3d8a8c; --reparto-5: #c29a6b; --reparto-6: #9a928a;
+  --grano: .03; --resplandor: .22; --luz-graf: 9%; --polvo: .4;
   --titulo: var(--marca); --titulo-peso: 500; --titulo-estilo: normal; --titulo-espacio: 0; /* títulos de periódico, en Ibarra */
-  --tenue-mezcla: 92%; /* 5c: con 78 %, el texto tenue salía a 4,4:1 sobre el fondo crema (AA pide 4,5); con 92 %, 6,2:1 (4,8:1 en la fila marcada) */
-  --velo: #1e1a17;
+  --tenue-mezcla: 92%; /* 5c: con 78 %, el texto tenue salía a 4,4:1 sobre la crema (AA pide 4,5); con 92 %, más de 6:1 */
+  --velo: #1c1915;
   --claro: #f7f2ea;
+  /* el oro del logo (en lo que no es texto: filos, el hilo de los títulos, el subrayado de las pestañas) y su metal */
+  --oro-logo: #e3b45f; --oro-hilo: #c99a45;
+  --metal-oro: linear-gradient(180deg, #f7dfa8 0%, #e3b45f 52%, #b5863a 100%); --sobre-oro: #2a0e14;
+  --hilo-tema: color-mix(in srgb, #e3b45f 62%, #dccbb0);
+  --sombra-tema: 0 1px 1px rgb(60 40 20 / .14), 0 14px 30px -24px rgb(60 40 20 / .14);
+  /* el sello de la cabecera, como el icono: disco negro, O crema y T de oro */
+  --sello-fondo: #000000; --sello-filo: #b5863a; --sello-o: #fbf3e6; --sello-t: #e3b45f;
+  /* el menú (lateral en el ordenador, barra de abajo en el móvil), en el vino de Borgoña */
+  --menu-fondo: #3c0b16; --menu-fondo-2: #4e101d; --menu-texto: #e2d0bb; --menu-texto-act: #fff7ea;
+  --menu-luz: rgb(255 255 255 / .07); --menu-borde: rgb(255 255 255 / .12); --menu-hundido: rgb(0 0 0 / .2);
+  --menu-sombra: rgb(40 10 15 / .55); --menu-oro-fondo: rgb(227 180 95 / .14); --menu-oro-filo: rgb(227 180 95 / .5);
   /* 5 nov: «light dark» en la raíz, para que Samsung Internet (que no hace caso de «only light») no lo repinte; lo de dentro, claro */
   color-scheme: light dark;
 }
 [data-tema="marfil"] body { color-scheme: light; }
 
-/* ---------- Borgoña: fondo borgoña muy oscuro, oro ---------- */
-:root[data-tema="borgona"], [data-tema="borgona"] {
-  --fondo: #2a0e14; --fondo-2: #1f0a0f; --superficie: #3c0b16; --superficie-2: #4e101d;
-  --borde: color-mix(in srgb, #e3b45f 26%, #3c0b16);
-  --texto: #f6ead5; --texto-2: #ead9c2; --oro-texto: #e3b45f; --grafica: #e3b45f;
-  --sube: #6eeaa8; --baja: #ff7b78; --aviso: #ffb877;
-  --primario: #e3b45f; --sobre-primario: #3c0b16; --sim-o: #f6ead5; --sim-t: #e3b45f;
-  --metal: linear-gradient(180deg, #f7dfa8 0%, #e3b45f 52%, #b5863a 100%);
-  --brillo: rgb(255 255 255 / .38); --hondo: rgb(10 2 4 / .6);
-  --reparto-1: #e3b45f; --reparto-2: #7fa7d6; --reparto-3: #b3a6e0; --reparto-4: #79c3c3; --reparto-5: #d9bc94; --reparto-6: #8d8580;
-  --grano: .06; --resplandor: .55; --luz-graf: 14%; --polvo: .8;
-  --titulo: var(--marca); --titulo-peso: 500; --titulo-estilo: italic; --titulo-espacio: .005em; /* títulos en cursiva de Ibarra */
-  --velo: #0f0306;
-  --claro: #f7f2ea;
-  color-scheme: dark;
-}
-
-/* ---------- Comunes a los tres: letras, medidas y derivados (sin un solo color) ---------- */
+/* ---------- Comunes: letras, medidas y derivados (sin un solo color) ---------- */
 /* 4 nov: Samsung Internet mira si la página responde a prefers-color-scheme para no meter su modo oscuro. Los colores no
    cambian (el diseño lo elige la persona): solo le dice que la app ya trae los suyos */
 @media (prefers-color-scheme: dark) { :root { --sistema-oscuro: 1; } }
@@ -76,10 +73,10 @@
   --r-xs: 4px; --r-s: 8px; --r-m: 12px; --r-l: 16px; --r-xl: 26px; --r-p: 999px;
   --e1: 4px; --e2: 8px; --e3: 12px; --e4: 16px; --e5: 20px; --e6: 24px; --e7: 32px;
   --toque: 48px;
-  --hilo: color-mix(in srgb, var(--oro-texto) 40%, transparent);
+  --hilo: var(--hilo-tema, color-mix(in srgb, var(--oro-texto) 40%, transparent));
   --sep: color-mix(in srgb, var(--texto) 10%, transparent);
   --aro: color-mix(in srgb, var(--texto) 16%, transparent);
-  --sombra-t: 0 1px 2px var(--hondo), 0 22px 44px -30px var(--hondo);
+  --sombra-t: var(--sombra-tema, 0 1px 2px var(--hondo), 0 22px 44px -30px var(--hondo));
 }
 
 /* ---------- Colores de marcas ajenas, que no cambian con el diseño: los botones de Google y de Apple (sus normas de
@@ -90,7 +87,7 @@
   --ios-azul: #0a84ff;
 }
 
-/* ---------- Derivados de los tokens, comunes a los tres diseños (sin un solo color propio) ----------
+/* ---------- Derivados de los tokens, comunes a los diseños (sin un solo color propio) ----------
    (Hasta el 5b aquí estaban también los nombres de GrowFolio, --bg, --accent, --text…, apuntando a estos; ya no los usa nadie.) */
 :root[data-tema] {
   --superficie-3: color-mix(in srgb, var(--superficie-2) 88%, var(--texto));
@@ -136,7 +133,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 
 /* títulos de cada pestaña en la letra de la marca */
 [data-tema] .vista-cab h1 { font-family: var(--marca); font-weight: 500; font-size: 32px; letter-spacing: 0; line-height: 1.1; }
-[data-tema="borgona"] .vista-cab h1 { font-style: italic; }
 
 /* botones: planos con borde fino; el principal, de metal */
 [data-tema] .btn { background: var(--superficie); border-color: var(--borde); color: var(--texto); box-shadow: none; border-radius: var(--r-p); }
@@ -204,7 +200,7 @@ img.tema-muestra { background: none; box-shadow: none; }
 
 /* =====================================================================
    El mapa del mundo (Mercados e Inicio) con los tokens: la tarjeta, el mar de puntos y la escala de cada país sale de
-   mezclar sube, baja u oro con la superficie (el mismo escalón en los tres diseños)
+   mezclar sube, baja u oro con la superficie (el mismo escalón en los dos diseños)
    ===================================================================== */
 [data-tema] .mapa-w { --mapa-fondo: var(--superficie); background: radial-gradient(55% 75% at 0% 0%, color-mix(in srgb, var(--oro-texto) 8%, transparent), transparent 70%), var(--superficie);
   border: 2px solid var(--borde); border-radius: var(--r-l); box-shadow: var(--sombra-t); }
@@ -266,11 +262,10 @@ img.tema-muestra { background: none; box-shadow: none; }
    ===================================================================== */
 [data-tema] .hero-hola { font: 400 22px/1.25 var(--marca); color: var(--texto); letter-spacing: -.005em; }
 [data-tema] .hola-nom { font-weight: 500; color: var(--oro-texto); }
-[data-tema="borgona"] .hero-hola { font-style: italic; }
 /* 0.8.3 (Carlos, 6 nov): la cifra del patrimonio, con la letra de los títulos de cada estilo (Inter en Mármol, Ibarra en
-   Marfil y en cursiva en Borgoña) y en negrita */
+   Marfil) y en negrita */
 [data-tema] .hero-num { font-family: var(--titulo); font-style: var(--titulo-estilo); font-weight: 700; letter-spacing: -.04em; }
-[data-tema="marfil"] .hero-num, [data-tema="borgona"] .hero-num { letter-spacing: -.01em; }
+[data-tema="marfil"] .hero-num { letter-spacing: -.01em; }
 [data-tema] .hero-num span.dec { font-weight: 600; color: var(--texto-2); }
 [data-tema] .hero-panel {
   margin: 0; border: 2px solid var(--borde); border-radius: var(--r-l); overflow: hidden; box-shadow: var(--sombra-t);
@@ -316,7 +311,6 @@ img.tema-muestra { background: none; box-shadow: none; }
    está en Hoy). El título propio de cada subpestaña (Análisis, Hacienda, Objetivos…) sobra: queda su explicación */
 [data-tema] .ts-grupo { display: grid; gap: var(--e3); margin: var(--e2) 0 var(--e5); }
 [data-tema] .ts-tit { margin: 0; font: 500 32px/1.1 var(--marca); letter-spacing: 0; color: var(--texto); }
-[data-tema="borgona"] .ts-tit { font-style: italic; }
 [data-tema] .ts-total { display: flex; flex-wrap: wrap; align-items: baseline; gap: var(--e1) var(--e4); }
 [data-tema] .ts-total-n { font: 500 26px/1.1 var(--ui); letter-spacing: -.03em; color: var(--texto); font-variant-numeric: tabular-nums; }
 [data-tema] .ts-total-v { display: inline-flex; align-items: baseline; gap: 5px; font: 600 13.5px/1.2 var(--ui); font-variant-numeric: tabular-nums; }
@@ -331,7 +325,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .tu-ini { width: 48px; height: 48px; flex: none; border-radius: 50%; display: grid; place-items: center; font: 500 23px/1 var(--marca); color: var(--oro-texto); background: var(--superficie-2); box-shadow: inset 0 0 0 1.5px var(--hilo); }
 [data-tema] .tu-cab > div { flex: 1; min-width: 0; }
 [data-tema] .tu-nom { margin: 0; font: 500 22px/1.2 var(--marca); color: var(--texto); }
-[data-tema="borgona"] .tu-nom { font-style: italic; }
 [data-tema] .tu-cab small { color: var(--texto-2); overflow-wrap: anywhere; }
 [data-tema] .tu a.aj-fila { color: inherit; text-decoration: none; min-height: var(--toque); }
 [data-tema] .tu button.aj-fila { min-height: var(--toque); }
@@ -340,18 +333,13 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* =====================================================================
    Componentes (paso 2 del rediseño): etiquetas de sección, pastillas, logos, avisos, toast y hojas, con lo que
    distingue a cada diseño en la maqueta aprobada: Mármol, etiquetas en mayúsculas espaciadas y luz de oro en las
-   tarjetas; Marfil, versalitas de la letra de marca con raya de tinta y doble filete bajo la cabecera; Borgoña,
-   cursiva de oro con un filete corto
+   tarjetas; Marfil, versalitas de la letra de marca en vino con un hilo de oro (desde el 7 nov, ver el final del archivo)
    ===================================================================== */
 /* etiquetas de sección (los títulos de cada tarjeta y lista) */
 [data-tema] .sec-cab { align-items: center; }
 [data-tema] .sec-cab h2 { font: 600 11.5px/14px var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
 [data-tema] .sec-cab h2 :is(small, .k) { text-transform: none; letter-spacing: 0; }
-[data-tema="marfil"] .sec-cab { border-bottom: 1px solid var(--texto); padding-bottom: 7px; }
-[data-tema="marfil"] .sec-cab h2 { font: 600 14px/16px var(--marca); letter-spacing: .14em; color: var(--texto); }
-[data-tema="borgona"] .sec-cab { position: relative; padding-bottom: 9px; }
-[data-tema="borgona"] .sec-cab::after { content: ''; position: absolute; bottom: 0; left: 0; width: 32px; height: 1px; background: var(--oro-texto); }
-[data-tema="borgona"] .sec-cab h2 { font: italic 500 20px/22px var(--marca); letter-spacing: .01em; text-transform: none; color: var(--oro-texto); }
+[data-tema="marfil"] .sec-cab h2 { font: 600 14px/16px var(--marca); letter-spacing: .14em; color: var(--primario); }
 
 /* acabado de las tarjetas por diseño (la de patrimonio ya lleva el suyo) */
 /* 0.8.3, Mármol G: losas de piedra pulida, con un filo de luz blanca arriba (antes dorada) y la sombra honda del negro */
@@ -379,13 +367,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="marmol"] :is(.vista-cab, .ts-grupo, .sec-cab, .hero-top, .check-mini, .pie) {
   text-shadow: 0 0 1px var(--fondo), 0 0 3px var(--fondo), 0 0 6px var(--fondo), 0 0 10px var(--fondo), 0 0 16px var(--fondo), 0 0 24px var(--fondo); }
 [data-tema="marmol"] :is(.vista-cab, .ts-grupo, .sec-cab, .hero-top, .check-mini, .pie) :is(button, .btn, a[class*="btn"], [role="tab"], nav) { text-shadow: none; }
-[data-tema="borgona"] :is(.tarjeta, .idea, .informe, .fx2, .num-sec, .merc2, .pf-card, .mfilas, .aj-caja, .toca, .opr, .tu-cab) {
-  background-image: radial-gradient(420px 160px at 80% -60px, color-mix(in srgb, var(--oro-texto) 7%, transparent), transparent 72%);
-}
-/* Marfil: la cabecera con doble filete de tinta, como un periódico */
-[data-tema="marfil"] .top { box-shadow: none; border-bottom: 3px double var(--texto); }
-[data-tema="marfil"] .marca-ts i { background: none; box-shadow: none; }
-[data-tema="marfil"] .marca-ts svg { width: 30px; }
 
 /* pastillas: teñidas de su color, redondas y sin borde */
 [data-tema] .chip { border: 0; border-radius: var(--r-p); padding: 1px 9px; background: color-mix(in srgb, currentColor 12%, transparent); font-weight: 600; }
@@ -413,10 +394,8 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* hojas: el título en la letra de la marca y el asa de arriba */
 [data-tema] .hoja-cab { background: var(--superficie); }
 [data-tema] .hoja-cab h2 { font: 500 22px/1.2 var(--marca); letter-spacing: 0; color: var(--texto); }
-[data-tema="borgona"] .hoja-cab h2 { font-style: italic; }
 [data-tema] .aj-grupo { font: 600 11.5px/14px var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
-[data-tema="marfil"] .aj-grupo { font: 600 14px/16px var(--marca); letter-spacing: .14em; color: var(--texto); }
-[data-tema="borgona"] .aj-grupo { font: italic 500 19px/22px var(--marca); letter-spacing: .01em; text-transform: none; color: var(--oro-texto); }
+[data-tema="marfil"] .aj-grupo { font: 600 14px/16px var(--marca); letter-spacing: .14em; color: var(--primario); }
 
 /* el saludo con la fecha encima en versalitas pequeñas, como en la maqueta («LUNES, 2 DE NOVIEMBRE») */
 [data-tema] .hola-fecha { display: block; margin-bottom: 6px; font: 500 11px/14px var(--ui); font-style: normal; letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
@@ -462,7 +441,7 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] svg.ic-pl, [data-tema] svg.ic-pl path { fill: currentColor; stroke: none; }
 
 /* ---------- Campos: cajas, desplegables, textos largos, casillas y botones de opción ----------
-   Hundidos en el fondo (más oscuros que la tarjeta en Mármol y Borgoña; crema más tostado en Marfil), borde de 2 px
+   Hundidos en el fondo (más oscuros que la tarjeta en Mármol; crema más tostado en Marfil), borde de 2 px
    como las tarjetas, radio 12 y, al escribir, el borde de oro con un halo suave. Las reglas de GrowFolio de cada campo
    siguen debajo: aquí van con [data-tema] y la clase delante para ganarles. */
 :root[data-tema], [data-tema] {
@@ -538,7 +517,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* ---------- Paso 3 · pantallas (3 nov) ---------- */
 /* la IA con Toisón: sin logo ni nombre de GrowIA; «La IA» en la letra de la marca y su bocadillo en un disco de metal */
 [data-tema] .ia-nom { font: 500 1em/1.1 var(--marca); color: var(--texto); letter-spacing: 0; }
-[data-tema="borgona"] .ia-nom { font-style: italic; }
 [data-tema] .ia-av:has(.ia-av-ts) { border-radius: 50% !important; }
 [data-tema] .ia-av-ts { display: grid; place-items: center; width: 100%; height: 100%; border-radius: 50%; background: var(--metal); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo), 0 2px 8px -3px var(--hondo); }
 [data-tema] .ia-av-ts svg { width: 58%; height: 58%; }
@@ -560,8 +538,7 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .hero-var .k { font: 400 12.5px/1.3 var(--ui); color: var(--texto-2); }
 /* «Patrimonio», con la misma etiqueta que las demás tarjetas (Marfil sin la raya: ya la lleva el hilo de oro) */
 [data-tema] #heroLbl { font: 600 11.5px/14px var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--texto-2); }
-[data-tema="marfil"] #heroLbl { font: 600 14px/16px var(--marca); letter-spacing: .14em; color: var(--texto); }
-[data-tema="borgona"] #heroLbl { font: italic 500 20px/22px var(--marca); letter-spacing: .01em; text-transform: none; color: var(--oro-texto); }
+[data-tema="marfil"] #heroLbl { font: 600 14px/16px var(--marca); letter-spacing: .14em; color: var(--primario); }
 /* «Lo que viene» en Hoy: el día en un recuadro con aro de oro (como «Tu mes» de la maqueta) */
 [data-tema] .ag-mini .ag-dia { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; height: 46px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1px var(--hilo); color: var(--texto); }
 [data-tema] .ag-dia b { display: block; font: 500 18px/1 var(--ui); font-variant-numeric: tabular-nums; }
@@ -582,7 +559,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 /* lo que aún está por hacer (la IA sin revisar, el perfil sin hacer): una tarjeta con filo de oro, no una caja de rayas */
 [data-tema] .ov-vacio { border: 2px solid var(--hilo); border-radius: var(--r-l); background: color-mix(in srgb, var(--oro-texto) 6%, var(--superficie)); box-shadow: var(--sombra-t); padding: var(--e5); }
 [data-tema] .ov-vacio h2 { font: 500 20px/1.2 var(--marca); color: var(--texto); }
-[data-tema="borgona"] .ov-vacio h2 { font-style: italic; }
 [data-tema] .ov-vacio h2 .ia-nom { font: inherit; }
 
 /* el panel de la IA: la hoja del diseño, con su cabecera de cristal y filete de oro, el nombre en la letra de la marca,
@@ -594,7 +570,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .as-cab .ib { border-radius: 50%; color: var(--texto-2); }
 [data-tema] .as-cab .ib:hover { color: var(--texto); }
 [data-tema] :is(.as-vacio h3, .as-config h3) { font: 500 26px/1.15 var(--marca); letter-spacing: 0; color: var(--texto); }
-[data-tema="borgona"] :is(.as-vacio h3, .as-config h3, .as-tit h2) { font-style: italic; }
 [data-tema] .as-sug button { border: 1px solid var(--hilo); border-radius: var(--r-l); background: var(--superficie); padding: var(--e3) var(--e4); }
 [data-tema] .as-sug button:hover { border-color: var(--oro-texto); }
 [data-tema] .as-sug .as-sug-rec { border-style: solid; border-color: var(--sep); }
@@ -616,7 +591,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema] .logo.logo-ts { display: grid; place-items: center; width: 64px; height: 64px; border-radius: var(--r-p); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--hilo), var(--sombra-t); }
 [data-tema] .logo.logo-ts .simb-ts { width: 40px; height: auto; }
 [data-tema] .caja h1, [data-tema] .bq-caja h1 { font: 400 32px/1.15 var(--marca); letter-spacing: .005em; }
-[data-tema="borgona"] .caja h1, [data-tema="borgona"] .bq-caja h1 { font-style: italic; }
 [data-tema] .caja .paso-chip { color: var(--oro-texto); font: 600 11.5px/1.3 var(--ui); letter-spacing: .14em; text-transform: uppercase; }
 /* Ajustes: arriba el símbolo y TOISÓN (la tarjeta «Muy pronto» ya no sale: estás en Toisón) */
 [data-tema] .aj-cab .aj-simb { width: 46px; height: auto; flex: none; }
@@ -635,11 +609,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="marmol"] .subvistas.dos-op { background: var(--superficie); border-bottom: 0; border-radius: var(--r-m);
   box-shadow: inset 0 0 0 1px var(--borde), inset 0 1px 0 var(--filo-luz); }
 [data-tema="marmol"] .subvistas.dos-op button[aria-pressed="true"]::after { bottom: 0; }
-/* Borgoña: el filete corto va bajo el título y no bajo toda la cabecera (cuando el botón baja de línea quedaba suelto) */
-[data-tema="borgona"] .sec-cab { padding-bottom: 0; }
-[data-tema="borgona"] .sec-cab::after { content: none; }
-[data-tema="borgona"] .sec-cab h2 { position: relative; padding-bottom: 9px; }
-[data-tema="borgona"] .sec-cab h2::after { content: ''; position: absolute; bottom: 0; left: 0; width: 32px; height: 1px; background: var(--oro-texto); }
 /* Hoy: «Personalizar» ya está arriba, junto al saludo; el de abajo sobraba */
 [data-tema] .car-pie:has(> .car-ordenar:only-child) { display: none; }
 
@@ -751,7 +720,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 .entrada-ts .ets-nom { display: flex; gap: .12em; font: 500 clamp(26px, 7vw, 34px)/1 var(--marca); letter-spacing: .12em; color: var(--texto); }
 .entrada-ts .ets-nom span { display: inline-block; animation: etsLetra .6s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(.45s + var(--k) * 70ms); }
 .entrada-ts .en-saludo { font: 400 clamp(20px, 5.4vw, 26px)/1.2 var(--marca); letter-spacing: 0; animation-delay: 1.05s; }
-[data-tema="borgona"] .entrada-ts .en-saludo { font-style: italic; }
 .entrada-ts .en-saludo b { font-weight: 500; background: none; color: var(--oro-texto); animation: none; }
 .entrada-ts .en-barra { background: var(--superficie-2); animation-delay: 2s; }
 .entrada-ts .en-barra i { background: var(--metal); }
@@ -779,16 +747,16 @@ img.tema-muestra { background: none; box-shadow: none; }
 
 /* =====================================================================
    Los títulos, uno por diseño (5c, Carlos: «antes los tres tenían un estilo distinto para los títulos»), como en la
-   maqueta de Inicio aprobada: Mármol moderno, en Inter; Marfil de periódico, en Ibarra; Borgoña en cursiva de Ibarra.
+   maqueta de Inicio aprobada: Mármol moderno, en Inter; Marfil de periódico, en Ibarra.
    Los tokens --titulo* van en el bloque de cada diseño. La palabra TOISÓN, las iniciales, GTA y la presentación no
-   cambian: llevan la letra de marca en los tres.
+   cambian: llevan la letra de marca en todos.
    ===================================================================== */
 [data-tema] :is(.vista-cab h1, .ts-tit, .hero-hola, .tu-nom, .hoja-cab h2, .mapa-tit h2, .ov-vacio h2, .as-tit h2, .as-vacio h3, .as-config h3, .caja h1, .bq-caja h1) {
   font-family: var(--titulo); font-weight: var(--titulo-peso); font-style: var(--titulo-estilo); letter-spacing: var(--titulo-espacio);
 }
 [data-tema="marmol"] .hola-nom { font-weight: 600; }
 /* en Ibarra, el saludo y el título de la cuenta van más finos (como estaban) */
-[data-tema]:is([data-tema="marfil"], [data-tema="borgona"]) :is(.hero-hola, .caja h1, .bq-caja h1) { font-weight: 400; }
+[data-tema="marfil"] :is(.hero-hola, .caja h1, .bq-caja h1) { font-weight: 400; }
 /* 0.8a: el correo de Tú no se parte en dos líneas en los móviles estrechos (a 360 px salía «lucia@prueba» y «.com»): una línea con puntos suspensivos */
 [data-tema] .tu-cab > div small { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
@@ -819,3 +787,65 @@ img.tema-muestra { background: none; box-shadow: none; }
 @media (max-width: 759px) { .car > .empezar, .car > .pf-recuerda { margin-bottom: -12px; } }
 /* Aportaciones periódicas en 360 px: «MyInvestor · el día 1 · próxima…» en dos líneas antes que cortado */
 [data-tema] .plan-l .pl-t small { white-space: normal; overflow: visible; text-overflow: clip; }
+
+/* =====================================================================
+   Marfil (0.8.3b, 7 nov): lo que lo distingue, al final para ganar a las reglas comunes de arriba. Colores, solo con
+   los tokens de su bloque
+   ===================================================================== */
+/* cabecera: un filete fino (no el doble de periódico) y el sello como el icono */
+[data-tema="marfil"] .top { background: color-mix(in srgb, var(--fondo-2) 90%, transparent); border-bottom: 1px solid var(--borde); box-shadow: none; }
+[data-tema="marfil"] .top.bajado { box-shadow: 0 10px 30px -18px var(--hondo); }
+[data-tema="marfil"] .marca-ts i { background: var(--sello-fondo); box-shadow: inset 0 0 0 1px var(--sello-filo); }
+[data-tema="marfil"] .marca-ts .s-o { fill: var(--sello-o); }
+[data-tema="marfil"] .marca-ts .s-t { fill: var(--sello-t); }
+/* tarjetas con filo de 1 px y la luz dorada de Borgoña arriba; botones sin brillo */
+[data-tema="marfil"] :is(.tarjeta, .plan-venta, .idea, .informe, .fx2, .fx3-lista, .num-sec, .merc2, .tarea, .pf-card, .mfilas, .aj-caja, .toca, .opr, .empezar, .hero-panel) { border-width: 1px; }
+[data-tema="marfil"] :is(.tarjeta, .idea, .informe, .num-sec, .merc2, .pf-card, .mfilas, .aj-caja, .toca, .hero-panel) {
+  background-image: radial-gradient(420px 160px at 80% -60px, color-mix(in srgb, var(--oro-logo) 10%, transparent), transparent 72%); }
+[data-tema="marfil"] .btn.pri { box-shadow: none; }
+/* títulos de sección: en vino, sobre un filete crema con un hilo de oro de 40 px (lo de Borgoña) */
+[data-tema="marfil"] .sec-cab { position: relative; border-bottom: 1px solid var(--borde); padding-bottom: 9px; }
+[data-tema="marfil"] .sec-cab::after { content: ''; position: absolute; left: 0; bottom: -1px; width: 40px; height: 2px; background: var(--oro-hilo); }
+/* el saludo, en cursiva de Ibarra, con el nombre en vino */
+[data-tema="marfil"] p.hero-hola { font-style: italic; }
+[data-tema="marfil"] p.hero-hola .hola-fecha { font-style: normal; }
+[data-tema="marfil"] .hola-nom { color: var(--primario); }
+/* pestañas y segmentos: sin carril; lo elegido en vino con el subrayado de oro (las de dos, a todo el ancho) */
+[data-tema="marfil"] :is(.subvistas, .plazos, .tabs, .hero-rangos, .op-modo, .as-modo, .cuenta-modo, .modo-op, .mapa-modos, .mapa-vistas, .pest-av) {
+  background: none; border: 0; border-bottom: 1px solid var(--borde); border-radius: 0; box-shadow: none; }
+[data-tema="marfil"] .pest-av { padding: 0; }
+/* las de arriba se quedan pegadas al bajar en el móvil: opacas, del color del fondo (sin carril a la vista) */
+[data-tema="marfil"] :is(.subvistas, .plazos) { background: var(--fondo); }
+[data-tema="marfil"] :is(.subvistas:not(.dos-op), .plazos, .tabs, .as-modo, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas) button[aria-pressed="true"],
+[data-tema="marfil"] .pest-av a[aria-current="page"], [data-tema="marfil"] .mg-tabs button[aria-selected="true"] {
+  background: none; color: var(--primario); font-weight: 700; border-color: transparent; border-radius: 0; box-shadow: inset 0 -2px 0 var(--oro-hilo); }
+[data-tema="marfil"] .mg-tabs button { border-radius: 0; border-color: transparent; }
+[data-tema="marfil"] .subvistas.dos-op button[aria-pressed="true"] { color: var(--primario); }
+[data-tema="marfil"] .subvistas.dos-op button[aria-pressed="true"]::after { left: 0; right: 0; background: var(--oro-hilo); }
+/* el menú en vino, como una tapa de piel: lateral en el ordenador */
+[data-tema="marfil"] .riel { background: var(--menu-fondo); border-right: 0; }
+[data-tema="marfil"] .riel .marca-ts b { color: var(--menu-texto-act); }
+[data-tema="marfil"] .riel .marca-ts i { background: none; box-shadow: none; }
+[data-tema="marfil"] .riel .marca-ts .s-o { fill: var(--menu-texto-act); }
+[data-tema="marfil"] .riel-nav a, [data-tema="marfil"] .riel :is(.riel-pie small, a, button) { color: var(--menu-texto); }
+[data-tema="marfil"] .riel-nav a:hover { color: var(--menu-texto-act); background: var(--menu-luz); }
+[data-tema="marfil"] .riel-nav a[aria-current="page"] { color: var(--menu-texto-act); background: var(--menu-luz); box-shadow: inset 0 0 0 1px var(--menu-oro-filo); }
+[data-tema="marfil"] .riel-nav a[aria-current="page"] svg { color: var(--oro-logo); }
+[data-tema="marfil"] .riel-nav .riel-med .s-t { fill: var(--oro-logo); }
+[data-tema="marfil"] .riel button.riel-ia, [data-tema="marfil"] .riel .seg-modo button[aria-pressed="true"] { background: var(--metal-oro); color: var(--sobre-oro); }
+[data-tema="marfil"] .riel .riel-ia svg { color: var(--sobre-oro); }
+[data-tema="marfil"] .riel-pie { border-color: var(--menu-borde); }
+[data-tema="marfil"] .riel .seg-modo { background: var(--menu-hundido); border-color: var(--menu-borde); box-shadow: none; }
+/* y la barra de abajo en el móvil, con el medallón de Hoy en el oro del logo */
+@media (max-width: 960px) {
+  [data-tema="marfil"] .navbar { background: color-mix(in srgb, var(--menu-fondo) 94%, transparent); box-shadow: 0 12px 30px -14px var(--menu-sombra); }
+  [data-tema="marfil"] .navbar :is(a, .nav-mas) { color: var(--menu-texto); }
+  [data-tema="marfil"] .navbar :is(a, .nav-mas)[aria-current="page"] { color: var(--menu-texto-act); }
+  [data-tema="marfil"] .navbar :is(a, .nav-mas)[aria-current="page"] svg { color: var(--oro-logo); background: var(--menu-oro-fondo); }
+  [data-tema="marfil"] .navbar a.nav-centro svg, [data-tema="marfil"] .navbar a.nav-centro:not([aria-current="page"]) svg { background: var(--menu-fondo-2); color: var(--oro-logo); box-shadow: inset 0 0 0 1.5px var(--menu-oro-filo); }
+  [data-tema="marfil"] .navbar a.nav-centro:not([aria-current="page"]) svg.nav-med .s-o { fill: var(--menu-texto-act); }
+  [data-tema="marfil"] .navbar a.nav-centro:not([aria-current="page"]) svg.nav-med .s-t { fill: var(--oro-logo); }
+  [data-tema="marfil"] .navbar a.nav-centro[aria-current="page"] svg { background: var(--metal-oro); box-shadow: 0 0 0 4px var(--menu-fondo); }
+  [data-tema="marfil"] .navbar a.nav-centro[aria-current="page"] svg.nav-med :is(.s-o, .s-t) { fill: var(--sobre-oro); }
+  [data-tema="marfil"] .navbar a.falta::after { background: var(--oro-logo); box-shadow: 0 0 0 2px var(--menu-fondo); }
+}

@@ -6,7 +6,7 @@ import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 
 const test = base.extend({
   errores: [async ({ context }, use) => {
-    const errores = await preparar(context, { ajustes: { 'inv-tema': JSON.stringify('borgona'), 'stub-dueno': 'lucia@prueba.com' } });
+    const errores = await preparar(context, { ajustes: { 'inv-tema': JSON.stringify('marfil'), 'stub-dueno': 'lucia@prueba.com' } });
     await use(errores);
     expect(errores, 'errores de JavaScript en la página').toEqual([]);
   }, { auto: true }],
@@ -47,7 +47,7 @@ test('cinco abajo con Hoy en el medallón, la IA arriba y cada cosa en su pesta�
   // Tú: lo tuyo, el diseño y los ajustes (que abren la hoja de siempre)
   await ir(page, 'tu');
   await expect(page.locator('.tu-cab')).toBeVisible();
-  await expect(page.locator('#vista [data-elige-tema]')).toHaveCount(3);
+  await expect(page.locator('#vista [data-elige-tema]')).toHaveCount(2);
   await page.locator('#vista .aj-fila[data-accion="ajustes"]').evaluate((b) => b.click());
   await expect(page.locator('.hoja-fondo #aAcceso')).toBeAttached();
 });

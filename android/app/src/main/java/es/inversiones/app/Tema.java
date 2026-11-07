@@ -8,16 +8,16 @@ import android.view.Window;
 import android.view.WindowInsetsController;
 
 /**
- * 0.8 (rediseño a Toisón): el diseño que se ha elegido en la web (Mármol, Marfil o Borgoña; vacío o desconocido = Mármol,
- * el de por defecto, que es también el de antes de que la web lo mande)
+ * 0.8 (rediseño a Toisón): el diseño que se ha elegido en la web (Mármol o Marfil; vacío o desconocido = Mármol,
+ * el de por defecto, que es también el de antes de que la web lo mande; «borgona», quitado el 7 nov, = Marfil)
  * y sus colores para lo que pinta la app por su cuenta: el widget, los avisos y las barras del móvil. La web lo manda
  * por el puente (Puente.tema) cada vez que abre y cuando cambia; aquí se guarda para que el widget y los avisos lo
  * sepan aunque la app esté cerrada. Los colores son los tokens de src/css/00-temas.css: si cambian allí, cambiarlos aquí.
  */
 final class Tema {
-    static final String[] TEMAS = {"marmol", "marfil", "borgona"};
+    static final String[] TEMAS = {"marmol", "marfil"};
 
-    final String id;          // "marmol", "marfil" o "borgona"
+    final String id;          // "marmol" o "marfil"
     final boolean claro;      // fondo claro (Marfil): iconos oscuros en las barras del móvil
     /** el widget: fondo de arriba y de abajo, borde, textos, apagado (--muted), la curva y su brillo, el oro de los
      *  textos, sube y baja */
@@ -48,15 +48,14 @@ final class Tema {
     // apagado = texto 2 al 78 % sobre el negro (#a4a09a), el oro del logo y sube/baja de la web; barras en negro puro
     private static final Tema MARMOL = new Tema("marmol", false, 0xFF111111, 0xFF000000, 0xFF313131, 0xFFF8F6F2,
             0xFFD2CDC5, 0xFFA4A09A, 0xFFE3B45F, 0xFFF7DFA8, 0xFFE3B45F, 0xFF55E8A0, 0xFFFF6B62, 0xFFE3B45F, 0xFF000000);
-    // Marfil (crema): la curva en el oro de la gráfica (#8a6216) y los textos de oro en el oscuro (#684910), que se leen
-    // sobre crema; el aviso en el borgoña del primario
-    private static final Tema MARFIL = new Tema("marfil", true, 0xFFF9F1E4, 0xFFEBDFCA, 0xFFD8C8AF, 0xFF1E1A17,
-            0xFF4D4640, 0xFF716961, 0xFF8A6216, 0xFF684910, 0xFF684910, 0xFF08573A, 0xFFA42018, 0xFF4E101D, 0xFFF2E7D5);
-    // Borgoña (fondo oscuro): fondo #2a0e14 → #1f0a0f; el borde, oro al 26 % sobre la tarjeta #3c0b16
-    private static final Tema BORGONA = new Tema("borgona", false, 0xFF3C0B16, 0xFF1F0A0F, 0xFF673729, 0xFFF6EAD5,
-            0xFFEAD9C2, 0xFFC0AC9C, 0xFFE3B45F, 0xFFF7DFA8, 0xFFE3B45F, 0xFF6EEAA8, 0xFFFF7B78, 0xFFE3B45F, 0xFF2A0E14);
+    // Marfil (0.8.3b, 7 nov): la tarjeta casi blanca #fdf9f2 → la crema honda #e5d7bf, borde #dccbb0, tinta #1c1915 y
+    // #4a443d, apagado = texto 2 al 92 % sobre el fondo #ede1cc (#575148), la curva en el oro de la gráfica (#a87a2a), los
+    // textos de oro en #7a5716 (5:1 sobre la crema), el aviso en el vino del primario y las barras de la crema del fondo
+    private static final Tema MARFIL = new Tema("marfil", true, 0xFFFDF9F2, 0xFFE5D7BF, 0xFFDCCBB0, 0xFF1C1915,
+            0xFF4A443D, 0xFF575148, 0xFFA87A2A, 0xFF7A5716, 0xFF7A5716, 0xFF08573A, 0xFFA42018, 0xFF4E101D, 0xFFEDE1CC);
 
     static String limpio(String t) {
+        if ("borgona".equals(t)) return "marfil"; // Borgoña se quitó el 7 nov: quien lo tenía, a Marfil
         if (t != null) for (String x : TEMAS) if (x.equals(t)) return x;
         return "marmol";
     }
@@ -64,7 +63,6 @@ final class Tema {
     static Tema de(String t) {
         switch (limpio(t)) {
             case "marfil": return MARFIL;
-            case "borgona": return BORGONA;
             default: return MARMOL;
         }
     }
