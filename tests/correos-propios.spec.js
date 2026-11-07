@@ -102,7 +102,7 @@ test('al notar que el correo ya está confirmado, pide la bienvenida una vez', a
   const b = vistos.find((v) => v.tipo === 'bienvenida');
   expect(b.auth).toMatch(/^Bearer .+/);
   // y no se vuelve a pedir en esta cuenta
-  expect(await page.evaluate(() => LS.get(LS_BIENVENIDA, []).includes(FB.user.uid))).toBe(true);
+  await expect.poll(() => page.evaluate(() => LS.get(LS_BIENVENIDA, []).includes(FB.user.uid))).toBe(true);
   expect(errores).toEqual([]);
 });
 

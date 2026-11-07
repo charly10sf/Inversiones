@@ -40,7 +40,9 @@ async function correoToison(tipo, extra) {
   try {
     const h = { 'Content-Type': 'application/json' };
     if (tipo !== 'clave') h.Authorization = 'Bearer ' + (await tokenCuenta());
-    const r = await conTiempo(fetch(WORKER + '/correo', { method: 'POST', headers: h, body: JSON.stringify({ tipo, lang: IDIOMA === 'en' ? 'en' : 'es', base: baseApp(), ...(extra || {}) }) }), 12000);
+    // pasados 12 s se corta de verdad (si no, podrían salir los dos correos: el del Worker, tarde, y el de Firebase)
+    const ctl = new AbortController(), t = setTimeout(() => ctl.abort(), 12000);
+    const r = await fetch(WORKER + '/correo', { method: 'POST', headers: h, signal: ctl.signal, body: JSON.stringify({ tipo, lang: IDIOMA === 'en' ? 'en' : 'es', base: baseApp(), ...(extra || {}) }) }).finally(() => clearTimeout(t));
     const j = await r.json().catch(() => null);
     return j && typeof j === 'object' ? j : { ok: false, motivo: 'fallo' };
   } catch (e) { return { ok: false, motivo: 'red' }; }
@@ -50,7 +52,9 @@ async function mandarCorreoConfirmacion() {
   await fbCargar(); if (!FB.user) throw new Error('sin sesión');
   const w = CFG.dev ? { ok: false } : await correoToison('confirmar');
   if (w.motivo === 'espera') throw errorEspera();
-  if (!w.ok && w.motivo !== 'ya') {
+  // el Worker ve ya confirmado el correo: no hay nada que mandar; la app lo nota (mirarCorreoConfirmado)
+  if (w.motivo === 'ya') return 'ya';
+  if (!w.ok) {
     try { FB.auth.languageCode = IDIOMA === 'en' ? 'en' : 'es'; } catch (e) {}
     await conTiempo(FB.au.sendEmailVerification(FB.user), 10000);
   }
@@ -66,10 +70,13 @@ async function mandarCorreoClave(email) {
   await FB.au.sendPasswordResetEmail(FB.auth, email);
   return true;
 }
-// la bienvenida, una vez por cuenta, al notar que el correo acaba de quedar confirmado (el Worker tampoco la repite)
+// la bienvenida, una vez por cuenta (el Worker tampoco la repite): al notar que el correo acaba de quedar confirmado o, si
+// se confirmó en otro sitio, al arrancar. Solo cuentas de la última semana: las de antes de la 0.8.3 no la reciben
 const LS_BIENVENIDA = 'inv-bienvenida-correo';
 function mandarBienvenida(u) {
   if (CFG.dev || !u) return;
+  const alta = Date.parse((u.metadata && u.metadata.creationTime) || '');
+  if (!(alta > Date.now() - 7 * 864e5)) return;
   const hechas = LS.get(LS_BIENVENIDA, []) || [];
   if (hechas.includes(u.uid)) return;
   correoToison('bienvenida').then((w) => { if (w.ok || w.motivo === 'ya') LS.set(LS_BIENVENIDA, hechas.concat(u.uid).slice(-5)); });
@@ -79,7 +86,10 @@ async function pedirCorreoConfirmacion() {
   // cada correo nuevo anula los anteriores: uno por minuto como mucho, así no se pisan
   const v = LS.get(LS_VERIF, null);
   if (v && FB.user && v.uid === FB.user.uid && Date.now() - v.t < 60000) { toast(L('Te lo acabo de mandar. Espera un minuto antes de pedir otro y mira también en spam.', 'I just sent it. Wait a minute before asking for another and check spam too.'), 6000); return false; }
-  try { await mandarCorreoConfirmacion(); toast(txtCorreoMandado(FB.user.email), 9000); return true; }
+  try {
+    if ((await mandarCorreoConfirmacion()) === 'ya') { VERIF_MIRADO = 0; mirarCorreoConfirmado(true); return true; }
+    toast(txtCorreoMandado(FB.user.email), 9000); return true;
+  }
   catch (e) {
     toast(e && e.code === 'auth/too-many-requests' ? L('Ya te he mandado varios hace poco. Espera unos minutos y mira también en spam.', "I've sent several recently. Wait a few minutes and check spam too.") : L('No se ha podido mandar ahora. Prueba en un rato.', "Couldn't send it now. Try again later."), 6000);
     return false;
@@ -113,7 +123,7 @@ function mirarCorreoConfirmado(forzar, desdeAcceso) {
     if (!u.emailVerified || u !== FB.user) return false;
     const quitarPausa = () => { try { const p = LS.get(LS_CLAUDE_PAUSA, null); if (p && p.motivo === 'no-permitido') LS.del(LS_CLAUDE_PAUSA); } catch (e) {} };
     // confirmado de antes y con el token al día: nada que avisar
-    if (await tokenConfirmado(u)) { if (u === FB.user) { VERIF_LISTO = u.uid; quitarPausa(); } return false; }
+    if (await tokenConfirmado(u)) { if (u === FB.user) { VERIF_LISTO = u.uid; quitarPausa(); mandarBienvenida(u); } return false; }
     // si no se puede renovar ahora (red), se vuelve a mirar en la próxima ocasión, sin avisar de nada
     try { await conTiempo(u.getIdToken(true), 8000); } catch (e) { VERIF_MIRADO = 0; return false; }
     if (u !== FB.user || !(await tokenConfirmado(u))) { VERIF_MIRADO = 0; return false; }

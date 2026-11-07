@@ -113,13 +113,13 @@ jobs:
           set -o pipefail
           if [ -z "$RESEND_API_KEY" ] || [ -z "$FIREBASE_CORREO" ]; then echo "::error::Faltan RESEND_API_KEY o FIREBASE_CORREO en los secretos de GitHub"; exit 1; fi
           N=growfolio-correos
-          npx --yes wrangler@4 deploy --name "$N" 2>&1 | tee salida.txt
+          npx --yes wrangler@4 deploy --env correos 2>&1 | tee salida.txt
           url=$(grep -oE "https://$N\.[a-z0-9.-]+\.workers\.dev" salida.txt | head -1)
           if [ -z "$url" ]; then echo "::error::No sale la dirección del Worker de pruebas"; exit 1; fi
           T=$(openssl rand -hex 24)
-          printf '%s' "$RESEND_API_KEY" | npx --yes wrangler@4 secret put RESEND_API_KEY --name "$N" > /dev/null
-          printf '%s' "$FIREBASE_CORREO" | npx --yes wrangler@4 secret put FIREBASE_CORREO --name "$N" > /dev/null
-          printf '%s' "$T" | npx --yes wrangler@4 secret put PRUEBA_TOKEN --name "$N" > /dev/null
+          printf '%s' "$RESEND_API_KEY" | npx --yes wrangler@4 secret put RESEND_API_KEY --env correos > /dev/null
+          printf '%s' "$FIREBASE_CORREO" | npx --yes wrangler@4 secret put FIREBASE_CORREO --env correos > /dev/null
+          printf '%s' "$T" | npx --yes wrangler@4 secret put PRUEBA_TOKEN --env correos > /dev/null
           sleep 15
           echo "::notice::Worker de pruebas: $url ($(curl -s "$url/salud"))"
           for tipo in confirmar clave bienvenida; do
@@ -128,4 +128,4 @@ jobs:
             sleep 2
           done
           # el token de pruebas se cambia al acabar: el de esta vuelta ya no vale para nada
-          openssl rand -hex 24 | npx --yes wrangler@4 secret put PRUEBA_TOKEN --name "$N" > /dev/null
+          openssl rand -hex 24 | npx --yes wrangler@4 secret put PRUEBA_TOKEN --env correos > /dev/null

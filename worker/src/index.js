@@ -550,7 +550,13 @@ export class Cuotas {
     if (espera > 0) { await this.estado.storage.put('l', l); return { ok: false, espera }; }
     l.push(ahora); if (l.length > 200) l = l.slice(-200);
     await this.estado.storage.put('l', l);
+    // pasada la ventana más larga, el objeto se borra solo (si no, cada IP o correo dejaría su contador para siempre)
+    if (this.estado.storage.setAlarm) await this.estado.storage.setAlarm(ahora + largo + 60e3);
     return { ok: true };
+  }
+  async alarm() {
+    const l = (await this.estado.storage.get('l')) || [];
+    if (!(await this.estado.storage.get('u')) && !(await this.estado.storage.get('c')) && !(await this.estado.storage.get('t')) && !l.some((t) => Date.now() - t < 2 * 864e5)) await this.estado.storage.deleteAll();
   }
   // el techo: g, lo gastado hoy (lo que han costado de verdad las respuestas acabadas), y p, lo apartado para las que
   // aún llegan. «reservar» aparta (si cabe); «cerrar» cambia lo apartado por lo que ha costado (0 si no llegó a Claude)
@@ -760,6 +766,8 @@ export default {
     const cors = { 'Access-Control-Allow-Origin': origenes.includes(origen) ? origen : ORIGENES[0], 'Access-Control-Allow-Methods': 'GET, POST, OPTIONS', 'Access-Control-Allow-Headers': 'Authorization, Content-Type', 'Access-Control-Max-Age': '86400', Vary: 'Origin' };
     const res = (cuerpo, status = 200) => new Response(JSON.stringify(cuerpo), { status, headers: { ...cors, 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } });
     if (req.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+    // el Worker de pruebas de los correos (growfolio-correos, SOLO_PRUEBA=1): solo su ruta de pruebas y las imágenes
+    if (env.SOLO_PRUEBA && !(url.pathname === '/correo/prueba' || url.pathname.startsWith('/correo/img/') || url.pathname === '/salud')) return res({ error: 'no-existe' }, 404);
     try {
       if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true, claude: !!env.ANTHROPIC_API_KEY, cuotas: !!env.CUOTAS, correo: !!(env.RESEND_API_KEY && env.FIREBASE_CORREO) });
       if (url.pathname.startsWith('/banco/')) return await banco(url.pathname.slice(7), url, req, env, res);

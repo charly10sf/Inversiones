@@ -1,9 +1,11 @@
 /* ---------- 0.8.3 · los correos propios de Toisón (desde noreply@toison.es, con Resend) ----------
    POST /correo { tipo, lang, base, correo }
-   · confirmar  — con sesión: el correo de confirmación de ESA cuenta (sin confirmar). 1 por minuto y 5 al día por cuenta.
+   · confirmar  — con sesión: el correo de confirmación de ESA cuenta (sin confirmar). 1 por minuto y 5 al día por cuenta;
+                  además 3 por hora y 10 al día por IP y 5 al día por correo (cuentas creadas en serie): pasados, «cupo».
    · bienvenida — con sesión y el correo ya confirmado: una sola vez por cuenta.
-   · clave      — SIN sesión, por correo: contraseña nueva. Tope por IP y por correo; la respuesta es la misma exista o no
-                  la cuenta (no dice quién está dado de alta) y el envío va aparte, para que el tiempo tampoco lo diga.
+   · clave      — SIN sesión, por correo: contraseña nueva. Tope por IP (las IPv6, por su /64) y por correo; pasados, «cupo»
+                  y la app manda el de Firebase. La respuesta es la misma exista o no la cuenta y llega antes de preguntar a
+                  Firebase (el enlace y el envío van aparte), para que tampoco lo diga el tiempo.
    Los enlaces los da Firebase (accounts:sendOobCode con returnOobLink, firmado con la cuenta de servicio del proyecto) y
    aquí se monta el nuestro: <app>/cuenta.html?mode=…&oobCode=…&lang=… (no depende de «Personalizar URL de acción»).
    Si falta algo (clave de Resend, cuenta de servicio) o el día se ha llenado, contesta un motivo y la app manda el correo
@@ -28,11 +30,21 @@ const PEDIDO_FB = { confirmar: 'VERIFY_EMAIL', clave: 'PASSWORD_RESET' };
 const TOPE_CONFIRMAR = [[60e3, 1], [864e5, 5]];
 const TOPE_CLAVE_CORREO = [[36e5, 3], [864e5, 6]];
 const TOPE_CLAVE_IP = [[36e5, 10], [864e5, 30]];
-const POR_DIA = 90;
+const TOPE_CONFIRMAR_IP = [[36e5, 3], [864e5, 10]];
+const TOPE_CONFIRMAR_CORREO = [[864e5, 5]];
+const POR_DIA = 90, POR_DIA_MAX = 200;
 // la ruta de pruebas (solo en el Worker de pruebas, el que tiene PRUEBA_TOKEN): solo a estas direcciones
 export const CORREOS_PRUEBA = ['toison.web.app+revision@gmail.com'];
 const CORREO_RE = /^[^\s@<>()",;:]{1,64}@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+$/i;
 
+// las IPv6 cuentan por su /64 (con una sola conexión hay miles de millones de direcciones)
+export function grupoIp(ip) {
+  const x = String(ip || '');
+  if (!x.includes(':')) return x;
+  const [a, b = ''] = x.split('::'), izq = a ? a.split(':') : [], der = b ? b.split(':') : [];
+  const todo = x.includes('::') ? [...izq, ...Array(Math.max(0, 8 - izq.length - der.length)).fill('0'), ...der] : izq;
+  return todo.slice(0, 4).map((g) => (parseInt(g, 16) || 0).toString(16)).join(':') + '::/64';
+}
 async function huella(txt) {
   const h = await crypto.subtle.digest('SHA-256', te.encode('toison-correo:' + txt));
   return b64u(h).slice(0, 32);
@@ -51,7 +63,7 @@ async function tokenGoogle(env, sa) {
   if (tokenG && tokenGDe === sa.client_email && Date.now() < tokenGHasta) return tokenG;
   const ahora = Math.floor(Date.now() / 1000), aud = env.GOOGLE_TOKEN_URL || 'https://oauth2.googleapis.com/token';
   const cab = json64({ alg: 'RS256', typ: 'JWT', ...(sa.private_key_id ? { kid: sa.private_key_id } : {}) });
-  const cue = json64({ iss: sa.client_email, sub: sa.client_email, aud, iat: ahora, exp: ahora + 3600, scope: 'https://www.googleapis.com/auth/cloud-platform https://www.googleapis.com/auth/identitytoolkit' });
+  const cue = json64({ iss: sa.client_email, sub: sa.client_email, aud, iat: ahora, exp: ahora + 3600, scope: 'https://www.googleapis.com/auth/identitytoolkit' });
   const k = await crypto.subtle.importKey('pkcs8', pemADer(sa.private_key), { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' }, false, ['sign']);
   const firma = b64u(await crypto.subtle.sign('RSASSA-PKCS1-v1_5', k, te.encode(`${cab}.${cue}`)));
   const r = await fetch(aud, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: `grant_type=${encodeURIComponent('urn:ietf:params:oauth:grant-type:jwt-bearer')}&assertion=${cab}.${cue}.${firma}` });
@@ -106,7 +118,7 @@ async function unaVez(env, nombre, op) {
   const r = await env.CUOTAS.get(env.CUOTAS.idFromName(' correo ' + nombre)).fetch('https://cuotas/', { method: 'POST', body: JSON.stringify({ op }) });
   return r.json();
 }
-const porDia = (env) => [[864e5, Math.max(1, Number(env.CORREO_POR_DIA) || POR_DIA)]];
+const porDia = (env) => [[864e5, Math.min(POR_DIA_MAX, Math.max(1, Number(env.CORREO_POR_DIA) || POR_DIA))]];
 
 export async function correoRuta(req, env, ctx, res, { quienEs, claveCorreo, origenes }) {
   const url = new URL(req.url), workerUrl = url.origin;
@@ -145,52 +157,66 @@ export async function correoRuta(req, env, ctx, res, { quienEs, claveCorreo, ori
     if (!origenes.includes(origen)) return res({ ok: false, motivo: 'origen' }, 403);
     const correo = String(d.correo || '').trim().toLowerCase();
     if (correo.length > 254 || !CORREO_RE.test(correo)) return res({ ok: false, motivo: 'correo' }, 400);
-    const ip = req.headers.get('CF-Connecting-IP') || 'sin-ip';
+    // pasado un tope, «cupo»: la app manda el de Firebase (que tiene sus propios topes). Así nadie puede dejar a otro sin
+    // poder cambiar su contraseña pidiendo su correo muchas veces (revisión aparte del 7 nov)
+    const ip = grupoIp(req.headers.get('CF-Connecting-IP') || 'sin-ip');
     const li = await limite(env, 'ip ' + (await huella(ip)), TOPE_CLAVE_IP);
-    if (!li.ok) return res({ ok: false, motivo: 'espera', espera: li.espera }, 429);
+    if (!li.ok) return res({ ok: false, motivo: 'cupo' }, 503);
     const lc = await limite(env, 'clave ' + (await huella(claveCorreo(correo))), TOPE_CLAVE_CORREO);
-    if (!lc.ok) return res({ ok: false, motivo: 'espera', espera: lc.espera }, 429);
-    const lg = await limite(env, 'dia', porDia(env));
-    if (!lg.ok) return res({ ok: false, motivo: 'cupo' }, 503);
-    let codigo;
-    try { codigo = await oob(env, sa, 'clave', correo); } catch (e) { console.log('correo clave: firebase', String(e.message || e).slice(0, 80)); return res({ ok: false, motivo: 'fallo' }, 502); }
-    // exista o no la cuenta, la misma respuesta y en el mismo tiempo: el envío sigue aparte. Si Resend falla, que lo mande Firebase
-    if (codigo) {
-      const envio = mandar(env, workerUrl, 'clave', lang, correo, enlaceCuenta(base, 'clave', codigo, lang))
-        .catch(async (e) => { console.log('correo clave: resend', String(e.message || e).slice(0, 80)); try { await oob(env, sa, 'clave', correo, false); } catch (e2) { console.log('correo clave: plan B', String(e2.message || e2).slice(0, 80)); } });
-      ctx.waitUntil(envio);
-    }
+    if (!lc.ok) return res({ ok: false, motivo: 'cupo' }, 503);
+    // exista o no la cuenta, la misma respuesta y en el mismo tiempo: Firebase y el envío van aparte. El día solo cuenta si hay
+    // algo que mandar; si está lleno o Resend falla, lo manda Firebase (plan B)
+    ctx.waitUntil((async () => {
+      let codigo;
+      try { codigo = await oob(env, sa, 'clave', correo); } catch (e) { console.log('correo clave: firebase', String(e.message || e).slice(0, 80)); codigo = 'B'; }
+      if (!codigo) return;
+      try {
+        if (codigo === 'B') throw new Error('sin enlace');
+        const lg = await limite(env, 'dia', porDia(env));
+        if (!lg.ok) throw new Error('día lleno');
+        await mandar(env, workerUrl, 'clave', lang, correo, enlaceCuenta(base, 'clave', codigo, lang));
+      } catch (e) {
+        console.log('correo clave: plan B,', String(e.message || e).slice(0, 80));
+        try { await oob(env, sa, 'clave', correo, false); } catch (e2) { console.log('correo clave: plan B falla', String(e2.message || e2).slice(0, 80)); }
+      }
+    })());
     return res({ ok: true });
   }
 
   // ---- con sesión: confirmar y bienvenida
+  if (!origenes.includes(origen)) return res({ ok: false, motivo: 'origen' }, 403);
   const u = await quienEs(req, env);
   if (!u) return res({ ok: false, motivo: 'sesion' }, 401);
   if (!u.email || u.email.length > 254) return res({ ok: false, motivo: 'correo' }, 400);
   const yo = await huella(u.uid);
-  if (tipo === 'confirmar') {
-    if (u.verificado) return res({ ok: false, motivo: 'ya' });
-    const l = await limite(env, 'confirmar ' + yo, TOPE_CONFIRMAR);
-    if (!l.ok) return res({ ok: false, motivo: 'espera', espera: l.espera }, 429);
-  } else {
-    if (!u.verificado) return res({ ok: false, motivo: 'verificar' }, 403);
-    const una = await unaVez(env, 'bienvenida ' + yo, 'una');
-    if (!una.ok) return res({ ok: false, motivo: 'ya' });
-  }
-  const lg = await limite(env, 'dia', porDia(env));
-  if (!lg.ok) { if (tipo === 'bienvenida') await unaVez(env, 'bienvenida ' + yo, 'desmarcar'); return res({ ok: false, motivo: 'cupo' }, 503); }
+  let marcada = false;
   try {
     let enlace = base;
     if (tipo === 'confirmar') {
+      if (u.verificado) return res({ ok: false, motivo: 'ya' });
+      // su propio tope (1 por minuto), «espera»; los de la IP y el correo (cuentas nuevas en serie), «cupo»: cae a Firebase
+      const l = await limite(env, 'confirmar ' + yo, TOPE_CONFIRMAR);
+      if (!l.ok) return res({ ok: false, motivo: 'espera', espera: l.espera }, 429);
+      const li = await limite(env, 'cip ' + (await huella(grupoIp(req.headers.get('CF-Connecting-IP') || 'sin-ip'))), TOPE_CONFIRMAR_IP);
+      if (!li.ok) return res({ ok: false, motivo: 'cupo' }, 503);
+      const lc = await limite(env, 'ccorreo ' + (await huella(claveCorreo(u.email))), TOPE_CONFIRMAR_CORREO);
+      if (!lc.ok) return res({ ok: false, motivo: 'cupo' }, 503);
       const codigo = await oob(env, sa, 'confirmar', u.email);
       if (!codigo) return res({ ok: false, motivo: 'sin-cuenta' }, 404);
       enlace = enlaceCuenta(base, 'confirmar', codigo, lang);
+    } else {
+      if (!u.verificado) return res({ ok: false, motivo: 'verificar' }, 403);
+      const una = await unaVez(env, 'bienvenida ' + yo, 'una');
+      if (!una.ok) return res({ ok: false, motivo: 'ya' });
+      marcada = true;
     }
+    const lg = await limite(env, 'dia', porDia(env));
+    if (!lg.ok) { if (marcada) await unaVez(env, 'bienvenida ' + yo, 'desmarcar'); return res({ ok: false, motivo: 'cupo' }, 503); }
     await mandar(env, workerUrl, tipo, lang, u.email, enlace);
     return res({ ok: true });
   } catch (e) {
     console.log('correo ' + tipo + ':', String(e.message || e).slice(0, 80));
-    if (tipo === 'bienvenida') await unaVez(env, 'bienvenida ' + yo, 'desmarcar');
+    if (marcada) { try { await unaVez(env, 'bienvenida ' + yo, 'desmarcar'); } catch (e2) {} }
     return res({ ok: false, motivo: 'fallo' }, 502);
   }
 }

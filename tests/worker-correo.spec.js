@@ -4,6 +4,7 @@
 import { test, expect } from '@playwright/test';
 import { generateKeyPairSync, createSign, createVerify } from 'node:crypto';
 import worker, { Cuotas } from '../worker/src/index.js';
+import { grupoIp } from '../worker/src/correo.js';
 import { render } from '../worker/src/correo-plantillas.js';
 
 test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'una vez basta'));
@@ -27,7 +28,7 @@ function cuotasDeMentira() {
     idFromName: (n) => n,
     get: (id) => ({
       fetch: (url, op) => {
-        if (!objetos.has(id)) { const m = new Map(); objetos.set(id, { o: new Cuotas({ storage: { get: async (k) => m.get(k), put: async (k, v) => { m.set(k, v); }, delete: async (k) => { m.delete(k); } } }), cola: Promise.resolve() }); }
+        if (!objetos.has(id)) { const m = new Map(); objetos.set(id, { o: new Cuotas({ storage: { get: async (k) => m.get(k), put: async (k, v) => { m.set(k, v); }, delete: async (k) => { m.delete(k); }, deleteAll: async () => { m.clear(); }, setAlarm: async () => {} } }), cola: Promise.resolve() }); }
         const x = objetos.get(id), r = x.cola.then(() => x.o.fetch(new Request(url, op)));
         x.cola = r.catch(() => {});
         return r;
@@ -40,7 +41,7 @@ const nuevoEnv = (extra = {}) => ({ RESEND_API_KEY: 're_prueba', FIREBASE_CORREO
 // cuentas que existen en el Firebase de mentira
 const CUENTAS = new Set(['ana@prueba.com', 'toison.web.app+revision@gmail.com', 'beto@prueba.com']);
 // fetch de imitación: apunta lo que llega a cada servicio
-async function con(prueba, { resendFalla = false } = {}) {
+async function con(prueba, { resendFalla = false, fbFalla = false } = {}) {
   const v = { token: [], fb: [], resend: [] }, antes = globalThis.fetch;
   globalThis.fetch = async (url, op = {}) => {
     url = String(url);
@@ -48,6 +49,7 @@ async function con(prueba, { resendFalla = false } = {}) {
     if (url === 'https://token.prueba/token') { v.token.push(String(op.body)); return new Response(JSON.stringify({ access_token: 'ya29.prueba', expires_in: 3600 })); }
     if (url === `https://idtk.prueba/v1/projects/${PROYECTO}/accounts:sendOobCode`) {
       const c = JSON.parse(op.body); v.fb.push({ c, auth: op.headers.Authorization });
+      if (fbFalla && c.returnOobLink) return new Response(JSON.stringify({ error: { code: 500, message: 'INTERNAL' } }), { status: 500 });
       if (!CUENTAS.has(c.email)) return new Response(JSON.stringify({ error: { code: 400, message: 'EMAIL_NOT_FOUND' } }), { status: 400 });
       return new Response(JSON.stringify(c.returnOobLink ? { email: c.email, oobLink: `https://growfolio-a79a9.firebaseapp.com/__/auth/action?mode=x&oobCode=COD-${c.requestType}-1&apiKey=k&lang=es` } : { email: c.email }));
     }
@@ -140,12 +142,20 @@ test('contraseña olvidada: la misma respuesta exista o no la cuenta, desde nues
     // 3 por hora por correo (con la +etiqueta o los puntos de Gmail cuenta igual)
     const env2 = nuevoEnv();
     for (const c of ['beto@prueba.com', 'beto+1@prueba.com', 'beto@prueba.com']) expect((await pedir(env2, { tipo: 'clave', correo: c }, { ip: '9.9.9.' + c.length })).j.ok).toBe(true);
+    // pasado el tope, «cupo»: la app manda el de Firebase (nadie puede dejar a otro sin poder cambiar su contraseña)
     const cuarta = await pedir(env2, { tipo: 'clave', correo: 'beto@prueba.com' }, { ip: '8.8.8.8' });
-    expect(cuarta.status).toBe(429);
+    expect(cuarta).toEqual({ status: 503, j: { ok: false, motivo: 'cupo' } });
     // y 10 por hora por IP
     const env3 = nuevoEnv();
     for (let i = 0; i < 10; i++) expect((await pedir(env3, { tipo: 'clave', correo: `x${i}@prueba.com` }, { ip: '5.5.5.5' })).j.ok).toBe(true);
-    expect((await pedir(env3, { tipo: 'clave', correo: 'y@prueba.com' }, { ip: '5.5.5.5' })).status).toBe(429);
+    expect((await pedir(env3, { tipo: 'clave', correo: 'y@prueba.com' }, { ip: '5.5.5.5' })).j.motivo).toBe('cupo');
+    // las IPv6 cuentan por su /64
+    const env4 = nuevoEnv();
+    for (let i = 0; i < 10; i++) expect((await pedir(env4, { tipo: 'clave', correo: `z${i}@prueba.com` }, { ip: `2001:db8:1:2::${i + 1}` })).j.ok).toBe(true);
+    expect((await pedir(env4, { tipo: 'clave', correo: 'w@prueba.com' }, { ip: '2001:db8:1:2:ffff::9' })).j.motivo).toBe('cupo');
+    expect(grupoIp('2001:db8:1:2:3:4:5:6')).toBe('2001:db8:1:2::/64');
+    expect(grupoIp('2001:db8::1')).toBe('2001:db8:0:0::/64');
+    expect(grupoIp('1.2.3.4')).toBe('1.2.3.4');
   });
 });
 
@@ -190,8 +200,10 @@ test('el tope del día (plan gratis de Resend): pasado, la app usa Firebase', as
     const env = nuevoEnv({ CORREO_POR_DIA: '1' });
     expect((await pedir(env, { tipo: 'confirmar' }, { uid: 'u8', email: 'ana@prueba.com', verificado: false })).j.ok).toBe(true);
     expect((await pedir(env, { tipo: 'confirmar' }, { uid: 'u9', email: 'beto@prueba.com', verificado: false })).j).toEqual({ ok: false, motivo: 'cupo' });
-    expect((await pedir(env, { tipo: 'clave', correo: 'beto@prueba.com' })).j).toEqual({ ok: false, motivo: 'cupo' });
+    // la contraseña olvidada contesta igual y, con el día lleno, la manda Firebase
+    expect((await pedir(env, { tipo: 'clave', correo: 'beto@prueba.com' })).j).toEqual({ ok: true });
     expect(v.resend.length).toBe(1);
+    expect(v.fb.filter((x) => x.c.requestType === 'PASSWORD_RESET').map((x) => !!x.c.returnOobLink)).toEqual([true, false]);
   });
 });
 
@@ -261,4 +273,55 @@ test('las plantillas: texto escapado, versión de solo texto y los tres tipos en
     expect(m.html).toContain(`lang="${lang}"`);
   }
   expect(() => render('otro', 'es', { correo: 'a@b.c', enlace: 'x', img: () => '' })).toThrow();
+});
+
+test('si Firebase no da el enlace de la contraseña olvidada, la misma respuesta y lo manda Firebase', async () => {
+  await con(async (v) => {
+    const r = await pedir(nuevoEnv(), { tipo: 'clave', correo: 'ana@prueba.com' });
+    expect(r).toEqual({ status: 200, j: { ok: true } });
+    expect(v.fb.map((x) => !!x.c.returnOobLink)).toEqual([true, false]);
+    expect(v.resend.length).toBe(0);
+  }, { fbFalla: true });
+});
+
+test('confirmar: desde nuestra web, y con cuentas en serie desde una IP, «cupo» (cae a Firebase)', async () => {
+  await con(async (v) => {
+    const env = nuevoEnv();
+    expect((await pedir(env, { tipo: 'confirmar' }, { uid: 'c0', email: 'ana@prueba.com', verificado: false, origen: 'https://malo.example' })).j.motivo).toBe('origen');
+    for (let i = 1; i <= 3; i++) expect((await pedir(env, { tipo: 'confirmar' }, { uid: 'c' + i, email: 'ana@prueba.com', verificado: false, ip: '7.7.7.7' })).j.ok).toBe(true);
+    expect((await pedir(env, { tipo: 'confirmar' }, { uid: 'c4', email: 'beto@prueba.com', verificado: false, ip: '7.7.7.7' })).j).toEqual({ ok: false, motivo: 'cupo' });
+    // y el mismo correo en muchas cuentas, 5 al día
+    const env2 = nuevoEnv();
+    for (let i = 1; i <= 5; i++) expect((await pedir(env2, { tipo: 'confirmar' }, { uid: 'd' + i, email: 'beto@prueba.com', verificado: false, ip: '6.6.6.' + i })).j.ok).toBe(true);
+    expect((await pedir(env2, { tipo: 'confirmar' }, { uid: 'd6', email: 'beto@prueba.com', verificado: false, ip: '6.6.6.9' })).j.motivo).toBe('cupo');
+    expect(v.resend.length).toBe(8);
+  });
+});
+
+test('el Worker de pruebas (SOLO_PRUEBA) solo deja la ruta de pruebas y las imágenes', async () => {
+  await con(async (v) => {
+    const env = nuevoEnv({ SOLO_PRUEBA: '1', PRUEBA_TOKEN: 'q'.repeat(40) });
+    expect((await pedir(env, { tipo: 'clave', correo: 'ana@prueba.com' })).status).toBe(404);
+    expect((await pedir(env, { tipo: 'confirmar' }, { uid: 'e1', email: 'ana@prueba.com', verificado: false })).status).toBe(404);
+    for (const ruta of ['/claude', '/isin', '/banco/inicio']) expect((await worker.fetch(new Request('https://w.prueba' + ruta, { method: 'POST' }), env, {})).status).toBe(404);
+    expect((await worker.fetch(new Request('https://w.prueba/correo/img/icono.png'), env, {})).status).toBe(200);
+    expect((await pedir(env, { tipo: 'bienvenida' }, { ruta: '/correo/prueba', cab: { 'X-Prueba': 'q'.repeat(40) } })).j.ok).toBe(true);
+    expect(v.resend.length).toBe(1);
+  });
+});
+
+test('los contadores de los correos se borran solos pasado su tiempo', async () => {
+  const m = new Map(); let alarma = 0;
+  const o = new Cuotas({ storage: { get: async (k) => m.get(k), put: async (k, val) => { m.set(k, val); }, delete: async (k) => { m.delete(k); }, deleteAll: async () => { m.clear(); }, setAlarm: async (t) => { alarma = t; } } });
+  const hace3dias = Date.now() - 3 * 864e5;
+  const r = await o.fetch(new Request('https://c/', { method: 'POST', body: JSON.stringify({ op: 'limite', ventanas: [[36e5, 3]], ahora: hace3dias }) }));
+  expect((await r.json()).ok).toBe(true);
+  expect(alarma).toBeGreaterThan(hace3dias);
+  expect(m.size).toBe(1);
+  await o.alarm();
+  expect(m.size).toBe(0);
+  // la marca de la bienvenida no se borra
+  await o.fetch(new Request('https://c/', { method: 'POST', body: JSON.stringify({ op: 'una' }) }));
+  await o.alarm();
+  expect(m.get('u')).toBe(1);
 });

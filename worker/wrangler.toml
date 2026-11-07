@@ -18,3 +18,11 @@ new_sqlite_classes = ["Cuotas"]
 # cada 4 horas el fin de semana; el catálogo de fondos, una vez al día. El de catálogo tiene que ser igual que CRON_CATALOGO.
 [triggers]
 crons = ["7,27,47 6-21 * * MON-FRI", "17 */4 * * SAT,SUN", "23 5 * * *"]
+
+# 0.8.3: el Worker de pruebas de los correos (growfolio-correos): lo publica la Action «Worker» con prueba=correos, desde
+# cualquier rama. Sin crons y con SOLO_PRUEBA (solo /correo/prueba y las imágenes): no puede mandar correos a nadie más
+[env.correos]
+name = "growfolio-correos"
+triggers = { crons = [] }
+vars = { SOLO_PRUEBA = "1" }
+durable_objects.bindings = [{ name = "CUOTAS", class_name = "Cuotas" }]
