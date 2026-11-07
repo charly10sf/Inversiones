@@ -93,7 +93,7 @@ export function enlaceCuenta(base, tipo, codigo, lang) {
 }
 
 async function mandar(env, workerUrl, tipo, lang, correo, enlace) {
-  const img = (n) => (IMAGENES[n] ? `${workerUrl}/correo/img/${n}.${IMAGENES[n][0] === 'image/jpeg' ? 'jpg' : 'png'}?v=1` : '');
+  const img = (n) => (IMAGENES[n] ? `${workerUrl}/correo/img/${n}.${IMAGENES[n][0] === 'image/jpeg' ? 'jpg' : 'png'}?v=${IMAGENES[n][2] || 1}` : '');
   const m = render(tipo, lang, { correo, enlace, img });
   const r = await fetch(env.RESEND_URL || 'https://api.resend.com/emails', {
     method: 'POST',

@@ -100,7 +100,7 @@ test('confirmar: solo con sesión, para esa cuenta sin confirmar, uno por minuto
     const enlace = 'https://toison.es/app/cuenta.html?mode=verifyEmail&amp;oobCode=COD-VERIFY_EMAIL-1&amp;lang=es';
     expect(m.html).toContain(`href="${enlace}"`);
     expect(m.text).toContain('https://toison.es/app/cuenta.html?mode=verifyEmail&oobCode=COD-VERIFY_EMAIL-1&lang=es');
-    expect(m.html).toContain('https://w.prueba/correo/img/hero-es.jpg?v=1');
+    expect(m.html).toContain('https://w.prueba/correo/img/hero-es.jpg?v=');
     // el segundo en menos de un minuto, no
     const r2 = await pedir(env, { tipo: 'confirmar' }, { uid: 'u2', email: 'ana@prueba.com', verificado: false });
     expect(r2.status).toBe(429);
@@ -117,7 +117,7 @@ test('en inglés, y los enlaces siempre a toison.es (aunque la app pida otra dir
     const r = await pedir(nuevoEnv(), { tipo: 'confirmar', lang: 'en', base: 'https://charly10sf.github.io/Inversiones/' }, { uid: 'u3', email: 'beto@prueba.com', verificado: false });
     expect(r.j.ok).toBe(true);
     expect(v.resend[0].c.subject).toBe('Confirm your Toisón email');
-    expect(v.resend[0].c.html).toContain('/correo/img/hero-en.jpg?v=1');
+    expect(v.resend[0].c.html).toContain('/correo/img/hero-en.jpg?v=');
     expect(v.resend[0].c.text).toContain('https://toison.es/app/cuenta.html?mode=verifyEmail&oobCode=COD-VERIFY_EMAIL-1&lang=en');
     expect(v.resend[0].c.html).not.toContain('github.io');
     expect(v.resend[0].c.text).not.toContain('github.io');
@@ -186,8 +186,8 @@ test('bienvenida: con el correo confirmado y una sola vez (si falla, se puede vo
     const m = v.resend[0].c;
     expect(m.subject).toBe('Te damos la bienvenida a Toisón');
     expect(m.html).toContain('href="https://toison.es/app/"');
-    expect(m.html).toContain('/correo/img/hero-es.jpg?v=1');
-    expect(m.html).toContain('/correo/img/i-candado.png?v=1');
+    expect(m.html).toContain('/correo/img/hero-es.jpg?v=');
+    expect(m.html).toContain('/correo/img/i-candado.png?v=');
     expect(v.fb.length).toBe(0);
     expect((await pedir(env, { tipo: 'bienvenida' }, { uid: 'u6', email: 'ana@prueba.com', verificado: true })).j).toEqual({ ok: false, motivo: 'ya' });
     expect(v.resend.length).toBe(1);
@@ -219,7 +219,7 @@ test('pedidos raros: tipo desconocido, cuerpo enorme, GET', async () => {
 
 test('las imágenes de los correos se sirven con caché larga', async () => {
   const env = nuevoEnv();
-  const r = await worker.fetch(new Request('https://w.prueba/correo/img/hero-es.jpg?v=1'), env, {});
+  const r = await worker.fetch(new Request('https://w.prueba/correo/img/hero-es.jpg?v='), env, {});
   expect(r.status).toBe(200);
   expect(r.headers.get('Content-Type')).toBe('image/jpeg');
   expect(r.headers.get('Cache-Control')).toContain('max-age=31536000');
