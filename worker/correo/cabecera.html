@@ -1,13 +1,8 @@
 <!doctype html><html><head><meta charset="utf-8"><style>
 <!-- Fuente de las imágenes de los correos (worker/correo/img). Se abre con Playwright a 2x, con ibarra.woff2 (fonts/) copiada al lado, y se recorta: la cabecera (#h, ?l=es|en) en hero-es/en.jpg y los iconos (#i-…) en i-*.png. Luego: node worker/correo/empaquetar.mjs -->
-@font-face{font-family:Ib;src:url(ibarra.woff2)}
-@font-face{font-family:In;src:url(/usr/share/fonts/opentype/inter/Inter-Medium.otf)}
-body{margin:0;background:#888}
-.h{width:576px;height:148px;position:relative;overflow:hidden;background:radial-gradient(90% 120% at 50% 0%,#1e1e1e 0%,#0a0a0a 55%,#000 100%)}
-svg{position:absolute;inset:0}
-</style></head><body>
-<div class="h" id="h"><svg width="576" height="148" viewBox="0 0 576 148">
-<defs>
+@font-face{font-family:Ib;src:url(ibarra.woff2)}@font-face{font-family:In;src:url(/usr/share/fonts/opentype/inter/Inter-Medium.otf)}
+body{margin:0}.h{width:576px;height:148px;position:relative;overflow:hidden;background:radial-gradient(90% 120% at 50% 0%,#1e1e1e 0%,#0a0a0a 55%,#000 100%)}svg{position:absolute;inset:0}</style></head><body>
+<div class="h" id="h"><svg width="576" height="148" viewBox="0 0 576 148"><defs>
 <linearGradient id="m" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f7dfa8"/><stop offset=".52" stop-color="#e3b45f"/><stop offset="1" stop-color="#b5863a"/></linearGradient>
 <linearGradient id="o" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbf3e6"/><stop offset="1" stop-color="#e2d2bb"/></linearGradient>
 <linearGradient id="w" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fbf3e6"/><stop offset="1" stop-color="#d9c4a3"/></linearGradient>
@@ -15,16 +10,7 @@ svg{position:absolute;inset:0}
 <linearGradient id="l" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b5863a" stop-opacity="0"/><stop offset=".12" stop-color="#b5863a"/><stop offset=".6" stop-color="#e3b45f"/><stop offset=".88" stop-color="#f7dfa8"/><stop offset="1" stop-color="#f7dfa8" stop-opacity="0"/></linearGradient>
 <radialGradient id="halo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000" stop-opacity=".85"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
 </defs>
-<g stroke="#fff" stroke-opacity=".05"><path d="M0 104H576M0 122H576M0 140H576"/><path d="M96 98V148M192 98V148M288 98V148M384 98V148M480 98V148" stroke-dasharray="2 4"/></g>
-<path id="curva" d="M0.0 139 L19.9 136 L39.7 137 L59.6 132 L79.4 133 L99.3 128 L119.2 131 L139.0 129 L158.9 124 L178.8 126 L198.6 127 L218.5 120 L238.3 122 L258.2 117 L278.1 121 L297.9 118 L317.8 113 L337.7 115 L357.5 116 L377.4 110 L397.2 108 L417.1 111 L437.0 104 L456.8 106 L476.7 101 L496.6 103 L516.4 98 L536.3 100 L556.1 93 L576.0 90" fill="none"/>
-<path d="M0.0 139 L19.9 136 L39.7 137 L59.6 132 L79.4 133 L99.3 128 L119.2 131 L139.0 129 L158.9 124 L178.8 126 L198.6 127 L218.5 120 L238.3 122 L258.2 117 L278.1 121 L297.9 118 L317.8 113 L337.7 115 L357.5 116 L377.4 110 L397.2 108 L417.1 111 L437.0 104 L456.8 106 L476.7 101 L496.6 103 L516.4 98 L536.3 100 L556.1 93 L576.0 90 L576 148 L0 148Z" fill="url(#a)"/>
-<use href="#curva" stroke="url(#l)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-<ellipse cx="288" cy="60" rx="170" ry="48" fill="url(#halo)"/>
-<g transform="translate(288 36) scale(.23)"><path d="M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z" fill="url(#o)"/><path d="M-61.15 -76L61.15 -76L61.15 -66.7L16.25 -66.7L9.05 -57L12.25 60L20.5 60L20.5 67.2L-20.5 67.2L-20.5 60L-12.25 60L-9.05 -57L-16.25 -66.7L-61.15 -66.7ZM-6.45 -40.5L-6.45 38.5L-4.55 38.5L-4.55 -40.5ZM-0.95 -40.5L-0.95 38.5L0.95 38.5L0.95 -40.5ZM4.55 -40.5L4.55 38.5L6.45 38.5L6.45 -40.5Z" fill="url(#m)"/></g>
+<radialGradient id="halo2" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#000" stop-opacity=".75"/><stop offset="1" stop-color="#000" stop-opacity="0"/></radialGradient>
+<defs><linearGradient id="hilo" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#b5863a" stop-opacity="0"/><stop offset=".5" stop-color="#f7dfa8"/><stop offset="1" stop-color="#b5863a" stop-opacity="0"/></linearGradient><radialGradient id="brillo" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#e3b45f" stop-opacity=".22"/><stop offset="1" stop-color="#e3b45f" stop-opacity="0"/></radialGradient></defs><ellipse cx="288" cy="126" rx="230" ry="20" fill="url(#brillo)"/><rect x="0" y="125.5" width="576" height="1" fill="url(#hilo)"/><rect x="250" y="122" width="76" height="7" fill="none"/><g transform="translate(288 36) scale(.23)"><path d="M-80.9 0A80.9 50 0 1 1 80.9 0A80.9 50 0 1 1 -80.9 0ZM-54.1 0A54.1 46.4 0 1 0 54.1 0A54.1 46.4 0 1 0 -54.1 0Z" fill="url(#o)"/><path d="M-61.15 -76L61.15 -76L61.15 -66.7L16.25 -66.7L9.05 -57L12.25 60L20.5 60L20.5 67.2L-20.5 67.2L-20.5 60L-12.25 60L-9.05 -57L-16.25 -66.7L-61.15 -66.7ZM-6.45 -40.5L-6.45 38.5L-4.55 38.5L-4.55 -40.5ZM-0.95 -40.5L-0.95 38.5L0.95 38.5L0.95 -40.5ZM4.55 -40.5L4.55 38.5L6.45 38.5L6.45 -40.5Z" fill="url(#m)"/></g>
 <text x="291" y="78" text-anchor="middle" font-family="Ib" font-size="20" letter-spacing="7" fill="url(#w)">TOISÓN</text>
-<text id="lema" x="288" y="96" text-anchor="middle" font-family="In" font-size="9.5" letter-spacing="1.8" fill="#b9ab94">TUS INVERSIONES EN UN SOLO SITIO</text>
-
-<circle cx="556.1" cy="93" r="2.6" fill="#f7dfa8"/><circle cx="556.1" cy="93" r="6" fill="#e3b45f" fill-opacity=".22"/>
-</svg></div>
-<script>const q=new URLSearchParams(location.search);if(q.get('l')==='en')document.getElementById('lema').textContent='ALL YOUR INVESTMENTS IN ONE PLACE';</script>
-</body></html>
+<text id="lema" x="288" y="96" text-anchor="middle" font-family="In" font-size="9.5" letter-spacing="1.8" fill="#b9ab94">TUS INVERSIONES EN UN SOLO SITIO</text></svg></div><script>const q=new URLSearchParams(location.search);if(q.get('l')==='en')document.getElementById('lema').textContent='ALL YOUR INVESTMENTS IN ONE PLACE';</script></body></html>
