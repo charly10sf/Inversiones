@@ -62,3 +62,38 @@ test('las reglas para la app llevan pesos y límites, nunca importes', async ({ 
   // ni los 60/90/70/540 de las posiciones ni el total salen en lo que se le pasa a la app
   expect(r.json).not.toMatch(/"valor"|"total"|"importe"/);
 });
+
+// de punta a punta en el navegador: con la pestaña oculta y el permiso dado, revisarAvisos manda UNA notificación por límite
+// pasado, con el hecho y sin órdenes, y no la repite al volver a revisar
+test('revisarAvisos manda la notificación del límite una sola vez', async ({ context, page }) => {
+  await preparar(context);
+  await page.clock.setFixedTime(new Date('2026-11-07T12:00:00'));
+  await page.addInitScript(() => {
+    window.__noti = [];
+    Object.defineProperty(document, 'hidden', { get: () => true, configurable: true });
+    class N { constructor(t, o) { window.__noti.push({ t, b: o && o.body }); } static get permission() { return 'granted'; } close() {} }
+    window.Notification = N;
+    Object.defineProperty(navigator.serviceWorker, 'getRegistration', { value: async () => undefined, configurable: true });
+  });
+  await page.goto('/');
+  await page.waitForFunction(() => typeof revisarAvisos === 'function');
+  await quitarCapas(page);
+  const r = await page.evaluate(async () => {
+    S.demo = false;
+    S.cartera = S.cartera || {};
+    S.cartera.limite_acciones = 20;
+    S.cartera.perfil = { ...(S.cartera.perfil || {}), limite_cripto: 5, limite_empresa: 10, limite_oro: 10 };
+    LS.set('inv-avisos', { on: true }); LS.del('inv-avisos-hechos');
+    const f = (id, tipo, clase, valor) => ({ inst: { id, corto: id, nombre: id, tipo, clase }, pos: { stop: 0 }, precio: 10, varDia: 0, valor, peso: 0 });
+    const M = { total: 1000, liquidez: 0, filas: [f('BTC', 'Cripto', 'Cripto', 70), f('MUNDO', 'Fondo', 'Renta variable', 930)] };
+    revisarAvisos(M); await new Promise((r) => setTimeout(r, 100));
+    const primera = window.__noti.slice();
+    revisarAvisos(M); await new Promise((r) => setTimeout(r, 100));
+    return { primera, total: window.__noti.length };
+  });
+  expect(r.primera.length).toBe(1);
+  expect(r.primera[0].t).toContain('Cripto pasa de tu límite');
+  expect(r.primera[0].b).toMatch(/7,0 % de tu cartera y tu límite es 5 %/);
+  expect(r.primera[0].b + r.primera[0].t).not.toMatch(/vende|reduce|deberías|compra/i);
+  expect(r.total).toBe(1);
+});
