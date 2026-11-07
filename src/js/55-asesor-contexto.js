@@ -521,6 +521,8 @@ async function conversar(o) {
         try { return await conversarClaude({ ...o, claudeModelo: HAIKU_IA, idPregunta }); }
         catch (e2) { if (e2 && e2.name === 'AbortError') throw e2; throw falloSinReserva(e2, o.turno); }
       }
+      // 0.8.3: un paso de más que puede fallar sin más (el arreglo de las frases de una revisión ya hecha) no aparta a Claude
+      if (o.sinApartar) throw e;
       throw falloSinReserva(e, o.turno);
     }
   } finally { vigiaConsejoIA(o.turno); cerrarTokensIA(o.turno, o.cuenta || o.tipo || 'pregunta'); }
@@ -1009,7 +1011,11 @@ function aMensajeClaude(m) {
 }
 // una copia de los mensajes con el punto de caché en el último bloque del último mensaje (si es del usuario): así cada ronda
 // de herramientas lee de la caché todo lo anterior. El primer punto va en el sistema (la foto de la cartera)
-function conCacheClaude(msgs) {
+// 0.8.3 (revisión aparte): el primer mensaje va siempre en bloques, también cuando ya no es el último. El Worker compara la
+// huella del primer mensaje de una tarea en cada ronda (huellaTarea) y «"texto"» no es lo mismo que «[{type:'text',…}]»: la
+// ronda 2 de una revisión (el arreglo de las frases de consejo, o una con herramientas) salía rechazada con 400 «tarea»
+function conCacheClaude(msgs0) {
+  const msgs = msgs0.map((m, i) => (i === 0 && m && m.role === 'user' && typeof m.content === 'string' ? { ...m, content: [{ type: 'text', text: m.content }] } : m));
   const k = msgs.length - 1, u = msgs[k];
   if (!u || u.role !== 'user') return msgs;
   const bloques = typeof u.content === 'string' ? [{ type: 'text', text: u.content }] : u.content.map((b) => ({ ...b }));

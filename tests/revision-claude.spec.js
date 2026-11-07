@@ -131,7 +131,7 @@ test.describe('la revisión, con Claude de verdad', () => {
       r.coste = llamadas.reduce((s, x) => s + (x.coste || 0), 0);
       const sal = llamadas.reduce((s, x) => s + (x.uso.output_tokens || 0), 0);
       const ent = llamadas.reduce((s, x) => s + (x.uso.input_tokens || 0) + (x.uso.cache_read_input_tokens || 0) + (x.uso.cache_creation_input_tokens || 0), 0);
-      const vuelta = { variante: v, ok: !r.error && !!r.json, error: r.error, segundos: Math.round((Date.now() - t0) / 1000), coste: Math.round(r.coste * 10000) / 10000, entrada: ent, salida: sal, repetida: llamadas.length > 1, llamadas, consejo: r.consejo, diario: r.diario, modelo: r.modelo, texto_largo: r.texto_largo, json: r.json };
+      const vuelta = { variante: v, ok: !r.error && !!r.json, error: r.error, segundos: Math.round((Date.now() - t0) / 1000), coste: Math.round(r.coste * 10000) / 10000, entrada: ent, salida: sal, repetida: llamadas.some((x) => x.stop === 'max_tokens'), arreglo: llamadas.length > 1 && !llamadas.some((x) => x.stop === 'max_tokens'), llamadas, consejo: r.consejo, diario: r.diario, modelo: r.modelo, texto_largo: r.texto_largo, json: r.json };
       vueltas.push(vuelta);
       console.log(`${vuelta.ok ? '✓' : '✘'} ${v}: ${vuelta.segundos} s, ${ent} de entrada, ${sal} de salida, ${vuelta.coste} US$${vuelta.repetida ? ', repetida' : ''}${r.consejo.length ? `, consejo: ${r.consejo.join(' | ')}` : ''}`);
       guardar();

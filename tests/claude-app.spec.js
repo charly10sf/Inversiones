@@ -664,7 +664,7 @@ test('si en la revisión se cuela un «te conviene», se pide reescrito en la mi
   const ids = await page.evaluate(() => [...new Set((S.M || calcular()).filas.map((f) => f.inst.id))]);
   const mala = 'Tu colchón cubre 2 meses. Te conviene subirlo a 6 meses antes de nada.';
   const json = { titular: 'Tu cartera sigue en orden.', resumen: ['Sube un 1 %.', 'Deberías vender IAG.'], mejorar: [{ titulo: 'Colchón', texto: mala }], fuentes: [{ t: 'Te conviene leerlo', u: 'https://a.es/x' }], posiciones: Object.fromEntries(ids.map((k) => [k, { texto: 'Sin cambios.' }])) };
-  let arreglo = '```json\n{"textos": ["Sube un 1 %.", "Tu colchón cubre 2 meses; tus límites piden 6."]}\n```';
+  let arreglo = '```json\n{"textos": {"1": "Sube un 1 %.", "2": "Tu colchón cubre 2 meses; tus límites piden 6."}}\n```';
   const w = await worker(page.context(), (c, n) => ({ sse: stream([{ tipo: 'texto', texto: n % 2 ? '```json\n' + JSON.stringify(json) + '\n```' : arreglo }]) }));
   await page.evaluate(() => generarAnalisisIA('revisión de la mañana'));
   await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
@@ -673,18 +673,20 @@ test('si en la revisión se cuela un «te conviene», se pide reescrito en la mi
   // la misma revisión para el Worker: mismo id y mismo primer mensaje, y la respuesta de antes delante
   expect(b.pregunta).toBe(a.pregunta);
   expect(b.tarea).toBe('revision');
-  expect(b.messages[0].content[0].text || b.messages[0].content).toBe(a.messages[0].content[0].text);
+  // el primer mensaje, igual en las dos (también en bloques, sin contar la marca de caché): el Worker compara su huella
+  const sinCache = (m) => JSON.stringify(m, (k, v) => (k === 'cache_control' ? undefined : v));
+  expect(sinCache(b.messages[0])).toBe(sinCache(a.messages[0]));
+  expect(Array.isArray(b.messages[0].content)).toBe(true);
   expect(b.messages.map((m) => m.role)).toEqual(['user', 'assistant', 'user']);
   expect(b.thinking).toEqual({ type: 'disabled' });
   expect(JSON.stringify(b.messages[2])).toContain('Deberías vender IAG.');
   let j = await page.evaluate(() => S.iaPropio.json);
-  // el primer texto devuelto ya no es el que tocaba (se reescribe por orden): «Sube un 1 %.» sustituye a «Deberías vender IAG.»
   expect(j.resumen).toEqual(['Sube un 1 %.', 'Sube un 1 %.']);
   expect(j.mejorar[0].texto).toBe('Tu colchón cubre 2 meses; tus límites piden 6.');
   // los enlaces y sus títulos no se miran
   expect(j.fuentes.some((f) => f.t === 'Te conviene leerlo')).toBe(true);
   expect(await page.evaluate(() => textoDiarioIA())).toMatch(/Revisión: 2 de 2 reescritos/);
-  // si lo que vuelve aún trae consejo (o no llega), se quita la frase y se queda el resto
+  // si lo que vuelve aún trae consejo, o una lista con menos textos (no se sabe cuál es cuál), se quita la frase y se queda el resto
   arreglo = '```json\n{"textos": ["Deberías vender IAG ya."]}\n```';
   await page.evaluate(() => { S.iaPropio = null; IA.ultimoIntento = 0; LS.set('inv-claude-quedan', { ...(LS.get('inv-claude-quedan') || {}), rv: null }); return generarAnalisisIA('revisión de la tarde'); });
   await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
@@ -692,6 +694,17 @@ test('si en la revisión se cuela un «te conviene», se pide reescrito en la mi
   expect(j.resumen).toEqual(['Sube un 1 %.']);
   expect(j.mejorar[0].texto).toBe('Tu colchón cubre 2 meses.');
   expect(await page.evaluate(() => consejosEnRevision(S.iaPropio.json))).toEqual([]);
+  // si el arreglo falla (el Worker dice que no), la revisión se guarda sin las frases y Claude no se aparta
+  json.preguntas = [{ q: '¿Tienes colchón?', opciones: ['Sí, vende algo', 'No'] }];
+  arreglo = null;
+  await page.unroute(WORKER);
+  await worker(page.context(), (c, n) => (n % 2 ? { sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]) } : { json: { error: 'peticion', motivo: 'tarea' }, estado: 400 }));
+  await page.evaluate(() => { S.iaPropio = null; IA.ultimoIntento = 0; LS.set('inv-claude-quedan', { ...(LS.get('inv-claude-quedan') || {}), rv: null }); return generarAnalisisIA('revisión de la tarde'); });
+  await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
+  j = await page.evaluate(() => S.iaPropio.json);
+  expect(j.preguntas[0].opciones).toEqual(['No']);
+  expect(j.mejorar[0].texto).toBe('Tu colchón cubre 2 meses.');
+  expect(await page.evaluate(() => [claudePausado(), IA.error])).toEqual([null, null]);
 });
 
 test('los importes que la IA deja sin ** en la revisión salen como dato y se ocultan con el ojo', async ({ page }) => {
@@ -706,6 +719,9 @@ test('los importes que la IA deja sin ** en la revisión salen como dato y se oc
   expect(r.fuera).toContain('<b class="dato">87.337 €</b>');
   expect(r.oculto).not.toMatch(/\d €/);
   expect(r.oculto).toContain('3,2 %');
+  // ni la raya de una lista, ni un rango, ni un trozo de cifra
+  const otros = await page.evaluate(() => ['- 1.200 € al mes', 'entre 1.000-2.000 €', '1234,567 €', 'cuesta 1.5 €'].map(envolverEurosIA));
+  expect(otros).toEqual(['- **1.200 €** al mes', 'entre 1.000-**2.000 €**', '1234,567 €', 'cuesta 1.5 €']);
 });
 
 const MADRID = (h) => Date.parse(`2026-11-06T${h}:00+01:00`);   // viernes 6 nov, hora de invierno

@@ -81,7 +81,9 @@ function totalAlDiaIA(txt, antes) {
 }
 /* 0.8.3: los importes en euros que la IA no ha puesto entre ** (se le pide, pero a veces no lo hace: en el banco de la revisión
    del 7 nov, de 6 a 71 por revisión) se envuelven aquí, para que salgan como dato y se oculten con el ojo como los demás */
-const RE_EUR_SUELTO_IA = /(\*\*[^*\n]*\*\*)|((?:[+\-−]\s?)?(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d{1,2})?[  ]?€)/g;
+// el signo pegado a la cifra y nada de cifra delante (ni «- 1.200 €» de una lista, ni el «-2.000» de «1.000-2.000 €», ni un
+// trozo de «1234,567 €»)
+const RE_EUR_SUELTO_IA = /(\*\*[^*\n]*\*\*)|((?<![\d.,\w])[+\-−]?(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d{1,2})?[  ]?€)/g;
 const envolverEurosIA = (t) => String(t).replace(RE_EUR_SUELTO_IA, (m, ya, suelto) => (ya ? ya : `**${suelto}**`));
 function rellenarIA(txt, v) {
   return esc(envolverEurosIA(totalAlDiaIA(limpiaIA(txt), v && v.total && v._totalIA)))

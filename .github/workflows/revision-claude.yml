@@ -29,7 +29,10 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 90
     steps:
+      # sin dejar el token guardado para npm ni Playwright: solo lo usa el paso de subir el resultado
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
 
       - uses: actions/setup-node@v4
         with:
@@ -55,10 +58,13 @@ jobs:
 
       - name: Subir el resultado a la rama banco-revision
         if: always()
+        env:
+          TOKEN: ${{ github.token }}
         run: |
           [ -f salida/revision.json ] || exit 0
           NOMBRE="revision/$(echo "${GITHUB_REF_NAME}" | tr '/' '-')-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}.json"
-          git config user.name "github-actions[bot]"; git config user.email "41898237+github-actions[bot]@users.noreply.github.com"
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git remote set-url origin "https://x-access-token:${TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           if git fetch -q --depth=1 origin banco-revision; then git checkout -q -B banco-revision FETCH_HEAD
           else git checkout -q --orphan banco-revision && git rm -rq --cached .; fi
           mkdir -p revision && cp salida/revision.json "$NOMBRE"

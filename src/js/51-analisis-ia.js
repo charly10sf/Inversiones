@@ -131,9 +131,9 @@ function extraerJSON(texto) {
 }
 /* 0.8.3 · las frases de consejo que se cuelan en una revisión (el 6 nov, un «te conviene»): el vigía (frasesConsejoIA) mira
    cada texto del JSON; los que tengan alguna se piden reescritos a Claude en la misma conversación (para el Worker, la misma
-   revisión: mismo id y mismo primer mensaje; sin pensar y con la salida corta) y, si aun así siguen, o si falla, se quitan
-   esas frases. Lo que no es texto para leer (enlaces, fechas, notas, opciones) no se mira */
-const NO_MIRAR_REVISION = new Set(['fuentes', 'u', 'd', 'k', 'nota', 'confianza', 'nivel', 'publico', 'modo', 'opciones', 'plazo_meses', 'subida_pct', 'importe']);
+   revisión: mismo id y mismo primer mensaje, en bloques en todas las rondas; sin pensar) y, si aun así siguen, o si falla, se quitan
+   esas frases. Lo que no es texto para leer (enlaces, fechas, notas) no se mira; las opciones de las preguntas, sí */
+const NO_MIRAR_REVISION = new Set(['fuentes', 'u', 'd', 'k', 'nota', 'confianza', 'nivel', 'publico', 'modo', 'plazo_meses', 'subida_pct', 'importe']);
 function consejosEnRevision(json) {
   const out = [];
   const mirar = (v, ruta) => {
@@ -154,18 +154,24 @@ async function arreglarConsejosRevision(json, { mensajes, sistema, texto, idPreg
   let nuevos = [];
   try {
     const t2 = { rol: 'ia', partes: [], citas: [], resultados: [] };
-    const pide = `En tu revisión se han colado frases que suenan a consejo personalizado (${[...new Set(malos.flatMap((m) => m.frases))].map((f) => `«${f}»`).join(', ')}). Reescribe solo estos textos para que cuenten lo que pasa y lo que supone, con las mismas cifras y el mismo formato (**cifras**), sin decirme qué hacer ni qué me conviene. Responde solo con un bloque \`\`\`json: {"textos": ["…"]}, uno por cada texto y en el mismo orden.\n${malos.map((m, i) => `${i + 1}. ${m.texto}`).join('\n')}`;
-    await conversar({ tipo: 'análisis', cuenta: 'arreglo', tarea: 'revision', soloHaiku: true, turno: t2, idPregunta, pensar: false, maxTokens: 2000, herramientas: false, web: false, maxBusquedas: 0, alCambiar() {},
+    const pide = `En tu revisión se han colado frases que suenan a consejo personalizado (${[...new Set(malos.flatMap((m) => m.frases))].map((f) => `«${f}»`).join(', ')}). Reescribe solo estos textos para que cuenten lo que pasa y lo que supone, con las mismas cifras y el mismo formato (**cifras**), sin decirme qué hacer ni qué me conviene. Responde solo con un bloque \`\`\`json: {"textos": {"1": "…", "2": "…"}}, con el número de cada texto.\n${malos.map((m, i) => `${i + 1}. ${m.texto}`).join('\n')}`;
+    await conversar({ tipo: 'análisis', cuenta: 'arreglo', tarea: 'revision', soloHaiku: true, sinApartar: true, turno: t2, idPregunta, pensar: false, maxTokens: 4000, herramientas: false, web: false, maxBusquedas: 0, alCambiar() {},
       preparar: () => ({ mensajes: [...mensajes, { role: 'assistant', content: texto }, { role: 'user', content: pide }], sistema }) });
     turno.coste = (turno.coste || 0) + (t2.coste || 0);
     const j = extraerJSON(t2.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n'));
-    nuevos = j && Array.isArray(j.textos) ? j.textos : [];
+    // por número; una lista vale solo si trae uno por cada texto (si no, cada uno podría caer en el campo de al lado)
+    const tx = j && j.textos;
+    nuevos = tx && !Array.isArray(tx) && typeof tx === 'object' ? malos.map((m, i) => tx[i + 1]) : Array.isArray(tx) && tx.length === malos.length ? tx : [];
   } catch (e) { diarioIA(`Revisión: el arreglo de las frases no ha llegado (${String(e.codigo || e.message || e).slice(0, 60)}): se quitan`); }
   let reescritos = 0;
   malos.forEach((m, i) => {
     const n = typeof nuevos[i] === 'string' ? nuevos[i].trim() : '';
     if (n && !frasesConsejoIA(n).length) { ponerEnRuta(json, m.ruta, n); reescritos++; }
-    else ponerEnRuta(json, m.ruta, sinFrasesConsejo(m.texto));
+    else {
+      // sin las frases; si no queda nada, el titular dice algo neutro (sin titular la revisión no se enseña bien)
+      const q = sinFrasesConsejo(m.texto);
+      ponerEnRuta(json, m.ruta, q || (m.ruta.length === 1 && m.ruta[0] === 'titular' ? 'La revisión de hoy de tu cartera.' : ''));
+    }
   });
   // un párrafo que se ha quedado vacío (en «resumen»), fuera
   for (const m of malos) { const padre = m.ruta.slice(0, -1).reduce((o, k) => o[k], json); if (Array.isArray(padre) && padre.some((x) => x === '')) ponerEnRuta(json, m.ruta.slice(0, -1), padre.filter((x) => x !== '')); }
