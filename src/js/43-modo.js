@@ -34,15 +34,7 @@ function pestAv() {
   const p = S.pestAv || LS.get(LS_PEST_AV, 'rentab');
   return PEST_AV.some(([k]) => k === p) ? p : 'rentab';
 }
-/* 0.9 (propuesta A): Análisis, lo que era Cartera. En avanzado, todas; en básico, las cuatro de siempre */
-function htmlPestAna() {
-  const p = pestAv(), av = modoApp() === 'avanzado';
-  const t = (k, n, en, v) => ({ k, n: L(n, en), v });
-  const lista = [t('posiciones', 'Posiciones', 'Holdings', 'posiciones'), ...PEST_AV.slice(0, 5).map(([k, n, en]) => t(k, n, en, 'av')), t('fiscal', 'Hacienda', 'Taxes', 'fiscal'), t('analisis', 'La IA explica', 'AI explains', 'analisis'), ...PEST_AV.slice(5).map(([k, n, en]) => t(k, n, en, 'av'))]
-    .filter((x) => av || ['posiciones', 'reparto', 'fiscal', 'analisis'].includes(x.k));
-  const actual = (x) => (x.v === 'av' ? S.vista === 'av' && p === x.k : S.vista === x.v);
-  return `<nav class="pest-av" aria-label="${L('Qué ver', 'What to see')}">${lista.map((x) => `<a href="#${x.v}"${x.v === 'av' ? ` data-pest-av="${x.k}"` : ''} aria-current="${actual(x) ? 'page' : 'false'}">${x.n}</a>`).join('')}</nav>`;
-}
+// 0.8.3a: las pestañas de Análisis (htmlPestAna) y el menú del ordenador (htmlRiel), en 43b-navegacion.js
 // el sitio de una pestaña de «av»: lo llena pintarPanelAv (en el trozo) después de pintar
 const htmlPanelAv = () => `<div class="panel-av" id="panelAv" data-p="${pestAv()}" aria-busy="true"><div class="pav-esq" role="status" aria-label="${L('Preparando la pestaña…', 'Getting the tab ready…')}"><i></i><i></i><i></i><i></i></div></div>`;
 function htmlSelectorModo(enRiel) {
@@ -51,17 +43,7 @@ function htmlSelectorModo(enRiel) {
   if (enRiel) return `<div class="riel-pie"><small>${L('Cómo la ves', 'How you see it')}</small><div class="seg-modo" role="group" aria-label="${L('Modo', 'Mode')}">${bs}</div></div>`;
   return `<div class="seccion-ed aj-idioma"><h3>${ICONOS_PL.ver}${L('Cómo la ves', 'How you see it')}</h3>
     <div class="idiomas seg-modo" role="group" aria-label="${L('Modo', 'Mode')}">${bs}</div>
-    <small>${L('Básico: lo esencial, explicado. Avanzado: Hoy con trece pestañas de datos (rentabilidad, riesgo, Hacienda, reparto…). Se guarda en este dispositivo.', 'Basic: the essentials, explained. Advanced: Today with thirteen data tabs (returns, risk, taxes, allocation…). Saved on this device.')}</small></div>`;
-}
-// el menú de la izquierda en el ordenador: las cinco secciones, la IA y el modo
-function htmlRiel() {
-  return `<aside class="riel" aria-label="${L('Secciones', 'Sections')}">
-    <div class="riel-marca"><span class="marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i><b>TOISÓN</b></span></div>
-    <nav class="riel-nav">${['cartera', 'posiciones', 'mercados', 'expertos', 'tu'].map((k) => { const g = GRUPOS.find((x) => x.k === k); return `<a href="#${k}" data-ir="${k}">${k === 'cartera' ? `<span class="riel-med">${ICONOS_TS.cartera()}</span>` : ICONOS_TS[k]()}<span>${L(g.t, g.en)}</span></a>`; }).join('')}</nav>
-    <button type="button" class="riel-ia" data-accion="asesor" aria-expanded="false">${ICONOS_PL.asistente}<span>${L('Pregúntale a la IA', 'Ask the AI')}</span></button>
-    ${htmlSelectorModo(true)}
-    <button type="button" class="riel-aj" data-accion="ajustes">${ICONOS_PL.ajustes}<span>${L('Ajustes', 'Settings')}</span></button>
-  </aside>`;
+    <small>${L('Básico: lo esencial, explicado. Avanzado: Análisis con siete pestañas (posiciones, rentabilidad, riesgo, reparto, ingresos y costes, Hacienda y la IA) y las herramientas. Se guarda en este dispositivo.', 'Basic: the essentials, explained. Advanced: Analysis with seven tabs (holdings, returns, risk, allocation, income and costs, taxes and the AI) and the tools. Saved on this device.')}</small></div>`;
 }
 const iaAlLado = () => innerWidth >= 1180;
 // los textos y ponerQueEs van en el trozo «avanzado»
@@ -78,7 +60,9 @@ document.addEventListener('click', (e) => {
   if (t) {
     e.preventDefault();
     S.pestAv = t.dataset.pestAv; LS.set(LS_PEST_AV, S.pestAv); vibrar();
-    if (S.vista !== 'av') location.hash = 'av'; else { S.scrollTop = true; pintar(); }
+    // 0.8.3a: cada pestaña del trozo tiene su dirección (#av-rentab…), así «Atrás» vuelve a la de antes
+    const h = 'av-' + S.pestAv;
+    if (location.hash.slice(1) !== h) location.hash = h; else { S.scrollTop = true; pintar(); }
   }
 });
 // la pestaña elegida, a la vista en la fila (al cambiar de pantalla se repinta entera)

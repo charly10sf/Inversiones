@@ -229,6 +229,9 @@ test.describe('Marfil (7 nov)', () => {
     await expect(page.locator('.top .marca-ts i').first()).toHaveCSS('background-color', 'rgb(0, 0, 0)');
     // las pestañas de Análisis: sin carril, la elegida en vino y subrayada de oro
     await page.evaluate(() => { location.hash = 'analisis'; });
+    // 0.8.3a: en el ordenador las pestañas de Análisis están en la segunda barra de la K2 (su acabado, con la sesión del liquid)
+    if (info.project.name === 'pc') await expect(page.locator('.k2-lista a[aria-current="page"]')).toHaveText('La IA explica');
+    else {
     const elegida = page.locator('.pest-av a[aria-current="page"]');
     await expect(elegida).toBeVisible({ timeout: 15_000 });
     await expect(elegida).toHaveCSS('color', 'rgb(78, 16, 29)');
@@ -236,6 +239,7 @@ test.describe('Marfil (7 nov)', () => {
     await expect(elegida).toHaveCSS('background-image', 'none');
     // con un fondo vino muy suave detrás (se ve también en el móvil), no la pastilla rellena
     expect(await elegida.evaluate((e) => getComputedStyle(e).backgroundColor)).not.toMatch(/^rgba?\(0, 0, 0, 0\)$|^transparent$/);
+    }
     // un título de sección: en vino, con el hilo de oro debajo
     await page.evaluate(() => { location.hash = 'cartera'; });
     const cab = page.locator('#vista .sec-cab').first();

@@ -32,7 +32,7 @@ function tactil() {
   const fallos = [];
   const vis = (el) => { const r = el.getBoundingClientRect(); return r.width && r.height && r.top >= 0 && r.bottom <= innerHeight && r.left >= 0 && r.right <= innerWidth && getComputedStyle(el).visibility !== 'hidden' ? r : null; };
   const nombre = (el) => el.tagName.toLowerCase() + '.' + String(el.className).trim().split(/\s+/).slice(0, 2).join('.') + ' «' + (el.innerText || el.getAttribute('aria-label') || '').trim().slice(0, 20) + '»';
-  const tapado = (el, x, y) => { const e = document.elementFromPoint(x, y); return !e || e.closest('.tour, .hoja-fondo, .top, nav.barra, .barra, .intro') && !el.closest('.tour, .hoja-fondo, .top, nav.barra, .barra, .intro'); };
+  const tapado = (el, x, y) => { const e = document.elementFromPoint(x, y); return !e || e.closest('.tour, .hoja-fondo, .top, nav.barra, .barra, .intro, .k2-top, .riel') && !el.closest('.tour, .hoja-fondo, .top, nav.barra, .barra, .intro, .k2-top, .riel'); };
   for (const el of document.querySelectorAll(window.__PEQ)) {
     const r = vis(el); if (!r || getComputedStyle(el).pointerEvents === 'none') continue;
     const cx = r.left + r.width / 2, cy = r.top + r.height / 2;

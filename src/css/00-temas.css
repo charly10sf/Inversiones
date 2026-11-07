@@ -837,6 +837,13 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="marfil"] .riel .riel-ia svg { color: var(--sobre-oro); }
 [data-tema="marfil"] .riel-pie { border-color: var(--menu-borde); }
 [data-tema="marfil"] .riel .seg-modo { background: var(--menu-hundido); border-color: var(--menu-borde); box-shadow: none; }
+/* 0.8.3a: la K2 en Marfil, sobre el vino del menú (el acabado de verdad, con la sesión del liquid) */
+[data-tema="marfil"] .riel :is(.k2-iconos, .k2-col) { background: none; border-color: var(--menu-borde); }
+[data-tema="marfil"] .riel :is(.k2-tit, .k2-ia-cab, .k2-ia small, .k2-pags .nota) { color: var(--menu-texto-act); }
+[data-tema="marfil"] .riel :is(.k2-ia, .riel-pie) { border-color: var(--menu-borde); }
+[data-tema="marfil"] .riel .k2-lista a:hover, [data-tema="marfil"] .riel .k2-iconos :is(a, .riel-aj):hover { color: var(--menu-texto-act); background: var(--menu-luz); }
+[data-tema="marfil"] .riel .k2-lista a[aria-current="page"] { color: var(--menu-texto-act); background: var(--menu-luz); box-shadow: inset 0 0 0 1px var(--menu-oro-filo); }
+[data-tema="marfil"] .riel .k2-iconos a[aria-current="page"] { color: var(--oro-logo); background: var(--menu-luz); box-shadow: inset 0 0 0 1px var(--menu-oro-filo); }
 /* y la barra de abajo en el móvil, con el medallón de Hoy en el oro del logo */
 @media (max-width: 960px) {
   [data-tema="marfil"] .navbar { background: color-mix(in srgb, var(--menu-fondo) 94%, transparent); box-shadow: 0 12px 30px -14px var(--menu-sombra); }

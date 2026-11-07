@@ -136,6 +136,8 @@ function vistaDeHash() {
   if (v === 'objetivos' || v === 'futuro') { S.tuAp = null; return 'futuro'; }
   if (v === 'proyeccion') { S.tuAp = 'proy'; return 'futuro'; }
   const tu = /^tu-(limites|colchon|metas|perfil|ia)$/.exec(v); if (tu) { S.tuAp = tu[1]; return 'futuro'; }
+  // 0.8.3a: las pestañas del trozo «avanzado», con su dirección (#av-rentab, #av-lab…)
+  const av = /^av-([a-z]+)$/.exec(v); if (av && PEST_AV.some(([k]) => k === av[1])) { S.pestAv = av[1]; LS.set(LS_PEST_AV, av[1]); return 'av'; }
   const w = vistaSegunNav(v);
   return esVista(w) ? w : null;
 }
@@ -144,7 +146,7 @@ window.addEventListener('hashchange', () => {
   S.navego = true;
   if (S.ficha) cerrarFicha(true);
   if (S.carEdit && v !== 'cartera') cerrarCarEdit(true);
-  if (v !== S.vista || /^(renta|impuestos|objetivos|proyeccion|plan|futuro|tu-[a-z]+)$/.test(location.hash.slice(1))) {
+  if (v !== S.vista || /^(renta|impuestos|objetivos|proyeccion|plan|futuro|tu-[a-z]+|av-[a-z]+)$/.test(location.hash.slice(1))) {
     const k = history.state && history.state.k, y = k ? SCROLLS[k] : null;
     // 0.9 · acabado: la pantalla entra desde el lado del botón que has tocado (a la derecha en la barra, desde la derecha)
     const ks = GRUPOS.map((g) => g.k), ia = ks.indexOf(grupoDe(S.vista).k), ib = ks.indexOf(grupoDe(v).k);

@@ -10,7 +10,8 @@ const test = base.extend({
     expect(errores, 'errores de JavaScript en la página').toEqual([]);
   }, { auto: true }],
 });
-const pest = (page, p) => page.evaluate((x) => document.querySelector(`[data-pest-av="${x}"]`).click(), p);
+// 0.8.3a: cada pestaña del trozo tiene su dirección; Gráfico técnico y Laboratorio ya no están en la fila de Análisis (están en Más)
+const pest = (page, p) => page.evaluate((x) => { location.hash = 'av-' + x; }, p);
 const panel = (page) => page.locator('#panelAv');
 
 test('las cinco pestañas nuevas se llenan y responden', async ({ page }, info) => {

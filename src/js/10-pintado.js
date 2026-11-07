@@ -155,9 +155,13 @@ function vistaSegunNav(v) {
   if (v === 'ideas') return 'expertos';
   return v;
 }
-const grupoDe = (v) => GRUPOS.find((g) => g.vistas.includes(v)) || GRUPOS.find((g) => g.k === 'cartera');
+// 0.8.3a: Gráfico técnico y Laboratorio están en Más (el sitio de Tú en la barra), aunque se pinten en el trozo de Análisis
+const grupoDe = (v) => (v === 'av' && typeof enHerramientas === 'function' && enHerramientas() ? GRUPOS.find((g) => g.k === 'tu') : GRUPOS.find((g) => g.vistas.includes(v)) || GRUPOS.find((g) => g.k === 'cartera'));
 const epocaRenta = () => { const m = new Date().getMonth(); return m >= 2 && m <= 5; };
 function htmlSubvistas() {
+  // 0.8.3a: en Hoy, la fila de tus fijados; Herramientas, con la vuelta a Más
+  if (S.vista === 'cartera') return htmlFijadosHoy();
+  if (enHerramientas()) return htmlHerramientas();
   const g = grupoDe(S.vista), sv = subvistas(g.k); if (!sv) return '';
   // 0.3.11a: Hacienda, siempre (antes solo de marzo a junio y aparecía y desaparecía según desde dónde entraras)
   const lista = sv;
@@ -165,8 +169,9 @@ function htmlSubvistas() {
   const nav = `<nav class="grupo-tabs" aria-label="${esc(L(g.t, g.en))}">${lista.map(([k, t, en]) => `<a href="#${k}" aria-current="${S.vista === k ? 'page' : 'false'}"${k === 'futuro' && falta ? ' class="falta"' : ''}>${L(t, en)}</a>`).join('')}</nav>`;
   // en Cartera, tu total en pequeño encima (la gráfica está en Hoy) y el título de la pestaña
   // 0.9: sin el patrimonio arriba (ya está en Hoy) y con las pestañas del detalle
-  if (g.k === 'posiciones') return `<div class="ts-grupo"><h1 class="ts-tit">${L('Análisis', 'Analysis')}</h1><p class="ts-sub">${L('Todo el detalle de tu cartera, por dentro.', 'All the detail of your portfolio, inside out.')}</p>${htmlPestAna()}</div>`;
-  if (g.k === 'tu') return `<div class="ts-grupo${S.vista === 'futuro' && S.tuAp ? ' tu-sub' : ''}"><h1 class="ts-tit">${L('Tú', 'You')}</h1>${nav}</div>`;
+  // 0.8.3a: en el ordenador, el título es el de la sección de la K2 y las pestañas están en la segunda barra
+  if (g.k === 'posiciones') return `<div class="ts-grupo"><h1 class="ts-tit">${titSeccion('Análisis', 'Analysis')}</h1><p class="ts-sub t-movil">${L('Todo el detalle de tu cartera, por dentro.', 'All the detail of your portfolio, inside out.')}</p>${htmlPestAna()}</div>`;
+  if (g.k === 'tu') return `<div class="ts-grupo${S.vista === 'futuro' && S.tuAp ? ' tu-sub' : ''}">${htmlVolverMas()}<h1 class="ts-tit">${titSeccion('Tú', 'You')}</h1>${nav}</div>`;
   return nav;
 }
 const esVista = (k) => VISTAS.some(([x]) => x === k) || VISTAS_APARTE.some(([x]) => x === k);
@@ -349,7 +354,7 @@ function montar() {
   $('#app').innerHTML = `${htmlRiel()}
   <header class="top"><div class="wrap fila-top">
     <div class="marca"><span class="marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i><b>TOISÓN</b></span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
-    <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`).join('')}</nav>
+    <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => (g.k === 'tu' ? `<a href="#tu" data-ir="tu" data-mas>${L('Más', 'More')}</a>` : `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`)).join('')}</nav>
     ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
     <span class="top-mini" id="topMini" aria-hidden="true"></span>
@@ -360,7 +365,7 @@ function montar() {
     </div>
   </div></header>
   <main class="wrap" id="vista"></main>
-  <nav class="navbar" aria-label="Secciones">${GRUPOS.map((g) => { const k = g.k; return `<a href="#${k}" data-ir="${k}"${k === 'cartera' ? ' class="nav-centro"' : ''}>${ICONOS_TS[k]()}<span>${L(g.c || g.t, g.en)}</span></a>`; }).join('')}</nav>`;
+  <nav class="navbar" aria-label="Secciones">${GRUPOS.map((g) => { const k = g.k; if (k === 'tu') return `<a href="#tu" data-ir="tu" data-mas class="nav-mas" aria-haspopup="dialog">${ICONOS_PL.puntos}<span>${L('Más', 'More')}</span></a>`; return `<a href="#${k}" data-ir="${k}"${k === 'cartera' ? ' class="nav-centro"' : ''}>${ICONOS_TS[k]()}<span>${L(g.c || g.t, g.en)}</span></a>`; }).join('')}</nav>`;
   S.tickerFirma = null; marcaIA();
   document.body.classList.add('nav-ts'); marcarModo();
   // la luz de arriba: al pasar el ratón (o tocarla) se despliegan las bolsas
@@ -610,6 +615,7 @@ function pintar() {
   for (const a of $$('.nav [data-ir], .navbar [data-ir], .riel [data-ir]')) a.classList.toggle('falta', faltaP && a.dataset.ir === kFalta);
   // lo nuevo de la versión: el botón de su sección lleva «Nuevo» y late hasta que lo ves de verdad
   pintarNavNuevo();
+  pintarK2(); apuntarReciente(paginaActual());
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
   pintarGtaTop();
   cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
@@ -618,7 +624,7 @@ function pintar() {
   const scroll = window.scrollY;
   const html = { av: () => htmlPanelAv(), cartera: vistaCartera, posiciones: vistaPosiciones, tu: vistaTu, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
   setTimeout(() => { plegarNotas($('#vista')); marcarDeslizables($('#vista')); }, 0);
-  $('#vista').innerHTML = sinCortes(htmlSubvistas() + html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntanoslo: lo leemos todo.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas, cripto y futuros, al instante.">Las bolsas, con 15 minutos de retraso; los fondos, con su precio de cada día. Tus cantidades van cifradas: solo las ves tú. Las visitas se cuentan sin cookies ni datos tuyos.</p>`);
+  $('#vista').innerHTML = sinCortes(htmlK2Pest() + htmlSubvistas() + html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntanoslo: lo leemos todo.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas, cripto y futuros, al instante.">Las bolsas, con 15 minutos de retraso; los fondos, con su precio de cada día. Tus cantidades van cifradas: solo las ves tú. Las visitas se cuentan sin cookies ni datos tuyos.</p>`);
   if (S.scrollA != null) {
     // volviendo atrás: al punto exacto en el que la dejaste (y otra vez en cuanto se haya pintado todo)
     const y = S.scrollA; S.scrollA = null; S.scrollTop = false;

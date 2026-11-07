@@ -33,10 +33,10 @@ test('nada se sale de la pantalla y ninguna cifra sale cortada', async ({ page }
 test('las pestañas que se deslizan se difuminan por el lado que sigue', async ({ page }, info) => {
   test.skip(info.project.name === 'pc', 'en el ordenador caben');
   await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
-  await page.evaluate(() => { location.hash = 'analisis'; scrollTo(0, 0); });
+  // 0.8.3a: siete pestañas; con Riesgo, la tercera, quedan pestañas a los dos lados
+  await page.evaluate(() => { ponerModo('avanzado'); location.hash = 'av-riesgo'; scrollTo(0, 0); });
   await page.waitForTimeout(600);
   const fila = page.locator('.pest-av').first();
-  // «La IA explica» queda en medio: hay pestañas a los dos lados
   await expect(fila).toHaveAttribute('data-desb', 'i d');
   // al principio, solo a la derecha; al final, solo a la izquierda (marcarDesborde, que es lo que llama el desplazamiento)
   expect(await fila.evaluate((el) => { el.style.scrollBehavior = 'auto'; el.scrollLeft = 0; marcarDesborde(el); return el.getAttribute('data-desb'); })).toBe('d');

@@ -20,45 +20,7 @@ body:not(.modo-basico) .que-es { display: none; }
 /* ---------- Básico / Avanzado en Tú y en el menú ---------- */
 .seg-modo button[aria-pressed="true"] { color: var(--texto); }
 
-/* ---------- El ordenador: el menú a la izquierda ---------- */
-.riel { display: none; }
-@media (min-width: 1180px) {
-  body.nav-ts { padding-left: 232px; }
-  .riel { position: fixed; z-index: 35; top: 0; bottom: 0; left: 0; width: 232px; display: flex; flex-direction: column; gap: 4px; padding: 22px 16px 18px; border-right: 1px solid var(--sep); background: color-mix(in srgb, var(--fondo-2, var(--fondo)) 70%, var(--fondo)); overflow-y: auto; }
-  .riel-marca { padding: 4px 8px 22px; }
-  .riel-marca .marca-ts { display: inline-flex; align-items: center; gap: 10px; }
-  .riel-marca .marca-ts i { width: 34px; display: inline-grid; }
-  .riel-marca .marca-ts svg { width: 34px; height: auto; }
-  .riel-marca .marca-ts b { font: 600 17px/1 var(--marca); letter-spacing: .12em; }
-  .riel-nav { display: grid; gap: 4px; }
-  .riel-nav a { display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 12px; border-radius: var(--r-m); color: var(--texto-2); text-decoration: none; font-weight: 550; }
-  .riel-nav a:hover { color: var(--texto); background: color-mix(in srgb, var(--superficie) 60%, transparent); }
-  .riel-nav a svg { width: 22px; height: 22px; flex: none; }
-  .riel-nav a[aria-current="page"] { color: var(--texto); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--hilo); }
-  .riel-nav a[aria-current="page"] svg { color: var(--oro-texto); }
-  .riel-nav .riel-med { display: inline-grid; width: 22px; }
-  .riel-nav .riel-med .s-o { fill: currentColor; } .riel-nav .riel-med .s-t { fill: var(--oro-texto); }
-  .riel-nav a.falta span::after { content: ""; display: inline-block; width: 7px; height: 7px; margin-left: 7px; border-radius: 50%; background: var(--aviso); vertical-align: middle; }
-  .riel-ia { margin-top: 14px; display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 14px; border: 0; border-radius: var(--r-m); background: var(--metal, var(--primario)); color: var(--sobre-primario); font: 650 14px/1.2 var(--ui); text-align: left; cursor: pointer; box-shadow: inset 0 1px 0 var(--brillo); }
-  .riel-ia svg { width: 22px; height: 22px; flex: none; }
-  .riel-aj { margin-top: 6px; display: flex; align-items: center; gap: 12px; min-height: 46px; padding: 0 12px; border: 0; border-radius: var(--r-m); background: none; color: var(--texto-2); font: 550 14px/1.2 var(--ui); text-align: left; cursor: pointer; }
-  .riel-aj:hover { color: var(--texto); background: color-mix(in srgb, var(--superficie) 60%, transparent); }
-  .riel-aj svg { width: 22px; height: 22px; flex: none; }
-  .riel-ia[aria-expanded="true"] { outline: 2px solid var(--hilo); outline-offset: 2px; }
-  .riel-pie { margin-top: auto; display: grid; gap: 10px; padding: 14px 6px 0; border-top: 1px solid var(--sep); }
-  .riel-pie small { font: 600 10.5px/1 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
-  .riel-pie .seg-modo { display: flex; padding: 3px; gap: 2px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--aro); }
-  .riel-pie .seg-modo button { flex: 1; min-height: 44px; padding: 0 8px; border: 0; border-radius: 999px; background: none; color: var(--texto-2); font: 600 12.5px/1 var(--ui); cursor: pointer; }
-  .riel-pie .seg-modo button[aria-pressed="true"] { background: var(--metal, var(--primario)); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo); }
-  /* arriba ya no van la marca, las secciones ni el botón de la IA (están en el menú); si no queda nada, sin cabecera */
-  [data-tema] body.nav-ts .top :is(.marca, .nav, .as-boton) { display: none; }
-  [data-tema] body.nav-ts .top:not(:has(.gta-top-w)) { display: none; }
-
-  /* la IA, al lado: una columna a la derecha y Hoy se estrecha para dejarle sitio */
-  body.ia-lado { padding-right: 400px; }
-  body.ia-lado .asesor-fondo { left: auto; width: 400px; background: none; }
-  body.ia-lado .asesor { width: 400px; border-left: 1px solid var(--borde); box-shadow: none; animation: none; }
-}
+/* ---------- El ordenador: el menú a la izquierda (0.8.3a: la K2, en 24-navegacion.css) ---------- */
 /* con el menú y la IA al lado, Hoy es más estrecho: la cifra grande no puede pisar los rangos de la gráfica */
 @media (min-width: 1180px) { body.ia-lado .hero-num { font-size: clamp(54px, 5.2vw, 80px); } }
 

@@ -1,0 +1,154 @@
+/* =========================== 0.8.3a · la navegación nueva (43b-navegacion.js) ===========================
+   Móvil: Más abre la hoja con todo; Análisis con sus pestañas y, debajo, los apartados de la abierta.
+   Ordenador (desde 1.180 px): la K2, una barra de iconos de 64 px y otra de 252 px con las páginas y la IA.
+   Solo la forma: el acabado (cristal, colores de cada diseño) va en la sesión del acabado liquid. */
+
+/* ---------- títulos que cambian con el ancho ---------- */
+.t-pc { display: none; }
+@media (min-width: 1180px) { .t-movil { display: none; } .t-pc { display: inline; } }
+
+/* ---------- los apartados de una pestaña de Análisis y la vuelta a Más ---------- */
+.apartados { display: flex; gap: 6px; margin: 4px 0 12px; overflow-x: auto; scrollbar-width: none; }
+.apartados::-webkit-scrollbar { display: none; }
+.apartados a { flex: none; min-height: 36px; display: inline-flex; align-items: center; padding: 0 13px; border-radius: 999px; color: var(--texto-2); font: 600 12.5px/1 var(--ui); text-decoration: none; box-shadow: inset 0 0 0 1px var(--sep); white-space: nowrap; }
+.apartados a:hover { color: var(--texto); }
+.apartados a[aria-current="page"] { color: var(--texto); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--hilo); }
+.volver-mas { display: inline-flex; align-items: center; min-height: 40px; margin: 0 0 2px -6px; padding: 0 8px; border: 0; background: none; color: var(--oro-texto); font: 600 14px/1 var(--ui); cursor: pointer; }
+
+/* ---------- los fijados en Hoy y en Más ---------- */
+.fijados-hoy, .mas-fij { display: flex; flex-wrap: wrap; gap: 8px; }
+.fijados-hoy { margin: 0 0 14px; }
+.chip-fij { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; padding: 0 14px 0 11px; border: 0; border-radius: 999px; background: var(--superficie); color: var(--texto); box-shadow: inset 0 0 0 1px var(--borde); font: 600 13px/1 var(--ui); text-decoration: none; cursor: pointer; }
+.chip-fij svg { width: 17px; height: 17px; flex: none; color: var(--oro-texto); }
+.chip-fij .nav-med { width: 18px; height: auto; }
+.chip-fij .nav-med .s-o { fill: currentColor; } .chip-fij .nav-med .s-t { fill: var(--oro-texto); }
+
+/* ---------- la hoja de Más y el buscador ---------- */
+.busca-caja { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 14px; border-radius: var(--r-m); background: var(--superficie-2, var(--superficie)); box-shadow: inset 0 0 0 1px var(--borde); }
+.busca-caja svg { width: 19px; height: 19px; flex: none; color: var(--tenue); }
+.busca-caja input { flex: 1; min-width: 0; min-height: 44px; border: 0; background: none; color: var(--texto); font: 500 16px/1.2 var(--ui); outline: none; }
+.busca-caja:focus-within { box-shadow: inset 0 0 0 1.5px var(--hilo); }
+.busca-sal { margin-top: 10px; }
+.busca-res { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.busca-res li { display: flex; align-items: center; gap: 4px; }
+.busca-it { flex: 1; display: flex; align-items: center; gap: 12px; min-height: 52px; padding: 6px 10px; border: 0; border-radius: var(--r-m); background: none; color: var(--texto); text-align: left; text-decoration: none; font: inherit; cursor: pointer; }
+.busca-it:hover, .busca-it:focus-visible { background: var(--superficie-2, var(--superficie)); }
+.busca-it > svg, .busca-it > .nav-med { width: 20px; height: 20px; flex: none; color: var(--oro-texto); }
+.busca-it span { display: grid; gap: 2px; }
+.busca-it b { font: 600 14.5px/1.2 var(--ui); }
+.busca-it small { font-size: 12px; color: var(--tenue); }
+.fij-b { flex: none; width: 44px; height: 44px; display: inline-grid; place-items: center; border: 0; border-radius: 50%; background: none; color: var(--tenue); cursor: pointer; }
+.fij-b svg { width: 19px; height: 19px; }
+.fij-b[aria-pressed="true"] { color: var(--oro-texto); }
+.fij-b[aria-pressed="true"] .est { fill: currentColor; }
+.mas-g { margin: 18px 2px 8px; font: 600 11px/1 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+.mas-rejilla { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.mas-rejilla li { position: relative; display: flex; align-items: stretch; border-radius: var(--r-m); background: var(--superficie-2, var(--superficie)); box-shadow: inset 0 0 0 1px var(--borde); }
+.mas-rejilla li > a, .mas-rejilla li > button:not(.fij-b), .mas-modo { flex: 1; min-width: 0; display: flex; align-items: center; gap: 10px; min-height: 54px; padding: 8px 4px 8px 12px; border: 0; background: none; color: var(--texto); text-align: left; text-decoration: none; font: 600 13.5px/1.2 var(--ui); cursor: pointer; }
+.mas-rejilla li > a[aria-current="page"] { color: var(--oro-texto); }
+.mas-rejilla li svg { width: 20px; height: 20px; flex: none; color: var(--oro-texto); }
+.mas-rejilla .fij-b { width: 40px; height: auto; border-radius: 0 var(--r-m) var(--r-m) 0; }
+.mas-app li:first-child { grid-column: 1 / -1; flex-wrap: wrap; align-items: center; padding-right: 8px; }
+.mas-app li:first-child .mas-modo { flex: 1 1 auto; cursor: default; }
+.mas-app .seg-modo { display: flex; padding: 3px; gap: 2px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--aro, var(--borde)); }
+.mas-app .seg-modo button { min-height: 40px; padding: 0 14px; border: 0; border-radius: 999px; background: none; color: var(--texto-2); font: 600 12.5px/1 var(--ui); cursor: pointer; }
+.mas-app .seg-modo button[aria-pressed="true"] { background: var(--metal, var(--primario)); color: var(--sobre-primario); }
+.hoja-escr .et-dorado-g { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--oro-texto); font: 650 12px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; }
+.hoja-escr .et-dorado-g svg { width: 16px; height: 16px; }
+
+/* ---------- el ordenador: la K2 ---------- */
+.riel, .k2-top { display: none; }
+.k2-pest { display: none; }
+@media (min-width: 1180px) {
+  body.nav-ts { --k2-ancho: 316px; padding-left: var(--k2-ancho); padding-top: 64px; }
+  body.nav-ts.ia-grande { --k2-ancho: 504px; }
+  /* arriba ya no van la marca, las secciones ni el botón de la IA (están en la K2); si no queda nada, sin cabecera */
+  [data-tema] body.nav-ts .top :is(.marca, .nav, .as-boton) { display: none; }
+  [data-tema] body.nav-ts .top:not(:has(.gta-top-w)) { display: none; }
+  /* en el ordenador, las páginas de cada sección están en la segunda barra */
+  body.nav-ts #vista :is(.pest-av, .apartados, .grupo-tabs, .volver-mas) { display: none; }
+
+  .riel { position: fixed; z-index: 35; top: 0; bottom: 0; left: 0; display: flex; }
+  .k2-iconos { width: 64px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 0 14px; border-right: 1px solid var(--sep); background: var(--fondo-2, var(--fondo)); overflow-y: auto; scrollbar-width: none; }
+  .k2-marca { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 14px; }
+  .k2-marca i { display: grid; width: 34px; }
+  .k2-marca svg { width: 34px; height: auto; }
+  .k2-iconos a { position: relative; display: grid; place-items: center; width: 46px; height: 46px; flex: none; border-radius: var(--r-m); color: var(--texto-2); text-decoration: none; }
+  .k2-iconos a:hover { color: var(--texto); background: color-mix(in srgb, var(--superficie) 70%, transparent); }
+  .k2-iconos a svg { width: 22px; height: 22px; }
+  .k2-iconos a[aria-current="page"] { color: var(--oro-texto); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--hilo); }
+  .k2-iconos .riel-med { display: grid; width: 24px; }
+  .k2-iconos .riel-med svg { width: 24px; height: auto; }
+  .k2-iconos .riel-med .s-o { fill: currentColor; } .k2-iconos .riel-med .s-t { fill: var(--oro-texto); }
+  .k2-iconos a.falta::after, .k2-iconos a.nuevo::after { content: ""; position: absolute; top: 8px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--oro-texto); }
+  .k2-iconos .riel-aj { margin-top: auto; display: grid; place-items: center; width: 46px; height: 46px; border: 0; border-radius: var(--r-m); background: none; color: var(--texto-2); cursor: pointer; }
+  .k2-iconos .riel-aj:hover { color: var(--texto); background: color-mix(in srgb, var(--superficie) 70%, transparent); }
+  .k2-iconos .riel-aj svg { width: 22px; height: 22px; }
+
+  .k2-col { width: 252px; display: flex; flex-direction: column; border-right: 1px solid var(--sep); background: color-mix(in srgb, var(--fondo-2, var(--fondo)) 70%, var(--fondo)); }
+  body.ia-grande .k2-col { width: 440px; }
+  body.ia-grande .k2-col > :not(.k2-ia) { visibility: hidden; }
+  .k2-pags { padding: 22px 14px 10px; overflow-y: auto; }
+  .k2-tit { margin: 0 8px 14px; font: 600 20px/1.15 var(--titulo, var(--ui)); letter-spacing: -.01em; }
+  .k2-lista { display: grid; gap: 2px; }
+  .k2-lista a { display: flex; align-items: center; min-height: 42px; padding: 0 12px; border-radius: var(--r-s); color: var(--texto-2); font: 550 14px/1.2 var(--ui); text-decoration: none; }
+  .k2-lista a:hover { color: var(--texto); background: color-mix(in srgb, var(--superficie) 60%, transparent); }
+  .k2-lista a[aria-current="page"] { color: var(--texto); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--hilo); }
+  .k2-pags .nota { margin: 0 8px 10px; }
+  .k2-pags .btn { margin: 0 8px; }
+  .k2-col .riel-pie { display: grid; gap: 8px; margin: 0 14px; padding: 12px 6px; border-top: 1px solid var(--sep); }
+  .k2-col .riel-pie small { font: 600 10.5px/1 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+  .k2-col .seg-modo { display: flex; padding: 3px; gap: 2px; border-radius: 999px; box-shadow: inset 0 0 0 1px var(--aro, var(--borde)); }
+  .k2-col .seg-modo button { flex: 1; min-height: 36px; padding: 0 8px; border: 0; border-radius: 999px; background: none; color: var(--texto-2); font: 600 12.5px/1 var(--ui); cursor: pointer; }
+  .k2-col .seg-modo button[aria-pressed="true"] { background: var(--metal, var(--primario)); color: var(--sobre-primario); box-shadow: inset 0 1px 0 var(--brillo); }
+  .k2-ia { flex: 1; min-height: 210px; display: flex; flex-direction: column; gap: 10px; padding: 14px; border-top: 1px solid var(--sep); }
+  .k2-ia-cab { display: flex; align-items: center; gap: 9px; font: 600 14px/1 var(--ui); }
+  .k2-ia-cab .ia-av-ts { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: var(--metal, var(--primario)); color: var(--sobre-primario); }
+  .k2-ia-cab .ia-av-ts svg { width: 17px; height: 17px; }
+  .riel-ia { display: flex; align-items: center; gap: 10px; min-height: 46px; padding: 0 14px; border: 0; border-radius: var(--r-m); background: var(--superficie); color: var(--texto-2); box-shadow: inset 0 0 0 1px var(--borde); font: 500 14px/1.2 var(--ui); text-align: left; cursor: text; }
+  .riel-ia:hover { color: var(--texto); box-shadow: inset 0 0 0 1px var(--hilo); }
+  .riel-ia svg { width: 18px; height: 18px; flex: none; color: var(--oro-texto); }
+  .riel-ia[aria-expanded="true"] { outline: 2px solid var(--hilo); outline-offset: 2px; }
+  .k2-ia small { color: var(--tenue); font-size: 12px; line-height: 1.35; }
+
+  /* arriba: buscador, fijados, Escritorios, avisos y cuenta */
+  .k2-top { position: fixed; z-index: 34; top: 0; left: var(--k2-ancho); right: 0; height: 64px; display: flex; align-items: center; gap: 16px; padding: 0 28px; background: color-mix(in srgb, var(--fondo) 88%, transparent); border-bottom: 1px solid var(--sep); }
+  body.ia-lado:not(.ia-grande) .k2-top { right: 0; }
+  .k2-busca { flex: 0 1 460px; display: flex; align-items: center; gap: 10px; min-height: 42px; padding: 0 12px 0 14px; border: 0; border-radius: var(--r-m); background: var(--superficie); color: var(--tenue); box-shadow: inset 0 0 0 1px var(--borde); font: 500 14px/1 var(--ui); cursor: pointer; text-align: left; }
+  .k2-busca span { flex: 1; }
+  .k2-busca svg { width: 18px; height: 18px; }
+  .k2-busca kbd { padding: 4px 7px; border-radius: 6px; box-shadow: inset 0 0 0 1px var(--borde); font: 600 11px/1 var(--ui); color: var(--texto-2); }
+  .k2-busca:hover { box-shadow: inset 0 0 0 1px var(--hilo); }
+  .k2-der { margin-left: auto; display: flex; align-items: center; gap: 6px; }
+  .k2-der .ib svg { width: 21px; height: 21px; }
+  .k2-escr { display: inline-flex; align-items: center; gap: 8px; min-height: 40px; padding: 0 12px; border: 0; border-radius: var(--r-m); background: none; color: var(--texto-2); font: 600 13.5px/1 var(--ui); cursor: pointer; }
+  .k2-escr:hover { color: var(--texto); background: var(--superficie); }
+  .et-dorado { padding: 3px 7px; border-radius: 999px; background: color-mix(in srgb, var(--oro-texto) 14%, transparent); color: var(--oro-texto); font: 700 10px/1 var(--ui); font-style: normal; letter-spacing: .06em; text-transform: uppercase; }
+  .k2-cuenta { display: grid; place-items: center; width: 40px; height: 40px; margin-left: 4px; border-radius: 50%; background: var(--superficie); color: var(--texto); box-shadow: inset 0 0 0 1px var(--borde); }
+  .k2-cuenta svg { width: 20px; height: 20px; }
+
+  /* con la IA agrandada, las páginas de la sección suben a pestañas encima de la página */
+  body.ia-grande .k2-pest { display: flex; gap: 6px; margin: 0 0 16px; overflow-x: auto; scrollbar-width: none; }
+  .k2-pest a { flex: none; min-height: 40px; display: inline-flex; align-items: center; padding: 0 15px; border-radius: 999px; color: var(--texto-2); font: 600 13px/1 var(--ui); text-decoration: none; white-space: nowrap; }
+  .k2-pest a[aria-current="page"] { background: var(--metal, var(--primario)); color: var(--sobre-primario); }
+
+  /* la IA abierta: en el hueco de abajo de la segunda barra; agrandada, la barra entera */
+  body.ia-lado .asesor-fondo { left: 64px; right: auto; top: var(--k2-ia-top, 50vh); bottom: 0; width: 252px; background: none; }
+  body.ia-lado .asesor { width: 100%; height: 100%; max-height: none; border-radius: 0; border: 0; border-top: 1px solid var(--borde); box-shadow: none; animation: none; }
+  body.ia-lado.ia-grande .asesor-fondo { top: 0; width: 440px; }
+  body.ia-lado.ia-grande .asesor { border-top: 0; border-right: 1px solid var(--borde); }
+  /* estrecha: la cabecera dice siempre «La IA» (que se vea que es una IA); se quitan el dibujo, la línea de debajo y el aviso de fallos */
+  body.ia-lado:not(.ia-grande) .as-cab { padding: 10px 6px 10px 14px; }
+  body.ia-lado:not(.ia-grande) .asesor :is(.as-ico, #asSub, .ib-bicho) { display: none; }
+  body.ia-lado:not(.ia-grande) .as-cab .ib { width: 38px; height: 38px; }
+}
+.as-agrandar { display: none; }
+@media (min-width: 1180px) { body.ia-lado .as-agrandar { display: inline-grid; } }
+@media (min-width: 1180px) and (prefers-reduced-motion: no-preference) { body.nav-ts { transition: padding-left .2s ease; } .k2-col, .k2-top { transition: width .2s ease, left .2s ease; } }
+/* la IA estrecha: nada puede pedir más ancho que la barra (un correo largo en una línea estiraba la rejilla) */
+@media (min-width: 1180px) {
+  body.ia-lado .as-cuerpo { overflow-wrap: anywhere; }
+  body.ia-lado .as-cuerpo > * { min-width: 0; }
+  body.ia-lado .as-config { grid-template-columns: minmax(0, 1fr); }
+  body.ia-lado .as-cuerpo :is(p, .btn) { max-width: 100%; white-space: normal; }
+}

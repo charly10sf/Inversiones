@@ -198,6 +198,7 @@ async function abrirAsesor(pregunta, enviar) {
     fondo = document.createElement('div'); fondo.className = 'asesor-fondo'; fondo.id = 'asesorFondo';
     fondo.innerHTML = `<section class="asesor" role="dialog" aria-modal="true" aria-labelledby="asTit">
       <header class="as-cab"><div class="as-tit"><span class="as-ico ia-av">${AVATAR_IA}</span><div><h2 id="asTit" data-no-trad>${NOM_IA}</h2><small id="asSub"></small></div></div>
+        <button class="ib as-agrandar" data-as="agrandar" title="Agrandar la IA" aria-label="Agrandar la IA" aria-pressed="false">${SVG('<path d="M14 4h6v6M10 20H4v-6M20 4l-6.5 6.5M4 20l6.5-6.5"/>', 1.9)}</button>
         <button class="ib" data-as="nueva" title="Nueva conversación" aria-label="Nueva conversación">${ICONOS.nueva}</button>
         <button class="ib" data-as="ajustes" title="Ajustes de la IA" aria-label="Ajustes de la IA">${ICONOS.ajustes}</button>
         <button class="ib ib-bicho" data-accion="opinion" title="Avisar de un fallo o mandar una idea" aria-label="Avisar de un fallo">${ICONOS.bicho}</button>
@@ -208,7 +209,8 @@ async function abrirAsesor(pregunta, enviar) {
     fondo.addEventListener('click', (e) => { if (e.target === fondo) cerrarAsesor(); else clicAsesor(e); });
     document.body.appendChild(fondo);
     // 0.9: en el ordenador la IA se abre al lado, en una columna a la derecha, y Hoy sigue a la vista y se puede mover
-    if (iaAlLado()) { document.body.classList.add('ia-lado'); $('.asesor', fondo).setAttribute('aria-modal', 'false'); for (const b of $$('.riel-ia')) b.setAttribute('aria-expanded', 'true'); }
+    // 0.8.3a (K2): abajo en la segunda barra, en el hueco de la IA; con «Agrandar», la barra entera (440 px)
+    if (iaAlLado()) { document.body.classList.add('ia-lado'); colocarIAK2(); if (LS.get('inv-ia-grande', false)) agrandarIA(true); $('.asesor', fondo).setAttribute('aria-modal', 'false'); for (const b of $$('.riel-ia')) b.setAttribute('aria-expanded', 'true'); }
     else document.body.style.overflow = 'hidden';
     S.asesorAtras = conAtras(() => cerrarAsesor(true), fondo);
     const ta = $('#asTexto', fondo);
@@ -278,7 +280,7 @@ function cerrarAsesor(desdeAtras) {
   const f = $('#asesorFondo'); if (!f) return;
   f.remove(); document.body.style.overflow = '';
   archivarYa();   // 0.8.2: la conversación abierta pasa ya a la lista (ver archivarLuego)
-  if (document.body.classList.contains('ia-lado')) { document.body.classList.remove('ia-lado'); for (const b of $$('.riel-ia')) b.setAttribute('aria-expanded', 'false'); }
+  if (document.body.classList.contains('ia-lado')) { document.body.classList.remove('ia-lado', 'ia-grande'); for (const b of $$('.riel-ia')) b.setAttribute('aria-expanded', 'false'); }
   if (desdeAtras !== true && S.asesorAtras) S.asesorAtras();
   S.asesorAtras = null;
   // el foco vuelve a lo que la abrió (una cifra, un «Pregúntale»); si ya no está, al botón de la IA
