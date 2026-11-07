@@ -3,10 +3,9 @@
 // render(tipo, lang, d) -> { asunto, previa, html, texto }
 //   tipo: 'confirmar' | 'clave' | 'bienvenida'
 //   lang: 'es' | 'en'
-//   d: { correo, enlace, img: nombre => url }  (img('icono'), img('hero-es'), img('i-cartera')…)
+//   d: { correo, enlace, img: nombre => url }  (img('hero-es'), img('i-cartera')…)
 
 const SANS = "-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Inter,Helvetica,Arial,sans-serif";
-const SERIF = "Georgia,'Gelasio','Times New Roman',serif";
 
 const C = {
   fondo: '#f3f1ec', tarjeta: '#ffffff', borde: '#e7e2d9', texto: '#1a1a1a', texto2: '#4b4740', tenue: '#7d776d',
@@ -135,13 +134,8 @@ export function render(tipo, lang, d) {
   const img = d.img, url = d.enlace, correo = d.correo;
   const regla = (pad = '0') => `<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:${pad}"><tr><td height="1" class="t-regla" bgcolor="${C.borde}" style="font-size:0;line-height:0;background:${C.borde}">&nbsp;</td></tr></table>`;
 
-  const heroUrl = tipo === 'bienvenida' ? img('hero-' + (T[lang] ? lang : 'es')) : '';
-  const cabecera = heroUrl
-    ? `<tr><td style="padding:0;font-size:0;line-height:0"><img src="${esc(heroUrl)}" width="574" alt="Toisón" style="display:block;border:0;width:100%;max-width:574px;height:auto;border-radius:13px 13px 0 0"></td></tr>`
-    : `<tr><td height="4" class="t-oro" bgcolor="${C.oro}" style="font-size:0;line-height:0;background:${C.oro};border-radius:14px 14px 0 0">&nbsp;</td></tr>
-<tr><td class="t-pad" style="padding:28px 40px 0"><table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
-<td valign="middle"><img src="${esc(img('icono'))}" width="42" height="42" alt="" style="display:block;border:0;border-radius:10px"></td>
-<td valign="middle" class="t-titulo" style="padding-left:13px;font:500 19px/1 ${SERIF};letter-spacing:.28em;color:${C.texto}">TOISÓN</td></tr></table></td></tr>`;
+  // la cabecera (símbolo, TOISÓN, el lema y la línea de oro) en los tres correos (Carlos, 7 nov)
+  const cabecera = `<tr><td style="padding:0;font-size:0;line-height:0"><img src="${esc(img('hero-' + (T[lang] ? lang : 'es')))}" width="574" alt="Toisón" style="display:block;border:0;width:100%;max-width:574px;height:auto;border-radius:13px 13px 0 0"></td></tr>`;
 
   const chip = tipo !== 'bienvenida' ? `<table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 20px"><tr><td class="t-chip" bgcolor="${C.chip}" style="background:${C.chip};border-radius:8px;padding:8px 12px;font:400 14px/20px ${SANS};color:${C.texto2}">${esc(L.cuenta)}: <b class="t-texto" style="color:${C.texto};font-weight:600">${esc(correo)}</b></td></tr></table>` : '';
 

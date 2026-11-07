@@ -100,7 +100,7 @@ test('confirmar: solo con sesión, para esa cuenta sin confirmar, uno por minuto
     const enlace = 'https://toison.es/app/cuenta.html?mode=verifyEmail&amp;oobCode=COD-VERIFY_EMAIL-1&amp;lang=es';
     expect(m.html).toContain(`href="${enlace}"`);
     expect(m.text).toContain('https://toison.es/app/cuenta.html?mode=verifyEmail&oobCode=COD-VERIFY_EMAIL-1&lang=es');
-    expect(m.html).toContain('https://w.prueba/correo/img/icono.png?v=1');
+    expect(m.html).toContain('https://w.prueba/correo/img/hero-es.jpg?v=1');
     // el segundo en menos de un minuto, no
     const r2 = await pedir(env, { tipo: 'confirmar' }, { uid: 'u2', email: 'ana@prueba.com', verificado: false });
     expect(r2.status).toBe(429);
@@ -117,6 +117,7 @@ test('en inglés y con la app de github.io', async () => {
     const r = await pedir(nuevoEnv(), { tipo: 'confirmar', lang: 'en', base: 'https://charly10sf.github.io/Inversiones/' }, { uid: 'u3', email: 'beto@prueba.com', verificado: false, origen: 'https://toison.es' });
     expect(r.j.ok).toBe(true);
     expect(v.resend[0].c.subject).toBe('Confirm your Toisón email');
+    expect(v.resend[0].c.html).toContain('/correo/img/hero-en.jpg?v=1');
     expect(v.resend[0].c.text).toContain('https://charly10sf.github.io/Inversiones/cuenta.html?mode=verifyEmail&oobCode=COD-VERIFY_EMAIL-1&lang=en');
     // una base que no es nuestra no se usa
     await pedir(nuevoEnv(), { tipo: 'confirmar', base: 'https://malo.example/' }, { uid: 'u4', email: 'beto@prueba.com', verificado: false, origen: 'https://toison.es' });
@@ -226,7 +227,7 @@ test('las imágenes de los correos se sirven con caché larga', async () => {
   expect(r.headers.get('Cache-Control')).toContain('max-age=31536000');
   const b = new Uint8Array(await r.arrayBuffer());
   expect([b[0], b[1]]).toEqual([0xff, 0xd8]);
-  const p = await worker.fetch(new Request('https://w.prueba/correo/img/icono.png'), env, {});
+  const p = await worker.fetch(new Request('https://w.prueba/correo/img/i-ia.png'), env, {});
   expect(p.headers.get('Content-Type')).toBe('image/png');
   expect((await worker.fetch(new Request('https://w.prueba/correo/img/constructor'), env, {})).status).toBe(404);
 });
@@ -304,7 +305,7 @@ test('el Worker de pruebas (SOLO_PRUEBA) solo deja la ruta de pruebas y las imá
     expect((await pedir(env, { tipo: 'clave', correo: 'ana@prueba.com' })).status).toBe(404);
     expect((await pedir(env, { tipo: 'confirmar' }, { uid: 'e1', email: 'ana@prueba.com', verificado: false })).status).toBe(404);
     for (const ruta of ['/claude', '/isin', '/banco/inicio']) expect((await worker.fetch(new Request('https://w.prueba' + ruta, { method: 'POST' }), env, {})).status).toBe(404);
-    expect((await worker.fetch(new Request('https://w.prueba/correo/img/icono.png'), env, {})).status).toBe(200);
+    expect((await worker.fetch(new Request('https://w.prueba/correo/img/hero-en.jpg'), env, {})).status).toBe(200);
     expect((await pedir(env, { tipo: 'bienvenida' }, { ruta: '/correo/prueba', cab: { 'X-Prueba': 'q'.repeat(40) } })).j.ok).toBe(true);
     expect(v.resend.length).toBe(1);
   });
