@@ -9,9 +9,11 @@ const NOVEDADES = [
     { d: 'pulido', t: 'Marfil, más cuidado', x: 'Marfil estrena crema en capas, con el menú lateral y la barra de abajo en vino, los detalles en el oro del logo y una raya de oro bajo la pestaña elegida. Borgoña se retira: quien la tenía pasa a Marfil.' },
     { d: 'app', t: 'Toisón se muda a toison.es/app', x: 'Cuando llegue el momento, la app te lo dice y te lleva tus datos a la dirección nueva con un toque. No pierdes nada.' },
     { d: 'logo', t: 'Los logos, desde Toisón', x: 'Los logos de las empresas y los fondos se guardan ahora en Toisón en vez de pedirse a Google. La mayoría ya sale así; el resto, como hasta ahora.' },
+    { d: 'perfil', ir: { v: 'objetivos' }, t: 'Un aviso cuando pasas tus límites', x: 'Si tu cartera pasa uno de los límites que pusiste en Tú (acciones sueltas, cripto, oro, una sola empresa o la caída desde su máximo), te llega un aviso con el dato y nada más. La caída es un campo nuevo en Tú: vacío, sin límite. Se activa en Ajustes, Avisos; en Android también con la app cerrada, en cuanto instales la app nueva.' },
     { d: 'app', t: 'En Android, el widget y los avisos con Marfil', x: 'El widget, la etiqueta de Marfil y las barras del móvil llevan el vino y el oro nuevos, en cuanto instales la app de Android nueva.', solo: 'dueno' },
   ], arreglos: [
     'El icono de la app y la portada de la presentación estrenan el Mármol: negro con la piedra y el oro del logo. En Android, al instalar la app nueva.',
+    'En el modo estándar, lo que dice cada límite de Tú se queda en cuánto te pasas, sin decirte qué hacer.',
     { t: 'Quien tenía guardado Borgoña abre en Marfil, también en la web y en Android.', solo: 'dueno' },
   ] },
   { v: '0.8.2e', f: '2026-11-06', h: '23:50', t: 'Las bajadas, en rojo', arreglos: [

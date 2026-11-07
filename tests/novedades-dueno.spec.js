@@ -33,7 +33,7 @@ for (const dueno of [false, true]) {
       for (let i = 0; i < 40 && !(await ixn.count()); i++) { await page.evaluate(() => document.querySelectorAll('.hoja-fondo, .tour').forEach((x) => x.remove())); await page.waitForTimeout(1500); }
       await expect(ixn).toBeVisible();
       // los de la 0.8.1 (6 el dueño, 3 los demás), los de la 0.8.1a (6 y 5), los de la 0.8.1b (2 para todos), los de la 0.8.1c (2 y 1) y los de la 0.8.1d (2 y 1), y los de la 0.8.2 (4 el dueño, 2 los demás) la 0.8.2a (2 y 2), la 0.8.2c (7 y 6), la 0.8.2d (8 y 4), la 0.8.2e (1 y 1) y la 0.8.3 (2 y 1)
-      await expect(ixn.locator('.ixn-arr li')).toHaveCount(dueno ? 42 : 28);
+      await expect(ixn.locator('.ixn-arr li')).toHaveCount(dueno ? 43 : 29);
       if (dueno) await expect(ixn).toContainText('Topes de gasto'); else await expect(ixn).not.toContainText('Topes de gasto');
       expect(await page.evaluate(() => LS.get('inv-dueno', 0))).toBe(dueno ? 1 : 0);
       await page.evaluate(() => document.querySelectorAll('.ixn, .intro').forEach((x) => x.remove()));
