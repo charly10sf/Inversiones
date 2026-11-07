@@ -2,7 +2,7 @@
    última versión; si la red no contesta en 3 segundos o no hay conexión, sale la copia guardada.
    El resto (iconos, letras) sale de la copia y se renueva por detrás.
    Los datos (precios, cartera cifrada, GitHub, Yahoo, Bitvavo) nunca pasan por aquí: la página los guarda aparte. */
-var CACHE = 'inv-v132';
+var CACHE = 'inv-v133';
 var CORE = ['./', 'index.html', 'manifest.webmanifest', 'favicon.svg', 'toison-32.png', 'toison-192.png', 'toison-512.png', 'toison-maskable-512.png', 'toison-180.png', 'icon-192.png', 'toison-aviso.png'];
 var DATOS = /(^|\/)(opinion\.json|instrumentos\.json|cartera\.enc\.json|analisis-ia\.json|analisis\.enc\.json)$/;
 // 0.6: lo de CORE se pide sin la caché del navegador (la página podía venir vieja, de hace hasta 10 minutos), y los

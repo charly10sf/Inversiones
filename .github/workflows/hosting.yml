@@ -1,0 +1,130 @@
+# toison.es entera en Firebase Hosting (0.8.3, «Toisón, en su casa»): la web de presentación (repo toison-web, rama main)
+# en la raíz y la app (el build de este repo) en /app/. GitHub Pages no admite alojar un negocio; Firebase Hosting, sí.
+#
+# Cómo se monta: hosting/sitio = toison-web (sin CNAME ni su app/ de redirección) + hosting/sitio/app = dist/ del build,
+# con los archivos con huella de la versión que ya estaba publicada en toison.es/app (como hace «Pages»), y se publica
+# con hosting/firebase.json (cabeceras de caché, /app → /app/ y el permiso para que la dirección vieja lea version.json).
+#
+# Cuándo:
+#   - A mano (Actions → Hosting → Run workflow): en el canal «prueba», una dirección provisional de Firebase
+#     (growfolio-a79a9--prueba-….web.app, caduca a los 7 días) que no toca toison.es. Con canal = live, toison.es.
+#   - Sola, tras «Pages» en main (cada versión publicada), y llamada desde toison-web al cambiar la web: SOLO si la variable
+#     del repositorio HOSTING_EN_VIVO vale «si». Hasta la mudanza no vale nada y no publica nada en toison.es.
+# Secreto: FIREBASE_HOSTING, la clave JSON de una cuenta de servicio con el papel «Administrador de Firebase Hosting» en el
+# proyecto growfolio-a79a9 (en toison-web, el mismo secreto). Sin él, avisa y no hace nada.
+name: Hosting
+
+on:
+  workflow_run:
+    workflows: [Pages]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      canal:
+        description: "prueba (dirección provisional) o live (toison.es)"
+        default: prueba
+        required: true
+  workflow_call:
+    inputs:
+      canal:
+        type: string
+        default: live
+    secrets:
+      FIREBASE_HOSTING:
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: hosting-${{ inputs.canal || 'live' }}
+  cancel-in-progress: false
+
+jobs:
+  hosting:
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      CANAL: ${{ inputs.canal || 'live' }}
+      EN_VIVO: ${{ vars.HOSTING_EN_VIVO }}
+      CLAVE: ${{ secrets.FIREBASE_HOSTING }}
+    steps:
+      - name: ¿Se publica?
+        id: puerta
+        run: |
+          if [ -z "$CLAVE" ]; then echo "::warning::Falta el secreto FIREBASE_HOSTING: no se publica nada."; echo "seguir=no" >> "$GITHUB_OUTPUT"; exit 0; fi
+          case "$CANAL" in
+            live) if [ "$EN_VIVO" != "si" ]; then echo "::notice::HOSTING_EN_VIVO no vale «si»: toison.es no se toca."; echo "seguir=no" >> "$GITHUB_OUTPUT"; exit 0; fi ;;
+            *[!a-z0-9-]*|"") echo "::error::Canal raro: $CANAL"; exit 1 ;;
+          esac
+          echo "seguir=si" >> "$GITHUB_OUTPUT"
+
+      # la app: desde toison-web (workflow_call) es main de este repo; tras «Pages», el commit que se publicó allí
+      - uses: actions/checkout@v4
+        if: steps.puerta.outputs.seguir == 'si'
+        with:
+          repository: charly10sf/Inversiones
+          ref: ${{ github.event.workflow_run.head_sha || (github.repository == 'charly10sf/Inversiones' && github.sha) || 'main' }}
+          path: app
+
+      - uses: actions/checkout@v4
+        if: steps.puerta.outputs.seguir == 'si'
+        with:
+          repository: charly10sf/toison-web
+          ref: main
+          path: web
+
+      - uses: actions/setup-node@v4
+        if: steps.puerta.outputs.seguir == 'si'
+        with:
+          node-version: "22"
+
+      - name: La app
+        if: steps.puerta.outputs.seguir == 'si'
+        working-directory: app
+        run: npm ci && npm run build
+
+      - name: El sitio (la web y la app en /app)
+        if: steps.puerta.outputs.seguir == 'si'
+        run: |
+          S=app/hosting/sitio
+          rm -rf "$S" && mkdir -p "$S"
+          (cd web && tar cf - --exclude=.git --exclude=.github --exclude=CNAME --exclude=.nojekyll --exclude=README.md --exclude=app .) | (cd "$S" && tar xf -)
+          cp -r app/dist "$S/app"
+          # los archivos con huella de lo que ya estaba en toison.es/app se quedan una versión más (pestañas y la app de
+          # Android abiertas desde antes siguen pidiendo los trozos de su versión hasta que recargan)
+          BASE=https://toison.es/app/
+          if html=$(curl -fsSL "${BASE}index.html" 2>/dev/null) && echo "$html" | grep -q 'assets/app-'; then
+            lista="$(echo "$html" | grep -oE 'assets/[A-Za-z0-9._-]+' || true)"
+            lista="$lista $(curl -fsSL "${BASE}sw.js" 2>/dev/null | grep -oE '(assets|en)/[A-Za-z0-9._-]+' || true)"
+            nucleo=$(echo "$html" | grep -oE 'assets/app-[a-f0-9]+\.js' | head -1 || true)
+            [ -n "$nucleo" ] && lista="$lista $(curl -fsSL "${BASE}$nucleo" | grep -oE '(assets|en)/[A-Za-z0-9_-]+\.(js|json)' || true)"
+            for f in $(echo $lista | tr ' ' '\n' | sort -u); do
+              [ -f "$S/app/$f" ] && continue
+              mkdir -p "$S/app/$(dirname "$f")"
+              if curl -fsSL "${BASE}$f" -o "$S/app/$f"; then echo "se queda $f"; else rm -f "$S/app/$f"; fi
+            done
+          else
+            echo "toison.es/app aún no es la app: nada que guardar de antes"
+          fi
+          test -f "$S/index.html" && test -f "$S/app/index.html" && test -f "$S/app/version.json"
+          echo "web: $(find "$S" -path "$S/app" -prune -o -type f -print | wc -l) archivos · app: $(find "$S/app" -type f | wc -l) archivos"
+
+      - name: Publicar
+        if: steps.puerta.outputs.seguir == 'si'
+        working-directory: app
+        run: |
+          printf '%s' "$CLAVE" > "$RUNNER_TEMP/clave.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/clave.json"
+          V=$(node -e "console.log(require('./dist/version.json').v || '')" 2>/dev/null || true)
+          if [ "$CANAL" = "live" ]; then
+            npx --yes firebase-tools@14 deploy --only hosting --config hosting/firebase.json --project growfolio-a79a9 --non-interactive -m "Toisón ${V} · web ${{ github.repository }}@${GITHUB_SHA::7}"
+            echo "::notice::Publicado en toison.es (app ${V})."
+          else
+            npx --yes firebase-tools@14 hosting:channel:deploy "$CANAL" --expires 7d --config hosting/firebase.json --project growfolio-a79a9 --non-interactive | tee "$RUNNER_TEMP/salida.txt"
+            url=$(grep -oE 'https://[a-z0-9-]+--[a-z0-9-]+\.web\.app' "$RUNNER_TEMP/salida.txt" | head -1 || true)
+            echo "::notice::Canal ${CANAL}: ${url} (caduca en 7 días; la app, en ${url}/app/)"
+          fi
+          rm -f "$RUNNER_TEMP/clave.json"

@@ -47,7 +47,16 @@ final class Datos {
         return prefs(c).getString("repo", VIEJO);
     }
 
+    /* 0.8.3: la casa nueva de la app, toison.es/app (Firebase Hosting). La app se cambia a ella cuando la web vieja le pasa
+       sus datos (Puente.mudanza): desde entonces carga la nueva. Los datos del widget y de los precios no cambian. */
+    static final String CASA_NUEVA = "https://toison.es/app/";
+
+    static boolean mudada(Context c) {
+        return "toison".equals(prefs(c).getString("casa", ""));
+    }
+
     static String web(Context c) {
+        if (mudada(c)) return CASA_NUEVA;
         return "https://charly10sf.github.io/" + repo(c) + "/";
     }
 

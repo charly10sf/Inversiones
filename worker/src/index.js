@@ -13,9 +13,10 @@
 const EB_API = 'https://api.enablebanking.com';
 const FB_PROYECTO = 'growfolio-a79a9';
 const FB_JWKS = 'https://www.googleapis.com/service_accounts/v1/jwk/securetoken@system.gserviceaccount.com';
-const ORIGENES = ['https://charly10sf.github.io'];
+// 0.8.3: también toison.es, la casa nueva de la app (toison.es/app, Firebase Hosting)
+const ORIGENES = ['https://charly10sf.github.io', 'https://toison.es'];
 // la primera es la de por defecto; la web manda la suya (la de GrowFolio, en cuanto el repositorio se renombre)
-const VUELTAS = ['https://charly10sf.github.io/Inversiones/', 'https://charly10sf.github.io/GrowFolio/'];
+const VUELTAS = ['https://charly10sf.github.io/Inversiones/', 'https://charly10sf.github.io/GrowFolio/', 'https://toison.es/app/'];
 // el saldo que vale para «tu efectivo»: el disponible si lo dan; si no, el contable
 const ORDEN_SALDO = ['ITAV', 'CLAV', 'ITBD', 'CLBD', 'XPCD', 'OPAV', 'OPBD', 'PRCD', 'FWAV', 'INFO', 'OTHR'];
 

@@ -156,3 +156,6 @@ body.con-ixn { overflow: hidden; }
 @keyframes ilus-cierra { from { transform: translateY(-14px); } }
 @media (prefers-reduced-motion: reduce) { :is(.ix-cap).activa * { animation: none !important; } }
 
+/* 0.8.3: la pantalla de la mudanza a toison.es/app, en la dirección nueva (62a-mudanza.js) */
+.mudanza-caja { text-align: center; }
+.mudanza-simb .simb-ts { display: block; width: 64px; height: auto; margin: 0 auto 14px; }

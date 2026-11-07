@@ -61,6 +61,29 @@ public class Puente {
         return Datos.repo(ctx);
     }
 
+    /** 0.8.3: la mudanza a toison.es/app. La web de la dirección vieja da aquí lo que guardaba en el navegador (un JSON con
+        sus textos de localStorage); la app lo guarda, se cambia a la dirección nueva y la nueva lo recoge con mudanzaDatos.
+        Que exista le dice además a la web que esta app ya sabe mudarse (la web solo lo llama desde la dirección vieja). */
+    @JavascriptInterface
+    public boolean mudanza(String json) {
+        if (json == null || json.length() > 8_000_000) return false;
+        Datos.prefs(ctx).edit().putString("mudanza", json).putString("casa", "toison").commit();
+        act.mudarse();
+        return true;
+    }
+
+    /** lo que dejó la dirección vieja (o null): lo pide la nueva al abrir con #mudanza */
+    @JavascriptInterface
+    public String mudanzaDatos() {
+        return Datos.mudada(ctx) ? Datos.prefs(ctx).getString("mudanza", null) : null;
+    }
+
+    /** la nueva ya lo ha guardado: fuera de la app */
+    @JavascriptInterface
+    public void mudanzaHecha() {
+        Datos.prefs(ctx).edit().remove("mudanza").apply();
+    }
+
     @JavascriptInterface
     public boolean bancoDentro() {
         return true;

@@ -146,6 +146,8 @@ const CFG = (() => {
     const c = LS.get('inv-repo');
     if (c && c.owner && c.repo) { owner = c.owner; repo = c.repo; }
   }
-  return { dev: q.has('dev'), owner, repo, pages: `https://${owner}.github.io/${repo}/` };
+  // la dirección pública de la app (para compartir y para el enlace con el token): desde la 0.8.3 también toison.es/app
+  const fuera = /(^|\.)toison\.es$/.test(location.hostname) || /\.(web\.app|firebaseapp\.com)$/.test(location.hostname);
+  return { dev: q.has('dev'), owner, repo, pages: fuera ? location.origin + location.pathname.replace(/[^/]*$/, '') : `https://${owner}.github.io/${repo}/` };
 })();
 

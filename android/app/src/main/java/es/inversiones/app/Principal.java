@@ -283,7 +283,18 @@ public class Principal extends Activity {
 
     private static boolean esDeLaWeb(Uri u) {
         String p = u.getPath() != null ? u.getPath().toLowerCase() : "";
+        // 0.8.3: la casa nueva, toison.es/app (el resto de toison.es, la web de presentación, se abre fuera)
+        if ("toison.es".equalsIgnoreCase(u.getHost()) && "https".equals(u.getScheme()) && (p.equals("/app") || p.startsWith("/app/"))) return true;
         return "charly10sf.github.io".equalsIgnoreCase(u.getHost()) && (p.startsWith("/inversiones") || p.startsWith("/growfolio"));
+    }
+
+    /** 0.8.3: la mudanza a toison.es/app. La web vieja ya ha dejado sus datos (Puente.mudanza); se apunta la casa nueva y
+        se carga, con #mudanza para que los recoja */
+    void mudarse() {
+        runOnUiThread(() -> {
+            WEB = Datos.web(this);
+            if (web != null) web.loadUrl(WEB + "#mudanza");
+        });
     }
 
     /** Android 12 o más: si el usuario ha dejado que GrowFolio abra los enlaces de Enable Banking («Abrir de forma predeterminada») */

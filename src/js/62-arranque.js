@@ -5,6 +5,8 @@ async function iniciar() {
   cargarIdioma();
   try { if (sessionStorage.getItem('toison-cuenta-borrada')) { sessionStorage.removeItem('toison-cuenta-borrada'); setTimeout(() => toast(trad('Tu cuenta y tu cartera se han borrado de Toisón y de este dispositivo.'), 7000), 900); } } catch (e) {}
   if (bancoALaApp()) return;
+  // 0.8.3: la dirección nueva (toison.es/app), abierta desde la vieja para traer lo de este dispositivo (62a-mudanza.js)
+  if (recibirMudanza()) return;
   // el enlace del estreno de Toisón (#toison, 0.7n) ya no abre nada: se quita de la dirección
   if (location.hash === '#toison') try { history.replaceState(history.state, '', location.pathname + location.search); } catch (e) {}
   try { if (window.InversionesApp && typeof InversionesApp.versionVista === 'function') InversionesApp.versionVista(VERSION); } catch (e) {}
@@ -113,9 +115,11 @@ if ('serviceWorker' in navigator && location.protocol === 'https:') {
   } catch (e) { /* sin red: a la próxima */ }
 })();
 iniciar();
+// 0.8.3: en la dirección vieja, la mudanza a toison.es/app en cuanto la nueva exista (62a-mudanza.js)
+setTimeout(() => { if (MUDANZA.auto) revisarMudanza().catch(() => {}); }, 4000);
 /* cuántas visitas tiene GrowFolio (el número, el país y si es móvil u ordenador): Cloudflare Web Analytics, sin cookies y sin
    nada tuyo ni de tu cartera. Solo en la web publicada (las pruebas no cuentan) y cuando el enlace ya no lleva el token */
-if (location.hostname === 'charly10sf.github.io' && !/[#&]t=/.test(location.hash)) {
+if (['charly10sf.github.io', 'toison.es'].includes(location.hostname) && !/[#&]t=/.test(location.hash)) {
   setTimeout(() => {
     try {
       const sc = document.createElement('script');
