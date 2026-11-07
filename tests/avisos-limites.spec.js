@@ -41,3 +41,24 @@ test('la opción de límites sale en Avisos y el texto no da órdenes', async ({
   expect(trozo).toContain('de tu límite');
   expect(trozo).not.toMatch(/vende|reduce|deberías|compra|sell |should /i);
 });
+
+test('las reglas para la app llevan pesos y límites, nunca importes', async ({ context, page }) => {
+  await preparar(context);
+  await page.goto('/');
+  await page.waitForFunction(() => typeof reglasAvisos === 'function');
+  await quitarCapas(page);
+  const r = await page.evaluate(() => {
+    S.cartera = S.cartera || {};
+    S.cartera.limite_acciones = 20;
+    S.cartera.perfil = { ...(S.cartera.perfil || {}), limite_cripto: 5, limite_empresa: 10, limite_oro: 10 };
+    const f = (id, tipo, clase, valor) => ({ inst: { id, corto: id, nombre: id, tipo, clase }, pos: { stop: 0 }, valor, precio: 10, peso: 0 });
+    // dos posiciones de la misma empresa (dos cuentas) suman su peso; 1000 en total, 200 de efectivo
+    const M = { total: 1000, liquidez: 200, filas: [f('ACME', 'Acción', 'Renta variable', 60), f('ACME', 'Acción', 'Renta variable', 90), f('BTC', 'Cripto', 'Cripto', 70), f('ORO', 'Fondo', 'Oro', 40), f('MUNDO', 'Fondo', 'Renta variable', 540)] };
+    const x = reglasAvisos(M);
+    return { reglas: x.reglas.map((q) => ({ id: q.id, w: q.w, a: q.a, g: q.g })), limites: x.limites, json: JSON.stringify(x) };
+  });
+  expect(r.reglas).toEqual([{ id: 'ACME', w: 0.15, a: 1, g: '' }, { id: 'BTC', w: 0.07, a: 0, g: 'c' }, { id: 'ORO', w: 0.04, a: 0, g: 'o' }, { id: 'MUNDO', w: 0.54, a: 0, g: '' }]);
+  expect(r.limites).toEqual({ sue: 20, cri: 5, oro: 10, emp: 10 });
+  // ni los 60/90/70/540 de las posiciones ni el total salen en lo que se le pasa a la app
+  expect(r.json).not.toMatch(/"valor"|"total"|"importe"/);
+});

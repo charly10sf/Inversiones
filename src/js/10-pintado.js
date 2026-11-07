@@ -387,7 +387,7 @@ const appAvisos = () => { const a = window.InversionesApp; return a && typeof a.
 function htmlAjAvisos() {
   const c = avisosCfg(), app = window.InversionesApp, nativo = appAvisos();
   const permiso = nativo ? (typeof nativo.avisosPermitidos === 'function' ? nativo.avisosPermitidos() : true) : 'Notification' in window ? Notification.permission === 'granted' : false;
-  const donde = nativo ? 'En el móvil, aunque no tengas la app abierta: la app mira cada media hora tus precios de salida, tus fechas y si la IA te pregunta algo.'
+  const donde = nativo ? 'En el móvil, aunque no tengas la app abierta: la app mira cada media hora tus precios de salida, tus fechas, tus límites y si la IA te pregunta algo.'
     : app ? 'Actualiza la app de Android (Ajustes > App de Android) para tener avisos en el móvil.'
     : 'Te avisa el navegador mientras Toisón esté abierto, aunque sea en otra pestaña. Para tenerlos con todo cerrado, la app de Android.';
   const fila = (k, t) => `<label class="av-op"><input type="checkbox" data-av="${k}"${c[k] ? ' checked' : ''}${c.on ? '' : ' disabled'}><span>${t}</span></label>`;
@@ -461,7 +461,11 @@ async function avisoSistema(tipo, titulo, cuerpo, hash = '#cartera', clave = '',
 }
 // las reglas de hoy: lo que la app de Android revisa sola y lo que el navegador mira al llegar precios
 function reglasAvisos(M) {
-  const reglas = M.filas.filter((f) => f.inst && f.valor > 0).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, sym: f.inst.yahoo ? String(f.inst.yahoo).toUpperCase() : '', cid: f.inst.cat || (catDe(f.inst) ? 'c-' + String(f.inst.isin || '').toLowerCase() : ''), stop: +f.pos.stop || 0, p: f.precio || 0 }));
+  // 0.8.2f: w = lo que pesa la posición (en tanto por uno, sumando las de un mismo valor), a = acción suelta, g = c (cripto) u o (oro):
+  // con eso la app repasa tus límites con los precios de ahora, sin importes
+  const peso = {};
+  for (const f of M.filas) if (f.inst && f.valor > 0 && M.total > 0) peso[f.inst.id] = (peso[f.inst.id] || 0) + f.valor / M.total;
+  const reglas = M.filas.filter((f) => f.inst && f.valor > 0).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, sym: f.inst.yahoo ? String(f.inst.yahoo).toUpperCase() : '', cid: f.inst.cat || (catDe(f.inst) ? 'c-' + String(f.inst.isin || '').toLowerCase() : ''), stop: +f.pos.stop || 0, p: f.precio || 0, w: +(peso[f.inst.id] || 0).toFixed(5), a: f.inst.tipo === 'Acción' ? 1 : 0, g: f.inst.clase === 'Cripto' ? 'c' : ['Oro', 'Materias primas'].includes(f.inst.clase) ? 'o' : '' }));
   const vistos = new Set(), unicas = reglas.filter((r) => !vistos.has(r.id) && vistos.add(r.id));
   let eventos = [];
   try { eventos = agendaLista(M, 3).filter((e) => ['resultados', 'dividendo', 'cobro'].includes(e.tipo)).map((e) => { const d = document.createElement('div'); d.innerHTML = e.t; return { k: e.id, d: e.d, t: trad(d.textContent), s: trad(String(e.s || '')) }; }); } catch (e) {}
@@ -469,7 +473,8 @@ function reglasAvisos(M) {
   const preg = preguntasIA().filter((x) => !preguntaVista(x, vistas)).map((x) => ({ k: clavePreg(x), q: x.q }));
   // 0.3.11: las empresas que sigues, con sus precios de aviso (en euros, los del radar)
   const seguir = siguiendo().filter((x) => x.baja || x.sube).map((x) => ({ sym: x.s, n: x.n, baja: +x.baja || 0, sube: +x.sube || 0 }));
-  return { reglas: unicas, eventos, preg, seguir };
+  const limites = { sue: +(S.cartera.limite_acciones ?? 20), cri: limiteDe('cripto'), oro: limiteDe('oro'), emp: limiteDe('empresa') };
+  return { reglas: unicas, eventos, preg, seguir, limites };
 }
 // en el navegador: al llegar precios y con GrowFolio en segundo plano (si lo estás mirando, ya lo ves en Cartera)
 function revisarAvisos(M) {
