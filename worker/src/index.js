@@ -337,6 +337,8 @@ const CLAUDE_POR_DIA_REDUCIDO = 5, CLAUDE_RONDAS_REDUCIDO = 15, CLAUDE_FONDO_RED
 // revisión aparte del 6 nov: en el nivel reducido, además, un tope de gasto por correo y día (así uno solo no se lleva el
 // techo de todos), menos salida y menos búsquedas por petición (para que el peor caso de cada una sea pequeño), y sin el
 // doble de entrada en las rondas siguientes
+// la única herramienta que se deja pasar: la búsqueda de la web en esta versión (la que usan la app y las Actions); otra versión, rechazada
+const BUSQUEDA = 'web_search_20250305';
 const CLAUDE_GASTO_REDUCIDO = 0.5, CLAUDE_SALIDA_REDUCIDO = 16000, CLAUDE_BUSQUEDAS_REDUCIDO = 3;
 // 0.8.2d (sesión 3 de «todo con Claude»): lo que no es una pregunta del chat (la revisión de la cartera, el resumen de una
 // noticia, leer capturas o un PDF al importar) va en su propio contador, para que no se coma las preguntas del día: «tarea»
@@ -372,7 +374,7 @@ function tareaMal(tipo, cuerpo, modelo) {
   // respuesta llega con pause_turn y la app la devuelve tal cual para que siga)
   if (!msgs[0] || msgs[0].role !== 'user' || msgs.slice(1).some((m) => !m || m.role !== 'assistant')) return 'mensajes';
   // sin las herramientas de la app: ni ofrecidas ni usadas antes
-  if ((cuerpo.tools || []).some((h) => !/^web_search_/.test(String(h.type || ''))) || cuerpo.tool_choice !== undefined) return 'tools';
+  if ((cuerpo.tools || []).some((h) => String(h.type || '') !== BUSQUEDA) || cuerpo.tool_choice !== undefined) return 'tools';
   if (contarBloques(msgs, 'tool_use') || contarBloques(msgs, 'tool_result')) return 'tools';
   const adjuntos = contarBloques(msgs, 'image') + contarBloques(msgs, 'document');
   if (tipo === 'noticia') {
@@ -589,10 +591,10 @@ async function claude(req, env, cors, res, ctx) {
   let busquedas = 0;
   if (cuerpo.tools !== undefined) {
     // solo herramientas propias de la app (sin type, o «custom») y una búsqueda en internet, con su tope de usos
-    if (!Array.isArray(cuerpo.tools) || cuerpo.tools.some((h) => !h || typeof h !== 'object' || (h.type && h.type !== 'custom' && !/^web_search_/.test(String(h.type))))) return res({ error: 'peticion', motivo: 'tools' }, 400);
-    if (cuerpo.tools.filter((h) => /^web_search_/.test(String(h.type || ''))).length > 1) return res({ error: 'peticion', motivo: 'tools' }, 400);
-    cuerpo.tools = cuerpo.tools.map((h) => (/^web_search_/.test(String(h.type || '')) ? { ...h, max_uses: Math.max(1, Math.min(Number(h.max_uses) || maxBusquedas, maxBusquedas)) } : h));
-    busquedas = cuerpo.tools.reduce((t, h) => t + (/^web_search_/.test(String(h.type || '')) ? h.max_uses : 0), 0);
+    if (!Array.isArray(cuerpo.tools) || cuerpo.tools.some((h) => !h || typeof h !== 'object' || (h.type && h.type !== 'custom' && String(h.type) !== BUSQUEDA))) return res({ error: 'peticion', motivo: 'tools' }, 400);
+    if (cuerpo.tools.filter((h) => String(h.type || '') === BUSQUEDA).length > 1) return res({ error: 'peticion', motivo: 'tools' }, 400);
+    cuerpo.tools = cuerpo.tools.map((h) => (String(h.type || '') === BUSQUEDA ? { ...h, max_uses: Math.max(1, Math.min(Number(h.max_uses) || maxBusquedas, maxBusquedas)) } : h));
+    busquedas = cuerpo.tools.reduce((t, h) => t + (String(h.type || '') === BUSQUEDA ? h.max_uses : 0), 0);
   }
   if (adjuntoFuera(cuerpo.messages) || adjuntoFuera(cuerpo.system)) return res({ error: 'peticion', motivo: 'adjunto' }, 400);
   const pdfs = contarBloques(cuerpo.messages, 'document'), imgs = contarBloques(cuerpo.messages, 'image');

@@ -1,6 +1,38 @@
 {
  "versiones": [
   {
+   "v": "0.8.3",
+   "f": "2026-11-29",
+   "h": "12:00",
+   "t": "Toisón, en su casa",
+   "commits": [
+    {
+     "cuando": "2026-11-07 12:45",
+     "asunto": "0.8.3 · Marfil nuevo y fuera Borgoña (165fb98, f980600, 177eb0e)",
+     "detalle": [
+      "Marfil: crema en capas (fondo #ede1cc, tarjetas #fdf9f2), tinta #1c1915, oro de textos #7a5716, menú lateral y barra de abajo en vino #3c0b16, pestañas con fondo vino suave y raya de oro de 3 px, títulos de sección con hilo de oro, sello con la O en vino (#4e101d) y la T de oro. Bajadas en #a42018.",
+      "Borgoña fuera de la app (TEMAS, selector de dos, tutorial, presentación, avanzado) y de Android (Tema.java, widget, Lienzo); lo guardado como borgona pasa a marfil.",
+      "Pruebas nuevas en tests/temas.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-07 03:45",
+     "asunto": "0.8.3 · Mármol G en iconos y presentación, y la mudanza a toison.es/app (69487f1, 307abb9, 877ea0f)",
+     "detalle": [
+      "scripts/marca_marmol_g.py rehace favicon, iconos de la app y la portada de la presentación sobre el negro y la piedra del Mármol G.",
+      "Mudanza: hosting/firebase.json y la Action «Hosting»; 62a-mudanza.js lleva lo del navegador a la dirección nueva con «Llevar mis datos» y, en Android, por el puente. Empieza sola cuando toison.es/app contesta con su version.json."
+     ]
+    },
+    {
+     "cuando": "2026-11-07 02:00",
+     "asunto": "0.8.3 · Logos desde el servidor (54e736f, fd4514a)",
+     "detalle": [
+      "scripts/logos.py y la Action «Logos» guardan el logo de cada dominio (128 px, webp) en la rama «logos»; la app lo usa si está en el índice y, si no, el servicio de iconos de Google como hasta ahora. Pruebas: tests/scripts/test_logos.py y tests/logos-servidor.spec.js."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.2e",
    "f": "2026-11-06",
    "h": "23:50",

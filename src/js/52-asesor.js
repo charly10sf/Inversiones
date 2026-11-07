@@ -35,8 +35,8 @@ async function avisarFalloIA(e, donde = 'chat', modelo = null) {
     if (c.pausa && Date.now() < c.pausa) return;
     const n0 = c.d === dia ? c.n || 0 : 0;
     const f = FB.fs, mod = modelo || null;
-    // el modelo: las reglas de Firestore solo aceptan los nombres de Gemini de antes, así que con Claude va vacío
-    const datos = { t: f.serverTimestamp(), caduca: new Date(Date.now() + 30 * 864e5), tipo, estado: Number.isInteger(e.estado) ? e.estado : null, modelo: /^gemini-[0-9a-z.-]{1,32}$/.test(mod || '') ? mod : null, donde, v };
+    // el modelo: las reglas de Firestore aceptan nombres de Claude y de Gemini (los de antes), con su forma de siempre
+    const datos = { t: f.serverTimestamp(), caduca: new Date(Date.now() + 30 * 864e5), tipo, estado: Number.isInteger(e.estado) ? e.estado : null, modelo: /^(gemini|claude)-[0-9a-z.-]{1,32}$/.test(mod || '') ? mod : null, donde, v };
     // si otro dispositivo de la misma cuenta ya ha usado ese número, las reglas lo rechazan: se prueba con el siguiente.
     // El contador solo avanza con lo que entra; si no entra ninguno (el reloj de este dispositivo no va con el del
     // servidor, o ya van 5 hoy), una hora de pausa

@@ -45,8 +45,8 @@ testDueno('Cómo va la IA: el banco de preguntas y los fallos, para el dueño', 
   expect(Object.keys(fallo).sort()).toEqual(['caduca', 'donde', 'estado', 'modelo', 't', 'tipo', 'v']);
   expect(fallo.caduca.__ts - Date.now()).toBeGreaterThan(29 * 864e5);
   expect(JSON.stringify(fallo)).not.toContain('Una pregunta que falla');
-  // un 400 sin «API key» es la petición, no la clave; el modelo de Claude no se apunta (las reglas solo aceptan los de Gemini)
-  expect([fallo.tipo, fallo.donde, fallo.estado, fallo.modelo]).toEqual(['peticion', 'chat', 400, null]);
+  // un 400 sin «API key» es la petición, no la clave; el modelo de Claude se apunta (las reglas aceptan «claude-…»)
+  expect([fallo.tipo, fallo.donde, fallo.estado, fallo.modelo]).toEqual(['peticion', 'chat', 400, 'claude-haiku-5-5']);
   expect(await page.evaluate(() => tipoFalloIA({ estado: 400, msg: 'API key not valid. Please pass a valid API key.' }))).toBe('clave');
   // lo que no es un fallo (el tope del día, el techo) no se apunta
   await page.evaluate(() => { LS.del(LS_CLAUDE_PAUSA); AS.cargando = false; });

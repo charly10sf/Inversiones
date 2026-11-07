@@ -76,7 +76,7 @@ test('reenvía a Claude con la clave y limpia la petición', async () => {
   await con(ok, async (vistas) => {
     const r = await pedir('uid-e', {
       ...PEDIDO, stream: false, metadata: { user_id: 'x' }, mcp_servers: [{ url: 'https://malo.prueba' }], container: 'c1',
-      tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 50 }, { name: 'cartera', description: 'd', input_schema: { type: 'object' } }],
+      tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 50 }, { name: 'cartera', description: 'd', input_schema: { type: 'object' } }],
     });
     expect(r.status).toBe(200);
     expect(await r.json()).toMatchObject({ id: 'msg_1', usage: { input_tokens: 10 } });
@@ -88,10 +88,10 @@ test('reenvía a Claude con la clave y limpia la petición', async () => {
     expect(v.cuerpo.tools[0].max_uses).toBe(5);
     expect(v.cuerpo.tools[1]).toEqual({ name: 'cartera', description: 'd', input_schema: { type: 'object' } });
     // una búsqueda sin tope pedido sale con el del Worker
-    await pedir('uid-e', { ...PEDIDO, tools: [{ type: 'web_search_20260209', name: 'web_search' }] });
+    await pedir('uid-e', { ...PEDIDO, tools: [{ type: 'web_search_20250305', name: 'web_search' }] });
     expect(vistas[1].cuerpo.tools[0].max_uses).toBe(5);
     // y el tope se puede cambiar sin tocar el código
-    await pedir('uid-e', { ...PEDIDO, tools: [{ type: 'web_search_20260209', name: 'web_search', max_uses: 4 }] }, { ...ENV, CLAUDE_MAX_BUSQUEDAS: '2' });
+    await pedir('uid-e', { ...PEDIDO, tools: [{ type: 'web_search_20250305', name: 'web_search', max_uses: 4 }] }, { ...ENV, CLAUDE_MAX_BUSQUEDAS: '2' });
     expect(vistas[2].cuerpo.tools[0].max_uses).toBe(2);
   });
 });
@@ -183,6 +183,8 @@ test('solo pasan las herramientas de la app y la búsqueda; los adjuntos, dentro
       [{ type: 'web_fetch_20260209', name: 'web_fetch', max_content_tokens: 100000 }, 'tools'],
       [{ type: 'code_execution_20260120', name: 'code_execution' }, 'tools'],
       [{ type: 'mcp_toolset', mcp_server_name: 'x' }, 'tools'],
+      // otra versión de la búsqueda (más cara o con otro comportamiento) tampoco: solo web_search_20250305
+      [{ type: 'web_search_20260209', name: 'web_search' }, 'tools'],
     ];
     for (const [h, motivo] of malas) {
       const r = await pedir('uid-k', { ...PEDIDO, tools: [propia, h] });
@@ -203,7 +205,7 @@ test('solo pasan las herramientas de la app y la búsqueda; los adjuntos, dentro
     }
     expect(vistas.length).toBe(0);
     // lo que sí vale: tu herramienta, la búsqueda, texto, una imagen en base64 y un resultado con texto
-    const bueno = { ...PEDIDO, tools: [propia, { type: 'custom', name: 'otra', input_schema: { type: 'object' } }, { type: 'web_search_20260209', name: 'web_search' }], messages: [
+    const bueno = { ...PEDIDO, tools: [propia, { type: 'custom', name: 'otra', input_schema: { type: 'object' } }, { type: 'web_search_20250305', name: 'web_search' }], messages: [
       { role: 'user', content: [{ type: 'text', text: 'mira' }, { type: 'image', source: { type: 'base64', media_type: 'image/png', data: 'AAAA' } }] },
       { role: 'assistant', content: [{ type: 'tool_use', id: 't1', name: 'cartera', input: {} }] },
       { role: 'user', content: [{ type: 'tool_result', tool_use_id: 't1', content: [{ type: 'text', text: '{}' }] }] }] };
