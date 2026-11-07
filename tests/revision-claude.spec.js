@@ -1,7 +1,7 @@
 // 0.8.3 · Banco de la revisión de la cartera con Claude de verdad: la revisión automática (la de las 5:00 y las 16:30),
 // con la app de verdad (el build), la cartera de prueba y las reglas del estándar, para medir tokens, tiempo, coste y
 // si cabe a la primera, y leer el JSON que sale. Solo con una clave de la API de Anthropic (la Action «Banco de la
-// revisión», que se lanza a mano o al cambiar tests/revision/pedir.cfg en una rama que no sea main).
+// revisión», que se lanza a mano o al cambiar tests/revision/pedir.cfg en una rama …-ia o banco-…).
 //   GF_BANCO_ANTHROPIC  la clave
 //   GF_REV_VARIANTES    las vueltas, separadas por comas: «app» es la petición tal cual la monta la app; detrás, con «+»,
 //                       lo que se cambia en la petición antes de mandarla: «sinpensar» (thinking disabled), «bajo»
