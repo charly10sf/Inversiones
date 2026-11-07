@@ -36,9 +36,11 @@ import java.util.concurrent.TimeUnit;
  * - una posición que sube o baja más de un 5 % en el día;
  * - resultados o dividendos de lo tuyo mañana (a partir de las 18:00) u hoy (por la mañana);
  * - una pregunta de GrowIA que aún no has visto;
- * - una empresa que sigues (sin tenerla) que baja o sube del precio que le pusiste.
+ * - una empresa que sigues (sin tenerla) que baja o sube del precio que le pusiste;
+ * - 0.8.2f: tu cartera pasa uno de los límites que escribiste en Tú (acciones sueltas, cripto, oro, una empresa).
  * Cada aviso, una sola vez; de 22:00 a 8:00, nada. No necesita la contraseña de la cartera: las reglas no llevan
- * importes, solo precios.
+ * importes, solo precios y, desde la 0.8.2f, lo que pesa cada posición en tanto por uno (para repasar los límites con
+ * los precios de ahora sin saber cuánto dinero hay).
  */
 public class Avisos extends Worker {
     static final String CANAL = "avisos";
@@ -110,6 +112,9 @@ public class Avisos extends Worker {
         boolean en = "en".equals(p.getString("idioma", "es"));   // 0.4: en el idioma de la web
         Tema tm = Tema.de(c);   // 0.8: «Toisón» y «la IA» (en inglés sigue GrowIA, como la web)
         String app = "Toisón";
+        // 0.8.2f: los pesos de cada posición, puestos al día con el precio de ahora, para los límites
+        double pesoViejo = 0, sumaW = 0, sueltasW = 0, criW = 0, oroW = 0, mayorW = 0;
+        String mayorN = "", mayorId = "";
 
         for (int k = 0; reglas != null && k < reglas.length(); k++) {
             JSONObject x = reglas.getJSONObject(k);
@@ -130,6 +135,15 @@ public class Avisos extends Worker {
                 double ant = r.optDouble(1, Double.NaN);
                 if (ant > 0) cambio = (precio / ant - 1) * 100;
             }
+            double w = x.optDouble("w", 0), pw = x.optDouble("p", 0);
+            double vv = w * (!Double.isNaN(precio) && precio > 0 && pw > 0 ? precio / pw : 1);
+            if (w > 0) {
+                pesoViejo += w;
+                sumaW += vv;
+                if (x.optInt("a", 0) == 1) { sueltasW += vv; if (vv > mayorW) { mayorW = vv; mayorN = n; mayorId = id; } }
+                String g = x.optString("g");
+                if (g.equals("c")) criW += vv; else if (g.equals("o")) oroW += vv;
+            }
             if (Double.isNaN(precio) || precio <= 0) continue;
             double stop = x.optDouble("stop", 0);
             if (av.optBoolean("stop", true) && stop > 0) {
@@ -147,6 +161,17 @@ public class Avisos extends Worker {
                                 : n + (cambio > 0 ? " sube un " : " baja un ") + num(Math.abs(cambio)) + " % hoy",
                         en ? "Open " + app + " to see what happened and what GrowIA says." : "Abre " + app + " para ver qué ha pasado y qué dice " + tm.ia(false, false) + ".", "cartera");
             }
+        }
+
+        // 0.8.2f: tus límites. El efectivo es lo que no pesan las posiciones; el total, ese efectivo más lo que valen ahora.
+        // Dice el hecho, nunca qué hacer; una vez por límite mientras siga pasado (la clave se purga a los 10 días)
+        JSONObject lm = av.optJSONObject("limites");
+        double tot = Math.max(0, 1 - pesoViejo) + sumaW;
+        if (av.optBoolean("lim", true) && lm != null && sumaW > 0 && tot > 0) {
+            limite(c, hechos, en, "sueltas", "", en ? "Single stocks" : "Acciones sueltas", sueltasW / tot * 100, lm.optDouble("sue", 20));
+            limite(c, hechos, en, "cripto", "", "Cripto", criW / tot * 100, lm.optDouble("cri", 5));
+            limite(c, hechos, en, "oro", "", en ? "Gold and commodities" : "Oro y materias primas", oroW / tot * 100, lm.optDouble("oro", 10));
+            limite(c, hechos, en, "empresa", mayorId, mayorN, mayorW / tot * 100, lm.optDouble("emp", 10));
         }
 
         // las que sigues: una vez cuando bajan del precio que pusiste o suben del otro (precios del radar, en euros)
@@ -177,6 +202,14 @@ public class Avisos extends Worker {
             avisar(c, hechos, "preg:" + x.optString("k"), en ? "GrowIA has a question" : tm.ia(false, true) + " te pregunta", x.optString("q"), "objetivos");
         }
         p.edit().putString("avisos_hechos", hechos.toString()).apply();
+    }
+
+    /** 0.8.2f: aviso de un límite propio pasado (con 0,5 puntos de margen, como la web) */
+    private static void limite(Context c, JSONObject hechos, boolean en, String k, String id, String nombre, double actual, double limite) throws Exception {
+        if (nombre == null || nombre.isEmpty() || Double.isNaN(limite) || limite < 0 || actual <= limite + 0.5) return;
+        avisar(c, hechos, "lim:" + k + ":" + id, nombre + (en ? " is over your limit" : " pasa de tu límite"),
+                en ? "It's " + num(actual) + " % of your portfolio and your limit is " + Math.round(limite) + " %."
+                        : "Pesa un " + num(actual) + " % de tu cartera y tu límite es " + Math.round(limite) + " %.", "objetivos");
     }
 
     /** un aviso ya, si no se ha mandado antes (la clave lo dice) */
