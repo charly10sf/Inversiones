@@ -4,7 +4,9 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInstaller;
+import android.net.Uri;
 import android.os.Build;
+import android.provider.Settings;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -20,6 +22,9 @@ final class Actualizador {
     static final String NOMBRE = "growfolio.apk";
     private static final String[] ORIGENES = {"https://github.com/charly10sf/GrowFolio/releases/", "https://github.com/charly10sf/Inversiones/releases/"};
     private static volatile boolean bajando;
+    /** 0.8.3: el pedido del permiso de instalar (antes en Principal) y el APK que espera a ese permiso */
+    static final int PERMISO = 8;
+    private static File pendiente;
 
     private Actualizador() {
     }
@@ -35,6 +40,41 @@ final class Actualizador {
         if (url == null || !url.endsWith(".apk")) return false;
         for (String o : ORIGENES) if (url.startsWith(o)) return true;
         return false;
+    }
+
+    /** Abre el instalador de Android con el APK descargado; la primera vez pide permiso para instalar desde la app.
+     *  0.8.3: vive aquí (antes en Principal) para que la versión de Google Play no lleve nada que instale paquetes */
+    static void instalar(Principal act, File f) {
+        if (f == null || !f.exists()) {
+            act.progreso(-1, "no hay nada descargado");
+            return;
+        }
+        if (!act.getPackageManager().canRequestPackageInstalls()) {
+            pendiente = f;
+            act.progreso(100, "permiso");
+            try {
+                act.startActivityForResult(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + act.getPackageName())), PERMISO);
+            } catch (Exception e) {
+                act.progreso(-1, "no se pudo abrir el permiso");
+            }
+            return;
+        }
+        Intent i = new Intent(Intent.ACTION_VIEW)
+                .setDataAndType(Archivos.uri(), "application/vnd.android.package-archive")
+                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
+        try {
+            act.startActivity(i);
+        } catch (Exception e) {
+            act.progreso(-1, "no se pudo abrir el instalador");
+        }
+    }
+
+    /** vuelta de la pantalla del permiso de instalar */
+    static void permisoVuelto(Principal act) {
+        File f = pendiente;
+        pendiente = null;
+        if (f != null && act.getPackageManager().canRequestPackageInstalls()) instalar(act, f);
+        else act.progreso(100, "permiso");
     }
 
     interface Progreso { void p(int pct); }

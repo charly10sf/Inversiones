@@ -23,4 +23,10 @@ final class Actualizador {
     static boolean puedeSola(Context c) { return false; }
 
     static void autoActualizar(Context c, org.json.JSONObject app) {}
+
+    static final int PERMISO = 8;
+
+    static void instalar(Principal act, File f) {}
+
+    static void permisoVuelto(Principal act) {}
 }

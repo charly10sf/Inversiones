@@ -6,6 +6,10 @@ plugins {
 // Sin ese secreto, la Action firma con una clave de prueba solo para comprobar que compila.
 def rutaFirma = System.getenv('FIRMA_RUTA')
 def claveFirma = System.getenv('FIRMA_CLAVE')
+// 0.8.3: la de Google Play se firma con otra clave, la de SUBIDA (android/subida.p12, con la misma contraseña). Play solo
+// la usa para saber que el .aab es tuyo: la app que llega a los móviles la firma Google con la suya (Play App Signing).
+// Así, si algún día se pierde o se filtra, Google la cambia y no afecta a la APK de siempre.
+def rutaSubida = System.getenv('SUBIDA_RUTA')
 
 android {
     namespace 'es.inversiones.app'
@@ -20,26 +24,6 @@ android {
         versionName System.getenv('VERSION_NAME') ?: "0.0.${System.getenv('VERSION_CODE') ?: '0'}"
     }
 
-    // 0.8.3 · Dos versiones de la misma app. «directa»: la APK de GitHub de siempre (es.inversiones.app, se actualiza
-    // sola, targetSdk 34). «play»: la de Google Play, que Play actualiza; Play pide targetSdk 36 a las apps nuevas desde
-    // el 31 ago 2026. Su número de versión va con un millón delante: así nunca es menor que el de app.json y la web no le
-    // ofrece la APK. El paquete de Play no se puede cambiar una vez publicado: es.toison.app (Carlos lo confirmó el
-    // 5 nov). La web sabe que es la de Play por Puente.canal() y no enseña GTA.
-    flavorDimensions 'canal'
-    productFlavors {
-        directa {
-            dimension 'canal'
-            buildConfigField 'boolean', 'ACTUALIZA_SOLA', 'true'
-        }
-        play {
-            dimension 'canal'
-            applicationId 'es.toison.app'
-            targetSdk 36
-            versionCode(1000000 + ((System.getenv('VERSION_CODE') ?: '1') as int))
-            buildConfigField 'boolean', 'ACTUALIZA_SOLA', 'false'
-        }
-    }
-
     signingConfigs {
         release {
             if (rutaFirma && claveFirma) {
@@ -50,12 +34,44 @@ android {
                 storeType 'pkcs12'
             }
         }
+        subida {
+            if (rutaSubida && claveFirma) {
+                storeFile file(rutaSubida)
+                storePassword claveFirma
+                keyAlias 'subida'
+                keyPassword claveFirma
+                storeType 'pkcs12'
+            }
+        }
+    }
+
+    // 0.8.3 · Dos versiones de la misma app. «directa»: la APK de GitHub de siempre (es.inversiones.app, se actualiza
+    // sola, targetSdk 34). «play»: la de Google Play, que Play actualiza; Play pide targetSdk 36 a las apps nuevas desde
+    // el 31 ago 2026. Su número de versión va con un millón delante: así nunca es menor que el de app.json y la web no le
+    // ofrece la APK. El paquete de Play no se puede cambiar una vez publicado: es.toison.app (Carlos lo confirmó el
+    // 5 nov). La web sabe que es la de Play por Puente.canal() y no enseña GTA.
+    flavorDimensions 'canal'
+    productFlavors {
+        directa {
+            dimension 'canal'
+            buildConfigField 'boolean', 'ACTUALIZA_SOLA', 'true'
+            if (rutaFirma && claveFirma) signingConfig signingConfigs.release
+        }
+        play {
+            dimension 'canal'
+            applicationId 'es.toison.app'
+            targetSdk 36
+            versionCode(1000000 + ((System.getenv('VERSION_CODE') ?: '1') as int))
+            buildConfigField 'boolean', 'ACTUALIZA_SOLA', 'false'
+            if (rutaSubida && claveFirma) signingConfig signingConfigs.subida
+        }
     }
 
     buildTypes {
         release {
             minifyEnabled false
-            if (rutaFirma && claveFirma) signingConfig signingConfigs.release
+            // la firma va en cada sabor (directa con la de siempre, play con la de subida): la del tipo de compilación
+            // mandaría sobre las dos
         }
     }
 

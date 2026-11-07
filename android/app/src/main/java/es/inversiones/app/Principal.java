@@ -33,11 +33,9 @@ public class Principal extends Activity {
     /** si la estás mirando: la actualización sola espera a que no la uses (instalar encima la cierra) */
     static volatile boolean enPantalla;
     private static final int ELEGIR_ARCHIVO = 7;
-    private static final int PERMISO_INSTALAR = 8;
     static final int ENTRAR_GOOGLE = 9;
     private static final int PERMISO_AVISOS = 10;
     private static final int DICTAR = 11;
-    private File pendiente;
     private Web web;
     private ValueCallback<Uri[]> archivos;
     private String tokenPendiente;
@@ -448,30 +446,9 @@ public class Principal extends Activity {
         runOnUiThread(() -> { if (web != null) web.evaluateJavascript(js, null); });
     }
 
-    /** Abre el instalador de Android con el APK descargado; la primera vez pide permiso para instalar desde la app */
+    /** Abre el instalador de Android con el APK descargado. 0.8.3: lo hace el Actualizador; en la de Google Play no hace nada */
     void instalar(File f) {
-        if (f == null || !f.exists()) {
-            progreso(-1, "no hay nada descargado");
-            return;
-        }
-        if (!getPackageManager().canRequestPackageInstalls()) {
-            pendiente = f;
-            progreso(100, "permiso");
-            try {
-                startActivityForResult(new Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES, Uri.parse("package:" + getPackageName())), PERMISO_INSTALAR);
-            } catch (Exception e) {
-                progreso(-1, "no se pudo abrir el permiso");
-            }
-            return;
-        }
-        Intent i = new Intent(Intent.ACTION_VIEW)
-                .setDataAndType(Archivos.uri(), "application/vnd.android.package-archive")
-                .addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_ACTIVITY_NEW_TASK);
-        try {
-            startActivity(i);
-        } catch (Exception e) {
-            progreso(-1, "no se pudo abrir el instalador");
-        }
+        Actualizador.instalar(this, f);
     }
 
     @Override
@@ -502,11 +479,8 @@ public class Principal extends Activity {
                     : "window.resultadoDictado && resultadoDictado(null, " + (resultado == RESULT_CANCELED ? "'cancelado'" : "'nada'") + ")");
             return;
         }
-        if (pedido == PERMISO_INSTALAR) {
-            File f = pendiente;
-            pendiente = null;
-            if (f != null && getPackageManager().canRequestPackageInstalls()) instalar(f);
-            else progreso(100, "permiso");
+        if (pedido == Actualizador.PERMISO) {
+            Actualizador.permisoVuelto(this);
             return;
         }
         if (pedido == ELEGIR_ARCHIVO && archivos != null) {

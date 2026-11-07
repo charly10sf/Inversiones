@@ -43,6 +43,8 @@ jobs:
             keytool -genkeypair -keystore /tmp/prueba.p12 -storetype PKCS12 -alias inversiones -keyalg RSA -keysize 2048 -validity 10000 -storepass prueba123 -keypass prueba123 -dname "CN=Prueba"
             echo "FIRMA=prueba" >> "$GITHUB_ENV"
             echo "FIRMA_RUTA=/tmp/prueba.p12" >> "$GITHUB_ENV"
+            keytool -genkeypair -keystore /tmp/subida-prueba.p12 -storetype PKCS12 -alias subida -keyalg RSA -keysize 2048 -validity 10000 -storepass prueba123 -keypass prueba123 -dname "CN=Prueba"
+            echo "SUBIDA_RUTA=/tmp/subida-prueba.p12" >> "$GITHUB_ENV"
           else
             if [ ! -f android/firma.p12 ]; then
               keytool -genkeypair -keystore android/firma.p12 -storetype PKCS12 -alias inversiones -keyalg RSA -keysize 3072 -validity 20000 -storepass "$CLAVE" -keypass "$CLAVE" -dname "CN=Inversiones"
@@ -52,8 +54,27 @@ jobs:
               git commit -q -m "App: clave de firma, cifrada con el secreto ANDROID_CLAVE"
               git pull -q --rebase origin main && git push -q origin HEAD:main
             fi
+            # 0.8.3 · la clave de SUBIDA de Google Play (Play App Signing): otra distinta de la de la APK, con la misma
+            # contraseña. Se crea una sola vez y se guarda en la rama en la que corre (nunca en main desde otra rama).
+            # Play la toma como clave de subida con el primer .aab que se suba: desde entonces, NO SE CAMBIA (si se
+            # pierde, se pide a Google cambiarla con el certificado nuevo). Su certificado va con el .aab (subida.pem)
+            if [ ! -f android/subida.p12 ]; then
+              keytool -genkeypair -keystore android/subida.p12 -storetype PKCS12 -alias subida -keyalg RSA -keysize 4096 -validity 20000 -storepass "$CLAVE" -keypass "$CLAVE" -dname "CN=Toison, O=Toison, C=ES"
+              git config user.name "github-actions[bot]"
+              git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+              git add android/subida.p12
+              git commit -q -m "App: clave de subida de Google Play, cifrada con el secreto ANDROID_CLAVE"
+              # si no se puede guardar, se para aquí: un .aab firmado con una clave perdida no debe llegar a Play
+              if ! { git pull -q --rebase origin "$GITHUB_REF_NAME" && git push -q origin "HEAD:$GITHUB_REF_NAME"; }; then
+                echo "::error::No se ha podido guardar la clave de subida en la rama $GITHUB_REF_NAME"; exit 1
+              fi
+              echo "::notice::Clave de subida de Play creada y guardada en la rama $GITHUB_REF_NAME"
+            fi
+            keytool -exportcert -rfc -keystore android/subida.p12 -storetype PKCS12 -alias subida -storepass "$CLAVE" -file subida.pem
+            echo "::notice::Clave de subida de Play: $(keytool -list -v -keystore android/subida.p12 -storetype PKCS12 -alias subida -storepass "$CLAVE" | grep -E 'SHA1:|SHA256:' | tr -s ' ' | tr '\n' ' ')"
             echo "FIRMA=buena" >> "$GITHUB_ENV"
             echo "FIRMA_RUTA=$GITHUB_WORKSPACE/android/firma.p12" >> "$GITHUB_ENV"
+            echo "SUBIDA_RUTA=$GITHUB_WORKSPACE/android/subida.p12" >> "$GITHUB_ENV"
           fi
 
       - name: Versión
@@ -71,6 +92,31 @@ jobs:
           set -o pipefail
           gradle assembleDirectaRelease bundlePlayRelease --no-daemon --stacktrace 2>&1 | tee "$GITHUB_WORKSPACE/compilacion.log"
 
+      # 0.8.3: lo que Play mira en la de Play. Si algo de esto falla, la Action se para antes de guardar nada
+      - name: Revisar la versión de Play
+        run: |
+          AAB=android/app/build/outputs/bundle/playRelease/app-play-release.aab
+          M=android/app/build/intermediates/merged_manifest/playRelease/processPlayReleaseMainManifest/AndroidManifest.xml
+          [ -f "$M" ] || M=$(find android/app/build/intermediates -path '*playRelease*' -name AndroidManifest.xml | head -1)
+          echo "manifiesto: $M"
+          mal=0
+          falta() { grep -q -- "$1" "$M" || { echo "::error::Al manifiesto de Play le falta: $1"; mal=1; }; }
+          sobra() { if grep -q -- "$1" "$M"; then echo "::error::Al manifiesto de Play le sobra: $1"; mal=1; fi; }
+          falta 'package="es.toison.app"'
+          falta 'android:targetSdkVersion="36"'
+          falta 'FOREGROUND_SERVICE_DATA_SYNC'
+          falta 'foregroundServiceType="shortService|dataSync"'
+          sobra 'REQUEST_INSTALL_PACKAGES'
+          sobra 'UPDATE_PACKAGES_WITHOUT_USER_ACTION'
+          sobra 'es.inversiones.app.Instalado'
+          # ni el código que abre el instalador de paquetes (el de src/directa) dentro de la de Play
+          D=$(mktemp -d); unzip -q -o "$AAB" 'base/dex/*' -d "$D"
+          for t in 'android.settings.MANAGE_UNKNOWN_APP_SOURCES' 'no se pudo abrir el instalador' 'charly10sf/Inversiones/releases/'; do
+            if grep -a -q -- "$t" "$D"/base/dex/*.dex; then echo "::error::La de Play lleva código de instalar APK ($t)"; mal=1; fi
+          done
+          [ "$mal" = 0 ] || exit 1
+          echo "::notice::Versión de Play revisada: es.toison.app, targetSdk 36, sin permisos ni código de instalar APK, dataSync declarado"
+
       # solo desde main: en otras ramas se compila para probar, sin publicar
       # 0.8.3: la versión de Google Play (paquete .aab, firmado con la clave de subida) se guarda en la ejecución para
       # subirla a mano a Play Console; no se publica en ningún sitio. Solo con la firma buena: con la de prueba no vale
@@ -79,7 +125,9 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: toison-play-${{ github.run_number }}
-          path: android/app/build/outputs/bundle/playRelease/app-play-release.aab
+          path: |
+            android/app/build/outputs/bundle/playRelease/app-play-release.aab
+            subida.pem
           retention-days: 30
 
       - name: Publicar la app

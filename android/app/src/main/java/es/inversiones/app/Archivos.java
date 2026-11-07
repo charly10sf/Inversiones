@@ -36,7 +36,7 @@ public class Archivos extends ContentProvider {
     private File archivo(Uri u) {
         if (u == null || getContext() == null) return null;
         String n = u.getLastPathSegment();
-        File f = Actualizador.NOMBRE.equals(n) ? Actualizador.archivo(getContext()) : IMAGEN.equals(n) ? imagen(getContext()) : null;
+        File f = BuildConfig.ACTUALIZA_SOLA && Actualizador.NOMBRE.equals(n) ? Actualizador.archivo(getContext()) : IMAGEN.equals(n) ? imagen(getContext()) : null;
         return f != null && f.exists() ? f : null;
     }
 
@@ -54,7 +54,9 @@ public class Archivos extends ContentProvider {
 
     @Override
     public String getType(Uri u) {
-        return u != null && IMAGEN.equals(u.getLastPathSegment()) ? "image/png" : TIPO;
+        // 0.8.3: el tipo de APK solo para el APK (en la de Google Play nunca hay ninguno que servir)
+        String n = u == null ? null : u.getLastPathSegment();
+        return IMAGEN.equals(n) ? "image/png" : BuildConfig.ACTUALIZA_SOLA && Actualizador.NOMBRE.equals(n) ? TIPO : null;
     }
 
     @Override
