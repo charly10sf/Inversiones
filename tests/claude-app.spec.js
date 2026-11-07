@@ -184,7 +184,10 @@ test('un análisis que se queda sin espacio (max_tokens) se repite con esfuerzo 
   expect(a.tools.some((t) => t.name === 'web_search')).toBe(true);
   expect(b.output_config.effort).toBe('low');
   expect(b.tools.some((t) => t.name === 'web_search')).toBe(false);
-  expect(await page.evaluate(() => textoDiarioIA())).toMatch(/se ha quedado sin espacio \(16\.731 de salida\)/);
+  // 0.8.3: y sin pensar, que es lo que se comía la salida
+  expect(a).not.toHaveProperty('thinking');
+  expect(b.thinking).toEqual({ type: 'disabled' });
+  expect(await page.evaluate(() => textoDiarioIA())).toMatch(/se ha quedado sin espacio \(16\.731 de salida\): repite con esfuerzo bajo, sin pensar y sin búsqueda/);
   // dos intentos: se cuentan los dos en los tokens (se han gastado)
   expect(await page.evaluate(() => LS.get('inv-ia-tokens', []).at(-1).m['claude-haiku-5-5'].n)).toBe(2);
 });
@@ -630,6 +633,81 @@ test('las conversaciones se guardan cifradas, se abren desde el panel y se borra
 // 0.8.2d · la revisión de la cartera e importar van como «tarea» (su propio contador en el Worker, no gastan preguntas); la
 // automática, en sus dos franjas (desde las 5:00 y las 16:30 de Madrid), igual en los dos niveles, sin rehacerse por señales
 // ni noticias; por la mañana, solo si queda también la de la tarde. IA.ahora fija la hora de la app
+// 0.8.3 · lo que cuesta la revisión (banco de la revisión, 7 nov): la automática con esfuerzo bajo, sin las ideas del radar en
+// sus datos y con la regla de las palabras en el pedido; si se cuela un consejo, se arregla en la misma revisión
+test('la revisión automática pide con esfuerzo bajo, y sus datos van sin las ideas del radar', async ({ page }) => {
+  await preparada(page);
+  await page.evaluate(() => LS.set('inv-claude-ok', true));
+  await page.evaluate(async () => { await cargarEscaneo().catch(() => {}); await cargarFichas().catch(() => {}); });
+  const ids = await page.evaluate(() => [...new Set((S.M || calcular()).filas.map((f) => f.inst.id))]);
+  const json = { titular: 'Tu cartera sigue en orden.', resumen: ['Sube un 1 %.'], posiciones: Object.fromEntries(ids.map((k) => [k, { texto: 'Sin cambios.' }])) };
+  const w = await worker(page.context(), () => ({ sse: stream([{ tipo: 'texto', texto: '```json\n' + JSON.stringify(json) + '\n```' }]) }));
+  await page.evaluate(() => generarAnalisisIA('revisión de la mañana'));
+  await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
+  expect(w.peticiones.length).toBe(1);
+  const c = w.peticiones[0].cuerpo, datos = c.system.map((b) => b.text).join('\n');
+  expect(c).toMatchObject({ model: 'claude-haiku-5-5', max_tokens: 24000, output_config: { effort: 'low' }, tarea: 'revision' });
+  expect(c).not.toHaveProperty('thinking');
+  expect(datos).toContain('## Posiciones');
+  expect(datos).not.toContain('## Radar de Toisón: las');
+  expect(datos).not.toContain('## Ideas del radar');
+  expect(datos).not.toContain('Lo que ha elegido la lectura automática');
+  expect(JSON.stringify(c.messages)).toContain('en ningún campo digas «te conviene»');
+  // el modo «revision» sin las reglas del estándar es el completo de siempre; el completo sigue llevando el radar
+  const r = await page.evaluate(() => { const M = calcular(); return { priv: contextoAsesor(M, 'revision', false) === contextoAsesor(M, 'completo', false), completo: contextoAsesor(M, 'completo', true).includes('## Radar de Toisón: las'), corto: contextoAsesor(M, 'revision', true).length < contextoAsesor(M, 'completo', true).length * 0.7 }; });
+  expect(r).toEqual({ priv: true, completo: true, corto: true });
+});
+
+test('si en la revisión se cuela un «te conviene», se pide reescrito en la misma revisión; si no llega bien, se quita la frase', async ({ page }) => {
+  await preparada(page);
+  await page.evaluate(() => LS.set('inv-claude-ok', true));
+  const ids = await page.evaluate(() => [...new Set((S.M || calcular()).filas.map((f) => f.inst.id))]);
+  const mala = 'Tu colchón cubre 2 meses. Te conviene subirlo a 6 meses antes de nada.';
+  const json = { titular: 'Tu cartera sigue en orden.', resumen: ['Sube un 1 %.', 'Deberías vender IAG.'], mejorar: [{ titulo: 'Colchón', texto: mala }], fuentes: [{ t: 'Te conviene leerlo', u: 'https://a.es/x' }], posiciones: Object.fromEntries(ids.map((k) => [k, { texto: 'Sin cambios.' }])) };
+  let arreglo = '```json\n{"textos": ["Sube un 1 %.", "Tu colchón cubre 2 meses; tus límites piden 6."]}\n```';
+  const w = await worker(page.context(), (c, n) => ({ sse: stream([{ tipo: 'texto', texto: n % 2 ? '```json\n' + JSON.stringify(json) + '\n```' : arreglo }]) }));
+  await page.evaluate(() => generarAnalisisIA('revisión de la mañana'));
+  await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
+  expect(w.peticiones.length).toBe(2);
+  const [a, b] = w.peticiones.map((p) => p.cuerpo);
+  // la misma revisión para el Worker: mismo id y mismo primer mensaje, y la respuesta de antes delante
+  expect(b.pregunta).toBe(a.pregunta);
+  expect(b.tarea).toBe('revision');
+  expect(b.messages[0].content[0].text || b.messages[0].content).toBe(a.messages[0].content[0].text);
+  expect(b.messages.map((m) => m.role)).toEqual(['user', 'assistant', 'user']);
+  expect(b.thinking).toEqual({ type: 'disabled' });
+  expect(JSON.stringify(b.messages[2])).toContain('Deberías vender IAG.');
+  let j = await page.evaluate(() => S.iaPropio.json);
+  // el primer texto devuelto ya no es el que tocaba (se reescribe por orden): «Sube un 1 %.» sustituye a «Deberías vender IAG.»
+  expect(j.resumen).toEqual(['Sube un 1 %.', 'Sube un 1 %.']);
+  expect(j.mejorar[0].texto).toBe('Tu colchón cubre 2 meses; tus límites piden 6.');
+  // los enlaces y sus títulos no se miran
+  expect(j.fuentes.some((f) => f.t === 'Te conviene leerlo')).toBe(true);
+  expect(await page.evaluate(() => textoDiarioIA())).toMatch(/Revisión: 2 de 2 reescritos/);
+  // si lo que vuelve aún trae consejo (o no llega), se quita la frase y se queda el resto
+  arreglo = '```json\n{"textos": ["Deberías vender IAG ya."]}\n```';
+  await page.evaluate(() => { S.iaPropio = null; IA.ultimoIntento = 0; LS.set('inv-claude-quedan', { ...(LS.get('inv-claude-quedan') || {}), rv: null }); return generarAnalisisIA('revisión de la tarde'); });
+  await expect.poll(() => page.evaluate(() => !!(S.iaPropio && S.iaPropio.json)), { timeout: 20_000 }).toBe(true);
+  j = await page.evaluate(() => S.iaPropio.json);
+  expect(j.resumen).toEqual(['Sube un 1 %.']);
+  expect(j.mejorar[0].texto).toBe('Tu colchón cubre 2 meses.');
+  expect(await page.evaluate(() => consejosEnRevision(S.iaPropio.json))).toEqual([]);
+});
+
+test('los importes que la IA deja sin ** en la revisión salen como dato y se ocultan con el ojo', async ({ page }) => {
+  await preparada(page);
+  const r = await page.evaluate(() => {
+    const t = 'Vale 87.337 € y pierde −1.466 € hoy; Repsol, a **29,90 €**, y −**899,67 €** en bitcoin. Sube un 3,2 % y 75.000 $.';
+    const fuera = rellenarIA(t, {});
+    S.oculto = true; const oculto = rellenarIA(t, {}); S.oculto = false;
+    return { env: envolverEurosIA(t), fuera, oculto };
+  });
+  expect(r.env).toBe('Vale **87.337 €** y pierde **−1.466 €** hoy; Repsol, a **29,90 €**, y −**899,67 €** en bitcoin. Sube un 3,2 % y 75.000 $.');
+  expect(r.fuera).toContain('<b class="dato">87.337 €</b>');
+  expect(r.oculto).not.toMatch(/\d €/);
+  expect(r.oculto).toContain('3,2 %');
+});
+
 const MADRID = (h) => Date.parse(`2026-11-06T${h}:00+01:00`);   // viernes 6 nov, hora de invierno
 test('la revisión va como tarea; la automática sale en su franja, igual en los dos niveles; sin tareas, no reintenta', async ({ page }) => {
   await preparada(page);

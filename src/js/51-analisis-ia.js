@@ -13,6 +13,11 @@ function txtSinRevisionIA() {
   return claudeOk() ? L('Le pondrá nota punto por punto, con qué mejoraría, qué mantendría y qué riesgos vigilar. Abre la IA y en unos segundos estará lista.', 'It will score it point by point, with what it would improve, keep and watch. Open the AI and it will be ready in a few seconds.')
     : L('Le pondrá nota punto por punto, con qué mejoraría, qué mantendría y qué riesgos vigilar. Ábrela y hazle una primera pregunta: la primera vez te dice adónde van tus datos.', 'It will score it point by point, with what it would improve, keep and watch. Open it and ask it something: the first time it tells you where your data goes.');
 }
+// 0.8.3: la salida que se le deja a la revisión (max_tokens = 2 × maxTokens en conversarClaude, y nunca menos de 12.000): la de
+// siempre. Lo que cambia es lo que se gasta pensando (banco de la revisión, 7 nov, cartera de prueba: el JSON son unos 3.500
+// tokens; con esfuerzo medio, Haiku 5.5 sacaba 16.000–21.500 en total; con esfuerzo bajo, ~9.200; sin pensar, 4.200–5.000).
+// Si aun así se queda sin sitio, se repite sin pensar (conversarClaude), que cabe siempre
+const REVISION_SALIDA = 24000;
 const IA = { generando: false, turno: null, error: null, ultimoIntento: 0, reintento: 0, reintentos: 0, reintentoT: 0 };
 function iaActual() {
   if (esPublico()) {
@@ -124,6 +129,49 @@ function extraerJSON(texto) {
   for (const c of cands) { try { const o = JSON.parse(c); if (o && typeof o === 'object') return o; } catch (e) {} }
   return null;
 }
+/* 0.8.3 · las frases de consejo que se cuelan en una revisión (el 6 nov, un «te conviene»): el vigía (frasesConsejoIA) mira
+   cada texto del JSON; los que tengan alguna se piden reescritos a Claude en la misma conversación (para el Worker, la misma
+   revisión: mismo id y mismo primer mensaje; sin pensar y con la salida corta) y, si aun así siguen, o si falla, se quitan
+   esas frases. Lo que no es texto para leer (enlaces, fechas, notas, opciones) no se mira */
+const NO_MIRAR_REVISION = new Set(['fuentes', 'u', 'd', 'k', 'nota', 'confianza', 'nivel', 'publico', 'modo', 'opciones', 'plazo_meses', 'subida_pct', 'importe']);
+function consejosEnRevision(json) {
+  const out = [];
+  const mirar = (v, ruta) => {
+    if (typeof v === 'string') { const f = frasesConsejoIA(v); if (f.length) out.push({ ruta, texto: v, frases: f }); }
+    else if (Array.isArray(v)) v.forEach((x, i) => mirar(x, [...ruta, i]));
+    else if (v && typeof v === 'object') for (const [k, x] of Object.entries(v)) if (!NO_MIRAR_REVISION.has(k)) mirar(x, [...ruta, k]);
+  };
+  mirar(json, []);
+  return out;
+}
+function ponerEnRuta(json, ruta, valor) { let o = json; for (const k of ruta.slice(0, -1)) o = o[k]; o[ruta[ruta.length - 1]] = valor; }
+// el texto sin las frases que llevan consejo (las mismas que separa el vigía)
+function sinFrasesConsejo(texto) { return String(texto).split(/(?<=[.!?])\s+|\n+/).filter((f) => f.trim() && !frasesConsejoIA(f).length).join(' ').trim(); }
+async function arreglarConsejosRevision(json, { mensajes, sistema, texto, idPregunta, turno }) {
+  const malos = consejosEnRevision(json);
+  if (!malos.length) return 0;
+  diarioIA(`Revisión: ${malos.length} texto${malos.length === 1 ? '' : 's'} con frases de consejo («${[...new Set(malos.flatMap((m) => m.frases))].slice(0, 3).join('», «')}»): se piden reescritos`);
+  let nuevos = [];
+  try {
+    const t2 = { rol: 'ia', partes: [], citas: [], resultados: [] };
+    const pide = `En tu revisión se han colado frases que suenan a consejo personalizado (${[...new Set(malos.flatMap((m) => m.frases))].map((f) => `«${f}»`).join(', ')}). Reescribe solo estos textos para que cuenten lo que pasa y lo que supone, con las mismas cifras y el mismo formato (**cifras**), sin decirme qué hacer ni qué me conviene. Responde solo con un bloque \`\`\`json: {"textos": ["…"]}, uno por cada texto y en el mismo orden.\n${malos.map((m, i) => `${i + 1}. ${m.texto}`).join('\n')}`;
+    await conversar({ tipo: 'análisis', cuenta: 'arreglo', tarea: 'revision', soloHaiku: true, turno: t2, idPregunta, pensar: false, maxTokens: 2000, herramientas: false, web: false, maxBusquedas: 0, alCambiar() {},
+      preparar: () => ({ mensajes: [...mensajes, { role: 'assistant', content: texto }, { role: 'user', content: pide }], sistema }) });
+    turno.coste = (turno.coste || 0) + (t2.coste || 0);
+    const j = extraerJSON(t2.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n'));
+    nuevos = j && Array.isArray(j.textos) ? j.textos : [];
+  } catch (e) { diarioIA(`Revisión: el arreglo de las frases no ha llegado (${String(e.codigo || e.message || e).slice(0, 60)}): se quitan`); }
+  let reescritos = 0;
+  malos.forEach((m, i) => {
+    const n = typeof nuevos[i] === 'string' ? nuevos[i].trim() : '';
+    if (n && !frasesConsejoIA(n).length) { ponerEnRuta(json, m.ruta, n); reescritos++; }
+    else ponerEnRuta(json, m.ruta, sinFrasesConsejo(m.texto));
+  });
+  // un párrafo que se ha quedado vacío (en «resumen»), fuera
+  for (const m of malos) { const padre = m.ruta.slice(0, -1).reduce((o, k) => o[k], json); if (Array.isArray(padre) && padre.some((x) => x === '')) ponerEnRuta(json, m.ruta.slice(0, -1), padre.filter((x) => x !== '')); }
+  diarioIA(`Revisión: ${reescritos} de ${malos.length} reescritos${reescritos < malos.length ? `; en ${malos.length - reescritos}, quitadas las frases` : ''}`);
+  return malos.length;
+}
 async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
   if (IA.generando) return;
   clearTimeout(IA.reintentoT); IA.reintento = 0;
@@ -162,11 +210,17 @@ async function generarAnalisisIA(motivo = 'la pides tú', solo = false) {
     // de venta que ya vienen en los datos. La que pides tú puede buscar (tres veces como mucho) y calcular
     const auto = motivo !== 'la pides tú';
     // 0.8.2: lo que se pide y con qué reglas, cuando ya se sabe quién contesta (con Claude, las del estándar)
-    const preparar = (est) => ({ mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto, est) }], sistema: [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: contextoAsesor(M, 'revision', est) }] });
-    await conversar({ tipo: 'análisis', tarea: 'revision', soloHaiku: auto, turno, preparar, maxTokens: 12000, alCambiar, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
+    // 0.8.3: los datos sin las ideas del radar (contextoAsesor «revision») y la automática pensando poco (esfuerzo bajo): con
+    // esfuerzo medio, Haiku 5.5 se iba a 16.000–24.000 tokens de salida y a veces se quedaba sin sitio y repetía entera. Sin
+    // pensar del todo sale aún más barata y rápida, pero se dejaba cosas (banco de la revisión, 7 nov): pensar poco las ve
+    let pedido = null;
+    const preparar = (est) => (pedido = { mensajes: [{ role: 'user', content: pedidoAnalisis(ids, motivo, !auto && cfgA.web && !AS.sinWeb, auto, est) }], sistema: [{ type: 'text', text: instruccionesAsesor(est) }, { type: 'text', text: contextoAsesor(M, 'revision', est) }] });
+    const idPregunta = nuevoIdPregunta();
+    await conversar({ tipo: 'análisis', tarea: 'revision', soloHaiku: auto, turno, preparar, idPregunta, ...(auto ? { esfuerzo: 'low' } : {}), maxTokens: REVISION_SALIDA / 2, alCambiar, herramientas: !auto, web: !auto, maxBusquedas: auto ? 0 : 3 });
     const texto = turno.partes.filter((p) => p.tipo === 'texto').map((p) => p.texto).join('\n');
     const json = extraerJSON(texto);
     if (!json || !json.titular || !json.posiciones) throw new Error('La respuesta no ha llegado completa. Vuelve a intentarlo.');
+    if (turno.estandar && pedido) await arreglarConsejosRevision(json, { ...pedido, texto, idPregunta, turno });
     const vistas = new Set();
     json.fuentes = [...turno.citas, ...(Array.isArray(json.fuentes) ? json.fuentes : [])].filter((x) => x && /^https?:\/\//.test(x.u || '') && !vistas.has(x.u) && vistas.add(x.u)).slice(0, 20);
     // publico: hecha con las reglas del estándar; modo: el de la app cuando se hizo (para rehacerla si cambias de modo)

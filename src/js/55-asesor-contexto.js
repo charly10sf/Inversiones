@@ -505,7 +505,9 @@ async function conversar(o) {
     if (typeof o.preparar === 'function') Object.assign(o, o.preparar(true));
     if (!conClaude) throw errorSinIA(motivoSinClaude());
     // el mismo id de pregunta también si contesta Haiku: para el Worker sigue siendo una sola pregunta
-    const idPregunta = nuevoIdPregunta();
+    // 0.8.3: o.idPregunta sigue una pregunta ya empezada (el arreglo de las frases de consejo de una revisión: para el
+    // Worker es la misma revisión, con el mismo primer mensaje)
+    const idPregunta = o.idPregunta || nuevoIdPregunta();
     try { return await conversarClaude({ ...o, claudeModelo: mc, idPregunta }); }
     catch (e) {
       if (e && e.name === 'AbortError') throw e;
@@ -521,7 +523,7 @@ async function conversar(o) {
       }
       throw falloSinReserva(e, o.turno);
     }
-  } finally { vigiaConsejoIA(o.turno); cerrarTokensIA(o.turno, o.tipo || 'pregunta'); }
+  } finally { vigiaConsejoIA(o.turno); cerrarTokensIA(o.turno, o.cuenta || o.tipo || 'pregunta'); }
 }
 const HAIKU_IA = 'claude-haiku-5-5';
 const nuevoIdPregunta = () => (crypto.randomUUID ? crypto.randomUUID() : Math.random().toString(36).slice(2) + Date.now().toString(36)).replace(/-/g, '').slice(0, 32);
@@ -657,7 +659,7 @@ function cerrarTokensIA(turno, tipo = 'pregunta') {
     const x = t[m];
     // Claude (0.8): la salida ya lleva lo que piensa, y la entrada, lo que se leyó de la caché
     const cl = !!MODELOS_CLAUDE[m];
-    diarioIA(`Tokens de${tipo === 'análisis' ? 'l análisis' : ' la pregunta'} · ${nombreMod(m)}: entrada ${fmtNum(x.e, 0)}${cl ? ` (caché ${fmtNum(x.c || 0, 0)})` : ''} · salida ${fmtNum(x.s, 0)}${cl ? '' : ` · razonamiento ${fmtNum(x.r, 0)}`} (${x.n} ${x.n === 1 ? 'ronda' : 'rondas'}${x.b ? `, ${x.b} ${x.b === 1 ? 'búsqueda' : 'búsquedas'}` : ''})${cl && turno.coste ? ` · ~${fmtNum(turno.coste, 3)} US$` : ''}`);
+    diarioIA(`Tokens de${tipo === 'análisis' ? 'l análisis' : tipo === 'arreglo' ? 'l arreglo de la revisión' : ' la pregunta'} · ${nombreMod(m)}: entrada ${fmtNum(x.e, 0)}${cl ? ` (caché ${fmtNum(x.c || 0, 0)})` : ''} · salida ${fmtNum(x.s, 0)}${cl ? '' : ` · razonamiento ${fmtNum(x.r, 0)}`} (${x.n} ${x.n === 1 ? 'ronda' : 'rondas'}${x.b ? `, ${x.b} ${x.b === 1 ? 'búsqueda' : 'búsquedas'}` : ''})${cl && turno.coste ? ` · ~${fmtNum(turno.coste, 3)} US$` : ''}`);
   }
 }
 function resumenTokensIA() {
@@ -1101,7 +1103,7 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   // los bloques de texto vacíos no se pueden devolver a la API
   return { contenido: bloques.filter((b) => b && !(b.type === 'text' && !b.text)), stop, uso };
 }
-async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, claudeModelo, herramientas = true, maxBusquedas = 1, tipo = 'pregunta', esfuerzo: esfuerzo0 = 'medium', idPregunta: id0 = null, tarea = null }) {
+async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alCambiar = () => {}, signal, web, claudeModelo, herramientas = true, maxBusquedas = 1, tipo = 'pregunta', esfuerzo: esfuerzo0 = 'medium', idPregunta: id0 = null, tarea = null, pensar: pensar0 = true }) {
   const modelo = claudeModelo, cfg = cfgAsesor();
   // 0.8.2d: lo que no es una pregunta del chat va como «tarea» (revisión, noticia, importar): en el Worker tiene su propio
   // contador y no gasta las preguntas del día
@@ -1117,7 +1119,9 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
   // esfuerzo medio siempre: con «alto» y dos búsquedas, Haiku se gastó todo el espacio pensando y el JSON salió cortado (2 nov).
   // Si aun así se queda sin sitio en un análisis, se repite una vez con esfuerzo bajo y sin búsqueda (maxRepetido)
   // (el resumen de una noticia pide «low»: contesta antes, y para resumir no hace falta pensar más)
-  let esfuerzo = esfuerzo0, maxRepetido = false;
+  // 0.8.3: pensar = false apaga el razonamiento de Claude (Haiku 5.5 piensa por defecto): la revisión automática se iba a
+  // 16.000–24.000 tokens de salida, de los que el JSON eran unos 3.500 (7 nov, banco de la revisión)
+  let esfuerzo = esfuerzo0, maxRepetido = false, pensar = pensar0;
   turno.modelo = modelo;
   let ronda = 0, cortes = 0, pausas = 0, cambios = 0, vacias = 0, enviada = false;
   const avisoRed = (txt) => { turno.partes = turno.partes.filter((x) => !x.red); const p = { tipo: 'paso', red: true, txt }; turno.partes.push(p); alCambiar(); return p; };
@@ -1129,7 +1133,7 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
     const tools = herrs();
     let r;
     ronda++;
-    const cuerpo = { model: modelo, max_tokens: Math.min(CLAUDE_MAX_SALIDA, Math.max(maxTokens * 2, 12000)), system: sis, messages: conCacheClaude(msgs), ...(tools.length ? { tools } : {}), stream: true, output_config: { effort: esfuerzo }, ronda: enviada ? Math.max(ronda, 2) : ronda, pregunta: idPregunta, ...(tareaW ? { tarea: tareaW } : {}) };
+    const cuerpo = { model: modelo, max_tokens: Math.min(CLAUDE_MAX_SALIDA, Math.max(maxTokens * 2, 12000)), system: sis, messages: conCacheClaude(msgs), ...(tools.length ? { tools } : {}), stream: true, output_config: { effort: esfuerzo }, ...(pensar ? {} : { thinking: { type: 'disabled' } }), ronda: enviada ? Math.max(ronda, 2) : ronda, pregunta: idPregunta, ...(tareaW ? { tarea: tareaW } : {}) };
     enviada = true;   // si hay que repetir la primera ronda, ya no cuenta como pregunta nueva en el Worker
     try { r = await llamarClaude(cuerpo, turno, signal, alCambiar, { ronda }); }
     catch (e) {
@@ -1158,9 +1162,9 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
     turno.coste = (turno.coste || 0) + costeClaude(modelo, r.uso);
     // un análisis que se queda sin espacio no sirve (el JSON sale cortado): una vez más, pensando menos y sin buscar en internet
     if (r.stop === 'max_tokens' && tipo === 'análisis' && !maxRepetido) {
-      maxRepetido = true; esfuerzo = 'low'; conWeb = false;
+      maxRepetido = true; esfuerzo = 'low'; conWeb = false; pensar = false;
       turno.partes.length = pasosAntes; turno.citas.length = 0; turno.resultados.length = 0;
-      diarioIA(`${nombreMod(modelo)}: se ha quedado sin espacio (${fmtNum((r.uso && r.uso.output_tokens) || 0, 0)} de salida): repite con esfuerzo bajo y sin búsqueda`);
+      diarioIA(`${nombreMod(modelo)}: se ha quedado sin espacio (${fmtNum((r.uso && r.uso.output_tokens) || 0, 0)} de salida): repite con esfuerzo bajo, sin pensar y sin búsqueda`);
       vuelta--; continue;
     }
     if (!r.contenido.length) {
