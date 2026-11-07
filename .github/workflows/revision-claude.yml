@@ -1,0 +1,64 @@
+# 0.8.3 · Banco de la revisión de la cartera con Claude: la revisión automática con la app de verdad (el build), la cartera
+# de prueba y Claude de verdad, para medir tokens, tiempo y coste y leer el JSON. Gasta créditos de la API (cada vuelta,
+# 0,01–0,03 US$ con Haiku): se lanza a mano o al cambiar tests/revision/pedir.cfg en una rama que no sea main. Usa
+# ANTHROPIC_BANCO_KEY si existe y, si no, la clave de la app (como el banco de preguntas). El resultado se sube a la rama
+# «banco-revision» (revision/<rama>-<fecha>.json), porque desde las sesiones de Claude no se pueden bajar los artefactos.
+name: Banco de la revisión
+
+on:
+  workflow_dispatch:
+    inputs:
+      variantes:
+        description: "Las vueltas, separadas por comas (vacío = las de tests/revision/pedir.cfg)"
+        type: string
+        default: ""
+  push:
+    branches-ignore: [main]
+    paths: [tests/revision/pedir.cfg]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: banco-revision
+  cancel-in-progress: false
+
+jobs:
+  revision:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Dependencias, datos y build
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          sh tests/traer-datos.sh
+          npm run build
+
+      - name: Revisiones con Claude
+        env:
+          GF_BANCO_ANTHROPIC: ${{ secrets.ANTHROPIC_BANCO_KEY || secrets.ANTHROPIC_API_KEY }}
+          ENTRADA: ${{ inputs.variantes }}
+        run: |
+          if [ -z "$GF_BANCO_ANTHROPIC" ]; then echo "::error::Falta el secreto ANTHROPIC_BANCO_KEY (o ANTHROPIC_API_KEY)"; exit 1; fi
+          V="$ENTRADA"; [ -n "$V" ] || V=$(grep -v '^#' tests/revision/pedir.cfg | tr -d ' \n')
+          mkdir -p salida
+          GF_REV_VARIANTES="$V" GF_REV_SALIDA=$PWD/salida/revision.json npx playwright test tests/revision-claude.spec.js --project=pc --reporter=list --retries=0
+
+      - name: Subir el resultado a la rama banco-revision
+        if: always()
+        run: |
+          [ -f salida/revision.json ] || exit 0
+          NOMBRE="revision/$(echo "${GITHUB_REF_NAME}" | tr '/' '-')-$(date -u +%Y%m%d-%H%M%S)-${GITHUB_SHA::7}.json"
+          git config user.name "github-actions[bot]"; git config user.email "41898237+github-actions[bot]@users.noreply.github.com"
+          if git fetch -q --depth=1 origin banco-revision; then git checkout -q -B banco-revision FETCH_HEAD
+          else git checkout -q --orphan banco-revision && git rm -rq --cached .; fi
+          mkdir -p revision && cp salida/revision.json "$NOMBRE"
+          git add "$NOMBRE" && git commit -qm "Banco de la revisión: ${GITHUB_REF_NAME} ${GITHUB_SHA::7} [skip ci]" && git push -q origin HEAD:refs/heads/banco-revision
