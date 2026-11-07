@@ -34,11 +34,12 @@ from pathlib import Path
 from PIL import Image, ImageStat
 
 LADO = 128            # px del logo guardado (nunca se agranda)
-MIN_LADO = 64         # por debajo se vería pixelado: se queda en iniciales
+MIN_LADO = 32         # por debajo se vería pixelado (se pinta a unos 26 px de lado, 52 en pantallas 2×): iniciales
+METODO = 2            # sube al mejorar la búsqueda: los dominios sin logo se vuelven a probar en la pasada siguiente
 VIGENCIA_DIAS = 90    # un logo ya bajado se vuelve a mirar a los 90 días
 REINTENTO_DIAS = 14   # un dominio sin logo se vuelve a probar a los 14 días
 MAX_BYTES = 2_000_000
-UA = "Mozilla/5.0 (compatible; ToisonLogos/1.0; +https://toison.es)"
+UA = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36 ToisonLogos/1.0 (+https://toison.es)"
 DOMINIO = re.compile(r"^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]*[a-z0-9])?)+$")
 FALLBACKS = (("/apple-touch-icon.png", 180), ("/apple-touch-icon-precomposed.png", 180), ("/favicon.png", 48), ("/favicon.ico", 32))
 
@@ -226,7 +227,7 @@ def abrir(url, timeout=10):
         u = urllib.parse.urlparse(url)
         if u.scheme not in ("http", "https") or not es_publica(u.hostname or ""):
             return None
-        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "*/*", "Accept-Language": "en,es;q=0.8"})
+        req = urllib.request.Request(url, headers={"User-Agent": UA, "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/*;q=0.8,*/*;q=0.5", "Accept-Language": "en-US,en;q=0.9,es;q=0.8"})
         with _abridor.open(req, timeout=timeout) as r:
             datos = r.read(MAX_BYTES + 1)
             if len(datos) > MAX_BYTES:
@@ -236,14 +237,17 @@ def abrir(url, timeout=10):
         return None
 
 
-def buscar_logo(dom, abrir_url=abrir, manual=None, max_intentos=8):
+def buscar_logo(dom, abrir_url=abrir, manual=None, max_intentos=8, motivo=None):
     """Devuelve (webp, url de origen) o None. Primero lo que se dio a mano, luego los iconos de la página de
-    inicio (con www o sin él), los del manifiesto y las direcciones de siempre."""
+    inicio (con www o sin él), los del manifiesto y las direcciones de siempre. Si falla, motivo['m'] dice por qué:
+    «sin-web» (la página no contestó), «no-descarga» (ninguna imagen se pudo bajar) o «no-vale» (se bajaron pero eran
+    pequeñas, no cuadradas o lisas)."""
+    motivo = motivo if motivo is not None else {}
     pruebas = []
     if manual and manual.get(dom):
         pruebas.append(manual[dom])
     base, html = None, ""
-    for b in (f"https://{dom}/", f"https://www.{dom}/", f"http://{dom}/"):
+    for b in (f"https://{dom}/", f"https://www.{dom}/", f"https://{dom}/", f"http://{dom}/"):      # el pelado se repite: a veces falla la primera
         r = abrir_url(b)
         if r and ("html" in (r[1] or "").lower() or b"<link" in r[0][:200000].lower()):
             base, html = r[2] or b, r[0][:600000].decode("utf-8", "replace")
@@ -260,15 +264,20 @@ def buscar_logo(dom, abrir_url=abrir, manual=None, max_intentos=8):
             todas[u] = max(todas.get(u, 0), p)
         pruebas += [u for u, _ in sorted(todas.items(), key=lambda x: -x[1])]
     else:
+        motivo["m"] = "sin-web"
         for ruta, _ in FALLBACKS:
             pruebas.append(f"https://{dom}{ruta}")
+    bajadas = 0
     for url in pruebas[:max_intentos]:
         r = abrir_url(url)
         if not r:
             continue
+        bajadas += 1
         im = imagen_valida(r[0])
         if im is not None:
             return a_webp(im), url
+    if "m" not in motivo:
+        motivo["m"] = "no-vale" if bajadas else "no-descarga"
     return None
 
 
@@ -286,6 +295,8 @@ def pendientes(doms, estado, hoy):
     """Orden de trabajo: primero los nunca probados, luego los logos viejos y por último los fallidos que ya toca
     reintentar. Los que se probaron hace poco, fuera."""
     ok, sin = estado.get("ok", {}), estado.get("sin", {})
+    if estado.get("m") != METODO:           # se mejoró la búsqueda desde la última vez: los que fallaron, otra vez
+        sin = {}
     nuevos = sorted(d for d in doms if d not in ok and d not in sin)
     viejos = sorted((d for d in doms if d in ok and (hoy - (_fecha(ok[d]) or dt.date.min)).days >= VIGENCIA_DIAS), key=lambda d: ok[d])
     fallidos = sorted((d for d in doms if d in sin and (hoy - (_fecha(sin[d]) or dt.date.min)).days >= REINTENTO_DIAS), key=lambda d: sin[d])
@@ -306,20 +317,23 @@ def principal(instrumentos, anterior, salida, minutos=None, hilos=12, abrir_url=
         (salida / "logos" / f.name).write_bytes(f.read_bytes())
     ok = {d: v for d, v in ok.items() if (salida / "logos" / f"{d}.webp").exists()}
     manual = {limpiar(k): v for k, v in (_json(Path(__file__).resolve().parents[1] / "logos-manual.json") or {}).items() if limpiar(k)}
-    cola = pendientes(doms, {"ok": ok, "sin": sin}, hoy)
+    cola = pendientes(doms, {"ok": ok, "sin": sin, "m": estado.get("m")}, hoy)
     print(f"{len(doms)} dominios; {len(ok)} con logo; {len(cola)} por mirar en esta pasada (hasta {minutos:g} min)")
 
     def uno(d):
         if time.time() > limite:
             return d, "tarde", None
+        mot = {}
         try:
-            return d, "ok", buscar_logo(d, abrir_url, manual)
+            return d, "ok", (buscar_logo(d, abrir_url, manual, motivo=mot), mot.get("m"))
         except Exception as e:  # una web rara no tumba la pasada
-            return d, "error", str(e)
+            return d, "error", (None, "error: " + str(e)[:80])
 
     nuevos = fallidos = tarde = 0
+    por_motivo = {}
     with ThreadPoolExecutor(max_workers=hilos) as ex:
-        for d, que, r in ex.map(uno, cola):
+        for d, que, res in ex.map(uno, cola):
+            r, mot = res if res else (None, None)
             if que == "tarde":
                 tarde += 1
             elif que == "ok" and r:
@@ -328,15 +342,18 @@ def principal(instrumentos, anterior, salida, minutos=None, hilos=12, abrir_url=
                 sin.pop(d, None)
                 nuevos += 1
             else:
+                por_motivo.setdefault(mot or "?", []).append(d)
                 if d not in ok:
                     sin[d] = hoy.isoformat()
                 else:                          # había logo: se conserva el viejo y se vuelve a mirar mañana
                     ok[d] = (hoy - dt.timedelta(days=VIGENCIA_DIAS - 1)).isoformat()
                 fallidos += 1
+    for m, lista in sorted(por_motivo.items(), key=lambda x: -len(x[1])):
+        print(f"  sin logo, {m}: {len(lista)} (por ejemplo: {', '.join(sorted(lista)[:14])})")
     # índice para la app: solo los dominios que Toisón conoce y tienen archivo
     con = sorted(d for d in ok if d in doms or (salida / "logos" / f"{d}.webp").exists())
     (salida / "logos.json").write_text(json.dumps({"v": 1, "g": hoy.isoformat(), "d": con}, ensure_ascii=False, separators=(",", ":")), encoding="utf-8")
-    (salida / "logos-estado.json").write_text(json.dumps({"ok": ok, "sin": {d: v for d, v in sin.items() if d in doms}}, ensure_ascii=False, sort_keys=True, separators=(",", ":")), encoding="utf-8")
+    (salida / "logos-estado.json").write_text(json.dumps({"m": METODO, "ok": ok, "sin": {d: v for d, v in sin.items() if d in doms}}, ensure_ascii=False, sort_keys=True, separators=(",", ":")), encoding="utf-8")
     resumen = f"Logos: {len(con)} publicados de {len(doms)} dominios; esta pasada: {nuevos} nuevos, {fallidos} sin logo, {tarde} sin mirar por tiempo"
     print(resumen)
     if os.environ.get("GITHUB_OUTPUT"):          # la Action solo publica si ha cambiado algo

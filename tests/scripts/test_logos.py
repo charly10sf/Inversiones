@@ -78,7 +78,7 @@ class Candidatas(unittest.TestCase):
 
 class Imagenes(unittest.TestCase):
     def test_pequena_no_vale(self):
-        self.assertIsNone(L.imagen_valida(png(32)))
+        self.assertIsNone(L.imagen_valida(png(24)))
         self.assertIsNone(L.imagen_valida(ico(16)))
 
     def test_no_cuadrada_no_vale(self):
@@ -149,6 +149,26 @@ class Buscar(unittest.TestCase):
         w = web({"https://acme.com/": pagina(links)})
         self.assertIsNone(L.buscar_logo("acme.com", w, max_intentos=5))
         self.assertLessEqual(len([u for u in w.visto if u.endswith(".png")]), 5)
+
+
+class Motivos(unittest.TestCase):
+    def test_dice_por_que_falla(self):
+        m = {}
+        L.buscar_logo("a.com", web({}), motivo=m)
+        self.assertEqual(m["m"], "sin-web")
+        m = {}
+        L.buscar_logo("a.com", web({"https://a.com/": pagina('<link rel="icon" href="/f.ico">')}), motivo=m)
+        self.assertEqual(m["m"], "no-descarga")
+        m = {}
+        L.buscar_logo("a.com", web({"https://a.com/": pagina('<link rel="icon" href="/f.ico">'), "https://a.com/f.ico": (ico(16), "image/x-icon")}), motivo=m)
+        self.assertEqual(m["m"], "no-vale")
+
+    def test_un_icono_de_32_ya_vale_pero_gana_el_grande(self):
+        w = web({"https://a.com/": pagina('<link rel="icon" href="/p.png" sizes="32x32"><link rel="icon" href="/g.png" sizes="192x192">'),
+                 "https://a.com/p.png": (png(32), "image/png"), "https://a.com/g.png": (png(192), "image/png")})
+        self.assertEqual(L.buscar_logo("a.com", w)[1], "https://a.com/g.png")
+        w = web({"https://a.com/": pagina('<link rel="icon" href="/p.png" sizes="32x32">'), "https://a.com/p.png": (png(32), "image/png")})
+        self.assertEqual(L.buscar_logo("a.com", w)[1], "https://a.com/p.png")
 
 
 class Direcciones(unittest.TestCase):
@@ -225,6 +245,20 @@ class Pasada(unittest.TestCase):
             r = L.principal(t / "instrumentos.json", ant, t / "salida", minutos=5, hilos=2, abrir_url=web({}), ahora=hoy)
             self.assertIn("acme.com", json.loads((t / "salida" / "logos.json").read_text())["d"])
             self.assertEqual(r["publicados"], 1)
+
+    def test_al_mejorar_el_metodo_los_que_fallaron_se_vuelven_a_probar(self):
+        with tempfile.TemporaryDirectory() as t:
+            t = self.preparar(t)
+            ant = t / "anterior"
+            hoy = dt.datetime(2026, 11, 7, tzinfo=dt.timezone.utc)
+            (ant / "logos-estado.json").write_text(json.dumps({"m": L.METODO, "ok": {}, "sin": {"acme.com": "2026-11-06"}}))
+            w = web({})
+            L.principal(t / "instrumentos.json", ant, t / "s1", minutos=5, hilos=2, abrir_url=w, ahora=hoy)
+            self.assertFalse(any("acme.com" in u for u in w.visto))          # misma versión: ayer fallaron, hoy no
+            (ant / "logos-estado.json").write_text(json.dumps({"m": L.METODO - 1, "ok": {}, "sin": {"acme.com": "2026-11-06"}}))
+            w = web({})
+            L.principal(t / "instrumentos.json", ant, t / "s2", minutos=5, hilos=2, abrir_url=w, ahora=hoy)
+            self.assertTrue(any("acme.com" in u for u in w.visto))           # versión vieja: otra vez
 
     def test_el_tiempo_se_acaba(self):
         with tempfile.TemporaryDirectory() as t:
