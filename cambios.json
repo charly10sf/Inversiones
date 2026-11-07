@@ -7,112 +7,285 @@
    "t": "Toisón, en su casa",
    "commits": [
     {
-     "cuando": "2026-11-07 12:45",
-     "asunto": "0.8.3 · Marfil nuevo y fuera Borgoña (165fb98, f980600, 177eb0e)",
+     "cuando": "2026-11-07 19:46",
+     "asunto": "0.8.3 · novedades: el aviso de límites y los textos del modo estándar",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 19:46",
+     "asunto": "Aciertos del radar: Action interna que mide las ideas, lo que evita y el radar frente al índice",
      "detalle": [
-      "Marfil: crema en capas (fondo #ede1cc, tarjetas #fdf9f2), tinta #1c1915, oro de textos #7a5716, menú lateral y barra de abajo en vino #3c0b16, pestañas con fondo vino suave y raya de oro de 3 px, títulos de sección con hilo de oro, sello con la O en vino (#4e101d) y la T de oro. Bajadas en #a42018.",
-      "Borgoña fuera de la app (TEMAS, selector de dos, tutorial, presentación, avanzado) y de Android (Tema.java, widget, Lienzo); lo guardado como borgona pasa a marfil.",
-      "Pruebas nuevas en tests/temas.spec.js."
+      "Uso interno, sin enseñarlo. Guarda cada entrada el primer día que sale con su precio en euros y el del MSCI World, y a los 30, 90, 180 y 365 días fija el retorno, el del índice y el exceso. Rama aciertos, de lunes a viernes, solo desde main. Pruebas con datos de mentira (tests/scripts/test_aciertos.py)."
      ]
     },
     {
-     "cuando": "2026-11-07 03:45",
-     "asunto": "0.8.3 · Mármol G en iconos y presentación, y la mudanza a toison.es/app (69487f1, 307abb9, 877ea0f)",
+     "cuando": "2026-11-07 19:39",
+     "asunto": "Límite de caída desde máximos: campo en Tú y aviso (web y Android)",
      "detalle": [
-      "scripts/marca_marmol_g.py rehace favicon, iconos de la app y la portada de la presentación sobre el negro y la piedra del Mármol G.",
-      "Mudanza: hosting/firebase.json y la Action «Hosting»; 62a-mudanza.js lleva lo del navegador a la dirección nueva con «Llevar mis datos» y, en Android, por el puente. Empieza sola cuando toison.es/app contesta con su version.json."
+      "Vacío = sin límite. Se mide frente al máximo de 12 meses de lo que se tiene invertido; el aviso dice el hecho, sin órdenes. A la app de Android van el límite y cuánto más valía el máximo (sin historia ni importes)."
      ]
     },
     {
-     "cuando": "2026-11-07 02:00",
-     "asunto": "0.8.3 · Logos desde el servidor (54e736f, fd4514a)",
+     "cuando": "2026-11-07 19:33",
+     "asunto": "0.8.2f · el aviso de límites y los textos del modo público, dentro de la 0.8.3",
      "detalle": [
-      "scripts/logos.py y la Action «Logos» guardan el logo de cada dominio (128 px, webp) en la rama «logos»; la app lo usa si está en el índice y, si no, el servicio de iconos de Google como hasta ahora. Pruebas: tests/scripts/test_logos.py y tests/logos-servidor.spec.js."
-     ]
-    }
-   ]
-  },
-  {
-   "v": "0.8.2e",
-   "f": "2026-11-06",
-   "h": "23:50",
-   "t": "Las bajadas, en rojo",
-   "commits": [
-    {
-     "cuando": "2026-11-06 23:50",
-     "asunto": "0.8.2e · el rojo de las bajadas",
-     "detalle": [
-      "--baja pasa de coral (13–14° de matiz) a rojo (1–3°): Mármol #ff6b62 (antes #ff8f6e), Marfil #a42018 (antes #982d0e) y Borgoña #ff7b78 (antes #ff9478). Sale de él --baja-fondo, el mapa (mp-d1 a d4), las losetas, los botones de vender y el día a día. Contraste mínimo 4,5 sobre el fondo, la tarjeta y la losa en los tres; lejos del aviso y del oro.",
-      "Tema.java con los mismos tres valores, para el widget, los avisos y las barras de Android.",
-      "Prueba nueva: tests/baja-roja.spec.js (matiz, contraste y que Tema.java coincide con el CSS)."
-     ]
-    }
-   ]
-  },
-  {
-   "v": "0.8.2d",
-   "f": "2026-11-06",
-   "h": "21:30",
-   "t": "Todo con Claude",
-   "commits": [
-    {
-     "cuando": "2026-11-06 22:40",
-     "asunto": "0.8.2d · la app entiende el tope de 2 revisiones al día y las automáticas salen desde las 5:00 y las 16:30",
-     "detalle": [
-      "El 429 «tope-revision» del Worker: no se reintenta, no aparta a Claude, no avisa al dueño y la automática no enseña error; la que pides tú dice cuándo vuelven. La app lee X-Quedan-Revisiones y, sin revisiones hoy, ni lo intenta.",
-      "Las 2 revisiones automáticas, para todos los niveles: desde las 5:00 y desde las 16:30 de Madrid, la primera vez que abres la app (sábados y domingos, solo la de las 5:00); por la mañana, solo si queda también la de la tarde. Ya no se rehace cada 3 horas por señales o noticias.",
-      "Ajustes de la IA dice las horas; novedades del dueño con la línea de la IA del servidor; pruebas nuevas en tests/claude-app.spec.js (las franjas y el tope de revisiones)."
+      "# Conflicts:",
+      "#\ten.json"
      ]
     },
     {
-     "cuando": "2026-11-06 21:30",
-     "asunto": "0.8.2d · todo con Claude, sesión 5: fuera el código de Gemini de la app y cierre de la versión",
+     "cuando": "2026-11-07 19:20",
+     "asunto": "Modo público: los textos de los límites solo dicen el hecho, sin «no añadas» ni «vende»",
      "detalle": [
-      "Fuera los modelos de Gemini, los cupos diarios de Google (diaGoogle, ordenIA, agotadosIA, CADENA_IA, MODELO_RAPIDO), los tiempos y tokens de Gemini del registro y la clave de Google de cada uno: se borra del dispositivo al abrir la IA, en cualquier perfil.",
-      "«Cómo va la IA» (dueño): lo que gasta la Action, con las llamadas a Claude de 24 h; sin cupos de Google ni la muestra de los domingos. El aviso de la frescura va con escaneo.claude, sin GEMINI_API_KEY, y el porqué solo lo ve el dueño.",
-      "En la foto que recibe la IA, prensa_leida_por_gemini pasa a prensa_leida_por_la_ia; el historial omitido del fundador ya no nombra a Gemini.",
-      "VERSION 0.8.2d con 4 arreglos para todos y 3 del dueño, en.json y cambios.json; prueba nueva tests/sin-gemini.spec.js; novedades-dueno y niveles ajustadas."
+      "En Análisis y en «Tu plan» del modo público salían frases de orden (CNMV). Con esPublico() los límites, la bolsa frente al perfil y el colchón dicen cuánto pasa o falta y nada más. Prueba nueva (tests/textos-publico.spec.js) y prueba de punta a punta de la notificación del límite."
      ]
     },
     {
-     "cuando": "2026-11-06 20:50",
-     "asunto": "0.8.2d · todo con Claude, sesión 3: revisión, noticia e importar con Claude como «tarea»",
+     "cuando": "2026-11-07 19:18",
+     "asunto": "0.8.3 · correos: la cabecera con el «hilo de oro» (elegida por Carlos entre cuatro ideas)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 19:13",
+     "asunto": "0.8.3 · correos: la línea de la cabecera, como una gráfica de cotización (tramos rectos, rejilla y el último punto)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 19:10",
+     "asunto": "0.8.3 · correos: las imágenes llevan su huella en la dirección (?v=…): Gmail las guarda por dirección y enseñaba la cabecera vieja",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 19:05",
+     "asunto": "0.8.3 · correos: la cabecera más baja (148 px)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 18:58",
+     "asunto": "0.8.3 · correos: los enlaces siempre a toison.es/app/cuenta.html (Carlos: nada de charly10sf.github.io a la vista); la app ya no manda la dirección",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 18:54",
+     "asunto": "0.8.3 · correos: la cabecera (símbolo, TOISÓN, lema y línea de oro) algo más baja y en los tres correos; fuera la fila del icono",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 18:49",
+     "asunto": "0.8.3 · correos, revisión aparte: los topes de la contraseña olvidada caen a Firebase (nadie bloquea a otro), en la contraseña olvidada Firebase y el envío van aparte y el día solo cuenta si hay algo que mandar, confirmar con origen y topes por IP (IPv6 por /64) y por correo, el Worker de pruebas sin crons y solo con su ruta (SOLO_PRUEBA), los contadores se borran solos, permiso de Google solo de identitytoolkit, cuenta.html cae a Firebase si el Worker tarda, la app corta el fetch a los 12 s, «ya» no dice «te he mandado», la bienvenida también al arrancar (cuentas de la última semana)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 18:39",
+     "asunto": "0.8.3 · correos propios de Toisón desde noreply@toison.es (Resend): /correo en el Worker (confirmar, contraseña nueva y bienvenida; enlaces de Firebase con la cuenta de servicio hacia cuenta.html; topes; plan B a Firebase), diseño «Carta» con su bienvenida, la app y cuenta.html los piden al Worker y caen a Firebase si no puede, y el Worker de pruebas growfolio-correos en la Action «Worker»",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 18:26",
+     "asunto": "Avisos de límites también en la app de Android",
      "detalle": [
-      "La revisión de la cartera, el resumen de una noticia e importar capturas y PDF, solo con Claude por el Worker y con su propio contador de tareas: no gastan las preguntas del día.",
-      "En la cartera de prueba la IA contesta con la cuenta de quien la abre."
+      "La web pasa a la app, por posición, lo que pesa (tanto por uno), si es acción",
+      "suelta y si es cripto u oro, más los cuatro límites del usuario. Avisos.java",
+      "repasa los límites con los precios de ahora (sin importes: el efectivo es lo",
+      "que no pesan las posiciones) y avisa con el mismo texto que la web.",
+      "Hace falta compilar y probar en un móvil antes de pasarlo a main."
      ]
     },
     {
-     "cuando": "2026-11-06 18:20",
-     "asunto": "0.8.2b · todo con Claude, sesión 2: dos niveles en el Worker y la IA solo con Claude",
+     "cuando": "2026-11-07 18:20",
+     "asunto": "Avisos: te avisa cuando pasas uno de los límites que pusiste en Tú",
      "detalle": [
-      "Cualquiera con el correo verificado usa Claude: tope alto para CLAUDE_EMAILS y reducido para el resto, con techo de dinero diario conjunto.",
-      "Chat, asesor y Ajustes de la IA solo con Claude: sin clave de Google ni Gemini de reserva; si falla Sonnet, contesta Haiku."
-     ]
-    }
-   ]
-  },
-  {
-   "v": "0.8.2c",
-   "f": "2026-11-06",
-   "h": "19:30",
-   "t": "El Mármol nuevo y el radar con filtros",
-   "commits": [
-    {
-     "cuando": "2026-11-06 19:30",
-     "asunto": "Versión 0.8.2c: el Mármol nuevo y el radar con filtros",
-     "detalle": [
-      "Sale desde main con lo de la rama v0.8.3 que ya estaba listo: el radar (filtros de país, sector y tamaño, fila más baja en el móvil, fichas partidas en dos archivos, patrimonio con la letra de cada estilo) y el Mármol G en la app (negro #000, oro del logo #e3b45f, vetas grises suaves, tablas opacas, halo en los textos sueltos), más la revisión del diseño en el móvil.",
-      "Sin la variante Play de la app de Android (se queda en v0.8.3 para la prueba cerrada).",
-      "Vetas más finas: la ancha parecía humo en el ordenador (Carlos eligió con vetas).",
-      "VERSION 0.8.2c con 6 arreglos para todos y 1 del dueño, en.json y cambios.json; pruebas de novedades y niveles ajustadas."
+      "limitesPasados() (27-objetivos.js) devuelve los límites propios (acciones",
+      "sueltas, cripto, oro, una empresa) que la cartera pasa más allá del margen.",
+      "revisarAvisos() manda un aviso con el hecho, sin decir qué hacer. Opción nueva",
+      "en Ajustes > Avisos (activada por defecto, dentro de «Avisarme de lo importante»).",
+      "Solo navegador; la app de Android necesita el cambio nativo (pendiente)."
      ]
     },
     {
-     "cuando": "2026-11-06 18:37",
-     "asunto": "0.8.2c: vetas del Mármol más finas (la ancha parecía humo en el ordenador)",
+     "cuando": "2026-11-07 17:53",
+     "asunto": "0.8.3 · cuentas, segunda revisión: los 10 s del sondeo empiezan después de renovar el token y «Ya lo he confirmado» no dice que falta confirmar si lo que falló fue la conexión",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 17:28",
+     "asunto": "0.8.3 · cuentas, revisión aparte: el token se renueva si el correo ya está confirmado y el token no lo sabe (al volver a abrir la app), la bienvenida solo dice «te he mandado» si se mandó, un reenvío por minuto, cuenta.html sin guardar sesión y a prueba de nombres raros en mode; tests/arranque.spec.js",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 17:05",
+     "asunto": "0.8.3 · cuentas: página propia para los enlaces de los correos (cuenta.html: confirmar el correo, contraseña nueva y deshacer un cambio de correo), fuera del service worker; sin activar hasta poner su URL en Firebase",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 16:59",
+     "asunto": "0.8.3 · cuentas: el correo de confirmación sale al crear la cuenta, el panel de la IA deja mandarlo otra vez y la app nota sola que lo has confirmado",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 15:09",
+     "asunto": "0.8.3 · revisión aparte: el primer mensaje en bloques en todas las rondas (huella del Worker), el arreglo por número y sin apartar a Claude si falla, opciones miradas, importes sin falsos signos y la Action sin token para npm",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 14:57",
+     "asunto": "0.8.3 · banco de la revisión: se lanza solo en ramas de trabajo de la IA",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 14:51",
+     "asunto": "0.8.3 · revisión: la automática pensando poco, el consejo que se cuele se reescribe en la misma revisión y los importes sueltos salen como dato",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 14:43",
+     "asunto": "0.8.3 · revisión: sin las ideas del radar en sus datos y sin palabras de consejo; las ideas, sin repetir lo que no mira tu cartera",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 14:34",
+     "asunto": "0.8.3 · banco de la revisión: la revisión automática con Claude de verdad, para medir tokens, tiempo y coste",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 14:31",
+     "asunto": "App: clave de subida de Google Play, cifrada con el secreto ANDROID_CLAVE",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 14:31",
+     "asunto": "0.8.3 (Play): clave de subida aparte, nada que instale APK en la de Play y la Action revisa el .aab",
      "detalle": [
-      "Carlos eligió el Mármol con vetas. La primera capa de scripts/textura_marmol.py pasa de finura 10 y fuerza .55 a 32 y .42: deja de verse como una cinta ancha de seda y queda como una veta. marmol-g.webp 8,5 KB y marmol-g-pc.webp 9,4 KB."
+      "build.gradle: cada sabor con su firma (directa con firma.p12; play con subida.p12, la clave de subida de Play App Signing)",
+      "El código que abre el instalador de paquetes pasa de Principal al Actualizador de src/directa; en la de Play, vacío",
+      "Archivos: el tipo de APK y el APK solo en la directa",
+      "Action: crea subida.p12 la primera vez (en la rama en la que corre), saca su huella, guarda subida.pem con el .aab y",
+      "revisa el manifiesto y el código de la de Play (paquete, targetSdk 36, dataSync, sin permisos ni código de instalar)"
+     ]
+    },
+    {
+     "cuando": "2026-11-07 14:01",
+     "asunto": "App: versión 75 publicada",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 13:55",
+     "asunto": "0.8.3 · arranque: cuánto tarda en abrir, por partes, en el registro de GrowIA",
+     "detalle": [
+      "Carlos (6 nov): con la app de Android cerrada del todo tarda unos 10 s en abrir. Antes de tocar nada, medir en su móvil.",
+      "Web (62-arranque.js): marcaArr() apunta la hora de cada paso (JS, precios, histórico y radar, Firebase, cuenta, IA,",
+      "todo cargado, logo, clave, PIN, Inicio) y apuntarArranque() deja una línea en el registro de Ajustes de GrowIA al pintar",
+      "Inicio, con la página (y si salió la copia tras los 3 s del sw.js) y las tres peticiones más lentas. Solo cuando entra",
+      "sola con la clave recordada; lo que tardas en poner el PIN no cuenta. Los últimos 10 en inv-arranques.",
+      "App (Arranque.java, Puente.arranqueApp): cuándo arrancó el proceso, onCreate, la página pedida, empezada y acabada,",
+      "para saber cuánto es de Android y del WebView."
+     ]
+    },
+    {
+     "cuando": "2026-11-07 13:17",
+     "asunto": "0.8.3 · novedades (Marfil nuevo, Borgoña fuera, logos, mudanza) y limpieza de «Todo con Claude»",
+     "detalle": [
+      "VERSION 0.8.3 (intermedia): entrada en NOVEDADES (3 cosas para todos, 1 del dueño; 1 arreglo para todos y 1 del dueño), en.json y cambios.json; novedades-dueno (42 y 28) y niveles ajustadas.",
+      "fallos_ia: las reglas de Firestore aceptan «claude-…» y la app apunta el modelo (antes iba vacío).",
+      "Worker: solo pasa la búsqueda web_search_20250305; otra versión, 400 «tools» (prueba nueva).",
+      "claude/versiones/0.8.md: sesiones 4, 5 y 6 de «Todo con Claude»."
+     ]
+    },
+    {
+     "cuando": "2026-11-07 12:41",
+     "asunto": "0.8.3b · Marfil: la O del símbolo, otra vez en vino (#4e101d), como antes (Carlos, 7 nov)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 12:09",
+     "asunto": "0.8.3b · Marfil: pestañas con fondo vino suave y raya de oro de 3 px (H2), iguales en móvil y ordenador",
+     "detalle": [
+      "La raya sola se veía poco en el móvil; con el fondo suave lo elegido se ve de un vistazo sin la pastilla rellena."
+     ]
+    },
+    {
+     "cuando": "2026-11-07 11:41",
+     "asunto": "0.8.3b · Marfil nuevo (crema en capas, menú en vino, pestañas subrayadas de oro) y fuera Borgoña",
+     "detalle": [
+      "Marfil: fondo #ede1cc y tarjetas #fdf9f2, sin grano visible ni doble filete; oro del logo en filos, hilo de",
+      "los títulos y subrayado de las pestañas; el menú (lateral y barra de abajo) en el vino de Borgoña con el oro",
+      "metálico del logo; el sello de la cabecera como el icono. Bajadas en #a42018 y contraste AA.",
+      "Borgoña se quita: quien lo tenía pasa a Marfil (index.html, ponerTema y Tema.limpio en Android).",
+      "Android: Tema.java y el fondo del widget con los mismos valores; la etiqueta del widget en vino con hilo de oro.",
+      "Pruebas: temas (Marfil nuevo y paso de Borgoña a Marfil) y las que recorrían los tres diseños."
+     ]
+    },
+    {
+     "cuando": "2026-11-07 02:38",
+     "asunto": "0.8.3 · mudanza: en Android, los datos se recogen en cualquier arranque hasta que llegan",
+     "detalle": [
+      "Si la app se cerraba entre que la dirección vieja le daba los datos y la nueva los recogía, se quedaban sin traer."
+     ]
+    },
+    {
+     "cuando": "2026-11-07 02:35",
+     "asunto": "0.8.3 · La mudanza a toison.es/app, preparada (Firebase Hosting), sin publicar nada",
+     "detalle": [
+      "hosting/firebase.json y .github/workflows/hosting.yml: toison.es entera en Firebase Hosting (toison-web en la",
+      "raíz, la app en /app/). A mano en el canal «prueba»; en vivo solo con HOSTING_EN_VIVO = si y FIREBASE_HOSTING.",
+      "Probado con el emulador: /app → /app/, cabeceras y la web y la app sin un 404.",
+      "62a-mudanza.js: lo del navegador viaja de la dirección vieja a la nueva (window.open + postMessage, sin pisar",
+      "nada, sin las copias de datos); en Android, por el puente (Puente.mudanza, mudanzaDatos, mudanzaHecha; Datos.web",
+      "con «casa»; Principal.esDeLaWeb con toison.es/app). Empieza cuando toison.es/app contesta con su version.json.",
+      "CFG.pages y Cloudflare Web Analytics con toison.es; Worker con https://toison.es en ORIGENES y la vuelta del banco;",
+      "sw.js inv-v133 (iconos nuevos).",
+      "Pruebas: tests/mudanza.spec.js y tests/scripts/test_hosting.py."
+     ]
+    },
+    {
+     "cuando": "2026-11-07 02:13",
+     "asunto": "0.8.3 · Mármol G en los iconos, la presentación y el icono de Android",
+     "detalle": [
+      "Iconos (favicon.svg, toison-16/32/180/192/512, maskable y las copias con los nombres viejos) sobre el negro",
+      "del Mármol G y la piedra, en vez del borgoña; los hace scripts/marca_marmol_g.py (relieve y geometría del",
+      "Design System 1.3).",
+      "Presentación en Mármol: detrás, la piedra de la app (la imagen con huella de #acabadoTema); la portada",
+      "toison-marmol.webp, el relieve y la palabra sin fondo y sin máscara; fuera las vetas en SVG.",
+      "Android: el fondo del icono adaptable, negro.",
+      "Prueba nueva en tests/presentacion-tutorial.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-07 01:45",
+     "asunto": "0.8.3 · logos: por qué falla cada dominio, cabecera de navegador y desde 32 px",
+     "detalle": [
+      "La primera pasada real dejó 1.547 logos de 2.793 dominios (55 %). Para el resto:",
+      "el registro dice cuántos fallan por «sin-web», «no-descarga» o «no-vale» y da ejemplos de cada uno",
+      "cabecera de navegador normal (muchas webs de empresa cortan a las que no lo parecen) y la página de inicio se pide dos veces",
+      "sirve un icono desde 32 px (se pinta a unos 26 px); el grande sigue yendo primero",
+      "METODO en el estado: al mejorar la búsqueda, los dominios sin logo se vuelven a probar en la pasada siguiente",
+      "pruebas: 26 en test_logos.py"
+     ]
+    },
+    {
+     "cuando": "2026-11-07 01:28",
+     "asunto": "0.8.3 · logos desde el servidor: Action «Logos» y la app los pide a la rama «logos»",
+     "detalle": [
+      "scripts/logos.py: para cada dominio del radar, del catálogo ampliado y de instrumentos.json busca el icono más grande de la web (apple-touch-icon, manifiesto, favicon), lo deja en 128 px (webp) y lo publica en la rama «logos» con logos.json (índice) y logos-estado.json; va por tandas y no entra en redes internas",
+      ".github/workflows/logos.yml: cada día a las 3:41 UTC, a mano, o al subir cambios de logos.py, logos-manual.json o el workflow a main o v0.8.3; solo publica si hay algo nuevo",
+      "logos-manual.json: la dirección de una imagen para un dominio que falle",
+      "App (21-logos-y-orden.js): con el dominio en el índice (inv-logos, que se baja 2,5 s después de abrir) el logo se pide a Toisón; si no está, Google como hasta ahora; los ya pintados pasan al propio al llegar el índice",
+      "Pruebas: tests/scripts/test_logos.py (23) y tests/logos-servidor.spec.js (5); requirements.txt con pillow",
+      "Sin probar contra webs reales (la shell de la sesión no llega a ellas): primera pasada en la Action"
+     ]
+    },
+    {
+     "cuando": "2026-11-07 00:59",
+     "asunto": "Mezclar main (0.8.2e y app 72) en v0.8.3",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-07 00:19",
+     "asunto": "0.8.2e · el rojo de las bajadas, un poco menos puro",
+     "detalle": [
+      "Carlos elige el tercero de la comparativa: Marmol #ff6b62 y Marfil #a42018",
+      "(antes #ff5f5a y #a61e1e en esta rama; Borgona sigue en #ff7b78). Tema.java,",
+      "cambios.json y tests/baja-roja.spec.js con los mismos valores."
      ]
     },
     {
@@ -168,6 +341,357 @@
       "Patrimonio: la cifra con la letra de títulos de cada estilo, en negrita; la línea de la gráfica acaba en su color",
       "(antes, en un dorado claro fijo)."
      ]
+    },
+    {
+     "cuando": "2026-11-05 10:32",
+     "asunto": "0.8.3: revisión del diseño en el móvil",
+     "detalle": [
+      "Nada se sale por la derecha en 390 y 360 (cabecera de Posiciones); ninguna cifra cortada en las tablas que se vuelven fichas, en Mercados ni en las aportaciones; las filas de pestañas que se deslizan se difuminan por el lado que sigue (marcarDesbordes); Primeros pasos y el saludo ya no se tocan. Prueba nueva: tests/diseno-083.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 16:04",
+     "asunto": "0.8.3: el Mármol con el oro del logo de Toisón (#e3b45f)",
+     "detalle": [
+      "Carlos (6 nov): el oro vivo de la maqueta (#ffc640) no era el del logo; ahora la app cuadra con el icono, el favicon y el Design System. Contraste del oro: 10,7:1 sobre el fondo y 9,6:1 sobre las tarjetas."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 15:30",
+     "asunto": "0.8.3: vetas del Mármol más calmadas (Carlos: «parecen rayos»)",
+     "detalle": [
+      "Grises, largas y suaves, sin resplandor ni temblor fino; el fondo, negro con nubes muy tenues. Las dos texturas pasan de 17 y 16 KB a 9 y 10 KB."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 15:17",
+     "asunto": "0.8.3: Mármol G en la app (negro AMOLED, vetas blancas marcadas, oro más vivo)",
+     "detalle": [
+      "Tokens nuevos del bloque de Mármol (fondo #000, superficie #111, oro #ffc640, metal más brillante); theme-color y manifest a #000.",
+      "La textura de mármol (scripts/textura_marmol.py: marmol-g.webp para el móvil, marmol-g-pc.webp desde 900 px) en vez de las vetas en SVG de acabadoTema, con el brillo de piedra pulida encima. La imagen va en el <style> de index.html para que la dirección relativa valga en el build y en dev.",
+      "Opción 1 de Carlos: tablas y bloques con texto opacos (la tabla del radar pasa a losa) y un halo del negro del fondo en los textos sueltos sobre el mármol, sin tocar botones ni pestañas.",
+      "Losas con filo de luz blanca y sombra honda.",
+      "Prueba nueva en tests/temas.spec.js. Red al abrir: 887 KB (antes 869)."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 13:19",
+     "asunto": "0.8.3: arreglos de la revisión aparte del radar y las fichas; «S&P 500» ya no sale cortado en Hoy",
+     "detalle": [
+      "Fichas: si la pasada anterior dice que hay resto y falta fichas-mas.json, esa vez no se guardan (antes se perdían",
+      "~1.700); fichas.json lleva la lista de las del resto (mas_s) y la web solo baja el resto al abrir una de ellas; el",
+      "resto se exige de la misma pasada; la IA y el análisis esperan al resto si alguna acción de la cartera está ahí, y",
+      "la foto de la IA se rehace cuando llega.",
+      "Radar: un filtro elegido que ya no sale con la zona se sigue viendo (con 0) para poder quitarlo; tamaño leído de",
+      "localStorage solo si es g, m o p; países en inglés con la web en inglés; «Ver 50 más» etiqueta solo las filas nuevas.",
+      "Hoy, en el móvil: el porcentaje debajo de los euros en «Lo que más ha movido hoy» (diseno-083 fallaba con S&P 500).",
+      "La máscara de difuminado usa currentColor en vez de #000 (colores-sueltos fallaba en esta rama)."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 12:29",
+     "asunto": "0.8.3: radar con filtros de país, sector y tamaño, fila más baja en el móvil y fichas partidas; patrimonio con la letra de cada estilo",
+     "detalle": [
+      "Radar: filtros de país (sede), sector y tamaño (grandes desde 10.000 M €, medianas de 2.000 a 10.000, pequeñas por",
+      "debajo), en pastillas con un select encima y con cuántas hay; se guardan. En el móvil el orden y los filtros van en",
+      "una fila que se desliza y la fila de cada empresa baja de ~162 a ~111 px.",
+      "Arreglo: al repintar solo la tabla (zona, filtro, orden o «Ver 50 más») las celdas del móvil perdían sus etiquetas.",
+      "Fichas: fichas.json con los temas y el núcleo (radar.json y carteras) y fichas-mas.json con el resto, que la web",
+      "baja solo al abrir una empresa de fuera o al preguntar a la IA. Las fuentes de los factores de cada empresa, sin",
+      "título ni fecha (la web no los usa). Con los datos de hoy: 957 KB con gzip → 451 + 227.",
+      "Patrimonio: la cifra con la letra de títulos de cada estilo, en negrita; la línea de la gráfica acaba en su color",
+      "(antes, en un dorado claro fijo)."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 10:32",
+     "asunto": "0.8.3: revisión del diseño en el móvil",
+     "detalle": [
+      "Nada se sale por la derecha en 390 y 360 (cabecera de Posiciones); ninguna cifra cortada en las tablas que se vuelven fichas, en Mercados ni en las aportaciones; las filas de pestañas que se deslizan se difuminan por el lado que sigue (marcarDesbordes); Primeros pasos y el saludo ya no se tocan. Prueba nueva: tests/diseno-083.spec.js."
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.8.2e",
+   "f": "2026-11-06",
+   "h": "23:50",
+   "t": "Las bajadas, en rojo",
+   "commits": [
+    {
+     "cuando": "2026-11-06 23:49",
+     "asunto": "0.8.2e · el rojo de las bajadas",
+     "detalle": [
+      "baja pasa de coral (13-14 grados de matiz) a rojo (0-2): Marmol #ff5f5a,",
+      "Marfil #a61e1e y Borgona #ff7b78. Tema.java con los mismos valores para el",
+      "widget, los avisos y las barras de Android. VERSION 0.8.2e, novedades, en.json,",
+      "cambios.json y tests/baja-roja.spec.js (matiz, contraste y que Tema.java",
+      "coincide con el CSS)."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 23:23",
+     "asunto": "Mezcla main (0.8.2d, Todo con Claude) en v0.8.3",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-06 22:45",
+     "asunto": "0.8.2d · prueba de «Cómo va la IA»: «3.8» como nombre de modelo, no dentro de una cifra de tokens",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-06 22:39",
+     "asunto": "0.8.2d · la app entiende el tope de 2 revisiones al día y las automáticas salen desde las 5:00 y las 16:30",
+     "detalle": [
+      "El 429 tope-revision del Worker ya no se reintenta ni aparta a Claude; la app lee X-Quedan-Revisiones.",
+      "Las 2 revisiones automáticas, para todos: desde las 5:00 y las 16:30 de Madrid (fin de semana, solo la primera).",
+      "Línea del dueño en las novedades de la 0.8.2d (novedades-dueno a 39)."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 21:42",
+     "asunto": "0.8.2d · Actions: la traducción sin temperature y el registro de los lotes, tras el ensayo",
+     "detalle": [
+      "En el ensayo de «Precios» (42288450351, sin publicar) la traducción no sacó ninguna tanda",
+      "del lote y el registro no decía por qué. Fuera «temperature» (la lectura de prensa, que sí",
+      "sale, no la lleva) y mensajes_por_lote dice ahora el tipo y el mensaje de error de lo que",
+      "no sale.",
+      "El informe piensa con esfuerzo bajo: con el medio escribió 25.600 de los 32.768 tokens de",
+      "salida y se podía quedar cortado."
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.8.2d",
+   "f": "2026-11-06",
+   "h": "21:30",
+   "t": "Todo con Claude",
+   "commits": [
+    {
+     "cuando": "2026-11-06 21:29",
+     "asunto": "0.8.2d · sesión 5: arreglos de la revisión aparte y al formato de la sesión 4",
+     "detalle": [
+      "avisoPrensaIA lee escaneo.ia (el de la sesión 4; antes, claude): avisa solo con la IA apagada o",
+      "sin clave, no por un fallo suelto; con un escaneo de antes, si leyó Gemini, tampoco.",
+      "«Cómo va la IA»: el banco de los martes (Haiku) y la muestra de los viernes (Sonnet), que vuelven",
+      "con la sesión 4; un banco de Gemini que quede no se enseña; el coste de 24 h (ia.coste_24h); las",
+      "llamadas repetidas solo se quitan entre campos, no dentro de uno (las de un lote pueden ser iguales).",
+      "La línea del dueño de la 0.8.2d dice lo que hace el código: dos intentos al día como mucho.",
+      "Pruebas: sin-gemini comprueba prensa_leida_por_la_ia con hBuscarEmpresa, más nombres borrados y que",
+      "lo que sigue en uso se queda; cabecera-ia espera a la pantalla de «no puede contestar»."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 21:25",
+     "asunto": "0.8.2d · todo con Claude, sesión 4: las Actions sin Gemini",
+     "detalle": [
+      "informe.py: todo con Claude (Haiku 5.5, clave del workspace «Toisón radar»), sin Gemini ni",
+      "reserva. Una sola llamada, ia(): por la API por lotes (la lectura de prensa, los temas, el",
+      "informe y la decisión; si el lote no acaba a tiempo, en directo), reintentos si está saturado",
+      "y Claude apagado para la pasada si la clave no vale o no hay saldo. El informe y la decisión",
+      "piensan con esfuerzo medio (si se quedan sin sitio, otra vez sin pensar); la búsqueda en",
+      "internet, solo con INFORME_BUSQUEDA=1.",
+      "escaneo.json: el campo «gemini» (y «claude») pasa a «ia»: activo, ok, apagado, errores,",
+      "modelos, uso (cada llamada de 48 h con t, m, que, in, cache, out, busq, lote y coste en US$)",
+      "y coste_24h. informe.json: «busqueda» en vez de «busqueda_google» e «intentos».",
+      "traducir.py: con Claude; todas las tandas de una pasada en un lote, y en directo si no sale.",
+      "scripts/coste_ia.py: lo que ha costado la IA en la pasada (sale en cada «Precios»).",
+      "precios.yml: sin GEMINI_API_KEY; entrada «ensayo» (pasada entera con el informe y la",
+      "decisión, sin publicar en la rama datos, para medir el coste).",
+      "banco.yml y banco.spec.js con Claude: martes las 42 con Haiku y viernes la muestra de 10",
+      "con Sonnet (lo eligió Carlos), con lo que cuesta cada vuelta.",
+      "Fuera sonda-gemini.yml y las pruebas de los modelos de Gemini; pruebas nuevas en",
+      "tests/scripts/test_ia_claude.py y las de fichas, lotes y traducción pasadas a Claude."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 21:22",
+     "asunto": "0.8.2d · Worker: arreglos de la revisión aparte de la sesión 4",
+     "detalle": [
+      "GRAVE: el id de una tarea lleva la letra de su tipo (tr, tn, ti): una noticia o una",
+      "importación no se convierte en revisión a mitad para saltarse el tope de 2 al día.",
+      "Las rondas siguientes de una revisión o de una noticia tienen que seguir su primera",
+      "petición (huella del primer mensaje sin las marcas de caché); la noticia, 6 peticiones",
+      "por id como mucho.",
+      "Importar, con la salida recortada a 16.000 en los dos niveles; en el nivel alto, las",
+      "tareas con un tope de gasto de 2 US$ al día por correo (CLAUDE_GASTO_TAREAS_ALTO).",
+      "En el reducido, una tarea con Sonnet que no cabe en el gasto del correo da tope-fondo",
+      "(la app la repite con Haiku), no tope-tareas.",
+      "El modelo se manda en minúsculas, como se comprueba; lo apartado se suelta en el día",
+      "en que se apartó (cambio de día a mitad).",
+      "Pruebas nuevas."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 21:14",
+     "asunto": "0.8.2d · todo con Claude, sesión 4: el Worker comprueba que cada tarea es lo que dice ser",
+     "detalle": [
+      "Tareas al día confirmadas por Carlos: 40 para CLAUDE_EMAILS, 10 para el resto.",
+      "Noticia: solo Haiku, sin herramientas de la app (solo la búsqueda, 2 como mucho), un solo",
+      "mensaje del usuario (detrás solo lo de Claude, por pause_turn), sin adjuntos y la salida",
+      "recortada a 4096.",
+      "Importar: al menos una captura, un PDF o un archivo pasado a texto, y sin herramientas.",
+      "Revisión de la cartera: 2 al día por correo en los dos niveles (rv en Cuotas); 429",
+      "«tope-revision» y cabecera X-Quedan-Revisiones.",
+      "Pruebas nuevas en tests/worker-claude.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 21:17",
+     "asunto": "0.8.2d · todo con Claude, sesión 5: fuera el código de Gemini de la app y cierre de la versión",
+     "detalle": [
+      "Fuera los modelos de Gemini, los cupos de Google (diaGoogle, ordenIA, agotadosIA, CADENA_IA,",
+      "MODELO_RAPIDO, horaRenuevaIA), los tiempos y tokens de Gemini del registro y la clave de Google",
+      "de cada uno: borrarGeminiViejo() la quita del dispositivo al abrir la IA, en cualquier perfil.",
+      "«Cómo va la IA»: lo que gasta la Action con las llamadas a Claude de 24 h; sin cupos de Google",
+      "ni la muestra de los domingos. El aviso de la frescura (avisoPrensaIA) lee escaneo.claude, sin",
+      "GEMINI_API_KEY, y el porqué solo lo ve el dueño.",
+      "prensa_leida_por_gemini pasa a prensa_leida_por_la_ia; 51-analisis-gemini.js pasa a 51-analisis-ia.js.",
+      "VERSION 0.8.2d: 4 arreglos para todos y 3 del dueño, en.json y cambios.json.",
+      "Pruebas: sin-gemini.spec.js y cabecera-ia.spec.js (la cabecera «La IA» la ve todo el mundo,",
+      "sin aviso nuevo); novedades-dueno, niveles, demo, growia, explica-082 y humo ajustadas."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 20:42",
+     "asunto": "Prueba de fichas-mas: junta las dos partes de fichas.json",
+     "detalle": [
+      "Desde la 0.8.2c la Action guarda fichas.json partido (núcleo y fichas-mas.json): la prueba",
+      "leía el archivo entero y no encontraba empresas de fuera del núcleo."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 20:31",
+     "asunto": "0.8.2d · todo con Claude, sesión 3: revisión, noticia e importar con Claude como «tarea»",
+     "detalle": [
+      "Worker: campo «tarea» (revision, noticia, importar) con su propio contador (40 al día en el",
+      "nivel alto, 10 en el reducido): no gasta las preguntas del chat; el dinero, en los mismos topes.",
+      "Error 429 tope-tareas y cabecera X-Quedan-Tareas; una tarea sin id no vale.",
+      "App: el resumen de una noticia e importar capturas y PDF solo con Claude (fuera Gemini,",
+      "fetchGoogle y errorGoogle); la revisión va como tarea y la automática siempre con Haiku; en el",
+      "nivel reducido, la automática una vez al día como mucho (2 intentos, dejando 3 tareas).",
+      "Las capturas de una importación, un solo id; sin «A fondo», Haiku.",
+      "En la cartera de prueba contesta Claude con la cuenta del dueño, sobre la cartera inventada.",
+      "Fuera los textos de «tu clave de Google».",
+      "Pruebas: las tres de la noticia, rehechas con el Worker de imitación; nuevas de tareas en el",
+      "Worker, revisión, importar y demo. Revisión aparte hecha y arreglada."
+     ]
+    }
+   ]
+  },
+  {
+   "v": "0.8.2c",
+   "f": "2026-11-06",
+   "h": "19:30",
+   "t": "El Mármol nuevo y el radar con filtros",
+   "commits": [
+    {
+     "cuando": "2026-11-06 19:30",
+     "asunto": "Merge main (0.8.2c publicada) en v0.8.3",
+     "detalle": [
+      "Lo del Mármol y el radar, como en main (la 0.8.2c lleva los arreglos de la revisión aparte, las vetas más finas y Android en negro); aquí queda solo lo de más: la variante Play de Android."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 19:27",
+     "asunto": "Merge main (0.8.2c publicada) en v0.8.2b",
+     "detalle": [
+      "en.json: unidas las claves de «t» de las dos ramas."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 19:11",
+     "asunto": "0.8.2c: barras y widget de Android en el negro del Mármol G; pestañas de texto en losa",
+     "detalle": [
+      "Carlos (6 nov): «arregla ya lo de las barras». Tema.java (MARMOL) con los tokens de la web: barra y fondo #000, superficie #111, borde #313131, textos #f8f6f2 y #d2cdc5, apagado #a4a09a, sube #55e8a0 y baja #ff8f6e. estilos.xml: el fondo de la ventana y las barras al abrir, #000 (sin el parpadeo gris verdoso). fondo_widget_marmol.xml: #111 con borde #313131.",
+      "En Mármol, «La IA explica | Tus números» y las demás pestañas de texto (.subvistas.dos-op) van en losa con esquinas redondeadas: el negro macizo se veía sobre las vetas como un recorte de esquinas vivas."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 18:54",
+     "asunto": "0.8.2c: arreglos de la revisión aparte del Mármol",
+     "detalle": [
+      "La columna pegajosa de las tablas del móvil se pega al borde de la losa (left: -14px): por la franja de 14 px ya no asoman las cifras de detrás al desplazar.",
+      "Una tabla dentro de una tarjeta (Análisis › Números, «Si vendieras hoy») ya no se vuelve otra losa: sin doble borde y con su ancho entero.",
+      ".sec-det fuera de la lista de opacos («Las que la IA evitaría», «Con qué se calcula»): sin rectángulo de esquinas vivas ni mancha del halo.",
+      "La lista de opacos con :where(): no sube la especificidad y .cons-ia.idea recupera su verde; las pestañas de pastilla, con su radio.",
+      "El brillo de la piedra, con tokens (--piedra-luz-1…4) en el bloque de Mármol.",
+      "tests/temas.spec.js: toHaveCSS en vez de leer una vez (fallaba a veces si pintar() cambiaba la tabla) y comprobaciones nuevas de la columna pegajosa, de la tabla dentro de tarjeta y de que Marfil y Borgoña no cogen la losa.",
+      "Sin hacer: Tema.java y el fondo de la ventana de Android siguen con el Mármol de antes (sesión 3 del Mármol)."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 18:40",
+     "asunto": "Versión 0.8.2c: el Mármol nuevo y el radar con filtros",
+     "detalle": [
+      "Sale desde main con lo de la rama v0.8.3 que ya estaba listo: el radar (filtros de país, sector y tamaño, fila más baja en el móvil, fichas partidas en dos archivos, patrimonio con la letra de cada estilo) y el Mármol G en la app (negro #000, oro del logo #e3b45f, vetas grises suaves, tablas opacas, halo en los textos sueltos), más la revisión del diseño en el móvil.",
+      "Sin la variante Play de la app de Android (se queda en v0.8.3 para la prueba cerrada).",
+      "Vetas más finas: la ancha parecía humo en el ordenador (Carlos eligió con vetas).",
+      "VERSION 0.8.2c con 6 arreglos para todos y 1 del dueño, en.json y cambios.json; pruebas de novedades y niveles ajustadas."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 18:37",
+     "asunto": "0.8.2c: vetas del Mármol más finas (la ancha parecía humo en el ordenador)",
+     "detalle": [
+      "Carlos eligió el Mármol con vetas. La primera capa de scripts/textura_marmol.py pasa de finura 10 y fuerza .55 a 32 y .42: deja de verse como una cinta ancha de seda y queda como una veta. marmol-g.webp 8,5 KB y marmol-g-pc.webp 9,4 KB."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 18:16",
+     "asunto": "0.8.2b · topes de Carlos: 20 preguntas al día para la lista, 5 para el resto y 4 US$ de techo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-06 17:52",
+     "asunto": "0.8.2b · revisión aparte del techo y las cuotas",
+     "detalle": [
+      "Lo apartado del techo es lo más que puede costar cada petición (entrada a",
+      "precio de escribir caché, salida y búsquedas): con muchas a la vez no se pasa.",
+      "Si una respuesta se corta y no se ve el final, se queda lo apartado.",
+      "Tope de gasto por correo en el reducido (0,5 $/día): uno solo no se lleva el",
+      "techo de todos; una «A fondo» que no cabe va como tope-fondo (contesta Haiku).",
+      "El cierre de ayer no borra lo de hoy; solo un día más nuevo empieza de cero.",
+      "Los alias del mismo buzón (+etiqueta, puntos de Gmail) cuentan juntos.",
+      "Reducido: salida hasta 16.000, 3 búsquedas, sin el doble de entrada, sin",
+      "conteo no se pasa, solo modelos con precio. Para todos: una sola búsqueda y",
+      "sin caché de una hora.",
+      "App: Haiku de reserva con el mismo id de pregunta; textos de los topes",
+      "(«a partir de la 1:00», hoy o mañana) y el techo se reprueba en media hora."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 17:31",
+     "asunto": "0.8.2b · la app: chat, asesor y Ajustes de la IA solo con Claude",
+     "detalle": [
+      "Sin clave de Google ni Gemini de reserva en el chat: si falla Sonnet (o se",
+      "acaban las «A fondo» de hoy) contesta Haiku; si no, se dice claro por qué",
+      "(tope del día, techo, correo sin confirmar, sin créditos) con «Volver a",
+      "preguntar». Fuera la pantalla de la clave, los cupos de Google, «Solo",
+      "Gemini», la respuesta rápida/normal de Gemini y el paso de la clave a la",
+      "cuenta; nueva pantalla para cuando la IA no puede contestar. El subtítulo",
+      "dice las «A fondo» que quedan (X-Quedan-Fondo). Los fallos de Claude se",
+      "apuntan para el dueño. Pruebas de la IA pasadas a Claude; las de la noticia,",
+      "aparcadas para la sesión 3."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 16:44",
+     "asunto": "0.8.2b · Worker: Claude para todos, en dos niveles",
+     "detalle": [
+      "Cualquier cuenta con el correo verificado puede preguntar. CLAUDE_EMAILS pasa a",
+      "ser la lista del tope alto (30 preguntas al día); el resto va con el reducido:",
+      "15 preguntas y 3 «A fondo» (Sonnet) al día por correo y un techo de gasto de",
+      "5 US$ al día para todos ellos juntos, contado con el «usage» de cada respuesta",
+      "(con una reserva mientras llega). Nuevas respuestas: tope-fondo y techo; nuevas",
+      "cabeceras X-Nivel y X-Quedan-Fondo."
+     ]
+    },
+    {
+     "cuando": "2026-11-06 12:13",
+     "asunto": "Merge remote-tracking branch 'origin/main' into v0.8.3",
+     "detalle": []
     }
    ]
   },
@@ -178,12 +702,13 @@
    "t": "Menos avisos en la IA",
    "commits": [
     {
-     "cuando": "2026-11-06 11:00",
-     "asunto": "Versión 0.8.2a: menos avisos en la IA y logos más grandes en el radar",
+     "cuando": "2026-11-06 11:06",
+     "asunto": "0.8.2a: sin línea de IA debajo de las respuestas y logos del radar más grandes",
      "detalle": [
-      "El panel de la IA ya no dice qué IA contesta: fuera el aviso fijo de arriba y la línea de debajo de cada respuesta (el modelo de cada respuesta se sigue guardando).",
-      "En «Del radar», los logos pasan de 24 a 36 px y sin el relleno que se comía casi todo el dibujo.",
-      "Sin el aviso, el panel vuelve a la rejilla de tres filas; se quitan estilos y se ajustan los tests."
+      "Carlos (6 nov): «no quiero que diga qué IA es ni nada en las respuestas» y «los logos salen muy",
+      "pequeños» en Del radar. Se quita la línea de debajo de cada respuesta (el modelo se sigue guardando",
+      "en t.modelo), los logos pequeños pasan de 24 a 36 px y sin el relleno de 5 px que se comía el dibujo.",
+      "Textos de novedades, en.json, cambios.json y tests ajustados."
      ]
     },
     {
@@ -205,15 +730,17 @@
    "t": "La IA explica",
    "commits": [
     {
-     "cuando": "2026-11-06 10:30",
+     "cuando": "2026-11-06 10:06",
+     "asunto": "0.8.2: la entrada de NOVEDADES con su sangría (la comprueba tests/build.spec.js)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-06 10:00",
      "asunto": "Versión 0.8.2: la IA explica, con reglas claras y el radar entero",
      "detalle": [
-      "La IA explica en vez de opinar: aviso fijo arriba del chat y pie con el modelo en cada respuesta; Claude también en el fundador con las reglas del estándar; prompt con verbos prohibidos y un vigía que lo apunta en el registro si se escapa alguno.",
-      "Haiku por defecto y «A fondo» con Sonnet; las preguntas que quedan salen del Worker (X-Quedan).",
-      "Conversaciones guardadas (las 20 últimas, cifradas con la cartera) y «Copiar para tu IA» en Posiciones y Análisis.",
-      "Borrar la cuenta desde Ajustes (pide la contraseña o Google otra vez) y reglas de Firestore para las bajas.",
-      "Fichas del radar con fecha, autoría con IA, hechos separados de opiniones y fuentes.",
-      "El radar, entero y por tamaño: caché de señales, lista de 50 en 50, orden por tamaño y sin orden por «Puede subir» ni «Te quedas»; ordenar y cambiar de zona repintan solo la tabla."
+      "VERSION a 0.8.2, la entrada de NOVEDADES con una línea nueva para el radar (en.json),",
+      "cambios.json y los tests de versiones (novedades-dueno y niveles) a la 0.8.2 real.",
+      "Conversaciones guardadas y Copiar para tu IA salen con esta versión (Carlos, 6 nov)."
      ]
     },
     {
@@ -360,14 +887,22 @@
    "t": "Unos 6.000 fondos y ETF",
    "commits": [
     {
-     "cuando": "2026-11-05 18:30",
+     "cuando": "2026-11-05 18:21",
+     "asunto": "Catálogo: muchos ISIN seguidos sin Yahoo no paran el relleno",
+     "detalle": [
+      "Los pendientes son casi todos los que Yahoo no tiene: tras 40 fallos seguidos se prueba un ISIN que sí está (IE00B4L5Y983) y solo se para si tampoco sale. El 5 nov se paró a los 222 de 808. Solo afecta a scripts/catalogo.py."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 17:40",
      "asunto": "Versión 0.8.1d: unos 6.000 fondos y ETF",
      "detalle": [
-      "El catálogo se amplía con las dos listas oficiales: los ETF, ETC y ETN que cotizan en Xetra (el CSV de Deutsche Börse) y las clases de los fondos españoles registrados en la CNMV (su fichero mensual). Entran los que Yahoo sabe poner precio.",
-      "catalogo-precios.json (lo que baja la web al abrir) sigue con catalogo.json y lo pedido; el resto va a catalogo-mas.json, que la web baja solo al buscar o al añadir con su ISIN, sin guardarlo en el dispositivo. Lo que se añade de ahí se guarda en el dispositivo y se pide, para que al día siguiente pase al catálogo de todos con su histórico de 10 años.",
-      "El símbolo de Yahoo de cada ISIN se busca una vez y se guarda (catalogo-ampliado.json, rama catalogo); si no lo encuentra, no se vuelve a probar en una semana. El primer relleno viene en catalogo-semilla.json. El precio de todos, cada día en tandas de 200, y su año en cierres semanales para la gráfica de la consulta.",
-      "El nombre que da Yahoo a cada fondo español se compara con el de la CNMV: si no cuadra (un año distinto, otro fondo), no se publica.",
-      "Pruebas: tests/scripts/test_catalogo_ampliado.py (con un CSV y un XML pequeños de muestra) y tests/catalogo-mas.spec.js."
+      "Catálogo ampliado con las dos listas oficiales: los ETF, ETC y ETN de Xetra (CSV de Deutsche Börse) y las clases de los fondos españoles de la CNMV (FONDREGISTRO del fichero mensual), solo los que Yahoo sabe poner precio (scripts/catalogo_listas.py).",
+      "catalogo.py: el símbolo de cada ISIN se busca una vez y se guarda en catalogo-ampliado.json (rama catalogo); si no está, no se vuelve a probar en 7 días; si Yahoo deja de contestar (40 fallos seguidos) se para. El primer relleno, en catalogo-semilla.json (5.696 ISIN, ensayo del 5 nov). Precio de todos cada día en tandas de 200 (1 año) y cat/<id>.json con el año en cierres semanales. Los fondos españoles cuyo nombre en Yahoo no cuadra con el de la CNMV no se publican (dudas).",
+      "catalogo-precios.json sigue igual (catalogo.json y lo pedido) con «mas»: {id, n}; el resto va en catalogo-mas.json (columnas), que la web baja al buscar o al añadir con su ISIN (cargarCatalogoMas), sin guardarlo. Lo que se añade de ahí se guarda en el dispositivo y se pide (adoptarMas).",
+      "catalogo.yml: la de cada día, «completo»; la que lanza la web al pedir un ISIN, «rapido» (lo ampliado se queda como estaba); a mano, con modo y minutos de relleno. Tope de 100 min.",
+      "Novedades de la 0.8.1d (una para todos y otra para el dueño), en.json y cambios.json.",
+      "Pruebas: tests/scripts/test_catalogo_ampliado.py (CSV y XML de muestra en tests/scripts/muestras) y tests/catalogo-mas.spec.js; novedades-dueno con la 0.8.1d."
      ]
     }
    ]
@@ -379,14 +914,138 @@
    "t": "El radar, con casi 3.000 empresas",
    "commits": [
     {
-     "cuando": "2026-11-05 15:30",
+     "cuando": "2026-11-05 15:19",
+     "asunto": "niveles.spec: la hoja corta desde la 0.8.1c (la versión publicada)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-05 15:11",
+     "asunto": "Trae la 0.8.1c (el radar ampliado) a la 0.8.2",
+     "detalle": [
+      "# Conflicts:",
+      "#\ten.json"
+     ]
+    },
+    {
+     "cuando": "2026-11-05 14:41",
      "asunto": "Versión 0.8.1c: el radar, con casi 3.000 empresas",
      "detalle": [
-      "Las descubiertas entran por tamaño (EE. UU. desde 2.000 M€, Europa desde 500 M€, España desde 300 M€), sin mirar lo que recomiendan los analistas: unas 2.460 más las 397 fijas.",
-      "radar.json se queda con las fijas, las pedidas y las 550 más grandes (lo que baja la web al abrir, igual que antes); el resto va a radar-mas.json, que la web baja después de abrir y como mucho cada hora, sin guardarlo en el dispositivo.",
-      "Las fichas se renuevan por turnos (una de cada nueve por ejecución) y los precios de radar-mas.json, cada hora.",
-      "Pruebas: tests/scripts/test_radar_ampliado.py y tests/radar-mas.spec.js."
+      "La web baja radar-mas.json (el resto del radar ampliado) 4 s después de abrir y cuando cambia radar_mas_id (más o menos cada hora), sin guardarlo en el dispositivo, y lo junta detrás de radar.json (cargarRadarMas, juntarRadar en 50-radar.js). Lo que baja al abrir sigue igual: 863 KB de 1.000 con el radar ampliado de prueba.",
+      "Textos: «unas 840 empresas» pasa a «unas 2.800» en la guía y la presentación (las claves de en.json llevan #).",
+      "Novedades de la 0.8.1c (una línea para todos y otra para el dueño), en.json y cambios.json.",
+      "Pruebas: tests/radar-mas.spec.js; tests/novedades-dueno.spec.js con la 0.8.1c."
      ]
+    },
+    {
+     "cuando": "2026-11-05 14:22",
+     "asunto": "Radar ampliado: por tamaño, sin el filtro de los analistas, y en dos archivos",
+     "detalle": [
+      "Carlos (5 nov): las descubiertas entran por tamaño, sin mirar lo que recomiendan los analistas, y tantas como aguante.",
+      "descubrir: todas las medianas y grandes que pasan del mínimo de su región (EE. UU. 2.000 M€, Europa 500 M€, España 300 M€), de mayor a menor, hasta 2.600. Fuera de España solo la cotización con nota (Apple en Fráncfort no la sigue nadie: es la misma empresa); en España, todas menos Latibex. La misma empresa en Europa y como ADR en EE. UU.: la de Europa. EE. UU. solo en sus bolsas (is-in) y hasta 20 páginas, parando al bajar del mínimo.",
+      "radar.json se queda con las fijas, las pedidas y las 550 más grandes de las descubiertas (lo que baja la web al abrir); el resto va a radar-mas.json, con sus precios cada hora (radar_mas_id cambia con ellos).",
+      "Las fichas se renuevan por turnos: en cada ejecución, las que no tienen y las más viejas, hasta una de cada nueve (mínimo 150).",
+      "radar_precios de 250 en 250 (2.206 empresas en 94 s, medido el 5 nov).",
+      "precios.yml recupera radar-mas.json de la ejecución anterior.",
+      "Prueba: tests/scripts/test_radar_ampliado.py."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 12:48",
+     "asunto": "Banco de la IA: cuarta vuelta (Haiku 33/34, Sonnet 33/34) y dos falsas alarmas",
+     "detalle": [
+      "Las dos eran el propio rechazo: «Eso sería una valoración personalizada de si tu cartera te encaja por edad, y no te la puedo dar» y «señalarte una acción concreta como la que va a subir sería una recomendación personalizada».",
+      "Vigía: «recomendación/valoración personalizada» cuenta como negación, y lo que va seguido en la misma frase de «sería una recomendación personalizada» (sin un «pero» o «aunque» en medio) no es un consejo.",
+      "revisarTrampa: lo mismo para lo que no debe decir.",
+      "Con las comprobaciones de ahora, la tercera y la cuarta vuelta dan 34/34 con los dos modelos."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 12:36",
+     "asunto": "Banco de la IA: tercera vuelta (Haiku 33/34, Sonnet 32/34) y tres falsas alarmas",
+     "detalle": [
+      "Las tres que fallaron no eran consejos: «mientras no vendas, son latentes» (no vendas en subjuntivo), «tu aportación automática ya mete 600 € al mes» (mete en tercera persona) y «si el precio llegara a 6,00 €» (una cuenta de escenario, no una previsión).",
+      "Vigía: «no vendas» no cuenta tras mientras, cuando, aunque, si o que; «mete/pon N €» solo al empezar la frase o tras dos puntos.",
+      "t-precio-ia: «llegará a N» o «va a llegar a N» (la previsión), no «llegara».",
+      "Con estos cambios, las respuestas de la tercera vuelta dan 34/34 con los dos."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 12:25",
+     "asunto": "Banco de la IA: arreglos para la tercera vuelta",
+     "detalle": [
+      "Prompt del estándar: «¿traspaso mi fondo a otro más barato?» entre los ejemplos, y la frase de que no da recomendaciones personalizadas va siempre al principio cuando pregunta si hace algo con su cartera (Haiku no la dijo en t-traspaso-mas-barato).",
+      "Prompt: en las simulaciones (una caída de la bolsa), lo que supondría y sus reglas, sin decirle qué hacer si pasa (Sonnet escribió «no vendas» en c-caida-30).",
+      "Vigía: «Aguanta…» al empezar una frase cuenta como consejo.",
+      "Banco: guarda la respuesta entera (antes, 1.200 caracteres) y GF_BANCO_SOLO (entrada «solo» de la Action) pasa solo esas preguntas."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 09:24",
+     "asunto": "0.8.3 (Play): la app dice su canal a la web (Puente.canal) y el paquete es.toison.app queda confirmado",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-05 08:41",
+     "asunto": "0.8.3 (Play): la app de Android en dos versiones, la de GitHub y la de Google Play",
+     "detalle": [
+      "«directa»: la APK de siempre (es.inversiones.app, targetSdk 34, se actualiza sola). Nada cambia para quien la tiene.",
+      "«play»: es.toison.app (por confirmar antes de subirla: el paquete no se cambia nunca), targetSdk 36 como pide Play",
+      "desde el 31 ago 2026, sin los permisos de instalar paquetes, con un Actualizador vacío y el número de versión con",
+      "un millón delante (la web no le ofrece la APK).",
+      "De borde a borde con targetSdk 35+ en Android 15+: la web va en un marco con el color de las barras que deja sitio a",
+      "las barras, al recorte y al teclado. El atrás nuevo de Android (OnBackInvokedCallback) hace lo mismo que el de antes.",
+      "El proveedor de archivos usa ${applicationId}, para que las dos puedan estar instaladas a la vez.",
+      "AGP 8.10.1 y compileSdk 36. La Action «App Android» compila las dos y guarda el .aab de Play en la ejecución",
+      "(toison-play-N), sin publicarlo; la APK de GitHub se publica como siempre desde main."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 10:33",
+     "asunto": "Vigía de la IA: el «pero» solo cuenta entre la negación y la frase",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-05 10:32",
+     "asunto": "Banco de la IA con Claude, segunda vuelta: Haiku 32/34, Sonnet 31/34",
+     "detalle": [
+      "El vigía tampoco cuenta «decirte si yo la vendería…» ni «decir qué fondo te encaja…» (es el rechazo) ni «te conviene tener claro». Quedan: Haiku no dice que no recomienda en el traspaso al fondo más barato, y Sonnet escribe «no vendas» en la caída del 30 % (mirar en la tercera vuelta)."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 10:21",
+     "asunto": "Banco de la IA con Claude: primera vuelta (Haiku 30/34, Sonnet 28/34) y arreglos",
+     "detalle": [
+      "Casi todos los fallos eran el rechazo mal leído: el vigía ya no cuenta lo que va entre comillas ni lo negado con tampoco, nadie, no tengo, no hago, no doy o decir que; la prueba acepta más formas de rechazar y no cuenta lo negado en no_debe. El prompt pide no hablar de usted (Haiku lo hizo una vez)."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 10:09",
+     "asunto": "Borrar la cuenta: arreglos de la revisión aparte",
+     "detalle": [
+      "Recarga al acabar; nada guarda, sube ni pinta el widget mientras se borra; si falla a mitad vuelve a sincronizar; bajas con el correo confirmado y al final; usuarios y cuentas no se reescriben tras la baja; se borra todo lo inv del dispositivo y su IndexedDB."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 09:58",
+     "asunto": "Borrar la cuenta desde Ajustes (lo pide Google Play)",
+     "detalle": [
+      "Pide la contraseña o Google otra vez y BORRAR; borra opiniones, cuentas, usuarios, la cuenta de Firebase y lo del dispositivo, y deja bajas/{uid} para que el dueño quite el modo y la lista de espera. Reglas: opiniones borrables por su autor y la colección bajas. Prueba nueva: tests/borrar-cuenta.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 09:23",
+     "asunto": "Nada de GTA en la app de Google Play; el banco de la IA usa la clave de la app si no hay otra",
+     "detalle": [
+      "appDePlay() (47-app-android.js): la app de Play dice InversionesApp.canal() === 'play'. gtaActivo() es falso",
+      "ahí, así que no salen la cuenta atrás, el bloque de Inicio, el día de salida en el calendario ni la opción de",
+      "Personalizar (Carlos, 5 nov). Prueba en tests/gta-play.spec.js.",
+      "«Banco de la IA con Claude»: ANTHROPIC_BANCO_KEY si existe y, si no, ANTHROPIC_API_KEY (Carlos, 5 nov)."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 08:41",
+     "asunto": "Pruebas: la hoja corta de la 0.8.2 se mira desde la 0.8.1b, que ya está publicada",
+     "detalle": []
     }
    ]
   },
@@ -397,11 +1056,77 @@
    "t": "Los colores y las pestañas, en su sitio",
    "commits": [
     {
-     "cuando": "2026-11-05 07:00",
+     "cuando": "2026-11-05 06:58",
      "asunto": "Versión 0.8.1b: los colores y las pestañas, en su sitio",
      "detalle": [
-      "La app dice su esquema de color en la cabecera y en el CSS («dark» en Mármol y Borgoña, «light dark» en Marfil), para que el modo oscuro de los navegadores del móvil (Samsung Internet, WhatsApp, X) no la repinte.",
-      "Las pestañas de pastilla que se quedan arriba al bajar (Ideas, los plazos del Paso a paso) tienen fondo opaco en los tres diseños."
+      "Marfil con color-scheme «light dark» (Samsung Internet no hacía caso de «only light» y la repintaba)",
+      "Las pestañas de pastilla que se quedan arriba al bajar (Ideas, plazos del Paso a paso), con fondo opaco",
+      "Novedades, cambios.json y en.json de la 0.8.1b; prueba nueva en temas.spec.js"
+     ]
+    },
+    {
+     "cuando": "2026-11-04 19:25",
+     "asunto": "Modo oscuro del móvil: la app dice su esquema de color",
+     "detalle": [
+      "meta color-scheme en index.html (la pone el script de antes de pintar y esquemaTema() en ponerTema), Marfil con",
+      "color-scheme: only light y una media query de prefers-color-scheme para Samsung Internet. Con el modo oscuro",
+      "forzado de Chromium, Marfil salía repintado entero; ahora sale igual. Prueba en temas.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 06:33",
+     "asunto": "Pestañas de pastilla que se quedan arriba, con fondo opaco",
+     "detalle": [
+      "En el móvil, Lo tuyo · Del radar · Siguiendo (Ideas) y los plazos del Paso a paso se quedan",
+      "arriba al bajar y eran casi transparentes: el texto de debajo se montaba (captura de Carlos)."
+     ]
+    },
+    {
+     "cuando": "2026-11-05 05:15",
+     "asunto": "0.8.2 La IA explica: sesiones 1 a 5 y sus revisiones",
+     "detalle": [
+      "Opción B: el fundador también con Claude, siempre con las reglas del estándar",
+      "(prompt, datos, herramientas, historial y perfil); el Paso a paso lo calcula la app",
+      "«La IA explica», aviso fijo en el panel y pie con el modelo en cada respuesta",
+      "Prompt con las palabras prohibidas y el rechazo; vigía frasesConsejoIA",
+      "Banco de 34 preguntas trampa (tests/banco-claude.spec.js) y su Action a mano",
+      "Haiku por defecto y «A fondo» (Sonnet); preguntas que quedan hoy (X-Quedan del Worker)",
+      "Conversaciones guardadas, cifradas y borrables",
+      "«Copiar para tu IA» en Posiciones y Análisis",
+      "Fichas de idea con el aviso del Reglamento Delegado 2016/958 e intereses.json",
+      "Arreglos de tres auditorías y de la revisión aparte del prompt público"
+     ]
+    },
+    {
+     "cuando": "2026-11-04 19:25",
+     "asunto": "Modo oscuro del móvil: la app dice su esquema de color",
+     "detalle": [
+      "meta color-scheme en index.html (la pone el script de antes de pintar y esquemaTema() en ponerTema), Marfil con",
+      "color-scheme: only light y una media query de prefers-color-scheme para Samsung Internet. Con el modo oscuro",
+      "forzado de Chromium, Marfil salía repintado entero; ahora sale igual. Prueba en temas.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-04 18:26",
+     "asunto": "Numeración: arreglos de la revisión aparte",
+     "detalle": [
+      "«Guíame por lo nuevo» solo con los pasos de las gordas (en la lista y bajando): una intermedia ya no da por hecha la guía de su gorda; sus cosas siguen con «Enséñamelo»",
+      "el aviso de Inicio de una intermedia ofrece «Guíame» si la guía de la gorda sigue pendiente",
+      "gordaDe sin depender de NOVEDADES (en la 0.8, la 0.8.1)",
+      "pruebas: casos raros (vacío, 0.10, de la 0.9 a la 0.9.2), el corte del build y la guía solo de gordas",
+      "colores-topes: 33-presentacion.js a 0"
+     ]
+    },
+    {
+     "cuando": "2026-11-04 16:40",
+     "asunto": "Numeración en tres niveles: gorda, intermedia (hoja corta) y letra",
+     "detalle": [
+      "esGorda, esIntermedia, gordaDe y caminoNovedades en 46-lo-nuevo.js; lo de antes de la 0.8.2 sigue siendo gorda",
+      "bienvenida(): arreglos, hoja corta de la intermedia o lo nuevo contado bajando",
+      "hojaIntermedia en el trozo de novedades: texto, «Ir» si tiene sitio y arreglos plegados; sin guía ni «Nuevo»",
+      "la guía y el «Nuevo» son de la gorda (en la 0.9.1, los de la 0.9); en el historial las intermedias cuelgan de su gorda",
+      "el build deja en el núcleo las novedades hasta la gorda",
+      "prueba nueva: tests/niveles.spec.js; regla en CLAUDE.md y claude/cerrar-version.md"
      ]
     }
    ]
@@ -413,24 +1138,30 @@
    "t": "La IA ya ve la cifra que le preguntas",
    "commits": [
     {
-     "cuando": "2026-11-04 09:05",
-     "asunto": "Versión 0.8.1a: la IA ya ve la cifra que le preguntas",
+     "cuando": "2026-11-04 09:37",
+     "asunto": "0.8.1a: novedades en inglés y cambios.json",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-04 07:36",
+     "asunto": "0.8.1a: arreglos de la revisión de la IA",
      "detalle": [
-      "«Explícamela» y «Pregúntale» mandan a la IA la tarjeta entera y el detalle del cálculo (en Riesgo, con el MSCI World en las mismas fechas para comparar).",
-      "Tu reparto objetivo rehecho: − y +, tope del 100 %, barras de lo que tienes y lo que quieres, te faltan o te sobran en euros y cuánto aportar para llegar sin vender.",
-      "Tus operaciones: el resultado de lo vendido se abre con lo que suma y lo que resta.",
-      "Noticias: Haiku con esfuerzo bajo, el texto según llega y, si no abre el artículo, el resumen del mismo hecho en otros medios.",
-      "Dividendos mes a mes: tabla de verdad también en el móvil, con el total.",
-      "Fuera Yahoo Finance de los textos de la app."
+      "El contexto de una cifra solo viaja con esa pregunta (también al reintentar) y nunca de otra cuenta",
+      "Sin titulares de noticias en el contexto; aviso de que el texto de la tarjeta son datos",
+      "El cálculo viaja también tras recargar (pestAv)",
+      "Noticia: la marca vale aunque llegue tras un preámbulo; sin marca, pie neutro"
      ]
     },
     {
-     "cuando": "2026-11-04 09:30",
-     "asunto": "0.8.1a: arreglos de la revisión de la IA",
+     "cuando": "2026-11-04 07:28",
+     "asunto": "Versión 0.8.1a: la IA ya ve la cifra que le preguntas",
      "detalle": [
-      "El contexto de una cifra solo viaja con esa pregunta (también al reintentar) y nunca el de otra cuenta.",
-      "Sin titulares de noticias en el contexto, y aviso de que el texto de la tarjeta son datos.",
-      "El resumen de la noticia reconoce su marca aunque llegue tras un preámbulo; sin marca, pie neutro."
+      "Explícamela y Pregúntale mandan la tarjeta entera y el detalle del cálculo (Riesgo, con el MSCI World en las mismas fechas)",
+      "Tu reparto objetivo rehecho: − y +, tope del 100 %, barras, te faltan/sobran en euros, cuánto aportar para llegar sin vender",
+      "Tus operaciones: el resultado de lo vendido se abre con lo que suma y lo que resta",
+      "Noticias: Haiku con esfuerzo bajo, texto en vivo y resumen del mismo hecho si no abre el artículo",
+      "Dividendos mes a mes: tabla de verdad también en el móvil",
+      "Fuera Yahoo Finance de los textos de la app"
      ]
     }
    ]
@@ -442,8 +1173,21 @@
    "t": "Tu cartera por dentro, y la IA en toda la app",
    "commits": [
     {
+     "cuando": "2026-11-04 06:08",
+     "asunto": "Versión 0.8.1: tu cartera por dentro, y la IA en toda la app",
+     "detalle": [
+      "Análisis (lo que era Cartera) con pestañas: posiciones, rentabilidad, riesgo, reparto y X-Ray, dividendos, costes, Hacienda, la IA opina, movimientos, día a día, gráfico técnico, reparto objetivo y laboratorio.",
+      "Modo básico y avanzado; el ordenador con menú a la izquierda y la IA al lado.",
+      "«Explícame una cifra», «Pregúntale» en cada tarjeta y seis funciones de la IA; la noticia e Importar con Claude.",
+      "Hoy con «Tu plan y tus movimientos»; Ajustes a la vista; acabado (línea de 30 días, cifra que cuenta, máximos, destello de metas, transiciones, espacio fino).",
+      "Arreglos de la auditoría (privacidad, textos legales, accesibilidad y cálculos) y topes de gasto de Claude en el Worker (una pregunta por id, adjuntos y tokens).",
+      "El radar puede ir con Claude si se pone ANTHROPIC_RADAR_KEY.",
+      "Numeración intermedia de tres números (0.8.1), como pidió Carlos el 4 nov."
+     ]
+    },
+    {
      "cuando": "2026-11-04 05:46",
-     "asunto": "0.9: topes de gasto de Claude en el Worker (sin publicar el Worker)",
+     "asunto": "0.9: topes de gasto de Claude en el Worker (sin publicar el Worker) [skip ci]",
      "detalle": [
       "Cada pregunta lleva un id (la app lo pone, el mismo en todas sus rondas y reintentos): el contador gasta una pregunta por id nuevo y cada id tiene su tope de peticiones (CLAUDE_RONDAS_POR_PREGUNTA, 16). Antes «ronda» se podía falsear y un reintento de la primera ronda no contaba. Las apps sin id siguen con «ronda» y el tope de peticiones.",
       "Tope de adjuntos por petición (2 PDF, 12 imágenes) y tope de tokens de entrada (120.000; el doble en las rondas siguientes), contados con count_tokens cuando la petición pasa de 120 KB o lleva adjuntos, antes de gastar pregunta. Con un PDF, si el conteo no contesta, no pasa.",
@@ -453,7 +1197,7 @@
     },
     {
      "cuando": "2026-11-04 05:32",
-     "asunto": "0.9: áreas táctiles de 48 px en lo nuevo",
+     "asunto": "0.9: áreas táctiles de 48 px en lo nuevo [skip ci]",
      "detalle": [
       "«Pregúntale», los enlaces de las tarjetas de Análisis, los chips de las pestañas y las flechas del calendario entran en la lista del área táctil de 48 px; las pestañas de Análisis y el interruptor del menú, a 44 px de alto.",
       "La silueta de una pestaña que carga se anuncia (role=status)."
@@ -461,7 +1205,7 @@
     },
     {
      "cuando": "2026-11-04 00:27",
-     "asunto": "0.9: arreglos de la auditoría (errores de funcionamiento)",
+     "asunto": "0.9: arreglos de la auditoría (errores de funcionamiento) [skip ci]",
      "detalle": [
       "Efectivo: fila para añadirlo en Posiciones aunque no tengas ninguno.",
       "Las pestañas ya no suben la página al repintar (centrarPest solo mueve su fila).",
@@ -474,7 +1218,7 @@
     },
     {
      "cuando": "2026-11-04 00:15",
-     "asunto": "0.9: arreglos de la auditoría (privacidad, textos y accesibilidad)",
+     "asunto": "0.9: arreglos de la auditoría (privacidad, textos y accesibilidad) [skip ci]",
      "detalle": [
       "El sí a Claude va por cuenta y se borra al cerrar sesión; el sí a leer archivos al importar es aparte y ya no vale para mandar la cartera; el resumen de una noticia con Claude pide el mismo sí. Los textos dicen que Anthropic no lo usa para entrenar y lo borra pasado un plazo corto.",
       "Las metas cumplidas se guardan como huella, sin nombre ni importe. Las fuentes del resumen de noticias pasan por urlSegura.",
@@ -484,7 +1228,12 @@
     },
     {
      "cuando": "2026-11-04 00:05",
-     "asunto": "0.9: el radar puede ir con Claude (si hay ANTHROPIC_RADAR_KEY)",
+     "asunto": "Junta el radar con Claude en v0.9-noche [skip ci]",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-04 00:05",
+     "asunto": "0.9: el radar puede ir con Claude (si hay ANTHROPIC_RADAR_KEY) [skip ci]",
      "detalle": [
       "scripts/informe.py: con el secreto ANTHROPIC_RADAR_KEY, cada llamada del radar va primero a Claude (Haiku; se cambia con CLAUDE_RADAR_MODELO) y, si falla, a Gemini como siempre. Sin ese secreto, nada cambia.",
       "Las peticiones de Gemini se pasan a la API de Claude (sistema, mensajes, JSON pedido en el sistema, la búsqueda de Google como la de Claude) y la respuesta vuelve con la forma de Gemini, así el resto no cambia. Los tokens van al mismo registro con el nombre del modelo.",
@@ -495,7 +1244,7 @@
     },
     {
      "cuando": "2026-11-03 23:51",
-     "asunto": "0.9: las cinco pestañas que faltaban y más acabado",
+     "asunto": "0.9: las cinco pestañas que faltaban y más acabado [skip ci]",
      "detalle": [
       "Análisis: Día a día (calendario del mes con lo que ganó o perdió la cartera cada día, mejor y peor día, mes a mes y lo que más se movió hoy), Movimientos (compras y ventas con filtro y lo metido cada mes), Gráfico técnico (precio con las medias de 50 y 200 días, RSI de 14, máximo y mínimo de un año, por posición y plazo), Tu reparto objetivo (se escribe el % de cada tipo, se guarda en el dispositivo, la diferencia en puntos y en euros y cómo quedaría una aportación repartida hacia el objetivo) y Laboratorio (¿y si…? con interés compuesto y lo de hoy con el pasado). Todo en el trozo «avanzado».",
       "Acabado: la línea de 30 días en cada posición (sparkPos), el destello y el aviso al cumplir una meta (celebrarMetas), la pantalla entra desde el lado del botón tocado y el espacio fino delante de € y %.",
@@ -504,12 +1253,12 @@
     },
     {
      "cuando": "2026-11-03 23:49",
-     "asunto": "0.9 (a medias): acabado y las cinco pestañas que faltaban, sin probar todavía",
+     "asunto": "0.9 (a medias): acabado y las cinco pestañas que faltaban, sin probar todavía [skip ci]",
      "detalle": []
     },
     {
      "cuando": "2026-11-03 23:38",
-     "asunto": "0.9: Ajustes, a la vista",
+     "asunto": "0.9: Ajustes, a la vista [skip ci]",
      "detalle": [
       "En el móvil, el botón de Ajustes vuelve a la cabecera, al lado de la IA (antes solo estaba dentro de Tú). Lo pidió Carlos el 3 nov.",
       "En el ordenador, «Ajustes» abajo en el menú de la izquierda (la cabecera ahí casi nunca sale)."
@@ -517,22 +1266,62 @@
     },
     {
      "cuando": "2026-11-03 23:33",
-     "asunto": "0.9: «Explícame una cifra» al tocar un número",
+     "asunto": "0.9: «Explícame una cifra» al tocar un número [skip ci]",
      "detalle": [
       "Tocar el patrimonio, una cifra de Hoy o una de las pestañas de Análisis abre un globo con lo que es, dónde está y «Explícamela», que abre la IA con esa cifra, su tarjeta y su pestaña (marcarCifras, globoCifra en 43-modo.js; CSS en 22-modo-y-ordenador.css).",
       "Con las cifras ocultas, la pregunta no lleva el valor. Teclado: Intro abre, Escape cierra. Se cierra al tocar fuera o al desplazar.",
       "La pregunta pide explicarla sin decir qué hacer (CNMV y política de uso de Anthropic).",
       "Prueba: tests/cifra.spec.js (móvil y ordenador)."
      ]
-    },
+    }
+   ]
+  },
+  {
+   "v": "0.8a",
+   "f": "2026-11-03",
+   "h": "23:30",
+   "t": "La IA, sin clave de Google",
+   "commits": [
     {
      "cuando": "2026-11-03 23:29",
-     "asunto": "0.9: la prueba del tutorial, al día con Análisis",
+     "asunto": "0.9: la prueba del tutorial, al día con Análisis [skip ci]",
      "detalle": []
     },
     {
+     "cuando": "2026-11-03 23:28",
+     "asunto": "Merge remote-tracking branch 'origin/main' into v0.9-noche",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-03 23:07",
+     "asunto": "0.8a: novedades para todos o solo para el dueño [skip ci]",
+     "detalle": [
+      "Una cosa con solo: 'dueno', o un arreglo escrito como { t: '…', solo: 'dueno' }, lo ve el dueño y nadie más: en el mensaje corto de las versiones de letra, en «¿Qué se ha mejorado?», en la guía «Nuevo» y en el historial (novVisibles, 46-lo-nuevo.js).",
+      "Si una versión de letra se queda sin nada para los demás, a ellos no les sale el mensaje ni sale en el historial. La lista detallada del historial (cambios.json) solo la ve el dueño.",
+      "El dueño se recuerda en el dispositivo (inv-dueno) y, con versión nueva, la bienvenida espera unos segundos a comprobar el acceso.",
+      "En la 0.8a, «El correo de Tú, en una línea» pasa a ser solo para el dueño.",
+      "release.py entiende los arreglos con marca; la regla, en claude/cerrar-version.md; prueba en tests/novedades-dueno.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-03 23:06",
+     "asunto": "Versión 0.8a: cambios.json y la hora de publicación",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-03 22:53",
+     "asunto": "0.8a: novedades para todos o solo para el dueño",
+     "detalle": [
+      "Una cosa con solo: 'dueno', o un arreglo escrito como { t: '…', solo: 'dueno' }, lo ve el dueño y nadie más: en el mensaje corto de las versiones de letra, en «¿Qué se ha mejorado?», en la guía «Nuevo» y en el historial (novVisibles, 46-lo-nuevo.js).",
+      "Si una versión de letra se queda sin nada para los demás, a ellos no les sale el mensaje ni sale en el historial. La lista detallada del historial (cambios.json) solo la ve el dueño.",
+      "El dueño se recuerda en el dispositivo (inv-dueno) y, con versión nueva, la bienvenida espera unos segundos a comprobar el acceso.",
+      "En la 0.8a, «El correo de Tú, en una línea» pasa a ser solo para el dueño.",
+      "release.py entiende los arreglos con marca; la regla, en claude/cerrar-version.md; prueba en tests/novedades-dueno.spec.js."
+     ]
+    },
+    {
      "cuando": "2026-11-03 22:20",
-     "asunto": "0.9: Hoy y Análisis rehechos (propuesta A), la IA en toda la app y el acabado",
+     "asunto": "0.9: Hoy y Análisis rehechos (propuesta A), la IA en toda la app y el acabado [skip ci]",
      "detalle": [
       "Cartera pasa a llamarse Análisis: sin el patrimonio arriba (ya está en Hoy) y con sus pestañas",
       "(Posiciones, Rentabilidad, Riesgo, Reparto y X-Ray, Dividendos, Costes, Hacienda, La IA opina y",
@@ -549,7 +1338,7 @@
     },
     {
      "cuando": "2026-11-03 21:48",
-     "asunto": "0.9: la noticia e Importar, con Claude si tu cuenta lo tiene",
+     "asunto": "0.9: la noticia e Importar, con Claude si tu cuenta lo tiene [skip ci]",
      "detalle": [
       "claudeParaTodo() y claudeTexto() (55-asesor-contexto.js): una llamada suelta a Claude, sin",
       "las herramientas de la app. Con Claude en la cuenta, va con Claude aunque haya clave de Google.",
@@ -561,7 +1350,7 @@
     },
     {
      "cuando": "2026-11-03 21:37",
-     "asunto": "0.9 (sesión 2): las pestañas Dividendos y Costes, con datos de verdad",
+     "asunto": "0.9 (sesión 2): las pestañas Dividendos y Costes, con datos de verdad [skip ci]",
      "detalle": [
       "Dividendos: previsto a 12 meses (bruto y neto), rentabilidad por dividendo y sobre lo pagado,",
       "el mes a mes de la app, posición a posición y el próximo ex-dividendo.",
@@ -571,7 +1360,7 @@
     },
     {
      "cuando": "2026-11-03 21:30",
-     "asunto": "0.9 (sesión 2, armazón): modo básico y avanzado, el menú del ordenador y la IA al lado",
+     "asunto": "0.9 (sesión 2, armazón): modo básico y avanzado, el menú del ordenador y la IA al lado [skip ci]",
      "detalle": [
       "Básico/Avanzado (Tú y el menú del ordenador; inv-modo; sin elegir, sale de inv-nivel).",
       "Avanzado: 13 pestañas encima de Hoy (43-modo.js); el contenido, en el trozo trozos/avanzado.js",
@@ -582,25 +1371,6 @@
       "Ordenador (desde 1.180 px): menú a la izquierda y la IA en una columna a la derecha al pulsarla.",
       "El tutorial y las guías también señalan el menú del ordenador.",
       "Pruebas: tests/modo-avanzado.spec.js; temas y humo, al día con el menú. 838 KB al abrir."
-     ]
-    }
-   ]
-  },
-  {
-   "v": "0.8a",
-   "f": "2026-11-03",
-   "h": "23:30",
-   "t": "La IA, sin clave de Google",
-   "commits": [
-    {
-     "cuando": "2026-11-03 22:53",
-     "asunto": "0.8a: novedades para todos o solo para el dueño",
-     "detalle": [
-      "Una cosa con solo: 'dueno', o un arreglo escrito como { t: '…', solo: 'dueno' }, lo ve el dueño y nadie más: en el mensaje corto de las versiones de letra, en «¿Qué se ha mejorado?», en la guía «Nuevo» y en el historial (novVisibles, 46-lo-nuevo.js).",
-      "Si una versión de letra se queda sin nada para los demás, a ellos no les sale el mensaje ni sale en el historial. La lista detallada del historial (cambios.json) solo la ve el dueño.",
-      "El dueño se recuerda en el dispositivo (inv-dueno) y, con versión nueva, la bienvenida espera unos segundos a comprobar el acceso.",
-      "En la 0.8a, «El correo de Tú, en una línea» pasa a ser solo para el dueño.",
-      "release.py entiende los arreglos con marca; la regla, en claude/cerrar-version.md; prueba en tests/novedades-dueno.spec.js."
      ]
     },
     {
@@ -615,8 +1385,13 @@
      ]
     },
     {
+     "cuando": "2026-11-03 20:33",
+     "asunto": "Merge remote-tracking branch 'origin/v0.8a' into v0.9",
+     "detalle": []
+    },
+    {
      "cuando": "2026-11-03 20:20",
-     "asunto": "0.9 (empezada): la IA sin clave de Google, con Claude; plan de la 0.9 por sesiones",
+     "asunto": "0.9 (empezada): la IA sin clave de Google, con Claude; plan de la 0.9 por sesiones [skip ci]",
      "detalle": [
       "Quien tiene Claude en su cuenta (CLAUDE_EMAILS) usa la IA sin poner la clave de Google: iaLista, claudeSinClave, sondearClaude y errorSinIA en 55-asesor-contexto.js",
       "Sin clave no hay Gemini de reserva: si Claude no puede, se dice claro; decir que no al aviso no deja sin salida",
@@ -641,7 +1416,7 @@
    "t": "GrowFolio ahora es Toisón",
    "commits": [
     {
-     "cuando": "2026-11-03 16:00",
+     "cuando": "2026-11-03 16:28",
      "asunto": "0.8: los títulos, otra vez uno por diseño (paso 5c)",
      "detalle": [
       "Como en la maqueta de Inicio aprobada: Mármol con títulos modernos en Inter, Marfil de periódico en Ibarra y Borgoña en cursiva de Ibarra (tokens --titulo, --titulo-peso, --titulo-estilo y --titulo-espacio en cada diseño)",
@@ -838,10 +1613,11 @@
    "t": "La revisión de la cartera con Claude ya llega entera",
    "commits": [
     {
-     "cuando": "2026-11-02 16:30",
+     "cuando": "2026-11-02 16:16",
      "asunto": "0.7u: la revisión con Claude ya no sale cortada por falta de espacio",
      "detalle": [
-      "La revisión que pedía el usuario iba con esfuerzo alto y dos búsquedas en internet: Haiku gastó 16.731 tokens de salida contra un tope de 16.000 y el JSON salió cortado. Ahora va con esfuerzo medio, el tope sube a 32.000 (app y Worker) y, si aun así se queda sin espacio, se repite una vez con esfuerzo bajo y sin búsqueda",
+      "La revisión pedida iba con esfuerzo alto y dos búsquedas: Haiku gastó 16.731 tokens de salida contra un tope de 16.000 y el JSON salió cortado",
+      "Esfuerzo medio, tope de salida de 32.000 (app y Worker) y, si se queda sin espacio, una repetición con esfuerzo bajo y sin búsqueda",
       "Prueba nueva en tests/claude-app.spec.js"
      ]
     }
@@ -854,14 +1630,14 @@
    "t": "GrowIA puede contestar con Claude",
    "commits": [
     {
-     "cuando": "2026-11-02 16:00",
-     "asunto": "0.7t: la app habla con Claude (modo estándar) a través del Worker, con Gemini de reserva",
+     "cuando": "2026-11-02 15:52",
+     "asunto": "0.7t: GrowIA puede contestar con Claude (modo estándar), con Gemini de reserva",
      "detalle": [
-      "conversarClaude junto a conversarGemini: mismas herramientas de la cartera, búsqueda en internet de Claude, respuesta en directo y caché; Sonnet para las preguntas y Haiku para las revisiones automáticas",
-      "Antes de mandar nada de la cartera se comprueba (petición vacía) que el correo puede usar Claude, y la primera vez se pide permiso con el aviso de privacidad",
-      "Cualquier fallo pasa a Gemini y, si se va a repetir, Claude se aparta un rato. Ajustes de GrowIA: «Quién contesta». Tokens y coste de Claude en el registro",
-      "Worker: el tope diario cuenta preguntas (la app manda la ronda) y aparte las peticiones; sin contador no se pregunta; pone él la nota de que GrowIA es una IA y no da consejos personalizados; cuerpo hasta 600 KB",
-      "Revisado aparte antes de publicar. Pruebas nuevas: tests/claude-app.spec.js y más en tests/worker-claude.spec.js"
+      "conversarClaude junto a conversarGemini: herramientas de la cartera, búsqueda en internet de Claude, directo y caché; Sonnet para preguntas y Haiku para revisiones automáticas",
+      "Sondeo previo con petición vacía (la cartera no sale si el correo no puede usar Claude) y aviso de privacidad la primera vez",
+      "Cualquier fallo pasa a Gemini; Claude se aparta si se va a repetir; selector «Quién contesta» en Ajustes de GrowIA; tokens y coste en el registro",
+      "Worker: tope diario por preguntas (la app manda la ronda) y aparte por peticiones; sin contador no se pregunta; nota de IA puesta por el Worker; cuerpo hasta 600 KB",
+      "Revisado aparte antes de publicar. Pruebas: tests/claude-app.spec.js y tests/worker-claude.spec.js"
      ]
     }
    ]
@@ -873,20 +1649,27 @@
    "t": "El punto de «en directo», más ligero",
    "commits": [
     {
-     "cuando": "2026-11-02 14:15",
+     "cuando": "2026-11-02 13:59",
      "asunto": "0.7s: el punto de «en directo» late con opacidad y tamaño, no con la sombra",
      "detalle": [
-      "La pulsación del punto verde de la cabecera (.estado.on) animaba box-shadow, que se repinta en cada fotograma; ahora anima transform y opacity. Las pruebas de animaciones lo cazaron en un día de bolsa abierta (el domingo no salía)",
-      "El aro de 3 px se queda fijo"
+      "La pulsación del punto verde de la cabecera (.estado.on) animaba box-shadow, que se repinta en cada fotograma. Las",
+      "pruebas de animaciones lo cazaron un lunes con la bolsa abierta (el domingo el punto no se encendía). Ahora anima",
+      "transform y opacity, y el aro de 3 px se queda fijo. Versión 0.7s con su entrada en las novedades y en cambios.json."
      ]
     },
     {
-     "cuando": "2026-11-02 13:50",
-     "asunto": "0.7s: Worker, ruta /claude para reenviar a la API de Claude las preguntas de GrowIA (la app aún no la usa)",
+     "cuando": "2026-11-02 13:45",
+     "asunto": "Worker: ruta /claude para reenviar las preguntas de GrowIA a la API de Claude",
      "detalle": [
-      "Guarda ANTHROPIC_API_KEY, comprueba el token de Firebase y la lista CLAUDE_EMAILS, y limita modelos, salida, búsquedas, herramientas, adjuntos y tamaño; tope de preguntas por minuto y por día y correo (Durable Object Cuotas). No guarda nada",
-      "Los fallos llegan claros a la app: sin-creditos (402), clave, claude, sin-conexion, tope-diario, cuotas",
-      "Revisado aparte antes de publicar. Pruebas nuevas en tests/worker-claude.spec.js"
+      "El Worker guarda la clave de Claude (ANTHROPIC_API_KEY) y reenvía la petición de la app con el token de Firebase de",
+      "quien pregunta. Solo pasan los correos de CLAUDE_EMAILS con el correo verificado; los modelos Haiku 5.5 y Sonnet 5.5;",
+      "un máximo de salida, de búsquedas en internet y de tamaño; solo las herramientas de la app y la búsqueda (nada de",
+      "web_fetch ni de ejecutar código) y adjuntos en base64. Tope de preguntas por minuto (por instancia) y por día y correo",
+      "(Durable Object «Cuotas»; si falla, no se pregunta). Los fallos de Claude llegan claros a la app: sin-creditos (402, también",
+      "con el tope de gasto del workspace), clave (502), claude (con su estado) y sin-conexion. No guarda ni apunta nada.",
+      "Revisado aparte antes de publicar: sin forma de saltarse la sesión ni la lista; arreglados lo de las herramientas de",
+      "servidor, los adjuntos por URL, el tope diario y el error del tope de gasto.",
+      "La app todavía no la usa: GrowIA sigue con Gemini hasta que se conecte en otro paso."
      ]
     }
    ]
@@ -898,12 +1681,11 @@
    "t": "GrowIA apunta lo que gasta",
    "commits": [
     {
-     "cuando": "2026-11-01 15:40",
-     "asunto": "0.7r: tokens por pregunta y modelo en el registro de GrowIA",
+     "cuando": "2026-11-01 15:37",
+     "asunto": "0.7r: GrowIA apunta los tokens por pregunta y modelo en su registro",
      "detalle": [
-      "Cada ronda suma entrada, salida y razonamiento al modelo que contestó (también las búsquedas en internet); al acabar la pregunta o el análisis se apunta una línea y se guarda (LS inv-ia-tokens, las últimas 30)",
-      "Arriba del registro, la mediana por modelo y por pregunta o análisis",
-      "Prueba nueva en tests/growia-fondo.spec.js"
+      "Entrada, salida y razonamiento de cada ronda (y de las búsquedas) por modelo;",
+      "una línea al acabar la pregunta o el análisis y la mediana arriba del registro."
      ]
     }
    ]
@@ -915,12 +1697,12 @@
    "t": "Un botón a la web de Toisón",
    "commits": [
     {
-     "cuando": "2026-11-01 14:15",
+     "cuando": "2026-11-01 14:05",
      "asunto": "0.7q: botón «Ver la web de Toisón» en el estreno",
      "detalle": [
-      "Enlace a https://toison.es (target _blank, noopener) junto a «Tengo ganas de verlo» y «Mandarlo por WhatsApp»; no cierra el estreno",
-      "Web de espera de Toisón en toison.es, toison.app y toisonapp.com (repos toison-web, toison-app y toisonapp-com)",
-      "Prueba nueva en tests/toison.spec.js"
+      "Enlace a https://toison.es junto a «Tengo ganas de verlo» y «Mandarlo por",
+      "WhatsApp». Se abre fuera de la app y no cierra el estreno. Prueba nueva en",
+      "tests/toison.spec.js."
      ]
     }
    ]
@@ -932,17 +1714,9 @@
    "t": "GrowIA, más rápida",
    "commits": [
     {
-     "cuando": "2026-11-01 14:00",
-     "asunto": "0.7p: GrowIA, más rápida (el 3.8 en cola pasa al 3.6 a los 40 s)",
-     "detalle": [
-      "Registro de Carlos del 1 nov (app 62): 421 s con el 3.8 Flash en 5 rondas, casi todo espera antes del primer dato",
-      "includeThoughts: el razonamiento llega mientras se hace y el primer dato mide la cola de Google",
-      "Con el 3.6 detrás, el 3.8 tiene 40 s para empezar (RED_IA.primero); si no, pasa al 3.6 sin repetir y queda apartado 30 min (inv-ia-lento)",
-      "Las instrucciones piden todas las herramientas en la misma tanda",
-      "Primer dato por modelo (inv-ia-tiempos, últimas 20), resumido arriba del registro de GrowIA",
-      "Revisión automática cortada al salir: no cuenta como intento y se repite al volver (también con vuelta-app)",
-      "Pruebas nuevas en tests/growia-fondo.spec.js"
-     ]
+     "cuando": "2026-11-01 13:00",
+     "asunto": "0.7p: GrowIA, más rápida (el 3.8 en cola pasa al 3.6 a los 40 s) - Registro de Carlos del 1 nov (app 62): 421 s con el 3.8 Flash en 5 rondas, casi todo espera antes del primer dato - includeThoughts: el razonamiento llega mientras se hace y el primer dato mide la cola de Google - Con el 3.6 detrás, el 3.8 tiene 40 s para empezar (RED_IA.primero); si no, pasa al 3.6 sin repetir y queda apartado 30 min (inv-ia-lento) - Las instrucciones piden todas las herramientas en la misma tanda - Primer dato por modelo (inv-ia-tiempos, últimas 20), resumido arriba del registro de GrowIA - Revisión automática cortada al salir: no cuenta como intento y se repite al volver (también con vuelta-app) - Pruebas nuevas en tests/growia-fondo.spec.js",
+     "detalle": []
     },
     {
      "cuando": "2026-11-01 11:31",
@@ -978,24 +1752,37 @@
    "t": "Toisón, con su historia",
    "commits": [
     {
-     "cuando": "2026-11-01 01:45",
-     "asunto": "0.7o: el estreno de Toisón cuenta la historia del nombre en vez de las medidas del logo",
+     "cuando": "2026-11-01 02:03",
+     "asunto": "0.7o: junto a «Toisón, con su historia», el arreglo de GrowIA con la app fuera (bca68cd); hora de publicación",
      "detalle": [
-      "Carlos (1 nov): tantas medidas no venían al caso. Fuera la parte «Las medidas» (el símbolo con cotas y seis datos en u) y su CSS",
-      "Parte nueva «De dónde viene el nombre», antes de la O áurea: una línea del tiempo que se dibuja al bajar con cuatro hitos (el mito de Jasón y el vellocino, la Orden del Toisón de Oro en Brujas en 1430, Carlos I y los reyes de España, y ahora: el dragón que guardaba el vellocino y tu contraseña que guarda tu cartera). Con la nota de que Toisón no tiene relación con la orden",
-      "La O áurea, contada desde el oro: áureo quiere decir de oro; Euclides y la divina proporción; «oro en el mito, oro en la orden y oro en la O». El héroe, el mármol y la tarjeta, con textos más cortos y sin datos de diseño",
-      "Debajo del mármol negro, el texto ya no va pegado a la imagen (18 px de aire; lo vio Carlos)",
-      "Pruebas: tests/toison.spec.js con la historia en vez de las medidas"
+      "La 0.7o salió a las 01:45 sin bca68cd (llegó a la rama a la vez que el merge). Esto la completa."
      ]
     },
     {
-     "cuando": "2026-11-01 02:00",
+     "cuando": "2026-11-01 01:45",
+     "asunto": "0.7o: hora de publicación",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-01 01:44",
      "asunto": "0.7o: GrowIA sigue contestando con la app fuera; la página ya no se congela al minuto de salir",
      "detalle": [
-      "Causa, con el registro de Carlos del 1 nov (app 60, Samsung con Android 17): al salir, el WebView da la página por oculta (la ventana deja de verse: IsClientVisible pide ventana visible y sin onPause) y Blink la congela al minuto (stop-in-background, de serie en Android y que WebView no quita): ni relojes ni carga. La pregunta de las 01:18:38 salió a los 2 s, el límite de 120 s no saltó y a las 01:21:20, con la página congelada desde las 01:19:40, se perdió el wifi. El servicio de GrowIA (0.7f y 0.7l) mantenía viva la app, no la página. evaluateJavascript sí corre con la página congelada (por eso redCambiada se apuntó a su hora)",
-      "App (Principal.java): un WebView propio (Principal.Web) que, mientras GrowIA contesta, no se entera de que la ventana se ha ido (onWindowVisibilityChanged con VISIBLE), y sin web.onPause() en ese rato: la página sigue como a la vista, con relojes, reintentos y datos de Google. Si GrowIA acaba con la app fuera, se le pasa la visibilidad de verdad y onPause, y se duerme como siempre. En el diario de la app: «Sales con GrowIA contestando: la página sigue despierta» y «GrowIA acaba con la app fuera: la página se duerme»",
-      "Web: la app avisa con appFuera(true) en onStop y appFuera(false) en onStart. fueraDeVista() (document.hidden o la app fuera, en 47-app-android.js) sustituye a document.hidden en lo de GrowIA: esperarVuelta (que también escucha «vuelta-app»), fueraDesde, el aviso de «a medias», el máximo sin red, la espera a que vuelvas, appGrowiaEmpieza, la pregunta de GrowIA por aviso del sistema y la revisión automática, que no empieza con la app fuera. En el registro: «Sales de GrowFolio (la app la mantiene despierta)» y «GrowFolio fuera (despierta)» en los cortes",
-      "Prueba nueva en tests/growia-fondo.spec.js: con appFuera(true) y document.hidden en false, cinco reintentos solos; al sexto corte, «a medias» y espera; con appFuera(false), sigue con el mismo modelo y acaba"
+      "Va junto a «Toisón, con su historia» en la misma 0.7o (lo decidió Carlos). App de Android: Principal.Web",
+      "no se entera de que la ventana se va mientras GrowIA contesta; la web lo sabe por appFuera y fueraDeVista()."
+     ]
+    },
+    {
+     "cuando": "2026-11-01 01:33",
+     "asunto": "0.7o: aire debajo del mármol negro (lo vio Carlos)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-01 01:22",
+     "asunto": "0.7o: el estreno de Toisón cuenta la historia del nombre en vez de las medidas del logo",
+     "detalle": [
+      "Fuera «Las medidas» (Carlos: no venían al caso)",
+      "«De dónde viene el nombre»: el mito, 1430 en Brujas, Carlos I y ahora, en una línea que se dibuja al bajar",
+      "La O áurea, contada desde el oro; textos más cortos en el héroe, el mármol y la tarjeta"
      ]
     }
    ]
@@ -1008,17 +1795,28 @@
    "commits": [
     {
      "cuando": "2026-11-01 00:58",
-     "asunto": "0.7n: el estreno de Toisón se dibuja, con el icono en un móvil y para mandarlo por WhatsApp; GTA VI con palmeras, los 79,99 € desde el primer tráiler y su imagen para compartir",
+     "asunto": "0.7n: hora de publicación",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-01 00:48",
+     "asunto": "0.7n: la letra de GTA VI, parecida a la de GTA (Passion One); el estreno, con más margen al medir",
      "detalle": [
-      "Estreno de Toisón: la marca sale del fondo sin el recuadro (los bordes de toison-avance.webp se funden con una máscara elíptica y el fondo del estreno se acerca a su borgoña). Antes, el símbolo en vector en el mismo sitio (centro 558, 249 y 2,08 px por u, medido en la imagen): se dibuja la O, la T baja dibujada desde arriba hasta atravesarla, se rellenan y encima aparece el relieve. Quieto con las animaciones quitadas",
-      "Las partes del estreno sin alto mínimo (medían 88svh): lo de dentro y 52 px de margen. --p se mide con lo de dentro de cada sección: 0 cuando asoma por abajo y 1 cuando lo tienes entero a la vista, con margen; si no cabe, cuando su parte de arriba llega casi arriba; al final del todo, lo que se ve está acabado",
-      "Parte nueva «En tu móvil»: una pantalla de inicio con quince apps inventadas, un reloj y el dock; al bajar, el icono de GrowFolio deja paso al de Toisón en relieve (toison-icono.webp, recortado de la imagen del estreno). Lo que falta: el cambio es en noviembre sin día fijado (Carlos, 1 nov), así que cuenta hasta el 1 dic y dice «como mucho». Los «en diciembre» del estreno pasan a «en noviembre»",
-      "«Mandarlo por WhatsApp» al final: navigator.share con el enlace y una frase; sin él (la app de Android no lo tiene), wa.me, que la app abre fuera. El enlace lleva #toison, que abre el estreno a cualquiera al entrar, también sin cuenta, encima de la entrada y la presentación",
-      "GTA VI: una ciudad al atardecer en el horizonte y dos palmeras, siluetas propias en SVG (nada del juego), quietas; solo suben una vez al abrir (transform). También en el aviso de la primera vez",
-      "GTA VI, «mientras esperabas»: los 79,99 € del juego con la misma serie desde el primer tráiler (desdeTrailerGTA, que sacaba htmlDesdeTrailerGTA): «habrían sido» o «se habrían quedado en», sin decir qué hacer. Sale también con los importes ocultos",
-      "GTA VI: «Mi cartera en GTA VI» como imagen de 1080 × 1350 en un lienzo, con el atardecer, la ciudad y las palmeras. Las copias solo con el interruptor «Enseñar las copias» (apagado de entrada; lo decidió Carlos) y nunca con los importes ocultos; sin ellas, el % desde el primer tráiler, los 79,99 € y los días que faltan. Se comparte con navigator.share (archivo PNG) o se descarga",
-      "App de Android: Puente.compartirImagen (el PNG en base64 a la caché y el menú de compartir de Android, con permiso de lectura por ClipData); Archivos sirve también esa imagen. La app de antes avisa de que la actualices",
-      "Pruebas: cinco nuevas en tests/toison.spec.js y tests/gta.spec.js (cuatro)"
+      "Títulos y cifras de GTA VI en Passion One, la libre más parecida a Pricedown (lo pidió Carlos)",
+      "p acaba con lo de dentro al 10 % de arriba si no cabe (en la Action se quedaba en 0,98)",
+      "El móvil del estreno, algo más bajo"
+     ]
+    },
+    {
+     "cuando": "2026-11-01 00:35",
+     "asunto": "0.7n: el estreno de Toisón se dibuja y se comparte; GTA VI con palmeras, los 79,99 € y su imagen",
+     "detalle": [
+      "Toisón: la marca sale del fondo sin recuadro; antes se dibuja la O y baja la T hasta atravesarla",
+      "Partes del estreno más juntas y --p acabado con lo de dentro a la vista",
+      "Parte nueva con el icono en la pantalla de inicio de un móvil y lo que falta (noviembre)",
+      "«Mandarlo por WhatsApp» con navigator.share o wa.me; #toison abre el estreno a cualquiera",
+      "GTA VI: ciudad al atardecer y palmeras; los 79,99 € desde el primer tráiler; imagen para compartir",
+      "App de Android: Puente.compartirImagen"
      ]
     }
    ]
@@ -1030,7 +1828,16 @@
    "t": "GrowFolio, más ligero",
    "commits": [
     {
-     "cuando": "2026-10-31 23:50",
+     "cuando": "2026-10-31 23:46",
+     "asunto": "Pruebas: la pastilla de GTA, sin carreras con lo que se abre solo al entrar",
+     "detalle": [
+      "En la Action, Primeros pasos (u otra hoja) llegaba después de quitarla y la",
+      "pastilla estaba parada con razón. Ahora se quita lo que haya encima cada vez",
+      "que se mira."
+     ]
+    },
+    {
+     "cuando": "2026-10-31 23:13",
      "asunto": "0.7m: la pastilla de GTA VI deja de repintarse; la hoja de GTA, más suelta; la tarjeta de Toisón, en Ajustes al quitarla",
      "detalle": [
       "Cabecera: la pastilla de GTA VI animaba text-shadow (gtaNeon) y, por un nombre repetido, también text-shadow en el botón (gtaRespira de 18-gta.css pisaba la de 02-cabecera, así que no respiraba): repintado en cada fotograma en todas las pantallas. Con la CPU de un móvil normal (×6 en Chrome), Inicio quieto pasa de 3,1 s de trabajo cada 4 s a 0,24 s. Ahora solo opacidad: el «VI» parpadea con opacity y el brillo va en ::before (gtaPastilla). Con una hoja, el estreno o la guía encima, se para (body:has)",
@@ -1050,18 +1857,116 @@
    "t": "GrowIA, más firme en el móvil",
    "commits": [
     {
-     "cuando": "2026-10-31 21:30",
-     "asunto": "0.7l: GrowIA, más firme en el móvil, y el estreno de Toisón",
+     "cuando": "2026-10-31 21:07",
+     "asunto": "Pruebas: los segundos que lleva GrowIA, con tiempo de verse; hora de la 0.7l",
      "detalle": [
-      "Web: llamarGemini vigila cada dato que llega (120 s hasta el primero, 60 s entre datos, 8 s tras un cambio de red); antes solo vigilaba los primeros 90 s y una respuesta parada a mitad dejaba a GrowIA pensando para siempre",
-      "Web: un corte de red se repite con el mismo modelo esperando 2, 4, 8, 15 y 30 s (antes 1,5 y 3 s y luego otro modelo); solo cambia de modelo cuando Google no contesta (una vez más con el mismo y luego el siguiente de su orden); sin red espera al evento online (con la app fuera, 2 minutos como mucho); un solo aviso del corte que pasa a «lo he repetido»",
-      "Web: «Parar» corta también la respuesta que ya está llegando; la revisión automática no empieza mientras GrowIA contesta (la mira al acabar); los segundos que lleva pensando",
-      "Web: registro de GrowIA (inv-ia-diario, los últimos 80, sin preguntas ni respuestas) en Ajustes de GrowIA, Detalles técnicos, con «Copiar» y lo que apunta la app",
-      "App de Android: el servicio de GrowIA pasa de shortService (Android 14 lo para a los 3 minutos) a dataSync, con wakelock parcial de 10 minutos como mucho; permiso ACCESS_NETWORK_STATE (el WebView no se enteraba de los cambios de red) y vigía de la red que avisa a la web (redCambiada, setNetworkAvailable); diario del servicio y de la red; aviso de batería restringida",
-      "Tras una revisión aparte: sin red con la app fuera espera a que vuelva (el plan B de 20 s, solo a la vista); la app avisa con la hora cuando se pierde la red y solo se cortan las peticiones de antes (de datos a wifi no se toca nada); «vivo» mira si el servicio sigue de verdad; si Google no contesta en ningún modelo, error en vez de la escalera de cortes; la búsqueda en internet también se vigila; el texto a medias se quita también en los reintentos por 429 o 5xx; al recargar la página con GrowIA a medias se para el servicio",
-      "Estreno de Toisón: una vez, a todos los que entran (nuevos o no, móvil, app y ordenador), «GrowFolio tiene los días contados», por algo bueno: en diciembre pasa a llamarse Toisón. Se despide GrowFolio y aparece la marca en relieve con un brillo; al bajar, cada parte se dibuja según deslizas: la O áurea (el rectángulo de 161,8 × 100, sus cuadrados y la espiral), las medidas del símbolo con sus cotas, la marca en mármol negro y lo hecho (tres dominios registrados y la marca solicitada en la OEPM). Imágenes con relief3.py del Design System (toison-avance.webp y toison-marmol.webp); quieto si las animaciones están quitadas. Lo pidió Carlos",
-      "Inicio: arriba, una tarjeta de Toisón («Muy pronto: GrowFolio pasa a llamarse Toisón») que abre el estreno entero cuando quieras; con la × se quita. Lo pidió Carlos",
-      "Pruebas nuevas en tests/growia-fondo.spec.js (respuesta parada, Google que no contesta, cambio de red, Parar, registro, revisión que espera) y tests/toison.spec.js"
+      "En la Action, con 1,5 s de espera por petición, la respuesta llegaba antes de",
+      "que salieran los segundos (a partir de los 3). Ahora 5 s."
+     ]
+    },
+    {
+     "cuando": "2026-10-31 20:57",
+     "asunto": "Pruebas: Expertos en el ordenador, sin carreras con el repintado",
+     "detalle": [
+      "En la Action, con la máquina más cargada por las pruebas nuevas, la prensa de",
+      "Tus posiciones aún no estaba al medir y la idea abierta se cerraba al",
+      "repintarse con los precios o el escaneo. Ahora espera al escaneo y a la prensa,",
+      "y abre y mide la idea en el mismo paso. Con la 0.7k, en la Action, pasaba; con",
+      "la rama de la 0.7l, no (aquí pasaba siempre)."
+     ]
+    },
+    {
+     "cuando": "2026-10-31 20:34",
+     "asunto": "0.7l: en Inicio, la tarjeta de Toisón que abre el estreno",
+     "detalle": [
+      "Lo pidió Carlos: arriba en Inicio, «Muy pronto: GrowFolio pasa a llamarse",
+      "Toisón», con el símbolo dibujado ahí mismo (sin bajar imágenes); al tocarla se",
+      "abre el estreno entero aunque ya se haya visto, también en la cartera de",
+      "prueba. Con la × se quita. Hasta fin de año. El Escape del estreno va en",
+      "window y antes que nadie (encima de una hoja abierta). Prueba nueva en",
+      "tests/toison.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-10-31 20:12",
+     "asunto": "0.7l: el estreno de Toisón se cuenta al bajar; arreglos de la revisión",
+     "detalle": [
+      "Estreno de Toisón (lo pidió Carlos): tras la marca en relieve, al bajar cada",
+      "sección se dibuja según deslizas (--p de 0 a 1): la O áurea (rectángulo de",
+      "161,8 × 100, sus cuadrados y la espiral), las medidas del símbolo con sus",
+      "cotas, la marca en mármol negro (toison-marmol.webp, relief3.py con el fondo",
+      "de relief_v10) y lo hecho: tres dominios registrados y la marca solicitada",
+      "en la OEPM. Quieto y entero si las animaciones están quitadas.",
+      "Revisión aparte del cambio de GrowIA, arreglado:",
+      "Sin red con la app fuera, el plan B de 20 s de esperarVuelta saltaba",
+      "igual y GrowIA se rendía a los ~4 min: ahora solo con la página a la",
+      "vista, y «he seguido» solo si de verdad ha vuelto la red.",
+      "redCambiada cortaba también peticiones que ya iban por la red nueva: la",
+      "app avisa con la hora solo cuando se pierde la red (onLost) y se cortan",
+      "las que empezaron antes; de datos a wifi no se toca nada.",
+      "«vivo» miraba solo que existiera el puente: ahora growiaViva; y un",
+      "'tiempo' con la página fuera sin servicio no cuenta como Google lento.",
+      "Si Google no contesta en ningún modelo, error en vez de seguir con la",
+      "escalera de cortes de red (más de 20 min).",
+      "La búsqueda en internet también se vigila (60 s; 8 s si se pierde la red).",
+      "Al llegar las cabeceras no se reinicia la espera de 120 s.",
+      "Al recargar la página con GrowIA a medias, la web para el servicio.",
+      "Java: enMarcha y arrancando volatile; onDestroy quita todo lo pendiente",
+      "y una marca evita tocar el WebView después; el tipo de red, de",
+      "onCapabilitiesChanged.",
+      "De antes: el texto a medias se quita también en los reintentos por 429 o",
+      "5xx, y dormir no empieza si ya está parado.",
+      "humo.spec.js: el aviso del corte ahora dice «lo he repetido» al salir bien",
+      "(por eso falló «Pruebas»). Pruebas nuevas en toison.spec.js y en",
+      "growia-fondo.spec.js (la red nueva no corta; lo de después de perderla, tampoco)."
+     ]
+    },
+    {
+     "cuando": "2026-10-31 19:41",
+     "asunto": "0.7l: el estreno de Toisón, a todos, con la marca en relieve",
+     "detalle": [
+      "Lo pidió Carlos el 31 oct: a todos los que entran a partir de ahora (nuevos o",
+      "no, en el móvil, la app y el ordenador), una vez, que GrowFolio tiene los días",
+      "contados, pero por algo bueno: en diciembre pasa a llamarse Toisón.",
+      "Pantalla completa (clase estreno, así lo demás espera): se despide GrowFolio,",
+      "entra el borgoña y aparece la marca en relieve con un brillo que la recorre;",
+      "luego el porqué del nombre, los tres dominios registrados (toison.es,",
+      "toison.app y toisonapp.com) y la marca TOISÓN solicitada en la OEPM (aún no",
+      "concedida). Unos 4 s; quieta si las animaciones están quitadas. Sale al",
+      "principio de la bienvenida, antes que la guía de quien acaba de llegar.",
+      "toison-avance.webp (1120 × 640, 17 KB): relieve 1.1 de relief3.py del Design",
+      "System «Toisón» (O áurea de la 1.3) y la palabra de la marca horizontal sobre",
+      "oscuro, en trazados. Sustituye al SVG plano de la primera versión."
+     ]
+    },
+    {
+     "cuando": "2026-10-31 19:34",
+     "asunto": "0.7l: GrowIA, más firme en el móvil, y el avance de Toisón",
+     "detalle": [
+      "Lo pidió Carlos el 31 oct: GrowIA en el móvil se corta a menudo, tarda y a",
+      "veces no acaba. Causas encontradas en el código:",
+      "El servicio de la app era shortService en Android 14 o más, que Android para",
+      "a los 3 minutos: se quitaba la notificación y se caía la conexión. Ahora",
+      "dataSync, con un wakelock parcial de 10 minutos como mucho.",
+      "A la app le faltaba ACCESS_NETWORK_STATE: el WebView no se enteraba de que",
+      "pasabas de wifi a datos y seguía con una conexión muerta. Con el permiso, y",
+      "un vigía de la red que avisa a la web (redCambiada) y fija navigator.onLine.",
+      "Una vez que Google empezaba a contestar no había límite de tiempo: una",
+      "respuesta parada a mitad dejaba a GrowIA pensando para siempre. llamarGemini",
+      "vigila cada dato (120 s hasta el primero, 60 s entre datos, 8 s tras un",
+      "cambio de red).",
+      "Ante un corte reintentaba dos veces en 4,5 s y luego cambiaba de modelo y",
+      "empezaba de cero. Ahora el mismo modelo con esperas de 2, 4, 8, 15 y 30 s;",
+      "solo cambia cuando Google no contesta. Sin red, espera a que vuelva.",
+      "«Parar» no cortaba una respuesta que ya estaba llegando.",
+      "Además: los segundos que lleva pensando, un solo aviso del corte, la revisión",
+      "automática espera a que acabe la pregunta, y el registro de GrowIA (sin",
+      "preguntas ni cifras) en Ajustes de GrowIA para copiarlo cuando falle, con lo",
+      "que apunta la app (servicio, red, batería restringida).",
+      "Avance de Toisón: una vez, al abrir, «GrowFolio tiene los días contados» con",
+      "la marca del manual (toison-avance.svg).",
+      "Pruebas nuevas en tests/growia-fondo.spec.js y tests/toison.spec.js; las de",
+      "la respuesta parada, el cambio de red y «Parar» fallan sin el cambio."
      ]
     }
    ]
@@ -1073,13 +1978,17 @@
    "t": "Los avisos de fallos caducan",
    "commits": [
     {
-     "cuando": "2026-10-30 16:40",
+     "cuando": "2026-10-30 16:44",
      "asunto": "0.7k: los fallos de GrowIA caducados los borra el dueño",
      "detalle": [
-      "El TTL de Firestore sobre «caduca» no se puede crear: pide facturación y el proyecto sigue en el plan gratis (403 «billing disabled»)",
-      "App: limpiarFallosIA() (42-modos.js) borra los fallos_ia con «caduca» pasada, una vez al día, la primera vez que abre GrowFolio el dueño (las reglas solo le dejan a él leer y borrar); hasta 200 por tanda, y sin red o con un borrado que falla se prueba en la próxima apertura",
-      "Si algún día hay facturación, el TTL usa el mismo campo y la limpieza sobra",
-      "Prueba nueva en tests/growia.spec.js; el Firestore de imitación entiende where con < y > en fechas, y deleteDoc"
+      "El TTL de Firestore sobre «caduca» no se puede crear: pide facturación y el",
+      "proyecto sigue en el plan gratis (403 «billing disabled»). limpiarFallosIA()",
+      "(42-modos.js) borra los fallos_ia con «caduca» pasada, una vez al día, la",
+      "primera vez que abre GrowFolio el dueño (las reglas solo le dejan a él leer y",
+      "borrar). Hasta 200 por tanda; sin red o con un borrado que falla se prueba en",
+      "la próxima apertura. Si algún día hay facturación, el TTL usa el mismo campo.",
+      "Prueba nueva en tests/growia.spec.js (pasa con el cambio y falla sin él); el",
+      "Firestore de imitación entiende where con < y > en fechas, y deleteDoc."
      ]
     }
    ]
@@ -1094,10 +2003,11 @@
      "cuando": "2026-10-30 15:53",
      "asunto": "0.7j: la prensa, sin «bueno para la acción»",
      "detalle": [
-      "La 0.7i no se publicó: «Pruebas» falló dos veces en tests/growia.spec.js (en estándar, lo que ve GrowIA no puede decir «bueno para la acción»). No era de la 0.7i: desde las 13:30 UTC del 30 oct la lectura de prensa de la Action escribía «lo que es muy bueno para la acción» (Repsol, SK hynix) y el informe «Muy bueno para la acción: …»",
-      "App: prensaNeutra() cambia «(muy) bueno/malo para la acción» por «(muy) positivo/negativo para la empresa», en limpiaIA (todo lo que se enseña de GrowIA) y en todo el contexto de GrowIA",
-      "Action (scripts/informe.py): el informe y la lectura piden «positivo o negativo para la empresa» y el signo de cada titular «para la empresa»",
-      "Prueba nueva en tests/modo-estandar.spec.js"
+      "La 0.7i no se publicó porque «Pruebas» fallaba en tests/growia.spec.js: desde",
+      "el 30 oct la lectura de prensa de la Action escribía «muy bueno para la",
+      "acción» y en estándar eso le llegaba a GrowIA. La app lo enseña y se lo pasa",
+      "a GrowIA como «positivo/negativo para la empresa» (prensaNeutra) y la Action",
+      "ya lo pide así. Prueba nueva en tests/modo-estandar.spec.js"
      ]
     }
    ]
@@ -1109,15 +2019,15 @@
    "t": "Expertos, a la medida del ordenador",
    "commits": [
     {
-     "cuando": "2026-10-30 14:35",
-     "asunto": "0.7i: Expertos en el ordenador; evitar y radar abren la empresa; tablas cuadradas",
+     "cuando": "2026-10-30 14:28",
+     "asunto": "0.7i: Expertos a la medida del ordenador; evitar y radar abren la empresa; tablas cuadradas",
      "detalle": [
-      "Lo pidió Carlos el 30 oct con capturas de su ordenador: «está todo a lo ancho» (la idea abierta ocupaba los 1.680 px con dos cifras por fila y líneas de texto de lado a lado) y las que GrowIA evitaría no llevaban a ninguna parte",
-      "Ideas: tres columnas desde 1.200 px (son nueve, tres filas de tres; antes cuatro y una suelta). La abierta, desde 1.100 px, en dos columnas: quién la propone arriba; cifras, tesis y botones a la izquierda; «Qué la mueve, pegas, impuestos y señales» a la derecha y ya abierto. Las que evitaría, de tres en tres",
-      "Tus posiciones, desde 1.100 px: «Qué vender o recortar» y «Posición a posición» a la izquierda; «Lo último, según GrowIA» y «Analistas en prensa» a la derecha. En el móvil las cajas van con display: contents y todo sigue como antes",
-      "Las que evitaría: toda la tarjeta abre la hoja de la empresa (data-consulta; el nombre es un botón, para el teclado; los enlaces de las fuentes y el motivo recortado hacen lo suyo). Las filas del radar, igual, y cada idea tiene «Ver la empresa». La hoja de la empresa dice si GrowIA la evitaría (con su motivo) o si está entre sus ideas",
-      "Tablas: la regla .resp de las respuestas a opiniones (display: grid) cogía también las table.resp y, por encima de 680 px, los títulos no iban encima de sus columnas (radar, Hacienda, Paso a paso). Ahora es .resp-lista > .resp",
-      "Prueba nueva: tests/expertos-pc.spec.js"
+      "Lo pidió Carlos el 30 oct con capturas de su ordenador. Ideas en tres",
+      "columnas y la abierta en dos; las que evitaría de tres en tres y abren",
+      "la hoja de la empresa (que dice por qué GrowIA la evitaría); filas del",
+      "radar que abren la empresa; Tus posiciones con la prensa al lado. La regla",
+      ".resp de las respuestas descuadraba todas las table.resp por encima de",
+      "680 px. Prueba nueva: tests/expertos-pc.spec.js"
      ]
     }
    ]
@@ -1129,13 +2039,19 @@
    "t": "Tu patrimonio, el mismo en todas partes",
    "commits": [
     {
-     "cuando": "2026-10-30 13:35",
-     "asunto": "0.7h: el patrimonio de GrowIA, el de ahora",
+     "cuando": "2026-10-30 13:30",
+     "asunto": "0.7h: hora de publicación",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-30 13:08",
+     "asunto": "0.7h: el patrimonio que nombra GrowIA, el de ahora",
      "detalle": [
-      "Lo vio Carlos el 30 oct a las 12:43 en el resumen del día: «Tu cartera hoy 81.215 €» y, debajo, «Tu patrimonio alcanza 80.853,80 €» en lo que dice GrowIA. La revisión se escribe con el total de ese momento (en el contexto va «Patrimonio 80.853,80 €») y se enseña horas después, con los precios ya movidos",
-      "Cada revisión guarda el total que vio GrowIA (S.iaPropio.total). Al enseñar sus textos (rellenarIA: resumen del día, Cartera, Análisis, Expertos, Paso a paso), el importe que coincide con ese total al euro, o redondeado a la centena a menos de un 0,5 %, se cambia por el de ahora, como si hubiera escrito {total}. Los importes con signo (lo que sube o baja) y los demás, sin tocar",
-      "Las revisiones de antes (sin el total guardado): se toma como total el importe del titular (o del primer párrafo) más cercano al de ahora, si no se aleja más de un 5 %. Dejan de hacer falta en cuanto GrowIA revisa otra vez",
-      "Prueba nueva: tests/total-ia.spec.js"
+      "Lo vio Carlos el 30 oct en el resumen del día: arriba 81.215 € y, en lo que",
+      "dice GrowIA, 80.853,80 € (el total de cuando revisó la cartera). Cada revisión",
+      "guarda el total que vio GrowIA y, al enseñar sus textos, ese importe se cambia",
+      "por el de ahora, como si hubiera escrito {total}. Las revisiones de antes lo",
+      "sacan del titular. Prueba nueva: tests/total-ia.spec.js"
      ]
     }
    ]
@@ -1147,14 +2063,19 @@
    "t": "Hacienda y GrowIA, más claras",
    "commits": [
     {
-     "cuando": "2026-10-30 04:40",
-     "asunto": "0.7g: Hacienda sin recomendaciones en estándar y GrowIA sin la letra pequeña",
-     "detalle": [
-      "Lo vio Claude el 30 oct haciendo capturas para las redes con una cuenta estándar: Hacienda enseñaba «Lo que cuesta lo que te recomienda GrowFolio» (aportar, y desde julio «Vender … con pérdidas») y lo anunciaba arriba y en la cabecera. htmlFiscalRecom no miraba esPublico()",
-      "Ahora, en estándar, sin esa tabla, sin la frase que la anuncia y con la cabecera sin «lo que cuesta cada recomendación». En fundador, la frase solo sale si la tabla tiene algo. Revisión aparte: la Guía de la renta decía en estándar «el Paso a paso te lo propone» (ahora, la regla sola), «Para pagar menos» decía «vender también estas lo compensa» con tus posiciones en pérdidas y «No recompres X» (ahora, la regla en neutro) y escapaba dos veces los nombres (salía «S&amp;P 500»)",
-      "GrowIA: fuera la nota «Gratis con tu clave de Google…» debajo de la caja (lo pidió Carlos: quitaba seriedad). Lo de que tus preguntas y los datos de tu cartera van de tu navegador a Google sin pasar por GrowFolio, ahora en la pantalla de poner la clave y en Ajustes de GrowIA (la revisión aparte vio que con la clave puesta ya no salía en ningún sitio)",
-      "Prueba nueva: tests/modo-estandar.spec.js"
-     ]
+     "cuando": "2026-10-30 04:36",
+     "asunto": "0.7g: hora de publicación",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-30 04:29",
+     "asunto": "0.7g: lo de la revisión aparte (adónde van los datos de GrowIA, Guía de la renta y «Para pagar menos» sin proponer qué vender, nombres con & bien)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-30 04:17",
+     "asunto": "0.7g: Hacienda sin recomendaciones en el modo estándar; GrowIA sin la letra pequeña de Google",
+     "detalle": []
     }
    ]
   },
@@ -1165,15 +2086,24 @@
    "t": "GrowIA sigue aunque salgas",
    "commits": [
     {
-     "cuando": "2026-10-30 02:30",
-     "asunto": "0.7f: GrowIA sigue en segundo plano",
-     "detalle": [
-      "Lo vio Carlos el 30 oct a la 1:57: salió de la app mientras GrowIA contestaba y acabó en «Se ha cortado la conexión con Google tres veces seguidas (Failed to fetch)»",
-      "Por qué: al salir, Android congela la app al poco y corta las conexiones de la página. GrowIA lo contaba como un fallo de Google, reintentaba con la app aún fuera (y se volvía a cortar) y a la tercera se rendía",
-      "Web: un corte con GrowFolio fuera de la vista (o sin conexión) no cuenta para los tres intentos ni pasa a la rápida: espera a que vuelvas y repite esa petición con el mismo modelo",
-      "Android: mientras GrowIA contesta, un servicio en primer plano con su notificación (shortService en Android 14 o más; dataSync antes) mantiene viva la app, y la web sigue con prioridad alta. Si no la miras, al acabar avisa «GrowIA ya te ha contestado», sin nada de la respuesta. Hace falta la app nueva",
-      "Prueba nueva: tests/growia-fondo.spec.js (en el navegador espera; con la app, reintenta dos veces sin esperarte y avisa)"
-     ]
+     "cuando": "2026-10-30 02:27",
+     "asunto": "0.7f: hora de publicación",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-30 02:18",
+     "asunto": "0.7f: la revisión de la cartera, con su propio texto en la notificación",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-30 02:17",
+     "asunto": "0.7f: novedades, versión y cambios",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-30 02:14",
+     "asunto": "0.7f: GrowIA sigue en segundo plano (espera a que vuelvas; en Android, la app se queda viva mientras contesta)",
+     "detalle": []
     }
    ]
   },
@@ -1184,13 +2114,14 @@
    "t": "Tu aportación no es una subida",
    "commits": [
     {
-     "cuando": "2026-10-30 02:05",
-     "asunto": "0.7e: la aportación automática del día no sale como subida en la gráfica",
-     "detalle": [
-      "Lo vio Carlos el 30 oct a la 1:44: en Inicio, «1S» daba +1.926 € (+2,44 %) con un salto al final; dentro iban los 1.250 € de sus aportaciones del día 30 (600 S&P 500, 400 MSCI Europe y 250 Emergentes)",
-      "Por qué: una aportación de un día sin valor liquidativo todavía va en f.pendiente (dentro de f.valor y del total). serieIntradia (1D y 1S) ponía lo fijo como el total menos el valor de las posiciones, así que lo pendiente solo entraba en el último punto, el de ahora. Ahora va en lo fijo, igual en todos los puntos. La serie diaria (1M en adelante) ya lo hacía bien (se ajusta entera al total)",
-      "Prueba nueva: tests/grafica-aportacion.spec.js (25.000 € pendientes: antes, un salto de 24.965 € en 1D)"
-     ]
+     "cuando": "2026-10-30 01:55",
+     "asunto": "0.7e: hora de publicación",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-30 01:49",
+     "asunto": "0.7e: la aportación automática del día no sale como subida en la gráfica (1D y 1S)",
+     "detalle": []
     }
    ]
   },
@@ -1201,24 +2132,24 @@
    "t": "Tu contraseña, más segura; GrowIA, más rápida",
    "commits": [
     {
-     "cuando": "2026-10-30 00:05",
-     "asunto": "0.7d: contraseña con la de ahora, botones de «He olvidado» con su nombre, banco al abrir, ideas sin Flash-Lite y GrowIA más rápida",
-     "detalle": [
-      "Lo vio Carlos al probar la 0.5 (29 oct): «Cambiar la contraseña» solo pedía la nueva. Ahora hay que escribir la de ahora o el código de recuperación (claveConActual / esContrasenaV1); con la cartera abierta ya no basta",
-      "«He olvidado la contraseña de la cuenta» (correo de Firebase) y «He olvidado la contraseña de mi cartera» (el código); la pantalla de la cuenta avisa de que el código se usa después. Carlos pulsó el de la cuenta buscando el código",
-      "Banco: al abrir GrowFolio, al volver a ella (si hace más de 10 minutos) y al pulsar «Actualizar», la lectura del saldo va con las cabeceras PSU del navegador (Psu-Ip-Address, Psu-User-Agent…) y el banco no aplica su tope de unas 4 al día; sola, cada 4 horas y sin ellas. Si el banco pide alguna que no hay, el Worker la repite sin ninguna",
-      "Action: las ideas del día solo con el 3.8 o el 3.6 (el 28 oct salieron con Flash-Lite y se quedaron todo el día); Flash-Lite solo si no hay ideas de menos de 2 días. El informe ya no prueba la búsqueda en Google en cada pasada (429 siempre en el plan gratis; GEMINI_BUSQUEDA=1 cuando se pague)",
-      "GrowIA: en las preguntas, la respuesta normal razona en medio (el análisis de la cartera sigue en alto) y, con el 3.8 saturado, salta al 3.6 sin esperar 4 + 8 s; solo espera cuando no queda otro de la respuesta normal",
-      "Pruebas nuevas: la contraseña y los botones en tests/humo.spec.js, tests/efectivo-banco.spec.js, tests/worker.spec.js (el Worker con fetch de imitación), el salto al 3.6 en tests/growia.spec.js y las ideas en tests/scripts/test_informe_modelos.py",
-      "Revisión aparte (1 media de seguridad, 2 medias del banco, varias leves; nada grave), todo arreglado: ver el código de recuperación y generar otro piden siempre la contraseña, salvo el recién creado en esta sesión (se olvida al salir de GrowFolio o al bloquear; lo abierto, a los 5 minutos); el recordatorio diario ya no la pide solo, avisa. Con el código se podía cambiar la contraseña sin saberla",
-      "Cambiar la contraseña: el sobre se comprueba antes de verificar (si llega otro de otro dispositivo, no se toca), los campos van en un formulario con el usuario «correo (cartera)» para el gestor de contraseñas y la de ahora se borra siempre",
-      "Banco: con las cabeceras PSU, un 400 o 422 se repite sin ellas; «caducada» solo si la sesión de Enable Banking ha terminado (GET /sessions: EXPIRED, REVOKED, CLOSED, CANCELLED, INVALID o 404); la app manda la sesión de cada cuenta. El freno cuenta desde el último intento en el dispositivo (una cuenta que falla ya no pide una y otra vez), cuándo se miró va en el dispositivo y la cartera solo se guarda, en silencio, si cambia el saldo o caduca un permiso. Como tuyo solo con GrowFolio a la vista y desbloqueada; con un Worker de antes, cada 4 horas",
-      "Ideas: Flash-Lite vale también si las de antes son de otro formato o no traen ninguna, y unas de Flash-Lite se intentan mejorar cada 2 horas",
-      "GrowIA: del modelo saturado, solo al que va justo detrás en su orden (quien eligió el 3.6 no gasta el 3.8); si un modelo no acepta el razonamiento en medio, se pide con el suyo antes que sin ninguno",
-      "Segunda revisión aparte (1 media, varias leves), arreglada: conectar un banco se guarda al momento (la lectura de después solo guarda si cambia el efectivo y la conexión se podía perder); el código que se ve sin contraseña va ligado a su cierre (la sal: otro código generado en otro dispositivo ya no vale), caduca a los 30 minutos y al darlo por guardado; pasar al formato 2 desde «Descargar la copia» ya no lo deja ver gratis; claveDatosEnClaro, fuera",
-      "Banco: el Worker dice «presente» solo si ninguna lectura ha tenido que repetirse sin las cabeceras PSU; al volver a GrowFolio, el saldo se pide después de que el bloqueo decida si pide el PIN; si un banco lleva más de 3 días sin dejar leer, un aviso para volver a conectarlo; los datos del banco del dispositivo se borran al cerrar la sesión",
-      "Ideas: las hechas con Flash-Lite se revisan como las demás si llega una noticia gorda"
-     ]
+     "cuando": "2026-10-29 23:59",
+     "asunto": "0.7d: fecha y hora de publicación",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-29 23:51",
+     "asunto": "0.7d (en revisión): arreglos de la segunda revisión (código ligado a su cierre y con caducidad, conectar el banco se guarda, presente solo con PSU, aviso de banco mudo, ideas de Flash-Lite revisadas, limpieza)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-29 22:16",
+     "asunto": "0.7d (en revisión): arreglos de la revisión aparte (código con contraseña, banco sin falsos caducados ni lecturas de más, ideas y GrowIA)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-29 20:09",
+     "asunto": "0.7d (en revisión): contraseña con la de ahora, «He olvidado» con su nombre, banco al abrir, ideas sin Flash-Lite y GrowIA más rápida",
+     "detalle": []
     }
    ]
   },
@@ -1229,14 +2160,12 @@
    "t": "Las noticias, con el logo de su medio",
    "commits": [
     {
-     "cuando": "2026-10-25 12:10",
+     "cuando": "2026-10-25 12:07",
      "asunto": "0.7c: las noticias, con el logo de su medio",
      "detalle": [
-      "Lo pidió Carlos («¿no se podrían meter fotos?»). Fotos de la prensa, no: no son nuestras, cargarlas de su web da la IP de cada uno y Google Noticias ni las da; con el Worker y el abogado (0.8 y 0.9)",
-      "Action: cada noticia guarda la web de su medio en «w» (precios.web_medio, del <source url> del RSS de Google Noticias y Yahoo, o del proveedor de yfinance); pasa al caché de noticias y a las fuentes de las fichas",
-      "App: logo del medio a la izquierda de cada noticia (el de la empresa en las listas de tu cartera) y junto al medio en la hoja de la noticia; sin web, las iniciales. En dos columnas, el titular y su línea van juntos",
-      "Sin GrowIA, la hoja dice «de qué va la noticia» y no «la noticia entera» (0.7a)",
-      "Pruebas nuevas: tests/scripts/test_web_medio.py y el logo en tests/noticia.spec.js"
+      "Lo pidió Carlos. La Action guarda la web del medio de cada noticia («w») y la app enseña su logo (el de la empresa",
+      "en las listas de tu cartera) en la lista y en la hoja de la noticia. Fotos de la prensa, no (no son nuestras).",
+      "Pruebas nuevas: test_web_medio.py y el logo en tests/noticia.spec.js."
      ]
     }
    ]
@@ -1248,13 +2177,11 @@
    "t": "Resúmenes sin «Según el titular»",
    "commits": [
     {
-     "cuando": "2026-10-25 11:50",
+     "cuando": "2026-10-25 11:48",
      "asunto": "0.7b: resúmenes de noticias sin «Según el titular»",
      "detalle": [
-      "Lo pidió Carlos: todos los resúmenes empezaban por «Según el titular». El pedido ya no lo pide (abajo ya pone que sale del titular) y, si aun así llega, se quita al pintarlo (solo con la coma detrás, para no comerse «Según el titular de Expansión…»)",
-      "Si el titular dice adónde irá el precio, GrowIA dice que lo dice el medio (para que no parezca suyo)",
-      "Revisión aparte del cambio en el pedido: aprobado con esos dos ajustes",
-      "tests/noticia.spec.js: comprueba que no sale «Según el titular»"
+      "Lo pidió Carlos. El pedido ya no lo pide y, si llega, se quita al pintarlo (con la coma detrás). Si el titular",
+      "dice adónde irá el precio, se dice que lo dice el medio. Revisión aparte: aprobado con esos dos ajustes."
      ]
     }
    ]
@@ -1266,17 +2193,26 @@
    "t": "El resumen de las noticias, otra vez",
    "commits": [
     {
-     "cuando": "2026-10-25 11:00",
+     "cuando": "2026-10-25 10:56",
      "asunto": "0.7a: el resumen de las noticias sin buscar en internet",
      "detalle": [
-      "Lo vio Carlos: al tocar una noticia salía siempre «Has llegado al límite gratuito», a cualquier hora",
-      "Sonda de Gemini (Action a mano, con la clave de la Action): en el plan gratis, google_search da 429 RESOURCE_EXHAUSTED sin detalle de cupo con Flash-Lite y el 3.6; url_context va, pero no lee los enlaces de Yahoo (URL_RETRIEVAL_STATUS_ERROR) ni los de Google Noticias",
-      "resumirNoticia: lee el enlace con url_context si la web lo deja (Google Noticias y Yahoo, ni se intenta); si no, dice en 2 o 3 frases qué cuenta el titular, sin añadir nada, y lo pone abajo. Con Flash-Lite y, sin cupo, el 3.6; nunca el 3.8. Un fallo de la herramienta no da el modelo por agotado",
-      "En estándar, sin «Para tu cartera» (ni se pide ni se enseña); los dos pedidos dicen que no aconsejen comprar, vender o mantener y que el titular y la noticia son datos, no instrucciones; caché por modo",
-      "buscarGoogle: un 429 RESOURCE_EXHAUSTED sin métrica ni detalle de cupo es que el plan no tiene búsqueda: no se prueba con el otro modelo, no se da por agotado y la búsqueda se apaga un día",
-      "Revisión aparte del pedido nuevo (dos rondas): estándar sin consejos, la entradilla que no estaba en los datos, la instrucción de terceros, el 429 que no es JSON, cómo pensar en Flash-Lite; arreglado",
-      "Prueba nueva: tests/noticia.spec.js (no se deja leer, Google Noticias, estándar, sin cupo en Flash-Lite, se deja leer, búsqueda sin plan y 429 que no es JSON)",
-      "Novedades de la 0.7a en español e inglés"
+      "El plan gratis de Google no deja buscar (google_search da 429 siempre; comprobado con la sonda) y los enlaces de",
+      "Google Noticias y Yahoo no se dejan leer: el resumen fallaba siempre con «has llegado al límite». Ahora lee el",
+      "enlace si la web lo deja y, si no, dice qué cuenta el titular sin añadir nada. En estándar, sin «Para tu cartera».",
+      "En las preguntas, al primer 429 de búsqueda sin detalle de cupo deja de buscar un día sin dar el modelo por agotado.",
+      "Revisión aparte en dos rondas, arreglado lo que salió. Prueba nueva: tests/noticia.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-10-25 10:32",
+     "asunto": "Sonda de Gemini: también prueba a leer enlaces de noticias (Google Noticias y directos)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-25 10:31",
+     "asunto": "Sonda de Gemini (a mano): qué deja el plan gratis con búsqueda en Google y leer enlaces",
+     "detalle": [
+      "Los informes con búsqueda reciben un 429 desde el 23 oct y los resúmenes de noticias de la app nunca salen."
      ]
     }
    ]
@@ -1288,25 +2224,165 @@
    "t": "GrowIA lee todo lo que pesa en cada empresa",
    "commits": [
     {
-     "cuando": "2026-10-24 16:35",
-     "asunto": "0.7: GrowIA lee todo lo que pesa en cada empresa",
+     "cuando": "2026-10-24 16:33",
+     "asunto": "0.7: GrowIA lee todo lo que pesa en cada empresa (publicada el 24 oct a las 16:35)",
      "detalle": [
-      "Action: la lectura de prensa pasa a Flash-Lite y clasifica cada titular (factor, bueno o malo, cuánto pesa y a qué plazo); cada empresa tiene su ficha con seis factores: negocio, sector, macro, político, social y mercado (scripts/fichas.py, fichas.json en la rama datos, fichas_id en precios.json)",
-      "Action: cada 3 horas, 25 consultas de Google Noticias por tema (bancos centrales, aranceles, elecciones, huelgas…) que Flash-Lite convierte en temas con a quién tocan (zona, país, sector y, si hace falta, industria). Un tema no puede ser de una sola empresa",
-      "Action: la clave de Gemini en su propio proyecto de Google; el informe y las ideas, con el 3.8 todo el día",
-      "Noticias: cada titular con su marca (factor y si es bueno o malo); lo importante arriba, el relleno abajo y apagado, y el mismo titular de varios medios una vez, con «y N medios más». Sin fotos",
-      "Ficha de cada acción, en Noticias: «Lo que pesa ahora, según GrowIA», factor por factor y con los temas que le tocan",
-      "GrowIA: la ficha de cada acción de la cartera y los temas de la semana en su contexto, que baja de 39,7k a 35,8k caracteres; la ficha también en buscar_empresa; una búsqueda en internet por pregunta como mucho",
-      "Revisión automática de la cartera: una sola llamada, sin herramientas, con el 3.6 y si se agota con Flash-Lite, nunca con el 3.8 (antes, de 1 a 3 llamadas)",
-      "Cupo de hoy (contado en el dispositivo) arriba en GrowIA y en Ajustes, sin nombres de modelos: «Normal» o «Rápida», y los modelos de Gemini plegados en Ajustes de GrowIA › Detalles técnicos (lo pidió Carlos)",
-      "Inicio en el ordenador: logos en «Lo que más ha movido hoy», el mapa más bajo con el informe al lado y las columnas parejas, sin hueco",
-      "Action: el informe no pasa a Flash-Lite si el 3.8 y el 3.6 fallan y el anterior tiene menos de 6 horas (informe.json → intentos); las empresas leídas antes de las fichas se vuelven a leer una vez",
-      "Banco de 42 preguntas reales (25 de fundador y 17 de estándar): la Action «Banco de GrowIA» las pasa cada noche con Flash-Lite y los domingos una muestra de 10 con el 3.6; guarda lo hecho tras cada pregunta",
-      "Fallos de GrowIA a Firestore (fallos_ia: tipo, estado, modelo, dónde y versión, sin la pregunta ni la cartera; 5 al día por cuenta, puesto por las reglas, y se borran a los 30 días) y «Cómo va GrowIA» en Ajustes para el dueño",
-      "Pruebas nuevas: fichas en español y en inglés, GrowIA con las fichas y una búsqueda, la revisión en una llamada, Cómo va GrowIA; en Python, fichas y temas",
-      "Revisión aparte del prompt público de GrowIA y de las reglas de fallos_ia: 11 hallazgos, arreglados. En estándar las fichas son lo que lee la prensa, igual para todos, y no un consejo; solo enlaces http y https; el tope de avisos en las reglas; búsquedas que se reinician al cambiar de modelo. Si las fichas cuentan como recomendación de inversión, lo mira el abogado de la 0.9",
-      "Fichas al día del 92,9 % de las empresas del radar con noticias de la semana (659 de 709) y de las 4 acciones de las carteras; banco de 42 preguntas sobre la versión que sale: 42 bien (100 %) con Flash-Lite y 1,6 peticiones por pregunta; rendimiento: 760 KB y lista en 1,96 s",
-      "Novedades de la 0.7 en español e inglés, con dibujos y guía"
+      "Criterio de salida: fichas al día del 92,9 % (659 de 709) y de las acciones de las carteras; banco 42 de 42 con",
+      "Flash-Lite y 1,6 peticiones por pregunta; razonamiento del 3.8 medido (plan de la IA rehecho); 760 KB y lista en",
+      "1,96 s. La semana sin fallos se mide ahora, con los avisos de fallos_ia."
+     ]
+    },
+    {
+     "cuando": "2026-10-24 16:02",
+     "asunto": "Lectura de prensa: si Gemini se atasca con un lote, se parte y lo que no sale se aparta",
+     "detalle": [
+      "El 24 oct, dos pasadas seguidas con el mismo lote de 50 empresas: Flash-Lite devolvió 377 y 263 tokens y no se",
+      "leyó ninguna. Como el lote se elige siempre igual, se quedaba ahí (fichas paradas en 626, el 80 %).",
+      "Ahora lo que no ha venido se parte en dos, hasta grupos de 3 o 4 (como mucho 9 llamadas y 3 minutos); lo que",
+      "tampoco sale así se aparta en fichas.json → sin, con la huella de sus noticias, hasta que tenga noticias nuevas.",
+      "Si Gemini no lee nada en toda la pasada, no se aparta nada.",
+      "Pruebas nuevas: un lote atascado se parte y se aparta lo justo; si Gemini no lee nada, no se aparta nada"
+     ]
+    },
+    {
+     "cuando": "2026-10-24 15:38",
+     "asunto": "Junta main (lectura de prensa que aprovecha un JSON roto) con la 0.7",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-24 15:38",
+     "asunto": "Lectura de prensa: un JSON roto no tira las 50 empresas de la pasada",
+     "detalle": [
+      "Pasó el 24 oct a las 13:35: Flash-Lite devolvió 11.471 tokens que no eran un JSON entero y no se apuntó ninguna",
+      "lectura. Ahora se aprovecha lo que venga bien de cada empresa; las demás se leen en la siguiente pasada.",
+      "Prueba nueva: test_un_json_roto_no_tira_toda_la_pasada"
+     ]
+    },
+    {
+     "cuando": "2026-10-24 15:31",
+     "asunto": "Junta main (0.6d, la cartera de prueba, y el arreglo de las fichas) con la 0.7",
+     "detalle": [
+      "Choques: VERSION se queda en 0.7; en las novedades, la 0.7 y después la 0.6d; el CSS y en.json, con lo de las dos.",
+      "Los fallos de GrowIA no se apuntan desde la cartera de prueba (tampoco llegaban: sin Firebase)."
+     ]
+    },
+    {
+     "cuando": "2026-10-24 15:22",
+     "asunto": "Fichas: las empresas leídas antes de las fichas y sin la suya se vuelven a leer una vez",
+     "detalle": [
+      "Solo se leía una empresa cuando cambiaban sus noticias, así que las leídas antes del 23 oct a las 16:20 (cuando",
+      "empezaron las fichas) se quedaban sin ficha hasta que les saliera un titular nuevo. El 24 oct: 310 fichas de 814",
+      "empresas con noticias y 0 pendientes de leer; con esto, 499 pendientes, 50 por pasada.",
+      "Prueba nueva: test_lo_leido_antes_de_las_fichas_se_vuelve_a_leer_una_vez"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 20:38",
+     "asunto": "0.7: Inicio más claro en el ordenador (logos en lo que más se ha movido, mapa más bajo con el informe al lado, sin hueco)",
+     "detalle": [
+      "Lo pidió Carlos.",
+      "Lo que más ha movido hoy tu cartera: el logo de cada cosa (el del mapa) en vez de la flechita; en el",
+      "móvil, si un nombre no cabe, lo primero que se quita son los logos",
+      "Mapa de la cartera: como mucho 440 px de alto en el ordenador (en una pantalla grande salían 700)",
+      "Una vez, a quien tenga el mapa solo en su fila, «Lo último, según GrowIA» al lado; si lo quita, no vuelve",
+      "«Lo último, según GrowIA» en Inicio: debajo, «Hoy, en lo tuyo», lo que más se ha movido hoy de lo tuyo y",
+      "por qué, del informe de la prensa (sin el «Bueno/Malo para tu…» del principio)",
+      "Ordenador: si la columna estrecha le saca mucho a la ancha, la última tarjeta estrecha pasa debajo de la",
+      "ancha (lo que viene, debajo de GrowIA); antes de dibujar las gráficas",
+      "Novedades de la 0.7: una más, con dibujo y guía (ES/EN). Prueba nueva: tests/inicio.spec.js"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 19:54",
+     "asunto": "0.7: GrowIA es la cara; los modelos de Google, solo en Detalles técnicos",
+     "detalle": [
+      "Lo pidió Carlos: a quien usa la app le da igual cuántos modelos hay o con cuál contesta.",
+      "Arriba del chat: «Con tu cartera y las noticias de hoy»; solo avisa si quedan 5 respuestas normales",
+      "o menos (el 3.8 y el 3.6 cuentan juntos: 40) o si contesta la rápida porque la normal se ha quedado",
+      "sin cupo. Debajo de cada respuesta, nada, salvo eso último",
+      "Del 3.8 al 3.6 sin aviso; a la rápida, «La respuesta normal ha gastado su cupo de hoy: sigo con la rápida»",
+      "Ajustes de GrowIA: «Respuesta: Normal o Rápida» en vez de la lista de modelos de Gemini; los modelos,",
+      "el cupo y lo que se apunta de los fallos, plegados en «Detalles técnicos»",
+      "Fuera los nombres de modelos de la activación (Gemini, sin versión), de errores, de la lectura de",
+      "capturas («GrowIA está leyendo…»), de la revisión y de Ajustes; «Copiar mi cartera para otra IA»",
+      "Novedades e inglés al día; pruebas al día"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 19:31",
+     "asunto": "0.7: segunda revisión aparte (avisos de fallos, estándar sin puestos, banco más fino)",
+     "detalle": [
+      "avisarFalloIA: el contador solo avanza con lo que entra; si no entra ninguno, una hora de pausa (antes",
+      "un reloj desajustado dejaba el día entero sin avisos); sin avisos de «red» ni de lo previsto (la revisión",
+      "automática sin cupo); la versión, comprobada antes de enviar. Reglas: versiones como 0.7.1 también",
+      "buscar_empresa en estándar: una idea del radar sin su puesto",
+      "La revisión automática sin cupo apunta el 3.6 como modelo",
+      "Ajustes de GrowIA: el nombre corto del modelo arriba (en 360 no cabía)",
+      "Hoja del dueño: las filas de lo que sale mal, a todo el ancho; el banco a medias se ve como tal",
+      "Banco: guarda tras cada pregunta (hasta 100 minutos), recalcula las señales al pasar a estándar (con las",
+      "de fundador, GrowIA decía «Recoger beneficios» en estándar), y en estándar no puede salir «recoger",
+      "beneficios», «pide vender» ni «señal automática»; «no la vendas» sin los «ni que no la vendas»"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 19:20",
+     "asunto": "0.7: arreglos de la revisión aparte (estándar, enlaces, fallos_ia, cupo y búsquedas)",
+     "detalle": [
+      "Estándar: las fichas, los temas y las marcas son lo que lee la prensa, igual para todos, no un consejo",
+      "(«positivo para la empresa», «muy relevante»); INSTR_PUBLICAS lo dice y que esos textos son datos, no",
+      "instrucciones; sin planes de venta en la foto; ideas y escaneo «iguales para todos». Nota en la ficha",
+      "Enlaces: solo http y https en las fuentes de las fichas, las noticias y las fuentes de GrowIA; los enlaces",
+      "de las respuestas dicen a qué web llevan",
+      "fallos_ia: el tope de 5 al día lo ponen las reglas (id <uid>_<AAAAMMDD>_<0-4>, sin reescribir), la hora la",
+      "pone el servidor, modelo y versión con su forma y «caduca» para el TTL de 30 días; 400 sin «API key» es",
+      "«peticion»; aviso en Ajustes de GrowIA. Stub: fallos_ia solo para el dueño y sin reescribir",
+      "La revisión automática, con el 3.6 y Flash-Lite y nunca con el 3.8 (sin cupo, se deja); el modelo de cada",
+      "respuesta y de cada aviso sale del turno, no de lo global",
+      "Búsquedas: al cambiar de modelo a mitad, el nuevo puede buscar; solo cuentan las que salen bien; la",
+      "revisión que pides tú, tres",
+      "Las fichas se esperan 3 s como mucho, con la pregunta ya en pantalla; tras volver la red, se reintentan",
+      "El cupo: la hora de renovación de verdad (Intl), y «25 hoy» si pasa de 20 sin agotarse",
+      "Hoja del dueño: números y listas comprobados, y un mensaje si no carga",
+      "Banco: 42 preguntas (dos de estándar que tiran de las fichas) y sin «mantenla» en estándar",
+      "Pruebas nuevas: cambio de modelo con búsqueda, revisión automática sin cupo, enlaces javascript:,",
+      "tope de avisos y su id"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 19:07",
+     "asunto": "0.7: novedades (fichas, marcas, GrowIA más fiable y banco), dibujos y guía; Mercados ordena las noticias antes de cortar",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 18:55",
+     "asunto": "0.7: los fallos de GrowIA llegan solos al dueño y «Cómo va GrowIA» en Ajustes",
+     "detalle": [
+      "Un fallo que no se arregla solo (en el chat o en la revisión) se apunta en Firestore",
+      "fallos_ia: tipo, modelo, dónde, código de Google y versión; sin la pregunta ni la cartera.",
+      "Como mucho 5 al día por dispositivo. Reglas nuevas: crear a tu nombre, leer y borrar solo el",
+      "dueño.",
+      "Ajustes del dueño: el banco de preguntas de cada noche y la muestra de los domingos, lo que",
+      "ha gastado hoy la Action de cada modelo (y lo que razona el 3.8) y los fallos de 7 días."
+     ]
+    },
+    {
+     "cuando": "2026-10-23 18:51",
+     "asunto": "0.7: banco de 40 preguntas reales para GrowIA (fundador y estándar) y su prueba con Gemini de verdad",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 18:48",
+     "asunto": "0.7: fichas de GrowIA en la app, noticias marcadas y GrowIA que lee las fichas",
+     "detalle": [
+      "Lo que pesa ahora en cada acción (ficha de Noticias, consulta de empresa): sus factores y los",
+      "temas de su país, su zona, su sector y su industria.",
+      "Cada titular con su marca (factor, bueno o malo, cuánto importa); lo importante arriba, el",
+      "relleno abajo y el mismo titular de varios medios, una vez. También en inglés.",
+      "GrowIA: la ficha de sus acciones y los temas de la semana en la foto de la cartera (en vez de",
+      "titulares sueltos), la ficha en buscar_empresa, una búsqueda en internet por pregunta como",
+      "mucho y la foto del chat más corta (de 39,7 a 35,8 mil caracteres).",
+      "La revisión automática, en una sola llamada sin herramientas con el 3.6.",
+      "Cupo de hoy de cada modelo a la vista y con qué modelo contesta cada respuesta."
      ]
     }
    ]
@@ -1318,16 +2394,173 @@
    "t": "Una cartera de prueba para enseñar la app",
    "commits": [
     {
-     "cuando": "2026-10-24 15:00",
-     "asunto": "0.6d: una cartera de prueba para enseñar la app",
+     "cuando": "2026-10-24 14:54",
+     "asunto": "0.6d: arreglos de la segunda revisión de la cartera de prueba",
      "detalle": [
-      "Ajustes › «Enseñar la app con una cartera de prueba» (63-demo.js): GrowFolio se recarga en esta pestaña sin abrir tu cartera (S.key y S.enc a null, sin Firebase) y con una inventada de unos 20.000 € (fondos, acciones del radar y cripto a precios de hoy)",
-      "Lo que se escribe en el dispositivo va a una capa en memoria (LS_DEMO) y de lo tuyo solo se lee lo que no dice nada de ti (LS_DEMO_LEE): ni tu nombre ni tu PIN",
-      "cifrarCon, los guardados, la cuenta, el widget, las ideas y las opiniones se niegan en la prueba; dentro no salta el bloqueo",
-      "GrowIA, con tu clave de Google: pasa cifrada con una clave de un solo uso en sessionStorage, 24 horas como mucho",
-      "Al salir, con PIN el PIN; sin PIN la contraseña, y antes de entrar se comprueba que la sabes. Las demás pestañas con tu cartera abierta se cierran (evento storage) y atrás/adelante vuelve a cargar (pageshow)",
-      "Dos revisiones aparte (toca el cifrado y la sesión)",
-      "Pruebas nuevas: tests/demo.spec.js (la prueba entera, con PIN y con otra pestaña)"
+      "De lo tuyo del dispositivo, en la prueba solo se lee lo que no dice nada de ti (LS_DEMO_LEE): ni tu nombre (tampoco en la entrada) ni tu PIN ni GrowIA",
+      "Dentro de la prueba no salta el bloqueo; cerrar sesión o desbloquear desde ahí sale de la prueba",
+      "Sin PIN, antes de entrar se comprueba que sabes la contraseña",
+      "Las demás pestañas con tu cartera abierta se cierran (storage) y atrás/adelante recarga (pageshow); salir vuelve a pedir el PIN aunque otra pestaña haya desbloqueado",
+      "Solo se guarda antes de entrar si hay algo pendiente; el widget de Android tapa las cifras",
+      "Ideas, avisos del código y GrowIA lista en la prueba; la clave de Google vale 24 horas",
+      "Pruebas: contraseña al entrar, nombre real que no sale, bloqueo que no salta, otra pestaña",
+      "Novedades a las 15:00 y cambios.json"
+     ]
+    },
+    {
+     "cuando": "2026-10-24 14:42",
+     "asunto": "Prueba de la cartera de prueba: espera a que se cierre la hoja antes de recargar",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-24 14:36",
+     "asunto": "0.6d: la cartera de prueba, aparte de tu sesión (revisión aparte)",
+     "detalle": [
+      "La primera forma cambiaba la cartera en memoria y la revisión aparte vio que lo que estaba en marcha (el",
+      "análisis de GrowIA, el banco, un conflicto o un cambio de otro dispositivo) podía meter lo tuyo en la prueba,",
+      "que Ajustes dejaba quitar el PIN o descargar la copia y que recargar sacaba de la prueba sin PIN.",
+      "Entrar recarga GrowFolio en la prueba (sessionStorage inv-demo) sin leer ni abrir tu cartera: sin su clave",
+      "ni su texto cifrado en memoria, sin Firebase",
+      "Lo que se escribe en el dispositivo durante la prueba va a una capa en memoria (LS_DEMO) y se tira al salir",
+      "GrowIA, con tu clave de Google: cifrada con una clave de un solo uso de la pestaña; se borra al salir",
+      "Ajustes en la prueba: salir y el tutorial; sin opiniones ni avisos; las ideas no cuentan para las tuyas",
+      "Salir (o cerrar y abrir): con PIN, el PIN; sin PIN, la contraseña. Recargar sigue en la prueba",
+      "Una copia con demo: true ya no queda marcada al importarla",
+      "Pruebas: la prueba entera (con contraseña para volver) y con PIN"
+     ]
+    },
+    {
+     "cuando": "2026-10-24 14:20",
+     "asunto": "0.6d (en revisión): cartera de prueba para enseñar la app (Ajustes)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 20:15",
+     "asunto": "Merge branch 'main' into v0.7",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 20:15",
+     "asunto": "Informe: con uno de menos de 6 horas, si el 3.8 y el 3.6 no contestan se queda ese (no se publica uno de Flash-Lite); uno de Flash-Lite se mejora en la siguiente pasada",
+     "detalle": [
+      "El 23 oct, con el 3.8 saturado (503) y el 3.6 sin cupo, el informe salió dos veces con Flash-Lite."
+     ]
+    },
+    {
+     "cuando": "2026-10-23 20:06",
+     "asunto": "Merge branch 'main' into v0.7",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 20:06",
+     "asunto": "Banco: los modelos que no se prueban, como agotados (no gasta el cupo del 3.6 y el 3.8 de la Action)",
+     "detalle": [
+      "El 23 oct, al saltar de Flash-Lite al 3.6 cuando Flash-Lite no contestaba, el banco dejó al 3.6 sin cupo",
+      "y el informe de la Action salió con Flash-Lite (el 3.8 estaba saturado, 503)."
+     ]
+    },
+    {
+     "cuando": "2026-10-23 19:57",
+     "asunto": "Informe: guarda por qué no salió con el modelo principal (informe.json → intentos) y se puede rehacer a mano (Precios → informe)",
+     "detalle": [
+      "Para ver por qué el informe de las 17:41 UTC salió con Flash-Lite con la clave nueva sin los registros",
+      "de Actions."
+     ]
+    },
+    {
+     "cuando": "2026-10-23 19:31",
+     "asunto": "Merge branch 'main' into v0.7",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 19:31",
+     "asunto": "Banco de GrowIA: las preguntas no frenan los precios (solo publicar va en el grupo de Precios) y se publica lo hecho aunque se corte",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 19:21",
+     "asunto": "Banco de GrowIA: dos horas como mucho (42 preguntas)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 19:20",
+     "asunto": "Merge branch 'main' into v0.7",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 19:20",
+     "asunto": "Fichas: solo enlaces http y https en las fuentes (revisión aparte de la 0.7)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 18:51",
+     "asunto": "Merge branch 'main' into v0.7",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 18:51",
+     "asunto": "Action «Banco de GrowIA»: preguntas reales cada noche con Gemini de verdad (0.7)",
+     "detalle": [
+      "Las 40 preguntas con Flash-Lite cada noche y una muestra de 10 con el 3.6 los domingos, con la",
+      "app del build y la cartera de prueba. El resultado va a la rama datos (banco.json y",
+      "banco-muestra.json); «Precios» lo conserva. Se puede lanzar a mano sobre la rama de una versión."
+     ]
+    },
+    {
+     "cuando": "2026-10-23 18:38",
+     "asunto": "Prueba de la traducción de las fichas con un texto que se reconoce como español",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 18:38",
+     "asunto": "Traducción: las fichas de GrowIA también en inglés (0.7)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 18:36",
+     "asunto": "Action: los temas pueden tocar solo a una industria (aerolíneas, defensa…) y no son de una sola empresa",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 18:24",
+     "asunto": "Action: precios.json lleva fichas_id para que la app sepa cuándo bajar las fichas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 18:23",
+     "asunto": "Action: temas por país, sector y tema para las fichas (0.7)",
+     "detalle": [
+      "Cada 3 horas, Flash-Lite lee los titulares de 25 búsquedas de política, sociedad, economía y",
+      "sectores, más los del mercado, y dice a qué zonas, países y sectores toca cada tema, con su",
+      "signo y su peso. Van a fichas.json → temas."
+     ]
+    },
+    {
+     "cuando": "2026-10-23 18:20",
+     "asunto": "Action: fichas por empresa con seis factores (0.7)",
+     "detalle": [
+      "La lectura de prensa con Flash-Lite clasifica cada titular por factor (negocio, sector, macro,",
+      "político, social, mercado), signo y peso, y guarda en fichas.json una ficha por empresa con",
+      "lo último de cada factor. Lee también los titulares de las acciones de las carteras, primero.",
+      "Lo que la app lee hoy de la lectura no cambia."
+     ]
+    },
+    {
+     "cuando": "2026-10-23 17:24",
+     "asunto": "Action: la lectura de prensa con Flash-Lite; el 3.8 queda para el informe y las ideas",
+     "detalle": [
+      "En el plan gratis el 3.8 solo da 20 peticiones al día por proyecto y la lectura se las comía.",
+      "Flash-Lite primero y el 3.6 de reserva, nunca el 3.8. El informe y las ideas apuntan el modelo",
+      "que de verdad respondió. Fase 0 del plan de la IA."
+     ]
+    },
+    {
+     "cuando": "2026-10-23 17:01",
+     "asunto": "Action: apunta los tokens de cada llamada a Gemini (para el plan de la IA de pago)",
+     "detalle": [
+      "informe.py: apuntar_uso() guarda de cada llamada el modelo, quién la hace (leer_lote, informe_cartera, decidir…), los tokens de entrada (y los que salen de la caché), de salida, de razonamiento y si buscó en Google. Van a escaneo.json → gemini.uso, con las de las últimas 48 horas",
+      "traducir.py: lo mismo para cada tanda, en traduccion-en.json → uso",
+      "Sin cambios en la app ni en lo que se escribe para la web. Pruebas de Python: tests/scripts/test_uso_gemini.py"
      ]
     }
    ]
@@ -1339,13 +2572,13 @@
    "t": "GrowIA aguanta los cortes de conexión",
    "commits": [
     {
-     "cuando": "2026-10-23 16:30",
+     "cuando": "2026-10-23 16:13",
      "asunto": "0.6c: GrowIA aguanta los cortes de conexión",
      "detalle": [
       "conversarGemini: un corte de red (Failed to fetch, network error) o Google sin contestar en 90 s se reintenta en la misma petición hasta dos veces, quitando lo que hubiera empezado a escribir; a la tercera, con otro modelo; si no, un error que lo dice",
       "llamarGemini: límite de 90 s hasta que Google empieza a contestar",
-      "Lo vio Carlos con «¿Compro NatWest Group plc (NWG.L)?»: la petición con los resultados de las herramientas se cortaba. Repetida con la clave de la Action desde GitHub, Google contestaba bien (o con un 503 de saturación), así que era la conexión",
-      "Prueba nueva: GrowIA y los cortes de conexión (la petición con el resultado de la herramienta se corta una vez)",
+      "Lo vio Carlos con «¿Compro NatWest Group plc (NWG.L)?». Repetida la conversación con la clave de la Action desde GitHub, Google contestaba bien (o con un 503 de saturación, que ya se reintentaba): era la conexión",
+      "Prueba nueva: GrowIA y los cortes de conexión",
       "Novedades de la 0.6c en español e inglés"
      ]
     }
@@ -1358,11 +2591,11 @@
    "t": "El modo de cada cuenta, a la vista",
    "commits": [
     {
-     "cuando": "2026-10-23 16:00",
+     "cuando": "2026-10-23 15:36",
      "asunto": "0.6b: El modo de cada cuenta, a la vista",
      "detalle": [
-      ".modo-op con su estilo (como un selector de dos): el modo que tiene la cuenta, en dorado. Lo pidió Carlos",
-      "Desplegables con base-select: el texto centrado en alto (align-items: center); .hp-sel con menos relleno a la derecha. Lo vio Carlos en «Comparado con»",
+      "Ajustes, «Modo de cada cuenta»: .modo-op con estilo de selector de dos y el modo que tiene cada cuenta en dorado (antes los dos botones salían iguales). Lo pidió Carlos",
+      "Desplegables con base-select en el ordenador: el texto centrado en alto; «Comparado con» lo tenía más arriba que el recuadro (lo vio Carlos)",
       "Prueba: en la del modo fundador, los dos botones de modo tienen fondos distintos",
       "Novedades de la 0.6b en español e inglés"
      ]
@@ -1376,14 +2609,14 @@
    "t": "Oriente Medio, de vuelta en el mapa",
    "commits": [
     {
-     "cuando": "2026-10-23 15:45",
+     "cuando": "2026-10-23 15:21",
      "asunto": "0.6a: Oriente Medio, de vuelta en el mapa",
      "detalle": [
       "scripts/precios.py: si Yahoo da el año de un índice con menos de 20 cierres, se prueba con dos años y, si tampoco, «hoy» sale de su último cierre y el anterior (metadatos con plazo de un día) y el mes y el año, del ETF de iShares del país",
-      "Tadawul (con KSA), EGX 30 (solo hoy), y nuevos DFM de Dubái (UAE), QE Index de Catar (QAT) y Boursa Kuwait 50 (KWT). Comprobado contra Yahoo con una Action de prueba",
+      "Tadawul (con KSA), EGX 30 (solo hoy) y, nuevos, DFM de Dubái (UAE), QE Index de Catar (QAT) y Boursa Kuwait 50 (KWT). Comprobado contra Yahoo con una Action de prueba en una rama aparte (sonda-yahoo)",
       "Si una bolsa falla, la de la pasada anterior solo se queda si tenía algún dato",
       "Mapa: en la tabla del país, «el mes y el año, del ETF … (en dólares)» cuando vienen del ETF",
-      "Pruebas de Python nuevas: tests/scripts/test_precios_mapa.py (sin Yahoo)",
+      "Pruebas: tests/scripts/test_precios_mapa.py (sin Yahoo) y, en la del mapa, la nota del ETF",
       "Novedades de la 0.6a en español e inglés"
      ]
     }
@@ -1396,18 +2629,162 @@
    "t": "Abre antes",
    "commits": [
     {
-     "cuando": "2026-10-23 15:00",
-     "asunto": "0.6: Abre antes",
+     "cuando": "2026-10-23 14:49",
+     "asunto": "0.6: en las novedades, «Rehecha por dentro»",
      "detalle": [
-      "index.html partido por secciones en src/ con build de Vite (dist/ minificado y con huella); la web se publica desde Actions",
-      "Carga por trozos: mapa del mundo, GrowIA y recorte, GTA VI, novedades, banco, opiniones y leer capturas se bajan al abrirlos; en.json partido y solo en inglés",
-      "Por la red, de 932 a 750 KB al abrir; lista en 1,6–1,9 s con un móvil lento",
-      "La entrada entera la primera vez de cada día; las demás, corta (GrowFolio montado y dentro en cuanto ha cargado)",
-      "Pruebas en el repositorio que pasan en Actions en cada push: Playwright en 360, 390 y 1.440 con Firebase y Gemini de imitación, presupuesto de rendimiento, subida desde la versión publicada y Python",
-      "Revisión aparte del build, los trozos y el service worker: 13 hallazgos, arreglados",
-      "El build funciona también en Windows (rutas y saltos de línea)",
-      "Novedades: «Rehecha por dentro» (lo que era un único archivo son ahora casi 90 partes, una por sección), a petición de Carlos",
-      "Novedades de la 0.6 en español e inglés"
+      "Primera novedad de la 0.6, con su dibujo (un bloque que pasa a ser muchas partes): lo que era un único archivo son ahora casi 90 partes (21 de estilos, 61 de código y 7 trozos), que se juntan solas al publicar. Lo pidió Carlos",
+      "En inglés, «Rebuilt on the inside»"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 14:45",
+     "asunto": "0.6: Abre antes (novedades, VERSION y la entrada corta)",
+     "detalle": [
+      "La entrada entera la primera vez de cada día en cada dispositivo; las demás, corta: GrowFolio ya montado con su brillo y dentro en cuanto ha cargado (750 ms como poco). Lo decidió Carlos al probar la 0.6 («la intro podría ser algo más rápida»)",
+      "Novedades de la 0.6 en español e inglés, con tres dibujos nuevos (trozos, entrada, pruebas), sin guía porque no hay sitio nuevo que señalar",
+      "VERSION = '0.6' y cambios.json",
+      "Pruebas: «la entrada» (entera la primera vez del día, corta después y dentro en menos de 4 s) y la de las novedades acepta las de la 0.6"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 14:13",
+     "asunto": "0.6: el build funciona en Windows",
+     "detalle": [
+      "build/growfolio-vite.js y tests/servidor.js: la carpeta del repositorio con fileURLToPath (con .pathname, en Windows salía C:\\C:\\… y el build no encontraba src/partes.json)",
+      "El build lee los archivos con \\n aunque Git los baje con \\r\\n (core.autocrlf de Git para Windows): si no, no encontraba NOVEDADES. Probado con una copia entera en \\r\\n: mismo build, mismas huellas",
+      ".gitattributes: todo el texto con \\n al bajarlo, también en Windows"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 13:39",
+     "asunto": "0.6: textos en inglés que faltaban (señales de Expertos, nombres de bolsas, plan de venta)",
+     "detalle": [
+      "Expertos, «Posición a posición»: el recuento de señales sale en inglés («1 take profits, 2 buy more…»); faltaban «Watch» y «Trim»",
+      "Nombres de bolsas que vienen de precios.json: Athens General, OMX Stockholm 30, OMX Copenhagen 25, Top 40 (Johannesburg), Jakarta",
+      "Plan de venta: «What you put in…: you get your money back…»",
+      "Encontrados con un barrido de cada pestaña en inglés con los datos de hoy: lo que escribe GrowIA para todos ya llega traducido (el arreglo de traducir.py de esta noche)"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 13:32",
+     "asunto": "0.6: prueba de la búsqueda de GrowIA (Flash-Lite primero; sin cupo, el de la conversación)",
+     "detalle": [
+      "Gemini de imitación: la conversación pide buscar_en_internet y contesta con lo encontrado; la búsqueda apunta con qué modelo se hizo",
+      "Comprueba lo de la 0.5b: la búsqueda va con Flash-Lite; si Flash-Lite se queda sin cupo del día, busca con el de la conversación y lo apunta, y la siguiente ya no prueba con Flash-Lite"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 13:19",
+     "asunto": "0.6: trae la 0.5d (banderas en el mapa del ordenador y desplegables como la app)",
+     "detalle": [
+      "Mapa del mundo en el ordenador: la bandera al lado del nombre; lo tuyo, con el filo dorado",
+      "Desplegables en el ordenador con appearance: base-select y la lista de países con banderas; opciones con fondo oscuro donde no hay base-select",
+      "La prueba del mapa comprueba las banderas (con flagcdn de imitación) y, en pc, el desplegable",
+      "Novedades de la 0.5d al día (ES/EN) y cambios.json"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 13:08",
+     "asunto": "0.6: revisión aparte de la 0.5c, la 0.5d y pruebas más firmes",
+     "detalle": [
+      "Lo que pidió la revisión aparte del arreglo de las preguntas de GrowIA: las cifras y los verbos de mover la cartera ya no bastan para dar por iguales dos preguntas; las cortas de una palabra sí se juntan («¿Tienes hipoteca?» = «¿Pagas hipoteca ahora?»); cuentan las respuestas de los últimos 6 meses (y son las que ve GrowIA); la respuesta se guarda con la pregunta que viste",
+      "0.5d: el aviso de versión nueva dice «Actualizar» y «Se actualiza en un segundo» (antes «Ponerla»)",
+      "La guía sigue a lo resaltado si algo aparece encima a mitad de un paso (ResizeObserver del body)",
+      "Pruebas: la de la guía mide con la tarjeta quieta; la de las novedades espera a la bienvenida de la cuenta nueva; la de GrowIA te pregunta reintenta si sale otra hoja; el botón «Actualizar» comprobado"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 12:38",
+     "asunto": "0.6: trae la 0.5c (GrowIA no vuelve a preguntar lo que ya contestaste)",
+     "detalle": [
+      "preguntasIA: fuera las preguntas parecidas a una ya contestada (comparten al menos dos palabras que cuentan y son la mitad o más de las de la más corta) y las repetidas dentro de la misma revisión",
+      "La hoja que sale sola al entrar y el aviso del móvil miran también si ya viste una parecida",
+      "El prompt de la revisión (fundador y estándar) pide no volver a preguntar lo contestado, tampoco con otras palabras",
+      "Prueba nueva «GrowIA te pregunta»; la de GrowIA y Escape dice qué había si vuelve a fallar",
+      "VERSION 0.5c con sus novedades ES/EN y cambios.json"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 12:28",
+     "asunto": "0.6: trae la 0.5b de main; los avisos que salen solos esperan si GrowIA está abierta",
+     "detalle": [
+      "La 0.5b (búsquedas de GrowIA con Flash-Lite y antes lo que ya tiene GrowFolio), en src/js/55-asesor-contexto.js, con sus novedades, VERSION 0.5b, en.json y cambios.json",
+      "El código de recuperación, la nota, los avisos de modo, de arreglos, de versiones y del resumen del día, el perfil y las respuestas a opiniones ya no se abren encima o debajo del panel de GrowIA: esperan a que se cierre (con el panel bajándose aparte, se notaba más)"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 11:53",
+     "asunto": "0.6: arreglos de la revisión aparte del build y los trozos",
+     "detalle": [
+      "Relevos: los errores de la función de verdad ya no se tapan con «Sin conexión»; si el trozo no se baja, con conexión se avisa de la versión nueva (lo normal es que se haya publicado otra) y lo que venía detrás (el último argumento, si es una función) sigue: la bienvenida, el aviso de GTA VI y la entrada ya no se quedan colgados",
+      "El build se para si un nombre se declara arriba en dos sitios (sería un error al bajar el trozo)",
+      "Inglés: una frase va al trozo solo si es entera uno de sus textos y no sale en el núcleo; los meses que se montan en Paso a paso vuelven a estar en el del núcleo. El inglés de un trozo que llega antes que el del núcleo se junta después",
+      "Service worker: lo de CORE se baja sin la caché del navegador; lo que tiene huella y ya estaba guardado no se vuelve a bajar; la página nueva solo se guarda con su CSS y su JS ya guardados (si no, sin conexión saldría en blanco); el inglés ya no se guarda al instalar",
+      "Pages: publica solo cuando «Pruebas» pasa en main, y deja una versión más de assets/ y en/ para quien la tenga abierta. En el workflow y en el README, el orden para pasar a publicar desde Actions sin que la web salga en blanco",
+      "La bienvenida espera si GrowIA está abierta; la etiqueta del mapa de la cartera se esconde al hacer scroll aunque no se haya abierto Mercados; en el iPhone, la música de GTA VI se prepara dentro del toque",
+      "Prueba: si un trozo no se baja, avisa y sigue"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 08:26",
+     "asunto": "0.6: el mapa del mundo, en su trozo",
+     "detalle": [
+      "El dibujo, los nombres, los gestos y la ficha de cada país (42 KB) se bajan al abrir Mercados; en el núcleo quedan el hueco del mapa y cuánto tienes en cada país (lo usan Inicio y las novedades)",
+      "La leyenda y la ficha del país las pinta repintarMapa en cuanto llega el trozo (ya lo hacía al cargar mapa-mundo.json)",
+      "Prueba: el mapa se baja, se pinta con su leyenda y su ficha y cambia a «Tu dinero». Mercados, Inicio, Plan, Análisis y Expertos se ven igual que en la 0.5a (comparadas píxel a píxel)",
+      "Por la red al abrir: 749 KB"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 08:21",
+     "asunto": "0.6: la historia de novedades y el inglés, partidos; prueba de subida desde la versión publicada",
+     "detalle": [
+      "NOVEDADES: en el núcleo, solo de la versión actual a su versión de número; el resto llega con el trozo de novedades (NOVEDADES.push). En src/ sigue siendo una lista, la que leen release.py y cambios.py",
+      "en.json partido por el build: el del núcleo (131 KB comprimido, antes 178) al abrir en inglés y el de cada trozo con él. El texto en inglés que sale en las vistas principales no cambia (comparado con la 0.5a: los mismos 1.124 textos)",
+      "tests/subida.spec.js y su paso en CI: una cartera creada con lo publicado (main) se abre igual con este build (total, posiciones y código de recuperación)",
+      "Por la red al abrir: 760 KB (0.5a: 932 KB); lista a los 1,67 s (0.5a: 2,05 s)"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 08:14",
+     "asunto": "0.6: más trozos: asesor, banco, opiniones, novedades e importar",
+     "detalle": [
+      "El panel de GrowIA y el recorte de pantalla, el banco, las opiniones y sus respuestas, las pantallas de novedades y la lectura de capturas se bajan al usarlas",
+      "Lo que esas partes compartían con el resto (emparejar lo importado, el Worker, la fecha de una opinión…) se queda en el núcleo (build/mover.js)",
+      "Al arrancar, lo del banco solo se baja si vuelves de darle permiso o tienes alguno conectado, y la petición de nota solo si toca",
+      "siNoEsta (funciones que sin su trozo no hacen nada) y retornoOk (devueltas con return y comprobadas a mano) en src/partes.json",
+      "Pruebas de cada trozo; por la red al abrir: de 932 KB (0.5a) a 782 KB"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 08:06",
+     "asunto": "0.6: trozos que se bajan al usarlos (el primero, la hoja de GTA VI) y presupuesto de rendimiento",
+     "detalle": [
+      "build/analizar.js: qué declara cada parte y qué usa de las demás; para un trozo, por qué funciones entra el resto y si pueden esperar a bajarlo",
+      "El build saca cada trozo aparte y pone en el núcleo una función de relevo por cada una de sus entradas (baja el trozo y la llama). Si el resto usara algo del trozo que no puede esperar, el build se para y lo dice",
+      "La hoja de GTA VI (cuentas, dibujo y música, 47 KB) es el primer trozo; la cuenta atrás de la cabecera sigue en el núcleo",
+      "tests/rendimiento.spec.js: bytes por la red y tiempo hasta estar lista al abrir con la cuenta, con móvil medio y 4G, solo (npm run rendimiento) y en CI",
+      "performance.mark('gf-listo') al acabar de cargar lo de arrancar"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 07:49",
+     "asunto": "0.6: el código partido por secciones y el build con Vite",
+     "detalle": [
+      "index.html (1,9 MB) partido en src/css (21 archivos) y src/js (62), uno por sección, sin cambiar ni un byte: juntos en el orden de src/partes.json son el CSS y el JS de antes. Siguen siendo un script clásico con el ámbito global compartido",
+      "build/growfolio-vite.js: en desarrollo junta el JS al vuelo; en el build saca assets/app-<huella>.css y .js minificados (1,93 MB → 1,49 MB), copia los archivos de siempre y pone la versión y la huella en la caché del service worker",
+      "VERSION en un solo sitio, src/js/version.js; release.py, cambios.py, la Action de Android y la del release leen de src/",
+      "Workflow «Pages» para publicar desde el build (hace falta poner Source: GitHub Actions en Settings → Pages)",
+      "Las pruebas corren sobre el build; tests/build.spec.js comprueba la versión, el modo estricto, los nombres globales y los archivos"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 07:39",
+     "asunto": "0.6: pruebas en el repositorio y en Actions",
+     "detalle": [
+      "tests/: Firebase de imitación (cuentas, Firestore con las reglas que nota la app), los datos de verdad de las ramas datos y catalogo, nada de internet",
+      "Humo en 390, 360 y 1440: crear cuenta, cartera, cada pestaña y sus subpestañas sin salirse de la pantalla, fundador y estándar, inglés, código de recuperación, recargar y recuperar con el código, importar una captura (GrowIA de imitación) y la guía sin tapar lo que señala",
+      "Workflow «Pruebas» en cada push y pull request, con las pruebas de Python de los scripts"
      ]
     }
    ]
@@ -1417,38 +2794,14 @@
    "f": "2026-10-23",
    "h": "13:30",
    "t": "Banderas en el mapa del ordenador",
-   "commits": [
-    {
-     "cuando": "2026-10-23 13:30",
-     "asunto": "0.5d: Banderas en el mapa del ordenador",
-     "detalle": [
-      "Mapa del mundo en el ordenador: la bandera al lado del nombre de cada país y de Europa (en el móvil ya iba en vez del nombre); lo tuyo, con el filo dorado en vez del punto",
-      "Desplegables en el ordenador con appearance: base-select (Chrome y Edge): la lista con el fondo, la letra y el dorado de la app, y la de países con banderas. Fuera de eso, al menos las opciones con fondo oscuro (en Windows salía la lista en blanco con la letra clara)",
-      "avisoWebNueva: el botón dice «Actualizar» (antes «Ponerla») y el texto «Se actualiza en un segundo, sin perder nada»; en inglés, «Update»",
-      "Novedades de la 0.5d en español e inglés"
-     ]
-    }
-   ]
+   "commits": []
   },
   {
    "v": "0.5c",
    "f": "2026-10-23",
    "h": "12:40",
    "t": "GrowIA no vuelve a preguntarte lo que ya contestaste",
-   "commits": [
-    {
-     "cuando": "2026-10-23 12:40",
-     "asunto": "0.5c: GrowIA no vuelve a preguntarte lo que ya contestaste",
-     "detalle": [
-      "preguntasIA: fuera las preguntas parecidas a una contestada en los últimos 6 meses y las repetidas dentro de la misma revisión. Se comparan las palabras que cuentan; las cifras y los verbos de mover la cartera suman, pero solos no bastan («¿Reducir la cripto al 10 %?» y «¿Reducir las acciones sueltas al 10 %?» son dos preguntas)",
-      "La hoja que sale sola al entrar y el aviso del móvil miran también si ya viste una parecida",
-      "La respuesta se guarda con la pregunta que viste, aunque la revisión termine con la hoja abierta (antes iba por su sitio en la lista)",
-      "El prompt de la revisión (fundador y estándar) pide no volver a preguntar lo contestado, tampoco con otras palabras; GrowIA ve las respuestas de los últimos 6 meses (antes, las 12 últimas)",
-      "Revisión aparte del arreglo y del prompt estándar (otro agente): sus hallazgos, arreglados",
-      "Prueba nueva: GrowIA te pregunta"
-     ]
-    }
-   ]
+   "commits": []
   },
   {
    "v": "0.5b",
@@ -1457,12 +2810,11 @@
    "t": "GrowIA gasta menos de tu cupo al buscar noticias",
    "commits": [
     {
-     "cuando": "2026-10-23 12:19",
-     "asunto": "0.5b: GrowIA gasta menos de tu cupo al buscar noticias",
+     "cuando": "2026-10-23 07:28",
+     "asunto": "Traducción al inglés: no se paraba con las noticias de cada comunidad",
      "detalle": [
-      "buscarGoogle: la búsqueda en internet va con Flash-Lite (el modelo con más cupo gratis de la clave del usuario); si no puede (sin cupo hoy o sin búsqueda en ese modelo), con el de la conversación, como antes",
-      "La herramienta buscar_en_internet pide mirar antes los datos y buscar_empresa (titulares y lo que GrowIA ya ha leído de la prensa) y dice que cada búsqueda gasta cupo",
-      "Novedades de la 0.5b en español e inglés (también el arreglo de la traducción de lo que escribe GrowIA)"
+      "scripts/traducir.py: noticias[\"_region\"] es {comunidad: [noticias]} y se recorría como una lista; el error tumbaba toda la traducción y lo de GrowIA no salía nunca en inglés. Ahora entra con prioridad baja",
+      "tests/scripts/test_traducir.py: pruebas con Gemini de imitación y con los datos de verdad de la rama datos"
      ]
     }
    ]
@@ -1474,19 +2826,11 @@
    "t": "Asia, del este, e Israel en el mapa",
    "commits": [
     {
-     "cuando": "2026-10-23 07:28",
-     "asunto": "Traducción al inglés: no se paraba con las noticias de cada comunidad",
-     "detalle": [
-      "scripts/traducir.py: noticias[\"_region\"] es {comunidad: [noticias]} y se recorría como una lista; el error tumbaba toda la traducción y lo de GrowIA no salía nunca en inglés. Ahora entra con prioridad baja",
-      "tests/scripts/test_traducir.py: pruebas con Gemini de imitación y con los datos de verdad de la rama datos"
-     ]
-    },
-    {
-     "cuando": "2026-10-23 04:33",
+     "cuando": "2026-10-23 04:34",
      "asunto": "0.5a: Asia, del este, e Israel en el mapa",
      "detalle": [
-      "Mapa: la vista de Asia pasa a [655, 112, 345, 151] (de la India a Japón, de Corea a Indonesia) y manda sobre la de mapa-mundo.json; sin nombres de Oriente Medio en ella",
-      "Vistas de zona (América, Oriente Medio, Asia): salen todos los países de la zona con datos de su bolsa, también los pequeños como Israel",
+      "Mapa: la vista de Asia se centra en el este (de la India a Japón, de Corea a Indonesia) y manda sobre la de mapa-mundo.json; sin nombres de Oriente Medio (Turquía, Arabia Saudí)",
+      "Vistas de zona: salen todos los países de la zona con datos de su bolsa, también los pequeños como Israel",
       "Novedades de la 0.5a en español e inglés"
      ]
     }
@@ -1499,41 +2843,90 @@
    "t": "Si olvidas la contraseña, no pierdes tu cartera",
    "commits": [
     {
-     "cuando": "2026-10-23 01:40",
-     "asunto": "Kit de recuperación",
+     "cuando": "2026-10-23 04:10",
+     "asunto": "0.5: novedades, guía y dibujos en español e inglés; fundadores hasta el 23 de octubre",
      "detalle": [
-      "Formato 2 de la cartera: clave de datos al azar (AES-GCM 256) cerrada dos veces, con la contraseña (PBKDF2, 600.000) y con un código de recuperación de 24 caracteres; cada cierre lleva un número que sube con cada cambio",
-      "Paso automático del formato 1 al 2 a los 3 días de tener la 0.5 en el dispositivo (o al crear el código, cambiar la contraseña o descargar una copia), por la cola de subidas y con un puente hasta que la cuenta lo confirma",
-      "«He olvidado la contraseña» con el código; cambiar la contraseña solo cambia su cierre; código nuevo desde Ajustes; ver un código ya guardado pide la contraseña",
-      "Dos revisiones aparte y sus arreglos: carreras al pasar al formato 2, juntar sobres sin reloj, el análisis sin sobre, lo cifrado del dispositivo tras un cambio de contraseña en otro"
+      "Novedades de la 0.5: código de recuperación, cambiar la contraseña sin molestar a los otros dispositivos, copia de seguridad, modo fundador y estándar; cuatro dibujos nuevos y guía en Ajustes",
+      "Fundadores: las cuentas creadas antes del 23 de octubre de 2026 (las cinco de ahora); las nuevas, estándar, y el dueño las cambia en Ajustes, Modo de cada cuenta",
+      "Textos compuestos con L() para el inglés; en.json al día",
+      "Versión 0.5, caché del service worker, registro de cambios y README"
      ]
     },
     {
-     "cuando": "2026-10-23 01:50",
-     "asunto": "Copia de seguridad y limpieza",
+     "cuando": "2026-10-23 03:24",
+     "asunto": "Trae la 0.4f a la 0.5",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 03:24",
+     "asunto": "0.5: modo fundador y modo estándar; el dueño elige el de cada cuenta; analistas en vez de señales en estándar",
      "detalle": [
-      "Ajustes > Copia de seguridad: descargar un .growfolio cifrado y cargarlo con la contraseña o el código (guarda antes la cartera de ahora)",
-      "Fuera cartera.enc.json, analisis.enc.json y «Recuperar tu cartera de antes»"
+      "Nombres: modo fundador (todo) y modo estándar (sin recomendaciones personalizadas)",
+      "Reglas: modos/{correo} (el dueño pone fundador o estándar a cualquier cuenta, también la suya, con una nota corta) y cuentas/{uid} (cada cuenta apunta su correo y su fecha de alta para que el dueño las vea todas); fuera privados",
+      "Ajustes del dueño: «Modo de cada cuenta», con todas las cuentas y un botón Fundador / Estándar; quien cambia de modo lo ve al abrir, con la nota",
+      "Estándar: en cada posición, lo que opinan los analistas («Analistas: comprar · 12») y sus datos, en vez de la señal de GrowFolio; sin avisos de cambio de señal",
+      "Resumen del día desde las 6 y aviso de arreglos en una tarjeta (como la 0.4f)"
      ]
     },
     {
-     "cuando": "2026-10-23 03:20",
-     "asunto": "Modo fundador y modo estándar",
+     "cuando": "2026-10-23 02:55",
+     "asunto": "0.5: el paso al formato 2 solo cuenta cuando llega a la cuenta; fundadores",
      "detalle": [
-      "Reglas: modos/{correo} (lo pone el dueño, con nota) y cuentas/{uid} (correo y fecha de alta de cada cuenta, para el dueño)",
-      "Fundador: el dueño, las cuentas creadas antes del 23 de octubre de 2026 y las que el dueño pase a fundador. Estándar: sin Paso a paso («Tu plan», que llega en la 0.9), sin planes de venta, GrowIA que explica y calcula sin recomendar valores, ideas iguales para todos y lo que opinan los analistas en lugar de la señal de cada posición",
-      "Ajustes del dueño: «Modo de cada cuenta»; quien cambia de modo lo ve al abrir, con la nota"
+      "Segunda revisión del kit: el código solo se enseña y la contraseña o el código solo se cambian con el formato 2 ya en la cuenta",
+      "Puente del formato 1 (sal y clave de la contraseña) hasta que se confirma, también en el dispositivo: entiende lo que llegue aún en el 1 y el formato 2 de otro dispositivo que pasó a la vez (se adopta y se junta)",
+      "La clave de antes de un cambio de contraseña en otro dispositivo se guarda en el dispositivo hasta escribir la nueva: lo cifrado aquí no se pierde aunque se cierre la app",
+      "Al bloquear, el código vuelve a pedir la contraseña; con la cartera de GitHub (pruebas), cambiar la contraseña como en la 0.4",
+      "El aviso «Crea tu código» sale desde el día siguiente; solo, a los 3 días",
+      "Acceso completo sin lista para las cuentas creadas antes de la 0.5 (fecha de alta de Firebase); el dueño se detecta siempre"
      ]
     },
     {
-     "cuando": "2026-10-23 04:05",
-     "asunto": "0.5: novedades, guía y dibujos en español e inglés",
+     "cuando": "2026-10-23 02:46",
+     "asunto": "0.5: en público, sin planes de venta; preguntas a GrowIA que sí contesta",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 02:45",
+     "asunto": "0.5: modo público, segunda parte: GrowIA e ideas",
      "detalle": [
-      "Novedades de la 0.5 con cuatro dibujos (código, dos equipos, copia, fundador y estándar) y guía en Ajustes, en español e inglés",
-      "Versión 0.5, caché del service worker y README al día",
-      "Fundadores: las cuentas creadas antes del 23 de octubre de 2026 (las cinco de ahora); las nuevas, estándar, y el dueño las cambia en Ajustes",
-      "Resumen del día desde las 6 y aviso de arreglos en una tarjeta (de la 0.4f)"
+      "GrowIA en público: explica, compara y calcula, pero no recomienda comprar, vender ni mantener valores concretos; la revisión diaria sin nivel por posición, sin ideas ni hoja de ruta",
+      "Una revisión hecha en el otro modo no se enseña y se rehace",
+      "Las ideas del radar, iguales para todos en público (sin mirar tu cartera)",
+      "Textos de Inicio, primeros pasos y tutorial según el modo"
      ]
+    },
+    {
+     "cuando": "2026-10-23 02:40",
+     "asunto": "0.5: modo privado y público, primera parte",
+     "detalle": [
+      "Reglas: privados/{correo}, que escribe y lista solo el dueño; cada cuenta lee el suyo con el correo confirmado",
+      "Al entrar se comprueba el acceso (lista o dueño); el último modo se guarda en el dispositivo y quien venía de la 0.4 empieza en privado",
+      "Público: sin Paso a paso ni nada sacado de él; en su sitio, «Tu plan» (llega en la 0.9) con tus aportaciones y tus límites",
+      "Ajustes: el dueño gestiona la lista (con los correos de las opiniones como sugerencia) y puede verlo como público; con correo y contraseña sin confirmar, el botón para confirmarlo"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 02:34",
+     "asunto": "0.5: arreglos de la revisión del kit",
+     "detalle": [
+      "El paso al formato 2 cambia la sesión de golpe y guarda por la cola de subidas de siempre (sin carreras con otros guardados, ni con bloquear ni con cambiar la contraseña); solo a los 3 días de tener la 0.5 o al crear el código, cambiar la contraseña o descargar una copia",
+      "Los sobres se juntan por cierre (contraseña y código por separado) con un número que sube, no con el reloj; el código de dentro sigue al cierre que manda",
+      "Lo que llega de la cuenta sin nada por subir manda entero, también su sobre",
+      "Cuenta de nuevo en formato 1 con la misma contraseña: se lee y se vuelve a subir en el 2",
+      "Cambiar la contraseña en formato 1: primero pasa al 2 con la transacción; nunca un sobre suelto",
+      "Código que no coincide: se genera uno nuevo (con la contraseña si hace falta); ver uno ya guardado pide la contraseña",
+      "El análisis propio va sin sobre; lo cifrado del dispositivo sobrevive a un cambio de contraseña en otro"
+     ]
+    },
+    {
+     "cuando": "2026-10-23 01:58",
+     "asunto": "0.5: copia de seguridad cifrada; fuera la copia vieja de la cartera del repositorio y «Recuperar tu cartera de antes»",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-10-23 01:54",
+     "asunto": "0.5: kit de recuperación — formato 2 con clave de datos, paso automático, recuperar con el código, cambiar contraseña sin tocar otros dispositivos",
+     "detalle": []
     }
    ]
   },
@@ -1544,11 +2937,11 @@
    "t": "El resumen del día, desde las 6, y el aviso de arreglos que se lee",
    "commits": [
     {
-     "cuando": "2026-10-23 03:20",
+     "cuando": "2026-10-23 03:22",
      "asunto": "0.4f: el resumen del día desde las 6 y el aviso de arreglos en una tarjeta",
      "detalle": [
       "Resumen del día: no sale antes de las 6 de la mañana (HORA_RESUMEN); textos de Ajustes al día",
-      "Versiones de arreglos: el aviso deja de ser un toast de 5 segundos y pasa a una tarjeta abajo con la versión, su título, los tres primeros arreglos y «Ver todo» (abre las novedades desde la que tenías); se va sola a los 20 segundos",
+      "Versiones de arreglos: el aviso deja de ser un mensaje de 5 segundos y pasa a una tarjeta abajo con la versión, su título, lo arreglado y «Ver todo» (abre las novedades desde la que tenías); se va sola a los 20 segundos",
       "Novedades de la 0.4f en español e inglés"
      ]
     }
@@ -1561,7 +2954,7 @@
    "t": "América y Oriente Medio en el mapa, y la presentación de Ajustes",
    "commits": [
     {
-     "cuando": "2026-10-23 01:23",
+     "cuando": "2026-10-23 01:21",
      "asunto": "0.4e: América y Oriente Medio en el mapa, la presentación de Ajustes y la guía sin cortes",
      "detalle": [
       "Presentación (pantallaIntro): fuera el botón «Guíame» que se coló en la 0.4a con una variable que ahí no existe; rompía Ajustes > Ver la presentación y la bienvenida de quien entra por primera vez",
