@@ -26,7 +26,8 @@
     "23-tu.css",
     "24-navegacion.css",
     "25-cristal.css",
-    "26-dorado.css", "27-revision-083b.css"
+    "26-dorado.css", "27-revision-083b.css",
+    "28-lista-seguimiento.css"
   ],
   "js": [
     "01-base.js",
@@ -70,6 +71,7 @@
     "36-anadir-isin.js",
     "37-buscador.js",
     "38-consulta.js",
+    "38b-lista-seguimiento.js",
     "39-versiones-y-novedades.js",
     "41-opiniones.js",
     "42-modos.js",

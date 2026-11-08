@@ -147,11 +147,12 @@ async function seguir(sim, nombre) {
   const lista = (S.cartera.siguiendo = S.cartera.siguiendo || []);
   const i = lista.findIndex((x) => x.s === sim);
   const x = radarPorSim(sim), n = nombre || (x ? nombreRadar(x) : sim);
+  if (i < 0 && segDeLimite()) { hojaDoradoSeg('limite'); return; }   // 0.8.6: sin Toisón Dorado, hasta 10 empresas
   if (i >= 0) lista.splice(i, 1);
-  else { const pr = precioSeguido({ s: sim }); lista.push({ s: sim, n, desde: hoyIso(), p0: pr && pr.eur ? +pr.eur.toFixed(4) : null }); }
+  else { const pr = precioSeguido({ s: sim }), act = listaActiva(); lista.push({ s: sim, n, desde: hoyIso(), p0: pr && pr.eur ? +pr.eur.toFixed(4) : null, ...(act !== 'mi' ? { l: act } : {}) }); }
   for (const b of $$(`[data-seguir="${CSS.escape(sim)}"]`)) { const si = i < 0; b.setAttribute('aria-pressed', String(si)); const t = b.querySelector('.seg-t'); if (t) t.textContent = si ? L('Siguiendo', 'Following') : L('Seguir', 'Follow'); }
   await guardarCartera(i >= 0 ? `Dejar de seguir ${n}` : `Seguir ${n}`);
-  toast(i >= 0 ? L(`Ya no sigues ${n}`, `No longer following ${n}`) : L(`Sigues ${n}: la tienes en Expertos, Siguiendo. Ponle un aviso de precio si quieres.`, `Following ${n}: it's in Experts, Following. Add a price alert if you like.`), 4500);
+  toast(i >= 0 ? L(`Ya no sigues ${n}`, `No longer following ${n}`) : L(`Sigues ${n}: la tienes en Ideas, Lista de seguimiento. Ponle un aviso de precio si quieres.`, `Following ${n}: it's in Ideas, Watchlist. Add a price alert if you like.`), 4500);
   AS.foto = null;
   if (S.vista === 'expertos') pintar();
 }
@@ -177,30 +178,6 @@ function editarAvisoSeguido(sim) {
     await guardarYPintar(`Aviso de ${it.n}`, h);
     if (!c.on) toast(L('Guardado. Para que te llegue, activa los avisos en Ajustes > Avisos y resumen.', 'Saved. To get it, turn on alerts in Settings > Alerts and summary.'), 6000);
   };
-}
-function htmlSiguiendo(M) {
-  const xs = siguiendo();
-  if (!xs.length) return `<section class="ov-vacio seg-vacio"><h2>${L('Sigue empresas sin tenerlas', 'Follow companies you don’t own')}</h2><p>${L('En cualquier idea de compra o empresa del radar, toca «Seguir». Aquí verás cómo van desde que las sigues, lo que esperan los analistas, y te aviso al precio que digas.', 'On any buy idea or radar company, tap «Follow». Here you’ll see how they’ve done since, what analysts expect, and I’ll alert you at the price you choose.')}</p><button type="button" class="btn pri" data-exp="ideas">${L('Ver las ideas de compra', 'See the buy ideas')}</button></section>`;
-  const filas = xs.map((it) => {
-    const pr = precioSeguido(it), x = pr && pr.x;
-    const desde = pr && pr.eur && it.p0 ? (pr.eur / it.p0 - 1) * 100 : null;
-    const e = x ? esperadaRadar(x, null) : null, q = e && e.prin;
-    const aviso = [it.baja && L(`si baja de ${precioFmt(it.baja)}`, `below ${precioFmt(it.baja)}`), it.sube && L(`si sube de ${precioFmt(it.sube)}`, `above ${precioFmt(it.sube)}`)].filter(Boolean);
-    const cerca = pr && pr.eur && ((it.baja && pr.eur <= it.baja * 1.03) || (it.sube && pr.eur >= it.sube * 0.97));
-    return `<article class="seg">
-      <button type="button" class="seg-cab" data-consulta="${esc(it.s)}">${logo(x && x.w, it.n)}<span class="seg-n"><b>${esc(it.n)}</b><small>${x ? lineaOrigenCorta(x) : esc(it.s)}</small></span>
-        <span class="seg-p">${pr && pr.eur ? `<b>${precioFmt(pr.eur)}</b>` : '<b>—</b>'}${pr && pr.dia != null ? `<small class="${cls(pr.dia)}">${pctS(pr.dia, 1)} ${L('hoy', 'today')}</small>` : ''}</span></button>
-      <div class="seg-datos">
-        <div><span class="k">${L('Desde que la sigues', 'Since you followed')}</span><b class="${cls(desde)}">${desde == null ? '—' : pctS(desde, 1)}</b><small>${L(`el ${fechaCorta(it.desde)}`, `on ${fechaCorta(it.desde)}`)}${it.p0 ? `, ${precioFmt(it.p0)}` : ''}</small></div>
-        <div><span class="k">${L('Lo que esperan', 'What they expect')}</span><b class="${cls(q && q.subida)}">${q ? pctS(q.subida, 0) : '—'}</b><small>${q ? `${L('en', 'in')} ${plazoTxt(q.meses)}${x && x.na ? L(`, ${x.na} analistas`, `, ${x.na} analysts`) : ''}` : L('sin objetivo de analistas', 'no analyst target')}</small></div>
-        <div><span class="k">${L('Aviso', 'Alert')}</span><b class="${cerca ? 'warn' : ''}">${aviso.length ? esc(aviso.join(L(' o ', ' or '))) : L('ninguno', 'none')}</b><small>${cerca ? L('¡ya está cerca!', 'it’s close!') : ''}</small></div>
-      </div>
-      <div class="seg-btns"><button type="button" class="btn peq" data-seg-aviso="${esc(it.s)}">${ICONOS.campana}${aviso.length ? L('Cambiar aviso', 'Change alert') : L('Ponerle aviso', 'Add alert')}</button><button type="button" class="btn peq" data-accion="asesor" data-q="${esc(L(`¿Qué me dices de ${it.n} (${it.s})? La sigo sin tenerla: ¿es momento de comprar, a qué precio y cuánto meter?`, `What do you think of ${it.n} (${it.s})? I follow it without owning it: is it time to buy, at what price and how much?`))}">${ICONOS.growia}${L('¿La compro?', 'Should I buy?')}</button>${botonSeguir(it.s, it.n)}</div>
-    </article>`;
-  }).join('');
-  return `<section aria-labelledby="hSeg" class="bloque-sec"><div class="sec-cab"><h2 id="hSeg">${L('Las que sigues', 'What you follow')}</h2><span class="k">${xs.length === 1 ? L('una empresa', 'one company') : L(`${xs.length} empresas`, `${xs.length} companies`)}</span></div>
-    <div class="pila" style="gap:14px">${filas}</div>
-    <p class="nota">${L('Precios del radar de Toisón, en euros. Los avisos te llegan una vez, sin abrir la app si la tienes en el móvil con los avisos activados.', 'Prices from the Toisón radar, in euros. Alerts reach you once, without opening the app if you have it on your phone with alerts on.')}</p></section>`;
 }
 document.addEventListener('click', (e) => {
   const b = e.target.closest('[data-seguir],[data-seg-aviso]'); if (!b || !S.cartera) return;

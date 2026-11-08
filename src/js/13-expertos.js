@@ -260,7 +260,7 @@ function filaExperto(f, ia, vIA = {}) {
 
 /* Ideas (lo que era Expertos) va en tres pestañas, con de dónde sale cada idea (y sin «de compra»: regla de la CNMV):
    lo tuyo, las del radar y las que sigues */
-const EXPERTOS = [['posiciones', 'Lo tuyo', 'Yours'], ['ideas', 'Del radar', 'From the radar'], ['siguiendo', 'Siguiendo', 'Following']];
+const EXPERTOS = [['posiciones', 'Lo tuyo', 'Yours'], ['ideas', 'Del radar', 'From the radar'], ['siguiendo', 'Lista de seguimiento', 'Watchlist']];
 const idxSenal = (n) => { const i = ORDEN_SENAL.indexOf(n); return i < 0 ? 99 : i; };
 const ordenSenales = (M) => [...M.filas].sort((a, b) => idxSenal(a.senal.nivel) - idxSenal(b.senal.nivel) || b.valor - a.valor);
 function htmlVistazo(M, ia) {
@@ -300,7 +300,7 @@ function vistaExpertos(M) {
     <div class="exp-lado">${htmlResumenInforme(true)}
     <details class="num-sec"><summary><span><b>Analistas en prensa</b><small>titulares sobre lo que tienes, de los últimos 30 días</small></span></summary><div class="num-cuerpo">${htmlNoticias(prensa.length ? prensa : noticiasCartera(false), true, 10)}</div></details></div></div>`;
   } else if (S.expTab === 'siguiendo') {
-    cuerpo = htmlSiguiendo(M);
+    cuerpo = htmlListaSeguimiento(M);
   } else {
     cuerpo = htmlIdeas(M, ia);
   }

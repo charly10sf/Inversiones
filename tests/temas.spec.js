@@ -126,7 +126,7 @@ test.describe('la app de Android sabe el diseño', () => {
 });
 
 // 0.8.1b (5 nov, captura de Carlos): en el móvil, las pestañas de pastilla que se quedan arriba al bajar (Ideas: Lo tuyo ·
-// Del radar · Siguiendo) tienen fondo de verdad en cada diseño, para que el texto de debajo no se monte
+// Del radar · Lista de seguimiento) tienen fondo de verdad en cada diseño, para que el texto de debajo no se monte
 test('las pestañas de pastilla que se quedan arriba tapan lo que pasa por debajo', async ({ page }, info) => {
   test.skip(info.project.name !== 'movil', 'en el móvil es donde se quedan arriba');
   await crearCuenta(page);
