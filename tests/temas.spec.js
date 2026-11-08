@@ -221,7 +221,8 @@ test.describe('Marfil (7 nov)', () => {
     expect(tok).toEqual(['#ede1cc', '#fdf9f2', '#3c0b16', '#c99a45', '#4e101d', '#e3b45f']);
     // el menú: lateral en el ordenador, barra de abajo en el móvil, los dos en vino
     const menu = info.project.name === 'pc' ? '.riel' : '.navbar';
-    const fm = await page.locator(menu).evaluate((e) => getComputedStyle(e).backgroundColor);
+    // (0.8.3b: en el móvil el vino va en el ::before de la barra, con el filo de cristal)
+    const fm = await page.locator(menu).evaluate((e, pc) => getComputedStyle(e, pc ? null : '::before').backgroundColor, info.project.name === 'pc');
     // (0.8.3a: la barra del móvil es de cristal, vino al 74 % que oscurece lo de detrás; el menú del ordenador, vino opaco)
     const n = (fm.match(/[\d.]+/g) || []).map(Number).slice(0, 3);
     expect((fm.startsWith('color(') ? n.map((v) => Math.round(v * 255)) : n), fm).toEqual(info.project.name === 'pc' ? [60, 11, 22] : [52, 9, 19]);

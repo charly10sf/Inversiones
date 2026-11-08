@@ -107,3 +107,31 @@
 /* ---------- Marfil: el oro de los textos pequeños ---------- */
 /* «Pregúntale» (en su pastilla de oro) y la etiqueta «Dorado» de Escritorios se quedaban por debajo de 4,5:1 */
 [data-tema="marfil"] .preg-ia, [data-tema="marfil"]:not([data-dorado]) .et-dorado { color: color-mix(in srgb, var(--oro-texto) 78%, var(--texto)); }
+
+/* ---------- La barra de abajo del móvil (8 nov, 15:10, Carlos) ---------- */
+/* el filo de luz y oro de la cápsula (::after) se pintaba encima de la moneda de Hoy y la cruzaba por dentro: la moneda,
+   por encima del filo */
+@media (max-width: 960px) { [data-tema] .navbar a.nav-centro { z-index: 1; } }
+/* el cristal de la barra, más «liquid» (Carlos, 8 nov): con sus propios tokens (--barra-*), para no tocar el de las hojas
+   ni el de la tira de pestañas. En Mármol, casi transparente (C); en Marfil, el vino en el centro con el filo de cristal */
+@media (max-width: 960px) {
+  [data-tema] .navbar { background: var(--barra-cristal);
+    -webkit-backdrop-filter: blur(var(--barra-blur)) saturate(var(--barra-sat)) brightness(var(--barra-luz));
+    backdrop-filter: blur(var(--barra-blur)) saturate(var(--barra-sat)) brightness(var(--barra-luz)); }
+  [data-tema] .navbar :is(a, .nav-mas):not(.nav-centro) svg { filter: var(--barra-icono-sombra); }
+  /* el fundido de debajo de la barra ya no hace falta: tapaba justo lo que el cristal deja ver */
+  body.nav-ts #app::after { display: none; }
+  [data-tema="marfil"] .navbar { background: none; }
+  [data-tema="marfil"] .navbar::before { background: var(--barra-brillo-cristal), var(--barra-cristal);
+    -webkit-mask: linear-gradient(90deg, color-mix(in srgb, currentColor 40%, transparent), currentColor 7%, currentColor 93%, color-mix(in srgb, currentColor 40%, transparent)),
+      linear-gradient(180deg, color-mix(in srgb, currentColor 40%, transparent), currentColor 16%, currentColor 84%, color-mix(in srgb, currentColor 40%, transparent));
+    -webkit-mask-composite: source-in;
+    mask: linear-gradient(90deg, color-mix(in srgb, currentColor 40%, transparent), currentColor 7%, currentColor 93%, color-mix(in srgb, currentColor 40%, transparent)),
+      linear-gradient(180deg, color-mix(in srgb, currentColor 40%, transparent), currentColor 16%, currentColor 84%, color-mix(in srgb, currentColor 40%, transparent));
+    mask-composite: intersect; }
+}
+/* con «reducir transparencia» o «más contraste», la barra de Marfil vuelve a ser vino opaco, sin el filo */
+@media (max-width: 960px) and (prefers-reduced-transparency: reduce), (max-width: 960px) and (prefers-contrast: more) {
+  [data-tema="marfil"] .navbar { background: var(--barra-cristal); }
+  [data-tema="marfil"] .navbar::before { -webkit-mask: none; mask: none; background: var(--barra-brillo); }
+}

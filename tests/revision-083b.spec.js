@@ -94,3 +94,19 @@ conTema('marmol')('Herramientas: la fecha del último precio, en palabras', asyn
   await ir(page, 'av-grafico');
   await expect(page.locator('#vista')).not.toContainText(/\b20\d\d-\d\d-\d\d\b/);
 });
+
+// la barra de abajo del móvil (8 nov, 15:10): la moneda de Hoy por encima del filo de la cápsula; más «liquid» en
+// Mármol (casi sin tinte ni desenfoque) y, en Marfil, el vino con un filo de cristal (máscara en el ::before)
+for (const tema of ['marmol', 'marfil']) {
+  conTema(tema)(`${tema}: la barra de abajo, más liquid y sin el filo cruzando la moneda`, async ({ page }, info) => {
+    base.skip(info.project.name === 'pc', 'la barra es del móvil');
+    await lista(page);
+    const x = await page.evaluate(() => {
+      const n = document.querySelector('.navbar'), m = n.querySelector('a.nav-centro');
+      return { z: getComputedStyle(m).zIndex, bf: getComputedStyle(n).backdropFilter, mascara: getComputedStyle(n, '::before').maskImage || getComputedStyle(n, '::before').webkitMaskImage };
+    });
+    expect(x.z).toBe('1');
+    if (tema === 'marmol') expect(x.bf).toContain('blur(7px)');
+    else expect(x.mascara).toContain('gradient');
+  });
+}

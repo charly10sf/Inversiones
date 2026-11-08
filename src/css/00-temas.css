@@ -34,12 +34,17 @@
   --cristal-hoja: rgb(8 8 8 / .40); --cristal-hoja-brillo: .62; --cristal-velo: rgb(0 0 0 / .42);
   --cristal-tira: rgb(0 0 0 / .30); --cristal-tira-brillo: .70; --cristal-tira-sat: 190%;
   --cristal-pil: rgb(0 0 0 / .30);
+  /* 0.8.3b · la barra de abajo, más «liquid» (Carlos, 8 nov, opción C): casi sin tinte ni desenfoque, se ven los colores de
+     detrás, oscurecidos (brightness .52) para que las letras se lean aunque pase algo claro por debajo, y un halo oscuro en
+     letras e iconos (como el cristal de iOS) */
+  --barra-cristal: rgb(0 0 0 / .14); --barra-blur: 7px; --barra-sat: 185%; --barra-luz: .52;
+  --barra-icono-sombra: drop-shadow(0 1px 1.5px rgb(0 0 0 / .8)) drop-shadow(0 0 5px rgb(0 0 0 / .55));
   --canto: linear-gradient(162deg, rgb(255 255 255 / .9) 0%, rgb(255 255 255 / .32) 14%, rgb(255 255 255 / .06) 40%, rgb(255 255 255 / .03) 62%, rgb(247 223 168 / .5) 90%, rgb(227 180 95 / .85) 100%);
   --canto-tira: var(--canto); --canto-hoja: var(--canto);
   --canto-pil: linear-gradient(165deg, rgb(255 255 255 / .62), rgb(255 255 255 / .10) 30%, rgb(255 255 255 / .03) 62%, rgb(227 180 95 / .42));
   --barra-sombra: inset 0 0 0 2.5px rgb(0 0 0 / .22), inset 0 12px 18px -14px rgb(255 255 255 / .30), inset 0 -12px 18px -14px rgb(227 180 95 / .30), 0 1px 1px rgb(0 0 0 / .35), 0 26px 46px -18px rgb(0 0 0 / .9);
   --barra-brillo: radial-gradient(55% 140% at 20% -40%, rgb(255 255 255 / .20), transparent 62%), radial-gradient(40% 120% at 85% 140%, rgb(227 180 95 / .12), transparent 60%);
-  --barra-texto: var(--texto); --barra-texto-act: var(--texto); --barra-texto-sombra: 0 1px 2px rgb(0 0 0 / .55); --barra-oro: var(--oro-texto);
+  --barra-texto: var(--texto); --barra-texto-act: var(--texto); --barra-texto-sombra: 0 0 1px rgb(0 0 0 / .9), 0 1px 3px rgb(0 0 0 / .85), 0 0 9px rgb(0 0 0 / .6); --barra-oro: var(--oro-texto);
   --hoja-sombra: inset 0 0 0 2.5px rgb(0 0 0 / .18), inset 0 14px 22px -16px rgb(255 255 255 / .25), 0 -24px 50px -20px rgb(0 0 0 / .7);
   --pil-sombra: 0 10px 24px -12px rgb(0 0 0 / .7);
   /* la gota: lo elegido, una lente más clara arriba con un hilo de oro abajo */
@@ -107,6 +112,10 @@
   --cristal-hoja: rgb(253 249 242 / .52); --cristal-hoja-brillo: 1.08; --cristal-velo: rgb(28 25 21 / .32);
   --cristal-tira: rgb(253 249 242 / .5); --cristal-tira-brillo: 1.06; --cristal-tira-sat: 140%;
   --cristal-pil: rgb(253 249 242 / .72);
+  /* 0.8.3b · la barra de abajo (Carlos, 8 nov: «híbrido entre el A y el F»): el vino de siempre en el centro, donde van
+     iconos y letras, y un filo de cristal fino por el que se ve lo de detrás (la máscara, en 27-revision-083b.css) */
+  --barra-cristal: rgb(52 9 19 / .82); --barra-blur: 12px; --barra-sat: 150%; --barra-luz: .58; --barra-icono-sombra: none;
+  --barra-brillo-cristal: radial-gradient(60% 150% at 18% -45%, rgb(255 255 255 / .28), transparent 62%), linear-gradient(180deg, rgb(255 255 255 / .10), transparent 40%), radial-gradient(40% 120% at 85% 140%, rgb(227 180 95 / .14), transparent 60%);
   --canto: linear-gradient(162deg, rgb(255 255 255 / .9) 0%, rgb(255 255 255 / .32) 14%, rgb(255 255 255 / .06) 40%, rgb(255 255 255 / .03) 62%, rgb(247 223 168 / .5) 90%, rgb(227 180 95 / .85) 100%);
   --canto-pil: linear-gradient(165deg, #ffffff, rgb(255 255 255 / .3) 35%, rgb(60 40 20 / .08) 65%, rgb(201 154 69 / .55)); --canto-tira: var(--canto-pil);
   --canto-hoja: linear-gradient(162deg, #ffffff 0%, rgb(255 255 255 / .5) 18%, rgb(60 40 20 / .08) 55%, rgb(201 154 69 / .6) 92%, #c99a45 100%);
@@ -141,10 +150,12 @@
 @media (prefers-reduced-transparency: reduce), (prefers-contrast: more) {
   :root[data-tema="marmol"], [data-tema="marmol"] {
     --cristal: #0b0b0b; --cristal-hoja: #111111; --cristal-tira: #0b0b0b; --cristal-pil: #0b0b0b; --cristal-menu: #0b0b0b; --cristal-arriba: #0b0b0b;
-    --cristal-blur: 0px; --cristal-menu-blur: 0px; --cristal-brillo: 1; --cristal-hoja-brillo: 1; --cristal-tira-brillo: 1; }
+    --cristal-blur: 0px; --cristal-menu-blur: 0px; --cristal-brillo: 1; --cristal-hoja-brillo: 1; --cristal-tira-brillo: 1;
+    --barra-cristal: #0b0b0b; --barra-blur: 0px; --barra-luz: 1; }
   :root[data-tema="marfil"], [data-tema="marfil"] {
     --cristal: #3c0b16; --cristal-hoja: #fdf9f2; --cristal-tira: #fdf9f2; --cristal-pil: #fdf9f2; --cristal-arriba: var(--fondo);
-    --cristal-blur: 0px; --cristal-brillo: 1; --cristal-hoja-brillo: 1; --cristal-tira-brillo: 1; }
+    --cristal-blur: 0px; --cristal-brillo: 1; --cristal-hoja-brillo: 1; --cristal-tira-brillo: 1;
+    --barra-cristal: #3c0b16; --barra-blur: 0px; --barra-luz: 1; }
 }
 
 /* ---------- Comunes: letras, medidas y derivados (sin un solo color) ---------- */
