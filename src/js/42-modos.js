@@ -242,8 +242,8 @@ function htmlSelectorTema() {
    quién lo tiene: de momento lo ve el dueño (veDueno, como las novedades «solo dueño»), que en Ajustes › Diseño puede
    ponerse «Como los demás» para ver la app como la ve un amigo. Con Toisón Dorado, data-dorado en <html> y el CSS hace
    el resto: con Mármol, el Mármol dorado (marmol-dorado*.webp, en index.html), el borde #4f3f20 y la marca entera
-   (sello + TOISÓN + DORADO) en la cabecera del móvil y arriba de la K2; con Marfil, solo la cabecera (sello con filo
-   #5e4210). Sin él, todo como siempre. Cuando exista el plan, solo cambia tieneDorado() */
+   (sello + TOISÓN + DORADO) en la cabecera del móvil y arriba de la K2; con Marfil, la crema con vetas de
+   oro (marfil-dorado*.webp), el borde #d4b580 y la cabecera (sello con filo #5e4210). Sin él, todo como siempre. Cuando exista el plan, solo cambia tieneDorado() */
 const tieneDorado = () => veDueno() && LS.get('inv-dorado-ver', 1) !== 0;
 function ponerDorado() {
   const d = tieneDorado(), r = document.documentElement;

@@ -68,6 +68,8 @@
 /* 0.8.3a · con Toisón Dorado y Mármol, el borde de las tarjetas pasa del gris al oro suave (Carlos, 7 nov: el suave,
    #4f3f20, no el #7d6230); mismo grosor. La textura dorada va en index.html */
 :root[data-tema="marmol"][data-dorado] { --borde: #4f3f20; }
+/* y con Marfil (Carlos, 8 nov: «A · Crema Marfil»), del #dccbb0 al oro suave #d4b580; la crema con vetas de oro, en index.html */
+:root[data-tema="marfil"][data-dorado] { --borde: #d4b580; }
 
 /* ---------- Marfil (0.8.3b, 7 nov): crema en capas (el fondo más hondo, las tarjetas casi blancas), tinta, el vino que
    era de Borgoña en el menú y los botones y el oro del logo. Elegido por Carlos de una tanda de variantes: sin grano
@@ -92,7 +94,8 @@
   --sombra-tema: 0 1px 1px rgb(60 40 20 / .14), 0 14px 30px -24px rgb(60 40 20 / .14);
   /* el sello (cabecera, barra y menú del ordenador): el símbolo en vino y oro sobre la crema (Carlos, 7 nov; antes, disco negro) */
   --sello-fondo: #fdf9f2; --sello-filo: #c99a45; --sello-o: #4e101d; --sello-t: #a87a2a;
-  /* 0.8.3a · Toisón Dorado en Marfil: solo la cabecera, con el sello en crema y su filo oscuro #5e4210 (Carlos, 7 nov) */
+  /* 0.8.3a · Toisón Dorado en Marfil: el sello en crema con su filo oscuro #5e4210 (Carlos, 7 nov); el fondo con vetas de
+     oro y el borde #d4b580, más abajo y en index.html (8 nov) */
   --dorado-filo: #5e4210; --dorado-filo-dentro: #5e4210;
   --dorado-sello-fondo: #fdf9f2; --dorado-sim-o: #4e101d; --dorado-sim-t: #a87a2a;
   --dorado-hilo: #a87a2a; --dorado-texto: #7a5716; /* sobre la pastilla crema de la cabecera */

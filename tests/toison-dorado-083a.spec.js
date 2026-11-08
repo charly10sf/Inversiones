@@ -1,7 +1,7 @@
 // 0.8.3a (sesión 4) · Toisón Dorado, lo visual (claude/sesion-temas-toison-dorado.md del Proyecto). Aún no hay plan de
 // pago: lo ve el dueño (tieneDorado, 42-modos.js), que puede ponerse «Como los demás». Con Mármol: el Mármol dorado, el
-// borde #4f3f20 y la marca entera (sello + TOISÓN + DORADO) en la cabecera del móvil y arriba de la K2; con Marfil, solo
-// la marca, con el sello de filo #5e4210. Sin él, todo como siempre, salvo los candados del plan con el sello pequeño.
+// borde #4f3f20 y la marca entera (sello + TOISÓN + DORADO) en la cabecera del móvil y arriba de la K2; con Marfil, la
+// marca con el sello de filo #5e4210, la crema con vetas de oro y el borde #d4b580 (8 nov). Sin él, todo como siempre, salvo los candados del plan con el sello pequeño.
 // Y las novedades de la 0.8.3a: una de letra con cosas sale en la hoja corta, con la guía de Más y la K2.
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
@@ -111,7 +111,7 @@ test.describe('con Toisón Dorado (el dueño)', () => {
     await expect(page.locator('html[data-dorado]')).toBeAttached();
   });
 
-  t('en Marfil, solo la marca: sello con filo #5e4210, sin textura ni borde dorado', async ({ page }, info) => {
+  t('en Marfil: sello con filo #5e4210, la crema con vetas de oro y el borde #d4b580 (8 nov)', async ({ page }, info) => {
     omitir(info);
     const pc = info.project.name === 'pc';
     await lista(page);
@@ -121,8 +121,18 @@ test.describe('con Toisón Dorado (el dueño)', () => {
     expect(x.dor).toBe(true);
     expect(x.sello).toBe(true);
     expect(x.filo).toContain('rgb(94, 66, 16)');
-    expect(x.borde).not.toBe('#4f3f20');
+    expect(x.borde).toBe('#d4b580');
     expect(x.fondo).not.toContain('marmol');
+    if (pc) expect(x.fondo).toContain('marfil-dorado-pc');
+    else { expect(x.fondo).toContain('marfil-dorado'); expect(x.fondo).not.toContain('marfil-dorado-pc'); }
+    const url = /url\("?([^")]+)"?\)/.exec(x.fondo)[1];
+    expect((await page.request.get(url)).status()).toBe(200);
+    // «Como los demás»: el Marfil de siempre, sin vetas ni borde dorado
+    await page.evaluate(() => { LS.set('inv-dorado-ver', 0); ponerDorado(); });
+    await expect(page.locator('html:not([data-dorado])')).toBeAttached();
+    const y = await mira(page, pc);
+    expect(y.borde).toBe('#dccbb0');
+    expect(y.fondo).not.toContain('dorado');
   });
 });
 
