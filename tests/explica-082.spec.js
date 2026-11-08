@@ -116,6 +116,9 @@ test('los botones del panel de la IA se tocan en 48 × 48', async ({ page }) => 
   await page.evaluate(() => { window.iaLista = () => true; abrirAsesor(); });
   await expect(page.locator('.asesor .as-enviar')).toBeVisible({ timeout: 15_000 });
   await page.waitForTimeout(800);
+  // 0.8.3c: sin la línea de debajo de Normal / A fondo, el pie es más bajo y el aviso «Guardado en tu cuenta» de meter la
+  // cartera (si aún está) cae justo encima de esos botones: se espera a que se vaya, como en accesibilidad.spec.js
+  await page.waitForSelector('.toast', { state: 'detached', timeout: 20_000 }).catch(() => {});
   const fallos = await page.evaluate(() => {
     const TOC = 'button, a[href], summary, input, select, textarea, label, [role="button"]', out = [];
     for (const el of document.querySelectorAll('.asesor :is(.as-adj, .as-enviar, .as-cab .ib, .as-modo .seg button)')) {
