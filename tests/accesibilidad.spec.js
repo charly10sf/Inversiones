@@ -61,6 +61,8 @@ for (const tema of ['marmol', 'marfil']) {
     base.skip(info.project.name !== 'movil' && tema !== 'marmol', 'en 360 y en el ordenador, con un diseño basta');
     base.setTimeout(180_000);
     await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
+    // el «Guardado en tu cuenta» de meter la cartera tapa botones si aún está (carrera según lo rápida que vaya la máquina)
+    await page.waitForSelector('.toast', { state: 'detached', timeout: 20_000 }).catch(() => {});
     await page.evaluate(([p, t]) => { window.__PEQ = p; window.__TOC = t; }, [PEQUENOS, TOCABLE]);
     const fallos = {};
     for (const h of PANTALLAS) {

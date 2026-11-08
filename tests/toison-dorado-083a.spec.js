@@ -148,8 +148,8 @@ test.describe('novedades de la 0.8.3a', () => {
       // las de letra de antes de la 0.8.2 con cosas siguen como siempre
       vieja: caminoNovedades('0.4', '0.4b'),
     }));
-    expect(r).toEqual({ v: '0.8.3a', primera: '0.8.3a', camino: 'corta', desde082: 'corta', vieja: 'letra' });
-    await page.evaluate(async () => { await cargarTrozo('novedades'); document.querySelectorAll('.hoja-fondo, .tour, .aviso-arr').forEach((x) => x.remove()); hojaIntermedia('0.8.3', () => { window.__cerrada = true; }); });
+    expect(r).toEqual({ v: '0.8.3b', primera: '0.8.3b', camino: 'corta', desde082: 'corta', vieja: 'letra' });
+    await page.evaluate(async () => { await cargarTrozo('novedades'); document.querySelectorAll('.hoja-fondo, .tour, .aviso-arr').forEach((x) => x.remove()); hojaIntermedia('0.8.3', () => { window.__cerrada = true; }, '0.8.3a'); });
     const h = page.locator('.hoja-corta');
     await expect(h).toBeVisible();
     await expect(h.locator('.hoja-t, h2').first()).toContainText('0.8.3a');
