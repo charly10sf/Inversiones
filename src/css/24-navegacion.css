@@ -66,7 +66,7 @@
   [data-tema] body.nav-ts .top :is(.marca, .nav, .as-boton) { display: none; }
   [data-tema] body.nav-ts .top:not(:has(.gta-top-w)) { display: none; }
   /* en el ordenador, las páginas de cada sección están en la segunda barra */
-  body.nav-ts #vista :is(.pest-av, .apartados, .grupo-tabs, .volver-mas) { display: none; }
+  body.nav-ts #vista :is(.pest-tira, .pest-av, .apartados, .grupo-tabs, .volver-mas) { display: none; }
 
   .riel { position: fixed; z-index: 35; top: 0; bottom: 0; left: 0; display: flex; }
   .k2-iconos { width: 64px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 0 14px; border-right: 1px solid var(--sep); background: var(--fondo-2, var(--fondo)); overflow-y: auto; scrollbar-width: none; }

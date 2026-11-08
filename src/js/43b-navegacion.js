@@ -25,9 +25,10 @@ const SECCIONES = [
 const ICO_SEC = {
   hoy: () => ICONOS_TS.cartera(), cartera: () => ICONOS_PL.cartera, rendimiento: () => ICONOS_PL.futuro, hacienda: () => ICONOS_PL.fiscalidad,
   mercados: () => ICONOS_PL.mercados, ideas: () => ICONOS_PL.expertos, tuplan: () => ICONOS_PL.tu,
-  riesgo: () => SVG('<path d="M12 3.5l7 2.6v5.3c0 4.3-2.9 7.6-7 9.1-4.1-1.5-7-4.8-7-9.1V6.1z"/><path d="M9 12l2.2 2.2L15.5 10"/>'),
-  reparto: () => SVG('<path d="M11 4a8.5 8.5 0 1 0 9 9h-9z"/><path d="M14 3.6A7.5 7.5 0 0 1 20.4 10H14z"/>'),
-  herramientas: () => SVG('<path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/>'),
+  // 0.8.3a: los tres que faltaban, de plumilla como los demás (2,2 × 1,1, puntas rectas; los dibuja scripts/plumilla_k2.py)
+  riesgo: () => PL('M4.3 5.7l7-2.6 .8-.1 7.9 2.8 .1 .3-.1 6.9-.8 2.5-1.5 2.1-2.5 2.1-1.5 .8-1.5 .5-.8 0-1.7-.8-2.7-1.8-1.1-1.2-.8-1.3-1-2.4-.2-1.6 0-5.8zM17.9 6.4l-5.9-2.2-5.9 2.2 0 5.5 .2 1.5 .5 1.4 .6 1.2 1.2 1.5 1.5 1.2 1.6 1 .3 .1 .7-.3 2-1.4 1.3-1.3 1-1.6 .5-1.3 .3-1.5zM10.2 14.6l-2.3-2.3 2-.4 1.2 1.2 3.3-3.4 2 .4-4.4 4.5-.9 .2z'),
+  reparto: () => PL('M13.9 10.5l-.9-.2-.1-.3 0-6.4 .1-.3 1.2-.2 2.2 .3 1.6 .7 1.5 1.1 1.2 1.6 .7 2.1 .1 1.3-.4 .2zM15.1 4.3l0 5.1 4.2 0-.5-1.7-.9-1.6-1.2-1.1zM12.1 4.6l0 7.8 7.7 .1 .7 .4-.1 1.2-.6 2.2-.8 1.5-1.1 1.4-1.3 1.1-1.6 .9-1.9 .5-2 .2-1.5 0-1.9-.5-1.7-.7-1.5-1.1-1.2-1.3-.9-1.4-.6-1.6-.3-1.7 .1-1.7 .6-2.2 .8-1.5 1.1-1.4 1.3-1.1 2.2-1.1 2-.5 1.7 0 .6 .2zM9.9 13l0-7.7-1.4 .4-1.3 .6-1.8 1.8-.9 1.3-.5 1.5-.3 2.6 .6 2.6 .8 1.4 .9 1.2 2.1 1.4 1.2 .5 1.3 .2 1.6-.1 1.3-.4 1.3-.6 1.2-1 .9-1.2 .8-1.4 .6-2.5-7.4-.1-.8-.2z'),
+  herramientas: () => PL('M18.6 8.5l-.1-.7 2.2-.1 .1 1.5-.3 1.1-.7 1.3-.9 .9-1.5 .8-1.6 .3-1.9-.1-1.6-.6-6.7 6.7-2-.4 7.4-7.4-1-1.7-.2-1.9 .3-1.1 .5-1 1.3-1.4 1.2-.6 1-.2 2.5 0-.7 1-1.2 0-1.2 .7-.8 .9-.5 .8-.2 1.3 .2 1.3 .6 1.2 1.1 1 .9 .4 .7 0 1.6-.6 1.1-1.5z'),
 };
 const ICO_BUSCA = SVG('<circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.6 15.6l4.6 4.6"/>', 1.9);
 /* las páginas: id, nombre, sección del ordenador (s), grupo de la rejilla de Más (g), adónde lleva (v, y p si es una
@@ -95,10 +96,10 @@ const pestAnaVisibles = () => PEST_ANA.filter((x) => !x.av || modoApp() === 'ava
 const aPag = (p, act, cls = '') => `<a href="${hrefPag(p)}"${p.v === 'av' ? ` data-pest-av="${p.p}"` : ''}${cls ? ` class="${cls}"` : ''} aria-current="${act ? 'page' : 'false'}">${esc(nomPag(p))}</a>`;
 function htmlPestAna() {
   const pa = paginaActual();
-  return `<nav class="pest-av" aria-label="${L('Qué ver', 'What to see')}">${pestAnaVisibles().map((x) => {
+  return `<div class="pest-tira"><nav class="pest-av" aria-label="${L('Qué ver', 'What to see')}">${pestAnaVisibles().map((x) => {
     const p = PAG[x.ap.find((id) => verPag(PAG[id]))];
     return `<a href="${hrefPag(p)}"${p.v === 'av' ? ` data-pest-av="${p.p}"` : ''} data-pest="${x.k}" aria-current="${x.ap.includes(pa) ? 'page' : 'false'}">${L(x.t, x.en)}</a>`;
-  }).join('')}</nav>${htmlApartados()}`;
+  }).join('')}</nav></div>${htmlApartados()}`;
 }
 // los apartados de la pestaña abierta (Posiciones · Movimientos · Día a día…), si tiene más de uno
 function htmlApartados(lista) {

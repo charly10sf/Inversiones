@@ -211,7 +211,7 @@ test.describe('quien tenía Borgoña', () => {
 });
 
 // 7 nov (0.8.3b, Carlos): el Marfil nuevo. Crema en capas, el menú en vino con el oro del logo, las pestañas con fondo vino suave y raya
-// de oro, los títulos de sección en vino con su hilo de oro y el sello de la cabecera como el icono
+// de oro, los títulos de sección en vino con su hilo de oro y el sello de la cabecera (0.8.3a: en vino y oro sobre la crema)
 test.describe('Marfil (7 nov)', () => {
   test.use({ ajustes: { 'inv-tema': JSON.stringify('marfil') } });
   test('menú en vino, pestañas con fondo suave y raya de oro y títulos con hilo de oro', async ({ page }, info) => {
@@ -222,23 +222,22 @@ test.describe('Marfil (7 nov)', () => {
     // el menú: lateral en el ordenador, barra de abajo en el móvil, los dos en vino
     const menu = info.project.name === 'pc' ? '.riel' : '.navbar';
     const fm = await page.locator(menu).evaluate((e) => getComputedStyle(e).backgroundColor);
-    // (la barra del móvil es vino al 94 %: Chrome la da como color(srgb …); se pasa a 0–255)
+    // (0.8.3a: la barra del móvil es de cristal, vino al 74 % que oscurece lo de detrás; el menú del ordenador, vino opaco)
     const n = (fm.match(/[\d.]+/g) || []).map(Number).slice(0, 3);
-    expect((fm.startsWith('color(') ? n.map((v) => Math.round(v * 255)) : n), fm).toEqual([60, 11, 22]);
-    // el sello de la cabecera: disco negro
-    await expect(page.locator('.top .marca-ts i').first()).toHaveCSS('background-color', 'rgb(0, 0, 0)');
-    // las pestañas de Análisis: sin carril, la elegida en vino y subrayada de oro
+    expect((fm.startsWith('color(') ? n.map((v) => Math.round(v * 255)) : n), fm).toEqual(info.project.name === 'pc' ? [60, 11, 22] : [52, 9, 19]);
+    // el sello de la cabecera: desde la 0.8.3a, el símbolo en vino y oro sobre la crema
+    await expect(page.locator('.top .marca-ts i').first()).toHaveCSS('background-color', 'rgb(253, 249, 242)');
+    expect(await page.locator('.top .marca-ts').first().evaluate((e) => ['.s-o', '.s-t'].map((s) => getComputedStyle(e.querySelector(s)).fill))).toEqual(['rgb(78, 16, 29)', 'rgb(168, 122, 42)']);
+    // las pestañas de Análisis (0.8.3a): en una tira de cristal, la elegida blanca con el hilo de oro abajo
     await page.evaluate(() => { location.hash = 'analisis'; });
     // 0.8.3a: en el ordenador las pestañas de Análisis están en la segunda barra de la K2 (su acabado, con la sesión del liquid)
     if (info.project.name === 'pc') await expect(page.locator('.k2-lista a[aria-current="page"]')).toHaveText('La IA explica');
     else {
     const elegida = page.locator('.pest-av a[aria-current="page"]');
     await expect(elegida).toBeVisible({ timeout: 15_000 });
-    await expect(elegida).toHaveCSS('color', 'rgb(78, 16, 29)');
-    await expect(elegida).toHaveCSS('box-shadow', 'rgb(201, 154, 69) 0px -3px 0px 0px inset');
-    await expect(elegida).toHaveCSS('background-image', 'none');
-    // con un fondo vino muy suave detrás (se ve también en el móvil), no la pastilla rellena
-    expect(await elegida.evaluate((e) => getComputedStyle(e).backgroundColor)).not.toMatch(/^rgba?\(0, 0, 0, 0\)$|^transparent$/);
+    await expect(elegida).toHaveCSS('color', 'rgb(28, 25, 21)');
+    expect(await elegida.evaluate((e) => getComputedStyle(e).boxShadow)).toMatch(/^rgb\(201, 154, 69\) 0px -1px 0px 0px inset/);
+    await expect(elegida).toHaveCSS('background-image', /linear-gradient\(rgb\(255, 255, 255\)/);
     }
     // un título de sección: en vino, con el hilo de oro debajo
     await page.evaluate(() => { location.hash = 'cartera'; });

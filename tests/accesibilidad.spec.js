@@ -113,3 +113,53 @@ for (const tema of ['marmol', 'marfil']) {
     expect(await axe(page), 'tutorial').toEqual([]);
   });
 }
+
+// 0.8.3a · El cristal de la barra (acabado «liquid»): las letras de la barra se leen (≥ 4,5:1) aunque pase por debajo
+// lo más claro posible, un bloque blanco, y con «reducir transparencia» del sistema la barra se vuelve opaca y sin
+// desenfoque. El contraste se mide en la captura: el color más repetido debajo de cada etiqueta (que no sea el de la
+// propia letra) frente al color de la letra.
+async function contrasteBarra(page) {
+  const cajas = await page.evaluate(() => [...document.querySelectorAll('.navbar a span')].map((s) => {
+    const r = s.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height, t: s.textContent.trim(), c: getComputedStyle(s).color };
+  }));
+  const png = (await page.screenshot()).toString('base64');
+  return page.evaluate(async ({ png, cajas }) => {
+    const img = new Image(); img.src = 'data:image/png;base64,' + png; await img.decode();
+    const k = img.width / innerWidth, cv = document.createElement('canvas'); cv.width = img.width; cv.height = img.height;
+    const cx = cv.getContext('2d'); cx.drawImage(img, 0, 0);
+    const lum = ([r, g, b]) => { const f = (v) => { v /= 255; return v <= 0.03928 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(r) + 0.7152 * f(g) + 0.0722 * f(b); };
+    const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p); return (x + 0.05) / (y + 0.05); };
+    return cajas.map((c) => {
+      const letra = (c.c.match(/[\d.]+/g) || []).slice(0, 3).map(Number);
+      const d = cx.getImageData(Math.round(c.x * k), Math.round(c.y * k), Math.max(1, Math.round(c.w * k)), Math.max(1, Math.round(c.h * k))).data;
+      const n = new Map();
+      for (let i = 0; i < d.length; i += 4) { const key = `${d[i]},${d[i + 1]},${d[i + 2]}`; n.set(key, (n.get(key) || 0) + 1); }
+      // los tres más repetidos: el primero que no sea casi la letra (con un degradado, la moda puede salir del texto)
+      const top = [...n].sort((a, b) => b[1] - a[1]).slice(0, 3).map(([s]) => s.split(',').map(Number));
+      const fondo = top.find((f) => ratio(f, letra) > 1.5) || top[0];
+      return [c.t, +ratio(fondo, letra).toFixed(1)];
+    });
+  }, { png, cajas });
+}
+
+for (const tema of ['marmol', 'marfil']) {
+  conTema(tema)(`${tema}: las letras de la barra de cristal se leen con blanco detrás y con «reducir transparencia»`, async ({ page }, info) => {
+    base.skip(info.project.name !== 'movil', 'la barra es del móvil; una vez basta');
+    await crearCuenta(page); await meterCartera(page); await quitarCapas(page);
+    await page.evaluate(() => { location.hash = 'cartera'; });
+    await page.waitForTimeout(500); await quitarCapas(page);
+    // lo peor que puede pasar por debajo: un bloque blanco (detrás del fundido de abajo, como cualquier cosa de la página)
+    await page.evaluate(() => { document.querySelectorAll('.toast').forEach((t) => t.remove()); const b = document.createElement('div'); b.id = 'estres'; b.style.cssText = 'position:fixed;left:0;right:0;bottom:0;height:140px;z-index:38;background:#fff'; document.querySelector('#app').appendChild(b); });
+    await page.waitForTimeout(300);
+    const conBlanco = await contrasteBarra(page);
+    for (const [t, r] of conBlanco) expect(r, `«${t}» con blanco detrás: ${r}:1`).toBeGreaterThanOrEqual(4.5);
+    // con «reducir transparencia», opaca y sin desenfoque
+    const cdp = await page.context().newCDPSession(page);
+    await cdp.send('Emulation.setEmulatedMedia', { features: [{ name: 'prefers-reduced-transparency', value: 'reduce' }] });
+    await page.waitForTimeout(300);
+    const barra = await page.locator('.navbar').evaluate((e) => { const s = getComputedStyle(e); return [s.backgroundColor, s.backdropFilter]; });
+    expect(barra[0]).toBe(tema === 'marmol' ? 'rgb(11, 11, 11)' : 'rgb(60, 11, 22)');
+    expect(barra[1]).toMatch(/^blur\(0px\)/);
+    for (const [t, r] of await contrasteBarra(page)) expect(r, `«${t}» opaca: ${r}:1`).toBeGreaterThanOrEqual(7);
+  });
+}

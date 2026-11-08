@@ -1,0 +1,100 @@
+/* =========================== 0.8.3a · el acabado «liquid» (claude/sesion-acabado-liquid.md) ===========================
+   Móvil: el «cristal hondo» (lo de detrás se oscurece al pasar por el cristal, así deja ver más sin perder lectura), la
+   barra en cápsula con canto de luz y oro, lo elegido en una gota, Hoy en una moneda y la cabecera en dos pastillas que
+   flotan sobre la página fundida. Ordenador: «la intermedia», las dos barras de la izquierda y la de arriba en cristal
+   mate, lo elegido en la misma gota neutra; el 6M y los botones, como estaban.
+   Solo forma: los colores son los tokens de cada diseño (00-temas.css, --cristal-*, --canto*, --gota*, --moneda*…).
+   Solo lleva backdrop-filter lo que tiene algo que se mueve debajo (la barra, las pastillas, la tira de pestañas, las
+   hojas y la barra de arriba del ordenador). Con «reducir transparencia» o «más contraste», los tokens lo hacen opaco. */
+
+/* el canto: un filo de 1,5 px que brilla arriba a la izquierda y se calienta con el oro abajo (una máscara deja solo el aro) */
+[data-tema] .navbar::after, [data-tema] .pest-tira::after, [data-tema] .top :is(.marca, .acciones)::after {
+  content: ""; position: absolute; inset: 0; border-radius: inherit; padding: 1.5px; pointer-events: none;
+  -webkit-mask: linear-gradient(currentColor 0 0) content-box, linear-gradient(currentColor 0 0); -webkit-mask-composite: xor;
+  mask: linear-gradient(currentColor 0 0) content-box exclude, linear-gradient(currentColor 0 0);
+}
+
+@media (max-width: 960px) {
+  :root[data-tema] { --nav-h: 94px; }
+
+  /* ---------- la barra: una cápsula a 14 px de los lados y 26 px del fondo ---------- */
+  [data-tema] .navbar { left: 14px; right: 14px; bottom: calc(26px + env(safe-area-inset-bottom)); height: 64px; padding: 0 4px; border: 0; border-radius: var(--r-p);
+    background: var(--cristal);
+    -webkit-backdrop-filter: blur(var(--cristal-blur)) saturate(var(--cristal-sat)) brightness(var(--cristal-brillo));
+    backdrop-filter: blur(var(--cristal-blur)) saturate(var(--cristal-sat)) brightness(var(--cristal-brillo));
+    box-shadow: var(--barra-sombra); }
+  [data-tema] .navbar::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: var(--barra-brillo); }
+  [data-tema] .navbar::after { background: var(--canto); }
+  [data-tema] .navbar :is(a, .nav-mas) { position: relative; color: var(--barra-texto); font: 560 11px/13px var(--ui); letter-spacing: .01em; text-shadow: var(--barra-texto-sombra); }
+  [data-tema] .navbar :is(a, .nav-mas) > :is(svg, span) { position: relative; }
+  [data-tema] .navbar :is(a, .nav-mas)[aria-current="page"] { color: var(--barra-texto-act); font-weight: 650; }
+  [data-tema] .navbar :is(a, .nav-mas):not(.nav-centro) svg, [data-tema] .navbar :is(a, .nav-mas):not(.nav-centro):active svg { background: none; box-shadow: none; }
+  [data-tema] .navbar :is(a, .nav-mas):not(.nav-centro)[aria-current="page"] svg { color: var(--barra-oro); background: none; box-shadow: none; }
+  /* la gota: lo elegido, una lente que ocupa la casilla */
+  [data-tema] .navbar :is(a, .nav-mas):not(.nav-centro)[aria-current="page"]::before { content: ""; position: absolute; top: 3px; bottom: 3px; left: 2px; right: 2px; border-radius: var(--r-p);
+    background: var(--gota); box-shadow: var(--gota-sombra); }
+  [data-tema] .navbar :is(a, .nav-mas).falta::after { background: var(--barra-oro); box-shadow: none; }
+  /* Hoy, una moneda (igual elegida o no: lo dice la etiqueta) */
+  [data-tema] .navbar a.nav-centro svg.nav-med, [data-tema] .navbar a.nav-centro[aria-current="page"] svg.nav-med { padding: 13px 12px; background: var(--moneda); box-shadow: var(--moneda-sombra); }
+  [data-tema] .navbar svg.nav-med .s-o, [data-tema] .navbar a.nav-centro[aria-current="page"] svg.nav-med .s-o { fill: var(--moneda-o); }
+  [data-tema] .navbar svg.nav-med .s-t, [data-tema] .navbar a.nav-centro[aria-current="page"] svg.nav-med .s-t { fill: var(--moneda-t); }
+  /* lo que pasa por debajo de la barra se apaga un poco antes de llegar (como en iOS 26) */
+  body.nav-ts #app::after { content: ""; position: fixed; left: 0; right: 0; bottom: 0; height: calc(110px + env(safe-area-inset-bottom)); z-index: 39; pointer-events: none;
+    background: linear-gradient(to top, color-mix(in srgb, var(--fondo) 62%, transparent), transparent); }
+
+  /* ---------- la cabecera: sin franja; la página se funde arriba y encima flotan dos pastillas ---------- */
+  [data-tema] .top, [data-tema] .top.bajado { background: none; -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: none; border-bottom: 0; }
+  [data-tema] .top::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: calc(100% + 44px); z-index: -1; pointer-events: none;
+    background: linear-gradient(to bottom, var(--fondo) 50%, color-mix(in srgb, var(--fondo) 55%, transparent) 75%, transparent); }
+  [data-tema] .top :is(.marca, .acciones) { position: relative; display: flex; align-items: center; height: 48px; border-radius: var(--r-p);
+    background: var(--cristal-pil); -webkit-backdrop-filter: blur(16px) saturate(160%); backdrop-filter: blur(16px) saturate(160%); box-shadow: var(--pil-sombra); }
+  [data-tema] .top :is(.marca, .acciones)::after { padding: 1px; background: var(--canto-pil); }
+  [data-tema] .top .marca { padding: 0 16px 0 6px; }
+  [data-tema] .top.cab-8 .marca { padding-right: 6px; }
+  [data-tema] .top .acciones { gap: 2px; padding: 0 4px; }
+  /* dentro de la pastilla, la IA y los ajustes sin fondo propio: la IA en oro */
+  [data-tema] .top .acciones .as-boton.as-ts { background: none; box-shadow: none; color: var(--oro-texto); }
+  [data-tema] .top .acciones .as-boton.as-ts:hover { background: none; filter: none; color: var(--texto); }
+  [data-tema] .top .acciones .as-boton.as-ts svg { width: 21px; height: 21px; }
+
+  /* ---------- las pestañas de Análisis: una tira de cristal con la elegida en lente ---------- */
+  [data-tema] .pest-tira { position: relative; min-width: 0; margin: var(--e2) 0 var(--e3); padding: 4px; border-radius: var(--r-p);
+    background: var(--cristal-tira);
+    -webkit-backdrop-filter: blur(var(--cristal-blur)) saturate(var(--cristal-tira-sat)) brightness(var(--cristal-tira-brillo));
+    backdrop-filter: blur(var(--cristal-blur)) saturate(var(--cristal-tira-sat)) brightness(var(--cristal-tira-brillo));
+    box-shadow: var(--pil-sombra); }
+  [data-tema] .pest-tira::after { background: var(--canto-tira); }
+  [data-tema] .pest-tira .pest-av { margin: 0; padding: 0; gap: 2px; border: 0; border-radius: var(--r-p); background: none; box-shadow: none; }
+  [data-tema] .pest-tira .pest-av a { min-height: 40px; padding: 0 14px; border-radius: var(--r-p); }
+  [data-tema] .pest-tira .pest-av a[aria-current="page"] { background: var(--lente); box-shadow: var(--lente-sombra); color: var(--lente-texto); font-weight: 650; }
+  /* el 6M y los demás segmentos: lo elegido, la misma lente (el principal sigue de metal) */
+  [data-tema] :is(.subvistas, .plazos, .tabs, .as-modo, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas):not(.dos-op) button[aria-pressed="true"] {
+    background: var(--lente); box-shadow: var(--lente-sombra); color: var(--lente-texto); border-color: transparent; border-radius: var(--r-p); }
+
+  /* ---------- las hojas: flotan a 8 px de los bordes, de cristal, con el filo arriba y el oro abajo ---------- */
+  [data-tema] .hoja-fondo { background: var(--cristal-velo); }
+  [data-tema] .hoja { width: calc(100% - 16px); max-height: calc(92vh - 16px); margin: 0 8px 8px; border: 0; border-radius: 34px;
+    background: var(--cristal-hoja);
+    -webkit-backdrop-filter: blur(var(--cristal-blur)) saturate(var(--cristal-sat)) brightness(var(--cristal-hoja-brillo));
+    backdrop-filter: blur(var(--cristal-blur)) saturate(var(--cristal-sat)) brightness(var(--cristal-hoja-brillo));
+    box-shadow: var(--hoja-sombra); }
+  [data-tema] .hoja.ancha { width: calc(100% - 16px); }
+  /* lo que se queda pegado dentro (la cabecera y los botones de abajo), del mismo cristal: lo que pasa por debajo se ve borroso */
+  [data-tema] :is(.hoja-cab, .hoja form > .fila-btns:last-child) { background: none; -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  [data-tema] .hoja-cab { margin-left: -20px; margin-right: -20px; padding-left: 20px; padding-right: 20px; }
+}
+
+/* ---------- el ordenador (K2): la intermedia ---------- */
+@media (min-width: 1180px) {
+  [data-tema] .riel :is(.k2-iconos, .k2-col) { background: var(--cristal-menu);
+    -webkit-backdrop-filter: blur(var(--cristal-menu-blur)) saturate(var(--cristal-menu-sat)); backdrop-filter: blur(var(--cristal-menu-blur)) saturate(var(--cristal-menu-sat)); }
+  [data-tema] .k2-top { background: var(--cristal-arriba); -webkit-backdrop-filter: blur(24px) saturate(120%); backdrop-filter: blur(24px) saturate(120%); }
+  /* lo elegido, en la gota neutra; el icono en oro */
+  [data-tema] .riel :is(.k2-iconos, .k2-lista) a[aria-current="page"] { background: var(--gota-pc); box-shadow: var(--gota-pc-sombra); color: var(--barra-texto-act); }
+  [data-tema] .riel .k2-iconos a[aria-current="page"] { color: var(--menu-oro); }
+  [data-tema] .riel .k2-iconos a[aria-current="page"] .riel-med .s-o { fill: var(--barra-texto-act); }
+  [data-tema] .riel .k2-iconos a[aria-current="page"] .riel-med .s-t { fill: var(--menu-oro); }
+  /* el sello de arriba, como en el móvil (en Marfil, vino y oro sobre la crema) */
+  [data-tema] .riel .k2-marca i { width: 38px; height: 38px; }
+  [data-tema] .riel .k2-marca svg { width: 24px; }
+}
