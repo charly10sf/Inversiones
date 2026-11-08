@@ -146,7 +146,8 @@
       ]
     },
     "avanzado": [
-      "trozos/avanzado.js"
+      "trozos/avanzado.js",
+      "trozos/entiende.js"
     ]
   }
 }
