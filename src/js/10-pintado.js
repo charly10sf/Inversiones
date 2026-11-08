@@ -179,7 +179,8 @@ const esVista = (k) => VISTAS.some(([x]) => x === k) || VISTAS_APARTE.some(([x])
 /* 0.8.3 (revisión del diseño, 5 nov): en las filas que se deslizan de lado (pestañas de Análisis, Tú, modos del mapa…)
    la palabra cortada en el borde parecía un fallo («stes», «D»). Ahora ese borde se difumina, y solo por el lado por el que
    queda algo: data-desb lleva «i» (queda a la izquierda) y/o «d» (a la derecha); lo pinta 00-temas.css. */
-const SEL_DESBORDE = '.pest-av, .grupo-tabs, .mg-tabs, .mapa-modos, .mapa-vistas, .subvistas';
+// 0.8.3b: y las tablas anchas de Análisis (Posición a posición, X-Ray…), que en el móvil se deslizan sin que se note
+const SEL_DESBORDE = '.pest-av, .grupo-tabs, .mg-tabs, .mapa-modos, .mapa-vistas, .subvistas, .pav-tabla';
 function marcarDesborde(el) {
   const izq = el.scrollLeft > 2, der = el.scrollLeft + el.clientWidth < el.scrollWidth - 2;
   const v = [izq && 'i', der && 'd'].filter(Boolean).join(' ');

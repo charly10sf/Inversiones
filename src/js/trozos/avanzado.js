@@ -77,14 +77,19 @@ const PAV_CSS = `
 .pnl-d small { font-size: 10.5px; color: var(--texto-2); }
 .pnl-d b { font: 600 12px/1.1 var(--ui); white-space: nowrap; }
 .pnl-d span { font-size: 10.5px; color: var(--texto-2); white-space: nowrap; }
-.pnl-d.vacio { background: color-mix(in srgb, var(--superficie) 40%, transparent); opacity: .55; }
-@media (max-width: 480px) { .pnl-d { min-height: 50px; padding: 4px; } .pnl-d span { font-size: 9.5px; } .pnl-d b { font-size: 10.5px; } }
+.pnl-d :is(span, b) i { font-style: normal; }
+.pnl-d.vacio { background: color-mix(in srgb, var(--superficie) 40%, transparent); opacity: .75; }
+@media (max-width: 480px) { .pnl-d { min-height: 50px; padding: 4px; } .pnl-d span { font-size: 9.5px; } .pnl-d b { font-size: 10.5px; letter-spacing: -.02em; } }
+/* 0.8.3b: en 360 px, «+1.200» tampoco cabía: un punto menos de letra y de relleno */
+@media (max-width: 380px) { .pnl-cal { gap: 3px; } .pnl-d { padding: 4px 3px; } .pnl-d b { font-size: 10px; letter-spacing: -.03em; } }
 .mov-t { display: inline-block; padding: 2px 8px; border-radius: var(--r-p); font-size: 12px; font-weight: 600; background: color-mix(in srgb, var(--texto) 8%, transparent); }
 .mov-t.compra { color: var(--sube); background: color-mix(in srgb, var(--sube) 13%, transparent); }
 .mov-t.venta { color: var(--baja); background: color-mix(in srgb, var(--baja) 13%, transparent); }
 .mov-pl { display: block; font-size: 11.5px; color: var(--tenue); }
 .mov-f { white-space: nowrap; font-variant-numeric: tabular-nums; }
 .lab-campos { margin-top: 0; }
+/* 0.8.3b: en el móvil, una debajo de otra con las casillas alineadas (antes cada una empezaba donde acababa su etiqueta) */
+@media (max-width: 680px) { .lab-campos { display: grid; justify-content: start; } .lab-campos .pav-sel > span { min-width: 10em; } }
 /* el resultado de lo vendido, que se abre (4 nov) */
 .pav-kpi-btn { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; padding: 0; border: 0; background: none; color: inherit; font: inherit; cursor: pointer; text-decoration: underline dotted color-mix(in srgb, currentColor 45%, transparent); text-underline-offset: 5px; }
 .pav-kpi-btn svg { width: 16px; height: 16px; opacity: .7; transition: transform .2s; }
@@ -724,7 +729,7 @@ function pavPnl(M) {
   for (let k = 0; k < hueco; k++) celdas += '<i></i>';
   for (let d = 1; d <= nd; d++) {
     const k = `${mes}-${String(d).padStart(2, '0')}`, x = porDia.get(k);
-    celdas += x ? `<div class="pnl-d" style="${pavColor(x.p, 2)}" role="img" aria-label="${esc(`${fechaCorta(k)}: ${S.oculto ? '' : eurS(x.e, 0) + ', '}${pctS(x.p, 2)}`)}"><small>${d}</small><b>${S.oculto ? '••' : (x.e > 0 ? '+' : '') + euCorto(x.e)}</b><span>${x.e > 0 ? '▲' : x.e < 0 ? '▼' : ''} ${pctS(x.p, 1)}</span></div>` : `<div class="pnl-d vacio"><small>${d}</small></div>`;
+    celdas += x ? `<div class="pnl-d" style="${pavColor(x.p, 2)}" role="img" aria-label="${esc(`${fechaCorta(k)}: ${S.oculto ? '' : eurS(x.e, 0) + ', '}${pctS(x.p, 2)}`)}"><small>${d}</small><b>${S.oculto ? '••' : ((x.e > 0 ? '+' : '') + euCorto(x.e)).replace(/\s€$/, '<i class="eu"> €</i>')}</b><span>${x.e > 0 ? '<i>▲</i> ' : x.e < 0 ? '<i>▼</i> ' : ''}${pctS(x.p, 1)}</span></div>` : `<div class="pnl-d vacio"><small>${d}</small></div>`;
   }
   const tot = sum(delMes, (x) => x.e), verdes = delMes.filter((x) => x.e > 0).length;
   const mejor = delMes.reduce((b, x) => (!b || x.e > b.e ? x : b), null), peor = delMes.reduce((b, x) => (!b || x.e < b.e ? x : b), null);
@@ -852,7 +857,7 @@ function pavGrafico(M) {
   const s50 = sobre(m50), s200 = sobre(m200), rango = S.grafRango || '1A';
   const sel = `<label class="pav-sel"><span>${L('Posición', 'Holding')}</span><select data-graf-pos>${fs.map((x) => `<option value="${esc(x.pos.id)}"${x === f ? ' selected' : ''}>${pavNom(x)}</option>`).join('')}</select></label>`;
   const kpis = pavKpis([
-    [L('Último precio', 'Last price'), precioFmt(ult.v), '', esc(ult.d)],
+    [L('Último precio', 'Last price'), precioFmt(ult.v), '', esc(fechaConAnio(ult.d))],
     [L('Frente a su media de 50 días', 'Against its 50-day average'), s50 == null ? '—' : pctS(s50, 1), s50 == null ? '' : cls(s50)],
     [L('Frente a su media de 200 días', 'Against its 200-day average'), s200 == null ? '—' : pctS(s200, 1), s200 == null ? '' : cls(s200)],
     [L('RSI de 14 días', '14-day RSI'), rsi == null ? '—' : fmtNum(rsi, 0), '', rsi == null ? '' : rsi >= 70 ? L('ha subido mucho en poco tiempo; no dice qué va a pasar', 'rose a lot in a short time; it does not tell what comes next') : rsi <= 30 ? L('ha bajado mucho en poco tiempo; no dice qué va a pasar', 'fell a lot in a short time; it does not tell what comes next') : L('en la zona media', 'in the middle range')],

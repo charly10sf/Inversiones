@@ -605,8 +605,8 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="marfil"] #heroLbl { font: 600 14px/16px var(--marca); letter-spacing: .14em; color: var(--primario); }
 /* «Lo que viene» en Hoy: el día en un recuadro con aro de oro (como «Tu mes» de la maqueta) */
 [data-tema] .ag-mini .ag-dia { flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 44px; height: 46px; border-radius: var(--r-m); box-shadow: inset 0 0 0 1px var(--hilo); color: var(--texto); }
-[data-tema] .ag-dia b { display: block; font: 500 18px/1 var(--ui); font-variant-numeric: tabular-nums; }
-[data-tema] .ag-dia small { display: block; margin-top: 3px; font: 600 9.5px/1 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--oro-texto); }
+[data-tema] span.ag-dia > b { display: block; font: 500 18px/1 var(--ui); font-variant-numeric: tabular-nums; }
+[data-tema] span.ag-dia > small { display: block; margin-top: 3px; font: 600 9.5px/1 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--oro-texto); }
 [data-tema] .ag-dia.pronto { box-shadow: inset 0 0 0 1.5px var(--oro-texto); }
 [data-tema] .ag-mini a { grid-template-columns: 44px minmax(0, 1fr) auto; gap: var(--e3); }
 [data-tema] .ag-mini .ag-tx small { white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }

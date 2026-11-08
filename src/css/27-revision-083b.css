@@ -1,0 +1,109 @@
+/* =========================== 0.8.3b · revisión del diseño de la 0.8.3 (8 nov) ===========================
+   Pasada por todas las pantallas en el móvil (390) y en el ordenador (1.440), en Mármol y Marfil, con y sin Toisón
+   Dorado, con capturas y el contraste de cada texto medido sobre lo que tiene pintado detrás. Aquí, lo que no encajaba
+   o se leía mal. Va al final para ganar a las reglas de antes sin subirles la especificidad. */
+
+/* ---------- el ordenador ---------- */
+@media (min-width: 1180px) {
+  /* el sello de arriba a la izquierda estaba pegado al borde de la pantalla (.marca-ts lo ponía en flex y place-items no
+     centraba): al centro de la barra de iconos, como los iconos de debajo */
+  [data-tema] .riel .k2-marca { justify-content: center; }
+}
+/* el buscador (arriba, en Más y en Ctrl K): al escribir salía un segundo recuadro dentro del recuadro (el halo de los
+   campos). El foco ya lo marca la caja entera */
+[data-tema] .busca-caja input:focus { border-color: transparent; box-shadow: none; }
+
+/* ---------- Hoy ---------- */
+/* «Te falta tu perfil» y la fecha de debajo se tocaban en el móvil (2 px): la regla del 5 nov que los separaba perdía
+   contra la de 15-paso-y-objetivos.css, que va después */
+@media (max-width: 759px) { [data-tema] .car > :is(.empezar, .pf-recuerda) { margin-bottom: -12px; } }
+/* «Lo que más ha movido hoy»: el % de cada casilla, al 80 %, se quedaba en 3,7:1 sobre su rojo o verde */
+.hero-movers .mv-v small { opacity: .92; }
+
+/* ---------- Calendario ---------- */
+/* el estilo del día de «Lo que viene» (Hoy) se colaba en la lista de «Más adelante», que también usa .ag-dia: los
+   títulos salían a 18 px finos y lo de debajo en versalitas de 9,5 px en oro («RESERVA FEDERAL DE EEUU, A LAS…»).
+   Arreglado en su sitio (00-temas.css: solo span.ag-dia, el recuadro del día) */
+/* Próximos: el título en dos líneas antes que «Dividendo de BAT: fecha de co…» o «Cierran Wall Street, la Bolsa de…» */
+[data-tema] .agc-t { white-space: normal; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; text-wrap: pretty; }
+/* en Marfil, los colores de cada tipo (pensados para el negro) no se leían sobre la crema: «Tu aportación» en amarillo
+   (1,3:1), «Dividendo» en verde claro (1,7:1), «Bancos centrales» en gris (2,2:1); y «Resultados» en crema sobre crema.
+   El mismo color, oscurecido con la tinta */
+[data-tema="marfil"] :is(.agc-cat, .agc-n.pal) { color: color-mix(in srgb, var(--c) 40%, var(--texto)); }
+[data-tema="marfil"] .agc-res .v { stroke: color-mix(in srgb, var(--c) 60%, var(--texto)); }
+/* Esta semana: los días ya pasados, al 32 %, casi no se veían (1,8:1). Siguen apagados, pero se leen */
+.ag-c.pasado { opacity: .55; }
+
+/* ---------- Mercados ---------- */
+/* El mundo, en el móvil, era 16 px más ancha que las tarjetas de encima (el buscador): ahora todas a la misma
+   anchura, y es el mapa el que aprovecha el margen */
+@media (max-width: 759px) {
+  .mapa-w { margin: 0; padding: 18px 16px 16px; }
+  .mapa-caja { margin: 0 -10px; }
+}
+
+/* ---------- Cartera › Posiciones ---------- */
+/* el país y la plataforma: en el ordenador, «Luxemburgo» arriba y «· MyInvestor» solo en otra línea, con el punto
+   delante. Ahora en una línea, y la plataforma se acorta si no cabe (como en el móvil) */
+[data-tema] .pos-donde { display: flex; flex-wrap: nowrap; gap: 6px; min-width: 0; overflow: hidden; }
+[data-tema] .pos-donde .origen { flex: none; }
+[data-tema] .pos-donde .pos-pl { flex: 0 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* las etiquetas de la fila en el móvil se cortaban en seco («Recoger bene», «Analistas: comprar · 1»): debajo de la
+   gráfica pequeña queda sitio, así que ahora se ven enteras aunque pasen por debajo de ella */
+@media (max-width: 680px) {
+  .fila .pos-chips { overflow: visible; contain: inline-size; }
+}
+/* en Marfil, «POSICIONES» en la letra de la marca es más ancho y empujaba «Pregúntale» fuera de la pantalla en 390 */
+@media (max-width: 400px) {
+  [data-tema="marfil"] .pos-cab h2 { font-size: 12.5px; letter-spacing: .05em; }
+  [data-tema="marfil"] .pos-cab { gap: 5px; }
+}
+
+/* en 360 px tampoco cabía (24 px de más en Marfil, 17 en Mármol): fuera el icono de ordenar (queda «Valor ↓») y el
+   botón de copiar, del ancho de los otros */
+@media (max-width: 380px) {
+  [data-tema] .pos-cab .orden-chip svg { display: none; }
+  [data-tema] .pos-cab .btn-copia-ia { width: 38px; padding: 0; }
+  [data-tema="marfil"] .pos-cab h2 { font-size: 12px; letter-spacing: .04em; }
+}
+
+/* ---------- Tú ---------- */
+/* en 360 px las tarjetas de Tú se salían 12 px por la derecha: la rejilla tomaba de ancho lo que pedía su contenido */
+[data-tema] .tu { grid-template-columns: minmax(0, 1fr); }
+
+/* Tu plan en el ordenador estrecho (1.180–1.500 px, con el menú de la izquierda): el panel de la derecha tomaba de
+   ancho lo que pedía su contenido y se salía de la pantalla (Lo que podrías tener, 70 px; Límites, 250 px) */
+[data-tema] .tuv-panel { grid-template-columns: minmax(0, 1fr); }
+/* y la tabla de Límites: con sus cinco columnas pedía 790 px y en 1.440 ya se salía de su tarjeta («Tu límite» y los
+   botones, cortados). Ahora más justa (cabe desde unos 660 px) y, si no cabe, como en el móvil */
+@media (min-width: 961px) { .tuv-panel { container-type: inline-size; } }
+@container (min-width: 660px) {
+  .tlm { padding: 6px 18px 10px; }
+  .tlm-th, .tlm-fila { grid-template-columns: minmax(140px, 1.3fr) minmax(90px, 1fr) 64px 100px 156px; column-gap: 14px; }
+}
+@container (max-width: 659px) {
+  .tlm { padding: 4px 18px 8px; }
+  .tlm-th { display: none; }
+  .tlm-fila { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "t hoy" "t est" "pista pista" "pie pie"; column-gap: 12px; row-gap: 4px; padding: 16px 0; }
+  .tlm-pista, .tlm-paso { margin-top: 8px; }
+  .tlm-paso { grid-area: pie; }
+  .tlm-hoy { font-size: 16px; }
+  .tlm-est { text-align: right; }
+  .tlm-lbl { display: block; }
+}
+
+/* ---------- Análisis ---------- */
+/* Día a día en el móvil: «▼ −0,2 %» y «+1.200 €» no cabían en la casilla y se cortaban («+1.200» sin el €, a medias).
+   La flecha y el € sobran ahí (ya lo dicen el signo, el color y «En el mes … €» de encima): fuera en las pantallas estrechas */
+@media (max-width: 480px) { .pnl-d span i, .pnl-d b i.eu { display: none; } }
+
+/* ---------- Ajustes ---------- */
+/* arriba, «Versión 0.8.3a alfa, con la cartera guardada…» quedaba en seis líneas estrechas al lado de «Novedades» */
+@media (max-width: 480px) {
+  .aj-cab { grid-template-columns: 44px minmax(0, 1fr); row-gap: 10px; }
+  .aj-cab > .btn { grid-column: 2; justify-self: start; }
+}
+
+/* ---------- Marfil: el oro de los textos pequeños ---------- */
+/* «Pregúntale» (en su pastilla de oro) y la etiqueta «Dorado» de Escritorios se quedaban por debajo de 4,5:1 */
+[data-tema="marfil"] .preg-ia, [data-tema="marfil"]:not([data-dorado]) .et-dorado { color: color-mix(in srgb, var(--oro-texto) 78%, var(--texto)); }
