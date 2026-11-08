@@ -164,7 +164,8 @@ test('Mármol G: textura de mármol en el fondo y tablas opacas; los otros dise�
   const url = /url\("?([^")]+)"?\)/.exec(x.img)[1];
   const r = await page.request.get(url);
   expect(r.ok(), url).toBe(true);
-  expect((await r.body()).length).toBeLessThan(25_000);
+  // 0.8.3c: la del ordenador, a 2880 × 1800 para que no se estire en pantallas grandes, pesa unos 30 KB
+  expect((await r.body()).length).toBeLessThan(info.project.name === 'pc' ? 40_000 : 25_000);
   // una tabla del radar: con fondo macizo, el de la losa
   await page.evaluate(() => { S.expTab = 'ideas'; location.hash = '#expertos'; pintar(); });
   const tabla = page.locator('.tabla-w').first();

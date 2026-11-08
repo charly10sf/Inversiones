@@ -945,6 +945,8 @@ function errorSinIA(e, aMedias) {
     : c === 'tope-pregunta' ? L('Esta pregunta ha necesitado demasiados pasos: prueba a hacerla más corta o en dos.', 'This question needed too many steps: try asking it shorter or in two parts.')
     : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace del último correo de confirmación que te llegó. Cuando lo abras, vuelve aquí: Toisón lo notará solo.', 'To use the AI, confirm your email with the link in the latest confirmation email you got. Once you open it, come back here: Toisón will notice by itself.')
     : c === 'sin-creditos' ? L('La IA no está disponible ahora mismo. Vuelve a probar dentro de unas horas.', 'The AI is not available right now. Try again in a few hours.')
+    // 0.8.3c: el tope de peticiones por minuto del Worker (cuentan también las rondas de herramientas de una misma pregunta)
+    : c === 'demasiadas' ? L('La IA ha tenido que hacer muchas consultas en el último minuto. Espera un minuto y vuelve a preguntar.', 'The AI has had to make many requests in the last minute. Wait a minute and ask again.')
     : L('La IA no está disponible ahora mismo. Vuelve a preguntar en un rato.', 'The AI is not available right now. Ask again in a while.');
   const x = new Error(txt);
   x.sinIA = true; x.codigo = c || 'sin-ia';
@@ -1277,7 +1279,7 @@ async function preguntarAsesor(texto) {
     const preparar = (est) => { refrescarFoto(nueva, est); return { mensajes: [...historialPara(AS.api, est), { role: 'user', content: contenido }], sistema: [].concat(sistemaAsesor(est)).map((x) => (typeof x === 'string' ? { text: x } : x)).concat(IDIOMA === 'en' ? [{ text: notaIdiomaIA() }] : []) }; };
     await conversar({ turno, preparar, alCambiar, signal: AS.ctrl.signal, pensar: 'medium' });
   } catch (e) {
-    turno.codigo = e.codigo || null;
+    turno.codigo = e.codigo || null; turno.estadoErr = Number.isInteger(e.estado) ? e.estado : null;
     turno.error = e.name === 'AbortError' ? 'Parado.' : !e.corte && /Failed to fetch|NetworkError|Load failed/i.test(e.message) ? L('No hay conexión. Mira tu conexión y vuelve a probar.', 'No connection. Check your connection and try again.') : e.message;
     if (!e.sinIA || e.avisar) avisarFalloIA(e, 'chat', turno.modelo);
   }

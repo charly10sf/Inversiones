@@ -94,13 +94,13 @@ async function capturarRecorte(r) {
   AS.adjunto = { img, mini, texto, donde };
   await abrirAsesor();
   const ta = $('#asTexto');
-  if (ta) { ta.placeholder = '¿Qué quieres saber de esto?'; ta.focus({ preventScroll: true }); }
+  if (ta) { ejemploAsesor(ta); ta.focus({ preventScroll: true }); }
 }
 function pintarAdjunto() {
   const el = $('#asAdjunto'); if (!el) return;
   const a = AS.adjunto;
   const ta = $('#asTexto');
-  if (ta && !a) ta.placeholder = 'Pregunta lo que quieras de tu cartera';
+  if (ta && !a) ejemploAsesor(ta);
   el.innerHTML = a ? `<div class="as-adjunto">${a.mini ? `<img src="${esc(a.mini)}" alt="">` : `<span class="as-adj-txt">${ICONOS.recorte}</span>`}<div><b>Recorte de ${esc(a.donde)}</b><small>${a.img ? 'Imagen y texto de la zona' : 'Solo el texto de la zona (la imagen no se pudo sacar)'}</small>
     <div class="as-adj-sug">${['Explícamelo fácil', '¿Qué significa cada dato?', '¿Me conviene? Con números'].map((q) => `<button type="button" data-as-q="${esc(q)}">${esc(q)}</button>`).join('')}</div></div>
     <button type="button" class="ib" data-as="quitar-adjunto" aria-label="Quitar el recorte" title="Quitar el recorte">${ICONOS.cerrar}</button></div>` : '';

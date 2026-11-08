@@ -34,6 +34,7 @@
 @media (prefers-reduced-motion: reduce) { .as-pensando i { animation: none; opacity: 0.8; } }
 .as-error { color: var(--baja); font-size: 13.5px; }
 .as-error .enlace { color: var(--primario); margin-left: 6px; }
+.as-error .as-err-cod { color: var(--tenue); font-size: 12px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .as-fuentes { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-top: 6px; }
 .as-fuentes .k { font-size: 12px; margin-right: 2px; }
 .as-fuentes a { font-size: 12px; color: var(--texto-2); border: 1px solid var(--borde); border-radius: 999px; padding: 1px 9px; max-width: 200px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -46,6 +47,17 @@
 .as-enviar { width: 38px; height: 38px; border: 0; display: grid; place-items: center; flex: none; }
 .as-enviar svg { width: 18px; height: 18px; }
 .as-pie small { color: var(--tenue); font-size: 12px; padding: 0 6px; }
+/* 0.8.3c · la caja de preguntar nunca pide más ancho que el panel (en la IA estrecha del ordenador se salía por la derecha:
+   la rejilla tomaba el ancho propio del cuadro de texto) y, si no caben el texto y los tres botones en una fila, el texto va
+   arriba a todo lo ancho y los botones debajo, con Enviar a la derecha. El cuadro no enseña barra hasta que pasa de 160 px */
+.as-pie { grid-template-columns: minmax(0, 1fr); container-type: inline-size; }
+.as-form { min-width: 0; }
+.as-form textarea { overflow-y: hidden; }
+@container (max-width: 330px) {
+  .as-form { flex-wrap: wrap; row-gap: 4px; padding: 8px 6px 6px 8px; }
+  .as-form textarea { flex: 1 1 100%; order: -1; padding: 4px 6px; }
+  .as-form .as-enviar { margin-left: auto; }
+}
 .as-modo { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 .as-modo > span { color: var(--tenue); font-size: 12.5px; }
 .as-modo .seg { display: flex; gap: 3px; padding: 3px; background: var(--superficie); border: 1px solid var(--sep); border-radius: 10px; }

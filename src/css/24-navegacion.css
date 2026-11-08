@@ -1,6 +1,8 @@
 /* =========================== 0.8.3a · la navegación nueva (43b-navegacion.js) ===========================
    Móvil: Más abre la hoja con todo; Análisis con sus pestañas y, debajo, los apartados de la abierta.
    Ordenador (desde 1.180 px): la K2, una barra de iconos de 64 px y otra de 252 px con las páginas y la IA.
+   0.8.3c: la segunda barra se ensancha arrastrando su borde (.k2-tirador): su ancho es --k2-col (--k2-col-n la normal,
+   --k2-col-g con la IA agrandada; los pone 43b-navegacion.js con lo que guardó cada uno).
    Solo la forma: el acabado (cristal, colores de cada diseño) va en la sesión del acabado liquid. */
 
 /* ---------- títulos que cambian con el ancho ---------- */
@@ -60,8 +62,8 @@
 .riel, .k2-top { display: none; }
 .k2-pest { display: none; }
 @media (min-width: 1180px) {
-  body.nav-ts { --k2-ancho: 316px; padding-left: var(--k2-ancho); padding-top: 64px; }
-  body.nav-ts.ia-grande { --k2-ancho: 504px; }
+  body.nav-ts { --k2-col: var(--k2-col-n, 252px); --k2-ancho: calc(64px + var(--k2-col)); padding-left: var(--k2-ancho); padding-top: 64px; }
+  body.nav-ts.ia-grande { --k2-col: var(--k2-col-g, 440px); }
   /* arriba ya no van la marca, las secciones ni el botón de la IA (están en la K2); si no queda nada, sin cabecera */
   [data-tema] body.nav-ts .top :is(.marca, .nav, .as-boton) { display: none; }
   [data-tema] body.nav-ts .top:not(:has(.gta-top-w)) { display: none; }
@@ -83,8 +85,7 @@
   .k2-iconos .riel-aj:hover { color: var(--texto); background: color-mix(in srgb, var(--superficie) 70%, transparent); }
   .k2-iconos .riel-aj svg { width: 22px; height: 22px; }
 
-  .k2-col { width: 252px; display: flex; flex-direction: column; border-right: 1px solid var(--sep); background: color-mix(in srgb, var(--fondo-2, var(--fondo)) 70%, var(--fondo)); }
-  body.ia-grande .k2-col { width: 440px; }
+  .k2-col { width: var(--k2-col, 252px); display: flex; flex-direction: column; border-right: 1px solid var(--sep); background: color-mix(in srgb, var(--fondo-2, var(--fondo)) 70%, var(--fondo)); }
   body.ia-grande .k2-col > :not(.k2-ia) { visibility: hidden; }
   .k2-pags { padding: 18px 14px 10px; overflow-y: auto; }
   .k2-tit { margin: 0 8px 14px; font: 600 20px/1.15 var(--titulo, var(--ui)); letter-spacing: -.01em; }
@@ -131,9 +132,9 @@
   .k2-pest a[aria-current="page"] { background: var(--metal, var(--primario)); color: var(--sobre-primario); }
 
   /* la IA abierta: en el hueco de abajo de la segunda barra; agrandada, la barra entera */
-  body.ia-lado .asesor-fondo { left: 64px; right: auto; top: var(--k2-ia-top, 50vh); bottom: 0; width: 252px; background: none; }
+  body.ia-lado .asesor-fondo { left: 64px; right: auto; top: var(--k2-ia-top, 50vh); bottom: 0; width: var(--k2-col, 252px); background: none; }
   body.ia-lado .asesor { width: 100%; height: 100%; max-height: none; border-radius: 0; border: 0; border-top: 1px solid var(--borde); box-shadow: none; animation: none; }
-  body.ia-lado.ia-grande .asesor-fondo { top: 0; width: 440px; }
+  body.ia-lado.ia-grande .asesor-fondo { top: 0; }
   body.ia-lado.ia-grande .asesor { border-top: 0; border-right: 1px solid var(--borde); }
   /* estrecha: la cabecera dice siempre «La IA» (que se vea que es una IA); se quitan el dibujo, la línea de debajo y el aviso de fallos */
   body.ia-lado:not(.ia-grande) .as-cab { padding: 10px 6px 10px 14px; }
@@ -142,11 +143,24 @@
 }
 .as-agrandar { display: none; }
 @media (min-width: 1180px) { body.ia-lado .as-agrandar { display: inline-grid; } }
-@media (min-width: 1180px) and (prefers-reduced-motion: no-preference) { body.nav-ts { transition: padding-left .2s ease; } .k2-col, .k2-top { transition: width .2s ease, left .2s ease; } }
+@media (min-width: 1180px) and (prefers-reduced-motion: no-preference) { body.nav-ts { transition: padding-left .2s ease; } .k2-col, .k2-top, .k2-tirador { transition: width .2s ease, left .2s ease; } }
 /* la IA estrecha: nada puede pedir más ancho que la barra (un correo largo en una línea estiraba la rejilla) */
 @media (min-width: 1180px) {
   body.ia-lado .as-cuerpo { overflow-wrap: anywhere; }
   body.ia-lado .as-cuerpo > * { min-width: 0; }
   body.ia-lado .as-config { grid-template-columns: minmax(0, 1fr); }
   body.ia-lado .as-cuerpo :is(p, .btn) { max-width: 100%; white-space: normal; }
+}
+/* 0.8.3c · el borde de la segunda barra se arrastra para ensancharla (la IA abierta va en ella y crece con ella). Va fuera
+   de #app (que hace su propia capa) para quedar encima de la IA: z-index 65, entre la IA (64) y las hojas (70) */
+.k2-tirador { display: none; }
+@media (min-width: 1180px) {
+  body.nav-ts:has(#app .k2) .k2-tirador { display: block; position: fixed; z-index: 65; top: 0; bottom: 0; left: calc(64px + var(--k2-col, 252px) - 6px); width: 12px; cursor: col-resize; touch-action: none; }
+  .k2-tirador::after { content: ""; position: absolute; top: 0; bottom: 0; left: 5px; width: 2px; border-radius: 2px; background: transparent; transition: background-color .15s ease; }
+  .k2-tirador:hover::after, .k2-tirador:focus-visible::after, body.k2-arrastra .k2-tirador::after { background: var(--oro-texto); }
+  .k2-tirador:focus-visible { outline: none; }
+  body.k2-arrastra { cursor: col-resize; user-select: none; -webkit-user-select: none; }
+  body.k2-arrastra, body.k2-arrastra :is(.k2-col, .k2-top, .k2-tirador) { transition: none; }
+  /* mientras se arrastra, la página no se lleva el ratón (los gráficos y los iframes se lo quedaban) */
+  body.k2-arrastra :is(#vista, .asesor) { pointer-events: none; }
 }

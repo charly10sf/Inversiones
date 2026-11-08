@@ -101,7 +101,7 @@ function htmlTurno(t, k) {
   const dom = (u) => { try { return new URL(u).hostname.replace(/^www\./, ''); } catch (e) { return u; } };
   return `<div class="as-ia${vivo ? ' vivo' : ''}" id="asT${k}">${partes}
     ${vivo && !(ult && ult.tipo === 'texto' && ult.texto) ? `<div class="as-pensando" aria-label="Pensando"><i></i><i></i><i></i><small class="as-seg">${t.t && Date.now() - t.t >= 3000 ? `${Math.round((Date.now() - t.t) / 1000)} s` : ''}</small></div>` : ''}
-    ${t.error ? `<div class="as-error">${esc(t.error)} <button class="enlace" data-as="reintentar">Volver a preguntar</button>${t.codigo === 'no-permitido' && correoSinConfirmar() ? ` · <button class="enlace" data-as="reenviar-correo">${L('Mandar el correo otra vez', 'Send the email again')}</button>` : ''}</div>` : ''}
+    ${t.error ? `<div class="as-error">${esc(t.error)}${codigoFalloDueno(t)} <button class="enlace" data-as="reintentar">Volver a preguntar</button>${t.codigo === 'no-permitido' && correoSinConfirmar() ? ` · <button class="enlace" data-as="reenviar-correo">${L('Mandar el correo otra vez', 'Send the email again')}</button>` : ''}</div>` : ''}
     ${!vivo && fuentes.length ? `<div class="as-fuentes"><span class="k">Fuentes</span>${fuentes.filter((x) => urlSegura(x.u)).map((x) => `<a href="${esc(x.u)}" target="_blank" rel="noopener noreferrer" title="${esc(x.t)}">${esc(x.d || dom(x.u))}</a>`).join('')}</div>` : ''}
   </div>`;
 }
@@ -214,8 +214,13 @@ async function abrirAsesor(pregunta, enviar) {
     else document.body.style.overflow = 'hidden';
     S.asesorAtras = conAtras(() => cerrarAsesor(true), fondo);
     const ta = $('#asTexto', fondo);
-    const ajustar = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 160) + 'px'; };
+    // 0.8.3c: la barra del cuadro solo sale cuando el texto pasa de 160 px (antes salía con el texto de ejemplo partido en dos
+    // líneas en la IA estrecha del ordenador); con el cuadro estrecho, un texto de ejemplo más corto
+    const ajustar = () => { ta.style.height = 'auto'; ta.style.height = Math.min(ta.scrollHeight, 160) + 'px'; ta.style.overflowY = ta.scrollHeight > 160 ? 'auto' : 'hidden'; };
     ta.addEventListener('input', ajustar);
+    // al cambiar de ancho (ensanchar la barra, agrandar la IA); fuera de la llamada del observador, para no avisar de un bucle
+    let anchoTa = 0;
+    if (window.ResizeObserver) new ResizeObserver(() => requestAnimationFrame(() => { if (ta.clientWidth === anchoTa) return; anchoTa = ta.clientWidth; ejemploAsesor(ta); ajustar(); })).observe(ta);
     ta.addEventListener('keydown', (e) => { if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) { e.preventDefault(); $('#asForm').requestSubmit(); } });
     $('#asForm', fondo).onsubmit = (e) => {
       e.preventDefault();
@@ -235,6 +240,17 @@ async function abrirAsesor(pregunta, enviar) {
   else if (pregunta) { ta.value = pregunta; ta.dispatchEvent(new Event('input')); }
   if (window.innerWidth > 760 && !pie_oculto()) ta.focus();
   function pie_oculto() { return $('#asPie', fondo).hidden; }
+}
+// 0.8.3c · al dueño, junto al fallo, el motivo técnico (el código y el estado de la respuesta): así una captura basta para
+// saber por qué no ha contestado, sin ir al registro de la IA. Los demás no lo ven
+const codigoFalloDueno = (t) => (veDueno() && t.codigo && t.error !== 'Parado.' ? ` <small class="as-err-cod" title="${L('Solo lo ves tú: el motivo técnico', 'Only you see this: the technical reason')}">[${esc(String(t.codigo))}${t.estadoErr ? ` · ${esc(String(t.estadoErr))}` : ''}]</small>` : '');
+// 0.8.3c · el texto de ejemplo de la caja de preguntar: con un recorte, el suyo; si no, el de siempre o, con la caja
+// estrecha (la IA de la segunda barra del ordenador, el móvil), uno corto que quepa en una línea
+function ejemploAsesor(ta = $('#asTexto')) {
+  if (!ta) return;
+  const p = AS.adjunto ? L('¿Qué quieres saber de esto?', 'What do you want to know about this?')
+    : ta.clientWidth && ta.clientWidth < 250 ? L('Pregúntale lo que quieras', 'Ask it anything') : L('Pregunta lo que quieras de tu cartera', 'Ask anything about your portfolio');
+  if (ta.placeholder !== p) ta.placeholder = p;
 }
 /* Dictar la pregunta en vez de escribirla. En el navegador, con el reconocimiento de voz del propio navegador
    (Chrome, Edge, Safari); en la app de Android, con el dictado de Google del móvil (su ventanita del micrófono).

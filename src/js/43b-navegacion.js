@@ -256,7 +256,7 @@ function pintarK2() {
   const ps = paginasDe(sec);
   $('#k2Pags').innerHTML = `<h2 class="k2-tit">${L(s.t, s.en)}</h2>${ps.length ? `<nav class="k2-lista" aria-label="${L(`Páginas de ${s.t}`, `${s.en} pages`)}">${ps.map((p) => aPag(p, p.id === pa)).join('')}</nav>`
     : `<p class="nota">${L('Está en el modo avanzado.', "It's in advanced mode.")}</p><button type="button" class="btn peq" data-modo="avanzado">${L('Pasar al avanzado', 'Switch to advanced')}</button>`}`;
-  colocarIAK2(); ubicarGta();
+  colocarIAK2(); ubicarGta(); ponerTiradorK2();
 }
 // la cuenta atrás de GTA VI va arriba con lo demás: en el ordenador, en la barra de la K2 (la cabecera de siempre se esconde)
 function ubicarGta() {
@@ -273,14 +273,80 @@ function colocarIAK2() {
   const d = $('#k2Ia'); if (!d || !iaAlLado()) return;
   document.body.style.setProperty('--k2-ia-top', Math.round(d.getBoundingClientRect().top) + 'px');
 }
-addEventListener('resize', () => requestAnimationFrame(() => { colocarIAK2(); ubicarGta(); }));
+addEventListener('resize', (e) => requestAnimationFrame(() => { colocarIAK2(); ubicarGta(); if (!e.k2) aplicarAnchoK2(); }));
 function agrandarIA(si) {
   const on = si == null ? !document.body.classList.contains('ia-grande') : si;
   document.body.classList.toggle('ia-grande', on);
   for (const b of $$('[data-as="agrandar"]')) { b.setAttribute('aria-pressed', String(on)); b.title = on ? L('Reducir la IA', 'Shrink the AI') : L('Agrandar la IA', 'Enlarge the AI'); }
   LS.set('inv-ia-grande', on);
+  marcarTiradorK2();
   requestAnimationFrame(colocarIAK2);
 }
+
+/* 0.8.3c · la segunda barra de la K2 (y la IA, que va en ella) se ensancha arrastrando su borde derecho (lo pidió Carlos el
+   8 nov). Un ancho para la barra normal y otro para la IA agrandada, guardados en este dispositivo (inv-k2-ancho); doble
+   clic en el borde vuelve al de siempre. Con el teclado: el borde se enfoca con Tab y las flechas lo mueven de 16 en 16.
+   La página siempre se queda con al menos 640 px */
+const K2_ANCHO = { n: [252, 220, 560], g: [440, 340, 800] };   // [el de siempre, el mínimo, el máximo]
+const LS_K2_ANCHO = 'inv-k2-ancho';
+const k2Modo = () => (document.body.classList.contains('ia-grande') ? 'g' : 'n');
+function k2Limites(k) { const [d, min, max] = K2_ANCHO[k]; return [d, min, Math.max(min, Math.min(max, innerWidth - 64 - 640))]; }
+function k2AnchoGuardado() { const g = LS.get(LS_K2_ANCHO, {}); return g && typeof g === 'object' ? g : {}; }
+function ponerAnchoK2(k, w) {
+  const [d, min, max] = k2Limites(k), v = Math.round(Math.max(min, Math.min(max, w || d)));
+  if (v === d && !w) document.body.style.removeProperty(`--k2-col-${k}`); else document.body.style.setProperty(`--k2-col-${k}`, v + 'px');
+  return v;
+}
+function aplicarAnchoK2() { const g = k2AnchoGuardado(); ponerAnchoK2('n', +g.n || 0); ponerAnchoK2('g', +g.g || 0); marcarTiradorK2(); }
+function anchoK2Ahora() { const k = k2Modo(), v = parseFloat(document.body.style.getPropertyValue(`--k2-col-${k}`)); return v || K2_ANCHO[k][0]; }
+function marcarTiradorK2() {
+  const t = $('#k2Tirador'); if (!t) return;
+  const [, min, max] = k2Limites(k2Modo());
+  t.setAttribute('aria-valuemin', min); t.setAttribute('aria-valuemax', max); t.setAttribute('aria-valuenow', Math.round(anchoK2Ahora()));
+}
+function guardarAnchoK2(k, w) {
+  const g = k2AnchoGuardado();
+  if (w == null) delete g[k]; else g[k] = Math.round(w);
+  LS.set(LS_K2_ANCHO, g);
+  // los gráficos de la página se vuelven a dibujar con su ancho nuevo (escuchan «resize»); e.k2 para no recolocar otra vez
+  const ev = new Event('resize'); ev.k2 = true; dispatchEvent(ev);
+}
+// fuera de #app (que hace su propia capa), para quedar encima de la IA abierta
+function ponerTiradorK2() {
+  if (!$('#k2Tirador')) document.body.insertAdjacentHTML('beforeend', `<div class="k2-tirador" id="k2Tirador" role="separator" aria-orientation="vertical" tabindex="0" aria-label="${L('Cambiar el ancho de la barra', 'Resize the sidebar')}" title="${L('Arrastra para cambiar el ancho; doble clic, el de siempre', 'Drag to resize; double-click to reset')}"></div>`);
+  aplicarAnchoK2();
+}
+document.addEventListener('pointerdown', (e) => {
+  const t = e.target.closest && e.target.closest('#k2Tirador');
+  if (!t || e.button !== 0) return;
+  e.preventDefault();
+  const k = k2Modo(), [, min, max] = k2Limites(k);
+  const w0 = anchoK2Ahora(); let w = w0;
+  document.body.classList.add('k2-arrastra');
+  try { t.setPointerCapture(e.pointerId); } catch (x) { /* sin captura, sigue igual */ }
+  const mover = (ev) => { w = ponerAnchoK2(k, Math.max(min, Math.min(max, ev.clientX - 64))); marcarTiradorK2(); colocarIAK2(); };
+  const soltar = () => {
+    t.removeEventListener('pointermove', mover); t.removeEventListener('pointerup', soltar); t.removeEventListener('pointercancel', soltar);
+    document.body.classList.remove('k2-arrastra');
+    // el clic que sale al soltar no cuenta (si se soltaba encima de la IA, tocaba una de sus sugerencias)
+    if (w !== w0) { const parar = (ev) => { ev.stopPropagation(); ev.preventDefault(); }; addEventListener('click', parar, { capture: true, once: true }); setTimeout(() => removeEventListener('click', parar, true), 0); }
+    if (w !== w0) guardarAnchoK2(k, w);
+    colocarIAK2();
+  };
+  t.addEventListener('pointermove', mover); t.addEventListener('pointerup', soltar); t.addEventListener('pointercancel', soltar);
+});
+document.addEventListener('dblclick', (e) => {
+  if (!(e.target.closest && e.target.closest('#k2Tirador'))) return;
+  const k = k2Modo(); ponerAnchoK2(k, 0); guardarAnchoK2(k, null); marcarTiradorK2(); requestAnimationFrame(colocarIAK2);
+});
+document.addEventListener('keydown', (e) => {
+  if (!(e.target && e.target.id === 'k2Tirador')) return;
+  const k = k2Modo(), [d, min, max] = k2Limites(k), w = anchoK2Ahora();
+  const n = { ArrowLeft: w - 16, ArrowRight: w + 16, Home: min, End: max }[e.key] ?? (e.key === 'Enter' ? d : null);
+  if (n == null) return;
+  e.preventDefault();
+  const v = ponerAnchoK2(k, n); guardarAnchoK2(k, v === d ? null : v); marcarTiradorK2(); requestAnimationFrame(colocarIAK2);
+});
 function hojaFijados() {
   const f = fijados().map(itemFijado).filter(Boolean), r = (LS.get('inv-recientes', []) || []).map((id) => PAG[id]).filter(verPag);
   hoja(L('Fijados y recientes', 'Pinned and recent'), `<div class="hoja-fij">
