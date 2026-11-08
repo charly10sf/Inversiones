@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toisón · Maqueta final de la 0.8.6</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ibarra+Real+Nova:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* El mismo fondo oscuro neutro de la página del 8 nov, para que Mármol y Marfil se vean sin competir. */
+  --fondo: #121110; --panel: #1b1a18; --panel-2: #24221f; --linea: #34312c;
+  --texto: #f2eee7; --tenue: #aaa298; --oro: #e3b45f; --oro-osc: #2b2214; --ok: #7fd3a0; --ok-osc: #15281d; --aviso: #e8a07a; --aviso-osc: #2e1c13;
+  --display: "Ibarra Real Nova", Georgia, "Times New Roman", serif;
+  --cuerpo: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--fondo); color: var(--texto); font: 400 15px/1.5 var(--cuerpo); }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible, textarea:focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+
+.barra { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--fondo) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--linea); }
+.barra-in { max-width: 1480px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; }
+.marca { font: 600 22px/1 var(--display); letter-spacing: .04em; margin-right: 6px; }
+.marca em { font-style: italic; color: var(--oro); font-weight: 500; }
+.grupo { display: flex; align-items: center; gap: 8px; }
+.grupo > span { font: 600 11px/1 var(--cuerpo); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--panel); border: 1px solid var(--linea); }
+.seg button { border: 0; background: none; padding: 7px 14px; border-radius: 999px; font-weight: 550; font-size: 13.5px; color: var(--tenue); white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--oro); color: #1a1205; }
+.elegidas { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.chip { padding: 5px 10px; border-radius: 999px; border: 1px solid var(--linea); font: 600 12.5px/1 var(--cuerpo); color: var(--tenue); }
+.chip.si { border-color: var(--ok); color: var(--ok); background: var(--ok-osc); }
+.chip.cambios { border-color: var(--aviso); color: var(--aviso); background: var(--aviso-osc); }
+.btn { border: 1px solid var(--linea); background: var(--panel-2); padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 13.5px; }
+.btn.pri { background: var(--oro); border-color: var(--oro); color: #1a1205; }
+
+.pest { max-width: 1480px; margin: 0 auto; padding: 22px 20px 0; display: flex; gap: 10px; flex-wrap: wrap; }
+.pest a { text-decoration: none; color: var(--tenue); padding: 12px 18px; border-radius: 14px; border: 1px solid var(--linea); background: var(--panel); display: grid; gap: 2px; min-width: 230px; }
+.pest a b { font: 600 20px/1.15 var(--display); color: var(--texto); }
+.pest a small { font-size: 12.5px; }
+.pest a[aria-current="page"] { border-color: var(--oro); background: var(--oro-osc); }
+.pest a[aria-current="page"] small { color: var(--oro); }
+
+main { max-width: 1480px; margin: 0 auto; padding: 18px 20px 80px; display: grid; gap: 22px; }
+.nota { margin: 0; max-width: 100ch; color: var(--tenue); font-size: 13.5px; }
+.nota b { color: var(--texto); font-weight: 600; }
+
+/* lo que hay que confirmar, arriba de cada pestaña */
+.decide { background: var(--panel); border: 1px solid var(--linea); border-radius: 18px; padding: 16px 18px; display: grid; gap: 12px; }
+.decide.si { border-color: var(--ok); }
+.decide.cambios { border-color: var(--aviso); }
+.decide h2 { margin: 0; font: 600 24px/1.15 var(--display); }
+.decide p { margin: 0; color: var(--tenue); max-width: 95ch; }
+.decide p b { color: var(--texto); font-weight: 600; }
+.decide .preg { padding: 10px 12px; border-radius: 12px; background: var(--oro-osc); border: 1px solid color-mix(in srgb, var(--oro) 40%, transparent); color: var(--texto); }
+.decide .preg b { color: var(--oro); }
+.decide-bot { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.decide-bot button[aria-pressed="true"].b-si { background: var(--ok); border-color: var(--ok); color: #0c1a12; }
+.decide-bot button[aria-pressed="true"].b-no { background: var(--aviso); border-color: var(--aviso); color: #22120a; }
+.decide textarea { width: 100%; min-height: 64px; resize: vertical; border-radius: 12px; border: 1px solid var(--linea); background: var(--panel-2); padding: 10px 12px; font-size: 14px; }
+.decide textarea::placeholder { color: var(--tenue); }
+
+.var { background: var(--panel); border: 1px solid var(--linea); border-radius: 18px; padding: 18px; display: grid; gap: 14px; }
+.var-cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 16px; }
+.var-cab h2 { margin: 0; font: 600 30px/1.1 var(--display); text-wrap: balance; }
+.var-cab h2 i { font-style: normal; color: var(--oro); margin-right: 8px; }
+.var-cab p { margin: 0; color: var(--tenue); max-width: 80ch; flex: 1 1 360px; }
+.fotos { display: flex; gap: 18px; align-items: flex-start; overflow-x: auto; padding-bottom: 4px; }
+.foto { margin: 0; display: grid; gap: 6px; flex: none; }
+.foto figcaption { font: 600 11px/1 var(--cuerpo); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+.foto button { border: 1px solid var(--linea); padding: 0; background: #000; border-radius: 12px; overflow: hidden; display: block; }
+.foto img { display: block; width: 100%; height: auto; }
+.foto.pc { width: min(100%, 1160px); flex: 1 1 760px; }
+.foto.mov { width: 340px; }
+.foto.mov button { border-radius: 22px; }
+.sin-mov { width: 300px; flex: none; align-self: stretch; display: grid; place-content: center; text-align: center; gap: 6px; padding: 20px; border: 1px dashed var(--linea); border-radius: 22px; color: var(--tenue); font-size: 13.5px; }
+.sin-mov b { font: 600 20px/1.2 var(--display); color: var(--texto); }
+
+.caja { position: fixed; inset: 0; z-index: 50; background: rgb(0 0 0 / .92); display: none; flex-direction: column; }
+.caja.abierta { display: flex; }
+.caja-cab { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--linea); background: var(--fondo); flex-wrap: wrap; }
+.caja-cab b { font: 600 20px/1.1 var(--display); }
+.caja-cab span { color: var(--tenue); font-size: 13px; }
+.caja-cab .der { margin-left: auto; display: flex; gap: 8px; }
+.caja-img { flex: 1; overflow: auto; display: flex; justify-content: center; padding: 16px; }
+.caja-img img { max-width: none; height: auto; border-radius: 10px; }
+.aviso { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: var(--panel-2); border: 1px solid var(--oro); color: var(--texto); padding: 10px 16px; border-radius: 12px; font-size: 14px; display: none; z-index: 60; max-width: 90vw; }
+.aviso.si { display: block; }
+
+@media (max-width: 900px) {
+  .elegidas { margin-left: 0; }
+  .pest a { min-width: 0; flex: 1 1 200px; }
+  .foto.mov, .sin-mov { width: min(100%, 340px); }
+}
+@media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="barra"><div class="barra-in">
+  <div class="marca">TOISÓN <em>0.8.6 · maqueta final, 2.ª vuelta</em></div>
+  <div class="grupo"><span>Diseño</span><div class="seg" id="segTema" role="group" aria-label="Diseño">
+    <button type="button" data-tema="marmol" aria-pressed="true">Mármol</button>
+    <button type="button" data-tema="marfil" aria-pressed="false">Marfil</button>
+  </div></div>
+  <div class="grupo"><span>Pantalla</span><div class="seg" id="segPant" role="group" aria-label="Pantalla">
+    <button type="button" data-pant="pc" aria-pressed="false">Ordenador</button>
+    <button type="button" data-pant="mov" aria-pressed="false">Móvil</button>
+    <button type="button" data-pant="dos" aria-pressed="true">Los dos</button>
+  </div></div>
+  <div class="elegidas" aria-live="polite">
+    <span class="chip" id="ch2">2: sin mirar</span>
+    <span class="chip" id="ch1">1: sin mirar</span>
+    <span class="chip" id="ch11">11: sin mirar</span>
+    <button type="button" class="btn pri" id="bCopiar">Copiar lo decidido</button>
+  </div>
+</div></div>
+
+<nav class="pest" aria-label="Pestañas">
+  <a href="#p2" data-p="2"><small>Pestaña 2 · Rendimiento</small><b>Frente a un indexado</b></a>
+  <a href="#p1" data-p="1"><small>Pestaña 1 · Ideas</small><b>Lista de seguimiento</b></a>
+  <a href="#p11" data-p="11"><small>Pestaña 11 · Cartera, solo básico</small><b>Entiende tu cartera</b></a>
+</nav>
+
+<main id="main">
+  <p class="nota" id="nota"></p>
+  <section class="decide" id="decide" aria-labelledby="decTit"></section>
+  <div id="vars" style="display:grid;gap:22px"></div>
+</main>
+
+<div class="caja" id="caja" role="dialog" aria-modal="true" aria-labelledby="cajaTit">
+  <div class="caja-cab">
+    <b id="cajaTit"></b><span id="cajaSub"></span>
+    <div class="der">
+      <button type="button" class="btn" id="cAnt" aria-label="Captura anterior">‹ Anterior</button>
+      <button type="button" class="btn" id="cSig" aria-label="Captura siguiente">Siguiente ›</button>
+      <button type="button" class="btn" id="cCerrar">Cerrar</button>
+    </div>
+  </div>
+  <div class="caja-img" id="cajaImg"></div>
+</div>
+<div class="aviso" id="aviso"></div>
+
+<script>
+const DIM = {"11X-indice-marfil-390":[390,1416],"11X-indice-marmol-390":[390,1414],"11X-leccion-marfil-390":[390,1815],"11X-leccion-marmol-390":[390,1814],"11X-marfil-1440":[1440,1132],"11X-marmol-1440":[1440,1132],"1X-tabla-marfil-1440":[1440,1254],"1X-tabla-marfil-390":[390,1745],"1X-tabla-marmol-1440":[1440,1232],"1X-tabla-marmol-390":[390,1741],"1X-tarjetas-marfil-1440":[1440,1494],"1X-tarjetas-marmol-1440":[1440,1472],"2X-marfil-1440":[1440,2367],"2X-marfil-390":[390,2300],"2X-marmol-1440":[1440,2320],"2X-marmol-390":[390,2295]};
+// cada pestaña: lo que se confirma y sus vistas; cada vista con su captura de ordenador y las del móvil
+const P = {
+  '2': {
+    nota: '<b>Apartado «Frente a un indexado» de Rendimiento</b> (en el móvil, Análisis › Rentabilidad). Ordenador en avanzado, con los candados de Toisón Dorado (otras referencias, de dónde sale la diferencia, captura en subidas y bajadas); móvil en básico. La misma cartera de prueba de 5 posiciones: 19.900 € metidos, 23.380 € hoy; el mismo dinero en un indexado del MSCI World, 24.150 €.',
+    decide: '¿Te vale así?',
+    pregunta: '<b>Cambiado con lo que dijiste (20:04):</b> el «cara a cara» ahora es solo la bolita de la diferencia. Ordenador: una tarjeta grande de todo el ancho con la gráfica y, al lado, la bolita y las cifras; debajo, filas parejas (diferencia y momentos, final de año y TWR), las medidas en una fila y los tres candados juntos. Móvil: de 5 tarjetas a 3 (la bolita con la diferencia en el tiempo, las dos líneas, final de cada año con la tabla a un toque) y escala en las gráficas.',
+    v: [['2X', 'Todo junto', 'Ordenador: la tarjeta grande arriba y debajo filas de la misma altura. Móvil: diferencia (con la bolita), dos líneas y final de cada año.', '2X', ['2X']]],
+  },
+  '1': {
+    nota: '<b>En Ideas, en lugar de «Siguiendo».</b> Ordenador en avanzado (columnas a elegir; los múltiplos, más de 10 valores y más de una lista, con Toisón Dorado); móvil en básico. Precios y fechas de ejemplo.',
+    decide: '¿Te vale así?',
+    pregunta: '<b>Cambiado:</b> las dos tarjetas de abajo, a la par (mitad y mitad, misma altura); «lo que viene» pasa a la de la IA. El móvil, como estaba (te valía). El conmutador «Vista: Tabla | Tarjetas» sigue arriba a la derecha y se recuerda.',
+    v: [['1X · Tabla', 'Vista de tabla', 'Con «Columnas» para elegir lo que ves (PER con candado). La fila marcada es la que abre el panel de abajo.', '1X-tabla', ['1X-tabla']],
+        ['1X · Tarjetas', 'Vista de tarjetas', 'La misma lista en tarjetas, con la gráfica del mes, «pesaría» y «solape». La tarjeta marcada es la del panel de abajo.', '1X-tarjetas', []]],
+  },
+  '11': {
+    nota: '<b>En Cartera, junto a Posiciones, solo en básico.</b> Las lecciones usan los números de la misma cartera de prueba (TER del MSCI World 0,12 %, unos 31 € al año en comisiones de fondos).',
+    decide: '¿Te vale así?',
+    pregunta: '<b>Cambiado:</b> «Para ti ahora» y el avance van juntos en una tira baja (en el ordenador, una sola línea). El índice se estrecha y la lección se agranda: letra más grande, un ejemplo y las cifras en una fila. En el móvil, la lección con más letra y menos margen. La progresión sigue igual: leídas por capítulo, 4 de 20, «Leída» en cada lección; sin confeti ni rachas.',
+    v: [['11X', 'Libro con «Para ti ahora»', 'Ordenador: la tira de arriba, el índice estrecho y la lección grande. Móvil: la tira, el índice y, al tocar una lección, su pantalla con volver.', '11X', ['11X-indice', '11X-leccion']]],
+  },
+};
+const TEMA = { marmol: 'Mármol', marfil: 'Marfil' };
+const MODO = { '2': 'avanzado', '1': 'avanzado', '11': 'básico' };
+const PIE = { '2X': 'Móvil · 390 · básico', '1X-tabla': 'Móvil · 390 · básico (solo tabla)', '11X-indice': 'Móvil · el índice', '11X-leccion': 'Móvil · al tocar una lección' };
+const leer = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch (e) { return d; } };
+const guardar = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} };
+const st = { p: '2', tema: leer('mf2-tema', 'marmol'), pant: leer('mf2-pant', 'dos'), dec: leer('mf2-dec', {}), notas: leer('mf2-notas', {}) };
+const $ = (s) => document.querySelector(s);
+const src = (id, w) => `img/${id}-${st.tema}-${w}.webp`;
+const fotoPc = (id) => { const [w, h] = DIM[`${id}-${st.tema}-1440`]; return `<figure class="foto pc"><figcaption>Ordenador · 1440 · ${MODO[st.p]}</figcaption><button type="button" data-ver="${id}" data-w="1440" aria-label="Ver ${id} en el ordenador a tamaño real"><img src="${src(id, 1440)}" width="${w}" height="${h}" alt="${id} en el ordenador, ${TEMA[st.tema]}" loading="lazy"></button></figure>`; };
+const fotoMov = (id) => { const [w, h] = DIM[`${id}-${st.tema}-390`]; return `<figure class="foto mov"><figcaption>${PIE[id] || 'Móvil · 390'}</figcaption><button type="button" data-ver="${id}" data-w="390" aria-label="Ver ${id} en el móvil a tamaño real"><img src="${src(id, 390)}" width="${w}" height="${h}" alt="${id} en el móvil, ${TEMA[st.tema]}" loading="lazy"></button></figure>`; };
+const SIN_MOV = '<div class="sin-mov"><b>En el móvil, solo tabla</b><span>Las tarjetas son del ordenador.</span></div>';
+
+// la lista de capturas de la pestaña, para pasar con flechas en la caja
+const capturas = () => P[st.p].v.flatMap(([n, t, , pc, movs]) => [...(st.pant !== 'mov' ? [[pc, 1440, t]] : []), ...(st.pant !== 'pc' ? movs.map((m) => [m, 390, t]) : [])]);
+
+function pintar() {
+  for (const a of document.querySelectorAll('.pest a')) a.setAttribute('aria-current', a.dataset.p === st.p ? 'page' : 'false');
+  for (const b of document.querySelectorAll('#segTema button')) b.setAttribute('aria-pressed', String(b.dataset.tema === st.tema));
+  for (const b of document.querySelectorAll('#segPant button')) b.setAttribute('aria-pressed', String(b.dataset.pant === st.pant));
+  const d = P[st.p], dec = st.dec[st.p];
+  $('#nota').innerHTML = d.nota + ' Toca una captura para verla a tamaño real.';
+  $('#decide').className = 'decide' + (dec ? ' ' + dec : '');
+  $('#decide').innerHTML = `<h2 id="decTit">${d.decide}</h2><p class="preg">${d.pregunta}</p>
+    <div class="decide-bot"><button type="button" class="btn b-si" data-dec="si" aria-pressed="${dec === 'si'}">Me vale así</button><button type="button" class="btn b-no" data-dec="cambios" aria-pressed="${dec === 'cambios'}">Quiero cambios</button></div>
+    <label class="nota" for="tNota">Lo que cambiarías (se copia con «Copiar lo decidido»):</label>
+    <textarea id="tNota" placeholder="Por ejemplo: en el móvil, el cara a cara antes que la de dos líneas">${(st.notas[st.p] || '').replace(/</g, '&lt;')}</textarea>`;
+  $('#vars').innerHTML = d.v.map(([n, t, lin, pc, movs]) => {
+    const fpc = st.pant !== 'mov' ? fotoPc(pc) : '';
+    const fmov = st.pant !== 'pc' ? (movs.length ? movs.map(fotoMov).join('') : SIN_MOV) : '';
+    return `<section class="var" aria-label="${n}"><div class="var-cab"><h2><i>${n}</i>${t}</h2><p>${lin}</p></div><div class="fotos">${fpc}${fmov}</div></section>`;
+  }).join('');
+  for (const p of ['2', '1', '11']) { const c = $('#ch' + p), v = st.dec[p]; c.textContent = `${p}: ${v === 'si' ? 'me vale' : v === 'cambios' ? 'cambios' : 'sin mirar'}`; c.className = 'chip' + (v ? ' ' + v : ''); }
+}
+const caja = { i: -1 };
+function abrir(id, w) { caja.i = capturas().findIndex((c) => c[0] === id && c[1] === +w); pintarCaja(); $('#caja').classList.add('abierta'); $('#cCerrar').focus(); }
+function pintarCaja() {
+  const [id, w, t] = capturas()[caja.i], [ww, hh] = DIM[`${id}-${st.tema}-${w}`];
+  $('#cajaTit').textContent = t;
+  $('#cajaSub').textContent = `${TEMA[st.tema]} · ${w === 1440 ? 'ordenador' : (PIE[id] || 'móvil').toLowerCase()} · ${caja.i + 1} de ${capturas().length}`;
+  $('#cajaImg').innerHTML = `<img src="${src(id, w)}" width="${ww}" height="${hh}" alt="${t} a tamaño real">`;
+  $('#cajaImg').scrollTop = 0;
+}
+function mover(d) { const n = capturas().length; caja.i = (caja.i + d + n) % n; pintarCaja(); }
+function cerrar() { $('#caja').classList.remove('abierta'); caja.i = -1; }
+function aviso(t) { const a = $('#aviso'); a.textContent = t; a.classList.add('si'); clearTimeout(aviso.t); aviso.t = setTimeout(() => a.classList.remove('si'), 3200); }
+
+document.addEventListener('click', (e) => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.dataset.tema) { st.tema = t.dataset.tema; guardar('mf2-tema', st.tema); pintar(); if (caja.i >= 0) pintarCaja(); }
+  else if (t.dataset.pant) { st.pant = t.dataset.pant; guardar('mf2-pant', st.pant); pintar(); }
+  else if (t.dataset.dec) { st.dec[st.p] = st.dec[st.p] === t.dataset.dec ? undefined : t.dataset.dec; guardar('mf2-dec', st.dec); pintar(); if (st.dec[st.p] === 'cambios') $('#tNota').focus(); }
+  else if (t.dataset.ver) abrir(t.dataset.ver, t.dataset.w);
+  else if (t.id === 'cCerrar') cerrar();
+  else if (t.id === 'cAnt') mover(-1);
+  else if (t.id === 'cSig') mover(1);
+  else if (t.id === 'bCopiar') {
+    const txt = ['2', '1', '11'].map((p) => { const v = st.dec[p], n = (st.notas[p] || '').trim(); return `Pestaña ${p}: ${v === 'si' ? 'me vale' : v === 'cambios' ? 'cambios' : 'sin mirar'}${n ? ' (' + n + ')' : ''}`; }).join(' · ');
+    navigator.clipboard.writeText(txt).then(() => aviso('Copiado: ' + txt), () => aviso(txt));
+  }
+});
+document.addEventListener('input', (e) => { if (e.target.id === 'tNota') { st.notas[st.p] = e.target.value; guardar('mf2-notas', st.notas); } });
+document.addEventListener('keydown', (e) => {
+  if (caja.i < 0) return;
+  if (e.key === 'Escape') cerrar(); else if (e.key === 'ArrowLeft') mover(-1); else if (e.key === 'ArrowRight') mover(1);
+});
+function deHash() { const m = (location.hash || '').match(/^#p(2|1|11)$/); st.p = m ? m[1] : '2'; if (caja.i >= 0) cerrar(); pintar(); }
+addEventListener('hashchange', deHash);
+deHash();
+</script>
+</body>
+</html>
