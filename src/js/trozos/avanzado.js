@@ -139,6 +139,56 @@ const PAV_CSS = `
 .ro-dest b { font-weight: 650; text-align: right; }
 .ro-dest small { grid-column: 1 / -1; margin-left: 18px; font-size: 12.5px; color: var(--tenue); }
 @media (max-width: 560px) { .ro-fila { grid-template-columns: minmax(0, 1fr) auto; grid-template-areas: "n paso" "dif dif" "pista pista"; } .ro-dif { text-align: left; display: flex; gap: 8px; align-items: baseline; } .ro-dif small { display: inline; } }
+/* 0.8.3a · Rentabilidad y Riesgo en básico: una cifra grande por tarjeta y su «¿Qué es?» */
+.pab-lead { margin: 0 0 2px; font-size: 14px; line-height: 1.45; color: var(--texto-2); }
+.pab { display: flex; flex-direction: column; }
+.pab-cab { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; font: 600 15px/1.3 var(--ui); color: var(--texto); }
+.pab-cab svg { width: 18px; height: 18px; flex: none; color: var(--oro-texto); }
+[data-tema="marfil"] .pab-cab { font: 600 16px/1.3 var(--marca); color: var(--primario); }
+.pab-grande { margin: 2px 0 6px; font: 650 30px/1.15 var(--ui); font-variant-numeric: tabular-nums; letter-spacing: -.015em; overflow-wrap: anywhere; }
+.pab-grande small { font-size: 15px; font-weight: 500; color: var(--texto-2); letter-spacing: 0; }
+.pab-grande.down { color: var(--baja); } .pab-grande.warn { color: var(--aviso); }
+.pab-frase { margin: 0; font: 600 24px/1.3 var(--ui); font-variant-numeric: tabular-nums; }
+.pab-frase b { font-weight: 700; }
+.pab-sub { margin: 6px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--texto-2); }
+.pab-sub b { font-weight: 650; }
+.pab-que { margin: auto 0 0; padding-top: 12px; border-top: 1px solid var(--sep); font-size: 13px; line-height: 1.5; color: var(--texto-2); }
+.pab > :not(.pab-que) + .pab-que { margin-top: 14px; }
+.pab-que b { font-weight: 600; color: var(--oro-texto); }
+.pab-escala { display: flex; gap: 5px; margin: 4px 0 10px; }
+.pab-escala i { flex: 1; max-width: 28px; height: 7px; border-radius: 9px; background: var(--sep); }
+.pab-escala i.on { background: var(--oro-texto); }
+.pab-cifras { display: flex; flex-wrap: wrap; gap: 10px 28px; margin-top: 14px; }
+.pab-cifras small { display: block; font-size: 12px; color: var(--tenue); }
+.pab-cifras b { font: 600 18px/1.3 var(--ui); font-variant-numeric: tabular-nums; }
+.pab-meses { display: grid; grid-template-columns: repeat(6, minmax(0, 76px)); gap: 8px; margin-top: 12px; }
+@media (max-width: 560px) { .pab-meses { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.pab-meses span { padding: 7px 10px; border-radius: var(--r-s); background: var(--superficie-2); border: 1px solid var(--sep); }
+.pab-meses small { display: block; font-size: 11.5px; color: var(--tenue); text-transform: capitalize; }
+.pab-meses b { font-size: 14px; font-weight: 650; font-variant-numeric: tabular-nums; }
+.pab-crisis { display: grid; gap: 4px; margin: 12px 0 2px; }
+.pab-cr { display: grid; grid-template-columns: minmax(110px, 1.1fr) minmax(0, 1.4fr) auto; gap: 14px; align-items: center; min-height: 52px; }
+.pab-cr b { display: block; font-weight: 600; font-size: 14px; }
+.pab-cr small { display: block; font-size: 12px; color: var(--tenue); font-variant-numeric: tabular-nums; }
+.pab-cr-v { text-align: right; white-space: nowrap; }
+.pab-cr-v b { font-size: 15px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.pab-cr .pav-pista { height: 9px; }
+.pab-pregs { display: grid; gap: 10px; }
+.pab-ia.pav-c12 .pab-pregs { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.pab-preg { min-height: 48px; padding: 10px 14px; border-radius: var(--r-m, 12px); border: 1px solid var(--borde); background: var(--superficie-2); color: var(--texto); font: 500 13.5px/1.35 var(--ui); text-align: left; cursor: pointer; }
+.pab-preg:hover { border-color: var(--oro-texto); }
+@media (min-width: 900px) { .pab-grande { font-size: 32px; } }
+@media (max-width: 560px) {
+  .pab-frase { font-size: 21px; } .pab-grande { font-size: 27px; }
+  .pab-cr { grid-template-columns: minmax(96px, 1fr) minmax(48px, .8fr) auto; gap: 10px; }
+}
+/* en el móvil, «En un mes malo» y «Tu peor caída» van de dos en dos, como en la maqueta */
+@media (min-width: 380px) and (max-width: 899px) {
+  .panel-av:has(.pab-escala) { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(2), .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(3) { grid-column: span 1; }
+  .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(2) .pab-grande, .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(3) .pab-grande { font-size: 23px; }
+  .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(2) .pab-que, .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(3) .pab-que { display: none; }
+}
 `;
 const ponerCssAv = () => { if (!$('#pavCss')) { const s = document.createElement('style'); s.id = 'pavCss'; s.textContent = PAV_CSS; document.head.appendChild(s); } };
 
@@ -178,7 +228,8 @@ function pintarPanelAv() {
   const el = $('#panelAv'); if (!el) return;
   ponerCssAv();
   const p = el.dataset.p, M = S.M || calcular();
-  const f = { rentab: pavRentab, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
+  // 0.8.3a: en básico, Rentabilidad y Riesgo sencillos (las demás, como en el avanzado)
+  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { rentab: pavRentab, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
@@ -223,6 +274,12 @@ function pavBenchSerie(id, desde) {
   const antes = precioEn(h, desde, 'antes'); if (antes) s.unshift({ d: desde, idx: antes });
   return s;
 }
+// 0.8.3a: lo ganado, el mismo en los dos modos: subida sin vender + ventas hechas + dividendos e intereses apuntados
+function pavGanado(M) {
+  const ventas = sum((S.cartera.movimientos || []).filter((m) => m.tipo === 'venta'), (m) => m.resultado || 0);
+  const rcm = sum(Object.values(S.cartera.fiscal || {}), (d) => +d.rcm || 0);
+  return { ventas, rcm, total: M.pl + ventas + rcm };
+}
 function pavRentab(M) {
   const R = rentabilidadCartera(M), tw = R.twr, s = tw && tw.serie;
   const anio = new Date().getFullYear(), ini = `${anio}-01-01`;
@@ -238,8 +295,7 @@ function pavRentab(M) {
   const porQue = !s ? `<p class="nota" style="margin:12px 0 0">${R.sinFecha && R.sinFecha.length ? L(`La de tu cartera necesita la fecha de compra de ${esc(R.sinFecha.slice(0, 4).join(', '))}${R.sinFecha.length > 4 ? '…' : ''}: ponla en su ficha o importa tus movimientos.`, `Your portfolio's needs the purchase date of ${esc(R.sinFecha.slice(0, 4).join(', '))}.`) : L('La de tu cartera sale en cuanto haya historial suficiente.', 'Yours shows up once there is enough history.')}</p>` : '';
   const tablaPer = filas.length ? pavTabla(cab, filas) : `<p class="nota" style="margin:0">${R.sinFecha && R.sinFecha.length ? L(`Para calcularla hace falta la fecha de compra de: ${esc(R.sinFecha.slice(0, 4).join(', '))}. Ponla en su ficha.`, `It needs the purchase date of: ${esc(R.sinFecha.slice(0, 4).join(', '))}. Add it on its page.`) : L('Aún no hay historial suficiente para calcularla.', 'Not enough history yet to work it out.')}</p>`;
   const tir = R.tir != null && !R.corto ? pctS(R.tir, 1) : '—';
-  const ventas = sum((S.cartera.movimientos || []).filter((m) => m.tipo === 'venta'), (m) => m.resultado || 0);
-  const rcm = sum(Object.values(S.cartera.fiscal || {}), (d) => +d.rcm || 0);
+  const { ventas, rcm } = pavGanado(M);
   const kpis = pavKpis([
     [L('Rentabilidad por tiempo (TWR)', 'Time-weighted return (TWR)'), tw ? pctS(tw.total, 1) : '—', tw ? cls(tw.total) : '', tw && tw.anual != null ? L(`${pctS(tw.anual, 1)} al año`, `${pctS(tw.anual, 1)} a year`) : ''],
     [L('Con tus aportaciones (TIR)', 'Money-weighted (IRR)'), tir, R.tir != null ? cls(R.tir) : '', L('al año', 'a year')],
@@ -287,24 +343,30 @@ function pavCorr(a, b) {
 }
 // los precios de algo en las mismas fechas que la serie de tu cartera
 const pavEnFechas = (h, serie) => serie.map((x) => ({ d: x.d, v: precioEn(h, x.d, 'antes') })).filter((x) => x.v);
+// 0.8.3a: las cifras de riesgo, una sola vez para los dos modos (la misma cifra no puede salir distinta en básico y en avanzado)
+function pavRiesgoBase(M) {
+  const s = serieCartera(M, 366);
+  if (s.length < 30) return null;
+  const vol = volatilidadSerie(s), r1 = (s[s.length - 1].v / s[0].v - 1) * 100, rr = pavRetornos(s);
+  const dias = diasEntre(s[0].d, s[s.length - 1].d) || 365;
+  const hb = histBench('fidelity-world'), sb = hb ? pavEnFechas(hb, s) : [];
+  const enSerie = s[s.length - 1].v;   // lo que tiene precios (sin el efectivo, que no cae)
+  return { s, vol, r1, rr, dias, hb, sb, enSerie, cr: claseRiesgo(vol), volB: sb.length === s.length ? volatilidadSerie(sb) : null,
+    var95: vol ? 1.645 * (vol / 100) / Math.sqrt(12) * enSerie : null, peor1: caidaMaxima(s), c10: caidaDetalle(serieCartera(M, 3650)) };
+}
 function pavRiesgo(M) {
   if (S.detAv) delete S.detAv.riesgo;   // sin precios sale antes: que no quede el cálculo de antes
-  const s = serieCartera(M, 366);
-  if (s.length < 30) return pavT('c12', L('Riesgo', 'Risk'), `<p class="nota" style="margin:0">${L('Faltan precios del último año para calcularlo.', 'Prices for the last year are missing.')}</p>`);
-  const vol = volatilidadSerie(s), r1 = (s[s.length - 1].v / s[0].v - 1) * 100, rr = pavRetornos(s);
-  const dias = diasEntre(s[0].d, s[s.length - 1].d) || 365, k = Math.sqrt((rr.length * 365) / dias);
+  const B = pavRiesgoBase(M);
+  if (!B) return pavT('c12', L('Riesgo', 'Risk'), `<p class="nota" style="margin:0">${L('Faltan precios del último año para calcularlo.', 'Prices for the last year are missing.')}</p>`);
+  const { s, vol, r1, rr, dias, sb, enSerie, var95, peor1, c10, cr } = B;
+  const k = Math.sqrt((rr.length * 365) / dias);
   const neg = rr.filter((x) => x < 0), dDown = neg.length ? Math.sqrt(sum(neg, (x) => x * x) / rr.length) * k * 100 : null;
   // con menos de un año de precios, la subida se pasa a «al año» para compararla con la volatilidad (que ya es anual)
   const r1a = dias < 330 ? (Math.pow(1 + r1 / 100, 365 / dias) - 1) * 100 : r1;
   const sharpe = vol ? r1a / vol : null, sortino = dDown ? r1a / dDown : null;
-  const hb = histBench('fidelity-world'), sb = hb ? pavEnFechas(hb, s) : [];
   let beta = null;
   if (sb.length === s.length) { const rb = pavRetornos(sb), n = Math.min(rr.length, rb.length), mb = sum(rb) / n, mr = sum(rr) / n; let cv = 0, vb = 0; for (let i = 0; i < n; i++) { cv += (rr[i] - mr) * (rb[i] - mb); vb += (rb[i] - mb) ** 2; } beta = vb ? cv / vb : null; }
-  const enSerie = s[s.length - 1].v;   // lo que tiene precios (sin el efectivo, que no cae)
-  const var95 = vol ? 1.645 * (vol / 100) / Math.sqrt(12) * enSerie : null;
-  const peor1 = caidaMaxima(s), c10 = caidaDetalle(serieCartera(M, 3650));
   const top = M.filas.find((f) => f.inst.tipo === 'Acción') || M.filas[0], top5 = sum(M.filas.slice(0, 5), (f) => f.peso);
-  const cr = claseRiesgo(vol);
   const kp = pavKpis([
     [L('Volatilidad (1 año)', 'Volatility (1 year)'), pct(vol, 1), '', cr ? L(`riesgo ${cr} de 7`, `risk ${cr} of 7`) : ''],
     dias < 330 ? [L(`Rentabilidad (${Math.round(dias / 30)} meses)`, `Return (${Math.round(dias / 30)} months)`), pctS(r1, 1), cls(r1)] : [L('Rentabilidad (1 año)', 'Return (1 year)'), pctS(r1, 1), cls(r1)],
@@ -325,7 +387,7 @@ function pavRiesgo(M) {
   // lo que la IA necesita para explicar estas cifras (Carlos, 4 nov: decía «no tengo el dato de origen»): cómo sale cada una,
   // con qué números y el mismo cálculo hecho al MSCI World en las mismas fechas, para que pueda comparar
   try {
-    const volB = sb.length === s.length ? volatilidadSerie(sb) : null, r1B = sb.length === s.length ? (sb[sb.length - 1].v / sb[0].v - 1) * 100 : null;
+    const volB = B.volB, r1B = sb.length === s.length ? (sb[sb.length - 1].v / sb[0].v - 1) * 100 : null;
     const nomC = cinco.map((f) => f.inst.corto || f.inst.nombre);
     const pares = []; for (let i = 0; i < cinco.length; i++) for (let j = i + 1; j < cinco.length; j++) { const c = rets[i] && rets[j] ? pavCorr(rets[i], rets[j]) : null; if (c != null) pares.push(`${nomC[i]} y ${nomC[j]}: ${fmtNum(c, 2)}`); }
     S.detAv = Object.assign(S.detAv && S.detAv.uid === uidActual() ? S.detAv : { uid: uidActual() }, { riesgo: [
@@ -353,6 +415,130 @@ function pavRiesgo(M) {
     pavT('c12', L('Caída desde el máximo', 'Drop from the high'), `${caidaTxt ? `<p style="margin:0 0 8px">${caidaTxt}</p>` : ''}<div class="chart" id="pavCaida"></div>`, L('Cada día, lo lejos que estaba tu cartera de su máximo hasta entonces, con tus posiciones de hoy (hasta 10 años atrás).', 'Each day, how far your portfolio was from its high so far, with today\'s holdings.')),
     pavT('c12', L('Posición a posición', 'Holding by holding'), porPos, L('Riesgo: la escala oficial de 1 a 7. Volatilidad y beta, del último año.', 'Risk: the official 1–7 scale.')),
   ].join('');
+}
+
+/* =========================== 0.8.3a · Rentabilidad y Riesgo en básico ===========================
+   Doc del básico y el avanzado (Lucía): una cifra grande por tarjeta, en euros y en frases, con su «¿Qué es?»; sin
+   siglas. Las cifras salen del mismo cálculo que el avanzado (pavGanado, pavCostesBase, pavRiesgoBase): un solo
+   cálculo, dos maneras de contarlo. En básico, Ingresos y costes no tienen pestaña: van como dos tarjetas aquí. */
+const pabDur = (d) => L(duracion(d), d < 75 ? `${Math.round(d)} days` : d < 548 ? `${Math.round(d / 30.4)} months` : `${fmtNum(d / 365, 1)} years`);
+const pabT = (c, titulo, cuerpo, que = '', id = '') => `<section class="pav-t pab pav-${c}"${id ? ` id="${id}"` : ''}><h2 class="pab-cab">${titulo}</h2>${cuerpo}${que ? `<p class="pab-que"><b>${L('¿Qué es?', 'What is it?')}</b> ${que}</p>` : ''}</section>`;
+const pabLead = (t) => `<p class="pab-lead">${t}</p>`;
+function pabPreguntas(qs, c = 'c4') {
+  return `<section class="pav-t pab pab-ia pav-${c}"><h2 class="pab-cab">${ICONOS_PL.asistente}<span>${L('Pregúntale a la IA', 'Ask the AI')}</span></h2><div class="pab-pregs">${qs.map((q) => `<button type="button" class="pab-preg" data-accion="asesor" data-q="${esc(q)}">${esc(q)}</button>`).join('')}</div></section>`;
+}
+
+/* ---------- Rentabilidad, en básico ---------- */
+function pavRentabBas(M) {
+  // sin la fecha de compra de algo, lo metido con fechas se queda corto: entonces, lo que costó lo que tienes
+  const R = rentabilidadCartera(M), G = pavGanado(M), metido = R.sinFecha.length || !R.metido ? M.invertido : R.metido;
+  const pg = metido ? (G.total / metido) * 100 : null, tir = R.tir != null && !R.corto ? R.tir : null;
+  const gana = G.total >= 0;
+  const frase = `${gana ? L('Has ganado', "You've made") : L('Has perdido', "You've lost")} <b class="${cls(G.total)}">${eur(Math.abs(G.total), 0)}</b>${pg != null ? L(`, un ${pct(Math.abs(pg), 1)}`, `, ${pct(Math.abs(pg), 1)}`) : ''}.`;
+  const alAnio = tir != null ? L(`Contando cuándo metiste el dinero, un <b class="${cls(tir)}">${pctS(tir, 1)}</b> al año.`, `Counting when you put the money in, <b class="${cls(tir)}">${pctS(tir, 1)}</b> a year.`)
+    : R.sinFecha && R.sinFecha.length ? L(`Para saber cuánto es al año hace falta la fecha de compra de ${esc(R.sinFecha.slice(0, 3).join(', '))}${R.sinFecha.length > 3 ? '…' : ''}: ponla en su ficha.`, `To work out the yearly figure, add the purchase date of ${esc(R.sinFecha.slice(0, 3).join(', '))}.`)
+    : R.corto ? L('Cuánto es al año, en cuanto lleves mes y medio: antes engañaría.', 'The yearly figure shows after six weeks: before that it would mislead.') : '';
+  const cifras = `<div class="pab-cifras"><div><small>${L('Has metido', 'Put in')}</small><b>${eur(metido, 0)}</b></div><div><small>${L('Vale hoy', 'Worth today')}</small><b>${eur(M.total, 0)}</b></div>${R.sacado > 0 ? `<div><small>${L('Has sacado', 'Taken out')}</small><b>${eur(R.sacado, 0)}</b></div>` : ''}</div>`;
+  const hero = pabT('c12', L('Lo que has ganado', 'What you have made'), `<p class="pab-frase">${frase}</p>${alAnio ? `<p class="pab-sub">${alAnio}</p>` : ''}${cifras}`,
+    L('Lo que vale hoy lo que tienes, menos lo que te costó, más lo que ganaste al vender y los dividendos que apuntaste. «Al año» tiene en cuenta cuándo entró cada euro: no es lo mismo ganar un 10 % en un año que en cinco.', 'What you hold is worth today, minus its cost, plus what you made selling and the dividends you recorded. «A year» counts when each euro went in.'));
+  const s = R.twr && R.twr.serie;
+  const graf = pabT('c8', L('Lo que has metido y lo que vale', 'What you put in and what it is worth'), s && s.length > 2
+    ? `<div class="chart" id="pabMetido"></div><p class="pav-ley"><span><i style="background:var(--grafica)"></i>${L('Lo que vale', 'Worth')}</span><span><i style="background:var(--texto-2)"></i>${L('Lo que has metido', 'Put in')}</span></p>`
+    : `<p class="nota" style="margin:0">${R.sinFecha && R.sinFecha.length ? L('Sale en cuanto tus posiciones tengan fecha de compra.', 'It shows once your holdings have a purchase date.') : L('Sale en cuanto haya historial suficiente.', 'It shows once there is enough history.')}</p>`,
+    L('La distancia entre las dos líneas es lo que has ganado (o perdido) con lo que tienes hoy; los escalones, cada vez que metiste dinero.', 'The gap between the two lines is what you have made with what you hold today; the steps, each time you put money in.'));
+  // ¿y si lo hubieras metido en un indexado? Cada euro, el mismo día, en un fondo del MSCI World en euros
+  const bm = R.flujos.length && !R.sinFecha.length ? benchMismoDinero(R, 'fidelity-world') : null;
+  let idx;
+  if (bm && !bm.sinDatos) {
+    const dif = R.valor - bm.valor;
+    idx = `<p class="pab-grande">${eur(bm.valor, 0)}</p><p class="pab-sub">${L(`tendrías con el mismo dinero, los mismos días, en un indexado de la bolsa mundial. Lo tuyo${M.total - R.valor > 1 ? ', sin el efectivo,' : ''} vale ${eur(R.valor, 0)}: <b class="${cls(dif)}">${eur(Math.abs(dif), 0)} ${dif >= 0 ? 'más' : 'menos'}</b>.`, `you would have with the same money, on the same days, in a world index fund. Yours${M.total - R.valor > 1 ? ', without cash,' : ''} is worth ${eur(R.valor, 0)}: <b class="${cls(dif)}">${eur(Math.abs(dif), 0)} ${dif >= 0 ? 'more' : 'less'}</b>.`)}</p>`;
+  } else idx = `<p class="nota" style="margin:0">${bm && bm.desdeDatos ? L(`El indexado tiene precios desde ${fechaConAnio(bm.desdeDatos)}, y tu primera compra es anterior.`, `The index fund has prices from ${fechaConAnio(bm.desdeDatos)}; your first purchase is earlier.`) : L('Sale en cuanto tus posiciones tengan fecha de compra.', 'It shows once your holdings have a purchase date.')}</p>`;
+  const indexado = pabT('c4', L('¿Y en un indexado?', 'And in an index fund?'), idx, L('Un fondo del MSCI World en euros, con los dividendos dentro y su comisión descontada. Lo de hoy no dice nada de lo que pasará.', 'An MSCI World fund in euros, dividends included and its fee taken off. Today says nothing about the future.'));
+  // lo que cobras y lo que te cuesta: las dos tarjetas de Ingresos y costes
+  const D = dividendosMeses(M), nomMes = (k) => { const d = deIso(k + '-01'); return IDIOMA === 'en' ? MESES_EN[d.getMonth()].slice(0, 3) : MESES[d.getMonth()]; };
+  const meses = D.meses.filter((m) => m.neto >= 1);
+  const cobras = pabT('c6', L('Lo que cobrarás', 'What you will collect'), D.bruto
+    ? `<p class="pab-grande">≈ ${eur(D.neto, 0)}</p><p class="pab-sub">${L(`en los próximos 12 meses, ya descontado lo de Hacienda (${eur(D.bruto, 0)} antes).`, `over the next 12 months, after tax (${eur(D.bruto, 0)} before).`)}</p><div class="pab-meses">${meses.slice(0, 6).map((m) => `<span><small>${nomMes(m.k)}</small><b>${eur(m.neto, 0)}</b></span>`).join('')}</div>`
+    : D.sinCal.length ? `<p class="pab-sub" style="margin-top:0">${L(`Aún no están las fechas. Lo que reparten al año: ${yLista(D.sinCal.map((x) => `${esc(x.n)} (unos ${eur(x.anual, 0)})`))}.`, `Dates not in yet. What they pay a year: ${D.sinCal.map((x) => `${esc(x.n)} (about ${eur(x.anual, 0)})`).join(', ')}.`)}</p>`
+    : `<p class="pab-sub" style="margin-top:0">${L('Ninguna de tus posiciones reparte dividendo: los fondos de acumulación lo reinvierten dentro.', 'None of your holdings pays a dividend: accumulating funds reinvest it.')}</p>`,
+    L('Repite lo que pagó cada empresa el último año, con lo que tienes hoy. No está prometido: lo decide cada empresa.', "Repeats what each company paid last year, with what you hold today. Not guaranteed: each company decides."), 'pab-div');
+  const C = pavCostesBase(M), caro = [...C.conTer].sort((a, b) => b.valor * b.inst.ter - a.valor * a.inst.ter)[0];
+  const cuesta = pabT('c6', L('Lo que te cuesta', 'What it costs you'), C.conTer.length
+    ? `<p class="pab-grande">${eur(C.anual, 0)} <small>${L('al año', 'a year')}</small></p><p class="pab-sub">${L(`≈ ${eur(C.total20, 0)} en 20 años si lo de hoy se queda ahí.`, `≈ ${eur(C.total20, 0)} over 20 years if today's amount stays.`)}${caro ? L(` El que más: ${pavNom(caro)}, ${eur((caro.valor * caro.inst.ter) / 100, 0)} al año.`, ` The biggest: ${pavNom(caro)}, ${eur((caro.valor * caro.inst.ter) / 100, 0)} a year.`) : ''}</p>`
+    : `<p class="pab-sub" style="margin-top:0">${L('No tienes fondos con comisión conocida.', 'No funds with a known fee.')}</p>`,
+    L('La comisión de cada fondo (su TER). No te la cobran aparte: va descontada del precio, por eso no se ve.', "Each fund's fee (its TER). It isn't charged separately: it comes off the price, so you don't see it."), 'pab-costes');
+  const nombres = M.filas.filter((f) => f.inst.tipo !== 'Efectivo').slice(0, 2).map((f) => f.inst.corto || f.inst.nombre);
+  return [
+    pabLead(L('Cuánto has ganado de verdad, lo que cobras y lo que te cuesta.', 'What you have really made, what you collect and what it costs you.')),
+    hero, graf, indexado, cobras, cuesta,
+    pabPreguntas([L('¿Voy bien?', 'Am I doing well?'), L('¿Por qué lo de «al año» no es lo que he ganado?', 'Why is the yearly figure not what I made?'), nombres.length ? L(`¿Cuánto me cuesta ${nombres[0]} frente a otros parecidos?`, `How much does ${nombres[0]} cost me compared with similar ones?`) : L('¿Me cobran mucho?', 'Am I paying a lot?')], 'c12'),
+  ].join('');
+}
+
+/* ---------- Riesgo, en básico ---------- */
+// tres crisis de verdad, con lo que tienes hoy: lo que llegó a caer cada inversión entre esas fechas (con sus precios si
+// los hay; si no, lo que cayó su tipo de inversión, en euros). La cripto no existía en 2008: cuenta lo de 2022.
+const PAB_CRISIS = [
+  { t: 'Crisis financiera', en: 'Financial crisis', c: ['2007 a 2009', '2007 to 2009'], ini: '2007-10-09', fin: '2009-03-09', cl: { rv: -50, rf: -3, oro: -5, mp: -55, cripto: -75 } },
+  { t: 'Covid', en: 'Covid', c: ['feb a mar de 2020', 'Feb to Mar 2020'], ini: '2020-02-19', fin: '2020-03-23', cl: { rv: -33, rf: -5, oro: -8, mp: -30, cripto: -50 } },
+  { t: 'Tipos e inflación', en: 'Rates and inflation', c: ['2022', '2022'], ini: '2022-01-03', fin: '2022-10-12', cl: { rv: -17, rf: -13, oro: -2, mp: 0, cripto: -70 } },
+];
+const pabClase = (f) => { const c = f.inst.clase; return f.inst.tipo === 'Efectivo' || c === 'Efectivo' || c === 'Monetario' ? '' : c === 'Renta fija' ? 'rf' : c === 'Oro' ? 'oro' : c === 'Materias primas' ? 'mp' : c === 'Cripto' ? 'cripto' : 'rv'; };
+function pabCrisis(M, x) {
+  let cambio = 0, reales = 0;
+  for (const f of M.filas) {
+    if (!(f.valor > 0)) continue;
+    const h = histDe(f.inst.id);
+    let pc = null;
+    if (h && h.length && h[0][0] <= x.ini) {
+      const p0 = precioEn(h, x.ini, 'antes');
+      if (p0) { let min = p0; for (const [d, v] of h) { if (d > x.fin) break; if (d >= x.ini && v != null && v < min) min = v; } pc = (min / p0 - 1) * 100; reales += f.valor; }
+    }
+    if (pc == null) { const k = pabClase(f); pc = k ? x.cl[k] : 0; }
+    cambio += (f.valor * pc) / 100;
+  }
+  return { cambio, pct: M.total ? (cambio / M.total) * 100 : 0, reales };
+}
+function pavRiesgoBas(M) {
+  if (S.detAv) delete S.detAv.riesgo;
+  const B = pavRiesgoBase(M);
+  if (!B) return pabLead(L('Cuánto se mueve tu cartera y qué pasaría en una mala racha.', 'How much your portfolio moves and what a bad spell would mean.')) + pabT('c12', L('Riesgo', 'Risk'), `<p class="nota" style="margin:0">${L('Faltan precios del último año para calcularlo.', 'Prices for the last year are missing.')}</p>`);
+  const { vol, cr, volB, var95, c10 } = B, crB = claseRiesgo(volB);
+  const puntos = `<div class="pab-escala" role="img" aria-label="${L(`${cr} de 7`, `${cr} of 7`)}">${[1, 2, 3, 4, 5, 6, 7].map((i) => `<i${i <= cr ? ' class="on"' : ''}></i>`).join('')}</div>`;
+  const comp = crB == null ? '' : cr === crB ? L('Lo normal en una cartera de bolsa mundial', 'Normal for a world stock portfolio') + (vol < volB * 0.9 ? L('; algo menos que el MSCI World', '; a bit less than the MSCI World') : vol > volB * 1.1 ? L('; algo más que el MSCI World', '; a bit more than the MSCI World') : '') + '.'
+    : cr < crB ? L(`Menos que una cartera de bolsa mundial (un ${crB}).`, `Less than a world stock portfolio (a ${crB}).`) : L(`Más que una cartera de bolsa mundial (un ${crB}).`, `More than a world stock portfolio (a ${crB}).`);
+  const t1 = pabT('c3', L('Cuánto se mueve', 'How much it moves'), `${puntos}<p class="pab-grande">${L(`${cr} de 7`, `${cr} of 7`)}</p>${comp ? `<p class="pab-sub">${comp}</p>` : ''}`,
+    L('La escala de los folletos de los fondos: 1 casi no se mueve, 7 se mueve muchísimo.', 'The scale on fund factsheets: 1 barely moves, 7 moves a lot.'));
+  const t2 = pabT('c3', L('En un mes malo', 'In a bad month'), `<p class="pab-grande down">${var95 == null ? '—' : eurS(-var95, 0)}</p><p class="pab-sub">${L('Uno de cada veinte meses puede ser así o peor.', 'One month in twenty can be like this or worse.')}</p>`,
+    L('Una estimación con lo que se ha movido tu cartera el último año. No es un límite: puede ser peor.', 'An estimate from how your portfolio moved over the last year. Not a limit: it can be worse.'));
+  const p = c10 && c10.peor, dd = (a, b) => Math.round((tiempoDe(b) - tiempoDe(a)) / 864e5);
+  const t3 = pabT('c3', L('Tu peor caída', 'Your worst drop'), p ? `<p class="pab-grande down">${pctS(p.pct, 1)}</p><p class="pab-sub">${L(`Del ${fechaConAnio(p.desde)} al ${fechaConAnio(p.hasta)}.`, `From ${fechaConAnio(p.desde)} to ${fechaConAnio(p.hasta)}.`)} ${p.vuelve ? L(`Volvió a su máximo en ${pabDur(dd(p.hasta, p.vuelve))}.`, `It got back to its high in ${pabDur(dd(p.hasta, p.vuelve))}.`) : L('Todavía no ha vuelto a su máximo.', "It hasn't got back to its high yet.")}</p>` : `<p class="pab-sub" style="margin-top:0">${L('Con lo que tienes hoy, no ha tenido caídas que contar.', 'With what you hold today, no drops worth mentioning.')}</p>`,
+    L('Lo más que ha bajado desde un máximo hasta el punto más bajo, con lo que tienes hoy y hasta 10 años atrás.', 'The most it has fallen from a high to the lowest point, with what you hold today, up to 10 years back.'));
+  const acc = M.filas.find((f) => f.inst.tipo === 'Acción'), mayor = M.filas.find((f) => f.inst.tipo !== 'Efectivo') || M.filas[0];
+  const repartido = (f) => f && f !== acc && f.inst.tipo !== 'Acción' && f.inst.clase === 'Renta variable';
+  const t4 = acc
+    ? pabT('c3', L('La empresa que más pesa', 'Your largest company'), `<p class="pab-grande${acc.peso > 10 ? ' warn' : ''}">${pavNom(acc)}, ${pct(acc.peso, 1)}</p>${repartido(mayor) ? `<p class="pab-sub">${L(`${pavNom(mayor)} pesa más (${pct(mayor.peso, 0)}), pero va repartido en muchas empresas.`, `${pavNom(mayor)} weighs more (${pct(mayor.peso, 0)}), but it is spread across many companies.`)}</p>` : ''}`,
+      L('Cuanto más pesa una sola cosa, más depende tu cartera de ella.', 'The more one thing weighs, the more your portfolio depends on it.'))
+    : pabT('c3', L('Lo que más pesa', 'Your largest holding'), `<p class="pab-grande">${pct(mayor.peso, 1)}</p><p class="pab-sub">${pavNom(mayor)}${repartido(mayor) ? L(': va repartido en muchas empresas.', ': spread across many companies.') : '.'}</p>`,
+      L('Cuanto más pesa una sola cosa, más depende tu cartera de ella.', 'The more one thing weighs, the more your portfolio depends on it.'));
+  const cs = PAB_CRISIS.map((x) => ({ x, r: pabCrisis(M, x) })), maxC = Math.max(1, ...cs.map((y) => Math.abs(y.r.pct)));
+  const crisis = pabT('c8', L('Si pasara otra vez', 'If it happened again'), `<p class="pab-sub" style="margin-top:0">${L('Con tu cartera de hoy y lo que cayó cada cosa entonces.', 'With your portfolio of today and what each thing fell back then.')}</p><div class="pab-crisis">${cs.map(({ x, r }) => `<div class="pab-cr"><span><b>${L(x.t, x.en)}</b><small>${L(x.c[0], x.c[1])}</small></span><span class="pav-pista"><i style="left:0;width:${Math.max(1, (Math.abs(r.pct) / maxC) * 100).toFixed(1)}%;background:var(--${r.cambio < 0 ? 'baja' : 'sube'})"></i></span><span class="pab-cr-v"><b class="${cls(r.cambio)}">${eurS(r.cambio, 0)}</b><small>${pctS(r.pct, 1)}</small></span></div>`).join('')}</div><p class="pab-sub">${L('No quiere decir que vaya a pasar, ni que vaya a ser igual.', "It doesn't mean it will happen, or that it would be the same.")}</p>`,
+    L('Con los precios de entonces de lo que tienes cuando los hay; si no, con lo que cayó su tipo de inversión (la bolsa mundial, la renta fija, el oro…) en euros. La cripto no existía en 2008: cuenta como en 2022.', 'With the prices back then of what you hold where available; otherwise with what its kind of investment fell, in euros. Crypto did not exist in 2008: it counts as in 2022.'));
+  const acciones = M.filas.filter((f) => f.inst.tipo === 'Acción').slice(0, 2).map((f) => f.inst.corto || f.inst.nombre);
+  const ia = pabPreguntas([L('¿Por qué mi cartera cae menos (o más) que la bolsa?', 'Why does my portfolio fall less (or more) than the market?'), acciones.length ? L(`¿Cuánto del riesgo viene de ${acciones.join(' y ')}?`, `How much of the risk comes from ${acciones.join(' and ')}?`) : L('¿De dónde viene el riesgo de mi cartera?', 'Where does my portfolio risk come from?'), L('¿Cómo aguantaría otra caída como la de 2022?', 'How would it cope with another fall like 2022?')]);
+  const larga = serieCartera(M, 3650);
+  const desde = larga.length > 30 ? pabT('c12', L(`Tu cartera desde ${larga[0].d.slice(0, 4)}`, `Your portfolio since ${larga[0].d.slice(0, 4)}`), '<div class="chart" id="pabDesde"></div>', L('Lo que habría valido cada día lo que tienes hoy (no cuenta cuándo compraste). La marca, tu peor caída.', 'What what you hold today would have been worth each day. The mark, your worst drop.')) : '';
+  // lo que la IA necesita para explicar estas tarjetas («explícame esta cifra»)
+  try {
+    S.detAv = Object.assign(S.detAv && S.detAv.uid === uidActual() ? S.detAv : { uid: uidActual() }, { riesgo: [
+      `Modo básico. Escala de riesgo 1–7 (la de los folletos, por la volatilidad anual de ${fmtNum(vol, 1)} % del último año): ${cr}${crB ? `; el MSCI World en las mismas fechas, ${crB} (volatilidad ${fmtNum(volB, 1)} %)` : ''}.`,
+      var95 == null ? '' : `«En un mes malo»: VaR 95 % a un mes paramétrico = 1,645 × volatilidad anual / √12 × valor con precio (${eur(B.enSerie, 0)}) = ${eur(var95, 0)}. Uno de cada veinte meses podría ser así o peor; no es un límite.`,
+      p ? `Peor caída con hasta 10 años de precios y las posiciones de hoy: ${fmtNum(p.pct, 1)} % (del ${p.desde} al ${p.hasta}${p.vuelve ? `, recuperada el ${p.vuelve}` : ', sin recuperar'}).` : '',
+      `Mayor empresa: ${acc ? `${acc.inst.corto || acc.inst.nombre}, ${fmtNum(acc.peso, 1)} %` : 'ninguna acción suelta'}. Mayor posición: ${mayor.inst.corto || mayor.inst.nombre}, ${fmtNum(mayor.peso, 1)} %.`,
+      `Crisis con la cartera de hoy (lo que llegó a caer cada posición entre esas fechas con sus precios si los hay; si no, la caída de su tipo en euros: ${PAB_CRISIS.map((x) => `${x.t} renta variable ${x.cl.rv} %, renta fija ${x.cl.rf} %, oro ${x.cl.oro} %, cripto ${x.cl.cripto} %`).join('; ')}): ${cs.map(({ x, r }) => `${x.t} (${x.ini} a ${x.fin}) ${eur(r.cambio, 0)}, ${fmtNum(r.pct, 1)} % del total; con precios reales ${eur(r.reales, 0)} de ${eur(M.total, 0)}`).join('; ')}.`,
+    ].filter(Boolean).join('\n') });
+  } catch (e) { console.warn(e); }
+  return [pabLead(L('Cuánto se mueve tu cartera y qué pasaría en una mala racha.', 'How much your portfolio moves and what a bad spell would mean.')), t1, t2, t3, t4, crisis, ia, desde].join('');
 }
 
 /* ---------- Hacienda ---------- */
@@ -449,7 +635,8 @@ function pavDiv(M) {
 }
 
 /* ---------- Costes ---------- */
-function pavCostes(M) {
+// 0.8.3a: lo que cuestan los fondos, una vez para los dos modos
+function pavCostesBase(M) {
   const conTer = M.filas.filter((f) => f.inst.ter != null);
   const anual = sum(conTer, (f) => (f.valor * f.inst.ter) / 100), base = sum(conTer, (f) => f.valor);
   let r = 7; try { r = cfgProy().bolsa; } catch (e) {}
@@ -457,6 +644,10 @@ function pavCostes(M) {
   const en20 = (v, ter) => { let x = v, c = 0; for (let i = 0; i < 20; i++) { const g = x * ter / 100; c += g; x = x * (1 + r / 100) - g; } return c; };
   const total20 = sum(conTer, (f) => en20(f.valor, f.inst.ter));
   const comis = sum((S.cartera.movimientos || []).filter((m) => String(m.fecha || '').startsWith(String(new Date().getFullYear()))), (m) => +m.gastos || +m.comision || 0);
+  return { conTer, anual, base, r, en20, total20, comis };
+}
+function pavCostes(M) {
+  const { conTer, anual, base, r, en20, total20, comis } = pavCostesBase(M);
   const tabla = conTer.length ? pavTabla([L('Fondo', 'Fund'), 'TER', L('Al año', 'Per year'), L('En 20 años*', 'Over 20 years*')], [...conTer].sort((a, b) => b.valor * b.inst.ter - a.valor * a.inst.ter).map((f) => [`<b>${pavNom(f)}</b>`, pct(f.inst.ter, 2), eur((f.valor * f.inst.ter) / 100, 2), `≈ ${eur(en20(f.valor, f.inst.ter), 0)}`])) : `<p class="nota" style="margin:0">${L('No tienes fondos con comisión conocida.', 'No funds with a known fee.')}</p>`;
   const sinTer = M.filas.filter((f) => f.inst.ter == null && f.inst.tipo !== 'Acción' && f.inst.clase !== 'Cripto');
   return [
@@ -472,6 +663,7 @@ function pavCostes(M) {
 
 /* ---------- Las gráficas, una vez pintado (con su ancho de verdad) ---------- */
 function dibujarPanelAv(p, M) {
+  if (modoApp() === 'basico' && (p === 'rentab' || p === 'riesgo')) { dibujarPanelBas(p, M); return; }
   if (p === 'rentab') {
     const el = $('#pavBench'), R = rentabilidadCartera(M), s = R.twr && R.twr.serie; if (!el || !s) return;
     const b = pavBenchSerie('fidelity-world', s[0].d); if (!b) return;
@@ -487,6 +679,21 @@ function dibujarPanelAv(p, M) {
   if (p === 'riesgo') {
     const el = $('#pavCaida'), c = caidaDetalle(serieCartera(M, 3650)); if (!el || !c) return;
     grafLinea(el, c.dd, { alto: innerWidth < 560 ? 150 : 180, color: 'var(--baja)', rellenoA: 0, sinRef: true, titulo: L('Distancia al máximo', 'Distance from the high'), fmt: (v) => pctS(v, 1), ejeFmt: (t) => `${fmtNum(t, 0)} %`, marca: c.peor ? { d: c.peor.hasta, txt: pctS(c.peor.pct, 1) } : null });
+  }
+}
+
+// las dos gráficas del básico: lo metido frente a lo que vale, y tu cartera de hoy hacia atrás con la peor caída marcada
+function dibujarPanelBas(p, M) {
+  if (p === 'rentab') {
+    const el = $('#pabMetido'), R = rentabilidadCartera(M), s = R.twr && R.twr.serie; if (!el || !s) return;
+    let k = 0, met = 0; const fl = R.flujos, m = [];
+    for (const x of s) { while (k < fl.length && fl[k].d <= x.d) { met -= fl[k].imp; k++; } m.push({ d: x.d, v: met }); }
+    grafLinea(el, [{ datos: s.map((x) => ({ d: x.d, v: x.v })), color: 'var(--grafica)', nombre: L('Lo que vale', 'Worth') }, { datos: m, color: 'var(--texto-2)', nombre: L('Lo que has metido', 'Put in') }], { alto: innerWidth < 560 ? 180 : 220, sinRef: true, titulo: L('Lo que has metido y lo que vale', 'What you put in and what it is worth'), fmt: (v) => eur(v, 0) });
+  }
+  if (p === 'riesgo') {
+    const el = $('#pabDesde'), s = serieCartera(M, 3650); if (!el || s.length < 30) return;
+    const c = caidaDetalle(s);
+    grafLinea(el, s, { alto: innerWidth < 560 ? 160 : 200, color: 'var(--grafica)', sinRef: true, titulo: L('Tu cartera de hoy, hacia atrás', 'Your portfolio of today, going back'), fmt: (v) => eur(v, 0), marca: c && c.peor ? { d: c.peor.hasta, txt: pctS(c.peor.pct, 1) } : null });
   }
 }
 

@@ -32,6 +32,8 @@ const PEST_AV = [
 ];
 function pestAv() {
   const p = S.pestAv || LS.get(LS_PEST_AV, 'rentab');
+  // 0.8.3a: en básico, Dividendos y Costes van dentro de Rentabilidad (dos tarjetas)
+  if (modoApp() === 'basico' && (p === 'div' || p === 'costes')) return 'rentab';
   return PEST_AV.some(([k]) => k === p) ? p : 'rentab';
 }
 // 0.8.3a: las pestañas de Análisis (htmlPestAna) y el menú del ordenador (htmlRiel), en 43b-navegacion.js

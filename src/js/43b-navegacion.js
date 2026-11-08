@@ -42,8 +42,8 @@ const PAGINAS = [
   { id: 'mov', t: 'Movimientos', en: 'Transactions', s: 'cartera', g: 'cartera', v: 'av', p: 'mov', kw: 'compras ventas operaciones' },
   { id: 'pnl', t: 'Día a día', en: 'Day by day', s: 'cartera', g: 'cartera', v: 'av', p: 'pnl', av: true, kw: 'ganancias diarias' },
   { id: 'rentab', t: 'Rentabilidad', en: 'Returns', s: 'rendimiento', g: 'rr', v: 'av', p: 'rentab', kw: 'twr mwr indexado msci divisa' },
-  { id: 'div', t: 'Dividendos', en: 'Dividends', s: 'rendimiento', g: 'rr', v: 'av', p: 'div', kw: 'cobros ingresos' },
-  { id: 'costes', t: 'Costes', en: 'Costs', s: 'rendimiento', g: 'rr', v: 'av', p: 'costes', kw: 'ter comisiones gastos' },
+  { id: 'div', t: 'Dividendos', en: 'Dividends', s: 'rendimiento', g: 'rr', v: 'av', p: 'div', bas: 'rentab', kw: 'cobros ingresos' },
+  { id: 'costes', t: 'Costes', en: 'Costs', s: 'rendimiento', g: 'rr', v: 'av', p: 'costes', bas: 'rentab', kw: 'ter comisiones gastos' },
   { id: 'analisis', t: 'La IA explica', en: 'AI explains', s: 'rendimiento', g: 'rr', v: 'analisis', kw: 'informe ia' },
   { id: 'riesgo', t: 'Riesgo', en: 'Risk', s: 'riesgo', g: 'rr', v: 'av', p: 'riesgo', kw: 'volatilidad var estres caida factores' },
   { id: 'reparto', t: 'Reparto y X-Ray', en: 'Allocation and X-Ray', s: 'reparto', g: 'rr', v: 'av', p: 'reparto', kw: 'paises sectores temas xray' },
@@ -68,8 +68,11 @@ const ACCIONES_APP = [
 ];
 const GRUPOS_MAS = [['cartera', 'Tu cartera', 'Your portfolio'], ['rr', 'Riesgo y rentabilidad', 'Risk and returns'], ['hacienda', 'Hacienda', 'Taxes'], ['mi', 'Mercados e ideas', 'Markets and ideas'], ['herr', 'Herramientas', 'Tools']];
 const verPag = (p) => p && (!p.av || modoApp() === 'avanzado');
+// 0.8.3a: en básico, Dividendos y Costes son dos tarjetas de Rentabilidad (bas): llevan allí y no salen sueltas en las listas
+const enBas = (p) => p && p.bas && modoApp() === 'basico';
+const enLista = (p) => verPag(p) && !enBas(p);
 const nomPag = (p) => L(p.t, p.en);
-const hrefPag = (p) => '#' + (p.h || (p.v === 'av' ? 'av-' + p.p : p.v));
+const hrefPag = (p) => { if (enBas(p)) p = PAG[p.bas]; return '#' + (p.h || (p.v === 'av' ? 'av-' + p.p : p.v)); };
 // la página en la que estás (para marcarla en las barras y en el buscador)
 function paginaActual() {
   const v = S.vista;
@@ -78,7 +81,7 @@ function paginaActual() {
   return { cartera: 'hoy', futuro: 'objetivos', expertos: 'ideas' }[v] || (PAG[v] ? v : 'hoy');
 }
 const seccionActual = () => (PAG[paginaActual()] || PAG.hoy).s;
-const paginasDe = (s) => PAGINAS.filter((p) => p.s === s && verPag(p));
+const paginasDe = (s) => PAGINAS.filter((p) => p.s === s && enLista(p));
 const hrefSeccion = (s) => { const ps = paginasDe(s); return ps.length ? hrefPag(ps[0]) : hrefPag(PAGINAS.find((p) => p.s === s)); };
 // Herramientas no tiene sección en la barra del móvil: se marca Más (que es donde está)
 const enHerramientas = () => S.vista === 'av' && ['grafico', 'lab'].includes(pestAv());
@@ -209,7 +212,7 @@ function abrirMas() {
     <div class="mas-cuerpo">
       <h3 class="mas-g">${L('Lo tuyo', 'Yours')}</h3><ul class="mas-rejilla mas-tuyo">${tuyo.map(casilla).join('')}</ul>
       <h3 class="mas-g">${L('Tus fijados', 'Your pinned')}</h3>${htmlMasFijados()}
-      ${GRUPOS_MAS.map(([g, t, en]) => { const ps = PAGINAS.filter((p) => p.g === g && verPag(p)); return ps.length ? `<h3 class="mas-g">${L(t, en)}</h3><ul class="mas-rejilla">${ps.map(casilla).join('')}</ul>` : ''; }).join('')}
+      ${GRUPOS_MAS.map(([g, t, en]) => { const ps = PAGINAS.filter((p) => p.g === g && enLista(p)); return ps.length ? `<h3 class="mas-g">${L(t, en)}</h3><ul class="mas-rejilla">${ps.map(casilla).join('')}</ul>` : ''; }).join('')}
       <h3 class="mas-g">${L('La app', 'The app')}</h3><ul class="mas-rejilla mas-app">${app}</ul>
     </div></div>`);
   h.el.classList.add('hoja-mas-f');
