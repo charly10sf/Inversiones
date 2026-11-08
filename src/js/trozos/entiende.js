@@ -70,7 +70,7 @@ const ENT_LECCIONES = {
       return { M, fs, v, ter: vt ? sum(conTer, (f) => f.valor * f.inst.ter) / vt : null, g, top: h && h.w > 0 ? { n: h.n, w: h.w } : null };
     },
     texto: (x) => [
-      'Un fondo indexado copia un índice: una lista de empresas fijada de antemano, como las 500 grandes de Estados Unidos (el S&P 500) o más de mil de los países ricos (el MSCI World). El fondo tiene todas, cada una con el mismo peso que en el índice, y no intenta adivinar cuáles irán mejor.',
+      'Un fondo indexado copia un índice: una lista de empresas fijada de antemano, como las 500 grandes de Estados Unidos (el S&P 500) o más de mil de los países ricos (el MSCI World). El fondo tiene esas empresas (o una muestra muy parecida), cada una con el mismo peso que en el índice, y no intenta adivinar cuáles irán mejor.',
       x ? `Tienes ${entCuantos(x.fs.length)}: ${entNombres(x.fs)}. Por eso cobran poco: nadie cobra por elegir. Y por eso, cuando la bolsa sube o baja, ${x.fs.length === 1 ? 'tu fondo hace' : 'cada uno hace'} casi lo mismo que su índice, ni mucho mejor ni mucho peor.`
         : 'Por eso cobran poco: nadie cobra por elegir. Y por eso, cuando la bolsa sube o baja, el fondo hace casi lo mismo que su índice, ni mucho mejor ni mucho peor.',
       'Dentro de un solo fondo hay cientos de empresas. Si a una le va fatal, en el fondo se nota poco.',
@@ -96,7 +96,9 @@ const ENT_LECCIONES = {
     },
     texto: (x) => [
       'Un ETC se negocia en bolsa como un ETF, pero no es un fondo: es un título que emite una entidad y que sigue el precio de algo, casi siempre una materia prima. En los de oro físico, cada título va respaldado por oro guardado en una cámara.',
-      'Para Hacienda funciona como una acción: pagas por la ganancia el día que lo vendes, y no se puede pasar a otro sin tributar, como sí pasa entre fondos.',
+      // DGT V0267-25 (13 mar 2025): un ETC hecho como título de deuda da rendimiento del capital mobiliario, no ganancia
+      // patrimonial (art. 25.2 LIRPF), con retención si el bróker es español. El módulo de Fiscalidad aún lo cuenta como una acción.
+      'Para Hacienda no es un fondo, y no se puede pasar a otro sin tributar. Lo que ganes tributa el día que lo vendes, en la base del ahorro; pero, según una consulta de Tributos de 2025, como está hecho como un título de deuda cuenta como rendimiento del capital mobiliario, no como la venta de una acción: va en otro apartado de la renta y, con un bróker español, puede llevar una retención del 19 % al vender.',
       x && x.g.inst.clase === 'Oro' || !x ? 'El oro no reparte dividendos ni intereses: lo que ganes con él saldrá solo de que suba su precio.' : 'No reparte dividendos ni intereses: lo que ganes saldrá solo de que suba su precio.',
     ],
     tus: (x) => [
@@ -114,7 +116,7 @@ const ENT_LECCIONES = {
     datos(M) {
       const acc = entPos(M).filter((f) => f.inst.tipo === 'Acción'), cri = entPos(M).filter((f) => f.inst.clase === 'Cripto');
       if (!acc.length && !cri.length) return null;
-      return { M, acc, cri, vA: sum(acc, (f) => f.valor), vC: sum(cri, (f) => f.valor) };
+      return { M, acc, cri, vA: sum(acc, (f) => f.valor), vC: sum(cri, (f) => f.valor), lim: +perfil().limite_empresa || null };
     },
     texto: (x) => [
       'Una acción es un trozo de una empresa. Si a la empresa le va bien, su precio tiende a subir y puede repartirte parte de lo que gana (el dividendo); si le va mal, puede caer mucho, y no hay nada debajo que lo frene.',
@@ -123,7 +125,7 @@ const ENT_LECCIONES = {
     ],
     tus: (x) => [
       x.acc.length ? ['Acciones sueltas', String(x.acc.length), '', `${eur(x.vA, 0)} · ${pct(entPc(x.vA, x.M), 1)}`] : null,
-      x.acc.length ? ['La que más pesa', pavNom(x.acc[0]), x.acc[0].peso > 10 ? 'warn' : '', `${pct(x.acc[0].peso, 1)} de tu cartera`] : null,
+      x.acc.length ? ['La que más pesa', pavNom(x.acc[0]), x.lim && x.acc[0].peso > x.lim ? 'warn' : '', `${pct(x.acc[0].peso, 1)} de tu cartera`] : null,
       x.cri.length ? ['Cripto', eur(x.vC, 0), '', `${pct(entPc(x.vC, x.M), 1)} de tu cartera`] : null,
       ['Entre las dos', pct(entPc(x.vA + x.vC, x.M), 1), '', 'de lo que tienes'],
     ],
@@ -146,11 +148,11 @@ const ENT_LECCIONES = {
       return { M, C, orden, caro: porTer[0], barato: porTer[porTer.length - 1], mayor: [...C.conTer].sort((a, b) => b.valor - a.valor)[0] };
     },
     texto: (x) => {
-      const p = ['Cada fondo se cobra un tanto por ciento al año por gestionarlo: la TER. No llega como un cargo aparte; se descuenta poco a poco del precio del fondo, día a día, y por eso no la ves en ningún extracto.'];
+      const p = ['Cada fondo se cobra un tanto por ciento al año por gestionarlo: la TER. No llega como un cargo aparte; se descuenta poco a poco del precio del fondo, día a día, y por eso no sale como un cargo en tus movimientos.'];
       if (!x) p.push('Un fondo indexado suele cobrar entre un 0,05 % y un 0,5 % al año; uno de gestión activa, bastante más.');
       else if (x.caro && x.barato && x.caro !== x.barato && x.caro.inst.ter / x.barato.inst.ter >= 1.5) {
         const r = x.caro.inst.ter / x.barato.inst.ter;
-        p.push(`${pavNom(x.caro)} cobra ${r >= 2 ? `${fmtNum(r, r < 10 ? 1 : 0)} veces más` : 'bastante más'} que ${pavNom(x.barato)} por cada euro: con la misma cantidad, uno te cuesta ${fmtNum(x.caro.inst.ter, 2)} € de cada 100 al año y el otro ${fmtNum(x.barato.inst.ter, 2)} €. Puede tener su motivo (hay mercados más caros de llevar), pero la diferencia es esa.`);
+        p.push(`Entre lo tuyo, la comisión va del ${fmtNum(x.barato.inst.ter, 2)} % de ${pavNom(x.barato)} al ${fmtNum(x.caro.inst.ter, 2)} % de ${pavNom(x.caro)}: de cada 100 € al año, ${fmtNum(x.barato.inst.ter, 2)} € y ${fmtNum(x.caro.inst.ter, 2)} €. Cada uno sigue un mercado distinto, y eso también cambia lo que cuesta llevarlo.`);
       } else if (x.C.conTer.length === 1) p.push(`Tienes uno con comisión conocida, ${pavNom(x.C.conTer[0])}: un ${fmtNum(x.C.conTer[0].inst.ter, 2)} % al año, ${fmtNum(x.C.conTer[0].inst.ter, 2)} € de cada 100 que tienes en él.`);
       else p.push('Tus fondos cobran parecido entre sí. Lo que más cambia lo que pagas es cuánto tienes en cada uno.');
       p.push('Se cobra todos los años sobre todo lo que tienes, también sobre lo que ya has ganado. Por eso, a 20 años, una diferencia de décimas acaba siendo dinero.');
@@ -159,7 +161,7 @@ const ENT_LECCIONES = {
     tus: (x) => [
       ...x.orden.slice(0, 2).map((f) => [pavNom(f), pct(f.inst.ter, 2), '', `≈ ${eur((f.valor * f.inst.ter) / 100, 0)} al año`]),
       ['En total', `≈ ${eur(x.C.anual, 0)}`, '', 'al año'],
-      ['En 20 años, si no cambia', `≈ ${eur(x.C.total20, 0)}`, '', 'contando lo que dejan de ganar'],
+      ['En 20 años, con las comisiones de hoy', `≈ ${eur(x.C.total20, 0)}`, '', 'contando lo que dejan de ganar'],
     ],
     ejemplo: (x) => x
       ? `Si ${pavNom(x.mayor)} sube un 8 % en un año, ese 8 % que ves en la app ya lleva quitada su comisión (el ${fmtNum(x.mayor.inst.ter, 2)} %). No tienes que restarla tú.`
@@ -173,15 +175,15 @@ const ENT_LECCIONES = {
       if (!plats.length) return null;
       const anio = String(new Date().getFullYear());
       const ops = (S.cartera.movimientos || []).filter((m) => String(m.fecha || '').startsWith(anio) && ['compra', 'venta'].includes(m.tipo)).length;
-      const accES = entPos(M).filter((f) => f.inst.tipo === 'Acción' && f.inst.pais === 'ES');
-      return { M, plats, conocidas: plats.filter((p) => ENT_COMIS[p]), comis: pavCostesBase(M).comis, ops, accES };
+      const accES = entPos(M).filter((f) => f.inst.tipo === 'Acción' && f.inst.pais === 'ES'), accGB = entPos(M).filter((f) => f.inst.tipo === 'Acción' && f.inst.pais === 'GB');
+      return { M, plats, conocidas: plats.filter((p) => ENT_COMIS[p]), comis: pavCostesBase(M).comis, ops, accES, accGB };
     },
     texto: (x) => [
       'La TER la cobra el fondo. El bróker, que es donde tienes la cuenta, cobra aparte: normalmente por cada operación, a veces por tener la cuenta o por cambiar de moneda.',
       'Esta comisión sí la ves, porque sale en cada operación. Y Hacienda la cuenta: lo que pagas al entrar se suma a lo que te costó y lo que pagas al salir se resta de lo que cobras, así que la ganancia que declaras es algo menor.',
       x && x.accES.length
-        ? `Con las acciones españolas de empresas de más de 1.000 millones hay además una tasa al comprarlas: el ${fmtNum(TASA_COMPRA.ES[0] * 100, 1)} % de lo que pagas (el impuesto sobre transacciones financieras). Si ${entNombres(x.accES, 2)} ${x.accES.length === 1 ? 'pasa' : 'pasan'} de ese tamaño, la pagaste al entrar. Los fondos y los ETF no la pagan.`
-        : `Al comprar acciones de algunos países se paga además una tasa: en España, el ${fmtNum(TASA_COMPRA.ES[0] * 100, 1)} % en empresas de más de 1.000 millones; en Francia, el ${fmtNum(TASA_COMPRA.FR[0] * 100, 1)} %. Los fondos y los ETF no la pagan.`,
+        ? `Con las acciones españolas de empresas de más de 1.000 millones hay además una tasa al comprarlas: el ${fmtNum(TASA_COMPRA.ES[0] * 100, 1)} % de lo que pagas (el impuesto sobre transacciones financieras). Si ${entNombres(x.accES, 2)} ${x.accES.length === 1 ? 'pasa' : 'pasan'} de ese tamaño, la pagaste al entrar.${x.accGB.length ? ` En las británicas (${entNombres(x.accGB, 2)}) se paga un ${fmtNum(TASA_COMPRA.GB[0] * 100, 1)} % de timbre al comprarlas.` : ''} Los fondos y los ETF no la pagan.`
+        : `Al comprar acciones de algunos países se paga además una tasa: en España, el ${fmtNum(TASA_COMPRA.ES[0] * 100, 1)} %, y en Francia, el ${fmtNum(TASA_COMPRA.FR[0] * 100, 1)} %, en empresas de más de 1.000 millones; en Reino Unido, el ${fmtNum(TASA_COMPRA.GB[0] * 100, 1)} %. Los fondos y los ETF no la pagan.`,
     ],
     tus: (x) => [
       ['Brókeres que usas', String(x.plats.length), '', esc(yLista(x.plats))],
@@ -212,7 +214,7 @@ const ENT_LECCIONES = {
       ['En tus fondos de bolsa', eur(x.v, 0), '', `${pct(entPc(x.v, x.M), 0)} de tu cartera`],
       ['Fuera de Europa', eur(x.fuera, 0), '', x.v ? `${pct((x.fuera / x.v) * 100, 0)} de esos fondos` : ''],
       x.us > 0 ? ['Solo en EEUU', eur(x.us, 0), '', 'en dólares por dentro'] : null,
-      ['En Europa', eur(x.eu, 0), '', 'casi todo en euros (también libras y francos suizos)'],
+      ['En Europa', eur(x.eu, 0), '', 'en euros, libras, francos suizos y coronas'],
     ],
     ejemplo: (x) => x && x.us > 0
       ? `Si el dólar bajara un 10 % frente al euro y las empresas de EEUU no se movieran, tu parte en EEUU (${eur(x.us, 0)}) perdería unos ${eur(x.us * 0.1, 0)} al pasarla a euros.`
@@ -295,15 +297,15 @@ const ENT_LECCIONES = {
       return { M, R, bm, dif: R.valor - bm.valor };
     },
     texto: (x) => [
-      'Una forma sencilla de saber cómo va tu cartera es compararla con lo más fácil que podías haber hecho: meter cada euro, el mismo día, en un fondo indexado de la bolsa mundial (un MSCI World) y no tocarlo.',
-      x ? `Con tu dinero y tus fechas, ese fondo valdría hoy ${eur(x.bm.valor, 0)}; lo tuyo, ${eur(x.R.valor, 0)}. ${x.dif >= 0 ? 'Lo que has elegido ha ido mejor hasta hoy.' : 'La alternativa más simple habría dado más hasta hoy.'} Ninguna de las dos cosas dice lo que pasará a partir de ahora.`
-        : 'Si tu cartera va por delante, lo que has elegido ha ido mejor hasta hoy; si va por detrás, la alternativa más simple habría dado más. Ninguna de las dos cosas dice lo que pasará a partir de ahora.',
+      'Una referencia habitual para ver cómo va una cartera es compararla con un fondo indexado de la bolsa mundial (un MSCI World), con el mismo dinero y en las mismas fechas, sin tocarlo.',
+      x ? `Con tu dinero y tus fechas, ese índice valdría hoy ${eur(x.bm.valor, 0)}; tu cartera, ${eur(x.R.valor, 0)}. Es lo que ha pasado hasta hoy: no dice nada de lo que pasará a partir de ahora.`
+        : 'La diferencia, a favor o en contra, cuenta lo que ha pasado hasta hoy: no dice nada de lo que pasará a partir de ahora.',
       'Ojo con comparar cosas distintas: con renta fija, oro o efectivo, es normal ir por detrás en los años buenos de bolsa y por delante en los malos. Se arriesga menos.',
     ],
     tus: (x) => [
       ['Con el indexado tendrías', eur(x.bm.valor, 0)],
       ['Lo tuyo vale', eur(x.R.valor, 0)],
-      ['Diferencia', eurS(x.dif, 0), cls(x.dif), x.dif >= 0 ? 'a tu favor' : 'a favor del indexado'],
+      ['Diferencia', eurS(x.dif, 0), cls(x.dif), 'tu cartera menos el índice'],
     ],
     ejemplo: () => 'Metes 100 € al mes durante tres años. Al final, lo tuyo vale 4.000 € y el indexado con el mismo dinero y los mismos días, 4.200 €: has ido 200 € por detrás. Eso no dice si el año que viene irás por delante o por detrás.',
     falta: 'Para compararlo hace falta la fecha en que metiste cada cosa. Ponla en la ficha de cada posición o importa tus movimientos.',
@@ -318,7 +320,7 @@ const ENT_LECCIONES = {
     },
     texto: (x) => [
       `Lo que ganas invirtiendo va a una parte de la renta que se llama base del ahorro. Ahí entran las ventas con ganancia o pérdida, los dividendos y los intereses, y se paga por tramos: ${textoTramos()}.`,
-      'Solo pagas por lo que ganas al vender, no por lo que vale lo que tienes. Y solo por la ganancia: si algo te costó 1.000 € y lo vendes por 1.200 €, tributan 200 €. Si compraste lo mismo en varias veces, para Hacienda salen primero las más antiguas.',
+      'De lo que sube de precio, solo pagas cuando lo vendes (en cripto, también cuando la cambias por otra), no por lo que vale lo que tienes. Y solo por la ganancia: si algo te costó 1.000 € y lo vendes por 1.200 €, tributan 200 €. Si compraste lo mismo en varias veces, para Hacienda salen primero las más antiguas.',
       `Las pérdidas restan. Si vendes algo con pérdidas, se resta de lo que ganaste vendiendo otras cosas ese año y, con un límite del 25 %, también de los dividendos e intereses${comunidadUsuario() === 'paisvasco' ? ' (en el País Vasco, este cruce no se hace)' : ''}. Lo que sobre se puede usar en los cuatro años siguientes.`,
     ],
     tus: (x) => [
@@ -340,22 +342,19 @@ const ENT_LECCIONES = {
       return { M, fs, v: sum(fs, (f) => f.valor), g, plats, mayor, imp: g > 0 ? impuestoDeVenta(g).impuesto : 0 };
     },
     texto: (x) => [
-      'Con los fondos de inversión hay una ventaja que no tienen las acciones ni los ETF: puedes pasar el dinero de un fondo a otro sin pagar nada en ese momento. Se llama traspaso, y no se declara en la renta.',
+      // art. 94.1.a LIRPF: entre IIC españolas, o extranjeras armonizadas inscritas en la CNMV (las sociedades, con 500 socios o más)
+      'Con los fondos de inversión españoles, y con los extranjeros registrados en la CNMV para venderse en España, hay una ventaja que no tienen las acciones ni los ETF: puedes pasar el dinero de uno a otro sin tributar en ese momento, si tu bróker o tu gestora lo permite. Se llama traspaso, y no se declara en la renta.',
       'El impuesto no desaparece: se aplaza. El fondo nuevo se queda con lo que te costó el viejo y con su fecha, y la ganancia tributa el día que saques el dinero de verdad (un reembolso). Mientras tanto, ese dinero sigue invertido entero.',
       x && x.fs.length === 1 ? `Tienes uno, ${pavNom(x.fs[0])}: el traspaso sirve el día que quieras pasar ese dinero a otro fondo. No vale para los ETF ni los ETC: para Hacienda, cada cambio entre ellos es una venta. Tampoco sirve para que cuente una pérdida: con un traspaso, ese año no resta.`
         : 'No vale para los ETF ni los ETC: aunque se parezcan a un fondo, para Hacienda cada cambio entre ellos es una venta. Y tampoco sirve para que cuente una pérdida: con un traspaso, ese año no resta; para que reste hay que reembolsar.',
     ],
     tus: (x) => [
-      ['Fondos que se pueden traspasar', String(x.fs.length), '', entNombres(x.fs, 2)],
+      ['Fondos de inversión', String(x.fs.length), '', `${entNombres(x.fs, 2)}: traspasables si están registrados en la CNMV`],
       ['Lo que tienes en ellos', eur(x.v, 0), '', x.plats.length ? `en ${esc(yLista(x.plats))}` : ''],
       ['Su ganancia sin vender', eurS(x.g, 0), cls(x.g)],
-      x.imp > 0 ? ['Si los reembolsaras hoy', `≈ ${eur(x.imp, 0)}`, '', 'de impuesto; con un traspaso, nada ahora'] : null,
+      x.imp > 0 ? ['Impuesto si se reembolsaran hoy', `≈ ${eur(x.imp, 0)}`, '', 'con un traspaso, se aplaza'] : null,
     ],
-    ejemplo: (x) => {
-      const g = x && x.mayor.valor - x.mayor.coste > 100 ? x.mayor.valor - x.mayor.coste : 3000;
-      const quien = x && g !== 3000 ? `Tu ${pavNom(x.mayor)} lleva ${eur(g, 0)} ganados.` : 'Imagina un fondo con 3.000 € ganados.';
-      return `${quien} Si lo reembolsas para meter el dinero en otro fondo, ese año tributa la ganancia: unos ${eur(irpfAhorro(g), 0)} si no tienes nada más en la base del ahorro. Con un traspaso al otro fondo, nada hasta el día que lo saques.`;
-    },
+    ejemplo: () => `Un fondo con 3.000 € ganados que se reembolsa para meter el dinero en otro tributa ese año por la ganancia: unos ${eur(irpfAhorro(3000), 0)} si no hay nada más en la base del ahorro. Con un traspaso al otro fondo, nada hasta el día que se saque el dinero.`,
     falta: 'Cuando tengas fondos de inversión, aquí salen cuáles se pueden traspasar y cuánto impuesto se aplaza.',
   },
   retencion: {
@@ -368,7 +367,7 @@ const ENT_LECCIONES = {
     },
     texto: () => [
       `Cuando cobras un dividendo de una empresa española, te llega con el ${RET_DIV.ES} % ya quitado: es la retención, un adelanto de la renta. En la declaración se ajusta a tu tramo y se resta de lo que te toque pagar.`,
-      'Si la empresa es de fuera, su país suele quedarse también un trozo. En la renta recuperas hasta lo que marque el convenio con ese país, casi siempre el 15 %, con la deducción por doble imposición. Lo que pase de ahí se pierde, salvo que lo reclames allí, con papeleo.',
+      'Si la empresa es de fuera, su país suele quedarse también un trozo. En la renta se descuenta de lo que pagas en España por ese dividendo (la deducción por doble imposición, art. 80 de la ley del IRPF): como mucho lo que marque el convenio con ese país, casi siempre el 15 %, y nunca más de lo que pagarías aquí por él. Lo que pase de ahí se pierde, salvo que lo reclames allí, con papeleo; y si ese año no pagas nada por el ahorro, tampoco se recupera.',
       `Cada país retiene lo suyo: Reino Unido, nada; Estados Unidos, un ${RET_DIV.US} % (con el formulario W-8BEN que gestiona el bróker); Francia, un ${fmtNumR(RET_DIV.FR)} %; Suiza, un ${RET_DIV.CH} %.`,
     ],
     tus: (x) => [
@@ -376,7 +375,7 @@ const ENT_LECCIONES = {
         fis.ret == null ? 'mira el informe de tu bróker' : f.inst.pais === 'ES' ? 'se ajusta en la renta' : fis.ret === 0 ? 'no retiene nada' : fis.pierde > 0 ? `pierdes un ${fmtNumR(fis.pierde)} %` : 'lo recuperas en la renta']),
       x.cobrado > 0 || x.rcm > 0 ? ['Cobrado este año', `≈ ${eur(Math.max(x.cobrado, x.rcm), 0)}`, '', x.rcm ? 'apuntado en Hacienda' : 'brutos, aproximado'] : null,
     ],
-    ejemplo: () => `De 100 € de dividendo de una empresa de EEUU, allí te retienen ${RET_DIV.US} €. En la renta los descuentas de lo que pagas en España, así que en total pagas lo mismo que con una española. De una suiza te retienen ${RET_DIV.CH} € y solo recuperas 15: los otros ${RET_DIV.CH - 15} se pierden si no los reclamas.`,
+    ejemplo: () => `De 100 € de dividendo de una empresa de EEUU, allí te retienen ${RET_DIV.US} €. En la renta los descuentas de lo que pagas en España, así que en total pagas lo mismo que con una española, si en España pagas al menos esos 15 € por él. De una suiza te retienen ${RET_DIV.CH} € y solo recuperas 15: los otros ${RET_DIV.CH - 15} se pierden si no los reclamas.`,
     falta: 'Ninguna de tus acciones reparte dividendo: cuando alguna lo haga, aquí sale lo que retiene su país y lo que recuperas.',
   },
   'dos-meses': {
@@ -384,11 +383,13 @@ const ENT_LECCIONES = {
     datos(M) {
       const fs = entPos(M);
       if (!fs.length) return null;
-      const r = fs.map((f) => ({ f, r: reglaRecompra(f.inst) })).filter((y) => y.r);
+      // los ETC, aparte: si cuentan como rendimiento del capital mobiliario (DGT V0267-25), su regla es la del art. 25.2.b,
+      // dos meses coticen donde coticen; reglaRecompra aún les da la de las acciones
+      const etc = fs.filter((f) => f.inst.tipo === 'ETC');
+      const r = fs.filter((f) => f.inst.tipo !== 'ETC').map((f) => ({ f, r: reglaRecompra(f.inst) })).filter((y) => y.r);
       const dos = r.filter((y) => y.r.meses === 2).map((y) => y.f), anio = r.filter((y) => y.r.meses === 12).map((y) => y.f), cri = r.filter((y) => !y.r.meses).map((y) => y.f);
-      const perd = fs.filter((f) => f.coste > 0 && f.valor - f.coste < -50);
       const ap = (S.cartera.movimientos || []).filter((m) => m.tipo === 'venta' && String(m.fecha).startsWith(String(new Date().getFullYear()))).map((m) => perdidaAplazada(m)).filter(Boolean);
-      return { M, dos, anio, cri, perd, aplazado: sum(ap, (a) => a.importe) };
+      return { M, dos, anio, cri, etc, aplazado: sum(ap, (a) => a.importe) };
     },
     texto: (x) => [
       'Si vendes algo con pérdidas y en los dos meses de antes o de después vuelves a comprar lo mismo, Hacienda no te deja restar esa pérdida ese año. No la pierdes: se queda aplazada hasta que vendas lo que recompraste.',
@@ -398,8 +399,8 @@ const ENT_LECCIONES = {
     tus: (x) => [
       x.dos.length ? ['Con plazo de dos meses', String(x.dos.length), '', entNombres(x.dos, 2)] : null,
       x.anio.length ? ['Con plazo de un año', String(x.anio.length), '', entNombres(x.anio, 2)] : null,
+      x.etc.length ? ['ETC', String(x.etc.length), '', `${entNombres(x.etc, 2)}: dos meses, como rendimiento del capital`] : null,
       x.cri.length ? ['Cripto', String(x.cri.length), '', 'sin la regla de los dos meses'] : null,
-      ['Con pérdidas sin vender', String(x.perd.length), '', x.perd.length ? entNombres(x.perd, 2) : 'ninguna'],
       x.aplazado < 0 ? ['Pérdida aplazada este año', eurS(x.aplazado, 0), 'warn', 'por recompras'] : null,
     ],
     ejemplo: () => 'Vendes una acción el 15 de diciembre con 500 € de pérdida y vuelves a comprar la misma el 10 de enero. Esos 500 € no restan en la renta de ese año; restarán el día que vendas las que recompraste.',
@@ -414,8 +415,8 @@ const ENT_LECCIONES = {
     },
     texto: (x) => [
       `La renta de un año se presenta entre primeros de abril y el 30 de junio del siguiente${x ? `: la de ${x.anio}, en ${x.anio + 1}` : ''} (las fechas exactas las publica Hacienda). Lo de invertir va en la base del ahorro, y lo de los bancos y brókeres españoles suele llegar ya en el borrador.`,
-      `Los pasos: en enero y febrero cada bróker publica su informe fiscal del año; desde abril abres el borrador en Renta Web y revisas ventas, dividendos e intereses. ${x && x.fuera.length ? `Lo de ${esc(yLista(x.fuera))} puede faltar o venir mal colocado: lo compruebas con su informe y lo metes tú.` : 'Lo de los brókeres de fuera puede faltar o venir mal colocado: se comprueba con su informe y se mete a mano.'}`,
-      'Si sale a pagar, se puede fraccionar sin intereses: 60 % en junio y 40 % en noviembre. Los modelos 720 y 721 van aparte, son informativos y solo tocan si a 31 de diciembre tenías más de 50.000 € fuera de España.',
+      `Los pasos: en enero y febrero cada bróker publica su informe fiscal del año; desde abril abres el borrador en Renta Web y revisas ventas, dividendos e intereses. ${x && x.fuera.length ? `Lo de ${esc(yLista(x.fuera))} puede faltar o venir mal colocado: se comprueba con su informe y se mete a mano.` : 'Lo de los brókeres de fuera puede faltar o venir mal colocado: se comprueba con su informe y se mete a mano.'}`,
+      'Si sale a pagar, se puede fraccionar sin intereses: 60 % al presentarla y 40 % en noviembre. Los modelos 720 y 721 van aparte, son informativos (no se paga nada) y se presentan de enero a marzo: tocan si a 31 de diciembre tenías fuera de España más de 50.000 € en alguno de sus bloques (cuentas; valores y fondos; inmuebles; cripto en plataformas extranjeras, el 721). Los años siguientes, solo si alguno sube más de 20.000 €.',
     ],
     tus: (x) => [
       ['Renta de', String(x.anio), '', `se presenta en ${x.anio + 1}`],
@@ -423,7 +424,8 @@ const ENT_LECCIONES = {
       ['Cuota estimada', eur(x.fa.cuota, 0), '', x.fa.retenido ? `menos ${eur(x.fa.retenido, 0)} ya retenidos` : ''],
       x.fuera.length ? ['Brókeres de fuera', String(x.fuera.length), '', esc(yLista(x.fuera))] : null,
     ],
-    ejemplo: () => 'Los dividendos van en la casilla 0029, en bruto, antes de retenciones. Las ventas de acciones y ETF, en la 0328, una línea por venta con lo que pagaste y lo que cobraste. Los traspasos entre fondos no se declaran.',
+    // los ETF no van con las acciones: la ayuda de Renta 2025 de la AEAT los pone en las transmisiones de IIC (fondos cotizados)
+    ejemplo: () => 'Los dividendos van en la casilla 0029, en bruto, antes de retenciones. Las ventas de acciones, en la 0328, una línea por venta con lo que pagaste y lo que cobraste. Las de ETF van en el apartado de fondos (instituciones de inversión colectiva, «fondos cotizados»), aunque coticen como una acción. Los traspasos entre fondos no se declaran.',
     falta: '',
   },
 
@@ -438,8 +440,9 @@ const ENT_LECCIONES = {
     },
     texto: (x) => [
       'La volatilidad mide cuánto se mueve algo arriba y abajo. No dice si sube o baja, sino lo brusco que es el camino.',
-      `Los folletos de los fondos la cuentan en una escala del 1 al 7: un 1 casi no se mueve; un 7 se mueve muchísimo. ${x ? `Tu cartera está en un ${x.B.cr}${x.crB ? `, y la bolsa mundial, en las mismas fechas, en un ${x.crB}` : ''}.` : 'Un fondo monetario está abajo del todo; una cripto, casi siempre en el 7.'}`,
-      'Más volatilidad no es peor por sí sola, pero pide más estómago: hay que pasar meses en rojo sin que te pille necesitando ese dinero.',
+      // claseRiesgo usa los tramos de la antigua escala SRRI; el KID PRIIPs de hoy trae el SRI, con otros tramos
+      `Toisón la cuenta en la escala del 1 al 7 que usaban los fondos según cuánto se movían: un 1 casi no se mueve; un 7 se mueve muchísimo. El documento de datos fundamentales de hoy trae otra escala del 1 al 7 (el SRI), calculada distinto, así que el número puede no coincidir. ${x ? `Tu cartera está en un ${x.B.cr}${x.crB ? `, y la bolsa mundial, en las mismas fechas, en un ${x.crB}` : ''}.` : 'Un fondo monetario está abajo del todo; una cripto, casi siempre en el 7.'}`,
+      'Más volatilidad no es peor por sí sola, pero supone pasar a veces meses en rojo; si justo entonces se necesita el dinero, la caída se convierte en pérdida.',
     ],
     tus: (x) => [
       ['Cuánto se mueve tu cartera', `${x.B.cr} de 7`],
@@ -520,7 +523,7 @@ const ENT_LECCIONES = {
       'En Tú puedes poner tus propios límites: cuánto quieres como mucho en una sola empresa, en cripto o en oro. Toisón te avisa cuando los pasas; lo que hagas con eso lo decides tú.',
     ],
     tus: (x) => [
-      ['Lo que más pesa', pct(x.mayor.peso, 1), x.mayor.peso > 40 ? 'warn' : '', pavNom(x.mayor)],
+      ['Lo que más pesa', pct(x.mayor.peso, 1), '', pavNom(x.mayor)],
       x.acc ? ['La mayor empresa suelta', pct(x.acc.peso, 1), x.lim && x.acc.peso > x.lim ? 'warn' : '', `${pavNom(x.acc)}${x.lim ? ` · tu límite, ${fmtNum(x.lim, 0)} %` : ''}`] : null,
       ['Las 5 mayores', pct(x.top5, 1), '', 'de tu cartera'],
       x.pl ? ['En un mismo bróker', pct(x.pl.pct, 0), '', esc(String(x.pl.k))] : null,
@@ -543,13 +546,13 @@ const ENT_LECCIONES = {
       const covid = PAB_CRISIS.find((c) => c.t === 'Covid');
       return [
         'El dinero que puedes necesitar pronto (un imprevisto, la entrada de un piso, un coche) casa mal con la bolsa: si llega una caída justo cuando lo necesitas, tendrías que venderlo bastante más barato de lo que valía unas semanas antes.',
-        'La forma habitual de verlo son dos montones: un colchón de varios meses de gastos en algo que casi no se mueve (una cuenta, un monetario, renta fija a corto plazo) y el resto invertido a largo plazo, para aguantar las caídas sin tocarlo.',
+        'Las guías de educación financiera suelen explicarlo con dos montones: un colchón de varios meses de gastos en algo que casi no se mueve (una cuenta, un monetario, renta fija a corto plazo) y el resto invertido a largo plazo, para aguantar las caídas sin tocarlo.',
         `Cuanto antes vayas a necesitar un dinero, más daño puede hacerle una caída en ese momento. En el covid, la bolsa mundial cayó un ${Math.abs(covid.cl.rv)} % en poco más de un mes.`,
       ];
     },
     tus: (x) => [
       ['Lo que casi no se mueve', eur(x.e.seguro, 0), '', 'efectivo, monetarios y renta fija'],
-      x.e.colchon ? ['Tu colchón, según Tú', eur(x.e.colchon, 0), x.e.seguro < x.e.colchon * 0.9 ? 'warn' : '', `${fmtNum(+x.e.p.colchon_meses || 6, 0)} meses de gastos`] : null,
+      x.e.colchon ? ['El colchón que pusiste en Tú', eur(x.e.colchon, 0), '', `${fmtNum(+x.e.p.colchon_meses || 6, 0)} meses de gastos`] : null,
       x.pronto.length ? ['Metas en menos de 3 años', String(x.pronto.length), '', eur(sum(x.pronto, (m) => +m.importe || 0), 0)] : null,
       ['En bolsa y cripto', pct(x.bolsa, 0), '', 'de tu cartera'],
     ],
@@ -588,17 +591,17 @@ function entiendeAvance() {
 
 /* ---------- «Para ti ahora» ---------- */
 const ENT_REGLAS = [
-  ['renta', (M, d) => (d.getMonth() === 11 ? 'Se cierra el año: lo que vendas desde el 1 de enero ya va a la renta del siguiente.' : d.getMonth() >= 3 && d.getMonth() <= 5 ? `Está abierta la renta de ${d.getFullYear() - 1}: se presenta hasta el 30 de junio.` : null)],
+  ['renta', (M, d) => (d.getMonth() === 11 ? 'Las ventas cuentan en la renta del año en que se hacen: las de enero, ya en la del siguiente.' : d.getMonth() >= 3 && d.getMonth() <= 5 ? `Está abierta la renta de ${d.getFullYear() - 1}: se presenta hasta el 30 de junio.` : null)],
   ['concentracion', (M) => { const f = entPos(M)[0]; return f && f.peso > 40 ? `${pavNom(f)} es un ${pct(f.peso, 0)} de tu cartera.` : null; }],
   ['volatilidad', (M) => { const p = entPc(sum(entPos(M).filter((f) => f.inst.clase === 'Cripto'), (f) => f.valor), M); return p > 10 ? `Tu cripto es un ${pct(p, 0)} de tu cartera, y es lo que más se mueve.` : null; }],
   ['traspaso', (M) => {
     const fs = entPos(M).filter(entEsFondo); if (fs.length < 2) return null;
     const pl = [...new Set(fs.map((f) => f.pos.plataforma).filter(Boolean))];
-    return `Tus ${entCuantos(fs.length)} fondos${pl.length === 1 ? ` de ${esc(pl[0])}` : ''} se pueden traspasar sin pasar por Hacienda.`;
+    return `Tienes ${entCuantos(fs.length)} fondos de inversión${pl.length === 1 ? ` en ${esc(pl[0])}` : ''}: aquí se explica cómo funciona el traspaso entre fondos.`;
   }],
   ['retencion', (M, d) => {
     const anio = d.getFullYear(), b = entTry(() => dividendosAnio(M, anio).bruto, 0), rcm = +datosFiscales(anio).rcm || 0;
-    return b > 0.5 || rcm > 0 ? `Este año has cobrado dividendos (unos ${eur(Math.max(b, rcm), 0)}): mira qué te han retenido.` : null;
+    return b > 0.5 || rcm > 0 ? `Este año has cobrado unos ${eur(Math.max(b, rcm), 0)} en dividendos: aquí se ve qué retiene cada país.` : null;
   }],
   ['dos-meses', (M, d) => {
     const ap = (S.cartera.movimientos || []).filter((m) => m.tipo === 'venta' && String(m.fecha).startsWith(String(d.getFullYear()))).map((m) => perdidaAplazada(m)).filter(Boolean);

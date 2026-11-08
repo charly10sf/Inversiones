@@ -129,7 +129,7 @@ test('«Para ti ahora» elige la lección que más toca, en su orden fijo', asyn
     return out;
   });
   expect(r.traspaso[0]).toBe('traspaso');
-  expect(r.traspaso[1]).toBe('Tus tres fondos de MyInvestor se pueden traspasar sin pasar por Hacienda.');
+  expect(r.traspaso[1]).toBe('Tienes tres fondos de inversión en MyInvestor: aquí se explica cómo funciona el traspaso entre fondos.');
   expect(r.diciembre).toBe('renta');
   expect(r.mayo).toBe('renta');
   expect(r.concentracion).toBe('concentracion');
