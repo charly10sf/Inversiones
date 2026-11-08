@@ -69,17 +69,15 @@
   body.nav-ts #vista :is(.pest-tira, .pest-av, .apartados, .grupo-tabs, .volver-mas) { display: none; }
 
   .riel { position: fixed; z-index: 35; top: 0; bottom: 0; left: 0; display: flex; }
-  .k2-iconos { width: 64px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 16px 0 14px; border-right: 1px solid var(--sep); background: var(--fondo-2, var(--fondo)); overflow-y: auto; scrollbar-width: none; }
-  .k2-marca { display: grid; place-items: center; width: 44px; height: 44px; margin-bottom: 14px; }
-  .k2-marca i { display: grid; width: 34px; }
-  .k2-marca svg { width: 34px; height: auto; }
+  .k2-iconos { width: 64px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 0 0 14px; border-right: 1px solid var(--sep); background: var(--fondo-2, var(--fondo)); overflow-y: auto; scrollbar-width: none; }
+  /* la marca, arriba y a la altura de la barra de arriba: el símbolo en la de iconos y TOISÓN en la segunda (8 nov) */
+  .k2-marca { display: grid; place-items: center; width: 100%; height: 64px; flex: none; margin-bottom: 8px; border-bottom: 1px solid var(--sep); }
+  .k2-marca-tx { display: flex; align-items: center; height: 64px; flex: none; padding: 0 22px 0 6px; border-bottom: 1px solid var(--sep); }
+  .k2-marca-tx b { font: 600 22px/1 var(--marca); letter-spacing: .12em; padding-top: 2px; color: var(--texto); }
   .k2-iconos a { position: relative; display: grid; place-items: center; width: 46px; height: 46px; flex: none; border-radius: var(--r-m); color: var(--texto-2); text-decoration: none; }
   .k2-iconos a:hover { color: var(--texto); background: color-mix(in srgb, var(--superficie) 70%, transparent); }
   .k2-iconos a svg { width: 22px; height: 22px; }
   .k2-iconos a[aria-current="page"] { color: var(--oro-texto); background: var(--superficie); box-shadow: inset 0 0 0 1px var(--hilo); }
-  .k2-iconos .riel-med { display: grid; width: 24px; }
-  .k2-iconos .riel-med svg { width: 24px; height: auto; }
-  .k2-iconos .riel-med .s-o { fill: currentColor; } .k2-iconos .riel-med .s-t { fill: var(--oro-texto); }
   .k2-iconos a.falta::after, .k2-iconos a.nuevo::after { content: ""; position: absolute; top: 8px; right: 8px; width: 7px; height: 7px; border-radius: 50%; background: var(--oro-texto); }
   .k2-iconos .riel-aj { margin-top: auto; display: grid; place-items: center; width: 46px; height: 46px; border: 0; border-radius: var(--r-m); background: none; color: var(--texto-2); cursor: pointer; }
   .k2-iconos .riel-aj:hover { color: var(--texto); background: color-mix(in srgb, var(--superficie) 70%, transparent); }
@@ -88,7 +86,7 @@
   .k2-col { width: 252px; display: flex; flex-direction: column; border-right: 1px solid var(--sep); background: color-mix(in srgb, var(--fondo-2, var(--fondo)) 70%, var(--fondo)); }
   body.ia-grande .k2-col { width: 440px; }
   body.ia-grande .k2-col > :not(.k2-ia) { visibility: hidden; }
-  .k2-pags { padding: 22px 14px 10px; overflow-y: auto; }
+  .k2-pags { padding: 18px 14px 10px; overflow-y: auto; }
   .k2-tit { margin: 0 8px 14px; font: 600 20px/1.15 var(--titulo, var(--ui)); letter-spacing: -.01em; }
   .k2-lista { display: grid; gap: 2px; }
   .k2-lista a { display: flex; align-items: center; min-height: 42px; padding: 0 12px; border-radius: var(--r-s); color: var(--texto-2); font: 550 14px/1.2 var(--ui); text-decoration: none; }

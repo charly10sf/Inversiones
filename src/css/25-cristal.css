@@ -92,9 +92,12 @@
   /* lo elegido, en la gota neutra; el icono en oro */
   [data-tema] .riel :is(.k2-iconos, .k2-lista) a[aria-current="page"] { background: var(--gota-pc); box-shadow: var(--gota-pc-sombra); color: var(--barra-texto-act); }
   [data-tema] .riel .k2-iconos a[aria-current="page"] { color: var(--menu-oro); }
-  [data-tema] .riel .k2-iconos a[aria-current="page"] .riel-med .s-o { fill: var(--barra-texto-act); }
-  [data-tema] .riel .k2-iconos a[aria-current="page"] .riel-med .s-t { fill: var(--menu-oro); }
-  /* el sello de arriba, como en el móvil (en Marfil, vino y oro sobre la crema) */
-  [data-tema] .riel .k2-marca i { width: 38px; height: 38px; }
-  [data-tema] .riel .k2-marca svg { width: 24px; }
+  /* la marca, como en el móvil: el sello (en Marfil, vino y oro sobre la crema) y TOISÓN más grande al lado; la raya
+     entre las dos barras empieza debajo, para que se lean juntos */
+  [data-tema] .riel .k2-marca i { width: 40px; height: 40px; }
+  [data-tema] .riel .k2-marca svg { width: 25px; }
+  [data-tema] .riel :is(.k2-marca, .k2-marca-tx) { border-bottom-color: var(--menu-borde, var(--sep)); }
+  [data-tema] .riel .k2-marca-tx b { color: var(--barra-texto-act); }
+  [data-tema] .riel .k2-iconos { border-right-color: transparent; background-image: linear-gradient(var(--menu-borde, var(--sep)), var(--menu-borde, var(--sep)));
+    background-size: 1px calc(100% - 64px); background-position: right bottom; background-repeat: no-repeat; background-origin: border-box; }
 }

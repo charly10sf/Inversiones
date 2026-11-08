@@ -1,4 +1,4 @@
-"""0.8.3a · Los iconos de plumilla de Riesgo, Reparto y Herramientas para la K2 (43b-navegacion.js, ICO_SEC).
+"""0.8.3a · Los iconos de plumilla de Riesgo, Reparto, Herramientas y Hoy (la casa) para la K2 (43b-navegacion.js, ICO_SEC).
 
 Como los de ICONOS_PL (10-pintado.js): la línea central escrita con una plumilla elíptica de 2,2 × 1,1 (los verticales,
 el doble de gruesos), puntas rectas, simplificada a 0,12 y en relativo con un decimal. Hace falta shapely
@@ -53,4 +53,6 @@ reparto = svg([trazo(tarta[:-1], True), trazo(porcion[:-1], True)])
 # Herramientas: una llave inglesa
 cab = arco(15.3, 8.7, 4.4, -12, 282, 64)
 herr = svg([trazo(cab), trazo([(12.2, 11.8), (4.6, 19.4)])])
-print(json.dumps({'riesgo': riesgo, 'reparto': reparto, 'herramientas': herr}, indent=1))
+# Hoy en el ordenador: una casa (el símbolo ya está arriba, en la marca)
+casa = svg([trazo([(3.6, 11.4), (12, 4.3), (20.4, 11.4)]), trazo([(5.9, 9.5), (5.9, 19.9), (18.1, 19.9), (18.1, 9.5)]), trazo([(10.1, 19.9), (10.1, 14.4), (13.9, 14.4), (13.9, 19.9)])])
+print(json.dumps({'riesgo': riesgo, 'reparto': reparto, 'herramientas': herr, 'hoy': casa}, indent=1))

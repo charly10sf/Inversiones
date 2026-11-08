@@ -873,7 +873,6 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="marfil"] .riel-nav a:hover { color: var(--menu-texto-act); background: var(--menu-luz); }
 [data-tema="marfil"] .riel-nav a[aria-current="page"] { color: var(--menu-texto-act); background: var(--menu-luz); box-shadow: inset 0 0 0 1px var(--menu-oro-filo); }
 [data-tema="marfil"] .riel-nav a[aria-current="page"] svg { color: var(--oro-logo); }
-[data-tema="marfil"] .riel-nav .riel-med .s-t { fill: var(--oro-logo); }
 [data-tema="marfil"] .riel button.riel-ia, [data-tema="marfil"] .riel .seg-modo button[aria-pressed="true"] { background: var(--metal-oro); color: var(--sobre-oro); }
 [data-tema="marfil"] .riel .riel-ia svg { color: var(--sobre-oro); }
 [data-tema="marfil"] .riel-pie { border-color: var(--menu-borde); }

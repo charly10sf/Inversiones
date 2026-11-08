@@ -30,6 +30,8 @@ const ICO_SEC = {
   reparto: () => PL('M13.9 10.5l-.9-.2-.1-.3 0-6.4 .1-.3 1.2-.2 2.2 .3 1.6 .7 1.5 1.1 1.2 1.6 .7 2.1 .1 1.3-.4 .2zM15.1 4.3l0 5.1 4.2 0-.5-1.7-.9-1.6-1.2-1.1zM12.1 4.6l0 7.8 7.7 .1 .7 .4-.1 1.2-.6 2.2-.8 1.5-1.1 1.4-1.3 1.1-1.6 .9-1.9 .5-2 .2-1.5 0-1.9-.5-1.7-.7-1.5-1.1-1.2-1.3-.9-1.4-.6-1.6-.3-1.7 .1-1.7 .6-2.2 .8-1.5 1.1-1.4 1.3-1.1 2.2-1.1 2-.5 1.7 0 .6 .2zM9.9 13l0-7.7-1.4 .4-1.3 .6-1.8 1.8-.9 1.3-.5 1.5-.3 2.6 .6 2.6 .8 1.4 .9 1.2 2.1 1.4 1.2 .5 1.3 .2 1.6-.1 1.3-.4 1.3-.6 1.2-1 .9-1.2 .8-1.4 .6-2.5-7.4-.1-.8-.2z'),
   herramientas: () => PL('M18.6 8.5l-.1-.7 2.2-.1 .1 1.5-.3 1.1-.7 1.3-.9 .9-1.5 .8-1.6 .3-1.9-.1-1.6-.6-6.7 6.7-2-.4 7.4-7.4-1-1.7-.2-1.9 .3-1.1 .5-1 1.3-1.4 1.2-.6 1-.2 2.5 0-.7 1-1.2 0-1.2 .7-.8 .9-.5 .8-.2 1.3 .2 1.3 .6 1.2 1.1 1 .9 .4 .7 0 1.6-.6 1.1-1.5z'),
 };
+// Hoy en la barra de iconos del ordenador: una casa, porque el símbolo ya va arriba con el nombre (Carlos, 8 nov: «dos logos seguidos»)
+const ICO_K2_HOY = () => PL('M19.5 11.7l-.3-.2 0 8.4-.2 .3-.9 .2-12.2 0-.7-.1-.4-.2 0-8.6-.3 .2-1.8-.6 8.5-7.2 .9-.1 .8 .2 8.4 7.1zM17 9.6l-5-4.2-5 4.2 0 9.7 2 0 0-4.9 .2-.3 .8-.2 3.9-.1 .7 .2 .4 .3 0 5 2 0zM11.2 15l0 4.3 1.6 0 0-4.3z');
 const ICO_BUSCA = SVG('<circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.6 15.6l4.6 4.6"/>', 1.9);
 /* las páginas: id, nombre, sección del ordenador (s), grupo de la rejilla de Más (g), adónde lleva (v, y p si es una
    pestaña del trozo «avanzado»; h si tiene dirección propia), av si solo sale en el avanzado y kw para el buscador */
@@ -219,10 +221,11 @@ function htmlRiel() {
   return `<aside class="riel k2" aria-label="${L('Menú', 'Menu')}">
     <nav class="riel-nav k2-iconos" aria-label="${L('Secciones', 'Sections')}">
       <span class="k2-marca marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i></span>
-      ${SECCIONES.map((s) => `<a href="${hrefSeccion(s.k)}" data-sec="${s.k}"${s.ir ? ` data-ir="${s.ir}"` : ''} title="${L(s.t, s.en)}">${s.k === 'hoy' ? `<span class="riel-med">${ICO_SEC.hoy()}</span>` : ICO_SEC[s.k]()}<span class="sr">${L(s.t, s.en)}</span></a>`).join('')}
+      ${SECCIONES.map((s) => `<a href="${hrefSeccion(s.k)}" data-sec="${s.k}"${s.ir ? ` data-ir="${s.ir}"` : ''} title="${L(s.t, s.en)}">${s.k === 'hoy' ? ICO_K2_HOY() : ICO_SEC[s.k]()}<span class="sr">${L(s.t, s.en)}</span></a>`).join('')}
       <button type="button" class="riel-aj" data-accion="ajustes" title="${L('Ajustes', 'Settings')}" aria-label="${L('Ajustes', 'Settings')}">${ICONOS_PL.ajustes}</button>
     </nav>
     <div class="k2-col">
+      <div class="k2-marca-tx" aria-hidden="true"><b>TOISÓN</b></div>
       <div class="k2-pags" id="k2Pags"></div>
       ${htmlSelectorModo(true)}
       <div class="k2-ia" id="k2Ia">

@@ -162,3 +162,19 @@ test('ordenador: Ctrl K abre el buscador; arriba, fijados, Escritorios, avisos y
   await tocar(page, '.k2-cuenta');
   await expect.poll(() => page.evaluate(() => S.vista)).toBe('tu');
 });
+
+// 8 nov (Carlos): arriba a la izquierda salían dos símbolos seguidos (la marca y Hoy). Ahora, una sola marca como en el
+// móvil, el sello con TOISÓN al lado y más grande, a la altura de la barra de arriba; Hoy lleva una casa
+test('ordenador: una sola marca arriba, el sello con TOISÓN al lado, y Hoy con su icono', async ({ page }, info) => {
+  test.skip(info.project.name !== 'pc', 'solo en el ordenador');
+  await lista(page);
+  await expect(page.locator('.riel svg path.s-o')).toHaveCount(1);
+  await expect(page.locator('.k2-iconos [data-sec="hoy"] svg.ic-pl')).toHaveCount(1);
+  const sello = await page.locator('.k2-marca i').boundingBox(), nombre = await page.locator('.k2-marca-tx b').boundingBox(), arriba = await page.locator('.k2-top').boundingBox();
+  await expect(page.locator('.k2-marca-tx b')).toHaveText('TOISÓN');
+  // en la misma fila que la barra de arriba, el nombre a la derecha del sello y más grande que en el móvil (17 px)
+  expect(Math.abs((sello.y + sello.height / 2) - (nombre.y + nombre.height / 2))).toBeLessThan(4);
+  expect(Math.abs((sello.y + sello.height / 2) - (arriba.y + arriba.height / 2))).toBeLessThan(4);
+  expect(nombre.x).toBeGreaterThan(sello.x + sello.width);
+  expect(await page.locator('.k2-marca-tx b').evaluate((e) => parseFloat(getComputedStyle(e).fontSize))).toBeGreaterThan(17);
+});
