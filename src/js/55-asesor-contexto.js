@@ -842,8 +842,9 @@ async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
     try {
       const token = await conTiempo(tokenCuenta(), 9000);
       // los 10 s, para el Worker: renovar el token (0.8.3) no se los come
-      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), 10000);
-      const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' }, { espera: ESPERA_WORKER.sondeo });
+      // 0.8.3d: con relevo, más (el sondeo de la ruta y, si toca, el arranque del relevo)
+      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), urlRelevo() ? 18000 : 10000);
+      const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' }, { repetible: true });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); puede = true; }
       else apartarClaude(errorClaude(r.status, j));
@@ -878,8 +879,9 @@ function sondearClaude() {
     try {
       const token = await conTiempo(tokenCuenta(), 9000);
       // los 10 s, para el Worker: renovar el token (0.8.3) no se los come
-      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), 10000);
-      const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' }, { espera: ESPERA_WORKER.sondeo });
+      // 0.8.3d: con relevo, más (el sondeo de la ruta y, si toca, el arranque del relevo)
+      clearTimeout(tt); tt = setTimeout(() => ctl.abort(), urlRelevo() ? 18000 : 10000);
+      const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' }, { repetible: true });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); return true; }
       const ms = pausaClaude(errorClaude(r.status, j)) || 5 * 6e4; pausarClaude((j && j.error) || 'sondeo', ms);
@@ -1097,7 +1099,7 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   };
   try {
     const token = await conTiempo(tokenCuenta(), 9000);
-    const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) });
+    const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) }, { repetible: true });
     if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); if (j && j.error === 'tope-tareas') apuntarQuedanClaude(null, null, null, 0); if (j && j.error === 'tope-revision') apuntarQuedanClaude(null, null, null, null, 0); throw errorClaude(r.status, j); }
     { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel'), h('x-quedan-tareas'), h('x-quedan-revisiones')); }
     const lector = r.body.getReader(), dec = new TextDecoder();
@@ -1153,7 +1155,7 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
   // 16.000–24.000 tokens de salida, de los que el JSON eran unos 3.500 (7 nov, banco de la revisión)
   let esfuerzo = esfuerzo0, maxRepetido = false, pensar = pensar0;
   turno.modelo = modelo;
-  let ronda = 0, cortes = 0, pausas = 0, cambios = 0, vacias = 0, enviada = false;
+  let ronda = 0, cortes = 0, pausas = 0, cambios = 0, vacias = 0, enviada = false, porElRelevo = false;
   const avisoRed = (txt) => { turno.partes = turno.partes.filter((x) => !x.red); const p = { tipo: 'paso', red: true, txt }; turno.partes.push(p); alCambiar(); return p; };
   // 0.9: un id por pregunta, el mismo en todas sus rondas y reintentos: el Worker cuenta una pregunta por id (antes se fiaba
   // de «ronda», que se podía falsear y hacía que un reintento de la primera ronda no contara o contara dos veces)
@@ -1185,8 +1187,14 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
       }
       // si lo que no acepta Claude es la búsqueda en internet, se repite sin ella (y se avisa en el registro)
       if (e.claude && e.estado === 400 && conWeb && /web.?search/i.test(`${e.msg} ${e.codigo}`)) { conWeb = false; diarioIA(`Claude no acepta la búsqueda en internet (${String(e.msg).slice(0, 80)}): sigue sin ella`); vuelta--; continue; }
-      // 0.8.3d: sin que haya llegado nada y con Toisón llegando, es el bloqueo del fútbol (también si no empezó a tiempo)
-      if (esCorteRed(e) && !e.claude && !e.datos && !(signal && signal.aborted) && await esBloqueoWorker()) e.tipo = 'bloqueo';
+      // 0.8.3d: sin que haya llegado nada (también si no empezó a tiempo), se vuelve a mirar por dónde ir: si el Worker ha
+      // dejado de llegar (el bloqueo empezó con la ruta ya guardada), una vez más por el relevo
+      if (esCorteRed(e) && !e.claude && !e.datos && !(signal && signal.aborted)) {
+        dudarDelWorker();
+        if (urlRelevo() && !porElRelevo && VIA_WORKER !== 'relevo' && (await rutaWorker(true)) === 'relevo') { porElRelevo = true; avisoRed(L('No llega al servidor: lo intento por otro camino', "Can't reach the server: trying another way")); vuelta--; continue; }
+        // con Toisón llegando y sin Worker ni relevo, el aviso del bloqueo
+        if (await esBloqueoWorker()) e.tipo = 'bloqueo';
+      }
       // lo demás (sin permiso, sin créditos, tope del día, 5xx, no empieza a tiempo…): lo decide conversar
       throw e;
     }

@@ -21,12 +21,13 @@ import { pipeline } from 'node:stream/promises';
 
 export const DESTINO_POR_DEFECTO = 'https://growfolio.growfolio-web-app.workers.dev';
 // las rutas del Worker que usa la app (lo demás no se reenvía: el relevo no es un proxy abierto)
-const RUTAS = [/^\/salud$/, /^\/claude$/, /^\/isin$/, /^\/banco\/[a-z0-9-]{1,40}$/i, /^\/correo$/, /^\/correo\/[a-z0-9-]{1,40}$/i];
+const RUTAS = [/^\/salud$/, /^\/claude$/, /^\/isin$/, /^\/banco\/[a-z0-9-]{1,40}$/, /^\/correo$/, /^\/correo\/[a-z0-9-]{1,40}$/];
 // lo que se copia de la petición al Worker. User-Agent, Accept, Accept-Language, Accept-Charset y Referer los usa el
 // banco (cabeceras PSU); Origin, para que el Worker aplique su lista de sitios. Nada más (ni cookies ni IP)
 const CABECERAS_IDA = ['authorization', 'content-type', 'origin', 'user-agent', 'accept', 'accept-language', 'accept-charset', 'referer'];
-// lo que no se devuelve tal cual: lo de la conexión y la compresión (fetch ya la deshace, así que se iría mal marcado)
-const CABECERAS_VUELTA_FUERA = new Set(['connection', 'keep-alive', 'transfer-encoding', 'content-encoding', 'content-length', 'upgrade', 'proxy-connection', 'te', 'trailer', 'alt-svc', 'set-cookie', 'server', 'cf-ray', 'cf-cache-status', 'nel', 'report-to']);
+// lo que se devuelve del Worker: el tipo, la caché, cuándo volver a probar y las propias (x-quedan…). Lo demás (las de
+// Cloudflare, cookies, compresión, que fetch ya deshace) se queda fuera
+const CABECERAS_VUELTA = (k) => k === 'content-type' || k === 'cache-control' || k === 'retry-after' || (k.startsWith('x-') && k !== 'x-powered-by');
 const MB = 1024 * 1024;
 
 export function crearRelevo({
@@ -40,6 +41,10 @@ export function crearRelevo({
   esperaHilo = Number(process.env.ESPERA_HILO_S || 75) * 1000,
   // cuántas peticiones por minuto deja a cada IP (en cada instancia): frena que alguien lo use para gastar
   porMinuto = Number(process.env.POR_MINUTO || 120),
+  // y cuántas abiertas a la vez (una respuesta de la IA dura 60–100 s): que pocas conexiones lentas no lo llenen
+  aLaVez = Number(process.env.A_LA_VEZ || 8),
+  // para terminar de subir el cuerpo (una pregunta con la cartera, o capturas, en segundos)
+  esperaSubida = Number(process.env.ESPERA_SUBIDA_S || 20) * 1000,
   registrar = (linea) => console.log(linea),
 } = {}) {
   const base = String(destino).replace(/\/+$/, '');
@@ -53,6 +58,7 @@ export function crearRelevo({
     c.n++;
     return c.n > porMinuto;
   };
+  const abiertas = new Map();
   // la IP solo para el límite de arriba (en memoria, un minuto); no se manda al Worker ni se apunta
   const ipDe = (req) => String(req.headers['x-forwarded-for'] || '').split(',').map((x) => x.trim()).filter(Boolean).pop() || req.socket.remoteAddress || '';
   const cors = (req) => {
@@ -69,8 +75,12 @@ export function crearRelevo({
     const t0 = Date.now();
     let ruta = '/', estado = 0;
     const fin = () => registrar(`${req.method} ${ruta} ${estado || res.statusCode} ${Date.now() - t0} ms`);
+    // un solo «close» con todo lo que hay que recoger al acabar (o al irse la app)
+    const alCerrar = [() => { if (!res.writableFinished) registrar(`${req.method} ${ruta} cortada ${Date.now() - t0} ms`); }];
     res.on('finish', fin);
-    res.on('close', () => { if (!res.writableFinished) registrar(`${req.method} ${ruta} cortada ${Date.now() - t0} ms`); });
+    res.on('close', () => { for (const f of alCerrar) try { f(); } catch (e) { /* nada */ } });
+    // una subida que se corta a medias: que no tumbe el proceso
+    req.on('error', () => { /* lo recoge «close» */ });
     try {
       const url = new URL(req.url, 'http://relevo');
       ruta = url.pathname;
@@ -80,7 +90,10 @@ export function crearRelevo({
       if (!['GET', 'POST'].includes(req.method) || !RUTAS.some((r) => r.test(ruta))) return responder(req, res, 404, { error: 'no-existe' });
       const o = req.headers.origin || '';
       if (origenes.length && o && !origenes.includes(o)) return responder(req, res, 403, { error: 'origen' });
-      if (deMas(ipDe(req))) return responder(req, res, 429, { error: 'demasiadas', motivo: 'relevo' });
+      const ip = ipDe(req);
+      if (deMas(ip) || (abiertas.get(ip) || 0) >= aLaVez) return responder(req, res, 429, { error: 'demasiadas', motivo: 'relevo' });
+      abiertas.set(ip, (abiertas.get(ip) || 0) + 1);
+      alCerrar.push(() => { const n = (abiertas.get(ip) || 1) - 1; if (n > 0) abiertas.set(ip, n); else abiertas.delete(ip); });
       const largo = Number(req.headers['content-length'] || 0);
       if (largo > maxCuerpo) return responder(req, res, 413, { error: 'grande' });
 
@@ -88,16 +101,20 @@ export function crearRelevo({
       for (const k of CABECERAS_IDA) if (req.headers[k]) cab[k] = String(req.headers[k]);
       // el Worker sabe así que viene del relevo: no usa esta IP (la de Google) como la tuya para el banco
       cab['x-toison-relevo'] = '1';
+      // sin comprimir: que nada en medio junte la respuesta en directo para comprimirla
+      cab['accept-encoding'] = 'identity';
 
       const ctl = new AbortController();
       let motivo = '';
       const cortar = (m) => { if (!motivo) motivo = m; ctl.abort(); };
       // si la app se va (cierra, corta), se corta también hacia el Worker: no se sigue gastando
-      res.on('close', () => { if (!res.writableFinished) cortar('cliente'); });
+      alCerrar.push(() => { if (!res.writableFinished) cortar('cliente'); });
       let reloj = setTimeout(() => cortar('cabeceras'), esperaCabeceras);
 
       let cuerpo;
       if (req.method === 'POST') {
+        const subida = setTimeout(() => cortar('subida'), esperaSubida);
+        req.on('end', () => clearTimeout(subida)); alCerrar.push(() => clearTimeout(subida));
         let n = 0;
         const contar = new Transform({ transform(trozo, _c, hecho) { n += trozo.length; if (n > maxCuerpo) { cortar('grande'); hecho(new Error('grande')); } else hecho(null, trozo); } });
         cuerpo = Readable.toWeb(req.pipe(contar));
@@ -109,12 +126,13 @@ export function crearRelevo({
         clearTimeout(reloj);
         if (motivo === 'cliente') return;
         if (motivo === 'grande') return responder(req, res, 413, { error: 'grande' });
+        if (motivo === 'subida') return responder(req, res, 408, { error: 'relevo', motivo: 'subida lenta' });
         estado = 502;
         return responder(req, res, 502, { error: 'relevo', motivo: motivo === 'cabeceras' ? 'el Worker no contesta' : 'no llega al Worker' });
       }
       clearTimeout(reloj);
       const vuelta = { ...cors(req) };
-      r.headers.forEach((v, k) => { if (!CABECERAS_VUELTA_FUERA.has(k) && !k.startsWith('access-control-')) vuelta[k] = v; });
+      r.headers.forEach((v, k) => { if (CABECERAS_VUELTA(k)) vuelta[k] = v; });
       // que nada en medio guarde ni junte la respuesta en directo
       vuelta['cache-control'] = r.headers.get('cache-control') || 'no-store';
       vuelta['x-accel-buffering'] = 'no';

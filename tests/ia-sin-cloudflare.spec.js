@@ -2,7 +2,8 @@
 // Cloudflare, y con ellas el Worker. Se comprueba: (1) el aviso claro cuando llega Toisón pero no el Worker, y el aviso de
 // siempre cuando no llega nada; (2) con el relevo (Cloud Run), que la app prueba el Worker, si no llega va por el relevo,
 // lo recuerda media hora, vuelve al Worker si el relevo cae, y que el banco, el ISIN y los correos van igual; y que sin
-// relevo configurado todo va al Worker como siempre.
+// relevo configurado todo va al Worker como siempre. Por dónde ir lo decide un sondeo de /salud: una petición de verdad
+// nunca se corta a mitad para mandarla otra vez.
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
 
@@ -14,6 +15,9 @@ const test = base.extend({
   }, { auto: true }],
 });
 test.beforeEach(({}, info) => test.skip(info.project.name !== 'movil', 'solo en el móvil'));
+// con tiempos medidos: una a una, para que la carga de las demás no las falsee
+test.describe.configure({ mode: 'serial' });
+const BLOQUEO = 'puede ser el bloqueo que hacen algunos operadores durante los partidos';
 
 const WORKER = 'https://growfolio.growfolio-web-app.workers.dev';
 const RELEVO = 'https://relevo-prueba.a.run.app';
@@ -25,7 +29,7 @@ const respuesta = (texto) => ev('message_start', { message: { id: 'm', type: 'me
 
 /* Un servidor (el Worker o el relevo) de imitación en /claude y /salud: el sondeo «{}» contesta 400 «peticion», lo demás
    contesta `texto` en directo. Devuelve cuántas peticiones le han llegado. */
-async function servidor(context, base, texto) {
+async function servidor(context, base, texto, { lento = 0 } = {}) {
   const v = { sondeos: 0, preguntas: 0, salud: 0, otras: [] };
   await context.route(`${base}/**`, async (r) => {
     const q = r.request(), u = new URL(q.url());
@@ -37,6 +41,7 @@ async function servidor(context, base, texto) {
       return r.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'text/event-stream' }, body: respuesta(texto) });
     }
     v.otras.push(u.pathname + u.search);
+    if (lento) await new Promise((ok) => setTimeout(ok, lento));
     return r.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify({ ok: true, via: base }) });
   });
   return v;
@@ -58,12 +63,12 @@ test('opción 1: llega Toisón pero no el Worker: se dice que es el bloqueo del 
   await preparada(page);
   await bloquear(context, WORKER, 'corta');
   await page.evaluate(() => abrirAsesor());
-  await expect(page.locator('#asCuerpo')).toContainText('durante los partidos de LaLiga', { timeout: 20_000 });
-  await expect(page.locator('#asCuerpo')).toContainText('Vuelve a probar al acabar el partido o con los datos de otro operador');
+  await expect(page.locator('#asCuerpo')).toContainText(BLOQUEO, { timeout: 20_000 });
+  await expect(page.locator('#asCuerpo')).toContainText('vuelve a probar al acabar el partido o con los datos de otro operador');
   expect((await page.evaluate(() => claudePausado())).motivo).toBe('bloqueo');
   // es una pausa por la red: al preguntar tú, se quita y se vuelve a intentar
   expect(await page.evaluate(() => PAUSAS_DE_RED.includes('bloqueo'))).toBe(true);
-  expect(await page.evaluate(() => textoDiarioIA())).toContain('bloqueo de la red (fútbol)');
+  expect(await page.evaluate(() => textoDiarioIA())).toContain('bloqueo de la red');
 });
 
 test('opción 1: una pregunta que no llega nunca al Worker, con Toisón llegando, acaba en el aviso del bloqueo', async ({ page, context }) => {
@@ -72,7 +77,7 @@ test('opción 1: una pregunta que no llega nunca al Worker, con Toisón llegando
   await page.evaluate(() => LS.set('inv-claude-sondeo', { ok: true, hasta: Date.now() + 36e5, uid: FB.user.uid }));
   await bloquear(context, WORKER, 'corta');
   await preguntar(page);
-  await expect(page.locator('#asCuerpo .as-error').last()).toContainText('durante los partidos de LaLiga', { timeout: 40_000 });
+  await expect(page.locator('#asCuerpo .as-error').last()).toContainText(BLOQUEO, { timeout: 40_000 });
 });
 
 test('opción 1: si tampoco llega Toisón (sin internet), no se habla del fútbol', async ({ page, context }) => {
@@ -101,8 +106,8 @@ test('opción 2: con el Worker colgado, la pregunta va por el relevo, contesta y
   await conRelevo(page);
   await bloquear(context, WORKER, 'cuelga');
   const rel = await servidor(context, RELEVO, 'Contesto por el relevo.');
-  // más corto que en la app (12 s / 6 s), para no esperar en la prueba; el sondeo y la pregunta, cada uno con lo suyo
-  await page.evaluate(() => { ESPERA_WORKER.normal = 2500; ESPERA_WORKER.sondeo = 1500; });
+  // el sondeo de la ruta, más corto que en la app (5 s), para no esperar en la prueba
+  await page.evaluate(() => { ESPERA_WORKER.sondeo = 1500; });
   const t0 = Date.now();
   await preguntar(page);
   await expect(page.locator('#asCuerpo')).toContainText('Contesto por el relevo.', { timeout: 30_000 });
@@ -110,8 +115,8 @@ test('opción 2: con el Worker colgado, la pregunta va por el relevo, contesta y
   expect(rel.preguntas).toBe(1);
   expect(await page.evaluate(() => [VIA_WORKER, porRelevo(), LS.get(LS_RUTA_WORKER).hasta - Date.now() > 25 * 6e4])).toEqual(['relevo', true, true]);
   expect(await page.evaluate(() => textoDiarioIA())).toContain('va por el relevo media hora');
-  // la siguiente va directa por el relevo, sin esperar al Worker
-  await page.evaluate(() => { AS.cargando = false; ESPERA_WORKER.normal = 60000; });
+  // la siguiente va directa por el relevo, sin volver a mirar el Worker
+  await page.evaluate(() => { AS.cargando = false; ESPERA_WORKER.sondeo = 60000; });
   const t1 = Date.now();
   await page.evaluate(() => preguntarAsesor('¿Y ahora?'));
   await expect(page.locator('#asCuerpo .as-ia').last()).toContainText('Contesto por el relevo.', { timeout: 20_000 });
@@ -149,7 +154,7 @@ test('opción 2: con el Worker y el relevo sin llegar y Toisón llegando, el avi
   await bloquear(context, WORKER, 'corta');
   await context.route(`${RELEVO}/**`, (r) => r.abort('failed'));
   await page.evaluate(() => abrirAsesor());
-  await expect(page.locator('#asCuerpo')).toContainText('durante los partidos de LaLiga', { timeout: 20_000 });
+  await expect(page.locator('#asCuerpo')).toContainText(BLOQUEO, { timeout: 20_000 });
 });
 
 test('opción 2: el ISIN, el banco y los correos también van por el relevo, con lo mismo detrás', async ({ page, context }) => {
@@ -160,7 +165,7 @@ test('opción 2: el ISIN, el banco y los correos también van por el relevo, con
   const r = await page.evaluate(async () => {
     const isin = await buscarIsinWorker('IE00B4L5Y983', false);
     const r1 = await fetchWorker('/banco/estado', { headers: { Authorization: 'Bearer x' } }).then((x) => x.json());
-    const r2 = await fetchWorker('/correo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"tipo":"clave"}' }, { espera: ESPERA_WORKER.sondeo }).then((x) => x.json());
+    const r2 = await fetchWorker('/correo', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"tipo":"clave"}' }).then((x) => x.json());
     return { isin, r1, r2, via: VIA_WORKER };
   });
   expect(r.isin.via).toBe(RELEVO);
@@ -183,4 +188,47 @@ test('opción 2: «parar» corta también la petición por el relevo y no deja l
   });
   expect(r).toBe('AbortError');
   expect(await page.evaluate(() => porRelevo())).toBe(true);
+});
+
+test('opción 2: una petición lenta del banco no se manda dos veces (nada la corta por tiempo)', async ({ page, context }) => {
+  await preparada(page);
+  await conRelevo(page);
+  const w = await servidor(context, WORKER, '', { lento: 4000 });
+  let alRelevo = 0;
+  await context.route(`${RELEVO}/**`, (r) => { alRelevo++; return r.abort(); });
+  const r = await page.evaluate(() => fetchWorker('/banco/sesion', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: '{"code":"un-solo-uso"}' }).then((x) => x.json()));
+  expect(r.via).toBe(WORKER);
+  expect(w.otras).toEqual(['/banco/sesion']);
+  expect(w.salud).toBe(1);
+  expect(alRelevo).toBe(0);
+});
+
+test('opción 2: lo que no se puede repetir (el código del banco, un correo) no se repite por el relevo; la siguiente ya va por él', async ({ page, context }) => {
+  await preparada(page);
+  await conRelevo(page);
+  // la ruta, guardada como buena antes del partido; luego el Worker deja de llegar
+  await page.evaluate(() => guardarRuta('worker'));
+  await bloquear(context, WORKER, 'corta');
+  const rel = await servidor(context, RELEVO, '');
+  const r = await page.evaluate(async () => {
+    let primera;
+    try { await fetchWorker('/correo', { method: 'POST', body: '{"tipo":"clave"}' }); primera = 'contestó'; } catch (e) { primera = e.name; }
+    const segunda = await fetchWorker('/correo', { method: 'POST', body: '{"tipo":"clave"}' }).then((x) => x.json());
+    return { primera, segunda, ruta: rutaGuardada() };
+  });
+  expect(r.primera).toBe('TypeError');
+  expect(r.segunda.via).toBe(RELEVO);
+  expect(r.ruta).toBe('relevo');
+  expect(rel.otras).toEqual(['/correo']);
+});
+
+test.describe('fuera de España', () => {
+  test.use({ timezoneId: 'America/New_York' });
+  test('opción 1: fuera de España no se habla del fútbol, solo de que la red no deja llegar', async ({ page, context }) => {
+    await preparada(page);
+    await bloquear(context, WORKER, 'corta');
+    await page.evaluate(() => abrirAsesor());
+    await expect(page.locator('#asCuerpo')).toContainText('puede que tu red lo esté bloqueando', { timeout: 20_000 });
+    await expect(page.locator('#asCuerpo')).not.toContainText('LaLiga');
+  });
 });

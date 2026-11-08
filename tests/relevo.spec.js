@@ -16,7 +16,7 @@ const ORIGEN = 'https://charly10sf.github.io';
 function workerFalso() {
   const visto = [];
   const s = createServer(async (req, res) => {
-    const trozos = []; for await (const t of req) trozos.push(t);
+    const trozos = []; try { for await (const t of req) trozos.push(t); } catch (e) { return; }
     const v = { metodo: req.method, url: req.url, cab: req.headers, cuerpo: Buffer.concat(trozos), cerrada: false };
     visto.push(v);
     req.on('close', () => {}); res.on('close', () => { if (!res.writableFinished) v.cerrada = true; });
@@ -74,6 +74,7 @@ test('reenvía la respuesta de la IA en directo, con las cabeceras justas, y no 
     expect(v.cab['user-agent']).toBe('Navegador/1.0');
     expect(v.cab['accept-language']).toBe('es-ES');
     expect(v.cab['x-toison-relevo']).toBe('1');
+    expect(v.cab['accept-encoding']).toBe('identity');
     expect(v.cab.cookie).toBeUndefined();
     expect(v.cab['cf-connecting-ip']).toBeUndefined();
     expect(v.cab['x-forwarded-for']).toBeUndefined();
@@ -162,5 +163,26 @@ test('sin llegar al Worker dice 502 «relevo»; el Worker callado corta a su tie
     const r4 = await fetch(`${m.url}/salud`);
     expect(r4.status).toBe(429);
     expect((await r4.json()).motivo).toBe('relevo');
+  } finally { m.cerrar(); }
+});
+
+test('pocas conexiones lentas no lo llenan: tope de abiertas a la vez por IP; la subida lenta se corta', async () => {
+  const m = await montar({ aLaVez: 2, esperaSubida: 400 });
+  try {
+    // dos respuestas largas abiertas a la vez (las de /correo/lento no acaban): la tercera, 429
+    const abiertas = [];
+    for (let i = 0; i < 2; i++) { const ctl = new AbortController(); abiertas.push(ctl); await fetch(`${m.url}/correo/lento`, { method: 'POST', body: '{}', headers: { Origin: ORIGEN }, signal: ctl.signal }); }
+    const r = await fetch(`${m.url}/salud`);
+    expect(r.status).toBe(429);
+    abiertas.forEach((c) => c.abort());
+    await new Promise((ok) => setTimeout(ok, 200));
+    expect((await fetch(`${m.url}/salud`)).status).toBe(200);
+    // una subida que no acaba: a los 0,4 s, 408
+    const codigo = await new Promise((ok) => {
+      const q = pedirHttp(`${m.url}/claude`, { method: 'POST', headers: { Origin: ORIGEN, 'content-type': 'application/json', 'transfer-encoding': 'chunked' } });
+      q.on('response', (res) => ok(res.statusCode)); q.on('error', () => ok('error'));
+      q.write('{"a":');
+    });
+    expect(codigo).toBe(408);
   } finally { m.cerrar(); }
 });

@@ -3,8 +3,10 @@
 #
 # NO HACE NADA hasta que Carlos lo decida: hace falta el plan Blaze (facturación) del proyecto growfolio-a79a9, con su
 # alerta de presupuesto, el secreto GCP_RELEVO y la variable RELEVO_EN_VIVO = si (paso a paso en relevo/LEEME.md).
-# Secreto: GCP_RELEVO, la clave JSON de una cuenta de servicio con «Administrador de Cloud Run», «Usuario de cuenta de
-# servicio», «Escritor de Artifact Registry» y «Editor de Cloud Build» en growfolio-a79a9. Sin él, avisa y no hace nada.
+# Secreto: GCP_RELEVO, la clave JSON de la cuenta de servicio que publica (relevo-publica@…), con «Desarrollador de
+# código fuente de Cloud Run» (roles/run.sourceDeveloper), «Usuario de cuenta de servicio» y «Consumidor de Service Usage»
+# en growfolio-a79a9 (a comprobar en el primer despliegue: relevo/LEEME.md). Sin él, avisa y no hace nada.
+# El servicio corre con otra cuenta, relevo@…, SIN NINGÚN PAPEL: no puede leer Firestore ni nada del proyecto.
 #
 # Lo que crea: el servicio toison-relevo en europe-southwest1 (Madrid), público (la app no tiene cuenta de Google; quién
 # eres lo mira el Worker con tu token), 1 vCPU, 256 MiB, hasta 80 peticiones a la vez por instancia, 0 instancias
@@ -29,12 +31,12 @@ jobs:
   relevo:
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    env:
-      EN_VIVO: ${{ vars.RELEVO_EN_VIVO }}
-      CLAVE: ${{ secrets.GCP_RELEVO }}
     steps:
       - name: ¿Se publica?
         id: puerta
+        env:
+          EN_VIVO: ${{ vars.RELEVO_EN_VIVO }}
+          CLAVE: ${{ secrets.GCP_RELEVO }}
         run: |
           if [ -z "$CLAVE" ]; then echo "::warning::Falta el secreto GCP_RELEVO: no se publica nada."; echo "seguir=no" >> "$GITHUB_OUTPUT"; exit 0; fi
           if [ "$EN_VIVO" != "si" ]; then echo "::notice::RELEVO_EN_VIVO no vale «si»: no se publica nada."; echo "seguir=no" >> "$GITHUB_OUTPUT"; exit 0; fi
@@ -56,10 +58,11 @@ jobs:
             --cpu 1 --memory 256Mi --concurrency 80 \
             --min-instances 0 --max-instances 2 --timeout 300 \
             --cpu-boost \
+            --service-account relevo@growfolio-a79a9.iam.gserviceaccount.com \
             --set-env-vars "^@^DESTINO=https://growfolio.growfolio-web-app.workers.dev@ORIGENES=https://charly10sf.github.io,https://toison.es" \
             --quiet
           url=$(gcloud run services describe toison-relevo --project growfolio-a79a9 --region europe-southwest1 --format 'value(status.url)')
           echo "::notice::Relevo en $url (ponerlo en RELEVO, src/js/32a-ruta-worker.js)"
-          code=$(curl -s -o /dev/null -w '%{http_code}' "$url/salud")
+          code=$(curl -s --max-time 30 -o /dev/null -w '%{http_code}' "$url/salud")
           echo "::notice::$url/salud → $code"
           [ "$code" = "200" ] || { echo "::error::El relevo no llega al Worker (/salud → $code)"; exit 1; }
