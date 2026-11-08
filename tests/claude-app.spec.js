@@ -578,7 +578,8 @@ test('con Claude, Normal es Haiku y «A fondo» es Sonnet; arriba, las preguntas
   await expect(fondoB).toHaveAttribute('aria-pressed', 'false');
   await fondoB.evaluate((el) => el.click());
   await expect(fondoB).toHaveAttribute('aria-pressed', 'true');
-  await expect(page.locator('#asModo')).toContainText('Sonnet');
+  // 0.8.3c: sin la línea de debajo; qué modelo es, al pasar el ratón por el botón
+  await expect(fondoB).toHaveAttribute('title', /Sonnet/);
   await page.evaluate(() => preguntarAsesor('¿Y a fondo?'));
   await expect.poll(() => w.peticiones.length, { timeout: 20_000 }).toBe(2);
   expect(w.peticiones[1].cuerpo.model).toBe('claude-sonnet-5-5');

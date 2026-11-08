@@ -106,6 +106,9 @@ test('ordenador: la caja de preguntar cabe en la IA estrecha y sin barra; ancha,
   expect(c.barra).toBe(false);
   expect(c.dosFilas).toBe(true);
   expect(c.ejemplo).toBe('Pregúntale lo que quieras');
+  // debajo de «Respuesta» ya no va la línea «Con Haiku: rápida y al grano» (queda al pasar el ratón por cada botón)
+  await expect(page.locator('#asModo small')).toHaveCount(0);
+  await expect(page.locator('#asModo [data-m="normal"]')).toHaveAttribute('title', 'Con Haiku: rápida y al grano');
   // un texto largo crece hasta 160 px y solo entonces sale la barra
   await page.locator('#asTexto').fill('una pregunta muy larga '.repeat(30));
   await expect.poll(async () => (await caja(page)).barra).toBe(true);

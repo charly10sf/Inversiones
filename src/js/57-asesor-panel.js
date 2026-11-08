@@ -165,7 +165,8 @@ function pintarAsesor(alFinal) {
   const cuerpo = $('#asCuerpo', fondo), pie = $('#asPie', fondo);
   $('#asSub', fondo).textContent = subtituloIA();
   // 0.8.2: Normal (Haiku) o «A fondo» (Sonnet) para tus preguntas; con un modelo fijo elegido en Ajustes, nada
-  $('#asModo', fondo).innerHTML = motorElegido() !== 'auto' ? '' : `<span>${L('Respuesta', 'Answer')}</span><div class="seg" role="group" aria-label="${L('Tipo de respuesta', 'Answer type')}" aria-describedby="asModoNota"><button type="button" data-as="fondo" data-m="normal" aria-pressed="${!AS.aFondo}">${L('Normal', 'Normal')}</button><button type="button" data-as="fondo" data-m="fondo" aria-pressed="${!!AS.aFondo}">${L('A fondo', 'In depth')}</button></div><small id="asModoNota">${AS.aFondo ? L('Con Sonnet: piensa más y tarda algo más', 'With Sonnet: thinks more and takes a bit longer') : L('Con Haiku: rápida y al grano', 'With Haiku: quick and to the point')}</small>`;
+  // 0.8.3c: sin la línea de debajo («Con Haiku: rápida y al grano»; Carlos, 8 nov): lo que hace cada una, al pasar el ratón
+  $('#asModo', fondo).innerHTML = motorElegido() !== 'auto' ? '' : `<span>${L('Respuesta', 'Answer')}</span><div class="seg" role="group" aria-label="${L('Tipo de respuesta', 'Answer type')}"><button type="button" data-as="fondo" data-m="normal" aria-pressed="${!AS.aFondo}" title="${L('Con Haiku: rápida y al grano', 'With Haiku: quick and to the point')}">${L('Normal', 'Normal')}</button><button type="button" data-as="fondo" data-m="fondo" aria-pressed="${!!AS.aFondo}" title="${L('Con Sonnet: piensa más y tarda algo más', 'With Sonnet: thinks more and takes a bit longer')}">${L('A fondo', 'In depth')}</button></div>`;
   // 0.9: con una conversación empezada (p. ej. Claude acaba de decir que no puede) se queda en el chat para que se lea
   const vista = !iaLista() && AS.vista !== 'ajustes' && !AS.conv.length ? 'sin-ia' : AS.vista;
   if (vista === 'sin-ia') cuerpo.innerHTML = htmlSinIA();
