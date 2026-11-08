@@ -7,6 +7,13 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.3c', f: '2026-11-08', h: '18:30', t: 'La IA, más firme', arreglos: [
+    'Si se corta la conexión con la IA, lo vuelve a intentar sola, y al volver a preguntar lo intenta de verdad en vez de esperar unos minutos.',
+    'En el ordenador, la barra de la izquierda se ensancha arrastrando su borde, y la IA con ella. Con doble clic en el borde vuelve a como estaba.',
+    'La caja para preguntar a la IA ya no se sale por la derecha ni enseña una barra de desplazamiento, y debajo ya no va la línea de «Con Haiku».',
+    'Las vetas del fondo se ven nítidas en las pantallas grandes y en el móvil.',
+    { t: 'Cuando la IA no contesta, junto al mensaje sale el motivo técnico entre corchetes.', solo: 'dueno' },
+  ] },
   { v: '0.8.3b', f: '2026-11-08', h: '15:50', t: 'Revisión del diseño', arreglos: [
     'La barra de abajo del móvil es más de cristal y la línea dorada ya no pasa por detrás del logo de Hoy.',
     'Nada se sale ni se corta en pantallas estrechas: Posiciones, Tú, Tu plan y las tablas anchas se ven enteras.',

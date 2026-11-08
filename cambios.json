@@ -1,6 +1,56 @@
 {
  "versiones": [
   {
+   "v": "0.8.3c",
+   "f": "2026-11-08",
+   "h": "18:30",
+   "t": "La IA, más firme",
+   "commits": [
+    {
+     "cuando": "2026-11-08 18:26",
+     "asunto": "0.8.3c: la IA aguanta los cortes de conexión y no se bloquea al volver a preguntar",
+     "detalle": [
+      "El 8 nov a Carlos se le cortó la respuesta dos veces seguidas (a los 15 s y, la segunda sin llegar nada, a los 5 s): la app",
+      "solo reintentaba una vez cuando no había llegado nada, apartaba a Claude 5 minutos y sus «Volver a preguntar» fallaban al",
+      "momento sin intentarlo, con «La IA no está disponible ahora mismo».",
+      "- Los cortes sin ningún dato también se reintentan dos veces (a los 2 y a los 5 s).",
+      "- Una pausa por la red (red, cambio, tiempo, sondeo) ya no frena lo que pides tú: al preguntar o abrir la IA se quita",
+      "  (quitarPausaDeRed). Las de la cuenta (topes, créditos, correo, clave, petición que no vale) siguen igual.",
+      "- Un corte se dice como corte («Se ha cortado la conexión con la IA. Vuelve a preguntar.») y el registro apunta si llegó",
+      "  algo y el error del navegador.",
+      "- Pruebas en claude-app.spec.js: dos cortes y a la tercera contesta; la pausa por la red no frena la pregunta y la de",
+      "  créditos sí; un corte que no se arregla dice «Se ha cortado la conexión»."
+     ]
+    },
+    {
+     "cuando": "2026-11-08 18:00",
+     "asunto": "Pruebas: el tamaño de toque del pie de la IA espera a que se vaya el aviso «Guardado en tu cuenta»",
+     "detalle": [
+      "Sin la línea de debajo de Normal / A fondo el pie es más bajo y el aviso, si aún está, cae encima de esos botones."
+     ]
+    },
+    {
+     "cuando": "2026-11-08 17:50",
+     "asunto": "0.8.3c: fuera la línea «Con Haiku: rápida y al grano» de debajo de la IA",
+     "detalle": [
+      "Lo que hace Normal y A fondo queda en el título de cada botón (al pasar el ratón). Lo pidió Carlos (8 nov, 17:43)."
+     ]
+    },
+    {
+     "cuando": "2026-11-08 17:33",
+     "asunto": "0.8.3c: borde de la K2 que se arrastra, caja de la IA que cabe y vetas nítidas",
+     "detalle": [
+      "- La segunda barra de la K2 (y la IA abierta en ella) se ensancha arrastrando su borde: 220–560 px la normal, 340–800 la",
+      "  IA agrandada, con su ancho guardado (inv-k2-ancho); doble clic, el de siempre; Tab y flechas con el teclado.",
+      "- La caja de preguntar no se sale por la derecha ni enseña barra: en la IA estrecha, el texto arriba y los botones debajo.",
+      "- Mármol, Mármol dorado y Marfil dorado salen del mismo dibujo sin comprimir, a 2880 × 1800 (ordenador) y 1170 × 2535.",
+      "- Al dueño, el código del fallo de la IA junto al mensaje; «demasiadas» con su propio mensaje.",
+      "- tests/revision-083c.spec.js; temas.spec.js deja la textura del ordenador hasta 40 KB."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.3b",
    "f": "2026-11-08",
    "h": "15:50",
