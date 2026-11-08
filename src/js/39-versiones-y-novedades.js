@@ -4,7 +4,19 @@
    vez que abres la web después de una versión nueva sale "¿Qué se ha mejorado?", con un dibujo por cambio.
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
+/* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
+   (caminoNovedades, 46-lo-nuevo.js). La fecha y la hora, las de verdad al cerrarla */
 const NOVEDADES = [
+  { v: '0.8.3a', f: '2026-11-08', h: '08:00', t: 'Toisón, por dentro', cosas: [
+    { d: 'movil', ir: [
+      { v: 'cartera', sel: '.navbar [data-mas], .riel .k2-iconos', t: 'Más, y el menú del ordenador', x: 'En el móvil, Más está abajo a la derecha: tu cuenta, tus objetivos, tus fijados y todas las funciones, con un buscador. En el ordenador, cada sección es un icono a la izquierda y sus páginas salen al lado.' },
+      { v: 'cartera', sel: '.navbar [data-ir="posiciones"], .k2-busca', t: 'Análisis y el buscador', x: 'Análisis reúne tu cartera por dentro, en pestañas. En el ordenador, cualquier página se busca arriba (Ctrl K).' },
+    ], t: 'Más, y un menú nuevo en el ordenador', x: 'Abajo, Análisis, Mercados, Hoy, Ideas y Más. Más reúne tu cuenta, tus objetivos, tus fijados y todas las funciones, con un buscador. En el ordenador, un icono por sección a la izquierda, sus páginas al lado y la IA debajo; arriba, el buscador (Ctrl K).' },
+    { d: 'perfil', ir: { v: 'objetivos' }, t: 'Tú, más claro', x: 'La pestaña Tú empieza por quién eres y un gráfico con tus límites: los que pasas, los que tienes cerca y los que van bien. Límites, colchón, metas, perfil y lo que sabe la IA, cada uno en su apartado.' },
+    { d: 'rinde', t: 'Rentabilidad y Riesgo, en sencillo', x: 'En el modo básico, lo que has ganado y lo que se mueve tu cartera, en euros y en frases, sin siglas: lo que podrías perder en un mes malo, tu peor caída y qué pasaría si volviera una crisis. Lo que cobras y lo que te cuesta, dentro de Rentabilidad.' },
+    { d: 'pulido', t: 'Un acabado de cristal', x: 'La barra de abajo y la cabecera flotan sobre la página, de cristal, y lo elegido se ilumina como una gota. En el ordenador, los menús van en cristal mate. En Marfil, el símbolo en vino y oro sobre crema.' },
+    { d: 'oro', t: 'Toisón Dorado, cómo se verá', x: 'Con Toisón Dorado, el Mármol dorado, el borde de las tarjetas en oro suave y la marca entera arriba; en Marfil, solo la marca. Hasta que haya plan de pago lo ves tú: en Tú, Diseño, «Como los demás» lo quita.', solo: 'dueno' },
+  ] },
   { v: '0.8.3', f: '2026-11-07', h: '20:30', t: 'Toisón, en su casa', cosas: [
     { d: 'pulido', t: 'Marfil, más cuidado', x: 'Marfil estrena crema en capas, con el menú lateral y la barra de abajo en vino, los detalles en el oro del logo y una raya de oro bajo la pestaña elegida. Borgoña se retira: quien la tenía pasa a Marfil.' },
     { d: 'app', t: 'Toisón se muda a toison.es/app', x: 'Cuando llegue el momento, la app te lo dice y te lleva tus datos a la dirección nueva con un toque. No pierdes nada.' },

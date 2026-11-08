@@ -29,7 +29,8 @@ const GUIA_ID = () => gordaDe(VERSION);
 function caminoNovedades(visto, v = VERSION) {
   if (!visto) return 'gorda';
   if (cmpVer(visto, v) >= 0) return null;
-  if (baseVer(visto) === baseVer(v)) return 'letra';
+  // 0.8.3a: una de letra que trae novedades (cosas para ti), desde la 0.8.2, sale en la hoja corta como una intermedia
+  if (baseVer(visto) === baseVer(v)) return letraConCosas(visto, v) ? 'corta' : 'letra';
   if (esIntermedia(baseVer(v)) && gordaDe(visto) === gordaDe(v)) return 'corta';
   return 'gorda';
 }
@@ -38,6 +39,8 @@ function caminoNovedades(visto, v = VERSION) {
    y nadie más. Una versión de letra que se queda sin nada para ti no sale (ni su mensaje corto ni en el historial).
    El dueño se sabe al comprobar el acceso (comprobarAcceso, 42-modos.js) y se recuerda en el dispositivo (inv-dueno)
    para que la próxima vez no haya que esperar. Todo lo que enseña novedades lee novVisibles(), no NOVEDADES */
+const letraConCosas = (visto, v) => cmpVer(baseVer(v), NIVELES_DESDE) >= 0
+  && novVisibles().some((n) => esParche(n.v) && n.cosas && cmpVer(n.v, visto) > 0 && cmpVer(n.v, v) <= 0);
 const veDueno = () => !!S.esDueno || (!S.noDueno && !!LS.get('inv-dueno', 0));
 const soloDueno = (x) => !!x && typeof x === 'object' && x.solo === 'dueno';
 function novVisibles() {

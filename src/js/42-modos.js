@@ -166,7 +166,7 @@ async function comprobarAcceso() {
       : S.esDueno || esFundadorPorAlta(alta) ? 'privado' : 'publico';
     fijarAcceso(a, u.uid, puesto);
   } catch (e) { console.warn('No se ha podido comprobar el modo', e); }
-  finally { S.accesoVisto = true; }   // bienvenida() espera a esto para saber qué novedades enseñar
+  finally { S.accesoVisto = true; ponerDorado(); }   // bienvenida() espera a esto para saber qué novedades enseñar
 }
 /* Los fallos de GrowIA (fallos_ia) llevan «caduca» a 30 días. El TTL de Firestore pide facturación y el proyecto sigue
    en el plan gratis, así que los borra el dueño, que es a quien las reglas dejan: una vez al día, la primera vez que
@@ -234,13 +234,34 @@ function htmlSelectorTema() {
   const b = (k, n) => `<button type="button" data-elige-tema="${k}" aria-pressed="${t === k}"><i class="tema-muestra" data-tema="${k}" aria-hidden="true"></i><span>${n}</span></button>`;
   return `<div class="seccion-ed aj-idioma"><h3>${ICONOS_PL.ver}${L('Diseño', 'Design')}</h3>
     <div class="idiomas temas" role="group" aria-label="${esc(L('Diseño', 'Design'))}" data-no-trad>${TEMAS.map((k) => b(k, nom[k])).join('')}</div>
-    <small>${L('Mármol, negro y con vetas; Marfil, en crema con el menú en vino. Se guarda en este dispositivo.', 'Marble, dark and veined; Ivory, cream with a burgundy menu. Saved on this device.')}</small></div>`;
+    <small>${L('Mármol, negro y con vetas; Marfil, en crema con el menú en vino. Se guarda en este dispositivo.', 'Marble, dark and veined; Ivory, cream with a burgundy menu. Saved on this device.')}</small>
+    ${veDueno() ? `<div class="idiomas temas-dorado" role="group" aria-label="Toisón Dorado" data-no-trad>${[[1, L('Con Toisón Dorado', 'With Toisón Gold')], [0, L('Como los demás', 'Like everyone else')]].map(([v, n]) => `<button type="button" data-dorado-ver="${v}" aria-pressed="${tieneDorado() === !!v}">${v ? selloDorado() : ''}<span>${n}</span></button>`).join('')}</div>
+    <small>${L('Toisón Dorado: el Mármol dorado, el borde de las tarjetas en oro suave y la marca entera arriba. Hasta que haya plan de pago, solo lo ves tú.', 'Toisón Gold: golden marble, soft gold card borders and the full brand at the top. Until there is a paid plan, only you see it.')}</small>` : ''}</div>`;
 }
+/* 0.8.3a · Toisón Dorado, lo visual (claude/sesion-temas-toison-dorado.md). Aún no hay plan de pago ni nada que diga
+   quién lo tiene: de momento lo ve el dueño (veDueno, como las novedades «solo dueño»), que en Ajustes › Diseño puede
+   ponerse «Como los demás» para ver la app como la ve un amigo. Con Toisón Dorado, data-dorado en <html> y el CSS hace
+   el resto: con Mármol, el Mármol dorado (marmol-dorado*.webp, en index.html), el borde #4f3f20 y la marca entera
+   (sello + TOISÓN + DORADO) en la cabecera del móvil y arriba de la K2; con Marfil, solo la cabecera (sello con filo
+   #5e4210). Sin él, todo como siempre. Cuando exista el plan, solo cambia tieneDorado() */
+const tieneDorado = () => veDueno() && LS.get('inv-dorado-ver', 1) !== 0;
+function ponerDorado() {
+  const d = tieneDorado(), r = document.documentElement;
+  if (r.hasAttribute('data-dorado') !== d) r.toggleAttribute('data-dorado', d);
+}
+// el sello pequeño de Toisón Dorado (el 11 «doble filete»): en los candados de lo que es del plan y en su etiqueta
+const selloDorado = (c = '') => `<i class="sello-d ${c}" aria-hidden="true"><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i>`;
+// y DORADO debajo de TOISÓN, entre dos hilos de oro con un rombo en la punta (los hilos, ::before y ::after)
+const marcaDorado = () => '<em class="marca-dor">DORADO</em>';
 function activarSelectorTema(el) {
   for (const b of $$('[data-elige-tema]', el)) b.onclick = () => {
     ponerTema(b.dataset.eligeTema);
     for (const x of $$('[data-elige-tema]', el)) x.setAttribute('aria-pressed', String(x === b));
     if (S.cartera && $('#vista') && !document.querySelector('.hoja-fondo form, .ficha')) pintar();
+  };
+  for (const b of $$('[data-dorado-ver]', el)) b.onclick = () => {
+    LS.set('inv-dorado-ver', +b.dataset.doradoVer); ponerDorado();
+    for (const x of $$('[data-dorado-ver]', el)) x.setAttribute('aria-pressed', String(x === b));
   };
 }
 // las cuentas que conoce GrowFolio (las que han abierto la 0.5) y lo que les ha puesto el dueño

@@ -1,0 +1,59 @@
+/* =====================================================================
+   0.8.3a · Toisón Dorado, lo visual (claude/sesion-temas-toison-dorado.md). Con data-dorado en <html> (tieneDorado,
+   42-modos.js): la marca entera arriba —el sello del 11 «doble filete», TOISÓN y, debajo, DORADO entre hilos de oro
+   con un rombo en cada punta— en la cabecera del móvil y arriba de la K2. El Mármol dorado va en index.html y el borde
+   #4f3f20 en 00-temas.css. En Marfil, solo la marca (sello en crema con filo #5e4210). Sin data-dorado, nada cambia
+   salvo los candados de lo que es del plan, que llevan el sello pequeño. Colores, solo los tokens --dorado-*.
+   ===================================================================== */
+
+/* el sello: un disco de oro (el filete de fuera, 12 sobre 200), dentro el negro con el filete fino (5 sobre 200) y el
+   símbolo en oro. Las medidas van con --sd para que sirva igual a 13 px que a 42 */
+.sello-d { --sd: 36px; position: relative; display: none; place-items: center; flex: none; width: var(--sd); height: var(--sd);
+  border-radius: 50%; background: var(--dorado-filo); font-style: normal; }
+.sello-d::before { content: ''; position: absolute; inset: calc(var(--sd) * .06); border-radius: 50%; background: var(--dorado-sello-fondo);
+  box-shadow: inset 0 0 0 calc(var(--sd) * .04) var(--dorado-sello-fondo), inset 0 0 0 calc(var(--sd) * .065) var(--dorado-filo-dentro); }
+.sello-d svg { position: relative; width: 56%; height: auto; }
+.sello-d .s-o { fill: var(--dorado-sim-o); }
+.sello-d .s-t { fill: var(--dorado-sim-t); }
+
+/* los candados de lo que es del plan, con el sello pequeño (también sin pagar) */
+.et-dorado { display: inline-flex; align-items: center; gap: 4px; }
+.et-dorado .sello-d { display: grid; --sd: 13px; }
+.hoja-escr .et-dorado-g .sello-d { display: grid; --sd: 20px; }
+.hoja-escr .et-dorado-g .sello-d svg { width: 56%; height: auto; }
+.temas-dorado { margin-top: 10px; }
+.temas-dorado .sello-d { display: grid; --sd: 20px; }
+/* con Toisón Dorado, la etiqueta Dorado de Escritorios, iluminada */
+[data-dorado] .et-dorado { background: var(--dorado-etiqueta); color: var(--sobre-dorado); }
+
+/* la marca entera */
+[data-tema] .marca-dor { display: none; }
+[data-tema]:not([data-dorado]) .marca-ts i.sello-d { display: none; }
+[data-tema][data-dorado] .marca-ts > i:not(.sello-d) { display: none; }
+[data-tema][data-dorado] .marca-ts i.sello-d { display: grid; width: var(--sd); height: var(--sd); background: var(--dorado-filo); box-shadow: none; }
+[data-tema][data-dorado] .marca-ts .sello-d svg { width: 56%; }
+[data-tema][data-dorado] .marca-ts .sello-d .s-o { fill: var(--dorado-sim-o); }
+[data-tema][data-dorado] .marca-ts .sello-d .s-t { fill: var(--dorado-sim-t); }
+[data-tema][data-dorado] .marca-dor { display: flex; align-items: center; font: 650 7.5px/1 var(--ui); font-style: normal; letter-spacing: .52em;
+  color: var(--dorado-texto); white-space: nowrap; }
+/* los hilos: una línea de 1 px con un rombo de 5 en la punta de fuera (la letra lleva su .52em detrás: el de la derecha va pegado) */
+[data-tema][data-dorado] .marca-dor::before, [data-tema][data-dorado] .marca-dor::after { content: ''; flex: 1 1 auto; min-width: 10px; height: 5px; background: var(--dorado-hilo); }
+[data-tema][data-dorado] .marca-dor::before { margin-right: .5em; clip-path: polygon(0 50%, 2.5px 0, 5px 2px, 100% 2px, 100% 3px, 5px 3px, 2.5px 100%); }
+[data-tema][data-dorado] .marca-dor::after { clip-path: polygon(100% 50%, calc(100% - 2.5px) 0, calc(100% - 5px) 2px, 0 2px, 0 3px, calc(100% - 5px) 3px, calc(100% - 2.5px) 100%); }
+
+/* en la cabecera del móvil: el sello a la izquierda y, a su lado, TOISÓN con DORADO debajo, del mismo ancho */
+[data-tema][data-dorado] .top .marca-ts { display: inline-grid; grid-template-columns: auto auto; column-gap: 10px; row-gap: 4px; align-items: center; }
+[data-tema][data-dorado] .top .marca-ts .sello-d { grid-row: 1 / span 2; }
+[data-tema][data-dorado] .top .marca-ts b { align-self: end; padding-top: 0; }
+[data-tema][data-dorado] .top .marca-ts .marca-dor { align-self: start; }
+[data-tema][data-dorado] .top.cab-8 .marca-dor { display: none; }
+[data-tema][data-dorado] .top.cab-8 .marca-ts { display: inline-flex; }
+
+/* arriba de la K2: el sello en la barra de iconos y TOISÓN DORADO en la segunda, como en el móvil */
+@media (min-width: 1180px) {
+  [data-tema][data-dorado] .riel .k2-marca i.sello-d { --sd: 40px; }
+  [data-tema][data-dorado] .riel .k2-marca-tx { display: grid; align-content: center; justify-content: start; row-gap: 6px; }
+  [data-tema][data-dorado] .riel .k2-marca-tx b { padding-top: 0; }
+  [data-tema][data-dorado] .riel .k2-marca-tx .marca-dor { font-size: 9.5px; color: var(--dorado-texto-menu); }
+  [data-tema][data-dorado] .riel .k2-marca-tx .marca-dor::before, [data-tema][data-dorado] .riel .k2-marca-tx .marca-dor::after { background: var(--dorado-hilo-menu); }
+}

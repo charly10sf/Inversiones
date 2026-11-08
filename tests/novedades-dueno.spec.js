@@ -24,7 +24,7 @@ for (const dueno of [false, true]) {
       await quitarCapas(page);
       await meterCartera(page);
       await page.waitForFunction(() => LS.get('inv-version') === VERSION, null, { timeout: 30_000 });
-      expect(await page.evaluate(() => VERSION)).toBe('0.8.3');
+      expect(await page.evaluate(() => VERSION)).toBe('0.8.3a');
       // de la 0.8a a la 0.8.1: las novedades contadas bajando, con sus arreglos (los del dueño, solo para él)
       await page.evaluate(() => { LS.set('inv-version', '0.8a'); LS.set('inv-vnum', 2); LS.set('inv-perfil-pedido', true); LS.set('inv-perfil-luego', { t: Date.now(), n: 1 }); LS.set('inv-resumen-off', true); });
       await page.reload();

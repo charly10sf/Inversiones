@@ -180,7 +180,9 @@ function hojaIntermedia(desde, alCerrar = () => {}, hasta = VERSION) {
   if (!cab || (!cosas.length && !arreglos.length)) return alCerrar();
   const item = (c, i) => `<li style="--i:${i}">${c.d ? dibujo(c.d) : ''}<div><b>${esc(c.t)}</b><p>${esc(c.x)}</p>${c.ir ? `<button type="button" class="enlace nov-ir" data-corta-ir="${i}">${L('Ir', 'Go')}</button>` : ''}</div></li>`;
   const n = arreglos.length;
-  const h = hoja(L(`Novedades de la ${baseVer(hasta)}`, `What's new in ${baseVer(hasta)}`), `<div class="novedades nov-corta">
+  // 0.8.3a: una de letra con novedades se llama por su nombre entero
+  const nom = esParche(cab.v) && cab.cosas ? cab.v : baseVer(hasta);
+  const h = hoja(L(`Novedades de la ${nom}`, `What's new in ${nom}`), `<div class="novedades nov-corta">
     <section class="nov-v"><div class="nov-cab"><span class="nov-num">${esc(hasta)}</span><small>${fechaNov(cab.f, cab.h)}</small></div>
       <h3>${esc(cab.t)}</h3>
       ${cosas.length ? `<ul class="nov-lista">${cosas.map(item).join('')}</ul>` : ''}

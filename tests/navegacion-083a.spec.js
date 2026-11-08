@@ -168,9 +168,10 @@ test('ordenador: Ctrl K abre el buscador; arriba, fijados, Escritorios, avisos y
 test('ordenador: una sola marca arriba, el sello con TOISÓN al lado, y Hoy con su icono', async ({ page }, info) => {
   test.skip(info.project.name !== 'pc', 'solo en el ordenador');
   await lista(page);
-  await expect(page.locator('.riel svg path.s-o')).toHaveCount(1);
+  // (el sello de Toisón Dorado está escondido: 26-dorado.css)
+  await expect(page.locator('.riel svg path.s-o:visible')).toHaveCount(1);
   await expect(page.locator('.k2-iconos [data-sec="hoy"] svg.ic-pl')).toHaveCount(1);
-  const sello = await page.locator('.k2-marca i').boundingBox(), nombre = await page.locator('.k2-marca-tx b').boundingBox(), arriba = await page.locator('.k2-top').boundingBox();
+  const sello = await page.locator('.k2-marca i:visible').boundingBox(), nombre = await page.locator('.k2-marca-tx b').boundingBox(), arriba = await page.locator('.k2-top').boundingBox();
   await expect(page.locator('.k2-marca-tx b')).toHaveText('TOISÓN');
   // en la misma fila que la barra de arriba, el nombre a la derecha del sello y más grande que en el móvil (17 px)
   expect(Math.abs((sello.y + sello.height / 2) - (nombre.y + nombre.height / 2))).toBeLessThan(4);

@@ -18,7 +18,7 @@
 <meta name="color-scheme" content="dark">
 <!-- el diseño de Toisón elegido (Mármol si no hay ninguno), puesto antes de pintar. El color de la barra lo pone
      después ponerTema (01-base.js) desde los tokens -->
-<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='borgona'){g='marfil';localStorage.setItem('inv-tema','"marfil"');}if(g==='marfil')t=g;}catch(e){}document.documentElement.setAttribute('data-tema',t);if(t==='marfil')document.querySelector('meta[name="color-scheme"]').setAttribute('content','light dark');</script>
+<script>var t='marmol';try{var g=JSON.parse(localStorage.getItem('inv-tema'));if(g==='borgona'){g='marfil';localStorage.setItem('inv-tema','"marfil"');}if(g==='marfil')t=g;}catch(e){}document.documentElement.setAttribute('data-tema',t);if(t==='marfil')document.querySelector('meta[name="color-scheme"]').setAttribute('content','light dark');try{if(localStorage.getItem('inv-dueno')&&localStorage.getItem('inv-dorado-ver')!=='0')document.documentElement.setAttribute('data-dorado','');}catch(e){}</script>
 <!-- las letras de Toisón, de la casa (sin Google Fonts) -->
 <style>
 @font-face{font-family:'Inter';src:url(fonts/inter.woff2) format('woff2');font-weight:100 900;font-display:swap}
@@ -30,6 +30,10 @@
 /* 0.8.3: la textura del Mármol G (el resto de la capa, en 00-temas.css); la ancha, solo desde 900 px */
 [data-tema="marmol"] #acabadoTema{background-image:url(marmol-g.webp)}
 @media (min-width:900px){[data-tema="marmol"] #acabadoTema{background-image:url(marmol-g-pc.webp)}}
+/* 0.8.3a: con Toisón Dorado, el Mármol dorado (las mismas vetas teñidas de oro al 50 %; scripts/textura_marmol_dorado.py).
+   Sin él no se baja: el navegador solo pide la imagen de la regla que se aplica */
+[data-tema="marmol"][data-dorado] #acabadoTema{background-image:url(marmol-dorado.webp)}
+@media (min-width:900px){[data-tema="marmol"][data-dorado] #acabadoTema{background-image:url(marmol-dorado-pc.webp)}}
 </style>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">

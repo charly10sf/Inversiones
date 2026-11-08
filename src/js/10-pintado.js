@@ -353,7 +353,7 @@ const ICONOS_TS = {
 function montar() {
   $('#app').innerHTML = `${htmlRiel()}
   <header class="top"><div class="wrap fila-top">
-    <div class="marca"><span class="marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i><b>TOISÓN</b></span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
+    <div class="marca"><span class="marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i>${selloDorado()}<b>TOISÓN</b>${marcaDorado()}</span><button class="ver-chip" data-accion="novedades" title="Qué se ha mejorado en esta versión">${VERSION} alfa</button></div>
     <nav class="nav" aria-label="Secciones">${GRUPOS.map((g) => (g.k === 'tu' ? `<a href="#tu" data-ir="tu" data-mas>${L('Más', 'More')}</a>` : `<a href="#${g.k}" data-ir="${g.k}">${L(g.t, g.en)}</a>`)).join('')}</nav>
     ${gtaActivo() ? '<div class="gta-top-w" id="gtaTop"></div>' : ''}
     <div class="estado-w" id="estadoW"><button type="button" class="estado-b" id="estadoB" aria-expanded="false" aria-controls="estadoPanel" title="Cómo están las bolsas"><span id="estado"></span></button><div class="estado-panel" id="estadoPanel" role="region" aria-label="Las bolsas ahora"></div></div>
@@ -377,6 +377,7 @@ function montar() {
   // se vuelve a montar al cambiar de diseño: los del documento, una sola vez y con la cabecera de ahora
   S.cierraEstado = (e) => { if (ew.classList.contains('abierto') && (e.type === 'click' ? !ew.contains(e.target) : e.key === 'Escape')) { abre(false); if (e.type === 'keydown') eb.focus(); } };
   if (!S.cierraEstadoPuesto) { S.cierraEstadoPuesto = true; document.addEventListener('click', (e) => S.cierraEstado(e)); document.addEventListener('keydown', (e) => S.cierraEstado(e)); }
+  ponerDorado();   // 0.8.3a: Toisón Dorado (42-modos.js)
 }
 
 /* Avisos (0.2.2), solo si los activas (Ajustes > Avisos y resumen), en cada dispositivo por separado:

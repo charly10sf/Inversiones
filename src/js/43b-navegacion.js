@@ -223,12 +223,12 @@ function abrirMas() {
 function htmlRiel() {
   return `<aside class="riel k2" aria-label="${L('Menú', 'Menu')}">
     <nav class="riel-nav k2-iconos" aria-label="${L('Secciones', 'Sections')}">
-      <span class="k2-marca marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i></span>
+      <span class="k2-marca marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i>${selloDorado()}</span>
       ${SECCIONES.map((s) => `<a href="${hrefSeccion(s.k)}" data-sec="${s.k}"${s.ir ? ` data-ir="${s.ir}"` : ''} title="${L(s.t, s.en)}">${s.k === 'hoy' ? ICO_K2_HOY() : ICO_SEC[s.k]()}<span class="sr">${L(s.t, s.en)}</span></a>`).join('')}
       <button type="button" class="riel-aj" data-accion="ajustes" title="${L('Ajustes', 'Settings')}" aria-label="${L('Ajustes', 'Settings')}">${ICONOS_PL.ajustes}</button>
     </nav>
     <div class="k2-col">
-      <div class="k2-marca-tx" aria-hidden="true"><b>TOISÓN</b></div>
+      <div class="k2-marca-tx" aria-hidden="true"><b>TOISÓN</b>${marcaDorado()}</div>
       <div class="k2-pags" id="k2Pags"></div>
       ${htmlSelectorModo(true)}
       <div class="k2-ia" id="k2Ia">
@@ -242,7 +242,7 @@ function htmlRiel() {
     <button type="button" class="k2-busca" data-accion="buscar-funciones">${ICO_BUSCA}<span>${L('Buscar páginas y funciones', 'Search pages and features')}</span><kbd>Ctrl K</kbd></button>
     <div class="k2-der">
       <button type="button" class="ib k2-fij" data-accion="fijados" title="${L('Fijados y recientes', 'Pinned and recent')}" aria-label="${L('Fijados y recientes', 'Pinned and recent')}">${ICONOS.estrella}</button>
-      <button type="button" class="k2-escr" data-accion="escritorios">${L('Escritorios', 'Desktops')}<i class="et-dorado">${L('Dorado', 'Gold')}</i></button>
+      <button type="button" class="k2-escr" data-accion="escritorios">${L('Escritorios', 'Desktops')}<i class="et-dorado">${selloDorado('sd-peq')}${L('Dorado', 'Gold')}</i></button>
       <button type="button" class="ib" data-accion="avisos" title="${L('Avisos', 'Alerts')}" aria-label="${L('Avisos', 'Alerts')}">${ICONOS_PL.campana}</button>
       <a class="k2-cuenta" href="#tu" title="${L('Tu cuenta', 'Your account')}" aria-label="${L('Tu cuenta', 'Your account')}">${ICONOS_PL.tu}</a>
     </div>
@@ -288,9 +288,10 @@ function hojaFijados() {
     <h3 class="mas-g">${L('Reciente', 'Recent')}</h3>${r.length ? `<div class="mas-fij">${r.map(chipItem).join('')}</div>` : `<p class="nota">${L('Aquí salen las últimas páginas que has abierto.', 'The last pages you opened show up here.')}</p>`}</div>`);
 }
 function hojaEscritorios() {
-  hoja(L('Escritorios', 'Desktops'), `<div class="hoja-escr"><p class="et-dorado-g">${ICONOS_PL.candado}${L('Toisón Dorado', 'Toisón Gold')}</p>
+  // 0.8.3a: el candado de lo que es del plan, con el sello pequeño de Toisón Dorado
+  hoja(L('Escritorios', 'Desktops'), `<div class="hoja-escr"><p class="et-dorado-g">${selloDorado('sd-peq')}${L('Toisón Dorado', 'Toisón Gold')}</p>
     <p>${L('Un escritorio a tu medida: varias páginas a la vez, en paneles que colocas tú, y tantos escritorios como quieras.', 'A desktop your way: several pages at once, in panels you arrange, and as many desktops as you like.')}</p>
-    <p class="nota">${L('Será parte de Toisón Dorado, el plan de pago. Todavía no está disponible.', "It'll be part of Toisón Gold, the paid plan. It isn't available yet.")}</p>
+    <p class="nota">${tieneDorado() ? L('Ya tienes Toisón Dorado: los Escritorios llegarán en una versión próxima.', 'You already have Toisón Gold: Desktops are coming in a future version.') : L('Será parte de Toisón Dorado, el plan de pago. Todavía no está disponible.', "It'll be part of Toisón Gold, the paid plan. It isn't available yet.")}</p>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Entendido', 'Got it')}</button></div></div>`);
 }
 function abrirAvisos() {
