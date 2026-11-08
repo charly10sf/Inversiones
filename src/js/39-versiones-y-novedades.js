@@ -7,6 +7,13 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.3b', f: '2026-11-08', h: '15:50', t: 'Revisión del diseño', arreglos: [
+    'La barra de abajo del móvil es más de cristal y la línea dorada ya no pasa por detrás del logo de Hoy.',
+    'Nada se sale ni se corta en pantallas estrechas: Posiciones, Tú, Tu plan y las tablas anchas se ven enteras.',
+    'El Calendario se lee mejor en Marfil, y los títulos de Próximos caben en dos líneas.',
+    { t: 'En el ordenador, el sello de arriba va centrado en la barra de iconos y el buscador no saca un segundo recuadro al escribir.', solo: 'dueno' },
+    { t: 'El Mármol dorado ya no enseña los cuadritos de la compresión junto a las tablas.', solo: 'dueno' },
+  ] },
   { v: '0.8.3a', f: '2026-11-08', h: '12:51', t: 'Toisón, por dentro', cosas: [
     { d: 'movil', ir: [
       { v: 'cartera', sel: '.navbar [data-mas], .riel .k2-iconos', t: 'Más, y el menú del ordenador', x: 'En el móvil, Más está abajo a la derecha: tu cuenta, tus objetivos, tus fijados y todas las funciones, con un buscador. En el ordenador, cada sección es un icono a la izquierda y sus páginas salen al lado.' },

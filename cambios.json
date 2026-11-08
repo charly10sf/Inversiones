@@ -1,6 +1,43 @@
 {
  "versiones": [
   {
+   "v": "0.8.3b",
+   "f": "2026-11-08",
+   "h": "15:50",
+   "t": "Revisión del diseño",
+   "commits": [
+    {
+     "cuando": "2026-11-08 15:30",
+     "asunto": "0.8.3b: la barra de abajo del móvil, más liquid y sin el filo cruzando la moneda de Hoy",
+     "detalle": [
+      "- La moneda de Hoy va por encima del filo de luz y oro de la cápsula (antes lo cruzaba por dentro).",
+      "- Mármol (opción C, Carlos): casi sin tinte ni desenfoque, se ven los colores de detrás; lo de detrás se oscurece y",
+      "  letras e iconos llevan un halo oscuro para leerse aunque pase algo claro por debajo.",
+      "- Marfil (híbrido A + F, Carlos): el vino de siempre en el centro y un filo de cristal en el contorno.",
+      "- Tokens nuevos --barra-*; con «reducir transparencia», opaca como antes. Sin el fundido de debajo de la barra."
+     ]
+    },
+    {
+     "cuando": "2026-11-08 14:28",
+     "asunto": "0.8.3b: revisión del diseño de la 0.8.3 en móvil y ordenador, Mármol y Marfil, con y sin Toisón Dorado",
+     "detalle": [
+      "- Ordenador: el sello de arriba, centrado en la barra de iconos; el buscador sin el segundo recuadro al escribir.",
+      "- Hoy: el aviso del perfil y la fecha ya no se tocan en el móvil; el % de «Lo que más ha movido», legible.",
+      "- Calendario: el estilo del día de «Lo que viene» ya no se cuela en «Más adelante»; los tipos se leen en Marfil;",
+      "  títulos de Próximos en dos líneas; los días pasados de la semana, más visibles.",
+      "- Mercados: El mundo, alineada con el buscador en el móvil.",
+      "- Posiciones: país y plataforma en una línea en el ordenador; etiquetas enteras en el móvil; la cabecera cabe en",
+      "  390 y 360.",
+      "- Tú (360) y Tu plan (1.180–1.500): nada se sale; la tabla de Límites cabe en su tarjeta (container query).",
+      "- Análisis: las tablas anchas se difuminan por el lado que sigue; Día a día sin cifras cortadas; la fecha del",
+      "  Gráfico técnico en palabras; Laboratorio alineado.",
+      "- Mármol dorado: textura sin los cuadros de la compresión (scripts/textura_marmol_dorado.py).",
+      "- tests/revision-083b.spec.js."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.3a",
    "f": "2026-11-08",
    "h": "12:51",
