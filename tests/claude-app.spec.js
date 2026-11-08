@@ -289,6 +289,47 @@ test('con el Worker sin alcanzar (bloqueado o caído) se dice claro sin esperar 
   expect((await page.evaluate(() => claudePausado())).motivo).toBeTruthy();
 });
 
+// 0.8.3c (lo que le pasó a Carlos el 8 nov): dos cortes seguidos, el segundo sin llegar nada. Antes se rendía al segundo y
+// apartaba a Claude 5 minutos; ahora lo intenta dos veces más y contesta
+test('si la conexión con la IA se corta dos veces seguidas, lo vuelve a intentar y contesta', async ({ page, context }) => {
+  await preparada(page);
+  let n = 0;
+  await context.route(WORKER, async (r) => {
+    const q = r.request();
+    if (q.method() === 'OPTIONS') return r.fulfill({ status: 204, headers: CORS });
+    if ((q.postData() || '') === '{}') return r.fulfill({ status: 400, headers: { ...CORS, 'content-type': 'application/json' }, body: JSON.stringify({ error: 'peticion', motivo: 'modelo' }) });
+    n++;
+    if (n <= 2) return r.abort('failed');
+    return r.fulfill({ status: 200, headers: { ...CORS, 'content-type': 'text/event-stream' }, body: stream([{ tipo: 'texto', texto: 'A la tercera va la vencida.' }]) });
+  });
+  await preguntar(page);
+  await expect(page.locator('#asCuerpo')).toContainText('A la tercera va la vencida', { timeout: 30_000 });
+  expect(n).toBe(3);
+  expect(await page.evaluate(() => claudePausado())).toBeNull();
+  expect(await page.evaluate(() => textoDiarioIA())).toMatch(/corte \(conexión\) a los \d+ s · sin datos/);
+});
+test('una pausa por la red no frena tu pregunta; si se corta del todo, lo dice así', async ({ page, context }) => {
+  await preparada(page);
+  // apartada 5 minutos por un corte de antes: tu pregunta va igual
+  await page.evaluate(() => pausarClaude('red', 5 * 6e4));
+  const w = await worker(context, () => ({ sse: stream([{ tipo: 'texto', texto: 'Contesto aunque hubo un corte antes.' }]) }));
+  await preguntar(page);
+  await expect(page.locator('#asCuerpo')).toContainText('Contesto aunque hubo un corte antes', { timeout: 20_000 });
+  expect(w.peticiones.length).toBe(1);
+  expect(await page.evaluate(() => textoDiarioIA())).toContain('Pausa por la red (red) quitada');
+  // una pausa de la cuenta (sin créditos) sí sigue frenando
+  await page.evaluate(() => { pausarClaude('sin-creditos', 36e5); AS.cargando = false; });
+  await page.evaluate(() => preguntarAsesor('¿Y ahora?'));
+  await expect(page.locator('#asCuerpo')).toContainText('Vuelve a probar dentro de unas horas', { timeout: 20_000 });
+  expect(w.peticiones.length).toBe(1);
+  // un corte que no se arregla con los reintentos: «se ha cortado la conexión», no «no está disponible»
+  await page.evaluate(() => { LS.del(LS_CLAUDE_PAUSA); AS.cargando = false; });
+  await context.unroute(WORKER);
+  await context.route(WORKER, (r) => (r.request().method() === 'OPTIONS' ? r.fulfill({ status: 204, headers: CORS }) : r.abort('failed')));
+  await page.evaluate(() => preguntarAsesor('¿Y si se corta?'));
+  await expect(page.locator('#asCuerpo .as-error').last()).toContainText('Se ha cortado la conexión con la IA', { timeout: 30_000 });
+});
+
 // 0.8.2 (opción B): el fundador también va con Claude, pero con las reglas del estándar; con Gemini, el asesor de siempre
 const fundador = (page) => page.evaluate(() => { S.acceso = 'privado'; LS.set('inv-acceso', { a: 'privado', uid: FB.user.uid, t: Date.now() }); });
 test('en modo fundador contesta Claude con las reglas del estándar', async ({ page, context }) => {

@@ -769,6 +769,18 @@ function claudePausado() {
   return p && p.hasta > Date.now() && (!p.uid || !FB.user || p.uid === FB.user.uid) ? p : null;
 }
 function pausarClaude(motivo, ms) { try { LS.set(LS_CLAUDE_PAUSA, { hasta: Date.now() + ms, motivo, uid: (FB.user && FB.user.uid) || null }); } catch (e) {} }
+/* 0.8.3c · una pausa por la red (la respuesta se cortó, no empezó a tiempo o el sondeo no llegó al Worker) frena lo que la
+   app hace sola, pero no lo que pides tú: al preguntar o al abrir la IA se quita y se vuelve a intentar. Carlos, 8 nov: dos
+   cortes seguidos apartaron a Claude 5 minutos y sus dos «Volver a preguntar» fallaron al momento sin llegar a intentarlo.
+   Las pausas de la cuenta (topes, créditos, correo sin confirmar, la clave, una petición que no vale) siguen como estaban */
+const PAUSAS_DE_RED = ['red', 'cambio', 'tiempo', 'sondeo'];
+function quitarPausaDeRed() {
+  const p = claudePausado();
+  if (!p || !PAUSAS_DE_RED.includes(p.motivo)) return false;
+  try { LS.del(LS_CLAUDE_PAUSA); } catch (e) {}
+  diarioIA(`Pausa por la red (${p.motivo}) quitada: lo pides tú`);
+  return true;
+}
 /* 0.8.2b: contesta siempre Claude. Se quedan para lo que aún pregunta (el subtítulo, el «A fondo») */
 const quienContestaIA = () => 'claude';
 // las preguntas que propone la app (sugerencias, «Pregúntale» de una idea o de una posición): las del estándar, también en el
@@ -945,6 +957,9 @@ function errorSinIA(e, aMedias) {
     : c === 'tope-pregunta' ? L('Esta pregunta ha necesitado demasiados pasos: prueba a hacerla más corta o en dos.', 'This question needed too many steps: try asking it shorter or in two parts.')
     : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace del último correo de confirmación que te llegó. Cuando lo abras, vuelve aquí: Toisón lo notará solo.', 'To use the AI, confirm your email with the link in the latest confirmation email you got. Once you open it, come back here: Toisón will notice by itself.')
     : c === 'sin-creditos' ? L('La IA no está disponible ahora mismo. Vuelve a probar dentro de unas horas.', 'The AI is not available right now. Try again in a few hours.')
+    // 0.8.3c: un corte de la conexión o una respuesta que no empieza, dicho como lo que es (antes, «no está disponible»)
+    : c === 'red' || c === 'cambio' ? L('Se ha cortado la conexión con la IA. Vuelve a preguntar.', 'The connection to the AI dropped. Ask again.')
+    : c === 'tiempo' ? L('La IA no ha empezado a contestar a tiempo. Vuelve a preguntar.', "The AI didn't start answering in time. Ask again.")
     // 0.8.3c: el tope de peticiones por minuto del Worker (cuentan también las rondas de herramientas de una misma pregunta)
     : c === 'demasiadas' ? L('La IA ha tenido que hacer muchas consultas en el último minuto. Espera un minuto y vuelve a preguntar.', 'The AI has had to make many requests in the last minute. Wait a minute and ask again.')
     : L('La IA no está disponible ahora mismo. Vuelve a preguntar en un rato.', 'The AI is not available right now. Ask again in a while.');
@@ -1154,7 +1169,7 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
       ronda--;
       if (esCorteRed(e) && !e.claude && e.tipo !== 'tiempo') {
         const sinRed = navigator.onLine === false, vivo = appSigueEnFondo() && deApp('growiaViva') !== false;
-        diarioIA(`${nombreMod(modelo)} · ronda ${ronda + 1}: corte (${{ cambio: 'cambio de red', red: 'conexión' }[e.tipo] || e.tipo}) a los ${e.seg != null ? e.seg : '?'} s${fueraDeVista() ? ' · Toisón fuera' : ''}`);
+        diarioIA(`${nombreMod(modelo)} · ronda ${ronda + 1}: corte (${{ cambio: 'cambio de red', red: 'conexión' }[e.tipo] || e.tipo}) a los ${e.seg != null ? e.seg : '?'} s${fueraDeVista() ? ' · Toisón fuera' : ''} · ${e.datos ? 'con datos' : 'sin datos'}${e.message ? ` · ${String(e.message).slice(0, 60)}` : ''}`);
         // ha cambiado la red: se repite al momento por la nueva
         if (e.tipo === 'cambio' && cambios < 3) { cambios++; avisoRed(L('Ha cambiado tu conexión: lo repito', 'Your connection changed: repeating it')); await dormir(500, signal); vuelta--; continue; }
         // sin conexión, o con GrowFolio fuera de la vista y el móvil cortando la página: esperar a que vuelva, sin gastar intentos
@@ -1162,7 +1177,8 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
           pausas++; avisoRed(sinRed ? L('Sin conexión: sigo en cuanto vuelva', "No connection: I'll carry on as soon as it's back") : L('Se ha cortado al salir de Toisón: sigo en cuanto vuelvas', "It dropped when you left Toisón: I'll carry on when you're back"));
           await esperarVuelta(signal, { soloRed: vivo }); alCambiar(); await dormir(300, signal); vuelta--; continue;
         }
-        if (cortes < (e.datos ? RED_CLAUDE.esperas.length : 1)) { const s = RED_CLAUDE.esperas[cortes++]; avisoRed(L('Se ha cortado la conexión: lo intento otra vez', 'The connection dropped: trying again')); await dormir(s * 1000, signal); vuelta--; continue; }
+        // 0.8.3c: también si no ha llegado nada (antes solo una vez: el 8 nov, a Carlos el segundo corte lo dejó sin respuesta)
+        if (cortes < RED_CLAUDE.esperas.length) { const s = RED_CLAUDE.esperas[cortes++]; avisoRed(L('Se ha cortado la conexión: lo intento otra vez', 'The connection dropped: trying again')); await dormir(s * 1000, signal); vuelta--; continue; }
       }
       // si lo que no acepta Claude es la búsqueda en internet, se repite sin ella (y se avisa en el registro)
       if (e.claude && e.estado === 400 && conWeb && /web.?search/i.test(`${e.msg} ${e.codigo}`)) { conWeb = false; diarioIA(`Claude no acepta la búsqueda en internet (${String(e.msg).slice(0, 80)}): sigue sin ella`); vuelta--; continue; }
@@ -1242,6 +1258,7 @@ async function preguntarAsesor(texto) {
   // para esa misma pregunta (si la cambias o se queda sin enviar, no se pega a la siguiente)
   const ctx0 = S.ctxIA; S.ctxIA = null;
   if (!texto || AS.cargando) return;
+  quitarPausaDeRed();
   // 0.8.2b: si el sondeo aún no ha contestado (el panel se acaba de abrir), se espera a él
   if (!iaLista() && modeloClaudeParaIA('pregunta')) await sondearClaude();
   // sin cuenta, la pantalla que lo explica; si no, la pregunta sigue y la respuesta dice por qué no puede contestar (Claude

@@ -190,6 +190,8 @@ function pintarTurno(k) {
   if (abajo) cuerpo.scrollTop = cuerpo.scrollHeight;
 }
 async function abrirAsesor(pregunta, enviar) {
+  // 0.8.3c: abrir la IA es pedirla: una pausa por la red se quita y se vuelve a intentar (quitarPausaDeRed)
+  quitarPausaDeRed();
   if (!S.cartera) return;
   // 0.8.3: si tenías el correo sin confirmar y ya lo has hecho, que lo note al abrir (repinta el panel si cambia)
   mirarCorreoConfirmado(true);
