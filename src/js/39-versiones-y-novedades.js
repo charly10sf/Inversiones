@@ -5,9 +5,9 @@
    ===================================================================== */
 // VERSION está en src/js/version.js (0.6: un solo sitio para la versión)
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
-   (caminoNovedades, 46-lo-nuevo.js). La fecha y la hora, las de verdad al cerrarla */
+   (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
-  { v: '0.8.3a', f: '2026-11-08', h: '08:00', t: 'Toisón, por dentro', cosas: [
+  { v: '0.8.3a', f: '2026-11-08', h: '12:51', t: 'Toisón, por dentro', cosas: [
     { d: 'movil', ir: [
       { v: 'cartera', sel: '.navbar [data-mas], .riel .k2-iconos', t: 'Más, y el menú del ordenador', x: 'En el móvil, Más está abajo a la derecha: tu cuenta, tus objetivos, tus fijados y todas las funciones, con un buscador. En el ordenador, cada sección es un icono a la izquierda y sus páginas salen al lado.' },
       { v: 'cartera', sel: '.navbar [data-ir="posiciones"], .k2-busca', t: 'Análisis y el buscador', x: 'Análisis reúne tu cartera por dentro, en pestañas. En el ordenador, cualquier página se busca arriba (Ctrl K).' },

@@ -1,6 +1,98 @@
 {
  "versiones": [
   {
+   "v": "0.8.3a",
+   "f": "2026-11-08",
+   "h": "12:51",
+   "t": "Toisón, por dentro",
+   "commits": [
+    {
+     "cuando": "2026-11-08 12:47",
+     "asunto": "0.8.3a: Marfil dorado (crema con vetas de oro y borde #d4b580 con Toisón Dorado)",
+     "detalle": [
+      "Elegido por Carlos el 8 nov («A · Crema Marfil»): con Toisón Dorado y Marfil, el fondo",
+      "pasa a un mármol crema con las vetas del Mármol G en oro (scripts/textura_marfil_dorado.py,",
+      "marfil-dorado*.webp; sin Toisón Dorado no se piden) y el borde de las tarjetas, de #dccbb0",
+      "a #d4b580. La novedad de Toisón Dorado lo cuenta (y en.json). Prueba al día."
+     ]
+    },
+    {
+     "cuando": "2026-11-08 06:03",
+     "asunto": "0.8.3a, sesión 4: Toisón Dorado, lo visual, y las novedades de la versión",
+     "detalle": [
+      "Toisón Dorado (de momento, el dueño: tieneDorado en 42-modos.js; en Tú › Diseño",
+      "puede ponerse «Como los demás»): data-dorado en <html>. Con Mármol, el Mármol",
+      "dorado (marmol-dorado*.webp, scripts/textura_marmol_dorado.py, receta del 7 nov),",
+      "el borde #4f3f20 y la marca entera (sello del 11 «doble filete» + TOISÓN + DORADO",
+      "entre hilos con rombo) en la cabecera del móvil y arriba de la K2. En Marfil,",
+      "solo la marca, con el sello de filo #5e4210. Sin él, todo como siempre.",
+      "Candados del plan con el sello pequeño (Escritorios y su etiqueta Dorado, que",
+      "con Toisón Dorado sale iluminada). CSS en src/css/26-dorado.css; colores solo",
+      "en los tokens --dorado-* de 00-temas.css.",
+      "Novedades de la 0.8.3a (VERSION en la rama; sin cerrar): Más y la K2 con su guía,",
+      "Tú, el básico, el acabado de cristal y, solo para el dueño, Toisón Dorado.",
+      "caminoNovedades: una de letra con cosas (desde la 0.8.2) sale en la hoja corta.",
+      "Pruebas: tests/toison-dorado-083a.spec.js; niveles, novedades-dueno y",
+      "navegacion-083a al día."
+     ]
+    },
+    {
+     "cuando": "2026-11-08 03:13",
+     "asunto": "0.8.3a, sesión 3: el básico con Rentabilidad y Riesgo sencillos",
+     "detalle": [
+      "Rentabilidad y Riesgo en básico, del Doc del básico y el avanzado: una cifra",
+      "grande por tarjeta, en euros y en frases, con su «¿Qué es?» y sin siglas.",
+      "Ingresos y costes, como dos tarjetas dentro de Rentabilidad (Dividendos y",
+      "Costes llevan allí en básico). Las cifras salen del mismo cálculo que el",
+      "avanzado (pavGanado, pavCostesBase, pavRiesgoBase). Riesgo con tres crisis",
+      "de verdad con la cartera de hoy. Prueba nueva: tests/basico-083a.spec.js."
+     ]
+    },
+    {
+     "cuando": "2026-11-08 02:15",
+     "asunto": "K2: una sola marca arriba, el sello con TOISÓN al lado, y Hoy con una casa",
+     "detalle": [
+      "Arriba a la izquierda salían dos símbolos seguidos (la marca y Hoy). Ahora,",
+      "como en el móvil: el sello en la barra de iconos y TOISÓN a 22 px en la",
+      "segunda, a la altura de la barra de arriba. Hoy lleva una casa de plumilla."
+     ]
+    },
+    {
+     "cuando": "2026-11-08 01:44",
+     "asunto": "0.8.3a, sesión 2: el acabado liquid y el símbolo de Marfil en vino y oro",
+     "detalle": [
+      "Móvil: barra cápsula de cristal hondo con canto, gota y Hoy en moneda; la",
+      "cabecera en dos pastillas sobre la página fundida; la tira de pestañas de",
+      "Análisis y el 6M con la lente; hojas que flotan. Ordenador: la intermedia",
+      "(barras en cristal mate, lo elegido en gota neutra; Marfil, vino opaco).",
+      "Tokens en 00-temas.css, forma en 25-cristal.css; opaco con reducir",
+      "transparencia. Iconos de plumilla de Riesgo, Reparto y Herramientas.",
+      "Prueba nueva: contraste de la barra con blanco detrás y opaca."
+     ]
+    },
+    {
+     "cuando": "2026-11-08 00:57",
+     "asunto": "Pruebas de la navegación: aguantan la hoja de la guía y la transición de la K2",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-08 00:47",
+     "asunto": "0.8.3a, sesión 1: navegación A en el móvil y K2 en el ordenador",
+     "detalle": [
+      "Móvil: Más en el sitio de Tú abre una hoja con buscador de páginas, Lo tuyo,",
+      "fijados (también en Hoy) y la rejilla por grupos; Análisis con 7 pestañas en",
+      "avanzado y 6 en básico, con apartados; Herramientas en Más.",
+      "Ordenador: barra de iconos de 64 px con 10 secciones y segunda barra de 252 px",
+      "con las páginas y la IA abajo (se agranda a 440 px y las páginas suben a",
+      "pestañas); arriba buscador (Ctrl K), fijados, Escritorios, avisos y cuenta.",
+      "Direcciones #av-<pestaña>; tutorial y textos que señalaban a Tú, a Más.",
+      "Pruebas: navegacion-083a.spec.js nueva y las de antes adaptadas.",
+      "claude/versiones/0.8.md: lo decidido de la 0.8.3a."
+     ]
+    }
+   ]
+  },
+  {
    "v": "0.8.3",
    "f": "2026-11-29",
    "h": "12:00",
