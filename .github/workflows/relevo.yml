@@ -1,0 +1,65 @@
+# El relevo de la IA en Google Cloud Run (0.8.3d; relevo/): reenvía al Worker de Cloudflare lo que la app no puede mandarle
+# directamente cuando los operadores españoles bloquean Cloudflare durante los partidos de LaLiga.
+#
+# NO HACE NADA hasta que Carlos lo decida: hace falta el plan Blaze (facturación) del proyecto growfolio-a79a9, con su
+# alerta de presupuesto, el secreto GCP_RELEVO y la variable RELEVO_EN_VIVO = si (paso a paso en relevo/LEEME.md).
+# Secreto: GCP_RELEVO, la clave JSON de una cuenta de servicio con «Administrador de Cloud Run», «Usuario de cuenta de
+# servicio», «Escritor de Artifact Registry» y «Editor de Cloud Build» en growfolio-a79a9. Sin él, avisa y no hace nada.
+#
+# Lo que crea: el servicio toison-relevo en europe-southwest1 (Madrid), público (la app no tiene cuenta de Google; quién
+# eres lo mira el Worker con tu token), 1 vCPU, 256 MiB, hasta 80 peticiones a la vez por instancia, 0 instancias
+# cuando no se usa (no cuesta nada parado) y como mucho 2 (tope de gasto si alguien lo abusa), 300 s por petición (la IA
+# tarda 60–100 s).
+name: Relevo
+
+on:
+  push:
+    branches: [main]
+    paths: ['relevo/**', '.github/workflows/relevo.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: relevo
+  cancel-in-progress: false
+
+jobs:
+  relevo:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      EN_VIVO: ${{ vars.RELEVO_EN_VIVO }}
+      CLAVE: ${{ secrets.GCP_RELEVO }}
+    steps:
+      - name: ¿Se publica?
+        id: puerta
+        run: |
+          if [ -z "$CLAVE" ]; then echo "::warning::Falta el secreto GCP_RELEVO: no se publica nada."; echo "seguir=no" >> "$GITHUB_OUTPUT"; exit 0; fi
+          if [ "$EN_VIVO" != "si" ]; then echo "::notice::RELEVO_EN_VIVO no vale «si»: no se publica nada."; echo "seguir=no" >> "$GITHUB_OUTPUT"; exit 0; fi
+          echo "seguir=si" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        if: steps.puerta.outputs.seguir == 'si'
+      - uses: google-github-actions/auth@v2
+        if: steps.puerta.outputs.seguir == 'si'
+        with:
+          credentials_json: ${{ secrets.GCP_RELEVO }}
+      - uses: google-github-actions/setup-gcloud@v2
+        if: steps.puerta.outputs.seguir == 'si'
+      - name: Publicar en Cloud Run
+        if: steps.puerta.outputs.seguir == 'si'
+        run: |
+          gcloud run deploy toison-relevo \
+            --project growfolio-a79a9 --region europe-southwest1 \
+            --source relevo --allow-unauthenticated \
+            --cpu 1 --memory 256Mi --concurrency 80 \
+            --min-instances 0 --max-instances 2 --timeout 300 \
+            --cpu-boost \
+            --set-env-vars "^@^DESTINO=https://growfolio.growfolio-web-app.workers.dev@ORIGENES=https://charly10sf.github.io,https://toison.es" \
+            --quiet
+          url=$(gcloud run services describe toison-relevo --project growfolio-a79a9 --region europe-southwest1 --format 'value(status.url)')
+          echo "::notice::Relevo en $url (ponerlo en RELEVO, src/js/32a-ruta-worker.js)"
+          code=$(curl -s -o /dev/null -w '%{http_code}' "$url/salud")
+          echo "::notice::$url/salud → $code"
+          [ "$code" = "200" ] || { echo "::error::El relevo no llega al Worker (/salud → $code)"; exit 1; }

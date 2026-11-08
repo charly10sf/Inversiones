@@ -64,6 +64,9 @@ const motivoEB = (r) => String((r.j && (r.j.message || r.j.detail || r.j.error))
    Sin la ubicación (Psu-Geo-Location): no la tenemos ni hace falta. */
 const PSU_DE = [['User-Agent', 'Psu-User-Agent'], ['Referer', 'Psu-Referer'], ['Accept', 'Psu-Accept'], ['Accept-Charset', 'Psu-Accept-Charset'], ['Accept-Encoding', 'Psu-Accept-Encoding'], ['Accept-Language', 'Psu-Accept-language']];
 function cabecerasPsu(req) {
+  // 0.8.3d: lo que llega por el relevo de Google (relevo/, cuando el operador bloquea Cloudflare durante el fútbol) trae
+  // la IP del relevo, no la tuya: no se le dice al banco que es la tuya. Se lee sin PSU, como cuando no estás
+  if (req.headers.get('X-Toison-Relevo')) return null;
   const ip = req.headers.get('CF-Connecting-IP');
   if (!ip) return null;
   const o = { 'Psu-Ip-Address': ip };

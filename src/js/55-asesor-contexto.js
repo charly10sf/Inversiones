@@ -773,7 +773,7 @@ function pausarClaude(motivo, ms) { try { LS.set(LS_CLAUDE_PAUSA, { hasta: Date.
    app hace sola, pero no lo que pides tú: al preguntar o al abrir la IA se quita y se vuelve a intentar. Carlos, 8 nov: dos
    cortes seguidos apartaron a Claude 5 minutos y sus dos «Volver a preguntar» fallaron al momento sin llegar a intentarlo.
    Las pausas de la cuenta (topes, créditos, correo sin confirmar, la clave, una petición que no vale) siguen como estaban */
-const PAUSAS_DE_RED = ['red', 'cambio', 'tiempo', 'sondeo'];
+const PAUSAS_DE_RED = ['red', 'cambio', 'tiempo', 'sondeo', 'bloqueo'];
 function quitarPausaDeRed() {
   const p = claudePausado();
   if (!p || !PAUSAS_DE_RED.includes(p.motivo)) return false;
@@ -843,13 +843,14 @@ async function claudeAlcanzable(tipo = 'pregunta', signal = null) {
       const token = await conTiempo(tokenCuenta(), 9000);
       // los 10 s, para el Worker: renovar el token (0.8.3) no se los come
       clearTimeout(tt); tt = setTimeout(() => ctl.abort(), 10000);
-      const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
+      const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' }, { espera: ESPERA_WORKER.sondeo });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); puede = true; }
       else apartarClaude(errorClaude(r.status, j));
     } catch (e) {
       if (signal && signal.aborted) throw new DOMException('Parado', 'AbortError');
-      apartarClaude(Object.assign(e, { corte: true }));
+      // 0.8.3d: si llega Toisón pero no el Worker, es el bloqueo del fútbol: se dice tal cual
+      apartarClaude(Object.assign(e, { corte: true }, (await esBloqueoWorker()) ? { tipo: 'bloqueo' } : {}));
     } finally { clearTimeout(tt); if (signal) signal.removeEventListener('abort', parar); }
   }
   if (!puede) return false;
@@ -878,12 +879,12 @@ function sondearClaude() {
       const token = await conTiempo(tokenCuenta(), 9000);
       // los 10 s, para el Worker: renovar el token (0.8.3) no se los come
       clearTimeout(tt); tt = setTimeout(() => ctl.abort(), 10000);
-      const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' });
+      const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: '{}' }, { espera: ESPERA_WORKER.sondeo });
       const j = await r.json().catch(() => null);
       if (r.status === 400 && j && j.error === 'peticion') { LS.set(LS_CLAUDE_SONDEO, { ok: true, hasta: Date.now() + 6 * 36e5, uid }); return true; }
       const ms = pausaClaude(errorClaude(r.status, j)) || 5 * 6e4; pausarClaude((j && j.error) || 'sondeo', ms);
       return false;
-    } catch (e) { pausarClaude('sondeo', 5 * 6e4); return false; }
+    } catch (e) { pausarClaude((await esBloqueoWorker()) ? 'bloqueo' : 'sondeo', 5 * 6e4); return false; }
     finally { clearTimeout(tt); SONDEO_EN_CURSO = null; }
   })();
   SONDEO_EN_CURSO.then((ok) => {
@@ -958,6 +959,8 @@ function errorSinIA(e, aMedias) {
     : c === 'no-permitido' ? L('Para usar la IA, confirma tu correo con el enlace del último correo de confirmación que te llegó. Cuando lo abras, vuelve aquí: Toisón lo notará solo.', 'To use the AI, confirm your email with the link in the latest confirmation email you got. Once you open it, come back here: Toisón will notice by itself.')
     : c === 'sin-creditos' ? L('La IA no está disponible ahora mismo. Vuelve a probar dentro de unas horas.', 'The AI is not available right now. Try again in a few hours.')
     // 0.8.3c: un corte de la conexión o una respuesta que no empieza, dicho como lo que es (antes, «no está disponible»)
+    // 0.8.3d: llega Toisón pero no el servidor de la IA (el bloqueo de los operadores durante LaLiga)
+    : c === 'bloqueo' ? TXT_BLOQUEO()
     : c === 'red' || c === 'cambio' ? L('Se ha cortado la conexión con la IA. Vuelve a preguntar.', 'The connection to the AI dropped. Ask again.')
     : c === 'tiempo' ? L('La IA no ha empezado a contestar a tiempo. Vuelve a preguntar.', "The AI didn't start answering in time. Ask again.")
     // 0.8.3c: el tope de peticiones por minuto del Worker (cuentan también las rondas de herramientas de una misma pregunta)
@@ -1094,7 +1097,7 @@ async function llamarClaude(cuerpo, turno, signal, alCambiar, info = {}) {
   };
   try {
     const token = await conTiempo(tokenCuenta(), 9000);
-    const r = await fetch(`${urlWorker()}/claude`, { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) });
+    const r = await fetchWorker('/claude', { method: 'POST', signal: ctl.signal, headers: { 'content-type': 'application/json', Authorization: `Bearer ${token}` }, body: JSON.stringify(cuerpo) });
     if (!r.ok) { let j = null; try { j = await r.json(); } catch (e) {} if (j && j.error === 'tope-diario') apuntarQuedanClaude(0); if (j && j.error === 'tope-fondo') apuntarQuedanClaude(null, 0); if (j && j.error === 'tope-tareas') apuntarQuedanClaude(null, null, null, 0); if (j && j.error === 'tope-revision') apuntarQuedanClaude(null, null, null, null, 0); throw errorClaude(r.status, j); }
     { const h = (k) => { const v = r.headers.get(k); return v != null && v !== '' ? Number(v) : null; }; apuntarQuedanClaude(h('x-quedan'), h('x-quedan-fondo'), r.headers.get('x-nivel'), h('x-quedan-tareas'), h('x-quedan-revisiones')); }
     const lector = r.body.getReader(), dec = new TextDecoder();
@@ -1182,6 +1185,8 @@ async function conversarClaude({ mensajes, turno, sistema, maxTokens = 4096, alC
       }
       // si lo que no acepta Claude es la búsqueda en internet, se repite sin ella (y se avisa en el registro)
       if (e.claude && e.estado === 400 && conWeb && /web.?search/i.test(`${e.msg} ${e.codigo}`)) { conWeb = false; diarioIA(`Claude no acepta la búsqueda en internet (${String(e.msg).slice(0, 80)}): sigue sin ella`); vuelta--; continue; }
+      // 0.8.3d: sin que haya llegado nada y con Toisón llegando, es el bloqueo del fútbol (también si no empezó a tiempo)
+      if (esCorteRed(e) && !e.claude && !e.datos && !(signal && signal.aborted) && await esBloqueoWorker()) e.tipo = 'bloqueo';
       // lo demás (sin permiso, sin créditos, tope del día, 5xx, no empieza a tiempo…): lo decide conversar
       throw e;
     }

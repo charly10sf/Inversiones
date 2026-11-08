@@ -64,6 +64,7 @@
     "30-importar.js",
     "31-aportaciones.js",
     "32-banco.js",
+    "32a-ruta-worker.js",
     "33-presentacion.js",
     "34-entrar.js",
     "35-cartera-desde-archivo.js",

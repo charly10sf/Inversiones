@@ -5,7 +5,7 @@ const BANCO_CADA_H = 4, BANCO_PRESENTE_MIN = 10;
 async function workerPide(ruta, cuerpo) {
   if (!urlWorker() || !FB.user) throw new Error('sin-worker');
   const t = await FB.user.getIdToken();
-  const r = await fetch(urlWorker() + ruta, { method: cuerpo ? 'POST' : 'GET', headers: { Authorization: `Bearer ${t}`, ...(cuerpo ? { 'Content-Type': 'application/json' } : {}) }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
+  const r = await fetchWorker(ruta, { method: cuerpo ? 'POST' : 'GET', headers: { Authorization: `Bearer ${t}`, ...(cuerpo ? { 'Content-Type': 'application/json' } : {}) }, body: cuerpo ? JSON.stringify(cuerpo) : undefined });
   const j = await r.json().catch(() => ({}));
   if (!r.ok) { const e = new Error(j.error || `http ${r.status}`); e.j = j; e.status = r.status; throw e; }
   return j;

@@ -1,0 +1,8 @@
+{
+  "name": "toison-relevo",
+  "private": true,
+  "type": "module",
+  "description": "Relevo de Toisón en Cloud Run: reenvía al Worker de Cloudflare lo que no llega durante los bloqueos de LaLiga",
+  "scripts": { "start": "node servidor.mjs" },
+  "engines": { "node": ">=22" }
+}
