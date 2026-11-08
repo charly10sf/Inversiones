@@ -102,7 +102,7 @@ main { max-width: 1480px; margin: 0 auto; padding: 18px 20px 80px; display: grid
 </head>
 <body>
 <div class="barra"><div class="barra-in">
-  <div class="marca">TOISÓN <em>0.8.6 · maqueta final, 2.ª vuelta</em></div>
+  <div class="marca">TOISÓN <em>0.8.6 · maqueta final, 3.ª vuelta</em></div>
   <div class="grupo"><span>Diseño</span><div class="seg" id="segTema" role="group" aria-label="Diseño">
     <button type="button" data-tema="marmol" aria-pressed="true">Mármol</button>
     <button type="button" data-tema="marfil" aria-pressed="false">Marfil</button>
@@ -146,26 +146,26 @@ main { max-width: 1480px; margin: 0 auto; padding: 18px 20px 80px; display: grid
 <div class="aviso" id="aviso"></div>
 
 <script>
-const DIM = {"11X-indice-marfil-390":[390,1416],"11X-indice-marmol-390":[390,1414],"11X-leccion-marfil-390":[390,1815],"11X-leccion-marmol-390":[390,1814],"11X-marfil-1440":[1440,1132],"11X-marmol-1440":[1440,1132],"1X-tabla-marfil-1440":[1440,1254],"1X-tabla-marfil-390":[390,1745],"1X-tabla-marmol-1440":[1440,1232],"1X-tabla-marmol-390":[390,1741],"1X-tarjetas-marfil-1440":[1440,1494],"1X-tarjetas-marmol-1440":[1440,1472],"2X-marfil-1440":[1440,2367],"2X-marfil-390":[390,2300],"2X-marmol-1440":[1440,2320],"2X-marmol-390":[390,2295]};
+const DIM = {"11X-indice-marfil-390":[390,1416],"11X-indice-marmol-390":[390,1414],"11X-leccion-marfil-390":[390,1815],"11X-leccion-marmol-390":[390,1814],"11X-marfil-1440":[1440,1132],"11X-marmol-1440":[1440,1132],"1X-tabla-marfil-1440":[1440,1302],"1X-tabla-marfil-390":[390,1745],"1X-tabla-marmol-1440":[1440,1280],"1X-tabla-marmol-390":[390,1741],"1X-tarjetas-marfil-1440":[1440,1542],"1X-tarjetas-marmol-1440":[1440,1520],"2X-marfil-1440":[1440,2367],"2X-marfil-390":[390,2319],"2X-marmol-1440":[1440,2320],"2X-marmol-390":[390,2314]};
 // cada pestaña: lo que se confirma y sus vistas; cada vista con su captura de ordenador y las del móvil
 const P = {
   '2': {
     nota: '<b>Apartado «Frente a un indexado» de Rendimiento</b> (en el móvil, Análisis › Rentabilidad). Ordenador en avanzado, con los candados de Toisón Dorado (otras referencias, de dónde sale la diferencia, captura en subidas y bajadas); móvil en básico. La misma cartera de prueba de 5 posiciones: 19.900 € metidos, 23.380 € hoy; el mismo dinero en un indexado del MSCI World, 24.150 €.',
     decide: '¿Te vale así?',
-    pregunta: '<b>Cambiado con lo que dijiste (20:04):</b> el «cara a cara» ahora es solo la bolita de la diferencia. Ordenador: una tarjeta grande de todo el ancho con la gráfica y, al lado, la bolita y las cifras; debajo, filas parejas (diferencia y momentos, final de año y TWR), las medidas en una fila y los tres candados juntos. Móvil: de 5 tarjetas a 3 (la bolita con la diferencia en el tiempo, las dos líneas, final de cada año con la tabla a un toque) y escala en las gráficas.',
-    v: [['2X', 'Todo junto', 'Ordenador: la tarjeta grande arriba y debajo filas de la misma altura. Móvil: diferencia (con la bolita), dos líneas y final de cada año.', '2X', ['2X']]],
+    pregunta: '<b>3.ª vuelta (23:20):</b> en el móvil va primero «Tu cartera y el indexado», con la bolita de −770 € y las cifras arriba, y después «¿Por encima o por debajo?». Así lo primero que ves es dónde estás, y luego cómo has llegado. <b>2.ª vuelta (20:04):</b> el «cara a cara» ahora es solo la bolita de la diferencia. Ordenador: una tarjeta grande de todo el ancho con la gráfica y, al lado, la bolita y las cifras; debajo, filas parejas (diferencia y momentos, final de año y TWR), las medidas en una fila y los tres candados juntos. Móvil: de 5 tarjetas a 3 (la bolita con la diferencia en el tiempo, las dos líneas, final de cada año con la tabla a un toque) y escala en las gráficas.',
+    v: [['2X', 'Todo junto', 'Ordenador: la tarjeta grande arriba y debajo filas de la misma altura. Móvil: tu cartera y el indexado (con la bolita), por encima o por debajo, y final de cada año.', '2X', ['2X']]],
   },
   '1': {
     nota: '<b>En Ideas, en lugar de «Siguiendo».</b> Ordenador en avanzado (columnas a elegir; los múltiplos, más de 10 valores y más de una lista, con Toisón Dorado); móvil en básico. Precios y fechas de ejemplo.',
     decide: '¿Te vale así?',
-    pregunta: '<b>Cambiado:</b> las dos tarjetas de abajo, a la par (mitad y mitad, misma altura); «lo que viene» pasa a la de la IA. El móvil, como estaba (te valía). El conmutador «Vista: Tabla | Tarjetas» sigue arriba a la derecha y se recuerda.',
+    pregunta: '<b>3.ª vuelta (23:20):</b> cada noticia de la IA lleva su tono: ▲ Buena, ▼ Negativa o ● Neutral (el de la noticia, no un consejo). <b>2.ª vuelta:</b> las dos tarjetas de abajo, a la par (mitad y mitad, misma altura); «lo que viene» pasa a la de la IA. El móvil, como estaba (te valía). El conmutador «Vista: Tabla | Tarjetas» sigue arriba a la derecha y se recuerda.',
     v: [['1X · Tabla', 'Vista de tabla', 'Con «Columnas» para elegir lo que ves (PER con candado). La fila marcada es la que abre el panel de abajo.', '1X-tabla', ['1X-tabla']],
         ['1X · Tarjetas', 'Vista de tarjetas', 'La misma lista en tarjetas, con la gráfica del mes, «pesaría» y «solape». La tarjeta marcada es la del panel de abajo.', '1X-tarjetas', []]],
   },
   '11': {
     nota: '<b>En Cartera, junto a Posiciones, solo en básico.</b> Las lecciones usan los números de la misma cartera de prueba (TER del MSCI World 0,12 %, unos 31 € al año en comisiones de fondos).',
     decide: '¿Te vale así?',
-    pregunta: '<b>Cambiado:</b> «Para ti ahora» y el avance van juntos en una tira baja (en el ordenador, una sola línea). El índice se estrecha y la lección se agranda: letra más grande, un ejemplo y las cifras en una fila. En el móvil, la lección con más letra y menos margen. La progresión sigue igual: leídas por capítulo, 4 de 20, «Leída» en cada lección; sin confeti ni rachas.',
+    pregunta: '<b>Te valió (23:20).</b> «Para ti ahora» y el avance van juntos en una tira baja (en el ordenador, una sola línea). El índice se estrecha y la lección se agranda: letra más grande, un ejemplo y las cifras en una fila. En el móvil, la lección con más letra y menos margen. La progresión sigue igual: leídas por capítulo, 4 de 20, «Leída» en cada lección; sin confeti ni rachas.',
     v: [['11X', 'Libro con «Para ti ahora»', 'Ordenador: la tira de arriba, el índice estrecho y la lección grande. Móvil: la tira, el índice y, al tocar una lección, su pantalla con volver.', '11X', ['11X-indice', '11X-leccion']]],
   },
 };

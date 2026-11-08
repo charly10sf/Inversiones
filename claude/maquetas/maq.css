@@ -294,3 +294,8 @@
   .mq-pag-g > p { font-size: 17px; line-height: 1.7; }
   .mq-pag-g h3 { font-size: 31px; }
 }
+/* 3.ª vuelta (8 nov 23:20): tono de cada noticia */
+.mq-tono { display: inline-flex; align-items: center; margin-right: 8px; padding: 2px 8px; border-radius: 99px; font: 650 11px/1.3 var(--ui); font-style: normal; white-space: nowrap; vertical-align: 1px; }
+.mq-tono.up { color: var(--sube); background: var(--sube-fondo); }
+.mq-tono.down { color: var(--baja); background: var(--baja-fondo); }
+.mq-tono.neu { color: var(--texto-2); background: var(--superficie-3, var(--superficie-2)); box-shadow: inset 0 0 0 1px var(--borde); }

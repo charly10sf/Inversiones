@@ -272,8 +272,8 @@ const X_MOMENTOS = () => `<ol class="mq-tl">${[['mar 2023', 'Empiezas con 6.700 
 
 function v2X({ modo, movil }) {
   if (movil || modo === 'basico') return [lead('¿Te habría dado lo mismo meterlo todo en un indexado? Con tus fechas y tus euros.'),
-    B('c12', '¿Por encima o por debajo?', `<div class="mq-bola-fila">${BOLA(true)}<div class="mq-dif-mini mq-dif-col"><span><small>Tú</small><b>${eur(TU)}</b></span><span><small>Indexado</small><b>${eur(IX)}</b></span><span><small>Has metido</small><b>${eur(AP)}</b></span></div></div>${X_DIFG(180)}`, `Cada mes, lo tuyo menos lo que valdría el mismo dinero, en las mismas fechas, en un fondo indexado del MSCI World en euros. ${AVISO}`),
-    B('c12', 'Tu cartera y el indexado', `<div class="mq-graf">${X_GRAF2(190)}</div>`, 'La línea de puntos es lo que has ido metiendo; las otras dos, lo que valía cada cosa.'),
+    B('c12', 'Tu cartera y el indexado', `<div class="mq-bola-fila">${BOLA(true)}<div class="mq-dif-mini mq-dif-col"><span><small>Tú</small><b>${eur(TU)}</b></span><span><small>Indexado</small><b>${eur(IX)}</b></span><span><small>Has metido</small><b>${eur(AP)}</b></span></div></div><div class="mq-graf">${X_GRAF2(190)}</div>`, `Cada euro que metiste, el mismo día, en un fondo indexado del MSCI World en euros. La línea de puntos es lo que has ido metiendo. ${AVISO}`),
+    B('c12', '¿Por encima o por debajo?', X_DIFG(180), 'Cada mes, lo que valía lo tuyo menos lo que valdría el mismo dinero en el indexado: verde, por encima; rojo, por debajo.'),
     B('c12', 'A final de cada año', X_BARRAS() + '<p class="mq-nota-fina"><a class="mq-enl">Verlo en tabla ›</a></p>', 'Lo que valía cada cosa el 31 de diciembre; el último, hoy.'),
     pregs(['¿Por qué mi cartera va por debajo?', '¿Qué pasó en abril de 2025?'])].join('');
   return [
@@ -318,7 +318,8 @@ function v1X({ modo, movil }, vista = 'tabla') {
     : 'Tabla o tarjetas: se queda la que elijas. «Pesaría»: lo que sería en tu cartera con 1.000 €. «Solape»: cuánto de su contenido ya tienes por tus fondos.';
   const x = SIG[3];
   const sup = `<p class="mq-sup-t">Si metieras 1.000 € en <b>${x[1]}</b></p>${pavKpis([['Pesaría', '4,1 %', '', 'de tu cartera'], ['Solape', x[7], '', 'con tu MSCI World'], ['País', x[5]], ['Sector', x[6]]], 4)}<p class="mq-nota-fina">Un ETF del S&P 500 se solapa casi entero con un MSCI World: unas 500 empresas son las mismas. No hay fechas de este ETF en los próximos 30 días.</p>`;
-  const ia = `<ul class="pav-lista">${[['ASML', 'El sector de chips en Europa, al alza hoy. Tres noticias de la mañana, resumidas.'], ['Inditex', 'Antes de sus resultados del 10 de diciembre: lo que se espera, sin opinión.'], ['Microsoft', 'Sin noticias que muevan hoy el precio.']].map(([a, b]) => `<li><b>${a}</b><span>${b}</span></li>`).join('')}</ul><div class="mq-ev-mini"><small>Lo que viene</small><p><b>10 dic</b> · resultados de Inditex &nbsp;·&nbsp; <b>9 ene</b> · ex-dividendo de Iberdrola</p></div>`;
+  const TONO = { up: '▲ Buena', down: '▼ Negativa', neu: '● Neutral' };
+  const ia = `<ul class="pav-lista mq-noticias">${[['ASML', 'up', 'El sector de chips en Europa, al alza hoy: pedidos mejores de lo esperado. Tres noticias de la mañana, resumidas.'], ['Microsoft', 'down', 'Bruselas abre una investigación sobre sus servicios en la nube.'], ['Inditex', 'neu', 'Antes de sus resultados del 10 de diciembre: lo que se espera, sin opinión.']].map(([a, t, b]) => `<li><b>${a}</b><span><i class="mq-tono ${t}">${TONO[t]}</i>${b}</span></li>`).join('')}</ul><p class="mq-nota-fina">El tono es el de la noticia, leído por la IA: no dice qué hacer.</p><div class="mq-ev-mini"><small>Lo que viene</small><p><b>10 dic</b> · resultados de Inditex &nbsp;·&nbsp; <b>9 ene</b> · ex-dividendo de Iberdrola</p></div>`;
   return [T('c12', 'Mi lista', cabecera + cuerpo, como),
     T('c6', 'Lo que supondría en tu cartera', sup, '', 'mq-igual'),
     T('c6', 'Lo que la IA ha leído hoy de lo que sigues', ia, '', 'mq-igual')].join('');
