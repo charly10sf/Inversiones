@@ -43,6 +43,9 @@ import urllib.request
 import yfinance as yf
 
 import precios as P  # noqa: E402  (noticias de Google, contraste de las ideas)
+# 9 nov 2026: precios.json guarda ahora hasta 60 titulares de mercado (para la página de Noticias); la IA sigue leyendo
+# 30, hasta 3 por zona, como antes: ni más gasto ni menos zonas
+elegir_mercado = P.elegir_mercado
 import fichas as F  # noqa: E402  (0.7: fichas por empresa con seis factores)
 
 HORAS_INFORME = 2          # como mucho uno cada 2 horas
@@ -438,7 +441,7 @@ def material(instrumentos, precios, radar):
     N = precios.get("noticias") or {}
     P = precios.get("instrumentos") or {}
     # mercado
-    merc = list(N.get("mercado") or [])[:30]
+    merc = elegir_mercado(N.get("mercado") or [], por_zona=3, total=30)
     for s in MERCADO:
         merc += noticias_yahoo(s, 3)
     mm = precios.get("mercados") or {}
@@ -1250,7 +1253,7 @@ def leer_temas(fichas, precios, valores=()):
             if n.get("t") and k not in vistos and not P.RUIDO.search(n["t"]):
                 vistos.add(k)
                 fuentes.append({kk: n.get(kk) for kk in ("t", "f", "d", "u") if n.get(kk)})
-    sumar(((precios or {}).get("noticias") or {}).get("mercado"))
+    sumar(elegir_mercado(((precios or {}).get("noticias") or {}).get("mercado") or [], por_zona=3, total=30))
     for q in TEMAS_CONSULTAS:
         try:
             sumar(P.noticias(q, 4, cuando="3d"))

@@ -119,7 +119,15 @@ NOTICIAS_MERCADO = [
     ("Tipos", "bonos rentabilidad bono 10 años"), ("Asia", "bolsas asiáticas China Japón"),
     ("Emergentes", "mercados emergentes bolsa India Brasil"), ("Materias primas", "petróleo Brent OPEP"),
     ("Materias primas", "oro precio onza"), ("Divisas", "dólar euro divisas"), ("Cripto", "bitcoin criptomonedas mercado"),
+    # 9 nov 2026 (la página de Noticias de la app, «más extensa y más detallada»): empresas, economía y más zonas
+    ("España", "bolsa española empresas resultados"), ("España", "economía española PIB paro"),
+    ("EEUU", "Wall Street resultados empresas Nasdaq"), ("Europa", "economía zona euro Alemania"),
+    ("Asia", "Nikkei Hang Seng bolsa"), ("Cripto", "ethereum criptomonedas regulación"),
 ]
+# los titulares de mercado, solo de los últimos días (antes, de 30: salían noticias viejas con la fecha de hoy) y más
+# por zona: hasta 5 de cada una y 60 en total
+NOTICIAS_MERCADO_CUANDO = "3d"
+NOTICIAS_POR_ZONA, NOTICIAS_MERCADO_MAX = 5, 60
 
 # Noticias de cada comunidad autónoma, solo las que tocan el dinero de quien vive allí: impuestos, ayudas, vivienda.
 # El titular tiene que nombrar la comunidad (o su gobierno) y hablar de dinero. Cada 6 horas, en noticias["_region"].
@@ -590,7 +598,8 @@ def comprimir(s, anios_diario=ANIOS_DIARIO, cifras=6):
 
 # ---------------------------------------------------------------- noticias (Google News en español)
 
-RUIDO = re.compile(r"^Precio de acciones, noticias|Gráfico de acciones|^Cotización de |\(\w+\d{6}[CP]\d+\)|cotización e historial", re.I)
+RUIDO = re.compile(r"^Precio de acciones, noticias|Gráfico de acciones|^Cotización de |\(\w+\d{6}[CP]\d+\)|cotización e historial"
+                   r"|tiempo real|cotizaci[oó]n (de )?hoy|^precio (del|de la|de) [^.]{0,40}\bhoy\b|minuto a minuto", re.I)
 
 
 def web_medio(it):
@@ -599,6 +608,27 @@ def web_medio(it):
     url = (src.get("url") if src is not None else None) or ""
     host = urllib.parse.urlparse(url).hostname or ""
     return re.sub(r"^www\.", "", host.lower()) or None
+
+
+def elegir_mercado(lista, por_zona=None, total=None):
+    """Los titulares de mercado que se guardan: sin repetidos, hasta por_zona de cada zona (los más nuevos) y el resto por
+    fecha hasta total; de más nuevo a más viejo."""
+    por_zona = NOTICIAS_POR_ZONA if por_zona is None else por_zona
+    total = NOTICIAS_MERCADO_MAX if total is None else total
+    m = sorted(lista, key=lambda x: x.get("d") or "", reverse=True)
+    vistos, unicos = set(), []
+    for x in m:
+        k = re.sub(r"\W+", "", x["t"].lower())[:60]
+        if k not in vistos:
+            vistos.add(k)
+            unicos.append(x)
+    zonas = {}
+    for x in unicos:
+        zonas.setdefault(x.get("z"), []).append(x)
+    elegidas = [x for xs in zonas.values() for x in xs[:por_zona]]
+    resto = [x for x in unicos if x not in elegidas]
+    elegidas += resto[: max(0, total - len(elegidas))]
+    return sorted(elegidas[:total], key=lambda x: x.get("d") or "", reverse=True)
 
 
 def noticias(consulta, n=6, debe=None, cuando="30d"):
@@ -1617,7 +1647,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
         consultas += [(inst["id"], inst["noticias"], inst.get("noticias_filtro"), None) for inst in instrumentos if inst.get("noticias")]
         for clave, q, debe, zona in consultas:
             try:
-                lista = noticias(q, 6 if zona else 8, debe)
+                lista = noticias(q, 6, debe, NOTICIAS_MERCADO_CUANDO) if zona else noticias(q, 8, debe)
                 for x in lista:
                     if zona:
                         x["z"] = zona
@@ -1628,21 +1658,7 @@ def main(ruta_inst, dir_anterior, dir_salida):
                     salida["noticias"][clave] = prev_not[clave]
             time.sleep(0.3)
         if "mercado" in salida["noticias"]:
-            m = sorted(salida["noticias"]["mercado"], key=lambda x: x["d"] or "", reverse=True)
-            vistos, unicos = set(), []
-            for x in m:
-                k = re.sub(r"\W+", "", x["t"].lower())[:60]
-                if k not in vistos:
-                    vistos.add(k)
-                    unicos.append(x)
-            # hasta 3 por zona y el resto por fecha, 30 como mucho
-            por_zona = {}
-            for x in unicos:
-                por_zona.setdefault(x.get("z"), []).append(x)
-            elegidas = [x for xs in por_zona.values() for x in xs[:3]]
-            resto = [x for x in unicos if x not in elegidas]
-            elegidas += resto[: max(0, 30 - len(elegidas))]
-            salida["noticias"]["mercado"] = sorted(elegidas, key=lambda x: x["d"] or "", reverse=True)
+            salida["noticias"]["mercado"] = elegir_mercado(salida["noticias"]["mercado"])
         salida["noticias_generado"] = ahora()
 
     # las de cada comunidad, aparte y más despacio

@@ -207,7 +207,7 @@ function calcularPos(pos, hoy) {
   // esas dos últimas sesiones; si es más viejo (un dato atascado), no se repite día tras día
   const diaViejo = !vivo && fechaPrecio && /^Fondo/.test(inst.tipo || '') && fechaPrecio < habilAntes(habilAntes(hoy)) ? fechaPrecio : null;
   if (diaViejo) dia = 0;
-  return { pos, inst, p, hist, uds, estimada, precio, varDia, diaViejo, valor, dia, coste, pl: sinPrecio ? 0 : valor - coste, plPct: sinPrecio ? null : coste ? (valor / coste - 1) * 100 : null, aportes, pendiente, vivo: !!vivo, sinPrecio };
+  return { pos, inst, p, hist, uds, estimada, precio, varDia, diaViejo, fecha: fechaPrecio, valor, dia, coste, pl: sinPrecio ? 0 : valor - coste, plPct: sinPrecio ? null : coste ? (valor / coste - 1) * 100 : null, aportes, pendiente, vivo: !!vivo, sinPrecio };
 }
 
 function calcular() {

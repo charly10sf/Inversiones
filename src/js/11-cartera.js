@@ -190,7 +190,7 @@ function htmlBloqueCar(k, M) {
     if (k === 'movidas') return htmlMovidas();
     if (k === 'noticias') {
       const n = pasadoAg('mio');
-      return n.html ? `<section aria-labelledby="hNotC"><div class="sec-cab"><h2 id="hNotC">Noticias de lo tuyo</h2><div class="der"><a class="enlace acento" href="#agenda">Ver más</a></div></div><div class="agp-lista">${n.html}</div></section>` : '';
+      return n.html ? `<section aria-labelledby="hNotC"><div class="sec-cab"><h2 id="hNotC">Noticias de lo tuyo</h2><div class="der"><a class="enlace acento" href="#noticias">Todas las noticias</a></div></div><div class="agp-lista">${n.html}</div></section>` : '';
     }
     if (k === 'futuro') {
       const pr = proyeccion(M), fila = (m, t) => (pr.p50[m] != null ? `<div class="car-fut-f"><span class="k">${t}</span><b>${euCorto(pr.p50[m])}</b><small>entre ${euCorto(pr.p10[m])} y ${euCorto(pr.p90[m])}</small></div>` : '');

@@ -26,7 +26,7 @@
     "23-tu.css",
     "24-navegacion.css",
     "25-cristal.css",
-    "26-dorado.css", "27-revision-083b.css"
+    "26-dorado.css", "27-revision-083b.css", "29-noticias.css"
   ],
   "js": [
     "01-base.js",
@@ -42,6 +42,7 @@
     "10-pintado.js",
     "11-cartera.js",
     "12-calendario.js",
+    "12b-noticias.js",
     "13-expertos.js",
     "13b-fichas.js",
     "14-mercados.js",
@@ -147,6 +148,9 @@
     },
     "avanzado": [
       "trozos/avanzado.js"
+    ],
+    "noticias": [
+      "trozos/noticias.js"
     ]
   }
 }

@@ -37,6 +37,7 @@ const ICO_BUSCA = SVG('<circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.6 15.6l
    pestaña del trozo «avanzado»; h si tiene dirección propia), av si solo sale en el avanzado y kw para el buscador */
 const PAGINAS = [
   { id: 'hoy', t: 'Hoy', en: 'Today', s: 'hoy', v: 'cartera', kw: 'inicio patrimonio grafica' },
+  { id: 'noticias', t: 'Noticias', en: 'News', s: 'hoy', g: 'cartera', v: 'noticias', kw: 'titulares prensa bolsa ibex wall street investing ultima hora' },
   { id: 'agenda', t: 'Calendario', en: 'Calendar', s: 'hoy', g: 'cartera', v: 'agenda', kw: 'fechas resultados dividendos aportaciones' },
   { id: 'posiciones', t: 'Posiciones', en: 'Holdings', s: 'cartera', g: 'cartera', v: 'posiciones', kw: 'cartera fondos acciones' },
   { id: 'mov', t: 'Movimientos', en: 'Transactions', s: 'cartera', g: 'cartera', v: 'av', p: 'mov', kw: 'compras ventas operaciones' },
@@ -142,7 +143,9 @@ function apuntarReciente(id) {
 }
 const itemFijado = (id) => PAG[id] || ACCIONES_APP.find((a) => a.id === id);
 // cada página con su icono si lo tiene; si no, el de su sección
-const ICO_PAG = { agenda: () => ICONOS_PL.calendario, tu: () => ICONOS_PL.tu, objetivos: () => ICONOS_PL.objetivos, ruta: () => ICONOS_PL.paso, mov: () => ICONOS_PL.ordenar,
+// Noticias: un periódico doblado, del mismo trazo que la lupa
+const ICO_NOT = SVG('<path d="M4 5.5h12.5v13.5H6.2A2.2 2.2 0 0 1 4 16.8z"/><path d="M16.5 8.5H20v8.3a2.2 2.2 0 0 1-2.2 2.2"/><path d="M7 9h6.5M7 12.2h6.5M7 15.4h4"/>', 1.9);
+const ICO_PAG = { noticias: () => ICO_NOT, agenda: () => ICONOS_PL.calendario, tu: () => ICONOS_PL.tu, objetivos: () => ICONOS_PL.objetivos, ruta: () => ICONOS_PL.paso, mov: () => ICONOS_PL.ordenar,
   div: () => ICONOS.dividendo, costes: () => ICONOS.calc, analisis: () => ICONOS_PL.asistente, renta: () => ICONOS.resultados, grafico: () => ICONOS_PL.analisis };
 const icoItem = (x) => (x.a ? x.ico() : (ICO_PAG[x.id] || ICO_SEC[x.s])());
 // un enlace corto (el chip de los fijados en Hoy y en Más)
