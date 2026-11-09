@@ -7,6 +7,12 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.3d', f: '2026-11-09', h: '20:45', t: 'Noticias', cosas: [
+    { d: 'mercados', ir: { v: 'noticias' }, t: 'Noticias, más completas', x: 'Una página nueva en Hoy, entre Hoy y Calendario: cómo van las bolsas, lo importante del día según la IA, los titulares por temas (España, EEUU, cripto, lo tuyo…) y por horas, con buscador, y lo que ha pasado en cada empresa con su tono. Toca un titular y la IA te lo resume dentro.' },
+  ], arreglos: [
+    'Buenos días dice de qué día es cada cifra: si la bolsa aún no ha abierto, lo de tu cartera es del último cierre, y lo de tus fondos, con el día de su último valor, va aparte.',
+    'Fuera de los titulares las noticias viejas que Google vuelve a fechar hoy y las páginas de cotización que no son noticias.',
+  ] },
   { v: '0.8.3c', f: '2026-11-08', h: '18:30', t: 'La IA, más firme', arreglos: [
     'Si se corta la conexión con la IA, lo vuelve a intentar sola, y al volver a preguntar lo intenta de verdad en vez de esperar unos minutos.',
     'En el ordenador, la barra de la izquierda se ensancha arrastrando su borde, y la IA con ella. Con doble clic en el borde vuelve a como estaba.',
