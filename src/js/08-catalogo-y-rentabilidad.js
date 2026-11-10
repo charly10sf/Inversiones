@@ -160,6 +160,8 @@ function calcularPos(pos, hoy) {
   const inst = instDe(pos.instrumento);
   const p = P[pos.instrumento] || pRadar(inst) || null;
   if (p && p.radar && !(S.histRadar && S.histRadar[pos.instrumento])) pedirHistRadar();
+  // lo que solo tiene cierres semanales (o nada): el histórico diario largo, al Worker
+  pedirHistLargo(pos.instrumento);
   const hist = histDe(pos.instrumento);
   let precio = p ? p.precio : null;
   let prev = p ? p.cierre_anterior : null;

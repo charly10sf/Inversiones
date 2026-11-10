@@ -127,3 +127,4 @@ a.kpi:hover .v { color: var(--primario); }
 
 /* la ficha en 1D sin precios por horas (un fondo, o sin red): el aviso ocupa el sitio de la gráfica */
 .vacio.sin-horas { min-height: 240px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px 24px; }
+.vacio.sin-horas .btn { margin-top: 12px; }
