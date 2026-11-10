@@ -60,6 +60,43 @@
 /* 7 · la gráfica del año */
 .ta-graf { position: relative; margin: 8px 0 0; }
 
+/* 0.8.6 · sesión 9: la cabecera con «Ocultar cantidades» y «Compartir sin cantidades» */
+.ta-cab { display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+.ta-cab-b { display: flex; gap: 10px; flex-wrap: wrap; }
+.ta-cab-b .btn svg { width: 16px; height: 16px; margin-right: 7px; vertical-align: -3px; }
+.ta-hder { display: inline-flex; align-items: center; gap: 2px; }
+.ta-ojo { width: 44px; height: 44px; margin: -12px 0; color: var(--texto-2); }
+.ta-ojo svg { width: 19px; height: 19px; }
+.ta-comp-m { display: none; }
+/* compartir: la vista previa a la izquierda y lo que sale a la derecha (en el móvil, una debajo de otra) */
+.ta-comp-w { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 28px; align-items: center; padding: 4px 2px 8px; }
+.ta-comp-img { display: block; width: 252px; height: auto; aspect-ratio: 9 / 16; border-radius: 18px; border: 1px solid var(--borde); box-shadow: var(--sombra-tema, none); }
+.ta-comp-op { max-width: 420px; }
+.ta-chk { display: grid; gap: 4px; margin: 0 0 12px; }
+.ta-chk-f { display: flex; align-items: center; gap: 10px; min-height: 36px; font-size: 14.5px; color: var(--texto); cursor: pointer; }
+.ta-chk-f input { width: 18px; height: 18px; accent-color: var(--primario); margin: 0; }
+.ta-chk-f:has(input:disabled) { color: var(--tenue); cursor: default; }
+.ta-comp-op .fila-btns { justify-content: flex-start; margin-top: 14px; }
+/* la entrada desde Hoy (diciembre y enero): sobria, sin confeti */
+.ta-entrada { position: relative; display: flex; align-items: center; margin: 0 0 16px; border: 1px solid var(--borde); border-radius: var(--r-l, 16px); background: var(--superficie-2); }
+.ta-entrada-a { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px 16px; align-items: center; padding: 13px 8px 13px 16px; color: var(--texto); text-decoration: none; min-height: 44px; }
+.ta-entrada-a small { grid-column: 1; font: 600 11px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--oro-texto); }
+.ta-entrada-a b { grid-column: 1; font: 500 14.5px/1.4 var(--ui); color: var(--texto); }
+.ta-entrada-ir { grid-column: 2; grid-row: 1 / span 2; font: 600 14px/1 var(--ui); color: var(--oro-texto); white-space: nowrap; }
+.ta-entrada-x { flex: none; width: 44px; height: 44px; margin-right: 4px; color: var(--tenue); }
+.ta-entrada-x svg { width: 16px; height: 16px; }
+/* «Lo que más se mueve» en Hoy: solo lo tuyo, con el porqué, sin botones */
+.mvt-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; }
+.mvt { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 14px; padding: 12px 0; border-top: 1px solid var(--sep); }
+.mvt:first-child { border-top: 0; }
+.mvt-n { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.mvt-n b { font: 600 14.5px/1.2 var(--ui); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.mvt-v { text-align: right; font: 600 15px/1.1 var(--ui); font-variant-numeric: tabular-nums; }
+.mvt-v small { display: block; margin-top: 3px; font: 500 12px/1 var(--ui); color: var(--tenue); }
+.mvt-p { grid-column: 1 / -1; margin: 2px 0 0; font-size: 13.5px; line-height: 1.45; color: var(--texto-2); }
+.mvt-de { color: var(--tenue); font-size: 12px; }
+.mvt-nota { margin-top: 8px; }
+
 /* el móvil: una tarjeta por pantalla, con las barras arriba y «Anterior / Siguiente» */
 @media (max-width: 759px) {
   .ta-portada { grid-template-columns: 1fr; gap: 16px; }
@@ -85,5 +122,15 @@
   .ta-hpie { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .ta-hpie .btn { min-height: 46px; justify-content: center; }
   body:has(#panelAv .ta-pag) { overflow: hidden; }
+  .ta-pag .ta-comp-m { display: grid; gap: 10px; margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--sep); }
+  .ta-comp-m p { margin: 0; font-size: 13.5px; color: var(--texto-2); }
+  .ta-comp-m .btn { min-height: 46px; justify-content: center; }
+  .ta-comp-w { grid-template-columns: 1fr; justify-items: center; gap: 16px; }
+  .ta-comp-img { width: min(200px, 52vw); }
+  .ta-comp-op { max-width: none; width: 100%; }
+  .ta-chk { grid-template-columns: 1fr 1fr; gap: 0 10px; }
+  .ta-chk-f { font-size: 13.5px; }
+  .ta-entrada-a { grid-template-columns: 1fr; }
+  .ta-entrada-ir { grid-column: 1; grid-row: auto; margin-top: 4px; }
 }
 @media (max-width: 400px) { .ta-meses small { font-size: 8.5px; letter-spacing: 0; } }

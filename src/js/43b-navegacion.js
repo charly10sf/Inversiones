@@ -106,6 +106,18 @@ function htmlTuAnoCab() {
   return `<div class="ts-grupo ta-grupo"><a class="vista-volver" href="#hoy">${L('‹ Hoy', '‹ Today')}</a><h1 class="ts-tit">${L('Tu año en Toisón', 'Your year in Toisón')}</h1><p class="ts-sub">${P.mesFin === 1 ? L(`${P.anio}, enero.`, `${P.anio}, January.`) : L(`${P.anio}, de enero a ${mes}.`, `${P.anio}, January to ${mes}.`)} ${L('Lo que hiciste con tu plan.', 'What you did with your plan.')}</p></div>`;
 }
 
+/* 0.8.6 · la entrada desde Hoy: solo en diciembre y en enero, una tarjeta sobria que lleva a Tu año (sin confeti ni
+   enhorabuenas). El resto del año, Tu año no sale en Hoy, aunque sigue en las listas (Hoy del ordenador, Más y el
+   buscador). Se puede quitar: vuelve el año siguiente */
+const entradaTuAnoToca = (hoy = hoyIso()) => { const m = +hoy.slice(5, 7); return m === 12 || m === 1; };
+function htmlEntradaTuAno(M, hoy = hoyIso()) {
+  if (!entradaTuAnoToca(hoy) || !M || !M.filas.length || S.demo) return '';
+  const P = periodoTuAno(hoy);
+  if (LS.get('inv-tuano-entrada-x', 0) === P.anio) return '';
+  return `<div class="ta-entrada" role="note"><a class="ta-entrada-a" href="#av-tuano"><small>${L(`Tu año ${P.anio} en Toisón`, `Your ${P.anio} in Toisón`)}</small><b>${L('Siete tarjetas con lo que hiciste con tu plan, de enero a noviembre.', 'Seven cards with what you did with your plan, January to November.')}</b><span class="ta-entrada-ir">${L('Verlo', 'See it')} ›</span></a>
+    <button type="button" class="ib ta-entrada-x" data-accion="tuano-entrada-x" aria-label="${L('Quitar de Hoy', 'Remove from Today')}">${ICONOS.cerrar}</button></div>`;
+}
+
 /* ---------- el móvil: Análisis por dentro ---------- */
 const PEST_ANA = [
   { k: 'posiciones', t: 'Posiciones', en: 'Holdings', ap: ['posiciones', 'mov', 'pnl'] },

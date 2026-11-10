@@ -208,7 +208,7 @@ const QUE_ES = {
   mapa: ['Cada cuadro es una posición: más grande cuanto más vale, verde si sube y rojo si baja.', 'Each box is a holding: bigger the more it is worth, green if it rises and red if it falls.'],
   informe: ['Un resumen de las noticias del día de lo que tienes, escrito por la IA.', 'A summary of today\'s news about what you own, written by the AI.'],
   noticias: ['Los últimos titulares de las empresas y fondos que tienes.', 'The latest headlines about the companies and funds you own.'],
-  movidas: ['Las empresas que más suben y bajan hoy en las bolsas.', 'The companies rising and falling most today.'],
+  movidas: ['Lo que más se mueve hoy de lo que tienes, y por qué. Un día no dice nada de tu plan.', 'What moves most today among what you own, and why. One day says nothing about your plan.'],
   futuro: ['Lo que podrías tener si sigues aportando y los mercados se portan como de media. No es una promesa.', 'What you could have if you keep investing and markets behave as on average. Not a promise.'],
   metas: ['Si llegas a cada meta que te has puesto con lo que aportas.', 'Whether you reach each goal you set with what you put in.'],
   renta: ['Lo que llevas ganado este año con lo que has vendido y lo que pagarías en la renta.', 'What you have made this year from sales and what you would pay in tax.'],

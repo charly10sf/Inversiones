@@ -575,6 +575,21 @@ function resumenDelDia(seguir = () => {}, forzar = false) {
    precios de widget.json, que publica la Action. Nunca sale de aquí la contraseña.
    ===================================================================== */
 let widgetT = 0, widgetFirma = '';
+/* 0.8.6 · modo discreto: la foto del widget en base 100. Todo lo que es dinero (total, hoy, invertido, lo fijo, el valor y
+   las unidades de cada posición y la gráfica) se multiplica por 100 / total: el widget recalcula con los precios igual
+   que siempre y le salen los mismos porcentajes, pero en el teléfono no queda guardado cuánto tienes */
+function fotoDiscreta(foto) {
+  const k = foto.total > 0 ? 100 / foto.total : 0, r = (v) => Math.round(v * k * 1e6) / 1e6;
+  return { ...foto, oculto: true, base100: true, total: r(foto.total), dia: r(foto.dia), invertido: r(foto.invertido), fijo: r(foto.fijo),
+    toca: String(foto.toca || '').replace(/[−-]?\d[\d.,]*\s?(mil\s)?€|€\s?\d[\d.,]*/g, '••••'),
+    pos: foto.pos.map((x) => ({ ...x, valor: r(x.valor), dia: r(x.dia), uds: x.uds ? r(x.uds) : undefined })), serie: foto.serie.map(r) };
+}
+// encender o apagar el modo discreto: en toda la app, recordado en este dispositivo y, en el móvil, también en el widget
+function ponerDiscreto(on) {
+  S.oculto = !!on; LS.set('inv-oculto', S.oculto);
+  pintar();
+  try { enviarWidget(true); } catch (e) {}
+}
 function enviarWidget(forzar) {
   const app = window.InversionesApp;
   if (!app || !S.cartera || !S.M || S.demo || S.borrandoCuenta) return;
@@ -597,7 +612,9 @@ function enviarWidget(forzar) {
       serie = se.filter((x, k) => k % paso === 0 || k === se.length - 1).map((x) => Math.round(x.v + extra));
     }
   } catch (e) {}
-  const foto = { v: 2, total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos, serie, rango: '1 mes' };
+  let foto = { v: 2, total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos, serie, rango: '1 mes' };
+  // 0.8.6 · modo discreto: al teléfono no llega ningún euro, solo la cartera en base 100 (mismos porcentajes y la misma gráfica)
+  if (S.oculto) foto = fotoDiscreta(foto);
   // los avisos (si están activados): las reglas que la app revisa sola cada media hora
   try { const c = avisosCfg(); if (c.on && appAvisos()) foto.avisos = { ...c, ...reglasAvisos(M) }; } catch (e) {}
   const firma = JSON.stringify({ ...foto, total: Math.round(foto.total), dia: Math.round(foto.dia) });
@@ -623,7 +640,7 @@ function pintar() {
   $('#estado').outerHTML = B('estado', 'estado').replace('<span ', '<span id="estado" ');
   pintarGtaTop();
   cancelAnimationFrame(encajarT); encajarT = requestAnimationFrame(encajarCabecera);
-  for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = S.oculto ? ICONOS.ojoNo : ICONOS.ojo; bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
+  for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = (S.oculto ? ICONOS.ojoNo : ICONOS.ojo) + (bo.dataset.txt != null ? (S.oculto ? L('Mostrar cantidades', 'Show amounts') : L('Ocultar cantidades', 'Hide amounts')) : ''); bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
   pintarTicker(M);
   const scroll = window.scrollY;
   const html = { av: () => htmlPanelAv(), cartera: vistaCartera, posiciones: vistaPosiciones, tu: vistaTu, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;

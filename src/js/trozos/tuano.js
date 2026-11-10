@@ -359,17 +359,20 @@ const TA_TARJ = {
 function pavTuAno(M) {
   const T = tuAnoCartera(M); S.taDatos = T;
   const i = Math.max(0, Math.min(TA_ORDEN.length - 1, S.taI || 0));
+  const ojo = `<button type="button" class="btn" data-accion="ocultar" data-txt aria-pressed="${!!S.oculto}">${S.oculto ? ICONOS.ojoNo : ICONOS.ojo}${S.oculto ? L('Mostrar cantidades', 'Show amounts') : L('Ocultar cantidades', 'Hide amounts')}</button>`;
+  const comp = `<button type="button" class="btn pri" data-ta-comp>${L('Compartir sin cantidades', 'Share without amounts')}</button>`;
   const tarj = TA_ORDEN.map((k, j) => {
     const [n, t, en, c, f] = TA_TARJ[k];
     let cuerpo; try { cuerpo = f(T); } catch (e) { console.warn(e); cuerpo = taNota(L('No se ha podido calcular esta tarjeta.', 'This card could not be worked out.')); }
+    const fin = j === TA_ORDEN.length - 1 ? `<div class="ta-comp-m"><p>${L('Tu año, en una imagen para compartir: el estilo y cuatro datos, sin euros.', 'Your year as an image to share: your style and four facts, no euros.')}</p>${comp}</div>` : '';
     return `<section class="pav-t pab pav-${c} ta-t${j === i ? ' ta-aqui' : ''}" data-ta="${k}" aria-labelledby="ta-h-${k}"><h2 class="pab-cab" id="ta-h-${k}"><span class="ta-n">${n} / ${TA_ORDEN.length}</span><span>${L(t, en)}</span></h2>${cuerpo}
-      <details class="ta-como"><summary>${L('Cómo se calcula', 'How it is worked out')}</summary><p>${TA_COMO[k]()}</p></details></section>`;
+      <details class="ta-como"><summary>${L('Cómo se calcula', 'How it is worked out')}</summary><p>${TA_COMO[k]()}</p></details>${fin}</section>`;
   }).join('');
-  const cab = `<section class="pav-t pav-c12 ta-cab"><p>${L('Siete tarjetas con lo que hiciste este año. Son tus datos, sin comparar con nadie, y no te dicen qué hacer.', 'Seven cards with what you did this year. Your data, compared with no one, and they do not tell you what to do.')}</p></section>`;
+  const cab = `<section class="pav-t pav-c12 ta-cab"><p>${L('Siete tarjetas con lo que hiciste este año. Son tus datos, sin comparar con nadie, y no te dicen qué hacer.', 'Seven cards with what you did this year. Your data, compared with no one, and they do not tell you what to do.')}</p><div class="ta-cab-b">${ojo}${comp}</div></section>`;
   // en el móvil, una tarjeta por pantalla: las barras de arriba, la cabecera y «Anterior / Siguiente»
   const barra = `<div class="ta-hbarra" aria-hidden="true">${TA_ORDEN.map((_, j) => `<i class="${j < i ? 'si' : j === i ? 'aqui' : ''}"></i>`).join('')}</div>`;
-  const hcab = `<div class="ta-hcab"><span>${L('Tu año en Toisón', 'Your year in Toisón')} · <b class="ta-hnum">${i + 1}</b> ${L('de', 'of')} ${TA_ORDEN.length}</span><a href="#hoy" class="ta-cerrar" aria-label="${L('Cerrar Tu año', 'Close Your year')}">✕</a></div>`;
-  const pie = `<div class="ta-hpie"><button type="button" class="btn" data-ta-ir="-1"${i === 0 ? ' disabled' : ''}>${L('‹ Anterior', '‹ Previous')}</button><button type="button" class="btn pri" data-ta-ir="1">${i === TA_ORDEN.length - 1 ? L('Volver a Hoy', 'Back to Today') : L('Siguiente ›', 'Next ›')}</button></div>`;
+  const hcab = `<div class="ta-hcab"><span>${L('Tu año en Toisón', 'Your year in Toisón')} · <b class="ta-hnum">${i + 1}</b> ${L('de', 'of')} ${TA_ORDEN.length}</span><span class="ta-hder"><button type="button" class="ib ta-ojo" data-accion="ocultar" aria-pressed="${!!S.oculto}" title="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}" aria-label="${S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts')}">${S.oculto ? ICONOS.ojoNo : ICONOS.ojo}</button><a href="#hoy" class="ta-cerrar" aria-label="${L('Cerrar Tu año', 'Close Your year')}">✕</a></span></div>`;
+  const pie = `<div class="ta-hpie"><button type="button" class="btn" data-ta-ir="-1"${i === 0 ? ' disabled' : ''}>${L('‹ Anterior', '‹ Previous')}</button><button type="button" class="btn${i === TA_ORDEN.length - 1 ? '' : ' pri'}" data-ta-ir="1">${i === TA_ORDEN.length - 1 ? L('Volver a Hoy', 'Back to Today') : L('Siguiente ›', 'Next ›')}</button></div>`;
   return `<div class="ta-pag" data-i="${i}">${cab}${barra}${hcab}${tarj}${pie}</div>`;
 }
 
@@ -392,12 +395,13 @@ function taIr(n) {
   $$('.ta-hbarra i', pag).forEach((b, j) => { b.className = j < i ? 'si' : j === i ? 'aqui' : ''; });
   const num = $('.ta-hnum', pag); if (num) num.textContent = i + 1;
   const [a, s] = $$('[data-ta-ir]', pag);
-  a.disabled = i === 0; s.textContent = i === TA_ORDEN.length - 1 ? L('Volver a Hoy', 'Back to Today') : L('Siguiente ›', 'Next ›');
+  a.disabled = i === 0; s.textContent = i === TA_ORDEN.length - 1 ? L('Volver a Hoy', 'Back to Today') : L('Siguiente ›', 'Next ›'); s.classList.toggle('pri', i < TA_ORDEN.length - 1);
   const t = $$('.ta-t', pag)[i]; if (t) { t.scrollTop = 0; const h = t.querySelector('h2'); if (h && matchMedia('(max-width: 759px)').matches) { h.tabIndex = -1; h.focus({ preventScroll: true }); } }
   if (TA_ORDEN[i] === 'meses') dibujarTuAno();
 }
 document.addEventListener('click', (e) => {
   if (e.target.closest && e.target.closest('#panelAv .ta-cerrar')) { S.taI = 0; return; }
+  if (e.target.closest && e.target.closest('#panelAv [data-ta-comp]')) { abrirCompartirTuAno(); return; }
   const b = e.target.closest && e.target.closest('#panelAv [data-ta-ir]'); if (!b) return;
   taIr(+b.dataset.taIr); vibrar();
 });
@@ -413,3 +417,144 @@ document.addEventListener('touchend', (e) => {
   const t = e.changedTouches[0], dx = t.clientX - taToque.x, dy = t.clientY - taToque.y; taToque = null;
   if (Math.abs(dx) > 60 && Math.abs(dx) > Math.abs(dy) * 1.5 && !e.target.closest('.ta-graf, .chart')) taIr(dx < 0 ? 1 : -1);
 }, { passive: true });
+
+/* ---------- 0.8.6 · compartir Tu año (sesión 9 del plan) ----------
+   Una imagen vertical 9:16 (1.080 × 1.920) hecha aquí, en un canvas: sin servidores, no sale nada de tu dispositivo
+   hasta que tú la mandas. En Mármol o en Marfil, según el tema que tengas. El logo, «Tu año 2026», el estilo y cuatro
+   datos: meses aportando, la edad de tu dinero, dónde más está y meses sin sacar dinero. Sin euros por defecto:
+   «Cantidades en euros» sale siempre apagada al abrir (y no se puede encender con el modo discreto puesto). Lo demás
+   que elijas se recuerda en este dispositivo (no son cantidades). En la app de Android, con su menú de compartir
+   (Puente.compartirImagen); en la web, navigator.share con el archivo y, si no se puede, se descarga. */
+const TA_COMP_K = [['estilo', 'Estilo', 'Style'], ['aport', 'Meses aportando', 'Months putting money in'], ['edad', 'Edad de tu dinero', 'Age of your money'], ['donde', 'Dónde más está', 'Where most of it is'], ['sinSacar', 'Meses sin sacar dinero', 'Months without taking money out'], ['euros', 'Cantidades en euros', 'Amounts in euros']];
+const TA_CORTO = { EEUU: 'EE. UU.', 'Estados Unidos': 'EE. UU.', 'United States': 'US', 'Reino Unido': 'Reino Unido', 'Países Bajos': 'P. Bajos' };
+function taDatosComp(T) {
+  const a = T.apo || {}, E = T.edad || {}, Z = T.sinSacar, pa = (T.paises || []).find((x) => !x.resto);
+  return {
+    anio: T.P.anio,
+    estilo: T.estilo ? L(...TA_ESTILOS[T.estilo.k]) : null,
+    aport: a.den ? L(`${a.si} de ${a.den}`, `${a.si} of ${a.den}`) : null,
+    edad: E.media != null ? (IDIOMA === 'en' ? taDur(E.media) : taDurC(E.media)) : null,
+    donde: pa ? TA_CORTO[pa.k] || pa.k : null,
+    sinSacar: Z ? String(Math.max(0, Z.n || 0)) : null,
+    euros: a.total > 0 ? a.total : null,
+  };
+}
+// lo que sale en la imagen, ya en texto: [valor, rótulo]; los euros solo si se piden y no está el modo discreto
+function taFilasComp(D, sel) {
+  const f = [];
+  if (sel.aport && D.aport) f.push([D.aport, L('meses aportando', 'months putting money in')]);
+  if (sel.edad && D.edad) f.push([D.edad, L('edad de tu dinero', 'age of your money')]);
+  if (sel.donde && D.donde) f.push([D.donde, L('donde más está', 'where most of it is')]);
+  if (sel.sinSacar && D.sinSacar != null) f.push([D.sinSacar, L('meses sin sacar dinero', 'months without taking money out')]);
+  if (sel.euros && D.euros != null && !S.oculto) f.push([eur(D.euros, 0), L(`aportados en ${D.anio}`, `put in during ${D.anio}`)]);
+  return f;
+}
+// los colores, de los tokens del tema (src/css/00-temas.css): se resuelven en un elemento suelto con ese data-tema
+function taPaleta(tema) {
+  const d = document.createElement('div'); d.dataset.tema = tema; d.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none';
+  document.body.appendChild(d);
+  const col = (k) => { d.style.color = `var(${k})`; return getComputedStyle(d).color; };
+  const P = { fondo: col('--fondo'), sup: col('--superficie'), tx: col('--texto'), tx2: col('--texto-2'), tenue: col('--tenue'), oro: col('--oro-texto'), o: col('--sim-o'), t: col('--sim-t'), raya: col('--borde'),
+    tit: getComputedStyle(d).getPropertyValue('--titulo').trim() || 'Inter', titP: getComputedStyle(d).getPropertyValue('--titulo-peso').trim() || '500' };
+  d.remove();
+  return P;
+}
+let taTextura = null;
+function taCargarTextura() {
+  if (taTextura) return taTextura;
+  taTextura = new Promise((ok) => { const im = new Image(); im.onload = () => ok(im); im.onerror = () => ok(null); const u = (document.head.innerHTML.match(/[^"'(\s]*marmol-g(-(?!pc)[\w-]+)?\.webp/) || [])[0]; im.src = u || 'marmol-g.webp'; setTimeout(() => ok(null), 2000); });
+  return taTextura;
+}
+function taLetras() {
+  if (!document.fonts || !document.fonts.load) return Promise.resolve();
+  return Promise.race([Promise.all(['600 80px Inter', '500 140px Inter', '500 140px "Ibarra Real Nova"'].map((f) => document.fonts.load(f))).catch(() => {}), new Promise((ok) => setTimeout(ok, 2000))]);
+}
+function pintarCompTuAno(cv, D, sel, tema = temaActual(), textura = null) {
+  const W = 1080, H = 1920, X = 96, c = cv.getContext('2d'), P = taPaleta(tema === 'marfil' ? 'marfil' : 'marmol');
+  cv.width = W; cv.height = H;
+  const txts = [];
+  const texto = (t, x, y, font, color, al = 'left', esp = 0) => { c.font = font; c.fillStyle = color; c.textAlign = al; if ('letterSpacing' in c) c.letterSpacing = `${esp}px`; c.fillText(t, x, y); if ('letterSpacing' in c) c.letterSpacing = '0px'; txts.push(t); };
+  // el fondo: la piedra (la textura de Mármol, oscurecida) o la crema de Marfil, con la luz de oro de arriba
+  if (tema === 'marfil') { const g = c.createLinearGradient(0, 0, 0, H); g.addColorStop(0, P.sup); g.addColorStop(1, P.fondo); c.fillStyle = g; c.fillRect(0, 0, W, H); }
+  else { c.fillStyle = P.fondo; c.fillRect(0, 0, W, H); if (textura) { const k = Math.max(W / textura.width, H / textura.height); c.globalAlpha = 0.55; c.drawImage(textura, (W - textura.width * k) / 2, (H - textura.height * k) / 2, textura.width * k, textura.height * k); c.globalAlpha = 0.45; c.fillStyle = P.fondo; c.fillRect(0, 0, W, H); c.globalAlpha = 1; } }
+  const rg = c.createRadialGradient(W * 0.2, 0, 0, W * 0.2, 0, H * 0.75); rg.addColorStop(0, P.oro); rg.addColorStop(1, 'transparent');
+  c.globalAlpha = tema === 'marfil' ? 0.12 : 0.17; c.fillStyle = rg; c.fillRect(0, 0, W, H); c.globalAlpha = 1;
+  // arriba: el símbolo, TOISÓN y «Tu año 2026»
+  if (typeof TS_O_D !== 'undefined') {
+    c.save(); c.translate(X + 36, 176); c.scale(0.44, 0.44);
+    c.fillStyle = P.o; c.fill(new Path2D(TS_O_D)); c.fillStyle = P.t; c.fill(new Path2D(TS_T_D)); c.restore();
+  }
+  c.textBaseline = 'middle';
+  texto('TOISÓN', X + 92, 176, '650 34px Inter, sans-serif', P.tx, 'left', 7);
+  texto(L(`Tu año ${D.anio}`, `Your ${D.anio}`), W - X, 176, '500 34px Inter, sans-serif', P.tx2, 'right');
+  c.textBaseline = 'alphabetic';
+  // el estilo, grande, y los datos debajo: todo junto, centrado entre la cabecera y el pie
+  const filas = taFilasComp(D, sel), paso = filas.length > 4 ? 172 : 196, conEst = sel.estilo && D.estilo;
+  const tam = conEst && D.estilo.length > 12 ? 118 : 150, alto = (conEst ? tam + 170 : 0) + filas.length * paso;
+  let y = Math.max(420, Math.round(300 + (1640 - 300 - alto) / 2) + 40);
+  if (conEst) {
+    texto(L('ESTILO', 'STYLE'), X, y, '600 30px Inter, sans-serif', P.tenue, 'left', 4);
+    texto(D.estilo, X, y + tam + 10, `${P.titP} ${tam}px ${P.tit}`, P.tx);
+    y += tam + 170;
+  } else y += 70;
+  // los datos, uno debajo de otro
+  for (const [v, r] of filas) {
+    c.globalAlpha = 0.7; c.fillStyle = P.raya; c.fillRect(X, y - 70, W - 2 * X, 2); c.globalAlpha = 1;
+    texto(v, X, y + 20, '600 74px Inter, sans-serif', P.tx);
+    texto(r.toUpperCase(), X, y + 74, '600 27px Inter, sans-serif', P.tenue, 'left', 3);
+    y += paso;
+  }
+  // abajo: sin cantidades (o con ellas, si las pediste) y la dirección
+  const conEur = filas.some(([v]) => /€/.test(v));
+  texto(`${conEur ? L('Con cantidades', 'With amounts') : L('Sin cantidades', 'No amounts')} · toison.es`, X, H - 110, '500 30px Inter, sans-serif', P.tenue);
+  c.fillStyle = P.oro; c.fillRect(X, H - 170, 64, 4);
+  cv.dataset.txt = txts.join(' | ');
+  return txts;
+}
+async function compartirCanvasTuAno(cv, anio) {
+  const url = CFG.dev ? CFG.pages : location.origin + location.pathname;
+  const texto = L(`Mi año ${anio} en Toisón: ${url}`, `My ${anio} in Toisón: ${url}`);
+  const app = window.InversionesApp;
+  if (app && typeof app.compartirImagen === 'function') { app.compartirImagen(cv.toDataURL('image/png').split(',')[1], texto); return 'app'; }
+  if (app) { toast(L('Para compartir la imagen, actualiza la app de Android (Ajustes > App de Android) o abre Toisón en Chrome.', 'To share the image, update the Android app (Settings > Android app) or open Toisón in Chrome.'), 6000); return 'app-vieja'; }
+  const blob = await new Promise((ok) => cv.toBlob(ok, 'image/png'));
+  if (!blob) return 'nada';
+  const nombre = L(`mi-ano-${anio}-en-toison.png`, `my-${anio}-in-toison.png`), file = new File([blob], nombre, { type: 'image/png' });
+  if (navigator.canShare && navigator.share && navigator.canShare({ files: [file] })) {
+    try { await navigator.share({ files: [file], text: texto }); return 'compartida'; } catch (e) { if (e && e.name === 'AbortError') return 'cancelada'; }
+  }
+  const u = URL.createObjectURL(blob), a = document.createElement('a');
+  a.href = u; a.download = nombre; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 5000);
+  toast(L('Imagen guardada: la tienes en Descargas', 'Image saved: it’s in your Downloads'));
+  return 'descargada';
+}
+function abrirCompartirTuAno() {
+  const T = S.taDatos || (S.M && tuAnoCartera(S.M)); if (!T) return;
+  const D = taDatosComp(T), O = !!S.oculto;
+  const guard = LS.get('inv-tuano-comp', {});
+  const sel = {}; for (const [k] of TA_COMP_K) sel[k] = k === 'euros' ? false : guard[k] !== false;
+  const hay = (k) => (k === 'euros' ? D.euros != null && !O : D[k] != null);
+  const h = hoja(L('Compartir sin cantidades', 'Share without amounts'), `<div class="ta-comp-w">
+    <canvas class="ta-comp-img" width="1080" height="1920" role="img" aria-label="${L('Vista previa de la imagen', 'Image preview')}"></canvas>
+    <div class="ta-comp-op"><p class="ta-texto">${L('Lo que sale en la imagen. Las cantidades en euros no salen nunca por defecto.', 'What goes in the image. Amounts in euros are never in by default.')}</p>
+      <div class="ta-chk">${TA_COMP_K.map(([k, es, en]) => `<label class="ta-chk-f"><input type="checkbox" data-comp-k="${k}"${sel[k] && hay(k) ? ' checked' : ''}${hay(k) ? '' : ' disabled'}><span>${L(es, en)}</span></label>`).join('')}</div>
+      <p class="ta-nota">${O ? L('Tienes el modo discreto puesto: la imagen va sin euros.', 'Discreet mode is on: the image has no euros.') : L('Con las cantidades se puede saber cuánto has metido. Sin ellas, solo lo que hiciste.', 'With amounts, people can tell how much you put in. Without them, only what you did.')}</p>
+      <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Cerrar', 'Close')}</button><button type="button" class="btn pri" data-comp-ok>${L('Compartir…', 'Share…')}</button></div></div></div>`, null, true);
+  h.el.classList.add('ta-comp-hoja');
+  const cv = $('canvas', h.el);
+  const leer = () => { for (const i of $$('[data-comp-k]', h.el)) sel[i.dataset.compK] = i.checked && !i.disabled; };
+  let tex = null;
+  const pintar = () => { leer(); pintarCompTuAno(cv, D, sel, temaActual(), tex); };
+  pintar();
+  Promise.all([taLetras(), temaActual() === 'marfil' ? null : taCargarTextura()]).then(([, t]) => { tex = t; if (cv.isConnected) pintar(); });
+  h.el.addEventListener('change', (e) => {
+    if (!e.target.matches('[data-comp-k]')) return;
+    pintar();
+    const g = { ...LS.get('inv-tuano-comp', {}) }; for (const i of $$('[data-comp-k]:not(:disabled)', h.el)) if (i.dataset.compK !== 'euros') g[i.dataset.compK] = i.checked; LS.set('inv-tuano-comp', g);
+  });
+  h.el.addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-comp-ok]'); if (!b || b.disabled) return;
+    b.disabled = true; try { pintar(); await compartirCanvasTuAno(cv, D.anio); } finally { b.disabled = false; }
+  });
+  return h;
+}

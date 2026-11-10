@@ -39,7 +39,8 @@ document.addEventListener('click', (e) => {
   else if (d.pos) abrirFicha(d.pos);
   else if (d.accion) {
     const a = d.accion;
-    if (a === 'ocultar') { S.oculto = !S.oculto; LS.set('inv-oculto', S.oculto); pintar(); }
+    if (a === 'ocultar') ponerDiscreto(!S.oculto);
+    else if (a === 'tuano-entrada-x') { LS.set('inv-tuano-entrada-x', periodoTuAno().anio); const e = $('.ta-entrada'); if (e) e.remove(); }
     else if (a === 'comparar') { S.comparar = !S.comparar; LS.set('inv-comparar', S.comparar); pintar(); }
     else if (a === 'inicio-inv') preguntarInicio(() => pintar());
     else if (a === 'ver-div12') { const x = $('#hDiv12'); if (x) x.scrollIntoView({ behavior: 'smooth', block: 'start' }); }

@@ -11,6 +11,8 @@ function niceTicks(min, max, n = 4) {
 /* series: [{datos:[{d,v}], color, disc, nombre}] — la primera manda en el eje X y en el color de relleno */
 function grafLinea(cont, series, opt = {}) {
   cont.innerHTML = '';
+  // 0.8.6 · modo discreto: una gráfica en euros (su fmt ya sale con «••••») va también sin cifras en el eje
+  if (opt.oculto == null && S.oculto && typeof opt.fmt === 'function') { try { if (/•/.test(String(opt.fmt(1234)))) opt = { ...opt, oculto: true }; } catch (e) {} }
   if (Array.isArray(series) && series.length && series[0].d) series = [{ datos: series }];
   const base = series[0] && series[0].datos;
   if (!base || base.length < 2) { cont.innerHTML = '<div class="vacio">Faltan precios para dibujarlo.</div>'; return; }
