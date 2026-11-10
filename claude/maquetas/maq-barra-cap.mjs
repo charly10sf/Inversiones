@@ -35,7 +35,7 @@ for (const pg of paginas.split(',')) {
     await quitarCapas(page);
     await page.evaluate(() => { scrollTo(0, 0); pintarK2(); });
     if (!(await page.evaluate(() => typeof montarBarra === 'function'))) await page.addScriptTag({ content: VJS });
-    const r = await page.evaluate(([v, ac]) => { const x = montarBarra(v); document.body.classList.remove('mb-ac', 'mb-ac-tinte', 'mb-ac-raya', 'mb-ac-tinta'); if (ac && v !== 'actual') document.body.classList.add('mb-ac', 'mb-ac-' + ac); return x; }, [v, AC]);
+    const r = await page.evaluate(([v, ac]) => { const x = montarBarra(v); document.body.className = document.body.className.replace(/\bmb-ac(-\w+)?\b/g, ''); if (ac && v !== 'actual') document.body.classList.add('mb-ac', 'mb-ac-' + ac); return x; }, [v, AC]);
     await page.mouse.move(w - 40, 500);
     await page.waitForTimeout(700);
     await page.screenshot({ path: `${dir}${v}-${pg}-${tema}-${modo}-${w}${AC ? '-' + AC : ''}.png` });

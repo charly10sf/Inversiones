@@ -115,7 +115,7 @@ textarea { flex: 1 1 380px; min-height: 44px; resize: vertical; padding: 10px 12
   <div class="grupo"><span>Pantalla</span><div class="seg" data-ctl="ancho"><button data-v="1440" aria-pressed="true">1.440</button><button data-v="1280" aria-pressed="false">1.280</button></div></div>
   <div class="grupo"><span>Modo</span><div class="seg" data-ctl="modo"><button data-v="avanzado" aria-pressed="true">Avanzado</button><button data-v="basico" aria-pressed="false">Básico</button></div></div>
   <div class="grupo"><span>Página</span><div class="seg" data-ctl="pg"><button data-v="hoy" aria-pressed="true">Hoy</button><button data-v="rentab" aria-pressed="false">Rentabilidad</button></div></div>
-  <div class="grupo"><span>Acabado</span><div class="seg" data-ctl="ac"><button data-v="tinte" aria-pressed="true">Plano · tinte</button><button data-v="raya" aria-pressed="false">Plano · raya</button><button data-v="tinta" aria-pressed="false">Plano · tinta</button><button data-v="relieve" aria-pressed="false">Relieve (antes)</button></div></div>
+  <div class="grupo"><span>Acabado</span><div class="seg" data-ctl="ac"><button data-v="hibrido" aria-pressed="true">Híbrido</button><button data-v="liquid" aria-pressed="false">Liquid nuevo</button><button data-v="tinte" aria-pressed="false">Plano · tinte</button><button data-v="raya" aria-pressed="false">Plano · raya</button><button data-v="tinta" aria-pressed="false">Plano · tinta</button><button data-v="relieve" aria-pressed="false">Relieve (antes)</button></div></div>
   <div class="der"><span class="cuenta" id="cuenta"></span><a class="btn pri" href="#decidir" style="text-decoration:none">Decidir</a></div>
 </div></header>
 
@@ -141,6 +141,11 @@ textarea { flex: 1 1 380px; min-height: 44px; resize: vertical; padding: 10px 12
       <li><b>Sin cristal en la barra.</b> Fondo opaco un punto más hondo que la página, filos casi invisibles y fuera las líneas que sobraban (debajo de la marca, entre bloques). La barra de arriba, igual.</li>
       <li><b>Rótulos normales.</b> Los grupos en minúscula y gris, sin MAYÚSCULAS ESPACIADAS; el título de la segunda columna, más pequeño.</li>
       <li><b>Movimiento corto.</b> Al pasar el ratón, un fondo suave en 120 ms; nada que rebote.</li>
+    </ul></div>
+    <div class="saco"><h3>Lo nuevo (23:55): el híbrido y un liquid de ahora</h3><ul>
+      <li><b>Híbrido</b> (lo que pediste): el tinte plano y, encima, una pastillita de oro de 3 × 16 px pegada a la izquierda. En las páginas de A, la pastillita va sobre el hilo. Es lo que sale por defecto arriba.</li>
+      <li><b>Liquid nuevo</b>: el cristal de ahora no es el de hace unos años. Lo que lo hacía «3D» era el degradado con sombra oscura por debajo, como un botón abombado. El de ahora es una lente: la barra deja ver el mármol desenfocado, y lo elegido lleva un poco de blanco, un filo de luz de medio píxel y nada de sombra por debajo. Lleva también la pastillita de oro. Es el camino que ha tomado Linear en su app del móvil, con un cristal propio en vez del de Apple.</li>
+      <li>Los dos están sacados para A, B (sus tres estados) y C, en todas las combinaciones de arriba. Raya y tinta sueltas solo se sacaron para A y C.</li>
     </ul></div>
     <p class="nota">Ojo: esto es la barra del ordenador. Las mismas reglas chocan con cosas ya aprobadas del acabado «liquid» (la gota de la barra del móvil, las pastillas como «1A» o «Hacerlo ahora» en metal). Va como pregunta abajo.</p>
   </section>
@@ -222,7 +227,7 @@ textarea { flex: 1 1 380px; min-height: 44px; resize: vertical; padding: 10px 12
     <div class="cab"><small>3 · Lo que tienes que decir</small><h2>Preguntas</h2></div>
     <div>
       <div class="preg" data-q="cual"><b>¿Cuál prefieres?</b><div class="opciones"><button data-v="A">A · Índice</button><button data-v="B">B · Riel que se abre</button><button data-v="C">C · Rótulos</button><button data-v="mezcla">Una mezcla (dímelo en las notas)</button></div></div>
-      <div class="preg" data-q="acabado"><b>¿Qué acabado para lo elegido?</b><span>Se ve arriba en «Acabado». Recomiendo el tinte: es el que menos ruido mete y se lee bien en Mármol y en Marfil.</span><div class="opciones"><button data-v="tinte">Plano · tinte</button><button data-v="raya">Plano · raya</button><button data-v="tinta">Plano · tinta</button><button data-v="relieve">El relieve de antes</button></div></div>
+      <div class="preg" data-q="acabado"><b>¿Qué acabado para lo elegido?</b><span>Se ve arriba en «Acabado». Dijiste que te gusta un híbrido de tinte y raya; el liquid nuevo es lo mismo con cristal.</span><div class="opciones"><button data-v="hibrido">Híbrido</button><button data-v="liquid">Liquid nuevo</button><button data-v="tinte">Plano · tinte</button><button data-v="raya">Plano · raya</button><button data-v="tinta">Plano · tinta</button><button data-v="relieve">El relieve de antes</button></div></div>
       <div class="preg" data-q="resto"><b>¿Llevamos el acabado plano al resto de la app?</b><span>La gota de la barra del móvil, las pastillas elegidas (1A, Avanzado), los botones en metal dorado y el cristal de las barras. Sería una sesión aparte de maqueta, como esta.</span><div class="opciones"><button data-v="todo">Sí, a todo (maqueta antes)</button><button data-v="pc">Solo el ordenador por ahora</button><button data-v="no">No, el resto se queda</button></div></div>
       <div class="preg" data-q="nombres"><b>¿Los nombres, siempre a la vista?</b><span>Lo que hacen casi todas. En B se verían solo al pasar el ratón o con la barra fijada.</span><div class="opciones"><button data-v="siempre">Sí, siempre</button><button data-v="raton">Basta con verlos al pasar el ratón</button><button data-v="elegir">Que lo elija cada uno (fijar o plegar)</button></div></div>
       <div class="preg" data-q="cuando"><b>¿Cuándo entra?</b><span>La 0.8.6 va justa (salida el 16 dic). C cabe en media sesión; A, en unas dos.</span><div class="opciones"><button data-v="086">En la 0.8.6, antes del repaso de la sesión 10</button><button data-v="letra">En una letra aparte, después de la 0.8.6</button><button data-v="10">Con la 1.0</button></div></div>
@@ -255,20 +260,20 @@ document.getElementById('refs').innerHTML = REFS.map((r) => `<article class="ref
   <div class="ref-t"><h3>${r.t}<em>${r.d}</em></h3><dl><dt>Nombres</dt><dd>${r.n}</dd><dt>Plegable</dt><dd>${r.p}</dd><dt>Al pasar</dt><dd>${r.h}</dd><dt>Grupos</dt><dd>${r.g}</dd><dt>Ajustes, cuenta, IA</dt><dd>${r.a}</dd><dt>Ancho y activo</dt><dd>${r.w}</dd></dl><p class="fuente">${r.f}</p></div></article>`).join('');
 
 const NOM = { actual: 'Ahora', A: 'A · Índice', B: 'B plegada', 'B-abierta': 'B al pasar el ratón', 'B-fijada': 'B fijada', C: 'C · Rótulos' };
-const ESTADO = { tema: 'marmol', ancho: '1440', modo: 'avanzado', pg: 'hoy', ac: 'tinte' };
+const ESTADO = { tema: 'marmol', ancho: '1440', modo: 'avanzado', pg: 'hoy', ac: 'hibrido' };
 const LS = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
-Object.assign(ESTADO, LS.get('barra-filtros', {})); if (!ESTADO.ac) ESTADO.ac = 'tinte';
+Object.assign(ESTADO, LS.get('barra-filtros', {})); if (!ESTADO.ac || !LS.get('barra-v3', false)) { ESTADO.ac = 'hibrido'; LS.set('barra-v3', true); }
 const DEC = LS.get('barra-dec', { p: {}, q: {}, notas: '' });
 
 // el acabado plano: tinte para todas; raya y tinta solo se sacaron para A y C (B va con tinte)
-const acDe = (v, e = ESTADO) => (v === 'actual' || e.ac === 'relieve') ? '' : (/^B/.test(v) && e.ac !== 'tinte' ? 'tinte' : e.ac);
+const acDe = (v, e = ESTADO) => (v === 'actual' || e.ac === 'relieve') ? '' : (/^B/.test(v) && (e.ac === 'raya' || e.ac === 'tinta') ? 'tinte' : e.ac);
 const src = (v, e = ESTADO) => { const a = acDe(v, e); return `img/${v}-${e.pg}-${e.tema}-${e.modo}-${e.ancho}${a ? '-' + a : ''}.webp`; };
-const NOMAC = { tinte: 'plano · tinte', raya: 'plano · raya', tinta: 'plano · tinta', '': 'relieve (antes)' };
+const NOMAC = { hibrido: 'híbrido (tinte + raya)', liquid: 'liquid nuevo', tinte: 'plano · tinte', raya: 'plano · raya', tinta: 'plano · tinta', '': 'relieve (antes)' };
 const pie = (v) => `<b>${NOM[v]}</b>${v === 'actual' ? '' : ` · acabado ${NOMAC[acDe(v)]}`} · ${ESTADO.tema === 'marmol' ? 'Mármol' : 'Marfil'}, ${ESTADO.ancho === '1440' ? '1.440' : '1.280'} px, ${ESTADO.modo === 'avanzado' ? 'avanzado' : 'básico'}, ${ESTADO.pg === 'hoy' ? 'Hoy' : 'Rendimiento › Rentabilidad'}`;
 function pintarCapturas() {
   for (const img of document.querySelectorAll('img[data-v]')) { img.src = src(img.dataset.v); img.closest('figure').querySelector('figcaption').innerHTML = pie(img.dataset.v); }
   const cr = document.querySelector('img[data-cmp=relieve]'), cp = document.querySelector('img[data-cmp=plano]');
-  const ePl = Object.assign({}, ESTADO, { ac: ESTADO.ac === 'relieve' ? 'tinte' : ESTADO.ac });
+  const ePl = Object.assign({}, ESTADO, { ac: ESTADO.ac === 'relieve' ? 'hibrido' : ESTADO.ac });
   cr.src = src('A', Object.assign({}, ESTADO, { ac: 'relieve' })); cr.closest('figure').querySelector('figcaption').innerHTML = '<b>A con el relieve de antes</b> · la gota con brillo y sombra';
   cp.src = src('A', ePl); cp.closest('figure').querySelector('figcaption').innerHTML = `<b>A con el acabado ${NOMAC[ePl.ac]}</b> · mismo diseño, pantalla y página`;
   for (const s of document.querySelectorAll('.seg[data-ctl]')) for (const b of s.children) b.setAttribute('aria-pressed', String(b.dataset.v === ESTADO[s.dataset.ctl]));
@@ -305,7 +310,7 @@ const TXT = {
   nombres: { siempre: 'sí, siempre a la vista', raton: 'basta con verlos al pasar el ratón', elegir: 'que lo elija cada uno (fijar o plegar)' },
   cuando: { '086': 'en la 0.8.6, antes del repaso de la sesión 10', letra: 'en una letra aparte, después de la 0.8.6', '10': 'con la 1.0' },
   movil: { igual: 'se queda como está', cambiar: 'quiere tocar algo (ver notas)' },
-  acabado: { tinte: 'plano con tinte', raya: 'plano con raya de oro', tinta: 'plano, solo tinta', relieve: 'el relieve de antes' },
+  acabado: { hibrido: 'híbrido (tinte + pastillita de oro)', liquid: 'liquid nuevo (lente con pastillita de oro)', tinte: 'plano con tinte', raya: 'plano con raya de oro', tinta: 'plano, solo tinta', relieve: 'el relieve de antes' },
   resto: { todo: 'sí, a toda la app (con maqueta antes)', pc: 'solo el ordenador por ahora', no: 'no, el resto se queda' },
 };
 function textoDecidido() {
