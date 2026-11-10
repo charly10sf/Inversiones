@@ -150,7 +150,8 @@
     },
     "avanzado": [
       "trozos/avanzado.js",
-      "trozos/frente.js"
+      "trozos/frente.js",
+      "trozos/entiende.js"
     ]
   }
 }
