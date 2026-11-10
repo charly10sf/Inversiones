@@ -63,7 +63,8 @@ function pavEntiende(M) {
 
 // abrir, pasar, marcar y volver: se repinta la pestaña y, en el móvil, se sube arriba
 async function entIr(id, { marcarAntes = null } = {}) {
-  if (marcarAntes && !entLeida(marcarAntes)) await entiendeMarcar(marcarAntes, true);
+  // se marca al momento y se guarda detrás: con mala red, el botón no se queda esperando a la subida (revisión aparte)
+  if (marcarAntes && !entLeida(marcarAntes)) entiendeMarcar(marcarAntes, true).catch((err) => console.warn('Entiende: no se ha guardado', err));
   S.entLeccion = id; if (id) S.entCap = entCapDe(id).id;
   repintarAv();
   setTimeout(() => { const el = entMovil() ? $('#panelAv') : $('#entLeccion'); if (el && el.getBoundingClientRect().top < 0) el.scrollIntoView({ block: 'start' }); const h = $('#panelAv .ent-pag h3'); if (h) { h.tabIndex = -1; h.focus({ preventScroll: true }); } }, 30);
@@ -77,5 +78,5 @@ document.addEventListener('click', async (e) => {
   else if (d.entCap) { S.entCap = S.entCap === d.entCap && entMovil() ? '_' : d.entCap; repintarAv(); }
   else if (d.entSig) entIr(d.entSig, { marcarAntes: entAbierta(S.M || calcular()) });
   else if ('entVolver' in d) { S.entLeccion = null; repintarAv(); setTimeout(() => scrollTo(0, 0), 30); }
-  else if (d.entLeida) { b.disabled = true; await entiendeMarcar(entAbierta(S.M || calcular()), d.entLeida === '1'); S.entLeccion = entAbierta(S.M || calcular()); repintarAv(); }
+  else if (d.entLeida) { const id = entAbierta(S.M || calcular()); entiendeMarcar(id, d.entLeida === '1').catch((err) => console.warn('Entiende: no se ha guardado', err)); S.entLeccion = id; repintarAv(); }
 });

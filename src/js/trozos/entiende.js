@@ -569,12 +569,20 @@ const ENT_ORDEN = ENT_CAPS.flatMap((c) => c.ls);
 const entCapDe = (id) => ENT_CAPS.find((c) => c.ls.includes(id));
 
 /* ---------- leídas, con la cartera cifrada ---------- */
-const entEstado = () => (S.cartera && S.cartera.entiende) || { leidas: {}, ultima: null };
+/* saneado (revisión aparte del 10 nov): lo que venga en la cartera (un .json importado, otra versión) se queda en
+   { leidas: { id: 'AAAA-MM-DD' }, ultima }, solo con lecciones que existen; un valor raro no tumba la pestaña ni el botón */
+const ENT_FECHA = /^\d{4}-\d{2}-\d{2}$/;
+function entSano(e) {
+  const obj = (x) => !!x && typeof x === 'object' && !Array.isArray(x);
+  const de = obj(e) && obj(e.leidas) ? e.leidas : {}, leidas = {};
+  for (const id of ENT_ORDEN) if (Object.prototype.hasOwnProperty.call(de, id) && typeof de[id] === 'string' && ENT_FECHA.test(de[id])) leidas[id] = de[id];
+  return { leidas, ultima: obj(e) && ENT_ORDEN.includes(e.ultima) ? e.ultima : null };
+}
+const entEstado = () => entSano(S.cartera && S.cartera.entiende);
 const entLeida = (id) => !!entEstado().leidas[id];
 async function entiendeMarcar(id, si = true) {
-  if (!ENT_LECCIONES[id] || !S.cartera) return false;
-  const e = S.cartera.entiende = S.cartera.entiende || { leidas: {}, ultima: null };
-  e.leidas = e.leidas || {};
+  if (!ENT_ORDEN.includes(id) || !S.cartera) return false;
+  const e = S.cartera.entiende = entSano(S.cartera.entiende);
   if (si) { e.leidas[id] = hoyIso(); e.ultima = id; } else delete e.leidas[id];
   return guardarCarteraCallada('Entiende tu cartera');
 }

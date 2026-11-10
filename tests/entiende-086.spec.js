@@ -160,3 +160,27 @@ test('las leídas se guardan con la cartera cifrada y se cuentan por capítulo',
   expect(Object.keys(r.guardada.leidas).sort()).toEqual(['broker', 'ter']);
   expect(r.leida).toBe(true);
 });
+
+// revisión aparte (10 nov): lo que venga raro en la cartera (un .json importado, otra versión) no tumba la pestaña ni el
+// botón, y al marcar se guarda limpio: solo lecciones que existen, con su fecha AAAA-MM-DD
+test('un «entiende» raro en la cartera se sanea al leer y al marcar', async ({ page }) => {
+  await entrar(page);
+  const r = await page.evaluate(async () => {
+    const raros = [{}, [], 'texto', 7, { leidas: null }, { leidas: ['ter'] }, { leidas: { ter: 'ayer', broker: '2026-11-01', constructor: '2026-11-01', '<img src=x>': '2026-11-01' }, ultima: 'constructor' }];
+    const vistos = [];
+    for (const x of raros) {
+      S.cartera.entiende = x;
+      let ok = true, av = null;
+      try { av = entiendeAvance(); entiendeLeccionHtml('ter', calcular()); entiendeSigue(); } catch (e) { ok = false; }
+      vistos.push([ok, av && av.leidas]);
+    }
+    await entiendeMarcar('ter');
+    const guardada = (await descifrar(S.enc.texto, S.key)).entiende;
+    return { vistos, guardada };
+  });
+  expect(r.vistos.map((v) => v[0])).toEqual([true, true, true, true, true, true, true]);
+  expect(r.vistos.map((v) => v[1])).toEqual([0, 0, 0, 0, 0, 0, 1]);
+  expect(r.guardada.ultima).toBe('ter');
+  expect(Object.keys(r.guardada.leidas).sort()).toEqual(['broker', 'ter']);
+  expect(Object.values(r.guardada.leidas).every((f) => /^\d{4}-\d{2}-\d{2}$/.test(f))).toBe(true);
+});
