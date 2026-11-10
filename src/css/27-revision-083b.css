@@ -31,8 +31,12 @@
    El mismo color, oscurecido con la tinta */
 [data-tema="marfil"] :is(.agc-cat, .agc-n.pal) { color: color-mix(in srgb, var(--c) 40%, var(--texto)); }
 [data-tema="marfil"] .agc-res .v { stroke: color-mix(in srgb, var(--c) 60%, var(--texto)); }
-/* Esta semana: los días ya pasados, al 32 %, casi no se veían (1,8:1). Siguen apagados, pero se leen */
-.ag-c.pasado { opacity: .55; }
+/* Esta semana: los días ya pasados, al 32 %, casi no se veían (1,8:1). Siguen apagados, pero se leen. 0.8.6: al 55 % el
+   número aún se quedaba en 4,3:1 en Mármol y 2,8:1 en Marfil (lo vio accesibilidad.spec.js el primer día de la semana
+   con días pasados a la vista): el número va en el gris tenue, que pasa de 4,5:1, y solo se apaga lo demás */
+.ag-c.pasado { opacity: 1; }
+.ag-c.pasado .n { color: var(--tenue); }
+.ag-c.pasado > :not(.n) { opacity: .55; }
 
 /* ---------- Mercados ---------- */
 /* El mundo, en el móvil, era 16 px más ancha que las tarjetas de encima (el buscador): ahora todas a la misma
