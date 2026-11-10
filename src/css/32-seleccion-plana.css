@@ -1,0 +1,26 @@
+/* 0.8.6 · Lo elegido en pestañas y segmentos, plano (Carlos, 10 nov, 23:01: «un toque más moderno y quitar ese 3D raro
+   que tiene cada pestaña seleccionada»): un fondo liso, sin degradado, sin brillo arriba y sin sombra debajo.
+   - Mármol: un gris claro sobre el negro (--sel-plano), con el texto blanco. Antes: el oro con relieve en el ordenador y
+     la lente de cristal en el móvil.
+   - Marfil: en el ordenador ya era plano (el vino suave con la raya de oro) y se queda; en el móvil, el mismo vino suave
+     en lugar de la lente blanca con sombra; en el menú vino, el oro liso en lugar del oro con degradado.
+   Lo que no se toca: la barra de abajo del móvil y la barra lateral del ordenador (se rehace en su propia sesión), ni los
+   botones (el oro de «Hacerlo ahora» sigue siendo un botón). Para volver atrás, basta con quitar este archivo de
+   src/partes.json. Lo prueba tests/seleccion-plana-086.spec.js. */
+[data-tema="marmol"] :is(.subvistas, .plazos, .tabs, .as-modo, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas):not(.dos-op) button[aria-pressed="true"],
+[data-tema="marmol"] .pest-tira .pest-av a[aria-current="page"],
+[data-tema="marmol"] .pest-av :is(a[aria-current="page"], button[aria-selected="true"]),
+[data-tema="marmol"] :is(.grupo-tabs, .k2-pest) a[aria-current="page"],
+[data-tema="marmol"] .seg-modo button[aria-pressed="true"] {
+  background: var(--sel-plano); color: var(--sel-plano-texto); box-shadow: none; border-color: transparent; font-weight: 650; }
+
+@media (max-width: 960px) {
+  [data-tema="marfil"] :is(.subvistas, .plazos, .tabs, .as-modo, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas):not(.dos-op) button[aria-pressed="true"],
+  [data-tema="marfil"] .pest-tira .pest-av a[aria-current="page"] {
+    background: var(--sel-plano); color: var(--sel-plano-texto); box-shadow: none; border-color: transparent; border-radius: var(--r-p); font-weight: 700; }
+}
+[data-tema="marfil"] .pest-av button[aria-selected="true"],
+[data-tema="marfil"] :is(.grupo-tabs, .k2-pest) a[aria-current="page"],
+[data-tema="marfil"] .mas-app .seg-modo button[aria-pressed="true"] {
+  background: var(--sel-plano); color: var(--sel-plano-texto); box-shadow: none; font-weight: 700; }
+[data-tema="marfil"] .riel .seg-modo button[aria-pressed="true"] { background: var(--sel-riel); color: var(--sobre-oro); box-shadow: none; }

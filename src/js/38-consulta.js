@@ -11,7 +11,19 @@ function candidatoDeSim(sim) {
   const id = instPorSim(sim), k = id ? 'inst:' + id : 'radar:' + sim;
   return candidatosBusqueda().find((c) => c.k === k) || null;
 }
-const nombreRadar = (x) => nombreCorto(/^[A-Z0-9 .,&'-]+$/.test(x.n) ? x.n.toLowerCase().replace(/\b\w/g, (c) => c.toUpperCase()) : x.n);
+/* 0.8.6 (repaso): los nombres que Yahoo da en mayúsculas, legibles. El acento que se pierde («CORPORACI...N ACCIONA
+   ENERG...A» → «Corporación Acciona Energía»), lo de después de la coma fuera («ACS,ACTIVIDADES DE CONSTRUCCION» →
+   «ACS»), sin un «De» suelto al final y las siglas de dos o tres letras del principio, en mayúsculas (SAP, EDP, DHL). */
+const NO_SIGLA = new Set(['the', 'de', 'el', 'la', 'los', 'las', 'del', 'and', 'of']);
+const nombreMayus = (n) => {
+  let t = n.replace(/CI\.\.\.N\b/g, 'CIÓN').replace(/G\.\.\.A\b/g, 'GÍA').replace(/\.\.\./g, '');
+  if (t.includes(',')) t = t.split(',')[0];
+  t = t.trim().toLowerCase().replace(/(^|[^\p{L}\p{N}'])(\p{L})/gu, (m, a, c) => a + c.toUpperCase())
+    .replace(/(^|\s)([dl])'(\p{L})/giu, (m, a, b, c) => a + b.toUpperCase() + "'" + c.toUpperCase())
+    .replace(/(\s(de|del|y|e|and|of))+$/iu, '');
+  return t.replace(/^(\p{L}{2,3})(?=\s|$)/u, (w) => NO_SIGLA.has(w.toLowerCase()) ? w : w.toUpperCase());
+};
+const nombreRadar = (x) => nombreCorto(/^[A-Z0-9 .,&'-]+$/.test(x.n) ? nombreMayus(x.n) : x.n);
 function htmlBuscaMercados() {
   // el catálogo ampliado se baja al buscar: hasta entonces, se cuenta con lo que dice catalogo-precios.json
   const n = candidatosBusqueda().length + (S.catMas ? 0 : (S.cat && S.cat.mas && S.cat.mas.n) || 0);

@@ -81,4 +81,10 @@
   .ls-t { padding: 16px 14px 14px; }
   .ls-noticias li { grid-template-columns: minmax(0, 1fr); gap: 2px; }
 }
+/* 0.8.6 (repaso): en el móvil, la tercera pestaña de Ideas más ancha que las otras dos, para que «Lista de seguimiento»
+   vaya en un renglón con su cuenta debajo, como las demás (a partes iguales se partía en tres renglones) */
+@media (max-width: 680px) {
+  .subvistas.exp-tabs { grid-template-columns: minmax(0, 0.75fr) minmax(0, 0.85fr) minmax(0, 1.6fr); }
+  .exp-tabs button[data-exp="siguiendo"] { white-space: nowrap; }
+}
 .ls-tj .ls-spark { width: 100%; height: auto; }

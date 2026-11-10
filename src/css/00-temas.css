@@ -52,6 +52,8 @@
   --gota-sombra: inset 0 0 0 1px rgb(255 255 255 / .20), inset 0 1.5px 0 rgb(255 255 255 / .65), inset 0 -1.5px 0 rgb(227 180 95 / .65), inset 0 8px 12px -8px rgb(255 255 255 / .35), 0 8px 16px -6px rgb(0 0 0 / .65);
   --lente: radial-gradient(120% 90% at 50% 0%, rgb(255 255 255 / .26), rgb(255 255 255 / .08) 60%);
   --lente-sombra: inset 0 1px 0 rgb(255 255 255 / .5), inset 0 -1px 0 rgb(227 180 95 / .45), 0 4px 10px -4px rgb(0 0 0 / .6); --lente-texto: var(--texto);
+  /* 0.8.6: lo elegido en pestañas y segmentos, plano (src/css/32-seleccion-plana.css): un gris claro sobre el negro */
+  --sel-plano: color-mix(in srgb, var(--texto) 13%, transparent); --sel-plano-texto: var(--texto);
   /* el medallón de Hoy, una moneda: negro hondo, aro de oro y luz arriba */
   --moneda: radial-gradient(circle at 50% 28%, #262420, #0a0907 62%, #000000);
   --moneda-sombra: inset 0 1px 0 rgb(255 255 255 / .28), inset 0 -2px 3px rgb(0 0 0 / .6), 0 0 0 1.2px rgb(227 180 95 / .75), 0 0 0 3px rgb(0 0 0 / .35), 0 8px 16px -6px #000000;
@@ -129,6 +131,8 @@
   /* la pestaña elegida y el 6M: blancos, con el hilo de oro abajo */
   --lente: linear-gradient(180deg, #ffffff, #f7f0e4);
   --lente-sombra: inset 0 -1px 0 #c99a45, 0 0 0 .5px rgb(60 40 20 / .2), 0 4px 10px -4px rgb(60 40 20 / .35); --lente-texto: var(--texto);
+  /* 0.8.6: lo elegido, plano: el vino suave; en el menú vino, el oro liso (src/css/32-seleccion-plana.css) */
+  --sel-plano: color-mix(in srgb, var(--primario) 9%, transparent); --sel-plano-texto: var(--primario); --sel-riel: #e3b45f;
   --moneda: radial-gradient(circle at 50% 28%, #fffdf8, #f3e9d6 70%, #e9dcc4);
   --moneda-sombra: inset 0 1px 0 #ffffff, inset 0 -2px 3px rgb(120 80 30 / .18), 0 0 0 1.2px #c99a45, 0 0 0 3px rgb(40 10 15 / .25), 0 8px 16px -6px rgb(40 10 15 / .6);
   --moneda-o: #4e101d; --moneda-t: #a87a2a;

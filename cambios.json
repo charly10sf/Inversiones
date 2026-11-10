@@ -1,6 +1,44 @@
 {
  "versiones": [
   {
+   "v": "0.8.6",
+   "f": "2026-11-10",
+   "h": "23:40",
+   "t": "Tres pestañas nuevas y Tu año",
+   "commits": [
+    {
+     "cuando": "2026-11-09 01:10",
+     "asunto": "0.8.6: Lista de seguimiento (pestaña 1, sesiones 1 y 2 del plan)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-09 23:30",
+     "asunto": "0.8.6 · Entiende tu cartera: las 20 lecciones, «Para ti ahora» y las leídas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-10 18:05",
+     "asunto": "0.8.6 · Frente a un indexado (pestaña 2) y las pantallas y la progresión de la 11",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-10 20:40",
+     "asunto": "0.8.6 · Tu año en Toisón: las siete tarjetas y el estilo de inversor",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-10 22:30",
+     "asunto": "0.8.6 · Tu año: compartir sin cantidades, modo discreto en toda la app y en el widget, y la regla de Hoy",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-10 23:40",
+     "asunto": "0.8.6: repaso, pestañas elegidas planas, nombres del radar, versión, novedades y cambios",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.8.3d",
    "f": "2026-11-09",
    "h": "20:45",

@@ -31,7 +31,8 @@
     "29-noticias.css",
     "29-frente-indexado.css",
     "30-entiende.css",
-    "31-tu-ano.css"
+    "31-tu-ano.css",
+    "32-seleccion-plana.css"
   ],
   "js": [
     "01-base.js",

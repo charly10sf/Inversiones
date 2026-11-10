@@ -7,6 +7,17 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.6', f: '2026-11-10', h: '23:40', t: 'Tres pestañas nuevas y Tu año', cosas: [
+    { d: 'ficha', ir: { v: 'expertos', antes: () => { S.expTab = 'siguiendo'; if (S.vista === 'expertos') pintar(); } }, t: 'Lista de seguimiento', x: 'En Ideas, lo que sigues sin tenerlo, en una tabla (en el ordenador, también en tarjetas): cómo va hoy y en el mes, lo que supondría en tu cartera meter 1.000 € y lo que ha leído la IA de cada empresa, con el tono de la noticia. Hasta 10 empresas.' },
+    { d: 'grafica', ir: { v: 'av-frente' }, t: 'Frente a un indexado', x: 'En Rentabilidad: lo que habría pasado si hubieras metido el mismo dinero, los mismos días, en un fondo indexado al MSCI World. La diferencia en euros, mes a mes y año a año. Es lo que habría pasado, no un indicador fiable de lo que pasará.' },
+    { d: 'jerga', t: 'Entiende tu cartera', x: 'En el modo básico, junto a Posiciones: 20 lecciones cortas en cinco capítulos, con tus propios números de ejemplo, y arriba la que más te sirve ahora. Formación general, no consejos.' },
+    { d: 'hecho', ir: { v: 'av-tuano' }, t: 'Tu año en Toisón', x: 'Siete tarjetas con lo que hiciste con tu plan este año: tu estilo de inversor, lo que aportaste, la edad de tu dinero, dónde está, lo que te costó, los dividendos y los meses sin sacar dinero. Se comparte como imagen, sin cantidades. En diciembre y enero sale en Hoy.' },
+    { d: 'ajustes', ir: { v: 'cartera', sel: '.hero-ojo' }, t: 'Modo discreto en toda la app', x: 'El ojo de Patrimonio, o Ajustes, General, Modo discreto, oculta las cantidades en toda la app y en el widget de Android, que pasa a enseñar solo porcentajes.' },
+  ], arreglos: [
+    'Lo que más se mueve, en Hoy, habla solo de lo tuyo y dice por qué se mueve.',
+    'La pestaña elegida se ve plana, sin relieve, en Mármol y en Marfil.',
+    'Los nombres de algunas empresas españolas salen bien escritos, como ACS o Corporación Acciona Energía.',
+  ] },
   { v: '0.8.3d', f: '2026-11-09', h: '20:45', t: 'Noticias', cosas: [
     { d: 'mercados', ir: { v: 'noticias' }, t: 'Noticias, más completas', x: 'Una página nueva en Hoy, entre Hoy y Calendario: cómo van las bolsas, lo importante del día según la IA, los titulares por temas (España, EEUU, cripto, lo tuyo…) y por horas, con buscador, y lo que ha pasado en cada empresa con su tono. Toca un titular y la IA te lo resume dentro.' },
   ], arreglos: [
