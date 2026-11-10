@@ -230,16 +230,17 @@ test.describe('Marfil (7 nov)', () => {
     // el sello de la cabecera: desde la 0.8.3a, el símbolo en vino y oro sobre la crema
     await expect(page.locator('.top .marca-ts i').first()).toHaveCSS('background-color', 'rgb(253, 249, 242)');
     expect(await page.locator('.top .marca-ts').first().evaluate((e) => ['.s-o', '.s-t'].map((s) => getComputedStyle(e.querySelector(s)).fill))).toEqual(['rgb(78, 16, 29)', 'rgb(168, 122, 42)']);
-    // las pestañas de Análisis (0.8.3a): en una tira de cristal, la elegida blanca con el hilo de oro abajo
+    // las pestañas de Análisis (0.8.3a): en una tira de cristal; la elegida, desde la 0.8.6, plana en el vino suave
     await page.evaluate(() => { location.hash = 'analisis'; });
     // 0.8.3a: en el ordenador las pestañas de Análisis están en la segunda barra de la K2 (su acabado, con la sesión del liquid)
     if (info.project.name === 'pc') await expect(page.locator('.k2-lista a[aria-current="page"]')).toHaveText('La IA explica');
     else {
     const elegida = page.locator('.pest-av a[aria-current="page"]');
     await expect(elegida).toBeVisible({ timeout: 15_000 });
-    await expect(elegida).toHaveCSS('color', 'rgb(28, 25, 21)');
-    expect(await elegida.evaluate((e) => getComputedStyle(e).boxShadow)).toMatch(/^rgb\(201, 154, 69\) 0px -1px 0px 0px inset/);
-    await expect(elegida).toHaveCSS('background-image', /linear-gradient\(rgb\(255, 255, 255\)/);
+    // 0.8.6 (Carlos, 10 nov: «quitar ese 3D raro»): ya no es la lente blanca con sombra, sino plana, en el vino suave
+    await expect(elegida).toHaveCSS('color', 'rgb(78, 16, 29)');
+    await expect(elegida).toHaveCSS('box-shadow', 'none');
+    await expect(elegida).toHaveCSS('background-image', 'none');
     }
     // un título de sección: en vino, con el hilo de oro debajo
     await page.evaluate(() => { location.hash = 'cartera'; });
