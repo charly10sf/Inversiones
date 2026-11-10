@@ -106,8 +106,9 @@ main { max-width: 1480px; margin: 0 auto; padding: 18px 20px 80px; display: grid
 <nav class="indice" id="indice"></nav>
 <main id="main">
   <section class="intro">
-    <h1>Tu año en Toisón · elige cómo es cada tarjeta</h1>
+    <h1>Tu año en Toisón · segunda vuelta</h1>
     <p class="nota">Montado encima de la app de verdad (rama <b>v0.8.6-frente</b>, con la cartera de prueba de 5 posiciones: 23.380 €, 19.900 € metidos, 300 € al mes desde marzo de 2023). Ordenador a 1.440 en avanzado; móvil a 390 en básico. Las cifras son de prueba. Son <b>siete tarjetas</b>: la del MSCI World ya es la pestaña 2. Sin candados de Dorado, porque el plan no pone ninguno en Tu año.</p>
+    <p class="nota"><b>Segunda vuelta (10 nov, 20:40):</b> ya vienen marcadas tus elecciones de la primera; en Dividendos está la híbrida que pediste (D), y arriba del todo, lo elegido montado junto.</p>
     <p class="nota">En cada tarjeta: marca la opción que te guste, luego «Me vale así» o «Quiero cambios» y, si quieres, una nota. Toca una imagen para verla a tamaño real. Arriba cambias entre Mármol y Marfil, y entre ordenador y móvil. Al final, «Copiar lo decidido» y me lo pegas.</p>
   </section>
   <div id="bloques"></div>
@@ -118,6 +119,8 @@ main { max-width: 1480px; margin: 0 auto; padding: 18px 20px 80px; display: grid
 
 <script>
 const BLOQUES = [
+  { k: 'elegido', n: '✓', tit: 'Lo que elegiste, todo junto', custom: true,
+    duda: 'Montado con tus elecciones: estilo A, aportaciones A, edad B, países A, costes B, dividendos D (la híbrida), meses A y la de compartir vertical. En el ordenador, la página entera; en el móvil, una tarjeta por pantalla, como elegiste. Si te vale, «Me vale así» aquí basta.' },
   { k: 'general', n: '0', tit: 'La página entera y cómo se recorre en el móvil',
     duda: 'En el ordenador, una página con las siete tarjetas en rejilla y la de compartir al final. <b>En el móvil hay duda de verdad:</b> una página que baja, como el resto de la app, o una tarjeta por pantalla, con barras arriba y «Anterior / Siguiente», como las historias.',
     soloMovil: true,
@@ -151,11 +154,12 @@ const BLOQUES = [
       { L: 'A', t: 'En porcentaje, con desglose', d: '«0,17 %», ≈ 39 € y cada coste en su línea, también los que este año fueron 0 €.' },
       { L: 'B', t: 'De cada 100 €', d: '«17 céntimos» de cada 100 €, una barra con de dónde sale y una frase.' },
     ] },
-  { k: 'divid', n: '6', tit: 'Dividendos', duda: '<b>¿Euros a la vista o a un toque?</b> El plan dice «opcional en euros». También: ¿contamos lo que se queda dentro de los fondos de acumulación?',
+  { k: 'divid', n: '6', tit: 'Dividendos', duda: '<b>Pediste una híbrida de A y B: es la D, al final.</b> Queda una duda: ¿contamos lo que se queda dentro de los fondos de acumulación? Es una estimación.',
     ops: [
       { L: 'A', t: 'Cobrado y lo de dentro de los fondos', d: 'Dos cajas: 227 € netos de Repsol (con la retención) y ≈ 250 € que se quedan dentro de tus fondos.' },
       { L: 'B', t: 'Mes a mes', d: '227 € cobrados y una barra por mes; lo de los fondos, en una nota.' },
       { L: 'C', t: 'Sin euros, a un toque', d: '«2 cobros, en enero y julio» y «Ver en euros». Las cantidades solo si las pides.' },
+      { L: 'D', t: 'Híbrida de A y B (nueva)', d: 'Las dos cajas de A, y en la de cobrados, las barras mes a mes de B (enero y julio).' },
     ] },
   { k: 'meses', n: '7', tit: 'Meses sin vender', duda: '<b>¿Contador con la gráfica del mes más movido o puntos por mes?</b> Texto sobrio: dice que no vendiste, sin decir que eso sea lo bueno. <b>Queda por decidir:</b> qué pasa si alguien vende para reequilibrar (con este nombre, su contador vuelve a cero).',
     ops: [
@@ -171,8 +175,10 @@ const BLOQUES = [
 
 let TEMA = 'marmol', PANT = '1440';
 const KEY = 'toison-tuano-v1';
+const PREV = { general: 'B', estilo: 'A', aport: 'A', edad: 'B', paises: 'A', costes: 'B', divid: 'D', meses: 'A', comp: 'A' };
 let EST = {};
 try { EST = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { EST = {}; }
+for (const [k, v] of Object.entries(PREV)) { EST[k] ||= {}; if (!EST[k].op || (k === 'divid' && EST[k].op !== 'D' && !EST[k].vD)) { EST[k].op = v; if (k === 'divid') EST[k].vD = 1; } }
 const guardar = () => { try { localStorage.setItem(KEY, JSON.stringify(EST)); } catch (e) {} };
 const nombre = { marmol: 'Mármol', marfil: 'Marfil', '1440': 'ordenador', '390': 'móvil' };
 const src = (b, o) => `img/${b.k}-${o.L}-${TEMA}-${PANT}.webp`;
@@ -183,13 +189,16 @@ function pintar() {
   cont.innerHTML = BLOQUES.map((b) => {
     const e = EST[b.k] || {};
     let ops;
-    if (b.soloMovil && PANT === '1440') {
+    if (b.custom) {
+      ops = PANT === '1440' ? `<figure class="contexto"><img loading="lazy" src="img/elegido-${TEMA}-1440.webp" alt="Tu año con lo elegido, ordenador" data-tit="Lo elegido · ${nombre[TEMA]} · ordenador"></figure>`
+        : `<div class="ops" style="--min:230px">${['estilo','aport','edad','paises','costes','divid','meses'].map((k, i) => `<div class="op"><b>${i + 1} de 7</b><img loading="lazy" src="img/hist-el-${k}-${TEMA}-390.webp" alt="Tarjeta ${i + 1} de 7" data-tit="Lo elegido · tarjeta ${i + 1} de 7 · ${nombre[TEMA]}"></div>`).join('')}</div>`;
+    } else if (b.soloMovil && PANT === '1440') {
       ops = `<details class="contexto" open><summary>Ver la página entera en ${nombre[TEMA]} (ordenador)</summary><img loading="lazy" src="img/pagina-${TEMA}-1440.webp" alt="Tu año, página entera en ordenador" data-tit="Página entera · ${nombre[TEMA]} · ordenador"></details>
         <p class="duda">Para la duda del móvil, pasa a «Móvil» arriba. Puedes elegir igualmente aquí:</p>` +
         `<div class="ops">${b.ops.map((o) => opHtml(b, o, e, true)).join('')}</div>`;
     } else ops = `<div class="ops">${b.ops.map((o) => opHtml(b, o, e, false)).join('')}</div>`;
     return `<section class="bloque ${e.d === 'vale' ? 'si' : e.d === 'camb' ? 'cambios' : ''}" id="t-${b.k}">
-      <div class="bloque-cab"><small>${b.n === '+' ? 'Aparte' : b.n === '0' ? 'Para empezar' : 'Tarjeta ' + b.n + ' de 7'}</small><h2>${b.tit}</h2></div>
+      <div class="bloque-cab"><small>${b.n === '+' ? 'Aparte' : b.n === '✓' ? 'Lo elegido' : b.n === '0' ? 'Para empezar' : 'Tarjeta ' + b.n + ' de 7'}</small><h2>${b.tit}</h2></div>
       <p class="duda">${b.duda}</p>${ops}
       <div class="decidir"><button class="btn vale" data-k="${b.k}" data-d="vale" aria-pressed="${e.d === 'vale'}">Me vale así</button><button class="btn camb" data-k="${b.k}" data-d="camb" aria-pressed="${e.d === 'camb'}">Quiero cambios</button>
       <textarea data-k="${b.k}" placeholder="Notas (qué cambiarías, o por qué esa)" aria-label="Notas de ${b.tit}">${(e.nota || '').replace(/</g, '&lt;')}</textarea></div></section>`;
@@ -235,10 +244,10 @@ document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') cerrar()
 function textoDecidido() {
   const l = ['Tu año en Toisón · lo decidido'];
   for (const b of BLOQUES) {
-    const e = EST[b.k] || {}, o = b.ops.find((x) => x.L === e.op);
+    const e = EST[b.k] || {}, o = (b.ops || []).find((x) => x.L === e.op);
     const op = o ? `${o.L} (${o.t})` : 'sin opción marcada';
     const d = e.d === 'vale' ? 'me vale así' : e.d === 'camb' ? 'quiero cambios' : 'sin decidir';
-    l.push(`${b.n === '+' ? 'Compartir' : b.n === '0' ? '0 · Móvil' : b.n + ' · ' + b.tit}: ${op} · ${d}${e.nota ? ' · ' + e.nota.trim().replace(/\s+/g, ' ') : ''}`);
+    l.push(`${b.n === '+' ? 'Compartir' : b.n === '✓' ? 'Todo junto' : b.n === '0' ? '0 · Móvil' : b.n + ' · ' + b.tit}: ${b.custom ? '' : op + ' · '}${d}${e.nota ? ' · ' + e.nota.trim().replace(/\s+/g, ' ') : ''}`);
   }
   return l.join('\n');
 }

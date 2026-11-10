@@ -96,6 +96,9 @@ const TARJ = {
     B: () => `${grande('227 € cobrados', '2 pagos de Repsol, ya con la retención')}
       <div class="ta-meses">${MES.map((m, i) => `<div><span class="ta-mb"><i style="height:${i === 0 || i === 6 ? 100 : 0}%"></i></span><small>${m}</small></div>`).join('')}</div>
       ${nota('Además, unos 250 € se quedaron dentro de tus fondos de acumulación: no los cobras, suben su precio.')}`,
+    D: () => `<div class="ta-dos ta-dos-b"><div class="ta-caja"><small>Cobrados</small><b class="mq-num-m">227 €</b><span>280 € de Repsol, menos 53 € de retención (19 %)</span>
+        <div class="ta-meses ta-meses-p">${MES.map((m, i) => `<div><span class="ta-mb"><i style="height:${i === 0 || i === 6 ? 100 : 0}%"></i></span><small>${m[0]}</small></div>`).join('')}</div></div>
+      <div class="ta-caja"><small>Dentro de tus fondos</small><b class="mq-num-m">≈ 250 €</b><span>Tus dos fondos son de acumulación: lo que reparten sus empresas se queda dentro y sube su precio. No llega a tu cuenta ni tributa hasta que vendas.</span></div></div>`,
     C: () => `${grande('2 cobros', 'de Repsol, en enero y julio')}
       <p class="ta-texto">Y dentro de tus dos fondos, lo que reparten sus empresas se queda dentro y sube su precio.</p>
       <button type="button" class="btn">Ver en euros</button>

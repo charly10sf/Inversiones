@@ -3,7 +3,8 @@
 import { chromium } from '@playwright/test';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { preparar, crearCuenta, quitarCapas } from './ayuda.js';
-const [,, tema, ancho, modo] = process.argv;
+const [,, tema, ancho, modo, letras = 'A,B,C'] = process.argv;
+const ELEGIDO = { estilo: 'A', aport: 'A', edad: 'B', paises: 'A', costes: 'B', divid: 'D', meses: 'A' };
 const w = +ancho, movil = w < 600, dir = '/home/claude/maq-ta/';
 mkdirSync(dir, { recursive: true });
 const VJS = readFileSync('tests/maq-tuano.js', 'utf8'), CSS = readFileSync('tests/maq.css', 'utf8') + readFileSync('tests/maq-tuano.css', 'utf8');
@@ -32,22 +33,28 @@ const montar = async (arg) => {
   await page.waitForTimeout(600);
 };
 const ops = await page.evaluate(() => null) ;
-for (const L of ['A', 'B', 'C']) {
-  const op = {}; for (const k of ['estilo', 'aport', 'edad', 'paises', 'costes', 'divid', 'meses']) op[k] = L;
+for (const L of letras.split(',')) {
+  const op = {}; for (const k of ['estilo', 'aport', 'edad', 'paises', 'costes', 'divid', 'meses']) op[k] = L === 'E' ? ELEGIDO[k] : L;
   await montar({ op, comp: L === 'B' ? 'c' : 'v' });
   const hh = await page.evaluate(() => Math.max(document.documentElement.scrollHeight, document.body.scrollHeight));
   await page.setViewportSize({ width: w, height: Math.min(hh, 6000) }); await page.waitForTimeout(500);
   if (L === 'A') await page.screenshot({ path: `${dir}pagina-${tema}-${w}.png` });
+  if (L === 'E') { await page.screenshot({ path: `${dir}elegido-${tema}-${w}.png` }); await page.setViewportSize({ width: w, height: movil ? 844 : 900 }); continue; }
   const tiene = await page.evaluate(() => TA_OPS);
   for (const k of [...Object.keys(tiene), 'comp']) {
     if (k !== 'comp' && !tiene[k].includes(L)) continue;
-    if (k === 'comp' && L === 'C') continue;
+    if (k === 'comp' && (L === 'C' || L === 'D')) continue;
     await page.locator(`[data-ta="${k}"]`).screenshot({ path: `${dir}${k}-${L}-${tema}-${w}.png` });
   }
   await page.setViewportSize({ width: w, height: movil ? 844 : 900 });
   console.log('ok', L, tema, w);
 }
-if (movil) for (const k of ['estilo', 'edad']) {
+if (movil && letras.includes('E')) for (const k of ['estilo', 'aport', 'edad', 'paises', 'costes', 'divid', 'meses']) {
+  await montar({ op: ELEGIDO, historia: k });
+  await page.screenshot({ path: `${dir}hist-el-${k}-${tema}-${w}.png` });
+  console.log('ok historia elegida', k);
+}
+if (movil && letras.includes('A')) for (const k of ['estilo', 'edad']) {
   await montar({ op: {}, historia: k });
   await page.screenshot({ path: `${dir}historia-${k}-${tema}-${w}.png` });
   console.log('ok historia', k);

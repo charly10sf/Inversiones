@@ -120,3 +120,6 @@
   .ta-meses { gap: 3px; }
   .ta-comp-w .ta-comp-op { max-width: none; width: 100%; }
 }
+
+.ta-meses-p { margin: 8px 0 0; gap: 4px; }
+.ta-meses-p .ta-mb { height: 46px; max-width: 18px; }
