@@ -8,11 +8,11 @@
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
   { v: '0.8.6', f: '2026-11-10', h: '23:40', t: 'Tres pestañas nuevas y Tu año', cosas: [
-    { d: 'ficha', ir: { v: 'expertos', antes: () => { S.expTab = 'siguiendo'; if (S.vista === 'expertos') pintar(); } }, t: 'Lista de seguimiento', x: 'En Ideas, lo que sigues sin tenerlo, en una tabla (en el ordenador, también en tarjetas): cómo va hoy y en el mes, lo que supondría en tu cartera meter 1.000 € y lo que ha leído la IA de cada empresa, con el tono de la noticia. Hasta 10 empresas.' },
-    { d: 'grafica', ir: { v: 'av-frente' }, t: 'Frente a un indexado', x: 'En Rentabilidad: lo que habría pasado si hubieras metido el mismo dinero, los mismos días, en un fondo indexado al MSCI World. La diferencia en euros, mes a mes y año a año. Es lo que habría pasado, no un indicador fiable de lo que pasará.' },
-    { d: 'jerga', t: 'Entiende tu cartera', x: 'En el modo básico, junto a Posiciones: 20 lecciones cortas en cinco capítulos, con tus propios números de ejemplo, y arriba la que más te sirve ahora. Formación general, no consejos.' },
-    { d: 'hecho', ir: { v: 'av-tuano' }, t: 'Tu año en Toisón', x: 'Siete tarjetas con lo que hiciste con tu plan este año: tu estilo de inversor, lo que aportaste, la edad de tu dinero, dónde está, lo que te costó, los dividendos y los meses sin sacar dinero. Se comparte como imagen, sin cantidades. En diciembre y enero sale en Hoy.' },
-    { d: 'ajustes', ir: { v: 'cartera', sel: '.hero-ojo' }, t: 'Modo discreto en toda la app', x: 'El ojo de Patrimonio, o Ajustes, General, Modo discreto, oculta las cantidades en toda la app y en el widget de Android, que pasa a enseñar solo porcentajes.' },
+    { d: 'lista', ir: { v: 'expertos', antes: () => { S.expTab = 'siguiendo'; if (S.vista === 'expertos') pintar(); } }, t: 'Lista de seguimiento', x: 'En Ideas, lo que sigues sin tenerlo, en una tabla (en el ordenador, también en tarjetas): cómo va hoy y en el mes, lo que supondría en tu cartera meter 1.000 € y lo que ha leído la IA de cada empresa, con el tono de la noticia. Hasta 10 empresas.' },
+    { d: 'frente', ir: { v: 'av-frente' }, t: 'Frente a un indexado', x: 'En Rentabilidad: lo que habría pasado si hubieras metido el mismo dinero, los mismos días, en un fondo indexado al MSCI World. La diferencia en euros, mes a mes y año a año. Es lo que habría pasado, no un indicador fiable de lo que pasará.' },
+    { d: 'entiende', t: 'Entiende tu cartera', x: 'En el modo básico, junto a Posiciones: 20 lecciones cortas en cinco capítulos, con tus propios números de ejemplo, y arriba la que más te sirve ahora. Formación general, no consejos.' },
+    { d: 'tuano', ir: { v: 'av-tuano' }, t: 'Tu año en Toisón', x: 'Siete tarjetas con lo que hiciste con tu plan este año: tu estilo de inversor, lo que aportaste, la edad de tu dinero, dónde está, lo que te costó, los dividendos y los meses sin sacar dinero. Se comparte como imagen, sin cantidades. En diciembre y enero sale en Hoy.' },
+    { d: 'discreto', ir: { v: 'cartera', sel: '.hero-ojo' }, t: 'Modo discreto en toda la app', x: 'El ojo de Patrimonio, o Ajustes, General, Modo discreto, oculta las cantidades en toda la app y en el widget de Android, que pasa a enseñar solo porcentajes.' },
   ], arreglos: [
     'Lo que más se mueve, en Hoy, habla solo de lo tuyo y dice por qué se mueve.',
     'La pestaña elegida se ve plana, sin relieve, en Mármol y en Marfil.',
@@ -703,6 +703,24 @@ const mundoDib = (col) => Object.entries(MUNDO_DIB).map(([k, d]) => `<path class
 const PILDORA_DIB = (x, y, w) => `<rect x="${x}" y="${y}" width="${w}" height="15" rx="7.5" fill="#0D0C0A" stroke="rgba(247,242,232,.14)" stroke-width="1"/>`;
 /* un dibujo pequeño por cada mejora (120 × 80, con los colores de la web) */
 const DIBUJOS = {
+  // 0.8.6: un dibujo propio para cada novedad (Carlos, 10 nov: «hacen falta bastantes nuevos logos, no reciclar siempre los mismos»)
+  // la Lista de seguimiento: tres filas con su logo, su gráfica del mes y el tono de su noticia (▲ buena, ▼ mala, ● neutra)
+  lista: '<path class="m" d="M6 29h108M6 51h108"/>'
+    + '<circle class="fa" cx="14" cy="18" r="6"/><path class="l" d="M25 15h26"/><path class="m" d="M25 21h16"/><path class="u" d="M58 22l6-4 5 2 6-7 6 2"/><rect class="fa" x="90" y="11" width="24" height="14" rx="7"/><path class="u" d="M97 21l3-4 3 4"/><path class="u" d="M106 19h3"/>'
+    + '<circle class="fa" cx="14" cy="40" r="6"/><path class="l" d="M25 37h22"/><path class="m" d="M25 43h18"/><path class="d" d="M58 35l6 3 5-2 6 7 6-1"/><rect class="fdn" x="90" y="33" width="24" height="14" rx="7"/><path class="d" d="M97 38l3 4 3-4"/><path class="d" d="M106 40h3"/>'
+    + '<circle class="fa" cx="14" cy="62" r="6"/><path class="l" d="M25 59h28"/><path class="m" d="M25 65h14"/><path class="l" d="M58 63l6-2 5 1 6-2 6 1"/><rect class="fp" x="90" y="55" width="24" height="14" rx="7"/><circle class="fA" cx="99" cy="62" r="2.2"/><path class="m" d="M105 62h4"/>',
+  // Frente a un indexado: tu cartera (oro) y el mismo dinero en el indexado (discontinua) y, debajo, la diferencia en el tiempo
+  frente: '<path class="l" d="M8 40C30 36 50 30 70 22S100 12 112 9" stroke-dasharray="3 4"/><path class="a" d="M8 42C28 38 46 35 68 26S98 18 112 16"/><circle class="l" cx="112" cy="9" r="2.4"/><circle class="fA" cx="112" cy="16" r="3"/><path class="m" d="M8 63h104"/>'
+    + [-3, -5, -2, 3, 5, 7, 4, -2, -5, -7, -4].map((h, k) => `<path class="${h > 0 ? 'u' : 'd'}" d="M${13 + k * 9.4} 63v${-h}" stroke-width="4.2"/>`).join(''),
+  // Entiende tu cartera: un libro abierto con la lección marcada y los cinco capítulos, tres leídos
+  entiende: '<path class="l" d="M48 18C38 12 22 12 10 16V66C22 62 38 62 48 68Z"/><path class="l" d="M48 18C58 12 74 12 86 16V66C74 62 58 62 48 68Z"/><path class="m" d="M17 27h22M17 35h24M17 43h18M17 51h22"/><path class="a" d="M55 27h24"/><path class="m" d="M55 35h20M55 43h24M55 51h16"/>'
+    + [1, 1, 1, 0, 0].map((x, k) => `<circle class="${x ? 'fA' : 'fp'}" cx="104" cy="${14 + k * 13}" r="4.5"/>`).join(''),
+  // Tu año en Toisón: las tarjetas apiladas, la de delante con el año y lo aportado mes a mes, y compartir
+  tuano: '<rect class="fp" x="30" y="6" width="62" height="58" rx="8" transform="rotate(-7 61 35)"/><rect class="fa" x="26" y="9" width="64" height="60" rx="8" transform="rotate(5 58 39)"/><rect class="fp" x="20" y="12" width="68" height="62" rx="9"/><rect class="l" x="20" y="12" width="68" height="62" rx="9"/><text class="ta" x="29" y="34" style="font-size:15px" data-no-trad>2026</text>'
+    + [6, 9, 8, 12, 15, 18].map((h, k) => `<rect class="fA" x="${29 + k * 9}" y="${66 - h}" width="5.5" height="${h}" rx="1.5"/>`).join('')
+    + '<path class="a" d="M104 46V30M98 36l6-6 6 6"/><path class="a" d="M97 44v10h14V44"/>',
+  // el modo discreto: las cantidades tapadas, los porcentajes a la vista y el ojo tachado
+  discreto: '<rect class="fp" x="8" y="10" width="104" height="60" rx="10"/><text class="ta" x="18" y="37" style="font-size:16px" data-no-trad>•••• €</text><text class="tu" x="18" y="57" style="font-size:11px" data-no-trad>+4,2 %</text><path class="a" d="M82 40c6-8 22-8 28 0-6 8-22 8-28 0z"/><circle class="a" cx="96" cy="40" r="4"/><path class="a" d="M84 54l24-28"/>',
   // 0.8: el símbolo de Toisón (con getter: sus trazos se definen más abajo, en 49-avisos-y-ajustes.js)
   get toison() { return `<g class="simb-ts" transform="translate(60 41) scale(.4)"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></g>`; },
   // 0.7: la ficha con sus factores (bueno, malo, neutro), los titulares marcados, GrowIA con su cupo y el banco de cada noche
