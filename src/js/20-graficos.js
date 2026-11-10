@@ -334,12 +334,24 @@ function dibujar(M) {
   for (const c of $$('.mc-caja')) pintarMapaCartera(c, M);
   equilibrarCar();
   const gp = $('#grafProy'); if (gp) grafAbanico(gp, proyeccion(M, cfgProy()), (S.horizonte || 20) * 12);
+  dibujarEvo(M);
+  if ($('#mapaMundo')) { if (S.mapaGeo) repintarMapa(); else cargarMapa(); }
+  const gc = $('#grafCaida'); if (gc && !gc.closest('details:not([open])')) dibujarCaida(gc, M);
+  // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
+  for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
+}
+/* la gráfica grande de la cartera. En 1D y 1S pide al Worker los precios por horas de lo que no trae intradia.json
+   y, cuando llegan, se vuelve a dibujar sola (sin repintar la página) */
+function dibujarEvo(M) {
   const g = $('#grafEvo');
   if (g) {
     const dias = diasRango(S.rango);
     const intra = INTRADIA.has(S.rango);
+    if (intra) pedirIntradia(M.filas.filter((f) => f.uds != null && f.valor > 0), (nuevo) => { if (nuevo && INTRADIA.has(S.rango) && S.M && $('#grafEvo')) dibujarEvo(S.M); });
     let serie = intra ? serieIntradia(M, S.rango) : serieCartera(M, dias), deIntra = intra;
-    if (intra && serie.length < 2) { serie = serieCartera(M, S.rango === '1D' ? 4 : 9); deIntra = false; }
+    // sin precios por horas de nada (una cartera solo de fondos, o sin red): los cierres de cada día; en 1S, de la
+    // última semana, y en 1D, de los últimos días (y la pastilla lo dice)
+    if (intra && serie.length < 2) { serie = serieCartera(M, S.rango === '1D' ? 4 : 7); deIntra = false; }
     // la serie diaria solo suma las posiciones con histórico: el efectivo (y lo que no tiene histórico) entra como
     // una cantidad fija, para que la gráfica, la pastilla y la cifra grande hablen del mismo patrimonio
     if (!deIntra && serie.length) { const extra = M.total - serie[serie.length - 1].v; if (isFinite(extra) && Math.abs(extra) > 0.005) serie = serie.map((x) => ({ d: x.d, v: x.v + extra })); }
@@ -347,6 +359,7 @@ function dibujar(M) {
     const t0s = serie.length ? tiempoDe(serie[0].d) : Date.now();
     const corto = (Date.now() - t0s) < dias * 864e5 * 0.85;
     const etqRango = S.rango === '1D' && deIntra ? L('desde el último cierre', 'since the last close')
+      : S.rango === '1D' && serie.length ? L(`sin precios por horas: desde el ${fechaPunto(serie[0].d)}`, `no hourly prices: since ${fechaPunto(serie[0].d)}`)
       : S.rango === 'Inicio' && inicioDicho() && serie.length ? L(`ganado desde que empezaste a invertir, en ${deIso(inicioDicho()).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`, `gained since you started investing, ${deIso(inicioDicho()).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`)
       : S.rango === 'Inicio' && inicioCartera() && serie.length ? L(`desde tu primera compra apuntada, el ${fechaPunto(serie[0].d)}`, `since your first logged purchase, ${fechaPunto(serie[0].d)}`)
       : S.rango === 'Inicio' && serie.length ? L('ganado desde que compraste', 'gained since you bought')
@@ -390,10 +403,6 @@ function dibujar(M) {
     const animar = grafHeroUltimo !== S.rango + (S.comparar ? '+' : ''); grafHeroUltimo = S.rango + (S.comparar ? '+' : '');
     grafHero(g, series, { titulo: L('Evolución del valor de la cartera', 'Portfolio value over time'), fmt: (v) => eur(v, 0), oculto: S.oculto, alto: movil ? 250 : 330, arriba: movil ? 58 : 76, borde: movil ? 16 : 28, grueso: movil ? 2.6 : 3, ref: ref0 && ref0.v, alMover, animar });
   }
-  if ($('#mapaMundo')) { if (S.mapaGeo) repintarMapa(); else cargarMapa(); }
-  const gc = $('#grafCaida'); if (gc && !gc.closest('details:not([open])')) dibujarCaida(gc, M);
-  // las de Mercados se dibujan al abrir cada fila (cerradas no tienen ancho)
-  for (const el of $$('[data-spark-m]')) if (!el.closest('details:not([open])')) dibujarSparkM(el);
 }
 function dibujarSparkM(el) {
   const h = histMercado(el.dataset.sparkM) || [];

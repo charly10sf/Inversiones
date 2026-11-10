@@ -292,17 +292,31 @@ function fichaDatos(f) {
 function dibujarFicha() {
   const g = $('#fichaGraf'); if (!g) return;
   const f = filaFicha(); if (!f) return;
-  const dias = RANGOS[S.fichaRango] || 366;
-  const pi = INTRADIA.has(S.fichaRango) && S.intra && S.intra.p && S.intra.p[f.inst.id];
+  const dias = RANGOS[S.fichaRango] || 366, intra = INTRADIA.has(S.fichaRango);
+  // lo que no trae intradia.json se pide al Worker; al llegar, se vuelve a dibujar (si sigue abierta y en 1D o 1S)
+  if (intra) pedirIntradia([f], () => { const f2 = filaFicha(); if (f2 && f2.inst.id === f.inst.id && INTRADIA.has(S.fichaRango)) dibujarFicha(); });
+  const pi = intra && intraDe(f.inst.id);
   let h;
-  if (pi && pi.length > 1) {
+  if (pi) {
     const dia = pi[pi.length - 1][0].slice(0, 10), antes = pi.filter(([t]) => t.slice(0, 10) < dia);
     const lim = S.fichaRango === '1D' ? (antes.length ? antes[antes.length - 1][0] : pi[0][0]) : new Date(Date.now() - 7 * 864e5).toISOString().slice(0, 16) + 'Z';
     h = pi.filter(([t]) => t >= lim).map(([d, v]) => ({ d, v }));
     if (f.precio && h.length) h.push({ d: new Date().toISOString().slice(0, 16) + 'Z', v: f.precio });
+  } else if (S.fichaRango === '1D') {
+    // sin precios por horas (un fondo, sin red o Yahoo sin datos): no se enseñan los cierres de días como si fuera el día
+    const cab = $('#fichaCab'), esperando = intraPendiente(f.inst.id), fondo = /^Fondo/.test(f.inst.tipo || '');
+    const hs = (f.hist || []).filter(([, v]) => +v > 0), ult = hs[hs.length - 1], prev = hs[hs.length - 2];
+    if (cab) cab.innerHTML = !esperando && ult && prev ? (() => { const p = (ult[1] / prev[1] - 1) * 100; return `<span class="${cls(p)}">${pctS(p)}</span><span class="k">${L(`en la sesión del ${fechaPunto(ult[0])}`, `in the ${fechaPunto(ult[0])} session`)}</span>`; })() : '';
+    g.innerHTML = `<div class="vacio sin-horas">${esperando ? L('Cargando los precios de hoy…', 'Loading today\'s prices…') : fondo ? L('Los fondos tienen un solo precio al día: no hay precios por horas. Mira 1S o más.', 'Funds have a single price per day: there are no hourly prices. Look at 1W or longer.') : L('No hay precios por horas de esto ahora mismo. Mira 1S o más.', 'There are no hourly prices for this right now. Look at 1W or longer.')}</div>`;
+    return;
   } else {
-    const desde = iso(new Date(Date.now() - Math.max(dias, INTRADIA.has(S.fichaRango) ? 9 : 0) * 86400000));
-    h = (f.hist || []).filter(([d]) => d >= desde).map(([d, v]) => ({ d, v }));
+    // los cierres de cada día. En 1S (sin precios por horas), los de la última semana con el último de antes, para
+    // tener desde dónde empezar (lo del radar viene semanal hasta hace poco: sin él no habría ni dos puntos)
+    const desde = iso(new Date(Date.now() - dias * 86400000)), hs = f.hist || [];
+    let k0 = hs.findIndex(([d]) => d >= desde);
+    if (k0 < 0) k0 = hs.length;
+    if (k0 > 0 && (k0 === hs.length || hs[k0][0] > desde)) k0--;
+    h = (INTRADIA.has(S.fichaRango) ? hs.slice(k0) : hs.filter(([d]) => d >= desde)).map(([d, v]) => ({ d, v }));
     if (h.length && f.precio) { const hoy = hoyIso(); if (h[h.length - 1].d === hoy) h[h.length - 1].v = f.precio; else h.push({ d: hoy, v: f.precio }); }
   }
   const cab = $('#fichaCab');

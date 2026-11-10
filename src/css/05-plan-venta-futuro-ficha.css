@@ -124,3 +124,6 @@ a.kpi:hover .v { color: var(--primario); }
 .anios div { flex: 1 1 72px; background: var(--fondo); padding: 8px 10px; display: grid; gap: 1px; font-variant-numeric: tabular-nums; box-shadow: 0 0 0 1px var(--sep); }
 .anios .k { font-size: 12px; }
 
+
+/* la ficha en 1D sin precios por horas (un fondo, o sin red): el aviso ocupa el sitio de la gráfica */
+.vacio.sin-horas { min-height: 240px; display: flex; align-items: center; justify-content: center; text-align: center; padding: 10px 24px; }
