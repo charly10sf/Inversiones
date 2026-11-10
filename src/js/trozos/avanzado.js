@@ -234,12 +234,12 @@ function pintarPanelAv() {
   ponerCssAv();
   const p = el.dataset.p, M = S.M || calcular();
   // 0.8.3a: en básico, Rentabilidad y Riesgo sencillos (las demás, como en el avanzado)
-  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { rentab: pavRentab, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
+  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { rentab: pavRentab, frente: pavFrente, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
   // al repintar (un botón, un campo de la pestaña), el foco vuelve al mismo mando: el mismo atributo y el mismo puesto
-  const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-mov-res', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-obj-mas', 'data-obj-menos', 'data-obj-acc', 'data-obj-add', 'data-rebal-aport', 'data-lab'];
+  const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-mov-res', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-obj-mas', 'data-obj-menos', 'data-obj-acc', 'data-obj-add', 'data-rebal-aport', 'data-lab', 'data-fr-ref'];
   const at = ae && el.contains(ae) ? ATTR.find((x) => ae.hasAttribute(x)) : null, pos = at ? $$(`[${at}]`, el).indexOf(ae) : -1;
   el.innerHTML = html; el.removeAttribute('aria-busy'); ponerPreguntale(el); marcarCifras(el);
   if (at) { const n = $$(`[${at}]`, el)[pos]; if (n && !n.disabled) n.focus({ preventScroll: true }); else { const t = el.querySelector('.pav-et h2'); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } } }
@@ -458,6 +458,7 @@ function pavRentabBas(M) {
     const dif = R.valor - bm.valor;
     idx = `<p class="pab-grande">${eur(bm.valor, 0)}</p><p class="pab-sub">${L(`tendrías con el mismo dinero, los mismos días, en un indexado de la bolsa mundial. Lo tuyo${M.total - R.valor > 1 ? ', sin el efectivo,' : ''} vale ${eur(R.valor, 0)}: <b class="${cls(dif)}">${eur(Math.abs(dif), 0)} ${dif >= 0 ? 'más' : 'menos'}</b>.`, `you would have with the same money, on the same days, in a world index fund. Yours${M.total - R.valor > 1 ? ', without cash,' : ''} is worth ${eur(R.valor, 0)}: <b class="${cls(dif)}">${eur(Math.abs(dif), 0)} ${dif >= 0 ? 'more' : 'less'}</b>.`)}</p>`;
   } else idx = `<p class="nota" style="margin:0">${bm && bm.desdeDatos ? L(`El indexado tiene precios desde ${fechaConAnio(bm.desdeDatos)}, y tu primera compra es anterior.`, `The index fund has prices from ${fechaConAnio(bm.desdeDatos)}; your first purchase is earlier.`) : L('Sale en cuanto tus posiciones tengan fecha de compra.', 'It shows once your holdings have a purchase date.')}</p>`;
+  if (bm && !bm.sinDatos) idx += `<p class="pab-sub" style="margin:10px 0 0"><a class="fr-ir" href="#av-frente" data-pest-av="frente">${L('Verlo mes a mes ›', 'See it month by month ›')}</a></p>`;
   const indexado = pabT('c4', L('¿Y en un indexado?', 'And in an index fund?'), idx, L('Un fondo del MSCI World en euros, con los dividendos dentro y su comisión descontada. Lo de hoy no dice nada de lo que pasará.', 'An MSCI World fund in euros, dividends included and its fee taken off. Today says nothing about the future.'));
   // lo que cobras y lo que te cuesta: las dos tarjetas de Ingresos y costes
   const D = dividendosMeses(M), nomMes = (k) => { const d = deIso(k + '-01'); return IDIOMA === 'en' ? MESES_EN[d.getMonth()].slice(0, 3) : MESES[d.getMonth()]; };
@@ -668,6 +669,7 @@ function pavCostes(M) {
 
 /* ---------- Las gráficas, una vez pintado (con su ancho de verdad) ---------- */
 function dibujarPanelAv(p, M) {
+  if (p === 'frente') { dibujarFrente(M); return; }
   if (modoApp() === 'basico' && (p === 'rentab' || p === 'riesgo')) { dibujarPanelBas(p, M); return; }
   if (p === 'rentab') {
     const el = $('#pavBench'), R = rentabilidadCartera(M), s = R.twr && R.twr.serie; if (!el || !s) return;

@@ -26,7 +26,7 @@ function marcarModo() {
 }
 // las pestañas que se pintan en el trozo «avanzado» (vista «av»); las demás de Análisis son pantallas de siempre
 const PEST_AV = [
-  ['rentab', 'Rentabilidad', 'Returns'], ['riesgo', 'Riesgo', 'Risk'], ['reparto', 'Reparto y X-Ray', 'Allocation and X-Ray'],
+  ['rentab', 'Rentabilidad', 'Returns'], ['frente', 'Frente a un indexado', 'Against an index fund'], ['riesgo', 'Riesgo', 'Risk'], ['reparto', 'Reparto y X-Ray', 'Allocation and X-Ray'],
   ['div', 'Dividendos', 'Dividends'], ['costes', 'Costes', 'Costs'], ['mov', 'Movimientos', 'Transactions'], ['pnl', 'Día a día', 'Day by day'],
   ['grafico', 'Gráfico técnico', 'Technical chart'], ['rebal', 'Tu reparto objetivo', 'Your target mix'], ['lab', 'Laboratorio', 'Lab'],
 ];

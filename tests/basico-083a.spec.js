@@ -97,7 +97,7 @@ test('básico: Dividendos y Costes llevan a Rentabilidad y no salen sueltos en M
   await expect(page.locator('#panelAv[data-p="rentab"]')).toBeAttached();
   await expect(page.locator('#pab-div')).toBeAttached({ timeout: 15_000 });
   await expect(page.locator('.pest-av a[aria-current="page"]')).toHaveText('Rentabilidad');
-  expect(await page.evaluate(() => [hrefPag(PAG.div), hrefPag(PAG.costes), paginasDe('rendimiento').map((p) => p.id).join()])).toEqual(['#av-rentab', '#av-rentab', 'rentab,analisis']);
+  expect(await page.evaluate(() => [hrefPag(PAG.div), hrefPag(PAG.costes), paginasDe('rendimiento').map((p) => p.id).join()])).toEqual(['#av-rentab', '#av-rentab', 'rentab,frente,analisis']); // 0.8.6: Frente a un indexado, también en básico
   // en avanzado, cada una a lo suyo
   expect(await page.evaluate(() => { ponerModo('avanzado'); return [hrefPag(PAG.div), hrefPag(PAG.costes)]; })).toEqual(['#av-div', '#av-costes']);
 });

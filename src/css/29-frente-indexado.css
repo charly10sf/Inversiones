@@ -1,0 +1,81 @@
+/* 0.8.6 · Frente a un indexado (pestaña 2), según la maqueta 2X aprobada el 8 nov. Todo con los tokens del tema. */
+.fr-refs { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
+.fr-ref { display: inline-flex; align-items: center; gap: 4px; padding: 7px 13px; border-radius: 99px; border: 1px solid var(--borde); background: var(--superficie-2); color: var(--texto-2); font: 550 13px/1 var(--ui); cursor: pointer; }
+.fr-ref[aria-pressed="true"] { background: var(--primario-fondo); color: var(--texto); border-color: var(--primario); }
+.fr-cand { display: inline-flex; margin-left: 3px; color: var(--oro-texto); }
+.fr-cand svg { width: 13px; height: 13px; }
+.pav-et h2 .et-dorado, .pab-cab .et-dorado { margin-left: 8px; padding: 2px 7px 2px 3px; border-radius: 99px; font: 650 9.5px/1 var(--ui); letter-spacing: .1em; text-transform: uppercase; vertical-align: 2px; }
+
+/* la tarjeta grande del ordenador: las dos líneas y, al lado, la bolita y las cifras */
+.fr-hero { display: grid; grid-template-columns: minmax(0, 1fr) 290px; gap: 30px; align-items: start; }
+.fr-frase { margin: 4px 0 6px; font-size: 17px; line-height: 1.5; color: var(--texto-2); }
+.fr-frase b { color: var(--texto); }
+.fr-frase b.down { color: var(--baja); } .fr-frase b.up { color: var(--sube); }
+.fr-hero-lado { display: grid; justify-items: center; gap: 18px; padding: 18px; border-radius: var(--r-l); background: var(--superficie-2); border: 1px solid var(--borde); }
+.fr-cifl { margin: 0; display: grid; gap: 12px; width: 100%; }
+.fr-cifl div { display: grid; gap: 3px; padding-top: 10px; border-top: 1px solid var(--sep); }
+.fr-cifl dt { font: 500 12px/1.3 var(--ui); color: var(--tenue); }
+.fr-cifl dd { margin: 0; font: 600 19px/1.2 var(--ui); font-variant-numeric: tabular-nums; }
+.fr-cifl dd small { font: 500 12px/1 var(--ui); color: var(--tenue); }
+.fr-chart { position: relative; margin-top: 10px; }
+
+/* la bolita de la diferencia */
+.fr-bola { display: grid; justify-items: center; align-content: center; gap: 3px; width: 150px; aspect-ratio: 1; padding: 14px; border-radius: 50%; border: 1.5px solid var(--aro, var(--borde)); background: var(--superficie); flex: none; }
+.fr-bola span { font: 600 10px/1 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--tenue); }
+.fr-bola b { font: 650 26px/1.1 var(--ui); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.fr-bola small { font-size: 12px; color: var(--texto-2); }
+.fr-bola .down, .fr-dif-cab .down, .fr-par .down, .fr-hitos .down, .fr-tl .down { color: var(--baja); }
+.fr-bola .up, .fr-dif-cab .up, .fr-par .up, .fr-hitos .up, .fr-tl .up { color: var(--sube); }
+.fr-bola-fila { display: flex; align-items: center; gap: 18px; margin: 4px 0 6px; }
+.fr-mini { display: grid; gap: 8px; }
+.fr-mini small { display: block; font: 500 12px/1.2 var(--ui); color: var(--tenue); }
+.fr-mini b { font: 600 16px/1.2 var(--ui); font-variant-numeric: tabular-nums; }
+
+/* la diferencia en el tiempo, con los momentos encima */
+.fr-dif-cab { display: grid; gap: 2px; margin-bottom: 4px; }
+.fr-dif-cab small { font: 500 12px/1.3 var(--ui); color: var(--tenue); }
+.fr-dif-cab span { font-size: 13px; color: var(--texto-2); }
+.fr-num { display: block; font: 600 34px/1.1 var(--ui); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.fr-difg { position: relative; padding-top: 40px; }
+.fr-hitos { position: absolute; inset: 0 0 auto 0; height: 38px; }
+.fr-hitos span { position: absolute; top: 0; transform: translateX(-50%); font: 500 11px/1.3 var(--ui); color: var(--tenue); text-align: center; white-space: nowrap; }
+.fr-hitos span.dcha { transform: translateX(-90%); } .fr-hitos span.izq { transform: translateX(-10%); }
+.fr-tl { list-style: none; margin: 0; padding: 0 0 0 14px; border-left: 2px solid var(--sep); }
+.fr-tl li { position: relative; padding: 0 0 16px 12px; font-size: 13.5px; }
+.fr-tl li:last-child { padding-bottom: 0; }
+.fr-tl li::before { content: ''; position: absolute; left: -21px; top: 4px; width: 10px; height: 10px; border-radius: 50%; background: var(--superficie); border: 2px solid var(--primario); }
+.fr-tl time { display: block; font: 600 11px/1.2 var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--tenue); margin-bottom: 3px; }
+
+/* a final de cada año: dos barras por año */
+.fr-pares { display: grid; grid-template-columns: repeat(var(--n, 4), minmax(0, 1fr)); gap: 14px; align-items: end; padding-top: 18px; }
+.fr-par { display: grid; justify-items: center; gap: 4px; }
+.fr-par-b { display: flex; align-items: flex-end; gap: 6px; height: 170px; width: 100%; justify-content: center; }
+.fr-par-b i { position: relative; width: 34%; max-width: 46px; border-radius: 8px 8px 3px 3px; }
+.fr-par-b em { position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font: 600 11px/1 var(--ui); font-style: normal; color: var(--texto-2); white-space: nowrap; }
+.fr-par b { font: 600 13px/1 var(--ui); margin-top: 6px; }
+.fr-par small { font: 600 12px/1 var(--ui); font-variant-numeric: tabular-nums; }
+.fr-tabla-d { margin-top: 12px; }
+.fr-tabla-d summary { cursor: pointer; font: 600 13px/1.4 var(--ui); color: var(--oro-texto); }
+.fr-tabla-d td small, .pav-tabla td small { display: block; font-size: 11.5px; color: var(--tenue); }
+.fr-notas { margin-top: 10px; display: grid; gap: 6px; }
+.fr-notas .nota { margin: 0; }
+.fr-ir { font: 600 13px/1 var(--ui); color: var(--oro-texto); }
+
+/* las tarjetas de una misma fila, de la misma altura */
+.fr-igual { align-self: stretch; }
+
+/* los candados de Dorado: un ejemplo borroso y el botón */
+.fr-bloq { position: relative; min-height: 150px; border-radius: var(--r-m); overflow: hidden; }
+.fr-bloq-in { filter: blur(6px); opacity: .55; pointer-events: none; user-select: none; }
+.fr-bloq-cta { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; text-align: center; }
+.fr-bloq-cta .sello-d { display: grid; --sd: 30px; }
+.fr-bloq-cta b { font: var(--titulo-estilo, normal) 500 18px/1.2 var(--titulo); }
+
+@media (max-width: 1100px) { .fr-hero { grid-template-columns: 1fr; } .fr-hero-lado { grid-template-columns: auto 1fr; justify-items: start; align-items: center; } }
+@media (max-width: 600px) {
+  .fr-bola { width: 128px; padding: 10px; } .fr-bola b { font-size: 22px; }
+  .fr-bola-fila { gap: 14px; }
+  .fr-pares { gap: 8px; } .fr-par-b { height: 130px; }
+  .fr-hitos span { font-size: 10px; }
+}
+@media (max-width: 370px) { .fr-bola { width: 112px; } .fr-bola b { font-size: 19px; } .fr-mini b { font-size: 15px; } }

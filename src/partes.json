@@ -27,7 +27,8 @@
     "24-navegacion.css",
     "25-cristal.css",
     "26-dorado.css", "27-revision-083b.css",
-    "28-lista-seguimiento.css"
+    "28-lista-seguimiento.css",
+    "29-frente-indexado.css"
   ],
   "js": [
     "01-base.js",

@@ -71,7 +71,12 @@ function grafLinea(cont, series, opt = {}) {
   if (!opt.sinRef) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(base[0].v)}" y2="${y(base[0].v)}" stroke="var(--borde)" stroke-width="1" stroke-dasharray="2 3"/>`;
   if (opt.linea && opt.linea.v) g += `<line x1="${ml}" x2="${W - mr}" y1="${y(opt.linea.v)}" y2="${y(opt.linea.v)}" stroke="var(--aviso)" stroke-width="1" stroke-dasharray="4 4"/><text x="${ml + 4}" y="${y(opt.linea.v) - 6}" font-size="11" fill="var(--aviso)">${esc(opt.linea.etiqueta || '')}</text>`;
   const yRel = opt.rellenoA != null ? y(opt.rellenoA) : H - mb;
-  g += `<polygon points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}" fill="${color}" fill-opacity="${opt.rellenoA != null ? 0.16 : 0.08}"/>`;
+  // 0.8.6: dosLados, por encima del valor de referencia en verde y por debajo en rojo (la diferencia con un indexado)
+  if (opt.rellenoA != null && opt.dosLados) {
+    const id = 'gl' + Math.random().toString(36).slice(2, 8), pol = `points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}"`;
+    g += `<defs><clipPath id="${id}a"><rect x="0" y="0" width="${W}" height="${Math.max(0, yRel)}"/></clipPath><clipPath id="${id}b"><rect x="0" y="${yRel}" width="${W}" height="${Math.max(0, H - yRel)}"/></clipPath></defs>`;
+    g += `<polygon ${pol} fill="var(--sube)" fill-opacity="0.22" clip-path="url(#${id}a)"/><polygon ${pol} fill="var(--baja)" fill-opacity="0.22" clip-path="url(#${id}b)"/>`;
+  } else g += `<polygon points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}" fill="${color}" fill-opacity="${opt.rellenoA != null ? 0.16 : 0.08}"/>`;
   if (opt.rellenoA != null) g += `<line x1="${ml}" x2="${W - mr}" y1="${yRel}" y2="${yRel}" stroke="var(--borde)" stroke-width="1"/>`;
   for (const s of series.slice(1)) g += `<polyline points="${pts(s.datos)}" fill="none" stroke="${s.color || 'var(--texto-2)'}" stroke-width="1.4" stroke-dasharray="${s.disc ? '5 4' : ''}" stroke-linejoin="round"/>`;
   g += `<polyline points="${pBase}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>`;

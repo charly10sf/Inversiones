@@ -41,7 +41,9 @@ const PAGINAS = [
   { id: 'posiciones', t: 'Posiciones', en: 'Holdings', s: 'cartera', g: 'cartera', v: 'posiciones', kw: 'cartera fondos acciones' },
   { id: 'mov', t: 'Movimientos', en: 'Transactions', s: 'cartera', g: 'cartera', v: 'av', p: 'mov', kw: 'compras ventas operaciones' },
   { id: 'pnl', t: 'Día a día', en: 'Day by day', s: 'cartera', g: 'cartera', v: 'av', p: 'pnl', av: true, kw: 'ganancias diarias' },
-  { id: 'rentab', t: 'Rentabilidad', en: 'Returns', s: 'rendimiento', g: 'rr', v: 'av', p: 'rentab', kw: 'twr mwr indexado msci divisa' },
+  { id: 'rentab', t: 'Rentabilidad', en: 'Returns', apT: 'Resumen', apEn: 'Summary', s: 'rendimiento', g: 'rr', v: 'av', p: 'rentab', kw: 'twr mwr indexado msci divisa' },
+  // 0.8.6: la pestaña 2; en el móvil, un apartado de Rentabilidad
+  { id: 'frente', t: 'Frente a un indexado', en: 'Against an index fund', s: 'rendimiento', g: 'rr', v: 'av', p: 'frente', kw: 'indexado msci world comparar referencia alfa beta tracking mismo dinero' },
   { id: 'div', t: 'Dividendos', en: 'Dividends', s: 'rendimiento', g: 'rr', v: 'av', p: 'div', bas: 'rentab', kw: 'cobros ingresos' },
   { id: 'costes', t: 'Costes', en: 'Costs', s: 'rendimiento', g: 'rr', v: 'av', p: 'costes', bas: 'rentab', kw: 'ter comisiones gastos' },
   { id: 'analisis', t: 'La IA explica', en: 'AI explains', s: 'rendimiento', g: 'rr', v: 'analisis', kw: 'informe ia' },
@@ -89,7 +91,7 @@ const enHerramientas = () => S.vista === 'av' && ['grafico', 'lab'].includes(pes
 /* ---------- el móvil: Análisis por dentro ---------- */
 const PEST_ANA = [
   { k: 'posiciones', t: 'Posiciones', en: 'Holdings', ap: ['posiciones', 'mov', 'pnl'] },
-  { k: 'rentab', t: 'Rentabilidad', en: 'Returns', ap: ['rentab'] },
+  { k: 'rentab', t: 'Rentabilidad', en: 'Returns', ap: ['rentab', 'frente'] },
   { k: 'riesgo', t: 'Riesgo', en: 'Risk', ap: ['riesgo'] },
   { k: 'reparto', t: 'Reparto', en: 'Allocation', ap: ['reparto', 'rebal'] },
   { k: 'ingresos', t: 'Ingresos y costes', en: 'Income and costs', ap: ['div', 'costes'], av: true },
@@ -112,7 +114,8 @@ function htmlApartados(lista) {
   if (!lista) { const x = PEST_ANA.find((y) => y.ap.includes(pa)); if (!x || x.sinAp) return ''; lista = x.ap; }
   const ps = lista.map((id) => PAG[id]).filter(verPag);
   if (ps.length < 2) return '';
-  return `<nav class="apartados" aria-label="${L('Apartados', 'Sections')}">${ps.map((p) => aPag(p, p.id === pa)).join('')}</nav>`;
+  // 0.8.6: un apartado puede tener otro nombre que su página (Rentabilidad › Resumen · Frente a un indexado)
+  return `<nav class="apartados" aria-label="${L('Apartados', 'Sections')}">${ps.map((p) => aPag(p.apT ? { ...p, t: p.apT, en: p.apEn || p.apT } : p, p.id === pa)).join('')}</nav>`;
 }
 // la vuelta a la hoja de Más desde lo que se abre en ella (Tú, Herramientas)
 const htmlVolverMas = () => `<button type="button" class="volver-mas" data-mas>${L('‹ Más', '‹ More')}</button>`;
