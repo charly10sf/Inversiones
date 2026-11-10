@@ -77,6 +77,11 @@ for (const tema of ['marmol', 'marfil']) for (const modo of ['basico', 'avanzado
     const e = await base(page, context, tema, modo);
     await ir(page, 'av-frente', '#frGraf svg');
     await guardar(page, info, `frente-${k}`, e);
+    // en el móvil y en avanzado, la cuarta tarjeta (las medidas, plegadas): también abierta
+    if (info.project.name !== 'pc' && modo === 'avanzado') {
+      await page.locator('#frMedD summary').click(); await page.waitForTimeout(400);
+      await page.locator('#frMedM').screenshot({ path: `${DIR}/frente-medidas-${k}-${ancho(info)}.png` });
+    }
   });
   test(`tuano · ${k}`, async ({ page, context }, info) => {
     const e = await base(page, context, tema, modo, true);

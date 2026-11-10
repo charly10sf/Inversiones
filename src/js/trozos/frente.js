@@ -277,7 +277,7 @@ function frTablaTwr(F) {
 function frTablaEur(F) {
   return pavTabla(['', L('Tú · indexado', 'You · index'), L('Diferencia', 'Difference')], F.anios.filter((a) => a.tu != null).map((a) => [frAnioEt(a), `${eur(a.tu, 0)}<small>${eur(a.ix, 0)}</small>`, `<b class="${cls(a.tu - a.ix)}">${eurS(a.tu - a.ix, 0)}</b>`]));
 }
-function frMedidas(F) {
+function frMedidas(F, cols = 6) {
   const m = F.medidas, tir = (v) => (v == null ? '—' : pctS(v, 1));
   const sinM = !m || m.faltan || m.quieto;
   const k = [
@@ -289,7 +289,7 @@ function frMedidas(F) {
     [L('Ratio de información', 'Information ratio'), sinM || m.ir == null ? '—' : `${masSi(m.ir, 2)}${fmtNum(m.ir, 2)}`, sinM || m.ir == null ? '' : cls(m.ir), L('la diferencia, por cada punto que se separa', 'the difference, per point apart')],
   ];
   const falta = m && m.faltan ? `<p class="nota" style="margin:12px 0 0">${L(`Alfa, beta y lo demás salen con medio año de semanas: llevas ${m.semanas}, faltan ${m.faltan}.`, `Alpha, beta and the rest show after half a year of weeks: ${m.semanas} so far, ${m.faltan} to go.`)}</p>` : '';
-  return pavKpis(k, 6) + falta;
+  return pavKpis(k, cols) + falta;
 }
 // los tres candados: con Dorado, lo de verdad; sin él, un ejemplo borroso con el botón
 const frBloq = (demo) => `<div class="fr-bloq"><div class="fr-bloq-in" aria-hidden="true" inert>${demo}</div><div class="fr-bloq-cta">${selloDorado('sd-peq')}<b>${L('Con Toisón Dorado', 'With Toisón Gold')}</b><button type="button" class="btn" data-fr-dorado>${L('Ver Toisón Dorado', 'See Toisón Gold')}</button></div></div>`;
@@ -328,6 +328,9 @@ function pavFrente(M) {
         L(`Cada euro que metiste, el mismo día, en un fondo indexado del ${nombre} en euros, con los dividendos dentro y su comisión descontada. La línea de puntos es lo que has ido metiendo. ${frAviso()}`, `Each euro you put in, on the same day, in an ${nombre} index fund in euros, dividends included and its fee taken off. The dotted line is what you have put in. ${frAviso()}`), 'frTuIx'),
       F.sinSerie ? '' : pabT('c12', L('¿Por encima o por debajo?', 'Above or below?'), difG(innerWidth < 560 ? 170 : 200), L('Cada día, lo que valía lo tuyo menos lo que valdría el mismo dinero en el indexado: verde, por encima; rojo, por debajo.', 'Each day, what yours was worth minus the same money in the index fund: green, above; red, below.'), 'frDifT'),
       F.sinSerie ? '' : pabT('c12', L('A final de cada año', 'At the end of each year'), `${frBarras(F, innerWidth < 600 ? 4 : 0)}<details class="fr-tabla-d"><summary>${F.anios.length > 4 && innerWidth < 600 ? L('Todos los años, en tabla', 'All years, as a table') : L('Verlo en tabla', 'See it as a table')}</summary>${frTablaEur(F)}</details>`, L('Lo que valía cada cosa el 31 de diciembre; el último, hoy.', 'What each was worth on 31 December; the last one, today.'), 'frAnios'),
+      // 0.8.6 (Carlos, 10 nov, 21:04; claude/decisiones-086-10nov.md): en el móvil y en avanzado, las medidas como cuarta
+      // tarjeta, plegada; en básico, solo las tres
+      modoApp() === 'avanzado' ? pabT('c12', L('Medidas frente a la referencia', 'Measures against the benchmark'), `<details class="fr-med-d" id="frMedD"><summary>${L('Ver alfa, beta y las demás', 'See alpha, beta and the rest')}</summary>${frMedidas(F, 2)}</details>`, L('Con lo que hace cada uno cada semana desde la primera aportación. Alfa y beta, por regresión y sin tipo sin riesgo; tracking error, lo que se separan semana a semana, pasado a un año; ratio de información, la diferencia de un año entre el tracking error.', 'With what each does every week since the first contribution. Alpha and beta by regression, without a risk-free rate; tracking error, how far the weekly returns drift apart, annualised; information ratio, the yearly difference over the tracking error.'), 'frMedM') : '',
       pabPreguntas([debajo ? L('¿Por qué mi cartera va por debajo del indexado?', 'Why is my portfolio below the index fund?') : L('¿Por qué mi cartera va por encima del indexado?', 'Why is my portfolio above the index fund?'), (debajo ? peor : mejor) ? L(`¿Qué pasó en ${frMes((debajo ? peor : mejor).d)}?`, `What happened in ${frMes((debajo ? peor : mejor).d)}?`) : L('¿Qué es un indexado?', 'What is an index fund?')], 'c12'),
     ].join('');
   }

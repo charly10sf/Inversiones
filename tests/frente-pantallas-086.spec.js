@@ -98,7 +98,8 @@ test('móvil (y básico): tres tarjetas, primero tu cartera y el indexado, todas
   test.skip(info.project.name === 'pc', 'es la forma del móvil (el básico del ordenador va en la siguiente)');
   await abrir(page, 'avanzado');
   const panel = page.locator('#panelAv');
-  await expect(panel.locator('.pab-cab')).toHaveText(['Tu cartera y el indexado', '¿Por encima o por debajo?', 'A final de cada año', 'Pregúntale a la IA']);
+  // (Carlos, 10 nov: en avanzado, las medidas como cuarta tarjeta, plegada; en básico, solo las tres)
+  await expect(panel.locator('.pab-cab')).toHaveText(['Tu cartera y el indexado', '¿Por encima o por debajo?', 'A final de cada año', 'Medidas frente a la referencia', 'Pregúntale a la IA']);
   // la bolita y las cifras arriba, las dos líneas debajo
   const [bola, graf] = await Promise.all([panel.locator('.fr-bola').boundingBox(), panel.locator('#frGraf').boundingBox()]);
   expect(graf.y).toBeGreaterThan(bola.y + bola.height - 2);
@@ -114,8 +115,17 @@ test('móvil (y básico): tres tarjetas, primero tu cartera y el indexado, todas
   await expect(page.locator('.apartados a[aria-current="page"]')).toHaveText('Frente a un indexado');
   await expect(page.locator('.pest-av a[aria-current="page"]')).toHaveText('Rentabilidad');
   await textosCnmv(panel);
+  // las medidas, plegadas: se abren a un toque y no se salen
+  await expect(panel.locator('#frMedD .pav-kpi, #frMedD [class*="kpi"]').first()).toBeHidden();
+  await tocar(page, '#frMedD summary');
+  await expect(panel.locator('#frMedD')).toContainText('Tracking error');
+  await expect(panel.locator('#frMedD')).toContainText('Beta');
   // nada se sale de la pantalla
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);
+  // en básico, solo las tres
+  await page.evaluate(() => ponerModo('basico'));
+  await expect(page.locator('#panelAv[data-p="frente"]:not([aria-busy]) .fr-bola')).toBeAttached({ timeout: 15_000 });
+  await expect(page.locator('#frMedM')).toHaveCount(0);
 });
 
 test('básico en el ordenador: las tres tarjetas, sin siglas, y desde Rentabilidad se llega con «Verlo mes a mes»', async ({ page }, info) => {
