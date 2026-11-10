@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toisón · Maqueta de Tu año (0.8.6)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ibarra+Real+Nova:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --fondo: #121110; --panel: #1b1a18; --panel-2: #24221f; --linea: #34312c;
+  --texto: #f2eee7; --tenue: #aaa298; --oro: #e3b45f; --oro-osc: #2b2214; --ok: #7fd3a0; --ok-osc: #15281d; --aviso: #e8a07a; --aviso-osc: #2e1c13;
+  --display: "Ibarra Real Nova", Georgia, "Times New Roman", serif;
+  --cuerpo: "Inter", system-ui, -apple-system, "Segoe UI", sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--fondo); color: var(--texto); font: 400 15px/1.5 var(--cuerpo); }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+button:focus-visible, a:focus-visible, textarea:focus-visible, label:focus-within { outline: 2px solid var(--oro); outline-offset: 2px; }
+
+.barra { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--fondo) 88%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--linea); }
+.barra-in { max-width: 1480px; margin: 0 auto; padding: 14px 20px; display: flex; flex-wrap: wrap; gap: 12px 22px; align-items: center; }
+.marca { font: 600 22px/1 var(--display); letter-spacing: .04em; margin-right: 6px; }
+.marca em { font-style: italic; color: var(--oro); font-weight: 500; }
+.grupo { display: flex; align-items: center; gap: 8px; }
+.grupo > span { font: 600 11px/1 var(--cuerpo); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--panel); border: 1px solid var(--linea); }
+.seg button { border: 0; background: none; padding: 7px 14px; border-radius: 999px; font-weight: 550; font-size: 13.5px; color: var(--tenue); white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--oro); color: #1a1205; }
+.elegidas { margin-left: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.cuenta { font-size: 13px; color: var(--tenue); }
+.cuenta b { color: var(--texto); }
+.btn { border: 1px solid var(--linea); background: var(--panel-2); padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 13.5px; }
+.btn.pri { background: var(--oro); border-color: var(--oro); color: #1a1205; }
+
+.indice { max-width: 1480px; margin: 0 auto; padding: 16px 20px 0; display: flex; gap: 8px; flex-wrap: wrap; }
+.indice a { text-decoration: none; color: var(--tenue); padding: 7px 12px; border-radius: 999px; border: 1px solid var(--linea); background: var(--panel); font-size: 13px; font-weight: 550; display: inline-flex; gap: 7px; align-items: center; }
+.indice a i { width: 8px; height: 8px; border-radius: 50%; background: var(--linea); }
+.indice a.si i { background: var(--ok); }
+.indice a.cambios i { background: var(--aviso); }
+
+main { max-width: 1480px; margin: 0 auto; padding: 18px 20px 80px; display: grid; gap: 26px; }
+.intro { display: grid; gap: 8px; }
+.intro h1 { margin: 0; font: 600 34px/1.1 var(--display); }
+.nota { margin: 0; max-width: 110ch; color: var(--tenue); font-size: 14px; }
+.nota b { color: var(--texto); font-weight: 600; }
+
+.bloque { background: var(--panel); border: 1px solid var(--linea); border-radius: 20px; padding: 18px; display: grid; gap: 14px; scroll-margin-top: 80px; }
+.bloque.si { border-color: var(--ok); }
+.bloque.cambios { border-color: var(--aviso); }
+.bloque-cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.bloque-cab small { font: 600 11px/1 var(--cuerpo); letter-spacing: .14em; text-transform: uppercase; color: var(--oro); }
+.bloque-cab h2 { margin: 0; font: 600 26px/1.15 var(--display); }
+.duda { margin: 0; color: var(--tenue); max-width: 100ch; }
+.duda b { color: var(--texto); font-weight: 600; }
+
+.ops { display: grid; gap: 14px; grid-template-columns: repeat(auto-fit, minmax(min(100%, var(--min, 420px)), 1fr)); align-items: start; }
+.movil .ops { --min: 300px; }
+.op { position: relative; display: grid; gap: 10px; padding: 12px; border-radius: 16px; background: var(--panel-2); border: 1.5px solid var(--linea); }
+.op.elegida { border-color: var(--oro); background: color-mix(in srgb, var(--oro) 7%, var(--panel-2)); }
+.op-cab { display: flex; align-items: flex-start; gap: 10px; }
+.op-cab input { margin: 4px 0 0; accent-color: var(--oro); width: 17px; height: 17px; flex: none; }
+.op-cab label { display: grid; gap: 2px; cursor: pointer; }
+.op-cab b { font-weight: 650; }
+.op-cab span { font-size: 13.5px; color: var(--tenue); }
+.op figure { margin: 0; }
+.op img { display: block; width: 100%; height: auto; border-radius: 10px; border: 1px solid var(--linea); cursor: zoom-in; background: #000; }
+.movil .op img { max-width: 390px; margin: 0 auto; }
+.op img.alta { max-height: 760px; object-fit: cover; object-position: top; }
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.movil .duo img { max-width: 100%; }
+
+.decidir { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+.decidir .btn[aria-pressed="true"].vale { background: var(--ok-osc); border-color: var(--ok); color: var(--ok); }
+.decidir .btn[aria-pressed="true"].camb { background: var(--aviso-osc); border-color: var(--aviso); color: var(--aviso); }
+.decidir textarea { flex: 1 1 380px; min-height: 44px; resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--linea); background: var(--fondo); font-size: 14px; }
+
+.contexto summary { cursor: pointer; font-weight: 600; color: var(--texto); }
+.contexto img { display: block; max-width: 100%; margin: 12px auto 0; border-radius: 12px; border: 1px solid var(--linea); cursor: zoom-in; }
+.movil .contexto img { max-width: 390px; }
+
+.copiado { position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); padding: 10px 16px; border-radius: 12px; background: var(--ok-osc); border: 1px solid var(--ok); color: var(--ok); font-weight: 600; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 50; }
+.copiado.ver { opacity: 1; }
+.texto-copia { width: 100%; min-height: 120px; margin-top: 10px; padding: 10px; border-radius: 10px; border: 1px solid var(--linea); background: var(--fondo); font: 13px/1.5 ui-monospace, monospace; display: none; }
+.texto-copia.ver { display: block; }
+
+.caja { position: fixed; inset: 0; z-index: 60; display: none; background: rgba(0,0,0,.88); overflow: auto; padding: 50px 20px 30px; }
+.caja.ver { display: block; }
+.caja img { display: block; margin: 0 auto; max-width: 100%; height: auto; border-radius: 10px; }
+.caja-cab { position: fixed; top: 0; left: 0; right: 0; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 16px; background: rgba(0,0,0,.7); }
+.caja-cab span { color: var(--tenue); font-size: 13.5px; }
+@media (max-width: 700px) { .marca { font-size: 19px; } .elegidas { margin-left: 0; } .bloque { padding: 14px; } .duo { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<header class="barra"><div class="barra-in">
+  <span class="marca">Toisón <em>· Tu año</em></span>
+  <div class="grupo"><span>Diseño</span><div class="seg" id="segTema"><button data-v="marmol" aria-pressed="true">Mármol</button><button data-v="marfil" aria-pressed="false">Marfil</button></div></div>
+  <div class="grupo"><span>Pantalla</span><div class="seg" id="segPant"><button data-v="1440" aria-pressed="true">Ordenador</button><button data-v="390" aria-pressed="false">Móvil</button></div></div>
+  <div class="elegidas"><span class="cuenta" id="cuenta"></span><button class="btn pri" id="copiar">Copiar lo decidido</button></div>
+</div></header>
+<nav class="indice" id="indice"></nav>
+<main id="main">
+  <section class="intro">
+    <h1>Tu año en Toisón · elige cómo es cada tarjeta</h1>
+    <p class="nota">Montado encima de la app de verdad (rama <b>v0.8.6-frente</b>, con la cartera de prueba de 5 posiciones: 23.380 €, 19.900 € metidos, 300 € al mes desde marzo de 2023). Ordenador a 1.440 en avanzado; móvil a 390 en básico. Las cifras son de prueba. Son <b>siete tarjetas</b>: la del MSCI World ya es la pestaña 2. Sin candados de Dorado, porque el plan no pone ninguno en Tu año.</p>
+    <p class="nota">En cada tarjeta: marca la opción que te guste, luego «Me vale así» o «Quiero cambios» y, si quieres, una nota. Toca una imagen para verla a tamaño real. Arriba cambias entre Mármol y Marfil, y entre ordenador y móvil. Al final, «Copiar lo decidido» y me lo pegas.</p>
+  </section>
+  <div id="bloques"></div>
+  <textarea class="texto-copia" id="textoCopia" readonly aria-label="Texto de lo decidido"></textarea>
+</main>
+<div class="copiado" id="copiado" role="status">Copiado</div>
+<div class="caja" id="caja" role="dialog" aria-modal="true" aria-label="Imagen a tamaño real"><div class="caja-cab"><span id="cajaTit"></span><button class="btn" id="cajaCerrar">Cerrar ✕</button></div><img id="cajaImg" alt=""></div>
+
+<script>
+const BLOQUES = [
+  { k: 'general', n: '0', tit: 'La página entera y cómo se recorre en el móvil',
+    duda: 'En el ordenador, una página con las siete tarjetas en rejilla y la de compartir al final. <b>En el móvil hay duda de verdad:</b> una página que baja, como el resto de la app, o una tarjeta por pantalla, con barras arriba y «Anterior / Siguiente», como las historias.',
+    soloMovil: true,
+    ops: [
+      { L: 'A', t: 'Una página que baja', d: 'Como Análisis o Ideas. Todo a la vista bajando; nada nuevo que aprender.', img: (T) => `pagina-${T}-390` },
+      { L: 'B', t: 'Una tarjeta por pantalla', d: 'Se pasa con «Siguiente» o deslizando; la barra de arriba dice cuántas quedan. Más de momento especial, una tarjeta cada vez.', duo: (T) => [`historia-estilo-${T}-390`, `historia-edad-${T}-390`] },
+    ] },
+  { k: 'estilo', n: '1', tit: 'Tu estilo de inversor', duda: '<b>¿Le ponemos nombre al estilo?</b> Un nombre (Constante, Paciente, Diversificador, Explorador) da tarjeta a quien ganó poco y es lo que más se comparte; sin nombre es más sobrio. Sale de lo que hiciste, nunca de lo que ganaste, y ningún estilo premia operar mucho.',
+    ops: [
+      { L: 'A', t: 'Con nombre, grande', d: '«Constante», la frase que lo explica y tres hechos: meses aportando, ventas y posiciones.' },
+      { L: 'B', t: 'Con sus rasgos', d: 'El nombre más pequeño y cuatro rasgos con su nivel (constancia, paciencia, reparto, cosas nuevas), cada uno con el dato que lo explica.' },
+      { L: 'C', t: 'Sin nombre', d: 'Una frase con lo que hiciste y tres cifras. Sin etiqueta.' },
+    ] },
+  { k: 'aport', n: '2', tit: 'Lo que aportaste', duda: '<b>¿Mes a mes o el total en el tiempo?</b>',
+    ops: [
+      { L: 'A', t: 'Calendario', d: '«11 de 11 meses», una casilla por mes con su importe y diciembre pendiente.' },
+      { L: 'B', t: 'Línea y total', d: '«3.300 €» y la línea en escalones de todo lo metido desde marzo de 2023.' },
+    ] },
+  { k: 'edad', n: '3', tit: 'La edad de tu dinero', duda: '<b>¿Una cifra explicada o desglosada por posición?</b> Es nueva para casi todos, así que la explicación pesa.',
+    ops: [
+      { L: 'A', t: 'Una cifra y cómo ha crecido', d: '«2 años y 7 meses», hace un año, qué significa y por qué sube menos de un año por año.' },
+      { L: 'B', t: 'Por posición', d: 'La misma cifra y la edad de cada posición, con tu media como raya.' },
+    ] },
+  { k: 'paises', n: '4', tit: 'Dónde está tu dinero', duda: '<b>¿Barras detalladas o una idea en una frase?</b> (El mapa del mundo de la investigación lo dejé fuera: con tantos países pequeños se lee peor que las barras.)',
+    ops: [
+      { L: 'A', t: 'Países y sectores en barras', d: 'Los seis primeros de cada uno, el resto y lo que no tiene país (oro y bitcoin), mirando dentro de los fondos.' },
+      { L: 'B', t: 'Por zonas, en una frase', d: '«El 58 % fuera de la zona euro», una barra de tres zonas y el país, el sector y las empresas que hay dentro.' },
+    ] },
+  { k: 'costes', n: '5', tit: 'Lo que te costó', duda: '<b>¿En porcentaje o «de cada 100 €»?</b> Las dos dicen lo mismo; cambia lo fácil que se entiende.',
+    ops: [
+      { L: 'A', t: 'En porcentaje, con desglose', d: '«0,17 %», ≈ 39 € y cada coste en su línea, también los que este año fueron 0 €.' },
+      { L: 'B', t: 'De cada 100 €', d: '«17 céntimos» de cada 100 €, una barra con de dónde sale y una frase.' },
+    ] },
+  { k: 'divid', n: '6', tit: 'Dividendos', duda: '<b>¿Euros a la vista o a un toque?</b> El plan dice «opcional en euros». También: ¿contamos lo que se queda dentro de los fondos de acumulación?',
+    ops: [
+      { L: 'A', t: 'Cobrado y lo de dentro de los fondos', d: 'Dos cajas: 227 € netos de Repsol (con la retención) y ≈ 250 € que se quedan dentro de tus fondos.' },
+      { L: 'B', t: 'Mes a mes', d: '227 € cobrados y una barra por mes; lo de los fondos, en una nota.' },
+      { L: 'C', t: 'Sin euros, a un toque', d: '«2 cobros, en enero y julio» y «Ver en euros». Las cantidades solo si las pides.' },
+    ] },
+  { k: 'meses', n: '7', tit: 'Meses sin vender', duda: '<b>¿Contador con la gráfica del mes más movido o puntos por mes?</b> Texto sobrio: dice que no vendiste, sin decir que eso sea lo bueno. <b>Queda por decidir:</b> qué pasa si alguien vende para reequilibrar (con este nombre, su contador vuelve a cero).',
+    ops: [
+      { L: 'A', t: 'Contador y el mes más movido', d: '«44 meses» y la línea de 2026 con marzo marcado: «llegó a bajar un 7,8 %. No vendiste».' },
+      { L: 'B', t: 'Puntos por mes', d: 'Un punto por cada mes desde marzo de 2023 y lo de marzo en una frase.' },
+    ] },
+  { k: 'comp', n: '+', tit: 'Para compartir (aparte de las siete)', duda: 'La imagen sale sin euros por defecto y se elige qué datos van. <b>¿Vertical o cuadrada?</b> Se hace en la sesión 9; la forma conviene saberla ya.',
+    ops: [
+      { L: 'A', t: 'Vertical (9:16)', d: 'Para estados de WhatsApp e historias. Cabe un dato más: meses sin vender.' },
+      { L: 'B', t: 'Cuadrada (1:1)', d: 'Para mandarla en un chat o publicarla. Estilo y tres datos.' },
+    ] },
+];
+
+let TEMA = 'marmol', PANT = '1440';
+const KEY = 'toison-tuano-v1';
+let EST = {};
+try { EST = JSON.parse(localStorage.getItem(KEY) || '{}') || {}; } catch (e) { EST = {}; }
+const guardar = () => { try { localStorage.setItem(KEY, JSON.stringify(EST)); } catch (e) {} };
+const nombre = { marmol: 'Mármol', marfil: 'Marfil', '1440': 'ordenador', '390': 'móvil' };
+const src = (b, o) => `img/${b.k}-${o.L}-${TEMA}-${PANT}.webp`;
+
+function pintar() {
+  document.body.classList.toggle('movil', PANT === '390');
+  const cont = document.getElementById('bloques');
+  cont.innerHTML = BLOQUES.map((b) => {
+    const e = EST[b.k] || {};
+    let ops;
+    if (b.soloMovil && PANT === '1440') {
+      ops = `<details class="contexto" open><summary>Ver la página entera en ${nombre[TEMA]} (ordenador)</summary><img loading="lazy" src="img/pagina-${TEMA}-1440.webp" alt="Tu año, página entera en ordenador" data-tit="Página entera · ${nombre[TEMA]} · ordenador"></details>
+        <p class="duda">Para la duda del móvil, pasa a «Móvil» arriba. Puedes elegir igualmente aquí:</p>` +
+        `<div class="ops">${b.ops.map((o) => opHtml(b, o, e, true)).join('')}</div>`;
+    } else ops = `<div class="ops">${b.ops.map((o) => opHtml(b, o, e, false)).join('')}</div>`;
+    return `<section class="bloque ${e.d === 'vale' ? 'si' : e.d === 'camb' ? 'cambios' : ''}" id="t-${b.k}">
+      <div class="bloque-cab"><small>${b.n === '+' ? 'Aparte' : b.n === '0' ? 'Para empezar' : 'Tarjeta ' + b.n + ' de 7'}</small><h2>${b.tit}</h2></div>
+      <p class="duda">${b.duda}</p>${ops}
+      <div class="decidir"><button class="btn vale" data-k="${b.k}" data-d="vale" aria-pressed="${e.d === 'vale'}">Me vale así</button><button class="btn camb" data-k="${b.k}" data-d="camb" aria-pressed="${e.d === 'camb'}">Quiero cambios</button>
+      <textarea data-k="${b.k}" placeholder="Notas (qué cambiarías, o por qué esa)" aria-label="Notas de ${b.tit}">${(e.nota || '').replace(/</g, '&lt;')}</textarea></div></section>`;
+  }).join('');
+  indice();
+}
+function opHtml(b, o, e, sinImg) {
+  const id = `op-${b.k}-${o.L}`;
+  let fig = '';
+  if (!sinImg) {
+    if (o.duo) fig = `<div class="duo">${o.duo(TEMA).map((f) => `<img loading="lazy" src="img/${f}.webp" alt="${o.t}" data-tit="${b.tit} · ${o.L} ${o.t} · ${nombre[TEMA]}">`).join('')}</div>`;
+    else fig = `<figure><img ${o.img ? 'class="alta" ' : ''}loading="lazy" src="${o.img ? 'img/' + o.img(TEMA) + '.webp' : src(b, o)}" alt="${b.tit}, opción ${o.L}: ${o.t}" data-tit="${b.tit} · ${o.L} ${o.t} · ${nombre[TEMA]} · ${nombre[PANT]}"></figure>`;
+  }
+  return `<div class="op${e.op === o.L ? ' elegida' : ''}"><div class="op-cab"><input type="radio" name="r-${b.k}" id="${id}" data-k="${b.k}" value="${o.L}" ${e.op === o.L ? 'checked' : ''}><label for="${id}"><b>${o.L} · ${o.t}</b><span>${o.d}</span></label></div>${fig}</div>`;
+}
+function indice() {
+  const n = BLOQUES.filter((b) => (EST[b.k] || {}).d).length;
+  document.getElementById('cuenta').innerHTML = `<b>${n}</b> de ${BLOQUES.length} decididas`;
+  document.getElementById('indice').innerHTML = BLOQUES.map((b) => { const d = (EST[b.k] || {}).d; return `<a href="#t-${b.k}" class="${d === 'vale' ? 'si' : d === 'camb' ? 'cambios' : ''}"><i></i>${b.n === '+' ? '' : b.n + ' · '}${b.tit.replace(' (aparte de las siete)', '').replace('La página entera y cómo se recorre en el móvil', 'Página y móvil')}</a>`; }).join('');
+}
+function seg(id, fn) {
+  document.getElementById(id).addEventListener('click', (ev) => { const b = ev.target.closest('button'); if (!b) return;
+    for (const x of b.parentNode.children) x.setAttribute('aria-pressed', x === b); fn(b.dataset.v); const y = scrollY; pintar(); scrollTo(0, y); });
+}
+seg('segTema', (v) => { TEMA = v; });
+seg('segPant', (v) => { PANT = v; });
+document.addEventListener('change', (ev) => { const r = ev.target; if (r.type === 'radio' && r.dataset.k) { (EST[r.dataset.k] ||= {}).op = r.value; guardar();
+  for (const op of document.querySelectorAll(`[name="r-${r.dataset.k}"]`)) op.closest('.op').classList.toggle('elegida', op.checked); } });
+document.addEventListener('input', (ev) => { const t = ev.target; if (t.tagName === 'TEXTAREA' && t.dataset.k) { (EST[t.dataset.k] ||= {}).nota = t.value; guardar(); } });
+document.addEventListener('click', (ev) => {
+  const b = ev.target.closest('.decidir .btn');
+  if (b) { const e = (EST[b.dataset.k] ||= {}); e.d = e.d === b.dataset.d ? '' : b.dataset.d; guardar();
+    const sec = b.closest('.bloque'); sec.classList.toggle('si', e.d === 'vale'); sec.classList.toggle('cambios', e.d === 'camb');
+    for (const x of sec.querySelectorAll('.decidir .btn')) x.setAttribute('aria-pressed', x.dataset.d === e.d); indice(); return; }
+  const im = ev.target.closest('.op img, .contexto img');
+  if (im) { document.getElementById('cajaImg').src = im.src; document.getElementById('cajaTit').textContent = im.dataset.tit || ''; document.getElementById('caja').classList.add('ver'); document.getElementById('caja').scrollTop = 0; }
+});
+const cerrar = () => document.getElementById('caja').classList.remove('ver');
+document.getElementById('cajaCerrar').onclick = cerrar;
+document.getElementById('caja').addEventListener('click', (ev) => { if (ev.target.id === 'caja') cerrar(); });
+document.addEventListener('keydown', (ev) => { if (ev.key === 'Escape') cerrar(); });
+
+function textoDecidido() {
+  const l = ['Tu año en Toisón · lo decidido'];
+  for (const b of BLOQUES) {
+    const e = EST[b.k] || {}, o = b.ops.find((x) => x.L === e.op);
+    const op = o ? `${o.L} (${o.t})` : 'sin opción marcada';
+    const d = e.d === 'vale' ? 'me vale así' : e.d === 'camb' ? 'quiero cambios' : 'sin decidir';
+    l.push(`${b.n === '+' ? 'Compartir' : b.n === '0' ? '0 · Móvil' : b.n + ' · ' + b.tit}: ${op} · ${d}${e.nota ? ' · ' + e.nota.trim().replace(/\s+/g, ' ') : ''}`);
+  }
+  return l.join('\n');
+}
+document.getElementById('copiar').addEventListener('click', async () => {
+  const t = textoDecidido(), ta = document.getElementById('textoCopia'); ta.value = t;
+  try { await navigator.clipboard.writeText(t); const c = document.getElementById('copiado'); c.textContent = 'Copiado: pégamelo en el chat'; c.classList.add('ver'); setTimeout(() => c.classList.remove('ver'), 2200); ta.classList.remove('ver'); }
+  catch (e) { ta.classList.add('ver'); ta.select(); ta.scrollIntoView({ block: 'center' }); }
+});
+pintar();
+</script>
+</body>
+</html>

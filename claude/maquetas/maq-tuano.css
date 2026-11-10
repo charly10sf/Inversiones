@@ -1,0 +1,122 @@
+/* Maqueta de Tu año (10 nov). Se suma a maq.css. */
+.mq-ta .pab-cab { display: flex; align-items: baseline; gap: 10px; }
+.ta-n { font: 600 11px/1 var(--ui); letter-spacing: .12em; color: var(--tenue); }
+.ta-cab { display: flex !important; text-align: left; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding-top: 14px; padding-bottom: 14px; }
+.ta-cab p { margin: 0; color: var(--texto-2); font-size: 14px; }
+.ta-cab div { display: flex; gap: 10px; }
+.ta-cab .btn svg { width: 15px; height: 15px; margin-right: 6px; vertical-align: -2px; }
+.ta-eyebrow { display: block; font: 600 11px/1.2 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--oro-texto); margin-bottom: 6px; }
+.ta-portada { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: center; padding: 6px 0 2px; }
+.ta-nombre { margin: 0; font: var(--titulo-estilo) var(--titulo-peso, 500) 54px/1.05 var(--titulo); letter-spacing: var(--titulo-espacio, -.01em); }
+.ta-nombre-m { font-size: 40px; }
+.ta-frase { margin: 10px 0 0; font-size: 15.5px; line-height: 1.5; color: var(--texto-2); max-width: 44ch; }
+.ta-frase-g { margin-top: 4px; font: var(--titulo-estilo) 500 26px/1.3 var(--titulo); color: var(--texto); max-width: 30ch; }
+.ta-rasgos { display: grid; gap: 12px; }
+.ta-rasgo { display: grid; grid-template-columns: 110px 92px 1fr; gap: 12px; align-items: center; font-size: 13.5px; }
+.ta-rasgo > span:first-child { font-weight: 600; }
+.ta-rasgo em { font-style: normal; color: var(--texto-2); font-size: 12.5px; }
+.ta-niv { display: flex; gap: 4px; }
+.ta-niv i { flex: 1; height: 7px; border-radius: 4px; background: var(--sep); }
+.ta-niv i.si { background: var(--primario); }
+.ta-grande { margin: 2px 0 12px; }
+.ta-grande b { display: block; font: 600 32px/1.1 var(--ui); font-variant-numeric: tabular-nums; letter-spacing: -.02em; }
+.ta-grande span { display: block; margin-top: 5px; font-size: 13.5px; color: var(--texto-2); }
+.ta-texto { margin: 8px 0 12px; font-size: 14px; line-height: 1.5; color: var(--texto-2); }
+.ta-texto-g { font-size: 17px; color: var(--texto); }
+.ta-texto-g b { font-size: 22px; }
+.ta-cal { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.ta-mes { display: grid; justify-items: center; gap: 3px; padding: 9px 4px 8px; border-radius: var(--r-m); background: var(--superficie-2); border: 1px solid var(--borde); }
+.ta-mes small { font: 600 10.5px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); }
+.ta-mes b { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--primario-fondo); color: var(--primario); }
+.ta-mes span { font: 600 11.5px/1 var(--ui); color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.ta-mes.falta { background: transparent; border-style: dashed; }
+.ta-mes.falta b { background: none; color: var(--tenue); }
+.ta-mes.falta span { font-weight: 500; color: var(--tenue); }
+.ta-graf { position: relative; margin: 8px 0 0; }
+.ta-punto { position: absolute; width: 12px; height: 12px; margin: -6px 0 0 -6px; border-radius: 50%; background: var(--superficie); border: 2.5px solid var(--baja); }
+.ta-movido-t { display: block; margin: 8px 0 0; font-size: 13px; color: var(--texto-2); }
+.ta-barras { display: grid; gap: 8px; }
+.ta-bf { display: grid; grid-template-columns: minmax(0, 1.25fr) 1fr 58px; gap: 10px; align-items: center; font-size: 13px; }
+.ta-bf > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--texto-2); }
+.ta-bf b { text-align: right; font: 600 13px/1 var(--ui); font-variant-numeric: tabular-nums; }
+.ta-pista { position: relative; height: 9px; border-radius: 5px; background: var(--sep); }
+.ta-pista i { display: block; height: 100%; border-radius: 5px; }
+.ta-pista u { position: absolute; top: -4px; bottom: -4px; width: 2px; background: var(--texto); border-radius: 1px; }
+.ta-edades .ta-bf { grid-template-columns: minmax(0, 1.3fr) 1fr 62px; }
+.ta-dos { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.ta-sub { margin: 0 0 10px; font: 600 11px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+.ta-apil { display: flex; height: 16px; border-radius: 8px; overflow: hidden; gap: 2px; margin: 6px 0 10px; }
+.ta-apil i { display: block; height: 100%; }
+.ta-apil-ley { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 14px; font-size: 13px; color: var(--texto-2); }
+.ta-apil-ley span { display: inline-flex; align-items: center; gap: 7px; }
+.ta-apil-ley i { width: 10px; height: 10px; border-radius: 3px; }
+.ta-apil-ley b { color: var(--texto); font-variant-numeric: tabular-nums; }
+.ta-lista { display: grid; gap: 0; border-top: 1px solid var(--sep); }
+.ta-lista div { display: flex; justify-content: space-between; gap: 10px; padding: 8px 0; border-bottom: 1px solid var(--sep); font-size: 13.5px; }
+.ta-lista small { color: var(--tenue); margin-left: 4px; }
+.ta-lista b { font-variant-numeric: tabular-nums; }
+.ta-dos-b { gap: 14px; }
+.ta-caja { display: grid; align-content: start; gap: 6px; padding: 16px; border-radius: var(--r-l); background: var(--superficie-2); border: 1px solid var(--borde); }
+.ta-caja small { font: 600 11px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+.ta-caja > span { font-size: 13px; line-height: 1.45; color: var(--texto-2); }
+.ta-hitos { display: flex; gap: 10px; margin-top: 6px; }
+.ta-hitos span { display: grid; gap: 2px; padding: 7px 12px; border-radius: var(--r-m); background: var(--superficie); border: 1px solid var(--borde); font: 600 13px/1.1 var(--ui); }
+.ta-hitos b { font: 600 10.5px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); }
+.ta-meses { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; margin: 4px 0 6px; }
+.ta-meses div { display: grid; justify-items: center; gap: 5px; }
+.ta-mb { display: flex; align-items: flex-end; width: 100%; max-width: 26px; height: 70px; border-radius: 5px; background: var(--sep); overflow: hidden; }
+.ta-mb i { display: block; width: 100%; background: var(--grafica); border-radius: 5px; }
+.ta-meses small { font: 600 10px/1 var(--ui); text-transform: uppercase; color: var(--tenue); }
+.ta-puntos { display: grid; gap: 8px; margin: 2px 0 6px; }
+.ta-puntos div { display: grid; grid-template-columns: 42px 1fr; align-items: center; gap: 8px; }
+.ta-puntos small { font: 600 11.5px/1 var(--ui); color: var(--tenue); }
+.ta-puntos span { display: grid; grid-template-columns: repeat(12, 1fr); gap: 5px; }
+.ta-puntos i { aspect-ratio: 1; max-width: 22px; border-radius: 50%; background: var(--primario); }
+.ta-puntos i.no { background: none; border: 1.5px dashed var(--borde); }
+/* para compartir */
+.ta-comp-w { display: grid; grid-template-columns: auto 1fr; gap: 30px; align-items: center; }
+.ta-comp-w.m { grid-template-columns: 1fr; justify-items: center; gap: 18px; }
+.ta-comp { position: relative; display: grid; align-content: space-between; gap: 18px; padding: 26px 24px; border-radius: 22px; overflow: hidden;
+  background: radial-gradient(120% 80% at 20% 0%, color-mix(in srgb, var(--oro-texto) 16%, transparent), transparent 60%), var(--superficie-2); border: 1px solid var(--aro, var(--borde)); color: var(--texto); }
+.ta-comp-v { width: 270px; aspect-ratio: 9 / 16; }
+.ta-comp-c { width: 330px; aspect-ratio: 1; }
+.ta-comp-cab { display: flex; align-items: center; gap: 8px; font: 650 12px/1 var(--ui); letter-spacing: .2em; }
+.ta-comp-cab em { margin-left: auto; font: 500 12px/1 var(--ui); letter-spacing: 0; font-style: normal; color: var(--texto-2); }
+.ta-logo { width: 22px; height: 20px; }
+.ta-logo .s-o { fill: var(--oro-logo, var(--oro-texto)); } .ta-logo .s-t { fill: var(--texto); }
+.ta-comp-est small, .ta-comp-datos small { display: block; font: 600 10.5px/1.3 var(--ui); letter-spacing: .1em; text-transform: uppercase; color: var(--tenue); }
+.ta-comp-est b { display: block; margin-top: 4px; font: var(--titulo-estilo) 500 40px/1.05 var(--titulo); }
+.ta-comp-datos { display: grid; gap: 14px; }
+.ta-comp-c .ta-comp-datos { grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.ta-comp-datos b { display: block; font: 600 22px/1.1 var(--ui); font-variant-numeric: tabular-nums; }
+.ta-comp-c .ta-comp-datos b { font-size: 18px; }
+.ta-comp-pie { margin: 0; font: 500 11px/1 var(--ui); color: var(--tenue); }
+.ta-comp-op { max-width: 420px; }
+.ta-chk { display: grid; gap: 8px; margin: 0 0 16px; }
+.ta-chk span { display: flex; align-items: center; gap: 9px; font-size: 14px; color: var(--texto-2); }
+.ta-chk i { display: grid; place-items: center; width: 18px; height: 18px; border-radius: 5px; border: 1.5px solid var(--borde); }
+.ta-chk span.si { color: var(--texto); }
+.ta-chk span.si i { background: var(--primario); border-color: var(--primario); color: var(--sobre-primario, #fff); }
+/* una tarjeta por pantalla (móvil) */
+.ta-hist { position: fixed; inset: 0; z-index: 9999; display: grid; grid-template-rows: auto auto 1fr auto; gap: 14px; padding: 14px 18px 22px; background: var(--fondo); color: var(--texto); }
+.ta-hist-barra { display: flex; gap: 4px; }
+.ta-hist-barra i { flex: 1; height: 3px; border-radius: 2px; background: var(--sep); }
+.ta-hist-barra i.si, .ta-hist-barra i.aqui { background: var(--texto); }
+.ta-hist-barra i.aqui { background: var(--oro-texto); }
+.ta-hist-cab { display: flex; justify-content: space-between; align-items: center; font: 600 12px/1 var(--ui); letter-spacing: .06em; color: var(--texto-2); }
+.ta-hist-cab button { border: 0; background: none; color: var(--texto-2); font-size: 18px; }
+.ta-hist-c { align-self: center; padding: 22px 18px; border-radius: var(--r-xl, 24px); background: var(--superficie); border: 1px solid var(--borde); }
+.ta-hist-c h2 { margin: 0 0 14px; font: var(--titulo-estilo) 500 26px/1.15 var(--titulo); }
+.ta-hist-c .ta-portada { grid-template-columns: 1fr; gap: 16px; }
+.ta-hist-pie { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+@media (max-width: 600px) {
+  .ta-portada, .ta-portada-b { grid-template-columns: 1fr; gap: 16px; }
+  .ta-nombre { font-size: 44px; }
+  .ta-rasgo { grid-template-columns: 92px 70px 1fr; gap: 8px; font-size: 13px; }
+  .ta-dos { grid-template-columns: 1fr; gap: 18px; }
+  .ta-cal { grid-template-columns: repeat(4, 1fr); }
+  .ta-grande b { font-size: 28px; }
+  .ta-frase-g { font-size: 22px; }
+  .ta-meses { gap: 3px; }
+  .ta-comp-w .ta-comp-op { max-width: none; width: 100%; }
+}
