@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toisón · La barra lateral del ordenador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ibarra+Real+Nova:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --fondo: #121110; --panel: #1b1a18; --panel-2: #24221f; --linea: #34312c;
+  --texto: #f2eee7; --tenue: #aaa298; --oro: #e3b45f; --ok: #7fd3a0; --ok-osc: #15281d; --aviso: #e8a07a; --aviso-osc: #2e1c13;
+  --display: "Ibarra Real Nova", Georgia, serif; --cuerpo: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--fondo); color: var(--texto); font: 400 15px/1.5 var(--cuerpo); }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:is(button, a, textarea):focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+
+.barra { position: sticky; top: 0; z-index: 20; background: color-mix(in srgb, var(--fondo) 90%, transparent); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-bottom: 1px solid var(--linea); }
+.barra-in { max-width: 1480px; margin: 0 auto; padding: 12px 20px; display: flex; flex-wrap: wrap; gap: 10px 20px; align-items: center; }
+.marca { font: 600 21px/1 var(--display); letter-spacing: .04em; }
+.marca em { font-style: italic; color: var(--oro); font-weight: 500; }
+.grupo { display: flex; align-items: center; gap: 8px; }
+.grupo > span { font: 600 11px/1 var(--cuerpo); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+.seg { display: inline-flex; padding: 3px; border-radius: 999px; background: var(--panel); border: 1px solid var(--linea); }
+.seg button { border: 0; background: none; padding: 6px 12px; border-radius: 999px; font-weight: 550; font-size: 13px; color: var(--tenue); white-space: nowrap; }
+.seg button[aria-pressed="true"] { background: var(--oro); color: #1a1205; }
+.der { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.cuenta { font-size: 13px; color: var(--tenue); }
+.cuenta b { color: var(--texto); }
+.btn { border: 1px solid var(--linea); background: var(--panel-2); padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 13.5px; }
+.btn.pri { background: var(--oro); border-color: var(--oro); color: #1a1205; }
+
+main { max-width: 1480px; margin: 0 auto; padding: 22px 20px 90px; display: grid; gap: 30px; }
+h1 { margin: 0; font: 600 36px/1.1 var(--display); }
+.nota { margin: 0; max-width: 110ch; color: var(--tenue); font-size: 14.5px; }
+.nota b { color: var(--texto); font-weight: 600; }
+.indice { display: flex; flex-wrap: wrap; gap: 8px; }
+.indice a { text-decoration: none; color: var(--tenue); padding: 7px 12px; border-radius: 999px; border: 1px solid var(--linea); background: var(--panel); font-size: 13px; font-weight: 550; display: inline-flex; gap: 7px; align-items: center; }
+.indice a i { width: 8px; height: 8px; border-radius: 50%; background: var(--linea); }
+.indice a.si i { background: var(--ok); } .indice a.cambios i { background: var(--aviso); }
+
+.bloque { background: var(--panel); border: 1px solid var(--linea); border-radius: 20px; padding: 20px; display: grid; gap: 16px; scroll-margin-top: 80px; }
+.bloque.si { border-color: var(--ok); } .bloque.cambios { border-color: var(--aviso); }
+.cab small { display: block; font: 600 11px/1 var(--cuerpo); letter-spacing: .14em; text-transform: uppercase; color: var(--oro); margin-bottom: 6px; }
+.cab h2 { margin: 0; font: 600 28px/1.15 var(--display); }
+.cab p { margin: 6px 0 0; color: var(--tenue); max-width: 100ch; }
+
+/* lo que vi */
+.refs { display: grid; gap: 14px; grid-template-columns: repeat(auto-fill, minmax(330px, 1fr)); }
+.ref { background: var(--panel-2); border: 1px solid var(--linea); border-radius: 16px; overflow: hidden; display: flex; flex-direction: column; }
+.ref figure { margin: 0; height: 210px; background: #0b0b0b; display: grid; place-items: center; overflow: hidden; border-bottom: 1px solid var(--linea); }
+.ref img { max-width: 100%; max-height: 210px; display: block; cursor: zoom-in; object-fit: contain; }
+.ref-t { padding: 12px 14px 14px; display: grid; gap: 6px; }
+.ref-t h3 { margin: 0; font: 600 17px/1.2 var(--cuerpo); display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+.ref-t h3 em { font: 500 11.5px/1 var(--cuerpo); font-style: normal; color: var(--tenue); }
+.ref dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 3px 10px; font-size: 13px; }
+.ref dt { color: var(--tenue); white-space: nowrap; }
+.ref dd { margin: 0; }
+.ref .fuente { font-size: 11.5px; color: var(--tenue); margin: 4px 0 0; }
+.saco { background: var(--panel-2); border-radius: 14px; padding: 14px 16px; border: 1px solid var(--linea); }
+.saco h3 { margin: 0 0 6px; font: 600 15px/1.2 var(--cuerpo); color: var(--oro); }
+.saco ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; font-size: 14px; }
+
+/* propuestas */
+.capturas { display: grid; gap: 12px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); }
+.cap { margin: 0; display: grid; gap: 6px; }
+.cap figcaption { font-size: 12.5px; color: var(--tenue); }
+.cap figcaption b { color: var(--texto); font-weight: 600; }
+.cap img { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--linea); cursor: zoom-in; background: #000; }
+.puntos { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
+.punto { background: var(--panel-2); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; border: 1px solid var(--linea); }
+.punto b { display: block; font-size: 11px; letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); margin-bottom: 4px; font-weight: 600; }
+.cifras { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+.cifras th, .cifras td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--linea); }
+.cifras th { color: var(--tenue); font-weight: 600; font-size: 12px; }
+.cifras td.mas { color: var(--ok); } .cifras td.menos { color: var(--aviso); }
+.decidir { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+.decidir .btn[aria-pressed="true"].vale { background: var(--ok-osc); border-color: var(--ok); color: var(--ok); }
+.decidir .btn[aria-pressed="true"].camb { background: var(--aviso-osc); border-color: var(--aviso); color: var(--aviso); }
+textarea { flex: 1 1 380px; min-height: 44px; resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--linea); background: var(--fondo); font-size: 14px; width: 100%; }
+
+/* preguntas */
+.preg { display: grid; gap: 8px; padding: 14px 0; border-top: 1px solid var(--linea); }
+.preg:first-of-type { border-top: 0; }
+.preg > b { font-size: 16px; }
+.preg > span { color: var(--tenue); font-size: 13.5px; max-width: 100ch; }
+.opciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.opciones button { border: 1px solid var(--linea); background: var(--panel-2); padding: 8px 14px; border-radius: 999px; font-size: 13.5px; font-weight: 550; color: var(--tenue); }
+.opciones button[aria-pressed="true"] { border-color: var(--oro); color: var(--oro); background: color-mix(in srgb, var(--oro) 10%, var(--panel-2)); }
+.resumen { white-space: pre-wrap; background: var(--fondo); border: 1px solid var(--linea); border-radius: 12px; padding: 14px; font: 13px/1.5 ui-monospace, Menlo, monospace; color: var(--tenue); }
+.copiado { color: var(--ok); font-size: 13px; }
+
+/* a tamaño real */
+.caja { position: fixed; inset: 0; z-index: 50; background: rgb(0 0 0 / .9); display: none; grid-template-rows: auto 1fr; }
+.caja.abierta { display: grid; }
+.caja-cab { display: flex; gap: 12px; align-items: center; padding: 10px 16px; color: var(--tenue); font-size: 13.5px; }
+.caja-cab b { color: var(--texto); }
+.caja-cab .btn { margin-left: auto; }
+.caja-img { overflow: auto; display: grid; place-items: start center; padding: 0 16px 16px; }
+.caja-img img { max-width: none; width: min(100%, 1440px); height: auto; border-radius: 8px; }
+.caja-img.real img { width: auto; }
+@media (max-width: 700px) { h1 { font-size: 28px; } .der { margin-left: 0; } }
+</style>
+</head>
+<body>
+<header class="barra"><div class="barra-in">
+  <div class="marca">Toisón · <em>la barra lateral</em></div>
+  <div class="grupo"><span>Diseño</span><div class="seg" data-ctl="tema"><button data-v="marmol" aria-pressed="true">Mármol</button><button data-v="marfil" aria-pressed="false">Marfil</button></div></div>
+  <div class="grupo"><span>Pantalla</span><div class="seg" data-ctl="ancho"><button data-v="1440" aria-pressed="true">1.440</button><button data-v="1280" aria-pressed="false">1.280</button></div></div>
+  <div class="grupo"><span>Modo</span><div class="seg" data-ctl="modo"><button data-v="avanzado" aria-pressed="true">Avanzado</button><button data-v="basico" aria-pressed="false">Básico</button></div></div>
+  <div class="grupo"><span>Página</span><div class="seg" data-ctl="pg"><button data-v="hoy" aria-pressed="true">Hoy</button><button data-v="rentab" aria-pressed="false">Rentabilidad</button></div></div>
+  <div class="der"><span class="cuenta" id="cuenta"></span><a class="btn pri" href="#decidir" style="text-decoration:none">Decidir</a></div>
+</div></header>
+
+<main>
+  <section class="intro" style="display:grid;gap:10px">
+    <h1>Rehacer la barra de la izquierda</h1>
+    <p class="nota">Hoy, en el ordenador, la primera columna son diez iconos sin nombre: hay que pasar el ratón o probar para saber qué es cada uno. Aquí está lo que hacen nueve webs parecidas y tres maneras de arreglarlo, <b>montadas encima de la app de verdad</b> (build de la rama v0.8.6-tuano, cuenta de prueba de 23.380 €). Arriba cambias diseño, pantalla, modo y página, y todas las capturas cambian a la vez. Pulsa una captura para verla a tamaño real (flechas para pasar). Es solo maqueta: no se ha tocado código de la app.</p>
+    <nav class="indice" id="indice"><a href="#vi"><i></i>Lo que vi</a><a href="#ahora"><i></i>Ahora</a><a href="#A" data-p="A"><i></i>A · Índice</a><a href="#B" data-p="B"><i></i>B · Riel que se abre</a><a href="#C" data-p="C"><i></i>C · Riel con rótulos</a><a href="#decidir"><i></i>Preguntas</a></nav>
+  </section>
+
+  <section class="bloque" id="vi">
+    <div class="cab"><small>1 · Cómo lo hacen otros</small><h2>Lo que vi en cada web</h2>
+      <p>No tengo sesión en esas cuentas ni puedo meter contraseñas, así que las capturas salen de sus propios vídeos, guías, centros de ayuda y sistemas de diseño públicos. Son de referencia: en Toisón no va nada copiado, ni sus marcas ni sus iconos.</p></div>
+    <div class="refs" id="refs"></div>
+    <div class="saco"><h3>Lo que me llevo</h3><ul>
+      <li>Casi todas enseñan <b>el nombre siempre</b>. Solo iconos aparece como estado plegado que elige el usuario (Coinbase, Notion, eToro) o en pantallas de operar con muchos datos (Coinbase «condensada», el Web Terminal de Trade Republic).</li>
+      <li>Ajustes, abajo del todo; la cuenta, arriba a la derecha. La IA casi nunca va en la lista: es un botón o un panel aparte (Linear, eToro, IBKR).</li>
+      <li>Pocas entradas arriba: Stripe recortó de unas 20 a 8 y metió lo demás dentro de cada sección. Nosotros tenemos 10.</li>
+      <li>Lo de abrirse al pasar el ratón divide: Notion lo hace y hay extensiones solo para quitarlo. Si se hace, que sea con retardo y con botón para fijarla.</li>
+      <li>Notion abre una segunda columna con la lista al pulsar un grupo, que es lo que ya hace nuestra K2. Binance y Stripe, en cambio, despliegan las páginas debajo de su sección, en una sola columna.</li>
+    </ul></div>
+  </section>
+
+  <section class="bloque" id="ahora">
+    <div class="cab"><small>2 · Para comparar</small><h2>Ahora (la K2 de la 0.8.3)</h2>
+      <p>Iconos de 64 px sin nombre, segunda columna de 252 px con las páginas, «Cómo la ves» y la IA. Ajustes, abajo del riel. En básico, Herramientas sale aunque esté vacía («Está en el modo avanzado»).</p></div>
+    <div class="capturas"><figure class="cap"><img data-v="actual" alt="La barra de ahora"><figcaption></figcaption></figure></div>
+  </section>
+
+  <section class="bloque" id="A" data-p="A">
+    <div class="cab"><small>Propuesta A</small><h2>Índice: una sola columna con icono y nombre</h2>
+      <p>Como Binance o Stripe. Las dos columnas se juntan en una de 248 px: Hoy arriba, tres grupos con rótulo (Tu cartera · Mercados e ideas · Lo tuyo) y la sección abierta despliega sus páginas debajo, colgando de un hilo con la página actual marcada en oro. Abajo, «Cómo la ves», la IA en una línea y Ajustes.</p></div>
+    <div class="capturas"><figure class="cap"><img data-v="A" alt="Propuesta A"><figcaption></figcaption></figure></div>
+    <div class="puntos">
+      <div class="punto"><b>Con la segunda columna</b>Desaparece: las páginas van dentro de la propia lista. Con la IA agrandada, las páginas suben a pestañas como hoy.</div>
+      <div class="punto"><b>1.440 y 1.280</b>Es la que más sitio deja a la página: 68 px más que ahora en las dos. En pantallas bajas, la lista se desplaza y el pie se queda fijo.</div>
+      <div class="punto"><b>Básico y avanzado</b>En básico se van Herramientas (vacía) y las páginas que no tocan; Dividendos y Costes ya son tarjetas de Rentabilidad. En avanzado, todas.</div>
+      <div class="punto"><b>Lo que cuesta</b>Es la que más cambia: se rehace htmlRiel y pintarK2, y el tirador pasa a ensanchar esta columna. La IA abierta pasa a ocupar el sitio del pie. Unas 2 sesiones.</div>
+    </div>
+    <div class="decidir" data-dec="A"><button class="btn vale" aria-pressed="false">Me vale así</button><button class="btn camb" aria-pressed="false">Quiero cambios</button><textarea placeholder="Notas sobre A (opcional)"></textarea></div>
+  </section>
+
+  <section class="bloque" id="B" data-p="B">
+    <div class="cab"><small>Propuesta B</small><h2>Riel que se abre: estrecha, con los nombres al pasar el ratón o fijada</h2>
+      <p>La K2 de ahora, con dos cosas nuevas: al pasar el ratón por los iconos (con un pequeño retardo) el riel se despliega por encima de la página con los nombres y los grupos; y con la chincheta de abajo se queda abierto empujando la página. Los grupos, plegada, son filos entre iconos.</p></div>
+    <div class="capturas">
+      <figure class="cap"><img data-v="B" alt="B cerrada"><figcaption></figcaption></figure>
+      <figure class="cap"><img data-v="B-abierta" alt="B al pasar el ratón"><figcaption></figcaption></figure>
+      <figure class="cap"><img data-v="B-fijada" alt="B fijada"><figcaption></figcaption></figure>
+    </div>
+    <div class="puntos">
+      <div class="punto"><b>Con la segunda columna</b>Igual que ahora mientras está plegada. Fijada a 1.440 caben las dos (208 + 252 px). Fijada a 1.280 no: las páginas suben a pestañas encima del título, como con la IA agrandada.</div>
+      <div class="punto"><b>1.440 y 1.280</b>Plegada, el mismo sitio que ahora. Fijada, 144 px menos a 1.440; a 1.280, 108 px más (porque se va la segunda columna).</div>
+      <div class="punto"><b>Básico y avanzado</b>Igual que A: en básico no sale Herramientas.</div>
+      <div class="punto"><b>Lo que cuesta</b>Poco código nuevo (un estado más del riel, el retardo, la chincheta guardada en el dispositivo). El riesgo es de uso: que se abra sin querer al ir a la izquierda. Una sesión.</div>
+    </div>
+    <div class="decidir" data-dec="B"><button class="btn vale" aria-pressed="false">Me vale así</button><button class="btn camb" aria-pressed="false">Quiero cambios</button><textarea placeholder="Notas sobre B (opcional)"></textarea></div>
+  </section>
+
+  <section class="bloque" id="C" data-p="C">
+    <div class="cab"><small>Propuesta C · de lo que vi</small><h2>Riel con rótulos: el nombre corto debajo de cada icono</h2>
+      <p>Sale de la barra «condensada» de Coinbase (la que usan en Advanced Trade) y de las apps de escritorio: 76 px en vez de 64, cada icono con su nombre debajo en letra pequeña (Rendim. y Herram. abreviados) y filos entre grupos. La segunda columna, igual que ahora.</p></div>
+    <div class="capturas"><figure class="cap"><img data-v="C" alt="Propuesta C"><figcaption></figcaption></figure></div>
+    <div class="puntos">
+      <div class="punto"><b>Con la segunda columna</b>No cambia nada: título, páginas, «Cómo la ves» y la IA, donde están.</div>
+      <div class="punto"><b>1.440 y 1.280</b>12 px menos para la página en las dos. Es el cambio más pequeño.</div>
+      <div class="punto"><b>Básico y avanzado</b>En básico no sale Herramientas. Las abreviaturas se pueden quitar si Carlos prefiere letra más pequeña con el nombre entero.</div>
+      <div class="punto"><b>Lo que cuesta</b>Media sesión: el rótulo, el ancho y las pruebas de 1.440. En inglés hay que mirar las abreviaturas (Perf., Tools).</div>
+    </div>
+    <div class="decidir" data-dec="C"><button class="btn vale" aria-pressed="false">Me vale así</button><button class="btn camb" aria-pressed="false">Quiero cambios</button><textarea placeholder="Notas sobre C (opcional)"></textarea></div>
+  </section>
+
+  <section class="bloque">
+    <div class="cab"><small>En números</small><h2>Cuánto sitio deja cada una a la página</h2><p>Ancho de la página en píxeles (sin la IA abierta).</p></div>
+    <table class="cifras"><thead><tr><th></th><th>Barra</th><th>A 1.440</th><th>A 1.280</th></tr></thead><tbody>
+      <tr><td>Ahora</td><td>64 + 252</td><td>1.124</td><td>964</td></tr>
+      <tr><td>A · Índice</td><td>248</td><td class="mas">1.192 (+68)</td><td class="mas">1.032 (+68)</td></tr>
+      <tr><td>B plegada</td><td>64 + 252</td><td>1.124</td><td>964</td></tr>
+      <tr><td>B fijada</td><td>208 + 252 (a 1.280, solo 208)</td><td class="menos">980 (−144)</td><td class="mas">1.072 (+108)</td></tr>
+      <tr><td>C · Rótulos</td><td>76 + 252</td><td class="menos">1.112 (−12)</td><td class="menos">952 (−12)</td></tr>
+    </tbody></table>
+  </section>
+
+  <section class="bloque" id="decidir">
+    <div class="cab"><small>3 · Lo que tienes que decir</small><h2>Preguntas</h2></div>
+    <div>
+      <div class="preg" data-q="cual"><b>¿Cuál prefieres?</b><div class="opciones"><button data-v="A">A · Índice</button><button data-v="B">B · Riel que se abre</button><button data-v="C">C · Rótulos</button><button data-v="mezcla">Una mezcla (dímelo en las notas)</button></div></div>
+      <div class="preg" data-q="nombres"><b>¿Los nombres, siempre a la vista?</b><span>Lo que hacen casi todas. En B se verían solo al pasar el ratón o con la barra fijada.</span><div class="opciones"><button data-v="siempre">Sí, siempre</button><button data-v="raton">Basta con verlos al pasar el ratón</button><button data-v="elegir">Que lo elija cada uno (fijar o plegar)</button></div></div>
+      <div class="preg" data-q="cuando"><b>¿Cuándo entra?</b><span>La 0.8.6 va justa (salida el 16 dic). C cabe en media sesión; A, en unas dos.</span><div class="opciones"><button data-v="086">En la 0.8.6, antes del repaso de la sesión 10</button><button data-v="letra">En una letra aparte, después de la 0.8.6</button><button data-v="10">Con la 1.0</button></div></div>
+      <div class="preg" data-q="movil"><b>¿El móvil se queda como está?</b><span>Abajo, Análisis · Mercados · Hoy · Ideas · Más. Esto es solo el ordenador.</span><div class="opciones"><button data-v="igual">Sí, igual</button><button data-v="cambiar">Quiero tocar algo (en las notas)</button></div></div>
+      <div class="preg" data-q="notas"><b>Notas generales</b><textarea id="notas" placeholder="Lo que quieras añadir: grupos, nombres, dónde va la IA, el orden…"></textarea></div>
+    </div>
+    <div class="decidir"><button class="btn pri" id="copiar">Copiar lo decidido</button><span class="copiado" id="copiado"></span></div>
+    <div class="resumen" id="resumen"></div>
+  </section>
+</main>
+
+<div class="caja" id="caja" role="dialog" aria-modal="true" aria-label="Captura a tamaño real">
+  <div class="caja-cab"><b id="cajaT"></b><span id="cajaN"></span><button class="btn" id="cajaReal">Tamaño real</button><button class="btn" id="cajaAnt">←</button><button class="btn" id="cajaSig">→</button><button class="btn" id="cajaX">Cerrar</button></div>
+  <div class="caja-img" id="cajaImg"><img alt=""></div>
+</div>
+
+<script>
+const REFS = [
+  { k: 'binance', t: 'Binance', d: 'panel de la cuenta', n: 'Siempre, con icono.', p: 'Fija.', h: 'Nada especial.', g: 'Acordeones: Activos › Resumen, Spot, Margen…', a: 'Cuenta y Ajustes dentro de la lista; lo demás de la web, arriba en horizontal. Sin IA en la barra.', w: 'Unos 240 px. Activo: fondo gris en la página abierta.', f: 'Captura de su centro de ayuda, vía Google Imágenes.' },
+  { k: 'traderepublic', t: 'Trade Republic', d: 'Web Terminal, jul 2026', n: 'No hay barra lateral.', p: '—', h: '—', g: 'Pestañas de espacios de trabajo arriba («Trading», +) y la pantalla en bloques.', a: 'Saldo y cuenta arriba a la derecha.', w: 'Pensada para operar, no para leer: no sirve de modelo para la barra.', f: 'Fotograma de un vídeo tutorial de 2026 (YouTube).' },
+  { k: 'etoro', t: 'eToro', d: 'web', n: 'Siempre: las cinco principales en letra grande, sin icono.', p: 'Se pliega con una flecha junto al logo.', h: '—', g: 'Un grupo «Más» con icono y letra pequeña (Academia, Calendario…), con etiquetas «New».', a: 'Perfil arriba de la lista, botón de depositar fijo abajo; la IA (destellos) y los avisos, arriba a la derecha.', w: 'Unos 280 px.', f: 'Fotograma de un vídeo tutorial de 2026 (YouTube).' },
+  { k: 'revolut', t: 'Revolut', d: 'web', n: 'Siempre, con icono.', p: 'Fija.', h: '—', g: 'Sin grupos, pocas secciones.', a: 'El usuario arriba (avatar, nombre, tipo de cuenta).', w: 'Estrecha. Activo: raya de color a la izquierda y texto en color.', f: 'Imagen de su presentación de la web app (antigua; hoy tiene más secciones con el mismo patrón).' },
+  { k: 'coinbase', t: 'Coinbase', d: 'su sistema de diseño', n: 'Tres modos: icono y nombre; «condensada» (nombre pequeño debajo, para Advanced Trade); plegada solo iconos.', p: 'Plegable, y se pliega sola por debajo de 768 px.', h: 'Plegada: el nombre en un globo.', g: 'Menú «Más» para lo que no cabe.', a: 'Ajustes al final de la lista.', w: 'Activo: pastilla de color con icono y texto en color.', f: 'Página pública de su componente Sidebar (cds.coinbase.com).' },
+  { k: 'ibkr', t: 'Interactive Brokers', d: 'Client Portal', n: 'No hay barra lateral: menú horizontal arriba con desplegables.', p: '—', h: 'Los desplegables se abren al pulsar.', g: 'Inicio, Cartera, Operar, Análisis, Transferir, Informes.', a: 'Buscador y botón Operar en la cabecera; cuenta y ayuda en una franja de arriba. Su asistente es una página propia.', w: '—', f: 'Imagen de su guía del Client Portal.' },
+  { k: 'linear', t: 'Linear', d: 'producto', n: 'Siempre, iconos finos monocromos, letra de 14 px.', p: 'Fija (se puede ocultar con atajo).', h: '—', g: 'Rótulos grises pequeños que pliegan su grupo (Workspace, Favorites).', a: 'Arriba, el nombre del espacio con su menú (ahí van ajustes y cuenta), buscar y nuevo. La IA, panel flotante a la derecha.', w: 'Unos 220 px. Activo: fondo gris suave, sin borde.', f: 'La imagen de su portada, que es la app real.' },
+  { k: 'notion', t: 'Notion', d: 'producto', n: 'Siempre.', p: 'Se pliega con «.', h: 'Plegada, reaparece al llevar el ratón al borde (hay extensiones solo para quitar eso).', g: 'Privado, Compartido, Espacios; al pulsar un rótulo se abre una segunda columna con la lista, como nuestra K2.', a: 'Buscar, Inicio, Bandeja y Ajustes arriba.', w: 'Unos 240 px. Activo: fondo gris.', f: 'Imagen de su centro de ayuda.' },
+  { k: 'stripe', t: 'Stripe', d: 'Dashboard', n: 'Siempre, icono pequeño.', p: 'Fija.', h: '—', g: 'Rehicieron la barra: de unas 20 entradas a 8, más Atajos (fijados y recientes) y Productos; lo de cada sección va dentro de ella.', a: 'Desarrolladores, datos de prueba y Ajustes abajo del todo.', w: 'Unos 220 px.', f: 'Imagen de su anuncio con el antes y el después.' },
+];
+document.getElementById('refs').innerHTML = REFS.map((r) => `<article class="ref"><figure><img src="img/${r.k}.webp" alt="${r.t}" data-ref="${r.k}" loading="lazy"></figure>
+  <div class="ref-t"><h3>${r.t}<em>${r.d}</em></h3><dl><dt>Nombres</dt><dd>${r.n}</dd><dt>Plegable</dt><dd>${r.p}</dd><dt>Al pasar</dt><dd>${r.h}</dd><dt>Grupos</dt><dd>${r.g}</dd><dt>Ajustes, cuenta, IA</dt><dd>${r.a}</dd><dt>Ancho y activo</dt><dd>${r.w}</dd></dl><p class="fuente">${r.f}</p></div></article>`).join('');
+
+const NOM = { actual: 'Ahora', A: 'A · Índice', B: 'B plegada', 'B-abierta': 'B al pasar el ratón', 'B-fijada': 'B fijada', C: 'C · Rótulos' };
+const ESTADO = { tema: 'marmol', ancho: '1440', modo: 'avanzado', pg: 'hoy' };
+const LS = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
+Object.assign(ESTADO, LS.get('barra-filtros', {}));
+const DEC = LS.get('barra-dec', { p: {}, q: {}, notas: '' });
+
+const src = (v, e = ESTADO) => `img/${v}-${e.pg}-${e.tema}-${e.modo}-${e.ancho}.webp`;
+const pie = (v) => `<b>${NOM[v]}</b> · ${ESTADO.tema === 'marmol' ? 'Mármol' : 'Marfil'}, ${ESTADO.ancho === '1440' ? '1.440' : '1.280'} px, ${ESTADO.modo === 'avanzado' ? 'avanzado' : 'básico'}, ${ESTADO.pg === 'hoy' ? 'Hoy' : 'Rendimiento › Rentabilidad'}`;
+function pintarCapturas() {
+  for (const img of document.querySelectorAll('img[data-v]')) { img.src = src(img.dataset.v); img.closest('figure').querySelector('figcaption').innerHTML = pie(img.dataset.v); }
+  for (const s of document.querySelectorAll('.seg[data-ctl]')) for (const b of s.children) b.setAttribute('aria-pressed', String(b.dataset.v === ESTADO[s.dataset.ctl]));
+}
+document.querySelectorAll('.seg[data-ctl]').forEach((s) => s.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; ESTADO[s.dataset.ctl] = b.dataset.v; LS.set('barra-filtros', ESTADO); pintarCapturas(); }));
+
+// decidir
+function pintarDec() {
+  for (const d of document.querySelectorAll('.decidir[data-dec]')) {
+    const k = d.dataset.dec, x = DEC.p[k] || {};
+    d.querySelector('.vale').setAttribute('aria-pressed', String(x.e === 'vale'));
+    d.querySelector('.camb').setAttribute('aria-pressed', String(x.e === 'camb'));
+    const ta = d.querySelector('textarea'); if (document.activeElement !== ta) ta.value = x.n || '';
+    const bl = document.getElementById(k); bl.classList.toggle('si', x.e === 'vale'); bl.classList.toggle('cambios', x.e === 'camb');
+    const ind = document.querySelector(`.indice a[data-p="${k}"]`); ind.className = x.e === 'vale' ? 'si' : x.e === 'camb' ? 'cambios' : '';
+  }
+  for (const q of document.querySelectorAll('.preg[data-q]')) for (const b of q.querySelectorAll('.opciones button')) b.setAttribute('aria-pressed', String(DEC.q[q.dataset.q] === b.dataset.v));
+  const n = document.getElementById('notas'); if (document.activeElement !== n) n.value = DEC.notas || '';
+  const hechas = ['A', 'B', 'C'].filter((k) => DEC.p[k] && DEC.p[k].e).length + Object.keys(DEC.q).length;
+  document.getElementById('cuenta').innerHTML = `<b>${hechas}</b> de 7 contestadas`;
+  document.getElementById('resumen').textContent = textoDecidido();
+  LS.set('barra-dec', DEC);
+}
+document.querySelectorAll('.decidir[data-dec]').forEach((d) => {
+  const k = d.dataset.dec;
+  d.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const x = DEC.p[k] = DEC.p[k] || {}; const v = b.classList.contains('vale') ? 'vale' : 'camb'; x.e = x.e === v ? '' : v; pintarDec(); });
+  d.querySelector('textarea').addEventListener('input', (e) => { (DEC.p[k] = DEC.p[k] || {}).n = e.target.value; pintarDec(); });
+});
+document.querySelectorAll('.preg[data-q] .opciones').forEach((o) => o.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; const q = o.closest('.preg').dataset.q; DEC.q[q] = DEC.q[q] === b.dataset.v ? undefined : b.dataset.v; if (!DEC.q[q]) delete DEC.q[q]; pintarDec(); }));
+document.getElementById('notas').addEventListener('input', (e) => { DEC.notas = e.target.value; pintarDec(); });
+
+const TXT = {
+  cual: { A: 'A · Índice (una columna con icono y nombre)', B: 'B · Riel que se abre (al pasar el ratón o fijada)', C: 'C · Riel con rótulos', mezcla: 'una mezcla (ver notas)' },
+  nombres: { siempre: 'sí, siempre a la vista', raton: 'basta con verlos al pasar el ratón', elegir: 'que lo elija cada uno (fijar o plegar)' },
+  cuando: { '086': 'en la 0.8.6, antes del repaso de la sesión 10', letra: 'en una letra aparte, después de la 0.8.6', '10': 'con la 1.0' },
+  movil: { igual: 'se queda como está', cambiar: 'quiere tocar algo (ver notas)' },
+};
+function textoDecidido() {
+  const l = ['Barra lateral del ordenador (maqueta del 10 nov):'];
+  const p = (k, nom) => { const x = DEC.p[k] || {}; l.push(`- ${nom}: ${x.e === 'vale' ? 'me vale así' : x.e === 'camb' ? 'quiero cambios' : 'sin decir'}${x.n ? ` · ${x.n.trim()}` : ''}`); };
+  p('A', 'A · Índice'); p('B', 'B · Riel que se abre'); p('C', 'C · Riel con rótulos');
+  l.push(`- Prefiero: ${TXT.cual[DEC.q.cual] || 'sin decir'}`);
+  l.push(`- Nombres: ${TXT.nombres[DEC.q.nombres] || 'sin decir'}`);
+  l.push(`- Cuándo: ${TXT.cuando[DEC.q.cuando] || 'sin decir'}`);
+  l.push(`- Móvil: ${TXT.movil[DEC.q.movil] || 'sin decir'}`);
+  if ((DEC.notas || '').trim()) l.push(`- Notas: ${DEC.notas.trim()}`);
+  return l.join('\n');
+}
+document.getElementById('copiar').addEventListener('click', async () => {
+  const c = document.getElementById('copiado');
+  try { await navigator.clipboard.writeText(textoDecidido()); c.textContent = 'Copiado. Pégalo en la conversación.'; }
+  catch (e) { c.textContent = 'No he podido copiar: selecciona el texto de abajo y cópialo a mano.'; }
+});
+
+// a tamaño real, con flechas
+const caja = document.getElementById('caja'), cajaImg = document.querySelector('#cajaImg img');
+let lista = [], idx = 0;
+function abrir(l, i) { lista = l; idx = i; mostrar(); caja.classList.add('abierta'); document.getElementById('cajaX').focus(); }
+function mostrar() { const x = lista[idx]; cajaImg.src = x.src; document.getElementById('cajaT').innerHTML = x.t; document.getElementById('cajaN').textContent = `${idx + 1} de ${lista.length}`; }
+function cerrar() { caja.classList.remove('abierta'); }
+document.addEventListener('click', (e) => {
+  const img = e.target.closest('main img'); if (!img) return;
+  if (img.dataset.ref) { const l = REFS.map((r) => ({ src: `img/${r.k}.webp`, t: `${r.t} · ${r.d}` })); abrir(l, REFS.findIndex((r) => r.k === img.dataset.ref)); return; }
+  const vs = ['actual', 'A', 'B', 'B-abierta', 'B-fijada', 'C']; const l = vs.map((v) => ({ src: src(v), t: pie(v) }));
+  abrir(l, vs.indexOf(img.dataset.v));
+});
+document.getElementById('cajaX').onclick = cerrar;
+document.getElementById('cajaAnt').onclick = () => { idx = (idx - 1 + lista.length) % lista.length; mostrar(); };
+document.getElementById('cajaSig').onclick = () => { idx = (idx + 1) % lista.length; mostrar(); };
+document.getElementById('cajaReal').onclick = () => document.getElementById('cajaImg').classList.toggle('real');
+caja.addEventListener('click', (e) => { if (e.target === caja || e.target.id === 'cajaImg') cerrar(); });
+document.addEventListener('keydown', (e) => { if (!caja.classList.contains('abierta')) return; if (e.key === 'Escape') cerrar(); if (e.key === 'ArrowRight') document.getElementById('cajaSig').click(); if (e.key === 'ArrowLeft') document.getElementById('cajaAnt').click(); });
+
+pintarCapturas(); pintarDec();
+</script>
+</body>
+</html>
