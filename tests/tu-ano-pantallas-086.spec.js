@@ -2,7 +2,7 @@
 // en el ordenador, las siete tarjetas en rejilla; en el móvil, una tarjeta por pantalla con las barras arriba y
 // «Anterior / Siguiente». Textos de la CNMV, sin candados de Dorado.
 import { test as base, expect } from '@playwright/test';
-import { preparar, crearCuenta, quitarCapas } from './ayuda.js';
+import { preparar, crearCuenta, quitarCapas, tocar } from './ayuda.js';
 import { meterCarteraTuAno } from './tuano-cartera.js';
 
 const test = base.extend({
@@ -76,10 +76,11 @@ test('móvil: una tarjeta por pantalla, con las barras, «Anterior / Siguiente»
       expect(r.abajo).toBeLessThanOrEqual(r.pie + 1); expect(r.ancho).toBe(true);
     }).toPass({ timeout: 10_000 });
     if (i === 6) { await expect(sig).toHaveText('Volver a Hoy'); expect(await page.locator('#taMovido svg text').count()).toBeGreaterThan(3); }
-    else await sig.click();
+    else await tocar(page, '[data-ta-ir="1"]');
   }
-  await ant.click(); await expect(page.locator('.ta-hnum')).toHaveText('6');
-  await sig.click(); await sig.click();
+  await tocar(page, '[data-ta-ir="-1"]'); await expect(page.locator('.ta-hnum')).toHaveText('6');
+  await tocar(page, '[data-ta-ir="1"]'); await expect(page.locator('.ta-hnum')).toHaveText('7');
+  await tocar(page, '[data-ta-ir="1"]');
   await expect(page).toHaveURL(/#hoy$/);
   await expect(page.locator('#panelAv .ta-pag')).toHaveCount(0);
 });
@@ -87,8 +88,8 @@ test('móvil: una tarjeta por pantalla, con las barras, «Anterior / Siguiente»
 test('móvil: la cruz vuelve a Hoy y, al volver, empieza por la primera', async ({ page }, info) => {
   test.skip(info.project.name !== 'movil', 'basta con un tamaño');
   await abrir(page, 'avanzado');
-  await page.locator('[data-ta-ir="1"]').click(); await page.locator('[data-ta-ir="1"]').click();
-  await page.locator('.ta-cerrar').click();
+  await tocar(page, '[data-ta-ir="1"]'); await expect(page.locator('.ta-hnum')).toHaveText('2');
+  await tocar(page, '.ta-cerrar');
   await expect(page).toHaveURL(/#hoy$/);
   await page.evaluate(() => { location.hash = 'av-tuano'; });
   await expect(page.locator('.ta-hnum')).toHaveText('1', { timeout: 20_000 });
