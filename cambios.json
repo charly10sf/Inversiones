@@ -1,6 +1,30 @@
 {
  "versiones": [
   {
+   "v": "0.8.3d",
+   "f": "2026-11-09",
+   "h": "20:45",
+   "t": "Noticias",
+   "commits": [
+    {
+     "cuando": "2026-11-09 16:24",
+     "asunto": "Noticias: página nueva estilo Investing y Buenos días con cada cifra de su día",
+     "detalle": [
+      "#noticias en Hoy (trozo «noticias»): cinta de índices con su día, lo importante según la IA, titulares por temas y por",
+      "horas con buscador, empresas leídas por la IA con su tono y la agenda.",
+      "Buenos días: «hoy», «último cierre» o «desde el último cierre» según de cuándo es cada cifra; desglose de lo de hoy y de",
+      "los fondos atrasados; índices con su día; fuera titulares viejos y páginas de cotización.",
+      "precios.py: más consultas de mercado, de los últimos 3 días, hasta 5 por zona y 60 en total; informe.py sigue leyendo 30."
+     ]
+    },
+    {
+     "cuando": "2026-11-09 20:45",
+     "asunto": "0.8.3d: versión, novedades y cambios",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.8.3c",
    "f": "2026-11-08",
    "h": "18:30",

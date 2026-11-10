@@ -309,6 +309,194 @@ async function isinRuta(url, req, env, ctx, res, deFuera) {
   return res(d.r ? { ok: true, ...d.r } : { ok: false, error: 'no-esta' });
 }
 
+/* ---------- Precios cada 30 minutos de lo que no está en intradia.json (gráficas de 1D y 1S) ----------
+   La Action solo baja los precios por horas de instrumentos.json. Lo que viene del catálogo o del radar (WDC, una
+   acción de EEUU cualquiera) se pide aquí: GET /intradia?s=WDC,AAPL,SOL-EUR. Yahoo, 5 días cada 30 minutos, pasado a
+   euros como hace intradia() en scripts/precios.py; la cripto que Yahoo no tenga, de Bitvavo. Mismo formato que
+   intradia.json: { p: { WDC: [["2026-10-19T14:30Z", 95.12], …] } }. Cada símbolo (y cada tipo de cambio) se guarda
+   12 minutos en la caché de Cloudflare. Como mucho INTRA_MAX símbolos por llamada: en el plan gratis hay 50
+   subpeticiones y la caché también cuenta (leer, Yahoo, guardar: 3 por símbolo, más los cambios). */
+const INTRA_MAX = 12, INTRA_TTL = 720;
+const simIntraValido = (s) => /^[A-Z0-9^][A-Z0-9.\-=^&]{0,24}$/.test(s);
+const horaIntra = (ms) => new Date(ms).toISOString().slice(0, 16) + 'Z';
+// [[ms, precio]] en orden y sin repetidos (Yahoo a veces repite la última vela)
+function velasLimpias(pares) {
+  const m = new Map();
+  for (const [t, v] of pares) if (v != null && isFinite(v) && +v > 0) m.set(horaIntra(t), [t, +v]);
+  return [...m.values()].sort((a, b) => a[0] - b[0]);
+}
+async function velasYahoo(sim) {
+  const c = await yahoo(`https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sim)}?range=5d&interval=30m`);
+  const r = c && c.chart && c.chart.result && c.chart.result[0];
+  if (!r) return null;
+  const ts = r.timestamp || [], cl = (r.indicators && r.indicators.quote && r.indicators.quote[0] && r.indicators.quote[0].close) || [];
+  const h = velasLimpias(ts.map((t, k) => [t * 1000, cl[k]]));
+  return h.length ? { m: String((r.meta && r.meta.currency) || 'EUR'), tipo: String((r.meta && r.meta.instrumentType) || ''), h } : null;
+}
+async function velasBitvavo(mercado) {
+  const r = await fetch(`https://api.bitvavo.com/v2/${encodeURIComponent(mercado)}/candles?interval=30m&limit=240`, { headers: { Accept: 'application/json' } });
+  if (!r.ok) return null;
+  const j = await r.json();
+  if (!Array.isArray(j)) return null;
+  const h = velasLimpias(j.map((x) => [+x[0], +x[4]]));
+  return h.length ? { m: 'EUR', tipo: 'CRYPTOCURRENCY', h } : null;
+}
+// peniques y demás: la moneda de verdad y por cuánto multiplicar
+const monedaIntra = (m) => (m === 'GBp' || m === 'GBX' ? ['GBP', 0.01] : m === 'ILA' ? ['ILS', 0.01] : m === 'ZAc' ? ['ZAR', 0.01] : [String(m).toUpperCase(), 1]);
+// cuántas unidades de la moneda vale 1 EUR, cada 30 minutos (EURUSD=X, EURGBP=X…)
+async function cambioIntra(moneda, cache) {
+  const clave = new Request(`https://growfolio.cache/intra-fx/${moneda}`);
+  const hit = await cache.match(clave);
+  if (hit) { const d = await hit.json().catch(() => null); if (d && d.h && d.h.length) return d.h; }
+  const v = await velasYahoo(`EUR${moneda}=X`);
+  if (!v) throw new Error(`sin cambio ${moneda}`);
+  await cache.put(clave, new Response(JSON.stringify({ h: v.h }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${INTRA_TTL}` } }));
+  return v.h;
+}
+function aEuros(h, fx, factor) {
+  let k = 0;
+  return h.map(([t, v]) => {
+    while (k + 1 < fx.length && fx[k + 1][0] <= t) k++;
+    return [horaIntra(t), +((v * factor) / fx[k][1]).toFixed(6)];
+  });
+}
+async function intraSimbolo(sim, cache, cambios) {
+  const clave = new Request(`https://growfolio.cache/intra/${encodeURIComponent(sim)}`);
+  const hit = await cache.match(clave);
+  if (hit) { const d = await hit.json().catch(() => null); if (d && Array.isArray(d.p)) return d; }
+  // un símbolo que Yahoo no conoce (404) es «sin datos», no un fallo; con la cripto se prueba luego Bitvavo
+  let v = await velasYahoo(sim).catch((e) => (/-EUR$/.test(sim) || /yahoo 404/.test(String(e && e.message)) ? null : Promise.reject(e)));
+  if (!v && /-EUR$/.test(sim)) v = await velasBitvavo(sim);
+  let p = [];
+  if (v) {
+    const [moneda, factor] = monedaIntra(v.m);
+    if (moneda === 'EUR') p = v.h.map(([t, x]) => [horaIntra(t), +(x * factor).toFixed(6)]);
+    else {
+      if (!cambios.has(moneda)) cambios.set(moneda, cambioIntra(moneda, cache));
+      p = aEuros(v.h, await cambios.get(moneda), factor);
+    }
+  }
+  const d = { p };
+  // lo que Yahoo no tiene (un fondo, un símbolo raro) se recuerda más tiempo: no va a aparecer en 12 minutos
+  await cache.put(clave, new Response(JSON.stringify(d), { headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${p.length ? INTRA_TTL : 3600}` } }));
+  return d;
+}
+async function intradiaRuta(url, req, env, res, deFuera) {
+  if (deFuera && !(req.headers.get('Authorization') && (await quienEs(req, env)))) return res({ error: 'no-permitido' }, 403);
+  const pedidos = [...new Set(String(url.searchParams.get('s') || '').toUpperCase().split(',').map((x) => x.trim()).filter(Boolean))];
+  const sims = pedidos.filter(simIntraValido).slice(0, INTRA_MAX);
+  if (!sims.length) return res({ error: 'simbolos' }, 400);
+  const cache = caches.default, cambios = new Map(), p = {}, fallos = [];
+  await Promise.all(sims.map(async (s) => {
+    try { p[s] = (await intraSimbolo(s, cache, cambios)).p; } catch (e) { fallos.push(s); }
+  }));
+  if (fallos.length === sims.length) return res({ ok: false, error: 'yahoo', fallos }, 502);
+  // los que no han entrado (más de INTRA_MAX o mal escritos) van aparte: la app los pide en otra llamada o se olvida
+  return res({ ok: true, p, fallos, fuera: pedidos.filter((s) => !sims.includes(s)) });
+}
+
+/* ---------- El histórico diario de lo que no trae la Action (gráficas de 1M a Máx) ----------
+   Lo que viene del radar (WDC y cualquier acción fuera de instrumentos.json) solo tiene un año de cierres semanales
+   (radar-hist.json), y lo del catálogo ampliado, lo mismo: la ficha de WDC en 1M tenía 4 o 5 puntos y en 3A, 5A y Máx
+   no pasaba de un año. La Action no puede bajar lo de cada uno (las carteras van cifradas), así que la web lo pide aquí:
+   GET /historico?s=WDC,0P0000XYZ.F,SOL-EUR. Yahoo en dos peticiones, como guarda la Action (comprimir() en precios.py):
+   diario los 2 últimos años (range=2y, interval=1d) y semanal hasta 10 años (range=10y, interval=1wk, fechado en
+   viernes). Así Yahoo manda unos 1.000 puntos y no 2.500, que importa por el tiempo de CPU del plan gratis. En euros con
+   el cambio de cada día (o de cada semana en lo viejo). La cripto que Yahoo no tenga, de Bitvavo (diaria, unos 4 años).
+   Respuesta: { ok, h: { WDC: [["2016-11-11", 40.1], …, ["2026-11-10", 258.3]] }, fallos, fuera }. Cada símbolo (y cada
+   cambio) se guarda 6 horas en la caché de Cloudflare. Como mucho HIST_MAX por llamada (subpeticiones: leer la caché,
+   dos de Yahoo y guardar, 4 por símbolo, más los cambios). */
+const HIST_MAX = 8, HIST_TTL = 6 * 3600, HIST_ANIOS_DIARIO = 2;
+// la fecha del día en la bolsa de cada uno (Tokio abre a las 00:00 UTC del mismo día; Nueva York, a las 14:30)
+const diaBolsa = (ms, off) => new Date(ms + (off || 0) * 1000).toISOString().slice(0, 10);
+function cierresYahoo(c, semanal) {
+  const r = c && c.chart && c.chart.result && c.chart.result[0];
+  if (!r) return null;
+  const off = (r.meta && r.meta.gmtoffset) || 0, ts = r.timestamp || [];
+  const cl = (r.indicators && r.indicators.quote && r.indicators.quote[0] && r.indicators.quote[0].close) || [];
+  const m = new Map();
+  ts.forEach((t, k) => {
+    const v = cl[k];
+    if (v == null || !isFinite(v) || !(+v > 0)) return;
+    // la vela semanal de Yahoo va fechada en lunes con el cierre del viernes: se fecha en viernes, como la Action
+    const d = new Date(diaBolsa(t * 1000, off) + 'T00:00:00Z');
+    if (semanal) d.setUTCDate(d.getUTCDate() + ((5 - d.getUTCDay() + 7) % 7));
+    m.set(d.toISOString().slice(0, 10), +v);
+  });
+  const h = [...m.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  return { m: String((r.meta && r.meta.currency) || 'EUR'), h };
+}
+async function largoYahoo(sim) {
+  const base = `https://query1.finance.yahoo.com/v8/finance/chart/${encodeURIComponent(sim)}`;
+  const [dia, sem] = await Promise.all([yahoo(`${base}?range=${HIST_ANIOS_DIARIO}y&interval=1d`), yahoo(`${base}?range=10y&interval=1wk`).catch(() => null)]);
+  const d = cierresYahoo(dia, false);
+  if (!d || !d.h.length) return null;
+  const s = cierresYahoo(sem, true), corte = d.h[0][0];
+  // lo semanal solo hasta donde empieza lo diario (y una semana de margen, para que no se pisen)
+  const viejo = s ? s.h.filter(([f]) => diasEntreIso(f, corte) > 3) : [];
+  return { m: d.m, h: [...viejo, ...d.h] };
+}
+const diasEntreIso = (a, b) => Math.round((Date.parse(b + 'T00:00:00Z') - Date.parse(a + 'T00:00:00Z')) / 864e5);
+async function largoBitvavo(mercado) {
+  const r = await fetch(`https://api.bitvavo.com/v2/${encodeURIComponent(mercado)}/candles?interval=1d&limit=1440`, { headers: { Accept: 'application/json' } });
+  if (!r.ok) return null;
+  const j = await r.json();
+  if (!Array.isArray(j)) return null;
+  const m = new Map();
+  for (const x of j) if (+x[4] > 0) m.set(new Date(+x[0]).toISOString().slice(0, 10), +x[4]);
+  const h = [...m.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  return h.length ? { m: 'EUR', h } : null;
+}
+// cuántas unidades de la moneda vale 1 EUR cada día (EURUSD=X…), en la caché como el resto
+async function cambioLargo(moneda, cache) {
+  const clave = new Request(`https://growfolio.cache/hist-fx/${moneda}`);
+  const hit = await cache.match(clave);
+  if (hit) { const d = await hit.json().catch(() => null); if (d && d.h && d.h.length) return d.h; }
+  const v = await largoYahoo(`EUR${moneda}=X`);
+  if (!v) throw new Error(`sin cambio ${moneda}`);
+  await cache.put(clave, new Response(JSON.stringify({ h: v.h }), { headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${HIST_TTL}` } }));
+  return v.h;
+}
+function fechasAEuros(h, fx, factor) {
+  let k = 0;
+  return h.map(([f, v]) => {
+    while (k + 1 < fx.length && fx[k + 1][0] <= f) k++;
+    return [f, +((v * factor) / fx[k][1]).toPrecision(7)];
+  });
+}
+async function histSimbolo(sim, cache, cambios) {
+  const clave = new Request(`https://growfolio.cache/hist/${encodeURIComponent(sim)}`);
+  const hit = await cache.match(clave);
+  if (hit) { const d = await hit.json().catch(() => null); if (d && Array.isArray(d.h)) return d; }
+  let v = await largoYahoo(sim).catch((e) => (/-EUR$/.test(sim) || /yahoo 404/.test(String(e && e.message)) ? null : Promise.reject(e)));
+  if (!v && /-EUR$/.test(sim)) v = await largoBitvavo(sim);
+  let h = [];
+  if (v) {
+    const [moneda, factor] = monedaIntra(v.m);
+    if (moneda === 'EUR') h = v.h.map(([f, x]) => [f, +(x * factor).toPrecision(7)]);
+    else {
+      if (!cambios.has(moneda)) cambios.set(moneda, cambioLargo(moneda, cache));
+      h = fechasAEuros(v.h, await cambios.get(moneda), factor);
+    }
+  }
+  const d = { h };
+  // lo que Yahoo no tiene se recuerda un día: no va a aparecer en unas horas
+  await cache.put(clave, new Response(JSON.stringify(d), { headers: { 'Content-Type': 'application/json', 'Cache-Control': `max-age=${h.length ? HIST_TTL : 86400}` } }));
+  return d;
+}
+async function historicoRuta(url, req, env, res, deFuera) {
+  if (deFuera && !(req.headers.get('Authorization') && (await quienEs(req, env)))) return res({ error: 'no-permitido' }, 403);
+  const pedidos = [...new Set(String(url.searchParams.get('s') || '').toUpperCase().split(',').map((x) => x.trim()).filter(Boolean))];
+  const sims = pedidos.filter(simIntraValido).slice(0, HIST_MAX);
+  if (!sims.length) return res({ error: 'simbolos' }, 400);
+  const cache = caches.default, cambios = new Map(), h = {}, fallos = [];
+  await Promise.all(sims.map(async (s) => {
+    try { h[s] = (await histSimbolo(s, cache, cambios)).h; } catch (e) { fallos.push(s); }
+  }));
+  if (fallos.length === sims.length) return res({ ok: false, error: 'yahoo', fallos }, 502);
+  return res({ ok: true, h, fallos, fuera: pedidos.filter((s) => !sims.includes(s)) });
+}
+
 /* ---------- La IA (antes GrowIA) con Claude (0.7s): el Worker guarda la clave de la API de Claude y reenvía las preguntas ----------
    La clave no puede ir en la web (es estática). La app manda aquí la misma petición que mandaría a la API de Mensajes
    de Claude, con el token de Firebase de quien pregunta; el Worker comprueba quién es, la limpia y la reenvía con la
@@ -769,12 +957,16 @@ export default {
     // el Worker de pruebas de los correos (growfolio-correos, SOLO_PRUEBA=1): solo su ruta de pruebas y las imágenes
     if (env.SOLO_PRUEBA && !(url.pathname === '/correo/prueba' || url.pathname.startsWith('/correo/img/') || url.pathname === '/salud')) return res({ error: 'no-existe' }, 404);
     try {
-      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true, claude: !!env.ANTHROPIC_API_KEY, cuotas: !!env.CUOTAS, correo: !!(env.RESEND_API_KEY && env.FIREBASE_CORREO) });
+      if (url.pathname === '/' || url.pathname === '/salud') return res({ ok: true, banco: !!(env.EB_CLAVE && env.EB_APP), precios: !!env.PRECIOS_TOKEN, isin: true, intradia: true, historico: true, claude: !!env.ANTHROPIC_API_KEY, cuotas: !!env.CUOTAS, correo: !!(env.RESEND_API_KEY && env.FIREBASE_CORREO) });
       if (url.pathname.startsWith('/banco/')) return await banco(url.pathname.slice(7), url, req, env, res);
       if (url.pathname === '/claude') return await claude(req, env, cors, res, ctx);
       if (url.pathname === '/correo' || url.pathname.startsWith('/correo/')) return await correoRuta(req, env, ctx, res, { quienEs, claveCorreo, origenes });
       // desde la web (o la app, que la carga) no hace falta sesión para buscar; desde otro sitio, sí
       if (url.pathname === '/isin') return await isinRuta(url, req, env, ctx, res, !origenes.includes(origen));
+      // igual que /isin: desde la web o la app, sin sesión; desde otro sitio, con ella
+      if (url.pathname === '/intradia') return await intradiaRuta(url, req, env, res, !origenes.includes(origen));
+      // lo mismo para el histórico diario largo (gráficas de 1M a Máx de lo que no trae la Action)
+      if (url.pathname === '/historico') return await historicoRuta(url, req, env, res, !origenes.includes(origen));
       return res({ error: 'no-existe' }, 404);
     } catch (e) {
       return res({ error: 'fallo', motivo: String((e && e.message) || e).slice(0, 160) }, 500);

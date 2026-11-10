@@ -415,7 +415,8 @@ function pasadoAg(modo) {
   if (modo === 'div') lista = lista.filter((n) => /dividend/i.test(n.t));
   if (modo === 'res') lista = lista.filter((n) => /resultad|beneficio|ingres|ventas|earnings|cuentas/i.test(n.t));
   const vistos = new Set();
-  lista = lista.filter((n) => n.d && n.t).sort((a, b) => (b.d > a.d ? 1 : -1)).filter((n) => { const k = n.t.slice(0, 48); if (vistos.has(k)) return false; vistos.add(k); return true; }).slice(0, 10);
+  // 9 nov: sin páginas de cotización ni titulares viejos que Google vuelve a fechar (12b-noticias.js)
+  lista = lista.filter((n) => n.d && n.t && notValida(n)).sort((a, b) => (b.d > a.d ? 1 : -1)).filter((n) => { const k = n.t.slice(0, 48); if (vistos.has(k)) return false; vistos.add(k); return true; }).slice(0, 10);
   // «Mercados hoy»: el titular del día y cómo van las bolsas y el bitcoin
   const fichas = [['^GSPC', 'S&P 500'], ['^IBEX', 'Ibex'], ['BTC-EUR', 'Bitcoin']].filter(([k]) => MK[k] && MK[k].variacion_dia != null);
   const hoyM = (modo === 'tu' || modo === 'eco') && fichas.length && (N.mercado || []).length ? (() => {

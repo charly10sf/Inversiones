@@ -1,7 +1,79 @@
 /* =====================================================================
    Cálculos
    ===================================================================== */
-const histDe = (id) => (S.hist && S.hist.instrumentos && S.hist.instrumentos[id]) || (S.precios && S.precios.instrumentos && S.precios.instrumentos[id] && S.precios.instrumentos[id].historico) || (S.catHist && S.catHist[id]) || (S.histRadar && S.histRadar[id]) || null;
+// lo de la Action primero; luego el histórico diario largo del Worker (si se ha pedido), el del catálogo y el del radar
+const histAction = (id) => (S.hist && S.hist.instrumentos && S.hist.instrumentos[id]) || (S.precios && S.precios.instrumentos && S.precios.instrumentos[id] && S.precios.instrumentos[id].historico) || null;
+const histBase = (id) => (S.catHist && S.catHist[id]) || (S.histRadar && S.histRadar[id]) || null;
+const histDe = (id) => histAction(id) || (HIST_MAS[id] && HIST_MAS[id].h.length > 1 ? HIST_MAS[id].h : null) || histBase(id);
+
+/* El histórico diario largo de lo que no trae la Action (10 nov). Lo del radar (WDC, cualquier acción de fuera de
+   instrumentos.json) solo tenía un año de cierres semanales, y lo del catálogo ampliado, igual: la ficha de WDC en 1M
+   enseñaba 4 o 5 puntos, en 3A, 5A y Máx no pasaba de un año, y en la cartera esa posición iba a saltos. Ahora, si lo que
+   hay es flojo (nada, o menos de 15 cierres en los últimos 45 días), se pide al Worker (/historico): diario los 2
+   últimos años y semanal hasta 10, en euros, como guarda la Action. En memoria 6 horas (5 minutos si falló la red), y
+   al llegar se recalcula la cartera y se repinta la ficha. Si el Worker no responde, se queda lo de antes. */
+const HIST_MAS = {}, HIST_PEND = new Set(), HIST_COLA = new Map(), HIST_LOTE = 8, HIST_VIDA = 6 * 3600e3;
+let histTemp = null;
+function histFlojo(h) {
+  if (!h || h.length < 2) return true;
+  const lim = iso(new Date(deIso(h[h.length - 1][0]).getTime() - 45 * 864e5));
+  let n = 0;
+  for (let k = h.length - 1; k >= 0 && h[k][0] >= lim; k--) n++;
+  return n < 15;
+}
+function simHist(i) {
+  if (!i || i.clase === 'Efectivo') return null;
+  const s = String(i.yahoo || (i.clase === 'Cripto' && i.bitvavo) || '').toUpperCase();
+  return s && /^[A-Z0-9^][A-Z0-9.\-=^&]{0,24}$/.test(s) ? s : null;
+}
+// todavía se está pidiendo (la ficha dice «Cargando» en vez de dibujar 4 puntos)
+const histLargoPendiente = (id) => HIST_PEND.has(id);
+function pedirHistLargo(id) {
+  if (!id || HIST_PEND.has(id) || histAction(id)) return;
+  if (HIST_MAS[id] && Date.now() - HIST_MAS[id].t < HIST_VIDA) return;
+  if (!histFlojo(histBase(id))) return;
+  const s = simHist(S.inst && S.inst[id]); if (!s) return;
+  HIST_PEND.add(id); HIST_COLA.set(id, s);
+  // un momento de espera: así va todo junto y, mientras, puede llegar el histórico del catálogo (que si es diario, basta)
+  clearTimeout(histTemp); histTemp = setTimeout(traerHistLargo, 600);
+}
+async function traerHistLargo() {
+  const faltan = new Map();
+  for (const [id, s] of HIST_COLA) {
+    if (!histFlojo(histBase(id))) { HIST_PEND.delete(id); continue; }
+    if (!faltan.has(s)) faltan.set(s, []);
+    faltan.get(s).push(id);
+  }
+  HIST_COLA.clear();
+  if (!faltan.size) return;
+  const sims = [...faltan.keys()], lotes = [];
+  for (let k = 0; k < sims.length; k += HIST_LOTE) lotes.push(sims.slice(k, k + HIST_LOTE));
+  let nuevo = false;
+  await Promise.all(lotes.map(async (lote) => {
+    let d = null;
+    try {
+      const r = await conTiempo(fetch(`${urlWorker()}/historico?s=${lote.map(encodeURIComponent).join(',')}`), 15000);
+      if (r.ok) d = await r.json();
+    } catch (e) { console.warn('histórico largo', e); }
+    const t = d ? Date.now() : Date.now() - HIST_VIDA + 5 * 60e3;
+    for (const s of lote) {
+      const h = d && d.h && Array.isArray(d.h[s]) ? d.h[s].filter((x) => Array.isArray(x) && x.length === 2 && /^\d{4}-\d\d-\d\d$/.test(x[0]) && +x[1] > 0) : [];
+      for (const id of faltan.get(s)) {
+        HIST_PEND.delete(id);
+        // lo de antes de lo que trae el Worker se queda (por si el catálogo llega más atrás)
+        const viejo = h.length > 1 ? (histBase(id) || []).filter(([f]) => f < h[0][0]) : [];
+        HIST_MAS[id] = { t, h: h.length > 1 ? [...viejo, ...h] : [] };
+        if (h.length > 1) nuevo = true;
+      }
+    }
+  }));
+  // también si no ha llegado nada: la ficha que esperaba tiene que dibujar ya lo que hay
+  if (!S.cartera) return;
+  if (nuevo) { S.M = null; pintar(); if (S.ficha) refrescarFicha(); return; }
+  // sin nada nuevo, solo la gráfica de la ficha que lo esperaba (para que deje de decir «Cargando»)
+  const f = S.ficha && typeof filaFicha === 'function' && filaFicha();
+  if (f && [...faltan.values()].some((ids) => ids.includes(f.inst.id))) dibujarFicha();
+}
 
 /* Lo que añade cada uno y la Action no sigue (no está en precios.json, como la AstraZeneca de un amigo): si la empresa
    está en el radar, su ficha sale de ahí (analistas, valoración, negocio, tendencia, próximos resultados) y su año,

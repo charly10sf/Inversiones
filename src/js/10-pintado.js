@@ -123,7 +123,7 @@ for (const [k, p] of Object.entries(PAREJA_PL)) ICONOS[k] = ICONOS_PL[p];
 /* las pestañas, con el nombre corto de la barra del móvil; Plan va dentro de Cartera. Mercados era un icono suelto
    arriba y no se veía: desde la 0.1.17 es una pestaña más */
 const VISTAS = [
-  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['agenda', 'Calendario', 'Calendario'], ['mercados', 'Mercados', 'Mercados'],
+  ['cartera', 'Cartera', 'Cartera'], ['ruta', 'Paso a paso', 'Pasos'], ['expertos', 'Expertos', 'Expertos'], ['analisis', 'Análisis', 'Análisis'], ['fiscal', 'Fiscalidad', 'Fiscal'], ['futuro', 'Objetivos', 'Objetivos'], ['agenda', 'Calendario', 'Calendario'], ['mercados', 'Mercados', 'Mercados'], ['noticias', 'Noticias', 'Noticias'],
 ];
 // 0.8: las dos que solo tiene Toisón (Cartera con tus posiciones, y Tú)
 const VISTAS_APARTE = [['posiciones', 'Análisis', 'Análisis'], ['tu', 'Tú', 'Tú'], ['av', 'Análisis', 'Análisis']];
@@ -138,7 +138,7 @@ const GRUPOS = [
   // 0.9 (propuesta A del 3 nov): Cartera pasa a llamarse Análisis y lleva las pestañas del detalle; Hoy, tu plan
   { k: 'posiciones', t: 'Análisis', en: 'Analysis', vistas: ['posiciones', 'av', 'analisis', 'fiscal'] },
   { k: 'mercados', t: 'Mercados', en: 'Markets', vistas: ['mercados'] },
-  { k: 'cartera', t: 'Hoy', en: 'Today', vistas: ['cartera', 'agenda'] },
+  { k: 'cartera', t: 'Hoy', en: 'Today', vistas: ['cartera', 'noticias', 'agenda'] },
   { k: 'expertos', t: 'Ideas', en: 'Ideas', vistas: ['expertos'] },
   { k: 'tu', t: 'Tú', en: 'You', vistas: ['tu', 'futuro', 'ruta'] },
 ];
@@ -147,6 +147,8 @@ const EN_CARTERA_TS = new Set(['posiciones', 'reparto']);
 function subvistas(k) {
   if (k === 'posiciones') return [['posiciones', 'Posiciones', 'Holdings'], ['analisis', 'Análisis', 'Analysis'], ['fiscal', 'Hacienda', 'Taxes']];
   if (k === 'tu') return [['tu', 'Tu cuenta', 'Your account'], ['futuro', 'Objetivos', 'Goals'], ['ruta', RUTA_NOM.t, RUTA_NOM.en]];
+  // 9 nov: en Noticias y Calendario (en Hoy salen tus fijados), las tres de Hoy a mano; en el ordenador ya están en la K2
+  if (k === 'cartera') return [['cartera', 'Hoy', 'Today'], ['noticias', 'Noticias', 'News'], ['agenda', 'Calendario', 'Calendar']];
   return null;
 }
 // las direcciones nuevas (#hoy, #ideas) caen en las claves de siempre
@@ -173,6 +175,7 @@ function htmlSubvistas() {
   // 0.9: sin el patrimonio arriba (ya está en Hoy) y con las pestañas del detalle
   // 0.8.3a: en el ordenador, el título es el de la sección de la K2 y las pestañas están en la segunda barra
   if (g.k === 'posiciones') return `<div class="ts-grupo"><h1 class="ts-tit">${titSeccion('Análisis', 'Analysis')}</h1><p class="ts-sub t-movil">${L('Todo el detalle de tu cartera, por dentro.', 'All the detail of your portfolio, inside out.')}</p>${htmlPestAna()}</div>`;
+  if (g.k === 'cartera') return nav.replace('class="grupo-tabs"', 'class="grupo-tabs hoy-sub"');
   if (g.k === 'tu') return `<div class="ts-grupo${S.vista === 'futuro' && S.tuAp ? ' tu-sub' : ''}">${htmlVolverMas()}<h1 class="ts-tit">${titSeccion('Tú', 'You')}</h1>${nav}</div>`;
   return nav;
 }
@@ -530,27 +533,44 @@ function noticiasDeLoTuyo(M, max = 5) {
   return out.sort((a, b) => (String(b.d || '') > String(a.d || '') ? 1 : -1)).slice(0, max);
 }
 function htmlResumenDia(M) {
-  const N = (S.precios && S.precios.noticias) || {}, MK = (S.precios && S.precios.mercados) || {}, inf = informeVisible(), ia = iaActual();
+  const N = (S.precios && S.precios.noticias) || {}, inf = informeVisible(), ia = iaActual();
   const hoyD = new Date(), fecha = hoyD.toLocaleDateString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+  // 9 nov: cada cifra dice de qué día es. Un lunes a las 6, lo de «hoy» era lo del viernes (y lo de los fondos, del jueves)
+  const dc = diaDeLaCartera(M), hp = horaPrecios();
   const mueven = [...M.filas].filter((f) => f.dia && Math.abs(f.dia) >= 1).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia)).slice(0, 3);
-  const fichas = [['^IBEX', 'Ibex 35'], ['^STOXX50E', 'Euro Stoxx 50'], ['^GSPC', 'S&P 500'], ['BTC-EUR', 'Bitcoin']].filter(([k]) => MK[k] && MK[k].variacion_dia != null);
+  const fichas = [['^IBEX', 'Ibex 35'], ['^STOXX50E', 'Euro Stoxx 50'], ['^GSPC', 'S&P 500'], ['^NDX', 'Nasdaq 100'], ['GC=F', L('Oro', 'Gold')], ['BTC-EUR', 'Bitcoin']].map(([k, n]) => fichaIndice(k, n)).filter(Boolean);
   const mercado = ((inf && inf.mercado) || []).slice(0, 3);
-  const tuyas = noticiasDeLoTuyo(M, 4), generales = (N.mercado || []).filter((n) => n.t && n.u).slice(0, 3);
+  // titulares: solo de las últimas horas (el fin de semana entero si es lunes), sin páginas de cotización ni noticias
+  // viejas que Google vuelve a fechar; los de la bolsa, uno por tema para que no salgan tres del bitcoin
+  const h = horasRecientes(30);
+  const tuyas = noticiasDeLoTuyo(M, 8).filter((n) => notValida(n, h + 18)).slice(0, 4);
+  const generales = (() => {
+    const vistos = new Set(), out = [];
+    for (const n of (N.mercado || []).filter((x) => notValida(x, h))) { const t = temaNoticia(n); if (vistos.has(t)) continue; vistos.add(t); out.push(n); if (out.length >= 3) break; }
+    return out;
+  })();
   // de tu comunidad, solo lo que toca tu dinero (impuestos, ayudas, vivienda), de los últimos 3 días y como mucho dos
-  const regionales = comunidadUsuario() ? noticiasComunidad(comunidadUsuario(), 2, 3) : [];
+  const regionales = comunidadUsuario() ? noticiasComunidad(comunidadUsuario(), 2, 3).filter((n) => notValida(n)) : [];
   const prox = (() => { try { return agendaLista(M, 2).filter((e) => !['festivo', 'media'].includes(e.tipo) || e.mio).slice(0, 4); } catch (e) { return []; } })();
   const toca = (() => { try { const P = pasosRuta(M); return [...P.mes, ...P.seis].filter((x) => !x.hecho && !x.auto && x.urgente)[0] || null; } catch (e) { return null; } })();
-  const noticia = (n) => `<li><a href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
+  // el análisis de la IA puede ser de otro día: se dice
+  const iaVieja = ia && ia.fecha && edadHoras(ia.fecha) > 20 ? haceCuanto(ia.fecha) : '';
+  const noticia = (n) => `<li><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}" data-nw="${esc(n.w || '')}"><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
+  const movChip = (f) => { const d = diaCifra(fechaMovFila(f)); return `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}${d && d !== diaCifra(dc.fecha) ? `<span class="fi-dia">${esc(d)}</span>` : ''}</small></button>`; };
   return `<div class="rdia">
-    <p class="rdia-fecha" data-no-trad>${esc(fecha[0].toUpperCase() + fecha.slice(1))}</p>
-    <section class="rdia-car"><span class="k">Tu cartera hoy</span><b class="rdia-tot">${eur(M.total, 0)}</b><span class="${cls(M.dia)} rdia-dia">${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})</span>
-      ${mueven.length ? `<div class="mv-l">${mueven.map((f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></button>`).join('')}</div>` : ''}</section>
-    ${ia && ia.titular ? `<section class="rdia-ia"><h3 data-no-trad>${conIA('Lo que dice la IA', 'What GrowIA says')}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
-    ${fichas.length || mercado.length ? `<section><h3>Los mercados</h3>${fichas.length ? `<div class="agp-fichas">${fichas.map(([k, n]) => { const v = MK[k].variacion_dia; return `<span class="${v >= 0 ? 'up' : 'down'}"><i>${v >= 0 ? '↑' : '↓'}</i>${esc(n)} <b>${pctS(v, 2)}</b></span>`; }).join('')}</div>` : ''}
+    <p class="rdia-fecha" data-no-trad>${esc(fecha[0].toUpperCase() + fecha.slice(1))}${hp ? ` <span class="rdia-hora">· ${esc(L(`precios de las ${hp}`, `prices at ${hp}`))}</span>` : ''}</p>
+    <section class="rdia-car"><span class="k">${dc.modo === 'hoy' ? L('Tu cartera hoy', 'Your portfolio today') : dc.modo === 'cierre' ? `${L('Tu cartera', 'Your portfolio')} <small>· ${esc(dc.etq)}, ${L('último día de bolsa', 'last trading day')}</small>` : `${L('Tu cartera', 'Your portfolio')} <small>· ${L('desde el último cierre', 'since the last close')}</small>`}</span><b class="rdia-tot">${eur(M.total, 0)}</b><span class="${cls(M.dia)} rdia-dia">${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})</span>
+      ${mueven.length ? `<div class="mv-l">${mueven.map(movChip).join('')}</div>` : ''}
+      ${dc.desglose.length ? `<dl class="rdia-desg">${dc.desglose.map((g) => `<div><dt>${esc(g.t)}</dt><dd class="${cls(g.v)}">${esc(eurS(g.v, 0))}</dd></div>`).join('')}</dl>` : ''}
+      ${dc.notaFondos && !dc.desglose.length ? `<p class="rdia-nota">${esc(dc.notaFondos)}</p>` : ''}</section>
+    ${ia && ia.titular ? `<section class="rdia-ia"><h3 data-no-trad>${conIA('Lo que dice la IA', 'What GrowIA says')}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${iaVieja ? `<p class="rdia-nota">${esc(L(`Su último análisis es de ${iaVieja}.`, `Its latest review is from ${iaVieja}.`))}</p>` : ''}${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
+    ${fichas.length || mercado.length ? `<section><h3>Los mercados</h3>${fichas.length ? `<div class="agp-fichas">${fichas.join('')}</div>` : ''}
+      ${fichas.some((x) => x.includes('fi-dia')) ? `<p class="rdia-nota">${esc(L('Lo que lleva un día al lado es su último cierre: esa bolsa aún no ha abierto hoy.', 'A day next to a figure means its last close: that market hasn’t opened yet today.'))}</p>` : ''}
       ${mercado.length ? `<ul class="rdia-merc">${mercado.map((m) => `<li>${chipImpacto(m.impacto)}<span>${escIA(m.t)}</span></li>`).join('')}</ul>` : ''}</section>` : ''}
     ${tuyas.length ? `<section><h3>Noticias de lo tuyo</h3><ul class="rdia-not">${tuyas.map(noticia).join('')}</ul></section>` : ''}
     ${generales.length ? `<section><h3>De la bolsa</h3><ul class="rdia-not">${generales.map(noticia).join('')}</ul></section>` : ''}
     ${regionales.length ? `<section><h3>${L('En', 'In')} ${esc(conArticulo(comunidadUsuario()))}</h3><ul class="rdia-not">${regionales.map(noticia).join('')}</ul></section>` : ''}
+    <a class="enlace acento rdia-ver" href="#noticias">${L('Todas las noticias', 'All the news')}</a>
     ${prox.length ? `<section><h3>Hoy y mañana</h3><ul class="rdia-prox">${prox.map((e) => `<li><span class="ag-cd">${faltan(e.d, true)}</span><span class="ag-ic">${iconoAg(e)}</span><span><b>${tituloAg(e)}</b><small>${esc(e.s || '')}</small></span></li>`).join('')}</ul></section>` : ''}
   </div>`;
 }
@@ -643,7 +663,7 @@ function pintar() {
   for (const bo of $$('[data-accion="ocultar"]')) { bo.innerHTML = (S.oculto ? ICONOS.ojoNo : ICONOS.ojo) + (bo.dataset.txt != null ? (S.oculto ? L('Mostrar cantidades', 'Show amounts') : L('Ocultar cantidades', 'Hide amounts')) : ''); bo.title = S.oculto ? L('Mostrar importes', 'Show amounts') : L('Ocultar importes', 'Hide amounts'); bo.setAttribute('aria-label', bo.title); bo.setAttribute('aria-pressed', String(!!S.oculto)); }
   pintarTicker(M);
   const scroll = window.scrollY;
-  const html = { av: () => htmlPanelAv(), cartera: vistaCartera, posiciones: vistaPosiciones, tu: vistaTu, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
+  const html = { av: () => htmlPanelAv(), noticias: vistaNoticias, cartera: vistaCartera, posiciones: vistaPosiciones, tu: vistaTu, ruta: vistaRuta, expertos: vistaExpertos, mercados: vistaMercados, analisis: vistaAnalisis, fiscal: vistaFiscal, futuro: vistaFuturo, agenda: vistaAgenda }[S.vista] || vistaCartera;
   setTimeout(() => { plegarNotas($('#vista')); marcarDeslizables($('#vista')); }, 0);
   $('#vista').innerHTML = sinCortes(htmlK2Pest() + htmlSubvistas() + html(M) + `<div class="pie-btns"><button class="opinion-pie" data-accion="opinion">${ICONOS.globo}<span><b>¿Algo se ve mal o tienes una idea?</b> Cuéntanoslo: lo leemos todo.</span></button><button class="opinion-pie tut" data-accion="tour">${ICONOS.ruta}<span><b>Ver el tutorial</b> Qué hay en cada pestaña.</span></button></div><p class="pie" title="La bolsa de Londres llega con 20 minutos de retraso; divisas, cripto y futuros, al instante.">Las bolsas, con 15 minutos de retraso; los fondos, con su precio de cada día. Tus cantidades van cifradas: solo las ves tú. Las visitas se cuentan sin cookies ni datos tuyos.</p>`);
   if (S.scrollA != null) {
@@ -655,6 +675,8 @@ function pintar() {
   if (S.vista === 'cartera') { if ($('[data-que-es]')) ponerQueEs($('#vista')); pedirEncajarMovers(); }
   // 0.9: una pestaña del modo avanzado se llena después (su código va en un trozo aparte)
   if (S.vista === 'av' && $('#panelAv')) pintarPanelAv();
+  // Noticias: igual, su contenido está en el trozo «noticias»
+  if (S.vista === 'noticias' && $('#panelNot')) pintarNoticias();
   ponerPreguntale($('#vista')); marcarCifras($('#vista')); pulirHoy(M); if (grupoDe(S.vista).k === 'posiciones') centrarPest();
   if (S.irPlan && S.vista === 'cartera') { S.irPlan = false; setTimeout(() => { const p = $('.car-plan'); if (p) p.scrollIntoView({ block: 'start' }); }, 60); }
   if (S.vista === 'tu') activarSelectorTema($('#vista'));

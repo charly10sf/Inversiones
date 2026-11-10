@@ -26,11 +26,63 @@ async function cargarIntradia() {
     if (r.ok) { S.intra = await r.json(); return; }
   } catch (e) { console.warn(e); }
 }
+/* Lo que no está en intradia.json (lo que viene del catálogo o del radar: WDC, cualquier acción de EEUU, una cripto)
+   se pide al Worker (/intradia), que lo baja de Yahoo (o de Bitvavo) en el mismo formato y en euros. Se guarda en
+   memoria 15 minutos (2 si falló la red) para no volver a pedirlo. Los fondos no cotizan durante el día: no se piden. */
+const INTRA_MAS = {}, INTRA_PEND = new Set(), INTRA_LOTE = 12, INTRA_VIDA = 15 * 60e3;
+function simIntra(i, p) {
+  if (!i || i.clase === 'Efectivo' || /^Fondo/.test(i.tipo || '')) return null;
+  const s = String((p && p.simbolo) || i.yahoo || (i.clase === 'Cripto' && i.bitvavo) || '').toUpperCase();
+  return s && !s.startsWith('0P') && /^[A-Z0-9^][A-Z0-9.\-=^&]{0,24}$/.test(s) ? s : null;
+}
+// los precios cada 30 minutos de un instrumento: los de la Action o, si no, los del Worker
+function intraDe(id) {
+  const a = S.intra && S.intra.p && S.intra.p[id];
+  if (a && a.length > 1) return a;
+  const m = INTRA_MAS[id];
+  return m && m.p.length > 1 ? m.p : null;
+}
+// todavía se están pidiendo (para no decir «no hay precios por horas» antes de tiempo)
+const intraPendiente = (id) => INTRA_PEND.has(id);
+/* pide lo que falte de esas filas; al llegar, alLlegar() (una vez, y solo si ha llegado algo nuevo que pintar) */
+async function pedirIntradia(filas, alLlegar) {
+  const faltan = new Map(), ahora = Date.now();
+  for (const f of filas || []) {
+    const id = f.inst && f.inst.id;
+    if (!id || INTRA_PEND.has(id) || (S.intra && S.intra.p && (S.intra.p[id] || []).length > 1)) continue;
+    if (INTRA_MAS[id] && ahora - INTRA_MAS[id].t < INTRA_VIDA) continue;
+    const s = simIntra(f.inst, f.p); if (!s) continue;
+    if (!faltan.has(s)) faltan.set(s, []);
+    faltan.get(s).push(id); INTRA_PEND.add(id);
+  }
+  if (!faltan.size) return false;
+  const sims = [...faltan.keys()], lotes = [];
+  for (let k = 0; k < sims.length; k += INTRA_LOTE) lotes.push(sims.slice(k, k + INTRA_LOTE));
+  let nuevo = false;
+  await Promise.all(lotes.map(async (lote) => {
+    let d = null;
+    try {
+      const r = await conTiempo(fetch(`${urlWorker()}/intradia?s=${lote.map(encodeURIComponent).join(',')}`), 10000);
+      if (r.ok) d = await r.json();
+    } catch (e) { console.warn('precios por horas', e); }
+    const t = d ? Date.now() : Date.now() - INTRA_VIDA + 2 * 60e3;
+    for (const s of lote) {
+      const p = d && d.p && Array.isArray(d.p[s]) ? d.p[s].filter((x) => Array.isArray(x) && x.length === 2 && +x[1] > 0) : [];
+      if (p.length > 1) nuevo = true;
+      for (const id of faltan.get(s)) { INTRA_PEND.delete(id); INTRA_MAS[id] = { t, p }; }
+    }
+  }));
+  // también si no ha llegado nada: lo que esperaba («cargando») tiene que decir ya que no hay
+  if (alLlegar) alLlegar(nuevo);
+  return nuevo;
+}
 /* El valor de la cartera en el día (desde el cierre anterior) o en la semana, con los precios cada 30
    minutos; los fondos, con su valor liquidativo del día. Lo que no tiene cantidad y el efectivo, fijos. */
 function serieIntradia(M, rango) {
-  const P = (S.intra && S.intra.p) || {};
   const items = M.filas.filter((f) => f.uds != null && f.valor > 0);
+  // los de la Action y, para el resto, los que ha traído el Worker
+  const P = {};
+  for (const f of items) { const h = intraDe(f.inst.id); if (h) P[f.inst.id] = h; }
   const ts = new Set();
   for (const f of items) for (const [t] of P[f.inst.id] || []) ts.add(t);
   let orden = [...ts].sort();
@@ -231,7 +283,7 @@ function htmlBloqueCar(k, M) {
     if (k === 'movidas') return htmlMovidasTuyas(M);
     if (k === 'noticias') {
       const n = pasadoAg('mio');
-      return n.html ? `<section aria-labelledby="hNotC"><div class="sec-cab"><h2 id="hNotC">Noticias de lo tuyo</h2><div class="der"><a class="enlace acento" href="#agenda">Ver más</a></div></div><div class="agp-lista">${n.html}</div></section>` : '';
+      return n.html ? `<section aria-labelledby="hNotC"><div class="sec-cab"><h2 id="hNotC">Noticias de lo tuyo</h2><div class="der"><a class="enlace acento" href="#noticias">Todas las noticias</a></div></div><div class="agp-lista">${n.html}</div></section>` : '';
     }
     if (k === 'futuro') {
       const pr = proyeccion(M), fila = (m, t) => (pr.p50[m] != null ? `<div class="car-fut-f"><span class="k">${t}</span><b>${euCorto(pr.p50[m])}</b><small>entre ${euCorto(pr.p10[m])} y ${euCorto(pr.p90[m])}</small></div>` : '');

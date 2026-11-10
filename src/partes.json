@@ -28,6 +28,7 @@
     "25-cristal.css",
     "26-dorado.css", "27-revision-083b.css",
     "28-lista-seguimiento.css",
+    "29-noticias.css",
     "29-frente-indexado.css",
     "30-entiende.css",
     "31-tu-ano.css"
@@ -46,6 +47,7 @@
     "10-pintado.js",
     "11-cartera.js",
     "12-calendario.js",
+    "12b-noticias.js",
     "13-expertos.js",
     "13b-fichas.js",
     "14-mercados.js",
@@ -156,6 +158,9 @@
       "trozos/tuano.js",
       "trozos/entiende.js",
       "trozos/entiende-pantallas.js"
+    ],
+    "noticias": [
+      "trozos/noticias.js"
     ]
   }
 }

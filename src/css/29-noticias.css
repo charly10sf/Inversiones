@@ -1,0 +1,100 @@
+/* Noticias (9 nov 2026): la página (#noticias, trozo «noticias») y lo nuevo de la hoja de Buenos días.
+   Solo var(): los colores son los de cada diseño (00-temas.css). */
+.panel-not { display: grid; gap: 24px; min-width: 0; }
+.nt-act { display: block; margin-top: 4px; color: var(--tenue); font-size: 13px; }
+
+/* la cinta de índices: en el móvil se desliza; en el ordenador, en dos filas de cinco */
+.nt-cinta { display: grid; grid-auto-flow: column; grid-auto-columns: minmax(124px, 1fr); gap: 8px; overflow-x: auto; scrollbar-width: none; padding-bottom: 2px; scroll-snap-type: x proximity; }
+.nt-cinta::-webkit-scrollbar { display: none; }
+.nt-ind { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: var(--superficie); border: 1px solid var(--sep); color: var(--texto); text-decoration: none; scroll-snap-align: start; min-width: 0; }
+.nt-ind:hover { border-color: var(--borde); }
+.nt-ind-n { display: flex; gap: 6px; align-items: baseline; font-size: 12.5px; color: var(--texto-2); white-space: nowrap; }
+.nt-ind-n small, .fi-dia { font-size: 10.5px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: var(--tenue); padding: 0 5px; border-radius: 5px; background: var(--superficie-3); line-height: 16px; }
+.agp-fichas .fi-dia { margin-left: 2px; }
+.nt-ind b { font-size: 16px; font-weight: 650; font-variant-numeric: tabular-nums; letter-spacing: -0.01em; }
+.nt-ind-v { font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.nt-ind.up .nt-ind-v { color: var(--sube); } .nt-ind.down .nt-ind-v { color: var(--baja); }
+@media (min-width: 900px) { .nt-cinta { grid-auto-flow: row; grid-template-columns: repeat(5, minmax(0, 1fr)); overflow: visible; } }
+
+/* lo importante, según la IA: tarjetas plegables (tres abiertas), en tres columnas en el ordenador ancho */
+.nt-imp { display: grid; gap: 12px; }
+.nt-imp-l { display: grid; gap: 10px; }
+.nt-imp-c { padding: 14px 16px; border-radius: 14px; background: linear-gradient(170deg, var(--superficie-2), var(--superficie)); border: 1px solid var(--sep); min-width: 0; }
+.nt-imp-c summary { cursor: pointer; list-style: none; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.nt-imp-c summary::-webkit-details-marker { display: none; }
+.nt-imp-c summary b { flex-basis: 100%; font-size: 15.5px; line-height: 1.35; font-weight: 650; }
+.nt-imp-c p { margin: 8px 0 0; font-size: 14px; line-height: 1.5; color: var(--texto-2); }
+.nt-imp-c .ia-implica { color: var(--texto); }
+.nt-imp-c .as-fuentes { margin-top: 8px; }
+/* los datos de la IA (bono, petróleo…) ya están en Mercados: en el móvil, fuera, para llegar antes a los titulares */
+@media (max-width: 899px) { .nt-macro { display: none; } }
+@media (min-width: 1180px) { .nt-imp-l { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: start; } }
+
+/* titulares: filtros por tema que se deslizan, buscador y la lista por horas */
+.nt-cols, .nt-main, .nt-lado { display: grid; gap: 24px; min-width: 0; align-content: start; }
+@media (min-width: 1180px) { .nt-cols { grid-template-columns: minmax(0, 1.5fr) minmax(340px, 1fr); gap: 36px; align-items: start; } }
+.nt-tit { display: grid; gap: 12px; min-width: 0; }
+.nt-filtros { display: grid; gap: 10px; min-width: 0; }
+.nt-temas { display: flex; max-width: 100%; }
+.nt-temas button small { margin-left: 5px; font-size: 11px; color: var(--tenue); font-variant-numeric: tabular-nums; }
+/* el buscador: el campo es el de cada diseño (00-temas.css), con la lupa dentro */
+.nt-busca { position: relative; display: block; color: var(--tenue); }
+.nt-busca svg { position: absolute; left: 13px; top: 50%; width: 17px; height: 17px; transform: translateY(-50%); pointer-events: none; }
+.nt-busca input { width: 100%; padding: 10px 12px 10px 38px; font-size: 15px; }
+@media (min-width: 1180px) { .nt-temas { flex-wrap: wrap; } }
+.nt-g { display: grid; gap: 4px; }
+.nt-g h3 { margin: 6px 0 2px; display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 700; color: var(--primario); letter-spacing: 0.02em; text-transform: uppercase; }
+.nt-g h3 small { font-weight: 600; color: var(--tenue); }
+.nt-g h3::after { content: ''; flex: 1; height: 1px; background: var(--sep); }
+.nt-vivo { width: 8px; height: 8px; border-radius: 50%; background: var(--baja); box-shadow: 0 0 0 3px var(--baja-fondo); animation: nt-late 1.6s ease-in-out infinite; }
+@keyframes nt-late { 50% { opacity: 0.35; } }
+@media (prefers-reduced-motion: reduce) { .nt-vivo { animation: none; } }
+.nt-l { list-style: none; margin: 0; padding: 0; display: grid; }
+.nt-i { display: grid; grid-template-columns: 52px minmax(0, 1fr); gap: 10px; padding: 11px 0; border-top: 1px solid var(--sep); }
+.nt-i:first-child { border-top: 0; }
+.nt-h { padding-top: 2px; font-size: 12.5px; font-weight: 600; color: var(--tenue); font-variant-numeric: tabular-nums; line-height: 1.3; }
+.nt-c { display: grid; gap: 4px; min-width: 0; }
+.nt-src { margin: 0; display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--texto-2); min-width: 0; }
+.nt-src .not-logo, .nt-src img { width: 18px; height: 18px; border-radius: 5px; flex: none; }
+.nt-src > span:nth-child(2) { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nt-tema { margin-left: auto; flex: none; font-size: 11.5px; color: var(--tenue); padding: 0 7px; border-radius: 999px; border: 1px solid var(--sep); line-height: 18px; }
+.nt-t { color: var(--texto); font-size: 15px; font-weight: 600; line-height: 1.38; text-decoration: none; text-wrap: pretty; }
+.nt-t:hover { color: var(--primario); }
+.nt-i.grande .nt-t { font-size: 19px; font-weight: 700; line-height: 1.28; letter-spacing: -0.01em; }
+.nt-pie { margin: 0; display: flex; gap: 8px; align-items: center; font-size: 12.5px; font-variant-numeric: tabular-nums; }
+.nt-pie .up { color: var(--sube); } .nt-pie .down { color: var(--baja); }
+.nt-mas { justify-self: start; margin: 8px 0 0 62px; }
+
+/* empresas: lo que ha leído la IA de cada una, con su tono */
+.nt-emp, .nt-ag { display: grid; gap: 12px; min-width: 0; }
+.nt-tonos { justify-self: start; }
+.nt-emp-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.nt-emp-l li { padding: 12px 14px; border-radius: 12px; background: var(--superficie); border: 1px solid var(--sep); display: grid; gap: 6px; min-width: 0; }
+.nt-emp-cab { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+.nt-emp-cab .logo, .nt-emp-cab img { width: 24px; height: 24px; border-radius: 6px; flex: none; }
+.nt-emp-n { border: 0; background: none; padding: 0; color: var(--texto); font: inherit; font-size: 15px; font-weight: 650; cursor: pointer; text-align: left; }
+.nt-emp-n:hover { color: var(--primario); }
+.nt-emp-cab small { color: var(--tenue); font-size: 12px; }
+.nt-emp-cab .nt-tono { margin-left: auto; }
+.nt-emp-l p { margin: 0; font-size: 14px; line-height: 1.5; }
+.nt-vig { color: var(--texto-2); font-size: 13px !important; }
+.nt-emp-pie { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; font-size: 12.5px; color: var(--tenue); }
+.nt-emp-pie .as-fuentes { margin: 0; }
+.nt-tono { font-style: normal; font-size: 12px; font-weight: 650; padding: 0 8px; line-height: 20px; border-radius: 999px; white-space: nowrap; }
+.nt-tono.up { color: var(--sube); background: var(--sube-fondo); }
+.nt-tono.down { color: var(--baja); background: var(--baja-fondo); }
+.nt-tono.neu { color: var(--texto-2); background: var(--superficie-3); }
+.nt-pie-n { margin-top: 4px; }
+
+/* la hoja de Buenos días (10-pintado.js, htmlResumenDia): de qué día es cada cifra y el enlace a Noticias */
+.rdia-car .k small { font-weight: 500; color: var(--tenue); }
+.rdia-nota { margin: 6px 0 0; color: var(--tenue); font-size: 12.5px; line-height: 1.4; }
+.rdia-hora { color: var(--tenue); }
+.rdia-desg { margin: 10px 0 0; display: grid; gap: 2px; font-size: 13.5px; }
+.rdia-desg div { display: flex; justify-content: space-between; gap: 12px; padding: 5px 0; border-top: 1px solid var(--sep); }
+.rdia-desg dt { color: var(--texto-2); } .rdia-desg dd { margin: 0; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.rdia-ver { justify-self: start; }
+.mv-c .fi-dia { margin-left: 4px; }
+
+/* Hoy · Noticias · Calendario en el móvil (en el ordenador ya están en la K2) */
+@media (min-width: 1180px) { .grupo-tabs.hoy-sub { display: none; } }
