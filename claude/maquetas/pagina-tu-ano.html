@@ -106,9 +106,9 @@ main { max-width: 1480px; margin: 0 auto; padding: 18px 20px 80px; display: grid
 <nav class="indice" id="indice"></nav>
 <main id="main">
   <section class="intro">
-    <h1>Tu año en Toisón · segunda vuelta</h1>
+    <h1>Tu año en Toisón · aprobada</h1>
     <p class="nota">Montado encima de la app de verdad (rama <b>v0.8.6-frente</b>, con la cartera de prueba de 5 posiciones: 23.380 €, 19.900 € metidos, 300 € al mes desde marzo de 2023). Ordenador a 1.440 en avanzado; móvil a 390 en básico. Las cifras son de prueba. Son <b>siete tarjetas</b>: la del MSCI World ya es la pestaña 2. Sin candados de Dorado, porque el plan no pone ninguno en Tu año.</p>
-    <p class="nota"><b>Segunda vuelta (10 nov, 20:40):</b> ya vienen marcadas tus elecciones de la primera; en Dividendos está la híbrida que pediste (D), y arriba del todo, lo elegido montado junto.</p>
+    <p class="nota"><b>Tercera vuelta (20:45):</b> APROBADA; Dividendos, solo lo cobrado, y «Meses sin vender» pasa a «Meses sin sacar dinero». <b>Segunda vuelta (20:33):</b> ya vienen marcadas tus elecciones de la primera; en Dividendos está la híbrida que pediste (D), y arriba del todo, lo elegido montado junto.</p>
     <p class="nota">En cada tarjeta: marca la opción que te guste, luego «Me vale así» o «Quiero cambios» y, si quieres, una nota. Toca una imagen para verla a tamaño real. Arriba cambias entre Mármol y Marfil, y entre ordenador y móvil. Al final, «Copiar lo decidido» y me lo pegas.</p>
   </section>
   <div id="bloques"></div>
@@ -120,7 +120,7 @@ main { max-width: 1480px; margin: 0 auto; padding: 18px 20px 80px; display: grid
 <script>
 const BLOQUES = [
   { k: 'elegido', n: '✓', tit: 'Lo que elegiste, todo junto', custom: true,
-    duda: 'Montado con tus elecciones: estilo A, aportaciones A, edad B, países A, costes B, dividendos D (la híbrida), meses A y la de compartir vertical. En el ordenador, la página entera; en el móvil, una tarjeta por pantalla, como elegiste. Si te vale, «Me vale así» aquí basta.' },
+    duda: 'Montado con tus elecciones: estilo A, aportaciones A, edad B, países A, costes B, dividendos D (solo lo cobrado), meses sin sacar dinero A y la de compartir vertical. En el ordenador, la página entera; en el móvil, una tarjeta por pantalla, como elegiste. Si te vale, «Me vale así» aquí basta.' },
   { k: 'general', n: '0', tit: 'La página entera y cómo se recorre en el móvil',
     duda: 'En el ordenador, una página con las siete tarjetas en rejilla y la de compartir al final. <b>En el móvil hay duda de verdad:</b> una página que baja, como el resto de la app, o una tarjeta por pantalla, con barras arriba y «Anterior / Siguiente», como las historias.',
     soloMovil: true,
@@ -154,16 +154,16 @@ const BLOQUES = [
       { L: 'A', t: 'En porcentaje, con desglose', d: '«0,17 %», ≈ 39 € y cada coste en su línea, también los que este año fueron 0 €.' },
       { L: 'B', t: 'De cada 100 €', d: '«17 céntimos» de cada 100 €, una barra con de dónde sale y una frase.' },
     ] },
-  { k: 'divid', n: '6', tit: 'Dividendos', duda: '<b>Pediste una híbrida de A y B: es la D, al final.</b> Queda una duda: ¿contamos lo que se queda dentro de los fondos de acumulación? Es una estimación.',
+  { k: 'divid', n: '6', tit: 'Dividendos', duda: '<b>Decidido (20:39):</b> solo dividendos cobrados. Lo que se queda dentro de los fondos ya sale en Rendimiento › Dividendos. La elegida es la D.',
     ops: [
       { L: 'A', t: 'Cobrado y lo de dentro de los fondos', d: 'Dos cajas: 227 € netos de Repsol (con la retención) y ≈ 250 € que se quedan dentro de tus fondos.' },
       { L: 'B', t: 'Mes a mes', d: '227 € cobrados y una barra por mes; lo de los fondos, en una nota.' },
       { L: 'C', t: 'Sin euros, a un toque', d: '«2 cobros, en enero y julio» y «Ver en euros». Las cantidades solo si las pides.' },
-      { L: 'D', t: 'Híbrida de A y B (nueva)', d: 'Las dos cajas de A, y en la de cobrados, las barras mes a mes de B (enero y julio).' },
+      { L: 'D', t: 'La elegida: solo lo cobrado, mes a mes', d: '227 € cobrados con la retención, las barras de cada mes y los dos pagos. Lo de dentro de los fondos no sale: está en Rendimiento › Dividendos (Carlos, 20:39).' },
     ] },
-  { k: 'meses', n: '7', tit: 'Meses sin vender', duda: '<b>¿Contador con la gráfica del mes más movido o puntos por mes?</b> Texto sobrio: dice que no vendiste, sin decir que eso sea lo bueno. <b>Queda por decidir:</b> qué pasa si alguien vende para reequilibrar (con este nombre, su contador vuelve a cero).',
+  { k: 'meses', n: '7', tit: 'Meses sin sacar dinero', duda: '<b>Cambiado (20:39):</b> antes «Meses sin vender». Ahora solo vuelve a cero el mes en que sale dinero de tu cartera; reequilibrar (vender una cosa y comprar otra) o traspasar un fondo no cuenta. La B se ve con el nombre viejo; la elegida es la A.',
     ops: [
-      { L: 'A', t: 'Contador y el mes más movido', d: '«44 meses» y la línea de 2026 con marzo marcado: «llegó a bajar un 7,8 %. No vendiste».' },
+      { L: 'A', t: 'Contador y el mes más movido', d: '«44 meses» sin sacar dinero y la línea de 2026 con marzo marcado: «llegó a bajar un 7,8 %. No sacaste dinero».' },
       { L: 'B', t: 'Puntos por mes', d: 'Un punto por cada mes desde marzo de 2023 y lo de marzo en una frase.' },
     ] },
   { k: 'comp', n: '+', tit: 'Para compartir (aparte de las siete)', duda: 'La imagen sale sin euros por defecto y se elige qué datos van. <b>¿Vertical o cuadrada?</b> Se hace en la sesión 9; la forma conviene saberla ya.',

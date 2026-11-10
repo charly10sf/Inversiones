@@ -96,17 +96,19 @@ const TARJ = {
     B: () => `${grande('227 € cobrados', '2 pagos de Repsol, ya con la retención')}
       <div class="ta-meses">${MES.map((m, i) => `<div><span class="ta-mb"><i style="height:${i === 0 || i === 6 ? 100 : 0}%"></i></span><small>${m}</small></div>`).join('')}</div>
       ${nota('Además, unos 250 € se quedaron dentro de tus fondos de acumulación: no los cobras, suben su precio.')}`,
-    D: () => `<div class="ta-dos ta-dos-b"><div class="ta-caja"><small>Cobrados</small><b class="mq-num-m">227 €</b><span>280 € de Repsol, menos 53 € de retención (19 %)</span>
-        <div class="ta-meses ta-meses-p">${MES.map((m, i) => `<div><span class="ta-mb"><i style="height:${i === 0 || i === 6 ? 100 : 0}%"></i></span><small>${m[0]}</small></div>`).join('')}</div></div>
-      <div class="ta-caja"><small>Dentro de tus fondos</small><b class="mq-num-m">≈ 250 €</b><span>Tus dos fondos son de acumulación: lo que reparten sus empresas se queda dentro y sube su precio. No llega a tu cuenta ni tributa hasta que vendas.</span></div></div>`,
+    D: () => `${grande('227 € cobrados', '280 € de Repsol, menos 53 € de retención (19 %)')}
+      <div class="ta-meses">${MES.map((m, i) => `<div><span class="ta-mb"><i style="height:${i === 0 || i === 6 ? 100 : 0}%"></i></span><small>${m}</small></div>`).join('')}</div>
+      <div class="ta-hitos"><span><b>ene</b>140 €</span><span><b>jul</b>140 €</span></div>
+      ${nota('Solo lo que llegó a tu cuenta. Lo que reparten las empresas de tus fondos de acumulación se queda dentro: lo tienes en Rendimiento › Dividendos.')}`,
     C: () => `${grande('2 cobros', 'de Repsol, en enero y julio')}
       <p class="ta-texto">Y dentro de tus dos fondos, lo que reparten sus empresas se queda dentro y sube su precio.</p>
       <button type="button" class="btn">Ver en euros</button>
       ${nota('Las cantidades, solo si las pides.')}`,
   } },
-  meses: { n: 7, tit: 'Meses sin vender', c: 'c6', op: {
-    A: () => `${grande('44 meses', 'sin vender nada, desde marzo de 2023')}
-      <div class="ta-movido">${linea(VAL26, { h: 110, marca: 2 })}<span class="ta-movido-t" style="left:18.2%">Marzo, tu mes más movido: llegó a bajar un 7,8 % desde su máximo. No vendiste.</span></div>${eje(MES.slice(0, 11))}`,
+  meses: { n: 7, tit: 'Meses sin sacar dinero', c: 'c6', op: {
+    A: () => `${grande('44 meses', 'sin sacar dinero de tu cartera, desde marzo de 2023')}
+      <div class="ta-movido">${linea(VAL26, { h: 110, marca: 2 })}<span class="ta-movido-t" style="left:18.2%">Marzo, tu mes más movido: llegó a bajar un 7,8 % desde su máximo. No sacaste dinero.</span></div>${eje(MES.slice(0, 11))}
+      ${nota('Cambiar de una posición a otra o traspasar un fondo no cuenta: solo el dinero que sale de tu cartera.')}`,
     B: () => `${grande('44 meses', 'sin vender nada')}
       <div class="ta-puntos">${[['2023', 10, 2], ['2024', 12, 0], ['2025', 12, 0], ['2026', 11, 0]].map(([a, n, hueco]) => `<div><small>${a}</small><span>${'<i class="no"></i>'.repeat(hueco)}${'<i></i>'.repeat(n)}${a === '2026' ? '<i class="no"></i>' : ''}</span></div>`).join('')}</div>
       <p class="ta-texto">En marzo, tu mes más movido, tu cartera llegó a bajar un 7,8 % desde su máximo. No vendiste nada.</p>`,
@@ -118,11 +120,11 @@ const ORDEN = ['estilo', 'aport', 'edad', 'paises', 'costes', 'divid', 'meses'];
 const LOGO = () => (typeof TS_O_D !== 'undefined' ? `<svg viewBox="-82 -78 164 147" class="ta-logo"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg>` : '');
 const COMP = (forma) => `<div class="ta-comp ta-comp-${forma}"><div class="ta-comp-cab">${LOGO()}<span>TOISÓN</span><em>Tu año 2026</em></div>
   <div class="ta-comp-est"><small>Estilo</small><b>Constante</b></div>
-  <div class="ta-comp-datos"><div><b>11 de 11</b><small>meses aportando</small></div><div><b>2 a 7 m</b><small>edad de tu dinero</small></div><div><b>EE. UU.</b><small>donde más está</small></div>${forma === 'v' ? '<div><b>44</b><small>meses sin vender</small></div>' : ''}</div>
+  <div class="ta-comp-datos"><div><b>11 de 11</b><small>meses aportando</small></div><div><b>2 a 7 m</b><small>edad de tu dinero</small></div><div><b>EE. UU.</b><small>donde más está</small></div>${forma === 'v' ? '<div><b>44</b><small>meses sin sacar dinero</small></div>' : ''}</div>
   <p class="ta-comp-pie">Sin cantidades · toison.es</p></div>`;
 const COMPARTIR = (forma, movil) => `<section class="pav-t pab pav-c12 mq-ta" data-ta="comp"><h2 class="pab-cab"><span>Para compartir</span></h2>
   <div class="ta-comp-w${movil ? ' m' : ''}">${COMP(forma)}<div class="ta-comp-op"><p class="ta-texto">Lo que sale en la imagen. Las cantidades en euros no salen nunca por defecto.</p>
-  <div class="ta-chk">${[['Estilo', 1], ['Meses aportando', 1], ['Edad de tu dinero', 1], ['Dónde más está', 1], ['Meses sin vender', forma === 'v' ? 1 : 0], ['Cantidades en euros', 0]].map(([t, s]) => `<span class="${s ? 'si' : ''}"><i>${s ? OK : ''}</i>${t}</span>`).join('')}</div>
+  <div class="ta-chk">${[['Estilo', 1], ['Meses aportando', 1], ['Edad de tu dinero', 1], ['Dónde más está', 1], ['Meses sin sacar dinero', forma === 'v' ? 1 : 0], ['Cantidades en euros', 0]].map(([t, s]) => `<span class="${s ? 'si' : ''}"><i>${s ? OK : ''}</i>${t}</span>`).join('')}</div>
   <button type="button" class="btn pri">Compartir…</button></div></div></section>`;
 
 const tarjeta = (k, L, movil) => { const t = TARJ[k], f = t.op[L] || t.op.A;
