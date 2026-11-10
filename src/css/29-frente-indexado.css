@@ -79,3 +79,5 @@
   .fr-hitos span { font-size: 10px; }
 }
 @media (max-width: 370px) { .fr-bola { width: 112px; } .fr-bola b { font-size: 19px; } .fr-mini b { font-size: 15px; } }
+/* básico en el ordenador: las cifras junto a la bolita, en fila (en el móvil, en columna) */
+@media (min-width: 900px) { .fr-bola-fila { gap: 36px; } .fr-bola-fila .fr-mini { grid-auto-flow: column; gap: 40px; } .fr-bola-fila .fr-mini b { font-size: 21px; } }
