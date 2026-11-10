@@ -29,7 +29,8 @@
     "26-dorado.css", "27-revision-083b.css",
     "28-lista-seguimiento.css",
     "29-frente-indexado.css",
-    "30-entiende.css"
+    "30-entiende.css",
+    "31-tu-ano.css"
   ],
   "js": [
     "01-base.js",
@@ -152,6 +153,7 @@
     "avanzado": [
       "trozos/avanzado.js",
       "trozos/frente.js",
+      "trozos/tuano.js",
       "trozos/entiende.js",
       "trozos/entiende-pantallas.js"
     ]

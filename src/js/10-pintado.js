@@ -156,12 +156,14 @@ function vistaSegunNav(v) {
   return v;
 }
 // 0.8.3a: Gráfico técnico y Laboratorio están en Más (el sitio de Tú en la barra), aunque se pinten en el trozo de Análisis
-const grupoDe = (v) => (v === 'av' && typeof enHerramientas === 'function' && enHerramientas() ? GRUPOS.find((g) => g.k === 'tu') : GRUPOS.find((g) => g.vistas.includes(v)) || GRUPOS.find((g) => g.k === 'cartera'));
+// 0.8.6: y Tu año en Toisón, en Hoy
+const grupoDe = (v) => (v === 'av' && typeof enHerramientas === 'function' && enHerramientas() ? GRUPOS.find((g) => g.k === 'tu') : v === 'av' && typeof enTuAno === 'function' && enTuAno() ? GRUPOS.find((g) => g.k === 'cartera') : GRUPOS.find((g) => g.vistas.includes(v)) || GRUPOS.find((g) => g.k === 'cartera'));
 const epocaRenta = () => { const m = new Date().getMonth(); return m >= 2 && m <= 5; };
 function htmlSubvistas() {
   // 0.8.3a: en Hoy, la fila de tus fijados; Herramientas, con la vuelta a Más
   if (S.vista === 'cartera') return htmlFijadosHoy();
   if (enHerramientas()) return htmlHerramientas();
+  if (enTuAno()) return htmlTuAnoCab();
   const g = grupoDe(S.vista), sv = subvistas(g.k); if (!sv) return '';
   // 0.3.11a: Hacienda, siempre (antes solo de marzo a junio y aparecía y desaparecía según desde dónde entraras)
   const lista = sv;

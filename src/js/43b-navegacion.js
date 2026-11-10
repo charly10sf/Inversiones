@@ -38,6 +38,8 @@ const ICO_BUSCA = SVG('<circle cx="10.8" cy="10.8" r="6.3"/><path d="M15.6 15.6l
 const PAGINAS = [
   { id: 'hoy', t: 'Hoy', en: 'Today', s: 'hoy', v: 'cartera', kw: 'inicio patrimonio grafica' },
   { id: 'agenda', t: 'Calendario', en: 'Calendar', s: 'hoy', g: 'cartera', v: 'agenda', kw: 'fechas resultados dividendos aportaciones' },
+  // 0.8.6: Tu año en Toisón, una página de Hoy que se pinta en el trozo «avanzado» (trozos/tuano.js)
+  { id: 'tuano', get t() { return `Tu año ${anioTuAno()}`; }, get en() { return `Your ${anioTuAno()}`; }, s: 'hoy', g: 'cartera', v: 'av', p: 'tuano', kw: 'resumen del ano estilo de inversor wrapped' },
   { id: 'posiciones', t: 'Posiciones', en: 'Holdings', s: 'cartera', g: 'cartera', v: 'posiciones', kw: 'cartera fondos acciones' },
   // 0.8.6: la pestaña 11, solo en básico (soloBas)
   { id: 'entiende', t: 'Entiende tu cartera', en: 'Understand your portfolio', s: 'cartera', g: 'cartera', v: 'av', p: 'entiende', soloBas: true, kw: 'aprender lecciones formacion ter twr tir hacienda riesgo' },
@@ -89,6 +91,20 @@ const paginasDe = (s) => PAGINAS.filter((p) => p.s === s && enLista(p));
 const hrefSeccion = (s) => { const ps = paginasDe(s); return ps.length ? hrefPag(ps[0]) : hrefPag(PAGINAS.find((p) => p.s === s)); };
 // Herramientas no tiene sección en la barra del móvil: se marca Más (que es donde está)
 const enHerramientas = () => S.vista === 'av' && ['grafico', 'lab'].includes(pestAv());
+
+/* ---------- 0.8.6: Tu año en Toisón ----------
+   El año que se enseña: de enero al mes de hoy y, como mucho, hasta noviembre (diciembre es el mes de verlo, como
+   en Year in Monzo); en enero, el año anterior, también hasta noviembre. Las tarjetas, en trozos/tuano.js. */
+function periodoTuAno(hoy = hoyIso()) {
+  const [y, m] = hoy.split('-').map(Number), cerrado = m === 1 || m === 12, anio = m === 1 ? y - 1 : y;
+  return { anio, desde: `${anio}-01-01`, hasta: cerrado ? `${anio}-11-30` : hoy, mesFin: cerrado ? 11 : m, cerrado };
+}
+const anioTuAno = () => periodoTuAno().anio;
+const enTuAno = () => S.vista === 'av' && pestAv() === 'tuano';
+function htmlTuAnoCab() {
+  const P = periodoTuAno(), mes = IDIOMA === 'en' ? MESES_EN[P.mesFin - 1] : MESES_LARGOS[P.mesFin - 1];
+  return `<div class="ts-grupo ta-grupo"><a class="vista-volver" href="#hoy">${L('‹ Hoy', '‹ Today')}</a><h1 class="ts-tit">${L('Tu año en Toisón', 'Your year in Toisón')}</h1><p class="ts-sub">${P.mesFin === 1 ? L(`${P.anio}, enero.`, `${P.anio}, January.`) : L(`${P.anio}, de enero a ${mes}.`, `${P.anio}, January to ${mes}.`)} ${L('Lo que hiciste con tu plan.', 'What you did with your plan.')}</p></div>`;
+}
 
 /* ---------- el móvil: Análisis por dentro ---------- */
 const PEST_ANA = [

@@ -234,7 +234,7 @@ function pintarPanelAv() {
   ponerCssAv();
   const p = el.dataset.p, M = S.M || calcular();
   // 0.8.3a: en básico, Rentabilidad y Riesgo sencillos (las demás, como en el avanzado)
-  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { rentab: pavRentab, frente: pavFrente, entiende: pavEntiende, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
+  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { rentab: pavRentab, frente: pavFrente, entiende: pavEntiende, tuano: pavTuAno, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
@@ -670,6 +670,7 @@ function pavCostes(M) {
 /* ---------- Las gráficas, una vez pintado (con su ancho de verdad) ---------- */
 function dibujarPanelAv(p, M) {
   if (p === 'frente') { dibujarFrente(M); return; }
+  if (p === 'tuano') { dibujarTuAno(M); return; }
   if (modoApp() === 'basico' && (p === 'rentab' || p === 'riesgo')) { dibujarPanelBas(p, M); return; }
   if (p === 'rentab') {
     const el = $('#pavBench'), R = rentabilidadCartera(M), s = R.twr && R.twr.serie; if (!el || !s) return;

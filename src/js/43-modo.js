@@ -29,6 +29,8 @@ const PEST_AV = [
   ['entiende', 'Entiende tu cartera', 'Understand your portfolio'], ['rentab', 'Rentabilidad', 'Returns'], ['frente', 'Frente a un indexado', 'Against an index fund'], ['riesgo', 'Riesgo', 'Risk'], ['reparto', 'Reparto y X-Ray', 'Allocation and X-Ray'],
   ['div', 'Dividendos', 'Dividends'], ['costes', 'Costes', 'Costs'], ['mov', 'Movimientos', 'Transactions'], ['pnl', 'Día a día', 'Day by day'],
   ['grafico', 'Gráfico técnico', 'Technical chart'], ['rebal', 'Tu reparto objetivo', 'Your target mix'], ['lab', 'Laboratorio', 'Lab'],
+  // 0.8.6: Tu año en Toisón (es de Hoy, no de Análisis: grupoDe y htmlSubvistas)
+  ['tuano', 'Tu año en Toisón', 'Your year in Toisón'],
 ];
 function pestAv() {
   const p = S.pestAv || LS.get(LS_PEST_AV, 'rentab');

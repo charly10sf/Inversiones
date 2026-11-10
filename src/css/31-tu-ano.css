@@ -1,0 +1,89 @@
+/* 0.8.6 · Tu año en Toisón (trozos/tuano.js), según la maqueta aprobada el 10 nov. Todo con los tokens del tema.
+   En el ordenador, las siete tarjetas en la rejilla de 12 columnas de #panelAv; en el móvil, una por pantalla. */
+.ta-pag { display: contents; }
+.ta-hbarra, .ta-hcab, .ta-hpie { display: none; }
+.ta-cab p { margin: 0; color: var(--texto-2); font-size: 14px; }
+.ta-t { align-self: stretch; }
+.ta-t .pab-cab { align-items: baseline; gap: 10px; }
+.ta-n { font: 600 11px/1 var(--ui); letter-spacing: .12em; color: var(--tenue); }
+.ta-eyebrow { display: block; font: 600 11px/1.2 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--oro-texto); margin-bottom: 6px; }
+.ta-portada { display: grid; grid-template-columns: 1.1fr 1fr; gap: 28px; align-items: center; padding: 6px 0 2px; }
+.ta-nombre { margin: 0; font: var(--titulo-estilo) var(--titulo-peso, 500) 54px/1.05 var(--titulo); letter-spacing: var(--titulo-espacio, -.01em); color: var(--texto); }
+.ta-frase { margin: 10px 0 0; font-size: 15.5px; line-height: 1.5; color: var(--texto-2); max-width: 44ch; }
+.ta-kpis .pav-kpi b { white-space: normal; }
+.ta-grande { margin: 2px 0 12px; }
+.ta-grande b { display: block; font: 600 32px/1.1 var(--ui); font-variant-numeric: tabular-nums; letter-spacing: -.02em; color: var(--texto); }
+.ta-grande span { display: block; margin-top: 5px; font-size: 13.5px; color: var(--texto-2); }
+.ta-texto { margin: 8px 0 12px; font-size: 14px; line-height: 1.5; color: var(--texto-2); }
+.ta-nota { margin: 10px 0 0; font-size: 12.5px; color: var(--tenue); line-height: 1.45; }
+.ta-nota a { color: var(--oro-texto); white-space: nowrap; }
+.ta-como { margin-top: 10px; font-size: 12px; color: var(--tenue); }
+.ta-como summary { cursor: pointer; width: fit-content; font-weight: 600; color: var(--texto-2); min-height: 24px; }
+.ta-como p { margin: 6px 0 0; line-height: 1.45; }
+/* 2 · el calendario */
+.ta-cal { display: grid; grid-template-columns: repeat(6, 1fr); gap: 8px; }
+.ta-mes { display: grid; justify-items: center; gap: 3px; padding: 9px 4px 8px; border-radius: var(--r-m); background: var(--superficie-2); border: 1px solid var(--borde); }
+.ta-mes small { font: 600 10.5px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); }
+.ta-mes b { display: grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: var(--primario-fondo); color: var(--primario); }
+.ta-mes span { font: 600 11.5px/1 var(--ui); color: var(--texto-2); font-variant-numeric: tabular-nums; }
+.ta-mes:is(.ta-pendiente, .ta-antes, .ta-no) { background: transparent; border-style: dashed; }
+.ta-mes:is(.ta-pendiente, .ta-antes, .ta-no) b { background: none; color: var(--tenue); }
+.ta-mes:is(.ta-pendiente, .ta-antes, .ta-no) span { font-weight: 500; color: var(--tenue); }
+/* barras (edad, países y sectores) */
+.ta-barras { display: grid; gap: 8px; }
+.ta-bf { display: grid; grid-template-columns: minmax(0, 1.25fr) 1fr 58px; gap: 10px; align-items: center; font-size: 13px; }
+.ta-bf > span:first-child { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--texto-2); }
+.ta-bf b { text-align: right; font: 600 13px/1 var(--ui); font-variant-numeric: tabular-nums; color: var(--texto); }
+.ta-pista { position: relative; height: 9px; border-radius: 5px; background: var(--sep); }
+.ta-pista i { display: block; height: 100%; border-radius: 5px; }
+.ta-pista u { position: absolute; top: -4px; bottom: -4px; width: 2px; margin-left: -1px; background: var(--texto); border-radius: 1px; }
+.ta-edades .ta-bf { grid-template-columns: minmax(0, 1.3fr) 1fr 62px; }
+.ta-dos { display: grid; grid-template-columns: 1fr 1fr; gap: 26px; }
+.ta-sub { margin: 0 0 10px; font: 600 11px/1.2 var(--ui); letter-spacing: .12em; text-transform: uppercase; color: var(--tenue); }
+/* 5 · costes */
+.ta-apil { display: flex; height: 16px; border-radius: 8px; overflow: hidden; gap: 2px; margin: 6px 0 10px; }
+.ta-apil i { display: block; height: 100%; }
+.ta-apil-ley { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-bottom: 6px; font-size: 13px; color: var(--texto-2); }
+.ta-apil-ley span { display: inline-flex; align-items: center; gap: 7px; }
+.ta-apil-ley i { width: 10px; height: 10px; border-radius: 3px; }
+.ta-apil-ley small { color: var(--tenue); }
+.ta-apil-ley b { color: var(--texto); font-variant-numeric: tabular-nums; }
+/* 6 · dividendos */
+.ta-meses { display: grid; grid-template-columns: repeat(12, 1fr); gap: 6px; margin: 4px 0 6px; }
+.ta-meses div { display: grid; justify-items: center; gap: 5px; }
+.ta-mb { display: flex; align-items: flex-end; width: 100%; max-width: 26px; height: 70px; border-radius: 5px; background: var(--sep); overflow: hidden; }
+.ta-mb i { display: block; width: 100%; background: var(--grafica); border-radius: 5px; }
+.ta-meses small { font: 600 10px/1 var(--ui); text-transform: uppercase; color: var(--tenue); }
+.ta-hitos { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 6px; }
+.ta-hitos span { display: grid; gap: 2px; padding: 7px 12px; border-radius: var(--r-m); background: var(--superficie-2); border: 1px solid var(--borde); font: 600 13px/1.1 var(--ui); font-variant-numeric: tabular-nums; color: var(--texto); }
+.ta-hitos b { font: 600 10.5px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; color: var(--tenue); }
+/* 7 · la gráfica del año */
+.ta-graf { position: relative; margin: 8px 0 0; }
+
+/* el móvil: una tarjeta por pantalla, con las barras arriba y «Anterior / Siguiente» */
+@media (max-width: 759px) {
+  .ta-portada { grid-template-columns: 1fr; gap: 16px; }
+  .ta-nombre { font-size: 44px; }
+  .ta-dos { grid-template-columns: 1fr; gap: 18px; }
+  .ta-cal { grid-template-columns: repeat(4, 1fr); }
+  .ta-grande b { font-size: 28px; }
+  .ta-meses { gap: 3px; }
+  .ta-pag { position: fixed; inset: 0; z-index: 55; display: grid; grid-template-rows: auto auto minmax(0, 1fr) auto; gap: 14px;
+    padding: calc(env(safe-area-inset-top, 0px) + 14px) 16px calc(env(safe-area-inset-bottom, 0px) + 18px); background: var(--fondo); color: var(--texto); }
+  .ta-pag > .ta-cab { display: none; }
+  .ta-hbarra { display: flex; gap: 4px; }
+  .ta-hbarra i { flex: 1; height: 3px; border-radius: 2px; background: var(--sep); }
+  .ta-hbarra i.si { background: var(--texto-2); }
+  .ta-hbarra i.aqui { background: var(--oro-texto); }
+  .ta-hcab { display: flex; justify-content: space-between; align-items: center; font: 600 12px/1 var(--ui); letter-spacing: .06em; color: var(--texto-2); }
+  .ta-hcab b { font-weight: 600; color: var(--texto); }
+  .ta-cerrar { display: grid; place-items: center; width: 44px; height: 44px; margin: -12px -10px -12px 0; border-radius: 50%; color: var(--texto-2); font-size: 18px; text-decoration: none; }
+  .ta-pag > .ta-t { display: none; }
+  .ta-pag > .ta-t.ta-aqui { display: block; align-self: center; max-height: 100%; overflow-y: auto; overscroll-behavior: contain; padding: 22px 18px; border-radius: var(--r-xl, 24px); }
+  .ta-pag > .ta-t .pab-cab { flex-wrap: wrap; font-size: 22px; }
+  .ta-pag > .ta-t .pab-cab .ta-n { flex-basis: 100%; }
+  .ta-hpie { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .ta-hpie .btn { min-height: 46px; justify-content: center; }
+  body:has(#panelAv .ta-pag) { overflow: hidden; }
+}
+@media (max-width: 400px) { .ta-meses small { font-size: 8.5px; letter-spacing: 0; } }
