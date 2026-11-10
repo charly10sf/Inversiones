@@ -1,0 +1,120 @@
+/* Maqueta del acabado HÍBRIDO en el resto del ordenador (11 nov, noche). Solo desde 1.180 px: el móvil sigue con el
+   liquid. Va con body.ac-h encima de la app de verdad (y de la barra A en híbrido de maq-barra-acabado.css).
+   La idea, la misma de la barra: plano, sin relieve, sin brillo arriba ni sombra por debajo, filos casi invisibles,
+   tintes lisos, y el oro solo en lo elegido (una pastillita) y en el botón principal, liso.
+   Mármol y Marfil siguen siendo los mismos; los sellos de Toisón Dorado no se tocan. */
+@media (min-width: 1180px) {
+  /* ---------- las piezas (tokens) ---------- */
+  [data-tema] body.ac-h {
+    --h-filo: rgb(255 255 255 / .075); --h-filo-2: rgb(255 255 255 / .12);
+    --h-carril: rgb(255 255 255 / .03); --h-tinte: rgb(255 255 255 / .085); --h-hover: rgb(255 255 255 / .045);
+    --h-tinta: var(--texto); --h-apagado: color-mix(in srgb, var(--texto) 62%, transparent);
+    --h-oro: var(--oro-texto);
+    /* el botón principal: el oro del logo, liso y un punto más callado (sin el degradado de metal) */
+    --h-pri: color-mix(in srgb, var(--oro-texto) 88%, #000); --h-pri-hover: var(--oro-texto); --h-pri-texto: #1d1408;
+    --h-tarjeta: var(--superficie);
+  }
+  [data-tema="marfil"] body.ac-h {
+    --h-filo: color-mix(in srgb, var(--borde) 85%, transparent); --h-filo-2: var(--borde);
+    --h-carril: color-mix(in srgb, var(--texto) 3%, transparent); --h-tinte: color-mix(in srgb, var(--primario) 7%, transparent); --h-hover: color-mix(in srgb, var(--texto) 4%, transparent);
+    --h-tinta: var(--primario); --h-apagado: var(--texto-2);
+    --h-oro: var(--oro-hilo);
+    /* en Marfil el principal es el vino de siempre, liso (sin el degradado) */
+    --h-pri: var(--primario); --h-pri-hover: color-mix(in srgb, var(--primario) 88%, #fff); --h-pri-texto: #fbf6ee;
+  }
+
+  /* ---------- 1 · la barra de arriba ---------- */
+  [data-tema] body.ac-h .k2-busca { background: var(--h-carril); box-shadow: inset 0 0 0 1px var(--h-filo); }
+  [data-tema] body.ac-h .k2-busca:hover { box-shadow: inset 0 0 0 1px var(--h-filo-2); background: var(--h-hover); }
+  [data-tema] body.ac-h .k2-busca kbd { box-shadow: none; background: var(--h-tinte); color: var(--h-apagado); }
+  [data-tema] body.ac-h .k2-cuenta { background: none; box-shadow: inset 0 0 0 1px var(--h-filo-2); }
+  /* el contador de GTA: sin el halo dorado que lo rodeaba; solo el filo */
+  [data-tema] body.ac-h .gta-top { box-shadow: none; }
+  [data-tema] body.ac-h .gta-top::before { box-shadow: none; border-color: color-mix(in srgb, var(--h-oro) 45%, transparent); animation: none; }
+  [data-tema] body.ac-h .top :is(.ib, .as-boton) { box-shadow: none; }
+  [data-tema] body.ac-h .k2-top { border-bottom: 1px solid var(--h-filo); }
+
+  /* ---------- 2 · periodos (1D…Total) y segmentos: carril liso; lo elegido, tinte y la pastillita de oro debajo ---------- */
+  [data-tema] body.ac-h :is(.subvistas, .plazos, .tabs, .as-modo .seg, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas) {
+    background: var(--h-carril); background-image: none; border: 0; box-shadow: inset 0 0 0 1px var(--h-filo); border-radius: 10px; }
+  [data-tema] body.ac-h :is(.subvistas, .plazos, .tabs, .as-modo .seg, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas) button { position: relative; color: var(--h-apagado); font-weight: 500; border-radius: 7px; }
+  [data-tema] body.ac-h :is(.subvistas, .plazos, .tabs, .as-modo .seg, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas) button:hover { color: var(--h-tinta); background: var(--h-hover); }
+  [data-tema] body.ac-h :is(.subvistas:not(.dos-op), .plazos, .tabs, .as-modo .seg, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas) button[aria-pressed="true"] {
+    background: var(--h-tinte); color: var(--h-tinta); font-weight: 600; box-shadow: none; border-color: transparent; border-radius: 7px; filter: none; }
+  [data-tema] body.ac-h :is(.subvistas:not(.dos-op), .plazos, .tabs, .as-modo .seg, .op-modo, .cuenta-modo, .hero-rangos, .modo-op, .mapa-modos, .mapa-vistas) button[aria-pressed="true"]::before {
+    content: ""; position: absolute; left: 50%; bottom: 3px; width: 14px; height: 2px; margin-left: -7px; border-radius: 2px; background: var(--h-oro); }
+  /* los que son de dos (con su raya ya puesta), solo el color */
+  [data-tema] body.ac-h .subvistas.dos-op { background: none; box-shadow: none; }
+  /* las pestañas de las páginas (Análisis, y encima del título con la IA agrandada): sin carril, lo mismo */
+  [data-tema] body.ac-h :is(.grupo-tabs a, .k2-pest a, .pest-av a) { position: relative; color: var(--h-apagado); font-weight: 500; }
+  [data-tema] body.ac-h :is(.grupo-tabs a, .k2-pest a, .pest-av a):hover { color: var(--h-tinta); background: var(--h-hover); }
+  [data-tema] body.ac-h :is(.grupo-tabs a, .k2-pest a, .pest-av a)[aria-current="page"] { background: var(--h-tinte); color: var(--h-tinta); font-weight: 600; box-shadow: none; border-radius: 9px; }
+  [data-tema] body.ac-h :is(.grupo-tabs a, .k2-pest a, .pest-av a)[aria-current="page"]::before {
+    content: ""; position: absolute; left: 50%; bottom: 4px; width: 16px; height: 2px; margin-left: -8px; border-radius: 2px; background: var(--h-oro); }
+  [data-tema] body.ac-h .k2-pest { gap: 2px; }
+  [data-tema] body.ac-h .k2-pest a { border-radius: 9px; }
+
+  /* ---------- 3 · botones: el principal, oro liso; los demás, planos con filo ---------- */
+  [data-tema] body.ac-h .btn { background: var(--h-carril); border: 1px solid var(--h-filo-2); box-shadow: none; }
+  [data-tema] body.ac-h .btn:hover { background: var(--h-hover); border-color: color-mix(in srgb, var(--texto) 22%, transparent); }
+  [data-tema] body.ac-h .btn.pri { background: var(--h-pri); border-color: transparent; color: var(--h-pri-texto); box-shadow: none; font-weight: 600; }
+  [data-tema] body.ac-h .btn.pri:hover { background: var(--h-pri-hover); filter: none; }
+  /* el círculo de la IA y su avatar: sin metal; el símbolo en oro sobre un filo */
+  [data-tema] body.ac-h :is(.ia-av-ts, .as-boton.as-ts) { background: none; color: var(--h-oro); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--h-oro) 45%, transparent); }
+  [data-tema] body.ac-h .as-boton.as-ts:hover { background: var(--h-hover); }
+  [data-tema] body.ac-h .as-enviar:not(.parar) { background: var(--h-pri); color: var(--h-pri-texto); box-shadow: none; }
+
+  /* ---------- 4 · chips y etiquetas: planas ---------- */
+  [data-tema] body.ac-h :is(.logo-a, .pf-r-ic, .ag-mini .ag-dia, span.ag-dia) { box-shadow: inset 0 0 0 1px var(--h-filo-2); }
+  [data-tema] body.ac-h .logo-a { background: var(--h-carril); }
+  [data-tema] body.ac-h .ag-dia.pronto { box-shadow: inset 0 0 0 1px var(--h-filo-2); background: var(--h-tinte); }
+  [data-tema] body.ac-h :is(.mapa-etqs .me, .mapa-etqs .me-punto, .mi-ban) { box-shadow: none; }
+  [data-tema] body.ac-h .mapa-etqs .me { border: 1px solid var(--h-filo-2); }
+  [data-tema] body.ac-h .mapa-caja button { -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: inset 0 0 0 1px var(--h-filo-2); }
+  [data-tema] body.ac-h .hp-cmp { box-shadow: none; border-color: var(--h-filo-2); }
+  [data-tema] body.ac-h .idiomas button { background: var(--h-carril); border-color: var(--h-filo-2); }
+  [data-tema] body.ac-h .idiomas button[aria-pressed="true"] { background: var(--h-tinte); border-color: color-mix(in srgb, var(--h-oro) 55%, transparent); }
+  [data-tema] body.ac-h :is(select, input:not([type=checkbox]):not([type=radio]), textarea) { background-image: none; box-shadow: none; }
+  /* los campos (el buscador de Mercados y los de las hojas): filo de 1 px y foco en oro sin halo */
+  [data-tema] body.ac-h :is(.busca input, .merc-busca input, .hoja input:not([type=checkbox]):not([type=radio]), .hoja select) { border-width: 1px; border-color: var(--h-filo-2); background-color: var(--h-carril); }
+  [data-tema] body.ac-h :is(.busca input, .merc-busca input, .hoja input, .hoja select):focus { border-color: color-mix(in srgb, var(--h-oro) 60%, transparent); box-shadow: none; }
+  [data-tema] body.ac-h select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='none' stroke='%23999' stroke-width='1.6'%3E%3Cpath d='M3 4.5l3 3 3-3'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; }
+
+  /* ---------- 5 · tarjetas y cajas: lisas, filo de 1 px, sin sombra ni luz dorada; los avisos, igual ---------- */
+  [data-tema] body.ac-h :is(.tarjeta, .plan-venta, .idea, .informe, .fx2, .fx3-lista, .fis-vacio, .num-sec, .desde-compra, .merc2,
+      .nov-ant, .tarea, .pf-card, .merc-busca, .mfilas, .ir-objetivos, .aj-caja, .ag-mes2, .agp-c, .toca, .opr, .empezar, .ov-lista, .ia-nota, .ag-prox,
+      .hero-panel, .mapa-w, .pf-recuerda, .nov-aviso, .tu-cab) {
+    background-color: var(--h-tarjeta); background-image: none; border-width: 1px; border-color: var(--h-filo); box-shadow: none; }
+  [data-tema] body.ac-h :is(.plan-venta, .informe, .toca, .tarea.primero, .empezar, .agp-hoy, .pf-recuerda, .nov-aviso) { border-color: var(--h-filo-2); }
+  [data-tema] body.ac-h :is(.hero-panel, .car-patrimonio)::after, [data-tema] body.ac-h .car-patrimonio::before { display: none; }
+  [data-tema] body.ac-h .aj-cab { background-image: none; background-color: var(--h-carril); box-shadow: inset 0 0 0 1px var(--h-filo); border: 0; }
+  [data-tema] body.ac-h .mapa-caja { background-color: var(--h-carril); }
+
+  /* ---------- 6 · hojas, paneles y la IA ---------- */
+  /* las hojas: lisas, filo de 1 px y nada de sombra; el velo de detrás las separa */
+  [data-tema] body.ac-h .hoja { box-shadow: 0 0 0 1px var(--h-filo-2); border: 0; background: var(--superficie); background-image: none; }
+  [data-tema] body.ac-h .hoja-fondo { background: rgb(0 0 0 / .62); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  [data-tema="marfil"] body.ac-h .hoja-fondo { background: rgb(40 18 14 / .42); }
+  [data-tema] body.ac-h :is(.hoja-cab, .hoja form > .fila-btns:last-child) { -webkit-backdrop-filter: none; backdrop-filter: none; background: var(--superficie); }
+  /* la IA al lado: el mismo plano que la barra, la cabecera sin raya dorada, el campo con filo y foco sin halo */
+  [data-tema] body.ac-h .asesor { box-shadow: none; background-image: none; }
+  [data-tema] body.ac-h .as-cab { border-bottom-color: var(--h-filo); box-shadow: none; }
+  [data-tema] body.ac-h .as-pie { border-top-color: var(--h-filo); }
+  [data-tema] body.ac-h .as-form { background: var(--h-carril); border: 1px solid var(--h-filo-2); box-shadow: none; }
+  [data-tema] body.ac-h .as-form:focus-within { border-color: color-mix(in srgb, var(--h-oro) 60%, transparent); box-shadow: none; }
+  [data-tema] body.ac-h .as-yo { background: var(--h-tinte); }
+  [data-tema] body.ac-h .as-sug button { border-color: var(--h-filo-2); background: var(--h-carril); }
+  [data-tema] body.ac-h .as-sug button:hover { border-color: color-mix(in srgb, var(--h-oro) 55%, transparent); }
+  [data-tema] body.ac-h :is(.as-func, .as-adj) { box-shadow: none; }
+
+  /* ---------- la K2 de ahora (la pantalla con la IA agrandada): sin cristal y lo elegido como en la barra A ---------- */
+  [data-tema] body.ac-h .riel :is(.k2-iconos, .k2-col) { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  [data-tema] body.ac-h .riel .k2-iconos { background-color: color-mix(in srgb, var(--fondo) 86%, #000); background-image: none; border-right: 1px solid var(--h-filo); }
+  [data-tema="marfil"] body.ac-h .riel .k2-iconos { background-color: var(--menu-fondo); border-right-color: var(--menu-borde); }
+  [data-tema] body.ac-h .riel .k2-iconos a { position: relative; color: color-mix(in srgb, var(--barra-texto, var(--texto)) 58%, transparent); }
+  [data-tema] body.ac-h .riel .k2-iconos a[aria-current="page"] { background: rgb(255 255 255 / .075); box-shadow: none; color: var(--menu-oro, var(--oro-texto)); }
+  [data-tema] body.ac-h .riel .k2-iconos a[aria-current="page"]::before { content: ""; position: absolute; left: -10px; top: 50%; width: 3px; height: 16px; margin-top: -8px; border-radius: 0 3px 3px 0; background: var(--menu-oro, var(--oro-texto)); }
+  [data-tema] body.ac-h .k2-top { background: color-mix(in srgb, var(--fondo) 94%, transparent); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  [data-tema="marfil"] body.ac-h .k2-top { background: var(--fondo); }
+  [data-tema] body.ac-h .k2-marca i { box-shadow: none; }
+}

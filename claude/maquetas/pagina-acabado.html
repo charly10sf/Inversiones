@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Toisón · El acabado híbrido en el ordenador</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Ibarra+Real+Nova:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --fondo: #111110; --panel: #191816; --panel-2: #211f1c; --linea: #2e2b27; --linea-2: #3a3631;
+  --texto: #f2eee7; --tenue: #a39b90; --oro: #e3b45f; --ok: #7fd3a0; --ok-osc: #13241a; --aviso: #e8a07a; --aviso-osc: #2b1a12;
+  --display: "Ibarra Real Nova", Georgia, serif; --cuerpo: "Inter", system-ui, sans-serif;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--fondo); color: var(--texto); font: 400 15px/1.5 var(--cuerpo); }
+button, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:is(button, a, textarea):focus-visible { outline: 2px solid var(--oro); outline-offset: 2px; }
+
+/* la barra de arriba de esta página va en el mismo acabado que se propone: plana, filos finos, oro solo en lo elegido */
+.barra { position: sticky; top: 0; z-index: 20; background: var(--fondo); border-bottom: 1px solid var(--linea); }
+.barra-in { max-width: 1500px; margin: 0 auto; padding: 12px 22px; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.marca { font: 600 21px/1 var(--display); letter-spacing: .04em; }
+.marca em { font-style: italic; color: var(--oro); font-weight: 500; }
+.grupo { display: flex; align-items: center; gap: 8px; }
+.grupo > span { font: 500 12px/1 var(--cuerpo); color: var(--tenue); }
+.seg { display: inline-flex; gap: 2px; padding: 3px; border-radius: 10px; background: rgb(255 255 255 / .03); box-shadow: inset 0 0 0 1px var(--linea); }
+.seg button { position: relative; border: 0; background: none; padding: 6px 12px; border-radius: 7px; font-weight: 500; font-size: 13px; color: var(--tenue); white-space: nowrap; }
+.seg button:hover { color: var(--texto); background: rgb(255 255 255 / .04); }
+.seg button[aria-pressed="true"] { background: rgb(255 255 255 / .085); color: var(--texto); font-weight: 600; }
+.seg button[aria-pressed="true"]::before { content: ""; position: absolute; left: 50%; bottom: 2px; width: 14px; height: 2px; margin-left: -7px; border-radius: 2px; background: var(--oro); }
+.der { margin-left: auto; display: flex; gap: 10px; align-items: center; }
+.cuenta { font-size: 13px; color: var(--tenue); }
+.cuenta b { color: var(--texto); font-weight: 600; }
+.btn { border: 1px solid var(--linea-2); background: rgb(255 255 255 / .03); padding: 8px 14px; border-radius: 10px; font-weight: 600; font-size: 13.5px; }
+.btn:hover { background: rgb(255 255 255 / .05); }
+.btn.pri { background: color-mix(in srgb, var(--oro) 88%, #000); border-color: transparent; color: #1d1408; }
+.btn.pri:hover { background: var(--oro); }
+
+main { max-width: 1500px; margin: 0 auto; padding: 26px 22px 90px; display: grid; gap: 30px; }
+h1 { margin: 0; font: 600 38px/1.1 var(--display); }
+.nota { margin: 0; max-width: 112ch; color: var(--tenue); font-size: 14.5px; }
+.nota b { color: var(--texto); font-weight: 600; }
+.reglas { display: grid; gap: 10px; grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+.regla { border: 1px solid var(--linea); border-radius: 12px; padding: 12px 14px; font-size: 13.5px; color: var(--tenue); }
+.regla b { display: block; color: var(--texto); font-size: 14px; margin-bottom: 3px; }
+.indice { display: flex; flex-wrap: wrap; gap: 8px; }
+.indice a { text-decoration: none; color: var(--tenue); padding: 7px 12px; border-radius: 9px; border: 1px solid var(--linea); font-size: 13px; font-weight: 500; display: inline-flex; gap: 7px; align-items: center; }
+.indice a:hover { color: var(--texto); }
+.indice a i { width: 7px; height: 7px; border-radius: 50%; background: var(--linea-2); }
+.indice a.si i { background: var(--ok); } .indice a.cambios i { background: var(--aviso); }
+
+.bloque { background: var(--panel); border: 1px solid var(--linea); border-radius: 18px; padding: 22px; display: grid; gap: 16px; scroll-margin-top: 80px; }
+.bloque.si { border-color: color-mix(in srgb, var(--ok) 60%, var(--linea)); } .bloque.cambios { border-color: color-mix(in srgb, var(--aviso) 60%, var(--linea)); }
+.cab small { display: block; font: 500 12px/1 var(--cuerpo); color: var(--oro); margin-bottom: 7px; }
+.cab h2 { margin: 0; font: 600 28px/1.15 var(--display); }
+.cab p { margin: 6px 0 0; color: var(--tenue); max-width: 108ch; }
+.cambia { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13.5px; max-width: 120ch; }
+.cambia li { display: grid; grid-template-columns: 110px 1fr; gap: 10px; }
+.cambia li span { color: var(--tenue); }
+
+/* capturas: «los dos» las pone una al lado de la otra */
+.pares { display: grid; gap: 18px; }
+.par { display: grid; gap: 10px; grid-template-columns: 1fr 1fr; }
+body.ver-uno .par { grid-template-columns: 1fr; }
+body.ver-ahora .par > .v-hibrido, body.ver-hibrido .par > .v-ahora { display: none; }
+.cap { margin: 0; display: grid; gap: 6px; min-width: 0; }
+.cap figcaption { font-size: 12.5px; color: var(--tenue); display: flex; gap: 8px; align-items: baseline; }
+.cap figcaption b { color: var(--texto); font-weight: 600; }
+.cap figcaption .et { font: 600 11px/1 var(--cuerpo); padding: 3px 7px; border-radius: 6px; border: 1px solid var(--linea-2); color: var(--tenue); }
+.cap.v-hibrido figcaption .et { color: var(--oro); border-color: color-mix(in srgb, var(--oro) 45%, transparent); }
+.cap img.entera { width: 100%; height: auto; display: block; border-radius: 10px; border: 1px solid var(--linea); cursor: zoom-in; background: #000; }
+.recorte { position: relative; overflow: hidden; border-radius: 10px; border: 1px solid var(--linea); background: #000; cursor: zoom-in; }
+.recorte img { position: absolute; max-width: none; height: auto; display: block; }
+.tit-par { font: 600 14px/1.3 var(--cuerpo); margin: 4px 0 -2px; }
+.tit-par small { color: var(--tenue); font-weight: 500; margin-left: 6px; }
+
+.decidir { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-start; }
+.decidir .btn[aria-pressed="true"].vale { background: var(--ok-osc); border-color: var(--ok); color: var(--ok); }
+.decidir .btn[aria-pressed="true"].camb { background: var(--aviso-osc); border-color: var(--aviso); color: var(--aviso); }
+textarea { flex: 1 1 380px; min-height: 44px; resize: vertical; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--linea); background: var(--fondo); font-size: 14px; width: 100%; }
+
+.preg { display: grid; gap: 8px; padding: 14px 0; border-top: 1px solid var(--linea); }
+.preg:first-of-type { border-top: 0; }
+.preg > b { font-size: 16px; }
+.preg > span { color: var(--tenue); font-size: 13.5px; max-width: 108ch; }
+.opciones { display: flex; flex-wrap: wrap; gap: 8px; }
+.opciones button { position: relative; border: 1px solid var(--linea-2); background: rgb(255 255 255 / .02); padding: 8px 14px; border-radius: 10px; font-size: 13.5px; font-weight: 500; color: var(--tenue); }
+.opciones button[aria-pressed="true"] { color: var(--texto); background: rgb(255 255 255 / .08); border-color: color-mix(in srgb, var(--oro) 55%, transparent); font-weight: 600; }
+.resumen { white-space: pre-wrap; background: var(--fondo); border: 1px solid var(--linea); border-radius: 12px; padding: 14px; font: 13px/1.5 ui-monospace, Menlo, monospace; color: var(--tenue); }
+.copiado { color: var(--ok); font-size: 13px; }
+
+.caja { position: fixed; inset: 0; z-index: 50; background: rgb(0 0 0 / .92); display: none; grid-template-rows: auto 1fr; }
+.caja.abierta { display: grid; }
+.caja-cab { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; padding: 10px 16px; color: var(--tenue); font-size: 13.5px; }
+.caja-cab b { color: var(--texto); }
+.caja-cab .der { gap: 8px; }
+.caja-img { overflow: auto; display: grid; place-items: start center; padding: 0 16px 16px; }
+.caja-img img { max-width: none; width: min(100%, 1440px); height: auto; border-radius: 8px; }
+@media (max-width: 900px) { .par { grid-template-columns: 1fr; } h1 { font-size: 29px; } .der { margin-left: 0; } .cambia li { grid-template-columns: 1fr; gap: 0; } }
+</style>
+</head>
+<body class="ver-dos">
+<div class="barra"><div class="barra-in">
+  <div class="marca">TOISÓN <em>· acabado híbrido</em></div>
+  <div class="grupo"><span>Diseño</span><div class="seg" data-ctl="tema"><button data-v="marmol" aria-pressed="true">Mármol</button><button data-v="marfil" aria-pressed="false">Marfil</button></div></div>
+  <div class="grupo"><span>Pantalla</span><div class="seg" data-ctl="ancho"><button data-v="1440" aria-pressed="true">1.440</button><button data-v="1280" aria-pressed="false">1.280</button></div></div>
+  <div class="grupo"><span>Ver</span><div class="seg" data-ctl="ver"><button data-v="dos" aria-pressed="true">Los dos</button><button data-v="ahora" aria-pressed="false">Ahora</button><button data-v="hibrido" aria-pressed="false">Híbrido</button></div></div>
+  <div class="der"><span class="cuenta" id="cuenta"><b>0</b> de 6 bloques mirados</span><a class="btn" href="#decidir" style="text-decoration:none;color:inherit">Ir a decidir</a></div>
+</div></div>
+
+<main>
+  <section style="display:grid;gap:14px">
+    <h1>El acabado híbrido en todo el ordenador</h1>
+    <p class="nota">Es el lenguaje que elegiste anoche para la barra lateral, llevado al resto de lo que se ve desde 1.180 px: la barra de arriba, los periodos y segmentos, los botones, las pestañas, los chips, las tarjetas, las hojas y la IA. Todo está montado encima de la app de verdad (rama v0.8.6-barra, cartera de prueba de 23.380 €) con la <b>barra A en híbrido</b>; solo cambia el CSS. <b>«Ahora»</b> es la app como está hoy con la barra A ya en híbrido, para que lo que compares sea solo el resto. El móvil no se toca: sigue con el liquid.</p>
+    <div class="reglas">
+      <div class="regla"><b>Plano</b>Sin el brillo de arriba ni la sombra de debajo. Ni gota ni cristal.</div>
+      <div class="regla"><b>Lo elegido: tinte y pastillita</b>Un fondo liso muy suave y una pastillita de oro de 14 × 2 px debajo (en la barra, 3 × 16 a la izquierda).</div>
+      <div class="regla"><b>El principal, oro liso</b>«Hacerlo ahora», enviar a la IA… en el oro del logo, un punto más callado y sin degradado. En Marfil, el vino de siempre, liso.</div>
+      <div class="regla"><b>Filos de 1 px</b>Tarjetas, campos y hojas con un filo casi invisible en vez del borde de 2 px y la sombra en capas.</div>
+      <div class="regla"><b>Lo que no cambia</b>Mármol y Marfil, la gráfica, los colores de subir y bajar, los sellos de Toisón Dorado y el móvil.</div>
+    </div>
+    <nav class="indice" id="indice"></nav>
+  </section>
+
+  <section class="bloque" id="pantallas">
+    <div class="cab"><small>Primero, de un vistazo</small><h2>Las cinco pantallas enteras</h2>
+      <p>Pulsa una para verla a tamaño real; con las flechas pasas de una a otra y con la tecla H cambias entre Ahora e Híbrido sin moverte del sitio. La IA agrandada sale con la K2 de ahora (la barra A aún no tiene sitio para ella), también en híbrido.</p></div>
+    <div class="pares" id="enteras"></div>
+  </section>
+
+  <div id="bloques"></div>
+
+  <section class="bloque" id="decidir">
+    <div class="cab"><small>Para cerrar</small><h2>Lo que queda por decir</h2></div>
+    <div id="preguntas"></div>
+    <div class="decidir"><button class="btn pri" id="copiar">Copiar lo decidido</button><span class="copiado" id="copiado"></span></div>
+    <div class="resumen" id="resumen"></div>
+  </section>
+</main>
+
+<div class="caja" id="caja" role="dialog" aria-modal="true" aria-label="Captura a tamaño real">
+  <div class="caja-cab"><span id="cajaTit"></span><div class="der"><button class="btn" id="cajaH">Ver híbrido</button><button class="btn" id="cajaAnt">‹</button><button class="btn" id="cajaSig">›</button><button class="btn" id="cajaCerrar">Cerrar</button></div></div>
+  <div class="caja-img"><img id="cajaImg" alt=""></div>
+</div>
+
+<script>
+const PANT = [
+  ['hoy', 'Hoy'], ['rentab', 'Rendimiento › Rentabilidad'], ['mercados', 'Mercados'], ['ajustes', 'Ajustes abierto (una hoja)'], ['ia', 'La IA agrandada'],
+];
+const RECTS = /*RECTS*/{"marfil-1280":{"hoy":{"arriba":[288,0,992,64],"periodos":[777,290,439,39],"aviso":[327,108,915,71],"botones":[327,191,915,56],"chips":[985,339,231,32],"hero":[327,261,915,599]},"rentab":{"tarjetas":[350,171,892,587]},"mercados":{"busca":[327,186,915,152],"mapa":[327,386,915,474]},"ajustes":{"hoja":[320,34,640,791]},"ia":{"panel":[64,0,440,860],"pestanas":[542,108,699,40],"modo":[78,725,411,37],"campo":[64,712,439,148]}},"marfil-1440":{"hoy":{"arriba":[301,0,1139,64],"periodos":[936,291,439,39],"aviso":[341,108,1059,71],"botones":[341,191,1059,56],"chips":[1144,340,231,32],"hero":[341,262,1059,598]},"rentab":{"tarjetas":[351,171,1049,569]},"mercados":{"busca":[291,187,1109,152],"mapa":[291,386,1109,474]},"ajustes":{"hoja":[400,34,640,791]},"ia":{"panel":[64,0,440,860],"pestanas":[544,108,856,40],"modo":[78,725,411,37],"campo":[64,712,439,148]}},"marmol-1280":{"hoy":{"arriba":[316,0,964,64],"periodos":[775,291,441,40],"aviso":[354,108,887,71],"botones":[354,191,887,56],"chips":[984,341,231,32],"hero":[354,261,887,599]},"rentab":{"tarjetas":[354,171,887,569]},"mercados":{"busca":[327,188,915,152],"mapa":[327,388,915,472]},"ajustes":{"hoja":[320,34,640,791]},"ia":{"panel":[64,0,440,860],"pestanas":[542,108,699,40],"modo":[78,726,411,36],"campo":[64,713,439,147]}},"marmol-1440":{"hoy":{"arriba":[311,0,1129,64],"periodos":[933,292,441,40],"aviso":[351,108,1049,71],"botones":[351,191,1049,56],"chips":[1143,342,231,32],"hero":[351,262,1049,598]},"rentab":{"tarjetas":[356,171,1044,551]},"mercados":{"busca":[288,189,1112,152],"mapa":[288,388,1112,472]},"ajustes":{"hoja":[400,34,640,791]},"ia":{"panel":[64,0,440,860],"pestanas":[544,108,856,40],"modo":[78,726,411,36],"campo":[64,713,439,147]}}};
+const BLOQUES = [
+  { id: 'arriba', t: 'La barra de arriba', s: 'Bloque 1',
+    p: 'Ya iba casi plana; quedaban el cristal, el borde del buscador y el halo dorado del contador de GTA.',
+    cambia: [['Fondo', 'Opaco, sin cristal, con un filo de 1 px debajo (igual que la barra lateral).'], ['Buscador', 'Un carril casi transparente con filo; «Ctrl K» sobre un tinte, sin recuadro.'], ['Cuenta y GTA', 'El círculo de la cuenta, solo con filo. El contador de GTA, sin el resplandor de alrededor; su letra y el oro se quedan.']],
+    rec: [['hoy', 'arriba', 'Hoy, la barra de arriba']] },
+  { id: 'periodos', t: 'Periodos y segmentos', s: 'Bloque 2',
+    p: 'Es lo que más cambia a la vista: hoy lo elegido es una píldora de metal dorado con brillo arriba y sombra debajo.',
+    cambia: [['Carril', 'Liso, casi transparente, con un filo de 1 px y esquinas de 10 px.'], ['Lo elegido', 'Un tinte liso, el texto en blanco (en Marfil, en vino) y una pastillita de oro de 14 × 2 px debajo. Es el mismo gesto que la barra lateral, girado.'], ['Lo demás', 'Texto apagado; al pasar el ratón se enciende con un tinte más suave.'], ['Dónde', '1D…Total, los modos del mapa (Hoy, 1 mes…), las regiones, Normal / A fondo de la IA y el resto de segmentos (Básico/Avanzado de las páginas, los plazos, las operaciones…).']],
+    rec: [['hoy', 'periodos', 'Hoy, los periodos'], ['mercados', 'mapa', 'Mercados, el mapa con sus dos segmentos'], ['ia', 'modo', 'La IA, Normal / A fondo']] },
+  { id: 'botones', t: 'Botones', s: 'Bloque 3',
+    p: 'El principal deja el degradado de metal y queda en oro liso; los secundarios, planos con filo.',
+    cambia: [['Principal', 'Mármol: el oro del logo un 12 % más oscuro, liso, sin sombra; al pasar el ratón, el oro del logo. Marfil: el vino de siempre, liso.'], ['Secundarios', 'Carril casi transparente y filo de 1 px, sin sombra (Calendario, Personalizar, Cambiar nombre…).'], ['La IA', 'El avatar y el círculo de la IA dejan el metal: el símbolo en oro sobre un filo. El botón de enviar, oro liso.']],
+    rec: [['hoy', 'aviso', 'Hoy, «Te falta tu perfil» con «Hacerlo ahora»'], ['hoy', 'botones', 'Hoy, Calendario y Personalizar'], ['ia', 'campo', 'La IA, el campo y enviar']] },
+  { id: 'pestanas', t: 'Pestañas y chips', s: 'Bloque 4',
+    p: 'Las pestañas de las páginas (las que suben encima del título con la IA agrandada, y las de Análisis) iban en una píldora de metal.',
+    cambia: [['Pestañas', 'Sin píldora: tinte liso y pastillita de oro debajo, como los segmentos.'], ['Chips', 'Las etiquetas del mapa, los logos y «Comparar con el MSCI World», con filo y sin sombra. Las de subir y bajar (verde y rojo) se quedan.'], ['Idioma', 'Español/English: lo elegido con tinte y un filo de oro suave.']],
+    rec: [['ia', 'pestanas', 'Las pestañas encima del título (IA agrandada)'], ['hoy', 'chips', 'Hoy, «Comparar con el MSCI World»'], ['mercados', 'mapa', 'Mercados, las etiquetas del mapa']] },
+  { id: 'tarjetas', t: 'Tarjetas y cajas', s: 'Bloque 5 (no lo pediste: decídelo aparte)',
+    p: 'No estaba en tu lista, pero llevaban sombra en capas, borde de 2 px y, en Marfil y en el patrimonio, una luz dorada arriba. Con todo lo demás plano, chocaban.',
+    cambia: [['Tarjetas', 'Fondo liso, filo de 1 px casi invisible, sin sombra ni luz dorada.'], ['Patrimonio', 'Sin el hilo de oro de arriba ni el resplandor detrás de la cifra.'], ['Avisos', '«Te falta tu perfil» y los que destacan: sin el borde de oro; destaca el botón.'], ['Campos', 'El buscador de Mercados y los de las hojas, filo de 1 px y foco en oro sin halo.']],
+    rec: [['rentab', 'tarjetas', 'Rentabilidad, las tarjetas'], ['hoy', 'hero', 'Hoy, el patrimonio'], ['mercados', 'busca', 'Mercados, el buscador']] },
+  { id: 'hojas', t: 'Hojas, paneles y la IA', s: 'Bloque 6',
+    p: 'Las hojas llevaban un brillo por dentro arriba y una sombra grande; la IA, el campo con halo y el avatar de metal.',
+    cambia: [['Hojas', 'Lisas, filo de 1 px y sin sombra; las separa el velo de detrás, más oscuro y sin desenfoque.'], ['Cabecera de Ajustes', 'La caja de Toisón sin el degradado: un carril liso con filo.'], ['La IA', 'El panel en el mismo plano que la barra; la burbuja tuya, un tinte; el campo con filo y foco en oro sin halo.'], ['La K2', 'Con la IA agrandada se ve la barra de iconos de ahora: sin cristal y lo elegido como en la A (tinte y pastillita).']],
+    rec: [['ajustes', 'hoja', 'Ajustes'], ['ia', 'panel', 'La IA agrandada']] },
+];
+const PREGUNTAS = [
+  { id: 'todo', t: '¿El híbrido va a todo el ordenador?', s: 'Lo de los bloques 1 a 4 y 6. Las tarjetas (bloque 5) van aparte, abajo.',
+    o: ['Sí, a todo el ordenador', 'Sí, salvo lo que he marcado con cambios', 'Solo a la barra (lateral y de arriba)'] },
+  { id: 'tarjetas', t: '¿Y las tarjetas, también lisas?', s: 'Filo de 1 px, sin sombra en capas ni luz dorada.',
+    o: ['Sí, lisas', 'Lisas, pero con la luz dorada de Marfil', 'Como están'] },
+  { id: 'cuando', t: '¿Entra en la 0.8.6 o va en una letra aparte?', s: 'Es solo CSS para ≥ 1.180 px (unas 150 líneas), pero toca casi todas las pantallas y pide repasar capturas y contrastes. Con la barra nueva son unas 2 sesiones; solo el acabado, una.',
+    o: ['En la 0.8.6, con la barra', 'En una letra aparte (0.8.6a), después de publicar la 0.8.6', 'Más adelante'] },
+  { id: 'marfil', t: 'En Marfil, el botón principal…', s: 'Hoy es vino (un degradado casi plano). En el híbrido lo he dejado en vino liso.',
+    o: ['Vino liso, como en la maqueta', 'Oro liso, como en Mármol'] },
+];
+const ESTADO = { tema: 'marmol', ancho: '1440', ver: 'dos', voto: {}, nota: {}, resp: {} };
+try { Object.assign(ESTADO, JSON.parse(localStorage.getItem('ac-hib') || '{}')); } catch (e) {}
+const guardar = () => { try { localStorage.setItem('ac-hib', JSON.stringify(ESTADO)); } catch (e) {} };
+const img = (pg, v) => `img/${pg}-${ESTADO.tema}-${ESTADO.ancho}-${v}.webp`;
+const VER = { ahora: 'Ahora', hibrido: 'Híbrido' };
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+
+function recorte(pg, pieza, v) {
+  const r = (RECTS[`${ESTADO.tema}-${ESTADO.ancho}`] || {})[pg]?.[pieza];
+  const W = +ESTADO.ancho, H = 860;
+  if (!r) return `<img class="entera" src="${img(pg, v)}" alt="" data-pg="${pg}" data-v="${v}" loading="lazy">`;
+  // un poco de aire alrededor de la pieza
+  const m = 18, x = Math.max(0, r[0] - m), y = Math.max(0, r[1] - m), w = Math.min(W - x, r[2] + 2 * m), h = Math.min(H - y, r[3] + 2 * m);
+  return `<div class="recorte" style="aspect-ratio:${w}/${h}" data-pg="${pg}" data-v="${v}"><img src="${img(pg, v)}" alt="" loading="lazy" style="width:${W / w * 100}%;left:${-x / w * 100}%;top:${-y / h * 100}%"></div>`;
+}
+const par = (pg, cont, tit) => `${tit ? `<p class="tit-par">${esc(tit)}</p>` : ''}<div class="par">${['ahora', 'hibrido'].map((v) => `<figure class="cap v-${v}"><figcaption><span class="et">${VER[v]}</span></figcaption>${cont(v)}</figure>`).join('')}</div>`;
+
+function pintar() {
+  document.body.className = 'ver-' + ESTADO.ver + (ESTADO.ver === 'dos' ? '' : ' ver-uno');
+  for (const s of document.querySelectorAll('.seg[data-ctl]')) for (const b of s.children) b.setAttribute('aria-pressed', String(ESTADO[s.dataset.ctl] === b.dataset.v));
+  document.getElementById('enteras').innerHTML = PANT.map(([pg, t]) => par(pg, (v) => `<img class="entera" src="${img(pg, v)}" alt="${esc(t)} · ${VER[v]}" data-pg="${pg}" data-v="${v}" loading="lazy">`, t)).join('');
+  document.getElementById('bloques').innerHTML = BLOQUES.map((b) => `<section class="bloque ${ESTADO.voto[b.id] || ''}" id="${b.id}">
+      <div class="cab"><small>${esc(b.s)}</small><h2>${esc(b.t)}</h2><p>${esc(b.p)}</p></div>
+      <ul class="cambia">${b.cambia.map(([k, v]) => `<li><span>${esc(k)}</span><div>${esc(v)}</div></li>`).join('')}</ul>
+      <div class="pares">${b.rec.map(([pg, pz, t]) => par(pg, (v) => recorte(pg, pz, v), t)).join('')}</div>
+      <div class="decidir" data-b="${b.id}">
+        <button class="btn vale" data-voto="si" aria-pressed="${ESTADO.voto[b.id] === 'si'}">Me vale así</button>
+        <button class="btn camb" data-voto="cambios" aria-pressed="${ESTADO.voto[b.id] === 'cambios'}">Quiero cambios</button>
+        <textarea placeholder="Notas: qué cambiarías (opcional)" data-nota="${b.id}">${esc(ESTADO.nota[b.id] || '')}</textarea>
+      </div></section>`).join('');
+  document.getElementById('indice').innerHTML = `<a href="#pantallas"><i></i>Las cinco pantallas</a>` + BLOQUES.map((b) => `<a href="#${b.id}" class="${ESTADO.voto[b.id] || ''}"><i></i>${esc(b.t)}</a>`).join('') + `<a href="#decidir"><i></i>Lo que queda por decir</a>`;
+  document.getElementById('preguntas').innerHTML = PREGUNTAS.map((q) => `<div class="preg"><b>${esc(q.t)}</b><span>${esc(q.s)}</span>
+      <div class="opciones" data-q="${q.id}">${q.o.map((o) => `<button aria-pressed="${ESTADO.resp[q.id] === o}">${esc(o)}</button>`).join('')}</div>
+      <textarea placeholder="Algo más (opcional)" data-nota="q-${q.id}">${esc(ESTADO.nota['q-' + q.id] || '')}</textarea></div>`).join('');
+  resumen();
+}
+function resumen() {
+  const n = BLOQUES.filter((b) => ESTADO.voto[b.id]).length;
+  document.getElementById('cuenta').innerHTML = `<b>${n}</b> de ${BLOQUES.length} bloques mirados`;
+  const l = ['Acabado híbrido en el ordenador (maqueta del 11 nov):'];
+  for (const b of BLOQUES) {
+    const v = ESTADO.voto[b.id], nt = (ESTADO.nota[b.id] || '').trim();
+    l.push(`- ${b.t}: ${v === 'si' ? 'me vale así' : v === 'cambios' ? 'quiero cambios' : 'sin mirar'}${nt ? ` · ${nt}` : ''}`);
+  }
+  for (const q of PREGUNTAS) {
+    const nt = (ESTADO.nota['q-' + q.id] || '').trim();
+    l.push(`- ${q.t} ${ESTADO.resp[q.id] || '(sin responder)'}${nt ? ` · ${nt}` : ''}`);
+  }
+  document.getElementById('resumen').textContent = l.join('\n');
+}
+document.addEventListener('click', (e) => {
+  const s = e.target.closest('.seg[data-ctl] button');
+  if (s) { ESTADO[s.parentElement.dataset.ctl] = s.dataset.v; guardar(); const y = scrollY; pintar(); scrollTo(0, y); return; }
+  const vb = e.target.closest('[data-voto]');
+  if (vb) { const id = vb.parentElement.dataset.b; ESTADO.voto[id] = ESTADO.voto[id] === vb.dataset.voto ? '' : vb.dataset.voto; guardar(); const y = scrollY; pintar(); scrollTo(0, y); return; }
+  const op = e.target.closest('.opciones button');
+  if (op) { const q = op.parentElement.dataset.q; ESTADO.resp[q] = op.textContent; guardar(); for (const b of op.parentElement.children) b.setAttribute('aria-pressed', String(b === op)); resumen(); return; }
+  const im = e.target.closest('img.entera, .recorte');
+  if (im) abrir(PANT.findIndex(([p]) => p === im.dataset.pg), im.dataset.v);
+});
+document.addEventListener('input', (e) => { const t = e.target.closest('[data-nota]'); if (t) { ESTADO.nota[t.dataset.nota] = t.value; guardar(); resumen(); } });
+document.getElementById('copiar').addEventListener('click', async () => {
+  const t = document.getElementById('resumen').textContent, c = document.getElementById('copiado');
+  try { await navigator.clipboard.writeText(t); c.textContent = 'Copiado. Pégalo en el chat.'; }
+  catch (err) { c.textContent = 'No he podido copiar: selecciona el texto de abajo y cópialo a mano.'; }
+});
+// a tamaño real
+let cI = 0, cV = 'hibrido';
+const caja = document.getElementById('caja');
+function abrir(i, v) { cI = (i + PANT.length) % PANT.length; cV = v || cV; const [pg, t] = PANT[cI];
+  document.getElementById('cajaImg').src = img(pg, cV);
+  document.getElementById('cajaTit').innerHTML = `<b>${esc(t)}</b> · ${VER[cV]} · ${ESTADO.tema === 'marmol' ? 'Mármol' : 'Marfil'} · ${ESTADO.ancho} px`;
+  document.getElementById('cajaH').textContent = cV === 'ahora' ? 'Ver híbrido (H)' : 'Ver ahora (H)';
+  caja.classList.add('abierta'); }
+const cerrar = () => caja.classList.remove('abierta');
+document.getElementById('cajaCerrar').onclick = cerrar;
+document.getElementById('cajaAnt').onclick = () => abrir(cI - 1);
+document.getElementById('cajaSig').onclick = () => abrir(cI + 1);
+document.getElementById('cajaH').onclick = () => abrir(cI, cV === 'ahora' ? 'hibrido' : 'ahora');
+caja.addEventListener('click', (e) => { if (e.target === caja || e.target.classList.contains('caja-img')) cerrar(); });
+addEventListener('keydown', (e) => {
+  if (!caja.classList.contains('abierta')) return;
+  if (e.key === 'Escape') cerrar();
+  else if (e.key === 'ArrowRight') abrir(cI + 1);
+  else if (e.key === 'ArrowLeft') abrir(cI - 1);
+  else if (e.key.toLowerCase() === 'h') abrir(cI, cV === 'ahora' ? 'hibrido' : 'ahora');
+});
+pintar();
+</script>
+</body>
+</html>
