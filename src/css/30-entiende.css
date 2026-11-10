@@ -1,0 +1,73 @@
+/* 0.8.6 · Entiende tu cartera (pestaña 11), según la maqueta 11X aprobada el 8 nov. Progresión sobria: barras finas y
+   «Leída»; nada que celebre. Todo con los tokens del tema. */
+.ent-tira-s { padding-top: 14px; padding-bottom: 14px; }
+.ent-tira { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }
+.ent-tira-d { flex: 1 1 320px; display: grid; gap: 3px; padding-left: 14px; border-left: 3px solid var(--primario); min-width: 0; }
+.ent-tira-d small { font: 600 10.5px/1 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--oro-texto); }
+.ent-tira-d b { font: var(--titulo-estilo, normal) 500 19px/1.2 var(--titulo); }
+.ent-tira-d span { font-size: 13.5px; color: var(--texto-2); }
+.ent-tira > .btn { flex: none; }
+.ent-tira-a { display: grid; gap: 6px; flex: 0 1 240px; padding-left: 18px; border-left: 1px solid var(--sep); font-size: 13px; color: var(--texto-2); }
+.ent-tira-a b { color: var(--texto); }
+.ent-tira-a a { font: 600 12.5px/1.3 var(--ui); color: var(--oro-texto); }
+.ent-prog, .ent-capb { display: block; height: 4px; border-radius: 9px; background: var(--sep); overflow: hidden; }
+.ent-prog i, .ent-capb i { display: block; height: 100%; background: var(--primario); }
+
+/* el índice */
+.ent-ix { display: grid; gap: 2px; }
+.ent-ixf { display: grid; grid-template-columns: 30px minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; padding: 11px 8px; border: 0; border-radius: var(--r-m); background: none; color: inherit; text-align: left; font: inherit; cursor: pointer; min-height: 48px; }
+.ent-ixf:hover { background: var(--superficie-2); }
+.ent-ixf.on { background: var(--primario-fondo); box-shadow: inset 3px 0 0 var(--primario); }
+.ent-rom { font: var(--titulo-estilo, normal) 500 22px/1 var(--titulo); color: var(--oro-texto); text-align: center; }
+.ent-ixt { display: grid; gap: 4px; min-width: 0; }
+.ent-ixt b { font-size: 14.5px; }
+.ent-ixt small { font-size: 12px; color: var(--tenue); }
+.ent-capb { height: 3px; max-width: 160px; }
+.ent-ixf em { display: inline-flex; align-items: center; gap: 5px; white-space: nowrap; font: 600 12px/1 var(--ui); font-style: normal; color: var(--tenue); font-variant-numeric: tabular-nums; }
+.ent-ixf.lleno em { color: var(--oro-texto); }
+.ent-ixf em svg { width: 14px; height: 14px; color: var(--primario); }
+.ent-subs { display: grid; gap: 2px; margin: 4px 0 8px 22px; padding: 0 0 0 10px; border-left: 2px solid var(--sep); list-style: none; }
+.ent-sub { display: flex; align-items: center; gap: 10px; width: 100%; min-height: 44px; padding: 9px 8px; border: 0; border-radius: var(--r-m); background: none; color: var(--texto); text-align: left; font: 500 13.5px/1.3 var(--ui); cursor: pointer; }
+.ent-sub:hover { background: var(--superficie-2); }
+.ent-sub.on { background: var(--superficie-2); font-weight: 650; }
+.ent-sub em { margin-left: auto; font: 500 12px/1 var(--ui); font-style: normal; color: var(--tenue); white-space: nowrap; }
+.ent-ck { flex: none; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid var(--borde); color: var(--primario); }
+.ent-ck svg { width: 12px; height: 12px; }
+.ent-ck.si { border-color: var(--primario); background: var(--primario-fondo); }
+.ent-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.ent-nota { margin: 12px 0 0; font-size: 12.5px; line-height: 1.45; color: var(--tenue); }
+
+/* la lección grande: letra de 17 px */
+.ent-leccion { padding-left: 28px; padding-right: 28px; }
+.ent-pag-cab { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.ent-pag-cab > small { font: 600 11px/1 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--oro-texto); margin-right: auto; }
+.ent-min { font: 500 12px/1 var(--ui); color: var(--tenue); }
+.ent-leida { display: inline-flex; align-items: center; gap: 6px; padding: 5px 10px; border-radius: 99px; background: var(--primario-fondo); color: var(--texto); font: 600 12px/1 var(--ui); }
+.ent-pag h3 { margin: 12px 0 16px; font: var(--titulo-estilo, normal) 500 38px/1.15 var(--titulo); letter-spacing: var(--titulo-espacio, 0); outline: none; }
+.ent-pag > p { max-width: 74ch; margin: 0 0 14px; font-size: 17px; line-height: 1.72; color: var(--texto); }
+.ent-tus { margin: 18px 0; padding: 16px; border-radius: var(--r-l); background: var(--superficie-2); border: 1px solid var(--borde); }
+.ent-tus > small { display: block; margin-bottom: 12px; font: 600 11px/1 var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--oro-texto); }
+.ent-tus.ent-sin p { margin: 0; font-size: 15px; color: var(--texto-2); }
+.ent-pag > p.ent-ej { padding: 14px 16px; border-radius: var(--r-m); background: color-mix(in srgb, var(--primario) 7%, transparent); border-left: 3px solid var(--primario); }
+.ent-pag > p.ent-pie { font-size: 13px; color: var(--tenue); }
+.ent-pag-av { display: flex; align-items: center; gap: 10px; margin-top: 18px; padding-top: 14px; border-top: 1px solid var(--sep); font: 500 12.5px/1.3 var(--ui); color: var(--tenue); }
+.ent-puntos { display: inline-flex; gap: 5px; }
+.ent-puntos i { width: 7px; height: 7px; border-radius: 50%; background: var(--sep); }
+.ent-puntos i.si { background: var(--primario); }
+.ent-puntos i.aqui { box-shadow: 0 0 0 2px var(--fondo, var(--superficie)), 0 0 0 3.5px var(--primario); }
+.ent-pag-pie { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 16px; }
+.ent-pie-d { display: flex; gap: 10px; flex-wrap: wrap; }
+.ent-pag-pie .btn svg { width: 15px; height: 15px; }
+.ent-desmarcar { color: var(--texto-2); }
+.ent-volver { display: inline-flex; align-items: center; min-height: 44px; margin: -6px 0 6px; padding: 0; border: 0; background: none; color: var(--oro-texto); font: 600 14px/1 var(--ui); cursor: pointer; }
+
+@media (max-width: 600px) {
+  .ent-tira { gap: 12px; } .ent-tira-d { flex-basis: 100%; } .ent-tira-a { flex: 1; padding-left: 12px; }
+  .ent-leccion { padding-left: 16px; padding-right: 16px; }
+  .ent-pag h3 { font-size: 31px; }
+  .ent-pag > p { font-size: 17px; line-height: 1.7; }
+  .ent-pag-pie, .ent-pie-d { flex-direction: column-reverse; align-items: stretch; width: 100%; }
+  .ent-pag-pie .btn { width: 100%; justify-content: center; }
+}
+/* en el ordenador, la tira es de una línea: el porqué, cortado con puntos si no cabe (entero en el título del elemento) */
+@media (min-width: 601px) { .ent-tira-d span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; } }

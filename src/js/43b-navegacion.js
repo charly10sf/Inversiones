@@ -39,6 +39,8 @@ const PAGINAS = [
   { id: 'hoy', t: 'Hoy', en: 'Today', s: 'hoy', v: 'cartera', kw: 'inicio patrimonio grafica' },
   { id: 'agenda', t: 'Calendario', en: 'Calendar', s: 'hoy', g: 'cartera', v: 'agenda', kw: 'fechas resultados dividendos aportaciones' },
   { id: 'posiciones', t: 'Posiciones', en: 'Holdings', s: 'cartera', g: 'cartera', v: 'posiciones', kw: 'cartera fondos acciones' },
+  // 0.8.6: la pestaña 11, solo en básico (soloBas)
+  { id: 'entiende', t: 'Entiende tu cartera', en: 'Understand your portfolio', s: 'cartera', g: 'cartera', v: 'av', p: 'entiende', soloBas: true, kw: 'aprender lecciones formacion ter twr tir hacienda riesgo' },
   { id: 'mov', t: 'Movimientos', en: 'Transactions', s: 'cartera', g: 'cartera', v: 'av', p: 'mov', kw: 'compras ventas operaciones' },
   { id: 'pnl', t: 'Día a día', en: 'Day by day', s: 'cartera', g: 'cartera', v: 'av', p: 'pnl', av: true, kw: 'ganancias diarias' },
   { id: 'rentab', t: 'Rentabilidad', en: 'Returns', apT: 'Resumen', apEn: 'Summary', s: 'rendimiento', g: 'rr', v: 'av', p: 'rentab', kw: 'twr mwr indexado msci divisa' },
@@ -69,7 +71,7 @@ const ACCIONES_APP = [
   { id: 'opinion', t: 'Avisar de un fallo', en: 'Report a bug', a: 'opinion', ico: () => ICONOS.bicho, kw: 'idea fallo error' },
 ];
 const GRUPOS_MAS = [['cartera', 'Tu cartera', 'Your portfolio'], ['rr', 'Riesgo y rentabilidad', 'Risk and returns'], ['hacienda', 'Hacienda', 'Taxes'], ['mi', 'Mercados e ideas', 'Markets and ideas'], ['herr', 'Herramientas', 'Tools']];
-const verPag = (p) => p && (!p.av || modoApp() === 'avanzado');
+const verPag = (p) => p && (!p.av || modoApp() === 'avanzado') && (!p.soloBas || modoApp() === 'basico');
 // 0.8.3a: en básico, Dividendos y Costes son dos tarjetas de Rentabilidad (bas): llevan allí y no salen sueltas en las listas
 const enBas = (p) => p && p.bas && modoApp() === 'basico';
 const enLista = (p) => verPag(p) && !enBas(p);
@@ -91,6 +93,7 @@ const enHerramientas = () => S.vista === 'av' && ['grafico', 'lab'].includes(pes
 /* ---------- el móvil: Análisis por dentro ---------- */
 const PEST_ANA = [
   { k: 'posiciones', t: 'Posiciones', en: 'Holdings', ap: ['posiciones', 'mov', 'pnl'] },
+  { k: 'entiende', t: 'Entiende tu cartera', en: 'Understand your portfolio', ap: ['entiende'], soloBas: true },
   { k: 'rentab', t: 'Rentabilidad', en: 'Returns', ap: ['rentab', 'frente'] },
   { k: 'riesgo', t: 'Riesgo', en: 'Risk', ap: ['riesgo'] },
   { k: 'reparto', t: 'Reparto', en: 'Allocation', ap: ['reparto', 'rebal'] },
@@ -98,7 +101,7 @@ const PEST_ANA = [
   { k: 'fiscal', t: 'Hacienda', en: 'Taxes', ap: ['fiscal', 'renta'], sinAp: true },
   { k: 'analisis', t: 'La IA explica', en: 'AI explains', ap: ['analisis'] },
 ];
-const pestAnaVisibles = () => PEST_ANA.filter((x) => !x.av || modoApp() === 'avanzado');
+const pestAnaVisibles = () => PEST_ANA.filter((x) => (!x.av || modoApp() === 'avanzado') && (!x.soloBas || modoApp() === 'basico'));
 // el enlace de una página: las del trozo llevan además data-pest-av (lo de siempre: se cambia sin dejar el trozo)
 const aPag = (p, act, cls = '') => `<a href="${hrefPag(p)}"${p.v === 'av' ? ` data-pest-av="${p.p}"` : ''}${cls ? ` class="${cls}"` : ''} aria-current="${act ? 'page' : 'false'}">${esc(nomPag(p))}</a>`;
 function htmlPestAna() {
