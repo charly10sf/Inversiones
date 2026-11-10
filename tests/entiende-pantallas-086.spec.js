@@ -2,7 +2,7 @@
 // aprobada el 8 nov. Solo en básico. Ordenador: la tira baja, el índice estrecho y la lección grande (17 px). Móvil: la
 // tira, el índice y la lección en su pantalla con volver. Progresión sobria, guardada con la cartera cifrada.
 import { test as base, expect } from '@playwright/test';
-import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
+import { preparar, crearCuenta, meterCartera, quitarCapas, tocar } from './ayuda.js';
 
 const test = base.extend({
   errores: [async ({ context }, use) => {
@@ -64,17 +64,17 @@ test('la progresión: «Ya la he leído», la siguiente, el avance por capítulo
   await abrir(page);
   const panel = page.locator('#panelAv');
   // abrir la primera del capítulo I desde el índice
-  await panel.locator('[data-ent-cap="tienes"]').click();
-  await panel.locator('.ent-sub[data-ent-abrir="indexado"]').click();
+  await tocar(page, '#panelAv [data-ent-cap="tienes"]');
+  await tocar(page, '#panelAv .ent-sub[data-ent-abrir="indexado"]');
   await expect(panel.locator('.ent-pag')).toHaveAttribute('data-leccion', 'indexado');
-  await panel.locator('[data-ent-leida="1"]').click();
+  await tocar(page, '#panelAv [data-ent-leida="1"]');
   await expect(panel.locator('.ent-pag .ent-leida')).toBeVisible();
   await expect(panel.locator('.ent-tira-a')).toContainText('1 de 20');
   await expect(panel.locator('.ent-ixf[data-ent-cap="tienes"] em')).toHaveText('1 / 3');
   // «Siguiente» pasa a la siguiente y da por leída la de ahora (ya lo estaba: sigue en 1)
-  await panel.locator('[data-ent-sig]').click();
+  await tocar(page, '#panelAv [data-ent-sig]');
   await expect(panel.locator('.ent-pag')).toHaveAttribute('data-leccion', 'etc');
-  await panel.locator('[data-ent-sig]').click();
+  await tocar(page, '#panelAv [data-ent-sig]');
   await expect(panel.locator('.ent-pag')).toHaveAttribute('data-leccion', 'acciones');
   await expect(panel.locator('.ent-tira-a')).toContainText('2 de 20');
   // con algo leído y «Para ti ahora» en otra, el enlace «Sigue donde lo dejaste» lleva a la siguiente sin leer
@@ -82,9 +82,9 @@ test('la progresión: «Ya la he leído», la siguiente, el avance por capítulo
   if (await sigue.count()) await expect(sigue).toHaveAttribute('data-ent-abrir', await page.evaluate(() => entiendeSigue()));
   await expect(panel.locator('.ent-pag-av')).toContainText('2 de 3 leídas en este capítulo');
   // se puede desmarcar
-  await panel.locator('[data-ent-leida="1"]').click();
+  await tocar(page, '#panelAv [data-ent-leida="1"]');
   await expect(panel.locator('.ent-ixf[data-ent-cap="tienes"]')).toHaveClass(/lleno/);
-  await panel.locator('[data-ent-leida="0"]').click();
+  await tocar(page, '#panelAv [data-ent-leida="0"]');
   await expect(panel.locator('.ent-ixf[data-ent-cap="tienes"] em')).toHaveText('2 / 3');
   // va dentro de la cartera (cifrada), no en el navegador suelto
   const [enCartera, enLS] = await page.evaluate(() => [Object.keys(S.cartera.entiende.leidas).sort(), Object.keys(localStorage).filter((k) => /entiende|leidas/i.test(k))]);
@@ -103,15 +103,15 @@ test('móvil: la tira, los capítulos y la lección en su pantalla con volver y 
   await expect(panel.locator('.pab-cab')).toHaveText(['Capítulos']);
   await expect(panel.locator('.ent-ixf small').first()).toBeVisible();
   // una lección abre su pantalla, sin el índice
-  await panel.locator('[data-ent-cap="cuesta"]').click();
-  await panel.locator('.ent-sub[data-ent-abrir="ter"]').click();
+  await tocar(page, '#panelAv [data-ent-cap="cuesta"]');
+  await tocar(page, '#panelAv .ent-sub[data-ent-abrir="ter"]');
   await expect(panel.locator('.ent-pag')).toHaveAttribute('data-leccion', 'ter');
   await expect(panel.locator('.ent-ix')).toHaveCount(0);
   expect(await panel.locator('.ent-pag > p').first().evaluate((p) => getComputedStyle(p).fontSize)).toBe('17px');
-  await panel.locator('[data-ent-leida="1"]').click();
+  await tocar(page, '#panelAv [data-ent-leida="1"]');
   await expect(panel.locator('.ent-pag .ent-leida')).toBeVisible();
   // volver, al índice, con el capítulo marcado
-  await panel.locator('.ent-volver').click();
+  await tocar(page, '#panelAv .ent-volver');
   await expect(panel.locator('.ent-ix')).toBeVisible();
   await expect(panel.locator('.ent-ixf[data-ent-cap="cuesta"] em')).toHaveText('1 / 3');
   expect(await page.evaluate(() => document.documentElement.scrollWidth - innerWidth)).toBeLessThanOrEqual(1);

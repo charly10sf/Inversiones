@@ -2,7 +2,7 @@
 // Ordenador en avanzado: la tarjeta grande de todo el ancho, filas de la misma altura, las medidas en una fila y los
 // tres candados de Dorado juntos. Móvil (y básico): tres tarjetas, todas las gráficas con escala. Textos de la CNMV.
 import { test as base, expect } from '@playwright/test';
-import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
+import { preparar, crearCuenta, meterCartera, quitarCapas, tocar } from './ayuda.js';
 
 const test = base.extend({
   errores: [async ({ context }, use) => {
@@ -46,8 +46,10 @@ test('ordenador, avanzado: la tarjeta grande, las filas a la misma altura, las m
   // las dos gráficas, con escala (rótulos en el eje)
   for (const id of ['#frGraf', '#frDif']) expect(await page.locator(`${id} svg text`).count()).toBeGreaterThan(3);
   // la bolita dice la diferencia de hoy, la misma que el cálculo
-  const dif = await page.evaluate(() => eurS(frenteCartera(calcular()).dif, 0));
-  await expect(panel.locator('.fr-bola b')).toHaveText(dif);
+  // (los precios en directo se mueven entre el pintado y la cuenta: con un margen pequeño)
+  const num = (t) => +t.replace(/[^\d,−-]/g, '').replace('−', '-').replace(',', '.');
+  const dif = await page.evaluate(() => frenteCartera(calcular()).dif);
+  expect(Math.abs(num(await panel.locator('.fr-bola b').textContent()) - dif)).toBeLessThan(Math.max(50, Math.abs(dif) * 0.01));
   await expect(panel.locator('.fr-hitos span').last()).toContainText('Hoy');
   // filas de la misma altura: diferencia y momentos; final de cada año y TWR; los tres candados
   const alturas = async (sel) => (await panel.locator(sel).evaluateAll((xs) => xs.map((x) => Math.round(x.getBoundingClientRect().height))));
@@ -63,7 +65,7 @@ test('ordenador, avanzado: la tarjeta grande, las filas a la misma altura, las m
   // sin Dorado: tres candados con su botón, y las otras referencias con candado llevan a lo mismo
   await expect(panel.locator('.fr-bloq')).toHaveCount(3);
   await expect(panel.locator('.fr-ref .fr-cand')).toHaveCount(4);
-  await panel.locator('[data-fr-ref="ishares-us"]').click();
+  await tocar(page, '#panelAv [data-fr-ref="ishares-us"]');
   await expect(page.locator('.hoja-escr')).toContainText('Toisón Dorado');
   await page.keyboard.press('Escape');
   await expect(panel.locator('[data-fr-ref="fidelity-world"]')).toHaveAttribute('aria-pressed', 'true');
@@ -82,11 +84,12 @@ test('ordenador con Dorado: otras referencias, de dónde sale la diferencia (sum
   expect(await panel.locator('.pav-c4').filter({ hasText: 'De dónde sale' }).locator('.pav-fila').count()).toBeGreaterThan(2);
   await expect(panel.locator('.pav-c4').filter({ hasText: 'Captura' }).locator('.pav-kpi b').first()).toContainText('%');
   // con el S&P 500, la frase y la bolita cambian; se recuerda
-  await panel.locator('[data-fr-ref="ishares-us"]').click();
+  await tocar(page, '#panelAv [data-fr-ref="ishares-us"]');
   await expect(panel.locator('[data-fr-ref="ishares-us"]')).toHaveAttribute('aria-pressed', 'true');
   await expect(panel.locator('.fr-frase')).toContainText('S&P 500');
-  const [b, esp, ls] = await page.evaluate(() => [document.querySelector('.fr-bola b').textContent, eurS(frenteCartera(calcular(), 'ishares-us').dif, 0), LS.get('inv-frente-ref')]);
-  expect(b).toBe(esp); expect(ls).toBe('ishares-us');
+  const [b, esp, ls] = await page.evaluate(() => [document.querySelector('.fr-bola b').textContent, frenteCartera(calcular(), 'ishares-us').dif, LS.get('inv-frente-ref')]);
+  const num2 = (t) => +t.replace(/[^\d,−-]/g, '').replace('−', '-').replace(',', '.');
+  expect(Math.abs(num2(b) - esp)).toBeLessThan(Math.max(50, Math.abs(esp) * 0.01)); expect(ls).toBe('ishares-us');
   const refs2 = await panel.locator('.pav-c4').filter({ hasText: 'Otras referencias' }).locator('tbody tr td:first-child').allInnerTexts();
   expect(refs2).toEqual(['MSCI World', 'MSCI Europe', 'Emergentes', '60/40']);
 });
@@ -104,7 +107,7 @@ test('móvil (y básico): tres tarjetas, primero tu cartera y el indexado, todas
   await expect(panel.locator('.fr-par')).toHaveCount(4);
   await expect(panel.locator('.fr-tabla-d tbody tr')).toHaveCount(6);
   await expect(panel.locator('.fr-tabla-d table')).toBeHidden();
-  await panel.locator('.fr-tabla-d summary').click();
+  await tocar(page, '#panelAv .fr-tabla-d summary');
   await expect(panel.locator('.fr-tabla-d table')).toBeVisible();
   // en Análisis › Rentabilidad, el apartado «Frente a un indexado» (el otro se llama Resumen)
   await expect(page.locator('.apartados a')).toHaveText(['Resumen', 'Frente a un indexado']);
@@ -123,7 +126,7 @@ test('básico en el ordenador: las tres tarjetas, sin siglas, y desde Rentabilid
   expect(await panel.innerText()).not.toMatch(/\b(TWR|TIR|Beta|Alfa|Tracking)\b/);
   await page.evaluate(() => { location.hash = 'av-rentab'; });
   await expect(page.locator('#panelAv[data-p="rentab"] .fr-ir')).toBeVisible({ timeout: 20_000 });
-  await page.locator('#panelAv .fr-ir').click();
+  await tocar(page, '#panelAv .fr-ir');
   await expect(page.locator('#panelAv[data-p="frente"]:not([aria-busy]) .fr-bola')).toBeVisible({ timeout: 20_000 });
   await expect(page.locator('.k2-lista a[aria-current="page"]')).toHaveText('Frente a un indexado');
 });
