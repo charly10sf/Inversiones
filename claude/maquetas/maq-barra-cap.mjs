@@ -1,12 +1,14 @@
 // Capturas de la maqueta de la barra lateral: node tests/maq-barra-cap.mjs <tema> <ancho> <modo> <variantes> [páginas]
 // variantes: actual,A,B,B-abierta,B-fijada,C · páginas: hoy,rentab (las que se abren antes de montar la barra)
+// ACABADO=tinte|raya|tinta (variable de entorno): el acabado plano de maq-barra-acabado.css; el nombre lleva -<acabado> al final
 import { chromium } from '@playwright/test';
 import { readFileSync, mkdirSync } from 'node:fs';
 import { preparar, crearCuenta, quitarCapas } from './ayuda.js';
 const [,, tema, ancho, modo, lista, paginas = 'hoy,rentab'] = process.argv;
 const w = +ancho, dir = '/home/claude/barra/cap/';
 mkdirSync(dir, { recursive: true });
-const VJS = readFileSync('tests/maq-barra.js', 'utf8'), CSS = readFileSync('tests/maq-barra.css', 'utf8');
+const AC = process.env.ACABADO || '';
+const VJS = readFileSync('tests/maq-barra.js', 'utf8'), CSS = readFileSync('tests/maq-barra.css', 'utf8') + (AC ? readFileSync('tests/maq-barra-acabado.css', 'utf8') : '');
 const browser = await chromium.launch({ executablePath: '/usr/bin/google-chrome', args: ['--no-sandbox'] });
 const context = await browser.newContext({ viewport: { width: w, height: 860 }, deviceScaleFactor: 1.5, locale: 'es-ES' });
 const errores = await preparar(context, { ajustes: { 'inv-tema': JSON.stringify(tema), 'inv-modo': JSON.stringify(modo), 'inv-empezar-no': true, 'inv-empezar-fin': true } });
@@ -33,10 +35,10 @@ for (const pg of paginas.split(',')) {
     await quitarCapas(page);
     await page.evaluate(() => { scrollTo(0, 0); pintarK2(); });
     if (!(await page.evaluate(() => typeof montarBarra === 'function'))) await page.addScriptTag({ content: VJS });
-    const r = await page.evaluate((v) => montarBarra(v), v);
+    const r = await page.evaluate(([v, ac]) => { const x = montarBarra(v); document.body.classList.remove('mb-ac', 'mb-ac-tinte', 'mb-ac-raya', 'mb-ac-tinta'); if (ac && v !== 'actual') document.body.classList.add('mb-ac', 'mb-ac-' + ac); return x; }, [v, AC]);
     await page.mouse.move(w - 40, 500);
     await page.waitForTimeout(700);
-    await page.screenshot({ path: `${dir}${v}-${pg}-${tema}-${modo}-${w}.png` });
+    await page.screenshot({ path: `${dir}${v}-${pg}-${tema}-${modo}-${w}${AC ? '-' + AC : ''}.png` });
     console.log(r, v, pg, tema, modo, w);
   }
 }

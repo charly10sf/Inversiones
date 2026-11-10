@@ -1,0 +1,68 @@
+/* Acabado nuevo de la barra (10 nov, noche): plano, callado y con el oro solo en lo elegido. Sin relieve, sin brillo,
+   sin sombra, sin cristal en la barra. Tres maneras de marcar dónde estás: tinte (fondo plano muy suave), raya (filo de
+   oro a la izquierda) y tinta (solo el texto, sin fondo). Va encima de maq-barra.css con body.mb-ac.mb-ac-<estilo>. */
+@media (min-width: 1180px) {
+  body.mb-ac { --ac-tinta: var(--barra-texto-act, var(--texto)); --ac-apagado: color-mix(in srgb, var(--barra-texto, var(--texto)) 58%, transparent);
+    --ac-filo: color-mix(in srgb, var(--menu-borde, var(--sep)) 55%, transparent); --ac-tinte: rgb(255 255 255 / .065); --ac-hover: rgb(255 255 255 / .04); --ac-oro: var(--menu-oro, var(--oro-texto)); }
+  [data-tema="marfil"] body.mb-ac { --ac-tinte: rgb(255 255 255 / .09); --ac-hover: rgb(255 255 255 / .05); --ac-apagado: color-mix(in srgb, var(--menu-texto) 66%, transparent); }
+
+  /* la barra: un plano opaco un punto más hondo que la página, sin cristal, con un filo casi invisible */
+  [data-tema] body.mb-ac :is(.mb-col, .mb-riel, .k2-col) { background: color-mix(in srgb, var(--fondo) 86%, #000); -webkit-backdrop-filter: none; backdrop-filter: none; border-right: 1px solid var(--ac-filo); background-image: none; }
+  [data-tema="marfil"] body.mb-ac :is(.mb-col, .mb-riel, .k2-col) { background: var(--menu-fondo); }
+  [data-tema] body.mb-ac .riel { background-image: none; }
+  [data-tema] body.mb-ac :is(.mb-cab, .k2-marca-tx) { border-bottom-color: transparent; }
+  [data-tema] body.mb-ac :is(.mb-pie, .mb-abajo, .k2-ia, .k2-col .riel-pie) { border-top-color: var(--ac-filo); }
+  [data-tema] body.mb-ac .mb-nav { gap: 1px; padding-top: 14px; }
+
+  /* filas: icono más pequeño y fino, texto apagado; lo elegido, en blanco */
+  [data-tema] body.mb-ac .riel :is(.mb-sec, .mb-aj, .mb-sub a, .k2-lista a) { color: var(--ac-apagado); background: none; box-shadow: none; transition: background-color .12s, color .12s; }
+  [data-tema] body.mb-ac .riel :is(.mb-sec, .mb-aj) { min-height: 36px; font: 500 13.5px/1.2 var(--ui); gap: 11px; }
+  [data-tema] body.mb-ac .riel :is(.mb-sec, .mb-aj) svg { width: 18px; height: 18px; opacity: .9; }
+  [data-tema] body.mb-ac .riel .k2-lista a { min-height: 36px; font: 500 13.5px/1.2 var(--ui); }
+  [data-tema] body.mb-ac .riel :is(.mb-sec, .mb-aj, .mb-sub a, .k2-lista a):hover { color: var(--ac-tinta); background: var(--ac-hover); }
+  [data-tema] body.mb-ac .riel :is(.mb-sec, .mb-sub a, .k2-lista a)[aria-current="page"] { color: var(--ac-tinta); font-weight: 600; box-shadow: none; background: none; }
+  [data-tema] body.mb-ac .riel .mb-sec[aria-current="page"] svg { color: var(--ac-oro); opacity: 1; }
+  [data-tema] body.mb-ac .mb-g { margin: 18px 10px 6px; font: 500 12px/1 var(--ui); letter-spacing: 0; text-transform: none; color: color-mix(in srgb, var(--ac-apagado) 75%, transparent); }
+  [data-tema] body.mb-ac .k2-tit { font: 600 15px/1.2 var(--ui); letter-spacing: 0; margin: 2px 8px 12px; }
+  [data-tema] body.mb-ac .mb-sub { border-left-color: var(--ac-filo); margin-left: 19px; }
+  [data-tema] body.mb-ac .mb-sub a { min-height: 32px; font-size: 13px; }
+  [data-tema] body.mb-ac .mb-chev { opacity: .35; }
+
+  /* 1 · tinte: un fondo plano muy suave, sin borde */
+  [data-tema] body.mb-ac-tinte .riel :is(.mb-sec, .k2-lista a)[aria-current="page"] { background: var(--ac-tinte); }
+  [data-tema] body.mb-ac-tinte .riel .mb-sub a[aria-current="page"] { background: none; box-shadow: none; }
+  /* 2 · raya: un filo de oro de 2 px a la izquierda, sin fondo */
+  [data-tema] body.mb-ac-raya .riel :is(.mb-sec, .mb-sub a, .k2-lista a)[aria-current="page"] { box-shadow: inset 2px 0 0 var(--ac-oro); border-radius: 0 var(--r-s) var(--r-s) 0; }
+  /* 3 · tinta: solo el texto en blanco y el icono en oro; nada de fondo */
+  [data-tema] body.mb-ac-tinta .riel .mb-sub a[aria-current="page"] { box-shadow: none; }
+
+  /* en el riel con rótulos (C), lo elegido es el icono sobre un tinte redondo y el rótulo en blanco */
+  [data-tema] body.mb-ac .mb-riel.rotulos .mb-sec { min-height: 54px; font: 500 10.5px/1.05 var(--ui); gap: 5px; }
+  [data-tema] body.mb-ac .mb-riel.rotulos .mb-sec svg { width: 20px; height: 20px; }
+  [data-tema] body.mb-ac-raya .riel .mb-riel.rotulos .mb-sec[aria-current="page"] { box-shadow: none; }
+  [data-tema] body.mb-ac-raya .riel .mb-riel.rotulos .mb-sec[aria-current="page"]::before { content: ""; position: absolute; left: -6px; top: 14px; bottom: 14px; width: 2px; border-radius: 2px; background: var(--ac-oro); }
+
+  /* controles de la barra: planos. «Cómo la ves» sin metal; la IA, un campo sin relleno */
+  [data-tema] body.mb-ac .riel .seg-modo { background: rgb(0 0 0 / .18); box-shadow: inset 0 0 0 1px var(--ac-filo); border: 0; }
+  [data-tema] body.mb-ac .riel .seg-modo button { color: var(--ac-apagado); font-weight: 500; }
+  [data-tema] body.mb-ac .riel .seg-modo button[aria-pressed="true"] { background: rgb(255 255 255 / .1); color: var(--ac-tinta); box-shadow: none; font-weight: 600; }
+  [data-tema] body.mb-ac .riel button.riel-ia { background: rgb(255 255 255 / .03); color: var(--ac-apagado); box-shadow: inset 0 0 0 1px var(--ac-filo); font-weight: 500; }
+  [data-tema] body.mb-ac .riel button.riel-ia svg { color: var(--ac-oro); }
+  [data-tema] body.mb-ac .riel .k2-ia-cab .ia-av-ts { background: none; color: var(--ac-oro); box-shadow: inset 0 0 0 1px var(--ac-filo); }
+  [data-tema] body.mb-ac .riel .k2-ia small { color: color-mix(in srgb, var(--ac-apagado) 80%, transparent); }
+  [data-tema] body.mb-ac .riel :is(.riel-pie small) { font: 500 12px/1 var(--ui); letter-spacing: 0; text-transform: none; color: color-mix(in srgb, var(--ac-apagado) 75%, transparent); }
+  /* la barra de arriba, a juego: sin cristal y con el mismo filo */
+  [data-tema] body.mb-ac .k2-top { background: color-mix(in srgb, var(--fondo) 94%, transparent); -webkit-backdrop-filter: none; backdrop-filter: none; border-bottom-color: var(--ac-filo); }
+  /* las pestañas de B fijada a 1.280, planas */
+  [data-tema] body.mb-ac .mb-pest a[aria-current="page"] { background: rgb(255 255 255 / .08); color: var(--texto); box-shadow: none; }
+}
+@media (min-width: 1180px) {
+  /* A: el pie más corto para que quepa entero a 860 px de alto (sin el rótulo «Cómo la ves», que ya se entiende) */
+  [data-tema] body.mb-ac .mb-pie { gap: 6px; padding: 8px 10px; }
+  [data-tema] body.mb-ac .mb-pie .riel-pie { padding: 0; }
+  [data-tema] body.mb-ac .mb-pie .riel-pie small { display: none; }
+  [data-tema] body.mb-ac .mb-pie .seg-modo button { min-height: 30px; }
+  [data-tema] body.mb-ac .mb-pie .mb-ia.corta .riel-ia { min-height: 38px; }
+  [data-tema] body.mb-ac .mb-col .mb-g { margin: 14px 10px 5px; }
+  [data-tema] body.mb-ac .mb-col .mb-nav { padding-top: 10px; }
+}

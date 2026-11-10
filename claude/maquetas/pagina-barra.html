@@ -115,6 +115,7 @@ textarea { flex: 1 1 380px; min-height: 44px; resize: vertical; padding: 10px 12
   <div class="grupo"><span>Pantalla</span><div class="seg" data-ctl="ancho"><button data-v="1440" aria-pressed="true">1.440</button><button data-v="1280" aria-pressed="false">1.280</button></div></div>
   <div class="grupo"><span>Modo</span><div class="seg" data-ctl="modo"><button data-v="avanzado" aria-pressed="true">Avanzado</button><button data-v="basico" aria-pressed="false">Básico</button></div></div>
   <div class="grupo"><span>Página</span><div class="seg" data-ctl="pg"><button data-v="hoy" aria-pressed="true">Hoy</button><button data-v="rentab" aria-pressed="false">Rentabilidad</button></div></div>
+  <div class="grupo"><span>Acabado</span><div class="seg" data-ctl="ac"><button data-v="tinte" aria-pressed="true">Plano · tinte</button><button data-v="raya" aria-pressed="false">Plano · raya</button><button data-v="tinta" aria-pressed="false">Plano · tinta</button><button data-v="relieve" aria-pressed="false">Relieve (antes)</button></div></div>
   <div class="der"><span class="cuenta" id="cuenta"></span><a class="btn pri" href="#decidir" style="text-decoration:none">Decidir</a></div>
 </div></header>
 
@@ -122,7 +123,26 @@ textarea { flex: 1 1 380px; min-height: 44px; resize: vertical; padding: 10px 12
   <section class="intro" style="display:grid;gap:10px">
     <h1>Rehacer la barra de la izquierda</h1>
     <p class="nota">Hoy, en el ordenador, la primera columna son diez iconos sin nombre: hay que pasar el ratón o probar para saber qué es cada uno. Aquí está lo que hacen nueve webs parecidas y tres maneras de arreglarlo, <b>montadas encima de la app de verdad</b> (build de la rama v0.8.6-tuano, cuenta de prueba de 23.380 €). Arriba cambias diseño, pantalla, modo y página, y todas las capturas cambian a la vez. Pulsa una captura para verla a tamaño real (flechas para pasar). Es solo maqueta: no se ha tocado código de la app.</p>
-    <nav class="indice" id="indice"><a href="#vi"><i></i>Lo que vi</a><a href="#ahora"><i></i>Ahora</a><a href="#A" data-p="A"><i></i>A · Índice</a><a href="#B" data-p="B"><i></i>B · Riel que se abre</a><a href="#C" data-p="C"><i></i>C · Riel con rótulos</a><a href="#decidir"><i></i>Preguntas</a></nav>
+    <nav class="indice" id="indice"><a href="#premium"><i></i>Premium de verdad</a><a href="#vi"><i></i>Lo que vi</a><a href="#ahora"><i></i>Ahora</a><a href="#A" data-p="A"><i></i>A · Índice</a><a href="#B" data-p="B"><i></i>B · Riel que se abre</a><a href="#C" data-p="C"><i></i>C · Riel con rótulos</a><a href="#decidir"><i></i>Preguntas</a></nav>
+  </section>
+
+  <section class="bloque" id="premium">
+    <div class="cab"><small>Nuevo · 10 nov, noche</small><h2>Premium de verdad: plano, callado y con el oro donde toca</h2>
+      <p>Tenías razón: la pestaña elegida en relieve (brillo arriba, sombra abajo, como una gota) es el lenguaje de hace unos años. Lo que se ve hoy en lo más cuidado (Linear, Mercury, Stripe, Vercel) va al revés: la barra se apaga para que mande la página, nada sobresale con sombras y la marca se usa con cuentagotas. Arriba, en «Acabado», está ya aplicado a las tres propuestas; «Relieve (antes)» es lo que había hace una hora.</p></div>
+    <div class="capturas" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr))">
+      <figure class="cap"><img src="img/linear-2026.webp" data-ref="linear-2026" alt="Linear, marzo de 2026: antes y después de su barra"><figcaption><b>Linear, 12 mar 2026</b> · antes (izquierda) y después: iconos más pequeños, texto apagado en lo que no está elegido y más aire entre filas. Lo explican con dos ideas: lo que sirve para orientarse se retira cuando ya has llegado, y la estructura se nota sin verse (menos líneas y más suaves). Imagen de su blog.</figcaption></figure>
+      <figure class="cap"><img data-cmp="relieve" alt="A con el relieve de antes"><figcaption></figcaption></figure>
+      <figure class="cap"><img data-cmp="plano" alt="A con el acabado plano"><figcaption></figcaption></figure>
+    </div>
+    <div class="saco"><h3>Las reglas que he aplicado</h3><ul>
+      <li><b>Lo elegido, plano.</b> Sin degradado, sin brillo interior, sin sombra ni borde. Tres maneras, a elegir: <b>tinte</b> (un fondo liso muy suave, como Linear), <b>raya</b> (un filo de oro de 2 px a la izquierda, sin fondo) y <b>tinta</b> (nada de fondo: solo el texto en blanco y el icono en oro).</li>
+      <li><b>La barra se apaga.</b> Lo no elegido, al 58 % (en Marfil, al 66 %); iconos de 18 px en vez de 20–22; filas de 36 px con más aire entre grupos. Lo que destaca es la página.</li>
+      <li><b>El oro, solo en una cosa.</b> El icono de donde estás (y los sellos de Dorado). «Avanzado» deja el metal dorado y pasa a un segmento liso; el botón de la IA, a un campo sin relleno.</li>
+      <li><b>Sin cristal en la barra.</b> Fondo opaco un punto más hondo que la página, filos casi invisibles y fuera las líneas que sobraban (debajo de la marca, entre bloques). La barra de arriba, igual.</li>
+      <li><b>Rótulos normales.</b> Los grupos en minúscula y gris, sin MAYÚSCULAS ESPACIADAS; el título de la segunda columna, más pequeño.</li>
+      <li><b>Movimiento corto.</b> Al pasar el ratón, un fondo suave en 120 ms; nada que rebote.</li>
+    </ul></div>
+    <p class="nota">Ojo: esto es la barra del ordenador. Las mismas reglas chocan con cosas ya aprobadas del acabado «liquid» (la gota de la barra del móvil, las pastillas como «1A» o «Hacerlo ahora» en metal). Va como pregunta abajo.</p>
   </section>
 
   <section class="bloque" id="vi">
@@ -202,6 +222,8 @@ textarea { flex: 1 1 380px; min-height: 44px; resize: vertical; padding: 10px 12
     <div class="cab"><small>3 · Lo que tienes que decir</small><h2>Preguntas</h2></div>
     <div>
       <div class="preg" data-q="cual"><b>¿Cuál prefieres?</b><div class="opciones"><button data-v="A">A · Índice</button><button data-v="B">B · Riel que se abre</button><button data-v="C">C · Rótulos</button><button data-v="mezcla">Una mezcla (dímelo en las notas)</button></div></div>
+      <div class="preg" data-q="acabado"><b>¿Qué acabado para lo elegido?</b><span>Se ve arriba en «Acabado». Recomiendo el tinte: es el que menos ruido mete y se lee bien en Mármol y en Marfil.</span><div class="opciones"><button data-v="tinte">Plano · tinte</button><button data-v="raya">Plano · raya</button><button data-v="tinta">Plano · tinta</button><button data-v="relieve">El relieve de antes</button></div></div>
+      <div class="preg" data-q="resto"><b>¿Llevamos el acabado plano al resto de la app?</b><span>La gota de la barra del móvil, las pastillas elegidas (1A, Avanzado), los botones en metal dorado y el cristal de las barras. Sería una sesión aparte de maqueta, como esta.</span><div class="opciones"><button data-v="todo">Sí, a todo (maqueta antes)</button><button data-v="pc">Solo el ordenador por ahora</button><button data-v="no">No, el resto se queda</button></div></div>
       <div class="preg" data-q="nombres"><b>¿Los nombres, siempre a la vista?</b><span>Lo que hacen casi todas. En B se verían solo al pasar el ratón o con la barra fijada.</span><div class="opciones"><button data-v="siempre">Sí, siempre</button><button data-v="raton">Basta con verlos al pasar el ratón</button><button data-v="elegir">Que lo elija cada uno (fijar o plegar)</button></div></div>
       <div class="preg" data-q="cuando"><b>¿Cuándo entra?</b><span>La 0.8.6 va justa (salida el 16 dic). C cabe en media sesión; A, en unas dos.</span><div class="opciones"><button data-v="086">En la 0.8.6, antes del repaso de la sesión 10</button><button data-v="letra">En una letra aparte, después de la 0.8.6</button><button data-v="10">Con la 1.0</button></div></div>
       <div class="preg" data-q="movil"><b>¿El móvil se queda como está?</b><span>Abajo, Análisis · Mercados · Hoy · Ideas · Más. Esto es solo el ordenador.</span><div class="opciones"><button data-v="igual">Sí, igual</button><button data-v="cambiar">Quiero tocar algo (en las notas)</button></div></div>
@@ -233,15 +255,22 @@ document.getElementById('refs').innerHTML = REFS.map((r) => `<article class="ref
   <div class="ref-t"><h3>${r.t}<em>${r.d}</em></h3><dl><dt>Nombres</dt><dd>${r.n}</dd><dt>Plegable</dt><dd>${r.p}</dd><dt>Al pasar</dt><dd>${r.h}</dd><dt>Grupos</dt><dd>${r.g}</dd><dt>Ajustes, cuenta, IA</dt><dd>${r.a}</dd><dt>Ancho y activo</dt><dd>${r.w}</dd></dl><p class="fuente">${r.f}</p></div></article>`).join('');
 
 const NOM = { actual: 'Ahora', A: 'A · Índice', B: 'B plegada', 'B-abierta': 'B al pasar el ratón', 'B-fijada': 'B fijada', C: 'C · Rótulos' };
-const ESTADO = { tema: 'marmol', ancho: '1440', modo: 'avanzado', pg: 'hoy' };
+const ESTADO = { tema: 'marmol', ancho: '1440', modo: 'avanzado', pg: 'hoy', ac: 'tinte' };
 const LS = { get(k, d) { try { return JSON.parse(localStorage.getItem(k)) ?? d; } catch (e) { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} } };
-Object.assign(ESTADO, LS.get('barra-filtros', {}));
+Object.assign(ESTADO, LS.get('barra-filtros', {})); if (!ESTADO.ac) ESTADO.ac = 'tinte';
 const DEC = LS.get('barra-dec', { p: {}, q: {}, notas: '' });
 
-const src = (v, e = ESTADO) => `img/${v}-${e.pg}-${e.tema}-${e.modo}-${e.ancho}.webp`;
-const pie = (v) => `<b>${NOM[v]}</b> · ${ESTADO.tema === 'marmol' ? 'Mármol' : 'Marfil'}, ${ESTADO.ancho === '1440' ? '1.440' : '1.280'} px, ${ESTADO.modo === 'avanzado' ? 'avanzado' : 'básico'}, ${ESTADO.pg === 'hoy' ? 'Hoy' : 'Rendimiento › Rentabilidad'}`;
+// el acabado plano: tinte para todas; raya y tinta solo se sacaron para A y C (B va con tinte)
+const acDe = (v, e = ESTADO) => (v === 'actual' || e.ac === 'relieve') ? '' : (/^B/.test(v) && e.ac !== 'tinte' ? 'tinte' : e.ac);
+const src = (v, e = ESTADO) => { const a = acDe(v, e); return `img/${v}-${e.pg}-${e.tema}-${e.modo}-${e.ancho}${a ? '-' + a : ''}.webp`; };
+const NOMAC = { tinte: 'plano · tinte', raya: 'plano · raya', tinta: 'plano · tinta', '': 'relieve (antes)' };
+const pie = (v) => `<b>${NOM[v]}</b>${v === 'actual' ? '' : ` · acabado ${NOMAC[acDe(v)]}`} · ${ESTADO.tema === 'marmol' ? 'Mármol' : 'Marfil'}, ${ESTADO.ancho === '1440' ? '1.440' : '1.280'} px, ${ESTADO.modo === 'avanzado' ? 'avanzado' : 'básico'}, ${ESTADO.pg === 'hoy' ? 'Hoy' : 'Rendimiento › Rentabilidad'}`;
 function pintarCapturas() {
   for (const img of document.querySelectorAll('img[data-v]')) { img.src = src(img.dataset.v); img.closest('figure').querySelector('figcaption').innerHTML = pie(img.dataset.v); }
+  const cr = document.querySelector('img[data-cmp=relieve]'), cp = document.querySelector('img[data-cmp=plano]');
+  const ePl = Object.assign({}, ESTADO, { ac: ESTADO.ac === 'relieve' ? 'tinte' : ESTADO.ac });
+  cr.src = src('A', Object.assign({}, ESTADO, { ac: 'relieve' })); cr.closest('figure').querySelector('figcaption').innerHTML = '<b>A con el relieve de antes</b> · la gota con brillo y sombra';
+  cp.src = src('A', ePl); cp.closest('figure').querySelector('figcaption').innerHTML = `<b>A con el acabado ${NOMAC[ePl.ac]}</b> · mismo diseño, pantalla y página`;
   for (const s of document.querySelectorAll('.seg[data-ctl]')) for (const b of s.children) b.setAttribute('aria-pressed', String(b.dataset.v === ESTADO[s.dataset.ctl]));
 }
 document.querySelectorAll('.seg[data-ctl]').forEach((s) => s.addEventListener('click', (e) => { const b = e.target.closest('button'); if (!b) return; ESTADO[s.dataset.ctl] = b.dataset.v; LS.set('barra-filtros', ESTADO); pintarCapturas(); }));
@@ -259,7 +288,7 @@ function pintarDec() {
   for (const q of document.querySelectorAll('.preg[data-q]')) for (const b of q.querySelectorAll('.opciones button')) b.setAttribute('aria-pressed', String(DEC.q[q.dataset.q] === b.dataset.v));
   const n = document.getElementById('notas'); if (document.activeElement !== n) n.value = DEC.notas || '';
   const hechas = ['A', 'B', 'C'].filter((k) => DEC.p[k] && DEC.p[k].e).length + Object.keys(DEC.q).length;
-  document.getElementById('cuenta').innerHTML = `<b>${hechas}</b> de 7 contestadas`;
+  document.getElementById('cuenta').innerHTML = `<b>${hechas}</b> de 9 contestadas`;
   document.getElementById('resumen').textContent = textoDecidido();
   LS.set('barra-dec', DEC);
 }
@@ -276,12 +305,16 @@ const TXT = {
   nombres: { siempre: 'sí, siempre a la vista', raton: 'basta con verlos al pasar el ratón', elegir: 'que lo elija cada uno (fijar o plegar)' },
   cuando: { '086': 'en la 0.8.6, antes del repaso de la sesión 10', letra: 'en una letra aparte, después de la 0.8.6', '10': 'con la 1.0' },
   movil: { igual: 'se queda como está', cambiar: 'quiere tocar algo (ver notas)' },
+  acabado: { tinte: 'plano con tinte', raya: 'plano con raya de oro', tinta: 'plano, solo tinta', relieve: 'el relieve de antes' },
+  resto: { todo: 'sí, a toda la app (con maqueta antes)', pc: 'solo el ordenador por ahora', no: 'no, el resto se queda' },
 };
 function textoDecidido() {
   const l = ['Barra lateral del ordenador (maqueta del 10 nov):'];
   const p = (k, nom) => { const x = DEC.p[k] || {}; l.push(`- ${nom}: ${x.e === 'vale' ? 'me vale así' : x.e === 'camb' ? 'quiero cambios' : 'sin decir'}${x.n ? ` · ${x.n.trim()}` : ''}`); };
   p('A', 'A · Índice'); p('B', 'B · Riel que se abre'); p('C', 'C · Riel con rótulos');
   l.push(`- Prefiero: ${TXT.cual[DEC.q.cual] || 'sin decir'}`);
+  l.push(`- Acabado de lo elegido: ${TXT.acabado[DEC.q.acabado] || 'sin decir'}`);
+  l.push(`- Acabado plano en el resto de la app: ${TXT.resto[DEC.q.resto] || 'sin decir'}`);
   l.push(`- Nombres: ${TXT.nombres[DEC.q.nombres] || 'sin decir'}`);
   l.push(`- Cuándo: ${TXT.cuando[DEC.q.cuando] || 'sin decir'}`);
   l.push(`- Móvil: ${TXT.movil[DEC.q.movil] || 'sin decir'}`);
@@ -302,6 +335,8 @@ function mostrar() { const x = lista[idx]; cajaImg.src = x.src; document.getElem
 function cerrar() { caja.classList.remove('abierta'); }
 document.addEventListener('click', (e) => {
   const img = e.target.closest('main img'); if (!img) return;
+  if (img.dataset.cmp) { abrir([{ src: document.querySelector('img[data-cmp=relieve]').src, t: 'A · relieve (antes)' }, { src: document.querySelector('img[data-cmp=plano]').src, t: 'A · acabado plano' }], img.dataset.cmp === 'plano' ? 1 : 0); return; }
+  if (img.dataset.ref === 'linear-2026') { abrir([{ src: 'img/linear-2026.webp', t: 'Linear · antes y después (mar 2026)' }], 0); return; }
   if (img.dataset.ref) { const l = REFS.map((r) => ({ src: `img/${r.k}.webp`, t: `${r.t} · ${r.d}` })); abrir(l, REFS.findIndex((r) => r.k === img.dataset.ref)); return; }
   const vs = ['actual', 'A', 'B', 'B-abierta', 'B-fijada', 'C']; const l = vs.map((v) => ({ src: src(v), t: pie(v) }));
   abrir(l, vs.indexOf(img.dataset.v));
