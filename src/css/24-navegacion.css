@@ -62,8 +62,12 @@
 .riel, .k2-top { display: none; }
 .k2-pest { display: none; }
 @media (min-width: 1180px) {
-  body.nav-ts { --k2-col: var(--k2-col-n, 252px); --k2-ancho: calc(64px + var(--k2-col)); padding-left: var(--k2-ancho); padding-top: 64px; }
-  body.nav-ts.ia-grande { --k2-col: var(--k2-col-g, 440px); }
+  /* 0.9 · una sola barra con nombres (--k2-nav; plegada, un riel de 72 px). La IA abierta ocupa una columna a su lado
+     (--k2-col; cerrada, 0). La forma de la barra, en 33-cascara.css */
+  body.nav-ts { --k2-nav: 232px; --k2-col: 0px; --k2-ancho: calc(var(--k2-nav) + var(--k2-col)); padding-left: var(--k2-ancho); padding-top: 64px; }
+  body.nav-ts.k2-plegada { --k2-nav: 72px; }
+  body.nav-ts.ia-lado { --k2-col: var(--k2-col-n, 360px); }
+  body.nav-ts.ia-lado.ia-grande { --k2-col: var(--k2-col-g, 520px); }
   /* arriba ya no van la marca, las secciones ni el botón de la IA (están en la K2); si no queda nada, sin cabecera */
   [data-tema] body.nav-ts .top :is(.marca, .nav, .as-boton) { display: none; }
   [data-tema] body.nav-ts .top:not(:has(.gta-top-w)) { display: none; }
@@ -132,7 +136,7 @@
   .k2-pest a[aria-current="page"] { background: var(--metal, var(--primario)); color: var(--sobre-primario); }
 
   /* la IA abierta: en el hueco de abajo de la segunda barra; agrandada, la barra entera */
-  body.ia-lado .asesor-fondo { left: 64px; right: auto; top: var(--k2-ia-top, 50vh); bottom: 0; width: var(--k2-col, 252px); background: none; }
+  body.ia-lado .asesor-fondo { left: var(--k2-nav); right: auto; top: 0; bottom: 0; width: var(--k2-col, 360px); background: none; }
   body.ia-lado .asesor { width: 100%; height: 100%; max-height: none; border-radius: 0; border: 0; border-top: 1px solid var(--borde); box-shadow: none; animation: none; }
   body.ia-lado.ia-grande .asesor-fondo { top: 0; }
   body.ia-lado.ia-grande .asesor { border-top: 0; border-right: 1px solid var(--borde); }
@@ -155,7 +159,7 @@
    de #app (que hace su propia capa) para quedar encima de la IA: z-index 65, entre la IA (64) y las hojas (70) */
 .k2-tirador { display: none; }
 @media (min-width: 1180px) {
-  body.nav-ts:has(#app .k2) .k2-tirador { display: block; position: fixed; z-index: 65; top: 0; bottom: 0; left: calc(64px + var(--k2-col, 252px) - 6px); width: 12px; cursor: col-resize; touch-action: none; }
+  body.nav-ts.ia-lado:has(#app .k2) .k2-tirador { display: block; position: fixed; z-index: 65; top: 0; bottom: 0; left: calc(var(--k2-nav) + var(--k2-col, 360px) - 6px); width: 12px; cursor: col-resize; touch-action: none; }
   .k2-tirador::after { content: ""; position: absolute; top: 0; bottom: 0; left: 5px; width: 2px; border-radius: 2px; background: transparent; transition: background-color .15s ease; }
   .k2-tirador:hover::after, .k2-tirador:focus-visible::after, body.k2-arrastra .k2-tirador::after { background: var(--oro-texto); }
   .k2-tirador:focus-visible { outline: none; }

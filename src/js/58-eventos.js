@@ -152,8 +152,17 @@ window.addEventListener('hashchange', () => {
     // 0.9 · acabado: la pantalla entra desde el lado del botón que has tocado (a la derecha en la barra, desde la derecha)
     const ks = GRUPOS.map((g) => g.k), ia = ks.indexOf(grupoDe(S.vista).k), ib = ks.indexOf(grupoDe(v).k);
     const dx = ia < 0 || ib < 0 || ia === ib ? 0 : ib > ia ? 18 : -18;
-    S.vista = v; S.scrollTop = !(y > 0); S.scrollA = y > 0 ? y : null; LS.set('inv-vista', v); pintar();
-    const vi = $('#vista'); if (vi) { vi.style.setProperty('--dx', `${dx}px`); vi.classList.remove('entra'); void vi.offsetWidth; vi.classList.add('entra'); }
+    const cambiar = () => { S.vista = v; S.scrollTop = !(y > 0); S.scrollA = y > 0 ? y : null; LS.set('inv-vista', v); pintar(); };
+    // 0.9 · rediseño: con la View Transitions API, la página vieja se funde y la nueva entra desde su lado (34-sistema.css);
+    // sin ella (o con «reducir movimiento»), la entrada de siempre
+    if (conTransicion()) {
+      const raiz = document.documentElement; raiz.classList.add('vt'); raiz.style.setProperty('--vt-dx', `${dx * 1.4}px`);
+      let t = null; try { t = document.startViewTransition(cambiar); } catch (e) { cambiar(); }
+      if (t) t.finished.catch(() => {}).finally(() => raiz.classList.remove('vt'));
+    } else {
+      cambiar();
+      const vi = $('#vista'); if (vi) { vi.style.setProperty('--dx', `${dx}px`); vi.classList.remove('entra'); void vi.offsetWidth; vi.classList.add('entra'); }
+    }
   }
 });
 /* «Atrás» vuelve al punto exacto de cada pestaña: cada entrada del historial lleva su clave y se apunta hasta dónde

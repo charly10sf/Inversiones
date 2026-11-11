@@ -87,8 +87,12 @@ test('ordenador: diez secciones a la izquierda y las páginas de la abierta al l
   await lista(page);
   await expect(page.locator('.k2-iconos [data-sec]')).toHaveCount(10);
   expect(await page.locator('.k2-iconos [data-sec]').evaluateAll((as) => as.map((a) => a.title))).toEqual(['Hoy', 'Cartera', 'Rendimiento', 'Riesgo', 'Reparto', 'Hacienda', 'Mercados', 'Ideas', 'Tu plan', 'Herramientas']);
-  const b1 = await page.locator('.k2-iconos').boundingBox(), b2 = await page.locator('.k2-col').boundingBox();
-  expect(Math.round(b1.width)).toBe(64); expect(Math.round(b2.width)).toBe(252);
+  // 0.9 (rediseño): una sola barra de 232 px con los nombres a la vista; la página empieza justo después
+  const b1 = await page.locator('.riel.k2').boundingBox();
+  expect(Math.round(b1.width)).toBe(232);
+  await expect(page.locator('.k2-iconos [data-sec="rendimiento"] .k2-nom')).toBeVisible();
+  expect(Math.round((await page.locator('#vista').boundingBox()).x)).toBeGreaterThanOrEqual(232);
+  expect(Math.round((await page.locator('#vista').boundingBox()).x)).toBeLessThan(300);
   // Rendimiento: sus páginas, y al tocar una se marca y se abre
   await tocar(page, '.k2-iconos [data-sec="rendimiento"]');
   await expect(page.locator('.k2-tit')).toHaveText('Rendimiento');
@@ -105,10 +109,24 @@ test('ordenador: diez secciones a la izquierda y las páginas de la abierta al l
   await expect(page.locator('.k2-lista a[aria-current="page"]')).toHaveText('Guía de la renta');
   await ir(page, 'objetivos');
   await expect(page.locator('.k2-iconos [data-sec="tuplan"]')).toHaveAttribute('aria-current', 'page');
-  // en básico, Herramientas avisa de que está en el avanzado
+  // 0.9: en básico, Herramientas no sale en la barra (antes salía vacía con «Está en el modo avanzado»)
   await page.evaluate(() => ponerModo('basico'));
-  await tocar(page, '.k2-iconos [data-sec="herramientas"]');
-  await expect(page.locator('.k2-pags')).toContainText('Está en el modo avanzado');
+  await expect(page.locator('.k2-iconos [data-sec="herramientas"]')).toBeHidden();
+  await expect(page.locator('.k2-iconos [data-sec]:visible')).toHaveCount(9);
+  // las páginas de la sección abierta cuelgan de ella, dentro de la misma barra
+  await page.evaluate(() => ponerModo('avanzado'));
+  await ir(page, 'av-riesgo');
+  expect(await page.evaluate(() => document.querySelector('#k2Pags').previousElementSibling.dataset.sec)).toBe('riesgo');
+  // plegada (su botón o la tecla «[»): un riel de 72 px y las páginas suben a pestañas; se guarda
+  await ir(page, 'posiciones');
+  await page.locator('[data-k2-plegar]').click();
+  await expect.poll(async () => Math.round((await page.locator('.riel.k2').boundingBox()).width)).toBe(72);
+  await expect(page.locator('#vista .k2-pest a')).toHaveText(['Posiciones', 'Movimientos', 'Día a día']);
+  await expect(page.locator('.k2-iconos [data-sec="cartera"]')).toHaveAccessibleName('Cartera');
+  expect(await page.evaluate(() => LS.get('inv-k2-plegada'))).toBe(true);
+  await page.keyboard.press('[');
+  await expect.poll(async () => Math.round((await page.locator('.riel.k2').boundingBox()).width)).toBe(232);
+  await expect(page.locator('#vista .k2-pest')).toBeHidden();
 });
 
 test('ordenador: la IA se agranda a toda la barra y las páginas suben a pestañas', async ({ page }, info) => {
@@ -117,18 +135,18 @@ test('ordenador: la IA se agranda a toda la barra y las páginas suben a pestañ
   await ir(page, 'posiciones');
   await tocar(page, '.riel-ia');
   await expect(page.locator('#asesorFondo .asesor')).toBeVisible({ timeout: 10_000 });
-  // la IA, abajo: empieza donde estaba su hueco de la segunda barra
-  const hueco = await page.locator('#k2Ia').boundingBox(), ia = await page.locator('#asesorFondo').boundingBox();
-  expect(Math.abs(ia.y - hueco.y)).toBeLessThan(2);
-  // ningún texto se sale de la barra
-  expect(await page.evaluate(() => [...document.querySelectorAll('#asesorFondo .as-cuerpo *')].every((e) => e.getBoundingClientRect().right <= 317))).toBe(true);
+  // 0.9: la IA abierta es una columna entera al lado de la barra (de 232 a 592 px), de arriba abajo
+  const ia = await page.locator('#asesorFondo').boundingBox();
+  expect([Math.round(ia.x), Math.round(ia.y), Math.round(ia.width)]).toEqual([232, 0, 360]);
+  // ningún texto se sale de ella
+  expect(await page.evaluate(() => [...document.querySelectorAll('#asesorFondo .as-cuerpo *')].every((e) => e.getBoundingClientRect().right <= 593))).toBe(true);
   await expect(page.locator('#vista .k2-pest')).toBeHidden();
   await page.locator('[data-as="agrandar"]').click();
   expect(await page.evaluate(() => document.body.classList.contains('ia-grande'))).toBe(true);
   const g = await page.locator('#asesorFondo').boundingBox();
-  expect(Math.round(g.width)).toBe(440); expect(Math.round(g.y)).toBe(0);
+  expect(Math.round(g.width)).toBe(520); expect(Math.round(g.y)).toBe(0);
   await expect(page.locator('#vista .k2-pest a')).toHaveText(['Posiciones', 'Movimientos', 'Día a día']);
-  await expect.poll(async () => (await page.locator('#vista').boundingBox()).x).toBeGreaterThanOrEqual(504);
+  await expect.poll(async () => (await page.locator('#vista').boundingBox()).x).toBeGreaterThanOrEqual(752);
   // al cerrarla, todo vuelve
   await page.locator('[data-as="cerrar"]').click();
   expect(await page.evaluate(() => document.body.classList.contains('ia-grande'))).toBe(false);

@@ -1,0 +1,89 @@
+/* =====================================================================
+   0.9 · La cáscara nueva del ordenador (≥ 1180 px). Carlos, 11 nov: «queda todo muy a la derecha» (el riel de 64 px y la
+   columna de páginas de 252 hacían que la página empezara en x = 356 de 1440).
+   Ahora: UNA barra con nombres (232 px; plegada con «[» o su botón, un riel de 72), las páginas de la sección abierta
+   colgando de ella, y la página centrada con un ancho máximo (--pagina-max). La IA abierta ocupa una columna al lado de la
+   barra y entonces la página se estrecha; cerrada, no ocupa nada.
+   El acabado es el híbrido que eligió Carlos el 11 nov para el ordenador: tinte plano y una pastilla de oro de 3 × 16 px.
+   El móvil no cambia (su barra de abajo sigue con el liquid).
+   ===================================================================== */
+@media (min-width: 1180px) {
+  [data-tema] body.nav-ts .riel { flex-direction: column; width: var(--k2-nav); background: var(--lado-fondo); border-right: 1px solid var(--lado-filo); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  [data-tema] body.nav-ts .riel .k2-iconos { width: auto; flex: 1; min-height: 0; align-items: stretch; gap: 2px; padding: 0 10px 10px; border: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; overflow-y: auto; scrollbar-width: none; }
+  /* la marca: el símbolo y TOISÓN en una línea, a la altura de la barra de arriba */
+  [data-tema] body.nav-ts .riel .k2-marca { display: flex; align-items: center; justify-content: flex-start; gap: 12px; width: auto; height: 64px; flex: none; margin: 0 0 10px; padding: 0 8px; border-bottom: 0; }
+  [data-tema] body.nav-ts .riel .k2-marca > i { width: 36px; height: 36px; flex: none; }
+  [data-tema] body.nav-ts .riel .k2-marca > i svg { width: 23px; }
+  [data-tema] body.nav-ts .riel .k2-marca-tx { display: grid; align-content: center; row-gap: 5px; height: auto; padding: 0; border: 0; }
+  [data-tema] body.nav-ts .riel .k2-marca-tx b { font: 600 18px/1 var(--marca); letter-spacing: .14em; padding-top: 2px; color: var(--lado-texto-act); }
+  /* las secciones: icono y nombre; lo no elegido, apagado */
+  [data-tema] body.nav-ts .riel .k2-iconos > a { position: relative; display: flex; align-items: center; justify-content: flex-start; gap: 12px; width: auto; height: 40px; flex: none; padding: 0 12px; border-radius: 10px; background: none; box-shadow: none; color: color-mix(in srgb, var(--lado-texto) 72%, transparent); font: 550 14px/1 var(--ui); letter-spacing: -.005em; text-decoration: none; transition: background-color var(--mov-toque) ease, color var(--mov-toque) ease; }
+  [data-tema] body.nav-ts .riel .k2-iconos > a[hidden] { display: none; }
+  [data-tema] body.nav-ts .riel .k2-iconos > a svg { width: 19px; height: 19px; flex: none; }
+  [data-tema] body.nav-ts .riel .k2-iconos > a:hover { color: var(--lado-texto-act); background: var(--lado-tinte); }
+  [data-tema] body.nav-ts .riel .k2-iconos > a[aria-current="page"] { color: var(--lado-texto-act); background: var(--lado-tinte); box-shadow: none; }
+  [data-tema] body.nav-ts .riel .k2-iconos > a[aria-current="page"] svg { color: var(--lado-oro); }
+  [data-tema] body.nav-ts .riel .k2-iconos > a[aria-current="page"]::before { content: ""; position: absolute; left: -10px; top: 50%; width: 3px; height: 16px; margin-top: -8px; border-radius: 0 3px 3px 0; background: var(--lado-oro); }
+  [data-tema] body.nav-ts .riel .k2-iconos > a:is(.falta, .nuevo)::after { top: 50%; right: 12px; margin-top: -3px; }
+  .k2-nom { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  /* las páginas de la sección abierta, colgando de un hilo */
+  [data-tema] body.nav-ts .riel .k2-pags { margin: 2px 0 8px 21px; padding: 0 0 0 9px; border-left: 1px solid var(--lado-filo); overflow: visible; }
+  [data-tema] body.nav-ts .riel .k2-pags:not(:has(.k2-lista, .nota)) { display: none; }
+  [data-tema] body.nav-ts .riel .k2-lista { gap: 1px; }
+  [data-tema] body.nav-ts .riel .k2-lista a { position: relative; display: flex; align-items: center; justify-content: flex-start; width: auto; height: auto; min-height: 34px; padding: 0 10px; border-radius: 8px; background: none; box-shadow: none; color: color-mix(in srgb, var(--lado-texto) 72%, transparent); font: 500 13.5px/1.2 var(--ui); }
+  [data-tema] body.nav-ts .riel .k2-lista a:hover { color: var(--lado-texto-act); background: var(--lado-tinte); }
+  [data-tema] body.nav-ts .riel .k2-lista a[aria-current="page"] { color: var(--lado-texto-act); background: var(--lado-tinte); box-shadow: none; font-weight: 600; }
+  [data-tema] body.nav-ts .riel .k2-lista a[aria-current="page"]::before { content: ""; position: absolute; left: -10px; top: 50%; width: 2px; height: 16px; margin-top: -8px; border-radius: 2px; background: var(--lado-oro); }
+  [data-tema] body.nav-ts .riel .k2-pags .nota { margin: 4px 0 8px; font-size: 12.5px; color: var(--lado-texto); }
+  [data-tema] body.nav-ts .riel .k2-pags .btn { margin: 0 0 4px; }
+  /* el pie: cómo la ves, la IA, Ajustes y plegar */
+  [data-tema] body.nav-ts .riel .k2-pie { width: auto; flex: none; display: grid; gap: 10px; padding: 12px 12px 14px; border: 0; border-top: 1px solid var(--lado-filo); background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
+  [data-tema] body.nav-ts .riel .k2-pie > * { visibility: visible; }
+  [data-tema] body.nav-ts .riel .k2-pie .riel-pie { margin: 0; padding: 0; border: 0; gap: 0; }
+  [data-tema] body.nav-ts .riel .k2-pie .riel-pie small { display: none; }
+  [data-tema] body.nav-ts .riel .k2-pie .seg-modo { background: var(--menu-hundido, var(--capa-hueco)); box-shadow: inset 0 0 0 1px var(--lado-filo); }
+  [data-tema] body.nav-ts .riel .k2-pie .seg-modo button { min-height: 32px; font-size: 12.5px; }
+  [data-tema] body.nav-ts .riel .k2-ia { flex: none; min-height: 0; padding: 0; border: 0; display: block; }
+  [data-tema] body.nav-ts .riel .riel-ia { width: 100%; min-height: 40px; padding: 0 12px; gap: 10px; border-radius: 10px; background: none; box-shadow: inset 0 0 0 1px var(--lado-filo); color: var(--lado-texto-act); font: 550 13.5px/1 var(--ui); cursor: pointer; }
+  [data-tema] body.nav-ts .riel .riel-ia:hover { background: var(--lado-tinte); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lado-oro) 45%, transparent); }
+  [data-tema] body.nav-ts .riel .riel-ia svg { color: var(--lado-oro); }
+  [data-tema] body.nav-ts .riel .riel-ia[aria-expanded="true"] { outline: 0; background: var(--lado-tinte); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--lado-oro) 60%, transparent); }
+  .k2-pie-fila { display: flex; align-items: center; gap: 4px; }
+  [data-tema] body.nav-ts .riel .k2-pie-fila :is(.riel-aj, .k2-plegar) { display: flex; align-items: center; gap: 12px; width: auto; height: 40px; margin: 0; padding: 0 12px; border: 0; border-radius: 10px; background: none; color: color-mix(in srgb, var(--lado-texto) 72%, transparent); font: 550 14px/1 var(--ui); cursor: pointer; }
+  [data-tema] body.nav-ts .riel .k2-pie-fila .riel-aj { flex: 1; }
+  [data-tema] body.nav-ts .riel .k2-pie-fila :is(.riel-aj, .k2-plegar):hover { color: var(--lado-texto-act); background: var(--lado-tinte); }
+  [data-tema] body.nav-ts .riel .k2-pie-fila svg { width: 19px; height: 19px; flex: none; }
+  [data-tema] body.nav-ts .riel .k2-plegar { width: 40px; justify-content: center; padding: 0; }
+  [data-tema] body.nav-ts .riel :is(a, button):focus-visible { outline: 2px solid var(--lado-oro); outline-offset: 2px; }
+
+  /* plegada: un riel de iconos; los nombres siguen para el lector de pantalla */
+  body.nav-ts.k2-plegada .riel :is(.k2-nom, .k2-marca-tx, .riel-ia span) { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  [data-tema] body.nav-ts.k2-plegada .riel .k2-marca { justify-content: center; padding: 0; }
+  [data-tema] body.nav-ts.k2-plegada .riel .k2-iconos > a { justify-content: center; width: 48px; height: 44px; margin: 0 auto; padding: 0; }
+  [data-tema] body.nav-ts.k2-plegada .riel .k2-iconos > a[aria-current="page"]::before { left: -12px; }
+  [data-tema] body.nav-ts.k2-plegada .riel :is(.k2-pags, .riel-pie) { display: none; }
+  [data-tema] body.nav-ts.k2-plegada .riel .k2-pie { justify-items: center; padding-inline: 0; }
+  [data-tema] body.nav-ts.k2-plegada .riel .riel-ia { width: 44px; height: 44px; padding: 0; justify-content: center; }
+  body.nav-ts.k2-plegada .k2-pie-fila { flex-direction: column; }
+  [data-tema] body.nav-ts.k2-plegada .riel .k2-pie-fila :is(.riel-aj, .k2-plegar) { width: 44px; height: 40px; flex: none; justify-content: center; padding: 0; }
+  /* plegada (o con la IA agrandada), las páginas de la sección van en pestañas encima del título */
+  body.nav-ts.k2-plegada .k2-pest { display: flex; gap: 4px; margin: 0 0 18px; overflow-x: auto; scrollbar-width: none; }
+  [data-tema] .k2-pest a { min-height: 36px; padding: 0 14px; font: 550 13.5px/1 var(--ui); }
+
+  /* la barra de arriba: sin filo, deja pasar la página por detrás */
+  [data-tema] body.nav-ts .k2-top { padding: 0 var(--pagina-aire); border-bottom: 0; background: color-mix(in srgb, var(--fondo) 72%, transparent); -webkit-backdrop-filter: blur(18px) saturate(140%); backdrop-filter: blur(18px) saturate(140%); }
+  [data-tema] body.nav-ts .k2-top > * { position: relative; }
+  [data-tema] body.nav-ts .k2-top::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 1px; background: var(--filo-suave); }
+  [data-tema] body.nav-ts .k2-busca { flex: 0 1 420px; min-height: 40px; border-radius: 12px; background: var(--capa-hueco); box-shadow: inset 0 0 0 1px var(--filo-suave); }
+
+  /* LA PÁGINA, CENTRADA: un ancho máximo y el mismo aire a los dos lados */
+  body.nav-ts #vista.wrap { max-width: calc(var(--pagina-max) + 2 * var(--pagina-aire)); margin-inline: auto; padding-inline: var(--pagina-aire); }
+
+  /* la IA abierta: una columna entera al lado de la barra */
+  [data-tema] body.ia-lado .asesor { border-top: 0; border-right: 1px solid var(--lado-filo); }
+  body.ia-lado:not(.ia-grande) .asesor :is(.as-ico, #asSub) { display: revert; }
+}
+@media (min-width: 1180px) and (prefers-reduced-motion: no-preference) {
+  .riel { transition: width var(--mov-medio) var(--curva-entrar); }
+  .asesor-fondo { transition: left var(--mov-medio) var(--curva-entrar); }
+}

@@ -917,3 +917,47 @@ img.tema-muestra { background: none; box-shadow: none; }
 [data-tema="marfil"] .riel .k2-lista a:hover, [data-tema="marfil"] .riel .k2-iconos :is(a, .riel-aj):hover { color: var(--menu-texto-act); background: var(--menu-luz); }
 [data-tema="marfil"] .riel .k2-lista a[aria-current="page"] { color: var(--menu-texto-act); background: var(--menu-luz); box-shadow: inset 0 0 0 1px var(--menu-oro-filo); }
 [data-tema="marfil"] .riel .k2-iconos a[aria-current="page"] { color: var(--oro-logo); background: var(--menu-luz); box-shadow: inset 0 0 0 1px var(--menu-oro-filo); }
+
+/* =====================================================================
+   0.9 · El sistema de diseño 2.0 (rediseño entero; principios en claude/investigacion-diseno-competencia.md).
+   Tokens comunes a los dos diseños, sin un solo color propio: espacios, la escala de las letras con la cifra como
+   protagonista, radios, las cuatro capas de profundidad (fondo, tarjeta, hoja, hueco) y EL MOVIMIENTO con nombre.
+   La cáscara nueva del ordenador, en 33-cascara.css; los componentes, en 34-sistema.css.
+   ===================================================================== */
+:root[data-tema], [data-tema] {
+  /* espacios: una escala de 4 px; e8–e11 para el aire entre bloques, que es lo que más cambia */
+  --e8: 40px; --e9: 48px; --e10: 64px; --e11: 88px;
+  /* letras: la cifra grande manda; lo demás, pequeño y tranquilo. Las cifras, siempre tabulares */
+  --cifra-xl: 600 clamp(52px, 5.4vw, 84px)/.92 var(--ui); --cifra-l: 600 clamp(34px, 3vw, 44px)/1 var(--ui);
+  --cifra-m: 600 26px/1.05 var(--ui); --cifra-s: 600 18px/1.1 var(--ui);
+  --cifra-espacio: -.035em; --cifra-num: tabular-nums lining-nums;
+  --rotulo: 600 11px/1.2 var(--ui); --rotulo-espacio: .1em;
+  --cuerpo: 400 15px/1.5 var(--ui); --cuerpo-s: 400 13.5px/1.45 var(--ui); --nota-s: 500 12px/1.35 var(--ui);
+  --tit-1: var(--titulo-peso, 500) 30px/1.1 var(--titulo, var(--ui)); --tit-2: 600 19px/1.2 var(--ui); --tit-3: 600 15px/1.25 var(--ui);
+  /* radios nuevos: tarjetas de 20, lo que flota de 24 */
+  --r-t: 20px; --r-f: 24px;
+  /* profundidad por tono: cada capa es un escalón de luz sobre el fondo, no un borde */
+  --capa-0: var(--fondo);
+  --capa-1: color-mix(in srgb, var(--superficie) 92%, var(--texto));
+  --capa-2: color-mix(in srgb, var(--superficie-2) 90%, var(--texto));
+  --capa-hueco: color-mix(in srgb, var(--fondo) 88%, var(--superficie));
+  --filo-suave: color-mix(in srgb, var(--texto) 7%, transparent);
+  --filo-claro: color-mix(in srgb, var(--texto) 12%, transparent);
+  --sombra-1: 0 1px 0 var(--filo-luz, transparent) inset, 0 1px 2px color-mix(in srgb, var(--hondo, #000) 30%, transparent), 0 18px 40px -28px var(--hondo, #000);
+  --sombra-2: 0 1px 0 var(--filo-luz, transparent) inset, 0 2px 6px color-mix(in srgb, var(--hondo, #000) 35%, transparent), 0 34px 70px -34px var(--hondo, #000);
+  /* la barra del ordenador: unos puntos más apagada que la página (Linear) */
+  --lado-fondo: var(--menu-fondo, color-mix(in srgb, var(--fondo) 86%, var(--superficie-2)));
+  --lado-texto: var(--menu-texto, var(--texto-2)); --lado-texto-act: var(--menu-texto-act, var(--texto));
+  --lado-tinte: var(--menu-luz, color-mix(in srgb, var(--texto) 7%, transparent));
+  --lado-filo: var(--menu-borde, var(--filo-suave)); --lado-oro: var(--menu-oro, var(--oro-texto));
+  /* el ancho de lectura de una página en el ordenador */
+  --pagina-max: 1240px; --pagina-aire: 36px;
+  /* MOVIMIENTO: duraciones y curvas con nombre. «muelle» pasa un poco y vuelve; «salir» es más corta que «entrar» */
+  --mov-toque: 120ms; --mov-corto: 180ms; --mov-medio: 280ms; --mov-largo: 460ms; --mov-dibujo: 900ms; --mov-cifra: 700ms;
+  --curva-entrar: cubic-bezier(.16, 1, .3, 1); --curva-salir: cubic-bezier(.4, 0, 1, 1); --curva-cambiar: cubic-bezier(.65, 0, .35, 1);
+  --curva-muelle: linear(0, .009, .035 2.1%, .141 4.4%, .723 12.9%, .938 16.7%, 1.017 19.4%, 1.067 22.4%, 1.089 25.5%, 1.088 29%, 1.012 43.6%, .996 51.8%, 1);
+  --paso-escalera: 45ms; /* lo que tarda en entrar cada tarjeta después de la anterior */
+}
+@media (prefers-reduced-motion: reduce) {
+  :root[data-tema], [data-tema] { --mov-toque: 0ms; --mov-corto: 0ms; --mov-medio: 0ms; --mov-largo: 0ms; --mov-dibujo: 0ms; --mov-cifra: 0ms; --paso-escalera: 0ms; }
+}

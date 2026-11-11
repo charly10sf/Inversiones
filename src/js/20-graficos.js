@@ -78,11 +78,12 @@ function grafLinea(cont, series, opt = {}) {
     const id = 'gl' + Math.random().toString(36).slice(2, 8), pol = `points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}"`;
     g += `<defs><clipPath id="${id}a"><rect x="0" y="0" width="${W}" height="${Math.max(0, yRel)}"/></clipPath><clipPath id="${id}b"><rect x="0" y="${yRel}" width="${W}" height="${Math.max(0, H - yRel)}"/></clipPath></defs>`;
     g += `<polygon ${pol} fill="var(--sube)" fill-opacity="0.22" clip-path="url(#${id}a)"/><polygon ${pol} fill="var(--baja)" fill-opacity="0.22" clip-path="url(#${id}b)"/>`;
-  } else g += `<polygon points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}" fill="${color}" fill-opacity="${opt.rellenoA != null ? 0.16 : 0.08}"/>`;
+  } else g += `<polygon class="gl-area" points="${x(0)},${yRel} ${pBase} ${x(n - 1)},${yRel}" fill="${color}" fill-opacity="${opt.rellenoA != null ? 0.16 : 0.08}"/>`;
   if (opt.rellenoA != null) g += `<line x1="${ml}" x2="${W - mr}" y1="${yRel}" y2="${yRel}" stroke="var(--borde)" stroke-width="1"/>`;
   for (const s of series.slice(1)) g += `<polyline points="${pts(s.datos)}" fill="none" stroke="${s.color || 'var(--texto-2)'}" stroke-width="1.4" stroke-dasharray="${s.disc ? '5 4' : ''}" stroke-linejoin="round"/>`;
-  g += `<polyline points="${pBase}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>`;
-  g += `<circle cx="${x(n - 1)}" cy="${y(base[n - 1].v)}" r="3.5" fill="${color}" stroke="var(--fondo)" stroke-width="2"/>`;
+  // 0.9: la línea lleva pathLength=1 para dibujarse de izquierda a derecha (34-sistema.css, .gl-linea)
+  g += `<polyline class="gl-linea" pathLength="1" points="${pBase}" fill="none" stroke="${color}" stroke-width="1.75" stroke-linejoin="round" stroke-linecap="round"/>`;
+  g += `<circle class="gl-punto" cx="${x(n - 1)}" cy="${y(base[n - 1].v)}" r="3.5" fill="${color}" stroke="var(--fondo)" stroke-width="2"/>`;
   if (opt.marca && idx.has(opt.marca.d)) { const i = idx.get(opt.marca.d), mx = x(i), my = y(base[i].v), izq = mx > W * 0.7; g += `<circle cx="${mx}" cy="${my}" r="4" fill="${color}" stroke="var(--fondo)" stroke-width="2"/><text x="${mx + (izq ? -8 : 8)}" y="${Math.min(my + 4, H - mb - 4)}" text-anchor="${izq ? 'end' : 'start'}" font-size="11.5" font-weight="700" fill="${color}" style="font-variant-numeric:tabular-nums">${esc(opt.marca.txt)}</text>`; }
   g += `<g class="cruz" visibility="hidden"><line y1="${mt}" y2="${H - mb}" stroke="var(--borde)" stroke-width="1"/><circle r="4" fill="${color}" stroke="var(--fondo)" stroke-width="2"/></g>`;
   g += `<rect x="${ml}" y="0" width="${W - ml - mr}" height="${H}" fill="transparent" class="zona"/>`;

@@ -89,13 +89,14 @@ test('en el ordenador: la K2 con la IA abajo en la segunda barra, sin tapar la p
   await expect(page.locator('.top .nav')).toBeHidden();
   await expect(page.locator('.riel [data-sec="hoy"]')).toHaveAttribute('aria-current', 'page');
   const caja = await page.locator('#vista').boundingBox();
-  expect(caja.x).toBeGreaterThanOrEqual(316);
+  expect(caja.x).toBeGreaterThanOrEqual(232);   // 0.9: una sola barra de 232 px
   await quitarCapas(page); await page.locator('.riel-ia').evaluate((b) => b.click());
   await expect(page.locator('#asesorFondo .asesor')).toBeVisible({ timeout: 10_000 });
   expect(await page.evaluate(() => [document.body.classList.contains('ia-lado'), document.body.style.overflow])).toEqual([true, '']);
-  // la IA queda dentro de la segunda barra (64–316 px) y la página, a la derecha, entera
+  // 0.9: la IA es una columna al lado de la barra (232–592 px) y la página, a la derecha, entera
+  await expect.poll(async () => Math.round((await page.locator('#vista').boundingBox()).x)).toBeGreaterThanOrEqual(592);
   const ia = await page.locator('#asesorFondo').boundingBox(), v = await page.locator('#vista').boundingBox();
-  expect(ia.x).toBe(64); expect(ia.x + ia.width).toBeLessThanOrEqual(317);
+  expect(ia.x).toBe(232); expect(ia.x + ia.width).toBeLessThanOrEqual(593);
   expect(v.x).toBeGreaterThanOrEqual(ia.x + ia.width - 1);
   await expect(page.locator('.riel-ia')).toHaveAttribute('aria-expanded', 'true');
   // se cierra con su X y el foco vuelve al botón de la IA

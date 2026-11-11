@@ -50,9 +50,9 @@ conTema('marmol')('Mármol: el sello y el buscador en el ordenador; Hoy, Mercado
   const pc = info.project.name === 'pc';
   await lista(page);
   if (pc) {
-    // el sello, al centro de la barra de iconos (64 px), no pegado al borde
-    const c = await page.evaluate(() => { const r = document.querySelector('.riel .k2-marca > i').getBoundingClientRect(); return r.left + r.width / 2; });
-    expect(Math.abs(c - 32)).toBeLessThanOrEqual(2);
+    // 0.9: el sello, al principio de la barra con nombres, alineado con los iconos de las secciones (no pegado al borde)
+    const [c, ic] = await page.evaluate(() => { const r = document.querySelector('.riel .k2-marca > i').getBoundingClientRect(), s = document.querySelector('.k2-iconos [data-sec] svg').getBoundingClientRect(); return [r.left, s.left]; });
+    expect(c).toBeGreaterThanOrEqual(12); expect(Math.abs(c + 18 - (ic + 9.5))).toBeLessThanOrEqual(8);
     // el buscador: al escribir, un solo recuadro (sin el halo de los campos dentro)
     await page.evaluate(() => document.querySelector('[data-accion="buscar-funciones"]').click());
     await expect(page.locator('.hoja .busca-caja input')).toBeVisible();

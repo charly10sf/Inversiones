@@ -15,7 +15,6 @@ await meterCartera(page);
 await quitarCapas(page);
 await page.evaluate(async (m) => {
   LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); LS.set('inv-dueno', 0); S.esDueno = false; S.noDueno = true;
-  for (const p of S.cartera.posiciones) p.desde = '2021-03-01';
   await guardarCartera('prueba'); ponerModo(m);
 }, modo);
 await page.waitForTimeout(2500);

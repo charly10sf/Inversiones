@@ -1,0 +1,87 @@
+/* =====================================================================
+   0.9 · Sistema de diseño 2.0: los componentes comunes y el movimiento (tokens en 00-temas.css, al final).
+   Solo var(): vale para Mármol y Marfil. [data-tema] delante para ganar a las reglas de los trozos (PAV_CSS…).
+   ===================================================================== */
+
+/* ---------- La tarjeta: profundidad por tono y un filo de luz arriba, no un borde que encierra ---------- */
+[data-tema] #vista :is(.pav-t, .fis-c, .pf-card, .aj-caja, .agp-c, .nt-imp-c, .tp-llega, .merc-busca) { border-radius: var(--r-t); border-color: var(--filo-suave); box-shadow: var(--sombra-1); }
+[data-tema] #vista .pav-t { padding: 22px 24px 20px; }
+[data-tema] #vista .hero-panel { border-radius: var(--r-f); }
+@media (max-width: 899px) { [data-tema] #vista .pav-t { padding: 18px 18px 16px; } }
+@media (hover: hover) { [data-tema] #vista .pav-t:hover { border-color: var(--filo-claro); } }
+
+/* ---------- La cifra: grande, tabular y con su rótulo pequeño encima ---------- */
+[data-tema] .pav-kpi small { font: var(--nota-s); color: var(--tenue); }
+[data-tema] .pav-kpi b { margin-top: 4px; font: var(--cifra-m); letter-spacing: -.025em; font-variant-numeric: var(--cifra-num); }
+[data-tema] .pav-kpis { gap: 20px 24px; }
+@media (max-width: 760px) { [data-tema] .pav-kpi b { font: var(--cifra-s); letter-spacing: -.02em; } }
+[data-tema] .hero-num { font-variant-numeric: var(--cifra-num); }
+/* la cifra protagonista de una página nueva (.cifra-xl) y su fila de datos al lado (.cifra-datos) */
+.cifra-xl { display: block; font: var(--cifra-xl); letter-spacing: var(--cifra-espacio); font-variant-numeric: var(--cifra-num); color: var(--texto); }
+.cifra-xl small { font-size: .42em; font-weight: 500; letter-spacing: -.01em; color: var(--texto-2); margin-left: .12em; }
+.cifra-l { display: block; font: var(--cifra-l); letter-spacing: -.03em; font-variant-numeric: var(--cifra-num); }
+.rotulo { font: var(--rotulo); letter-spacing: var(--rotulo-espacio); text-transform: uppercase; color: var(--tenue); }
+.cifra-datos { display: flex; flex-wrap: wrap; gap: 8px 28px; margin-top: 14px; }
+.cifra-datos > div small { display: block; font: var(--nota-s); color: var(--tenue); }
+.cifra-datos > div b { font: var(--cifra-s); font-variant-numeric: var(--cifra-num); letter-spacing: -.01em; }
+
+/* ---------- La tabla experta: densa, con la cabecera pegada y la fila que se enciende ---------- */
+[data-tema] .pav-tabla td { padding: 10px 8px; transition: background-color var(--mov-toque) ease; }
+@media (hover: hover) { [data-tema] .pav-tabla tbody tr:hover td { background: var(--lado-tinte); } [data-tema] .pav-tabla :is(.pav-matriz, .pav-calor) tbody tr:hover td { background: revert-layer; } }
+[data-tema] .pav-tabla th { padding-bottom: 12px; }
+
+/* ---------- El título de la página: más aire y más cuerpo en el ordenador ---------- */
+@media (min-width: 1180px) {
+  [data-tema] body.nav-ts #vista { padding-top: 12px; }
+  [data-tema] body.nav-ts .panel-av { gap: var(--e4); }
+}
+
+/* ---------- Los segmentos y las pestañas compactas dentro de una tarjeta (.seg2) ---------- */
+.seg2 { display: inline-flex; gap: 2px; padding: 3px; border-radius: 12px; background: var(--capa-hueco); box-shadow: inset 0 0 0 1px var(--filo-suave); max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.seg2 button { flex: none; min-height: 36px; padding: 0 14px; border: 0; border-radius: 9px; background: none; color: var(--texto-2); font: 550 13px/1 var(--ui); cursor: pointer; white-space: nowrap; transition: background-color var(--mov-toque) ease, color var(--mov-toque) ease; }
+.seg2 button:hover { color: var(--texto); }
+.seg2 button[aria-pressed="true"], .seg2 button[aria-selected="true"] { background: var(--sel-plano); color: var(--sel-plano-texto); }
+.seg2 button:focus-visible { outline: 2px solid var(--oro-texto); outline-offset: 1px; }
+@media (pointer: coarse) { .seg2 button { min-height: 44px; } }
+
+/* ---------- El aviso de una línea (.nota2) y la frase que explica (.frase) ---------- */
+.frase { margin: 0; font: 400 16px/1.5 var(--ui); color: var(--texto); max-width: 62ch; text-wrap: pretty; }
+.frase b { font-weight: 650; }
+.nota2 { display: flex; gap: 10px; align-items: flex-start; margin: 14px 0 0; padding: 12px 14px; border-radius: 12px; background: var(--capa-hueco); font: var(--cuerpo-s); color: var(--texto-2); }
+.nota2 svg { width: 18px; height: 18px; flex: none; margin-top: 1px; color: var(--oro-texto); }
+
+/* =====================================================================
+   EL MOVIMIENTO. Todo con las duraciones y curvas con nombre; con «reducir movimiento» valen 0 y nada se mueve.
+   ===================================================================== */
+/* cambiar de página: la página se funde y entra desde el lado del botón tocado; la cáscara no se mueve */
+@media (prefers-reduced-motion: no-preference) {
+  html.vt #vista { view-transition-name: pagina; }
+  ::view-transition { pointer-events: none; }
+  ::view-transition-group(root) { animation: none; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+  ::view-transition-old(pagina) { animation: vtSale var(--mov-corto) var(--curva-salir) both; }
+  ::view-transition-new(pagina) { animation: vtEntra var(--mov-medio) var(--curva-entrar) both; }
+  ::view-transition-group(pagina) { animation-duration: var(--mov-medio); animation-timing-function: var(--curva-entrar); }
+  @keyframes vtSale { to { opacity: 0; transform: translateX(calc(var(--vt-dx, 0px) * -.6)); } }
+  @keyframes vtEntra { from { opacity: 0; transform: translateX(var(--vt-dx, 0px)) translateY(6px); } }
+
+  /* las tarjetas de una pestaña entran en escalera */
+  .panel-av:not([aria-busy="true"]) > .pav-t { animation: tarjetaEntra var(--mov-largo) var(--curva-entrar) both; }
+  .panel-av > .pav-t:nth-child(2) { animation-delay: calc(var(--paso-escalera) * 1); }
+  .panel-av > .pav-t:nth-child(3) { animation-delay: calc(var(--paso-escalera) * 2); }
+  .panel-av > .pav-t:nth-child(4) { animation-delay: calc(var(--paso-escalera) * 3); }
+  .panel-av > .pav-t:nth-child(5) { animation-delay: calc(var(--paso-escalera) * 4); }
+  .panel-av > .pav-t:nth-child(n+6) { animation-delay: calc(var(--paso-escalera) * 5); }
+  @keyframes tarjetaEntra { from { opacity: 0; transform: translateY(14px) scale(.985); } }
+
+  /* la gráfica se dibuja de izquierda a derecha y su relleno llega después */
+  svg .gl-linea { stroke-dasharray: 1; stroke-dashoffset: 1; animation: glDibuja var(--mov-dibujo) var(--curva-cambiar) forwards; }
+  svg .gl-area { opacity: 0; animation: glArea var(--mov-largo) ease calc(var(--mov-dibujo) * .55) forwards; }
+  svg .gl-punto { opacity: 0; animation: glArea var(--mov-corto) ease var(--mov-dibujo) forwards; }
+  @keyframes glDibuja { to { stroke-dashoffset: 0; } }
+  @keyframes glArea { to { opacity: 1; } }
+
+  /* las barras de una fila crecen desde su origen */
+  .panel-av .pav-pista i { transform-origin: left center; animation: barraCrece var(--mov-largo) var(--curva-entrar) both; animation-delay: calc(var(--paso-escalera) * 3); }
+  @keyframes barraCrece { from { transform: scaleX(0); } }
+}

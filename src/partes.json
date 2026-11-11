@@ -32,7 +32,9 @@
     "29-frente-indexado.css",
     "30-entiende.css",
     "31-tu-ano.css",
-    "32-seleccion-plana.css"
+    "32-seleccion-plana.css",
+    "33-cascara.css",
+    "34-sistema.css"
   ],
   "js": [
     "01-base.js",
@@ -100,6 +102,7 @@
     "60-bloqueo.js",
     "61-idiomas.js",
     "62a-mudanza.js",
+    "64-movimiento.js",
     "62-arranque.js",
     "63-demo.js"
   ],

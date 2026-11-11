@@ -373,7 +373,7 @@ function montar() {
   <main class="wrap" id="vista"></main>
   <nav class="navbar" aria-label="Secciones">${GRUPOS.map((g) => { const k = g.k; if (k === 'tu') return `<a href="#tu" data-ir="tu" data-mas class="nav-mas" aria-haspopup="dialog">${ICONOS_PL.puntos}<span>${L('Más', 'More')}</span></a>`; return `<a href="#${k}" data-ir="${k}"${k === 'cartera' ? ' class="nav-centro"' : ''}>${ICONOS_TS[k]()}<span>${L(g.c || g.t, g.en)}</span></a>`; }).join('')}</nav>`;
   S.tickerFirma = null; marcaIA();
-  document.body.classList.add('nav-ts'); marcarModo();
+  document.body.classList.add('nav-ts'); document.body.classList.toggle('k2-plegada', k2Plegada()); marcarModo();
   // la luz de arriba: al pasar el ratón (o tocarla) se despliegan las bolsas
   const ew = $('#estadoW'), eb = $('#estadoB'), ep = $('#estadoPanel');
   const rellena = () => { ep.innerHTML = htmlBolsasPanel(); };
@@ -673,6 +673,7 @@ function pintar() {
     setTimeout(() => { if (Math.abs(window.scrollY - y) > 40 && window.scrollY < y) window.scrollTo(0, y); }, 300);
   } else if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if (S.vista === 'cartera') { if ($('[data-que-es]')) ponerQueEs($('#vista')); pedirEncajarMovers(); }
+  animarHero();
   // 0.9: una pestaña del modo avanzado se llena después (su código va en un trozo aparte)
   if (S.vista === 'av' && $('#panelAv')) pintarPanelAv();
   // Noticias: igual, su contenido está en el trozo «noticias»

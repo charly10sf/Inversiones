@@ -258,20 +258,19 @@ function abrirMas() {
 
 /* ---------- el ordenador: la K2 ---------- */
 function htmlRiel() {
+  const pl = k2Plegada();
   return `<aside class="riel k2" aria-label="${L('Menú', 'Menu')}">
     <nav class="riel-nav k2-iconos" aria-label="${L('Secciones', 'Sections')}">
-      <span class="k2-marca marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i>${selloDorado()}</span>
-      ${SECCIONES.map((s) => `<a href="${hrefSeccion(s.k)}" data-sec="${s.k}"${s.ir ? ` data-ir="${s.ir}"` : ''} title="${L(s.t, s.en)}">${s.k === 'hoy' ? ICO_K2_HOY() : ICO_SEC[s.k]()}<span class="sr">${L(s.t, s.en)}</span></a>`).join('')}
-      <button type="button" class="riel-aj" data-accion="ajustes" title="${L('Ajustes', 'Settings')}" aria-label="${L('Ajustes', 'Settings')}">${ICONOS_PL.ajustes}</button>
-    </nav>
-    <div class="k2-col">
-      <div class="k2-marca-tx" aria-hidden="true"><b>TOISÓN</b>${marcaDorado()}</div>
+      <span class="k2-marca marca-ts" role="img" aria-label="Toisón"><i><svg viewBox="-82 -78 164 147"><path class="s-o" d="${TS_O_D}"/><path class="s-t" d="${TS_T_D}"/></svg></i>${selloDorado()}<span class="k2-marca-tx" aria-hidden="true"><b>TOISÓN</b>${marcaDorado()}</span></span>
+      ${SECCIONES.map((s) => `<a href="${hrefSeccion(s.k)}" data-sec="${s.k}"${s.ir ? ` data-ir="${s.ir}"` : ''} title="${L(s.t, s.en)}">${s.k === 'hoy' ? ICO_K2_HOY() : ICO_SEC[s.k]()}<span class="k2-nom">${L(s.t, s.en)}</span></a>`).join('')}
       <div class="k2-pags" id="k2Pags"></div>
+    </nav>
+    <div class="k2-col k2-pie">
       ${htmlSelectorModo(true)}
-      <div class="k2-ia" id="k2Ia">
-        <div class="k2-ia-cab">${AVATAR_IA}<b>${L('La IA', 'The AI')}</b></div>
-        <button type="button" class="riel-ia" data-accion="asesor" aria-expanded="false">${ICONOS_PL.asistente}<span>${L('Pregúntale lo que quieras', 'Ask anything')}</span></button>
-        <small>${L('Explica y hace las cuentas con tus números.', 'Explains and does the maths with your numbers.')}</small>
+      <div class="k2-ia" id="k2Ia"><button type="button" class="riel-ia" data-accion="asesor" aria-expanded="false" title="${L('Pregúntale lo que quieras', 'Ask anything')}">${ICONOS_PL.asistente}<span>${L('Pregunta a la IA', 'Ask the AI')}</span></button></div>
+      <div class="k2-pie-fila">
+        <button type="button" class="riel-aj" data-accion="ajustes" title="${L('Ajustes', 'Settings')}" aria-label="${L('Ajustes', 'Settings')}">${ICONOS_PL.ajustes}<span class="k2-nom" aria-hidden="true">${L('Ajustes', 'Settings')}</span></button>
+        <button type="button" class="k2-plegar" data-k2-plegar aria-pressed="${pl}" title="${L('Plegar o desplegar la barra ( [ )', 'Collapse or expand the sidebar ( [ )')}" aria-label="${L('Plegar la barra', 'Collapse the sidebar')}"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="4.5" width="17" height="15" rx="3.5" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M9.5 4.5v15" stroke="currentColor" stroke-width="1.6"/></svg></button>
       </div>
     </div>
   </aside>
@@ -289,12 +288,39 @@ function htmlRiel() {
 function pintarK2() {
   const r = $('.k2'); if (!r) return;
   const pa = paginaActual(), sec = seccionActual(), s = SECCIONES.find((x) => x.k === sec);
-  for (const a of $$('[data-sec]', r)) { a.setAttribute('aria-current', a.dataset.sec === sec ? 'page' : 'false'); a.setAttribute('href', hrefSeccion(a.dataset.sec)); }
-  const ps = paginasDe(sec);
-  $('#k2Pags').innerHTML = `<h2 class="k2-tit">${L(s.t, s.en)}</h2>${ps.length ? `<nav class="k2-lista" aria-label="${L(`Páginas de ${s.t}`, `${s.en} pages`)}">${ps.map((p) => aPag(p, p.id === pa)).join('')}</nav>`
+  let act = null;
+  for (const a of $$('[data-sec]', r)) {
+    const on = a.dataset.sec === sec; if (on) act = a;
+    a.setAttribute('aria-current', on ? 'page' : 'false'); a.setAttribute('href', hrefSeccion(a.dataset.sec));
+    // 0.9: en básico, Herramientas no sale en la barra (antes salía vacía con «Está en el modo avanzado»)
+    a.hidden = !paginasDe(a.dataset.sec).length && !on;
+  }
+  // 0.9: las páginas de la sección abierta cuelgan de ella, debajo, en la misma barra
+  const pags = $('#k2Pags'), ps = paginasDe(sec);
+  if (act && pags.previousElementSibling !== act) act.after(pags);
+  pags.innerHTML = `<h2 class="k2-tit sr">${L(s.t, s.en)}</h2>${ps.length ? (ps.length > 1 ? `<nav class="k2-lista" aria-label="${L(`Páginas de ${s.t}`, `${s.en} pages`)}">${ps.map((p) => aPag(p, p.id === pa)).join('')}</nav>` : '')
     : `<p class="nota">${L('Está en el modo avanzado.', "It's in advanced mode.")}</p><button type="button" class="btn peq" data-modo="avanzado">${L('Pasar al avanzado', 'Switch to advanced')}</button>`}`;
   colocarIAK2(); ubicarGta(); ponerTiradorK2();
 }
+/* 0.9 · la barra se pliega a un riel de iconos (el botón de abajo o la tecla «[»); se guarda en este dispositivo. Plegada,
+   las páginas de la sección suben a pestañas encima del título (htmlK2Pest), como con la IA agrandada */
+const K2_NAV = { abierta: 232, plegada: 72 };
+function k2Plegada() { return !!LS.get('inv-k2-plegada', false); }
+function k2NavAncho() { return innerWidth >= 1180 ? (document.body.classList.contains('k2-plegada') ? K2_NAV.plegada : K2_NAV.abierta) : 0; }
+function plegarK2(si) {
+  const on = si == null ? !document.body.classList.contains('k2-plegada') : !!si;
+  document.body.classList.toggle('k2-plegada', on);
+  for (const b of $$('[data-k2-plegar]')) b.setAttribute('aria-pressed', String(on));
+  LS.set('inv-k2-plegada', on);
+  aplicarAnchoK2();
+  const ev = new Event('resize'); ev.k2 = true; setTimeout(() => dispatchEvent(ev), 240);
+}
+document.addEventListener('click', (e) => { if (e.target.closest && e.target.closest('[data-k2-plegar]')) plegarK2(); });
+document.addEventListener('keydown', (e) => {
+  if (e.key !== '[' || e.ctrlKey || e.metaKey || e.altKey || innerWidth < 1180 || !$('.k2')) return;
+  const t = e.target; if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName))) return;
+  plegarK2();
+});
 // la cuenta atrás de GTA VI va arriba con lo demás: en el ordenador, en la barra de la K2 (la cabecera de siempre se esconde)
 function ubicarGta() {
   const g = $('#gtaTop'), k = $('.k2-der'), fila = $('.top .fila-top'); if (!g || !k || !fila) return;
@@ -324,10 +350,10 @@ function agrandarIA(si) {
    8 nov). Un ancho para la barra normal y otro para la IA agrandada, guardados en este dispositivo (inv-k2-ancho); doble
    clic en el borde vuelve al de siempre. Con el teclado: el borde se enfoca con Tab y las flechas lo mueven de 16 en 16.
    La página siempre se queda con al menos 640 px */
-const K2_ANCHO = { n: [252, 220, 560], g: [440, 340, 800] };   // [el de siempre, el mínimo, el máximo]
+const K2_ANCHO = { n: [360, 300, 560], g: [520, 400, 800] };   // [el de siempre, el mínimo, el máximo]
 const LS_K2_ANCHO = 'inv-k2-ancho';
 const k2Modo = () => (document.body.classList.contains('ia-grande') ? 'g' : 'n');
-function k2Limites(k) { const [d, min, max] = K2_ANCHO[k]; return [d, min, Math.max(min, Math.min(max, innerWidth - 64 - 640))]; }
+function k2Limites(k) { const [d, min, max] = K2_ANCHO[k]; return [d, min, Math.max(min, Math.min(max, innerWidth - k2NavAncho() - 640))]; }
 function k2AnchoGuardado() { const g = LS.get(LS_K2_ANCHO, {}); return g && typeof g === 'object' ? g : {}; }
 function ponerAnchoK2(k, w) {
   const [d, min, max] = k2Limites(k), v = Math.round(Math.max(min, Math.min(max, w || d)));
@@ -361,7 +387,7 @@ document.addEventListener('pointerdown', (e) => {
   const w0 = anchoK2Ahora(); let w = w0;
   document.body.classList.add('k2-arrastra');
   try { t.setPointerCapture(e.pointerId); } catch (x) { /* sin captura, sigue igual */ }
-  const mover = (ev) => { w = ponerAnchoK2(k, Math.max(min, Math.min(max, ev.clientX - 64))); marcarTiradorK2(); colocarIAK2(); };
+  const mover = (ev) => { w = ponerAnchoK2(k, Math.max(min, Math.min(max, ev.clientX - k2NavAncho()))); marcarTiradorK2(); colocarIAK2(); };
   const soltar = () => {
     t.removeEventListener('pointermove', mover); t.removeEventListener('pointerup', soltar); t.removeEventListener('pointercancel', soltar);
     document.body.classList.remove('k2-arrastra');

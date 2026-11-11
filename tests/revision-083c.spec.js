@@ -21,7 +21,9 @@ const abrirIA = async (page, sel = '.riel-ia') => {
   await tocar(page, sel);
   await expect(page.locator('#asTexto')).toBeVisible({ timeout: 15_000 });
 };
-const anchoCol = (page) => page.evaluate(() => Math.round(document.querySelector('.k2-col').getBoundingClientRect().width));
+// 0.9: la columna que se ensancha es la de la IA (al lado de la barra de 232 px); su ancho, el que guarda la app
+const NAV = 232;
+const anchoCol = (page) => page.evaluate(() => Math.round(anchoK2Ahora()));
 // arrastra el borde de la segunda barra hasta x (en px de la ventana)
 const arrastrar = async (page, x) => {
   const b = await page.locator('#k2Tirador').boundingBox();
@@ -44,40 +46,42 @@ test('ordenador: el borde de la segunda barra se arrastra, la IA crece con ella 
   await lista(page);
   await ir(page, 'av-grafico');
   const t = page.locator('#k2Tirador');
+  // 0.9: sin la IA abierta no hay nada que ensanchar; el borde sale con ella
+  await expect(t).toBeHidden();
+  await abrirIA(page);
   await expect(t).toBeVisible();
   await expect(t).toHaveAttribute('role', 'separator');
-  expect(await anchoCol(page)).toBe(252);
-  await abrirIA(page);
+  expect(await anchoCol(page)).toBe(360);
   // más ancha: la barra, la IA y la página se mueven a la vez
-  await arrastrar(page, 64 + 400);
+  await arrastrar(page, NAV + 400);
   expect(await anchoCol(page)).toBe(400);
   expect(Math.round((await page.locator('#asesorFondo').boundingBox()).width)).toBe(400);
-  await expect.poll(async () => Math.round((await page.locator('#vista').boundingBox()).x)).toBeGreaterThanOrEqual(464);
+  await expect.poll(async () => Math.round((await page.locator('#vista').boundingBox()).x)).toBeGreaterThanOrEqual(NAV + 400);
   await expect(t).toHaveAttribute('aria-valuenow', '400');
   expect(await page.evaluate(() => LS.get('inv-k2-ancho'))).toEqual({ n: 400 });
-  // la IA sigue empezando en su hueco de la segunda barra
-  const hueco = await page.locator('#k2Ia').boundingBox(), ia = await page.locator('#asesorFondo').boundingBox();
-  expect(Math.abs(ia.y - hueco.y)).toBeLessThan(2);
-  // no pasa del máximo (560) ni del mínimo (220)
+  // la IA sigue pegada a la barra, de arriba abajo
+  const ia = await page.locator('#asesorFondo').boundingBox();
+  expect([Math.round(ia.x), Math.round(ia.y)]).toEqual([NAV, 0]);
+  // no pasa del máximo (560) ni del mínimo (300)
   await arrastrar(page, 1300);
   expect(await anchoCol(page)).toBe(560);
   await arrastrar(page, 100);
-  expect(await anchoCol(page)).toBe(220);
+  expect(await anchoCol(page)).toBe(300);
   // al soltar encima de la IA no se toca nada de ella (antes salía una de sus sugerencias o la hoja del perfil)
   expect(await page.evaluate(() => [AS.conv.length, document.querySelectorAll('.hoja-fondo').length])).toEqual([0, 0]);
   // con el teclado: las flechas lo mueven de 16 en 16
   await page.evaluate(() => document.querySelectorAll('.hoja-fondo, .tour, .ixn, .intro').forEach((x) => x.remove()));
   await t.press('ArrowRight');
-  await expect.poll(() => anchoCol(page)).toBe(236);
+  await expect.poll(() => anchoCol(page)).toBe(316);
   // al volver a abrir la app, sigue igual
   await page.reload();
   await quitarCapas(page);
-  await expect(page.locator('.k2-col')).toBeVisible({ timeout: 20_000 });
-  await expect.poll(() => anchoCol(page)).toBe(236);
+  await expect(page.locator('.riel.k2')).toBeVisible({ timeout: 20_000 });
+  await expect.poll(() => anchoCol(page)).toBe(316);
   // doble clic: el de siempre (sin la hoja de la guía que puede salir al volver a abrir)
   await page.evaluate(() => document.querySelectorAll('.hoja-fondo, .tour, .ixn, .intro').forEach((x) => x.remove()));
-  await page.locator('#k2Tirador').dispatchEvent('dblclick');
-  await expect.poll(() => anchoCol(page)).toBe(252);
+  await page.evaluate(() => document.querySelector('#k2Tirador').dispatchEvent(new MouseEvent('dblclick', { bubbles: true })));
+  await expect.poll(() => anchoCol(page)).toBe(360);
   expect(await page.evaluate(() => LS.get('inv-k2-ancho'))).toEqual({});
 });
 
@@ -86,14 +90,15 @@ test('ordenador: con la IA agrandada se guarda otro ancho', async ({ page }, inf
   await lista(page);
   await abrirIA(page);
   await page.locator('[data-as="agrandar"]').click();
-  await expect.poll(() => anchoCol(page)).toBe(440);
-  await arrastrar(page, 64 + 600);
-  expect(await anchoCol(page)).toBe(600);
-  expect(Math.round((await page.locator('#asesorFondo').boundingBox()).width)).toBe(600);
+  await expect.poll(() => anchoCol(page)).toBe(520);
+  // la página se queda siempre con 640 px: a 1.440, la IA agrandada llega como mucho a 568
+  await arrastrar(page, NAV + 560);
+  expect(await anchoCol(page)).toBe(560);
+  expect(Math.round((await page.locator('#asesorFondo').boundingBox()).width)).toBe(560);
   // reducida, vuelve a la suya
   await page.locator('[data-as="agrandar"]').click();
-  await expect.poll(() => anchoCol(page)).toBe(252);
-  expect(await page.evaluate(() => LS.get('inv-k2-ancho'))).toEqual({ g: 600 });
+  await expect.poll(() => anchoCol(page)).toBe(360);
+  expect(await page.evaluate(() => LS.get('inv-k2-ancho'))).toEqual({ g: 560 });
 });
 
 test('ordenador: la caja de preguntar cabe en la IA estrecha y sin barra; ancha, en una fila', async ({ page }, info) => {
@@ -101,11 +106,13 @@ test('ordenador: la caja de preguntar cabe en la IA estrecha y sin barra; ancha,
   await lista(page);
   await ir(page, 'av-grafico');
   await abrirIA(page);
+  // 0.9: la IA abre con 360 px; la más estrecha es de 300 (se arrastra hasta el mínimo)
+  await arrastrar(page, 100);
   let c = await caja(page);
   expect(c.fuera).toEqual([]);
   expect(c.barra).toBe(false);
   expect(c.dosFilas).toBe(true);
-  expect(c.ejemplo).toBe('Pregúntale lo que quieras');
+  // (el texto de ejemplo corto era para la barra de 252 px de antes; con 300, en dos filas, cabe el largo)
   // debajo de «Respuesta» ya no va la línea «Con Haiku: rápida y al grano» (queda al pasar el ratón por cada botón)
   await expect(page.locator('#asModo small')).toHaveCount(0);
   await expect(page.locator('#asModo [data-m="normal"]')).toHaveAttribute('title', 'Con Haiku: rápida y al grano');
@@ -115,7 +122,7 @@ test('ordenador: la caja de preguntar cabe en la IA estrecha y sin barra; ancha,
   expect((await page.locator('#asTexto').boundingBox()).height).toBeLessThanOrEqual(161);
   await page.locator('#asTexto').fill('');
   // más ancha, todo en una fila y con el texto de ejemplo entero
-  await arrastrar(page, 64 + 480);
+  await arrastrar(page, NAV + 480);
   await expect.poll(async () => (await caja(page)).dosFilas).toBe(false);
   c = await caja(page);
   expect(c.fuera).toEqual([]);
