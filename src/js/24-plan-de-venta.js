@@ -113,6 +113,7 @@ function htmlFiscalVenta(pl) {
   if (a.rcm) yaLlevas.push(`${eur(a.rcm, 0)} en dividendos e intereses`);
   if (a.rcmVentas) yaLlevas.push(`${eurS(a.rcmVentas, 0)} en ventas de ETC`);
   if (a.pendientes) yaLlevas.push(`${eur(a.pendientes, 0)} de pérdidas de años anteriores`);
+  if (a.pendientesRcm) yaLlevas.push(`${eur(a.pendientesRcm, 0)} de rendimientos negativos de años anteriores`);
   if (pl.ganancia > 0) {
     lineas.push(yaLlevas.length ? `Este año ya llevas ${yaLlevas.join(', ')}: con esta venta tu base del ahorro queda en ${eur(fs.despues.base, 0)} y tu tramo en el ${pctTramo(fs.despues.marginal)} %.` : `Es lo único que declaras este año por ahora. Si tienes pérdidas de otras ventas o dividendos, apúntalos en Análisis > Hacienda > Datos fiscales, y este cálculo se ajusta.`);
     lineas.push(`Coste fiscal de mover el dinero: ${eur(pl.impuesto, 0)}. La inversión nueva tiene que ganar al menos eso más que ${esc(pl.f.inst.corto)} para que el cambio compense.`);

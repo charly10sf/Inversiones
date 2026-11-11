@@ -363,7 +363,7 @@ function htmlImpuestos(M) {
       <div><span class="k">Base del ahorro</span><span class="v">${eur(fa.base, 0)}</span><small class="k">tramo del ${pctTramo(fa.marginal)} %</small></div>
       <div><span class="k">Cuota estimada</span><span class="v">${eur(fa.cuota, 0)}</span><small class="k">${fa.retenido ? `menos ${eur(fa.retenido, 0)} ya retenidos: ${eurS(fa.cuota - fa.retenido, 0)}` : 'antes de restar retenciones'}</small></div>
       ${fa.sobra > 0 ? `<div><span class="k">Pérdidas para años siguientes</span><span class="v down">${eur(fa.sobra, 0)}</span><small class="k">hasta ${anio + 4}</small></div>` : ''}
-      ${fa.sobraRCM > 0 ? `<div><span class="k">Rendimientos negativos para años siguientes</span><span class="v down">${eur(fa.sobraRCM, 0)}</span><small class="k">de tus ETC, hasta ${anio + 4}; van aparte de las pérdidas de acciones y fondos</small></div>` : ''}
+      ${fa.sobraRCM > 0 ? `<div><span class="k">Rendimientos negativos para años siguientes</span><span class="v down">${eur(fa.sobraRCM, 0)}</span><small class="k">van aparte de las pérdidas de acciones y fondos; cada año se puede compensar en los 4 siguientes al suyo</small></div>` : ''}
     </div>`}
     ${fa.ventas.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Venta</th><th class="r">Unidades</th><th class="r">Valor de venta</th><th class="r" title="Hacienda cuenta que vendes primero las que compraste antes (FIFO)">Lo que te costó</th><th class="r">Resultado</th></tr></thead><tbody>${fa.ventas.map((m) => `<tr><td><b style="font-weight:600">${nombreI(m.instrumento)}</b><small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${eur(m.importe || 0)}<small>gastos restados</small></td><td class="r">${eur(m.coste_vendido || 0)}<small>${m.fifo && m.fifo.length ? `${m.fifo.length} ${m.fifo.length === 1 ? 'lote' : 'lotes'}${m.mezcla ? ', con el de partida' : ''}` : ''}</small></td><td class="r ${cls(m.resultado)}">${eurS(m.resultado || 0)}</td></tr>`).join('')}</tbody></table></div>` : ''}
 
@@ -374,7 +374,7 @@ function htmlImpuestos(M) {
         <div class="tabla-w"><table class="resp"><thead><tr><th>Posición</th><th class="r">Ganancia o pérdida</th><th class="r">Impuesto si vendes todo</th><th class="r">Tipo</th></tr></thead><tbody>
           ${latentes.map((x) => `<tr><td><b style="font-weight:600">${esc(x.f.inst.corto || x.f.inst.nombre)}</b><small>${esc(x.f.pos.plataforma || '')}${/^Fondo/.test(x.f.inst.tipo || '') ? ', se puede traspasar sin pagar' : ''}</small></td><td class="r ${cls(x.g)}">${eurS(x.g, 0)}</td><td class="r">${x.imp > 0 ? eur(x.imp, 0) : '—'}</td><td class="r">${x.g > 0 ? pct((x.imp / x.g) * 100, 1) : x.g < 0 ? '<span class="k">resta</span>' : '—'}</td></tr>`).join('')}
         </tbody></table></div>
-        <p class="nota">Vender todo hoy costaría unos ${eur(todo, 0)} en la renta de ${anio}. Las pérdidas restan de las ganancias del mismo año; por eso el impuesto de cada fila depende de lo que ya llevas. ${perdidas.length ? `Ahora tienes pérdidas sin vender en ${yLista(perdidas.map((x) => esc(x.f.inst.corto)))}: si algún día las vendes, restan de las ganancias de ese año.` : ''}</p>
+        <p class="nota">Vender todo hoy costaría unos ${eur(todo, 0)} en la renta de ${anio}. Las pérdidas restan de las ganancias del mismo año; por eso el impuesto de cada fila depende de lo que ya llevas.</p>
       </div></details>
     </div>
     ${htmlFiscalGuia(M, fa, { tr, cripto, fondos, divs })}`;

@@ -318,7 +318,7 @@ const ENT_LECCIONES = {
       const anio = new Date().getFullYear(), fa = fiscalAnio(anio);
       // lo de los ETC va con los rendimientos del capital, no con las ganancias
       const lr = sum(M.filas.filter((f) => esRCMVenta(f.inst)), (f) => f.valor - f.coste);
-      return { M, fa, imp: M.pl > 0 ? impuestoDeVentas([{ g: M.pl - lr }, { g: lr, inst: { tipo: 'ETC' } }], anio).impuesto : 0, hay: entPos(M).length > 0 };
+      return { M, fa, imp: Math.max(0, impuestoDeVentas([{ g: M.pl - lr }, { g: lr, inst: { tipo: 'ETC' } }], anio).impuesto), hay: entPos(M).length > 0 };
     },
     texto: (x) => [
       `Lo que ganas invirtiendo va a una parte de la renta que se llama base del ahorro. Ahí entran las ventas con ganancia o pérdida, los dividendos y los intereses, y se paga por tramos: ${textoTramos()}.`,

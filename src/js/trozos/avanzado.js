@@ -576,6 +576,7 @@ function pavHacienda(M) {
     pavT('c12', L(`Renta de ${anio} (se presenta entre abril y junio de ${anio + 1})`, `${anio} tax return`), pavKpis([
       [L('Ganancias y pérdidas por ventas', 'Gains and losses from sales'), eurS(fa.gp, 0), cls(fa.gp)],
       [L('Dividendos e intereses', 'Dividends and interest'), eur(fa.rcm, 0)],
+      fa.pendientesRcm ? [L('Rendimientos negativos de años anteriores', 'Negative investment income from earlier years'), eur(fa.pendientesRcm, 0), '', fa.usadasRcm ? L(`usas ${eur(fa.usadasRcm, 0)}`, `using ${eur(fa.usadasRcm, 0)}`) : ''] : null,
       fa.nRCM ? [L('Ventas de ETC (rendimiento del capital)', 'ETC sales (investment income)'), eurS(fa.rcmVentas, 0), cls(fa.rcmVentas)] : null,
       [L('Pérdidas de años anteriores', 'Losses from earlier years'), eur(fa.pendientes, 0), '', fa.usadas ? L(`usas ${eur(fa.usadas, 0)}`, `using ${eur(fa.usadas, 0)}`) : ''],
       [L('Base del ahorro', 'Savings tax base'), eur(fa.base, 0)],
