@@ -54,6 +54,14 @@ test('el ETC cuenta como rendimiento del capital y su recompra es de dos meses',
     fijar([venta('v1', 'phau', `${a}-03-10`, 5, -200)], [{ f: `${a - 1}-06-01`, u: 10, c: 2000 }, { f: `${a}-06-15`, u: 5, c: 900 }]);
     out.tresMeses = perdidaAplazada(S.cartera.movimientos[0]);
     out.rcmSinAplazar = fiscalAnio(a).rcmVentas;
+    // lo que sobró de un ETC otros años (campo aparte): contra rendimientos, entero; contra ganancias, hasta el 25 %
+    fijar([venta('v2', 'repsol', `${a}-03-11`, 100, 1000)]); S.cartera.fiscal = { [a]: { pendientesRcm: 1000 } };
+    const fc = fiscalAnio(a); out.fc = { base: fc.base, usadasRcm: fc.usadasRcm, sobraRCM: fc.sobraRCM, sobra: fc.sobra };
+    fijar([venta('v1', 'phau', `${a}-03-10`, 5, 1000)]); S.cartera.fiscal = { [a]: { pendientesRcm: 1000 } };
+    const fd = fiscalAnio(a); out.fd = { base: fd.base, usadasRcm: fd.usadasRcm, sobraRCM: fd.sobraRCM };
+    // y las pérdidas patrimoniales de otros años siguen como estaban: enteras contra ganancias
+    fijar([venta('v2', 'repsol', `${a}-03-11`, 100, 1000)]); S.cartera.fiscal = { [a]: { pendientes: 1000 } };
+    out.fe = fiscalAnio(a).base;
     out.sede = fiscalidadSede(etc.pais, etc.tipo).txt;
     // y una venta de hoy, para la pantalla de Fiscalidad
     fijar([venta('v9', 'phau', hoyIso(), 2, 300)]);
@@ -71,6 +79,9 @@ test('el ETC cuenta como rendimiento del capital y su recompra es de dos meses',
   expect(r.fa.cuota).toBeCloseTo(r.cuota750, 2);
   // lo que sobra de la pérdida del ETC va en su saldo, no con las pérdidas patrimoniales (al año siguiente no compensan igual)
   expect(r.fb).toMatchObject({ gp: 1000, rcmVentas: -1000, base: 750, sobra: 0, sobraRCM: 750 });
+  expect(r.fc).toEqual({ base: 750, usadasRcm: 250, sobraRCM: 750, sobra: 0 });
+  expect(r.fd).toEqual({ base: 0, usadasRcm: 1000, sobraRCM: 0 });
+  expect(r.fe).toBe(0);
   expect(r.deVenta).toEqual({ etc: 500, accion: 500 });
   expect(r.aplazada).toMatchObject({ importe: -200, plazo: 'dos meses' });
   expect(r.rcmConAplazada).toBe(0);
@@ -91,14 +102,16 @@ test('la Guía de la renta: ETF con los fondos cotizados, 720 por bloques y sin 
   await crearCuenta(page);
   await quitarCapas(page);
   await meterCartera(page);
-  const mes = await page.evaluate(() => {
-    const hoy = new Date(), a = hoy.getMonth() < 6 ? hoy.getFullYear() - 1 : hoy.getFullYear(); // el año de la guía
+  await page.evaluate(() => {
+    // fecha fija (11 nov 2026) para que el paso del cierre del año salga siempre: solo cambia «new Date()» sin argumentos
+    const R = Date;
+    window.Date = class extends R { constructor(...x) { if (x.length) super(...x); else super(2026, 10, 11, 12, 0, 0); } };
+    const a = 2026;
     S.inst['etf-prueba'] = { id: 'etf-prueba', tipo: 'ETF', clase: 'Renta variable', nombre: 'ETF Mundo de prueba', corto: 'ETF Mundo de prueba', yahoo: 'VWCE.DE', pais: 'IE' };
     const venta = (id, instrumento, resultado) => ({ id, tipo: 'venta', fecha: `${a}-02-10`, instrumento, plataforma: 'Trade Republic', uds: 3, importe: 1000 + resultado, coste_vendido: 1000, resultado });
     S.cartera.movimientos = [venta('v1', 'etf-prueba', 120), venta('v2', 'repsol', 80), venta('v3', 'phau', 60)];
     S.M = calcular();
     location.hash = '#impuestos';
-    return hoy.getMonth();
   });
   const vista = page.locator('#vista');
   await expect(vista).toContainText('Lo que pagas');
@@ -134,11 +147,17 @@ test('la Guía de la renta: ETF con los fondos cotizados, 720 por bloques y sin 
   await expect(vista).not.toContainText('te compensa vender');
   await expect(vista).not.toContainText('te lo propone');
   await expect(vista).not.toContainText('Cierra el año');
-  if (mes >= 6) {
-    const cierre = vista.locator('.rg-paso', { hasText: 'El año fiscal se cierra el 31 de diciembre' });
-    await expect(cierre).toContainText('cuenta en la renta de este año');
-    await expect(cierre).toContainText('y los ETC coticen donde coticen');
-  }
+  const cierre = vista.locator('.rg-paso', { hasText: 'El año fiscal se cierra el 31 de diciembre' });
+  await expect(cierre).toContainText('cuenta en la renta de este año');
+  await expect(cierre).toContainText('y los ETC coticen donde coticen');
+  // la 0328, solo para bolsas españolas y de la UE (la cartera de prueba lleva una acción de Londres)
+  await expect(caja('Ventas de acciones')).toContainText('las que cotizan fuera (EEUU, Reino Unido…) las lleva a «otros elementos patrimoniales»');
+  // «Para pagar menos» y el Calendario: la regla, sin órdenes
+  await page.evaluate(() => { S.fisTab = 'tu'; pintar(); });
+  await expect(vista).toContainText('Los traspasos entre fondos no tributan');
+  await expect(vista).not.toContainText('Usa traspasos');
+  await expect(vista).not.toContainText('Aprovecha tus pérdidas');
+  await expect(vista).not.toContainText('Tienes pérdidas sin vender');
 });
 
 test('la IA lee la comisión de Interactive Brokers y lo del ETC igual que la app', async ({ page, errores }) => {

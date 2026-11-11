@@ -316,7 +316,9 @@ const ENT_LECCIONES = {
     t: 'Cómo tributa lo que ganas', min: 3,
     datos(M) {
       const anio = new Date().getFullYear(), fa = fiscalAnio(anio);
-      return { M, fa, imp: M.pl > 0 ? impuestoDeVenta(M.pl, anio).impuesto : 0, hay: entPos(M).length > 0 };
+      // lo de los ETC va con los rendimientos del capital, no con las ganancias
+      const lr = sum(M.filas.filter((f) => esRCMVenta(f.inst)), (f) => f.valor - f.coste);
+      return { M, fa, imp: M.pl > 0 ? impuestoDeVentas([{ g: M.pl - lr }, { g: lr, inst: { tipo: 'ETC' } }], anio).impuesto : 0, hay: entPos(M).length > 0 };
     },
     texto: (x) => [
       `Lo que ganas invirtiendo va a una parte de la renta que se llama base del ahorro. Ahí entran las ventas con ganancia o pérdida, los dividendos y los intereses, y se paga por tramos: ${textoTramos()}.`,
@@ -326,7 +328,7 @@ const ENT_LECCIONES = {
     tus: (x) => [
       ['Ganancia sin vender', eurS(x.M.pl, 0), cls(x.M.pl), 'no tributa mientras no vendas'],
       x.imp > 0 ? ['Si vendieras todo hoy', `≈ ${eur(x.imp, 0)}`, '', 'de impuesto, sumado a lo de este año'] : null,
-      ['Ventas de este año', eurS(x.fa.gp, 0), cls(x.fa.gp), 'ganancia o pérdida apuntada'],
+      ['Ventas de este año', eurS(x.fa.gp + x.fa.rcmVentas, 0), cls(x.fa.gp + x.fa.rcmVentas), 'ganancia o pérdida apuntada'],
       ['Tu tramo este año', `${pctTramo(x.fa.marginal)} %`, '', TRAMOS_FORAL[comunidadUsuario()] ? `escala de ${esc(nombreComunidad(comunidadUsuario()))}` : 'el último euro'],
     ],
     ejemplo: () => `Con 10.000 € de ganancia en un año, y nada más en la base del ahorro, pagarías ${eur(irpfAhorro(10000), 0)}: ${entDesglose(10000)}.`,

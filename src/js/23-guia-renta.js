@@ -20,7 +20,7 @@ function htmlGuiaRenta(M) {
   const casillas = [
     ['Intereses de cuentas', '0027', 'Lo que te ha pagado el efectivo (Trade Republic y similares), en bruto.'],
     ['Dividendos', '0029', 'En bruto, antes de retenciones. La retención española sale aparte y se resta de lo que pagas.'],
-    ['Ventas de acciones', '0328', 'Una línea por cada venta: fechas, lo que pagaste y lo que cobraste (con comisiones).'],
+    ['Ventas de acciones', '0328', `Una línea por cada venta: fechas, lo que pagaste y lo que cobraste (con comisiones).${M.filas.some((f) => f.inst.tipo === 'Acción' && !cotizaEnUE(f.inst)) || deGrupo('acciones').some((m) => !cotizaEnUE(S.inst[m.instrumento])) ? ' La ayuda de la Agencia Tributaria reserva este apartado para las acciones de bolsas españolas y de la UE; las que cotizan fuera (EEUU, Reino Unido…) las lleva a «otros elementos patrimoniales».' : ''}`],
     // los ETF no van en la 0328: la ayuda de Renta de la AEAT los pone con las transmisiones de instituciones de inversión colectiva
     // (fondos cotizados del art. 79 del reglamento de IIC y los extranjeros análogos), en la parte no sujeta a retención
     ['Ventas de ETF', 'fondos cotizados', 'Aunque coticen como una acción, no van con ellas: van en el mismo apartado que los fondos (transmisiones de instituciones de inversión colectiva), como «fondos cotizados», en la parte que no lleva retención. Una línea por cada venta.'],

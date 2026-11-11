@@ -180,6 +180,9 @@ function fiscalAnio(anio, extra = 0, extraRCM = 0) {
   const gp = gpWeb + otras + extra;
   const rcm = +d.rcm || 0, rcmT = rcm + rcmVentas + extraRCM;
   const pendientes = Math.max(0, +d.pendientes || 0);
+  // los saldos negativos de rendimientos del capital de años anteriores (ventas de ETC con pérdidas) van aparte:
+  // compensan primero rendimientos y, lo que sobre, ganancias hasta el 25 % (art. 49.1 LIRPF; ayuda de Renta, 8.1.4)
+  const pendientesRcm = Math.max(0, +d.pendientesRcm || 0);
   // 0.3.9: el 25 % se calcula sobre el saldo positivo antes de compensar y es un tope conjunto con las pérdidas de años
   // anteriores (Manual AEAT 8.1.4); en Álava, Bizkaia y Gipuzkoa no hay compensación cruzada en la base del ahorro
   const cruza = comunidadUsuario() !== 'paisvasco';
@@ -187,15 +190,18 @@ function fiscalAnio(anio, extra = 0, extraRCM = 0) {
   const topeGP = cruza ? 0.25 * Math.max(0, rcmT) : 0, topeRCM = cruza ? 0.25 * Math.max(0, gp) : 0;
   if (bGP < 0 && bRCM > 0) { cruzado = Math.min(-bGP, topeGP); bGP += cruzado; bRCM -= cruzado; }
   else if (bRCM < 0 && bGP > 0) { cruzado = Math.min(-bRCM, topeRCM); bRCM += cruzado; bGP -= cruzado; }
-  let usadas = 0;
+  let usadas = 0, usadasRcm = 0;
   if (pendientes > 0 && bGP > 0) { usadas = Math.min(bGP, pendientes); bGP -= usadas; }
+  if (pendientesRcm > 0 && bRCM > 0) { usadasRcm = Math.min(bRCM, pendientesRcm); bRCM -= usadasRcm; }
   const quedaTope = Math.max(0, topeGP - (gp < 0 ? cruzado : 0));
   if (pendientes - usadas > 0 && bRCM > 0 && quedaTope > 0) { const u2 = Math.min(quedaTope, bRCM, pendientes - usadas); bRCM -= u2; usadas += u2; }
+  const quedaTopeR = Math.max(0, topeRCM - (rcmT < 0 ? cruzado : 0));
+  if (pendientesRcm - usadasRcm > 0 && bGP > 0 && quedaTopeR > 0) { const u3 = Math.min(quedaTopeR, bGP, pendientesRcm - usadasRcm); bGP -= u3; usadasRcm += u3; }
   const base = Math.max(0, bGP) + Math.max(0, bRCM);
   // los rendimientos negativos que sobran también se guardan 4 años (art. 49.1.a LIRPF), pero en su propio saldo: al año
   // siguiente compensan primero rendimientos y solo hasta el 25 % de las ganancias. Por eso no se suman a «sobra»
-  const sobraRCM = bRCM < 0 ? -bRCM : 0;
-  return { anio, ventas, gpWeb, otras, gp, rcm, rcmVentas, nRCM, rcmT, pendientes, usadas, cruzado, base, cuota: irpfAhorro(base), marginal: tipoMarginal(base), sobra: (bGP < 0 ? -bGP : 0) + (pendientes - usadas), sobraRCM, retenido: +d.retenido || 0 };
+  const sobraRCM = (bRCM < 0 ? -bRCM : 0) + (pendientesRcm - usadasRcm);
+  return { anio, ventas, gpWeb, otras, gp, rcm, rcmVentas, nRCM, rcmT, pendientes, usadas, pendientesRcm, usadasRcm, cruzado, base, cuota: irpfAhorro(base), marginal: tipoMarginal(base), sobra: (bGP < 0 ? -bGP : 0) + (pendientes - usadas), sobraRCM, retenido: +d.retenido || 0 };
 }
 /* lo que añade una venta concreta a la factura de este año (con todo lo demás que ya llevas) */
 function impuestoDeVenta(ganancia, anio = new Date().getFullYear(), inst = null) {
@@ -243,13 +249,14 @@ function editarFiscal(anio = new Date().getFullYear()) {
       <label class="campo">Dividendos e intereses cobrados (€)<input name="rcm" inputmode="decimal" value="${val(d.rcm)}" placeholder="0"><small>En bruto, antes de retenciones. Incluye los intereses del efectivo remunerado de tus plataformas.</small></label>
       <label class="campo">Retenciones que ya te han hecho (€)<input name="retenido" inputmode="decimal" value="${val(d.retenido)}" placeholder="0"><small>Las españolas, enteras: se restan de lo que pagas. De lo que te retuvieron fuera, pon como mucho el 15 % de esos dividendos (lo que pasa de ahí no se recupera en la renta).</small></label>
       <label class="campo">Pérdidas de años anteriores sin compensar (€)<input name="pendientes" inputmode="decimal" value="${val(d.pendientes)}" placeholder="0"><small>Las que te queden de los últimos 4 años, en positivo (vienen en tu declaración anterior).</small></label>
+      <label class="campo">Rendimientos negativos de años anteriores sin compensar (€)<input name="pendientesRcm" inputmode="decimal" value="${val(d.pendientesRcm)}" placeholder="0"><small>Solo si te quedan saldos negativos de rendimientos del capital (por ejemplo, de vender un ETC con pérdidas), en positivo. Van aparte de las pérdidas de acciones y fondos.</small></label>
     </div>
     <div class="error" id="errFis"></div>
     <div class="fila-btns"><button type="button" class="btn" data-cerrar>Cancelar</button><button type="submit" class="btn pri">Guardar</button></div></form>`);
   $('#fFis', h.el).onsubmit = async (ev) => {
     ev.preventDefault();
     const o = {};
-    for (const k of ['otras', 'rcm', 'retenido', 'pendientes']) {
+    for (const k of ['otras', 'rcm', 'retenido', 'pendientes', 'pendientesRcm']) {
       const n = numero(ev.target[k].value);
       if (Number.isNaN(n)) { $('#errFis', h.el).textContent = 'Algún importe no es un número.'; return; }
       if (n != null) o[k] = n;
@@ -453,11 +460,11 @@ function htmlFiscalGuia(M, fa, x) {
   const latentes = M.filas.map((f) => ({ f, g: f.valor - f.coste }));
   const perd = latentes.filter((y) => y.g < -50), gan = latentes.filter((y) => y.g > 50);
   const trucos = [
-    x.fondos.length && ['Usa traspasos, no ventas', 'Para cambiar de un fondo a otro, traspasa: no pagas nada hasta el día que saques el dinero.'],
-    perd.length && gan.length && ['Junta ganancias y pérdidas en el mismo año', `Tienes pérdidas sin vender en ${yLista(perd.map((y) => y.f.inst.corto))}. Las pérdidas de lo que vendes restan de las ganancias del mismo año.`],
-    ['Vender poco a poco, si la ganancia es grande', `Los primeros ${fmtNum(TA[0][0], 0)} € de la base del ahorro pagan el ${pctTramo(TA[0][1])} %; de ahí a ${fmtNum(TA[1][0], 0)} €, el ${pctTramo(TA[1][1])} %. Repartir una venta grande entre dos años puede dejarla en el tramo bajo.`],
-    ['Acumulación mejor que reparto', 'Un fondo o ETF de acumulación reinvierte los dividendos sin que pagues por ellos cada año; uno de reparto te los da y tributan.'],
-    fa.sobra > 0 && ['Aprovecha tus pérdidas pendientes', `Te quedan ${eur(fa.sobra, 0)} para compensar en los próximos 4 años.`],
+    x.fondos.length && ['Los traspasos entre fondos no tributan', 'Al pasar el dinero de un fondo a otro con un traspaso no se paga nada hasta el día que se saca.'],
+    perd.length && gan.length && ['Ganancias y pérdidas del mismo año se compensan', 'Las pérdidas de lo que se vende restan de las ganancias de lo vendido ese mismo año.'],
+    ['Una ganancia grande, en uno o en dos años', `Los primeros ${fmtNum(TA[0][0], 0)} € de la base del ahorro pagan el ${pctTramo(TA[0][1])} %; de ahí a ${fmtNum(TA[1][0], 0)} €, el ${pctTramo(TA[1][1])} %. Una venta grande repartida entre dos años puede quedar en el tramo bajo.`],
+    ['Acumulación y reparto no tributan igual', 'Un fondo o ETF de acumulación reinvierte los dividendos sin que pagues por ellos cada año; uno de reparto te los da y tributan.'],
+    fa.sobra > 0 && ['Tienes pérdidas pendientes de compensar', `Te quedan ${eur(fa.sobra, 0)} para compensar en los próximos 4 años.`],
   ].filter(Boolean);
   return `
     <section style="margin-top:44px" aria-labelledby="hTram"><div class="sec-cab"><h2 id="hTram">Cuánto pagas: los tramos del ahorro</h2><span class="k">ganancias de ventas, dividendos e intereses de ${anio}</span></div>
