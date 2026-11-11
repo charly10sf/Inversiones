@@ -161,7 +161,8 @@
       "trozos/frente.js",
       "trozos/tuano.js",
       "trozos/entiende.js",
-      "trozos/entiende-pantallas.js"
+      "trozos/entiende-pantallas.js",
+        "trozos/nuevas.js"
     ],
     "noticias": [
       "trozos/noticias.js"

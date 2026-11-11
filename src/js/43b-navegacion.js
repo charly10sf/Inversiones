@@ -41,6 +41,8 @@ const PAGINAS = [
   { id: 'agenda', t: 'Calendario', en: 'Calendar', s: 'hoy', g: 'cartera', v: 'agenda', kw: 'fechas resultados dividendos aportaciones' },
   // 0.8.6: Tu año en Toisón, una página de Hoy que se pinta en el trozo «avanzado» (trozos/tuano.js)
   { id: 'tuano', get t() { return `Tu año ${anioTuAno()}`; }, get en() { return `Your ${anioTuAno()}`; }, s: 'hoy', g: 'cartera', v: 'av', p: 'tuano', kw: 'resumen del ano estilo de inversor wrapped' },
+  // 0.9 (rediseño): tu semana y tus cobros, otra página de Hoy que se pinta en el trozo «avanzado» (trozos/nuevas.js)
+  { id: 'semana', t: 'Tu semana y tus cobros', en: 'Your week and your payments', s: 'hoy', g: 'cartera', v: 'av', p: 'semana', kw: 'semana cobros dividendos proximos dias resultados' },
   { id: 'posiciones', t: 'Posiciones', en: 'Holdings', s: 'cartera', g: 'cartera', v: 'posiciones', kw: 'cartera fondos acciones' },
   // 0.8.6: la pestaña 11, solo en básico (soloBas)
   { id: 'entiende', t: 'Entiende tu cartera', en: 'Understand your portfolio', s: 'cartera', g: 'cartera', v: 'av', p: 'entiende', soloBas: true, kw: 'aprender lecciones formacion ter twr tir hacienda riesgo' },
@@ -49,10 +51,12 @@ const PAGINAS = [
   { id: 'rentab', t: 'Rentabilidad', en: 'Returns', apT: 'Resumen', apEn: 'Summary', s: 'rendimiento', g: 'rr', v: 'av', p: 'rentab', kw: 'twr mwr indexado msci divisa' },
   // 0.8.6: la pestaña 2; en el móvil, un apartado de Rentabilidad
   { id: 'frente', t: 'Frente a un indexado', en: 'Against an index fund', s: 'rendimiento', g: 'rr', v: 'av', p: 'frente', kw: 'indexado msci world comparar referencia alfa beta tracking mismo dinero' },
+  { id: 'divisa', t: 'Efecto divisa', en: 'Currency effect', s: 'rendimiento', g: 'rr', v: 'av', p: 'divisa', kw: 'divisa dolar euro moneda cambio cubierto' },
   { id: 'div', t: 'Dividendos', en: 'Dividends', s: 'rendimiento', g: 'rr', v: 'av', p: 'div', bas: 'rentab', kw: 'cobros ingresos' },
   { id: 'costes', t: 'Costes', en: 'Costs', s: 'rendimiento', g: 'rr', v: 'av', p: 'costes', bas: 'rentab', kw: 'ter comisiones gastos' },
   { id: 'analisis', t: 'La IA explica', en: 'AI explains', s: 'rendimiento', g: 'rr', v: 'analisis', kw: 'informe ia' },
   { id: 'riesgo', t: 'Riesgo', en: 'Risk', s: 'riesgo', g: 'rr', v: 'av', p: 'riesgo', kw: 'volatilidad var estres caida factores' },
+  { id: 'estres', t: 'Prueba de estrés', en: 'Stress test', s: 'riesgo', g: 'rr', v: 'av', p: 'estres', kw: 'crisis 2008 2020 2022 puntocom caida si pasara otra vez escenarios' },
   { id: 'reparto', t: 'Reparto y X-Ray', en: 'Allocation and X-Ray', s: 'reparto', g: 'rr', v: 'av', p: 'reparto', kw: 'paises sectores temas xray' },
   { id: 'rebal', t: 'Tu reparto objetivo', en: 'Your target mix', s: 'reparto', g: 'rr', v: 'av', p: 'rebal', kw: 'rebalancear objetivo' },
   { id: 'fiscal', t: 'Hacienda', en: 'Taxes', s: 'hacienda', g: 'hacienda', v: 'fiscal', h: 'impuestos', kw: 'impuestos irpf plusvalias' },
@@ -102,6 +106,12 @@ function periodoTuAno(hoy = hoyIso()) {
 }
 const anioTuAno = () => periodoTuAno().anio;
 const enTuAno = () => S.vista === 'av' && pestAv() === 'tuano';
+// 0.9: «Tu semana y tus cobros» también es una página de Hoy (su cabecera, con la vuelta a Hoy)
+const enSemana = () => S.vista === 'av' && pestAv() === 'semana';
+const enHoyAv = () => enTuAno() || enSemana();
+function htmlSemanaCab() {
+  return `<div class="ts-grupo ta-grupo"><a class="vista-volver" href="#hoy">${L('‹ Hoy', '‹ Today')}</a><h1 class="ts-tit">${L('Tu semana y tus cobros', 'Your week and your payments')}</h1><p class="ts-sub">${L('Lo que pasa estos días en lo tuyo y lo que vas a cobrar.', 'What happens these days in your holdings and what you will collect.')}</p></div>`;
+}
 function htmlTuAnoCab() {
   const P = periodoTuAno(), mes = IDIOMA === 'en' ? MESES_EN[P.mesFin - 1] : MESES_LARGOS[P.mesFin - 1];
   return `<div class="ts-grupo ta-grupo"><a class="vista-volver" href="#hoy">${L('‹ Hoy', '‹ Today')}</a><h1 class="ts-tit">${L('Tu año en Toisón', 'Your year in Toisón')}</h1><p class="ts-sub">${P.mesFin === 1 ? L(`${P.anio}, enero.`, `${P.anio}, January.`) : L(`${P.anio}, de enero a ${mes}.`, `${P.anio}, January to ${mes}.`)} ${L('Lo que hiciste con tu plan.', 'What you did with your plan.')}</p></div>`;
@@ -123,8 +133,8 @@ function htmlEntradaTuAno(M, hoy = hoyIso()) {
 const PEST_ANA = [
   { k: 'posiciones', t: 'Posiciones', en: 'Holdings', ap: ['posiciones', 'mov', 'pnl'] },
   { k: 'entiende', t: 'Entiende tu cartera', en: 'Understand your portfolio', ap: ['entiende'], soloBas: true },
-  { k: 'rentab', t: 'Rentabilidad', en: 'Returns', ap: ['rentab', 'frente'] },
-  { k: 'riesgo', t: 'Riesgo', en: 'Risk', ap: ['riesgo'] },
+  { k: 'rentab', t: 'Rentabilidad', en: 'Returns', ap: ['rentab', 'frente', 'divisa'] },
+  { k: 'riesgo', t: 'Riesgo', en: 'Risk', ap: ['riesgo', 'estres'] },
   { k: 'reparto', t: 'Reparto', en: 'Allocation', ap: ['reparto', 'rebal'] },
   { k: 'ingresos', t: 'Ingresos y costes', en: 'Income and costs', ap: ['div', 'costes'], av: true },
   { k: 'fiscal', t: 'Hacienda', en: 'Taxes', ap: ['fiscal', 'renta'], sinAp: true },

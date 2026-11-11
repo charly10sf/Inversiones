@@ -31,6 +31,8 @@ const PEST_AV = [
   ['grafico', 'Gráfico técnico', 'Technical chart'], ['rebal', 'Tu reparto objetivo', 'Your target mix'], ['lab', 'Laboratorio', 'Lab'],
   // 0.8.6: Tu año en Toisón (es de Hoy, no de Análisis: grupoDe y htmlSubvistas)
   ['tuano', 'Tu año en Toisón', 'Your year in Toisón'],
+  // 0.9 (rediseño): las pestañas nuevas (trozos/nuevas.js). «semana» es de Hoy, como Tu año
+  ['estres', 'Prueba de estrés', 'Stress test'], ['divisa', 'Efecto divisa', 'Currency effect'], ['semana', 'Tu semana y tus cobros', 'Your week and your payments'],
 ];
 function pestAv() {
   const p = S.pestAv || LS.get(LS_PEST_AV, 'rentab');

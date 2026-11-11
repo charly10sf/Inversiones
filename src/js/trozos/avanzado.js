@@ -195,7 +195,7 @@ const PAV_CSS = `
   .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(2) .pab-que, .panel-av:has(.pab-escala) > .pav-c3:nth-of-type(3) .pab-que { display: none; }
 }
 `;
-const ponerCssAv = () => { if (!$('#pavCss')) { const s = document.createElement('style'); s.id = 'pavCss'; s.textContent = PAV_CSS; document.head.appendChild(s); } };
+const ponerCssAv = () => { if (!$('#pavCss')) { const s = document.createElement('style'); s.id = 'pavCss'; s.textContent = PAV_CSS + NUEVAS_CSS; document.head.appendChild(s); } };
 
 /* Básico: «¿Qué es?» de cada bloque de Hoy, solo en básico. Va detrás del título del bloque (o al principio si no tiene) */
 const QUE_ES = {
@@ -234,12 +234,12 @@ function pintarPanelAv() {
   ponerCssAv();
   const p = el.dataset.p, M = S.M || calcular();
   // 0.8.3a: en básico, Rentabilidad y Riesgo sencillos (las demás, como en el avanzado)
-  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { rentab: pavRentab, frente: pavFrente, entiende: pavEntiende, tuano: pavTuAno, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
+  const f = (modoApp() === 'basico' && { rentab: pavRentabBas, riesgo: pavRiesgoBas }[p]) || { estres: pavEstres, semana: pavSemana, divisa: pavDivisa, rentab: pavRentab, frente: pavFrente, entiende: pavEntiende, tuano: pavTuAno, riesgo: pavRiesgo, hacienda: pavHacienda, reparto: pavReparto, div: pavDiv, costes: pavCostes, pnl: pavPnl, mov: pavMov, grafico: pavGrafico, rebal: pavRebal, lab: pavLab }[p];
   let html;
   try { html = !M.filas.length ? pavSinCartera() : f ? f(M) : pavLuego(p); }
   catch (e) { console.warn(e); html = pavT('c12', L('No se ha podido calcular', 'Could not work it out'), `<p class="nota" style="margin:0">${esc(e.message || '')}</p>`); }
   // al repintar (un botón, un campo de la pestaña), el foco vuelve al mismo mando: el mismo atributo y el mismo puesto
-  const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-mov-res', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-obj-mas', 'data-obj-menos', 'data-obj-acc', 'data-obj-add', 'data-rebal-aport', 'data-lab', 'data-fr-ref'];
+  const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-mov-res', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-obj-mas', 'data-obj-menos', 'data-obj-acc', 'data-obj-add', 'data-rebal-aport', 'data-lab', 'data-fr-ref', 'data-estres', 'data-estres-pct'];
   const at = ae && el.contains(ae) ? ATTR.find((x) => ae.hasAttribute(x)) : null, pos = at ? $$(`[${at}]`, el).indexOf(ae) : -1;
   el.innerHTML = html; el.removeAttribute('aria-busy'); ponerPreguntale(el); marcarCifras(el);
   if (at) { const n = $$(`[${at}]`, el)[pos]; if (n && !n.disabled) n.focus({ preventScroll: true }); else { const t = el.querySelector('.pav-et h2'); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } } }
@@ -672,6 +672,7 @@ function pavCostes(M) {
 
 /* ---------- Las gráficas, una vez pintado (con su ancho de verdad) ---------- */
 function dibujarPanelAv(p, M) {
+  if (p === 'estres' || p === 'semana' || p === 'divisa') { dibujarNuevas(p, M); return; }
   if (p === 'frente') { dibujarFrente(M); return; }
   if (p === 'tuano') { dibujarTuAno(M); return; }
   if (modoApp() === 'basico' && (p === 'rentab' || p === 'riesgo')) { dibujarPanelBas(p, M); return; }

@@ -142,6 +142,7 @@ function vistaDeHash() {
   const w = vistaSegunNav(v);
   return esVista(w) ? w : null;
 }
+let vtEnCurso = 0;   // 0.9: transiciones entre páginas a medias (la clase «vt» se quita al acabar la última)
 window.addEventListener('hashchange', () => {
   const v = vistaDeHash(); if (!v || !S.cartera) return;
   S.navego = true;
@@ -158,7 +159,8 @@ window.addEventListener('hashchange', () => {
     if (conTransicion()) {
       const raiz = document.documentElement; raiz.classList.add('vt'); raiz.style.setProperty('--vt-dx', `${dx * 1.4}px`);
       let t = null; try { t = document.startViewTransition(cambiar); } catch (e) { cambiar(); }
-      if (t) t.finished.catch(() => {}).finally(() => raiz.classList.remove('vt'));
+      // si llega otra navegación antes de acabar, la transición se salta y «ready» se rechaza: no es un error
+      if (t) { vtEnCurso++; t.ready.catch(() => {}); t.finished.catch(() => {}).finally(() => { if (--vtEnCurso <= 0) { vtEnCurso = 0; raiz.classList.remove('vt'); } }); }
     } else {
       cambiar();
       const vi = $('#vista'); if (vi) { vi.style.setProperty('--dx', `${dx}px`); vi.classList.remove('entra'); void vi.offsetWidth; vi.classList.add('entra'); }
