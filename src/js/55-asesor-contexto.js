@@ -270,7 +270,7 @@ function instruccionesAsesor(est = esPublico()) {
   // lo de sus brókeres sale de lo que tiene de verdad (no de la cartera del creador de GrowFolio)
   const plats = [...new Set([...((S.M && S.M.filas) || []).map((f) => f.pos.plataforma), ...((S.M && S.M.efectivo) || []).map((e) => e.plataforma)].filter(Boolean))];
   const fuera = plats.filter(esDeFuera), conFondos = ((S.M && S.M.filas) || []).some((f) => /^Fondo/.test(f.inst.tipo || ''));
-  const COMIS = { 'Trade Republic': 'Trade Republic, 1 € por operación', MyInvestor: 'MyInvestor, sin comisión en fondos indexados', Bitvavo: 'Bitvavo, alrededor del 0,25 %', Revolut: 'Revolut, según su plan', 'Interactive Brokers': 'Interactive Brokers, desde unos 3 € por operación en Europa' };
+  const COMIS = { 'Trade Republic': 'Trade Republic, 1 € por operación', MyInvestor: 'MyInvestor, sin comisión en fondos indexados', Bitvavo: 'Bitvavo, alrededor del 0,25 %', Revolut: 'Revolut, según su plan', 'Interactive Brokers': 'Interactive Brokers, desde unos 1,25 € por operación en Europa con la tarifa escalonada (3 € con la fija)' };
   const comis = plats.map((p2) => COMIS[p2]).filter(Boolean);
   const fiscal = `Fiscalidad en España en ${anio}:
 - Ventas: ganancia o pérdida = lo cobrado (menos comisiones) menos lo que costó (más comisiones y tasas), por FIFO. Tributa en la base del ahorro: ${textoTramos()}${TRAMOS_FORAL[comunidadUsuario()] ? ` (escala foral de ${nombreComunidad(comunidadUsuario())}, donde vive)` : ''}.
