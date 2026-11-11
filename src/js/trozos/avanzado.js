@@ -558,7 +558,7 @@ function pavHacienda(M) {
     if (!f.precio || f.inst.tipo === 'Efectivo') continue;
     for (const l of lotesDe(f.pos)) { if (!(l.u > 1e-9)) continue; const v = l.u * f.precio; lotes.push({ f, l, v, g: v - l.c }); }
   }
-  const gTotal = sum(lotes, (x) => x.g), siTodo = impuestoDeVenta(gTotal).impuesto;
+  const gTotal = sum(lotes, (x) => x.g), siTodo = impuestoDeVentas(lotes.map((x) => ({ g: x.g, inst: x.f.inst }))).impuesto;
   lotes.sort((a, b) => Math.abs(b.g) - Math.abs(a.g));
   const tabla = pavTabla([L('Posición', 'Holding'), L('Compra', 'Bought'), L('Coste → hoy', 'Cost → today'), L('Ganancia', 'Gain'), L('Si lo vendieras', 'If you sold it')], lotes.slice(0, 14).map(({ f, l, v, g }) => [`<b>${pavNom(f)}</b>`, `${l.f ? fechaConAnio(l.f) : '—'}<small>${fmtNum(l.u, l.u < 10 ? 4 : 2)} ${L('uds.', 'units')}${l.mezcla ? L(' · coste medio', ' · average cost') : ''}</small>`, `${eur(l.c, 0)}<small>${eur(v, 0)}</small>`, `<span class="${cls(g)}">${eurS(g, 0)}</span>`, g > 0 ? `≈ ${eur(impuestoDeVenta(g).impuesto, 0)}` : `<small>${L('compensaría', 'would offset')}</small>`]))
     + (lotes.length > 14 ? `<p class="pav-como" style="margin-top:8px">${L(`Y ${lotes.length - 14} lotes más, más pequeños.`, `And ${lotes.length - 14} smaller lots.`)}</p>` : '');
@@ -576,6 +576,7 @@ function pavHacienda(M) {
     pavT('c12', L(`Renta de ${anio} (se presenta entre abril y junio de ${anio + 1})`, `${anio} tax return`), pavKpis([
       [L('Ganancias y pérdidas por ventas', 'Gains and losses from sales'), eurS(fa.gp, 0), cls(fa.gp)],
       [L('Dividendos e intereses', 'Dividends and interest'), eur(fa.rcm, 0)],
+      fa.nRCM ? [L('Ventas de ETC (rendimiento del capital)', 'ETC sales (investment income)'), eurS(fa.rcmVentas, 0), cls(fa.rcmVentas)] : null,
       [L('Pérdidas de años anteriores', 'Losses from earlier years'), eur(fa.pendientes, 0), '', fa.usadas ? L(`usas ${eur(fa.usadas, 0)}`, `using ${eur(fa.usadas, 0)}`) : ''],
       [L('Base del ahorro', 'Savings tax base'), eur(fa.base, 0)],
       [L('Impuesto', 'Tax'), eur(fa.cuota, 0), '', L(`tramo del ${pctTramo(fa.marginal)} %`, `${pctTramo(fa.marginal)}% bracket`)],

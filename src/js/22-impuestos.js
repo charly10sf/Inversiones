@@ -89,6 +89,7 @@ function fiscalidadSede(cod, tipo = 'Acción') {
   const nombre = (cod && PAISES[cod]) || 'su país';
   if (tipo && /^Fondo/.test(tipo)) return { ret: 0, pierde: 0, txt: 'Fondos de acumulación: no reparten; pagas solo al vender (y entre fondos, ni eso, con un traspaso).' };
   if (tipo === 'ETF') return { ret: 0, pierde: 0, txt: 'ETF: si es de acumulación no reparte y pagas solo al vender (los traspasos sin impuestos no valen para los ETF). Si reparte, el dividendo tributa en tu renta.' };
+  if (tipo === 'ETC') return { ret: 0, pierde: 0, rcm: true, txt: 'ETC: no reparte nada; pagas solo al vender. Según Tributos (consulta V0267-25), como es un título de deuda, lo que ganes o pierdas cuenta como rendimiento del capital mobiliario, no como la venta de una acción; con un bróker español puede llevar un 19 % de retención.' };
   if (tipo && tipo !== 'Acción') return { ret: 0, pierde: 0, txt: 'No reparte nada: pagas solo al vender.' };
   const ret = cod ? RET_DIV[cod] : null;
   if (ret == null) return { ret: null, pierde: 0, txt: `Dividendos: ${nombre} aplica su propia retención; mira el informe de tu bróker.` };
@@ -159,20 +160,31 @@ function perdidaAplazada(v) {
   const aporte = (S.cartera.aportaciones || []).some((a) => a.instrumento === v.instrumento) && !(S.cartera.movimientos || []).some((m) => m.tipo === 'compra' && m.instrumento === v.instrumento && m.fecha === primero);
   return { fecha: primero, r, parte, importe: v.resultado * parte, aporte };
 }
-function fiscalAnio(anio, extra = 0) {
+/* Los ETC (y los ETN, que Toisón guarda como ETC) no son fondos ni acciones: se emiten como títulos de deuda. Según la
+   DGT (consulta vinculante V0267-25, de 13 de marzo de 2025, sobre un ETC ligado al petróleo), lo que se gana o se
+   pierde al venderlos es rendimiento del capital mobiliario (art. 25.2.b LIRPF), no ganancia patrimonial. En la base
+   del ahorro van con los dividendos y los intereses (con las ganancias solo se cruzan hasta el 25 %), la recompra es
+   de dos meses coticen donde coticen (último párrafo del 25.2.b) y, con un intermediario español, llevan retención. */
+function esRCMVenta(inst) { return !!inst && inst.tipo === 'ETC'; }
+/* extra: una ganancia o pérdida patrimonial más (una venta que se está mirando); extraRCM: lo mismo si es de un ETC */
+function fiscalAnio(anio, extra = 0, extraRCM = 0) {
   const d = datosFiscales(anio);
   const ventas = (S.cartera.movimientos || []).filter((m) => m.tipo === 'venta' && String(m.fecha).startsWith(String(anio)));
   // las pérdidas bloqueadas por una recompra no restan este año (se aplazan hasta vender lo recomprado)
-  const gpWeb = sum(ventas, (m) => { const a = perdidaAplazada(m); return (m.resultado || 0) - (a ? a.importe : 0); });
+  const neto = (m) => { const a = perdidaAplazada(m); return (m.resultado || 0) - (a ? a.importe : 0); };
+  const deRCM = (m) => esRCMVenta(S.inst[m.instrumento]);
+  const gpWeb = sum(ventas.filter((m) => !deRCM(m)), neto);
+  // las ventas de ETC no son ganancias: van con los rendimientos (rcm sigue siendo lo apuntado: dividendos e intereses)
+  const nRCM = ventas.filter(deRCM).length, rcmVentas = sum(ventas.filter(deRCM), neto);
   const otras = +d.otras || 0;
   const gp = gpWeb + otras + extra;
-  const rcm = +d.rcm || 0;
+  const rcm = +d.rcm || 0, rcmT = rcm + rcmVentas + extraRCM;
   const pendientes = Math.max(0, +d.pendientes || 0);
   // 0.3.9: el 25 % se calcula sobre el saldo positivo antes de compensar y es un tope conjunto con las pérdidas de años
   // anteriores (Manual AEAT 8.1.4); en Álava, Bizkaia y Gipuzkoa no hay compensación cruzada en la base del ahorro
   const cruza = comunidadUsuario() !== 'paisvasco';
-  let bGP = gp, bRCM = rcm, cruzado = 0;
-  const topeGP = cruza ? 0.25 * Math.max(0, rcm) : 0, topeRCM = cruza ? 0.25 * Math.max(0, gp) : 0;
+  let bGP = gp, bRCM = rcmT, cruzado = 0;
+  const topeGP = cruza ? 0.25 * Math.max(0, rcmT) : 0, topeRCM = cruza ? 0.25 * Math.max(0, gp) : 0;
   if (bGP < 0 && bRCM > 0) { cruzado = Math.min(-bGP, topeGP); bGP += cruzado; bRCM -= cruzado; }
   else if (bRCM < 0 && bGP > 0) { cruzado = Math.min(-bRCM, topeRCM); bRCM += cruzado; bGP -= cruzado; }
   let usadas = 0;
@@ -180,11 +192,19 @@ function fiscalAnio(anio, extra = 0) {
   const quedaTope = Math.max(0, topeGP - (gp < 0 ? cruzado : 0));
   if (pendientes - usadas > 0 && bRCM > 0 && quedaTope > 0) { const u2 = Math.min(quedaTope, bRCM, pendientes - usadas); bRCM -= u2; usadas += u2; }
   const base = Math.max(0, bGP) + Math.max(0, bRCM);
-  return { anio, ventas, gpWeb, otras, gp, rcm, pendientes, usadas, cruzado, base, cuota: irpfAhorro(base), marginal: tipoMarginal(base), sobra: (bGP < 0 ? -bGP : 0) + (pendientes - usadas), retenido: +d.retenido || 0 };
+  // los rendimientos negativos que sobran también se guardan 4 años (art. 49.1.a LIRPF)
+  const sobraRCM = bRCM < 0 ? -bRCM : 0;
+  return { anio, ventas, gpWeb, otras, gp, rcm, rcmVentas, nRCM, rcmT, pendientes, usadas, cruzado, base, cuota: irpfAhorro(base), marginal: tipoMarginal(base), sobra: (bGP < 0 ? -bGP : 0) + sobraRCM + (pendientes - usadas), sobraRCM, retenido: +d.retenido || 0 };
 }
 /* lo que añade una venta concreta a la factura de este año (con todo lo demás que ya llevas) */
-function impuestoDeVenta(ganancia, anio = new Date().getFullYear()) {
-  const a = fiscalAnio(anio), b = fiscalAnio(anio, ganancia);
+function impuestoDeVenta(ganancia, anio = new Date().getFullYear(), inst = null) {
+  const a = fiscalAnio(anio), b = esRCMVenta(inst) ? fiscalAnio(anio, 0, ganancia) : fiscalAnio(anio, ganancia);
+  return { impuesto: b.cuota - a.cuota, antes: a, despues: b };
+}
+/* lo mismo con varias a la vez, cada una con su instrumento: [{ g, inst }] */
+function impuestoDeVentas(lista, anio = new Date().getFullYear()) {
+  const r = sum(lista.filter((x) => esRCMVenta(x.inst)), (x) => x.g), g = sum(lista, (x) => x.g) - r;
+  const a = fiscalAnio(anio), b = fiscalAnio(anio, g, r);
   return { impuesto: b.cuota - a.cuota, antes: a, despues: b };
 }
 
@@ -255,10 +275,11 @@ function htmlFiscalRecom(M, fa) {
   if (esPublico()) return '';
   const anio = new Date().getFullYear(), filas = [];
   const planes = M.filas.map((f) => planVenta(f, M)).filter(Boolean);
-  let gan = 0;
+  let gan = 0, ganR = 0; // lo que suman las ventas del plan: ganancias y, aparte, lo de los ETC (rendimiento del capital)
   for (const pl of planes) {
-    gan += pl.ganancia;
-    const antes = fiscalAnio(anio, gan - pl.ganancia).cuota, despues = fiscalAnio(anio, gan).cuota;
+    const esR = esRCMVenta(pl.f.inst), antes = fiscalAnio(anio, gan, ganR).cuota;
+    if (esR) ganR += pl.ganancia; else gan += pl.ganancia;
+    const despues = fiscalAnio(anio, gan, ganR).cuota;
     filas.push({ q: `Vender ${oc(fmtNum(pl.uds, pl.accion && esEntero(pl.uds) ? 0 : 2))} ${esc(pl.f.inst.corto)}`, d: `${pl.ganancia < 0 ? `pérdida de ${eur(-pl.ganancia, 0)}` : `ganancia de ${eur(pl.ganancia, 0)}`} por FIFO (se venden primero las más antiguas)`, v: despues - antes, c: `en la renta de ${anio}, entre abril y junio de ${anio + 1}` });
     const top = pl.ideas[0];
     if (pl.aIdea > 0 && top) {
@@ -270,8 +291,9 @@ function htmlFiscalRecom(M, fa) {
   }
   const perd = restoEnPerdidas(M, planes);
   if (new Date().getMonth() >= 6) for (const x of perd) {
-    const ahorro = fiscalAnio(anio, gan).cuota - fiscalAnio(anio, gan + x.g).cuota;
-    if (ahorro >= 15) filas.push({ q: `Vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas`, d: `${eurS(x.g, 0)}: resta de tus ganancias del año${x.f.inst.clase === 'Cripto' ? '; en cripto la norma no está clara: para ir sobre seguro, no la recompres en un año' : `; no ${/^Fondo/.test(x.f.inst.tipo || '') ? 'lo' : 'la'} recompres en ${(reglaRecompra(x.f.inst) || {}).plazo || 'dos meses'}`}`, v: -ahorro, c: `en la renta de ${anio}`, opc: true });
+    const esR = esRCMVenta(x.f.inst);
+    const ahorro = fiscalAnio(anio, gan, ganR).cuota - fiscalAnio(anio, gan + (esR ? 0 : x.g), ganR + (esR ? x.g : 0)).cuota;
+    if (ahorro >= 15) filas.push({ q: `Vender ${x.resto ? 'el resto de ' : ''}${esc(x.f.inst.corto)} con pérdidas`, d: `${eurS(x.g, 0)}: resta de ${esR ? 'tus rendimientos del capital del año (dividendos, intereses y otros ETC)' : 'tus ganancias del año'}${x.f.inst.clase === 'Cripto' && !esR ? '; en cripto la norma no está clara: para ir sobre seguro, no la recompres en un año' : `; no ${/^Fondo/.test(x.f.inst.tipo || '') ? 'lo' : 'la'} recompres en ${(reglaRecompra(x.f.inst) || {}).plazo || 'dos meses'}`}`, v: -ahorro, c: `en la renta de ${anio}`, opc: true });
   }
   const ap = sum(aportacionesActivas(), ({ a }) => +a.importe || 0);
   if (ap > 0) filas.push({ q: `Aportar ${eur(ap, 0)} al mes`, d: 'a fondos de acumulación: no reparten dividendos, no tributan hasta que vendas', v: 0, c: '' });
@@ -315,10 +337,10 @@ function htmlImpuestos(M) {
   // si vendieras cada posición hoy (FIFO sobre todo lo que tienes = valor menos coste total)
   const latentes = M.filas.map((f) => {
     const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0);
-    return { f, g, imp: g > 0 ? impuestoDeVenta(g, anio).impuesto : 0 };
+    return { f, g, imp: g > 0 ? impuestoDeVenta(g, anio, f.inst).impuesto : 0 };
   }).sort((a, b) => b.g - a.g);
   const totLat = sum(latentes, (x) => x.g);
-  const todo = impuestoDeVenta(totLat, anio).impuesto;
+  const todo = impuestoDeVentas(latentes.map((x) => ({ g: x.g, inst: x.f.inst })), anio).impuesto;
   const perdidas = latentes.filter((x) => x.g < 0);
   const fondos = M.filas.filter((f) => /^Fondo/.test(f.inst.tipo || ''));
   const tr = enElExtranjero(M);
@@ -327,7 +349,8 @@ function htmlImpuestos(M) {
   return `
     <div class="sec-cab"><h2>Renta de ${anio}</h2><span class="k">se presenta entre abril y junio de ${anio + 1}</span><div class="der"><button class="btn peq" data-accion="fiscal">${ICONOS.lapiz}Datos fiscales de ${anio}</button></div></div>
     ${!fa.ventas.length && !fa.otras && !fa.rcm && !fa.retenido ? `<div class="fis-vacio"><p><b>${M.dividendos >= 1 ? `Por ahora no has apuntado nada para la renta de ${anio}.` : `Por ahora no pagas nada en la renta de ${anio}.`}</b> ${M.dividendos >= 1 ? (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return `${da && da.bruto >= 1 ? `Por lo que han pagado tus acciones, este año habrás cobrado unos ${eur(da.bruto, 0)} brutos en dividendos (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}), que` : `Tus posiciones reparten unos ${eur(M.dividendos, 0)} brutos al año en dividendos, que`} tributan (desde un ${pctTramo(tramosAhorro()[0][1])} %) aunque no vendas: mira el informe de tu bróker y apunta lo cobrado en «Datos fiscales» para que salga en la cuenta.`; })() : 'Este año no has apuntado ventas ni dividendos.'} Cuando vendas algo, apúntalo en Inicio con «Apuntar compra o venta» y aquí verás lo que te toca.${M.dividendos >= 1 ? '' : ' Si has cobrado dividendos o intereses, ponlos en «Datos fiscales».'}</p>${recom ? '<p class="k">Más abajo, lo que supondría en la renta cada paso de tu plan.</p>' : ''}</div>` : `<div class="resumen-fila">
-      <div><span class="k">Ventas del año</span><span class="v ${cls(fa.gp)}">${eurS(fa.gp, 0)}</span><small class="k">${fa.ventas.length} en Toisón${fa.otras ? `, ${eurS(fa.otras, 0)} fuera` : ''}</small></div>
+      <div><span class="k">Ventas del año</span><span class="v ${cls(fa.gp)}">${eurS(fa.gp, 0)}</span><small class="k">${fa.ventas.length - fa.nRCM} en Toisón${fa.otras ? `, ${eurS(fa.otras, 0)} fuera` : ''}</small></div>
+      ${fa.nRCM ? `<div><span class="k">Ventas de ETC</span><span class="v ${cls(fa.rcmVentas)}">${eurS(fa.rcmVentas, 0)}</span><small class="k">${fa.nRCM} en Toisón; cuentan como rendimiento del capital, con los dividendos e intereses</small></div>` : ''}
       <div><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm, 0)}</span><small class="k">${fa.rcm ? 'los que has apuntado' : (() => { const da = anio === new Date().getFullYear() ? dividendosAnio(M, anio) : null; return da && da.bruto >= 1 ? `este año, unos ${eur(da.bruto, 0)} brutos por lo que han pagado tus acciones (${esc(yLista([...new Set(da.de.map((x) => x.n))]))}): mira el informe de tu bróker y apúntalos en Datos fiscales` : 'apúntalos en Datos fiscales'; })()}</small></div>
       <div><span class="k">Base del ahorro</span><span class="v">${eur(fa.base, 0)}</span><small class="k">tramo del ${pctTramo(fa.marginal)} %</small></div>
       <div><span class="k">Cuota estimada</span><span class="v">${eur(fa.cuota, 0)}</span><small class="k">${fa.retenido ? `menos ${eur(fa.retenido, 0)} ya retenidos: ${eurS(fa.cuota - fa.retenido, 0)}` : 'antes de restar retenciones'}</small></div>
@@ -395,13 +418,14 @@ function htmlFiscalGuia(M, fa, x) {
   // cómo tributa lo que tienes
   const tiene = (fn) => M.filas.filter(fn);
   const accES = tiene((f) => f.inst.tipo === 'Acción' && f.inst.pais === 'ES'), accEx = tiene((f) => f.inst.tipo === 'Acción' && f.inst.pais !== 'ES');
-  const etc = tiene((f) => /ETC|ETF/.test(f.inst.tipo || '')), cri = tiene((f) => f.inst.clase === 'Cripto');
+  const etf = tiene((f) => f.inst.tipo === 'ETF'), etc = tiene((f) => esRCMVenta(f.inst)), cri = tiene((f) => f.inst.clase === 'Cripto' && !esRCMVenta(f.inst));
   const lista = (v) => yLista(v.map((f) => esc(f.inst.corto)));
   const como = [
     x.fondos.length && ['Fondos de inversión', lista(x.fondos), 'Mientras no los vendas no pagas nada. Si pasas el dinero de un fondo a otro (traspaso) tampoco: el impuesto se aplaza hasta que lo saques de verdad. Al reembolsar te retienen el 19 % de la ganancia.'],
     accES.length && ['Acciones españolas', lista(accES), 'Pagas por la ganancia al vender (FIFO: primero salen las más antiguas). Los dividendos llegan con el 19 % retenido, que se resta en la renta.'],
     accEx.length && ['Acciones extranjeras', lista(accEx), 'Igual al vender. Los dividendos pueden traer la retención del país de la sede: en la renta recuperas hasta el 15 % con la deducción por doble imposición; lo que pase de ahí se pierde salvo que lo reclames allí.'],
-    etc.length && ['ETF y ETC (oro)', lista(etc), 'Como una acción: cada venta paga por la ganancia y no hay traspasos sin impuestos.'],
+    etf.length && ['ETF', lista(etf), 'Al vender, como una acción: cada venta paga por la ganancia (FIFO) y no hay traspasos sin impuestos. En la renta van con los fondos, como «fondos cotizados».'],
+    etc.length && ['ETC (oro, materias primas…)', lista(etc), 'No es un fondo ni una acción: es un título de deuda. Según una consulta de Tributos (V0267-25, de 2025), lo que ganes o pierdas al venderlo es rendimiento del capital mobiliario, como los intereses, y no una ganancia patrimonial: va en otro apartado de la renta, con las ganancias de acciones y fondos solo se compensa hasta un 25 % y, con un bróker español, puede llevar un 19 % de retención al vender. La recompra es de dos meses, cotice donde cotice, y tampoco hay traspasos sin impuestos.'],
     cri.length && ['Criptomonedas', lista(cri), 'Paga al venderla a euros y también al cambiarla por otra cripto. Por encima de 50.000 € fuera de España hay que presentar el modelo 721.'],
     ['Intereses del efectivo', 'Trade Republic y similares', 'Rendimiento del capital: tributa en la base del ahorro como los dividendos.'],
   ].filter(Boolean);

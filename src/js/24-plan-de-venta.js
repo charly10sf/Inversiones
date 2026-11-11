@@ -59,7 +59,7 @@ function planVenta0(f, M) {
   try { r = fifo(lotesDe(f.pos), uds); } catch (e) { r = { coste: medio * uds, mezcla: true, usados: [] }; }
   const ganancia = neto - r.coste;
   const anio = new Date().getFullYear();
-  const iv = impuestoDeVenta(ganancia, anio);
+  const iv = impuestoDeVenta(ganancia, anio, f.inst);
   const impuesto = Math.max(0, iv.impuesto);
   const mover = Math.max(0, neto - impuesto);
   const fiscal = { coste: r.coste, mezcla: r.mezcla, lotes: r.usados.length, antes: iv.antes, despues: iv.despues, anio, finDeAnio: new Date().getMonth() >= 10 };
@@ -117,7 +117,7 @@ function htmlFiscalVenta(pl) {
     lineas.push(`Coste fiscal de mover el dinero: ${eur(pl.impuesto, 0)}. La inversión nueva tiene que ganar al menos eso más que ${esc(pl.f.inst.corto)} para que el cambio compense.`);
     if (fs.finDeAnio) lineas.push(`Si esperas a enero, el impuesto se paga un año más tarde (en la renta de ${fs.anio + 1}).`);
   } else {
-    lineas.push(`Esa pérdida resta de tus ganancias de ${fs.anio}; si sobra, ${comunidadUsuario() === 'paisvasco' ? '' : 'de hasta un 25 % de tus dividendos e intereses y '}el resto en los 4 años siguientes. ${(() => { const r = reglaRecompra(pl.f.inst); return r && r.meses ? `No vuelvas a comprar ${esc(pl.f.inst.corto)} en ${r.plazo} (ni antes ni después de vender) o la pérdida no cuenta hasta que la vendas.` : 'En cripto la norma no está clara: para ir sobre seguro, no la recompres en un año.'; })()}`);
+    lineas.push(`Esa pérdida resta de ${esRCMVenta(pl.f.inst) ? 'tus rendimientos del capital' : 'tus ganancias'} de ${fs.anio}; si sobra, ${comunidadUsuario() === 'paisvasco' ? '' : esRCMVenta(pl.f.inst) ? 'de hasta un 25 % de tus ganancias y ' : 'de hasta un 25 % de tus dividendos e intereses y '}el resto en los 4 años siguientes. ${(() => { const r = reglaRecompra(pl.f.inst); return r && r.meses ? `No vuelvas a comprar ${esc(pl.f.inst.corto)} en ${r.plazo} (ni antes ni después de vender) o la pérdida no cuenta hasta que la vendas.` : 'En cripto la norma no está clara: para ir sobre seguro, no la recompres en un año.'; })()}`);
   }
   return `<b>${pl.ganancia > 0 ? `Declaras una ganancia de ${eur(pl.ganancia, 0)}: unos ${eur(pl.impuesto, 0)} de impuesto` : `Declaras una pérdida de ${eur(-pl.ganancia, 0)}: no pagas y te ahorra impuestos`}</b><details class="mas"><summary>Cómo se calcula</summary><ul class="motivos">${lineas.map((l) => `<li>${l}</li>`).join('')}</ul></details>`;
 }

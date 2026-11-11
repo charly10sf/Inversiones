@@ -125,9 +125,9 @@ function contextoAsesor(M, modo = 'chat', est = esPublico()) {
     }
     const fa = fiscalAnio(anio);
     L.push('', `## Impuestos de ${anio} (renta que se presenta entre abril y junio de ${anio + 1})`);
-    L.push(`Ventas del año ${eurP(fa.gp)} (${fa.ventas.length} registradas en Toisón por ${eurP(fa.gpWeb)}; fuera de Toisón ${eurP(fa.otras)}). Dividendos e intereses apuntados ${E2(fa.rcm)}. Retenciones ya hechas ${E2(fa.retenido)}. Pérdidas de años anteriores pendientes ${E2(fa.pendientes)}. Base del ahorro ${E2(fa.base)}, cuota estimada ${E2(fa.cuota)}, tipo marginal ${pctTramo(fa.marginal)} %. Pérdidas que pasarían a años siguientes ${E2(fa.sobra)}.`);
+    L.push(`Ventas del año ${eurP(fa.gp)} (${fa.ventas.length - fa.nRCM} registradas en Toisón por ${eurP(fa.gpWeb)}; fuera de Toisón ${eurP(fa.otras)}). Dividendos e intereses apuntados ${E2(fa.rcm)}.${fa.nRCM ? ` Ventas de ETC ${eurP(fa.rcmVentas)} (${fa.nRCM}; cuentan como rendimiento del capital mobiliario, no como ganancia patrimonial).` : ''} Retenciones ya hechas ${E2(fa.retenido)}. Pérdidas de años anteriores pendientes ${E2(fa.pendientes)}. Base del ahorro ${E2(fa.base)}, cuota estimada ${E2(fa.cuota)}, tipo marginal ${pctTramo(fa.marginal)} %. Pérdidas que pasarían a años siguientes ${E2(fa.sobra)}.`);
     if (!fa.otras && !fa.rcm) L.push('Aviso: no ha apuntado en Toisón sus dividendos ni ventas hechas fuera de ella, así que el impuesto calculado puede salir alto.');
-    L.push('Si vendiera hoy cada posición entera (ganancia, e impuesto extra con lo que ya lleva): ' + M.filas.map((f) => { const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0); return `${f.inst.corto} ${eurP(g, 0)}${g > 0 ? `, impuesto ${E0(impuestoDeVenta(g, anio).impuesto)}` : ''}`; }).join('; ') + '.');
+    L.push('Si vendiera hoy cada posición entera (ganancia, e impuesto extra con lo que ya lleva): ' + M.filas.map((f) => { const g = f.valor - f.coste - (f.pos.plataforma === 'Trade Republic' ? 1 : 0); return `${f.inst.corto} ${eurP(g, 0)}${g > 0 ? `, impuesto ${E0(impuestoDeVenta(g, anio, f.inst).impuesto)}` : ''}`; }).join('; ') + '.');
     // en el modo estándar GrowFolio no propone ventas: ni la sección (un «ninguna pide vender» sería un «mantén»)
     const planes = pub ? [] : M.filas.map((f) => planVenta(f, M)).filter(Boolean);
     if (!pub) L.push('', '## Planes de venta que propone Toisón ahora');
@@ -277,6 +277,7 @@ function instruccionesAsesor(est = esPublico()) {
 - Las pérdidas se compensan con las ganancias del año; si sobran, con hasta el 25 % de dividendos e intereses; el resto, durante los 4 años siguientes.
 - Regla de recompra: si vende con pérdidas y recompra lo mismo en los dos meses anteriores o posteriores (acciones y ETF de bolsas de la UE) o en el año anterior o posterior (fondos de inversión, también con aportaciones automáticas, y acciones y ETF que cotizan fuera de la UE), se aplaza la parte de la pérdida que corresponde a lo recomprado. En cripto no se aplica, aunque hay quien defiende un plazo de un año.
 - Traspasos entre fondos de inversión: no tributan. Entre ETF sí.
+- ETC y ETN (oro, materias primas): son títulos de deuda. Según la DGT (consulta vinculante V0267-25, de 2025), lo que se gana o se pierde al venderlos es rendimiento del capital mobiliario, no ganancia patrimonial: se suma a dividendos e intereses, con las ganancias solo se compensa hasta el 25 %, la recompra es de dos meses coticen donde coticen y un bróker español puede retener el 19 % al vender. Tampoco se traspasan sin tributar.
 - Dividendos e intereses: tributan en la base del ahorro; los españoles llegan con el 19 % retenido. Los extranjeros traen la retención del país de la sede: EEUU 15 % (con el W-8BEN que hace el bróker), Países Bajos 15 %, Francia 12,8 %, Reino Unido 0 %; Suiza 35 %, Alemania 26,4 %, Italia 26 %, Dinamarca 27 %, Suecia 30 %, Finlandia 35 %, Bélgica 30 %, Austria 27,5 %, Irlanda 25 %, Noruega 25 %, Portugal 25 %. En la renta recupera con la deducción por doble imposición internacional hasta el tipo del convenio (casi siempre el 15 %): lo que pase se pierde salvo que lo reclame a ese país.
 - Fondos de acumulación${conFondos ? ' (mira en sus datos si los suyos lo son)' : ''}: no reparten, así que no pagan nada hasta que venda.
 - Tasas al comprar acciones: 0,2 % en España y 0,4 % en Francia (empresas de más de 1.000 millones de capitalización), 0,1 % en Italia y 0,5 % de timbre en Reino Unido. Fondos y ETF no la pagan.
@@ -333,12 +334,12 @@ function hSimularVenta(q) {
   const r = fifo(lotesDe(f.pos), u);
   const gan = neto - r.coste;
   const anio = new Date().getFullYear();
-  const iv = impuestoDeVenta(gan, anio);
+  const iv = impuestoDeVenta(gan, anio, f.inst);
   return {
     posicion: f.inst.corto, plataforma: f.pos.plataforma, unidades: R2(u, 6), de_un_total_de: R2(f.uds, 6), precio: R2(pr, 4),
     importe_bruto: R2(bruto), comision: R2(gastos), cobras: R2(neto), valor_de_compra_fifo: R2(r.coste),
     lotes_usados: r.usados.map((l) => ({ fecha: l.f, unidades: R2(l.u, 6), coste: R2(l.c) })),
-    ganancia_o_perdida: R2(gan), impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
+    ganancia_o_perdida: R2(gan), tributa_como: esRCMVenta(f.inst) ? 'rendimiento del capital mobiliario (ETC; DGT V0267-25)' : 'ganancia o pérdida patrimonial', impuesto_extra_en_la_renta: R2(Math.max(0, iv.impuesto)), ahorro_en_la_renta: R2(Math.max(0, -iv.impuesto)),
     tipo_efectivo_pct: gan > 0 ? R2((iv.impuesto / gan) * 100, 1) : 0,
     renta: { anio, cuota_antes: R2(iv.antes.cuota), cuota_despues: R2(iv.despues.cuota), base_despues: R2(iv.despues.base), perdidas_para_anios_siguientes: R2(iv.despues.sobra) },
     te_quedan: R2(f.uds - u, 6), valor_que_te_queda: R2((f.uds - u) * f.precio),

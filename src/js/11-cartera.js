@@ -299,7 +299,7 @@ function htmlBloqueCar(k, M) {
     if (k === 'renta') {
       const fa = fiscalAnio(anio);
       return `<section aria-labelledby="hRenC"><div class="sec-cab"><h2 id="hRenC">Hacienda de ${anio}</h2><div class="der"><a class="enlace acento" href="#fiscal">Ver Hacienda</a></div></div>
-        <div class="kpis car-renta"><div class="kpi"><span class="k">Ganancias y pérdidas</span><span class="v ${cls(fa.gp || 0)}">${eurS(fa.gp || 0, 0)}</span></div><div class="kpi"><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm || 0, 0)}</span></div><div class="kpi"><span class="k">Te tocaría pagar</span><span class="v">${eur(fa.cuota || 0, 0)}</span></div></div>
+        <div class="kpis car-renta"><div class="kpi"><span class="k">Ganancias y pérdidas</span><span class="v ${cls((fa.gp || 0) + (fa.rcmVentas || 0))}">${eurS((fa.gp || 0) + (fa.rcmVentas || 0), 0)}</span></div><div class="kpi"><span class="k">Dividendos e intereses</span><span class="v">${eur(fa.rcm || 0, 0)}</span></div><div class="kpi"><span class="k">Te tocaría pagar</span><span class="v">${eur(fa.cuota || 0, 0)}</span></div></div>
         <p class="nota">Con lo que llevas vendido y cobrado este año, antes de restar lo que ya te han retenido.</p></section>`;
     }
   } catch (e) { console.warn('bloque de Cartera', k, e); }

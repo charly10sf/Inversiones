@@ -97,7 +97,7 @@ const ENT_LECCIONES = {
     texto: (x) => [
       'Un ETC se negocia en bolsa como un ETF, pero no es un fondo: es un título que emite una entidad y que sigue el precio de algo, casi siempre una materia prima. En los de oro físico, cada título va respaldado por oro guardado en una cámara.',
       // DGT V0267-25 (13 mar 2025): un ETC hecho como título de deuda da rendimiento del capital mobiliario, no ganancia
-      // patrimonial (art. 25.2 LIRPF), con retención si el bróker es español. El módulo de Fiscalidad aún lo cuenta como una acción.
+      // patrimonial (art. 25.2 LIRPF), con retención si el bróker es español. El módulo de Fiscalidad lo cuenta igual (esRCMVenta, 22-impuestos.js).
       'Para Hacienda no es un fondo, y no se puede pasar a otro sin tributar. Lo que ganes tributa el día que lo vendes, en la base del ahorro; pero, según una consulta de Tributos de 2025, como está hecho como un título de deuda cuenta como rendimiento del capital mobiliario, no como la venta de una acción: va en otro apartado de la renta y, con un bróker español, puede llevar una retención del 19 % al vender.',
       x && x.g.inst.clase === 'Oro' || !x ? 'El oro no reparte dividendos ni intereses: lo que ganes con él saldrá solo de que suba su precio.' : 'No reparte dividendos ni intereses: lo que ganes saldrá solo de que suba su precio.',
     ],
@@ -384,7 +384,7 @@ const ENT_LECCIONES = {
       const fs = entPos(M);
       if (!fs.length) return null;
       // los ETC, aparte: si cuentan como rendimiento del capital mobiliario (DGT V0267-25), su regla es la del art. 25.2.b,
-      // dos meses coticen donde coticen; reglaRecompra aún les da la de las acciones
+      // dos meses coticen donde coticen; reglaRecompra ya les da ese plazo
       const etc = fs.filter((f) => f.inst.tipo === 'ETC');
       const r = fs.filter((f) => f.inst.tipo !== 'ETC').map((f) => ({ f, r: reglaRecompra(f.inst) })).filter((y) => y.r);
       const dos = r.filter((y) => y.r.meses === 2).map((y) => y.f), anio = r.filter((y) => y.r.meses === 12).map((y) => y.f), cri = r.filter((y) => !y.r.meses).map((y) => y.f);
