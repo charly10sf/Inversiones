@@ -89,7 +89,7 @@ function fiscalidadSede(cod, tipo = 'Acción') {
   const nombre = (cod && PAISES[cod]) || 'su país';
   if (tipo && /^Fondo/.test(tipo)) return { ret: 0, pierde: 0, txt: 'Fondos de acumulación: no reparten; pagas solo al vender (y entre fondos, ni eso, con un traspaso).' };
   if (tipo === 'ETF') return { ret: 0, pierde: 0, txt: 'ETF: si es de acumulación no reparte y pagas solo al vender (los traspasos sin impuestos no valen para los ETF). Si reparte, el dividendo tributa en tu renta.' };
-  if (tipo === 'ETC') return { ret: 0, pierde: 0, rcm: true, txt: 'ETC: no reparte nada; pagas solo al vender. Según Tributos (consulta V0267-25), como es un título de deuda, lo que ganes o pierdas cuenta como rendimiento del capital mobiliario, no como la venta de una acción; con un bróker español puede llevar un 19 % de retención.' };
+  if (tipo === 'ETC') return { ret: 0, pierde: 0, rcm: true, txt: 'ETC: no reparte nada; pagas solo al vender. Como es un título de deuda, lo que ganes o pierdas cuenta como rendimiento del capital mobiliario, no como la venta de una acción (consulta de Tributos V0267-25, sobre un ETC de petróleo); con un bróker español puede llevar una retención del 19 % de la ganancia.' };
   if (tipo && tipo !== 'Acción') return { ret: 0, pierde: 0, txt: 'No reparte nada: pagas solo al vender.' };
   const ret = cod ? RET_DIV[cod] : null;
   if (ret == null) return { ret: null, pierde: 0, txt: `Dividendos: ${nombre} aplica su propia retención; mira el informe de tu bróker.` };
@@ -192,9 +192,10 @@ function fiscalAnio(anio, extra = 0, extraRCM = 0) {
   const quedaTope = Math.max(0, topeGP - (gp < 0 ? cruzado : 0));
   if (pendientes - usadas > 0 && bRCM > 0 && quedaTope > 0) { const u2 = Math.min(quedaTope, bRCM, pendientes - usadas); bRCM -= u2; usadas += u2; }
   const base = Math.max(0, bGP) + Math.max(0, bRCM);
-  // los rendimientos negativos que sobran también se guardan 4 años (art. 49.1.a LIRPF)
+  // los rendimientos negativos que sobran también se guardan 4 años (art. 49.1.a LIRPF), pero en su propio saldo: al año
+  // siguiente compensan primero rendimientos y solo hasta el 25 % de las ganancias. Por eso no se suman a «sobra»
   const sobraRCM = bRCM < 0 ? -bRCM : 0;
-  return { anio, ventas, gpWeb, otras, gp, rcm, rcmVentas, nRCM, rcmT, pendientes, usadas, cruzado, base, cuota: irpfAhorro(base), marginal: tipoMarginal(base), sobra: (bGP < 0 ? -bGP : 0) + sobraRCM + (pendientes - usadas), sobraRCM, retenido: +d.retenido || 0 };
+  return { anio, ventas, gpWeb, otras, gp, rcm, rcmVentas, nRCM, rcmT, pendientes, usadas, cruzado, base, cuota: irpfAhorro(base), marginal: tipoMarginal(base), sobra: (bGP < 0 ? -bGP : 0) + (pendientes - usadas), sobraRCM, retenido: +d.retenido || 0 };
 }
 /* lo que añade una venta concreta a la factura de este año (con todo lo demás que ya llevas) */
 function impuestoDeVenta(ganancia, anio = new Date().getFullYear(), inst = null) {
@@ -355,6 +356,7 @@ function htmlImpuestos(M) {
       <div><span class="k">Base del ahorro</span><span class="v">${eur(fa.base, 0)}</span><small class="k">tramo del ${pctTramo(fa.marginal)} %</small></div>
       <div><span class="k">Cuota estimada</span><span class="v">${eur(fa.cuota, 0)}</span><small class="k">${fa.retenido ? `menos ${eur(fa.retenido, 0)} ya retenidos: ${eurS(fa.cuota - fa.retenido, 0)}` : 'antes de restar retenciones'}</small></div>
       ${fa.sobra > 0 ? `<div><span class="k">Pérdidas para años siguientes</span><span class="v down">${eur(fa.sobra, 0)}</span><small class="k">hasta ${anio + 4}</small></div>` : ''}
+      ${fa.sobraRCM > 0 ? `<div><span class="k">Rendimientos negativos para años siguientes</span><span class="v down">${eur(fa.sobraRCM, 0)}</span><small class="k">de tus ETC, hasta ${anio + 4}; van aparte de las pérdidas de acciones y fondos</small></div>` : ''}
     </div>`}
     ${fa.ventas.length ? `<div class="tabla-w"><table class="resp"><thead><tr><th>Venta</th><th class="r">Unidades</th><th class="r">Valor de venta</th><th class="r" title="Hacienda cuenta que vendes primero las que compraste antes (FIFO)">Lo que te costó</th><th class="r">Resultado</th></tr></thead><tbody>${fa.ventas.map((m) => `<tr><td><b style="font-weight:600">${nombreI(m.instrumento)}</b><small>${fechaLarga(m.fecha)}, ${esc(m.plataforma || '')}</small></td><td class="r">${oc(fmtNum(m.uds, 4))}</td><td class="r">${eur(m.importe || 0)}<small>gastos restados</small></td><td class="r">${eur(m.coste_vendido || 0)}<small>${m.fifo && m.fifo.length ? `${m.fifo.length} ${m.fifo.length === 1 ? 'lote' : 'lotes'}${m.mezcla ? ', con el de partida' : ''}` : ''}</small></td><td class="r ${cls(m.resultado)}">${eurS(m.resultado || 0)}</td></tr>`).join('')}</tbody></table></div>` : ''}
 
@@ -425,7 +427,7 @@ function htmlFiscalGuia(M, fa, x) {
     accES.length && ['Acciones españolas', lista(accES), 'Pagas por la ganancia al vender (FIFO: primero salen las más antiguas). Los dividendos llegan con el 19 % retenido, que se resta en la renta.'],
     accEx.length && ['Acciones extranjeras', lista(accEx), 'Igual al vender. Los dividendos pueden traer la retención del país de la sede: en la renta recuperas hasta el 15 % con la deducción por doble imposición; lo que pase de ahí se pierde salvo que lo reclames allí.'],
     etf.length && ['ETF', lista(etf), 'Al vender, como una acción: cada venta paga por la ganancia (FIFO) y no hay traspasos sin impuestos. En la renta van con los fondos, como «fondos cotizados».'],
-    etc.length && ['ETC (oro, materias primas…)', lista(etc), 'No es un fondo ni una acción: es un título de deuda. Según una consulta de Tributos (V0267-25, de 2025), lo que ganes o pierdas al venderlo es rendimiento del capital mobiliario, como los intereses, y no una ganancia patrimonial: va en otro apartado de la renta, con las ganancias de acciones y fondos solo se compensa hasta un 25 % y, con un bróker español, puede llevar un 19 % de retención al vender. La recompra es de dos meses, cotice donde cotice, y tampoco hay traspasos sin impuestos.'],
+    etc.length && ['ETC (oro, materias primas…)', lista(etc), 'No es un fondo ni una acción: es un título de deuda. En una consulta de 2025 sobre un ETC de petróleo (V0267-25), Tributos dijo que lo que se gana o se pierde al venderlo es rendimiento del capital mobiliario, como los intereses, y no una ganancia patrimonial; no hay consulta expresa sobre los de oro, pero están hechos igual. Va en otro apartado de la renta, con las ganancias de acciones y fondos solo se compensa hasta un 25 % y, con un bróker español, puede llevar una retención del 19 % de la ganancia al vender. La recompra es de dos meses, cotice donde cotice, y tampoco hay traspasos sin impuestos.'],
     cri.length && ['Criptomonedas', lista(cri), 'Paga al venderla a euros y también al cambiarla por otra cripto. Por encima de 50.000 € fuera de España hay que presentar el modelo 721.'],
     ['Intereses del efectivo', 'Trade Republic y similares', 'Rendimiento del capital: tributa en la base del ahorro como los dividendos.'],
   ].filter(Boolean);

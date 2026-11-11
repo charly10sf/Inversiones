@@ -25,7 +25,7 @@
 const ENT_PIE = 'Formación general con tus números: no te dice qué hacer.';
 // las comisiones de cada bróker, las mismas que le cuenta a la IA instruccionesAsesor (55-asesor-contexto.js);
 // cuando se junten las ramas, que salgan de un solo sitio
-const ENT_COMIS = { 'Trade Republic': '1 € por operación', MyInvestor: 'sin comisión en fondos indexados', Bitvavo: 'alrededor del 0,25 % por operación', Revolut: 'según su plan', 'Interactive Brokers': 'desde unos 1,25 € por operación en Europa con la tarifa escalonada (3 € con la fija)' };
+const ENT_COMIS = { 'Trade Republic': '1 € por operación', MyInvestor: 'sin comisión en fondos indexados', Bitvavo: 'alrededor del 0,25 % por operación', Revolut: 'según su plan', 'Interactive Brokers': 'desde unos 1,25 € por operación en Europa con la tarifa escalonada, más las tasas de bolsa (3 € con la fija)' };
 
 /* ---------- ayudas ---------- */
 const entPos = (M) => M.filas.filter((f) => f.inst.tipo !== 'Efectivo' && f.valor > 0);

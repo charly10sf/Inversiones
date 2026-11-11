@@ -69,7 +69,8 @@ test('el ETC cuenta como rendimiento del capital y su recompra es de dos meses',
   expect(r.reglaEtnCripto).toBe(2);
   expect(r.fa).toMatchObject({ gp: -1000, rcmVentas: 1000, nRCM: 1, rcm: 0, cruzado: 250, base: 750, sobra: 750 });
   expect(r.fa.cuota).toBeCloseTo(r.cuota750, 2);
-  expect(r.fb).toMatchObject({ gp: 1000, rcmVentas: -1000, base: 750, sobra: 750, sobraRCM: 750 });
+  // lo que sobra de la pérdida del ETC va en su saldo, no con las pérdidas patrimoniales (al año siguiente no compensan igual)
+  expect(r.fb).toMatchObject({ gp: 1000, rcmVentas: -1000, base: 750, sobra: 0, sobraRCM: 750 });
   expect(r.deVenta).toEqual({ etc: 500, accion: 500 });
   expect(r.aplazada).toMatchObject({ importe: -200, plazo: 'dos meses' });
   expect(r.rcmConAplazada).toBe(0);
@@ -135,7 +136,7 @@ test('la Guía de la renta: ETF con los fondos cotizados, 720 por bloques y sin 
   await expect(vista).not.toContainText('Cierra el año');
   if (mes >= 6) {
     const cierre = vista.locator('.rg-paso', { hasText: 'El año fiscal se cierra el 31 de diciembre' });
-    await expect(cierre).toContainText('restan de las ganancias de este año');
+    await expect(cierre).toContainText('cuenta en la renta de este año');
     await expect(cierre).toContainText('y los ETC coticen donde coticen');
   }
 });
@@ -156,4 +157,6 @@ test('la IA lee la comisión de Interactive Brokers y lo del ETC igual que la ap
   expect(r.ent).toContain('desde unos 1,25 € por operación en Europa con la tarifa escalonada');
   expect(r.i).toContain('V0267-25');
   expect(r.i).toContain('rendimiento del capital mobiliario, no ganancia patrimonial');
+  expect(r.i).toContain('sobre un ETC de petróleo');
+  expect(r.i).toContain('en alguno de los bloques, cada uno por separado');
 });

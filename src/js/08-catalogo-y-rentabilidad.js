@@ -226,7 +226,7 @@ function calcular() {
   filas.sort((a, b) => b.valor - a.valor);
   const M = { filas, efectivo, liquidez, total, totalPos, invertido, dia, diaPct: total - dia ? (dia / (total - dia)) * 100 : 0, pl: totalPos - invertido, plPct: invertido ? (totalPos / invertido - 1) * 100 : 0 };
   M.dividendos = sum(filas, (f) => (f.p && f.p.dividendo_pct ? (f.valor * f.p.dividendo_pct) / 100 : 0));
-  M.realizado = fiscalAnio(new Date().getFullYear()).gp;
+  { const fa0 = fiscalAnio(new Date().getFullYear()); M.realizado = fa0.gp + fa0.rcmVentas; } // con las ventas de ETC, que ya no van en gp
   // 0.3.9: los límites se miran sumando el grupo (como en Objetivos): toda la cripto, oro y materias primas, y la misma
   // empresa en dos brókers. Antes, BTC 4 % + ETH 4 % con un límite del 5 % no saltaba en ninguna señal
   M.pesoLim = {}; M.nLim = {};
