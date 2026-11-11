@@ -675,6 +675,7 @@ function pintar() {
   } else if (S.scrollTop) { window.scrollTo(0, 0); S.scrollTop = false; } else window.scrollTo(0, scroll);
   if (S.vista === 'cartera') { if ($('[data-que-es]')) ponerQueEs($('#vista')); pedirEncajarMovers(); }
   animarHero();
+  if (S.vista !== 'av') S.pavEntrada = '';   // 0.9: al volver a una pestaña de Análisis, sus tarjetas entran otra vez
   // 0.9: una pestaña del modo avanzado se llena después (su código va en un trozo aparte)
   if (S.vista === 'av' && $('#panelAv')) pintarPanelAv();
   // Noticias: igual, su contenido está en el trozo «noticias»
