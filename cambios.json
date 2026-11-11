@@ -1,6 +1,64 @@
 {
  "versiones": [
   {
+   "v": "0.8.6a",
+   "f": "2026-11-11",
+   "h": "21:45",
+   "t": "Hacienda, revisada",
+   "commits": [
+    {
+     "cuando": "2026-11-11 19:44",
+     "asunto": "Guía de la renta: los ETF, fuera de la 0328 y con los fondos cotizados",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:44",
+     "asunto": "Guía de la renta: el 720 y el 721, por bloques y con su plazo",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:44",
+     "asunto": "Guía de la renta: el cierre del año informa, sin proponer ventas",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:44",
+     "asunto": "Comisiones: Interactive Brokers, desde unos 1,25 € con la tarifa escalonada",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:51",
+     "asunto": "Hacienda: el ETC cuenta como rendimiento del capital mobiliario (DGT V0267-25)",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 19:51",
+     "asunto": "Pruebas de los arreglos de Hacienda: el ETC, la Guía de la renta y la comisión de IBKR",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 20:13",
+     "asunto": "Arreglos de Hacienda: lo que vio la revisión aparte",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 20:49",
+     "asunto": "Hacienda: lo que quedaba abierto tras la revisión",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 21:02",
+     "asunto": "Hacienda: retoques de la segunda revisión",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-11 21:45",
+     "asunto": "0.8.6a: versión, novedades y cambios",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.8.6",
    "f": "2026-11-10",
    "h": "23:40",

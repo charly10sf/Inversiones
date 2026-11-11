@@ -7,6 +7,15 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.6a', f: '2026-11-11', h: '21:45', t: 'Hacienda, revisada', arreglos: [
+    'Los ETC, como el oro cotizado, cuentan en la renta como rendimiento del capital mobiliario, junto a dividendos e intereses, y no como ganancia: así lo ve Hacienda en una consulta sobre un ETC de petróleo. Con un bróker español llevan retención del 19 % de la ganancia y la regla de recompra es de dos meses, cotice donde cotice.',
+    'En la Guía de la renta, los ETF ya no van en la casilla 0328 con las acciones: van con los fondos, como «fondos cotizados». Los ETC tienen su propia fila.',
+    'El 720 y el 721 se explican por bloques (cuentas, valores y fondos, inmuebles, cripto), cada uno con su límite de 50.000 € y su plazo, del 1 de enero al 31 de marzo.',
+    'En Datos fiscales hay un campo para los rendimientos negativos de años anteriores, aparte de las pérdidas.',
+    'Interactive Brokers, desde unos 1,25 € por operación en Europa con la tarifa escalonada, más las tasas de bolsa.',
+    'El cierre del año y el aviso del Calendario cuentan lo que entra en la renta de este año, sin proponer qué vender.',
+    { t: '«Para pagar menos» sin órdenes, y la IA con el 720 por bloques y el criterio del ETC.', solo: 'dueno' },
+  ] },
   { v: '0.8.6', f: '2026-11-10', h: '23:40', t: 'Tres pestañas nuevas y Tu año', cosas: [
     { d: 'lista', ir: { v: 'expertos', antes: () => { S.expTab = 'siguiendo'; if (S.vista === 'expertos') pintar(); } }, t: 'Lista de seguimiento', x: 'En Ideas, lo que sigues sin tenerlo, en una tabla (en el ordenador, también en tarjetas): cómo va hoy y en el mes, lo que supondría en tu cartera meter 1.000 € y lo que ha leído la IA de cada empresa, con el tono de la noticia. Hasta 10 empresas.' },
     { d: 'frente', ir: { v: 'av-frente' }, t: 'Frente a un indexado', x: 'En Rentabilidad: lo que habría pasado si hubieras metido el mismo dinero, los mismos días, en un fondo indexado al MSCI World. La diferencia en euros, mes a mes y año a año. Es lo que habría pasado, no un indicador fiable de lo que pasará.' },
