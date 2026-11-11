@@ -205,7 +205,7 @@ const QUE_ES = {
   agenda: ['Lo que pasa estas semanas con lo tuyo. Lo que hagas lo decides tú.', 'What is coming up for what you own. What you do is up to you.'],
   ia: ['La IA lee tu cartera y las noticias, explica y hace cuentas. No te dice qué comprar ni vender.', 'The AI reads your portfolio and the news, explains and does the maths. It does not tell you what to buy or sell.'],
   cifras: ['Tus números de un vistazo: por plataforma, lo que metiste y lo que cobras.', 'Your numbers at a glance: by platform, what you put in and what you collect.'],
-  mapa: ['Cada cuadro es una posición: más grande cuanto más vale, verde si sube y rojo si baja.', 'Each box is a holding: bigger the more it is worth, green if it rises and red if it falls.'],
+  mapa: ['Cada cuadro es una posición: más grande cuanto más vale, verde si sube, rojo si baja y gris si apenas se mueve.', 'Each box is a holding: bigger the more it is worth, grey if it barely moves, green if it rises and red if it falls.'],
   informe: ['Un resumen de las noticias del día de lo que tienes, escrito por la IA.', 'A summary of today\'s news about what you own, written by the AI.'],
   noticias: ['Los últimos titulares de las empresas y fondos que tienes.', 'The latest headlines about the companies and funds you own.'],
   movidas: ['Lo que más se mueve hoy de lo que tienes, y por qué. Un día no dice nada de tu plan.', 'What moves most today among what you own, and why. One day says nothing about your plan.'],

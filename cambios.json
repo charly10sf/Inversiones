@@ -1,6 +1,24 @@
 {
  "versiones": [
   {
+   "v": "0.8.6b",
+   "f": "2026-11-12",
+   "h": "00:15",
+   "t": "Detalles que no cuadraban",
+   "commits": [
+    {
+     "cuando": "2026-11-12 00:10",
+     "asunto": "Arreglos del repaso: la hora en la subida que escribe la IA, Objetivos sin «Más ›», «Apuntar compra» en la ficha, los días de la cuenta atrás, la estrella de Más y el gris del mapa",
+     "detalle": []
+    },
+    {
+     "cuando": "2026-11-12 00:10",
+     "asunto": "Prueba de los arreglos de la 0.8.6b",
+     "detalle": []
+    }
+   ]
+  },
+  {
    "v": "0.8.6a",
    "f": "2026-11-11",
    "h": "21:45",
