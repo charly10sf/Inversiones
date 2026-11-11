@@ -44,3 +44,19 @@ function animarCifras(raiz) {
     cifraCuenta(el, n, (v) => `${sig && v > 0 ? '+' : ''}${fmtNum(v, dec)}${suf}`, 700, el.dataset.desde != null ? +el.dataset.desde : 0);
   }
 }
+
+/* la luz que sigue al ratón sobre una tarjeta (solo con ratón de verdad): un reflejo dorado muy suave, como piedra pulida.
+   No mueve nada de sitio: solo cambia --mx y --my de la tarjeta, que usa 34-sistema.css */
+let luzRaf = 0, luzEv = null;
+document.addEventListener('pointermove', (e) => {
+  if (e.pointerType !== 'mouse' || movQuieto()) return;
+  luzEv = e;
+  if (luzRaf) return;
+  luzRaf = requestAnimationFrame(() => {
+    luzRaf = 0;
+    const t = luzEv && luzEv.target && luzEv.target.closest ? luzEv.target.closest('#vista .pav-t, #vista .hero-panel') : null;
+    if (!t) return;
+    const r = t.getBoundingClientRect();
+    t.style.setProperty('--mx', `${Math.round(luzEv.clientX - r.left)}px`); t.style.setProperty('--my', `${Math.round(luzEv.clientY - r.top)}px`);
+  });
+}, { passive: true });
