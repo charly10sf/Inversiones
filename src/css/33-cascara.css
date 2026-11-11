@@ -83,6 +83,11 @@
   [data-tema] body.ia-lado .asesor { border-top: 0; border-right: 1px solid var(--lado-filo); }
   body.ia-lado:not(.ia-grande) .asesor :is(.as-ico, #asSub) { display: revert; }
 }
+/* una tableta apaisada (táctil y ancha): los mandos de la barra, con 44 px de toque */
+@media (min-width: 1180px) and (pointer: coarse) {
+  [data-tema] body.nav-ts .riel .k2-iconos > a, [data-tema] body.nav-ts .riel .k2-lista a, [data-tema] body.nav-ts .riel .k2-pie .seg-modo button, [data-tema] body.nav-ts .riel .k2-pie-fila :is(.riel-aj, .k2-plegar), [data-tema] body.nav-ts .riel .riel-ia { min-height: 44px; }
+  [data-tema] body.nav-ts .riel .k2-pie-fila :is(.riel-aj, .k2-plegar) { height: 44px; }
+}
 @media (min-width: 1180px) and (prefers-reduced-motion: no-preference) {
   .riel { transition: width var(--mov-medio) var(--curva-entrar); }
   .asesor-fondo { transition: left var(--mov-medio) var(--curva-entrar); }

@@ -5,7 +5,8 @@
    prueba lo pida con inv-mov-prueba: una cifra a medio contar o una página a medio entrar hacen fallar pruebas que
    miran otra cosa.
    ===================================================================== */
-const movQuieto = () => { try { return matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) { return true; } };
+let movMq = null;   // la consulta se guarda una vez: se pregunta en cada movimiento del ratón
+const movQuieto = () => { try { movMq = movMq || matchMedia('(prefers-reduced-motion: reduce)'); return movMq.matches; } catch (e) { return true; } };
 const movEnPrueba = () => !!navigator.webdriver && !LS.get('inv-mov-prueba', false);
 const conMovimiento = () => !movQuieto() && !movEnPrueba();
 const conTransicion = () => conMovimiento() && typeof document.startViewTransition === 'function' && !document.querySelector('.hoja-fondo, #fichaFondo, .tour');

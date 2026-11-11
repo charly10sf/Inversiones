@@ -110,7 +110,7 @@ const enTuAno = () => S.vista === 'av' && pestAv() === 'tuano';
 const enSemana = () => S.vista === 'av' && pestAv() === 'semana';
 const enHoyAv = () => enTuAno() || enSemana();
 function htmlSemanaCab() {
-  return `<div class="ts-grupo ta-grupo"><a class="vista-volver" href="#hoy">${L('‹ Hoy', '‹ Today')}</a><h1 class="ts-tit">${L('Tu semana y tus cobros', 'Your week and your payments')}</h1><p class="ts-sub">${L('Lo que pasa estos días en lo tuyo y lo que vas a cobrar.', 'What happens these days in your holdings and what you will collect.')}</p></div>`;
+  return `<div class="ts-grupo ta-grupo"><a class="vista-volver" href="#hoy">${L('‹ Hoy', '‹ Today')}</a><h1 class="ts-tit">${L('Tu semana y tus cobros', 'Your week and your payments')}</h1><p class="ts-sub">${L('Lo que pasa estos días en lo tuyo y los dividendos previstos.', 'What happens these days in your holdings and the expected dividends.')}</p></div>`;
 }
 function htmlTuAnoCab() {
   const P = periodoTuAno(), mes = IDIOMA === 'en' ? MESES_EN[P.mesFin - 1] : MESES_LARGOS[P.mesFin - 1];

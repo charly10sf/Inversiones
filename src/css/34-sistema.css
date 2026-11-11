@@ -66,7 +66,7 @@
   @keyframes vtEntra { from { opacity: 0; transform: translateX(var(--vt-dx, 0px)) translateY(6px); } }
 
   /* las tarjetas de una pestaña entran en escalera */
-  .panel-av:not([aria-busy="true"]) > .pav-t { animation: tarjetaEntra var(--mov-largo) var(--curva-entrar) both; }
+  .panel-av.entra > .pav-t { animation: tarjetaEntra var(--mov-largo) var(--curva-entrar) both; }
   .panel-av > .pav-t:nth-child(2) { animation-delay: calc(var(--paso-escalera) * 1); }
   .panel-av > .pav-t:nth-child(3) { animation-delay: calc(var(--paso-escalera) * 2); }
   .panel-av > .pav-t:nth-child(4) { animation-delay: calc(var(--paso-escalera) * 3); }
@@ -82,10 +82,12 @@
   @keyframes glArea { to { opacity: 1; } }
 
   /* las barras de una fila crecen desde su origen */
-  .panel-av .pav-pista i { transform-origin: left center; animation: barraCrece var(--mov-largo) var(--curva-entrar) both; animation-delay: calc(var(--paso-escalera) * 3); }
+  .panel-av.entra .pav-pista i { transform-origin: left center; animation: barraCrece var(--mov-largo) var(--curva-entrar) both; animation-delay: calc(var(--paso-escalera) * 3); }
   @keyframes barraCrece { from { transform: scaleX(0); } }
 }
 
+@property --mx { syntax: '<length-percentage>'; inherits: false; initial-value: 50%; }
+@property --my { syntax: '<length-percentage>'; inherits: false; initial-value: 0px; }
 /* ---------- La luz que sigue al ratón sobre la tarjeta (64-movimiento.js pone --mx y --my) ---------- */
 @media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
   [data-tema] #vista .pav-t::after { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity var(--mov-medio) ease; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 0px), color-mix(in srgb, var(--oro-texto) 7%, transparent), transparent 62%); }

@@ -241,7 +241,10 @@ function pintarPanelAv() {
   // al repintar (un botón, un campo de la pestaña), el foco vuelve al mismo mando: el mismo atributo y el mismo puesto
   const ae = document.activeElement, ATTR = ['data-pnl-mes', 'data-mov-f', 'data-mov-res', 'data-graf-r', 'data-graf-pos', 'data-obj-k', 'data-obj-mas', 'data-obj-menos', 'data-obj-acc', 'data-obj-add', 'data-rebal-aport', 'data-lab', 'data-fr-ref', 'data-estres', 'data-estres-pct'];
   const at = ae && el.contains(ae) ? ATTR.find((x) => ae.hasAttribute(x)) : null, pos = at ? $$(`[${at}]`, el).indexOf(ae) : -1;
+  // 0.9: las tarjetas entran en escalera solo al abrir la pestaña (no en cada repintado por un botón o un precio nuevo)
+  const primera = el.hasAttribute('aria-busy');
   el.innerHTML = html; el.removeAttribute('aria-busy'); ponerPreguntale(el); marcarCifras(el);
+  if (primera) { el.classList.add('entra'); setTimeout(() => el.classList.remove('entra'), 1100); }
   if (at) { const n = $$(`[${at}]`, el)[pos]; if (n && !n.disabled) n.focus({ preventScroll: true }); else { const t = el.querySelector('.pav-et h2'); if (t) { t.tabIndex = -1; t.focus({ preventScroll: true }); } } }
   requestAnimationFrame(() => dibujarPanelAv(p, M));
 }

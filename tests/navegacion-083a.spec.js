@@ -96,7 +96,7 @@ test('ordenador: diez secciones a la izquierda y las páginas de la abierta al l
   // Rendimiento: sus páginas, y al tocar una se marca y se abre
   await tocar(page, '.k2-iconos [data-sec="rendimiento"]');
   await expect(page.locator('.k2-tit')).toHaveText('Rendimiento');
-  await expect(page.locator('.k2-lista a')).toHaveText(['Rentabilidad', 'Frente a un indexado', 'Dividendos', 'Costes', 'La IA explica']); // 0.8.6: la pestaña 2
+  await expect(page.locator('.k2-lista a')).toHaveText(['Rentabilidad', 'Frente a un indexado', 'Efecto divisa', 'Dividendos', 'Costes', 'La IA explica']); // 0.8.6: la pestaña 2
   await quitarCapas(page); await page.locator('.k2-lista a', { hasText: 'Costes' }).evaluate((e) => e.click());
   await expect(page.locator('.k2-lista a[aria-current="page"]')).toHaveText('Costes');
   await expect(page.locator('.k2-iconos [data-sec="rendimiento"]')).toHaveAttribute('aria-current', 'page');

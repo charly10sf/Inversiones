@@ -158,7 +158,7 @@ window.addEventListener('hashchange', () => {
     // sin ella (o con «reducir movimiento»), la entrada de siempre
     if (conTransicion()) {
       const raiz = document.documentElement; raiz.classList.add('vt'); raiz.style.setProperty('--vt-dx', `${dx * 1.4}px`);
-      let t = null; try { t = document.startViewTransition(cambiar); } catch (e) { cambiar(); }
+      let t = null; try { t = document.startViewTransition(cambiar); } catch (e) { if (!vtEnCurso) raiz.classList.remove('vt'); cambiar(); }
       // si llega otra navegación antes de acabar, la transición se salta y «ready» se rechaza: no es un error
       if (t) { vtEnCurso++; t.ready.catch(() => {}); t.finished.catch(() => {}).finally(() => { if (--vtEnCurso <= 0) { vtEnCurso = 0; raiz.classList.remove('vt'); } }); }
     } else {

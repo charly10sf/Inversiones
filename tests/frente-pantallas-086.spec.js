@@ -111,7 +111,7 @@ test('móvil (y básico): tres tarjetas, primero tu cartera y el indexado, todas
   await tocar(page, '#panelAv .fr-tabla-d summary');
   await expect(panel.locator('.fr-tabla-d table')).toBeVisible();
   // en Análisis › Rentabilidad, el apartado «Frente a un indexado» (el otro se llama Resumen)
-  await expect(page.locator('.apartados a')).toHaveText(['Resumen', 'Frente a un indexado']);
+  await expect(page.locator('.apartados a')).toHaveText(['Resumen', 'Frente a un indexado', 'Efecto divisa']);   // 0.9: la pestaña nueva
   await expect(page.locator('.apartados a[aria-current="page"]')).toHaveText('Frente a un indexado');
   await expect(page.locator('.pest-av a[aria-current="page"]')).toHaveText('Rentabilidad');
   await textosCnmv(panel);
