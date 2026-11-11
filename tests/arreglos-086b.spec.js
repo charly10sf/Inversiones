@@ -28,7 +28,7 @@ test('la subida del día que escribe la IA dice de qué hora es', async ({ page,
   expect(r.otra).toBe('Hoy sube la bolsa y hoy, además, baja el oro.');   // solo la cifra entre paréntesis
 });
 
-test('Objetivos se llama Objetivos, sin «Más ›», en español y en inglés', async ({ page, context }, info) => {
+test('Objetivos se llama Objetivos, sin el «Más» de delante', async ({ page, context }, info) => {
   await dentro(page, context);
   await page.evaluate(() => { location.hash = 'cartera'; });
   const en = page.locator('.ir-objetivos small');
