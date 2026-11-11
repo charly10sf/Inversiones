@@ -243,7 +243,12 @@ document.addEventListener('click', (e) => {
   pintarPanelAv();
 });
 const NUEVAS_CSS = `
-.es-seg { margin-bottom: 18px; }
+/* las tarjetas de una fila, a la misma altura: que encajen (Carlos, 12 nov) */
+.panel-av:is([data-p="estres"], [data-p="divisa"], [data-p="semana"]) { align-items: stretch; }
+.panel-av:is([data-p="estres"], [data-p="divisa"], [data-p="semana"]) > .pav-t { display: flex; flex-direction: column; }
+.panel-av:is([data-p="estres"], [data-p="divisa"], [data-p="semana"]) > .pav-t > :is(.pav-como, .pab-que) { margin-top: auto; padding-top: 12px; }
+.es-seg { margin-bottom: 18px; align-self: flex-start; }
+.es-t .seg2 { align-self: flex-start; }
 .es-medida { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; margin: -6px 0 18px; }
 .es-hero { display: grid; grid-template-columns: minmax(0, 1fr); gap: 18px 40px; align-items: end; }
 @media (min-width: 900px) { .es-hero { grid-template-columns: minmax(0, auto) minmax(0, 1fr); } .es-txt { padding-bottom: 6px; } }

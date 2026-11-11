@@ -1,0 +1,50 @@
+/* =====================================================================
+   0.9 · El acabado «liso», la versión alternativa de todo Toisón que pidió Carlos el 12 nov (0:11): «¿por qué todo va en
+   cajas? Es por el fondo de las vetas, supongo. Quizá lo más serio y sensato sería quitar las vetas y dejar el fondo
+   negro o parecido».
+   Otras políticas de diseño, las mismas en Mármol y en Marfil (html[data-acabado="liso"]; lo pone ponerAcabado, 64-movimiento.js):
+     1. Fondo plano: sin vetas, sin grano y sin brillo de piedra.
+     2. Sin cajas: cada bloque va directamente sobre el fondo. Lo que separa es el aire y un hilo fino arriba, no un marco.
+     3. El título de cada bloque deja de ser un rótulo en mayúsculas y pasa a ser un título de verdad.
+     4. La barra lateral y la de arriba son del mismo plano que la página (sin cristal ni filo).
+     5. Solo queda con fondo propio lo que se toca o lo que avisa: botones, campos, segmentos, pastillas y avisos.
+   El acabado de siempre («piedra») no cambia: todo esto va detrás de [data-acabado="liso"].
+   ===================================================================== */
+html[data-acabado="liso"] #acabadoTema, html[data-acabado="liso"][data-dorado] #acabadoTema { background-image: none !important; background-color: var(--fondo) !important; }
+html[data-acabado="liso"] #acabadoTema::after, html[data-acabado="liso"] #acabadoTema .grano { display: none !important; }
+html[data-acabado="liso"][data-tema="marmol"] { --fondo: #08080a; --fondo-2: #08080a; --lado-fondo: #08080a; --lado-filo: transparent; }
+html[data-acabado="liso"] { --hilo-liso: color-mix(in srgb, var(--texto) 11%, transparent); }
+
+/* 2 · sin cajas: los bloques de todas las páginas */
+html[data-acabado="liso"] #vista :is(.pav-t, .hero-panel, .fis-c, .pf-card, .aj-caja, .agp-c, .tp-llega, .merc-busca, .mapa-w, .mapa-caja, .mfilas, .informe, .ag-mes2, .tu-cab, .toca, .num-sec, .fx3-lista, .ov-vacio, .fis-vacio, .ir-objetivos, .lista, .tabla-pos, .car-plan, .ls-t, .nt-bloque) {
+  background: none !important; background-image: none !important; border: 0 !important; border-radius: 0 !important; box-shadow: none !important;
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+html[data-acabado="liso"] #vista :is(.pav-t, .fis-c, .pf-card, .aj-caja, .agp-c, .tp-llega, .informe, .mfilas, .num-sec, .toca) { padding: 26px 0 30px !important; border-top: 1px solid var(--hilo-liso) !important; }
+html[data-acabado="liso"] #vista .hero-panel { padding-inline: 0 !important; }
+html[data-acabado="liso"] #vista .hero-panel::before, html[data-acabado="liso"] #vista .hero-panel::after, html[data-acabado="liso"] #vista .pav-t::after { display: none !important; }
+html[data-acabado="liso"] #vista .panel-av { column-gap: 56px; row-gap: 0; }
+html[data-acabado="liso"] #vista .pav-t:hover { transform: none; }
+@media (max-width: 899px) { html[data-acabado="liso"] #vista :is(.pav-t, .fis-c, .pf-card, .aj-caja, .agp-c, .tp-llega, .informe, .mfilas, .num-sec, .toca) { padding: 22px 0 24px !important; } }
+
+/* 3 · el título de cada bloque, un título */
+html[data-acabado="liso"] #vista .pav-et { margin-bottom: 18px; padding-bottom: 0; border-bottom: 0; background: none; font: var(--tit-2); letter-spacing: -.01em; text-transform: none; color: var(--texto); }
+html[data-acabado="liso"][data-tema="marfil"] #vista .pav-et { font: 500 22px/1.2 var(--marca); color: var(--texto); }
+html[data-acabado="liso"] #vista .pab-cab { font-size: 21px; }
+html[data-acabado="liso"] #vista :is(.pav-como, .pab-que) { max-width: 92ch; }
+
+/* 4 · la barra y la cabecera, en el plano de la página */
+@media (min-width: 1180px) {
+  html[data-acabado="liso"] body.nav-ts .k2-top { background: var(--fondo); -webkit-backdrop-filter: none; backdrop-filter: none; }
+  html[data-acabado="liso"] body.nav-ts .k2-top::after { display: none; }
+  html[data-acabado="liso"][data-tema="marmol"] body.nav-ts .riel { border-right-color: var(--hilo-liso); }
+  html[data-acabado="liso"] body.nav-ts .k2-busca { background: none; box-shadow: inset 0 0 0 1px var(--hilo-liso); }
+  html[data-acabado="liso"] body.nav-ts #vista .vista-cab h1, html[data-acabado="liso"] body.nav-ts #vista .ts-tit { font-size: 38px; letter-spacing: -.02em; }
+}
+html[data-acabado="liso"] .top { background: var(--fondo) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; box-shadow: none !important; }
+
+/* 5 · las tablas y las listas, de lado a lado, con filas más altas */
+html[data-acabado="liso"] #vista .pav-tabla td { padding-block: 13px; }
+html[data-acabado="liso"] #vista .pav-tabla :is(th, td) { border-bottom-color: var(--hilo-liso); }
+html[data-acabado="liso"] #vista :is(.pav-matriz, .pav-calor) td { border-color: var(--fondo); }
+html[data-acabado="liso"] .es-hechos span, html[data-acabado="liso"] .sm-dia, html[data-acabado="liso"] .seg2 { background: color-mix(in srgb, var(--texto) 5%, transparent); }

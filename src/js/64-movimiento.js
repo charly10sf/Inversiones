@@ -61,3 +61,21 @@ document.addEventListener('pointermove', (e) => {
     t.style.setProperty('--mx', `${Math.round(luzEv.clientX - r.left)}px`); t.style.setProperty('--my', `${Math.round(luzEv.clientY - r.top)}px`);
   });
 }, { passive: true });
+
+/* 0.9 · el acabado: «piedra» (las vetas y las tarjetas de siempre) o «liso» (fondo plano y sin cajas; 35-liso.css). Lo pidió
+   Carlos el 12 nov para verlos lado a lado; se guarda en este dispositivo (inv-acabado) y vale para Mármol y para Marfil */
+const ACABADOS = ['piedra', 'liso'];
+function acabadoApp() { const a = LS.get('inv-acabado', 'piedra'); return ACABADOS.includes(a) ? a : 'piedra'; }
+function ponerAcabado(a) {
+  a = ACABADOS.includes(a) ? a : 'piedra';
+  LS.set('inv-acabado', a);
+  if (a === 'liso') document.documentElement.setAttribute('data-acabado', 'liso'); else document.documentElement.removeAttribute('data-acabado');
+  for (const b of $$('[data-acabado-b]')) b.setAttribute('aria-pressed', String(b.dataset.acabadoB === a));
+  // las gráficas dibujadas con los colores del fondo se rehacen
+  const ev = new Event('resize'); ev.k2 = true; dispatchEvent(ev);
+}
+const htmlSelectorAcabado = () => `<div class="seccion-ed aj-idioma"><h3>${ICONOS_PL.ver}${L('Acabado', 'Finish')}</h3>
+  <div class="idiomas seg-modo" role="group" aria-label="${L('Acabado', 'Finish')}"><button type="button" data-acabado-b="piedra" aria-pressed="${acabadoApp() === 'piedra'}">${L('Piedra', 'Stone')}</button><button type="button" data-acabado-b="liso" aria-pressed="${acabadoApp() === 'liso'}">${L('Liso', 'Plain')}</button></div>
+  <small>${L('Piedra: el fondo con vetas y cada bloque en su tarjeta. Liso: fondo plano y sin cajas. Se guarda en este dispositivo.', 'Stone: the veined background and each block in its card. Plain: flat background and no boxes. Saved on this device.')}</small></div>`;
+document.addEventListener('click', (e) => { const b = e.target.closest && e.target.closest('[data-acabado-b]'); if (b) ponerAcabado(b.dataset.acabadoB); });
+if (acabadoApp() === 'liso') document.documentElement.setAttribute('data-acabado', 'liso');

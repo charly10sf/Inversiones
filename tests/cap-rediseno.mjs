@@ -22,6 +22,8 @@ await page.evaluate(async (m) => {
 await page.waitForTimeout(2500);
 // CAP_VAR=B: la barra plegada. CAP_VAR=C: maqueta de «navegación arriba» (solo CSS encima, para enseñarla como opción)
 const VAR = process.env.CAP_VAR || '';
+// CAP_ACABADO=liso: el acabado liso (fondo plano y sin cajas)
+if (process.env.CAP_ACABADO) await page.evaluate((a) => ponerAcabado(a), process.env.CAP_ACABADO);
 if (VAR === 'B') await page.evaluate(() => plegarK2(true));
 if (VAR === 'C') { await page.evaluate(() => plegarK2(true)); await page.addStyleTag({ content: `@media (min-width:1180px){
   body.nav-ts{padding-left:0!important;padding-top:118px!important}

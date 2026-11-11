@@ -222,3 +222,28 @@ test('con transiciones pedidas, cambiar de página no deja nada a medias ni erro
   await expect(page.locator('#panelAv[data-p="divisa"]:not([aria-busy]) .pav-t').first()).toBeAttached({ timeout: 20_000 });
   await expect.poll(() => page.evaluate(() => document.documentElement.classList.contains('vt')), { timeout: 10_000 }).toBe(false);
 });
+
+test('el acabado liso: fondo plano, sin cajas, se guarda y se vuelve a la piedra', async ({ page }) => {
+  await abrir(page, 'avanzado', 'estres');
+  const medir = () => page.evaluate(() => {
+    const t = getComputedStyle(document.querySelector('#panelAv .pav-t')), f = getComputedStyle(document.querySelector('#acabadoTema'));
+    return { acabado: document.documentElement.getAttribute('data-acabado'), fondoTarjeta: t.backgroundColor, borde: t.borderLeftWidth, radio: t.borderTopLeftRadius, sombra: t.boxShadow, vetas: f.backgroundImage, guardado: LS.get('inv-acabado', null) };
+  });
+  const piedra = await medir();
+  expect(piedra.acabado).toBeNull();
+  expect(piedra.fondoTarjeta).not.toBe('rgba(0, 0, 0, 0)');
+  expect(piedra.vetas).toContain('url(');
+  await page.evaluate(() => ponerAcabado('liso'));
+  const liso = await medir();
+  expect(liso).toMatchObject({ acabado: 'liso', fondoTarjeta: 'rgba(0, 0, 0, 0)', borde: '0px', radio: '0px', sombra: 'none', vetas: 'none', guardado: 'liso' });
+  // el título del bloque pasa de rótulo en mayúsculas a título
+  expect(await page.evaluate(() => getComputedStyle(document.querySelector('#panelAv .pav-et')).textTransform)).toBe('none');
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+  // al volver a abrir sigue liso; y se puede volver
+  await page.reload(); await quitarCapas(page);
+  await expect.poll(() => page.evaluate(() => document.documentElement.getAttribute('data-acabado')), { timeout: 20_000 }).toBe('liso');
+  await page.evaluate(() => ponerAcabado('piedra'));
+  expect(await page.evaluate(() => [document.documentElement.getAttribute('data-acabado'), LS.get('inv-acabado', null)])).toEqual([null, 'piedra']);
+  // el mando está en Ajustes
+  expect(await page.evaluate(() => /data-acabado-b="liso"/.test(htmlSelectorAcabado()))).toBe(true);
+});

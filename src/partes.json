@@ -34,7 +34,8 @@
     "31-tu-ano.css",
     "32-seleccion-plana.css",
     "33-cascara.css",
-    "34-sistema.css"
+    "34-sistema.css",
+    "35-liso.css"
   ],
   "js": [
     "01-base.js",
