@@ -83,7 +83,8 @@ jobs:
           python - <<'PY'
           import json, datetime
           d = json.load(open("salida/precios.json"))
-          p = {k: [v.get("precio"), v.get("cierre_anterior")] for k, v in (d.get("instrumentos") or {}).items() if v.get("precio") is not None}
+          # con la fecha del precio (12 nov): el widget solo cuenta como «hoy» lo que tiene precio de hoy, como la app
+          p = {k: [v.get("precio"), v.get("cierre_anterior"), v.get("fecha") or ""] for k, v in (d.get("instrumentos") or {}).items() if v.get("precio") is not None}
           # los cierres para que el widget dibuje él solo su gráfica (1 semana, 1 mes, 3 meses o 1 año, lo que elijas en
           # él): día a día los últimos 100 días y, antes, el último de cada semana hasta un año (unos 35 KB). Las APK
           # de antes de la 0.2.4 solo miran el último mes, así que les da igual que haya más

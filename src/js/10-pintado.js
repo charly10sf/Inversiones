@@ -236,6 +236,9 @@ function binds(M) {
   b.totalE = { txt: S.oculto ? '••••' : (tR < 0 ? '−' : '') + fmtNum(tE, 0), n: M.total };
   b.totalD = { txt: S.oculto ? '\u202f€' : ',' + String(tC).padStart(2, '0') + '\u202f€', n: tC };
   b.dia = { txt: `${eurS(M.dia)} (${pctS(M.diaPct)})`, n: M.dia, cls: cls(M.dia) };
+  // los mismos, redondeados, para Buenos días (que también se pone al día con los precios en directo)
+  b.dia0 = { txt: `${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})`, n: M.dia, cls: cls(M.dia) };
+  b.total0 = { txt: eur(M.total, 0), n: M.total };
   b.pl = { txt: `${eurS(M.pl)} (${pctS(M.plPct)})`, n: M.pl, cls: cls(M.pl) };
   b.estado = estadoDirecto();
   for (const [k, o] of porPlataforma(M)) b['plat:' + k] = { txt: eur(o.v, 0), n: o.v };
@@ -244,12 +247,11 @@ function binds(M) {
     const id = f.pos.id;
     b['pv:' + id] = { txt: eur(f.valor), n: f.valor };
     b['pp:' + id] = { txt: precioFmt(f.precio), n: f.precio };
-    // un fondo cuyo último valor es de hace más de dos sesiones no se ha movido «hoy»: raya, no su cambio viejo
-    // sin dato de hoy, una sola raya (salía «hoy — —»)
-    b['pd:' + id] = f.diaViejo || f.varDia == null ? { txt: '', n: null, cls: '' } : { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
+    // lo que hoy no ha cotizado (la bolsa sin abrir, un fondo, el fin de semana): una sola raya (salía «hoy — —»)
+    b['pd:' + id] = f.varDia == null ? { txt: '', n: null, cls: '' } : { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
     // lo de hoy también en euros (en la tabla sale con el % debajo)
     b['pdF:' + id] = { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
-    b['pdE:' + id] = { txt: f.dia == null || f.varDia == null || f.diaViejo ? '—' : eurS(f.dia, Math.abs(f.dia) < 10 ? 2 : 0), n: f.diaViejo ? null : f.dia, cls: f.diaViejo ? '' : cls(f.dia) };
+    b['pdE:' + id] = { txt: f.varDia == null ? '—' : eurS(f.dia, Math.abs(f.dia) < 10 ? 2 : 0), n: f.varDia == null ? null : f.dia, cls: f.varDia == null ? '' : cls(f.dia) };
     b['pw:' + id] = { txt: pct(f.peso, 1), n: f.peso };
     b['pt:' + id] = { txt: pctS(f.plPct, 1), n: f.plPct, cls: cls(f.pl) };
     b['pg:' + id] = { txt: eurS(f.pl, 0), n: f.pl, cls: cls(f.pl) };
@@ -257,7 +259,7 @@ function binds(M) {
     if (!vistos.has(f.inst.id)) {
       vistos.add(f.inst.id);
       b['tp:' + f.inst.id] = { txt: precioFmt(f.precio), n: f.precio };
-      b['tv:' + f.inst.id] = { txt: pctS(f.varDia), n: f.varDia, cls: cls(f.varDia) };
+      b['tv:' + f.inst.id] = { txt: pctS(f.varUlt), n: f.varUlt, cls: cls(f.varUlt) };
     }
   }
   b.recalc = { txt: new Date().toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) };
@@ -536,6 +538,9 @@ function htmlResumenDia(M) {
   const N = (S.precios && S.precios.noticias) || {}, inf = informeVisible(), ia = iaActual();
   const hoyD = new Date(), fecha = hoyD.toLocaleDateString(IDIOMA === 'en' ? 'en-GB' : 'es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
   // 9 nov: cada cifra dice de qué día es. Un lunes a las 6, lo de «hoy» era lo del viernes (y lo de los fondos, del jueves)
+  // 12 nov: «hoy» es hoy, la misma cifra que la casilla de hoy del calendario, la de Inicio y la del widget; y debajo,
+  // el último día de bolsa anterior, la misma de su casilla. B() la pone al día con los precios en directo
+  if (!S.binds || !S.binds.dia0) S.binds = binds(M);
   const dc = diaDeLaCartera(M), hp = horaPrecios();
   const mueven = [...M.filas].filter((f) => f.dia && Math.abs(f.dia) >= 1).sort((a, b) => Math.abs(b.dia) - Math.abs(a.dia)).slice(0, 3);
   const fichas = [['^IBEX', 'Ibex 35'], ['^STOXX50E', 'Euro Stoxx 50'], ['^GSPC', 'S&P 500'], ['^NDX', 'Nasdaq 100'], ['GC=F', L('Oro', 'Gold')], ['BTC-EUR', 'Bitcoin']].map(([k, n]) => fichaIndice(k, n)).filter(Boolean);
@@ -556,13 +561,14 @@ function htmlResumenDia(M) {
   // el análisis de la IA puede ser de otro día: se dice
   const iaVieja = ia && ia.fecha && edadHoras(ia.fecha) > 20 ? haceCuanto(ia.fecha) : '';
   const noticia = (n) => `<li><a class="noti" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer" data-no-trad data-nf="${esc(n.f || '')}" data-nd="${esc(n.d || '')}" data-nw="${esc(n.w || '')}"><b>${esc(n.t)}</b></a><small>${n.inst ? `<span class="chip">${esc(n.inst.corto || n.inst.nombre)}</span>` : ''}<span data-no-trad>${esc(n.f || '')}</span>${n.d ? ` · ${esc(haceCuanto(n.d))}` : ''}</small></li>`;
-  const movChip = (f) => { const d = diaCifra(fechaMovFila(f)); return `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}${d && d !== diaCifra(dc.fecha) ? `<span class="fi-dia">${esc(d)}</span>` : ''}</small></button>`; };
+  const movChip = (f) => `<button type="button" class="mv-c ${cls(f.dia)}" data-pos="${esc(f.pos.id)}" title="${esc(L('Abrir su ficha', 'Open its details'))}"><span class="mv-f" aria-hidden="true">${f.dia > 0 ? '▲' : '▼'}</span><b>${esc(f.inst.corto)}</b>${esc(eurS(f.dia, 0))}<small>${esc(pctS(f.varDia, 1))}</small></button>`;
   return `<div class="rdia">
     <p class="rdia-fecha" data-no-trad>${esc(fecha[0].toUpperCase() + fecha.slice(1))}${hp ? ` <span class="rdia-hora">· ${esc(L(`precios de las ${hp}`, `prices at ${hp}`))}</span>` : ''}</p>
-    <section class="rdia-car"><span class="k">${dc.modo === 'hoy' ? L('Tu cartera hoy', 'Your portfolio today') : dc.modo === 'cierre' ? `${L('Tu cartera', 'Your portfolio')} <small>· ${esc(dc.etq)}, ${L('último día de bolsa', 'last trading day')}</small>` : `${L('Tu cartera', 'Your portfolio')} <small>· ${L('desde el último cierre', 'since the last close')}</small>`}</span><b class="rdia-tot">${eur(M.total, 0)}</b><span class="${cls(M.dia)} rdia-dia">${eurS(M.dia, 0)} (${pctS(M.diaPct, 2)})</span>
+    <section class="rdia-car"><span class="k">${L('Tu cartera hoy', 'Your portfolio today')}</span><b class="rdia-tot">${B('total0')}</b>${B('dia0', 'rdia-dia')}
+      ${dc.nota ? `<p class="rdia-nota">${esc(dc.nota)}</p>` : ''}
       ${mueven.length ? `<div class="mv-l">${mueven.map(movChip).join('')}</div>` : ''}
-      ${dc.desglose.length ? `<dl class="rdia-desg">${dc.desglose.map((g) => `<div><dt>${esc(g.t)}</dt><dd class="${cls(g.v)}">${esc(eurS(g.v, 0))}</dd></div>`).join('')}</dl>` : ''}
-      ${dc.notaFondos && !dc.desglose.length ? `<p class="rdia-nota">${esc(dc.notaFondos)}</p>` : ''}</section>
+      ${dc.antes ? `<dl class="rdia-desg"><div><dt>${esc(dc.antes.t)}</dt><dd class="${cls(dc.antes.e)}">${esc(`${eurS(dc.antes.e, 0)} (${pctS(dc.antes.p, 2)})`)}</dd></div></dl>` : ''}
+      ${dc.notaFondos ? `<p class="rdia-nota">${esc(dc.notaFondos)}</p>` : ''}</section>
     ${ia && ia.titular ? `<section class="rdia-ia"><h3 data-no-trad>${conIA('Lo que dice la IA', 'What GrowIA says')}</h3><p>${rellenarIA(ia.titular, valoresIA(M))}</p>${iaVieja ? `<p class="rdia-nota">${esc(L(`Su último análisis es de ${iaVieja}.`, `Its latest review is from ${iaVieja}.`))}</p>` : ''}${toca ? `<p class="rdia-toca"><span class="k">Lo urgente:</span> ${toca.t}</p>` : ''}<a class="enlace acento" href="#analisis" data-cerrar>Ver su análisis</a></section>` : toca ? `<section class="rdia-ia"><h3>Lo que toca</h3><p>${toca.t}</p></section>` : ''}
     ${fichas.length || mercado.length ? `<section><h3>Los mercados</h3>${fichas.length ? `<div class="agp-fichas">${fichas.join('')}</div>` : ''}
       ${fichas.some((x) => x.includes('fi-dia')) ? `<p class="rdia-nota">${esc(L('Lo que lleva un día al lado es su último cierre: esa bolsa aún no ha abierto hoy.', 'A day next to a figure means its last close: that market hasn’t opened yet today.'))}</p>` : ''}
@@ -602,7 +608,7 @@ function fotoDiscreta(foto) {
   const k = foto.total > 0 ? 100 / foto.total : 0, r = (v) => Math.round(v * k * 1e6) / 1e6;
   return { ...foto, oculto: true, base100: true, total: r(foto.total), dia: r(foto.dia), invertido: r(foto.invertido), fijo: r(foto.fijo),
     toca: String(foto.toca || '').replace(/[−-]?\d[\d.,]*\s?(mil\s)?€|€\s?\d[\d.,]*/g, '••••'),
-    pos: foto.pos.map((x) => ({ ...x, valor: r(x.valor), dia: r(x.dia), uds: x.uds ? r(x.uds) : undefined })), serie: foto.serie.map(r) };
+    pos: foto.pos.map((x) => ({ ...x, valor: r(x.valor), dia: r(x.dia), aj: x.aj ? r(x.aj) : undefined, uds: x.uds ? r(x.uds) : undefined })), serie: foto.serie.map(r) };
 }
 // encender o apagar el modo discreto: en toda la app, recordado en este dispositivo y, en el móvil, también en el widget
 function ponerDiscreto(on) {
@@ -621,7 +627,7 @@ function enviarWidget(forzar) {
     const x = pend.find((y) => y.urgente) || pend[0];
     if (x) { const d = document.createElement('div'); d.innerHTML = x.t; toca = trad(d.textContent.replace(/\s+/g, ' ').trim()); cuando = trad(x.cuando || ''); }
   } catch (e) {}
-  const pos = M.filas.filter((f) => f.valor).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, uds: f.uds || undefined, valor: Math.round(f.valor * 100) / 100, dia: Math.round((f.dia || 0) * 100) / 100 }));
+  const pos = M.filas.filter((f) => f.valor).map((f) => ({ id: f.inst.id, n: f.inst.corto || f.inst.nombre, uds: f.uds || undefined, valor: Math.round(f.valor * 100) / 100, dia: Math.round((f.dia || 0) * 100) / 100, aj: f.ajHoy ? Math.round(f.ajHoy * 100) / 100 : undefined }));
   // la gráfica del widget: el último mes, día a día, con el efectivo sumado para que acabe en el total de hoy
   let serie = [];
   try {
@@ -632,7 +638,9 @@ function enviarWidget(forzar) {
       serie = se.filter((x, k) => k % paso === 0 || k === se.length - 1).map((x) => Math.round(x.v + extra));
     }
   } catch (e) {}
-  let foto = { v: 2, total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos, serie, rango: '1 mes' };
+  // 12 nov: «hoy» es hoy también en el widget: con la fecha de la foto, mañana no repite lo de hoy; y con «aj» (lo
+  // comprado hoy, desde su precio de compra) el widget hace la misma cuenta que la app al ponerse al día con los precios
+  let foto = { v: 2, hoy: hoyIso(), total: M.total, dia: M.dia, invertido: M.invertido, fijo: M.total - sum(pos, (x) => x.valor), oculto: !!S.oculto, toca, cuando, pos, serie, rango: '1 mes' };
   // 0.8.6 · modo discreto: al teléfono no llega ningún euro, solo la cartera en base 100 (mismos porcentajes y la misma gráfica)
   if (S.oculto) foto = fotoDiscreta(foto);
   // los avisos (si están activados): las reglas que la app revisa sola cada media hora

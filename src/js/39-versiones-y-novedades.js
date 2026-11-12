@@ -7,6 +7,12 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.6c', f: '2026-11-12', h: '08:30', t: 'Una sola cifra para hoy', arreglos: [
+    'La cifra de hoy es la misma en todas partes: arriba en Hoy, en Buenos días, en la pastilla de 1D, en la casilla de hoy del calendario de Análisis y en el widget. Antes cada sitio la contaba a su manera y salían cifras distintas.',
+    'Hoy es lo que ha cambiado desde el cierre de ayer. Antes de que abra la bolsa solo se mueve la cripto, y los fondos, que publican su valor uno o dos días después, cuentan en el día de ese valor. Buenos días enseña debajo cómo acabó el último día de bolsa, con la misma cifra que su casilla del calendario.',
+    'La cripto cuenta desde el cierre de ayer, como lo demás, y no las últimas 24 horas.',
+    'El widget ya no repite al día siguiente lo de la víspera ni cuenta como de hoy el último valor de un fondo (con la versión nueva de la app de Android).',
+  ] },
   { v: '0.8.6b', f: '2026-11-12', h: '00:15', t: 'Detalles que no cuadraban', arreglos: [
     'En Hoy, la subida del día que escribe la IA dice de qué hora es («hoy a las 20:05»). Antes parecía contradecir la cifra de arriba, que va al momento.',
     '«Tus límites, tu perfil y tus metas» ya no manda a «Más › Objetivos», que en el ordenador no existe: dice Objetivos, sin más.',

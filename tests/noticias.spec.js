@@ -34,40 +34,76 @@ test('lo que vale y lo que no de un titular, y su tema', async ({ page, errores 
   expect(r).toEqual({ ruido: false, buena: true, vieja: false, cerca: true, prevision: true, antigua: false, ibex: 'espana', cripto: 'cripto', fed: 'tipos', zona: 'asia' });
 });
 
-test('Buenos días: cada cifra dice de qué día es', async ({ page, errores }, info) => {
+test('«Hoy» es hoy en todas partes: Buenos días, Inicio, el calendario y el widget dan la misma cifra', async ({ page, errores }, info) => {
+  // Carlos, 12 nov: «hay un baile de cifras bastante serio con lo de las últimas 24 horas»: el calendario, Buenos días
+  // (arriba y dentro), la pastilla verde de 1D y el widget daban cada uno una cifra distinta
   test.skip(info.project.name !== 'movil', 'solo en el móvil');
   await crearCuenta(page);
   await quitarCapas(page);
   await meterCartera(page);
   const r = await page.evaluate(() => {
-    const M = calcular();
-    const viernes = (() => { let d = hoyIso(); do d = sumarDias(d, -1); while ([0, 6].includes(deIso(d).getDay())); return d; })();
-    // 1) un lunes a primera hora: nada ha cotizado hoy; lo de «hoy» es del último día de bolsa
-    for (const f of M.filas) { f.vivo = false; f.fecha = viernes; if (!f.dia) f.dia = 3; }
-    S.precios.mercados['^GSPC'] = { ...S.precios.mercados['^GSPC'], variacion_dia: 0.31, fecha: viernes };
-    const d = document.createElement('div');
-    d.innerHTML = htmlResumenDia(M);
-    const cierre = { k: d.querySelector('.rdia-car .k').textContent, sp: [...d.querySelectorAll('.agp-fichas span')].find((x) => x.textContent.includes('S&P')).textContent };
-    // 2) con el bitcoin cotizando hoy y lo demás del viernes: «desde el último cierre», con lo de hoy aparte
-    const btc = M.filas.find((f) => f.inst.id === 'btc'); btc.fecha = hoyIso(); btc.dia = 12;
-    d.innerHTML = htmlResumenDia(M);
-    const mixto = { k: d.querySelector('.rdia-car .k').textContent, nota: [...d.querySelectorAll('.rdia-desg dt')].map((x) => x.textContent).join(' | ') };
-    // 3) todo de hoy, menos los fondos (del día anterior): «hoy», y se dice con qué día van los fondos
-    for (const f of M.filas) f.fecha = /^Fondo/.test(f.inst.tipo || '') ? viernes : hoyIso();
-    d.innerHTML = htmlResumenDia(M);
-    const hoy = { k: d.querySelector('.rdia-car .k').textContent, fondos: [...d.querySelectorAll('.rdia-desg dt, .rdia-car .rdia-nota')].map((x) => x.textContent).join(' | ') };
-    return { cierre, mixto, hoy, ver: !!d.querySelector('a[href="#noticias"]') };
+    const hoy = hoyIso(), ayer = habilAntes(hoy), anteayer = habilAntes(ayer);
+    // unos históricos de prueba que acaban ayer (o anteayer, los fondos: publican su valor tarde)
+    const serie = (hasta, p0) => { const out = []; let d = sumarDias(hasta, -40), p = p0; while (d <= hasta) { if (![0, 6].includes(deIso(d).getDay())) { out.push([d, Math.round(p * 1e4) / 1e4]); p *= 1.003; } d = sumarDias(d, 1); } return out; };
+    S.hist = S.hist || {}; S.hist.instrumentos = { ...(S.hist.instrumentos || {}) };
+    const P = S.precios.instrumentos;
+    for (const f of calcular().filas) {
+      const id = f.inst.id, fondo = /^Fondo/.test(f.inst.tipo || '') && id !== 'phau';
+      const fin = id === 'btc' ? sumarDias(hoy, -1) : fondo ? anteayer : ayer;
+      const h = id === 'btc' ? (() => { const o = []; for (let k = 40; k >= 1; k--) o.push([sumarDias(hoy, -k), 60000 + k * 10]); return o; })() : serie(fin, f.precio || 10);
+      S.hist.instrumentos[id] = h;
+      const u = h[h.length - 1], a = h[h.length - 2];
+      if (P[id]) P[id] = { ...P[id], precio: u[1], cierre_anterior: a[1], variacion_dia: (u[1] / a[1] - 1) * 100, fecha: u[0] };
+    }
+    S.live = {};
+    // 1) a las 7 de la mañana: nada en directo. «Hoy», cero, y el calendario no tiene casilla de hoy
+    let M = calcular();
+    const temprano = { dia: M.dia, conHoy: M.filas.filter((f) => f.varDia != null).length, cal: cambiosPorDia(M, 30).filter((x) => x.d === hoy).length };
+    // 2) el bitcoin en directo (Bitvavo dice +5 % en 24 h): cuenta desde el cierre de ayer, no las 24 h
+    const cBtc = S.hist.instrumentos.btc[S.hist.instrumentos.btc.length - 1][1];
+    S.live.btc = { precio: cBtc * 1.01, var: 5, t: Date.now(), fuente: 'Bitvavo' };
+    // 3) Repsol en directo, +2 % sobre su cierre de ayer
+    const cRep = S.hist.instrumentos.repsol[S.hist.instrumentos.repsol.length - 1][1];
+    S.live.repsol = { precio: cRep * 1.02, var: 2, t: Date.now(), fuente: 'en directo' };
+    M = calcular(); S.M = M; S.binds = binds(M);
+    const fila = (id) => M.filas.find((f) => f.inst.id === id);
+    const cal = cambiosPorDia(M, 30), casillaHoy = cal.find((x) => x.d === hoy);
+    const d = document.createElement('div'); d.innerHTML = htmlResumenDia(M);
+    // la foto del widget
+    let foto = null; window.InversionesApp = { guardarWidget: (j) => { foto = JSON.parse(j); } }; enviarWidget(true); delete window.InversionesApp;
+    return {
+      temprano,
+      btc: fila('btc').dia, btcEsperado: fila('btc').uds * cBtc * 0.01,
+      rep: fila('repsol').dia, repEsperado: fila('repsol').uds * cRep * 0.02,
+      fondos: M.filas.filter((f) => /^Fondo/.test(f.inst.tipo || '')).map((f) => f.dia),
+      bat: fila('bat').dia,
+      dia: M.dia, casillaHoy: casillaHoy && casillaHoy.e, pctHoy: casillaHoy && casillaHoy.p, diaPct: M.diaPct,
+      ayer: (cal.filter((x) => x.d < hoy).pop() || {}),
+      bd: { k: d.querySelector('.rdia-car .k').textContent, dia: d.querySelector('.rdia-dia').textContent, desg: d.querySelector('.rdia-desg') ? d.querySelector('.rdia-desg').textContent : '', notas: [...d.querySelectorAll('.rdia-car .rdia-nota')].map((x) => x.textContent).join(' | ') },
+      dia0: S.binds.dia0.txt, eurAyer: (() => { const u = cal.filter((x) => x.d < hoy).pop(); return u ? eurS(u.e, 0) : ''; })(),
+      foto: foto && { hoy: foto.hoy, dia: foto.dia, suma: sum(foto.pos, (x) => x.dia) },
+      hoyIso: hoy,
+    };
   });
-  expect(r.cierre.k).toContain('último día de bolsa');
-  expect(r.cierre.k).not.toContain('hoy');
-  expect(r.cierre.sp).toMatch(/S&P 500.*(ayer|lun|mar|mié|jue|vie)/);
-  expect(r.mixto.k).toContain('desde el último cierre');
-  expect(r.mixto.nota).toContain('Lo que cotiza hoy');
-  expect(r.mixto.nota).toMatch(/Del .* \(último cierre\)/);
-  expect(r.hoy.k).toBe('Tu cartera hoy');
-  expect(r.hoy.fondos).toContain('Tus fondos, con su valor del');
-  expect(r.hoy.fondos).toContain('Lo que cotiza hoy');
-  expect(r.ver).toBe(true);
+  expect(r.temprano).toEqual({ dia: 0, conHoy: 0, cal: 0 });
+  expect(r.btc).toBeCloseTo(r.btcEsperado, 2);
+  expect(r.rep).toBeCloseTo(r.repEsperado, 2);
+  expect(r.fondos.every((x) => x === 0)).toBe(true);
+  expect(r.bat).toBe(0);
+  expect(r.dia).toBeCloseTo(r.btcEsperado + r.repEsperado, 2);
+  // la casilla de hoy del calendario es la misma cifra, con el mismo %
+  expect(r.casillaHoy).toBe(r.dia);
+  expect(r.pctHoy).toBe(r.diaPct);
+  // Buenos días: arriba la misma cifra, «hoy», y debajo el último día de bolsa con la cifra de su casilla
+  expect(r.bd.k).toBe('Tu cartera hoy');
+  expect(r.bd.dia).toBe(r.dia0);
+  expect(r.bd.desg).toContain(r.eurAyer);
+  expect(r.bd.desg).toMatch(/Ayer|El /);
+  expect(r.bd.notas).toContain('Los fondos publican su valor');
+  // el widget recibe la misma cifra y la fecha de la foto
+  expect(r.foto.hoy).toBe(r.hoyIso);
+  expect(r.foto.dia).toBeCloseTo(r.dia, 6);
+  expect(r.foto.suma).toBeCloseTo(r.dia, 1);
   if (CAP) {
     await page.evaluate(() => { LS.set('inv-resumen-dia', ''); resumenDelDia(() => {}, true); });
     await page.waitForSelector('.hoja-rdia .rdia-tot');

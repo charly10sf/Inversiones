@@ -69,7 +69,7 @@ function noticiasTodas(M, horas = 24 * 7) {
   };
   for (const f of (M && M.filas) || []) {
     const i = f.inst, lista = (N[i.id] && N[i.id].length ? N[i.id] : i.yahoo ? noticiasIdea(i.yahoo) : []) || [];
-    for (const n of lista) meter(n, { tema: 'tuyo', inst: i, id: i.id, varDia: f.varDia, fechaMov: fechaMovFila(f) });
+    for (const n of lista) meter(n, { tema: 'tuyo', inst: i, id: i.id, varDia: f.varUlt, fechaMov: fechaMovFila(f) });
   }
   for (const n of N.mercado || []) meter(n, { tema: temaNoticia(n) });
   const c = comunidadUsuario();
@@ -85,35 +85,30 @@ function diaCifra(fecha) {
   if (fecha === ayerIso()) return L('ayer', 'yest.');
   return diaSemL(deIso(fecha).getDay()).slice(0, 3);
 }
-// el día del último cambio de una posición: hoy si va en directo; si no, el de su último precio
-const fechaMovFila = (f) => (f.vivo ? hoyIso() : f.fecha || null);
-/* «Tu cartera hoy», «el viernes 6» o «desde el último cierre»: de qué día es el cambio que se enseña. Los fondos no
-   cuentan para decidirlo (publican su valor uno o dos días tarde); se dice aparte con qué día van */
+// el día del último cambio de una posición: el de su precio en directo o, si no va en directo, el de su último precio
+const fechaMovFila = (f) => f.fechaMov || (f.vivo ? hoyIso() : f.fecha || null);
+/* Buenos días (12 nov: «hoy» es hoy en todas partes). Lo de arriba es M.dia, igual que en Inicio, en el widget y en la
+   casilla de hoy del calendario. Aquí: una nota si la bolsa aún no ha abierto (o si solo se ha movido la cripto), el
+   último día de bolsa anterior con la misma cifra que su casilla del calendario, y con qué día van los fondos. */
 function diaDeLaCartera(M) {
-  const hoy = hoyIso(), con = M.filas.filter((f) => f.dia && fechaMovFila(f));
-  const esFondo = (f) => /^Fondo/.test(f.inst.tipo || '');
-  const base = con.some((f) => !esFondo(f)) ? con.filter((f) => !esFondo(f)) : con;
-  const deHoy = base.filter((f) => fechaMovFila(f) >= hoy), viejas = base.filter((f) => fechaMovFila(f) < hoy);
-  const ultVieja = viejas.map(fechaMovFila).sort().pop() || null;
-  const ult = deHoy.length ? hoy : ultVieja || hoy;
-  const etqDe = (d) => { const x = deIso(d); return d >= hoy ? L('hoy', 'today') : d === ayerIso() ? L('ayer', 'yesterday') : L(`el ${DIAS_LARGOS[x.getDay()]} ${x.getDate()}`, `on ${DIAS_EN[x.getDay()]} ${x.getDate()}`); };
-  const modo = !viejas.length ? 'hoy' : !deHoy.length ? 'cierre' : 'mixto';
-  // y de qué se compone la cifra: un lunes, el −4 % del jueves de un fondo del S&P 500 parecía de hoy. Por días (lo de
-  // hoy, lo del último cierre) y los fondos atrasados aparte, con su día
-  const grupos = new Map();
-  for (const f of con) {
-    const d = fechaMovFila(f), atras = esFondo(f) && d < ult, k = (atras ? 'F' : 'D') + d;
-    const g = grupos.get(atras ? 'F' : k) || { k: atras ? 'F' : k, d, atras, v: 0 };
-    g.v += f.dia; if (atras && d < g.d) g.d = d; grupos.set(g.k, g);
-  }
+  const hoy = hoyIso(), esFondo = (f) => /^Fondo/.test(f.inst.tipo || '');
+  const conHoy = M.filas.filter((f) => f.varDia != null), bolsaHoy = conHoy.some((f) => f.inst.clase !== 'Cripto');
+  const finde = [0, 6].includes(new Date().getDay()), cripto = M.filas.some((f) => f.inst.clase === 'Cripto');
+  const pronto = new Date().getHours() < 10;
+  const nota = bolsaHoy ? '' : conHoy.length
+    ? (finde ? L('Es fin de semana: lo de hoy es solo la cripto, que cotiza todos los días.', 'It’s the weekend: today is just crypto, which trades every day.') : pronto ? L('La bolsa aún no ha abierto: lo de hoy es solo la cripto, que cotiza a todas horas.', 'The stock market hasn’t opened yet: today is just crypto, which trades around the clock.') : L('Lo de hoy es solo la cripto: lo demás aún no tiene precio de hoy.', 'Today is just crypto: the rest has no price for today yet.'))
+    : (finde ? L('Es fin de semana: hoy no cotiza nada de lo tuyo.', 'It’s the weekend: nothing of yours trades today.') : pronto ? L('La bolsa aún no ha abierto: hoy no se ha movido nada de lo tuyo.', 'The stock market hasn’t opened yet: nothing of yours has moved today.') : L('Aún no hay precios de hoy de lo tuyo.', 'No prices for today yet for your holdings.'));
+  // el último día anterior con movimiento, con la cifra de su casilla del calendario
+  let antes = null;
+  try {
+    const u = cambiosPorDia(M, 12).filter((x) => x.d < hoy && (cripto || ![0, 6].includes(deIso(x.d).getDay()))).pop();
+    if (u) { const x = deIso(u.d); antes = { d: u.d, e: u.e, p: u.p, t: u.d === ayerIso() ? L(`Ayer, ${diaSemL(x.getDay()).slice(0, 3)} ${x.getDate()}`, `Yesterday, ${diaSemL(x.getDay()).slice(0, 3)} ${x.getDate()}`) : L(`El ${DIAS_LARGOS[x.getDay()]} ${x.getDate()}`, `${DIAS_EN[x.getDay()]} ${x.getDate()}`) }; }
+  } catch (e) { antes = null; }
+  const fondos = M.filas.filter((f) => esFondo(f) && fechaMovFila(f)).map(fechaMovFila).sort();
+  const uf = fondos.length ? fondos[fondos.length - 1] : null;
   const corto = (d) => { const x = deIso(d); return `${diaSemL(x.getDay()).slice(0, 3)} ${x.getDate()}`; };
-  const desglose = grupos.size > 1 ? [...grupos.values()].sort((a, b) => a.atras - b.atras || (b.d > a.d ? 1 : -1)).map((g) => ({
-    t: g.atras ? L(`Tus fondos, con su valor del ${corto(g.d)}`, `Your funds, priced on ${corto(g.d)}`) : g.d >= hoy ? L('Lo que cotiza hoy', 'What’s trading today') : L(`Del ${corto(g.d)} (último cierre)`, `From ${corto(g.d)} (last close)`),
-    v: g.v,
-  })) : [];
-  const fx = grupos.get('F') ? deIso(grupos.get('F').d) : null;
-  const notaFondos = fx ? L(`Los fondos publican su valor uno o dos días después: el último de los tuyos es del ${corto(grupos.get('F').d)}.`, `Funds publish their price a day or two later: your latest is from ${corto(grupos.get('F').d)}.`) : '';
-  return { fecha: ult, hoy: modo === 'hoy', modo, etq: etqDe(ult), etqVieja: ultVieja ? etqDe(ultVieja) : '', diaHoy: sum(deHoy, (f) => f.dia), desglose, notaFondos };
+  const notaFondos = uf && uf < hoy ? L(`Los fondos publican su valor uno o dos días después: su cambio va en el día de ese valor (el último de los tuyos, del ${corto(uf)}).`, `Funds publish their price a day or two later: their change goes on that day (your latest is from ${corto(uf)}).`) : '';
+  return { nota, antes, notaFondos, bolsaHoy };
 }
 // la hora de los precios que se están viendo (la última vez que los bajó la Action, o ahora si van en directo)
 function horaPrecios() {
