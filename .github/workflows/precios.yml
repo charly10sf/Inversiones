@@ -112,21 +112,29 @@ jobs:
               print("sin intradía para el widget:", e)
           json.dump({"generado": d.get("generado"), "p": p, "h": h, "i": i}, open("salida/widget.json", "w"), separators=(",", ":"))
           # Para los avisos de la app (solo los baja si los activas y tienes algo fuera de los precios comunes):
-          # el radar {símbolo: [precio en €, % del día]} y el catálogo de fondos {id: [precio, anterior]}
+          # el radar {símbolo: [precio en €, % del día, día del precio]} y el catálogo de fondos {id: [precio, anterior, día]}.
+          # El día (12 nov): el aviso de «sube un 8 % hoy» solo salta si ese cambio es de hoy (antes avisaba por la mañana
+          # de lo de ayer en Wall Street, y dentro de la app salía lo de hoy)
+          from zoneinfo import ZoneInfo
+          def dia_madrid(t):
+              try:
+                  return datetime.datetime.fromisoformat(str(t).replace("Z", "+00:00")).astimezone(ZoneInfo("Europe/Madrid")).date().isoformat()
+              except Exception:
+                  return str(t or "")[:10]
           r, c = {}, {}
           for f in ("salida/radar.json", "anterior/radar.json"):
               try:
                   for x in json.load(open(f)).get("valores") or []:
                       pe = x.get("pe") if x.get("pe") is not None else x.get("p")
                       if x.get("s") and pe:
-                          r[str(x["s"]).upper()] = [round(pe, 4), round(x.get("v"), 2) if x.get("v") is not None else None]
+                          r[str(x["s"]).upper()] = [round(pe, 4), round(x.get("v"), 2) if x.get("v") is not None else None, dia_madrid(x.get("f"))]
                   break
               except Exception as e:
                   print("sin radar para los avisos:", f, e)
           try:
               for k, x in (json.load(open("anterior/catalogo-precios.json")).get("v") or {}).items():
                   if x.get("p"):
-                      c[k] = [x.get("p"), x.get("pa")]
+                      c[k] = [x.get("p"), x.get("pa"), x.get("f") or ""]
           except Exception as e:
               print("sin catálogo para los avisos:", e)
           json.dump({"generado": d.get("generado"), "r": r, "c": c}, open("salida/avisos.json", "w"), separators=(",", ":"))

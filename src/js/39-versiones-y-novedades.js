@@ -12,6 +12,7 @@ const NOVEDADES = [
     'Hoy es lo que ha cambiado desde el cierre de ayer. Antes de que abra la bolsa solo se mueve la cripto, y los fondos, que publican su valor uno o dos días después, cuentan en el día de ese valor. Buenos días enseña debajo cómo acabó el último día de bolsa, con la misma cifra que su casilla del calendario.',
     'La cripto cuenta desde el cierre de ayer, como lo demás, y no las últimas 24 horas.',
     'El widget ya no repite al día siguiente lo de la víspera ni cuenta como de hoy el último valor de un fondo (con la versión nueva de la app de Android).',
+    'El aviso del móvil de que algo «sube un 8 % hoy» solo salta con lo de hoy. Antes, por la mañana, avisaba de lo que había pasado ayer en Wall Street y dentro de la app salía otra cifra (también con la versión nueva de la app de Android).',
   ] },
   { v: '0.8.6b', f: '2026-11-12', h: '00:15', t: 'Detalles que no cuadraban', arreglos: [
     'En Hoy, la subida del día que escribe la IA dice de qué hora es («hoy a las 20:05»). Antes parecía contradecir la cifra de arriba, que va al momento.',

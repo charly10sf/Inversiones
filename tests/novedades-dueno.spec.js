@@ -32,8 +32,8 @@ for (const dueno of [false, true]) {
       const ixn = page.locator('.ixn');
       for (let i = 0; i < 40 && !(await ixn.count()); i++) { await page.evaluate(() => document.querySelectorAll('.hoja-fondo, .tour').forEach((x) => x.remove())); await page.waitForTimeout(1500); }
       await expect(ixn).toBeVisible();
-      // los de la 0.8.1 (6 el dueño, 3 los demás), los de la 0.8.1a (6 y 5), los de la 0.8.1b (2 para todos), los de la 0.8.1c (2 y 1) y los de la 0.8.1d (2 y 1), y los de la 0.8.2 (4 el dueño, 2 los demás) la 0.8.2a (2 y 2), la 0.8.2c (7 y 6), la 0.8.2d (8 y 4), la 0.8.2e (1 y 1) la 0.8.3 (2 y 1), la 0.8.3b (5 y 3), la 0.8.3c (5 y 4), la 0.8.3d (2 y 2) la 0.8.6 (3 y 3), la 0.8.6a (7 y 6) y la 0.8.6c (4 y 4)
-      await expect(ixn.locator('.ixn-arr li')).toHaveCount(dueno ? 75 : 57);
+      // los de la 0.8.1 (6 el dueño, 3 los demás), los de la 0.8.1a (6 y 5), los de la 0.8.1b (2 para todos), los de la 0.8.1c (2 y 1) y los de la 0.8.1d (2 y 1), y los de la 0.8.2 (4 el dueño, 2 los demás) la 0.8.2a (2 y 2), la 0.8.2c (7 y 6), la 0.8.2d (8 y 4), la 0.8.2e (1 y 1) la 0.8.3 (2 y 1), la 0.8.3b (5 y 3), la 0.8.3c (5 y 4), la 0.8.3d (2 y 2) la 0.8.6 (3 y 3), la 0.8.6a (7 y 6) y la 0.8.6c (5 y 5)
+      await expect(ixn.locator('.ixn-arr li')).toHaveCount(dueno ? 76 : 58);
       if (dueno) await expect(ixn).toContainText('Topes de gasto'); else await expect(ixn).not.toContainText('Topes de gasto');
       expect(await page.evaluate(() => LS.get('inv-dueno', 0))).toBe(dueno ? 1 : 0);
       await page.evaluate(() => document.querySelectorAll('.ixn, .intro').forEach((x) => x.remove()));

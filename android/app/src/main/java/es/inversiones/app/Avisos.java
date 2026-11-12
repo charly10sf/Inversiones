@@ -120,21 +120,28 @@ public class Avisos extends Worker {
             JSONObject x = reglas.getJSONObject(k);
             String id = x.optString("id"), n = x.optString("n", id), sym = x.optString("sym"), cid = x.optString("cid");
             double precio = Double.NaN, cambio = Double.NaN;
+            // 12 nov: el día del precio (desde la 0.8.6c lo traen widget.json y avisos.json). «Sube un 8 % hoy» solo
+            // si ese cambio es de hoy: antes, por la mañana, avisaba de lo de ayer en Wall Street y en la app salía otra cosa
+            String diaP = "";
             JSONArray q = pr.optJSONArray(id);
             if (q != null) {
                 precio = q.optDouble(0);
                 double ant = q.optDouble(1, Double.NaN);
                 if (ant > 0) cambio = (precio / ant - 1) * 100;
+                diaP = q.optString(2, "");
             } else if (!sym.isEmpty() && rp.optJSONArray(sym) != null) {
                 JSONArray r = rp.optJSONArray(sym);
                 precio = r.optDouble(0);
                 cambio = r.optDouble(1, Double.NaN);
+                diaP = r.optString(2, "");
             } else if (!cid.isEmpty() && cp.optJSONArray(cid) != null) {
                 JSONArray r = cp.optJSONArray(cid);
                 precio = r.optDouble(0);
                 double ant = r.optDouble(1, Double.NaN);
                 if (ant > 0) cambio = (precio / ant - 1) * 100;
+                diaP = r.optString(2, "");
             }
+            if (!diaP.isEmpty() && diaP.compareTo(hoy) < 0) cambio = Double.NaN;
             double w = x.optDouble("w", 0), pw = x.optDouble("p", 0);
             double vv = w * (!Double.isNaN(precio) && precio > 0 && pw > 0 ? precio / pw : 1);
             if (w > 0) {
