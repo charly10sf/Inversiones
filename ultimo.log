@@ -1,0 +1,114 @@
+To honour the JVM settings for this build a single-use Daemon process will be forked. For more on this, please refer to https://docs.gradle.org/8.11.1/userguide/gradle_daemon.html#sec:disabling_the_daemon in the Gradle documentation.
+Daemon will be stopped at the end of the build 
+> Task :app:preBuild UP-TO-DATE
+> Task :app:preDirectaReleaseBuild UP-TO-DATE
+> Task :app:mergeDirectaReleaseJniLibFolders
+> Task :app:mergeDirectaReleaseNativeLibs NO-SOURCE
+> Task :app:stripDirectaReleaseDebugSymbols NO-SOURCE
+> Task :app:extractDirectaReleaseNativeSymbolTables NO-SOURCE
+> Task :app:mergeDirectaReleaseNativeDebugMetadata NO-SOURCE
+> Task :app:generateDirectaReleaseBuildConfig
+> Task :app:checkDirectaReleaseDuplicateClasses
+> Task :app:javaPreCompileDirectaRelease
+> Task :app:generateDirectaReleaseResValues
+> Task :app:checkDirectaReleaseAarMetadata
+> Task :app:mapDirectaReleaseSourceSetPaths
+> Task :app:generateDirectaReleaseResources
+> Task :app:packageDirectaReleaseResources
+> Task :app:createDirectaReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksDirectaRelease
+> Task :app:mergeDirectaReleaseResources
+> Task :app:parseDirectaReleaseLocalResources
+> Task :app:processDirectaReleaseMainManifest
+> Task :app:processDirectaReleaseManifest
+> Task :app:mergeDirectaReleaseStartupProfile
+> Task :app:desugarDirectaReleaseFileDependencies
+> Task :app:processDirectaReleaseManifestForPackage
+> Task :app:mergeDirectaReleaseArtProfile
+> Task :app:mergeDirectaReleaseShaders
+> Task :app:compileDirectaReleaseShaders NO-SOURCE
+> Task :app:generateDirectaReleaseAssets UP-TO-DATE
+> Task :app:mergeDirectaReleaseAssets
+> Task :app:processDirectaReleaseResources
+> Task :app:compressDirectaReleaseAssets
+> Task :app:extractDirectaReleaseVersionControlInfo
+> Task :app:mergeExtDexDirectaRelease
+
+> Task :app:compileDirectaReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:dexBuilderDirectaRelease
+> Task :app:mergeDirectaReleaseGlobalSynthetics
+> Task :app:processDirectaReleaseJavaRes NO-SOURCE
+> Task :app:collectDirectaReleaseDependencies
+> Task :app:sdkDirectaReleaseDependencyData
+> Task :app:validateSigningDirectaRelease
+> Task :app:optimizeDirectaReleaseResources
+> Task :app:writeDirectaReleaseAppMetadata
+> Task :app:writeDirectaReleaseSigningConfigVersions
+> Task :app:prePlayReleaseBuild UP-TO-DATE
+> Task :app:generatePlayReleaseResValues
+> Task :app:mapPlayReleaseSourceSetPaths
+> Task :app:generatePlayReleaseResources
+> Task :app:mergeDirectaReleaseJavaResource
+> Task :app:createPlayReleaseCompatibleScreenManifests
+> Task :app:extractDeepLinksPlayRelease
+> Task :app:processPlayReleaseMainManifest
+> Task :app:processPlayReleaseManifest
+> Task :app:processApplicationManifestPlayReleaseForBundle
+> Task :app:checkPlayReleaseAarMetadata
+> Task :app:packagePlayReleaseResources
+> Task :app:parsePlayReleaseLocalResources
+> Task :app:extractPlayReleaseVersionControlInfo
+> Task :app:processPlayReleaseManifestForPackage
+> Task :app:generatePlayReleaseBuildConfig
+> Task :app:javaPreCompilePlayRelease
+> Task :app:checkPlayReleaseDuplicateClasses
+> Task :app:desugarPlayReleaseFileDependencies
+> Task :app:mergePlayReleaseStartupProfile
+> Task :app:mergePlayReleaseShaders
+> Task :app:compilePlayReleaseShaders NO-SOURCE
+> Task :app:generatePlayReleaseAssets UP-TO-DATE
+> Task :app:mergePlayReleaseAssets
+> Task :app:processPlayReleaseJavaRes NO-SOURCE
+> Task :app:mergePlayReleaseResources
+> Task :app:mergeDexDirectaRelease
+> Task :app:processPlayReleaseResources
+> Task :app:mergePlayReleaseJavaResource
+> Task :app:bundlePlayReleaseResources
+> Task :app:compileDirectaReleaseArtProfile
+> Task :app:mergeExtDexPlayRelease
+
+> Task :app:compilePlayReleaseJavaWithJavac
+Note: Some input files use or override a deprecated API.
+Note: Recompile with -Xlint:deprecation for details.
+
+> Task :app:dexBuilderPlayRelease
+> Task :app:packageDirectaRelease
+> Task :app:createDirectaReleaseApkListingFileRedirect
+> Task :app:assembleDirectaRelease
+> Task :app:mergePlayReleaseGlobalSynthetics
+> Task :app:mergePlayReleaseJniLibFolders
+> Task :app:mergePlayReleaseNativeLibs NO-SOURCE
+> Task :app:stripPlayReleaseDebugSymbols NO-SOURCE
+> Task :app:writePlayReleaseAppMetadata
+> Task :app:mergePlayReleaseArtProfile
+> Task :app:collectPlayReleaseDependencies
+> Task :app:configurePlayReleaseDependencies
+> Task :app:extractPlayReleaseNativeSymbolTables NO-SOURCE
+> Task :app:validateSigningPlayRelease
+> Task :app:parsePlayReleaseIntegrityConfig
+> Task :app:mergeDexPlayRelease
+> Task :app:buildPlayReleasePreBundle
+> Task :app:compilePlayReleaseArtProfile
+> Task :app:packagePlayReleaseBundle
+> Task :app:signPlayReleaseBundle
+> Task :app:producePlayReleaseBundleIdeListingFile
+> Task :app:createPlayReleaseBundleListingFileRedirect
+> Task :app:bundlePlayRelease
+gradle/actions: Writing build results to /home/runner/work/_temp/.gradle-actions/build-results/__run_3-1794470645296.json
+[Incubating] Problems report is available at: file:///home/runner/work/Inversiones/Inversiones/android/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 33s
+81 actionable tasks: 81 executed
