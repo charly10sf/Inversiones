@@ -230,6 +230,12 @@ body:has(> .estreno, > .hoja-fondo, > .tour) .gta-top-t, body:has(> .estreno, > 
 .modo-op button { border: 0; background: none; color: var(--tenue); font: inherit; font-size: 13px; font-weight: 500; padding: 6px 11px; border-radius: 7px; min-height: 32px; cursor: pointer; }
 .modo-op button:hover { color: var(--texto); }
 .modo-op button[aria-pressed="true"] { background: var(--primario); color: var(--sobre-primario); font-weight: 600; cursor: default; }
+/* 13 nov 2026: Toisón Dorado cuenta a cuenta, al lado del modo; puesto, en oro */
+.modo-dor { flex: none; display: inline-flex; align-items: center; gap: 6px; min-height: 40px; padding: 0 12px; border: 1px solid var(--sep); border-radius: 10px; background: var(--superficie); color: var(--tenue); font: inherit; font-size: 13px; font-weight: 500; cursor: pointer; }
+.modo-dor .sello-d { width: 16px; height: 16px; opacity: .55; }
+.modo-dor:hover { color: var(--texto); }
+.modo-dor[aria-pressed="true"] { border-color: var(--hilo); background: color-mix(in srgb, var(--oro-texto) 14%, var(--superficie)); color: var(--oro-texto); font-weight: 600; }
+.modo-dor[aria-pressed="true"] .sello-d { opacity: 1; }
 .modo-nota { margin: 0; padding: 12px 14px; border-radius: 12px; background: var(--superficie-2); font-style: italic; }
 .aj-info { cursor: default; }
 .ruta-espera { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: start; margin: 0 0 18px; padding: 14px 16px; border-radius: 14px; background: color-mix(in srgb, var(--primario) 8%, transparent); border: 1px solid color-mix(in srgb, var(--primario) 28%, transparent); }

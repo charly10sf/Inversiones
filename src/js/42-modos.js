@@ -165,6 +165,7 @@ async function comprobarAcceso() {
     const a = puesto && (puesto.modo === 'fundador' || puesto.modo === 'estandar') ? (puesto.modo === 'fundador' ? 'privado' : 'publico')
       : S.esDueno || esFundadorPorAlta(alta) ? 'privado' : 'publico';
     fijarAcceso(a, u.uid, puesto);
+    fijarDoradoCuenta(u.uid, !!(puesto && puesto.dorado === true));
   } catch (e) { console.warn('No se ha podido comprobar el modo', e); }
   finally { S.accesoVisto = true; ponerDorado(); }   // bienvenida() espera a esto para saber qué novedades enseñar
 }
@@ -224,7 +225,7 @@ async function filaAcceso(h) {
     w.innerHTML = `<button class="aj-fila" id="aVerif">${ICONOS.alerta}<span><b>${L('Confirma tu correo', 'Confirm your email')}</b><small>${L('Hace falta para usar la IA y para el modo fundador. Pulsa y te mando el enlace otra vez.', 'You need it to use the AI and for founder mode. Tap and I\'ll send the link again.')}</small></span><i class="aj-flecha" aria-hidden="true"></i></button>`;
     $('#aVerif', h.el).onclick = () => pedirCorreoConfirmacion();
   } else {
-    w.innerHTML = `<div class="aj-fila aj-info">${ICONOS.candado}<span><b>${L('Tu modo', 'Your mode')}: ${esc(nombreModo(S.acceso))}</b><small>${esPublico() ? L('Sin recomendaciones personalizadas: «Tu plan» en lugar del Paso a paso.', 'No personalised recommendations: Your plan instead of Steps.') : L('Toisón entero, con el Paso a paso.', 'All of Toisón, with Steps.')}</small></span></div>`;
+    w.innerHTML = `<div class="aj-fila aj-info">${ICONOS.candado}<span><b>${L('Tu modo', 'Your mode')}: ${esc(nombreModo(S.acceso))}</b><small>${esPublico() ? L('Sin recomendaciones personalizadas: «Tu plan» en lugar del Paso a paso.', 'No personalised recommendations: Your plan instead of Steps.') : L('Toisón entero, con el Paso a paso.', 'All of Toisón, with Steps.')}${tieneDorado() ? ' ' + L('Con Toisón Dorado.', 'With Toisón Gold.') : ''}</small></span></div>`;
   }
 }
 /* 0.8: el diseño lo elige cualquiera en Tú (Mármol o Marfil; sin elegir, Mármol; Borgoña se quitó el 7 nov) y se guarda en el dispositivo.
@@ -236,7 +237,7 @@ function htmlSelectorTema() {
     <div class="idiomas temas" role="group" aria-label="${esc(L('Diseño', 'Design'))}" data-no-trad>${TEMAS.map((k) => b(k, nom[k])).join('')}</div>
     <small>${L('Mármol, negro y con vetas; Marfil, en crema con el menú en vino. Se guarda en este dispositivo.', 'Marble, dark and veined; Ivory, cream with a burgundy menu. Saved on this device.')}</small>
     ${veDueno() ? `<div class="idiomas temas-dorado" role="group" aria-label="Toisón Dorado" data-no-trad>${[[1, L('Con Toisón Dorado', 'With Toisón Gold')], [0, L('Como los demás', 'Like everyone else')]].map(([v, n]) => `<button type="button" data-dorado-ver="${v}" aria-pressed="${tieneDorado() === !!v}">${v ? selloDorado() : ''}<span>${n}</span></button>`).join('')}</div>
-    <small>${L('Toisón Dorado: el Mármol dorado, el borde de las tarjetas en oro suave y la marca entera arriba. Hasta que haya plan de pago, solo lo ves tú.', 'Toisón Gold: golden marble, soft gold card borders and the full brand at the top. Until there is a paid plan, only you see it.')}</small>` : ''}</div>`;
+    <small>${L('Toisón Dorado: el Mármol dorado, el borde de las tarjetas en oro suave y la marca entera arriba. Hasta que haya plan de pago, lo tienes tú y las cuentas a las que se lo pongas en Ajustes › Modo de cada cuenta.', 'Toisón Gold: golden marble, soft gold card borders and the full brand at the top. Until there is a paid plan, you have it, plus the accounts you give it to in Settings › Each account\'s mode.')}</small>` : ''}</div>`;
 }
 /* 0.8.3a · Toisón Dorado, lo visual (claude/sesion-temas-toison-dorado.md). Aún no hay plan de pago ni nada que diga
    quién lo tiene: de momento lo ve el dueño (veDueno, como las novedades «solo dueño»), que en Ajustes › Diseño puede
@@ -244,7 +245,22 @@ function htmlSelectorTema() {
    el resto: con Mármol, el Mármol dorado (marmol-dorado*.webp, en index.html), el borde #4f3f20 y la marca entera
    (sello + TOISÓN + DORADO) en la cabecera del móvil y arriba de la K2; con Marfil, la crema con vetas de
    oro (marfil-dorado*.webp), el borde #d4b580 y la cabecera (sello con filo #5e4210). Sin él, todo como siempre. Cuando exista el plan, solo cambia tieneDorado() */
-const tieneDorado = () => veDueno() && LS.get('inv-dorado-ver', 1) !== 0;
+/* 13 nov 2026: y, hasta que haya plan de pago, las cuentas a las que se lo pone el dueño en «Modo de cada cuenta»
+   (dorado: true en modos/{correo}, como el modo). Se recuerda en el dispositivo con el uid de la cuenta
+   (inv-dorado-cuenta), para el primer pintado y sin red; con otra cuenta en el mismo dispositivo no vale.
+   OJO: lo decide el dispositivo con lo que lee de Firestore; cuando Dorado se pague, lo de pago se comprueba también fuera */
+const doradoDeCuenta = () => { const d = LS.get('inv-dorado-cuenta', null), a = LS.get('inv-acceso', null); return !!d && !!a && d === a.uid; };
+const tieneDorado = () => (veDueno() || doradoDeCuenta()) && LS.get('inv-dorado-ver', 1) !== 0;
+function fijarDoradoCuenta(uid, si) {
+  const antes = tieneDorado(), conocido = LS.get('inv-dorado-cuenta-visto', null) === uid;
+  if (si) LS.set('inv-dorado-cuenta', uid); else LS.del('inv-dorado-cuenta');
+  LS.set('inv-dorado-cuenta-visto', uid);
+  if (tieneDorado() === antes) return;
+  ponerDorado();
+  if (S.cartera && $('#vista') && !document.querySelector('.hoja-fondo form, .ficha')) pintar();
+  // se le cuenta, salvo la primera vez que esta cuenta abre Toisón en este dispositivo
+  if (conocido && !veDueno()) toast(si ? L('Ya tienes Toisón Dorado: Tu renta casilla a casilla y lo demás de Dorado, abiertos.', 'You now have Toisón Gold: your tax return box by box and the rest of Gold, unlocked.') : L('Tu cuenta ya no tiene Toisón Dorado.', 'Your account no longer has Toisón Gold.'), 6000);
+}
 function ponerDorado() {
   const d = tieneDorado(), r = document.documentElement;
   if (r.hasAttribute('data-dorado') !== d) r.toggleAttribute('data-dorado', d);
@@ -282,9 +298,11 @@ async function verModos() {
   const yo = yoCorreo();
   if (yo && !l.some((x) => x.correo === yo)) l.unshift({ correo: yo, alta: altaDe(FB.user), modo: S.acceso === 'publico' ? 'estandar' : 'fundador' });
   const fila = (x) => `<li data-correo="${esc(x.correo)}"><div class="modo-t"><b data-no-trad>${esc(x.correo)}${x.correo === yo ? ` <em>${L('(tú)', '(you)')}</em>` : ''}</b><small>${x.alta ? L(`Cuenta del ${esc(fechaLarga(x.alta))}`, `Account from ${esc(x.alta)}`) : L('Aún no ha entrado con la 0.5', 'Not signed in with 0.5 yet')}${x.puesto ? ` · ${L('lo pusiste tú', 'set by you')}` : esFundadorPorAlta(x.alta) ? ` · ${L('fundador por fecha', 'founder by date')}` : ''}</small></div>
-      <div class="dos-op modo-op" role="group" aria-label="${esc(L('Modo', 'Mode'))}"><button type="button" data-modo="fundador" aria-pressed="${x.modo === 'fundador'}">${L('Fundador', 'Founder')}</button><button type="button" data-modo="estandar" aria-pressed="${x.modo === 'estandar'}">${L('Estándar', 'Standard')}</button></div></li>`;
+      <div class="dos-op modo-op" role="group" aria-label="${esc(L('Modo', 'Mode'))}"><button type="button" data-modo="fundador" aria-pressed="${x.modo === 'fundador'}">${L('Fundador', 'Founder')}</button><button type="button" data-modo="estandar" aria-pressed="${x.modo === 'estandar'}">${L('Estándar', 'Standard')}</button></div>
+      ${x.correo === yo ? '' : `<button type="button" class="modo-dor" data-dorado-cta aria-pressed="${!!(x.puesto && x.puesto.dorado)}" aria-label="${esc(L(`Toisón Dorado para ${x.correo}`, `Toisón Gold for ${x.correo}`))}">${selloDorado('sd-peq')}${L('Dorado', 'Gold')}</button>`}</li>`;
   const h = hoja(L('Modo de cada cuenta', "Each account's mode"), `<div class="priv">
     <p>${L('Fundador: Toisón entero, con el Paso a paso y la IA cuando dice qué comprar o vender. Estándar: sin recomendaciones personalizadas («Tu plan» en lugar del Paso a paso y lo que opinan los analistas en cada posición). Las cuentas creadas antes de la 0.5 son fundador; las nuevas, estándar, salvo que lo cambies aquí.', 'Founder: all of Toisón, with Steps and GrowIA when it says what to buy or sell. Standard: no personalised recommendations (Your plan instead of Steps and what analysts think on each holding). Accounts created before 0.5 are founders; new ones, standard, unless you change it here.')}</p>
+    <p>${L('Dorado: Toisón Dorado para esa cuenta (Tu renta casilla a casilla, sin límite de empresas en la lista, el diseño dorado…). Va aparte del modo y, hasta que haya plan de pago, lo pones y lo quitas tú.', 'Gold: Toisón Gold for that account (your tax return box by box, no limit on followed companies, the gold design…). It is separate from the mode and, until there is a paid plan, you give and remove it.')}</p>
     <ul class="priv-l modo-l">${l.map(fila).join('')}</ul>
     <form id="pvF" class="priv-add" novalidate><label class="campo">${L('Otra cuenta, por su correo', 'Another account, by email')}<input id="pvC" type="email" autocomplete="off" inputmode="email" placeholder="${L('amigo@gmail.com', 'friend@gmail.com')}"></label><button class="btn" type="submit">${L('Añadir', 'Add')}</button></form>
     <div class="error" id="pvErr"></div>
@@ -300,7 +318,8 @@ async function verModos() {
       ev.preventDefault();
       const nota = $('#mdN', n.el).value.trim().slice(0, 140), b = $('#mdF .btn.pri', n.el); b.disabled = true;
       try {
-        await conTiempo(f.setDoc(f.doc(FB.db, 'modos', correo), { modo, por: yoCorreo(), cuando: f.serverTimestamp(), ...(nota ? { nota } : {}) }), 10000);
+        const dor = (l.find((x) => x.correo === correo) || {}).puesto;
+        await conTiempo(f.setDoc(f.doc(FB.db, 'modos', correo), { modo, por: yoCorreo(), cuando: f.serverTimestamp(), ...(nota ? { nota } : {}), ...(dor && dor.dorado ? { dorado: true } : {}) }), 10000);
         n.cerrar(true); h.cerrar(true);
         toast(L(`${correo}: ${modo === 'fundador' ? 'modo fundador' : 'modo estándar'}. Le llega al volver a abrir Toisón.`, `${correo}: ${modo === 'fundador' ? 'founder mode' : 'standard mode'}. It reaches them when they next open Toisón.`), 5000);
         if (correo === yoCorreo()) comprobarAcceso(); else verModos();
@@ -308,6 +327,18 @@ async function verModos() {
     };
   };
   for (const b of $$('[data-modo]', h.el)) b.onclick = () => { if (b.getAttribute('aria-pressed') === 'true') return; poner(b.closest('li').dataset.correo, b.dataset.modo); };
+  // Dorado, cuenta a cuenta: se guarda al momento, con el modo que ya tiene (y su nota, si la hay)
+  for (const b of $$('[data-dorado-cta]', h.el)) b.onclick = async () => {
+    const correo = b.closest('li').dataset.correo, x = l.find((y) => y.correo === correo), si = b.getAttribute('aria-pressed') !== 'true';
+    b.disabled = true;
+    try {
+      await conTiempo(f.setDoc(f.doc(FB.db, 'modos', correo), { modo: x.modo, dorado: si, por: yoCorreo(), cuando: f.serverTimestamp(), ...(x.puesto && x.puesto.nota ? { nota: x.puesto.nota } : {}) }), 10000);
+      x.puesto = { ...(x.puesto || {}), modo: x.modo, dorado: si };
+      b.setAttribute('aria-pressed', String(si));
+      toast(si ? L(`${correo}: con Toisón Dorado. Le llega al volver a abrir Toisón.`, `${correo}: with Toisón Gold. It reaches them when they next open Toisón.`) : L(`${correo}: sin Toisón Dorado.`, `${correo}: without Toisón Gold.`), 5000);
+    } catch (e) { toast(errPermiso(e) ? L('Firestore no lo deja guardar: faltan las reglas nuevas (se publican con el paso a main).', "Firestore won't save it: the new rules are missing (they're published on the move to main).") : L('No se ha podido guardar (¿sin conexión?).', "Couldn't save it (offline?)."), 6000); }
+    b.disabled = false;
+  };
   $('#pvF', h.el).onsubmit = (ev) => {
     ev.preventDefault();
     const c = $('#pvC', h.el).value.trim().toLowerCase();

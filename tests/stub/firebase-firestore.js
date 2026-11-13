@@ -60,6 +60,11 @@ export async function getDoc(ref) { if (!puedeLeer(ref.path)) throw sinPermiso()
 // fallos_ia: se crean y no se reescriben (las reglas no dejan update)
 export async function setDoc(ref, data, o) {
   if (ref.path.startsWith('fallos_ia/') && crudo(ref.path)) throw sinPermiso();
+  // modos: solo el dueño, con modo fundador o estándar y, como mucho, nota y dorado (sí o no), como firestore.rules
+  if (ref.path.startsWith('modos/')) {
+    const d = o && o.merge ? { ...(crudo(ref.path) || {}), ...data } : data;
+    if (!esDueno() || Object.keys(d).some((k) => !['modo', 'por', 'cuando', 'nota', 'dorado'].includes(k)) || !['fundador', 'estandar'].includes(d.modo) || ('dorado' in d && typeof d.dorado !== 'boolean')) throw sinPermiso();
+  }
   // usuarios y cuentas: una cuenta dada de baja (bajas/{uid}) no vuelve a escribir (0.8.2)
   if (/^(usuarios|cuentas)\//.test(ref.path) && crudo('bajas/' + ref.path.split('/')[1])) throw sinPermiso();
   poner(ref.path, data, o && o.merge);

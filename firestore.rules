@@ -54,13 +54,15 @@ service cloud.firestore {
     // 0.5: modo fundador o estándar de cada cuenta, por su correo en minúsculas. Lo pone, lo lista y lo quita solo el
     // dueño (con una nota corta opcional para esa persona); cada cuenta solo puede leer el suyo, con el correo confirmado
     // (Google y Apple lo traen confirmado; con correo y contraseña, al confirmarlo).
+    // 13 nov 2026: también «dorado» (sí o no): Toisón Dorado cuenta a cuenta, puesto por el dueño hasta que haya plan de pago.
     match /modos/{correo} {
       allow get: if esDueno() || (request.auth != null && request.auth.token.email_verified == true
         && request.auth.token.email.lower() == correo);
       allow list, delete: if esDueno();
       allow create, update: if esDueno() && correo == correo.lower() && correo.matches('^[^@/ ]+@[^@/ ]+$')
-        && request.resource.data.keys().hasOnly(['modo', 'por', 'cuando', 'nota'])
+        && request.resource.data.keys().hasOnly(['modo', 'por', 'cuando', 'nota', 'dorado'])
         && request.resource.data.modo in ['fundador', 'estandar']
+        && (!('dorado' in request.resource.data) || request.resource.data.dorado is bool)
         && (!('nota' in request.resource.data) || (request.resource.data.nota is string && request.resource.data.nota.size() <= 140));
     }
     // 0.5: cada cuenta apunta su correo y su fecha de alta (nada más), para que el dueño las vea todas en Ajustes y
