@@ -7,6 +7,21 @@
 /* 0.8.3a: Carlos la llamó con letra, pero trae novedades: con cosas, sale en la hoja corta como una intermedia
    (caminoNovedades, 46-lo-nuevo.js). Cerrada el 8 nov con la hora de verdad */
 const NOVEDADES = [
+  { v: '0.8.6c', f: '2026-11-12', h: '08:30', t: 'Una sola cifra para hoy', arreglos: [
+    'La cifra de hoy es la misma en todas partes: arriba en Hoy, en Buenos días, en la pastilla de 1D, en la casilla de hoy del calendario de Análisis y en el widget. Antes cada sitio la contaba a su manera y salían cifras distintas.',
+    'Hoy es lo que ha cambiado desde el cierre de ayer. Antes de que abra la bolsa solo se mueve la cripto, y los fondos, que publican su valor uno o dos días después, cuentan en el día de ese valor. Buenos días enseña debajo cómo acabó el último día de bolsa, con la misma cifra que su casilla del calendario.',
+    'La cripto cuenta desde el cierre de ayer, como lo demás, y no las últimas 24 horas.',
+    'El widget ya no repite al día siguiente lo de la víspera ni cuenta como de hoy el último valor de un fondo (con la versión nueva de la app de Android).',
+    'El aviso del móvil de que algo «sube un 8 % hoy» solo salta con lo de hoy. Antes, por la mañana, avisaba de lo que había pasado ayer en Wall Street y dentro de la app salía otra cifra (también con la versión nueva de la app de Android).',
+  ] },
+  { v: '0.8.6b', f: '2026-11-12', h: '00:15', t: 'Detalles que no cuadraban', arreglos: [
+    'En Hoy, la subida del día que escribe la IA dice de qué hora es («hoy a las 20:05»). Antes parecía contradecir la cifra de arriba, que va al momento.',
+    '«Tus límites, tu perfil y tus metas» ya no manda a «Más › Objetivos», que en el ordenador no existe: dice Objetivos, sin más.',
+    'En la ficha de una posición, los botones dicen «Apuntar compra» y «Apuntar venta»: Toisón apunta lo que haces en tu bróker, no compra ni vende.',
+    'La cuenta atrás de la cabecera y el Calendario cuentan los mismos días.',
+    'En el menú Más del móvil, la estrella ya no pisa los nombres largos, como «Movimientos».',
+    'En básico, el mapa de tu cartera explica el gris: es lo que apenas se ha movido.',
+  ] },
   { v: '0.8.6a', f: '2026-11-11', h: '21:45', t: 'Hacienda, revisada', arreglos: [
     'Los ETC, como el oro cotizado, cuentan en la renta como rendimiento del capital mobiliario, junto a dividendos e intereses, y no como ganancia: así lo ve Hacienda en una consulta sobre un ETC de petróleo. Con un bróker español llevan retención del 19 % de la ganancia y la regla de recompra es de dos meses, cotice donde cotice.',
     'En la Guía de la renta, los ETF ya no van en la casilla 0328 con las acciones: van con los fondos, como «fondos cotizados». Los ETC tienen su propia fila.',

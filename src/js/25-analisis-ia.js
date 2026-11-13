@@ -85,6 +85,14 @@ function totalAlDiaIA(txt, antes) {
 // trozo de «1234,567 €»)
 const RE_EUR_SUELTO_IA = /(\*\*[^*\n]*\*\*)|((?<![\d.,\w])[+\-−]?(?:\d{1,3}(?:\.\d{3})+|\d+)(?:,\d{1,2})?[  ]?€)/g;
 const envolverEurosIA = (t) => String(t).replace(RE_EUR_SUELTO_IA, (m, ya, suelto) => (ya ? ya : `**${suelto}**`));
+/* 0.8.6b: «(+1.013 € hoy, +1,3 %)» lo escribió la IA a una hora; el total de al lado se pone al día y la subida no, y en Hoy
+   se contradecía con la cabecera. La cifra se queda (es la de entonces) y se dice de cuándo es. */
+function hoyConHoraIA(txt, ia) {
+  const f = String((ia && ia.fecha) || ''); if (!ia || !ia.propio || f.length <= 10) return txt;
+  const d = new Date(f), dias = diasEntre(iso(d), hoyIso());
+  const cuando = dias === 0 ? L(`hoy a las ${d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`, `today at ${d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}`) : L('ese día', 'that day');
+  return String(txt || '').replace(/(\((?:\*\*)?[+\-−]?\d[\d.]*(?:,\d+)?[  ]?€(?:\*\*)?) hoy(?=[,)])/, `$1 ${cuando}`);
+}
 function rellenarIA(txt, v) {
   return esc(envolverEurosIA(totalAlDiaIA(limpiaIA(txt), v && v.total && v._totalIA)))
     .replace(/\{([a-z0-9_]+)(?::([a-z0-9-]+))?\}/g, (m, k, id) => {
@@ -122,7 +130,7 @@ function htmlAnalisisIA(M) {
     <div class="ia-firma">${ICONOS.growia}<span>${esc(firma)}</span>${boton}<button class="btn peq" data-accion="copiar-ia" title="${L('Copia tu cartera en texto para pegarla en el asistente de IA que uses', 'Copy your portfolio as text to paste into the AI assistant you use')}">${ICONOS.copiar}${L('Copiar para tu IA', 'Copy for your AI')}</button></div>
     <div class="ia-cab">
       ${!ia.propio && dias > 14 ? `<div class="chip warn" style="justify-self:start">Tiene más de dos semanas: activa la IA para que se renueve solo</div>` : ''}
-      <p class="ia-titular">${R(ia.titular)}</p>
+      <p class="ia-titular">${R(hoyConHoraIA(ia.titular, ia))}</p>
       ${(ia.resumen || []).slice(0, 1).map((p) => `<p class="ia-p">${R(p)}</p>`).join('')}
       ${(ia.resumen || []).length > 1 ? `<details class="mas ia-mas"><summary>Seguir leyendo</summary>${ia.resumen.slice(1).map((p) => `<p class="ia-p">${R(p)}</p>`).join('')}</details>` : ''}
     </div>

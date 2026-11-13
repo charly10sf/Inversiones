@@ -474,9 +474,9 @@ function htmlToca(M) {
     const hora = d.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
     const cuando = ia.propio ? (dias === 0 ? `Hoy a las ${hora}` : dias === 1 ? `Ayer a las ${hora}` : `El ${fechaLarga(iso(d))}`) : 'Análisis de partida';
     cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>${esc(cuando)}${IA.generando ? ' · revisándolo ahora' : ''}</small></div><a class="enlace acento" href="#analisis">Ver el análisis</a></div>`;
-    tit = ia.titular ? `<p class="iac-tit">${rellenarIA(ia.titular, vIA)}</p>` : '';
+    tit = ia.titular ? `<p class="iac-tit">${rellenarIA(hoyConHoraIA(ia.titular, ia), vIA)}</p>` : '';
     const res = (ia.resumen || [])[0];
-    tit += res ? `<p class="iac-res">${rellenarIA(res, vIA)}</p>` : '';
+    tit += res ? `<p class="iac-res">${rellenarIA(hoyConHoraIA(res, ia), vIA)}</p>` : '';
     notas = (ia.puntuaciones || []).length ? `<div class="iac-notas">${ia.puntuaciones.slice(0, 5).map((x) => { const n = Math.max(0, Math.min(5, +x.nota || 0)); return `<span class="iac-nota" title="${esc(x.k)}: ${n} de 5"><small>${esc(/^riesgo$/i.test(x.k) ? 'Riesgo' : x.k)}</small><span class="ia-puntos" role="img" aria-label="${n} de 5">${[1, 2, 3, 4, 5].map((k) => `<i class="${k <= n ? 'on' : ''}"></i>`).join('')}</span></span>`; }).join('')}</div>` : '';
   } else if (!S.iaListo) {
     cab = `<div class="iac-cab"><span class="iac-ico ia-av">${AVATAR_IA}</span><div><h2 id="hToca" data-no-trad>${NOM_IA}</h2><small>Cargando lo que dice de tu cartera…</small></div></div>`;

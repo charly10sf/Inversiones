@@ -64,8 +64,8 @@ function htmlFicha(f) {
     <div class="ficha-precio" style="margin-top:-6px;font-size:15px"><span class="k">Tienes</span>${B('pv:' + id, 'valor')}${B('pg:' + id)}${B('pt:' + id)}</div>
     ${(() => { if (i.clase === 'Efectivo') return ''; const tp = tiempoPos(f); return tp ? `<div class="ficha-anual k">Desde hace ${duracion(tp.dias)}: <b class="${cls(tp.anual)}">${pctS(tp.anual, 1)} al año</b> (la bolsa suele dar un ${fmtNum(bolsaAnual(), 0)} %)</div>` : `<div class="ficha-anual k">¿Cuánto ganas al año? <button class="enlace acento" data-accion="editar-pos" data-id="${esc(id)}">Pon desde cuándo la tienes</button></div>`; })()}
     <div class="ficha-botones">
-      <button class="btn compra" data-accion="operacion" data-tipo="compra" data-id="${esc(id)}">${ICONOS.compra}Comprar</button>
-      <button class="btn venta" data-accion="operacion" data-tipo="venta" data-id="${esc(id)}">${ICONOS.venta}Vender</button>
+      <button class="btn compra" data-accion="operacion" data-tipo="compra" data-id="${esc(id)}">${ICONOS.compra}Apuntar compra</button>
+      <button class="btn venta" data-accion="operacion" data-tipo="venta" data-id="${esc(id)}">${ICONOS.venta}Apuntar venta</button>
       <button class="btn" data-accion="editar-pos" data-id="${esc(id)}">${ICONOS.lapiz}Editar</button>
       <button class="btn" data-accion="asesor" data-q="${esc(preguntasDelEstandar() ? `¿Qué está pasando con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y lo que dicen los analistas.` : `¿Qué hago con ${i.corto || i.nombre}? Contrasta su situación con las noticias de esta semana y dime cuánto y cuándo.`)}">${ICONOS.growia}Pregúntale</button>
     </div>

@@ -366,8 +366,10 @@ function dibujarEvo(M) {
     // la variación del periodo, en una pastilla debajo de la cifra grande
     const t0s = serie.length ? tiempoDe(serie[0].d) : Date.now();
     const corto = (Date.now() - t0s) < dias * 864e5 * 0.85;
-    const etqRango = S.rango === '1D' && deIntra ? L('desde el último cierre', 'since the last close')
-      : S.rango === '1D' && serie.length ? L(`sin precios por horas: desde el ${fechaPunto(serie[0].d)}`, `no hourly prices: since ${fechaPunto(serie[0].d)}`)
+    // 12 nov: en 1D la pastilla es siempre «Hoy» (la misma cifra de Buenos días, del widget y de la casilla de hoy del
+    // calendario); antes, sin precios por horas, enseñaba lo de los últimos cuatro días
+    const etqRango = S.rango === '1D' && deIntra ? L('hoy, desde el cierre de ayer', 'today, since yesterday’s close')
+      : S.rango === '1D' && serie.length ? L(`hoy (la gráfica, sin precios por horas: desde el ${fechaPunto(serie[0].d)})`, `today (chart without hourly prices: since ${fechaPunto(serie[0].d)})`)
       : S.rango === 'Inicio' && inicioDicho() && serie.length ? L(`ganado desde que empezaste a invertir, en ${deIso(inicioDicho()).toLocaleDateString('es-ES', { month: 'long', year: 'numeric' })}`, `gained since you started investing, ${deIso(inicioDicho()).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}`)
       : S.rango === 'Inicio' && inicioCartera() && serie.length ? L(`desde tu primera compra apuntada, el ${fechaPunto(serie[0].d)}`, `since your first logged purchase, ${fechaPunto(serie[0].d)}`)
       : S.rango === 'Inicio' && serie.length ? L('ganado desde que compraste', 'gained since you bought')
@@ -378,7 +380,8 @@ function dibujarEvo(M) {
       cab.innerHTML = `<span class="hv-p ${c}"><i aria-hidden="true">${d > 0 ? '▲' : d < 0 ? '▼' : '•'}</i>${esc(eurS(d, 0))}<em>${esc(pctS(p))}</em></span><span class="k">${esc(etq)}</span>`;
     };
     // desde dónde se cuenta: el primer punto del periodo o, en 1D, el cierre de ayer (así cuadra con «Hoy»)
-    const ref0 = S.rango === '1D' && deIntra && isFinite(M.dia) && serie.length ? { d: serie[0].d, v: M.total - M.dia } : serie[0] || null;
+    const dia1 = S.rango === '1D' && isFinite(M.dia) && serie.length > 0;
+    const ref0 = dia1 ? { d: serie[0].d, v: M.total - M.dia } : serie[0] || null;
     const ahora = { d: hoyIso(), v: isFinite(M.total) ? M.total : (serie[serie.length - 1] || {}).v };
     const real = (M2) => (S.rango === 'Inicio' && isFinite(M2.pl) && isFinite(M2.plPct) ? { d: M2.pl, p: M2.plPct } : null);
     if (serie.length > 1) pintarVar(ref0, ahora, etqRango, real(M));
@@ -394,7 +397,7 @@ function dibujarEvo(M) {
           { const r = Math.round(p.v * 100) / 100, e = Math.trunc(r), c = Math.round(Math.abs(r - e) * 100); hn.innerHTML = `<span>${fmtNum(e, 0)}</span><span class="dec">,${String(c).padStart(2, '0')} €</span>`; }
         }
         lbl.textContent = L(`El ${fechaPunto(p.d)}`, fechaPunto(p.d));
-        pintarVar(ref0, p, ref0 === serie[0] ? L(`desde el ${fechaPunto(ref0.d)}`, `since ${fechaPunto(ref0.d)}`) : L('desde el último cierre', 'since the last close'));
+        pintarVar(ref0, p, ref0 === serie[0] ? L(`desde el ${fechaPunto(ref0.d)}`, `since ${fechaPunto(ref0.d)}`) : L('desde el cierre de ayer', 'since yesterday’s close'));
       } else {
         if (hn.dataset.antes) { hn.innerHTML = hn.dataset.antes; delete hn.dataset.antes; hn.classList.remove('mira'); }
         lbl.textContent = L('Patrimonio', 'Net worth');
@@ -404,7 +407,7 @@ function dibujarEvo(M) {
     // con los precios en directo cambia el patrimonio: la pastilla se pone al día con él (salvo con el dedo encima)
     S.heroVar = (M2) => {
       const hn = $('#heroNum'); if (!hn || hn.dataset.antes || serie.length < 2) return;
-      const desde = S.rango === '1D' && deIntra && isFinite(M2.dia) ? { v: M2.total - M2.dia } : ref0;
+      const desde = S.rango === '1D' && isFinite(M2.dia) ? { v: M2.total - M2.dia } : ref0;
       pintarVar(desde, { v: isFinite(M2.total) ? M2.total : ahora.v }, etqRango, real(M2));
     };
     const movil = innerWidth < 760;

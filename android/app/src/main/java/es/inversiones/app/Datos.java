@@ -215,15 +215,27 @@ final class Datos {
             r.toca = f.optString("toca", "");
             r.cuando = f.optString("cuando", "");
             double totalPos = 0, dia = 0;
+            // 12 nov: «hoy» es hoy, como en la app y en la casilla de hoy del calendario. Lo de una foto de otro día
+            // no cuenta como de hoy, y con los precios de widget.json (desde la 0.8.6c traen la fecha del precio)
+            // solo se mueve hoy lo que tiene precio de hoy; los fondos, la bolsa sin abrir y el fin de semana, nada
+            String hoyS = LocalDate.now().toString();
+            String fotoDia = f.optString("hoy", "");
+            boolean fotoDeHoy = fotoDia.isEmpty() || fotoDia.equals(hoyS);
             JSONArray pos = f.optJSONArray("pos");
             for (int k = 0; pos != null && k < pos.length(); k++) {
                 JSONObject x = pos.getJSONObject(k);
-                double valor = x.optDouble("valor", 0), d = x.optDouble("dia", 0);
+                double valor = x.optDouble("valor", 0), d = fotoDeHoy ? x.optDouble("dia", 0) : 0;
                 JSONArray q = nuevos ? pr.optJSONArray(x.optString("id")) : null;
                 if (q != null && x.has("uds") && !Double.isNaN(q.optDouble(0))) {
-                    double precio = q.optDouble(0), anterior = q.optDouble(1, Double.NaN);
-                    valor = x.optDouble("uds") * precio;
-                    d = Double.isNaN(anterior) || anterior <= 0 ? d : x.optDouble("uds") * (precio - anterior);
+                    double precio = q.optDouble(0), anterior = q.optDouble(1, Double.NaN), uds = x.optDouble("uds");
+                    String fq = q.optString(2, "");
+                    valor = uds * precio;
+                    if (!fq.isEmpty()) {
+                        boolean deHoy = fq.compareTo(hoyS) >= 0 && !Double.isNaN(anterior) && anterior > 0;
+                        d = deHoy ? uds * (precio - anterior) + (fotoDia.equals(hoyS) ? x.optDouble("aj", 0) : 0) : 0;
+                    } else if (!Double.isNaN(anterior) && anterior > 0) {
+                        d = uds * (precio - anterior);
+                    }
                     r.conPrecios = true;
                 }
                 totalPos += valor;

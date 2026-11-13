@@ -118,6 +118,15 @@ function precioEn(hist, fecha, modo) {
   for (const [d, p] of hist) if (d > fecha) return p;
   return null;
 }
+/* el último cierre de antes de «fecha» (sin contar ese día): de donde sale lo de hoy, igual que la casilla de hoy del
+   calendario. Si es de antes del día hábil anterior (cierres semanales del radar, un festivo), null: entonces vale el
+   cierre anterior que trae el precio */
+function cierreAntes(hist, fecha) {
+  if (!hist || !hist.length) return null;
+  let r = null, rd = null;
+  for (const [d, p] of hist) { if (d < fecha) { r = p; rd = d; } else break; }
+  return rd && rd >= habilAntes(fecha) && r > 0 ? r : null;
+}
 
 /* Rango de precios posibles ese día. Con cierres diarios es el cierre de siempre (lo = hi = real). Con cierres semanales
    (los del radar, para lo que añades tú), el día puede estar en cualquier punto entre los cierres que lo rodean: en una
@@ -199,17 +208,29 @@ function calcularPos(pos, hoy) {
   const sinPrecio = !(uds != null && precio != null) && !(+pos.valor_ref);
   const valorPos = uds != null && precio != null ? uds * precio : (+pos.valor_ref || (+pos.coste || 0));
   const valor = valorPos + pendiente;
-  // «Hoy»: lo que se ha movido desde el cierre de ayer, salvo lo comprado hoy (eso, desde su precio de compra)
-  let dia = uds != null && precio != null && prev ? uds * (precio - prev) : 0;
+  /* «Hoy» (12 nov; Carlos: «hay mucho baile de cifras con lo de las últimas 24 horas»). Antes cada sitio sumaba «el
+     último movimiento de cada cosa»: a las 7 de la mañana, la bolsa de ayer, el último valor de los fondos (de uno o
+     dos días antes) y la cripto de las 24 h móviles de Bitvavo; el calendario, en cambio, suma por fechas. Ahora «hoy»
+     es hoy en todas partes, igual que la casilla de hoy del calendario: solo cuenta lo que tiene precio de hoy (en
+     directo o con fecha de hoy), medido desde su último cierre de antes de hoy. La bolsa que aún no ha abierto, el fin
+     de semana y los fondos no se mueven «hoy»: su cambio va en el día de su precio. Lo comprado hoy, desde su precio
+     de compra. */
+  const tVivo = vivo && vivo.t ? (vivo.t < 1e12 ? vivo.t * 1000 : vivo.t) : 0;
+  const fechaMov = vivo ? (tVivo ? iso(new Date(tVivo)) : hoy) : fechaPrecio;
+  const deHoyP = !!fechaMov && fechaMov >= hoy;
+  const ref = deHoyP ? (cierreAntes(hist, hoy) ?? prev) : null;
+  let dia = deHoyP && uds != null && precio != null && ref > 0 ? uds * (precio - ref) : 0;
+  const varHoy = deHoyP && precio != null && ref > 0 ? (precio / ref - 1) * 100 : null;
+  let ajHoy = 0;
   if (dia && uds > 0) {
-    const deHoy = (S.cartera.movimientos || []).filter((m) => m.tipo === 'compra' && m.instrumento === pos.instrumento && (!m.plataforma || !pos.plataforma || m.plataforma === pos.plataforma) && m.fecha === hoy && +m.uds > 0 && +m.precio > 0);
-    for (const m of deHoy) dia -= Math.min(+m.uds, uds) * (+m.precio - prev);
+    const compras = (S.cartera.movimientos || []).filter((m) => m.tipo === 'compra' && m.instrumento === pos.instrumento && (!m.plataforma || !pos.plataforma || m.plataforma === pos.plataforma) && m.fecha === hoy && +m.uds > 0 && +m.precio > 0);
+    for (const m of compras) ajHoy -= Math.min(+m.uds, uds) * (+m.precio - ref);
+    dia += ajHoy;
   }
-  // los fondos publican su valor con uno o dos días de retraso: su último cambio cuenta en «Hoy» mientras sea de
-  // esas dos últimas sesiones; si es más viejo (un dato atascado), no se repite día tras día
+  // un fondo con el último valor de hace más de dos sesiones (un dato atascado): en la lista, raya en vez de su cambio
   const diaViejo = !vivo && fechaPrecio && /^Fondo/.test(inst.tipo || '') && fechaPrecio < habilAntes(habilAntes(hoy)) ? fechaPrecio : null;
-  if (diaViejo) dia = 0;
-  return { pos, inst, p, hist, uds, estimada, precio, varDia, diaViejo, fecha: fechaPrecio, valor, dia, coste, pl: sinPrecio ? 0 : valor - coste, plPct: sinPrecio ? null : coste ? (valor / coste - 1) * 100 : null, aportes, pendiente, vivo: !!vivo, sinPrecio };
+  // varDia: lo de hoy en % (null si hoy no ha cotizado); varUlt: el último cambio de su precio, sea del día que sea
+  return { pos, inst, p, hist, uds, estimada, precio, varDia: varHoy, varUlt: varDia, diaViejo, fecha: fechaPrecio, fechaMov, valor, dia, ajHoy, coste, pl: sinPrecio ? 0 : valor - coste, plPct: sinPrecio ? null : coste ? (valor / coste - 1) * 100 : null, aportes, pendiente, vivo: !!vivo, sinPrecio };
 }
 
 function calcular() {
@@ -304,18 +325,25 @@ function reparto(M, dim, base) {
 function serieCartera(M, dias) {
   const desde = iso(new Date(Date.now() - dias * 86400000));
   const items = M.filas.filter((f) => f.uds != null && f.hist && f.hist.length);
+  // 12 nov: el precio de ahora entra como un punto más en el día de su precio (hoy si va en directo; el de su valor,
+  // si es un fondo), para que su cambio caiga en su día y no se cuele en el de hoy
+  const H = items.map((f) => {
+    const h = f.hist, ud = h[h.length - 1][0];
+    if (f.precio == null || !f.fechaMov || f.fechaMov < ud) return h;
+    return f.fechaMov === ud ? [...h.slice(0, -1), [ud, f.precio]] : [...h, [f.fechaMov, f.precio]];
+  });
   const fechas = new Set();
-  for (const f of items) for (const [d] of f.hist) if (d >= desde) fechas.add(d);
+  for (const h of H) for (const [d] of h) if (d >= desde) fechas.add(d);
   const orden = [...fechas].sort();
   if (orden.length < 2) return [];
   // lo que aún no cotizaba ese día (una salida a bolsa reciente, un fondo nuevo) cuenta a su primer precio: así la
   // gráfica llega tan atrás como lo demás, en vez de empezar el día que salió lo último que compraste
-  const idx = items.map(() => 0), ult = items.map((f) => precioEn(f.hist, desde, 'antes') ?? f.hist[0][1]);
+  const idx = items.map(() => 0), ult = H.map((h) => precioEn(h, desde, 'antes') ?? h[0][1]);
   const out = [];
   for (const d of orden) {
     let v = 0, completo = true;
     items.forEach((f, k) => {
-      const h = f.hist;
+      const h = H[k];
       while (idx[k] < h.length && h[idx[k]][0] <= d) { ult[k] = h[idx[k]][1]; idx[k]++; }
       if (ult[k] == null) completo = false; else v += f.uds * ult[k];
     });
@@ -325,6 +353,27 @@ function serieCartera(M, dias) {
     const hoy = hoyIso(), ahora = sum(items, (f) => f.uds * f.precio);
     if (out[out.length - 1].d === hoy) out[out.length - 1].v = ahora; else if (out[out.length - 1].d < hoy) out.push({ d: hoy, v: ahora });
   }
+  return out;
+}
+
+/* Lo que cambió tu cartera cada día, con lo que tienes hoy: el calendario de Análisis y el «Ayer» de Buenos días.
+   La casilla de hoy es exactamente la cifra de «Hoy» (M.dia) que sale en Inicio, en Buenos días y en el widget. El
+   porcentaje, sobre todo lo que tienes (con el efectivo), como el de «Hoy». Sin cripto, el sábado y el domingo no son
+   días de bolsa. */
+function cambiosPorDia(M, dias = 420) {
+  const s0 = serieCartera(M, dias), cripto = M.filas.some((f) => f.inst.clase === 'Cripto'), out = [];
+  const s = cripto ? s0 : s0.filter((x) => { const g = deIso(x.d).getDay(); return g !== 0 && g !== 6; });
+  const extra = s.length ? M.total - s[s.length - 1].v : 0, fijo = isFinite(extra) ? extra : 0;
+  for (let i = 1; i < s.length; i++) {
+    const b = s[i - 1].v + fijo;
+    if (b > 0) out.push({ d: s[i].d, e: s[i].v - s[i - 1].v, p: ((s[i].v - s[i - 1].v) / b) * 100 });
+  }
+  // hoy, solo si algo ha cotizado hoy (a las 7 de la mañana, sin la cripto, la casilla de hoy sigue vacía)
+  const hoy = hoyIso(), algoHoy = M.filas.some((f) => f.varDia != null);
+  if (out.length && out[out.length - 1].d === hoy && !algoHoy) out.pop();
+  const u = out[out.length - 1];
+  if (u && u.d === hoy && isFinite(M.dia)) { u.e = M.dia; u.p = M.diaPct; }
+  else if (isFinite(M.dia) && Math.abs(M.dia) >= 0.005 && (cripto || ![0, 6].includes(new Date().getDay()))) out.push({ d: hoy, e: M.dia, p: M.diaPct });
   return out;
 }
 

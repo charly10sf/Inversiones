@@ -98,8 +98,9 @@ if (document.fonts && document.fonts.ready) document.fonts.ready.then(pedirEncaj
 function pintarGtaTop() {
   const w = $('#gtaTop'); if (!w) return;
   if (!gtaActivo()) { w.remove(); return; }
-  const f = gtaFalta(), cuenta = !f ? L('¡Ya!', 'Out!') : f.d ? `${f.d}${L('d', 'd')}` : `${f.h}h`;
-  const txt = !f ? L('ya está aquí', 'out now') : f.d ? L(`faltan ${f.d} ${f.d === 1 ? 'día' : 'días'}`, `${f.d} ${f.d === 1 ? 'day' : 'days'} to go`) : L(`faltan ${f.h} horas`, `${f.h} hours to go`);
+  // 0.8.6b: los días, de calendario, como en «Lo que viene» (antes decía «7d» el mismo día que el Calendario decía «en 8 días»)
+  const f = gtaFalta(), dd = f && f.d ? Math.ceil((GTA.salida - Date.now()) / 864e5) : 0, cuenta = !f ? L('¡Ya!', 'Out!') : dd ? `${dd}${L('d', 'd')}` : `${f.h}h`;
+  const txt = !f ? L('ya está aquí', 'out now') : dd ? L(`faltan ${dd} ${dd === 1 ? 'día' : 'días'}`, `${dd} ${dd === 1 ? 'day' : 'days'} to go`) : L(`faltan ${f.h} horas`, `${f.h} hours to go`);
   const html = `<button type="button" class="gta-top" data-gta title="GTA VI: ${esc(txt)}" aria-label="GTA VI: ${esc(txt)}"><span class="gta-top-t" data-no-trad><span class="gta-top-g">GTA </span>VI</span><span class="gta-top-d" data-no-trad>${esc(cuenta)}</span></button>`;
   if (w.innerHTML !== html) w.innerHTML = html;
 }

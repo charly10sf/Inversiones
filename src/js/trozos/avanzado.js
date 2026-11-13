@@ -205,7 +205,7 @@ const QUE_ES = {
   agenda: ['Lo que pasa estas semanas con lo tuyo. Lo que hagas lo decides tú.', 'What is coming up for what you own. What you do is up to you.'],
   ia: ['La IA lee tu cartera y las noticias, explica y hace cuentas. No te dice qué comprar ni vender.', 'The AI reads your portfolio and the news, explains and does the maths. It does not tell you what to buy or sell.'],
   cifras: ['Tus números de un vistazo: por plataforma, lo que metiste y lo que cobras.', 'Your numbers at a glance: by platform, what you put in and what you collect.'],
-  mapa: ['Cada cuadro es una posición: más grande cuanto más vale, verde si sube y rojo si baja.', 'Each box is a holding: bigger the more it is worth, green if it rises and red if it falls.'],
+  mapa: ['Cada cuadro es una posición: más grande cuanto más vale, verde si sube, rojo si baja y gris si apenas se mueve.', 'Each box is a holding: bigger the more it is worth, grey if it barely moves, green if it rises and red if it falls.'],
   informe: ['Un resumen de las noticias del día de lo que tienes, escrito por la IA.', 'A summary of today\'s news about what you own, written by the AI.'],
   noticias: ['Los últimos titulares de las empresas y fondos que tienes.', 'The latest headlines about the companies and funds you own.'],
   movidas: ['Lo que más se mueve hoy de lo que tienes, y por qué. Un día no dice nada de tu plan.', 'What moves most today among what you own, and why. One day says nothing about your plan.'],
@@ -721,13 +721,8 @@ const PAV_MESES = () => (IDIOMA === 'en' ? ['January', 'February', 'March', 'Apr
 const pavChips = (attr, actual, xs) => `<div class="tabs" role="group">${xs.map(([k, t]) => `<button type="button" ${attr}="${k}" aria-pressed="${actual === k}">${t}</button>`).join('')}</div>`;
 
 /* ---------- Día a día ---------- */
-function pavDias(M) {
-  // sin cripto, el sábado y el domingo no son días de bolsa (serieCartera pone un punto «hoy» también en fin de semana)
-  const s0 = serieCartera(M, 420), cripto = M.filas.some((f) => f.inst.clase === 'Cripto'), out = [];
-  const s = cripto ? s0 : s0.filter((x) => { const g = deIso(x.d).getDay(); return g !== 0 && g !== 6; });
-  for (let i = 1; i < s.length; i++) if (s[i - 1].v > 0) out.push({ d: s[i].d, e: s[i].v - s[i - 1].v, p: (s[i].v / s[i - 1].v - 1) * 100 });
-  return out;
-}
+// el cálculo, en el núcleo (cambiosPorDia): Buenos días usa el mismo para «Ayer»
+const pavDias = (M) => cambiosPorDia(M, 420);
 function pavPnl(M) {
   const ds = pavDias(M);
   if (ds.length < 5) return pavT('c12', L('Día a día', 'Day by day'), `<p class="nota" style="margin:0">${L('Aún no hay precios de suficientes días para contarlo.', 'Not enough days of prices yet.')}</p>`);
@@ -757,10 +752,10 @@ function pavPnl(M) {
   const maxM = Math.max(1, ...ult.map(([, v]) => Math.abs(v)));
   const barras = ult.map(([k, v]) => pavDos(`${PAV_MESES()[+k.slice(5) - 1].slice(0, 3)} ${k.slice(2, 4)}`, v, maxM)).join('');
   // lo que más ha movido tu cartera el último día
-  const mov = M.filas.filter((f) => f.dia != null && f.varDia != null && !f.diaViejo).map((f) => [f.inst.corto || f.inst.nombre, f.dia]).filter(([, v]) => isFinite(v) && Math.abs(v) > 0.005).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1])).slice(0, 6);
+  const mov = M.filas.filter((f) => f.dia != null && f.varDia != null).map((f) => [f.inst.corto || f.inst.nombre, f.dia]).filter(([, v]) => isFinite(v) && Math.abs(v) > 0.005).sort((x, y) => Math.abs(y[1]) - Math.abs(x[1])).slice(0, 6);
   const maxD = Math.max(1, ...mov.map(([, v]) => Math.abs(v)));
   return [
-    pavT('c8', L('Tu cartera, día a día', 'Your portfolio, day by day'), kpis + `<div style="margin-top:16px">${cal}</div>`, L('Con lo que tienes hoy y el precio de cierre de cada día de bolsa: lo que cambió su valor de un día al siguiente. No cuenta las compras ni las ventas que hiciste por medio, así que un día en que compraste no sale como una subida.', 'With what you own today and each trading day\'s close: how its value changed from one day to the next. Purchases and sales in between are not counted.')),
+    pavT('c8', L('Tu cartera, día a día', 'Your portfolio, day by day'), kpis + `<div style="margin-top:16px">${cal}</div>`, L('Con lo que tienes hoy y el precio de cierre de cada día de bolsa: lo que cambió su valor de un día al siguiente. No cuenta las compras ni las ventas que hiciste por medio, así que un día en que compraste no sale como una subida. La casilla de hoy es la cifra de «Hoy» de Inicio, Buenos días y el widget; lo de los fondos va en el día de su valor, que publican uno o dos días después.', 'With what you own today and each trading day\'s close: how its value changed from one day to the next. Purchases and sales in between are not counted. Today\'s box is the same «Today» figure as on Home, the morning summary and the widget; funds go on the day of their price, published a day or two later.')),
     pavT('c4', L('Mes a mes', 'Month by month'), barras, L('La suma de los días de cada mes, en euros, con lo que tienes hoy.', 'The sum of each month\'s days, in euros, with what you own today.')),
     mov.length ? pavT('c12', L('Lo que más ha movido tu cartera hoy', 'What moved your portfolio most today'), mov.map(([n, v]) => pavDos(n, v, maxD)).join(''), L('Lo que ha ganado o perdido cada posición en la última sesión, en euros.', 'What each holding gained or lost in the last session, in euros.')) : '',
   ].join('');
