@@ -102,7 +102,7 @@ test('ordenador: diez secciones a la izquierda y las páginas de la abierta al l
   // las direcciones de siempre caen en su sección
   await ir(page, 'renta');
   await expect(page.locator('.k2-tit')).toHaveText('Hacienda');
-  await expect(page.locator('.k2-lista a[aria-current="page"]')).toHaveText('Guía de la renta');
+  await expect(page.locator('.k2-lista a[aria-current="page"]')).toHaveText(/^Tu renta 20\d\d$/);
   await ir(page, 'objetivos');
   await expect(page.locator('.k2-iconos [data-sec="tuplan"]')).toHaveAttribute('aria-current', 'page');
   // en básico, Herramientas avisa de que está en el avanzado

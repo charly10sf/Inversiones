@@ -1,8 +1,8 @@
 // Arreglos de Hacienda del núcleo (PENDIENTE 49 e, 11 nov 2026):
 //  - el ETC no tributa «como una acción»: según la DGT (V0267-25) es rendimiento del capital mobiliario, con recompra de
 //    dos meses cotice donde cotice (art. 25.2.b LIRPF);
-//  - en la Guía de la renta, los ETF van con los fondos cotizados (no en la 0328) y el 720/721 va por bloques;
-//  - la Guía informa del cierre del año sin proponer ventas, también en fundador;
+//  - en Tu renta, los ETF van con los fondos cotizados (no en la 0328) y el ETC en la 0031 (antes, en la Guía);
+//  - el 720/721 por bloques y el cierre del año, sin proponer ventas: a «Cómo tributa y calendario» (fase 2, sesión 2);
 //  - Interactive Brokers, desde unos 1,25 € con la tarifa escalonada.
 import { test as base, expect } from '@playwright/test';
 import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
@@ -102,66 +102,58 @@ test('el ETC cuenta como rendimiento del capital y su recompra es de dos meses',
   await expect(vista).toContainText('cuentan como rendimiento del capital');
 });
 
-test('la Guía de la renta: ETF con los fondos cotizados, 720 por bloques y sin proponer ventas', async ({ page, errores }) => {
-  // fecha fija (11 nov 2026) para que el paso del cierre del año salga siempre, también en 2027
+test('Tu renta: ETF con los fondos cotizados, el ETC en la 0031 y la 0328 solo para bolsas de España y la UE', async ({ page, errores }) => {
+  // fecha fija (11 nov 2026): la renta que toca es la de 2026
   await page.clock.setFixedTime(new Date('2026-11-11T12:00:00+01:00'));
   await crearCuenta(page);
-  await quitarCapas(page);
-  await meterCartera(page);
+  // la guía de primeros pasos de una cuenta recién creada sale una vez, al rato: se espera a que salga y se quita
+  await page.waitForSelector('.hoja-guia', { timeout: 10_000 }).catch(() => {});
+  await meterCartera(page); await quitarCapas(page);
+  await page.evaluate(() => { LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); });
   await page.evaluate(() => {
     const a = 2026;
     S.inst['etf-prueba'] = { id: 'etf-prueba', tipo: 'ETF', clase: 'Renta variable', nombre: 'ETF Mundo de prueba', corto: 'ETF Mundo de prueba', yahoo: 'VWCE.DE', pais: 'IE' };
     const venta = (id, instrumento, resultado) => ({ id, tipo: 'venta', fecha: `${a}-02-10`, instrumento, plataforma: 'Trade Republic', uds: 3, importe: 1000 + resultado, coste_vendido: 1000, resultado });
-    S.cartera.movimientos = [venta('v1', 'etf-prueba', 120), venta('v2', 'repsol', 80), venta('v3', 'phau', 60)];
+    S.cartera.movimientos = [venta('v1', 'etf-prueba', 120), venta('v2', 'repsol', 80), venta('v3', 'phau', 60), venta('v4', 'bat', 30)];
     S.M = calcular();
-    location.hash = '#impuestos';
+    location.hash = '#renta';
   });
-  const vista = page.locator('#vista');
-  await expect(vista).toContainText('Lo que pagas');
-  await page.evaluate(() => { S.fisTab = 'renta'; pintar(); });
-  await expect(vista).toContainText('Revisa cada apartado con lo tuyo');
-  const caja = (t) => vista.locator('.rg-c').filter({ has: page.locator('.rg-c-cab b', { hasText: new RegExp(`^${t}$`) }) });
-  // 1. los ETF, fuera de la 0328
-  await expect(vista).not.toContainText('Ventas de acciones y ETF');
-  await expect(caja('Ventas de acciones')).toContainText('casilla 0328');
-  await expect(caja('Ventas de acciones')).toContainText('Repsol');
-  await expect(caja('Ventas de acciones')).not.toContainText('ETF Mundo de prueba');
-  await expect(caja('Ventas de ETF')).toContainText('fondos cotizados');
-  await expect(caja('Ventas de ETF')).toContainText('instituciones de inversión colectiva');
-  await expect(caja('Ventas de ETF')).toContainText('ETF Mundo de prueba');
-  await expect(caja('Ventas de ETF')).not.toContainText('0328');
-  // 5. y el ETC, con los rendimientos del capital
-  await expect(caja('Ventas de ETC')).toContainText('casilla 0031');
-  await expect(caja('Ventas de ETC')).toContainText('Oro');
-  await expect(caja('Ventas de acciones')).not.toContainText('Oro');
-  // 2. el 720 y el 721, por bloques
-  const p720 = vista.locator('.rg-paso', { hasText: 'Modelos 720 y 721' });
-  await expect(p720).toContainText('del 1 de enero al 31 de marzo');
-  await expect(p720).toContainText('más de 50.000 € en alguno de estos bloques, cada uno por separado');
-  await expect(p720).toContainText('cuentas');
-  await expect(p720).toContainText('valores y fondos');
-  await expect(p720).toContainText('inmuebles');
-  await expect(p720).toContainText('cripto en plataformas extranjeras (el 721)');
-  await expect(p720).toContainText('solo si un bloque sube más de 20.000 €');
-  await expect(p720).not.toContainText('el 720 para valores y cuentas');
-  // 3. en fundador tampoco propone vender
+  const hz = page.locator('#hz');
+  await expect(hz.locator('.hz-lista')).toBeVisible();
+  const abrir = async (t) => { await hz.locator('button.hz-paso', { hasText: t }).click(); await expect(hz.locator('#hzTit')).toHaveText(t); };
+  // 1. los ETF, fuera de la 0328: con los fondos, como fondos cotizados
+  await abrir('Fondos cotizados (ETF)');
+  await expect(hz.locator('.hz-panel')).toContainText('instituciones de inversión colectiva');
+  await expect(hz.locator('.hz-panel')).toContainText('ETF Mundo de prueba');
+  await expect(hz.locator('.hz-panel .hz-ey')).not.toContainText('0328');
+  // 2. las acciones, en la 0328, sin el ETF ni el oro; y las de Londres, a «otros elementos patrimoniales»
+  await abrir('Ventas de acciones');
+  await expect(hz.locator('.hz-panel .hz-ey')).toContainText('casilla 0328');
+  await expect(hz.locator('.hz-ventas')).toContainText('Repsol');
+  await expect(hz.locator('.hz-ventas')).not.toContainText('ETF Mundo de prueba');
+  await expect(hz.locator('.hz-ventas')).not.toContainText('Oro');
+  await expect(hz.locator('.hz-panel')).toContainText('Las que solo cotizan fuera (en EEUU o en Londres, por ejemplo) van en «otros elementos patrimoniales»');
+  // 3. el ETC, con los rendimientos del capital (casilla 0031)
+  await hz.locator('button.hz-paso', { hasText: '0031' }).click();
+  await expect(hz.locator('.hz-panel .hz-ey')).toContainText('Rendimientos del capital mobiliario · casilla 0031');
+  await expect(hz.locator('.hz-panel')).toContainText('Un ETC es un título de deuda');
+  // 4. sin órdenes, tampoco en fundador
   await page.evaluate(() => { S.acceso = 'privado'; pintar(); });
-  await expect(vista).toContainText('Guía de la renta');
-  await expect(vista).not.toContainText('te compensa vender');
-  await expect(vista).not.toContainText('te lo propone');
-  await expect(vista).not.toContainText('Cierra el año');
-  const cierre = vista.locator('.rg-paso', { hasText: 'El año fiscal se cierra el 31 de diciembre' });
-  await expect(cierre).toContainText('cuenta en la renta de este año');
-  await expect(cierre).toContainText('y los ETC coticen donde coticen');
-  // la 0328, solo para bolsas españolas y de la UE (la cartera de prueba lleva una acción de Londres)
-  await expect(caja('Ventas de acciones')).toContainText('las que solo cotizan fuera (por ejemplo, en EEUU o Reino Unido) irían a «otros elementos patrimoniales»');
+  await expect(hz).not.toContainText('te compensa vender');
+  await expect(hz).not.toContainText('te lo propone');
   // «Para pagar menos» y la nota de «si vendieras hoy»: la regla, sin órdenes ni lista de lo que va en pérdidas
   await page.evaluate(() => { S.fisTab = 'tu'; pintar(); });
+  const vista = page.locator('#vista');
   await expect(vista).toContainText('Los traspasos entre fondos no tributan');
   await expect(vista).not.toContainText('Usa traspasos');
   await expect(vista).not.toContainText('Aprovecha tus pérdidas');
   await expect(vista).not.toContainText(/pérdidas sin vender/i);
 });
+
+// Fase 2, sesión 2: el 720 y el 721 por bloques y el cierre del año pasan a «Cómo tributa y calendario». Hasta entonces,
+// lo que decía la Guía vieja (del 1 de enero al 31 de marzo, cada bloque por separado, inmuebles, 721, más de 20.000 €;
+// el cierre del 31 de diciembre con los ETC coticen donde coticen) queda apuntado aquí para volver a probarlo allí.
+test.fixme('Cómo tributa y calendario: el 720 y el 721 por bloques y el cierre del año, sin proponer ventas', async () => {});
 
 test('la IA lee la comisión de Interactive Brokers y lo del ETC igual que la app', async ({ page, errores }) => {
   await crearCuenta(page);

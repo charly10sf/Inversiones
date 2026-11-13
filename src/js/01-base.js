@@ -37,7 +37,7 @@ const MODO = (() => {
   } catch (e) { return 'github'; }
 })();
 const PERFIL_LOCAL = MODO !== 'github', PERFIL_CUENTA = MODO === 'cuenta';
-const PRIVADAS = new Set(['inv-bloqueo', 'inv-bloqueo-t', 'inv-cache-enc', 'inv-pend-enc', 'inv-cuenta-enc', 'inv-pend-cuenta', 'inv-token', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-convs', 'inv-asesor-cfg2', 'inv-ia-propio', 'inv-ia-agotados', 'inv-gkey-modo', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-reparto-obj', 'inv-metas-hechas']);
+const PRIVADAS = new Set(['inv-bloqueo', 'inv-bloqueo-t', 'inv-cache-enc', 'inv-pend-enc', 'inv-cuenta-enc', 'inv-pend-cuenta', 'inv-token', 'inv-asesor-clave', 'inv-asesor-clave-g', 'inv-asesor-conv', 'inv-asesor-convs', 'inv-asesor-cfg2', 'inv-ia-propio', 'inv-ia-agotados', 'inv-gkey-modo', 'inv-cache-ia', 'inv-oculto', 'inv-proy', 'inv-reparto-obj', 'inv-metas-hechas', 'inv-hz-donde']);
 const IDB_CLAVE = PERFIL_CUENTA ? 'clave-cuenta' : PERFIL_LOCAL ? 'clave-local' : 'clave';
 const LS_SOBRA = ['inv-cache-tren', 'inv-cache-escaneo', 'inv-cache-hist', 'inv-cache-radar', 'inv-cache-informe', 'inv-cache-precios', 'inv-cache-cat', 'inv-cache-inst', 'inv-logos'];
 /* 0.6d: con la cartera de prueba, lo que se escribe se queda en esta capa en memoria y se tira al salir: lo tuyo del

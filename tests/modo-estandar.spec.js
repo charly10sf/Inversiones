@@ -34,9 +34,9 @@ test('en estándar, Hacienda no habla de lo que recomienda GrowFolio; en fundado
   // «Para pagar menos»: la regla, sin decir qué vender, y los nombres con «&» sin escapar dos veces
   await expect(vista).not.toContainText('vender también estas');
   await expect(vista).not.toContainText('&amp;');
-  // la Guía de la renta, en estándar, sin «el Paso a paso te lo propone»
+  // Tu renta (antes la Guía), en estándar, sin «el Paso a paso te lo propone»
   await page.evaluate(() => { S.fisTab = 'renta'; pintar(); });
-  await expect(vista).toContainText('Guía de la renta');
+  await expect(page.locator('#hz .hz-lista')).toBeVisible();
   await expect(vista).not.toContainText('te lo propone');
   await page.evaluate(() => { S.fisTab = 'tu'; pintar(); });
 

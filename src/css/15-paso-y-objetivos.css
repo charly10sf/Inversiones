@@ -389,29 +389,6 @@ fieldset.opciones legend { font-size: 13.5px; color: var(--texto-2); margin-bott
 .tr2.tuyo b { color: var(--primario); }
 @media (max-width: 560px) { .tramos2 { grid-template-columns: repeat(3, minmax(0, 1fr)); } .tr2 { padding: 9px 9px 8px; } .tr2 b { font-size: 16px; } .tr2 small { font-size: 12px; } .tr2 span { top: 8px; right: 8px; } }
 /* guía de la renta */
-.rg-intro { margin: 0 0 22px; font-size: 16px; line-height: 1.55; color: var(--texto-2); max-width: 760px; }
-.rg-intro b { color: var(--texto); }
-.rg-pasos { list-style: none; margin: 0; padding: 0; display: grid; gap: 0; max-width: 860px; }
-.rg-paso { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 14px; position: relative; padding-bottom: 24px; }
-.rg-paso::before { content: ''; position: absolute; left: 16px; top: 34px; bottom: 4px; width: 2px; background: var(--sep); }
-.rg-paso:last-child::before { display: none; }
-.rg-n { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--primario-fondo); color: var(--primario); font-weight: 700; font-size: 14px; border: 1px solid color-mix(in srgb, var(--oro-texto) 40%, transparent); }
-.rg-cab { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 12px; margin: 6px 0 6px; }
-.rg-cab b { font-size: 16.5px; font-weight: 650; letter-spacing: -0.01em; }
-.rg-cuando { font-size: 12.5px; color: var(--primario); font-weight: 600; }
-.rg-paso p { margin: 0 0 8px; color: var(--texto-2); font-size: 14.5px; line-height: 1.6; }
-.rg-lista { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
-.rg-lista li { display: grid; gap: 2px; padding: 10px 12px; border-radius: 10px; background: var(--superficie); border: 1px solid var(--sep); font-size: 14px; line-height: 1.5; color: var(--texto-2); }
-.rg-lista b { color: var(--texto); font-weight: 600; }
-.rg-casillas { display: grid; gap: 8px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 250px), 1fr)); margin-bottom: 10px; }
-.rg-c { padding: 12px; border-radius: 12px; border: 1px solid var(--sep); }
-.rg-c-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 4px; }
-.rg-c-cab b { font-size: 14.5px; font-weight: 600; }
-.rg-cas { font-size: 12px; font-weight: 700; color: var(--primario); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.rg-c p { font-size: 13.5px; margin: 0; }
-.rg-c p.k { margin-top: 8px; font-size: 12.5px; }
-.rg-ventas { list-style: none; margin: 8px 0 0; padding: 0; font-size: 13px; display: grid; gap: 4px; }
-.rg-ventas li { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; }
 
 /* tour: entrada, foco que late, flecha hacia lo resaltado y texto que desliza al cambiar de paso */
 .tour { animation: tour-in 0.25s ease both; }

@@ -142,6 +142,8 @@ function tiempoPos(f) {
 const duracion = (dias) => (dias < 75 ? `${Math.round(dias)} días` : dias < 548 ? `${Math.round(dias / 30.4)} meses` : `${fmtNum(dias / 365, 1)} años`);
 
 function datosFiscales(anio) { return ((S.cartera.fiscal || {})[anio]) || {}; }
+/* la renta que toca mirar: de enero a junio, la del año pasado (la que se presenta); después, la del año en curso */
+const anioRenta = () => { const h = new Date(); return h.getMonth() < 6 ? h.getFullYear() - 1 : h.getFullYear(); };
 /* la regla de recompra de Hacienda (dos meses en lo que cotiza en la UE, un año en fondos y en lo de fuera, nada en cripto): una venta con
    pérdidas con una compra del mismo valor en ese plazo, antes o después (también una aportación automática), no
    resta este año. Devuelve la primera compra que la bloquea, o null si la pérdida cuenta */
@@ -247,6 +249,7 @@ function editarFiscal(anio = new Date().getFullYear()) {
     <div class="form-grid">
       <label class="campo">Resultado de ventas no apuntadas (€)<input name="otras" inputmode="decimal" value="${val(d.otras)}" placeholder="0"><small>Ganancia o pérdida neta de lo que vendiste este año sin apuntarlo en Toisón. Las pérdidas, en negativo.</small></label>
       <label class="campo">Dividendos e intereses cobrados (€)<input name="rcm" inputmode="decimal" value="${val(d.rcm)}" placeholder="0"><small>En bruto, antes de retenciones. Incluye los intereses del efectivo remunerado de tus plataformas.</small></label>
+      <label class="campo">De ellos, intereses (€)<input name="intereses" inputmode="decimal" value="${val(d.intereses)}" placeholder="0"><small>Lo que te ha pagado el efectivo, en bruto. Van en otra casilla que los dividendos (0027 y 0029); si lo dejas en blanco, Tu renta los enseña juntos.</small></label>
       <label class="campo">Retenciones que ya te han hecho (€)<input name="retenido" inputmode="decimal" value="${val(d.retenido)}" placeholder="0"><small>Las españolas, enteras: se restan de lo que pagas. De lo que te retuvieron fuera, pon como mucho el 15 % de esos dividendos (lo que pasa de ahí no se recupera en la renta).</small></label>
       <label class="campo">Pérdidas de años anteriores sin compensar (€)<input name="pendientes" inputmode="decimal" value="${val(d.pendientes)}" placeholder="0"><small>Las que te queden de los últimos 4 años, en positivo (vienen en tu declaración anterior).</small></label>
       <label class="campo">Rendimientos negativos de años anteriores sin compensar (€)<input name="pendientesRcm" inputmode="decimal" value="${val(d.pendientesRcm)}" placeholder="0"><small>Solo si te quedan saldos negativos de rendimientos del capital (por ejemplo, de vender un ETC con pérdidas), en positivo. Van aparte de las pérdidas de acciones y fondos.</small></label>
@@ -256,11 +259,15 @@ function editarFiscal(anio = new Date().getFullYear()) {
   $('#fFis', h.el).onsubmit = async (ev) => {
     ev.preventDefault();
     const o = {};
-    for (const k of ['otras', 'rcm', 'retenido', 'pendientes', 'pendientesRcm']) {
+    for (const k of ['otras', 'rcm', 'intereses', 'retenido', 'pendientes', 'pendientesRcm']) {
       const n = numero(ev.target[k].value);
       if (Number.isNaN(n)) { $('#errFis', h.el).textContent = 'Algún importe no es un número.'; return; }
       if (n != null) o[k] = n;
     }
+    if (o.intereses != null && o.intereses > (o.rcm || 0) + 0.005) { $('#errFis', h.el).textContent = 'Los intereses no pueden pasar de lo que pones en dividendos e intereses: van dentro.'; return; }
+    // lo que guarda Tu renta en el mismo año (las respuestas y las marcas de la hoja) no se pierde al guardar el formulario
+    const ant = datosFiscales(anio);
+    for (const k of Object.keys(ant)) if (k.startsWith('hz')) o[k] = ant[k];
     S.cartera.fiscal = { ...(S.cartera.fiscal || {}), [anio]: o };
     await guardarYPintar('Datos fiscales', h);
   };
@@ -485,9 +492,8 @@ function htmlFiscalGuia(M, fa, x) {
     <p class="nota">Cálculo orientativo con la normativa de ${anio}: la cifra exacta sale en el borrador de la renta y en los informes fiscales de tus brókeres.</p>`;
 }
 function vistaFiscal(M) {
-  const t = S.fisTab === 'renta' ? 'renta' : 'tu';
-  return `<div class="vista-cab"><h1>Hacienda</h1><p>${esPublico() ? 'Lo que pagarás en la renta, cómo tributa cada cosa y cómo hacer la declaración.' : 'Lo que pagarás en la renta, lo que costaría cada paso de tu plan, cómo tributa cada cosa y cómo hacer la declaración.'}</p></div>
-  <div class="subvistas dos-op" id="fisTabs" role="group" aria-label="Qué ver"><button data-fis="tu" aria-pressed="${t === 'tu'}">${ICONOS.calc}Lo que pagas</button><button data-fis="renta" aria-pressed="${t === 'renta'}">${ICONOS.fiscal}Guía de la renta</button></div>
-  ${t === 'renta' ? htmlGuiaRenta(M) : htmlImpuestos(M)}`;
+  const t = S.fisTab === 'tu' ? 'tu' : 'renta';
+  return `<div class="vista-cab"><h1>Hacienda</h1><p>${esPublico() ? 'Tu renta casilla a casilla, lo que pagarás y cómo tributa cada cosa.' : 'Tu renta casilla a casilla, lo que pagarás, lo que costaría cada paso de tu plan y cómo tributa cada cosa.'}</p></div>
+  <div class="subvistas dos-op" id="fisTabs" role="group" aria-label="Qué ver"><button data-fis="renta" aria-pressed="${t === 'renta'}">${ICONOS.fiscal}Tu renta ${anioRenta()}</button><button data-fis="tu" aria-pressed="${t === 'tu'}">${ICONOS.calc}Lo que pagas</button></div>
+  ${t === 'renta' ? `<div class="panel-hz" id="panelHz" aria-busy="true"><div class="pav-esq" role="status" aria-label="Preparando tu renta…"><i></i><i></i><i></i></div></div>` : htmlImpuestos(M)}`;
 }
-

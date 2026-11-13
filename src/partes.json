@@ -26,7 +26,8 @@
     "23-tu.css",
     "24-navegacion.css",
     "25-cristal.css",
-    "26-dorado.css", "27-revision-083b.css",
+    "26-dorado.css",
+    "27-revision-083b.css",
     "28-lista-seguimiento.css",
     "29-noticias.css",
     "29-frente-indexado.css",
@@ -60,7 +61,6 @@
     "20-graficos.js",
     "21-logos-y-orden.js",
     "22-impuestos.js",
-    "23-guia-renta.js",
     "24-plan-de-venta.js",
     "25-analisis-ia.js",
     "26-futuro.js",
@@ -162,6 +162,9 @@
     ],
     "noticias": [
       "trozos/noticias.js"
+    ],
+    "hacienda": [
+      "trozos/hacienda.js"
     ]
   }
 }

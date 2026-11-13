@@ -685,6 +685,8 @@ function pintar() {
   if (S.vista === 'av' && $('#panelAv')) pintarPanelAv();
   // Noticias: igual, su contenido está en el trozo «noticias»
   if (S.vista === 'noticias' && $('#panelNot')) pintarNoticias();
+  // Hacienda > Tu renta: el recorrido casilla a casilla está en el trozo «hacienda»
+  if (S.vista === 'fiscal' && $('#panelHz')) pintarHacienda();
   ponerPreguntale($('#vista')); marcarCifras($('#vista')); pulirHoy(M); if (grupoDe(S.vista).k === 'posiciones') centrarPest();
   if (S.irPlan && S.vista === 'cartera') { S.irPlan = false; setTimeout(() => { const p = $('.car-plan'); if (p) p.scrollIntoView({ block: 'start' }); }, 60); }
   if (S.vista === 'tu') activarSelectorTema($('#vista'));

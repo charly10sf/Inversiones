@@ -55,8 +55,8 @@ const PAGINAS = [
   { id: 'riesgo', t: 'Riesgo', en: 'Risk', s: 'riesgo', g: 'rr', v: 'av', p: 'riesgo', kw: 'volatilidad var estres caida factores' },
   { id: 'reparto', t: 'Reparto y X-Ray', en: 'Allocation and X-Ray', s: 'reparto', g: 'rr', v: 'av', p: 'reparto', kw: 'paises sectores temas xray' },
   { id: 'rebal', t: 'Tu reparto objetivo', en: 'Your target mix', s: 'reparto', g: 'rr', v: 'av', p: 'rebal', kw: 'rebalancear objetivo' },
-  { id: 'fiscal', t: 'Hacienda', en: 'Taxes', s: 'hacienda', g: 'hacienda', v: 'fiscal', h: 'impuestos', kw: 'impuestos irpf plusvalias' },
-  { id: 'renta', t: 'Guía de la renta', en: 'Tax return guide', s: 'hacienda', g: 'hacienda', v: 'fiscal', h: 'renta', kw: 'declaracion renta' },
+  { id: 'renta', get t() { return `Tu renta ${anioRenta()}`; }, get en() { return `Your ${anioRenta()} tax return`; }, s: 'hacienda', g: 'hacienda', v: 'fiscal', h: 'renta', kw: 'declaracion renta guia casillas borrador renta web' },
+  { id: 'fiscal', t: 'Lo que pagas', en: 'What you pay', s: 'hacienda', g: 'hacienda', v: 'fiscal', h: 'impuestos', kw: 'hacienda impuestos irpf plusvalias' },
   { id: 'mercados', t: 'Mercados', en: 'Markets', s: 'mercados', g: 'mi', v: 'mercados', kw: 'bolsas tipos divisas materias primas buscar' },
   { id: 'ideas', t: 'Ideas', en: 'Ideas', s: 'ideas', g: 'mi', v: 'expertos', h: 'ideas', kw: 'radar analistas expertos seguimiento' },
   { id: 'tu', t: 'Tu cuenta', en: 'Your account', s: 'tuplan', g: 'tuyo', v: 'tu', kw: 'diseno tema perfil' },
@@ -84,7 +84,7 @@ const hrefPag = (p) => { if (enBas(p)) p = PAG[p.bas]; return '#' + (p.h || (p.v
 function paginaActual() {
   const v = S.vista;
   if (v === 'av') { const p = pestAv(); return (PAGINAS.find((x) => x.p === p) || PAG.rentab).id; }
-  if (v === 'fiscal') return S.fisTab === 'renta' ? 'renta' : 'fiscal';
+  if (v === 'fiscal') return S.fisTab === 'tu' ? 'fiscal' : 'renta';
   return { cartera: 'hoy', futuro: 'objetivos', expertos: 'ideas' }[v] || (PAG[v] ? v : 'hoy');
 }
 const seccionActual = () => (PAG[paginaActual()] || PAG.hoy).s;
@@ -127,7 +127,7 @@ const PEST_ANA = [
   { k: 'riesgo', t: 'Riesgo', en: 'Risk', ap: ['riesgo'] },
   { k: 'reparto', t: 'Reparto', en: 'Allocation', ap: ['reparto', 'rebal'] },
   { k: 'ingresos', t: 'Ingresos y costes', en: 'Income and costs', ap: ['div', 'costes'], av: true },
-  { k: 'fiscal', t: 'Hacienda', en: 'Taxes', ap: ['fiscal', 'renta'], sinAp: true },
+  { k: 'fiscal', t: 'Hacienda', en: 'Taxes', ap: ['renta', 'fiscal'], sinAp: true },
   { k: 'analisis', t: 'La IA explica', en: 'AI explains', ap: ['analisis'] },
 ];
 const pestAnaVisibles = () => PEST_ANA.filter((x) => (!x.av || modoApp() === 'avanzado') && (!x.soloBas || modoApp() === 'basico'));
