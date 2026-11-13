@@ -1305,7 +1305,14 @@ def decidir(lectura, cache, valores, medianas, tuyas, precios=None, previa=None)
     texto_pedido = f"Hoy es {hoy}.\n\n" + (f"## Cómo van los mercados por zonas\n{zonas}\n\n" if zonas else "") + "\n\n".join(bloques) + memoria + f"\n\nEn \"plazos\" pon una entrada para cada una de estas, sin saltarte ninguna: {obligadas}."
     # 0.8.2d: Haiku pensando (esfuerzo medio) y por lote. Si no sale, se quedan las ideas de la vez anterior y se reintenta
     # en otra pasada (a las 2 horas)
-    msg = ia(pedido(DECIDIR, texto_pedido, 32768, json_=True, pensar=True), "decidir")
+    # 14 nov 2026 (auditoría): la decisión puede ir con otro modelo (CLAUDE_DECIDIR_MODELO; en la Action, la variable del
+    # repositorio del mismo nombre). Vacío o un modelo que no esté en PRECIOS: el del radar, como siempre. En el ensayo,
+    # Sonnet 5.5 costó 0,053 US$ por decisión (Haiku, 0,006) y fue el único que no leyó mal ningún dato.
+    cuerpo = pedido(DECIDIR, texto_pedido, 32768, json_=True, pensar=True)
+    otro = os.environ.get("CLAUDE_DECIDIR_MODELO", "").strip()
+    if otro in PRECIOS:
+        cuerpo["model"] = otro
+    msg = ia(cuerpo, "decidir")
     texto, _ = texto_de(msg)
     modelo_usado = msg.get("model") or CLAUDE_MODELO
     d = extraer_json(texto)

@@ -161,6 +161,8 @@ jobs:
           ANTHROPIC_RADAR_KEY: ${{ secrets.ANTHROPIC_RADAR_KEY }}
           INFORME_FORZAR: ${{ (inputs.informe || inputs.ensayo) && '1' || '' }}
           INFORME_DECIDIR: ${{ inputs.ensayo && '1' || '' }}
+          # 14 nov 2026 (auditoría): otro modelo solo para la decisión de las ideas (claude-sonnet-5-5). Vacío: el del radar
+          CLAUDE_DECIDIR_MODELO: ${{ vars.CLAUDE_DECIDIR_MODELO }}
         run: |
           python scripts/informe.py instrumentos.json anterior salida || echo "el informe no se pudo generar"
 

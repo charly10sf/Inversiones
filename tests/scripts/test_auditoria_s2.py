@@ -269,6 +269,38 @@ class TendenciaEnLaDecision(Base):
         self.assertIn("línea «Tendencia»", I.DECIDIR)
 
 
+class ModeloDeLaDecision(Base):
+    """La decisión de las ideas puede ir con otro modelo (CLAUDE_DECIDIR_MODELO); sin la variable, con el del radar."""
+
+    def decide(self):
+        modelos = []
+        pedir = I.peticion_claude
+
+        def espia(cuerpo, clave):
+            modelos.append(cuerpo["model"])
+            return pedir(cuerpo, clave)
+        valores = [empresa("WDC", "Western Digital", r="strong_buy", pot=40, na=24, rm=1.5, perf=7.3, v=1, m50=9, m200=8, mx=12, epsg=42.1, roe=30,
+                           v0=[10, 10, 4, 0, 0], v3=[8, 9, 6, 0, 1], c1a=20)]
+        self.claude_dice({"comentario": "x", "ideas": [], "evitar": [], "cambios": [], "plazos": []})
+        pedir = I.peticion_claude
+        I.peticion_claude = espia
+        I.decidir({"WDC": {"d": ahora(2), "rel": 2, "imp": "positivo", "txt": "Bien."}}, {"WDC": {"n": [{"t": "Western Digital climbs", "u": "https://e/1", "d": ahora(5)}]}},
+                  valores, P.per_sector_mediano(valores), set(), {})
+        return modelos
+
+    def test_sin_la_variable_el_del_radar(self):
+        os.environ.pop("CLAUDE_DECIDIR_MODELO", None)
+        self.assertEqual(self.decide(), [I.CLAUDE_MODELO])
+
+    def test_con_la_variable_el_que_diga(self):
+        os.environ["CLAUDE_DECIDIR_MODELO"] = "claude-sonnet-5-5"
+        self.assertEqual(self.decide(), ["claude-sonnet-5-5"])
+
+    def test_un_modelo_que_no_se_conoce_no_vale(self):
+        os.environ["CLAUDE_DECIDIR_MODELO"] = "otro-modelo"
+        self.assertEqual(self.decide(), [I.CLAUDE_MODELO])
+
+
 class ObjetivoImposible(unittest.TestCase):
     """Fallo 8: un precio objetivo en otra unidad daba un recorrido del 1.150 %."""
 
