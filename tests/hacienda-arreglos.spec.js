@@ -5,7 +5,7 @@
 //  - el 720/721 por bloques y el cierre del año, sin proponer ventas: a «Cómo tributa y calendario» (fase 2, sesión 2);
 //  - Interactive Brokers, desde unos 1,25 € con la tarifa escalonada.
 import { test as base, expect } from '@playwright/test';
-import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
+import { preparar, crearCuenta, meterCartera, quitarCapas, hzIrA, conDorado } from './ayuda.js';
 
 const test = base.extend({
   errores: async ({ context }, use) => {
@@ -110,6 +110,7 @@ test('Tu renta: ETF con los fondos cotizados, el ETC en la 0031 y la 0328 solo p
   await page.waitForSelector('.hoja-guia', { timeout: 10_000 }).catch(() => {});
   await meterCartera(page); await quitarCapas(page);
   await page.evaluate(() => { LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); });
+  await conDorado(page);
   await page.evaluate(() => {
     const a = 2026;
     S.inst['etf-prueba'] = { id: 'etf-prueba', tipo: 'ETF', clase: 'Renta variable', nombre: 'ETF Mundo de prueba', corto: 'ETF Mundo de prueba', yahoo: 'VWCE.DE', pais: 'IE' };
@@ -119,8 +120,8 @@ test('Tu renta: ETF con los fondos cotizados, el ETC en la 0031 y la 0328 solo p
     location.hash = '#renta';
   });
   const hz = page.locator('#hz');
-  await expect(hz.locator('.hz-lista')).toBeVisible();
-  const abrir = async (t) => { await hz.locator('button.hz-paso', { hasText: t }).click(); await expect(hz.locator('#hzTit')).toHaveText(t); };
+  await expect(hz.locator('#hzPanel')).toBeVisible();
+  const abrir = async (t) => { await hzIrA(page, t); await expect(hz.locator('#hzTit')).toHaveText(t); };
   // 1. los ETF, fuera de la 0328: con los fondos, como fondos cotizados
   await abrir('Fondos cotizados (ETF)');
   await expect(hz.locator('.hz-panel')).toContainText('instituciones de inversión colectiva');
@@ -134,8 +135,9 @@ test('Tu renta: ETF con los fondos cotizados, el ETC en la 0031 y la 0328 solo p
   await expect(hz.locator('.hz-ventas')).not.toContainText('Oro');
   await expect(hz.locator('.hz-panel')).toContainText('Las que solo cotizan fuera (en EEUU o en Londres, por ejemplo) van en «otros elementos patrimoniales»');
   // 3. el ETC, con los rendimientos del capital (casilla 0031)
-  await hz.locator('button.hz-paso', { hasText: '0031' }).click();
-  await expect(hz.locator('.hz-panel .hz-ey')).toContainText('Rendimientos del capital mobiliario · casilla 0031');
+  await hzIrA(page, '0031');
+  // en el móvil, el apartado va en corto encima del título
+  await expect(hz.locator('.hz-panel .hz-ey')).toContainText(/capital mobiliario · casilla 0031/i);
   await expect(hz.locator('.hz-panel')).toContainText('Un ETC es un título de deuda');
   // 4. sin órdenes, tampoco en fundador
   await page.evaluate(() => { S.acceso = 'privado'; pintar(); });

@@ -83,7 +83,7 @@ function ponerPreguntale(raiz) {
     b.type = 'button'; b.className = 'preg-ia'; b.dataset.accion = 'asesor';
     b.dataset.q = L(`Explícame «${tit}» con mi cartera: qué significa, de dónde salen las cifras y qué hay que vigilar.`, `Explain «${tit}» with my portfolio: what it means, where the numbers come from and what to watch.`);
     b.innerHTML = `${ICONOS_PL.asistente}<span>${L('Pregúntale', 'Ask')}</span>`;
-    b.setAttribute('aria-label', L(`Pregúntale a la IA por ${tit}`, `Ask the AI about ${tit}`));
+    b.setAttribute('aria-label', L(`Pregúntale a la IA por ${tit}`, `Ask the AI about ${trad(tit)}`));
     c.appendChild(b);
   }
 }

@@ -130,7 +130,7 @@ const HZ_CSS = `
 .hz-gr-n .z-tot b { font-weight: 400; }
 .hz-gr-de { display: flex; flex-wrap: wrap; gap: 6px 18px; padding-top: 12px; border-top: 1px solid var(--sep); font-size: 13px; color: var(--texto-2); }
 .hz-gr-de b { font-weight: 600; color: var(--texto); }
-@media (max-width: 599px) { .hz-gr-n { gap: 8px; flex-wrap: nowrap; } .hz-gr-n b { font-size: 25px; } .hz-gr-n i { font-size: 16px; padding-bottom: 18px; } .hz-gr-n span { font-size: 11.5px; } }
+@media (max-width: 599px) { .hz-gr-n { gap: 8px; flex-wrap: nowrap; align-items: flex-start; } .hz-gr-n b { font-size: 25px; } .hz-gr-n i { font-size: 16px; padding: 4px 0 0; } .hz-gr-n span { font-size: 11.5px; line-height: 1.3; } }
 .hz-tira-b { display: flex; gap: 8px; }
 .hz-falta-b { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
 .hz-falta-n { margin: 4px 0 0; font-size: 13px; color: var(--texto-2); }
@@ -185,6 +185,39 @@ const HZ_CSS = `
 .hz-renta-web { position: sticky; top: 84px; display: grid; justify-items: start; align-content: start; gap: 10px; padding: 18px; border-radius: var(--r-l); border: 1.5px dashed var(--aro); color: var(--texto-2); }
 .hz-renta-web span { font: 600 11px/1 var(--ui); letter-spacing: .14em; text-transform: uppercase; } .hz-renta-web p { margin: 0; font-size: 13.5px; max-width: 46ch; line-height: 1.5; }
 @media (max-width: 899px) { .hz-solo-pc { display: none !important; } }
+/* sin Dorado: candados, la tarjeta de Toisón Dorado y el enlace a lo de todos */
+.hz-paso.z-cerrado .hz-pi { box-shadow: inset 0 0 0 1px var(--hilo); color: var(--oro-texto); }
+.hz-paso.z-cerrado .hz-pt b { color: var(--texto-2); }
+#hz .btn.z-cerrado .hz-ic:first-child { color: var(--oro-texto); }
+.hz-cta { display: grid !important; gap: 12px !important; justify-items: start; }
+.hz-cta h3 { margin: 0; font: var(--titulo-estilo, normal) var(--titulo-peso, 500) 22px/1.2 var(--titulo); letter-spacing: var(--titulo-espacio, -.02em); }
+[data-tema="marfil"] .hz-cta h3 { font-family: var(--marca); letter-spacing: 0; }
+.hz-dor { display: inline-flex; align-items: center; gap: 6px; margin: 0; color: var(--oro-texto); font: 650 12px/1 var(--ui); letter-spacing: .08em; text-transform: uppercase; }
+.hz-dor svg { width: 16px; height: 16px; }
+.hz-dor-l { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; font-size: 14px; line-height: 1.45; color: var(--texto-2); }
+.hz-dor-l li { display: flex; gap: 9px; align-items: flex-start; } .hz-dor-l .hz-ic { width: 16px; height: 16px; margin-top: 2px; color: var(--oro-texto); }
+.hoja .hz-dor-l { margin: 4px 0 14px; }
+.hz-lect { display: grid !important; grid-template-columns: 38px minmax(0, 1fr) 18px; align-items: center; gap: 12px !important; padding: 14px 16px !important; color: var(--texto); text-decoration: none; }
+.hz-lect-i { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px; background: var(--primario-fondo); color: var(--oro-texto); }
+.hz-lect b { display: block; font-size: 14.5px; font-weight: 600; } .hz-lect small { display: block; margin-top: 2px; font-size: 12.5px; line-height: 1.4; color: var(--texto-2); }
+.hz-lect:hover { box-shadow: inset 0 0 0 1px var(--hilo); }
+/* el móvil: una casilla por pantalla */
+.hz-mtop { display: grid; gap: 10px; scroll-margin-top: 12px; }
+.hz-mtop-f { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+.hz-mtop .hz-enl { min-height: 44px; }
+.hz-desliza { letter-spacing: .04em; text-transform: none; font-weight: 500; color: var(--tenue); }
+.hz-seg i.z-sale { background: var(--sep); box-shadow: inset 0 0 0 1px var(--aro); } .hz-seg i.z-cerrado { background: var(--sep); }
+.hz-seg.z-m { gap: 3px; } .hz-seg.z-m i { height: 5px; }
+.hz-seg.z-m i.z-aqui { box-shadow: 0 0 0 2px var(--fondo), 0 0 0 3.5px var(--texto); }
+.hz-pH.z-mov .hz-panel { touch-action: pan-y; }
+.hz-pH.z-mov .hz-panel-pie { position: sticky; bottom: calc(var(--nav-h, 0px) + env(safe-area-inset-bottom, 0px)); z-index: 2; margin: 0 -16px -18px; padding: 12px 16px 14px; background: color-mix(in srgb, var(--superficie) 92%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 0 0 var(--r-l) var(--r-l); }
+.hz-pH.z-mov .hz-panel-pie .btn { flex: 1; justify-content: center; }
+.hz-hojam { display: grid; gap: 12px; }
+.hz-hojam .hz-filtro { margin: 0; }
+.hz-hojam .hz-paso { padding: 11px 8px; }
+.hz-tira.z-enhoja { display: grid; grid-template-columns: 1fr; gap: 10px; padding: 14px; border-radius: var(--r-l); background: color-mix(in srgb, var(--texto) 3.5%, transparent); }
+.hz-tira.z-enhoja .hz-tira-r { padding-left: 0; border-left: 0; } .hz-tira.z-enhoja .hz-tira-b { display: none; }
+html:has(.hz-pH.z-mov) { overscroll-behavior-x: none; }
 @media print {
   body * { visibility: hidden !important; }
   #hzHoja, #hzHoja * { visibility: visible !important; }
@@ -218,7 +251,15 @@ const HZ_P = {
   lado: '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><path d="M14 4.5v15"/>',
   imprimir: '<path d="M7.5 9V4.5h9V9"/><rect x="4" y="9" width="16" height="7.5" rx="2"/><path d="M7.5 14h9v6h-9z"/>',
   lapiz: '<path d="M5 19l1-4.2L15.6 5.2a1.9 1.9 0 0 1 2.7 0l.5.5a1.9 1.9 0 0 1 0 2.7L9.2 18z"/><path d="M13.8 7l3.2 3.2"/>',
+  candado: '<rect x="5" y="10.5" width="14" height="10" rx="2.5"/><path d="M8.5 10.5V8a3.5 3.5 0 0 1 7 0v2.5"/>',
+  cal: '<rect x="4" y="5.5" width="16" height="14.5" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>',
 };
+/* el móvil (y la tableta estrecha): una casilla por pantalla, la lista entera en una hoja y deslizar entre casillas */
+const HZ_MQ = '(max-width: 899px)';
+const hzMov = () => matchMedia(HZ_MQ).matches;
+/* Tu renta casilla a casilla es de Toisón Dorado (hoy lo abre tieneDorado, 42-modos.js). Sin él: lo que pagas este año
+   arriba, «Tus datos y tus informes» abierto, lo demás con candado y el enlace a «Cómo tributa y calendario», que es de todos */
+const hzDor = () => tieneDorado();
 const hzIc = (k, c = '') => `<svg class="hz-ic${c ? ' ' + c : ''}" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">${HZ_P[k]}</svg>`;
 
 /* ---------- cifras: en pantalla con sus puntos; para copiar, como las quiere Renta Web (1234,56) ---------- */
@@ -255,7 +296,8 @@ function hzCasillas(anio, M) {
   // dividendos e intereses: los apuntas en Datos fiscales (en bruto). Si dices cuánto es de intereses, cada uno va en su casilla
   const rcm = +d.rcm || 0, int = d.intereses == null || d.intereses === '' ? null : +d.intereses;
   const origenRcm = deFueraSinInforme.length ? 'tu' : 'borrador';
-  const ojoRcm = `Van en bruto, antes de la retención; la retención se resta después, en lo que sale.${deFueraSinInforme.length ? ` Lo que cobres en ${yLista(deFueraSinInforme)} no lo trae el borrador: eso lo metes tú.` : ''}`;
+  const ojoRcm = L(`Van en bruto, antes de la retención; la retención se resta después, en lo que sale.${deFueraSinInforme.length ? ` Lo que cobres en ${yLista(deFueraSinInforme)} no lo trae el borrador: eso lo metes tú.` : ''}`,
+    `They go in gross, before withholding; the withholding is subtracted later, in what you owe.${deFueraSinInforme.length ? ` What you collect at ${yLista(deFueraSinInforme)} isn’t in the draft return: you enter that yourself.` : ''}`);
   if (rcm > 0 && int != null) {
     add(int > 0 ? { k: 'c0027', g: 'rcm', cas: '0027', t: 'Intereses de cuentas', sub: 'Lo que te ha pagado el efectivo', v: int, o: origenRcm, e: 'listo', de: [['Intereses que apuntaste en Datos fiscales', int]], pone: [['Ingresos íntegros', int]], ojo: ojoRcm }
       : { k: 'c0027', g: 'rcm', cas: '0027', t: 'Intereses de cuentas', sub: 'No apuntaste intereses', e: 'no' });
@@ -357,7 +399,7 @@ function hzElegir(R) {
 const hzGuardarDonde = (R) => LS.set(HZ_LS, { a: R.anio, k: hzEstado().k, t: Date.now() });
 function hzCuando(t) {
   const d = new Date(t), h = new Date(), dias = Math.round((new Date(h.getFullYear(), h.getMonth(), h.getDate()) - new Date(d.getFullYear(), d.getMonth(), d.getDate())) / 864e5);
-  return dias <= 0 ? 'hoy' : dias === 1 ? 'ayer' : dias < 7 ? `hace ${dias} días` : `el ${fechaCorta(iso(d))}`;
+  return dias <= 0 ? L('hoy', 'today') : dias === 1 ? L('ayer', 'yesterday') : dias < 7 ? L(`hace ${dias} días`, `${dias} days ago`) : L(`el ${fechaCorta(iso(d))}`, `on ${fechaCortaL(iso(d))}`);
 }
 
 /* ---------- trozos de una casilla ---------- */
@@ -368,12 +410,14 @@ function hzVenta(m, cripto) {
   const st = hzEstado(), i = S.inst[m.instrumento] || {}, on = st.abierta === m.id, ap = perdidaAplazada(m), r = hzNeto(m);
   // las fechas de compra de lo que salió en esta venta (FIFO), si Toisón las tiene
   const fx = [...new Set((Array.isArray(m.fifo) ? m.fifo : []).map((l) => l.f).filter((f) => /^\d{4}-\d\d-\d\d/.test(f || '')))].sort();
-  return `<div class="hz-venta${on ? ' z-on' : ''}"><button type="button" class="hz-venta-cab" data-hz="abre" data-id="${esc(m.id)}" aria-expanded="${on}"><span><b>${esc(nombreInst(m.instrumento))}</b><small>${fmtNum(+m.uds, +m.uds % 1 ? 4 : 0)} ${cripto ? (i.simbolo || 'uds.') : +m.uds === 1 ? 'ud.' : 'uds.'} · ${fechaCorta(m.fecha)} · ${esc(m.plataforma || '')}</small></span><b class="${r < 0 ? 'hz-baja' : 'hz-sube'}">${hzSg(r)}</b>${hzIc(on ? 'abajo' : 'der', 'hz-chev')}</button>
+  return `<div class="hz-venta${on ? ' z-on' : ''}"><button type="button" class="hz-venta-cab" data-hz="abre" data-id="${esc(m.id)}" aria-expanded="${on}"><span><b>${esc(nombreInst(m.instrumento))}</b><small>${fmtNum(+m.uds, +m.uds % 1 ? 4 : 0)} ${cripto ? (i.simbolo || L('uds.', 'units')) : +m.uds === 1 ? L('ud.', 'unit') : L('uds.', 'units')} · ${fechaCortaL(m.fecha)} · ${esc(m.plataforma || '')}</small></span><b class="${r < 0 ? 'hz-baja' : 'hz-sube'}">${hzSg(r)}</b>${hzIc(on ? 'abajo' : 'der', 'hz-chev')}</button>
     ${on ? `<div class="hz-venta-c">${m.coste_vendido != null ? hzCuenta([['Lo cobraste al vender, ya sin comisiones', +m.importe || 0], ['Lo que te costó, con sus comisiones', -(+m.coste_vendido || 0)]], [m.resultado < 0 ? 'Pérdida' : 'Ganancia', m.resultado || 0]) : ''}
-      ${ap ? `<p class="hz-ojo"><b>Esta pérdida no cuenta entera este año.</b> Volviste a comprar ${esc(nombreInst(m.instrumento))} el ${fechaCorta(ap.fecha)}, dentro de ${ap.r.plazo}: ${eur(-ap.importe, 2)} se aplazan hasta que vendas lo recomprado. Renta Web te lo pide como pérdida no computable.</p>` : ''}
-      ${fx.length ? `<p class="hz-ojo">${fx.length === 1 ? `Hacienda cuenta que vendes primero lo que compraste antes: ${fmtNum(+m.uds, +m.uds % 1 ? 4 : 0)} de tu compra del ${fechaLarga(fx[0])}.` : `Hacienda cuenta que vendes primero lo que compraste antes: salen de ${fx.length} compras, la primera del ${fechaLarga(fx[0])}.`}</p>` : ''}
+      ${ap ? `<p class="hz-ojo"><b>${L('Esta pérdida no cuenta entera este año.', 'This loss doesn’t fully count this year.')}</b> ${L(`Volviste a comprar ${esc(nombreInst(m.instrumento))} el ${fechaCorta(ap.fecha)}, dentro de ${ap.r.plazo}: ${eur(-ap.importe, 2)} se aplazan hasta que vendas lo recomprado. Renta Web te lo pide como pérdida no computable.`, `You bought ${esc(nombreInst(m.instrumento))} again on ${fechaCortaL(ap.fecha)}, within ${trad(ap.r.plazo)}: ${eur(-ap.importe, 2)} is deferred until you sell what you bought back. Renta Web asks for it as a non-deductible loss.`)}</p>` : ''}
+      ${fx.length ? `<p class="hz-ojo">${fx.length === 1 ? L(`Hacienda cuenta que vendes primero lo que compraste antes: ${fmtNum(+m.uds, +m.uds % 1 ? 4 : 0)} de tu compra del ${hzFL(fx[0])}.`, `The tax office counts what you bought first as sold first: ${fmtNum(+m.uds, +m.uds % 1 ? 4 : 0)} from your purchase on ${hzFL(fx[0])}.`) : L(`Hacienda cuenta que vendes primero lo que compraste antes: salen de ${fx.length} compras, la primera del ${hzFL(fx[0])}.`, `The tax office counts what you bought first as sold first: they come from ${fx.length} purchases, the first on ${hzFL(fx[0])}.`)}</p>` : ''}
       <div class="hz-campos">${cripto ? hzCampo(['Moneda virtual', `${i.nombre || nombreInst(m.instrumento)}${i.simbolo ? ` (${i.simbolo})` : ''}`]) : hzCampo(['Entidad emisora', i.nombre || nombreInst(m.instrumento)])}${hzCampo(['Valor de transmisión', +m.importe || 0])}${m.coste_vendido != null ? hzCampo(['Valor de adquisición', +m.coste_vendido]) : ''}${hzCampo(['Fecha de transmisión', fechaEs(m.fecha)])}${fx.length === 1 ? hzCampo(['Fecha de adquisición', fechaEs(fx[0])]) : fx.length ? hzCampo(['Fechas de adquisición', fx.map(fechaEs).join(', ')], false) : ''}</div></div>` : ''}</div>`;
 }
+// fechas: en la pantalla, en el idioma de la app; para teclear en Renta Web, dd/mm/aaaa
+const hzFL = (s) => { if (IDIOMA !== 'en') return fechaLarga(s); const d = deIso(s); return `${MESES_EN[d.getMonth()].slice(0, 3)} ${d.getDate()}, ${d.getFullYear()}`; };
 const fechaEs = (iso) => { const [a, m, d] = String(iso).slice(0, 10).split('-'); return `${d}/${m}/${a}`; };
 
 function hzDatosPaso(R, M) {
@@ -392,7 +436,7 @@ function hzDatosPaso(R, M) {
 function hzResPaso(R) {
   const fa = R.fa, ret = fa.retenido, neto = fa.cuota - ret;
   return `<div class="hz-res"><b class="${neto > 0.5 ? 'hz-baja' : neto < -0.5 ? 'hz-sube' : ''}">${eur(Math.abs(neto), 0)}</b><span>${neto > 0.5 ? 'a pagar por tus inversiones' : neto < -0.5 ? 'retenidos de más por tus inversiones' : 'por tus inversiones'}</span></div>
-    <p class="hz-res-f">De tus inversiones sale un impuesto de <b>${eur(fa.cuota, 0)}</b>${ret ? ` y ya te han retenido <b>${eur(ret, 0)}</b>` : ''}. Con tu sueldo, la renta entera puede salir a pagar o a devolver: eso Toisón todavía no lo calcula.</p>
+    <p class="hz-res-f">${L(`De tus inversiones sale un impuesto de <b>${eur(fa.cuota, 0)}</b>${ret ? ` y ya te han retenido <b>${eur(ret, 0)}</b>` : ''}. Con tu sueldo, la renta entera puede salir a pagar o a devolver: eso Toisón todavía no lo calcula.`, `Your investments come to <b>${eur(fa.cuota, 0)}</b> in tax${ret ? ` and <b>${eur(ret, 0)}</b> has already been withheld` : ''}. With your salary, the whole return may come out owing or as a refund: Toisón doesn’t work that out yet.`)}</p>
     <div class="hz-sec"><h4>Cómo sale</h4>${hzCuenta([['Ventas (ganancias menos pérdidas)', fa.gp], ...(fa.usadas ? [['Pérdidas de años anteriores', -fa.usadas]] : []), ['Dividendos, intereses y ETC', fa.rcmT], ...(fa.usadasRcm ? [['Rendimientos negativos de años anteriores', -fa.usadasRcm]] : [])], ['Base del ahorro', fa.base])}
       ${hzCuenta([['Impuesto, con la escala del ahorro', fa.cuota], ['Ya retenido por tus bancos y brókeres', -ret]], [neto >= 0 ? 'Te queda por pagar' : 'Te han retenido de más', Math.abs(neto)])}</div>
     ${fa.sobra > 0 || fa.sobraRCM > 0 ? `<p class="hz-ojo">Te quedan <b>${eur(fa.sobra + fa.sobraRCM, 0)}</b> de pérdidas para restar en los cuatro años siguientes. Renta Web las guarda sola.</p>` : ''}
@@ -402,9 +446,9 @@ function hzResPaso(R) {
 // lo que falta del ETC: ¿te retuvieron algo al venderlo?
 function hzPregEtc(c) {
   const p = c.preg, st = hzEstado();
-  if (p.r != null) return `<div class="hz-falta z-hecho">${hzIc('ok')}<div><b>Contestado: ${p.r ? `te retuvieron ${eur(p.r, 2)}` : 'no te retuvieron nada'}.</b><span>${p.r ? 'Se resta de lo que pagas.' : 'Así queda: sin retención.'}</span></div><button type="button" class="hz-enl" data-hz="etc" data-r="borrar">Cambiar</button></div>`;
+  if (p.r != null) return `<div class="hz-falta z-hecho">${hzIc('ok')}<div><b>${p.r ? L(`Contestado: te retuvieron ${eur(p.r, 2)}.`, `Answered: ${eur(p.r, 2)} was withheld.`) : L('Contestado: no te retuvieron nada.', 'Answered: nothing was withheld.')}</b><span>${p.r ? 'Se resta de lo que pagas.' : 'Así queda: sin retención.'}</span></div><button type="button" class="hz-enl" data-hz="etc" data-r="borrar">Cambiar</button></div>`;
   const r19 = Math.round(p.g * 19) / 100;
-  return `<div class="hz-falta"><span class="hz-falta-i">${hzIc('alerta')}</span><div class="hz-falta-c"><b>¿${esc(p.plats || 'Tu bróker')} te retuvo algo al vender?</b>
+  return `<div class="hz-falta"><span class="hz-falta-i">${hzIc('alerta')}</span><div class="hz-falta-c"><b>${p.plats ? L(`¿${esc(p.plats)} te retuvo algo al vender?`, `Did ${esc(p.plats)} withhold anything when you sold?`) : L('¿Tu bróker te retuvo algo al vender?', 'Did your broker withhold anything when you sold?')}</b>
     <span>Los brókeres españoles retienen el 19 % de lo que ganas con un ETC (aquí serían ${eur(r19, 2)}); los de fuera, normalmente nada. Sale en su informe fiscal, que publican en enero.</span>
     <div class="hz-falta-b"><button type="button" class="btn peq" data-hz="etc" data-r="0">No, nada</button><button type="button" class="btn peq" data-hz="etc" data-r="${r19}">Sí, ${eur(r19, 2)}</button><button type="button" class="btn peq" data-hz="etc" data-r="otra">Otra cifra</button><button type="button" class="btn peq" data-hz="etc" data-r="nose">No lo sé</button></div>
     ${st.etcOtra ? `<div class="hz-cmp-f"><input id="hzEtcOtra" inputmode="decimal" aria-label="Lo que te retuvieron, en euros" placeholder="${hzN(r19)}"><span>€</span><button type="button" class="btn pri peq" data-hz="etc" data-r="leer">Guardar</button></div>` : ''}
@@ -417,7 +461,7 @@ function hzComparar(c, R) {
   if (b !== '') {
     const n = numero(String(b));
     if (n != null && !Number.isNaN(n)) res = Math.abs(n - obj) < 0.005 ? `<p class="hz-cmp-r z-ok">${hzIc('ok')}Cuadra con lo tuyo.</p>`
-      : `<p class="hz-cmp-r z-mal">${hzIc('alerta')}<span>No cuadra: el borrador dice ${eur(n, 2)} y a ti te sale ${eur(obj, 2)} (${hzSg(obj - n)}). ${c.k === 'c0328' && Math.abs(n) < 0.005 ? 'Lo más probable: tu bróker las puso en la 0031. Míralo allí.' : 'Mira qué venta o qué cobro le falta o le sobra al borrador: la cifra de Toisón sale de tus movimientos.'}</span></p>`;
+      : `<p class="hz-cmp-r z-mal">${hzIc('alerta')}<span>${L(`No cuadra: el borrador dice ${eur(n, 2)} y a ti te sale ${eur(obj, 2)} (${hzSg(obj - n)}).`, `It doesn’t match: the draft says ${eur(n, 2)} and you get ${eur(obj, 2)} (${hzSg(obj - n)}).`)} ${c.k === 'c0328' && Math.abs(n) < 0.005 ? L('Lo más probable: tu bróker las puso en la 0031. Míralo allí.', 'Most likely your broker put them in box 0031. Look there.') : L('Mira qué venta o qué cobro le falta o le sobra al borrador: la cifra de Toisón sale de tus movimientos.', 'Check which sale or payment the draft is missing or has extra: Toisón’s figure comes from your transactions.')}</span></p>`;
   }
   return `<div class="hz-cmp"><label for="hzCmp-${c.k}">¿Qué pone tu borrador?</label><div class="hz-cmp-f"><input id="hzCmp-${c.k}" inputmode="decimal" placeholder="${hzN(obj)}" value="${esc(b)}" data-hz-cmp="${c.k}"><span>€</span><button type="button" class="btn peq" data-hz="cmp" data-k="${c.k}">Comparar</button></div>${res}</div>`;
 }
@@ -461,7 +505,7 @@ function hzHoja(R, { sinTit = false, lado = false } = {}) {
       <div class="hz-hoja-b">${lado ? '' : `<button type="button" class="btn peq hz-solo-pc" data-hz="lado">${hzIc('lado')}Para tener al lado</button>`}<button type="button" class="btn peq" data-hz="copiaTodo">${hzIc('copiar')}Copiar todo</button><button type="button" class="btn peq" data-hz="imprimir">${hzIc('imprimir')}Imprimir o PDF</button></div></div>
     <div class="hz-hoja-p"><span>${n} de ${fil.length} hechas</span><div class="hz-prog" role="progressbar" aria-valuemin="0" aria-valuemax="${fil.length}" aria-valuenow="${n}" aria-label="Hechas"><i style="width:${fil.length ? (n / fil.length) * 100 : 0}%"></i></div></div>
     ${grupos.map(({ g, fs }) => `<div class="hz-hg"><h4>${HZ_AP[g]}</h4>${fs.map(fila).join('')}</div>`).join('')}
-    ${no.length ? `<div class="hz-hg z-no"><h4>No te toca</h4><p>${esc(yLista(no.map((c) => c.t + (c.cas ? ` (${c.cas})` : ''))))}.</p></div>` : ''}
+    ${no.length ? `<div class="hz-hg z-no"><h4>No te toca</h4><p>${esc(yLista(no.map((c) => trad(c.t) + (c.cas ? ` (${c.cas.replace(' y ', L(' y ', ' and '))})` : ''))))}.</p></div>` : ''}
     <div class="hz-hg z-no"><h4>Lo demás, en Renta Web</h4><p>Vivienda, alquiler, deducciones de tu comunidad, donativos, plan de pensiones: lo revisas allí.</p></div>
     <div class="hz-hoja-pie"><span>Por tus inversiones: <b>${eur(Math.abs(neto), 0)} ${neto >= -0.5 ? 'a pagar' : 'retenidos de más'}</b>, sin contar tu sueldo.</span><span>Si el borrador no cuadra, mira qué venta o qué cobro le falta: la cifra de Toisón sale de tus movimientos.</span></div>
   </div>`;
@@ -480,42 +524,87 @@ function hzLado(R) {
 }
 
 /* ---------- la pantalla ---------- */
+// sin Dorado solo se abre la primera (tus datos); en la de en medio está la casilla que se ve
+const hzAbierta = (c) => hzDor() || c.k === 'datos';
+const hzEstPaso = (c) => (!hzAbierta(c) ? 'cerrado' : c.e === 'falta' ? 'falta' : c.nav && c.e === 'sale' ? 'sale' : 'listo');
 function hzLista(R) {
-  const st = hzEstado(), f = st.filtro;
+  const st = hzEstado(), dor = hzDor(), f = dor ? st.filtro : 'todo', k = hzActual(R).k;
   const pasa = (c) => f === 'todo' || (!c.nav && c.e !== 'no' && ((f === 'tu' && c.o === 'tu') || (f === 'mira' && (c.e === 'comprueba' || c.e === 'falta'))));
   const gr = []; for (const c of R.L) { if (!pasa(c)) continue; if (!gr.length || gr[gr.length - 1].g !== c.g) gr.push({ g: c.g, cs: [] }); gr[gr.length - 1].cs.push(c); }
-  const filtros = `<div class="hz-filtro" role="group" aria-label="Qué ver">${[['todo', 'Todo'], ['tu', 'Metes tú'], ['mira', 'Por mirar']].map(([k, n]) => `<button type="button" data-hz="filtro" data-f="${k}" aria-pressed="${f === k}">${n}</button>`).join('')}</div>`;
+  const filtros = dor ? `<div class="hz-filtro" role="group" aria-label="Qué ver">${[['todo', 'Todo'], ['tu', 'Metes tú'], ['mira', 'Por mirar']].map(([x, n]) => `<button type="button" data-hz="filtro" data-f="${x}" aria-pressed="${f === x}">${n}</button>`).join('')}</div>` : '';
   const item = (c) => {
     if (c.e === 'no') return `<li><div class="hz-paso z-gris"><span class="hz-pi">${hzIc('raya')}</span><span class="hz-pt"><b>${esc(c.t)}</b><small>${hzCasN(c)}<span class="hz-sh">No te toca</span></small></span></div></li>`;
-    const e = c.e === 'falta' ? 'falta' : c.nav && c.e === 'sale' ? 'sale' : 'listo';
-    return `<li><button type="button" class="hz-paso z-${e}${st.k === c.k ? ' z-on' : ''}" data-hz="ir" data-k="${c.k}"${st.k === c.k ? ' aria-current="step"' : ''}><span class="hz-pi">${hzIc(hzIcoPaso[e])}</span><span class="hz-pt"><b>${esc(c.t)}</b><small>${hzCasN(c)}${hzSubLista(c)}</small></span>${hzVal(c) ? `<em>${hzVal(c)}</em>` : ''}</button></li>`;
+    const e = hzEstPaso(c);
+    if (e === 'cerrado') return `<li><button type="button" class="hz-paso z-cerrado" data-hz="dorado" aria-label="${esc(c.t)}: con Toisón Dorado"><span class="hz-pi">${hzIc('candado')}</span><span class="hz-pt"><b>${esc(c.t)}</b><small>${hzCasN(c)}${hzSubLista(c)}</small></span></button></li>`;
+    return `<li><button type="button" class="hz-paso z-${e}${k === c.k ? ' z-on' : ''}" data-hz="ir" data-k="${c.k}"${k === c.k ? ' aria-current="step"' : ''}><span class="hz-pi">${hzIc(hzIcoPaso[e])}</span><span class="hz-pt"><b>${esc(c.t)}</b><small>${hzCasN(c)}${hzSubLista(c)}</small></span>${hzVal(c) ? `<em>${hzVal(c)}</em>` : ''}</button></li>`;
   };
   return `${filtros}<ol class="hz-pasos">${gr.map(({ g, cs }) => `<li class="hz-pg">${HZ_AP[g]}</li>${cs.map(item).join('')}`).join('')}
     ${f === 'todo' ? `<li class="hz-pg">Y lo demás</li><li><div class="hz-paso z-fuera"><span class="hz-pi">${hzIc('lista')}</span><span class="hz-pt"><b>Vivienda, deducciones, alquileres</b><small><span class="hz-sh">Lo revisas en Renta Web</span></small></span></div></li>` : ''}</ol>
     ${!gr.length ? `<p class="hz-vacio">${f === 'tu' ? 'Nada que tengas que meter tú: todo lo trae el borrador.' : 'Nada por mirar.'}</p>` : ''}`;
 }
-function hzTira(R) {
+function hzTira(R, enHoja = false) {
   const cs = hzCuentan(R), f = cs.filter((c) => c.e === 'falta').length, n = cs.length - f, neto = R.fa.cuota - R.fa.retenido, res = R.L.find((c) => c.k === 'res');
-  return `<section class="tarjeta hz-tira"><div class="hz-tira-p"><small class="hz-ey">Renta de ${R.anio}</small><b>${n} de ${cs.length} ${cs.length === 1 ? 'casilla lista' : 'casillas listas'}${f ? ` <span class="hz-falta-t">· ${f === 1 ? 'falta 1 dato' : `faltan ${f} datos`}</span>` : ''}</b>
+  return `<section class="${enHoja ? 'hz-tira z-enhoja' : 'tarjeta hz-tira'}"><div class="hz-tira-p"><small class="hz-ey">Renta de ${R.anio}</small><b>${n} de ${cs.length} ${cs.length === 1 ? 'casilla lista' : 'casillas listas'}${f ? ` <span class="hz-falta-t">· ${f === 1 ? 'falta 1 dato' : `faltan ${f} datos`}</span>` : ''}</b>
       <div class="hz-seg" aria-hidden="true">${cs.map((c) => `<i class="z-${c.e === 'falta' ? 'falta' : 'listo'}"></i>`).join('')}</div></div>
     <div class="hz-tira-r"><small>Por tus inversiones</small><b class="${neto > 0.5 ? 'hz-baja' : neto < -0.5 ? 'hz-sube' : ''}">${eur(Math.abs(neto), 0)} ${neto > 0.5 ? 'a pagar' : neto < -0.5 ? 'retenidos de más' : ''}</b>${res ? `<button type="button" class="hz-enl" data-hz="ir" data-k="res">Cómo sale</button>` : ''}</div>
     <div class="hz-tira-b"><button type="button" class="btn peq" data-hz="ir" data-k="hoja">${hzIc('lado')}La hoja</button></div></section>`;
 }
+// la casilla que se enseña: la elegida, o la primera si no tienes Dorado
+const hzActual = (R) => { const nav = hzNav(R), k = hzDor() ? hzEstado().k : 'datos'; return nav.find((c) => c.k === k) || nav[0]; };
+// en el móvil, el apartado en corto (encima del título no cabe «Rendimientos del capital mobiliario · casilla 0031»)
+const HZ_AP_C = { datos: 'Antes de empezar', trabajo: 'Trabajo', rcm: 'Capital mobiliario', gp: 'Ganancias y pérdidas', comp: 'Compensación', ded: 'Deducciones', inf: 'Informativas', sale: 'Lo que sale' };
 function hzPanel(R, M) {
-  const st = hzEstado(), nav = hzNav(R), i = nav.findIndex((c) => c.k === st.k), c = nav[i], ant = nav[i - 1], sig = nav[i + 1];
-  const ey = `${HZ_AP[c.g]}${c.cas ? ` · ${/^\d+$/.test(c.cas) ? 'casilla ' : ''}${c.cas}` : ''}`;
+  const st = hzEstado(), mov = hzMov(), dor = hzDor(), nav = hzNav(R), c = hzActual(R), i = nav.indexOf(c), ant = nav[i - 1], sig = nav[i + 1];
+  const ey = `${(mov ? HZ_AP_C : HZ_AP)[c.g]}${c.cas ? ` · ${c.g === 'inf' ? (/^\d+$/.test(c.cas) ? 'modelo ' : 'modelos ') : /^\d+$/.test(c.cas) ? 'casilla ' : ''}${c.cas}` : ''}`;
   const tu = !c.nav && (c.v != null || HZ_EST[c.e]) ? `<div class="hz-ptu">${c.v != null ? `<small>Lo tuyo</small><b>${c.k === 'perd' ? eur(-c.v, 2) : hzSg(c.v)}</b>` : ''}${hzChipEst(c)}</div>` : '';
+  const bAnt = ant ? `<button type="button" class="btn peq" data-hz="ir" data-k="${ant.k}"${mov ? ` aria-label="Anterior: ${esc(ant.t)}"` : ''}>${hzIc('izq')}${mov ? 'Anterior' : esc(ant.t)}</button>` : '<span></span>';
+  const bSig = !sig ? '' : hzAbierta(sig) ? `<button type="button" class="btn pri peq" data-hz="ir" data-k="${sig.k}"${mov ? ` aria-label="Siguiente: ${esc(sig.t)}"` : ''}>${mov ? 'Siguiente' : `Siguiente: ${esc(sig.t)}`}${hzIc('der')}</button>`
+    : `<button type="button" class="btn peq z-cerrado" data-hz="dorado" aria-label="Siguiente: ${esc(sig.t)}, con Toisón Dorado">${hzIc('candado')}${mov ? 'Siguiente' : `Siguiente: ${esc(sig.t)}`}${hzIc('der')}</button>`;
   return `<section class="tarjeta hz-panel${st.dir ? ' hz-entra-' + st.dir : ''}" id="hzPanel" aria-labelledby="hzTit"><div class="hz-panel-cab"><small class="hz-ey">${esc(ey)}</small>
-      ${st.recuerda ? `<span class="hz-recuerda">${hzIc('reloj')}Lo dejaste aquí ${hzCuando(st.recuerda)}</span>` : ''}</div>
+      ${dor && st.recuerda ? `<span class="hz-recuerda">${hzIc('reloj')}${L('Lo dejaste aquí', 'You left off here')} ${hzCuando(st.recuerda)}</span>` : ''}</div>
     <h2 class="hz-h2" id="hzTit">${esc(c.t)}</h2>${tu}${hzCuerpo(c, R, M)}
-    <div class="hz-panel-pie">${ant ? `<button type="button" class="btn peq" data-hz="ir" data-k="${ant.k}">${hzIc('izq')}${esc(ant.t)}</button>` : '<span></span>'}${sig ? `<button type="button" class="btn pri peq" data-hz="ir" data-k="${sig.k}">Siguiente: ${esc(sig.t)}${hzIc('der')}</button>` : ''}</div></section>`;
+    <div class="hz-panel-pie">${bAnt}${bSig}</div></section>`;
 }
+// arriba en el móvil: en qué paso vas, la barra de todos y el botón de la lista entera
+function hzMtop(R) {
+  const nav = hzNav(R), c = hzActual(R), i = nav.indexOf(c);
+  return `<section class="hz-mtop"><div class="hz-mtop-f"><small class="hz-ey">Paso ${i + 1} de ${nav.length}${hzDor() ? '<span class="hz-desliza"> · desliza para pasar</span>' : ''}</small><button type="button" class="hz-enl" data-hz="todas" aria-haspopup="dialog">${hzIc('lista')}Todas las casillas</button></div>
+    <div class="hz-seg z-m" aria-hidden="true">${nav.map((x) => `<i class="z-${hzEstPaso(x)}${x === c ? ' z-aqui' : ''}"></i>`).join('')}</div></section>`;
+}
+// la lista entera del móvil, en una hoja: la tira y las casillas por apartados (con los filtros, si tienes Dorado)
+const hzTodasHtml = (R) => `${hzDor() ? hzTira(R, true) : ''}${hzLista(R)}`;
+function hzAbrirTodas() {
+  const R = S.hzUlt; if (!R) return;
+  const h = hoja('Tu renta, en el orden de Renta Web', `<div class="hz-hojam" id="hzTodas">${hzTodasHtml(R)}</div>`);
+  S.hzTodas = h;
+  // la casilla de ahora, a la vista (lo justo: arriba se queda el título de la hoja)
+  const on = $('#hzTodas .hz-paso.z-on'); if (on) on.scrollIntoView({ block: 'nearest' });
+}
+// sin Dorado: lo que trae, en una hoja (aún no hay plan de pago)
+const HZ_DOR_LISTA = [['Cada casilla con tu cifra y de dónde sale', 'Every box with your figure and where it comes from'], ['Venta a venta, lo que tecleas en Renta Web, para copiar', 'Sale by sale, what you type into Renta Web, ready to copy'],
+  ['Comparar con lo que pone tu borrador', 'Check it against what your draft return says'], ['La hoja para tener al lado de Renta Web, para marcar e imprimir', 'The sheet to keep next to Renta Web, to tick off and print']];
+function hzHojaDorado() {
+  hoja(L('Tu renta, casilla a casilla', 'Your tax return, box by box'), `<div class="hoja-escr"><p class="et-dorado-g">${selloDorado('sd-peq')}${L('Toisón Dorado', 'Toisón Gold')}</p>
+    <p>${L('Tus datos y los informes de tus brókeres son de todos. Lo demás de Tu renta, casilla a casilla y en el orden de Renta Web, es de Toisón Dorado:', 'Your details and your brokers’ reports are for everyone. The rest of Your tax return, box by box and in Renta Web’s order, is part of Toisón Gold:')}</p>
+    <ul class="hz-dor-l">${HZ_DOR_LISTA.map(([es, en]) => `<li>${hzIc('ok')}<span>${L(es, en)}</span></li>`).join('')}</ul>
+    <p class="nota">${tieneDorado() ? L('Ya tienes Toisón Dorado.', 'You already have Toisón Gold.') : L('Será parte de Toisón Dorado, el plan de pago. Todavía no está disponible. Lo que pagas este año, cómo tributa cada cosa y el calendario siguen siendo de todos.', 'It will be part of Toisón Gold, the paid plan. It isn’t available yet. What you pay this year, how each thing is taxed and the key dates are still for everyone.')}</p>
+    <div class="fila-btns"><button type="button" class="btn" data-cerrar>${L('Entendido', 'Got it')}</button></div></div>`);
+}
+const hzCtaDorado = () => `<section class="tarjeta hz-cta"><p class="hz-dor">${selloDorado('sd-peq')}Toisón Dorado</p><h3>El resto, casilla a casilla, con tus cifras</h3>
+    <ul class="hz-dor-l">${HZ_DOR_LISTA.map(([es]) => `<li>${hzIc('ok')}<span>${es}</span></li>`).join('')}</ul>
+    <button type="button" class="btn pri" data-hz="dorado">Ver Toisón Dorado</button></section>`;
+const hzEnlLectura = () => `<a class="tarjeta hz-lect" href="#impuestos"><span class="hz-lect-i">${hzIc('cal')}</span><span><b>Cómo tributa y calendario</b><small>Lo que pagas este año, cómo tributa cada cosa y las fechas. Es de todos.</small></span>${hzIc('der', 'hz-chev')}</a>`;
+// lo que pagas este año, arriba, si no tienes Dorado (y si hay algo que contar)
+const hzArribaGratis = (fa) => (fa.ventas.length || fa.otras || fa.rcm || fa.retenido ? hzGratis(fa) : '');
 function htmlHacienda(M) {
   const R = hzCasillas(anioRenta(), M);
   S.hzUlt = R;
   hzElegir(R);
-  if (hzEstado().lado && matchMedia('(min-width: 900px)').matches) return `<div id="hz" class="hz-pH">${hzLado(R)}</div>`;
-  return `<div id="hz" class="hz-pH">${hzTira(R)}<div class="hz-A"><aside class="tarjeta hz-lista" aria-label="Las casillas de tu renta">${hzLista(R)}</aside><div class="hz-A-der">${hzPanel(R, M)}</div></div></div>`;
+  const dor = hzDor(), mov = hzMov();
+  if (dor && hzEstado().lado && !mov) return `<div id="hz" class="hz-pH">${hzLado(R)}</div>`;
+  const arriba = dor ? (mov ? '' : hzTira(R)) : hzArribaGratis(R.fa), abajo = dor ? '' : hzCtaDorado() + hzEnlLectura();
+  if (mov) return `<div id="hz" class="hz-pH z-mov${dor ? '' : ' z-sin'}">${arriba}${hzMtop(R)}${hzPanel(R, M)}${abajo}</div>`;
+  return `<div id="hz" class="hz-pH${dor ? '' : ' z-sin'}">${arriba}<div class="hz-A"><aside class="tarjeta hz-lista" aria-label="Las casillas de tu renta">${hzLista(R)}</aside><div class="hz-A-der">${hzPanel(R, M)}${abajo}</div></div></div>`;
 }
 /* Hacienda tiene dos páginas, las dos en este trozo: Tu renta (el recorrido) y Cómo tributa y calendario (lo que
    pagas este año, cómo tributa cada cosa, el calendario y lo de antes de «Lo que pagas») */
@@ -528,9 +617,44 @@ function pintarHacienda() {
   marcarCifras(el); ponerPreguntale(el); plegarNotas(el); marcarDeslizables(el);
 }
 
+// ir a una casilla (la lista, Anterior y Siguiente, la tira, la hoja del móvil o el gesto de deslizar)
+function hzIr(k) {
+  const st = hzEstado(), R = S.hzUlt, nav = R ? hzNav(R) : [], de = nav.findIndex((c) => c.k === st.k), a = nav.findIndex((c) => c.k === k);
+  if (a < 0) return;
+  if (!hzAbierta(nav[a])) { hzHojaDorado(); return; }
+  if (S.hzTodas) { S.hzTodas.cerrar(); S.hzTodas = null; }
+  st.dir = a > de ? 'd' : 'i'; st.k = k; st.recuerda = null; st.abierta = null;
+  if (R && hzDor()) hzGuardarDonde(R);
+  pintarHacienda();
+  // en el móvil, arriba del todo de la casilla (con el «Paso X de Y» a la vista); en el ordenador, solo si se ha ido arriba
+  // (en el móvil, «Tu renta / Cómo tributa» se queda pegado arriba: se deja su hueco)
+  const pn = $(hzMov() ? '#hz .hz-mtop' : '#hzPanel'), suave = matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth';
+  const ft = $('#fisTabs'), cs = ft && getComputedStyle(ft), tope = cs && cs.position === 'sticky' && cs.display !== 'none' ? (parseFloat(cs.top) || 0) + ft.offsetHeight + 8 : 70;
+  if (pn && pn.getBoundingClientRect().top < tope) scrollTo({ top: scrollY + pn.getBoundingClientRect().top - tope, behavior: suave });
+}
+// en el móvil, deslizar a los lados en la casilla pasa a la de al lado (como las tarjetas de Tu año)
+let hzToque = null;
+document.addEventListener('touchstart', (e) => {
+  const t = e.touches[0];
+  hzToque = e.touches.length === 1 && hzMov() && e.target.closest && e.target.closest('#hzPanel') && !e.target.closest('input, textarea, select, .tabla-w') ? { x: t.clientX, y: t.clientY, t: Date.now() } : null;
+}, { passive: true });
+document.addEventListener('touchend', (e) => {
+  if (!hzToque || !S.hzUlt) return;
+  const t = e.changedTouches[0], dx = t.clientX - hzToque.x, dy = t.clientY - hzToque.y, rapido = Date.now() - hzToque.t < 700;
+  hzToque = null;
+  if (!rapido || Math.abs(dx) < 60 || Math.abs(dy) > Math.abs(dx) * 0.6) return;
+  const nav = hzNav(S.hzUlt), i = nav.indexOf(hzActual(S.hzUlt)), n = nav[i + (dx < 0 ? 1 : -1)];
+  if (n) hzIr(n.k);
+}, { passive: true });
+// al pasar del móvil al ordenador (o al revés), la otra forma de la página
+matchMedia(HZ_MQ).addEventListener('change', () => { if (S.hzTodas) { S.hzTodas.cerrar(); S.hzTodas = null; } if ($('#panelHz #hz')) pintarHacienda(); });
+
 document.addEventListener('click', (e) => {
-  const b = e.target.closest('#panelHz [data-hz]'); if (!b) return;
+  const b = e.target.closest('#panelHz [data-hz], #hzTodas [data-hz]'); if (!b) return;
   const st = hzEstado(), R = S.hzUlt, q = b.dataset.hz;
+  if (q === 'todas') { hzAbrirTodas(); return; }
+  if (q === 'dorado') { hzHojaDorado(); return; }
+  if (q === 'filtro' && b.closest('#hzTodas')) { st.filtro = b.dataset.f; const el = $('#hzTodas'); if (el && R) el.innerHTML = hzTodasHtml(R); pintarHacienda(); return; }
   if (q === 'copia') { const v = b.dataset.v; try { navigator.clipboard.writeText(v); } catch (x) { /* sin permiso: queda el aviso */ } toast(`Copiado: ${v}`, 1800); return; }
   if (q === 'datos') { editarFiscal(R ? R.anio : anioRenta()); return; }
   if (q === 'ccaa') { cambiarComunidad(); return; }
@@ -552,14 +676,7 @@ document.addEventListener('click', (e) => {
     return;
   }
   if (q === 'abre') { st.abierta = st.abierta === b.dataset.id ? null : b.dataset.id; const y = scrollY; pintarHacienda(); scrollTo(0, y); return; }
-  if (q === 'ir') {
-    const nav = R ? hzNav(R) : [], de = nav.findIndex((c) => c.k === st.k), a = nav.findIndex((c) => c.k === b.dataset.k);
-    if (a < 0) return;
-    st.dir = a > de ? 'd' : 'i'; st.k = b.dataset.k; st.recuerda = null; st.abierta = null;
-    if (R) hzGuardarDonde(R);
-    pintarHacienda();
-    const pn = $('#hzPanel'); if (pn && pn.getBoundingClientRect().top < 70) pn.scrollIntoView({ block: 'start', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
-  }
+  if (q === 'ir') hzIr(b.dataset.k);
 });
 /* lo que pagas (o te ahorras) con cada cosa que te recomienda la web, todo junto */
 function htmlFiscalRecom(M, fa) {

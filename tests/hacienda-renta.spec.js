@@ -3,7 +3,7 @@
 // oro +118 (ETC, va en la 0031), bitcoin +276 (Bitvavo, lo metes tú), 286 € de dividendos e intereses (6 de intereses),
 // 54,34 € retenidos y 120 € de pérdidas de 2024. Base del ahorro 705, cuota 133,95.
 import { test as base, expect } from '@playwright/test';
-import { preparar, crearCuenta, meterCartera, quitarCapas } from './ayuda.js';
+import { preparar, crearCuenta, meterCartera, quitarCapas, hzLista, hzCerrarLista, hzIrA, hzTextoTira, hzConVentas } from './ayuda.js';
 
 const test = base.extend({
   errores: async ({ context }, use) => {
@@ -13,26 +13,7 @@ const test = base.extend({
   },
 });
 
-async function conVentas(page, { intereses = 6 } = {}) {
-  await crearCuenta(page);
-  // la guía de primeros pasos de una cuenta recién creada sale una vez, al rato: se espera a que salga y se quita
-  await page.waitForSelector('.hoja-guia', { timeout: 10_000 }).catch(() => {});
-  await meterCartera(page); await quitarCapas(page);
-  await page.evaluate(() => { LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); });
-  await page.evaluate(async (intereses) => {
-    const a = anioRenta();
-    const v = (id, instrumento, plataforma, fecha, uds, importe, coste) => ({ id, tipo: 'venta', fecha: `${a}-${fecha}`, instrumento, plataforma, uds, importe, coste_vendido: coste, resultado: +(importe - coste).toFixed(2) });
-    S.cartera.movimientos = [v('v1', 'repsol', 'Trade Republic', '03-12', 30, 630, 390), v('v2', 'iag', 'Trade Republic', '06-04', 200, 665, 760),
-      v('v3', 'phau', 'MyInvestor', '09-09', 2, 530, 412), v('v4', 'btc', 'Bitvavo', '10-21', 0.012, 1020, 744)];
-    // sin recompras dentro de plazo: las posiciones de prueba son de enero de 2025
-    S.cartera.fiscal = { [a]: { rcm: 286, ...(intereses != null ? { intereses } : {}), retenido: 54.34, pendientes: 120 } };
-    S.cartera.perfil = { ...(S.cartera.perfil || {}), comunidad: 'madrid' };
-    await guardarCartera('prueba');
-    LS.set('inv-hz-donde', null);
-    S.vista = 'fiscal'; S.fisTab = 'renta'; S.hzR = null; pintar();
-  }, intereses);
-  await page.waitForSelector('#hz .hz-panel');
-}
+const conVentas = hzConVentas;
 
 test('las casillas salen de tus datos, en el orden de Renta Web, con lo que no te toca en gris', async ({ page, errores }) => {
   await conVentas(page);
@@ -50,24 +31,25 @@ test('las casillas salen de tus datos, en el orden de Renta Web, con lo que no t
 
   const hz = page.locator('#hz');
   // la tira: las casillas que te tocan y lo que sale por tus inversiones (134 − 54 = 80)
-  await expect(hz.locator('.hz-tira')).toContainText('casillas listas');
-  await expect(hz.locator('.hz-tira')).toContainText('80');
-  // la lista por apartados de Renta Web, con lo que no te toca en gris y sin botón
-  await expect(hz.locator('.hz-pg').first()).toHaveText('Antes de empezar');
-  await expect(hz.locator('.hz-lista')).toContainText('Ganancias y pérdidas patrimoniales');
-  await expect(hz.locator('.hz-paso.z-gris', { hasText: 'Fondos cotizados (ETF)' })).toHaveCount(1);
-  await expect(hz.locator('button.hz-paso', { hasText: 'Fondos de inversión' })).toHaveCount(0);
+  expect(await hzTextoTira(page)).toContain('casillas listas');
+  expect(await hzTextoTira(page)).toContain('80');
   // al abrir sin nada guardado: la primera casilla por mirar (el oro, al que le falta saber si te retuvieron)
   await expect(hz.locator('#hzTit')).toHaveText('Oro (ETC)');
-  await expect(hz.locator('.hz-tira')).toContainText('falta 1 dato');
-  await hz.locator('button.hz-paso', { hasText: 'Ventas de acciones' }).click();
+  expect(await hzTextoTira(page)).toContain('falta 1 dato');
+  // la lista por apartados de Renta Web, con lo que no te toca en gris y sin botón (en el móvil, en su hoja)
+  const lista = await hzLista(page);
+  await expect(lista.locator('.hz-pg').first()).toHaveText('Antes de empezar');
+  await expect(lista).toContainText('Ganancias y pérdidas patrimoniales');
+  await expect(lista.locator('.hz-paso.z-gris', { hasText: 'Fondos cotizados (ETF)' })).toHaveCount(1);
+  await expect(lista.locator('button.hz-paso', { hasText: 'Fondos de inversión' })).toHaveCount(0);
+  await hzIrA(page, 'Ventas de acciones');
   await expect(hz.locator('.hz-panel')).toContainText('Trade Republic a veces manda las ventas de acciones');
 });
 
 test('Anterior y Siguiente, venta a venta con copiar y «Lo dejaste aquí» al volver', async ({ page, errores }) => {
   await conVentas(page);
   const hz = page.locator('#hz');
-  await hz.locator('button.hz-paso', { hasText: 'Monedas virtuales' }).click();
+  await hzIrA(page, 'Monedas virtuales');
   await expect(hz.locator('#hzTit')).toHaveText('Monedas virtuales');
   await expect(hz.locator('.hz-ptu')).toContainText('Lo metes tú');
   // venta a venta: se abre y enseña lo que hay que teclear
@@ -86,8 +68,10 @@ test('Anterior y Siguiente, venta a venta con copiar y «Lo dejaste aquí» al v
   await expect(hz.locator('.hz-panel')).toContainText('Es una estimación');
   await expect(hz.locator('.hz-panel .hz-res')).toContainText('80');
   // filtros: «Metes tú» deja la cripto y los dividendos de fuera
-  await hz.locator('.hz-filtro [data-f="tu"]').click();
-  await expect(hz.locator('button.hz-paso')).toHaveText([/Monedas virtuales/, /Dividendos de fuera/]);
+  const lista = await hzLista(page);
+  await lista.locator('.hz-filtro [data-f="tu"]').click();
+  await expect(lista.locator('button.hz-paso')).toHaveText([/Monedas virtuales/, /Dividendos de fuera/]);
+  await hzCerrarLista(page);
   await hz.locator('.hz-panel-pie .btn.pri').click();
   await expect(hz.locator('#hzTit')).toHaveText('Tu hoja para Renta Web');
   await hz.locator('.hz-panel-pie .btn').first().click();
@@ -102,18 +86,19 @@ test('Anterior y Siguiente, venta a venta con copiar y «Lo dejaste aquí» al v
 test('sin separar los intereses, falta un dato; Datos fiscales los separa sin perder lo de Tu renta', async ({ page, errores }) => {
   await conVentas(page, { intereses: null });
   const hz = page.locator('#hz');
-  await expect(hz.locator('.hz-tira')).toContainText('faltan 2 datos');
-  await hz.locator('button.hz-paso', { hasText: 'Intereses y dividendos' }).click();
+  expect(await hzTextoTira(page)).toContain('faltan 2 datos');
+  await hzIrA(page, 'Intereses y dividendos');
   await expect(hz.locator('.hz-falta')).toContainText('¿Cuánto es de intereses?');
   await page.evaluate(() => { S.cartera.fiscal[anioRenta()].hzPrueba = 1; });
   await hz.locator('.hz-falta [data-hz="datos"]').click();
   await page.fill('#fFis [name="intereses"]', '6');
   await page.click('#fFis [type="submit"]');
-  await expect(hz.locator('button.hz-paso', { hasText: 'Intereses de cuentas' })).toBeVisible();
-  await expect(hz.locator('.hz-tira')).toContainText('falta 1 dato');
+  await expect((await hzLista(page)).locator('button.hz-paso', { hasText: 'Intereses de cuentas' })).toBeVisible();
+  await hzCerrarLista(page);
+  expect(await hzTextoTira(page)).toContain('falta 1 dato');
   expect(await page.evaluate(() => S.cartera.fiscal[anioRenta()])).toMatchObject({ rcm: 286, intereses: 6, hzPrueba: 1 });
   // más intereses que el total: no se guarda
-  await hz.locator('button.hz-paso', { hasText: 'Tus datos' }).click();
+  await hzIrA(page, 'Tus datos');
   await hz.locator('.hz-panel [data-hz="datos"]').click();
   await page.fill('#fFis [name="intereses"]', '300');
   await page.click('#fFis [type="submit"]');
@@ -131,8 +116,8 @@ test('el oro: la pregunta de la retención entra en la cuenta y se guarda cifrad
   await expect(hz.locator('.hz-falta.z-hecho')).toContainText('te retuvieron 22,42');
   await expect(hz.locator('.hz-campos')).toContainText('Retenciones');
   // 134 − 54,34 − 22,42 = 57,19: la tira lo dice y ya no falta nada
-  await expect(hz.locator('.hz-tira')).toContainText('57');
-  await expect(hz.locator('.hz-tira')).not.toContainText('falta');
+  await expect.poll(() => hzTextoTira(page)).toContain('57');
+  expect(await hzTextoTira(page)).not.toContain('falta');
   expect(await page.evaluate(() => S.cartera.fiscal[anioRenta()].hzRetEtc)).toBe(22.42);
   // «Otra cifra»
   await hz.locator('.hz-falta [data-r="borrar"]').click();
@@ -149,7 +134,7 @@ test('el oro: la pregunta de la retención entra en la cuenta y se guarda cifrad
 test('¿qué pone tu borrador? y la hoja: marcar, copiar todo y para tener al lado', async ({ page, errores }, info) => {
   await conVentas(page);
   const hz = page.locator('#hz');
-  await hz.locator('button.hz-paso', { hasText: 'Ventas de acciones' }).click();
+  await hzIrA(page, 'Ventas de acciones');
   await page.fill('#hzCmp-c0328', '0');
   await hz.locator('[data-hz="cmp"][data-k="c0328"]').click();
   await expect(hz.locator('.hz-cmp-r.z-mal')).toContainText('Lo más probable: tu bróker las puso en la 0031');
@@ -157,7 +142,7 @@ test('¿qué pone tu borrador? y la hoja: marcar, copiar todo y para tener al la
   await page.press('#hzCmp-c0328', 'Enter');
   await expect(hz.locator('.hz-cmp-r.z-ok')).toHaveText('Cuadra con lo tuyo.');
   // la hoja
-  await hz.locator('.hz-tira [data-k="hoja"]').click();
+  if (info.project.name === 'pc') await hz.locator('.hz-tira [data-k="hoja"]').click(); else await hzIrA(page, 'Tu hoja para Renta Web');
   await expect(hz.locator('#hzTit')).toHaveText('Tu hoja para Renta Web');
   const hoja = hz.locator('#hzHoja');
   await expect(hoja).toContainText('Ganancias y pérdidas patrimoniales');

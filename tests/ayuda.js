@@ -150,3 +150,49 @@ export function fichasDePrueba() {
     },
   };
 }
+
+/* Hacienda › Tu renta (fase 2): en el ordenador la lista de casillas está a la izquierda; en el móvil (bajo 900 px), en
+   la hoja «Todas las casillas». Estas ayudas sirven para las dos */
+export async function hzLista(page) {
+  if (!(await page.evaluate(() => hzMov()))) return page.locator('#hz .hz-lista');
+  if (!(await page.locator('#hzTodas').count())) await page.locator('#hz [data-hz="todas"]').click();
+  await page.locator('#hzTodas').waitFor();
+  return page.locator('#hzTodas');
+}
+export async function hzCerrarLista(page) {
+  if (!(await page.locator('#hzTodas').count())) return;
+  await page.keyboard.press('Escape');
+  await page.locator('#hzTodas').waitFor({ state: 'detached' });
+}
+export async function hzIrA(page, texto) {
+  await (await hzLista(page)).locator('button.hz-paso', { hasText: texto }).first().click();
+  await page.locator('#hzTodas').waitFor({ state: 'detached' });
+}
+// la tira (cuántas casillas están listas y lo que sale), leída del código: en el móvil va dentro de la hoja
+export const hzTextoTira = (page) => page.evaluate(() => { const d = document.createElement('div'); d.innerHTML = hzTira(S.hzUlt); return d.textContent.replace(/\s+/g, ' '); });
+// Tu renta casilla a casilla es de Toisón Dorado: hoy lo tiene el dueño (tieneDorado, 42-modos.js)
+export const conDorado = (page, si = true) => page.evaluate((si) => { if (si) { LS.set('inv-dueno', 1); S.esDueno = true; S.noDueno = false; } else { LS.set('inv-dueno', 0); S.esDueno = false; S.noDueno = true; } }, si);
+
+/* la cartera de la maqueta de Hacienda: Repsol +240 e IAG −95 (Trade Republic), el oro +118 (ETC, MyInvestor), bitcoin
+   +276 (Bitvavo), 286 € de dividendos e intereses (6 de intereses), 54,34 € retenidos y 120 € de pérdidas de 2024 */
+export async function hzConVentas(page, { intereses = 6, dorado = true } = {}) {
+  await crearCuenta(page);
+  // la guía de primeros pasos de una cuenta recién creada sale una vez, al rato: se espera a que salga y se quita
+  await page.waitForSelector('.hoja-guia', { timeout: 10_000 }).catch(() => {});
+  await meterCartera(page); await quitarCapas(page);
+  await page.evaluate(() => { LS.set('inv-empezar-no', true); LS.set('inv-empezar-fin', true); });
+  await conDorado(page, dorado);
+  await page.evaluate(async (intereses) => {
+    const a = anioRenta();
+    const v = (id, instrumento, plataforma, fecha, uds, importe, coste) => ({ id, tipo: 'venta', fecha: `${a}-${fecha}`, instrumento, plataforma, uds, importe, coste_vendido: coste, resultado: +(importe - coste).toFixed(2) });
+    S.cartera.movimientos = [v('v1', 'repsol', 'Trade Republic', '03-12', 30, 630, 390), v('v2', 'iag', 'Trade Republic', '06-04', 200, 665, 760),
+      v('v3', 'phau', 'MyInvestor', '09-09', 2, 530, 412), v('v4', 'btc', 'Bitvavo', '10-21', 0.012, 1020, 744)];
+    // sin recompras dentro de plazo: las posiciones de prueba son de enero de 2025
+    S.cartera.fiscal = { [a]: { rcm: 286, ...(intereses != null ? { intereses } : {}), retenido: 54.34, pendientes: 120 } };
+    S.cartera.perfil = { ...(S.cartera.perfil || {}), comunidad: 'madrid' };
+    await guardarCartera('prueba');
+    LS.set('inv-hz-donde', null);
+    S.vista = 'fiscal'; S.fisTab = 'renta'; S.hzR = null; pintar();
+  }, intereses);
+  await page.waitForSelector('#hz .hz-panel');
+}

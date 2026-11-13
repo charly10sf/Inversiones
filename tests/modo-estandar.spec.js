@@ -36,7 +36,8 @@ test('en estándar, Hacienda no habla de lo que recomienda GrowFolio; en fundado
   await expect(vista).not.toContainText('&amp;');
   // Tu renta (antes la Guía), en estándar, sin «el Paso a paso te lo propone»
   await page.evaluate(() => { S.fisTab = 'renta'; pintar(); });
-  await expect(page.locator('#hz .hz-lista')).toBeVisible();
+  // (en el móvil, una casilla por pantalla: la lista va en la hoja «Todas las casillas»)
+  await expect(page.locator('#hz .hz-panel')).toBeVisible();
   await expect(vista).not.toContainText('te lo propone');
   await page.evaluate(() => { S.fisTab = 'tu'; pintar(); });
 
