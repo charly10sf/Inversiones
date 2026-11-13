@@ -263,7 +263,7 @@ class TendenciaEnLaDecision(Base):
         self.claude_dice({"comentario": "x", "ideas": [], "evitar": [], "cambios": [], "plazos": []})
         I.decidir(lectura, cache, valores, P.per_sector_mediano(valores), set(), {})
         self.assertIn("Tendencia: hoy -5.17 %, -25.2 % frente a su media de 50 sesiones", self.pedidos[0])
-        self.assertIn("últimos 12 meses 97.2 %", self.pedidos[0])
+        self.assertIn("la acción en 12 meses 97.2 %", self.pedidos[0])  # no «últimos 12 meses» a secas: Haiku lo leía como beneficio
         self.assertIn("línea «Tendencia»", I.DECIDIR)
 
 
