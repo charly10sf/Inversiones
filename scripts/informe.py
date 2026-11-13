@@ -36,6 +36,7 @@ import os
 import re
 import sys
 import time
+import unicodedata
 import urllib.error
 import urllib.parse
 import urllib.request
@@ -62,9 +63,14 @@ LOTE_LECTURA_LOTES = int(os.environ.get("INFORME_LECTURAS_POR_PASADA", "400"))  
 TANDA_MAX_CARACTERES = 260000  # una petición no pasa de esto (unos 75.000 tokens): si pasa, se parte antes de mandarla
 RONDAS_LOTE = 4             # lo que no sale se parte en dos y va en otro lote, hasta 3 veces después de la primera
 LOTE_MIN_PARTIR = 3         # si se atasca, se parte el lote hasta grupos de este tamaño
-# la Action tiene 20 minutos en total (precios, esto, traducción, publicar): esto no pasa de unos 11 desde que empieza
-PRESUPUESTO = int(os.environ.get("INFORME_PRESUPUESTO", "660"))
+# 13 nov 2026 (auditoría): la Action tiene 40 minutos en total (precios, esto, traducción, publicar). Antes eran 20 y esto
+# podía pasar de 13: tras la noche o el fin de semana tocaba todo a la vez (lecturas, temas, informe y decisión), la pasada
+# se cortaba sin publicar y lo que había cobrado Claude se tiraba (el 7 nov, 10 de 12 pasadas). Ahora cada cosa mira el
+# tiempo que queda antes de empezar (hay_tiempo) y, si no llega, se deja para la pasada siguiente, por lote y a mitad de
+# precio, en vez de pedirla deprisa en directo.
+PRESUPUESTO = int(os.environ.get("INFORME_PRESUPUESTO", "780"))
 INICIO = time.time()
+TIEMPO_TEMAS, TIEMPO_INFORME, TIEMPO_DECISION = 120, 180, 240   # segundos que tienen que quedar para empezar cada cosa
 INICIO_FICHAS = "2026-10-23T16:20"  # desde aquí, cada lectura rellena la ficha de la empresa (0.7)
 MAX_NOTICIAS = 8            # noticias guardadas por empresa
 DIAS_NOTICIA = 21
@@ -101,6 +107,19 @@ def hace_menos_de(iso, horas):
         return dt.datetime.now(dt.timezone.utc) - dt.datetime.fromisoformat(iso) < dt.timedelta(hours=horas)
     except Exception:  # noqa: BLE001
         return False
+
+
+def queda():
+    """Los segundos que le quedan a esta pasada para la IA."""
+    return PRESUPUESTO - (time.time() - INICIO)
+
+
+def hay_tiempo(que, hace_falta):
+    """False (y lo dice) si a la pasada no le queda tiempo para empezar `que`: se hará en la siguiente."""
+    if queda() >= hace_falta:
+        return True
+    print(f"{que}: quedan {max(0, round(queda()))} s de la pasada y hacen falta {hace_falta}; se deja para la siguiente")
+    return False
 
 
 DIAG = {"yahoo_rss": 0, "yahoo_rss_vacias": 0, "yahoo_rss_error": 0, "yahoo_api": 0, "google": 0, "google_error": 0}
@@ -461,7 +480,7 @@ def material(instrumentos, precios, radar):
         p = P.get(iid) or {}
         a = p.get("analistas") or {}
         t = p.get("tecnico") or {}
-        datos = [f"{inst.get('nombre')} ({inst.get('corto')}, {inst.get('tipo')}, id {iid})", f"precio {p.get('precio')} €", f"hoy {p.get('variacion_dia')} %"]
+        datos = [f"{inst.get('nombre')} ({inst.get('corto')}, {inst.get('tipo')}, id {iid})"] + precio_y_dia(p)
         if inst.get("region"):
             datos.append("zonas " + ", ".join(f"{k} {v} %" for k, v in inst["region"].items()))
         if a.get("objetivo"):
@@ -484,6 +503,24 @@ def material(instrumentos, precios, radar):
         lista = list(NI.get(s) or [])[:5] + noticias_yahoo(s, 5)
         bloques.append(f"## Idea {s}\n{datos}\n" + "\n".join(citar(lista)))
     return "\n\n".join(bloques), fuentes
+
+
+def hoy_madrid():
+    try:
+        from zoneinfo import ZoneInfo
+        return dt.datetime.now(ZoneInfo("Europe/Madrid")).date().isoformat()
+    except Exception:  # noqa: BLE001
+        return dt.datetime.now(dt.timezone.utc).date().isoformat()
+
+
+def precio_y_dia(p, hoy=None):
+    """El precio de una posición y lo que se movió, diciendo de qué día es si no es de hoy. 13 nov 2026 (auditoría): los
+    fondos publican su valor con uno o dos días de retraso y se le pasaba a la IA como «hoy»: el informe decía «el fondo sube
+    un 1,87 % hoy, pero el S&P 500 baja» y ponía «mixto» en 8 de 15 posiciones (el dato era del día 11)."""
+    fecha = str(p.get("fecha") or "")[:10]
+    if fecha and fecha < (hoy or hoy_madrid()):
+        return [f"último precio {p.get('precio')} €, del {fecha} (no hay otro más nuevo)", f"ese día, el {fecha}, {p.get('variacion_dia')} % (no es de hoy)"]
+    return [f"precio {p.get('precio')} €", f"hoy {p.get('variacion_dia')} %"]
 
 
 INSTRUCCIONES = """Eres el analista de prensa de una web privada de inversión de un inversor particular español.
@@ -519,6 +556,10 @@ Finance con su resumen) junto con sus datos, y escribe un informe contrastado. R
   una fecha suelta como 2026-10-28. Si no hay nada concreto, "nada especial".
 - No pongas la fecha de hoy en los textos ("este 21 de octubre de 2026"): ya se sabe que es de hoy.
 - Los datos de cada zona y de cada posición son los de hoy: si una noticia dice otra cifra (más vieja), manda la de los datos.
+- Salvo cuando el dato de una posición dice de qué día es («del 2026-11-11», «no es de hoy»): los fondos publican su valor
+  con uno o dos días de retraso. Ese movimiento no es de hoy: no lo llames «hoy» ni lo compares con lo que hacen hoy los
+  índices; di de qué día es («su último valor, del 11 de noviembre, subió un 1,9 %») y, para hoy, lo que hacen los
+  mercados que sigue. No digas que el dato no cuadra.
 - "impacto" y el texto dicen lo mismo: si el texto empieza por "malo para…", el impacto es negativo; si es "bueno para…",
   positivo; si hay de las dos cosas, mixto. Nunca un impacto positivo con un texto que empieza por "malo".
 Responde solo con un bloque ```json con este formato:
@@ -563,6 +604,8 @@ def informe_cartera(ruta_inst, dir_anterior, dir_salida):
         return conservar("sin ANTHROPIC_RADAR_KEY, se deja el anterior")
     if previo.get("generado") and hace_menos_de(previo["generado"], HORAS_INFORME) and not os.environ.get("INFORME_FORZAR"):
         return conservar("el último tiene menos de 2 horas")
+    if not hay_tiempo("informe", TIEMPO_INFORME):
+        return conservar("sin tiempo en esta pasada, se deja el anterior")
     instrumentos = leer(ruta_inst).get("instrumentos") or []
     precios = leer(f"{dir_salida}/precios.json")
     radar = leer(f"{dir_salida}/radar.json")
@@ -673,8 +716,93 @@ def datos_idea(x, medianas):
     fav, con = P.contraste_idea(x, medianas)
     return (f"{x.get('n')} ({x['s']}, cotiza en {x.get('z')}, sede en {x.get('pais') or '?'}, {x.get('sector')}): precio {x.get('p')} {x.get('m')}, {x.get('na')} analistas, "
             f"consenso {x.get('r')}, objetivo medio a 12 meses {x.get('obj')} ({x.get('pot')} % de recorrido), PER futuro {x.get('perf')}, "
-            f"beneficio esperado {x.get('epsg') if x.get('epsg') is not None else x.get('eg')} %, dividendo {x.get('div') or 0} %, 1 año {x.get('c1a')} %, "
+            f"beneficio esperado {x.get('epsg') if x.get('epsg') is not None else x.get('eg')} %, dividendo {x.get('div') or 0} %, últimos 12 meses {x.get('c1a')} %, "
             f"contraste de la web {fav} señales a favor y {con} en contra")
+
+
+def tendencia_idea(x):
+    """La tendencia de la cotización, para la decisión: hoy, frente a sus medias de 50 y 200 sesiones y a su máximo de 52
+    semanas. 13 nov 2026 (auditoría): el encargo de la decisión dice que las candidatas traen «tendencia» y no la traían;
+    decidía con el recorrido hasta el precio objetivo, que se dispara justo cuando la acción se hunde y los analistas aún no
+    han tocado sus objetivos (Western Digital: 108 % de recorrido con el precio un 25 % por debajo de su media de 50)."""
+    p = x.get("p")
+    if not p:
+        return ""
+
+    def frente(v):
+        return f"{round((p / v - 1) * 100, 1)} %" if v else "?"
+    t = [f"hoy {x.get('v')} %" if x.get("v") is not None else "", f"{frente(x.get('m50'))} frente a su media de 50 sesiones",
+         f"{frente(x.get('m200'))} frente a la de 200", f"{frente(x.get('mx'))} desde su máximo de 52 semanas"]
+    return "Tendencia: " + ", ".join(y for y in t if y) + "."
+
+
+# 13 nov 2026 (auditoría): el RSS de Yahoo devuelve lo mismo para muchos tickers europeos que no conoce («AF Gruppen
+# reports strong Q3 profit» colgaba de 78 empresas). Un enlace que cuelga de COMPARTIDA_MIN empresas o más y no nombra a
+# la empresa (ni su nombre ni su ticker, en el titular o en el resumen) no se le pasa a la IA. Medido con los datos del
+# 13 nov: 875 titulares de 15.919 (5,5 %), de los que la propia IA había marcado 816 como relleno (peso 0), 5 con peso 1 y
+# ninguno con más; 81 empresas se quedan sin nada que leer.
+COMPARTIDA_MIN = 10
+GENERICAS = set("the and of de la el los las group grupo holding holdings company companies corporation corp inc plc sa se ag nv ab asa "
+                "oyj spa ltd limited co banco bank banca first american united national international global general new compagnie "
+                "societe sociedad financiere industries trust investment capital energy".split())
+
+
+def _llano(t):
+    return "".join(c for c in unicodedata.normalize("NFD", str(t or "").lower()) if unicodedata.category(c) != "Mn")
+
+
+def nombra(x, n):
+    """Si la noticia `n` nombra a la empresa `x`: una de las dos primeras palabras propias de su nombre, o su ticker en
+    mayúsculas, en el titular o en el resumen. Ante la duda (sin nombre ni ticker que buscar), sí."""
+    palabras = [w for w in re.split(r"[^a-z0-9]+", _llano(x.get("n"))) if len(w) >= 3 and w not in GENERICAS][:2]
+    raiz = re.split(r"[.\-]", str(x.get("s") or ""))[0]
+    raiz = raiz if len(raiz) >= 2 else ""
+    if not palabras and not raiz:
+        return True
+    crudo = f"{n.get('t') or ''} {n.get('r') or ''}"
+    texto = _llano(crudo)
+    if any(re.search(r"(?<![a-z0-9])" + re.escape(w) + r"(?![a-z0-9])", texto) for w in palabras):
+        return True
+    return bool(raiz) and re.search(r"(?<![A-Za-z0-9])" + re.escape(raiz.upper()) + r"(?![A-Za-z0-9])", crudo) is not None
+
+
+def compartidas(cache):
+    """Los enlaces que cuelgan de COMPARTIDA_MIN empresas o más."""
+    c = collections.Counter(n.get("u") for e in cache.values() if isinstance(e, dict) for n in (e.get("n") or []) if n.get("u"))
+    return {u for u, k in c.items() if k >= COMPARTIDA_MIN}
+
+
+def propias(cache, x, comp):
+    """Las noticias guardadas de la empresa, sin las compartidas que no la nombran."""
+    return [n for n in ((cache.get(x["s"]) or {}).get("n") or []) if not (n.get("u") in comp and not nombra(x, n))]
+
+
+def citadas_por_peso(r, fuentes, s):
+    """Los números de las noticias que cita la lectura de `s`, de más a menos peso según la propia IA («tit») y sin las que
+    ella misma marca como relleno (peso 0), y la fecha de la más reciente con peso 2 o más. Solo las de su bloque. 13 nov
+    2026 (auditoría): se guardaban las dos primeras que citaba, y 305 de 2.409 lecturas enseñaban como fuente un titular que
+    la IA había marcado como relleno (en Audax, dos notas de Klépierre y Ramsay)."""
+    pesos = {}
+    tit = r.get("tit")
+    for k, v in (tit.items() if isinstance(tit, dict) else []):
+        try:
+            pesos[int(k)] = F.peso_de(v[2] if isinstance(v, (list, tuple)) and len(v) > 2 else 0)
+        except (TypeError, ValueError):
+            continue
+
+    def suya(k):
+        return 1 <= k <= len(fuentes) and fuentes[k - 1].get("_s", s) == s
+    nums = []
+    for k in r.get("fuentes") or []:
+        try:
+            k = int(k)
+        except (TypeError, ValueError):
+            continue
+        if suya(k) and k not in nums:
+            nums.append(k)
+    con_peso = sorted((k for k in nums if pesos.get(k, 1) > 0), key=lambda k: -pesos.get(k, 1))
+    fechas = [str(fuentes[k - 1].get("d") or "") for k, p_ in pesos.items() if p_ >= 2 and suya(k)]
+    return (con_peso or nums), (max(fechas) if any(fechas) else None)
 
 
 LEER = """Vigilas la prensa de cientos de empresas para un inversor particular español. Para cada empresa
@@ -712,12 +840,12 @@ def leer_lote(lectura, cache, valores, medianas, fichas=None, tuyas=()):
     Con Claude y la API por lotes se leen hasta LOTE_LECTURA_LOTES empresas por pasada (peticiones de 50 dentro de un
     mismo lote); si no, LOTE_LECTURA como siempre."""
     global CLAUDE_APAGADO
-    pend = []
+    pend, comp, suyas = [], compartidas(cache), {}
     for x in valores:
-        e = cache.get(x["s"]) or {}
-        if not e.get("n"):
+        suyas[x["s"]] = propias(cache, x, comp)
+        if not suyas[x["s"]]:
             continue
-        h = huella(e["n"])
+        h = huella(suyas[x["s"]])
         antes = lectura.get(x["s"]) or {}
         # leída ya con estas noticias: no se vuelve a leer. Salvo si fue antes de las fichas y no tiene la suya: si no,
         # una empresa sin titulares nuevos se quedaría sin ficha hasta que salieran (el 24 oct, 322 de 814)
@@ -741,8 +869,8 @@ def leer_lote(lectura, cache, valores, medianas, fichas=None, tuyas=()):
         fuentes, bloques = [], []
         for _, x, _ in trozo:
             lineas = []
-            for n in (cache[x["s"]]["n"] or [])[:6]:
-                fuentes.append(n)
+            for n in suyas[x["s"]][:6]:
+                fuentes.append({**n, "_s": x["s"]})
                 lineas.append(f"[{len(fuentes)}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}" + (f" — {n['r'][:300]}" if n.get("r") else ""))
             bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n" + "\n".join(lineas))
         hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
@@ -760,19 +888,24 @@ def leer_lote(lectura, cache, valores, medianas, fichas=None, tuyas=()):
             if not isinstance(r, dict):
                 continue
             fs = []
-            for k in r.get("fuentes") or []:
-                try:
-                    f = fuentes[int(k) - 1]
-                except (ValueError, IndexError, TypeError):
-                    continue
+            citadas, dn = citadas_por_peso(r, fuentes, x["s"])
+            for k in citadas:
+                f = fuentes[k - 1]
                 if f.get("u") and len(fs) < 2:
                     fs.append({kk: f.get(kk) for kk in ("t", "u", "f", "d", "w") if f.get(kk)})
             try:
                 rel = max(0, min(3, int(r.get("rel") or 0)))
             except (TypeError, ValueError):
                 rel = 0
-            lectura[x["s"]] = {"d": ahora(), "h": h, "imp": r.get("imp") if r.get("imp") in ("positivo", "negativo", "neutral", "mixto") else "neutral",
-                               "rel": rel, "txt": (r.get("txt") or "")[:300], "cat": (r.get("cat") or "")[:160], "fuentes": fs}
+            antes = lectura.get(x["s"]) or {}
+            nueva = {"d": ahora(), "h": h, "imp": r.get("imp") if r.get("imp") in ("positivo", "negativo", "neutral", "mixto") else "neutral",
+                     "rel": rel, "txt": (r.get("txt") or "")[:300], "cat": (r.get("cat") or "")[:160], "fuentes": fs}
+            if rel >= 3:  # desde cuándo es gorda con este signo y de cuándo es su última noticia de peso (ver gorda())
+                sigue = (antes.get("rel") or 0) >= 3 and antes.get("imp") == nueva["imp"]
+                nueva["g"] = (antes.get("g") or antes.get("d") or nueva["d"]) if sigue else nueva["d"]
+                if dn:
+                    nueva["dn"] = dn
+            lectura[x["s"]] = nueva
             if fichas is not None:
                 F.aplicar_lectura(fichas, x["s"], r, fuentes, lectura[x["s"]]["d"], x.get("n"))
             n += 1
@@ -883,6 +1016,10 @@ Decide tú. Reglas:
   analistas, o depende de una sola fuente, baja la confianza o descártala, y dilo.
 - Busca un motor concreto (un catalizador con fecha o un cambio de tendencia), que esté razonablemente
   barata y que el balance aguante.
+- Mira la línea «Tendencia» de cada una. El recorrido hasta el precio objetivo se dispara cuando la acción cae deprisa y
+  los analistas aún no han tocado sus objetivos: si cotiza muy por debajo de sus medias de 50 y de 200 sesiones, ese
+  recorrido vale menos; dilo en «riesgo» y baja la confianza, o espera a que deje de caer. Y no repitas la misma apuesta:
+  si varias candidatas dependen de lo mismo (el mismo sector, el mismo cliente, la misma noticia), elige la mejor.
 - El plazo importa: no es lo mismo ganar un 50 % en 3 meses que en 3 años. El objetivo de los analistas es
   a 12 meses; para cada idea estima tú en cuántos meses se puede materializar la mayor parte de la subida
   (por su catalizador) y cuánto esperas que suba en ese plazo (puede ser menos que lo de los analistas).
@@ -925,12 +1062,21 @@ def gorda(lectura, s, desde=None, signo="negativo"):
     """Una noticia que cambia la tesis (relevancia 3 de la lectura de prensa), de la última semana y, si se
     dice, posterior a la decisión anterior. Es lo único que deja cambiar de opinión de un día para otro."""
     le = lectura.get(s) or {}
+    # 13 nov 2026 (auditoría):
+    # «d» es la última vez que se leyó; «g», desde cuándo la lectura es gorda con este signo; «dn», la fecha de su última
+    # noticia de peso. Para «posterior a la decisión» cuentan «g» y «dn»: antes se miraba «d», y bastaba un titular de
+    # relleno nuevo para releer la empresa y que una noticia que la decisión ya había visto pasara por nueva y sacara la idea
     d = cuando(le.get("d"))
     if d is None or (le.get("rel") or 0) < 3 or le.get("imp") != signo:
         return False
     if d < dt.datetime.now(dt.timezone.utc) - dt.timedelta(days=7):
         return False
-    return desde is None or d > desde
+    if desde is None:
+        return True
+    g, dn = cuando(le.get("g")), cuando(le.get("dn"))
+    if g is None and dn is None:
+        return d > desde  # lecturas de antes del 13 nov, sin esas fechas: como siempre
+    return any(t is not None and t > desde for t in (g, dn))
 
 
 def rota(x):
@@ -1062,6 +1208,17 @@ def revisar(decision, lectura, valores):
     return {**decision, "ideas": quedan, "cambios": (cam + (decision.get("cambios") or []))[:12], "revisada": ahora()}
 
 
+def con_ideas_previas(valores, todas, decision):
+    """Las empresas entre las que se decide (las de radar.json) más las ideas y las «evitar» de la vez anterior que ya no
+    están ahí pero siguen en el radar ampliado (radar-mas.json). 13 nov 2026 (auditoría): Salzgitter pasó al radar ampliado
+    el 6 nov y se quedó de idea sin que nadie volviera a mirar sus números (para «rota» era «un fallo de datos») ni se la
+    enseñara a la IA: no podía salir nunca."""
+    dentro = {x["s"] for x in valores}
+    por_s = {x["s"]: x for x in todas if x.get("s")}
+    previas = [i.get("s") for k in ("ideas", "evitar") for i in ((decision or {}).get(k) or []) if isinstance(i, dict)]
+    return list(valores) + [por_s[s] for s in dict.fromkeys(previas) if s in por_s and s not in dentro]
+
+
 def contexto_zonas(precios):
     """Una línea por zona con cómo van sus índices (hoy, mes y año), para que la IA pese la geografía."""
     grupos = {}
@@ -1105,6 +1262,7 @@ def decidir(lectura, cache, valores, medianas, tuyas, precios=None, previa=None)
     web.sort(key=lambda t: -t[0])
     radar_top = [x["s"] for _, x in web[:9]]
     porval = {x["s"]: x for x in valores}
+    comp = compartidas(cache)
     # las ideas de la vez anterior entran siempre en la lista, para que la IA pueda mantenerlas
     de_antes = [porval[i["s"]] for i in ((previa or {}).get("ideas") or []) if isinstance(i, dict) and i.get("s") in porval and i["s"] not in tuyas]
     vistos, orden = set(), []
@@ -1119,11 +1277,11 @@ def decidir(lectura, cache, valores, medianas, tuyas, precios=None, previa=None)
     for x in cands:
         le = lectura.get(x["s"]) or {}
         lineas = []
-        for n in ((cache.get(x["s"]) or {}).get("n") or [])[:3]:
+        for n in propias(cache, x, comp)[:3]:
             fuentes.append(n)
             lineas.append(f"[{len(fuentes)}] {(n.get('d') or '')[:10]} {n.get('f') or ''}: {n['t']}")
         prensa = f"Prensa ({le.get('imp')}, relevancia {le.get('rel')}): {le.get('txt')}" + (f" Catalizador: {le.get('cat')}." if le.get("cat") else "") if le else "Prensa: sin leer todavía."
-        bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n{prensa}\n" + "\n".join(lineas))
+        bloques.append(f"## {x['s']}\n{datos_idea(x, medianas)}\n{tendencia_idea(x)}\n{prensa}\n" + "\n".join(lineas))
     hoy = dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%d")
     obligadas = ", ".join(x["s"] for x in cands[:CANDIDATAS] if x not in [m for _, m in malas[:10]])
     zonas = contexto_zonas(precios or {})
@@ -1243,7 +1401,7 @@ def leer_temas(fichas, precios, valores=()):
     """0.7: cada 3 horas, la IA lee los titulares por tema y por sector (y los del mercado) y dice a qué
     zonas, países y sectores toca cada tema. Van a fichas.json → temas; la app los junta con la ficha de cada
     empresa por su país, su zona y su sector."""
-    if not clave_claude() or hace_menos_de(fichas.get("temas_d") or "", HORAS_TEMAS):
+    if not clave_claude() or hace_menos_de(fichas.get("temas_d") or "", HORAS_TEMAS) or not hay_tiempo("temas", TIEMPO_TEMAS):
         return 0
     fuentes, vistos = [], set()
 
@@ -1307,13 +1465,29 @@ def uso_anterior(esc):
     return [x for x in viejo if isinstance(x, dict) and hace_menos_de(x.get("t") or "", 48)]
 
 
+DIAS_COSTE = 40
+
+
+def coste_por_dias(previo, uso, hoy=None):
+    """{día (UTC): {cosa: US$}} de los últimos DIAS_COSTE días: lo que ya había más las llamadas de esta pasada. 13 nov 2026
+    (auditoría): «uso» solo guarda 48 horas, y para saber lo que cuesta un sábado o un domingo había que ir a la Console."""
+    dias = {d: dict(v) for d, v in (previo or {}).items() if isinstance(v, dict)}
+    for x in uso or []:
+        d = dias.setdefault(str(x.get("t") or "")[:10], {})
+        q = x.get("que") or "?"
+        d[q] = round(d.get(q, 0) + float(x.get("coste") or 0), 6)
+    limite = ((hoy or dt.datetime.now(dt.timezone.utc).date()) - dt.timedelta(days=DIAS_COSTE)).isoformat()
+    return {d: v for d, v in sorted(dias.items()) if d >= limite}
+
+
 def estado_ia(esc, hay_ia):
     """escaneo.json → ia: si hay clave (activo), si ha ido bien esta pasada (ok), si se ha apagado por la clave o el saldo,
     los últimos fallos, los modelos que han contestado, cada llamada de las últimas 48 horas (uso: t, m, que, in, cache,
     out, busq, lote, coste en US$) y lo que han costado las de las últimas 24 horas (coste_24h, US$)."""
     uso = uso_anterior(esc) + USO
     return {"activo": hay_ia, "ok": hay_ia and not CLAUDE_ERRORES and not CLAUDE_APAGADO, "apagado": CLAUDE_APAGADO, "errores": CLAUDE_ERRORES[-4:],
-            "modelos": sorted(USADOS), "uso": uso, "coste_24h": round(sum(x.get("coste") or 0 for x in uso if hace_menos_de(x.get("t") or "", 24)), 4)}
+            "modelos": sorted(USADOS), "uso": uso, "coste_dias": coste_por_dias(((esc.get("ia") or {}).get("coste_dias")) if isinstance(esc.get("ia"), dict) else None, USO),
+            "coste_24h": round(sum(x.get("coste") or 0 for x in uso if hace_menos_de(x.get("t") or "", 24)), 4)}
 
 
 def main(ruta_inst, dir_anterior, dir_salida):
@@ -1361,18 +1535,21 @@ def main(ruta_inst, dir_anterior, dir_salida):
     informe_cartera(ruta_inst, dir_anterior, dir_salida)
     # una decisión nueva al día (o si cambia su formato); entre medias, solo se revisa si hay una noticia gorda
     viejo = not decision or decision.get("v") != DECISION_V or not hace_menos_de(decision.get("generado") or "", HORAS_DECISION)
+    valores_dec = con_ideas_previas(valores, todas, decision)
     if not viejo and valores:
-        decision = revisar(decision, lectura, valores)
+        decision = revisar(decision, lectura, valores_dec)
     # si la última vez falló (Claude saturado o sin saldo, por ejemplo), no se reintenta hasta pasadas 2 horas
     intento = esc.get("intento_decision")
     if viejo and intento and hace_menos_de(intento, 2):
         viejo = False
     # 0.8.2d: el ensayo de la Action (sin publicar) decide aunque no toque, para medir lo que cuesta
     viejo = viejo or bool(os.environ.get("INFORME_DECIDIR"))
-    if hay_ia and valores and viejo:
+    # (13 nov, auditoría) si no queda tiempo, la decisión se deja para la pasada siguiente, sin apuntar el intento: así no
+    # espera 2 horas
+    if hay_ia and valores and viejo and hay_tiempo("decisión", TIEMPO_DECISION):
         intento = ahora()
         try:
-            d = decidir(lectura, cache, valores, medianas, tuyas, leer(f"{dir_salida}/precios.json"), previa=decision)
+            d = decidir(lectura, cache, valores_dec, medianas, tuyas, leer(f"{dir_salida}/precios.json"), previa=decision)
             if d:
                 decision = d
                 print(f"escaneo: decisión con {d['candidatas']} candidatas, {len(d['ideas'])} ideas y {len(d['evitar'])} a evitar")

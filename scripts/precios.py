@@ -1273,6 +1273,18 @@ def fechas_radar(info, precio, a_eur):
     return out
 
 
+def objetivo_creible(objetivo, precio):
+    """El precio objetivo medio, o None si no puede ser: más de 8 veces el precio o menos de la octava parte es un cambio de
+    unidad de Yahoo (peniques contra libras), no una opinión. 13 nov 2026 (auditoría): Templeton Emerging Markets (TEM.L)
+    salía con un 1.150 % de recorrido (objetivo 3.757,7 con el precio en 300,5 peniques)."""
+    try:
+        if objetivo and precio and 0.125 <= float(objetivo) / float(precio) <= 8:
+            return objetivo
+    except (TypeError, ValueError, ZeroDivisionError):
+        pass
+    return None
+
+
 def radar_ficha(sim, zona, fx):
     """Todo lo que hace falta para contrastar una idea: analistas (y cómo han cambiado en 3 meses),
     rango de precios objetivo, valoración, crecimiento esperado, rentabilidad, deuda y tendencia."""
@@ -1284,7 +1296,9 @@ def radar_ficha(sim, zona, fx):
     moneda = info.get("currency") or "EUR"
     a_eur = cambio_hoy(moneda, fx)
     a_eur_base = cambio_hoy(normaliza_moneda(moneda)[0], fx)
-    objetivo = info.get("targetMeanPrice")
+    objetivo = objetivo_creible(info.get("targetMeanPrice"), precio)
+    if objetivo is None:  # sin objetivo medio que valga, tampoco su rango
+        info = {**info, "targetLowPrice": None, "targetHighPrice": None}
     eps, epsf = info.get("trailingEps"), info.get("forwardEps")
     div = info.get("dividendYield")
     cambio_1a = info.get("52WeekChange")

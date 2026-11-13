@@ -36,7 +36,10 @@ concurrency:
 jobs:
   precios:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    # 13 nov 2026 (auditoría): eran 20. Tras la noche o el fin de semana la pasada (precios 5-7 min, la IA 12-14 y la
+    # traducción) no cabía, se cortaba sin publicar y lo ya cobrado por Claude se tiraba: el 7 nov, 10 de 12 pasadas; entre
+    # semana, las dos primeras de la mañana. Con 40 cabe la peor; si una se alarga, la siguiente espera (mismo grupo).
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v4
 

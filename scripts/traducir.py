@@ -32,7 +32,7 @@ DIAS_GUARDA = 3    # lo que deja de usarse se queda este tiempo por si vuelve
 DIAS_FALLO = 2     # un texto que la IA no consigue traducir solo no se vuelve a pedir hasta pasados estos días
 # claves que no son texto para leer (enlaces, fechas, símbolos, nombres, etiquetas) o subárboles que no se pintan
 SALTA = {"u", "f", "d", "h", "s", "id", "n", "modelo", "generado", "impacto", "imp", "urgencia", "confianza", "zona", "dato",
-         "fuentes", "noticias", "fuentes_pasada", "gemini", "ia", "claude", "empresas", "con_noticias", "leidas_24h", "v", "rel", "web"}
+         "fuentes", "noticias", "fuentes_pasada", "gemini", "ia", "claude", "empresas", "con_noticias", "leidas_24h", "v", "rel", "web", "g", "dn"}
 ES = re.compile(r"\b(de|del|la|las|los|el|que|para|con|por|una?|está|son|hay|se|su|sus|más|años?|hoy|tras|sin|muy)\b|[áéíóúñ¿¡]", re.I)
 
 
@@ -182,7 +182,8 @@ def main(ruta_inst, dir_anterior, dir_salida):
     def guardar(t, usado, dudoso, nopedir):
         with open(f"{dir_salida}/traduccion-en.json", "w", encoding="utf-8") as f:
             json.dump({"v": 1, "generado": I.ahora(), "t": t, "u": usado, "x": dudoso, "n": nopedir,
-                       "uso": [x for x in (previo.get("uso") or []) if I.hace_menos_de(x.get("t") or "", 48)] + I.USO}, f,
+                       "uso": [x for x in (previo.get("uso") or []) if I.hace_menos_de(x.get("t") or "", 48)] + I.USO,
+                       "coste_dias": I.coste_por_dias(previo.get("coste_dias"), I.USO)}, f,
                       ensure_ascii=False, separators=(",", ":"))
 
     try:
